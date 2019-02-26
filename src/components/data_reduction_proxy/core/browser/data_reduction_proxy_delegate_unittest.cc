@@ -14,13 +14,13 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_entropy_provider.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -84,15 +84,9 @@ class TestDataReductionProxyDelegate : public DataReductionProxyDelegate {
   TestDataReductionProxyDelegate(
       DataReductionProxyConfig* config,
       const DataReductionProxyConfigurator* configurator,
-      DataReductionProxyEventCreator* event_creator,
       DataReductionProxyBypassStats* bypass_stats,
-      bool proxy_supports_quic,
-      net::NetLog* net_log)
-      : DataReductionProxyDelegate(config,
-                                   configurator,
-                                   event_creator,
-                                   bypass_stats,
-                                   net_log),
+      bool proxy_supports_quic)
+      : DataReductionProxyDelegate(config, configurator, bypass_stats),
         proxy_supports_quic_(proxy_supports_quic) {}
 
   ~TestDataReductionProxyDelegate() override {}
@@ -227,12 +221,14 @@ class DataReductionProxyDelegateTest : public testing::Test {
 
   int64_t total_received_bytes() const {
     test_context_->RunUntilIdle();
-    return GetSessionNetworkStatsInfoInt64("session_received_content_length");
+    return test_context_->pref_service()->GetInt64(
+        prefs::kHttpReceivedContentLength);
   }
 
   int64_t total_original_received_bytes() const {
     test_context_->RunUntilIdle();
-    return GetSessionNetworkStatsInfoInt64("session_original_content_length");
+    return test_context_->pref_service()->GetInt64(
+        prefs::kHttpOriginalContentLength);
   }
 
   net::MockClientSocketFactory* mock_socket_factory() {
@@ -258,22 +254,8 @@ class DataReductionProxyDelegateTest : public testing::Test {
   }
 
  private:
-  int64_t GetSessionNetworkStatsInfoInt64(const char* key) const {
-    std::unique_ptr<base::DictionaryValue> session_network_stats_info =
-        base::DictionaryValue::From(test_context_->settings()
-                                        ->data_reduction_proxy_service()
-                                        ->compression_stats()
-                                        ->SessionNetworkStatsInfoToValue());
-    EXPECT_TRUE(session_network_stats_info);
-
-    std::string string_value;
-    EXPECT_TRUE(session_network_stats_info->GetString(key, &string_value));
-    int64_t value = 0;
-    EXPECT_TRUE(base::StringToInt64(string_value, &value));
-    return value;
-  }
-
-  base::MessageLoopForIO message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
   net::MockClientSocketFactory mock_socket_factory_;
   net::TestURLRequestContext context_;
   net::URLRequestContextStorage context_storage_;
@@ -475,10 +457,9 @@ TEST_F(DataReductionProxyDelegateTest, AlternativeProxy) {
 
     params()->SetProxiesForHttpForTesting(proxies_for_http);
 
-    TestDataReductionProxyDelegate delegate(
-        config(), io_data()->configurator(), io_data()->event_creator(),
-        io_data()->bypass_stats(), test.proxy_supports_quic,
-        io_data()->net_log());
+    TestDataReductionProxyDelegate delegate(config(), io_data()->configurator(),
+                                            io_data()->bypass_stats(),
+                                            test.proxy_supports_quic);
 
     base::FieldTrialList field_trial_list(nullptr);
     base::FieldTrialList::CreateFieldTrial(

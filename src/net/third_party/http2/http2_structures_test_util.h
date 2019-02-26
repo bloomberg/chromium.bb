@@ -7,13 +7,12 @@
 
 #include "net/third_party/http2/http2_structures.h"
 #include "net/third_party/http2/platform/api/http2_string.h"
+#include "net/third_party/http2/test_tools/http2_random.h"
 #include "net/third_party/http2/tools/http2_frame_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace http2 {
 namespace test {
-
-class RandomBase;
 
 template <class S>
 Http2String SerializeStructure(const S& s) {
@@ -25,15 +24,15 @@ Http2String SerializeStructure(const S& s) {
 
 // Randomize the members of out, in a manner that yields encodeable contents
 // (e.g. a "uint24" field has only the low 24 bits set).
-void Randomize(Http2FrameHeader* out, RandomBase* rng);
-void Randomize(Http2PriorityFields* out, RandomBase* rng);
-void Randomize(Http2RstStreamFields* out, RandomBase* rng);
-void Randomize(Http2SettingFields* out, RandomBase* rng);
-void Randomize(Http2PushPromiseFields* out, RandomBase* rng);
-void Randomize(Http2PingFields* out, RandomBase* rng);
-void Randomize(Http2GoAwayFields* out, RandomBase* rng);
-void Randomize(Http2WindowUpdateFields* out, RandomBase* rng);
-void Randomize(Http2AltSvcFields* out, RandomBase* rng);
+void Randomize(Http2FrameHeader* out, Http2Random* rng);
+void Randomize(Http2PriorityFields* out, Http2Random* rng);
+void Randomize(Http2RstStreamFields* out, Http2Random* rng);
+void Randomize(Http2SettingFields* out, Http2Random* rng);
+void Randomize(Http2PushPromiseFields* out, Http2Random* rng);
+void Randomize(Http2PingFields* out, Http2Random* rng);
+void Randomize(Http2GoAwayFields* out, Http2Random* rng);
+void Randomize(Http2WindowUpdateFields* out, Http2Random* rng);
+void Randomize(Http2AltSvcFields* out, Http2Random* rng);
 
 // Clear bits of header->flags that are known to be invalid for the
 // type. For unknown frame types, no change is made.

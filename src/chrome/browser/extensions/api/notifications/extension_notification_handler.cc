@@ -112,7 +112,7 @@ void ExtensionNotificationHandler::OnClick(
 void ExtensionNotificationHandler::DisableNotifications(Profile* profile,
                                                         const GURL& origin) {
   message_center::NotifierId notifier_id(
-      message_center::NotifierId::APPLICATION, origin.host());
+      message_center::NotifierType::APPLICATION, origin.host());
   NotifierStateTrackerFactory::GetForProfile(profile)->SetNotifierEnabled(
       notifier_id, false /* enabled */);
 }

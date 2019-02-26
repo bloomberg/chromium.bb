@@ -39,19 +39,20 @@ void CheckNonFrameRateDefaults(const VideoCaptureSettings& result) {
 void CheckTrackAdapterSettingsEqualsFormat(const VideoCaptureSettings& result) {
   // For content capture, resolution and frame rate should always be the same
   // for source and track.
-  EXPECT_EQ(result.Width(), result.track_adapter_settings().max_width);
-  EXPECT_EQ(result.Height(), result.track_adapter_settings().max_height);
-  EXPECT_EQ(0.0, result.track_adapter_settings().max_frame_rate);
+  EXPECT_TRUE(result.track_adapter_settings().target_size().has_value());
+  EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
+  EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
+  EXPECT_EQ(0.0, result.track_adapter_settings().max_frame_rate());
 }
 
 void CheckTrackAdapterSettingsEqualsFormatDefaultAspectRatio(
     const VideoCaptureSettings& result) {
   EXPECT_EQ(
       static_cast<double>(kMinScreenCastDimension) / kMaxScreenCastDimension,
-      result.track_adapter_settings().min_aspect_ratio);
+      result.track_adapter_settings().min_aspect_ratio());
   EXPECT_EQ(
       static_cast<double>(kMaxScreenCastDimension) / kMinScreenCastDimension,
-      result.track_adapter_settings().max_aspect_ratio);
+      result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 }
 
@@ -180,6 +181,28 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, OverconstrainedOnFrameRate) {
             result.failed_constraint_name());
 }
 
+TEST_F(MediaStreamConstraintsUtilVideoContentTest,
+       OverconstrainedOnInvalidResizeMode) {
+  constraint_factory_.Reset();
+  constraint_factory_.basic().resize_mode.SetExact(
+      blink::WebString::FromASCII("invalid"));
+  auto result = SelectSettings();
+  EXPECT_FALSE(result.HasValue());
+  EXPECT_EQ(constraint_factory_.basic().resize_mode.GetName(),
+            result.failed_constraint_name());
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoContentTest,
+       OverconstrainedOnEmptyResizeMode) {
+  constraint_factory_.Reset();
+  constraint_factory_.basic().resize_mode.SetExact(
+      blink::WebString::FromASCII(""));
+  auto result = SelectSettings();
+  EXPECT_FALSE(result.HasValue());
+  EXPECT_EQ(constraint_factory_.basic().resize_mode.GetName(),
+            result.failed_constraint_name());
+}
+
 // The "Mandatory" and "Ideal" tests check that various selection criteria work
 // for each individual constraint in the basic constraint set.
 TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryDeviceID) {
@@ -267,9 +290,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryExactHeight) {
   EXPECT_EQ(std::round(kHeight * kDefaultScreenCastAspectRatio),
             result.Width());
   CheckNonResolutionDefaults(result);
-  EXPECT_EQ(1.0 / kHeight, result.track_adapter_settings().min_aspect_ratio);
+  EXPECT_EQ(1.0 / kHeight, result.track_adapter_settings().min_aspect_ratio());
   EXPECT_EQ(static_cast<double>(kMaxScreenCastDimension) / kHeight,
-            result.track_adapter_settings().max_aspect_ratio);
+            result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 }
 
@@ -285,9 +308,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMinHeight) {
             result.Width());
   CheckNonResolutionDefaults(result);
   EXPECT_EQ(1.0 / kMaxScreenCastDimension,
-            result.track_adapter_settings().min_aspect_ratio);
+            result.track_adapter_settings().min_aspect_ratio());
   EXPECT_EQ(static_cast<double>(kMaxScreenCastDimension) / kHeight,
-            result.track_adapter_settings().max_aspect_ratio);
+            result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 
   const int kSmallHeight = 100;
@@ -299,9 +322,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMinHeight) {
   EXPECT_EQ(kDefaultScreenCastWidth, result.Width());
   CheckNonResolutionDefaults(result);
   EXPECT_EQ(1.0 / kMaxScreenCastDimension,
-            result.track_adapter_settings().min_aspect_ratio);
+            result.track_adapter_settings().min_aspect_ratio());
   EXPECT_EQ(static_cast<double>(kMaxScreenCastDimension) / kSmallHeight,
-            result.track_adapter_settings().max_aspect_ratio);
+            result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 }
 
@@ -318,9 +341,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMaxHeight) {
               result.Width());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(1.0 / kMaxHeight,
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(kMaxScreenCastDimension,
-              result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
 
@@ -336,9 +359,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMaxHeight) {
               result.Width());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(1.0 / kMaxHeight,
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(kMaxScreenCastDimension,
-              result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
 
@@ -354,9 +377,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMaxHeight) {
         result.Width());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(1.0 / kMaxScreenCastDimension,
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(kMaxScreenCastDimension,
-              result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
 
@@ -373,9 +396,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMaxHeight) {
     EXPECT_EQ(kMaxScreenCastDimension, result.Width());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(1.0 / kMaxHeight,
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(kMaxScreenCastDimension,
-              result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
 }
@@ -395,9 +418,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryHeightRange) {
               result.Width());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(1.0 / kMaxHeight,
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(static_cast<double>(kMaxScreenCastDimension) / kMinHeight,
-              result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
 
@@ -415,9 +438,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryHeightRange) {
               result.Width());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(1.0 / kMaxHeight,
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(static_cast<double>(kMaxScreenCastDimension) / kMinHeight,
-              result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
 
@@ -435,9 +458,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryHeightRange) {
               result.Width());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(1.0 / kMaxHeight,
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(static_cast<double>(kMaxScreenCastDimension) / kMinHeight,
-              result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
 }
@@ -475,9 +498,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealHeight) {
               result.Width());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(1.0 / kMaxHeight,
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(kMaxScreenCastDimension,
-              result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
 
@@ -497,9 +520,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealHeight) {
               result.Width());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(1.0 / kMaxScreenCastDimension,
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(static_cast<double>(kMaxScreenCastDimension) / kMinHeight,
-              result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
 
@@ -522,8 +545,10 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealHeight) {
     // Expect width closest to kIdealHeight * default aspect ratio.
     EXPECT_EQ(std::round(kIdealHeight * default_aspect_ratio), result.Width());
     CheckNonResolutionDefaults(result);
-    EXPECT_EQ(100.0 / 1000.0, result.track_adapter_settings().min_aspect_ratio);
-    EXPECT_EQ(500.0 / 500.0, result.track_adapter_settings().max_aspect_ratio);
+    EXPECT_EQ(100.0 / 1000.0,
+              result.track_adapter_settings().min_aspect_ratio());
+    EXPECT_EQ(500.0 / 500.0,
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
 
@@ -544,8 +569,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealHeight) {
     EXPECT_EQ(constraint_factory_.basic().width.Max(), result.Width());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(100.0 / kMaxHeight,
-              result.track_adapter_settings().min_aspect_ratio);
-    EXPECT_EQ(500.0 / 500.0, result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
+    EXPECT_EQ(500.0 / 500.0,
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
 
@@ -564,8 +590,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealHeight) {
     EXPECT_EQ(constraint_factory_.basic().height.Max(), result.Height());
     EXPECT_EQ(constraint_factory_.basic().width.Max(), result.Width());
     CheckNonResolutionDefaults(result);
-    EXPECT_EQ(1.0, result.track_adapter_settings().min_aspect_ratio);
-    EXPECT_EQ(1000.0 / 500.0, result.track_adapter_settings().max_aspect_ratio);
+    EXPECT_EQ(1.0, result.track_adapter_settings().min_aspect_ratio());
+    EXPECT_EQ(1000.0 / 500.0,
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
 }
@@ -581,9 +608,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryExactWidth) {
             result.Height());
   CheckNonResolutionDefaults(result);
   EXPECT_EQ(static_cast<double>(kWidth) / kMaxScreenCastDimension,
-            result.track_adapter_settings().min_aspect_ratio);
+            result.track_adapter_settings().min_aspect_ratio());
   EXPECT_EQ(static_cast<double>(kWidth) / kMinScreenCastDimension,
-            result.track_adapter_settings().max_aspect_ratio);
+            result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 }
 
@@ -599,10 +626,10 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMinWidth) {
             result.Height());
   CheckNonResolutionDefaults(result);
   EXPECT_EQ(static_cast<double>(kWidth) / kMaxScreenCastDimension,
-            result.track_adapter_settings().min_aspect_ratio);
+            result.track_adapter_settings().min_aspect_ratio());
   EXPECT_EQ(
       static_cast<double>(kMaxScreenCastDimension) / kMinScreenCastDimension,
-      result.track_adapter_settings().max_aspect_ratio);
+      result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 
   const int kSmallWidth = 100;
@@ -614,10 +641,10 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMinWidth) {
   EXPECT_EQ(kDefaultScreenCastHeight, result.Height());
   CheckNonResolutionDefaults(result);
   EXPECT_EQ(static_cast<double>(kSmallWidth) / kMaxScreenCastDimension,
-            result.track_adapter_settings().min_aspect_ratio);
+            result.track_adapter_settings().min_aspect_ratio());
   EXPECT_EQ(
       static_cast<double>(kMaxScreenCastDimension) / kMinScreenCastDimension,
-      result.track_adapter_settings().max_aspect_ratio);
+      result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 }
 
@@ -635,9 +662,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMaxWidth) {
               result.Height());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(1.0 / kMaxScreenCastDimension,
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(static_cast<double>(kMaxWidth) / kMinScreenCastDimension,
-              result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
 
@@ -654,9 +681,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMaxWidth) {
               result.Height());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(1.0 / kMaxScreenCastDimension,
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(static_cast<double>(kMaxWidth) / kMinScreenCastDimension,
-              result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
 
@@ -673,10 +700,10 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMaxWidth) {
         result.Height());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(1.0 / kMaxScreenCastDimension,
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(
         static_cast<double>(kMaxScreenCastDimension) / kMinScreenCastDimension,
-        result.track_adapter_settings().max_aspect_ratio);
+        result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
 
@@ -692,9 +719,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMaxWidth) {
               result.Height());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(1.0 / kMaxScreenCastDimension,
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(static_cast<double>(kMaxWidth) / kMinScreenCastDimension,
-              result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
 }
@@ -714,9 +741,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryWidthRange) {
               result.Height());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(static_cast<double>(kMinWidth) / kMaxScreenCastDimension,
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(static_cast<double>(kMaxWidth) / kMinScreenCastDimension,
-              result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
 
@@ -734,9 +761,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryWidthRange) {
               result.Height());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(static_cast<double>(kMinWidth) / kMaxScreenCastDimension,
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(static_cast<double>(kMaxWidth) / kMinScreenCastDimension,
-              result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
 
@@ -754,9 +781,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryWidthRange) {
               result.Height());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(static_cast<double>(kMinWidth) / kMaxScreenCastDimension,
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(static_cast<double>(kMaxWidth) / kMinScreenCastDimension,
-              result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
 }
@@ -793,9 +820,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealWidth) {
               result.Height());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(1.0 / kMaxScreenCastDimension,
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(static_cast<double>(kMaxWidth) / kMinScreenCastDimension,
-              result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
 
@@ -814,10 +841,10 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealWidth) {
               result.Height());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(static_cast<double>(kMinWidth) / kMaxScreenCastDimension,
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(
         static_cast<double>(kMaxScreenCastDimension) / kMinScreenCastDimension,
-        result.track_adapter_settings().max_aspect_ratio);
+        result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
 
@@ -840,8 +867,10 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealWidth) {
         constraint_factory_.basic().height.Max();
     EXPECT_EQ(std::round(kIdealWidth / default_aspect_ratio), result.Height());
     CheckNonResolutionDefaults(result);
-    EXPECT_EQ(500.0 / 500.0, result.track_adapter_settings().min_aspect_ratio);
-    EXPECT_EQ(1000.0 / 100.0, result.track_adapter_settings().max_aspect_ratio);
+    EXPECT_EQ(500.0 / 500.0,
+              result.track_adapter_settings().min_aspect_ratio());
+    EXPECT_EQ(1000.0 / 100.0,
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
 
@@ -861,9 +890,10 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealWidth) {
     // max height.
     EXPECT_EQ(constraint_factory_.basic().height.Max(), result.Height());
     CheckNonResolutionDefaults(result);
-    EXPECT_EQ(500.0 / 500.0, result.track_adapter_settings().min_aspect_ratio);
+    EXPECT_EQ(500.0 / 500.0,
+              result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(static_cast<double>(kMaxWidth) / 100.0,
-              result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
 
@@ -882,8 +912,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealWidth) {
     EXPECT_EQ(constraint_factory_.basic().width.Max(), result.Width());
     EXPECT_EQ(constraint_factory_.basic().height.Max(), result.Height());
     CheckNonResolutionDefaults(result);
-    EXPECT_EQ(100.0 / 500.0, result.track_adapter_settings().min_aspect_ratio);
-    EXPECT_EQ(1.0, result.track_adapter_settings().max_aspect_ratio);
+    EXPECT_EQ(100.0 / 500.0,
+              result.track_adapter_settings().min_aspect_ratio());
+    EXPECT_EQ(1.0, result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
 }
@@ -901,8 +932,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryExactAspectRatio) {
   EXPECT_EQ(std::round(kDefaultScreenCastHeight * kAspectRatio),
             result.Width());
   CheckNonResolutionDefaults(result);
-  EXPECT_EQ(kAspectRatio, result.track_adapter_settings().min_aspect_ratio);
-  EXPECT_EQ(kAspectRatio, result.track_adapter_settings().max_aspect_ratio);
+  EXPECT_EQ(kAspectRatio, result.track_adapter_settings().min_aspect_ratio());
+  EXPECT_EQ(kAspectRatio, result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 }
 
@@ -917,10 +948,10 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMinAspectRatio) {
   EXPECT_EQ(std::round(kDefaultScreenCastHeight * kAspectRatio),
             result.Width());
   CheckNonResolutionDefaults(result);
-  EXPECT_EQ(kAspectRatio, result.track_adapter_settings().min_aspect_ratio);
+  EXPECT_EQ(kAspectRatio, result.track_adapter_settings().min_aspect_ratio());
   EXPECT_EQ(static_cast<double>(kMaxScreenCastDimension) /
                 static_cast<double>(kMinScreenCastDimension),
-            result.track_adapter_settings().max_aspect_ratio);
+            result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 
   const double kSmallAspectRatio = 0.5;
@@ -932,10 +963,10 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMinAspectRatio) {
   EXPECT_EQ(kDefaultScreenCastWidth, result.Width());
   CheckNonResolutionDefaults(result);
   EXPECT_EQ(kSmallAspectRatio,
-            result.track_adapter_settings().min_aspect_ratio);
+            result.track_adapter_settings().min_aspect_ratio());
   EXPECT_EQ(static_cast<double>(kMaxScreenCastDimension) /
                 static_cast<double>(kMinScreenCastDimension),
-            result.track_adapter_settings().max_aspect_ratio);
+            result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 }
 
@@ -951,8 +982,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMaxAspectRatio) {
   CheckNonResolutionDefaults(result);
   EXPECT_EQ(static_cast<double>(kMinScreenCastDimension) /
                 static_cast<double>(kMaxScreenCastDimension),
-            result.track_adapter_settings().min_aspect_ratio);
-  EXPECT_EQ(kAspectRatio, result.track_adapter_settings().max_aspect_ratio);
+            result.track_adapter_settings().min_aspect_ratio());
+  EXPECT_EQ(kAspectRatio, result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 
   const double kSmallAspectRatio = 0.5;
@@ -968,9 +999,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMaxAspectRatio) {
   CheckNonResolutionDefaults(result);
   EXPECT_EQ(static_cast<double>(kMinScreenCastDimension) /
                 static_cast<double>(kMaxScreenCastDimension),
-            result.track_adapter_settings().min_aspect_ratio);
+            result.track_adapter_settings().min_aspect_ratio());
   EXPECT_EQ(kSmallAspectRatio,
-            result.track_adapter_settings().max_aspect_ratio);
+            result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 }
 
@@ -988,9 +1019,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryRangeAspectRatio) {
     EXPECT_EQ(kDefaultScreenCastWidth, result.Width());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(kMinAspectRatio,
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(kMaxAspectRatio,
-              result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
 
@@ -1007,9 +1038,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryRangeAspectRatio) {
               result.Width());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(kMinAspectRatio,
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(kMaxAspectRatio,
-              result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
 
@@ -1026,9 +1057,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryRangeAspectRatio) {
     EXPECT_EQ(kDefaultScreenCastWidth, result.Width());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(kMinAspectRatio,
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(kMaxAspectRatio,
-              result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
 }
@@ -1064,9 +1095,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealAspectRatio) {
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(
         static_cast<double>(kMinScreenCastDimension) / kMaxScreenCastDimension,
-        result.track_adapter_settings().min_aspect_ratio);
+        result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(kMaxAspectRatio,
-              result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
 
@@ -1085,10 +1116,10 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealAspectRatio) {
     EXPECT_EQ(kDefaultScreenCastWidth, result.Width());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(kMinAspectRatio,
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(
         static_cast<double>(kMaxScreenCastDimension) / kMinScreenCastDimension,
-        result.track_adapter_settings().max_aspect_ratio);
+        result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
 
@@ -1111,8 +1142,10 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealAspectRatio) {
         result.Height());
     EXPECT_EQ(constraint_factory_.basic().width.Max(), result.Width());
     CheckNonResolutionDefaults(result);
-    EXPECT_EQ(100.0 / 500.0, result.track_adapter_settings().min_aspect_ratio);
-    EXPECT_EQ(500.0 / 100.0, result.track_adapter_settings().max_aspect_ratio);
+    EXPECT_EQ(100.0 / 500.0,
+              result.track_adapter_settings().min_aspect_ratio());
+    EXPECT_EQ(500.0 / 100.0,
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
 
     constraint_factory_.basic().height.SetMin(1000);
@@ -1128,9 +1161,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealAspectRatio) {
     EXPECT_EQ(constraint_factory_.basic().width.Max(), result.Width());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(1000.0 / 5000.0,
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(5000.0 / 1000.0,
-              result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
 
     constraint_factory_.Reset();
@@ -1145,9 +1178,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealAspectRatio) {
     EXPECT_EQ(kDefaultScreenCastHeight * kIdealAspectRatio, result.Width());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(250.0 / kMaxScreenCastDimension,
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(kMaxScreenCastDimension / 250.0,
-              result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
 
@@ -1172,9 +1205,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealAspectRatio) {
     EXPECT_EQ(constraint_factory_.basic().width.Max(), result.Width());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(kMinAspectRatio,
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(kMaxAspectRatio,
-              result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
 
     constraint_factory_.basic().aspect_ratio.SetIdeal(0.3);
@@ -1187,9 +1220,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealAspectRatio) {
         result.Width());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(kMinAspectRatio,
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(kMaxAspectRatio,
-              result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
 
     // Use a box that is bigger and further from the origin to force closeness
@@ -1209,9 +1242,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealAspectRatio) {
         result.Width());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(kMinAspectRatio,
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(kMaxAspectRatio,
-              result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
 
     constraint_factory_.basic().aspect_ratio.SetIdeal(0.3);
@@ -1224,9 +1257,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealAspectRatio) {
     EXPECT_EQ(constraint_factory_.basic().width.Min(), result.Width());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(kMinAspectRatio,
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(kMaxAspectRatio,
-              result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
 
@@ -1245,8 +1278,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealAspectRatio) {
     EXPECT_EQ(constraint_factory_.basic().height.Min(), result.Height());
     EXPECT_EQ(constraint_factory_.basic().width.Max(), result.Width());
     CheckNonResolutionDefaults(result);
-    EXPECT_EQ(1.0, result.track_adapter_settings().min_aspect_ratio);
-    EXPECT_EQ(500.0 / 100.0, result.track_adapter_settings().max_aspect_ratio);
+    EXPECT_EQ(1.0, result.track_adapter_settings().min_aspect_ratio());
+    EXPECT_EQ(500.0 / 100.0,
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
 }
@@ -1499,6 +1533,32 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealFrameRate) {
   }
 }
 
+TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryResizeMode) {
+  const int kIdealWidth = 641;
+  const int kIdealHeight = 480;
+  constraint_factory_.Reset();
+  constraint_factory_.basic().width.SetIdeal(kIdealWidth);
+  constraint_factory_.basic().height.SetIdeal(kIdealHeight);
+  constraint_factory_.basic().resize_mode.SetExact(
+      blink::WebString::FromASCII("none"));
+  auto result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  // Screen capture will proceed at 641x480, which will be considered "native".
+  // No rescaling will occur since it is explicitly disabled.
+  EXPECT_EQ(result.Width(), kIdealWidth);
+  EXPECT_EQ(result.Height(), kIdealHeight);
+  EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
+
+  constraint_factory_.basic().resize_mode.SetExact(
+      blink::WebString::FromASCII("crop-and-scale"));
+  result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  EXPECT_EQ(result.Width(), kIdealWidth);
+  EXPECT_EQ(result.Height(), kIdealHeight);
+  EXPECT_EQ(result.track_adapter_settings().target_width(), kIdealWidth);
+  EXPECT_EQ(result.track_adapter_settings().target_height(), kIdealHeight);
+}
+
 // The "Advanced" tests check selection criteria involving advanced constraint
 // sets.
 TEST_F(MediaStreamConstraintsUtilVideoContentTest,
@@ -1528,8 +1588,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
   EXPECT_EQ(400, result.Height());
   EXPECT_EQ(500, result.Width());
   CheckNonResolutionDefaults(result);
-  EXPECT_EQ(5.0 / 4.0, result.track_adapter_settings().min_aspect_ratio);
-  EXPECT_EQ(5.0 / 4.0, result.track_adapter_settings().max_aspect_ratio);
+  EXPECT_EQ(5.0 / 4.0, result.track_adapter_settings().min_aspect_ratio());
+  EXPECT_EQ(5.0 / 4.0, result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 
   blink::WebMediaTrackConstraintSet& advanced3 =
@@ -1543,8 +1603,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
   EXPECT_EQ(10.0, result.FrameRate());
   EXPECT_EQ(base::Optional<bool>(), result.noise_reduction());
   EXPECT_EQ(std::string(), result.device_id());
-  EXPECT_EQ(5.0 / 4.0, result.track_adapter_settings().min_aspect_ratio);
-  EXPECT_EQ(5.0 / 4.0, result.track_adapter_settings().max_aspect_ratio);
+  EXPECT_EQ(5.0 / 4.0, result.track_adapter_settings().min_aspect_ratio());
+  EXPECT_EQ(5.0 / 4.0, result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 
   blink::WebMediaTrackConstraintSet& advanced4 =
@@ -1560,8 +1620,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
   EXPECT_EQ(10.0, result.FrameRate());
   EXPECT_EQ(base::Optional<bool>(), result.noise_reduction());
   EXPECT_EQ(std::string(), result.device_id());
-  EXPECT_EQ(5.0 / 4.0, result.track_adapter_settings().min_aspect_ratio);
-  EXPECT_EQ(5.0 / 4.0, result.track_adapter_settings().max_aspect_ratio);
+  EXPECT_EQ(5.0 / 4.0, result.track_adapter_settings().min_aspect_ratio());
+  EXPECT_EQ(5.0 / 4.0, result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 
   constraint_factory_.basic().width.SetIdeal(100);
@@ -1577,8 +1637,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
   EXPECT_EQ(10.0, result.FrameRate());
   EXPECT_EQ(base::Optional<bool>(), result.noise_reduction());
   EXPECT_EQ(std::string(), result.device_id());
-  EXPECT_EQ(5.0 / 4.0, result.track_adapter_settings().min_aspect_ratio);
-  EXPECT_EQ(5.0 / 4.0, result.track_adapter_settings().max_aspect_ratio);
+  EXPECT_EQ(5.0 / 4.0, result.track_adapter_settings().min_aspect_ratio());
+  EXPECT_EQ(5.0 / 4.0, result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 
   constraint_factory_.basic().width.SetIdeal(2000);
@@ -1593,8 +1653,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
   EXPECT_EQ(10.0, result.FrameRate());
   EXPECT_EQ(base::Optional<bool>(), result.noise_reduction());
   EXPECT_EQ(std::string(), result.device_id());
-  EXPECT_EQ(5.0 / 4.0, result.track_adapter_settings().min_aspect_ratio);
-  EXPECT_EQ(5.0 / 4.0, result.track_adapter_settings().max_aspect_ratio);
+  EXPECT_EQ(5.0 / 4.0, result.track_adapter_settings().min_aspect_ratio());
+  EXPECT_EQ(5.0 / 4.0, result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 }
 
@@ -1628,9 +1688,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, AdvancedExactResolution) {
     EXPECT_EQ(1080, result.Height());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(1920.0 / 1080.0,
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(1920.0 / 1080.0,
-              result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
 
     blink::WebMediaTrackConstraintSet& advanced4 =
@@ -1645,9 +1705,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, AdvancedExactResolution) {
     EXPECT_EQ(1080, result.Height());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(1920.0 / 1080.0,
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(1920.0 / 1080.0,
-              result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
 
     constraint_factory_.basic().width.SetIdeal(800);
@@ -1659,9 +1719,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, AdvancedExactResolution) {
     EXPECT_EQ(1080, result.Height());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(1920.0 / 1080.0,
-              result.track_adapter_settings().min_aspect_ratio);
+              result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(1920.0 / 1080.0,
-              result.track_adapter_settings().max_aspect_ratio);
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
 }
@@ -1681,8 +1741,10 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
   EXPECT_EQ(1920, result.Width());
   EXPECT_EQ(1080, result.Height());
   EXPECT_EQ(60.0, result.FrameRate());
-  EXPECT_EQ(1920.0 / 1080.0, result.track_adapter_settings().min_aspect_ratio);
-  EXPECT_EQ(1920.0 / 1080.0, result.track_adapter_settings().max_aspect_ratio);
+  EXPECT_EQ(1920.0 / 1080.0,
+            result.track_adapter_settings().min_aspect_ratio());
+  EXPECT_EQ(1920.0 / 1080.0,
+            result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 }
 
@@ -1708,9 +1770,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, AdvancedNoiseReduction) {
             result.Height());
   EXPECT_TRUE(result.noise_reduction() && !*result.noise_reduction());
   EXPECT_EQ(kMinWidth / static_cast<double>(kMaxScreenCastDimension),
-            result.track_adapter_settings().min_aspect_ratio);
+            result.track_adapter_settings().min_aspect_ratio());
   EXPECT_EQ(static_cast<double>(kMaxScreenCastDimension) / kMinHeight,
-            result.track_adapter_settings().max_aspect_ratio);
+            result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 }
 
@@ -1734,8 +1796,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
   EXPECT_EQ(640, result.Width());
   EXPECT_EQ(480, result.Height());
   EXPECT_TRUE(result.noise_reduction() && *result.noise_reduction());
-  EXPECT_EQ(640.0 / 480.0, result.track_adapter_settings().min_aspect_ratio);
-  EXPECT_EQ(640.0 / 480.0, result.track_adapter_settings().max_aspect_ratio);
+  EXPECT_EQ(640.0 / 480.0, result.track_adapter_settings().min_aspect_ratio());
+  EXPECT_EQ(640.0 / 480.0, result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 }
 
@@ -1755,8 +1817,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
   EXPECT_EQ(640, result.Width());
   EXPECT_EQ(480, result.Height());
   CheckNonResolutionDefaults(result);
-  EXPECT_EQ(640.0 / 480.0, result.track_adapter_settings().min_aspect_ratio);
-  EXPECT_EQ(640.0 / 480.0, result.track_adapter_settings().max_aspect_ratio);
+  EXPECT_EQ(640.0 / 480.0, result.track_adapter_settings().min_aspect_ratio());
+  EXPECT_EQ(640.0 / 480.0, result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 }
 
@@ -1779,9 +1841,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
   // Resolution cannot exceed the requested resolution.
   EXPECT_EQ(kDefaultScreenCastFrameRate, result.FrameRate());
   EXPECT_EQ(kMinScreenCastDimension / 480.0,
-            result.track_adapter_settings().min_aspect_ratio);
+            result.track_adapter_settings().min_aspect_ratio());
   EXPECT_EQ(640.0 / kMinScreenCastDimension,
-            result.track_adapter_settings().max_aspect_ratio);
+            result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 }
 
@@ -1806,9 +1868,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
   EXPECT_EQ(kMinHeight, result.Height());
   EXPECT_EQ(kDefaultScreenCastFrameRate, result.FrameRate());
   EXPECT_EQ(static_cast<double>(kMinWidth) / kMaxScreenCastDimension,
-            result.track_adapter_settings().min_aspect_ratio);
+            result.track_adapter_settings().min_aspect_ratio());
   EXPECT_EQ(static_cast<double>(kMaxScreenCastDimension) / kMinHeight,
-            result.track_adapter_settings().max_aspect_ratio);
+            result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 }
 
@@ -1828,8 +1890,10 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
             result.Width());
   EXPECT_EQ(kDefaultScreenCastHeight, result.Height());
   CheckNonResolutionDefaults(result);
-  EXPECT_EQ(kMinAspectRatio, result.track_adapter_settings().min_aspect_ratio);
-  EXPECT_EQ(kMinAspectRatio, result.track_adapter_settings().max_aspect_ratio);
+  EXPECT_EQ(kMinAspectRatio,
+            result.track_adapter_settings().min_aspect_ratio());
+  EXPECT_EQ(kMinAspectRatio,
+            result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 }
 
@@ -1849,10 +1913,11 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
             result.Width());
   EXPECT_EQ(kDefaultScreenCastHeight, result.Height());
   CheckNonResolutionDefaults(result);
-  EXPECT_EQ(kMinAspectRatio, result.track_adapter_settings().min_aspect_ratio);
+  EXPECT_EQ(kMinAspectRatio,
+            result.track_adapter_settings().min_aspect_ratio());
   EXPECT_EQ(
       kMaxScreenCastDimension / static_cast<double>(kMinScreenCastDimension),
-      result.track_adapter_settings().max_aspect_ratio);
+      result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 }
 
@@ -1910,9 +1975,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
   EXPECT_EQ(90.0, result.FrameRate());
   EXPECT_EQ(
       static_cast<double>(kMinScreenCastDimension) / kMaxScreenCastDimension,
-      result.track_adapter_settings().min_aspect_ratio);
+      result.track_adapter_settings().min_aspect_ratio());
   EXPECT_EQ(static_cast<double>(kMaxWidth) / kMinScreenCastDimension,
-            result.track_adapter_settings().max_aspect_ratio);
+            result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 }
 
@@ -1937,10 +2002,10 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
   EXPECT_EQ(kMaxHeight, result.Height());
   EXPECT_EQ(60.0, result.FrameRate());
   EXPECT_EQ(static_cast<double>(kMinScreenCastDimension) / kMaxHeight,
-            result.track_adapter_settings().min_aspect_ratio);
+            result.track_adapter_settings().min_aspect_ratio());
   EXPECT_EQ(
       static_cast<double>(kMaxScreenCastDimension) / kMinScreenCastDimension,
-      result.track_adapter_settings().max_aspect_ratio);
+      result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFormat(result);
 }
 
@@ -2021,6 +2086,37 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, AdvancedIdealDeviceID) {
   CheckTrackAdapterSettingsEqualsFormatDefaultAspectRatio(result);
 }
 
+TEST_F(MediaStreamConstraintsUtilVideoContentTest, AdvancedResizeMode) {
+  const int kIdealWidth = 641;
+  const int kIdealHeight = 480;
+  constraint_factory_.Reset();
+  constraint_factory_.basic().width.SetIdeal(kIdealWidth);
+  constraint_factory_.basic().height.SetIdeal(kIdealHeight);
+  blink::WebMediaTrackConstraintSet& advanced =
+      constraint_factory_.AddAdvanced();
+  advanced.resize_mode.SetExact(blink::WebString::FromASCII("none"));
+  auto result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  // Screen capture will proceed at 641x480, which will be considered "native".
+  // No rescaling will occur since it is explicitly disabled in the advanced
+  // constraint set.
+  EXPECT_EQ(result.Width(), kIdealWidth);
+  EXPECT_EQ(result.Height(), kIdealHeight);
+  EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
+
+  advanced.resize_mode.SetExact(blink::WebString::FromASCII("crop-and-scale"));
+  result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  // Screen capture will proceed at 641x480, which will be considered "native".
+  // No rescaling will occur since it is explicitly disabled in the advanced
+  // constraint set.
+  EXPECT_EQ(result.Width(), kIdealWidth);
+  EXPECT_EQ(result.Height(), kIdealHeight);
+  EXPECT_TRUE(result.track_adapter_settings().target_size().has_value());
+  EXPECT_EQ(result.track_adapter_settings().target_width(), kIdealWidth);
+  EXPECT_EQ(result.track_adapter_settings().target_height(), kIdealHeight);
+}
+
 TEST_F(MediaStreamConstraintsUtilVideoContentTest, ResolutionChangePolicy) {
   {
     constraint_factory_.Reset();
@@ -2064,8 +2160,10 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, ResolutionChangePolicy) {
     EXPECT_EQ(480, result.Height());
     EXPECT_EQ(media::ResolutionChangePolicy::FIXED_RESOLUTION,
               result.ResolutionChangePolicy());
-    EXPECT_EQ(640.0 / 480.0, result.track_adapter_settings().min_aspect_ratio);
-    EXPECT_EQ(640.0 / 480.0, result.track_adapter_settings().max_aspect_ratio);
+    EXPECT_EQ(640.0 / 480.0,
+              result.track_adapter_settings().min_aspect_ratio());
+    EXPECT_EQ(640.0 / 480.0,
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
   {
@@ -2077,8 +2175,10 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, ResolutionChangePolicy) {
     EXPECT_EQ(500, result.Height());
     EXPECT_EQ(media::ResolutionChangePolicy::FIXED_RESOLUTION,
               result.ResolutionChangePolicy());
-    EXPECT_EQ(1000.0 / 500.0, result.track_adapter_settings().min_aspect_ratio);
-    EXPECT_EQ(1000.0 / 500.0, result.track_adapter_settings().max_aspect_ratio);
+    EXPECT_EQ(1000.0 / 500.0,
+              result.track_adapter_settings().min_aspect_ratio());
+    EXPECT_EQ(1000.0 / 500.0,
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
   {
@@ -2090,8 +2190,10 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, ResolutionChangePolicy) {
     EXPECT_EQ(470, result.Height());
     EXPECT_EQ(media::ResolutionChangePolicy::FIXED_RESOLUTION,
               result.ResolutionChangePolicy());
-    EXPECT_EQ(630.0 / 470.0, result.track_adapter_settings().min_aspect_ratio);
-    EXPECT_EQ(630.0 / 470.0, result.track_adapter_settings().max_aspect_ratio);
+    EXPECT_EQ(630.0 / 470.0,
+              result.track_adapter_settings().min_aspect_ratio());
+    EXPECT_EQ(630.0 / 470.0,
+              result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
   {
@@ -2134,8 +2236,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, ResolutionChangePolicy) {
     // Only specifying a maximum resolution allows resolution adjustment.
     EXPECT_EQ(media::ResolutionChangePolicy::ANY_WITHIN_LIMIT,
               result.ResolutionChangePolicy());
-    EXPECT_EQ(1.0 / 4000, result.track_adapter_settings().min_aspect_ratio);
-    EXPECT_EQ(4000.0, result.track_adapter_settings().max_aspect_ratio);
+    EXPECT_EQ(1.0 / 4000, result.track_adapter_settings().min_aspect_ratio());
+    EXPECT_EQ(4000.0, result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
 }

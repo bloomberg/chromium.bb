@@ -59,6 +59,12 @@ TEST_F(CastDialogMetricsTest, OnStartCasting) {
       (start_casting_time - sink_load_time).InMilliseconds(), 1);
 }
 
+TEST_F(CastDialogMetricsTest, OnStopCasting) {
+  metrics_.OnStopCasting(/* is_local_route*/ false);
+  tester_.ExpectUniqueSample(MediaRouterMetrics::kHistogramStopRoute,
+                             /* Remote route */ 1, 1);
+}
+
 TEST_F(CastDialogMetricsTest, OnCloseDialog) {
   metrics_.OnPaint(paint_time);
   metrics_.OnCloseDialog(close_dialog_time);
@@ -72,6 +78,15 @@ TEST_F(CastDialogMetricsTest, OnRecordSinkCount) {
   metrics_.OnRecordSinkCount(kSinkCount);
   tester_.ExpectUniqueSample(MediaRouterMetrics::kHistogramUiDeviceCount,
                              kSinkCount, 1);
+}
+
+TEST_F(CastDialogMetricsTest, RecordFirstAction) {
+  metrics_.OnStopCasting(true);
+  metrics_.OnCastModeSelected();
+  metrics_.OnCloseDialog(close_dialog_time);
+  // Only the first action should be recorded for the first action metric.
+  tester_.ExpectUniqueSample(MediaRouterMetrics::kHistogramUiFirstAction,
+                             MediaRouterUserAction::STOP_LOCAL, 1);
 }
 
 }  // namespace media_router

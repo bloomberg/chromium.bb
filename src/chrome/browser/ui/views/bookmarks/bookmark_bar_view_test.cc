@@ -47,8 +47,10 @@
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/test/test_clipboard.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/views/background.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_item_view.h"
@@ -102,9 +104,9 @@ class DialogWaiter : public aura::EnvObserver,
   }
 
   // views::WidgetObserver:
-  void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override {
+  void OnWidgetActivationChanged(views::Widget* widget, bool active) override {
     CHECK_EQ(dialog_, widget);
-    if (visible) {
+    if (active) {
       dialog_created_ = true;
       dialog_->RemoveObserver(this);
       if (!quit_closure_.is_null())
@@ -161,11 +163,11 @@ class TabKeyWaiter : public ui::EventHandler {
   explicit TabKeyWaiter(views::Widget* widget)
       : widget_(widget),
         received_tab_(false) {
-    widget_->GetNativeView()->AddPreTargetHandler(this);
+    widget_->GetNativeWindow()->AddPreTargetHandler(this);
   }
 
   ~TabKeyWaiter() override {
-    widget_->GetNativeView()->RemovePreTargetHandler(this);
+    widget_->GetNativeWindow()->RemovePreTargetHandler(this);
   }
 
   void WaitForTab() {
@@ -314,6 +316,15 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     // state calculated in GetPreferredSizeForContents().
     EXPECT_TRUE(GetBookmarkButton(5)->visible());
     EXPECT_FALSE(GetBookmarkButton(6)->visible());
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+    // On desktop Linux, the bookmark bar context menu blocks on retrieving the
+    // clipboard selection from the X server (for the 'paste' item), so mock it
+    // out.
+    ui::Clipboard::SetClipboardForCurrentThread(
+        std::make_unique<ui::TestClipboard>());
+    GetWidget()->Activate();
+#endif
   }
 
   void TearDown() override {
@@ -489,8 +500,6 @@ class BookmarkBarViewTest2 : public BookmarkBarViewEventTestBase {
     // NOTE: this code assume there is a left margin, which is currently
     // true. If that changes, this code will need to find another empty space
     // to press the mouse on.
-    gfx::Point mouse_loc;
-    views::View::ConvertPointToScreen(bb_view_.get(), &mouse_loc);
     ASSERT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
         0, 0, CreateEventTask(this, &BookmarkBarViewTest2::Step3)));
   }
@@ -519,9 +528,8 @@ class BookmarkBarViewTest2 : public BookmarkBarViewEventTestBase {
   }
 };
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) || defined(OS_WIN)
-// TODO(erg): linux_aura bringup: http://crbug.com/163931
-// Disable this test on Win10:    http://crbug.com/828063
+#if defined(OS_WIN)
+// Disable this test on Win10: http://crbug.com/828063
 #define MAYBE_HideOnDesktopClick DISABLED_HideOnDesktopClick
 #else
 #define MAYBE_HideOnDesktopClick HideOnDesktopClick
@@ -1297,6 +1305,8 @@ VIEW_TEST(BookmarkBarViewTest11, CloseMenuAfterClosingContextMenu)
 class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
  protected:
   void DoTestOnMessageLoop() override {
+    base::RunLoop().RunUntilIdle();
+
     // Open up the other folder.
     views::LabelButton* button = bb_view_->other_bookmarks_button();
     ui_test_utils::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
@@ -1329,7 +1339,9 @@ class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
   void Step3() {
     // Make sure the context menu is showing.
     views::MenuItemView* menu = bb_view_->GetContextMenu();
-    ASSERT_TRUE(menu && menu->GetSubmenu() && menu->GetSubmenu()->IsShowing());
+    ASSERT_TRUE(menu);
+    ASSERT_TRUE(menu->GetSubmenu());
+    ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
 
     // Select the first item in the context menu (open all).
     views::MenuItemView* child_menu =
@@ -1337,8 +1349,8 @@ class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(child_menu != NULL);
 
     // Click and wait until the dialog box appears.
-    auto dialog_waiter = std::make_unique<DialogWaiter>(
-        bb_view_->GetWidget()->GetNativeWindow()->env());
+    auto dialog_waiter =
+        std::make_unique<DialogWaiter>(GetWidget()->GetNativeWindow()->env());
     ui_test_utils::MoveMouseToCenterAndPress(
         child_menu, ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP,
         base::Bind(&BookmarkBarViewTest12::Step4, base::Unretained(this),
@@ -1353,7 +1365,7 @@ class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
     // receives the tab key.
     TabKeyWaiter tab_waiter(dialog);
     ASSERT_TRUE(ui_controls::SendKeyPress(
-        window_->GetNativeWindow(), ui::VKEY_TAB, false, false, false, false));
+        dialog->GetNativeWindow(), ui::VKEY_TAB, false, false, false, false));
     tab_waiter.WaitForTab();
 
     // For some reason return isn't processed correctly unless we delay.
@@ -1368,21 +1380,14 @@ class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
     DialogCloseWaiter waiter(dialog);
     // And press enter so that the cancel button is selected.
     ASSERT_TRUE(ui_controls::SendKeyPressNotifyWhenDone(
-        window_->GetNativeWindow(), ui::VKEY_RETURN, false, false, false, false,
+        dialog->GetNativeWindow(), ui::VKEY_RETURN, false, false, false, false,
         base::OnceClosure()));
     waiter.WaitForDialogClose();
     Done();
   }
 };
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-// TODO(erg): linux_aura bringup: http://crbug.com/163931
-#define MAYBE_CloseWithModalDialog DISABLED_CloseWithModalDialog
-#else
-#define MAYBE_CloseWithModalDialog CloseWithModalDialog
-#endif
-
-VIEW_TEST(BookmarkBarViewTest12, MAYBE_CloseWithModalDialog)
+VIEW_TEST(BookmarkBarViewTest12, CloseWithModalDialog)
 
 // Tests clicking on the separator of a context menu (this is for coverage of
 // bug 17862).
@@ -1883,7 +1888,7 @@ class BookmarkBarViewTest20 : public BookmarkBarViewEventTestBase {
   }
 
   void Step3() {
-#if defined(OS_CHROMEOS)
+#if defined(OS_LINUX)
     ASSERT_EQ(test_view_->press_count(), 1);
 #else
     ASSERT_EQ(test_view_->press_count(), 2);
@@ -1931,14 +1936,7 @@ class BookmarkBarViewTest20 : public BookmarkBarViewEventTestBase {
   TestViewForMenuExit* test_view_;
 };
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-// TODO(erg): linux_aura bringup: http://crbug.com/163931
-#define MAYBE_ContextMenuExitTest DISABLED_ContextMenuExitTest
-#else
-#define MAYBE_ContextMenuExitTest ContextMenuExitTest
-#endif
-
-VIEW_TEST(BookmarkBarViewTest20, MAYBE_ContextMenuExitTest)
+VIEW_TEST(BookmarkBarViewTest20, ContextMenuExitTest)
 
 // Tests context menu by way of opening a context menu for a empty folder menu.
 // The opened context menu should behave as it is from the folder button.
@@ -2143,13 +2141,7 @@ class BookmarkBarViewTest23 : public BookmarkBarViewEventTestBase {
   BookmarkContextMenuNotificationObserver observer_;
 };
 
-#if defined(USE_OZONE)
-// ozone bringup - http://crbug.com/401304
-#define MAYBE_ContextMenusKeyboard DISABLED_ContextMenusKeyboard
-#else
-#define MAYBE_ContextMenusKeyboard ContextMenusKeyboard
-#endif
-VIEW_TEST(BookmarkBarViewTest23, MAYBE_ContextMenusKeyboard)
+VIEW_TEST(BookmarkBarViewTest23, ContextMenusKeyboard)
 
 // Test that pressing escape on a menu opened via the keyboard dismisses the
 // context menu but not the parent menu.
@@ -2227,13 +2219,7 @@ class BookmarkBarViewTest24 : public BookmarkBarViewEventTestBase {
   BookmarkContextMenuNotificationObserver observer_;
 };
 
-#if defined(USE_OZONE)
-// ozone bringup - http://crbug.com/401304
-#define MAYBE_ContextMenusKeyboardEscape DISABLED_ContextMenusKeyboardEscape
-#else
-#define MAYBE_ContextMenusKeyboardEscape ContextMenusKeyboardEscape
-#endif
-VIEW_TEST(BookmarkBarViewTest24, MAYBE_ContextMenusKeyboardEscape)
+VIEW_TEST(BookmarkBarViewTest24, ContextMenusKeyboardEscape)
 
 #if defined(OS_WIN)
 // Tests that pressing the key KEYCODE closes the menu.

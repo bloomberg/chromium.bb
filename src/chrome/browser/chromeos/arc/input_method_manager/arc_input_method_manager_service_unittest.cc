@@ -13,10 +13,12 @@
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/ui/ash/chrome_keyboard_controller_client_test_helper.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -32,8 +34,6 @@
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/mock_ime_input_context_handler.h"
 #include "ui/base/ime/mock_input_method.h"
-#include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_util.h"
 
 namespace arc {
 namespace {
@@ -250,8 +250,13 @@ class ArcInputMethodManagerServiceTest : public ash::AshTestBase {
     input_method_manager_ = new TestInputMethodManager();
     chromeos::input_method::InputMethodManager::Initialize(
         input_method_manager_);
-    tablet_mode_client_ = std::make_unique<TabletModeClient>();
     profile_ = std::make_unique<TestingProfile>();
+    tablet_mode_client_ = std::make_unique<TabletModeClient>();
+
+    chrome_keyboard_controller_client_test_helper_ =
+        ChromeKeyboardControllerClientTestHelper::InitializeForAsh();
+    chrome_keyboard_controller_client_test_helper_->SetProfile(profile_.get());
+
     service_ = ArcInputMethodManagerService::GetForBrowserContextForTesting(
         profile_.get());
     test_bridge_ = new TestInputMethodManagerBridge();
@@ -262,7 +267,8 @@ class ArcInputMethodManagerServiceTest : public ash::AshTestBase {
   void TearDown() override {
     test_bridge_ = nullptr;
     service_->Shutdown();
-    profile_.reset(nullptr);
+    chrome_keyboard_controller_client_test_helper_.reset();
+    profile_.reset();
     tablet_mode_client_.reset(nullptr);
     chromeos::input_method::InputMethodManager::Shutdown();
     ui::IMEBridge::Shutdown();
@@ -273,9 +279,10 @@ class ArcInputMethodManagerServiceTest : public ash::AshTestBase {
   std::unique_ptr<ArcServiceManager> arc_service_manager_;
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<TabletModeClient> tablet_mode_client_;
+  std::unique_ptr<ChromeKeyboardControllerClientTestHelper>
+      chrome_keyboard_controller_client_test_helper_;
   TestInputMethodManager* input_method_manager_ = nullptr;
   TestInputMethodManagerBridge* test_bridge_ = nullptr;  // Owned by |service_|
-
   ArcInputMethodManagerService* service_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ArcInputMethodManagerServiceTest);
@@ -875,6 +882,11 @@ TEST_F(ArcInputMethodManagerServiceTest, IMEOperations) {
       test_context_handler.last_update_composition_arg().composition_text.text);
   EXPECT_EQ(1, test_context_handler.commit_text_call_count());
 
+  // CommitText should clear the composing text.
+  connection->FinishComposingText();
+  // commit_text_call_count() doesn't change.
+  EXPECT_EQ(1, test_context_handler.commit_text_call_count());
+
   test_context_handler.Reset();
   connection->SetComposingText(text, 0, base::make_optional<gfx::Range>(1, 3));
   EXPECT_EQ(1u, test_context_handler.last_update_composition_arg()
@@ -909,19 +921,25 @@ TEST_F(ArcInputMethodManagerServiceTest, DisableFallbackVirtualKeyboard) {
   service()->InputMethodChanged(imm(), profile(), false /* show_message */);
 
   // Enable Chrome OS virtual keyboard
-  keyboard::SetTouchKeyboardEnabled(true);
-  keyboard::SetKeyboardShowOverride(keyboard::KEYBOARD_SHOW_OVERRIDE_NONE);
-  ASSERT_TRUE(keyboard::IsKeyboardEnabled());
+  auto* client = ChromeKeyboardControllerClient::Get();
+  client->ClearEnableFlag(
+      keyboard::mojom::KeyboardEnableFlag::kAndroidDisabled);
+  client->SetEnableFlag(keyboard::mojom::KeyboardEnableFlag::kTouchEnabled);
+  client->FlushForTesting();
+  base::RunLoop().RunUntilIdle();  // Allow observers to fire and process.
+  ASSERT_TRUE(client->is_keyboard_enabled());
 
   // It's disabled when the ARC IME is activated.
   imm()->state()->SetActiveInputMethod(arc_ime_id);
   service()->InputMethodChanged(imm(), profile(), false);
-  EXPECT_FALSE(keyboard::IsKeyboardEnabled());
+  client->FlushForTesting();
+  EXPECT_FALSE(client->is_keyboard_enabled());
 
   // It's re-enabled when the ARC IME is deactivated.
   imm()->state()->SetActiveInputMethod(component_extension_ime_id);
   service()->InputMethodChanged(imm(), profile(), false);
-  EXPECT_TRUE(keyboard::IsKeyboardEnabled());
+  client->FlushForTesting();
+  EXPECT_TRUE(client->is_keyboard_enabled());
 }
 
 TEST_F(ArcInputMethodManagerServiceTest, ShowVirtualKeyboard) {

@@ -38,7 +38,7 @@ class MEDIA_EXPORT VideoDecoderConfig {
   VideoDecoderConfig(VideoCodec codec,
                      VideoCodecProfile profile,
                      VideoPixelFormat format,
-                     ColorSpace color_space,
+                     const VideoColorSpace& color_space,
                      VideoRotation rotation,
                      const gfx::Size& coded_size,
                      const gfx::Rect& visible_rect,
@@ -54,7 +54,7 @@ class MEDIA_EXPORT VideoDecoderConfig {
   void Initialize(VideoCodec codec,
                   VideoCodecProfile profile,
                   VideoPixelFormat format,
-                  ColorSpace color_space,
+                  const VideoColorSpace& color_space,
                   VideoRotation rotation,
                   const gfx::Size& coded_size,
                   const gfx::Rect& visible_rect,
@@ -82,11 +82,6 @@ class MEDIA_EXPORT VideoDecoderConfig {
 
   // Video format used to determine YUV buffer sizes.
   VideoPixelFormat format() const { return format_; }
-
-  // The default color space of the decoded frames. Decoders should output
-  // frames tagged with this color space unless they find a different value in
-  // the bitstream.
-  ColorSpace color_space() const { return color_space_; }
 
   // Default is VIDEO_ROTATION_0.
   VideoRotation video_rotation() const { return rotation_; }
@@ -123,7 +118,6 @@ class MEDIA_EXPORT VideoDecoderConfig {
     return encryption_scheme_;
   }
 
-  void set_color_space_info(const VideoColorSpace& color_space_info);
   const VideoColorSpace& color_space_info() const;
 
   void set_hdr_metadata(const HDRMetadata& hdr_metadata);
@@ -138,9 +132,6 @@ class MEDIA_EXPORT VideoDecoderConfig {
   VideoCodecProfile profile_;
 
   VideoPixelFormat format_;
-
-  // TODO(servolk): Deprecated, use color_space_info_ instead.
-  ColorSpace color_space_;
 
   VideoRotation rotation_;
 

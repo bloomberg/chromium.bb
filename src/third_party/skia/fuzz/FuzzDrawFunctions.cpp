@@ -47,8 +47,8 @@ static void init_paint(Fuzz* fuzz, SkPaint* p) {
     fuzz->nextRange(&tmp_u8, 0, (int)kHigh_SkFilterQuality);
     p->setFilterQuality(static_cast<SkFilterQuality>(tmp_u8));
 
-    fuzz->nextRange(&tmp_u8, 0, (int)SkPaint::kFull_Hinting);
-    p->setHinting(static_cast<SkPaint::Hinting>(tmp_u8));
+    fuzz->nextRange(&tmp_u8, 0, (int)SkFontHinting::kFull);
+    p->setHinting(static_cast<SkFontHinting>(tmp_u8));
 
     fuzz->nextRange(&tmp_u8, 0, (int)SkPaint::kLast_Cap);
     p->setStrokeCap(static_cast<SkPaint::Cap>(tmp_u8));
@@ -135,8 +135,6 @@ static void fuzz_drawText(Fuzz* fuzz, sk_sp<SkTypeface> font) {
     fuzz->next(&b);
     p.setAutohinted(b);
     fuzz->next(&b);
-    p.setDevKernText(b);
-    fuzz->next(&b);
     p.setEmbeddedBitmapText(b);
     fuzz->next(&b);
     p.setFakeBoldText(b);
@@ -152,8 +150,6 @@ static void fuzz_drawText(Fuzz* fuzz, sk_sp<SkTypeface> font) {
     p.setTextSkewX(x);
     fuzz->next(&x);
     p.setTextSize(x);
-    fuzz->next(&b);
-    p.setVerticalText(b);
 
     SkCanvas* cnv = surface->getCanvas();
     cnv->drawPosText(text, (kTxtLen-1), pts, p);

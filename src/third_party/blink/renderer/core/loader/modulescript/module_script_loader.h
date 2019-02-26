@@ -45,6 +45,10 @@ class CORE_EXPORT ModuleScriptLoader final
   };
 
  public:
+  ModuleScriptLoader(Modulator*,
+                     const ScriptFetchOptions&,
+                     ModuleScriptLoaderRegistry*,
+                     ModuleScriptLoaderClient*);
   ~ModuleScriptLoader();
 
   static void Fetch(
@@ -67,11 +71,6 @@ class CORE_EXPORT ModuleScriptLoader final
   void Trace(blink::Visitor*) override;
 
  private:
-  ModuleScriptLoader(Modulator*,
-                     const ScriptFetchOptions&,
-                     ModuleScriptLoaderRegistry*,
-                     ModuleScriptLoaderClient*);
-
   void FetchInternal(
       const ModuleScriptFetchRequest&,
       FetchClientSettingsObjectSnapshot* fetch_client_settings_object,

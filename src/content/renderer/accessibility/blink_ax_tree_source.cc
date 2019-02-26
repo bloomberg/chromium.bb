@@ -449,7 +449,7 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
   bool clips_children = false;
   src.GetRelativeBounds(offset_container, bounds_in_container,
                         container_transform, &clips_children);
-  dst->location = bounds_in_container;
+  dst->relative_bounds.bounds = bounds_in_container;
 #if !defined(OS_ANDROID) && !defined(OS_MACOSX)
   if (src.Equals(root())) {
     WebView* web_view = render_frame_->GetRenderView()->GetWebView();
@@ -461,15 +461,17 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
         gfx::Vector2dF(-web_view->VisualViewportOffset().x,
                        -web_view->VisualViewportOffset().y));
     if (!container_transform_gfx->IsIdentity())
-      dst->transform = std::move(container_transform_gfx);
+      dst->relative_bounds.transform = std::move(container_transform_gfx);
   } else if (!container_transform.isIdentity())
-    dst->transform = base::WrapUnique(new gfx::Transform(container_transform));
+    dst->relative_bounds.transform =
+        base::WrapUnique(new gfx::Transform(container_transform));
 #else
   if (!container_transform.isIdentity())
-    dst->transform = base::WrapUnique(new gfx::Transform(container_transform));
+    dst->relative_bounds.transform =
+        base::WrapUnique(new gfx::Transform(container_transform));
 #endif  // !defined(OS_ANDROID) && !defined(OS_MACOSX)
   if (!offset_container.IsDetached())
-    dst->offset_container_id = offset_container.AxID();
+    dst->relative_bounds.offset_container_id = offset_container.AxID();
   if (clips_children)
     dst->AddBoolAttribute(ax::mojom::BoolAttribute::kClipsChildren, true);
 
@@ -609,9 +611,8 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
     }
 
     if (src.TextStyle()) {
-      dst->AddIntAttribute(
-          ax::mojom::IntAttribute::kTextStyle,
-          static_cast<int32_t>(AXTextStyleFromBlink(src.TextStyle())));
+      dst->AddIntAttribute(ax::mojom::IntAttribute::kTextStyle,
+                           src.TextStyle());
     }
 
     if (dst->role == ax::mojom::Role::kInlineTextBox) {
@@ -805,7 +806,7 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
       TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kHtmlTag,
                                     "#document");
 
-    const bool is_table_like_role = ui::IsTableLikeRole(dst->role);
+    const bool is_table_like_role = ui::IsTableLike(dst->role);
     if (is_table_like_role) {
       int column_count = src.ColumnCount();
       int row_count = src.RowCount();
@@ -827,7 +828,7 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
                              aria_rowcount);
     }
 
-    if (ui::IsTableRowRole(dst->role)) {
+    if (ui::IsTableRow(dst->role)) {
       dst->AddIntAttribute(ax::mojom::IntAttribute::kTableRowIndex,
                            src.RowIndex());
       WebAXObject header = src.RowHeader();
@@ -836,7 +837,7 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
                              header.AxID());
     }
 
-    if (ui::IsCellOrTableHeaderRole(dst->role)) {
+    if (ui::IsCellOrTableHeader(dst->role)) {
       dst->AddIntAttribute(ax::mojom::IntAttribute::kTableCellColumnIndex,
                            src.CellColumnIndex());
       dst->AddIntAttribute(ax::mojom::IntAttribute::kTableCellColumnSpan,
@@ -853,8 +854,7 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
       }
     }
 
-    if (ui::IsCellOrTableHeaderRole(dst->role) ||
-        ui::IsTableRowRole(dst->role)) {
+    if (ui::IsCellOrTableHeader(dst->role) || ui::IsTableRow(dst->role)) {
       // aria-rowindex is supported on cells, headers and rows.
       int aria_rowindex = src.AriaRowIndex();
       if (aria_rowindex)
@@ -862,7 +862,7 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
                              aria_rowindex);
     }
 
-    if (ui::IsTableHeaderRole(dst->role) &&
+    if (ui::IsTableHeader(dst->role) &&
         src.SortDirection() != ax::mojom::SortDirection::kNone) {
       dst->AddIntAttribute(ax::mojom::IntAttribute::kSortDirection,
                            static_cast<int32_t>(src.SortDirection()));

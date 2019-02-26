@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "components/sync/base/storage_option.h"
 #include "components/sync/engine/configure_reason.h"
 
 namespace syncer {
@@ -18,15 +19,11 @@ namespace syncer {
 // controllers, which for USS datatypes propagate analogous information to the
 // processor/bridge via DataTypeActivationRequest.
 struct ConfigureContext {
-  enum StorageOption {
-    STORAGE_ON_DISK,
-    STORAGE_IN_MEMORY,
-  };
-
   std::string authenticated_account_id;
   std::string cache_guid;
   StorageOption storage_option = STORAGE_ON_DISK;
   ConfigureReason reason = CONFIGURE_REASON_UNKNOWN;
+  base::Time configuration_start_time;
   // TODO(mastiz): Consider adding |requested_types| here, but currently there
   // are subtle differences across layers (e.g. where control types are
   // enforced).

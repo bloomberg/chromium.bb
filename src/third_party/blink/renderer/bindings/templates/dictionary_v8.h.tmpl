@@ -1,8 +1,8 @@
 {% filter format_blink_cpp_source_code %}
 
 {% include 'copyright_block.txt' %}
-#ifndef {{v8_original_class}}_h
-#define {{v8_original_class}}_h
+#ifndef {{header_guard}}
+#define {{header_guard}}
 
 {% for filename in header_includes %}
 #include "{{filename}}"
@@ -14,24 +14,24 @@ class ExceptionState;
 
 class {{v8_class}} {
  public:
-  {{exported}}static void ToImpl(v8::Isolate*, v8::Local<v8::Value>, {{cpp_class}}&, ExceptionState&);
+  {{exported}}static void ToImpl(v8::Isolate*, v8::Local<v8::Value>, {{cpp_class}}* impl, ExceptionState&);
 };
 
-{{exported}}bool toV8{{cpp_class}}(const {{cpp_class}}&, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate*);
+{{exported}}bool toV8{{cpp_class}}(const {{cpp_class}}*, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate*);
 
 template <class CallbackInfo>
-inline void V8SetReturnValue(const CallbackInfo& callbackInfo, {{cpp_class}}& impl) {
+inline void V8SetReturnValue(const CallbackInfo& callbackInfo, {{cpp_class}}* impl) {
   V8SetReturnValue(callbackInfo, ToV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
 template <class CallbackInfo>
-inline void V8SetReturnValue(const CallbackInfo& callbackInfo, {{cpp_class}}& impl, v8::Local<v8::Object> creationContext) {
+inline void V8SetReturnValue(const CallbackInfo& callbackInfo, {{cpp_class}}* impl, v8::Local<v8::Object> creationContext) {
   V8SetReturnValue(callbackInfo, ToV8(impl, creationContext, callbackInfo.GetIsolate()));
 }
 
 template <>
 struct NativeValueTraits<{{cpp_class}}> : public NativeValueTraitsBase<{{cpp_class}}> {
-  {{exported}}static {{cpp_class}} NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  {{exported}}static {{cpp_class}}* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 template <>
@@ -41,6 +41,6 @@ struct V8TypeOf<{{cpp_class}}> {
 
 }  // namespace blink
 
-#endif  // {{v8_original_class}}_h
+#endif  // {{header_guard}}
 
 {% endfilter %}{# format_blink_cpp_source_code #}

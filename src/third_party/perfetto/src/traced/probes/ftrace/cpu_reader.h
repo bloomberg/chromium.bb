@@ -26,8 +26,9 @@
 #include <set>
 #include <thread>
 
-#include "gtest/gtest_prod.h"
-#include "perfetto/base/page_allocator.h"
+#include "perfetto/base/gtest_prod_util.h"
+#include "perfetto/base/paged_memory.h"
+#include "perfetto/base/pipe.h"
 #include "perfetto/base/scoped_file.h"
 #include "perfetto/base/thread_checker.h"
 #include "perfetto/protozero/message.h"
@@ -48,7 +49,6 @@ class FtraceEventBundle;
 }  // namespace pbzero
 }  // namespace protos
 
-class EventFilter;  // Declared down below.
 
 // Reads raw ftrace data for a cpu and writes that into the perfetto userspace
 // buffer.
@@ -67,7 +67,8 @@ class CpuReader {
   // Drains all available data from the staging pipe into the buffer of the
   // passed data sources.
   // Should be called in response to the |on_data_available| callback.
-  bool Drain(const std::set<FtraceDataSource*>&);
+  void Drain(const std::set<FtraceDataSource*>&);
+  void InterruptWorkerThreadWithSignal();
 
   template <typename T>
   static bool ReadAndAdvance(const uint8_t** ptr, const uint8_t* end, T* out) {
@@ -193,38 +194,13 @@ class CpuReader {
   const ProtoTranslationTable* const table_;
   const size_t cpu_;
   base::ScopedFile trace_fd_;
-  base::ScopedFile staging_read_fd_;
-  base::ScopedFile staging_write_fd_;
-  base::PageAllocator::UniquePtr buffer_;
+  base::Pipe staging_pipe_;
+  base::PagedMemory buffer_;
   std::thread worker_thread_;
   std::atomic<ThreadCtl> cmd_{kRun};
   PERFETTO_THREAD_CHECKER(thread_checker_)
 };
 
-// Class for efficient 'is event with id x enabled?' tests.
-// Mirrors the data in a FtraceConfig but in a format better suited
-// to be consumed by CpuReader.
-class EventFilter {
- public:
-  EventFilter(const ProtoTranslationTable&, std::set<std::string>);
-  ~EventFilter();
-
-  bool IsEventEnabled(size_t ftrace_event_id) const {
-    if (ftrace_event_id == 0 || ftrace_event_id > enabled_ids_.size()) {
-      return false;
-    }
-    return enabled_ids_[ftrace_event_id];
-  }
-
-  const std::set<std::string>& enabled_names() const { return enabled_names_; }
-
- private:
-  EventFilter(const EventFilter&) = delete;
-  EventFilter& operator=(const EventFilter&) = delete;
-
-  const std::vector<bool> enabled_ids_;
-  std::set<std::string> enabled_names_;
-};
 
 }  // namespace perfetto
 

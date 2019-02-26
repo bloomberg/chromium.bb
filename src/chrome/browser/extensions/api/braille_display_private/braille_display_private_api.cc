@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #endif
@@ -85,18 +86,10 @@ void BrailleDisplayPrivateAPI::OnBrailleKeyEvent(const KeyEvent& key_event) {
 
 bool BrailleDisplayPrivateAPI::IsProfileActive() {
 #if defined(OS_CHROMEOS)
-  Profile* active_profile;
-  chromeos::ScreenLocker* screen_locker =
-      chromeos::ScreenLocker::default_screen_locker();
-  if (screen_locker && screen_locker->locked()) {
-    active_profile = chromeos::ProfileHelper::GetSigninProfile();
-  } else {
-    // Since we are creating one instance per profile / user, we should be fine
-    // comparing against the active user. That said - if we ever change that,
-    // this code will need to be changed.
-    active_profile = ProfileManager::GetActiveUserProfile();
-  }
-  return profile_->IsSameProfile(active_profile);
+  // Since we are creating one instance per profile / user, we should be fine
+  // comparing against the active user. That said - if we ever change that,
+  // this code will need to be changed.
+  return profile_->IsSameProfile(ProfileManager::GetActiveUserProfile());
 #else  // !defined(OS_CHROMEOS)
   return true;
 #endif
@@ -184,5 +177,20 @@ void BrailleDisplayPrivateWriteDotsFunction::Work() {
 bool BrailleDisplayPrivateWriteDotsFunction::Respond() {
   return true;
 }
+
+ExtensionFunction::ResponseAction
+BrailleDisplayPrivateUpdateBluetoothBrailleDisplayAddressFunction::Run() {
+#if !defined(OS_CHROMEOS)
+  NOTREACHED();
+  return RespondNow(Error("Unsupported on this platform."));
+#else
+  std::string address;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &address));
+  chromeos::AccessibilityManager::Get()->UpdateBluetoothBrailleDisplayAddress(
+      address);
+  return RespondNow(NoArguments());
+#endif
+}
+
 }  // namespace api
 }  // namespace extensions

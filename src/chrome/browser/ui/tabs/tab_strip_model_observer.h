@@ -111,6 +111,10 @@ class TabStripModelChange {
 // Struct to carry changes on selection/activation.
 struct TabStripSelectionChange {
   TabStripSelectionChange();
+  TabStripSelectionChange(const TabStripSelectionChange& other);
+  ~TabStripSelectionChange();
+
+  TabStripSelectionChange& operator=(const TabStripSelectionChange& other);
 
   // Fill TabStripSelectionChange with given |contents| and |selection_model|.
   // note that |new_contents| and |new_model| will be filled too so that
@@ -122,13 +126,17 @@ struct TabStripSelectionChange {
 
   // TODO(sangwoo.ko) Do we need something to indicate that the change
   // was made implicitly?
-  bool selection_changed() const { return old_model != new_model; }
+  bool selection_changed() const {
+    return selected_tabs_were_removed || old_model != new_model;
+  }
 
   content::WebContents* old_contents = nullptr;
   content::WebContents* new_contents = nullptr;
 
   ui::ListSelectionModel old_model;
   ui::ListSelectionModel new_model;
+
+  bool selected_tabs_were_removed = false;
 
   int reason = 0;
 };
@@ -177,81 +185,6 @@ class TabStripModelObserver {
                                       const TabStripModelChange& change,
                                       const TabStripSelectionChange& selection);
 
-  // A new WebContents was inserted into the TabStripModel at the
-  // specified index. |foreground| is whether or not it was opened in the
-  // foreground (selected).
-  // DEPRECATED, use OnTabStripChanged() above.
-  // TODO(crbug.com/842194): Delete this and migrate callsites.
-  virtual void TabInsertedAt(TabStripModel* tab_strip_model,
-                             content::WebContents* contents,
-                             int index,
-                             bool foreground);
-
-  // The specified WebContents at |index| is being closed (and eventually
-  // destroyed). |tab_strip_model| is the TabStripModel that contained the tab.
-  // DEPRECATED, use OnTabStripChanged() above.
-  // TODO(erikchen): |index| is not used outside of tests. Do not use it. It
-  // will be removed soon. https://crbug.com/842194.
-  virtual void TabClosingAt(TabStripModel* tab_strip_model,
-                            content::WebContents* contents,
-                            int index);
-
-  // The specified WebContents at |previous_index| has been detached, perhaps to
-  // be inserted in another TabStripModel. The implementer should take whatever
-  // action is necessary to deal with the WebContents no longer being present.
-  // |previous_index| cannot be used to index into the current state of the
-  // TabStripModel.
-  // DEPRECATED, use OnTabStripChanged() above.
-  // TODO(crbug.com/842194): Delete this and migrate callsites.
-  virtual void TabDetachedAt(content::WebContents* contents,
-                             int previous_index,
-                             bool was_active);
-
-  // The active WebContents is about to change from |old_contents|.
-  // This gives observers a chance to prepare for an impending switch before it
-  // happens.
-  // DEPRECATED, use OnTabStripChanged() above.
-  // TODO(crbug.com/842194): Delete this and migrate callsites.
-  virtual void TabDeactivated(content::WebContents* contents);
-
-  // Sent when the active tab changes. The previously active tab is identified
-  // by |old_contents| and the newly active tab by |new_contents|. |index| is
-  // the index of |new_contents|. If |reason| has CHANGE_REASON_REPLACED set
-  // then the web contents was replaced (see TabChangedAt). If |reason| has
-  // CHANGE_REASON_USER_GESTURE set then the web contents was changed due to a
-  // user input event (e.g. clicking on a tab, keystroke).
-  // Note: It is possible for the selection to change while the active tab
-  // remains unchanged. For example, control-click may not change the active tab
-  // but does change the selection. In this case |ActiveTabChanged| is not sent.
-  // If you care about any changes to the selection, override
-  // TabSelectionChanged.
-  // Note: |old_contents| will be NULL if there was no contents previously
-  // active.
-  // DEPRECATED, use OnTabStripChanged() above.
-  // TODO(crbug.com/842194): Delete this and migrate callsites.
-  virtual void ActiveTabChanged(content::WebContents* old_contents,
-                                content::WebContents* new_contents,
-                                int index,
-                                int reason);
-
-  // Sent when the selection changes in |tab_strip_model|. More precisely when
-  // selected tabs, anchor tab or active tab change. |old_model| is a snapshot
-  // of the selection model before the change. See also ActiveTabChanged for
-  // details.
-  // TODO(erikchen): |old_model| is not used outside of tests. Do not use it. It
-  // will be removed soon. https://crbug.com/842194.
-  // DEPRECATED, use OnTabStripChanged() above.
-  // TODO(crbug.com/842194): Delete this and migrate callsites.
-  virtual void TabSelectionChanged(TabStripModel* tab_strip_model,
-                                   const ui::ListSelectionModel& old_model);
-
-  // The specified WebContents at |from_index| was moved to |to_index|.
-  // DEPRECATED, use OnTabStripChanged() above.
-  // TODO(crbug.com/842194): Delete this and migrate callsites.
-  virtual void TabMoved(content::WebContents* contents,
-                        int from_index,
-                        int to_index);
-
   // The specified WebContents at |index| changed in some way. |contents|
   // may be an entirely different object and the old value is no longer
   // available by the time this message is delivered.
@@ -260,15 +193,6 @@ class TabStripModelObserver {
   virtual void TabChangedAt(content::WebContents* contents,
                             int index,
                             TabChangeType change_type);
-
-  // The WebContents was replaced at the specified index. This is invoked when
-  // prerendering swaps in a prerendered WebContents.
-  // DEPRECATED, use OnTabStripChanged() above.
-  // TODO(crbug.com/842194): Delete this and migrate callsites.
-  virtual void TabReplacedAt(TabStripModel* tab_strip_model,
-                             content::WebContents* old_contents,
-                             content::WebContents* new_contents,
-                             int index);
 
   // Invoked when the pinned state of a tab changes.
   virtual void TabPinnedStateChanged(TabStripModel* tab_strip_model,

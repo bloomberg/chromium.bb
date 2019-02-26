@@ -19,7 +19,7 @@
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "chrome/browser/metrics/perf/windowed_incognito_observer.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/channel_info.h"
@@ -332,17 +332,16 @@ PerfProvider::CollectionParams::CollectionParams(
     base::TimeDelta periodic_interval,
     TriggerParams resume_from_suspend,
     TriggerParams restore_session)
-    : collection_duration_(collection_duration.ToInternalValue()),
-      periodic_interval_(periodic_interval.ToInternalValue()),
+    : collection_duration_(collection_duration),
+      periodic_interval_(periodic_interval),
       resume_from_suspend_(resume_from_suspend),
-      restore_session_(restore_session) {
-}
+      restore_session_(restore_session) {}
 
 PerfProvider::CollectionParams::TriggerParams::TriggerParams(
     int64_t sampling_factor,
     base::TimeDelta max_collection_delay)
     : sampling_factor_(sampling_factor),
-      max_collection_delay_(max_collection_delay.ToInternalValue()) {}
+      max_collection_delay_(max_collection_delay) {}
 
 PerfProvider::PerfProvider()
     : login_observer_(this),
@@ -370,9 +369,8 @@ void PerfProvider::Init() {
 
   // Register as an observer of session restore.
   on_session_restored_callback_subscription_ =
-      SessionRestore::RegisterOnSessionRestoredCallback(
-          base::Bind(&PerfProvider::OnSessionRestoreDone,
-                     weak_factory_.GetWeakPtr()));
+      SessionRestore::RegisterOnSessionRestoredCallback(base::BindRepeating(
+          &PerfProvider::OnSessionRestoreDone, weak_factory_.GetWeakPtr()));
 
   // Check the login state. At the time of writing, this class is instantiated
   // before login. A subsequent login would activate the profiling. However,
@@ -619,12 +617,10 @@ void PerfProvider::SuspendDone(const base::TimeDelta& sleep_duration) {
   // Randomly pick a delay before doing the collection.
   base::TimeDelta collection_delay = RandomTimeDelta(
       resume_params.max_collection_delay());
-  timer_.Start(FROM_HERE,
-               collection_delay,
-               base::Bind(&PerfProvider::CollectPerfDataAfterResume,
-                          weak_factory_.GetWeakPtr(),
-                          sleep_duration,
-                          collection_delay));
+  timer_.Start(FROM_HERE, collection_delay,
+               base::BindOnce(&PerfProvider::CollectPerfDataAfterResume,
+                              weak_factory_.GetWeakPtr(), sleep_duration,
+                              collection_delay));
 }
 
 void PerfProvider::OnSessionRestoreDone(int num_tabs_restored) {
@@ -659,13 +655,10 @@ void PerfProvider::OnSessionRestoreDone(int num_tabs_restored) {
   // Randomly pick a delay before doing the collection.
   base::TimeDelta collection_delay = RandomTimeDelta(
       restore_params.max_collection_delay());
-  timer_.Start(
-      FROM_HERE,
-      collection_delay,
-      base::Bind(&PerfProvider::CollectPerfDataAfterSessionRestore,
-                 weak_factory_.GetWeakPtr(),
-                 collection_delay,
-                 num_tabs_restored));
+  timer_.Start(FROM_HERE, collection_delay,
+               base::BindOnce(&PerfProvider::CollectPerfDataAfterSessionRestore,
+                              weak_factory_.GetWeakPtr(), collection_delay,
+                              num_tabs_restored));
 }
 
 void PerfProvider::OnUserLoggedIn() {
@@ -753,15 +746,16 @@ void PerfProvider::CollectIfNecessary(
       base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
   PerfSubcommand subcommand = GetPerfSubcommandType(command);
 
-  perf_output_call_.reset(new PerfOutputCall(
+  perf_output_call_ = std::make_unique<PerfOutputCall>(
       collection_params_.collection_duration(), command,
-      base::Bind(&PerfProvider::ParseOutputProtoIfValid,
-                 weak_factory_.GetWeakPtr(), base::Passed(&incognito_observer),
-                 base::Passed(&sampled_profile), subcommand)));
+      base::BindOnce(&PerfProvider::ParseOutputProtoIfValid,
+                     weak_factory_.GetWeakPtr(),
+                     base::Passed(&incognito_observer),
+                     base::Passed(&sampled_profile), subcommand));
 }
 
 void PerfProvider::DoPeriodicCollection() {
-  std::unique_ptr<SampledProfile> sampled_profile(new SampledProfile);
+  auto sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::PERIODIC_COLLECTION);
 
   CollectIfNecessary(std::move(sampled_profile));
@@ -771,7 +765,7 @@ void PerfProvider::CollectPerfDataAfterResume(
     const base::TimeDelta& sleep_duration,
     const base::TimeDelta& time_after_resume) {
   // Fill out a SampledProfile protobuf that will contain the collected data.
-  std::unique_ptr<SampledProfile> sampled_profile(new SampledProfile);
+  auto sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::RESUME_FROM_SUSPEND);
   sampled_profile->set_suspend_duration_ms(sleep_duration.InMilliseconds());
   sampled_profile->set_ms_after_resume(time_after_resume.InMilliseconds());
@@ -783,7 +777,7 @@ void PerfProvider::CollectPerfDataAfterSessionRestore(
     const base::TimeDelta& time_after_restore,
     int num_tabs_restored) {
   // Fill out a SampledProfile protobuf that will contain the collected data.
-  std::unique_ptr<SampledProfile> sampled_profile(new SampledProfile);
+  auto sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::RESTORE_SESSION);
   sampled_profile->set_ms_after_restore(time_after_restore.InMilliseconds());
   sampled_profile->set_num_tabs_restored(num_tabs_restored);

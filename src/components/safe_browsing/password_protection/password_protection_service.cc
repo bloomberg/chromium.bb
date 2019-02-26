@@ -12,6 +12,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -25,10 +26,12 @@
 #include "components/safe_browsing/db/whitelist_checker_client.h"
 #include "components/safe_browsing/password_protection/password_protection_navigation_throttle.h"
 #include "components/safe_browsing/password_protection/password_protection_request.h"
+#include "components/zoom/zoom_controller.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/page_zoom.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 #include "net/base/url_util.h"
@@ -229,7 +232,7 @@ void PasswordProtectionService::CacheVerdict(
   DCHECK(trigger_type == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE ||
          trigger_type == LoginReputationClientRequest::PASSWORD_REUSE_EVENT);
 
-  if (!CanGetReputationOfURL(url)) {
+  if (!CanGetReputationOfURL(url) || IsIncognito()) {
     return;
   }
 
@@ -377,6 +380,13 @@ void PasswordProtectionService::MaybeStartProtectedPasswordEntryRequest(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!IsSupportedPasswordTypeForPinging(reused_password_type))
     return;
+
+  // Collect metrics about typical page-zoom on login pages.
+  double zoom_level =
+      zoom::ZoomController::GetZoomLevelForWebContents(web_contents);
+  UMA_HISTOGRAM_COUNTS_1000(
+      "PasswordProtection.PageZoomFactor",
+      static_cast<int>(100 * content::ZoomLevelToZoomFactor(zoom_level)));
 
   RequestOutcome reason;
   if (CanSendPing(LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
@@ -526,6 +536,7 @@ void PasswordProtectionService::FillUserPopulation(
   user_population->set_is_history_sync_enabled(IsHistorySyncEnabled());
   user_population->set_is_under_advanced_protection(
       IsUnderAdvancedProtection());
+  user_population->set_is_incognito(IsIncognito());
 }
 
 void PasswordProtectionService::OnURLsDeleted(
@@ -703,9 +714,7 @@ bool PasswordProtectionService::PathVariantsMatchCacheExpression(
 
 bool PasswordProtectionService::IsCacheExpired(int cache_creation_time,
                                                int cache_duration) {
-  // TODO(jialiul): For now, we assume client's clock is accurate or almost
-  // accurate. Need some logic to handle cases where client's clock is way
-  // off.
+  // Note that we assume client's clock is accurate or almost accurate.
   return base::Time::Now().ToDoubleT() >
          static_cast<double>(cache_creation_time + cache_duration);
 }
@@ -801,7 +810,8 @@ bool PasswordProtectionService::IsWarningEnabled() {
 }
 
 bool PasswordProtectionService::IsEventLoggingEnabled() {
-  return GetSyncAccountType() != PasswordReuseEvent::NOT_SIGNED_IN;
+  return !IsIncognito() &&
+         GetSyncAccountType() != PasswordReuseEvent::NOT_SIGNED_IN;
 }
 
 // static

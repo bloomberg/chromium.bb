@@ -21,10 +21,12 @@
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #import "content/browser/renderer_host/render_widget_host_view_mac_editcommand_helper.h"
 #import "content/public/browser/render_widget_host_view_mac_delegate.h"
+#include "content/public/common/content_features.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
 #import "ui/base/clipboard/clipboard_util_mac.h"
 #import "ui/base/cocoa/appkit_utils.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
+#import "ui/base/cocoa/touch_bar_util.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_utils.h"
@@ -32,8 +34,6 @@
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
 
-using content::BrowserAccessibility;
-using content::BrowserAccessibilityManager;
 using content::EditCommand;
 using content::InputEvent;
 using content::NativeWebKeyboardEvent;
@@ -51,6 +51,42 @@ using blink::WebGestureEvent;
 using blink::WebTouchEvent;
 
 namespace {
+
+// A dummy RenderWidgetHostNSViewClientHelper implementation which no-ops all
+// functions.
+class DummyClientHelper : public RenderWidgetHostNSViewClientHelper {
+ public:
+  explicit DummyClientHelper() {}
+
+ private:
+  // RenderWidgetHostNSViewClientHelper implementation.
+  id GetRootBrowserAccessibilityElement() override { return nil; }
+  id GetFocusedBrowserAccessibilityElement() override { return nil; }
+  void ForwardKeyboardEvent(const NativeWebKeyboardEvent& key_event,
+                            const ui::LatencyInfo& latency_info) override {}
+  void ForwardKeyboardEventWithCommands(
+      const NativeWebKeyboardEvent& key_event,
+      const ui::LatencyInfo& latency_info,
+      const std::vector<EditCommand>& commands) override {}
+  void RouteOrProcessMouseEvent(
+      const blink::WebMouseEvent& web_event) override {}
+  void RouteOrProcessTouchEvent(
+      const blink::WebTouchEvent& web_event) override {}
+  void RouteOrProcessWheelEvent(
+      const blink::WebMouseWheelEvent& web_event) override {}
+  void ForwardMouseEvent(const blink::WebMouseEvent& web_event) override {}
+  void ForwardWheelEvent(const blink::WebMouseWheelEvent& web_event) override {}
+  void GestureBegin(blink::WebGestureEvent begin_event,
+                    bool is_synthetically_injected) override {}
+  void GestureUpdate(blink::WebGestureEvent update_event) override {}
+  void GestureEnd(blink::WebGestureEvent end_event) override {}
+  void SmartMagnify(const blink::WebGestureEvent& web_event) override {}
+
+  DISALLOW_COPY_AND_ASSIGN(DummyClientHelper);
+};
+
+// Touch bar identifier.
+NSString* const kWebContentTouchBarId = @"web-content";
 
 // Whether a keyboard event has been reserved by OSX.
 BOOL EventIsReservedBySystem(NSEvent* event) {
@@ -119,6 +155,10 @@ void ExtractUnderlines(NSAttributedString* string,
 @interface RenderWidgetHostViewCocoa () {
   bool keyboardLockActive_;
   base::Optional<base::flat_set<ui::DomCode>> lockedKeys_;
+
+  API_AVAILABLE(macos(10.12.2))
+  base::scoped_nsobject<NSCandidateListTouchBarItem> candidateListTouchBarItem_;
+  NSInteger textSuggestionsSequenceNumber_;
 }
 - (void)processedWheelEvent:(const blink::WebMouseWheelEvent&)event
                    consumed:(BOOL)consumed;
@@ -128,13 +168,24 @@ void ExtractUnderlines(NSAttributedString* string,
 - (void)windowDidBecomeKey:(NSNotification*)notification;
 - (void)windowDidResignKey:(NSNotification*)notification;
 - (void)sendViewBoundsInWindowToClient;
+- (void)requestTextSuggestions API_AVAILABLE(macos(10.12.2));
 - (void)sendWindowFrameInScreenToClient;
 - (bool)clientIsDisconnected;
+- (void)invalidateTouchBar API_AVAILABLE(macos(10.12.2));
+
+// NSCandidateListTouchBarItemDelegate implementation
+- (void)candidateListTouchBarItem:(NSCandidateListTouchBarItem*)anItem
+     endSelectingCandidateAtIndex:(NSInteger)index
+    API_AVAILABLE(macos(10.12.2));
+- (void)candidateListTouchBarItem:(NSCandidateListTouchBarItem*)anItem
+    changedCandidateListVisibility:(BOOL)isVisible
+    API_AVAILABLE(macos(10.12.2));
 @end
 
 @implementation RenderWidgetHostViewCocoa
 @synthesize markedRange = markedRange_;
 @synthesize textInputType = textInputType_;
+@synthesize spellCheckerForTesting = spellCheckerForTesting_;
 
 - (id)initWithClient:(RenderWidgetHostNSViewClient*)client
     withClientHelper:(RenderWidgetHostNSViewClientHelper*)clientHelper {
@@ -191,12 +242,78 @@ void ExtractUnderlines(NSAttributedString* string,
   client_->OnBoundsInWindowChanged(gfxViewBoundsInWindow, true);
 }
 
+- (void)requestTextSuggestions {
+  auto* touchBarItem = candidateListTouchBarItem_.get();
+  if (!touchBarItem)
+    return;
+  [touchBarItem
+      updateWithInsertionPointVisibility:textSelectionRange_.is_empty()];
+  if (!touchBarItem.candidateListVisible)
+    return;
+  if (!textSelectionRange_.IsValid() ||
+      textSelectionOffset_ > textSelectionRange_.GetMin())
+    return;
+
+  NSRange selectionRange = textSelectionRange_.ToNSRange();
+  NSString* selectionText = base::SysUTF16ToNSString(textSelectionText_);
+  selectionRange.location -= textSelectionOffset_;
+  if (NSMaxRange(selectionRange) > selectionText.length)
+    return;
+  NSSpellChecker* spell_checker = spellCheckerForTesting_
+                                      ? spellCheckerForTesting_
+                                      : [NSSpellChecker sharedSpellChecker];
+  textSuggestionsSequenceNumber_ = [spell_checker
+      requestCandidatesForSelectedRange:selectionRange
+                               inString:selectionText
+                                  types:NSTextCheckingAllSystemTypes
+                                options:nil
+                 inSpellDocumentWithTag:0
+                      completionHandler:^(
+                          NSInteger sequenceNumber,
+                          NSArray<NSTextCheckingResult*>* candidates) {
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                          if (sequenceNumber != textSuggestionsSequenceNumber_)
+                            return;
+                          [touchBarItem setCandidates:candidates
+                                     forSelectedRange:selectionRange
+                                             inString:selectionText];
+                        });
+                      }];
+}
+
 - (void)setTextSelectionText:(base::string16)text
                       offset:(size_t)offset
                        range:(gfx::Range)range {
   textSelectionText_ = text;
   textSelectionOffset_ = offset;
   textSelectionRange_ = range;
+  if (@available(macOS 10.12.2, *))
+    [self requestTextSuggestions];
+}
+
+- (void)candidateListTouchBarItem:(NSCandidateListTouchBarItem*)anItem
+     endSelectingCandidateAtIndex:(NSInteger)index {
+  if (index == NSNotFound)
+    return;
+  NSTextCheckingResult* selectedResult = anItem.candidates[index];
+  NSRange replacementRange = selectedResult.range;
+  replacementRange.location += textSelectionOffset_;
+  [self insertText:selectedResult.replacementString
+      replacementRange:replacementRange];
+}
+
+- (void)candidateListTouchBarItem:(NSCandidateListTouchBarItem*)anItem
+    changedCandidateListVisibility:(BOOL)isVisible {
+  [self requestTextSuggestions];
+}
+
+- (void)setTextInputType:(ui::TextInputType)textInputType {
+  if (textInputType_ == textInputType)
+    return;
+  textInputType_ = textInputType;
+
+  if (@available(macOS 10.12.2, *))
+    [self invalidateTouchBar];
 }
 
 - (base::string16)selectedText {
@@ -296,8 +413,7 @@ void ExtractUnderlines(NSAttributedString* string,
   // to forward messages to that client.
   content::mojom::RenderWidgetHostNSViewClientRequest dummyClientRequest =
       mojo::MakeRequest(&dummyClient_);
-  dummyClientHelper_ = RenderWidgetHostNSViewClientHelper::CreateForMojoClient(
-      dummyClient_.get());
+  dummyClientHelper_ = std::make_unique<DummyClientHelper>();
   client_ = dummyClient_.get();
   clientHelper_ = dummyClientHelper_.get();
 
@@ -1158,7 +1274,7 @@ void ExtractUnderlines(NSAttributedString* string,
   DCHECK_EQ([self window], [notification object]);
   if ([responderDelegate_ respondsToSelector:@selector(windowDidBecomeKey)])
     [responderDelegate_ windowDidBecomeKey];
-  if ([self window].isKeyWindow && [[self window] firstResponder] == self)
+  if ([self window].isKeyWindow)
     client_->OnWindowIsKeyChanged(true);
 }
 
@@ -1173,8 +1289,7 @@ void ExtractUnderlines(NSAttributedString* string,
   if ([NSApp isActive] && ([NSApp keyWindow] == [self window]))
     return;
 
-  if ([[self window] firstResponder] == self)
-    client_->OnWindowIsKeyChanged(false);
+  client_->OnWindowIsKeyChanged(false);
 }
 
 - (BOOL)becomeFirstResponder {
@@ -1280,17 +1395,14 @@ void ExtractUnderlines(NSAttributedString* string,
 }
 
 - (id)accessibilityAttributeValue:(NSString*)attribute {
-  BrowserAccessibilityManager* manager =
-      clientHelper_->GetRootBrowserAccessibilityManager();
-
+  id root_element = clientHelper_->GetRootBrowserAccessibilityElement();
   // Contents specifies document view of RenderWidgetHostViewCocoa provided by
   // BrowserAccessibilityManager. Children includes all subviews in addition to
   // contents. Currently we do not have subviews besides the document view.
   if (([attribute isEqualToString:NSAccessibilityChildrenAttribute] ||
        [attribute isEqualToString:NSAccessibilityContentsAttribute]) &&
-      manager) {
-    return [NSArray
-        arrayWithObjects:ToBrowserAccessibilityCocoa(manager->GetRoot()), nil];
+      root_element) {
+    return [NSArray arrayWithObjects:root_element, nil];
   } else if ([attribute isEqualToString:NSAccessibilityRoleAttribute]) {
     return NSAccessibilityScrollAreaRole;
   }
@@ -1306,31 +1418,26 @@ void ExtractUnderlines(NSAttributedString* string,
 }
 
 - (id)accessibilityHitTest:(NSPoint)point {
-  BrowserAccessibilityManager* manager =
-      clientHelper_->GetRootBrowserAccessibilityManager();
-  if (!manager)
+  id root_element = clientHelper_->GetRootBrowserAccessibilityElement();
+  if (!root_element)
     return self;
   NSPoint pointInWindow =
       ui::ConvertPointFromScreenToWindow([self window], point);
   NSPoint localPoint = [self convertPoint:pointInWindow fromView:nil];
   localPoint.y = NSHeight([self bounds]) - localPoint.y;
-  BrowserAccessibilityCocoa* root =
-      ToBrowserAccessibilityCocoa(manager->GetRoot());
-  id obj = [root accessibilityHitTest:localPoint];
+  id obj = [root_element accessibilityHitTest:localPoint];
   return obj;
 }
 
 - (BOOL)accessibilityIsIgnored {
-  BrowserAccessibilityManager* manager =
-      clientHelper_->GetRootBrowserAccessibilityManager();
-  return !manager;
+  id root_element = clientHelper_->GetRootBrowserAccessibilityElement();
+  return !root_element;
 }
 
 - (NSUInteger)accessibilityGetIndexOf:(id)child {
-  BrowserAccessibilityManager* manager =
-      clientHelper_->GetRootBrowserAccessibilityManager();
+  id root_element = clientHelper_->GetRootBrowserAccessibilityElement();
   // Only child is root.
-  if (manager && ToBrowserAccessibilityCocoa(manager->GetRoot()) == child) {
+  if (root_element == child) {
     return 0;
   } else {
     return NSNotFound;
@@ -1338,30 +1445,7 @@ void ExtractUnderlines(NSAttributedString* string,
 }
 
 - (id)accessibilityFocusedUIElement {
-  // If content is overlayed with a focused popup from native UI code, this
-  // getter must return the current menu item as the focused element, rather
-  // than the focus within the content. An example of this occurs with the
-  // Autofill feature, where focus is actually still in the textbox although
-  // the UX acts as if focus is in the popup.
-  gfx::NativeViewAccessible popup_focus_override =
-      ui::AXPlatformNode::GetPopupFocusOverride();
-  if (popup_focus_override)
-    return popup_focus_override;
-
-  BrowserAccessibilityManager* manager =
-      clientHelper_->GetRootBrowserAccessibilityManager();
-  if (manager) {
-    BrowserAccessibility* focused_item = manager->GetFocus();
-    DCHECK(focused_item);
-    if (focused_item) {
-      BrowserAccessibilityCocoa* focused_item_cocoa =
-          ToBrowserAccessibilityCocoa(focused_item);
-      DCHECK(focused_item_cocoa);
-      if (focused_item_cocoa)
-        return focused_item_cocoa;
-    }
-  }
-  return [super accessibilityFocusedUIElement];
+  return clientHelper_->GetFocusedBrowserAccessibilityElement();
 }
 
 // Below is our NSTextInputClient implementation.
@@ -1552,12 +1636,11 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
 }
 
 // Each RenderWidgetHostViewCocoa has its own input context, but we return
-// nil when the caret is in non-editable content or password box to avoid
-// making input methods do their work.
+// nil when the caret is in non-editable content to avoid making input methods
+// do their work.
 - (NSTextInputContext*)inputContext {
   switch (textInputType_) {
     case ui::TEXT_INPUT_TYPE_NONE:
-    case ui::TEXT_INPUT_TYPE_PASSWORD:
       return nil;
     default:
       return [super inputContext];
@@ -1703,6 +1786,7 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
   [self sendWindowFrameInScreenToClient];
   [self sendViewBoundsInWindowToClient];
   [self updateScreenProperties];
+  client_->OnWindowIsKeyChanged([[self window] isKeyWindow]);
   client_->OnFirstResponderChanged([[self window] firstResponder] == self);
 
   // If we switch windows (or are removed from the view hierarchy), cancel any
@@ -1840,6 +1924,36 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
 - (void)popupWindowWillClose:(NSNotification*)notification {
   [self setHidden:YES];
   client_->RequestShutdown();
+}
+
+- (void)invalidateTouchBar {
+  candidateListTouchBarItem_.reset();
+  self.touchBar = nil;
+}
+
+- (NSTouchBar*)makeTouchBar {
+  if (textInputType_ != ui::TEXT_INPUT_TYPE_NONE &&
+      textInputType_ != ui::TEXT_INPUT_TYPE_PASSWORD &&
+      (base::FeatureList::IsEnabled(features::kTextSuggestionsTouchBar) ||
+       base::FeatureList::IsEnabled(features::kExperimentalUi))) {
+    candidateListTouchBarItem_.reset([[NSCandidateListTouchBarItem alloc]
+        initWithIdentifier:NSTouchBarItemIdentifierCandidateList]);
+    auto* candidateListItem = candidateListTouchBarItem_.get();
+
+    candidateListItem.delegate = self;
+    candidateListItem.client = self;
+    [self requestTextSuggestions];
+
+    base::scoped_nsobject<NSTouchBar> scopedTouchBar([[NSTouchBar alloc] init]);
+    auto* touchBar = scopedTouchBar.get();
+    touchBar.customizationIdentifier = ui::GetTouchBarId(kWebContentTouchBarId);
+    touchBar.templateItems = [NSSet setWithObject:candidateListTouchBarItem_];
+    touchBar.defaultItemIdentifiers =
+        @[ NSTouchBarItemIdentifierCandidateList ];
+    return scopedTouchBar.autorelease();
+  }
+
+  return [super makeTouchBar];
 }
 
 @end

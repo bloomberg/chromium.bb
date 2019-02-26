@@ -177,7 +177,16 @@ class NET_EXPORT MDnsClient {
   static std::unique_ptr<MDnsClient> CreateDefault();
 };
 
-NET_EXPORT IPEndPoint GetMDnsIPEndPoint(AddressFamily address_family);
+// Gets the endpoint for the multicast group a socket should join to receive
+// MDNS messages. Such sockets should also bind to the endpoint from
+// GetMDnsReceiveEndPoint().
+//
+// This is also the endpoint messages should be sent to to send MDNS messages.
+NET_EXPORT IPEndPoint GetMDnsGroupEndPoint(AddressFamily address_family);
+
+// Gets the endpoint sockets should be bound to to receive MDNS messages. Such
+// sockets should also join the multicast group from GetMDnsGroupEndPoint().
+NET_EXPORT IPEndPoint GetMDnsReceiveEndPoint(AddressFamily address_family);
 
 typedef std::vector<std::pair<uint32_t, AddressFamily>>
     InterfaceIndexFamilyList;

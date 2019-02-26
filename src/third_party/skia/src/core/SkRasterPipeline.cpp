@@ -6,7 +6,7 @@
  */
 
 #include "SkRasterPipeline.h"
-#include "../jumper/SkJumper.h"
+#include "SkOpts.h"
 #include <algorithm>
 
 SkRasterPipeline::SkRasterPipeline(SkArenaAlloc* alloc) : fAlloc(alloc) {
@@ -119,7 +119,7 @@ void SkRasterPipeline::append_constant_color(SkArenaAlloc* alloc, const float rg
         this->append(white_color);
         INC_WHITE;
     } else {
-        auto ctx = alloc->make<SkJumper_UniformColorCtx>();
+        auto ctx = alloc->make<SkRasterPipeline_UniformColorCtx>();
         Sk4f color = Sk4f::Load(rgba);
         color.store(&ctx->r);
 
@@ -193,43 +193,51 @@ void SkRasterPipeline::append_matrix(SkArenaAlloc* alloc, const SkMatrix& matrix
     }
 }
 
-void SkRasterPipeline::append_load(SkColorType ct, const SkJumper_MemoryCtx* ctx) {
+void SkRasterPipeline::append_load(SkColorType ct, const SkRasterPipeline_MemoryCtx* ctx) {
     switch (ct) {
         case kUnknown_SkColorType: SkASSERT(false); break;
 
-        case kGray_8_SkColorType:       this->append(load_g8,      ctx); break;
         case kAlpha_8_SkColorType:      this->append(load_a8,      ctx); break;
         case kRGB_565_SkColorType:      this->append(load_565,     ctx); break;
         case kARGB_4444_SkColorType:    this->append(load_4444,    ctx); break;
-        case kBGRA_8888_SkColorType:    this->append(load_bgra,    ctx); break;
         case kRGBA_8888_SkColorType:    this->append(load_8888,    ctx); break;
         case kRGBA_1010102_SkColorType: this->append(load_1010102, ctx); break;
         case kRGBA_F16_SkColorType:     this->append(load_f16,     ctx); break;
         case kRGBA_F32_SkColorType:     this->append(load_f32,     ctx); break;
 
-        case kRGB_888x_SkColorType:    this->append(load_8888, ctx);
-                                       this->append(force_opaque);
-                                       break;
+        case kGray_8_SkColorType:       this->append(load_a8, ctx);
+                                        this->append(alpha_to_gray);
+                                        break;
 
-        case kRGB_101010x_SkColorType: this->append(load_1010102, ctx);
-                                       this->append(force_opaque);
-                                       break;
+        case kRGB_888x_SkColorType:     this->append(load_8888, ctx);
+                                        this->append(force_opaque);
+                                        break;
+
+        case kRGB_101010x_SkColorType:  this->append(load_1010102, ctx);
+                                        this->append(force_opaque);
+                                        break;
+
+        case kBGRA_8888_SkColorType:    this->append(load_8888, ctx);
+                                        this->append(swap_rb);
+                                        break;
     }
 }
 
-void SkRasterPipeline::append_load_dst(SkColorType ct, const SkJumper_MemoryCtx* ctx) {
+void SkRasterPipeline::append_load_dst(SkColorType ct, const SkRasterPipeline_MemoryCtx* ctx) {
     switch (ct) {
         case kUnknown_SkColorType: SkASSERT(false); break;
 
-        case kGray_8_SkColorType:       this->append(load_g8_dst,      ctx); break;
         case kAlpha_8_SkColorType:      this->append(load_a8_dst,      ctx); break;
         case kRGB_565_SkColorType:      this->append(load_565_dst,     ctx); break;
         case kARGB_4444_SkColorType:    this->append(load_4444_dst,    ctx); break;
-        case kBGRA_8888_SkColorType:    this->append(load_bgra_dst,    ctx); break;
         case kRGBA_8888_SkColorType:    this->append(load_8888_dst,    ctx); break;
         case kRGBA_1010102_SkColorType: this->append(load_1010102_dst, ctx); break;
         case kRGBA_F16_SkColorType:     this->append(load_f16_dst,     ctx); break;
         case kRGBA_F32_SkColorType:     this->append(load_f32_dst,     ctx); break;
+
+        case kGray_8_SkColorType:       this->append(load_a8_dst, ctx);
+                                        this->append(alpha_to_gray_dst);
+                                        break;
 
         case kRGB_888x_SkColorType:     this->append(load_8888_dst, ctx);
                                         this->append(force_opaque_dst);
@@ -238,33 +246,40 @@ void SkRasterPipeline::append_load_dst(SkColorType ct, const SkJumper_MemoryCtx*
         case kRGB_101010x_SkColorType:  this->append(load_1010102_dst, ctx);
                                         this->append(force_opaque_dst);
                                         break;
+
+        case kBGRA_8888_SkColorType:    this->append(load_8888_dst, ctx);
+                                        this->append(swap_rb_dst);
+                                        break;
     }
 }
 
-void SkRasterPipeline::append_store(SkColorType ct, const SkJumper_MemoryCtx* ctx) {
+void SkRasterPipeline::append_store(SkColorType ct, const SkRasterPipeline_MemoryCtx* ctx) {
     switch (ct) {
         case kUnknown_SkColorType: SkASSERT(false); break;
 
         case kAlpha_8_SkColorType:      this->append(store_a8,      ctx); break;
         case kRGB_565_SkColorType:      this->append(store_565,     ctx); break;
         case kARGB_4444_SkColorType:    this->append(store_4444,    ctx); break;
-        case kBGRA_8888_SkColorType:    this->append(store_bgra,    ctx); break;
         case kRGBA_8888_SkColorType:    this->append(store_8888,    ctx); break;
         case kRGBA_1010102_SkColorType: this->append(store_1010102, ctx); break;
         case kRGBA_F16_SkColorType:     this->append(store_f16,     ctx); break;
         case kRGBA_F32_SkColorType:     this->append(store_f32,     ctx); break;
 
-        case kRGB_888x_SkColorType:    this->append(force_opaque);
-                                       this->append(store_8888, ctx);
-                                       break;
+        case kRGB_888x_SkColorType:     this->append(force_opaque);
+                                        this->append(store_8888, ctx);
+                                        break;
 
-        case kRGB_101010x_SkColorType: this->append(force_opaque);
-                                       this->append(store_1010102, ctx);
-                                       break;
+        case kRGB_101010x_SkColorType:  this->append(force_opaque);
+                                        this->append(store_1010102, ctx);
+                                        break;
 
-        case kGray_8_SkColorType:      this->append(luminance_to_alpha);
-                                       this->append(store_a8, ctx);
-                                       break;
+        case kGray_8_SkColorType:       this->append(luminance_to_alpha);
+                                        this->append(store_a8, ctx);
+                                        break;
+
+        case kBGRA_8888_SkColorType:    this->append(swap_rb);
+                                        this->append(store_8888, ctx);
+                                        break;
     }
 }
 
@@ -275,4 +290,65 @@ void SkRasterPipeline::append_gamut_clamp_if_normalized(const SkImageInfo& dstIn
     {
         this->unchecked_append(SkRasterPipeline::clamp_gamut, nullptr);
     }
+}
+
+SkRasterPipeline::StartPipelineFn SkRasterPipeline::build_pipeline(void** ip) const {
+    // We'll try to build a lowp pipeline, but if that fails fallback to a highp float pipeline.
+    void** reset_point = ip;
+
+    // Stages are stored backwards in fStages, so we reverse here, back to front.
+    *--ip = (void*)SkOpts::just_return_lowp;
+    for (const StageList* st = fStages; st; st = st->prev) {
+        SkOpts::StageFn fn;
+        if (!st->rawFunction && (fn = SkOpts::stages_lowp[st->stage])) {
+            if (st->ctx) {
+                *--ip = st->ctx;
+            }
+            *--ip = (void*)fn;
+        } else {
+            ip = reset_point;
+            break;
+        }
+    }
+    if (ip != reset_point) {
+        return SkOpts::start_pipeline_lowp;
+    }
+
+    *--ip = (void*)SkOpts::just_return_highp;
+    for (const StageList* st = fStages; st; st = st->prev) {
+        if (st->ctx) {
+            *--ip = st->ctx;
+        }
+        if (st->rawFunction) {
+            *--ip = (void*)st->stage;
+        } else {
+            *--ip = (void*)SkOpts::stages_highp[st->stage];
+        }
+    }
+    return SkOpts::start_pipeline_highp;
+}
+
+void SkRasterPipeline::run(size_t x, size_t y, size_t w, size_t h) const {
+    if (this->empty()) {
+        return;
+    }
+
+    // Best to not use fAlloc here... we can't bound how often run() will be called.
+    SkAutoSTMalloc<64, void*> program(fSlotsNeeded);
+
+    auto start_pipeline = this->build_pipeline(program.get() + fSlotsNeeded);
+    start_pipeline(x,y,x+w,y+h, program.get());
+}
+
+std::function<void(size_t, size_t, size_t, size_t)> SkRasterPipeline::compile() const {
+    if (this->empty()) {
+        return [](size_t, size_t, size_t, size_t) {};
+    }
+
+    void** program = fAlloc->makeArray<void*>(fSlotsNeeded);
+
+    auto start_pipeline = this->build_pipeline(program + fSlotsNeeded);
+    return [=](size_t x, size_t y, size_t w, size_t h) {
+        start_pipeline(x,y,x+w,y+h, program);
+    };
 }

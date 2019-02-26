@@ -5,6 +5,7 @@
 module device.mojom;
 
 import "mojo/public/mojom/base/string16.mojom";
+import "url/mojom/url.mojom";
 
 enum UsbOpenDeviceError {
   // Opening the device succeeded.
@@ -88,6 +89,7 @@ struct UsbDeviceInfo {
   mojo_base.mojom.String16? manufacturer_name;
   mojo_base.mojom.String16? product_name;
   mojo_base.mojom.String16? serial_number;
+  url.mojom.Url? webusb_landing_page;
   uint8 active_configuration;
   array<UsbConfigurationInfo> configurations;
 };

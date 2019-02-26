@@ -32,10 +32,13 @@ namespace blink {
 struct AttributeTriggers;
 class Color;
 class DocumentFragment;
+class ElementInternals;
 class ExceptionState;
 class FormAssociated;
 class HTMLFormElement;
 class KeyboardEvent;
+class StringOrTrustedScript;
+class StringTreatNullAsEmptyStringOrTrustedScript;
 
 enum TranslateAttributeMode {
   kTranslateAttributeYes,
@@ -57,6 +60,12 @@ class CORE_EXPORT HTMLElement : public Element {
   int tabIndex() const override;
 
   void setInnerText(const String&, ExceptionState&);
+  virtual void setInnerText(const StringOrTrustedScript&, ExceptionState&);
+  virtual void setInnerText(const StringTreatNullAsEmptyStringOrTrustedScript&,
+                            ExceptionState&);
+  String innerText();
+  void innerText(StringOrTrustedScript& result);
+  void innerText(StringTreatNullAsEmptyStringOrTrustedScript& result);
   void setOuterText(const String&, ExceptionState&);
 
   virtual bool HasCustomFocusLogic() const;
@@ -121,7 +130,9 @@ class CORE_EXPORT HTMLElement : public Element {
 
   Element* unclosedOffsetParent();
 
-  virtual FormAssociated* ToFormAssociatedOrNull() { return nullptr; };
+  ElementInternals* attachInternals(ExceptionState& exception_state);
+  virtual FormAssociated* ToFormAssociatedOrNull() { return nullptr; }
+  bool IsFormAssociatedCustomElement() const;
 
  protected:
   HTMLElement(const QualifiedName& tag_name, Document&, ConstructionType);
@@ -155,6 +166,8 @@ class CORE_EXPORT HTMLElement : public Element {
   void CalculateAndAdjustDirectionality();
 
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
+  void RemovedFrom(ContainerNode& insertion_point) override;
+  void DidMoveToNewDocument(Document& old_document) override;
 
  private:
   String DebugNodeName() const final;

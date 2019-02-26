@@ -3,15 +3,17 @@
 <translationbundle lang="en-GB">
 <translation id="1296843352074373664">Google user</translation>
 <translation id="1383286653814676580">Used to run Google Credential Provider sign-in page.</translation>
-<translation id="2119303206591679297">Logon with this Google account is not permitted.</translation>
-<translation id="3374277789313311065">An internal error occurred. If the error persists, please report to Google.</translation>
-<translation id="3713454256426064844">Log on using your Google account.</translation>
-<translation id="440343981193409132">Log on using your updated Google account password.</translation>
-<translation id="4735679347289592174">Signing in to your Google account failed. Please try again. Make sure that the computer has a valid Internet connection. If the error persists, please report to Google.</translation>
-<translation id="7000592418234387954">Google Account Logon</translation>
+<translation id="195232392645680541">Sign in using your Google account.</translation>
+<translation id="3623301090691182018">Google account sign-in</translation>
+<translation id="4057329986137569701">An internal error occurred.</translation>
+<translation id="4128734677223009352">Signing in to your Google account failed. Make sure that the computer has an Internet connection, then try again.</translation>
+<translation id="4307406925561182259">Sign in using your updated Google account password.</translation>
+<translation id="6064337552080329342">Sorry, your password couldn't be verified. Please try again.</translation>
+<translation id="6613125771987245372">Signing in with this Google account is not allowed. Try a different account.</translation>
+<translation id="7357241217513796177">Make sure that you have a network connection and try again.</translation>
+<translation id="7463006580194749499">Add person</translation>
 <translation id="8474372283141585908">Google Credential Provider</translation>
 <translation id="866458870819756755">A user could not be created.</translation>
 <translation id="8860262547644202689">Google Credential Provider Helper</translation>
-<translation id="8912362522468806198">Google Account</translation>
 <translation id="9094033019050270033">Update password</translation>
 </translationbundle>

@@ -59,7 +59,6 @@
 #include "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
 #include "third_party/ocmock/ocmock_extensions.h"
-#import "ui/base/test/ios/ui_view_test_utils.h"
 #include "url/scheme_host_port.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -68,10 +67,6 @@
 
 using base::test::ios::WaitUntilConditionOrTimeout;
 using base::test::ios::kWaitForPageLoadTimeout;
-
-@interface CRWWebController (PrivateAPI)
-@property(nonatomic, readwrite) web::PageDisplayState pageDisplayState;
-@end
 
 namespace web {
 namespace {
@@ -91,31 +86,6 @@ enum PageScalabilityType {
   PAGE_SCALABILITY_DISABLED = 0,
   PAGE_SCALABILITY_ENABLED,
 };
-NSString* GetHTMLForZoomState(const PageZoomState& zoom_state,
-                              PageScalabilityType scalability_type) {
-  NSString* const kHTMLFormat =
-      @"<html><head><meta name='viewport' content="
-       "'width=%f,minimum-scale=%f,maximum-scale=%f,initial-scale=%f,"
-       "user-scalable=%@'/></head><body>Test</body></html>";
-  CGFloat width =
-      CGRectGetWidth(UIApplication.sharedApplication.keyWindow.bounds) /
-      zoom_state.minimum_zoom_scale();
-  BOOL scalability_enabled = scalability_type == PAGE_SCALABILITY_ENABLED;
-  return [NSString
-      stringWithFormat:kHTMLFormat, width, zoom_state.minimum_zoom_scale(),
-                       zoom_state.maximum_zoom_scale(), zoom_state.zoom_scale(),
-                       scalability_enabled ? @"yes" : @"no"];
-}
-
-// Forces |webController|'s view to render and waits until |webController|'s
-// PageZoomState matches |zoom_state|.
-void WaitForZoomRendering(CRWWebController* webController,
-                          const PageZoomState& zoom_state) {
-  ui::test::uiview_utils::ForceViewRendering(webController.view);
-  base::test::ios::WaitUntilCondition(^bool() {
-    return webController.pageDisplayState.zoom_state() == zoom_state;
-  });
-}
 
 // Tests in this file are parameterized on this enum to test both
 // LegacyNavigationManagerImpl and WKBasedNavigationManagerImpl.
@@ -242,7 +212,7 @@ class CRWWebControllerTest : public WebTestWithWebController,
                        context:nullptr];
     [[result stub] removeObserver:web_controller() forKeyPath:OCMOCK_ANY];
     [[result stub] evaluateJavaScript:OCMOCK_ANY completionHandler:OCMOCK_ANY];
-    // CRWWebController sets this property to NO by default.
+    [[result stub] setAllowsBackForwardNavigationGestures:YES];
     [[result stub] setAllowsBackForwardNavigationGestures:NO];
 
     return result;
@@ -317,6 +287,9 @@ TEST_P(CRWWebControllerTest, AbortNativeUrlNavigation) {
       loadRequest:OCMOCK_ANY];
   TestNativeContentProvider* mock_native_provider =
       [[TestNativeContentProvider alloc] init];
+  TestNativeContent* content =
+      [[TestNativeContent alloc] initWithURL:native_url virtualURL:native_url];
+  [mock_native_provider setController:content forURL:native_url];
   [web_controller() setNativeProvider:mock_native_provider];
 
   AddPendingItem(native_url, ui::PAGE_TRANSITION_TYPED);
@@ -337,21 +310,26 @@ TEST_P(CRWWebControllerTest, AbortNativeUrlNavigation) {
   EXPECT_FALSE(observer.did_finish_navigation_info());
 }
 
-// Tests allowsBackForwardNavigationGestures default value and setting this
-// property to YES.
+// Tests allowsBackForwardNavigationGestures default value and negating this
+// property.
 TEST_P(CRWWebControllerTest, SetAllowsBackForwardNavigationGestures) {
-  OCMExpect([mock_web_view_ setAllowsBackForwardNavigationGestures:YES]);
-  EXPECT_FALSE(web_controller().allowsBackForwardNavigationGestures);
-  web_controller().allowsBackForwardNavigationGestures = YES;
-  EXPECT_TRUE(web_controller().allowsBackForwardNavigationGestures);
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    EXPECT_TRUE(web_controller().allowsBackForwardNavigationGestures);
+    web_controller().allowsBackForwardNavigationGestures = NO;
+    EXPECT_FALSE(web_controller().allowsBackForwardNavigationGestures);
+  } else {
+    EXPECT_FALSE(web_controller().allowsBackForwardNavigationGestures);
+    web_controller().allowsBackForwardNavigationGestures = YES;
+    EXPECT_TRUE(web_controller().allowsBackForwardNavigationGestures);
+  }
 }
 
 INSTANTIATE_TEST_CASES(CRWWebControllerTest);
 
-// Test fixture to test |WebState::SetShouldSuppressDialogs|.
-class DialogsSuppressionTest : public ProgrammaticWebTestWithWebState {
+// Test fixture to test JavaScriptDialogPresenter.
+class JavaScriptDialogPresenterTest : public ProgrammaticWebTestWithWebState {
  protected:
-  DialogsSuppressionTest() : page_url_("https://chromium.test/") {}
+  JavaScriptDialogPresenterTest() : page_url_("https://chromium.test/") {}
   void SetUp() override {
     ProgrammaticWebTestWithWebState::SetUp();
     LoadHtml(@"<html><body></body></html>", page_url_);
@@ -374,23 +352,10 @@ class DialogsSuppressionTest : public ProgrammaticWebTestWithWebState {
   GURL page_url_;
 };
 
-// Tests that window.alert dialog is suppressed.
-TEST_P(DialogsSuppressionTest, SuppressAlert) {
-  TestWebStateObserver observer(web_state());
-  ASSERT_FALSE(observer.did_suppress_dialog_info());
-  web_state()->SetShouldSuppressDialogs(true);
-  ExecuteJavaScript(@"alert('test')");
-  ASSERT_TRUE(observer.did_suppress_dialog_info());
-  EXPECT_EQ(web_state(), observer.did_suppress_dialog_info()->web_state);
-};
-
 // Tests that window.alert dialog is shown.
-TEST_P(DialogsSuppressionTest, AllowAlert) {
-  TestWebStateObserver observer(web_state());
-  ASSERT_FALSE(observer.did_suppress_dialog_info());
+TEST_P(JavaScriptDialogPresenterTest, Alert) {
   ASSERT_TRUE(requested_dialogs().empty());
 
-  web_state()->SetShouldSuppressDialogs(false);
   ExecuteJavaScript(@"alert('test')");
 
   ASSERT_EQ(1U, requested_dialogs().size());
@@ -400,32 +365,14 @@ TEST_P(DialogsSuppressionTest, AllowAlert) {
   EXPECT_EQ(JAVASCRIPT_DIALOG_TYPE_ALERT, dialog.java_script_dialog_type);
   EXPECT_NSEQ(@"test", dialog.message_text);
   EXPECT_FALSE(dialog.default_prompt_text);
-  ASSERT_FALSE(observer.did_suppress_dialog_info());
-};
-
-// Tests that window.confirm dialog is suppressed.
-TEST_P(DialogsSuppressionTest, SuppressConfirm) {
-  TestWebStateObserver observer(web_state());
-  ASSERT_FALSE(observer.did_suppress_dialog_info());
-  ASSERT_TRUE(requested_dialogs().empty());
-
-  web_state()->SetShouldSuppressDialogs(true);
-  EXPECT_NSEQ(@NO, ExecuteJavaScript(@"confirm('test')"));
-
-  ASSERT_TRUE(requested_dialogs().empty());
-  ASSERT_TRUE(observer.did_suppress_dialog_info());
-  EXPECT_EQ(web_state(), observer.did_suppress_dialog_info()->web_state);
 };
 
 // Tests that window.confirm dialog is shown and its result is true.
-TEST_P(DialogsSuppressionTest, AllowConfirmWithTrue) {
-  TestWebStateObserver observer(web_state());
-  ASSERT_FALSE(observer.did_suppress_dialog_info());
+TEST_P(JavaScriptDialogPresenterTest, ConfirmWithTrue) {
   ASSERT_TRUE(requested_dialogs().empty());
 
   js_dialog_presenter()->set_callback_success_argument(true);
 
-  web_state()->SetShouldSuppressDialogs(false);
   EXPECT_NSEQ(@YES, ExecuteJavaScript(@"confirm('test')"));
 
   ASSERT_EQ(1U, requested_dialogs().size());
@@ -435,16 +382,12 @@ TEST_P(DialogsSuppressionTest, AllowConfirmWithTrue) {
   EXPECT_EQ(JAVASCRIPT_DIALOG_TYPE_CONFIRM, dialog.java_script_dialog_type);
   EXPECT_NSEQ(@"test", dialog.message_text);
   EXPECT_FALSE(dialog.default_prompt_text);
-  ASSERT_FALSE(observer.did_suppress_dialog_info());
 }
 
 // Tests that window.confirm dialog is shown and its result is false.
-TEST_P(DialogsSuppressionTest, AllowConfirmWithFalse) {
-  TestWebStateObserver observer(web_state());
-  ASSERT_FALSE(observer.did_suppress_dialog_info());
+TEST_P(JavaScriptDialogPresenterTest, ConfirmWithFalse) {
   ASSERT_TRUE(requested_dialogs().empty());
 
-  web_state()->SetShouldSuppressDialogs(false);
   EXPECT_NSEQ(@NO, ExecuteJavaScript(@"confirm('test')"));
 
   ASSERT_EQ(1U, requested_dialogs().size());
@@ -454,32 +397,14 @@ TEST_P(DialogsSuppressionTest, AllowConfirmWithFalse) {
   EXPECT_EQ(JAVASCRIPT_DIALOG_TYPE_CONFIRM, dialog.java_script_dialog_type);
   EXPECT_NSEQ(@"test", dialog.message_text);
   EXPECT_FALSE(dialog.default_prompt_text);
-  ASSERT_FALSE(observer.did_suppress_dialog_info());
-}
-
-// Tests that window.prompt dialog is suppressed.
-TEST_P(DialogsSuppressionTest, SuppressPrompt) {
-  TestWebStateObserver observer(web_state());
-  ASSERT_FALSE(observer.did_suppress_dialog_info());
-  ASSERT_TRUE(requested_dialogs().empty());
-
-  web_state()->SetShouldSuppressDialogs(true);
-  EXPECT_EQ([NSNull null], ExecuteJavaScript(@"prompt('Yes?', 'No')"));
-
-  ASSERT_TRUE(requested_dialogs().empty());
-  ASSERT_TRUE(observer.did_suppress_dialog_info());
-  EXPECT_EQ(web_state(), observer.did_suppress_dialog_info()->web_state);
 }
 
 // Tests that window.prompt dialog is shown.
-TEST_P(DialogsSuppressionTest, AllowPrompt) {
-  TestWebStateObserver observer(web_state());
-  ASSERT_FALSE(observer.did_suppress_dialog_info());
+TEST_P(JavaScriptDialogPresenterTest, Prompt) {
   ASSERT_TRUE(requested_dialogs().empty());
 
   js_dialog_presenter()->set_callback_user_input_argument(@"Maybe");
 
-  web_state()->SetShouldSuppressDialogs(false);
   EXPECT_NSEQ(@"Maybe", ExecuteJavaScript(@"prompt('Yes?', 'No')"));
 
   ASSERT_EQ(1U, requested_dialogs().size());
@@ -489,108 +414,9 @@ TEST_P(DialogsSuppressionTest, AllowPrompt) {
   EXPECT_EQ(JAVASCRIPT_DIALOG_TYPE_PROMPT, dialog.java_script_dialog_type);
   EXPECT_NSEQ(@"Yes?", dialog.message_text);
   EXPECT_NSEQ(@"No", dialog.default_prompt_text);
-  ASSERT_FALSE(observer.did_suppress_dialog_info());
 }
 
-// Tests that window.open is suppressed.
-TEST_P(DialogsSuppressionTest, SuppressWindowOpen) {
-  TestWebStateObserver observer(web_state());
-  ASSERT_FALSE(observer.did_suppress_dialog_info());
-  ASSERT_TRUE(requested_dialogs().empty());
-
-  web_state()->SetShouldSuppressDialogs(true);
-  ExecuteJavaScript(@"window.open('')");
-
-  ASSERT_TRUE(observer.did_suppress_dialog_info());
-  EXPECT_EQ(web_state(), observer.did_suppress_dialog_info()->web_state);
-}
-
-INSTANTIATE_TEST_CASES(DialogsSuppressionTest);
-
-// A separate test class, as none of the |CRWWebControllerTest| setup is
-// needed.
-class CRWWebControllerPageScrollStateTest
-    : public ProgrammaticWebTestWithWebController {
- protected:
-  // Returns a PageDisplayState that will scroll a WKWebView to
-  // |scrollOffset| and zoom the content by |relativeZoomScale|.
-  inline PageDisplayState CreateTestPageDisplayState(
-      CGPoint scroll_offset,
-      CGFloat relative_zoom_scale,
-      CGFloat original_minimum_zoom_scale,
-      CGFloat original_maximum_zoom_scale,
-      CGFloat original_zoom_scale) const {
-    return PageDisplayState(scroll_offset.x, scroll_offset.y,
-                            original_minimum_zoom_scale,
-                            original_maximum_zoom_scale,
-                            relative_zoom_scale * original_minimum_zoom_scale);
-  }
-};
-
-// TODO(crbug/493427): Flaky on the bots.
-TEST_P(CRWWebControllerPageScrollStateTest,
-       FLAKY_SetPageDisplayStateWithUserScalableDisabled) {
-#if !TARGET_IPHONE_SIMULATOR
-  // TODO(crbug.com/493427): fails flakily on device, so skip it there.
-  return;
-#endif
-  PageZoomState zoom_state(1.0, 5.0, 1.0);
-  LoadHtml(GetHTMLForZoomState(zoom_state, PAGE_SCALABILITY_DISABLED));
-  WaitForZoomRendering(web_controller(), zoom_state);
-  PageZoomState original_zoom_state =
-      web_controller().pageDisplayState.zoom_state();
-
-  NavigationManager* nagivation_manager = web_state()->GetNavigationManager();
-  nagivation_manager->GetLastCommittedItem()->SetPageDisplayState(
-      CreateTestPageDisplayState(CGPointMake(1.0, 1.0),  // scroll offset
-                                 3.0,                    // relative zoom scale
-                                 1.0,    // original minimum zoom scale
-                                 5.0,    // original maximum zoom scale
-                                 1.0));  // original zoom scale
-  [web_controller() restoreStateFromHistory];
-
-  // |-restoreStateFromHistory| is async; wait for its completion.
-  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
-    return web_controller().pageDisplayState.scroll_state().offset_x() == 1.0;
-  }));
-
-  ASSERT_EQ(original_zoom_state,
-            web_controller().pageDisplayState.zoom_state());
-};
-
-// TODO(crbug/493427): Flaky on the bots.
-TEST_P(CRWWebControllerPageScrollStateTest,
-       FLAKY_SetPageDisplayStateWithUserScalableEnabled) {
-#if !TARGET_IPHONE_SIMULATOR
-  // TODO(crbug.com/493427): fails flakily on device, so skip it there.
-  return;
-#endif
-  PageZoomState zoom_state(1.0, 5.0, 1.0);
-
-  LoadHtml(GetHTMLForZoomState(zoom_state, PAGE_SCALABILITY_ENABLED));
-  WaitForZoomRendering(web_controller(), zoom_state);
-
-  NavigationManager* nagivation_manager = web_state()->GetNavigationManager();
-  nagivation_manager->GetLastCommittedItem()->SetPageDisplayState(
-      CreateTestPageDisplayState(CGPointMake(1.0, 1.0),  // scroll offset
-                                 3.0,                    // relative zoom scale
-                                 1.0,    // original minimum zoom scale
-                                 5.0,    // original maximum zoom scale
-                                 1.0));  // original zoom scale
-  [web_controller() restoreStateFromHistory];
-
-  // |-restoreStateFromHistory| is async; wait for its completion.
-  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
-    return web_controller().pageDisplayState.scroll_state().offset_x() == 1.0;
-  }));
-
-  PageZoomState final_zoom_state =
-      web_controller().pageDisplayState.zoom_state();
-  EXPECT_FLOAT_EQ(3, final_zoom_state.zoom_scale() /
-                        final_zoom_state.minimum_zoom_scale());
-};
-
-INSTANTIATE_TEST_CASES(CRWWebControllerPageScrollStateTest);
+INSTANTIATE_TEST_CASES(JavaScriptDialogPresenterTest);
 
 // Test fixture for testing visible security state.
 typedef ProgrammaticWebTestWithWebState CRWWebStateSecurityStateTest;
@@ -916,6 +742,46 @@ TEST_P(CRWWebControllerTest, CurrentUrlWithTrustLevel) {
   EXPECT_EQ(kAbsolute, trust_level);
 }
 
+// Tests |currentURLWithTrustLevel:| method.
+TEST_P(CRWWebControllerTest, CurrentUrlWithFailProvisionalNavigation) {
+  GURL url("http://chromium.test");
+  AddPendingItem(url, ui::PAGE_TRANSITION_TYPED);
+
+  [[[mock_web_view_ stub] andReturnBool:NO] hasOnlySecureContent];
+  [static_cast<WKWebView*>([[mock_web_view_ stub] andReturn:@""]) title];
+  SetWebViewURL(@"http://chromium.test");
+
+  // Stub out the injection process.
+  [[mock_web_view_ stub] evaluateJavaScript:OCMOCK_ANY
+                          completionHandler:OCMOCK_ANY];
+
+  // Simulate a page load to trigger a URL update.
+  NSError* error = [NSError errorWithDomain:NSURLErrorDomain
+                                       code:NSURLErrorUnsupportedURL
+                                   userInfo:nil];
+  NSObject* navigation = [[NSObject alloc] init];
+  [navigation_delegate_ webView:mock_web_view_
+      didStartProvisionalNavigation:static_cast<WKNavigation*>(navigation)];
+
+  NSObject* placeholder = [[NSObject alloc] init];
+  [static_cast<WKWebView*>([[mock_web_view_ stub] andReturn:placeholder])
+      loadRequest:OCMOCK_ANY];
+  // When navigating back slim navigation will immediately commit, so skip
+  // didFailProvisionalNavigation.
+  if (!GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    [navigation_delegate_ webView:mock_web_view_
+        didFailProvisionalNavigation:static_cast<WKNavigation*>(navigation)
+                           withError:error];
+  } else {
+    [mock_wk_list_ setCurrentURL:@"http://chromium.test"];
+    [navigation_delegate_ webView:mock_web_view_
+              didCommitNavigation:static_cast<WKNavigation*>(navigation)];
+  }
+
+  URLVerificationTrustLevel trust_level = kNone;
+  EXPECT_EQ(url, [web_controller() currentURLWithTrustLevel:&trust_level]);
+  EXPECT_EQ(kAbsolute, trust_level);
+}
 INSTANTIATE_TEST_CASES(CRWWebControllerResponseTest);
 
 // Test fixture to test decidePolicyForNavigationAction:decisionHandler:
@@ -976,6 +842,15 @@ TEST_P(CRWWebControllerPolicyDeciderTest,
   app_url_request.mainDocumentURL = [NSURL URLWithString:@(kTestURLString)];
   EXPECT_TRUE(VerifyDecidePolicyForNavigationAction(
       app_url_request, WKNavigationActionPolicyCancel));
+}
+
+// Tests that blob URL navigation is allowed.
+TEST_P(CRWWebControllerPolicyDeciderTest, BlobUrl) {
+  NSURL* blob_url = [NSURL URLWithString:@"blob://aslfkh-asdkjh"];
+  NSMutableURLRequest* blob_url_request =
+      [NSMutableURLRequest requestWithURL:blob_url];
+  EXPECT_TRUE(VerifyDecidePolicyForNavigationAction(
+      blob_url_request, WKNavigationActionPolicyAllow));
 }
 
 INSTANTIATE_TEST_CASES(CRWWebControllerPolicyDeciderTest);

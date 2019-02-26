@@ -330,10 +330,6 @@ void InProcessContextFactory::RemoveCompositor(Compositor* compositor) {
   per_compositor_data_.erase(it);
 }
 
-double InProcessContextFactory::GetRefreshRate() const {
-  return refresh_rate_;
-}
-
 gpu::GpuMemoryBufferManager*
 InProcessContextFactory::GetGpuMemoryBufferManager() {
   return &gpu_memory_buffer_manager_;

@@ -13,11 +13,13 @@
 # limitations under the License.
 
 import("perfetto.gni")
+import("proto_library.gni")
 
-# Used in production targets (i.e. testonly == false) for the FRIEND_TEST_*
-# macros.
+# Used by base/gtest_prod_util.h for the FRIEND_TEST_* macros. Note that other
+# production targets (i.e. testonly == false) should use base/gtest_prod_util.h
+# instead.
 group("gtest_prod_config") {
-  if (!build_with_chromium) {
+  if (perfetto_build_standalone || perfetto_build_with_android) {
     public_configs = [ "//buildtools:googletest_prod_config" ]
   } else {
     public_configs = [ ":gtest_config" ]
@@ -25,17 +27,26 @@ group("gtest_prod_config") {
 }
 
 config("gtest_config") {
-  if (build_with_chromium) {
+  if (perfetto_build_with_embedder) {
     include_dirs = [ "//testing/gtest/include" ]
+  }
+}
+
+config("gmock_config") {
+  if (perfetto_build_with_embedder) {
+    include_dirs = [ "//testing/gmock/include" ]
   }
 }
 
 group("gtest_deps") {
   testonly = true
 
-  public_configs = [ ":gtest_config" ]
+  public_configs = [
+    ":gtest_config",
+    ":gmock_config",
+  ]
 
-  if (!build_with_chromium) {
+  if (perfetto_build_standalone || perfetto_build_with_android) {
     public_deps = [
       "//buildtools:gmock",
       "//buildtools:gtest",
@@ -51,7 +62,7 @@ group("gtest_deps") {
 group("gtest_main") {
   testonly = true
 
-  if (!build_with_chromium) {
+  if (perfetto_build_standalone || perfetto_build_with_android) {
     public_deps = [
       "//buildtools:gtest_main",
     ]
@@ -65,37 +76,24 @@ group("gtest_main") {
 # protoc compiler library, for building protoc plugins on the host.
 if (current_toolchain == host_toolchain) {
   group("protoc_lib_deps") {
-    if (!build_with_chromium) {
-      public_deps = [
-        "//buildtools:protoc_lib",
-      ]
-    } else {
-      public_deps = [
-        "//third_party/protobuf:protoc_lib",
-      ]
-    }
+    public_deps = [
+      "${perfetto_protobuf_target_prefix}:protoc_lib",
+    ]
   }
 }
 
 group("protobuf_full_deps") {
   testonly = true
-
-  if (!build_with_chromium) {
-    public_deps = [
-      "//buildtools:protobuf_full",
-    ]
-  } else {
-    public_deps = [
-      "//third_party/protobuf:protobuf_full",
-    ]
-  }
+  public_deps = [
+    "${perfetto_protobuf_target_prefix}:protobuf_full",
+  ]
 }
 
 # All targets should depend on this target to inherit the right flags and
 # include directories.
 group("default_deps") {
   public_configs = [ ":default_config" ]
-  if (!build_with_chromium) {
+  if (perfetto_build_standalone || perfetto_build_with_android) {
     public_deps = [
       "//gn/standalone/libc++:deps",
       "//gn/standalone/sanitizers:deps",
@@ -119,6 +117,11 @@ config("default_config") {
     }
   }
 
+  # Disable debug log spam if we're embedded in a third-party project.
+  if (!perfetto_build_with_embedder) {
+    defines += [ "PERFETTO_ENABLE_DLOG" ]
+  }
+
   include_dirs = [
     "..",
     "../include",
@@ -138,7 +141,7 @@ config("public_config") {
 # For now JsonCpp is supported only in standalone builds outside of Android or
 # Chromium.
 group("jsoncpp_deps") {
-  if (build_standalone) {
+  if (perfetto_build_standalone) {
     public_configs = [ "//buildtools:jsoncpp_config" ]
     public_deps = [
       "//buildtools:jsoncpp",

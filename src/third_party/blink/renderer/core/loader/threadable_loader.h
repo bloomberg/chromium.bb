@@ -89,10 +89,6 @@ class CORE_EXPORT ThreadableLoader final
   // After any of these methods is called, the loader won't call any of the
   // ThreadableLoaderClient methods.
   //
-  // A user must guarantee that the loading completes before the attached
-  // client gets invalid. Also, a user must guarantee that the loading
-  // completes before the ThreadableLoader is destructed.
-  //
   // When ThreadableLoader::Cancel() is called,
   // ThreadableLoaderClient::DidFail() is called with a ResourceError
   // with IsCancellation() returning true, if any of DidFinishLoading()
@@ -100,7 +96,7 @@ class CORE_EXPORT ThreadableLoader final
   // called with a ResourceError with IsCancellation() returning true
   // also for cancellation happened inside the loader.)
   //
-  // ThreadableLoaderClient methods may call cancel().
+  // ThreadableLoaderClient methods may call Cancel().
   ThreadableLoader(ExecutionContext&,
                    ThreadableLoaderClient*,
                    const ResourceLoaderOptions&);
@@ -187,7 +183,7 @@ class CORE_EXPORT ThreadableLoader final
   void LoadActualRequest();
   // Clears actual_request_ and reports access control check failure to
   // m_client.
-  void HandlePreflightFailure(const KURL&, const network::CORSErrorStatus&);
+  void HandlePreflightFailure(const KURL&, const network::CorsErrorStatus&);
   // Investigates the response for the preflight request. If successful,
   // the actual request will be made later in NotifyFinished().
   void HandlePreflightResponse(const ResourceResponse&);
@@ -211,7 +207,7 @@ class CORE_EXPORT ThreadableLoader final
   // TODO(kinuko): Remove dependency to document.
   Document* GetDocument() const;
 
-  ThreadableLoaderClient* client_;
+  Member<ThreadableLoaderClient> client_;
   Member<ExecutionContext> execution_context_;
 
   TimeDelta timeout_;
@@ -220,7 +216,7 @@ class CORE_EXPORT ThreadableLoader final
   // up-to-date values from them and this variable, and use it.
   const ResourceLoaderOptions resource_loader_options_;
 
-  // True when feature OutOfBlinkCORS is enabled (https://crbug.com/736308).
+  // True when feature OutOfBlinkCors is enabled (https://crbug.com/736308).
   bool out_of_blink_cors_;
 
   // Corresponds to the CORS flag in the Fetch spec.

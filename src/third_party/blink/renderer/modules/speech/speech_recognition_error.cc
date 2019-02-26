@@ -62,33 +62,34 @@ static String ErrorCodeToString(mojom::blink::SpeechRecognitionErrorCode code) {
 SpeechRecognitionError* SpeechRecognitionError::Create(
     mojom::blink::SpeechRecognitionErrorCode code,
     const String& message) {
-  return new SpeechRecognitionError(ErrorCodeToString(code), message);
+  return MakeGarbageCollected<SpeechRecognitionError>(ErrorCodeToString(code),
+                                                      message);
 }
 
 SpeechRecognitionError* SpeechRecognitionError::Create(
     const AtomicString& event_name,
-    const SpeechRecognitionErrorInit& initializer) {
-  return new SpeechRecognitionError(event_name, initializer);
+    const SpeechRecognitionErrorInit* initializer) {
+  return MakeGarbageCollected<SpeechRecognitionError>(event_name, initializer);
 }
 
 SpeechRecognitionError::SpeechRecognitionError(const String& error,
                                                const String& message)
-    : Event(EventTypeNames::error, Bubbles::kNo, Cancelable::kNo),
+    : Event(event_type_names::kError, Bubbles::kNo, Cancelable::kNo),
       error_(error),
       message_(message) {}
 
 SpeechRecognitionError::SpeechRecognitionError(
     const AtomicString& event_name,
-    const SpeechRecognitionErrorInit& initializer)
+    const SpeechRecognitionErrorInit* initializer)
     : Event(event_name, initializer) {
-  if (initializer.hasError())
-    error_ = initializer.error();
-  if (initializer.hasMessage())
-    message_ = initializer.message();
+  if (initializer->hasError())
+    error_ = initializer->error();
+  if (initializer->hasMessage())
+    message_ = initializer->message();
 }
 
 const AtomicString& SpeechRecognitionError::InterfaceName() const {
-  return EventNames::SpeechRecognitionError;
+  return event_interface_names::kSpeechRecognitionError;
 }
 
 }  // namespace blink

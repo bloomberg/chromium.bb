@@ -8,15 +8,16 @@ namespace blink {
 
 ExtendableMessageEvent* ExtendableMessageEvent::Create(
     const AtomicString& type,
-    const ExtendableMessageEventInit& initializer) {
-  return new ExtendableMessageEvent(type, initializer);
+    const ExtendableMessageEventInit* initializer) {
+  return MakeGarbageCollected<ExtendableMessageEvent>(type, initializer);
 }
 
 ExtendableMessageEvent* ExtendableMessageEvent::Create(
     const AtomicString& type,
-    const ExtendableMessageEventInit& initializer,
+    const ExtendableMessageEventInit* initializer,
     WaitUntilObserver* observer) {
-  return new ExtendableMessageEvent(type, initializer, observer);
+  return MakeGarbageCollected<ExtendableMessageEvent>(type, initializer,
+                                                      observer);
 }
 
 ExtendableMessageEvent* ExtendableMessageEvent::Create(
@@ -24,7 +25,8 @@ ExtendableMessageEvent* ExtendableMessageEvent::Create(
     const String& origin,
     MessagePortArray* ports,
     WaitUntilObserver* observer) {
-  return new ExtendableMessageEvent(std::move(data), origin, ports, observer);
+  return MakeGarbageCollected<ExtendableMessageEvent>(std::move(data), origin,
+                                                      ports, observer);
 }
 
 ExtendableMessageEvent* ExtendableMessageEvent::Create(
@@ -33,8 +35,8 @@ ExtendableMessageEvent* ExtendableMessageEvent::Create(
     MessagePortArray* ports,
     ServiceWorkerClient* source,
     WaitUntilObserver* observer) {
-  ExtendableMessageEvent* event =
-      new ExtendableMessageEvent(std::move(data), origin, ports, observer);
+  ExtendableMessageEvent* event = MakeGarbageCollected<ExtendableMessageEvent>(
+      std::move(data), origin, ports, observer);
   event->source_as_client_ = source;
   return event;
 }
@@ -45,21 +47,10 @@ ExtendableMessageEvent* ExtendableMessageEvent::Create(
     MessagePortArray* ports,
     ServiceWorker* source,
     WaitUntilObserver* observer) {
-  ExtendableMessageEvent* event =
-      new ExtendableMessageEvent(std::move(data), origin, ports, observer);
+  ExtendableMessageEvent* event = MakeGarbageCollected<ExtendableMessageEvent>(
+      std::move(data), origin, ports, observer);
   event->source_as_service_worker_ = source;
   return event;
-}
-
-MessagePortArray ExtendableMessageEvent::ports() const {
-  // TODO(bashi): Currently we return a copied array because the binding
-  // layer could modify the content of the array while executing JS callbacks.
-  // Avoid copying once we can make sure that the binding layer won't
-  // modify the content.
-  if (ports_) {
-    return *ports_;
-  }
-  return MessagePortArray();
 }
 
 void ExtendableMessageEvent::source(
@@ -76,8 +67,19 @@ void ExtendableMessageEvent::source(
     result = ClientOrServiceWorkerOrMessagePort();
 }
 
+MessagePortArray ExtendableMessageEvent::ports() const {
+  // TODO(bashi): Currently we return a copied array because the binding
+  // layer could modify the content of the array while executing JS callbacks.
+  // Avoid copying once we can make sure that the binding layer won't
+  // modify the content.
+  if (ports_) {
+    return *ports_;
+  }
+  return MessagePortArray();
+}
+
 const AtomicString& ExtendableMessageEvent::InterfaceName() const {
-  return EventNames::ExtendableMessageEvent;
+  return event_interface_names::kExtendableMessageEvent;
 }
 
 void ExtendableMessageEvent::Trace(blink::Visitor* visitor) {
@@ -90,28 +92,28 @@ void ExtendableMessageEvent::Trace(blink::Visitor* visitor) {
 
 ExtendableMessageEvent::ExtendableMessageEvent(
     const AtomicString& type,
-    const ExtendableMessageEventInit& initializer)
+    const ExtendableMessageEventInit* initializer)
     : ExtendableMessageEvent(type, initializer, nullptr) {}
 
 ExtendableMessageEvent::ExtendableMessageEvent(
     const AtomicString& type,
-    const ExtendableMessageEventInit& initializer,
+    const ExtendableMessageEventInit* initializer,
     WaitUntilObserver* observer)
     : ExtendableEvent(type, initializer, observer) {
-  if (initializer.hasOrigin())
-    origin_ = initializer.origin();
-  if (initializer.hasLastEventId())
-    last_event_id_ = initializer.lastEventId();
-  if (initializer.hasSource()) {
-    if (initializer.source().IsClient())
-      source_as_client_ = initializer.source().GetAsClient();
-    else if (initializer.source().IsServiceWorker())
-      source_as_service_worker_ = initializer.source().GetAsServiceWorker();
-    else if (initializer.source().IsMessagePort())
-      source_as_message_port_ = initializer.source().GetAsMessagePort();
+  if (initializer->hasOrigin())
+    origin_ = initializer->origin();
+  if (initializer->hasLastEventId())
+    last_event_id_ = initializer->lastEventId();
+  if (initializer->hasSource()) {
+    if (initializer->source().IsClient())
+      source_as_client_ = initializer->source().GetAsClient();
+    else if (initializer->source().IsServiceWorker())
+      source_as_service_worker_ = initializer->source().GetAsServiceWorker();
+    else if (initializer->source().IsMessagePort())
+      source_as_message_port_ = initializer->source().GetAsMessagePort();
   }
-  if (initializer.hasPorts())
-    ports_ = new MessagePortArray(initializer.ports());
+  if (initializer->hasPorts())
+    ports_ = MakeGarbageCollected<MessagePortArray>(initializer->ports());
 }
 
 ExtendableMessageEvent::ExtendableMessageEvent(
@@ -119,8 +121,8 @@ ExtendableMessageEvent::ExtendableMessageEvent(
     const String& origin,
     MessagePortArray* ports,
     WaitUntilObserver* observer)
-    : ExtendableEvent(EventTypeNames::message,
-                      ExtendableMessageEventInit(),
+    : ExtendableEvent(event_type_names::kMessage,
+                      ExtendableMessageEventInit::Create(),
                       observer),
       serialized_data_(std::move(data)),
       origin_(origin),

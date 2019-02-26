@@ -8,9 +8,9 @@
 #include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/model/assistant_cache_model.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
+#include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding.h"
 
 namespace ash {
 
@@ -19,7 +19,7 @@ class AssistantController;
 
 class AssistantCacheController : public AssistantControllerObserver,
                                  public AssistantUiModelObserver,
-                                 public mojom::VoiceInteractionObserver {
+                                 public DefaultVoiceInteractionObserver {
  public:
   explicit AssistantCacheController(AssistantController* assistant_controller);
   ~AssistantCacheController() override;
@@ -36,27 +36,19 @@ class AssistantCacheController : public AssistantControllerObserver,
   void OnAssistantControllerDestroying() override;
 
   // AssistantUiModelObserver:
-  void OnUiVisibilityChanged(AssistantVisibility new_visibility,
-                             AssistantVisibility old_visibility,
-                             AssistantSource source) override;
+  void OnUiVisibilityChanged(
+      AssistantVisibility new_visibility,
+      AssistantVisibility old_visibility,
+      base::Optional<AssistantEntryPoint> entry_point,
+      base::Optional<AssistantExitPoint> exit_point) override;
 
  private:
-  // mojom::VoiceInteractionObserver:
-  void OnVoiceInteractionStatusChanged(
-      mojom::VoiceInteractionState state) override {}
-  void OnVoiceInteractionSettingsEnabled(bool enabled) override {}
+  // DefaultVoiceInteractionObserver:
   void OnVoiceInteractionContextEnabled(bool enabled) override;
-  void OnVoiceInteractionHotwordEnabled(bool enabled) override {}
-  void OnVoiceInteractionSetupCompleted(bool completed) override {}
-  void OnAssistantFeatureAllowedChanged(
-      mojom::AssistantAllowedState state) override {}
-  void OnLocaleChanged(const std::string& locale) override {}
 
   void UpdateConversationStarters();
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
-
-  mojo::Binding<mojom::VoiceInteractionObserver> voice_interaction_binding_;
 
   AssistantCacheModel model_;
 

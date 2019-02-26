@@ -58,6 +58,8 @@ enum {
   kPerUserToggleTap,
   kPerUserCycleEasyUnlockState,
   kPerUserCycleFingerprintState,
+  kPerUserAuthFingerprintSuccessState,
+  kPerUserAuthFingerprintFailState,
   kPerUserForceOnlineSignIn,
   kPerUserToggleAuthEnabled,
   kPerUserUseDetachableBase,
@@ -103,8 +105,8 @@ struct UserMetadata {
   bool enable_auth = true;
   user_manager::UserType type = user_manager::USER_TYPE_REGULAR;
   mojom::EasyUnlockIconId easy_unlock_id = mojom::EasyUnlockIconId::NONE;
-  mojom::FingerprintUnlockState fingerprint_state =
-      mojom::FingerprintUnlockState::UNAVAILABLE;
+  mojom::FingerprintState fingerprint_state =
+      mojom::FingerprintState::UNAVAILABLE;
 };
 
 std::string DetachableBasePairingStatusToString(
@@ -319,15 +321,21 @@ class LockDebugView::DebugDataDispatcherTransformer
   }
 
   // Enables fingerprint auth for the user at |user_index|.
-  void CycleFingerprintUnlockForUserIndex(size_t user_index) {
+  void CycleFingerprintStateForUserIndex(size_t user_index) {
     DCHECK(user_index >= 0 && user_index < debug_users_.size());
     UserMetadata* debug_user = &debug_users_[user_index];
 
-    debug_user->fingerprint_state = static_cast<mojom::FingerprintUnlockState>(
+    debug_user->fingerprint_state = static_cast<mojom::FingerprintState>(
         (static_cast<int>(debug_user->fingerprint_state) + 1) %
-        (static_cast<int>(mojom::FingerprintUnlockState::kMaxValue) + 1));
-    debug_dispatcher_.SetFingerprintUnlockState(debug_user->account_id,
-                                                debug_user->fingerprint_state);
+        (static_cast<int>(mojom::FingerprintState::kMaxValue) + 1));
+    debug_dispatcher_.SetFingerprintState(debug_user->account_id,
+                                          debug_user->fingerprint_state);
+  }
+  void AuthenticateFingerprintForUserIndex(size_t user_index, bool success) {
+    DCHECK(user_index >= 0 && user_index < debug_users_.size());
+    UserMetadata* debug_user = &debug_users_[user_index];
+    debug_dispatcher_.NotifyFingerprintAuthResult(debug_user->account_id,
+                                                  success);
   }
 
   // Force online sign-in for the user at |user_index|.
@@ -939,7 +947,15 @@ void LockDebugView::ButtonPressed(views::Button* sender,
 
   // Cycle fingerprint unlock state.
   if (sender->id() == ButtonId::kPerUserCycleFingerprintState)
-    debug_data_dispatcher_->CycleFingerprintUnlockForUserIndex(sender->tag());
+    debug_data_dispatcher_->CycleFingerprintStateForUserIndex(sender->tag());
+  if (sender->id() == ButtonId::kPerUserAuthFingerprintSuccessState) {
+    debug_data_dispatcher_->AuthenticateFingerprintForUserIndex(sender->tag(),
+                                                                true);
+  }
+  if (sender->id() == ButtonId::kPerUserAuthFingerprintFailState) {
+    debug_data_dispatcher_->AuthenticateFingerprintForUserIndex(sender->tag(),
+                                                                false);
+  }
 
   // Force online sign-in.
   if (sender->id() == ButtonId::kPerUserForceOnlineSignIn)
@@ -985,8 +1001,14 @@ void LockDebugView::UpdatePerUserActionContainer() {
     AddButton("Toggle Tap", ButtonId::kPerUserToggleTap, row)->set_tag(i);
     AddButton("Cycle easy unlock", ButtonId::kPerUserCycleEasyUnlockState, row)
         ->set_tag(i);
-    AddButton("Cycle fingerprint unlock",
+    AddButton("Cycle fingerprint state",
               ButtonId::kPerUserCycleFingerprintState, row)
+        ->set_tag(i);
+    AddButton("Send fingerprint auth success",
+              ButtonId::kPerUserAuthFingerprintSuccessState, row)
+        ->set_tag(i);
+    AddButton("Send fingerprint auth fail",
+              ButtonId::kPerUserAuthFingerprintFailState, row)
         ->set_tag(i);
     AddButton("Force online sign-in", ButtonId::kPerUserForceOnlineSignIn, row)
         ->set_tag(i);

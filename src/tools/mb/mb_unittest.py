@@ -6,6 +6,7 @@
 """Tests for mb.py."""
 
 import json
+import os
 import StringIO
 import sys
 import unittest
@@ -110,6 +111,7 @@ TEST_CONFIG = """\
     'fake_master': {
       'fake_builder': 'rel_bot',
       'fake_debug_builder': 'debug_goma',
+      'fake_simplechrome_builder': 'cros_chrome_sdk',
       'fake_args_bot': '//build/args/bots/fake_master/fake_args_bot.gn',
       'fake_multi_phase': { 'phase_1': 'phase_1', 'phase_2': 'phase_2'},
       'fake_args_file': 'args_file_goma',
@@ -119,12 +121,16 @@ TEST_CONFIG = """\
   'configs': {
     'args_file_goma': ['args_file', 'goma'],
     'args_file_twice': ['args_file', 'args_file'],
+    'cros_chrome_sdk': ['cros_chrome_sdk'],
     'rel_bot': ['rel', 'goma', 'fake_feature1'],
     'debug_goma': ['debug', 'goma'],
     'phase_1': ['phase_1'],
     'phase_2': ['phase_2'],
   },
   'mixins': {
+    'cros_chrome_sdk': {
+      'cros_passthrough': True,
+    },
     'fake_feature1': {
       'gn_args': 'enable_doom_melon=true',
     },
@@ -217,11 +223,17 @@ class UnitTest(unittest.TestCase):
         mbw.files[path] = contents
     return mbw
 
-  def check(self, args, mbw=None, files=None, out=None, err=None, ret=None):
+  def check(self, args, mbw=None, files=None, out=None, err=None, ret=None,
+            env=None):
     if not mbw:
       mbw = self.fake_mbw(files)
 
-    actual_ret = mbw.Main(args)
+    try:
+      prev_env = os.environ.copy()
+      os.environ = env if env else prev_env
+      actual_ret = mbw.Main(args)
+    finally:
+      os.environ = prev_env
 
     self.assertEqual(actual_ret, ret)
     if out is not None:
@@ -582,6 +594,12 @@ class UnitTest(unittest.TestCase):
                     'use_goma = true\n'
                     '""" to _path_/args.gn.\n\n'
                     '/fake_src/buildtools/linux64/gn gen _path_\n'))
+
+  def test_lookup_simplechrome(self):
+    simplechrome_env = {
+        'GN_ARGS': 'is_chromeos=1 target_os="chromeos"',
+    }
+    self.check(['lookup', '-c', 'cros_chrome_sdk'], ret=0, env=simplechrome_env)
 
   def test_help(self):
     orig_stdout = sys.stdout

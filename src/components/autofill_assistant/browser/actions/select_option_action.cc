@@ -19,29 +19,39 @@ SelectOptionAction::SelectOptionAction(const ActionProto& proto)
 
 SelectOptionAction::~SelectOptionAction() {}
 
-void SelectOptionAction::ProcessAction(ActionDelegate* delegate,
-                                       ProcessActionCallback callback) {
-  processed_action_proto_ = std::make_unique<ProcessedActionProto>();
+void SelectOptionAction::InternalProcessAction(ActionDelegate* delegate,
+                                               ProcessActionCallback callback) {
   const SelectOptionProto& select_option = proto_.select_option();
 
   // A non prefilled |select_option| is not supported.
   DCHECK(select_option.has_selected_option());
-  std::vector<std::string> selectors;
-  for (const auto& selector : select_option.element().selectors()) {
-    selectors.emplace_back(selector);
+  DCHECK_GT(select_option.element().selectors_size(), 0);
+
+  delegate->ShortWaitForElementExist(
+      ExtractSelector(select_option.element()),
+      base::BindOnce(&SelectOptionAction::OnWaitForElement,
+                     weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),
+                     std::move(callback)));
+}
+
+void SelectOptionAction::OnWaitForElement(ActionDelegate* delegate,
+                                          ProcessActionCallback callback,
+                                          bool element_found) {
+  if (!element_found) {
+    UpdateProcessedAction(ELEMENT_RESOLUTION_FAILED);
+    std::move(callback).Run(std::move(processed_action_proto_));
+    return;
   }
-  DCHECK(!selectors.empty());
 
   delegate->SelectOption(
-      selectors, select_option.selected_option(),
+      ExtractSelector(proto_.select_option().element()),
+      proto_.select_option().selected_option(),
       base::BindOnce(&::autofill_assistant::SelectOptionAction::OnSelectOption,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void SelectOptionAction::OnSelectOption(ProcessActionCallback callback,
                                         bool status) {
-  // TODO(crbug.com/806868): Distinguish element not found from other error and
-  // report them as ELEMENT_RESOLUTION_FAILED.
   UpdateProcessedAction(status ? ACTION_APPLIED : OTHER_ACTION_STATUS);
   std::move(callback).Run(std::move(processed_action_proto_));
 }

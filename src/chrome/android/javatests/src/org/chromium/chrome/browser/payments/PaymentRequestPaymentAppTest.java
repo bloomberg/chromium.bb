@@ -19,6 +19,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.TestPay;
@@ -106,6 +107,7 @@ public class PaymentRequestPaymentAppTest {
      */
     @Test
     @MediumTest
+    @FlakyTest(message = "https://crbug.com/769851")
     @Feature({"Payments"})
     public void testPaymentAppNoInstrumentsResponseAfterDismissShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {

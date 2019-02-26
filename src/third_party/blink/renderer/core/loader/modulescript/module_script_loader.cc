@@ -84,7 +84,7 @@ void ModuleScriptLoader::Fetch(
     ModuleScriptCustomFetchType custom_fetch_type,
     ModuleScriptLoaderRegistry* registry,
     ModuleScriptLoaderClient* client) {
-  ModuleScriptLoader* loader = new ModuleScriptLoader(
+  ModuleScriptLoader* loader = MakeGarbageCollected<ModuleScriptLoader>(
       module_map_settings_object, module_request.Options(), registry, client);
   registry->AddLoader(loader);
   loader->FetchInternal(module_request, fetch_client_settings_object, level,
@@ -154,8 +154,9 @@ void ModuleScriptLoader::FetchInternal(
 
   // [SMSR] "... its referrer policy to options's referrer policy." [spec text]
   // Note: For now this is done below with SetHTTPReferrer()
-  ReferrerPolicy referrer_policy = module_request.Options().GetReferrerPolicy();
-  if (referrer_policy == kReferrerPolicyDefault)
+  network::mojom::ReferrerPolicy referrer_policy =
+      module_request.Options().GetReferrerPolicy();
+  if (referrer_policy == network::mojom::ReferrerPolicy::kDefault)
     referrer_policy = fetch_client_settings_object->GetReferrerPolicy();
 
   // Step 5. "... mode is "cors", ..."
@@ -239,9 +240,9 @@ void ModuleScriptLoader::NotifyFetchFinished(
   // Step 10. "Let module script be the result of creating a module script given
   // source text, module map settings object, response's url, and options."
   // [spec text]
-  module_script_ = ModuleScript::Create(
-      params->GetSourceText(), modulator_, params->GetResponseUrl(),
-      params->GetResponseUrl(), options_, params->GetAccessControlStatus());
+  module_script_ = ModuleScript::Create(params->GetSourceText(), modulator_,
+                                        params->GetResponseUrl(),
+                                        params->GetResponseUrl(), options_);
 
   AdvanceState(State::kFinished);
 }

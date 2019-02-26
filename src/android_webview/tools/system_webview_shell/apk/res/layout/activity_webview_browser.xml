@@ -15,7 +15,9 @@
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
+        <!-- TODO(crbug.com/900912): Fix and remove lint ignore -->
         <EditText
+            tools:ignore="Autofill"
             android:id="@+id/url_field"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

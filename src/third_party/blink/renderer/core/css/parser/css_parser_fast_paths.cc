@@ -665,7 +665,7 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
     case CSSPropertyPointerEvents:
       return value_id == CSSValueVisible || value_id == CSSValueNone ||
              value_id == CSSValueAll || value_id == CSSValueAuto ||
-             (value_id >= CSSValueVisiblePainted &&
+             (value_id >= CSSValueVisiblepainted &&
               value_id <= CSSValueBoundingBox);
     case CSSPropertyPosition:
       return value_id == CSSValueStatic || value_id == CSSValueRelative ||
@@ -678,7 +678,6 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
               (value_id == CSSValueBlock || value_id == CSSValueInline)) ||
              value_id == CSSValueAuto;
     case CSSPropertyScrollBehavior:
-      DCHECK(RuntimeEnabledFeatures::CSSOMSmoothScrollEnabled());
       return value_id == CSSValueAuto || value_id == CSSValueSmooth;
     case CSSPropertyShapeRendering:
       return value_id == CSSValueAuto || value_id == CSSValueOptimizespeed ||
@@ -883,7 +882,6 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
       return value_id == CSSValueNormal || value_id == CSSValueBreakAll ||
              value_id == CSSValueKeepAll || value_id == CSSValueBreakWord;
     case CSSPropertyScrollSnapStop:
-      DCHECK(RuntimeEnabledFeatures::CSSScrollSnapPointsEnabled());
       return value_id == CSSValueNormal || value_id == CSSValueAlways;
     case CSSPropertyOverscrollBehaviorX:
       return value_id == CSSValueAuto || value_id == CSSValueContain ||

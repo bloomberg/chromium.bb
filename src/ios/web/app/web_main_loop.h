@@ -21,6 +21,7 @@ class CookieNotificationBridge;
 class ServiceManagerContext;
 class WebMainParts;
 class WebThreadImpl;
+class WebSubThread;
 
 // Implements the main web loop stages called from WebMainRunner.
 // See comments in web_main_parts.h for additional info.
@@ -83,7 +84,7 @@ class WebMainLoop {
   std::unique_ptr<WebThreadImpl> main_thread_;
 
   // Members initialized in |RunMainMessageLoopParts()| ------------------------
-  std::unique_ptr<WebThreadImpl> io_thread_;
+  std::unique_ptr<WebSubThread> io_thread_;
 
   // Members initialized in |WebThreadsStarted()| --------------------------
   std::unique_ptr<CookieNotificationBridge> cookie_notification_bridge_;

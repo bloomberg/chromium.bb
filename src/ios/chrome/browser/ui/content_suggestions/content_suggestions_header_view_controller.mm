@@ -18,14 +18,15 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_view.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_controller_delegate.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
-#import "ios/chrome/browser/ui/toolbar/primary_toolbar_view.h"
-#import "ios/chrome/browser/ui/toolbar/primary_toolbar_view_controller.h"
 #import "ios/chrome/browser/ui/toolbar/public/fakebox_focuser.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/ui/logo_vendor.h"
@@ -62,9 +63,6 @@ using base::UserMetricsAction;
 @property(nonatomic, strong) ContentSuggestionsHeaderView* headerView;
 @property(nonatomic, strong) UIButton* fakeOmnibox;
 @property(nonatomic, strong) UIButton* accessibilityButton;
-@property(nonatomic, strong) UILabel* searchHintLabel;
-@property(nonatomic, strong) NSLayoutConstraint* hintLabelLeadingConstraint;
-@property(nonatomic, strong) NSLayoutConstraint* voiceTapTrailingConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* doodleHeightConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* doodleTopMarginConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* fakeOmniboxWidthConstraint;
@@ -79,7 +77,6 @@ using base::UserMetricsAction;
 @synthesize dispatcher = _dispatcher;
 @synthesize delegate = _delegate;
 @synthesize commandHandler = _commandHandler;
-@synthesize searchHintLabel = _searchHintLabel;
 @synthesize collectionSynchronizer = _collectionSynchronizer;
 @synthesize readingListModel = _readingListModel;
 @synthesize toolbarDelegate = _toolbarDelegate;
@@ -87,15 +84,13 @@ using base::UserMetricsAction;
 @synthesize promoCanShow = _promoCanShow;
 @synthesize canGoForward = _canGoForward;
 @synthesize canGoBack = _canGoBack;
-@synthesize isShowing = _isShowing;
+@synthesize showing = _showing;
 @synthesize omniboxFocused = _omniboxFocused;
 @synthesize tabCount = _tabCount;
 
 @synthesize headerView = _headerView;
 @synthesize fakeOmnibox = _fakeOmnibox;
 @synthesize accessibilityButton = _accessibilityButton;
-@synthesize hintLabelLeadingConstraint = _hintLabelLeadingConstraint;
-@synthesize voiceTapTrailingConstraint = _voiceTapTrailingConstraint;
 @synthesize doodleHeightConstraint = _doodleHeightConstraint;
 @synthesize doodleTopMarginConstraint = _doodleTopMarginConstraint;
 @synthesize fakeOmniboxWidthConstraint = _fakeOmniboxWidthConstraint;
@@ -159,14 +154,9 @@ using base::UserMetricsAction;
     }
   }
 
-  NSArray* constraints =
-      @[ self.hintLabelLeadingConstraint, self.voiceTapTrailingConstraint ];
-
   [self.headerView updateSearchFieldWidth:self.fakeOmniboxWidthConstraint
                                    height:self.fakeOmniboxHeightConstraint
                                 topMargin:self.fakeOmniboxTopMarginConstraint
-                                hintLabel:self.searchHintLabel
-                       subviewConstraints:constraints
                                 forOffset:offset
                               screenWidth:screenWidth
                            safeAreaInsets:safeAreaInsets];
@@ -202,10 +192,12 @@ using base::UserMetricsAction;
   CGFloat offsetY =
       headerHeight - ntp_header::kScrolledToTopOmniboxBottomMargin;
   if (!IsRegularXRegularSizeClass(self)) {
-    offsetY -= ntp_header::ToolbarHeight() + [self topInset];
+    offsetY -= ToolbarExpandedHeight(
+                   self.traitCollection.preferredContentSizeCategory) +
+               [self topInset];
   }
 
-  return offsetY;
+  return AlignValueToPixel(offsetY);
 }
 
 - (CGFloat)headerHeight {
@@ -237,7 +229,7 @@ using base::UserMetricsAction;
       insetsView =
           [[UIApplication sharedApplication] keyWindow].rootViewController.view;
     }
-    UIEdgeInsets safeAreaInsets = SafeAreaInsetsForView(insetsView);
+    UIEdgeInsets safeAreaInsets = insetsView.safeAreaInsets;
     width = std::max<CGFloat>(
         0, width - safeAreaInsets.left - safeAreaInsets.right);
 
@@ -247,7 +239,6 @@ using base::UserMetricsAction;
                         fakeOmnibox:self.fakeOmnibox
                       andHeaderView:self.headerView];
 
-    [self.headerView addViewsToSearchField:self.fakeOmnibox];
     [self.logoVendor fetchDoodle];
   }
   return self.headerView;
@@ -265,21 +256,10 @@ using base::UserMetricsAction;
   self.fakeOmnibox.accessibilityIdentifier =
       ntp_home::FakeOmniboxAccessibilityID();
 
-  // Set up fakebox hint label.
-  self.searchHintLabel = [[UILabel alloc] init];
-  content_suggestions::configureSearchHintLabel(self.searchHintLabel,
-                                                self.fakeOmnibox);
-
-  self.hintLabelLeadingConstraint = [self.searchHintLabel.leadingAnchor
-      constraintGreaterThanOrEqualToAnchor:[self.fakeOmnibox leadingAnchor]
-                                  constant:ntp_header::kHintLabelSidePadding];
-  self.hintLabelLeadingConstraint.active = YES;
-
   // Set a button the same size as the fake omnibox as the accessibility
   // element. If the hint is the only accessible element, when the fake omnibox
   // is taking the full width, there are few points that are not accessible and
   // allow to select the content below it.
-  self.searchHintLabel.isAccessibilityElement = NO;
   self.accessibilityButton = [[UIButton alloc] init];
   [self.accessibilityButton addTarget:self
                                action:@selector(fakeboxTapped)
@@ -298,28 +278,17 @@ using base::UserMetricsAction;
   self.accessibilityButton.translatesAutoresizingMaskIntoConstraints = NO;
   AddSameConstraints(self.fakeOmnibox, self.accessibilityButton);
 
-  // Add a voice search button.
-  UIButton* voiceTapTarget = [[UIButton alloc] init];
-  content_suggestions::configureVoiceSearchButton(voiceTapTarget,
-                                                  self.fakeOmnibox);
-
-  self.voiceTapTrailingConstraint = [voiceTapTarget.trailingAnchor
-      constraintEqualToAnchor:[self.fakeOmnibox trailingAnchor]];
-  [NSLayoutConstraint activateConstraints:@[
-    [self.searchHintLabel.trailingAnchor
-        constraintLessThanOrEqualToAnchor:voiceTapTarget.leadingAnchor],
-    _voiceTapTrailingConstraint
-  ]];
+  [self.headerView addViewsToSearchField:self.fakeOmnibox];
 
   if (self.voiceSearchIsEnabled) {
-    [voiceTapTarget addTarget:self
-                       action:@selector(loadVoiceSearch:)
-             forControlEvents:UIControlEventTouchUpInside];
-    [voiceTapTarget addTarget:self
-                       action:@selector(preloadVoiceSearch:)
-             forControlEvents:UIControlEventTouchDown];
+    [self.headerView.voiceSearchButton addTarget:self
+                                          action:@selector(loadVoiceSearch:)
+                                forControlEvents:UIControlEventTouchUpInside];
+    [self.headerView.voiceSearchButton addTarget:self
+                                          action:@selector(preloadVoiceSearch:)
+                                forControlEvents:UIControlEventTouchDown];
   } else {
-    [voiceTapTarget setEnabled:NO];
+    [self.headerView.voiceSearchButton setEnabled:NO];
   }
 }
 
@@ -412,7 +381,9 @@ using base::UserMetricsAction;
       constraintEqualToConstant:content_suggestions::doodleHeight(
                                     self.logoIsShowing)];
   self.fakeOmniboxHeightConstraint = [fakeOmnibox.heightAnchor
-      constraintEqualToConstant:content_suggestions::kSearchFieldHeight];
+      constraintEqualToConstant:ToolbarExpandedHeight(
+                                    self.traitCollection
+                                        .preferredContentSizeCategory)];
   self.fakeOmniboxTopMarginConstraint = [logoView.bottomAnchor
       constraintEqualToAnchor:fakeOmnibox.topAnchor
                      constant:-content_suggestions::searchFieldTopMargin()];
@@ -449,12 +420,7 @@ using base::UserMetricsAction;
 }
 
 - (CGFloat)topInset {
-  if (@available(iOS 11, *))
-    return self.parentViewController.view.safeAreaInsets.top;
-
-  // TODO(crbug.com/826369) Replace this when the NTP is contained by the
-  // BVC with |self.parentViewController.topLayoutGuide.length|.
-  return StatusBarHeight();
+  return self.parentViewController.view.safeAreaInsets.top;
 }
 
 #pragma mark - LogoAnimationControllerOwnerOwner

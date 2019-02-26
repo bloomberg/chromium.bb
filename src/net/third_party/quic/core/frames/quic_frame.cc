@@ -3,11 +3,10 @@
 // found in the LICENSE file.
 
 #include "net/third_party/quic/core/frames/quic_frame.h"
+
 #include "net/third_party/quic/core/quic_constants.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
-
-using std::string;
 
 namespace quic {
 
@@ -52,6 +51,9 @@ QuicFrame::QuicFrame(QuicApplicationCloseFrame* frame)
 
 QuicFrame::QuicFrame(QuicNewConnectionIdFrame* frame)
     : type(NEW_CONNECTION_ID_FRAME), new_connection_id_frame(frame) {}
+
+QuicFrame::QuicFrame(QuicRetireConnectionIdFrame* frame)
+    : type(RETIRE_CONNECTION_ID_FRAME), retire_connection_id_frame(frame) {}
 
 QuicFrame::QuicFrame(QuicMaxStreamIdFrame frame) : max_stream_id_frame(frame) {}
 
@@ -123,6 +125,9 @@ void DeleteFrame(QuicFrame* frame) {
     case NEW_CONNECTION_ID_FRAME:
       delete frame->new_connection_id_frame;
       break;
+    case RETIRE_CONNECTION_ID_FRAME:
+      delete frame->retire_connection_id_frame;
+      break;
     case PATH_RESPONSE_FRAME:
       delete frame->path_response_frame;
       break;
@@ -161,6 +166,7 @@ bool IsControlFrame(QuicFrameType type) {
     case STREAM_ID_BLOCKED_FRAME:
     case MAX_STREAM_ID_FRAME:
     case PING_FRAME:
+    case STOP_SENDING_FRAME:
       return true;
     default:
       return false;
@@ -183,6 +189,8 @@ QuicControlFrameId GetControlFrameId(const QuicFrame& frame) {
       return frame.max_stream_id_frame.control_frame_id;
     case PING_FRAME:
       return frame.ping_frame.control_frame_id;
+    case STOP_SENDING_FRAME:
+      return frame.stop_sending_frame->control_frame_id;
     default:
       return kInvalidControlFrameId;
   }
@@ -211,6 +219,9 @@ void SetControlFrameId(QuicControlFrameId control_frame_id, QuicFrame* frame) {
     case MAX_STREAM_ID_FRAME:
       frame->max_stream_id_frame.control_frame_id = control_frame_id;
       return;
+    case STOP_SENDING_FRAME:
+      frame->stop_sending_frame->control_frame_id = control_frame_id;
+      return;
     default:
       QUIC_BUG
           << "Try to set control frame id of a frame without control frame id";
@@ -234,6 +245,15 @@ QuicFrame CopyRetransmittableControlFrame(const QuicFrame& frame) {
       break;
     case PING_FRAME:
       copy = QuicFrame(QuicPingFrame(frame.ping_frame.control_frame_id));
+      break;
+    case STOP_SENDING_FRAME:
+      copy = QuicFrame(new QuicStopSendingFrame(*frame.stop_sending_frame));
+      break;
+    case STREAM_ID_BLOCKED_FRAME:
+      copy = QuicFrame(QuicStreamIdBlockedFrame(frame.stream_id_blocked_frame));
+      break;
+    case MAX_STREAM_ID_FRAME:
+      copy = QuicFrame(QuicMaxStreamIdFrame(frame.max_stream_id_frame));
       break;
     default:
       QUIC_BUG << "Try to copy a non-retransmittable control frame: " << frame;
@@ -295,6 +315,10 @@ std::ostream& operator<<(std::ostream& os, const QuicFrame& frame) {
       break;
     case NEW_CONNECTION_ID_FRAME:
       os << "type { NEW_CONNECTION_ID } " << *(frame.new_connection_id_frame);
+      break;
+    case RETIRE_CONNECTION_ID_FRAME:
+      os << "type { RETIRE_CONNECTION_ID } "
+         << *(frame.retire_connection_id_frame);
       break;
     case MAX_STREAM_ID_FRAME:
       os << "type { MAX_STREAM_ID } " << frame.max_stream_id_frame;

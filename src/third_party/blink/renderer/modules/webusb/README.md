@@ -13,5 +13,5 @@ for the [WebUSB specification]. It communicates with the browser process through
 WebUSB is primarily tested in [Web Platform Tests].
 Chromium implementation details are tested in [Layout Tests].
 
-[Web Platform Tests]: ../../../LayoutTests/external/wpt/webusb/
-[Layout Tests]: ../../../LayoutTests/usb/
+[Web Platform Tests]: ../../../web_tests/external/wpt/webusb/
+[Layout Tests]: ../../../web_tests/usb/

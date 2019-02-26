@@ -209,6 +209,8 @@ class ArcAppListPrefs : public KeyedService,
   // It is called from chrome/browser/prefs/browser_prefs.cc.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
+  static void UprevCurrentIconsVersionForTesting();
+
   ~ArcAppListPrefs() override;
 
   // Returns a list of all app ids, including ready and non-ready apps.
@@ -394,8 +396,13 @@ class ArcAppListPrefs : public KeyedService,
   void DisableAllApps();
   void RemoveAllAppsAndPackages();
   std::vector<std::string> GetAppIdsNoArcEnabledCheck() const;
+  // Retrieves registered apps and shortcuts for specific package |package_name|
+  // If |include_only_launchable_apps| is set to true then only launchable apps
+  // are included and runtime apps are ignored. Otherwise all apps are returned.
+  // |include_shortcuts| specifies if shorcuts needs to be included.
   std::unordered_set<std::string> GetAppsAndShortcutsForPackage(
       const std::string& package_name,
+      bool include_only_launchable_apps,
       bool include_shortcuts) const;
 
   // Enumerates apps from preferences and notifies listeners about available

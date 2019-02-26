@@ -504,6 +504,10 @@ PageInfoBubbleView::PageInfoBubbleView(
   if (!profile->IsGuestSession())
     layout->AddView(CreateSiteSettingsLink(side_margin, this).release());
 
+  // We don't want the PageInfo to adjust as it causes some weirdness with
+  // bubble views which are snapped to the left hand edge of the screen, causing
+  // them to display in the wrong place.
+  set_adjust_if_offscreen(false);
   views::BubbleDialogDelegateView::CreateBubble(this);
   presenter_.reset(new PageInfo(
       this, profile, TabSpecificContentSettings::FromWebContents(web_contents),

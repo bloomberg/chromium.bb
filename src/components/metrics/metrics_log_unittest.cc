@@ -16,7 +16,7 @@
 #include "base/metrics/sample_vector.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "components/metrics/delegating_provider.h"
 #include "components/metrics/environment_recorder.h"
@@ -138,8 +138,7 @@ TEST_F(MetricsLogTest, BasicRecord) {
   system_profile->set_application_locale(client.GetApplicationLocale());
 
 #if defined(ADDRESS_SANITIZER) || DCHECK_IS_ON()
-  // TODO(889105): Field will be renamed to is_instrumented_build up-stream.
-  system_profile->set_is_asan_build(true);
+  system_profile->set_is_instrumented_build(true);
 #endif
   metrics::SystemProfileProto::Hardware* hardware =
       system_profile->mutable_hardware();
@@ -158,6 +157,9 @@ TEST_F(MetricsLogTest, BasicRecord) {
 #if defined(OS_CHROMEOS)
   system_profile->mutable_os()->set_kernel_version(
       base::SysInfo::KernelVersion());
+#elif defined(OS_LINUX)
+  system_profile->mutable_os()->set_kernel_version(
+      base::SysInfo::OperatingSystemVersion());
 #elif defined(OS_ANDROID)
   system_profile->mutable_os()->set_build_fingerprint(
       base::android::BuildInfo::GetInstance()->android_build_fp());

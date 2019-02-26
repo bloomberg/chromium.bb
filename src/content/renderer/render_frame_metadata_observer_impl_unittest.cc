@@ -98,7 +98,8 @@ TEST_F(RenderFrameMetadataObserverImplTest, ShouldSendFrameToken) {
   cc::RenderFrameMetadata render_frame_metadata;
   render_frame_metadata.is_mobile_optimized = true;
   observer_impl().OnRenderFrameSubmission(render_frame_metadata,
-                                          &compositor_frame_metadata);
+                                          &compositor_frame_metadata,
+                                          false /* force_send */);
   // |is_mobile_optimized| should be synchronized with frame activation so
   // RenderFrameMetadataObserverImpl should ask for the frame token from
   // Viz.
@@ -124,7 +125,8 @@ TEST_F(RenderFrameMetadataObserverImplTest, ShouldSendFrameTokenOnAndroid) {
   render_frame_metadata.root_layer_size = gfx::SizeF(100.f, 100.f);
   render_frame_metadata.scrollable_viewport_size = gfx::SizeF(100.f, 50.f);
   observer_impl().OnRenderFrameSubmission(render_frame_metadata,
-                                          &compositor_frame_metadata);
+                                          &compositor_frame_metadata,
+                                          false /* force_send */);
   // The first RenderFrameMetadata will always get a corresponding frame token
   // from Viz because this is the first frame.
   EXPECT_TRUE(compositor_frame_metadata.send_frame_token_to_embedder);
@@ -140,7 +142,8 @@ TEST_F(RenderFrameMetadataObserverImplTest, ShouldSendFrameTokenOnAndroid) {
   render_frame_metadata.root_scroll_offset = gfx::Vector2dF(0.f, 0.f);
 
   observer_impl().OnRenderFrameSubmission(render_frame_metadata,
-                                          &compositor_frame_metadata);
+                                          &compositor_frame_metadata,
+                                          false /* force_send */);
   // Android does not need a corresponding frame token.
   EXPECT_FALSE(compositor_frame_metadata.send_frame_token_to_embedder);
   {
@@ -154,5 +157,61 @@ TEST_F(RenderFrameMetadataObserverImplTest, ShouldSendFrameTokenOnAndroid) {
   }
 }
 #endif
+
+// This test verifies that a request to force send metadata is respected.
+TEST_F(RenderFrameMetadataObserverImplTest, ForceSendMetadata) {
+  const uint32_t expected_frame_token = 1337;
+  viz::CompositorFrameMetadata compositor_frame_metadata;
+  compositor_frame_metadata.send_frame_token_to_embedder = false;
+  compositor_frame_metadata.frame_token = expected_frame_token;
+  cc::RenderFrameMetadata render_frame_metadata;
+  observer_impl().OnRenderFrameSubmission(render_frame_metadata,
+                                          &compositor_frame_metadata,
+                                          false /* force_send */);
+  // The first RenderFrameMetadata will always get a corresponding frame token
+  // from Viz because this is the first frame.
+  EXPECT_TRUE(compositor_frame_metadata.send_frame_token_to_embedder);
+  {
+    base::RunLoop run_loop;
+    EXPECT_CALL(client(), OnRenderFrameMetadataChanged(expected_frame_token,
+                                                       render_frame_metadata))
+        .WillOnce(InvokeClosure(run_loop.QuitClosure()));
+    run_loop.Run();
+  }
+
+  // Submit twice with no changes, but once with |force_send|. We should get
+  // exactly one call to OnRenderFrameMetadataChanged.
+  observer_impl().OnRenderFrameSubmission(render_frame_metadata,
+                                          &compositor_frame_metadata,
+                                          false /* force_send */);
+  observer_impl().OnRenderFrameSubmission(
+      render_frame_metadata, &compositor_frame_metadata, true /* force_send */);
+  // Force send does not trigger sending a frame token.
+  EXPECT_FALSE(compositor_frame_metadata.send_frame_token_to_embedder);
+  {
+    base::RunLoop run_loop;
+    // The 0u frame token indicates that the client should not expect
+    // a corresponding frame token from Viz.
+    EXPECT_CALL(client(),
+                OnRenderFrameMetadataChanged(0u, render_frame_metadata))
+        .WillOnce(InvokeClosure(run_loop.QuitClosure()));
+    run_loop.Run();
+  }
+
+  // Update the metadata and send one more message to ensure that no spurious
+  // OnRenderFrameMetadataChanged messages were generated.
+  render_frame_metadata.is_scroll_offset_at_top =
+      !render_frame_metadata.is_scroll_offset_at_top;
+  observer_impl().OnRenderFrameSubmission(render_frame_metadata,
+                                          &compositor_frame_metadata,
+                                          false /* force_send */);
+  {
+    base::RunLoop run_loop;
+    EXPECT_CALL(client(), OnRenderFrameMetadataChanged(expected_frame_token,
+                                                       render_frame_metadata))
+        .WillOnce(InvokeClosure(run_loop.QuitClosure()));
+    run_loop.Run();
+  }
+}
 
 }  // namespace content

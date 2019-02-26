@@ -217,7 +217,7 @@ static_assert(
     !std::is_trivially_default_constructible<DefaultConstructorDeleted>::value,
     "DefaultConstructorDeleted must not be trivially default constructible.");
 
-static_assert(!IsTriviallyDestructible<DestructorDeleted>::value,
+static_assert(!std::is_trivially_destructible<DestructorDeleted>::value,
               "DestructorDeleted must not be trivially destructible.");
 
 #define EnsurePtrConvertibleArgDecl(From, To)                              \

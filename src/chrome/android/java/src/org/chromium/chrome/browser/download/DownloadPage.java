@@ -98,6 +98,10 @@ public class DownloadPage extends BasicNativePage implements DownloadManagerCoor
     // DownloadManagerCoordinator.Observer implementation.
     @Override
     public void onUrlChanged(String url) {
-        onStateChange(url);
+        // We want to squash consecutive download home URLs having different filters into the one
+        // having the latest filter. This will avoid requiring user to press back button too many
+        // times to exit download home. In the event, chrome gets killed or if user navigates away
+        // from download home, we still will be able to come back to the latest filter.
+        onStateChange(url, true);
     }
 }

@@ -50,7 +50,7 @@ class BaseTest : public testing::Test {
             ? SkIRect::MakeWH(paint_image().width(), paint_image().height())
             : src_rect,
         kMedium_SkFilterQuality, CreateMatrix(SkSize::Make(scale, scale), true),
-        PaintImage::kDefaultFrameIndex, GetColorSpace());
+        PaintImage::kDefaultFrameIndex);
   }
 
   SoftwareImageDecodeCache& cache() { return *cache_; }
@@ -80,7 +80,8 @@ class N32Cache : public virtual BaseTest {
   std::unique_ptr<SoftwareImageDecodeCache> CreateCache() override {
     return std::make_unique<SoftwareImageDecodeCache>(
         kN32_SkColorType, kLockedMemoryLimitBytes,
-        PaintImage::kDefaultGeneratorClientId);
+        PaintImage::kDefaultGeneratorClientId,
+        GetColorSpace().ToSkColorSpace());
   }
 };
 
@@ -89,7 +90,8 @@ class RGBA4444Cache : public virtual BaseTest {
   std::unique_ptr<SoftwareImageDecodeCache> CreateCache() override {
     return std::make_unique<SoftwareImageDecodeCache>(
         kARGB_4444_SkColorType, kLockedMemoryLimitBytes,
-        PaintImage::kDefaultGeneratorClientId);
+        PaintImage::kDefaultGeneratorClientId,
+        GetColorSpace().ToSkColorSpace());
   }
 };
 
@@ -98,7 +100,8 @@ class RGBA_F16Cache : public virtual BaseTest {
   std::unique_ptr<SoftwareImageDecodeCache> CreateCache() override {
     return std::make_unique<SoftwareImageDecodeCache>(
         kRGBA_F16_SkColorType, kLockedMemoryLimitBytes,
-        PaintImage::kDefaultGeneratorClientId);
+        PaintImage::kDefaultGeneratorClientId,
+        GetColorSpace().ToSkColorSpace());
   }
 };
 
@@ -135,9 +138,6 @@ class Predecode : public virtual BaseTest {
                          const DrawImage& draw_image,
                          const gfx::Size& expected_size) override {
     auto decoded = cache().GetDecodedImageForDraw(draw_image);
-    EXPECT_TRUE(SkColorSpace::Equals(
-        decoded.image()->colorSpace(),
-        draw_image.target_color_space().ToSkColorSpace().get()));
     SCOPED_TRACE(base::StringPrintf("Failure from line %d", line));
     EXPECT_EQ(decoded.image()->width(), expected_size.width());
     EXPECT_EQ(decoded.image()->height(), expected_size.height());

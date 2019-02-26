@@ -9,14 +9,30 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate_factory.h"
 #include "chrome/common/extensions/api/passwords_private.h"
+#include "components/password_manager/core/browser/manage_passwords_referrer.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_function_registry.h"
 
 namespace extensions {
+
+////////////////////////////////////////////////////////////////////////////////
+// PasswordsPrivateRecordPasswordsPageAccessInSettingsFunction
+
+PasswordsPrivateRecordPasswordsPageAccessInSettingsFunction::
+    ~PasswordsPrivateRecordPasswordsPageAccessInSettingsFunction() {}
+
+ExtensionFunction::ResponseAction
+PasswordsPrivateRecordPasswordsPageAccessInSettingsFunction::Run() {
+  UMA_HISTOGRAM_ENUMERATION(
+      "PasswordManager.ManagePasswordsReferrer",
+      password_manager::ManagePasswordsReferrer::kChromeSettings);
+  return RespondNow(NoArguments());
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // PasswordsPrivateRemoveSavedPasswordFunction
@@ -35,7 +51,7 @@ ExtensionFunction::ResponseAction
       PasswordsPrivateDelegateFactory::GetForBrowserContext(browser_context(),
                                                             true /* create */);
 
-  delegate->RemoveSavedPassword(parameters->index);
+  delegate->RemoveSavedPassword(parameters->id);
 
   return RespondNow(NoArguments());
 }
@@ -57,7 +73,7 @@ ExtensionFunction::ResponseAction
   PasswordsPrivateDelegate* delegate =
       PasswordsPrivateDelegateFactory::GetForBrowserContext(browser_context(),
                                                             true /* create */);
-  delegate->RemovePasswordException(parameters->index);
+  delegate->RemovePasswordException(parameters->id);
 
   return RespondNow(NoArguments());
 }
@@ -95,7 +111,7 @@ ExtensionFunction::ResponseAction
   PasswordsPrivateDelegate* delegate =
       PasswordsPrivateDelegateFactory::GetForBrowserContext(browser_context(),
                                                             true /* create */);
-  delegate->RequestShowPassword(parameters->index, GetSenderWebContents());
+  delegate->RequestShowPassword(parameters->id, GetSenderWebContents());
 
   // No response given from this API function; instead, listeners wait for the
   // chrome.passwordsPrivate.onPlaintextPasswordRetrieved event to fire.

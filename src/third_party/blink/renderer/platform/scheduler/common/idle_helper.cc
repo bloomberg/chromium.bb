@@ -9,7 +9,7 @@
 #include "base/task/sequence_manager/time_domain.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/traced_value.h"
 #include "third_party/blink/renderer/platform/scheduler/common/scheduler_helper.h"
 
 namespace blink {

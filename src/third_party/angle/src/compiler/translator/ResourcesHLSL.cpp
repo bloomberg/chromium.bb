@@ -10,6 +10,7 @@
 #include "compiler/translator/ResourcesHLSL.h"
 
 #include "common/utilities.h"
+#include "compiler/translator/AtomicCounterFunctionHLSL.h"
 #include "compiler/translator/ImmutableStringBuilder.h"
 #include "compiler/translator/StructureHLSL.h"
 #include "compiler/translator/UtilsHLSL.h"
@@ -107,8 +108,7 @@ ResourcesHLSL::ResourcesHLSL(StructureHLSL *structureHLSL,
       mStructureHLSL(structureHLSL),
       mOutputType(outputType),
       mUniforms(uniforms)
-{
-}
+{}
 
 void ResourcesHLSL::reserveUniformRegisters(unsigned int registerCount)
 {
@@ -155,7 +155,14 @@ unsigned int ResourcesHLSL::assignUniformRegister(const TType &type,
         registerIndex = mUniformRegister;
     }
 
-    mUniformRegisterMap[uniform->name] = registerIndex;
+    if (uniform->name == "angle_DrawID" && uniform->mappedName == "angle_DrawID")
+    {
+        mUniformRegisterMap["gl_DrawID"] = registerIndex;
+    }
+    else
+    {
+        mUniformRegisterMap[uniform->name] = registerIndex;
+    }
 
     unsigned int registerCount = HLSLVariableRegisterCount(*uniform, mOutputType);
 
@@ -378,6 +385,14 @@ void ResourcesHLSL::outputUniform(TInfoSinkBase &out,
     out << ArrayString(type) << " : " << registerString << ";\n";
 }
 
+void ResourcesHLSL::outputAtomicCounterBuffer(TInfoSinkBase &out,
+                                              const int binding,
+                                              const unsigned int registerIndex)
+{
+    out << "uniform RWByteAddressBuffer " << getAtomicCounterNameForBinding(binding)
+        << " : register(u" << registerIndex << ");\n";
+}
+
 void ResourcesHLSL::uniformsHeader(TInfoSinkBase &out,
                                    ShShaderOutput outputType,
                                    const ReferencedVariables &referencedUniforms,
@@ -394,6 +409,8 @@ void ResourcesHLSL::uniformsHeader(TInfoSinkBase &out,
     TMap<const TVariable *, TString> samplerInStructSymbolsToAPINames;
     TVector<TVector<const TVariable *>> groupedReadonlyImageUniforms(HLSL_TEXTURE_MAX + 1);
     TVector<TVector<const TVariable *>> groupedImageUniforms(HLSL_RWTEXTURE_MAX + 1);
+
+    TUnorderedMap<int, unsigned int> assignedAtomicCounterBindings;
     for (auto &uniformIt : referencedUniforms)
     {
         // Output regular uniforms. Group sampler uniforms by type.
@@ -424,6 +441,24 @@ void ResourcesHLSL::uniformsHeader(TInfoSinkBase &out,
                     type.getBasicType(), type.getLayoutQualifier().imageInternalFormat);
                 groupedImageUniforms[group].push_back(&variable);
             }
+        }
+        else if (outputType == SH_HLSL_4_1_OUTPUT && IsAtomicCounter(type.getBasicType()))
+        {
+            TLayoutQualifier layout = type.getLayoutQualifier();
+            int binding             = layout.binding;
+            unsigned int registerIndex;
+            if (assignedAtomicCounterBindings.find(binding) == assignedAtomicCounterBindings.end())
+            {
+                registerIndex                          = mUAVRegister++;
+                assignedAtomicCounterBindings[binding] = registerIndex;
+                outputAtomicCounterBuffer(out, binding, registerIndex);
+            }
+            else
+            {
+                registerIndex = assignedAtomicCounterBindings[binding];
+            }
+            const Uniform *uniform             = findUniformByName(variable.name());
+            mUniformRegisterMap[uniform->name] = registerIndex;
         }
         else
         {
@@ -469,8 +504,10 @@ void ResourcesHLSL::uniformsHeader(TInfoSinkBase &out,
 
     if (outputType == SH_HLSL_4_1_OUTPUT)
     {
-        unsigned int groupTextureRegisterIndex   = 0;
-        unsigned int groupRWTextureRegisterIndex = 0;
+        unsigned int groupTextureRegisterIndex = 0;
+        // Atomic counters and RW texture share the same resources. Therefore, RW texture need to
+        // start counting after the last atomic counter.
+        unsigned int groupRWTextureRegisterIndex = mUAVRegister;
         unsigned int imageUniformGroupIndex      = 0;
         // TEXTURE_2D is special, index offset is assumed to be 0 and omitted in that case.
         ASSERT(HLSL_TEXTURE_MIN == HLSL_TEXTURE_2D);
@@ -509,6 +546,7 @@ void ResourcesHLSL::samplerMetadataUniforms(TInfoSinkBase &out, const char *reg)
                "        int internalFormatBits;\n"
                "        int wrapModes;\n"
                "        int padding;\n"
+               "        int4 intBorderColor;\n"
                "    };\n"
                "    SamplerMetadata samplerMetadata["
             << mSamplerCount << "] : packoffset(" << reg << ");\n";
@@ -692,4 +730,4 @@ TString ResourcesHLSL::uniformBlockStructString(const TInterfaceBlock &interface
            "{\n" +
            uniformBlockMembersString(interfaceBlock, blockStorage) + "};\n\n";
 }
-}
+}  // namespace sh

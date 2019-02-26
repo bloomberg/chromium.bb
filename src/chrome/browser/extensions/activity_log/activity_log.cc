@@ -743,10 +743,9 @@ bool ActivityLog::ShouldLog(const std::string& extension_id) const {
   return is_active_ && !ActivityLogAPI::IsExtensionWhitelisted(extension_id);
 }
 
-void ActivityLog::OnScriptsExecuted(
-    const content::WebContents* web_contents,
-    const ExecutingScriptsMap& extension_ids,
-    const GURL& on_url) {
+void ActivityLog::OnScriptsExecuted(content::WebContents* web_contents,
+                                    const ExecutingScriptsMap& extension_ids,
+                                    const GURL& on_url) {
   if (!is_active_)
     return;
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile_);

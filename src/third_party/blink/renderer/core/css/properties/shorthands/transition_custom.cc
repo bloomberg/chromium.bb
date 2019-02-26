@@ -18,18 +18,18 @@ namespace {
 
 CSSValue* ConsumeTransitionValue(CSSPropertyID property,
                                  CSSParserTokenRange& range,
-                                 const CSSParserContext&,
+                                 const CSSParserContext& context,
                                  bool use_legacy_parsing) {
   switch (property) {
     case CSSPropertyTransitionDelay:
-      return CSSPropertyParserHelpers::ConsumeTime(range, kValueRangeAll);
+      return css_property_parser_helpers::ConsumeTime(range, kValueRangeAll);
     case CSSPropertyTransitionDuration:
-      return CSSPropertyParserHelpers::ConsumeTime(range,
-                                                   kValueRangeNonNegative);
+      return css_property_parser_helpers::ConsumeTime(range,
+                                                      kValueRangeNonNegative);
     case CSSPropertyTransitionProperty:
-      return CSSParsingUtils::ConsumeTransitionProperty(range);
+      return css_parsing_utils::ConsumeTransitionProperty(range, context);
     case CSSPropertyTransitionTimingFunction:
-      return CSSParsingUtils::ConsumeAnimationTimingFunction(range);
+      return css_parsing_utils::ConsumeAnimationTimingFunction(range);
     default:
       NOTREACHED();
       return nullptr;
@@ -37,7 +37,7 @@ CSSValue* ConsumeTransitionValue(CSSPropertyID property,
 }
 
 }  // namespace
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool Transition::ParseShorthand(
     bool important,
@@ -48,9 +48,9 @@ bool Transition::ParseShorthand(
   const StylePropertyShorthand shorthand = transitionShorthandForParsing();
   const unsigned longhand_count = shorthand.length();
 
-  HeapVector<Member<CSSValueList>, CSSParsingUtils::kMaxNumAnimationLonghands>
+  HeapVector<Member<CSSValueList>, css_parsing_utils::kMaxNumAnimationLonghands>
       longhands(longhand_count);
-  if (!CSSParsingUtils::ConsumeAnimationShorthand(
+  if (!css_parsing_utils::ConsumeAnimationShorthand(
           shorthand, longhands, ConsumeTransitionValue, range, context,
           local_context.UseAliasParsing())) {
     return false;
@@ -58,14 +58,15 @@ bool Transition::ParseShorthand(
 
   for (unsigned i = 0; i < longhand_count; ++i) {
     if (shorthand.properties()[i]->IDEquals(CSSPropertyTransitionProperty) &&
-        !CSSParsingUtils::IsValidPropertyList(*longhands[i]))
+        !css_parsing_utils::IsValidPropertyList(*longhands[i]))
       return false;
   }
 
   for (unsigned i = 0; i < longhand_count; ++i) {
-    CSSPropertyParserHelpers::AddProperty(
+    css_property_parser_helpers::AddProperty(
         shorthand.properties()[i]->PropertyID(), shorthand.id(), *longhands[i],
-        important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+        important,
+        css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
         properties);
   }
 
@@ -113,5 +114,5 @@ const CSSValue* Transition::CSSValueFromComputedStyleInternal(
   return list;
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink

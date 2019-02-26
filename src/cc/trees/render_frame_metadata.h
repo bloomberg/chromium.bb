@@ -6,10 +6,11 @@
 #define CC_TREES_RENDER_FRAME_METADATA_H_
 
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "cc/cc_export.h"
 #include "components/viz/common/quads/selection.h"
-#include "components/viz/common/surfaces/local_surface_id.h"
+#include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_f.h"
@@ -61,10 +62,13 @@ class CC_EXPORT RenderFrameMetadata {
   // the size of the root render pass.
   gfx::Size viewport_size_in_pixels;
 
-  // The last viz::LocalSurfaceId used to submit a CompositorFrame.
-  base::Optional<viz::LocalSurfaceId> local_surface_id;
+  // The last viz::LocalSurfaceIdAllocation used to submit a CompositorFrame.
+  base::Optional<viz::LocalSurfaceIdAllocation> local_surface_id_allocation;
 
+  // Page scale factor (always 1.f for sub-frame renderers).
   float page_scale_factor = 1.f;
+  // Used for testing propagation of page scale factor to sub-frame renderers.
+  float external_page_scale_factor = 1.f;
 
   // Used to position the location top bar and page content, whose precise
   // position is computed by the renderer compositor.

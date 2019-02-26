@@ -96,12 +96,12 @@ class SupportLibWebMessagePortAdapter implements WebMessagePortBoundaryInterface
             MessagePort[] messagePorts) {
         if (messagePorts == null) return null;
 
-        InvocationHandler[] ports = new InvocationHandler[messagePorts.length];
+        SupportLibWebMessagePortAdapter[] ports =
+                new SupportLibWebMessagePortAdapter[messagePorts.length];
         for (int i = 0; i < messagePorts.length; i++) {
-            ports[i] = BoundaryInterfaceReflectionUtil.createInvocationHandlerFor(
-                    new SupportLibWebMessagePortAdapter(messagePorts[i]));
+            ports[i] = new SupportLibWebMessagePortAdapter(messagePorts[i]);
         }
-        return ports;
+        return BoundaryInterfaceReflectionUtil.createInvocationHandlersForArray(ports);
     }
 
     public static MessagePort[] toMessagePorts(InvocationHandler[] webMessagePorts) {

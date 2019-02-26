@@ -21,6 +21,8 @@ class MojoWebUIBrowserTest : public WebUIBrowserTest,
   MojoWebUIBrowserTest();
   ~MojoWebUIBrowserTest() override;
 
+  void set_use_mojo_lite_bindings() { use_mojo_lite_bindings_ = true; }
+
   // WebUIBrowserTest:
   void BrowsePreload(const GURL& browse_to) override;
   void SetUpOnMainThread() override;
@@ -36,6 +38,7 @@ class MojoWebUIBrowserTest : public WebUIBrowserTest,
   void BindTestRunner(web_ui_test::mojom::TestRunnerRequest request);
 
   service_manager::BinderRegistry registry_;
+  bool use_mojo_lite_bindings_ = false;
 };
 
 #endif  // CHROME_TEST_BASE_MOJO_WEB_UI_BROWSER_TEST_H_

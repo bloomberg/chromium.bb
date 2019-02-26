@@ -65,10 +65,10 @@ class CheckWaiter {
 
 class DevToolsManagerDelegateTest : public InProcessBrowserTest {
  public:
-  void SendCommand(std::string state) {
+  void SendCommand(const std::string& state) {
     auto window_bounds =
         protocol::Browser::Bounds::Create().SetWindowState(state).Build();
-    BrowserHandler handler(nullptr);
+    BrowserHandler handler(nullptr, "");
     handler.SetWindowBounds(browser()->session_id().id(),
                             std::move(window_bounds));
   }
@@ -79,7 +79,7 @@ class DevToolsManagerDelegateTest : public InProcessBrowserTest {
                              .SetLeft(200)
                              .SetHeight(400)
                              .Build();
-    BrowserHandler handler(nullptr);
+    BrowserHandler handler(nullptr, "");
     handler.SetWindowBounds(browser()->session_id().id(),
                             std::move(window_bounds));
   }

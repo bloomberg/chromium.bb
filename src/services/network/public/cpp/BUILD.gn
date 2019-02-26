@@ -2,8 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
 import("//build/config/jumbo.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
+import("//services/network/public/cpp/features.gni")
+
+buildflag_header("buildflags") {
+  header = "network_service_buildflags.h"
+  flags = [ "IS_CT_SUPPORTED=$is_ct_supported" ]
+}
 
 jumbo_component("cpp") {
   output_name = "network_cpp"
@@ -166,19 +173,25 @@ source_set("tests") {
     "cors/preflight_result_unittest.cc",
     "cross_thread_shared_url_loader_factory_info_unittest.cc",
     "digitally_signed_mojom_traits_unittest.cc",
+    "host_resolver_mojom_traits_unittest.cc",
+    "ip_address_mojom_traits_unittest.cc",
     "mutable_network_traffic_annotation_tag_mojom_traits_unittest.cc",
     "mutable_partial_network_traffic_annotation_tag_mojom_traits_unittest.cc",
     "network_connection_tracker_unittest.cc",
     "network_mojom_traits_unittest.cc",
     "network_quality_tracker_unittest.cc",
     "proxy_config_mojom_traits_unittest.cc",
-    "signed_tree_head_mojom_traits_unittest.cc",
     "simple_url_loader_unittest.cc",
   ]
+
+  if (is_ct_supported) {
+    sources += [ "signed_tree_head_mojom_traits_unittest.cc" ]
+  }
 
   if (!is_ios) {
     sources += [ "server/http_server_unittest.cc" ]
   }
+
   deps = [
     ":cpp",
     ":test_interfaces",
@@ -190,5 +203,9 @@ source_set("tests") {
     "//services/network:network_service",
     "//services/network:test_support",
     "//testing/gtest",
+  ]
+
+  public_deps = [
+    ":buildflags",
   ]
 }

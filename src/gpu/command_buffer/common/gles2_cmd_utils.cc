@@ -16,6 +16,7 @@
 #include <sstream>
 
 #include "base/numerics/safe_math.h"
+#include "base/stl_util.h"
 
 namespace gpu {
 namespace gles2 {
@@ -1643,6 +1644,15 @@ size_t GLES2Util::CalcClearBufferfvDataCount(int buffer) {
       return 4;
     case GL_DEPTH:
       return 1;
+    default:
+      return 0;
+  }
+}
+
+size_t GLES2Util::CalcClearBufferuivDataCount(int buffer) {
+  switch (buffer) {
+    case GL_COLOR:
+      return 4;
     default:
       return 0;
   }

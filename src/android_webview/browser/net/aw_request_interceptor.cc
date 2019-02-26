@@ -10,6 +10,7 @@
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/input_stream.h"
 #include "android_webview/browser/net/android_stream_reader_url_request_job.h"
+#include "android_webview/browser/net/aw_web_resource_request.h"
 #include "android_webview/browser/net/aw_web_resource_response.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
@@ -90,7 +91,7 @@ class ShouldInterceptRequestAdaptor
     callback_ = std::move(callback);
     io_thread_client_->ShouldInterceptRequestAsync(
         // The request is only used while preparing the call, not retained.
-        request,
+        AwWebResourceRequest(*request),
         base::BindOnce(
             &ShouldInterceptRequestAdaptor::WebResourceResponseObtained,
             // The lifetime of the DelegateObtainer is managed by

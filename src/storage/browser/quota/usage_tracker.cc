@@ -27,7 +27,7 @@ void DidGetGlobalUsageForLimitedGlobalUsage(UsageCallback callback,
 void StripUsageWithBreakdownCallback(
     UsageCallback callback,
     int64_t usage,
-    base::flat_map<QuotaClient::ID, int64_t> usage_breakdown) {
+    blink::mojom::UsageBreakdownPtr usage_breakdown) {
   std::move(callback).Run(usage);
 }
 
@@ -56,13 +56,14 @@ ClientUsageTracker* UsageTracker::GetClientTracker(QuotaClient::ID client_id) {
 }
 
 void UsageTracker::GetGlobalLimitedUsage(UsageCallback callback) {
-  if (global_usage_callbacks_.HasCallbacks()) {
-    global_usage_callbacks_.Add(base::BindOnce(
+  if (!global_usage_callbacks_.empty()) {
+    global_usage_callbacks_.emplace_back(base::BindOnce(
         &DidGetGlobalUsageForLimitedGlobalUsage, std::move(callback)));
     return;
   }
 
-  if (!global_limited_usage_callbacks_.Add(std::move(callback)))
+  global_limited_usage_callbacks_.emplace_back(std::move(callback));
+  if (global_limited_usage_callbacks_.size() > 1)
     return;
 
   AccumulateInfo* info = new AccumulateInfo;
@@ -86,7 +87,8 @@ void UsageTracker::GetGlobalLimitedUsage(UsageCallback callback) {
 }
 
 void UsageTracker::GetGlobalUsage(GlobalUsageCallback callback) {
-  if (!global_usage_callbacks_.Add(std::move(callback)))
+  global_usage_callbacks_.emplace_back(std::move(callback));
+  if (global_usage_callbacks_.size() > 1)
     return;
 
   AccumulateInfo* info = new AccumulateInfo;
@@ -119,7 +121,10 @@ void UsageTracker::GetHostUsage(const std::string& host,
 void UsageTracker::GetHostUsageWithBreakdown(
     const std::string& host,
     UsageWithBreakdownCallback callback) {
-  if (!host_usage_callbacks_.Add(host, std::move(callback)))
+  std::vector<UsageWithBreakdownCallback>& host_callbacks =
+      host_usage_callbacks_[host];
+  host_callbacks.emplace_back(std::move(callback));
+  if (host_callbacks.size() > 1)
     return;
 
   AccumulateInfo* info = new AccumulateInfo;
@@ -194,9 +199,12 @@ void UsageTracker::AccumulateClientGlobalLimitedUsage(AccumulateInfo* info,
   if (--info->pending_clients)
     return;
 
-  // All the clients have returned their usage data.  Dispatch the
-  // pending callbacks.
-  global_limited_usage_callbacks_.Run(info->usage);
+  // Moving callbacks out of the original vector handles the case where a
+  // callback makes a new quota call.
+  std::vector<UsageCallback> pending_callbacks;
+  pending_callbacks.swap(global_limited_usage_callbacks_);
+  for (auto& callback : pending_callbacks)
+    std::move(callback).Run(info->usage);
 }
 
 void UsageTracker::AccumulateClientGlobalUsage(AccumulateInfo* info,
@@ -218,29 +226,72 @@ void UsageTracker::AccumulateClientGlobalUsage(AccumulateInfo* info,
   else if (info->unlimited_usage < 0)
     info->unlimited_usage = 0;
 
-  // All the clients have returned their usage data.  Dispatch the
-  // pending callbacks.
-  global_usage_callbacks_.Run(info->usage, info->unlimited_usage);
+  // Moving callbacks out of the original vector early handles the case where a
+  // callback makes a new quota call.
+  std::vector<GlobalUsageCallback> pending_callbacks;
+  pending_callbacks.swap(global_usage_callbacks_);
+  for (auto& callback : pending_callbacks)
+    std::move(callback).Run(info->usage, info->unlimited_usage);
 }
 
-void UsageTracker::AccumulateClientHostUsage(const base::Closure& barrier,
-                                             AccumulateInfo* info,
-                                             const std::string& host,
-                                             QuotaClient::ID client,
-                                             int64_t usage) {
+void UsageTracker::AccumulateClientHostUsage(
+    const base::RepeatingClosure& barrier,
+    AccumulateInfo* info,
+    const std::string& host,
+    QuotaClient::ID client,
+    int64_t usage) {
   info->usage += usage;
   // Defend against confusing inputs from clients.
   if (info->usage < 0)
     info->usage = 0;
 
-  info->usage_breakdown[client] += usage;
+  switch (client) {
+    case QuotaClient::kUnknown:
+      break;
+    case QuotaClient::kFileSystem:
+      info->usage_breakdown->fileSystem += usage;
+      break;
+    case QuotaClient::kDatabase:
+      info->usage_breakdown->webSql += usage;
+      break;
+    case QuotaClient::kAppcache:
+      info->usage_breakdown->appcache += usage;
+      break;
+    case QuotaClient::kIndexedDatabase:
+      info->usage_breakdown->indexedDatabase += usage;
+      break;
+    case QuotaClient::kServiceWorkerCache:
+      info->usage_breakdown->serviceWorkerCache += usage;
+      break;
+    case QuotaClient::kServiceWorker:
+      info->usage_breakdown->serviceWorker += usage;
+      break;
+    case QuotaClient::kBackgroundFetch:
+      info->usage_breakdown->backgroundFetch += usage;
+      break;
+    case QuotaClient::kAllClientsMask:
+      NOTREACHED();
+      break;
+  }
+
   barrier.Run();
 }
 
 void UsageTracker::FinallySendHostUsageWithBreakdown(AccumulateInfo* info,
                                                      const std::string& host) {
-  host_usage_callbacks_.Run(host, info->usage,
-                            std::move(info->usage_breakdown));
+  auto host_it = host_usage_callbacks_.find(host);
+  if (host_it == host_usage_callbacks_.end())
+    return;
+
+  std::vector<UsageWithBreakdownCallback> pending_callbacks;
+  pending_callbacks.swap(host_it->second);
+  DCHECK(pending_callbacks.size() > 0)
+      << "host_usage_callbacks_ should only have non-empty callback lists";
+  host_usage_callbacks_.erase(host_it);
+
+  for (auto& callback : pending_callbacks) {
+    std::move(callback).Run(info->usage, info->usage_breakdown->Clone());
+  }
 }
 
 }  // namespace storage

@@ -63,13 +63,20 @@ class SafeAcquisitionTracker {
     if (acquired_locks->empty())
       return;
 
-    // Otherwise, make sure that the previous lock acquired is an allowed
-    // predecessor.
+    // A universal predecessor may not be acquired after any other lock.
+    DCHECK(!lock->is_universal_predecessor());
+
+    // Otherwise, make sure that the previous lock acquired is either an
+    // allowed predecessor for this lock or a universal predecessor.
+    const SchedulerLockImpl* previous_lock = acquired_locks->back();
+    if (previous_lock->is_universal_predecessor())
+      return;
+
     AutoLock auto_lock(allowed_predecessor_map_lock_);
     // Using at() is exception-safe here as |lock| was registered already.
     const SchedulerLockImpl* allowed_predecessor =
         allowed_predecessor_map_.at(lock);
-    DCHECK_EQ(acquired_locks->back(), allowed_predecessor);
+    DCHECK_EQ(previous_lock, allowed_predecessor);
   }
 
   // Asserts that |lock|'s registered predecessor is safe. Because
@@ -124,9 +131,13 @@ LazyInstance<SafeAcquisitionTracker>::Leaky g_safe_acquisition_tracker =
 
 SchedulerLockImpl::SchedulerLockImpl() : SchedulerLockImpl(nullptr) {}
 
-SchedulerLockImpl::SchedulerLockImpl(const SchedulerLockImpl* predecessor) {
+SchedulerLockImpl::SchedulerLockImpl(const SchedulerLockImpl* predecessor)
+    : is_universal_predecessor_(false) {
   g_safe_acquisition_tracker.Get().RegisterLock(this, predecessor);
 }
+
+SchedulerLockImpl::SchedulerLockImpl(UniversalPredecessor)
+    : is_universal_predecessor_(true) {}
 
 SchedulerLockImpl::~SchedulerLockImpl() {
   g_safe_acquisition_tracker.Get().UnregisterLock(this);

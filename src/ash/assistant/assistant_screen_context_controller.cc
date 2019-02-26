@@ -4,6 +4,9 @@
 
 #include "ash/assistant/assistant_screen_context_controller.h"
 
+#include <utility>
+#include <vector>
+
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
@@ -47,7 +50,7 @@ std::vector<uint8_t> DownsampleAndEncodeImage(gfx::Image image) {
 }
 
 void EncodeScreenshotAndRunCallback(
-    mojom::AssistantController::RequestScreenshotCallback callback,
+    mojom::AssistantScreenContextController::RequestScreenshotCallback callback,
     std::unique_ptr<ui::LayerTreeOwner> layer_owner,
     gfx::Image image) {
   base::PostTaskWithTraitsAndReplyWithResult(
@@ -129,12 +132,18 @@ std::unique_ptr<ui::LayerTreeOwner> CreateLayerForAssistantSnapshot(
 AssistantScreenContextController::AssistantScreenContextController(
     AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller),
+      binding_(this),
       screen_context_request_factory_(this) {
   assistant_controller_->AddObserver(this);
 }
 
 AssistantScreenContextController::~AssistantScreenContextController() {
   assistant_controller_->RemoveObserver(this);
+}
+
+void AssistantScreenContextController::BindRequest(
+    mojom::AssistantScreenContextControllerRequest request) {
+  binding_.Bind(std::move(request));
 }
 
 void AssistantScreenContextController::SetAssistant(
@@ -154,7 +163,8 @@ void AssistantScreenContextController::RemoveModelObserver(
 
 void AssistantScreenContextController::RequestScreenshot(
     const gfx::Rect& rect,
-    mojom::AssistantController::RequestScreenshotCallback callback) {
+    mojom::AssistantScreenContextController::RequestScreenshotCallback
+        callback) {
   aura::Window* root_window = Shell::Get()->GetRootWindowForNewWindows();
 
   std::unique_ptr<ui::LayerTreeOwner> layer_owner =
@@ -190,7 +200,8 @@ void AssistantScreenContextController::OnAssistantControllerDestroying() {
 void AssistantScreenContextController::OnUiVisibilityChanged(
     AssistantVisibility new_visibility,
     AssistantVisibility old_visibility,
-    AssistantSource source) {
+    base::Optional<AssistantEntryPoint> entry_point,
+    base::Optional<AssistantExitPoint> exit_point) {
   // We only initiate a contextual query for caching if the UI is being shown.
   // Otherwise, we abort any requests in progress and reset state.
   if (new_visibility != AssistantVisibility::kVisible) {

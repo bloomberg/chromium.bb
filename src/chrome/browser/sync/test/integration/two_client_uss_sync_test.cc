@@ -21,6 +21,7 @@
 #include "components/sync/model/model_type_change_processor.h"
 #include "components/sync/model/model_type_controller_delegate.h"
 #include "components/sync/model_impl/client_tag_based_model_type_processor.h"
+#include "components/sync/test/fake_server/fake_server_http_post_provider.h"
 #include "net/base/network_change_notifier.h"
 
 using browser_sync::ChromeSyncClient;
@@ -310,7 +311,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, DisableEnable) {
   // Disable PREFERENCES.
   syncer::ModelTypeSet types = syncer::UserSelectableTypes();
   types.Remove(syncer::PREFERENCES);
-  GetSyncService(0)->OnUserChoseDatatypes(false, types);
+  GetSyncService(0)->GetUserSettings()->SetChosenDataTypes(false, types);
 
   // Wait for it to take effect and remove the metadata.
   ASSERT_TRUE(MetadataAbsentChecker(model0, kKey1).Wait());
@@ -321,7 +322,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, DisableEnable) {
   ASSERT_EQ(1U, model1->db().metadata_count());
 
   // Re-enable PREFERENCES.
-  GetSyncService(0)->OnUserChoseDatatypes(true, syncer::UserSelectableTypes());
+  GetSyncService(0)->GetUserSettings()->SetChosenDataTypes(
+      true, syncer::UserSelectableTypes());
 
   // Wait for metadata to be re-added.
   ASSERT_TRUE(MetadataPresentChecker(model0, kKey1).Wait());
@@ -346,14 +348,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, ConflictResolution) {
 
   // Disable network, write value on client 0 and wait for it to attempt
   // committing the value. This client now has conflicting change.
-  GetFakeServer()->DisableNetwork();
+  fake_server::FakeServerHttpPostProvider::DisableNetwork();
   model0->WriteItem(kKey1, kValue2);
   ASSERT_TRUE(SyncCycleFailedChecker(GetSyncService(0)).Wait());
 
   // Enable network, write different value on client 1 and wait for it to arrive
   // on server. Server now has value different from client 0 which will cause
   // conflict when client 0 performs GetUpdates.
-  GetFakeServer()->EnableNetwork();
+  fake_server::FakeServerHttpPostProvider::EnableNetwork();
   model1->WriteItem(kKey1, kValue3);
   model1->WriteItem(kKey2, kValue1);
   ASSERT_TRUE(ServerCountMatchStatusChecker(syncer::PREFERENCES, 2).Wait());
@@ -398,8 +400,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, Encryption) {
   model0->WriteItem(kKey1, kValue1);
   ASSERT_TRUE(DataChecker(model1, kKey1, kValue1).Wait());
 
-  GetSyncService(0)->SetEncryptionPassphrase(kPassphrase,
-                                             syncer::SyncService::EXPLICIT);
+  GetSyncService(0)->GetUserSettings()->SetEncryptionPassphrase(kPassphrase);
   ASSERT_TRUE(PassphraseAcceptedChecker(GetSyncService(0)).Wait());
   // Wait for client 1 to know that a passphrase is happening to avoid potential
   // race conditions and make the functionality this case tests more consistent.
@@ -409,7 +410,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, Encryption) {
   model0->WriteItem(kKey2, kValue1);
   model1->WriteItem(kKey3, kValue1);
 
-  ASSERT_TRUE(GetSyncService(1)->SetDecryptionPassphrase(kPassphrase));
+  ASSERT_TRUE(GetSyncService(1)->GetUserSettings()->SetDecryptionPassphrase(
+      kPassphrase));
   ASSERT_TRUE(PassphraseAcceptedChecker(GetSyncService(1)).Wait());
 
   model0->WriteItem(kKey4, kValue1);

@@ -30,16 +30,19 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">Вибрати &amp;всі</translation>
+<translation id="1938451708255335766">Щоб налаштувати щільність показу вікон, перезапустіть додаток.</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 д.}one{# д.}few{# дн.}many{# дн.}other{# дн.}}</translation>
 <translation id="2148716181193084225">Сьогодні</translation>
 <translation id="2168039046890040389">Сторінка вгору</translation>
 <translation id="2190355936436201913">(пусто)</translation>
+<translation id="2192232475740621500">Використовувати низьку щільність</translation>
 <translation id="219905428774326614">Панель запуску, усі додатки</translation>
 <translation id="2267918077332197517">Блокувати всі сповіщення від цього сайту</translation>
 <translation id="2289052229480071835">Торкніться елементів для дотику на екрані.</translation>
 <translation id="2295140143284145483">Опитування</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> ТБ/сек.</translation>
 <translation id="24452542372838207">Розгорнути сповіщення</translation>
+<translation id="2445449901874883781">Використовувати високу щільність</translation>
 <translation id="2482878487686419369">Сповіщення</translation>
 <translation id="2497284189126895209">Усі файли</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -60,6 +63,7 @@
 <translation id="3234408098842461169">Курсор униз</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 день}one{# день}few{# дні}many{# днів}other{# дня}}</translation>
 <translation id="335581015389089642">Speech</translation>
+<translation id="3479552764303398839">Не зараз</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Залишився 1 день}one{Залишився # день}few{Залишилося # дні}many{Залишилося # днів}other{Залишилося # дня}}</translation>
 <translation id="3618849550573277856">Шукати "<ph name="LOOKUP_STRING" />"</translation>
 <translation id="364720409959344976">Виберіть папку для завантаження</translation>
@@ -99,6 +103,7 @@
 <translation id="5613020302032141669">Курсор ліворуч</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 хв}one{# хв}few{# хв}many{# хв}other{# хв}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 день і }one{# день і }few{# дні та }many{# днів і }other{# дня та }}</translation>
+<translation id="5895138241574237353">Перезапустити</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{Залишилась 1 секунда}one{Залишилася # секунда}few{Залишилося # секунди}many{Залишилося # секунд}other{Залишилося # секунди}}</translation>
 <translation id="5941711191222866238">Зменшити</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 година}one{# година}few{# години}many{# годин}other{# години}}</translation>

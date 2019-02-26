@@ -17,6 +17,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/vr/service/vr_service_impl.h"
+#include "chrome/browser/vr/service/xr_runtime_manager_observer.h"
 #include "chrome/browser/vr/vr_export.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device.h"
@@ -41,6 +42,10 @@ class VR_EXPORT XRRuntimeManager {
   static bool HasInstance();
   static void RecordVrStartupHistograms();
 
+  // Statics for global obrservers
+  static void AddObserver(XRRuntimeManagerObserver* observer);
+  static void RemoveObserver(XRRuntimeManagerObserver* observer);
+
   // Adds a listener for runtime manager events. XRRuntimeManager does not own
   // this object.
   void AddService(VRServiceImpl* service);
@@ -61,6 +66,9 @@ class VR_EXPORT XRRuntimeManager {
   void SupportsSession(
       device::mojom::XRSessionOptionsPtr options,
       device::mojom::XRDevice::SupportsSessionCallback callback);
+
+  void ForEachRuntime(
+      const base::RepeatingCallback<void(BrowserXRRuntime*)>& fn);
 
  protected:
   using ProviderList = std::vector<std::unique_ptr<device::VRDeviceProvider>>;

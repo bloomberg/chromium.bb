@@ -9,12 +9,12 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* Stroke::ParseSingleValue(CSSParserTokenRange& range,
                                          const CSSParserContext& context,
                                          const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ParsePaintStroke(range, context);
+  return css_parsing_utils::ParsePaintStroke(range, context);
 }
 
 const CSSValue* Stroke::CSSValueFromComputedStyleInternal(
@@ -27,5 +27,5 @@ const CSSValue* Stroke::CSSValueFromComputedStyleInternal(
       svg_style.StrokePaint(), style.GetColor());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

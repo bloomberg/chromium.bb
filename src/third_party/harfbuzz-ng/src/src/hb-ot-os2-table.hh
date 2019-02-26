@@ -36,11 +36,11 @@ namespace OT {
  * OS/2 and Windows Metrics
  * https://docs.microsoft.com/en-us/typography/opentype/spec/os2
  */
-#define HB_OT_TAG_os2 HB_TAG('O','S','/','2')
+#define HB_OT_TAG_OS2 HB_TAG('O','S','/','2')
 
-struct os2
+struct OS2
 {
-  static const hb_tag_t tableTag = HB_OT_TAG_os2;
+  static const hb_tag_t tableTag = HB_OT_TAG_OS2;
 
   inline bool sanitize (hb_sanitize_context_t *c) const
   {
@@ -50,12 +50,12 @@ struct os2
 
   inline bool subset (hb_subset_plan_t *plan) const
   {
-    hb_blob_t *os2_blob = hb_sanitize_context_t().reference_table<os2> (plan->source);
+    hb_blob_t *os2_blob = hb_sanitize_context_t ().reference_table<OS2> (plan->source);
     hb_blob_t *os2_prime_blob = hb_blob_create_sub_blob (os2_blob, 0, -1);
     // TODO(grieger): move to hb_blob_copy_writable_or_fail
     hb_blob_destroy (os2_blob);
 
-    os2 *os2_prime = (os2 *) hb_blob_get_data_writable (os2_prime_blob, nullptr);
+    OS2 *os2_prime = (OS2 *) hb_blob_get_data_writable (os2_prime_blob, nullptr);
     if (unlikely (!os2_prime)) {
       hb_blob_destroy (os2_prime_blob);
       return false;
@@ -67,14 +67,14 @@ struct os2
     os2_prime->usLastCharIndex.set (max_cp);
 
     _update_unicode_ranges (plan->unicodes, os2_prime->ulUnicodeRange);
-    bool result = plan->add_table (HB_OT_TAG_os2, os2_prime_blob);
+    bool result = plan->add_table (HB_OT_TAG_OS2, os2_prime_blob);
 
     hb_blob_destroy (os2_prime_blob);
     return result;
   }
 
   inline void _update_unicode_ranges (const hb_set_t *codepoints,
-                                      HBUINT32 ulUnicodeRange[4]) const
+				      HBUINT32 ulUnicodeRange[4]) const
   {
     for (unsigned int i = 0; i < 4; i++)
       ulUnicodeRange[i].set (0);
@@ -84,24 +84,24 @@ struct os2
       unsigned int bit = _hb_ot_os2_get_unicode_range_bit (cp);
       if (bit < 128)
       {
-        unsigned int block = bit / 32;
-        unsigned int bit_in_block = bit % 32;
-        unsigned int mask = 1 << bit_in_block;
-        ulUnicodeRange[block].set (ulUnicodeRange[block] | mask);
+	unsigned int block = bit / 32;
+	unsigned int bit_in_block = bit % 32;
+	unsigned int mask = 1 << bit_in_block;
+	ulUnicodeRange[block].set (ulUnicodeRange[block] | mask);
       }
       if (cp >= 0x10000 && cp <= 0x110000)
       {
-        /* the spec says that bit 57 ("Non Plane 0") implies that there's
-           at least one codepoint beyond the BMP; so I also include all
-           the non-BMP codepoints here */
-        ulUnicodeRange[1].set (ulUnicodeRange[1] | (1 << 25));
+	/* the spec says that bit 57 ("Non Plane 0") implies that there's
+	   at least one codepoint beyond the BMP; so I also include all
+	   the non-BMP codepoints here */
+	ulUnicodeRange[1].set (ulUnicodeRange[1] | (1 << 25));
       }
     }
   }
 
   static inline void find_min_and_max_codepoint (const hb_set_t *codepoints,
-                                                 uint16_t *min_cp, /* OUT */
-                                                 uint16_t *max_cp  /* OUT */)
+						 uint16_t *min_cp, /* OUT */
+						 uint16_t *max_cp  /* OUT */)
   {
     *min_cp = codepoints->get_min ();
     *max_cp = codepoints->get_max ();

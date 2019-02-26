@@ -16,6 +16,8 @@ namespace {
 // Tests for the --log-net-log command line flag.
 class LogNetLogTest : public InProcessBrowserTest {
  public:
+  LogNetLogTest() = default;
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ASSERT_TRUE(tmp_dir_.CreateUniqueTempDir());
     net_log_path_ = tmp_dir_.GetPath().AppendASCII("netlog.json");
@@ -26,6 +28,7 @@ class LogNetLogTest : public InProcessBrowserTest {
 
   void TearDownInProcessBrowserTestFixture() override { VerifyNetLog(); }
 
+ private:
   // Verify that the netlog file was written and appears to be well formed.
   void VerifyNetLog() {
     // Read the netlog from disk.
@@ -54,6 +57,8 @@ class LogNetLogTest : public InProcessBrowserTest {
 
   base::FilePath net_log_path_;
   base::ScopedTempDir tmp_dir_;
+
+  DISALLOW_COPY_AND_ASSIGN(LogNetLogTest);
 };
 
 IN_PROC_BROWSER_TEST_F(LogNetLogTest, Basic) {

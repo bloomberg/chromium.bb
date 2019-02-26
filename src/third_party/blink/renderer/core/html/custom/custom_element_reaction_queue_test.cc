@@ -17,7 +17,10 @@ namespace blink {
 TEST(CustomElementReactionQueueTest, invokeReactions_one) {
   std::vector<char> log;
   CustomElementReactionQueue* queue = new CustomElementReactionQueue();
-  queue->Add(new TestReaction({new Log('a', log)}));
+  HeapVector<Member<Command>>* commands =
+      MakeGarbageCollected<HeapVector<Member<Command>>>();
+  commands->push_back(MakeGarbageCollected<Log>('a', log));
+  queue->Add(MakeGarbageCollected<TestReaction>(commands));
   queue->InvokeReactions(nullptr);
   EXPECT_EQ(log, std::vector<char>({'a'}))
       << "the reaction should have been invoked";
@@ -26,9 +29,24 @@ TEST(CustomElementReactionQueueTest, invokeReactions_one) {
 TEST(CustomElementReactionQueueTest, invokeReactions_many) {
   std::vector<char> log;
   CustomElementReactionQueue* queue = new CustomElementReactionQueue();
-  queue->Add(new TestReaction({new Log('a', log)}));
-  queue->Add(new TestReaction({new Log('b', log)}));
-  queue->Add(new TestReaction({new Log('c', log)}));
+  {
+    HeapVector<Member<Command>>* commands =
+        MakeGarbageCollected<HeapVector<Member<Command>>>();
+    commands->push_back(MakeGarbageCollected<Log>('a', log));
+    queue->Add(MakeGarbageCollected<TestReaction>(commands));
+  }
+  {
+    HeapVector<Member<Command>>* commands =
+        MakeGarbageCollected<HeapVector<Member<Command>>>();
+    commands->push_back(MakeGarbageCollected<Log>('b', log));
+    queue->Add(MakeGarbageCollected<TestReaction>(commands));
+  }
+  {
+    HeapVector<Member<Command>>* commands =
+        MakeGarbageCollected<HeapVector<Member<Command>>>();
+    commands->push_back(MakeGarbageCollected<Log>('c', log));
+    queue->Add(MakeGarbageCollected<TestReaction>(commands));
+  }
   queue->InvokeReactions(nullptr);
   EXPECT_EQ(log, std::vector<char>({'a', 'b', 'c'}))
       << "the reaction should have been invoked";
@@ -38,16 +56,27 @@ TEST(CustomElementReactionQueueTest, invokeReactions_recursive) {
   std::vector<char> log;
   CustomElementReactionQueue* queue = new CustomElementReactionQueue();
 
-  CustomElementReaction* third = new TestReaction(
-      {new Log('c', log), new Recurse(queue)});  // "Empty" recursion
+  HeapVector<Member<Command>>* third_commands =
+      MakeGarbageCollected<HeapVector<Member<Command>>>();
+  third_commands->push_back(MakeGarbageCollected<Log>('c', log));
+  third_commands->push_back(MakeGarbageCollected<Recurse>(queue));
+  CustomElementReaction* third =
+      MakeGarbageCollected<TestReaction>(third_commands);  // "Empty" recursion
 
-  CustomElementReaction* second = new TestReaction(
-      {new Log('b', log),
-       new Enqueue(queue, third)});  // Unwinds one level of recursion
+  HeapVector<Member<Command>>* second_commands =
+      MakeGarbageCollected<HeapVector<Member<Command>>>();
+  second_commands->push_back(MakeGarbageCollected<Log>('b', log));
+  second_commands->push_back(MakeGarbageCollected<Enqueue>(queue, third));
+  CustomElementReaction* second = MakeGarbageCollected<TestReaction>(
+      second_commands);  // Unwinds one level of recursion
 
-  CustomElementReaction* first =
-      new TestReaction({new Log('a', log), new Enqueue(queue, second),
-                        new Recurse(queue)});  // Non-empty recursion
+  HeapVector<Member<Command>>* first_commands =
+      MakeGarbageCollected<HeapVector<Member<Command>>>();
+  first_commands->push_back(MakeGarbageCollected<Log>('a', log));
+  first_commands->push_back(MakeGarbageCollected<Enqueue>(queue, second));
+  first_commands->push_back(MakeGarbageCollected<Recurse>(queue));
+  CustomElementReaction* first = MakeGarbageCollected<TestReaction>(
+      first_commands);  // Non-empty recursion
 
   queue->Add(first);
   queue->InvokeReactions(nullptr);
@@ -59,11 +88,26 @@ TEST(CustomElementReactionQueueTest, clear_duringInvoke) {
   std::vector<char> log;
   CustomElementReactionQueue* queue = new CustomElementReactionQueue();
 
-  queue->Add(new TestReaction({new Log('a', log)}));
-  queue->Add(new TestReaction({new Call(WTF::Bind(
-      [](CustomElementReactionQueue* queue, Element*) { queue->Clear(); },
-      WrapPersistent(queue)))}));
-  queue->Add(new TestReaction({new Log('b', log)}));
+  {
+    HeapVector<Member<Command>>* commands =
+        MakeGarbageCollected<HeapVector<Member<Command>>>();
+    commands->push_back(MakeGarbageCollected<Log>('a', log));
+    queue->Add(MakeGarbageCollected<TestReaction>(commands));
+  }
+  {
+    HeapVector<Member<Command>>* commands =
+        MakeGarbageCollected<HeapVector<Member<Command>>>();
+    commands->push_back(new Call(WTF::Bind(
+        [](CustomElementReactionQueue* queue, Element*) { queue->Clear(); },
+        WrapPersistent(queue))));
+    queue->Add(MakeGarbageCollected<TestReaction>(commands));
+  }
+  {
+    HeapVector<Member<Command>>* commands =
+        MakeGarbageCollected<HeapVector<Member<Command>>>();
+    commands->push_back(MakeGarbageCollected<Log>('b', log));
+    queue->Add(MakeGarbageCollected<TestReaction>(commands));
+  }
 
   queue->InvokeReactions(nullptr);
   EXPECT_EQ(log, std::vector<char>({'a'}))

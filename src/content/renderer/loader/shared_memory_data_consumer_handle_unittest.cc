@@ -134,7 +134,7 @@ class ThreadedSharedMemoryDataConsumerHandleTest : public ::testing::Test {
         scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
         const base::Closure& on_done)
         : handle_(std::move(handle)),
-          main_thread_task_runner_(main_thread_task_runner),
+          main_thread_task_runner_(std::move(main_thread_task_runner)),
           on_done_(on_done) {}
 
     const std::string& result() const { return result_; }
@@ -1044,7 +1044,8 @@ TEST(SharedMemoryDataConsumerHandleWithoutBackpressureTest, AddData) {
 TEST_F(ThreadedSharedMemoryDataConsumerHandleTest, Read) {
   base::RunLoop run_loop;
   auto operation = std::make_unique<ReadDataOperation>(
-      std::move(handle_), base::ThreadTaskRunnerHandle::Get(),
+      std::move(handle_),
+      blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
       run_loop.QuitClosure());
   scoped_refptr<Logger> logger(new Logger);
 

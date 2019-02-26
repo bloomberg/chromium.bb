@@ -96,7 +96,7 @@ angle::Result StreamInIndexBuffer(const gl::Context *context,
 
     bool check = (count > (std::numeric_limits<unsigned int>::max() >> dstTypeInfo.bytesShift));
     ANGLE_CHECK(GetImplAs<ContextD3D>(context), !check,
-                "Reserving indices exceeds the maximum buffer size.", E_OUTOFMEMORY);
+                "Reserving indices exceeds the maximum buffer size.", GL_OUT_OF_MEMORY);
 
     unsigned int bufferSizeRequired = count << dstTypeInfo.bytesShift;
     ANGLE_TRY(buffer->reserveBufferSpace(context, bufferSizeRequired, dstType));
@@ -136,12 +136,9 @@ bool IsOffsetAligned(GLenum elementType, unsigned int offset)
 // IndexDataManager implementation.
 IndexDataManager::IndexDataManager(BufferFactoryD3D *factory)
     : mFactory(factory), mStreamingBufferShort(), mStreamingBufferInt()
-{
-}
+{}
 
-IndexDataManager::~IndexDataManager()
-{
-}
+IndexDataManager::~IndexDataManager() {}
 
 void IndexDataManager::deinitialize()
 {
@@ -303,7 +300,9 @@ angle::Result IndexDataManager::getStreamingIndexBuffer(const gl::Context *conte
 }
 
 angle::Result GetIndexTranslationDestType(const gl::Context *context,
-                                          const gl::DrawCallParams &drawCallParams,
+                                          GLsizei indexCount,
+                                          GLenum indexType,
+                                          const void *indices,
                                           bool usePrimitiveRestartWorkaround,
                                           GLenum *destTypeOut)
 {
@@ -312,22 +311,24 @@ angle::Result GetIndexTranslationDestType(const gl::Context *context,
     if (usePrimitiveRestartWorkaround)
     {
         // Conservatively assume we need to translate the indices for draw indirect.
-        if (drawCallParams.isDrawIndirect())
+        // This is a bit of a trick. We assume the count for an indirect draw is zero.
+        if (indexCount == 0)
         {
             *destTypeOut = GL_UNSIGNED_INT;
             return angle::Result::Continue();
         }
 
-        ANGLE_TRY_HANDLE(context, drawCallParams.ensureIndexRangeResolved(context));
-        const gl::IndexRange &indexRange = drawCallParams.getIndexRange();
-        if (indexRange.end == gl::GetPrimitiveRestartIndex(drawCallParams.type()))
+        gl::IndexRange indexRange;
+        ANGLE_TRY(context->getGLState().getVertexArray()->getIndexRange(
+            context, indexType, indexCount, indices, &indexRange));
+        if (indexRange.end == gl::GetPrimitiveRestartIndex(indexType))
         {
             *destTypeOut = GL_UNSIGNED_INT;
             return angle::Result::Continue();
         }
     }
 
-    *destTypeOut = (drawCallParams.type() == GL_UNSIGNED_INT) ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT;
+    *destTypeOut = (indexType == GL_UNSIGNED_INT) ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT;
     return angle::Result::Continue();
 }
 

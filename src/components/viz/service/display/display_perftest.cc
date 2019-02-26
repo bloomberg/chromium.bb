@@ -99,7 +99,8 @@ class RemoveOverdrawQuadPerfTest : public testing::Test {
         quad->SetNew(shared_quad_state, rect, rect, needs_blending, resource_id,
                      premultiplied_alpha, uv_top_left, uv_bottom_right,
                      background_color, vertex_opacity, y_flipped,
-                     nearest_neighbor, false);
+                     nearest_neighbor, /*secure_output_only=*/false,
+                     ui::ProtectedVideoType::kClear);
         j += quad_height;
       }
       j = y_top;

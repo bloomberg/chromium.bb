@@ -7,14 +7,15 @@
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
-#include "third_party/blink/renderer/platform/fonts/paint_font.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
+
+#include <SkFont.h>
 
 namespace blink {
 
 namespace {
 
-SkPaint::Hinting g_skia_hinting = SkPaint::kNormal_Hinting;
+SkFontHinting g_skia_hinting = SkFontHinting::kNormal;
 bool g_use_skia_auto_hint = true;
 bool g_use_skia_bitmaps = true;
 bool g_use_skia_anti_alias = true;
@@ -28,7 +29,7 @@ void WebFontRenderStyle::SetSkiaFontManager(sk_sp<SkFontMgr> font_mgr) {
 }
 
 // static
-void WebFontRenderStyle::SetHinting(SkPaint::Hinting hinting) {
+void WebFontRenderStyle::SetHinting(SkFontHinting hinting) {
   g_skia_hinting = hinting;
 }
 
@@ -66,8 +67,7 @@ void WebFontRenderStyle::SetSystemFontFamily(const WebString& name) {
 WebFontRenderStyle WebFontRenderStyle::GetDefault() {
   WebFontRenderStyle result;
   result.use_anti_alias = g_use_skia_anti_alias;
-  result.hint_style = SkPaint::kNo_Hinting;
-  result.hint_style = g_skia_hinting;
+  result.hint_style = static_cast<char>(g_skia_hinting);
   result.use_bitmaps = g_use_skia_bitmaps;
   result.use_auto_hint = g_use_skia_auto_hint;
   result.use_anti_alias = g_use_skia_anti_alias;
@@ -97,23 +97,46 @@ void WebFontRenderStyle::OverrideWith(const WebFontRenderStyle& other) {
     use_subpixel_positioning = other.use_subpixel_positioning;
 }
 
-void WebFontRenderStyle::ApplyToPaintFont(PaintFont& font,
-                                          float device_scale_factor) const {
-  auto sk_hint_style = static_cast<SkPaint::Hinting>(hint_style);
-  font.SetAntiAlias(use_anti_alias);
-  font.SetHinting(sk_hint_style);
-  font.SetEmbeddedBitmapText(use_bitmaps);
-  font.SetAutohinted(use_auto_hint);
+void WebFontRenderStyle::ApplyToSkPaint(SkPaint& font,
+                                        float device_scale_factor) const {
+  auto sk_hint_style = static_cast<SkFontHinting>(hint_style);
+  font.setAntiAlias(use_anti_alias);
+  font.setHinting(sk_hint_style);
+  font.setEmbeddedBitmapText(use_bitmaps);
+  font.setAutohinted(use_auto_hint);
   if (use_anti_alias)
-    font.SetLcdRenderText(use_subpixel_rendering);
+    font.setLCDRenderText(use_subpixel_rendering);
 
   // Force-enable subpixel positioning, except when full hinting is requested on
-  // low-dpi screen or when running layout tests.
+  // low-dpi screen or when running web tests.
   bool force_subpixel_positioning =
-      !LayoutTestSupport::IsRunningLayoutTest() &&
-      (sk_hint_style != SkPaint::kFull_Hinting || device_scale_factor > 1.0f);
+      !WebTestSupport::IsRunningWebTest() &&
+      (sk_hint_style != SkFontHinting::kFull || device_scale_factor > 1.0f);
 
-  font.SetSubpixelText(force_subpixel_positioning || use_subpixel_positioning);
+  font.setSubpixelText(force_subpixel_positioning || use_subpixel_positioning);
+}
+
+void WebFontRenderStyle::ApplyToSkFont(SkFont* font,
+                                       float device_scale_factor) const {
+  auto sk_hint_style = static_cast<SkFontHinting>(hint_style);
+  font->setHinting(sk_hint_style);
+  font->setEmbeddedBitmaps(use_bitmaps);
+  font->setForceAutoHinting(use_auto_hint);
+  if (use_anti_alias && use_subpixel_rendering) {
+    font->setEdging(SkFont::Edging::kSubpixelAntiAlias);
+  } else if (use_anti_alias) {
+    font->setEdging(SkFont::Edging::kAntiAlias);
+  } else {
+    font->setEdging(SkFont::Edging::kAlias);
+  }
+
+  // Force-enable subpixel positioning, except when full hinting is requested on
+  // low-dpi screen or when running web tests.
+  bool force_subpixel_positioning =
+      !WebTestSupport::IsRunningWebTest() &&
+      (sk_hint_style != SkFontHinting::kFull || device_scale_factor > 1.0f);
+
+  font->setSubpixel(force_subpixel_positioning || use_subpixel_positioning);
 }
 
 }  // namespace blink

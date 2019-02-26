@@ -106,7 +106,7 @@ TEST_F(ChildProcessTaskTest, TestAll) {
   // The following process which has handle = base::kNullProcessHandle, won't be
   // added.
   ChildProcessData data1(0);
-  ASSERT_EQ(base::kNullProcessHandle, data1.GetHandle());
+  ASSERT_FALSE(data1.GetProcess().IsValid());
   provider.BrowserChildProcessLaunchedAndConnected(data1);
   EXPECT_TRUE(provided_tasks_.empty());
 
@@ -116,7 +116,7 @@ TEST_F(ChildProcessTaskTest, TestAll) {
       IDS_TASK_MANAGER_PLUGIN_PREFIX, name));
 
   ChildProcessData data2(content::PROCESS_TYPE_PPAPI_PLUGIN);
-  data2.SetHandle(base::GetCurrentProcessHandle());
+  data2.SetProcess(base::Process::Current());
   data2.name = name;
   data2.id = unique_id;
   provider.BrowserChildProcessLaunchedAndConnected(data2);
@@ -163,7 +163,7 @@ TEST_F(ChildProcessTaskTest, ProcessTypeToTaskType) {
   for (const auto& types_pair : process_task_types_pairs) {
     // Add the task.
     ChildProcessData data(types_pair.process_type_);
-    data.SetHandle(base::GetCurrentProcessHandle());
+    data.SetProcess(base::Process::Current());
     provider.BrowserChildProcessLaunchedAndConnected(data);
     ASSERT_EQ(1U, provided_tasks_.size());
     Task* task = provided_tasks_.begin()->second;

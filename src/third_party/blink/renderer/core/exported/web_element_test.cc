@@ -172,7 +172,7 @@ TEST_F(WebElementTest, IsAutonomousCustomElement) {
   EXPECT_FALSE(TestElement().IsAutonomousCustomElement());
 
   GetDocument().GetSettings()->SetScriptEnabled(true);
-  auto* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  auto* script = GetDocument().CreateRawElement(html_names::kScriptTag);
   script->setTextContent(R"JS(
     customElements.define('v1-custom', class extends HTMLElement {});
     document.body.appendChild(document.createElement('v1-custom'));

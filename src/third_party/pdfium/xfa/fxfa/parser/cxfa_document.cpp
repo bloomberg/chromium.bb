@@ -15,6 +15,7 @@
 #include "fxjs/xfa/cjx_object.h"
 #include "third_party/base/compiler_specific.h"
 #include "third_party/base/ptr_util.h"
+#include "third_party/base/stl_util.h"
 #include "xfa/fxfa/cxfa_ffdoc.h"
 #include "xfa/fxfa/cxfa_ffnotify.h"
 #include "xfa/fxfa/parser/cscript_datawindow.h"
@@ -1279,13 +1280,7 @@ CXFA_Document::CXFA_Document(CXFA_FFNotify* notify)
       m_eCurVersionMode(XFA_VERSION_DEFAULT),
       m_dwDocFlags(0) {}
 
-CXFA_Document::~CXFA_Document() {
-  // The destruction order of the nodes is not known because they're stored in a
-  // list in the document. Therefore. the binding nodes must be released before
-  // freeing the nodes to avoid dangling UnownedPtrs.
-  if (m_pRootNode)
-    m_pRootNode->ReleaseBindingNodes();
-}
+CXFA_Document::~CXFA_Document() = default;
 
 CXFA_LayoutProcessor* CXFA_Document::GetLayoutProcessor() {
   if (!m_pLayoutProcessor)

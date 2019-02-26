@@ -63,10 +63,6 @@ const char kAshEnableWaylandServer[] = "enable-wayland-server";
 // Enables mirrored screen.
 const char kAshEnableMirroredScreen[] = "ash-enable-mirrored-screen";
 
-// Enables display scale tray settings. This uses force-device-scale-factor flag
-// to modify the dsf of the device to any non discrete value.
-const char kAshEnableScaleSettingsTray[] = "ash-enable-scale-settings-tray";
-
 // Enables the stylus tools next to the status area.
 const char kAshForceEnableStylusTools[] = "force-enable-stylus-tools";
 

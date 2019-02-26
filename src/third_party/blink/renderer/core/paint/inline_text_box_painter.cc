@@ -77,7 +77,7 @@ static LineLayoutItem EnclosingUnderlineObject(
       return current;
 
     if (Node* node = current.GetNode()) {
-      if (IsHTMLAnchorElement(node) || node->HasTagName(HTMLNames::fontTag))
+      if (IsHTMLAnchorElement(node) || node->HasTagName(html_names::kFontTag))
         return current;
     }
   }
@@ -147,11 +147,9 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
   base::Optional<DrawingRecorder> recorder;
   if (paint_info.phase != PaintPhase::kTextClip) {
     if (DrawingRecorder::UseCachedDrawingIfPossible(
-            paint_info.context, inline_text_box_,
-            DisplayItem::PaintPhaseToDrawingType(paint_info.phase)))
+            paint_info.context, inline_text_box_, paint_info.phase))
       return;
-    recorder.emplace(paint_info.context, inline_text_box_,
-                     DisplayItem::PaintPhaseToDrawingType(paint_info.phase));
+    recorder.emplace(paint_info.context, inline_text_box_, paint_info.phase);
   }
 
   GraphicsContext& context = paint_info.context;

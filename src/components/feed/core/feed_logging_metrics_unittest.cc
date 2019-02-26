@@ -5,18 +5,22 @@
 #include "components/feed/core/feed_logging_metrics.h"
 
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/mojo/window_open_disposition.mojom.h"
 
+using testing::ElementsAre;
+using testing::IsEmpty;
+
 namespace feed {
 namespace {
 
-GURL VISITED_URL("http://visited_url.com");
+GURL kVisitedUrl("http://visited_url.com/");
 
-using testing::ElementsAre;
-using testing::IsEmpty;
+// Fixed "now" to make tests more deterministic.
+char kNowString[] = "2018-06-11 15:41";
 
 // This needs to keep in sync with ActionType in third_party/feed/src/src/main/
 // java/com/google/android/libraries/feed/host/logging/ActionType.java.
@@ -31,7 +35,7 @@ enum FeedActionType {
 
 void CheckURLVisit(const GURL& url,
                    FeedLoggingMetrics::CheckURLVisitCallback callback) {
-  if (url == VISITED_URL) {
+  if (url == kVisitedUrl) {
     std::move(callback).Run(true);
   } else {
     std::move(callback).Run(false);
@@ -43,15 +47,22 @@ void CheckURLVisit(const GURL& url,
 class FeedLoggingMetricsTest : public testing::Test {
  public:
   FeedLoggingMetricsTest() {
+    base::Time now;
+    EXPECT_TRUE(base::Time::FromUTCString(kNowString, &now));
+    test_clock_.SetNow(now);
+
     feed_logging_metrics_ = std::make_unique<FeedLoggingMetrics>(
-        base::BindRepeating(&CheckURLVisit));
+        base::BindRepeating(&CheckURLVisit), &test_clock_);
   }
 
   FeedLoggingMetrics* feed_logging_metrics() {
     return feed_logging_metrics_.get();
   }
+  base::SimpleTestClock* test_clock() { return &test_clock_; }
 
  private:
+  base::SimpleTestClock test_clock_;
+
   std::unique_ptr<FeedLoggingMetrics> feed_logging_metrics_;
 
   DISALLOW_COPY_AND_ASSIGN(FeedLoggingMetricsTest);
@@ -60,18 +71,18 @@ class FeedLoggingMetricsTest : public testing::Test {
 TEST_F(FeedLoggingMetricsTest, ShouldLogOnSuggestionsShown) {
   base::HistogramTester histogram_tester;
   feed_logging_metrics()->OnSuggestionShown(
-      /*position=*/1, base::Time::Now(),
-      /*score=*/0.01f, base::Time::Now() - base::TimeDelta::FromHours(2));
+      /*position=*/1, test_clock()->Now(),
+      /*score=*/0.01f, test_clock()->Now() - base::TimeDelta::FromHours(2));
   // Test corner cases for score.
   feed_logging_metrics()->OnSuggestionShown(
-      /*position=*/2, base::Time::Now(),
-      /*score=*/0.0f, base::Time::Now() - base::TimeDelta::FromHours(2));
+      /*position=*/2, test_clock()->Now(),
+      /*score=*/0.0f, test_clock()->Now() - base::TimeDelta::FromHours(2));
   feed_logging_metrics()->OnSuggestionShown(
-      /*position=*/3, base::Time::Now(),
-      /*score=*/1.0f, base::Time::Now() - base::TimeDelta::FromHours(2));
+      /*position=*/3, test_clock()->Now(),
+      /*score=*/1.0f, test_clock()->Now() - base::TimeDelta::FromHours(2));
   feed_logging_metrics()->OnSuggestionShown(
-      /*position=*/4, base::Time::Now(),
-      /*score=*/8.0f, base::Time::Now() - base::TimeDelta::FromHours(2));
+      /*position=*/4, test_clock()->Now(),
+      /*score=*/8.0f, test_clock()->Now() - base::TimeDelta::FromHours(2));
 
   EXPECT_THAT(
       histogram_tester.GetAllSamples("NewTabPage.ContentSuggestions.Shown"),
@@ -99,16 +110,16 @@ TEST_F(FeedLoggingMetricsTest, ShouldLogOnPageShown) {
 TEST_F(FeedLoggingMetricsTest, ShouldLogOnSuggestionOpened) {
   base::HistogramTester histogram_tester;
   feed_logging_metrics()->OnSuggestionOpened(
-      /*position=*/11, base::Time::Now(),
+      /*position=*/11, test_clock()->Now(),
       /*score=*/1.0f);
   feed_logging_metrics()->OnSuggestionOpened(
-      /*position=*/13, base::Time::Now(),
+      /*position=*/13, test_clock()->Now(),
       /*score=*/1.0f);
   feed_logging_metrics()->OnSuggestionOpened(
-      /*position=*/15, base::Time::Now(),
+      /*position=*/15, test_clock()->Now(),
       /*score=*/1.0f);
   feed_logging_metrics()->OnSuggestionOpened(
-      /*position=*/23, base::Time::Now(),
+      /*position=*/23, test_clock()->Now(),
       /*score=*/1.0f);
 
   EXPECT_THAT(
@@ -140,7 +151,7 @@ TEST_F(FeedLoggingMetricsTest, ShouldLogOnSuggestionWindowOpened) {
 
 TEST_F(FeedLoggingMetricsTest, ShouldLogOnSuggestionDismissedIfVisited) {
   base::HistogramTester histogram_tester;
-  feed_logging_metrics()->OnSuggestionDismissed(/*position=*/10, VISITED_URL);
+  feed_logging_metrics()->OnSuggestionDismissed(/*position=*/10, kVisitedUrl);
   EXPECT_THAT(histogram_tester.GetAllSamples(
                   "NewTabPage.ContentSuggestions.DismissedVisited"),
               ElementsAre(base::Bucket(/*min=*/10, /*count=*/1)));

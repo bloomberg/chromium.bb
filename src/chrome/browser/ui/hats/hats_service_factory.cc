@@ -39,4 +39,4 @@ KeyedService* HatsServiceFactory::BuildServiceInstanceFor(
              : new HatsService(profile);
 }
 
-HatsServiceFactory::~HatsServiceFactory() {}
+HatsServiceFactory::~HatsServiceFactory() = default;

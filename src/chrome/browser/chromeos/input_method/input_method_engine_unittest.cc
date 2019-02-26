@@ -12,10 +12,14 @@
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_task_environment.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager_impl.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/chrome_keyboard_controller_client_test_helper.h"
 #include "chrome/browser/ui/input_method/input_method_engine_base.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_service_manager_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/mock_component_extension_ime_manager_delegate.h"
@@ -24,7 +28,6 @@
 #include "ui/base/ime/mock_ime_input_context_handler.h"
 #include "ui/base/ime/text_input_flags.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/keyboard/keyboard_controller.h"
 
 using input_method::InputMethodEngineBase;
 
@@ -140,7 +143,7 @@ class TestObserver : public InputMethodEngineBase::Observer {
 
 class InputMethodEngineTest : public testing::Test {
  public:
-  InputMethodEngineTest() : observer_(NULL), input_view_("inputview.html") {
+  InputMethodEngineTest() : observer_(nullptr), input_view_("inputview.html") {
     languages_.push_back("en-US");
     layouts_.push_back("us");
     InitInputMethod();
@@ -148,10 +151,15 @@ class InputMethodEngineTest : public testing::Test {
     mock_ime_input_context_handler_.reset(new ui::MockIMEInputContextHandler());
     ui::IMEBridge::Get()->SetInputContextHandler(
         mock_ime_input_context_handler_.get());
+
+    chrome_keyboard_controller_client_test_helper_ =
+        ChromeKeyboardControllerClientTestHelper::InitializeWithFake();
   }
+
   ~InputMethodEngineTest() override {
-    ui::IMEBridge::Get()->SetInputContextHandler(NULL);
+    ui::IMEBridge::Get()->SetInputContextHandler(nullptr);
     engine_.reset();
+    chrome_keyboard_controller_client_test_helper_.reset();
     Shutdown();
   }
 
@@ -182,11 +190,12 @@ class InputMethodEngineTest : public testing::Test {
   GURL options_page_;
   GURL input_view_;
 
+  content::TestBrowserThreadBundle thread_bundle_;
+  content::TestServiceManagerContext service_manager_context_;
   std::unique_ptr<ui::MockIMEInputContextHandler>
       mock_ime_input_context_handler_;
-
-  // Used by InputMethodEngine::EnableInputView().
-  keyboard::KeyboardController keyboard_controller_;
+  std::unique_ptr<ChromeKeyboardControllerClientTestHelper>
+      chrome_keyboard_controller_client_test_helper_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InputMethodEngineTest);
@@ -301,13 +310,13 @@ TEST_F(InputMethodEngineTest, TestHistograms) {
   int context = engine_->GetCotextIdForTesting();
   std::string error;
   base::HistogramTester histograms;
-  engine_->SetComposition(context, "test", 0, 0, 0, segments, NULL);
+  engine_->SetComposition(context, "test", 0, 0, 0, segments, nullptr);
   engine_->CommitText(context, "input", &error);
-  engine_->SetComposition(context, "test", 0, 0, 0, segments, NULL);
+  engine_->SetComposition(context, "test", 0, 0, 0, segments, nullptr);
   engine_->CommitText(context,
                       "\xE5\x85\xA5\xE5\x8A\x9B",  // 2 UTF-8 characters
                       &error);
-  engine_->SetComposition(context, "test", 0, 0, 0, segments, NULL);
+  engine_->SetComposition(context, "test", 0, 0, 0, segments, nullptr);
   engine_->CommitText(context, "input\xE5\x85\xA5\xE5\x8A\x9B", &error);
   histograms.ExpectTotalCount("InputMethod.CommitLength", 3);
   histograms.ExpectBucketCount("InputMethod.CommitLength", 5, 1);

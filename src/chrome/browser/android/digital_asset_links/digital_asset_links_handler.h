@@ -42,9 +42,9 @@ class DigitalAssetLinksHandler {
 
   // Checks whether the given "relationship" has been declared by the target
   // |web_domain| for the source Android app which is uniquely defined by the
-  // |package_name| and SHA256 |fingerprint| (a string with 32 hexadecimals
-  // with : in between) given. Any error in the string params
-  // here will result in a bad request and a nullptr response to the callback.
+  // |package| and SHA256 |fingerprint| (a string with 32 hexadecimals with :
+  // between) given. Any error in the string params here will result in a bad
+  // request and a nullptr response to the callback.
   //
   // Calling this multiple times on the same handler will cancel the previous
   // checks.
@@ -54,15 +54,21 @@ class DigitalAssetLinksHandler {
   bool CheckDigitalAssetLinkRelationship(
       RelationshipCheckResultCallback callback,
       const std::string& web_domain,
-      const std::string& package_name,
+      const std::string& package,
       const std::string& fingerprint,
       const std::string& relationship);
 
  private:
-  void OnURLLoadComplete(std::unique_ptr<std::string> response_body);
+  void OnURLLoadComplete(const std::string& package,
+                         const std::string& fingerprint,
+                         const std::string& relationship,
+                         std::unique_ptr<std::string> response_body);
 
   // Callbacks for the SafeJsonParser.
-  void OnJSONParseSucceeded(std::unique_ptr<base::Value> result);
+  void OnJSONParseSucceeded(const std::string& package,
+                            const std::string& fingerprint,
+                            const std::string& relationship,
+                            std::unique_ptr<base::Value> result);
   void OnJSONParseFailed(const std::string& error_message);
 
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;

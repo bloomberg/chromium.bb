@@ -37,7 +37,7 @@ public class AutofillKeyboardAccessoryBridge
     private long mNativeAutofillKeyboardAccessory;
     private ManualFillingCoordinator mManualFillingCoordinator;
     private Context mContext;
-    private KeyboardAccessoryData.Provider<KeyboardAccessoryData.Action> mChipProvider =
+    private KeyboardAccessoryData.Provider<KeyboardAccessoryData.Action[]> mChipProvider =
             new KeyboardAccessoryData.PropertyProvider<>(AccessoryAction.AUTOFILL_SUGGESTION);
 
     private AutofillKeyboardAccessoryBridge() {
@@ -97,7 +97,7 @@ public class AutofillKeyboardAccessoryBridge
         if (mContext instanceof ChromeActivity) {
             mManualFillingCoordinator = ((ChromeActivity) mContext).getManualFillingController();
             if (mManualFillingCoordinator.getKeyboardAccessory() != null) {
-                mManualFillingCoordinator.getKeyboardAccessory().registerActionListProvider(
+                mManualFillingCoordinator.getKeyboardAccessory().registerActionProvider(
                         mChipProvider);
             }
         }

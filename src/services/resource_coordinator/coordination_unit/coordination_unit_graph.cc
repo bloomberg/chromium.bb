@@ -49,10 +49,9 @@ CoordinationUnitGraph::~CoordinationUnitGraph() {
 void CoordinationUnitGraph::OnStart(
     service_manager::BinderRegistryWithArgs<
         const service_manager::BindSourceInfo&>* registry,
-    service_manager::ServiceContextRefFactory* service_ref_factory) {
+    service_manager::ServiceKeepalive* keepalive) {
   // Create the singleton CoordinationUnitProvider.
-  provider_ =
-      std::make_unique<CoordinationUnitProviderImpl>(service_ref_factory, this);
+  provider_ = std::make_unique<CoordinationUnitProviderImpl>(keepalive, this);
   registry->AddInterface(base::BindRepeating(
       &CoordinationUnitProviderImpl::Bind, base::Unretained(provider_.get())));
 }
@@ -80,26 +79,26 @@ void CoordinationUnitGraph::OnBeforeCoordinationUnitDestroyed(
 
 FrameCoordinationUnitImpl* CoordinationUnitGraph::CreateFrameCoordinationUnit(
     const CoordinationUnitID& id,
-    std::unique_ptr<service_manager::ServiceContextRef> service_ref) {
+    std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref) {
   return FrameCoordinationUnitImpl::Create(id, this, std::move(service_ref));
 }
 
 PageCoordinationUnitImpl* CoordinationUnitGraph::CreatePageCoordinationUnit(
     const CoordinationUnitID& id,
-    std::unique_ptr<service_manager::ServiceContextRef> service_ref) {
+    std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref) {
   return PageCoordinationUnitImpl::Create(id, this, std::move(service_ref));
 }
 
 ProcessCoordinationUnitImpl*
 CoordinationUnitGraph::CreateProcessCoordinationUnit(
     const CoordinationUnitID& id,
-    std::unique_ptr<service_manager::ServiceContextRef> service_ref) {
+    std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref) {
   return ProcessCoordinationUnitImpl::Create(id, this, std::move(service_ref));
 }
 
 SystemCoordinationUnitImpl*
 CoordinationUnitGraph::FindOrCreateSystemCoordinationUnit(
-    std::unique_ptr<service_manager::ServiceContextRef> service_ref) {
+    std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref) {
   CoordinationUnitBase* system_cu =
       GetCoordinationUnitByID(system_coordination_unit_id_);
   if (system_cu)

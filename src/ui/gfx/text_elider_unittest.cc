@@ -58,15 +58,7 @@ struct TestData {
 
 }  // namespace
 
-// TODO(crbug.com/546240): This test fails on iOS because iOS version of
-// GetStringWidthF that calls [NSString sizeWithFont] returns the rounded string
-// width.
-#if defined(OS_IOS)
-#define MAYBE_ElideEmail DISABLED_ElideEmail
-#else
-#define MAYBE_ElideEmail ElideEmail
-#endif
-TEST(TextEliderTest, MAYBE_ElideEmail) {
+TEST(TextEliderTest, ElideEmail) {
   const std::string kEllipsisStr(kEllipsis);
 
   // Test emails and their expected elided forms (from which the available
@@ -147,15 +139,7 @@ TEST(TextEliderTest, ElideEmailMoreSpace) {
   }
 }
 
-// TODO(crbug.com/546240): This test fails on iOS because iOS version of
-// GetStringWidthF that calls [NSString sizeWithFont] returns the rounded string
-// width.
-#if defined(OS_IOS)
-#define MAYBE_TestFilenameEliding DISABLED_TestFilenameEliding
-#else
-#define MAYBE_TestFilenameEliding TestFilenameEliding
-#endif
-TEST(TextEliderTest, MAYBE_TestFilenameEliding) {
+TEST(TextEliderTest, TestFilenameEliding) {
   const std::string kEllipsisStr(kEllipsis);
   const base::FilePath::StringType kPathSeparator =
       base::FilePath::StringType().append(1, base::FilePath::kSeparators[0]);

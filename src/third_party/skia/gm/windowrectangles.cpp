@@ -9,6 +9,7 @@
 #include "sk_tool_utils.h"
 #include "SkClipStack.h"
 #include "SkRRect.h"
+#include "SkTextUtils.h"
 
 #include "GrAppliedClip.h"
 #include "GrCaps.h"
@@ -183,10 +184,10 @@ void WindowRectanglesMaskGM::onCoverClipStack(const SkClipStack& stack, SkCanvas
 
     GrPaint paint;
     if (GrFSAAType::kNone == rtc->fsaaType()) {
-        paint.setColor4f(GrColor4f(0, 0.25f, 1, 1));
+        paint.setColor4f({ 0, 0.25f, 1, 1 });
         this->visualizeAlphaMask(ctx, rtc, reducedClip, std::move(paint));
     } else {
-        paint.setColor4f(GrColor4f(1, 0.25f, 0.25f, 1));
+        paint.setColor4f({ 1, 0.25f, 0.25f, 1 });
         this->visualizeStencilMask(ctx, rtc, reducedClip, std::move(paint));
     }
 }
@@ -195,9 +196,11 @@ void WindowRectanglesMaskGM::visualizeAlphaMask(GrContext* ctx, GrRenderTargetCo
                                                 const GrReducedClip& reducedClip, GrPaint&& paint) {
     const int padRight = (kDeviceRect.right() - kCoverRect.right()) / 2;
     const int padBottom = (kDeviceRect.bottom() - kCoverRect.bottom()) / 2;
+    const GrBackendFormat format =
+            ctx->contextPriv().caps()->getBackendFormatFromColorType(kAlpha_8_SkColorType);
     sk_sp<GrRenderTargetContext> maskRTC(
         ctx->contextPriv().makeDeferredRenderTargetContextWithFallback(
-                                                         SkBackingFit::kExact,
+                                                         format, SkBackingFit::kExact,
                                                          kCoverRect.width() + padRight,
                                                          kCoverRect.height() + padBottom,
                                                          kAlpha_8_GrPixelConfig, nullptr));
@@ -208,7 +211,7 @@ void WindowRectanglesMaskGM::visualizeAlphaMask(GrContext* ctx, GrRenderTargetCo
     // Draw a checker pattern into the alpha mask so we can visualize the regions left untouched by
     // the clip mask generation.
     this->stencilCheckerboard(maskRTC.get(), true);
-    maskRTC->clear(nullptr, GrColorPackA4(0xff), GrRenderTargetContext::CanClearFullscreen::kYes);
+    maskRTC->clear(nullptr, SK_PMColor4fWHITE, GrRenderTargetContext::CanClearFullscreen::kYes);
     maskRTC->priv().drawAndStencilRect(make_stencil_only_clip(), &GrUserStencilSettings::kUnused,
                                        SkRegion::kDifference_Op, false, GrAA::kNo, SkMatrix::I(),
                                        SkRect::MakeIWH(maskRTC->width(), maskRTC->height()));
@@ -265,7 +268,6 @@ void WindowRectanglesMaskGM::stencilCheckerboard(GrRenderTargetContext* rtc, boo
 void WindowRectanglesMaskGM::fail(SkCanvas* canvas) {
     SkPaint paint;
     paint.setAntiAlias(true);
-    paint.setTextAlign(SkPaint::kCenter_Align);
     paint.setTextSize(20);
     sk_tool_utils::set_portable_typeface(&paint);
 
@@ -275,8 +277,9 @@ void WindowRectanglesMaskGM::fail(SkCanvas* canvas) {
     canvas->clipRect(SkRect::Make(kCoverRect));
     canvas->clear(SK_ColorWHITE);
 
-    canvas->drawString(errorMsg, SkIntToScalar((kCoverRect.left() + kCoverRect.right())/2),
-                     SkIntToScalar((kCoverRect.top() + kCoverRect.bottom())/2 - 10), paint);
+    SkTextUtils::DrawString(canvas, errorMsg, SkIntToScalar((kCoverRect.left() + kCoverRect.right())/2),
+                     SkIntToScalar((kCoverRect.top() + kCoverRect.bottom())/2 - 10), paint,
+                            SkTextUtils::kCenter_Align);
 }
 
 DEF_GM( return new WindowRectanglesMaskGM(); )

@@ -296,6 +296,11 @@ const struct QuicErrorMapping {
      "quic.data.received.on.write.unidirectional.stream"},
     {quic::QUIC_TRY_TO_WRITE_DATA_ON_READ_UNIDIRECTIONAL_STREAM,
      "quic.try.to.write.data.on.read.unidirectional.stream"},
+    {quic::QUIC_INVALID_RETIRE_CONNECTION_ID_DATA,
+     "quic.invalid.retire.connection.id.data"},
+    {quic::QUIC_STREAM_ID_BLOCKED_ERROR,
+     "quic.stream.id.in.stream_id_blocked.frame"},
+    {quic::QUIC_MAX_STREAM_ID_ERROR, "quic.stream.id.in.max_stream_id.frame"},
 
     // No error. Used as bound while iterating.
     {quic::QUIC_LAST_ERROR, "quic.last_error"}};

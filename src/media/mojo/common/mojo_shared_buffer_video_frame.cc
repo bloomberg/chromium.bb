@@ -192,12 +192,15 @@ scoped_refptr<MojoSharedBufferVideoFrame> MojoSharedBufferVideoFrame::Create(
     DLOG(ERROR) << __func__ << " Invalid offset";
     return nullptr;
   }
-
+  auto layout = VideoFrameLayout::CreateWithStrides(
+      format, coded_size, {y_stride, u_stride, v_stride});
+  if (!layout) {
+    return nullptr;
+  }
   // Now allocate the frame and initialize it.
   scoped_refptr<MojoSharedBufferVideoFrame> frame(
-      new MojoSharedBufferVideoFrame(
-          VideoFrameLayout(format, coded_size, {y_stride, u_stride, v_stride}),
-          visible_rect, natural_size, std::move(handle), data_size, timestamp));
+      new MojoSharedBufferVideoFrame(*layout, visible_rect, natural_size,
+                                     std::move(handle), data_size, timestamp));
   if (!frame->Init(y_offset, u_offset, v_offset)) {
     DLOG(ERROR) << __func__ << " MojoSharedBufferVideoFrame::Init failed.";
     return nullptr;

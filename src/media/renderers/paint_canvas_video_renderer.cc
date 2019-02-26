@@ -41,6 +41,7 @@
 #define LIBYUV_H420_TO_ARGB libyuv::H420ToARGB
 #define LIBYUV_I010_TO_ARGB libyuv::I010ToARGB
 #define LIBYUV_H010_TO_ARGB libyuv::H010ToARGB
+#define LIBYUV_NV12_TO_ARGB libyuv::NV12ToARGB
 #elif SK_R32_SHIFT == 0 && SK_G32_SHIFT == 8 && SK_B32_SHIFT == 16 && \
     SK_A32_SHIFT == 24
 #define LIBYUV_I420_TO_ARGB libyuv::I420ToABGR
@@ -51,6 +52,7 @@
 #define LIBYUV_H420_TO_ARGB libyuv::H420ToABGR
 #define LIBYUV_I010_TO_ARGB libyuv::I010ToABGR
 #define LIBYUV_H010_TO_ARGB libyuv::H010ToABGR
+#define LIBYUV_NV12_TO_ARGB libyuv::NV12ToABGR
 #else
 #error Unexpected Skia ARGB_8888 layout!
 #endif
@@ -205,6 +207,7 @@ sk_sp<SkImage> NewSkImageFromVideoFrameNative(VideoFrame* video_frame,
 
   gpu::gles2::GLES2Interface* gl = context_3d.gl;
   unsigned source_texture = 0;
+  gfx::ColorSpace color_space_for_skia;
   if (mailbox_holder.texture_target != GL_TEXTURE_2D) {
     // TODO(dcastagna): At the moment Skia doesn't support targets different
     // than GL_TEXTURE_2D.  Avoid this copy once
@@ -219,6 +222,7 @@ sk_sp<SkImage> NewSkImageFromVideoFrameNative(VideoFrame* video_frame,
     gl->WaitSyncTokenCHROMIUM(mailbox_holder.sync_token.GetConstData());
     source_texture =
         gl->CreateAndConsumeTextureCHROMIUM(mailbox_holder.mailbox.name);
+    color_space_for_skia = video_frame->ColorSpace();
   }
   GrGLTextureInfo source_texture_info;
   source_texture_info.fID = source_texture;
@@ -233,7 +237,8 @@ sk_sp<SkImage> NewSkImageFromVideoFrameNative(VideoFrame* video_frame,
       GrMipMapped::kNo, source_texture_info);
   return SkImage::MakeFromAdoptedTexture(
       context_3d.gr_context, source_backend_texture, kTopLeft_GrSurfaceOrigin,
-      kRGBA_8888_SkColorType);
+      kRGBA_8888_SkColorType, kPremul_SkAlphaType,
+      color_space_for_skia.ToSkColorSpace());
 }
 
 void VideoFrameCopyTextureOrSubTexture(gpu::gles2::GLES2Interface* gl,
@@ -334,8 +339,9 @@ class VideoImageGenerator : public cc::PaintImageGenerator {
     return true;
   }
 
-  bool QueryYUV8(SkYUVSizeInfo* sizeInfo,
-                 SkYUVColorSpace* color_space) const override {
+  bool QueryYUVA8(SkYUVASizeInfo* sizeInfo,
+                  SkYUVAIndex indices[SkYUVAIndex::kIndexCount],
+                  SkYUVColorSpace* color_space) const override {
     if (!media::IsYuvPlanar(frame_->format()) ||
         // TODO(rileya): Skia currently doesn't support YUVA conversion. Remove
         // this case once it does. As-is we will fall back on the pure-software
@@ -361,18 +367,40 @@ class VideoImageGenerator : public cc::PaintImageGenerator {
       sizeInfo->fSizes[plane].set(size.width(), size.height());
       sizeInfo->fWidthBytes[plane] = size.width();
     }
+    sizeInfo->fSizes[VideoFrame::kAPlane] = SkISize::MakeEmpty();
+    sizeInfo->fWidthBytes[VideoFrame::kAPlane] = 0;
+
+    indices[SkYUVAIndex::kY_Index] = {VideoFrame::kYPlane, SkColorChannel::kR};
+    indices[SkYUVAIndex::kU_Index] = {VideoFrame::kUPlane, SkColorChannel::kR};
+    indices[SkYUVAIndex::kV_Index] = {VideoFrame::kVPlane, SkColorChannel::kR};
+    indices[SkYUVAIndex::kA_Index] = {-1, SkColorChannel::kR};
 
     return true;
   }
 
-  bool GetYUV8Planes(const SkYUVSizeInfo& sizeInfo,
-                     void* planes[3],
-                     size_t frame_index,
-                     uint32_t lazy_pixel_ref) override {
+  bool GetYUVA8Planes(const SkYUVASizeInfo& sizeInfo,
+                      const SkYUVAIndex indices[SkYUVAIndex::kIndexCount],
+                      void* planes[4],
+                      size_t frame_index,
+                      uint32_t lazy_pixel_ref) override {
     DCHECK_EQ(frame_index, 0u);
 
     media::VideoPixelFormat format = frame_->format();
     DCHECK(media::IsYuvPlanar(format) && format != PIXEL_FORMAT_I420A);
+
+    for (int i = 0; i <= VideoFrame::kVPlane; ++i) {
+      if (sizeInfo.fSizes[i].isEmpty() || !sizeInfo.fWidthBytes[i]) {
+        return false;
+      }
+    }
+    if (!sizeInfo.fSizes[VideoFrame::kAPlane].isEmpty() ||
+        sizeInfo.fWidthBytes[VideoFrame::kAPlane]) {
+      return false;
+    }
+    int numPlanes;
+    if (!SkYUVAIndex::AreValidIndices(indices, &numPlanes) || numPlanes != 3) {
+      return false;
+    }
 
     for (int plane = VideoFrame::kYPlane; plane <= VideoFrame::kVPlane;
          ++plane) {
@@ -888,6 +916,15 @@ void PaintCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
       break;
 
     case PIXEL_FORMAT_NV12:
+      LIBYUV_NV12_TO_ARGB(video_frame->visible_data(VideoFrame::kYPlane),
+                          video_frame->stride(VideoFrame::kYPlane),
+                          video_frame->visible_data(VideoFrame::kUVPlane),
+                          video_frame->stride(VideoFrame::kUVPlane),
+                          static_cast<uint8_t*>(rgb_pixels), row_bytes,
+                          video_frame->visible_rect().width(),
+                          video_frame->visible_rect().height());
+      break;
+
     case PIXEL_FORMAT_NV21:
     case PIXEL_FORMAT_UYVY:
     case PIXEL_FORMAT_YUY2:
@@ -897,6 +934,8 @@ void PaintCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
     case PIXEL_FORMAT_RGB32:
     case PIXEL_FORMAT_MJPEG:
     case PIXEL_FORMAT_MT21:
+    case PIXEL_FORMAT_ABGR:
+    case PIXEL_FORMAT_XBGR:
     case PIXEL_FORMAT_UNKNOWN:
       NOTREACHED() << "Only YUV formats and Y16 are supported, got: "
                    << media::VideoPixelFormatToString(video_frame->format());

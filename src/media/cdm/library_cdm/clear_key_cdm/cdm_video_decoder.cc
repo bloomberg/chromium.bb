@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/no_destructor.h"
 #include "base/optional.h"
 // Necessary to convert async media::VideoDecoder to sync CdmVideoDecoder.
@@ -24,14 +25,19 @@
 #include "media/cdm/cdm_type_conversion.h"
 #include "media/cdm/library_cdm/cdm_host_proxy.h"
 #include "media/media_buildflags.h"
+#include "third_party/libaom/av1_buildflags.h"
 #include "third_party/libyuv/include/libyuv/planar_functions.h"
-
-#if BUILDFLAG(ENABLE_FFMPEG)
-#include "media/filters/ffmpeg_video_decoder.h"
-#endif
 
 #if BUILDFLAG(ENABLE_LIBVPX)
 #include "media/filters/vpx_video_decoder.h"
+#endif
+
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+#include "media/filters/aom_video_decoder.h"
+#endif
+
+#if BUILDFLAG(ENABLE_FFMPEG)
+#include "media/filters/ffmpeg_video_decoder.h"
 #endif
 
 namespace media {
@@ -44,14 +50,12 @@ media::VideoDecoderConfig ToClearMediaVideoDecoderConfig(
 
   VideoDecoderConfig media_config(
       ToMediaVideoCodec(config.codec), ToMediaVideoCodecProfile(config.profile),
-      ToMediaVideoFormat(config.format), COLOR_SPACE_UNSPECIFIED,
+      ToMediaVideoFormat(config.format), ToMediaColorSpace(config.color_space),
       VideoRotation::VIDEO_ROTATION_0, coded_size, gfx::Rect(coded_size),
       coded_size,
       std::vector<uint8_t>(config.extra_data,
                            config.extra_data + config.extra_data_size),
       Unencrypted());
-
-  media_config.set_color_space_info(ToMediaColorSpace(config.color_space));
 
   return media_config;
 }
@@ -134,7 +138,7 @@ bool ToCdmVideoFrame(const VideoFrame& video_frame,
 // they will not be available and we have to setup it by ourselves.
 void SetupGlobalEnvironmentIfNeeded() {
   // Creating a base::MessageLoop to setup base::ThreadTaskRunnerHandle.
-  if (!base::MessageLoop::current()) {
+  if (!base::MessageLoopCurrent::IsSet()) {
     static base::NoDestructor<base::MessageLoop> message_loop;
   }
 
@@ -294,6 +298,11 @@ std::unique_ptr<CdmVideoDecoder> CreateVideoDecoder(
 #if BUILDFLAG(ENABLE_LIBVPX)
   if (config.codec == cdm::kCodecVp8 || config.codec == cdm::kCodecVp9)
     video_decoder.reset(new VpxVideoDecoder());
+#endif
+
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+  if (config.codec == cdm::kCodecAv1)
+    video_decoder.reset(new AomVideoDecoder(null_media_log.get()));
 #endif
 
 #if BUILDFLAG(ENABLE_FFMPEG)

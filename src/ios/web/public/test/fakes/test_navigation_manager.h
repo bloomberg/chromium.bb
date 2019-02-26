@@ -5,6 +5,7 @@
 #ifndef IOS_WEB_PUBLIC_TEST_FAKES_TEST_NAVIGATION_MANAGER_H_
 #define IOS_WEB_PUBLIC_TEST_FAKES_TEST_NAVIGATION_MANAGER_H_
 
+#include "base/callback.h"
 #import "ios/web/public/navigation_item.h"
 #include "ios/web/public/navigation_item_list.h"
 #import "ios/web/public/navigation_manager.h"
@@ -47,6 +48,7 @@ class TestNavigationManager : public NavigationManager {
   NavigationItemList GetForwardItems() const override;
   void Restore(int last_committed_item_index,
                std::vector<std::unique_ptr<NavigationItem>> items) override;
+  void AddRestoreCompletionCallback(base::OnceClosure callback) override;
   void CopyStateFromAndPrune(const NavigationManager* source) override;
   bool CanPruneAllButLastCommittedItem() const override;
 

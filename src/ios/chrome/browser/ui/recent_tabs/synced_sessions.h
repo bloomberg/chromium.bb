@@ -16,8 +16,8 @@
 #include "components/sync_sessions/synced_session.h"
 #include "url/gurl.h"
 
-namespace syncer {
-class SyncService;
+namespace sync_sessions {
+class SessionSyncService;
 }
 
 namespace sync_sessions {
@@ -53,7 +53,8 @@ class DistantSession {
   DistantSession();
   // Initialize with the session tagged with |tag| and obtained with
   // |sync_service|. |sync_service| must not be null.
-  DistantSession(syncer::SyncService* sync_service, const std::string& tag);
+  DistantSession(sync_sessions::SessionSyncService* sync_service,
+                 const std::string& tag);
   ~DistantSession();
   void InitWithSyncedSession(const sync_sessions::SyncedSession* synced_session,
                              sync_sessions::OpenTabsUIDelegate* open_tabs);
@@ -73,8 +74,9 @@ class SyncedSessions {
   SyncedSessions();
   // Initialize with all the distant sessions obtained from |sync_service|.
   // |sync_service| must not be null.
-  explicit SyncedSessions(syncer::SyncService* sync_service);
-  SyncedSessions(syncer::SyncService* sync_service, const std::string& tag);
+  explicit SyncedSessions(sync_sessions::SessionSyncService* sync_service);
+  SyncedSessions(sync_sessions::SessionSyncService* sync_service,
+                 const std::string& tag);
   ~SyncedSessions();
   DistantSession const* GetSession(size_t index) const;
   DistantSession const* GetSessionWithTag(const std::string& tag) const;

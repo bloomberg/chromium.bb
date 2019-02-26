@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "base/optional.h"
-#include "components/cbor/cbor_values.h"
-#include "components/cbor/cbor_writer.h"
+#include "components/cbor/values.h"
+#include "components/cbor/writer.h"
 #include "device/fido/authenticator_data.h"
 #include "device/fido/fido_parsing_utils.h"
 
@@ -36,9 +36,15 @@ AuthenticatorGetAssertionResponse::CreateFromU2fSignResponse(
   if (key_handle.empty())
     return base::nullopt;
 
-  auto flags = u2f_data.subspan<kFlagIndex, kFlagLength>();
+  auto flags = u2f_data.subspan<kFlagIndex, kFlagLength>()[0];
+  if (flags &
+      (static_cast<uint8_t>(AuthenticatorData::Flag::kExtensionDataIncluded) |
+       static_cast<uint8_t>(AuthenticatorData::Flag::kAttestation))) {
+    // U2F responses cannot assert CTAP2 features.
+    return base::nullopt;
+  }
   auto counter = u2f_data.subspan<kCounterIndex, kCounterLength>();
-  AuthenticatorData authenticator_data(relying_party_id_hash, flags[0], counter,
+  AuthenticatorData authenticator_data(relying_party_id_hash, flags, counter,
                                        base::nullopt);
 
   auto signature =
@@ -93,7 +99,7 @@ AuthenticatorGetAssertionResponse::SetNumCredentials(uint8_t num_credentials) {
 
 std::vector<uint8_t> GetSerializedCtapDeviceResponse(
     const AuthenticatorGetAssertionResponse& response) {
-  cbor::CBORValue::MapValue response_map;
+  cbor::Value::MapValue response_map;
   if (response.credential())
     response_map.emplace(1, response.credential()->ConvertToCBOR());
 
@@ -106,7 +112,7 @@ std::vector<uint8_t> GetSerializedCtapDeviceResponse(
   // Multiple account selection is not supported.
   response_map.emplace(5, 1);
   auto encoded_response =
-      cbor::CBORWriter::Write(cbor::CBORValue(std::move(response_map)));
+      cbor::Writer::Write(cbor::Value(std::move(response_map)));
   DCHECK(encoded_response);
   return *encoded_response;
 }

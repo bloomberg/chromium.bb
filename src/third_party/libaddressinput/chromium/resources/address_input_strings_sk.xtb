@@ -3,13 +3,13 @@
 <translationbundle lang="sk">
 <translation id="1340068511406764697">Musíte zadať poštové smerovacie číslo, napríklad <ph name="EXAMPLE" />. Nepoznáte svoje poštové smerovacie číslo? Zistite ho <ph name="BEGIN_LINK" />tu<ph name="END_LINK" />.</translation>
 <translation id="2053553514270667976">PSČ</translation>
-<translation id="2096368010154057602">Správna oblasť</translation>
+<translation id="2096368010154057602">Department</translation>
 <translation id="2577522251608256362">Obvod</translation>
 <translation id="3050787670591910834">Musíte zadať poštové smerovacie číslo, napríklad <ph name="EXAMPLE" />.</translation>
 <translation id="3174168572213147020">Ostrov</translation>
 <translation id="3713769522066937702">Formát tohto PSČ sa nedá rozpoznať. Príklad platného PSČ: <ph name="EXAMPLE" />. Nepoznáte svoje PSČ? Zistite ho <ph name="BEGIN_LINK" />tu<ph name="END_LINK" />.</translation>
 <translation id="3882422586004212847">Formát tohto poštového smerovacieho čísla sa nedá rozpoznať. Príklad platného poštového smerovacieho čísla: <ph name="EXAMPLE" />.</translation>
-<translation id="3885155851504623709">Okrsok</translation>
+<translation id="3885155851504623709">Farnosť</translation>
 <translation id="43113324827158664">Toto pole nemôže byť prázdne.</translation>
 <translation id="4376888869070172068">Tento formát poštového kódu nebol rozpoznaný.</translation>
 <translation id="4518701284698680367">Musíte zadať PSČ, napríklad <ph name="EXAMPLE" />. Nepoznáte svoje PSČ? Zistite ho <ph name="BEGIN_LINK" />tu<ph name="END_LINK" />.</translation>
@@ -29,8 +29,8 @@
 <translation id="6777217372746654521">Adresa je zrejme typu P. O. BOX. Zadajte poštovú adresu ulice alebo budovy.</translation>
 <translation id="6839929833149231406">Oblasť</translation>
 <translation id="684852933191805996">Mestská časť</translation>
-<translation id="6970216967273061347">Obvod</translation>
-<translation id="7087282848513945231">Grófstvo</translation>
+<translation id="6970216967273061347">Okres</translation>
+<translation id="7087282848513945231">Okres</translation>
 <translation id="7139724024395191329">Emirát</translation>
 <translation id="7393381084163773901">Ulica</translation>
 <translation id="7602447984296396718">PSČ zrejme nezodpovedá zvyšnej časti adresy.</translation>

@@ -9,15 +9,15 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* WebkitHighlight::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   if (range.Peek().Id() == CSSValueNone)
-    return CSSPropertyParserHelpers::ConsumeIdent(range);
-  return CSSPropertyParserHelpers::ConsumeString(range);
+    return css_property_parser_helpers::ConsumeIdent(range);
+  return css_property_parser_helpers::ConsumeString(range);
 }
 
 const CSSValue* WebkitHighlight::CSSValueFromComputedStyleInternal(
@@ -31,5 +31,5 @@ const CSSValue* WebkitHighlight::CSSValueFromComputedStyleInternal(
   return CSSStringValue::Create(style.Highlight());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

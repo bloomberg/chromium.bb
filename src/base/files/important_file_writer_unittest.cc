@@ -13,10 +13,10 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -124,7 +124,7 @@ class ImportantFileWriterTest : public testing::Test {
  protected:
   WriteCallbacksObserver write_callback_observer_;
   FilePath file_;
-  MessageLoop loop_;
+  test::ScopedTaskEnvironment scoped_task_environment_;
 
  private:
   ScopedTempDir temp_dir_;

@@ -20,10 +20,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/secure_origin_whitelist.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/features.h"
 #include "components/security_state/content/content_utils.h"
-#include "components/toolbar/toolbar_field_trial.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -177,14 +177,14 @@ void SecurityStateTabHelper::DidFinishNavigation(
   // the console to reduce developer confusion about the experimental UI
   // treatments for HTTPS pages with EV certificates.
   const std::string parameter =
-      base::FeatureList::IsEnabled(toolbar::features::kSimplifyHttpsIndicator)
+      base::FeatureList::IsEnabled(omnibox::kSimplifyHttpsIndicator)
           ? base::GetFieldTrialParamValueByFeature(
-                toolbar::features::kSimplifyHttpsIndicator,
-                toolbar::features::kSimplifyHttpsIndicatorParameterName)
+                omnibox::kSimplifyHttpsIndicator,
+                OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterName)
           : std::string();
   if (security_info.security_level == security_state::EV_SECURE) {
     if (parameter ==
-        toolbar::features::kSimplifyHttpsIndicatorParameterEvToSecure) {
+        OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterEvToSecure) {
       web_contents()->GetMainFrame()->AddMessageToConsole(
           content::CONSOLE_MESSAGE_LEVEL_INFO,
           "As part of an experiment, Chrome temporarily shows only the "
@@ -192,7 +192,7 @@ void SecurityStateTabHelper::DidFinishNavigation(
           "Extended Validation is still valid.");
     }
     if (parameter ==
-        toolbar::features::kSimplifyHttpsIndicatorParameterBothToLock) {
+        OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterBothToLock) {
       web_contents()->GetMainFrame()->AddMessageToConsole(
           content::CONSOLE_MESSAGE_LEVEL_INFO,
           "As part of an experiment, Chrome temporarily shows only the lock "

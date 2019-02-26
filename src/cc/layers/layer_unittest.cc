@@ -397,7 +397,7 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
 
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(
-      root->SetBackgroundFilters(arbitrary_filters));
+      root->SetBackdropFilters(arbitrary_filters));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
       root->PushPropertiesTo(root_impl.get());
       child->PushPropertiesTo(child_impl.get());

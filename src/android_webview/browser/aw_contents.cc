@@ -50,6 +50,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
+#include "base/no_destructor.h"
 #include "base/pickle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
@@ -111,18 +112,20 @@ using content::WebContents;
 
 namespace android_webview {
 
+class CompositorFrameConsumer;
+
 namespace {
 
 bool g_should_download_favicons = false;
 
 std::string* g_locale() {
-  CR_DEFINE_STATIC_LOCAL(std::string, locale, ());
-  return &locale;
+  static base::NoDestructor<std::string> locale;
+  return locale.get();
 }
 
 std::string* g_locale_list() {
-  CR_DEFINE_STATIC_LOCAL(std::string, locale_list, ());
-  return &locale_list;
+  static base::NoDestructor<std::string> locale_list;
+  return locale_list.get();
 }
 
 const void* const kAwContentsUserDataKey = &kAwContentsUserDataKey;
@@ -234,7 +237,6 @@ AwRenderProcessGoneDelegate* AwRenderProcessGoneDelegate::FromWebContents(
 
 AwContents::AwContents(std::unique_ptr<WebContents> web_contents)
     : content::WebContentsObserver(web_contents.get()),
-      functor_(nullptr),
       browser_view_renderer_(
           this,
           base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})),
@@ -378,7 +380,7 @@ AwContents::~AwContents() {
     base::MemoryPressureListener::NotifyMemoryPressure(
         base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
   }
-  SetAwGLFunctor(nullptr);
+  browser_view_renderer_.SetCurrentCompositorFrameConsumer(nullptr);
   AwContentsLifecycleNotifier::OnWebViewDestroyed();
 }
 
@@ -393,23 +395,12 @@ base::android::ScopedJavaLocalRef<jobject> AwContents::GetWebContents(
   return web_contents_->GetJavaWebContents();
 }
 
-void AwContents::SetAwGLFunctor(AwGLFunctor* functor) {
-  if (functor == functor_) {
-    return;
-  }
-  functor_ = functor;
-  if (functor_) {
-    browser_view_renderer_.SetCurrentCompositorFrameConsumer(
-        functor_->GetCompositorFrameConsumer());
-  } else {
-    browser_view_renderer_.SetCurrentCompositorFrameConsumer(nullptr);
-  }
-}
-
-void AwContents::SetAwGLFunctor(JNIEnv* env,
-                                const base::android::JavaParamRef<jobject>& obj,
-                                jlong gl_functor) {
-  SetAwGLFunctor(reinterpret_cast<AwGLFunctor*>(gl_functor));
+void AwContents::SetCompositorFrameConsumer(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jlong compositor_frame_consumer) {
+  browser_view_renderer_.SetCurrentCompositorFrameConsumer(
+      reinterpret_cast<CompositorFrameConsumer*>(compositor_frame_consumer));
 }
 
 ScopedJavaLocalRef<jobject> AwContents::GetRenderProcess(
@@ -1125,7 +1116,7 @@ gfx::Point AwContents::GetLocationOnScreen() {
     return gfx::Point();
   std::vector<int> location;
   base::android::JavaIntArrayToIntVector(
-      env, Java_AwContents_getLocationOnScreen(env, obj).obj(), &location);
+      env, Java_AwContents_getLocationOnScreen(env, obj), &location);
   return gfx::Point(location[0], location[1]);
 }
 
@@ -1476,6 +1467,34 @@ void AwContents::EvaluateJavaScriptOnInterstitialForTesting(
 
   interstitial->GetMainFrame()->ExecuteJavaScriptForTests(
       ConvertJavaStringToUTF16(env, script), js_callback);
+}
+
+void AwContents::RendererUnresponsive(
+    content::RenderProcessHost* render_process_host) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+
+  AwRenderProcess* aw_render_process =
+      AwRenderProcess::GetInstanceForRenderProcessHost(render_process_host);
+  Java_AwContents_onRendererUnresponsive(env, obj,
+                                         aw_render_process->GetJavaObject());
+}
+
+void AwContents::RendererResponsive(
+    content::RenderProcessHost* render_process_host) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+
+  AwRenderProcess* aw_render_process =
+      AwRenderProcess::GetInstanceForRenderProcessHost(render_process_host);
+  Java_AwContents_onRendererResponsive(env, obj,
+                                       aw_render_process->GetJavaObject());
 }
 
 void AwContents::OnRenderProcessGone(int child_process_id) {

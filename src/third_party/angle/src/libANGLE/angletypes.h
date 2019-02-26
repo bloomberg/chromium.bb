@@ -10,6 +10,7 @@
 #define LIBANGLE_ANGLETYPES_H_
 
 #include "common/Color.h"
+#include "common/FixedVector.h"
 #include "common/PackedEnums.h"
 #include "common/bitset_utils.h"
 #include "common/vector_utils.h"
@@ -17,6 +18,7 @@
 #include "libANGLE/Error.h"
 #include "libANGLE/RefCountObject.h"
 
+#include <inttypes.h>
 #include <stdint.h>
 
 #include <bitset>
@@ -33,8 +35,7 @@ struct Rectangle
     Rectangle() : x(0), y(0), width(0), height(0) {}
     constexpr Rectangle(int x_in, int y_in, int width_in, int height_in)
         : x(x_in), y(y_in), width(width_in), height(height_in)
-    {
-    }
+    {}
 
     int x0() const { return x; }
     int y0() const { return y; }
@@ -96,8 +97,7 @@ struct Box
     Box() : x(0), y(0), z(0), width(0), height(0), depth(0) {}
     Box(int x_in, int y_in, int z_in, int width_in, int height_in, int depth_in)
         : x(x_in), y(y_in), z(z_in), width(width_in), height(height_in), depth(depth_in)
-    {
-    }
+    {}
     Box(const Offset &offset, const Extents &size)
         : x(offset.x),
           y(offset.y),
@@ -105,8 +105,7 @@ struct Box
           width(size.width),
           height(size.height),
           depth(size.depth)
-    {
-    }
+    {}
     bool operator==(const Box &other) const;
     bool operator!=(const Box &other) const;
     Rectangle toRect() const;
@@ -273,6 +272,10 @@ class SamplerState final
 
     void setSRGBDecode(GLenum sRGBDecode);
 
+    void setBorderColor(const ColorGeneric &color);
+
+    const ColorGeneric &getBorderColor() const { return mBorderColor; }
+
     bool sameCompleteness(const SamplerState &samplerState) const
     {
         return mCompleteness.packed == samplerState.mCompleteness.packed;
@@ -299,7 +302,10 @@ class SamplerState final
 
     GLenum mSRGBDecode;
 
-    union Completeness {
+    ColorGeneric mBorderColor;
+
+    union Completeness
+    {
         uint32_t packed;
         PackedSamplerCompleteness typed;
     };
@@ -356,8 +362,7 @@ struct PixelStoreStateBase
 };
 
 struct PixelUnpackState : PixelStoreStateBase
-{
-};
+{};
 
 struct PixelPackState : PixelStoreStateBase
 {
@@ -410,6 +415,9 @@ template <typename T>
 using DrawBuffersArray = std::array<T, IMPLEMENTATION_MAX_DRAW_BUFFERS>;
 
 template <typename T>
+using DrawBuffersVector = angle::FixedVector<T, IMPLEMENTATION_MAX_DRAW_BUFFERS>;
+
+template <typename T>
 using AttribArray = std::array<T, MAX_VERTEX_ATTRIBS>;
 
 using ActiveTextureMask = angle::BitSet<IMPLEMENTATION_MAX_ACTIVE_TEXTURES>;
@@ -431,20 +439,20 @@ namespace rx
 {
 // A macro that determines whether an object has a given runtime type.
 #if defined(__clang__)
-#if __has_feature(cxx_rtti)
-#define ANGLE_HAS_DYNAMIC_CAST 1
-#endif
+#    if __has_feature(cxx_rtti)
+#        define ANGLE_HAS_DYNAMIC_CAST 1
+#    endif
 #elif !defined(NDEBUG) && (!defined(_MSC_VER) || defined(_CPPRTTI)) &&              \
     (!defined(__GNUC__) || __GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 3) || \
      defined(__GXX_RTTI))
-#define ANGLE_HAS_DYNAMIC_CAST 1
+#    define ANGLE_HAS_DYNAMIC_CAST 1
 #endif
 
 #ifdef ANGLE_HAS_DYNAMIC_CAST
-#define ANGLE_HAS_DYNAMIC_TYPE(type, obj) (dynamic_cast<type>(obj) != nullptr)
-#undef ANGLE_HAS_DYNAMIC_CAST
+#    define ANGLE_HAS_DYNAMIC_TYPE(type, obj) (dynamic_cast<type>(obj) != nullptr)
+#    undef ANGLE_HAS_DYNAMIC_CAST
 #else
-#define ANGLE_HAS_DYNAMIC_TYPE(type, obj) (obj != nullptr)
+#    define ANGLE_HAS_DYNAMIC_TYPE(type, obj) (obj != nullptr)
 #endif
 
 // Downcast a base implementation object (EG TextureImpl to TextureD3D)
@@ -549,13 +557,11 @@ class UniqueObjectPointerBase : angle::NonCopyable
   public:
     template <typename ContextT>
     UniqueObjectPointerBase(const ContextT *context) : mObject(nullptr), mDeleter(context)
-    {
-    }
+    {}
 
     template <typename ContextT>
     UniqueObjectPointerBase(ObjT *obj, const ContextT *context) : mObject(obj), mDeleter(context)
-    {
-    }
+    {}
 
     ~UniqueObjectPointerBase()
     {

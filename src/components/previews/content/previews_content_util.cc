@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "components/previews/content/previews_user_data.h"
+#include "components/previews/core/previews_lite_page_redirect.h"
 
 namespace previews {
 
@@ -15,10 +16,11 @@ bool HasEnabledPreviews(content::PreviewsState previews_state) {
          !(previews_state & content::PREVIEWS_NO_TRANSFORM);
 }
 
-content::PreviewsState DetermineEnabledClientPreviewsState(
+content::PreviewsState DetermineAllowedClientPreviewsState(
     previews::PreviewsUserData* previews_data,
     const GURL& url,
     bool is_reload,
+    bool is_redirect,
     bool is_data_saver_user,
     previews::PreviewsDecider* previews_decider) {
   content::PreviewsState previews_state = content::PREVIEWS_UNSPECIFIED;
@@ -34,8 +36,18 @@ content::PreviewsState DetermineEnabledClientPreviewsState(
     return previews_state;
   }
 
-  if (previews_decider->ShouldAllowPreview(previews_data, url, is_reload,
-                                           previews::PreviewsType::OFFLINE)) {
+  // Offline previews state should not be updated during a redirect. The Offline
+  // Previews URLLoader will not receive an updated PreviewsState, so the state
+  // should stay consistent throughout the navigation.
+  if (is_redirect) {
+    // Record that the navigation was redirected.
+    previews_data->set_is_redirect(true);
+    // Keep the same OFFLINE previews bit as the original URL.
+    previews_state |=
+        (previews_data->allowed_previews_state() & content::OFFLINE_PAGE_ON);
+  } else if (previews_decider->ShouldAllowPreviewAtNavigationStart(
+                 previews_data, url, is_reload,
+                 previews::PreviewsType::OFFLINE)) {
     previews_state |= content::OFFLINE_PAGE_ON;
   }
 
@@ -43,28 +55,39 @@ content::PreviewsState DetermineEnabledClientPreviewsState(
   if (!is_data_saver_user)
     return previews_state;
 
-  if (previews_decider->ShouldAllowPreview(
+  // Check PageHint preview types first.
+
+  bool should_load_page_hints = false;
+  if (previews_decider->ShouldAllowPreviewAtNavigationStart(
           previews_data, url, is_reload,
           previews::PreviewsType::RESOURCE_LOADING_HINTS)) {
     previews_state |= content::RESOURCE_LOADING_HINTS_ON;
-    // Initiate load of any applicable hint details.
-    previews_decider->LoadResourceHints(url);
+    should_load_page_hints = true;
+  }
+  if (previews_decider->ShouldAllowPreviewAtNavigationStart(
+          previews_data, url, is_reload, previews::PreviewsType::NOSCRIPT)) {
+    previews_state |= content::NOSCRIPT_ON;
+    should_load_page_hints = true;
+  }
+  bool has_page_hints = false;
+  if (should_load_page_hints) {
+    // Initiate load of any applicable page hint details.
+    // TODO(dougarnett): Generalize method name to LoadPageHints().
+    has_page_hints = previews_decider->LoadResourceHints(url);
   }
 
-  // Check for client-side previews in precedence order.
   // Note: this is for the beginning of navigation so we should not
   // check for https here (since an http request may redirect to https).
-  if (previews_decider->ShouldAllowPreview(previews_data, url, is_reload,
-                                           previews::PreviewsType::NOSCRIPT)) {
-    previews_state |= content::NOSCRIPT_ON;
+  if ((!has_page_hints || params::LitePagePreviewsOverridePageHints()) &&
+      previews_decider->ShouldAllowPreviewAtNavigationStart(
+          previews_data, url, is_reload,
+          previews::PreviewsType::LITE_PAGE_REDIRECT)) {
+    previews_state |= content::LITE_PAGE_REDIRECT_ON;
   }
 
   if (previews::params::IsClientLoFiEnabled() &&
-      previews_decider->ShouldAllowPreviewAtECT(
-          previews_data, url, is_reload, previews::PreviewsType::LOFI,
-          previews::params::EffectiveConnectionTypeThresholdForClientLoFi(),
-          previews::params::GetBlackListedHostsForClientLoFiFieldTrial(),
-          false)) {
+      previews_decider->ShouldAllowPreviewAtNavigationStart(
+          previews_data, url, is_reload, previews::PreviewsType::LOFI)) {
     previews_state |= content::CLIENT_LOFI_ON;
   }
 
@@ -109,13 +132,21 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
     return content::PREVIEWS_OFF;
   }
 
+  // Check if a LITE_PAGE_REDIRECT preview was actually served.
+  if (previews_state & content::LITE_PAGE_REDIRECT_ON) {
+    if (IsLitePageRedirectPreviewURL(url))
+      return content::LITE_PAGE_REDIRECT_ON;
+    previews_state &= ~content::LITE_PAGE_REDIRECT_ON;
+  }
+  DCHECK(!IsLitePageRedirectPreviewURL(url));
+
   // Make priority decision among allowed client preview types that can be
   // decided at Commit time.
   if (previews_state & content::RESOURCE_LOADING_HINTS_ON) {
     // Resource loading hints was chosen for the original URL but only continue
     // with it if the committed URL has HTTPS scheme and is allowed by decider.
     if (is_https && previews_decider &&
-        previews_decider->IsURLAllowedForPreview(
+        previews_decider->ShouldCommitPreview(
             previews_data, url,
             previews::PreviewsType::RESOURCE_LOADING_HINTS)) {
       return content::RESOURCE_LOADING_HINTS_ON;
@@ -129,7 +160,7 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
     // NoScript was chosen for the original URL but only continue with it
     // if the committed URL has HTTPS scheme and is allowed by decider.
     if (is_https && previews_decider &&
-        previews_decider->IsURLAllowedForPreview(
+        previews_decider->ShouldCommitPreview(
             previews_data, url, previews::PreviewsType::NOSCRIPT)) {
       return content::NOSCRIPT_ON;
     }
@@ -153,6 +184,8 @@ previews::PreviewsType GetMainFramePreviewsType(
   // The order is important here.
   if (previews_state & content::OFFLINE_PAGE_ON)
     return previews::PreviewsType::OFFLINE;
+  if (previews_state & content::LITE_PAGE_REDIRECT_ON)
+    return previews::PreviewsType::LITE_PAGE_REDIRECT;
   if (previews_state & content::SERVER_LITE_PAGE_ON)
     return previews::PreviewsType::LITE_PAGE;
   if (previews_state & content::SERVER_LOFI_ON)

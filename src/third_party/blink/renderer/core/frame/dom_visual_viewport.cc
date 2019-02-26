@@ -49,7 +49,7 @@ void DOMVisualViewport::Trace(blink::Visitor* visitor) {
 }
 
 const AtomicString& DOMVisualViewport::InterfaceName() const {
-  return EventTargetNames::DOMVisualViewport;
+  return event_target_names::kVisualViewport;
 }
 
 ExecutionContext* DOMVisualViewport::GetExecutionContext() const {

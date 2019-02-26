@@ -52,7 +52,7 @@ TEST_P(ETCTextureTest, ETC1Validation)
 
     glBindTexture(GL_TEXTURE_2D, mTexture);
 
-    GLubyte pixel[8] = { 0x0, 0x0, 0xf8, 0x2, 0x43, 0xff, 0x4, 0x12 };
+    GLubyte pixel[8] = {0x0, 0x0, 0xf8, 0x2, 0x43, 0xff, 0x4, 0x12};
     glCompressedTexImage2D(GL_TEXTURE_2D, 0, GL_ETC1_RGB8_LOSSY_DECODE_ANGLE, 4, 4, 0,
                            sizeof(pixel), pixel);
     if (supported)
@@ -266,5 +266,6 @@ ANGLE_INSTANTIATE_TEST(ETCTextureTest,
                        ES2_D3D11_FL9_3(),
                        ES3_D3D11(),
                        ES2_OPENGL(),
-                       ES3_OPENGL());
+                       ES3_OPENGL(),
+                       ES2_VULKAN());
 }  // anonymous namespace

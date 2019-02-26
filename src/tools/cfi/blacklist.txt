@@ -20,10 +20,6 @@ type:*SkBlockComRef*
 type:*RemoveIUnknown*
 src:*atlcomcli.h
 
-# invalid downcasts for IPC messages
-# https://crbug.com/520760
-src:*nacl_message_scanner.cc*
-
 # src/base/win/event_trace_provider_unittest.cc
 type:*EtwTraceProvider*
 
@@ -162,7 +158,10 @@ src:*ui/accessibility/platform/ax_platform_node_auralinux.cc
 src:*ui/accessibility/platform/ax_platform_atk_hyperlink.cc
 
 src:*chrome/browser/ui/zoom/chrome_zoom_level_prefs.cc
+# Temporary needs both paths until the WebRTC changed is rolled in again
+# see https://bugs.chromium.org/p/chromium/issues/detail?id=901319#c14
 src:*third_party/webrtc/modules/desktop_capture/x11/x_server_pixel_buffer.cc
+src:*third_party/webrtc/modules/desktop_capture/linux/x_server_pixel_buffer.cc
 src:*media/cdm/*
 src:*third_party/swiftshader/*
 src:*base/native_library_unittest.cc
@@ -199,10 +198,6 @@ src:*third_party/icu/source/common/*
 src:*third_party/blink/renderer/platform/wtf/*
 # v8/src/intl.cc
 fun:*LocaleConvertCase*
-
-# Casts away const qualifier
-# third_party/boringssl/src/crypto/pem/pem_lib.c
-fun:*PEM_ASN1_write*
 
 # PropertyCallbackArguments::Call methods cast function pointers
 src:*v8/src/api-arguments-inl.h

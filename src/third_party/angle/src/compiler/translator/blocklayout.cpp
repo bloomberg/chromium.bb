@@ -28,31 +28,34 @@ bool IsRowMajorLayout(const ShaderVariable &var)
 }
 
 template <typename VarT>
-void GetUniformBlockInfo(const std::vector<VarT> &fields,
-                         const std::string &prefix,
-                         sh::BlockLayoutEncoder *encoder,
-                         bool inRowMajorLayout,
-                         BlockLayoutMap *blockInfoOut);
+void GetInterfaceBlockInfo(const std::vector<VarT> &fields,
+                           const std::string &prefix,
+                           sh::BlockLayoutEncoder *encoder,
+                           bool inRowMajorLayout,
+                           BlockLayoutMap *blockInfoOut);
 
 template <typename VarT>
-void GetUniformBlockStructMemberInfo(const std::vector<VarT> &fields,
-                                     const std::string &fieldName,
-                                     sh::BlockLayoutEncoder *encoder,
-                                     bool inRowMajorLayout,
-                                     BlockLayoutMap *blockInfoOut)
+void GetInterfaceBlockStructMemberInfo(const std::vector<VarT> &fields,
+                                       const std::string &fieldName,
+                                       sh::BlockLayoutEncoder *encoder,
+                                       bool inRowMajorLayout,
+                                       BlockLayoutMap *blockInfoOut)
 {
+    // TODO(jiajia.qin@intel.com):we need to set the right structure base alignment before
+    // enterAggregateType for std430 layout just like GetShaderStorageBlockFieldMemberInfo did in
+    // ShaderStorageBlockOutputHLSL.cpp. http://anglebug.com/1920
     encoder->enterAggregateType();
-    GetUniformBlockInfo(fields, fieldName, encoder, inRowMajorLayout, blockInfoOut);
+    GetInterfaceBlockInfo(fields, fieldName, encoder, inRowMajorLayout, blockInfoOut);
     encoder->exitAggregateType();
 }
 
 template <typename VarT>
-void GetUniformBlockStructArrayMemberInfo(const VarT &field,
-                                          unsigned int arrayNestingIndex,
-                                          const std::string &arrayName,
-                                          sh::BlockLayoutEncoder *encoder,
-                                          bool inRowMajorLayout,
-                                          BlockLayoutMap *blockInfoOut)
+void GetInterfaceBlockStructArrayMemberInfo(const VarT &field,
+                                            unsigned int arrayNestingIndex,
+                                            const std::string &arrayName,
+                                            sh::BlockLayoutEncoder *encoder,
+                                            bool inRowMajorLayout,
+                                            BlockLayoutMap *blockInfoOut)
 {
     // Nested arrays are processed starting from outermost (arrayNestingIndex 0u) and ending at the
     // innermost.
@@ -62,24 +65,24 @@ void GetUniformBlockStructArrayMemberInfo(const VarT &field,
         const std::string elementName = arrayName + ArrayString(arrayElement);
         if (arrayNestingIndex + 1u < field.arraySizes.size())
         {
-            GetUniformBlockStructArrayMemberInfo(field, arrayNestingIndex + 1u, elementName,
-                                                 encoder, inRowMajorLayout, blockInfoOut);
+            GetInterfaceBlockStructArrayMemberInfo(field, arrayNestingIndex + 1u, elementName,
+                                                   encoder, inRowMajorLayout, blockInfoOut);
         }
         else
         {
-            GetUniformBlockStructMemberInfo(field.fields, elementName, encoder, inRowMajorLayout,
-                                            blockInfoOut);
+            GetInterfaceBlockStructMemberInfo(field.fields, elementName, encoder, inRowMajorLayout,
+                                              blockInfoOut);
         }
     }
 }
 
 template <typename VarT>
-void GetUniformBlockArrayOfArraysMemberInfo(const VarT &field,
-                                            unsigned int arrayNestingIndex,
-                                            const std::string &arrayName,
-                                            sh::BlockLayoutEncoder *encoder,
-                                            bool isRowMajorMatrix,
-                                            BlockLayoutMap *blockInfoOut)
+void GetInterfaceBlockArrayOfArraysMemberInfo(const VarT &field,
+                                              unsigned int arrayNestingIndex,
+                                              const std::string &arrayName,
+                                              sh::BlockLayoutEncoder *encoder,
+                                              bool isRowMajorMatrix,
+                                              BlockLayoutMap *blockInfoOut)
 {
     const unsigned int currentArraySize = field.getNestedArraySize(arrayNestingIndex);
     for (unsigned int arrayElement = 0u; arrayElement < currentArraySize; ++arrayElement)
@@ -87,8 +90,8 @@ void GetUniformBlockArrayOfArraysMemberInfo(const VarT &field,
         const std::string elementName = arrayName + ArrayString(arrayElement);
         if (arrayNestingIndex + 2u < field.arraySizes.size())
         {
-            GetUniformBlockArrayOfArraysMemberInfo(field, arrayNestingIndex + 1u, elementName,
-                                                   encoder, isRowMajorMatrix, blockInfoOut);
+            GetInterfaceBlockArrayOfArraysMemberInfo(field, arrayNestingIndex + 1u, elementName,
+                                                     encoder, isRowMajorMatrix, blockInfoOut);
         }
         else
         {
@@ -101,11 +104,11 @@ void GetUniformBlockArrayOfArraysMemberInfo(const VarT &field,
 }
 
 template <typename VarT>
-void GetUniformBlockInfo(const std::vector<VarT> &fields,
-                         const std::string &prefix,
-                         sh::BlockLayoutEncoder *encoder,
-                         bool inRowMajorLayout,
-                         BlockLayoutMap *blockInfoOut)
+void GetInterfaceBlockInfo(const std::vector<VarT> &fields,
+                           const std::string &prefix,
+                           sh::BlockLayoutEncoder *encoder,
+                           bool inRowMajorLayout,
+                           BlockLayoutMap *blockInfoOut)
 {
     for (const VarT &field : fields)
     {
@@ -124,20 +127,20 @@ void GetUniformBlockInfo(const std::vector<VarT> &fields,
         {
             if (field.isArray())
             {
-                GetUniformBlockStructArrayMemberInfo(field, 0u, fieldName, encoder, rowMajorLayout,
-                                                     blockInfoOut);
+                GetInterfaceBlockStructArrayMemberInfo(field, 0u, fieldName, encoder,
+                                                       rowMajorLayout, blockInfoOut);
             }
             else
             {
-                GetUniformBlockStructMemberInfo(field.fields, fieldName, encoder, rowMajorLayout,
-                                                blockInfoOut);
+                GetInterfaceBlockStructMemberInfo(field.fields, fieldName, encoder, rowMajorLayout,
+                                                  blockInfoOut);
             }
         }
         else if (field.isArrayOfArrays())
         {
-            GetUniformBlockArrayOfArraysMemberInfo(field, 0u, fieldName, encoder,
-                                                   rowMajorLayout && gl::IsMatrixType(field.type),
-                                                   blockInfoOut);
+            GetInterfaceBlockArrayOfArraysMemberInfo(field, 0u, fieldName, encoder,
+                                                     rowMajorLayout && gl::IsMatrixType(field.type),
+                                                     blockInfoOut);
         }
         else
         {
@@ -149,9 +152,7 @@ void GetUniformBlockInfo(const std::vector<VarT> &fields,
 
 }  // anonymous namespace
 
-BlockLayoutEncoder::BlockLayoutEncoder() : mCurrentOffset(0)
-{
-}
+BlockLayoutEncoder::BlockLayoutEncoder() : mCurrentOffset(0), mStructureBaseAlignment(0) {}
 
 BlockMemberInfo BlockLayoutEncoder::encodeType(GLenum type,
                                                const std::vector<unsigned int> &arraySizes,
@@ -172,6 +173,16 @@ BlockMemberInfo BlockLayoutEncoder::encodeType(GLenum type,
     return memberInfo;
 }
 
+void BlockLayoutEncoder::increaseCurrentOffset(size_t offsetInBytes)
+{
+    mCurrentOffset += (offsetInBytes / BytesPerComponent);
+}
+
+void BlockLayoutEncoder::setStructureBaseAlignment(size_t baseAlignment)
+{
+    mStructureBaseAlignment = baseAlignment;
+}
+
 // static
 size_t BlockLayoutEncoder::getBlockRegister(const BlockMemberInfo &info)
 {
@@ -189,9 +200,7 @@ void BlockLayoutEncoder::nextRegister()
     mCurrentOffset = rx::roundUp<size_t>(mCurrentOffset, ComponentsPerRegister);
 }
 
-Std140BlockEncoder::Std140BlockEncoder()
-{
-}
+Std140BlockEncoder::Std140BlockEncoder() {}
 
 void Std140BlockEncoder::enterAggregateType()
 {
@@ -256,9 +265,8 @@ void Std140BlockEncoder::advanceOffset(GLenum type,
     }
     else if (gl::IsMatrixType(type))
     {
-        ASSERT(matrixStride == ComponentsPerRegister);
         const int numRegisters = gl::MatrixRegisterCount(type, isRowMajorMatrix);
-        mCurrentOffset += ComponentsPerRegister * numRegisters;
+        mCurrentOffset += matrixStride * numRegisters;
     }
     else
     {
@@ -266,14 +274,62 @@ void Std140BlockEncoder::advanceOffset(GLenum type,
     }
 }
 
-void GetUniformBlockInfo(const std::vector<InterfaceBlockField> &fields,
-                         const std::string &prefix,
-                         sh::BlockLayoutEncoder *encoder,
-                         BlockLayoutMap *blockInfoOut)
+Std430BlockEncoder::Std430BlockEncoder() {}
+
+void Std430BlockEncoder::nextRegister()
+{
+    mCurrentOffset = rx::roundUp<size_t>(mCurrentOffset, mStructureBaseAlignment);
+}
+
+void Std430BlockEncoder::getBlockLayoutInfo(GLenum type,
+                                            const std::vector<unsigned int> &arraySizes,
+                                            bool isRowMajorMatrix,
+                                            int *arrayStrideOut,
+                                            int *matrixStrideOut)
+{
+    // We assume we are only dealing with 4 byte components (no doubles or half-words currently)
+    ASSERT(gl::VariableComponentSize(gl::VariableComponentType(type)) == BytesPerComponent);
+
+    size_t baseAlignment = 0;
+    int matrixStride     = 0;
+    int arrayStride      = 0;
+
+    if (gl::IsMatrixType(type))
+    {
+        const int numComponents = gl::MatrixComponentCount(type, isRowMajorMatrix);
+        baseAlignment           = (numComponents == 3 ? 4u : static_cast<size_t>(numComponents));
+        matrixStride            = baseAlignment;
+
+        if (!arraySizes.empty())
+        {
+            const int numRegisters = gl::MatrixRegisterCount(type, isRowMajorMatrix);
+            arrayStride            = matrixStride * numRegisters;
+        }
+    }
+    else
+    {
+        const int numComponents = gl::VariableComponentCount(type);
+        baseAlignment           = (numComponents == 3 ? 4u : static_cast<size_t>(numComponents));
+        if (!arraySizes.empty())
+        {
+            arrayStride = baseAlignment;
+        }
+    }
+    mStructureBaseAlignment = std::max(baseAlignment, mStructureBaseAlignment);
+    mCurrentOffset          = rx::roundUp(mCurrentOffset, baseAlignment);
+
+    *matrixStrideOut = matrixStride;
+    *arrayStrideOut  = arrayStride;
+}
+
+void GetInterfaceBlockInfo(const std::vector<InterfaceBlockField> &fields,
+                           const std::string &prefix,
+                           sh::BlockLayoutEncoder *encoder,
+                           BlockLayoutMap *blockInfoOut)
 {
     // Matrix packing is always recorded in individual fields, so they'll set the row major layout
     // flag to true if needed.
-    GetUniformBlockInfo(fields, prefix, encoder, false, blockInfoOut);
+    GetInterfaceBlockInfo(fields, prefix, encoder, false, blockInfoOut);
 }
 
 void GetUniformBlockInfo(const std::vector<Uniform> &uniforms,
@@ -283,8 +339,7 @@ void GetUniformBlockInfo(const std::vector<Uniform> &uniforms,
 {
     // Matrix packing is always recorded in individual fields, so they'll set the row major layout
     // flag to true if needed.
-    GetUniformBlockInfo(uniforms, prefix, encoder, false, blockInfoOut);
+    GetInterfaceBlockInfo(uniforms, prefix, encoder, false, blockInfoOut);
 }
-
 
 }  // namespace sh

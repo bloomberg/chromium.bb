@@ -43,7 +43,7 @@ bool ModuleScriptFetcher::WasModuleLoadSuccessful(
 
   const auto& response = resource->GetResponse();
   // - response's status is not an ok status
-  if (response.IsHTTP() && !CORS::IsOkStatus(response.HttpStatusCode())) {
+  if (response.IsHTTP() && !cors::IsOkStatus(response.HttpStatusCode())) {
     return false;
   }
 

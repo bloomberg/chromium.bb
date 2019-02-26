@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -26,8 +27,8 @@
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
@@ -52,6 +53,7 @@ class ChromeNavigationBrowserTest : public InProcessBrowserTest {
     // tests don't time out.
     command_line->AppendSwitch(switches::kDisableRendererBackgrounding);
 
+    embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
     ASSERT_TRUE(embedded_test_server()->Start());
   }
 
@@ -99,12 +101,26 @@ class DidStartNavigationObserver : public content::WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(DidStartNavigationObserver);
 };
 
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+// Fails on chromium.memory/Linux Chromium OS ASan LSan:
+// https://crbug.com/897879
+#define MAYBE_TransientEntryPreservedOnMultipleNavigationsDuringInterstitial \
+  DISABLED_TransientEntryPreservedOnMultipleNavigationsDuringInterstitial
+#else
+#define MAYBE_TransientEntryPreservedOnMultipleNavigationsDuringInterstitial \
+  TransientEntryPreservedOnMultipleNavigationsDuringInterstitial
+#endif
+
 // Test to verify that navigations are not deleting the transient
 // NavigationEntry when showing an interstitial page and the old renderer
 // process is trying to navigate. See https://crbug.com/600046.
+// With committed interstitials, interstitials are no longer transient
+// navigations, so this test does not apply.
 IN_PROC_BROWSER_TEST_F(
     ChromeNavigationBrowserTest,
-    TransientEntryPreservedOnMultipleNavigationsDuringInterstitial) {
+    MAYBE_TransientEntryPreservedOnMultipleNavigationsDuringInterstitial) {
+  if (base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials))
+    return;
   StartServerWithExpiredCert();
 
   GURL setup_url =
@@ -660,11 +676,6 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
 // commit in the error page process when it is redirected to.
 IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
                        RedirectErrorPageReloadToAboutBlank) {
-  // TODO(nasko): Skip running this test with Network Service until
-  // https://crbug.com/894480 is fixed.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   GURL url(embedded_test_server()->GetURL("a.com", "/title1.html"));
@@ -836,9 +847,8 @@ class WillProcessResponseObserver : public content::WebContentsObserver {
 // submitted to load an iframe.
 // See https://crbug.com/757809.
 // Note: This test couldn't be a content_browsertests, since there would be
-// not handler defined for the "ftp" protocol in
+// no handler defined for the "ftp" protocol in
 // URLRequestJobFactoryImpl::protocol_handler_map_.
-// Flaky on Mac only.  http://crbug.com/816646
 IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest, BlockLegacySubresources) {
   net::SpawnedTestServer ftp_server(
       net::SpawnedTestServer::TYPE_FTP,
@@ -846,7 +856,6 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest, BlockLegacySubresources) {
   ASSERT_TRUE(ftp_server.Start());
 
   GURL main_url_http(embedded_test_server()->GetURL("/iframe.html"));
-  GURL main_url_ftp(ftp_server.GetURL("iframe.html"));
   GURL iframe_url_http(embedded_test_server()->GetURL("/simple.html"));
   GURL iframe_url_ftp(ftp_server.GetURL("simple.html"));
   GURL redirect_url(embedded_test_server()->GetURL("/server-redirect?"));
@@ -858,8 +867,6 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest, BlockLegacySubresources) {
   } kTestCases[] = {
       {main_url_http, iframe_url_http, true},
       {main_url_http, iframe_url_ftp, false},
-      {main_url_ftp, iframe_url_http, true},
-      {main_url_ftp, iframe_url_ftp, true},
   };
   for (const auto test_case : kTestCases) {
     // Blocking the request should work, even after a redirect.
@@ -934,6 +941,83 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest, CrossSiteRedirectionToPDF) {
                          ->tab_strip_model()
                          ->GetActiveWebContents()
                          ->GetLastCommittedURL());
+}
+
+// Check that clicking on a link doesn't carry the transient user activation
+// from the original page to the navigated page (crbug.com/865243).
+IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
+                       WindowOpenBlockedAfterClickNavigation) {
+  // Navigate to a test page with links.
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/links.html"));
+
+  // Click to navigate to title1.html.
+  content::WebContents* main_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::TestNavigationObserver observer(main_contents);
+  ASSERT_TRUE(ExecuteScript(main_contents,
+                            "document.getElementById('title1').click();"));
+  observer.Wait();
+
+  // Make sure popup attempt fails due to lack of transient user activation.
+  bool opened = false;
+  EXPECT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractBool(
+      main_contents, "window.domAutomationController.send(!!window.open());",
+      &opened));
+  EXPECT_FALSE(opened);
+
+  EXPECT_EQ(embedded_test_server()->GetURL("/title1.html"),
+            main_contents->GetLastCommittedURL());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+}
+
+// Test which verifies that a noopener link/window.open() properly focus the
+// newly opened tab. See https://crbug.com/912348.
+IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
+                       NoopenerCorrectlyFocusesNewTab) {
+  content::WebContents* main_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Navigate to a test page with links.
+  {
+    content::TestNavigationObserver observer(main_contents);
+    ui_test_utils::NavigateToURL(
+        browser(),
+        embedded_test_server()->GetURL("/click-noreferrer-links.html"));
+    observer.Wait();
+    EXPECT_TRUE(observer.last_navigation_succeeded());
+  }
+
+  // Click a link with noopener that navigates in a new window.
+  content::WebContents* link_web_contents = nullptr;
+  {
+    ui_test_utils::WindowedTabAddedNotificationObserver tab_added_observer(
+        content::NotificationService::AllSources());
+    EXPECT_TRUE(
+        content::ExecJs(main_contents, "clickSameSiteNoOpenerTargetedLink();"));
+    tab_added_observer.Wait();
+    link_web_contents = tab_added_observer.GetTab();
+  }
+
+  EXPECT_NE(main_contents, link_web_contents);
+  EXPECT_TRUE(link_web_contents->GetRenderWidgetHostView()->HasFocus());
+
+  // Execute window.open() with noopener.
+  content::WebContents* open_web_contents = nullptr;
+  {
+    ui_test_utils::WindowedTabAddedNotificationObserver tab_added_observer(
+        content::NotificationService::AllSources());
+    EXPECT_TRUE(content::ExecJs(
+        main_contents, content::JsReplace("window.open($1, 'bar', 'noopener');",
+                                          embedded_test_server()->GetURL(
+                                              "a.com", "/title1.html"))));
+    tab_added_observer.Wait();
+    open_web_contents = tab_added_observer.GetTab();
+  }
+
+  EXPECT_NE(main_contents, open_web_contents);
+  EXPECT_NE(link_web_contents, open_web_contents);
+  EXPECT_TRUE(open_web_contents->GetRenderWidgetHostView()->HasFocus());
 }
 
 // TODO(csharrison): These tests should become tentative WPT, once the feature

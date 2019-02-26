@@ -10,14 +10,14 @@
 #include "third_party/blink/renderer/core/css/zoom_adjusted_pixel_value.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* ScrollMarginLeft::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   return ConsumeLength(range, context.Mode(), kValueRangeAll,
-                       CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
+                       css_property_parser_helpers::UnitlessQuirk::kForbid);
 }
 
 const CSSValue* ScrollMarginLeft::CSSValueFromComputedStyleInternal(
@@ -29,5 +29,5 @@ const CSSValue* ScrollMarginLeft::CSSValueFromComputedStyleInternal(
   return ZoomAdjustedPixelValue(style.ScrollMarginLeft(), style);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

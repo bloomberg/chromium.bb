@@ -379,6 +379,19 @@ void DecodeNetworkPolicies(const em::ChromeDeviceSettingsProto& policy,
     }
   }
 
+  if (policy.has_device_wifi_fast_transition_enabled()) {
+    const em::DeviceWiFiFastTransitionEnabledProto& container(
+        policy.device_wifi_fast_transition_enabled());
+    if (container.has_device_wifi_fast_transition_enabled()) {
+      policies->Set(key::kDeviceWiFiFastTransitionEnabled,
+                    POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                    POLICY_SOURCE_CLOUD,
+                    std::make_unique<base::Value>(
+                        container.device_wifi_fast_transition_enabled()),
+                    nullptr);
+    }
+  }
+
   if (policy.has_network_throttling()) {
     const em::NetworkThrottlingEnabledProto& container(
         policy.network_throttling());
@@ -834,10 +847,21 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
   if (policy.has_display_rotation_default()) {
     const em::DisplayRotationDefaultProto& container(
         policy.display_rotation_default());
-    policies->Set(key::kDisplayRotationDefault, POLICY_LEVEL_MANDATORY,
-                  POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-                  DecodeIntegerValue(container.display_rotation_default()),
-                  nullptr);
+    if (container.has_display_rotation_default()) {
+      policies->Set(key::kDisplayRotationDefault, POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                    DecodeIntegerValue(container.display_rotation_default()),
+                    nullptr);
+    }
+  }
+
+  if (policy.has_device_display_resolution()) {
+    const em::DeviceDisplayResolutionProto& container(
+        policy.device_display_resolution());
+    if (container.has_device_display_resolution()) {
+      SetJsonDevicePolicy(key::kDeviceDisplayResolution,
+                          container.device_display_resolution(), policies);
+    }
   }
 
   if (policy.has_usb_detachable_whitelist()) {
@@ -1048,6 +1072,17 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
                     std::make_unique<base::Value>(
                         container.device_unaffiliated_crostini_allowed()),
                     nullptr);
+    }
+  }
+
+  if (policy.has_plugin_vm_allowed()) {
+    const em::PluginVmAllowedProto& container(policy.plugin_vm_allowed());
+    if (container.has_plugin_vm_allowed()) {
+      policies->Set(
+          key::kPluginVmAllowed, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+          POLICY_SOURCE_CLOUD,
+          std::make_unique<base::Value>(container.plugin_vm_allowed()),
+          nullptr);
     }
   }
 }

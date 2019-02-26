@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/time/default_tick_clock.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
@@ -122,6 +123,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+#include "chrome/browser/offline_pages/auto_fetch_page_load_watcher.h"
 #include "chrome/browser/offline_pages/offline_page_tab_helper.h"
 #include "chrome/browser/offline_pages/recent_tab_helper.h"
 #endif
@@ -254,8 +256,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
       web_contents,
       sync_sessions::SyncSessionsWebContentsRouterFactory::GetForProfile(
           profile));
-  // TODO(vabr): Remove TabSpecificContentSettings from here once their function
-  // is taken over by ChromeContentSettingsClient. http://crbug.com/387075
   TabSpecificContentSettings::CreateForWebContents(web_contents);
   TabUIHelper::CreateForWebContents(web_contents);
   ukm::InitializeSourceUrlRecorderForWebContents(web_contents);
@@ -267,7 +267,11 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   // --- Platform-specific tab helpers ---
 
 #if defined(OS_ANDROID)
-  banners::AppBannerManagerAndroid::CreateForWebContents(web_contents);
+  {
+    // Remove after fixing https://crbug/905919
+    TRACE_EVENT0("browser", "AppBannerManagerAndroid::CreateForWebContents");
+    banners::AppBannerManagerAndroid::CreateForWebContents(web_contents);
+  }
   ContextMenuHelper::CreateForWebContents(web_contents);
   JavaScriptDialogTabHelper::CreateForWebContents(web_contents);
   if (OomInterventionTabHelper::IsEnabled()) {
@@ -287,10 +291,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   FramebustBlockTabHelper::CreateForWebContents(web_contents);
   HungPluginTabHelper::CreateForWebContents(web_contents);
   JavaScriptDialogTabHelper::CreateForWebContents(web_contents);
-  if (base::FeatureList::IsEnabled(
-          features::kLookalikeUrlNavigationSuggestions)) {
-    LookalikeUrlNavigationObserver::CreateForWebContents(web_contents);
-  }
+  LookalikeUrlNavigationObserver::CreateForWebContents(web_contents);
   ManagePasswordsUIController::CreateForWebContents(web_contents);
   pdf::PDFWebContentsHelper::CreateForWebContentsWithClient(
       web_contents, std::unique_ptr<pdf::PDFWebContentsHelperClient>(
@@ -326,6 +327,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 offline_pages::OfflinePageTabHelper::CreateForWebContents(web_contents);
 offline_pages::RecentTabHelper::CreateForWebContents(web_contents);
+offline_pages::AutoFetchPageLoadWatcher::CreateForWebContents(web_contents);
 #endif
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)

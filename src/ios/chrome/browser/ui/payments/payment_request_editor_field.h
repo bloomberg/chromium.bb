@@ -46,7 +46,7 @@ typedef NS_ENUM(NSInteger, EditorFieldType) {
     UITextAutocapitalizationType autoCapitalizationType;
 // The associated CollectionViewItem instance. May be nil.
 @property(nonatomic, strong) CollectionViewItem* item;
-// The section identifier for the associated AutofillEditItem.
+// The section identifier for the associated LegacyAutofillEditItem.
 @property(nonatomic, assign) NSInteger sectionIdentifier;
 // Whether the field has been modified or not.
 @property(nonatomic, getter=isPristine) BOOL pristine;

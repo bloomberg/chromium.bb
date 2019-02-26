@@ -11,10 +11,11 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_global_error.h"
 #include "chrome/browser/signin/signin_global_error_factory.h"
@@ -27,12 +28,15 @@
 #include "chrome/common/pref_names.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/account_consistency_method.h"
+#include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
-#include "components/signin/core/browser/profile_management_switches.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/signin/core/browser/identity_utils.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/browser/signin_pref_names.h"
 #include "components/user_manager/user_manager.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/text_elider.h"
@@ -63,11 +67,12 @@ void CreateDiceTurnSyncOnHelper(
 
 namespace signin_ui_util {
 
-base::string16 GetAuthenticatedUsername(const SigninManagerBase* signin) {
+base::string16 GetAuthenticatedUsername(
+    const identity::IdentityManager* identity_manager) {
   std::string user_display_name;
 
-  if (signin->IsAuthenticated()) {
-    user_display_name = signin->GetAuthenticatedAccountInfo().email;
+  if (identity_manager->HasPrimaryAccount()) {
+    user_display_name = identity_manager->GetPrimaryAccountInfo().email;
 
 #if defined(OS_CHROMEOS)
     if (user_manager::UserManager::IsInitialized()) {
@@ -167,11 +172,12 @@ void EnableSyncFromPromo(
           ? signin_metrics::PromoAction::PROMO_ACTION_WITH_DEFAULT
           : signin_metrics::PromoAction::PROMO_ACTION_NOT_DEFAULT;
 
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
   bool needs_reauth_before_enable_sync =
-      !token_service->RefreshTokenIsAvailable(account.account_id) ||
-      token_service->RefreshTokenHasError(account.account_id);
+      !identity_manager->HasAccountWithRefreshToken(account.account_id) ||
+      identity_manager->HasAccountWithRefreshTokenInPersistentErrorState(
+          account.account_id);
   if (needs_reauth_before_enable_sync) {
     browser->signin_view_controller()->ShowDiceSigninTab(
         profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN, browser, access_point,
@@ -209,9 +215,10 @@ std::string GetDisplayEmail(Profile* profile, const std::string& account_id) {
 
 std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile) {
   // Fetch account ids for accounts that have a token.
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-  std::vector<std::string> account_ids = token_service->GetAccounts();
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
+  std::vector<AccountInfo> accounts_with_tokens =
+      identity_manager->GetAccountsWithRefreshTokens();
 
   // Compute the default account.
   SigninManager* signin_manager = SigninManagerFactory::GetForProfile(profile);
@@ -223,8 +230,8 @@ std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile) {
     GaiaCookieManagerService* cookie_manager_service =
         GaiaCookieManagerServiceFactory::GetForProfile(profile);
     std::vector<gaia::ListedAccount> cookie_accounts;
-    bool cookie_accounts_valid = cookie_manager_service->ListAccounts(
-        &cookie_accounts, nullptr, "ProfileChooserView");
+    bool cookie_accounts_valid =
+        cookie_manager_service->ListAccounts(&cookie_accounts, nullptr);
     UMA_HISTOGRAM_BOOLEAN("Profile.DiceUI.GaiaAccountsStale",
                           !cookie_accounts_valid);
     if (cookie_accounts_valid && !cookie_accounts.empty())
@@ -233,18 +240,15 @@ std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile) {
 
   // Fetch account information for each id and make sure that the first account
   // in the list matches the first account in the Gaia cookies (if available).
-  AccountTrackerService* account_tracker_service =
-      AccountTrackerServiceFactory::GetForProfile(profile);
   std::vector<AccountInfo> accounts;
-  for (const std::string& account_id : account_ids) {
-    DCHECK(!account_id.empty());
-    AccountInfo account_info =
-        account_tracker_service->GetAccountInfo(account_id);
-    if (account_info.IsEmpty() ||
-        !signin_manager->IsAllowedUsername(account_info.email)) {
+  for (auto account_info : accounts_with_tokens) {
+    DCHECK(!account_info.IsEmpty());
+    if (!identity::LegacyIsUsernameAllowedByPatternFromPrefs(
+            g_browser_process->local_state(), account_info.email,
+            prefs::kGoogleServicesUsernamePattern)) {
       continue;
     }
-    if (account_id == default_account_id)
+    if (account_info.account_id == default_account_id)
       accounts.insert(accounts.begin(), account_info);
     else
       accounts.push_back(account_info);

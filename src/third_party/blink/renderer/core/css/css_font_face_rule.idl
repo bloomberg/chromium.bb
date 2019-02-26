@@ -18,14 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// The CSSFontFaceRule interface was introduced in DOM Level 2 Style, but has
-// been replaced by an entirely different interface in CSS Fonts:
-// https://www.w3.org/TR/DOM-Level-2-Style/css.html#CSS-CSSFontFaceRule
 // https://drafts.csswg.org/css-fonts/#om-fontface
-//
-// TODO(foolip): Make CSSFontFaceRule match new spec and/or change spec to match
-// what's implemented. https://crbug.com/709013
-// https://github.com/w3c/csswg-drafts/issues/825
 
 interface CSSFontFaceRule : CSSRule {
     [Measure] readonly attribute CSSStyleDeclaration style;

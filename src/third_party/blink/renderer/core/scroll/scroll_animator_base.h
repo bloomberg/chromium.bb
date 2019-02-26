@@ -55,6 +55,7 @@ class CORE_EXPORT ScrollAnimatorBase
  public:
   static ScrollAnimatorBase* Create(ScrollableArea*);
 
+  explicit ScrollAnimatorBase(ScrollableArea*);
   ~ScrollAnimatorBase() override;
 
   virtual void Dispose() {}
@@ -114,8 +115,6 @@ class CORE_EXPORT ScrollAnimatorBase
   void Trace(blink::Visitor*) override;
 
  protected:
-  explicit ScrollAnimatorBase(ScrollableArea*);
-
   virtual void NotifyOffsetChanged();
 
   Member<ScrollableArea> scrollable_area_;

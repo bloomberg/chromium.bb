@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 
 import("//android_webview/system_webview_apk_tmpl.gni")
-import("//android_webview/webview_repack_locales.gni")
 import("//android_webview/variables.gni")
+import("//android_webview/webview_repack_locales.gni")
 import("//build/config/android/chrome_version.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
@@ -496,8 +496,8 @@ source_set("common") {
     "browser/aw_download_manager_delegate.h",
     "browser/aw_feature_list.cc",
     "browser/aw_feature_list.h",
-    "browser/aw_field_trial_creator.cc",
-    "browser/aw_field_trial_creator.h",
+    "browser/aw_feature_list_creator.cc",
+    "browser/aw_feature_list_creator.h",
     "browser/aw_form_database.cc",
     "browser/aw_form_database_service.cc",
     "browser/aw_form_database_service.h",
@@ -551,6 +551,8 @@ source_set("common") {
     "browser/aw_safe_browsing_whitelist_manager.h",
     "browser/aw_settings.cc",
     "browser/aw_settings.h",
+    "browser/aw_speech_recognition_manager_delegate.cc",
+    "browser/aw_speech_recognition_manager_delegate.h",
     "browser/aw_ssl_host_state_delegate.cc",
     "browser/aw_ssl_host_state_delegate.h",
     "browser/aw_url_checker_delegate_impl.cc",
@@ -621,6 +623,8 @@ source_set("common") {
     "browser/net/input_stream_reader.h",
     "browser/net/token_binding_manager.cc",
     "browser/net/token_binding_manager.h",
+    "browser/net_helpers.cc",
+    "browser/net_helpers.h",
     "browser/parent_compositor_draw_constraints.cc",
     "browser/parent_compositor_draw_constraints.h",
     "browser/parent_output_surface.cc",
@@ -848,6 +852,7 @@ android_library("android_webview_java") {
     "java/src/org/chromium/android_webview/AwDevToolsServer.java",
     "java/src/org/chromium/android_webview/AwFeatureList.java",
     "java/src/org/chromium/android_webview/AwFormDatabase.java",
+    "java/src/org/chromium/android_webview/AwFunctor.java",
     "java/src/org/chromium/android_webview/AwGeolocationPermissions.java",
     "java/src/org/chromium/android_webview/AwGLFunctor.java",
     "java/src/org/chromium/android_webview/AwHttpAuthHandler.java",
@@ -933,6 +938,7 @@ android_library("android_webview_java") {
     "//content/public/android:content_java",
     "//device/gamepad:java",
     "//net/android:net_java",
+    "//services/network/public/mojom:mojom_java",
     "//third_party/android_deps:android_support_annotations_java",
     "//third_party/blink/public:blink_headers_java",
     "//ui/android:ui_java",
@@ -957,7 +963,9 @@ android_library("android_webview_variations_utils_java") {
   java_files = [ "java/src/org/chromium/android_webview/VariationsUtils.java" ]
   deps = [
     "//android_webview/proto:aw_variations_seed_proto_java",
+    "//base:base_java",
     "//components/variations/android:variations_java",
+    "//third_party/protobuf:protobuf_lite_javalib",
   ]
 }
 
@@ -1070,6 +1078,7 @@ android_library("android_webview_services_java") {
     "//base:base_java",
     "//components/background_task_scheduler:background_task_scheduler_task_ids_java",
     "//components/minidump_uploader:minidump_uploader_java",
+    "//components/variations/android:variations_java",
     "//components/version_info/android:version_constants_java",
   ]
   srcjar_deps = [

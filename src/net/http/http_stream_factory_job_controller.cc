@@ -259,6 +259,10 @@ void HttpStreamFactory::JobController::OnStreamReady(
   DCHECK(!is_websocket_);
   DCHECK_EQ(HttpStreamRequest::HTTP_STREAM, request_->stream_type());
   OnJobSucceeded(job);
+
+  // TODO(bnc): Remove when https://crbug.com/461981 is fixed.
+  CHECK(request_);
+
   DCHECK(request_->completed());
   delegate_->OnStreamReady(used_ssl_config, job->proxy_info(),
                            std::move(stream));

@@ -198,6 +198,9 @@ TEST_F(RenderWidgetHostViewChildFrameTest, VisibilityTest) {
 // Verify that RenderWidgetHostViewChildFrame passes the child's SurfaceId to
 // FrameConnectorDelegate to be sent to the embedding renderer.
 TEST_F(RenderWidgetHostViewChildFrameTest, PassesSurfaceId) {
+  if (features::IsSurfaceSynchronizationEnabled())
+    return;
+
   gfx::Size view_size(100, 100);
   gfx::Rect view_rect(view_size);
   float scale_factor = 1.f;
@@ -205,8 +208,9 @@ TEST_F(RenderWidgetHostViewChildFrameTest, PassesSurfaceId) {
   view_->SetSize(view_size);
   view_->Show();
 
-  viz::SurfaceId surface_id(view_->GetFrameSinkId(),
-                            view_->GetLocalSurfaceId());
+  viz::SurfaceId surface_id(
+      view_->GetFrameSinkId(),
+      view_->GetLocalSurfaceIdAllocation().local_surface_id());
   viz::SurfaceInfo surface_info(surface_id, scale_factor, view_size);
   view_->OnFirstSurfaceActivation(surface_info);
 
@@ -270,9 +274,10 @@ TEST_F(RenderWidgetHostViewChildFrameZoomForDSFTest,
             test_frame_connector_->screen_space_rect_in_pixels().origin());
 }
 
-// Tests that WasResized is called only once and all the parameters change
-// atomically.
-TEST_F(RenderWidgetHostViewChildFrameTest, WasResizedOncePerChange) {
+// Tests that SynchronizeVisualProperties is called only once and all the
+// parameters change atomically.
+TEST_F(RenderWidgetHostViewChildFrameTest,
+       SynchronizeVisualPropertiesOncePerChange) {
   MockRenderProcessHost* process =
       static_cast<MockRenderProcessHost*>(widget_host_->GetProcess());
   process->Init();
@@ -282,9 +287,10 @@ TEST_F(RenderWidgetHostViewChildFrameTest, WasResizedOncePerChange) {
   constexpr gfx::Size compositor_viewport_pixel_size(100, 100);
   constexpr gfx::Rect screen_space_rect(compositor_viewport_pixel_size);
   viz::ParentLocalSurfaceIdAllocator allocator;
-  viz::LocalSurfaceId local_surface_id = allocator.GetCurrentLocalSurfaceId();
+  allocator.GenerateId();
+  viz::LocalSurfaceIdAllocation local_surface_id_allocation =
+      allocator.GetCurrentLocalSurfaceIdAllocation();
   constexpr viz::FrameSinkId frame_sink_id(1, 1);
-  const viz::SurfaceId surface_id(frame_sink_id, local_surface_id);
 
   process->sink().ClearMessages();
 
@@ -292,7 +298,8 @@ TEST_F(RenderWidgetHostViewChildFrameTest, WasResizedOncePerChange) {
   visual_properties.screen_space_rect = screen_space_rect;
   visual_properties.local_frame_size = compositor_viewport_pixel_size;
   visual_properties.capture_sequence_number = 123u;
-  test_frame_connector_->SynchronizeVisualProperties(surface_id,
+  visual_properties.local_surface_id_allocation = local_surface_id_allocation;
+  test_frame_connector_->SynchronizeVisualProperties(frame_sink_id,
                                                      visual_properties);
 
   ASSERT_EQ(1u, process->sink().message_count());
@@ -305,7 +312,8 @@ TEST_F(RenderWidgetHostViewChildFrameTest, WasResizedOncePerChange) {
   EXPECT_EQ(compositor_viewport_pixel_size,
             std::get<0>(params).compositor_viewport_pixel_size);
   EXPECT_EQ(screen_space_rect.size(), std::get<0>(params).new_size);
-  EXPECT_EQ(local_surface_id, std::get<0>(params).local_surface_id);
+  EXPECT_EQ(local_surface_id_allocation,
+            std::get<0>(params).local_surface_id_allocation);
   EXPECT_EQ(123u, std::get<0>(params).capture_sequence_number);
 }
 

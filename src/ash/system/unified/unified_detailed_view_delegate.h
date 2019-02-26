@@ -5,6 +5,7 @@
 #ifndef ASH_SYSTEM_UNIFIED_UNIFIED_DETAILED_VIEW_DELEGATE_H_
 #define ASH_SYSTEM_UNIFIED_UNIFIED_DETAILED_VIEW_DELEGATE_H_
 
+#include "ash/ash_export.h"
 #include "ash/system/tray/detailed_view_delegate.h"
 #include "base/macros.h"
 
@@ -13,7 +14,8 @@ namespace ash {
 class UnifiedSystemTrayController;
 
 // Default implementation of DetailedViewDelegate for UnifiedSystemTray.
-class UnifiedDetailedViewDelegate : public DetailedViewDelegate {
+// TODO(tetsui): Combine with DetailedViewDelegate.  https://crbug.com/901713
+class ASH_EXPORT UnifiedDetailedViewDelegate : public DetailedViewDelegate {
  public:
   explicit UnifiedDetailedViewDelegate(
       UnifiedSystemTrayController* tray_controller);

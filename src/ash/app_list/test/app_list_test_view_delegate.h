@@ -18,6 +18,7 @@
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "services/content/public/cpp/test/fake_navigable_contents_factory.h"
 #include "ui/base/models/simple_menu_model.h"
 
 namespace app_list {
@@ -44,6 +45,10 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   // Sets the number of apps that the model will be created with the next time
   // SetProfileByPath() is called.
   void set_next_profile_app_count(int apps) { next_profile_app_count_ = apps; }
+
+  content::FakeNavigableContentsFactory& fake_navigable_contents_factory() {
+    return fake_navigable_contents_factory_;
+  }
 
   // Sets whether the search engine is Google or not.
   void SetSearchEngineIsGoogle(bool is_google);
@@ -80,7 +85,8 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   bool ProcessHomeLauncherGesture(ui::GestureEvent* event,
                                   const gfx::Point& screen_location) override;
   bool CanProcessEventsOnApplistViews() override;
-  ws::WindowService* GetWindowService() override;
+  void GetNavigableContentsFactory(
+      content::mojom::NavigableContentsFactoryRequest request) override;
 
   // Do a bulk replacement of the items in the model.
   void ReplaceTestModel(int item_count);
@@ -103,6 +109,7 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   std::unique_ptr<SearchModel> search_model_;
   std::vector<SkColor> wallpaper_prominent_colors_;
   ui::SimpleMenuModel search_result_context_menu_model_;
+  content::FakeNavigableContentsFactory fake_navigable_contents_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListTestViewDelegate);
 };

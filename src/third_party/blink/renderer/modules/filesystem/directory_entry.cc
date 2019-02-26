@@ -46,7 +46,7 @@ DirectoryReader* DirectoryEntry::createReader() {
 }
 
 void DirectoryEntry::getFile(const String& path,
-                             const FileSystemFlags& options,
+                             const FileSystemFlags* options,
                              V8EntryCallback* success_callback,
                              V8ErrorCallback* error_callback) {
   file_system_->GetFile(
@@ -56,7 +56,7 @@ void DirectoryEntry::getFile(const String& path,
 }
 
 void DirectoryEntry::getDirectory(const String& path,
-                                  const FileSystemFlags& options,
+                                  const FileSystemFlags* options,
                                   V8EntryCallback* success_callback,
                                   V8ErrorCallback* error_callback) {
   file_system_->GetDirectory(

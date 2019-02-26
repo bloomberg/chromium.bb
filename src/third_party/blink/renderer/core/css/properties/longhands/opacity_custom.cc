@@ -8,12 +8,12 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* Opacity::ParseSingleValue(CSSParserTokenRange& range,
                                           const CSSParserContext& context,
                                           const CSSParserLocalContext&) const {
-  return CSSPropertyParserHelpers::ConsumeNumber(range, kValueRangeAll);
+  return css_property_parser_helpers::ConsumeNumber(range, kValueRangeAll);
 }
 
 const CSSValue* Opacity::CSSValueFromComputedStyleInternal(
@@ -26,5 +26,5 @@ const CSSValue* Opacity::CSSValueFromComputedStyleInternal(
                                    CSSPrimitiveValue::UnitType::kNumber);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

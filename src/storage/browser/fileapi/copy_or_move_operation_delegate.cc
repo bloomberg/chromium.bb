@@ -55,14 +55,13 @@ class CopyOrMoveOnSameFileSystemImpl
       const FileSystemURL& src_url,
       const FileSystemURL& dest_url,
       CopyOrMoveOperationDelegate::CopyOrMoveOption option,
-      const FileSystemOperation::CopyFileProgressCallback&
-          file_progress_callback)
+      FileSystemOperation::CopyFileProgressCallback file_progress_callback)
       : operation_runner_(operation_runner),
         operation_type_(operation_type),
         src_url_(src_url),
         dest_url_(dest_url),
         option_(option),
-        file_progress_callback_(file_progress_callback) {}
+        file_progress_callback_(std::move(file_progress_callback)) {}
 
   void Run(CopyOrMoveOperationDelegate::StatusCallback callback) override {
     if (operation_type_ == CopyOrMoveOperationDelegate::OPERATION_MOVE) {
@@ -596,12 +595,12 @@ CopyOrMoveOperationDelegate::StreamCopyHelper::StreamCopyHelper(
     std::unique_ptr<FileStreamWriter> writer,
     storage::FlushPolicy flush_policy,
     int buffer_size,
-    const FileSystemOperation::CopyFileProgressCallback& file_progress_callback,
+    FileSystemOperation::CopyFileProgressCallback file_progress_callback,
     const base::TimeDelta& min_progress_callback_invocation_span)
     : reader_(std::move(reader)),
       writer_(std::move(writer)),
       flush_policy_(flush_policy),
-      file_progress_callback_(file_progress_callback),
+      file_progress_callback_(std::move(file_progress_callback)),
       io_buffer_(base::MakeRefCounted<net::IOBufferWithSize>(buffer_size)),
       num_copied_bytes_(0),
       previous_flush_offset_(0),
@@ -614,79 +613,73 @@ CopyOrMoveOperationDelegate::StreamCopyHelper::~StreamCopyHelper() = default;
 
 void CopyOrMoveOperationDelegate::StreamCopyHelper::Run(
     StatusCallback callback) {
+  DCHECK(callback);
+  DCHECK(!completion_callback_);
+
+  completion_callback_ = std::move(callback);
+
   file_progress_callback_.Run(0);
   last_progress_callback_invocation_time_ = base::Time::Now();
-  Read(std::move(callback));
+  Read();
 }
 
 void CopyOrMoveOperationDelegate::StreamCopyHelper::Cancel() {
   cancel_requested_ = true;
 }
 
-void CopyOrMoveOperationDelegate::StreamCopyHelper::Read(
-    StatusCallback callback) {
-  auto repeatable_callback =
-      base::AdaptCallbackForRepeating(std::move(callback));
+void CopyOrMoveOperationDelegate::StreamCopyHelper::Read() {
   int result = reader_->Read(
       io_buffer_.get(), io_buffer_->size(),
-      base::BindOnce(&StreamCopyHelper::DidRead, weak_factory_.GetWeakPtr(),
-                     repeatable_callback));
+      base::BindOnce(&StreamCopyHelper::DidRead, weak_factory_.GetWeakPtr()));
   if (result != net::ERR_IO_PENDING)
-    DidRead(repeatable_callback, result);
+    DidRead(result);
 }
 
-void CopyOrMoveOperationDelegate::StreamCopyHelper::DidRead(
-    StatusCallback callback,
-    int result) {
+void CopyOrMoveOperationDelegate::StreamCopyHelper::DidRead(int result) {
   if (cancel_requested_) {
-    std::move(callback).Run(base::File::FILE_ERROR_ABORT);
+    std::move(completion_callback_).Run(base::File::FILE_ERROR_ABORT);
     return;
   }
 
   if (result < 0) {
-    std::move(callback).Run(NetErrorToFileError(result));
+    std::move(completion_callback_).Run(NetErrorToFileError(result));
     return;
   }
 
   if (result == 0) {
     // Here is the EOF.
     if (flush_policy_ == storage::FlushPolicy::FLUSH_ON_COMPLETION)
-      Flush(std::move(callback), true /* is_eof */);
+      Flush(true /* is_eof */);
     else
-      std::move(callback).Run(base::File::FILE_OK);
+      std::move(completion_callback_).Run(base::File::FILE_OK);
     return;
   }
 
-  Write(std::move(callback),
-        base::MakeRefCounted<net::DrainableIOBuffer>(io_buffer_, result));
+  Write(base::MakeRefCounted<net::DrainableIOBuffer>(io_buffer_, result));
 }
 
 void CopyOrMoveOperationDelegate::StreamCopyHelper::Write(
-    StatusCallback callback,
     scoped_refptr<net::DrainableIOBuffer> buffer) {
   DCHECK_GT(buffer->BytesRemaining(), 0);
 
-  auto repeatable_callback =
-      base::AdaptCallbackForRepeating(std::move(callback));
-  int result = writer_->Write(
-      buffer.get(), buffer->BytesRemaining(),
-      base::BindOnce(&StreamCopyHelper::DidWrite, weak_factory_.GetWeakPtr(),
-                     repeatable_callback, buffer));
+  int result =
+      writer_->Write(buffer.get(), buffer->BytesRemaining(),
+                     base::BindOnce(&StreamCopyHelper::DidWrite,
+                                    weak_factory_.GetWeakPtr(), buffer));
   if (result != net::ERR_IO_PENDING)
-    DidWrite(repeatable_callback, buffer, result);
+    DidWrite(buffer, result);
 }
 
 void CopyOrMoveOperationDelegate::StreamCopyHelper::DidWrite(
-    StatusCallback callback,
     scoped_refptr<net::DrainableIOBuffer> buffer,
     int result) {
   if (cancel_requested_) {
-    std::move(callback).Run(base::File::FILE_ERROR_ABORT);
+    std::move(completion_callback_).Run(base::File::FILE_ERROR_ABORT);
     return;
   }
 
   if (result < 0) {
-    std::move(callback).Run(NetErrorToFileError(result));
+    std::move(completion_callback_).Run(NetErrorToFileError(result));
     return;
   }
 
@@ -702,44 +695,38 @@ void CopyOrMoveOperationDelegate::StreamCopyHelper::DidWrite(
   }
 
   if (buffer->BytesRemaining() > 0) {
-    Write(std::move(callback), buffer);
+    Write(buffer);
     return;
   }
 
   if (flush_policy_ == storage::FlushPolicy::FLUSH_ON_COMPLETION &&
       (num_copied_bytes_ - previous_flush_offset_) > kFlushIntervalInBytes) {
-    Flush(std::move(callback), false /* not is_eof */);
+    Flush(false /* not is_eof */);
   } else {
-    Read(std::move(callback));
+    Read();
   }
 }
 
-void CopyOrMoveOperationDelegate::StreamCopyHelper::Flush(
-    StatusCallback callback,
-    bool is_eof) {
-  auto repeatable_callback =
-      base::AdaptCallbackForRepeating(std::move(callback));
-  int result = writer_->Flush(base::BindOnce(&StreamCopyHelper::DidFlush,
-                                             weak_factory_.GetWeakPtr(),
-                                             repeatable_callback, is_eof));
+void CopyOrMoveOperationDelegate::StreamCopyHelper::Flush(bool is_eof) {
+  int result = writer_->Flush(base::BindOnce(
+      &StreamCopyHelper::DidFlush, weak_factory_.GetWeakPtr(), is_eof));
   if (result != net::ERR_IO_PENDING)
-    DidFlush(repeatable_callback, is_eof, result);
+    DidFlush(is_eof, result);
 }
 
 void CopyOrMoveOperationDelegate::StreamCopyHelper::DidFlush(
-    StatusCallback callback,
     bool is_eof,
     int result) {
   if (cancel_requested_) {
-    std::move(callback).Run(base::File::FILE_ERROR_ABORT);
+    std::move(completion_callback_).Run(base::File::FILE_ERROR_ABORT);
     return;
   }
 
   previous_flush_offset_ = num_copied_bytes_;
   if (is_eof)
-    std::move(callback).Run(NetErrorToFileError(result));
+    std::move(completion_callback_).Run(NetErrorToFileError(result));
   else
-    Read(std::move(callback));
+    Read();
 }
 
 CopyOrMoveOperationDelegate::CopyOrMoveOperationDelegate(
@@ -814,8 +801,8 @@ void CopyOrMoveOperationDelegate::ProcessFile(const FileSystemURL& src_url,
        operation_type_ == OPERATION_MOVE)) {
     impl = std::make_unique<CopyOrMoveOnSameFileSystemImpl>(
         operation_runner(), operation_type_, src_url, dest_url, option_,
-        base::Bind(&CopyOrMoveOperationDelegate::OnCopyFileProgress,
-                   weak_factory_.GetWeakPtr(), src_url));
+        base::BindRepeating(&CopyOrMoveOperationDelegate::OnCopyFileProgress,
+                            weak_factory_.GetWeakPtr(), src_url));
   } else {
     // Cross filesystem case.
     base::File::Error error = base::File::FILE_ERROR_FAILED;
@@ -841,8 +828,9 @@ void CopyOrMoveOperationDelegate::ProcessFile(const FileSystemURL& src_url,
         impl = std::make_unique<StreamCopyOrMoveImpl>(
             operation_runner(), file_system_context(), operation_type_, src_url,
             dest_url, option_, std::move(reader), std::move(writer),
-            base::Bind(&CopyOrMoveOperationDelegate::OnCopyFileProgress,
-                       weak_factory_.GetWeakPtr(), src_url));
+            base::BindRepeating(
+                &CopyOrMoveOperationDelegate::OnCopyFileProgress,
+                weak_factory_.GetWeakPtr(), src_url));
       }
     }
 
@@ -850,8 +838,8 @@ void CopyOrMoveOperationDelegate::ProcessFile(const FileSystemURL& src_url,
       impl = std::make_unique<SnapshotCopyOrMoveImpl>(
           operation_runner(), operation_type_, src_url, dest_url, option_,
           validator_factory,
-          base::Bind(&CopyOrMoveOperationDelegate::OnCopyFileProgress,
-                     weak_factory_.GetWeakPtr(), src_url));
+          base::BindRepeating(&CopyOrMoveOperationDelegate::OnCopyFileProgress,
+                              weak_factory_.GetWeakPtr(), src_url));
     }
   }
 

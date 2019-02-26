@@ -46,7 +46,7 @@ ApplicationCacheErrorEvent::ApplicationCacheErrorEvent(
     const String& url,
     int status,
     const String& message)
-    : Event(EventTypeNames::error, Bubbles::kNo, Cancelable::kNo),
+    : Event(event_type_names::kError, Bubbles::kNo, Cancelable::kNo),
       reason_(ErrorReasonToString(reason)),
       url_(url),
       status_(status),
@@ -54,16 +54,16 @@ ApplicationCacheErrorEvent::ApplicationCacheErrorEvent(
 
 ApplicationCacheErrorEvent::ApplicationCacheErrorEvent(
     const AtomicString& event_type,
-    const ApplicationCacheErrorEventInit& initializer)
+    const ApplicationCacheErrorEventInit* initializer)
     : Event(event_type, initializer), status_(0) {
-  if (initializer.hasReason())
-    reason_ = initializer.reason();
-  if (initializer.hasURL())
-    url_ = initializer.url();
-  if (initializer.hasStatus())
-    status_ = initializer.status();
-  if (initializer.hasMessage())
-    message_ = initializer.message();
+  if (initializer->hasReason())
+    reason_ = initializer->reason();
+  if (initializer->hasURL())
+    url_ = initializer->url();
+  if (initializer->hasStatus())
+    status_ = initializer->status();
+  if (initializer->hasMessage())
+    message_ = initializer->message();
 }
 
 ApplicationCacheErrorEvent::~ApplicationCacheErrorEvent() = default;

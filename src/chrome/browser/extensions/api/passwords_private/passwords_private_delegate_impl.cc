@@ -122,27 +122,26 @@ void PasswordsPrivateDelegateImpl::GetPasswordExceptionsList(
     get_password_exception_list_callbacks_.push_back(callback);
 }
 
-void PasswordsPrivateDelegateImpl::RemoveSavedPassword(size_t index) {
+void PasswordsPrivateDelegateImpl::RemoveSavedPassword(int id) {
   ExecuteFunction(
       base::Bind(&PasswordsPrivateDelegateImpl::RemoveSavedPasswordInternal,
-                 base::Unretained(this), index));
+                 base::Unretained(this), id));
 }
 
-void PasswordsPrivateDelegateImpl::RemoveSavedPasswordInternal(size_t index) {
-  const std::string* sort_key = password_id_generator_.TryGetSortKey(index);
+void PasswordsPrivateDelegateImpl::RemoveSavedPasswordInternal(int id) {
+  const std::string* sort_key = password_id_generator_.TryGetSortKey(id);
   if (sort_key)
     password_manager_presenter_->RemoveSavedPassword(*sort_key);
 }
 
-void PasswordsPrivateDelegateImpl::RemovePasswordException(size_t index) {
+void PasswordsPrivateDelegateImpl::RemovePasswordException(int id) {
   ExecuteFunction(
       base::Bind(&PasswordsPrivateDelegateImpl::RemovePasswordExceptionInternal,
-                 base::Unretained(this), index));
+                 base::Unretained(this), id));
 }
 
-void PasswordsPrivateDelegateImpl::RemovePasswordExceptionInternal(
-    size_t index) {
-  const std::string* sort_key = exception_id_generator_.TryGetSortKey(index);
+void PasswordsPrivateDelegateImpl::RemovePasswordExceptionInternal(int id) {
+  const std::string* sort_key = exception_id_generator_.TryGetSortKey(id);
   if (sort_key)
     password_manager_presenter_->RemovePasswordException(*sort_key);
 }
@@ -159,15 +158,15 @@ void PasswordsPrivateDelegateImpl::
 }
 
 void PasswordsPrivateDelegateImpl::RequestShowPassword(
-    size_t index,
+    int id,
     content::WebContents* web_contents) {
   ExecuteFunction(
       base::Bind(&PasswordsPrivateDelegateImpl::RequestShowPasswordInternal,
-                 base::Unretained(this), index, web_contents));
+                 base::Unretained(this), id, web_contents));
 }
 
 void PasswordsPrivateDelegateImpl::RequestShowPasswordInternal(
-    size_t index,
+    int id,
     content::WebContents* web_contents) {
   // Save |web_contents| so that the call to RequestShowPassword() below
   // can use this value by calling GetNativeWindow(). Note: This is safe because
@@ -182,7 +181,7 @@ void PasswordsPrivateDelegateImpl::RequestShowPasswordInternal(
   }
 
   // Request the password. When it is retrieved, ShowPassword() will be called.
-  const std::string* sort_key = password_id_generator_.TryGetSortKey(index);
+  const std::string* sort_key = password_id_generator_.TryGetSortKey(id);
   if (sort_key)
     password_manager_presenter_->RequestShowPassword(*sort_key);
 }
@@ -223,7 +222,7 @@ void PasswordsPrivateDelegateImpl::SetPasswordList(
     api::passwords_private::PasswordUiEntry entry;
     entry.login_pair.urls = CreateUrlCollectionFromForm(*form);
     entry.login_pair.username = base::UTF16ToUTF8(form->username_value);
-    entry.index = password_id_generator_.GenerateId(
+    entry.id = password_id_generator_.GenerateId(
         password_manager::CreateSortKey(*form));
     entry.num_characters_in_password = form->password_value.length();
 
@@ -258,7 +257,7 @@ void PasswordsPrivateDelegateImpl::SetPasswordExceptionList(
   for (const auto& form : password_exception_list) {
     api::passwords_private::ExceptionEntry current_exception_entry;
     current_exception_entry.urls = CreateUrlCollectionFromForm(*form);
-    current_exception_entry.index = exception_id_generator_.GenerateId(
+    current_exception_entry.id = exception_id_generator_.GenerateId(
         password_manager::CreateSortKey(*form));
     current_exceptions_.push_back(std::move(current_exception_entry));
   }

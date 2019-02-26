@@ -20,6 +20,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/test/event_generator.h"
 
+#if defined(OS_CHROMEOS)
+#include "ui/aura/window.h"
+#endif
+
 using testing::_;
 using testing::AtLeast;
 
@@ -86,7 +90,8 @@ IN_PROC_BROWSER_TEST_F(BrowserShutdownBrowserTest,
 IN_PROC_BROWSER_TEST_F(BrowserShutdownBrowserTest, ShutdownConfirmation) {
   const int modifiers = ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN;
 
-  ui::test::EventGenerator generator(browser()->window()->GetNativeWindow());
+  ui::test::EventGenerator generator(
+      browser()->window()->GetNativeWindow()->GetRootWindow());
 
   // Press the accelerator for quitting.
   generator.PressKey(ui::VKEY_Q, modifiers);

@@ -77,7 +77,7 @@ class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier>,
                            UnloadedExtensionReason reason) override;
 
   using ContentHashCallback =
-      base::OnceCallback<void(const scoped_refptr<const ContentHash>&)>;
+      base::OnceCallback<void(scoped_refptr<const ContentHash>)>;
 
   // Retrieves ContentHash for an extension through |callback|.
   // Must be called on IO thread.
@@ -110,12 +110,17 @@ class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier>,
 
   void ShutdownOnIO();
 
+  struct CacheKey;
   class HashHelper;
 
   void OnFetchComplete(const scoped_refptr<const ContentHash>& content_hash);
   ContentHash::FetchParams GetFetchParams(
       const ExtensionId& extension_id,
       const base::Version& extension_version);
+
+  void DidGetContentHash(const CacheKey& cache_key,
+                         ContentHashCallback orig_callback,
+                         scoped_refptr<const ContentHash> content_hash);
 
   // Binds an URLLoaderFactoryRequest on the UI thread.
   void BindURLLoaderFactoryRequestOnUIThread(
@@ -161,6 +166,8 @@ class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier>,
   // Created and used on IO thread.
   std::unique_ptr<HashHelper, content::BrowserThread::DeleteOnIOThread>
       hash_helper_;
+
+  std::map<CacheKey, scoped_refptr<const ContentHash>> cache_;
 
   std::unique_ptr<ContentVerifierDelegate> delegate_;
 

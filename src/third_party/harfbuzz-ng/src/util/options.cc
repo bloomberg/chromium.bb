@@ -29,9 +29,7 @@
 #ifdef HAVE_FREETYPE
 #include <hb-ft.h>
 #endif
-#ifdef HAVE_OT
 #include <hb-ot.h>
-#endif
 
 static struct supported_font_funcs_t {
 	char name[4];
@@ -41,9 +39,7 @@ static struct supported_font_funcs_t {
 #ifdef HAVE_FREETYPE
   {"ft",	hb_ft_font_set_funcs},
 #endif
-#ifdef HAVE_OT
   {"ot",	hb_ot_font_set_funcs},
-#endif
 };
 
 
@@ -329,6 +325,7 @@ parse_text (const char *name G_GNUC_UNUSED,
     return false;
   }
 
+  text_opts->text_len = -1;
   text_opts->text = g_strdup (arg);
   return true;
 }
@@ -374,6 +371,7 @@ parse_unicodes (const char *name G_GNUC_UNUSED,
     s = p;
   }
 
+  text_opts->text_len = gs->len;
   text_opts->text = g_string_free (gs, FALSE);
   return true;
 }
@@ -415,6 +413,7 @@ shape_options_t::add_options (option_parser_t *parser)
     {"eot",		0, 0, G_OPTION_ARG_NONE,	&this->eot,			"Treat text as end-of-paragraph",	nullptr},
     {"preserve-default-ignorables",0, 0, G_OPTION_ARG_NONE,	&this->preserve_default_ignorables,	"Preserve Default-Ignorable characters",	nullptr},
     {"remove-default-ignorables",0, 0, G_OPTION_ARG_NONE,	&this->remove_default_ignorables,	"Remove Default-Ignorable characters",	nullptr},
+    {"invisible-glyph",	0, 0, G_OPTION_ARG_INT,		&this->invisible_glyph,		"Glyph value to replace Default-Ignorables with",	nullptr},
     {"utf8-clusters",	0, 0, G_OPTION_ARG_NONE,	&this->utf8_clusters,		"Use UTF8 byte indices, not char indices",	nullptr},
     {"cluster-level",	0, 0, G_OPTION_ARG_INT,		&this->cluster_level,		"Cluster merging level (default: 0)",	"0/1/2"},
     {"normalize-glyphs",0, 0, G_OPTION_ARG_NONE,	&this->normalize_glyphs,	"Rearrange glyph clusters in nominal order",	nullptr},
@@ -663,7 +662,7 @@ font_options_t::get_font (void) const
   blob = hb_blob_create_from_file (font_path);
 
   if (blob == hb_blob_get_empty ())
-    fail (false, "No such file or directory");
+    fail (false, "Couldn't read or find %s, or it was empty.", font_path);
 
   /* Create the face */
   hb_face_t *face = hb_face_create (blob, face_index);
@@ -730,7 +729,11 @@ const char *
 text_options_t::get_line (unsigned int *len)
 {
   if (text) {
-    if (!line) line = text;
+    if (!line)
+    {
+      line = text;
+      line_len = text_len;
+    }
     if (line_len == (unsigned int) -1)
       line_len = strlen (line);
 

@@ -57,6 +57,7 @@
 #include "third_party/blink/renderer/core/svg/radial_gradient_attributes.h"
 #include "third_party/blink/renderer/core/svg/svg_circle_element.h"
 #include "third_party/blink/renderer/core/svg/svg_ellipse_element.h"
+#include "third_party/blink/renderer/core/svg/svg_enumeration_map.h"
 #include "third_party/blink/renderer/core/svg/svg_filter_element.h"
 #include "third_party/blink/renderer/core/svg/svg_line_element.h"
 #include "third_party/blink/renderer/core/svg/svg_linear_gradient_element.h"
@@ -172,40 +173,21 @@ static WTF::TextStream& operator<<(WTF::TextStream& ts, const WindRule rule) {
   return ts;
 }
 
-namespace {
-
-template <typename Enum>
-String SVGEnumerationToString(Enum value) {
-  const SVGEnumerationStringEntries& entries = GetStaticStringEntries<Enum>();
-
-  SVGEnumerationStringEntries::const_iterator it = entries.begin();
-  SVGEnumerationStringEntries::const_iterator it_end = entries.end();
-  for (; it != it_end; ++it) {
-    if (value == it->first)
-      return it->second;
-  }
-
-  NOTREACHED();
-  return String();
-}
-
-}  // namespace
-
 static WTF::TextStream& operator<<(WTF::TextStream& ts,
                                    const SVGUnitTypes::SVGUnitType& unit_type) {
-  ts << SVGEnumerationToString<SVGUnitTypes::SVGUnitType>(unit_type);
+  ts << GetEnumerationMap<SVGUnitTypes::SVGUnitType>().NameFromValue(unit_type);
   return ts;
 }
 
 static WTF::TextStream& operator<<(WTF::TextStream& ts,
                                    const SVGMarkerUnitsType& marker_unit) {
-  ts << SVGEnumerationToString<SVGMarkerUnitsType>(marker_unit);
+  ts << GetEnumerationMap<SVGMarkerUnitsType>().NameFromValue(marker_unit);
   return ts;
 }
 
 static WTF::TextStream& operator<<(WTF::TextStream& ts,
                                    const SVGMarkerOrientType& orient_type) {
-  ts << SVGEnumerationToString<SVGMarkerOrientType>(orient_type);
+  ts << GetEnumerationMap<SVGMarkerOrientType>().NameFromValue(orient_type);
   return ts;
 }
 
@@ -243,7 +225,8 @@ static WTF::TextStream& operator<<(WTF::TextStream& ts, LineJoin style) {
 
 static WTF::TextStream& operator<<(WTF::TextStream& ts,
                                    const SVGSpreadMethodType& type) {
-  ts << SVGEnumerationToString<SVGSpreadMethodType>(type).UpperASCII();
+  auto* name = GetEnumerationMap<SVGSpreadMethodType>().NameFromValue(type);
+  ts << String(name).UpperASCII();
   return ts;
 }
 

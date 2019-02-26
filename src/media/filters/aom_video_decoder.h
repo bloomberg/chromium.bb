@@ -6,17 +6,18 @@
 #define MEDIA_FILTERS_AOM_VIDEO_DECODER_H_
 
 #include "base/callback_forward.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
-#include "media/base/video_frame_pool.h"
 
 struct aom_codec_ctx;
 struct aom_image;
 
 namespace media {
+class FrameBufferPool;
 class MediaLog;
 
 // libaom video decoder wrapper.
@@ -73,7 +74,10 @@ class MEDIA_EXPORT AomVideoDecoder : public VideoDecoder {
   VideoDecoderConfig config_;
 
   // Pool used for memory efficiency when vending frames from the decoder.
-  VideoFramePool frame_pool_;
+  scoped_refptr<FrameBufferPool> memory_pool_;
+
+  // Timestamps are FIFO for libaom decoding.
+  base::circular_deque<base::TimeDelta> timestamps_;
 
   // The allocated decoder; null before Initialize() and anytime after
   // CloseDecoder().

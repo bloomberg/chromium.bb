@@ -8,12 +8,12 @@
 // DO NOT MODIFY!
 
 // clang-format off
-
-#ifndef V8VoidCallbackFunctionTestInterfaceSequenceArg_h
-#define V8VoidCallbackFunctionTestInterfaceSequenceArg_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_V8_VOID_CALLBACK_FUNCTION_TEST_INTERFACE_SEQUENCE_ARG_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_V8_VOID_CALLBACK_FUNCTION_TEST_INTERFACE_SEQUENCE_ARG_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/callback_function_base.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -23,9 +23,11 @@ class TestInterfaceImplementation;
 class CORE_EXPORT V8VoidCallbackFunctionTestInterfaceSequenceArg final : public CallbackFunctionBase {
  public:
   static V8VoidCallbackFunctionTestInterfaceSequenceArg* Create(v8::Local<v8::Function> callback_function) {
-    return new V8VoidCallbackFunctionTestInterfaceSequenceArg(callback_function);
+    return MakeGarbageCollected<V8VoidCallbackFunctionTestInterfaceSequenceArg>(callback_function);
   }
 
+  explicit V8VoidCallbackFunctionTestInterfaceSequenceArg(v8::Local<v8::Function> callback_function)
+      : CallbackFunctionBase(callback_function) {}
   ~V8VoidCallbackFunctionTestInterfaceSequenceArg() override = default;
 
   // NameClient overrides:
@@ -38,10 +40,6 @@ class CORE_EXPORT V8VoidCallbackFunctionTestInterfaceSequenceArg final : public 
   // Performs "invoke", and then reports an exception, if any, to the global
   // error handler such as DevTools' console.
   void InvokeAndReportException(ScriptWrappable* callback_this_value, const HeapVector<Member<TestInterfaceImplementation>>& arg);
-
- private:
-  explicit V8VoidCallbackFunctionTestInterfaceSequenceArg(v8::Local<v8::Function> callback_function)
-      : CallbackFunctionBase(callback_function) {}
 };
 
 template <>
@@ -79,4 +77,4 @@ Persistent<V8VoidCallbackFunctionTestInterfaceSequenceArg> WrapPersistent(V8Void
 
 }  // namespace blink
 
-#endif  // V8VoidCallbackFunctionTestInterfaceSequenceArg_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_V8_VOID_CALLBACK_FUNCTION_TEST_INTERFACE_SEQUENCE_ARG_H_

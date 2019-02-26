@@ -50,8 +50,8 @@ FEDropShadow* FEDropShadow::Create(Filter* filter,
                                    float dy,
                                    const Color& shadow_color,
                                    float shadow_opacity) {
-  return new FEDropShadow(filter, std_x, std_y, dx, dy, shadow_color,
-                          shadow_opacity);
+  return MakeGarbageCollected<FEDropShadow>(filter, std_x, std_y, dx, dy,
+                                            shadow_color, shadow_opacity);
 }
 
 FloatRect FEDropShadow::MapEffect(const FloatSize& std_deviation,
@@ -75,8 +75,8 @@ FloatRect FEDropShadow::MapEffect(const FloatRect& rect) const {
 }
 
 sk_sp<PaintFilter> FEDropShadow::CreateImageFilter() {
-  sk_sp<PaintFilter> input(
-      PaintFilterBuilder::Build(InputEffect(0), OperatingInterpolationSpace()));
+  sk_sp<PaintFilter> input(paint_filter_builder::Build(
+      InputEffect(0), OperatingInterpolationSpace()));
   float dx = GetFilter()->ApplyHorizontalScale(dx_);
   float dy = GetFilter()->ApplyVerticalScale(dy_);
   float std_x = GetFilter()->ApplyHorizontalScale(std_x_);

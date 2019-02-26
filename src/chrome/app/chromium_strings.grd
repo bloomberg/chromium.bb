@@ -220,7 +220,7 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
           Chromium OS is made possible by additional <ph name="BEGIN_LINK_CROS_OSS">&lt;a target="_blank" href="$1"&gt;</ph>open source software<ph name="END_LINK_CROS_OSS">&lt;/a&gt;</ph>.
         </message>
         <message name="IDS_ABOUT_CROS_WITH_LINUX_VERSION_LICENSE" desc="Additional text displayed beneath the Chromium open source URLs for Chrome OS when Crostini is installed.">
-          Chrome OS is made possible by additional <ph name="BEGIN_LINK_CROS_OSS">&lt;a target="_blank" href="$1"&gt;</ph>open source software<ph name="END_LINK_CROS_OSS">&lt;/a&gt;</ph>, as is <ph name="BEGIN_LINK_LINUX_OSS">&lt;a target="_blank" href="$2"&gt;</ph>Linux (Beta)<ph name="END_LINK_LINUX_OSS">&lt;/a&gt;</ph>.
+          Chromium OS is made possible by additional <ph name="BEGIN_LINK_CROS_OSS">&lt;a target="_blank" href="$1"&gt;</ph>open source software<ph name="END_LINK_CROS_OSS">&lt;/a&gt;</ph>, as is <ph name="BEGIN_LINK_LINUX_OSS">&lt;a target="_blank" href="$2"&gt;</ph>Linux (Beta)<ph name="END_LINK_LINUX_OSS">&lt;/a&gt;</ph>.
         </message>
         <message name="IDS_ABOUT_SAFETY_INFORMATION" desc="The safety label in the About box." translateable="false">
           Not used in Chromium. Placeholder to keep resource maps in sync.
@@ -513,10 +513,6 @@ Chromium is unable to recover your settings.
       </if>
 
       <!-- Extension/App install prompt -->
-      <message name="IDS_EXTENSION_INLINE_INSTALL_PROMPT_TITLE" desc="Titlebar of the extension or app inline installation prompt window">
-        Add to Chromium
-      </message>
-
       <if expr="enable_extensions">
         <!-- Extension installed bubble -->
         <message name="IDS_EXTENSION_INSTALLED_HEADING" desc="Title of the extension-installed bubble. Instructs that the extension was installed.">
@@ -684,15 +680,6 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
         </message>
       </if>
 
-      <if expr="toolkit_views">
-        <message name="IDS_ENTERPRISE_FORCE_SIGNOUT_EXPLANATION" desc="Text of the reason to sign out">
-          Authentication certificate failed. Please sign in to Chromium again as <ph name="USER_NAME">$1<ex>pat@example.com</ex></ph> or contact your administrator for more information. <ph name="ADDITIONAL_EXPLANATION">$2</ph>
-        </message>
-        <message name="IDS_ENTERPRISE_FORCE_SIGNOUT_EXPLANATION_WITHOUT_USER_NAME" desc="Text of the reason to sign out when there is no valid email address">
-          Authentication certificate failed. Please sign in to Chromium again or contact your administrator for more information. <ph name="ADDITIONAL_EXPLANATION">$2</ph>
-        </message>
-      </if>
-
       <!-- Signin Email Confirmation tab modal dialog -->
       <if expr="not chromeos">
         <message name="IDS_SIGNIN_EMAIL_CONFIRMATION_TITLE" desc="Title of the signin email confirmation tab modal dialog.">
@@ -748,13 +735,6 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
       <message name="IDS_AUTOFILL_DESCRIBE_LOCAL_COPY" desc="Text label that described a Wallet credit card which has been copied to the local Chrome instance.">
         Copied to Chromium
       </message>
-
-      <!-- Chrome OS keyboard overlay-->
-      <if expr="chromeos">
-        <message name="IDS_KEYBOARD_OVERLAY_SHOW_WRENCH_MENU" desc="The text in the keyboard overlay to explain the shortcut that opens the main Chrome menu.">
-          Show Chromium menu
-        </message>
-      </if>
 
       <!-- App list -->
       <if expr="enable_app_list">
@@ -849,7 +829,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@example.com</
 
         <!-- User pod remove sync warning text -->
         <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_SYNC" desc="Main text shown as a warning when attempting to remove an user.">
-          This person's browsing data will be deleted from this device. To recover the data, sign in to Chrome as $2.
+          This person's browsing data will be deleted from this device. To recover the data, sign in to Chromium as $2.
         </message>
 
         <!-- Tutorial -->
@@ -1042,10 +1022,10 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@example.com</
          other {Chromium will restart in # seconds}}
       </message>
       <message name="IDS_CRITICAL_NOTIFICATION_TITLE_ALTERNATE" desc="The title for a bubble that appears when there is a critical update and Chromium must restart to install it. The title was previously countng down to an automatic restart and now it has finished. Will only be seen if a web page stops the shutdown process.">
-        You should restart Chromium now.
+        You should restart Chromium now
       </message>
       <message name="IDS_CRITICAL_NOTIFICATION_TEXT" desc="Explanation text for the bubble that appears when there is a critical update and Chromium must restart to install it.">
-        A special security update for Chromium was just applied; you should restart now for it to take effect (we'll restore your tabs).
+        A special security update for Chromium was just applied. Restart now and we'll restore your tabs.
       </message>
 
       <!-- Dialog that asks whether user wants to participate in Safe Browsing Extended Reporting -->
@@ -1120,7 +1100,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@example.com</
       <!-- OOM intervention message -->
       <if expr="is_android">
         <message name="IDS_NEAR_OOM_REDUCTION_MESSAGE" desc="The message stating that the browser removed some content of the page using too much memory.">
-           This page uses too much memory, so Chrome removed some content.
+           This page uses too much memory, so Chromium removed some content.
         </message>
       </if>
 
@@ -1274,7 +1254,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@example.com</
           </else>
         </if>
       </if>
-      <!-- Chroium launch blocking dialog. -->
+      <!-- Chromium launch blocking dialog. -->
       <if expr="not is_android and not chromeos">
          <message name="IDS_ENTERPRISE_STARTUP_CLOUD_POLICY_ENROLLMENT_TOOLTIP" desc="The information message of Chromium launch blocking dialog for machine level user cloud policy enrollment.">
           Launching Chromium...

@@ -107,6 +107,10 @@ cr.define('cr.ui', function() {
         if (menuItem instanceof cr.ui.FilesMenuItem)
           menuItem.setAnimating_(value);
       }
+
+      if (!value) {
+        menu.classList.remove('toolbar-menu');
+      }
     },
 
     /**

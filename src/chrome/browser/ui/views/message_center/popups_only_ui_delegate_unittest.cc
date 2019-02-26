@@ -60,7 +60,7 @@ class PopupsOnlyUiDelegateTest : public views::test::WidgetTest {
         base::ASCIIToUTF16("Notification message body."), gfx::Image(),
         base::ASCIIToUTF16("Some Chrome extension"),
         GURL("chrome-extension://abbccedd"),
-        NotifierId(NotifierId::APPLICATION, id),
+        NotifierId(message_center::NotifierType::APPLICATION, id),
         message_center::RichNotificationData(), nullptr);
 
     MessageCenter::Get()->AddNotification(std::move(notification));
@@ -73,7 +73,7 @@ class PopupsOnlyUiDelegateTest : public views::test::WidgetTest {
         base::ASCIIToUTF16("Notification message body."), gfx::Image(),
         base::ASCIIToUTF16("Some Chrome extension"),
         GURL("chrome-extension://abbccedd"),
-        NotifierId(NotifierId::APPLICATION, id),
+        NotifierId(message_center::NotifierType::APPLICATION, id),
         message_center::RichNotificationData(), nullptr);
 
     MessageCenter::Get()->UpdateNotification(id, std::move(notification));
@@ -92,8 +92,7 @@ class PopupsOnlyUiDelegateTest : public views::test::WidgetTest {
 };
 
 TEST_F(PopupsOnlyUiDelegateTest, WebNotificationPopupBubble) {
-  auto ui_controller = std::make_unique<PopupsOnlyUiController>(
-      std::make_unique<PopupsOnlyUiDelegate>());
+  auto ui_controller = std::make_unique<PopupsOnlyUiController>();
 
   // Adding a notification should show the popup bubble.
   AddNotification("id1");
@@ -116,8 +115,7 @@ TEST_F(PopupsOnlyUiDelegateTest, WebNotificationPopupBubble) {
 }
 
 TEST_F(PopupsOnlyUiDelegateTest, ManyPopupNotifications) {
-  auto ui_controller = std::make_unique<PopupsOnlyUiController>(
-      std::make_unique<PopupsOnlyUiDelegate>());
+  auto ui_controller = std::make_unique<PopupsOnlyUiController>();
 
   // Add the max visible popup notifications +1, ensure the correct num visible.
   size_t notifications_to_add =

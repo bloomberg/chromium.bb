@@ -11,21 +11,25 @@
 #import "base/test/ios/wait_util.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/autofill/ios/browser/autofill_switches.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_accessory_view_controller.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/password_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/password_mediator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/password_view_controller.h"
-#import "ios/chrome/browser/ui/ui_util.h"
+#import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#include "ios/web/public/features.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #include "ios/web/public/test/element_selector.h"
+#import "ios/web/public/test/web_view_interaction_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 
@@ -36,16 +40,23 @@
 namespace {
 
 const char kFormElementUsername[] = "username";
+const char kFormElementPassword[] = "password";
 
 const char kExampleUsername[] = "concrete username";
 const char kExamplePassword[] = "concrete password";
 
 const char kFormHTMLFile[] = "/username_password_field_form.html";
+const char kIFrameHTMLFile[] = "/iframe_form.html";
 
 // Returns a matcher for the password icon in the keyboard accessory bar.
 id<GREYMatcher> PasswordIconMatcher() {
   return grey_accessibilityID(
       manual_fill::AccessoryPasswordAccessibilityIdentifier);
+}
+
+id<GREYMatcher> KeyboardIconMatcher() {
+  return grey_accessibilityID(
+      manual_fill::AccessoryKeyboardAccessibilityIdentifier);
 }
 
 // Returns a matcher for the password table view in manual fallback.
@@ -73,6 +84,11 @@ id<GREYMatcher> OtherPasswordsMatcher() {
       manual_fill::OtherPasswordsAccessibilityIdentifier);
 }
 
+id<GREYMatcher> OtherPasswordsDismissMatcher() {
+  return grey_accessibilityID(
+      manual_fill::PasswordDoneButtonAccessibilityIdentifier);
+}
+
 // Returns a matcher for the example username in the list.
 id<GREYMatcher> UsernameButtonMatcher() {
   return grey_buttonTitle(base::SysUTF8ToNSString(kExampleUsername));
@@ -86,6 +102,13 @@ id<GREYMatcher> PasswordSettingsMatcher() {
 // Returns a matcher for the search bar in password settings.
 id<GREYMatcher> PasswordSettingsSearchMatcher() {
   return grey_accessibilityID(@"SettingsSearchCellTextField");
+}
+
+// Returns a matcher for the PasswordTableView window.
+id<GREYMatcher> PasswordTableViewWindowMatcher() {
+  id<GREYMatcher> classMatcher = grey_kindOfClass([UIWindow class]);
+  id<GREYMatcher> parentMatcher = grey_descendant(PasswordTableViewMatcher());
+  return grey_allOf(classMatcher, parentMatcher, nil);
 }
 
 // Gets the current password store.
@@ -171,7 +194,17 @@ void SaveExamplePasswordForm() {
   autofill::PasswordForm example;
   example.username_value = base::ASCIIToUTF16(kExampleUsername);
   example.password_value = base::ASCIIToUTF16(kExamplePassword);
-  example.origin = GURL("https://example.com");
+  example.origin = GURL("https://example.com/");
+  example.signon_realm = example.origin.spec();
+  SaveToPasswordStore(example);
+}
+
+// Saves an example form in the store.
+void SaveLocalPasswordForm() {
+  autofill::PasswordForm example;
+  example.username_value = base::ASCIIToUTF16(kExampleUsername);
+  example.password_value = base::ASCIIToUTF16(kExamplePassword);
+  example.origin = GURL("http://127.0.0.1:55264");
   example.signon_realm = example.origin.spec();
   SaveToPasswordStore(example);
 }
@@ -183,6 +216,21 @@ void ClearPasswordStore() {
   TestStoreConsumer consumer;
   GREYAssert(consumer.GetStoreResults().empty(),
              @"PasswordStore was not cleared.");
+}
+
+// Polls the JavaScript query |java_script_condition| until the returned
+// |boolValue| is YES with a kWaitForActionTimeout timeout.
+BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
+  auto verify_block = ^BOOL {
+    id value = chrome_test_util::ExecuteJavaScript(java_script_condition, nil);
+    return [value isEqual:@YES];
+  };
+  NSTimeInterval timeout = base::test::ios::kWaitForActionTimeout;
+  NSString* condition_name = [NSString
+      stringWithFormat:@"Wait for JS condition: %@", java_script_condition];
+  GREYCondition* condition =
+      [GREYCondition conditionWithName:condition_name block:verify_block];
+  return [condition waitWithTimeout:timeout];
 }
 
 }  // namespace
@@ -201,19 +249,18 @@ void ClearPasswordStore() {
   const GURL URL = self.testServer->GetURL(kFormHTMLFile);
   [ChromeEarlGrey loadURL:URL];
   [ChromeEarlGrey waitForWebViewContainingText:"hello!"];
+  SaveExamplePasswordForm();
 }
 
 - (void)tearDown {
   ClearPasswordStore();
+  [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
+                           errorOrNil:nil];
   [super tearDown];
 }
 
-// Test that the passwords view controller appears on screen.
+// Tests that the passwords view controller appears on screen.
 - (void)testPasswordsViewControllerIsPresented {
-  // TODO:(https://crbug.com/878388) Enable on iPad when supported.
-  if (IsIPadIdiom())
-    return;
-
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
@@ -227,13 +274,9 @@ void ClearPasswordStore() {
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
-// Test that the passwords view controller contains the "Manage Passwords..."
+// Tests that the passwords view controller contains the "Manage Passwords..."
 // action.
 - (void)testPasswordsViewControllerContainsManagePasswordsAction {
-  // TODO:(https://crbug.com/878388) Enable on iPad when supported.
-  if (IsIPadIdiom())
-    return;
-
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
@@ -247,12 +290,8 @@ void ClearPasswordStore() {
       assertWithMatcher:grey_interactable()];
 }
 
-// Test that the "Manage Passwords..." action works.
+// Tests that the "Manage Passwords..." action works.
 - (void)testManagePasswordsActionOpensPasswordSettings {
-  // TODO:(https://crbug.com/878388) Enable on iPad when supported.
-  if (IsIPadIdiom())
-    return;
-
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
@@ -270,12 +309,8 @@ void ClearPasswordStore() {
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
-// Test that the Password View Controller is not present when presenting UI.
+// Tests that the Password View Controller is not present when presenting UI.
 - (void)testPasswordControllerPauses {
-  // TODO:(https://crbug.com/878388) Enable on iPad when supported.
-  if (IsIPadIdiom())
-    return;
-
   // For the search bar to appear in password settings at least one password is
   // needed.
   SaveExamplePasswordForm();
@@ -293,7 +328,6 @@ void ClearPasswordStore() {
       performAction:grey_tap()];
 
   // Tap the password search.
-
   [[EarlGrey selectElementWithMatcher:PasswordSettingsSearchMatcher()]
       performAction:grey_tap()];
 
@@ -303,12 +337,13 @@ void ClearPasswordStore() {
       assertWithMatcher:grey_notVisible()];
 }
 
-// Test that the Password View Controller is resumed after selecting other
+// Tests that the Password View Controller is resumed after selecting other
 // password.
 - (void)testPasswordControllerResumes {
-  // TODO:(https://crbug.com/878388) Enable on iPad when supported.
-  if (IsIPadIdiom())
+  if (([UIDevice currentDevice].systemVersion.doubleValue < 11.3)) {
+    // TODO(crbug.com/908776): OtherPasswordsMatcher is disabled in <11.3.
     return;
+  }
 
   // For this test one password is needed.
   SaveExamplePasswordForm();
@@ -321,7 +356,7 @@ void ClearPasswordStore() {
   [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
       performAction:grey_tap()];
 
-  // Tap the "Manage Passwords..." action.
+  // Tap the "Other Passwords..." action.
   [[EarlGrey selectElementWithMatcher:OtherPasswordsMatcher()]
       performAction:grey_tap()];
 
@@ -334,18 +369,277 @@ void ClearPasswordStore() {
   [[EarlGrey selectElementWithMatcher:UsernameButtonMatcher()]
       performAction:grey_tap()];
 
-  // Only on iOS 12 it is certain that on iPhones the keyboard is back. On iOS
-  // 11, it varies by device and version.
-  if (base::ios::IsRunningOnIOS12OrLater()) {
-    // Verify the password controller table view and the keyboard are visible.
-    GREYAssertTrue([GREYKeyboard isKeyboardShown], @"Keyboard Should be Shown");
+  // Wait for the password list to disappear. Using the search bar, since the
+  // popover doesn't have it.
+  [[EarlGrey selectElementWithMatcher:PasswordSearchBarMatcher()]
+      assertWithMatcher:grey_notVisible()];
+
+  // Only on iOS 11.3 it is certain that on iPhones the keyboard is back. On iOS
+  // 11.0-11.2, it varies by device and version.
+  if ([GREYKeyboard isKeyboardShown]) {
     [[EarlGrey selectElementWithMatcher:PasswordTableViewMatcher()]
         assertWithMatcher:grey_sufficientlyVisible()];
-  } else if (!base::ios::IsRunningOnIOS11OrLater()) {
-    // On iOS 10 the keyboard is hidden.
-    GREYAssertFalse([GREYKeyboard isKeyboardShown],
-                    @"Keyboard Should be Hidden");
+    [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
+        assertWithMatcher:grey_sufficientlyVisible()];
   }
+}
+
+// Tests that the Password View Controller is resumed after dismissing "Other
+// Passwords".
+- (void)testPasswordControllerResumesWhenOtherPasswordsDismiss {
+  if (([UIDevice currentDevice].systemVersion.doubleValue < 11.3)) {
+    // TODO(crbug.com/908776): OtherPasswordsMatcher is disabled in <11.3.
+    return;
+  }
+
+  // Bring up the keyboard.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+
+  // Tap on the passwords icon.
+  [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
+      performAction:grey_tap()];
+
+  // Tap the "Other Passwords..." action.
+  [[EarlGrey selectElementWithMatcher:OtherPasswordsMatcher()]
+      performAction:grey_tap()];
+
+  // Dismiss the Other Passwords view.
+  [[EarlGrey selectElementWithMatcher:OtherPasswordsDismissMatcher()]
+      performAction:grey_tap()];
+
+  // Wait for the password list to disappear. Using the search bar, since the
+  // popover doesn't have it.
+  [[EarlGrey selectElementWithMatcher:PasswordSearchBarMatcher()]
+      assertWithMatcher:grey_notVisible()];
+
+  // Only on iOS 11.3 it is certain that on iPhones the keyboard is back. On iOS
+  // 11.0-11.2, it varies by device and version.
+  if ([GREYKeyboard isKeyboardShown]) {
+    [[EarlGrey selectElementWithMatcher:PasswordTableViewMatcher()]
+        assertWithMatcher:grey_sufficientlyVisible()];
+    [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
+        assertWithMatcher:grey_sufficientlyVisible()];
+  }
+}
+
+// Tests that the Password View Controller is dismissed when tapping the
+// keyboard icon.
+- (void)testKeyboardIconDismissPasswordController {
+  if (IsIPadIdiom()) {
+    // The keyboard icon is never present in iPads.
+    return;
+  }
+  // Bring up the keyboard.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+
+  // Tap on the passwords icon.
+  [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
+      performAction:grey_tap()];
+
+  // Verify the password controller table view is visible.
+  [[EarlGrey selectElementWithMatcher:PasswordTableViewMatcher()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Tap on the keyboard icon.
+  [[EarlGrey selectElementWithMatcher:KeyboardIconMatcher()]
+      performAction:grey_tap()];
+
+  // Verify the password controller table view and the password icon is NOT
+  // visible.
+  [[EarlGrey selectElementWithMatcher:PasswordTableViewMatcher()]
+      assertWithMatcher:grey_notVisible()];
+  [[EarlGrey selectElementWithMatcher:KeyboardIconMatcher()]
+      assertWithMatcher:grey_notVisible()];
+}
+
+// Tests that the Password View Controller is dismissed when tapping the outside
+// the popover on iPad.
+- (void)testIPadTappingOutsidePopOverDismissPasswordController {
+  if (!IsIPadIdiom()) {
+    return;
+  }
+  // Bring up the keyboard.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+
+  // Tap on the passwords icon.
+  [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
+      performAction:grey_tap()];
+
+  // Verify the password controller table view is visible.
+  [[EarlGrey selectElementWithMatcher:PasswordTableViewMatcher()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Tap on a point outside of the popover.
+  // The way EarlGrey taps doesn't go through the window hierarchy. Because of
+  // this, the tap needs to be done in the same window as the popover.
+  [[EarlGrey selectElementWithMatcher:PasswordTableViewWindowMatcher()]
+      performAction:grey_tapAtPoint(CGPointMake(0, 0))];
+
+  // Verify the password controller table view and the password icon is NOT
+  // visible.
+  [[EarlGrey selectElementWithMatcher:PasswordTableViewMatcher()]
+      assertWithMatcher:grey_notVisible()];
+  [[EarlGrey selectElementWithMatcher:KeyboardIconMatcher()]
+      assertWithMatcher:grey_notVisible()];
+}
+
+// Tests that the Password View Controller is dismissed when tapping the
+// keyboard.
+// TODO(crbug.com/909629): started to be flaky and sometimes opens full list
+// when typing text.
+- (void)DISABLED_testTappingKeyboardDismissPasswordControllerPopOver {
+  if (!IsIPadIdiom()) {
+    return;
+  }
+  // Bring up the keyboard.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+
+  // Tap on the passwords icon.
+  [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
+      performAction:grey_tap()];
+
+  // Verify the password controller table view is visible.
+  [[EarlGrey selectElementWithMatcher:PasswordTableViewMatcher()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  [[EarlGrey selectElementWithMatcher:PasswordTableViewMatcher()]
+      performAction:grey_typeText(@"text")];
+
+  // Verify the password controller table view and the password icon is NOT
+  // visible.
+  [[EarlGrey selectElementWithMatcher:PasswordTableViewMatcher()]
+      assertWithMatcher:grey_notVisible()];
+  [[EarlGrey selectElementWithMatcher:KeyboardIconMatcher()]
+      assertWithMatcher:grey_notVisible()];
+}
+
+// Tests that after switching fields the content size of the table view didn't
+// grow.
+- (void)testPasswordControllerKeepsRightSize {
+  if (([UIDevice currentDevice].systemVersion.doubleValue < 11.3)) {
+    // TODO(crbug.com/908776): OtherPasswordsMatcher is disabled in <11.3.
+    return;
+  }
+
+  // Bring up the keyboard.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+
+  // Tap on the passwords icon.
+  [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
+      performAction:grey_tap()];
+
+  // Verify the "Manage Passwords..." is on screen.
+  [[EarlGrey selectElementWithMatcher:OtherPasswordsMatcher()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Tap the second element.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElement(kFormElementPassword)];
+
+  // Try to scroll.
+  [[EarlGrey selectElementWithMatcher:PasswordTableViewMatcher()]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
+
+  // Verify the "Manage Passwords..." is on screen.
+  [[EarlGrey selectElementWithMatcher:OtherPasswordsMatcher()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Tests that the Password View Controller stays on rotation.
+- (void)testPasswordControllerSupportsRotation {
+  // Bring up the keyboard.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+
+  // Tap on the passwords icon.
+  [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
+      performAction:grey_tap()];
+
+  // Verify the password controller table view is visible.
+  [[EarlGrey selectElementWithMatcher:PasswordTableViewMatcher()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeLeft
+                           errorOrNil:nil];
+
+  // Verify the password controller table view is still visible.
+  [[EarlGrey selectElementWithMatcher:PasswordTableViewMatcher()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Tests that content is injected in iframe messaging.
+- (void)testPasswordControllerSupportsIFrameMessaging {
+  // Iframe messaging is not supported on iOS < 11.3.
+  if (!base::ios::IsRunningOnOrLater(11, 3, 0)) {
+    EARL_GREY_TEST_SKIPPED(@"Skipped for iOS < 11.3");
+  }
+  GREYAssert(base::FeatureList::IsEnabled(web::features::kWebFrameMessaging),
+             @"Frame Messaging must be enabled for this Test Case");
+
+  const GURL URL = self.testServer->GetURL(kIFrameHTMLFile);
+  [ChromeEarlGrey loadURL:URL];
+  [ChromeEarlGrey waitForWebViewContainingText:"iFrame"];
+
+  SaveLocalPasswordForm();
+
+  // Bring up the keyboard.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElementInFrame(kFormElementUsername,
+                                                           0)];
+
+  // Wait for the accessory icon to appear.
+  [GREYKeyboard waitForKeyboardToAppear];
+
+  // Tap on the passwords icon.
+  [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
+      performAction:grey_tap()];
+
+  // Verify the password controller table view is visible.
+  [[EarlGrey selectElementWithMatcher:PasswordTableViewMatcher()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Select a username.
+  [[EarlGrey selectElementWithMatcher:UsernameButtonMatcher()]
+      performAction:grey_tap()];
+
+  // Verify Web Content.
+  NSString* javaScriptCondition = [NSString
+      stringWithFormat:
+          @"window.frames[0].document.getElementById('%s').value === '%s'",
+          kFormElementUsername, kExampleUsername];
+  XCTAssertTrue(WaitForJavaScriptCondition(javaScriptCondition));
+}
+
+// Tests that the password icon is hidden when no passwords are available.
+- (void)testPasswordIconIsNotVisibleWhenPasswordStoreEmpty {
+  ClearPasswordStore();
+
+  // Bring up the keyboard.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+
+  // Wait for the keyboard to appear.
+  [GREYKeyboard waitForKeyboardToAppear];
+
+  // Assert the password icon is not visible.
+  [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
+      assertWithMatcher:grey_notVisible()];
+
+  // Store one password.
+  SaveExamplePasswordForm();
+
+  // Tap another field to trigger form activity.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElement(kFormElementPassword)];
+
+  // Assert the password icon is visible now.
+  [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
+      assertWithMatcher:grey_sufficientlyVisible()];
 }
 
 @end

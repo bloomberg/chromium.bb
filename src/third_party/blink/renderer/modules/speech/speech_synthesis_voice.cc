@@ -29,7 +29,7 @@ namespace blink {
 
 SpeechSynthesisVoice* SpeechSynthesisVoice::Create(
     scoped_refptr<PlatformSpeechSynthesisVoice> voice) {
-  return new SpeechSynthesisVoice(std::move(voice));
+  return MakeGarbageCollected<SpeechSynthesisVoice>(std::move(voice));
 }
 
 SpeechSynthesisVoice::SpeechSynthesisVoice(

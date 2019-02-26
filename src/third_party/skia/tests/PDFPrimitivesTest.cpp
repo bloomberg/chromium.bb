@@ -40,13 +40,9 @@
 #define DUMMY_TEXT "DCT compessed stream."
 
 template <typename T>
-static SkString emit_to_string(T& obj, SkPDFObjNumMap* catPtr = nullptr) {
-    SkPDFObjNumMap catalog;
+static SkString emit_to_string(T& obj) {
     SkDynamicMemoryWStream buffer;
-    if (!catPtr) {
-        catPtr = &catalog;
-    }
-    obj.emitObject(&buffer, *catPtr);
+    obj.emitObject(&buffer);
     SkString tmp(buffer.bytesWritten());
     buffer.copyTo(tmp.writable_str());
     return tmp;
@@ -153,7 +149,7 @@ static void TestObjectRef(skiatest::Reporter* reporter) {
     catalog.addObjectRecursively(a1.get());
     REPORTER_ASSERT(reporter, catalog.getObjectNumber(a1.get()) == 1);
 
-    SkString result = emit_to_string(*a2, &catalog);
+    SkString result = emit_to_string(*a2);
     // If appendObjRef misbehaves, then the result would
     // be [[]], not [1 0 R].
     assert_eq(reporter, result, "[1 0 R]");
@@ -274,7 +270,7 @@ static void TestPDFArray(skiatest::Reporter* reporter) {
                             referencedArray.get()) == 1);
     array->appendObjRef(std::move(referencedArray));
 
-    SkString result = emit_to_string(*array, &catalog);
+    SkString result = emit_to_string(*array);
     assert_eq(reporter, result,
               "[42 .5 0 true /ThisName /AnotherName (This String) "
               "(Another String) [-1] 1 0 R]");
@@ -337,7 +333,7 @@ static void TestPDFDict(skiatest::Reporter* reporter) {
     REPORTER_ASSERT(reporter, catalog.getObjectNumber(
                             referencedArray.get()) == 1);
     dict->insertObjRef("n1", std::move(referencedArray));
-    SkString result = emit_to_string(*dict, &catalog);
+    SkString result = emit_to_string(*dict);
     assert_eq(reporter, result, "<</Type /DType\n/n1 1 0 R>>");
 }
 
@@ -359,7 +355,6 @@ public:
         return sk_sp<DummyImageFilter>(new DummyImageFilter(visited));
     }
 
-    SK_DECLARE_PUBLIC_FLATTENABLE_DESERIALIZATION_PROCS(DummyImageFilter)
     bool visited() const { return fVisited; }
 
 protected:
@@ -374,6 +369,7 @@ protected:
     }
 
 private:
+    SK_FLATTENABLE_HOOKS(DummyImageFilter)
     DummyImageFilter(bool visited) : INHERITED(nullptr, 0, nullptr), fVisited(visited) {}
 
     mutable bool fVisited;
@@ -493,10 +489,8 @@ static SkGlyphRun make_run(size_t len, const SkGlyphID* glyphs, SkPoint* pos,
                            SkPaint paint, const uint32_t* clusters,
                            size_t utf8TextByteLength, const char* utf8Text) {
     return SkGlyphRun(paint, SkRunFont{paint},
-                      SkSpan<const uint16_t>{},  // No dense indices for now.
                       SkSpan<const SkPoint>{pos, len},
                       SkSpan<const SkGlyphID>{glyphs, len},
-                      SkSpan<const SkGlyphID>{},
                       SkSpan<const char>{utf8Text, utf8TextByteLength},
                       SkSpan<const uint32_t>{clusters, len});
 }

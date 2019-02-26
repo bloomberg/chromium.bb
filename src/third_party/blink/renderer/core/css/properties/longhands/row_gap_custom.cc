@@ -11,12 +11,12 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* RowGap::ParseSingleValue(CSSParserTokenRange& range,
                                          const CSSParserContext& context,
                                          const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ConsumeGapLength(range, context);
+  return css_parsing_utils::ConsumeGapLength(range, context);
 }
 
 const CSSValue* RowGap::CSSValueFromComputedStyleInternal(
@@ -28,5 +28,5 @@ const CSSValue* RowGap::CSSValueFromComputedStyleInternal(
   return ComputedStyleUtils::ValueForGapLength(style.RowGap(), style);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

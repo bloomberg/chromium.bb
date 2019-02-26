@@ -194,7 +194,6 @@ Resource::Resource(const ResourceRequest& request,
       encoded_size_(0),
       encoded_size_memory_usage_(0),
       decoded_size_(0),
-      overhead_size_(CalculateOverheadSize()),
       cache_identifier_(MemoryCache::DefaultCacheIdentifier()),
       link_preload_(false),
       is_revalidating_(false),
@@ -203,7 +202,8 @@ Resource::Resource(const ResourceRequest& request,
       integrity_disposition_(ResourceIntegrityDisposition::kNotChecked),
       options_(options),
       response_timestamp_(CurrentTime()),
-      resource_request_(request) {
+      resource_request_(request),
+      overhead_size_(CalculateOverheadSize()) {
   InstanceCounters::IncrementCounter(InstanceCounters::kResourceCounter);
 
   if (IsMainThread())
@@ -272,7 +272,7 @@ void Resource::CheckResourceIntegrity() {
 }
 
 void Resource::NotifyFinished() {
-  DCHECK(IsLoaded());
+  CHECK(IsFinishedInternal());
 
   ResourceClientWalker<ResourceClient> w(clients_);
   while (ResourceClient* c = w.Next()) {
@@ -299,6 +299,10 @@ void Resource::AppendData(const char* data, size_t length) {
       data_ = SharedBuffer::Create(data, length);
     SetEncodedSize(data_->size());
   }
+  NotifyDataReceived(data, length);
+}
+
+void Resource::NotifyDataReceived(const char* data, size_t length) {
   ResourceClientWalker<ResourceClient> w(Clients());
   while (ResourceClient* c = w.Next())
     c->DataReceived(this, data, length);
@@ -322,8 +326,9 @@ void Resource::TriggerNotificationForFinishObservers(
   if (finish_observers_.IsEmpty())
     return;
 
-  auto* new_collections = new HeapHashSet<WeakMember<ResourceFinishObserver>>(
-      std::move(finish_observers_));
+  auto* new_collections =
+      MakeGarbageCollected<HeapHashSet<WeakMember<ResourceFinishObserver>>>(
+          std::move(finish_observers_));
   finish_observers_.clear();
 
   task_runner->PostTask(FROM_HERE, WTF::Bind(&NotifyFinishObservers,
@@ -617,7 +622,7 @@ void Resource::DidAddClient(ResourceClient* c) {
   }
   if (!HasClient(c))
     return;
-  if (IsLoaded()) {
+  if (IsFinishedInternal()) {
     c->NotifyFinished(this);
     if (clients_.Contains(c)) {
       finished_clients_.insert(c);
@@ -689,6 +694,12 @@ void Resource::AddFinishObserver(ResourceFinishObserver* client,
 
   WillAddClientOrObserver();
   finish_observers_.insert(client);
+  // Despite these being "Finish" observers, what they actually care about is
+  // whether the resource is "Loaded", not "Finished" (e.g. link onload). Hence
+  // we check IsLoaded directly here, rather than IsFinishedInternal.
+  //
+  // TODO(leszeks): Either rename FinishObservers to LoadedObservers, or the
+  // NotifyFinished method of ResourceClient to NotifyProcessed (or similar).
   if (IsLoaded())
     TriggerNotificationForFinishObservers(task_runner);
 }
@@ -798,7 +809,7 @@ Resource::MatchStatus Resource::CanReuse(const FetchParameters& params) const {
   if (GetResponse().WasFetchedViaServiceWorker() &&
       GetResponse().GetType() == network::mojom::FetchResponseType::kOpaque &&
       new_request.GetFetchRequestMode() !=
-          network::mojom::FetchRequestMode::kNoCORS) {
+          network::mojom::FetchRequestMode::kNoCors) {
     return MatchStatus::kUnknownFailure;
   }
 
@@ -884,13 +895,13 @@ Resource::MatchStatus Resource::CanReuse(const FetchParameters& params) const {
     return MatchStatus::kRequestModeDoesNotMatch;
 
   switch (new_mode) {
-    case network::mojom::FetchRequestMode::kNoCORS:
+    case network::mojom::FetchRequestMode::kNoCors:
     case network::mojom::FetchRequestMode::kNavigate:
       break;
 
-    case network::mojom::FetchRequestMode::kCORS:
+    case network::mojom::FetchRequestMode::kCors:
     case network::mojom::FetchRequestMode::kSameOrigin:
-    case network::mojom::FetchRequestMode::kCORSWithForcedPreflight:
+    case network::mojom::FetchRequestMode::kCorsWithForcedPreflight:
       // We have two separate CORS handling logics in ThreadableLoader
       // and ResourceLoader and sharing resources is difficult when they are
       // handled differently.
@@ -964,7 +975,7 @@ void Resource::OnMemoryDump(WebMemoryDumpLevelOfDetail level_of_detail,
               WTF::CodePointCompareLessThan);
 
     StringBuilder builder;
-    for (size_t i = 0;
+    for (wtf_size_t i = 0;
          i < client_names.size() && i < kMaxResourceClientToShowInMemoryInfra;
          ++i) {
       if (i > 0)
@@ -1072,7 +1083,7 @@ bool Resource::HasCacheControlNoStoreHeader() const {
 
 bool Resource::MustReloadDueToVaryHeader(
     const ResourceRequest& new_request) const {
-  const AtomicString& vary = GetResponse().HttpHeaderField(HTTPNames::Vary);
+  const AtomicString& vary = GetResponse().HttpHeaderField(http_names::kVary);
   if (vary.IsNull())
     return false;
   if (vary == "*")
@@ -1133,6 +1144,17 @@ bool Resource::StaleRevalidationRequested() const {
   return false;
 }
 
+bool Resource::NetworkAccessed() const {
+  if (GetResponse().NetworkAccessed())
+    return true;
+
+  for (auto& redirect : redirect_chain_) {
+    if (redirect.redirect_response_.NetworkAccessed())
+      return true;
+  }
+  return false;
+}
+
 bool Resource::CanUseCacheValidator() const {
   if (IsLoading() || ErrorOccurred())
     return false;
@@ -1165,37 +1187,37 @@ void Resource::DidChangePriority(ResourceLoadPriority load_priority,
 // TODO(toyoshim): Consider to generate automatically. https://crbug.com/675515.
 static const char* InitiatorTypeNameToString(
     const AtomicString& initiator_type_name) {
-  if (initiator_type_name == FetchInitiatorTypeNames::audio)
+  if (initiator_type_name == fetch_initiator_type_names::kAudio)
     return "Audio";
-  if (initiator_type_name == FetchInitiatorTypeNames::css)
+  if (initiator_type_name == fetch_initiator_type_names::kCSS)
     return "CSS resource";
-  if (initiator_type_name == FetchInitiatorTypeNames::document)
+  if (initiator_type_name == fetch_initiator_type_names::kDocument)
     return "Document";
-  if (initiator_type_name == FetchInitiatorTypeNames::icon)
+  if (initiator_type_name == fetch_initiator_type_names::kIcon)
     return "Icon";
-  if (initiator_type_name == FetchInitiatorTypeNames::internal)
+  if (initiator_type_name == fetch_initiator_type_names::kInternal)
     return "Internal resource";
-  if (initiator_type_name == FetchInitiatorTypeNames::fetch)
+  if (initiator_type_name == fetch_initiator_type_names::kFetch)
     return "Fetch";
-  if (initiator_type_name == FetchInitiatorTypeNames::link)
+  if (initiator_type_name == fetch_initiator_type_names::kLink)
     return "Link element resource";
-  if (initiator_type_name == FetchInitiatorTypeNames::other)
+  if (initiator_type_name == fetch_initiator_type_names::kOther)
     return "Other resource";
-  if (initiator_type_name == FetchInitiatorTypeNames::processinginstruction)
+  if (initiator_type_name == fetch_initiator_type_names::kProcessinginstruction)
     return "Processing instruction";
-  if (initiator_type_name == FetchInitiatorTypeNames::track)
+  if (initiator_type_name == fetch_initiator_type_names::kTrack)
     return "Track";
-  if (initiator_type_name == FetchInitiatorTypeNames::uacss)
+  if (initiator_type_name == fetch_initiator_type_names::kUacss)
     return "User Agent CSS resource";
-  if (initiator_type_name == FetchInitiatorTypeNames::video)
+  if (initiator_type_name == fetch_initiator_type_names::kVideo)
     return "Video";
-  if (initiator_type_name == FetchInitiatorTypeNames::xml)
+  if (initiator_type_name == fetch_initiator_type_names::kXml)
     return "XML resource";
-  if (initiator_type_name == FetchInitiatorTypeNames::xmlhttprequest)
+  if (initiator_type_name == fetch_initiator_type_names::kXmlhttprequest)
     return "XMLHttpRequest";
 
   static_assert(
-      FetchInitiatorTypeNames::FetchInitiatorTypeNamesCount == 17,
+      fetch_initiator_type_names::kNamesCount == 17,
       "New FetchInitiatorTypeNames should be handled correctly here.");
 
   return "Resource";

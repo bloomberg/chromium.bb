@@ -1,6 +1,6 @@
 {
   metadata: {
-    namespace: "HTTP",
+    namespace: "http_names",
     export: "PLATFORM_EXPORT",
   },
 

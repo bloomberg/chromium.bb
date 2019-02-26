@@ -14,31 +14,9 @@
 #include "SkImageEncoderPriv.h"
 #include "SkJpegEncoder.h"
 #include "SkPngEncoder.h"
-#include "SkUnPreMultiply.h"
 #include "SkWebpEncoder.h"
 
 namespace skiagm {
-
-static void make_opaque_256(SkBitmap* bitmap) {
-    GetResourceAsBitmap("images/mandrill_256.png", bitmap);
-}
-
-static void make_premul_256(SkBitmap* bitmap) {
-    SkBitmap tmp;
-    GetResourceAsBitmap("images/yellow_rose.png", &tmp);
-    tmp.extractSubset(bitmap, SkIRect::MakeWH(256, 256));
-}
-
-static void make_unpremul_256(SkBitmap* bitmap) {
-    make_premul_256(bitmap);
-    for (int y = 0; y < bitmap->height(); y++) {
-        for (int x = 0; x < bitmap->width(); x++) {
-            SkPMColor* pixel = bitmap->getAddr32(x, y);
-            *pixel = SkUnPreMultiply::UnPreMultiplyPreservingByteOrder(*pixel);
-        }
-    }
-    bitmap->setAlphaType(kUnpremul_SkAlphaType);
-}
 
 #if defined(SK_BUILD_FOR_MAC) || defined(SK_BUILD_FOR_IOS)
 static SkEncodedImageFormat kTypes[] {
@@ -105,9 +83,18 @@ protected:
 
     void onDraw(SkCanvas* canvas) override {
         SkBitmap opaqueBm, premulBm, unpremulBm;
-        make_opaque_256(&opaqueBm);
-        make_premul_256(&premulBm);
-        make_unpremul_256(&unpremulBm);
+
+        if (!GetResourceAsBitmap("images/mandrill_256.png", &opaqueBm)) {
+            return;
+        }
+        SkBitmap tmp;
+        if (!GetResourceAsBitmap("images/yellow_rose.png", &tmp)) {
+            return;
+        }
+        tmp.extractSubset(&premulBm, SkIRect::MakeWH(256, 256));
+        tmp.reset();
+        unpremulBm.allocPixels(premulBm.info().makeAlphaType(kUnpremul_SkAlphaType));
+        SkAssertResult(premulBm.readPixels(unpremulBm.pixmap()));
 
         for (SkEncodedImageFormat type : kTypes) {
             auto opaqueImage = SkImage::MakeFromEncoded(encode_data(type, opaqueBm));

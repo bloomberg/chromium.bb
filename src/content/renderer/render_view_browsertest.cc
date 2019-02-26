@@ -32,7 +32,6 @@
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_controller_factory.h"
 #include "content/public/common/bindings_policy.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/url_constants.h"
@@ -63,6 +62,7 @@
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/common/origin_trials/origin_trial_policy.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
@@ -80,6 +80,7 @@
 #include "third_party/blink/public/web/web_history_item.h"
 #include "third_party/blink/public/web/web_input_method_controller.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_navigation_params.h"
 #include "third_party/blink/public/web/web_origin_trials.h"
 #include "third_party/blink/public/web/web_performance.h"
 #include "third_party/blink/public/web/web_script_source.h"
@@ -423,7 +424,7 @@ class RenderViewImplTest : public RenderViewTest {
 
   int GetScrollbarWidth() {
     blink::WebView* webview = view()->webview();
-    return webview->Size().width -
+    return webview->MainFrameWidget()->Size().width -
            webview->MainFrame()->VisibleContentRect().width;
   }
 
@@ -482,8 +483,10 @@ class RenderViewImplScaleFactorTest : public RenderViewImplTest {
         view()->min_size_for_auto_resize();
     visual_properties.max_size_for_auto_resize =
         view()->max_size_for_auto_resize();
-    visual_properties.local_surface_id = base::Optional<viz::LocalSurfaceId>(
-        viz::LocalSurfaceId(1, 1, base::UnguessableToken::Create()));
+    visual_properties.local_surface_id_allocation =
+        viz::LocalSurfaceIdAllocation(
+            viz::LocalSurfaceId(1, 1, base::UnguessableToken::Create()),
+            base::TimeTicks::Now());
     view()->OnSynchronizeVisualProperties(visual_properties);
     ASSERT_EQ(dsf, view()->GetWebScreenInfo().device_scale_factor);
     ASSERT_EQ(dsf, view()->GetOriginalScreenInfo().device_scale_factor);
@@ -550,7 +553,8 @@ TEST_F(RenderViewImplTest, RenderFrameClearedAfterClose) {
   blink::WebView* new_web_view = view()->CreateView(
       GetMainFrame(), popup_request, blink::WebWindowFeatures(), "foo",
       blink::kWebNavigationPolicyNewForegroundTab, false,
-      blink::WebSandboxFlags::kNone);
+      blink::WebSandboxFlags::kNone,
+      blink::AllocateSessionStorageNamespaceId());
   RenderViewImpl* new_view = RenderViewImpl::FromWebView(new_web_view);
 
   // Checks that the frame is deleted properly and cleans up the view.
@@ -651,7 +655,7 @@ TEST_F(RenderViewImplTest, OnNavigationLoadDataWithBaseURL) {
 }
 #endif
 
-TEST_F(RenderViewImplTest, DecideNavigationPolicy) {
+TEST_F(RenderViewImplTest, BeginNavigation) {
   WebUITestWebUIControllerFactory factory;
   WebUIControllerFactory::RegisterFactory(&factory);
 
@@ -663,37 +667,46 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicy) {
   request.SetFetchRedirectMode(network::mojom::FetchRedirectMode::kManual);
   request.SetFrameType(network::mojom::RequestContextFrameType::kTopLevel);
   request.SetRequestContext(blink::mojom::RequestContextType::INTERNAL);
-  blink::WebLocalFrameClient::NavigationPolicyInfo policy_info(request);
-  policy_info.navigation_type = blink::kWebNavigationTypeLinkClicked;
-  policy_info.default_policy = blink::kWebNavigationPolicyCurrentTab;
-  blink::WebNavigationPolicy policy =
-      frame()->DecidePolicyForNavigation(policy_info);
+  request.SetRequestorOrigin(
+      blink::WebSecurityOrigin::Create(GURL("http://foo.com")));
+  auto navigation_info = std::make_unique<blink::WebNavigationInfo>();
+  navigation_info->url_request = request;
+  navigation_info->navigation_type = blink::kWebNavigationTypeLinkClicked;
+  navigation_info->navigation_policy = blink::kWebNavigationPolicyCurrentTab;
+  frame()->BeginNavigation(std::move(navigation_info));
   // If this is a renderer-initiated navigation that just begun, it should
   // stop and be sent to the browser.
-  EXPECT_EQ(blink::kWebNavigationPolicyHandledByClient, policy);
+  EXPECT_TRUE(frame()->IsBrowserSideNavigationPending());
 
   // Verify that form posts to WebUI URLs will be sent to the browser process.
-  blink::WebURLRequest form_request(GURL("chrome://foo"));
-  blink::WebLocalFrameClient::NavigationPolicyInfo form_policy_info(
-      form_request);
-  form_policy_info.navigation_type = blink::kWebNavigationTypeFormSubmitted;
-  form_policy_info.default_policy = blink::kWebNavigationPolicyCurrentTab;
-  form_request.SetHTTPMethod("POST");
-  policy = frame()->DecidePolicyForNavigation(form_policy_info);
-  EXPECT_EQ(blink::kWebNavigationPolicyIgnore, policy);
+  auto form_navigation_info = std::make_unique<blink::WebNavigationInfo>();
+  form_navigation_info->url_request =
+      blink::WebURLRequest(GURL("chrome://foo"));
+  form_navigation_info->url_request.SetHTTPMethod("POST");
+  form_navigation_info->navigation_type =
+      blink::kWebNavigationTypeFormSubmitted;
+  form_navigation_info->navigation_policy =
+      blink::kWebNavigationPolicyCurrentTab;
+  render_thread_->sink().ClearMessages();
+  frame()->BeginNavigation(std::move(form_navigation_info));
+  EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
+      FrameHostMsg_OpenURL::ID));
 
   // Verify that popup links to WebUI URLs also are sent to browser.
   blink::WebURLRequest popup_request(GURL("chrome://foo"));
-  blink::WebLocalFrameClient::NavigationPolicyInfo popup_policy_info(
-      popup_request);
-  popup_policy_info.navigation_type = blink::kWebNavigationTypeLinkClicked;
-  popup_policy_info.default_policy =
+  auto popup_navigation_info = std::make_unique<blink::WebNavigationInfo>();
+  popup_navigation_info->url_request =
+      blink::WebURLRequest(GURL("chrome://foo"));
+  popup_navigation_info->navigation_type = blink::kWebNavigationTypeLinkClicked;
+  popup_navigation_info->navigation_policy =
       blink::kWebNavigationPolicyNewForegroundTab;
-  policy = frame()->DecidePolicyForNavigation(popup_policy_info);
-  EXPECT_EQ(blink::kWebNavigationPolicyIgnore, policy);
+  render_thread_->sink().ClearMessages();
+  frame()->BeginNavigation(std::move(popup_navigation_info));
+  EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
+      FrameHostMsg_OpenURL::ID));
 }
 
-TEST_F(RenderViewImplTest, DecideNavigationPolicyHandlesAllTopLevel) {
+TEST_F(RenderViewImplTest, BeginNavigationHandlesAllTopLevel) {
   RendererPreferences prefs = view()->renderer_preferences();
   prefs.browser_handles_all_top_level_requests = true;
   view()->OnSetRendererPrefs(prefs);
@@ -707,51 +720,59 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicyHandlesAllTopLevel) {
       blink::kWebNavigationTypeOther,
   };
 
-  blink::WebURLRequest request(GURL("http://foo.com"));
-  blink::WebLocalFrameClient::NavigationPolicyInfo policy_info(request);
-  policy_info.default_policy = blink::kWebNavigationPolicyCurrentTab;
-
   for (size_t i = 0; i < arraysize(kNavTypes); ++i) {
-    policy_info.navigation_type = kNavTypes[i];
+    auto navigation_info = std::make_unique<blink::WebNavigationInfo>();
+    navigation_info->url_request = blink::WebURLRequest(GURL("http://foo.com"));
+    navigation_info->navigation_policy = blink::kWebNavigationPolicyCurrentTab;
+    navigation_info->navigation_type = kNavTypes[i];
 
-    blink::WebNavigationPolicy policy =
-        frame()->DecidePolicyForNavigation(policy_info);
-    EXPECT_EQ(blink::kWebNavigationPolicyIgnore, policy);
+    render_thread_->sink().ClearMessages();
+    frame()->BeginNavigation(std::move(navigation_info));
+    EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
+        FrameHostMsg_OpenURL::ID));
   }
 }
 
-TEST_F(RenderViewImplTest, DecideNavigationPolicyForWebUI) {
+TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
   // Enable bindings to simulate a WebUI view.
   view()->GetMainRenderFrame()->AllowBindings(BINDINGS_POLICY_WEB_UI);
 
   // Navigations to normal HTTP URLs will be sent to browser process.
-  blink::WebURLRequest request(GURL("http://foo.com"));
-  blink::WebLocalFrameClient::NavigationPolicyInfo policy_info(request);
-  policy_info.navigation_type = blink::kWebNavigationTypeLinkClicked;
-  policy_info.default_policy = blink::kWebNavigationPolicyCurrentTab;
+  auto navigation_info = std::make_unique<blink::WebNavigationInfo>();
+  navigation_info->url_request = blink::WebURLRequest(GURL("http://foo.com"));
+  navigation_info->navigation_type = blink::kWebNavigationTypeLinkClicked;
+  navigation_info->navigation_policy = blink::kWebNavigationPolicyCurrentTab;
 
-  blink::WebNavigationPolicy policy =
-      frame()->DecidePolicyForNavigation(policy_info);
-  EXPECT_EQ(blink::kWebNavigationPolicyIgnore, policy);
+  render_thread_->sink().ClearMessages();
+  frame()->BeginNavigation(std::move(navigation_info));
+  EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
+      FrameHostMsg_OpenURL::ID));
 
   // Navigations to WebUI URLs will also be sent to browser process.
-  blink::WebURLRequest webui_request(GURL("chrome://foo"));
-  blink::WebLocalFrameClient::NavigationPolicyInfo webui_policy_info(
-      webui_request);
-  webui_policy_info.navigation_type = blink::kWebNavigationTypeLinkClicked;
-  webui_policy_info.default_policy = blink::kWebNavigationPolicyCurrentTab;
-  policy = frame()->DecidePolicyForNavigation(webui_policy_info);
-  EXPECT_EQ(blink::kWebNavigationPolicyIgnore, policy);
+  auto webui_navigation_info = std::make_unique<blink::WebNavigationInfo>();
+  webui_navigation_info->url_request =
+      blink::WebURLRequest(GURL("chrome://foo"));
+  webui_navigation_info->navigation_type = blink::kWebNavigationTypeLinkClicked;
+  webui_navigation_info->navigation_policy =
+      blink::kWebNavigationPolicyCurrentTab;
+  render_thread_->sink().ClearMessages();
+  frame()->BeginNavigation(std::move(webui_navigation_info));
+  EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
+      FrameHostMsg_OpenURL::ID));
 
   // Verify that form posts to data URLs will be sent to the browser process.
-  blink::WebURLRequest data_request(GURL("data:text/html,foo"));
-  blink::WebLocalFrameClient::NavigationPolicyInfo data_policy_info(
-      data_request);
-  data_policy_info.navigation_type = blink::kWebNavigationTypeFormSubmitted;
-  data_policy_info.default_policy = blink::kWebNavigationPolicyCurrentTab;
-  data_request.SetHTTPMethod("POST");
-  policy = frame()->DecidePolicyForNavigation(data_policy_info);
-  EXPECT_EQ(blink::kWebNavigationPolicyIgnore, policy);
+  auto data_navigation_info = std::make_unique<blink::WebNavigationInfo>();
+  data_navigation_info->url_request =
+      blink::WebURLRequest(GURL("data:text/html,foo"));
+  data_navigation_info->url_request.SetHTTPMethod("POST");
+  data_navigation_info->navigation_type =
+      blink::kWebNavigationTypeFormSubmitted;
+  data_navigation_info->navigation_policy =
+      blink::kWebNavigationPolicyCurrentTab;
+  render_thread_->sink().ClearMessages();
+  frame()->BeginNavigation(std::move(data_navigation_info));
+  EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
+      FrameHostMsg_OpenURL::ID));
 
   // Verify that a popup that creates a view first and then navigates to a
   // normal HTTP URL will be sent to the browser process, even though the
@@ -760,18 +781,81 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicyForWebUI) {
   blink::WebView* new_web_view = view()->CreateView(
       GetMainFrame(), popup_request, blink::WebWindowFeatures(), "foo",
       blink::kWebNavigationPolicyNewForegroundTab, false,
-      blink::WebSandboxFlags::kNone);
+      blink::WebSandboxFlags::kNone,
+      blink::AllocateSessionStorageNamespaceId());
   RenderViewImpl* new_view = RenderViewImpl::FromWebView(new_web_view);
-  blink::WebLocalFrameClient::NavigationPolicyInfo popup_policy_info(
-      popup_request);
-  popup_policy_info.navigation_type = blink::kWebNavigationTypeLinkClicked;
-  popup_policy_info.default_policy =
+  auto popup_navigation_info = std::make_unique<blink::WebNavigationInfo>();
+  popup_navigation_info->url_request = popup_request;
+  popup_navigation_info->navigation_type = blink::kWebNavigationTypeLinkClicked;
+  popup_navigation_info->navigation_policy =
       blink::kWebNavigationPolicyNewForegroundTab;
-  policy = static_cast<RenderFrameImpl*>(new_view->GetMainRenderFrame())
-               ->DecidePolicyForNavigation(popup_policy_info);
-  EXPECT_EQ(blink::kWebNavigationPolicyIgnore, policy);
+  render_thread_->sink().ClearMessages();
+  static_cast<RenderFrameImpl*>(new_view->GetMainRenderFrame())
+      ->BeginNavigation(std::move(popup_navigation_info));
+  EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
+      FrameHostMsg_OpenURL::ID));
 
   CloseRenderView(new_view);
+}
+
+class AlwaysForkingRenderViewTest : public RenderViewImplTest {
+ public:
+  ContentRendererClient* CreateContentRendererClient() override {
+    return new TestContentRendererClient;
+  }
+
+ private:
+  class TestContentRendererClient : public ContentRendererClient {
+   public:
+    bool ShouldFork(blink::WebLocalFrame* frame,
+                    const GURL& url,
+                    const std::string& http_method,
+                    bool is_initial_navigation,
+                    bool is_server_redirect) override {
+      return true;
+    }
+  };
+};
+
+TEST_F(AlwaysForkingRenderViewTest, BeginNavigationDoesNotForkEmptyUrl) {
+  GURL example_url("http://example.com");
+  GURL empty_url("");
+  GURL blank_url("about:blank");
+
+  LoadHTMLWithUrlOverride("<body></body", example_url.spec().c_str());
+  EXPECT_EQ(
+      example_url,
+      GURL(frame()->GetWebFrame()->GetDocumentLoader()->GetRequest().Url()));
+
+  // Empty url should never fork.
+  auto navigation_info = std::make_unique<blink::WebNavigationInfo>();
+  navigation_info->url_request = blink::WebURLRequest(empty_url);
+  navigation_info->navigation_policy = blink::kWebNavigationPolicyCurrentTab;
+  frame()->BeginNavigation(std::move(navigation_info));
+  // Check that we committed synchronously.
+  EXPECT_EQ(
+      blank_url,
+      GURL(frame()->GetWebFrame()->GetDocumentLoader()->GetRequest().Url()));
+}
+
+TEST_F(AlwaysForkingRenderViewTest, BeginNavigationDoesNotForkAboutBlank) {
+  GURL example_url("http://example.com");
+  GURL blank_url("about:blank");
+
+  LoadHTMLWithUrlOverride("<body></body", example_url.spec().c_str());
+  EXPECT_EQ(
+      example_url,
+      GURL(frame()->GetWebFrame()->GetDocumentLoader()->GetRequest().Url()));
+
+  // About blank should never fork.
+  auto navigation_info = std::make_unique<blink::WebNavigationInfo>();
+  navigation_info->url_request = blink::WebURLRequest(blank_url);
+  navigation_info->navigation_policy = blink::kWebNavigationPolicyCurrentTab;
+  frame()->BeginNavigation(std::move(navigation_info));
+  // Check that we committed synchronously.
+  EXPECT_EQ(
+      blank_url,
+      GURL(frame()->GetWebFrame()->GetDocumentLoader()->GetRequest().Url()));
 }
 
 // This test verifies that when device emulation is enabled, RenderFrameProxy
@@ -930,7 +1014,8 @@ TEST_F(RenderViewImplEnableZoomForDSFTest, UpdateDSFAfterSwapIn) {
   base::string16 get_width =
       base::ASCIIToUTF16("Number(document.documentElement.clientWidth)");
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(get_width, &width));
-  EXPECT_EQ(view()->webview()->Size().width, width * device_scale);
+  EXPECT_EQ(view()->webview()->MainFrameWidget()->Size().width,
+            width * device_scale);
 }
 
 // Test that when a parent detaches a remote child after the provisional
@@ -1898,8 +1983,7 @@ class RendererErrorPageTest : public RenderViewImplTest {
     void PrepareErrorPage(content::RenderFrame* render_frame,
                           const blink::WebURLRequest& failed_request,
                           const blink::WebURLError& error,
-                          std::string* error_html,
-                          base::string16* error_description) override {
+                          std::string* error_html) override {
       if (error_html)
         *error_html = "A suffusion of yellow.";
     }
@@ -1908,8 +1992,7 @@ class RendererErrorPageTest : public RenderViewImplTest {
         const blink::WebURLRequest& failed_request,
         const GURL& url,
         int http_status_code,
-        std::string* error_html,
-        base::string16* error_description) override {
+        std::string* error_html) override {
       if (error_html)
         *error_html = "A suffusion of yellow.";
     }
@@ -2129,8 +2212,8 @@ TEST_F(RenderViewImplTest, OnSetAccessibilityMode) {
 // recorded at an appropriate time and is passed in the corresponding message.
 TEST_F(RenderViewImplTest, RendererNavigationStartTransmittedToBrowser) {
   base::TimeTicks lower_bound_navigation_start(base::TimeTicks::Now());
-  frame()->GetWebFrame()->LoadHTMLString(
-      "hello world", blink::WebURL(GURL("data:text/html,")));
+  frame()->LoadHTMLString("hello world", GURL("data:text/html,"), "UTF-8",
+                          GURL(), false /* replace_current_item */);
 
   NavigationState* navigation_state = NavigationState::FromDocumentLoader(
       frame()->GetWebFrame()->GetProvisionalDocumentLoader());

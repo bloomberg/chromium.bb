@@ -34,8 +34,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 AXMenuListOption::AXMenuListOption(HTMLOptionElement* element,
                                    AXObjectCacheImpl& ax_object_cache)
     : AXMockObject(ax_object_cache), element_(element) {}

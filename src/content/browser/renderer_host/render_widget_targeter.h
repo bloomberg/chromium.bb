@@ -80,6 +80,11 @@ class RenderWidgetTargeter {
 
     virtual RenderWidgetHostViewBase* FindViewFromFrameSinkId(
         const viz::FrameSinkId& frame_sink_id) const = 0;
+
+    // Returns true if a further asynchronous query should be sent to the
+    // candidate RenderWidgetHostView.
+    virtual bool ShouldContinueHitTesting(
+        RenderWidgetHostViewBase* target_view) const = 0;
   };
 
   // The delegate must outlive this targeter.
@@ -233,6 +238,11 @@ class RenderWidgetTargeter {
   std::unique_ptr<OneShotTimeoutMonitor> async_verify_hit_test_timeout_;
 
   uint64_t trace_id_;
+
+  const bool is_viz_hit_testing_debug_enabled_;
+  // Stores SurfaceIds for regions that were async queried if hit-test debugging
+  // is enabled. This allows us to send the queried regions in batches.
+  std::vector<viz::FrameSinkId> hit_test_async_queried_debug_queue_;
 
   Delegate* const delegate_;
   base::WeakPtrFactory<RenderWidgetTargeter> weak_ptr_factory_;

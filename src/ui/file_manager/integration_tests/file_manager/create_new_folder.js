@@ -63,14 +63,14 @@ function createNewFolder(appId, initialEntrySet, selector) {
   }).then(function(result) {
     chrome.test.assertTrue(result);
     // Check: a new folder should be shown in the file list.
-    const files = [['New Folder', '--', 'Folder', '']].concat(
+    const files = [['New folder', '--', 'Folder', '']].concat(
         TestEntryInfo.getExpectedRows(initialEntrySet));
     return remoteCall.waitForFiles(
         appId, files, {ignoreLastModifiedTime: true});
   }).then(function() {
     // Check: a new folder should be present in the directory tree.
-    const newSubtreeChildItem = selector +
-        ' .tree-children .tree-item[entry-label="New Folder"]';
+    const newSubtreeChildItem =
+        selector + ' .tree-children .tree-item[entry-label="New folder"]';
     return remoteCall.waitForElement(appId, newSubtreeChildItem);
   }).then(function() {
     // Check: the text input should be shown in the file list.
@@ -83,7 +83,7 @@ function createNewFolder(appId, initialEntrySet, selector) {
   }).then(function(elements) {
     // Check: the new folder only should be 'renaming'.
     chrome.test.assertEq(1, elements.length);
-    chrome.test.assertEq(0, elements[0].text.indexOf('New Folder--'));
+    chrome.test.assertEq(0, elements[0].text.indexOf('New folder--'));
     chrome.test.assertTrue('selected' in elements[0].attributes);
   }).then(function() {
     // Get all file list rows that have attribute 'selected'.
@@ -93,7 +93,7 @@ function createNewFolder(appId, initialEntrySet, selector) {
   }).then(function(elements) {
     // Check: the new folder only should be 'selected'.
     chrome.test.assertEq(1, elements.length);
-    chrome.test.assertEq(0, elements[0].text.indexOf('New Folder--'));
+    chrome.test.assertEq(0, elements[0].text.indexOf('New folder--'));
     chrome.test.assertTrue('renaming' in elements[0].attributes);
   }).then(function() {
     // Type the test folder name.
@@ -142,7 +142,8 @@ function createNewFolder(appId, initialEntrySet, selector) {
  * @return {Promise} Promise fulfilled on success.
  */
 function expandRoot(appId, selector) {
-  const expandIcon = selector + ' > .tree-row > .expand-icon';
+  const expandIcon =
+      selector + ' > .tree-row[has-children=true] > .expand-icon';
 
   return new Promise(function(resolve) {
     // Wait for the subtree expand icon to appear.
@@ -199,26 +200,20 @@ testcase.createFolderDownloads = function() {
 testcase.createFolderNestedDownloads = function() {
   let appId;
 
-  const promise =
-      new Promise(function(resolve) {
-        setupAndWaitUntilReady(
-            null, RootPath.DOWNLOADS, resolve, BASIC_LOCAL_ENTRY_SET, []);
-      })
-          .then(function(results) {
-            appId = results.windowId;
-            return expandRoot(appId, TREEITEM_DOWNLOADS);
-          })
-          .then(function() {
-            return remoteCall.navigateWithDirectoryTree(
-                appId, '/photos', 'Downloads');
-          })
-          .then(function() {
-            return remoteCall.waitForFiles(
-                appId, [], {ignoreLastModifiedTime: true});
-          })
-          .then(function() {
-            return createNewFolder(appId, [], TREEITEM_DOWNLOADS);
-          });
+  const promise = new Promise(function(resolve) {
+    setupAndWaitUntilReady(
+        null, RootPath.DOWNLOADS, resolve, BASIC_LOCAL_ENTRY_SET, []);
+  }).then(function(results) {
+    appId = results.windowId;
+    return expandRoot(appId, TREEITEM_DOWNLOADS);
+  }).then(function() {
+    return remoteCall.navigateWithDirectoryTree(
+        appId, RootPath.DOWNLOADS_PATH + '/photos', 'My files/Downloads');
+  }).then(function() {
+    return remoteCall.waitForFiles(appId, [], {ignoreLastModifiedTime: true});
+  }).then(function() {
+    return createNewFolder(appId, [], TREEITEM_DOWNLOADS);
+  });
 
   testPromise(promise);
 };

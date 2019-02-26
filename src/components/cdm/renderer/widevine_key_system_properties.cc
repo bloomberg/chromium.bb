@@ -70,7 +70,7 @@ std::string WidevineKeySystemProperties::GetKeySystemName() const {
 
 bool WidevineKeySystemProperties::IsSupportedInitDataType(
     EmeInitDataType init_data_type) const {
-  // Here we assume that support for a container imples support for the
+  // Here we assume that support for a container implies support for the
   // associated initialization data type. KeySystems handles validating
   // |init_data_type| x |container| pairings.
   if (init_data_type == EmeInitDataType::WEBM)

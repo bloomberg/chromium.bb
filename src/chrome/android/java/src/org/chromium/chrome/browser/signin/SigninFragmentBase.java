@@ -193,15 +193,6 @@ public abstract class SigninFragmentBase
             boolean settingsClicked, Runnable callback);
 
     /**
-     * Returns the string resource id for the title TextView. This is invoked once from
-     * {@link #onCreateView}. Subclasses may override this method to customize the title text.
-     */
-    @StringRes
-    protected int getTitleTextId() {
-        return R.string.signin_title;
-    }
-
-    /**
      * Returns the string resource id for the negative button. This is invoked once from
      * {@link #onCreateView}.
      */
@@ -342,7 +333,7 @@ public abstract class SigninFragmentBase
 
     /** Sets texts for immutable elements. Accept button text is set by {@link #setHasAccounts}. */
     private void updateConsentText() {
-        mConsentTextTracker.setText(mView.getTitleView(), getTitleTextId());
+        mConsentTextTracker.setText(mView.getTitleView(), R.string.signin_title);
         mConsentTextTracker.setText(
                 mView.getSyncDescriptionView(), R.string.signin_sync_description);
 
@@ -547,13 +538,16 @@ public abstract class SigninFragmentBase
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == ADD_ACCOUNT_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            if (data == null) return;
+            String addedAccountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
+            if (addedAccountName == null) return;
+
+            // Found the account name, dismiss the account picker dialog if it is shown.
             AccountPickerDialogFragment accountPickerFragment = getAccountPickerDialogFragment();
             if (accountPickerFragment != null) {
                 accountPickerFragment.dismiss();
             }
 
-            String addedAccountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
-            if (addedAccountName == null) return;
             // Wait for the account cache to be updated and select newly-added account.
             AccountManagerFacade.get().waitForPendingUpdates(() -> {
                 mAccountSelectionPending = true;

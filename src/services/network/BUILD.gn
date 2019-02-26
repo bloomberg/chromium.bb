@@ -4,10 +4,9 @@
 
 import("//build/config/jumbo.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
-import("//services/catalog/public/tools/catalog.gni")
-import("//services/service_manager/public/cpp/service.gni")
+import("//net/features.gni")
+import("//services/network/public/cpp/features.gni")
 import("//services/service_manager/public/service_manifest.gni")
-import("//services/service_manager/public/tools/test/service_test.gni")
 
 jumbo_component("network_service") {
   sources = [
@@ -33,10 +32,10 @@ jumbo_component("network_service") {
     "cross_origin_read_blocking.h",
     "data_pipe_element_reader.cc",
     "data_pipe_element_reader.h",
+    "dns_config_change_manager.cc",
+    "dns_config_change_manager.h",
     "empty_url_loader_client.cc",
     "empty_url_loader_client.h",
-    "expect_ct_reporter.cc",
-    "expect_ct_reporter.h",
     "host_resolver.cc",
     "host_resolver.h",
     "http_cache_data_counter.cc",
@@ -51,6 +50,8 @@ jumbo_component("network_service") {
     "keepalive_statistics_recorder.h",
     "loader_util.cc",
     "loader_util.h",
+    "mojo_host_resolver_impl.cc",
+    "mojo_host_resolver_impl.h",
     "net_log_capture_mode_type_converter.cc",
     "net_log_capture_mode_type_converter.h",
     "net_log_exporter.cc",
@@ -59,6 +60,8 @@ jumbo_component("network_service") {
     "network_change_manager.h",
     "network_context.cc",
     "network_context.h",
+    "network_qualities_pref_delegate.cc",
+    "network_qualities_pref_delegate.h",
     "network_quality_estimator_manager.cc",
     "network_quality_estimator_manager.h",
     "network_sandbox_hook_linux.cc",
@@ -85,10 +88,14 @@ jumbo_component("network_service") {
     "p2p/socket_throttler.h",
     "p2p/socket_udp.cc",
     "p2p/socket_udp.h",
+    "pending_callback_chain.cc",
+    "pending_callback_chain.h",
     "proxy_config_service_mojo.cc",
     "proxy_config_service_mojo.h",
     "proxy_lookup_request.cc",
     "proxy_lookup_request.h",
+    "proxy_resolver_factory_mojo.cc",
+    "proxy_resolver_factory_mojo.h",
     "proxy_resolving_client_socket.cc",
     "proxy_resolving_client_socket.h",
     "proxy_resolving_client_socket_factory.cc",
@@ -97,6 +104,8 @@ jumbo_component("network_service") {
     "proxy_resolving_socket_factory_mojo.h",
     "proxy_resolving_socket_mojo.cc",
     "proxy_resolving_socket_mojo.h",
+    "proxy_service_mojo.cc",
+    "proxy_service_mojo.h",
     "resolve_host_request.cc",
     "resolve_host_request.h",
     "resource_scheduler.cc",
@@ -159,6 +168,13 @@ jumbo_component("network_service") {
     "url_request_context_owner.h",
   ]
 
+  if (enable_mdns) {
+    sources += [
+      "mdns_responder.cc",
+      "mdns_responder.h",
+    ]
+  }
+
   if (!is_ios) {
     sources += [
       "websocket.cc",
@@ -170,13 +186,24 @@ jumbo_component("network_service") {
     ]
   }
 
+  if (is_chromeos) {
+    sources += [
+      "cert_verifier_with_trust_anchors.cc",
+      "cert_verifier_with_trust_anchors.h",
+      "cert_verify_proc_chromeos.cc",
+      "cert_verify_proc_chromeos.h",
+      "nss_temp_certs_cache_chromeos.cc",
+      "nss_temp_certs_cache_chromeos.h",
+    ]
+  }
+
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   deps = [
     "//base",
-    "//components/certificate_transparency",
     "//components/content_settings/core/common",
     "//components/cookie_config",
+    "//components/domain_reliability",
     "//components/network_session_configurator/browser",
     "//components/network_session_configurator/common",
     "//components/os_crypt",
@@ -199,6 +226,18 @@ jumbo_component("network_service") {
     "//url",
   ]
 
+  public_deps = [
+    "//services/network/public/cpp:buildflags",
+  ]
+
+  if (is_ct_supported) {
+    sources += [
+      "expect_ct_reporter.cc",
+      "expect_ct_reporter.h",
+    ]
+    deps += [ "//components/certificate_transparency" ]
+  }
+
   if (is_linux) {
     deps += [
       "//sandbox/linux:sandbox_services",
@@ -217,14 +256,6 @@ jumbo_component("network_service") {
     deps += [ "//sandbox/win:sandbox" ]
   }
 
-  sources += [
-    "proxy_resolver_factory_mojo.cc",
-    "proxy_resolver_factory_mojo.h",
-    "proxy_service_mojo.cc",
-    "proxy_service_mojo.h",
-  ]
-  deps += [ "//net/dns:mojo_service" ]
-
   defines = [ "IS_NETWORK_SERVICE_IMPL" ]
 
   if (is_chromecast) {
@@ -239,18 +270,21 @@ source_set("tests") {
     "chunked_data_pipe_upload_data_stream_unittest.cc",
     "cookie_manager_unittest.cc",
     "cookie_settings_unittest.cc",
+    "cors/cors_url_loader_factory_unittest.cc",
     "cors/cors_url_loader_unittest.cc",
     "cors/preflight_controller_unittest.cc",
     "cross_origin_read_blocking_unittest.cc",
     "data_pipe_element_reader_unittest.cc",
-    "expect_ct_reporter_unittest.cc",
+    "dns_config_change_manager_unittest.cc",
     "host_resolver_unittest.cc",
     "http_cache_data_counter_unittest.cc",
     "http_cache_data_remover_unittest.cc",
     "ignore_errors_cert_verifier_unittest.cc",
     "keepalive_statistics_recorder_unittest.cc",
+    "mojo_host_resolver_impl_unittest.cc",
     "network_change_manager_unittest.cc",
     "network_context_unittest.cc",
+    "network_qualities_pref_delegate_unittest.cc",
     "network_quality_estimator_manager_unittest.cc",
     "network_service_proxy_delegate_unittest.cc",
     "network_service_unittest.cc",
@@ -260,6 +294,7 @@ source_set("tests") {
     "p2p/socket_test_utils.cc",
     "p2p/socket_test_utils.h",
     "p2p/socket_udp_unittest.cc",
+    "pending_callback_chain_unittest.cc",
     "proxy_config_service_mojo_unittest.cc",
     "proxy_resolving_client_socket_unittest.cc",
     "proxy_resolving_socket_mojo_unittest.cc",
@@ -283,9 +318,12 @@ source_set("tests") {
     "url_loader_unittest.cc",
   ]
 
+  if (enable_mdns) {
+    sources += [ "mdns_responder_unittest.cc" ]
+  }
+
   if (!is_ios) {
     sources += [
-      "network_context_cert_transparency_unittest.cc",
       "proxy_resolver_factory_mojo_unittest.cc",
       "websocket_throttler_unittest.cc",
     ]
@@ -299,12 +337,21 @@ source_set("tests") {
     ]
   }
 
+  if (is_chromeos) {
+    sources += [
+      "cert_verifier_with_trust_anchors_unittest.cc",
+      "cert_verify_proc_chromeos_unittest.cc",
+      "nss_temp_certs_cache_chromeos_unittest.cc",
+    ]
+  }
+
   deps = [
     ":network_service",
     ":test_support",
     "//base",
-    "//components/certificate_transparency",
     "//components/network_session_configurator/browser",
+    "//components/prefs:test_support",
+    "//crypto:test_support",
     "//jingle:jingle_fake_socket",
     "//mojo/core/embedder",
     "//mojo/public/cpp/bindings",
@@ -312,12 +359,22 @@ source_set("tests") {
     "//net",
     "//net:extras",
     "//net:test_support",
+    "//net/http:transport_security_state_unittest_data_default",
     "//services/network/public/cpp",
+    "//services/network/public/cpp:buildflags",
     "//services/network/public/mojom",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/cpp:service_test_support",
+    "//services/service_manager/public/cpp/test:test_support",
     "//testing/gtest",
   ]
+
+  if (is_ct_supported) {
+    sources += [
+      "expect_ct_reporter_unittest.cc",
+      "network_context_cert_transparency_unittest.cc",
+    ]
+    deps += [ "//components/certificate_transparency" ]
+  }
 }
 
 jumbo_source_set("test_support") {
@@ -349,6 +406,7 @@ jumbo_source_set("test_support") {
 
   public_deps = [
     "//services/network/public/cpp",
+    "//services/network/public/cpp:buildflags",
     "//services/network/public/mojom",
   ]
 
@@ -365,15 +423,4 @@ jumbo_source_set("test_support") {
 service_manifest("manifest") {
   name = "network"
   source = "manifest.json"
-}
-
-service_manifest("unittest_manifest") {
-  name = "network_unittests"
-  source = "test/service_unittest_manifest.json"
-  packaged_services = [ ":manifest" ]
-}
-
-catalog("tests_catalog") {
-  testonly = true
-  embedded_services = [ ":unittest_manifest" ]
 }

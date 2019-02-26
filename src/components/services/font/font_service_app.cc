@@ -13,7 +13,6 @@
 #include "components/services/font/fontconfig_matching.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ppapi/buildflags/buildflags.h"
-#include "services/service_manager/public/cpp/service_context.h"
 #include "ui/gfx/font_fallback_linux.h"
 #include "ui/gfx/font_render_params.h"
 
@@ -83,11 +82,8 @@ font_service::mojom::RenderStyleSwitch ConvertSubpixelRendering(
 
 namespace font_service {
 
-std::unique_ptr<service_manager::Service> FontServiceApp::CreateService() {
-  return std::make_unique<FontServiceApp>();
-}
-
-FontServiceApp::FontServiceApp() {
+FontServiceApp::FontServiceApp(service_manager::mojom::ServiceRequest request)
+    : service_binding_(this, std::move(request)) {
   registry_.AddInterface(
       base::BindRepeating(&FontServiceApp::CreateSelf, base::Unretained(this)));
 }

@@ -158,7 +158,8 @@ IN_PROC_BROWSER_TEST_F(LoadTimingBrowserTest, Proxy) {
   ProfileNetworkContextServiceFactory::GetForContext(browser()->profile())
       ->FlushProxyConfigMonitorForTesting();
 
-  GURL url = spawned_test_server()->GetURL("chunked?waitBeforeHeaders=100");
+  // This request will fail if it doesn't go through proxy.
+  GURL url("http://does.not.resolve.test/chunked?waitBeforeHeaders=100");
   ui_test_utils::NavigateToURL(browser(), url);
 
   TimingDeltas navigation_deltas;

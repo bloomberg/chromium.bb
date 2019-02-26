@@ -116,7 +116,7 @@ public class ChildProcessConnectionTest {
 
     // Parameters captured from the IChildProcessService.setupConnection() call
     private Bundle mConnectionBundle;
-    private ICallbackInt mConnectionPidCallback;
+    private IParentProcess mConnectionParentProcess;
     private IBinder mConnectionIBinderCallback;
 
     @Before
@@ -129,7 +129,7 @@ public class ChildProcessConnectionTest {
             @Override
             public Void answer(InvocationOnMock invocation) {
                 mConnectionBundle = (Bundle) invocation.getArgument(0);
-                mConnectionPidCallback = (ICallbackInt) invocation.getArgument(1);
+                mConnectionParentProcess = (IParentProcess) invocation.getArgument(1);
                 mConnectionIBinderCallback = (IBinder) invocation.getArgument(2);
                 return null;
             }
@@ -305,9 +305,27 @@ public class ChildProcessConnectionTest {
         verify(mConnectionCallback, never()).onConnected(any());
         mFirstServiceConnection.notifyServiceConnected(mChildProcessServiceBinder);
         ShadowLooper.runUiThreadTasks();
-        assertNotNull(mConnectionPidCallback);
-        mConnectionPidCallback.call(34 /* pid */);
+        assertNotNull(mConnectionParentProcess);
+        mConnectionParentProcess.sendPid(34);
         verify(mConnectionCallback, times(1)).onConnected(connection);
+    }
+
+    @Test
+    public void testSendPidOnlyWorksOnce() throws RemoteException {
+        ChildProcessConnection connection = createDefaultTestConnection();
+        assertNotNull(mFirstServiceConnection);
+        connection.start(false /* useStrongBinding */, null /* serviceCallback */);
+        connection.setupConnection(
+                null /* connectionBundle */, null /* callback */, mConnectionCallback);
+        verify(mConnectionCallback, never()).onConnected(any());
+        mFirstServiceConnection.notifyServiceConnected(mChildProcessServiceBinder);
+        ShadowLooper.runUiThreadTasks();
+        assertNotNull(mConnectionParentProcess);
+
+        mConnectionParentProcess.sendPid(34);
+        assertEquals(34, connection.getPid());
+        mConnectionParentProcess.sendPid(543);
+        assertEquals(34, connection.getPid());
     }
 
     @Test
@@ -320,8 +338,8 @@ public class ChildProcessConnectionTest {
                 null /* connectionBundle */, null /* callback */, mConnectionCallback);
         verify(mConnectionCallback, never()).onConnected(any());
         ShadowLooper.runUiThreadTasks();
-        assertNotNull(mConnectionPidCallback);
-        mConnectionPidCallback.call(34 /* pid */);
+        assertNotNull(mConnectionParentProcess);
+        mConnectionParentProcess.sendPid(34);
         verify(mConnectionCallback, times(1)).onConnected(connection);
     }
 
@@ -335,8 +353,8 @@ public class ChildProcessConnectionTest {
                 null /* connectionBundle */, null /* callback */, mConnectionCallback);
         verify(mConnectionCallback, never()).onConnected(any());
         ShadowLooper.runUiThreadTasks();
-        assertNotNull(mConnectionPidCallback);
-        mConnectionPidCallback.call(34 /* pid */);
+        assertNotNull(mConnectionParentProcess);
+        mConnectionParentProcess.sendPid(34);
         verify(mConnectionCallback, times(1)).onConnected(connection);
 
         // Add strong binding so that connection is oom protected.

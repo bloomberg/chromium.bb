@@ -24,6 +24,9 @@
 
 namespace base {
 class Thread;
+namespace test {
+class ScopedFeatureList;
+}
 }
 
 namespace viz {
@@ -118,6 +121,7 @@ class PixelTest : public testing::Test {
   void TearDownGpuServiceOnGpuThread(base::WaitableEvent* event);
 
   std::unique_ptr<gl::DisableNullDrawGLBindings> enable_pixel_output_;
+  std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
 };
 
 template<typename RendererType>
@@ -221,6 +225,7 @@ inline void RendererPixelTest<SkiaRendererDDL>::SetUp() {
 typedef RendererPixelTest<viz::GLRenderer> GLRendererPixelTest;
 typedef RendererPixelTest<viz::SoftwareRenderer> SoftwareRendererPixelTest;
 typedef RendererPixelTest<viz::SkiaRenderer> SkiaRendererPixelTest;
+typedef RendererPixelTest<SkiaRendererDDL> SkiaRendererDDLPixelTest;
 
 }  // namespace cc
 

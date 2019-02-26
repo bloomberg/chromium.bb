@@ -11,13 +11,16 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_impl.h"
+#include "chrome/browser/data_use_measurement/chrome_data_use_measurement.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/notifications/notification_platform_bridge.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/notifications/system_notification_helper.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/resource_coordinator/resource_coordinator_parts.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_paths.h"
@@ -56,8 +59,6 @@
 #endif
 
 #if !defined(OS_ANDROID)
-#include "chrome/browser/resource_coordinator/tab_lifecycle_unit_source.h"
-#include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "components/keep_alive_registry/keep_alive_registry.h"
 #endif
 
@@ -114,13 +115,6 @@ TestingBrowserProcess::~TestingBrowserProcess() {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions::ExtensionsBrowserClient::Set(nullptr);
   extensions::AppWindowClient::Set(nullptr);
-#endif
-
-#if !defined(OS_ANDROID)
-  // TabLifecycleUnitSource must be deleted before TabManager because it has a
-  // raw pointer to a UsageClock owned by TabManager.
-  tab_lifecycle_unit_source_.reset();
-  tab_manager_.reset();
 #endif
 
   content::SetNetworkConnectionTrackerForTesting(nullptr);
@@ -271,7 +265,7 @@ TestingBrowserProcess::safe_browsing_detection_service() {
   return nullptr;
 }
 
-subresource_filter::ContentRulesetService*
+subresource_filter::RulesetService*
 TestingBrowserProcess::subresource_filter_ruleset_service() {
   return subresource_filter_ruleset_service_.get();
 }
@@ -425,20 +419,17 @@ gcm::GCMDriver* TestingBrowserProcess::gcm_driver() {
   return nullptr;
 }
 
-resource_coordinator::TabManager* TestingBrowserProcess::GetTabManager() {
-#if defined(OS_ANDROID)
-  return nullptr;
-#else
-  if (!tab_manager_) {
-    tab_manager_ = std::make_unique<resource_coordinator::TabManager>();
-    tab_lifecycle_unit_source_ =
-        std::make_unique<resource_coordinator::TabLifecycleUnitSource>(
-            tab_manager_->intervention_policy_database(),
-            tab_manager_->usage_clock());
-    tab_lifecycle_unit_source_->AddObserver(tab_manager_.get());
+resource_coordinator::ResourceCoordinatorParts*
+TestingBrowserProcess::resource_coordinator_parts() {
+  if (!resource_coordinator_parts_) {
+    resource_coordinator_parts_ =
+        std::make_unique<resource_coordinator::ResourceCoordinatorParts>();
   }
-  return tab_manager_.get();
-#endif
+  return resource_coordinator_parts_.get();
+}
+
+resource_coordinator::TabManager* TestingBrowserProcess::GetTabManager() {
+  return resource_coordinator_parts()->tab_manager();
 }
 
 shell_integration::DefaultWebClientState
@@ -469,6 +460,11 @@ void TestingBrowserProcess::SetNotificationUIManager(
 void TestingBrowserProcess::SetNotificationPlatformBridge(
     std::unique_ptr<NotificationPlatformBridge> notification_platform_bridge) {
   notification_platform_bridge_.swap(notification_platform_bridge);
+}
+
+void TestingBrowserProcess::SetSystemNotificationHelper(
+    std::unique_ptr<SystemNotificationHelper> system_notification_helper) {
+  system_notification_helper_ = std::move(system_notification_helper);
 }
 
 void TestingBrowserProcess::SetLocalState(PrefService* local_state) {
@@ -506,9 +502,8 @@ void TestingBrowserProcess::SetSafeBrowsingService(
 }
 
 void TestingBrowserProcess::SetRulesetService(
-    std::unique_ptr<subresource_filter::ContentRulesetService>
-        content_ruleset_service) {
-  subresource_filter_ruleset_service_.swap(content_ruleset_service);
+    std::unique_ptr<subresource_filter::RulesetService> ruleset_service) {
+  subresource_filter_ruleset_service_.swap(ruleset_service);
 }
 
 void TestingBrowserProcess::SetOptimizationGuideService(

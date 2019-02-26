@@ -16,11 +16,8 @@
 #include "base/strings/string_split.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_export.h"
+#include "ui/accessibility/ax_relative_bounds.h"
 #include "ui/gfx/geometry/rect_f.h"
-
-namespace gfx {
-class Transform;
-};
 
 namespace ui {
 
@@ -100,6 +97,7 @@ struct AX_EXPORT AXNodeData {
   void AddStringAttribute(ax::mojom::StringAttribute attribute,
                           const std::string& value);
   void AddIntAttribute(ax::mojom::IntAttribute attribute, int32_t value);
+  void RemoveIntAttribute(ax::mojom::IntAttribute attribute);
   void AddFloatAttribute(ax::mojom::FloatAttribute attribute, float value);
   void AddBoolAttribute(ax::mojom::BoolAttribute attribute, bool value);
   void AddIntListAttribute(ax::mojom::IntListAttribute attribute,
@@ -127,88 +125,36 @@ struct AX_EXPORT AXNodeData {
   void SetValue(const base::string16& value);
 
   // Returns true if the given enum bit is 1.
-  bool HasState(ax::mojom::State state_enum) const;
-  bool HasAction(ax::mojom::Action state_enum) const;
+  bool HasState(ax::mojom::State state) const;
+  bool HasAction(ax::mojom::Action action) const;
+  bool HasTextStyle(ax::mojom::TextStyle text_style) const;
 
-  // Set bits in the given enum's corresponding bitfield.
-  void AddState(ax::mojom::State state_enum);
-  void AddAction(ax::mojom::Action action_enum);
+  // Set or remove bits in the given enum's corresponding bitfield.
+  ax::mojom::State AddState(ax::mojom::State state);
+  ax::mojom::State RemoveState(ax::mojom::State state);
+  ax::mojom::Action AddAction(ax::mojom::Action action);
+  void AddTextStyle(ax::mojom::TextStyle text_style);
 
-  // Remove bits in the given enum's corresponding bitfield.
-  void RemoveState(ax::mojom::State state_enum);
-
-  // Helper functions to get some common int attributes with some specific
-  // enum types:
-  ax::mojom::CheckedState GetCheckedState() const {
-    return static_cast<ax::mojom::CheckedState>(
-        GetIntAttribute(ax::mojom::IntAttribute::kCheckedState));
-  }
-
-  ax::mojom::HasPopup GetHasPopup() const {
-    return static_cast<ax::mojom::HasPopup>(
-        GetIntAttribute(ax::mojom::IntAttribute::kHasPopup));
-  }
-
-  ax::mojom::DefaultActionVerb GetDefaultActionVerb() const {
-    return static_cast<ax::mojom::DefaultActionVerb>(
-        GetIntAttribute(ax::mojom::IntAttribute::kDefaultActionVerb));
-  }
-  ax::mojom::InvalidState GetInvalidState() const {
-    return static_cast<ax::mojom::InvalidState>(
-        GetIntAttribute(ax::mojom::IntAttribute::kInvalidState));
-  }
-  ax::mojom::NameFrom GetNameFrom() const {
-    return static_cast<ax::mojom::NameFrom>(
-        GetIntAttribute(ax::mojom::IntAttribute::kNameFrom));
-  }
-  ax::mojom::Restriction GetRestriction() const {
-    return static_cast<ax::mojom::Restriction>(
-        GetIntAttribute(ax::mojom::IntAttribute::kRestriction));
-  }
-  ax::mojom::TextDirection GetTextDirection() const {
-    return static_cast<ax::mojom::TextDirection>(
-        GetIntAttribute(ax::mojom::IntAttribute::kTextDirection));
-  }
-
-  ax::mojom::TextPosition GetTextPosition() const {
-    return static_cast<ax::mojom::TextPosition>(
-        GetIntAttribute(ax::mojom::IntAttribute::kTextPosition));
-  }
-
-  // Helper functions to set some common int attributes.
-  void SetCheckedState(ax::mojom::CheckedState checked_state) {
-    AddIntAttribute(ax::mojom::IntAttribute::kCheckedState,
-                    static_cast<int32_t>(checked_state));
-  }
-  void SetHasPopup(ax::mojom::HasPopup has_popup) {
-    AddIntAttribute(ax::mojom::IntAttribute::kHasPopup,
-                    static_cast<int32_t>(has_popup));
-  }
-  void SetDefaultActionVerb(ax::mojom::DefaultActionVerb default_action_verb) {
-    AddIntAttribute(ax::mojom::IntAttribute::kDefaultActionVerb,
-                    static_cast<int32_t>(default_action_verb));
-  }
-  void SetInvalidState(ax::mojom::InvalidState invalid_state) {
-    AddIntAttribute(ax::mojom::IntAttribute::kInvalidState,
-                    static_cast<int32_t>(invalid_state));
-  }
-  void SetNameFrom(ax::mojom::NameFrom name_from) {
-    AddIntAttribute(ax::mojom::IntAttribute::kNameFrom,
-                    static_cast<int32_t>(name_from));
-  }
-  void SetRestriction(ax::mojom::Restriction restriction) {
-    AddIntAttribute(ax::mojom::IntAttribute::kRestriction,
-                    static_cast<int32_t>(restriction));
-  }
-  void SetTextDirection(ax::mojom::TextDirection text_direction) {
-    AddIntAttribute(ax::mojom::IntAttribute::kTextDirection,
-                    static_cast<int32_t>(text_direction));
-  }
-
-  void SetTextPosition(ax::mojom::TextPosition text_position) {
-    AddIntAttribute(ax::mojom::IntAttribute::kTextPosition,
-                    static_cast<int32_t>(text_position));
-  }
+  // Helper functions to get or set some common int attributes with some
+  // specific enum types. To remove an attribute, set it to None.
+  //
+  // Please keep in alphabetic order.
+  ax::mojom::CheckedState GetCheckedState() const;
+  void SetCheckedState(ax::mojom::CheckedState checked_state);
+  ax::mojom::DefaultActionVerb GetDefaultActionVerb() const;
+  void SetDefaultActionVerb(ax::mojom::DefaultActionVerb default_action_verb);
+  ax::mojom::HasPopup GetHasPopup() const;
+  void SetHasPopup(ax::mojom::HasPopup has_popup);
+  ax::mojom::InvalidState GetInvalidState() const;
+  void SetInvalidState(ax::mojom::InvalidState invalid_state);
+  ax::mojom::NameFrom GetNameFrom() const;
+  void SetNameFrom(ax::mojom::NameFrom name_from);
+  ax::mojom::TextPosition GetTextPosition() const;
+  void SetTextPosition(ax::mojom::TextPosition text_position);
+  ax::mojom::Restriction GetRestriction() const;
+  void SetRestriction(ax::mojom::Restriction restriction);
+  ax::mojom::TextDirection GetTextDirection() const;
+  void SetTextDirection(ax::mojom::TextDirection text_direction);
 
   // Return a string representation of this data, for debugging.
   virtual std::string ToString() const;
@@ -232,22 +178,7 @@ struct AX_EXPORT AXNodeData {
   base::StringPairs html_attributes;
   std::vector<int32_t> child_ids;
 
-  // TODO(dmazzoni): replace the following three members with a single
-  // instance of AXRelativeBounds.
-
-  // The id of an ancestor node in the same AXTree that this object's
-  // bounding box is relative to, or -1 if there's no offset container.
-  int32_t offset_container_id = -1;
-
-  // The relative bounding box of this node.
-  gfx::RectF location;
-
-  // An additional transform to apply to position this object and its subtree.
-  // NOTE: this member is a std::unique_ptr because it's rare and gfx::Transform
-  // takes up a fair amount of space. The assignment operator and copy
-  // constructor both make a duplicate of the owned pointer, so it acts more
-  // like a member than a pointer.
-  std::unique_ptr<gfx::Transform> transform;
+  AXRelativeBounds relative_bounds;
 };
 
 }  // namespace ui

@@ -22,12 +22,14 @@ namespace autofill_assistant {
 namespace {
 
 using ::testing::_;
-using ::testing::ElementsAre;
+using ::testing::Eq;
 using ::testing::InSequence;
+using ::testing::Invoke;
+using ::testing::IsNull;
 using ::testing::Not;
+using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::StrNe;
-using ::testing::Invoke;
 
 class MockPersonalDataManager : public autofill::PersonalDataManager {
  public:
@@ -96,13 +98,13 @@ class DirectCallback {
 class AutofillActionTest : public testing::Test {
  public:
   void SetUp() override {
-    autofill::AutofillProfile profile(base::GenerateGUID(),
-                                      autofill::test::kEmptyOrigin);
-    autofill::test::SetProfileInfo(&profile, kFirstName, "", kLastName, kEmail,
-                                   "", "", "", "", "", "", "", "");
-    autofill_profile_guid_ = profile.guid();
+    autofill_profile_ = std::make_unique<autofill::AutofillProfile>(
+        base::GenerateGUID(), autofill::test::kEmptyOrigin);
+    autofill::test::SetProfileInfo(autofill_profile_.get(), kFirstName, "",
+                                   kLastName, kEmail, "", "", "", "", "", "",
+                                   "", "");
     personal_data_manager_ = std::make_unique<MockPersonalDataManager>();
-    personal_data_manager_->SaveImportedProfile(profile);
+    personal_data_manager_->SaveImportedProfile(*autofill_profile_);
 
     ON_CALL(mock_action_delegate_, GetClientMemory)
         .WillByDefault(Return(&mock_client_memory_));
@@ -112,6 +114,8 @@ class AutofillActionTest : public testing::Test {
         .WillByDefault(Invoke([this]() {
           return std::make_unique<BatchElementChecker>(&mock_web_controller_);
         }));
+    ON_CALL(mock_action_delegate_, OnShortWaitForElementExist(_, _))
+        .WillByDefault(RunOnceCallback<1>(true));
   }
 
  protected:
@@ -163,7 +167,8 @@ class AutofillActionTest : public testing::Test {
 
   void ExpectActionToStopScript(const ActionProto& action_proto,
                                 const std::string& expected_message) {
-    EXPECT_CALL(mock_action_delegate_, StopCurrentScript(expected_message));
+    EXPECT_CALL(mock_action_delegate_,
+                StopCurrentScriptAndShutdown(expected_message));
 
     // The AutofillAction should finish successfully even when stopping the
     // current script.
@@ -173,7 +178,7 @@ class AutofillActionTest : public testing::Test {
   MockActionDelegate mock_action_delegate_;
   MockWebController mock_web_controller_;
   MockClientMemory mock_client_memory_;
-  std::string autofill_profile_guid_;
+  std::unique_ptr<autofill::AutofillProfile> autofill_profile_;
   std::unique_ptr<autofill::PersonalDataManager> personal_data_manager_;
 };
 
@@ -184,8 +189,8 @@ TEST_F(AutofillActionTest, FillManually) {
   action_proto.mutable_use_address()->set_prompt(kSelectionPrompt);
 
   // No selection was made previously.
-  EXPECT_CALL(mock_client_memory_, selected_address(kAddressName))
-      .WillOnce(Return(base::nullopt));
+  EXPECT_CALL(mock_client_memory_, has_selected_address(kAddressName))
+      .WillOnce(Return(false));
 
   // Expect prompt.
   EXPECT_CALL(mock_action_delegate_, ShowStatusMessage(kSelectionPrompt));
@@ -195,7 +200,8 @@ TEST_F(AutofillActionTest, FillManually) {
       .WillOnce(RunOnceCallback<0>(""));
 
   // We save the selection in memory.
-  EXPECT_CALL(mock_client_memory_, set_selected_address(kAddressName, ""));
+  EXPECT_CALL(mock_client_memory_,
+              set_selected_address(kAddressName, IsNull()));
 
   ExpectActionToStopScript(action_proto, kFillForm);
 }
@@ -212,13 +218,14 @@ TEST_F(AutofillActionTest, ValidationSucceeds) {
                    "#email");
 
   // Return a fake selected address.
-  EXPECT_CALL(mock_client_memory_, selected_address(kAddressName))
-      .WillOnce(Return(autofill_profile_guid_));
+  ON_CALL(mock_client_memory_, has_selected_address(kAddressName))
+      .WillByDefault(Return(true));
+  ON_CALL(mock_client_memory_, selected_address(kAddressName))
+      .WillByDefault(Return(autofill_profile_.get()));
 
   // Autofill succeeds.
-  EXPECT_CALL(
-      mock_action_delegate_,
-      OnFillAddressForm(autofill_profile_guid_, ElementsAre(kFakeSelector), _))
+  EXPECT_CALL(mock_action_delegate_,
+              OnFillAddressForm(NotNull(), Eq(Selector({kFakeSelector})), _))
       .WillOnce(RunOnceCallback<2>(true));
 
   // Validation succeeds.
@@ -240,28 +247,30 @@ TEST_F(AutofillActionTest, FallbackFails) {
                    "#email");
 
   // Return a fake selected address.
-  EXPECT_CALL(mock_client_memory_, selected_address(kAddressName))
-      .WillOnce(Return(autofill_profile_guid_));
+  ON_CALL(mock_client_memory_, has_selected_address(kAddressName))
+      .WillByDefault(Return(true));
+  ON_CALL(mock_client_memory_, selected_address(kAddressName))
+      .WillByDefault(Return(autofill_profile_.get()));
 
   // Autofill succeeds.
-  EXPECT_CALL(
-      mock_action_delegate_,
-      OnFillAddressForm(autofill_profile_guid_, ElementsAre(kFakeSelector), _))
+  EXPECT_CALL(mock_action_delegate_,
+              OnFillAddressForm(NotNull(), Eq(Selector({kFakeSelector})), _))
       .WillOnce(RunOnceCallback<2>(true));
 
   // Validation fails when getting FIRST_NAME.
-  EXPECT_CALL(mock_web_controller_, OnGetFieldValue(ElementsAre("#email"), _))
+  EXPECT_CALL(mock_web_controller_,
+              OnGetFieldValue(Eq(Selector({"#email"})), _))
       .WillOnce(RunOnceCallback<1>(true, "not empty"));
   EXPECT_CALL(mock_web_controller_,
-              OnGetFieldValue(ElementsAre("#first_name"), _))
+              OnGetFieldValue(Eq(Selector({"#first_name"})), _))
       .WillOnce(RunOnceCallback<1>(true, ""));
   EXPECT_CALL(mock_web_controller_,
-              OnGetFieldValue(ElementsAre("#last_name"), _))
+              OnGetFieldValue(Eq(Selector({"#last_name"})), _))
       .WillOnce(RunOnceCallback<1>(true, "not empty"));
 
   // Fallback fails.
   EXPECT_CALL(mock_action_delegate_,
-              OnSetFieldValue(ElementsAre("#first_name"), kFirstName, _))
+              OnSetFieldValue(Eq(Selector({"#first_name"})), kFirstName, _))
       .WillOnce(RunOnceCallback<2>(false));
 
   ExpectActionToStopScript(action_proto, kCheckForm);
@@ -279,31 +288,33 @@ TEST_F(AutofillActionTest, FallbackSucceeds) {
                    "#email");
 
   // Return a fake selected address.
-  EXPECT_CALL(mock_client_memory_, selected_address(kAddressName))
-      .WillOnce(Return(autofill_profile_guid_));
+  ON_CALL(mock_client_memory_, has_selected_address(kAddressName))
+      .WillByDefault(Return(true));
+  ON_CALL(mock_client_memory_, selected_address(kAddressName))
+      .WillByDefault(Return(autofill_profile_.get()));
 
   // Autofill succeeds.
-  EXPECT_CALL(
-      mock_action_delegate_,
-      OnFillAddressForm(autofill_profile_guid_, ElementsAre(kFakeSelector), _))
+  EXPECT_CALL(mock_action_delegate_,
+              OnFillAddressForm(NotNull(), Eq(Selector({kFakeSelector})), _))
       .WillOnce(RunOnceCallback<2>(true));
 
   {
     InSequence seq;
 
     // Validation fails when getting FIRST_NAME.
-    EXPECT_CALL(mock_web_controller_, OnGetFieldValue(ElementsAre("#email"), _))
+    EXPECT_CALL(mock_web_controller_,
+                OnGetFieldValue(Eq(Selector({"#email"})), _))
         .WillOnce(RunOnceCallback<1>(true, "not empty"));
     EXPECT_CALL(mock_web_controller_,
-                OnGetFieldValue(ElementsAre("#first_name"), _))
+                OnGetFieldValue(Eq(Selector({"#first_name"})), _))
         .WillOnce(RunOnceCallback<1>(true, ""));
     EXPECT_CALL(mock_web_controller_,
-                OnGetFieldValue(ElementsAre("#last_name"), _))
+                OnGetFieldValue(Eq(Selector({"#last_name"})), _))
         .WillOnce(RunOnceCallback<1>(true, "not empty"));
 
     // Fallback succeeds.
     EXPECT_CALL(mock_action_delegate_,
-                OnSetFieldValue(ElementsAre("#first_name"), kFirstName, _))
+                OnSetFieldValue(Eq(Selector({"#first_name"})), kFirstName, _))
         .WillOnce(RunOnceCallback<2>(true));
 
     // Second validation succeeds.
@@ -312,6 +323,5 @@ TEST_F(AutofillActionTest, FallbackSucceeds) {
   }
   EXPECT_TRUE(ProcessAction(action_proto));
 }
-
 }  // namespace
 }  // namespace autofill_assistant

@@ -11,13 +11,13 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* Height::ParseSingleValue(CSSParserTokenRange& range,
                                          const CSSParserContext& context,
                                          const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ConsumeWidthOrHeight(
-      range, context, CSSPropertyParserHelpers::UnitlessQuirk::kAllow);
+  return css_parsing_utils::ConsumeWidthOrHeight(
+      range, context, css_property_parser_helpers::UnitlessQuirk::kAllow);
 }
 
 bool Height::IsLayoutDependent(const ComputedStyle* style,
@@ -39,5 +39,5 @@ const CSSValue* Height::CSSValueFromComputedStyleInternal(
                                                              style);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

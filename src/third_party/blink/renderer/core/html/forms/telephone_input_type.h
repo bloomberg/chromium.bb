@@ -39,8 +39,9 @@ class TelephoneInputType final : public BaseTextInputType {
  public:
   static InputType* Create(HTMLInputElement&);
 
- private:
   TelephoneInputType(HTMLInputElement& element) : BaseTextInputType(element) {}
+
+ private:
   void CountUsage() override;
   const AtomicString& FormControlType() const override;
 };

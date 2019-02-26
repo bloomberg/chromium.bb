@@ -4,6 +4,9 @@
 
 #include "media/base/mock_audio_renderer_sink.h"
 
+#include "base/bind.h"
+#include "base/threading/sequenced_task_runner_handle.h"
+
 namespace media {
 MockAudioRendererSink::MockAudioRendererSink()
     : MockAudioRendererSink(OUTPUT_DEVICE_STATUS_OK) {}
@@ -29,12 +32,11 @@ MockAudioRendererSink::MockAudioRendererSink(
 
 MockAudioRendererSink::~MockAudioRendererSink() = default;
 
-void MockAudioRendererSink::SwitchOutputDevice(
-    const std::string& device_id,
-    const OutputDeviceStatusCB& callback) {
+void MockAudioRendererSink::SwitchOutputDevice(const std::string& device_id,
+                                               OutputDeviceStatusCB callback) {
   // NB: output device won't be changed, since it's not required by any tests
   // now.
-  callback.Run(output_device_info_.device_status());
+  std::move(callback).Run(output_device_info_.device_status());
 }
 
 void MockAudioRendererSink::Initialize(const AudioParameters& params,
@@ -44,6 +46,12 @@ void MockAudioRendererSink::Initialize(const AudioParameters& params,
 
 OutputDeviceInfo MockAudioRendererSink::GetOutputDeviceInfo() {
   return output_device_info_;
+}
+
+void MockAudioRendererSink::GetOutputDeviceInfoAsync(
+    OutputDeviceInfoCB info_cb) {
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(info_cb), output_device_info_));
 }
 
 bool MockAudioRendererSink::IsOptimizedForHardwareParameters() {

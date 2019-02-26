@@ -38,12 +38,20 @@ class RemoteCharacteristic
       const bluetooth_v2_shlib::Uuid& uuid) = 0;
 
   // Register or deregister from a notification. Calls |SetNotification| and
-  // writes the cccd.
+  // writes the CCCD. For indication support, see method
+  // |SetRegisterNotificationOrIndication|.
   virtual void SetRegisterNotification(bool enable, StatusCallback cb) = 0;
 
   // Enable notifications for this characteristic. Client must still write to
   // the CCCD seperately (or use |SetRegisterNotification| instead).
   virtual void SetNotification(bool enable, StatusCallback cb) = 0;
+
+  // If notification is supported, then register or deregister notification.
+  // If indication is supported, then register or deregister indication.
+  // Note that notification has higher priority over indication.
+  // Calls |SetNotification| and writes the CCCD.
+  virtual void SetRegisterNotificationOrIndication(bool enable,
+                                                   StatusCallback cb) = 0;
 
   // Read the characteristic with |auth_req|. When completed, |callback| will be
   // called.

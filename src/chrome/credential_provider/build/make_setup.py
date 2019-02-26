@@ -75,7 +75,7 @@ def main():
   gcp_7z_fn = os.path.join(args.root_build_path, 'gcp.7z')
 
   sz_fn = os.path.join(args.src_path, r'third_party\lzma_sdk\7zr.exe')
-  sfx_fn = os.path.join(args.root_build_path, '7zS2.exe')
+  sfx_fn = os.path.join(args.root_build_path, 'gcp_sfx.exe')
 
   # Build the command line for updating files in the GCP 7z archive.
   cmd = [
@@ -107,15 +107,20 @@ def main():
   # Add the credential provider dll and setup programs to the archive.
   # If the files added to the archive are changed, make sure to update the
   # kFilenames array in setup_lib.cc.
-  os.chdir(args.root_build_path)
-  subprocess.call(cmd + ['gaia1_0.dll'])
-  subprocess.call(cmd + ['gcp_setup.exe'])
-  subprocess.call(cmd + ['gcp_eventlog_provider.dll'])
+
+  # 7zip and copy commands don't have a "silent" mode, so redirecting stdout
+  # and stderr to nul.
+  with open('nul') as nul_file:
+    os.chdir(args.root_build_path)
+    subprocess.check_call(cmd + ['gaia1_0.dll'], stdout=nul_file)
+    subprocess.check_call(cmd + ['gcp_setup.exe'], stdout=nul_file)
+    subprocess.check_call(cmd + ['gcp_eventlog_provider.dll'], stdout=nul_file)
 
   # Combine the SFX module with the archive to make a self extracting
   # executable.
-  command = 'copy /b %s + %s %s' % (sfx_fn, gcp_7z_fn, gcp_installer_fn)
-  subprocess.call(command, shell=True)
+  command = 'copy /b %s + %s %s > nul' % (sfx_fn, gcp_7z_fn, gcp_installer_fn)
+  subprocess.check_call(command, shell=True)
+
   return 0
 
 

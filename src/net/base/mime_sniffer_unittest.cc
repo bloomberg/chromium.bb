@@ -4,8 +4,10 @@
 
 #include "net/base/mime_sniffer.h"
 
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "url/url_constants.h"
 
 namespace net {
 namespace {
@@ -29,6 +31,38 @@ static std::string SniffMimeType(const std::string& content,
   SniffMimeType(content.data(), content.size(), GURL(url), mime_type_hint,
                 ForceSniffFileUrlsForHtml::kDisabled, &mime_type);
   return mime_type;
+}
+
+TEST(MimeSnifferTest, SniffableSchemes) {
+  struct {
+    const char* scheme;
+    bool sniffable;
+  } kTestCases[] = {
+    {url::kAboutScheme, false},
+    {url::kBlobScheme, false},
+#if defined(OS_ANDROID)
+    {url::kContentScheme, true},
+#else
+    {url::kContentScheme, false},
+#endif
+    {url::kContentIDScheme, false},
+    {url::kDataScheme, false},
+    {url::kFileScheme, true},
+    {url::kFileSystemScheme, true},
+    {url::kFtpScheme, false},
+    {url::kGopherScheme, false},
+    {url::kHttpScheme, true},
+    {url::kHttpsScheme, true},
+    {url::kJavaScriptScheme, false},
+    {url::kMailToScheme, false},
+    {url::kWsScheme, false},
+    {url::kWssScheme, false}
+  };
+
+  for (const auto test_case : kTestCases) {
+    GURL url(std::string(test_case.scheme) + "://host/path/whatever");
+    EXPECT_EQ(test_case.sniffable, ShouldSniffMimeType(url, ""));
+  }
 }
 
 TEST(MimeSnifferTest, BoundaryConditionsTest) {
@@ -455,6 +489,13 @@ TEST(MimeSnifferTest, AudioVideoTest) {
   EXPECT_TRUE(SniffMimeTypeFromLocalData(kAACTestData, sizeof(kAACTestData) - 1,
                                          &mime_type));
   EXPECT_EQ("audio/mpeg", mime_type);
+  mime_type.clear();
+
+  const char kAMRTestData[] =
+      "\x23\x21\x41\x4d\x52\x0a\x3c\x53\x0a\x7c\xe8\xb8\x41\xa5\x80\xca";
+  EXPECT_TRUE(SniffMimeTypeFromLocalData(kAMRTestData, sizeof(kAMRTestData) - 1,
+                                         &mime_type));
+  EXPECT_EQ("audio/amr", mime_type);
   mime_type.clear();
 }
 

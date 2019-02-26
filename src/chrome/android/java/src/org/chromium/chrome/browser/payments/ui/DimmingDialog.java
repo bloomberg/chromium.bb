@@ -36,6 +36,10 @@ import org.chromium.chrome.browser.widget.animation.AnimatorProperties;
  * A fullscreen semitransparent dialog used for dimming Chrome when overlaying a bottom sheet
  * dialog/CCT or an alert dialog on top of it. FLAG_DIM_BEHIND is not being used because it causes
  * the web contents of a payment handler CCT to also dim on some versions of Android (e.g., Nougat).
+ *
+ * Note: Do not use this class outside of the payments.ui package!
+ * TODO(crbug.com/806868): Revert the visibility to package default again when it is no longer used
+ * by Autofill Assistant.
  */
 /* package */ class DimmingDialog {
     /**
@@ -190,7 +194,7 @@ import org.chromium.chrome.browser.widget.animation.AnimatorProperties;
     private class DisappearingAnimator extends AnimatorListenerAdapter {
         private final boolean mIsDialogClosing;
 
-        /* package */ DisappearingAnimator(boolean removeDialog) {
+        public DisappearingAnimator(boolean removeDialog) {
             mIsDialogClosing = removeDialog;
 
             View child = mFullContainer.getChildAt(0);

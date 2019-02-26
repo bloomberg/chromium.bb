@@ -144,7 +144,7 @@ TracingServiceImpl::ConnectProducer(Producer* producer,
   }
 
   if (producers_.size() >= kMaxProducerID) {
-    PERFETTO_DCHECK(false);
+    PERFETTO_DFATAL("Too many producers.");
     return nullptr;
   }
   const ProducerID id = GetNextProducerID();
@@ -419,12 +419,16 @@ bool TracingServiceImpl::StartTracing(TracingSessionID tsid) {
         tracing_session->delay_to_next_write_period_ms());
   }
 
+  // Start the periodic flush tasks if the config specified a flush period.
+  if (tracing_session->config.flush_period_ms())
+    PeriodicFlushTask(tsid, /*post_next_only=*/true);
+
   for (const auto& kv : tracing_session->data_source_instances) {
     ProducerID producer_id = kv.first;
     const DataSourceInstance& data_source = kv.second;
     ProducerEndpointImpl* producer = GetProducer(producer_id);
     if (!producer) {
-      PERFETTO_DCHECK(false);
+      PERFETTO_DFATAL("Producer does not exist.");
       continue;
     }
     producer->StartDataSource(data_source.instance_id, data_source.config);
@@ -526,7 +530,7 @@ void TracingServiceImpl::NotifyDataSourceStopped(
     if (pending_stop_acks.empty())
       continue;
     if (tracing_session.state != TracingSession::DISABLING_WAITING_STOP_ACKS) {
-      PERFETTO_DCHECK(false);
+      PERFETTO_DFATAL("Tracing session in incorrect state.");
       continue;
     }
     pending_stop_acks.erase(std::make_pair(producer_id, data_source_id));
@@ -665,6 +669,31 @@ void TracingServiceImpl::FlushAndDisableTracing(TracingSessionID tsid) {
   });
 }
 
+void TracingServiceImpl::PeriodicFlushTask(TracingSessionID tsid,
+                                           bool post_next_only) {
+  PERFETTO_DCHECK_THREAD(thread_checker_);
+  TracingSession* tracing_session = GetTracingSession(tsid);
+  if (!tracing_session || tracing_session->state != TracingSession::STARTED)
+    return;
+
+  uint32_t flush_period_ms = tracing_session->config.flush_period_ms();
+  auto weak_this = weak_ptr_factory_.GetWeakPtr();
+  task_runner_->PostDelayedTask(
+      [weak_this, tsid] {
+        if (weak_this)
+          weak_this->PeriodicFlushTask(tsid, /*post_next_only=*/false);
+      },
+      flush_period_ms - (base::GetWallTimeMs().count() % flush_period_ms));
+
+  if (post_next_only)
+    return;
+
+  Flush(tsid, kFlushTimeoutMs, [](bool success) {
+    if (!success)
+      PERFETTO_ELOG("Periodic flush timed out");
+  });
+}
+
 // Note: when this is called to write into a file passed when starting tracing
 // |consumer| will be == nullptr (as opposite to the case of a consumer asking
 // to send the trace data back over IPC).
@@ -690,7 +719,7 @@ void TracingServiceImpl::ReadBuffers(TracingSessionID tsid,
     // If the consumer enabled tracing and asked to save the contents into the
     // passed file makes little sense to also try to read the buffers over IPC,
     // as that would just steal data from the periodic draining task.
-    PERFETTO_DCHECK(false);
+    PERFETTO_DFATAL("Consumer trying to read from write_to_file session.");
     return;
   }
 
@@ -736,7 +765,7 @@ void TracingServiceImpl::ReadBuffers(TracingSessionID tsid,
        buf_idx++) {
     auto tbuf_iter = buffers_.find(tracing_session->buffers_index[buf_idx]);
     if (tbuf_iter == buffers_.end()) {
-      PERFETTO_DCHECK(false);
+      PERFETTO_DFATAL("Buffer not found.");
       continue;
     }
     TraceBuffer& tbuf = *tbuf_iter->second;
@@ -916,7 +945,7 @@ void TracingServiceImpl::RegisterDataSource(ProducerID producer_id,
 
   ProducerEndpointImpl* producer = GetProducer(producer_id);
   if (!producer) {
-    PERFETTO_DCHECK(false);
+    PERFETTO_DFATAL("Producer not found.");
     return;
   }
 
@@ -973,11 +1002,10 @@ void TracingServiceImpl::UnregisterDataSource(ProducerID producer_id,
     }
   }
 
-  PERFETTO_DLOG(
+  PERFETTO_DFATAL(
       "Tried to unregister a non-existent data source \"%s\" for "
       "producer %" PRIu16,
       name.c_str(), producer_id);
-  PERFETTO_DCHECK(false);
 }
 
 TracingServiceImpl::DataSourceInstance* TracingServiceImpl::SetupDataSource(
@@ -1026,11 +1054,12 @@ TracingServiceImpl::DataSourceInstance* TracingServiceImpl::SetupDataSource(
 
   DataSourceInstanceID inst_id = ++last_data_source_instance_id_;
   auto insert_iter = tracing_session->data_source_instances.emplace(
-      producer->id_,
-      DataSourceInstance{inst_id,
-                         cfg_data_source.config(),  //  Deliberate copy.
-                         data_source.descriptor.name(),
-                         data_source.descriptor.will_notify_on_stop()});
+      std::piecewise_construct,  //
+      std::forward_as_tuple(producer->id_),
+      std::forward_as_tuple(inst_id,
+                            cfg_data_source.config(),  //  Deliberate copy.
+                            data_source.descriptor.name(),
+                            data_source.descriptor.will_notify_on_stop()));
   DataSourceInstance* ds_instance = &insert_iter->second;
   DataSourceConfig& ds_config = ds_instance->config;
   ds_config.set_trace_duration_ms(tracing_session->config.duration_ms());
@@ -1128,9 +1157,8 @@ void TracingServiceImpl::ApplyChunkPatches(
     // patches per request, so we can allocate the |patches| array on the stack.
     std::array<TraceBuffer::Patch, 1024> patches;  // Uninitialized.
     if (chunk.patches().size() > patches.size()) {
-      PERFETTO_DLOG("Too many patches (%zu) batched in the same request",
-                    patches.size());
-      PERFETTO_DCHECK(false);
+      PERFETTO_DFATAL("Too many patches (%zu) batched in the same request",
+                      patches.size());
       continue;
     }
 
@@ -1299,7 +1327,7 @@ void TracingServiceImpl::SnapshotStats(TracingSession* tracing_session,
   for (BufferID buf_id : tracing_session->buffers_index) {
     TraceBuffer* buf = GetBufferByID(buf_id);
     if (!buf) {
-      PERFETTO_DCHECK(false);
+      PERFETTO_DFATAL("Buffer not found.");
       continue;
     }
     auto* buf_stats_proto = trace_stats->add_buffer_stats();

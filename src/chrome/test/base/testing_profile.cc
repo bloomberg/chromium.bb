@@ -46,6 +46,7 @@
 #include "chrome/browser/profiles/storage_partition_descriptor.h"
 #include "chrome/browser/search_engines/template_url_fetcher_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/sync/bookmark_sync_service_factory.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
 #include "chrome/browser/web_data_service_factory.h"
@@ -491,8 +492,15 @@ void TestingProfile::FinishInit() {
   if (profile_manager)
     profile_manager->InitProfileUserPrefs(this);
 
-  if (delegate_)
+  if (delegate_) {
     delegate_->OnProfileCreated(this, true, false);
+  } else {
+    // It is the role of the delegate to ensure that the signout allowed is
+    // properly updated after the profile is create is initialized.
+    // For testing profiles that do not have a delegate, the signout allowed
+    // must be initialized when the testing profile finishes its initialization.
+    signin_util::EnsureUserSignoutAllowedIsInitializedForProfile(this);
+  }
 }
 
 TestingProfile::~TestingProfile() {
@@ -615,12 +623,6 @@ void TestingProfile::SetIsNewProfile(bool is_new_profile) {
 
 base::FilePath TestingProfile::GetPath() const {
   return profile_path_;
-}
-
-base::FilePath TestingProfile::GetCachePath() const {
-  base::FilePath cache_path;
-  chrome::GetUserCacheDirectory(profile_path_, &cache_path);
-  return cache_path;
 }
 
 #if !defined(OS_ANDROID)
@@ -881,6 +883,11 @@ void TestingProfile::set_last_selected_directory(const base::FilePath& path) {
 }
 
 #if defined(OS_CHROMEOS)
+void TestingProfile::ChangeAppLocale(const std::string& locale,
+                                     AppLocaleChangedVia via) {
+  requested_locale_ = locale;
+}
+
 chromeos::ScopedCrosSettingsTestHelper*
 TestingProfile::ScopedCrosSettingsTestHelper() {
   return scoped_cros_settings_test_helper_.get();
@@ -1049,15 +1056,6 @@ void TestingProfile::Builder::SetPolicyService(
 
 void TestingProfile::Builder::SetProfileName(const std::string& profile_name) {
   profile_name_ = profile_name;
-}
-
-void TestingProfile::Builder::AddTestingFactory(
-    BrowserContextKeyedServiceFactory* service_factory,
-    BrowserContextKeyedServiceFactory::TestingFactoryFunction function) {
-  BrowserContextKeyedServiceFactory::TestingFactory testing_factory;
-  if (function)
-    testing_factory = base::BindRepeating(function);
-  AddTestingFactory(service_factory, std::move(testing_factory));
 }
 
 void TestingProfile::Builder::AddTestingFactory(

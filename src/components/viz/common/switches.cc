@@ -24,6 +24,9 @@ const char kEnableSurfaceSynchronization[] = "enable-surface-synchronization";
 // For local inspection use chrome://inspect#other
 const char kEnableVizDevTools[] = "enable-viz-devtools";
 
+// Enables hit-test debug logging.
+const char kEnableVizHitTestDebug[] = "enable-viz-hit-test-debug";
+
 // Effectively disables pipelining of compositor frame production stages by
 // waiting for each stage to finish before completing a frame.
 const char kRunAllCompositorStagesBeforeDraw[] =

@@ -48,6 +48,11 @@ class MODULES_EXPORT MediaDeviceInfo : public ScriptWrappable {
                                  const String& group_id,
                                  MediaDeviceType);
 
+  MediaDeviceInfo(const String& device_id,
+                  const String& label,
+                  const String& group_id,
+                  MediaDeviceType);
+
   String deviceId() const;
   String kind() const;
   String label() const;
@@ -56,12 +61,6 @@ class MODULES_EXPORT MediaDeviceInfo : public ScriptWrappable {
   MediaDeviceType DeviceType() const;
 
   ScriptValue toJSONForBinding(ScriptState*);
-
- protected:
-  MediaDeviceInfo(const String& device_id,
-                  const String& label,
-                  const String& group_id,
-                  MediaDeviceType);
 
  private:
   String device_id_;

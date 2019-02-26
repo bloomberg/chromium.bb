@@ -16,11 +16,8 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/filters/jpeg_parser.h"
+#include "media/gpu/macros.h"
 #include "third_party/libyuv/include/libyuv.h"
-
-#define VLOGF(level) VLOG(level) << __func__ << "(): "
-#define DVLOGF(level) DVLOG(level) << __func__ << "(): "
-#define VPLOGF(level) VPLOG(level) << __func__ << "(): "
 
 #define IOCTL_OR_ERROR_RETURN_VALUE(type, arg, value, type_name)    \
   do {                                                              \
@@ -370,6 +367,7 @@ bool V4L2JpegDecodeAccelerator::CreateInputBuffers() {
   format.fmt.pix_mp.field = V4L2_FIELD_ANY;
   format.fmt.pix_mp.num_planes = kMaxInputPlanes;
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_S_FMT, &format);
+  DCHECK_EQ(format.fmt.pix_mp.pixelformat, V4L2_PIX_FMT_JPEG);
 
   struct v4l2_requestbuffers reqbufs;
   memset(&reqbufs, 0, sizeof(reqbufs));
@@ -441,7 +439,8 @@ bool V4L2JpegDecodeAccelerator::CreateOutputBuffers() {
   VideoPixelFormat output_format =
       V4L2Device::V4L2PixFmtToVideoPixelFormat(output_buffer_pixelformat_);
   if (output_format == PIXEL_FORMAT_UNKNOWN) {
-    VLOGF(1) << "unknown V4L2 pixel format: " << output_buffer_pixelformat_;
+    VLOGF(1) << "unknown V4L2 pixel format: "
+             << FourccToString(output_buffer_pixelformat_);
     PostNotifyError(kInvalidBitstreamBufferId, PLATFORM_FAILURE);
     return false;
   }

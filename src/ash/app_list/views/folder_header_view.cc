@@ -43,6 +43,7 @@ class FolderHeaderView::FolderNameView : public views::Textfield {
   ~FolderNameView() override = default;
 
   void OnFocus() override {
+    SetText(base::UTF8ToUTF16(folder_header_view_->folder_item_->name()));
     SelectAll(false);
     Textfield::OnFocus();
   }
@@ -69,18 +70,20 @@ FolderHeaderView::FolderHeaderView(FolderHeaderViewDelegate* delegate)
               IDS_APP_LIST_FOLDER_NAME_PLACEHOLDER)),
       delegate_(delegate),
       folder_name_visible_(true) {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  gfx::FontList font_list = rb.GetFontList(ui::ResourceBundle::MediumFont);
   folder_name_view_->set_placeholder_text_color(kFolderTitleHintTextColor);
   folder_name_view_->set_placeholder_text(folder_name_placeholder_text_);
   folder_name_view_->SetBorder(views::NullBorder());
 
   // Make folder name font size 14px.
-  folder_name_view_->SetFontList(font_list.DeriveWithSizeDelta(-1));
+  folder_name_view_->SetFontList(
+      ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(2));
   folder_name_view_->SetBackgroundColor(SK_ColorTRANSPARENT);
   folder_name_view_->SetTextColor(kFolderNameColor);
   folder_name_view_->set_controller(this);
   AddChildView(folder_name_view_);
+
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
 }
 
 FolderHeaderView::~FolderHeaderView() {

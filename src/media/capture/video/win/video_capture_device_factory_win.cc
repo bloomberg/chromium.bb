@@ -466,7 +466,7 @@ void VideoCaptureDeviceFactoryWin::EnumerateDevicesUWP(
       Microsoft::WRL::Callback<
           ABI::Windows::Foundation::IAsyncOperationCompletedHandler<
               DeviceInformationCollection*>>(
-          [factory, com_thread_runner, device_info_callback](
+          [com_thread_runner, device_info_callback](
               IAsyncOperation<DeviceInformationCollection*>* operation,
               AsyncStatus status) -> HRESULT {
             com_thread_runner->PostTask(

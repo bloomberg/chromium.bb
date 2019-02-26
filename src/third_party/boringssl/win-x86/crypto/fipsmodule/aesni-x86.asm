@@ -1,3 +1,9 @@
+; This file is generated from a similarly-named Perl script in the BoringSSL
+; source tree. Do not edit by hand.
+
+%ifdef BORINGSSL_PREFIX
+%include "boringssl_prefix_symbols_nasm.inc"
+%endif
 %ifidn __OUTPUT_FORMAT__,obj
 section	code	use32 class=code align=64
 %elifidn __OUTPUT_FORMAT__,win32
@@ -15,10 +21,10 @@ section	.text	code align=64
 section	.text	code
 %endif
 ;extern	_OPENSSL_ia32cap_P
-global	_aesni_encrypt
+global	_aes_hw_encrypt
 align	16
-_aesni_encrypt:
-L$_aesni_encrypt_begin:
+_aes_hw_encrypt:
+L$_aes_hw_encrypt_begin:
 	mov	eax,DWORD [4+esp]
 	mov	edx,DWORD [12+esp]
 	movups	xmm2,[eax]
@@ -40,10 +46,10 @@ db	102,15,56,221,209
 	movups	[eax],xmm2
 	pxor	xmm2,xmm2
 	ret
-global	_aesni_decrypt
+global	_aes_hw_decrypt
 align	16
-_aesni_decrypt:
-L$_aesni_decrypt_begin:
+_aes_hw_decrypt:
+L$_aes_hw_decrypt_begin:
 	mov	eax,DWORD [4+esp]
 	mov	edx,DWORD [12+esp]
 	movups	xmm2,[eax]
@@ -351,10 +357,10 @@ db	102,15,56,223,232
 db	102,15,56,223,240
 db	102,15,56,223,248
 	ret
-global	_aesni_ecb_encrypt
+global	_aes_hw_ecb_encrypt
 align	16
-_aesni_ecb_encrypt:
-L$_aesni_ecb_encrypt_begin:
+_aes_hw_ecb_encrypt:
+L$_aes_hw_ecb_encrypt_begin:
 	push	ebp
 	push	ebx
 	push	esi
@@ -584,10 +590,10 @@ L$012ecb_ret:
 	pop	ebx
 	pop	ebp
 	ret
-global	_aesni_ccm64_encrypt_blocks
+global	_aes_hw_ccm64_encrypt_blocks
 align	16
-_aesni_ccm64_encrypt_blocks:
-L$_aesni_ccm64_encrypt_blocks_begin:
+_aes_hw_ccm64_encrypt_blocks:
+L$_aes_hw_ccm64_encrypt_blocks_begin:
 	push	ebp
 	push	ebx
 	push	esi
@@ -670,10 +676,10 @@ db	102,15,56,0,213
 	pop	ebx
 	pop	ebp
 	ret
-global	_aesni_ccm64_decrypt_blocks
+global	_aes_hw_ccm64_decrypt_blocks
 align	16
-_aesni_ccm64_decrypt_blocks:
-L$_aesni_ccm64_decrypt_blocks_begin:
+_aes_hw_ccm64_decrypt_blocks:
+L$_aes_hw_ccm64_decrypt_blocks_begin:
 	push	ebp
 	push	ebx
 	push	esi
@@ -791,10 +797,10 @@ db	102,15,56,221,217
 	pop	ebx
 	pop	ebp
 	ret
-global	_aesni_ctr32_encrypt_blocks
+global	_aes_hw_ctr32_encrypt_blocks
 align	16
-_aesni_ctr32_encrypt_blocks:
-L$_aesni_ctr32_encrypt_blocks_begin:
+_aes_hw_ctr32_encrypt_blocks:
+L$_aes_hw_ctr32_encrypt_blocks_begin:
 	push	ebp
 	push	ebx
 	push	esi
@@ -1027,10 +1033,10 @@ L$040ctr32_ret:
 	pop	ebx
 	pop	ebp
 	ret
-global	_aesni_xts_encrypt
+global	_aes_hw_xts_encrypt
 align	16
-_aesni_xts_encrypt:
-L$_aesni_xts_encrypt_begin:
+_aes_hw_xts_encrypt:
+L$_aes_hw_xts_encrypt_begin:
 	push	ebp
 	push	ebx
 	push	esi
@@ -1385,10 +1391,10 @@ L$056xts_enc_ret:
 	pop	ebx
 	pop	ebp
 	ret
-global	_aesni_xts_decrypt
+global	_aes_hw_xts_decrypt
 align	16
-_aesni_xts_decrypt:
-L$_aesni_xts_decrypt_begin:
+_aes_hw_xts_decrypt:
+L$_aes_hw_xts_decrypt_begin:
 	push	ebp
 	push	ebx
 	push	esi
@@ -1773,10 +1779,10 @@ L$069xts_dec_ret:
 	pop	ebx
 	pop	ebp
 	ret
-global	_aesni_cbc_encrypt
+global	_aes_hw_cbc_encrypt
 align	16
-_aesni_cbc_encrypt:
-L$_aesni_cbc_encrypt_begin:
+_aes_hw_cbc_encrypt:
+L$_aes_hw_cbc_encrypt_begin:
 	push	ebp
 	push	ebx
 	push	esi
@@ -2363,19 +2369,19 @@ L$095bad_keybits:
 	pop	ebx
 	pop	ebp
 	ret
-global	_aesni_set_encrypt_key
+global	_aes_hw_set_encrypt_key
 align	16
-_aesni_set_encrypt_key:
-L$_aesni_set_encrypt_key_begin:
+_aes_hw_set_encrypt_key:
+L$_aes_hw_set_encrypt_key_begin:
 	mov	eax,DWORD [4+esp]
 	mov	ecx,DWORD [8+esp]
 	mov	edx,DWORD [12+esp]
 	call	__aesni_set_encrypt_key
 	ret
-global	_aesni_set_decrypt_key
+global	_aes_hw_set_decrypt_key
 align	16
-_aesni_set_decrypt_key:
-L$_aesni_set_decrypt_key_begin:
+_aes_hw_set_decrypt_key:
+L$_aes_hw_set_decrypt_key_begin:
 	mov	eax,DWORD [4+esp]
 	mov	ecx,DWORD [8+esp]
 	mov	edx,DWORD [12+esp]

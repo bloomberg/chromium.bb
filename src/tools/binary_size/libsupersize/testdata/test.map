@@ -102,6 +102,10 @@ Memory map
  .text._ZN10_GLOBAL__N5blink12PaintChunker18releasePaintChunksEv.part.1
                 0x002a1000       0x5e obj/third_party/WebKit.a(sub/ContiguousContainer.o)
                 0x002a1001                (anonymous namespace)::blink::PaintChunker::releasePaintChunks() [clone .part.1]
+ .text.OUTLINED_FUNCTION_0
+                0x002a2000       0x20 obj/third_party/WebKit.a(sub/ContiguousContainer.o)
+ .text.OUTLINED_FUNCTION_1
+                0x002a2020       0x30 obj/third_party/WebKit.a(sub/ContiguousContainer.o)
 
 .ARM.exidx      0x024ca628   0x1771c8
  .ARM.exidx.text.startup._GLOBAL__sub_I_page_allocator.cc

@@ -86,6 +86,7 @@ namespace sw
 		void BREAK(Int4 &condition);
 		void CONTINUE();
 		void TEST();
+		void SCALAR();
 		void CALL(int labelIndex, int callSiteIndex);
 		void CALLNZ(int labelIndex, int callSiteIndex, const Src &src);
 		void CALLNZb(int labelIndex, int callSiteIndex, const Src &boolRegister);
@@ -121,10 +122,10 @@ namespace sw
 		Vector4f sampleTexture(const Src &s, Vector4f &uvwq, Float4 &lod, Vector4f &dsx, Vector4f &dsy, Vector4f &offset, SamplerFunction function);
 		Vector4f sampleTexture(int sampler, Vector4f &uvwq, Float4 &lod, Vector4f &dsx, Vector4f &dsy, Vector4f &offset, SamplerFunction function);
 
-		int ifDepth;
-		int loopRepDepth;
-		int currentLabel;
-		bool whileTest;
+		int ifDepth = 0;
+		int loopRepDepth = 0;
+		int currentLabel = -1;
+		bool scalar = false;
 
 		BasicBlock *ifFalseBlock[24 + 24];
 		BasicBlock *loopRepTestBlock[4];
@@ -133,6 +134,7 @@ namespace sw
 		std::vector<BasicBlock*> callRetBlock[2048];
 		BasicBlock *returnBlock;
 		bool isConditionalIf[24 + 24];
+		std::vector<Int4> restoreContinue;
 	};
 }
 

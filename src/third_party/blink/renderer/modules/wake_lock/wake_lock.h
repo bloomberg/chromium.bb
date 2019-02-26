@@ -26,12 +26,15 @@ class WakeLock final : public EventTargetWithInlineData,
   USING_GARBAGE_COLLECTED_MIXIN(WakeLock);
 
  public:
+  enum class LockType { kSystem, kScreen };
+
+  WakeLock(ScriptState*, LockType);
   ~WakeLock() override;
 
   // wake_lock.idl implementation
   AtomicString type() const;
   bool active() const;
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(activechange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(activechange, kActivechange);
   WakeLockRequest* createRequest();
 
   // Called by NavigatorWakeLock to create Screen Wake Lock
@@ -61,10 +64,6 @@ class WakeLock final : public EventTargetWithInlineData,
   void CancelRequest();
 
  private:
-  enum class LockType { kSystem, kScreen };
-
-  WakeLock(ScriptState*, LockType);
-
   // Error handler in case of failure to connect to Wake Lock mojo service
   void OnConnectionError();
 

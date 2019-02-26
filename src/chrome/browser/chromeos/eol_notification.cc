@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/eol_notification.h"
 
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -149,14 +150,15 @@ void EolNotification::Update() {
   data.buttons.emplace_back(GetStringUTF16(IDS_EOL_DISMISS_BUTTON));
 
   std::unique_ptr<message_center::Notification> notification =
-      message_center::Notification::CreateSystemNotification(
+      ash::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kEolNotificationId,
           GetStringUTF16(IDS_EOL_NOTIFICATION_TITLE),
           GetStringUTF16(IDS_EOL_NOTIFICATION_EOL),
           GetStringUTF16(IDS_EOL_NOTIFICATION_DISPLAY_SOURCE),
           GURL(kEolNotificationId),
           message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT, kEolNotificationId),
+              message_center::NotifierType::SYSTEM_COMPONENT,
+              kEolNotificationId),
           data, new EolNotificationDelegate(profile_),
           ash::kNotificationEndOfSupportIcon,
           message_center::SystemNotificationWarningLevel::CRITICAL_WARNING);

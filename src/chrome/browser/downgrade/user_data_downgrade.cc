@@ -9,23 +9,17 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
-#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
-#include "base/time/time.h"
-#include "base/version.h"
-#include "base/win/registry.h"
 #include "chrome/browser/policy/policy_path_parser.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version.h"
-#include "chrome/install_static/install_util.h"
-#include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/install_util.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -162,18 +156,6 @@ void DeleteMovedUserDataSoon() {
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}),
       base::Bind(&DeleteMovedUserData, user_data_dir, GetDiskCacheDir()));
-}
-
-bool IsMSIInstall() {
-  base::win::RegKey key;
-  DWORD is_msi = 3;
-  return key.Open(install_static::IsSystemInstall() ? HKEY_LOCAL_MACHINE
-                                                    : HKEY_CURRENT_USER,
-                  install_static::GetClientStateKeyPath().c_str(),
-                  KEY_QUERY_VALUE | KEY_WOW64_32KEY) == ERROR_SUCCESS &&
-         key.ReadValueDW(google_update::kRegMSIField, &is_msi) ==
-             ERROR_SUCCESS &&
-         is_msi != 0;
 }
 
 }  // namespace downgrade

@@ -102,7 +102,9 @@ are treated in different ways during painting:
     concept.
 
 *   Visual rect: the bounding box of all pixels that will be painted by a
-    display item client.
+    [display item client](../../platform/graphics/paint/README.md#display-items).
+    It's in the space of the containing transform property node (see [Building
+    paint property trees](#building-paint-property-trees)).
 
 *   Isolation nodes/boundary: In certain situations, it is possible to put in
     place a barrier that isolates a subtree from being affected by its
@@ -376,125 +378,7 @@ Layerization                     | PLC/CLM            | PLC/CLM               | 
 cc property tree builder         | on                 | off                   | off
 ```
 
-## PaintInvalidation (Deprecated by [PrePaint](#PrePaint))
-
-Paint invalidation marks anything that need to be painted differently from the
-original cached painting.
-
-Paint invalidation is a document cycle stage after compositing update and before
-paint. During the previous stages, objects are marked for needing paint
-invalidation checking if needed by style change, layout change, compositing
-change, etc. In paint invalidation stage, we traverse the layout tree in
-pre-order, crossing frame boundaries, for marked subtrees and objects and send
-the following information to `GraphicsLayer`s and `PaintController`s:
-
-*   invalidated display item clients: must invalidate all display item clients
-    that will generate different display items.
-
-*   paint invalidation rects: must cover all areas that will generate different
-    pixels. They are generated based on visual rects of invalidated display item
-    clients.
-
-### `PaintInvalidationState`
-
-`PaintInvalidationState` is an optimization used during the paint invalidation
-phase. Before the paint invalidation tree walk, a root `PaintInvalidationState`
-is created for the root `LayoutView`. During the tree walk, one
-`PaintInvalidationState` is created for each visited object based on the
-`PaintInvalidationState` passed from the parent object. It tracks the following
-information to provide O(1) complexity access to them if possible:
-
-*   Paint invalidation container: Since as indicated by the definitions in
-    [Glossaries](#other-glossaries), the paint invalidation container for
-    stacked objects can differ from normal objects, we have to track both
-    separately. Here is an example:
-
-        <div style="overflow: scroll">
-            <div id=A style="position: absolute"></div>
-            <div id=B></div>
-        </div>
-
-    If the scroller is composited (for high-DPI screens for example), it is the
-    paint invalidation container for div B, but not A.
-
-*   Paint offset and clip rect: if possible, `PaintInvalidationState`
-    accumulates paint offsets and overflow clipping rects from the paint
-    invalidation container to provide O(1) complexity to map a point or a rect
-    in current object's local space to paint invalidation container's space.
-    Because locations of objects are determined by their containing blocks, and
-    the containing block for absolute-position objects differs from
-    non-absolute, we track paint offsets and overflow clipping rects for
-    absolute-position objects separately.
-
-In cases that accurate accumulation of paint offsets and clipping rects is
-impossible, we will fall back to slow-path using
-`LayoutObject::localToAncestorPoint()` or
-`LayoutObject::mapToVisualRectInAncestorSpace()`. This includes the following
-cases:
-
-*   An object has transform related property, is multi-column or has flipped
-    blocks writing-mode, causing we can't simply accumulate paint offset for
-    mapping a local rect to paint invalidation container;
-
-*   An object has has filter (including filter induced by reflection), which
-    needs to expand visual rect for descendants, because currently we don't
-    include and filter extents into visual overflow;
-
-*   For a fixed-position object we calculate its offset using
-    `LayoutObject::localToAncestorPoint()`, but map for its descendants in
-    fast-path if no other things prevent us from doing this;
-
-*   Because we track paint offset from the normal paint invalidation container
-    only, if we are going to use
-    `m_paintInvalidationContainerForStackedContents` and it's different from the
-    normal paint invalidation container, we have to force slow-path because the
-    accumulated paint offset is not usable;
-
-*   We also stop to track paint offset and clipping rect for absolute-position
-    objects when `m_paintInvalidationContainerForStackedContents` becomes
-    different from `m_paintInvalidationContainer`.
-
-### Paint invalidation of texts
-
-Texts are painted by `InlineTextBoxPainter` using `InlineTextBox` as display
-item client. Text backgrounds and masks are painted by `InlineTextFlowPainter`
-using `InlineFlowBox` as display item client. We should invalidate these display
-item clients when their painting will change.
-
-`LayoutInline`s and `LayoutText`s are marked for full paint invalidation if
-needed when new style is set on them. During paint invalidation, we invalidate
-the `InlineFlowBox`s directly contained by the `LayoutInline` in
-`LayoutInline::InvalidateDisplayItemClients()` and `InlineTextBox`s contained by
-the `LayoutText` in `LayoutText::InvalidateDisplayItemClients()`. We don't need
-to traverse into the subtree of `InlineFlowBox`s in
-`LayoutInline::InvalidateDisplayItemClients()` because the descendant
-`InlineFlowBox`s and `InlineTextBox`s will be handled by their owning
-`LayoutInline`s and `LayoutText`s, respectively, when changed style is propagated.
-
-### Specialty of `::first-line`
-
-`::first-line` pseudo style dynamically applies to all `InlineBox`'s in the
-first line in the block having `::first-line` style. The actual applied style is
-computed from the `::first-line` style and other applicable styles.
-
-If the first line contains any `LayoutInline`, we compute the style from the
-`::first-line` style and the style of the `LayoutInline` and apply the computed
-style to the first line part of the `LayoutInline`. In Blink's style
-implementation, the combined first line style of `LayoutInline` is identified
-with `FIRST_LINE_INHERITED` pseudo ID.
-
-The normal paint invalidation of texts doesn't work for first line because
-*   `ComputedStyle::VisualInvalidationDiff()` can't detect first line style
-    changes;
-*   The normal paint invalidation is based on whole LayoutObject's, not aware of
-    the first line.
-
-We have a special path for first line style change: the style system informs the
-layout system when the computed first-line style changes through
-`LayoutObject::FirstLineStyleDidChange()`. When this happens, we invalidate all
-`InlineBox`es in the first line.
-
-## PrePaint (Slimming paint invalidation/v2 only)
+## PrePaint
 [`PrePaintTreeWalk`](pre_paint_tree_walk.h)
 
 During `InPrePaint` document lifecycle state, this class is called to walk the
@@ -626,12 +510,82 @@ for a much more detail about multicolumn/pagination.
 ### Paint invalidation
 [`PaintInvalidator`](paint_invalidator.h)
 
-This class replaces [`PaintInvalidationState`] for SlimmingPaintInvalidation.
-The main difference is that in PaintInvalidator, visual rects and locations
-are computed by `GeometryMapper`(../../platform/graphics/paint/geometry_mapper.h),
-based on paint properties produced by `PaintPropertyTreeBuilder`.
+Paint invalidator marks anything that need to be painted differently from the
+original cached painting.
 
-TODO(wangxianzhu): Combine documentation of PaintInvalidation phase into here.
+During the document lifecycle stages prior to PrePaint, objects are marked for
+needing paint invalidation checking if needed by style change, layout change,
+compositing change, etc. In PrePaint stage, we traverse the layout tree in
+pre-order, crossing frame boundaries, for marked subtrees and objects and
+invalidate display item clients that will generate different display items.
+
+At the beginning of the PrePaint tree walk, a root `PaintInvalidatorContext`
+is created for the root `LayoutView`. During the tree walk, one
+`PaintInvalidatorContext` is created for each visited object based on the
+`PaintInvalidatorContext` passed from the parent object. It tracks the following
+information to provide O(1) complexity access to them if possible:
+
+*   Paint invalidation container (Slimming Paint v1 only): Since as indicated by
+    the definitions in [Glossaries](#other-glossaries), the paint invalidation
+    container for stacked objects can differ from normal objects, we have to
+    track both separately. Here is an example:
+
+        <div style="overflow: scroll">
+            <div id=A style="position: absolute"></div>
+            <div id=B></div>
+        </div>
+
+    If the scroller is composited (for high-DPI screens for example), it is the
+    paint invalidation container for div B, but not A.
+
+*   Painting layer: the layer which will initiate painting of the current
+    object. It's the same value as `LayoutObject::PaintingLayer()`.
+
+`PaintInvalidator`[PaintInvalidator.h] initializes `PaintInvalidatorContext`
+for the current object, then calls `LayoutObject::InvalidatePaint()` which
+calls the object's paint invalidator (e.g. `BoxPaintInvalidator`) to complete
+paint invalidation of the object.
+
+#### Paint invalidation of text
+
+Text is painted by `InlineTextBoxPainter` using `InlineTextBox` as display
+item client. Text backgrounds and masks are painted by `InlineTextFlowPainter`
+using `InlineFlowBox` as display item client. We should invalidate these display
+item clients when their painting will change.
+
+`LayoutInline`s and `LayoutText`s are marked for full paint invalidation if
+needed when new style is set on them. During paint invalidation, we invalidate
+the `InlineFlowBox`s directly contained by the `LayoutInline` in
+`LayoutInline::InvalidateDisplayItemClients()` and `InlineTextBox`s contained by
+the `LayoutText` in `LayoutText::InvalidateDisplayItemClients()`. We don't need
+to traverse into the subtree of `InlineFlowBox`s in
+`LayoutInline::InvalidateDisplayItemClients()` because the descendant
+`InlineFlowBox`s and `InlineTextBox`s will be handled by their owning
+`LayoutInline`s and `LayoutText`s, respectively, when changed style is
+propagated.
+
+#### Specialty of `::first-line`
+
+`::first-line` pseudo style dynamically applies to all `InlineBox`'s in the
+first line in the block having `::first-line` style. The actual applied style is
+computed from the `::first-line` style and other applicable styles.
+
+If the first line contains any `LayoutInline`, we compute the style from the
+`::first-line` style and the style of the `LayoutInline` and apply the computed
+style to the first line part of the `LayoutInline`. In Blink's style
+implementation, the combined first line style of `LayoutInline` is identified
+with `FIRST_LINE_INHERITED` pseudo ID.
+
+The normal paint invalidation of texts doesn't work for first line because
+*   `ComputedStyle::VisualInvalidationDiff()` can't detect first line style
+    changes;
+*   The normal paint invalidation is based on whole LayoutObject's, not aware of
+    the first line.
+
+We have a special path for first line style change: the style system informs the
+layout system when the computed first-line style changes through
+`LayoutObject::FirstLineStyleDidChange()`. When this happens, we invalidate all
+`InlineBox`es in the first line.
 
 ## Paint
 

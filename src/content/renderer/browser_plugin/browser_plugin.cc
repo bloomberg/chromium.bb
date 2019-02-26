@@ -19,6 +19,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/viz/common/features.h"
+#include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "content/common/browser_plugin/browser_plugin_constants.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
@@ -100,6 +101,12 @@ BrowserPlugin::BrowserPlugin(
       weak_ptr_factory_(this) {
   browser_plugin_instance_id_ =
       BrowserPluginManager::Get()->GetNextInstanceID();
+
+  // TODO(jonross): Address the Surface Invariants Violations that led to the
+  // addition of ParentLocalSurfaceIdAllocator::Reset used within
+  // BrowserPlugin::OnAttachACK. Then have BrowserPlugin only generate new ids
+  // as needed.
+  parent_local_surface_id_allocator_.GenerateId();
 
   if (delegate_)
     delegate_->SetElementInstanceID(browser_plugin_instance_id_);
@@ -207,7 +214,8 @@ void BrowserPlugin::Detach() {
 }
 
 const viz::LocalSurfaceId& BrowserPlugin::GetLocalSurfaceId() const {
-  return parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
+  return parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
+      .local_surface_id();
 }
 
 #if defined(USE_AURA)
@@ -264,8 +272,11 @@ void BrowserPlugin::SynchronizeVisualProperties() {
           pending_visual_properties_.screen_info ||
       capture_sequence_number_changed;
 
-  if (synchronized_props_changed)
+  if (synchronized_props_changed) {
     parent_local_surface_id_allocator_.GenerateId();
+    pending_visual_properties_.local_surface_id_allocation =
+        parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation();
+  }
 
   if (frame_sink_id_.is_valid()) {
     // If we're synchronizing surfaces, then use an infinite deadline to ensure
@@ -274,7 +285,7 @@ void BrowserPlugin::SynchronizeVisualProperties() {
         capture_sequence_number_changed
             ? cc::DeadlinePolicy::UseInfiniteDeadline()
             : cc::DeadlinePolicy::UseDefaultDeadline();
-    compositing_helper_->SetPrimarySurfaceId(
+    compositing_helper_->SetSurfaceId(
         viz::SurfaceId(frame_sink_id_, GetLocalSurfaceId()),
         screen_space_rect().size(), deadline);
   }
@@ -290,8 +301,7 @@ void BrowserPlugin::SynchronizeVisualProperties() {
     // Let the browser know about the updated view rect.
     BrowserPluginManager::Get()->Send(
         new BrowserPluginHostMsg_SynchronizeVisualProperties(
-            browser_plugin_instance_id_, GetLocalSurfaceId(),
-            pending_visual_properties_));
+            browser_plugin_instance_id_, pending_visual_properties_));
   }
 
   if (delegate_ && size_changed)
@@ -318,12 +328,8 @@ void BrowserPlugin::OnAdvanceFocus(int browser_plugin_instance_id,
   render_view->GetWebView()->AdvanceFocus(reverse);
 }
 
-void BrowserPlugin::OnAttachACK(
-    int browser_plugin_instance_id,
-    const base::Optional<viz::LocalSurfaceId>& child_local_surface_id) {
+void BrowserPlugin::OnAttachACK(int browser_plugin_instance_id) {
   attached_ = true;
-  if (child_local_surface_id)
-    parent_local_surface_id_allocator_.Reset(*child_local_surface_id);
   SynchronizeVisualProperties();
 }
 
@@ -345,7 +351,8 @@ void BrowserPlugin::OnDidUpdateVisualProperties(
     int browser_plugin_instance_id,
     const cc::RenderFrameMetadata& metadata) {
   if (!parent_local_surface_id_allocator_.UpdateFromChild(
-          metadata.local_surface_id.value_or(viz::LocalSurfaceId()))) {
+          metadata.local_surface_id_allocation.value_or(
+              viz::LocalSurfaceIdAllocation()))) {
     return;
   }
 

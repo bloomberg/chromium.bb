@@ -40,7 +40,7 @@ class CONTENT_EXPORT MediaInterfaceFactory
   void CreateDecryptor(int cdm_id,
                        media::mojom::DecryptorRequest request) final;
   // TODO(xhwang): We should not expose this here.
-  void CreateCdmProxy(const std::string& cdm_guid,
+  void CreateCdmProxy(const base::Token& cdm_guid,
                       media::mojom::CdmProxyRequest request) final;
 
  private:

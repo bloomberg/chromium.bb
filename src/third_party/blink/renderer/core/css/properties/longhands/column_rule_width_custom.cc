@@ -9,14 +9,15 @@
 #include "third_party/blink/renderer/core/css/zoom_adjusted_pixel_value.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* ColumnRuleWidth::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSPropertyParserHelpers::ConsumeLineWidth(
-      range, context.Mode(), CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
+  return css_property_parser_helpers::ConsumeLineWidth(
+      range, context.Mode(),
+      css_property_parser_helpers::UnitlessQuirk::kForbid);
 }
 
 const CSSValue* ColumnRuleWidth::CSSValueFromComputedStyleInternal(
@@ -28,5 +29,5 @@ const CSSValue* ColumnRuleWidth::CSSValueFromComputedStyleInternal(
   return ZoomAdjustedPixelValue(style.ColumnRuleWidth(), style);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/layout/line/line_width.h"
 #include "third_party/blink/renderer/core/layout/line/trailing_objects.h"
 #include "third_party/blink/renderer/core/layout/line/word_measurement.h"
+#include "third_party/blink/renderer/core/layout/logical_values.h"
 #include "third_party/blink/renderer/core/layout/text_run_constructor.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/platform/fonts/character_range.h"
@@ -208,6 +209,7 @@ class BreakingContext {
   bool ignoring_spaces_;
   bool current_character_is_space_;
   bool single_leading_space_;
+  unsigned current_start_offset_;  // initial offset for the current text
   bool applied_start_width_;
   bool include_end_width_;
   bool auto_wrap_;
@@ -379,6 +381,10 @@ inline void BreakingContext::InitializeForCurrentObject() {
   if (collapse_white_space_ && !ComputedStyle::CollapseWhiteSpace(last_ws_))
     current_character_is_space_ = false;
 
+  // Since current_ iterates all along the text's length, we need to store the
+  // initial offset of the current handle text so that we can then identify
+  // a single leading white-space as potential breaking opportunities.
+  current_start_offset_ = current_.Offset();
   single_leading_space_ = false;
 }
 
@@ -416,7 +422,7 @@ inline void BreakingContext::HandleBR(EClear& clear) {
       EnsureLineBoxInsideIgnoredSpaces(&line_midpoint_state_, br);
 
     if (!line_info_.IsEmpty())
-      clear = current_style_->Clear();
+      clear = ResolvedClear(*current_style_, block_.StyleRef());
   }
   at_end_ = true;
 }
@@ -698,17 +704,17 @@ ALWAYS_INLINE void BreakingContext::SetCurrentCharacterIsSpace(UChar c) {
 }
 
 inline float FirstPositiveWidth(const WordMeasurements& word_measurements) {
-  for (size_t i = 0; i < word_measurements.size(); ++i) {
-    if (word_measurements[i].width > 0)
-      return word_measurements[i].width;
+  for (const WordMeasurement& word_measurement : word_measurements) {
+    if (word_measurement.width > 0)
+      return word_measurement.width;
   }
   return 0;
 }
 
 ALWAYS_INLINE TextDirection
-TextDirectionFromUnicode(WTF::Unicode::CharDirection direction) {
-  return direction == WTF::Unicode::kRightToLeft ||
-                 direction == WTF::Unicode::kRightToLeftArabic
+TextDirectionFromUnicode(WTF::unicode::CharDirection direction) {
+  return direction == WTF::unicode::kRightToLeft ||
+                 direction == WTF::unicode::kRightToLeftArabic
              ? TextDirection::kRtl
              : TextDirection::kLtr;
 }
@@ -1362,7 +1368,7 @@ inline void BreakingContext::PrepareForNextCharacter(
     if (auto_wrap_ && current_style_->BreakOnlyAfterWhiteSpace()) {
       line_break_.MoveTo(current_.GetLineLayoutItem(), current_.Offset(),
                          current_.NextBreakablePosition());
-      if (current_.Offset() == 1)
+      if (current_.Offset() == current_start_offset_ + 1)
         single_leading_space_ = true;
     }
   }
@@ -1426,7 +1432,7 @@ inline bool BreakingContext::TrailingSpaceExceedsAvailableWidth(
   // If we break only after white-space, consider the current character
   // as candidate width for this line.
   if (width_.FitsOnLine() && current_character_is_space_ &&
-      current_style_->BreakOnlyAfterWhiteSpace() && !can_break_mid_word) {
+      current_style_->BreakOnlyAfterWhiteSpace()) {
     float char_width = TextWidth(layout_text, current_.Offset(), 1, font,
                                  width_.CurrentWidth(), collapse_white_space_,
                                  &word_measurement.fallback_fonts,

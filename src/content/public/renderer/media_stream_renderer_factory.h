@@ -24,7 +24,7 @@ namespace content {
 
 // MediaStreamRendererFactory is used by WebMediaPlayerMS to create audio and
 // video feeds from a MediaStream provided an URL.
-// The factory methods are virtual in order for blink layouttests to be able to
+// The factory methods are virtual in order for Blink web tests to be able to
 // override them.
 class MediaStreamRendererFactory {
  public:

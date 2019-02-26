@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/optional.h"
 #include "media/base/media_export.h"
 #include "media/base/video_types.h"
 #include "ui/gfx/geometry/size.h"
@@ -29,13 +30,17 @@ namespace media {
 // Note that it is copyable.
 class MEDIA_EXPORT VideoFrameLayout {
  public:
+  // Default alignment for buffers.
+  // Note: This value is dependent on what's used by ffmpeg, do not change
+  // without inspecting av_frame_get_buffer() first.
+  static constexpr size_t kBufferAddressAlignment = 32;
+
   struct Plane {
     Plane() = default;
     Plane(int32_t stride, size_t offset) : stride(stride), offset(offset) {}
 
-    bool operator==(const Plane& rhs) const {
-      return stride == rhs.stride && offset == rhs.offset;
-    }
+    bool operator==(const Plane& rhs) const;
+    bool operator!=(const Plane& rhs) const;
 
     // Strides of a plane, typically greater or equal to the
     // width of the surface divided by the horizontal sampling period. Note that
@@ -47,34 +52,43 @@ class MEDIA_EXPORT VideoFrameLayout {
     size_t offset = 0;
   };
 
-  enum {
-    kDefaultPlaneCount = 4,
-    kDefaultBufferCount = 4,
-  };
+  // Factory functions.
+  // |format| and |coded_size| must be specified.
+  // |strides|, |planes| and |buffer_sizes| are optional, whereas they should
+  //  be specified if |buffer_sizes| are given.
+  // The size of |buffer_sizes| must be less than or equal to |planes|.
+  // Unless they are specified, num_planes() is NumPlanes(|format|) and
+  // num_buffers() is 0.
+  // |buffer_addr_align| can be specified to request a specific buffer memory
+  // alignment.
+  // The returned base::Optional will be base::nullopt if the configured values
+  // are invalid.
+  static base::Optional<VideoFrameLayout> Create(VideoPixelFormat format,
+                                                 const gfx::Size& coded_size);
 
-  // Constructor with strides and buffers' size.
-  // If strides and buffer_sizes are not assigned, strides, offsets and
-  // buffer_sizes are {0, 0, 0, 0}.
-  VideoFrameLayout(VideoPixelFormat format,
-                   const gfx::Size& coded_size,
-                   std::vector<int32_t> strides =
-                       std::vector<int32_t>(kDefaultPlaneCount, 0),
-                   std::vector<size_t> buffer_sizes =
-                       std::vector<size_t>(kDefaultBufferCount, 0));
+  // The size of |strides| must be NumPlanes(|format|). Planes' offset will be
+  // 0.
+  static base::Optional<VideoFrameLayout> CreateWithStrides(
+      VideoPixelFormat format,
+      const gfx::Size& coded_size,
+      std::vector<int32_t> strides,
+      std::vector<size_t> buffer_sizes = {});
 
-  // Constructor with plane's stride/offset, and buffers' size.
-  // If buffer_sizes are not assigned, it is {0, 0, 0, 0}.
-  VideoFrameLayout(VideoPixelFormat format,
-                   const gfx::Size& coded_size,
-                   std::vector<Plane> planes,
-                   std::vector<size_t> buffer_sizes =
-                       std::vector<size_t>(kDefaultBufferCount, 0));
+  // The size of |planes| must be NumPlanes(|format|).
+  static base::Optional<VideoFrameLayout> CreateWithPlanes(
+      VideoPixelFormat format,
+      const gfx::Size& coded_size,
+      std::vector<Plane> planes,
+      std::vector<size_t> buffer_sizes = {},
+      size_t buffer_addr_align = kBufferAddressAlignment);
 
-  VideoFrameLayout();
+  VideoFrameLayout() = delete;
   VideoFrameLayout(const VideoFrameLayout&);
   VideoFrameLayout(VideoFrameLayout&&);
   VideoFrameLayout& operator=(const VideoFrameLayout&);
   ~VideoFrameLayout();
+
+  static size_t NumPlanes(VideoPixelFormat format);
 
   VideoPixelFormat format() const { return format_; }
   const gfx::Size& coded_size() const { return coded_size_; }
@@ -91,13 +105,21 @@ class MEDIA_EXPORT VideoFrameLayout {
   // Returns sum of bytes of all buffers.
   size_t GetTotalBufferSize() const;
 
-  // Composes VideoFrameLayout as human readable string.
-  std::string ToString() const;
+  bool operator==(const VideoFrameLayout& rhs) const;
+  bool operator!=(const VideoFrameLayout& rhs) const;
 
-  // Returns false if it is invalid.
-  bool IsValid() const { return format_ != PIXEL_FORMAT_UNKNOWN; }
+  // Returns the required memory alignment for buffers.
+  size_t buffer_addr_align() const {
+    return buffer_addr_align_;
+  }
 
  private:
+  VideoFrameLayout(VideoPixelFormat format,
+                   const gfx::Size& coded_size,
+                   std::vector<Plane> planes,
+                   std::vector<size_t> buffer_sizes,
+                   size_t buffer_addr_align);
+
   VideoPixelFormat format_;
 
   // Width and height of the video frame in pixels. This must include pixel
@@ -113,11 +135,20 @@ class MEDIA_EXPORT VideoFrameLayout {
   // Vector of sizes for each buffer, typically greater or equal to the area of
   // |coded_size_|.
   std::vector<size_t> buffer_sizes_;
+
+  // Memory address alignment of the buffers. This is only relevant when
+  // allocating physical memory for the buffer, so it doesn't need to be
+  // serialized when frames are passed through Mojo.
+  size_t buffer_addr_align_;
 };
 
 // Outputs VideoFrameLayout::Plane to stream.
-std::ostream& operator<<(std::ostream& ostream,
-                         const VideoFrameLayout::Plane& plane);
+MEDIA_EXPORT std::ostream& operator<<(std::ostream& ostream,
+                                      const VideoFrameLayout::Plane& plane);
+
+// Outputs VideoFrameLayout to stream.
+MEDIA_EXPORT std::ostream& operator<<(std::ostream& ostream,
+                                      const VideoFrameLayout& layout);
 
 }  // namespace media
 

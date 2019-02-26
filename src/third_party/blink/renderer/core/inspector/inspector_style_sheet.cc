@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/css/css_keyframe_rule.h"
 #include "third_party/blink/renderer/core/css/css_keyframes_rule.h"
 #include "third_party/blink/renderer/core/css/css_media_rule.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/css_rule_list.h"
 #include "third_party/blink/renderer/core/css/css_style_rule.h"
@@ -41,7 +42,6 @@
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/css/style_rule.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
-#include "third_party/blink/renderer/core/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -188,7 +188,7 @@ void StyleSheetHandler::StartRuleHeader(StyleRule::RuleType type,
   if (current_rule_data_)
     current_rule_data_stack_.pop_back();
 
-  CSSRuleSourceData* data = new CSSRuleSourceData(type);
+  CSSRuleSourceData* data = MakeGarbageCollected<CSSRuleSourceData>(type);
   data->rule_header_range.start = offset;
   current_rule_data_ = data;
   current_rule_data_stack_.push_back(data);
@@ -318,7 +318,8 @@ void StyleSheetHandler::ObserveComment(unsigned start_offset,
     return;
 
   // FIXME: Use the actual rule type rather than STYLE_RULE?
-  CSSRuleSourceDataList* source_data = new CSSRuleSourceDataList();
+  CSSRuleSourceDataList* source_data =
+      MakeGarbageCollected<CSSRuleSourceDataList>();
 
   StyleSheetHandler handler(comment_text, document_, source_data);
   CSSParser::ParseDeclarationListForInspector(
@@ -345,7 +346,8 @@ bool VerifyRuleText(Document* document, const String& rule_text) {
   DEFINE_STATIC_LOCAL(String, bogus_property_name, ("-webkit-boguz-propertee"));
   StyleSheetContents* style_sheet =
       StyleSheetContents::Create(ParserContextForDocument(document));
-  CSSRuleSourceDataList* source_data = new CSSRuleSourceDataList();
+  CSSRuleSourceDataList* source_data =
+      MakeGarbageCollected<CSSRuleSourceDataList>();
   String text = rule_text + " div { " + bogus_property_name + ": none; }";
   StyleSheetHandler handler(text, document, source_data);
   CSSParser::ParseSheetForInspector(ParserContextForDocument(document),
@@ -382,7 +384,8 @@ bool VerifyStyleText(Document* document, const String& text) {
 bool VerifyKeyframeKeyText(Document* document, const String& key_text) {
   StyleSheetContents* style_sheet =
       StyleSheetContents::Create(ParserContextForDocument(document));
-  CSSRuleSourceDataList* source_data = new CSSRuleSourceDataList();
+  CSSRuleSourceDataList* source_data =
+      MakeGarbageCollected<CSSRuleSourceDataList>();
   String text = "@keyframes boguzAnim { " + key_text +
                 " { -webkit-boguz-propertee : none; } }";
   StyleSheetHandler handler(text, document, source_data);
@@ -412,7 +415,8 @@ bool VerifySelectorText(Document* document, const String& selector_text) {
   DEFINE_STATIC_LOCAL(String, bogus_property_name, ("-webkit-boguz-propertee"));
   StyleSheetContents* style_sheet =
       StyleSheetContents::Create(ParserContextForDocument(document));
-  CSSRuleSourceDataList* source_data = new CSSRuleSourceDataList();
+  CSSRuleSourceDataList* source_data =
+      MakeGarbageCollected<CSSRuleSourceDataList>();
   String text = selector_text + " { " + bogus_property_name + ": none; }";
   StyleSheetHandler handler(text, document, source_data);
   CSSParser::ParseSheetForInspector(ParserContextForDocument(document),
@@ -441,7 +445,8 @@ bool VerifyMediaText(Document* document, const String& media_text) {
   DEFINE_STATIC_LOCAL(String, bogus_property_name, ("-webkit-boguz-propertee"));
   StyleSheetContents* style_sheet =
       StyleSheetContents::Create(ParserContextForDocument(document));
-  CSSRuleSourceDataList* source_data = new CSSRuleSourceDataList();
+  CSSRuleSourceDataList* source_data =
+      MakeGarbageCollected<CSSRuleSourceDataList>();
   String text = "@media " + media_text + " { div { " + bogus_property_name +
                 ": none; } }";
   StyleSheetHandler handler(text, document, source_data);
@@ -533,6 +538,7 @@ void CollectFlatRules(RuleList rule_list, CSSRuleVector* result) {
       case CSSRule::kFontFaceRule:
       case CSSRule::kViewportRule:
       case CSSRule::kKeyframeRule:
+      case CSSRule::kFontFeatureValuesRule:
         result->push_back(rule);
         break;
       case CSSRule::kMediaRule:
@@ -718,7 +724,8 @@ InspectorStyle* InspectorStyle::Create(
     CSSStyleDeclaration* style,
     CSSRuleSourceData* source_data,
     InspectorStyleSheetBase* parent_style_sheet) {
-  return new InspectorStyle(style, source_data, parent_style_sheet);
+  return MakeGarbageCollected<InspectorStyle>(style, source_data,
+                                              parent_style_sheet);
 }
 
 InspectorStyle::InspectorStyle(CSSStyleDeclaration* style,
@@ -955,8 +962,9 @@ InspectorStyleSheet* InspectorStyleSheet::Create(
     const String& document_url,
     InspectorStyleSheetBase::Listener* listener,
     InspectorResourceContainer* resource_container) {
-  return new InspectorStyleSheet(network_agent, page_style_sheet, origin,
-                                 document_url, listener, resource_container);
+  return MakeGarbageCollected<InspectorStyleSheet>(
+      network_agent, page_style_sheet, origin, document_url, listener,
+      resource_container);
 }
 
 InspectorStyleSheet::InspectorStyleSheet(
@@ -1410,7 +1418,8 @@ void InspectorStyleSheet::ReplaceText(const SourceRange& range,
 
 void InspectorStyleSheet::InnerSetText(const String& text,
                                        bool mark_as_locally_modified) {
-  CSSRuleSourceDataList* rule_tree = new CSSRuleSourceDataList();
+  CSSRuleSourceDataList* rule_tree =
+      MakeGarbageCollected<CSSRuleSourceDataList>();
   StyleSheetContents* style_sheet = StyleSheetContents::Create(
       page_style_sheet_->Contents()->ParserContext());
   StyleSheetHandler handler(text, page_style_sheet_->OwnerDocument(),
@@ -1430,7 +1439,7 @@ void InspectorStyleSheet::InnerSetText(const String& text,
   parsed_flat_rules_.clear();
   CollectFlatRules(source_data_sheet, &parsed_flat_rules_);
 
-  source_data_ = new CSSRuleSourceDataList();
+  source_data_ = MakeGarbageCollected<CSSRuleSourceDataList>();
   FlattenSourceData(*rule_tree, source_data_.Get());
   text_ = text;
 
@@ -1891,7 +1900,8 @@ bool InspectorStyleSheet::InspectorStyleSheetText(String* result) {
 InspectorStyleSheetForInlineStyle* InspectorStyleSheetForInlineStyle::Create(
     Element* element,
     Listener* listener) {
-  return new InspectorStyleSheetForInlineStyle(element, listener);
+  return MakeGarbageCollected<InspectorStyleSheetForInlineStyle>(element,
+                                                                 listener);
 }
 
 InspectorStyleSheetForInlineStyle::InspectorStyleSheetForInlineStyle(
@@ -1943,12 +1953,13 @@ CSSRuleSourceData* InspectorStyleSheetForInlineStyle::RuleSourceData() {
   const String& text = ElementStyleText();
   CSSRuleSourceData* rule_source_data = nullptr;
   if (text.IsEmpty()) {
-    rule_source_data = new CSSRuleSourceData(StyleRule::kStyle);
+    rule_source_data =
+        MakeGarbageCollected<CSSRuleSourceData>(StyleRule::kStyle);
     rule_source_data->rule_body_range.start = 0;
     rule_source_data->rule_body_range.end = 0;
   } else {
     CSSRuleSourceDataList* rule_source_data_result =
-        new CSSRuleSourceDataList();
+        MakeGarbageCollected<CSSRuleSourceDataList>();
     StyleSheetHandler handler(text, &element_->GetDocument(),
                               rule_source_data_result);
     CSSParser::ParseDeclarationListForInspector(

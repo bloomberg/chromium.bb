@@ -40,6 +40,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/common/offline_page_auto_fetcher.mojom.h"
+#endif
+
 namespace {
 
 using OfflineContentOnNetErrorFeatureState =
@@ -171,6 +175,7 @@ class NetErrorHelperCoreTest : public testing::Test,
         show_saved_copy_count_(0),
         diagnose_error_count_(0),
         download_count_(0),
+        list_visible_by_prefs_(true),
         enable_page_helper_functions_count_(0),
         default_url_(GURL(kFailedUrl)),
         error_url_(GURL(content::kUnreachableWebDataURL)),
@@ -248,6 +253,10 @@ class NetErrorHelperCoreTest : public testing::Test,
     offline_content_feature_state_ = offline_content_feature_state;
   }
 
+  bool list_visible_by_prefs() const { return list_visible_by_prefs_; }
+
+  void set_auto_fetch_allowed(bool allowed) { auto_fetch_allowed_ = allowed; }
+
   const std::string& offline_content_json() const {
     return offline_content_json_;
   }
@@ -255,6 +264,15 @@ class NetErrorHelperCoreTest : public testing::Test,
   const std::string& offline_content_summary_json() const {
     return offline_content_summary_json_;
   }
+
+#if defined(OS_ANDROID)
+  // State of auto fetch, as reported to Delegate. Unset if SetAutoFetchState
+  // was not called.
+  base::Optional<chrome::mojom::OfflinePageAutoFetcherScheduleResult>
+  auto_fetch_state() const {
+    return auto_fetch_state_;
+  }
+#endif
 
   base::MockOneShotTimer* timer() { return timer_; }
 
@@ -359,6 +377,7 @@ class NetErrorHelperCoreTest : public testing::Test,
       bool* show_cached_copy_button_shown,
       bool* download_button_shown,
       OfflineContentOnNetErrorFeatureState* offline_content_feature_state,
+      bool* auto_fetch_allowed,
       std::string* html) const override {
     last_can_show_network_diagnostics_dialog_ =
         can_show_network_diagnostics_dialog;
@@ -368,6 +387,7 @@ class NetErrorHelperCoreTest : public testing::Test,
     *show_cached_copy_button_shown = false;
     *download_button_shown = false;
     *offline_content_feature_state = offline_content_feature_state_;
+    *auto_fetch_allowed = auto_fetch_allowed_;
     *html = ErrorToString(error, is_failed_post);
   }
 
@@ -389,6 +409,9 @@ class NetErrorHelperCoreTest : public testing::Test,
     last_error_page_params_.reset(nullptr);
     last_error_html_ = ErrorToString(error, is_failed_post);
   }
+
+  void InitializeErrorPageEasterEggHighScore(int high_score) override {}
+  void RequestEasterEggHighScore() override {}
 
   void FetchNavigationCorrections(
       const GURL& navigation_correction_url,
@@ -441,7 +464,9 @@ class NetErrorHelperCoreTest : public testing::Test,
   void SetIsShowingDownloadButton(bool show) override {}
 
   void OfflineContentAvailable(
+      bool list_visible_by_prefs,
       const std::string& offline_content_json) override {
+    list_visible_by_prefs_ = list_visible_by_prefs;
     offline_content_json_ = offline_content_json;
   }
 
@@ -449,6 +474,13 @@ class NetErrorHelperCoreTest : public testing::Test,
       const std::string& offline_content_summary_json) override {
     offline_content_summary_json_ = offline_content_summary_json;
   }
+
+#if defined(OS_ANDROID)
+  void SetAutoFetchState(
+      chrome::mojom::OfflinePageAutoFetcherScheduleResult result) override {
+    auto_fetch_state_ = result;
+  }
+#endif
 
   void SendTrackingRequest(const GURL& tracking_url,
                            const std::string& tracking_request_body) override {
@@ -471,6 +503,8 @@ class NetErrorHelperCoreTest : public testing::Test,
     EXPECT_TRUE(StringValueEquals(*dict, "params.originCountry", kCountry));
     EXPECT_TRUE(StringValueEquals(*dict, "params.key", kApiKey));
   }
+
+  content::RenderFrame* GetRenderFrame() override { return nullptr; }
 
   base::MockOneShotTimer* timer_;
 
@@ -505,10 +539,16 @@ class NetErrorHelperCoreTest : public testing::Test,
   int diagnose_error_count_;
   GURL diagnose_error_url_;
   int download_count_;
+  bool list_visible_by_prefs_;
   std::string offline_content_json_;
   std::string offline_content_summary_json_;
+#if defined(OS_ANDROID)
+  base::Optional<chrome::mojom::OfflinePageAutoFetcherScheduleResult>
+      auto_fetch_state_;
+#endif
   OfflineContentOnNetErrorFeatureState offline_content_feature_state_ =
       OfflineContentOnNetErrorFeatureState::kDisabled;
+  bool auto_fetch_allowed_ = false;
 
   int enable_page_helper_functions_count_;
 
@@ -2405,8 +2445,6 @@ TEST_F(NetErrorHelperCoreAutoReloadTest, ManualReloadShowsError) {
 class NetErrorHelperCoreHistogramTest
     : public NetErrorHelperCoreAutoReloadTest {
  public:
-  void SetUp() override { NetErrorHelperCoreAutoReloadTest::SetUp(); }
-
   static const char kCountAtStop[];
   static const char kErrorAtStop[];
   static const char kCountAtSuccess[];
@@ -2633,7 +2671,9 @@ TEST_F(NetErrorHelperCoreTest, Download) {
 
 const char kDataURI[] = "data:image/png;base64,abc";
 
-std::vector<chrome::mojom::AvailableOfflineContentPtr> TestAvailableContent() {
+// Creates a couple of fake AvailableOfflineContent instances.
+std::vector<chrome::mojom::AvailableOfflineContentPtr>
+GetFakeAvailableContent() {
   std::vector<chrome::mojom::AvailableOfflineContentPtr> content;
   content.push_back(chrome::mojom::AvailableOfflineContent::New(
       "ID", "name_space", "title", "snippet", "date_modified", "attribution",
@@ -2645,6 +2685,40 @@ std::vector<chrome::mojom::AvailableOfflineContentPtr> TestAvailableContent() {
   return content;
 }
 
+// Builds the expected JSON representation of the AvailableOfflineContent
+// instances returned by |GetFakeAvailableContent|.
+const std::string GetExpectedAvailableContentAsJson() {
+  // About the below data:
+  // * |content_type| is an AvailableContentType enum value where
+  //   0 = kPrefetchedPage and 3=kOtherPage.
+  // * The base64 encoded values represent the encoded versions of the
+  //   respective entries returned by |GetFakeAvailableContent|.
+  std::string want_json = R"([
+    {
+      "ID": "ID",
+      "attribution_base64": "AGEAdAB0AHIAaQBiAHUAdABpAG8Abg==",
+      "content_type": 0,
+      "date_modified": "date_modified",
+      "name_space": "name_space",
+      "snippet_base64": "AHMAbgBpAHAAcABlAHQ=",
+      "thumbnail_data_uri": "data:image/png;base64,abc",
+      "title_base64": "AHQAaQB0AGwAZQ=="
+    },
+    {
+      "ID": "ID2",
+      "attribution_base64": "AGEAdAB0AHIAaQBiAHUAdABpAG8AbgAy",
+      "content_type": 3,
+      "date_modified": "date_modified2",
+      "name_space": "name_space2",
+      "snippet_base64": "AHMAbgBpAHAAcABlAHQAMg==",
+      "thumbnail_data_uri": "data:image/png;base64,abc",
+      "title_base64": "AHQAaQB0AGwAZQAy"
+    }
+  ])";
+  base::ReplaceChars(want_json, base::kWhitespaceASCII, "", &want_json);
+  return want_json;
+}
+
 class FakeAvailableOfflineContentProvider
     : public chrome::mojom::AvailableOfflineContentProvider {
  public:
@@ -2652,9 +2726,10 @@ class FakeAvailableOfflineContentProvider
 
   void List(ListCallback callback) override {
     if (return_content_) {
-      std::move(callback).Run(TestAvailableContent());
+      std::move(callback).Run(list_visible_by_prefs_,
+                              GetFakeAvailableContent());
     } else {
-      std::move(callback).Run({});
+      std::move(callback).Run(list_visible_by_prefs_, {});
     }
   }
 
@@ -2671,6 +2746,7 @@ class FakeAvailableOfflineContentProvider
   MOCK_METHOD2(LaunchItem,
                void(const std::string& item_ID, const std::string& name_space));
   MOCK_METHOD1(LaunchDownloadsPage, void(bool open_prefetched_articles_tab));
+  MOCK_METHOD1(ListVisibilityChanged, void(bool is_visible));
 
   void AddBinding(mojo::ScopedMessagePipeHandle handle) {
     bindings_.AddBinding(this,
@@ -2682,8 +2758,13 @@ class FakeAvailableOfflineContentProvider
     return_content_ = return_content;
   }
 
+  void set_list_visible_by_prefs(bool list_visible_by_prefs) {
+    list_visible_by_prefs_ = list_visible_by_prefs;
+  }
+
  private:
   bool return_content_ = true;
+  bool list_visible_by_prefs_ = true;
   mojo::BindingSet<chrome::mojom::AvailableOfflineContentProvider> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAvailableOfflineContentProvider);
@@ -2695,8 +2776,9 @@ class NetErrorHelperCoreAvailableOfflineContentTest
  public:
   void SetUp() override {
     NetErrorHelperCoreTest::SetUp();
-    test_api_.OverrideBinderForTesting(
-        service_manager::Identity(content::mojom::kBrowserServiceName),
+    render_thread()->GetConnector()->OverrideBinderForTesting(
+        service_manager::ServiceFilter::ByName(
+            content::mojom::kBrowserServiceName),
         chrome::mojom::AvailableOfflineContentProvider::Name_,
         base::BindRepeating(&FakeAvailableOfflineContentProvider::AddBinding,
                             base::Unretained(&fake_provider_)));
@@ -2704,8 +2786,6 @@ class NetErrorHelperCoreAvailableOfflineContentTest
 
  protected:
   FakeAvailableOfflineContentProvider fake_provider_;
-  service_manager::Connector::TestApi test_api_{
-      render_thread()->GetConnector()};
   base::HistogramTester histogram_tester_;
 };
 
@@ -2716,32 +2796,8 @@ TEST_F(NetErrorHelperCoreAvailableOfflineContentTest, ListAvailableContent) {
 
   DoErrorLoad(net::ERR_INTERNET_DISCONNECTED);
   task_environment()->RunUntilIdle();
-  // Note: content_type is an AvailableContentType enum value.
-  // Below, 0=kPrefetchedPage and 3=kOtherPage.
-  std::string want_json = R"([
-      {
-        "ID": "ID",
-        "attribution": "attribution",
-        "content_type": 0,
-        "date_modified": "date_modified",
-        "name_space": "name_space",
-        "snippet": "snippet",
-        "thumbnail_data_uri": "data:image/png;base64,abc",
-        "title": "title"
-      },
-      {
-        "ID": "ID2",
-        "attribution": "attribution2",
-        "content_type": 3,
-        "date_modified": "date_modified2",
-        "name_space": "name_space2",
-        "snippet": "snippet2",
-        "thumbnail_data_uri": "data:image/png;base64,abc",
-        "title": "title2"
-      }
-    ])";
-  base::ReplaceChars(want_json, base::kWhitespaceASCII, "", &want_json);
-  EXPECT_EQ(want_json, offline_content_json());
+  EXPECT_TRUE(list_visible_by_prefs());
+  EXPECT_EQ(GetExpectedAvailableContentAsJson(), offline_content_json());
 
   histogram_tester_.ExpectTotalCount("Net.ErrorPageCounts.SuggestionPresented",
                                      2);
@@ -2754,6 +2810,49 @@ TEST_F(NetErrorHelperCoreAvailableOfflineContentTest, ListAvailableContent) {
   histogram_tester_.ExpectBucketCount(
       "Net.ErrorPageCounts",
       error_page::NETWORK_ERROR_PAGE_OFFLINE_SUGGESTIONS_SHOWN, 1);
+  histogram_tester_.ExpectBucketCount(
+      "Net.ErrorPageCounts",
+      error_page::NETWORK_ERROR_PAGE_OFFLINE_SUGGESTIONS_SHOWN_COLLAPSED, 0);
+
+  core()->LaunchOfflineItem("ID", "name_space");
+  histogram_tester_.ExpectBucketCount(
+      "Net.ErrorPageCounts.SuggestionPresented",
+      chrome::mojom::AvailableContentType::kPrefetchedPage, 1);
+  histogram_tester_.ExpectBucketCount(
+      "Net.ErrorPageCounts",
+      error_page::NETWORK_ERROR_PAGE_OFFLINE_SUGGESTION_CLICKED, 1);
+
+  core()->LaunchDownloadsPage();
+  histogram_tester_.ExpectBucketCount(
+      "Net.ErrorPageCounts",
+      error_page::NETWORK_ERROR_PAGE_OFFLINE_DOWNLOADS_PAGE_CLICKED, 1);
+}
+
+TEST_F(NetErrorHelperCoreAvailableOfflineContentTest, ListHiddenByPrefs) {
+  set_offline_content_feature_state(
+      OfflineContentOnNetErrorFeatureState::kEnabledList);
+  fake_provider_.set_return_content(true);
+  fake_provider_.set_list_visible_by_prefs(false);
+
+  DoErrorLoad(net::ERR_INTERNET_DISCONNECTED);
+  task_environment()->RunUntilIdle();
+  EXPECT_FALSE(list_visible_by_prefs());
+  EXPECT_EQ(GetExpectedAvailableContentAsJson(), offline_content_json());
+
+  histogram_tester_.ExpectTotalCount("Net.ErrorPageCounts.SuggestionPresented",
+                                     2);
+  histogram_tester_.ExpectBucketCount(
+      "Net.ErrorPageCounts.SuggestionPresented",
+      chrome::mojom::AvailableContentType::kPrefetchedPage, 1);
+  histogram_tester_.ExpectBucketCount(
+      "Net.ErrorPageCounts.SuggestionPresented",
+      chrome::mojom::AvailableContentType::kOtherPage, 1);
+  histogram_tester_.ExpectBucketCount(
+      "Net.ErrorPageCounts",
+      error_page::NETWORK_ERROR_PAGE_OFFLINE_SUGGESTIONS_SHOWN, 0);
+  histogram_tester_.ExpectBucketCount(
+      "Net.ErrorPageCounts",
+      error_page::NETWORK_ERROR_PAGE_OFFLINE_SUGGESTIONS_SHOWN_COLLAPSED, 1);
 
   core()->LaunchOfflineItem("ID", "name_space");
   histogram_tester_.ExpectBucketCount(
@@ -2777,7 +2876,14 @@ TEST_F(NetErrorHelperCoreAvailableOfflineContentTest, ListNoAvailableContent) {
   DoErrorLoad(net::ERR_INTERNET_DISCONNECTED);
   task_environment()->RunUntilIdle();
 
+  EXPECT_TRUE(list_visible_by_prefs());
   EXPECT_EQ("", offline_content_json());
+  histogram_tester_.ExpectBucketCount(
+      "Net.ErrorPageCounts",
+      error_page::NETWORK_ERROR_PAGE_OFFLINE_SUGGESTIONS_SHOWN, 0);
+  histogram_tester_.ExpectBucketCount(
+      "Net.ErrorPageCounts",
+      error_page::NETWORK_ERROR_PAGE_OFFLINE_SUGGESTIONS_SHOWN_COLLAPSED, 0);
 }
 
 TEST_F(NetErrorHelperCoreAvailableOfflineContentTest, SummaryAvailableContent) {
@@ -2804,6 +2910,9 @@ TEST_F(NetErrorHelperCoreAvailableOfflineContentTest, SummaryAvailableContent) {
       error_page::NETWORK_ERROR_PAGE_OFFLINE_SUGGESTIONS_SHOWN, 0);
   histogram_tester_.ExpectBucketCount(
       "Net.ErrorPageCounts",
+      error_page::NETWORK_ERROR_PAGE_OFFLINE_SUGGESTIONS_SHOWN_COLLAPSED, 0);
+  histogram_tester_.ExpectBucketCount(
+      "Net.ErrorPageCounts",
       error_page::NETWORK_ERROR_PAGE_OFFLINE_CONTENT_SUMMARY_SHOWN, 1);
 
   core()->LaunchDownloadsPage();
@@ -2820,12 +2929,121 @@ TEST_F(NetErrorHelperCoreAvailableOfflineContentTest, NotAllowed) {
   DoErrorLoad(net::ERR_INTERNET_DISCONNECTED);
   task_environment()->RunUntilIdle();
 
+  EXPECT_TRUE(list_visible_by_prefs());
   EXPECT_EQ("", offline_content_json());
   histogram_tester_.ExpectTotalCount("Net.ErrorPageCounts.SuggestionPresented",
                                      0);
   histogram_tester_.ExpectBucketCount(
       "Net.ErrorPageCounts",
       error_page::NETWORK_ERROR_PAGE_OFFLINE_SUGGESTIONS_SHOWN, 0);
+  histogram_tester_.ExpectBucketCount(
+      "Net.ErrorPageCounts",
+      error_page::NETWORK_ERROR_PAGE_OFFLINE_SUGGESTIONS_SHOWN_COLLAPSED, 0);
+}
+
+class FakeOfflinePageAutoFetcher
+    : public chrome::mojom::OfflinePageAutoFetcher {
+ public:
+  FakeOfflinePageAutoFetcher() = default;
+
+  struct TryScheduleParameters {
+    bool user_requested;
+    TryScheduleCallback callback;
+  };
+
+  void TrySchedule(bool user_requested, TryScheduleCallback callback) override {
+    try_schedule_calls_.push_back({user_requested, std::move(callback)});
+  }
+
+  void CancelSchedule() override { cancel_calls_++; }
+
+  void AddBinding(mojo::ScopedMessagePipeHandle handle) {
+    bindings_.AddBinding(
+        this, chrome::mojom::OfflinePageAutoFetcherRequest(std::move(handle)));
+  }
+
+  int cancel_calls() const { return cancel_calls_; }
+  std::vector<TryScheduleParameters> take_try_schedule_calls() {
+    std::vector<TryScheduleParameters> result = std::move(try_schedule_calls_);
+    try_schedule_calls_.clear();
+    return result;
+  }
+
+ private:
+  mojo::BindingSet<chrome::mojom::OfflinePageAutoFetcher> bindings_;
+  int cancel_calls_ = 0;
+  std::vector<TryScheduleParameters> try_schedule_calls_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeOfflinePageAutoFetcher);
+};
+// This uses the real implementation of PageAutoFetcherHelper, but with a
+// substituted fetcher.
+class TestPageAutoFetcherHelper : public PageAutoFetcherHelper {
+ public:
+  explicit TestPageAutoFetcherHelper(
+      chrome::mojom::OfflinePageAutoFetcherPtr fetcher)
+      : PageAutoFetcherHelper(nullptr) {
+    fetcher_ = std::move(fetcher);
+  }
+  bool Bind() override { return true; }
+};
+
+// Provides set up for testing the 'auto fetch on dino' feature.
+class NetErrorHelperCoreAutoFetchTest : public NetErrorHelperCoreTest {
+ public:
+  void SetUp() override {
+    NetErrorHelperCoreTest::SetUp();
+    // Override PageAutoFetcherHelper so that it talks to
+    // FakeOfflinePageAutoFetcher. This is a bit roundabout because
+    // we do not create a RenderFrame in this fixture.
+    render_thread()->GetConnector()->OverrideBinderForTesting(
+        service_manager::ServiceFilter::ByName(
+            content::mojom::kBrowserServiceName),
+        chrome::mojom::OfflinePageAutoFetcher::Name_,
+        base::BindRepeating(&FakeOfflinePageAutoFetcher::AddBinding,
+                            base::Unretained(&fake_fetcher_)));
+    chrome::mojom::OfflinePageAutoFetcherPtr fetcher_ptr;
+    render_thread()->GetConnector()->BindInterface(
+        content::mojom::kBrowserServiceName, &fetcher_ptr);
+    ASSERT_TRUE(fetcher_ptr);
+    core()->SetPageAutoFetcherHelperForTesting(
+        std::make_unique<TestPageAutoFetcherHelper>(std::move(fetcher_ptr)));
+  }
+
+ protected:
+  FakeOfflinePageAutoFetcher fake_fetcher_;
+};
+
+TEST_F(NetErrorHelperCoreAutoFetchTest, NotAllowed) {
+  set_auto_fetch_allowed(false);
+
+  DoErrorLoad(net::ERR_INTERNET_DISCONNECTED);
+  task_environment()->RunUntilIdle();
+
+  // When auto fetch is not allowed, OfflinePageAutoFetcher is not called.
+  std::vector<FakeOfflinePageAutoFetcher::TryScheduleParameters> calls =
+      fake_fetcher_.take_try_schedule_calls();
+  EXPECT_EQ(0ul, calls.size());
+}
+
+TEST_F(NetErrorHelperCoreAutoFetchTest, AutoFetchTriggered) {
+  set_auto_fetch_allowed(true);
+
+  DoErrorLoad(net::ERR_INTERNET_DISCONNECTED);
+  task_environment()->RunUntilIdle();
+
+  // Auto fetch is allowed, so OfflinePageAutoFetcher is called once.
+  std::vector<FakeOfflinePageAutoFetcher::TryScheduleParameters> calls =
+      fake_fetcher_.take_try_schedule_calls();
+  EXPECT_EQ(1ul, calls.size());
+
+  // Finalize the call to TrySchedule, and verify the delegate is called.
+  std::move(calls[0].callback)
+      .Run(chrome::mojom::OfflinePageAutoFetcherScheduleResult::kScheduled);
+  task_environment()->RunUntilIdle();
+
+  EXPECT_EQ(chrome::mojom::OfflinePageAutoFetcherScheduleResult::kScheduled,
+            auto_fetch_state());
 }
 
 #endif  // defined(OS_ANDROID)

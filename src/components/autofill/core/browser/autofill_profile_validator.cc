@@ -36,7 +36,7 @@ const int kRulesLoadingTimeoutSeconds = 5;
 }  // namespace
 
 AutofillProfileValidator::ValidationRequest::ValidationRequest(
-    base::WeakPtr<AutofillProfile> profile,
+    base::WeakPtr<const AutofillProfile> profile,
     autofill::AddressValidator* validator,
     AutofillProfileValidatorCallback on_validated)
     : profile_(profile),
@@ -78,13 +78,14 @@ AutofillProfileValidator::AutofillProfileValidator(
 AutofillProfileValidator::~AutofillProfileValidator() {}
 
 void AutofillProfileValidator::StartProfileValidation(
-    AutofillProfile* profile,
+    const AutofillProfile* profile,
     AutofillProfileValidatorCallback cb) {
   DCHECK(profile);
   if (!profile)
     return;
+
   std::unique_ptr<ValidationRequest> request(
-      std::make_unique<ValidationRequest>(profile->AsWeakPtr(),
+      std::make_unique<ValidationRequest>(profile->GetWeakPtr(),
                                           &address_validator_, std::move(cb)));
 
   // If the |region_code| is not a valid code according to our source, calling

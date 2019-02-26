@@ -74,6 +74,7 @@ component("gpu") {
     "//content/renderer:*",
     "//media/gpu/ipc/*",
     "//media/gpu/vaapi/*",
+    "//media/gpu/test/*",
     "//media/mojo/*",
     "//remoting/codec:encoder",
     ":*",
@@ -122,6 +123,7 @@ component("gpu") {
     "//gpu/command_buffer/common:gles2_utils",
     "//gpu/command_buffer/service:gles2",
     "//gpu/ipc/service",
+    "//third_party/libyuv",
     "//ui/base",
     "//ui/display/types",
     "//ui/gl",
@@ -202,7 +204,6 @@ component("gpu") {
       "//gpu/ipc/common:ipc_common_sources",
       "//media/mojo:buildflags",
       "//services/service_manager/public/cpp:cpp",
-      "//third_party/libyuv",
       "//ui/gl:gl_jni_headers",
     ]
 
@@ -220,10 +221,7 @@ component("gpu") {
   }
 
   if (use_v4l2_codec) {
-    deps += [
-      "//third_party/libyuv",
-      "//ui/ozone",
-    ]
+    deps += [ "//ui/ozone" ]
     sources += [
       "v4l2/generic_v4l2_device.cc",
       "v4l2/generic_v4l2_device.h",
@@ -233,6 +231,8 @@ component("gpu") {
       "v4l2/v4l2_image_processor.h",
       "v4l2/v4l2_jpeg_decode_accelerator.cc",
       "v4l2/v4l2_jpeg_decode_accelerator.h",
+      "v4l2/v4l2_jpeg_encode_accelerator.cc",
+      "v4l2/v4l2_jpeg_encode_accelerator.h",
       "v4l2/v4l2_slice_video_decode_accelerator.cc",
       "v4l2/v4l2_slice_video_decode_accelerator.h",
       "v4l2/v4l2_video_decode_accelerator.cc",
@@ -263,6 +263,8 @@ component("gpu") {
       "windows/d3d11_h264_accelerator.h",
       "windows/d3d11_picture_buffer.cc",
       "windows/d3d11_picture_buffer.h",
+      "windows/d3d11_video_context_wrapper.cc",
+      "windows/d3d11_video_context_wrapper.h",
       "windows/d3d11_video_decoder.cc",
       "windows/d3d11_video_decoder.h",
       "windows/d3d11_video_decoder_client.h",
@@ -288,7 +290,6 @@ component("gpu") {
     public_deps += [ "//media/base/win" ]
     deps += [
       "//third_party/angle:includes",
-      "//third_party/libyuv",
       "//ui/display",
     ]
     libs += [
@@ -333,6 +334,7 @@ source_set("common") {
     "h264_decoder.h",
     "h264_dpb.cc",
     "h264_dpb.h",
+    "macros.h",
     "vp9_decoder.cc",
     "vp9_decoder.h",
     "vp9_picture.cc",
@@ -355,6 +357,7 @@ source_set("common") {
     "//base",
     "//media",
     "//ui/gfx:buffer_types",
+    "//ui/gfx:memory_buffer",
     "//ui/gfx/geometry",
   ]
 }
@@ -391,14 +394,9 @@ if (is_win || is_android || use_v4l2_codec || use_vaapi) {
     configs += [ "//third_party/khronos:khronos_headers" ]
 
     if (is_win || is_chromeos || use_v4l2_codec) {
-      sources += [
-        "test/rendering_helper.cc",
-        "test/rendering_helper.h",
-        "test/video_decode_accelerator_unittest_helpers.cc",
-        "test/video_decode_accelerator_unittest_helpers.h",
-        "video_decode_accelerator_unittest.cc",
-      ]
+      sources += [ "video_decode_accelerator_unittest.cc" ]
       deps += [
+        "test:helpers",
         "//mojo/core/embedder",
         "//ui/display",
         "//ui/display/types",
@@ -449,6 +447,8 @@ source_set("android_video_decode_accelerator_unittests") {
       "android/fake_codec_allocator.h",
       "android/image_reader_gl_owner_unittest.cc",
       "android/media_codec_video_decoder_unittest.cc",
+      "android/mock_abstract_texture.cc",
+      "android/mock_abstract_texture.h",
       "android/mock_android_video_surface_chooser.cc",
       "android/mock_android_video_surface_chooser.h",
       "android/mock_device_info.cc",
@@ -481,6 +481,7 @@ source_set("android_video_decode_accelerator_unittests") {
 if (use_v4l2_codec || use_vaapi || is_mac || is_win) {
   test("video_encode_accelerator_unittest") {
     deps = [
+      "test:helpers",
       "//base",
       "//base/test:test_support",
       "//media:test_support",
@@ -496,7 +497,6 @@ if (use_v4l2_codec || use_vaapi || is_mac || is_win) {
     ]
     configs += [ "//third_party/libyuv:libyuv_config" ]
     sources = [
-      "test/video_accelerator_unittest_helpers.h",
       "video_encode_accelerator_unittest.cc",
     ]
     if (use_x11) {
@@ -508,7 +508,7 @@ if (use_v4l2_codec || use_vaapi || is_mac || is_win) {
   }
 }
 
-if (use_vaapi) {
+if (use_v4l2_codec || use_vaapi) {
   test("jpeg_encode_accelerator_unittest") {
     deps = [
       "//base",
@@ -631,5 +631,28 @@ source_set("unit_tests") {
       "windows/d3d11_video_decoder_unittest.cc",
     ]
     libs = [ "dxguid.lib" ]
+  }
+}
+
+# TODO(dstaessens@) Make this work on other platforms too.
+if (is_chromeos) {
+  test("video_decode_accelerator_tests") {
+    sources = [
+      "video_decode_accelerator_tests.cc",
+    ]
+    data = [
+      "//media/test/data/",
+    ]
+    deps = [
+      ":buildflags",
+      "test:video_player",
+      "//base/test:test_support",
+      "//media:test_support",
+      "//mojo/core/embedder",
+      "//testing/gtest",
+    ]
+    if (use_vaapi) {
+      deps += [ "//media/gpu/vaapi" ]
+    }
   }
 }

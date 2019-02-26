@@ -42,7 +42,7 @@
 // <include src="../../file_manager/common/js/async_util.js">
 // <include src="../../file_manager/common/js/file_type.js">
 // <include src="../../file_manager/common/js/util.js">
-// <include src="../../file_manager/common/js/volume_manager_common.js">
+// <include src="../../base/js/volume_manager_types.js">
 // <include src="../../base/js/filtered_volume_manager.js">
 
 // <include src="cast/cast_extension_discoverer.js">

@@ -17,7 +17,7 @@
 #include "base/threading/thread.h"
 #include "media/midi/midi_export.h"
 #include "media/midi/midi_manager.h"
-#include "media/midi/midi_port_info.h"
+#include "media/midi/midi_service.mojom.h"
 
 namespace midi {
 

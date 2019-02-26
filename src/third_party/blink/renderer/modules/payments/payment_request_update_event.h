@@ -26,12 +26,16 @@ class MODULES_EXPORT PaymentRequestUpdateEvent : public Event,
   USING_GARBAGE_COLLECTED_MIXIN(PaymentRequestUpdateEvent)
 
  public:
+  PaymentRequestUpdateEvent(ExecutionContext*,
+                            const AtomicString& type,
+                            const PaymentRequestUpdateEventInit*);
   ~PaymentRequestUpdateEvent() override;
 
   static PaymentRequestUpdateEvent* Create(
       ExecutionContext*,
       const AtomicString& type,
-      const PaymentRequestUpdateEventInit& = PaymentRequestUpdateEventInit());
+      const PaymentRequestUpdateEventInit* =
+          PaymentRequestUpdateEventInit::Create());
 
   void SetPaymentDetailsUpdater(PaymentUpdater*);
 
@@ -40,17 +44,13 @@ class MODULES_EXPORT PaymentRequestUpdateEvent : public Event,
   bool is_waiting_for_update() const { return wait_for_update_; }
 
   // PaymentUpdater:
-  void OnUpdatePaymentDetails(const ScriptValue& details_script_value) override;
+  void OnUpdatePaymentDetails(const AtomicString& event_type,
+                              const ScriptValue& details_script_value) override;
   void OnUpdatePaymentDetailsFailure(const String& error) override;
 
   void Trace(blink::Visitor*) override;
 
   void OnUpdateEventTimeoutForTesting();
-
- protected:
-  PaymentRequestUpdateEvent(ExecutionContext*,
-                            const AtomicString& type,
-                            const PaymentRequestUpdateEventInit&);
 
  private:
   void OnUpdateEventTimeout(TimerBase*);

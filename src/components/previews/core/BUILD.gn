@@ -10,11 +10,15 @@ static_library("core") {
     "host_filter.h",
     "previews_black_list.cc",
     "previews_black_list.h",
+    "previews_constants.cc",
+    "previews_constants.h",
     "previews_decider.h",
     "previews_experiments.cc",
     "previews_experiments.h",
     "previews_features.cc",
     "previews_features.h",
+    "previews_lite_page_redirect.cc",
+    "previews_lite_page_redirect.h",
     "previews_logger.cc",
     "previews_logger.h",
     "previews_logger_observer.h",
@@ -58,6 +62,7 @@ source_set("unit_tests") {
     "host_filter_unittest.cc",
     "previews_black_list_unittest.cc",
     "previews_experiments_unittest.cc",
+    "previews_lite_page_redirect_unittest.cc",
     "previews_logger_unittest.cc",
   ]
 

@@ -177,17 +177,17 @@ WebMouseEventBuilder::WebMouseEventBuilder(const LocalFrameView* plugin_parent,
   // OOPIF will prevent synthetic events being dispatched into
   // other frames; but for now we allow the fallback to generate
   // WebMouseEvents from synthetic events.
-  if (event.type() == EventTypeNames::mousemove)
+  if (event.type() == event_type_names::kMousemove)
     type_ = WebInputEvent::kMouseMove;
-  else if (event.type() == EventTypeNames::mouseout)
+  else if (event.type() == event_type_names::kMouseout)
     type_ = WebInputEvent::kMouseLeave;
-  else if (event.type() == EventTypeNames::mouseover)
+  else if (event.type() == event_type_names::kMouseover)
     type_ = WebInputEvent::kMouseEnter;
-  else if (event.type() == EventTypeNames::mousedown)
+  else if (event.type() == event_type_names::kMousedown)
     type_ = WebInputEvent::kMouseDown;
-  else if (event.type() == EventTypeNames::mouseup)
+  else if (event.type() == event_type_names::kMouseup)
     type_ = WebInputEvent::kMouseUp;
-  else if (event.type() == EventTypeNames::contextmenu)
+  else if (event.type() == event_type_names::kContextmenu)
     type_ = WebInputEvent::kContextMenu;
   else
     return;  // Skip all other mouse events.
@@ -250,7 +250,8 @@ WebMouseEventBuilder::WebMouseEventBuilder(const LocalFrameView* plugin_parent,
   if (!event.touches())
     return;
   if (event.touches()->length() != 1) {
-    if (event.touches()->length() || event.type() != EventTypeNames::touchend ||
+    if (event.touches()->length() ||
+        event.type() != event_type_names::kTouchend ||
         !event.changedTouches() || event.changedTouches()->length() != 1)
       return;
   }
@@ -261,11 +262,11 @@ WebMouseEventBuilder::WebMouseEventBuilder(const LocalFrameView* plugin_parent,
   if (touch->identifier())
     return;
 
-  if (event.type() == EventTypeNames::touchstart)
+  if (event.type() == event_type_names::kTouchstart)
     type_ = kMouseDown;
-  else if (event.type() == EventTypeNames::touchmove)
+  else if (event.type() == event_type_names::kTouchmove)
     type_ = kMouseMove;
-  else if (event.type() == EventTypeNames::touchend)
+  else if (event.type() == event_type_names::kTouchend)
     type_ = kMouseUp;
   else
     return;
@@ -304,11 +305,11 @@ WebKeyboardEventBuilder::WebKeyboardEventBuilder(const KeyboardEvent& event) {
     return;
   }
 
-  if (event.type() == EventTypeNames::keydown)
+  if (event.type() == event_type_names::kKeydown)
     type_ = kKeyDown;
-  else if (event.type() == EventTypeNames::keyup)
+  else if (event.type() == event_type_names::kKeyup)
     type_ = WebInputEvent::kKeyUp;
-  else if (event.type() == EventTypeNames::keypress)
+  else if (event.type() == event_type_names::kKeypress)
     type_ = WebInputEvent::kChar;
   else
     return;  // Skip all other keyboard events.

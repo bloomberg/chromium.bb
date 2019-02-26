@@ -259,9 +259,10 @@ void ClientSideDetectionService::SendModelToProcess(
     return;
   }
   ChromeService::GetInstance()->connector()->BindInterface(
-      service_manager::Identity(chrome::mojom::kRendererServiceName,
-                                process->GetChildIdentity().user_id(),
-                                process->GetChildIdentity().instance()),
+      service_manager::ServiceFilter::ByNameWithIdInGroup(
+          chrome::mojom::kRendererServiceName,
+          process->GetChildIdentity().instance_id(),
+          process->GetChildIdentity().instance_group()),
       &phishing);
   phishing->SetPhishingModel(model);
 }

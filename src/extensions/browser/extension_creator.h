@@ -38,6 +38,7 @@ class ExtensionCreator {
     kOverwriteCRX = 1 << 0,
     kRequireModernManifestVersion = 1 << 1,
     kBookmarkApp = 1 << 2,
+    kSystemApp = 1 << 3,
   };
 
   // Categories of error that may need special handling on the UI end.

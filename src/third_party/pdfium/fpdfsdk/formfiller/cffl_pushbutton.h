@@ -17,8 +17,9 @@ class CFFL_PushButton final : public CFFL_Button {
   ~CFFL_PushButton() override;
 
   // CFFL_Button:
-  std::unique_ptr<CPWL_Wnd> NewPDFWindow(
-      const CPWL_Wnd::CreateParams& cp) override;
+  std::unique_ptr<CPWL_Wnd> NewPWLWindow(
+      const CPWL_Wnd::CreateParams& cp,
+      std::unique_ptr<CPWL_Wnd::PrivateData> pAttachedData) override;
 };
 
 #endif  // FPDFSDK_FORMFILLER_CFFL_PUSHBUTTON_H_

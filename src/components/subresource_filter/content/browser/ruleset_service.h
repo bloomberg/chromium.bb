@@ -2,8 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(ericrobinson): Merge RulesetService and ContentRulesetService into a
-// single class.  See: go/chromerulesetservicemerge.
+// This file contains the top-level class for the RulesetService.  There are
+// associated classes that tie this into the dealer as well as the filter
+// agents.  The distribution pipeline looks like this:
+//
+//                      RulesetService
+//                           |
+//                           v                  Browser
+//                 RulesetPublisher(Impl)
+//                     |              |
+//        - - - - - - -|- - - - - - - |- - - - - - - - - -
+//                     |       |      |
+//                     v              v
+//          *RulesetDealer     |  *RulesetDealer
+//                 |                |       |
+//                 |           |    |       v
+//                 v                |      SubresourceFilterAgent
+//    SubresourceFilterAgent   |    v
+//                                SubresourceFilterAgent
+//                             |
+//
+//         Renderer #1         |          Renderer #n
+//
+// Note: UnverifiedRulesetDealer is shortened to *RulesetDealer above. There is
+// also a VerifiedRulesetDealer which is used similarly on the browser side.
 
 #ifndef COMPONENTS_SUBRESOURCE_FILTER_CONTENT_BROWSER_RULESET_SERVICE_H_
 #define COMPONENTS_SUBRESOURCE_FILTER_CONTENT_BROWSER_RULESET_SERVICE_H_
@@ -22,80 +44,20 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "base/version.h"
+#include "components/subresource_filter/content/browser/ruleset_publisher.h"
 #include "components/subresource_filter/content/browser/verified_ruleset_dealer.h"
-#include "components/subresource_filter/core/browser/ruleset_service_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-class PrefService;
-class PrefRegistrySimple;
-
 namespace base {
 class SequencedTaskRunner;
-
-namespace trace_event {
-class TracedValue;
-}  // namespace trace_event
 }  // namespace base
 
 namespace subresource_filter {
 
 class RulesetIndexer;
-
-// Encapsulates information about a version of unindexed subresource
-// filtering rules on disk.
-struct UnindexedRulesetInfo {
-  UnindexedRulesetInfo();
-  ~UnindexedRulesetInfo();
-
-  // The version of the ruleset contents. Because the wire format of unindexed
-  // rules is expected to be stable over time (at least backwards compatible),
-  // the unindexed ruleset is uniquely identified by its content version.
-  //
-  // The version string must not be empty, but can be any string otherwise.
-  // There is no ordering defined on versions.
-  std::string content_version;
-
-  // The path to the file containing the unindexed subresource filtering rules.
-  base::FilePath ruleset_path;
-
-  // The (optional) path to a file containing the applicable license, which will
-  // be copied next to the indexed ruleset. For convenience, the lack of license
-  // can be indicated not only by setting |license_path| to empty, but also by
-  // setting it to any non existent path.
-  base::FilePath license_path;
-};
-
-// Encapsulates the combination of the binary format version of the indexed
-// ruleset, and the version of the ruleset contents.
-//
-// In contrast to the unindexed ruleset, the binary format of the index data
-// structures is expected to evolve over time, so the indexed ruleset is
-// identified by a pair of versions: the content version of the rules that have
-// been indexed; and the binary format version of the indexed data structures.
-// It also contains a checksum of the data, to ensure it hasn't been corrupted.
-struct IndexedRulesetVersion {
-  IndexedRulesetVersion();
-  IndexedRulesetVersion(const std::string& content_version, int format_version);
-  ~IndexedRulesetVersion();
-  IndexedRulesetVersion& operator=(const IndexedRulesetVersion&);
-
-  static void RegisterPrefs(PrefRegistrySimple* registry);
-  static int CurrentFormatVersion();
-
-  bool IsValid() const;
-  bool IsCurrentFormatVersion() const;
-
-  void SaveToPrefs(PrefService* local_state) const;
-  void ReadFromPrefs(PrefService* local_state);
-
-  std::unique_ptr<base::trace_event::TracedValue> ToTracedValue() const;
-
-  std::string content_version;
-  int format_version = 0;
-  int checksum = 0;
-};
 
 // Contains all utility functions that govern how files pertaining to indexed
 // ruleset version should be organized on disk.
@@ -146,7 +108,7 @@ class IndexedRulesetLocator {
 // Responsible for indexing subresource filtering rules that are downloaded
 // through the component updater; for versioned storage of the indexed ruleset;
 // and for supplying the most up-to-date version of the indexed ruleset to the
-// RulesetServiceDelegate, provided in the constructor, that abstracts away
+// RulesetPublisher, provided in the constructor, that abstracts away
 // distribution of the ruleset to renderers.
 //
 // Files corresponding to each version of the indexed ruleset are stored in a
@@ -182,13 +144,22 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
   };
 
   // Creates a new instance of a ruleset.  This is then assigned to a
-  // Delegate that calls Initialize for this ruleset service.
+  // RulesetPublisher that calls Initialize for this ruleset service.
+  // Starts initialization of the RulesetService, performing tasks that won't
+  // slow down Chrome startup, then queues the FinishInitialization task.
   RulesetService(
       PrefService* local_state,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner,
-      RulesetServiceDelegate* delegate,
-      const base::FilePath& indexed_ruleset_base_dir);
+      const base::FilePath& indexed_ruleset_base_dir,
+      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
+      // Note: Optional publisher parameter used exclusively for testing.
+      std::unique_ptr<RulesetPublisher> publisher = nullptr);
   virtual ~RulesetService();
+
+  // Pass-through function to set the callback on publishing.
+  void SetRulesetPublishedCallbackForTesting(base::OnceClosure callback) {
+    publisher_->SetRulesetPublishedCallbackForTesting(std::move(callback));
+  }
 
   // Indexes, stores, and publishes the given unindexed ruleset, unless its
   // |content_version| matches that of the most recently indexed version, in
@@ -206,15 +177,17 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
   // Get the ruleset version associated with the current local_state_.
   IndexedRulesetVersion GetMostRecentlyIndexedVersion() const;
 
-  // Publishes the most recently indexed version of the ruleset if one is
-  // available according to prefs.
-  void Initialize();
-
-  void set_is_after_startup_for_testing() { is_after_startup_ = true; }
+  VerifiedRulesetDealer::Handle* GetRulesetDealer() {
+    return publisher_->GetRulesetDealer();
+  }
 
  private:
   friend class SubresourceFilteringRulesetServiceTest;
-  FRIEND_TEST_ALL_PREFIXES(SubresourceFilterContentRulesetServiceTest,
+  friend class SubresourceFilterBrowserTest;
+  FRIEND_TEST_ALL_PREFIXES(
+      SubresourceFilterRulesetPublisherImplTest,
+      PublishedRuleset_IsDistributedToExistingAndNewRenderers);
+  FRIEND_TEST_ALL_PREFIXES(SubresourceFilterRulesetPublisherImplTest,
                            PublishesRulesetInOnePostTask);
   FRIEND_TEST_ALL_PREFIXES(SubresourceFilteringRulesetServiceTest,
                            NewRuleset_WriteFailure);
@@ -258,8 +231,10 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
   static decltype(&IndexRuleset) g_index_ruleset_func;
   static decltype(&base::ReplaceFile) g_replace_file_func;
 
-  // Performs indexing of the queued unindexed ruleset (if any) after start-up.
-  void InitializeAfterStartup();
+  // Runs as a BEST_EFFORT task to complete portions of the initialization that
+  // could potentially block Chrome startup.  Once this task is reached, the
+  // RulesetService is considered initialized.
+  void FinishInitialization();
 
   // Posts a task to the |background_task_runner| to index and persist the
   // given unindexed ruleset. Then, on success, updates the most recently
@@ -279,97 +254,14 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
   // Obsolete files deletion and indexing should be done on this runner.
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 
-  // Must outlive |this| object.
-  RulesetServiceDelegate* delegate_;
+  std::unique_ptr<RulesetPublisher> publisher_;
 
   UnindexedRulesetInfo queued_unindexed_ruleset_info_;
-  bool is_after_startup_;
+  bool is_initialized_;
 
   const base::FilePath indexed_ruleset_base_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(RulesetService);
-};
-
-// The content-layer specific implementation of RulesetServiceDelegate. Owns the
-// underlying RulesetService.
-//
-// Its main responsibility is receiving new versions of subresource filtering
-// rules from the RulesetService, and distributing them to renderer processes,
-// where they will be memory-mapped as-needed by the UnverifiedRulesetDealer.
-//
-// The distribution pipeline looks like this:
-//
-//                      RulesetService
-//                           |
-//                           v                  Browser
-//                 RulesetServiceDelegate
-//                     |              |
-//        - - - - - - -|- - - - - - - |- - - - - - - - - -
-//                     |       |      |
-//                     v              v
-//          *RulesetDealer     |  *RulesetDealer
-//                 |                |       |
-//                 |           |    |       v
-//                 v                |      SubresourceFilterAgent
-//    SubresourceFilterAgent   |    v
-//                                SubresourceFilterAgent
-//                             |
-//
-//         Renderer #1         |          Renderer #n
-//
-// Note: UnverifiedRulesetDealer is shortened to *RulesetDealer above. There is
-// also a VerifiedRulesetDealer which is used similarly on the browser side.
-class ContentRulesetService : public RulesetServiceDelegate,
-                              content::NotificationObserver {
- public:
-  explicit ContentRulesetService(
-      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
-  ~ContentRulesetService() override;
-
-  void SetRulesetPublishedCallbackForTesting(base::OnceClosure callback);
-
-  // RulesetServiceDelegate:
-  void PostAfterStartupTask(base::OnceClosure task) override;
-  void TryOpenAndSetRulesetFile(
-      const base::FilePath& file_path,
-      int expected_checksum,
-      base::OnceCallback<void(base::File)> callback) override;
-
-  void PublishNewRulesetVersion(base::File ruleset_data) override;
-
-  // Sets the ruleset_service_ member and calls its Initialize function.
-  void SetAndInitializeRulesetService(
-      std::unique_ptr<RulesetService> ruleset_service);
-
-  // Forwards calls to the underlying ruleset_service_.
-  void IndexAndStoreAndPublishRulesetIfNeeded(
-      const UnindexedRulesetInfo& unindex_ruleset_info);
-
-  // The most recently indexed version associated with the ruleset_service_.
-  IndexedRulesetVersion GetMostRecentlyIndexedVersion() {
-    return ruleset_service_->GetMostRecentlyIndexedVersion();
-  }
-
-  VerifiedRulesetDealer::Handle* ruleset_dealer() {
-    return ruleset_dealer_.get();
-  }
-
-  void SetIsAfterStartupForTesting();
-
- private:
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
-  content::NotificationRegistrar notification_registrar_;
-  base::File ruleset_data_;
-  base::OnceClosure ruleset_published_callback_;
-
-  std::unique_ptr<RulesetService> ruleset_service_;
-  std::unique_ptr<VerifiedRulesetDealer::Handle> ruleset_dealer_;
-
-  DISALLOW_COPY_AND_ASSIGN(ContentRulesetService);
 };
 
 }  // namespace subresource_filter

@@ -5,6 +5,7 @@ include_rules = [
   "+components/password_manager/core/browser/password_reuse_detector.h",
   "+components/sessions",
   "+components/sync_preferences/testing_pref_service_syncable.h",
+  "+components/zoom",
   "+content/public/test",
   "+net",
   "+services/network/public",

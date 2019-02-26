@@ -10,6 +10,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
+#include "skia/ext/skia_utils_base.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 
@@ -148,7 +149,12 @@ void ClipboardClient::WriteWebSmartPaste() {
 
 void ClipboardClient::WriteBitmap(const SkBitmap& bitmap) {
   mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
-  clipboard_->WriteBitmap(bitmap);
+  SkBitmap out_bitmap;
+  if (!skia::SkBitmapToN32OpaqueOrPremul(bitmap, &out_bitmap)) {
+    NOTREACHED() << "Unable to convert bitmap for clipboard";
+    return;
+  }
+  clipboard_->WriteBitmap(out_bitmap);
 }
 
 void ClipboardClient::WriteData(const FormatType& format,

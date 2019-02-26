@@ -27,6 +27,7 @@
 <translation id="1323735185997015385">মুছুন</translation>
 <translation id="132683371494960526">মূল ফোল্ডার পরিবর্তন করতে দুবার আলতো চাপুন।</translation>
 <translation id="1340643665687018190">মেনু বন্ধ করুন</translation>
+<translation id="1360432990279830238">সাইন-আউট করে সিঙ্ক বন্ধ করবেন?</translation>
 <translation id="1375321115329958930">সংরক্ষিত পাসওয়ার্ড</translation>
 <translation id="1377255359165588604">সিঙ্ক কাজ করা বন্ধ করে দিয়েছে।</translation>
 <translation id="1377321085342047638">কার্ড নম্বর</translation>
@@ -45,14 +46,14 @@
 <translation id="1582732959743469162">এর ফলে আপনি এখন যা ডাউনলোড করছেন সেগুলি সব বন্ধ হয়ে যাবে।</translation>
 <translation id="1605658421715042784">ছবি কপি করুন</translation>
 <translation id="1612730193129642006">ট্যাব গ্রিড দেখান</translation>
-<translation id="162035744160882748">সিঙ্ক, ব্যক্তিগতকরণ এবং অন্যান্য Google পরিষেবাগুলি চালু করুন</translation>
 <translation id="1644574205037202324">ইতিহাস</translation>
 <translation id="1657011748321897393">শেয়ার করা ব্যার্থ হয়েছে কারণ আপনি নেটওয়ার্কের সাথে সংযুক্ত নন৷</translation>
 <translation id="165877110639533037">কোনো ট্যাব খোলা নেই</translation>
+<translation id="168715261339224929">সব ডিভাইসে আপনার বুকমার্ক পেতে, সিঙ্ক চালু করুন।</translation>
 <translation id="1687475363370981210">সমস্ত পঠিত হিসেবে চিহ্নিত করুন</translation>
 <translation id="1690731385917361335">কোনো আইটেম নেই</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />টি নির্বাচিত</translation>
-<translation id="1740468249224277719">ইনস্টল করতে দুবার ট্যাপ করুন।</translation>
+<translation id="1740468249224277719">ইনস্টল করতে দুবার আলতো চাপুন।</translation>
 <translation id="1746815479209538200">ওয়েব ব্রাউজ করতে, একটি নতুন ট্যাব যোগ করুন।</translation>
 <translation id="17513872634828108">খোলা ট্যাব</translation>
 <translation id="1752547299766512813">পাসওয়ার্ডগুলি সেভ করুন</translation>
@@ -75,7 +76,6 @@
 <translation id="209018056901015185">ডেস্কটপ সাইট অনুরোধ করুন</translation>
 <translation id="2103075008456228677">history.google.com খুলুন</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />টি আইটেম সরানো হয়েছে</translation>
-<translation id="2120297377148151361">অ্যাক্টিভিটি এবং ইন্টার‌্যাকশন</translation>
 <translation id="213900355088104901">গোপনে ব্রাউজ করার জন্য ছদ্মবেশী ট্যাব খুলুন</translation>
 <translation id="2149973817440762519">বুকমার্ক সম্পাদনা করুন</translation>
 <translation id="2207590065820824892">পড়ার তালিকাতে <ph name="UNREAD_COUNT" />টি না পড়া নিবন্ধ।</translation>
@@ -83,11 +83,12 @@
 <translation id="2239626343334228536">ব্রাউজিং ডেটা মোছা হচ্ছে…</translation>
 <translation id="2256128224215992540">সার্চ এবং সাইটের প্রস্তাবনা</translation>
 <translation id="2267753748892043616">অ্যাকাউন্ট যোগ করুন</translation>
+<translation id="2268044343513325586">রিফাইন করুন</translation>
 <translation id="2273327106802955778">‘আরও’ মেনু</translation>
 <translation id="2320166752086256636">কীবোর্ড লুকান</translation>
 <translation id="2339560363438331454">সিঙ্ক এবং Google পরিষেবাগুলি</translation>
 <translation id="2351097562818989364">আপনার অনুবাদ সেটিংস আবার সেট করা হয়েছে৷</translation>
-<translation id="2359808026110333948">অবিরত</translation>
+<translation id="2359808026110333948">চালিয়ে যান</translation>
 <translation id="2360196772093551345">মোবাইল সাইটের জন্য অনুরোধ করুন</translation>
 <translation id="2381405137052800939">প্রাথমিক বিষয়াদি</translation>
 <translation id="2386793615875593361">১টি নির্বাচিত</translation>
@@ -98,7 +99,6 @@
 <translation id="2529021024822217800">সবকটি খুলুন</translation>
 <translation id="2572712655377361602">একটি ডিভাইস নীতি আপনার ফটোতে অ্যাক্সেস অবরুদ্ধ করেছে</translation>
 <translation id="2584132361465095047">অ্যাকাউন্ট যোগ করুন...</translation>
-<translation id="2593774076813182497">এই পৃষ্ঠাটির প্রিন্ট করা যাবে না৷</translation>
 <translation id="2625189173221582860">পাসওয়ার্ড কপি করা হয়েছে</translation>
 <translation id="2648803196158606475">’পড়া হয়েছে’ মুছুন</translation>
 <translation id="2653659639078652383">জমা দিন</translation>
@@ -114,8 +114,10 @@
 <translation id="2780046210906776326">কোনো ইমেল অ্যাকাউন্ট নেই</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">ট্যাব পরিবর্তনকারী থেকে বেরিয়ে যান</translation>
+<translation id="2830972654601096923">ঠিকানাগুলি ম্যানেজ করুন...</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">অনুবাদ সেটিংস আবার সেট করুন</translation>
+<translation id="2858204748079866344">আপনার গোপনীয়তা রক্ষার জন্য, Chrome এই ক্ষেত্রে আপনার পাসওয়ার্ডটি নিজে থেকে পূরণ করবে না।</translation>
 <translation id="285960592395650245">আবার ডাউনলোডের চেষ্টা করুন</translation>
 <translation id="2870560284913253234">সাইট</translation>
 <translation id="2871695793448672541">লুকানো, পাসওয়ার্ড</translation>
@@ -127,11 +129,13 @@
 <translation id="2923448633003185837">পেস্ট করে শুরু করুন</translation>
 <translation id="292639812446257861">অপঠিত হিসেবে চিহ্নিত করুন</translation>
 <translation id="2933759065870693102">টর্চ</translation>
+<translation id="2958718410589002129">পাসওয়ার্ড</translation>
 <translation id="2969979262385602596">প্রবেশ করতে ব্যর্থ হয়েছে৷ দয়া করে পরে আবার চেষ্টা করুন৷</translation>
 <translation id="2989805286512600854">নতুন ট্যাবে খুলুন</translation>
 <translation id="3024255823539804759">গত দিন</translation>
 <translation id="3037605927509011580">ইস!</translation>
 <translation id="3112556859945124369">চিহ্নিত করুন…</translation>
+<translation id="3126574100374611517">ক্রেডিট কার্ডগুলি ম্যানেজ করুন...</translation>
 <translation id="3157684681743766797">সবগুলি চিহ্নিত করুন…</translation>
 <translation id="3175081911749765310">ওয়েব পরিষেবা</translation>
 <translation id="3207960819495026254">বুকমার্ক করা হয়েছে</translation>
@@ -160,17 +164,16 @@
 <translation id="3494788280727468875">ব্রাউস করা ডেটা সাফ করার বিষয়টি নিশ্চিত করুন</translation>
 <translation id="3519193562722059437">ওয়েব ব্রাউজ করার জন্য একটি ট্যাব খুলুন।</translation>
 <translation id="3527085408025491307">ফোল্ডার</translation>
+<translation id="3529024052484145543">সুরক্ষিত নয়</translation>
 <translation id="3533202363250687977">সব ছদ্মবেশী ট্যাব বন্ধ করুন</translation>
 <translation id="3533436815740441613">নতুন ট্যাব খুলুন</translation>
 <translation id="3551320343578183772">ট্যাব বন্ধ করুন</translation>
 <translation id="3588820906588687999">নতুন ট্যাবে ছবি খুলুন</translation>
 <translation id="3603009562372709545">লিঙ্ক URL কপি করুন</translation>
 <translation id="3607167657931203000">ডেটা স্বতঃপূর্ণ করুন</translation>
-<translation id="360930808415985584">সিঙ্ক, নিজের মতন করে সাজিয়ে নেওয়া এবং আরও অনেক কিছু নিয়ন্ত্রণ করুন</translation>
 <translation id="3609785682760573515">সিঙ্ক হচ্ছে...</translation>
 <translation id="3638472932233958418">পূর্বলোড ওয়েবপৃষ্ঠা</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> এ বুকমার্ক করা হয়েছে</translation>
-<translation id="3765471630796399471">অন্য পাসওয়ার্ড ব্যবহার করুন</translation>
 <translation id="3771033907050503522">ছদ্মবেশী ট্যাবগুলি</translation>
 <translation id="3779810277399252432">কোনও ইন্টারনেট সংযোগ নেই৷</translation>
 <translation id="3783017676699494206">ছবি সেভ করুন</translation>
@@ -179,6 +182,8 @@
 <translation id="3897092660631435901">মেনু</translation>
 <translation id="3915450441834151894">সাইটের তথ্য</translation>
 <translation id="3928666092801078803">আমার ডেটা একত্রিত করুন</translation>
+<translation id="3929457972718048006">ঠিকানা</translation>
+<translation id="3943492037546055397">পাসওয়ার্ড</translation>
 <translation id="3950820424414687140">প্রবেশ করুন</translation>
 <translation id="3967822245660637423">ডাউনলোড সম্পূর্ণ</translation>
 <translation id="3989635538409502728">সাইন-আউট করুন</translation>
@@ -195,8 +200,7 @@
 <translation id="4121993058175073134">নেট-রপ্তানি ডেটা পাঠানোর জন্য, অনুগ্রহ করে সিস্টেম অ্যাপে আপনার ইমেল অ্যাকাউন্ট কনফিগার করুন৷</translation>
 <translation id="4124987746317609294">সময় সীমা</translation>
 <translation id="4172051516777682613">সর্বদা দেখান</translation>
-<translation id="418156467088430727">নতুন ট্যাবে অফলাইন সংস্করণ দেখুন</translation>
-<translation id="4192273449750167573">পরবর্তী স্ক্রিনে আপনার সেটিংস পর্যালোচনা করুন</translation>
+<translation id="418156467088430727">নতুন ট্যাবে অফলাইন ভার্সন দেখুন</translation>
 <translation id="4237682350741091554"><ph name="BEGIN_LINK" />সেটিংস<ph name="END_LINK" /> থেকে Chrome সিঙ্ক এবং ব্যক্তিগতকরণ পরিচালনা করুন</translation>
 <translation id="424315890655130736">পাসফ্রেজ লিখুন</translation>
 <translation id="4272631900155121838">একটি QR কোড স্ক্যান করতে, সেটিংস থেকে ক্যামেরা সক্ষম করুন</translation>
@@ -215,8 +219,8 @@
 <translation id="4508750114462689118">সাইন-ইন প্রচার বন্ধ করুন</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> এ গিয়ে সংরক্ষণ করা পাসওয়ার্ডগুলি দেখুন ও পরিচালনা করুন</translation>
 <translation id="4536418791685807335">আবার সাইন ইন করার চেষ্টা করুন।</translation>
-<translation id="4541241553780729349">Google-এ সিঙ্ক করা ডেটা এবং আপনার ব্যবহার করা বৈশিষ্ট্য পরিবর্তন হবে না</translation>
 <translation id="457386861538956877">আরও...</translation>
+<translation id="4592368184551360546">কীবোর্ড</translation>
 <translation id="461440297010471931">Google এর মাধ্যমে সার্চ করা হচ্ছে</translation>
 <translation id="4619615317237390068">অন্যান্য ডিভাইসগুলি থেকে ট্যাব</translation>
 <translation id="4620246317052452550">আপনি যেসব পৃষ্ঠা পড়েছেন</translation>
@@ -225,7 +229,7 @@
 <translation id="4666531726415300315"><ph name="EMAIL" /> হিসেবে প্রবেশ করেছেন।
 
 আপনার সিঙ্ক পাসফ্রেজের মাধ্যমে আপনার ডেটা এনক্রিপটেড হয়েছে। সিঙ্ক শুরু করতে এটি লিখুন।</translation>
-<translation id="473775607612524610">আপডেট</translation>
+<translation id="473775607612524610">আপডেট করুন</translation>
 <translation id="4747097190499141774">পাসফ্রেজ এনক্রিপশনে Google Pay-এর পেমেন্ট পদ্ধতি ও ঠিকানা অন্তর্ভুক্ত থাকে না। আপনার পাসফ্রেজ আছে এমন কেউই শুধু আপনার এনক্রিপ্ট করা ডেটা পড়তে পারবেন। পাসফ্রেজ Google-এ পাঠানো হয় না বা Google তা সংরক্ষণ করে না। আপনার পাসফ্রেজ ভুলে গেলে বা এই সেটিং পরিবর্তন করতে চাইলে, আপনাকে সিঙ্ক রিসেট করতে হবে। <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">পৃষ্ঠাতে খুঁজুন…</translation>
 <translation id="4751645464639803239">নতুন ছদ্মবেশী ট্যাব খুলুন</translation>
@@ -234,10 +238,12 @@
 <ph name="BEGIN_LINK" />রিসেট সিঙ্ক<ph name="END_LINK" /> থেকে এই সেটিং পরিবর্তন করুন</translation>
 <translation id="4807020197310989387">পড়ার তালিকাতে ১টি না পড়া নিবন্ধ।</translation>
 <translation id="481968316161811770">কুকিজ, সাইট ডেটা</translation>
+<translation id="4840495572919996524">আপনার বুকমার্ক, ইতিহাস, পাসওয়ার্ড এবং আরও অনেক কিছু আপনার Google অ্যাকাউন্টের সাথে আর সিঙ্ক করা হবে না।</translation>
 <translation id="4854345657858711387">একটি পাসকোড সেট করুন</translation>
 <translation id="4860895144060829044">কল করুন</translation>
 <translation id="4881695831933465202">খুলুন</translation>
 <translation id="4882831918239250449">সার্চ, বিজ্ঞাপনসহ আরও অনেক কিছু ব্যক্তিগতকৃত করার জন্য আপনার ব্রাউজিং ইতিহাস কীভাবে ব্যবহার হবে তা নিয়ন্ত্রণ করুন</translation>
+<translation id="4895709476292058519">অ্যাকাউন্ট পরিবর্তন করুন</translation>
 <translation id="4904877109095351937">পঠিত হিসেবে চিহ্নিত করুন</translation>
 <translation id="4930268273022498155">বিদ্যমান ডেটা মুছুন। আপনি <ph name="USER_EMAIL1" /> এ ফিরে গিয়ে এটি পুনরুদ্ধার করতে পারেন।</translation>
 <translation id="4941089862236492464">দুঃখিত, আপনার জিনিস শেয়ার করার সময় একটা সমস্যা ছিল।</translation>
@@ -247,6 +253,7 @@
 <translation id="5010803260590204777">ব্যক্তিগতভাবে ওয়েব ব্রাউজ করার জন্য একটি ছদ্মবেশী ট্যাব খুলুন।</translation>
 <translation id="5011684439661633295">হেলো, <ph name="FULL_ACCOUNT_NAME" /></translation>
 <translation id="5039804452771397117">অনুমতি দিন</translation>
+<translation id="5059136629401106827">ঠিক আছে</translation>
 <translation id="5062321486222145940">Google ড্রাইভ ইনস্টল করুন</translation>
 <translation id="5083464117946352670">ফাইলের আকার নির্ধারণ করা যাচ্ছে না।</translation>
 <translation id="5094827893301452931">Tweet সম্পূর্ণ হয়েছে৷</translation>
@@ -264,6 +271,7 @@
 <translation id="5409365236829784218">এই ফাউলটি খুলতে পারে এমন কোনো অ্যাপ্লিকেশন এখানে ডাউনলোড করা নেই৷</translation>
 <translation id="5433691172869980887">ইউজারনেম কপি করা হয়েছে</translation>
 <translation id="54401264925851789">পৃষ্ঠা নিরাপত্তা তথ্য</translation>
+<translation id="5443952882982198570">ক্রেডিট কার্ড</translation>
 <translation id="5525269841082836315">পাসফ্রেজ তৈরি করুন</translation>
 <translation id="5548760955356983418">Handoff এই ডিভাইসে একটি ওয়েবসাইট ব্রাউজ করা শুরু করতে দেয় এবং পরে সহজেই আপনার Mac এ অবিরত করতে দেয়৷ সাম্প্রতিক খোলা ওয়েবসাইটটি আপনার Mac এ ডক-এ প্রদর্শিত হবে৷
 
@@ -276,7 +284,7 @@
 <translation id="5626245204502895507">ফাইলটি এই সময়ে ডাউনলোড করা যাবে না৷</translation>
 <translation id="5659593005791499971">ইমেল আইডি</translation>
 <translation id="5669528293118408608">www</translation>
-<translation id="567881659373499783">সংস্করণ <ph name="PRODUCT_VERSION" /></translation>
+<translation id="567881659373499783">ভার্সন <ph name="PRODUCT_VERSION" /></translation>
 <translation id="5728700505257787410">দুঃখিত, আপনার অ্যাকাউন্টে প্রবেশ করার সময় একটি সমস্যা হয়েছে৷</translation>
 <translation id="5737974891429562743">অ্যাকাউন্ট সাইন-ইনের বিশদ বিবরণ পুরনো হয়ে গেছে। সিঙ্ক শুরু করার জন্য আপডেট করুন।</translation>
 <translation id="5738887413654608789">এই আদেশটি আপনার পারিপার্শ্বিক পরিবেশের উপর নির্ভর করে ওয়েব পৃষ্ঠার খোঁজ করতে দেয়।</translation>
@@ -294,12 +302,12 @@
 <translation id="5916664084637901428">চালু</translation>
 <translation id="5938160824633642847">আপনার ডিভাইসে পর্যাপ্ত জায়গা নেই। জায়গা খালি করে আবার চেষ্টা করুন।</translation>
 <translation id="5948291296578561264">এর ফলে আপনি ফটো লাইব্রেরিতে ফটো সেভ করতে পারবেন।</translation>
-<translation id="5955891643922670672">অফলাইন সংস্করণ দেখছেন</translation>
-<translation id="5957613098218939406">আরও বিকল্পগুলি</translation>
+<translation id="5955891643922670672">অফলাইন ভার্সন দেখছেন</translation>
 <translation id="5964480694698977962">নতুন ছদ্মবেশী ট্যাব তৈরি করুন।</translation>
 <translation id="5965679971710331625">আপনি প্রবেশ করেছেন</translation>
 <translation id="5979837087407522202">পাসওয়ার্ড খুঁজুন</translation>
 <translation id="5982717868370722439">বিদ্যমান ডেটা <ph name="USER_EMAIL" /> এ যোগ করুন।</translation>
+<translation id="5984222099446776634">সাম্প্রতিককালে দেখা</translation>
 <translation id="6012140227487808125">এনক্রিপ্ট হচ্ছে...</translation>
 <translation id="6021332621416007159">এতে খুলুন...</translation>
 <translation id="6039429417015973673"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" /></translation>
@@ -311,12 +319,14 @@
 <translation id="6127379762771434464">আইটেম সরানো হয়েছে</translation>
 <translation id="6136914049981179737">সেকেন্ড আগে</translation>
 <translation id="616831107264507309">পরে পড়ুন</translation>
+<translation id="6177442314419606057">Chrome-এ সার্চ করুন</translation>
 <translation id="6184086493125982861">ট্যাব দেখান</translation>
 <translation id="6187302354554850004">শেষে সিঙ্ক হয়েছে: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">অপঠিত</translation>
 <translation id="6196207969502475924">ভয়েস সার্চ</translation>
 <translation id="6254066287920239840">ব্রাউজারের পরিবর্তে অ্যাপটিতে লিঙ্কগুলি খুলুন।</translation>
 <translation id="6255097610484507482">ক্রেডিট কার্ড সম্পাদনা করুন</translation>
+<translation id="6303969859164067831">সাইন-আউট করুন এবং সিঙ্ক করা বন্ধ করুন</translation>
 <translation id="6308436439357671616">এটি আপনাকে ফটো তুলতে এবং আপলোড করতে দেয়।</translation>
 <translation id="6324528485781869530">সিঙ্ক অ্যাকাউন্ট পাল্টান</translation>
 <translation id="6324669097367352121">প্রবেশ করুন সেটিংস</translation>
@@ -342,6 +352,9 @@
 <translation id="6464071786529933911">নতুন ছদ্মবেশী ট্যাবে খুলুন</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />টি আইটেম মোছা হয়েছে</translation>
 <translation id="6541915733953096570">গত এক ঘণ্টা</translation>
+<translation id="6548479190262846511">এই সাইটের জন্য কোনও পাসওয়ার্ড পাওয়া যায়নি</translation>
+<translation id="6642362222295953972">আগে থেকে থাকা ট্যাবে পাল্টান</translation>
+<translation id="6643016212128521049">সাফ করুন</translation>
 <translation id="6656103420185847513">ফোল্ডার সম্পাদনা করুন</translation>
 <translation id="6657585470893396449">পাসওয়ার্ড</translation>
 <translation id="667999046851023355">দস্তাবেজ</translation>
@@ -354,7 +367,6 @@
 <translation id="6797885426782475225">ভয়েস সার্চ</translation>
 <translation id="6807889908376551050">সমস্ত দেখান...</translation>
 <translation id="681368974849482173">আইটেম তৈরি করা হয়েছে</translation>
-<translation id="685040365210406336">কোনও পরিবর্তন করবেন না</translation>
 <translation id="6851516051005285358">ডেস্কটপ সাইটের জন্য অনুরোধ করুন</translation>
 <translation id="6896758677409633944">অনুলিপি</translation>
 <translation id="6903907808598579934">সিঙ্ক চালু করুন</translation>
@@ -364,7 +376,6 @@
 <translation id="6979158407327259162">Google ড্রাইভ</translation>
 <translation id="7004499039102548441">সাম্প্রতিক ট্যাবগুলি</translation>
 <translation id="7006788746334555276">সামগ্রী সেটিংস</translation>
-<translation id="7017968314960951695">ব্যক্তিগতকরণের জন্য আপনার দেখা সাইটগুলির কন্টেন্ট এবং ব্রাউজারের অ্যাক্টিভিটি ও ইন্টার‌্যাকশনগুলি ব্যবহার করে</translation>
 <translation id="7029809446516969842">পাসওয়ার্ড</translation>
 <translation id="7031882061095297553">এতে সিঙ্ক করুন</translation>
 <translation id="7053983685419859001">ব্লক করুন</translation>
@@ -387,7 +398,6 @@
 <translation id="7346909386216857016">ঠিক আছে, বুঝেছি</translation>
 <translation id="7383797227493018512">পড়ার সূচি খুলুন</translation>
 <translation id="7400418766976504921">URL</translation>
-<translation id="741204030948306876">হ্যাঁ, আমি রাজি</translation>
 <translation id="7425346204213733349">আপনার বুকমার্ক, ইতিহাস, পাসওয়ার্ড এবং অন্যান্য সেটিংসে করা পরিবর্তন আর আপনার Google অ্যাকাউন্টের সাথে সিঙ্ক করা হবে না। অবশ্য, আপনার বিদ্যমান ডেটা আপনার Google অ্যাকাউন্টে সঞ্চিত থাকবে।</translation>
 <translation id="744343212394640790"><ph name="EMAIL" /> না</translation>
 <translation id="7454057999980797137">রাজ্য / দেশ</translation>
@@ -410,10 +420,12 @@
 <translation id="7769602470925380267">স্বীকার করে প্রস্থান করুন</translation>
 <translation id="7772032839648071052">পাসফ্রেজ নিশ্চিত করুন</translation>
 <translation id="7781829728241885113">গতকাল</translation>
+<translation id="778855399387580014">নতুন Chrome ট্যাবে সার্চ করা শুরু করুন।</translation>
 <translation id="780301667611848630">না থাক</translation>
 <translation id="7840771868269352570">আপনার বেছে নেওয়া আইটেমগুলি সরানো হবে।</translation>
 <translation id="7856733331829174190">ডাউনলোড করা যায়নি</translation>
 <translation id="7859704718976024901">ব্রাউজিং ইতিহাস</translation>
+<translation id="7887198238286927132">আপনার গোপনীয়তা রক্ষার জন্য, Chrome এই ক্ষেত্রটি নিজে থেকে পূরণ করবে না।</translation>
 <translation id="7918293828610777738">আপনার পড়ার তালিকাটি অফলাইনে উপলভ্য। আপনার পড়ার তালিকায় কোনও পৃষ্ঠা যোগ করতে <ph name="SHARE_OPENING_ICON" />  তারপর <ph name="READ_LATER_TEXT" /> ট্যাপ করুন।</translation>
 <translation id="7938254975914653459">ফেসটাইম</translation>
 <translation id="7939128259257418052">পাসওয়ার্ড এক্সপোর্ট করুন...</translation>
@@ -480,6 +492,7 @@
 <translation id="9079935439869366234">সমস্ত অপঠিত হিসেবে চিহ্নিত করুন</translation>
 <translation id="9081058212938299310"><ph name="USERNAME" />-এর পাসওয়ার্ড আপডেট করবেন?</translation>
 <translation id="9083392325882095631">১টি আইটেম</translation>
+<translation id="9083838294503912307">সমগ্র ডিভাইস জুড়ে সিঙ্ক এবং নিজের মতো সাজিয়ে নিতে সিঙ্ক বিকল্পটি চালু করুন।</translation>
 <translation id="9100610230175265781">পাসফ্রেজের প্রয়োজন</translation>
 <translation id="9148126808321036104">আবার প্রবেশ করুন</translation>
 <translation id="9157836665414082580">ডায়ালগ রুদ্ধ করুন</translation>

@@ -91,12 +91,14 @@ void AnimationEffect::UpdateSpecifiedTiming(const Timing& timing) {
   InvalidateAndNotifyOwner();
 }
 
-void AnimationEffect::getTiming(EffectTiming& effect_timing) const {
-  effect_timing.setDelay(SpecifiedTiming().start_delay * 1000);
-  effect_timing.setEndDelay(SpecifiedTiming().end_delay * 1000);
-  effect_timing.setFill(Timing::FillModeString(SpecifiedTiming().fill_mode));
-  effect_timing.setIterationStart(SpecifiedTiming().iteration_start);
-  effect_timing.setIterations(SpecifiedTiming().iteration_count);
+EffectTiming* AnimationEffect::getTiming() const {
+  EffectTiming* effect_timing = EffectTiming::Create();
+
+  effect_timing->setDelay(SpecifiedTiming().start_delay * 1000);
+  effect_timing->setEndDelay(SpecifiedTiming().end_delay * 1000);
+  effect_timing->setFill(Timing::FillModeString(SpecifiedTiming().fill_mode));
+  effect_timing->setIterationStart(SpecifiedTiming().iteration_start);
+  effect_timing->setIterations(SpecifiedTiming().iteration_count);
   UnrestrictedDoubleOrString duration;
   if (SpecifiedTiming().iteration_duration) {
     duration.SetUnrestrictedDouble(
@@ -104,65 +106,58 @@ void AnimationEffect::getTiming(EffectTiming& effect_timing) const {
   } else {
     duration.SetString("auto");
   }
-  effect_timing.setDuration(duration);
-  effect_timing.setDirection(
+  effect_timing->setDuration(duration);
+  effect_timing->setDirection(
       Timing::PlaybackDirectionString(SpecifiedTiming().direction));
-  effect_timing.setEasing(SpecifiedTiming().timing_function->ToString());
+  effect_timing->setEasing(SpecifiedTiming().timing_function->ToString());
+
+  return effect_timing;
 }
 
-EffectTiming AnimationEffect::getTiming() const {
-  EffectTiming result;
-  getTiming(result);
-  return result;
-}
+ComputedEffectTiming* AnimationEffect::getComputedTiming() const {
+  ComputedEffectTiming* computed_timing = ComputedEffectTiming::Create();
 
-void AnimationEffect::getComputedTiming(
-    ComputedEffectTiming& computed_timing) const {
   // ComputedEffectTiming members.
-  computed_timing.setEndTime(EndTimeInternal() * 1000);
-  computed_timing.setActiveDuration(RepeatedDuration() * 1000);
+  computed_timing->setEndTime(EndTimeInternal() * 1000);
+  computed_timing->setActiveDuration(RepeatedDuration() * 1000);
 
   if (IsNull(EnsureCalculated().local_time)) {
-    computed_timing.setLocalTimeToNull();
+    computed_timing->setLocalTimeToNull();
   } else {
-    computed_timing.setLocalTime(EnsureCalculated().local_time * 1000);
+    computed_timing->setLocalTime(EnsureCalculated().local_time * 1000);
   }
 
   if (EnsureCalculated().is_in_effect) {
-    computed_timing.setProgress(EnsureCalculated().progress.value());
-    computed_timing.setCurrentIteration(EnsureCalculated().current_iteration);
+    computed_timing->setProgress(EnsureCalculated().progress.value());
+    computed_timing->setCurrentIteration(EnsureCalculated().current_iteration);
   } else {
-    computed_timing.setProgressToNull();
-    computed_timing.setCurrentIterationToNull();
+    computed_timing->setProgressToNull();
+    computed_timing->setCurrentIterationToNull();
   }
 
   // For the EffectTiming members, getComputedTiming is equivalent to getTiming
   // except that the fill and duration must be resolved.
   //
   // https://drafts.csswg.org/web-animations-1/#dom-animationeffect-getcomputedtiming
-  computed_timing.setDelay(SpecifiedTiming().start_delay * 1000);
-  computed_timing.setEndDelay(SpecifiedTiming().end_delay * 1000);
-  computed_timing.setFill(Timing::FillModeString(
+  computed_timing->setDelay(SpecifiedTiming().start_delay * 1000);
+  computed_timing->setEndDelay(SpecifiedTiming().end_delay * 1000);
+  computed_timing->setFill(Timing::FillModeString(
       ResolvedFillMode(SpecifiedTiming().fill_mode, IsKeyframeEffect())));
-  computed_timing.setIterationStart(SpecifiedTiming().iteration_start);
-  computed_timing.setIterations(SpecifiedTiming().iteration_count);
+  computed_timing->setIterationStart(SpecifiedTiming().iteration_start);
+  computed_timing->setIterations(SpecifiedTiming().iteration_count);
 
   UnrestrictedDoubleOrString duration;
   duration.SetUnrestrictedDouble(IterationDuration().InMillisecondsF());
-  computed_timing.setDuration(duration);
+  computed_timing->setDuration(duration);
 
-  computed_timing.setDirection(
+  computed_timing->setDirection(
       Timing::PlaybackDirectionString(SpecifiedTiming().direction));
-  computed_timing.setEasing(SpecifiedTiming().timing_function->ToString());
+  computed_timing->setEasing(SpecifiedTiming().timing_function->ToString());
+
+  return computed_timing;
 }
 
-ComputedEffectTiming AnimationEffect::getComputedTiming() const {
-  ComputedEffectTiming result;
-  getComputedTiming(result);
-  return result;
-}
-
-void AnimationEffect::updateTiming(OptionalEffectTiming& optional_timing,
+void AnimationEffect::updateTiming(OptionalEffectTiming* optional_timing,
                                    ExceptionState& exception_state) {
   // TODO(crbug.com/827178): Determine whether we should pass a Document in here
   // (and which) to resolve the CSS secure/insecure context against.

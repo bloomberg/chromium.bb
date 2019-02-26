@@ -57,13 +57,12 @@ LEGACY_CALLBACK_INTERFACE_CPP_INCLUDES = frozenset([
 ])
 
 
-def cpp_type(idl_type):
+def _cpp_type(idl_type):
     # FIXME: remove this function by making callback types consistent
     # (always use usual v8_types.cpp_type)
-    idl_type_name = idl_type.name
-    if idl_type_name == 'String' or idl_type.is_enum:
+    if idl_type.is_string_type or idl_type.is_enum:
         return 'const String&'
-    if idl_type_name == 'void':
+    if idl_type.name == 'void':
         return 'void'
     # Callbacks use raw pointers, so raw_type=True
     raw_cpp_type = idl_type.cpp_type_args(raw_type=True)
@@ -72,7 +71,7 @@ def cpp_type(idl_type):
         return 'const %s&' % raw_cpp_type
     return raw_cpp_type
 
-IdlTypeBase.callback_cpp_type = property(cpp_type)
+IdlTypeBase.callback_cpp_type = property(_cpp_type)
 
 
 def callback_interface_context(callback_interface, _):
@@ -123,6 +122,8 @@ def forward_declarations(callback_interface):
             return idl_type.implemented_as
         elif idl_type.is_array_or_sequence_type:
             return find_forward_declaration(idl_type.element_type)
+        elif idl_type.is_nullable:
+            return find_forward_declaration(idl_type.inner_type)
         return None
 
     declarations = set()

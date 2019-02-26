@@ -33,7 +33,7 @@ namespace security_state {
 // numeric values should never be reused.
 //
 // If you change this enum, you may need to update the UI icons in
-// ToolbarModelImpl::GetVectorIcon and GetIconForSecurityState.
+// LocationBarModelImpl::GetVectorIcon and GetIconForSecurityState.
 //
 // A Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.security_state
@@ -104,6 +104,9 @@ enum MaliciousContentStatus {
 struct SecurityInfo {
   SecurityInfo();
   ~SecurityInfo();
+  // Whether the connection security fields are initialized.
+  bool connection_info_initialized;
+  // Describes the overall security state of the page.
   SecurityLevel security_level;
   // Describes the nature of the page's malicious content, if any.
   MaliciousContentStatus malicious_content_status;
@@ -119,19 +122,15 @@ struct SecurityInfo {
   bool scheme_is_cryptographic;
   net::CertStatus cert_status;
   scoped_refptr<net::X509Certificate> certificate;
-  // The security strength, in bits, of the SSL cipher suite. In late
-  // 2015, 128 is considered the minimum.
-  //
-  // 0 means the connection uses HTTPS but is not encrypted.  -1 means
-  // the security strength is unknown or the connection does not use
-  // HTTPS.
-  int security_bits;
   // Information about the SSL connection, such as protocol and
   // ciphersuite. See ssl_connection_flags.h in net.
   int connection_status;
   // The ID of the (EC)DH group used by the key exchange. The value is zero if
   // unknown (older cache entries may not store the value) or not applicable.
   uint16_t key_exchange_group;
+  // The signature algorithm used by the peer in the TLS handshake, or zero if
+  // unknown (older cache entries may not store the value) or not applicable.
+  uint16_t peer_signature_algorithm;
   // A mask that indicates which of the protocol version,
   // key exchange, or cipher for the connection is considered
   // obsolete. See net::ObsoleteSSLMask for specific mask values.
@@ -159,7 +158,6 @@ struct SecurityInfo {
 struct VisibleSecurityState {
   VisibleSecurityState();
   ~VisibleSecurityState();
-  bool operator==(const VisibleSecurityState& other) const;
   GURL url;
 
   MaliciousContentStatus malicious_content_status;
@@ -175,7 +173,9 @@ struct VisibleSecurityState {
   // The ID of the (EC)DH group used by the key exchange. The value is zero if
   // unknown (older cache entries may not store the value) or not applicable.
   uint16_t key_exchange_group;
-  int security_bits;
+  // The signature algorithm used by the peer in the TLS handshake, or zero if
+  // unknown (older cache entries may not store the value) or not applicable.
+  uint16_t peer_signature_algorithm;
   // True if the page displayed passive mixed content.
   bool displayed_mixed_content;
   // True if the secure page contained a form with a nonsecure target.
@@ -235,6 +235,10 @@ bool IsOriginLocalhostOrFile(const GURL& url);
 // Returns true if the page has a valid SSL certificate. Only EV_SECURE,
 // SECURE, and SECURE_WITH_POLICY_INSTALLED_CERT are considered valid.
 bool IsSslCertificateValid(security_state::SecurityLevel security_level);
+
+// Returns the given prefix suffixed with a dot and the current security level.
+std::string GetSecurityLevelHistogramName(
+    const std::string& prefix, security_state::SecurityLevel level);
 
 }  // namespace security_state
 

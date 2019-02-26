@@ -37,7 +37,11 @@ class TextTrackCueList final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static TextTrackCueList* Create() { return new TextTrackCueList; }
+  static TextTrackCueList* Create() {
+    return MakeGarbageCollected<TextTrackCueList>();
+  }
+
+  TextTrackCueList();
 
   wtf_size_t length() const;
 
@@ -59,7 +63,6 @@ class TextTrackCueList final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  TextTrackCueList();
   wtf_size_t FindInsertionIndex(const TextTrackCue*) const;
   void InvalidateCueIndex(wtf_size_t index);
   void Clear();

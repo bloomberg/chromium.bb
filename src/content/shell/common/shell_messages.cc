@@ -12,11 +12,6 @@
 #undef CONTENT_SHELL_COMMON_SHELL_MESSAGES_H_
 #include "content/shell/common/shell_messages.h"
 
-// Generate destructors.
-#include "ipc/struct_destructor_macros.h"
-#undef CONTENT_SHELL_COMMON_SHELL_MESSAGES_H_
-#include "content/shell/common/shell_messages.h"
-
 // Generate param traits write methods.
 #include "ipc/param_traits_write_macros.h"
 namespace IPC {

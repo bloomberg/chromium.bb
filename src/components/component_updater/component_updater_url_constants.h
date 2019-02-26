@@ -7,8 +7,13 @@
 
 namespace component_updater {
 
+// Xml endpoints.
 extern const char kUpdaterDefaultUrl[];
 extern const char kUpdaterFallbackUrl[];
+
+// JSON endpoints.
+extern const char kUpdaterJSONDefaultUrl[];
+extern const char kUpdaterJSONFallbackUrl[];
 
 }  // namespace component_updater
 

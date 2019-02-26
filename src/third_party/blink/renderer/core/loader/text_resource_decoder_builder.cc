@@ -119,7 +119,7 @@ std::unique_ptr<TextResourceDecoder> BuildTextResourceDecoderFor(
   // could be an attack vector.
   // FIXME: This might be too cautious for non-7bit-encodings and we may
   // consider relaxing this later after testing.
-  const bool use_hint_encoding =
+  bool use_hint_encoding =
       frame && CanReferToParentFrameEncoding(frame, parent_frame);
 
   std::unique_ptr<TextResourceDecoder> decoder;
@@ -134,9 +134,11 @@ std::unique_ptr<TextResourceDecoder> BuildTextResourceDecoderFor(
     if (DOMImplementation::IsXMLMIMEType(mime_type)) {
       decoder = TextResourceDecoder::Create(TextResourceDecoderOptions(
           TextResourceDecoderOptions::kXMLContent, default_encoding));
+      use_hint_encoding = false;
     } else if (DOMImplementation::IsJSONMIMEType(mime_type)) {
       decoder = TextResourceDecoder::Create(TextResourceDecoderOptions(
           TextResourceDecoderOptions::kJSONContent, default_encoding));
+      use_hint_encoding = false;
     } else {
       WTF::TextEncoding hint_encoding;
       if (use_hint_encoding &&

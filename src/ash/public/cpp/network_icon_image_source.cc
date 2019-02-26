@@ -5,7 +5,6 @@
 #include "ash/public/cpp/network_icon_image_source.h"
 
 #include "ash/public/cpp/ash_constants.h"
-#include "ash/public/cpp/ash_features.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
@@ -70,12 +69,8 @@ void NetworkIconImageSource::Draw(gfx::Canvas* canvas) {
   if (badges_.center.icon)
     paint_badge(badges_.center, icon_x, icon_y, icon_.width());
 
-  // The other badges are flush against the edges of the canvas, except at the
-  // top, where the badge is only 1dp higher than the base image.
-  const int top_badge_y =
-      features::IsSystemTrayUnifiedEnabled() ? icon_y : icon_y - 1;
   if (badges_.top_left.icon)
-    paint_badge(badges_.top_left, 0, top_badge_y);
+    paint_badge(badges_.top_left, 0, icon_y);
   if (badges_.bottom_left.icon) {
     paint_badge(
         badges_.bottom_left, 0,

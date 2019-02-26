@@ -39,8 +39,6 @@ dependencies {
     compile "com.google.android.gms:play-services-vision:${gmsVersion}"
     compile "com.google.android.gms:play-services-fido:${gmsVersion}"
 
-    compile "com.google.android.play:core:1.3.0"
-
     // Support v4 libraries
     def supportLibVersion = '27.0.0'
     compile "com.android.support:support-v4:${supportLibVersion}"
@@ -75,6 +73,7 @@ dependencies {
     // Matches version depended on by Dagger.
     compile "com.squareup:javapoet:1.11.0"
 
+    compile "com.google.protobuf:protobuf-lite:3.0.1"
 }
 
 task setUpRepository(type: BuildConfigGenerator) {

@@ -118,6 +118,14 @@
       status: "experimental",
     },
     {
+      name: "BackgroundFetchAccessActiveFetches",
+      status: "experimental",
+    },
+    {
+      name: "BackgroundFetchUploads",
+      status: "experimental",
+    },
+    {
       name: "BackgroundVideoTrackOptimization",
       status: "stable",
     },
@@ -156,7 +164,7 @@
     },
     {
       name: "CacheStorageAddAllRejectsDuplicates",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CacheStyleSheetWithMediaQueries",
@@ -221,6 +229,10 @@
       status: "experimental",
     },
     {
+      name: "ContactsManager",
+      status: "experimental",
+    },
+    {
       name: "ContextMenu",
       status: "experimental",
     },
@@ -246,12 +258,11 @@
       status: "experimental",
     },
     {
-      name: "CSSEnvironmentVariables",
-      status: "stable",
-    },
-    {
       name: "CSSFocusVisible",
       status: "experimental",
+    },
+    {
+      name: "CSSFontFeatureValues"
     },
     {
       name: "CSSFontSizeAdjust",
@@ -261,6 +272,9 @@
       name: "CSSFragmentIdentifiers"
     },
     {
+      // This needs to be kept as a runtime flag as long as we need to forcibly
+      // disable it for WebView on Android versions older than P. See
+      // https://crrev.com/f311a84728272e30979432e8474089b3db3c67df
       name: "CSSHexAlphaColor",
       status: "stable",
     },
@@ -286,10 +300,6 @@
       status: "experimental",
     },
     {
-      name: "CSSMatches",
-      status: "experimental",
-    },
-    {
       name: "CSSOffsetPathRay",
       status: "experimental",
     },
@@ -302,30 +312,21 @@
       status: "experimental",
     },
     {
-      name: "CSSOMSmoothScroll",
-      status: "stable",
-    },
-    // Do not ship CSSPaintAPIArguments without shipping CSSVariables2 first.
-    //
-    // CSSPaintAPIArguments depends on parts of the the 'CSS Properties and
-    // Values API Level 1', specification (section 'Supported syntax strings').
-    // That specification is implemented behind the runtime enabled feature
-    // CSSVariables2.
-    {
       name: "CSSPaintAPIArguments",
       status: "experimental",
+      depends_on: ["CSSVariables2"],
     },
     {
       name: "CSSPartPseudoElement",
       status: "experimental",
     },
     {
-      name: "CSSPseudoIS",
+      name: "CSSPseudoIs",
       status: "experimental",
     },
     {
-      name: "CSSScrollSnapPoints",
-      status: "stable",
+      name: "CSSPseudoWhere",
+      status: "experimental",
     },
     {
       name: "CSSSnapSize",
@@ -334,6 +335,19 @@
     {
       name: "CSSVariables2",
       status: "experimental",
+    },
+    // Support for registered custom properties with <image> syntax.
+    {
+      name: "CSSVariables2ImageValues",
+      status: "test",
+      depends_on: ["CSSVariables2"],
+    },
+    // Support for registered custom properties with <transform-list> and
+    // <transform-function> syntax.
+    {
+      name: "CSSVariables2TransformValues",
+      status: "test",
+      depends_on: ["CSSVariables2"],
     },
     {
       name: "CSSViewport",
@@ -361,10 +375,6 @@
       status: "experimental",
     },
     {
-      name: "DeprecationReporting",
-      status: "stable",
-    },
-    {
       name: "DesktopCaptureDisableLocalEchoControl",
       status: "experimental",
     },
@@ -381,10 +391,6 @@
       name: "DisplayLocking",
     },
     {
-      name: "DisplayNoneIFrameCreatesNoLayoutObject",
-      status: "stable",
-    },
-    {
       name: "DocumentCookie",
     },
     {
@@ -396,6 +402,11 @@
     {
       // http://crbug.com/707656 content editable in LayoutNG.
       name: "EditingNG",
+    },
+    {
+      // http://crbug.com/905922
+      name: "ElementInternals",
+      implied_by: ["FormAssociatedCustomElements"],
     },
     {
       // https://crbug.com/879270
@@ -473,11 +484,13 @@
     },
     {
       name: "FeaturePolicyJavaScriptInterface",
+      implied_by: ["ExperimentalProductivityFeatures"],
       origin_trial_feature_name: "FeaturePolicyJSAPI",
       status: "experimental"
     },
     {
       name: "FeaturePolicyReporting",
+      implied_by: ["ExperimentalProductivityFeatures"],
       status: "experimental"
     },
     {
@@ -486,6 +499,12 @@
     {
       name: "FileSystem",
       status: "stable",
+    },
+    // FirstContentfulPaintPlusPlus enables the Largest Text Paint metric, Last
+    // Text Paint metric, Largest Image Paint metric and Last Image Paint
+    // metric. See also: http://bit.ly/fcp_plus_plus
+    {
+      name: "FirstContentfulPaintPlusPlus",
     },
     {
       name: "FontCacheScaling",
@@ -504,15 +523,15 @@
       name: "ForceTallerSelectPopup",
     },
     {
+      name: "FormAssociatedCustomElements",
+      status: "test",
+    },
+    {
       name: "FormDataEvent",
       status: "experimental",
     },
     {
       name: "FractionalMouseEvent",
-    },
-    {
-      name: "FractionalMouseTypePointerEvent",
-      status: "stable",
     },
     {
       name: "FractionalScrollOffsets",
@@ -550,7 +569,7 @@
     },
     {
       name: "GetDisplayMedia",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "HeapCompaction",
@@ -566,10 +585,11 @@
     {
       name: "HeapUnifiedGarbageCollection",
     },
-    // Only exposed when a translation engine is available
-    // and experimental features are enabled.
     {
       name: "HrefTranslate",
+      depends_on: ["TranslateService"],
+      origin_trial_feature_name: "HrefTranslate",
+      status: "experimental",
     },
     // https://crbug.com/766694 for testing disabling the feature.
     {
@@ -586,8 +606,8 @@
       status: "experimental",
     },
     {
-      name: "IdleTimeColdModeSpellChecking",
-      status: "stable",
+      name: "IgnoreCrossOriginWindowWhenNamedAccessOnWindow",
+      status: "experimental",
     },
     {
       name: "ImageOrientation",
@@ -615,10 +635,6 @@
       name: "IntersectionObserverV2",
     },
     {
-      name: "InterventionReporting",
-      status: "stable",
-    },
-    {
       name: "InvisibleDOM",
       status: "experimental",
     },
@@ -630,12 +646,17 @@
       // Tracks "jank" from layout objects changing their visual location
       // between animation frames (see crbug.com/581518).
       name: "JankTracking",
-      implied_by: ["LayoutJankAPI"],
+      implied_by: ["LayoutJankAPI", "JankTrackingSweepLine"],
       status: "experimental",
     },
     {
-      name: "KeyboardMap",
-      status: "stable",
+      // Modifies JankTracking to use O(n log n) sweep line algorithm for
+      // computing the area of the jank region.
+      name: "JankTrackingSweepLine",
+    },
+    {
+      name: "KeyboardFocusableScrollers",
+      status: "experimental",
     },
     {
       name: "LangAttributeAwareFormControlUI",
@@ -668,6 +689,10 @@
       implied_by: ["LayoutNG"],
     },
     {
+      name: "LayoutViewIsolationNodes",
+      status: "stable",
+    },
+    {
       name: "LazyFrameLoading",
     },
     {
@@ -696,12 +721,11 @@
       status:"experimental",
     },
     {
-      name: "MediaCapabilities",
-      origin_trial_feature_name: "MediaCapabilities",
-      status: "stable",
+      name: "MediaCapabilitiesEncodingInfo",
+      status: "experimental",
     },
     {
-      name: "MediaCapabilitiesEncodingInfo",
+      name: "MediaCapabilitiesEncryptedMedia",
       status: "experimental",
     },
     {
@@ -755,6 +779,9 @@
       name: "MediaStreamTrackContentHint",
       status: "stable",
     },
+    {
+      name: "MergeBlockingNonBlockingPools",
+    },
     // This is enabled by default on Windows only. The only part that's
     // "experimental" is the support on other platforms.
     {
@@ -772,10 +799,6 @@
       status: "experimental",
     },
     {
-      name: "ModulePreload",
-      status: "stable",
-    },
-    {
       name: "ModuleServiceWorker",
       status: "test",
     },
@@ -790,6 +813,9 @@
       status: "test",
     },
     {
+      name: "MovementXYInBlink",
+    },
+    {
       name: "NavigatorContentUtils",
     },
     {
@@ -797,23 +823,7 @@
       status: "stable",
     },
     {
-      name: "NestedWorkers",
-      status: "stable",
-    },
-    {
-      name: "NetInfoDownlinkHeader",
-      status: "stable",
-    },
-    {
       name: "NetInfoDownlinkMax",
-      status: "stable",
-    },
-    {
-      name: "NetInfoEffectiveTypeHeader",
-      status: "stable",
-    },
-    {
-      name: "NetInfoRttHeader",
       status: "stable",
     },
     {
@@ -845,10 +855,6 @@
       status: "test",
     },
     {
-      name: "NotificationInlineReplies",
-      status: "stable",
-    },
-    {
       name: "Notifications",
       status: "stable",
     },
@@ -860,7 +866,7 @@
       name: "OffMainThreadCSSPaint",
     },
     {
-      name: "OffMainThreadWebSocket",
+      name: "OffMainThreadWorkerScriptFetch",
     },
     {
       name: "OffscreenCanvas",
@@ -903,7 +909,7 @@
       implied_by: ["OriginTrialsSampleAPI"],
     },
     {
-      name: "OutOfBlinkCORS",
+      name: "OutOfBlinkCors",
     },
     {
       name: "OverflowIconsForMediaControls",
@@ -923,12 +929,7 @@
     // Compute touch action rects in paint instead of ScrollingCoordinator.
     {
       name: "PaintTouchActionRects",
-    },
-    // PaintTracking enables the Largest Text Paint metric, Last Text Paint
-    // metric, Largest Image Paint metric and Last Image Paint metric.
-    // See also: https://docs.google.com/document/d/1DRVd4a2VU8-yyWftgOparZF-sf16daf0vfbsHuz2rws/edit
-    {
-      name: "PaintTracking",
+      status: "stable",
     },
     {
       name: "PaintUnderInvalidationChecking",
@@ -960,10 +961,6 @@
     {
       name: "PaymentRetry",
       status: "experimental",
-    },
-    {
-      name: "PerformanceNavigationTiming2",
-      status: "stable",
     },
     {
       name: "PermissionDelegation",
@@ -999,20 +996,16 @@
       status: "test",
     },
     {
-      name: "PostMessageOptions",
-      status: "stable",
+      name: "PreciseMemoryInfo",
     },
     {
-      name: "PreciseMemoryInfo",
+      name: "PredictedEvents",
+      status: "experimental",
     },
     // This feature is deprecated and we are evangelizing affected sites.
     // See https://crbug.com/346236 for current status.
     {
       name: "PrefixedVideoFullscreen",
-      status: "stable",
-    },
-    {
-      name: "PreloadDefaultIsMetadata",
       status: "stable",
     },
     {
@@ -1033,9 +1026,6 @@
     {
       name: "PushMessaging",
       status: "stable",
-    },
-    {
-      name: "PWAFullCodeCache"
     },
     {
       name: "RasterInducingScroll",
@@ -1060,21 +1050,28 @@
       status: "stable",
     },
     {
-      name: "ReportingObserver",
-      implied_by: ["DeprecationReporting", "InterventionReporting"],
-      status: "stable",
-    },
-    {
-      name: "RequireCSSExtensionForFile",
-      status: "stable",
-    },
-    {
       name: "ResourceLoadScheduler",
       status: "experimental",
     },
     {
       name: "RestrictAppCacheToSecureContexts",
       status: "stable",
+    },
+    {
+      name: "RestrictLazyFrameLoadingToDataSaver",
+    },
+    {
+      name: "RestrictLazyImageLoadingToDataSaver",
+    },
+    {
+      name: "RtcAudioJitterBufferMaxPackets",
+      origin_trial_feature_name: "RtcAudioJitterBufferMaxPackets",
+      status: "experimental",
+    },
+    // Enables the use of the RTCDtlsTransport object.
+    {
+      name: "RTCDtlsTransport",
+      status: "test",
     },
     // Enables the use of the RTCIceTransport with extensions.
     {
@@ -1109,9 +1106,18 @@
     {
       name: "ScheduledScriptStreaming",
     },
+    // WebSpeech API with both speech recognition and synthesis functionality
+    // is not fully enabled on all platforms.
     {
-      name: "ScriptedSpeech",
+      name: "ScriptedSpeechRecognition",
       status: "stable",
+    },
+    {
+      name: "ScriptedSpeechSynthesis",
+      status: "stable",
+    },
+    {
+      name: "ScriptStreamingOnPreload",
     },
     // Serialize and restore scroll anchors.
     {
@@ -1153,9 +1159,6 @@
       status: "experimental",
     },
     {
-      name: "ServiceWorkerScriptFullCodeCache",
-    },
-    {
       name: "SetRootScroller",
       status: "experimental",
     },
@@ -1194,12 +1197,13 @@
       name: "SlimmingPaintV2",
     },
     {
-      name: "SMIL",
-      status: "stable",
-    },
-    {
       name: "SmoothScrollJSIntervention",
       status: "stable",
+    },
+    // When this is enabled (and Spatial Navigation is enabled), overrides of box shadow and outline
+    // on focused elements will be ignored.
+    {
+      name: "SpatialNavigationForcesOutline",
     },
     // Used as argument in attribute of stable-release functions/interfaces
     // where a runtime-enabled feature name is required for correct IDL syntax.
@@ -1215,6 +1219,10 @@
     {
       name: "StaleWhileRevalidate",
       origin_trial_feature_name: "StaleWhileRevalidate",
+      status: "experimental",
+    },
+    {
+      name: "StorageQuotaDetails",
       status: "experimental",
     },
     {
@@ -1239,16 +1247,17 @@
       origin_trial_feature_name: "ForceTouchEventFeatureDetectionForInspector",
       status: "stable",
     },
-    // This is set conditionally in SetRuntimeFeaturesDefaultsAndUpdateFromArgs
-    // and will eventually go away when the touchpad/wheel scroll latching is
-    // enabled on all platforms (http://crbug.com/526463).
-    {
-      name: "TouchpadAndWheelScrollLatching",
-    },
     // When enabled, tracks the number of times each LayoutBlock
     // goes through layout. For testing purposes only.
     {
       name: "TrackLayoutPassesPerBlock",
+    },
+    {
+      name: "TransferableStreams",
+    },
+    // This is conditionally set if the platform supports translation.
+    {
+      name: "TranslateService"
     },
     {
       name: "TrustedDOMTypes",
@@ -1268,7 +1277,10 @@
     },
     {
       name: "UserActivationAPI",
-      status: "experimental",
+      status: "stable",
+    },
+    {
+      name: "UserActivationSameOriginVisibility",
     },
     {
       name: "UserActivationV2",
@@ -1298,6 +1310,10 @@
     },
     {
       name: "WakeLockNavigator",
+      status: "experimental",
+    },
+    {
+      name: "WasmCodeCache",
       status: "experimental",
     },
     {
@@ -1350,10 +1366,6 @@
     {
       name: "WebGPU",
       status: "test",
-    },
-    {
-      name: "WebLocksAPI",
-      status: "stable",
     },
     {
       name: "WebNFC",

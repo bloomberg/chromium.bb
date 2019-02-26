@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
+#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/mojom/messaging/transferable_message.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
@@ -16,7 +17,6 @@
 #include "third_party/blink/renderer/core/workers/threaded_messaging_proxy_base.h"
 #include "third_party/blink/renderer/core/workers/worker_backing_thread_startup_data.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
 
 namespace blink {
 
@@ -37,7 +37,7 @@ class CORE_EXPORT DedicatedWorkerMessagingProxy
   // These methods should only be used on the parent context thread.
   void StartWorkerGlobalScope(
       std::unique_ptr<GlobalScopeCreationParams>,
-      const WorkerOptions&,
+      const WorkerOptions*,
       const KURL& script_url,
       FetchClientSettingsObjectSnapshot* outside_settings_object,
       const v8_inspector::V8StackTraceId&,

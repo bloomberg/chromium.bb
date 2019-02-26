@@ -42,13 +42,23 @@ public class FeedNetworkBridge implements NetworkClient {
 
     @Override
     public void send(HttpRequest request, Consumer<HttpResponse> responseConsumer) {
-        assert mNativeBridge != 0;
-        nativeSendNetworkRequest(mNativeBridge, request.getUri().toString(), request.getMethod(),
-                request.getBody(), result -> responseConsumer.accept(result));
+        if (mNativeBridge == 0) {
+            responseConsumer.accept(createHttpResponse(500, new byte[0]));
+        } else {
+            nativeSendNetworkRequest(mNativeBridge, request.getUri().toString(),
+                    request.getMethod(), request.getBody(),
+                    result -> responseConsumer.accept(result));
+        }
     }
 
     @Override
-    public void close() {}
+    public void close() {
+        // Bridge could have been destroyed for policy when this is called.
+        // See https://crbug.com/901414.
+        if (mNativeBridge == 0) return;
+
+        nativeCancelRequests(mNativeBridge);
+    }
 
     @CalledByNative
     private static HttpResponse createHttpResponse(int code, byte[] body) {
@@ -59,4 +69,5 @@ public class FeedNetworkBridge implements NetworkClient {
     private native void nativeDestroy(long nativeFeedNetworkBridge);
     private native void nativeSendNetworkRequest(long nativeFeedNetworkBridge, String url,
             String requestType, byte[] body, Callback<HttpResponse> resultCallback);
+    private native void nativeCancelRequests(long nativeFeedNetworkBridge);
 }

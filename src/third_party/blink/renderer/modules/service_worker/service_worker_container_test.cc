@@ -1,4 +1,3 @@
-
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -24,7 +23,6 @@
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/modules/service_worker/navigator_service_worker.h"
-#include "third_party/blink/renderer/modules/service_worker/service_worker_container_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -122,6 +120,33 @@ class ExpectDOMException : public ScriptValueTest {
   String expected_message_;
 };
 
+// Matches a ScriptValue and a TypeError with a message.
+class ExpectTypeError : public ScriptValueTest {
+ public:
+  ExpectTypeError(const String& expected_message)
+      : expected_message_(expected_message) {}
+
+  ~ExpectTypeError() override = default;
+
+  void operator()(ScriptValue value) const override {
+    v8::Isolate* isolate = value.GetIsolate();
+    v8::Local<v8::Context> context = value.GetContext();
+    v8::Local<v8::Object> error_object =
+        value.V8Value()->ToObject(context).ToLocalChecked();
+    v8::Local<v8::Value> name =
+        error_object->Get(context, V8String(isolate, "name")).ToLocalChecked();
+    v8::Local<v8::Value> message =
+        error_object->Get(context, V8String(isolate, "message"))
+            .ToLocalChecked();
+
+    EXPECT_EQ("TypeError", ToCoreString(name->ToString(isolate)));
+    EXPECT_EQ(expected_message_, ToCoreString(message->ToString(isolate)));
+  }
+
+ private:
+  String expected_message_;
+};
+
 // Service Worker-specific tests.
 
 class NotReachedWebServiceWorkerProvider : public WebServiceWorkerProvider {
@@ -129,7 +154,7 @@ class NotReachedWebServiceWorkerProvider : public WebServiceWorkerProvider {
   ~NotReachedWebServiceWorkerProvider() override = default;
 
   void RegisterServiceWorker(
-      const WebURL& pattern,
+      const WebURL& scope,
       const WebURL& script_url,
       blink::mojom::ScriptType script_type,
       mojom::ServiceWorkerUpdateViaCache update_via_cache,
@@ -154,19 +179,9 @@ class ServiceWorkerContainerTest : public PageTestBase {
     V8GCController::CollectAllGarbageForTesting(GetIsolate());
   }
 
-  ExecutionContext* GetExecutionContext() { return &GetDocument(); }
-  NavigatorServiceWorker* GetNavigatorServiceWorker() {
-    return NavigatorServiceWorker::From(GetDocument());
-  }
   v8::Isolate* GetIsolate() { return v8::Isolate::GetCurrent(); }
   ScriptState* GetScriptState() {
     return ToScriptStateForMainWorld(GetDocument().GetFrame());
-  }
-
-  void Provide(std::unique_ptr<WebServiceWorkerProvider> provider) {
-    Supplement<Document>::ProvideTo(
-        GetDocument(),
-        new ServiceWorkerContainerClient(GetDocument(), std::move(provider)));
   }
 
   void SetPageURL(const String& url) {
@@ -187,13 +202,13 @@ class ServiceWorkerContainerTest : public PageTestBase {
                             const ScriptValueTest& value_test) {
     // When the registration is rejected, a register call must not reach
     // the provider.
-    Provide(std::make_unique<NotReachedWebServiceWorkerProvider>());
-
-    ServiceWorkerContainer* container = ServiceWorkerContainer::Create(
-        GetExecutionContext(), GetNavigatorServiceWorker());
+    ServiceWorkerContainer* container =
+        ServiceWorkerContainer::CreateForTesting(
+            &GetDocument(),
+            std::make_unique<NotReachedWebServiceWorkerProvider>());
     ScriptState::Scope script_scope(GetScriptState());
-    RegistrationOptions options;
-    options.setScope(scope);
+    RegistrationOptions* options = RegistrationOptions::Create();
+    options->setScope(scope);
     ScriptPromise promise =
         container->registerServiceWorker(GetScriptState(), script_url, options);
     ExpectRejected(GetScriptState(), promise, value_test);
@@ -201,10 +216,10 @@ class ServiceWorkerContainerTest : public PageTestBase {
 
   void TestGetRegistrationRejected(const String& document_url,
                                    const ScriptValueTest& value_test) {
-    Provide(std::make_unique<NotReachedWebServiceWorkerProvider>());
-
-    ServiceWorkerContainer* container = ServiceWorkerContainer::Create(
-        GetExecutionContext(), GetNavigatorServiceWorker());
+    ServiceWorkerContainer* container =
+        ServiceWorkerContainer::CreateForTesting(
+            &GetDocument(),
+            std::make_unique<NotReachedWebServiceWorkerProvider>());
     ScriptState::Scope script_scope(GetScriptState());
     ScriptPromise promise =
         container->getRegistration(GetScriptState(), document_url);
@@ -224,14 +239,24 @@ TEST_F(ServiceWorkerContainerTest, Register_CrossOriginScriptIsRejected) {
                          "current origin ('https://www.example.com')."));
 }
 
+TEST_F(ServiceWorkerContainerTest, Register_UnsupportedSchemeIsRejected) {
+  SetPageURL("https://www.example.com");
+  TestRegisterRejected(
+      "https://www.example.com",
+      "wss://www.example.com/",  // Only support http and https
+      ExpectTypeError(
+          "Failed to register a ServiceWorker: The URL protocol "
+          "of the scope ('wss://www.example.com/') is not supported."));
+}
+
 TEST_F(ServiceWorkerContainerTest, Register_CrossOriginScopeIsRejected) {
   SetPageURL("https://www.example.com");
   TestRegisterRejected(
       "https://www.example.com",
-      "wss://www.example.com/",  // Differs by protocol
+      "http://www.example.com/",  // Differs by protocol
       ExpectDOMException("SecurityError",
                          "Failed to register a ServiceWorker: The origin of "
-                         "the provided scope ('wss://www.example.com') does "
+                         "the provided scope ('http://www.example.com') does "
                          "not match the current origin "
                          "('https://www.example.com')."));
 }
@@ -282,14 +307,14 @@ class StubWebServiceWorkerProvider {
     ~WebServiceWorkerProviderImpl() override = default;
 
     void RegisterServiceWorker(
-        const WebURL& pattern,
+        const WebURL& scope,
         const WebURL& script_url,
         blink::mojom::ScriptType script_type,
         mojom::ServiceWorkerUpdateViaCache update_via_cache,
         std::unique_ptr<WebServiceWorkerRegistrationCallbacks> callbacks)
         override {
       owner_.register_call_count_++;
-      owner_.register_scope_ = pattern;
+      owner_.register_scope_ = scope;
       owner_.register_script_url_ = script_url;
       owner_.script_type_ = script_type;
       owner_.update_via_cache_ = update_via_cache;
@@ -334,16 +359,14 @@ TEST_F(ServiceWorkerContainerTest,
   SetPageURL("http://localhost/x/index.html");
 
   StubWebServiceWorkerProvider stub_provider;
-  Provide(stub_provider.Provider());
-
-  ServiceWorkerContainer* container = ServiceWorkerContainer::Create(
-      GetExecutionContext(), GetNavigatorServiceWorker());
+  ServiceWorkerContainer* container = ServiceWorkerContainer::CreateForTesting(
+      &GetDocument(), stub_provider.Provider());
 
   // register
   {
     ScriptState::Scope script_scope(GetScriptState());
-    RegistrationOptions options;
-    options.setScope("y/");
+    RegistrationOptions* options = RegistrationOptions::Create();
+    options->setScope("y/");
     container->registerServiceWorker(GetScriptState(), "/x/y/worker.js",
                                      options);
 
@@ -363,10 +386,8 @@ TEST_F(ServiceWorkerContainerTest,
   SetPageURL("http://localhost/x/index.html");
 
   StubWebServiceWorkerProvider stub_provider;
-  Provide(stub_provider.Provider());
-
-  ServiceWorkerContainer* container = ServiceWorkerContainer::Create(
-      GetExecutionContext(), GetNavigatorServiceWorker());
+  ServiceWorkerContainer* container = ServiceWorkerContainer::CreateForTesting(
+      &GetDocument(), stub_provider.Provider());
 
   {
     ScriptState::Scope script_scope(GetScriptState());
@@ -385,16 +406,14 @@ TEST_F(ServiceWorkerContainerTest,
   SetPageURL("http://localhost/x/index.html");
 
   StubWebServiceWorkerProvider stub_provider;
-  Provide(stub_provider.Provider());
-
-  ServiceWorkerContainer* container = ServiceWorkerContainer::Create(
-      GetExecutionContext(), GetNavigatorServiceWorker());
+  ServiceWorkerContainer* container = ServiceWorkerContainer::CreateForTesting(
+      &GetDocument(), stub_provider.Provider());
 
   // register
   {
     ScriptState::Scope script_scope(GetScriptState());
-    RegistrationOptions options;
-    options.setUpdateViaCache("none");
+    RegistrationOptions* options = RegistrationOptions::Create();
+    options->setUpdateViaCache("none");
     container->registerServiceWorker(GetScriptState(), "/x/y/worker.js",
                                      options);
 
@@ -413,16 +432,14 @@ TEST_F(ServiceWorkerContainerTest, Register_TypeOptionDelegatesToProvider) {
   SetPageURL("http://localhost/x/index.html");
 
   StubWebServiceWorkerProvider stub_provider;
-  Provide(stub_provider.Provider());
-
-  ServiceWorkerContainer* container = ServiceWorkerContainer::Create(
-      GetExecutionContext(), GetNavigatorServiceWorker());
+  ServiceWorkerContainer* container = ServiceWorkerContainer::CreateForTesting(
+      &GetDocument(), stub_provider.Provider());
 
   // register
   {
     ScriptState::Scope script_scope(GetScriptState());
-    RegistrationOptions options;
-    options.setType("module");
+    RegistrationOptions* options = RegistrationOptions::Create();
+    options->setType("module");
     container->registerServiceWorker(GetScriptState(), "/x/y/worker.js",
                                      options);
 

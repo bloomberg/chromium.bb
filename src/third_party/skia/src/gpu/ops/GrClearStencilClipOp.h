@@ -25,6 +25,7 @@ public:
 
     const char* name() const override { return "ClearStencilClip"; }
 
+#ifdef SK_DEBUG
     SkString dumpInfo() const override {
         SkString string("Scissor [");
         if (fClip.scissorEnabled()) {
@@ -37,6 +38,7 @@ public:
         string.append(INHERITED::dumpInfo());
         return string;
     }
+#endif
 
 private:
     friend class GrOpMemoryPool; // for ctor
@@ -54,7 +56,7 @@ private:
 
     void onPrepare(GrOpFlushState*) override {}
 
-    void onExecute(GrOpFlushState* state) override;
+    void onExecute(GrOpFlushState*, const SkRect& chainBounds) override;
 
     const GrFixedClip fClip;
     const bool        fInsideStencilMask;

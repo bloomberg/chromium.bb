@@ -5,6 +5,7 @@
 #include "net/filter/fuzzed_source_stream.h"
 
 #include <algorithm>
+#include <string>
 #include <utility>
 
 #include "base/test/fuzzed_data_provider.h"
@@ -39,8 +40,8 @@ int FuzzedSourceStream::Read(IOBuffer* buf,
   DCHECK_LE(0, buf_len);
 
   bool sync = data_provider_->ConsumeBool();
-  int result = data_provider_->ConsumeUint32InRange(0, buf_len);
-  std::string data = data_provider_->ConsumeBytes(result);
+  int result = data_provider_->ConsumeIntegralInRange(0, buf_len);
+  std::string data = data_provider_->ConsumeBytesAsString(result);
   result = data.size();
 
   if (result <= 0)
@@ -48,7 +49,7 @@ int FuzzedSourceStream::Read(IOBuffer* buf,
 
   if (sync) {
     if (result > 0) {
-      std::copy(data.data(), data.data() + result, buf->data());
+      std::copy(data.data(), data.data() + data.size(), buf->data());
     } else {
       end_returned_ = true;
     }

@@ -255,77 +255,6 @@ testcase.showHiddenFilesDrive = function() {
 };
 
 /**
- * Tests toggling the show-google-docs option on Drive.
- */
-testcase.toogleGoogleDocsDrive = function() {
-  var appId;
-  StepsRunner.run([
-    function() {
-      setupAndWaitUntilReady(null, RootPath.DRIVE).then(this.next);
-    },
-    function(results) {
-      appId = results.windowId;
-      remoteCall.waitForElement(appId, '#gear-button').then(this.next);
-    },
-    // Open the gear meny by a shortcut (Alt-E).
-    function() {
-      remoteCall.fakeKeyDown(appId, 'body', 'e', false, false, true)
-          .then(this.next);
-    },
-    // Wait for menu to appear.
-    function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.waitForElement(appId, '#gear-menu').then(this.next);
-    },
-    // Wait for menu to appear.
-    function(result) {
-      remoteCall.waitForElement(appId,
-          '#gear-menu-drive-hosted-settings:not([disabled])').then(this.next);
-    },
-    function(results) {
-      remoteCall.callRemoteTestUtil(
-          'fakeMouseClick', appId, ['#gear-menu-drive-hosted-settings'],
-              this.next);
-    },
-    function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.waitForFiles(appId, TestEntryInfo.getExpectedRows(
-          BASIC_DRIVE_ENTRY_SET_WITHOUT_GDOCS), {ignoreFileSize: true,
-          ignoreLastModifiedTime: true}).then(this.next);
-    },
-    function(inAppId) {
-      remoteCall.waitForElement(appId, '#gear-button').then(this.next);
-    },
-    function() {
-      remoteCall.callRemoteTestUtil(
-          'fakeMouseClick', appId, ['#gear-button'], this.next);
-    },
-    function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.waitForElement(appId, '#gear-menu').then(this.next);
-    },
-    function(result) {
-      remoteCall.waitForElement(appId,
-          '#gear-menu-drive-hosted-settings:not([disabled])').then(this.next);
-    },
-    function(result) {
-      remoteCall.callRemoteTestUtil(
-          'fakeMouseClick', appId, ['#gear-menu-drive-hosted-settings'],
-              this.next);
-    },
-    function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.waitForFiles(appId, TestEntryInfo.getExpectedRows(
-          BASIC_DRIVE_ENTRY_SET), {ignoreFileSize: true,
-          ignoreLastModifiedTime: true}).then(this.next);
-    },
-    function() {
-      checkIfNoErrorsOccured(this.next);
-    },
-  ]);
-};
-
-/**
  * Tests that toggle-hidden-android-folders menu item exists when "Play files"
  * is selected, but hidden in Recents.
  */
@@ -787,5 +716,50 @@ testcase.showSelectAllInCurrentFolder = function() {
     function() {
       checkIfNoErrorsOccured(this.next);
     },
+  ]);
+};
+
+/**
+ * Tests that new folder appears in the gear menu with Downloads focused in the
+ * directory tree.
+ */
+testcase.newFolderInDownloads = function() {
+  var appId;
+  StepsRunner.run([
+    function() {
+      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, null, [ENTRIES.hello], [
+      ]).then(this.next);
+    },
+    // Focus the directory tree.
+    function(results) {
+      appId = results.windowId;
+
+      remoteCall.callRemoteTestUtil('focus', appId, ['#directory-tree'])
+          .then(this.next);
+    },
+    // Open the gear menu.
+    function() {
+      remoteCall.waitForElement(appId, '#gear-button').then(this.next);
+    },
+    // Open the gear meny by a shortcut (Alt-E).
+    function() {
+      remoteCall.fakeKeyDown(appId, 'body', 'e', false, false, true)
+          .then(this.next);
+    },
+    // Wait for menu to appear.
+    function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.waitForElement(appId, '#gear-menu').then(this.next);
+    },
+    // Wait for menu to appear, containing new folder.
+    function(result) {
+      remoteCall
+          .waitForElement(
+              appId, '#gear-menu-newfolder:not([disabled]):not([hidden])')
+          .then(this.next);
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    }
   ]);
 };

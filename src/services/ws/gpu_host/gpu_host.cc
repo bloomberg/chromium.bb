@@ -26,6 +26,7 @@
 #include "services/viz/privileged/interfaces/viz_main.mojom.h"
 #include "services/viz/public/interfaces/constants.mojom.h"
 #include "services/ws/gpu_host/gpu_host_delegate.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/buffer_format_util.h"
 
 #if defined(OS_WIN)
@@ -43,12 +44,6 @@ namespace {
 
 // The client Id 1 is reserved for the frame sink manager.
 const int32_t kInternalGpuChannelClientId = 2;
-
-// TODO(crbug.com/620927): This should be removed once ozone-mojo is done.
-bool HasSplitVizProcess() {
-  constexpr char kEnableViz[] = "enable-viz";
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(kEnableViz);
-}
 
 class GpuClientDelegate : public viz::GpuClientDelegate {
  public:
@@ -100,7 +95,7 @@ GpuHost::GpuHost(GpuHostDelegate* delegate,
   viz::GpuHostImpl::InitFontRenderParams(
       gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), nullptr));
 
-  bool in_process = !connector || !HasSplitVizProcess();
+  bool in_process = !connector || !features::IsMashOopVizEnabled();
 
   viz::mojom::VizMainPtr viz_main_ptr;
   if (in_process) {

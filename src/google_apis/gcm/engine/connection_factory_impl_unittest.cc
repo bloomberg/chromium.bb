@@ -304,6 +304,7 @@ class ConnectionFactoryImplTest
   std::unique_ptr<base::RunLoop> run_loop_;
 
   GURL connected_server_;
+  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   std::unique_ptr<network::NetworkService> network_service_;
   network::mojom::NetworkContextPtr network_context_ptr_;
   std::unique_ptr<network::NetworkContext> network_context_;
@@ -320,6 +321,7 @@ ConnectionFactoryImplTest::ConnectionFactoryImplTest()
                base::Bind(&ConnectionFactoryImplTest::ConnectionsComplete,
                           base::Unretained(this))),
       run_loop_(new base::RunLoop()),
+      network_change_notifier_(net::NetworkChangeNotifier::CreateMock()),
       network_service_(network::NetworkService::CreateForTesting()) {
   network::mojom::NetworkContextParamsPtr params =
       network::mojom::NetworkContextParams::New();

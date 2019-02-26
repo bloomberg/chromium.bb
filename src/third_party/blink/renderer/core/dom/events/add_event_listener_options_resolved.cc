@@ -10,10 +10,18 @@ AddEventListenerOptionsResolved::AddEventListenerOptionsResolved()
     : passive_forced_for_document_target_(false), passive_specified_(false) {}
 
 AddEventListenerOptionsResolved::AddEventListenerOptionsResolved(
-    const AddEventListenerOptions& options)
-    : AddEventListenerOptions(options),
-      passive_forced_for_document_target_(false),
-      passive_specified_(false) {}
+    const AddEventListenerOptions* options)
+    : passive_forced_for_document_target_(false), passive_specified_(false) {
+  DCHECK(options);
+  // AddEventListenerOptions
+  if (options->hasPassive())
+    setPassive(options->passive());
+  if (options->hasOnce())
+    setOnce(options->once());
+  // EventListenerOptions
+  if (options->hasCapture())
+    setCapture(options->capture());
+}
 
 AddEventListenerOptionsResolved::~AddEventListenerOptionsResolved() = default;
 

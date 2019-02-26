@@ -11,7 +11,6 @@ import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_V
 
 import android.graphics.PointF;
 import android.os.SystemClock;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 
 import org.junit.Assert;
@@ -31,7 +30,6 @@ import org.chromium.chrome.browser.vr.util.VrBrowserTransitionUtils;
 import org.chromium.chrome.browser.vr.util.VrShellDelegateUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
-import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -93,11 +91,10 @@ public class VrBrowserNativeUiTest {
     @MediumTest
     public void testPaymentRequest() throws InterruptedException {
         // We can't request payment on file:// URLs, so use a local server.
-        EmbeddedTestServer server =
-                EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
-                server.getURL(VrBrowserTestFramework.getEmbeddedServerPathForHtmlTestFile(
-                        "test_payment_request")),
+                mVrTestRule.getTestServer().getURL(
+                        VrBrowserTestFramework.getEmbeddedServerPathForHtmlTestFile(
+                                "test_payment_request")),
                 PAGE_LOAD_TIMEOUT_S);
         // Set up an observer so we'll know if the payment request is shown.
         AtomicBoolean requestShown = new AtomicBoolean(false);
@@ -124,7 +121,6 @@ public class VrBrowserNativeUiTest {
         Assert.assertTrue("Payment request caused VR exit",
                 VrShellDelegateUtils.getDelegateInstance().isVrEntryComplete());
         mVrBrowserTestFramework.endTest();
-        server.stopAndDestroyServer();
     }
 
     /**
@@ -152,8 +148,8 @@ public class VrBrowserNativeUiTest {
             NativeUiUtils.inputBackspace();
         }
         // Wait for suggestions to change so that our navigation succeeds.
-        NativeUiUtils.performActionAndWaitForVisibilityChange(
-                UserFriendlyElementName.SUGGESTION_BOX,
+        NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                UserFriendlyElementName.SUGGESTION_BOX, true /* visible */,
                 () -> { NativeUiUtils.inputString("version/"); });
         NativeUiUtils.inputEnter();
         ChromeTabUtils.waitForTabPageLoaded(
@@ -181,8 +177,9 @@ public class VrBrowserNativeUiTest {
                 UserFriendlyElementName.OMNIBOX_TEXT_FIELD, new PointF(-0.45f, 0.0f));
         // We expect this to delete an "a" instead of anything in "chrome://". Do so and wait for
         // the suggestions to appear.
-        NativeUiUtils.performActionAndWaitForVisibilityChange(
-                UserFriendlyElementName.SUGGESTION_BOX, () -> { NativeUiUtils.inputBackspace(); });
+        NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                UserFriendlyElementName.SUGGESTION_BOX, true /* visible */,
+                () -> { NativeUiUtils.inputBackspace(); });
         NativeUiUtils.inputEnter();
         // Navigating automatically appends a "/".
         ChromeTabUtils.waitForTabPageLoaded(
@@ -201,8 +198,8 @@ public class VrBrowserNativeUiTest {
         NativeUiUtils.enableMockedKeyboard();
         NativeUiUtils.clickElementAndWaitForUiQuiescence(UserFriendlyElementName.URL, new PointF());
         // Input text and close the omnibox without committing.
-        NativeUiUtils.performActionAndWaitForVisibilityChange(
-                UserFriendlyElementName.SUGGESTION_BOX,
+        NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                UserFriendlyElementName.SUGGESTION_BOX, true /* visible */,
                 () -> { NativeUiUtils.inputString("chrome://version/"); });
         NativeUiUtils.clickElementAndWaitForUiQuiescence(
                 UserFriendlyElementName.OMNIBOX_CLOSE_BUTTON, new PointF());
@@ -215,8 +212,8 @@ public class VrBrowserNativeUiTest {
         for (int i = 0; i < 11; ++i) {
             NativeUiUtils.inputBackspace();
         }
-        NativeUiUtils.performActionAndWaitForVisibilityChange(
-                UserFriendlyElementName.SUGGESTION_BOX,
+        NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                UserFriendlyElementName.SUGGESTION_BOX, true /* visibile */,
                 () -> { NativeUiUtils.inputString("chrome://version/"); });
         NativeUiUtils.inputEnter();
         // This should only succeed if the original "chrome://version/" we input is not present -
@@ -241,8 +238,8 @@ public class VrBrowserNativeUiTest {
         // Test that autocompletion works with only one option left.
         NativeUiUtils.clickElementAndWaitForUiQuiescence(UserFriendlyElementName.URL, new PointF());
         // This should autocomplete to "chrome://version".
-        NativeUiUtils.performActionAndWaitForVisibilityChange(
-                UserFriendlyElementName.SUGGESTION_BOX,
+        NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                UserFriendlyElementName.SUGGESTION_BOX, true /* visible */,
                 () -> { NativeUiUtils.inputString("chrome://v"); });
         NativeUiUtils.inputEnter();
         ChromeTabUtils.waitForTabPageLoaded(
@@ -252,8 +249,8 @@ public class VrBrowserNativeUiTest {
 
         // Test that autocompletion updates successfully when entering more text.
         NativeUiUtils.clickElementAndWaitForUiQuiescence(UserFriendlyElementName.URL, new PointF());
-        NativeUiUtils.performActionAndWaitForVisibilityChange(
-                UserFriendlyElementName.SUGGESTION_BOX,
+        NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                UserFriendlyElementName.SUGGESTION_BOX, true /* visible */,
                 () -> { NativeUiUtils.inputString("chrome://v"); });
         NativeUiUtils.inputString("e");
         // Since suggestions are already visible, we need to wait for suggestions to update via
@@ -267,8 +264,8 @@ public class VrBrowserNativeUiTest {
         NativeUiUtils.clickElementAndWaitForUiQuiescence(UserFriendlyElementName.URL, new PointF());
         // This could be either "chrome://net-export" or "chrome://net-internals", so it shouldn't
         // autocomplete to anything.
-        NativeUiUtils.performActionAndWaitForVisibilityChange(
-                UserFriendlyElementName.SUGGESTION_BOX,
+        NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                UserFriendlyElementName.SUGGESTION_BOX, true /* visible */,
                 () -> { NativeUiUtils.inputString("chrome://net-"); });
         NativeUiUtils.inputEnter();
         ChromeTabUtils.waitForTabPageLoaded(
@@ -277,8 +274,8 @@ public class VrBrowserNativeUiTest {
         // Test that autocompletion cancels if a non-matching character is input.
         NativeUiUtils.clickElementAndWaitForUiQuiescence(UserFriendlyElementName.URL, new PointF());
         // This should autocomplete to "chrome://version".
-        NativeUiUtils.performActionAndWaitForVisibilityChange(
-                UserFriendlyElementName.SUGGESTION_BOX,
+        NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                UserFriendlyElementName.SUGGESTION_BOX, true /* visible */,
                 () -> { NativeUiUtils.inputString("chrome://v"); });
         NativeUiUtils.inputString("a");
         NativeUiUtils.waitNumFrames(NativeUiUtils.NUM_FRAMES_FOR_SUGGESTION_UPDATE);

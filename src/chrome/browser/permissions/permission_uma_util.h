@@ -28,6 +28,7 @@ enum class PermissionSourceUI {
   OIB = 1,
   SITE_SETTINGS = 2,
   PAGE_ACTION = 3,
+  ANDROID_SETTINGS = 4,
 
   // Always keep this at the end.
   NUM,
@@ -86,7 +87,7 @@ class PermissionUmaUtil {
 
   static void PermissionPromptResolved(
       const std::vector<PermissionRequest*>& requests,
-      const content::WebContents* web_contents,
+      content::WebContents* web_contents,
       PermissionAction permission_action);
 
   static void RecordWithBatteryBucket(const std::string& histogram);

@@ -35,9 +35,9 @@
         width: 100%;
       }
 
-      /* Used by |chromeCleanupPoweredByHTML| */
-      #powered-by-logo {
-        content: url(chrome://settings/partner-logo.svg);
+      /* Apply a fixed height to the <svg> tag inside #powered-by-logo.
+         Used by |chromeCleanupPoweredByHTML|. */
+      #powered-by-logo > svg {
         height: 22px;
       }
 

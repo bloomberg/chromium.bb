@@ -30,6 +30,9 @@ void AddDirectoryEntryToList(smbprovider::DirectoryEntryListProto* entry_list,
 
 FakeSmbProviderClient::FakeSmbProviderClient() {}
 
+FakeSmbProviderClient::FakeSmbProviderClient(bool should_run_synchronously)
+    : should_run_synchronously_(should_run_synchronously) {}
+
 FakeSmbProviderClient::~FakeSmbProviderClient() {}
 
 void FakeSmbProviderClient::AddNetBiosPacketParsingForTesting(
@@ -184,7 +187,12 @@ void FakeSmbProviderClient::GetShares(const base::FilePath& server_url,
     AddDirectoryEntryToList(&entry_list, share);
   }
 
-  std::move(callback).Run(smbprovider::ERROR_OK, entry_list);
+  if (should_run_synchronously_) {
+    std::move(callback).Run(smbprovider::ERROR_OK, entry_list);
+  } else {
+    stored_readdir_callback_ =
+        base::BindOnce(std::move(callback), smbprovider::ERROR_OK, entry_list);
+  }
 }
 
 void FakeSmbProviderClient::SetupKerberos(const std::string& account_id,
@@ -253,6 +261,10 @@ void FakeSmbProviderClient::ContinueReadDirectory(
 
 void FakeSmbProviderClient::ClearShares() {
   shares_.clear();
+}
+
+void FakeSmbProviderClient::RunStoredReadDirCallback() {
+  std::move(stored_readdir_callback_).Run();
 }
 
 }  // namespace chromeos

@@ -23,8 +23,25 @@ from gpu_tests import gpu_test_expectations
 
 class _BaseSampleIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   _test_state = {}
+
+  @classmethod
+  def SetUpProcess(cls):
+    finder_options = fakes.CreateBrowserFinderOptions()
+    finder_options.browser_options.platform = fakes.FakeLinuxPlatform()
+    finder_options.output_formats = ['none']
+    finder_options.suppress_gtest_report = True
+    finder_options.output_dir = None
+    finder_options.upload_bucket = 'public'
+    finder_options.upload_results = False
+    cls._finder_options = finder_options
+    cls.platform = None
+    cls.browser = None
+    cls.SetBrowserOptions(cls._finder_options)
+    cls.StartBrowser()
+
   @classmethod
   def AddCommandlineArgs(cls, parser):
+    super(_BaseSampleIntegrationTest, cls).AddCommandlineArgs(parser)
     parser.add_option('--test-state-json-path',
         help=('Where to dump the test state json (this is used by '
               'gpu_integration_test_unittest)'))
@@ -44,28 +61,9 @@ class SimpleTest(_BaseSampleIntegrationTest):
     'num_browser_starts': 0
   }
 
-
   @classmethod
   def Name(cls):
     return 'simple_integration_unittest'
-
-  def setUp(self):
-    super(SimpleTest, self).setUp()
-
-  @classmethod
-  def SetUpProcess(cls):
-    finder_options = fakes.CreateBrowserFinderOptions()
-    finder_options.browser_options.platform = fakes.FakeLinuxPlatform()
-    finder_options.output_formats = ['none']
-    finder_options.suppress_gtest_report = True
-    finder_options.output_dir = None
-    finder_options.upload_bucket = 'public'
-    finder_options.upload_results = False
-    cls._finder_options = finder_options
-    cls.platform = None
-    cls.browser = None
-    cls.SetBrowserOptions(cls._finder_options)
-    cls.StartBrowser()
 
   @classmethod
   def GenerateGpuTests(cls, options):
@@ -101,7 +99,6 @@ class SimpleTest(_BaseSampleIntegrationTest):
 
 
 class BrowserStartFailureTest(_BaseSampleIntegrationTest):
-
   _test_state = {
     'num_browser_crashes': 0,
     'num_browser_starts': 0
@@ -152,7 +149,6 @@ class BrowserStartFailureTest(_BaseSampleIntegrationTest):
 
 
 class BrowserCrashAfterStartTest(_BaseSampleIntegrationTest):
-
   _test_state = {
     'num_browser_crashes': 0,
     'num_browser_starts': 0,
@@ -206,6 +202,81 @@ class BrowserCrashAfterStartTest(_BaseSampleIntegrationTest):
     # and then succeeds on the third time so we are just testing that this
     # is successful based on the parameters.
     pass
+
+
+class TestRetryLimit(_BaseSampleIntegrationTest):
+  _test_state = {
+    'num_test_runs': 0,
+  }
+
+  @classmethod
+  def Name(cls):
+    return 'test_retry_limit'
+
+  @classmethod
+  def GenerateGpuTests(cls, options):
+    yield ('unexpected_failure', 'failure.html', ())
+
+  @classmethod
+  def _CreateExpectations(cls):
+    expectations = gpu_test_expectations.GpuTestExpectations()
+    return expectations
+
+  def RunActualGpuTest(self, file_path, *args):
+    self._test_state['num_test_runs'] += 1
+    if file_path == 'failure.html':
+      self.fail('Expected failure')
+    else:
+      raise Exception('Unexpected test name ' + file_path)
+
+
+class TestRepeat(_BaseSampleIntegrationTest):
+  _test_state = {
+    'num_test_runs': 0,
+  }
+
+  @classmethod
+  def Name(cls):
+    return 'test_repeat'
+
+  @classmethod
+  def GenerateGpuTests(cls, options):
+    yield ('success', 'success.html', ())
+
+  @classmethod
+  def _CreateExpectations(cls):
+    expectations = gpu_test_expectations.GpuTestExpectations()
+    return expectations
+
+  def RunActualGpuTest(self, file_path, *args):
+    self._test_state['num_test_runs'] += 1
+    if file_path != 'success.html':
+      raise Exception('Unexpected test name ' + file_path)
+
+
+class TestAlsoRunDisabledTests(_BaseSampleIntegrationTest):
+  _test_state = {
+    'num_test_runs': 0,
+  }
+
+  @classmethod
+  def Name(cls):
+    return 'test_also_run_disabled_tests'
+
+  @classmethod
+  def GenerateGpuTests(cls, options):
+    yield ('success', 'success.html', ())
+
+  @classmethod
+  def _CreateExpectations(cls):
+    expectations = gpu_test_expectations.GpuTestExpectations()
+    expectations.Skip('success')
+    return expectations
+
+  def RunActualGpuTest(self, file_path, *args):
+    self._test_state['num_test_runs'] += 1
+    if file_path != 'success.html':
+      raise Exception('Unexpected test name ' + file_path)
 
 
 def load_tests(loader, tests, pattern):

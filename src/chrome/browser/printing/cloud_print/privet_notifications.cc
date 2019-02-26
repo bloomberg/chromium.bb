@@ -22,7 +22,7 @@
 #include "chrome/browser/printing/cloud_print/privet_device_lister_impl.h"
 #include "chrome/browser/printing/cloud_print/privet_http_asynchronous_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -34,12 +34,12 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/signin_manager_base.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "net/net_buildflags.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -286,7 +286,7 @@ void PrivetNotificationService::AddNotification(
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           IDR_LOCAL_DISCOVERY_CLOUDPRINT_ICON),
       product_name, GURL(kPrivetNotificationOriginUrl),
-      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
+      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
                                  kPrivetNotificationID),
       rich_notification_data, CreateNotificationDelegate(profile));
 
@@ -307,11 +307,10 @@ void PrivetNotificationService::PrivetRemoveNotification() {
 
 void PrivetNotificationService::Start() {
 #if defined(CHROMEOS)
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfileIfExists(
-          Profile::FromBrowserContext(profile_));
+  auto* identity_manager = IdentityManagerFactory::GetForProfileIfExists(
+      Profile::FromBrowserContext(profile_));
 
-  if (!signin_manager || !signin_manager->IsAuthenticated())
+  if (!identity_manager || !identity_manager->HasPrimaryAccount())
     return;
 #endif
 

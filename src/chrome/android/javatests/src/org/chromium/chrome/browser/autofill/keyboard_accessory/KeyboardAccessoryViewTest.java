@@ -35,10 +35,10 @@ import static org.chromium.chrome.test.util.ViewUtils.VIEW_NULL;
 import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 
 import android.support.test.filters.MediumTest;
-import android.support.v7.widget.AppCompatImageView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
+import android.widget.ImageView;
 
 import org.hamcrest.Matcher;
 import org.junit.Before;
@@ -96,7 +96,7 @@ public class KeyboardAccessoryViewTest {
      */
     private static Matcher<View> isTabWithDescription(String description) {
         return allOf(withContentDescription(description),
-                instanceOf(AppCompatImageView.class)); // Match only the image.
+                instanceOf(ImageView.class)); // Match only the image.
     }
 
     @Before

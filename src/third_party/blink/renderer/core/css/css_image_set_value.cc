@@ -117,8 +117,8 @@ StyleImage* CSSImageSetValue::CacheImage(
     resource_request.SetHTTPReferrer(image.referrer);
     ResourceLoaderOptions options;
     options.initiator_info.name = parser_mode_ == kUASheetMode
-                                      ? FetchInitiatorTypeNames::uacss
-                                      : FetchInitiatorTypeNames::css;
+                                      ? fetch_initiator_type_names::kUacss
+                                      : fetch_initiator_type_names::kCSS;
     FetchParameters params(resource_request, options);
 
     if (cross_origin != kCrossOriginAttributeNotSet) {

@@ -114,10 +114,6 @@ class PerfDataGeneratorTest(unittest.TestCase):
           'script': '//testing/trigger_scripts/perf_device_trigger.py'
         },
         'merge': {
-          'args': [
-            '--service-account-file',
-            'C:\\creds\\service_accounts\\service-account-chromium-perf-histograms.json'
-          ],
           'script': '//tools/perf/process_perf_results.py'
         },
         'swarming': {
@@ -125,7 +121,7 @@ class PerfDataGeneratorTest(unittest.TestCase):
           'can_use_on_swarming_builders': True,
           'expiration': 7200,
           'io_timeout': 1800,
-          'hard_timeout': 25200,
+          'hard_timeout': 36000,
           'upload_test_results': True,
           'dimension_sets': [[{'os': 'SkyNet', 'pool': 'T-RIP'}]],
           'shards': 1
@@ -168,10 +164,6 @@ class PerfDataGeneratorTest(unittest.TestCase):
           'script': '//testing/trigger_scripts/perf_device_trigger.py'
         },
         'merge': {
-          'args': [
-            '--service-account-file',
-            '/creds/service_accounts/service-account-chromium-perf-histograms.json'
-          ],
           'script': '//tools/perf/process_perf_results.py'
         },
         'swarming': {
@@ -179,7 +171,7 @@ class PerfDataGeneratorTest(unittest.TestCase):
           'can_use_on_swarming_builders': True,
           'expiration': 7200,
           'io_timeout': 1800,
-          'hard_timeout': 25200,
+          'hard_timeout': 36000,
           'upload_test_results': True,
           'dimension_sets': [[{'os': 'SkyNet', 'pool': 'T-RIP'}]],
           'shards': 26
@@ -221,10 +213,6 @@ class PerfDataGeneratorTest(unittest.TestCase):
           'script': '//testing/trigger_scripts/perf_device_trigger.py'
         },
         'merge': {
-          'args': [
-            '--service-account-file',
-            '/creds/service_accounts/service-account-chromium-perf-histograms.json'
-          ],
           'script': '//tools/perf/process_perf_results.py'
         },
         'swarming': {
@@ -232,7 +220,7 @@ class PerfDataGeneratorTest(unittest.TestCase):
           'can_use_on_swarming_builders': True,
           'expiration': 7200,
           'io_timeout': 1800,
-          'hard_timeout': 25200,
+          'hard_timeout': 36000,
           'upload_test_results': True,
           'dimension_sets': [[{'os': 'SkyNet', 'pool': 'T-RIP'}]],
           'shards': 26

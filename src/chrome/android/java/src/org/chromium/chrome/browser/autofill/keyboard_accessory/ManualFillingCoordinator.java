@@ -5,10 +5,13 @@
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
 import android.support.annotation.Nullable;
-import android.support.v4.view.ViewPager;
+import android.view.View;
+import android.view.ViewStub;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Provider;
+import org.chromium.ui.DeferredViewStubInflationProvider;
 import org.chromium.ui.DropdownPopupWindow;
 import org.chromium.ui.ViewProvider;
 import org.chromium.ui.base.WindowAndroid;
@@ -28,21 +31,26 @@ public class ManualFillingCoordinator {
      * Initializes the manual filling component. Calls to this class are NoOps until this method is
      * called.
      * @param windowAndroid The window needed to listen to the keyboard and to connect to activity.
-     * @param accessoryViewProvider The view provider for the keyboard accessory bar.
-     * @param viewPagerProvider The view provider for the keyboard accessory bottom sheet.
+     * @param barStub The {@link ViewStub} used to inflate the keyboard accessory bar.
+     * @param sheetStub The {@link ViewStub} used to inflate the keyboard accessory bottom sheet.
      */
-    public void initialize(WindowAndroid windowAndroid,
-            ViewProvider<KeyboardAccessoryView> accessoryViewProvider,
-            ViewProvider<ViewPager> viewPagerProvider) {
-        KeyboardAccessoryCoordinator keyboardAccessory =
-                new KeyboardAccessoryCoordinator(mMediator, accessoryViewProvider);
-        viewPagerProvider.whenLoaded(viewPager -> {
-            accessoryViewProvider.whenLoaded(accessoryView -> {
-                viewPager.addOnPageChangeListener(accessoryView.getPageChangeListener());
-            });
-        });
-        AccessorySheetCoordinator accessorySheet = new AccessorySheetCoordinator(viewPagerProvider);
-        mMediator.initialize(keyboardAccessory, accessorySheet, windowAndroid);
+    public void initialize(WindowAndroid windowAndroid, ViewStub barStub, ViewStub sheetStub) {
+        if (barStub == null || sheetStub == null) return; // The manual filling isn't needed.
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)) {
+            barStub.setLayoutResource(org.chromium.chrome.R.layout.keyboard_accessory_modern);
+        }
+        initialize(windowAndroid, new DeferredViewStubInflationProvider<>(barStub),
+                new DeferredViewStubInflationProvider<>(sheetStub));
+    }
+
+    @VisibleForTesting
+    void initialize(WindowAndroid windowAndroid, ViewProvider<KeyboardAccessoryView> barProvider,
+            ViewProvider<AccessorySheetView> sheetProvider) {
+        sheetProvider.whenLoaded(accessorySheetView -> barProvider.whenLoaded(accessoryView -> {
+            accessorySheetView.addOnPageChangeListener(accessoryView.getPageChangeListener());
+        }));
+        mMediator.initialize(new KeyboardAccessoryCoordinator(mMediator, barProvider),
+                new AccessorySheetCoordinator(sheetProvider), windowAndroid);
     }
 
     /**
@@ -91,11 +99,11 @@ public class ManualFillingCoordinator {
     }
 
     void registerActionProvider(
-            KeyboardAccessoryData.PropertyProvider<KeyboardAccessoryData.Action> actionProvider) {
+            KeyboardAccessoryData.PropertyProvider<KeyboardAccessoryData.Action[]> actionProvider) {
         mMediator.registerActionProvider(actionProvider);
     }
 
-    void registerPasswordProvider(Provider<KeyboardAccessoryData.Item> itemProvider) {
+    void registerPasswordProvider(Provider<KeyboardAccessoryData.Item[]> itemProvider) {
         mMediator.registerPasswordProvider(itemProvider);
     }
 
@@ -138,5 +146,14 @@ public class ManualFillingCoordinator {
     @VisibleForTesting
     ManualFillingMediator getMediatorForTesting() {
         return mMediator;
+    }
+
+    /**
+     * Returns whether the Keyboard is replaced by an accessory sheet or is about to do so.
+     * @return True if an accessory sheet is (being) opened and replacing the keyboard.
+     * @param view A {@link View} that is used to find the window root.
+     */
+    public boolean isFillingViewShown(View view) {
+        return mMediator.isFillingViewShown(view);
     }
 }

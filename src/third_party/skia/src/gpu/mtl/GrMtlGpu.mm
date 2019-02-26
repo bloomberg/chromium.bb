@@ -107,10 +107,10 @@ GrMtlGpu::GrMtlGpu(GrContext* context, const GrContextOptions& options,
 }
 
 GrGpuRTCommandBuffer* GrMtlGpu::getCommandBuffer(
-            GrRenderTarget* renderTarget, GrSurfaceOrigin origin,
+            GrRenderTarget* renderTarget, GrSurfaceOrigin origin, const SkRect& bounds,
             const GrGpuRTCommandBuffer::LoadAndStoreInfo& colorInfo,
             const GrGpuRTCommandBuffer::StencilLoadAndStoreInfo& stencilInfo) {
-    return new GrMtlGpuRTCommandBuffer(this, renderTarget, origin, colorInfo, stencilInfo);
+    return new GrMtlGpuRTCommandBuffer(this, renderTarget, origin, bounds, colorInfo, stencilInfo);
 }
 
 GrGpuTextureCommandBuffer* GrMtlGpu::getCommandBuffer(GrTexture* texture,
@@ -338,7 +338,7 @@ static inline void init_surface_desc(GrSurfaceDesc* surfaceDesc, id<MTLTexture> 
 }
 
 sk_sp<GrTexture> GrMtlGpu::onWrapBackendTexture(const GrBackendTexture& backendTex,
-                                                GrWrapOwnership ownership) {
+                                                GrWrapOwnership ownership, bool purgeImmediately) {
     id<MTLTexture> mtlTexture = get_texture_from_backend(backendTex, ownership);
     if (!mtlTexture) {
         return nullptr;
@@ -347,7 +347,7 @@ sk_sp<GrTexture> GrMtlGpu::onWrapBackendTexture(const GrBackendTexture& backendT
     GrSurfaceDesc surfDesc;
     init_surface_desc(&surfDesc, mtlTexture, false, backendTex.config());
 
-    return GrMtlTexture::MakeWrappedTexture(this, surfDesc, mtlTexture);
+    return GrMtlTexture::MakeWrappedTexture(this, surfDesc, mtlTexture, purgeImmediately);
 }
 
 sk_sp<GrTexture> GrMtlGpu::onWrapRenderableBackendTexture(const GrBackendTexture& backendTex,
@@ -518,7 +518,7 @@ GrBackendTexture GrMtlGpu::createTestingOnlyBackendTexture(const void* pixels, i
 }
 
 bool GrMtlGpu::isTestingOnlyBackendTexture(const GrBackendTexture& tex) const {
-    SkASSERT(kMetal_GrBackend == tex.backend());
+    SkASSERT(GrBackendApi::kMetal == tex.backend());
 
     GrMtlTextureInfo info;
     if (!tex.getMtlTextureInfo(&info)) {
@@ -533,7 +533,7 @@ bool GrMtlGpu::isTestingOnlyBackendTexture(const GrBackendTexture& tex) const {
 }
 
 void GrMtlGpu::deleteTestingOnlyBackendTexture(const GrBackendTexture& tex) {
-    SkASSERT(kMetal_GrBackend == tex.fBackend);
+    SkASSERT(GrBackendApi::kMetal == tex.fBackend);
 
     GrMtlTextureInfo info;
     if (tex.getMtlTextureInfo(&info)) {
@@ -561,7 +561,7 @@ GrBackendRenderTarget GrMtlGpu::createTestingOnlyBackendRenderTarget(int w, int 
 }
 
 void GrMtlGpu::deleteTestingOnlyBackendRenderTarget(const GrBackendRenderTarget& rt) {
-    SkASSERT(kMetal_GrBackend == rt.fBackend);
+    SkASSERT(GrBackendApi::kMetal == rt.fBackend);
 
     GrMtlTextureInfo info;
     if (rt.getMtlTextureInfo(&info)) {

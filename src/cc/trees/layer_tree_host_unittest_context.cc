@@ -818,30 +818,46 @@ class LayerTreeHostContextTestLayersNotified : public LayerTreeHostContextTest {
     root_->AddChild(child_);
     child_->AddChild(grandchild_);
 
-    layer_tree_host()->SetRootLayer(root_);
     LayerTreeHostContextTest::SetupTree();
     client_.set_bounds(root_->bounds());
   }
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
+  void AttachTree() { layer_tree_host()->SetRootLayer(root_); }
+
   void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
     LayerTreeHostContextTest::DidActivateTreeOnThread(host_impl);
+
+    ++num_commits_;
 
     FakePictureLayerImpl* root_picture = nullptr;
     FakePictureLayerImpl* child_picture = nullptr;
     FakePictureLayerImpl* grandchild_picture = nullptr;
-
-    root_picture = static_cast<FakePictureLayerImpl*>(
-        host_impl->active_tree()->root_layer_for_testing());
-    child_picture = static_cast<FakePictureLayerImpl*>(
-        host_impl->active_tree()->LayerById(child_->id()));
-    grandchild_picture = static_cast<FakePictureLayerImpl*>(
-        host_impl->active_tree()->LayerById(grandchild_->id()));
-
-    ++num_commits_;
+    // Root layer isn't attached on first activation so the static_cast will
+    // fail before second activation.
+    if (num_commits_ >= 2) {
+      root_picture = static_cast<FakePictureLayerImpl*>(
+          host_impl->active_tree()->root_layer_for_testing());
+      child_picture = static_cast<FakePictureLayerImpl*>(
+          host_impl->active_tree()->LayerById(child_->id()));
+      grandchild_picture = static_cast<FakePictureLayerImpl*>(
+          host_impl->active_tree()->LayerById(grandchild_->id()));
+    }
     switch (num_commits_) {
       case 1:
+        // Because setting the colorspace on the first activation releases
+        // resources, don't attach the layers until the first activation.
+        // Because of single thread vs multi thread differences (i.e.
+        // commit to active tree), if this delay is not done, then the
+        // active tree layers will have a different number of resource
+        // releasing.
+        MainThreadTaskRunner()->PostTask(
+            FROM_HERE,
+            base::BindOnce(&LayerTreeHostContextTestLayersNotified::AttachTree,
+                           base::Unretained(this)));
+        break;
+      case 2:
         EXPECT_EQ(0u, root_picture->release_resources_count());
         EXPECT_EQ(0u, child_picture->release_resources_count());
         EXPECT_EQ(0u, grandchild_picture->release_resources_count());
@@ -850,7 +866,7 @@ class LayerTreeHostContextTestLayersNotified : public LayerTreeHostContextTest {
         LoseContext();
         times_to_fail_create_ = 1;
         break;
-      case 2:
+      case 3:
         EXPECT_TRUE(root_picture->release_resources_count());
         EXPECT_TRUE(child_picture->release_resources_count());
         EXPECT_TRUE(grandchild_picture->release_resources_count());
@@ -1617,14 +1633,19 @@ class TileResourceFreedIfLostWhileExported : public LayerTreeHostContextTest {
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
+    auto* context_provider = static_cast<viz::TestContextProvider*>(
+        impl->layer_tree_frame_sink()->worker_context_provider());
+    viz::TestSharedImageInterface* sii =
+        context_provider->SharedImageInterface();
     switch (impl->active_tree()->source_frame_number()) {
       case 0:
         // The PicturLayer has a texture for a tile, that has been exported to
         // the display compositor now.
         EXPECT_EQ(1u, impl->resource_provider()->num_resources_for_testing());
         EXPECT_EQ(1u, impl->resource_pool()->resource_count());
-        // Shows that the tile texture is allocated with the current context.
-        num_textures_ = gl_->NumTextures();
+        // Shows that the tile texture is allocated with the current worker
+        // context.
+        num_textures_ = sii->shared_image_count();
         EXPECT_GT(num_textures_, 0u);
 
         // Lose the LayerTreeFrameSink connection. The tile resource should
@@ -1638,8 +1659,8 @@ class TileResourceFreedIfLostWhileExported : public LayerTreeHostContextTest {
         EXPECT_EQ(1u, impl->resource_provider()->num_resources_for_testing());
         EXPECT_EQ(1u, impl->resource_pool()->resource_count());
         // Shows that the replacement tile texture is re-allocated with the
-        // current context, not just the previous one.
-        EXPECT_EQ(num_textures_, gl_->NumTextures());
+        // current worker context, not just the previous one.
+        EXPECT_EQ(num_textures_, sii->shared_image_count());
         EndTest();
     }
   }
@@ -1736,9 +1757,12 @@ class LayerTreeHostContextTestLoseAfterSendingBeginMainFrame
       return;
     deferred_ = true;
 
-    // Defer commits before the BeginFrame completes, causing it to be delayed.
-    scoped_defer_commits_ = layer_tree_host()->DeferCommits();
-    // Meanwhile, lose the context while we are in defer commits.
+    // TODO(schenney): This should switch back to defer_commits_ because there
+    // is no way in the real code to start deferring main frame updates when
+    // inside WillBeginMainFrame. Defer commits before the BeginFrame completes,
+    // causing it to be delayed.
+    scoped_defer_main_frame_update_ = layer_tree_host()->DeferMainFrameUpdate();
+    // Meanwhile, lose the context while we are in defer BeginMainFrame.
     ImplThreadTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(&LayerTreeHostContextTestLoseAfterSendingBeginMainFrame::
@@ -1746,8 +1770,8 @@ class LayerTreeHostContextTestLoseAfterSendingBeginMainFrame
                        base::Unretained(this)));
 
     // After the first frame, we will lose the context and then not start
-    // allowing commits until that happens. The 2nd frame should not happen
-    // before DidInitializeLayerTreeFrameSink occurs.
+    // lifecycle updates and commits until that happens. The 2nd frame should
+    // not happen before DidInitializeLayerTreeFrameSink occurs.
     lost_ = true;
   }
 
@@ -1759,15 +1783,18 @@ class LayerTreeHostContextTestLoseAfterSendingBeginMainFrame
   void LoseContextOnImplThread() {
     LoseContext();
 
+    // TODO(schenney): This should switch back to defer_commits_ to match the
+    // change above.
     // After losing the context, stop deferring commits.
-    PostReturnDeferCommitsToMainThread(std::move(scoped_defer_commits_));
+    PostReturnDeferMainFrameUpdateToMainThread(
+        std::move(scoped_defer_main_frame_update_));
   }
 
   void DidCommitAndDrawFrame() override { EndTest(); }
 
   void AfterTest() override {}
 
-  std::unique_ptr<ScopedDeferCommits> scoped_defer_commits_;
+  std::unique_ptr<ScopedDeferMainFrameUpdate> scoped_defer_main_frame_update_;
   bool deferred_ = false;
   bool lost_ = true;
 };

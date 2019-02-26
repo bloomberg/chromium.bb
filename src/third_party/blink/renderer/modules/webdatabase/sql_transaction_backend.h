@@ -67,6 +67,10 @@ class SQLTransactionBackend final
                                        SQLTransactionWrapper*,
                                        bool read_only);
 
+  SQLTransactionBackend(Database*,
+                        SQLTransaction*,
+                        SQLTransactionWrapper*,
+                        bool read_only);
   ~SQLTransactionBackend() override;
   void Trace(blink::Visitor*);
 
@@ -88,11 +92,6 @@ class SQLTransactionBackend final
                   int permissions);
 
  private:
-  SQLTransactionBackend(Database*,
-                        SQLTransaction*,
-                        SQLTransactionWrapper*,
-                        bool read_only);
-
   void DoCleanup();
 
   void EnqueueStatementBackend(SQLStatementBackend*);

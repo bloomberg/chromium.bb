@@ -606,9 +606,9 @@ bool Shell::ShouldAllowRunningInsecureContent(
 
 gfx::Size Shell::EnterPictureInPicture(const viz::SurfaceId& surface_id,
                                        const gfx::Size& natural_size) {
-  // During tests, returning a fake window size to pretent the window was
-  // created and allow tests to run accordingly.
-  return switches::IsRunWebTestsSwitchPresent() ? gfx::Size(42, 42)
+  // During tests, returning a fake window size (same aspect ratio) to pretend
+  // the window was created and allow tests to run accordingly.
+  return switches::IsRunWebTestsSwitchPresent() ? natural_size
                                                 : gfx::Size(0, 0);
 }
 

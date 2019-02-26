@@ -49,6 +49,8 @@ class MODULES_EXPORT SpeechSynthesis final
  public:
   static SpeechSynthesis* Create(ExecutionContext*);
 
+  explicit SpeechSynthesis(ExecutionContext*);
+
   bool pending() const;
   bool speaking() const;
   bool paused() const;
@@ -63,7 +65,7 @@ class MODULES_EXPORT SpeechSynthesis final
   // Used in testing to use a mock platform synthesizer
   void SetPlatformSynthesizer(PlatformSpeechSynthesizer*);
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(voiceschanged);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(voiceschanged, kVoiceschanged);
 
   ExecutionContext* GetExecutionContext() const override {
     return ContextClient::GetExecutionContext();
@@ -72,8 +74,6 @@ class MODULES_EXPORT SpeechSynthesis final
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit SpeechSynthesis(ExecutionContext*);
-
   // PlatformSpeechSynthesizerClient override methods.
   void VoicesDidChange() override;
   void DidStartSpeaking(PlatformSpeechSynthesisUtterance*) override;
@@ -93,7 +93,7 @@ class MODULES_EXPORT SpeechSynthesis final
                  const String& name);
 
   void FireErrorEvent(SpeechSynthesisUtterance*,
-                      unsigned long char_index,
+                      uint32_t char_index,
                       const String& error);
 
   // Returns the utterance at the front of the queue.

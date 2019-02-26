@@ -7,6 +7,8 @@ import("//testing/test.gni")
 
 # Only applied to CRC32C source and tests. (not exported)
 config("crc32c_config") {
+  visibility = [ ":*" ]
+
   include_dirs = [
     "config",
     "src/include",
@@ -64,30 +66,26 @@ config("crc32c_config") {
 
 source_set("crc32c") {
   sources = [
-    "config/crc32c/crc32c_config.h",
     "src/include/crc32c/crc32c.h",
     "src/src/crc32c.cc",
-    "src/src/crc32c_arm_linux_check.h",
-    "src/src/crc32c_internal.h",
     "src/src/crc32c_portable.cc",
-    "src/src/crc32c_prefetch.h",
-    "src/src/crc32c_read_le.h",
-    "src/src/crc32c_round_up.h",
-    "src/src/crc32c_sse42_check.h",
   ]
 
   configs += [ ":crc32c_config" ]
   deps = [
     ":crc32c_arm64",
+    ":crc32c_internal_headers",
     ":crc32c_sse42",
   ]
 }
 
 source_set("crc32c_sse42") {
+  visibility = [ ":*" ]
+
   sources = [
-    "config/crc32c/crc32c_config.h",
     "src/src/crc32c_sse42.cc",
     "src/src/crc32c_sse42.h",
+    "src/src/crc32c_sse42_check.h",
   ]
 
   configs += [ ":crc32c_config" ]
@@ -98,19 +96,39 @@ source_set("crc32c_sse42") {
       cflags = [ "-msse4.2" ]
     }
   }
+
+  deps = [
+    ":crc32c_internal_headers",
+  ]
 }
 
 source_set("crc32c_arm64") {
+  visibility = [ ":*" ]
+
   sources = [
-    "config/crc32c/crc32c_config.h",
     "src/src/crc32c_arm64.cc",
     "src/src/crc32c_arm64.h",
+    "src/src/crc32c_arm64_linux_check.h",
   ]
 
   configs += [ ":crc32c_config" ]
   if (current_cpu == "arm64") {
     cflags = [ "-march=armv8-a+crc+crypto" ]
   }
+
+  deps = [
+    ":crc32c_internal_headers",
+  ]
+}
+
+source_set("crc32c_internal_headers") {
+  sources = [
+    "config/crc32c/crc32c_config.h",
+    "src/src/crc32c_internal.h",
+    "src/src/crc32c_prefetch.h",
+    "src/src/crc32c_read_le.h",
+    "src/src/crc32c_round_up.h",
+  ]
 }
 
 test("crc32c_tests") {
@@ -128,6 +146,10 @@ test("crc32c_tests") {
   configs += [ ":crc32c_config" ]
   deps = [
     ":crc32c",
+    ":crc32c_arm64",
+    ":crc32c_internal_headers",
+    ":crc32c_sse42",
     "//testing/gtest:gtest_main",
+    "//third_party/googletest:gtest",
   ]
 }

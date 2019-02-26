@@ -14,15 +14,21 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
+#include "components/invalidation/impl/invalidation_logger.h"
+#include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/impl/invalidator_storage.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
+#include "components/invalidation/public/invalidation_service.h"
 #include "components/invalidation/public/invalidator_state.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
 #include "components/sync/base/experiments.h"
+#include "components/sync/base/invalidation_helper.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/base/test_unrecoverable_error_handler.h"
 #include "components/sync/device_info/device_info.h"
@@ -41,7 +47,6 @@
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google/cacheinvalidation/include/types.h"
-#include "google_apis/gaia/gaia_constants.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -161,6 +166,27 @@ class NullEncryptionObserver : public SyncEncryptionHandler::Observer {
       const SyncEncryptionHandler::NigoriState& nigori_state) override {}
 };
 
+class MockInvalidationService : public invalidation::InvalidationService {
+ public:
+  MockInvalidationService() = default;
+  ~MockInvalidationService() override = default;
+
+  MOCK_METHOD1(RegisterInvalidationHandler,
+               void(syncer::InvalidationHandler* handler));
+  MOCK_METHOD2(UpdateRegisteredInvalidationIds,
+               bool(syncer::InvalidationHandler* handler,
+                    const syncer::ObjectIdSet& ids));
+  MOCK_METHOD1(UnregisterInvalidationHandler,
+               void(syncer::InvalidationHandler* handler));
+  MOCK_METHOD0(GetInvalidatorStat, syncer::InvalidatorState());
+  MOCK_CONST_METHOD0(GetInvalidatorState, syncer::InvalidatorState());
+  MOCK_CONST_METHOD0(GetInvalidatorClientId, std::string());
+  MOCK_METHOD0(GetInvalidationLogger, invalidation::InvalidationLogger*());
+  MOCK_CONST_METHOD1(RequestDetailedStatus,
+                     void(base::RepeatingCallback<
+                          void(const base::DictionaryValue&)> post_caller));
+};
+
 class SyncEngineTest : public testing::Test {
  protected:
   SyncEngineTest()
@@ -178,13 +204,16 @@ class SyncEngineTest : public testing::Test {
 
     sync_prefs_ = std::make_unique<SyncPrefs>(&pref_service_);
     sync_thread_.StartAndWaitForTesting();
+    ON_CALL(invalidator_,
+            UpdateRegisteredInvalidationIds(testing::_, testing::_))
+        .WillByDefault(testing::Return(true));
     backend_ = std::make_unique<SyncBackendHostImpl>(
-        "dummyDebugName", &sync_client_, nullptr, sync_prefs_->AsWeakPtr(),
+        "dummyDebugName", &sync_client_, &invalidator_,
+        sync_prefs_->AsWeakPtr(),
         temp_dir_.GetPath().Append(base::FilePath(kTestSyncDir)));
     credentials_.account_id = "user@example.com";
     credentials_.email = "user@example.com";
     credentials_.sync_token = "sync_token";
-    credentials_.scope_set.insert(GaiaConstants::kChromeSyncOAuth2Scope);
 
     fake_manager_factory_ = std::make_unique<FakeSyncManagerFactory>(
         &fake_manager_, network::TestNetworkConnectionTracker::GetInstance());
@@ -229,8 +258,8 @@ class SyncEngineTest : public testing::Test {
     params.registrar = std::make_unique<SyncBackendRegistrar>(
         std::string(), base::Bind(&SyncClient::CreateModelWorkerForGroup,
                                   base::Unretained(&sync_client_)));
-    params.encryption_observer_proxy =
-        std::make_unique<NullEncryptionObserver>();
+    params.encryption_observer_proxies.push_back(
+        std::make_unique<NullEncryptionObserver>());
     params.http_factory_getter = std::move(http_post_provider_factory_getter);
     params.credentials = credentials_;
     params.sync_manager_factory = std::move(fake_manager_factory_);
@@ -269,8 +298,6 @@ class SyncEngineTest : public testing::Test {
     params.to_purge = Intersection(engine_types_, disabled_types);
     params.ready_task =
         base::Bind(&SyncEngineTest::DownloadReady, base::Unretained(this));
-    params.retry_callback =
-        base::Bind(&SyncEngineTest::OnDownloadRetry, base::Unretained(this));
 
     ModelTypeSet ready_types =
         Difference(params.enabled_types, params.to_download);
@@ -285,8 +312,6 @@ class SyncEngineTest : public testing::Test {
     engine_types_.PutAll(succeeded_types);
     std::move(quit_loop_).Run();
   }
-
-  void OnDownloadRetry() { NOTIMPLEMENTED(); }
 
   void SetEngineTypes(ModelTypeSet engine_types) {
     EXPECT_TRUE(engine_types_.Empty());
@@ -319,6 +344,7 @@ class SyncEngineTest : public testing::Test {
   std::unique_ptr<NetworkResources> network_resources_;
   std::unique_ptr<SyncEncryptionHandler::NigoriState> saved_nigori_state_;
   base::OnceClosure quit_loop_;
+  testing::NiceMock<MockInvalidationService> invalidator_;
 };
 
 // Test basic initialization with no initial types (first time initialization).
@@ -826,6 +852,116 @@ TEST_F(SyncEngineTest, ModelTypeConnectorValidDuringShutdown) {
   backend_->DeactivateNonBlockingDataType(AUTOFILL);
   backend_->Shutdown(STOP_SYNC);
   backend_.reset();
+}
+
+TEST_F(SyncEngineTest, EnabledTypesStayUnchangedWhenFCMIsDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      invalidation::switches::kFCMInvalidations);
+
+  // Making sure that the noisy types we're interested in are in the
+  // |enabled_types_|.
+  enabled_types_.Put(SESSIONS);
+  enabled_types_.Put(FAVICON_IMAGES);
+  enabled_types_.Put(FAVICON_TRACKING);
+
+  InitializeBackend(true);
+  EXPECT_CALL(invalidator_,
+              UpdateRegisteredInvalidationIds(
+                  backend_.get(), ModelTypeSetToObjectIdSet(enabled_types_)));
+  ConfigureDataTypes();
+
+  // At shutdown, we clear the registered invalidation ids.
+  EXPECT_CALL(invalidator_,
+              UpdateRegisteredInvalidationIds(backend_.get(), ObjectIdSet()));
+}
+
+TEST_F(
+    SyncEngineTest,
+    NoisyDataTypesInvalidationAreDiscardedByDefaultOnAndroidWhenFCMIsEnabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      invalidation::switches::kFCMInvalidations);
+  // Making sure that the noisy types we're interested in are in the
+  // |enabled_types_|.
+  enabled_types_.Put(SESSIONS);
+  enabled_types_.Put(FAVICON_IMAGES);
+  enabled_types_.Put(FAVICON_TRACKING);
+
+  ModelTypeSet invalidation_enabled_types(enabled_types_);
+
+#if defined(OS_ANDROID)
+  // SESSIONS, FAVICON_IMAGES, FAVICON_TRACKING are noisy data types whose
+  // invalidations aren't enabled by default on Android.
+  invalidation_enabled_types.Remove(SESSIONS);
+  invalidation_enabled_types.Remove(FAVICON_IMAGES);
+  invalidation_enabled_types.Remove(FAVICON_TRACKING);
+#endif
+
+  InitializeBackend(true);
+  EXPECT_CALL(invalidator_,
+              UpdateRegisteredInvalidationIds(
+                  backend_.get(),
+                  ModelTypeSetToObjectIdSet(invalidation_enabled_types)));
+  ConfigureDataTypes();
+
+  // At shutdown, we clear the registered invalidation ids.
+  EXPECT_CALL(invalidator_,
+              UpdateRegisteredInvalidationIds(backend_.get(), ObjectIdSet()));
+}
+
+TEST_F(SyncEngineTest, WhenEnabledTypesStayDisabledFCMIsEnabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      invalidation::switches::kFCMInvalidations);
+  // Testing that noisy types doesn't used for registration, when
+  // they're disabled in Sync, hence removing noisy datatypes from
+  // |enabled_types_|.
+  enabled_types_.Remove(SESSIONS);
+  enabled_types_.Remove(FAVICON_IMAGES);
+  enabled_types_.Remove(FAVICON_TRACKING);
+
+  InitializeBackend(true);
+  EXPECT_CALL(invalidator_,
+              UpdateRegisteredInvalidationIds(
+                  backend_.get(), ModelTypeSetToObjectIdSet(enabled_types_)));
+  ConfigureDataTypes();
+
+  // At shutdown, we clear the registered invalidation ids.
+  EXPECT_CALL(invalidator_,
+              UpdateRegisteredInvalidationIds(backend_.get(), ObjectIdSet()));
+}
+
+TEST_F(SyncEngineTest,
+       EnabledTypesChangesWhenSetInvalidationsForSessionsCalled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  // Making sure that the noisy types we're interested in are in the
+  // |enabled_types_|.
+  enabled_types_.Put(SESSIONS);
+  enabled_types_.Put(FAVICON_IMAGES);
+  enabled_types_.Put(FAVICON_TRACKING);
+
+  InitializeBackend(true);
+  ConfigureDataTypes();
+
+  EXPECT_CALL(invalidator_,
+              UpdateRegisteredInvalidationIds(
+                  backend_.get(), ModelTypeSetToObjectIdSet(enabled_types_)));
+  backend_->SetInvalidationsForSessionsEnabled(true);
+
+  ModelTypeSet enabled_types(enabled_types_);
+  enabled_types.Remove(SESSIONS);
+  enabled_types.Remove(FAVICON_IMAGES);
+  enabled_types.Remove(FAVICON_TRACKING);
+
+  EXPECT_CALL(invalidator_,
+              UpdateRegisteredInvalidationIds(
+                  backend_.get(), ModelTypeSetToObjectIdSet(enabled_types)));
+  backend_->SetInvalidationsForSessionsEnabled(false);
+
+  // At shutdown, we clear the registered invalidation ids.
+  EXPECT_CALL(invalidator_,
+              UpdateRegisteredInvalidationIds(backend_.get(), ObjectIdSet()));
 }
 
 }  // namespace

@@ -28,7 +28,6 @@ class SecureChannelClient;
 namespace tether {
 
 class ActiveHost;
-class BleConnectionManager;
 class DeviceIdTetherNetworkGuidMap;
 class DisconnectTetheringRequestSender;
 class HostScanCache;
@@ -53,7 +52,6 @@ class TetherConnectorImpl : public TetherConnector,
       WifiHotspotConnector* wifi_hotspot_connector,
       ActiveHost* active_host,
       TetherHostFetcher* tether_host_fetcher,
-      BleConnectionManager* connection_manager,
       TetherHostResponseRecorder* tether_host_response_recorder,
       DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map,
       HostScanCache* host_scan_cache,
@@ -108,7 +106,6 @@ class TetherConnectorImpl : public TetherConnector,
   WifiHotspotConnector* wifi_hotspot_connector_;
   ActiveHost* active_host_;
   TetherHostFetcher* tether_host_fetcher_;
-  BleConnectionManager* connection_manager_;
   TetherHostResponseRecorder* tether_host_response_recorder_;
   DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map_;
   HostScanCache* host_scan_cache_;

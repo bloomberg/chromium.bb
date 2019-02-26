@@ -5,16 +5,23 @@
 #include <memory>
 #include <string>
 
+#include "base/guid.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/values_test_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/common/url_constants.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/reporting/reporting_policy.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
@@ -77,7 +84,8 @@ class ReportingBrowserTest : public CertVerifierBrowserTest {
 
 void ReportingBrowserTest::SetUp() {
   scoped_feature_list_.InitWithFeatures(
-      {network::features::kReporting, network::features::kNetworkErrorLogging},
+      {network::features::kReporting, network::features::kNetworkErrorLogging,
+       features::kCrashReporting},
       {});
   CertVerifierBrowserTest::SetUp();
 
@@ -101,7 +109,7 @@ void ReportingBrowserTest::SetUpOnMainThread() {
 
   // Reporting and NEL will ignore configurations headers if the response
   // doesn't come from an HTTPS origin, or if the origin's certificate is
-  // invalud.  Our test certs are valid, so we need a mock certificate verifier
+  // invalid.  Our test certs are valid, so we need a mock certificate verifier
   // to trick the Reporting stack into paying attention to our test headers.
   mock_cert_verifier()->set_default_result(net::OK);
   ASSERT_TRUE(server()->Start());
@@ -165,4 +173,52 @@ IN_PROC_BROWSER_TEST_F(ReportingBrowserTest, TestReportingHeadersProcessed) {
       )json",
       port()));
   EXPECT_EQ(*expected, *actual);
+}
+
+// This test intentionally crashes a render process, and so fails ASan tests.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_CrashReport DISABLED_CrashReport
+#else
+#define MAYBE_CrashReport CrashReport
+#endif
+IN_PROC_BROWSER_TEST_F(ReportingBrowserTest, MAYBE_CrashReport) {
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::TestNavigationObserver navigation_observer(contents);
+
+  // Navigate to reporting-enabled page.
+  NavigateParams params(browser(), GetReportingEnabledURL(),
+                        ui::PAGE_TRANSITION_LINK);
+  Navigate(&params);
+
+  original_response()->WaitForRequest();
+  original_response()->Send("HTTP/1.1 200 OK\r\n");
+  original_response()->Send(GetReportToHeader());
+  original_response()->Send("\r\n");
+  original_response()->Done();
+  navigation_observer.Wait();
+
+  // Simulate a crash on the page.
+  contents->GetController().LoadURL(GURL(content::kChromeUICrashURL),
+                                    content::Referrer(),
+                                    ui::PAGE_TRANSITION_TYPED, std::string());
+
+  upload_response()->WaitForRequest();
+  auto response = ParseReportUpload(upload_response()->http_request()->content);
+  upload_response()->Send("HTTP/1.1 200 OK\r\n");
+  upload_response()->Send("\r\n");
+  upload_response()->Done();
+
+  // Verify the contents of the report that we received.
+  EXPECT_TRUE(response != nullptr);
+  auto report = response->GetList().begin();
+  auto* type = report->FindKeyOfType("type", base::Value::Type::STRING);
+  auto* url = report->FindKeyOfType("url", base::Value::Type::STRING);
+  auto* id =
+      report->FindPathOfType({"body", "crashId"}, base::Value::Type::STRING);
+
+  EXPECT_EQ("crash", type->GetString());
+  EXPECT_EQ(base::StringPrintf("https://example.com:%d/original", port()),
+            url->GetString());
+  EXPECT_TRUE(base::IsValidGUID(id->GetString()));
 }

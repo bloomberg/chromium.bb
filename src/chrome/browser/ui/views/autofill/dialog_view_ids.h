@@ -21,6 +21,7 @@ enum DialogViewId : int {
   FOOTNOTE_VIEW,             // Contains the legal messages for upload save
   SIGN_IN_PROMO_VIEW,        // Contains the sign-in promo view
   MANAGE_CARDS_VIEW,         // The manage cards view
+  EXPIRATION_DATE_VIEW,      // Contains the dropdowns for expiration date
 
   // The sub-view that contains the sign-in button in the promo.
   SIGN_IN_VIEW,
@@ -40,6 +41,13 @@ enum DialogViewId : int {
 
   // The following are views::TooltipIcon objects.
   CARDHOLDER_NAME_TOOLTIP,  // Appears during cardholder name entry/confirmation
+
+  // The following are views::Combobox objects.
+  EXPIRATION_DATE_DROPBOX_MONTH,
+  EXPIRATION_DATE_DROPBOX_YEAR,
+
+  // The following are views::Label objects.
+  EXPIRATION_DATE_LABEL,  // Appears during save offer bubble
 };
 
 }  // namespace autofill

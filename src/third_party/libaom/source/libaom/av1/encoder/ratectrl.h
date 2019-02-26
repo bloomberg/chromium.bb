@@ -42,6 +42,7 @@ extern "C" {
 #define REDUCE_LAST_GF_LENGTH 1
 #define MULTI_LVL_BOOST_VBR_CQ 1
 #else
+#define MAX_PYRAMID_SIZE 16
 #define USE_SYMM_MULTI_LAYER 0
 #define REDUCE_LAST_ALT_BOOST 0
 #define REDUCE_LAST_GF_LENGTH 0
@@ -262,9 +263,6 @@ int av1_rc_clamp_iframe_target_size(const struct AV1_COMP *const cpi,
                                     int target);
 int av1_rc_clamp_pframe_target_size(const struct AV1_COMP *const cpi,
                                     int target);
-// Utility to set frame_target into the RATE_CONTROL structure
-// This function is called only from the av1_rc_get_..._params() functions.
-void av1_rc_set_frame_target(struct AV1_COMP *cpi, int target);
 
 // Computes a q delta (in "q index" terms) to get from a starting q value
 // to a target q value
@@ -287,6 +285,10 @@ void av1_rc_set_gf_interval_range(const struct AV1_COMP *const cpi,
 void av1_set_target_rate(struct AV1_COMP *cpi, int width, int height);
 
 int av1_resize_one_pass_cbr(struct AV1_COMP *cpi);
+
+void av1_configure_buffer_updates(struct AV1_COMP *cpi);
+
+void av1_estimate_qp_gop(struct AV1_COMP *cpi);
 
 #ifdef __cplusplus
 }  // extern "C"

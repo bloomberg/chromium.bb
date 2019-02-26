@@ -25,7 +25,8 @@ namespace blink {
 
 PresentationReceiver::PresentationReceiver(LocalFrame* frame)
     : ContextLifecycleObserver(frame->GetDocument()),
-      connection_list_(new PresentationConnectionList(frame->GetDocument())),
+      connection_list_(MakeGarbageCollected<PresentationConnectionList>(
+          frame->GetDocument())),
       receiver_binding_(this) {
   auto* interface_provider = GetFrame()->Client()->GetInterfaceProvider();
   interface_provider->GetInterface(mojo::MakeRequest(&presentation_service_));

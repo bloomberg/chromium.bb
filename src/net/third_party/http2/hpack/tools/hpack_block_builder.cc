@@ -5,7 +5,7 @@
 #include "net/third_party/http2/hpack/tools/hpack_block_builder.h"
 
 #include "net/third_party/http2/hpack/varint/hpack_varint_encoder.h"
-#include "net/third_party/http2/tools/http2_bug_tracker.h"
+#include "net/third_party/http2/platform/api/http2_bug_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace http2 {
@@ -29,7 +29,8 @@ void HpackBlockBuilder::AppendHighBitsAndVarint(uint8_t high_bits,
 
   // After the prefix, at most 63 bits can remain to be encoded.
   // Each octet holds 7 bits, so at most 9 octets are necessary.
-  varint_encoder.ResumeEncoding(/* max_encoded_bytes = */ 9, &buffer_);
+  // TODO(bnc): Move this into a constant in HpackVarintEncoder.
+  varint_encoder.ResumeEncoding(/* max_encoded_bytes = */ 10, &buffer_);
   DCHECK(!varint_encoder.IsEncodingInProgress());
 }
 
@@ -62,6 +63,7 @@ void HpackBlockBuilder::AppendEntryTypeAndVarint(HpackEntryType entry_type,
       HTTP2_BUG << "Unreached, entry_type=" << entry_type;
       high_bits = 0;
       prefix_length = 0;
+      break;
   }
   AppendHighBitsAndVarint(high_bits, prefix_length, varint);
 }

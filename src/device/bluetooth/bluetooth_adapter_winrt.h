@@ -117,8 +117,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
       const;
 
   virtual std::unique_ptr<BluetoothDeviceWinrt> CreateDevice(
-      uint64_t raw_address,
-      base::Optional<std::string> local_name);
+      uint64_t raw_address);
 
  private:
   void OnGetDefaultAdapter(

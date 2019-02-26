@@ -8,7 +8,7 @@
 
 #if defined(OS_LINUX)
 #include "base/linux_util.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #else
 #include "remoting/base/platform_details.h"
 #endif

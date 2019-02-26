@@ -24,7 +24,7 @@ void WorkerModuleTreeClient::NotifyModuleTreeLoadFinished(
   auto* execution_context =
       ExecutionContext::From(modulator_->GetScriptState());
   blink::WorkerReportingProxy& worker_reporting_proxy =
-      ToWorkerGlobalScope(execution_context)->ReportingProxy();
+      To<WorkerGlobalScope>(execution_context)->ReportingProxy();
 
   if (!module_script) {
     // Step 12: "If the algorithm asynchronously completes with null, queue
@@ -41,6 +41,9 @@ void WorkerModuleTreeClient::NotifyModuleTreeLoadFinished(
   // asynchronous completion, with script being the asynchronous completion
   // value."
   worker_reporting_proxy.WillEvaluateModuleScript();
+  // This |error| is always null because the second argument is |kReport|.
+  // TODO(nhiroki): Catch an error when an evaluation error happens.
+  // (https://crbug.com/680046)
   ScriptValue error = modulator_->ExecuteModule(
       module_script, Modulator::CaptureEvalErrorFlag::kReport);
   worker_reporting_proxy.DidEvaluateModuleScript(error.IsEmpty());

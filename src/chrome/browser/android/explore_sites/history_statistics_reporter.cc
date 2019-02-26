@@ -41,7 +41,9 @@ HistoryStatisticsReporter::HistoryStatisticsReporter(
       history_service_observer_(this),
       weak_ptr_factory_(this) {}
 
-HistoryStatisticsReporter::~HistoryStatisticsReporter() {}
+HistoryStatisticsReporter::~HistoryStatisticsReporter() {
+  history_service_observer_.RemoveAll();
+}
 
 void HistoryStatisticsReporter::ScheduleReportStatistics() {
   // Only try to report stats once per session.
@@ -69,6 +71,11 @@ void HistoryStatisticsReporter::OnHistoryServiceLoaded(
     history::HistoryService* history_service) {
   DCHECK(history_service == history_service_);
   ComputeStatistics();
+}
+
+void HistoryStatisticsReporter::HistoryServiceBeingDeleted(
+    history::HistoryService* history_service) {
+  history_service_observer_.RemoveAll();
 }
 
 void HistoryStatisticsReporter::MaybeReportStatistics() {

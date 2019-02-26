@@ -22,6 +22,9 @@ class CORE_EXPORT CSSMathMax final : public CSSMathVariadic {
   // Blink-internal constructor.
   static CSSMathMax* Create(CSSNumericValueVector);
 
+  CSSMathMax(CSSNumericArray* values, const CSSNumericValueType& type)
+      : CSSMathVariadic(values, type) {}
+
   String getOperator() const final { return "max"; }
 
   // From CSSStyleValue.
@@ -33,9 +36,6 @@ class CORE_EXPORT CSSMathMax final : public CSSMathVariadic {
   }
 
  private:
-  CSSMathMax(CSSNumericArray* values, const CSSNumericValueType& type)
-      : CSSMathVariadic(values, type) {}
-
   void BuildCSSText(Nested, ParenLess, StringBuilder&) const final;
 
   base::Optional<CSSNumericSumValue> SumValue() const final;

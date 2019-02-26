@@ -37,6 +37,7 @@ class WebGLProgram final : public WebGLSharedPlatform3DObject {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  explicit WebGLProgram(WebGLRenderingContextBase*);
   ~WebGLProgram() override;
 
   static WebGLProgram* Create(WebGLRenderingContextBase*);
@@ -75,8 +76,6 @@ class WebGLProgram final : public WebGLSharedPlatform3DObject {
   void Trace(blink::Visitor*) override;
 
  protected:
-  explicit WebGLProgram(WebGLRenderingContextBase*);
-
   void DeleteObjectImpl(gpu::gles2::GLES2Interface*) override;
 
  private:

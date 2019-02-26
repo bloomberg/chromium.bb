@@ -37,12 +37,12 @@
 #include "third_party/blink/renderer/core/layout/layout_details_marker.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 inline PickerIndicatorElement::PickerIndicatorElement(
     Document& document,
@@ -54,9 +54,10 @@ PickerIndicatorElement* PickerIndicatorElement::Create(
     Document& document,
     PickerIndicatorOwner& picker_indicator_owner) {
   PickerIndicatorElement* element =
-      new PickerIndicatorElement(document, picker_indicator_owner);
+      MakeGarbageCollected<PickerIndicatorElement>(document,
+                                                   picker_indicator_owner);
   element->SetShadowPseudoId(AtomicString("-webkit-calendar-picker-indicator"));
-  element->setAttribute(idAttr, ShadowElementNames::PickerIndicator());
+  element->setAttribute(kIdAttr, shadow_element_names::PickerIndicator());
   return element;
 }
 
@@ -75,10 +76,10 @@ void PickerIndicatorElement::DefaultEventHandler(Event& event) {
       picker_indicator_owner_->IsPickerIndicatorOwnerDisabledOrReadOnly())
     return;
 
-  if (event.type() == EventTypeNames::click) {
+  if (event.type() == event_type_names::kClick) {
     OpenPopup();
     event.SetDefaultHandled();
-  } else if (event.type() == EventTypeNames::keypress &&
+  } else if (event.type() == event_type_names::kKeypress &&
              event.IsKeyboardEvent()) {
     int char_code = ToKeyboardEvent(event).charCode();
     if (char_code == ' ' || char_code == '\r') {
@@ -161,15 +162,15 @@ Node::InsertionNotificationRequest PickerIndicatorElement::InsertedInto(
 void PickerIndicatorElement::DidNotifySubtreeInsertionsToDocument() {
   if (!GetDocument().ExistingAXObjectCache())
     return;
-  // Don't make this focusable if we are in layout tests in order to avoid to
-  // break existing tests.
-  // FIXME: We should have a way to disable accessibility in layout tests.
-  if (LayoutTestSupport::IsRunningLayoutTest())
+  // Don't make this focusable if we are in web tests in order to avoid
+  // breaking existing tests.
+  // FIXME: We should have a way to disable accessibility in web tests.
+  if (WebTestSupport::IsRunningWebTest())
     return;
-  setAttribute(tabindexAttr, "0");
-  setAttribute(aria_haspopupAttr, "menu");
-  setAttribute(roleAttr, "button");
-  setAttribute(aria_labelAttr,
+  setAttribute(kTabindexAttr, "0");
+  setAttribute(kAriaHaspopupAttr, "menu");
+  setAttribute(kRoleAttr, "button");
+  setAttribute(kAriaLabelAttr,
                AtomicString(GetLocale().QueryString(
                    WebLocalizedString::kAXCalendarShowDatePicker)));
 }

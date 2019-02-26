@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -112,11 +113,10 @@
 #include "printing/buildflags/buildflags.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "services/service_manager/public/cpp/service_context.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
-#include "third_party/blink/public/platform/scheduler/renderer_process_type.h"
+#include "third_party/blink/public/platform/scheduler/web_renderer_process_type.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_cache.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
@@ -377,20 +377,23 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 
   thread->SetRendererProcessType(
       IsStandaloneContentExtensionProcess()
-          ? blink::scheduler::RendererProcessType::kExtensionRenderer
-          : blink::scheduler::RendererProcessType::kRenderer);
+          ? blink::scheduler::WebRendererProcessType::kExtensionRenderer
+          : blink::scheduler::WebRendererProcessType::kRenderer);
 
   {
     startup_metric_utils::mojom::StartupMetricHostPtr startup_metric_host;
-    GetConnector()->BindInterface(chrome::mojom::kServiceName,
-                                  &startup_metric_host);
+    GetConnector()->BindInterface(
+        service_manager::ServiceFilter::ByName(chrome::mojom::kServiceName),
+        &startup_metric_host);
     startup_metric_host->RecordRendererMainEntryTime(main_entry_time_);
   }
 
 #if defined(OS_WIN)
   // Bind the ModuleEventSink interface.
-  thread->GetConnector()->BindInterface(content::mojom::kBrowserServiceName,
-                                        &module_event_sink_);
+  thread->GetConnector()->BindInterface(
+      service_manager::ServiceFilter::ByName(
+          content::mojom::kBrowserServiceName),
+      &module_event_sink_);
 
   // Rebind the ModuleEventSink to the IO task runner.
   // The use of base::Unretained() is safe here because |module_event_sink_|
@@ -747,8 +750,8 @@ ChromeContentRendererClient::GetPluginInfoHost() {
     ~PluginInfoHostHolder() {}
     chrome::mojom::PluginInfoHostAssociatedPtr plugin_info_host;
   };
-  CR_DEFINE_STATIC_LOCAL(PluginInfoHostHolder, holder, ());
-  return holder.plugin_info_host;
+  static base::NoDestructor<PluginInfoHostHolder> holder;
+  return holder->plugin_info_host;
 }
 
 // static
@@ -1068,10 +1071,6 @@ GURL ChromeContentRendererClient::GetNaClContentHandlerURL(
   return GURL();
 }
 
-void ChromeContentRendererClient::OnStart() {
-  context()->connector()->BindConnectorRequest(std::move(connector_request_));
-}
-
 void ChromeContentRendererClient::OnBindInterface(
     const service_manager::BindSourceInfo& remote_info,
     const std::string& name,
@@ -1082,12 +1081,9 @@ void ChromeContentRendererClient::OnBindInterface(
 void ChromeContentRendererClient::GetInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
-  // In some tests, this may not be configured.
-  if (!connector_)
-    return;
-  connector_->BindInterface(
-      service_manager::Identity(chrome::mojom::kServiceName), interface_name,
-      std::move(interface_pipe));
+  service_binding_.GetConnector()->BindInterface(
+      service_manager::ServiceFilter::ByName(chrome::mojom::kServiceName),
+      interface_name, std::move(interface_pipe));
 }
 
 #if BUILDFLAG(ENABLE_NACL)
@@ -1180,13 +1176,12 @@ void ChromeContentRendererClient::PrepareErrorPage(
     content::RenderFrame* render_frame,
     const WebURLRequest& failed_request,
     const blink::WebURLError& web_error,
-    std::string* error_html,
-    base::string16* error_description) {
+    std::string* error_html) {
   PrepareErrorPageInternal(
       render_frame, failed_request,
       error_page::Error::NetError(web_error.url(), web_error.reason(),
                                   web_error.has_copy_in_cache()),
-      error_html, error_description);
+      error_html);
 }
 
 void ChromeContentRendererClient::PrepareErrorPageForHttpStatusError(
@@ -1194,12 +1189,10 @@ void ChromeContentRendererClient::PrepareErrorPageForHttpStatusError(
     const WebURLRequest& failed_request,
     const GURL& unreachable_url,
     int http_status,
-    std::string* error_html,
-    base::string16* error_description) {
+    std::string* error_html) {
   PrepareErrorPageInternal(
       render_frame, failed_request,
-      error_page::Error::HttpError(unreachable_url, http_status), error_html,
-      error_description);
+      error_page::Error::HttpError(unreachable_url, http_status), error_html);
 }
 
 void ChromeContentRendererClient::GetErrorDescription(
@@ -1217,15 +1210,12 @@ void ChromeContentRendererClient::PrepareErrorPageInternal(
     content::RenderFrame* render_frame,
     const WebURLRequest& failed_request,
     const error_page::Error& error,
-    std::string* error_html,
-    base::string16* error_description) {
+    std::string* error_html) {
   bool is_post = failed_request.HttpMethod().Ascii() == "POST";
   bool is_ignoring_cache =
       failed_request.GetCacheMode() == FetchCacheMode::kBypassCache;
   NetErrorHelper::Get(render_frame)
       ->PrepareErrorPage(error, is_post, is_ignoring_cache, error_html);
-  if (error_description)
-    GetErrorDescriptionInternal(failed_request, error, error_description);
 }
 
 void ChromeContentRendererClient::GetErrorDescriptionInternal(
@@ -1375,14 +1365,9 @@ ChromeContentRendererClient::GetPrescientNetworking() {
   return prescient_networking_dispatcher_.get();
 }
 
-bool ChromeContentRendererClient::ShouldOverridePageVisibilityState(
-    const content::RenderFrame* render_frame,
-    blink::mojom::PageVisibilityState* override_state) {
-  if (!prerender::PrerenderHelper::IsPrerendering(render_frame))
-    return false;
-
-  *override_state = blink::mojom::PageVisibilityState::kPrerender;
-  return true;
+bool ChromeContentRendererClient::ShouldOverrideVisibilityAsPrerender(
+    const content::RenderFrame* render_frame) {
+  return prerender::PrerenderHelper::IsPrerendering(render_frame);
 }
 
 bool ChromeContentRendererClient::IsExternalPepperPlugin(
@@ -1713,15 +1698,12 @@ bool ChromeContentRendererClient::OverrideLegacySymantecCertConsoleMessage(
 
 void ChromeContentRendererClient::CreateRendererService(
     service_manager::mojom::ServiceRequest service_request) {
-  service_context_ = std::make_unique<service_manager::ServiceContext>(
-      std::make_unique<service_manager::ForwardingService>(this),
-      std::move(service_request));
+  DCHECK(!service_binding_.is_bound());
+  service_binding_.Bind(std::move(service_request));
 }
 
 service_manager::Connector* ChromeContentRendererClient::GetConnector() {
-  if (!connector_)
-    connector_ = service_manager::Connector::Create(&connector_request_);
-  return connector_.get();
+  return service_binding_.GetConnector();
 }
 
 std::unique_ptr<content::URLLoaderThrottleProvider>

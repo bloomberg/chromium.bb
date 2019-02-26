@@ -68,7 +68,8 @@ TEST(GoogleServiceAuthErrorTest, FromInvalidGaiaCredentialsReason) {
   EXPECT_EQ(GoogleServiceAuthError::InvalidGaiaCredentialsReason::
                 CREDENTIALS_REJECTED_BY_SERVER,
             error.GetInvalidGaiaCredentialsReason());
-  EXPECT_EQ("Invalid credentials (1).", error.ToString());
+  EXPECT_EQ("Invalid credentials (credentials rejected by server).",
+            error.ToString());
 }
 
 TEST(GoogleServiceAuthErrorTest, AuthErrorNone) {

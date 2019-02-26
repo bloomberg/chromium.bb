@@ -36,7 +36,7 @@ using ExecutingScriptsMap = std::map<std::string, std::set<std::string>>;
 // Callback that ScriptExecutor uses to notify when content scripts and/or
 // tabs.executeScript calls run on a page.
 using ScriptsExecutedNotification = base::RepeatingCallback<
-    void(const content::WebContents*, const ExecutingScriptsMap&, const GURL&)>;
+    void(content::WebContents*, const ExecutingScriptsMap&, const GURL&)>;
 
 // Interface for executing extension content scripts (e.g. executeScript) as
 // described by the ExtensionMsg_ExecuteCode_Params IPC, and notifying the

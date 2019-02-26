@@ -99,9 +99,12 @@ class NotificationButtonMD : public views::LabelButton {
   const base::Optional<base::string16>& placeholder() const {
     return placeholder_;
   }
+  void set_placeholder(const base::Optional<base::string16>& placeholder) {
+    placeholder_ = placeholder;
+  }
 
  private:
-  const base::Optional<base::string16> placeholder_;
+  base::Optional<base::string16> placeholder_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationButtonMD);
 };
@@ -171,7 +174,6 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   // Overridden from views::View:
   void Layout() override;
   void OnFocus() override;
-  void ScrollRectToVisible(const gfx::Rect& rect) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
@@ -213,11 +215,17 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, TestClickExpanded);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, TestActionButtonClick);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, TestInlineReply);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest,
+                           TestInlineReplyRemovedByUpdate);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, ExpandLongMessage);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, TestAccentColor);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, UseImageAsIcon);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, NotificationWithoutIcon);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, InlineSettings);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, UpdateViewsOrderingTest);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, TestDeleteOnToggleExpanded);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest,
+                           TestDeleteOnDisableNotification);
 
   friend class NotificationViewMDTest;
 
@@ -288,6 +296,10 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   views::View* action_buttons_row_ = nullptr;
   NotificationInputContainerMD* inline_reply_ = nullptr;
 
+  // Counter for view layouting, which is used during the CreateOrUpdate*
+  // phases to keep track of the view ordering. See crbug.com/901045
+  int left_content_count_;
+
   // Views for inline settings.
   views::RadioButton* block_all_button_ = nullptr;
   views::RadioButton* dont_block_button_ = nullptr;
@@ -296,6 +308,8 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   std::unique_ptr<ui::EventHandler> click_activator_;
 
   base::TimeTicks last_mouse_pressed_timestamp_;
+
+  base::WeakPtrFactory<NotificationViewMD> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NotificationViewMD);
 };

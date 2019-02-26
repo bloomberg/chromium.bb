@@ -7,7 +7,7 @@
 
 #include "third_party/blink/public/platform/web_application_cache_host_client.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
-#include "third_party/blink/renderer/core/event_names.h"
+#include "third_party/blink/renderer/core/event_interface_names.h"
 #include "third_party/blink/renderer/core/events/application_cache_error_event_init.h"
 #include "third_party/blink/renderer/core/loader/appcache/application_cache_host.h"
 
@@ -29,7 +29,7 @@ class ApplicationCacheErrorEvent final : public Event {
 
   static ApplicationCacheErrorEvent* Create(
       const AtomicString& event_type,
-      const ApplicationCacheErrorEventInit& initializer) {
+      const ApplicationCacheErrorEventInit* initializer) {
     return new ApplicationCacheErrorEvent(event_type, initializer);
   }
 
@@ -39,7 +39,7 @@ class ApplicationCacheErrorEvent final : public Event {
   const String& message() const { return message_; }
 
   const AtomicString& InterfaceName() const override {
-    return EventNames::ApplicationCacheErrorEvent;
+    return event_interface_names::kApplicationCacheErrorEvent;
   }
 
   void Trace(blink::Visitor*) override;
@@ -50,7 +50,7 @@ class ApplicationCacheErrorEvent final : public Event {
                              int status,
                              const String& message);
   ApplicationCacheErrorEvent(const AtomicString& event_type,
-                             const ApplicationCacheErrorEventInit& initializer);
+                             const ApplicationCacheErrorEventInit* initializer);
 
   String reason_;
   String url_;

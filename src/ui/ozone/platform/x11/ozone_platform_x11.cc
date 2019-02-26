@@ -17,6 +17,7 @@
 #include "ui/gfx/x/x11.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
 #include "ui/ozone/platform/x11/x11_cursor_factory_ozone.h"
+#include "ui/ozone/platform/x11/x11_screen_ozone.h"
 #include "ui/ozone/platform/x11/x11_surface_factory.h"
 #include "ui/ozone/platform/x11/x11_window_manager_ozone.h"
 #include "ui/ozone/platform/x11/x11_window_ozone.h"
@@ -74,6 +75,10 @@ class OzonePlatformX11 : public OzonePlatform {
   std::unique_ptr<display::NativeDisplayDelegate> CreateNativeDisplayDelegate()
       override {
     return std::make_unique<display::FakeDisplayDelegate>();
+  }
+
+  std::unique_ptr<PlatformScreen> CreateScreen() override {
+    return std::make_unique<X11ScreenOzone>();
   }
 
   void InitializeUI(const InitParams& params) override {

@@ -62,15 +62,15 @@ const double DocumentTimeline::kMinimumDelay = 0.04;
 DocumentTimeline* DocumentTimeline::Create(Document* document,
                                            TimeDelta origin_time,
                                            PlatformTiming* timing) {
-  return new DocumentTimeline(document, origin_time, timing);
+  return MakeGarbageCollected<DocumentTimeline>(document, origin_time, timing);
 }
 
 DocumentTimeline* DocumentTimeline::Create(
     ExecutionContext* execution_context,
-    const DocumentTimelineOptions& options) {
+    const DocumentTimelineOptions* options) {
   Document* document = To<Document>(execution_context);
-  return new DocumentTimeline(
-      document, TimeDelta::FromMillisecondsD(options.originTime()), nullptr);
+  return MakeGarbageCollected<DocumentTimeline>(
+      document, TimeDelta::FromMillisecondsD(options->originTime()), nullptr);
 }
 
 DocumentTimeline::DocumentTimeline(Document* document,
@@ -84,7 +84,7 @@ DocumentTimeline::DocumentTimeline(Document* document,
       playback_rate_(1),
       last_current_time_internal_(0) {
   if (!timing)
-    timing_ = new DocumentTimelineTiming(this);
+    timing_ = MakeGarbageCollected<DocumentTimelineTiming>(this);
   else
     timing_ = timing;
 

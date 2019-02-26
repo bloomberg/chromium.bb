@@ -12,7 +12,6 @@ import android.text.TextUtils;
 import org.chromium.base.Supplier;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -21,6 +20,7 @@ import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -28,21 +28,6 @@ import java.util.Set;
 */
 public class SigninPromoUtil {
     private SigninPromoUtil() {}
-
-    /**
-     * Launches the consent bump screen if it needs to be displayed.
-     * @param activity The parent activity.
-     * @return Whether the consent bump screen is shown.
-     */
-    public static boolean launchConsentBumpIfNeeded(final Activity activity) {
-        String accountName = ChromeSigninController.get().getSignedInAccountName();
-        if (accountName == null || !ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)
-                || !UnifiedConsentServiceBridge.shouldShowConsentBump()) {
-            return false;
-        }
-        activity.startActivity(SigninActivity.createIntentForConsentBump(activity, accountName));
-        return true;
-    }
 
     /**
      * Launches the signin promo if it needs to be displayed.
@@ -119,9 +104,9 @@ public class SigninPromoUtil {
             ProfileDataCache profileDataCache, PersonalizedSigninPromoView view,
             SigninPromoController.OnDismissListener listener) {
         DisplayableProfileData profileData = null;
-        Account[] accounts = AccountManagerFacade.get().tryGetGoogleAccounts();
-        if (accounts.length > 0) {
-            String defaultAccountName = accounts[0].name;
+        List<Account> accounts = AccountManagerFacade.get().tryGetGoogleAccounts();
+        if (accounts.size() > 0) {
+            String defaultAccountName = accounts.get(0).name;
             profileDataCache.update(Collections.singletonList(defaultAccountName));
             profileData = profileDataCache.getProfileDataOrDefault(defaultAccountName);
         }

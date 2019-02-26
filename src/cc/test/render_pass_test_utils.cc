@@ -198,17 +198,17 @@ std::vector<viz::ResourceId> AddOneOfEveryQuadType(
                             resource6, gfx::Size(), gfx::Transform());
 
   auto* texture_quad = to_pass->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
-  texture_quad->SetNew(shared_state, rect, visible_rect, needs_blending,
-                       resource1, false, gfx::PointF(0.f, 0.f),
-                       gfx::PointF(1.f, 1.f), SK_ColorTRANSPARENT,
-                       vertex_opacity, false, false, false);
+  texture_quad->SetNew(
+      shared_state, rect, visible_rect, needs_blending, resource1, false,
+      gfx::PointF(0.f, 0.f), gfx::PointF(1.f, 1.f), SK_ColorTRANSPARENT,
+      vertex_opacity, false, false, false, ui::ProtectedVideoType::kClear);
 
   auto* external_resource_texture_quad =
       to_pass->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
   external_resource_texture_quad->SetNew(
       shared_state, rect, visible_rect, needs_blending, resource8, false,
       gfx::PointF(0.f, 0.f), gfx::PointF(1.f, 1.f), SK_ColorTRANSPARENT,
-      vertex_opacity, false, false, false);
+      vertex_opacity, false, false, false, ui::ProtectedVideoType::kClear);
 
   auto* scaled_tile_quad =
       to_pass->CreateAndAppendDrawQuad<viz::TileDrawQuad>();
@@ -375,17 +375,17 @@ void AddOneOfEveryQuadTypeInDisplayResourceProvider(
 
   viz::TextureDrawQuad* texture_quad =
       to_pass->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
-  texture_quad->SetNew(shared_state, rect, visible_rect, needs_blending,
-                       mapped_resource1, false, gfx::PointF(0.f, 0.f),
-                       gfx::PointF(1.f, 1.f), SK_ColorTRANSPARENT,
-                       vertex_opacity, false, false, false);
+  texture_quad->SetNew(
+      shared_state, rect, visible_rect, needs_blending, mapped_resource1, false,
+      gfx::PointF(0.f, 0.f), gfx::PointF(1.f, 1.f), SK_ColorTRANSPARENT,
+      vertex_opacity, false, false, false, ui::ProtectedVideoType::kClear);
 
   viz::TextureDrawQuad* external_resource_texture_quad =
       to_pass->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
   external_resource_texture_quad->SetNew(
       shared_state, rect, visible_rect, needs_blending, mapped_resource8, false,
       gfx::PointF(0.f, 0.f), gfx::PointF(1.f, 1.f), SK_ColorTRANSPARENT,
-      vertex_opacity, false, false, false);
+      vertex_opacity, false, false, false, ui::ProtectedVideoType::kClear);
 
   viz::TileDrawQuad* scaled_tile_quad =
       to_pass->CreateAndAppendDrawQuad<viz::TileDrawQuad>();

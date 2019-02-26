@@ -11,6 +11,7 @@
 
 namespace views {
 class ImageView;
+class Label;
 }  // namespace views
 
 namespace ash {
@@ -33,6 +34,10 @@ class UserItemButton : public views::Button, public views::ButtonListener {
 
   void SetCaptureState(mojom::MediaCaptureState capture_states);
 
+  // views::Button:
+  bool GetTooltipText(const gfx::Point& p,
+                      base::string16* tooltip) const override;
+
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
@@ -40,6 +45,8 @@ class UserItemButton : public views::Button, public views::ButtonListener {
   const int user_index_;
   UnifiedSystemTrayController* const controller_;
   views::ImageView* const capture_icon_;
+  views::Label* const name_;
+  views::Label* const email_;
 
   DISALLOW_COPY_AND_ASSIGN(UserItemButton);
 };

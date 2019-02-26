@@ -38,6 +38,8 @@ struct PasswordForm;
 }
 
 namespace syncer {
+class ModelTypeControllerDelegate;
+class ProxyModelTypeControllerDelegate;
 class SyncableService;
 }
 
@@ -47,6 +49,7 @@ class AffiliatedMatchHelper;
 class PasswordStoreConsumer;
 class PasswordStoreSigninNotifier;
 class PasswordSyncableService;
+class PasswordSyncBridge;
 struct InteractionsStats;
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
@@ -258,10 +261,17 @@ class PasswordStore : protected PasswordStoreSync,
   // Schedules the given |task| to be run on the PasswordStore's TaskRunner.
   bool ScheduleTask(base::OnceClosure task);
 
+  scoped_refptr<base::SequencedTaskRunner> GetBackgroundTaskRunner();
+
   // Returns true iff initialization was successful.
   virtual bool IsAbleToSavePasswords() const;
 
   base::WeakPtr<syncer::SyncableService> GetPasswordSyncableService();
+
+  // For sync codebase only: instantiates a proxy controller delegate to
+  // interact with PasswordSyncBridge. Must be called from the UI thread.
+  std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
+  CreateSyncControllerDelegate();
 
 // TODO(crbug.com/706392): Fix password reuse detection for Android.
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
@@ -673,6 +683,11 @@ class PasswordStore : protected PasswordStoreSync,
       const autofill::PasswordForm& updated_android_form,
       const std::vector<std::string>& affiliated_web_realms);
 
+  // Returns the sync controller delegate for syncing passwords. It must be
+  // called on the background sequence.
+  base::WeakPtr<syncer::ModelTypeControllerDelegate>
+  GetSyncControllerDelegateOnBackgroundSequence();
+
   // Schedules UpdateAffiliatedWebLoginsImpl() to run on the background
   // sequence. Should be called from the main sequence.
   void ScheduleUpdateAffiliatedWebLoginsImpl(
@@ -692,7 +707,10 @@ class PasswordStore : protected PasswordStoreSync,
   // The observers.
   scoped_refptr<base::ObserverListThreadSafe<Observer>> observers_;
 
+  // Either of two below would actually be set based on a feature flag.
   std::unique_ptr<PasswordSyncableService> syncable_service_;
+  std::unique_ptr<PasswordSyncBridge> sync_bridge_;
+
   std::unique_ptr<AffiliatedMatchHelper> affiliated_match_helper_;
 // TODO(crbug.com/706392): Fix password reuse detection for Android.
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)

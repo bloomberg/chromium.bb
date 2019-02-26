@@ -11,8 +11,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/renderer/core/frame/platform_event_controller.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_acceleration.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_motion_data.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_motion_event_pump.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_rotation_rate.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "ui/gfx/geometry/angle_conversions.h"
 
@@ -74,15 +76,15 @@ class DeviceMotionEventPumpTest : public testing::Test {
   void SetUp() override {
     device::mojom::SensorProviderPtrInfo sensor_provider_ptr_info;
     sensor_provider_.Bind(mojo::MakeRequest(&sensor_provider_ptr_info));
-    auto* motion_pump =
-        new DeviceMotionEventPump(base::ThreadTaskRunnerHandle::Get());
+    auto* motion_pump = MakeGarbageCollected<DeviceMotionEventPump>(
+        base::ThreadTaskRunnerHandle::Get());
     motion_pump->SetSensorProviderForTesting(
         device::mojom::blink::SensorProviderPtr(
             device::mojom::blink::SensorProviderPtrInfo(
                 sensor_provider_ptr_info.PassHandle(),
                 device::mojom::SensorProvider::Version_)));
 
-    controller_ = new MockDeviceMotionController(motion_pump);
+    controller_ = MakeGarbageCollected<MockDeviceMotionController>(motion_pump);
 
     ExpectAllThreeSensorsStateToBe(
         DeviceMotionEventPump::SensorState::NOT_INITIALIZED);
@@ -224,26 +226,34 @@ TEST_F(DeviceMotionEventPumpTest, AllSensorsAreActive) {
   const DeviceMotionData* received_data = controller()->data();
   EXPECT_TRUE(controller()->did_change_device_motion());
 
-  EXPECT_TRUE(received_data->GetAccelerationIncludingGravity()->CanProvideX());
-  EXPECT_EQ(1, received_data->GetAccelerationIncludingGravity()->X());
-  EXPECT_TRUE(received_data->GetAccelerationIncludingGravity()->CanProvideY());
-  EXPECT_EQ(2, received_data->GetAccelerationIncludingGravity()->Y());
-  EXPECT_TRUE(received_data->GetAccelerationIncludingGravity()->CanProvideZ());
-  EXPECT_EQ(3, received_data->GetAccelerationIncludingGravity()->Z());
+  bool is_null;
+  EXPECT_TRUE(
+      received_data->GetAccelerationIncludingGravity()->HasAccelerationData());
+  EXPECT_EQ(1, received_data->GetAccelerationIncludingGravity()->x(is_null));
+  EXPECT_FALSE(is_null);
+  EXPECT_EQ(2, received_data->GetAccelerationIncludingGravity()->y(is_null));
+  EXPECT_FALSE(is_null);
+  EXPECT_EQ(3, received_data->GetAccelerationIncludingGravity()->z(is_null));
+  EXPECT_FALSE(is_null);
 
-  EXPECT_TRUE(received_data->GetAcceleration()->CanProvideX());
-  EXPECT_EQ(4, received_data->GetAcceleration()->X());
-  EXPECT_TRUE(received_data->GetAcceleration()->CanProvideY());
-  EXPECT_EQ(5, received_data->GetAcceleration()->Y());
-  EXPECT_TRUE(received_data->GetAcceleration()->CanProvideZ());
-  EXPECT_EQ(6, received_data->GetAcceleration()->Z());
+  EXPECT_TRUE(received_data->GetAcceleration()->HasAccelerationData());
+  EXPECT_EQ(4, received_data->GetAcceleration()->x(is_null));
+  EXPECT_FALSE(is_null);
+  EXPECT_EQ(5, received_data->GetAcceleration()->y(is_null));
+  EXPECT_FALSE(is_null);
+  EXPECT_EQ(6, received_data->GetAcceleration()->z(is_null));
+  EXPECT_FALSE(is_null);
 
-  EXPECT_TRUE(received_data->GetRotationRate()->CanProvideAlpha());
-  EXPECT_EQ(gfx::RadToDeg(7.0), received_data->GetRotationRate()->Alpha());
-  EXPECT_TRUE(received_data->GetRotationRate()->CanProvideBeta());
-  EXPECT_EQ(gfx::RadToDeg(8.0), received_data->GetRotationRate()->Beta());
-  EXPECT_TRUE(received_data->GetRotationRate()->CanProvideGamma());
-  EXPECT_EQ(gfx::RadToDeg(9.0), received_data->GetRotationRate()->Gamma());
+  EXPECT_TRUE(received_data->GetRotationRate()->HasRotationData());
+  EXPECT_EQ(gfx::RadToDeg(7.0),
+            received_data->GetRotationRate()->alpha(is_null));
+  EXPECT_FALSE(is_null);
+  EXPECT_EQ(gfx::RadToDeg(8.0),
+            received_data->GetRotationRate()->beta(is_null));
+  EXPECT_FALSE(is_null);
+  EXPECT_EQ(gfx::RadToDeg(9.0),
+            received_data->GetRotationRate()->gamma(is_null));
+  EXPECT_FALSE(is_null);
 
   controller()->motion_pump()->Stop();
 
@@ -270,23 +280,33 @@ TEST_F(DeviceMotionEventPumpTest, TwoSensorsAreActive) {
   const DeviceMotionData* received_data = controller()->data();
   EXPECT_TRUE(controller()->did_change_device_motion());
 
-  EXPECT_TRUE(received_data->GetAccelerationIncludingGravity()->CanProvideX());
-  EXPECT_EQ(1, received_data->GetAccelerationIncludingGravity()->X());
-  EXPECT_TRUE(received_data->GetAccelerationIncludingGravity()->CanProvideY());
-  EXPECT_EQ(2, received_data->GetAccelerationIncludingGravity()->Y());
-  EXPECT_TRUE(received_data->GetAccelerationIncludingGravity()->CanProvideZ());
-  EXPECT_EQ(3, received_data->GetAccelerationIncludingGravity()->Z());
+  bool is_null;
+  EXPECT_TRUE(
+      received_data->GetAccelerationIncludingGravity()->HasAccelerationData());
+  EXPECT_EQ(1, received_data->GetAccelerationIncludingGravity()->x(is_null));
+  EXPECT_FALSE(is_null);
+  EXPECT_EQ(2, received_data->GetAccelerationIncludingGravity()->y(is_null));
+  EXPECT_FALSE(is_null);
+  EXPECT_EQ(3, received_data->GetAccelerationIncludingGravity()->z(is_null));
+  EXPECT_FALSE(is_null);
 
-  EXPECT_FALSE(received_data->GetAcceleration()->CanProvideX());
-  EXPECT_FALSE(received_data->GetAcceleration()->CanProvideY());
-  EXPECT_FALSE(received_data->GetAcceleration()->CanProvideZ());
+  received_data->GetAcceleration()->x(is_null);
+  EXPECT_TRUE(is_null);
+  received_data->GetAcceleration()->y(is_null);
+  EXPECT_TRUE(is_null);
+  received_data->GetAcceleration()->z(is_null);
+  EXPECT_TRUE(is_null);
 
-  EXPECT_TRUE(received_data->GetRotationRate()->CanProvideAlpha());
-  EXPECT_EQ(gfx::RadToDeg(7.0), received_data->GetRotationRate()->Alpha());
-  EXPECT_TRUE(received_data->GetRotationRate()->CanProvideBeta());
-  EXPECT_EQ(gfx::RadToDeg(8.0), received_data->GetRotationRate()->Beta());
-  EXPECT_TRUE(received_data->GetRotationRate()->CanProvideGamma());
-  EXPECT_EQ(gfx::RadToDeg(9.0), received_data->GetRotationRate()->Gamma());
+  EXPECT_TRUE(received_data->GetRotationRate()->HasRotationData());
+  EXPECT_EQ(gfx::RadToDeg(7.0),
+            received_data->GetRotationRate()->alpha(is_null));
+  EXPECT_FALSE(is_null);
+  EXPECT_EQ(gfx::RadToDeg(8.0),
+            received_data->GetRotationRate()->beta(is_null));
+  EXPECT_FALSE(is_null);
+  EXPECT_EQ(gfx::RadToDeg(9.0),
+            received_data->GetRotationRate()->gamma(is_null));
+  EXPECT_FALSE(is_null);
 
   controller()->motion_pump()->Stop();
 
@@ -312,23 +332,30 @@ TEST_F(DeviceMotionEventPumpTest, SomeSensorDataFieldsNotAvailable) {
   const DeviceMotionData* received_data = controller()->data();
   EXPECT_TRUE(controller()->did_change_device_motion());
 
-  EXPECT_FALSE(received_data->GetAccelerationIncludingGravity()->CanProvideX());
-  EXPECT_TRUE(received_data->GetAccelerationIncludingGravity()->CanProvideY());
-  EXPECT_EQ(2, received_data->GetAccelerationIncludingGravity()->Y());
-  EXPECT_TRUE(received_data->GetAccelerationIncludingGravity()->CanProvideZ());
-  EXPECT_EQ(3, received_data->GetAccelerationIncludingGravity()->Z());
+  bool is_null;
+  received_data->GetAccelerationIncludingGravity()->x(is_null);
+  EXPECT_TRUE(is_null);
+  EXPECT_EQ(2, received_data->GetAccelerationIncludingGravity()->y(is_null));
+  EXPECT_FALSE(is_null);
+  EXPECT_EQ(3, received_data->GetAccelerationIncludingGravity()->z(is_null));
+  EXPECT_FALSE(is_null);
 
-  EXPECT_TRUE(received_data->GetAcceleration()->CanProvideX());
-  EXPECT_EQ(4, received_data->GetAcceleration()->X());
-  EXPECT_FALSE(received_data->GetAcceleration()->CanProvideY());
-  EXPECT_TRUE(received_data->GetAcceleration()->CanProvideZ());
-  EXPECT_EQ(6, received_data->GetAcceleration()->Z());
+  EXPECT_EQ(4, received_data->GetAcceleration()->x(is_null));
+  EXPECT_FALSE(is_null);
+  received_data->GetAcceleration()->y(is_null);
+  EXPECT_TRUE(is_null);
+  EXPECT_EQ(6, received_data->GetAcceleration()->z(is_null));
+  EXPECT_FALSE(is_null);
 
-  EXPECT_TRUE(received_data->GetRotationRate()->CanProvideAlpha());
-  EXPECT_EQ(gfx::RadToDeg(7.0), received_data->GetRotationRate()->Alpha());
-  EXPECT_TRUE(received_data->GetRotationRate()->CanProvideBeta());
-  EXPECT_EQ(gfx::RadToDeg(8.0), received_data->GetRotationRate()->Beta());
-  EXPECT_FALSE(received_data->GetRotationRate()->CanProvideGamma());
+  EXPECT_TRUE(received_data->GetAcceleration()->HasAccelerationData());
+  EXPECT_EQ(gfx::RadToDeg(7.0),
+            received_data->GetRotationRate()->alpha(is_null));
+  EXPECT_FALSE(is_null);
+  EXPECT_EQ(gfx::RadToDeg(8.0),
+            received_data->GetRotationRate()->beta(is_null));
+  EXPECT_FALSE(is_null);
+  received_data->GetRotationRate()->gamma(is_null);
+  EXPECT_TRUE(is_null);
 
   controller()->motion_pump()->Stop();
 
@@ -353,17 +380,12 @@ TEST_F(DeviceMotionEventPumpTest, FireAllNullEvent) {
   const DeviceMotionData* received_data = controller()->data();
   EXPECT_TRUE(controller()->did_change_device_motion());
 
-  EXPECT_FALSE(received_data->GetAcceleration()->CanProvideX());
-  EXPECT_FALSE(received_data->GetAcceleration()->CanProvideY());
-  EXPECT_FALSE(received_data->GetAcceleration()->CanProvideZ());
+  EXPECT_FALSE(received_data->GetAcceleration()->HasAccelerationData());
 
-  EXPECT_FALSE(received_data->GetAccelerationIncludingGravity()->CanProvideX());
-  EXPECT_FALSE(received_data->GetAccelerationIncludingGravity()->CanProvideY());
-  EXPECT_FALSE(received_data->GetAccelerationIncludingGravity()->CanProvideZ());
+  EXPECT_FALSE(
+      received_data->GetAccelerationIncludingGravity()->HasAccelerationData());
 
-  EXPECT_FALSE(received_data->GetRotationRate()->CanProvideAlpha());
-  EXPECT_FALSE(received_data->GetRotationRate()->CanProvideBeta());
-  EXPECT_FALSE(received_data->GetRotationRate()->CanProvideGamma());
+  EXPECT_FALSE(received_data->GetRotationRate()->HasRotationData());
 
   controller()->motion_pump()->Stop();
 

@@ -52,7 +52,7 @@ std::vector<FilePath> GetAllPrivateDownloadsDirectories() {
   std::vector<std::string> dirs;
   JNIEnv* env = AttachCurrentThread();
   auto jarray = Java_PathUtils_getAllPrivateDownloadsDirectories(env);
-  base::android::AppendJavaStringArrayToStringVector(env, jarray.obj(), &dirs);
+  base::android::AppendJavaStringArrayToStringVector(env, jarray, &dirs);
 
   std::vector<base::FilePath> file_paths;
   for (const auto& dir : dirs)

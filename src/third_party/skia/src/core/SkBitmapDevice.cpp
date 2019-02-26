@@ -10,12 +10,10 @@
 #include "SkGlyphRun.h"
 #include "SkImageFilter.h"
 #include "SkImageFilterCache.h"
-#include "SkMallocPixelRef.h"
 #include "SkMakeUnique.h"
 #include "SkMatrix.h"
 #include "SkPaint.h"
 #include "SkPath.h"
-#include "SkPixelRef.h"
 #include "SkPixmap.h"
 #include "SkRasterClip.h"
 #include "SkRasterHandleAllocator.h"
@@ -190,42 +188,15 @@ public:
 
 static bool valid_for_bitmap_device(const SkImageInfo& info,
                                     SkAlphaType* newAlphaType) {
-    if (info.width() < 0 || info.height() < 0) {
+    if (info.width() < 0 || info.height() < 0 || kUnknown_SkColorType == info.colorType()) {
         return false;
     }
 
-    // TODO: can we stop supporting kUnknown in SkBitmkapDevice?
-    if (kUnknown_SkColorType == info.colorType()) {
-        if (newAlphaType) {
-            *newAlphaType = kUnknown_SkAlphaType;
-        }
-        return true;
-    }
-
-    SkAlphaType canonicalAlphaType = info.alphaType();
-
-    switch (info.colorType()) {
-        case kAlpha_8_SkColorType:
-        case kARGB_4444_SkColorType:
-        case kRGBA_8888_SkColorType:
-        case kBGRA_8888_SkColorType:
-        case kRGBA_1010102_SkColorType:
-        case kRGBA_F16_SkColorType:
-        case kRGBA_F32_SkColorType:
-            break;
-        case kGray_8_SkColorType:
-        case kRGB_565_SkColorType:
-        case kRGB_888x_SkColorType:
-        case kRGB_101010x_SkColorType:
-            canonicalAlphaType = kOpaque_SkAlphaType;
-            break;
-        default:
-            return false;
-    }
-
     if (newAlphaType) {
-        *newAlphaType = canonicalAlphaType;
+        *newAlphaType = SkColorTypeIsAlwaysOpaque(info.colorType()) ? kOpaque_SkAlphaType
+                                                                    : info.alphaType();
     }
+
     return true;
 }
 
@@ -571,19 +542,7 @@ void SkBitmapDevice::drawSprite(const SkBitmap& bitmap, int x, int y, const SkPa
 }
 
 void SkBitmapDevice::drawGlyphRunList(const SkGlyphRunList& glyphRunList) {
-#if defined(SK_SUPPORT_LEGACY_TEXT_BLOB)
-    auto blob = glyphRunList.blob();
-
-    if (blob == nullptr) {
-        glyphRunList.temporaryShuntToDrawPosText(this, SkPoint::Make(0, 0));
-    } else {
-        auto origin = glyphRunList.origin();
-        auto paint = glyphRunList.paint();
-        this->drawTextBlob(blob, origin.x(), origin.y(), paint);
-    }
-#else
     LOOP_TILER( drawGlyphRunList(glyphRunList, &fGlyphPainter), nullptr )
-#endif
 }
 
 void SkBitmapDevice::drawVertices(const SkVertices* vertices, const SkVertices::Bone bones[],
@@ -744,7 +703,7 @@ sk_sp<SkSpecialImage> SkBitmapDevice::makeSpecial(const SkBitmap& bitmap) {
 
 sk_sp<SkSpecialImage> SkBitmapDevice::makeSpecial(const SkImage* image) {
     return SkSpecialImage::MakeFromImage(SkIRect::MakeWH(image->width(), image->height()),
-                                         image->makeNonTextureImage(), fBitmap.colorSpace());
+                                         image->makeNonTextureImage());
 }
 
 sk_sp<SkSpecialImage> SkBitmapDevice::snapSpecial() {

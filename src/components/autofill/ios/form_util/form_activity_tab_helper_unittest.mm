@@ -25,7 +25,7 @@ class FormTestClient : public web::TestWebClient {
   }
 };
 
-// Test fixture for autofill::FormActivityTabHelper class.
+// Tests fixture for autofill::FormActivityTabHelper class.
 class FormActivityTabHelperTest
     : public web::WebJsTest<web::WebTestWithWebState> {
  public:
@@ -53,7 +53,7 @@ class FormActivityTabHelperTest
   std::unique_ptr<autofill::TestFormActivityObserver> observer_;
 };
 
-// Test that observer is called on form submission.
+// Tests that observer is called on form submission using submit control.
 TEST_F(FormActivityTabHelperTest, TestObserverDocumentSubmitted) {
   LoadHtmlAndInject(
       @"<form name='form-name'>"
@@ -63,7 +63,8 @@ TEST_F(FormActivityTabHelperTest, TestObserverDocumentSubmitted) {
   const std::string kTestFormName("form-name");
   const std::string kTestFormData(
       "[{\"name\":\"form-name\",\"origin\":\"https://chromium.test/"
-      "\",\"action\":\"https://chromium.test/\"}]");
+      "\",\"action\":\"https://chromium.test/\","
+      "\"name_attribute\":\"form-name\",\"id_attribute\":\"\"}]");
   bool has_user_gesture = false;
   bool form_in_main_frame = true;
   EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
@@ -84,7 +85,39 @@ TEST_F(FormActivityTabHelperTest, TestObserverDocumentSubmitted) {
             observer_->submit_document_info()->form_in_main_frame);
 }
 
-// Test that observer is called on form activity (input event).
+// Tests that observer is called on form submission using submit() method.
+TEST_F(FormActivityTabHelperTest, TestFormSubmittedHook) {
+  LoadHtmlAndInject(
+      @"<form name='form-name' id='form'>"
+       "<input type='submit'/>"
+       "</form>");
+  ASSERT_FALSE(observer_->submit_document_info());
+  const std::string kTestFormName("form-name");
+  const std::string kTestFormData(
+      "[{\"name\":\"form-name\",\"origin\":\"https://chromium.test/"
+      "\",\"action\":\"https://chromium.test/\","
+      "\"name_attribute\":\"form-name\",\"id_attribute\":\"form\"}]");
+  bool has_user_gesture = false;
+  bool form_in_main_frame = true;
+  EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForJSCompletionTimeout, ^bool {
+        return web::GetMainWebFrame(web_state()) != nullptr;
+      }));
+  web::WebFrame* main_frame = web::GetMainWebFrame(web_state());
+
+  ExecuteJavaScript(@"document.getElementById('form').submit();");
+  ASSERT_TRUE(observer_->submit_document_info());
+  EXPECT_EQ(web_state(), observer_->submit_document_info()->web_state);
+  EXPECT_EQ(main_frame, observer_->submit_document_info()->sender_frame);
+  EXPECT_EQ(kTestFormName, observer_->submit_document_info()->form_name);
+  EXPECT_EQ(kTestFormData, observer_->submit_document_info()->form_data);
+  EXPECT_EQ(has_user_gesture,
+            observer_->submit_document_info()->has_user_gesture);
+  EXPECT_EQ(form_in_main_frame,
+            observer_->submit_document_info()->form_in_main_frame);
+}
+
+// Tests that observer is called on form activity (input event).
 TEST_F(FormActivityTabHelperTest, TestObserverFormActivityFrameMessaging) {
   LoadHtmlAndInject(
       @"<form name='form-name'>"
@@ -109,8 +142,6 @@ TEST_F(FormActivityTabHelperTest, TestObserverFormActivityFrameMessaging) {
   EXPECT_EQ(main_frame, observer_->form_activity_info()->sender_frame);
   EXPECT_EQ("form-name",
             observer_->form_activity_info()->form_activity.form_name);
-  EXPECT_EQ("field-name",
-            observer_->form_activity_info()->form_activity.field_name);
   EXPECT_EQ("text", observer_->form_activity_info()->form_activity.field_type);
   EXPECT_EQ("focus", observer_->form_activity_info()->form_activity.type);
   EXPECT_EQ("", observer_->form_activity_info()->form_activity.value);

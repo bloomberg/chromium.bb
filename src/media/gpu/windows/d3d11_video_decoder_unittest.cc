@@ -36,7 +36,7 @@ class MockD3D11VideoDecoderImpl : public D3D11VideoDecoderImpl {
   MockD3D11VideoDecoderImpl()
       : D3D11VideoDecoderImpl(
             nullptr,
-            base::RepeatingCallback<gpu::CommandBufferStub*()>()) {}
+            base::RepeatingCallback<scoped_refptr<CommandBufferHelper>()>()) {}
 
   void Initialize(InitCB init_cb,
                   ReturnPictureBufferCB return_picture_buffer_cb) override {
@@ -74,8 +74,7 @@ class D3D11VideoDecoderTest : public ::testing::Test {
         d3d11_decoder_raw_ = new D3D11VideoDecoder(
             gpu_task_runner_, nullptr /* MediaLog */, gpu_preferences_,
             gpu_workarounds_, std::move(impl),
-            base::BindRepeating(
-                []() -> gpu::CommandBufferStub* { return nullptr; })));
+            base::RepeatingCallback<scoped_refptr<CommandBufferHelper>()>()));
     d3d11_decoder_raw_->SetCreateDeviceCallbackForTesting(
         base::BindRepeating(&D3D11CreateDeviceMock::Create,
                             base::Unretained(&create_device_mock_)));

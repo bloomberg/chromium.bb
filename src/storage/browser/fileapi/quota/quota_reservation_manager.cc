@@ -9,6 +9,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/callback.h"
 #include "storage/browser/fileapi/quota/quota_reservation.h"
 #include "storage/browser/fileapi/quota/quota_reservation_buffer.h"
 
@@ -24,13 +25,12 @@ QuotaReservationManager::~QuotaReservationManager() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 }
 
-void QuotaReservationManager::ReserveQuota(
-    const url::Origin& origin,
-    FileSystemType type,
-    int64_t size,
-    const ReserveQuotaCallback& callback) {
+void QuotaReservationManager::ReserveQuota(const url::Origin& origin,
+                                           FileSystemType type,
+                                           int64_t size,
+                                           ReserveQuotaCallback callback) {
   DCHECK(!origin.opaque());
-  backend_->ReserveQuota(origin, type, size, callback);
+  backend_->ReserveQuota(origin, type, size, std::move(callback));
 }
 
 void QuotaReservationManager::ReleaseReservedQuota(const url::Origin& origin,

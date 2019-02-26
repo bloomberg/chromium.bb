@@ -223,8 +223,8 @@ TEST(DynamicModuleResolverTest, ResolveSuccess) {
 
   ScriptModule record = ScriptModule::Compile(
       scope.GetIsolate(), "export const foo = 'hello';", TestReferrerURL(),
-      TestReferrerURL(), ScriptFetchOptions(), kSharableCrossOrigin,
-      TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
+      TestReferrerURL(), ScriptFetchOptions(), TextPosition::MinimumPosition(),
+      ASSERT_NO_EXCEPTION);
   ModuleScript* module_script =
       ModuleScript::CreateForTest(modulator, record, TestDependencyURL());
   EXPECT_TRUE(record.Instantiate(scope.GetScriptState()).IsEmpty());
@@ -312,8 +312,8 @@ TEST(DynamicModuleResolverTest, ExceptionThrown) {
 
   ScriptModule record = ScriptModule::Compile(
       scope.GetIsolate(), "throw Error('bar')", TestReferrerURL(),
-      TestReferrerURL(), ScriptFetchOptions(), kSharableCrossOrigin,
-      TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
+      TestReferrerURL(), ScriptFetchOptions(), TextPosition::MinimumPosition(),
+      ASSERT_NO_EXCEPTION);
   ModuleScript* module_script =
       ModuleScript::CreateForTest(modulator, record, TestDependencyURL());
   EXPECT_TRUE(record.Instantiate(scope.GetScriptState()).IsEmpty());
@@ -352,7 +352,7 @@ TEST(DynamicModuleResolverTest, ResolveWithNullReferrerScriptSuccess) {
 
   ScriptModule record = ScriptModule::Compile(
       scope.GetIsolate(), "export const foo = 'hello';", TestDependencyURL(),
-      TestDependencyURL(), ScriptFetchOptions(), kSharableCrossOrigin,
+      TestDependencyURL(), ScriptFetchOptions(),
       TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
   ModuleScript* module_script =
       ModuleScript::CreateForTest(modulator, record, TestDependencyURL());

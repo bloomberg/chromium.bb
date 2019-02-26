@@ -46,11 +46,13 @@ class CORE_EXPORT CSSComputedStyleDeclaration final
       Node* node,
       bool allow_visited_style = false,
       const String& pseudo_element_name = String()) {
-    return new CSSComputedStyleDeclaration(node, allow_visited_style,
-                                           pseudo_element_name);
+    return MakeGarbageCollected<CSSComputedStyleDeclaration>(
+        node, allow_visited_style, pseudo_element_name);
   }
 
   static const Vector<const CSSProperty*>& ComputableProperties();
+
+  CSSComputedStyleDeclaration(Node*, bool allow_visited_style, const String&);
   ~CSSComputedStyleDeclaration() override;
 
   String GetPropertyValue(CSSPropertyID) const;
@@ -75,8 +77,6 @@ class CORE_EXPORT CSSComputedStyleDeclaration final
   void Trace(blink::Visitor*) override;
 
  private:
-  CSSComputedStyleDeclaration(Node*, bool allow_visited_style, const String&);
-
   // The styled node is either the node passed into getComputedStyle, or the
   // PseudoElement for :before and :after if they exist.
   // FIXME: This should be styledElement since in JS getComputedStyle only works

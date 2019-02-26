@@ -91,13 +91,13 @@ DocumentMarkerList* CreateListForType(DocumentMarker::MarkerType type) {
     case DocumentMarker::kComposition:
       return new CompositionMarkerListImpl();
     case DocumentMarker::kSpelling:
-      return new SpellingMarkerListImpl();
+      return MakeGarbageCollected<SpellingMarkerListImpl>();
     case DocumentMarker::kGrammar:
-      return new GrammarMarkerListImpl();
+      return MakeGarbageCollected<GrammarMarkerListImpl>();
     case DocumentMarker::kSuggestion:
-      return new SuggestionMarkerListImpl();
+      return MakeGarbageCollected<SuggestionMarkerListImpl>();
     case DocumentMarker::kTextMatch:
-      return new TextMatchMarkerListImpl();
+      return MakeGarbageCollected<TextMatchMarkerListImpl>();
   }
 
   NOTREACHED();
@@ -154,14 +154,16 @@ void DocumentMarkerController::Clear() {
 void DocumentMarkerController::AddSpellingMarker(const EphemeralRange& range,
                                                  const String& description) {
   AddMarkerInternal(range, [&description](int start_offset, int end_offset) {
-    return new SpellingMarker(start_offset, end_offset, description);
+    return MakeGarbageCollected<SpellingMarker>(start_offset, end_offset,
+                                                description);
   });
 }
 
 void DocumentMarkerController::AddGrammarMarker(const EphemeralRange& range,
                                                 const String& description) {
   AddMarkerInternal(range, [&description](int start_offset, int end_offset) {
-    return new GrammarMarker(start_offset, end_offset, description);
+    return MakeGarbageCollected<GrammarMarker>(start_offset, end_offset,
+                                               description);
   });
 }
 
@@ -170,7 +172,8 @@ void DocumentMarkerController::AddTextMatchMarker(
     TextMatchMarker::MatchStatus match_status) {
   DCHECK(!document_->NeedsLayoutTreeUpdate());
   AddMarkerInternal(range, [match_status](int start_offset, int end_offset) {
-    return new TextMatchMarker(start_offset, end_offset, match_status);
+    return MakeGarbageCollected<TextMatchMarker>(start_offset, end_offset,
+                                                 match_status);
   });
   // Don't invalidate tickmarks here. TextFinder invalidates tickmarks using a
   // throttling algorithm. crbug.com/6819.
@@ -206,10 +209,10 @@ void DocumentMarkerController::AddSuggestionMarker(
     const EphemeralRange& range,
     const SuggestionMarkerProperties& properties) {
   DCHECK(!document_->NeedsLayoutTreeUpdate());
-  AddMarkerInternal(
-      range, [this, &properties](int start_offset, int end_offset) {
-        return new SuggestionMarker(start_offset, end_offset, properties);
-      });
+  AddMarkerInternal(range, [&properties](int start_offset, int end_offset) {
+    return MakeGarbageCollected<SuggestionMarker>(start_offset, end_offset,
+                                                  properties);
+  });
 }
 
 void DocumentMarkerController::PrepareForDestruction() {
@@ -283,7 +286,7 @@ void DocumentMarkerController::AddMarkerToNode(const Text& text,
   Member<MarkerLists>& markers =
       markers_.insert(&text, nullptr).stored_value->value;
   if (!markers) {
-    markers = new MarkerLists;
+    markers = MakeGarbageCollected<MarkerLists>();
     markers->Grow(DocumentMarker::kMarkerTypeIndexesCount);
   }
 
@@ -314,8 +317,8 @@ void DocumentMarkerController::MoveMarkers(const Text& src_node,
     return;
 
   if (!markers_.Contains(&dst_node)) {
-    markers_.insert(&dst_node,
-                    new MarkerLists(DocumentMarker::kMarkerTypeIndexesCount));
+    markers_.insert(&dst_node, MakeGarbageCollected<MarkerLists>(
+                                   DocumentMarker::kMarkerTypeIndexesCount));
   }
   MarkerLists* const dst_markers = markers_.at(&dst_node);
 
@@ -398,13 +401,11 @@ DocumentMarker* DocumentMarkerController::FirstMarkerAroundPosition(
     return nullptr;
 
   const PositionInFlatTree start_of_word_or_null =
-      StartOfWord(CreateVisiblePosition(position), kPreviousWordIfOnBoundary)
-          .DeepEquivalent();
+      StartOfWordPosition(position, kPreviousWordIfOnBoundary);
   const PositionInFlatTree start =
       start_of_word_or_null.IsNotNull() ? start_of_word_or_null : position;
   const PositionInFlatTree end_of_word_or_null =
-      EndOfWord(CreateVisiblePosition(position), kNextWordIfOnBoundary)
-          .DeepEquivalent();
+      EndOfWordPosition(position, kNextWordIfOnBoundary);
   const PositionInFlatTree end =
       end_of_word_or_null.IsNotNull() ? end_of_word_or_null : position;
 
@@ -780,6 +781,29 @@ void DocumentMarkerController::RemoveSpellingMarkersUnderWords(
                                                                     words)) {
         InvalidatePaintForNode(text);
       }
+    }
+  }
+}
+
+void DocumentMarkerController::RemoveSuggestionMarkerInRangeOnFinish(
+    const EphemeralRangeInFlatTree& range) {
+  // MarkersIntersectingRange() might be expensive. In practice, we hope we will
+  // only check one node for composing range.
+  const HeapVector<std::pair<Member<Node>, Member<DocumentMarker>>>&
+      node_marker_pairs = MarkersIntersectingRange(
+          range, DocumentMarker::MarkerTypes::Suggestion());
+  for (const auto& node_marker_pair : node_marker_pairs) {
+    SuggestionMarker* suggestion_marker =
+        ToSuggestionMarker(node_marker_pair.second);
+    if (suggestion_marker->NeedsRemovalOnFinishComposing()) {
+      const Text& text = ToText(*node_marker_pair.first);
+      DocumentMarkerList* const list =
+          ListForType(markers_.at(&text), DocumentMarker::kSuggestion);
+      // RemoveMarkerByTag() might be expensive. In practice, we have at most
+      // one suggestion marker needs to be removed.
+      ToSuggestionMarkerListImpl(list)->RemoveMarkerByTag(
+          suggestion_marker->Tag());
+      InvalidatePaintForNode(text);
     }
   }
 }

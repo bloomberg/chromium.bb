@@ -23,7 +23,6 @@
 #include "ios/chrome/browser/ui/history/history_entry_inserter.h"
 #import "ios/chrome/browser/ui/history/history_entry_item.h"
 #import "ios/chrome/browser/ui/history/history_entry_item_delegate.h"
-#import "ios/chrome/browser/ui/history/history_image_data_source.h"
 #include "ios/chrome/browser/ui/history/history_local_commands.h"
 #import "ios/chrome/browser/ui/history/history_ui_constants.h"
 #include "ios/chrome/browser/ui/history/history_util.h"
@@ -32,6 +31,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_link_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
+#import "ios/chrome/browser/ui/table_view/table_view_favicon_data_source.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
@@ -152,29 +152,25 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
 
-  if (@available(iOS 11, *)) {
-    // Center search bar's cancel button vertically so it looks centered.
-    // We change the cancel button proxy styles, so we will return it to
-    // default in viewDidDisappear.
-    UIOffset offset =
-        UIOffsetMake(0.0f, kTableViewNavigationVerticalOffsetForSearchHeader);
-    UIBarButtonItem* cancelButton = [UIBarButtonItem
-        appearanceWhenContainedInInstancesOfClasses:@[ [UISearchBar class] ]];
-    [cancelButton setTitlePositionAdjustment:offset
-                               forBarMetrics:UIBarMetricsDefault];
-  }
+  // Center search bar's cancel button vertically so it looks centered.
+  // We change the cancel button proxy styles, so we will return it to
+  // default in viewDidDisappear.
+  UIOffset offset =
+      UIOffsetMake(0.0f, kTableViewNavigationVerticalOffsetForSearchHeader);
+  UIBarButtonItem* cancelButton = [UIBarButtonItem
+      appearanceWhenContainedInInstancesOfClasses:@[ [UISearchBar class] ]];
+  [cancelButton setTitlePositionAdjustment:offset
+                             forBarMetrics:UIBarMetricsDefault];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
   [super viewWillDisappear:animated];
 
-  if (@available(iOS 11, *)) {
-    // Restore to default origin offset for cancel button proxy style.
-    UIBarButtonItem* cancelButton = [UIBarButtonItem
-        appearanceWhenContainedInInstancesOfClasses:@[ [UISearchBar class] ]];
-    [cancelButton setTitlePositionAdjustment:UIOffsetZero
-                               forBarMetrics:UIBarMetricsDefault];
-  }
+  // Restore to default origin offset for cancel button proxy style.
+  UIBarButtonItem* cancelButton = [UIBarButtonItem
+      appearanceWhenContainedInInstancesOfClasses:@[ [UISearchBar class] ]];
+  [cancelButton setTitlePositionAdjustment:UIOffsetZero
+                             forBarMetrics:UIBarMetricsDefault];
 }
 
 - (void)viewDidLoad {
@@ -241,21 +237,16 @@ const CGFloat kButtonHorizontalPadding = 30.0;
                      action:@selector(dismissSearchController:)
            forControlEvents:UIControlEventAllTouchEvents];
 
-  // For iOS 11 and later, place the search bar in the navigation bar. Otherwise
-  // place the search bar in the table view's header.
-  if (@available(iOS 11, *)) {
-    self.navigationItem.searchController = self.searchController;
-    self.navigationItem.hidesSearchBarWhenScrolling = NO;
+  // Place the search bar in the navigation bar.
+  self.navigationItem.searchController = self.searchController;
+  self.navigationItem.hidesSearchBarWhenScrolling = NO;
 
-    // Center search bar and cancel button vertically so it looks centered
-    // in the header when searching.
-    UIOffset offset =
-        UIOffsetMake(0.0f, kTableViewNavigationVerticalOffsetForSearchHeader);
-    self.searchController.searchBar.searchFieldBackgroundPositionAdjustment =
-        offset;
-  } else {
-    self.tableView.tableHeaderView = self.searchController.searchBar;
-  }
+  // Center search bar and cancel button vertically so it looks centered
+  // in the header when searching.
+  UIOffset offset =
+      UIOffsetMake(0.0f, kTableViewNavigationVerticalOffsetForSearchHeader);
+  self.searchController.searchBar.searchFieldBackgroundPositionAdjustment =
+      offset;
 }
 
 #pragma mark - TableViewModel
@@ -534,25 +525,15 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   }
   self.historyService->RemoveVisits(entries);
 
-  // Delete items from |self.tableView|.
-  // If iOS11+ use performBatchUpdates: instead of beginUpdates/endUpdates.
-  if (@available(iOS 11, *)) {
-    [self.tableView performBatchUpdates:^{
-      [self deleteItemsFromTableViewModelWithIndex:toDeleteIndexPaths
-                          deleteItemsFromTableView:YES];
-    }
-        completion:^(BOOL) {
-          [self updateTableViewAfterDeletingEntries];
-          [self configureViewsForNonEditModeWithAnimation:YES];
-        }];
-  } else {
-    [self.tableView beginUpdates];
+  // Delete items from |self.tableView| using performBatchUpdates.
+  [self.tableView performBatchUpdates:^{
     [self deleteItemsFromTableViewModelWithIndex:toDeleteIndexPaths
                         deleteItemsFromTableView:YES];
-    [self updateTableViewAfterDeletingEntries];
-    [self configureViewsForNonEditModeWithAnimation:YES];
-    [self.tableView endUpdates];
   }
+      completion:^(BOOL) {
+        [self updateTableViewAfterDeletingEntries];
+        [self configureViewsForNonEditModeWithAnimation:YES];
+      }];
   base::RecordAction(base::UserMetricsAction("HistoryPage_RemoveSelected"));
 }
 
@@ -815,14 +796,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 
   // If there's any tableUpdates, run them.
   if (tableUpdates) {
-    // If iOS11+ use performBatchUpdates: instead of beginUpdates/endUpdates.
-    if (@available(iOS 11, *)) {
-      [self.tableView performBatchUpdates:tableUpdates completion:nil];
-    } else {
-      [self.tableView beginUpdates];
-      tableUpdates();
-      [self.tableView endUpdates];
-    }
+    [self.tableView performBatchUpdates:tableUpdates completion:nil];
   }
   self.currentStatusMessage = newStatusMessage;
 }
@@ -1096,8 +1070,9 @@ const CGFloat kButtonHorizontalPadding = 30.0;
                                  new_tab_page_uma::ACTION_OPENED_HISTORY_ENTRY);
   web::NavigationManager::WebLoadParams params(URL);
   params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
+  ChromeLoadParams chromeParams(params);
   [self.localDispatcher dismissHistoryWithCompletion:^{
-    [self.loader loadURLWithParams:params];
+    [self.loader loadURLWithParams:chromeParams];
     [self.presentationDelegate showActiveRegularTabFromHistory];
   }];
 }

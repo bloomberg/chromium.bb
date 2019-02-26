@@ -11,8 +11,8 @@
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_picker_view.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/label_link_controller.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/common/string_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
@@ -93,7 +93,6 @@ NSString* const kSyncCompleteIconName = @"ic_sync_complete";
     _imageBackgroundViewHeightConstraint;
 @synthesize noIdentityConstraint = _noIdentityConstraint;
 @synthesize openSettingsStringId = _openSettingsStringId;
-@synthesize interactable = _interactable;
 @synthesize scrollView = _scrollView;
 @synthesize settingsLinkController = _settingsLinkController;
 @synthesize withIdentityConstraint = _withIdentityConstraint;
@@ -110,7 +109,7 @@ NSString* const kSyncCompleteIconName = @"ic_sync_complete";
   self.noIdentityConstraint.active = NO;
   self.withIdentityConstraint.active = YES;
   [self.identityPickerView setIdentityName:fullName email:email];
-  [self setSettingsLinkURLShown:self.interactable];
+  [self setSettingsLinkURLShown:YES];
 }
 
 - (void)updateIdentityPickerViewWithAvatar:(UIImage*)avatar {
@@ -143,15 +142,6 @@ NSString* const kSyncCompleteIconName = @"ic_sync_complete";
   return scrollPosition >= scrollLimit;
 }
 
-- (void)setInteractable:(BOOL)interactable {
-  _interactable = interactable;
-  if (!self.viewLoaded)
-    return;
-
-  self.identityPickerView.canChangeIdentity = interactable;
-  [self setSettingsLinkURLShown:interactable];
-}
-
 #pragma mark - UIViewController
 
 - (void)viewDidLoad {
@@ -161,13 +151,11 @@ NSString* const kSyncCompleteIconName = @"ic_sync_complete";
   self.scrollView = [[UIScrollView alloc] initWithFrame:self.view.bounds];
   self.scrollView.translatesAutoresizingMaskIntoConstraints = NO;
   self.scrollView.accessibilityIdentifier = kUnifiedConsentScrollViewIdentifier;
-  if (@available(iOS 11, *)) {
-    // The observed behavior was buggy. When the view appears on the screen,
-    // the scrollview was not scrolled all the way to the top. Adjusting the
-    // safe area manually fixes the issue.
-    self.scrollView.contentInsetAdjustmentBehavior =
-        UIScrollViewContentInsetAdjustmentNever;
-  }
+  // The observed behavior was buggy. When the view appears on the screen,
+  // the scrollview was not scrolled all the way to the top. Adjusting the
+  // safe area manually fixes the issue.
+  self.scrollView.contentInsetAdjustmentBehavior =
+      UIScrollViewContentInsetAdjustmentNever;
   [self.view addSubview:self.scrollView];
 
   // Scroll view container.
@@ -203,7 +191,6 @@ NSString* const kSyncCompleteIconName = @"ic_sync_complete";
   // Identity picker view.
   self.identityPickerView =
       [[IdentityPickerView alloc] initWithFrame:CGRectZero];
-  self.identityPickerView.canChangeIdentity = self.interactable;
   self.identityPickerView.translatesAutoresizingMaskIntoConstraints = NO;
   [self.identityPickerView addTarget:self
                               action:@selector(identityPickerAction:forEvent:)
@@ -299,7 +286,7 @@ NSString* const kSyncCompleteIconName = @"ic_sync_complete";
       constraintEqualToAnchor:self.identityPickerView.bottomAnchor
                      constant:kVerticalTextMargin];
   // Adding constraints for the container.
-  id<LayoutGuideProvider> safeArea = SafeAreaLayoutGuideForView(self.view);
+  id<LayoutGuideProvider> safeArea = self.view.safeAreaLayoutGuide;
   [container.widthAnchor constraintEqualToAnchor:safeArea.widthAnchor].active =
       YES;
   // Adding constraints for |imageBackgroundView|.
@@ -454,17 +441,9 @@ NSString* const kSyncCompleteIconName = @"ic_sync_complete";
 // Updates constraints and content insets for the |scrollView| and
 // |imageBackgroundView| related to non-safe area.
 - (void)updateScrollViewAndImageBackgroundView {
-  if (@available(iOS 11, *)) {
-    self.scrollView.contentInset = self.view.safeAreaInsets;
-    self.imageBackgroundViewHeightConstraint.constant =
-        self.view.safeAreaInsets.top;
-  } else {
-    CGFloat statusBarHeight =
-        [UIApplication sharedApplication].isStatusBarHidden ? 0.
-                                                            : StatusBarHeight();
-    self.scrollView.contentInset = UIEdgeInsetsMake(statusBarHeight, 0, 0, 0);
-    self.imageBackgroundViewHeightConstraint.constant = statusBarHeight;
-  }
+  self.scrollView.contentInset = self.view.safeAreaInsets;
+  self.imageBackgroundViewHeightConstraint.constant =
+      self.view.safeAreaInsets.top;
   if (self.scrollView.delegate == self) {
     // Don't send the notification if the delegate is not configured yet.
     [self sendDidReachBottomIfReached];

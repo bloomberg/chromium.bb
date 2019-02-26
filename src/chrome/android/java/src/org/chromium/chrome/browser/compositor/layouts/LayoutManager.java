@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.compositor.animation.CompositorAnimationHandl
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContentViewDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
+import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabPanel;
 import org.chromium.chrome.browser.compositor.layouts.Layout.Orientation;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.components.VirtualView;
@@ -39,6 +40,7 @@ import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
+import org.chromium.chrome.browser.tab.TabThemeColorHelper;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
@@ -103,9 +105,11 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
 
     // Internal State
     private final SparseArray<LayoutTab> mTabCache = new SparseArray<>();
-    private int mFullscreenToken = FullscreenManager.INVALID_TOKEN;
+    private int mControlsShowingToken = FullscreenManager.INVALID_TOKEN;
+    private int mControlsHidingToken = FullscreenManager.INVALID_TOKEN;
     private boolean mUpdateRequested;
     private final ContextualSearchPanel mContextualSearchPanel;
+    private final EphemeralTabPanel mEphemeralTabPanel;
     private final OverlayPanelManager mOverlayPanelManager;
     private final ToolbarSceneLayer mToolbarOverlay;
 
@@ -218,6 +222,10 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         // Contextual Search scene overlay.
         mContextualSearchPanel = new ContextualSearchPanel(mContext, this, mOverlayPanelManager);
 
+        mEphemeralTabPanel = EphemeralTabPanel.isSupported()
+                ? new EphemeralTabPanel(mContext, this, mOverlayPanelManager)
+                : null;
+
         // Set up layout parameters
         mStaticLayout.setLayoutHandlesTabLifecycles(true);
 
@@ -229,6 +237,13 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
      */
     public OverlayPanelManager getOverlayPanelManager() {
         return mOverlayPanelManager;
+    }
+
+    /**
+     * @return The layout manager's ephemeral tab panel manager.
+     */
+    public EphemeralTabPanel getEphemeralTabPanel() {
+        return mEphemeralTabPanel;
     }
 
     @Override
@@ -468,16 +483,23 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     public SceneLayer getUpdatedActiveSceneLayer(LayerTitleCache layerTitleCache,
             TabContentManager tabContentManager, ResourceManager resourceManager,
             ChromeFullscreenManager fullscreenManager) {
-        // Update the android browser controls state.
-        if (fullscreenManager != null) {
-            fullscreenManager.setHideBrowserControlsAndroidView(
-                    mActiveLayout.forceHideBrowserControlsAndroidView());
-        }
-
+        updateControlsHidingState(fullscreenManager);
         getViewportPixel(mCachedVisibleViewport);
         mHost.getWindowViewport(mCachedWindowViewport);
         return mActiveLayout.getUpdatedSceneLayer(mCachedWindowViewport, mCachedVisibleViewport,
                 layerTitleCache, tabContentManager, resourceManager, fullscreenManager);
+    }
+
+    private void updateControlsHidingState(ChromeFullscreenManager fullscreenManager) {
+        if (fullscreenManager == null) {
+            return;
+        }
+        if (mActiveLayout.forceHideBrowserControlsAndroidView()) {
+            mControlsHidingToken =
+                    fullscreenManager.hideAndroidControlsAndClearOldToken(mControlsHidingToken);
+        } else {
+            fullscreenManager.releaseAndroidControlsHidingToken(mControlsHidingToken);
+        }
     }
 
     @Override
@@ -616,7 +638,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         String url = tab.getUrl();
         boolean isNativePage = tab.isNativePage()
                 || (url != null && url.startsWith(UrlConstants.CHROME_NATIVE_URL_PREFIX));
-        int themeColor = tab.getThemeColor();
+        int themeColor = TabThemeColorHelper.getColor(tab);
 
         boolean canUseLiveTexture = tab.getWebContents() != null && !SadTab.isShowing(tab)
                 && !isNativePage && !tab.isHidden();
@@ -775,13 +797,12 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
             mPreviousLayoutShowingToolbar = !fullscreenManager.areBrowserControlsOffScreen();
 
             // Release any old fullscreen token we were holding.
-            fullscreenManager.getBrowserVisibilityDelegate().hideControlsPersistent(
-                    mFullscreenToken);
-            mFullscreenToken = FullscreenManager.INVALID_TOKEN;
+            fullscreenManager.getBrowserVisibilityDelegate().releasePersistentShowingToken(
+                    mControlsShowingToken);
 
             // Grab a new fullscreen token if this layout can't be in fullscreen.
             if (getActiveLayout().forceShowBrowserControlsAndroidView()) {
-                mFullscreenToken =
+                mControlsShowingToken =
                         fullscreenManager.getBrowserVisibilityDelegate().showControlsPersistent();
             }
         }
@@ -854,6 +875,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     protected void addAllSceneOverlays() {
         addGlobalSceneOverlay(mToolbarOverlay);
         mStaticLayout.addSceneOverlay(mContextualSearchPanel);
+        if (mEphemeralTabPanel != null) mStaticLayout.addSceneOverlay(mEphemeralTabPanel);
     }
 
     /**

@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/time/time_override.h"
+#include "base/trace_event/builtin_categories.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "base/trace_event/heap_profiler.h"
 #include "base/trace_event/trace_category.h"
@@ -31,16 +32,15 @@
 #define TRACE_STR_COPY(str) \
     trace_event_internal::TraceStringWithCopy(str)
 
-// DEPRECATED: do not use: Consider using TRACE_ID_{GLOBAL, LOCAL} macros,
-// instead. By default, uint64_t ID argument values are not mangled with the
-// Process ID in TRACE_EVENT_ASYNC macros. Use this macro to force Process ID
-// mangling.
+// DEPRECATED: do not use: Consider using the TRACE_ID_LOCAL macro instead. By
+// default, uint64_t ID argument values are not mangled with the Process ID in
+// TRACE_EVENT_ASYNC macros. Use this macro to force Process ID mangling.
 #define TRACE_ID_MANGLE(id) \
     trace_event_internal::TraceID::ForceMangle(id)
 
-// DEPRECATED: do not use: Consider using TRACE_ID_{GLOBAL, LOCAL} macros,
-// instead. By default, pointers are mangled with the Process ID in
-// TRACE_EVENT_ASYNC macros. Use this macro to prevent Process ID mangling.
+// DEPRECATED: do not use: Consider using the TRACE_ID_GLOBAL macro instead. By
+// default, pointers are mangled with the Process ID in TRACE_EVENT_ASYNC
+// macros. Use this macro to prevent Process ID mangling.
 #define TRACE_ID_DONT_MANGLE(id) \
     trace_event_internal::TraceID::DontMangle(id)
 
@@ -61,7 +61,12 @@
 #define TRACE_ID_WITH_SCOPE(scope, ...) \
   trace_event_internal::TraceID::WithScope(scope, ##__VA_ARGS__)
 
+// Use this for ids that are unique across processes. This allows different
+// processes to use the same id to refer to the same event.
 #define TRACE_ID_GLOBAL(id) trace_event_internal::TraceID::GlobalId(id)
+
+// Use this for ids that are unique within a single process. This allows
+// different processes to use the same id to refer to different events.
 #define TRACE_ID_LOCAL(id) trace_event_internal::TraceID::LocalId(id)
 
 #define TRACE_EVENT_API_CURRENT_THREAD_ID \
@@ -98,7 +103,7 @@
 // the TRACE_EVENT_IS_NEW_TRACE facility.
 // unsigned int TRACE_EVENT_API_GET_NUM_TRACES_RECORDED()
 #define TRACE_EVENT_API_GET_NUM_TRACES_RECORDED \
-    base::trace_event::TraceLog::GetInstance()->GetNumTracesRecorded
+  trace_event_internal::GetNumTracesRecorded
 
 // Add a trace event to the platform tracing system.
 // base::trace_event::TraceEventHandle TRACE_EVENT_API_ADD_TRACE_EVENT(
@@ -114,8 +119,7 @@
 //                    std::unique_ptr<ConvertableToTraceFormat>*
 //                    convertable_values,
 //                    unsigned int flags)
-#define TRACE_EVENT_API_ADD_TRACE_EVENT \
-    base::trace_event::TraceLog::GetInstance()->AddTraceEvent
+#define TRACE_EVENT_API_ADD_TRACE_EVENT trace_event_internal::AddTraceEvent
 
 // Add a trace event to the platform tracing system.
 // base::trace_event::TraceEventHandle
@@ -134,7 +138,7 @@
 //                    convertable_values,
 //                    unsigned int flags)
 #define TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_BIND_ID \
-  base::trace_event::TraceLog::GetInstance()->AddTraceEventWithBindId
+  trace_event_internal::AddTraceEventWithBindId
 
 // Add a trace event to the platform tracing system overriding the pid.
 // The resulting event will have tid = pid == (process_id passed here).
@@ -154,7 +158,7 @@
 //                    convertable_values,
 //                    unsigned int flags)
 #define TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_PROCESS_ID \
-  base::trace_event::TraceLog::GetInstance()->AddTraceEventWithProcessId
+  trace_event_internal::AddTraceEventWithProcessId
 
 // Add a trace event to the platform tracing system.
 // base::trace_event::TraceEventHandle
@@ -174,8 +178,7 @@
 //                    convertable_values,
 //                    unsigned int flags)
 #define TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_THREAD_ID_AND_TIMESTAMP \
-    base::trace_event::TraceLog::GetInstance() \
-      ->AddTraceEventWithThreadIdAndTimestamp
+  trace_event_internal::AddTraceEventWithThreadIdAndTimestamp
 
 // Set the duration field of a COMPLETE trace event.
 // void TRACE_EVENT_API_UPDATE_TRACE_EVENT_DURATION(
@@ -183,7 +186,7 @@
 //     const char* name,
 //     base::trace_event::TraceEventHandle id)
 #define TRACE_EVENT_API_UPDATE_TRACE_EVENT_DURATION \
-    base::trace_event::TraceLog::GetInstance()->UpdateTraceEventDuration
+  trace_event_internal::UpdateTraceEventDuration
 
 // Set the duration field of a COMPLETE trace event.
 // void TRACE_EVENT_API_UPDATE_TRACE_EVENT_DURATION_EXPLICIT(
@@ -193,7 +196,7 @@
 //     const TimeTicks& now,
 //     const ThreadTicks* thread_now)
 #define TRACE_EVENT_API_UPDATE_TRACE_EVENT_DURATION_EXPLICIT \
-  base::trace_event::TraceLog::GetInstance()->UpdateTraceEventDurationExplicit
+  trace_event_internal::UpdateTraceEventDurationExplicit
 
 // Adds a metadata event to the trace log. The |AppendValueAsTraceFormat| method
 // on the convertable value will be called at flush time.
@@ -230,25 +233,41 @@
 // No barriers are needed, because this code is designed to operate safely
 // even when the unsigned char* points to garbage data (which may be the case
 // on processors without cache coherency).
-#define INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO_CUSTOM_VARIABLES( \
-    category_group, atomic, category_group_enabled) \
-    category_group_enabled = \
-        reinterpret_cast<const unsigned char*>(TRACE_EVENT_API_ATOMIC_LOAD( \
-            atomic)); \
-    if (UNLIKELY(!category_group_enabled)) { \
-      category_group_enabled = \
-          TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(category_group); \
-      TRACE_EVENT_API_ATOMIC_STORE(atomic, \
-          reinterpret_cast<TRACE_EVENT_API_ATOMIC_WORD>( \
-              category_group_enabled)); \
-    }
+#define INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO_CUSTOM_VARIABLES(    \
+    category_group, atomic, category_group_enabled)                 \
+  category_group_enabled = reinterpret_cast<const unsigned char*>(  \
+      TRACE_EVENT_API_ATOMIC_LOAD(atomic));                         \
+  if (UNLIKELY(!category_group_enabled)) {                          \
+    category_group_enabled =                                        \
+        TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(category_group); \
+    TRACE_EVENT_API_ATOMIC_STORE(                                   \
+        atomic, reinterpret_cast<TRACE_EVENT_API_ATOMIC_WORD>(      \
+                    category_group_enabled));                       \
+  }
 
-#define INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO(category_group) \
+#define INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO_MAYBE_AT_COMPILE_TIME(        \
+    category_group, k_category_group_enabled, category_group_enabled)        \
+  if (k_category_group_enabled) {                                            \
+    category_group_enabled = k_category_group_enabled;                       \
+  } else {                                                                   \
     static TRACE_EVENT_API_ATOMIC_WORD INTERNAL_TRACE_EVENT_UID(atomic) = 0; \
-    const unsigned char* INTERNAL_TRACE_EVENT_UID(category_group_enabled); \
-    INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO_CUSTOM_VARIABLES(category_group, \
-        INTERNAL_TRACE_EVENT_UID(atomic), \
-        INTERNAL_TRACE_EVENT_UID(category_group_enabled));
+    INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO_CUSTOM_VARIABLES(                 \
+        category_group, INTERNAL_TRACE_EVENT_UID(atomic),                    \
+        category_group_enabled);                                             \
+  }
+
+#define INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO(category_group)                 \
+  static_assert(                                                               \
+      base::trace_event::BuiltinCategories::IsAllowedCategory(category_group), \
+      "Unknown tracing category is used. Please register your "                \
+      "category in base/trace_event/builtin_categories.h");                    \
+  constexpr const unsigned char* INTERNAL_TRACE_EVENT_UID(                     \
+      k_category_group_enabled) =                                              \
+      base::trace_event::TraceLog::GetBuiltinCategoryEnabled(category_group);  \
+  const unsigned char* INTERNAL_TRACE_EVENT_UID(category_group_enabled);       \
+  INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO_MAYBE_AT_COMPILE_TIME(                \
+      category_group, INTERNAL_TRACE_EVENT_UID(k_category_group_enabled),      \
+      INTERNAL_TRACE_EVENT_UID(category_group_enabled));
 
 // Implementation detail: internal macro to return unoverridden
 // base::TimeTicks::Now(). This is important because in headless VirtualTime can
@@ -477,9 +496,7 @@ const int kZeroNumArgs = 0;
 const std::nullptr_t kGlobalScope = nullptr;
 const unsigned long long kNoId = 0;
 
-// TraceID encapsulates an ID that can either be an integer or pointer. Pointers
-// are by default mangled with the Process ID so that they are unlikely to
-// collide when the same pointer is used on different processes.
+// TraceID encapsulates an ID that can either be an integer or pointer.
 class BASE_EXPORT TraceID {
  public:
   // Can be combined with WithScope.
@@ -540,7 +557,7 @@ class BASE_EXPORT TraceID {
     unsigned int id_flags_ = TRACE_EVENT_FLAG_HAS_ID;
   };
 
-  // DEPRECATED: consider using LocalId or GlobalId, instead.
+  // DEPRECATED: consider using GlobalId, instead.
   class DontMangle {
    public:
     explicit DontMangle(const void* raw_id)
@@ -566,7 +583,7 @@ class BASE_EXPORT TraceID {
     unsigned long long raw_id_;
   };
 
-  // DEPRECATED: consider using LocalId or GlobalId, instead.
+  // DEPRECATED: consider using LocalId, instead.
   class ForceMangle {
    public:
     explicit ForceMangle(unsigned long long raw_id) : raw_id_(raw_id) {}
@@ -743,6 +760,115 @@ static inline void SetTraceValue(const base::ThreadTicks arg,
   *type = TRACE_VALUE_TYPE_INT;
   *value = arg.ToInternalValue();
 }
+
+// These functions all internally call
+// base::trace_event::TraceLog::GetInstance() then call the method with the same
+// name on it. This is used to reduce the generated machine code at each
+// TRACE_EVENTXXX macro call.
+
+base::trace_event::TraceEventHandle BASE_EXPORT
+AddTraceEvent(char phase,
+              const unsigned char* category_group_enabled,
+              const char* name,
+              const char* scope,
+              unsigned long long id,
+              int num_args,
+              const char* const* arg_names,
+              const unsigned char* arg_types,
+              const unsigned long long* arg_values,
+              std::unique_ptr<base::trace_event::ConvertableToTraceFormat>*
+                  convertable_values,
+              unsigned int flags);
+
+base::trace_event::TraceEventHandle BASE_EXPORT AddTraceEventWithBindId(
+    char phase,
+    const unsigned char* category_group_enabled,
+    const char* name,
+    const char* scope,
+    unsigned long long id,
+    unsigned long long bind_id,
+    int num_args,
+    const char* const* arg_names,
+    const unsigned char* arg_types,
+    const unsigned long long* arg_values,
+    std::unique_ptr<base::trace_event::ConvertableToTraceFormat>*
+        convertable_values,
+    unsigned int flags);
+
+base::trace_event::TraceEventHandle BASE_EXPORT AddTraceEventWithProcessId(
+    char phase,
+    const unsigned char* category_group_enabled,
+    const char* name,
+    const char* scope,
+    unsigned long long id,
+    int process_id,
+    int num_args,
+    const char* const* arg_names,
+    const unsigned char* arg_types,
+    const unsigned long long* arg_values,
+    std::unique_ptr<base::trace_event::ConvertableToTraceFormat>*
+        convertable_values,
+    unsigned int flags);
+
+base::trace_event::TraceEventHandle BASE_EXPORT
+AddTraceEventWithThreadIdAndTimestamp(
+    char phase,
+    const unsigned char* category_group_enabled,
+    const char* name,
+    const char* scope,
+    unsigned long long id,
+    int thread_id,
+    const base::TimeTicks& timestamp,
+    int num_args,
+    const char* const* arg_names,
+    const unsigned char* arg_types,
+    const unsigned long long* arg_values,
+    std::unique_ptr<base::trace_event::ConvertableToTraceFormat>*
+        convertable_values,
+    unsigned int flags);
+
+base::trace_event::TraceEventHandle BASE_EXPORT
+AddTraceEventWithThreadIdAndTimestamp(
+    char phase,
+    const unsigned char* category_group_enabled,
+    const char* name,
+    const char* scope,
+    unsigned long long id,
+    unsigned long long bind_id,
+    int thread_id,
+    const base::TimeTicks& timestamp,
+    int num_args,
+    const char* const* arg_names,
+    const unsigned char* arg_types,
+    const unsigned long long* arg_values,
+    std::unique_ptr<base::trace_event::ConvertableToTraceFormat>*
+        convertable_values,
+    unsigned int flags);
+
+void BASE_EXPORT
+AddMetadataEvent(const unsigned char* category_group_enabled,
+                 const char* name,
+                 int num_args,
+                 const char* const* arg_names,
+                 const unsigned char* arg_types,
+                 const unsigned long long* arg_values,
+                 std::unique_ptr<base::trace_event::ConvertableToTraceFormat>*
+                     convertable_values,
+                 unsigned int flags);
+
+int BASE_EXPORT GetNumTracesRecorded();
+
+void BASE_EXPORT
+UpdateTraceEventDuration(const unsigned char* category_group_enabled,
+                         const char* name,
+                         base::trace_event::TraceEventHandle handle);
+
+void BASE_EXPORT
+UpdateTraceEventDurationExplicit(const unsigned char* category_group_enabled,
+                                 const char* name,
+                                 base::trace_event::TraceEventHandle handle,
+                                 const base::TimeTicks& now,
+                                 const base::ThreadTicks& thread_now);
 
 // These AddTraceEvent and AddTraceEventWithThreadIdAndTimestamp template
 // functions are defined here instead of in the macro, because the arg_values
@@ -1072,12 +1198,12 @@ static inline void AddMetadataEvent(
   unsigned char arg_types[1] = {TRACE_VALUE_TYPE_CONVERTABLE};
   std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
       convertable_values[1] = {std::move(arg_value)};
-  base::trace_event::TraceLog::GetInstance()->AddMetadataEvent(
-      category_group_enabled, event_name,
-      1,  // num_args
-      arg_names, arg_types,
-      nullptr,  // arg_values
-      convertable_values, TRACE_EVENT_FLAG_NONE);
+  trace_event_internal::AddMetadataEvent(category_group_enabled, event_name,
+                                         1,  // num_args
+                                         arg_names, arg_types,
+                                         nullptr,  // arg_values
+                                         convertable_values,
+                                         TRACE_EVENT_FLAG_NONE);
 }
 
 template <class ARG1_TYPE>
@@ -1091,7 +1217,7 @@ static void AddMetadataEvent(const unsigned char* category_group_enabled,
   unsigned long long arg_values[1];
   SetTraceValue(arg_val, &arg_types[0], &arg_values[0]);
 
-  base::trace_event::TraceLog::GetInstance()->AddMetadataEvent(
+  trace_event_internal::AddMetadataEvent(
       category_group_enabled, event_name, num_args, arg_names, arg_types,
       arg_values, nullptr, TRACE_EVENT_FLAG_NONE);
 }
@@ -1151,26 +1277,23 @@ class TRACE_EVENT_API_CLASS_EXPORT ScopedTraceBinaryEfficient {
 namespace base {
 namespace trace_event {
 
-template<typename IDType> class TraceScopedTrackableObject {
+template <typename IDType, const char* category>
+class TraceScopedTrackableObject {
  public:
-  TraceScopedTrackableObject(const char* category_group, const char* name,
-      IDType id)
-    : category_group_(category_group),
-      name_(name),
-      id_(id) {
-    TRACE_EVENT_OBJECT_CREATED_WITH_ID(category_group_, name_, id_);
+  TraceScopedTrackableObject(const char* name, IDType id)
+      : name_(name), id_(id) {
+    TRACE_EVENT_OBJECT_CREATED_WITH_ID(category, name_, id_);
   }
 
   template <typename ArgType> void snapshot(ArgType snapshot) {
-    TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(category_group_, name_, id_, snapshot);
+    TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(category, name_, id_, snapshot);
   }
 
   ~TraceScopedTrackableObject() {
-    TRACE_EVENT_OBJECT_DELETED_WITH_ID(category_group_, name_, id_);
+    TRACE_EVENT_OBJECT_DELETED_WITH_ID(category, name_, id_);
   }
 
  private:
-  const char* category_group_;
   const char* name_;
   IDType id_;
 

@@ -338,18 +338,20 @@ bool SourceBufferStream<RangeClass>::Append(const BufferQueue& buffers) {
   // https://crbug.com/580621.
   CHECK(!new_coded_frame_group_ || buffers.front()->is_key_frame());
 
-  // Buffers within a coded frame group should be monotonically increasing in
-  // DTS order.
-  if (!IsDtsMonotonicallyIncreasing(buffers)) {
-    return false;
-  }
+  // Buffers within a coded frame group (when buffering by DTS) or within each
+  // GOP in a coded frame group (when buffering by PTS) must be monotonically
+  // increasing in DTS order.
+  // TODO(wolenetz): Relax to a DCHECK once this has baked long enough with a
+  // large enough population of MseBufferByPts.
+  CHECK(IsDtsMonotonicallyIncreasing(buffers));
 
-  if (coded_frame_group_start_time_ < DecodeTimestamp() ||
-      BufferGetTimestamp(buffers.front()) < DecodeTimestamp()) {
-    MEDIA_LOG(ERROR, media_log_)
-        << "Cannot append a coded frame group with negative timestamps.";
-    return false;
-  }
+  // Both of these checks enforce what should be guaranteed by how
+  // FrameProcessor signals OnStartOfCodedFrameGroup and the buffers it tells us
+  // to Append.
+  // TODO(wolenetz): Relax to DCHECKS once this has baked long enough with a
+  // large enough population of MseBufferByPts.
+  CHECK(coded_frame_group_start_time_ >= DecodeTimestamp());
+  CHECK(BufferGetTimestamp(buffers.front()) >= DecodeTimestamp());
 
   if (UpdateMaxInterbufferDtsDistance(buffers)) {
     // Coalesce |ranges_| using the new fudge room. This helps keep |ranges_|
@@ -763,6 +765,17 @@ bool SourceBufferStream<RangeClass>::IsDtsMonotonicallyIncreasing(
         << " pts " << (*itr)->timestamp().InMicroseconds() << "us dts "
         << (*itr)->GetDecodeTimestamp().InMicroseconds() << "us dur "
         << (*itr)->duration().InMicroseconds() << "us";
+
+    // FrameProcessor should have enforced that all audio frames are keyframes
+    // already.
+    DCHECK(current_is_keyframe || GetType() != SourceBufferStreamType::kAudio);
+
+    // When buffering by PTS, only verify DTS monotonicity within the current
+    // GOP.
+    if (current_is_keyframe && BufferingByPts()) {
+      // Reset prev_timestamp DTS tracking since a new GOP is starting.
+      prev_timestamp = kNoDecodeTimestamp();
+    }
 
     if (prev_timestamp != kNoDecodeTimestamp()) {
       if (current_timestamp < prev_timestamp) {

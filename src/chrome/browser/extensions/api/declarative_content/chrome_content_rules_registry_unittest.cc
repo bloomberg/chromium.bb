@@ -14,7 +14,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
-#include "content/public/test/test_web_contents_factory.h"
+#include "content/public/test/test_renderer_host.h"
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -135,7 +135,9 @@ class DeclarativeChromeContentRulesRegistryTest : public testing::Test {
 
  private:
   TestExtensionEnvironment env_;
-  content::TestWebContentsFactory factory_;
+
+  // Must come after |env_| so only one UI MessageLoop is created.
+  content::RenderViewHostTestEnabler rvh_enabler_;
 
   DISALLOW_COPY_AND_ASSIGN(DeclarativeChromeContentRulesRegistryTest);
 };

@@ -75,8 +75,14 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   static HTMLDocumentParser* Create(
       HTMLDocument& document,
       ParserSynchronizationPolicy background_parsing_policy) {
-    return new HTMLDocumentParser(document, background_parsing_policy);
+    return MakeGarbageCollected<HTMLDocumentParser>(document,
+                                                    background_parsing_policy);
   }
+
+  HTMLDocumentParser(HTMLDocument&, ParserSynchronizationPolicy);
+  HTMLDocumentParser(DocumentFragment*,
+                     Element* context_element,
+                     ParserContentPolicy);
   ~HTMLDocumentParser() override;
   void Trace(blink::Visitor*) override;
 
@@ -140,11 +146,6 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   void Append(const String&) override;
   void Finish() final;
 
-  HTMLDocumentParser(HTMLDocument&, ParserSynchronizationPolicy);
-  HTMLDocumentParser(DocumentFragment*,
-                     Element* context_element,
-                     ParserContentPolicy);
-
   HTMLTreeBuilder* TreeBuilder() const { return tree_builder_.Get(); }
 
   void ForcePlaintextForTextDocument();
@@ -153,8 +154,8 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   static HTMLDocumentParser* Create(DocumentFragment* fragment,
                                     Element* context_element,
                                     ParserContentPolicy parser_content_policy) {
-    return new HTMLDocumentParser(fragment, context_element,
-                                  parser_content_policy);
+    return MakeGarbageCollected<HTMLDocumentParser>(fragment, context_element,
+                                                    parser_content_policy);
   }
   HTMLDocumentParser(Document&,
                      ParserContentPolicy,

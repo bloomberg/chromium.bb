@@ -7,11 +7,24 @@
 namespace previews {
 namespace switches {
 
+// Do not require the user notification InfoBar to be shown before triggering a
+// Lite Page Redirect preview.
+const char kDoNotRequireLitePageRedirectInfoBar[] =
+    "dont-require-litepage-redirect-infobar";
+
 // Ignore decisions made by PreviewsBlackList.
 const char kIgnorePreviewsBlacklist[] = "ignore-previews-blacklist";
 
 // Override the Lite Page Preview Host.
 const char kLitePageServerPreviewHost[] = "litepage-server-previews-host";
+
+// Ignore the optimization hints blacklist for Lite Page Redirect previews.
+const char kIgnoreLitePageRedirectOptimizationBlacklist[] =
+    "ignore-litepage-redirect-optimization-blacklist";
+
+// Clears the local Lite Page Redirect blacklist on startup.
+const char kClearLitePageRedirectLocalBlacklist[] =
+    "clear-litepage-redirect-local-blacklist-on-startup";
 
 }  // namespace switches
 }  // namespace previews

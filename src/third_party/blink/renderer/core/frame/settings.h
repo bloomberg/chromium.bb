@@ -88,12 +88,6 @@ class CORE_EXPORT Settings {
 
   void SetDelegate(SettingsDelegate*);
 
-  // TODO(lunalu): Service worker and shared worker count feature usage on the
-  // blink side use counter via the shadow page. Once blink side use counter is
-  // removed, this flag is no longer needed (crbug.com/811948).
-  void SetIsShadowPage(bool);
-  bool IsShadowPage() const { return is_shadow_page_; }
-
  private:
   Settings();
 
@@ -104,10 +98,6 @@ class CORE_EXPORT Settings {
   GenericFontFamilySettings generic_font_family_settings_;
   IntSize text_autosizing_window_size_override_;
   bool text_autosizing_enabled_ : 1;
-  // TODO(lunalu): Service worker is counting feature usage on the blink side
-  // use counter via the shadow page. Once blink side use counter is removed,
-  // this flag is no longer needed (crbug.com/811948).
-  bool is_shadow_page_;
   bool bypass_csp_ = false;
 
   SETTINGS_MEMBER_VARIABLES

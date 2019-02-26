@@ -7,6 +7,7 @@
 
 // Defines the style of a collection view cell. Individual cells may choose to
 // expose and respect this setting.
+// TODO(crbug.com/894800): Remove this.
 enum class CollectionViewCellStyle {
   // A cell style that conforms to Material Design guidelines.
   kMaterial = 0,

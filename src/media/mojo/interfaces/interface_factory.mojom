@@ -10,6 +10,7 @@ import "media/mojo/interfaces/decryptor.mojom";
 import "media/mojo/interfaces/content_decryption_module.mojom";
 import "media/mojo/interfaces/renderer.mojom";
 import "media/mojo/interfaces/video_decoder.mojom";
+import "mojo/public/mojom/base/token.mojom";
 
 // Defines the types of renderers that can be hosted by a mojo Renderer.
 enum HostedRendererType {
@@ -69,6 +70,5 @@ interface InterfaceFactory {
   // type of the CDM, identified by |cdm_guid|.
   // TODO(crbug.com/676224): Conditionally enable this when EnabledIf attribute
   // is supported in mojom files.
-  // TODO(xhwang): Add a helper type for GUID to avoid passing string here.
-  CreateCdmProxy(string cdm_guid, CdmProxy& cdm_proxy);
+  CreateCdmProxy(mojo_base.mojom.Token cdm_guid, CdmProxy& cdm_proxy);
 };

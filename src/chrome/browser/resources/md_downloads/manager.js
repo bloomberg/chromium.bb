@@ -116,10 +116,15 @@ cr.define('downloads', function() {
       if (this.inSearchMode_) {
         Polymer.IronA11yAnnouncer.requestAvailability();
         this.fire('iron-announce', {
-          text: this.hasDownloads_ ?
-              loadTimeData.getStringF(
-                  'searchResultsFor', this.$.toolbar.getSearchText()) :
-              this.noDownloadsText_()
+          text: this.items_.length == 0 ?
+              this.noDownloadsText_() :
+              (this.items_.length == 1 ?
+                   loadTimeData.getStringF(
+                       'searchResultsSingular',
+                       this.$.toolbar.getSearchText()) :
+                   loadTimeData.getStringF(
+                       'searchResultsPlural', this.items_.length,
+                       this.$.toolbar.getSearchText()))
         });
       }
     },

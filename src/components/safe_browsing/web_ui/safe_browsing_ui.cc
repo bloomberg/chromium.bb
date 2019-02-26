@@ -376,6 +376,9 @@ base::Value SerializeReferrer(const ReferrerChainEntry& referrer) {
     case ReferrerChainEntry::RECENT_NAVIGATION:
       url_type = "RECENT_NAVIGATION";
       break;
+    case ReferrerChainEntry::REFERRER:
+      url_type = "REFERRER";
+      break;
   }
   referrer_dict.SetKey("type", base::Value(url_type));
 
@@ -824,6 +827,8 @@ base::Value SerializeChromeUserPopulation(
   population_dict.SetKey(
       "is_under_advanced_protection",
       base::Value(population.is_under_advanced_protection()));
+  population_dict.SetKey("is_incognito",
+                         base::Value(population.is_incognito()));
 
   return std::move(population_dict);
 }

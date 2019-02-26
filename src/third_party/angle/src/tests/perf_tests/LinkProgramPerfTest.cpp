@@ -31,6 +31,8 @@ struct LinkProgramParams final : public RenderTestParams
 {
     LinkProgramParams(LinkProgramOption optionIn)
     {
+        iterationsPerStep = 1;
+
         majorVersion = 2;
         minorVersion = 0;
         windowWidth  = 256;
@@ -79,9 +81,7 @@ class LinkProgramBenchmark : public ANGLERenderTest,
     GLuint mVertexBuffer = 0;
 };
 
-LinkProgramBenchmark::LinkProgramBenchmark() : ANGLERenderTest("LinkProgram", GetParam())
-{
-}
+LinkProgramBenchmark::LinkProgramBenchmark() : ANGLERenderTest("LinkProgram", GetParam()) {}
 
 void LinkProgramBenchmark::initializeBenchmark()
 {

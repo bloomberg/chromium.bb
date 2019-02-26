@@ -115,7 +115,9 @@ PACKAGE_LICENSES = {
     'chromeos-base/chromeos-chrome': ['BSD-Google', 'Google-TOS'],
 
     # Currently the code cannot parse LGPL-3 || ( LGPL-2.1 MPL-1.1 )
+    # Currently the code cannot parse BSD-2 BSD || ( Artistic GPL-2 LGPL-2 )
     'dev-python/pycairo': ['LGPL-3', 'LGPL-2.1'],
+    'dev-lang/yasm': ['BSD-2', 'GPL-2', 'LGPL-2'],
 
     # Currently the code cannot parse the license for mit-krb5
     # "openafs-krb5-a BSD MIT OPENLDAP BSD-2 HPND BSD-4 ISC RSA CC-BY-SA-3.0 ||

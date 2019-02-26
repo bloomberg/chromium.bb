@@ -11,9 +11,9 @@
 #include "third_party/blink/renderer/core/animation/filter_interpolation_functions.h"
 #include "third_party/blink/renderer/core/animation/list_interpolation_functions.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
-#include "third_party/blink/renderer/core/css_property_names.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
@@ -66,7 +66,7 @@ class UnderlyingFilterListChecker
         underlying_non_interpolable_list.length())
       return false;
     for (wtf_size_t i = 0; i < non_interpolable_list_->length(); i++) {
-      if (!FilterInterpolationFunctions::FiltersAreCompatible(
+      if (!filter_interpolation_functions::FiltersAreCompatible(
               *non_interpolable_list_->Get(i),
               *underlying_non_interpolable_list.Get(i)))
         return false;
@@ -118,7 +118,7 @@ InterpolationValue ConvertFilterList(const FilterOperations& filter_operations,
   Vector<scoped_refptr<NonInterpolableValue>> non_interpolable_values(length);
   for (wtf_size_t i = 0; i < length; i++) {
     InterpolationValue filter_result =
-        FilterInterpolationFunctions::MaybeConvertFilter(
+        filter_interpolation_functions::MaybeConvertFilter(
             *filter_operations.Operations()[i], zoom);
     if (!filter_result)
       return nullptr;
@@ -182,7 +182,7 @@ InterpolationValue CSSFilterListInterpolationType::MaybeConvertValue(
   Vector<scoped_refptr<NonInterpolableValue>> non_interpolable_values(length);
   for (wtf_size_t i = 0; i < length; i++) {
     InterpolationValue item_result =
-        FilterInterpolationFunctions::MaybeConvertCSSFilter(list.Item(i));
+        filter_interpolation_functions::MaybeConvertCSSFilter(list.Item(i));
     if (!item_result)
       return nullptr;
     interpolable_list->Set(i, std::move(item_result.interpolable_value));
@@ -211,7 +211,7 @@ PairwiseInterpolationValue CSSFilterListInterpolationType::MaybeMergeSingles(
   wtf_size_t end_length = end_non_interpolable_list.length();
 
   for (wtf_size_t i = 0; i < start_length && i < end_length; i++) {
-    if (!FilterInterpolationFunctions::FiltersAreCompatible(
+    if (!filter_interpolation_functions::FiltersAreCompatible(
             *start_non_interpolable_list.Get(i),
             *end_non_interpolable_list.Get(i)))
       return nullptr;
@@ -243,7 +243,7 @@ PairwiseInterpolationValue CSSFilterListInterpolationType::MaybeMergeSingles(
           i, std::move(shorter_interpolable_list.GetMutable(i)));
     else
       extended_interpolable_list->Set(
-          i, FilterInterpolationFunctions::CreateNoneValue(
+          i, filter_interpolation_functions::CreateNoneValue(
                  *longer_non_interpolable_list.Get(i)));
   }
   shorter.interpolable_value = std::move(extended_interpolable_list);
@@ -267,7 +267,7 @@ void CSSFilterListInterpolationType::Composite(
   wtf_size_t length = non_interpolable_list.length();
 
   for (wtf_size_t i = 0; i < underlying_length && i < length; i++) {
-    if (!FilterInterpolationFunctions::FiltersAreCompatible(
+    if (!filter_interpolation_functions::FiltersAreCompatible(
             *underlying_non_interpolable_list.Get(i),
             *non_interpolable_list.Get(i))) {
       underlying_value_owner.Set(*this, value);
@@ -320,7 +320,7 @@ void CSSFilterListInterpolationType::ApplyStandardPropertyValue(
   filter_operations.Operations().ReserveCapacity(length);
   for (wtf_size_t i = 0; i < length; i++) {
     filter_operations.Operations().push_back(
-        FilterInterpolationFunctions::CreateFilter(
+        filter_interpolation_functions::CreateFilter(
             *interpolable_list.Get(i), *non_interpolable_list.Get(i), state));
   }
   SetFilterList(CssProperty(), *state.Style(), std::move(filter_operations));

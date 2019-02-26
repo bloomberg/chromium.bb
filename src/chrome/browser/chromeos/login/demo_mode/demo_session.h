@@ -5,21 +5,20 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_DEMO_MODE_DEMO_SESSION_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_DEMO_MODE_DEMO_SESSION_H_
 
-#include <list>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_extensions_external_loader.h"
-#include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 #include "components/session_manager/core/session_manager_observer.h"
+#include "components/user_manager/user_manager.h"
 #include "extensions/browser/extension_registry_observer.h"
+
+class PrefRegistrySimple;
 
 namespace session_manager {
 class SessionManager;
@@ -27,11 +26,13 @@ class SessionManager;
 
 namespace chromeos {
 
-// Tracks global demo session state. For example, whether the demo session has
-// started, and whether the demo session offline resources have been loaded.
-// TODO(michaelpg): Componentize the logic for providing offline resources.
+class DemoResources;
+
+// Tracks global demo session state, such as whether the demo session has
+// started and the state of demo mode resources.
 class DemoSession : public session_manager::SessionManagerObserver,
-                    extensions::ExtensionRegistryObserver {
+                    public extensions::ExtensionRegistryObserver,
+                    public user_manager::UserManager::UserSessionStateObserver {
  public:
   // Type of demo mode configuration.
   // Warning: DemoModeConfig is stored in local state. Existing entries should
@@ -48,14 +49,6 @@ class DemoSession : public session_manager::SessionManagerObserver,
     // Add new entries above this line and make sure to update kLast value.
     kLast = kOffline,
   };
-
-  // The name of the demo mode resources CrOS component or preinstalled
-  // imageloader image.
-  static const char kDemoModeResourcesComponentName[];
-
-  // Location on disk where pre-installed demo mode resources are expected to be
-  // found.
-  static base::FilePath GetPreInstalledDemoResourcesPath();
 
   static std::string DemoConfigToString(DemoModeConfig config);
 
@@ -96,29 +89,11 @@ class DemoSession : public session_manager::SessionManagerObserver,
   // in demo mode. Returns true for all apps in non-demo mode.
   static bool ShouldDisplayInAppLauncher(const std::string& app_id);
 
+  static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
+
   // Ensures that the load of offline demo session resources is requested.
   // |load_callback| will be run once the offline resource load finishes.
   void EnsureOfflineResourcesLoaded(base::OnceClosure load_callback);
-
-  // Fakes offline demo session resources having been requested and mounted at
-  // the given path (or not mounted if |path| is empty).
-  void SetOfflineResourcesLoadedForTesting(const base::FilePath& path);
-
-  // Gets the path of the image containing demo session Android apps. The path
-  // will be set when the offline resources get loaded.
-  base::FilePath GetDemoAppsPath() const;
-
-  // Gets the path under offline demo resources mount point that contains
-  // external extensions prefs (JSON containing set of extensions to be loaded
-  // as external extensions into demo sessions - expected to map extension IDs
-  // to the associated CRX path and version).
-  base::FilePath GetExternalExtensionsPrefsPath() const;
-
-  // Converts a relative path to an absolute path under the offline demo
-  // resources mount. Returns an empty string if the offline demo resources are
-  // not loaded.
-  base::FilePath GetOfflineResourceAbsolutePath(
-      const base::FilePath& relative_path) const;
 
   // Returns true if the Chrome app or ARC++ package, which is normally pinned
   // by policy, should actually not be force-pinned because the device is
@@ -133,30 +108,18 @@ class DemoSession : public session_manager::SessionManagerObserver,
   // device is offline in Demo Mode.
   void OverrideIgnorePinPolicyAppsForTesting(std::vector<std::string> apps);
 
+  // user_manager::UserManager::UserSessionStateObserver:
+  void ActiveUserChanged(const user_manager::User* user) override;
+
   bool offline_enrolled() const { return offline_enrolled_; }
 
   bool started() const { return started_; }
 
-  bool offline_resources_loaded() const { return offline_resources_loaded_; }
+  const DemoResources* resources() const { return demo_resources_.get(); }
 
  private:
   DemoSession();
   ~DemoSession() override;
-
-  // Called after load of a currently installed (if any) demo mode resources
-  // component has finished.
-  // On success, |path| is expected to contain the path as which the component
-  // is loaded.
-  void InstalledComponentLoaded(
-      component_updater::CrOSComponentManager::Error error,
-      const base::FilePath& path);
-
-  // Loads the preinstalled offline resources image.
-  void LoadPreinstalledOfflineResources();
-
-  // Callback for the image loader request to load offline demo mode resources.
-  // |mount_path| is the path at which the resources were loaded.
-  void OnOfflineResourcesLoaded(base::Optional<base::FilePath> mounted_path);
 
   // Installs resources for Demo Mode from the offline demo mode resources, such
   // as apps and media.
@@ -186,17 +149,10 @@ class DemoSession : public session_manager::SessionManagerObserver,
   // Whether demo session has been started.
   bool started_ = false;
 
-  bool offline_resources_load_requested_ = false;
-  bool offline_resources_loaded_ = false;
-
-  // Path at which offline demo mode resources were loaded.
-  base::FilePath offline_resources_path_;
-
   // Apps that ShouldIgnorePinPolicy() will check for if the device is offline.
   std::vector<std::string> ignore_pin_policy_offline_apps_;
 
-  // List of pending callbacks passed to EnsureOfflineResourcesLoaded().
-  std::list<base::OnceClosure> offline_resources_load_callbacks_;
+  std::unique_ptr<DemoResources> demo_resources_;
 
   ScopedObserver<session_manager::SessionManager,
                  session_manager::SessionManagerObserver>

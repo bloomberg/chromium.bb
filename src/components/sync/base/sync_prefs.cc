@@ -25,7 +25,7 @@ namespace {
 //   pref_groups_[EXTENSIONS] = { EXTENSION_SETTINGS }
 // etc.
 using PrefGroupsMap = std::map<ModelType, ModelTypeSet>;
-PrefGroupsMap ComputePrefGroups(bool user_events_separate_pref_group) {
+PrefGroupsMap ComputePrefGroups() {
   PrefGroupsMap pref_groups;
   pref_groups[APPS].Put(APP_NOTIFICATIONS);
   pref_groups[APPS].Put(APP_SETTINGS);
@@ -47,10 +47,7 @@ PrefGroupsMap ComputePrefGroups(bool user_events_separate_pref_group) {
   pref_groups[TYPED_URLS].Put(SESSIONS);
   pref_groups[TYPED_URLS].Put(FAVICON_IMAGES);
   pref_groups[TYPED_URLS].Put(FAVICON_TRACKING);
-
-  if (!user_events_separate_pref_group) {
-    pref_groups[TYPED_URLS].Put(USER_EVENTS);
-  }
+  pref_groups[TYPED_URLS].Put(USER_EVENTS);
 
   pref_groups[PROXY_TABS].Put(SESSIONS);
   pref_groups[PROXY_TABS].Put(FAVICON_IMAGES);
@@ -80,8 +77,6 @@ SyncPrefs::SyncPrefs(PrefService* pref_service) : pref_service_(pref_service) {
   local_sync_enabled_ =
       pref_service_->GetBoolean(prefs::kEnableLocalSyncBackend);
 }
-
-SyncPrefs::SyncPrefs() : pref_service_(nullptr) {}
 
 SyncPrefs::~SyncPrefs() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -169,8 +164,8 @@ void SyncPrefs::ClearPreferences() {
       prefs::kSyncPassphraseEncryptionTransitionInProgress);
   pref_service_->ClearPref(prefs::kSyncNigoriStateForPassphraseTransition);
 
-  // TODO(nick): The current behavior does not clear
-  // e.g. prefs::kSyncBookmarks.  Is that really what we want?
+  // Note: We do *not* clear prefs which are directly user-controlled such as
+  // the set of preferred data types here.
 }
 
 bool SyncPrefs::IsFirstSetupComplete() const {
@@ -264,8 +259,7 @@ void SyncPrefs::SetKeepEverythingSynced(bool keep_everything_synced) {
 }
 
 ModelTypeSet SyncPrefs::GetPreferredDataTypes(
-    ModelTypeSet registered_types,
-    bool user_events_separate_pref_group) const {
+    ModelTypeSet registered_types) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (pref_service_->GetBoolean(prefs::kSyncKeepEverythingSynced)) {
@@ -278,16 +272,13 @@ ModelTypeSet SyncPrefs::GetPreferredDataTypes(
       preferred_types.Put(type);
     }
   }
-  return ResolvePrefGroups(registered_types, preferred_types,
-                           user_events_separate_pref_group);
+  return ResolvePrefGroups(registered_types, preferred_types);
 }
 
 void SyncPrefs::SetPreferredDataTypes(ModelTypeSet registered_types,
-                                      ModelTypeSet preferred_types,
-                                      bool user_events_separate_pref_group) {
+                                      ModelTypeSet preferred_types) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  preferred_types = ResolvePrefGroups(registered_types, preferred_types,
-                                      user_events_separate_pref_group);
+  preferred_types = ResolvePrefGroups(registered_types, preferred_types);
   DCHECK(registered_types.HasAll(preferred_types));
   for (ModelType type : registered_types) {
     SetDataTypePreferred(type, preferred_types.Has(type));
@@ -383,7 +374,7 @@ const char* SyncPrefs::GetPrefNameForDataType(ModelType type) {
       return prefs::kSyncArticles;
     case APP_LIST:
       return prefs::kSyncAppList;
-    case WIFI_CREDENTIALS:
+    case DEPRECATED_WIFI_CREDENTIALS:
       return prefs::kSyncWifiCredentials;
     case SUPERVISED_USER_WHITELISTS:
       return prefs::kSyncSupervisedUserWhitelists;
@@ -401,6 +392,8 @@ const char* SyncPrefs::GetPrefNameForDataType(ModelType type) {
       return prefs::kSyncMountainShares;
     case USER_CONSENTS:
       return prefs::kSyncUserConsents;
+    case SEND_TAB_TO_SELF:
+      return prefs::kSyncSendTabToSelf;
     case NIGORI:
     case EXPERIMENTS:
     case MODEL_TYPE_COUNT:
@@ -473,13 +466,11 @@ void SyncPrefs::SetDataTypePreferred(ModelType type, bool is_preferred) {
   pref_service_->SetBoolean(pref_name, is_preferred);
 }
 
-ModelTypeSet SyncPrefs::ResolvePrefGroups(
-    ModelTypeSet registered_types,
-    ModelTypeSet types,
-    bool user_events_separate_pref_group) const {
+// static
+ModelTypeSet SyncPrefs::ResolvePrefGroups(ModelTypeSet registered_types,
+                                          ModelTypeSet types) {
   ModelTypeSet types_with_groups = types;
-  for (const auto& pref_group :
-       ComputePrefGroups(user_events_separate_pref_group)) {
+  for (const auto& pref_group : ComputePrefGroups()) {
     if (types.Has(pref_group.first)) {
       types_with_groups.PutAll(pref_group.second);
     }
@@ -593,10 +584,6 @@ void SyncPrefs::GetNigoriSpecificsForPassphraseTransition(
 
 bool SyncPrefs::IsLocalSyncEnabled() const {
   return local_sync_enabled_;
-}
-
-base::FilePath SyncPrefs::GetLocalSyncBackendDir() const {
-  return pref_service_->GetFilePath(prefs::kLocalSyncBackendDir);
 }
 
 }  // namespace syncer

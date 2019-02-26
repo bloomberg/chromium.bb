@@ -32,7 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_CSS_ANIMATABLE_VALUE_FACTORY_H_
 
 #include "third_party/blink/renderer/core/animation/animatable/animatable_value.h"
-#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {

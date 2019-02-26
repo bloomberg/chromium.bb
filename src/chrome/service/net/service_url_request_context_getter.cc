@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "build/build_config.h"
 #include "chrome/service/service_process.h"
 #include "components/version_info/version_info.h"

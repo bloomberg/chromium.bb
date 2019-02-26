@@ -47,7 +47,6 @@ class ShellBrowserContext : public BrowserContext {
 
   // BrowserContext implementation.
   base::FilePath GetPath() const override;
-  base::FilePath GetCachePath() const override;
 #if !defined(OS_ANDROID)
   std::unique_ptr<ZoomLevelDelegate> CreateZoomLevelDelegate(
       const base::FilePath& partition_path) override;
@@ -83,16 +82,7 @@ class ShellBrowserContext : public BrowserContext {
     ShellResourceContext();
     ~ShellResourceContext() override;
 
-    // ResourceContext implementation:
-    net::URLRequestContext* GetRequestContext() override;
-
-    void set_url_request_context_getter(ShellURLRequestContextGetter* getter) {
-      getter_ = getter;
-    }
-
   private:
-    ShellURLRequestContextGetter* getter_;
-
     DISALLOW_COPY_AND_ASSIGN(ShellResourceContext);
   };
 

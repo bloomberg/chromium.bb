@@ -11,7 +11,10 @@
 #include "ash/accessibility/accessibility_focus_ring_controller.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_screen_context_controller.h"
+#include "ash/assistant/assistant_setup_controller.h"
 #include "ash/cast_config_controller.h"
+#include "ash/contained_shell/contained_shell_controller.h"
 #include "ash/display/ash_display_controller.h"
 #include "ash/display/cros_display_config.h"
 #include "ash/display/display_output_protection.h"
@@ -87,6 +90,20 @@ void BindAssistantControllerRequestOnMainThread(
   Shell::Get()->assistant_controller()->BindRequest(std::move(request));
 }
 
+void BindAssistantScreenContextControllerRequestOnMainThread(
+    mojom::AssistantScreenContextControllerRequest request) {
+  Shell::Get()
+      ->assistant_controller()
+      ->screen_context_controller()
+      ->BindRequest(std::move(request));
+}
+
+void BindAssistantSetupControllerRequestOnMainThread(
+    mojom::AssistantSetupControllerRequest request) {
+  Shell::Get()->assistant_controller()->setup_controller()->BindRequest(
+      std::move(request));
+}
+
 void BindAssistantVolumeControlRequestOnMainThread(
     mojom::AssistantVolumeControlRequest request) {
   Shell::Get()->assistant_controller()->BindRequest(std::move(request));
@@ -104,6 +121,11 @@ void BindAshMessageCenterControllerRequestOnMainThread(
 
 void BindCastConfigOnMainThread(mojom::CastConfigRequest request) {
   Shell::Get()->cast_config()->BindRequest(std::move(request));
+}
+
+void BindContainedShellControllerRequestOnMainThread(
+    mojom::ContainedShellControllerRequest request) {
+  Shell::Get()->contained_shell_controller()->BindRequest(std::move(request));
 }
 
 void BindDisplayOutputProtectionRequestOnMainThread(
@@ -244,6 +266,13 @@ void RegisterInterfaces(
         base::BindRepeating(&BindAssistantControllerRequestOnMainThread),
         main_thread_task_runner);
     registry->AddInterface(
+        base::BindRepeating(
+            &BindAssistantScreenContextControllerRequestOnMainThread),
+        main_thread_task_runner);
+    registry->AddInterface(
+        base::BindRepeating(&BindAssistantSetupControllerRequestOnMainThread),
+        main_thread_task_runner);
+    registry->AddInterface(
         base::BindRepeating(&BindAssistantVolumeControlRequestOnMainThread),
         main_thread_task_runner);
   }
@@ -258,6 +287,11 @@ void RegisterInterfaces(
       main_thread_task_runner);
   registry->AddInterface(base::BindRepeating(&BindCastConfigOnMainThread),
                          main_thread_task_runner);
+  if (base::FeatureList::IsEnabled(features::kContainedShell)) {
+    registry->AddInterface(
+        base::BindRepeating(&BindContainedShellControllerRequestOnMainThread),
+        main_thread_task_runner);
+  }
   registry->AddInterface(
       base::BindRepeating(&BindDisplayOutputProtectionRequestOnMainThread),
       main_thread_task_runner);

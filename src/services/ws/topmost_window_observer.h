@@ -7,10 +7,11 @@
 
 #include "services/ws/public/mojom/window_tree.mojom.h"
 #include "ui/aura/window_observer.h"
-#include "ui/events/event_handler.h"
+#include "ui/events/event_observer.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace aura {
+class Env;
 class Window;
 }
 
@@ -23,7 +24,7 @@ class WindowTree;
 
 // TODO(mukai): support multiple displays.
 class COMPONENT_EXPORT(WINDOW_SERVICE) TopmostWindowObserver
-    : public ui::EventHandler,
+    : public ui::EventObserver,
       public aura::WindowObserver {
  public:
   // |source| determines the type of the event, and |initial_target| is the
@@ -37,9 +38,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) TopmostWindowObserver
  private:
   friend class TopmostWindowObserverTest;
 
-  // ui::EventHandler:
-  void OnMouseEvent(ui::MouseEvent* event) override;
-  void OnTouchEvent(ui::TouchEvent* event) override;
+  // ui::EventObserver:
+  void OnEvent(const ui::Event& event) override;
 
   // aura::WindowObserver:
   void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
@@ -72,8 +72,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) TopmostWindowObserver
   // The topmost window (including |last_target_|) under the cursor/touch.
   aura::Window* real_topmost_ = nullptr;
 
-  // The attached root window.
-  aura::Window* root_;
+  aura::Env* env_;
 
   DISALLOW_COPY_AND_ASSIGN(TopmostWindowObserver);
 };

@@ -18,8 +18,9 @@ namespace chromecast {
 
 class SystemTracer {
  public:
-  SystemTracer();
-  ~SystemTracer();
+  static std::unique_ptr<SystemTracer> Create();
+
+  virtual ~SystemTracer() = default;
 
   enum class Status {
     OK,
@@ -32,54 +33,20 @@ class SystemTracer {
       base::RepeatingCallback<void(Status status, std::string trace_data)>;
 
   // Start system tracing for categories in |categories| (comma separated).
-  void StartTracing(base::StringPiece categories,
-                    StartTracingCallback callback);
+  virtual void StartTracing(base::StringPiece categories,
+                            StartTracingCallback callback) = 0;
 
   // Stop system tracing.
   //
   // This will call |callback| on the current thread with the trace data. If
   // |status| is Status::KEEP_GOING, another call will be made with additional
   // data.
-  void StopTracing(const StopTracingCallback& callback);
+  virtual void StopTracing(const StopTracingCallback& callback) = 0;
+
+ protected:
+  SystemTracer() = default;
 
  private:
-  enum class State {
-    INITIAL,   // Not yet started.
-    STARTING,  // Sent start message, waiting for ack.
-    TRACING,   // Tracing, not yet requested stop.
-    READING,   // Trace stopped, reading output.
-    FINISHED,  // All done.
-  };
-
-  void ReceiveStartAckAndTracePipe();
-  void ReceiveTraceData();
-  void FailStartTracing();
-  void FailStopTracing();
-  void SendPartialTraceData();
-  void FinishTracing();
-  void Cleanup();
-
-  // Current state of tracing attempt.
-  State state_ = State::INITIAL;
-
-  // Unix socket connection to tracing daemon.
-  base::ScopedFD connection_fd_;
-  std::unique_ptr<base::FileDescriptorWatcher::Controller> connection_watcher_;
-
-  // Pipe for trace data.
-  base::ScopedFD trace_pipe_fd_;
-  std::unique_ptr<base::FileDescriptorWatcher::Controller> trace_pipe_watcher_;
-
-  // Read buffer (of size kBufferSize).
-  std::unique_ptr<char[]> buffer_;
-
-  // Callbacks for StartTracing() and StopTracing().
-  StartTracingCallback start_tracing_callback_;
-  StopTracingCallback stop_tracing_callback_;
-
-  // Trace data.
-  std::string trace_data_;
-
   DISALLOW_COPY_AND_ASSIGN(SystemTracer);
 };
 

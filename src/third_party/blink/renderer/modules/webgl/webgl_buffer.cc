@@ -31,7 +31,7 @@
 namespace blink {
 
 WebGLBuffer* WebGLBuffer::Create(WebGLRenderingContextBase* ctx) {
-  return new WebGLBuffer(ctx);
+  return MakeGarbageCollected<WebGLBuffer>(ctx);
 }
 
 WebGLBuffer::WebGLBuffer(WebGLRenderingContextBase* ctx)

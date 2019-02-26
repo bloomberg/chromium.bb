@@ -18,9 +18,9 @@
 #include "content/public/test/test_renderer_host.h"
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_system_impl.h"
-#include "media/audio/audio_thread_impl.h"
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/audio/fake_audio_manager.h"
+#include "media/audio/test_audio_thread.h"
 #include "media/base/media_switches.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
@@ -103,7 +103,7 @@ class AudioOutputAuthorizationHandlerTest : public RenderViewHostTestHarness {
     RenderViewHostTestHarness::SetUp();
 
     audio_manager_ = std::make_unique<media::FakeAudioManager>(
-        std::make_unique<media::AudioThreadImpl>(), &log_factory_);
+        std::make_unique<media::TestAudioThread>(true), &log_factory_);
     audio_system_ =
         std::make_unique<media::AudioSystemImpl>(audio_manager_.get());
     media_stream_manager_ = std::make_unique<MediaStreamManager>(

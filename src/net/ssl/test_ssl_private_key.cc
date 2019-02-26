@@ -31,6 +31,8 @@ class TestSSLPlatformKey : public ThreadedSSLPrivateKey::Delegate {
 
   ~TestSSLPlatformKey() override = default;
 
+  std::string GetProviderName() override { return "EVP_PKEY"; }
+
   std::vector<uint16_t> GetAlgorithmPreferences() override {
     return SSLPrivateKey::DefaultAlgorithmPreferences(EVP_PKEY_id(key_.get()),
                                                       true /* supports PSS */);
@@ -70,6 +72,28 @@ class TestSSLPlatformKey : public ThreadedSSLPrivateKey::Delegate {
   DISALLOW_COPY_AND_ASSIGN(TestSSLPlatformKey);
 };
 
+class FailingSSLPlatformKey : public ThreadedSSLPrivateKey::Delegate {
+ public:
+  FailingSSLPlatformKey() = default;
+  ~FailingSSLPlatformKey() override = default;
+
+  std::string GetProviderName() override { return "FailingSSLPlatformKey"; }
+
+  std::vector<uint16_t> GetAlgorithmPreferences() override {
+    return SSLPrivateKey::DefaultAlgorithmPreferences(EVP_PKEY_RSA,
+                                                      true /* supports PSS */);
+  }
+
+  Error Sign(uint16_t algorithm,
+             base::span<const uint8_t> input,
+             std::vector<uint8_t>* signature) override {
+    return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FailingSSLPlatformKey);
+};
+
 }  // namespace
 
 scoped_refptr<SSLPrivateKey> WrapOpenSSLPrivateKey(
@@ -85,6 +109,11 @@ scoped_refptr<SSLPrivateKey> WrapOpenSSLPrivateKey(
 scoped_refptr<SSLPrivateKey> WrapRSAPrivateKey(
     crypto::RSAPrivateKey* rsa_private_key) {
   return net::WrapOpenSSLPrivateKey(bssl::UpRef(rsa_private_key->key()));
+}
+
+scoped_refptr<SSLPrivateKey> CreateFailSigningSSLPrivateKey() {
+  return base::MakeRefCounted<ThreadedSSLPrivateKey>(
+      std::make_unique<FailingSSLPlatformKey>(), GetSSLPlatformKeyTaskRunner());
 }
 
 }  // namespace net

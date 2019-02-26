@@ -15,6 +15,9 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "content/public/browser/desktop_media_id.h"
+#include "ui/views/controls/button/label_button.h"
+#include "ui/views/window/dialog_client_view.h"
+#include "ui/views/window/dialog_delegate.h"
 
 class DesktopMediaPickerViewsBrowserTest : public DialogBrowserTest {
  public:
@@ -43,7 +46,7 @@ class DesktopMediaPickerViewsBrowserTest : public DialogBrowserTest {
                   DesktopMediaPicker::DoneCallback());
   }
 
- private:
+ protected:
   std::unique_ptr<DesktopMediaPickerViews> picker_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopMediaPickerViewsBrowserTest);
@@ -53,4 +56,13 @@ class DesktopMediaPickerViewsBrowserTest : public DialogBrowserTest {
 // they would like to share.
 IN_PROC_BROWSER_TEST_F(DesktopMediaPickerViewsBrowserTest, InvokeUi_default) {
   ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(DesktopMediaPickerViewsBrowserTest,
+                       InitiallyFocusesCancel) {
+  ShowUi(std::string());
+  views::DialogDelegate* dialog =
+      picker_->GetDialogViewForTesting()->AsDialogDelegate();
+  EXPECT_EQ(dialog->GetDialogClientView()->cancel_button(),
+            dialog->DialogDelegate::GetInitiallyFocusedView());
 }

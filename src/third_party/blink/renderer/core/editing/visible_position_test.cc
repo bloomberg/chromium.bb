@@ -69,13 +69,13 @@ TEST_F(VisiblePositionTest, NonNullInvalidatedAfterDOMChange) {
   VisiblePosition null_visible_position;
   VisiblePosition non_null_visible_position = CreateVisiblePosition(position);
 
-  Element* div = GetDocument().CreateRawElement(HTMLNames::divTag);
+  Element* div = GetDocument().CreateRawElement(html_names::kDivTag);
   GetDocument().body()->AppendChild(div);
 
   EXPECT_TRUE(null_visible_position.IsValid());
   EXPECT_FALSE(non_null_visible_position.IsValid());
 
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Invalid VisiblePosition can never become valid again.
   EXPECT_FALSE(non_null_visible_position.IsValid());
@@ -93,14 +93,14 @@ TEST_F(VisiblePositionTest, NonNullInvalidatedAfterStyleChange) {
                             ASSERT_NO_EXCEPTION);
   EXPECT_FALSE(visible_position1.IsValid());
 
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   VisiblePosition visible_position2 = CreateVisiblePosition(position);
   div->style()->setProperty(&GetDocument(), "display", "none", "important",
                             ASSERT_NO_EXCEPTION);
   EXPECT_FALSE(visible_position2.IsValid());
 
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Invalid VisiblePosition can never become valid again.
   EXPECT_FALSE(visible_position1.IsValid());

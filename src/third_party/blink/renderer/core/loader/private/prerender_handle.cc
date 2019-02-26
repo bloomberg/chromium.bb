@@ -30,12 +30,12 @@
 
 #include "third_party/blink/renderer/core/loader/private/prerender_handle.h"
 
+#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/loader/prerenderer_client.h"
 #include "third_party/blink/renderer/platform/prerender.h"
-#include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
 namespace blink {
@@ -61,7 +61,7 @@ PrerenderHandle* PrerenderHandle::Create(Document& document,
     prerenderer_client->WillAddPrerender(prerender);
   prerender->Add();
 
-  return new PrerenderHandle(document, prerender);
+  return MakeGarbageCollected<PrerenderHandle>(document, prerender);
 }
 
 PrerenderHandle::PrerenderHandle(Document& document, Prerender* prerender)

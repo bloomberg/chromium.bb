@@ -44,6 +44,7 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
       priority_queue<AudioDevice, std::vector<AudioDevice>, AudioDeviceCompare>
           AudioDevicePriorityQueue;
   typedef std::vector<uint64_t> NodeIdList;
+  static constexpr int32_t kSystemAecGroupIdNotAvailable = -1;
 
   class AudioObserver {
    public:
@@ -277,6 +278,10 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // Returns if system AEC is supported in CRAS.
   bool system_aec_supported() const;
 
+  // Returns the system AEC group ID. If no group ID is specified, -1 is
+  // returned.
+  int32_t system_aec_group_id() const;
+
  protected:
   explicit CrasAudioHandler(
       scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler);
@@ -487,6 +492,15 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // Handle dbus callback for GetSystemAecSupported.
   void HandleGetSystemAecSupported(base::Optional<bool> system_aec_supported);
 
+  // Calling dbus to get the system AEC group id if available.
+  void GetSystemAecGroupId();
+
+  // Calling dbus to get any available system AEC group id on main thread.
+  void GetSystemAecGroupIdOnMainThread();
+
+  // Handle dbus callback for GetSystemAecGroupId.
+  void HandleGetSystemAecGroupId(base::Optional<int32_t> system_aec_group_id);
+
   void OnVideoCaptureStartedOnMainThread(media::VideoFacingMode facing);
   void OnVideoCaptureStoppedOnMainThread(media::VideoFacingMode facing);
 
@@ -534,6 +548,7 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   int32_t default_output_buffer_size_;
 
   bool system_aec_supported_ = false;
+  int32_t system_aec_group_id_ = kSystemAecGroupIdNotAvailable;
 
   int num_active_output_streams_ = 0;
 

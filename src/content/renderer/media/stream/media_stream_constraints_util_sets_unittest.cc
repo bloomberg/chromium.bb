@@ -10,11 +10,13 @@
 
 #include "content/renderer/media/stream/mock_constraint_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_media_stream_track.h"
 
 namespace content {
 namespace media_constraints {
 
 using Point = ResolutionSet::Point;
+using BoolSet = DiscreteSet<bool>;
 
 namespace {
 
@@ -1121,6 +1123,34 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, ResolutionVertices) {
   }
 }
 
+TEST_F(MediaStreamConstraintsUtilSetsTest, ExactResolution) {
+  const int kExactWidth = 640;
+  const int kExactHeight = 480;
+  ResolutionSet set =
+      ResolutionSet::FromExactResolution(kExactWidth, kExactHeight);
+  EXPECT_TRUE(set.ContainsPoint(kExactHeight, kExactWidth));
+  EXPECT_FALSE(set.ContainsPoint(kExactHeight - 1, kExactWidth - 1));
+  EXPECT_FALSE(set.ContainsPoint(kExactHeight - 1, kExactWidth));
+  EXPECT_FALSE(set.ContainsPoint(kExactHeight - 1, kExactWidth + 1));
+  EXPECT_FALSE(set.ContainsPoint(kExactHeight, kExactWidth - 1));
+  EXPECT_FALSE(set.ContainsPoint(kExactHeight, kExactWidth + 1));
+  EXPECT_FALSE(set.ContainsPoint(kExactHeight + 1, kExactWidth - 1));
+  EXPECT_FALSE(set.ContainsPoint(kExactHeight + 1, kExactWidth));
+  EXPECT_FALSE(set.ContainsPoint(kExactHeight + 1, kExactWidth + 1));
+  EXPECT_FALSE(set.ContainsPoint(1, 1));
+  EXPECT_FALSE(set.ContainsPoint(2000, 2000));
+  EXPECT_FALSE(set.IsHeightEmpty());
+  EXPECT_FALSE(set.IsWidthEmpty());
+  EXPECT_FALSE(set.IsAspectRatioEmpty());
+}
+
+TEST_F(MediaStreamConstraintsUtilSetsTest, ZeroExactResolution) {
+  ResolutionSet set = ResolutionSet::FromExactResolution(0, 0);
+  EXPECT_TRUE(set.ContainsPoint(0, 0));
+  EXPECT_EQ(set.min_aspect_ratio(), 0.0);
+  EXPECT_EQ(set.max_aspect_ratio(), HUGE_VAL);
+}
+
 TEST_F(MediaStreamConstraintsUtilSetsTest, NumericRangeSetDouble) {
   using DoubleRangeSet = NumericRangeSet<double>;
   // Open set.
@@ -1128,6 +1158,10 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, NumericRangeSetDouble) {
   EXPECT_FALSE(set.Min().has_value());
   EXPECT_FALSE(set.Max().has_value());
   EXPECT_FALSE(set.IsEmpty());
+  EXPECT_TRUE(set.Contains(0.0));
+  EXPECT_TRUE(set.Contains(1.0));
+  EXPECT_TRUE(set.Contains(HUGE_VAL));
+  EXPECT_TRUE(set.Contains(-1.0));
 
   // Constrained set.
   const double kMin = 1.0;
@@ -1136,10 +1170,27 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, NumericRangeSetDouble) {
   EXPECT_EQ(kMin, *set.Min());
   EXPECT_EQ(kMax, *set.Max());
   EXPECT_FALSE(set.IsEmpty());
+  EXPECT_FALSE(set.Contains(0.0));
+  EXPECT_TRUE(set.Contains(1.0));
+  EXPECT_TRUE(set.Contains(10.0));
+  EXPECT_FALSE(set.Contains(HUGE_VAL));
+  EXPECT_FALSE(set.Contains(-1.0));
 
-  // Empty set.
+  // If the lower bound is greater than the upper bound, the set is empty.
   set = DoubleRangeSet(kMax, kMin);
   EXPECT_TRUE(set.IsEmpty());
+  EXPECT_FALSE(set.Contains(0.0));
+  EXPECT_FALSE(set.Contains(1.0));
+  EXPECT_FALSE(set.Contains(HUGE_VAL));
+  EXPECT_FALSE(set.Contains(-1.0));
+
+  // An explicit empty set is empty.
+  set = DoubleRangeSet::EmptySet();
+  EXPECT_TRUE(set.IsEmpty());
+  EXPECT_FALSE(set.Contains(0.0));
+  EXPECT_FALSE(set.Contains(1.0));
+  EXPECT_FALSE(set.Contains(HUGE_VAL));
+  EXPECT_FALSE(set.Contains(-1.0));
 
   // Intersection.
   set = DoubleRangeSet(kMin, kMax);
@@ -1151,15 +1202,18 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, NumericRangeSetDouble) {
   EXPECT_FALSE(intersection.IsEmpty());
 
   // Intersection with partially open sets.
-  set = DoubleRangeSet(base::Optional<double>(), kMax);
-  intersection =
-      set.Intersection(DoubleRangeSet(kMin2, base::Optional<double>()));
+  set = DoubleRangeSet(base::nullopt, kMax);
+  intersection = set.Intersection(DoubleRangeSet(kMin2, base::nullopt));
   EXPECT_EQ(kMin2, *intersection.Min());
   EXPECT_EQ(kMax, *intersection.Max());
   EXPECT_FALSE(intersection.IsEmpty());
 
   // Empty intersection.
   intersection = set.Intersection(DoubleRangeSet(kMax + 1, HUGE_VAL));
+  EXPECT_TRUE(intersection.IsEmpty());
+
+  // Intersection with empty set.
+  intersection = set.Intersection(DoubleRangeSet::EmptySet());
   EXPECT_TRUE(intersection.IsEmpty());
 }
 
@@ -1218,7 +1272,6 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, DiscreteSetString) {
 }
 
 TEST_F(MediaStreamConstraintsUtilSetsTest, DiscreteSetBool) {
-  using BoolSet = DiscreteSet<bool>;
   // Universal set.
   BoolSet set = BoolSet::UniversalSet();
   EXPECT_TRUE(set.Contains(true));
@@ -1265,6 +1318,98 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, DiscreteSetBool) {
   set = BoolSet({true});
   intersection = set.Intersection(BoolSet({false}));
   EXPECT_TRUE(intersection.IsEmpty());
+
+  // Explicit universal set with true as the first element.
+  // This cannot result from a boolean constraint because they can only specify
+  // one exact value.
+  set = BoolSet({true, false});
+  EXPECT_TRUE(set.is_universal());
+  EXPECT_TRUE(set.HasExplicitElements());
+  EXPECT_TRUE(set.FirstElement());
+  intersection = set.Intersection(BoolSet());
+  EXPECT_TRUE(set.is_universal());
+  EXPECT_TRUE(set.HasExplicitElements());
+  EXPECT_TRUE(set.FirstElement());
+  intersection = BoolSet().Intersection(set);
+  EXPECT_TRUE(set.is_universal());
+  EXPECT_TRUE(set.HasExplicitElements());
+  EXPECT_TRUE(set.FirstElement());
+
+  // Explicit universal set with false as the first element.
+  // This cannot result from a boolean constraint because they can only specify
+  // one exact value.
+  set = BoolSet({false, true});
+  EXPECT_TRUE(set.is_universal());
+  EXPECT_TRUE(set.HasExplicitElements());
+  EXPECT_FALSE(set.FirstElement());
+  intersection = set.Intersection(BoolSet());
+  EXPECT_TRUE(set.is_universal());
+  EXPECT_TRUE(set.HasExplicitElements());
+  EXPECT_FALSE(set.FirstElement());
+  intersection = BoolSet().Intersection(set);
+  EXPECT_TRUE(set.is_universal());
+  EXPECT_TRUE(set.HasExplicitElements());
+  EXPECT_FALSE(set.FirstElement());
+
+  // Intersection of explicit universal sets with different first elements.
+  // This cannot result from boolean constraints because they can only specify
+  // one exact value. The first element of the left-hand side is selected as the
+  // first element of the intersection.
+  set = BoolSet({true, false}).Intersection(BoolSet({false, true}));
+  EXPECT_TRUE(set.is_universal());
+  EXPECT_TRUE(set.HasExplicitElements());
+  EXPECT_TRUE(set.FirstElement());
+  set = BoolSet({false, true}).Intersection(BoolSet({true, false}));
+  EXPECT_TRUE(set.is_universal());
+  EXPECT_TRUE(set.HasExplicitElements());
+  EXPECT_FALSE(set.FirstElement());
+}
+
+TEST_F(MediaStreamConstraintsUtilSetsTest, RescaleSetFromConstraints) {
+  factory_.Reset();
+  factory_.CreateWebMediaConstraints();
+  BoolSet set = RescaleSetFromConstraint(factory_.basic().resize_mode);
+  EXPECT_TRUE(set.is_universal());
+  EXPECT_FALSE(set.HasExplicitElements());
+
+  // Invalid exact value.
+  factory_.basic().resize_mode.SetExact(
+      {blink::WebString::FromASCII("invalid")});
+  set = RescaleSetFromConstraint(factory_.basic().resize_mode);
+  EXPECT_TRUE(set.IsEmpty());
+
+  // No rescaling
+  factory_.basic().resize_mode.SetExact(
+      blink::WebString::FromASCII(blink::WebMediaStreamTrack::kResizeModeNone));
+  set = RescaleSetFromConstraint(factory_.basic().resize_mode);
+  EXPECT_TRUE(set.Contains(false));
+  EXPECT_FALSE(set.Contains(true));
+
+  // Rescaling
+  factory_.basic().resize_mode.SetExact(blink::WebString::FromASCII(
+      blink::WebMediaStreamTrack::kResizeModeRescale));
+  set = RescaleSetFromConstraint(factory_.basic().resize_mode);
+  EXPECT_TRUE(set.Contains(true));
+  EXPECT_FALSE(set.Contains(false));
+
+  // Both explicit
+  blink::WebString rescale_modes[] = {
+      blink::WebString::FromASCII(
+          blink::WebMediaStreamTrack::kResizeModeRescale),
+      blink::WebString::FromASCII(blink::WebMediaStreamTrack::kResizeModeNone)};
+  factory_.basic().resize_mode.SetExact(blink::WebVector<blink::WebString>(
+      rescale_modes, base::size(rescale_modes)));
+  set = RescaleSetFromConstraint(factory_.basic().resize_mode);
+  EXPECT_TRUE(set.Contains(true));
+  EXPECT_TRUE(set.Contains(false));
+
+  // Invalid and no rescaling.
+  rescale_modes[0] = "invalid";
+  factory_.basic().resize_mode.SetExact(blink::WebVector<blink::WebString>(
+      rescale_modes, base::size(rescale_modes)));
+  set = RescaleSetFromConstraint(factory_.basic().resize_mode);
+  EXPECT_FALSE(set.Contains(true));
+  EXPECT_TRUE(set.Contains(false));
 }
 
 }  // namespace media_constraints

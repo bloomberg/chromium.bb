@@ -8,8 +8,8 @@
 #include <stdint.h>
 
 #include <vector>
-
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/quads/frame_deadline.h"
@@ -136,6 +136,10 @@ class VIZ_COMMON_EXPORT CompositorFrameMetadata {
   // position is computed by the renderer compositor.
   float top_controls_height = 0.f;
   float top_controls_shown_ratio = 0.f;
+
+  // The time at which the LocalSurfaceId used to submit this CompositorFrame
+  // was allocated.
+  base::TimeTicks local_surface_id_allocation_time;
 
 #if defined(OS_ANDROID)
   float max_page_scale_factor = 0.f;

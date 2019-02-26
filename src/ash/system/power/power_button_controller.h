@@ -237,9 +237,6 @@ class ASH_EXPORT PowerButtonController
   // True if the next button release event should force the display off.
   bool force_off_on_button_up_ = false;
 
-  // Whether FocusManager can handle arrow key before showing the power menu.
-  const bool arrow_key_traversal_initially_enabled_;
-
   // Used to force backlights off, when needed.
   BacklightsForcedOffSetter* backlights_forced_off_setter_;  // Not owned.
 

@@ -15,7 +15,7 @@
 #include "SkStream.h"
 #include "SkTo.h"
 
-static const int kMaximumGlyphCount = UINT16_MAX + 1;
+static constexpr SkGlyphID kMaximumGlyphIndex = UINT16_MAX;
 
 static bool stream_equals(const SkDynamicMemoryWStream& stream, size_t offset,
                           const char* buffer, size_t len) {
@@ -37,7 +37,7 @@ static bool stream_equals(const SkDynamicMemoryWStream& stream, size_t offset,
 DEF_TEST(SkPDF_ToUnicode, reporter) {
     SkTDArray<SkUnichar> glyphToUnicode;
     SkTDArray<uint16_t> glyphsInSubset;
-    SkBitSet subset(kMaximumGlyphCount);
+    SkPDFGlyphUse subset(1, kMaximumGlyphIndex);
 
     glyphToUnicode.push_back(0);  // 0
     glyphToUnicode.push_back(0);  // 1
@@ -78,7 +78,9 @@ DEF_TEST(SkPDF_ToUnicode, reporter) {
     SkGlyphID lastGlyphID = SkToU16(glyphToUnicode.count() - 1);
 
     SkDynamicMemoryWStream buffer;
-    subset.setAll(glyphsInSubset.begin(), glyphsInSubset.count());
+    for (uint16_t v : glyphsInSubset) {
+        subset.set(v);
+    }
     SkPDFAppendCmapSections(&glyphToUnicode[0], &subset, &buffer, true, 0,
                             SkTMin<SkGlyphID>(0xFFFF,  lastGlyphID));
 
@@ -153,7 +155,7 @@ endbfrange\n";
 
     glyphToUnicode.reset();
     glyphsInSubset.reset();
-    SkBitSet subset2(kMaximumGlyphCount);
+    SkPDFGlyphUse subset2(1, kMaximumGlyphIndex);
 
     // Test mapping:
     //           I  n  s  t  a  l
@@ -172,7 +174,9 @@ endbfrange\n";
     glyphsInSubset.push_back(0x57);
 
     SkDynamicMemoryWStream buffer2;
-    subset2.setAll(glyphsInSubset.begin(), glyphsInSubset.count());
+    for (uint16_t v : glyphsInSubset) {
+        subset2.set(v);
+    }
     SkPDFAppendCmapSections(&glyphToUnicode[0], &subset2, &buffer2, true, 0,
                             SkTMin<SkGlyphID>(0xFFFF, lastGlyphID));
 

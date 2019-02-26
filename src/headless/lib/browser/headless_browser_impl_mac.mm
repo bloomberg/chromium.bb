@@ -5,6 +5,7 @@
 #include "headless/lib/browser/headless_browser_impl.h"
 
 #import "base/mac/scoped_objc_class_swizzler.h"
+#include "base/no_destructor.h"
 #include "content/public/browser/web_contents.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
 #import "ui/base/cocoa/base_view.h"
@@ -33,11 +34,12 @@ namespace {
 class HeadlessPopUpMethods {
  public:
   static void Init() {
-    CR_DEFINE_STATIC_LOCAL(HeadlessPopUpMethods, swizzler, ());
+    static base::NoDestructor<HeadlessPopUpMethods> swizzler;
     ALLOW_UNUSED_LOCAL(swizzler);
   }
 
  private:
+  friend class base::NoDestructor<HeadlessPopUpMethods>;
   HeadlessPopUpMethods()
       : popup_perform_click_swizzler_([NSPopUpButtonCell class],
                                       [FakeNSPopUpButtonCell class],
@@ -73,7 +75,8 @@ void HeadlessBrowserImpl::PlatformStart() {
 
 void HeadlessBrowserImpl::PlatformInitializeWebContents(
     HeadlessWebContentsImpl* web_contents) {
-  NSView* web_view = web_contents->web_contents()->GetNativeView();
+  NSView* web_view =
+      web_contents->web_contents()->GetNativeView().GetNativeNSView();
   [web_view setAutoresizingMask:(NSViewWidthSizable | NSViewHeightSizable)];
   // TODO(eseckler): Support enabling BeginFrameControl on Mac. This is tricky
   // because it's a ui::Compositor startup setting and ui::Compositors are
@@ -83,7 +86,8 @@ void HeadlessBrowserImpl::PlatformInitializeWebContents(
 void HeadlessBrowserImpl::PlatformSetWebContentsBounds(
     HeadlessWebContentsImpl* web_contents,
     const gfx::Rect& bounds) {
-  NSView* web_view = web_contents->web_contents()->GetNativeView();
+  NSView* web_view =
+      web_contents->web_contents()->GetNativeView().GetNativeNSView();
   NSRect frame = gfx::ScreenRectToNSRect(bounds);
   [web_view setFrame:frame];
 }

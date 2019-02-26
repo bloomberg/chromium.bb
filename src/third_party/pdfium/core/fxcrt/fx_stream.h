@@ -36,10 +36,13 @@ struct FxFolderHandleCloser {
 #define FX_FILEMODE_ReadOnly 1
 #define FX_FILEMODE_Truncate 2
 
-class IFX_WriteStream : virtual public Retainable {
+class IFX_WriteStream {
  public:
   virtual bool WriteBlock(const void* pData, size_t size) = 0;
   virtual bool WriteString(const ByteStringView& str) = 0;
+
+ protected:
+  virtual ~IFX_WriteStream() = default;
 };
 
 class IFX_ArchiveStream : public IFX_WriteStream {
@@ -49,37 +52,39 @@ class IFX_ArchiveStream : public IFX_WriteStream {
   virtual FX_FILESIZE CurrentOffset() const = 0;
 };
 
-class IFX_ReadStream : virtual public Retainable {
+class IFX_StreamWithSize {
  public:
-  virtual bool IsEOF() = 0;
-  virtual FX_FILESIZE GetPosition() = 0;
-  virtual size_t ReadBlock(void* buffer, size_t size) = 0;
+  virtual FX_FILESIZE GetSize() = 0;
 };
 
-class IFX_SeekableWriteStream : public IFX_WriteStream {
+class IFX_RetainableWriteStream : virtual public Retainable,
+                                  public IFX_WriteStream {};
+
+class IFX_SeekableWriteStream : virtual public IFX_StreamWithSize,
+                                public IFX_RetainableWriteStream {
  public:
   // IFX_WriteStream:
   bool WriteBlock(const void* pData, size_t size) override;
 
-  virtual FX_FILESIZE GetSize() = 0;
   virtual bool Flush() = 0;
-  virtual bool WriteBlock(const void* pData,
-                          FX_FILESIZE offset,
-                          size_t size) = 0;
+  virtual bool WriteBlockAtOffset(const void* pData,
+                                  FX_FILESIZE offset,
+                                  size_t size) = 0;
 };
 
-class IFX_SeekableReadStream : public IFX_ReadStream {
+class IFX_SeekableReadStream : virtual public Retainable,
+                               virtual public IFX_StreamWithSize {
  public:
   static RetainPtr<IFX_SeekableReadStream> CreateFromFilename(
       const char* filename);
 
-  // IFX_ReadStream:
-  bool IsEOF() override;
-  FX_FILESIZE GetPosition() override;
-  size_t ReadBlock(void* buffer, size_t size) override;
+  virtual bool IsEOF();
+  virtual FX_FILESIZE GetPosition();
+  virtual size_t ReadBlock(void* buffer, size_t size);
 
-  virtual bool ReadBlock(void* buffer, FX_FILESIZE offset, size_t size) = 0;
-  virtual FX_FILESIZE GetSize() = 0;
+  virtual bool ReadBlockAtOffset(void* buffer,
+                                 FX_FILESIZE offset,
+                                 size_t size) = 0;
 };
 
 class IFX_SeekableStream : public IFX_SeekableReadStream,
@@ -92,21 +97,9 @@ class IFX_SeekableStream : public IFX_SeekableReadStream,
       const wchar_t* filename,
       uint32_t dwModes);
 
-  // IFX_SeekableReadStream:
-  bool IsEOF() override = 0;
-  FX_FILESIZE GetPosition() override = 0;
-  size_t ReadBlock(void* buffer, size_t size) override = 0;
-  bool ReadBlock(void* buffer, FX_FILESIZE offset, size_t size) override = 0;
-  FX_FILESIZE GetSize() override = 0;
-
   // IFX_SeekableWriteStream:
-  bool WriteBlock(const void* buffer,
-                  FX_FILESIZE offset,
-                  size_t size) override = 0;
   bool WriteBlock(const void* buffer, size_t size) override;
   bool WriteString(const ByteStringView& str) override;
-
-  bool Flush() override = 0;
 };
 
 #endif  // CORE_FXCRT_FX_STREAM_H_

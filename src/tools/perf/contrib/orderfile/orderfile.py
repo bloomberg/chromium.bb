@@ -32,7 +32,6 @@ using the following benchmark names.
     orderfile_generation.variation.testing0
     orderfile_generation.variation.testing1
     orderfile_generation.variation.testing2
-    orderfile_generation.variation.testing3
 
 The orderfile_generation.debugging benchmark is a short benchmark of 3 stories
 that is useful for debugging hardware and test setup problems.
@@ -61,9 +60,27 @@ class OrderfileStorySet(story.StorySet):
   _PLATFORM = 'mobile'
 
   _BLACKLIST = set([
+      'background:news:nytimes',
+      'background:tools:gmail',
       'browse:chrome:newtab',
+      'browse:chrome:omnibox',
+      'browse:news:cnn',
+      'browse:news:cnn:2018',
+      'browse:news:globo',
+      'browse:news:toi',
+      'browse:shopping:avito',
       'browse:shopping:flipkart',
       'long_running:tools:gmail-foreground',
+      'browse:social:facebook',
+      'browse:social:facebook_infinite_scroll',
+      'browse:social:pinterest_infinite_scroll',
+      'browse:social:tumblr_infinite_scroll',
+      'browse:tech:discourse_infinite_scroll:2018',
+      'load:media:soundcloud',
+      'load:news:cnn',
+      'load:news:washingtonpost',
+      'load:tools:drive',
+      'load:tools:gmail',
       'long_running:tools:gmail-background',
   ])
 
@@ -74,6 +91,11 @@ class OrderfileStorySet(story.StorySet):
   DEFAULT_TRAINING = 25
   DEFAULT_TESTING = 8
   DEFAULT_VARIATIONS = 1
+
+  # The number of variations to use with the variation benchmarks. If this is
+  # changed, the number of OrderfileVariationTesting* classes declared below
+  # should change as well.
+  NUM_VARIATION_BENCHMARKS = 3
 
   def __init__(self, run_set, num_training=DEFAULT_TRAINING,
                num_testing=DEFAULT_TESTING, num_variations=DEFAULT_VARIATIONS,
@@ -175,8 +197,10 @@ class _OrderfileVariation(system_health.MobileMemorySystemHealth):
   options = {'pageset_repeat': 7}
 
   def CreateStorySet(self, options):
-    return OrderfileStorySet( run_set=self.STORY_RUN_SET,
-        num_training=25, num_testing=8, num_variations=4,
+    return OrderfileStorySet(
+        run_set=self.STORY_RUN_SET,
+        num_training=25, num_testing=8,
+        num_variations=OrderfileStorySet.NUM_VARIATION_BENCHMARKS,
         test_variation=self.TEST_VARIATION)
 
   @classmethod
@@ -204,23 +228,16 @@ class OrderfileVariationTesting0(_OrderfileVariation):
 
 # pylint: disable=R0901
 @benchmark.Owner(emails=['mattcary@chromium.org'])
-class OrderfileTesting1(_OrderfileVariation):
+class OrderfileVariationTesting1(_OrderfileVariation):
   STORY_RUN_SET = OrderfileStorySet.TESTING
   TEST_VARIATION = 1
 
 
 # pylint: disable=R0901
 @benchmark.Owner(emails=['mattcary@chromium.org'])
-class OrderfileTesting2(_OrderfileVariation):
+class OrderfileVariationTesting2(_OrderfileVariation):
   STORY_RUN_SET = OrderfileStorySet.TESTING
   TEST_VARIATION = 2
-
-
-# pylint: disable=R0901
-@benchmark.Owner(emails=['mattcary@chromium.org'])
-class OrderfileTesting3(_OrderfileVariation):
-  STORY_RUN_SET = OrderfileStorySet.TESTING
-  TEST_VARIATION = 3
 
 
 # pylint: disable=R0901

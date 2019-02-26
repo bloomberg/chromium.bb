@@ -43,18 +43,6 @@ Polymer({
 
     // <if expr="chromeos">
     /**
-     * Whether Smb Shares settings should be fetched and displayed.
-     * @private
-     */
-    enableSmbSettings_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('enableNativeSmbSetting');
-      },
-      readOnly: true,
-    },
-
-    /**
      * The download location string that is suitable to display in the UI.
      */
     downloadLocation_: String,

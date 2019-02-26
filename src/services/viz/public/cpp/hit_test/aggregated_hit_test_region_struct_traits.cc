@@ -16,6 +16,7 @@ bool StructTraits<viz::mojom::AggregatedHitTestRegionDataView,
     return false;
   }
   out->flags = data.flags();
+  out->async_hit_test_reasons = data.async_hit_test_reasons();
   out->child_count = data.child_count();
   return true;
 }

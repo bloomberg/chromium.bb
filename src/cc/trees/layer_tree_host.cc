@@ -28,7 +28,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
-#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/traced_value.h"
 #include "build/build_config.h"
 #include "cc/base/devtools_instrumentation.h"
 #include "cc/base/histograms.h"
@@ -120,7 +120,7 @@ LayerTreeHost::LayerTreeHost(InitParams params, CompositorMode mode)
       content_source_id_(0),
       event_listener_properties_(),
       mutator_host_(params.mutator_host),
-      defer_commits_weak_ptr_factory_(this) {
+      defer_main_frame_update_weak_ptr_factory_(this) {
   DCHECK(task_graph_runner_);
   DCHECK(!settings_.enable_checker_imaging || image_worker_task_runner_);
 
@@ -173,15 +173,15 @@ void LayerTreeHost::InitializeProxy(std::unique_ptr<Proxy> proxy) {
   proxy_ = std::move(proxy);
   proxy_->Start();
 
-  UpdateDeferCommitsInternal();
+  UpdateDeferMainFrameUpdateInternal();
 
   mutator_host_->SetSupportsScrollAnimations(proxy_->SupportsImplScrolling());
 }
 
 LayerTreeHost::~LayerTreeHost() {
   // Track when we're inside a main frame to see if compositor is being
-  // destroyed midway which causes a crash. crbug.com/654672
-  DCHECK(!inside_main_frame_);
+  // destroyed midway which causes a crash. crbug.com/895883
+  CHECK(!inside_main_frame_);
   TRACE_EVENT0("cc", "LayerTreeHost::~LayerTreeHost");
 
   // Clear any references into the LayerTreeHost.
@@ -277,8 +277,8 @@ const LayerTreeDebugState& LayerTreeHost::GetDebugState() const {
   return debug_state_;
 }
 
-void LayerTreeHost::RequestMainFrameUpdate() {
-  client_->UpdateLayerTreeHost();
+void LayerTreeHost::RequestMainFrameUpdate(bool record_main_frame_metrics) {
+  client_->UpdateLayerTreeHost(record_main_frame_metrics);
 }
 
 // This function commits the LayerTreeHost to an impl tree. When modifying
@@ -312,6 +312,7 @@ void LayerTreeHost::FinishCommitOnImplThread(
     pending_presentation_time_callbacks_.push_back(base::DoNothing());
   sync_tree->AddPresentationCallbacks(
       std::move(pending_presentation_time_callbacks_));
+  pending_presentation_time_callbacks_.clear();
 
   if (needs_full_tree_sync_)
     TreeSynchronizer::SynchronizeTrees(root_layer(), sync_tree);
@@ -376,22 +377,14 @@ void LayerTreeHost::FinishCommitOnImplThread(
   // Dump property trees and layers if run with:
   //   --vmodule=layer_tree_host=3
   if (VLOG_IS_ON(3)) {
-    VLOG(3) << "After finishing commit on impl, the sync tree:";
-    // Because the property tree and layer list output can be verbose, the VLOG
-    // output is split by line to avoid line buffer limits on android.
-    VLOG(3) << "property trees:";
     std::string property_trees;
     base::JSONWriter::WriteWithOptions(
         *sync_tree->property_trees()->AsTracedValue()->ToBaseValue(),
         base::JSONWriter::OPTIONS_PRETTY_PRINT, &property_trees);
-    std::stringstream property_trees_stream(property_trees);
-    for (std::string line; std::getline(property_trees_stream, line);)
-      VLOG(3) << line;
-
-    VLOG(3) << "layers:";
-    std::stringstream layers_stream(host_impl->LayerListAsJson());
-    for (std::string line; std::getline(layers_stream, line);)
-      VLOG(3) << line;
+    VLOG(3) << "After finishing commit on impl, the sync tree:"
+            << "\nproperty_trees:\n"
+            << property_trees << "\nlayers:\n"
+            << host_impl->LayerListAsJson();
   }
 }
 
@@ -444,11 +437,11 @@ void LayerTreeHost::WillCommit() {
   }
 }
 
-
-void LayerTreeHost::UpdateDeferCommitsInternal() {
-  proxy_->SetDeferCommits(defer_commits_count_ > 0 ||
-                          (settings_.enable_surface_synchronization &&
-                           !local_surface_id_from_parent_.is_valid()));
+void LayerTreeHost::UpdateDeferMainFrameUpdateInternal() {
+  proxy_->SetDeferMainFrameUpdate(
+      defer_main_frame_update_count_ > 0 ||
+      (settings_.enable_surface_synchronization &&
+       !local_surface_id_allocation_from_parent_.IsValid()));
 }
 
 bool LayerTreeHost::IsUsingLayerLists() const {
@@ -534,23 +527,24 @@ void LayerTreeHost::DidLoseLayerTreeFrameSink() {
   SetNeedsCommit();
 }
 
-ScopedDeferCommits::ScopedDeferCommits(LayerTreeHost* host)
-    : host_(host->defer_commits_weak_ptr_factory_.GetWeakPtr()) {
-  host->defer_commits_count_++;
-  host->UpdateDeferCommitsInternal();
+ScopedDeferMainFrameUpdate::ScopedDeferMainFrameUpdate(LayerTreeHost* host)
+    : host_(host->defer_main_frame_update_weak_ptr_factory_.GetWeakPtr()) {
+  host->defer_main_frame_update_count_++;
+  host->UpdateDeferMainFrameUpdateInternal();
 }
 
-ScopedDeferCommits::~ScopedDeferCommits() {
+ScopedDeferMainFrameUpdate::~ScopedDeferMainFrameUpdate() {
   LayerTreeHost* host = host_.get();
   if (host) {
-    DCHECK_GT(host->defer_commits_count_, 0u);
-    if (--host->defer_commits_count_ == 0)
-      host->UpdateDeferCommitsInternal();
+    DCHECK_GT(host->defer_main_frame_update_count_, 0u);
+    if (--host->defer_main_frame_update_count_ == 0)
+      host->UpdateDeferMainFrameUpdateInternal();
   }
 }
 
-std::unique_ptr<ScopedDeferCommits> LayerTreeHost::DeferCommits() {
-  return std::make_unique<ScopedDeferCommits>(this);
+std::unique_ptr<ScopedDeferMainFrameUpdate>
+LayerTreeHost::DeferMainFrameUpdate() {
+  return std::make_unique<ScopedDeferMainFrameUpdate>(this);
 }
 
 DISABLE_CFI_PERF
@@ -656,7 +650,7 @@ void LayerTreeHost::LayoutAndUpdateLayers() {
   DCHECK(IsSingleThreaded());
   // This function is only valid when not using the scheduler.
   DCHECK(!settings_.single_thread_proxy_scheduler);
-  RequestMainFrameUpdate();
+  RequestMainFrameUpdate(false /* record_main_frame_metrics */);
   UpdateLayers();
 }
 
@@ -756,8 +750,6 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
   // and SlimmingPaintV2.
   if (!IsUsingLayerLists()) {
     TRACE_EVENT0("cc", "LayerTreeHost::UpdateLayers::BuildPropertyTrees");
-    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
-                 "LayerTreeHostCommon::ComputeVisibleRectsWithPropertyTrees");
     Layer* root_scroll =
         PropertyTreeBuilder::FindFirstScrollableLayer(root_layer);
     Layer* page_scale_layer = viewport_layers_.page_scale.get();
@@ -813,33 +805,27 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
   //   --vmodule=layer_tree_host=3
   // This only prints output for the renderer.
   if (VLOG_IS_ON(3) && GetClientNameForMetrics() == std::string("Renderer")) {
-    VLOG(3) << "After updating layers on the main thread:";
-    // Because the property tree and layer list output can be verbose, the VLOG
-    // output is split by line to avoid line buffer limits on android.
-    VLOG(3) << "property trees:";
     std::string property_trees;
     base::JSONWriter::WriteWithOptions(
         *property_trees_.AsTracedValue()->ToBaseValue(),
         base::JSONWriter::OPTIONS_PRETTY_PRINT, &property_trees);
-    std::stringstream property_trees_stream(property_trees);
-    for (std::string line; std::getline(property_trees_stream, line);)
-      VLOG(3) << line;
-
-    VLOG(3) << "layers:";
+    std::ostringstream layers;
     for (auto* layer : *this) {
-      VLOG(3) << "  layer id " << layer->id();
-      VLOG(3) << "    element_id: " << layer->element_id();
-      VLOG(3) << "    bounds: " << layer->bounds().ToString();
-      VLOG(3) << "    opacity: " << layer->opacity();
-      VLOG(3) << "    position: " << layer->position().ToString();
-      VLOG(3) << "    draws_content: " << layer->DrawsContent();
-      VLOG(3) << "    scrollable: " << layer->scrollable();
-      VLOG(3) << "    contents_opaque: " << layer->contents_opaque();
-      VLOG(3) << "    transform_tree_index: " << layer->transform_tree_index();
-      VLOG(3) << "    clip_tree_index: " << layer->clip_tree_index();
-      VLOG(3) << "    effect_tree_index: " << layer->effect_tree_index();
-      VLOG(3) << "    scroll_tree_index: " << layer->scroll_tree_index();
+      layers << "\n  layer id " << layer->id();
+      layers << "\n    element_id: " << layer->element_id();
+      layers << "\n    bounds: " << layer->bounds().ToString();
+      layers << "\n    opacity: " << layer->opacity();
+      layers << "\n    position: " << layer->position().ToString();
+      layers << "\n    draws_content: " << layer->DrawsContent();
+      layers << "\n    scrollable: " << layer->scrollable();
+      layers << "\n    contents_opaque: " << layer->contents_opaque();
+      layers << "\n    transform_tree_index: " << layer->transform_tree_index();
+      layers << "\n    clip_tree_index: " << layer->clip_tree_index();
+      layers << "\n    effect_tree_index: " << layer->effect_tree_index();
+      layers << "\n    scroll_tree_index: " << layer->scroll_tree_index();
     }
+    VLOG(3) << "After updating layers on the main thread:\nproperty trees:\n"
+            << property_trees << "\nlayers:" << layers.str();
   }
 
   bool painted_content_has_slow_paths = false;
@@ -869,23 +855,25 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
   return did_paint_content;
 }
 
-void LayerTreeHost::ApplyViewportDeltas(const ScrollAndScaleSet& info) {
-  gfx::Vector2dF inner_viewport_scroll_delta;
+void LayerTreeHost::ApplyViewportChanges(const ScrollAndScaleSet& info) {
+  gfx::ScrollOffset inner_viewport_scroll_delta;
   if (info.inner_viewport_scroll.element_id)
     inner_viewport_scroll_delta = info.inner_viewport_scroll.scroll_delta;
 
   if (inner_viewport_scroll_delta.IsZero() && info.page_scale_delta == 1.f &&
-      info.elastic_overscroll_delta.IsZero() && !info.top_controls_delta)
+      info.elastic_overscroll_delta.IsZero() && !info.top_controls_delta &&
+      !info.browser_controls_constraint_changed &&
+      !info.scroll_gesture_did_end) {
     return;
+  }
 
   // Preemptively apply the scroll offset and scale delta here before sending
   // it to the client.  If the client comes back and sets it to the same
   // value, then the layer can early out without needing a full commit.
   if (viewport_layers_.inner_viewport_scroll) {
     viewport_layers_.inner_viewport_scroll->SetScrollOffsetFromImplSide(
-        gfx::ScrollOffsetWithDelta(
-            viewport_layers_.inner_viewport_scroll->CurrentScrollOffset(),
-            inner_viewport_scroll_delta));
+        viewport_layers_.inner_viewport_scroll->CurrentScrollOffset() +
+        inner_viewport_scroll_delta);
   }
 
   ApplyPageScaleDeltaFromImplSide(info.page_scale_delta);
@@ -895,7 +883,8 @@ void LayerTreeHost::ApplyViewportDeltas(const ScrollAndScaleSet& info) {
   // may be translated appropriately.
   client_->ApplyViewportChanges(
       {inner_viewport_scroll_delta, info.elastic_overscroll_delta,
-       info.page_scale_delta, info.top_controls_delta});
+       info.page_scale_delta, info.top_controls_delta,
+       info.browser_controls_constraint, info.scroll_gesture_did_end});
   SetNeedsUpdateLayers();
 }
 
@@ -925,8 +914,8 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
       Layer* layer = LayerByElementId(info->scrolls[i].element_id);
       if (!layer)
         continue;
-      layer->SetScrollOffsetFromImplSide(gfx::ScrollOffsetWithDelta(
-          layer->CurrentScrollOffset(), info->scrolls[i].scroll_delta));
+      layer->SetScrollOffsetFromImplSide(layer->CurrentScrollOffset() +
+                                         info->scrolls[i].scroll_delta);
       SetNeedsUpdateLayers();
     }
     for (size_t i = 0; i < info->scrollbars.size(); ++i) {
@@ -940,7 +929,7 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
   // This needs to happen after scroll deltas have been sent to prevent top
   // controls from clamping the layout viewport both on the compositor and
   // on the main thread.
-  ApplyViewportDeltas(*info);
+  ApplyViewportChanges(*info);
 
   RecordWheelAndTouchScrollingCount(*info);
 }
@@ -1078,6 +1067,13 @@ void LayerTreeHost::RegisterViewportLayers(const ViewportLayers& layers) {
   viewport_layers_.outer_viewport_scroll = layers.outer_viewport_scroll;
 }
 
+void LayerTreeHost::RegisterViewportPropertyIds(
+    const ViewportPropertyIds& ids) {
+  DCHECK(!viewport_layers_.inner_viewport_scroll);
+  DCHECK(IsUsingLayerLists());
+  viewport_property_ids_ = ids;
+}
+
 void LayerTreeHost::RegisterSelection(const LayerSelection& selection) {
   if (selection_ == selection)
     return;
@@ -1140,8 +1136,10 @@ void LayerTreeHost::SetEventListenerProperties(
 void LayerTreeHost::SetViewportSizeAndScale(
     const gfx::Size& device_viewport_size,
     float device_scale_factor,
-    const viz::LocalSurfaceId& local_surface_id_from_parent) {
-  SetLocalSurfaceIdFromParent(local_surface_id_from_parent);
+    const viz::LocalSurfaceIdAllocation&
+        local_surface_id_allocation_from_parent) {
+  SetLocalSurfaceIdAllocationFromParent(
+      local_surface_id_allocation_from_parent);
 
   bool changed = false;
   if (device_viewport_size_ != device_viewport_size) {
@@ -1170,7 +1168,7 @@ void LayerTreeHost::SetViewportSizeAndScale(
     // be.
     CHECK(!has_pushed_local_surface_id_from_parent_ ||
           new_local_surface_id_request_ ||
-          !local_surface_id_from_parent_.is_valid());
+          !local_surface_id_allocation_from_parent_.IsValid());
 #endif
   }
 }
@@ -1267,29 +1265,48 @@ void LayerTreeHost::SetRasterColorSpace(
       this, [](Layer* layer) { layer->SetNeedsDisplay(); });
 }
 
+void LayerTreeHost::SetExternalPageScaleFactor(float page_scale_factor) {
+  if (external_page_scale_factor_ == page_scale_factor)
+    return;
+
+  external_page_scale_factor_ = page_scale_factor;
+  SetNeedsCommit();
+}
+
 void LayerTreeHost::SetContentSourceId(uint32_t id) {
   content_source_id_ = id;
 }
 
-void LayerTreeHost::SetLocalSurfaceIdFromParent(
-    const viz::LocalSurfaceId& local_surface_id_from_parent) {
-  if (local_surface_id_from_parent_.parent_sequence_number() ==
+void LayerTreeHost::SetLocalSurfaceIdAllocationFromParent(
+    const viz::LocalSurfaceIdAllocation&
+        local_surface_id_allocation_from_parent) {
+  const viz::LocalSurfaceId& local_surface_id_from_parent =
+      local_surface_id_allocation_from_parent.local_surface_id();
+  const viz::LocalSurfaceId& current_local_surface_id_from_parent =
+      local_surface_id_allocation_from_parent_.local_surface_id();
+  if (current_local_surface_id_from_parent.parent_sequence_number() ==
           local_surface_id_from_parent.parent_sequence_number() &&
-      local_surface_id_from_parent_.embed_token() ==
+      current_local_surface_id_from_parent.embed_token() ==
           local_surface_id_from_parent.embed_token()) {
     return;
   }
+
+  // If the viz::LocalSurfaceId is valid but the allocation time is invalid then
+  // this API is not being used correctly.
+  DCHECK_EQ(local_surface_id_from_parent.is_valid(),
+            local_surface_id_allocation_from_parent.IsValid());
 
   TRACE_EVENT_WITH_FLOW2(
       TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
       "LocalSurfaceId.Submission.Flow",
       TRACE_ID_GLOBAL(local_surface_id_from_parent.submission_trace_id()),
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
-      "SetLocalSurfaceIdFromParent", "local_surface_id",
-      local_surface_id_from_parent.ToString());
-  local_surface_id_from_parent_ = local_surface_id_from_parent;
+      "SetLocalSurfaceAllocationIdFromParent", "local_surface_id_allocation",
+      local_surface_id_allocation_from_parent.ToString());
+  local_surface_id_allocation_from_parent_ =
+      local_surface_id_allocation_from_parent;
   has_pushed_local_surface_id_from_parent_ = false;
-  UpdateDeferCommitsInternal();
+  UpdateDeferMainFrameUpdateInternal();
   SetNeedsCommit();
 }
 
@@ -1302,7 +1319,7 @@ void LayerTreeHost::RequestNewLocalSurfaceId() {
   // viz::LocalSurfaceId but that request will be deferred until we have a valid
   // viz::LocalSurfaceId from the parent.
   DCHECK(settings_.enable_surface_synchronization ||
-         local_surface_id_from_parent_.is_valid());
+         local_surface_id_allocation_from_parent_.IsValid());
   if (new_local_surface_id_request_)
     return;
   new_local_surface_id_request_ = true;
@@ -1412,14 +1429,10 @@ void LayerTreeHost::UpdateHudLayer(bool show_hud_info) {
   if (show_hud_info) {
     if (!hud_layer_.get())
       hud_layer_ = HeadsUpDisplayLayer::Create();
-
-    gfx::Size device_viewport_in_layout_pixels =
-        gfx::Size(device_viewport_size_.width() / device_scale_factor_,
-                  device_viewport_size_.height() / device_scale_factor_);
-    hud_layer_->SetBounds(device_viewport_in_layout_pixels);
-
     if (root_layer_.get() && !hud_layer_->parent())
       root_layer_->AddChild(hud_layer_);
+    hud_layer_->UpdateLocationAndSize(device_viewport_size_,
+                                      device_scale_factor_);
   } else if (hud_layer_.get()) {
     hud_layer_->RemoveFromParent();
     hud_layer_ = nullptr;
@@ -1483,6 +1496,8 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
     tree_impl->ClearViewportLayers();
   }
 
+  tree_impl->set_viewport_property_ids(viewport_property_ids_);
+
   tree_impl->RegisterSelection(selection_);
 
   tree_impl->PushPageScaleFromMainThread(
@@ -1499,6 +1514,7 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
     tree_impl->elastic_overscroll()->PushPendingToActive();
 
   tree_impl->SetRasterColorSpace(raster_color_space_id_, raster_color_space_);
+  tree_impl->SetExternalPageScaleFactor(external_page_scale_factor_);
 
   tree_impl->set_content_source_id(content_source_id_);
 
@@ -1510,13 +1526,17 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
   if (TakeNewLocalSurfaceIdRequest())
     tree_impl->RequestNewLocalSurfaceId();
 
-  tree_impl->SetLocalSurfaceIdFromParent(local_surface_id_from_parent_);
+  tree_impl->SetLocalSurfaceIdAllocationFromParent(
+      local_surface_id_allocation_from_parent_);
   has_pushed_local_surface_id_from_parent_ = true;
 
   if (pending_page_scale_animation_) {
     tree_impl->SetPendingPageScaleAnimation(
         std::move(pending_page_scale_animation_));
   }
+
+  if (TakeForceSendMetadataRequest())
+    tree_impl->RequestForceSendMetadata();
 
   tree_impl->set_has_ever_been_drawn(false);
 }
@@ -1549,6 +1569,7 @@ void LayerTreeHost::RegisterElement(ElementId element_id,
                                     ElementListType list_type,
                                     Layer* layer) {
   element_layers_map_[element_id] = layer;
+  elements_in_property_trees_.insert(element_id);
   mutator_host_->RegisterElement(element_id, list_type);
 }
 
@@ -1556,6 +1577,27 @@ void LayerTreeHost::UnregisterElement(ElementId element_id,
                                       ElementListType list_type) {
   mutator_host_->UnregisterElement(element_id, list_type);
   element_layers_map_.erase(element_id);
+  elements_in_property_trees_.erase(element_id);
+}
+
+void LayerTreeHost::SetActiveRegisteredElementIds(const ElementIdSet& ids) {
+  DCHECK(IsUsingLayerLists());
+
+  // Unregister ids that should no longer be registered.
+  for (auto id_iter = elements_in_property_trees_.begin();
+       id_iter != elements_in_property_trees_.end();) {
+    const auto& id = *(id_iter++);
+    if (!ids.count(id))
+      UnregisterElement(id, ElementListType::ACTIVE);
+  }
+
+  // Register new ids that were not already registered.
+  for (const auto& id : ids) {
+    if (!elements_in_property_trees_.count(id)) {
+      elements_in_property_trees_.insert(id);
+      mutator_host_->RegisterElement(id, ElementListType::ACTIVE);
+    }
+  }
 }
 
 static void SetElementIdForTesting(Layer* layer) {
@@ -1577,6 +1619,10 @@ void LayerTreeHost::BuildPropertyTreesForTesting() {
 
 bool LayerTreeHost::IsElementInList(ElementId element_id,
                                     ElementListType list_type) const {
+  if (IsUsingLayerLists()) {
+    return list_type == ElementListType::ACTIVE &&
+           elements_in_property_trees_.count(element_id);
+  }
   return list_type == ElementListType::ACTIVE && LayerByElementId(element_id);
 }
 
@@ -1726,6 +1772,12 @@ void LayerTreeHost::SetURLForUkm(const GURL& url) {
 void LayerTreeHost::SetRenderFrameObserver(
     std::unique_ptr<RenderFrameMetadataObserver> observer) {
   proxy_->SetRenderFrameObserver(std::move(observer));
+}
+
+bool LayerTreeHost::TakeForceSendMetadataRequest() {
+  bool force_send_metadata_request = force_send_metadata_request_;
+  force_send_metadata_request_ = false;
+  return force_send_metadata_request;
 }
 
 }  // namespace cc

@@ -47,8 +47,10 @@ class RTCSessionDescription final : public ScriptWrappable {
 
  public:
   static RTCSessionDescription* Create(ExecutionContext*,
-                                       const RTCSessionDescriptionInit&);
+                                       const RTCSessionDescriptionInit*);
   static RTCSessionDescription* Create(WebRTCSessionDescription);
+
+  explicit RTCSessionDescription(WebRTCSessionDescription);
 
   String type() const;
   void setType(const String&);
@@ -61,8 +63,6 @@ class RTCSessionDescription final : public ScriptWrappable {
   WebRTCSessionDescription WebSessionDescription();
 
  private:
-  explicit RTCSessionDescription(WebRTCSessionDescription);
-
   WebRTCSessionDescription web_session_description_;
 };
 

@@ -55,6 +55,7 @@
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
+#include "third_party/blink/renderer/core/layout/logical_values.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -433,6 +434,9 @@ void LayoutBlock::UpdateLayout() {
 
   LayoutAnalyzer::Scope analyzer(*this);
 
+  if (LayoutBlockedByDisplayLock())
+    return;
+
   bool needs_scroll_anchoring =
       HasOverflowClip() && GetScrollableArea()->ShouldPerformScrollAnchoring();
   if (needs_scroll_anchoring)
@@ -451,6 +455,7 @@ void LayoutBlock::UpdateLayout() {
 
   height_available_to_children_changed_ = false;
   cached_constraint_space_.reset();
+  NotifyDisplayLockDidLayout();
 }
 
 bool LayoutBlock::WidthAvailableToChildrenHasChanged() {
@@ -892,8 +897,8 @@ void LayoutBlock::LayoutPositionedObject(LayoutBox* positioned_object,
   // here instead of a full layout. Need to investigate why it does not
   // trigger the correct invalidations in that case. crbug.com/350756
   if (info == kForcedLayoutAfterContainingBlockMoved) {
-    positioned_object->SetNeedsLayout(LayoutInvalidationReason::kAncestorMoved,
-                                      kMarkOnlyThis);
+    positioned_object->SetNeedsLayout(
+        layout_invalidation_reason::kAncestorMoved, kMarkOnlyThis);
   }
 
   positioned_object->LayoutIfNeeded();
@@ -1140,7 +1145,7 @@ void LayoutBlock::DirtyForLayoutFromPercentageHeightDescendants(
 LayoutUnit LayoutBlock::TextIndentOffset() const {
   LayoutUnit cw;
   if (StyleRef().TextIndent().IsPercentOrCalc())
-    cw = ContainingBlock()->AvailableLogicalWidth();
+    cw = ContentLogicalWidth();
   return MinimumValueForLength(StyleRef().TextIndent(), cw);
 }
 
@@ -1326,7 +1331,7 @@ PositionWithAffinity LayoutBlock::PositionForPointIfOutsideAtomicInlineLevel(
 static inline bool IsChildHitTestCandidate(LayoutBox* box) {
   return box->Size().Height() &&
          box->StyleRef().Visibility() == EVisibility::kVisible &&
-         !box->IsOutOfFlowPositioned() && !box->IsLayoutFlowThread();
+         !box->IsFloatingOrOutOfFlowPositioned() && !box->IsLayoutFlowThread();
 }
 
 PositionWithAffinity LayoutBlock::PositionForPoint(
@@ -1368,9 +1373,6 @@ PositionWithAffinity LayoutBlock::PositionForPoint(
         continue;
       LayoutUnit child_logical_bottom =
           LogicalTopForChild(*child_box) + LogicalHeightForChild(*child_box);
-      if (child_box->IsLayoutBlockFlow())
-          child_logical_bottom += ToLayoutBlockFlow(child_box)->LowestFloatLogicalBottom();
-
       // We hit child if our click is above the bottom of its padding box (like
       // IE6/7 and FF3).
       if (point_in_logical_contents.Y() < child_logical_bottom ||
@@ -1532,13 +1534,12 @@ void LayoutBlock::ComputeBlockPreferredLogicalWidths(
     if (child->IsFloating() ||
         (child->IsBox() && ToLayoutBox(child)->AvoidsFloats())) {
       LayoutUnit float_total_width = float_left_width + float_right_width;
-      if (child_style->Clear() == EClear::kBoth ||
-          child_style->Clear() == EClear::kLeft) {
+      EClear c = ResolvedClear(*child_style, style_to_use);
+      if (c == EClear::kBoth || c == EClear::kLeft) {
         max_logical_width = std::max(float_total_width, max_logical_width);
         float_left_width = LayoutUnit();
       }
-      if (child_style->Clear() == EClear::kBoth ||
-          child_style->Clear() == EClear::kRight) {
+      if (c == EClear::kBoth || c == EClear::kRight) {
         max_logical_width = std::max(float_total_width, max_logical_width);
         float_right_width = LayoutUnit();
       }
@@ -1603,7 +1604,7 @@ void LayoutBlock::ComputeBlockPreferredLogicalWidths(
     }
 
     if (child->IsFloating()) {
-      if (child_style->Floating() == EFloat::kLeft)
+      if (ResolvedFloating(*child_style, style_to_use) == EFloat::kLeft)
         float_left_width += w;
       else
         float_right_width += w;

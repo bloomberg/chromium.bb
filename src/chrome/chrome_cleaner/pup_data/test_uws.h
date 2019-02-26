@@ -12,6 +12,11 @@ namespace chrome_cleaner {
 extern const UwSId kGoogleTestAUwSID;
 extern const UwSId kGoogleTestBUwSID;
 
+extern const char kGoogleTestAUwEID[];
+extern const char kGoogleTestBUwEID[];
+extern const char kGoogleTestExtensionInvalid1[];
+extern const char kGoogleTestExtensionInvalid2[];
+
 extern const char kTestUwsAFileContents[];
 extern const int kTestUwsAFileContentsSize;
 extern const wchar_t kTestUwsAFilename[];

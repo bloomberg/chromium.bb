@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
@@ -36,8 +35,6 @@ int main(int argc, char** argv) {
   angle::InitTestHarness(&argc, argv);
   base::TestSuite test_suite(argc, argv);
   int rt = base::LaunchUnitTestsSerially(
-      argc,
-      argv,
-      base::Bind(&RunHelper, base::Unretained(&test_suite)));
+      argc, argv, base::BindOnce(&RunHelper, base::Unretained(&test_suite)));
   return rt;
 }

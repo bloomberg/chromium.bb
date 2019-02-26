@@ -44,6 +44,7 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/accessibility/ax_event_manager.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -52,7 +53,6 @@
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/view_observer.h"
 #include "ui/views/view_tracker.h"
-#include "ui/views/views_delegate.h"
 #include "ui/views/views_switches.h"
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/views/widget/root_view.h"
@@ -123,30 +123,7 @@ const char View::kViewClassName[] = "View";
 
 // Creation and lifetime -------------------------------------------------------
 
-View::View()
-    : owned_by_client_(false),
-      id_(0),
-      group_(-1),
-      parent_(nullptr),
-#if DCHECK_IS_ON()
-      iterating_(false),
-#endif
-      can_process_events_within_subtree_(true),
-      visible_(true),
-      enabled_(true),
-      notify_enter_exit_on_child_(false),
-      registered_for_visible_bounds_notification_(false),
-      needs_layout_(true),
-      snap_layer_to_pixel_boundary_(false),
-      flip_canvas_on_paint_for_rtl_ui_(false),
-      paint_to_layer_(false),
-      accelerator_focus_manager_(nullptr),
-      registered_accelerator_count_(0),
-      next_focusable_view_(nullptr),
-      previous_focusable_view_(nullptr),
-      focus_behavior_(FocusBehavior::NEVER),
-      context_menu_controller_(nullptr),
-      drag_controller_(nullptr) {
+View::View() {
   SetTargetHandler(this);
 }
 
@@ -446,6 +423,9 @@ void View::SizeToPreferredSize() {
 }
 
 gfx::Size View::GetMinimumSize() const {
+  if (layout_manager_)
+    return layout_manager_->GetMinimumSize(this);
+
   return GetPreferredSize();
 }
 
@@ -454,7 +434,7 @@ gfx::Size View::GetMaximumSize() const {
 }
 
 int View::GetHeightForWidth(int w) const {
-  if (layout_manager_.get())
+  if (layout_manager_)
     return layout_manager_->GetPreferredHeightForWidth(this, w);
   return GetPreferredSize().height();
 }
@@ -609,7 +589,7 @@ void View::Layout() {
   needs_layout_ = false;
 
   // If we have a layout manager, let it handle the layout for us.
-  if (layout_manager_.get())
+  if (layout_manager_)
     layout_manager_->Layout(this);
 
   // Make sure to propagate the Layout() call to any children that haven't
@@ -632,6 +612,9 @@ void View::InvalidateLayout() {
   // Always invalidate up. This is needed to handle the case of us already being
   // valid, but not our parent.
   needs_layout_ = true;
+  if (layout_manager_)
+    layout_manager_->InvalidateLayout();
+
   if (parent_)
     parent_->InvalidateLayout();
 }
@@ -1468,8 +1451,7 @@ gfx::NativeViewAccessible View::GetNativeViewAccessible() {
 
 void View::NotifyAccessibilityEvent(ax::mojom::Event event_type,
                                     bool send_native_event) {
-  if (ViewsDelegate::GetInstance())
-    ViewsDelegate::GetInstance()->NotifyAccessibilityEvent(this, event_type);
+  AXEventManager::Get()->NotifyViewEvent(this, event_type);
 
   if (send_native_event && GetWidget())
     GetViewAccessibility().NotifyAccessibilityEvent(event_type);
@@ -1519,7 +1501,7 @@ bool View::HasObserver(const ViewObserver* observer) const {
 // Size and disposition --------------------------------------------------------
 
 gfx::Size View::CalculatePreferredSize() const {
-  if (layout_manager_.get())
+  if (layout_manager_)
     return layout_manager_->GetPreferredSize(this);
   return gfx::Size();
 }

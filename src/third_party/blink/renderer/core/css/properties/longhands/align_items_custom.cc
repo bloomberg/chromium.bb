@@ -10,17 +10,18 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* AlignItems::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   // align-items property does not allow the 'auto' value.
-  if (CSSPropertyParserHelpers::IdentMatches<CSSValueAuto>(range.Peek().Id()))
+  if (css_property_parser_helpers::IdentMatches<CSSValueAuto>(
+          range.Peek().Id()))
     return nullptr;
-  return CSSParsingUtils::ConsumeSelfPositionOverflowPosition(
-      range, CSSParsingUtils::IsSelfPositionKeyword);
+  return css_parsing_utils::ConsumeSelfPositionOverflowPosition(
+      range, css_parsing_utils::IsSelfPositionKeyword);
 }
 
 const CSSValue* AlignItems::CSSValueFromComputedStyleInternal(
@@ -33,5 +34,5 @@ const CSSValue* AlignItems::CSSValueFromComputedStyleInternal(
       style.AlignItems());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

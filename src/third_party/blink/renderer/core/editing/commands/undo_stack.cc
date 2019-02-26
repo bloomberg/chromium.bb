@@ -41,7 +41,7 @@ static const size_t kMaximumUndoStackDepth = 1000;
 UndoStack::UndoStack() : in_redo_(false) {}
 
 UndoStack* UndoStack::Create() {
-  return new UndoStack();
+  return MakeGarbageCollected<UndoStack>();
 }
 
 void UndoStack::RegisterUndoStep(UndoStep* step) {

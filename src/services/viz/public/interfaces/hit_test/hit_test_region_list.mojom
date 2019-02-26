@@ -12,6 +12,7 @@ import "ui/gfx/mojo/transform.mojom";
 // See src/components/viz/common/hit_test/hit_test_region_list.h.
 struct HitTestRegion {
   uint32 flags;
+  uint32 async_hit_test_reasons;
   FrameSinkId frame_sink_id;
   gfx.mojom.Rect rect;
   gfx.mojom.Transform transform;
@@ -20,6 +21,7 @@ struct HitTestRegion {
 // See src/components/viz/common/hit_test/hit_test_region_list.h.
 struct HitTestRegionList {
   uint32 flags;
+  uint32 async_hit_test_reasons;
   gfx.mojom.Rect bounds;
   gfx.mojom.Transform transform;
   array<HitTestRegion> regions;

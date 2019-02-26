@@ -77,13 +77,13 @@ constexpr int kTestResourceSize = 103;  // size of white-1x1.png
 
 void RegisterMockedURLLoadWithCustomResponse(const KURL& url,
                                              const ResourceResponse& response) {
-  URLTestHelpers::RegisterMockedURLLoadWithCustomResponse(
+  url_test_helpers::RegisterMockedURLLoadWithCustomResponse(
       url, test::PlatformTestDataPath(kTestResourceFilename),
       WrappedResourceResponse(response));
 }
 
 void RegisterMockedURLLoad(const KURL& url) {
-  URLTestHelpers::RegisterMockedURLLoad(
+  url_test_helpers::RegisterMockedURLLoad(
       url, test::PlatformTestDataPath(kTestResourceFilename),
       kTestResourceMimeType);
 }
@@ -140,7 +140,7 @@ TEST_F(ResourceFetcherTest, UseExistingResource) {
   KURL url("http://127.0.0.1:8000/foo.html");
   ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
-  response.SetHTTPHeaderField(HTTPNames::Cache_Control, "max-age=3600");
+  response.SetHTTPHeaderField(http_names::kCacheControl, "max-age=3600");
   RegisterMockedURLLoadWithCustomResponse(url, response);
 
   FetchParameters fetch_params{ResourceRequest(url)};
@@ -167,7 +167,7 @@ TEST_F(ResourceFetcherTest, WillSendRequestAdBit) {
   AddResourceToMemoryCache(resource);
   ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
-  response.SetHTTPHeaderField(HTTPNames::Cache_Control, "max-age=3600");
+  response.SetHTTPHeaderField(http_names::kCacheControl, "max-age=3600");
   resource->ResponseReceived(response, nullptr);
   resource->FinishForTest();
 
@@ -200,8 +200,8 @@ TEST_F(ResourceFetcherTest, Vary) {
 
   ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
-  response.SetHTTPHeaderField(HTTPNames::Cache_Control, "max-age=3600");
-  response.SetHTTPHeaderField(HTTPNames::Vary, "*");
+  response.SetHTTPHeaderField(http_names::kCacheControl, "max-age=3600");
+  response.SetHTTPHeaderField(http_names::kVary, "*");
   resource->ResponseReceived(response, nullptr);
   resource->FinishForTest();
   ASSERT_TRUE(resource->MustReloadDueToVaryHeader(ResourceRequest(url)));
@@ -268,8 +268,8 @@ TEST_F(ResourceFetcherTest, VaryOnBack) {
 
   ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
-  response.SetHTTPHeaderField(HTTPNames::Cache_Control, "max-age=3600");
-  response.SetHTTPHeaderField(HTTPNames::Vary, "*");
+  response.SetHTTPHeaderField(http_names::kCacheControl, "max-age=3600");
+  response.SetHTTPHeaderField(http_names::kVary, "*");
   resource->ResponseReceived(response, nullptr);
   resource->FinishForTest();
   ASSERT_TRUE(resource->MustReloadDueToVaryHeader(ResourceRequest(url)));
@@ -288,8 +288,8 @@ TEST_F(ResourceFetcherTest, VaryResource) {
   KURL url("http://127.0.0.1:8000/foo.html");
   ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
-  response.SetHTTPHeaderField(HTTPNames::Cache_Control, "max-age=3600");
-  response.SetHTTPHeaderField(HTTPNames::Vary, "*");
+  response.SetHTTPHeaderField(http_names::kCacheControl, "max-age=3600");
+  response.SetHTTPHeaderField(http_names::kVary, "*");
   RegisterMockedURLLoadWithCustomResponse(url, response);
 
   FetchParameters fetch_params_original{ResourceRequest(url)};
@@ -353,16 +353,17 @@ TEST_F(ResourceFetcherTest, RevalidateWhileFinishingLoading) {
 
   ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
-  response.SetHTTPHeaderField(HTTPNames::Cache_Control, "max-age=3600");
-  response.SetHTTPHeaderField(HTTPNames::ETag, "1234567890");
+  response.SetHTTPHeaderField(http_names::kCacheControl, "max-age=3600");
+  response.SetHTTPHeaderField(http_names::kETag, "1234567890");
   RegisterMockedURLLoadWithCustomResponse(url, response);
 
   ResourceFetcher* fetcher1 = ResourceFetcher::Create(Context());
   ResourceRequest request1(url);
-  request1.SetHTTPHeaderField(HTTPNames::Cache_Control, "no-cache");
+  request1.SetHTTPHeaderField(http_names::kCacheControl, "no-cache");
   FetchParameters fetch_params1(request1);
   Persistent<RequestSameResourceOnComplete> client =
-      new RequestSameResourceOnComplete(fetch_params1, fetcher1);
+      MakeGarbageCollected<RequestSameResourceOnComplete>(fetch_params1,
+                                                          fetcher1);
   platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
   EXPECT_TRUE(client->NotifyFinishedCalled());
 }
@@ -380,7 +381,7 @@ TEST_F(ResourceFetcherTest, MAYBE_DontReuseMediaDataUrl) {
   request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
   ResourceLoaderOptions options;
   options.data_buffering_policy = kDoNotBufferData;
-  options.initiator_info.name = FetchInitiatorTypeNames::internal;
+  options.initiator_info.name = fetch_initiator_type_names::kInternal;
   FetchParameters fetch_params(request, options);
   Resource* resource1 = RawResource::FetchMedia(fetch_params, fetcher, nullptr);
   Resource* resource2 = RawResource::FetchMedia(fetch_params, fetcher, nullptr);
@@ -446,7 +447,7 @@ TEST_F(ResourceFetcherTest, ResponseOnCancel) {
   resource_request.SetRequestContext(mojom::RequestContextType::INTERNAL);
   FetchParameters fetch_params(resource_request);
   Persistent<ServeRequestsOnCompleteClient> client =
-      new ServeRequestsOnCompleteClient();
+      MakeGarbageCollected<ServeRequestsOnCompleteClient>();
   Resource* resource = RawResource::Fetch(fetch_params, fetcher, client);
   resource->Loader()->Cancel();
 }
@@ -464,7 +465,7 @@ class ScopedMockRedirectRequester {
     WebURLResponse redirect_response;
     redirect_response.SetURL(redirect_url);
     redirect_response.SetHTTPStatusCode(301);
-    redirect_response.SetHTTPHeaderField(HTTPNames::Location, to_url);
+    redirect_response.SetHTTPHeaderField(http_names::kLocation, to_url);
     redirect_response.SetEncodedDataLength(kRedirectResponseOverheadBytes);
     Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
         redirect_url, redirect_response, "");
@@ -605,7 +606,8 @@ TEST_F(ResourceFetcherTest, LinkPreloadResourceAndUse) {
 
   // Resource created by parser
   FetchParameters fetch_params{ResourceRequest(url)};
-  Persistent<MockResourceClient> client = new MockResourceClient;
+  Persistent<MockResourceClient> client =
+      MakeGarbageCollected<MockResourceClient>();
   Resource* new_resource = MockResource::Fetch(fetch_params, fetcher, client);
   EXPECT_EQ(resource, new_resource);
   EXPECT_FALSE(resource->IsLinkPreload());
@@ -810,7 +812,8 @@ TEST_F(ResourceFetcherTest, LinkPreloadResourceMultipleFetchersAndMove) {
 
   // Resource created by parser on the second fetcher
   FetchParameters fetch_params2{ResourceRequest(url)};
-  Persistent<MockResourceClient> client2 = new MockResourceClient;
+  Persistent<MockResourceClient> client2 =
+      MakeGarbageCollected<MockResourceClient>();
   Resource* new_resource2 =
       MockResource::Fetch(fetch_params2, fetcher2, client2);
   EXPECT_NE(resource, new_resource2);
@@ -883,7 +886,7 @@ TEST_F(ResourceFetcherTest, StaleWhileRevalidate) {
 
   ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
-  response.SetHTTPHeaderField(HTTPNames::Cache_Control,
+  response.SetHTTPHeaderField(http_names::kCacheControl,
                               "max-age=0, stale-while-revalidate=40");
 
   RegisterMockedURLLoadWithCustomResponse(url, response);

@@ -11,11 +11,13 @@
 #include "gpu/command_buffer/common/sync_token.h"
 
 namespace gfx {
-class Size;
 class ColorSpace;
+class GpuMemoryBuffer;
+class Size;
 }  // namespace gfx
 
 namespace gpu {
+class GpuMemoryBufferManager;
 
 // An interface to create shared images that can be imported into other APIs.
 // This interface is thread-safe and (essentially) stateless. It is asynchronous
@@ -30,8 +32,9 @@ class SharedImageInterface {
   // |usage| is a combination of |SharedImageUsage| bits that describes which
   // API(s) the image will be used with.
   // Returns a mailbox that can be imported into said APIs using their
-  // corresponding mailbox functions (e.g.
-  // RasterInterface::CreateAndConsumeTexture or
+  // corresponding shared image functions (e.g.
+  // GLES2Interface::CreateAndTexStorage2DSharedImageCHROMIUM) or (deprecated)
+  // mailbox functions (e.g.  RasterInterface::CreateAndConsumeTexture or
   // GLES2Interface::CreateAndConsumeTextureCHROMIUM).
   // The |SharedImageInterface| keeps ownership of the image until
   // |DestroySharedImage| is called or the interface itself is destroyed (e.g.
@@ -40,6 +43,31 @@ class SharedImageInterface {
                                     const gfx::Size& size,
                                     const gfx::ColorSpace& color_space,
                                     uint32_t usage) = 0;
+
+  // Creates a shared image out of a GpuMemoryBuffer, using |color_space|.
+  // |usage| is a combination of |SharedImageUsage| bits that describes which
+  // API(s) the image will be used with. Format and size are derived from the
+  // GpuMemoryBuffer. |gpu_memory_buffer_manager| is the manager that created
+  // |gpu_memory_buffer|. If valid, |color_space| will be applied to the shared
+  // image (possibly overwriting the one set on the GpuMemoryBuffer).
+  // Returns a mailbox that can be imported into said APIs using their
+  // corresponding shared image functions (e.g.
+  // GLES2Interface::CreateAndTexStorage2DSharedImageCHROMIUM) or (deprecated)
+  // mailbox functions (e.g.  RasterInterface::CreateAndConsumeTexture or
+  // GLES2Interface::CreateAndConsumeTextureCHROMIUM).
+  // The |SharedImageInterface| keeps ownership of the image until
+  // |DestroySharedImage| is called or the interface itself is destroyed (e.g.
+  // the GPU channel is lost).
+  virtual Mailbox CreateSharedImage(
+      gfx::GpuMemoryBuffer* gpu_memory_buffer,
+      GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      const gfx::ColorSpace& color_space,
+      uint32_t usage) = 0;
+
+  // Updates a shared image after its GpuMemoryBuffer (if any) was modified on
+  // the CPU or through external devices, after |sync_token| has been released.
+  virtual void UpdateSharedImage(const SyncToken& sync_token,
+                                 const Mailbox& mailbox) = 0;
 
   // Destroys the shared image, unregistering its mailbox, after |sync_token|
   // has been released. After this call, the mailbox can't be used to reference

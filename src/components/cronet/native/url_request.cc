@@ -502,12 +502,12 @@ void Cronet_UrlRequestImpl::PostTaskToExecutor(base::OnceClosure task) {
   Cronet_Executor_Execute(executor_, runnable);
 }
 
-void Cronet_UrlRequestImpl::InvokeCallbackOnRedirectReceived() {
+void Cronet_UrlRequestImpl::InvokeCallbackOnRedirectReceived(
+    const std::string& new_location) {
   if (IsDone())
     return;
   Cronet_UrlRequestCallback_OnRedirectReceived(
-      callback_, this, response_info_.get(),
-      response_info_->url_chain.front().c_str());
+      callback_, this, response_info_.get(), new_location.c_str());
 }
 
 void Cronet_UrlRequestImpl::InvokeCallbackOnResponseStarted() {
@@ -612,7 +612,7 @@ void Cronet_UrlRequestImpl::NetworkTasks::OnReceivedRedirect(
   // Invoke Cronet_UrlRequestCallback_OnRedirectReceived on client executor.
   url_request_->PostTaskToExecutor(
       base::BindOnce(&Cronet_UrlRequestImpl::InvokeCallbackOnRedirectReceived,
-                     base::Unretained(url_request_)));
+                     base::Unretained(url_request_), new_location));
 }
 
 void Cronet_UrlRequestImpl::NetworkTasks::OnResponseStarted(

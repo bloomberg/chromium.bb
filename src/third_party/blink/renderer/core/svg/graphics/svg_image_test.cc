@@ -33,7 +33,7 @@ class SVGImageTest : public testing::Test {
   SVGImage& GetImage() { return *image_; }
 
   void Load(const char* data, bool should_pause) {
-    observer_ = new PauseControlImageObserver(should_pause);
+    observer_ = MakeGarbageCollected<PauseControlImageObserver>(should_pause);
     image_ = SVGImage::Create(observer_);
     image_->SetData(SharedBuffer::Create(data, strlen(data)), true);
   }
@@ -62,7 +62,6 @@ class SVGImageTest : public testing::Test {
     void DecodedSizeChangedTo(const Image*, size_t new_size) override {}
 
     bool ShouldPauseAnimation(const Image*) override { return should_pause_; }
-    void AnimationAdvanced(const Image*) override {}
 
     void Changed(const Image*) override {}
 

@@ -39,10 +39,12 @@ class ForceSigninVerifierTest
  public:
   void SetUp() override {
     TestingProfile::Builder builder;
-    builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
-                              BuildFakeSigninManagerBase);
-    builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
-                              BuildFakeProfileOAuth2TokenService);
+    builder.AddTestingFactory(
+        SigninManagerFactory::GetInstance(),
+        base::BindRepeating(&BuildFakeSigninManagerForTesting));
+    builder.AddTestingFactory(
+        ProfileOAuth2TokenServiceFactory::GetInstance(),
+        base::BindRepeating(&BuildFakeProfileOAuth2TokenService));
     profile_ = builder.Build();
     FakeSigninManager* signin_manager_ = static_cast<FakeSigninManager*>(
         SigninManagerFactory::GetForProfile(profile_.get()));

@@ -76,6 +76,7 @@ static std::string GetStringShaderBinaryFormat(uint32_t value);
 static std::string GetStringShaderParameter(uint32_t value);
 static std::string GetStringShaderPrecision(uint32_t value);
 static std::string GetStringShaderType(uint32_t value);
+static std::string GetStringSharedImageAccessMode(uint32_t value);
 static std::string GetStringSrcBlendFactor(uint32_t value);
 static std::string GetStringStencilOp(uint32_t value);
 static std::string GetStringStringType(uint32_t value);

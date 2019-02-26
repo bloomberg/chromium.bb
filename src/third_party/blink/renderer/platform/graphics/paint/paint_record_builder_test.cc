@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/platform/testing/fake_display_item_client.h"
 
 using testing::_;
+using testing::ElementsAre;
 
 namespace blink {
 
@@ -27,9 +28,9 @@ TEST_F(PaintRecordBuilderTest, TransientPaintController) {
   EXPECT_CALL(canvas, drawPicture(_)).Times(1);
   builder.EndRecording(canvas);
 
-  EXPECT_DISPLAY_LIST(context.GetPaintController().GetDisplayItemList(), 2,
-                      TestDisplayItem(client, kBackgroundType),
-                      TestDisplayItem(client, kForegroundType));
+  EXPECT_THAT(context.GetPaintController().GetDisplayItemList(),
+              ElementsAre(IsSameId(&client, kBackgroundType),
+                          IsSameId(&client, kForegroundType)));
   EXPECT_FALSE(ClientCacheIsValid(context.GetPaintController(), client));
 }
 
@@ -51,9 +52,9 @@ TEST_F(PaintRecordBuilderTest, LastingPaintController) {
   builder.EndRecording(canvas);
   EXPECT_TRUE(ClientCacheIsValid(client));
 
-  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
-                      TestDisplayItem(client, kBackgroundType),
-                      TestDisplayItem(client, kForegroundType));
+  EXPECT_THAT(GetPaintController().GetDisplayItemList(),
+              ElementsAre(IsSameId(&client, kBackgroundType),
+                          IsSameId(&client, kForegroundType)));
 
   InitRootChunk();
   EXPECT_TRUE(DrawingRecorder::UseCachedDrawingIfPossible(context, client,
@@ -63,9 +64,9 @@ TEST_F(PaintRecordBuilderTest, LastingPaintController) {
   EXPECT_CALL(canvas, drawPicture(_)).Times(1);
   builder.EndRecording(canvas);
 
-  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
-                      TestDisplayItem(client, kBackgroundType),
-                      TestDisplayItem(client, kForegroundType));
+  EXPECT_THAT(GetPaintController().GetDisplayItemList(),
+              ElementsAre(IsSameId(&client, kBackgroundType),
+                          IsSameId(&client, kForegroundType)));
   EXPECT_TRUE(ClientCacheIsValid(client));
 }
 
@@ -77,9 +78,9 @@ TEST_F(PaintRecordBuilderTest, TransientAndAnotherPaintController) {
   DrawRect(context, client, kBackgroundType, FloatRect(10, 10, 20, 20));
   DrawRect(context, client, kForegroundType, FloatRect(15, 15, 10, 10));
   CommitAndFinishCycle();
-  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
-                      TestDisplayItem(client, kBackgroundType),
-                      TestDisplayItem(client, kForegroundType));
+  EXPECT_THAT(GetPaintController().GetDisplayItemList(),
+              ElementsAre(IsSameId(&client, kBackgroundType),
+                          IsSameId(&client, kForegroundType)));
   // EXPECT_TRUE(ClientCacheIsValid(client));
 
   PaintRecordBuilder builder;

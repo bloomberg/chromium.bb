@@ -29,23 +29,26 @@ class GLSurface;
 }  // namespace gl
 
 namespace vr {
-class MailboxToSurfaceBridge;
+class ArCoreInstallUtils;
 }  // namespace vr
 
 namespace device {
 
 class ArCore;
+class ArCoreFactory;
 struct ArCoreHitTestRequest;
-class ARImageTransport;
+class ArImageTransport;
 
 // All of this class's methods must be called on the same valid GL thread with
 // the exception of GetGlThreadTaskRunner() and GetWeakPtr().
 class ArCoreGl {
  public:
-  explicit ArCoreGl(std::unique_ptr<vr::MailboxToSurfaceBridge> mailbox_bridge);
+  explicit ArCoreGl(std::unique_ptr<ArImageTransport> ar_image_transport);
   ~ArCoreGl();
 
-  void Initialize(base::OnceCallback<void(bool)> callback);
+  void Initialize(vr::ArCoreInstallUtils* install_utils,
+                  ArCoreFactory* arcore_factory,
+                  base::OnceCallback<void(bool)> callback);
 
   void ProduceFrame(const gfx::Size& frame_size,
                     display::Display::Rotation display_rotation,
@@ -78,7 +81,7 @@ class ArCoreGl {
 
   // Created on GL thread and should only be accessed on that thread.
   std::unique_ptr<ArCore> arcore_;
-  std::unique_ptr<ARImageTransport> ar_image_transport_;
+  std::unique_ptr<ArImageTransport> ar_image_transport_;
 
   // Default dummy values to ensure consistent behaviour.
   gfx::Size transfer_size_ = gfx::Size(0, 0);

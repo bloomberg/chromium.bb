@@ -7,10 +7,10 @@ package org.chromium.chrome.browser.toolbar;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
-import android.support.v7.widget.AppCompatImageButton;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -22,9 +22,9 @@ import org.chromium.chrome.browser.util.ColorUtils;
 /**
  * The overflow menu button.
  */
-class MenuButton extends FrameLayout implements ThemeColorObserver {
-    /** The {@link android.support.v7.widget.AppCompatImageButton} for the menu button. */
-    private AppCompatImageButton mMenuImageButton;
+public class MenuButton extends FrameLayout implements ThemeColorObserver {
+    /** The {@link ImageButton} for the menu button. */
+    private ImageButton mMenuImageButton;
 
     /** The view for the update badge. */
     private ImageView mUpdateBadgeView;
@@ -48,7 +48,7 @@ class MenuButton extends FrameLayout implements ThemeColorObserver {
      * @param onTouchListener An {@link OnTouchListener} that is triggered when the menu button is
      *                        clicked.
      */
-    void setTouchListener(OnTouchListener onTouchListener) {
+    public void setTouchListener(OnTouchListener onTouchListener) {
         mMenuImageButton.setOnTouchListener(onTouchListener);
     }
 
@@ -68,7 +68,7 @@ class MenuButton extends FrameLayout implements ThemeColorObserver {
      *                if the update type does not require a badge.
      * TODO(crbug.com/865801): Clean this up when MenuButton and UpdateMenuItemHelper is MVCed.
      */
-    void setUpdateBadgeVisibilityIfValidState(boolean visible) {
+    public void setUpdateBadgeVisibilityIfValidState(boolean visible) {
         switch (UpdateMenuItemHelper.getInstance().getUpdateType()) {
             case UpdateMenuItemHelper.UpdateType.UPDATE_AVAILABLE:
             // Intentional fall through.
@@ -92,12 +92,12 @@ class MenuButton extends FrameLayout implements ThemeColorObserver {
      * Sets the visual type of update badge to use (if any).
      * @param useLightDrawables Whether the light drawable should be used.
      */
-    void setUseLightDrawables(boolean useLightDrawables) {
+    public void setUseLightDrawables(boolean useLightDrawables) {
         mUseLightDrawables = useLightDrawables;
         updateImageResources();
     }
 
-    void updateImageResources() {
+    public void updateImageResources() {
         Drawable drawable;
         if (mUseLightDrawables) {
             drawable = UpdateMenuItemHelper.getInstance().getLightBadgeDrawable(
@@ -113,7 +113,7 @@ class MenuButton extends FrameLayout implements ThemeColorObserver {
     /**
      * @return Whether the update badge is showing.
      */
-    boolean isShowingAppMenuUpdateBadge() {
+    public boolean isShowingAppMenuUpdateBadge() {
         return mUpdateBadgeView.getVisibility() == View.VISIBLE;
     }
 
@@ -121,15 +121,15 @@ class MenuButton extends FrameLayout implements ThemeColorObserver {
      * Sets the content description for the menu button.
      * @param isUpdateBadgeVisible Whether the update menu badge is visible.
      */
-    void updateContentDescription(boolean isUpdateBadgeVisible) {
+    public void updateContentDescription(boolean isUpdateBadgeVisible) {
         if (isUpdateBadgeVisible) {
             switch (UpdateMenuItemHelper.getInstance().getUpdateType()) {
                 case UpdateMenuItemHelper.UpdateType.UPDATE_AVAILABLE:
-                    setContentDescription(getResources().getString(
+                    mMenuImageButton.setContentDescription(getResources().getString(
                             R.string.accessibility_toolbar_btn_menu_update));
                     break;
                 case UpdateMenuItemHelper.UpdateType.UNSUPPORTED_OS_VERSION:
-                    setContentDescription(getResources().getString(
+                    mMenuImageButton.setContentDescription(getResources().getString(
                             R.string.accessibility_toolbar_btn_menu_os_version_unsupported));
                     break;
                 case UpdateMenuItemHelper.UpdateType.NONE:
@@ -140,16 +140,16 @@ class MenuButton extends FrameLayout implements ThemeColorObserver {
                     break;
             }
         } else {
-            setContentDescription(
+            mMenuImageButton.setContentDescription(
                     getResources().getString(R.string.accessibility_toolbar_btn_menu));
         }
     }
 
-    AppCompatImageButton getImageButton() {
+    ImageButton getImageButton() {
         return mMenuImageButton;
     }
 
-    void setThemeColorProvider(ThemeColorProvider themeColorProvider) {
+    public void setThemeColorProvider(ThemeColorProvider themeColorProvider) {
         mThemeColorProvider = themeColorProvider;
         mThemeColorProvider.addObserver(this);
     }
@@ -160,7 +160,7 @@ class MenuButton extends FrameLayout implements ThemeColorObserver {
         setUseLightDrawables(ColorUtils.shouldUseLightForegroundOnBackground(primaryColor));
     }
 
-    void destroy() {
+    public void destroy() {
         if (mThemeColorProvider != null) {
             mThemeColorProvider.removeObserver(this);
             mThemeColorProvider = null;

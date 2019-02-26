@@ -38,7 +38,7 @@ class NavigatorMediaStream {
 
  public:
   static void getUserMedia(Navigator&,
-                           const MediaStreamConstraints&,
+                           const MediaStreamConstraints*,
                            V8NavigatorUserMediaSuccessCallback*,
                            V8NavigatorUserMediaErrorCallback*,
                            ExceptionState&);

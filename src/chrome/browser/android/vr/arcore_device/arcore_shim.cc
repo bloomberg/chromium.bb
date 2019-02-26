@@ -6,6 +6,7 @@
 
 #include <dlfcn.h>
 
+#include "base/android/build_info.h"
 #include "base/logging.h"
 
 namespace {
@@ -70,11 +71,11 @@ void LoadFunction(void* handle, const char* function_name, Fn* fn_out) {
 
 namespace vr {
 
-bool LoadArCoreSdk() {
+bool LoadArCoreSdk(const std::string& libraryPath) {
   if (arcore_api)
     return true;
 
-  sdk_handle = dlopen("libarcore_sdk_c_minimal.so", RTLD_GLOBAL | RTLD_NOW);
+  sdk_handle = dlopen(libraryPath.c_str(), RTLD_GLOBAL | RTLD_NOW);
   if (!sdk_handle) {
     char* error_string = nullptr;
     error_string = dlerror();
@@ -92,6 +93,11 @@ bool LoadArCoreSdk() {
 #undef CALL
 
   return true;
+}
+
+bool SupportsArCore() {
+  return base::android::BuildInfo::GetInstance()->sdk_int() >=
+         base::android::SDK_VERSION_OREO;
 }
 
 }  // namespace vr

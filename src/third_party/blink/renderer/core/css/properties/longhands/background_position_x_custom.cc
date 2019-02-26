@@ -11,14 +11,14 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* BackgroundPositionX::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
-      CSSParsingUtils::ConsumePositionLonghand<CSSValueLeft, CSSValueRight>,
+  return css_property_parser_helpers::ConsumeCommaSeparatedList(
+      css_parsing_utils::ConsumePositionLonghand<CSSValueLeft, CSSValueRight>,
       range, context.Mode());
 }
 
@@ -33,5 +33,5 @@ const CSSValue* BackgroundPositionX::CSSValueFromComputedStyleInternal(
       style, curr_layer);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

@@ -158,13 +158,6 @@ void SupervisedUserPrefStore::OnNewSettingsAvailable(
       prefs_->SetInteger(prefs::kIncognitoModeAvailability,
                          record_history ? IncognitoModePrefs::DISABLED
                                         : IncognitoModePrefs::ENABLED);
-
-      bool record_history_includes_session_sync = true;
-      settings->GetBoolean(supervised_users::kRecordHistoryIncludesSessionSync,
-                           &record_history_includes_session_sync);
-      prefs_->SetBoolean(
-          prefs::kForceSessionSync,
-          record_history && record_history_includes_session_sync);
     }
 
     {

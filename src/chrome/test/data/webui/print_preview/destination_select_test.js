@@ -11,6 +11,8 @@ cr.define('destination_select_test', function() {
         'multiple recent destinations one request',
     DefaultDestinationSelectionRules: 'default destination selection rules',
     SystemDefaultPrinterPolicy: 'system default printer policy',
+    KioskModeSelectsFirstPrinter: 'kiosk mode selects first printer',
+    NoPrintersShowsError: 'no printers shows error',
   };
 
   const suiteName = 'DestinationSelectTests';
@@ -41,10 +43,13 @@ cr.define('destination_select_test', function() {
 
     /*
      * Sets the initial settings to the stored value and creates the page.
-     * @return {!Promise} Promise that resolves when initial settings and
-     *     printer capabilities have been returned.
+     * @param {boolean=} opt_expectPrinterFailure Whether printer fetch is
+     *     expected to fail
+     * @return {!Promise} Promise that resolves when initial settings and,
+     *     if printer failure is not expected, printer capabilities have
+     *     been returned.
      */
-    function setInitialSettings() {
+    function setInitialSettings(opt_expectPrinterFailure) {
       nativeLayer.setInitialSettings(initialSettings);
       nativeLayer.setLocalDestinations(localDestinations);
       print_preview.NativeLayer.setInstance(nativeLayer);
@@ -52,10 +57,27 @@ cr.define('destination_select_test', function() {
       page = document.createElement('print-preview-app');
       document.body.appendChild(page);
 
-      return Promise.all([
-        nativeLayer.whenCalled('getInitialSettings'),
-        nativeLayer.whenCalled('getPrinterCapabilities')
-      ]);
+      const promises = [nativeLayer.whenCalled('getInitialSettings')];
+      if (!opt_expectPrinterFailure)
+        promises.push(nativeLayer.whenCalled('getPrinterCapabilities'));
+      return Promise.all(promises);
+    }
+
+    /**
+     * Checks that a printer is displayed to the user with the name given
+     * by |printerName|.
+     * @param {string} printerName The printer name that should be displayed.
+     */
+    function assertPrinterDisplay(printerName) {
+      const destinationSettings = page.$$('print-preview-destination-settings');
+
+      // Check that the throbber is hidden and the destination info is shown.
+      assertTrue(destinationSettings.$$('.throbber-container').hidden);
+      assertFalse(destinationSettings.$$('.destination-settings-box').hidden);
+
+      // Check that the destination matches the expected destination.
+      assertEquals(
+          printerName, destinationSettings.$$('.destination-name').textContent);
     }
 
     /**
@@ -74,6 +96,7 @@ cr.define('destination_select_test', function() {
         assertEquals('ID1', argsArray[1].destinationId);
         assertEquals(print_preview.PrinterType.LOCAL, argsArray[1].type);
         assertEquals('ID1', page.destination_.id);
+        assertPrinterDisplay('One');
       });
     });
 
@@ -98,6 +121,7 @@ cr.define('destination_select_test', function() {
             assertEquals('ID1', argsArray[1].destinationId);
             assertEquals(print_preview.PrinterType.LOCAL, argsArray[1].type);
             assertEquals('ID1', page.destination_.id);
+            assertPrinterDisplay('One');
 
             // Load all local destinations.
             page.destinationStore_.startLoadDestinations(
@@ -175,6 +199,7 @@ cr.define('destination_select_test', function() {
         assertEquals('ID4', argsArray[1].destinationId);
         assertEquals(print_preview.PrinterType.LOCAL, argsArray[1].type);
         assertEquals('ID4', page.destination_.id);
+        assertPrinterDisplay('Four');
       });
     });
 
@@ -202,7 +227,61 @@ cr.define('destination_select_test', function() {
         assertEquals('FooDevice', argsArray[1].destinationId);
         assertEquals(print_preview.PrinterType.LOCAL, argsArray[1].type);
         assertEquals('FooDevice', page.destination_.id);
+        assertPrinterDisplay('FooName');
       });
+    });
+
+    /**
+     * Tests that if there is no system default destination, the default
+     * selection rules and recent destinations are empty, and the preview
+     * is in app kiosk mode (so no PDF printer), the first destination returned
+     * from printer fetch is selected.
+     */
+    test(assert(TestNames.KioskModeSelectsFirstPrinter), function() {
+      initialSettings.serializedDefaultDestinationSelectionRulesStr = '';
+      initialSettings.serializedAppStateStr = '';
+      initialSettings.isInAppKioskMode = true;
+      initialSettings.printerName = '';
+
+      return setInitialSettings().then(function(argsArray) {
+        // Should have loaded the first destination as the selected printer.
+        assertEquals(destinations[0].id, argsArray[1].destinationId);
+        assertEquals(print_preview.PrinterType.LOCAL, argsArray[1].type);
+        assertEquals(destinations[0].id, page.destination_.id);
+        assertPrinterDisplay(destinations[0].displayName);
+      });
+    });
+
+    /**
+     * Tests that if there is no system default destination, the default
+     * selection rules and recent destinations are empty, the preview
+     * is in app kiosk mode (so no PDF printer), and there are no
+     * destinations found, the no destinations found error is displayed.
+     */
+    test(assert(TestNames.NoPrintersShowsError), function() {
+      initialSettings.serializedDefaultDestinationSelectionRulesStr = '';
+      initialSettings.serializedAppStateStr = '';
+      initialSettings.isInAppKioskMode = true;
+      initialSettings.printerName = '';
+      localDestinations = [];
+
+      return Promise
+          .all([
+            setInitialSettings(true),
+            test_util.eventToPromise(
+                print_preview.DestinationStore.EventType.NO_DESTINATIONS_FOUND,
+                page.destinationStore_),
+          ])
+          .then(function() {
+            assertEquals(undefined, page.destination_);
+            const destinationSettings =
+                page.$$('print-preview-destination-settings');
+            assertTrue(destinationSettings.$$('.throbber-container').hidden);
+            assertTrue(
+                destinationSettings.$$('.destination-settings-box').hidden);
+            assertFalse(
+                destinationSettings.$$('.no-destinations-display').hidden);
+          });
     });
   });
 

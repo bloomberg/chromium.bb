@@ -51,7 +51,8 @@ SVGTransform::SVGTransform(SVGTransformType transform_type,
 SVGTransform::~SVGTransform() = default;
 
 SVGTransform* SVGTransform::Clone() const {
-  return new SVGTransform(transform_type_, angle_, center_, matrix_);
+  return MakeGarbageCollected<SVGTransform>(transform_type_, angle_, center_,
+                                            matrix_);
 }
 
 SVGPropertyBase* SVGTransform::CloneForAnimation(const String&) const {

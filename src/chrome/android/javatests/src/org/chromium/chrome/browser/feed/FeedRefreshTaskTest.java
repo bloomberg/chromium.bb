@@ -13,13 +13,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.CommandLine;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
 import org.chromium.components.background_task_scheduler.TaskIds;
@@ -31,10 +31,14 @@ import java.util.List;
 /**
  * Unit tests for {@link FeedSchedulerBridge}.
  */
+// TODO(https://crbug.com/894334): Remove format suppression once formatting bug is fixed.
+// clang-format off
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
-//@Features.EnableFeatures(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)
+@Features.EnableFeatures(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)
 public class FeedRefreshTaskTest {
+    // clang-format on
+
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
@@ -72,13 +76,6 @@ public class FeedRefreshTaskTest {
 
     @Before
     public void setUp() throws InterruptedException {
-        // TODO(https://crbug.com/894334): Replace with @Features.EnableFeatures when presubmit
-        // forced format is fixed.
-        CommandLine commandLine = CommandLine.getInstance();
-        String oldValue = commandLine.getSwitchValue("enable-features");
-        commandLine.appendSwitchWithValue("enable-features",
-                oldValue + "," + ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS);
-
         mTaskScheduler = new TestBackgroundTaskScheduler();
         BackgroundTaskSchedulerFactory.setSchedulerForTesting(mTaskScheduler);
 
@@ -117,9 +114,10 @@ public class FeedRefreshTaskTest {
     @SmallTest
     public void testCancelWakeUp() {
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertEquals(0, mTaskScheduler.getCanceledTaskIds().size());
+            int initialCanceledTasks = mTaskScheduler.getCanceledTaskIds().size();
             FeedRefreshTask.cancelWakeUp();
-            Assert.assertEquals(1, mTaskScheduler.getCanceledTaskIds().size());
+            Assert.assertEquals(
+                    initialCanceledTasks + 1, mTaskScheduler.getCanceledTaskIds().size());
         });
     }
 

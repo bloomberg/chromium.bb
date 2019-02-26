@@ -109,6 +109,24 @@ ServiceWorkerUnregisterJob::UnregistrationCallback SaveUnregistration(
   return base::BindOnce(&SaveUnregistrationCallback, expected_status, called);
 }
 
+bool RequestTermination(EmbeddedWorkerTestHelper* helper,
+                        scoped_refptr<ServiceWorkerVersion> version) {
+  base::RunLoop loop;
+  base::Optional<bool> will_be_terminated;
+  helper->SimulateRequestTermination(
+      version->embedded_worker()->embedded_worker_id(),
+      base::BindOnce(
+          [](base::OnceClosure done,
+             base::Optional<bool>* out_will_be_terminated,
+             bool will_be_terminated) {
+            *out_will_be_terminated = will_be_terminated;
+            std::move(done).Run();
+          },
+          loop.QuitClosure(), &will_be_terminated));
+  loop.Run();
+  return will_be_terminated.value();
+}
+
 }  // namespace
 
 class ServiceWorkerJobTest : public testing::Test {
@@ -135,11 +153,11 @@ class ServiceWorkerJobTest : public testing::Test {
       const blink::mojom::ServiceWorkerRegistrationOptions& options,
       blink::ServiceWorkerStatusCode expected_status =
           blink::ServiceWorkerStatusCode::kOk);
-  void RunUnregisterJob(const GURL& pattern,
+  void RunUnregisterJob(const GURL& scope,
                         blink::ServiceWorkerStatusCode expected_status =
                             blink::ServiceWorkerStatusCode::kOk);
-  scoped_refptr<ServiceWorkerRegistration> FindRegistrationForPattern(
-      const GURL& pattern,
+  scoped_refptr<ServiceWorkerRegistration> FindRegistrationForScope(
+      const GURL& scope,
       blink::ServiceWorkerStatusCode expected_status =
           blink::ServiceWorkerStatusCode::kOk);
   ServiceWorkerProviderHost* CreateControllee();
@@ -165,10 +183,10 @@ scoped_refptr<ServiceWorkerRegistration> ServiceWorkerJobTest::RunRegisterJob(
 }
 
 void ServiceWorkerJobTest::RunUnregisterJob(
-    const GURL& pattern,
+    const GURL& scope,
     blink::ServiceWorkerStatusCode expected_status) {
   bool called;
-  job_coordinator()->Unregister(pattern,
+  job_coordinator()->Unregister(scope,
                                 SaveUnregistration(expected_status, &called));
   EXPECT_FALSE(called);
   base::RunLoop().RunUntilIdle();
@@ -176,14 +194,13 @@ void ServiceWorkerJobTest::RunUnregisterJob(
 }
 
 scoped_refptr<ServiceWorkerRegistration>
-ServiceWorkerJobTest::FindRegistrationForPattern(
-    const GURL& pattern,
+ServiceWorkerJobTest::FindRegistrationForScope(
+    const GURL& scope,
     blink::ServiceWorkerStatusCode expected_status) {
   bool called;
   scoped_refptr<ServiceWorkerRegistration> registration;
-  storage()->FindRegistrationForPattern(
-      pattern,
-      SaveFoundRegistration(expected_status, &called, &registration));
+  storage()->FindRegistrationForScope(
+      scope, SaveFoundRegistration(expected_status, &called, &registration));
 
   EXPECT_FALSE(called);
   base::RunLoop().RunUntilIdle();
@@ -341,16 +358,16 @@ TEST_F(ServiceWorkerJobTest, Unregister) {
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version->running_status());
   EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, version->status());
 
-  registration = FindRegistrationForPattern(
+  registration = FindRegistrationForScope(
       options.scope, blink::ServiceWorkerStatusCode::kErrorNotFound);
 
   EXPECT_FALSE(registration);
 }
 
 TEST_F(ServiceWorkerJobTest, Unregister_NothingRegistered) {
-  GURL pattern("https://www.example.com/");
+  GURL scope("https://www.example.com/");
 
-  RunUnregisterJob(pattern, blink::ServiceWorkerStatusCode::kErrorNotFound);
+  RunUnregisterJob(scope, blink::ServiceWorkerStatusCode::kErrorNotFound);
 }
 
 // Make sure registering a new script creates a new version and shares an
@@ -362,24 +379,24 @@ TEST_F(ServiceWorkerJobTest, RegisterNewScript) {
   scoped_refptr<ServiceWorkerRegistration> old_registration = RunRegisterJob(
       GURL("https://www.example.com/service_worker.js"), options);
 
-  scoped_refptr<ServiceWorkerRegistration> old_registration_by_pattern =
-      FindRegistrationForPattern(options.scope);
+  scoped_refptr<ServiceWorkerRegistration> old_registration_by_scope =
+      FindRegistrationForScope(options.scope);
 
-  ASSERT_EQ(old_registration, old_registration_by_pattern);
-  old_registration_by_pattern = nullptr;
+  ASSERT_EQ(old_registration, old_registration_by_scope);
+  old_registration_by_scope = nullptr;
 
   scoped_refptr<ServiceWorkerRegistration> new_registration = RunRegisterJob(
       GURL("https://www.example.com/service_worker_new.js"), options);
 
   ASSERT_EQ(old_registration, new_registration);
 
-  scoped_refptr<ServiceWorkerRegistration> new_registration_by_pattern =
-      FindRegistrationForPattern(options.scope);
+  scoped_refptr<ServiceWorkerRegistration> new_registration_by_scope =
+      FindRegistrationForScope(options.scope);
 
-  ASSERT_EQ(new_registration, new_registration_by_pattern);
+  ASSERT_EQ(new_registration, new_registration_by_scope);
 }
 
-// Make sure that when registering a duplicate pattern+script_url
+// Make sure that when registering a duplicate scope+script_url
 // combination, that the same registration is used.
 TEST_F(ServiceWorkerJobTest, RegisterDuplicateScript) {
   GURL script_url("https://www.example.com/service_worker.js");
@@ -404,10 +421,10 @@ TEST_F(ServiceWorkerJobTest, RegisterDuplicateScript) {
   EXPECT_EQ(0UL, provider_host->registration_object_hosts_.size());
   ASSERT_TRUE(old_registration->HasOneRef());
 
-  scoped_refptr<ServiceWorkerRegistration> old_registration_by_pattern =
-      FindRegistrationForPattern(options.scope);
+  scoped_refptr<ServiceWorkerRegistration> old_registration_by_scope =
+      FindRegistrationForScope(options.scope);
 
-  ASSERT_TRUE(old_registration_by_pattern.get());
+  ASSERT_TRUE(old_registration_by_scope.get());
 
   scoped_refptr<ServiceWorkerRegistration> new_registration =
       RunRegisterJob(script_url, options);
@@ -416,14 +433,14 @@ TEST_F(ServiceWorkerJobTest, RegisterDuplicateScript) {
 
   ASSERT_FALSE(old_registration->HasOneRef());
 
-  scoped_refptr<ServiceWorkerRegistration> new_registration_by_pattern =
-      FindRegistrationForPattern(options.scope);
+  scoped_refptr<ServiceWorkerRegistration> new_registration_by_scope =
+      FindRegistrationForScope(options.scope);
 
-  EXPECT_EQ(new_registration_by_pattern, old_registration);
+  EXPECT_EQ(new_registration_by_scope, old_registration);
 }
 
 // Make sure that the same registration is used and the update_via_cache value
-// is updated when registering a duplicate pattern+script_url with a different
+// is updated when registering a duplicate scope+script_url with a different
 // update_via_cache value.
 TEST_F(ServiceWorkerJobTest, RegisterWithDifferentUpdateViaCache) {
   GURL script_url("https://www.example.com/service_worker.js");
@@ -451,10 +468,10 @@ TEST_F(ServiceWorkerJobTest, RegisterWithDifferentUpdateViaCache) {
   EXPECT_EQ(0UL, provider_host->registration_object_hosts_.size());
   ASSERT_TRUE(old_registration->HasOneRef());
 
-  scoped_refptr<ServiceWorkerRegistration> old_registration_by_pattern =
-      FindRegistrationForPattern(options.scope);
+  scoped_refptr<ServiceWorkerRegistration> old_registration_by_scope =
+      FindRegistrationForScope(options.scope);
 
-  ASSERT_TRUE(old_registration_by_pattern.get());
+  ASSERT_TRUE(old_registration_by_scope.get());
 
   options.update_via_cache = blink::mojom::ServiceWorkerUpdateViaCache::kNone;
   scoped_refptr<ServiceWorkerRegistration> new_registration =
@@ -467,10 +484,10 @@ TEST_F(ServiceWorkerJobTest, RegisterWithDifferentUpdateViaCache) {
 
   ASSERT_FALSE(old_registration->HasOneRef());
 
-  scoped_refptr<ServiceWorkerRegistration> new_registration_by_pattern =
-      FindRegistrationForPattern(options.scope);
+  scoped_refptr<ServiceWorkerRegistration> new_registration_by_scope =
+      FindRegistrationForScope(options.scope);
 
-  EXPECT_EQ(new_registration_by_pattern, old_registration);
+  EXPECT_EQ(new_registration_by_scope, old_registration);
 }
 
 class FailToStartWorkerTestHelper : public EmbeddedWorkerTestHelper {
@@ -508,7 +525,7 @@ TEST_F(ServiceWorkerJobTest, Register_FailToStartWorker) {
   ASSERT_EQ(scoped_refptr<ServiceWorkerRegistration>(nullptr), registration);
 }
 
-// Register and then unregister the pattern, in parallel. Job coordinator should
+// Register and then unregister the scope, in parallel. Job coordinator should
 // process jobs until the last job.
 TEST_F(ServiceWorkerJobTest, ParallelRegUnreg) {
   GURL script_url("https://www.example.com/service_worker.js");
@@ -533,17 +550,17 @@ TEST_F(ServiceWorkerJobTest, ParallelRegUnreg) {
   ASSERT_TRUE(registration_called);
   ASSERT_TRUE(unregistration_called);
 
-  registration = FindRegistrationForPattern(
+  registration = FindRegistrationForScope(
       options.scope, blink::ServiceWorkerStatusCode::kErrorNotFound);
 
   ASSERT_EQ(scoped_refptr<ServiceWorkerRegistration>(), registration);
 }
 
-// Register conflicting scripts for the same pattern. The most recent
+// Register conflicting scripts for the same scope. The most recent
 // registration should win, and the old registration should have been
 // shutdown.
 TEST_F(ServiceWorkerJobTest, ParallelRegNewScript) {
-  GURL pattern("https://www.example.com/");
+  GURL scope("https://www.example.com/");
 
   GURL script_url1("https://www.example.com/service_worker1.js");
   bool registration1_called = false;
@@ -551,7 +568,7 @@ TEST_F(ServiceWorkerJobTest, ParallelRegNewScript) {
   job_coordinator()->Register(
       script_url1,
       blink::mojom::ServiceWorkerRegistrationOptions(
-          pattern, blink::mojom::ScriptType::kClassic,
+          scope, blink::mojom::ScriptType::kClassic,
           blink::mojom::ServiceWorkerUpdateViaCache::kNone),
       SaveRegistration(blink::ServiceWorkerStatusCode::kOk,
                        &registration1_called, &registration1));
@@ -562,7 +579,7 @@ TEST_F(ServiceWorkerJobTest, ParallelRegNewScript) {
   job_coordinator()->Register(
       script_url2,
       blink::mojom::ServiceWorkerRegistrationOptions(
-          pattern, blink::mojom::ScriptType::kClassic,
+          scope, blink::mojom::ScriptType::kClassic,
           blink::mojom::ServiceWorkerUpdateViaCache::kAll),
       SaveRegistration(blink::ServiceWorkerStatusCode::kOk,
                        &registration2_called, &registration2));
@@ -574,12 +591,12 @@ TEST_F(ServiceWorkerJobTest, ParallelRegNewScript) {
   ASSERT_TRUE(registration2_called);
 
   scoped_refptr<ServiceWorkerRegistration> registration =
-      FindRegistrationForPattern(pattern);
+      FindRegistrationForScope(scope);
 
   ASSERT_EQ(registration2, registration);
 }
 
-// Register the exact same pattern + script. Requests should be
+// Register the exact same scope + script. Requests should be
 // coalesced such that both callers get the exact same registration
 // object.
 TEST_F(ServiceWorkerJobTest, ParallelRegSameScript) {
@@ -610,27 +627,25 @@ TEST_F(ServiceWorkerJobTest, ParallelRegSameScript) {
   ASSERT_EQ(registration1, registration2);
 
   scoped_refptr<ServiceWorkerRegistration> registration =
-      FindRegistrationForPattern(options.scope);
+      FindRegistrationForScope(options.scope);
 
   ASSERT_EQ(registration, registration1);
 }
 
 // Call simulataneous unregister calls.
 TEST_F(ServiceWorkerJobTest, ParallelUnreg) {
-  GURL pattern("https://www.example.com/");
+  GURL scope("https://www.example.com/");
 
   GURL script_url("https://www.example.com/service_worker.js");
   bool unregistration1_called = false;
   job_coordinator()->Unregister(
-      pattern,
-      SaveUnregistration(blink::ServiceWorkerStatusCode::kErrorNotFound,
-                         &unregistration1_called));
+      scope, SaveUnregistration(blink::ServiceWorkerStatusCode::kErrorNotFound,
+                                &unregistration1_called));
 
   bool unregistration2_called = false;
   job_coordinator()->Unregister(
-      pattern,
-      SaveUnregistration(blink::ServiceWorkerStatusCode::kErrorNotFound,
-                         &unregistration2_called));
+      scope, SaveUnregistration(blink::ServiceWorkerStatusCode::kErrorNotFound,
+                                &unregistration2_called));
 
   ASSERT_FALSE(unregistration1_called);
   ASSERT_FALSE(unregistration2_called);
@@ -642,8 +657,8 @@ TEST_F(ServiceWorkerJobTest, ParallelUnreg) {
   // but we can make sure they can exist simultaneously without
   // crashing.
   scoped_refptr<ServiceWorkerRegistration> registration =
-      FindRegistrationForPattern(
-          pattern, blink::ServiceWorkerStatusCode::kErrorNotFound);
+      FindRegistrationForScope(scope,
+                               blink::ServiceWorkerStatusCode::kErrorNotFound);
 
   ASSERT_EQ(scoped_refptr<ServiceWorkerRegistration>(), registration);
 }
@@ -680,13 +695,13 @@ TEST_F(ServiceWorkerJobTest, AbortAll_Register) {
   ASSERT_TRUE(registration_called2);
 
   bool find_called1 = false;
-  storage()->FindRegistrationForPattern(
+  storage()->FindRegistrationForScope(
       options1.scope,
       SaveFoundRegistration(blink::ServiceWorkerStatusCode::kErrorNotFound,
                             &find_called1, &registration1));
 
   bool find_called2 = false;
-  storage()->FindRegistrationForPattern(
+  storage()->FindRegistrationForScope(
       options2.scope,
       SaveFoundRegistration(blink::ServiceWorkerStatusCode::kErrorNotFound,
                             &find_called2, &registration2));
@@ -699,19 +714,19 @@ TEST_F(ServiceWorkerJobTest, AbortAll_Register) {
 }
 
 TEST_F(ServiceWorkerJobTest, AbortAll_Unregister) {
-  GURL pattern1("https://www1.example.com/");
-  GURL pattern2("https://www2.example.com/");
+  GURL scope1("https://www1.example.com/");
+  GURL scope2("https://www2.example.com/");
 
   bool unregistration_called1 = false;
   scoped_refptr<ServiceWorkerRegistration> registration1;
   job_coordinator()->Unregister(
-      pattern1, SaveUnregistration(blink::ServiceWorkerStatusCode::kErrorAbort,
-                                   &unregistration_called1));
+      scope1, SaveUnregistration(blink::ServiceWorkerStatusCode::kErrorAbort,
+                                 &unregistration_called1));
 
   bool unregistration_called2 = false;
   job_coordinator()->Unregister(
-      pattern2, SaveUnregistration(blink::ServiceWorkerStatusCode::kErrorAbort,
-                                   &unregistration_called2));
+      scope2, SaveUnregistration(blink::ServiceWorkerStatusCode::kErrorAbort,
+                                 &unregistration_called2));
 
   ASSERT_FALSE(unregistration_called1);
   ASSERT_FALSE(unregistration_called2);
@@ -748,10 +763,48 @@ TEST_F(ServiceWorkerJobTest, AbortAll_RegUnreg) {
   ASSERT_TRUE(registration_called);
   ASSERT_TRUE(unregistration_called);
 
-  registration = FindRegistrationForPattern(
+  registration = FindRegistrationForScope(
       options.scope, blink::ServiceWorkerStatusCode::kErrorNotFound);
 
   EXPECT_EQ(scoped_refptr<ServiceWorkerRegistration>(), registration);
+}
+
+TEST_F(ServiceWorkerJobTest, AbortScope) {
+  GURL script_url("https://www.example.com/service_worker.js");
+  blink::mojom::ServiceWorkerRegistrationOptions options1;
+  options1.scope = GURL("https://www.example.com/1");
+  blink::mojom::ServiceWorkerRegistrationOptions options2;
+  options2.scope = GURL("https://www.example.com/2");
+
+  bool registration1_called = false;
+  scoped_refptr<ServiceWorkerRegistration> registration1;
+  job_coordinator()->Register(
+      script_url, options1,
+      SaveRegistration(blink::ServiceWorkerStatusCode::kErrorAbort,
+                       &registration1_called, &registration1));
+
+  bool registration2_called = false;
+  scoped_refptr<ServiceWorkerRegistration> registration2;
+  job_coordinator()->Register(
+      script_url, options2,
+      SaveRegistration(blink::ServiceWorkerStatusCode::kOk,
+                       &registration2_called, &registration2));
+
+  ASSERT_FALSE(registration1_called);
+  ASSERT_FALSE(registration2_called);
+  job_coordinator()->Abort(options1.scope);
+
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(registration1_called);
+  ASSERT_TRUE(registration2_called);
+
+  registration1 = FindRegistrationForScope(
+      options1.scope, blink::ServiceWorkerStatusCode::kErrorNotFound);
+  EXPECT_EQ(nullptr, registration1);
+
+  registration2 = FindRegistrationForScope(options2.scope,
+                                           blink::ServiceWorkerStatusCode::kOk);
+  EXPECT_NE(nullptr, registration2);
 }
 
 // Tests that the waiting worker enters the 'redundant' state upon
@@ -928,10 +981,6 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
     force_start_worker_failure_ = force_start_worker_failure;
   }
 
-  const base::Optional<bool>& will_be_terminated() const {
-    return will_be_terminated_;
-  }
-
   scoped_refptr<ServiceWorkerRegistration> SetupInitialRegistration(
       const GURL& test_origin) {
     blink::mojom::ServiceWorkerRegistrationOptions options;
@@ -950,17 +999,6 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
     EXPECT_FALSE(registration->waiting_version());
     observed_registration_ = registration;
     return registration;
-  }
-
-  void RequestTermination(int embedded_worker_id) {
-    GetEmbeddedWorkerInstanceHost(embedded_worker_id)
-        ->RequestTermination(
-            base::BindOnce(&UpdateJobTestHelper::OnRequestedTermination,
-                           weak_factory_.GetWeakPtr()));
-  }
-
-  void OnRequestedTermination(bool will_be_terminated) {
-    will_be_terminated_ = will_be_terminated;
   }
 
   // EmbeddedWorkerTestHelper overrides
@@ -1240,6 +1278,9 @@ TEST_F(ServiceWorkerJobTest, Update_NewVersion) {
       update_helper->SetupInitialRegistration(kNewVersionOrigin);
   ASSERT_TRUE(registration.get());
   update_helper->state_change_log_.clear();
+  scoped_refptr<base::TestSimpleTaskRunner> runner(
+      new base::TestSimpleTaskRunner());
+  registration->SetTaskRunnerForTest(runner);
 
   // Run the update job.
   registration->AddListener(update_helper);
@@ -1247,6 +1288,26 @@ TEST_F(ServiceWorkerJobTest, Update_NewVersion) {
       registration->active_version();
   first_version->StartUpdate();
   base::RunLoop().RunUntilIdle();
+
+  // S13nServiceWorker: the worker is updated after RequestTermination() is
+  // called from the renderer. Until then, the active version stays active.
+  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
+    EXPECT_EQ(first_version.get(), registration->active_version());
+    // The new worker is installed but not yet to be activated.
+    EXPECT_EQ(2u, update_helper->attribute_change_log_.size());
+    EXPECT_TRUE(RequestTermination(helper_.get(), first_version));
+    base::RunLoop().RunUntilIdle();
+
+    // RequestTermination() and following RunUntilIdle() terminated the service
+    // worker and resulted in calling ServiceWorkerRegistration::OnNoWork(). It
+    // started the activation procedure, and posted a delayed task to activate
+    // the worker. RunPendingTasks() runs the posted activation task.
+    EXPECT_TRUE(runner->HasPendingTask());
+    runner->RunPendingTasks();
+
+    // Make sure that all tasks for activation finish.
+    base::RunLoop().RunUntilIdle();
+  }
 
   // Verify results.
   ASSERT_TRUE(registration->active_version());
@@ -1353,6 +1414,21 @@ TEST_F(ServiceWorkerJobTest, Update_ScriptUrlChanged) {
   // Run the update job.
   base::RunLoop().RunUntilIdle();
 
+  // S13nServiceWorker: the worker is activated after RequestTermination() is
+  // called from the renderer. Until then, the active version stays active.
+  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
+    // Still waiting, but the waiting version isn't |version| since another
+    // ServiceWorkerVersion is created during the update job and the job wipes
+    // out the older waiting version.
+    EXPECT_TRUE(registration->active_version());
+    EXPECT_NE(version.get(), registration->waiting_version());
+    EXPECT_NE(nullptr, registration->waiting_version());
+
+    EXPECT_TRUE(
+        RequestTermination(helper_.get(), registration->active_version()));
+    base::RunLoop().RunUntilIdle();
+  }
+
   // The update job should have created a new version with the new script,
   // and promoted it to the active version.
   EXPECT_EQ(new_script, registration->active_version()->script_url());
@@ -1455,6 +1531,8 @@ TEST_F(ServiceWorkerJobTest, RegisterWhileUninstalling) {
   EXPECT_EQ(ServiceWorkerVersion::INSTALLED, new_version->status());
 
   old_version->RemoveControllee(host->client_uuid());
+  if (blink::ServiceWorkerUtils::IsServicificationEnabled())
+    EXPECT_TRUE(RequestTermination(helper_.get(), old_version));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(registration->is_uninstalling());
@@ -1490,7 +1568,7 @@ TEST_F(ServiceWorkerJobTest, RegisterAndUnregisterWhileUninstalling) {
 
   EXPECT_EQ(registration, RunRegisterJob(script2, options));
 
-  EXPECT_EQ(registration, FindRegistrationForPattern(options.scope));
+  EXPECT_EQ(registration, FindRegistrationForScope(options.scope));
   scoped_refptr<ServiceWorkerVersion> new_version =
       registration->waiting_version();
   ASSERT_TRUE(new_version);
@@ -1501,8 +1579,8 @@ TEST_F(ServiceWorkerJobTest, RegisterAndUnregisterWhileUninstalling) {
   RunUnregisterJob(options.scope,
                    blink::ServiceWorkerStatusCode::kErrorNotFound);
 
-  FindRegistrationForPattern(options.scope,
-                             blink::ServiceWorkerStatusCode::kErrorNotFound);
+  FindRegistrationForScope(options.scope,
+                           blink::ServiceWorkerStatusCode::kErrorNotFound);
   EXPECT_TRUE(registration->is_uninstalling());
   EXPECT_EQ(old_version, registration->active_version());
 
@@ -1558,6 +1636,8 @@ TEST_F(ServiceWorkerJobTest, RegisterSameScriptMultipleTimesWhileUninstalling) {
   EXPECT_EQ(new_version, registration->waiting_version());
 
   old_version->RemoveControllee(host->client_uuid());
+  if (blink::ServiceWorkerUtils::IsServicificationEnabled())
+    EXPECT_TRUE(RequestTermination(helper_.get(), old_version));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(registration->is_uninstalling());
@@ -1615,6 +1695,8 @@ TEST_F(ServiceWorkerJobTest, RegisterMultipleTimesWhileUninstalling) {
   EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, second_version->status());
 
   first_version->RemoveControllee(host->client_uuid());
+  if (blink::ServiceWorkerUtils::IsServicificationEnabled())
+    EXPECT_TRUE(RequestTermination(helper_.get(), first_version));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(registration->is_uninstalling());
@@ -1645,13 +1727,12 @@ class EventCallbackHelper : public EmbeddedWorkerTestHelper {
       mojom::ServiceWorker::DispatchInstallEventCallback callback) override {
     if (!install_callback_.is_null())
       std::move(install_callback_).Run();
-    std::move(callback).Run(install_event_result_, has_fetch_handler_,
-                            base::TimeTicks::Now());
+    std::move(callback).Run(install_event_result_, has_fetch_handler_);
   }
 
   void OnActivateEvent(
       mojom::ServiceWorker::DispatchActivateEventCallback callback) override {
-    std::move(callback).Run(activate_event_result_, base::TimeTicks::Now());
+    std::move(callback).Run(activate_event_result_);
   }
 
   void set_install_callback(base::OnceClosure callback) {
@@ -1676,6 +1757,11 @@ class EventCallbackHelper : public EmbeddedWorkerTestHelper {
 };
 
 TEST_F(ServiceWorkerJobTest, RemoveControlleeDuringInstall) {
+  // S13nServiceWorker: RemoveControllee doesn't affect activation so let's skip
+  // this test.
+  if (blink::ServiceWorkerUtils::IsServicificationEnabled())
+    return;
+
   EventCallbackHelper* helper = new EventCallbackHelper;
   helper_.reset(helper);
 
@@ -1713,10 +1799,15 @@ TEST_F(ServiceWorkerJobTest, RemoveControlleeDuringInstall) {
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, new_version->running_status());
   EXPECT_EQ(ServiceWorkerVersion::ACTIVATED, new_version->status());
 
-  EXPECT_EQ(registration, FindRegistrationForPattern(options.scope));
+  EXPECT_EQ(registration, FindRegistrationForScope(options.scope));
 }
 
 TEST_F(ServiceWorkerJobTest, RemoveControlleeDuringRejectedInstall) {
+  // S13nServiceWorker: RemoveControllee doesn't affect activation so let's skip
+  // this test.
+  if (blink::ServiceWorkerUtils::IsServicificationEnabled())
+    return;
+
   EventCallbackHelper* helper = new EventCallbackHelper;
   helper_.reset(helper);
 
@@ -1751,11 +1842,16 @@ TEST_F(ServiceWorkerJobTest, RemoveControlleeDuringRejectedInstall) {
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, old_version->running_status());
   EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, old_version->status());
 
-  FindRegistrationForPattern(options.scope,
-                             blink::ServiceWorkerStatusCode::kErrorNotFound);
+  FindRegistrationForScope(options.scope,
+                           blink::ServiceWorkerStatusCode::kErrorNotFound);
 }
 
 TEST_F(ServiceWorkerJobTest, RemoveControlleeDuringInstall_RejectActivate) {
+  // S13nServiceWorker: RemoveControllee doesn't affect activation so let's skip
+  // this test.
+  if (blink::ServiceWorkerUtils::IsServicificationEnabled())
+    return;
+
   EventCallbackHelper* helper = new EventCallbackHelper;
   helper_.reset(helper);
 
@@ -1790,8 +1886,7 @@ TEST_F(ServiceWorkerJobTest, RemoveControlleeDuringInstall_RejectActivate) {
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, old_version->running_status());
   EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, old_version->status());
 
-  FindRegistrationForPattern(options.scope,
-                             blink::ServiceWorkerStatusCode::kOk);
+  FindRegistrationForScope(options.scope, blink::ServiceWorkerStatusCode::kOk);
 }
 
 TEST_F(ServiceWorkerJobTest, HasFetchHandler) {
@@ -1805,14 +1900,14 @@ TEST_F(ServiceWorkerJobTest, HasFetchHandler) {
 
   helper->set_has_fetch_handler(true);
   RunRegisterJob(script, options);
-  registration = FindRegistrationForPattern(options.scope);
+  registration = FindRegistrationForScope(options.scope);
   EXPECT_EQ(ServiceWorkerVersion::FetchHandlerExistence::EXISTS,
             registration->active_version()->fetch_handler_existence());
   RunUnregisterJob(options.scope);
 
   helper->set_has_fetch_handler(false);
   RunRegisterJob(script, options);
-  registration = FindRegistrationForPattern(options.scope);
+  registration = FindRegistrationForScope(options.scope);
   EXPECT_EQ(ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST,
             registration->active_version()->fetch_handler_existence());
   RunUnregisterJob(options.scope);
@@ -1916,10 +2011,8 @@ TEST_F(ServiceWorkerJobTest, ActivateCancelsOnShutdown) {
     // S13nServiceWorker: Activating the new version won't happen until
     // RequestTermination() is called.
     EXPECT_EQ(first_version.get(), registration->active_version());
-    update_helper->RequestTermination(
-        first_version->embedded_worker()->embedded_worker_id());
+    EXPECT_TRUE(RequestTermination(update_helper, first_version));
     base::RunLoop().RunUntilIdle();
-    EXPECT_TRUE(update_helper->will_be_terminated().value());
   }
 
   EXPECT_EQ(new_version.get(), registration->active_version());
@@ -1952,18 +2045,18 @@ TEST_F(ServiceWorkerJobTest, AddRegistrationToMatchingProviderHosts) {
 
   // Make an in-scope client.
   ServiceWorkerProviderHost* client = CreateControllee();
-  client->SetDocumentUrl(in_scope);
+  client->UpdateUrls(in_scope, in_scope);
 
   // Make an in-scope reserved client.
   base::WeakPtr<ServiceWorkerProviderHost> reserved_client =
       ServiceWorkerProviderHost::PreCreateNavigationHost(
           helper_->context()->AsWeakPtr(), true /* are_ancestors_secure */,
           {} /* web_contents_getter */);
-  reserved_client->SetDocumentUrl(in_scope);
+  reserved_client->UpdateUrls(in_scope, in_scope);
 
   // Make an out-scope client.
   ServiceWorkerProviderHost* out_scope_client = CreateControllee();
-  out_scope_client->SetDocumentUrl(out_scope);
+  out_scope_client->UpdateUrls(out_scope, out_scope);
 
   // Make a new registration.
   GURL script("https://www.example.com/service_worker.js");

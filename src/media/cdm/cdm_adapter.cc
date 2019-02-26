@@ -226,6 +226,7 @@ CdmAdapter::~CdmAdapter() {
 
 CdmWrapper* CdmAdapter::CreateCdmInstance(const std::string& key_system) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  TRACE_EVENT0("media", "CdmAdapter::CreateCdmInstance");
 
   CdmWrapper* cdm = CdmWrapper::Create(create_cdm_func_, key_system.data(),
                                        key_system.size(), GetCdmHost, this);
@@ -245,6 +246,7 @@ CdmWrapper* CdmAdapter::CreateCdmInstance(const std::string& key_system) {
 
 void CdmAdapter::Initialize(std::unique_ptr<media::SimpleCdmPromise> promise) {
   DVLOG(1) << __func__;
+  TRACE_EVENT0("media", "CdmAdapter::Initialize");
 
   cdm_.reset(CreateCdmInstance(key_system_));
   if (!cdm_) {
@@ -276,6 +278,7 @@ void CdmAdapter::SetServerCertificate(
     std::unique_ptr<SimpleCdmPromise> promise) {
   DVLOG(2) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
+  TRACE_EVENT0("media", "CdmAdapter::SetServerCertificate");
 
   if (certificate.size() < limits::kMinCertificateLength ||
       certificate.size() > limits::kMaxCertificateLength) {
@@ -293,6 +296,7 @@ void CdmAdapter::GetStatusForPolicy(
     HdcpVersion min_hdcp_version,
     std::unique_ptr<KeyStatusCdmPromise> promise) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  TRACE_EVENT0("media", "CdmAdapter::GetStatusForPolicy");
 
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
   DVLOG(2) << __func__ << ": promise_id = " << promise_id;
@@ -311,6 +315,7 @@ void CdmAdapter::CreateSessionAndGenerateRequest(
     const std::vector<uint8_t>& init_data,
     std::unique_ptr<NewSessionCdmPromise> promise) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  TRACE_EVENT0("media", "CdmAdapter::CreateSessionAndGenerateRequest");
 
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
   DVLOG(2) << __func__ << ": promise_id = " << promise_id;
@@ -324,6 +329,7 @@ void CdmAdapter::LoadSession(CdmSessionType session_type,
                              const std::string& session_id,
                              std::unique_ptr<NewSessionCdmPromise> promise) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  TRACE_EVENT1("media", "CdmAdapter::LoadSession", "session_id", session_id);
 
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
   DVLOG(2) << __func__ << ": session_id = " << session_id
@@ -339,6 +345,7 @@ void CdmAdapter::UpdateSession(const std::string& session_id,
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!session_id.empty());
   DCHECK(!response.empty());
+  TRACE_EVENT1("media", "CdmAdapter::UpdateSession", "session_id", session_id);
 
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
   DVLOG(2) << __func__ << ": session_id = " << session_id
@@ -352,6 +359,7 @@ void CdmAdapter::CloseSession(const std::string& session_id,
                               std::unique_ptr<SimpleCdmPromise> promise) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!session_id.empty());
+  TRACE_EVENT1("media", "CdmAdapter::CloseSession", "session_id", session_id);
 
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
   DVLOG(2) << __func__ << ": session_id = " << session_id
@@ -364,6 +372,7 @@ void CdmAdapter::RemoveSession(const std::string& session_id,
                                std::unique_ptr<SimpleCdmPromise> promise) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!session_id.empty());
+  TRACE_EVENT1("media", "CdmAdapter::RemoveSession", "session_id", session_id);
 
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
   DVLOG(2) << __func__ << ": session_id = " << session_id
@@ -427,8 +436,8 @@ void CdmAdapter::Decrypt(StreamType stream_type,
                          const DecryptCB& decrypt_cb) {
   DVLOG(3) << __func__ << ": " << encrypted->AsHumanReadableString();
   DCHECK(task_runner_->BelongsToCurrentThread());
+  TRACE_EVENT1("media", "CdmAdapter::Decrypt", "stream_type", stream_type);
 
-  TRACE_EVENT0("media", "CdmAdapter::Decrypt");
   ScopedCrashKeyString scoped_crash_key(&g_origin_crash_key, origin_string_);
 
   cdm::InputBuffer_2 input_buffer = {};
@@ -462,6 +471,7 @@ void CdmAdapter::InitializeAudioDecoder(const AudioDecoderConfig& config,
   DVLOG(2) << __func__ << ": " << config.AsHumanReadableString();
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!audio_init_cb_);
+  TRACE_EVENT0("media", "CdmAdapter::InitializeAudioDecode");
 
   auto cdm_config = ToCdmAudioDecoderConfig(config);
   if (cdm_config.codec == cdm::kUnknownAudioCodec) {
@@ -496,6 +506,7 @@ void CdmAdapter::InitializeVideoDecoder(const VideoDecoderConfig& config,
   DVLOG(2) << __func__ << ": " << config.AsHumanReadableString();
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!video_init_cb_);
+  TRACE_EVENT0("media", "CdmAdapter::InitializeVideoDecoder");
 
   // cdm::kUnknownVideoCodecProfile and cdm::kUnknownVideoFormat are not checked
   // because it's possible the container has wrong information or the demuxer
@@ -517,6 +528,7 @@ void CdmAdapter::InitializeVideoDecoder(const VideoDecoderConfig& config,
   }
 
   pixel_aspect_ratio_ = config.GetPixelAspectRatio();
+  is_video_encrypted_ = config.is_encrypted();
 
   if (status == cdm::kDeferredInitialization) {
     DVLOG(1) << "Deferred initialization in " << __func__;
@@ -531,8 +543,8 @@ void CdmAdapter::DecryptAndDecodeAudio(scoped_refptr<DecoderBuffer> encrypted,
                                        const AudioDecodeCB& audio_decode_cb) {
   DVLOG(3) << __func__ << ": " << encrypted->AsHumanReadableString();
   DCHECK(task_runner_->BelongsToCurrentThread());
-
   TRACE_EVENT0("media", "CdmAdapter::DecryptAndDecodeAudio");
+
   ScopedCrashKeyString scoped_crash_key(&g_origin_crash_key, origin_string_);
 
   cdm::InputBuffer_2 input_buffer = {};
@@ -566,8 +578,12 @@ void CdmAdapter::DecryptAndDecodeVideo(scoped_refptr<DecoderBuffer> encrypted,
                                        const VideoDecodeCB& video_decode_cb) {
   DVLOG(3) << __func__ << ": " << encrypted->AsHumanReadableString();
   DCHECK(task_runner_->BelongsToCurrentThread());
+  TRACE_EVENT1(
+      "media", "CdmAdapter::DecryptAndDecodeVideo", "buffer type",
+      encrypted->end_of_stream()
+          ? "end of stream"
+          : (encrypted->is_key_frame() ? "key frame" : "non-key frame"));
 
-  TRACE_EVENT0("media", "CdmAdapter::DecryptAndDecodeVideo");
   ScopedCrashKeyString scoped_crash_key(&g_origin_crash_key, origin_string_);
 
   cdm::InputBuffer_2 input_buffer = {};
@@ -593,18 +609,28 @@ void CdmAdapter::DecryptAndDecodeVideo(scoped_refptr<DecoderBuffer> encrypted,
     return;
   }
 
+  if (is_video_encrypted_) {
+    decoded_frame->metadata()->SetBoolean(VideoFrameMetadata::PROTECTED_VIDEO,
+                                          true);
+  }
+
   video_decode_cb.Run(Decryptor::kSuccess, decoded_frame);
 }
 
 void CdmAdapter::ResetDecoder(StreamType stream_type) {
   DVLOG(2) << __func__ << ": stream_type = " << stream_type;
   DCHECK(task_runner_->BelongsToCurrentThread());
+  TRACE_EVENT1("media", "CdmAdapter::ResetDecoder", "stream_type", stream_type);
 
   cdm_->ResetDecoder(ToCdmStreamType(stream_type));
 }
 
 void CdmAdapter::DeinitializeDecoder(StreamType stream_type) {
+  DVLOG(2) << __func__ << ": stream_type = " << stream_type;
   DCHECK(task_runner_->BelongsToCurrentThread());
+  TRACE_EVENT1("media", "CdmAdapter::DeinitializeDecoder", "stream_type",
+               stream_type);
+
   cdm_->DeinitializeDecoder(ToCdmStreamType(stream_type));
 
   // Reset the saved values from initializing the decoder.
@@ -620,20 +646,32 @@ void CdmAdapter::DeinitializeDecoder(StreamType stream_type) {
 }
 
 cdm::Buffer* CdmAdapter::Allocate(uint32_t capacity) {
+  DVLOG(3) << __func__ << ": capacity = " << capacity;
   DCHECK(task_runner_->BelongsToCurrentThread());
+  TRACE_EVENT1("media", "CdmAdapter::Allocate", "capacity", capacity);
+
   return helper_->CreateCdmBuffer(capacity);
 }
 
 void CdmAdapter::SetTimer(int64_t delay_ms, void* context) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+
+  auto delay = base::TimeDelta::FromMilliseconds(delay_ms);
+  DVLOG(3) << __func__ << ": delay = " << delay << ", context = " << context;
+  TRACE_EVENT2("media", "CdmAdapter::SetTimer", "delay_ms", delay_ms, "context",
+               context);
+
   task_runner_->PostDelayedTask(FROM_HERE,
                                 base::Bind(&CdmAdapter::TimerExpired,
                                            weak_factory_.GetWeakPtr(), context),
-                                base::TimeDelta::FromMilliseconds(delay_ms));
+                                delay);
 }
 
 void CdmAdapter::TimerExpired(void* context) {
+  DVLOG(3) << __func__ << ": context = " << context;
   DCHECK(task_runner_->BelongsToCurrentThread());
+  TRACE_EVENT1("media", "CdmAdapter::TimerExpired", "context", context);
+
   cdm_->TimerExpired(context);
 }
 
@@ -783,6 +821,10 @@ void CdmAdapter::OnChallengePlatformDone(
     const std::string& signed_data,
     const std::string& signed_data_signature,
     const std::string& platform_key_certificate) {
+  DVLOG(2) << __func__ << ": success = " << success;
+  TRACE_EVENT1("media", "CdmAdapter::OnChallengePlatformDone", "success",
+               success);
+
   cdm::PlatformChallengeResponse platform_challenge_response = {};
   if (success) {
     platform_challenge_response.signed_data =
@@ -802,6 +844,7 @@ void CdmAdapter::OnChallengePlatformDone(
 }
 
 void CdmAdapter::EnableOutputProtection(uint32_t desired_protection_mask) {
+  DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   helper_->EnableProtection(
@@ -828,6 +871,10 @@ void CdmAdapter::QueryOutputProtectionStatus() {
 void CdmAdapter::OnQueryOutputProtectionStatusDone(bool success,
                                                    uint32_t link_mask,
                                                    uint32_t protection_mask) {
+  DVLOG(2) << __func__ << ": success = " << success;
+  TRACE_EVENT1("media", "CdmAdapter::OnQueryOutputProtectionStatusDone",
+               "success", success);
+
   // The bit mask definition must be consistent between media::OutputProtection
   // and cdm::ContentDecryptionModule* interfaces. This is statically asserted
   // by ASSERT_ENUM_EQs above.
@@ -892,9 +939,9 @@ void CdmAdapter::ReportOutputProtectionQueryResult(uint32_t link_mask,
 
 void CdmAdapter::OnDeferredInitializationDone(cdm::StreamType stream_type,
                                               cdm::Status decoder_status) {
+  DVLOG(1) << __func__ << ": stream_type = " << stream_type
+           << ", decoder_status = " << decoder_status;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DVLOG_IF(1, decoder_status != cdm::kSuccess)
-      << __func__ << ": status = " << decoder_status;
 
   switch (stream_type) {
     case cdm::kStreamTypeAudio:
@@ -976,6 +1023,10 @@ cdm::CdmProxy* CdmAdapter::RequestCdmProxy(cdm::CdmProxyClient* client) {
 
 void CdmAdapter::OnStorageIdObtained(uint32_t version,
                                      const std::vector<uint8_t>& storage_id) {
+  DVLOG(2) << __func__ << ": version = " << version;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  TRACE_EVENT1("media", "CdmAdapter::OnStorageIdObtained", "version", version);
+
   cdm_->OnStorageId(version, storage_id.data(), storage_id.size());
 }
 

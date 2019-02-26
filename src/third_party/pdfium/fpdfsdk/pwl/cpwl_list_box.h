@@ -38,7 +38,8 @@ class CPWL_List_Notify {
 
 class CPWL_ListBox : public CPWL_Wnd {
  public:
-  CPWL_ListBox();
+  CPWL_ListBox(const CreateParams& cp,
+               std::unique_ptr<PrivateData> pAttachedData);
   ~CPWL_ListBox() override;
 
   // CPWL_Wnd
@@ -92,10 +93,10 @@ class CPWL_ListBox : public CPWL_Wnd {
   void AttachFFLData(CFFL_FormFiller* pData) { m_pFormFiller = pData; }
 
  protected:
+  bool m_bMouseDown = false;
+  bool m_bHoverSel = false;
   std::unique_ptr<CPWL_ListCtrl> m_pList;
   std::unique_ptr<CPWL_List_Notify> m_pListNotify;
-  bool m_bMouseDown;
-  bool m_bHoverSel;
   UnownedPtr<IPWL_Filler_Notify> m_pFillerNotify;
 
  private:

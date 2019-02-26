@@ -8,8 +8,8 @@
 // DO NOT MODIFY!
 
 // clang-format off
-#ifndef V8ArrayBuffer_h
-#define V8ArrayBuffer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_V8_ARRAY_BUFFER_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_V8_ARRAY_BUFFER_H_
 
 #include "third_party/blink/renderer/bindings/core/v8/generated_code_helper.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits.h"
@@ -29,12 +29,12 @@ class V8ArrayBuffer {
  public:
   CORE_EXPORT static TestArrayBuffer* ToImpl(v8::Local<v8::Object> object);
   CORE_EXPORT static TestArrayBuffer* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
-  CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
-  static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount;
+  CORE_EXPORT static const WrapperTypeInfo wrapper_type_info;
+  static constexpr int kInternalFieldCount = kV8DefaultWrapperInternalFieldCount;
 
   // Callback functions
 
-  CORE_EXPORT static void byteLengthAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void ByteLengthAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 };
 
 template <>
@@ -50,4 +50,4 @@ struct V8TypeOf<TestArrayBuffer> {
 
 }  // namespace blink
 
-#endif  // V8ArrayBuffer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_V8_ARRAY_BUFFER_H_

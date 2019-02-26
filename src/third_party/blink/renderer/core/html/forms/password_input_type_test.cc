@@ -72,7 +72,8 @@ TEST(PasswordInputTypeTest, PasswordVisibilityEvent) {
   MockInsecureInputService mock_service(page_holder->GetFrame());
   page_holder->GetDocument().body()->SetInnerHTMLFromString(
       "<input type='password'>");
-  page_holder->GetDocument().View()->UpdateAllLifecyclePhases();
+  page_holder->GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
   blink::test::RunPendingTasks();
   EXPECT_TRUE(mock_service.PasswordFieldVisibleCalled());
 }
@@ -90,7 +91,8 @@ TEST(PasswordInputTypeTest, PasswordVisibilityEventInSecureContext) {
       SecureContextState::kSecure);
   page_holder->GetDocument().body()->SetInnerHTMLFromString(
       "<input type='password'>");
-  page_holder->GetDocument().View()->UpdateAllLifecyclePhases();
+  page_holder->GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
   // No message should have been sent from a secure context.
   blink::test::RunPendingTasks();
   EXPECT_FALSE(mock_service.PasswordFieldVisibleCalled());
@@ -104,7 +106,8 @@ TEST(PasswordInputTypeTest, InvisiblePasswordFieldBecomesVisible) {
   MockInsecureInputService mock_service(page_holder->GetFrame());
   page_holder->GetDocument().body()->SetInnerHTMLFromString(
       "<input type='password' style='display:none;'>");
-  page_holder->GetDocument().View()->UpdateAllLifecyclePhases();
+  page_holder->GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
   blink::test::RunPendingTasks();
   // The message should not be sent for a hidden password field.
   EXPECT_FALSE(mock_service.PasswordFieldVisibleCalled());
@@ -113,7 +116,8 @@ TEST(PasswordInputTypeTest, InvisiblePasswordFieldBecomesVisible) {
   HTMLInputElement* input =
       ToHTMLInputElement(page_holder->GetDocument().body()->firstChild());
   input->setAttribute("style", "", ASSERT_NO_EXCEPTION);
-  page_holder->GetDocument().View()->UpdateAllLifecyclePhases();
+  page_holder->GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
   blink::test::RunPendingTasks();
   EXPECT_TRUE(mock_service.PasswordFieldVisibleCalled());
 }
@@ -126,7 +130,8 @@ TEST(PasswordInputTypeTest, NonPasswordFieldBecomesPassword) {
   MockInsecureInputService mock_service(page_holder->GetFrame());
   page_holder->GetDocument().body()->SetInnerHTMLFromString(
       "<input type='text'>");
-  page_holder->GetDocument().View()->UpdateAllLifecyclePhases();
+  page_holder->GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
   // The message should not be sent for a non-password field.
   blink::test::RunPendingTasks();
   EXPECT_FALSE(mock_service.PasswordFieldVisibleCalled());
@@ -135,7 +140,8 @@ TEST(PasswordInputTypeTest, NonPasswordFieldBecomesPassword) {
   HTMLInputElement* input =
       ToHTMLInputElement(page_holder->GetDocument().body()->firstChild());
   input->setType("password");
-  page_holder->GetDocument().View()->UpdateAllLifecyclePhases();
+  page_holder->GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
   blink::test::RunPendingTasks();
   EXPECT_TRUE(mock_service.PasswordFieldVisibleCalled());
 }
@@ -149,7 +155,8 @@ TEST(PasswordInputTypeTest,
   MockInsecureInputService mock_service(page_holder->GetFrame());
   page_holder->GetDocument().body()->SetInnerHTMLFromString(
       "<input type='password' style='display:none;'>");
-  page_holder->GetDocument().View()->UpdateAllLifecyclePhases();
+  page_holder->GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
   blink::test::RunPendingTasks();
   // The message should not be sent for a hidden password field.
   EXPECT_FALSE(mock_service.PasswordFieldVisibleCalled());
@@ -159,7 +166,8 @@ TEST(PasswordInputTypeTest,
       ToHTMLInputElement(page_holder->GetDocument().body()->firstChild());
   input->setType("text");
   input->setAttribute("style", "", ASSERT_NO_EXCEPTION);
-  page_holder->GetDocument().View()->UpdateAllLifecyclePhases();
+  page_holder->GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
   blink::test::RunPendingTasks();
   EXPECT_FALSE(mock_service.PasswordFieldVisibleCalled());
 }
@@ -172,7 +180,8 @@ TEST(PasswordInputTypeTest, VisiblePasswordFieldBecomesInvisible) {
   MockInsecureInputService mock_service(page_holder->GetFrame());
   page_holder->GetDocument().body()->SetInnerHTMLFromString(
       "<input type='password'>");
-  page_holder->GetDocument().View()->UpdateAllLifecyclePhases();
+  page_holder->GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
   blink::test::RunPendingTasks();
   EXPECT_TRUE(mock_service.PasswordFieldVisibleCalled());
   EXPECT_EQ(0u, mock_service.NumPasswordFieldsInvisibleCalls());
@@ -181,7 +190,8 @@ TEST(PasswordInputTypeTest, VisiblePasswordFieldBecomesInvisible) {
   HTMLInputElement* input =
       ToHTMLInputElement(page_holder->GetDocument().body()->firstChild());
   input->setAttribute("style", "display:none;", ASSERT_NO_EXCEPTION);
-  page_holder->GetDocument().View()->UpdateAllLifecyclePhases();
+  page_holder->GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
   blink::test::RunPendingTasks();
   EXPECT_EQ(1u, mock_service.NumPasswordFieldsInvisibleCalls());
 }
@@ -194,7 +204,8 @@ TEST(PasswordInputTypeTest, AllVisiblePasswordFieldBecomeInvisible) {
   MockInsecureInputService mock_service(page_holder->GetFrame());
   page_holder->GetDocument().body()->SetInnerHTMLFromString(
       "<input type='password'><input type='password'>");
-  page_holder->GetDocument().View()->UpdateAllLifecyclePhases();
+  page_holder->GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
   blink::test::RunPendingTasks();
   EXPECT_EQ(0u, mock_service.NumPasswordFieldsInvisibleCalls());
 
@@ -203,25 +214,29 @@ TEST(PasswordInputTypeTest, AllVisiblePasswordFieldBecomeInvisible) {
   HTMLInputElement* input =
       ToHTMLInputElement(page_holder->GetDocument().body()->firstChild());
   input->setAttribute("style", "display:none;", ASSERT_NO_EXCEPTION);
-  page_holder->GetDocument().View()->UpdateAllLifecyclePhases();
+  page_holder->GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
   blink::test::RunPendingTasks();
   EXPECT_EQ(0u, mock_service.NumPasswordFieldsInvisibleCalls());
 
   // When all inputs are invisible, then a message should be sent.
   input = ToHTMLInputElement(page_holder->GetDocument().body()->lastChild());
   input->setAttribute("style", "display:none;", ASSERT_NO_EXCEPTION);
-  page_holder->GetDocument().View()->UpdateAllLifecyclePhases();
+  page_holder->GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
   blink::test::RunPendingTasks();
   EXPECT_EQ(1u, mock_service.NumPasswordFieldsInvisibleCalls());
 
   // If the count of visible inputs goes positive again and then back to
   // zero, a message should be sent again.
   input->setAttribute("style", "", ASSERT_NO_EXCEPTION);
-  page_holder->GetDocument().View()->UpdateAllLifecyclePhases();
+  page_holder->GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
   blink::test::RunPendingTasks();
   EXPECT_EQ(1u, mock_service.NumPasswordFieldsInvisibleCalls());
   input->setAttribute("style", "display:none;", ASSERT_NO_EXCEPTION);
-  page_holder->GetDocument().View()->UpdateAllLifecyclePhases();
+  page_holder->GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
   blink::test::RunPendingTasks();
   EXPECT_EQ(2u, mock_service.NumPasswordFieldsInvisibleCalls());
 }
@@ -234,7 +249,8 @@ TEST(PasswordInputTypeTest, PasswordFieldContainerBecomesInvisible) {
   MockInsecureInputService mock_service(page_holder->GetFrame());
   page_holder->GetDocument().body()->SetInnerHTMLFromString(
       "<div><input type='password'></div>");
-  page_holder->GetDocument().View()->UpdateAllLifecyclePhases();
+  page_holder->GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
   blink::test::RunPendingTasks();
   EXPECT_EQ(0u, mock_service.NumPasswordFieldsInvisibleCalls());
 
@@ -242,18 +258,21 @@ TEST(PasswordInputTypeTest, PasswordFieldContainerBecomesInvisible) {
   HTMLElement* div =
       ToHTMLDivElement(page_holder->GetDocument().body()->firstChild());
   div->setAttribute("style", "display:none;", ASSERT_NO_EXCEPTION);
-  page_holder->GetDocument().View()->UpdateAllLifecyclePhases();
+  page_holder->GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
   blink::test::RunPendingTasks();
   EXPECT_EQ(1u, mock_service.NumPasswordFieldsInvisibleCalls());
 
   // If the containing div becomes visible and then invisible again, a message
   // should be sent.
   div->setAttribute("style", "", ASSERT_NO_EXCEPTION);
-  page_holder->GetDocument().View()->UpdateAllLifecyclePhases();
+  page_holder->GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
   blink::test::RunPendingTasks();
   EXPECT_EQ(1u, mock_service.NumPasswordFieldsInvisibleCalls());
   div->setAttribute("style", "display:none;", ASSERT_NO_EXCEPTION);
-  page_holder->GetDocument().View()->UpdateAllLifecyclePhases();
+  page_holder->GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
   blink::test::RunPendingTasks();
   EXPECT_EQ(2u, mock_service.NumPasswordFieldsInvisibleCalls());
 }
@@ -266,7 +285,8 @@ TEST(PasswordInputTypeTest, PasswordFieldsBecomeNonPasswordFields) {
   MockInsecureInputService mock_service(page_holder->GetFrame());
   page_holder->GetDocument().body()->SetInnerHTMLFromString(
       "<input type='password'><input type='password'>");
-  page_holder->GetDocument().View()->UpdateAllLifecyclePhases();
+  page_holder->GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
   blink::test::RunPendingTasks();
   EXPECT_EQ(0u, mock_service.NumPasswordFieldsInvisibleCalls());
 
@@ -275,14 +295,16 @@ TEST(PasswordInputTypeTest, PasswordFieldsBecomeNonPasswordFields) {
   HTMLInputElement* input =
       ToHTMLInputElement(page_holder->GetDocument().body()->firstChild());
   input->setType("text");
-  page_holder->GetDocument().View()->UpdateAllLifecyclePhases();
+  page_holder->GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
   blink::test::RunPendingTasks();
   EXPECT_EQ(0u, mock_service.NumPasswordFieldsInvisibleCalls());
 
   // When all inputs are no longer passwords, then a message should be sent.
   input = ToHTMLInputElement(page_holder->GetDocument().body()->lastChild());
   input->setType("text");
-  page_holder->GetDocument().View()->UpdateAllLifecyclePhases();
+  page_holder->GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
   blink::test::RunPendingTasks();
   EXPECT_EQ(1u, mock_service.NumPasswordFieldsInvisibleCalls());
 }
@@ -295,12 +317,14 @@ TEST(PasswordInputTypeTest, MultipleEventsInSameTask) {
   MockInsecureInputService mock_service(page_holder->GetFrame());
   page_holder->GetDocument().body()->SetInnerHTMLFromString(
       "<input type='password'>");
-  page_holder->GetDocument().View()->UpdateAllLifecyclePhases();
+  page_holder->GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
   // Make the password field invisible in the same task.
   HTMLInputElement* input =
       ToHTMLInputElement(page_holder->GetDocument().body()->firstChild());
   input->setType("text");
-  page_holder->GetDocument().View()->UpdateAllLifecyclePhases();
+  page_holder->GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
   blink::test::RunPendingTasks();
   // Only a single Mojo message should have been sent, with the latest state of
   // the page (which is that no password fields are visible).
@@ -316,7 +340,8 @@ TEST(PasswordInputTypeTest, DidEditFieldEvent) {
   MockInsecureInputService mock_service(page_holder->GetFrame());
   page_holder->GetDocument().body()->SetInnerHTMLFromString(
       "<input type='password'>");
-  page_holder->GetDocument().View()->UpdateAllLifecyclePhases();
+  page_holder->GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
   blink::test::RunPendingTasks();
   EXPECT_EQ(0u, mock_service.DidEditFieldCalls());
   // Simulate a text field edit.
@@ -342,7 +367,8 @@ TEST(PasswordInputTypeTest, DidEditFieldEventNotSentFromSecureContext) {
       SecureContextState::kSecure);
   page_holder->GetDocument().body()->SetInnerHTMLFromString(
       "<input type='password'>");
-  page_holder->GetDocument().View()->UpdateAllLifecyclePhases();
+  page_holder->GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
   // Simulate a text field edit.
   page_holder->GetDocument().MaybeQueueSendDidEditFieldInInsecureContext();
   // No message should have been sent from a secure context.

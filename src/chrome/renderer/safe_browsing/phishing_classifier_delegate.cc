@@ -12,6 +12,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "chrome/renderer/safe_browsing/feature_extractor_clock.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier.h"
 #include "chrome/renderer/safe_browsing/scorer.h"
@@ -30,18 +31,23 @@ using content::RenderThread;
 
 namespace safe_browsing {
 
-static GURL StripRef(const GURL& url) {
+namespace {
+
+GURL StripRef(const GURL& url) {
   GURL::Replacements replacements;
   replacements.ClearRef();
   return url.ReplaceComponents(replacements);
 }
 
-typedef std::set<PhishingClassifierDelegate*> PhishingClassifierDelegates;
-static base::LazyInstance<PhishingClassifierDelegates>::DestructorAtExit
-    g_delegates = LAZY_INSTANCE_INITIALIZER;
+std::set<PhishingClassifierDelegate*>& PhishingClassifierDelegates() {
+  static base::NoDestructor<std::set<PhishingClassifierDelegate*>> s;
+  return *s;
+}
 
-static base::LazyInstance<std::unique_ptr<const safe_browsing::Scorer>>::
+base::LazyInstance<std::unique_ptr<const safe_browsing::Scorer>>::
     DestructorAtExit g_phishing_scorer = LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
 
 // static
 void PhishingClassifierFilter::Create(
@@ -65,10 +71,8 @@ void PhishingClassifierFilter::SetPhishingModel(const std::string& model) {
       return;
     }
   }
-  PhishingClassifierDelegates::iterator i;
-  for (i = g_delegates.Get().begin(); i != g_delegates.Get().end(); ++i) {
-    (*i)->SetPhishingScorer(scorer);
-  }
+  for (auto* delegate : PhishingClassifierDelegates())
+    delegate->SetPhishingScorer(scorer);
   g_phishing_scorer.Get().reset(scorer);
 }
 
@@ -88,7 +92,7 @@ PhishingClassifierDelegate::PhishingClassifierDelegate(
       last_main_frame_transition_(ui::PAGE_TRANSITION_LINK),
       have_page_text_(false),
       is_classifying_(false) {
-  g_delegates.Get().insert(this);
+  PhishingClassifierDelegates().insert(this);
   if (!classifier) {
     classifier =
         new PhishingClassifier(render_frame, new FeatureExtractorClock());
@@ -106,7 +110,7 @@ PhishingClassifierDelegate::PhishingClassifierDelegate(
 
 PhishingClassifierDelegate::~PhishingClassifierDelegate() {
   CancelPendingClassification(SHUTDOWN);
-  g_delegates.Get().erase(this);
+  PhishingClassifierDelegates().erase(this);
 }
 
 void PhishingClassifierDelegate::SetPhishingScorer(

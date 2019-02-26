@@ -34,8 +34,8 @@ include_rules = [
     "+base/strings/string_util.h",
     "+base/strings/stringprintf.h",
     "+base/synchronization/waitable_event.h",
-    "+base/sys_info.h",
     "+base/android/sys_utils.h",
+    "+base/system/sys_info.h",
     "+base/task/sequence_manager/task_time_observer.h",
     "+base/test",
     "+base/test/fuzzed_data_provider.h",
@@ -56,7 +56,6 @@ include_rules = [
     "+mozilla",
     "+services/metrics/public/cpp/ukm_entry_builder.h",
     "+services/metrics/public/cpp/ukm_recorder.h",
-    "+services/network/public/mojom/data_pipe_getter.mojom-blink.h",
     "+services/viz/public/interfaces/compositing/compositor_frame_sink.mojom-blink.h",
     "+skia/ext",
     #TODO(nverne): remove this
@@ -80,5 +79,9 @@ specific_include_rules = {
     ],
     "ukm_time_aggregator_test.cc" : [
         "+components/ukm/test_ukm_recorder.h"
+    ],
+    "data_resource_helper.cc" : [
+        "+third_party/zlib/google/compression_utils.h",
+        "+ui/base/resource",
     ],
 }

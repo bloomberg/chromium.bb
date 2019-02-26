@@ -26,7 +26,13 @@ namespace blink {
 class CSSGridAutoRepeatValue : public CSSValueList {
  public:
   static CSSGridAutoRepeatValue* Create(CSSValueID id) {
-    return new CSSGridAutoRepeatValue(id);
+    return MakeGarbageCollected<CSSGridAutoRepeatValue>(id);
+  }
+
+  CSSGridAutoRepeatValue(CSSValueID id)
+      : CSSValueList(kGridAutoRepeatClass, kSpaceSeparator),
+        auto_repeat_id_(id) {
+    DCHECK(id == CSSValueAutoFill || id == CSSValueAutoFit);
   }
 
   String CustomCSSText() const;
@@ -37,12 +43,6 @@ class CSSGridAutoRepeatValue : public CSSValueList {
   }
 
  private:
-  CSSGridAutoRepeatValue(CSSValueID id)
-      : CSSValueList(kGridAutoRepeatClass, kSpaceSeparator),
-        auto_repeat_id_(id) {
-    DCHECK(id == CSSValueAutoFill || id == CSSValueAutoFit);
-  }
-
   const CSSValueID auto_repeat_id_;
 };
 

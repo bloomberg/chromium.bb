@@ -87,25 +87,44 @@ class CORE_EXPORT Event : public ScriptWrappable {
     kPassiveDefault,
   };
 
-  static Event* Create() { return new Event; }
+  static Event* Create() { return MakeGarbageCollected<Event>(); }
 
   static Event* Create(const AtomicString& type) {
-    return new Event(type, Bubbles::kNo, Cancelable::kNo);
+    return MakeGarbageCollected<Event>(type, Bubbles::kNo, Cancelable::kNo);
   }
   static Event* CreateCancelable(const AtomicString& type) {
-    return new Event(type, Bubbles::kNo, Cancelable::kYes);
+    return MakeGarbageCollected<Event>(type, Bubbles::kNo, Cancelable::kYes);
   }
   static Event* CreateBubble(const AtomicString& type) {
-    return new Event(type, Bubbles::kYes, Cancelable::kNo);
+    return MakeGarbageCollected<Event>(type, Bubbles::kYes, Cancelable::kNo);
   }
   static Event* CreateCancelableBubble(const AtomicString& type) {
-    return new Event(type, Bubbles::kYes, Cancelable::kYes);
+    return MakeGarbageCollected<Event>(type, Bubbles::kYes, Cancelable::kYes);
   }
 
-  static Event* Create(const AtomicString& type, const EventInit& initializer) {
-    return new Event(type, initializer);
+  static Event* Create(const AtomicString& type, const EventInit* initializer) {
+    return MakeGarbageCollected<Event>(type, initializer);
   }
 
+  Event();
+  Event(const AtomicString& type,
+        Bubbles,
+        Cancelable,
+        ComposedMode,
+        TimeTicks platform_time_stamp);
+  Event(const AtomicString& type,
+        Bubbles,
+        Cancelable,
+        TimeTicks platform_time_stamp);
+  Event(const AtomicString& type,
+        Bubbles,
+        Cancelable,
+        ComposedMode = ComposedMode::kScoped);
+  Event(const AtomicString& type,
+        const EventInit*,
+        TimeTicks platform_time_stamp);
+  Event(const AtomicString& type, const EventInit* init)
+      : Event(type, init, CurrentTimeTicks()) {}
   ~Event() override;
 
   void initEvent(const AtomicString& type, bool bubbles, bool cancelable);
@@ -294,26 +313,6 @@ class CORE_EXPORT Event : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  protected:
-  Event();
-  Event(const AtomicString& type,
-        Bubbles,
-        Cancelable,
-        ComposedMode,
-        TimeTicks platform_time_stamp);
-  Event(const AtomicString& type,
-        Bubbles,
-        Cancelable,
-        TimeTicks platform_time_stamp);
-  Event(const AtomicString& type,
-        Bubbles,
-        Cancelable,
-        ComposedMode = ComposedMode::kScoped);
-  Event(const AtomicString& type,
-        const EventInit&,
-        TimeTicks platform_time_stamp);
-  Event(const AtomicString& type, const EventInit& init)
-      : Event(type, init, CurrentTimeTicks()) {}
-
   virtual void ReceivedTarget();
 
   void SetBubbles(bool bubble) { bubbles_ = bubble; }

@@ -17,10 +17,6 @@ void StubLayerTreeViewDelegate::RequestNewLayerTreeFrameSink(
   std::move(callback).Run(nullptr);
 }
 
-bool StubLayerTreeViewDelegate::IsClosing() const {
-  return false;
-}
-
 std::unique_ptr<cc::SwapPromise>
 StubLayerTreeViewDelegate::RequestCopyOfOutputForLayoutTest(
     std::unique_ptr<viz::CopyOutputRequest> request) {

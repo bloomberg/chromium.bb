@@ -47,14 +47,17 @@ class CORE_EXPORT WorkerClients final : public GarbageCollected<WorkerClients>,
   USING_GARBAGE_COLLECTED_MIXIN(WorkerClients);
 
  public:
-  static WorkerClients* Create() { return new WorkerClients; }
+  static WorkerClients* Create() {
+    return MakeGarbageCollected<WorkerClients>();
+  }
+
+  WorkerClients() = default;
 
   void Trace(blink::Visitor* visitor) override {
     Supplementable<WorkerClients>::Trace(visitor);
   }
 
  private:
-  WorkerClients() = default;
   DISALLOW_COPY_AND_ASSIGN(WorkerClients);
 };
 

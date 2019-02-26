@@ -75,8 +75,24 @@ def GetExpectedFailures():
                               for m in methods])
   return expected_failures
 
+def GetTestRunFilterArg(test_run, skip_expected_failures):
+  skips = []
+  if skip_expected_failures:
+    skips = GetExpectedFailures()
 
-def RunCTS(test_runner_args, local_cts_dir, apk, test_filter,
+  excludes = test_run.get("excludes", [])
+  includes = test_run.get("includes", [])
+  assert len(excludes) == 0 or len(includes) == 0, \
+         "test_runs error, can't have both includes and excludes: %s" % test_run
+  if len(includes) > 0:
+    return ['-f=' + ':'.join([i["match"] for i in includes])]
+  else:
+    skips.extend([i["match"] for i in excludes])
+    if len(skips) > 0:
+      return ['-f=' + "-" + ':'.join(skips)]
+    return []
+
+def RunCTS(test_runner_args, local_cts_dir, test_run,
            skip_expected_failures=True, json_results_file=None):
   """Run tests in apk using test_runner script at _TEST_RUNNER_PATH.
 
@@ -85,20 +101,22 @@ def RunCTS(test_runner_args, local_cts_dir, apk, test_filter,
   is set to False, test results will be stored in
   the json_results_file file if specified
   """
+
+  apk = test_run['apk']
+
   local_test_runner_args = test_runner_args + ['--test-apk',
                                                os.path.join(local_cts_dir, apk)]
 
   # TODO(mikecase): This doesn't work at all with the
   # --gtest-filter test runner option currently. The
   # filter options will just override eachother.
-  if skip_expected_failures:
-    local_test_runner_args += ['-f=-%s' % ':'.join(GetExpectedFailures())]
   # The preferred method is to specify test filters per release in
   # the CTS_GCS path file.  It will override any
   # previous filters, including ones in expected failures
   # file.
-  if test_filter:
-    local_test_runner_args += ['-f=' + test_filter]
+  local_test_runner_args.extend(GetTestRunFilterArg(test_run,
+                                                    skip_expected_failures))
+
   if json_results_file:
     local_test_runner_args += ['--json-results-file=%s' %
                                json_results_file]
@@ -150,7 +168,9 @@ def ExtractCTSZip(args):
 
   cts_zip_path = os.path.join(_CTS_ARCHIVE_DIR, relative_cts_zip_path)
   local_cts_dir = os.path.join(base_cts_dir,
-                               GetCtsInfo(args.arch, args.platform, 'apkdir'))
+                               GetCtsInfo(args.arch, args.platform,
+                                          'unzip_dir')
+                              )
   zf = zipfile.ZipFile(cts_zip_path, 'r')
   zf.extractall(local_cts_dir)
   return (local_cts_dir, base_cts_dir, delete_cts_dir)
@@ -170,26 +190,25 @@ def RunAllCTSTests(args, test_runner_args):
   cts_result = 0
   json_results_file = args.json_results_file
   try:
-    cts_tests_info = GetCtsInfo(args.arch, args.platform, 'tests')
+    cts_test_runs = GetCtsInfo(args.arch, args.platform, 'test_runs')
     cts_results_json = {}
-    for cts_tests_item in cts_tests_info:
-      for relative_apk_path, test_filter in cts_tests_item.iteritems():
-        iteration_cts_result = 0
-        if json_results_file:
-          with tempfile.NamedTemporaryFile() as iteration_json_file:
-            iteration_cts_result = RunCTS(test_runner_args, local_cts_dir,
-                                          relative_apk_path, test_filter,
-                                          args.skip_expected_failures,
-                                          iteration_json_file.name)
-            with open(iteration_json_file.name) as f:
-              additional_results_json = json.load(f)
-              MergeTestResults(cts_results_json, additional_results_json)
-        else:
+    for cts_test_run in cts_test_runs:
+      iteration_cts_result = 0
+      if json_results_file:
+        with tempfile.NamedTemporaryFile() as iteration_json_file:
           iteration_cts_result = RunCTS(test_runner_args, local_cts_dir,
-                                        relative_apk_path, test_filter,
-                                        args.skip_expected_failures)
-        if iteration_cts_result:
-          cts_result = iteration_cts_result
+                                        cts_test_run,
+                                        args.skip_expected_failures,
+                                        iteration_json_file.name)
+          with open(iteration_json_file.name) as f:
+            additional_results_json = json.load(f)
+            MergeTestResults(cts_results_json, additional_results_json)
+      else:
+        iteration_cts_result = RunCTS(test_runner_args, local_cts_dir,
+                                      cts_test_run,
+                                      args.skip_expected_failures)
+      if iteration_cts_result:
+        cts_result = iteration_cts_result
     if json_results_file:
       with open(json_results_file, 'w') as f:
         json.dump(cts_results_json, f, indent=2)

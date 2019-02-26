@@ -30,9 +30,6 @@ class MockFileSystem(object):
   def sep(self):
     return self._sep
 
-  def _split(self, path):
-    return path.rsplit(self.sep, 1)
-
   def abspath(self, path):
     if path.endswith(self.sep):
       return path[:-1]
@@ -41,12 +38,12 @@ class MockFileSystem(object):
   def basename(self, path):
     if self.sep not in path:
       return ''
-    return self._split(path)[-1] or self.sep
+    return self.split(path)[-1] or self.sep
 
   def dirname(self, path):
     if self.sep not in path:
       return ''
-    return self._split(path)[0] or self.sep
+    return self.split(path)[0] or self.sep
 
   def exists(self, path):
     return self.isfile(path) or self.isdir(path)
@@ -92,3 +89,6 @@ class MockFileSystem(object):
       base += self.sep
     assert path.startswith(base)
     return path[len(base):]
+
+  def split(self, path):
+    return path.rsplit(self.sep, 1)

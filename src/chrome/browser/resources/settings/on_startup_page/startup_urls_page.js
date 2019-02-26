@@ -29,6 +29,9 @@ Polymer({
 
     /** @private {Object}*/
     lastFocused_: Object,
+
+    /** @private */
+    listBlurred_: Boolean,
   },
 
   /** @private {?settings.StartupUrlsPageBrowserProxy} */

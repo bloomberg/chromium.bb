@@ -104,6 +104,9 @@ struct StructTraits<ws::mojom::ImeTextSpanDataView, ui::ImeTextSpan> {
   static uint32_t suggestion_highlight_color(const ui::ImeTextSpan& c) {
     return c.suggestion_highlight_color;
   }
+  static bool remove_on_finish_composing(const ui::ImeTextSpan& c) {
+    return c.remove_on_finish_composing;
+  }
   static std::vector<std::string> suggestions(const ui::ImeTextSpan& c) {
     return c.suggestions;
   }

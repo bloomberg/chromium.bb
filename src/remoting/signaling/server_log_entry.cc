@@ -5,7 +5,7 @@
 #include "remoting/signaling/server_log_entry.h"
 
 #include "base/logging.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "remoting/base/constants.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 

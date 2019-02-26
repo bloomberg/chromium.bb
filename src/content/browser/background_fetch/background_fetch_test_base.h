@@ -51,7 +51,7 @@ class BackgroundFetchTestBase : public ::testing::Test {
 
   // Creates a ServiceWorkerFetchRequest instance for the given details and
   // provides a faked |response|.
-  ServiceWorkerFetchRequest CreateRequestWithProvidedResponse(
+  blink::mojom::FetchAPIRequestPtr CreateRequestWithProvidedResponse(
       const std::string& method,
       const GURL& url,
       std::unique_ptr<TestResponse> response);

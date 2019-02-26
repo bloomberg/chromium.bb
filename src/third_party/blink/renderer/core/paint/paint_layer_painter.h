@@ -13,6 +13,7 @@
 
 namespace blink {
 
+class CullRect;
 class ClipRect;
 class ComputedStyle;
 class DisplayItemClient;
@@ -30,11 +31,11 @@ class CORE_EXPORT PaintLayerPainter {
  public:
   PaintLayerPainter(PaintLayer& paint_layer) : paint_layer_(paint_layer) {}
 
-  // The Paint() method paints the layers that intersect the damage rect from
+  // The Paint() method paints the layers that intersect the cull rect from
   // back to front.  paint() assumes that the caller will clip to the bounds of
   // damageRect if necessary.
   void Paint(GraphicsContext&,
-             const LayoutRect& damage_rect,
+             const CullRect&,
              const GlobalPaintFlags = kGlobalPaintNormalPhase,
              PaintLayerFlags = 0);
   // Paint() assumes that the caller will clip to the bounds of the painting
@@ -49,7 +50,7 @@ class CORE_EXPORT PaintLayerPainter {
                                  PaintLayerFlags);
 
   void PaintOverlayScrollbars(GraphicsContext&,
-                              const LayoutRect& damage_rect,
+                              const CullRect&,
                               const GlobalPaintFlags);
 
   // Returns true if the painted output of this PaintLayer and its children is

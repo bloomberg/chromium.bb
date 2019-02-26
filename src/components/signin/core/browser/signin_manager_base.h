@@ -44,10 +44,6 @@ class PrefService;
 class SigninClient;
 class SigninErrorController;
 
-namespace password_manager {
-class PasswordStoreSigninNotifierImpl;
-}
-
 class SigninManagerBase : public KeyedService {
  public:
   class Observer {
@@ -59,30 +55,6 @@ class SigninManagerBase : public KeyedService {
     // This method is not called during a reauth.
     virtual void GoogleSigninSucceeded(const AccountInfo& account_info) {}
 
-    // DEPRECATED: Use the above method instead.
-    virtual void GoogleSigninSucceeded(const std::string& account_id,
-                                       const std::string& username) {}
-
-    // Called when the currently signed-in user for a user has been signed out.
-    virtual void GoogleSignedOut(const AccountInfo& account_info) {}
-
-    // DEPRECATED: Use the above method instead.
-    virtual void GoogleSignedOut(const std::string& account_id,
-                                 const std::string& username) {}
-
-   protected:
-    virtual ~Observer() {}
-
-   private:
-    // Observers that can observer the password of the Google account after a
-    // successful sign-in.
-    friend class PasswordStoreSigninNotifierImpl;
-
-    // SigninManagers that fire |GoogleSigninSucceededWithPassword|
-    // notifications.
-    friend class SigninManager;
-    friend class FakeSigninManager;
-
     // Called when a user signs into Google services such as sync. Also passes
     // the password of the Google account that was used to sign in.
     // This method is not called during a reauth.
@@ -93,10 +65,23 @@ class SigninManagerBase : public KeyedService {
     // Note: The password is always empty on mobile as the user signs in to
     // Chrome with accounts that were added to the device, so Chrome does not
     // have access to the password.
+    // DEPRECATED: password will be empty if login is using DICE workflow; the
+    // method will be removed once all login is using the DICE workflow.
     virtual void GoogleSigninSucceededWithPassword(
-        const std::string& account_id,
-        const std::string& username,
+        const AccountInfo& account_info,
         const std::string& password) {}
+
+    // Called when the currently signed-in user for a user has been signed out.
+    virtual void GoogleSignedOut(const AccountInfo& account_info) {}
+
+   protected:
+    virtual ~Observer() {}
+
+   private:
+    // SigninManagers that fire |GoogleSigninSucceededWithPassword|
+    // notifications.
+    friend class SigninManager;
+    friend class FakeSigninManager;
   };
 
 // On non-ChromeOS platforms, SigninManagerBase should only be instantiated
@@ -129,11 +114,9 @@ class SigninManagerBase : public KeyedService {
   bool IsInitialized() const;
 
   // Returns true if a signin to Chrome is allowed (by policy or pref).
-  // TODO(tim): kSigninAllowed is defined for all platforms in pref_names.h.
-  // If kSigninAllowed pref was non-Chrome OS-only, this method wouldn't be
-  // needed, but as is we provide this method to let all interested code
-  // code query the value in one way, versus half using PrefService directly
-  // and the other half using SigninManager.
+  // TODO(crbug.com/806778): this method should not be used externally,
+  // instead the value of the kSigninAllowed preference should be checked.
+  // Once all external code has been modified, this method will be removed.
   virtual bool IsSigninAllowed() const;
 
   // If a user has previously signed in (and has not signed out), this returns

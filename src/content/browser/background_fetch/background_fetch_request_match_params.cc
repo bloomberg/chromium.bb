@@ -7,7 +7,7 @@
 namespace content {
 
 BackgroundFetchRequestMatchParams::BackgroundFetchRequestMatchParams(
-    base::Optional<ServiceWorkerFetchRequest> request_to_match,
+    blink::mojom::FetchAPIRequestPtr request_to_match,
     blink::mojom::QueryParamsPtr cache_query_params,
     bool match_all)
     : request_to_match_(std::move(request_to_match)),

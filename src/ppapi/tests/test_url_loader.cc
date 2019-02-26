@@ -852,7 +852,7 @@ std::string TestURLLoader::TestUntendedLoad() {
     loader.GetDownloadProgress(&bytes_received, &total_bytes_to_be_received);
     if (total_bytes_to_be_received <= 0)
       return ReportError("URLLoader::GetDownloadProgress total size",
-          total_bytes_to_be_received);
+                         static_cast<int32_t>(total_bytes_to_be_received));
     if (bytes_received == total_bytes_to_be_received)
       break;
     // Yield if we're on the main thread, so that URLLoader can receive more

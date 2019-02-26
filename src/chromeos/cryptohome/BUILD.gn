@@ -9,6 +9,7 @@ import("//third_party/protobuf/proto_library.gni")
 assert(is_chromeos, "Non-Chrome-OS builds must not depend on //chromeos")
 
 source_set("cryptohome") {
+  configs += [ "//chromeos:chromeos_implementation" ]
   deps = [
     "//base",
     "//chromeos:chromeos_export",
@@ -31,7 +32,6 @@ source_set("cryptohome") {
     "system_salt_getter.cc",
     "system_salt_getter.h",
   ]
-  defines = [ "CHROMEOS_IMPLEMENTATION" ]
 }
 
 source_set("unit_tests") {

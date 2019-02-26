@@ -41,15 +41,15 @@ RegisteredEventListener::RegisteredEventListener()
 
 RegisteredEventListener::RegisteredEventListener(
     EventListener* listener,
-    const AddEventListenerOptionsResolved& options)
+    const AddEventListenerOptionsResolved* options)
     : callback_(listener),
-      use_capture_(options.capture()),
-      passive_(options.passive()),
-      once_(options.once()),
+      use_capture_(options->capture()),
+      passive_(options->passive()),
+      once_(options->once()),
       blocked_event_warning_emitted_(false),
       passive_forced_for_document_target_(
-          options.PassiveForcedForDocumentTarget()),
-      passive_specified_(options.PassiveSpecified()) {}
+          options->PassiveForcedForDocumentTarget()),
+      passive_specified_(options->PassiveSpecified()) {}
 
 RegisteredEventListener& RegisteredEventListener::operator=(
     const RegisteredEventListener& that) = default;
@@ -58,13 +58,15 @@ void RegisteredEventListener::Trace(Visitor* visitor) {
   visitor->Trace(callback_);
 }
 
-AddEventListenerOptionsResolved RegisteredEventListener::Options() const {
-  AddEventListenerOptionsResolved result;
-  result.setCapture(use_capture_);
-  result.setPassive(passive_);
-  result.SetPassiveForcedForDocumentTarget(passive_forced_for_document_target_);
-  result.setOnce(once_);
-  result.SetPassiveSpecified(passive_specified_);
+AddEventListenerOptionsResolved* RegisteredEventListener::Options() const {
+  AddEventListenerOptionsResolved* result =
+      AddEventListenerOptionsResolved::Create();
+  result->setCapture(use_capture_);
+  result->setPassive(passive_);
+  result->SetPassiveForcedForDocumentTarget(
+      passive_forced_for_document_target_);
+  result->setOnce(once_);
+  result->SetPassiveSpecified(passive_specified_);
   return result;
 }
 
@@ -74,12 +76,12 @@ void RegisteredEventListener::SetCallback(EventListener* listener) {
 
 bool RegisteredEventListener::Matches(
     const EventListener* listener,
-    const EventListenerOptions& options) const {
+    const EventListenerOptions* options) const {
   // Equality is soley based on the listener and useCapture flags.
   DCHECK(callback_);
   DCHECK(listener);
   return *callback_ == *listener &&
-         static_cast<bool>(use_capture_) == options.capture();
+         static_cast<bool>(use_capture_) == options->capture();
 }
 
 bool RegisteredEventListener::ShouldFire(const Event& event) const {

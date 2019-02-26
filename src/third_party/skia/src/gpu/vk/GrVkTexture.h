@@ -8,6 +8,8 @@
 #ifndef GrVkTexture_DEFINED
 #define GrVkTexture_DEFINED
 
+#include "GrVkVulkan.h"
+
 #include "GrTexture.h"
 #include "GrVkImage.h"
 
@@ -24,12 +26,14 @@ public:
                                              GrMipMapsStatus);
 
     static sk_sp<GrVkTexture> MakeWrappedTexture(GrVkGpu*, const GrSurfaceDesc&,
-                                                 GrWrapOwnership, const GrVkImageInfo&,
-                                                 sk_sp<GrVkImageLayout>);
+                                                 GrWrapOwnership, bool purgeImmediatley,
+                                                 const GrVkImageInfo&, sk_sp<GrVkImageLayout>);
 
     ~GrVkTexture() override;
 
     GrBackendTexture getBackendTexture() const override;
+
+    GrBackendFormat backendFormat() const override { return this->getBackendFormat(); }
 
     void textureParamsModified() override {}
 
@@ -62,7 +66,7 @@ private:
                 GrMipMapsStatus);
     GrVkTexture(GrVkGpu*, Wrapped, const GrSurfaceDesc&, const GrVkImageInfo&,
                 sk_sp<GrVkImageLayout> layout, const GrVkImageView* imageView, GrMipMapsStatus,
-                GrBackendObjectOwnership);
+                GrBackendObjectOwnership, bool purgeImmediately);
 
     const GrVkImageView*     fTextureView;
 

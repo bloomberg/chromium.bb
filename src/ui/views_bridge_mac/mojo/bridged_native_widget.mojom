@@ -9,11 +9,36 @@ import "ui/base/mojo/ui_base_types.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/ca_layer_params.mojom";
 
+// The window class (subclass of kNativeWidgetMacNSWindow) to use for a given
+// window.
+enum WindowClass {
+  // NativeWidgetMacNSWindow
+  kDefault,
+  // BrowserNativeWidgetWindow
+  kBrowser,
+  // NativeWidgetMacFramelessNSWindow
+  kFrameless,
+};
+
 // Parameters used to described creation of an NSWindow.
-// TODO(ccameron): Add additional members to support all window sub-classes.
 struct CreateWindowParams {
+  // The subclass of NativeWidgetMacNSWindow to use for this window.
+  WindowClass window_class;
+
   // The NSWindowStyleMask for the window.
   uint64 style_mask;
+
+  // Whether or not the titlebar should be forced to be transparent. If so, then
+  // the window is responsible for drawing its own titlebar. Note that the
+  // traffic lights will be drawn independent of this setting.
+  bool titlebar_appears_transparent;
+
+  // Whether or not to hide the default title drawn by the window. If so, then
+  // the window is responsible for drawing its own title.
+  bool window_title_hidden;
+
+  // Whether or not window animations should be initially enabled.
+  bool animation_enabled;
 };
 
 // Ways of changing the visibility of the bridged NSWindow.
@@ -110,6 +135,9 @@ interface BridgedNativeWidget {
   // descendant windows where necessary.
   SetVisibilityState(WindowVisibilityState new_state);
 
+  // Enables or disables all window animations.
+  SetAnimationEnabled(bool animation_enabled);
+
   // Sets which transitions will animate. Currently this only affects non-native
   // animations.
   SetTransitionsToAnimate(VisibilityTransition transitions);
@@ -156,4 +184,17 @@ interface BridgedNativeWidget {
   // CocoaMouseCaptureDelegate, then captures all mouse events until released.
   AcquireCapture();
   ReleaseCapture();
+
+  // Redispatch a keyboard event using the widget's window's CommandDispatcher.
+  // Note that the callers of this method use content::NativeWebKeyboardEvent,
+  // which would  introduce a layering violation here. Specify explicitly as
+  // arguments only what is used in constructing the |os_event| member of
+  // content::NativeWebKeyboardEvent, to avoid this layering violation.
+  RedispatchKeyEvent(
+      uint64 type,
+      uint64 modifier_flags,
+      double timestamp,
+      mojo_base.mojom.String16 characters,
+      mojo_base.mojom.String16 characters_ignoring_modifiers,
+      uint32 key_code);
 };

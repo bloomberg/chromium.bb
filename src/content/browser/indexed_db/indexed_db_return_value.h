@@ -18,6 +18,10 @@ namespace content {
 // database, so they are kept separately, and sent back with the original data
 // so that the render process can amend the returned object.
 struct CONTENT_EXPORT IndexedDBReturnValue : public IndexedDBValue {
+  // Destructively converts an IndexedDBReturnValue to a Mojo ReturnValue.
+  static blink::mojom::IDBReturnValuePtr ConvertReturnValue(
+      IndexedDBReturnValue* value);
+
   blink::IndexedDBKey
       primary_key;  // primary key (only when using key generator)
   blink::IndexedDBKeyPath key_path;

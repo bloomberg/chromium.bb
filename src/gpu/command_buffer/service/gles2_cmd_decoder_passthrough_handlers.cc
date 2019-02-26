@@ -4,6 +4,7 @@
 
 #include "gpu/command_buffer/service/gles2_cmd_decoder_passthrough.h"
 
+#include "gpu/command_buffer/common/discardable_handle.h"
 #include "ui/gfx/ipc/color/gfx_param_traits.h"
 
 namespace gpu {
@@ -304,8 +305,12 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetActiveUniformsiv(
   GLsizei uniformCount = static_cast<GLsizei>(bucket->size() / sizeof(GLuint));
   const GLuint* indices = bucket->GetDataAs<const GLuint*>(0, bucket->size());
   typedef cmds::GetActiveUniformsiv::Result Result;
-  Result* result = GetSharedMemoryAs<Result*>(
-      params_shm_id, params_shm_offset, Result::ComputeSize(uniformCount));
+  uint32_t checked_size = 0;
+  if (!Result::ComputeSize(uniformCount).AssignIfValid(&checked_size)) {
+    return error::kOutOfBounds;
+  }
+  Result* result = GetSharedMemoryAs<Result*>(params_shm_id, params_shm_offset,
+                                              checked_size);
   GLint* params = result ? result->GetData() : nullptr;
   if (params == nullptr) {
     return error::kOutOfBounds;
@@ -337,8 +342,12 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetAttachedShaders(
 
   typedef cmds::GetAttachedShaders::Result Result;
   uint32_t maxCount = Result::ComputeMaxResults(result_size);
+  uint32_t checked_size = 0;
+  if (!Result::ComputeSize(maxCount).AssignIfValid(&checked_size)) {
+    return error::kOutOfBounds;
+  }
   Result* result = GetSharedMemoryAs<Result*>(result_shm_id, result_shm_offset,
-                                              Result::ComputeSize(maxCount));
+                                              checked_size);
   if (!result) {
     return error::kOutOfBounds;
   }
@@ -759,9 +768,12 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetUniformIndices(
     return error::kInvalidArguments;
   }
   typedef cmds::GetUniformIndices::Result Result;
-  Result* result = GetSharedMemoryAs<Result*>(
-      indices_shm_id, indices_shm_offset,
-      Result::ComputeSize(static_cast<size_t>(count)));
+  uint32_t checked_size = 0;
+  if (!Result::ComputeSize(count).AssignIfValid(&checked_size)) {
+    return error::kOutOfBounds;
+  }
+  Result* result = GetSharedMemoryAs<Result*>(indices_shm_id,
+                                              indices_shm_offset, checked_size);
   GLuint* indices = result ? result->GetData() : nullptr;
   if (indices == nullptr) {
     return error::kOutOfBounds;
@@ -1841,9 +1853,11 @@ error::Error GLES2DecoderPassthroughImpl::HandleScheduleDCLayerCHROMIUM(
       reinterpret_cast<const volatile GLuint*>(mem + 8);
   const GLfloat* contents_rect = mem;
   const GLfloat* bounds_rect = mem + 4;
+  GLuint protected_video_type_param = c.protected_video_type;
+
   return DoScheduleDCLayerCHROMIUM(
       num_textures, contents_texture_ids, contents_rect, background_color,
-      edge_aa_mask, filter, bounds_rect, c.is_protected_video);
+      edge_aa_mask, filter, bounds_rect, protected_video_type_param);
 }
 
 error::Error GLES2DecoderPassthroughImpl::HandleSetColorSpaceMetadataCHROMIUM(
@@ -2789,20 +2803,46 @@ error::Error
 GLES2DecoderPassthroughImpl::HandleInitializeDiscardableTextureCHROMIUM(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  return error::kNoError;
+  const volatile gles2::cmds::InitializeDiscardableTextureCHROMIUM& c =
+      *static_cast<
+          const volatile gles2::cmds::InitializeDiscardableTextureCHROMIUM*>(
+          cmd_data);
+  GLuint texture_id = c.texture_id;
+  uint32_t shm_id = c.shm_id;
+  uint32_t shm_offset = c.shm_offset;
+
+  scoped_refptr<gpu::Buffer> buffer = GetSharedMemoryBuffer(shm_id);
+  if (!DiscardableHandleBase::ValidateParameters(buffer.get(), shm_offset)) {
+    return error::kInvalidArguments;
+  }
+
+  ServiceDiscardableHandle handle(std::move(buffer), shm_offset, shm_id);
+
+  return DoInitializeDiscardableTextureCHROMIUM(texture_id, std::move(handle));
 }
 
 error::Error
 GLES2DecoderPassthroughImpl::HandleUnlockDiscardableTextureCHROMIUM(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  return error::kNoError;
+  const volatile gles2::cmds::UnlockDiscardableTextureCHROMIUM& c =
+      *static_cast<
+          const volatile gles2::cmds::UnlockDiscardableTextureCHROMIUM*>(
+          cmd_data);
+  GLuint texture_id = c.texture_id;
+
+  return DoUnlockDiscardableTextureCHROMIUM(texture_id);
 }
 
 error::Error GLES2DecoderPassthroughImpl::HandleLockDiscardableTextureCHROMIUM(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  return error::kNoError;
+  const volatile gles2::cmds::LockDiscardableTextureCHROMIUM& c =
+      *static_cast<const volatile gles2::cmds::LockDiscardableTextureCHROMIUM*>(
+          cmd_data);
+  GLuint texture_id = c.texture_id;
+
+  return DoLockDiscardableTextureCHROMIUM(texture_id);
 }
 
 error::Error GLES2DecoderPassthroughImpl::HandleCreateGpuFenceINTERNAL(

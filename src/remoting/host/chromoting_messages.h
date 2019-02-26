@@ -14,6 +14,7 @@
 #include "remoting/host/chromoting_param_traits.h"
 #include "remoting/host/desktop_environment_options.h"
 #include "remoting/host/screen_resolution.h"
+#include "remoting/proto/action.pb.h"
 #include "remoting/proto/process_stats.pb.h"
 #include "remoting/protocol/errors.h"
 #include "remoting/protocol/transport.h"
@@ -182,6 +183,10 @@ IPC_MESSAGE_CONTROL2(ChromotingDesktopNetworkMsg_CaptureResult,
                      webrtc::DesktopCapturer::Result /* result */,
                      SerializedDesktopFrame /* frame */)
 
+// Notifies the network process that the host display layout has changed.
+IPC_MESSAGE_CONTROL1(ChromotingDesktopNetworkMsg_DisplayChanged,
+                     remoting::protocol::VideoLayout /* layout */)
+
 // Carries a cursor share update from the desktop session agent to the client.
 IPC_MESSAGE_CONTROL1(ChromotingDesktopNetworkMsg_MouseCursor,
                      webrtc::MouseCursor /* cursor */ )
@@ -243,6 +248,10 @@ IPC_MESSAGE_CONTROL1(ChromotingNetworkDesktopMsg_InjectTouchEvent,
 // Changes the screen resolution in the desktop session.
 IPC_MESSAGE_CONTROL1(ChromotingNetworkDesktopMsg_SetScreenResolution,
                      remoting::ScreenResolution /* resolution */)
+
+// Carries an action request event from the client to the desktop session agent.
+IPC_MESSAGE_CONTROL1(ChromotingNetworkDesktopMsg_ExecuteActionRequest,
+                     remoting::protocol::ActionRequest /* request */)
 
 //---------------------------------------------------------------------
 // Chromoting messages sent from the remote_security_key process to the

@@ -25,7 +25,8 @@ WebEncryptedMediaClient* MediaKeysController::EncryptedMediaClient(
 }
 
 void MediaKeysController::ProvideMediaKeysTo(Page& page) {
-  MediaKeysController::ProvideTo(page, new MediaKeysController());
+  MediaKeysController::ProvideTo(page,
+                                 MakeGarbageCollected<MediaKeysController>());
 }
 
 }  // namespace blink

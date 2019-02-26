@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/values.h"
 
 namespace sync_preferences {
 
@@ -25,6 +26,15 @@ class PrefModelAssociatorClient {
   // whose server value is merged with local value during synchronisation.
   virtual bool IsMergeableDictionaryPreference(
       const std::string& pref_name) const = 0;
+
+  // Returns the merged value if the client wants to apply a custom merging
+  // strategy to the preference named |pref_name| with local value |local_value|
+  // and server-provided value |server_value|. Otherwise, returns |nullptr| and
+  // the server's value will be chosen.
+  virtual std::unique_ptr<base::Value> MaybeMergePreferenceValues(
+      const std::string& pref_name,
+      const base::Value& local_value,
+      const base::Value& server_value) const = 0;
 
  protected:
   PrefModelAssociatorClient() {}

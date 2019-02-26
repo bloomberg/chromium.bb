@@ -96,9 +96,13 @@ TEST_F(SurfaceAggregatorPixelTest, DrawSimpleFrame) {
   auto root_frame =
       CompositorFrameBuilder().AddRenderPass(std::move(pass)).Build();
 
-  SurfaceId root_surface_id(support_->frame_sink_id(), allocator_.GenerateId());
-  support_->SubmitCompositorFrame(allocator_.GetCurrentLocalSurfaceId(),
-                                  std::move(root_frame));
+  allocator_.GenerateId();
+  SurfaceId root_surface_id(
+      support_->frame_sink_id(),
+      allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id());
+  support_->SubmitCompositorFrame(
+      allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id(),
+      std::move(root_frame));
 
   SurfaceAggregator aggregator(manager_.surface_manager(),
                                resource_provider_.get(), true);
@@ -120,10 +124,14 @@ TEST_F(SurfaceAggregatorPixelTest, DrawSimpleAggregatedFrame) {
       nullptr, &manager_, kArbitraryChildFrameSinkId, kIsChildRoot,
       kNeedsSyncPoints);
 
-  LocalSurfaceId child_local_surface_id = allocator_.GenerateId();
+  allocator_.GenerateId();
+  LocalSurfaceId child_local_surface_id =
+      allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
   SurfaceId child_surface_id(child_support->frame_sink_id(),
                              child_local_surface_id);
-  LocalSurfaceId root_local_surface_id = allocator_.GenerateId();
+  allocator_.GenerateId();
+  LocalSurfaceId root_local_surface_id =
+      allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
   SurfaceId root_surface_id(support_->frame_sink_id(), root_local_surface_id);
 
   {
@@ -136,10 +144,11 @@ TEST_F(SurfaceAggregatorPixelTest, DrawSimpleAggregatedFrame) {
                                        device_viewport_size_);
 
     auto* surface_quad = pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
-    surface_quad->SetNew(pass->shared_quad_state_list.back(),
-                         gfx::Rect(child_size), gfx::Rect(child_size),
-                         SurfaceRange(base::nullopt, child_surface_id),
-                         SK_ColorWHITE, false);
+    surface_quad->SetNew(
+        pass->shared_quad_state_list.back(), gfx::Rect(child_size),
+        gfx::Rect(child_size), SurfaceRange(base::nullopt, child_surface_id),
+        SK_ColorWHITE, /*stretch_content_to_fill_bounds=*/false,
+        /*ignores_input_event=*/false);
 
     auto* color_quad = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
     bool force_anti_aliasing_off = false;
@@ -204,12 +213,18 @@ TEST_F(SurfaceAggregatorPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
   auto right_support = std::make_unique<CompositorFrameSinkSupport>(
       nullptr, &manager_, kArbitraryRightFrameSinkId, kIsChildRoot,
       kNeedsSyncPoints);
-  LocalSurfaceId left_child_local_id = allocator_.GenerateId();
+  allocator_.GenerateId();
+  LocalSurfaceId left_child_local_id =
+      allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
   SurfaceId left_child_id(left_support->frame_sink_id(), left_child_local_id);
-  LocalSurfaceId right_child_local_id = allocator_.GenerateId();
+  allocator_.GenerateId();
+  LocalSurfaceId right_child_local_id =
+      allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
   SurfaceId right_child_id(right_support->frame_sink_id(),
                            right_child_local_id);
-  LocalSurfaceId root_local_surface_id = allocator_.GenerateId();
+  allocator_.GenerateId();
+  LocalSurfaceId root_local_surface_id =
+      allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
   SurfaceId root_surface_id(support_->frame_sink_id(), root_local_surface_id);
 
   {
@@ -223,20 +238,22 @@ TEST_F(SurfaceAggregatorPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
                                        device_viewport_size_);
 
     auto* left_surface_quad = pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
-    left_surface_quad->SetNew(pass->shared_quad_state_list.back(),
-                              gfx::Rect(child_size), gfx::Rect(child_size),
-                              SurfaceRange(base::nullopt, left_child_id),
-                              SK_ColorWHITE, false);
+    left_surface_quad->SetNew(
+        pass->shared_quad_state_list.back(), gfx::Rect(child_size),
+        gfx::Rect(child_size), SurfaceRange(base::nullopt, left_child_id),
+        SK_ColorWHITE, /*stretch_content_to_fill_bounds=*/false,
+        /*ignores_input_event=*/false);
 
     surface_transform.Translate(100, 0);
     CreateAndAppendTestSharedQuadState(pass.get(), surface_transform,
                                        device_viewport_size_);
 
     auto* right_surface_quad = pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
-    right_surface_quad->SetNew(pass->shared_quad_state_list.back(),
-                               gfx::Rect(child_size), gfx::Rect(child_size),
-                               SurfaceRange(base::nullopt, right_child_id),
-                               SK_ColorWHITE, false);
+    right_surface_quad->SetNew(
+        pass->shared_quad_state_list.back(), gfx::Rect(child_size),
+        gfx::Rect(child_size), SurfaceRange(base::nullopt, right_child_id),
+        SK_ColorWHITE, /*stretch_content_to_fill_bounds=*/false,
+        /*ignores_input_event=*/false);
 
     auto root_frame =
         CompositorFrameBuilder().AddRenderPass(std::move(pass)).Build();

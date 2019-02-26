@@ -298,10 +298,7 @@ class BlinkScrollbarPartAnimationTimer {
  public:
   BlinkScrollbarPartAnimationTimer(BlinkScrollbarPartAnimation* animation,
                                    CFTimeInterval duration)
-      : timer_(Platform::Current()
-                   ->MainThread()
-                   ->Scheduler()
-                   ->CompositorTaskRunner(),
+      : timer_(ThreadScheduler::Current()->CompositorTaskRunner(),
                this,
                &BlinkScrollbarPartAnimationTimer::TimerFired),
         start_time_(0.0),
@@ -693,10 +690,7 @@ ScrollAnimatorBase* ScrollAnimatorBase::Create(
 
 ScrollAnimatorMac::ScrollAnimatorMac(blink::ScrollableArea* scrollable_area)
     : ScrollAnimatorBase(scrollable_area),
-      task_runner_(Platform::Current()
-                       ->CurrentThread()
-                       ->Scheduler()
-                       ->CompositorTaskRunner()),
+      task_runner_(ThreadScheduler::Current()->CompositorTaskRunner()),
       have_scrolled_since_page_load_(false),
       needs_scroller_style_update_(false) {
   scroll_animation_helper_delegate_.AdoptNS(

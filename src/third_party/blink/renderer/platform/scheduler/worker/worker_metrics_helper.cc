@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_metrics_helper.h"
 
-#include "third_party/blink/renderer/platform/scheduler/child/process_state.h"
+#include "third_party/blink/renderer/platform/scheduler/common/process_state.h"
 
 namespace blink {
 namespace scheduler {

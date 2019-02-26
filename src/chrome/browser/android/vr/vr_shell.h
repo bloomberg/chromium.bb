@@ -16,7 +16,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/page_info/page_info_ui.h"
-#include "chrome/browser/ui/toolbar/chrome_toolbar_model_delegate.h"
+#include "chrome/browser/ui/toolbar/chrome_location_bar_model_delegate.h"
 #include "chrome/browser/vr/assets_load_status.h"
 #include "chrome/browser/vr/exit_vr_prompt_choice.h"
 #include "chrome/browser/vr/metrics/session_metrics_helper.h"
@@ -51,7 +51,7 @@ namespace vr {
 class BrowserUiInterface;
 class AndroidUiGestureTarget;
 class AutocompleteController;
-class ToolbarHelper;
+class LocationBarHelper;
 class VrGLThread;
 class VrInputConnection;
 class VrShellDelegate;
@@ -66,7 +66,7 @@ struct AutocompleteRequest;
 class VrShell : device::GvrGamepadDataProvider,
                 device::CardboardGamepadDataProvider,
                 VoiceResultDelegate,
-                public ChromeToolbarModelDelegate,
+                public ChromeLocationBarModelDelegate,
                 public PageInfoUI {
  public:
   VrShell(JNIEnv* env,
@@ -135,15 +135,12 @@ class VrShell : device::GvrGamepadDataProvider,
   void NavigateForward();
   void ReloadTab();
   void OpenNewTab(bool incognito);
-  void SelectTab(int id, bool incognito);
   void OpenBookmarks();
   void OpenRecentTabs();
   void OpenHistory();
   void OpenDownloads();
   void OpenShare();
   void OpenSettings();
-  void CloseTab(int id, bool incognito);
-  void CloseAllTabs();
   void CloseAllIncognitoTabs();
   void OpenFeedback();
   void CloseHostedDialog();
@@ -255,7 +252,7 @@ class VrShell : device::GvrGamepadDataProvider,
   void RegisterCardboardGamepadDataFetcher(
       device::CardboardGamepadDataFetcher*) override;
 
-  // ChromeToolbarModelDelegate implementation.
+  // ChromeLocationBarModelDelegate implementation.
   content::WebContents* GetActiveWebContents() const override;
   bool ShouldDisplayURL() const override;
 
@@ -285,11 +282,12 @@ class VrShell : device::GvrGamepadDataProvider,
       const base::android::JavaParamRef<jobject>& obj,
       jstring filepath_base);
 
-  void WatchElementForVisibilityChangeForTesting(
+  void WatchElementForVisibilityStatusForTesting(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       jint element_name,
-      jint timeout_ms);
+      jint timeout_ms,
+      jboolean visibility);
 
   void ReportUiOperationResultForTesting(UiTestOperationType action_type,
                                          UiTestOperationResult result);
@@ -352,7 +350,7 @@ class VrShell : device::GvrGamepadDataProvider,
 
   // These instances make use of ui_ (provided by gl_thread_), and hence must be
   // destroyed before gl_thread_;
-  std::unique_ptr<ToolbarHelper> toolbar_;
+  std::unique_ptr<LocationBarHelper> toolbar_;
   std::unique_ptr<vr::AutocompleteController> autocomplete_controller_;
   std::unique_ptr<SpeechRecognizer> speech_recognizer_;
 
@@ -393,6 +391,9 @@ class VrShell : device::GvrGamepadDataProvider,
 
   base::WaitableEvent gl_surface_created_event_;
   gfx::AcceleratedWidget surface_window_ = nullptr;
+
+  std::set<int> regular_tab_ids_;
+  std::set<int> incognito_tab_ids_;
 
   base::WeakPtrFactory<VrShell> weak_ptr_factory_;
 

@@ -16,7 +16,6 @@
 #include "base/test/bind_test_util.h"
 #include "base/timer/mock_timer.h"
 #include "chrome/browser/extensions/test_extension_system.h"
-#include "chrome/browser/web_applications/components/install_result_code.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_installation_task.h"
@@ -43,31 +42,37 @@ const char kXyzWebAppUrl[] = "https://xyz.example";
 const char kWrongUrl[] = "https://foobar.example";
 
 web_app::PendingAppManager::AppInfo GetFooAppInfo(
-    bool override_previous_user_uninstall = web_app::PendingAppManager::
-        AppInfo::kDefaultOverridePreviousUserUninstall) {
-  return web_app::PendingAppManager::AppInfo(
+    base::Optional<bool> override_previous_user_uninstall =
+        base::Optional<bool>()) {
+  web_app::PendingAppManager::AppInfo info(
       GURL(kFooWebAppUrl), web_app::LaunchContainer::kTab,
-      web_app::InstallSource::kExternalPolicy,
-      web_app::PendingAppManager::AppInfo::kDefaultCreateShortcuts,
-      override_previous_user_uninstall);
+      web_app::InstallSource::kExternalPolicy);
+
+  if (override_previous_user_uninstall.has_value())
+    info.override_previous_user_uninstall = *override_previous_user_uninstall;
+
+  return info;
 }
 
 web_app::PendingAppManager::AppInfo GetBarAppInfo() {
-  return web_app::PendingAppManager::AppInfo(
+  web_app::PendingAppManager::AppInfo info(
       GURL(kBarWebAppUrl), web_app::LaunchContainer::kWindow,
       web_app::InstallSource::kExternalPolicy);
+  return info;
 }
 
 web_app::PendingAppManager::AppInfo GetQuxAppInfo() {
-  return web_app::PendingAppManager::AppInfo(
+  web_app::PendingAppManager::AppInfo info(
       GURL(kQuxWebAppUrl), web_app::LaunchContainer::kWindow,
       web_app::InstallSource::kExternalPolicy);
+  return info;
 }
 
 web_app::PendingAppManager::AppInfo GetXyzAppInfo() {
-  return web_app::PendingAppManager::AppInfo(
+  web_app::PendingAppManager::AppInfo info(
       GURL(kXyzWebAppUrl), web_app::LaunchContainer::kWindow,
       web_app::InstallSource::kExternalPolicy);
+  return info;
 }
 
 scoped_refptr<const Extension> CreateDummyExtension(const std::string& id) {
@@ -126,11 +131,10 @@ class TestBookmarkAppInstallationTask : public BookmarkAppInstallationTask {
   void InstallWebAppOrShortcutFromWebContents(
       content::WebContents* web_contents,
       BookmarkAppInstallationTask::ResultCallback callback) override {
-    BookmarkAppInstallationTask::ResultCode result_code =
-        BookmarkAppInstallationTask::ResultCode::kInstallationFailed;
+    auto result_code = web_app::InstallResultCode::kFailedUnknownReason;
     std::string app_id;
     if (succeeds_) {
-      result_code = BookmarkAppInstallationTask::ResultCode::kSuccess;
+      result_code = web_app::InstallResultCode::kSuccess;
       app_id = GenerateFakeAppId(app_info().url);
       ExtensionRegistry::Get(profile_)->AddEnabled(
           CreateDummyExtension(app_id));
@@ -206,7 +210,7 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
     auto* task_ptr = task.get();
     task->SetOnInstallCalled(base::BindLambdaForTesting([task_ptr, this]() {
       ++installation_task_run_count_;
-      last_app_info_ = task_ptr->app_info().Clone();
+      last_app_info_ = task_ptr->app_info();
     }));
     return task;
   }
@@ -291,7 +295,7 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
   const GURL& install_callback_url() { return install_callback_url_.value(); }
 
   const web_app::PendingAppManager::AppInfo& last_app_info() {
-    CHECK(last_app_info_.get());
+    CHECK(last_app_info_.has_value());
     return *last_app_info_;
   }
 
@@ -320,7 +324,7 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
   content::WebContentsTester* web_contents_tester_ = nullptr;
   base::Optional<GURL> install_callback_url_;
   base::Optional<web_app::InstallResultCode> install_callback_code_;
-  std::unique_ptr<web_app::PendingAppManager::AppInfo> last_app_info_;
+  base::Optional<web_app::PendingAppManager::AppInfo> last_app_info_;
   size_t installation_task_run_count_ = 0;
 
   std::unique_ptr<TestExtensionRegistryObserver>
@@ -567,6 +571,43 @@ TEST_F(PendingBookmarkAppManagerTest, Install_ConcurrentCallsSameApp) {
   // The second installation should succeed even though the app is installed
   // already.
   EXPECT_EQ(0u, installation_task_run_count());
+  EXPECT_TRUE(app_installed());
+  EXPECT_EQ(GURL(kFooWebAppUrl), install_callback_url());
+}
+
+TEST_F(PendingBookmarkAppManagerTest, Install_AlwaysUpdate) {
+  auto pending_app_manager = GetPendingBookmarkAppManagerWithTestFactories();
+
+  auto get_always_update_info = []() {
+    web_app::PendingAppManager::AppInfo info(
+        GURL(kFooWebAppUrl), web_app::LaunchContainer::kWindow,
+        web_app::InstallSource::kExternalPolicy);
+    info.always_update = true;
+    return info;
+  };
+  pending_app_manager->Install(
+      get_always_update_info(),
+      base::BindOnce(&PendingBookmarkAppManagerTest::InstallCallback,
+                     base::Unretained(this)));
+
+  base::RunLoop().RunUntilIdle();
+  SuccessfullyLoad(GURL(kFooWebAppUrl));
+
+  EXPECT_EQ(1u, installation_task_run_count());
+  EXPECT_TRUE(app_installed());
+  EXPECT_EQ(GURL(kFooWebAppUrl), install_callback_url());
+  ResetResults();
+
+  pending_app_manager->Install(
+      get_always_update_info(),
+      base::BindOnce(&PendingBookmarkAppManagerTest::InstallCallback,
+                     base::Unretained(this)));
+
+  base::RunLoop().RunUntilIdle();
+  SuccessfullyLoad(GURL(kFooWebAppUrl));
+
+  // The app is reinstalled even though it is already installed.
+  EXPECT_EQ(1u, installation_task_run_count());
   EXPECT_TRUE(app_installed());
   EXPECT_EQ(GURL(kFooWebAppUrl), install_callback_url());
 }

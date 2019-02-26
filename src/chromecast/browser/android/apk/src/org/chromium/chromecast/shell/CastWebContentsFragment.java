@@ -8,6 +8,7 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -87,8 +88,8 @@ public class CastWebContentsFragment extends Fragment {
             return;
         }
 
-        mSurfaceHelper = new CastWebContentsSurfaceHelper(getActivity(), /* hostActivity */
-                CastWebContentsView.onLayoutFragment(getActivity(),
+        mSurfaceHelper = new CastWebContentsSurfaceHelper(
+                CastWebContentsScopes.onLayoutFragment(getActivity(),
                         (FrameLayout) getView().findViewById(R.id.web_contents_container),
                         CastSwitches.getSwitchValueColor(
                                 CastSwitches.CAST_APP_BACKGROUND_COLOR, Color.BLACK)),
@@ -102,6 +103,11 @@ public class CastWebContentsFragment extends Fragment {
         mAppId = CastWebContentsIntentUtils.getAppId(bundle);
         mInitialVisiblityPriority = CastWebContentsIntentUtils.getVisibilityPriority(bundle);
         mSurfaceHelper.onNewStartParams(params);
+
+        // Whenever our app is visible, volume controls should modify the music stream.
+        // For more information read:
+        // http://developer.android.com/training/managing-audio/volume-playback.html
+        getActivity().setVolumeControlStream(AudioManager.STREAM_MUSIC);
     }
 
     @Override

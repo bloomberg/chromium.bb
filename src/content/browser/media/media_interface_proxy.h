@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
+#include "base/token.h"
 #include "build/build_config.h"
 #include "media/media_buildflags.h"
 #include "media/mojo/interfaces/content_decryption_module.mojom.h"
@@ -53,7 +54,7 @@ class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
                  media::mojom::ContentDecryptionModuleRequest request) final;
   void CreateDecryptor(int cdm_id,
                        media::mojom::DecryptorRequest request) final;
-  void CreateCdmProxy(const std::string& cdm_guid,
+  void CreateCdmProxy(const base::Token& cdm_guid,
                       media::mojom::CdmProxyRequest request) final;
 
  private:
@@ -61,7 +62,7 @@ class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
   // mojo media (or CDM) service running remotely. |cdm_file_system_id| is
   // used to register the appropriate CdmStorage interface needed by the CDM.
   service_manager::mojom::InterfaceProviderPtr GetFrameServices(
-      const std::string& cdm_guid,
+      const base::Token& cdm_guid,
       const std::string& cdm_file_system_id);
 
   // Gets the MediaService |interface_factory_ptr_|. Returns null if unexpected
@@ -84,18 +85,18 @@ class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
   // |cdm_path| will be used to preload the CDM, if necessary.
   // |cdm_file_system_id| is used when creating the matching storage interface.
   media::mojom::CdmFactory* ConnectToCdmService(
-      const std::string& cdm_guid,
+      const base::Token& cdm_guid,
       const base::FilePath& cdm_path,
       const std::string& cdm_file_system_id);
 
   // Callback for connection error from the CdmFactoryPtr in the
   // |cdm_factory_map_| associated with |cdm_guid|.
-  void OnCdmServiceConnectionError(const std::string& cdm_guid);
+  void OnCdmServiceConnectionError(const base::Token& cdm_guid);
 
   // Creates a CdmProxy for the CDM in CdmService. Not implemented in
   // CreateCdmProxy() because we don't want any client to be able to create
   // a CdmProxy.
-  void CreateCdmProxyInternal(const std::string& cdm_guid,
+  void CreateCdmProxyInternal(const base::Token& cdm_guid,
                               media::mojom::CdmProxyRequest request);
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
@@ -122,7 +123,7 @@ class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   // CDM GUID to CDM InterfaceFactoryPtr mapping, where the InterfaceFactory
   // instances live in the standalone kCdmServiceName service instances.
-  std::map<std::string, media::mojom::CdmFactoryPtr> cdm_factory_map_;
+  std::map<base::Token, media::mojom::CdmFactoryPtr> cdm_factory_map_;
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
   base::ThreadChecker thread_checker_;

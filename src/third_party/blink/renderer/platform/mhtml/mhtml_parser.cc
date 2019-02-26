@@ -30,24 +30,70 @@
 
 #include "third_party/blink/renderer/platform/mhtml/mhtml_parser.h"
 
+#include <stddef.h>
 #include "third_party/blink/renderer/platform/mhtml/archive_resource.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/network/parsed_content_type.h"
-#include "third_party/blink/renderer/platform/text/quoted_printable.h"
+#include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_concatenate.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
+
+namespace {
+
+void QuotedPrintableDecode(const char* data,
+                           size_t data_length,
+                           Vector<char>& out) {
+  out.clear();
+  if (!data_length)
+    return;
+
+  for (size_t i = 0; i < data_length; ++i) {
+    char current_character = data[i];
+    if (current_character != '=') {
+      out.push_back(current_character);
+      continue;
+    }
+    // We are dealing with a '=xx' sequence.
+    if (data_length - i < 3) {
+      // Unfinished = sequence, append as is.
+      out.push_back(current_character);
+      continue;
+    }
+    char upper_character = data[++i];
+    char lower_character = data[++i];
+    if (upper_character == '\r' && lower_character == '\n')
+      continue;
+
+    if (!IsASCIIHexDigit(upper_character) ||
+        !IsASCIIHexDigit(lower_character)) {
+      // Invalid sequence, = followed by non hex digits, just insert the
+      // characters as is.
+      out.push_back('=');
+      out.push_back(upper_character);
+      out.push_back(lower_character);
+      continue;
+    }
+    out.push_back(
+        static_cast<char>(ToASCIIHexValue(upper_character, lower_character)));
+  }
+}
+
+}  // namespace
 
 // This class is a limited MIME parser used to parse the MIME headers of MHTML
 // files.
 class MIMEHeader : public GarbageCollectedFinalized<MIMEHeader> {
  public:
-  static MIMEHeader* Create() { return new MIMEHeader; }
+  static MIMEHeader* Create() { return MakeGarbageCollected<MIMEHeader>(); }
+
+  MIMEHeader();
 
   enum Encoding {
     kQuotedPrintable,
@@ -81,8 +127,6 @@ class MIMEHeader : public GarbageCollectedFinalized<MIMEHeader> {
   void Trace(blink::Visitor* visitor) {}
 
  private:
-  MIMEHeader();
-
   static Encoding ParseContentTransferEncoding(const String&);
 
   String content_type_;

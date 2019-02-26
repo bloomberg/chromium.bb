@@ -19,7 +19,7 @@
 <translation id="1710340000377843106">jetzt</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 Minute}other{# Minuten}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
-<translation id="1801827354178857021">Zeitraum</translation>
+<translation id="1801827354178857021">Punkt</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 Monat}other{# Monate}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
 <translation id="1812519734428420144">Bewertung <ph name="RATING_SCORE" /></translation>
@@ -30,16 +30,19 @@
 <translation id="1871244248791675517">Einfg</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">&amp;Alles auswählen</translation>
+<translation id="1938451708255335766">Wenn Sie die Anzeigedichte der App-Fenster anpassen möchten, starten Sie die App neu.</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 Tag}other{# Tage}}</translation>
 <translation id="2148716181193084225">Heute</translation>
 <translation id="2168039046890040389">Nach oben</translation>
 <translation id="2190355936436201913">(leer)</translation>
+<translation id="2192232475740621500">Niedrige Anzeigedichte verwenden</translation>
 <translation id="219905428774326614">Launcher, alle Apps</translation>
 <translation id="2267918077332197517">Alle Benachrichtigungen von dieser Website blockieren</translation>
 <translation id="2289052229480071835">Tippen Sie auf die Zielelemente auf dem Bildschirm.</translation>
 <translation id="2295140143284145483">Umfrage</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="24452542372838207">Benachrichtigung erweitern</translation>
+<translation id="2445449901874883781">Hohe Anzeigedichte verwenden</translation>
 <translation id="2482878487686419369">Benachrichtigungen</translation>
 <translation id="2497284189126895209">Alle Dateien</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -60,6 +63,7 @@
 <translation id="3234408098842461169">Abwärtspfeil</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 Tag}other{# Tage}}</translation>
 <translation id="335581015389089642">Sprachausgabe</translation>
+<translation id="3479552764303398839">Jetzt nicht</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 Tag übrig}other{# Tage übrig}}</translation>
 <translation id="3618849550573277856">"<ph name="LOOKUP_STRING" />" nachschlagen</translation>
 <translation id="364720409959344976">Ordner zum Hochladen auswählen</translation>
@@ -99,6 +103,7 @@
 <translation id="5613020302032141669">Linkspfeil</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 Min.}other{# Min.}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 Tag und  }other{# Tage und  }}</translation>
+<translation id="5895138241574237353">Neu starten</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 Sekunde übrig}other{# Sekunden übrig}}</translation>
 <translation id="5941711191222866238">Verkleinern</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 Stunde}other{# Stunden}}</translation>

@@ -37,7 +37,8 @@ void HostedAppMenuModel::Build() {
                        ->tab_strip_model()
                        ->GetActiveWebContents()
                        ->GetVisibleURL()));
-  SetMinorIcon(app_info_index, browser()->toolbar_model()->GetVectorIcon());
+  SetMinorIcon(app_info_index,
+               browser()->location_bar_model()->GetVectorIcon());
 
   AddSeparator(ui::NORMAL_SEPARATOR);
   AddItemWithStringId(IDC_COPY_URL, IDS_COPY_URL);

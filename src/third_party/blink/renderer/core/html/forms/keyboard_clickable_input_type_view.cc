@@ -36,8 +36,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 void KeyboardClickableInputTypeView::HandleKeydownEvent(KeyboardEvent& event) {
   if (event.key() == " ") {
     GetElement().SetActive(true);

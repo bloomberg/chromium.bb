@@ -19,6 +19,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/win/scoped_handle.h"
 #include "net/test/python_utils.h"
 
@@ -71,7 +72,9 @@ bool ReadData(HANDLE read_fd,
     bytes_read += num_bytes;
   }
 
+  base::ScopedAllowBlockingForTesting allow_thread_join;
   thread.Stop();
+
   // If the timeout kicked in, abort.
   if (unblocked) {
     LOG(ERROR) << "Timeout exceeded for ReadData";

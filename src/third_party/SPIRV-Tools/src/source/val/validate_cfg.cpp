@@ -48,6 +48,20 @@ spv_result_t ValidatePhi(ValidationState_t& _, const Instruction* inst) {
               "basic blocks.";
   }
 
+  const Instruction* type_inst = _.FindDef(inst->type_id());
+  assert(type_inst);
+
+  const SpvOp type_opcode = type_inst->opcode();
+  if (type_opcode == SpvOpTypePointer &&
+      _.addressing_model() == SpvAddressingModelLogical) {
+    if (!_.features().variable_pointers &&
+        !_.features().variable_pointers_storage_buffer) {
+      return _.diag(SPV_ERROR_INVALID_DATA, inst)
+             << "Using pointers with OpPhi requires capability "
+             << "VariablePointers or VariablePointersStorageBuffer";
+    }
+  }
+
   // Create a uniqued vector of predecessor ids for comparison against
   // incoming values. OpBranchConditional %cond %label %label produces two
   // predecessors in the CFG.
@@ -111,7 +125,8 @@ spv_result_t ValidateBranchConditional(ValidationState_t& _,
   // grab the condition operand and check that it is a bool
   const auto cond_id = inst->GetOperandAs<uint32_t>(0);
   const auto cond_op = _.FindDef(cond_id);
-  if (!cond_op || !_.IsBoolScalarType(cond_op->type_id())) {
+  if (!cond_op || !cond_op->type_id() ||
+      !_.IsBoolScalarType(cond_op->type_id())) {
     return _.diag(SPV_ERROR_INVALID_ID, inst) << "Condition operand for "
                                                  "OpBranchConditional must be "
                                                  "of boolean type";

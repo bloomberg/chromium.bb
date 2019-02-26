@@ -14,7 +14,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/global_routing_id.h"
-#include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/common/navigation_policy.h"
 #include "content/public/common/process_type.h"
 #include "net/url_request/url_request.h"
 
@@ -67,33 +67,33 @@ void ResourceRequestInfo::AllocateForTesting(
 
   ResourceRequestInfoImpl* info = new ResourceRequestInfoImpl(
       ResourceRequesterInfo::CreateForRendererTesting(
-          render_process_id),              // resource_requester_info
-      render_view_id,                      // route_id
-      -1,                                  // frame_tree_node_id
-      ChildProcessHost::kInvalidUniqueID,  // plugin_child_id
-      0,                                   // request_id
-      render_frame_id,                     // render_frame_id
-      is_main_frame,                       // is_main_frame
-      {},                                  // fetch_window_id
-      resource_type,                       // resource_type
-      ui::PAGE_TRANSITION_LINK,            // transition_type
-      false,                               // is_download
-      false,                               // is_stream
-      allow_download,                      // allow_download
-      false,                               // has_user_gesture
-      false,                               // enable load timing
-      request->has_upload(),               // enable upload progress
-      false,                               // do_not_prompt_for_login
-      false,                               // keep_alive
-      blink::kWebReferrerPolicyDefault,    // referrer_policy
-      false,                               // is_prerendering
-      context,                             // context
-      false,                               // report_raw_headers
-      false,                               // report_security_info
-      is_async,                            // is_async
-      previews_state,                      // previews_state
-      nullptr,                             // body
-      false);                              // initiated_in_secure_context
+          render_process_id),                    // resource_requester_info
+      render_view_id,                            // route_id
+      -1,                                        // frame_tree_node_id
+      ChildProcessHost::kInvalidUniqueID,        // plugin_child_id
+      0,                                         // request_id
+      render_frame_id,                           // render_frame_id
+      is_main_frame,                             // is_main_frame
+      {},                                        // fetch_window_id
+      resource_type,                             // resource_type
+      ui::PAGE_TRANSITION_LINK,                  // transition_type
+      false,                                     // is_download
+      false,                                     // is_stream
+      allow_download,                            // allow_download
+      false,                                     // has_user_gesture
+      false,                                     // enable load timing
+      request->has_upload(),                     // enable upload progress
+      false,                                     // do_not_prompt_for_login
+      false,                                     // keep_alive
+      network::mojom::ReferrerPolicy::kDefault,  // referrer_policy
+      false,                                     // is_prerendering
+      context,                                   // context
+      false,                                     // report_raw_headers
+      false,                                     // report_security_info
+      is_async,                                  // is_async
+      previews_state,                            // previews_state
+      nullptr,                                   // body
+      false);                                    // initiated_in_secure_context
   info->AssociateWithRequest(request);
   info->set_navigation_ui_data(std::move(navigation_ui_data));
 }
@@ -154,7 +154,7 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
     bool enable_upload_progress,
     bool do_not_prompt_for_login,
     bool keepalive,
-    blink::WebReferrerPolicy referrer_policy,
+    network::mojom::ReferrerPolicy referrer_policy,
     bool is_prerendering,
     ResourceContext* context,
     bool report_raw_headers,
@@ -290,7 +290,8 @@ int ResourceRequestInfoImpl::GetProcessType() const {
                                                     : PROCESS_TYPE_RENDERER;
 }
 
-blink::WebReferrerPolicy ResourceRequestInfoImpl::GetReferrerPolicy() const {
+network::mojom::ReferrerPolicy ResourceRequestInfoImpl::GetReferrerPolicy()
+    const {
   return referrer_policy_;
 }
 
@@ -324,10 +325,6 @@ bool ResourceRequestInfoImpl::IsDownload() const {
 
 PreviewsState ResourceRequestInfoImpl::GetPreviewsState() const {
   return previews_state_;
-}
-
-void ResourceRequestInfoImpl::SetPreviewsState(PreviewsState previews_state) {
-  previews_state_ = previews_state;
 }
 
 NavigationUIData* ResourceRequestInfoImpl::GetNavigationUIData() const {

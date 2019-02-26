@@ -78,6 +78,10 @@ testing_support/google_appengine
 
 # Ignore emacs / vim backup files.
 *~
+*.swp
 
 # Ignore the monitoring config. It is unique for each user.
 /metrics.cfg
+
+# Ignore the ninjalog upload config.
+/ninjalog.cfg

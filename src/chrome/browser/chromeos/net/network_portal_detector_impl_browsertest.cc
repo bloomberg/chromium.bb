@@ -16,7 +16,6 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_impl.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_utils.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -96,7 +95,7 @@ class NetworkPortalDetectorImplBrowserTest
         base::Bind(&ErrorCallbackFunction));
 
     display_service_ = std::make_unique<NotificationDisplayServiceTester>(
-        chromeos::ProfileHelper::GetSigninProfile());
+        nullptr /* profile */);
 
     network_portal_detector_ =
         new NetworkPortalDetectorImpl(test_loader_factory());

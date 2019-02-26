@@ -38,15 +38,15 @@ class MojoPageTimingSender : public PageTimingSender {
         &page_load_metrics_);
   }
   ~MojoPageTimingSender() override {}
-  void SendTiming(
-      const mojom::PageLoadTimingPtr& timing,
-      const mojom::PageLoadMetadataPtr& metadata,
-      mojom::PageLoadFeaturesPtr new_features,
-      std::vector<mojom::ResourceDataUpdatePtr> resources) override {
+  void SendTiming(const mojom::PageLoadTimingPtr& timing,
+                  const mojom::PageLoadMetadataPtr& metadata,
+                  mojom::PageLoadFeaturesPtr new_features,
+                  std::vector<mojom::ResourceDataUpdatePtr> resources,
+                  const mojom::PageRenderData& render_data) override {
     DCHECK(page_load_metrics_);
     page_load_metrics_->UpdateTiming(timing->Clone(), metadata->Clone(),
                                      std::move(new_features),
-                                     std::move(resources));
+                                     std::move(resources), render_data.Clone());
   }
 
  private:
@@ -89,7 +89,13 @@ void MetricsRenderFrameObserver::DidObserveNewCssPropertyUsage(
   }
 }
 
+void MetricsRenderFrameObserver::DidObserveLayoutJank(double jank_fraction) {
+  if (page_timing_metrics_sender_)
+    page_timing_metrics_sender_->DidObserveLayoutJank(jank_fraction);
+}
+
 void MetricsRenderFrameObserver::DidStartResponse(
+    const GURL& response_url,
     int request_id,
     const network::ResourceResponseHead& response_head,
     content::ResourceType resource_type) {
@@ -99,10 +105,11 @@ void MetricsRenderFrameObserver::DidStartResponse(
     // load starts, and data use of the frame request might be missed in that
     // case. There should be a guarantee that DidStartProvisionalLoad be called
     // before DidStartResponse for the frame request.
-    provisional_frame_resource_data_use_->DidStartResponse(request_id,
-                                                           response_head);
+    provisional_frame_resource_data_use_->DidStartResponse(
+        response_url, request_id, response_head);
   } else if (page_timing_metrics_sender_) {
-    page_timing_metrics_sender_->DidStartResponse(request_id, response_head);
+    page_timing_metrics_sender_->DidStartResponse(response_url, request_id,
+                                                  response_head);
     UpdateResourceMetadata(request_id);
   }
 }
@@ -315,6 +322,22 @@ mojom::PageLoadTimingPtr MetricsRenderFrameObserver::GetTiming() const {
   if (perf.FirstMeaningfulPaint() > 0.0) {
     timing->paint_timing->first_meaningful_paint =
         ClampDelta(perf.FirstMeaningfulPaint(), start);
+  }
+  if (perf.LargestImagePaint() > 0.0) {
+    timing->paint_timing->largest_image_paint =
+        ClampDelta(perf.LargestImagePaint(), start);
+  }
+  if (perf.LastImagePaint() > 0.0) {
+    timing->paint_timing->last_image_paint =
+        ClampDelta(perf.LastImagePaint(), start);
+  }
+  if (perf.LargestTextPaint() > 0.0) {
+    timing->paint_timing->largest_text_paint =
+        ClampDelta(perf.LargestTextPaint(), start);
+  }
+  if (perf.LastTextPaint() > 0.0) {
+    timing->paint_timing->last_text_paint =
+        ClampDelta(perf.LastTextPaint(), start);
   }
   if (perf.ParseStart() > 0.0)
     timing->parse_timing->parse_start = ClampDelta(perf.ParseStart(), start);

@@ -26,25 +26,23 @@ var mockCopier;
 /** @type {!MockFileSystem} */
 var destinationFileSystem;
 
-/** @type {!importer.TestDuplicateFinder.Factory} */
-var duplicateFinderFactory;
-
 /** @type {!Promise<!DirectoryEntry>} */
 var destinationFactory;
 
 /** @type {!MockDriveSyncHandler} */
 var driveSyncHandler;
 
-// Set up string assets.
-loadTimeData.data = {
-  CLOUD_IMPORT_ITEMS_REMAINING: '',
-  DRIVE_DIRECTORY_LABEL: 'My Drive',
-  DOWNLOADS_DIRECTORY_LABEL: 'Downloads'
-};
-
 var chrome;
 
+window.metrics = {
+  recordSmallCount: function() {},
+  recordUserAction: function() {},
+  recordMediumCount: function() {},
+  recordBoolean: function() {},
+};
+
 function setUp() {
+  window.loadTimeData.getString = id => id;
   // Set up mock chrome APIs.
   chrome = {
     power: {
@@ -92,13 +90,12 @@ function setUp() {
   mediaScanner = new TestMediaScanner();
   destinationFileSystem = new MockFileSystem('googleDriveFilesystem');
   destinationFactory = Promise.resolve(destinationFileSystem.root);
-  duplicateFinderFactory = new importer.TestDuplicateFinder.Factory();
   driveSyncHandler = new MockDriveSyncHandler();
 
   mediaImporter = new importer.MediaImportHandler(
       progressCenter, importHistory, function(entry, destination) {
         return dispositionChecker(entry, destination);
-      }, new TestTracker(), driveSyncHandler);
+      }, driveSyncHandler);
 }
 
 function testImportMedia(callback) {
@@ -168,8 +165,7 @@ function testImportMedia_skipAndMarkDuplicatedFiles(callback) {
     return Promise.resolve(importer.Disposition.ORIGINAL);
   };
   mediaImporter = new importer.MediaImportHandler(
-      progressCenter, importHistory, dispositionChecker, new TestTracker(),
-      driveSyncHandler);
+      progressCenter, importHistory, dispositionChecker, driveSyncHandler);
   var scanResult = new TestScanResult(media);
   var importTask = mediaImporter.importFromScanResult(
       scanResult,

@@ -351,7 +351,7 @@ class BaseCQTestCase(generic_stages_unittest.StageTestCase):
 
     # BuildStart stage would have seeded the build.
     build_id = self.fake_db.InsertBuild(
-        'test_builder', waterfall.WATERFALL_TRYBOT, 666, 'test_config',
+        'test_builder', waterfall.WATERFALL_SWARMING, 666, 'test_config',
         'test_hostname',
         timeout_seconds=23456)
     self._run.attrs.metadata.UpdateWithDict({'build_id': build_id})
@@ -395,7 +395,7 @@ class BaseCQTestCase(generic_stages_unittest.StageTestCase):
     if pre_cq_status is not None:
       config = constants.PRE_CQ_DEFAULT_CONFIGS[0]
       new_build_id = self.fake_db.InsertBuild('Pre cq group',
-                                              waterfall.WATERFALL_TRYBOT,
+                                              waterfall.WATERFALL_SWARMING,
                                               1,
                                               config,
                                               'bot-hostname')
@@ -644,7 +644,7 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     """Test _GetFailedPreCQConfigs."""
     change = self._patch_factory.MockPatch()
     pre_cq_1 = self.fake_db.InsertBuild(
-        'eve-pre-cq', constants.WATERFALL_TRYBOT, 0, 'eve-pre-cq',
+        'eve-pre-cq', constants.WATERFALL_SWARMING, 0, 'eve-pre-cq',
         'bot hostname')
     self.fake_db.InsertCLActions(
         pre_cq_1,
@@ -652,7 +652,7 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
             change, constants.CL_ACTION_PICKED_UP)])
 
     pre_cq_2 = self.fake_db.InsertBuild(
-        'cyan-pre-cq', constants.WATERFALL_TRYBOT, 1, 'eve-pre-cq',
+        'cyan-pre-cq', constants.WATERFALL_SWARMING, 1, 'eve-pre-cq',
         'bot hostname', status=constants.BUILDER_STATUS_FAILED)
     self.fake_db.InsertCLActions(
         pre_cq_2,
@@ -667,13 +667,13 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
   def testFailureStreakCounterExceedsThreshold(self):
     """Test FailureStreakCounterExceedsThreshold."""
     pre_cq_1 = self.fake_db.InsertBuild(
-        'eve-pre-cq', constants.WATERFALL_TRYBOT, 0, 'eve-pre-cq',
+        'eve-pre-cq', constants.WATERFALL_SWARMING, 0, 'eve-pre-cq',
         'bot hostname')
     pre_cq_2 = self.fake_db.InsertBuild(
-        'eve-pre-cq', constants.WATERFALL_TRYBOT, 1, 'eve-pre-cq',
+        'eve-pre-cq', constants.WATERFALL_SWARMING, 1, 'eve-pre-cq',
         'bot hostname')
     pre_cq_3 = self.fake_db.InsertBuild(
-        'eve-pre-cq', constants.WATERFALL_TRYBOT, 2, 'eve-pre-cq',
+        'eve-pre-cq', constants.WATERFALL_SWARMING, 2, 'eve-pre-cq',
         'bot hostname')
     self.fake_db.FinishBuild(pre_cq_1, status=constants.BUILDER_STATUS_PASSED)
     self.fake_db.FinishBuild(pre_cq_2, status=constants.BUILDER_STATUS_FAILED)
@@ -684,7 +684,7 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
         'eve-pre-cq', build_history))
 
     pre_cq_4 = self.fake_db.InsertBuild(
-        'eve-pre-cq', constants.WATERFALL_TRYBOT, 2, 'eve-pre-cq',
+        'eve-pre-cq', constants.WATERFALL_SWARMING, 2, 'eve-pre-cq',
         'bot hostname')
     self.fake_db.FinishBuild(pre_cq_4, status=constants.BUILDER_STATUS_FAILED)
 
@@ -699,7 +699,7 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     for build_config in ('eve-pre-cq', 'cyan-pre-cq'):
       for _ in range(0, 3):
         pre_cq = self.fake_db.InsertBuild(
-            build_config, constants.WATERFALL_TRYBOT, 0, build_config,
+            build_config, constants.WATERFALL_SWARMING, 0, build_config,
             'bot hostname')
         self.fake_db.FinishBuild(pre_cq, status=constants.BUILDER_STATUS_FAILED)
 
@@ -767,12 +767,12 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     self.sync_stage.LaunchSanityPreCQs(
         self.build_id, self.fake_db, mock_pool, configs)
 
-    requests = self.fake_db.GetBuildRequestsForBuildConfig('test-pre-cq1')
+    requests = self.fake_db.GetBuildRequestsForBuildConfigs(['test-pre-cq1'])
     self.assertEqual(len(requests), 1)
     self.assertEqual(requests[0].request_build_config, 'test-pre-cq1')
     self.assertEqual(requests[0].request_buildbucket_id, 'bb_id_1')
 
-    requests = self.fake_db.GetBuildRequestsForBuildConfig('test-pre-cq2')
+    requests = self.fake_db.GetBuildRequestsForBuildConfigs(['test-pre-cq2'])
     self.assertEqual(len(requests), 1)
     self.assertEqual(requests[0].request_build_config, 'test-pre-cq2')
     self.assertEqual(requests[0].request_buildbucket_id, 'bb_id_2')
@@ -897,7 +897,7 @@ pre-cq-configs: link-pre-cq
 
     for config in constants.PRE_CQ_DEFAULT_CONFIGS:
       build_id = self.fake_db.InsertBuild(
-          'builder name', waterfall.WATERFALL_TRYBOT, 2, config,
+          'builder name', waterfall.WATERFALL_SWARMING, 2, config,
           'bot hostname')
       self.fake_db.InsertCLActions(
           build_id,
@@ -1330,7 +1330,7 @@ pre-cq-configs: link-pre-cq
             constants.CL_PRECQ_CONFIG_STATUS_LAUNCHED):
           if not config in build_ids_per_config:
             build_ids_per_config[config] = self.fake_db.InsertBuild(
-                config, waterfall.WATERFALL_TRYBOT, 1, config, config)
+                config, waterfall.WATERFALL_SWARMING, 1, config, config)
           self.fake_db.InsertCLActions(
               build_ids_per_config[config],
               [clactions.CLAction.FromGerritPatchAndAction(
@@ -1366,7 +1366,7 @@ pre-cq-configs: link-pre-cq
     """Test that a previously rejected patch gets marked as requeued."""
     p = MockPatch()
     previous_build_id = self.fake_db.InsertBuild(
-        'some name', waterfall.WATERFALL_TRYBOT, 1, 'some_config',
+        'some name', waterfall.WATERFALL_SWARMING, 1, 'some_config',
         'some_hostname')
     action = clactions.CLAction.FromGerritPatchAndAction(
         p, constants.CL_ACTION_KICKED_OUT)
@@ -1609,13 +1609,13 @@ class MasterSlaveLKGMSyncTest(generic_stages_unittest.StageTestCase):
     """Test GetLastChromeOSVersion"""
     id1 = self.fake_db.InsertBuild(
         builder_name='test_builder',
-        waterfall=waterfall.WATERFALL_TRYBOT,
+        waterfall=waterfall.WATERFALL_SWARMING,
         build_number=666,
         build_config='master-chromium-pfq',
         bot_hostname='test_hostname')
     id2 = self.fake_db.InsertBuild(
         builder_name='test_builder',
-        waterfall=waterfall.WATERFALL_TRYBOT,
+        waterfall=waterfall.WATERFALL_SWARMING,
         build_number=667,
         build_config='master-chromium-pfq',
         bot_hostname='test_hostname')

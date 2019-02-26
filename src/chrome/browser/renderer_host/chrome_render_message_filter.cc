@@ -284,15 +284,13 @@ void ChromeRenderMessageFilter::FileSystemAccessedResponse(
 void ChromeRenderMessageFilter::OnAllowIndexedDB(int render_frame_id,
                                                  const GURL& origin_url,
                                                  const GURL& top_origin_url,
-                                                 const base::string16& name,
                                                  bool* allowed) {
   *allowed =
       cookie_settings_->IsCookieAccessAllowed(origin_url, top_origin_url);
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
       base::Bind(&TabSpecificContentSettings::IndexedDBAccessed,
-                 render_process_id_, render_frame_id, origin_url, name,
-                 !*allowed));
+                 render_process_id_, render_frame_id, origin_url, !*allowed));
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)

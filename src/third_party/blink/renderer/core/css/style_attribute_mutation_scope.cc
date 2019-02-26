@@ -68,21 +68,21 @@ StyleAttributeMutationScope::StyleAttributeMutationScope(
 
   mutation_recipients_ =
       MutationObserverInterestGroup::CreateForAttributesMutation(
-          *current_decl_->ParentElement(), HTMLNames::styleAttr);
+          *current_decl_->ParentElement(), html_names::kStyleAttr);
   bool should_read_old_value =
       (mutation_recipients_ && mutation_recipients_->IsOldValueRequested()) ||
       DefinitionIfStyleChangedCallback(current_decl_->ParentElement());
 
   if (should_read_old_value) {
     old_value_ =
-        current_decl_->ParentElement()->getAttribute(HTMLNames::styleAttr);
+        current_decl_->ParentElement()->getAttribute(html_names::kStyleAttr);
   }
 
   if (mutation_recipients_) {
     AtomicString requested_old_value =
         mutation_recipients_->IsOldValueRequested() ? old_value_ : g_null_atom;
     mutation_ = MutationRecord::CreateAttributes(current_decl_->ParentElement(),
-                                                 HTMLNames::styleAttr,
+                                                 html_names::kStyleAttr,
                                                  requested_old_value);
   }
 }
@@ -101,8 +101,8 @@ StyleAttributeMutationScope::~StyleAttributeMutationScope() {
     if (CustomElementDefinition* definition =
             DefinitionIfStyleChangedCallback(element)) {
       definition->EnqueueAttributeChangedCallback(
-          element, HTMLNames::styleAttr, old_value_,
-          element->getAttribute(HTMLNames::styleAttr));
+          element, html_names::kStyleAttr, old_value_,
+          element->getAttribute(html_names::kStyleAttr));
     }
 
     should_deliver_ = false;

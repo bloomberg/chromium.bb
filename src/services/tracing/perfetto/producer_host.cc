@@ -17,19 +17,12 @@ ProducerHost::ProducerHost() = default;
 ProducerHost::~ProducerHost() = default;
 
 void ProducerHost::Initialize(mojom::ProducerClientPtr producer_client,
-                              mojom::ProducerHostRequest producer_host,
                               perfetto::TracingService* service,
                               const std::string& name) {
   DCHECK(service);
   DCHECK(!producer_endpoint_);
-  producer_client_ = std::move(producer_client);
-  producer_client_.set_connection_error_handler(
-      base::BindOnce(&ProducerHost::OnConnectionError, base::Unretained(this)));
 
-  binding_ = std::make_unique<mojo::Binding<mojom::ProducerHost>>(
-      this, std::move(producer_host));
-  binding_->set_connection_error_handler(
-      base::BindOnce(&ProducerHost::OnConnectionError, base::Unretained(this)));
+  producer_client_ = std::move(producer_client);
 
   // TODO(oysteine): Figure out an uid once we need it.
   // TODO(oysteine): Figure out a good buffer size.
@@ -37,19 +30,15 @@ void ProducerHost::Initialize(mojom::ProducerClientPtr producer_client,
       this, 0 /* uid */, name,
       4 * 1024 * 1024 /* shared_memory_size_hint_bytes */);
   DCHECK(producer_endpoint_);
+
+  producer_client_.set_connection_error_handler(
+      base::BindOnce(&ProducerHost::OnConnectionError, base::Unretained(this)));
 }
 
 void ProducerHost::OnConnectionError() {
   // Manually reset to prevent any callbacks from the ProducerEndpoint
   // when we're in a half-destructed state.
   producer_endpoint_.reset();
-  // If the ProducerHost is owned by the PerfettoService, let it know
-  // we're disconnected to let this be cleaned up. Tests manage lifespan
-  // themselves.
-  if (connection_error_handler_) {
-    std::move(connection_error_handler_).Run();
-  }
-  // This object *may* be destroyed at this point.
 }
 
 void ProducerHost::OnConnect() {

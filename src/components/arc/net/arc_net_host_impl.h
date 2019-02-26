@@ -54,9 +54,6 @@ class ArcNetHostImpl : public KeyedService,
 
   // ARC -> Chrome calls:
 
-  void GetNetworksDeprecated(mojom::GetNetworksRequestType type,
-                             GetNetworksDeprecatedCallback callback) override;
-
   void GetNetworks(mojom::GetNetworksRequestType type,
                    GetNetworksCallback callback) override;
 

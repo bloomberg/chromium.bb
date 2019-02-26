@@ -13,6 +13,7 @@
 #include "GrResourceProvider.h"
 #include "GrShaderCaps.h"
 #include "GrStyle.h"
+#include "GrVertexWriter.h"
 #include "SkRRectPriv.h"
 #include "SkStrokeRec.h"
 #include "glsl/GrGLSLFragmentShaderBuilder.h"
@@ -37,14 +38,19 @@ struct EllipseVertex {
     SkPoint fInnerRadii;
 };
 
-struct DIEllipseVertex {
-    SkPoint fPos;
-    GrColor fColor;
-    SkPoint fOuterOffset;
-    SkPoint fInnerOffset;
+static inline bool circle_stays_circle(const SkMatrix& m) { return m.isSimilarity(); }
+
+static inline GrPrimitiveProcessor::Attribute color_attribute(bool wideColor) {
+    return { "inColor",
+             wideColor ? kHalf4_GrVertexAttribType : kUByte4_norm_GrVertexAttribType,
+             kHalf4_GrSLType };
+}
+
+// Produces TriStrip vertex data for an origin-centered rectangle from [-x, -y] to [x, y]
+static inline GrVertexWriter::TriStrip<float> origin_centered_tri_strip(float x, float y) {
+    return GrVertexWriter::TriStrip<float>{ -x, -y, x, y };
 };
 
-static inline bool circle_stays_circle(const SkMatrix& m) { return m.isSimilarity(); }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -71,31 +77,30 @@ static inline bool circle_stays_circle(const SkMatrix& m) { return m.isSimilarit
 class CircleGeometryProcessor : public GrGeometryProcessor {
 public:
     CircleGeometryProcessor(bool stroke, bool clipPlane, bool isectPlane, bool unionPlane,
-                            bool roundCaps, const SkMatrix& localMatrix)
+                            bool roundCaps, bool wideColor, const SkMatrix& localMatrix)
             : INHERITED(kCircleGeometryProcessor_ClassID)
             , fLocalMatrix(localMatrix)
             , fStroke(stroke) {
-        int cnt = 3;
+        fInPosition = {"inPosition", kFloat2_GrVertexAttribType, kFloat2_GrSLType};
+        fInColor = color_attribute(wideColor);
+        fInCircleEdge = {"inCircleEdge", kFloat4_GrVertexAttribType, kFloat4_GrSLType};
+
         if (clipPlane) {
             fInClipPlane = {"inClipPlane", kFloat3_GrVertexAttribType, kHalf3_GrSLType};
-            ++cnt;
         }
         if (isectPlane) {
             fInIsectPlane = {"inIsectPlane", kFloat3_GrVertexAttribType, kHalf3_GrSLType};
-            ++cnt;
         }
         if (unionPlane) {
             fInUnionPlane = {"inUnionPlane", kFloat3_GrVertexAttribType, kHalf3_GrSLType};
-            ++cnt;
         }
         if (roundCaps) {
             SkASSERT(stroke);
             SkASSERT(clipPlane);
             fInRoundCapCenters =
                     {"inRoundCapCenters", kFloat4_GrVertexAttribType, kFloat4_GrSLType};
-            ++cnt;
         }
-        this->setVertexAttributeCnt(cnt);
+        this->setVertexAttributes(&fInPosition, 7);
     }
 
     ~CircleGeometryProcessor() override {}
@@ -125,7 +130,7 @@ private:
             // emit attributes
             varyingHandler->emitAttributes(cgp);
             fragBuilder->codeAppend("float4 circleEdge;");
-            varyingHandler->addPassThroughAttribute(cgp.kInCircleEdge, "circleEdge");
+            varyingHandler->addPassThroughAttribute(cgp.fInCircleEdge, "circleEdge");
             if (cgp.fInClipPlane.isInitialized()) {
                 fragBuilder->codeAppend("half3 clipPlane;");
                 varyingHandler->addPassThroughAttribute(cgp.fInClipPlane, "clipPlane");
@@ -148,20 +153,20 @@ private:
                 // This is the cap radius in normalized space where the outer radius is 1 and
                 // circledEdge.w is the normalized inner radius.
                 vertBuilder->codeAppendf("%s = (1.0 - %s.w) / 2.0;", capRadius.vsOut(),
-                                         cgp.kInCircleEdge.name());
+                                         cgp.fInCircleEdge.name());
             }
 
             // setup pass through color
-            varyingHandler->addPassThroughAttribute(cgp.kInColor, args.fOutputColor);
+            varyingHandler->addPassThroughAttribute(cgp.fInColor, args.fOutputColor);
 
             // Setup position
-            this->writeOutputPosition(vertBuilder, gpArgs, cgp.kInPosition.name());
+            this->writeOutputPosition(vertBuilder, gpArgs, cgp.fInPosition.name());
 
             // emit transforms
             this->emitTransforms(vertBuilder,
                                  varyingHandler,
                                  uniformHandler,
-                                 cgp.kInPosition.asShaderVar(),
+                                 cgp.fInPosition.asShaderVar(),
                                  cgp.fLocalMatrix,
                                  args.fFPCoordTransformHandler);
 
@@ -231,20 +236,11 @@ private:
         typedef GrGLSLGeometryProcessor INHERITED;
     };
 
-    const Attribute& onVertexAttribute(int i) const override {
-        return IthInitializedAttribute(i, kInPosition, kInColor, kInCircleEdge, fInClipPlane,
-                                       fInIsectPlane, fInUnionPlane, fInRoundCapCenters);
-    }
-
     SkMatrix fLocalMatrix;
 
-    static constexpr Attribute kInPosition =
-            {"inPosition", kFloat2_GrVertexAttribType, kFloat2_GrSLType};
-    static constexpr Attribute kInColor =
-            {"inColor", kUByte4_norm_GrVertexAttribType, kHalf4_GrSLType};
-    static constexpr Attribute kInCircleEdge =
-            {"inCircleEdge", kFloat4_GrVertexAttribType, kFloat4_GrSLType};
-
+    Attribute fInPosition;
+    Attribute fInColor;
+    Attribute fInCircleEdge;
     // Optional attributes.
     Attribute fInClipPlane;
     Attribute fInIsectPlane;
@@ -256,9 +252,6 @@ private:
 
     typedef GrGeometryProcessor INHERITED;
 };
-constexpr GrPrimitiveProcessor::Attribute CircleGeometryProcessor::kInPosition;
-constexpr GrPrimitiveProcessor::Attribute CircleGeometryProcessor::kInColor;
-constexpr GrPrimitiveProcessor::Attribute CircleGeometryProcessor::kInCircleEdge;
 
 GR_DEFINE_GEOMETRY_PROCESSOR_TEST(CircleGeometryProcessor);
 
@@ -266,20 +259,25 @@ GR_DEFINE_GEOMETRY_PROCESSOR_TEST(CircleGeometryProcessor);
 sk_sp<GrGeometryProcessor> CircleGeometryProcessor::TestCreate(GrProcessorTestData* d) {
     bool stroke = d->fRandom->nextBool();
     bool roundCaps = stroke ? d->fRandom->nextBool() : false;
+    bool wideColor = d->fRandom->nextBool();
     bool clipPlane = d->fRandom->nextBool();
     bool isectPlane = d->fRandom->nextBool();
     bool unionPlane = d->fRandom->nextBool();
     const SkMatrix& matrix = GrTest::TestMatrix(d->fRandom);
-    return sk_sp<GrGeometryProcessor>(new CircleGeometryProcessor(stroke, roundCaps, clipPlane,
-                                                                  isectPlane, unionPlane, matrix));
+    return sk_sp<GrGeometryProcessor>(new CircleGeometryProcessor(
+            stroke, clipPlane, isectPlane, unionPlane, roundCaps, wideColor, matrix));
 }
 #endif
 
 class ButtCapDashedCircleGeometryProcessor : public GrGeometryProcessor {
 public:
-    ButtCapDashedCircleGeometryProcessor(const SkMatrix& localMatrix)
+    ButtCapDashedCircleGeometryProcessor(bool wideColor, const SkMatrix& localMatrix)
             : INHERITED(kButtCapStrokedCircleGeometryProcessor_ClassID), fLocalMatrix(localMatrix) {
-        this->setVertexAttributeCnt(4);
+        fInPosition = {"inPosition", kFloat2_GrVertexAttribType, kFloat2_GrSLType};
+        fInColor = color_attribute(wideColor);
+        fInCircleEdge = {"inCircleEdge", kFloat4_GrVertexAttribType, kFloat4_GrSLType};
+        fInDashParams = {"inDashParams", kFloat4_GrVertexAttribType, kFloat4_GrSLType};
+        this->setVertexAttributes(&fInPosition, 4);
     }
 
     ~ButtCapDashedCircleGeometryProcessor() override {}
@@ -310,11 +308,11 @@ private:
             // emit attributes
             varyingHandler->emitAttributes(bcscgp);
             fragBuilder->codeAppend("float4 circleEdge;");
-            varyingHandler->addPassThroughAttribute(bcscgp.kInCircleEdge, "circleEdge");
+            varyingHandler->addPassThroughAttribute(bcscgp.fInCircleEdge, "circleEdge");
 
             fragBuilder->codeAppend("float4 dashParams;");
             varyingHandler->addPassThroughAttribute(
-                    bcscgp.kInDashParams, "dashParams",
+                    bcscgp.fInDashParams, "dashParams",
                     GrGLSLVaryingHandler::Interpolation::kCanBeFlat);
             GrGLSLVarying wrapDashes(kHalf4_GrSLType);
             varyingHandler->addVarying("wrapDashes", &wrapDashes,
@@ -322,7 +320,7 @@ private:
             GrGLSLVarying lastIntervalLength(kHalf_GrSLType);
             varyingHandler->addVarying("lastIntervalLength", &lastIntervalLength,
                                        GrGLSLVaryingHandler::Interpolation::kCanBeFlat);
-            vertBuilder->codeAppendf("float4 dashParams = %s;", bcscgp.kInDashParams.name());
+            vertBuilder->codeAppendf("float4 dashParams = %s;", bcscgp.fInDashParams.name());
             // Our fragment shader works in on/off intervals as specified by dashParams.xy:
             //     x = length of on interval, y = length of on + off.
             // There are two other parameters in dashParams.zw:
@@ -384,17 +382,17 @@ private:
 
             // setup pass through color
             varyingHandler->addPassThroughAttribute(
-                    bcscgp.kInColor, args.fOutputColor,
+                    bcscgp.fInColor, args.fOutputColor,
                     GrGLSLVaryingHandler::Interpolation::kCanBeFlat);
 
             // Setup position
-            this->writeOutputPosition(vertBuilder, gpArgs, bcscgp.kInPosition.name());
+            this->writeOutputPosition(vertBuilder, gpArgs, bcscgp.fInPosition.name());
 
             // emit transforms
             this->emitTransforms(vertBuilder,
                                  varyingHandler,
                                  uniformHandler,
-                                 bcscgp.kInPosition.asShaderVar(),
+                                 bcscgp.fInPosition.asShaderVar(),
                                  bcscgp.fLocalMatrix,
                                  args.fFPCoordTransformHandler);
             GrShaderVar fnArgs[] = {
@@ -488,33 +486,22 @@ private:
         typedef GrGLSLGeometryProcessor INHERITED;
     };
 
-    const Attribute& onVertexAttribute(int i) const override {
-        return IthAttribute(i, kInPosition, kInColor, kInCircleEdge, kInDashParams);
-    }
-
     SkMatrix fLocalMatrix;
-    static constexpr Attribute kInPosition =
-            {"inPosition", kFloat2_GrVertexAttribType, kFloat2_GrSLType};
-    static constexpr Attribute kInColor =
-            {"inColor", kUByte4_norm_GrVertexAttribType, kHalf4_GrSLType};
-    static constexpr Attribute kInCircleEdge =
-            {"inCircleEdge", kFloat4_GrVertexAttribType, kFloat4_GrSLType};
-    static constexpr Attribute kInDashParams =
-            {"inDashParams", kFloat4_GrVertexAttribType, kFloat4_GrSLType};
+    Attribute fInPosition;
+    Attribute fInColor;
+    Attribute fInCircleEdge;
+    Attribute fInDashParams;
 
     GR_DECLARE_GEOMETRY_PROCESSOR_TEST
 
     typedef GrGeometryProcessor INHERITED;
 };
-constexpr GrPrimitiveProcessor::Attribute ButtCapDashedCircleGeometryProcessor::kInPosition;
-constexpr GrPrimitiveProcessor::Attribute ButtCapDashedCircleGeometryProcessor::kInColor;
-constexpr GrPrimitiveProcessor::Attribute ButtCapDashedCircleGeometryProcessor::kInCircleEdge;
-constexpr GrPrimitiveProcessor::Attribute ButtCapDashedCircleGeometryProcessor::kInDashParams;
 
 #if GR_TEST_UTILS
 sk_sp<GrGeometryProcessor> ButtCapDashedCircleGeometryProcessor::TestCreate(GrProcessorTestData* d) {
+    bool wideColor = d->fRandom->nextBool();
     const SkMatrix& matrix = GrTest::TestMatrix(d->fRandom);
-    return sk_sp<GrGeometryProcessor>(new ButtCapDashedCircleGeometryProcessor(matrix));
+    return sk_sp<GrGeometryProcessor>(new ButtCapDashedCircleGeometryProcessor(wideColor, matrix));
 }
 #endif
 
@@ -530,10 +517,14 @@ sk_sp<GrGeometryProcessor> ButtCapDashedCircleGeometryProcessor::TestCreate(GrPr
 
 class EllipseGeometryProcessor : public GrGeometryProcessor {
 public:
-    EllipseGeometryProcessor(bool stroke, const SkMatrix& localMatrix)
+    EllipseGeometryProcessor(bool stroke, bool wideColor, const SkMatrix& localMatrix)
     : INHERITED(kEllipseGeometryProcessor_ClassID)
     , fLocalMatrix(localMatrix) {
-        this->setVertexAttributeCnt(4);
+        fInPosition = {"inPosition", kFloat2_GrVertexAttribType, kFloat2_GrSLType};
+        fInColor = color_attribute(wideColor);
+        fInEllipseOffset = {"inEllipseOffset", kFloat2_GrVertexAttribType, kHalf2_GrSLType};
+        fInEllipseRadii = {"inEllipseRadii", kFloat4_GrVertexAttribType, kHalf4_GrSLType};
+        this->setVertexAttributes(&fInPosition, 4);
         fStroke = stroke;
     }
 
@@ -566,24 +557,24 @@ private:
             GrGLSLVarying ellipseOffsets(kHalf2_GrSLType);
             varyingHandler->addVarying("EllipseOffsets", &ellipseOffsets);
             vertBuilder->codeAppendf("%s = %s;", ellipseOffsets.vsOut(),
-                                     egp.kInEllipseOffset.name());
+                                     egp.fInEllipseOffset.name());
 
             GrGLSLVarying ellipseRadii(kHalf4_GrSLType);
             varyingHandler->addVarying("EllipseRadii", &ellipseRadii);
-            vertBuilder->codeAppendf("%s = %s;", ellipseRadii.vsOut(), egp.kInEllipseRadii.name());
+            vertBuilder->codeAppendf("%s = %s;", ellipseRadii.vsOut(), egp.fInEllipseRadii.name());
 
             GrGLSLFPFragmentBuilder* fragBuilder = args.fFragBuilder;
             // setup pass through color
-            varyingHandler->addPassThroughAttribute(egp.kInColor, args.fOutputColor);
+            varyingHandler->addPassThroughAttribute(egp.fInColor, args.fOutputColor);
 
             // Setup position
-            this->writeOutputPosition(vertBuilder, gpArgs, egp.kInPosition.name());
+            this->writeOutputPosition(vertBuilder, gpArgs, egp.fInPosition.name());
 
             // emit transforms
             this->emitTransforms(vertBuilder,
                                  varyingHandler,
                                  uniformHandler,
-                                 egp.kInPosition.asShaderVar(),
+                                 egp.fInPosition.asShaderVar(),
                                  egp.fLocalMatrix,
                                  args.fFPCoordTransformHandler);
             // For stroked ellipses, we use the full ellipse equation (x^2/a^2 + y^2/b^2 = 1)
@@ -639,18 +630,10 @@ private:
         typedef GrGLSLGeometryProcessor INHERITED;
     };
 
-    const Attribute& onVertexAttribute(int i) const override {
-        return IthAttribute(i, kInPosition, kInColor, kInEllipseOffset, kInEllipseRadii);
-    }
-
-    static constexpr Attribute kInPosition =
-            {"inPosition", kFloat2_GrVertexAttribType, kFloat2_GrSLType};
-    static constexpr Attribute kInColor =
-            {"inColor", kUByte4_norm_GrVertexAttribType, kHalf4_GrSLType};
-    static constexpr Attribute kInEllipseOffset =
-            {"inEllipseOffset", kFloat2_GrVertexAttribType, kHalf2_GrSLType};
-    static constexpr Attribute kInEllipseRadii =
-            {"inEllipseRadii", kFloat4_GrVertexAttribType, kHalf4_GrSLType};
+    Attribute fInPosition;
+    Attribute fInColor;
+    Attribute fInEllipseOffset;
+    Attribute fInEllipseRadii;
 
     SkMatrix fLocalMatrix;
     bool fStroke;
@@ -659,17 +642,14 @@ private:
 
     typedef GrGeometryProcessor INHERITED;
 };
-constexpr GrPrimitiveProcessor::Attribute EllipseGeometryProcessor::kInPosition;
-constexpr GrPrimitiveProcessor::Attribute EllipseGeometryProcessor::kInColor;
-constexpr GrPrimitiveProcessor::Attribute EllipseGeometryProcessor::kInEllipseOffset;
-constexpr GrPrimitiveProcessor::Attribute EllipseGeometryProcessor::kInEllipseRadii;
 
 GR_DEFINE_GEOMETRY_PROCESSOR_TEST(EllipseGeometryProcessor);
 
 #if GR_TEST_UTILS
 sk_sp<GrGeometryProcessor> EllipseGeometryProcessor::TestCreate(GrProcessorTestData* d) {
     return sk_sp<GrGeometryProcessor>(
-            new EllipseGeometryProcessor(d->fRandom->nextBool(), GrTest::TestMatrix(d->fRandom)));
+            new EllipseGeometryProcessor(d->fRandom->nextBool(), d->fRandom->nextBool(),
+                                         GrTest::TestMatrix(d->fRandom)));
 }
 #endif
 
@@ -688,11 +668,15 @@ enum class DIEllipseStyle { kStroke = 0, kHairline, kFill };
 
 class DIEllipseGeometryProcessor : public GrGeometryProcessor {
 public:
-    DIEllipseGeometryProcessor(const SkMatrix& viewMatrix, DIEllipseStyle style)
+    DIEllipseGeometryProcessor(bool wideColor, const SkMatrix& viewMatrix, DIEllipseStyle style)
             : INHERITED(kDIEllipseGeometryProcessor_ClassID)
             , fViewMatrix(viewMatrix) {
         fStyle = style;
-        this->setVertexAttributeCnt(4);
+        fInPosition = {"inPosition", kFloat2_GrVertexAttribType, kFloat2_GrSLType};
+        fInColor = color_attribute(wideColor);
+        fInEllipseOffsets0 = {"inEllipseOffsets0", kFloat2_GrVertexAttribType, kHalf2_GrSLType};
+        fInEllipseOffsets1 = {"inEllipseOffsets1", kFloat2_GrVertexAttribType, kHalf2_GrSLType};
+        this->setVertexAttributes(&fInPosition, 4);
     }
 
     ~DIEllipseGeometryProcessor() override {}
@@ -723,20 +707,20 @@ private:
 
             GrGLSLVarying offsets0(kHalf2_GrSLType);
             varyingHandler->addVarying("EllipseOffsets0", &offsets0);
-            vertBuilder->codeAppendf("%s = %s;", offsets0.vsOut(), diegp.kInEllipseOffsets0.name());
+            vertBuilder->codeAppendf("%s = %s;", offsets0.vsOut(), diegp.fInEllipseOffsets0.name());
 
             GrGLSLVarying offsets1(kHalf2_GrSLType);
             varyingHandler->addVarying("EllipseOffsets1", &offsets1);
-            vertBuilder->codeAppendf("%s = %s;", offsets1.vsOut(), diegp.kInEllipseOffsets1.name());
+            vertBuilder->codeAppendf("%s = %s;", offsets1.vsOut(), diegp.fInEllipseOffsets1.name());
 
             GrGLSLFPFragmentBuilder* fragBuilder = args.fFragBuilder;
-            varyingHandler->addPassThroughAttribute(diegp.kInColor, args.fOutputColor);
+            varyingHandler->addPassThroughAttribute(diegp.fInColor, args.fOutputColor);
 
             // Setup position
             this->writeOutputPosition(vertBuilder,
                                       uniformHandler,
                                       gpArgs,
-                                      diegp.kInPosition.name(),
+                                      diegp.fInPosition.name(),
                                       diegp.fViewMatrix,
                                       &fViewMatrixUniform);
 
@@ -744,7 +728,7 @@ private:
             this->emitTransforms(vertBuilder,
                                  varyingHandler,
                                  uniformHandler,
-                                 diegp.kInPosition.asShaderVar(),
+                                 diegp.fInPosition.asShaderVar(),
                                  args.fFPCoordTransformHandler);
 
             // for outer curve
@@ -815,20 +799,11 @@ private:
         typedef GrGLSLGeometryProcessor INHERITED;
     };
 
-    const Attribute& onVertexAttribute(int i) const override {
-        return IthAttribute(i, kInPosition, kInColor, kInEllipseOffsets0, kInEllipseOffsets1);
-    }
 
-    static constexpr Attribute kInPosition =
-            {"inPosition", kFloat2_GrVertexAttribType, kFloat2_GrSLType};
-    static constexpr Attribute kInColor =
-            {"inColor", kUByte4_norm_GrVertexAttribType, kHalf4_GrSLType};
-    static constexpr Attribute kInEllipseOffsets0 = {"inEllipseOffsets0",
-                                                     kFloat2_GrVertexAttribType,
-                                                     kHalf2_GrSLType};
-    static constexpr Attribute kInEllipseOffsets1 = {"inEllipseOffsets1",
-                                                     kFloat2_GrVertexAttribType,
-                                                     kHalf2_GrSLType};
+    Attribute fInPosition;
+    Attribute fInColor;
+    Attribute fInEllipseOffsets0;
+    Attribute fInEllipseOffsets1;
 
     SkMatrix fViewMatrix;
     DIEllipseStyle fStyle;
@@ -837,17 +812,14 @@ private:
 
     typedef GrGeometryProcessor INHERITED;
 };
-constexpr GrPrimitiveProcessor::Attribute DIEllipseGeometryProcessor::kInPosition;
-constexpr GrPrimitiveProcessor::Attribute DIEllipseGeometryProcessor::kInColor;
-constexpr GrPrimitiveProcessor::Attribute DIEllipseGeometryProcessor::kInEllipseOffsets0;
-constexpr GrPrimitiveProcessor::Attribute DIEllipseGeometryProcessor::kInEllipseOffsets1;
 
 GR_DEFINE_GEOMETRY_PROCESSOR_TEST(DIEllipseGeometryProcessor);
 
 #if GR_TEST_UTILS
 sk_sp<GrGeometryProcessor> DIEllipseGeometryProcessor::TestCreate(GrProcessorTestData* d) {
     return sk_sp<GrGeometryProcessor>(new DIEllipseGeometryProcessor(
-            GrTest::TestMatrix(d->fRandom), (DIEllipseStyle)(d->fRandom->nextRangeU(0, 2))));
+            d->fRandom->nextBool(), GrTest::TestMatrix(d->fRandom),
+            (DIEllipseStyle)(d->fRandom->nextRangeU(0, 2))));
 }
 #endif
 
@@ -881,6 +853,33 @@ static const uint16_t gStrokeCircleIndices[] = {
         // clang-format on
 };
 
+// Normalized geometry for octagons that circumscribe and lie on a circle:
+
+static constexpr SkScalar kOctOffset = 0.41421356237f;  // sqrt(2) - 1
+static constexpr SkPoint kOctagonOuter[] = {
+    SkPoint::Make(-kOctOffset, -1),
+    SkPoint::Make( kOctOffset, -1),
+    SkPoint::Make( 1, -kOctOffset),
+    SkPoint::Make( 1,  kOctOffset),
+    SkPoint::Make( kOctOffset, 1),
+    SkPoint::Make(-kOctOffset, 1),
+    SkPoint::Make(-1,  kOctOffset),
+    SkPoint::Make(-1, -kOctOffset),
+};
+
+// cosine and sine of pi/8
+static constexpr SkScalar kCosPi8 = 0.923579533f;
+static constexpr SkScalar kSinPi8 = 0.382683432f;
+static constexpr SkPoint kOctagonInner[] = {
+    SkPoint::Make(-kSinPi8, -kCosPi8),
+    SkPoint::Make( kSinPi8, -kCosPi8),
+    SkPoint::Make( kCosPi8, -kSinPi8),
+    SkPoint::Make( kCosPi8,  kSinPi8),
+    SkPoint::Make( kSinPi8,  kCosPi8),
+    SkPoint::Make(-kSinPi8,  kCosPi8),
+    SkPoint::Make(-kCosPi8,  kSinPi8),
+    SkPoint::Make(-kCosPi8, -kSinPi8),
+};
 
 static const int kIndicesPerFillCircle = SK_ARRAY_COUNT(gFillCircleIndices);
 static const int kIndicesPerStrokeCircle = SK_ARRAY_COUNT(gStrokeCircleIndices);
@@ -957,13 +956,15 @@ public:
                                                radius, style, arcParams);
     }
 
-    CircleOp(const Helper::MakeArgs& helperArgs, GrColor color, const SkMatrix& viewMatrix,
-             SkPoint center, SkScalar radius, const GrStyle& style, const ArcParams* arcParams)
+    CircleOp(const Helper::MakeArgs& helperArgs, const SkPMColor4f& color,
+             const SkMatrix& viewMatrix, SkPoint center, SkScalar radius, const GrStyle& style,
+             const ArcParams* arcParams)
             : GrMeshDrawOp(ClassID()), fHelper(helperArgs, GrAAType::kCoverage) {
         const SkStrokeRec& stroke = style.strokeRec();
         SkStrokeRec::Style recStyle = stroke.getStyle();
 
         fRoundCaps = false;
+        fWideColor = !SkPMColor4fFitsInBytes(color);
 
         viewMatrix.mapPoints(&center, 1);
         radius = viewMatrix.mapRadius(radius);
@@ -1137,27 +1138,30 @@ public:
 
     const char* name() const override { return "CircleOp"; }
 
-    void visitProxies(const VisitProxyFunc& func) const override {
+    void visitProxies(const VisitProxyFunc& func, VisitorType) const override {
         fHelper.visitProxies(func);
     }
 
+#ifdef SK_DEBUG
     SkString dumpInfo() const override {
         SkString string;
         for (int i = 0; i < fCircles.count(); ++i) {
             string.appendf(
                     "Color: 0x%08x Rect [L: %.2f, T: %.2f, R: %.2f, B: %.2f],"
                     "InnerRad: %.2f, OuterRad: %.2f\n",
-                    fCircles[i].fColor, fCircles[i].fDevBounds.fLeft, fCircles[i].fDevBounds.fTop,
-                    fCircles[i].fDevBounds.fRight, fCircles[i].fDevBounds.fBottom,
-                    fCircles[i].fInnerRadius, fCircles[i].fOuterRadius);
+                    fCircles[i].fColor.toBytes_RGBA(), fCircles[i].fDevBounds.fLeft,
+                    fCircles[i].fDevBounds.fTop, fCircles[i].fDevBounds.fRight,
+                    fCircles[i].fDevBounds.fBottom, fCircles[i].fInnerRadius,
+                    fCircles[i].fOuterRadius);
         }
         string += fHelper.dumpInfo();
         string += INHERITED::dumpInfo();
         return string;
     }
+#endif
 
     RequiresDstTexture finalize(const GrCaps& caps, const GrAppliedClip* clip) override {
-        GrColor* color = &fCircles.front().fColor;
+        SkPMColor4f* color = &fCircles.front().fColor;
         return fHelper.xpRequiresDstTexture(caps, clip, GrProcessorAnalysisCoverage::kSingleChannel,
                                             color);
     }
@@ -1173,33 +1177,14 @@ private:
 
         // Setup geometry processor
         sk_sp<GrGeometryProcessor> gp(new CircleGeometryProcessor(
-                !fAllFill, fClipPlane, fClipPlaneIsect, fClipPlaneUnion, fRoundCaps, localMatrix));
-
-        struct CircleVertex {
-            SkPoint fPos;
-            GrColor fColor;
-            SkPoint fOffset;
-            SkScalar fOuterRadius;
-            SkScalar fInnerRadius;
-            // These planes may or may not be present in the vertex buffer.
-            SkScalar fHalfPlanes[3][3];
-        };
-
-        int numPlanes = (int)fClipPlane + fClipPlaneIsect + fClipPlaneUnion;
-        auto vertexCapCenters = [numPlanes](CircleVertex* v) {
-            return (void*)(v->fHalfPlanes + numPlanes);
-        };
-        size_t vertexStride = sizeof(CircleVertex) - (fClipPlane ? 0 : 3 * sizeof(SkScalar)) -
-                              (fClipPlaneIsect ? 0 : 3 * sizeof(SkScalar)) -
-                              (fClipPlaneUnion ? 0 : 3 * sizeof(SkScalar)) +
-                              (fRoundCaps ? 2 * sizeof(SkPoint) : 0);
-        SkASSERT(vertexStride == gp->debugOnly_vertexStride());
+                !fAllFill, fClipPlane, fClipPlaneIsect, fClipPlaneUnion, fRoundCaps, fWideColor,
+                localMatrix));
 
         const GrBuffer* vertexBuffer;
         int firstVertex;
-        char* vertices = (char*)target->makeVertexSpace(vertexStride, fVertCount, &vertexBuffer,
-                                                        &firstVertex);
-        if (!vertices) {
+        GrVertexWriter vertices{target->makeVertexSpace(gp->vertexStride(), fVertCount,
+                                                        &vertexBuffer, &firstVertex)};
+        if (!vertices.fPtr) {
             SkDebugf("Could not allocate vertices\n");
             return;
         }
@@ -1216,24 +1201,15 @@ private:
         for (const auto& circle : fCircles) {
             SkScalar innerRadius = circle.fInnerRadius;
             SkScalar outerRadius = circle.fOuterRadius;
-            GrColor color = circle.fColor;
+            GrVertexColor color(circle.fColor, fWideColor);
             const SkRect& bounds = circle.fDevBounds;
-
-            CircleVertex* v0 = reinterpret_cast<CircleVertex*>(vertices + 0 * vertexStride);
-            CircleVertex* v1 = reinterpret_cast<CircleVertex*>(vertices + 1 * vertexStride);
-            CircleVertex* v2 = reinterpret_cast<CircleVertex*>(vertices + 2 * vertexStride);
-            CircleVertex* v3 = reinterpret_cast<CircleVertex*>(vertices + 3 * vertexStride);
-            CircleVertex* v4 = reinterpret_cast<CircleVertex*>(vertices + 4 * vertexStride);
-            CircleVertex* v5 = reinterpret_cast<CircleVertex*>(vertices + 5 * vertexStride);
-            CircleVertex* v6 = reinterpret_cast<CircleVertex*>(vertices + 6 * vertexStride);
-            CircleVertex* v7 = reinterpret_cast<CircleVertex*>(vertices + 7 * vertexStride);
 
             // The inner radius in the vertex data must be specified in normalized space.
             innerRadius = innerRadius / outerRadius;
+            SkPoint radii = { outerRadius, innerRadius };
 
             SkPoint center = SkPoint::Make(bounds.centerX(), bounds.centerY());
             SkScalar halfWidth = 0.5f * bounds.width();
-            SkScalar octOffset = 0.41421356237f;  // sqrt(2) - 1
 
             SkVector geoClipPlane = { 0, 0 };
             SkScalar offsetClipDist = SK_Scalar1;
@@ -1250,228 +1226,61 @@ private:
                 offsetClipDist = 0.5f / halfWidth;
             }
 
-            auto clipOffset = [geoClipPlane, offsetClipDist](const SkPoint& p) {
+            for (int i = 0; i < 8; ++i) {
                 // This clips the normalized offset to the half-plane we computed above. Then we
                 // compute the vertex position from this.
-                SkScalar dist = SkTMin(p.dot(geoClipPlane) + offsetClipDist, 0.0f);
-                return p - geoClipPlane * dist;
-            };
-
-            v0->fOffset = clipOffset(SkPoint::Make(-octOffset, -1));
-            v0->fPos = center + v0->fOffset * halfWidth;
-            v0->fColor = color;
-            v0->fOuterRadius = outerRadius;
-            v0->fInnerRadius = innerRadius;
-
-            v1->fOffset = clipOffset(SkPoint::Make(octOffset, -1));
-            v1->fPos = center + v1->fOffset * halfWidth;
-            v1->fColor = color;
-            v1->fOuterRadius = outerRadius;
-            v1->fInnerRadius = innerRadius;
-
-            v2->fOffset = clipOffset(SkPoint::Make(1, -octOffset));
-            v2->fPos = center + v2->fOffset * halfWidth;
-            v2->fColor = color;
-            v2->fOuterRadius = outerRadius;
-            v2->fInnerRadius = innerRadius;
-
-            v3->fOffset = clipOffset(SkPoint::Make(1, octOffset));
-            v3->fPos = center + v3->fOffset * halfWidth;
-            v3->fColor = color;
-            v3->fOuterRadius = outerRadius;
-            v3->fInnerRadius = innerRadius;
-
-            v4->fOffset = clipOffset(SkPoint::Make(octOffset, 1));
-            v4->fPos = center + v4->fOffset * halfWidth;
-            v4->fColor = color;
-            v4->fOuterRadius = outerRadius;
-            v4->fInnerRadius = innerRadius;
-
-            v5->fOffset = clipOffset(SkPoint::Make(-octOffset, 1));
-            v5->fPos = center + v5->fOffset * halfWidth;
-            v5->fColor = color;
-            v5->fOuterRadius = outerRadius;
-            v5->fInnerRadius = innerRadius;
-
-            v6->fOffset = clipOffset(SkPoint::Make(-1, octOffset));
-            v6->fPos = center + v6->fOffset * halfWidth;
-            v6->fColor = color;
-            v6->fOuterRadius = outerRadius;
-            v6->fInnerRadius = innerRadius;
-
-            v7->fOffset = clipOffset(SkPoint::Make(-1, -octOffset));
-            v7->fPos = center + v7->fOffset * halfWidth;
-            v7->fColor = color;
-            v7->fOuterRadius = outerRadius;
-            v7->fInnerRadius = innerRadius;
-
-            if (fClipPlane) {
-                memcpy(v0->fHalfPlanes[0], circle.fClipPlane, 3 * sizeof(SkScalar));
-                memcpy(v1->fHalfPlanes[0], circle.fClipPlane, 3 * sizeof(SkScalar));
-                memcpy(v2->fHalfPlanes[0], circle.fClipPlane, 3 * sizeof(SkScalar));
-                memcpy(v3->fHalfPlanes[0], circle.fClipPlane, 3 * sizeof(SkScalar));
-                memcpy(v4->fHalfPlanes[0], circle.fClipPlane, 3 * sizeof(SkScalar));
-                memcpy(v5->fHalfPlanes[0], circle.fClipPlane, 3 * sizeof(SkScalar));
-                memcpy(v6->fHalfPlanes[0], circle.fClipPlane, 3 * sizeof(SkScalar));
-                memcpy(v7->fHalfPlanes[0], circle.fClipPlane, 3 * sizeof(SkScalar));
-            }
-            int unionIdx = 1;
-            if (fClipPlaneIsect) {
-                memcpy(v0->fHalfPlanes[1], circle.fIsectPlane, 3 * sizeof(SkScalar));
-                memcpy(v1->fHalfPlanes[1], circle.fIsectPlane, 3 * sizeof(SkScalar));
-                memcpy(v2->fHalfPlanes[1], circle.fIsectPlane, 3 * sizeof(SkScalar));
-                memcpy(v3->fHalfPlanes[1], circle.fIsectPlane, 3 * sizeof(SkScalar));
-                memcpy(v4->fHalfPlanes[1], circle.fIsectPlane, 3 * sizeof(SkScalar));
-                memcpy(v5->fHalfPlanes[1], circle.fIsectPlane, 3 * sizeof(SkScalar));
-                memcpy(v6->fHalfPlanes[1], circle.fIsectPlane, 3 * sizeof(SkScalar));
-                memcpy(v7->fHalfPlanes[1], circle.fIsectPlane, 3 * sizeof(SkScalar));
-                unionIdx = 2;
-            }
-            if (fClipPlaneUnion) {
-                memcpy(v0->fHalfPlanes[unionIdx], circle.fUnionPlane, 3 * sizeof(SkScalar));
-                memcpy(v1->fHalfPlanes[unionIdx], circle.fUnionPlane, 3 * sizeof(SkScalar));
-                memcpy(v2->fHalfPlanes[unionIdx], circle.fUnionPlane, 3 * sizeof(SkScalar));
-                memcpy(v3->fHalfPlanes[unionIdx], circle.fUnionPlane, 3 * sizeof(SkScalar));
-                memcpy(v4->fHalfPlanes[unionIdx], circle.fUnionPlane, 3 * sizeof(SkScalar));
-                memcpy(v5->fHalfPlanes[unionIdx], circle.fUnionPlane, 3 * sizeof(SkScalar));
-                memcpy(v6->fHalfPlanes[unionIdx], circle.fUnionPlane, 3 * sizeof(SkScalar));
-                memcpy(v7->fHalfPlanes[unionIdx], circle.fUnionPlane, 3 * sizeof(SkScalar));
-            }
-            if (fRoundCaps) {
-                memcpy(vertexCapCenters(v0), circle.fRoundCapCenters, 2 * sizeof(SkPoint));
-                memcpy(vertexCapCenters(v1), circle.fRoundCapCenters, 2 * sizeof(SkPoint));
-                memcpy(vertexCapCenters(v2), circle.fRoundCapCenters, 2 * sizeof(SkPoint));
-                memcpy(vertexCapCenters(v3), circle.fRoundCapCenters, 2 * sizeof(SkPoint));
-                memcpy(vertexCapCenters(v4), circle.fRoundCapCenters, 2 * sizeof(SkPoint));
-                memcpy(vertexCapCenters(v5), circle.fRoundCapCenters, 2 * sizeof(SkPoint));
-                memcpy(vertexCapCenters(v6), circle.fRoundCapCenters, 2 * sizeof(SkPoint));
-                memcpy(vertexCapCenters(v7), circle.fRoundCapCenters, 2 * sizeof(SkPoint));
+                SkScalar dist = SkTMin(kOctagonOuter[i].dot(geoClipPlane) + offsetClipDist, 0.0f);
+                SkVector offset = kOctagonOuter[i] - geoClipPlane * dist;
+                vertices.write(center + offset * halfWidth,
+                               color,
+                               offset,
+                               radii);
+                if (fClipPlane) {
+                    vertices.write(circle.fClipPlane);
+                }
+                if (fClipPlaneIsect) {
+                    vertices.write(circle.fIsectPlane);
+                }
+                if (fClipPlaneUnion) {
+                    vertices.write(circle.fUnionPlane);
+                }
+                if (fRoundCaps) {
+                    vertices.write(circle.fRoundCapCenters);
+                }
             }
 
             if (circle.fStroked) {
                 // compute the inner ring
-                CircleVertex* v0 = reinterpret_cast<CircleVertex*>(vertices + 8 * vertexStride);
-                CircleVertex* v1 = reinterpret_cast<CircleVertex*>(vertices + 9 * vertexStride);
-                CircleVertex* v2 = reinterpret_cast<CircleVertex*>(vertices + 10 * vertexStride);
-                CircleVertex* v3 = reinterpret_cast<CircleVertex*>(vertices + 11 * vertexStride);
-                CircleVertex* v4 = reinterpret_cast<CircleVertex*>(vertices + 12 * vertexStride);
-                CircleVertex* v5 = reinterpret_cast<CircleVertex*>(vertices + 13 * vertexStride);
-                CircleVertex* v6 = reinterpret_cast<CircleVertex*>(vertices + 14 * vertexStride);
-                CircleVertex* v7 = reinterpret_cast<CircleVertex*>(vertices + 15 * vertexStride);
 
-                // cosine and sine of pi/8
-                SkScalar c = 0.923579533f;
-                SkScalar s = 0.382683432f;
-                SkScalar r = circle.fInnerRadius;
-
-                v0->fPos = center + SkPoint::Make(-s * r, -c * r);
-                v0->fColor = color;
-                v0->fOffset = SkPoint::Make(-s * innerRadius, -c * innerRadius);
-                v0->fOuterRadius = outerRadius;
-                v0->fInnerRadius = innerRadius;
-
-                v1->fPos = center + SkPoint::Make(s * r, -c * r);
-                v1->fColor = color;
-                v1->fOffset = SkPoint::Make(s * innerRadius, -c * innerRadius);
-                v1->fOuterRadius = outerRadius;
-                v1->fInnerRadius = innerRadius;
-
-                v2->fPos = center + SkPoint::Make(c * r, -s * r);
-                v2->fColor = color;
-                v2->fOffset = SkPoint::Make(c * innerRadius, -s * innerRadius);
-                v2->fOuterRadius = outerRadius;
-                v2->fInnerRadius = innerRadius;
-
-                v3->fPos = center + SkPoint::Make(c * r, s * r);
-                v3->fColor = color;
-                v3->fOffset = SkPoint::Make(c * innerRadius, s * innerRadius);
-                v3->fOuterRadius = outerRadius;
-                v3->fInnerRadius = innerRadius;
-
-                v4->fPos = center + SkPoint::Make(s * r, c * r);
-                v4->fColor = color;
-                v4->fOffset = SkPoint::Make(s * innerRadius, c * innerRadius);
-                v4->fOuterRadius = outerRadius;
-                v4->fInnerRadius = innerRadius;
-
-                v5->fPos = center + SkPoint::Make(-s * r, c * r);
-                v5->fColor = color;
-                v5->fOffset = SkPoint::Make(-s * innerRadius, c * innerRadius);
-                v5->fOuterRadius = outerRadius;
-                v5->fInnerRadius = innerRadius;
-
-                v6->fPos = center + SkPoint::Make(-c * r, s * r);
-                v6->fColor = color;
-                v6->fOffset = SkPoint::Make(-c * innerRadius, s * innerRadius);
-                v6->fOuterRadius = outerRadius;
-                v6->fInnerRadius = innerRadius;
-
-                v7->fPos = center + SkPoint::Make(-c * r, -s * r);
-                v7->fColor = color;
-                v7->fOffset = SkPoint::Make(-c * innerRadius, -s * innerRadius);
-                v7->fOuterRadius = outerRadius;
-                v7->fInnerRadius = innerRadius;
-
-                if (fClipPlane) {
-                    memcpy(v0->fHalfPlanes[0], circle.fClipPlane, 3 * sizeof(SkScalar));
-                    memcpy(v1->fHalfPlanes[0], circle.fClipPlane, 3 * sizeof(SkScalar));
-                    memcpy(v2->fHalfPlanes[0], circle.fClipPlane, 3 * sizeof(SkScalar));
-                    memcpy(v3->fHalfPlanes[0], circle.fClipPlane, 3 * sizeof(SkScalar));
-                    memcpy(v4->fHalfPlanes[0], circle.fClipPlane, 3 * sizeof(SkScalar));
-                    memcpy(v5->fHalfPlanes[0], circle.fClipPlane, 3 * sizeof(SkScalar));
-                    memcpy(v6->fHalfPlanes[0], circle.fClipPlane, 3 * sizeof(SkScalar));
-                    memcpy(v7->fHalfPlanes[0], circle.fClipPlane, 3 * sizeof(SkScalar));
-                }
-                int unionIdx = 1;
-                if (fClipPlaneIsect) {
-                    memcpy(v0->fHalfPlanes[1], circle.fIsectPlane, 3 * sizeof(SkScalar));
-                    memcpy(v1->fHalfPlanes[1], circle.fIsectPlane, 3 * sizeof(SkScalar));
-                    memcpy(v2->fHalfPlanes[1], circle.fIsectPlane, 3 * sizeof(SkScalar));
-                    memcpy(v3->fHalfPlanes[1], circle.fIsectPlane, 3 * sizeof(SkScalar));
-                    memcpy(v4->fHalfPlanes[1], circle.fIsectPlane, 3 * sizeof(SkScalar));
-                    memcpy(v5->fHalfPlanes[1], circle.fIsectPlane, 3 * sizeof(SkScalar));
-                    memcpy(v6->fHalfPlanes[1], circle.fIsectPlane, 3 * sizeof(SkScalar));
-                    memcpy(v7->fHalfPlanes[1], circle.fIsectPlane, 3 * sizeof(SkScalar));
-                    unionIdx = 2;
-                }
-                if (fClipPlaneUnion) {
-                    memcpy(v0->fHalfPlanes[unionIdx], circle.fUnionPlane, 3 * sizeof(SkScalar));
-                    memcpy(v1->fHalfPlanes[unionIdx], circle.fUnionPlane, 3 * sizeof(SkScalar));
-                    memcpy(v2->fHalfPlanes[unionIdx], circle.fUnionPlane, 3 * sizeof(SkScalar));
-                    memcpy(v3->fHalfPlanes[unionIdx], circle.fUnionPlane, 3 * sizeof(SkScalar));
-                    memcpy(v4->fHalfPlanes[unionIdx], circle.fUnionPlane, 3 * sizeof(SkScalar));
-                    memcpy(v5->fHalfPlanes[unionIdx], circle.fUnionPlane, 3 * sizeof(SkScalar));
-                    memcpy(v6->fHalfPlanes[unionIdx], circle.fUnionPlane, 3 * sizeof(SkScalar));
-                    memcpy(v7->fHalfPlanes[unionIdx], circle.fUnionPlane, 3 * sizeof(SkScalar));
-                }
-                if (fRoundCaps) {
-                    memcpy(vertexCapCenters(v0), circle.fRoundCapCenters, 2 * sizeof(SkPoint));
-                    memcpy(vertexCapCenters(v1), circle.fRoundCapCenters, 2 * sizeof(SkPoint));
-                    memcpy(vertexCapCenters(v2), circle.fRoundCapCenters, 2 * sizeof(SkPoint));
-                    memcpy(vertexCapCenters(v3), circle.fRoundCapCenters, 2 * sizeof(SkPoint));
-                    memcpy(vertexCapCenters(v4), circle.fRoundCapCenters, 2 * sizeof(SkPoint));
-                    memcpy(vertexCapCenters(v5), circle.fRoundCapCenters, 2 * sizeof(SkPoint));
-                    memcpy(vertexCapCenters(v6), circle.fRoundCapCenters, 2 * sizeof(SkPoint));
-                    memcpy(vertexCapCenters(v7), circle.fRoundCapCenters, 2 * sizeof(SkPoint));
+                for (int i = 0; i < 8; ++i) {
+                    vertices.write(center + kOctagonInner[i] * circle.fInnerRadius,
+                                   color,
+                                   kOctagonInner[i] * innerRadius,
+                                   radii);
+                    if (fClipPlane) {
+                        vertices.write(circle.fClipPlane);
+                    }
+                    if (fClipPlaneIsect) {
+                        vertices.write(circle.fIsectPlane);
+                    }
+                    if (fClipPlaneUnion) {
+                        vertices.write(circle.fUnionPlane);
+                    }
+                    if (fRoundCaps) {
+                        vertices.write(circle.fRoundCapCenters);
+                    }
                 }
             } else {
                 // filled
-                CircleVertex* v8 = reinterpret_cast<CircleVertex*>(vertices + 8 * vertexStride);
-                v8->fPos = center;
-                v8->fColor = color;
-                v8->fOffset = SkPoint::Make(0, 0);
-                v8->fOuterRadius = outerRadius;
-                v8->fInnerRadius = innerRadius;
+                vertices.write(center, color, SkPoint::Make(0, 0), radii);
                 if (fClipPlane) {
-                    memcpy(v8->fHalfPlanes[0], circle.fClipPlane, 3 * sizeof(SkScalar));
+                    vertices.write(circle.fClipPlane);
                 }
-                int unionIdx = 1;
                 if (fClipPlaneIsect) {
-                    memcpy(v8->fHalfPlanes[1], circle.fIsectPlane, 3 * sizeof(SkScalar));
-                    unionIdx = 2;
+                    vertices.write(circle.fIsectPlane);
                 }
                 if (fClipPlaneUnion) {
-                    memcpy(v8->fHalfPlanes[unionIdx], circle.fUnionPlane, 3 * sizeof(SkScalar));
+                    vertices.write(circle.fUnionPlane);
                 }
                 SkASSERT(!fRoundCaps);
             }
@@ -1483,7 +1292,6 @@ private:
             }
 
             currStartVertex += circle_type_to_vert_count(circle.fStroked);
-            vertices += circle_type_to_vert_count(circle.fStroked) * vertexStride;
         }
 
         GrMesh* mesh = target->allocMesh(GrPrimitiveType::kTriangles);
@@ -1517,9 +1325,9 @@ private:
         fClipPlaneIsect |= that->fClipPlaneIsect;
         fClipPlaneUnion |= that->fClipPlaneUnion;
         fRoundCaps |= that->fRoundCaps;
+        fWideColor |= that->fWideColor;
 
         fCircles.push_back_n(that->fCircles.count(), that->fCircles.begin());
-        this->joinBounds(*that);
         fVertCount += that->fVertCount;
         fIndexCount += that->fIndexCount;
         fAllFill = fAllFill && that->fAllFill;
@@ -1527,7 +1335,7 @@ private:
     }
 
     struct Circle {
-        GrColor fColor;
+        SkPMColor4f fColor;
         SkScalar fInnerRadius;
         SkScalar fOuterRadius;
         SkScalar fClipPlane[3];
@@ -1548,6 +1356,7 @@ private:
     bool fClipPlaneIsect;
     bool fClipPlaneUnion;
     bool fRoundCaps;
+    bool fWideColor;
 
     typedef GrMeshDrawOp INHERITED;
 };
@@ -1576,7 +1385,7 @@ public:
                                                             onAngle, offAngle, phaseAngle);
     }
 
-    ButtCapDashedCircleOp(const Helper::MakeArgs& helperArgs, GrColor color,
+    ButtCapDashedCircleOp(const Helper::MakeArgs& helperArgs, const SkPMColor4f& color,
                           const SkMatrix& viewMatrix, SkPoint center, SkScalar radius,
                           SkScalar strokeWidth, SkScalar startAngle, SkScalar onAngle,
                           SkScalar offAngle, SkScalar phaseAngle)
@@ -1646,12 +1455,16 @@ public:
                 HasAABloat::kYes, IsZeroArea::kNo);
         fVertCount = circle_type_to_vert_count(true);
         fIndexCount = circle_type_to_index_count(true);
+        fWideColor = !SkPMColor4fFitsInBytes(color);
     }
 
     const char* name() const override { return "ButtCappedDashedCircleOp"; }
 
-    void visitProxies(const VisitProxyFunc& func) const override { fHelper.visitProxies(func); }
+    void visitProxies(const VisitProxyFunc& func, VisitorType) const override {
+        fHelper.visitProxies(func);
+    }
 
+#ifdef SK_DEBUG
     SkString dumpInfo() const override {
         SkString string;
         for (int i = 0; i < fCircles.count(); ++i) {
@@ -1659,18 +1472,20 @@ public:
                     "Color: 0x%08x Rect [L: %.2f, T: %.2f, R: %.2f, B: %.2f],"
                     "InnerRad: %.2f, OuterRad: %.2f, OnAngle: %.2f, TotalAngle: %.2f, "
                     "Phase: %.2f\n",
-                    fCircles[i].fColor, fCircles[i].fDevBounds.fLeft, fCircles[i].fDevBounds.fTop,
-                    fCircles[i].fDevBounds.fRight, fCircles[i].fDevBounds.fBottom,
-                    fCircles[i].fInnerRadius, fCircles[i].fOuterRadius, fCircles[i].fOnAngle,
-                    fCircles[i].fTotalAngle, fCircles[i].fPhaseAngle);
+                    fCircles[i].fColor.toBytes_RGBA(), fCircles[i].fDevBounds.fLeft,
+                    fCircles[i].fDevBounds.fTop, fCircles[i].fDevBounds.fRight,
+                    fCircles[i].fDevBounds.fBottom, fCircles[i].fInnerRadius,
+                    fCircles[i].fOuterRadius, fCircles[i].fOnAngle, fCircles[i].fTotalAngle,
+                    fCircles[i].fPhaseAngle);
         }
         string += fHelper.dumpInfo();
         string += INHERITED::dumpInfo();
         return string;
     }
+#endif
 
     RequiresDstTexture finalize(const GrCaps& caps, const GrAppliedClip* clip) override {
-        GrColor* color = &fCircles.front().fColor;
+        SkPMColor4f* color = &fCircles.front().fColor;
         return fHelper.xpRequiresDstTexture(caps, clip, GrProcessorAnalysisCoverage::kSingleChannel,
                                             color);
     }
@@ -1685,28 +1500,14 @@ private:
         }
 
         // Setup geometry processor
-        sk_sp<GrGeometryProcessor> gp(new ButtCapDashedCircleGeometryProcessor(localMatrix));
-
-        struct CircleVertex {
-            SkPoint fPos;
-            GrColor fColor;
-            SkPoint fOffset;
-            SkScalar fOuterRadius;
-            SkScalar fInnerRadius;
-            SkScalar fOnAngle;
-            SkScalar fTotalAngle;
-            SkScalar fStartAngle;
-            SkScalar fPhaseAngle;
-        };
-
-        static constexpr size_t kVertexStride = sizeof(CircleVertex);
-        SkASSERT(kVertexStride == gp->debugOnly_vertexStride());
+        sk_sp<GrGeometryProcessor> gp(new ButtCapDashedCircleGeometryProcessor(fWideColor,
+                                                                               localMatrix));
 
         const GrBuffer* vertexBuffer;
         int firstVertex;
-        char* vertices = (char*)target->makeVertexSpace(kVertexStride, fVertCount, &vertexBuffer,
-                                                        &firstVertex);
-        if (!vertices) {
+        GrVertexWriter vertices{target->makeVertexSpace(gp->vertexStride(), fVertCount,
+                                                        &vertexBuffer, &firstVertex)};
+        if (!vertices.fPtr) {
             SkDebugf("Could not allocate vertices\n");
             return;
         }
@@ -1727,70 +1528,46 @@ private:
             auto normInnerRadius = circle.fInnerRadius / circle.fOuterRadius;
             const SkRect& bounds = circle.fDevBounds;
             bool reflect = false;
-            SkScalar totalAngle = circle.fTotalAngle;
-            if (totalAngle < 0) {
+            struct { float onAngle, totalAngle, startAngle, phaseAngle; } dashParams = {
+                circle.fOnAngle, circle.fTotalAngle, circle.fStartAngle, circle.fPhaseAngle
+            };
+            if (dashParams.totalAngle < 0) {
                 reflect = true;
-                totalAngle = -totalAngle;
+                dashParams.totalAngle = -dashParams.totalAngle;
+                dashParams.startAngle = -dashParams.startAngle;
             }
+
+            GrVertexColor color(circle.fColor, fWideColor);
 
             // The bounding geometry for the circle is composed of an outer bounding octagon and
             // an inner bounded octagon.
 
-            // Initializes the attributes that are the same at each vertex. Also applies reflection.
-            auto init_const_attrs_and_reflect = [&](CircleVertex* v) {
-                v->fColor = circle.fColor;
-                v->fOuterRadius = circle.fOuterRadius;
-                v->fInnerRadius = normInnerRadius;
-                v->fOnAngle = circle.fOnAngle;
-                v->fTotalAngle = totalAngle;
-                v->fStartAngle = circle.fStartAngle;
-                v->fPhaseAngle = circle.fPhaseAngle;
-                if (reflect) {
-                    v->fStartAngle = -v->fStartAngle;
-                    v->fOffset.fY = -v->fOffset.fY;
-                }
-            };
-
             // Compute the vertices of the outer octagon.
             SkPoint center = SkPoint::Make(bounds.centerX(), bounds.centerY());
             SkScalar halfWidth = 0.5f * bounds.width();
-            auto init_outer_vertex = [&](int idx, SkScalar x, SkScalar y) {
-                CircleVertex* v = reinterpret_cast<CircleVertex*>(vertices + idx * kVertexStride);
-                v->fPos = center + SkPoint{x * halfWidth, y * halfWidth};
-                v->fOffset = {x, y};
-                init_const_attrs_and_reflect(v);
+
+            auto reflectY = [=](const SkPoint& p) {
+                return SkPoint{ p.fX, reflect ? -p.fY : p.fY };
             };
-            static constexpr SkScalar kOctOffset = 0.41421356237f;  // sqrt(2) - 1
-            init_outer_vertex(0, -kOctOffset, -1);
-            init_outer_vertex(1, kOctOffset, -1);
-            init_outer_vertex(2, 1, -kOctOffset);
-            init_outer_vertex(3, 1, kOctOffset);
-            init_outer_vertex(4, kOctOffset, 1);
-            init_outer_vertex(5, -kOctOffset, 1);
-            init_outer_vertex(6, -1, kOctOffset);
-            init_outer_vertex(7, -1, -kOctOffset);
+
+            for (int i = 0; i < 8; ++i) {
+                vertices.write(center + kOctagonOuter[i] * halfWidth,
+                               color,
+                               reflectY(kOctagonOuter[i]),
+                               circle.fOuterRadius,
+                               normInnerRadius,
+                               dashParams);
+            }
 
             // Compute the vertices of the inner octagon.
-            auto init_inner_vertex = [&](int idx, SkScalar x, SkScalar y) {
-                CircleVertex* v =
-                        reinterpret_cast<CircleVertex*>(vertices + (idx + 8) * kVertexStride);
-                v->fPos = center + SkPoint{x * circle.fInnerRadius, y * circle.fInnerRadius};
-                v->fOffset = {x * normInnerRadius, y * normInnerRadius};
-                init_const_attrs_and_reflect(v);
-            };
-
-            // cosine and sine of pi/8
-            static constexpr SkScalar kCos = 0.923579533f;
-            static constexpr SkScalar kSin = 0.382683432f;
-
-            init_inner_vertex(0, -kSin, -kCos);
-            init_inner_vertex(1,  kSin, -kCos);
-            init_inner_vertex(2,  kCos, -kSin);
-            init_inner_vertex(3,  kCos,  kSin);
-            init_inner_vertex(4,  kSin,  kCos);
-            init_inner_vertex(5, -kSin,  kCos);
-            init_inner_vertex(6, -kCos,  kSin);
-            init_inner_vertex(7, -kCos, -kSin);
+            for (int i = 0; i < 8; ++i) {
+                vertices.write(center + kOctagonInner[i] * circle.fInnerRadius,
+                               color,
+                               reflectY(kOctagonInner[i]) * normInnerRadius,
+                               circle.fOuterRadius,
+                               normInnerRadius,
+                               dashParams);
+            }
 
             const uint16_t* primIndices = circle_type_to_indices(true);
             const int primIndexCount = circle_type_to_index_count(true);
@@ -1799,7 +1576,6 @@ private:
             }
 
             currStartVertex += circle_type_to_vert_count(true);
-            vertices += circle_type_to_vert_count(true) * kVertexStride;
         }
 
         GrMesh* mesh = target->allocMesh(GrPrimitiveType::kTriangles);
@@ -1828,14 +1604,14 @@ private:
         }
 
         fCircles.push_back_n(that->fCircles.count(), that->fCircles.begin());
-        this->joinBounds(*that);
         fVertCount += that->fVertCount;
         fIndexCount += that->fIndexCount;
+        fWideColor |= that->fWideColor;
         return CombineResult::kMerged;
     }
 
     struct Circle {
-        GrColor fColor;
+        SkPMColor4f fColor;
         SkScalar fOuterRadius;
         SkScalar fInnerRadius;
         SkScalar fOnAngle;
@@ -1850,6 +1626,7 @@ private:
     SkSTArray<1, Circle, true> fCircles;
     int fVertCount;
     int fIndexCount;
+    bool fWideColor;
 
     typedef GrMeshDrawOp INHERITED;
 };
@@ -1937,8 +1714,9 @@ public:
                                                 params, stroke);
     }
 
-    EllipseOp(const Helper::MakeArgs& helperArgs, GrColor color, const SkMatrix& viewMatrix,
-              const DeviceSpaceParams& params, const SkStrokeRec& stroke)
+    EllipseOp(const Helper::MakeArgs& helperArgs, const SkPMColor4f& color,
+              const SkMatrix& viewMatrix, const DeviceSpaceParams& params,
+              const SkStrokeRec& stroke)
             : INHERITED(ClassID()), fHelper(helperArgs, GrAAType::kCoverage) {
         SkStrokeRec::Style style = stroke.getStyle();
         bool isStrokeOnly =
@@ -1958,14 +1736,16 @@ public:
 
         fStroked = isStrokeOnly && params.fInnerXRadius > 0 && params.fInnerYRadius > 0;
         fViewMatrixIfUsingLocalCoords = viewMatrix;
+        fWideColor = !SkPMColor4fFitsInBytes(color);
     }
 
     const char* name() const override { return "EllipseOp"; }
 
-    void visitProxies(const VisitProxyFunc& func) const override {
+    void visitProxies(const VisitProxyFunc& func, VisitorType) const override {
         fHelper.visitProxies(func);
     }
 
+#ifdef SK_DEBUG
     SkString dumpInfo() const override {
         SkString string;
         string.appendf("Stroked: %d\n", fStroked);
@@ -1973,17 +1753,18 @@ public:
             string.appendf(
                     "Color: 0x%08x Rect [L: %.2f, T: %.2f, R: %.2f, B: %.2f], "
                     "XRad: %.2f, YRad: %.2f, InnerXRad: %.2f, InnerYRad: %.2f\n",
-                    geo.fColor, geo.fDevBounds.fLeft, geo.fDevBounds.fTop, geo.fDevBounds.fRight,
-                    geo.fDevBounds.fBottom, geo.fXRadius, geo.fYRadius, geo.fInnerXRadius,
-                    geo.fInnerYRadius);
+                    geo.fColor.toBytes_RGBA(), geo.fDevBounds.fLeft, geo.fDevBounds.fTop,
+                    geo.fDevBounds.fRight, geo.fDevBounds.fBottom, geo.fXRadius, geo.fYRadius,
+                    geo.fInnerXRadius, geo.fInnerYRadius);
         }
         string += fHelper.dumpInfo();
         string += INHERITED::dumpInfo();
         return string;
     }
+#endif
 
     RequiresDstTexture finalize(const GrCaps& caps, const GrAppliedClip* clip) override {
-        GrColor* color = &fEllipses.front().fColor;
+        SkPMColor4f* color = &fEllipses.front().fColor;
         return fHelper.xpRequiresDstTexture(caps, clip, GrProcessorAnalysisCoverage::kSingleChannel,
                                             color);
     }
@@ -1998,25 +1779,26 @@ private:
         }
 
         // Setup geometry processor
-        sk_sp<GrGeometryProcessor> gp(new EllipseGeometryProcessor(fStroked, localMatrix));
-
-        SkASSERT(sizeof(EllipseVertex) == gp->debugOnly_vertexStride());
-        QuadHelper helper(target, sizeof(EllipseVertex), fEllipses.count());
-        EllipseVertex* verts = reinterpret_cast<EllipseVertex*>(helper.vertices());
-        if (!verts) {
+        sk_sp<GrGeometryProcessor> gp(new EllipseGeometryProcessor(fStroked, fWideColor,
+                                                                   localMatrix));
+        QuadHelper helper(target, gp->vertexStride(), fEllipses.count());
+        GrVertexWriter verts{helper.vertices()};
+        if (!verts.fPtr) {
             return;
         }
 
         for (const auto& ellipse : fEllipses) {
-            GrColor color = ellipse.fColor;
+            GrVertexColor color(ellipse.fColor, fWideColor);
             SkScalar xRadius = ellipse.fXRadius;
             SkScalar yRadius = ellipse.fYRadius;
 
             // Compute the reciprocals of the radii here to save time in the shader
-            SkScalar xRadRecip = SkScalarInvert(xRadius);
-            SkScalar yRadRecip = SkScalarInvert(yRadius);
-            SkScalar xInnerRadRecip = SkScalarInvert(ellipse.fInnerXRadius);
-            SkScalar yInnerRadRecip = SkScalarInvert(ellipse.fInnerYRadius);
+            struct { float xOuter, yOuter, xInner, yInner; } invRadii = {
+                SkScalarInvert(xRadius),
+                SkScalarInvert(yRadius),
+                SkScalarInvert(ellipse.fInnerXRadius),
+                SkScalarInvert(ellipse.fInnerYRadius)
+            };
             SkScalar xMaxOffset = xRadius + SK_ScalarHalf;
             SkScalar yMaxOffset = yRadius + SK_ScalarHalf;
 
@@ -2028,31 +1810,10 @@ private:
             }
 
             // The inner radius in the vertex data must be specified in normalized space.
-            verts[0].fPos = SkPoint::Make(ellipse.fDevBounds.fLeft, ellipse.fDevBounds.fTop);
-            verts[0].fColor = color;
-            verts[0].fOffset = SkPoint::Make(-xMaxOffset, -yMaxOffset);
-            verts[0].fOuterRadii = SkPoint::Make(xRadRecip, yRadRecip);
-            verts[0].fInnerRadii = SkPoint::Make(xInnerRadRecip, yInnerRadRecip);
-
-            verts[1].fPos = SkPoint::Make(ellipse.fDevBounds.fLeft, ellipse.fDevBounds.fBottom);
-            verts[1].fColor = color;
-            verts[1].fOffset = SkPoint::Make(-xMaxOffset, yMaxOffset);
-            verts[1].fOuterRadii = SkPoint::Make(xRadRecip, yRadRecip);
-            verts[1].fInnerRadii = SkPoint::Make(xInnerRadRecip, yInnerRadRecip);
-
-            verts[2].fPos = SkPoint::Make(ellipse.fDevBounds.fRight, ellipse.fDevBounds.fTop);
-            verts[2].fColor = color;
-            verts[2].fOffset = SkPoint::Make(xMaxOffset, -yMaxOffset);
-            verts[2].fOuterRadii = SkPoint::Make(xRadRecip, yRadRecip);
-            verts[2].fInnerRadii = SkPoint::Make(xInnerRadRecip, yInnerRadRecip);
-
-            verts[3].fPos = SkPoint::Make(ellipse.fDevBounds.fRight, ellipse.fDevBounds.fBottom);
-            verts[3].fColor = color;
-            verts[3].fOffset = SkPoint::Make(xMaxOffset, yMaxOffset);
-            verts[3].fOuterRadii = SkPoint::Make(xRadRecip, yRadRecip);
-            verts[3].fInnerRadii = SkPoint::Make(xInnerRadRecip, yInnerRadRecip);
-
-            verts += kVerticesPerQuad;
+            verts.writeQuad(GrVertexWriter::TriStripFromRect(ellipse.fDevBounds),
+                            color,
+                            origin_centered_tri_strip(xMaxOffset, yMaxOffset),
+                            invRadii);
         }
         auto pipe = fHelper.makePipeline(target);
         helper.recordDraw(target, std::move(gp), pipe.fPipeline, pipe.fFixedDynamicState);
@@ -2075,12 +1836,12 @@ private:
         }
 
         fEllipses.push_back_n(that->fEllipses.count(), that->fEllipses.begin());
-        this->joinBounds(*that);
+        fWideColor |= that->fWideColor;
         return CombineResult::kMerged;
     }
 
     struct Ellipse {
-        GrColor fColor;
+        SkPMColor4f fColor;
         SkScalar fXRadius;
         SkScalar fYRadius;
         SkScalar fInnerXRadius;
@@ -2091,6 +1852,7 @@ private:
     SkMatrix fViewMatrixIfUsingLocalCoords;
     Helper fHelper;
     bool fStroked;
+    bool fWideColor;
     SkSTArray<1, Ellipse, true> fEllipses;
 
     typedef GrMeshDrawOp INHERITED;
@@ -2175,8 +1937,8 @@ public:
         return Helper::FactoryHelper<DIEllipseOp>(context, std::move(paint), params, viewMatrix);
     }
 
-    DIEllipseOp(Helper::MakeArgs& helperArgs, GrColor color, const DeviceSpaceParams& params,
-                const SkMatrix& viewMatrix)
+    DIEllipseOp(Helper::MakeArgs& helperArgs, const SkPMColor4f& color,
+                const DeviceSpaceParams& params, const SkMatrix& viewMatrix)
             : INHERITED(ClassID()), fHelper(helperArgs, GrAAType::kCoverage) {
         // This expands the outer rect so that after CTM we end up with a half-pixel border
         SkScalar a = viewMatrix[SkMatrix::kMScaleX];
@@ -2195,14 +1957,16 @@ public:
                                          params.fCenter.fY + params.fYRadius + geoDy)});
         this->setTransformedBounds(fEllipses[0].fBounds, viewMatrix, HasAABloat::kYes,
                                    IsZeroArea::kNo);
+        fWideColor = !SkPMColor4fFitsInBytes(color);
     }
 
     const char* name() const override { return "DIEllipseOp"; }
 
-    void visitProxies(const VisitProxyFunc& func) const override {
+    void visitProxies(const VisitProxyFunc& func, VisitorType) const override {
         fHelper.visitProxies(func);
     }
 
+#ifdef SK_DEBUG
     SkString dumpInfo() const override {
         SkString string;
         for (const auto& geo : fEllipses) {
@@ -2210,17 +1974,18 @@ public:
                     "Color: 0x%08x Rect [L: %.2f, T: %.2f, R: %.2f, B: %.2f], XRad: %.2f, "
                     "YRad: %.2f, InnerXRad: %.2f, InnerYRad: %.2f, GeoDX: %.2f, "
                     "GeoDY: %.2f\n",
-                    geo.fColor, geo.fBounds.fLeft, geo.fBounds.fTop, geo.fBounds.fRight,
-                    geo.fBounds.fBottom, geo.fXRadius, geo.fYRadius, geo.fInnerXRadius,
-                    geo.fInnerYRadius, geo.fGeoDx, geo.fGeoDy);
+                    geo.fColor.toBytes_RGBA(), geo.fBounds.fLeft, geo.fBounds.fTop,
+                    geo.fBounds.fRight, geo.fBounds.fBottom, geo.fXRadius, geo.fYRadius,
+                    geo.fInnerXRadius, geo.fInnerYRadius, geo.fGeoDx, geo.fGeoDy);
         }
         string += fHelper.dumpInfo();
         string += INHERITED::dumpInfo();
         return string;
     }
+#endif
 
     RequiresDstTexture finalize(const GrCaps& caps, const GrAppliedClip* clip) override {
-        GrColor* color = &fEllipses.front().fColor;
+        SkPMColor4f* color = &fEllipses.front().fColor;
         return fHelper.xpRequiresDstTexture(caps, clip, GrProcessorAnalysisCoverage::kSingleChannel,
                                             color);
     }
@@ -2231,61 +1996,38 @@ private:
     void onPrepareDraws(Target* target) override {
         // Setup geometry processor
         sk_sp<GrGeometryProcessor> gp(
-                new DIEllipseGeometryProcessor(this->viewMatrix(), this->style()));
+                new DIEllipseGeometryProcessor(fWideColor, this->viewMatrix(), this->style()));
 
-        SkASSERT(sizeof(DIEllipseVertex) == gp->debugOnly_vertexStride());
-        QuadHelper helper(target, sizeof(DIEllipseVertex), fEllipses.count());
-        DIEllipseVertex* verts = reinterpret_cast<DIEllipseVertex*>(helper.vertices());
-        if (!verts) {
+        QuadHelper helper(target, gp->vertexStride(), fEllipses.count());
+        GrVertexWriter verts{helper.vertices()};
+        if (!verts.fPtr) {
             return;
         }
 
         for (const auto& ellipse : fEllipses) {
-            GrColor color = ellipse.fColor;
+            GrVertexColor color(ellipse.fColor, fWideColor);
             SkScalar xRadius = ellipse.fXRadius;
             SkScalar yRadius = ellipse.fYRadius;
-
-            const SkRect& bounds = ellipse.fBounds;
 
             // This adjusts the "radius" to include the half-pixel border
             SkScalar offsetDx = ellipse.fGeoDx / xRadius;
             SkScalar offsetDy = ellipse.fGeoDy / yRadius;
 
-            verts[0].fPos = SkPoint::Make(bounds.fLeft, bounds.fTop);
-            verts[0].fColor = color;
-            verts[0].fOuterOffset = SkPoint::Make(-1.0f - offsetDx, -1.0f - offsetDy);
-            verts[0].fInnerOffset = SkPoint::Make(0.0f, 0.0f);
+            // By default, constructed so that inner offset is (0, 0) for all points
+            SkScalar innerRatioX = -offsetDx;
+            SkScalar innerRatioY = -offsetDy;
 
-            verts[1].fPos = SkPoint::Make(bounds.fLeft, bounds.fBottom);
-            verts[1].fColor = color;
-            verts[1].fOuterOffset = SkPoint::Make(-1.0f - offsetDx, 1.0f + offsetDy);
-            verts[1].fInnerOffset = SkPoint::Make(0.0f, 0.0f);
-
-            verts[2].fPos = SkPoint::Make(bounds.fRight, bounds.fTop);
-            verts[2].fColor = color;
-            verts[2].fOuterOffset = SkPoint::Make(1.0f + offsetDx, -1.0f - offsetDy);
-            verts[2].fInnerOffset = SkPoint::Make(0.0f, 0.0f);
-
-            verts[3].fPos = SkPoint::Make(bounds.fRight, bounds.fBottom);
-            verts[3].fColor = color;
-            verts[3].fOuterOffset = SkPoint::Make(1.0f + offsetDx, 1.0f + offsetDy);
-            verts[3].fInnerOffset = SkPoint::Make(0.0f, 0.0f);
-
+            // ... unless we're stroked
             if (DIEllipseStyle::kStroke == this->style()) {
-                SkScalar innerRatioX = xRadius / ellipse.fInnerXRadius;
-                SkScalar innerRatioY = yRadius / ellipse.fInnerYRadius;
-
-                verts[0].fInnerOffset = SkPoint::Make(-innerRatioX - offsetDx,
-                                                      -innerRatioY - offsetDy);
-                verts[1].fInnerOffset = SkPoint::Make(-innerRatioX - offsetDx,
-                                                      innerRatioY + offsetDy);
-                verts[2].fInnerOffset = SkPoint::Make(innerRatioX + offsetDx,
-                                                      -innerRatioY - offsetDy);
-                verts[3].fInnerOffset = SkPoint::Make(innerRatioX + offsetDx,
-                                                      innerRatioY + offsetDy);
+                innerRatioX = xRadius / ellipse.fInnerXRadius;
+                innerRatioY = yRadius / ellipse.fInnerYRadius;
             }
 
-            verts += kVerticesPerQuad;
+            verts.writeQuad(GrVertexWriter::TriStripFromRect(ellipse.fBounds),
+                            color,
+                            origin_centered_tri_strip(1.0f + offsetDx, 1.0f + offsetDy),
+                            origin_centered_tri_strip(innerRatioX + offsetDx,
+                                                      innerRatioY + offsetDy));
         }
         auto pipe = fHelper.makePipeline(target);
         helper.recordDraw(target, std::move(gp), pipe.fPipeline, pipe.fFixedDynamicState);
@@ -2307,7 +2049,7 @@ private:
         }
 
         fEllipses.push_back_n(that->fEllipses.count(), that->fEllipses.begin());
-        this->joinBounds(*that);
+        fWideColor |= that->fWideColor;
         return CombineResult::kMerged;
     }
 
@@ -2316,7 +2058,7 @@ private:
 
     struct Ellipse {
         SkMatrix fViewMatrix;
-        GrColor fColor;
+        SkPMColor4f fColor;
         SkScalar fXRadius;
         SkScalar fYRadius;
         SkScalar fInnerXRadius;
@@ -2328,6 +2070,7 @@ private:
     };
 
     Helper fHelper;
+    bool fWideColor;
     SkSTArray<1, Ellipse, true> fEllipses;
 
     typedef GrMeshDrawOp INHERITED;
@@ -2479,8 +2222,9 @@ public:
                                                       devRect, devRadius,
                                                       devStrokeWidth, strokeOnly);
     }
-    CircularRRectOp(Helper::MakeArgs& helperArgs, GrColor color, const SkMatrix& viewMatrix,
-                    const SkRect& devRect, float devRadius, float devStrokeWidth, bool strokeOnly)
+    CircularRRectOp(Helper::MakeArgs& helperArgs, const SkPMColor4f& color,
+                    const SkMatrix& viewMatrix, const SkRect& devRect, float devRadius,
+                    float devStrokeWidth, bool strokeOnly)
             : INHERITED(ClassID())
             , fViewMatrixIfUsingLocalCoords(viewMatrix)
             , fHelper(helperArgs, GrAAType::kCoverage) {
@@ -2532,27 +2276,30 @@ public:
 
     const char* name() const override { return "CircularRRectOp"; }
 
-    void visitProxies(const VisitProxyFunc& func) const override {
+    void visitProxies(const VisitProxyFunc& func, VisitorType) const override {
         fHelper.visitProxies(func);
     }
 
+#ifdef SK_DEBUG
     SkString dumpInfo() const override {
         SkString string;
         for (int i = 0; i < fRRects.count(); ++i) {
             string.appendf(
                     "Color: 0x%08x Rect [L: %.2f, T: %.2f, R: %.2f, B: %.2f],"
                     "InnerRad: %.2f, OuterRad: %.2f\n",
-                    fRRects[i].fColor, fRRects[i].fDevBounds.fLeft, fRRects[i].fDevBounds.fTop,
-                    fRRects[i].fDevBounds.fRight, fRRects[i].fDevBounds.fBottom,
-                    fRRects[i].fInnerRadius, fRRects[i].fOuterRadius);
+                    fRRects[i].fColor.toBytes_RGBA(), fRRects[i].fDevBounds.fLeft,
+                    fRRects[i].fDevBounds.fTop, fRRects[i].fDevBounds.fRight,
+                    fRRects[i].fDevBounds.fBottom, fRRects[i].fInnerRadius,
+                    fRRects[i].fOuterRadius);
         }
         string += fHelper.dumpInfo();
         string += INHERITED::dumpInfo();
         return string;
     }
+#endif
 
     RequiresDstTexture finalize(const GrCaps& caps, const GrAppliedClip* clip) override {
-        GrColor* color = &fRRects.front().fColor;
+        SkPMColor4f* color = &fRRects.front().fColor;
         return fHelper.xpRequiresDstTexture(caps, clip, GrProcessorAnalysisCoverage::kSingleChannel,
                                             color);
     }
@@ -2644,9 +2391,10 @@ private:
 
         // Setup geometry processor
         sk_sp<GrGeometryProcessor> gp(
-                new CircleGeometryProcessor(!fAllFill, false, false, false, false, localMatrix));
+                new CircleGeometryProcessor(!fAllFill, false, false, false, false, false,
+                                            localMatrix));
 
-        SkASSERT(sizeof(CircleVertex) == gp->debugOnly_vertexStride());
+        SkASSERT(sizeof(CircleVertex) == gp->vertexStride());
 
         const GrBuffer* vertexBuffer;
         int firstVertex;
@@ -2668,7 +2416,8 @@ private:
 
         int currStartVertex = 0;
         for (const auto& rrect : fRRects) {
-            GrColor color = rrect.fColor;
+            // TODO4F: Preserve float colors
+            GrColor color = rrect.fColor.toBytes_RGBA();
             SkScalar outerRadius = rrect.fOuterRadius;
             const SkRect& bounds = rrect.fDevBounds;
 
@@ -2727,7 +2476,7 @@ private:
                 SkScalar maxOffset = -rrect.fInnerRadius / overstrokeOuterRadius;
 
                 FillInOverstrokeVerts(&verts, bounds, outerRadius, overstrokeOuterRadius, maxOffset,
-                                      overstrokeOuterRadius, 0.0f, rrect.fColor);
+                                      overstrokeOuterRadius, 0.0f, color);
             }
 
             const uint16_t* primIndices = rrect_type_to_indices(rrect.fType);
@@ -2765,7 +2514,6 @@ private:
         }
 
         fRRects.push_back_n(that->fRRects.count(), that->fRRects.begin());
-        this->joinBounds(*that);
         fVertCount += that->fVertCount;
         fIndexCount += that->fIndexCount;
         fAllFill = fAllFill && that->fAllFill;
@@ -2773,7 +2521,7 @@ private:
     }
 
     struct RRect {
-        GrColor fColor;
+        SkPMColor4f fColor;
         SkScalar fInnerRadius;
         SkScalar fOuterRadius;
         SkRect fDevBounds;
@@ -2864,9 +2612,9 @@ public:
                                                         strokeOnly);
     }
 
-    EllipticalRRectOp(Helper::MakeArgs helperArgs, GrColor color, const SkMatrix& viewMatrix,
-                      const SkRect& devRect, float devXRadius, float devYRadius,
-                      SkVector devStrokeHalfWidths, bool strokeOnly)
+    EllipticalRRectOp(Helper::MakeArgs helperArgs, const SkPMColor4f& color,
+                      const SkMatrix& viewMatrix, const SkRect& devRect, float devXRadius,
+                      float devYRadius, SkVector devStrokeHalfWidths, bool strokeOnly)
             : INHERITED(ClassID()), fHelper(helperArgs, GrAAType::kCoverage) {
         SkScalar innerXRadius = 0.0f;
         SkScalar innerYRadius = 0.0f;
@@ -2896,10 +2644,11 @@ public:
 
     const char* name() const override { return "EllipticalRRectOp"; }
 
-    void visitProxies(const VisitProxyFunc& func) const override {
+    void visitProxies(const VisitProxyFunc& func, VisitorType) const override {
         fHelper.visitProxies(func);
     }
 
+#ifdef SK_DEBUG
     SkString dumpInfo() const override {
         SkString string;
         string.appendf("Stroked: %d\n", fStroked);
@@ -2907,17 +2656,18 @@ public:
             string.appendf(
                     "Color: 0x%08x Rect [L: %.2f, T: %.2f, R: %.2f, B: %.2f], "
                     "XRad: %.2f, YRad: %.2f, InnerXRad: %.2f, InnerYRad: %.2f\n",
-                    geo.fColor, geo.fDevBounds.fLeft, geo.fDevBounds.fTop, geo.fDevBounds.fRight,
-                    geo.fDevBounds.fBottom, geo.fXRadius, geo.fYRadius, geo.fInnerXRadius,
-                    geo.fInnerYRadius);
+                    geo.fColor.toBytes_RGBA(), geo.fDevBounds.fLeft, geo.fDevBounds.fTop,
+                    geo.fDevBounds.fRight, geo.fDevBounds.fBottom, geo.fXRadius, geo.fYRadius,
+                    geo.fInnerXRadius, geo.fInnerYRadius);
         }
         string += fHelper.dumpInfo();
         string += INHERITED::dumpInfo();
         return string;
     }
+#endif
 
     RequiresDstTexture finalize(const GrCaps& caps, const GrAppliedClip* clip) override {
-        GrColor* color = &fRRects.front().fColor;
+        SkPMColor4f* color = &fRRects.front().fColor;
         return fHelper.xpRequiresDstTexture(caps, clip, GrProcessorAnalysisCoverage::kSingleChannel,
                                             color);
     }
@@ -2932,9 +2682,9 @@ private:
         }
 
         // Setup geometry processor
-        sk_sp<GrGeometryProcessor> gp(new EllipseGeometryProcessor(fStroked, localMatrix));
+        sk_sp<GrGeometryProcessor> gp(new EllipseGeometryProcessor(fStroked, false, localMatrix));
 
-        SkASSERT(sizeof(EllipseVertex) == gp->debugOnly_vertexStride());
+        SkASSERT(sizeof(EllipseVertex) == gp->vertexStride());
 
         // drop out the middle quad if we're stroked
         int indicesPerInstance = fStroked ? kIndicesPerStrokeRRect : kIndicesPerFillRRect;
@@ -2951,7 +2701,8 @@ private:
         }
 
         for (const auto& rrect : fRRects) {
-            GrColor color = rrect.fColor;
+            // TODO4F: Preserve float colors
+            GrColor color = rrect.fColor.toBytes_RGBA();
             // Compute the reciprocals of the radii here to save time in the shader
             SkScalar xRadRecip = SkScalarInvert(rrect.fXRadius);
             SkScalar yRadRecip = SkScalarInvert(rrect.fYRadius);
@@ -3031,12 +2782,11 @@ private:
         }
 
         fRRects.push_back_n(that->fRRects.count(), that->fRRects.begin());
-        this->joinBounds(*that);
         return CombineResult::kMerged;
     }
 
     struct RRect {
-        GrColor fColor;
+        SkPMColor4f fColor;
         SkScalar fXRadius;
         SkScalar fYRadius;
         SkScalar fInnerXRadius;

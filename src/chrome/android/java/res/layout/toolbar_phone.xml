@@ -6,14 +6,14 @@
 <!-- The toolbar containing the URL bar, back button, and NTP button.
 -->
 
-<org.chromium.chrome.browser.toolbar.ToolbarPhone
+<org.chromium.chrome.browser.toolbar.top.ToolbarPhone
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/toolbar"
     android:layout_width="match_parent"
     android:layout_height="@dimen/toolbar_height_no_shadow" >
 
-    <org.chromium.chrome.browser.widget.newtab.NewTabButton
+    <org.chromium.chrome.browser.toolbar.NewTabButton
         android:id="@+id/new_tab_button"
         style="@style/ToolbarButton"
         android:layout_width="wrap_content"
@@ -21,10 +21,9 @@
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
         android:visibility="invisible"
-        android:background="?attr/selectableItemBackground"
         android:contentDescription="@string/accessibility_toolbar_btn_new_tab" />
 
-    <org.chromium.chrome.browser.toolbar.HomePageButton
+    <org.chromium.chrome.browser.toolbar.HomeButton
         android:id="@+id/home_button"
         style="@style/ToolbarButton"
         android:src="@drawable/btn_toolbar_home"
@@ -70,4 +69,4 @@
 
     </LinearLayout>
 
-</org.chromium.chrome.browser.toolbar.ToolbarPhone>
+</org.chromium.chrome.browser.toolbar.top.ToolbarPhone>

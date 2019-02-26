@@ -290,7 +290,7 @@ void GCMAccountTracker::GetAllNeededTokens() {
 void GCMAccountTracker::GetToken(AccountInfos::iterator& account_iter) {
   DCHECK_EQ(account_iter->second.state, TOKEN_NEEDED);
 
-  OAuth2TokenService::ScopeSet scopes;
+  identity::ScopeSet scopes;
   scopes.insert(kGCMGroupServerScope);
   scopes.insert(kGCMCheckinServerScope);
 

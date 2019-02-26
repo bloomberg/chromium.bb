@@ -10,14 +10,14 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* BoxShadow::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ConsumeShadow(
-      range, context.Mode(), CSSParsingUtils::AllowInsetAndSpread::kAllow);
+  return css_parsing_utils::ConsumeShadow(
+      range, context.Mode(), css_parsing_utils::AllowInsetAndSpread::kAllow);
 }
 
 const CSSValue* BoxShadow::CSSValueFromComputedStyleInternal(
@@ -29,5 +29,5 @@ const CSSValue* BoxShadow::CSSValueFromComputedStyleInternal(
   return ComputedStyleUtils::ValueForShadowList(style.BoxShadow(), style, true);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

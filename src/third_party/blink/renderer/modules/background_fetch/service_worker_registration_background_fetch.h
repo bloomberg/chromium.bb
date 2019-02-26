@@ -24,6 +24,8 @@ class ServiceWorkerRegistrationBackgroundFetch final
  public:
   static const char kSupplementName[];
 
+  explicit ServiceWorkerRegistrationBackgroundFetch(
+      ServiceWorkerRegistration* registration);
   virtual ~ServiceWorkerRegistrationBackgroundFetch();
 
   static ServiceWorkerRegistrationBackgroundFetch& From(
@@ -36,9 +38,6 @@ class ServiceWorkerRegistrationBackgroundFetch final
   void Trace(blink::Visitor* visitor) override;
 
  private:
-  explicit ServiceWorkerRegistrationBackgroundFetch(
-      ServiceWorkerRegistration* registration);
-
   Member<ServiceWorkerRegistration> registration_;
   Member<BackgroundFetchManager> background_fetch_manager_;
 };

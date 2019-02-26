@@ -4,6 +4,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
 <link rel="import" href="chrome://resources/cr_elements/paper_tabs_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_indicator.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
@@ -52,6 +53,10 @@
 
       .settings-box > paper-button:first-child {
         padding-inline-start: 0
+      }
+
+      .settings-box > cr-policy-pref-indicator {
+        margin-inline-end: var(--cr-controlled-by-spacing);
       }
 
       #controlsDiv > .settings-box:first-of-type {
@@ -146,10 +151,20 @@
             [[logicalResolutionText_]]
           </div>
         </div>
+        <template is="dom-if" if="[[isDisplayScaleManagedByPolicy_(
+            selectedDisplay, prefs.cros.device_display_resolution)]]">
+          <cr-policy-pref-indicator
+              pref="[[prefs.cros.device_display_resolution]]"
+              icon-aria-label="$i18n{displayResolutionText}">
+          </cr-policy-pref-indicator>
+        </template>
         <settings-slider id="displaySizeSlider"
             ticks="[[zoomValues_]]" pref="{{selectedZoomPref_}}"
             label-min="$i18n{displaySizeSliderMinLabel}"
             label-max="$i18n{displaySizeSliderMaxLabel}"
+            disabled="[[isDisplayScaleMandatory_(
+                selectedDisplay,
+                prefs.cros.device_display_resolution)]]"
             on-value-changed="onDisplaySizeSliderDrag_">
         </settings-slider>
       </div>
@@ -163,8 +178,17 @@
             $i18n{displayResolutionSublabel}
           </div>
         </div>
+        <template is="dom-if" if="[[isDisplayResolutionManagedByPolicy_(
+            prefs.cros.device_display_resolution)]]">
+          <cr-policy-pref-indicator
+              pref="[[prefs.cros.device_display_resolution]]"
+              icon-aria-label="$i18n{displayResolutionText}">
+          </cr-policy-pref-indicator>
+        </template>
         <settings-dropdown-menu id="displayModeSelector"
             pref="{{selectedModePref_}}"
+            disabled="[[isDisplayResolutionMandatory_(
+                prefs.cros.device_display_resolution)]]"
             label="Display Mode Menu"
             menu-options="[[displayModeList_]]">
         </settings-dropdown-menu>
@@ -174,6 +198,13 @@
           <div id="displayOrientation" class="start text-area">
             $i18n{displayOrientation}
           </div>
+          <template is="dom-if" if="[[isDevicePolicyEnabled_(
+              prefs.cros.display_rotation_default)]]">
+            <cr-policy-pref-indicator
+                pref="[[prefs.cros.display_rotation_default]]"
+                icon-aria-label="$i18n{displayOrientation}">
+            </cr-policy-pref-indicator>
+          </template>
           <select class="md-select" value="[[selectedDisplay.rotation]]"
               disabled="[[selectedDisplay.isTabletMode]]"
               aria-labelledby="displayOrientation"

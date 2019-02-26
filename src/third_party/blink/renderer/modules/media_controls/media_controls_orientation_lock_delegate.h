@@ -10,7 +10,7 @@
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_lock_type.h"
 #include "third_party/blink/renderer/core/dom/events/event_listener.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
@@ -90,7 +90,7 @@ class MediaControlsOrientationLockDelegate final : public EventListener {
   };
 
   // EventListener implementation.
-  void handleEvent(ExecutionContext*, Event*) override;
+  void Invoke(ExecutionContext*, Event*) override;
 
   HTMLVideoElement& VideoElement() const;
   Document& GetDocument() const;

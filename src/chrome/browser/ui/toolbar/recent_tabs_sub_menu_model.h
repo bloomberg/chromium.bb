@@ -5,8 +5,12 @@
 #ifndef CHROME_BROWSER_UI_TOOLBAR_RECENT_TABS_SUB_MENU_MODEL_H_
 #define CHROME_BROWSER_UI_TOOLBAR_RECENT_TABS_SUB_MENU_MODEL_H_
 
+#include <memory>
 #include <set>
+#include <string>
+#include <vector>
 
+#include "base/callback_list.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
@@ -16,7 +20,6 @@
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/sessions/core/tab_restore_service_observer.h"
-#include "components/sync/driver/sync_service_observer.h"
 #include "components/sync_sessions/synced_session.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -37,11 +40,8 @@ struct SessionTab;
 
 namespace sync_sessions {
 class OpenTabsUIDelegate;
+class SessionSyncService;
 }
-
-namespace syncer {
-class SyncService;
-}  // namespace syncer
 
 namespace ui {
 class AcceleratorProvider;
@@ -52,8 +52,7 @@ class AcceleratorProvider;
 // opened tabs of other devices.
 class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
                                public ui::SimpleMenuModel::Delegate,
-                               public sessions::TabRestoreServiceObserver,
-                               public syncer::SyncServiceObserver {
+                               public sessions::TabRestoreServiceObserver {
  public:
   // Command Id for recently closed items header or disabled item to which the
   // accelerator string will be appended.
@@ -135,8 +134,8 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
   // TabNavigationItems in |tab_items|.
   int CommandIdToTabVectorIndex(int command_id, TabNavigationItems** tab_items);
 
-  // Convenience function to access OpenTabsUIDelegate provided by SyncService.
-  // Can return null if session sync is not running.
+  // Convenience function to access OpenTabsUIDelegate provided by
+  // SessionSyncService. Can return null if session sync is not running.
   sync_sessions::OpenTabsUIDelegate* GetOpenTabsUIDelegate();
 
   // Overridden from TabRestoreServiceObserver:
@@ -144,13 +143,11 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
   void TabRestoreServiceDestroyed(
       sessions::TabRestoreService* service) override;
 
-  // Overridden from syncer::SyncServiceObserver:
-  void OnSyncConfigurationCompleted(syncer::SyncService* sync) override;
-  void OnForeignSessionUpdated(syncer::SyncService* sync) override;
+  void OnForeignSessionUpdated();
 
   Browser* const browser_;  // Weak.
 
-  syncer::SyncService* const sync_service_;  // Weak.
+  sync_sessions::SessionSyncService* const session_sync_service_;  // Weak.
 
   // Accelerator for reopening last closed tab.
   ui::Accelerator reopen_closed_tab_accelerator_;
@@ -191,9 +188,10 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
 #if !defined(OS_MACOSX)
   ScopedObserver<sessions::TabRestoreService, RecentTabsSubMenuModel>
       tab_restore_service_observer_;
-
-  ScopedObserver<syncer::SyncService, RecentTabsSubMenuModel> sync_observer_;
 #endif
+
+  std::unique_ptr<base::CallbackList<void()>::Subscription>
+      foreign_session_updated_subscription_;
 
   base::WeakPtrFactory<RecentTabsSubMenuModel> weak_ptr_factory_;
 

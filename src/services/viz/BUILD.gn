@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
 
@@ -29,25 +28,17 @@ source_set("lib") {
   deps = [
     "//base",
     "//components/viz/service",
-    "//components/viz/service/main",
     "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp",
     "//services/viz/privileged/interfaces",
+  ]
+
+  public_deps = [
+    "//components/viz/service/main",
   ]
 }
 
 service_manifest("manifest") {
   name = "viz"
   source = "manifest.json"
-}
-
-service_manifest("unittests_manifest") {
-  name = "viz_service_unittests"
-  source = "test_manifest.json"
-}
-
-catalog("tests_catalog") {
-  testonly = true
-  embedded_services = [ ":unittests_manifest" ]
-  standalone_services = [ ":manifest" ]
 }

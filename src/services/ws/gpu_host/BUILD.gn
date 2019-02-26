@@ -89,7 +89,6 @@ source_set("tests") {
     "//gpu/ipc/client",
     "//mojo/public/cpp/bindings:bindings",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/cpp:service_test_support",
     "//services/service_manager/public/mojom",
     "//services/ws/common",
     "//services/ws/common:task_runner_test_base",

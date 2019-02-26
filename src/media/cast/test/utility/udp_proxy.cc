@@ -16,6 +16,7 @@
 #include "base/rand_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "net/base/io_buffer.h"
@@ -693,6 +694,7 @@ class UDPProxyImpl : public UDPProxy {
         from_dest_pipe_(std::move(from_dest_pipe)),
         blocked_(false),
         weak_factory_(this) {
+    base::ScopedAllowBlockingForTesting allow_blocking;
     proxy_thread_.StartWithOptions(
         base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
     base::WaitableEvent start_event(
@@ -708,6 +710,7 @@ class UDPProxyImpl : public UDPProxy {
   }
 
   ~UDPProxyImpl() final {
+    base::ScopedAllowBlockingForTesting allow_blocking;
     base::WaitableEvent stop_event(
         base::WaitableEvent::ResetPolicy::AUTOMATIC,
         base::WaitableEvent::InitialState::NOT_SIGNALED);

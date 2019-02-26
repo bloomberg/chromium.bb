@@ -8,13 +8,35 @@
 #include <mach/mach.h>
 #include <spawn.h>
 #include <string.h>
+#include <sys/syscall.h>
 #include <sys/wait.h>
 
+#include "base/command_line.h"
+#include "base/files/scoped_file.h"
 #include "base/logging.h"
+#include "base/mac/availability.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/threading/scoped_blocking_call.h"
+#include "base/threading/thread_restrictions.h"
+#include "base/trace_event/trace_event.h"
+
+// Changes the current thread's directory to a path or directory file
+// descriptor. libpthread only exposes a syscall wrapper starting in
+// macOS 10.12, but the system call dates back to macOS 10.5. On older OSes,
+// the syscall is issued directly.
+extern "C" {
+int pthread_chdir_np(const char*) API_AVAILABLE(macosx(10.12));
+int pthread_fchdir_np(int fd) API_AVAILABLE(macosx(10.12));
+}
 
 namespace base {
+
+// Friend and derived class of ScopedAllowBaseSyncPrimitives which allows
+// GetAppOutputInternal() to join a process. GetAppOutputInternal() can't itself
+// be a friend of ScopedAllowBaseSyncPrimitives because it is in the anonymous
+// namespace.
+class GetAppOutputScopedAllowBaseSyncPrimitives
+    : public base::ScopedAllowBaseSyncPrimitives {};
 
 namespace {
 
@@ -71,31 +93,95 @@ class PosixSpawnFileActions {
   DISALLOW_COPY_AND_ASSIGN(PosixSpawnFileActions);
 };
 
-}  // namespace
-
-void RestoreDefaultExceptionHandler() {
-  // This function is tailored to remove the Breakpad exception handler.
-  // exception_mask matches s_exception_mask in
-  // third_party/breakpad/breakpad/src/client/mac/handler/exception_handler.cc
-  const exception_mask_t exception_mask = EXC_MASK_BAD_ACCESS |
-                                          EXC_MASK_BAD_INSTRUCTION |
-                                          EXC_MASK_ARITHMETIC |
-                                          EXC_MASK_BREAKPOINT;
-
-  // Setting the exception port to MACH_PORT_NULL may not be entirely
-  // kosher to restore the default exception handler, but in practice,
-  // it results in the exception port being set to Apple Crash Reporter,
-  // the desired behavior.
-  task_set_exception_ports(mach_task_self(), exception_mask, MACH_PORT_NULL,
-                           EXCEPTION_DEFAULT, THREAD_STATE_NONE);
+int ChangeCurrentThreadDirectory(const char* path) {
+  if (__builtin_available(macOS 10.12, *)) {
+    return pthread_chdir_np(path);
+  } else {
+    return syscall(SYS___pthread_chdir, path);
+  }
 }
 
-Process LaunchProcessPosixSpawn(const std::vector<std::string>& argv,
-                                const LaunchOptions& options) {
-  DCHECK(!options.pre_exec_delegate)
-      << "LaunchProcessPosixSpawn does not support PreExecDelegate";
-  DCHECK(options.current_directory.empty())
-      << "LaunchProcessPosixSpawn does not support current_directory";
+// The recommended way to unset a per-thread cwd is to set a new value to an
+// invalid file descriptor, per libpthread-218.1.3/private/private.h.
+int ResetCurrentThreadDirectory() {
+  if (__builtin_available(macOS 10.12, *)) {
+    return pthread_fchdir_np(-1);
+  } else {
+    return syscall(SYS___pthread_fchdir, -1);
+  }
+}
+
+struct GetAppOutputOptions {
+  // Whether to pipe stderr to stdout in |output|.
+  bool include_stderr = false;
+  // Caller-supplied string poiter for the output.
+  std::string* output = nullptr;
+  // Result exit code of Process::Wait().
+  int exit_code = 0;
+};
+
+bool GetAppOutputInternal(const std::vector<std::string>& argv,
+                          GetAppOutputOptions* gao_options) {
+  ScopedFD read_fd, write_fd;
+  {
+    int pipefds[2];
+    if (pipe(pipefds) != 0) {
+      DPLOG(ERROR) << "pipe";
+      return false;
+    }
+    read_fd.reset(pipefds[0]);
+    write_fd.reset(pipefds[1]);
+  }
+
+  LaunchOptions launch_options;
+  launch_options.fds_to_remap.emplace_back(write_fd.get(), STDOUT_FILENO);
+  if (gao_options->include_stderr) {
+    launch_options.fds_to_remap.emplace_back(write_fd.get(), STDERR_FILENO);
+  }
+
+  Process process = LaunchProcess(argv, launch_options);
+
+  // Close the parent process' write descriptor, so that EOF is generated in
+  // read loop below.
+  write_fd.reset();
+
+  // Read the child's output before waiting for its exit, otherwise the pipe
+  // buffer may fill up if the process is producing a lot of output.
+  std::string* output = gao_options->output;
+  output->clear();
+
+  const size_t kBufferSize = 1024;
+  size_t total_bytes_read = 0;
+  ssize_t read_this_pass = 0;
+  do {
+    output->resize(output->size() + kBufferSize);
+    read_this_pass = HANDLE_EINTR(
+        read(read_fd.get(), &(*output)[total_bytes_read], kBufferSize));
+    if (read_this_pass >= 0) {
+      total_bytes_read += read_this_pass;
+      output->resize(total_bytes_read);
+    }
+  } while (read_this_pass > 0);
+
+  // Reap the child process.
+  GetAppOutputScopedAllowBaseSyncPrimitives allow_wait;
+  if (!process.WaitForExit(&gao_options->exit_code)) {
+    return false;
+  }
+
+  return read_this_pass == 0;
+}
+
+}  // namespace
+
+Process LaunchProcess(const CommandLine& cmdline,
+                      const LaunchOptions& options) {
+  return LaunchProcess(cmdline.argv(), options);
+}
+
+Process LaunchProcess(const std::vector<std::string>& argv,
+                      const LaunchOptions& options) {
+  TRACE_EVENT0("base", "LaunchProcess");
 
   PosixSpawnAttr attr;
 
@@ -155,10 +241,26 @@ Process LaunchProcessPosixSpawn(const std::vector<std::string>& argv,
                                     ? options.real_path.value().c_str()
                                     : argv_cstr[0];
 
+  // If the new program has specified its PWD, change the thread-specific
+  // working directory. The new process will inherit it during posix_spawn().
+  if (!options.current_directory.empty()) {
+    int rv =
+        ChangeCurrentThreadDirectory(options.current_directory.value().c_str());
+    if (rv != 0) {
+      DPLOG(ERROR) << "pthread_chdir_np";
+      return Process();
+    }
+  }
+
   // Use posix_spawnp as some callers expect to have PATH consulted.
   pid_t pid;
   int rv = posix_spawnp(&pid, executable_path, file_actions.get(), attr.get(),
                         &argv_cstr[0], new_environ);
+
+  // Restore the thread's working directory if it was changed.
+  if (!options.current_directory.empty()) {
+    ResetCurrentThreadDirectory();
+  }
 
   if (rv != 0) {
     DLOG(ERROR) << "posix_spawnp(" << executable_path << "): -" << rv << " "
@@ -175,6 +277,45 @@ Process LaunchProcessPosixSpawn(const std::vector<std::string>& argv,
   }
 
   return Process(pid);
+}
+
+bool GetAppOutput(const CommandLine& cl, std::string* output) {
+  return GetAppOutput(cl.argv(), output);
+}
+
+bool GetAppOutputAndError(const CommandLine& cl, std::string* output) {
+  return GetAppOutputAndError(cl.argv(), output);
+}
+
+bool GetAppOutputWithExitCode(const CommandLine& cl,
+                              std::string* output,
+                              int* exit_code) {
+  GetAppOutputOptions options;
+  options.output = output;
+  bool rv = GetAppOutputInternal(cl.argv(), &options);
+  *exit_code = options.exit_code;
+  return rv;
+}
+
+bool GetAppOutput(const std::vector<std::string>& argv, std::string* output) {
+  GetAppOutputOptions options;
+  options.output = output;
+  return GetAppOutputInternal(argv, &options) &&
+         options.exit_code == EXIT_SUCCESS;
+}
+
+bool GetAppOutputAndError(const std::vector<std::string>& argv,
+                          std::string* output) {
+  GetAppOutputOptions options;
+  options.include_stderr = true;
+  options.output = output;
+  return GetAppOutputInternal(argv, &options) &&
+         options.exit_code == EXIT_SUCCESS;
+}
+
+void RaiseProcessToHighPriority() {
+  // Historically this has not been implemented on POSIX and macOS. This could
+  // influence the Mach task policy in the future.
 }
 
 }  // namespace base

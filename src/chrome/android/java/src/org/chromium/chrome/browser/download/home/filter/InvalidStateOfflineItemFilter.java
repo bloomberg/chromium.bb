@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.download.home.filter;
 
+import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemState;
 
@@ -20,14 +21,15 @@ public class InvalidStateOfflineItemFilter extends OfflineItemFilter {
     // OfflineItemFilter implementation.
     @Override
     protected boolean isFilteredOut(OfflineItem item) {
-        if (item.externallyRemoved || item.isTransient) return true;
+        boolean inPrimaryDirectory =
+                DownloadUtils.isInPrimaryStorageDownloadDirectory(item.filePath);
+        if ((item.externallyRemoved && inPrimaryDirectory) || item.isTransient) return true;
 
         switch (item.state) {
             case OfflineItemState.CANCELLED:
             case OfflineItemState.FAILED:
                 return true;
             case OfflineItemState.INTERRUPTED:
-                return !item.isResumable;
             default:
                 return false;
         }

@@ -5,13 +5,11 @@
 package org.chromium.chrome.browser.init;
 
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.SystemClock;
 import android.support.annotation.WorkerThread;
-import android.view.View;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.view.inputmethod.InputMethodSubtype;
@@ -55,7 +53,6 @@ import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
 import org.chromium.chrome.browser.media.MediaViewerUtils;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.PackageMetrics;
-import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.notifications.channels.ChannelsUpdater;
 import org.chromium.chrome.browser.ntp.NewTabPage;
@@ -77,12 +74,12 @@ import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler
 import org.chromium.components.minidump_uploader.CrashFileManager;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountsChangeObserver;
+import org.chromium.content_public.browser.BrowserTaskExecutor;
 import org.chromium.content_public.browser.ChildProcessLauncherHelper;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.printing.PrintDocumentAdapterWrapper;
 import org.chromium.printing.PrintingControllerImpl;
 import org.chromium.ui.ContactsPickerListener;
-import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.PhotoPickerListener;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.SelectFileDialog;
@@ -150,25 +147,9 @@ public class ProcessInitializationHandler {
      * Performs the shared class initialization.
      */
     protected void handlePreNativeInitialization() {
+        BrowserTaskExecutor.register();
+
         Context application = ContextUtils.getApplicationContext();
-
-        KeyboardVisibilityDelegate.setInstance(new KeyboardVisibilityDelegate() {
-            @Override
-            public boolean isKeyboardShowing(Context context, View view) {
-                Activity activity = null;
-                if (context instanceof Activity) {
-                    activity = (Activity) context;
-                } else if (view != null && view.getContext() instanceof Activity) {
-                    activity = (Activity) view.getContext();
-                }
-
-                if (activity != null
-                        && MultiWindowUtils.getInstance().isLegacyMultiWindow(activity)) {
-                    return false; // For multi-window mode we do not track keyboard visibility.
-                }
-                return super.isKeyboardShowing(context, view);
-            }
-        });
 
         // Initialize the AccountManagerFacade with the correct AccountManagerDelegate. Must be done
         // only once and before AccountMangerHelper.get(...) is called to avoid using the
@@ -448,6 +429,10 @@ public class ProcessInitializationHandler {
             MediaViewerUtils.updateMediaLauncherActivityEnabled(
                     ContextUtils.getApplicationContext());
         });
+
+        deferredStartupHandler.addDeferredTask(
+                ChromeApplication.getComponent().resolveTwaClearDataDialogRecorder()
+                        ::makeDeferredRecordings);
     }
 
     private void initChannelsAsync() {

@@ -54,34 +54,34 @@ EventHandlerRegistry::~EventHandlerRegistry() {
 
 bool EventHandlerRegistry::EventTypeToClass(
     const AtomicString& event_type,
-    const AddEventListenerOptions& options,
+    const AddEventListenerOptions* options,
     EventHandlerClass* result) {
-  if (event_type == EventTypeNames::scroll) {
+  if (event_type == event_type_names::kScroll) {
     *result = kScrollEvent;
-  } else if (event_type == EventTypeNames::wheel ||
-             event_type == EventTypeNames::mousewheel) {
-    *result = options.passive() ? kWheelEventPassive : kWheelEventBlocking;
-  } else if (event_type == EventTypeNames::touchend ||
-             event_type == EventTypeNames::touchcancel) {
-    *result = options.passive() ? kTouchEndOrCancelEventPassive
-                                : kTouchEndOrCancelEventBlocking;
-  } else if (event_type == EventTypeNames::touchstart ||
-             event_type == EventTypeNames::touchmove) {
-    *result = options.passive() ? kTouchStartOrMoveEventPassive
-                                : kTouchStartOrMoveEventBlocking;
-  } else if (event_type == EventTypeNames::pointerrawmove) {
+  } else if (event_type == event_type_names::kWheel ||
+             event_type == event_type_names::kMousewheel) {
+    *result = options->passive() ? kWheelEventPassive : kWheelEventBlocking;
+  } else if (event_type == event_type_names::kTouchend ||
+             event_type == event_type_names::kTouchcancel) {
+    *result = options->passive() ? kTouchEndOrCancelEventPassive
+                                 : kTouchEndOrCancelEventBlocking;
+  } else if (event_type == event_type_names::kTouchstart ||
+             event_type == event_type_names::kTouchmove) {
+    *result = options->passive() ? kTouchStartOrMoveEventPassive
+                                 : kTouchStartOrMoveEventBlocking;
+  } else if (event_type == event_type_names::kPointerrawmove) {
     // This will be used to avoid waking up the main thread to
     // process pointerrawmove events and hit-test them when
     // there is no listener on the page.
     *result = kPointerRawMoveEvent;
-  } else if (EventUtil::IsPointerEventType(event_type)) {
+  } else if (event_util::IsPointerEventType(event_type)) {
     // The pointer events never block scrolling and the compositor
     // only needs to know about the touch listeners.
     *result = kPointerEvent;
 #if DCHECK_IS_ON()
-  } else if (event_type == EventTypeNames::load ||
-             event_type == EventTypeNames::mousemove ||
-             event_type == EventTypeNames::touchstart) {
+  } else if (event_type == event_type_names::kLoad ||
+             event_type == event_type_names::kMousemove ||
+             event_type == event_type_names::kTouchstart) {
     *result = kEventsForTesting;
 #endif
   } else {
@@ -156,7 +156,7 @@ bool EventHandlerRegistry::UpdateEventHandlerInternal(
 void EventHandlerRegistry::UpdateEventHandlerOfType(
     ChangeOperation op,
     const AtomicString& event_type,
-    const AddEventListenerOptions& options,
+    const AddEventListenerOptions* options,
     EventTarget* target) {
   EventHandlerClass handler_class;
   if (!EventTypeToClass(event_type, options, &handler_class))
@@ -167,14 +167,14 @@ void EventHandlerRegistry::UpdateEventHandlerOfType(
 void EventHandlerRegistry::DidAddEventHandler(
     EventTarget& target,
     const AtomicString& event_type,
-    const AddEventListenerOptions& options) {
+    const AddEventListenerOptions* options) {
   UpdateEventHandlerOfType(kAdd, event_type, options, &target);
 }
 
 void EventHandlerRegistry::DidRemoveEventHandler(
     EventTarget& target,
     const AtomicString& event_type,
-    const AddEventListenerOptions& options) {
+    const AddEventListenerOptions* options) {
   UpdateEventHandlerOfType(kRemove, event_type, options, &target);
 }
 

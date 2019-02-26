@@ -8,7 +8,7 @@
 
 #include "base/ios/ios_util.h"
 #include "base/strings/stringprintf.h"
-#include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #include "ios/chrome/test/app/history_test_util.h"
 #include "ios/chrome/test/app/navigation_test_util.h"
@@ -190,10 +190,10 @@ class CacheTestResponseProvider : public web::DataResponseProvider {
 // Tests that cache is not used when selecting omnibox suggested website, even
 // though cache for that website exists.
 - (void)testCachingBehaviorOnSelectOmniboxSuggestion {
-  // TODO(crbug.com/753098): Re-enable this test on iOS 11 iPad once
-  // grey_typeText works on iOS 11.
-  if (base::ios::IsRunningOnIOS11OrLater() && IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 11.");
+  // TODO(crbug.com/753098): Re-enable this test on iPad once grey_typeText
+  // works.
+  if (IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
   }
 
   web::test::SetUpHttpServer(std::make_unique<CacheTestResponseProvider>());

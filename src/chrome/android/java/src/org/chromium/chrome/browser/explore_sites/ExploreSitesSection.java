@@ -36,11 +36,6 @@ import java.util.Map;
 public class ExploreSitesSection {
     private static final String TAG = "ExploreSitesSection";
     private static final int MAX_CATEGORIES = 3;
-    // This is a number of UMA histogram buckets that should be an upper bound
-    // of MAX_CATEGORIES over time, plus 1 for "More" button, and plus 1 for
-    // overflow bucket. If MAX_CATEGORIES changes, this value should be updated
-    // only upwards.
-    private static final int MAX_CATEGORIES_HISTOGRAM_BUCKETS = 5;
 
     @TileStyle
     private int mStyle;
@@ -184,6 +179,8 @@ public class ExploreSitesSection {
         int tileCount = 0;
         for (final ExploreSitesCategory category : categoryList) {
             if (tileCount >= MAX_CATEGORIES) break;
+            // Skip empty categories from being shown on NTP.
+            if (!category.isPlaceholder() && category.getNumDisplayed() == 0) continue;
             createTileView(tileCount, category);
             tileCount++;
         }
@@ -194,8 +191,8 @@ public class ExploreSitesSection {
     }
 
     private void onClicked(int tileIndex, ExploreSitesCategory category, View v) {
-        RecordHistogram.recordLinearCountHistogram("ExploreSites.ClickedNTPCategoryIndex",
-                tileIndex, 0, MAX_CATEGORIES, MAX_CATEGORIES_HISTOGRAM_BUCKETS);
+        RecordHistogram.recordLinearCountHistogram(
+                "ExploreSites.ClickedNTPCategoryIndex", tileIndex, 1, 100, 100);
         mNavigationDelegate.openUrl(WindowOpenDisposition.CURRENT_TAB,
                 new LoadUrlParams(category.getUrl(), PageTransition.AUTO_BOOKMARK));
     }

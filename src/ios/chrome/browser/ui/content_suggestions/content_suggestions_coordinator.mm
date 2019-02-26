@@ -35,7 +35,7 @@
 #import "ios/chrome/browser/ui/ntp/notification_promo_whats_new.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
@@ -192,6 +192,8 @@
       [[ContentSuggestionsHeaderSynchronizer alloc]
           initWithCollectionController:self.suggestionsViewController
                       headerController:self.headerController];
+  self.NTPMediator.headerCollectionInteractionHandler =
+      self.headerCollectionInteractionHandler;
 }
 
 - (void)stop {
@@ -255,14 +257,7 @@
 
 - (CGFloat)overscrollHeaderHeight {
   CGFloat height = [self.headerController toolBarView].bounds.size.height;
-  CGFloat topInset = 0.0;
-  if (@available(iOS 11, *)) {
-    topInset = self.suggestionsViewController.view.safeAreaInsets.top;
-  } else {
-    // TODO(crbug.com/826369) Replace this when the NTP is contained by the
-    // BVC with |self.suggestionsViewController.topLayoutGuide.length|.
-    topInset = StatusBarHeight();
-  }
+  CGFloat topInset = self.suggestionsViewController.view.safeAreaInsets.top;
   return height + topInset;
 }
 
@@ -277,13 +272,9 @@
 }
 
 - (void)wasShown {
-  self.headerController.isShowing = YES;
-  [self.suggestionsViewController.collectionView
-          .collectionViewLayout invalidateLayout];
 }
 
 - (void)wasHidden {
-  self.headerController.isShowing = NO;
 }
 
 - (void)dismissModals {

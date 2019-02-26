@@ -674,10 +674,11 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, ProgressCallback) {
                                       kRegularFileSystemTestCaseSize));
 
   std::vector<ProgressRecord> records;
-  ASSERT_EQ(base::File::FILE_OK,
-            helper.CopyWithProgress(src, dest,
-                                    base::Bind(&RecordProgressCallback,
-                                               base::Unretained(&records))));
+  ASSERT_EQ(
+      base::File::FILE_OK,
+      helper.CopyWithProgress(src, dest,
+                              base::BindRepeating(&RecordProgressCallback,
+                                                  base::Unretained(&records))));
 
   // Verify progress callback.
   for (size_t i = 0; i < kRegularFileSystemTestCaseSize; ++i) {
@@ -758,12 +759,13 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper) {
       std::move(reader), std::move(writer),
       storage::FlushPolicy::NO_FLUSH_ON_COMPLETION,
       10,  // buffer size
-      base::Bind(&RecordFileProgressCallback, base::Unretained(&progress)),
+      base::BindRepeating(&RecordFileProgressCallback,
+                          base::Unretained(&progress)),
       base::TimeDelta());  // For testing, we need all the progress.
 
   base::File::Error error = base::File::FILE_ERROR_FAILED;
   base::RunLoop run_loop;
-  helper.Run(base::Bind(&AssignAndQuit, &run_loop, &error));
+  helper.Run(base::BindOnce(&AssignAndQuit, &run_loop, &error));
   run_loop.Run();
 
   EXPECT_EQ(base::File::FILE_OK, error);
@@ -814,12 +816,13 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelperWithFlush) {
       std::move(reader), std::move(writer),
       storage::FlushPolicy::NO_FLUSH_ON_COMPLETION,
       10,  // buffer size
-      base::Bind(&RecordFileProgressCallback, base::Unretained(&progress)),
+      base::BindRepeating(&RecordFileProgressCallback,
+                          base::Unretained(&progress)),
       base::TimeDelta());  // For testing, we need all the progress.
 
   base::File::Error error = base::File::FILE_ERROR_FAILED;
   base::RunLoop run_loop;
-  helper.Run(base::Bind(&AssignAndQuit, &run_loop, &error));
+  helper.Run(base::BindOnce(&AssignAndQuit, &run_loop, &error));
   run_loop.Run();
 
   EXPECT_EQ(base::File::FILE_OK, error);
@@ -865,7 +868,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper_Cancel) {
       std::move(reader), std::move(writer),
       storage::FlushPolicy::NO_FLUSH_ON_COMPLETION,
       10,  // buffer size
-      base::Bind(&RecordFileProgressCallback, base::Unretained(&progress)),
+      base::BindRepeating(&RecordFileProgressCallback,
+                          base::Unretained(&progress)),
       base::TimeDelta());  // For testing, we need all the progress.
 
   // Call Cancel() later.
@@ -876,7 +880,7 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper_Cancel) {
 
   base::File::Error error = base::File::FILE_ERROR_FAILED;
   base::RunLoop run_loop;
-  helper.Run(base::Bind(&AssignAndQuit, &run_loop, &error));
+  helper.Run(base::BindOnce(&AssignAndQuit, &run_loop, &error));
   run_loop.Run();
 
   EXPECT_EQ(base::File::FILE_ERROR_ABORT, error);

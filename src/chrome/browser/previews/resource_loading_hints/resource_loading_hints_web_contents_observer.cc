@@ -10,6 +10,7 @@
 #include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
+#include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/previews/content/previews_content_util.h"
 #include "components/previews/content/previews_ui_service.h"
@@ -19,6 +20,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/loader/previews_resource_loading_hints.mojom.h"
 #include "url/gurl.h"
@@ -43,26 +45,28 @@ void ResourceLoadingHintsWebContentsObserver::DidFinishNavigation(
     return;
   }
 
-  // Store Previews information for this navigation.
-  ChromeNavigationData* nav_data = static_cast<ChromeNavigationData*>(
-      navigation_handle->GetNavigationData());
-  if (!nav_data || !nav_data->previews_user_data())
+  PreviewsUITabHelper* ui_tab_helper =
+      PreviewsUITabHelper::FromWebContents(navigation_handle->GetWebContents());
+  if (!ui_tab_helper)
     return;
 
   previews::PreviewsUserData* previews_user_data =
-      nav_data->previews_user_data();
+      ui_tab_helper->GetPreviewsUserData(navigation_handle);
 
-  if (previews_user_data->committed_previews_type() !=
-      previews::PreviewsType::RESOURCE_LOADING_HINTS) {
+  if (!previews_user_data ||
+      previews_user_data->committed_previews_type() !=
+          previews::PreviewsType::RESOURCE_LOADING_HINTS) {
     return;
   }
 
   DCHECK(previews::params::IsResourceLoadingHintsEnabled());
-  SendResourceLoadingHints(navigation_handle);
+  SendResourceLoadingHints(navigation_handle,
+                           previews_user_data->is_redirect());
 }
 
 void ResourceLoadingHintsWebContentsObserver::SendResourceLoadingHints(
-    content::NavigationHandle* navigation_handle) const {
+    content::NavigationHandle* navigation_handle,
+    bool is_redirect) const {
   // Hints should be sent only after the renderer frame has committed.
   DCHECK(navigation_handle->HasCommitted());
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
@@ -80,9 +84,17 @@ void ResourceLoadingHintsWebContentsObserver::SendResourceLoadingHints(
 
   UMA_HISTOGRAM_BOOLEAN(
       "ResourceLoadingHints.ResourcePatternsAvailableAtCommit", !hints.empty());
+  if (is_redirect) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "ResourceLoadingHints.ResourcePatternsAvailableAtCommitForRedirect",
+        !hints.empty());
+  }
 
   if (hints.empty())
     return;
+
+  hints_ptr->ukm_source_id = ukm::ConvertToSourceId(
+      navigation_handle->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID);
   for (const std::string& hint : hints)
     hints_ptr->subresources_to_block.push_back(hint);
 

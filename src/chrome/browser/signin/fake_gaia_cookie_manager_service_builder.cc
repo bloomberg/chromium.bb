@@ -10,30 +10,19 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "google_apis/gaia/gaia_constants.h"
-
-namespace {
-
-std::unique_ptr<KeyedService> BuildFakeGaiaCookieManagerServiceImpl(
-    content::BrowserContext* context,
-    bool use_fake_url_fetcher) {
-  Profile* profile = Profile::FromBrowserContext(context);
-  return std::make_unique<FakeGaiaCookieManagerService>(
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-      GaiaConstants::kChromeSource,
-      ChromeSigninClientFactory::GetForProfile(profile), use_fake_url_fetcher);
-}
-
-}  // namespace
 
 std::unique_ptr<KeyedService> BuildFakeGaiaCookieManagerService(
     content::BrowserContext* context) {
-  return BuildFakeGaiaCookieManagerServiceImpl(context,
-                                               /*use_fake_url_fetcher=*/true);
+  return BuildFakeGaiaCookieManagerServiceWithOptions(
+      /*create_fake_url_loader_factory_for_cookie_requests=*/true, context);
 }
 
-std::unique_ptr<KeyedService> BuildFakeGaiaCookieManagerServiceNoFakeUrlFetcher(
+std::unique_ptr<KeyedService> BuildFakeGaiaCookieManagerServiceWithOptions(
+    bool create_fake_url_loader_factory_for_cookie_requests,
     content::BrowserContext* context) {
-  return BuildFakeGaiaCookieManagerServiceImpl(context,
-                                               /*use_fake_url_fetcher=*/false);
+  Profile* profile = Profile::FromBrowserContext(context);
+  return std::make_unique<FakeGaiaCookieManagerService>(
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
+      ChromeSigninClientFactory::GetForProfile(profile),
+      create_fake_url_loader_factory_for_cookie_requests);
 }

@@ -16,7 +16,6 @@
 #include "components/sync/syncable/syncable_write_transaction.h"
 #include "components/sync/test/engine/test_directory_setter_upper.h"
 #include "components/sync/test/engine/test_id_factory.h"
-#include "components/sync_sessions/sessions_sync_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using syncer::syncable::Entry;

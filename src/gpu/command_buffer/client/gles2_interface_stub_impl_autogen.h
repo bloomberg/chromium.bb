@@ -1056,7 +1056,8 @@ void GLES2InterfaceStub::ScheduleDCLayerCHROMIUM(
     GLuint /* edge_aa_mask */,
     const GLfloat* /* bounds_rect */,
     GLuint /* filter */,
-    bool /* is_protected_video */) {}
+    GLuint /* protected_video_type */) {}
+void GLES2InterfaceStub::SetActiveURLCHROMIUM(const char* /* url */) {}
 void GLES2InterfaceStub::MatrixLoadfCHROMIUM(GLenum /* matrixMode */,
                                              const GLfloat* /* m */) {}
 void GLES2InterfaceStub::MatrixLoadIdentityCHROMIUM(GLenum /* matrixMode */) {}
@@ -1244,4 +1245,14 @@ void GLES2InterfaceStub::FramebufferTextureMultiviewLayeredANGLE(
     GLint /* baseViewIndex */,
     GLsizei /* numViews */) {}
 void GLES2InterfaceStub::MaxShaderCompilerThreadsKHR(GLuint /* count */) {}
+GLuint GLES2InterfaceStub::CreateAndTexStorage2DSharedImageCHROMIUM(
+    GLenum /* internalFormat */,
+    const GLbyte* /* mailbox */) {
+  return 0;
+}
+void GLES2InterfaceStub::BeginSharedImageAccessDirectCHROMIUM(
+    GLuint /* texture */,
+    GLenum /* mode */) {}
+void GLES2InterfaceStub::EndSharedImageAccessDirectCHROMIUM(
+    GLuint /* texture */) {}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_STUB_IMPL_AUTOGEN_H_

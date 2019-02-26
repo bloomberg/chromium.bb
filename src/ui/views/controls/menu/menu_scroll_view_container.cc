@@ -172,9 +172,7 @@ class MenuScrollViewContainer::MenuScrollView : public View {
 // MenuScrollViewContainer ----------------------------------------------------
 
 MenuScrollViewContainer::MenuScrollViewContainer(SubmenuView* content_view)
-    : content_view_(content_view),
-      arrow_(BubbleBorder::NONE),
-      bubble_border_(NULL) {
+    : content_view_(content_view) {
   scroll_up_button_ = new MenuScrollButton(content_view, true);
   scroll_down_button_ = new MenuScrollButton(content_view, false);
   AddChildView(scroll_up_button_);
@@ -186,10 +184,7 @@ MenuScrollViewContainer::MenuScrollViewContainer(SubmenuView* content_view)
   arrow_ = BubbleBorderTypeFromAnchor(
       content_view_->GetMenuItem()->GetMenuController()->GetAnchorPosition());
 
-  if (arrow_ != BubbleBorder::NONE)
-    CreateBubbleBorder();
-  else
-    CreateDefaultBorder();
+  CreateBorder();
 }
 
 bool MenuScrollViewContainer::HasBubbleBorder() {
@@ -201,10 +196,19 @@ void MenuScrollViewContainer::SetBubbleArrowOffset(int offset) {
   bubble_border_->set_arrow_offset(offset);
 }
 
+MenuItemView* MenuScrollViewContainer::GetFootnote() const {
+  MenuItemView* footnote = content_view_->GetLastItem();
+  if (!footnote || footnote->GetType() != MenuItemView::HIGHLIGHTED)
+    return nullptr;
+  return footnote;
+}
+
 gfx::Size MenuScrollViewContainer::CalculatePreferredSize() const {
   gfx::Size prefsize = scroll_view_->GetContents()->GetPreferredSize();
   gfx::Insets insets = GetInsets();
   prefsize.Enlarge(insets.width(), insets.height());
+  if (GetFootnote() && bubble_border_)
+    prefsize.Enlarge(0, bubble_border_->GetBorderCornerRadius());
   return prefsize;
 }
 
@@ -214,11 +218,18 @@ void MenuScrollViewContainer::Layout() {
   int y = insets.top();
   int width = View::width() - insets.width();
   int content_height = height() - insets.height();
+  MenuItemView* footnote = GetFootnote();
   if (!scroll_up_button_->visible()) {
+    if (footnote && bubble_border_)
+      footnote->SetCornerRadius(bubble_border_->GetBorderCornerRadius());
     scroll_view_->SetBounds(x, y, width, content_height);
     scroll_view_->Layout();
     return;
   }
+
+  // Don't round the footnote when the scroll button is visible.
+  if (footnote)
+    footnote->SetCornerRadius(0);
 
   gfx::Size pref = scroll_up_button_->GetPreferredSize();
   scroll_up_button_->SetBounds(x, y, width, pref.height());
@@ -237,7 +248,7 @@ void MenuScrollViewContainer::Layout() {
 
 void MenuScrollViewContainer::OnNativeThemeChanged(
     const ui::NativeTheme* theme) {
-  if (arrow_ == BubbleBorder::NONE)
+  if (!HasBubbleBorder())
     CreateDefaultBorder();
 }
 
@@ -270,6 +281,13 @@ void MenuScrollViewContainer::OnBoundsChanged(
   Layout();
 }
 
+void MenuScrollViewContainer::CreateBorder() {
+  if (HasBubbleBorder())
+    CreateBubbleBorder();
+  else
+    CreateDefaultBorder();
+}
+
 void MenuScrollViewContainer::CreateDefaultBorder() {
   DCHECK_EQ(arrow_, BubbleBorder::NONE);
   bubble_border_ = nullptr;
@@ -292,6 +310,8 @@ void MenuScrollViewContainer::CreateDefaultBorder() {
   const int horizontal_inset =
       menu_config.menu_horizontal_border_size + padding;
 
+  int bottom_inset = GetFootnote() ? 0 : vertical_inset;
+
   if (use_outer_border) {
     SkColor color = GetNativeTheme()
                         ? GetNativeTheme()->GetSystemColor(
@@ -299,10 +319,11 @@ void MenuScrollViewContainer::CreateDefaultBorder() {
                         : gfx::kPlaceholderColor;
     SetBorder(views::CreateBorderPainter(
         std::make_unique<views::RoundRectPainter>(color, corner_radius),
-        gfx::Insets(vertical_inset, horizontal_inset)));
+        gfx::Insets(vertical_inset, horizontal_inset, bottom_inset,
+                    horizontal_inset)));
   } else {
-    SetBorder(CreateEmptyBorder(vertical_inset, horizontal_inset,
-                                vertical_inset, horizontal_inset));
+    SetBorder(CreateEmptyBorder(vertical_inset, horizontal_inset, bottom_inset,
+                                horizontal_inset));
   }
 }
 
@@ -316,8 +337,10 @@ void MenuScrollViewContainer::CreateBubbleBorder() {
     bubble_border_->SetCornerRadius(menu_config.touchable_corner_radius);
     bubble_border_->set_md_shadow_elevation(
         menu_config.touchable_menu_shadow_elevation);
-    scroll_view_->GetContents()->SetBorder(CreateEmptyBorder(
-        gfx::Insets(menu_config.vertical_touchable_menu_item_padding, 0)));
+    gfx::Insets insets(menu_config.vertical_touchable_menu_item_padding, 0);
+    if (GetFootnote())
+      insets.Set(menu_config.vertical_touchable_menu_item_padding, 0, 0, 0);
+    scroll_view_->GetContents()->SetBorder(CreateEmptyBorder(insets));
   }
 
   SetBorder(std::unique_ptr<Border>(bubble_border_));

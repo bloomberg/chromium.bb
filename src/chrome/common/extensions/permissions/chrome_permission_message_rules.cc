@@ -619,9 +619,6 @@ ChromePermissionMessageRule::GetAllRules() {
        {APIPermission::kCertificateProvider},
        {}},
 
-      {IDS_EXTENSION_PROMPT_WARNING_SCREENLOCK_PRIVATE,
-       {APIPermission::kScreenlockPrivate},
-       {}},
       {IDS_EXTENSION_PROMPT_WARNING_ACTIVITY_LOG_PRIVATE,
        {APIPermission::kActivityLogPrivate},
        {}},

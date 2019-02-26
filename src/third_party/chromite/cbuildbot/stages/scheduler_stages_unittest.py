@@ -82,7 +82,7 @@ class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
 
     slave_config_map_1 = {
         'slave_external': config_lib.BuildConfig(
-            important=True, active_waterfall=waterfall.WATERFALL_EXTERNAL)}
+            important=True, active_waterfall=waterfall.WATERFALL_SWARMING)}
     self.PatchObject(generic_stages.BuilderStage, '_GetSlaveConfigMap',
                      return_value=slave_config_map_1)
     self.assertRaises(
@@ -109,7 +109,7 @@ class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
 
     slave_config_map = {
         'slave_external': config_lib.BuildConfig(
-            important=False, active_waterfall=waterfall.WATERFALL_EXTERNAL),
+            important=False, active_waterfall=waterfall.WATERFALL_SWARMING),
         'slave_internal': config_lib.BuildConfig(
             important=False, active_waterfall=waterfall.WATERFALL_INTERNAL),}
     self.PatchObject(generic_stages.BuilderStage, '_GetSlaveConfigMap',
@@ -132,7 +132,7 @@ class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
 
     slave_config_map = {
         'slave_external': config_lib.BuildConfig(
-            important=False, active_waterfall=waterfall.WATERFALL_EXTERNAL),
+            important=False, active_waterfall=waterfall.WATERFALL_SWARMING),
         'slave_internal': config_lib.BuildConfig(
             important=True, active_waterfall=waterfall.WATERFALL_INTERNAL)}
     self.PatchObject(generic_stages.BuilderStage, '_GetSlaveConfigMap',
@@ -152,7 +152,7 @@ class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
 
     slave_config_map = {
         'slave_external': config_lib.BuildConfig(
-            important=False, active_waterfall=waterfall.WATERFALL_EXTERNAL),
+            important=False, active_waterfall=waterfall.WATERFALL_SWARMING),
         'slave_internal': config_lib.BuildConfig(
             important=True, active_waterfall=waterfall.WATERFALL_INTERNAL)}
     self.PatchObject(generic_stages.BuilderStage, '_GetSlaveConfigMap',
@@ -215,24 +215,25 @@ class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
                      side_effect=(('bb_id_1', None), ('bb_id_2', None)))
     slave_config_map = {
         'important_external': config_lib.BuildConfig(
-            important=True, active_waterfall=waterfall.WATERFALL_EXTERNAL),
+            important=True, active_waterfall=waterfall.WATERFALL_SWARMING),
         'experimental_external': config_lib.BuildConfig(
-            important=False, active_waterfall=waterfall.WATERFALL_EXTERNAL)}
+            important=False, active_waterfall=waterfall.WATERFALL_SWARMING)}
     self.PatchObject(generic_stages.BuilderStage, '_GetSlaveConfigMap',
                      return_value=slave_config_map)
 
     stage = self.ConstructStage()
     stage.ScheduleSlaveBuildsViaBuildbucket(important_only=False, dryrun=True)
 
-    results = self.fake_db.GetBuildRequestsForBuildConfig('important_external')
+    results = self.fake_db.GetBuildRequestsForBuildConfigs(
+        ['important_external'])
     self.assertEqual(len(results), 1)
     self.assertEqual(results[0].request_build_config, 'important_external')
     self.assertEqual(results[0].request_buildbucket_id, 'bb_id_2')
     self.assertEqual(results[0].request_reason,
                      build_requests.REASON_IMPORTANT_CQ_SLAVE)
 
-    results = self.fake_db.GetBuildRequestsForBuildConfig(
-        'experimental_external')
+    results = self.fake_db.GetBuildRequestsForBuildConfigs(
+        ['experimental_external'])
     self.assertEqual(len(results), 1)
     self.assertEqual(results[0].request_build_config, 'experimental_external')
     self.assertEqual(results[0].request_buildbucket_id, 'bb_id_1')

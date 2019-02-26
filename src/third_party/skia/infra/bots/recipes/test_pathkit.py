@@ -17,7 +17,7 @@ DEPS = [
 ]
 
 
-DOCKER_IMAGE = 'gcr.io/skia-public/gold-karma-chrome-tests:68.0.3440.106_v4'
+DOCKER_IMAGE = 'gcr.io/skia-public/gold-karma-chrome-tests:68.0.3440.106_v6'
 INNER_KARMA_SCRIPT = '/SRC/skia/infra/pathkit/test_pathkit.sh'
 
 
@@ -33,10 +33,10 @@ def RunSteps(api):
   # The karma script is configured to look in ./npm-(asmjs|wasm)/bin/test/ for
   # the test files to load, so we must copy them there (see Set up for docker).
   copy_dest = checkout_root.join('skia', 'modules', 'pathkit',
-                        'npm-wasm', 'bin', 'test')
+                                 'npm-wasm', 'bin', 'test')
   if 'asmjs' in api.vars.builder_name:
     copy_dest = checkout_root.join('skia', 'modules', 'pathkit',
-                        'npm-asmjs', 'bin', 'test')
+                                   'npm-asmjs', 'bin', 'test')
 
   base_dir = api.vars.build_dir
   bundle_name = 'pathkit.wasm'
@@ -75,7 +75,7 @@ except OSError as e:
     raise
 
 # Copy binaries (pathkit.js and pathkit.wasm) to where the karma tests
-# expect them ($SKIA_ROOT/modules/pathkit/npm-wasm/test/)
+# expect them ($SKIA_ROOT/modules/pathkit/npm-wasm/bin/test/)
 dest = os.path.join(copy_dest, 'pathkit.js')
 shutil.copyfile(os.path.join(base_dir, 'pathkit.js'), dest)
 os.chmod(dest, 0o644) # important, otherwise non-privileged docker can't read.
@@ -93,24 +93,25 @@ os.chmod(out_dir, 0o777) # important, otherwise non-privileged docker can't writ
       infra_step=True)
 
 
-
   cmd = ['docker', 'run', '--shm-size=2gb', '--rm',
-         '-v', '%s:/SRC' % checkout_root, '-v', '%s:/OUT' % out_dir]
+         '--volume', '%s:/SRC' % checkout_root,
+         '--volume', '%s:/OUT' % out_dir]
 
   if 'asmjs' in api.vars.builder_name:
-    cmd.extend(['-e', 'ASM_JS=1'])  # -e sets environment variables
+    cmd.extend(['--env', 'ASM_JS=1'])
 
   cmd.extend([
-         DOCKER_IMAGE,             INNER_KARMA_SCRIPT,
-         '--builder',              api.vars.builder_name,
-         '--git_hash',             api.properties['revision'],
-         '--buildbucket_build_id', api.properties.get('buildbucket_build_id',
-                                                      ''),
-         '--bot_id',               api.vars.swarming_bot_id,
-         '--task_id',              api.vars.swarming_task_id,
-         '--browser',              'Chrome',
-         '--config',               api.vars.configuration,
-         ])
+      DOCKER_IMAGE,             INNER_KARMA_SCRIPT,
+      '--builder',              api.vars.builder_name,
+      '--git_hash',             api.properties['revision'],
+      '--buildbucket_build_id', api.properties.get('buildbucket_build_id',
+                                                  ''),
+      '--bot_id',               api.vars.swarming_bot_id,
+      '--task_id',              api.vars.swarming_task_id,
+      '--browser',              'Chrome',
+      '--config',               api.vars.configuration,
+      '--source_type',          'pathkit',
+      ])
 
   if 'asmjs' in api.vars.builder_name:
     cmd.extend(['--compiled_language', 'asmjs']) # the default is wasm
@@ -119,7 +120,6 @@ os.chmod(out_dir, 0o777) # important, otherwise non-privileged docker can't writ
     cmd.extend([
       '--issue',         api.vars.issue,
       '--patchset',      api.vars.patchset,
-      '--patch_storage', api.vars.patch_storage,
     ])
 
   api.run(

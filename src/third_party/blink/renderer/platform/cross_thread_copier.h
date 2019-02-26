@@ -183,6 +183,13 @@ struct CrossThreadCopier<
 };
 
 template <wtf_size_t inlineCapacity, typename Allocator>
+struct CrossThreadCopier<Vector<uint8_t, inlineCapacity, Allocator>> {
+  STATIC_ONLY(CrossThreadCopier);
+  using Type = Vector<uint8_t, inlineCapacity, Allocator>;
+  static Type Copy(Type value) { return value; }
+};
+
+template <wtf_size_t inlineCapacity, typename Allocator>
 struct CrossThreadCopier<Vector<uint64_t, inlineCapacity, Allocator>> {
   STATIC_ONLY(CrossThreadCopier);
   using Type = Vector<uint64_t, inlineCapacity, Allocator>;

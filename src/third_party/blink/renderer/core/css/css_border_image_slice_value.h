@@ -35,8 +35,10 @@ namespace cssvalue {
 class CSSBorderImageSliceValue : public CSSValue {
  public:
   static CSSBorderImageSliceValue* Create(CSSQuadValue* slices, bool fill) {
-    return new CSSBorderImageSliceValue(slices, fill);
+    return MakeGarbageCollected<CSSBorderImageSliceValue>(slices, fill);
   }
+
+  CSSBorderImageSliceValue(CSSQuadValue* slices, bool fill);
 
   String CustomCSSText() const;
 
@@ -50,8 +52,6 @@ class CSSBorderImageSliceValue : public CSSValue {
   void TraceAfterDispatch(blink::Visitor*);
 
  private:
-  CSSBorderImageSliceValue(CSSQuadValue* slices, bool fill);
-
   // These four values are used to make "cuts" in the border image. They can be
   // numbers or percentages.
   Member<CSSQuadValue> slices_;

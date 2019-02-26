@@ -31,6 +31,7 @@
 <translation id="1351937230027495976">تصغير القائمة</translation>
 <translation id="1383876407941801731">البحث</translation>
 <translation id="1419738280318246476">فتح قفل الجهاز لتنفيذ إجراء الإشعارات</translation>
+<translation id="1455242230282523554">عرض إعدادات اللغة</translation>
 <translation id="1467432559032391204">اليسار</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{عرض إعدادات الإشعارات. تم إيقاف الإشعارات لتطبيق واحد}zero{عرض إعدادات الإشعارات. تم إيقاف الإشعارات لـ # تطبيق}two{عرض إعدادات الإشعارات. تم إيقاف الإشعارات لتطبيقين (#)}few{عرض إعدادات الإشعارات. تم إيقاف الإشعارات لـ # تطبيقات}many{عرض إعدادات الإشعارات. تم إيقاف الإشعارات لـ # تطبيقًا}other{عرض إعدادات الإشعارات. تم إيقاف الإشعارات لـ # تطبيق}}</translation>
@@ -38,8 +39,8 @@
 <translation id="1537254971476575106">مكبّر بملء الشاشة</translation>
 <translation id="15373452373711364">مؤشر الماوس الكبير</translation>
 <translation id="1550523713251050646">انقر للحصول على المزيد من الخيارات</translation>
-<translation id="1567387640189251553">تم توصيل لوحة مفاتيح مختلفة منذ آخر إدخال لكلمة المرور، وقد يكون ذلك محاولةً لسرقة ضغطات المفاتيح.</translation>
 <translation id="1570871743947603115">تبديل البلوتوث. <ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">الوصول إلى جميع أنشطتك في جلسة واحدة</translation>
 <translation id="1608626060424371292">إزالة هذا المستخدم</translation>
 <translation id="1621499497873603021">الوقت المتبقي حتى تصبح البطارية فارغة <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">بدء طلب بحث صوتي</translation>
@@ -87,7 +88,7 @@
 <translation id="2341729377289034582">تم القفل على الوضع العمودي</translation>
 <translation id="2352467521400612932">إعدادات قلم الشاشة</translation>
 <translation id="2354174487190027830">تفعيل <ph name="NAME" /></translation>
-<translation id="2359808026110333948">المتابعة</translation>
+<translation id="2359808026110333948">متابعة</translation>
 <translation id="2365393535144473978">سيؤدي تفعيل ميزة بيانات الجوّال إلى تفعيل البلوتوث.</translation>
 <translation id="2391579633712104609">180 درجة</translation>
 <translation id="239188844683466770">تبديل حالة "الرجاء عدم الإزعاج"</translation>
@@ -111,8 +112,8 @@
 <translation id="2727977024730340865">تمّ توصيل شاحن منخفض الطاقة. لذا قد لا تكون عملية شحن البطارية جديرة بالثقة.</translation>
 <translation id="2761704814324807722">علبة الحالة، والوقت <ph name="TIME" />، و<ph name="BATTERY" /></translation>
 <translation id="277257480934873581">إعادة الاتصال بـ <ph name="NAME" /></translation>
-<translation id="2790844815106384441">اختيار ما إذا كان يمكن لمواقع الويب استخدام خدمات الموقع الجغرافي أو ميكروفون الجهاز أو الكاميرا أو ميزات أخرى</translation>
 <translation id="2792498699870441125">‏Alt+مفتاح البحث</translation>
+<translation id="2803734122639935495">لفتح القفل، أدخِل كلمة مرورك</translation>
 <translation id="2819276065543622893">سيتم تسجيل خروجك الآن.</translation>
 <translation id="2825619548187458965">الرف</translation>
 <translation id="2844169650293029770">‏جهاز USB-C (المنفذ الأمامي الأيسر)</translation>
@@ -126,6 +127,7 @@
 <translation id="2946119680249604491">إضافة اتصال</translation>
 <translation id="2961963223658824723">حدث خطأ. يُرجى إعادة المحاولة خلال بضع ثوانٍ.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">تثبيت التطبيقات والإضافات والتصاميم</translation>
 <translation id="2995447421581609334">عرض أجهزة البث.</translation>
 <translation id="2996462380875591307">‏تم تفعيل المكبّر. يمكنك إيقافه بالضغط على Ctrl+Search+D مرة أخرى.</translation>
 <translation id="3000461861112256445">صوت أحادي</translation>
@@ -155,6 +157,7 @@
 <translation id="3413817803639110246">ليس لديك شيء للمشاهدة حتى الآن</translation>
 <translation id="3445925074670675829">‏جهاز USB-C</translation>
 <translation id="3454224730401036106">تم تبديل الاتصال إلى شبكة أكثر أمانًا.</translation>
+<translation id="3465223694362104965">تم ربط لوحة مفاتيح أخرى بهذا الجهاز منذ آخر مرة سجَّلت الدخول فيها. يُرجى التأكُّد من أن لوحة المفاتيح هذه موثوقة قبل استخدامها.</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3510164367642747937">تمييز مؤشر الماوس</translation>
 <translation id="3510503721818156981">‏تم ربط جهاز Chromebook بهاتف جديد</translation>
@@ -173,6 +176,7 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">قفل</translation>
 <translation id="3798670284305777884">سماعة (داخلية)</translation>
+<translation id="3799080171973636491">لقد ضغطت على اختصار لوحة المفاتيح للمُكبِّر بملء الشاشة. هل ترغب في تفعيله؟</translation>
 <translation id="380165613292957338">مرحبًا، كيف يمكنني مساعدتك؟</translation>
 <translation id="383629559565718788">عرض إعدادات لوحة المفاتيح</translation>
 <translation id="3846575436967432996">لا توجد معلومات متاحة حول الشبكة</translation>
@@ -190,7 +194,7 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{الإشعارات متوقفة لتطبيق واحد}zero{الإشعارات متوقفة لـ # تطبيق}two{الإشعارات متوقفة لتطبيقَين (#)}few{الإشعارات متوقفة لـ # تطبيقات}many{الإشعارات متوقفة لـ # تطبيقًا}other{الإشعارات متوقفة لـ # تطبيق}}</translation>
 <translation id="4072264167173457037">إشارة متوسطة</translation>
 <translation id="4146833061457621061">تشغيل الموسيقى</translation>
-<translation id="4200057768455216496">لقد ضغطت على اختصار المُكبِّر الذي تم إرساؤه. هل ترغب في تفعيله؟</translation>
+<translation id="4181841719683918333">اللغات</translation>
 <translation id="4217571870635786043">إملاء</translation>
 <translation id="4261870227682513959">عرض إعدادات الإشعارات. تم إيقاف الإشعارات</translation>
 <translation id="4269883910223712419">يمتلك مشرف هذا الجهاز القدرة على ما يلي:</translation>
@@ -198,12 +202,14 @@
 <translation id="4279490309300973883">النسخ المطابق</translation>
 <translation id="4292681942966152062">جارٍ تفعيل <ph name="NETWORK_NAME" /></translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4321776623976362024">لقد ضغطت على اختصار لوحة المفاتيح للتباين العالي. هل ترغب في تفعيله؟</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">العدسة المكبرة</translation>
 <translation id="4351433414020964307">جارٍ تحميل المساعد...</translation>
 <translation id="435527878592612277">اختيار صورتك</translation>
 <translation id="4378551569595875038">جارٍ الاتصال...</translation>
 <translation id="4379531060876907730">هذه هي أدوات قلم الشاشة</translation>
+<translation id="4389184120735010762">لقد ضغطت على اختصار لوحة المفاتيح للمُكبِّر الذي تم إرساؤه. هل ترغب في تفعيله؟</translation>
 <translation id="4421231901400348175">مشاركة التحكم في شاشتك مع <ph name="HELPER_NAME" /> عن طريق المساعدة عن بُعد.</translation>
 <translation id="4430019312045809116">مستوى الصوت</translation>
 <translation id="4450893287417543264">عدم الإظهار مرة أخرى</translation>
@@ -219,6 +225,7 @@
 <translation id="4628757576491864469">الأجهزة</translation>
 <translation id="4659419629803378708">‏تم تفعيل ChromeVox</translation>
 <translation id="4734965478015604180">أفقي</translation>
+<translation id="476166673298332917">قد يراقب مشرف الجهاز نشاط التصفُح.</translation>
 <translation id="4774338217796918551">يمكنك العودة غدًا في <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">كلمة مرور <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">‏لا يتوفَّر "مساعد Google" في جلسة تجريبية.</translation>
@@ -241,6 +248,7 @@
 <translation id="5207949376430453814">تمييز علامة إقحام النص</translation>
 <translation id="5222676887888702881">الخروج</translation>
 <translation id="523505283826916779">إعدادات إمكانية الدخول</translation>
+<translation id="5302048478445481009">اللغة</translation>
 <translation id="5313326810920013265">إعدادات البلوتوث</translation>
 <translation id="5331975486040154427">‏جهاز USB-C (المنفذ الخلفي الأيسر)</translation>
 <translation id="5379115545237091094">محاولات كثيرة جدًا</translation>
@@ -253,13 +261,14 @@
 <translation id="5537725057119320332">إرسال</translation>
 <translation id="5548285847212963613">يمكن أن تساعد الإضافة " <ph name="EXTENSION_NAME" /> "على الاتصال بهذه الشبكة.</translation>
 <translation id="554893713779400387">تبديل الإملاء</translation>
-<translation id="5554214597676791969">لتسجيل الدخول مرة أخرى، يُرجى إدخال كلمة المرور.</translation>
 <translation id="5571066253365925590">تم تفعيل البلوتوث</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />، <ph name="DATE" /></translation>
 <translation id="5600837773213129531">‏اضغط على Ctrl + Alt + Z لإيقاف التعليقات والملاحظات المنطوقة</translation>
+<translation id="5626283214046138476">ستنتهي صلاحية حساب المستخدم تحت الإشراف قريبًا.</translation>
 <translation id="5648021990716966815">مقبس الميكروفون</translation>
 <translation id="5669267381087807207">تفعيل</translation>
 <translation id="5673434351075758678">من "<ph name="FROM_LOCALE" />" إلى "<ph name="TO_LOCALE" />" بعد مزامنة الإعدادات.</translation>
+<translation id="5691772641933328258">لم يتمّ التعرُّف على البصمة</translation>
 <translation id="5710450975648804523">تمّ تفعيل وضع "عدم الإزعاج"</translation>
 <translation id="574392208103952083">متوسط</translation>
 <translation id="5744083938413354016">السحب بعد النقر</translation>
@@ -301,7 +310,6 @@
 <translation id="6284232397434400372">تم تغيير درجة الدقة</translation>
 <translation id="6297287540776456956">استخدام قلم الشاشة لتحديد منطقة</translation>
 <translation id="6310121235600822547">تم تدوير <ph name="DISPLAY_NAME" /> إلى <ph name="ROTATION" /></translation>
-<translation id="632744581670418035">تراكب لوحة المفاتيح</translation>
 <translation id="6344698853700675736">تبديل "الإضاءة الليلية"</translation>
 <translation id="6376931439017688372">تم تفعيل البلوتوث</translation>
 <translation id="639644700271529076">‏مفتاح CAPS LOCK قيد الإيقاف</translation>
@@ -323,6 +331,7 @@
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6650933572246256093">يريد جهاز بلوتوث "<ph name="DEVICE_NAME" />" الحصول على إذن للإقران. يُرجى إدخال مفتاح المرور هذا في هذا الجهاز: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">كلمة المرور</translation>
+<translation id="6665545700722362599">منح مواقع الويب والتطبيقات والإضافات الإذن لاستخدام خدمات الموقع الجغرافي أو كاميرا وميكروفون الجهاز أو الميزات الأخرى</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">تحتاج لوحة المفاتيح القابلة للفصل إلى تحديث مهم</translation>
 <translation id="6700713906295497288">‏زر قائمة أداة تحرير أسلوب الإدخال (IME)</translation>
@@ -333,7 +342,6 @@
 <translation id="6751826523481687655">تتبّع الأداء قيْد التفعيل</translation>
 <translation id="6785414152754474415">اكتمل شحن <ph name="PERCENTAGE" />% من البطارية ويجري شحنها.</translation>
 <translation id="6803622936009808957">تعذر إجراء النسخ المطابق للعروض نظرًا لعدم العثور على درجات دقة متوافقة. تم الدخول إلى سطح المكتب الممتد بدلاً من ذلك.</translation>
-<translation id="6814658242098378692">إدارة التطبيقات والإضافات والمظاهر</translation>
 <translation id="6820676911989879663">حان وقت الاستراحة</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">تفعيل <ph name="NETWORKSERVICE" /></translation>
@@ -344,7 +352,6 @@
 <translation id="698231206551913481">سيتم حذف جميع الملفات والبيانات المحلية المرتبطة بهذا المستخدم نهائيًا بمجرد إزالة هذا المستخدم.</translation>
 <translation id="7015766095477679451">يمكنك العودة لاستخدام الجهاز في <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">إنهاء الجلسة</translation>
-<translation id="7037152028959403492">لقد ضغطت على اختصار التباين العالي. هل ترغب في تفعيله؟</translation>
 <translation id="7066646422045619941">تم إيقاف هذه الشبكة من قِبل مشرفك.</translation>
 <translation id="7067196344162293536">تدوير تلقائي</translation>
 <translation id="7068360136237591149">فتح الملفات</translation>
@@ -374,7 +381,6 @@
 <translation id="7564874036684306347">قد ينتج عن نقل النوافذ إلى سطح مكتب آخر سلوك غير متوقع. من الممكن أن يتم تقسيم مربعات الحوار والنوافذ والإشعارات المتتالية بين سطحَي المكتب.</translation>
 <translation id="7569509451529460200">‏تم تفعيل Braille وChromeVox</translation>
 <translation id="7593891976182323525">‏مفتاح البحث أو Shift</translation>
-<translation id="7604942372593434070">الدخول إلى نشاط التصفح</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (المالك)</translation>
 <translation id="7647488630410863958">إلغاء قفل الجهاز لعرض الإشعارات</translation>
 <translation id="7649070708921625228">مساعدة</translation>
@@ -383,6 +389,7 @@
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{إشعار واحد}zero{# إشعار}two{إشعاران (#)}few{# إشعارات}many{# إشعارًا}other{# إشعار}}</translation>
 <translation id="776344839111254542">النقر لعرض تفاصيل التحديث</translation>
+<translation id="7780159184141939021">تدوير الشاشة</translation>
 <translation id="7796353162336583443">‏انقر على زر قلم الشاشة على الرف لتدوين ملاحظة أو الحصول على لقطة شاشة أو استخدام مساعد Google أو مؤشر الليزر أو العدسة المكبرة.</translation>
 <translation id="7798302898096527229">‏اضغط على مفتاح البحث أو المفتاح Shift للإلغاء.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> و<ph name="MINUTE" /></translation>
@@ -390,14 +397,17 @@
 <translation id="7842211907556571265">جارٍ الاتصال بشبكة <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">تحذير: ميزة تجريبية</translation>
 <translation id="7846634333498149051">لوحة المفاتيح</translation>
+<translation id="7868900307798234037">فتح القفل باستخدام بصمة الإصبع</translation>
 <translation id="7886169021410746335">ضبط إعدادات الخصوصية</translation>
 <translation id="7886277072580235377">سيتم محو جلسة الإنترنت عند تسجيل الخروج. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">إرسال رسالة إلكترونية</translation>
+<translation id="7897375687985782769">لقد ضغطت على اختصار لوحة المفاتيح لتدوير الشاشة. هل ترغب في تدوير الشاشة؟</translation>
 <translation id="7904094684485781019">لقد حظر مشرف هذا الحساب إمكانية الدخول المتعدد.</translation>
 <translation id="7933084174919150729">‏لا يتوفر مساعد Google إلا للملف الشخصي الأساسي.</translation>
 <translation id="79341161159229895">يُدير <ph name="FIRST_PARENT_EMAIL" /> و<ph name="SECOND_PARENT_EMAIL" /> الحساب.</translation>
 <translation id="7977927628060636163">جارٍ البحث عن شبكات الجوّال...</translation>
 <translation id="7982789257301363584">الشبكة</translation>
+<translation id="7984197416080286869">أُجريت محاولات كثيرة جدًا لاستخدام بصمة الإصبع</translation>
 <translation id="7994370417837006925">الدخول المتعدد</translation>
 <translation id="8000066093800657092">لا شبكة</translation>
 <translation id="8029241286966751120">‏تم تفعيل المكبّر بوضع ملء الشاشة. يمكنك إيقافه بالضغط على Ctrl+Search+M مرة أخرى.</translation>
@@ -409,7 +419,6 @@
 <translation id="8132793192354020517">تم الاتصال بالموقع <ph name="NAME" /></translation>
 <translation id="813913629614996137">جارٍ التهيئة...</translation>
 <translation id="8142699993796781067">الشبكة الخاصة</translation>
-<translation id="8152119955266188852">لقد ضغطت على اختصار المُكبِّر بملء الشاشة. هل ترغب في تفعيله؟</translation>
 <translation id="8190698733819146287">تخصيص اللغات والإدخال...</translation>
 <translation id="8192202700944119416">يتم إخفاء الإشعارات.</translation>
 <translation id="8236042855478648955">حان وقت الراحة</translation>

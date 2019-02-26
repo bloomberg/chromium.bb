@@ -39,7 +39,7 @@
 
 namespace blink {
 
-void V8MessageChannel::constructorCustom(
+void V8MessageChannel::ConstructorCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
 
@@ -57,7 +57,7 @@ void V8MessageChannel::constructorCustom(
       wrapper, ToV8(channel->port2(), wrapper, isolate));
 
   V8SetReturnValue(info, V8DOMWrapper::AssociateObjectWithWrapper(
-                             isolate, channel, &wrapperTypeInfo, wrapper));
+                             isolate, channel, &wrapper_type_info, wrapper));
 }
 
 }  // namespace blink

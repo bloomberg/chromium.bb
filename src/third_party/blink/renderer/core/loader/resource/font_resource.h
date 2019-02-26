@@ -33,7 +33,7 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
-#include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 
 namespace blink {
 
@@ -47,6 +47,8 @@ class CORE_EXPORT FontResource final : public Resource {
   static FontResource* Fetch(FetchParameters&,
                              ResourceFetcher*,
                              FontResourceClient*);
+
+  FontResource(const ResourceRequest&, const ResourceLoaderOptions&);
   ~FontResource() override;
 
   void DidAddClient(ResourceClient*) override;
@@ -77,10 +79,9 @@ class CORE_EXPORT FontResource final : public Resource {
 
     Resource* Create(const ResourceRequest& request,
                      const ResourceLoaderOptions& options) const override {
-      return new FontResource(request, options);
+      return MakeGarbageCollected<FontResource>(request, options);
     }
   };
-  FontResource(const ResourceRequest&, const ResourceLoaderOptions&);
 
   void NotifyFinished() override;
   void FontLoadShortLimitCallback();

@@ -21,6 +21,7 @@
 #include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/command_buffer/service/raster_decoder_context_state.h"
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/config/dx_diag_node.h"
@@ -120,16 +121,6 @@ void DestroyBinding(mojo::BindingSet<mojom::GpuService>* binding,
 
 }  // namespace
 
-struct GpuServiceImpl::GrContextAndGLContext {
-  GrContextAndGLContext() = default;
-  GrContextAndGLContext(GrContextAndGLContext&& other) = default;
-  ~GrContextAndGLContext() = default;
-  GrContextAndGLContext& operator=(GrContextAndGLContext&& other) = default;
-
-  scoped_refptr<gl::GLContext> gl_context;
-  sk_sp<GrContext> gr_context;
-};
-
 GpuServiceImpl::GpuServiceImpl(
     const gpu::GPUInfo& gpu_info,
     std::unique_ptr<gpu::GpuWatchdogThread> watchdog_thread,
@@ -193,20 +184,6 @@ GpuServiceImpl::~GpuServiceImpl() {
     DCHECK(scheduler_);
     scheduler_->DestroySequence(skia_output_surface_sequence_id_);
   }
-
-  for (auto& key_and_data : contexts_for_gl_) {
-    auto& data = key_and_data.second;
-    if (!data.gr_context)
-      continue;
-    if (!data.gl_context ||
-        !data.gl_context->MakeCurrent(
-            gpu_channel_manager_->default_offscreen_surface())) {
-      LOG(ERROR) << "Failed to make current.";
-      data.gr_context->abandonContext();
-    }
-    data.gr_context = nullptr;
-  }
-  contexts_for_gl_.clear();
 
   media_gpu_channel_manager_.reset();
   gpu_channel_manager_.reset();
@@ -283,11 +260,11 @@ void GpuServiceImpl::InitializeWithHost(
   // Defer creation of the render thread. This is to prevent it from handling
   // IPC messages before the sandbox has been enabled and all other necessary
   // initialization has succeeded.
-  gpu_channel_manager_.reset(new gpu::GpuChannelManager(
+  gpu_channel_manager_ = std::make_unique<gpu::GpuChannelManager>(
       gpu_preferences_, this, watchdog_thread_.get(), main_runner_, io_runner_,
       scheduler_.get(), sync_point_manager_, gpu_memory_buffer_factory_.get(),
       gpu_feature_info_, std::move(activity_flags),
-      std::move(default_offscreen_surface)));
+      std::move(default_offscreen_surface), vulkan_context_provider());
 
   media_gpu_channel_manager_.reset(
       new media::MediaGpuChannelManager(gpu_channel_manager_.get()));
@@ -311,57 +288,27 @@ void GpuServiceImpl::DisableGpuCompositing() {
   (*gpu_host_)->DisableGpuCompositing();
 }
 
-bool GpuServiceImpl::GetGrContextForGLSurface(gl::GLSurface* surface,
-                                              GrContext** gr_context,
-                                              gl::GLContext** gl_context) {
+scoped_refptr<gpu::raster::RasterDecoderContextState>
+GpuServiceImpl::GetContextStateForGLSurface(gl::GLSurface* surface) {
   DCHECK(main_runner_->BelongsToCurrentThread());
   DCHECK(!is_using_vulkan());
-  DCHECK(surface);
-  DCHECK(gr_context && !*gr_context);
-  DCHECK(gl_context && !*gl_context);
-
-  auto& data = contexts_for_gl_[surface->GetCompatibilityKey()];
-  if (!data.gr_context) {
-    DCHECK(!data.gl_context);
-
-    gl::GLContextAttribs attribs;
-    // TODO(penghuang) set attribs.
-    data.gl_context = gl::init::CreateGLContext(
-        gpu_channel_manager_->share_group(), surface, attribs);
-    DCHECK(data.gl_context);
-    gpu_feature_info_.ApplyToGLContext(data.gl_context.get());
-    if (!data.gl_context->MakeCurrent(surface)) {
-      LOG(FATAL) << "Failed to make current.";
-      // TODO(penghuang): handle the failure.
-    }
-
-    const auto* gl_version_info = data.gl_context->GetVersionInfo();
-    const bool use_version_es2 = false;
-    auto native_interface =
-        gl::init::CreateGrGLInterface(*gl_version_info, use_version_es2);
-    DCHECK(native_interface);
-
-    GrContextOptions options;
-    options.fExplicitlyAllocateGPUResources = GrContextOptions::Enable::kYes;
-    options.fUseGLBufferDataNullHint = GrContextOptions::Enable::kYes;
-    data.gr_context = GrContext::MakeGL(std::move(native_interface), options);
-    DCHECK(data.gr_context);
-  }
-
-  *gr_context = data.gr_context.get();
-  *gl_context = data.gl_context.get();
-  return !!gr_context;
+  gpu::ContextResult result;
+  auto context_state =
+      gpu_channel_manager_->GetRasterDecoderContextState(&result);
+  // TODO(penghuang): https://crbug.com/899740 Support GLSurface which is not
+  // compatible.
+  DCHECK_EQ(surface->GetCompatibilityKey(),
+            context_state->surface->GetCompatibilityKey());
+  DCHECK(!context_state->use_virtualized_gl_contexts);
+  return context_state;
 }
 
-GrContext* GpuServiceImpl::GetGrContextForVulkan() {
+scoped_refptr<gpu::raster::RasterDecoderContextState>
+GpuServiceImpl::GetContextStateForVulkan() {
   DCHECK(main_runner_->BelongsToCurrentThread());
   DCHECK(is_using_vulkan());
-#if BUILDFLAG(ENABLE_VULKAN)
-  return vulkan_context_provider_->GetGrContext();
-#else
-  NOTREACHED();
-  return nullptr;
-#endif
+  gpu::ContextResult result;
+  return gpu_channel_manager_->GetRasterDecoderContextState(&result);
 }
 
 gpu::ImageFactory* GpuServiceImpl::gpu_image_factory() {
@@ -786,14 +733,16 @@ void GpuServiceImpl::OnBackgroundCleanup() {
 }
 
 void GpuServiceImpl::OnBackgrounded() {
+  DCHECK(io_runner_->BelongsToCurrentThread());
   if (watchdog_thread_)
     watchdog_thread_->OnBackgrounded();
 
-  if (io_runner_->BelongsToCurrentThread()) {
-    main_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&GpuServiceImpl::OnBackgrounded, weak_ptr_));
-    return;
-  }
+  main_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&GpuServiceImpl::OnBackgroundedOnMainThread, weak_ptr_));
+}
+
+void GpuServiceImpl::OnBackgroundedOnMainThread() {
   gpu_channel_manager_->OnApplicationBackgrounded();
 }
 

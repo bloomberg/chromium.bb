@@ -44,8 +44,11 @@ class CORE_EXPORT MediaError final : public ScriptWrappable {
   };
 
   static MediaError* Create(ErrorCode code, const String& message) {
-    return new MediaError(code, message);
+    return MakeGarbageCollected<MediaError>(code, message);
   }
+
+  MediaError(ErrorCode code, const String& message)
+      : code_(code), message_(message) {}
 
   ErrorCode code() const { return code_; }
 
@@ -54,9 +57,6 @@ class CORE_EXPORT MediaError final : public ScriptWrappable {
   String message() const { return message_; }
 
  private:
-  MediaError(ErrorCode code, const String& message)
-      : code_(code), message_(message) {}
-
   ErrorCode code_;
   String message_;
 };

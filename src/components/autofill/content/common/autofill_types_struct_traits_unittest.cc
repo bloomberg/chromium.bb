@@ -102,8 +102,7 @@ void CreateTestPasswordForm(PasswordForm* form) {
   form->was_parsed_using_autofill_predictions = false;
   form->is_public_suffix_match = true;
   form->is_affiliation_based_match = true;
-  form->submission_event =
-      PasswordForm::SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION;
+  form->submission_event = SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION;
 }
 
 void CreateTestFormsPredictionsMap(FormsPredictionsMap* predictions) {
@@ -338,10 +337,13 @@ TEST_F(AutofillTypeTraitsTestImpl, PassFormFieldData) {
   test::CreateTestSelectField("TestLabel", "TestName", "TestValue", kOptions,
                               kOptions, 4, &input);
   // Set other attributes to check if they are passed correctly.
-  input.id = base::ASCIIToUTF16("id");
+  input.id_attribute = base::ASCIIToUTF16("id");
+  input.name_attribute = base::ASCIIToUTF16("name");
   input.autocomplete_attribute = "on";
   input.placeholder = base::ASCIIToUTF16("placeholder");
   input.css_classes = base::ASCIIToUTF16("class1");
+  input.aria_label = base::ASCIIToUTF16("aria label");
+  input.aria_description = base::ASCIIToUTF16("aria description");
   input.max_length = 12345;
   input.is_autofilled = true;
   input.check_status = FormFieldData::CHECKED;

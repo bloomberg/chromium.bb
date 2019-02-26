@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "net/base/io_buffer.h"
 #include "net/third_party/quic/core/quic_types.h"
+#include "net/third_party/quic/platform/api/quic_string_piece.h"
 
 namespace quic {
 
@@ -30,6 +31,14 @@ class QUIC_EXPORT_PRIVATE QuicMemSliceSpanImpl {
   // Save IO buffers in buffers_ to |send_buffer| and returns the length of all
   // saved mem slices.
   QuicByteCount SaveMemSlicesInSendBuffer(QuicStreamSendBuffer* send_buffer);
+
+  QuicStringPiece GetData(size_t index) {
+    return QuicStringPiece(buffers_[index]->data(), lengths_[index]);
+  }
+
+  QuicByteCount total_length();
+
+  size_t NumSlices() { return num_buffers_; }
 
   bool empty() const { return num_buffers_ == 0; }
 

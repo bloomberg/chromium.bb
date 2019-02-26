@@ -6,6 +6,7 @@
 
 #import <MobileCoreServices/MobileCoreServices.h>
 
+#import "ios/web_view/shell/shell_auth_service.h"
 #import "ios/web_view/shell/shell_autofill_delegate.h"
 #import "ios/web_view/shell/shell_translation_delegate.h"
 
@@ -20,9 +21,11 @@ NSString* const kWebViewShellAddressFieldAccessibilityLabel = @"Address field";
 NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
     @"WebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier";
 
-@interface ShellViewController ()<CWVNavigationDelegate,
+@interface ShellViewController ()<CWVDownloadTaskDelegate,
+                                  CWVNavigationDelegate,
                                   CWVUIDelegate,
                                   CWVScriptCommandHandler,
+                                  CWVSyncControllerDelegate,
                                   UITextFieldDelegate>
 // Container for |webView|.
 @property(nonatomic, strong) UIView* containerView;
@@ -38,6 +41,14 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
 @property(nonatomic, strong) ShellAutofillDelegate* autofillDelegate;
 // Handles the translation of the content displayed in |webView|.
 @property(nonatomic, strong) ShellTranslationDelegate* translationDelegate;
+// The on-going download task if any.
+@property(nonatomic, strong, nullable) CWVDownloadTask* downloadTask;
+// The path to a local file which the download task is writing to.
+@property(nonatomic, strong, nullable) NSString* downloadFilePath;
+// A controller to show a "Share" menu for the downloaded file.
+@property(nonatomic, strong, nullable)
+    UIDocumentInteractionController* documentInteractionController;
+@property(nonatomic, strong) ShellAuthService* authService;
 
 - (void)back;
 - (void)forward;
@@ -58,6 +69,10 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
 @synthesize toolbar = _toolbar;
 @synthesize webView = _webView;
 @synthesize translationDelegate = _translationDelegate;
+@synthesize downloadTask = _downloadTask;
+@synthesize downloadFilePath = _downloadFilePath;
+@synthesize documentInteractionController = _documentInteractionController;
+@synthesize authService = _authService;
 
 - (void)viewDidLoad {
   [super viewDidLoad];
@@ -149,8 +164,12 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
 
   [CWVWebView setUserAgentProduct:@"Dummy/1.0"];
 
-  [self createWebViewWithConfiguration:[CWVWebViewConfiguration
-                                           defaultConfiguration]];
+  CWVWebViewConfiguration* configuration =
+      [CWVWebViewConfiguration defaultConfiguration];
+  configuration.syncController.delegate = self;
+  [self createWebViewWithConfiguration:configuration];
+
+  _authService = [[ShellAuthService alloc] init];
 }
 
 - (void)observeValueForKeyPath:(NSString*)keyPath
@@ -239,6 +258,32 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
                                        handler:^(UIAlertAction* action) {
                                          [weakSelf resetTranslateSettings];
                                        }]];
+
+  for (CWVIdentity* identity in [_authService identities]) {
+    NSString* title =
+        [NSString stringWithFormat:@"Start sync with %@", identity.email];
+    [alertController
+        addAction:[UIAlertAction
+                      actionWithTitle:title
+                                style:UIAlertActionStyleDefault
+                              handler:^(UIAlertAction* action) {
+                                CWVSyncController* syncController =
+                                    weakSelf.webView.configuration
+                                        .syncController;
+                                [syncController
+                                    startSyncWithIdentity:identity
+                                               dataSource:_authService];
+                              }]];
+  }
+
+  [alertController
+      addAction:[UIAlertAction
+                    actionWithTitle:@"Stop sync"
+                              style:UIAlertActionStyleDefault
+                            handler:^(UIAlertAction* action) {
+                              [weakSelf.webView.configuration
+                                      .syncController stopSyncAndClearIdentity];
+                            }]];
 
   [self presentViewController:alertController animated:YES completion:nil];
 }
@@ -509,6 +554,27 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
   NSLog(@"%@", NSStringFromSelector(_cmd));
 }
 
+- (void)webView:(CWVWebView*)webView
+    didFailNavigationWithSSLError:(NSError*)error
+                      overridable:(BOOL)overridable
+                  decisionHandler:
+                      (void (^)(CWVSSLErrorDecision))decisionHandler {
+  NSLog(@"%@", NSStringFromSelector(_cmd));
+  decisionHandler(CWVSSLErrorDecisionDoNothing);
+}
+
+- (void)webView:(CWVWebView*)webView
+    didRequestDownloadWithTask:(CWVDownloadTask*)task {
+  NSLog(@"%@", NSStringFromSelector(_cmd));
+  self.downloadTask = task;
+  NSString* documentDirectoryPath = NSSearchPathForDirectoriesInDomains(
+      NSDocumentDirectory, NSUserDomainMask, YES)[0];
+  self.downloadFilePath = [documentDirectoryPath
+      stringByAppendingPathComponent:task.suggestedFileName];
+  task.delegate = self;
+  [task startDownloadToLocalFileAtPath:self.downloadFilePath];
+}
+
 #pragma mark CWVScriptCommandHandler
 
 - (BOOL)webView:(CWVWebView*)webView
@@ -516,6 +582,43 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
           fromMainFrame:(BOOL)fromMainFrame {
   NSLog(@"%@ command.content=%@", NSStringFromSelector(_cmd), command.content);
   return YES;
+}
+
+#pragma mark CWVDownloadTaskDelegate
+
+- (void)downloadTask:(CWVDownloadTask*)downloadTask
+    didFinishWithError:(nullable NSError*)error {
+  NSLog(@"%@", NSStringFromSelector(_cmd));
+  if (!error) {
+    NSURL* url = [NSURL fileURLWithPath:self.downloadFilePath];
+    self.documentInteractionController =
+        [UIDocumentInteractionController interactionControllerWithURL:url];
+    [self.documentInteractionController presentOptionsMenuFromRect:CGRectZero
+                                                            inView:self.view
+                                                          animated:YES];
+  }
+  self.downloadTask = nil;
+  self.downloadFilePath = nil;
+}
+
+- (void)downloadTaskProgressDidChange:(CWVDownloadTask*)downloadTask {
+  NSLog(@"%@", NSStringFromSelector(_cmd));
+}
+
+#pragma mark CWVSyncControllerDelegate
+
+- (void)syncControllerDidStartSync:(CWVSyncController*)syncController {
+  NSLog(@"%@", NSStringFromSelector(_cmd));
+}
+
+- (void)syncController:(CWVSyncController*)syncController
+      didFailWithError:(NSError*)error {
+  NSLog(@"%@:%@", NSStringFromSelector(_cmd), error);
+}
+
+- (void)syncController:(CWVSyncController*)syncController
+    didStopSyncWithReason:(CWVStopSyncReason)reason {
+  NSLog(@"%@:%ld", NSStringFromSelector(_cmd), reason);
 }
 
 @end

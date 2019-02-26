@@ -1,4 +1,4 @@
-// Copyright (c) 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "media/base/video_codecs.h"
+#include "media/base/video_frame.h"
 #include "media/base/video_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
@@ -54,41 +55,12 @@ class VideoDecodeAcceleratorTestEnvironment : public ::testing::Environment {
   DISALLOW_COPY_AND_ASSIGN(VideoDecodeAcceleratorTestEnvironment);
 };
 
-// A helper class used to manage the lifetime of a Texture. Can be backed by
-// either a buffer allocated by the VDA, or by a preallocated pixmap.
-class TextureRef : public base::RefCounted<TextureRef> {
- public:
-  static scoped_refptr<TextureRef> Create(
-      uint32_t texture_id,
-      base::OnceClosure no_longer_needed_cb);
-
-  static scoped_refptr<TextureRef> CreatePreallocated(
-      uint32_t texture_id,
-      base::OnceClosure no_longer_needed_cb,
-      VideoPixelFormat pixel_format,
-      const gfx::Size& size);
-
-  gfx::GpuMemoryBufferHandle ExportGpuMemoryBufferHandle() const;
-
-  int32_t texture_id() const { return texture_id_; }
-
- private:
-  friend class base::RefCounted<TextureRef>;
-
-  TextureRef(uint32_t texture_id, base::OnceClosure no_longer_needed_cb);
-  ~TextureRef();
-
-  uint32_t texture_id_;
-  base::OnceClosure no_longer_needed_cb_;
-#if defined(OS_CHROMEOS)
-  scoped_refptr<gfx::NativePixmap> pixmap_;
-#endif
-  THREAD_CHECKER(thread_checker_);
-};
-
 class EncodedDataHelper {
  public:
+  // TODO(dstaessens@) Remove this constructor once the VDA tests are migrated.
   EncodedDataHelper(const std::string& encoded_data, VideoCodecProfile profile);
+  EncodedDataHelper(const std::vector<uint8_t>& stream,
+                    VideoCodecProfile profile);
   ~EncodedDataHelper();
 
   // Compute and return the next fragment to be sent to the decoder, starting

@@ -11,6 +11,8 @@ namespace chromeos {
 namespace smb_client {
 
 InMemoryHostLocator::InMemoryHostLocator() = default;
+InMemoryHostLocator::InMemoryHostLocator(bool should_run_synchronously)
+    : should_run_synchronously_(should_run_synchronously) {}
 InMemoryHostLocator::~InMemoryHostLocator() = default;
 
 void InMemoryHostLocator::AddHost(const Hostname& hostname,
@@ -29,7 +31,17 @@ void InMemoryHostLocator::RemoveHost(const Hostname& hostname) {
 }
 
 void InMemoryHostLocator::FindHosts(FindHostsCallback callback) {
-  std::move(callback).Run(true /* success */, host_map_);
+  if (should_run_synchronously_) {
+    std::move(callback).Run(true /* success */, host_map_);
+  } else {
+    stored_callback_ = std::move(callback);
+  }
+}
+
+void InMemoryHostLocator::RunCallback() {
+  DCHECK(!should_run_synchronously_);
+
+  std::move(stored_callback_).Run(true /* success */, host_map_);
 }
 
 }  // namespace smb_client

@@ -538,20 +538,20 @@ TEST_F(SubresourceIntegrityTest, OriginIntegrity) {
 
   const TestCase cases[] = {
       // FetchResponseType::kError never arrives because it is a loading error.
-      {url, FetchRequestMode::kNoCORS, FetchResponseType::kBasic, kOk},
-      {url, FetchRequestMode::kNoCORS, FetchResponseType::kCORS, kOk},
-      {url, FetchRequestMode::kNoCORS, FetchResponseType::kDefault, kOk},
-      {url, FetchRequestMode::kNoCORS, FetchResponseType::kOpaque, kFail},
-      {url, FetchRequestMode::kNoCORS, FetchResponseType::kOpaqueRedirect,
+      {url, FetchRequestMode::kNoCors, FetchResponseType::kBasic, kOk},
+      {url, FetchRequestMode::kNoCors, FetchResponseType::kCors, kOk},
+      {url, FetchRequestMode::kNoCors, FetchResponseType::kDefault, kOk},
+      {url, FetchRequestMode::kNoCors, FetchResponseType::kOpaque, kFail},
+      {url, FetchRequestMode::kNoCors, FetchResponseType::kOpaqueRedirect,
        kFail},
 
       // FetchResponseType::kError never arrives because it is a loading error.
       // FetchResponseType::kOpaque and FetchResponseType::kOpaqueResponse
       // never arrives: even when service worker is involved, it's handled as
       // an error.
-      {url, FetchRequestMode::kCORS, FetchResponseType::kBasic, kOk},
-      {url, FetchRequestMode::kCORS, FetchResponseType::kCORS, kOk},
-      {url, FetchRequestMode::kCORS, FetchResponseType::kDefault, kOk},
+      {url, FetchRequestMode::kCors, FetchResponseType::kBasic, kOk},
+      {url, FetchRequestMode::kCors, FetchResponseType::kCors, kOk},
+      {url, FetchRequestMode::kCors, FetchResponseType::kDefault, kOk},
   };
 
   MockWebCryptoDigestorFactory factory_sha256(

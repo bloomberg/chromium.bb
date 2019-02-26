@@ -19,7 +19,7 @@
 #include "ui/aura/test/mus/test_window_tree.h"
 #include "ui/aura/test/mus/test_window_tree_client_delegate.h"
 #include "ui/aura/test/mus/test_window_tree_client_setup.h"
-#include "ui/aura/test/mus/window_tree_client_private.h"
+#include "ui/aura/test/mus/window_tree_client_test_api.h"
 #include "ui/aura/test/test_focus_client.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_window_parenting_client.h"
@@ -134,6 +134,10 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory,
   }
 
   EnvTestHelper env_helper(env);
+
+  // Reset aura::Env to eliminate test dependency (https://crbug.com/586514).
+  env_helper.ResetEnvForTesting();
+
   if (env_mode == Env::Mode::MUS) {
     env_window_tree_client_setter_ =
         std::make_unique<EnvWindowTreeClientSetter>(window_tree_client_);

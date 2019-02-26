@@ -39,6 +39,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
+#include "components/download/public/common/download_task_runner.h"
 #include "components/tracing/common/trace_startup.h"
 #include "content/app/mojo/mojo_init.h"
 #include "content/browser/browser_process_sub_thread.h"
@@ -151,6 +152,10 @@
 #include "services/service_manager/zygote/common/zygote_handle.h"
 #include "services/service_manager/zygote/host/zygote_communication_linux.h"
 #include "services/service_manager/zygote/host/zygote_host_impl_linux.h"
+#endif
+
+#if defined(OS_ANDROID)
+#include "content/browser/android/browser_startup_controller.h"
 #endif
 
 namespace content {
@@ -281,10 +286,12 @@ void InitializeZygoteSandboxForBrowserProcess(
   // zygote are both disabled. It initializes the sandboxed process socket.
   SandboxHostLinux::GetInstance()->Init();
 
-  if (parsed_command_line.HasSwitch(switches::kNoZygote) &&
-      !parsed_command_line.HasSwitch(service_manager::switches::kNoSandbox)) {
-    LOG(ERROR) << "--no-sandbox should be used together with --no--zygote";
-    exit(EXIT_FAILURE);
+  if (parsed_command_line.HasSwitch(switches::kNoZygote)) {
+    if (!parsed_command_line.HasSwitch(service_manager::switches::kNoSandbox)) {
+      LOG(ERROR) << "--no-sandbox should be used together with --no--zygote";
+      exit(EXIT_FAILURE);
+    }
+    return;
   }
 
   // Tickle the zygote host so it forks now.
@@ -482,6 +489,7 @@ int RunZygote(ContentMainDelegate* delegate) {
   main_params.zygote_child = true;
 
   InitializeFieldTrialAndFeatureList();
+  delegate->PostFieldTrialInitialization();
 
   service_manager::SandboxType sandbox_type =
       service_manager::SandboxTypeFromCommandLine(command_line);
@@ -836,8 +844,10 @@ int ContentMainRunnerImpl::Run(bool start_service_manager_only) {
   // Run this logic on all child processes. Zygotes will run this at a later
   // point in time when the command line has been updated.
   if (!process_type.empty() &&
-      process_type != service_manager::switches::kZygoteProcess)
+      process_type != service_manager::switches::kZygoteProcess) {
     InitializeFieldTrialAndFeatureList();
+    delegate_->PostFieldTrialInitialization();
+  }
 #endif
 
   MainFunctionParams main_params(command_line);
@@ -852,12 +862,25 @@ int ContentMainRunnerImpl::Run(bool start_service_manager_only) {
   RegisterMainThreadFactories();
 
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
-  // The thread used to start the ServiceManager is handed-off to
-  // BrowserMain() which may elect to promote it (e.g. to BrowserThread::IO).
-  if (process_type.empty()) {
-    startup_data_ = std::make_unique<StartupDataImpl>();
-    startup_data_->thread = BrowserProcessSubThread::CreateIOThread();
-    main_params.startup_data = startup_data_.get();
+  if (process_type.empty())
+    return RunServiceManager(main_params, start_service_manager_only);
+#endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
+
+  return RunOtherNamedProcessTypeMain(process_type, main_params, delegate_);
+}
+
+#if !defined(CHROME_MULTIPLE_DLL_CHILD)
+int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
+                                             bool start_service_manager_only) {
+  if (is_browser_main_loop_started_)
+    return -1;
+
+  if (!service_manager_context_) {
+    if (delegate_->ShouldCreateFeatureList()) {
+      DCHECK(!field_trial_list_);
+      field_trial_list_ = SetUpFieldTrialsAndFeatureList();
+      delegate_->PostFieldTrialInitialization();
+    }
 
     if (GetContentClient()->browser()->ShouldCreateTaskScheduler()) {
       // Create and start the TaskScheduler early to allow upcoming code to use
@@ -881,11 +904,6 @@ int ContentMainRunnerImpl::Run(bool start_service_manager_only) {
     if (!base::MessageLoopCurrentForUI::IsSet())
       main_message_loop_ = std::make_unique<base::MessageLoopForUI>();
 
-    if (delegate_->ShouldCreateFeatureList()) {
-      DCHECK(!field_trial_list_);
-      field_trial_list_ = SetUpFieldTrialsAndFeatureList();
-    }
-
     delegate_->PostEarlyInitialization(main_params.ui_task != nullptr);
 
     if (GetContentClient()->browser()->ShouldCreateTaskScheduler()) {
@@ -897,12 +915,32 @@ int ContentMainRunnerImpl::Run(bool start_service_manager_only) {
     // incorrect to post to a BrowserThread before this point.
     BrowserTaskExecutor::Create();
 
-    return RunBrowserProcessMain(main_params, delegate_);
+    // The thread used to start the ServiceManager is handed-off to
+    // BrowserMain() which may elect to promote it (e.g. to BrowserThread::IO).
+    service_manager_thread_ = BrowserProcessSubThread::CreateIOThread();
+    service_manager_context_.reset(
+        new ServiceManagerContext(service_manager_thread_->task_runner()));
+    download::SetIOTaskRunner(service_manager_thread_->task_runner());
+#if defined(OS_ANDROID)
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&ServiceManagerStartupComplete));
+#endif
   }
-#endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 
-  return RunOtherNamedProcessTypeMain(process_type, main_params, delegate_);
+  if (base::FeatureList::IsEnabled(
+          features::kAllowStartingServiceManagerOnly) &&
+      start_service_manager_only) {
+    return -1;
+  }
+
+  is_browser_main_loop_started_ = true;
+  startup_data_ = std::make_unique<StartupDataImpl>();
+  startup_data_->thread = std::move(service_manager_thread_);
+  startup_data_->service_manager_context = service_manager_context_.get();
+  main_params.startup_data = startup_data_.get();
+  return RunBrowserProcessMain(main_params, delegate_);
 }
+#endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 
 void ContentMainRunnerImpl::Shutdown() {
   DCHECK(is_initialized_);

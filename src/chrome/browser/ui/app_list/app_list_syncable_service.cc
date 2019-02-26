@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/values.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
+#include "chrome/browser/ui/app_list/app_service_app_model_builder.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_item.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_model_builder.h"
@@ -32,6 +34,7 @@
 #include "chrome/browser/ui/app_list/internal_app/internal_app_model_builder.h"
 #include "chrome/browser/ui/app_list/page_break_app_item.h"
 #include "chrome/browser/ui/app_list/page_break_constants.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
@@ -268,6 +271,8 @@ AppListSyncableService::AppListSyncableService(
       extension_system_(extension_system),
       initial_sync_data_processed_(false),
       first_app_list_sync_(true),
+      is_app_service_enabled_(
+          base::FeatureList::IsEnabled(features::kAppService)),
       weak_ptr_factory_(this) {
   if (g_model_updater_factory_callback_for_test_)
     model_updater_ = g_model_updater_factory_callback_for_test_->Run();
@@ -345,7 +350,9 @@ void AppListSyncableService::InitFromLocalStorage() {
 }
 
 bool AppListSyncableService::IsInitialized() const {
-  return apps_builder_.get();
+  if (is_app_service_enabled_)
+    return app_service_apps_builder_.get();
+  return ext_apps_builder_.get();
 }
 
 void AppListSyncableService::BuildModel() {
@@ -354,24 +361,35 @@ void AppListSyncableService::BuildModel() {
   DCHECK(IsExtensionServiceReady());
   AppListClientImpl* client = AppListClientImpl::GetInstance();
   AppListControllerDelegate* controller = client;
-  apps_builder_ = std::make_unique<ExtensionAppModelBuilder>(controller);
-  if (arc::IsArcAllowedForProfile(profile_))
-    arc_apps_builder_ = std::make_unique<ArcAppModelBuilder>(controller);
-  if (crostini::IsCrostiniUIAllowedForProfile(profile_)) {
-    crostini_apps_builder_ =
-        std::make_unique<CrostiniAppModelBuilder>(controller);
+
+  if (is_app_service_enabled_) {
+    app_service_apps_builder_ =
+        std::make_unique<AppServiceAppModelBuilder>(controller);
+  } else {
+    ext_apps_builder_ = std::make_unique<ExtensionAppModelBuilder>(controller);
+    if (arc::IsArcAllowedForProfile(profile_))
+      arc_apps_builder_ = std::make_unique<ArcAppModelBuilder>(controller);
+    if (crostini::IsCrostiniUIAllowedForProfile(profile_)) {
+      crostini_apps_builder_ =
+          std::make_unique<CrostiniAppModelBuilder>(controller);
+    }
+    internal_apps_builder_ =
+        std::make_unique<InternalAppModelBuilder>(controller);
   }
-  internal_apps_builder_ =
-      std::make_unique<InternalAppModelBuilder>(controller);
 
   DCHECK(profile_);
   SyncStarted();
-  apps_builder_->Initialize(this, profile_, model_updater_.get());
-  if (arc_apps_builder_.get())
-    arc_apps_builder_->Initialize(this, profile_, model_updater_.get());
-  if (crostini_apps_builder_.get())
-    crostini_apps_builder_->Initialize(this, profile_, model_updater_.get());
-  internal_apps_builder_->Initialize(this, profile_, model_updater_.get());
+
+  if (is_app_service_enabled_) {
+    app_service_apps_builder_->Initialize(this, profile_, model_updater_.get());
+  } else {
+    ext_apps_builder_->Initialize(this, profile_, model_updater_.get());
+    if (arc_apps_builder_.get())
+      arc_apps_builder_->Initialize(this, profile_, model_updater_.get());
+    if (crostini_apps_builder_.get())
+      crostini_apps_builder_->Initialize(this, profile_, model_updater_.get());
+    internal_apps_builder_->Initialize(this, profile_, model_updater_.get());
+  }
 
   HandleUpdateFinished();
 }
@@ -882,10 +900,14 @@ syncer::SyncError AppListSyncableService::ProcessSyncChanges(
 }
 
 void AppListSyncableService::Shutdown() {
+  if (is_app_service_enabled_) {
+    app_service_apps_builder_.reset();
+    return;
+  }
   internal_apps_builder_.reset();
   crostini_apps_builder_.reset();
   arc_apps_builder_.reset();
-  apps_builder_.reset();
+  ext_apps_builder_.reset();
 }
 
 // AppListSyncableService private

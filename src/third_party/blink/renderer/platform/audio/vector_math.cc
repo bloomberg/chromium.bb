@@ -45,19 +45,19 @@
 
 namespace blink {
 
-namespace VectorMath {
+namespace vector_math {
 
 namespace {
 #if defined(OS_MACOSX)
-namespace Impl = Mac;
+namespace impl = mac;
 #elif WTF_CPU_ARM_NEON
-namespace Impl = NEON;
+namespace impl = neon;
 #elif HAVE_MIPS_MSA_INTRINSICS
-namespace Impl = MSA;
+namespace impl = msa;
 #elif defined(ARCH_CPU_X86_FAMILY)
-namespace Impl = X86;
+namespace impl = x86;
 #else
-namespace Impl = Scalar;
+namespace impl = scalar;
 #endif
 }  // namespace
 
@@ -71,7 +71,7 @@ void PrepareFilterForConv(const float* filter_p,
   DCHECK_EQ(-1, filter_stride);
   DCHECK(prepared_filter);
 #if defined(ARCH_CPU_X86_FAMILY) && !defined(OS_MACOSX)
-  X86::PrepareFilterForConv(filter_p, filter_stride, filter_size,
+  x86::PrepareFilterForConv(filter_p, filter_stride, filter_size,
                             prepared_filter);
 #endif
 }
@@ -82,7 +82,7 @@ void Conv(const float* source_p,
           int filter_stride,
           float* dest_p,
           int dest_stride,
-          size_t frames_to_process,
+          uint32_t frames_to_process,
           size_t filter_size,
           const AudioFloatArray* prepared_filter) {
   // Only contiguous convolution is implemented by all implementations.
@@ -91,7 +91,7 @@ void Conv(const float* source_p,
   DCHECK_EQ(1, source_stride);
   DCHECK_EQ(-1, filter_stride);
   DCHECK_EQ(1, dest_stride);
-  Impl::Conv(source_p, source_stride, filter_p, filter_stride, dest_p,
+  impl::Conv(source_p, source_stride, filter_p, filter_stride, dest_p,
              dest_stride, frames_to_process, filter_size, prepared_filter);
 }
 
@@ -101,8 +101,8 @@ void Vadd(const float* source1p,
           int source_stride2,
           float* dest_p,
           int dest_stride,
-          size_t frames_to_process) {
-  Impl::Vadd(source1p, source_stride1, source2p, source_stride2, dest_p,
+          uint32_t frames_to_process) {
+  impl::Vadd(source1p, source_stride1, source2p, source_stride2, dest_p,
              dest_stride, frames_to_process);
 }
 
@@ -112,7 +112,7 @@ void Vclip(const float* source_p,
            const float* high_threshold_p,
            float* dest_p,
            int dest_stride,
-           size_t frames_to_process) {
+           uint32_t frames_to_process) {
   float low_threshold = *low_threshold_p;
   float high_threshold = *high_threshold_p;
 
@@ -125,17 +125,17 @@ void Vclip(const float* source_p,
   DCHECK_LE(low_threshold, high_threshold);
 #endif
 
-  Impl::Vclip(source_p, source_stride, &low_threshold, &high_threshold, dest_p,
+  impl::Vclip(source_p, source_stride, &low_threshold, &high_threshold, dest_p,
               dest_stride, frames_to_process);
 }
 
 void Vmaxmgv(const float* source_p,
              int source_stride,
              float* max_p,
-             size_t frames_to_process) {
+             uint32_t frames_to_process) {
   float max = 0;
 
-  Impl::Vmaxmgv(source_p, source_stride, &max, frames_to_process);
+  impl::Vmaxmgv(source_p, source_stride, &max, frames_to_process);
 
   DCHECK(max_p);
   *max_p = max;
@@ -147,8 +147,8 @@ void Vmul(const float* source1p,
           int source_stride2,
           float* dest_p,
           int dest_stride,
-          size_t frames_to_process) {
-  Impl::Vmul(source1p, source_stride1, source2p, source_stride2, dest_p,
+          uint32_t frames_to_process) {
+  impl::Vmul(source1p, source_stride1, source2p, source_stride2, dest_p,
              dest_stride, frames_to_process);
 }
 
@@ -157,10 +157,10 @@ void Vsma(const float* source_p,
           const float* scale,
           float* dest_p,
           int dest_stride,
-          size_t frames_to_process) {
+          uint32_t frames_to_process) {
   const float k = *scale;
 
-  Impl::Vsma(source_p, source_stride, &k, dest_p, dest_stride,
+  impl::Vsma(source_p, source_stride, &k, dest_p, dest_stride,
              frames_to_process);
 }
 
@@ -169,20 +169,20 @@ void Vsmul(const float* source_p,
            const float* scale,
            float* dest_p,
            int dest_stride,
-           size_t frames_to_process) {
+           uint32_t frames_to_process) {
   const float k = *scale;
 
-  Impl::Vsmul(source_p, source_stride, &k, dest_p, dest_stride,
+  impl::Vsmul(source_p, source_stride, &k, dest_p, dest_stride,
               frames_to_process);
 }
 
 void Vsvesq(const float* source_p,
             int source_stride,
             float* sum_p,
-            size_t frames_to_process) {
+            uint32_t frames_to_process) {
   float sum = 0;
 
-  Impl::Vsvesq(source_p, source_stride, &sum, frames_to_process);
+  impl::Vsvesq(source_p, source_stride, &sum, frames_to_process);
 
   DCHECK(sum_p);
   *sum_p = sum;
@@ -194,11 +194,11 @@ void Zvmul(const float* real1p,
            const float* imag2p,
            float* real_dest_p,
            float* imag_dest_p,
-           size_t frames_to_process) {
-  Impl::Zvmul(real1p, imag1p, real2p, imag2p, real_dest_p, imag_dest_p,
+           uint32_t frames_to_process) {
+  impl::Zvmul(real1p, imag1p, real2p, imag2p, real_dest_p, imag_dest_p,
               frames_to_process);
 }
 
-}  // namespace VectorMath
+}  // namespace vector_math
 
 }  // namespace blink

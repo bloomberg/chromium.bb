@@ -56,22 +56,22 @@ class NavigationPolicyTest : public testing::Test {
   }
 
   Event* GetEvent(int modifiers, WebMouseEvent::Button button) {
-    MouseEventInit mouse_initializer;
+    MouseEventInit* mouse_initializer = MouseEventInit::Create();
     if (button == WebMouseEvent::Button::kLeft)
-      mouse_initializer.setButton(0);
+      mouse_initializer->setButton(0);
     if (button == WebMouseEvent::Button::kMiddle)
-      mouse_initializer.setButton(1);
+      mouse_initializer->setButton(1);
     if (button == WebMouseEvent::Button::kRight)
-      mouse_initializer.setButton(2);
+      mouse_initializer->setButton(2);
     if (modifiers & WebInputEvent::kShiftKey)
-      mouse_initializer.setShiftKey(true);
+      mouse_initializer->setShiftKey(true);
     if (modifiers & WebInputEvent::kControlKey)
-      mouse_initializer.setCtrlKey(true);
+      mouse_initializer->setCtrlKey(true);
     if (modifiers & WebInputEvent::kAltKey)
-      mouse_initializer.setAltKey(true);
+      mouse_initializer->setAltKey(true);
     if (modifiers & WebInputEvent::kMetaKey)
-      mouse_initializer.setMetaKey(true);
-    return MouseEvent::Create(nullptr, EventTypeNames::click,
+      mouse_initializer->setMetaKey(true);
+    return MouseEvent::Create(nullptr, event_type_names::kClick,
                               mouse_initializer);
   }
 

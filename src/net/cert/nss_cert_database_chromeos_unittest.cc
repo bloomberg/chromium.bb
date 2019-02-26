@@ -179,9 +179,9 @@ TEST_F(NSSCertDatabaseChromeOSTest, ImportCACerts) {
   ScopedCERTCertificateList user_1_certlist_async;
   ScopedCERTCertificateList user_2_certlist_async;
   db_1_->ListCerts(
-      base::Bind(&SwapCertLists, base::Unretained(&user_1_certlist_async)));
+      base::BindOnce(&SwapCertLists, base::Unretained(&user_1_certlist_async)));
   db_2_->ListCerts(
-      base::Bind(&SwapCertLists, base::Unretained(&user_2_certlist_async)));
+      base::BindOnce(&SwapCertLists, base::Unretained(&user_2_certlist_async)));
 
   RunUntilIdle();
 
@@ -240,9 +240,9 @@ TEST_F(NSSCertDatabaseChromeOSTest, ImportServerCert) {
   ScopedCERTCertificateList user_1_certlist_async;
   ScopedCERTCertificateList user_2_certlist_async;
   db_1_->ListCerts(
-      base::Bind(&SwapCertLists, base::Unretained(&user_1_certlist_async)));
+      base::BindOnce(&SwapCertLists, base::Unretained(&user_1_certlist_async)));
   db_2_->ListCerts(
-      base::Bind(&SwapCertLists, base::Unretained(&user_2_certlist_async)));
+      base::BindOnce(&SwapCertLists, base::Unretained(&user_2_certlist_async)));
 
   RunUntilIdle();
 
@@ -259,7 +259,7 @@ TEST_F(NSSCertDatabaseChromeOSTest, ImportServerCert) {
 // is being processed on the worker pool.
 TEST_F(NSSCertDatabaseChromeOSTest, NoCrashIfShutdownBeforeDoneOnWorkerPool) {
   ScopedCERTCertificateList certlist;
-  db_1_->ListCerts(base::Bind(&SwapCertLists, base::Unretained(&certlist)));
+  db_1_->ListCerts(base::BindOnce(&SwapCertLists, base::Unretained(&certlist)));
   EXPECT_EQ(0U, certlist.size());
 
   db_1_.reset();

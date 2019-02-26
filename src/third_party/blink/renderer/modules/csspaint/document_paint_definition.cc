@@ -15,8 +15,8 @@ DocumentPaintDefinition::~DocumentPaintDefinition() = default;
 
 bool DocumentPaintDefinition::RegisterAdditionalPaintDefinition(
     const CSSPaintDefinition& other) {
-  if (GetPaintRenderingContext2DSettings().alpha() !=
-          other.GetPaintRenderingContext2DSettings().alpha() ||
+  if (GetPaintRenderingContext2DSettings()->alpha() !=
+          other.GetPaintRenderingContext2DSettings()->alpha() ||
       NativeInvalidationProperties() != other.NativeInvalidationProperties() ||
       CustomInvalidationProperties() != other.CustomInvalidationProperties() ||
       InputArgumentTypes() != other.InputArgumentTypes())

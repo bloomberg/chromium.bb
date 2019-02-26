@@ -44,8 +44,9 @@ void RecursiveOperationDelegate::StartRecursiveOperation(
 }
 
 void RecursiveOperationDelegate::TryProcessFile(const FileSystemURL& root) {
-  ProcessFile(root, base::Bind(&RecursiveOperationDelegate::DidTryProcessFile,
-                               AsWeakPtr(), root));
+  ProcessFile(root,
+              base::BindOnce(&RecursiveOperationDelegate::DidTryProcessFile,
+                             AsWeakPtr(), root));
 }
 
 FileSystemOperationRunner* RecursiveOperationDelegate::operation_runner() {
@@ -79,9 +80,8 @@ void RecursiveOperationDelegate::ProcessNextDirectory() {
   const FileSystemURL& url = pending_directory_stack_.top().front();
 
   ProcessDirectory(
-      url,
-      base::Bind(
-          &RecursiveOperationDelegate::DidProcessDirectory, AsWeakPtr()));
+      url, base::BindOnce(&RecursiveOperationDelegate::DidProcessDirectory,
+                          AsWeakPtr()));
 }
 
 void RecursiveOperationDelegate::DidProcessDirectory(
@@ -149,10 +149,11 @@ void RecursiveOperationDelegate::ProcessPendingFiles() {
   if (!pending_files_.empty()) {
     current_task_runner->PostTask(
         FROM_HERE,
-        base::BindOnce(&RecursiveOperationDelegate::ProcessFile, AsWeakPtr(),
-                       pending_files_.front(),
-                       base::Bind(&RecursiveOperationDelegate::DidProcessFile,
-                                  AsWeakPtr(), pending_files_.front())));
+        base::BindOnce(
+            &RecursiveOperationDelegate::ProcessFile, AsWeakPtr(),
+            pending_files_.front(),
+            base::BindOnce(&RecursiveOperationDelegate::DidProcessFile,
+                           AsWeakPtr(), pending_files_.front())));
     pending_files_.pop();
   }
 }
@@ -200,8 +201,8 @@ void RecursiveOperationDelegate::ProcessSubDirectory() {
   DCHECK(!pending_directory_stack_.top().empty());
   PostProcessDirectory(
       pending_directory_stack_.top().front(),
-      base::Bind(&RecursiveOperationDelegate::DidPostProcessDirectory,
-                 AsWeakPtr()));
+      base::BindOnce(&RecursiveOperationDelegate::DidPostProcessDirectory,
+                     AsWeakPtr()));
 }
 
 void RecursiveOperationDelegate::DidPostProcessDirectory(

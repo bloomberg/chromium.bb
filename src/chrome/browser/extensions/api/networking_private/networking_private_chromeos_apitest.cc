@@ -13,11 +13,11 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 #include "chrome/browser/extensions/api/networking_cast_private/chrome_networking_cast_private_delegate.h"
-#include "chrome/browser/extensions/api/networking_private/networking_private_credentials_getter.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_ui_delegate_chromeos.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chromeos/chromeos_switches.h"
@@ -112,15 +112,6 @@ class TestNetworkingCastPrivateDelegate
                          const FailureCallback& failure_callback) override {
     AssertCredentials(*credentials);
     success_callback.Run(true);
-  }
-
-  void VerifyAndEncryptCredentials(
-      const std::string& guid,
-      std::unique_ptr<Credentials> credentials,
-      const DataCallback& success_callback,
-      const FailureCallback& failure_callback) override {
-    AssertCredentials(*credentials);
-    success_callback.Run("encrypted_credentials");
   }
 
   void VerifyAndEncryptData(const std::string& data,
@@ -500,6 +491,7 @@ class NetworkingPrivateChromeOSApiTest : public extensions::ExtensionApiTest {
   }
 
   bool SetupCertificates() {
+    base::ScopedAllowBlockingForTesting allow_io;
     net::ScopedCERTCertificateList cert_list =
         net::CreateCERTCertificateListFromFile(
             net::GetTestCertsDirectory(), "client_1_ca.pem",
@@ -834,11 +826,6 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
 
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, VerifyDestination) {
   EXPECT_TRUE(RunNetworkingSubtest("verifyDestination")) << message_;
-}
-
-IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
-                       VerifyAndEncryptCredentials) {
-  EXPECT_TRUE(RunNetworkingSubtest("verifyAndEncryptCredentials")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, VerifyAndEncryptData) {

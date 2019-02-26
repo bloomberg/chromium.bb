@@ -5,6 +5,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_ADAPTERS_P2P_QUIC_STREAM_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_ADAPTERS_P2P_QUIC_STREAM_H_
 
+#include <stdint.h>
+
+#include "third_party/blink/renderer/platform/wtf/vector.h"
+
 namespace blink {
 
 // The bidirectional QUIC stream object to be used by the RTCQuicStream Web
@@ -13,7 +17,8 @@ namespace blink {
 // Lifetime: The P2PQuicStream is owned by the P2PQuicTransport, and can be
 // deleted after the stream is closed for reading and writing. This can happen
 // in 3 ways: 1) OnRemoteReset has been fired. 2) Calling Reset(). 3) Both
-// Finish() has been called and OnRemoteFinish has been fired.
+// a FIN bit has been sent with WriteData(_, true) and OnRemoteFinish has been
+// fired.
 class P2PQuicStream {
  public:
   // Receives callbacks for receiving RST_STREAM frames or a STREAM_FRAME with
@@ -29,14 +34,24 @@ class P2PQuicStream {
     // deleted by the quic::QuicSession.
     virtual void OnRemoteReset() {}
 
-    // Called when the P2PQuicStream has consumed all incoming data from the
-    // remote side up to the FIN bit. Consuming means that the data is marked
-    // as consumed by quic::QuicStreamSequencer, but the data has not
-    // necessarily been read by the application. If the stream has already
-    // finished writing, then upon consuming the FIN bit the stream can no
-    // longer read or write and is deleted by the quic::QuicSession.
-    virtual void OnRemoteFinish() {}
+    // Called when the P2PQuicStream has received data from the remote side.
+    // If |fin| is set to true that means that the FIN bit has been received
+    // and the Delegate will no longer receive data with OnDataReceived.
+    // If the stream has already finished writing, then upon receiving the FIN
+    // bit the stream can no longer read or write and is deleted by the
+    // quic::QuicSession.
+    virtual void OnDataReceived(Vector<uint8_t> data, bool fin) {}
+
+    // Called when data written with WriteData() has been consumed by QUIC.
+    //
+    // This will happen immediately after calling WriteData(), unless QUIC has
+    // buffered the data in which case it will be fired when the stream is no
+    // longer write blocked and the data is consumed. |amount| specifies how
+    // much data was consumed in bytes.
+    virtual void OnWriteDataConsumed(uint32_t amount) {}
   };
+
+  virtual ~P2PQuicStream() = default;
 
   // Sends a RST_STREAM frame to the remote side. This closes the P2PQuicStream
   // for reading & writing and it will be deleted by the quic::QuicSession. When
@@ -46,18 +61,24 @@ class P2PQuicStream {
   // received from the remote side, because the local stream is already closed.
   virtual void Reset() = 0;
 
-  // Sends a stream frame with the FIN bit set, which notifies the remote side
-  // that this stream is done writing. The stream can no longer write after
-  // calling this function. If the stream has already received a FIN bit, this
-  // will close the stream for reading & writing and it will be deleted by the
-  // quic::QuicSession.
-  virtual void Finish() = 0;
+  // Marks received data of size |amount| as being consumed by the Delegate.
+  // This is used in conjuction with Delegate::OnDataReceived, to let the
+  // P2PQuicStream know that received data has been consumed. This allows the
+  // P2PQuicStream to send back pressure to the send side, if the Delegate
+  // cannot receive more data.
+  virtual void MarkReceivedDataConsumed(uint32_t amount) = 0;
+
+  // Writes |data| to a STREAM frame and gives it to QUIC to be buffered or sent
+  // to the remote endpoint. Once that data has been sent Delegate::OnDataSent()
+  // will be fired. Specifying |fin| to true will mark the STREAM frame with the
+  // FIN bit set, which notifies the remote side that this stream is done
+  // writing. After sending the FIN bit, the P2PQuicStream can no longer write.
+  // Once the P2PQuicStream has sent AND received the FIN bit it will be closed
+  // for reading and writing and deleted by the quic::QuicSession.
+  virtual void WriteData(Vector<uint8_t> data, bool fin) = 0;
 
   // Sets the delegate object, which must outlive the P2PQuicStream.
   virtual void SetDelegate(Delegate* delegate) = 0;
-
-  // TODO:(https://crbug.com/874296): Create functions for reading and writing,
-  // specifically for waitForReadable/waitForWriteable.
 };
 
 }  // namespace blink

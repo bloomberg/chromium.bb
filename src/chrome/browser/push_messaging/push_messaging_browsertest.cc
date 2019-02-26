@@ -1652,13 +1652,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PermissionStateSaysDenied) {
   EXPECT_EQ("permission status - denied", script_result);
 }
 
-// TODO(peter): Flaky on Win buildbots. https://crbug.com/838759
-#if defined(OS_WIN)
-#define MAYBE_UnsubscribeSuccess DISABLED_UnsubscribeSuccess
-#else
-#define MAYBE_UnsubscribeSuccess UnsubscribeSucces
-#endif
-IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, MAYBE_UnsubscribeSuccess) {
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, UnsubscribeSuccess) {
   std::string script_result;
 
   std::string token1;

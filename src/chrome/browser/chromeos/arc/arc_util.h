@@ -135,6 +135,9 @@ bool IsActiveDirectoryUserForProfile(const Profile* profile);
 // Returns true if ChromeOS OOBE opt-in window is currently showing.
 bool IsArcOobeOptInActive();
 
+// Returns true if opt-in during ChromeOS OOBE is triggered by configuration.
+bool IsArcOobeOptInConfigurationBased();
+
 // Returns true if OPA opt-in window is currently showing and active screen is
 // ARC ToS.
 bool IsArcOptInWizardForAssistantActive();

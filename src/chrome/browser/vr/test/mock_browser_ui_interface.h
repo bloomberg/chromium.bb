@@ -8,8 +8,8 @@
 #include "base/macros.h"
 #include "chrome/browser/vr/browser_ui_interface.h"
 #include "chrome/browser/vr/model/assets.h"
+#include "chrome/browser/vr/model/location_bar_state.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
-#include "chrome/browser/vr/model/toolbar_state.h"
 #include "chrome/browser/vr/ui_test_input.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -22,7 +22,7 @@ class MockBrowserUiInterface : public BrowserUiInterface {
 
   MOCK_METHOD1(SetWebVrMode, void(bool enabled));
   MOCK_METHOD1(SetFullscreen, void(bool enabled));
-  MOCK_METHOD1(SetToolbarState, void(const ToolbarState& state));
+  MOCK_METHOD1(SetLocationBarState, void(const LocationBarState& state));
   MOCK_METHOD1(SetIncognito, void(bool enabled));
   MOCK_METHOD1(SetLoading, void(bool loading));
   MOCK_METHOD1(SetLoadProgress, void(float progress));
@@ -44,6 +44,8 @@ class MockBrowserUiInterface : public BrowserUiInterface {
                       const base::Version& component_version) override {}
   MOCK_METHOD0(OnAssetsUnavailable, void());
   MOCK_METHOD0(WaitForAssets, void());
+  MOCK_METHOD1(SetRegularTabsOpen, void(bool));
+  MOCK_METHOD1(SetIncognitoTabsOpen, void(bool));
   MOCK_METHOD1(SetOverlayTextureEmpty, void(bool));
   MOCK_METHOD1(ShowSoftInput, void(bool));
   MOCK_METHOD4(UpdateWebInputIndices, void(int, int, int, int));
@@ -53,11 +55,10 @@ class MockBrowserUiInterface : public BrowserUiInterface {
   MOCK_METHOD1(ShowPlatformToast, void(const base::string16&));
   MOCK_METHOD0(CancelPlatformToast, void());
   MOCK_METHOD2(OnContentBoundsChanged, void(int, int));
-  MOCK_METHOD3(AddOrUpdateTab,
-               void(int id, bool incognito, const base::string16& title));
-  MOCK_METHOD2(RemoveTab, void(int id, bool incognito));
   MOCK_METHOD0(RemoveAllTabs, void());
   MOCK_METHOD1(PerformKeyboardInputForTesting, void(KeyboardTestInput));
+  MOCK_METHOD1(SetVisibleExternalPromptNotification,
+               void(ExternalPromptNotificationType));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockBrowserUiInterface);

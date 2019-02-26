@@ -100,7 +100,8 @@ ScreenOrientation* ScreenOrientation::Create(LocalFrame* frame) {
   if (!ScreenOrientationControllerImpl::From(*frame))
     return nullptr;
 
-  ScreenOrientation* orientation = new ScreenOrientation(frame);
+  ScreenOrientation* orientation =
+      MakeGarbageCollected<ScreenOrientation>(frame);
   DCHECK(orientation->Controller());
   // FIXME: ideally, we would like to provide the ScreenOrientationController
   // the case where it is not defined but for the moment, it is eagerly
@@ -119,7 +120,7 @@ ScreenOrientation::ScreenOrientation(LocalFrame* frame)
 ScreenOrientation::~ScreenOrientation() = default;
 
 const WTF::AtomicString& ScreenOrientation::InterfaceName() const {
-  return EventTargetNames::ScreenOrientation;
+  return event_target_names::kScreenOrientation;
 }
 
 ExecutionContext* ScreenOrientation::GetExecutionContext() const {

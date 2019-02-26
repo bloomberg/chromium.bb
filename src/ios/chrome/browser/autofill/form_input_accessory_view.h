@@ -7,21 +7,41 @@
 
 #import <UIKit/UIKit.h>
 
-@protocol FormInputAccessoryViewDelegate;
+@class FormInputAccessoryView;
+
+// Informs the receiver of actions in the accessory view.
+@protocol FormInputAccessoryViewDelegate
+- (void)formInputAccessoryViewDidTapNextButton:(FormInputAccessoryView*)sender;
+- (void)formInputAccessoryViewDidTapPreviousButton:
+    (FormInputAccessoryView*)sender;
+- (void)formInputAccessoryViewDidTapCloseButton:(FormInputAccessoryView*)sender;
+@end
 
 // Subview of the accessory view for web forms. Shows a custom view with form
-// navigation controls above the keyboard. Subclassed to enable input clicks by
-// way of the playInputClick method.
+// navigation controls above the keyboard. Enables input clicks by way of the
+// playInputClick method.
 @interface FormInputAccessoryView : UIView<UIInputViewAudioFeedback>
 
-// Sets up the view with the given |customView|. Navigation controls are shown
-// and use |delegate| for actions.
-- (void)setUpWithNavigationDelegate:(id<FormInputAccessoryViewDelegate>)delegate
-                         customView:(UIView*)customView;
+// The previous button if the view was set up with a navigation delegate. Nil
+// otherwise.
+@property(nonatomic, readonly, weak) UIButton* previousButton;
 
-// Sets up the view with the given |customView|. Navigation controls are not
-// shown.
-- (void)setUpWithCustomView:(UIView*)customView;
+// The next button if the view was set up with a navigation delegate. Nil
+// otherwise.
+@property(nonatomic, readonly, weak) UIButton* nextButton;
+
+// The leading view.
+@property(nonatomic, readonly, weak) UIView* leadingView;
+
+// Sets up the view with the given |leadingView|. Navigation controls are shown
+// on the trailing side and use |delegate| for actions.
+- (void)setUpWithLeadingView:(UIView*)leadingView
+          navigationDelegate:(id<FormInputAccessoryViewDelegate>)delegate;
+
+// Sets up the view with the given |leadingView|. Navigation controls are
+// replaced with |customTrailingView|.
+- (void)setUpWithLeadingView:(UIView*)leadingView
+          customTrailingView:(UIView*)customTrailingView;
 
 @end
 

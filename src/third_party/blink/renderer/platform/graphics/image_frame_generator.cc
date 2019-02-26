@@ -34,21 +34,22 @@
 #include "third_party/blink/renderer/platform/graphics/image_decoding_store.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
-#include "third_party/skia/include/core/SkYUVSizeInfo.h"
+#include "third_party/skia/include/core/SkYUVASizeInfo.h"
 
 namespace blink {
 
 static bool UpdateYUVComponentSizes(ImageDecoder* decoder,
-                                    SkISize component_sizes[3],
-                                    size_t component_width_bytes[3]) {
-  if (!decoder->CanDecodeToYUV())
-    return false;
+                                    SkISize component_sizes[4],
+                                    size_t component_width_bytes[4]) {
+  DCHECK(decoder->CanDecodeToYUV());
 
   for (int yuv_index = 0; yuv_index < 3; ++yuv_index) {
     IntSize size = decoder->DecodedYUVSize(yuv_index);
     component_sizes[yuv_index].set(size.Width(), size.Height());
     component_width_bytes[yuv_index] = decoder->DecodedYUVWidthBytes(yuv_index);
   }
+  component_sizes[3] = SkISize::MakeEmpty();
+  component_width_bytes[3] = 0;
 
   return true;
 }
@@ -149,6 +150,7 @@ bool ImageFrameGenerator::DecodeToYUV(SegmentReader* data,
                                       void* planes[3],
                                       const size_t row_bytes[3]) {
   MutexLocker lock(generator_mutex_);
+  DCHECK_EQ(index, 0u);
 
   // TODO (scroggo): The only interesting thing this uses from the
   // ImageFrameGenerator is m_decodeFailed. Move this into
@@ -209,7 +211,7 @@ bool ImageFrameGenerator::HasAlpha(size_t index) {
 }
 
 bool ImageFrameGenerator::GetYUVComponentSizes(SegmentReader* data,
-                                               SkYUVSizeInfo* size_info) {
+                                               SkYUVASizeInfo* size_info) {
   TRACE_EVENT2("blink", "ImageFrameGenerator::getYUVComponentSizes", "width",
                full_size_.width(), "height", full_size_.height());
 

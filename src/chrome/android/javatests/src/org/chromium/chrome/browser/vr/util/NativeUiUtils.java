@@ -44,6 +44,11 @@ public class NativeUiUtils {
     // waiting for the suggestion box to appear doesn't work, e.g. if you need to input text, wait
     // for autocomplete, then input more text before committing. 20 is arbitrary, but stable.
     public static final int NUM_FRAMES_FOR_SUGGESTION_UPDATE = 20;
+    public static final String FRAME_BUFFER_SUFFIX_WEB_XR_OVERLAY = "_WebXrOverlay";
+    public static final String FRAME_BUFFER_SUFFIX_WEB_XR_CONTENT = "_WebXrContent";
+    public static final String FRAME_BUFFER_SUFFIX_BROWSER_UI = "_BrowserUi";
+    public static final String FRAME_BUFFER_SUFFIX_BROWSER_CONTENT = "_BrowserContent";
+
     // Arbitrary but reasonable amount of time to expect the UI to stop updating after interacting
     // with an element.
     private static final int DEFAULT_UI_QUIESCENCE_TIMEOUT_MS = 2000;
@@ -77,7 +82,44 @@ public class NativeUiUtils {
      */
     public static void clickElement(int elementName, PointF position) {
         TestVrShellDelegate.getInstance().performControllerActionForTesting(
-                elementName, VrControllerTestAction.CLICK, position);
+                elementName, VrControllerTestAction.CLICK_DOWN, position);
+        TestVrShellDelegate.getInstance().performControllerActionForTesting(
+                elementName, VrControllerTestAction.CLICK_UP, position);
+    }
+
+    /**
+     * Clicks the app button while pointed at a UI element.
+     * @param elementName The UserFriendlyElementName that will be pointed at.
+     * @param position A PointF specifying where on the element to point at relative to a unit
+     *        square centered on (0, 0).
+     */
+    public static void clickAppButton(int elementName, PointF position) {
+        TestVrShellDelegate.getInstance().performControllerActionForTesting(
+                elementName, VrControllerTestAction.APP_DOWN, position);
+        TestVrShellDelegate.getInstance().performControllerActionForTesting(
+                elementName, VrControllerTestAction.APP_UP, position);
+    }
+
+    /**
+     * Presses the app button down while pointed at a UI element.
+     * @param elementName The UserFriendlyElementName that will be pointed at.
+     * @param position A PointF specifying where on the element to point at relative to a unit
+     *        square centered on (0, 0).
+     */
+    public static void pressAppButton(int elementName, PointF position) {
+        TestVrShellDelegate.getInstance().performControllerActionForTesting(
+                elementName, VrControllerTestAction.APP_DOWN, position);
+    }
+
+    /**
+     * Releases the app button while pointed at a UI element.
+     * @param elementName The UserFriendlyElementName that will be pointed at.
+     * @param position A PointF specifying where on the element to point at relative to a unit
+     *        square centered on (0, 0).
+     */
+    public static void releaseAppButton(int elementName, PointF position) {
+        TestVrShellDelegate.getInstance().performControllerActionForTesting(
+                elementName, VrControllerTestAction.APP_UP, position);
     }
 
     /**
@@ -215,26 +257,34 @@ public class NativeUiUtils {
     }
 
     /**
-     * Runs the given Runnable and waits until the native UI reports that it is quiescent.
+     * Runs the given Runnable and waits until the native UI reports that it is quiescent. The
+     * provided Runnable is expected to cause a UI change of some sort, so the quiescence wait will
+     * fail if no change is detected within the allotted time.
      *
      * @param action A Runnable containing the action to perform.
      */
-    public static void performActionAndWaitForUiQuiescence(Runnable action)
-            throws InterruptedException {
+    public static void performActionAndWaitForUiQuiescence(Runnable action) {
         final TestVrShellDelegate instance = TestVrShellDelegate.getInstance();
         final CountDownLatch resultLatch = new CountDownLatch(1);
+        final VrShell.UiOperationData operationData = new VrShell.UiOperationData();
+        operationData.actionType = UiTestOperationType.UI_ACTIVITY_RESULT;
+        operationData.resultCallback = () -> {
+            resultLatch.countDown();
+        };
+        operationData.timeoutMs = DEFAULT_UI_QUIESCENCE_TIMEOUT_MS;
         // Run on the UI thread to prevent issues with registering a new callback before
         // ReportUiOperationResultForTesting has finished.
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            instance.registerUiOperationCallbackForTesting(
-                    UiTestOperationType.UI_ACTIVITY_RESULT, () -> {
-                        resultLatch.countDown();
-                    }, DEFAULT_UI_QUIESCENCE_TIMEOUT_MS, 0 /* unused */);
-        });
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> { instance.registerUiOperationCallbackForTesting(operationData); });
         action.run();
 
-        // Wait for any outstanding animations to finish.
-        resultLatch.await();
+        // Wait for any outstanding animations to finish. Catch the interrupted exception so we
+        // don't have to try/catch anytime we chain multiple actions.
+        try {
+            resultLatch.await();
+        } catch (InterruptedException e) {
+            Assert.fail("Interrupted while waiting for UI quiescence: " + e.toString());
+        }
         int uiResult =
                 instance.getLastUiOperationResultForTesting(UiTestOperationType.UI_ACTIVITY_RESULT);
         Assert.assertEquals("UI reported non-quiescent result '"
@@ -243,32 +293,77 @@ public class NativeUiUtils {
     }
 
     /**
-     * Runs the given Runnable and waits until the specified element changes its visibility.
-     *
-     * @param elementName The UserFriendlyElementName to wait on to change visibility.
-     * @param action A Runnable containing the action to perform.
+     * Waits until either the UI reports quiescence or a timeout is reached. Unlike
+     * performActionAndWaitForUiQuiescence, this does not fail if no UI change is detected within
+     * the allotted time, so it can be used when it is unsure whether the UI is already quiescent
+     * or not, e.g. when initally entering the VR browser.
      */
-    public static void performActionAndWaitForVisibilityChange(
-            final int elementName, Runnable action) throws InterruptedException {
+    public static void waitForUiQuiescence() {
         final TestVrShellDelegate instance = TestVrShellDelegate.getInstance();
         final CountDownLatch resultLatch = new CountDownLatch(1);
+        final VrShell.UiOperationData operationData = new VrShell.UiOperationData();
+        operationData.actionType = UiTestOperationType.UI_ACTIVITY_RESULT;
+        operationData.resultCallback = () -> {
+            resultLatch.countDown();
+        };
+        operationData.timeoutMs = DEFAULT_UI_QUIESCENCE_TIMEOUT_MS;
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> { instance.registerUiOperationCallbackForTesting(operationData); });
+        // Catch the interrupted exception so we don't have to try/catch anytime we chain multiple
+        // actions.
+        try {
+            resultLatch.await();
+        } catch (InterruptedException e) {
+            Assert.fail("Interrupted while waiting for UI quiescence: " + e.toString());
+        }
+
+        int uiResult =
+                instance.getLastUiOperationResultForTesting(UiTestOperationType.UI_ACTIVITY_RESULT);
+        Assert.assertTrue("UI reported non-quiescent result '"
+                        + uiTestOperationResultToString(uiResult) + "'",
+                uiResult == UiTestOperationResult.QUIESCENT
+                        || uiResult == UiTestOperationResult.TIMEOUT_NO_START);
+    }
+
+    /**
+     * Runs the given Runnable and waits until the specified element matches the requested
+     * visibility.
+     *
+     * @param elementName The UserFriendlyElementName to wait on to change visibility.
+     * @param status The visibility status to wait for.
+     * @param action A Runnable containing the action to perform.
+     */
+    public static void performActionAndWaitForVisibilityStatus(
+            final int elementName, final boolean visible, Runnable action) {
+        final TestVrShellDelegate instance = TestVrShellDelegate.getInstance();
+        final CountDownLatch resultLatch = new CountDownLatch(1);
+        final VrShell.UiOperationData operationData = new VrShell.UiOperationData();
+        operationData.actionType = UiTestOperationType.ELEMENT_VISIBILITY_STATUS;
+        operationData.resultCallback = () -> {
+            resultLatch.countDown();
+        };
+        operationData.timeoutMs = DEFAULT_UI_QUIESCENCE_TIMEOUT_MS;
+        operationData.elementName = elementName;
+        operationData.visibility = visible;
         // Run on the UI thread to prevent issues with registering a new callback before
         // ReportUiOperationResultForTesting has finished.
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            instance.registerUiOperationCallbackForTesting(
-                    UiTestOperationType.ELEMENT_VISIBILITY_CHANGE, () -> {
-                        resultLatch.countDown();
-                    }, DEFAULT_UI_QUIESCENCE_TIMEOUT_MS, elementName);
-        });
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> { instance.registerUiOperationCallbackForTesting(operationData); });
         action.run();
 
-        // Wait for the result to be reported.
-        resultLatch.await();
+        // Wait for the result to be reported. Catch the interrupted exception so we don't have to
+        // try/catch anytime we chain multiple actions.
+        try {
+            resultLatch.await();
+        } catch (InterruptedException e) {
+            Assert.fail("Interrupted while waiting for visibility status: " + e.toString());
+        }
+
         int result = instance.getLastUiOperationResultForTesting(
-                UiTestOperationType.ELEMENT_VISIBILITY_CHANGE);
+                UiTestOperationType.ELEMENT_VISIBILITY_STATUS);
         Assert.assertEquals("UI reported non-visibility-changed result '"
                         + uiTestOperationResultToString(result) + "'",
-                UiTestOperationResult.VISIBILITY_CHANGE, result);
+                UiTestOperationResult.VISIBILITY_MATCH, result);
     }
 
     /**
@@ -301,8 +396,9 @@ public class NativeUiUtils {
      */
     public static void dumpNextFramesFrameBuffers(String filepathBase) throws InterruptedException {
         // Clear out any existing images with the names of the files that may be created.
-        for (String suffix :
-                new String[] {"_WebXrOverlay", "_WebXrContent", "_BrowserUi", "_BrowserContent"}) {
+        for (String suffix : new String[] {FRAME_BUFFER_SUFFIX_WEB_XR_OVERLAY,
+                     FRAME_BUFFER_SUFFIX_WEB_XR_CONTENT, FRAME_BUFFER_SUFFIX_BROWSER_UI,
+                     FRAME_BUFFER_SUFFIX_BROWSER_CONTENT}) {
             File dumpFile = new File(filepathBase, suffix + ".png");
             Assert.assertFalse("Failed to delete existing screenshot",
                     dumpFile.exists() && !dumpFile.delete());
@@ -310,13 +406,16 @@ public class NativeUiUtils {
 
         final TestVrShellDelegate instance = TestVrShellDelegate.getInstance();
         final CountDownLatch resultLatch = new CountDownLatch(1);
+        final VrShell.UiOperationData operationData = new VrShell.UiOperationData();
+        operationData.actionType = UiTestOperationType.FRAME_BUFFER_DUMPED;
+        operationData.resultCallback = () -> {
+            resultLatch.countDown();
+        };
 
         // Run on the UI thread to prevent issues with registering a new callback before
         // ReportUiOperationResultForTesting has finished.
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            instance.registerUiOperationCallbackForTesting(UiTestOperationType.FRAME_BUFFER_DUMPED,
-                    () -> { resultLatch.countDown(); }, 0 /* unused */, 0 /* unused */);
-        });
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> { instance.registerUiOperationCallbackForTesting(operationData); });
         instance.saveNextFrameBufferToDiskForTesting(filepathBase);
         resultLatch.await();
     }
@@ -372,10 +471,10 @@ public class NativeUiUtils {
                 return "Timeout (UI activity not started)";
             case UiTestOperationResult.TIMEOUT_NO_END:
                 return "Timeout (UI activity not stopped)";
-            case UiTestOperationResult.VISIBILITY_CHANGE:
-                return "Visibility change";
-            case UiTestOperationResult.TIMEOUT_NO_CHANGE:
-                return "Timeout (Element visibility did not change)";
+            case UiTestOperationResult.VISIBILITY_MATCH:
+                return "Visibility match";
+            case UiTestOperationResult.TIMEOUT_NO_VISIBILITY_MATCH:
+                return "Timeout (Element visibility did not match)";
             default:
                 return "Unknown result";
         }

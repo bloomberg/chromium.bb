@@ -12,8 +12,8 @@
 #include "base/timer/mock_timer.h"
 #include "components/consent_auditor/consent_auditor.h"
 #include "components/consent_auditor/fake_consent_auditor.h"
+#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/profile_management_switches.h"
 #include "components/unified_consent/feature.h"
 #include "components/unified_consent/scoped_unified_consent.h"
 #include "components/version_info/version_info.h"
@@ -107,7 +107,7 @@ class ChromeSigninViewControllerTest
       : unified_consent_enabled_(GetParam()),
         scoped_unified_consent_(
             unified_consent_enabled_
-                ? unified_consent::UnifiedConsentFeatureState::kEnabledNoBump
+                ? unified_consent::UnifiedConsentFeatureState::kEnabled
                 : unified_consent::UnifiedConsentFeatureState::kDisabled) {}
 
  protected:

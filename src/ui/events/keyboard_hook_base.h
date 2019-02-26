@@ -29,7 +29,9 @@ class KeyboardHookBase : public KeyboardHook {
   bool ShouldCaptureKeyEvent(DomCode dom_code) const;
 
   // Forwards the key event using |key_event_callback_|.
-  void ForwardCapturedKeyEvent(std::unique_ptr<KeyEvent> event);
+  // |event| is owned by the calling method and will live until this method
+  // returns.
+  void ForwardCapturedKeyEvent(KeyEvent* event);
 
   const base::Optional<base::flat_set<DomCode>>& dom_codes() {
     return dom_codes_;

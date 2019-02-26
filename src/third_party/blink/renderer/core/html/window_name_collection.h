@@ -15,13 +15,12 @@ class WindowNameCollection final : public HTMLNameCollection {
                                       CollectionType type,
                                       const AtomicString& name) {
     DCHECK_EQ(type, kWindowNamedItems);
-    return new WindowNameCollection(document, name);
+    return MakeGarbageCollected<WindowNameCollection>(document, name);
   }
 
-  bool ElementMatches(const Element&) const;
-
- private:
   WindowNameCollection(ContainerNode& document, const AtomicString& name);
+
+  bool ElementMatches(const Element&) const;
 };
 
 DEFINE_TYPE_CASTS(WindowNameCollection,

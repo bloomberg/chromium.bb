@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 
+#include "base/optional.h"
 #include "remoting/host/file_proxy_wrapper.h"
 #include "remoting/proto/file_transfer.pb.h"
 #include "remoting/protocol/named_message_pipe_handler.h"
@@ -30,16 +31,12 @@ class FileTransferMessageHandler : public protocol::NamedMessagePipeHandler {
   void OnDisconnecting() override;
 
  private:
-  void StatusCallback(
-      FileProxyWrapper::State state,
-      base::Optional<protocol::FileTransferResponse_ErrorCode> error);
-  void SendToFileProxy(std::unique_ptr<CompoundBuffer> buffer);
-  void ParseNewRequest(std::unique_ptr<CompoundBuffer> buffer);
-  void CancelAndSendError(const std::string& error);
+  void SaveResultCallback(base::Optional<protocol::FileTransfer_Error> error);
+  void StartFile(protocol::FileTransfer_Metadata metadata);
+  void CancelAndSendError(protocol::FileTransfer_Error error,
+                          const std::string& log_message);
 
   std::unique_ptr<FileProxyWrapper> file_proxy_wrapper_;
-  std::unique_ptr<protocol::FileTransferRequest> request_;
-  uint64_t total_bytes_written_ = 0;
 };
 
 }  // namespace remoting

@@ -9,7 +9,7 @@
 #import "base/mac/foundation_util.h"
 #import "base/test/ios/wait_util.h"
 #include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/test/scoped_key_window.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #import "testing/gtest_mac.h"
@@ -31,9 +31,6 @@ class RepostFormCoordinatorTest : public PlatformTest {
  protected:
   RepostFormCoordinatorTest() {
     view_controller_ = [[UIViewController alloc] init];
-    [scoped_key_window_.Get() setRootViewController:view_controller_];
-    UIView* view = [[UIView alloc] initWithFrame:view_controller_.view.bounds];
-    web_state_.SetView(view);
 
     CGPoint dialogLocation =
         CGPointMake(kDialogHorizontalLocation, kDialogVerticalLocation);
@@ -52,7 +49,7 @@ class RepostFormCoordinatorTest : public PlatformTest {
 
   // Coordinator will not present the dialog until view is added to the window.
   void AddViewToWindow() {
-    [view_controller_.view addSubview:web_state_.GetView()];
+    [scoped_key_window_.Get() setRootViewController:view_controller_];
   }
 
   RepostFormCoordinator* coordinator_;

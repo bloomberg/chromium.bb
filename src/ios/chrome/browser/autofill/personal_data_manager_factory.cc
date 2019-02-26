@@ -11,12 +11,12 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/autofill_profile_validator_factory.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
+#include "ios/chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
 
@@ -39,7 +39,9 @@ PersonalDataManagerFactory::PersonalDataManagerFactory()
           "PersonalDataManager",
           BrowserStateDependencyManager::GetInstance()) {
   DependsOn(IdentityManagerFactory::GetInstance());
+  DependsOn(ios::HistoryServiceFactory::GetInstance());
   DependsOn(ios::WebDataServiceFactory::GetInstance());
+  DependsOn(ios::GaiaCookieManagerServiceFactory::GetInstance());
 }
 
 PersonalDataManagerFactory::~PersonalDataManagerFactory() {}
@@ -60,6 +62,8 @@ PersonalDataManagerFactory::BuildServiceInstanceFor(
       autofill_db, nullptr, chrome_browser_state->GetPrefs(),
       IdentityManagerFactory::GetForBrowserState(chrome_browser_state),
       AutofillProfileValidatorFactory::GetInstance(), history_service,
+      ios::GaiaCookieManagerServiceFactory::GetForBrowserState(
+          chrome_browser_state),
       chrome_browser_state->IsOffTheRecord());
   return service;
 }

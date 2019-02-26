@@ -16,16 +16,46 @@ found in the LICENSE file.
 /**
  * @fileoverview This file contains implementations of the following metrics.
  *
- * thread_{thread group}_cpu_time_per_second_tbmv2
- * ===============================================
- * This set of metrics show how much a thread group was busy during a specific
- * segment marked by a test.  More precisely, it shows the amount of CPU cores
- * per seconds the thread group consumes during the segment.
+ * The addCpuUtilizationHistograms method can generate the following sets of
+ * metrics, dependeing on the input values for segments, shouldNormalize, and
+ * segmentCostFunc.
  *
- * thread_{thread group}_cpu_time_per_frame_tbmv2
- * ==============================================
+ * thread_{thread group}_cpu_time_per_second
+ * =========================================
+ * segments: any set of interesting segments
+ * shouldNormalize: True
+ * segmentCostFunc: thread.getCpuTimeForRange
+ *
+ * This set of metrics show how much a thread group was busy during specific
+ * segments marked by a test. More precisely, it shows the average amount of CPU
+ * cores per seconds the thread group consumes during the segments.
+ *
+ * thread_{thread group}_cpu_time_per_frame
+ * ========================================
+ * segments: display compositor's frames
+ * shouldNormalize: False
+ * segmentCostFunc: thread.getCpuTimeForRange
+ *
  * This set of metrics show the distribution of CPU usage of a thread
  * group in each display compositor's frame.
+ *
+ * tasks_per_second_{thread group}
+ * ===============================
+ * segments: any set of interesting segments
+ * shouldNormalize: True
+ * segmentCostFunc: thread.getNumToplevelSlicesForRange
+ *
+ * This set of metrics show the average number of tasks per second of a thread
+ * group during specific segments marked by a test.
+ *
+ * tasks_per_frame_{thread group}
+ * ==============================
+ * segments: display compositor's frames
+ * shouldNormalize: False
+ * segmentCostFunc: thread.getNumToplevelSlicesForRange
+ *
+ * This set of metrics show the distribution of the number of task in each
+ * display compositor's frame of a thread group.
  *
  * Note: the CPU usage in all above-mentioned metrics, is approximated from
  * top-level trace events in each thread; it does not come from the OS. So, the
@@ -36,16 +66,16 @@ tr.exportTo('tr.metrics.rendering', function() {
   const UNKNOWN_THREAD_NAME = 'Unknown';
 
   const CATEGORY_THREAD_MAP = new Map();
-  CATEGORY_THREAD_MAP.set('all', [/.*/]);
+  CATEGORY_THREAD_MAP.set('total_all', [/.*/]);
   CATEGORY_THREAD_MAP.set(
       'browser', [/^Browser Compositor$/, /^CrBrowserMain$/]);
   CATEGORY_THREAD_MAP.set('display_compositor', [/^VizCompositorThread$/]);
   CATEGORY_THREAD_MAP.set(
-      'fast_path', [
+      'total_fast_path', [
         /^Browser Compositor$/, /^Chrome_InProcGpuThread$/, /^Compositor$/,
         /^CrBrowserMain$/, /^CrGpuMain$/, /IOThread/, /^VizCompositorThread$/]);
-  CATEGORY_THREAD_MAP.set('gpu', [/^Chrome_InProcGpuThread$/, /^CrGpuMain$/]);
-  CATEGORY_THREAD_MAP.set('io', [/IOThread/]);
+  CATEGORY_THREAD_MAP.set('GPU', [/^Chrome_InProcGpuThread$/, /^CrGpuMain$/]);
+  CATEGORY_THREAD_MAP.set('IO', [/IOThread/]);
   CATEGORY_THREAD_MAP.set('raster', [/CompositorTileWorker/]);
   CATEGORY_THREAD_MAP.set('renderer_compositor', [/^Compositor$/]);
   CATEGORY_THREAD_MAP.set('renderer_main', [/^CrRendererMain$/]);
@@ -62,7 +92,7 @@ tr.exportTo('tr.metrics.rendering', function() {
     for (const [category, regexps] of CATEGORY_THREAD_MAP) {
       for (const regexp of regexps) {
         if (regexp.test(threadName)) {
-          if (category !== 'all') isOther = false;
+          if (category !== 'total_all') isOther = false;
           yield category;
           break;
         }
@@ -81,15 +111,16 @@ tr.exportTo('tr.metrics.rendering', function() {
   }
 
   function addCpuUtilizationHistograms(
-      histograms, model, segments, segmentName, shouldNormalize) {
+      histograms, model, segments, shouldNormalize, segmentCostFunc,
+      histogramNameFunc, description, unit) {
     const histogramMap = new Map();
     for (const category of ALL_CATEGORIES) {
       const histogram = histograms.createHistogram(
-          `thread_${category}_cpu_time_per_${segmentName}_tbmv2`,
-          tr.b.Unit.byName.timeDurationInMs_smallerIsBetter, [], {
+          histogramNameFunc(category), unit, [], {
             binBoundaries:
                 tr.v.HistogramBinBoundaries.createExponential(1, 50, 20),
-            description: `CPU cores per ${segmentName} of a thread group`,
+            description,
+            summaryOptions: tr.metrics.rendering.SUMMARY_OPTIONS,
           });
       histogramMap.set(category, histogram);
     }
@@ -116,7 +147,7 @@ tr.exportTo('tr.metrics.rendering', function() {
         addValueToMap_(
             threadValues,
             thread.name || UNKNOWN_THREAD_NAME,
-            thread.getCpuTimeForRange(segment.boundsRange));
+            segmentCostFunc(thread, segment));
       }
       const categoryValues = new Map();
       const breakdowns = new Map();
@@ -151,8 +182,13 @@ tr.exportTo('tr.metrics.rendering', function() {
     }
   }
 
+  const SUMMARY_OPTIONS = {
+    percentile: [0.90, 0.95],
+  };
+
   return {
     addCpuUtilizationHistograms,
+    SUMMARY_OPTIONS,
   };
 });
 </script>

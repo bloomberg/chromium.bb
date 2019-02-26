@@ -22,8 +22,6 @@
 #include "core/fxcrt/fx_string.h"
 #include "fxjs/cfx_v8.h"
 #include "fxjs/ijs_runtime.h"
-#include "third_party/base/stl_util.h"
-#include "v8/include/v8-util.h"
 #include "v8/include/v8.h"
 
 #ifdef PDF_ENABLE_XFA
@@ -52,9 +50,7 @@ class FXJS_PerIsolateData {
   static void SetUp(v8::Isolate* pIsolate);
   static FXJS_PerIsolateData* Get(v8::Isolate* pIsolate);
 
-  int MaxObjDefinitionID() const {
-    return pdfium::CollectionSize<int>(m_ObjectDefnArray);
-  }
+  int MaxObjDefinitionID() const;
   CFXJS_ObjDefinition* ObjDefinitionForID(int id) const;
   int AssignIDForObjDefinition(std::unique_ptr<CFXJS_ObjDefinition> pDefn);
 
@@ -131,9 +127,7 @@ class CFXJS_Engine : public CFX_V8 {
   v8::Local<v8::Object> NewFXJSBoundObject(int nObjDefnID, FXJSOBJTYPE type);
   void Error(const WideString& message);
 
-  v8::Local<v8::Context> GetV8Context() {
-    return v8::Local<v8::Context>::New(GetIsolate(), m_V8Context);
-  }
+  v8::Local<v8::Context> GetV8Context();
 
   v8::Local<v8::Array> GetConstArray(const WideString& name);
   void SetConstArray(const WideString& name, v8::Local<v8::Array> array);

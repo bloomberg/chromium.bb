@@ -76,7 +76,10 @@ class V8ValueConverterImplTest : public testing::Test {
 
   std::string GetString(v8::Local<v8::Object> value, const std::string& key) {
     v8::Local<v8::String> temp =
-        value->Get(v8::String::NewFromUtf8(isolate_, key.c_str()))
+        value
+            ->Get(v8::String::NewFromUtf8(isolate_, key.c_str(),
+                                          v8::NewStringType::kInternalized)
+                      .ToLocalChecked())
             .As<v8::String>();
     if (temp.IsEmpty()) {
       ADD_FAILURE();
@@ -107,7 +110,10 @@ class V8ValueConverterImplTest : public testing::Test {
 
   int32_t GetInt(v8::Local<v8::Object> value, const std::string& key) {
     v8::Local<v8::Int32> temp =
-        value->Get(v8::String::NewFromUtf8(isolate_, key.c_str()))
+        value
+            ->Get(v8::String::NewFromUtf8(isolate_, key.c_str(),
+                                          v8::NewStringType::kInternalized)
+                      .ToLocalChecked())
             .As<v8::Int32>();
     if (temp.IsEmpty()) {
       ADD_FAILURE();
@@ -136,7 +142,9 @@ class V8ValueConverterImplTest : public testing::Test {
 
   bool IsNull(v8::Local<v8::Object> value, const std::string& key) {
     v8::Local<v8::Value> child =
-        value->Get(v8::String::NewFromUtf8(isolate_, key.c_str()));
+        value->Get(v8::String::NewFromUtf8(isolate_, key.c_str(),
+                                           v8::NewStringType::kInternalized)
+                       .ToLocalChecked());
     if (child.IsEmpty()) {
       ADD_FAILURE();
       return false;
@@ -179,7 +187,10 @@ class V8ValueConverterImplTest : public testing::Test {
     }
 
     v8::Local<v8::Object> object(v8::Object::New(isolate_));
-    object->Set(v8::String::NewFromUtf8(isolate_, "test"), val);
+    object->Set(v8::String::NewFromUtf8(isolate_, "test",
+                                        v8::NewStringType::kInternalized)
+                    .ToLocalChecked(),
+                val);
     std::unique_ptr<base::DictionaryValue> dictionary(
         base::DictionaryValue::From(converter.FromV8Value(object, context)));
     ASSERT_TRUE(dictionary.get());
@@ -214,8 +225,10 @@ class V8ValueConverterImplTest : public testing::Test {
 
   template <typename T>
   v8::Local<T> CompileRun(v8::Local<v8::Context> context, const char* source) {
-    return v8::Script::Compile(context,
-                               v8::String::NewFromUtf8(isolate_, source))
+    return v8::Script::Compile(
+               context, v8::String::NewFromUtf8(isolate_, source,
+                                                v8::NewStringType::kNormal)
+                            .ToLocalChecked())
         .ToLocalChecked()
         ->Run(context)
         .ToLocalChecked()
@@ -264,34 +277,85 @@ TEST_F(V8ValueConverterImplTest, BasicRoundTrip) {
 
   EXPECT_EQ(static_cast<const base::DictionaryValue&>(*original_root).size(),
             v8_object->GetPropertyNames()->Length());
+  EXPECT_TRUE(v8_object
+                  ->Get(v8::String::NewFromUtf8(
+                            isolate_, "null", v8::NewStringType::kInternalized)
+                            .ToLocalChecked())
+                  ->IsNull());
+  EXPECT_TRUE(v8_object
+                  ->Get(v8::String::NewFromUtf8(
+                            isolate_, "true", v8::NewStringType::kInternalized)
+                            .ToLocalChecked())
+                  ->IsTrue());
+  EXPECT_TRUE(v8_object
+                  ->Get(v8::String::NewFromUtf8(
+                            isolate_, "false", v8::NewStringType::kInternalized)
+                            .ToLocalChecked())
+                  ->IsFalse());
   EXPECT_TRUE(
-      v8_object->Get(v8::String::NewFromUtf8(isolate_, "null"))->IsNull());
+      v8_object
+          ->Get(v8::String::NewFromUtf8(isolate_, "positive-int",
+                                        v8::NewStringType::kInternalized)
+                    .ToLocalChecked())
+          ->IsInt32());
   EXPECT_TRUE(
-      v8_object->Get(v8::String::NewFromUtf8(isolate_, "true"))->IsTrue());
-  EXPECT_TRUE(
-      v8_object->Get(v8::String::NewFromUtf8(isolate_, "false"))->IsFalse());
-  EXPECT_TRUE(v8_object->Get(v8::String::NewFromUtf8(isolate_, "positive-int"))
+      v8_object
+          ->Get(v8::String::NewFromUtf8(isolate_, "negative-int",
+                                        v8::NewStringType::kInternalized)
+                    .ToLocalChecked())
+          ->IsInt32());
+  EXPECT_TRUE(v8_object
+                  ->Get(v8::String::NewFromUtf8(
+                            isolate_, "zero", v8::NewStringType::kInternalized)
+                            .ToLocalChecked())
                   ->IsInt32());
-  EXPECT_TRUE(v8_object->Get(v8::String::NewFromUtf8(isolate_, "negative-int"))
-                  ->IsInt32());
   EXPECT_TRUE(
-      v8_object->Get(v8::String::NewFromUtf8(isolate_, "zero"))->IsInt32());
+      v8_object
+          ->Get(v8::String::NewFromUtf8(isolate_, "double",
+                                        v8::NewStringType::kInternalized)
+                    .ToLocalChecked())
+          ->IsNumber());
   EXPECT_TRUE(
-      v8_object->Get(v8::String::NewFromUtf8(isolate_, "double"))->IsNumber());
-  EXPECT_TRUE(v8_object->Get(v8::String::NewFromUtf8(
-                                 isolate_, "big-integral-double"))->IsNumber());
+      v8_object
+          ->Get(v8::String::NewFromUtf8(isolate_, "big-integral-double",
+                                        v8::NewStringType::kInternalized)
+                    .ToLocalChecked())
+          ->IsNumber());
   EXPECT_TRUE(
-      v8_object->Get(v8::String::NewFromUtf8(isolate_, "string"))->IsString());
-  EXPECT_TRUE(v8_object->Get(v8::String::NewFromUtf8(isolate_, "empty-string"))
-                  ->IsString());
-  EXPECT_TRUE(v8_object->Get(v8::String::NewFromUtf8(isolate_, "dictionary"))
-                  ->IsObject());
-  EXPECT_TRUE(v8_object->Get(v8::String::NewFromUtf8(
-                                 isolate_, "empty-dictionary"))->IsObject());
+      v8_object
+          ->Get(v8::String::NewFromUtf8(isolate_, "string",
+                                        v8::NewStringType::kInternalized)
+                    .ToLocalChecked())
+          ->IsString());
   EXPECT_TRUE(
-      v8_object->Get(v8::String::NewFromUtf8(isolate_, "list"))->IsArray());
-  EXPECT_TRUE(v8_object->Get(v8::String::NewFromUtf8(isolate_, "empty-list"))
+      v8_object
+          ->Get(v8::String::NewFromUtf8(isolate_, "empty-string",
+                                        v8::NewStringType::kInternalized)
+                    .ToLocalChecked())
+          ->IsString());
+  EXPECT_TRUE(
+      v8_object
+          ->Get(v8::String::NewFromUtf8(isolate_, "dictionary",
+                                        v8::NewStringType::kInternalized)
+                    .ToLocalChecked())
+          ->IsObject());
+  EXPECT_TRUE(
+      v8_object
+          ->Get(v8::String::NewFromUtf8(isolate_, "empty-dictionary",
+                                        v8::NewStringType::kInternalized)
+                    .ToLocalChecked())
+          ->IsObject());
+  EXPECT_TRUE(v8_object
+                  ->Get(v8::String::NewFromUtf8(
+                            isolate_, "list", v8::NewStringType::kInternalized)
+                            .ToLocalChecked())
                   ->IsArray());
+  EXPECT_TRUE(
+      v8_object
+          ->Get(v8::String::NewFromUtf8(isolate_, "empty-list",
+                                        v8::NewStringType::kInternalized)
+                    .ToLocalChecked())
+          ->IsArray());
 
   std::unique_ptr<base::Value> new_root(
       converter.FromV8Value(v8_object, context));
@@ -333,8 +397,10 @@ TEST_F(V8ValueConverterImplTest, ObjectExceptions) {
   CompileRun<v8::Value>(context, source);
 
   v8::Local<v8::Object> object(v8::Object::New(isolate_));
-  object->Set(v8::String::NewFromUtf8(isolate_, "bar"),
-              v8::String::NewFromUtf8(isolate_, "bar"));
+  v8::Local<v8::String> bar =
+      v8::String::NewFromUtf8(isolate_, "bar", v8::NewStringType::kInternalized)
+          .ToLocalChecked();
+  object->Set(bar, bar);
 
   // Converting from v8 value should replace the foo property with null.
   V8ValueConverterImpl converter;
@@ -406,8 +472,11 @@ TEST_F(V8ValueConverterImplTest, WeirdTypes) {
   v8::Context::Scope context_scope(context);
 
   v8::Local<v8::RegExp> regex(
-      v8::RegExp::New(context, v8::String::NewFromUtf8(isolate_, "."),
-                      v8::RegExp::kNone)
+      v8::RegExp::New(
+          context,
+          v8::String::NewFromUtf8(isolate_, ".", v8::NewStringType::kNormal)
+              .ToLocalChecked(),
+          v8::RegExp::kNone)
           .ToLocalChecked());
 
   V8ValueConverterImpl converter;
@@ -619,9 +688,15 @@ TEST_F(V8ValueConverterImplTest, RecursiveObjects) {
 
   v8::Local<v8::Object> object = v8::Object::New(isolate_).As<v8::Object>();
   ASSERT_FALSE(object.IsEmpty());
-  object->Set(v8::String::NewFromUtf8(isolate_, "foo"),
-              v8::String::NewFromUtf8(isolate_, "bar"));
-  object->Set(v8::String::NewFromUtf8(isolate_, "obj"), object);
+  object->Set(
+      v8::String::NewFromUtf8(isolate_, "foo", v8::NewStringType::kInternalized)
+          .ToLocalChecked(),
+      v8::String::NewFromUtf8(isolate_, "bar", v8::NewStringType::kNormal)
+          .ToLocalChecked());
+  object->Set(
+      v8::String::NewFromUtf8(isolate_, "obj", v8::NewStringType::kInternalized)
+          .ToLocalChecked(),
+      object);
 
   std::unique_ptr<base::DictionaryValue> object_result(
       base::DictionaryValue::From(converter.FromV8Value(object, context)));
@@ -631,7 +706,9 @@ TEST_F(V8ValueConverterImplTest, RecursiveObjects) {
 
   v8::Local<v8::Array> array = v8::Array::New(isolate_).As<v8::Array>();
   ASSERT_FALSE(array.IsEmpty());
-  array->Set(0, v8::String::NewFromUtf8(isolate_, "1"));
+  array->Set(0,
+             v8::String::NewFromUtf8(isolate_, "1", v8::NewStringType::kNormal)
+                 .ToLocalChecked());
   array->Set(1, array);
 
   std::unique_ptr<base::ListValue> list_result(
@@ -807,8 +884,9 @@ TEST_F(V8ValueConverterImplTest, DetectCycles) {
   v8::Local<v8::Object> recursive_object(v8::Object::New(isolate_));
   v8::TryCatch try_catch(isolate_);
   recursive_object->Set(
-      v8::String::NewFromUtf8(
-          isolate_, key.c_str(), v8::String::kNormalString, key.length()),
+      v8::String::NewFromUtf8(isolate_, key.c_str(),
+                              v8::NewStringType::kInternalized, key.length())
+          .ToLocalChecked(),
       recursive_object);
   ASSERT_FALSE(try_catch.HasCaught());
 
@@ -901,7 +979,10 @@ TEST_F(V8ValueConverterImplTest, MaxRecursionDepth) {
   v8::Local<v8::Object> leaf = deep_object;
   for (int i = 0; i < kDepth; ++i) {
     v8::Local<v8::Object> new_object = v8::Object::New(isolate_);
-    leaf->Set(v8::String::NewFromUtf8(isolate_, kKey), new_object);
+    leaf->Set(v8::String::NewFromUtf8(isolate_, kKey,
+                                      v8::NewStringType::kInternalized)
+                  .ToLocalChecked(),
+              new_object);
     leaf = new_object;
   }
 

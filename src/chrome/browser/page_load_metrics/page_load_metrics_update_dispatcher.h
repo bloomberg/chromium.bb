@@ -120,12 +120,12 @@ class PageLoadMetricsUpdateDispatcher {
       PageLoadMetricsEmbedderInterface* embedder_interface);
   ~PageLoadMetricsUpdateDispatcher();
 
-  void UpdateMetrics(
-      content::RenderFrameHost* render_frame_host,
-      const mojom::PageLoadTiming& new_timing,
-      const mojom::PageLoadMetadata& new_metadata,
-      const mojom::PageLoadFeatures& new_features,
-      const std::vector<mojom::ResourceDataUpdatePtr>& resources);
+  void UpdateMetrics(content::RenderFrameHost* render_frame_host,
+                     mojom::PageLoadTimingPtr new_timing,
+                     mojom::PageLoadMetadataPtr new_metadata,
+                     mojom::PageLoadFeaturesPtr new_features,
+                     const std::vector<mojom::ResourceDataUpdatePtr>& resources,
+                     mojom::PageRenderDataPtr render_data);
 
   // This method is only intended to be called for PageLoadFeatures being
   // recorded directly from the browser process. Features coming from the
@@ -148,16 +148,21 @@ class PageLoadMetricsUpdateDispatcher {
   const mojom::PageLoadMetadata& subframe_metadata() const {
     return *(subframe_metadata_.get());
   }
+  const mojom::PageRenderData& main_frame_render_data() const {
+    return *(main_frame_render_data_.get());
+  }
 
  private:
   using FrameTreeNodeId = int;
 
-  void UpdateMainFrameTiming(const mojom::PageLoadTiming& new_timing);
+  void UpdateMainFrameTiming(mojom::PageLoadTimingPtr new_timing);
   void UpdateSubFrameTiming(content::RenderFrameHost* render_frame_host,
-                            const mojom::PageLoadTiming& new_timing);
+                            mojom::PageLoadTimingPtr new_timing);
 
-  void UpdateMainFrameMetadata(const mojom::PageLoadMetadata& new_metadata);
-  void UpdateSubFrameMetadata(const mojom::PageLoadMetadata& subframe_metadata);
+  void UpdateMainFrameMetadata(mojom::PageLoadMetadataPtr new_metadata);
+  void UpdateSubFrameMetadata(mojom::PageLoadMetadataPtr subframe_metadata);
+
+  void UpdateMainFrameRenderData(mojom::PageRenderDataPtr render_data);
 
   void MaybeDispatchTimingUpdates(bool did_merge_new_timing_value);
   void DispatchTimingUpdates();
@@ -169,6 +174,15 @@ class PageLoadMetricsUpdateDispatcher {
 
   // Time the navigation for this page load was initiated.
   const base::TimeTicks navigation_start_;
+
+  // As FCP++ metrics need to report the last candidate, this attributes are
+  // used as a buffer to store the latest one of the updating candidate. We
+  // buffer them as private members and only merge them back into
+  // current_merged_page_timing_ at the end of the pageload life time.
+  base::Optional<base::TimeDelta> largest_image_paint_;
+  base::Optional<base::TimeDelta> last_image_paint_;
+  base::Optional<base::TimeDelta> largest_text_paint_;
+  base::Optional<base::TimeDelta> last_text_paint_;
 
   // PageLoadTiming for the currently tracked page. The fields in |paint_timing|
   // are merged across all frames in the document. All other fields are from the
@@ -183,6 +197,8 @@ class PageLoadMetricsUpdateDispatcher {
 
   mojom::PageLoadMetadataPtr main_frame_metadata_;
   mojom::PageLoadMetadataPtr subframe_metadata_;
+
+  mojom::PageRenderDataPtr main_frame_render_data_;
 
   // Navigation start offsets for the most recently committed document in each
   // frame.

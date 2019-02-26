@@ -5,13 +5,15 @@
 #import <XCTest/XCTest.h>
 
 #include "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/ui/ui_util.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/web_view_interaction_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#include "ios/web/public/features.h"
+#import "ios/web/public/test/url_test_util.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -372,7 +374,9 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
   std::string backHashChangeContent = "backHashChange";
   [self addHashChangeListenerWithContent:backHashChangeContent];
   [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:OmniboxText(page1URL.GetContent())]
+  const std::string page1OmniboxText =
+      web::GetContentAndFragmentForUrl(page1URL);
+  [[EarlGrey selectElementWithMatcher:OmniboxText(page1OmniboxText)]
       assertWithMatcher:grey_notNil()];
   [ChromeEarlGrey waitForWebViewContainingText:backHashChangeContent];
 
@@ -381,9 +385,10 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
   [self addHashChangeListenerWithContent:forwardHashChangeContent];
   [[EarlGrey selectElementWithMatcher:ForwardButton()]
       performAction:grey_tap()];
+  const std::string hashChangedWithHistoryOmniboxText =
+      web::GetContentAndFragmentForUrl(hashChangedWithHistoryURL);
   [[EarlGrey
-      selectElementWithMatcher:OmniboxText(
-                                   hashChangedWithHistoryURL.GetContent())]
+      selectElementWithMatcher:OmniboxText(hashChangedWithHistoryOmniboxText)]
       assertWithMatcher:grey_notNil()];
   [ChromeEarlGrey waitForWebViewContainingText:forwardHashChangeContent];
 
@@ -411,25 +416,26 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
   // Tap link to replace the location value.
   GREYAssert(TapWebViewElementWithId(kHashChangeWithoutHistoryLabel),
              @"Failed to tap %s", kHashChangeWithoutHistoryLabel);
-  [[EarlGrey
-      selectElementWithMatcher:OmniboxText(
-                                   hashChangedWithoutHistoryURL.GetContent())]
+  const std::string hashChangedWithoutHistoryOmniboxText =
+      web::GetContentAndFragmentForUrl(hashChangedWithoutHistoryURL);
+  [[EarlGrey selectElementWithMatcher:OmniboxText(
+                                          hashChangedWithoutHistoryOmniboxText)]
       assertWithMatcher:grey_notNil()];
 
   // Tap link to update the location.hash with a new value.
   GREYAssert(TapWebViewElementWithId(kHashChangeWithHistoryLabel),
              @"Failed to tap %s", kHashChangeWithHistoryLabel);
+  const std::string hashChangedWithHistoryOmniboxText =
+      web::GetContentAndFragmentForUrl(hashChangedWithHistoryURL);
   [[EarlGrey
-      selectElementWithMatcher:OmniboxText(
-                                   hashChangedWithHistoryURL.GetContent())]
+      selectElementWithMatcher:OmniboxText(hashChangedWithHistoryOmniboxText)]
       assertWithMatcher:grey_notNil()];
 
   // Navigate back and verify that the URL that replaced window.location
   // has been reached.
   [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
-  [[EarlGrey
-      selectElementWithMatcher:OmniboxText(
-                                   hashChangedWithoutHistoryURL.GetContent())]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(
+                                          hashChangedWithoutHistoryOmniboxText)]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -448,9 +454,10 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
   // Tap link to update location.hash with a new value.
   GREYAssert(TapWebViewElementWithId(kHashChangeWithHistoryLabel),
              @"Failed to tap %s", kHashChangeWithHistoryLabel);
+  const std::string hashChangedWithHistoryOmniboxText =
+      web::GetContentAndFragmentForUrl(hashChangedWithHistoryURL);
   [[EarlGrey
-      selectElementWithMatcher:OmniboxText(
-                                   hashChangedWithHistoryURL.GetContent())]
+      selectElementWithMatcher:OmniboxText(hashChangedWithHistoryOmniboxText)]
       assertWithMatcher:grey_notNil()];
 
   // Tap link to update location.hash with the same value.
@@ -459,15 +466,16 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
 
   // Tap back once to return to original URL.
   [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:OmniboxText(page1URL.GetContent())]
+  const std::string page1OmniboxText =
+      web::GetContentAndFragmentForUrl(page1URL);
+  [[EarlGrey selectElementWithMatcher:OmniboxText(page1OmniboxText)]
       assertWithMatcher:grey_notNil()];
 
   // Navigate forward and verify the URL.
   [[EarlGrey selectElementWithMatcher:ForwardButton()]
       performAction:grey_tap()];
   [[EarlGrey
-      selectElementWithMatcher:OmniboxText(
-                                   hashChangedWithHistoryURL.GetContent())]
+      selectElementWithMatcher:OmniboxText(hashChangedWithHistoryOmniboxText)]
       assertWithMatcher:grey_notNil()];
 }
 

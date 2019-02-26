@@ -37,16 +37,18 @@ struct ArrayTraits<WTF::Vector<U, InlineCapacity>> {
   }
 
   static U& GetAt(WTF::Vector<U, InlineCapacity>& input, size_t index) {
-    return input[index];
+    return input[static_cast<wtf_size_t>(index)];
   }
 
   static const U& GetAt(const WTF::Vector<U, InlineCapacity>& input,
                         size_t index) {
-    return input[index];
+    return input[static_cast<wtf_size_t>(index)];
   }
 
   static bool Resize(WTF::Vector<U, InlineCapacity>& input, size_t size) {
-    input.resize(size);
+    if (!base::IsValueInRangeForNumericType<wtf_size_t>(size))
+      return false;
+    input.resize(static_cast<wtf_size_t>(size));
     return true;
   }
 };

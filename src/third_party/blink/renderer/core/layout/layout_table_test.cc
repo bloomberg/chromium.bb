@@ -30,13 +30,14 @@ TEST_F(LayoutTableTest, OverflowViaOutline) {
   auto* target = GetTableByElementId("target");
   EXPECT_EQ(LayoutRect(0, 0, 100, 200), target->SelfVisualOverflowRect());
   ToElement(target->GetNode())
-      ->setAttribute(HTMLNames::styleAttr, "outline: 2px solid black");
+      ->setAttribute(html_names::kStyleAttr, "outline: 2px solid black");
 
   auto* child = GetTableByElementId("child");
   ToElement(child->GetNode())
-      ->setAttribute(HTMLNames::styleAttr, "outline: 2px solid black");
+      ->setAttribute(html_names::kStyleAttr, "outline: 2px solid black");
 
-  target->GetFrameView()->UpdateAllLifecyclePhases();
+  target->GetFrameView()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
   EXPECT_EQ(LayoutRect(-2, -2, 104, 204), target->SelfVisualOverflowRect());
 
   EXPECT_EQ(LayoutRect(-2, -2, 104, 204), child->SelfVisualOverflowRect());

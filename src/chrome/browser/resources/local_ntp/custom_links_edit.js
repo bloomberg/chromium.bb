@@ -4,17 +4,6 @@
 
 
 /**
- * Alias for document.getElementById.
- * @param {string} id The ID of the element to find.
- * @return {HTMLElement} The found element or null if not found.
- */
-function $(id) {
-  // eslint-disable-next-line no-restricted-properties
-  return document.getElementById(id);
-}
-
-
-/**
  * Enum for ids.
  * @enum {string}
  * @const
@@ -57,14 +46,6 @@ const DOMAIN_ORIGIN = '{{ORIGIN}}';
 
 
 /**
- * Time in ms to wait for the |doesUrlResolve| callback before automatically
- * closing the dialog. Keep in sync with InstantService.
- * @const {number}
- */
-const DIALOG_TIMEOUT = 2000;
-
-
-/**
  * List of parameters passed by query args.
  * @type {Object}
  */
@@ -101,37 +82,6 @@ let editLinkTitle = '';
  * @type {string}
  */
 let deleteLinkTitle = '';
-
-
-/**
- * The timeout function for |updateLink| that can be triggered early by the
- * |doesUrlResolve| callback. Only set if we are waiting for the callback.
- * @type {?Object}
- */
-let urlResolvesCallbackHandler;
-
-
-/**
- * Returns a timeout for |updateLink| that can be executed early by the
- * |doesUrlResolve| callback. Otherwise, calls |updateLink| and closes the
- * dialog.
- * @param {string} newUrl The new custom link URL.
- * @param {string} newTitle The new custom link title.
- * @param {number} delay The timeout delay.
- * @return {Object}
- */
-function createUpdateLinkTimeout(newUrl, newTitle, delay) {
-  let timeoutId = window.setTimeout(() => {
-    // Do not update the URL scheme if the dialog times out.
-    updateLink(newUrl, newTitle, true);
-  }, delay);
-  return {
-    trigger: (resolves) => {
-      window.clearTimeout(timeoutId);
-      updateLink(newUrl, newTitle, resolves);
-    }
-  };
-}
 
 
 /**
@@ -181,54 +131,21 @@ function finishEditLink() {
   let newTitle = '';
 
   const urlValue = $(IDS.URL_FIELD).value;
-  const titleValue = $(IDS.TITLE_FIELD).value;
+  if (urlValue != prepopulatedLink.url) {
+    newUrl = chrome.embeddedSearch.newTabPage.fixupAndValidateUrl(urlValue);
+    // Show error message for invalid urls.
+    if (!newUrl || (newUrl && !utils.isSchemeAllowed(newUrl))) {
+      showInvalidUrlUntilTextInput();
+      $(IDS.DONE).disabled = true;  // Disable submit until text input.
+      return;
+    }
+  }
 
+  const titleValue = $(IDS.TITLE_FIELD).value;
   if (!titleValue)  // Set the URL input as the title if no title is provided.
     newTitle = urlValue;
   else if (titleValue != prepopulatedLink.title)
     newTitle = titleValue;
-
-  // No need to validate if the URL was not changed.
-  if (urlValue == prepopulatedLink.url) {
-    updateLink(newUrl, newTitle, true);
-    return;
-  }
-
-  newUrl = chrome.embeddedSearch.newTabPage.fixupAndValidateUrl(urlValue);
-
-  // Show error message for invalid urls.
-  if (!newUrl) {
-    showInvalidUrlUntilTextInput();
-    disableSubmitUntilTextInput();
-    return;
-  }
-
-  // If the new URL uses the default "https" scheme, we need to check if it can
-  // resolve. Disable submit and wait for the |doesUrlResolve| callback. If it
-  // does not resolve, replace "https" with "http" before calling update.
-  $(IDS.DONE).disabled = true;  // Re-enabled when the dialog closes.
-  // Automatically close the dialog and call update if the callback has not
-  // returned before |DIALOG_TIMEOUT|.
-  urlResolvesCallbackHandler =
-      createUpdateLinkTimeout(newUrl, newTitle, DIALOG_TIMEOUT);
-}
-
-
-/**
- * Calls the EmbeddedSearchAPI to add/update the link. If the new URl does not
- * resolve, updates the default "https" scheme to "http". Closes the dialog.
- * @param {string} newUrl The new custom link URL.
- * @param {string} newTitle The new custom link title.
- * @param {boolean} resolves True if the URL resolves.
- */
-function updateLink(newUrl, newTitle, resolves) {
-  // Clear callback handler.
-  urlResolvesCallbackHandler = null;
-
-  // If the URL does not resolve, use "http" instead of the default "https"
-  // scheme.
-  if (!!newUrl && !resolves && newUrl.startsWith('https'))
-    newUrl = newUrl.replace('https', 'http');
 
   // Update the link only if a field was changed.
   if (!!newUrl || !!newTitle) {
@@ -312,27 +229,7 @@ function handlePostMessage(event) {
     window.setTimeout(() => {
       $(IDS.TITLE_FIELD).select();
     }, 10);
-  } else if (cmd === 'doesUrlResolve') {
-    // Ignore any unexpected callbacks.
-    if (!!urlResolvesCallbackHandler)
-      urlResolvesCallbackHandler.trigger(args.resolves);
   }
-}
-
-
-/**
- * Disables the focus outline for |element| on mousedown.
- * @param {Element} element The element to remove the focus outline from.
- */
-function disableOutlineOnMouseClick(element) {
-  element.addEventListener('mousedown', (event) => {
-    element.classList.add('mouse-navigation');
-    let resetOutline = (event) => {
-      element.classList.remove('mouse-navigation');
-      element.removeEventListener('blur', resetOutline);
-    };
-    element.addEventListener('blur', resetOutline);
-  });
 }
 
 
@@ -399,9 +296,11 @@ function init() {
   };
   $(IDS.TITLE_FIELD).onkeydown = finishEditOrClose;
   $(IDS.URL_FIELD).onkeydown = finishEditOrClose;
-  disableOutlineOnMouseClick($(IDS.DELETE));
-  disableOutlineOnMouseClick($(IDS.CANCEL));
-  disableOutlineOnMouseClick($(IDS.DONE));
+  utils.disableOutlineOnMouseClick($(IDS.DELETE));
+  utils.disableOutlineOnMouseClick($(IDS.CANCEL));
+  utils.disableOutlineOnMouseClick($(IDS.DONE));
+
+  animations.addRippleAnimations();
 
   // Change input field name to blue on input field focus.
   let changeColor = (fieldTitle) => {

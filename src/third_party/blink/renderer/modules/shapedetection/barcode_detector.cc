@@ -61,11 +61,11 @@ void BarcodeDetector::OnDetectBarcodes(
 
   HeapVector<Member<DetectedBarcode>> detected_barcodes;
   for (const auto& barcode : barcode_detection_results) {
-    HeapVector<Point2D> corner_points;
+    HeapVector<Member<Point2D>> corner_points;
     for (const auto& corner_point : barcode->corner_points) {
-      Point2D point;
-      point.setX(corner_point.x);
-      point.setY(corner_point.y);
+      Point2D* point = Point2D::Create();
+      point->setX(corner_point.x);
+      point->setY(corner_point.y);
       corner_points.push_back(point);
     }
     detected_barcodes.push_back(DetectedBarcode::Create(

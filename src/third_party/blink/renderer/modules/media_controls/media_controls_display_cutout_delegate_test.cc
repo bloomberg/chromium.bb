@@ -26,7 +26,7 @@ namespace {
 class DisplayCutoutMockChromeClient : public EmptyChromeClient {
  public:
   // ChromeClient overrides:
-  void EnterFullscreen(LocalFrame& frame, const FullscreenOptions&) override {
+  void EnterFullscreen(LocalFrame& frame, const FullscreenOptions*) override {
     Fullscreen::DidEnterFullscreen(*frame.GetDocument());
   }
   void ExitFullscreen(LocalFrame& frame) override {
@@ -75,35 +75,38 @@ class MediaControlsDisplayCutoutDelegateTest : public PageTestBase {
 
   void SimulateContractingGesture() {
     TouchList* list = CreateTouchListWithTwoPoints(5, 5, -5, -5);
-    SimulateEvent(CreateTouchEventWithList(EventTypeNames::touchstart, list));
+    SimulateEvent(
+        CreateTouchEventWithList(event_type_names::kTouchstart, list));
 
     list = CreateTouchListWithTwoPoints(4, 4, -4, -4);
-    SimulateEvent(CreateTouchEventWithList(EventTypeNames::touchmove, list));
+    SimulateEvent(CreateTouchEventWithList(event_type_names::kTouchmove, list));
 
     list = CreateTouchListWithTwoPoints(0, 0, 0, 0);
-    SimulateEvent(CreateTouchEventWithList(EventTypeNames::touchend, list));
+    SimulateEvent(CreateTouchEventWithList(event_type_names::kTouchend, list));
   }
 
   void SimulateExpandingGesture() {
     TouchList* list = CreateTouchListWithTwoPoints(1, 1, -1, -1);
-    SimulateEvent(CreateTouchEventWithList(EventTypeNames::touchstart, list));
+    SimulateEvent(
+        CreateTouchEventWithList(event_type_names::kTouchstart, list));
 
     list = CreateTouchListWithTwoPoints(4, 4, -4, -4);
-    SimulateEvent(CreateTouchEventWithList(EventTypeNames::touchmove, list));
+    SimulateEvent(CreateTouchEventWithList(event_type_names::kTouchmove, list));
 
     list = CreateTouchListWithTwoPoints(5, 5, -5, -5);
-    SimulateEvent(CreateTouchEventWithList(EventTypeNames::touchend, list));
+    SimulateEvent(CreateTouchEventWithList(event_type_names::kTouchend, list));
   }
 
   void SimulateSingleTouchGesture() {
     TouchList* list = CreateTouchListWithOnePoint(1, 1);
-    SimulateEvent(CreateTouchEventWithList(EventTypeNames::touchstart, list));
+    SimulateEvent(
+        CreateTouchEventWithList(event_type_names::kTouchstart, list));
 
     list = CreateTouchListWithOnePoint(4, 4);
-    SimulateEvent(CreateTouchEventWithList(EventTypeNames::touchmove, list));
+    SimulateEvent(CreateTouchEventWithList(event_type_names::kTouchmove, list));
 
     list = CreateTouchListWithOnePoint(5, 5);
-    SimulateEvent(CreateTouchEventWithList(EventTypeNames::touchend, list));
+    SimulateEvent(CreateTouchEventWithList(event_type_names::kTouchend, list));
   }
 
   bool HasGestureState() { return GetDelegate().previous_.has_value(); }
@@ -173,16 +176,16 @@ TEST_F(MediaControlsDisplayCutoutDelegateTest, CombinedGesture) {
 
   // Simulate the an expanding gesture but do not finish it.
   TouchList* list = CreateTouchListWithTwoPoints(1, 1, -1, -1);
-  SimulateEvent(CreateTouchEventWithList(EventTypeNames::touchstart, list));
+  SimulateEvent(CreateTouchEventWithList(event_type_names::kTouchstart, list));
   list = CreateTouchListWithTwoPoints(4, 4, -4, -4);
-  SimulateEvent(CreateTouchEventWithList(EventTypeNames::touchmove, list));
+  SimulateEvent(CreateTouchEventWithList(event_type_names::kTouchmove, list));
 
   // Check the viewport fit value has been correctly set.
   EXPECT_EQ(mojom::ViewportFit::kCoverForcedByUserAgent, CurrentViewportFit());
 
   // Finish the gesture by contracting.
   list = CreateTouchListWithTwoPoints(0, 0, 0, 0);
-  SimulateEvent(CreateTouchEventWithList(EventTypeNames::touchend, list));
+  SimulateEvent(CreateTouchEventWithList(event_type_names::kTouchend, list));
 
   // Check the viewport fit value has been correctly set.
   EXPECT_EQ(mojom::ViewportFit::kAuto, CurrentViewportFit());
@@ -253,15 +256,15 @@ TEST_F(MediaControlsDisplayCutoutDelegateTest, IncompleteGestureClearsState) {
 
   // Simulate a gesture and check we have state.
   TouchList* list = CreateTouchListWithTwoPoints(1, 1, -1, -1);
-  SimulateEvent(CreateTouchEventWithList(EventTypeNames::touchstart, list));
+  SimulateEvent(CreateTouchEventWithList(event_type_names::kTouchstart, list));
 
   list = CreateTouchListWithTwoPoints(2, 2, -2, -2);
-  SimulateEvent(CreateTouchEventWithList(EventTypeNames::touchmove, list));
+  SimulateEvent(CreateTouchEventWithList(event_type_names::kTouchmove, list));
   EXPECT_TRUE(DirectionIsExpanding());
 
   // Simulate another start gesture and make sure we do not have a direction.
   list = CreateTouchListWithTwoPoints(3, 3, -3, -3);
-  SimulateEvent(CreateTouchEventWithList(EventTypeNames::touchstart, list));
+  SimulateEvent(CreateTouchEventWithList(event_type_names::kTouchstart, list));
   EXPECT_TRUE(DirectionIsUnknown());
 }
 
@@ -288,12 +291,12 @@ TEST_F(MediaControlsDisplayCutoutDelegateTest, TouchCancelShouldClearState) {
 
   // Simulate a gesture and check we have state.
   TouchList* list = CreateTouchListWithTwoPoints(1, 1, -1, -1);
-  SimulateEvent(CreateTouchEventWithList(EventTypeNames::touchstart, list));
+  SimulateEvent(CreateTouchEventWithList(event_type_names::kTouchstart, list));
   EXPECT_TRUE(HasGestureState());
 
   // Simulate a touchcancel gesture and check that clears the state.
   list = CreateTouchListWithTwoPoints(1, 1, -1, -1);
-  SimulateEvent(CreateTouchEventWithList(EventTypeNames::touchcancel, list));
+  SimulateEvent(CreateTouchEventWithList(event_type_names::kTouchcancel, list));
   EXPECT_FALSE(HasGestureState());
   EXPECT_EQ(mojom::ViewportFit::kAuto, CurrentViewportFit());
 }
@@ -303,12 +306,12 @@ TEST_F(MediaControlsDisplayCutoutDelegateTest, TouchEndShouldClearState) {
 
   // Simulate a gesture and check we have state.
   TouchList* list = CreateTouchListWithTwoPoints(1, 1, -1, -1);
-  SimulateEvent(CreateTouchEventWithList(EventTypeNames::touchstart, list));
+  SimulateEvent(CreateTouchEventWithList(event_type_names::kTouchstart, list));
   EXPECT_TRUE(HasGestureState());
 
   // Simulate a touchend gesture and check that clears the state.
   list = CreateTouchListWithTwoPoints(1, 1, -1, -1);
-  SimulateEvent(CreateTouchEventWithList(EventTypeNames::touchend, list));
+  SimulateEvent(CreateTouchEventWithList(event_type_names::kTouchend, list));
   EXPECT_FALSE(HasGestureState());
   EXPECT_EQ(mojom::ViewportFit::kAuto, CurrentViewportFit());
 }

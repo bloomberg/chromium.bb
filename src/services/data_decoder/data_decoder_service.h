@@ -13,20 +13,23 @@
 #include "services/data_decoder/public/mojom/xml_parser.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/cpp/service_keepalive.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace data_decoder {
 
 class DataDecoderService : public service_manager::Service {
  public:
   DataDecoderService();
+  explicit DataDecoderService(service_manager::mojom::ServiceRequest request);
   ~DataDecoderService() override;
 
-  // Factory function for use as an embedded service.
-  static std::unique_ptr<service_manager::Service> Create();
+  // May be used to establish a latent Service binding for this instance. May
+  // only be called once, and only if this instance was default-constructed.
+  void BindRequest(service_manager::mojom::ServiceRequest request);
 
   // service_manager::Service:
-  void OnStart() override;
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
@@ -36,8 +39,9 @@ class DataDecoderService : public service_manager::Service {
   void BindJsonParser(mojom::JsonParserRequest request);
   void BindXmlParser(mojom::XmlParserRequest request);
 
+  service_manager::ServiceBinding binding_{this};
+  service_manager::ServiceKeepalive keepalive_;
   service_manager::BinderRegistry registry_;
-  std::unique_ptr<service_manager::ServiceKeepalive> keepalive_;
 
   DISALLOW_COPY_AND_ASSIGN(DataDecoderService);
 };

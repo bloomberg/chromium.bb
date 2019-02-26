@@ -36,31 +36,31 @@ GestureEvent* GestureEvent::Create(AbstractView* view,
 
   switch (event.GetType()) {
     case WebInputEvent::kGestureScrollBegin:
-      event_type = EventTypeNames::gesturescrollstart;
+      event_type = event_type_names::kGesturescrollstart;
       break;
     case WebInputEvent::kGestureScrollEnd:
-      event_type = EventTypeNames::gesturescrollend;
+      event_type = event_type_names::kGesturescrollend;
       break;
     case WebInputEvent::kGestureScrollUpdate:
-      event_type = EventTypeNames::gesturescrollupdate;
+      event_type = event_type_names::kGesturescrollupdate;
       break;
     case WebInputEvent::kGestureTap:
-      event_type = EventTypeNames::gesturetap;
+      event_type = event_type_names::kGesturetap;
       break;
     case WebInputEvent::kGestureTapUnconfirmed:
-      event_type = EventTypeNames::gesturetapunconfirmed;
+      event_type = event_type_names::kGesturetapunconfirmed;
       break;
     case WebInputEvent::kGestureTapDown:
-      event_type = EventTypeNames::gesturetapdown;
+      event_type = event_type_names::kGesturetapdown;
       break;
     case WebInputEvent::kGestureShowPress:
-      event_type = EventTypeNames::gestureshowpress;
+      event_type = event_type_names::kGestureshowpress;
       break;
     case WebInputEvent::kGestureLongPress:
-      event_type = EventTypeNames::gesturelongpress;
+      event_type = event_type_names::kGesturelongpress;
       break;
     case WebInputEvent::kGestureFlingStart:
-      event_type = EventTypeNames::gestureflingstart;
+      event_type = event_type_names::kGestureflingstart;
       break;
     case WebInputEvent::kGestureTwoFingerTap:
     case WebInputEvent::kGesturePinchBegin:
@@ -70,7 +70,7 @@ GestureEvent* GestureEvent::Create(AbstractView* view,
     default:
       return nullptr;
   }
-  return new GestureEvent(event_type, view, event);
+  return MakeGarbageCollected<GestureEvent>(event_type, view, event);
 }
 
 GestureEvent::GestureEvent(const AtomicString& event_type,

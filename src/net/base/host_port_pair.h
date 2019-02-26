@@ -40,6 +40,8 @@ class NET_EXPORT HostPortPair {
     return std::tie(port_, host_) < std::tie(other.port_, other.host_);
   }
 
+  bool operator==(const HostPortPair& other) const { return Equals(other); }
+
   // Equality test of contents. (Probably another violation of style guide).
   bool Equals(const HostPortPair& other) const {
     return host_ == other.host_ && port_ == other.port_;

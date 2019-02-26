@@ -20,6 +20,7 @@
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit.h"
 #include "chrome/browser/resource_coordinator/test_lifecycle_unit.h"
 #include "chrome/browser/resource_coordinator/time.h"
+#include "chrome/browser/resource_coordinator/utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
 #include "chrome/common/pref_names.h"
@@ -111,7 +112,7 @@ class TabLifecycleUnitSourceTest
     // Force TabManager/TabLifecycleUnitSource creation.
     g_browser_process->GetTabManager();
 
-    source_ = TabLifecycleUnitSource::GetInstance();
+    source_ = GetTabLifecycleUnitSource();
     source_->AddObserver(&source_observer_);
     source_->AddTabLifecycleObserver(&tab_observer_);
 

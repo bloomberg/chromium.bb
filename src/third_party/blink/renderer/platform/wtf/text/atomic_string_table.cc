@@ -88,12 +88,12 @@ struct HashAndUTF8CharactersTranslator {
     if (buffer.utf16_length != buffer.length) {
       if (string->Is8Bit()) {
         const LChar* characters8 = string->Characters8();
-        return Unicode::EqualLatin1WithUTF8(
+        return unicode::EqualLatin1WithUTF8(
             characters8, characters8 + string->length(), buffer.characters,
             buffer.characters + buffer.length);
       }
       const UChar* characters16 = string->Characters16();
-      return Unicode::EqualUTF16WithUTF8(
+      return unicode::EqualUTF16WithUTF8(
           characters16, characters16 + string->length(), buffer.characters,
           buffer.characters + buffer.length);
     }
@@ -133,9 +133,9 @@ struct HashAndUTF8CharactersTranslator {
       new_string = StringImpl::CreateUninitialized(buffer.utf16_length, target);
 
       const char* source = buffer.characters;
-      if (Unicode::ConvertUTF8ToUTF16(&source, source + buffer.length, &target,
+      if (unicode::ConvertUTF8ToUTF16(&source, source + buffer.length, &target,
                                       target + buffer.utf16_length,
-                                      &is_all_ascii) != Unicode::kConversionOK)
+                                      &is_all_ascii) != unicode::kConversionOK)
         NOTREACHED();
     } else {
       new_string = StringImpl::Create(buffer.characters, buffer.length);
@@ -210,7 +210,7 @@ scoped_refptr<StringImpl> AtomicStringTable::AddUTF8(
     const char* characters_end) {
   HashAndUTF8Characters buffer;
   buffer.characters = characters_start;
-  buffer.hash = Unicode::CalculateStringHashAndLengthFromUTF8MaskingTop8Bits(
+  buffer.hash = unicode::CalculateStringHashAndLengthFromUTF8MaskingTop8Bits(
       characters_start, characters_end, buffer.length, buffer.utf16_length);
 
   if (!buffer.hash)

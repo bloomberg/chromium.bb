@@ -32,6 +32,7 @@
 
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/css/cssom/inline_style_property_map.h"
+#include "third_party/blink/renderer/core/html/custom/element_internals.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observation.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -40,8 +41,9 @@ namespace blink {
 
 struct SameSizeAsElementRareData : NodeRareData {
   IntSize scroll_offset;
-  void* pointers_or_strings[5];
-  Member<void*> members[14];
+  void* pointers_or_strings[4];
+  Member<void*> members[17];
+  bool flags[1];
 };
 
 ElementRareData::ElementRareData(NodeRenderingData* node_layout_data)
@@ -55,15 +57,18 @@ ElementRareData::~ElementRareData() {
 
 CSSStyleDeclaration& ElementRareData::EnsureInlineCSSStyleDeclaration(
     Element* owner_element) {
-  if (!cssom_wrapper_)
-    cssom_wrapper_ = new InlineCSSStyleDeclaration(owner_element);
+  if (!cssom_wrapper_) {
+    cssom_wrapper_ =
+        MakeGarbageCollected<InlineCSSStyleDeclaration>(owner_element);
+  }
   return *cssom_wrapper_;
 }
 
 InlineStylePropertyMap& ElementRareData::EnsureInlineStylePropertyMap(
     Element* owner_element) {
   if (!cssom_map_wrapper_) {
-    cssom_map_wrapper_ = new InlineStylePropertyMap(owner_element);
+    cssom_map_wrapper_ =
+        MakeGarbageCollected<InlineStylePropertyMap>(owner_element);
   }
   return *cssom_map_wrapper_;
 }
@@ -79,21 +84,31 @@ void ElementRareData::ClearComputedStyle() {
 
 AttrNodeList& ElementRareData::EnsureAttrNodeList() {
   if (!attr_node_list_)
-    attr_node_list_ = new AttrNodeList;
+    attr_node_list_ = MakeGarbageCollected<AttrNodeList>();
   return *attr_node_list_;
 }
 
 ElementRareData::ResizeObserverDataMap&
 ElementRareData::EnsureResizeObserverData() {
-  if (!resize_observer_data_)
-    resize_observer_data_ = new HeapHashMap<TraceWrapperMember<ResizeObserver>,
-                                            Member<ResizeObservation>>();
+  if (!resize_observer_data_) {
+    resize_observer_data_ =
+        MakeGarbageCollected<HeapHashMap<TraceWrapperMember<ResizeObserver>,
+                                         Member<ResizeObservation>>>();
+  }
   return *resize_observer_data_;
+}
+
+ElementInternals& ElementRareData::EnsureElementInternals(HTMLElement& target) {
+  if (element_internals_)
+    return *element_internals_;
+  element_internals_ = MakeGarbageCollected<ElementInternals>(target);
+  return *element_internals_;
 }
 
 void ElementRareData::TraceAfterDispatch(blink::Visitor* visitor) {
   visitor->Trace(dataset_);
   visitor->Trace(class_list_);
+  visitor->Trace(part_);
   visitor->Trace(shadow_root_);
   visitor->Trace(attribute_map_);
   visitor->Trace(attr_node_list_);
@@ -102,8 +117,10 @@ void ElementRareData::TraceAfterDispatch(blink::Visitor* visitor) {
   visitor->Trace(cssom_map_wrapper_);
   visitor->Trace(pseudo_element_data_);
   visitor->Trace(accessible_node_);
+  visitor->Trace(display_lock_context_);
   visitor->Trace(v0_custom_element_definition_);
   visitor->Trace(custom_element_definition_);
+  visitor->Trace(element_internals_);
   visitor->Trace(intersection_observer_data_);
   visitor->Trace(resize_observer_data_);
   NodeRareData::TraceAfterDispatch(visitor);

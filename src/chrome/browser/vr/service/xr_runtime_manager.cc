@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
 #include "chrome/browser/vr/service/browser_xr_runtime.h"
@@ -47,6 +48,9 @@ namespace vr {
 
 namespace {
 XRRuntimeManager* g_xr_runtime_manager = nullptr;
+
+base::LazyInstance<base::ObserverList<XRRuntimeManagerObserver>>::Leaky
+    g_xr_runtime_manager_observers;
 }  // namespace
 
 XRRuntimeManager::~XRRuntimeManager() {
@@ -115,6 +119,14 @@ void XRRuntimeManager::RecordVrStartupHistograms() {
 #endif
 }
 
+void XRRuntimeManager::AddObserver(XRRuntimeManagerObserver* observer) {
+  g_xr_runtime_manager_observers.Get().AddObserver(observer);
+}
+
+void XRRuntimeManager::RemoveObserver(XRRuntimeManagerObserver* observer) {
+  g_xr_runtime_manager_observers.Get().RemoveObserver(observer);
+}
+
 void XRRuntimeManager::AddService(VRServiceImpl* service) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -150,11 +162,20 @@ BrowserXRRuntime* XRRuntimeManager::GetRuntime(device::mojom::XRDeviceId id) {
 BrowserXRRuntime* XRRuntimeManager::GetRuntimeForOptions(
     device::mojom::XRSessionOptions* options) {
   // Examine options to determine which device provider we should use.
-  if (options->immersive && !options->provide_passthrough_camera) {
-    return GetImmersiveRuntime();
-  } else if (options->provide_passthrough_camera && !options->immersive) {
+
+  // AR requested.
+  if (options->environment_integration) {
+    if (options->immersive) {
+      // No support for immersive AR.
+      return nullptr;
+    }
+    // Return the ARCore device.
     return GetRuntime(device::mojom::XRDeviceId::ARCORE_DEVICE_ID);
-  } else if (!options->provide_passthrough_camera && !options->immersive) {
+  }
+
+  if (options->immersive) {
+    return GetImmersiveRuntime();
+  } else {
     // Non immersive session.
     // Try the orientation provider if it exists.
     auto* orientation_runtime =
@@ -166,7 +187,6 @@ BrowserXRRuntime* XRRuntimeManager::GetRuntimeForOptions(
     // Otherwise fall back to immersive providers.
     return GetImmersiveRuntime();
   }
-  return nullptr;
 }
 
 BrowserXRRuntime* XRRuntimeManager::GetImmersiveRuntime() {
@@ -208,7 +228,7 @@ device::mojom::VRDisplayInfoPtr XRRuntimeManager::GetCurrentVRDisplayInfo(
 
   // Get an AR device if there is one.
   device::mojom::XRSessionOptions options = {};
-  options.provide_passthrough_camera = true;
+  options.environment_integration = true;
   auto* ar_runtime = GetRuntimeForOptions(&options);
   if (ar_runtime) {
     // Listen to  changes for this device.
@@ -230,12 +250,10 @@ device::mojom::VRDisplayInfoPtr XRRuntimeManager::GetCurrentVRDisplayInfo(
                                  : nullptr;
   }
 
-  // Use the immersive or AR device. However, if we are using the immersive
-  // device's info, and AR is supported, reflect that in capabilities.
+  // Use the immersive or AR device.
   device::mojom::VRDisplayInfoPtr device_info =
       immersive_runtime ? immersive_runtime->GetVRDisplayInfo()
                         : ar_runtime->GetVRDisplayInfo();
-  device_info->capabilities->can_provide_pass_through_images = !!ar_runtime;
 
   return device_info;
 }
@@ -278,6 +296,13 @@ void XRRuntimeManager::SupportsSession(
   // TODO(http://crbug.com/842025): Pass supports session on to the device
   // runtimes.
   std::move(callback).Run(true);
+}
+
+void XRRuntimeManager::ForEachRuntime(
+    const base::RepeatingCallback<void(BrowserXRRuntime*)>& fn) {
+  for (auto& rt : runtimes_) {
+    fn.Run(rt.second.get());
+  }
 }
 
 XRRuntimeManager::XRRuntimeManager(ProviderList providers)
@@ -341,7 +366,12 @@ void XRRuntimeManager::AddRuntime(device::mojom::XRDeviceId id,
 
   runtimes_[id] =
       std::make_unique<BrowserXRRuntime>(std::move(runtime), std::move(info));
+
+  for (XRRuntimeManagerObserver& obs : g_xr_runtime_manager_observers.Get())
+    obs.OnRuntimeAdded(runtimes_[id].get());
+
   for (VRServiceImpl* service : services_)
+    // TODO(sumankancherla): Consider combining with XRRuntimeManagerObserver.
     service->RuntimesChanged();
 }
 

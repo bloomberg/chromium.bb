@@ -5,9 +5,7 @@
 #ifndef UI_KEYBOARD_CONTAINER_FULLSCREEN_BEHAVIOR_H_
 #define UI_KEYBOARD_CONTAINER_FULLSCREEN_BEHAVIOR_H_
 
-#include "ui/aura/window.h"
 #include "ui/keyboard/container_full_width_behavior.h"
-#include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_export.h"
 
 namespace keyboard {
@@ -15,7 +13,7 @@ namespace keyboard {
 class KEYBOARD_EXPORT ContainerFullscreenBehavior
     : public ContainerFullWidthBehavior {
  public:
-  ContainerFullscreenBehavior(KeyboardController* controller);
+  explicit ContainerFullscreenBehavior(Delegate* controller);
   ~ContainerFullscreenBehavior() override;
 
   // ContainerFullWidthBehavior overrides
@@ -24,7 +22,7 @@ class KEYBOARD_EXPORT ContainerFullscreenBehavior
       const gfx::Rect& requested_bounds_in_screen_coords) override;
   void SetCanonicalBounds(aura::Window* container,
                           const gfx::Rect& display_bounds) override;
-  ContainerType GetType() const override;
+  mojom::ContainerType GetType() const override;
   void SetOccludedBounds(const gfx::Rect& occluded_bounds_in_window) override;
   gfx::Rect GetOccludedBounds(
       const gfx::Rect& visual_bounds_in_screen) const override;

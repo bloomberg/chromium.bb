@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/parsed_content_disposition.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_builder.h"
@@ -140,7 +141,8 @@ class FetchDataLoaderAsArrayBuffer final : public FetchDataLoader,
         return;
       if (result == BytesConsumer::Result::kOk) {
         if (available > 0) {
-          unsigned bytes_appended = raw_data_->Append(buffer, available);
+          unsigned bytes_appended =
+              raw_data_->Append(buffer, SafeCast<wtf_size_t>(available));
           if (!bytes_appended) {
             auto unused = consumer_->EndRead(0);
             ALLOW_UNUSED_LOCAL(unused);
@@ -262,8 +264,8 @@ class FetchDataLoaderAsFormData final : public FetchDataLoader,
 
     client_ = client;
     form_data_ = FormData::Create();
-    multipart_parser_ =
-        new MultipartParser(std::move(multipart_boundary_vector), this);
+    multipart_parser_ = MakeGarbageCollected<MultipartParser>(
+        std::move(multipart_boundary_vector), this);
     consumer_ = consumer;
     consumer_->SetClient(this);
     OnStateChange();
@@ -343,7 +345,7 @@ class FetchDataLoaderAsFormData final : public FetchDataLoader,
    public:
     bool Initialize(const HTTPHeaderMap& header_fields) {
       const ParsedContentDisposition disposition(
-          header_fields.Get(HTTPNames::Content_Disposition));
+          header_fields.Get(http_names::kContentDisposition));
       const String disposition_type = disposition.Type();
       filename_ = disposition.Filename();
       name_ = disposition.ParameterValueForName("name");
@@ -354,7 +356,7 @@ class FetchDataLoaderAsFormData final : public FetchDataLoader,
       if (!filename_.IsNull()) {
         blob_data_ = BlobData::Create();
         const AtomicString& content_type =
-            header_fields.Get(HTTPNames::Content_Type);
+            header_fields.Get(http_names::kContentType);
         blob_data_->SetContentType(content_type.IsNull() ? "text/plain"
                                                          : content_type);
       } else {
@@ -483,6 +485,7 @@ class FetchDataLoaderAsString final : public FetchDataLoader,
 class FetchDataLoaderAsDataPipe final : public FetchDataLoader,
                                         public BytesConsumer::Client {
   USING_GARBAGE_COLLECTED_MIXIN(FetchDataLoaderAsDataPipe);
+  USING_PRE_FINALIZER(FetchDataLoaderAsDataPipe, Dispose);
 
  public:
   explicit FetchDataLoaderAsDataPipe(
@@ -561,7 +564,7 @@ class FetchDataLoaderAsDataPipe final : public FetchDataLoader,
         if (available == 0) {
           result = consumer_->EndRead(0);
         } else {
-          uint32_t num_bytes = available;
+          uint32_t num_bytes = SafeCast<uint32_t>(available);
           MojoResult mojo_result = out_data_pipe_->WriteData(
               buffer, &num_bytes, MOJO_WRITE_DATA_FLAG_NONE);
           if (mojo_result == MOJO_RESULT_OK) {
@@ -613,6 +616,8 @@ class FetchDataLoaderAsDataPipe final : public FetchDataLoader,
     data_pipe_watcher_.Cancel();
     out_data_pipe_.reset();
   }
+
+  void Dispose() { data_pipe_watcher_.Cancel(); }
 
   TraceWrapperMember<BytesConsumer> consumer_;
   Member<FetchDataLoader::Client> client_;

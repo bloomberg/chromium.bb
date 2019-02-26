@@ -560,8 +560,8 @@ class MidiManagerWinrt::MidiPortManager {
       std::string manufacturer = "Unknown", driver_version = "Unknown";
       GetDriverInfoFromDeviceId(dev_id, &manufacturer, &driver_version);
 
-      AddPort(MidiPortInfo(dev_id, manufacturer, port_names_[dev_id],
-                           driver_version, PortState::OPENED));
+      AddPort(mojom::PortInfo(dev_id, manufacturer, port_names_[dev_id],
+                              driver_version, PortState::OPENED));
 
       port = new MidiPort<InterfaceType>;
       port->index = static_cast<uint32_t>(port_ids_.size());
@@ -591,7 +591,7 @@ class MidiManagerWinrt::MidiPortManager {
   virtual void RemovePortEventHandlers(MidiPort<InterfaceType>* port) {}
 
   // Calls midi_manager_->Add{Input,Output}Port.
-  virtual void AddPort(MidiPortInfo info) = 0;
+  virtual void AddPort(mojom::PortInfo info) = 0;
 
   // Calls midi_manager_->Set{Input,Output}PortState.
   virtual void SetPortState(uint32_t port_index, PortState state) = 0;
@@ -710,7 +710,9 @@ class MidiManagerWinrt::MidiInPortManager final
     port->token_MessageReceived.value = kInvalidTokenValue;
   }
 
-  void AddPort(MidiPortInfo info) final { midi_manager_->AddInputPort(info); }
+  void AddPort(mojom::PortInfo info) final {
+    midi_manager_->AddInputPort(info);
+  }
 
   void SetPortState(uint32_t port_index, PortState state) final {
     midi_manager_->SetInputPortState(port_index, state);
@@ -742,7 +744,9 @@ class MidiManagerWinrt::MidiOutPortManager final
 
  private:
   // MidiPortManager overrides:
-  void AddPort(MidiPortInfo info) final { midi_manager_->AddOutputPort(info); }
+  void AddPort(mojom::PortInfo info) final {
+    midi_manager_->AddOutputPort(info);
+  }
 
   void SetPortState(uint32_t port_index, PortState state) final {
     midi_manager_->SetOutputPortState(port_index, state);

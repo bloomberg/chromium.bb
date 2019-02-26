@@ -47,7 +47,7 @@ class SequencedModelWorkerTest : public testing::Test {
     scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE, run_loop_.QuitClosure());
     did_do_work_ = true;
-    return SYNCER_OK;
+    return SyncerError(SyncerError::SYNCER_OK);
   }
 
   // This will be called by the OneShotTimer and make the test fail unless

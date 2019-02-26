@@ -13,44 +13,44 @@
 
 namespace blink {
 
-// A simple config object for creating a P2PQuicTransport. It's constructor
-// guarantees that the required objects for creating a P2PQuicTransport are part
-// of the P2PQuicTransportConfig.
+// A simple config object for creating a P2PQuicTransport. Its constructor
+// guarantees that the required configuration for creating a P2PQuicTransport
+// are part of the P2PQuicTransportConfig.
 struct P2PQuicTransportConfig final {
   // This object is only moveable.
   explicit P2PQuicTransportConfig(
-      P2PQuicTransport::Delegate* const delegate_in,
-      P2PQuicPacketTransport* const packet_transport_in,
+      quic::Perspective perspective,
       const std::vector<rtc::scoped_refptr<rtc::RTCCertificate>>
-          certificates_in)
-      : packet_transport(packet_transport_in),
+          certificates_in,
+      uint32_t stream_delegate_read_buffer_size_in,
+      uint32_t stream_write_buffer_size_in)
+      : perspective(perspective),
         certificates(certificates_in),
-        delegate(delegate_in) {
+        stream_delegate_read_buffer_size(stream_delegate_read_buffer_size_in),
+        stream_write_buffer_size(stream_write_buffer_size_in) {
     DCHECK_GT(certificates.size(), 0u);
-    DCHECK(packet_transport);
-    DCHECK(delegate);
+    DCHECK_GT(stream_delegate_read_buffer_size, 0u);
+    DCHECK_GT(stream_write_buffer_size, 0u);
   }
-  P2PQuicTransportConfig(const P2PQuicTransportConfig&) = delete;
-  P2PQuicTransportConfig& operator=(const P2PQuicTransportConfig&) = delete;
-  P2PQuicTransportConfig(P2PQuicTransportConfig&&) = default;
-  P2PQuicTransportConfig& operator=(P2PQuicTransportConfig&&) = delete;
-  ~P2PQuicTransportConfig() = default;
 
-  //  The standard case is an ICE transport. It's lifetime will be managed by
-  //  the ICE transport objects and outlive the P2PQuicTransport.
-  P2PQuicPacketTransport* const packet_transport;
-  bool is_server = true;
+  // Client or server.
+  quic::Perspective perspective;
   // The certificates are owned by the P2PQuicTransport. These come from
   // blink::RTCCertificates: https://www.w3.org/TR/webrtc/#dom-rtccertificate
   const std::vector<rtc::scoped_refptr<rtc::RTCCertificate>> certificates;
-  // Mandatory for creating a P2PQuicTransport and must outlive
-  // the P2PQuicTransport. In the standard case the |delegate_| will be
-  // the object that owns the P2PQuicTransport.
-  P2PQuicTransport::Delegate* const delegate;
   // When set to true the P2PQuicTransport will immediately be able
   // to listen and respond to a crypto handshake upon construction.
   // This will NOT start a handshake.
   bool can_respond_to_crypto_handshake = true;
+  // The amount that the delegate can store in its read buffer. This is a
+  // mandatory field that must be set to ensure that the
+  // P2PQuicStream::Delegate will not give the delegate more data than it can
+  // store.
+  const uint32_t stream_delegate_read_buffer_size;
+  // The amount that the P2PQuicStream will allow to buffer. This is a mandatory
+  // field that must be set to ensure that the client of the P2PQuicStream does
+  // not write more data than can be buffered.
+  const uint32_t stream_write_buffer_size;
 };
 
 // For creating a P2PQuicTransport. This factory should be injected into
@@ -64,8 +64,14 @@ class P2PQuicTransportFactory {
 
   // Creates the P2PQuicTransport. This should be called on the same
   // thread that the P2PQuicTransport will be used on.
+  // |delegate| receives callbacks from the P2PQuicTransport on the same thread.
+  //     It must outlive the P2PQuicTransport.
+  // |packet_transport| is used to send and receive UDP packets. It must outlive
+  //     the P2PQuicTransport.
   virtual std::unique_ptr<P2PQuicTransport> CreateQuicTransport(
-      P2PQuicTransportConfig config) = 0;
+      P2PQuicTransport::Delegate* delegate,
+      P2PQuicPacketTransport* packet_transport,
+      const P2PQuicTransportConfig& config) = 0;
 };
 
 }  // namespace blink

@@ -8,6 +8,8 @@
 #include "base/macros.h"
 #include "chrome/common/page_load_metrics/page_load_metrics.mojom.h"
 
+class GURL;
+
 namespace network {
 struct ResourceResponseHead;
 struct URLLoaderCompletionStatus;
@@ -23,7 +25,8 @@ class PageResourceDataUse {
   PageResourceDataUse(const PageResourceDataUse& other);
   ~PageResourceDataUse();
 
-  void DidStartResponse(int resource_id,
+  void DidStartResponse(const GURL& response_url,
+                        int resource_id,
                         const network::ResourceResponseHead& response_head);
 
   // Updates received bytes.
@@ -60,8 +63,8 @@ class PageResourceDataUse {
   // used.
   double data_reduction_proxy_compression_ratio_estimate_;
 
-  uint64_t total_received_bytes_;
-  uint64_t last_update_bytes_;
+  uint64_t total_received_bytes_ = 0;
+  uint64_t last_update_bytes_ = 0;
   uint64_t encoded_body_length_ = 0;
 
   bool is_complete_;
@@ -69,6 +72,8 @@ class PageResourceDataUse {
   bool reported_as_ad_resource_;
   bool is_main_frame_resource_;
   bool was_fetched_via_cache_;
+  bool is_secure_scheme_;
+  bool proxy_used_;
 
   std::string mime_type_;
 

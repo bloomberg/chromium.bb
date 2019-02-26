@@ -59,12 +59,10 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 namespace {
 
 static bool IsWhiteSpaceOrPunctuation(UChar c) {
-  return IsSpaceOrNewline(c) || WTF::Unicode::IsPunct(c);
+  return IsSpaceOrNewline(c) || WTF::unicode::IsPunct(c);
 }
 
 bool IsAmbiguousBoundaryCharacter(UChar character) {
@@ -81,7 +79,7 @@ bool IsAmbiguousBoundaryCharacter(UChar character) {
 }  // namespace
 
 SpellChecker* SpellChecker::Create(LocalFrame& frame) {
-  return new SpellChecker(frame);
+  return MakeGarbageCollected<SpellChecker>(frame);
 }
 
 static WebSpellCheckPanelHostClient& GetEmptySpellCheckPanelHostClient() {
@@ -165,8 +163,9 @@ void SpellChecker::AdvanceToNextMisspelling(bool start_before_selection) {
 
     if (!GetFrame().GetDocument()->documentElement())
       return;
-    position = FirstEditableVisiblePositionAfterPositionInRoot(
-                   position, *GetFrame().GetDocument()->documentElement())
+    position = CreateVisiblePosition(
+                   FirstEditablePositionAfterPositionInRoot(
+                       position, *GetFrame().GetDocument()->documentElement()))
                    .DeepEquivalent();
     if (position.IsNull())
       return;
@@ -600,8 +599,8 @@ void SpellChecker::CancelCheck() {
   spell_check_requester_->CancelCheck();
 }
 
-void SpellChecker::DocumentAttached(Document* document) {
-  idle_spell_check_controller_->DocumentAttached(document);
+void SpellChecker::DidAttachDocument(Document* document) {
+  idle_spell_check_controller_->DidAttachDocument(document);
 }
 
 void SpellChecker::Trace(blink::Visitor* visitor) {
@@ -756,7 +755,7 @@ bool SpellChecker::IsSpellCheckingEnabledAt(const Position& position) {
     if (auto* input = ToHTMLInputElementOrNull(text_control)) {
       // TODO(tkent): The following password type check should be done in
       // HTMLElement::spellcheck(). crbug.com/371567
-      if (input->type() == InputTypeNames::password)
+      if (input->type() == input_type_names::kPassword)
         return false;
       if (!input->IsFocusedElementInDocument())
         return false;

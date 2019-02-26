@@ -11,10 +11,10 @@
 
 #include "core/fxcrt/fx_coordinates.h"
 #include "core/fxcrt/retain_ptr.h"
-#include "core/fxge/dib/cfx_dibbase.h"
 #include "core/fxge/fx_dib.h"
 #include "xfa/fxfa/fxfa_basic.h"
 
+class CFXJSE_Value;
 class CXFA_FFDoc;
 class CXFA_FFPageView;
 class CXFA_FFWidget;

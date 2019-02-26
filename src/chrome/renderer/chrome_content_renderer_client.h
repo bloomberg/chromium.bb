@@ -32,6 +32,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/local_interface_provider.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
 #include "v8/include/v8.h"
 
 #if defined(OS_WIN)
@@ -131,15 +132,13 @@ class ChromeContentRendererClient
   void PrepareErrorPage(content::RenderFrame* render_frame,
                         const blink::WebURLRequest& failed_request,
                         const blink::WebURLError& error,
-                        std::string* error_html,
-                        base::string16* error_description) override;
+                        std::string* error_html) override;
   void PrepareErrorPageForHttpStatusError(
       content::RenderFrame* render_frame,
       const blink::WebURLRequest& failed_request,
       const GURL& unreachable_url,
       int http_status,
-      std::string* error_html,
-      base::string16* error_description) override;
+      std::string* error_html) override;
 
   void GetErrorDescription(const blink::WebURLRequest& failed_request,
                            const blink::WebURLError& error,
@@ -171,9 +170,8 @@ class ChromeContentRendererClient
                                      size_t length) override;
   bool IsLinkVisited(unsigned long long link_hash) override;
   blink::WebPrescientNetworking* GetPrescientNetworking() override;
-  bool ShouldOverridePageVisibilityState(
-      const content::RenderFrame* render_frame,
-      blink::mojom::PageVisibilityState* override_state) override;
+  bool ShouldOverrideVisibilityAsPrerender(
+      const content::RenderFrame* render_frame) override;
   bool IsExternalPepperPlugin(const std::string& module_name) override;
   bool IsOriginIsolatedPepperPlugin(const base::FilePath& plugin_path) override;
   std::unique_ptr<content::WebSocketHandshakeThrottleProvider>
@@ -272,7 +270,6 @@ class ChromeContentRendererClient
                                        const content::WebPluginInfo& plugin);
 
   // service_manager::Service:
-  void OnStart() override;
   void OnBindInterface(const service_manager::BindSourceInfo& remote_info,
                        const std::string& name,
                        mojo::ScopedMessagePipeHandle handle) override;
@@ -284,8 +281,7 @@ class ChromeContentRendererClient
   void PrepareErrorPageInternal(content::RenderFrame* render_frame,
                                 const blink::WebURLRequest& failed_request,
                                 const error_page::Error& error,
-                                std::string* error_html,
-                                base::string16* error_description);
+                                std::string* error_html);
 
   void GetErrorDescriptionInternal(const blink::WebURLRequest& failed_request,
                                    const error_page::Error& error,
@@ -342,9 +338,7 @@ class ChromeContentRendererClient
   mojom::ModuleEventSinkPtr module_event_sink_;
 #endif
 
-  std::unique_ptr<service_manager::Connector> connector_;
-  service_manager::mojom::ConnectorRequest connector_request_;
-  std::unique_ptr<service_manager::ServiceContext> service_context_;
+  service_manager::ServiceBinding service_binding_{this};
   service_manager::BinderRegistry registry_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeContentRendererClient);

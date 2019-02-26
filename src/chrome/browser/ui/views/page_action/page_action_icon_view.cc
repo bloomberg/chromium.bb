@@ -228,10 +228,10 @@ void PageActionIconView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   IconLabelBubbleView::OnBoundsChanged(previous_bounds);
 }
 
-void PageActionIconView::OnMdModeChanged() {
+void PageActionIconView::OnTouchUiChanged() {
   icon_size_ = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
   UpdateIconImage();
-  IconLabelBubbleView::OnMdModeChanged();
+  IconLabelBubbleView::OnTouchUiChanged();
 }
 
 void PageActionIconView::UpdateBorder() {

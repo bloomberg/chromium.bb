@@ -38,6 +38,8 @@ class CORE_EXPORT HTMLTextAreaElement final : public TextControlElement {
  public:
   static HTMLTextAreaElement* Create(Document&);
 
+  explicit HTMLTextAreaElement(Document&);
+
   unsigned cols() const { return cols_; }
   unsigned rows() const { return rows_; }
 
@@ -66,7 +68,6 @@ class CORE_EXPORT HTMLTextAreaElement final : public TextControlElement {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(HTMLTextAreaElementTest, SanitizeUserInputValue);
-  explicit HTMLTextAreaElement(Document&);
 
   enum WrapMethod { kNoWrap, kSoftWrap, kHardWrap };
 
@@ -125,7 +126,7 @@ class CORE_EXPORT HTMLTextAreaElement final : public TextControlElement {
   bool MayTriggerVirtualKeyboard() const override;
   bool IsKeyboardFocusable() const override;
   void UpdateFocusAppearanceWithOptions(SelectionBehaviorOnFocus,
-                                        const FocusOptions&) override;
+                                        const FocusOptions*) override;
 
   void AccessKeyAction(bool send_mouse_events) override;
 

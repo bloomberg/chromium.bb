@@ -77,7 +77,7 @@ config("subcomponent_config") {
   if (is_mac) {
     visibility += [ "//media/base/mac" ]
   }
-  defines = [ "MEDIA_IMPLEMENTATION" ]
+  defines = [ "IS_MEDIA_IMPL" ]
   configs = [
     ":media_config",
     "//build/config/compiler:wexit_time_destructors",
@@ -144,6 +144,7 @@ test("media_unittests") {
     "//media/filters:unit_tests",
     "//media/formats:unit_tests",
     "//media/gpu:unit_tests",
+    "//media/learning:unit_tests",
     "//media/mojo:unit_tests",
     "//media/muxers:unit_tests",
     "//media/renderers:unit_tests",

@@ -36,12 +36,14 @@ class RTCDTMFToneChangeEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  explicit RTCDTMFToneChangeEvent(const String& tone);
+  explicit RTCDTMFToneChangeEvent(const RTCDTMFToneChangeEventInit*);
   ~RTCDTMFToneChangeEvent() override;
 
   static RTCDTMFToneChangeEvent* Create(const String& tone);
   static RTCDTMFToneChangeEvent* Create(
       const AtomicString& type,
-      const RTCDTMFToneChangeEventInit& initializer);
+      const RTCDTMFToneChangeEventInit* initializer);
 
   const String& tone() const;
 
@@ -50,9 +52,6 @@ class RTCDTMFToneChangeEvent final : public Event {
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit RTCDTMFToneChangeEvent(const String& tone);
-  explicit RTCDTMFToneChangeEvent(const RTCDTMFToneChangeEventInit&);
-
   String tone_;
 };
 

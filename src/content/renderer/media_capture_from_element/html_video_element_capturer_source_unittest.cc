@@ -39,7 +39,7 @@ class MockWebMediaPlayer : public blink::WebMediaPlayer,
 
   LoadTiming Load(LoadType,
                   const blink::WebMediaPlayerSource&,
-                  CORSMode) override {
+                  CorsMode) override {
     return LoadTiming::kImmediate;
   }
   void Play() override {}
@@ -60,7 +60,7 @@ class MockWebMediaPlayer : public blink::WebMediaPlayer,
     return blink::WebTimeRanges();
   }
   void SetSinkId(const blink::WebString& sinkId,
-                 blink::WebSetSinkIdCallbacks*) override {}
+                 std::unique_ptr<blink::WebSetSinkIdCallbacks>) override {}
   bool HasVideo() const override { return true; }
   bool HasAudio() const override { return false; }
   blink::WebSize NaturalSize() const override { return blink::WebSize(16, 10); }

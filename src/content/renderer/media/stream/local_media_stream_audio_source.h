@@ -32,6 +32,9 @@ class CONTENT_EXPORT LocalMediaStreamAudioSource
 
   ~LocalMediaStreamAudioSource() final;
 
+  // MediaStreamAudioSource implementation.
+  void ChangeSourceImpl(const MediaStreamDevice& new_device) final;
+
  private:
   // MediaStreamAudioSource implementation.
   bool EnsureSourceIsStarted() final;

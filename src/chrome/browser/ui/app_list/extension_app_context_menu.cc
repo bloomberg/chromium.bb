@@ -16,7 +16,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/common/context_menu_params.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/vector_icons.h"
@@ -92,45 +91,11 @@ void ExtensionAppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
         base::Bind(MenuItemHasLauncherContext));
 
     // First, add the primary actions.
-    if (!is_platform_app_) {
-      if (features::IsTouchableAppContextMenuEnabled()) {
-        CreateOpenNewSubmenu(menu_model);
-      } else {
-        AddContextMenuOption(menu_model, ash::LAUNCH_NEW, GetLaunchStringId());
-        menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
-
-        // When bookmark apps are enabled, hosted apps can only toggle between
-        // USE_LAUNCH_TYPE_WINDOW and USE_LAUNCH_TYPE_REGULAR.
-        if (extensions::util::CanHostedAppsOpenInWindows() &&
-            extensions::util::IsNewBookmarkAppsEnabled()) {
-          // When both flags are enabled, only allow toggling between
-          // USE_LAUNCH_TYPE_WINDOW and USE_LAUNCH_TYPE_REGULAR
-          AddContextMenuOption(menu_model, ash::USE_LAUNCH_TYPE_WINDOW,
-                               IDS_APP_CONTEXT_MENU_OPEN_WINDOW);
-        } else if (!extensions::util::IsNewBookmarkAppsEnabled()) {
-          // When new bookmark apps are disabled, add pinned and full screen
-          // options as well. Add open as window if CanHostedAppsOpenInWindows
-          // is enabled.
-          AddContextMenuOption(menu_model, ash::USE_LAUNCH_TYPE_REGULAR,
-                               IDS_APP_CONTEXT_MENU_OPEN_REGULAR);
-          AddContextMenuOption(menu_model, ash::USE_LAUNCH_TYPE_PINNED,
-                               IDS_APP_CONTEXT_MENU_OPEN_PINNED);
-          if (extensions::util::CanHostedAppsOpenInWindows()) {
-            AddContextMenuOption(menu_model, ash::USE_LAUNCH_TYPE_WINDOW,
-                                 IDS_APP_CONTEXT_MENU_OPEN_WINDOW);
-          }
-          // Even though the launch type is Full Screen it is more accurately
-          // described as Maximized in Ash.
-          AddContextMenuOption(menu_model, ash::USE_LAUNCH_TYPE_FULLSCREEN,
-                               IDS_APP_CONTEXT_MENU_OPEN_MAXIMIZED);
-        }
-      }
-    }
+    if (!is_platform_app_)
+      CreateOpenNewSubmenu(menu_model);
 
     // Create default items.
     AppContextMenu::BuildMenu(menu_model);
-    if (!features::IsTouchableAppContextMenuEnabled())
-      menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
 
     // Assign unique IDs to commands added by the app itself.
     int index = ash::USE_LAUNCH_TYPE_COMMAND_END;
@@ -139,13 +104,6 @@ void ExtensionAppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
         base::string16(),
         &index,
         false);  // is_action_menu
-
-    // If at least 1 item was added, add another separator after the list.
-    if (index > ash::USE_LAUNCH_TYPE_COMMAND_END &&
-        !features::IsTouchableAppContextMenuEnabled()) {
-      menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
-    }
-
     if (!is_platform_app_)
       AddContextMenuOption(menu_model, ash::OPTIONS, IDS_NEW_TAB_APP_OPTIONS);
 
@@ -172,9 +130,6 @@ base::string16 ExtensionAppContextMenu::GetLabelForCommandId(
 
 bool ExtensionAppContextMenu::GetIconForCommandId(int command_id,
                                                   gfx::Image* icon) const {
-  if (!features::IsTouchableAppContextMenuEnabled())
-    return false;
-
   if (command_id == ash::TOGGLE_PIN)
     return AppContextMenu::GetIconForCommandId(command_id, icon);
 

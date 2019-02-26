@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
+#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
@@ -55,7 +56,7 @@ class FocusPODWaiter {
   }
 
   void OnFocusPOD() {
-    ASSERT_TRUE(base::MessageLoopForUI::IsCurrent());
+    ASSERT_TRUE(base::MessageLoopCurrentForUI::IsSet());
     focused_ = true;
     if (runner_.get()) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -198,7 +199,7 @@ class LoginUIKeyboardTestWithUsersAndOwner : public chromeos::LoginManagerTest {
     chromeos::input_method::InputMethodManager::Get()->MigrateInputMethods(
         &user_input_methods);
 
-    CrosSettings::Get()->SetString(kDeviceOwner, kTestUser3);
+    settings_helper_.SetString(kDeviceOwner, kTestUser3);
 
     LoginManagerTest::SetUpOnMainThread();
   }
@@ -223,6 +224,8 @@ class LoginUIKeyboardTestWithUsersAndOwner : public chromeos::LoginManagerTest {
 
  protected:
   std::vector<std::string> user_input_methods;
+  ScopedCrosSettingsTestHelper settings_helper_{
+      /* create_settings_service= */ false};
 };
 
 void LoginUIKeyboardTestWithUsersAndOwner::CheckGaiaKeyboard() {

@@ -23,6 +23,29 @@ void TestExecutor_Execute(Cronet_ExecutorPtr self,
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, cronet::test::RunnableWrapper::CreateOnceClosure(runnable));
 }
+
+// Test Cert Verifier that successfully verifies any cert from test.example.com.
+class TestCertVerifier : public net::MockCertVerifier {
+ public:
+  TestCertVerifier() = default;
+  ~TestCertVerifier() override = default;
+
+  // CertVerifier implementation
+  int Verify(const RequestParams& params,
+             net::CertVerifyResult* verify_result,
+             net::CompletionOnceCallback callback,
+             std::unique_ptr<Request>* out_req,
+             const net::NetLogWithSource& net_log) override {
+    if (params.hostname() == "test.example.com") {
+      verify_result->verified_cert = params.certificate();
+      verify_result->cert_status = MapNetErrorToCertStatus(net::OK);
+      return net::OK;
+    }
+    return net::MockCertVerifier::Verify(params, verify_result,
+                                         std::move(callback), out_req, net_log);
+  };
+};
+
 }  // namespace
 
 namespace cronet {
@@ -54,8 +77,7 @@ Cronet_EnginePtr CreateTestEngine(int quic_server_port) {
   // Create Cronet Engine.
   Cronet_EnginePtr cronet_engine = Cronet_Engine_Create();
   // Set Mock Cert Verifier.
-  auto cert_verifier = std::make_unique<net::MockCertVerifier>();
-  cert_verifier->set_default_result(net::OK);
+  auto cert_verifier = std::make_unique<TestCertVerifier>();
   Cronet_Engine_SetMockCertVerifierForTesting(cronet_engine,
                                               cert_verifier.release());
   // Start Cronet Engine.

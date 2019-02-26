@@ -18,6 +18,10 @@
 #include "mojo/public/tests/test_support_private.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+#include "mojo/core/embedder/default_mach_broker.h"
+#endif
+
 int main(int argc, char** argv) {
 #if !defined(OS_ANDROID)
   // Silence death test thread warnings on Linux. We can afford to run our death
@@ -37,6 +41,11 @@ int main(int argc, char** argv) {
   base::TestSuite test_suite(argc, argv);
 
   mojo::core::Init();
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  mojo::core::SetMachPortProvider(
+      mojo::core::DefaultMachBroker::Get()->port_provider());
+#endif
 
   mojo::test::TestSupport::Init(new mojo::core::test::TestSupportImpl());
   base::TestIOThread test_io_thread(base::TestIOThread::kAutoStart);

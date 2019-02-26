@@ -16,6 +16,7 @@ dictionary MediaTrackConstraintSet {
     ConstrainDouble aspectRatio;
     ConstrainDouble frameRate;
     ConstrainDOMString facingMode;
+    ConstrainDOMString resizeMode;
     ConstrainDouble volume;
     ConstrainLong sampleRate;
     ConstrainLong sampleSize;

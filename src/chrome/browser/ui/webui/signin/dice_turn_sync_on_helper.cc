@@ -29,9 +29,9 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/signin_pref_names.h"
@@ -374,17 +374,21 @@ void DiceTurnSyncOnHelper::ShowSyncConfirmationUI() {
 
 void DiceTurnSyncOnHelper::FinishSyncSetupAndDelete(
     LoginUIService::SyncConfirmationUIClosedResult result) {
+  unified_consent::UnifiedConsentService* consent_service =
+      UnifiedConsentServiceFactory::GetForProfile(profile_);
+
   switch (result) {
     case LoginUIService::CONFIGURE_SYNC_FIRST:
-      EnableUnifiedConsentIfNeeded();
+      if (consent_service)
+        consent_service->EnableGoogleServices();
       delegate_->ShowSyncSettings();
       break;
     case LoginUIService::SYNC_WITH_DEFAULT_SETTINGS: {
       browser_sync::ProfileSyncService* sync_service = GetProfileSyncService();
-      if (sync_service) {
-        sync_service->SetFirstSetupComplete();
-        EnableUnifiedConsentIfNeeded();
-      }
+      if (sync_service)
+        sync_service->GetUserSettings()->SetFirstSetupComplete();
+      if (consent_service)
+        consent_service->EnableGoogleServices();
       break;
     }
     case LoginUIService::ABORT_SIGNIN:
@@ -401,14 +405,10 @@ void DiceTurnSyncOnHelper::AbortAndDelete() {
   if (signin_aborted_mode_ == SigninAbortedMode::REMOVE_ACCOUNT) {
     // Revoke the token, and the AccountReconcilor and/or the Gaia server will
     // take care of invalidating the cookies.
-    token_service_->RevokeCredentials(account_info_.account_id);
+    token_service_->RevokeCredentials(
+        account_info_.account_id,
+        signin_metrics::SourceForRefreshTokenOperation::
+            kDiceTurnOnSyncHelper_Abort);
   }
   delete this;
-}
-
-void DiceTurnSyncOnHelper::EnableUnifiedConsentIfNeeded() {
-  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    UnifiedConsentServiceFactory::GetForProfile(profile_)
-        ->SetUnifiedConsentGiven(true);
-  }
 }

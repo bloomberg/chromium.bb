@@ -153,7 +153,7 @@ void LayoutMenuList::AdjustInnerStyle(ComputedStyle& inner_style) const {
 
   if (HasOptionStyleChanged(inner_style)) {
     inner_block_->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-        LayoutInvalidationReason::kStyleChange);
+        layout_invalidation_reason::kStyleChange);
     inner_style.SetDirection(option_style_->Direction());
     inner_style.SetUnicodeBidi(option_style_->GetUnicodeBidi());
   }

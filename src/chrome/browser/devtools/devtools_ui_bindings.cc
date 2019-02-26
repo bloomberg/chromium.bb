@@ -226,6 +226,15 @@ std::string SanitizeRevision(const std::string& revision) {
   return revision;
 }
 
+std::string SanitizeRemoteVersion(const std::string& remoteVersion) {
+  for (size_t i = 0; i < remoteVersion.length(); i++) {
+    if (remoteVersion[i] != '.' &&
+        !(remoteVersion[i] >= '0' && remoteVersion[i] <= '9'))
+      return std::string();
+  }
+  return remoteVersion;
+}
+
 std::string SanitizeFrontendPath(const std::string& path) {
   for (size_t i = 0; i < path.length(); i++) {
     if (path[i] != '/' && path[i] != '-' && path[i] != '_'
@@ -304,6 +313,9 @@ std::string SanitizeFrontendQueryParam(
   if (key == "remoteFrontendUrl")
     return SanitizeRemoteFrontendURL(value);
 
+  if (key == "remoteVersion")
+    return SanitizeRemoteVersion(value);
+
   return std::string();
 }
 
@@ -351,9 +363,9 @@ class DevToolsUIBindings::NetworkResourceLoader
         bindings_(bindings),
         loader_(std::move(loader)),
         callback_(callback) {
-    loader_->DownloadAsStream(url_loader_factory, this);
     loader_->SetOnResponseStartedCallback(base::BindOnce(
         &NetworkResourceLoader::OnResponseStarted, base::Unretained(this)));
+    loader_->DownloadAsStream(url_loader_factory, this);
   }
 
  private:
@@ -712,6 +724,9 @@ void DevToolsUIBindings::LoadNetworkResource(const DispatchCallback& callback,
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = gurl;
+  // TODO(caseq): this preserves behavior of URLFetcher-based implementation.
+  // We really need to pass proper first party origin from the front-end.
+  resource_request->site_for_cookies = gurl;
   resource_request->headers.AddHeadersFromString(headers);
 
   auto* partition = content::BrowserContext::GetStoragePartitionForSite(

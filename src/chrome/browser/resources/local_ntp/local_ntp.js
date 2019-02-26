@@ -50,17 +50,6 @@ function disableIframesAndVoiceSearchForTesting() {
 
 
 /**
- * Alias for document.getElementById.
- * @param {string} id The ID of the element to find.
- * @return {HTMLElement} The found element or null if not found.
- */
-function $(id) {
-  // eslint-disable-next-line no-restricted-properties
-  return document.getElementById(id);
-}
-
-
-/**
  * Specifications for an NTP design (not comprehensive).
  *
  * numTitleLines: Number of lines to display in titles.
@@ -98,11 +87,6 @@ var CLASSES = {
                                      // link dialog is open.
   // Applies float animations to the Most Visited notification
   FLOAT_UP: 'float-up',
-  // Applies ripple animation to the element on click
-  RIPPLE: 'ripple',
-  RIPPLE_CONTAINER: 'ripple-container',
-  RIPPLE_EFFECT_MASK: 'ripple-effect-mask',
-  RIPPLE_EFFECT: 'ripple-effect',
   // Applies drag focus style to the fakebox
   FAKEBOX_DRAG_FOCUS: 'fakebox-drag-focused',
   // Applies a different style to the error notification if a link is present.
@@ -153,6 +137,7 @@ var IDS = {
   NOTIFICATION_CLOSE_BUTTON: 'mv-notice-x',
   NOTIFICATION_MESSAGE: 'mv-msg',
   NTP_CONTENTS: 'ntp-contents',
+  PROMO: 'promo',
   RESTORE_ALL_LINK: 'mv-restore',
   TILES: 'mv-tiles',
   TILES_IFRAME: 'mv-single',
@@ -245,20 +230,6 @@ var KEYCODE = {ENTER: 13, SPACE: 32};
  * @type {number}
  */
 const NOTIFICATION_TIMEOUT = 10000;
-
-
-/**
- * The duration of the ripple animation.
- * @type {number}
- */
-const RIPPLE_DURATION_MS = 800;
-
-
-/**
- * The max size of the ripple animation.
- * @type {number}
- */
-const RIPPLE_MAX_RADIUS_PX = 300;
 
 
 /**
@@ -635,19 +606,6 @@ function onDeleteCustomLinkDone(success) {
 
 
 /**
- * Callback for embeddedSearch.newTabPage.ondoesurlresolve. Called when we
- * determine if a custom link URL can resolve. Notifies the edit custom link
- * dialog with the result.
- * @param {boolean} resolves True if the URL can resolve.
- */
-function onDoesUrlResolve(resolves) {
-  $(IDS.CUSTOM_LINKS_EDIT_IFRAME)
-      .contentWindow.postMessage(
-          {cmd: 'doesUrlResolve', resolves: resolves}, '*');
-}
-
-
-/**
  * Shows the Most Visited pop-up notification and triggers a delay to hide it.
  * The message will be set to |msg|.
  * @param {string} msg The notification message.
@@ -715,6 +673,11 @@ function showErrorNotification(msg, linkName, linkOnClick) {
  * @param {!Element} notificationContainer The notification container element.
  */
 function floatUpNotification(notification, notificationContainer) {
+  // Show middle-slot promo if one is present.
+  if ($(IDS.PROMO) !== null) {
+    $(IDS.PROMO).classList.add(CLASSES.HIDE_NOTIFICATION);
+  }
+
   // Hide pre-existing notification if it was different type. Clear timeout and
   // replace it with the new timeout and new message if it was the same type.
   if (delayedHideNotification) {
@@ -748,6 +711,11 @@ function floatUpNotification(notification, notificationContainer) {
 function floatDownNotification(notification, notificationContainer) {
   if (!notificationContainer.classList.contains(CLASSES.FLOAT_UP))
     return;
+
+  // Hide middle-slot promo if one is present.
+  if ($(IDS.PROMO) !== null) {
+    $(IDS.PROMO).classList.remove(CLASSES.HIDE_NOTIFICATION);
+  }
 
   // Clear the timeout to hide the notification.
   if (delayedHideNotification) {
@@ -901,6 +869,15 @@ function handlePostMessage(event) {
         injectOneGoogleBar(og);
       };
     }
+    if (configData.isGooglePage && !$('promo-loader')) {
+      var promoScript = document.createElement('script');
+      promoScript.id = 'promo-loader';
+      promoScript.src = 'chrome-search://local-ntp/promo.js';
+      document.body.appendChild(promoScript);
+      promoScript.onload = function() {
+        injectPromo(promo);
+      };
+    }
     if (configData.isCustomLinksEnabled) {
       $(customBackgrounds.IDS.CUSTOM_LINKS_RESTORE_DEFAULT)
           .classList.toggle(
@@ -924,9 +901,17 @@ function handlePostMessage(event) {
     let height = args.height || null;
     let duration = args.duration || '0s';
     let iframe = $(IDS.LOGO_DOODLE_IFRAME);
+
+    var transitionCallback = function() {
+      iframe.removeEventListener('webkitTransitionEnd', transitionCallback);
+      iframe.contentWindow.postMessage(
+          {cmd: 'resizeComplete'}, 'https://www.google.com');
+    };
+    iframe.addEventListener('webkitTransitionEnd', transitionCallback, false);
+
+    document.body.style.setProperty('--logo-iframe-resize-duration', duration);
     document.body.style.setProperty('--logo-iframe-height', height);
     document.body.style.setProperty('--logo-iframe-width', width);
-    document.body.style.setProperty('--logo-iframe-resize-duration', duration);
   } else if (cmd === 'startEditLink') {
     $(IDS.CUSTOM_LINKS_EDIT_IFRAME)
         .contentWindow.postMessage({cmd: 'linkData', tid: args.tid}, '*');
@@ -953,7 +938,7 @@ function enableMDIcons() {
   $(IDS.MOST_VISITED).classList.add(CLASSES.MATERIAL_DESIGN_ICONS);
   $(IDS.TILES).classList.add(CLASSES.MATERIAL_DESIGN_ICONS);
   enableMD();
-  addRippleAnimations();
+  animations.addRippleAnimations();
 }
 
 
@@ -962,91 +947,6 @@ function enableMDIcons() {
  */
 function enableMD() {
   document.body.classList.add(CLASSES.MATERIAL_DESIGN);
-}
-
-
-/**
- * Enables ripple animations for elements with CLASSES.RIPPLE. The target
- * element must have position relative or absolute.
- * TODO(kristipark): Remove after migrating to WebUI.
- */
-function addRippleAnimations() {
-  let ripple = (event) => {
-    let target = event.target;
-    const rect = target.getBoundingClientRect();
-    const x = Math.round(event.clientX - rect.left);
-    const y = Math.round(event.clientY - rect.top);
-
-    // Calculate radius
-    const corners = [
-      {x: 0, y: 0},
-      {x: rect.width, y: 0},
-      {x: 0, y: rect.height},
-      {x: rect.width, y: rect.height},
-    ];
-    let distance = (x1, y1, x2, y2) => {
-      var xDelta = x1 - x2;
-      var yDelta = y1 - y2;
-      return Math.sqrt(xDelta * xDelta + yDelta * yDelta);
-    };
-    let cornerDistances = corners.map(function(corner) {
-      return Math.round(distance(x, y, corner.x, corner.y));
-    });
-    const radius =
-        Math.min(RIPPLE_MAX_RADIUS_PX, Math.max.apply(Math, cornerDistances));
-
-    let ripple = document.createElement('div');
-    let rippleMask = document.createElement('div');
-    let rippleContainer = document.createElement('div');
-    ripple.classList.add(CLASSES.RIPPLE_EFFECT);
-    rippleMask.classList.add(CLASSES.RIPPLE_EFFECT_MASK);
-    rippleContainer.classList.add(CLASSES.RIPPLE_CONTAINER);
-    rippleMask.appendChild(ripple);
-    rippleContainer.appendChild(rippleMask);
-    target.appendChild(rippleContainer);
-    // Ripple start location
-    ripple.style.marginLeft = x + 'px';
-    ripple.style.marginTop = y + 'px';
-
-    rippleMask.style.width = target.offsetWidth + 'px';
-    rippleMask.style.height = target.offsetHeight + 'px';
-    rippleMask.style.borderRadius =
-        window.getComputedStyle(target).borderRadius;
-
-    // Start transition/ripple
-    ripple.style.width = radius * 2 + 'px';
-    ripple.style.height = radius * 2 + 'px';
-    ripple.style.marginLeft = x - radius + 'px';
-    ripple.style.marginTop = y - radius + 'px';
-    ripple.style.backgroundColor = 'rgba(0, 0, 0, 0)';
-
-    window.setTimeout(function() {
-      ripple.remove();
-      rippleMask.remove();
-      rippleContainer.remove();
-    }, RIPPLE_DURATION_MS);
-  };
-
-  let rippleElements = document.querySelectorAll('.' + CLASSES.RIPPLE);
-  for (let i = 0; i < rippleElements.length; i++) {
-    rippleElements[i].addEventListener('mousedown', ripple);
-  }
-}
-
-
-/**
- * Disables the focus outline for |element| on mousedown.
- * @param {Element} element The element to remove the focus outline from.
- */
-function disableOutlineOnMouseClick(element) {
-  element.addEventListener('mousedown', (event) => {
-    element.classList.add('mouse-navigation');
-    let resetOutline = (event) => {
-      element.classList.remove('mouse-navigation');
-      element.removeEventListener('blur', resetOutline);
-    };
-    element.addEventListener('blur', resetOutline);
-  });
 }
 
 
@@ -1112,7 +1012,6 @@ function init() {
       ntpApiHandle.onaddcustomlinkdone = onAddCustomLinkDone;
       ntpApiHandle.onupdatecustomlinkdone = onUpdateCustomLinkDone;
       ntpApiHandle.ondeletecustomlinkdone = onDeleteCustomLinkDone;
-      ntpApiHandle.doesurlresolve = onDoesUrlResolve;
     }
 
     if (configData.isCustomBackgroundsEnabled ||
@@ -1170,7 +1069,7 @@ function init() {
     inputbox.ondragleave = function() {
       setFakeboxDragFocus(false);
     };
-    disableOutlineOnMouseClick($(IDS.FAKEBOX_MICROPHONE));
+    utils.disableOutlineOnMouseClick($(IDS.FAKEBOX_MICROPHONE));
 
     // Update the fakebox style to match the current key capturing state.
     setFakeboxFocus(searchboxApiHandle.isKeyCaptureEnabled);
@@ -1346,6 +1245,21 @@ function createIframes() {
  */
 function listen() {
   document.addEventListener('DOMContentLoaded', init);
+}
+
+
+/**
+ * Injects a middle-slot promo into the page. Called asynchronously, so that it
+ * doesn't block the main page load.
+ */
+function injectPromo(promo) {
+  if (promo.promoHtml == '')
+    return;
+
+  let promoContainer = document.createElement('div');
+  promoContainer.id = IDS.PROMO;
+  promoContainer.innerHTML += promo.promoHtml;
+  $(IDS.NTP_CONTENTS).appendChild(promoContainer);
 }
 
 

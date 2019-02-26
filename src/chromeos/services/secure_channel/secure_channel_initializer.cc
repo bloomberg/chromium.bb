@@ -61,9 +61,9 @@ SecureChannelInitializer::ConnectionRequestArgs::~ConnectionRequestArgs() =
 SecureChannelInitializer::SecureChannelInitializer(
     scoped_refptr<base::TaskRunner> task_runner)
     : weak_ptr_factory_(this) {
-  PA_LOG(INFO) << "SecureChannelInitializer::SecureChannelInitializer(): "
-               << "Fetching Bluetooth adapter. All requests received before "
-               << "the adapter is fetched will be queued.";
+  PA_LOG(VERBOSE) << "SecureChannelInitializer::SecureChannelInitializer(): "
+                  << "Fetching Bluetooth adapter. All requests received before "
+                  << "the adapter is fetched will be queued.";
 
   // device::BluetoothAdapterFactory::SetAdapterForTesting() causes the
   // GetAdapter() callback to return synchronously. Thus, post the GetAdapter()
@@ -116,9 +116,9 @@ void SecureChannelInitializer::InitiateConnectionToDevice(
 
 void SecureChannelInitializer::OnBluetoothAdapterReceived(
     scoped_refptr<device::BluetoothAdapter> bluetooth_adapter) {
-  PA_LOG(INFO) << "SecureChannelInitializer::OnBluetoothAdapterReceived(): "
-               << "Bluetooth adapter has been fetched. Passing all queued "
-               << "requests to the service.";
+  PA_LOG(VERBOSE) << "SecureChannelInitializer::OnBluetoothAdapterReceived(): "
+                  << "Bluetooth adapter has been fetched. Passing all queued "
+                  << "requests to the service.";
 
   secure_channel_impl_ =
       SecureChannelImpl::Factory::Get()->BuildInstance(bluetooth_adapter);

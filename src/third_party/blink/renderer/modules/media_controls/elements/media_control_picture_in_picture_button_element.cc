@@ -18,7 +18,7 @@ namespace blink {
 MediaControlPictureInPictureButtonElement::
     MediaControlPictureInPictureButtonElement(MediaControlsImpl& media_controls)
     : MediaControlInputElement(media_controls, kMediaPlayButton) {
-  setType(InputTypeNames::button);
+  setType(input_type_names::kButton);
   SetShadowPseudoId(
       AtomicString("-internal-media-controls-picture-in-picture-button"));
   SetIsWanted(false);
@@ -66,7 +66,7 @@ const char* MediaControlPictureInPictureButtonElement::GetNameForHistograms()
 
 void MediaControlPictureInPictureButtonElement::DefaultEventHandler(
     Event& event) {
-  if (event.type() == EventTypeNames::click) {
+  if (event.type() == event_type_names::kClick) {
     PictureInPictureControllerImpl& controller =
         PictureInPictureControllerImpl::From(MediaElement().GetDocument());
 

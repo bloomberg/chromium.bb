@@ -196,7 +196,12 @@ void PageRenovatorBrowserTest::QuitRunLoop() {
   base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI}, quit_task);
 }
 
-IN_PROC_BROWSER_TEST_F(PageRenovatorBrowserTest, CorrectRenovationsRun) {
+#if defined(OS_WIN)
+#define MAYBE_CorrectRenovationsRun DISABLED_CorrectRenovationsRun
+#else
+#define MAYBE_CorrectRenovationsRun CorrectRenovationsRun
+#endif
+IN_PROC_BROWSER_TEST_F(PageRenovatorBrowserTest, MAYBE_CorrectRenovationsRun) {
   Navigate(kTestPagePath);
   InitializeWithTestingRenovations(GURL("http://foo.bar/"));
   // This should run FooPageRenovation and AlwaysRenovation, but not
@@ -221,7 +226,13 @@ IN_PROC_BROWSER_TEST_F(PageRenovatorBrowserTest, CorrectRenovationsRun) {
   EXPECT_TRUE(alwaysResult->GetBool());
 }
 
-IN_PROC_BROWSER_TEST_F(PageRenovatorBrowserTest, WikipediaRenovationRuns) {
+#if defined(OS_WIN)
+#define MAYBE_WikipediaRenovationRuns DISABLED_WikipediaRenovationRuns
+#else
+#define MAYBE_WikipediaRenovationRuns WikipediaRenovationRuns
+#endif
+IN_PROC_BROWSER_TEST_F(PageRenovatorBrowserTest,
+                       MAYBE_WikipediaRenovationRuns) {
   Navigate(kWikipediaTestPagePath);
   InitializeWithRealRenovations(GURL("http://en.m.wikipedia.org/"));
   page_renovator_->RunRenovations(base::BindOnce(

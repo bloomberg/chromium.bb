@@ -9,13 +9,15 @@
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "ui/gl/gl_version_info.h"
 
+#include <string>
+
 namespace gpu {
 namespace gles2 {
 
 CopyTexImageResourceManager::CopyTexImageResourceManager(
     const gles2::FeatureInfo* feature_info)
     : feature_info_(feature_info) {
-  DCHECK(feature_info->gl_version_info().is_desktop_core_profile);
+  DCHECK(feature_info->gl_version_info().NeedsLuminanceAlphaEmulation());
 }
 
 CopyTexImageResourceManager::~CopyTexImageResourceManager() = default;
@@ -28,8 +30,9 @@ void CopyTexImageResourceManager::Initialize(const DecoderContext* decoder) {
   blit_program_ = glCreateProgram();
 
   // Compile the vertex shader
-  const char* vs_source =
-      "#version 150\n"
+  std::string vs_source =
+      std::string(feature_info_->gl_version_info().is_es3 ? "#version 300 es\n"
+                                                          : "#version 150\n") +
       "out vec2 v_texcoord;\n"
       "\n"
       "void main()\n"
@@ -51,13 +54,15 @@ void CopyTexImageResourceManager::Initialize(const DecoderContext* decoder) {
       "}\n";
 
   GLuint vs = glCreateShader(GL_VERTEX_SHADER);
-  CompileShaderWithLog(vs, vs_source);
+  CompileShaderWithLog(vs, vs_source.c_str());
   glAttachShader(blit_program_, vs);
   glDeleteShader(vs);
 
   // Compile the fragment shader
-  const char* fs_source =
-      "#version 150\n"
+  std::string fs_source =
+      std::string(feature_info_->gl_version_info().is_es3
+                      ? "#version 300 es\nprecision mediump float;\n"
+                      : "#version 150\n") +
       "uniform sampler2D u_source_texture;\n"
       "in vec2 v_texcoord;\n"
       "out vec4 output_color;\n"
@@ -68,7 +73,7 @@ void CopyTexImageResourceManager::Initialize(const DecoderContext* decoder) {
       "}\n";
 
   GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
-  CompileShaderWithLog(fs, fs_source);
+  CompileShaderWithLog(fs, fs_source.c_str());
   glAttachShader(blit_program_, fs);
   glDeleteShader(fs);
 
@@ -192,7 +197,15 @@ void CopyTexImageResourceManager::DoCopyTexSubImageToLUMACompatibilityTexture(
       (luma_format == GL_LUMINANCE_ALPHA) ? GL_ALPHA : GL_ZERO, GL_ZERO,
       GL_ZERO,
   };
-  glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzle);
+  if (feature_info_->gl_version_info().is_es) {
+    // ES doesn't support GL_TEXTURE_SWIZZLE_RGBA. We must set each swizzle
+    // separately.
+    for (int i = 0; i < 4; i++) {
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R + i, swizzle[i]);
+    }
+  } else {
+    glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzle);
+  }
 
   // Make a temporary framebuffer using the second scratch texture to render the
   // swizzled result to.
@@ -254,7 +267,7 @@ void CopyTexImageResourceManager::DoCopyTexSubImageToLUMACompatibilityTexture(
 bool CopyTexImageResourceManager::CopyTexImageRequiresBlit(
     const gles2::FeatureInfo* feature_info,
     GLenum dest_texture_format) {
-  if (feature_info->gl_version_info().is_desktop_core_profile) {
+  if (feature_info->gl_version_info().NeedsLuminanceAlphaEmulation()) {
     switch (dest_texture_format) {
       case GL_LUMINANCE:
       case GL_ALPHA:

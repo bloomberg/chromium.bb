@@ -430,8 +430,8 @@ int InspectorDOMSnapshotAgent::VisitNode(Node* node,
 
     if (auto* input_element = ToHTMLInputElementOrNull(*element)) {
       value->setInputValue(input_element->value());
-      if ((input_element->type() == InputTypeNames::radio) ||
-          (input_element->type() == InputTypeNames::checkbox)) {
+      if ((input_element->type() == input_type_names::kRadio) ||
+          (input_element->type() == input_type_names::kCheckbox)) {
         value->setInputChecked(input_element->checked());
       }
     }
@@ -647,8 +647,8 @@ int InspectorDOMSnapshotAgent::VisitNode2(Node* node, int parent_index) {
 
     if (auto* input_element = ToHTMLInputElementOrNull(*element)) {
       SetRare(nodes->getInputValue(nullptr), index, input_element->value());
-      if ((input_element->type() == InputTypeNames::radio) ||
-          (input_element->type() == InputTypeNames::checkbox)) {
+      if ((input_element->type() == input_type_names::kRadio) ||
+          (input_element->type() == input_type_names::kCheckbox)) {
         if (input_element->checked()) {
           SetRare(nodes->getInputChecked(nullptr), index);
         }

@@ -12,6 +12,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <cstdint>
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -19,6 +20,7 @@
 #include "net/third_party/http2/decoder/decode_status.h"
 #include "net/third_party/http2/hpack/varint/hpack_varint_decoder.h"
 #include "net/third_party/http2/platform/api/http2_export.h"
+#include "net/third_party/http2/platform/api/http2_macros.h"
 #include "net/third_party/http2/platform/api/http2_string.h"
 
 namespace http2 {
@@ -94,7 +96,7 @@ class HTTP2_EXPORT_PRIVATE HpackStringDecoder {
           // buffer, and hence this fall through skips another trip through the
           // switch above and more importantly skips setting the state_ variable
           // again in those cases where we don't need it.
-          FALLTHROUGH;
+          HTTP2_FALLTHROUGH;
 
         case kDecodingString:
           DVLOG(2) << "kDecodingString: db->Remaining=" << db->Remaining()
@@ -192,8 +194,8 @@ class HTTP2_EXPORT_PRIVATE HpackStringDecoder {
 
   HpackVarintDecoder length_decoder_;
 
-  // These fields are initialized just to keep memory corruption detectors
-  // happy about reading them from DebugString().
+  // These fields are initialized just to keep ASAN happy about reading
+  // them from DebugString().
   size_t remaining_ = 0;
   StringDecoderState state_ = kStartDecodingLength;
   bool huffman_encoded_ = false;

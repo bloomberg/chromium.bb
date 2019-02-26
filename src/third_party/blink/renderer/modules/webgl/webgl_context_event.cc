@@ -35,16 +35,16 @@ WebGLContextEvent::WebGLContextEvent(const AtomicString& type,
       status_message_(status_message) {}
 
 WebGLContextEvent::WebGLContextEvent(const AtomicString& type,
-                                     const WebGLContextEventInit& initializer)
+                                     const WebGLContextEventInit* initializer)
     : Event(type, initializer) {
-  if (initializer.hasStatusMessage())
-    status_message_ = initializer.statusMessage();
+  if (initializer->hasStatusMessage())
+    status_message_ = initializer->statusMessage();
 }
 
 WebGLContextEvent::~WebGLContextEvent() = default;
 
 const AtomicString& WebGLContextEvent::InterfaceName() const {
-  return EventNames::WebGLContextEvent;
+  return event_interface_names::kWebGLContextEvent;
 }
 
 void WebGLContextEvent::Trace(blink::Visitor* visitor) {

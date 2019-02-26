@@ -14,7 +14,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
-#include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
+#include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -23,11 +23,6 @@
 #include "content/public/browser/browser_task_traits.h"
 
 namespace {
-
-void CreateAppShimHost(mojo::PlatformChannelEndpoint endpoint) {
-  // AppShimHost takes ownership of itself.
-  (new AppShimHost)->ServeChannel(std::move(endpoint));
-}
 
 base::FilePath GetDirectoryInTmpTemplate(const base::FilePath& user_data_dir) {
   base::FilePath temp_dir;
@@ -163,7 +158,8 @@ void AppShimHostManager::OnClientConnected(
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::UI})
       ->PostTask(FROM_HERE,
-                 base::BindOnce(&CreateAppShimHost, std::move(endpoint)));
+                 base::BindOnce(&AppShimHostBootstrap::CreateForChannel,
+                                std::move(endpoint)));
 }
 
 void AppShimHostManager::OnListenError() {

@@ -44,6 +44,8 @@ class CORE_EXPORT MediaQueryMatcher final
 
  public:
   static MediaQueryMatcher* Create(Document&);
+
+  explicit MediaQueryMatcher(Document&);
   ~MediaQueryMatcher();
 
   void DocumentDetached();
@@ -63,8 +65,6 @@ class CORE_EXPORT MediaQueryMatcher final
   void Trace(blink::Visitor*);
 
  private:
-  explicit MediaQueryMatcher(Document&);
-
   MediaQueryEvaluator* CreateEvaluator() const;
 
   Member<Document> document_;

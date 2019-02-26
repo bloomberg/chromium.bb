@@ -21,9 +21,9 @@ class AutofillPopupDelegate;
 class CardUnmaskDelegate;
 class CreditCard;
 class FormStructure;
+class LegacyStrikeDatabase;
 class MigratableCreditCard;
 class PersonalDataManager;
-class StrikeDatabase;
 }
 
 namespace content {
@@ -64,7 +64,9 @@ class AwAutofillClient : public autofill::AutofillClient,
   PrefService* GetPrefs() override;
   syncer::SyncService* GetSyncService() override;
   identity::IdentityManager* GetIdentityManager() override;
-  autofill::StrikeDatabase* GetStrikeDatabase() override;
+  autofill::payments::PaymentsClient* GetPaymentsClient() override;
+  autofill::FormDataImporter* GetFormDataImporter() override;
+  autofill::LegacyStrikeDatabase* GetLegacyStrikeDatabase() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
   autofill::AddressNormalizer* GetAddressNormalizer() override;
@@ -77,11 +79,19 @@ class AwAutofillClient : public autofill::AutofillClient,
   void OnUnmaskVerificationResult(PaymentsRpcResult result) override;
   void ShowLocalCardMigrationDialog(
       base::OnceClosure show_migration_dialog_closure) override;
+  void ConfirmAccountNameFixFlow(
+      base::OnceCallback<void(const base::string16&)> callback) override;
   void ConfirmMigrateLocalCardToCloud(
       std::unique_ptr<base::DictionaryValue> legal_message,
       const std::vector<autofill::MigratableCreditCard>&
           migratable_credit_cards,
       LocalCardMigrationCallback start_migrating_cards_callback) override;
+  void ShowLocalCardMigrationResults(
+      const bool has_server_error,
+      const base::string16& tip_message,
+      const std::vector<autofill::MigratableCreditCard>&
+          migratable_credit_cards,
+      MigrationDeleteCardCallback delete_local_card_callback) override;
   void ConfirmSaveAutofillProfile(const autofill::AutofillProfile& profile,
                                   base::OnceClosure callback) override;
   void ConfirmSaveCreditCardLocally(const autofill::CreditCard& card,
@@ -91,10 +101,11 @@ class AwAutofillClient : public autofill::AutofillClient,
       const autofill::CreditCard& card,
       std::unique_ptr<base::DictionaryValue> legal_message,
       bool should_request_name_from_user,
+      bool should_request_expiration_date_from_user,
       bool show_prompt,
-      base::OnceCallback<void(const base::string16&)> callback) override;
+      UserAcceptedUploadCallback callback) override;
   void ConfirmCreditCardFillAssist(const autofill::CreditCard& card,
-                                   const base::Closure& callback) override;
+                                   base::OnceClosure callback) override;
   void LoadRiskData(
       base::OnceCallback<void(const std::string&)> callback) override;
   bool HasCreditCardScanFeature() override;

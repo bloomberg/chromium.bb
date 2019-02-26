@@ -141,18 +141,13 @@ void OpenVRRenderLoop::OnSessionStart() {
   openvr_->GetCompositor()->SuspendRendering(false);
 
   // Measure the VrViewerType we are presenting with.
-  using ViewerMap = std::map<std::string, VrViewerType>;
-  CR_DEFINE_STATIC_LOCAL(ViewerMap, viewer_types,
-                         ({
-                             {"Oculus Rift CV1", VrViewerType::OPENVR_RIFT_CV1},
-                             {"Vive MV", VrViewerType::OPENVR_VIVE},
-                         }));
-  VrViewerType type = VrViewerType::OPENVR_UNKNOWN;
   std::string model =
       GetOpenVRString(openvr_->GetSystem(), vr::Prop_ModelNumber_String);
-  auto it = viewer_types.find(model);
-  if (it != viewer_types.end())
-    type = it->second;
+  VrViewerType type = VrViewerType::OPENVR_UNKNOWN;
+  if (model == "Oculus Rift CV1")
+    type = VrViewerType::OPENVR_RIFT_CV1;
+  else if (model == "Vive MV")
+    type = VrViewerType::OPENVR_VIVE;
 
   base::UmaHistogramSparse("VRViewerType", static_cast<int>(type));
 }
@@ -198,6 +193,15 @@ mojom::XRFrameDataPtr OpenVRRenderLoop::GetNextFrameData() {
   }
 
   return frame_data;
+}
+
+void OpenVRRenderLoop::GetEnvironmentIntegrationProvider(
+    mojom::XREnvironmentIntegrationProviderAssociatedRequest
+        environment_provider) {
+  // Environment integration is not supported. This call should not
+  // be made on this device.
+  mojo::ReportBadMessage("Environment integration is not supported.");
+  return;
 }
 
 std::vector<mojom::XRInputSourceStatePtr> OpenVRRenderLoop::GetInputState(

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/content_setting_bubble_contents.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/strings/utf_string_conversions.h"
@@ -359,13 +360,13 @@ void ContentSettingBubbleContents::ListItemContainer::AddRowToLayout(
 // ContentSettingBubbleContents -----------------------------------------------
 
 ContentSettingBubbleContents::ContentSettingBubbleContents(
-    ContentSettingBubbleModel* content_setting_bubble_model,
+    std::unique_ptr<ContentSettingBubbleModel> content_setting_bubble_model,
     content::WebContents* web_contents,
     views::View* anchor_view,
     views::BubbleBorder::Arrow arrow)
     : content::WebContentsObserver(web_contents),
       BubbleDialogDelegateView(anchor_view, arrow),
-      content_setting_bubble_model_(content_setting_bubble_model),
+      content_setting_bubble_model_(std::move(content_setting_bubble_model)),
       list_item_container_(nullptr),
       custom_link_(nullptr),
       manage_button_(nullptr),
@@ -382,7 +383,8 @@ ContentSettingBubbleContents::~ContentSettingBubbleContents() {
 }
 
 void ContentSettingBubbleContents::WindowClosing() {
-  content_setting_bubble_model_->CommitChanges();
+  if (content_setting_bubble_model_)
+    content_setting_bubble_model_->CommitChanges();
 }
 
 gfx::Size ContentSettingBubbleContents::CalculatePreferredSize() const {
@@ -423,6 +425,8 @@ void ContentSettingBubbleContents::OnNativeThemeChanged(
 }
 
 base::string16 ContentSettingBubbleContents::GetWindowTitle() const {
+  if (!content_setting_bubble_model_)
+    return base::string16();
   return content_setting_bubble_model_->bubble_content().title;
 }
 
@@ -431,6 +435,7 @@ bool ContentSettingBubbleContents::ShouldShowCloseButton() const {
 }
 
 void ContentSettingBubbleContents::Init() {
+  DCHECK(content_setting_bubble_model_);
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(),
@@ -469,7 +474,7 @@ void ContentSettingBubbleContents::Init() {
     for (auto i(radio_group.radio_items.begin());
          i != radio_group.radio_items.end(); ++i) {
       auto radio = std::make_unique<views::RadioButton>(*i, 0);
-      radio->SetEnabled(bubble_content.radio_group_enabled);
+      radio->SetEnabled(radio_group.user_managed);
       radio->SetMultiLine(true);
       radio_group_.push_back(radio.get());
       rows.push_back({std::move(radio), LayoutRowType::INDENTED});
@@ -536,6 +541,7 @@ void ContentSettingBubbleContents::Init() {
 }
 
 views::View* ContentSettingBubbleContents::CreateExtraView() {
+  DCHECK(content_setting_bubble_model_);
   const auto& bubble_content = content_setting_bubble_model_->bubble_content();
   const auto* layout = ChromeLayoutProvider::Get();
   std::vector<View*> extra_views;
@@ -588,6 +594,9 @@ int ContentSettingBubbleContents::GetDialogButtons() const {
 
 base::string16 ContentSettingBubbleContents::GetDialogButtonLabel(
     ui::DialogButton button) const {
+  if (!content_setting_bubble_model_)
+    return base::string16();
+
   const base::string16& done_text =
       content_setting_bubble_model_->bubble_content().done_button_text;
   return done_text.empty() ? l10n_util::GetStringUTF16(IDS_DONE) : done_text;
@@ -619,11 +628,20 @@ void ContentSettingBubbleContents::OnVisibilityChanged(
 }
 
 void ContentSettingBubbleContents::WebContentsDestroyed() {
+  // Destroy the bubble model to ensure that the underlying WebContents outlives
+  // it.
+  content_setting_bubble_model_->CommitChanges();
+  content_setting_bubble_model_.reset();
+
+  // Closing the widget should synchronously hide it (and post a task to delete
+  // it). Subsequent event listener methods should not be invoked on hidden
+  // widgets.
   GetWidget()->Close();
 }
 
 void ContentSettingBubbleContents::ButtonPressed(views::Button* sender,
                                                  const ui::Event& event) {
+  DCHECK(content_setting_bubble_model_);
   if (sender == manage_checkbox_) {
     content_setting_bubble_model_->OnManageCheckboxChecked(
         manage_checkbox_->checked());
@@ -644,6 +662,7 @@ void ContentSettingBubbleContents::ButtonPressed(views::Button* sender,
 
 void ContentSettingBubbleContents::LinkClicked(views::Link* source,
                                                int event_flags) {
+  DCHECK(content_setting_bubble_model_);
   if (source == custom_link_) {
     content_setting_bubble_model_->OnCustomLinkClicked();
     GetWidget()->Close();
@@ -655,6 +674,7 @@ void ContentSettingBubbleContents::LinkClicked(views::Link* source,
 }
 
 void ContentSettingBubbleContents::OnPerformAction(views::Combobox* combobox) {
+  DCHECK(content_setting_bubble_model_);
   MediaComboboxModel* model =
       static_cast<MediaComboboxModel*>(combobox->model());
   content_setting_bubble_model_->OnMediaMenuClicked(

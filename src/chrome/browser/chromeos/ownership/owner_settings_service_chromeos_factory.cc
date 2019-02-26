@@ -5,11 +5,14 @@
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 
 #include "base/path_service.h"
+#include "chrome/browser/chromeos/ownership/fake_owner_settings_service.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/chromeos_paths.h"
+#include "chromeos/chromeos_switches.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/ownership/owner_key_util.h"
 #include "components/ownership/owner_key_util_impl.h"
@@ -82,6 +85,17 @@ KeyedService* OwnerSettingsServiceChromeOSFactory::BuildInstanceFor(
       ProfileHelper::IsLockScreenAppProfile(profile)) {
     return nullptr;
   }
+
+  // If kStubCrosSettings is set, we treat the current user as the owner, and
+  // write settings directly to the stubbed provider in CrosSettings.
+  // This is done using the FakeOwnerSettingsService.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kStubCrosSettings)) {
+    return new FakeOwnerSettingsService(
+        profile, GetInstance()->GetOwnerKeyUtil(),
+        CrosSettings::Get()->stubbed_provider_for_test());
+  }
+
   return new OwnerSettingsServiceChromeOS(
       GetDeviceSettingsService(),
       profile,

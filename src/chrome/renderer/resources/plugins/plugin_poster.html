@@ -95,10 +95,10 @@
       container.style.width = width;
       container.style.height = height;
 
-      if (plugin.didFinishIconRepositionForTesting) {
+      if (plugin.notifyPlaceholderReadyForTesting) {
         // Defer until reflow complete.
         window.setTimeout(function() {
-          plugin.didFinishIconRepositionForTesting();
+          plugin.notifyPlaceholderReadyForTesting();
         });
       }
     };

@@ -5,8 +5,7 @@
 #include "media/gpu/vaapi/vp8_encoder.h"
 
 #include "base/bits.h"
-
-#define DVLOGF(level) DVLOG(level) << __func__ << "(): "
+#include "media/gpu/macros.h"
 
 namespace media {
 

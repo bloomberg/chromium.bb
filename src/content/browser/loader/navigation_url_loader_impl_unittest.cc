@@ -91,13 +91,14 @@ class TestNavigationLoaderInterceptor : public NavigationLoaderInterceptor {
         base::BindOnce(&TestNavigationLoaderInterceptor::DeleteURLLoader,
                        base::Unretained(this)),
         std::move(request), 0 /* options */, resource_request,
-        false /* report_raw_headers */, std::move(client),
-        TRAFFIC_ANNOTATION_FOR_TESTS, &params, 0, /* request_id */
+        std::move(client), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+        0, /* request_id */
         resource_scheduler_client_, nullptr,
-        nullptr /* network_usage_accumulator */);
+        nullptr /* network_usage_accumulator */, nullptr /* header_client */);
   }
 
   bool MaybeCreateLoaderForResponse(
+      const GURL& request_url,
       const network::ResourceResponseHead& response,
       network::mojom::URLLoaderPtr* loader,
       network::mojom::URLLoaderClientRequest* client_request,
@@ -160,7 +161,8 @@ class NavigationURLLoaderImplTest : public testing::Test {
       const std::string& headers,
       const std::string& method,
       NavigationURLLoaderDelegate* delegate,
-      bool allow_download = false,
+      NavigationDownloadPolicy download_policy =
+          NavigationDownloadPolicy::kAllow,
       bool is_main_frame = true,
       bool upgrade_if_insecure = false) {
     mojom::BeginNavigationParamsPtr begin_params =
@@ -176,7 +178,7 @@ class NavigationURLLoaderImplTest : public testing::Test {
     CommonNavigationParams common_params;
     common_params.url = url;
     common_params.method = method;
-    common_params.allow_download = allow_download;
+    common_params.download_policy = download_policy;
 
     std::unique_ptr<NavigationRequestInfo> request_info(
         new NavigationRequestInfo(
@@ -259,7 +261,7 @@ class NavigationURLLoaderImplTest : public testing::Test {
         url,
         base::StringPrintf("%s: %s", net::HttpRequestHeaders::kOrigin,
                            url.GetOrigin().spec().c_str()),
-        "GET", &delegate, false /* allow_download */, is_main_frame);
+        "GET", &delegate, NavigationDownloadPolicy::kAllow, is_main_frame);
     delegate.WaitForRequestRedirected();
     loader->FollowRedirect(base::nullopt, base::nullopt);
     delegate.WaitForResponseStarted();
@@ -275,8 +277,8 @@ class NavigationURLLoaderImplTest : public testing::Test {
         url,
         base::StringPrintf("%s: %s", net::HttpRequestHeaders::kOrigin,
                            url.GetOrigin().spec().c_str()),
-        "GET", &delegate, false /* allow_download */, true /*is_main_frame*/,
-        upgrade_if_insecure);
+        "GET", &delegate, NavigationDownloadPolicy::kAllow,
+        true /*is_main_frame*/, upgrade_if_insecure);
     delegate.WaitForRequestRedirected();
     loader->FollowRedirect(base::nullopt, base::nullopt);
     if (expect_request_fail) {

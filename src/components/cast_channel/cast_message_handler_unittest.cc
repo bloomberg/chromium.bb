@@ -61,7 +61,7 @@ class CastMessageHandlerTest : public testing::Test {
         cast_socket_service_(new base::TestSimpleTaskRunner()),
         handler_(&cast_socket_service_,
                  /* connector */ nullptr,
-                 "batchId",
+                 base::Token{1, 1},
                  kTestUserAgentString,
                  "66.0.3331.0",
                  "en-US") {

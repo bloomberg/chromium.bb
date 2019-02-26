@@ -36,14 +36,13 @@
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/mojom/net_log.mojom.h"
 #include "services/network/public/mojom/network_change_manager.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/test/test_network_service_client.h"
 #include "services/network/test/test_url_loader_client.h"
-#include "services/service_manager/public/cpp/service_context.h"
-#include "services/service_manager/public/cpp/service_test.h"
-#include "services/service_manager/public/mojom/service_factory.mojom.h"
+#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -634,53 +633,21 @@ TEST_F(NetworkServiceTest, AuthAndroidNegotiateAccountType) {
 }
 #endif  // defined(OS_ANDROID)
 
-class ServiceTestClient : public service_manager::test::ServiceTestClient,
-                          public service_manager::mojom::ServiceFactory {
- public:
-  explicit ServiceTestClient(service_manager::test::ServiceTest* test)
-      : service_manager::test::ServiceTestClient(test) {
-    registry_.AddInterface<service_manager::mojom::ServiceFactory>(base::Bind(
-        &ServiceTestClient::BindServiceFactoryRequest, base::Unretained(this)));
-  }
-  ~ServiceTestClient() override {}
-
- protected:
-  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle interface_pipe) override {
-    registry_.BindInterface(interface_name, std::move(interface_pipe));
-  }
-
-  void CreateService(
-      service_manager::mojom::ServiceRequest request,
-      const std::string& name,
-      service_manager::mojom::PIDReceiverPtr pid_receiver) override {
-    if (name == kNetworkServiceName) {
-      service_context_.reset(new service_manager::ServiceContext(
-          NetworkService::CreateForTesting(), std::move(request)));
-    }
-  }
-
-  void BindServiceFactoryRequest(
-      service_manager::mojom::ServiceFactoryRequest request) {
-    service_factory_bindings_.AddBinding(this, std::move(request));
-  }
-
-  std::unique_ptr<service_manager::ServiceContext> service_context_;
-
- private:
-  service_manager::BinderRegistry registry_;
-  mojo::BindingSet<service_manager::mojom::ServiceFactory>
-      service_factory_bindings_;
-};
-
-class NetworkServiceTestWithService
-    : public service_manager::test::ServiceTest {
+class NetworkServiceTestWithService : public testing::Test {
  public:
   NetworkServiceTestWithService()
-      : ServiceTest("network_unittests",
-                    base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
+      : task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
   ~NetworkServiceTestWithService() override {}
+
+  void SetUp() override {
+    test_server_.AddDefaultHandlers(base::FilePath(kServicesTestData));
+    ASSERT_TRUE(test_server_.Start());
+    service_ = NetworkService::CreateForTesting(
+        test_connector_factory_.RegisterInstance(kNetworkServiceName));
+    test_connector_factory_.GetDefaultConnector()->BindInterface(
+        kNetworkServiceName, &network_service_);
+  }
 
   void CreateNetworkContext() {
     mojom::NetworkContextParamsPtr context_params =
@@ -716,6 +683,8 @@ class NetworkServiceTestWithService
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
   }
 
+  void Shutdown() { service_.reset(); }
+
   net::EmbeddedTestServer* test_server() { return &test_server_; }
   TestURLLoaderClient* client() { return client_.get(); }
   mojom::URLLoader* loader() { return loader_.get(); }
@@ -723,16 +692,9 @@ class NetworkServiceTestWithService
   mojom::NetworkContext* context() { return network_context_.get(); }
 
  protected:
-  std::unique_ptr<service_manager::Service> CreateService() override {
-    return std::make_unique<ServiceTestClient>(this);
-  }
-
-  void SetUp() override {
-    test_server_.AddDefaultHandlers(base::FilePath(kServicesTestData));
-    ASSERT_TRUE(test_server_.Start());
-    service_manager::test::ServiceTest::SetUp();
-    connector()->BindInterface(kNetworkServiceName, &network_service_);
-  }
+  base::test::ScopedTaskEnvironment task_environment_;
+  service_manager::TestConnectorFactory test_connector_factory_;
+  std::unique_ptr<NetworkService> service_;
 
   net::EmbeddedTestServer test_server_;
   std::unique_ptr<TestURLLoaderClient> client_;
@@ -775,7 +737,7 @@ TEST_F(NetworkServiceTestWithService, StartsNetLog) {
   Shutdown();
 
   // |log_file| is closed on another thread, so have to wait for that to happen.
-  RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   JSONFileValueDeserializer deserializer(log_path);
   std::unique_ptr<base::Value> log_dict =
@@ -796,7 +758,7 @@ TEST_F(NetworkServiceTestWithService, RawRequestHeadersAbsent) {
   client()->RunUntilRedirectReceived();
   EXPECT_TRUE(client()->has_received_redirect());
   EXPECT_TRUE(!client()->response_head().raw_request_response_info);
-  loader()->FollowRedirect(base::nullopt, base::nullopt);
+  loader()->FollowRedirect(base::nullopt, base::nullopt, base::nullopt);
   client()->RunUntilComplete();
   EXPECT_TRUE(!client()->response_head().raw_request_response_info);
 }
@@ -826,7 +788,7 @@ TEST_F(NetworkServiceTestWithService, RawRequestHeadersPresent) {
                                  "HTTP/1.1 301 Moved Permanently\r",
                                  base::CompareCase::SENSITIVE));
   }
-  loader()->FollowRedirect(base::nullopt, base::nullopt);
+  loader()->FollowRedirect(base::nullopt, base::nullopt, base::nullopt);
   client()->RunUntilComplete();
   {
     scoped_refptr<HttpRawRequestResponseInfo> request_response_info =
@@ -856,7 +818,10 @@ TEST_F(NetworkServiceTestWithService, RawRequestAccessControl) {
   StartLoadingURL(request, process_id);
   client()->RunUntilComplete();
   EXPECT_FALSE(client()->response_head().raw_request_response_info);
-  service()->SetRawHeadersAccess(process_id, true);
+  service()->SetRawHeadersAccess(
+      process_id,
+      {url::Origin::CreateFromNormalizedTuple("http", "example.com", 80),
+       url::Origin::Create(request.url)});
   StartLoadingURL(request, process_id);
   client()->RunUntilComplete();
   {
@@ -867,9 +832,72 @@ TEST_F(NetworkServiceTestWithService, RawRequestAccessControl) {
     EXPECT_EQ("OK", request_response_info->http_status_text);
   }
 
-  service()->SetRawHeadersAccess(process_id, false);
+  service()->SetRawHeadersAccess(process_id, {});
   StartLoadingURL(request, process_id);
   client()->RunUntilComplete();
+  EXPECT_FALSE(client()->response_head().raw_request_response_info.get());
+
+  service()->SetRawHeadersAccess(
+      process_id,
+      {url::Origin::CreateFromNormalizedTuple("http", "example.com", 80)});
+  StartLoadingURL(request, process_id);
+  client()->RunUntilComplete();
+  EXPECT_FALSE(client()->response_head().raw_request_response_info.get());
+}
+
+class NetworkServiceTestWithResolverMap : public NetworkServiceTestWithService {
+  void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        network::switches::kHostResolverRules, "MAP *.test 127.0.0.1");
+    NetworkServiceTestWithService::SetUp();
+  }
+};
+
+TEST_F(NetworkServiceTestWithResolverMap, RawRequestAccessControlWithRedirect) {
+  CreateNetworkContext();
+
+  const uint32_t process_id = 42;
+  // initial_url in a.test redirects to b_url (in b.test) that then redirects to
+  // url_a in a.test.
+  GURL url_a = test_server()->GetURL("a.test", "/echo");
+  GURL url_b =
+      test_server()->GetURL("b.test", "/server-redirect?" + url_a.spec());
+  GURL initial_url =
+      test_server()->GetURL("a.test", "/server-redirect?" + url_b.spec());
+  ResourceRequest request;
+  request.url = initial_url;
+  request.method = "GET";
+  request.report_raw_headers = true;
+  request.request_initiator = url::Origin();
+
+  service()->SetRawHeadersAccess(process_id, {url::Origin::Create(url_a)});
+
+  StartLoadingURL(request, process_id);
+  client()->RunUntilRedirectReceived();  // from a.test to b.test
+  EXPECT_TRUE(client()->response_head().raw_request_response_info);
+
+  loader()->FollowRedirect(base::nullopt, base::nullopt, base::nullopt);
+  client()->ClearHasReceivedRedirect();
+  client()->RunUntilRedirectReceived();  // from b.test to a.test
+  EXPECT_FALSE(client()->response_head().raw_request_response_info);
+
+  loader()->FollowRedirect(base::nullopt, base::nullopt, base::nullopt);
+  client()->RunUntilComplete();  // Done loading a.test
+  EXPECT_TRUE(client()->response_head().raw_request_response_info.get());
+
+  service()->SetRawHeadersAccess(process_id, {url::Origin::Create(url_b)});
+
+  StartLoadingURL(request, process_id);
+  client()->RunUntilRedirectReceived();  // from a.test to b.test
+  EXPECT_FALSE(client()->response_head().raw_request_response_info);
+
+  loader()->FollowRedirect(base::nullopt, base::nullopt, base::nullopt);
+  client()->ClearHasReceivedRedirect();
+  client()->RunUntilRedirectReceived();  // from b.test to a.test
+  EXPECT_TRUE(client()->response_head().raw_request_response_info);
+
+  loader()->FollowRedirect(base::nullopt, base::nullopt, base::nullopt);
+  client()->RunUntilComplete();  // Done loading a.test
   EXPECT_FALSE(client()->response_head().raw_request_response_info.get());
 }
 
@@ -1172,6 +1200,14 @@ TEST_F(NetworkServiceTestWithService,
   EXPECT_TRUE(network_context.encountered_error());
 }
 
+TEST_F(NetworkServiceTestWithService, GetDnsConfigChangeManager) {
+  mojom::DnsConfigChangeManagerPtr ptr;
+  ASSERT_FALSE(ptr.is_bound());
+
+  network_service_->GetDnsConfigChangeManager(mojo::MakeRequest(&ptr));
+  EXPECT_TRUE(ptr.is_bound());
+}
+
 class TestNetworkChangeManagerClient
     : public mojom::NetworkChangeManagerClient {
  public:
@@ -1208,6 +1244,8 @@ class TestNetworkChangeManagerClient
     connection_type_ = type;
     run_loop_.Run();
   }
+
+  void Flush() { binding_.FlushForTesting(); }
 
  private:
   base::RunLoop run_loop_;
@@ -1254,49 +1292,29 @@ TEST_F(NetworkChangeTest, MAYBE_NetworkChangeManagerRequest) {
   manager_client.WaitForNotification(mojom::ConnectionType::CONNECTION_3G);
 }
 
-class NetworkServiceNetworkChangeTest
-    : public service_manager::test::ServiceTest {
+class NetworkServiceNetworkChangeTest : public testing::Test {
  public:
   NetworkServiceNetworkChangeTest()
-      : ServiceTest("network_unittests",
-                    base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
+      : task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+        service_(NetworkService::CreateForTesting(
+            test_connector_factory_.RegisterInstance(kNetworkServiceName))) {
+    test_connector_factory_.GetDefaultConnector()->BindInterface(
+        kNetworkServiceName, &network_service_);
+  }
+
   ~NetworkServiceNetworkChangeTest() override {}
 
   mojom::NetworkService* service() { return network_service_.get(); }
 
+  void SimulateNetworkChange() {
+    // This posts a task to simulate a network change notification
+  }
+
  private:
-  // A ServiceTestClient that broadcasts a network change notification in the
-  // network service's process.
-  class ServiceTestClientWithNetworkChange : public ServiceTestClient {
-   public:
-    explicit ServiceTestClientWithNetworkChange(
-        service_manager::test::ServiceTest* test)
-        : ServiceTestClient(test) {}
-    ~ServiceTestClientWithNetworkChange() override {}
-
-   protected:
-    void CreateService(
-        service_manager::mojom::ServiceRequest request,
-        const std::string& name,
-        service_manager::mojom::PIDReceiverPtr pid_receiver) override {
-      if (name == kNetworkServiceName) {
-        service_context_.reset(new service_manager::ServiceContext(
-            NetworkService::CreateForTesting(), std::move(request)));
-        // Send a broadcast after NetworkService is actually created.
-        // Otherwise, this NotifyObservers is a no-op.
-        net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-            net::NetworkChangeNotifier::CONNECTION_3G);
-      }
-    }
-  };
-  std::unique_ptr<service_manager::Service> CreateService() override {
-    return std::make_unique<ServiceTestClientWithNetworkChange>(this);
-  }
-
-  void SetUp() override {
-    service_manager::test::ServiceTest::SetUp();
-    connector()->BindInterface(kNetworkServiceName, &network_service_);
-  }
+  base::test::ScopedTaskEnvironment task_environment_;
+  service_manager::TestConnectorFactory test_connector_factory_;
+  std::unique_ptr<NetworkService> service_;
 
   mojom::NetworkServicePtr network_service_;
 #if defined(OS_ANDROID)
@@ -1311,6 +1329,15 @@ class NetworkServiceNetworkChangeTest
 
 TEST_F(NetworkServiceNetworkChangeTest, MAYBE_NetworkChangeManagerRequest) {
   TestNetworkChangeManagerClient manager_client(service());
+
+  // Wait for the NetworkChangeManagerClient registration to be processed within
+  // the NetworkService impl before simulating a change. Flushing guarantees
+  // end-to-end connection of the client interface.
+  manager_client.Flush();
+
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_3G);
+
   manager_client.WaitForNotification(mojom::ConnectionType::CONNECTION_3G);
 }
 

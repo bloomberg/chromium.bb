@@ -126,14 +126,30 @@ void SendFillInformationToRenderer(
   }
   DCHECK(preferred_match);
 
+  // Chrome tries to avoid filling into fields where the user is asked to enter
+  // a fresh password. The old condition for filling on load was: "does the
+  // form lack a new-password field?" The new one is: "does the form have a
+  // current-password field?" because the current-password field is what should
+  // be filled. The old condition is used with the old parser, and the new
+  // condition with the new one. The new one is not explicitly checked here,
+  // because it is implicit in the way filling is done: if there is no current
+  // password field ID, then PasswordAutofillAgent has no way to fill the
+  // password anywhere.
+  const bool form_good_for_filling =
+      base::FeatureList::IsEnabled(features::kNewPasswordFormParsing)
+          ? true
+          : !observed_form.IsPossibleChangePasswordForm();
+
   // Proceed to autofill.
   // Note that we provide the choices but don't actually prefill a value if:
   // (1) we are in Incognito mode, or
   // (2) if it matched using public suffix domain matching, or
-  // (3) the form is change password form.
+  // (3) it would result in unexpected filling in a form with new password
+  //     fields.
   bool wait_for_username = client.IsIncognito() ||
                            preferred_match->is_public_suffix_match ||
-                           observed_form.IsPossibleChangePasswordForm();
+                           !form_good_for_filling;
+
   if (wait_for_username) {
     metrics_recorder->SetManagerAction(
         PasswordFormMetricsRecorder::kManagerActionNone);

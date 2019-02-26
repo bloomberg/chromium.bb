@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // This file has been auto-generated from the Jinja2 template
-// third_party/blink/renderer/bindings/templates/callback_interface.cpp.tmpl
+// third_party/blink/renderer/bindings/templates/callback_interface.cc.tmpl
 // by the script code_generator_v8.py.
 // DO NOT MODIFY!
 
@@ -35,7 +35,7 @@ V8TestCallbackInterface* V8TestCallbackInterface::CreateOrNull(v8::Local<v8::Obj
   if (creation_context.IsEmpty())
     return nullptr;
 
-  return new V8TestCallbackInterface(callback_object, creation_context);
+  return MakeGarbageCollected<V8TestCallbackInterface>(callback_object, creation_context);
 }
 
 v8::Maybe<void> V8TestCallbackInterface::voidMethod(ScriptWrappable* callback_this_value) {

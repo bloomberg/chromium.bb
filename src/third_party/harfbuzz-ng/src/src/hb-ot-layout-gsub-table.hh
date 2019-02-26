@@ -48,7 +48,7 @@ struct SingleSubstFormat1
   inline void closure (hb_closure_context_t *c) const
   {
     TRACE_CLOSURE (this);
-    for (hb_auto_t<Coverage::Iter> iter (this+coverage); iter.more (); iter.next ())
+    for (Coverage::Iter iter (this+coverage); iter.more (); iter.next ())
     {
       /* TODO Switch to range-based API to work around malicious fonts.
        * https://github.com/harfbuzz/harfbuzz/issues/363 */
@@ -62,7 +62,7 @@ struct SingleSubstFormat1
   {
     TRACE_COLLECT_GLYPHS (this);
     if (unlikely (!(this+coverage).add_coverage (c->input))) return;
-    for (hb_auto_t<Coverage::Iter> iter (this+coverage); iter.more (); iter.next ())
+    for (Coverage::Iter iter (this+coverage); iter.more (); iter.next ())
     {
       /* TODO Switch to range-based API to work around malicious fonts.
        * https://github.com/harfbuzz/harfbuzz/issues/363 */
@@ -103,17 +103,17 @@ struct SingleSubstFormat1
     TRACE_SERIALIZE (this);
     if (unlikely (!c->extend_min (*this))) return_trace (false);
     if (unlikely (!coverage.serialize (c, this).serialize (c, glyphs, num_glyphs))) return_trace (false);
-    deltaGlyphID.set (delta); /* TODO(serilaize) overflow? */
+    deltaGlyphID.set (delta); /* TODO(serialize) overflow? */
     return_trace (true);
   }
 
   inline bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
-    hb_auto_t<hb_vector_t<GlyphID> > from;
-    hb_auto_t<hb_vector_t<GlyphID> > to;
+    hb_vector_t<GlyphID> from;
+    hb_vector_t<GlyphID> to;
     hb_codepoint_t delta = deltaGlyphID;
-    for (hb_auto_t<Coverage::Iter> iter (this+coverage); iter.more (); iter.next ())
+    for (Coverage::Iter iter (this+coverage); iter.more (); iter.next ())
     {
       if (!c->plan->glyphset->has (iter.get_glyph ()))
         continue;
@@ -157,7 +157,7 @@ struct SingleSubstFormat2
   {
     TRACE_CLOSURE (this);
     unsigned int count = substitute.len;
-    for (hb_auto_t<Coverage::Iter> iter (this+coverage); iter.more (); iter.next ())
+    for (Coverage::Iter iter (this+coverage); iter.more (); iter.next ())
     {
       if (unlikely (iter.get_coverage () >= count))
         break; /* Work around malicious fonts. https://github.com/harfbuzz/harfbuzz/issues/363 */
@@ -171,7 +171,7 @@ struct SingleSubstFormat2
     TRACE_COLLECT_GLYPHS (this);
     if (unlikely (!(this+coverage).add_coverage (c->input))) return;
     unsigned int count = substitute.len;
-    for (hb_auto_t<Coverage::Iter> iter (this+coverage); iter.more (); iter.next ())
+    for (Coverage::Iter iter (this+coverage); iter.more (); iter.next ())
     {
       if (unlikely (iter.get_coverage () >= count))
         break; /* Work around malicious fonts. https://github.com/harfbuzz/harfbuzz/issues/363 */
@@ -216,9 +216,9 @@ struct SingleSubstFormat2
   inline bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
-    hb_auto_t<hb_vector_t<GlyphID> > from;
-    hb_auto_t<hb_vector_t<GlyphID> > to;
-    for (hb_auto_t<Coverage::Iter> iter (this+coverage); iter.more (); iter.next ())
+    hb_vector_t<GlyphID> from;
+    hb_vector_t<GlyphID> to;
+    for (Coverage::Iter iter (this+coverage); iter.more (); iter.next ())
     {
       if (!c->plan->glyphset->has (iter.get_glyph ()))
         continue;
@@ -395,7 +395,7 @@ struct MultipleSubstFormat1
   {
     TRACE_CLOSURE (this);
     unsigned int count = sequence.len;
-    for (hb_auto_t<Coverage::Iter> iter (this+coverage); iter.more (); iter.next ())
+    for (Coverage::Iter iter (this+coverage); iter.more (); iter.next ())
     {
       if (unlikely (iter.get_coverage () >= count))
         break; /* Work around malicious fonts. https://github.com/harfbuzz/harfbuzz/issues/363 */
@@ -585,10 +585,10 @@ struct AlternateSubstFormat1
   {
     TRACE_CLOSURE (this);
     unsigned int count = alternateSet.len;
-    for (hb_auto_t<Coverage::Iter> iter (this+coverage); iter.more (); iter.next ())
+    for (Coverage::Iter iter (this+coverage); iter.more (); iter.next ())
     {
       if (unlikely (iter.get_coverage () >= count))
-        break; /* Work around malicious fonts. https://github.com/harfbuzz/harfbuzz/issues/363 */
+	break; /* Work around malicious fonts. https://github.com/harfbuzz/harfbuzz/issues/363 */
       if (c->glyphs->has (iter.get_glyph ()))
 	(this+alternateSet[iter.get_coverage ()]).closure (c);
     }
@@ -599,10 +599,10 @@ struct AlternateSubstFormat1
     TRACE_COLLECT_GLYPHS (this);
     if (unlikely (!(this+coverage).add_coverage (c->input))) return;
     unsigned int count = alternateSet.len;
-    for (hb_auto_t<Coverage::Iter> iter (this+coverage); iter.more (); iter.next ())
+    for (Coverage::Iter iter (this+coverage); iter.more (); iter.next ())
     {
       if (unlikely (iter.get_coverage () >= count))
-        break; /* Work around malicious fonts. https://github.com/harfbuzz/harfbuzz/issues/363 */
+	break; /* Work around malicious fonts. https://github.com/harfbuzz/harfbuzz/issues/363 */
       (this+alternateSet[iter.get_coverage ()]).collect_glyphs (c);
     }
   }
@@ -906,7 +906,7 @@ struct LigatureSubstFormat1
   inline bool intersects (const hb_set_t *glyphs) const
   {
     unsigned int count = ligatureSet.len;
-    for (hb_auto_t<Coverage::Iter> iter (this+coverage); iter.more (); iter.next ())
+    for (Coverage::Iter iter (this+coverage); iter.more (); iter.next ())
     {
       if (unlikely (iter.get_coverage () >= count))
         break; /* Work around malicious fonts. https://github.com/harfbuzz/harfbuzz/issues/363 */
@@ -921,7 +921,7 @@ struct LigatureSubstFormat1
   {
     TRACE_CLOSURE (this);
     unsigned int count = ligatureSet.len;
-    for (hb_auto_t<Coverage::Iter> iter (this+coverage); iter.more (); iter.next ())
+    for (Coverage::Iter iter (this+coverage); iter.more (); iter.next ())
     {
       if (unlikely (iter.get_coverage () >= count))
         break; /* Work around malicious fonts. https://github.com/harfbuzz/harfbuzz/issues/363 */
@@ -935,7 +935,7 @@ struct LigatureSubstFormat1
     TRACE_COLLECT_GLYPHS (this);
     if (unlikely (!(this+coverage).add_coverage (c->input))) return;
     unsigned int count = ligatureSet.len;
-    for (hb_auto_t<Coverage::Iter> iter (this+coverage); iter.more (); iter.next ())
+    for (Coverage::Iter iter (this+coverage); iter.more (); iter.next ())
     {
       if (unlikely (iter.get_coverage () >= count))
         break; /* Work around malicious fonts. https://github.com/harfbuzz/harfbuzz/issues/363 */
@@ -1114,7 +1114,7 @@ struct ReverseChainSingleSubstFormat1
 
     const ArrayOf<GlyphID> &substitute = StructAfter<ArrayOf<GlyphID> > (lookahead);
     count = substitute.len;
-    for (hb_auto_t<Coverage::Iter> iter (this+coverage); iter.more (); iter.next ())
+    for (Coverage::Iter iter (this+coverage); iter.more (); iter.next ())
     {
       if (unlikely (iter.get_coverage () >= count))
         break; /* Work around malicious fonts. https://github.com/harfbuzz/harfbuzz/issues/363 */
@@ -1449,7 +1449,10 @@ struct SubstLookup : Lookup
 
     hb_closure_context_t::return_t ret = dispatch_recurse_func (c, lookup_index);
 
-    c->flush ();
+    /* While in theory we should flush here, it will cause timeouts because a recursive
+     * lookup can keep growing the glyph set.  Skip, and outer loop will retry up to
+     * HB_CLOSURE_MAX_STAGES time, which should be enough for every realistic font. */
+    //c->flush ();
 
     return ret;
   }
@@ -1483,8 +1486,14 @@ struct GSUB : GSUBGPOS
   inline bool sanitize (hb_sanitize_context_t *c) const
   { return GSUBGPOS::sanitize<SubstLookup> (c); }
 
+  HB_INTERNAL bool is_blacklisted (hb_blob_t *blob,
+				   hb_face_t *face) const;
+
   typedef GSUBGPOS::accelerator_t<GSUB> accelerator_t;
 };
+
+
+struct GSUB_accelerator_t : GSUB::accelerator_t {};
 
 
 /* Out-of-class implementation for methods recursing */
@@ -1500,13 +1509,13 @@ struct GSUB : GSUBGPOS
 template <typename context_t>
 /*static*/ inline typename context_t::return_t SubstLookup::dispatch_recurse_func (context_t *c, unsigned int lookup_index)
 {
-  const SubstLookup &l = _get_gsub_relaxed (c->face).get_lookup (lookup_index);
+  const SubstLookup &l = c->face->table.GSUB.get_relaxed ()->table->get_lookup (lookup_index);
   return l.dispatch (c);
 }
 
 /*static*/ inline bool SubstLookup::apply_recurse_func (hb_ot_apply_context_t *c, unsigned int lookup_index)
 {
-  const SubstLookup &l = _get_gsub_relaxed (c->face).get_lookup (lookup_index);
+  const SubstLookup &l = c->face->table.GSUB.get_relaxed ()->table->get_lookup (lookup_index);
   unsigned int saved_lookup_props = c->lookup_props;
   unsigned int saved_lookup_index = c->lookup_index;
   c->set_lookup_index (lookup_index);
@@ -1516,8 +1525,6 @@ template <typename context_t>
   c->set_lookup_props (saved_lookup_props);
   return ret;
 }
-
-struct GSUB_accelerator_t : GSUB::accelerator_t {};
 
 } /* namespace OT */
 

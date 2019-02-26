@@ -4,6 +4,7 @@
 
 #include "base/synchronization/condition_variable.h"
 
+#include "base/optional.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_restrictions.h"
@@ -30,8 +31,11 @@ void ConditionVariable::Wait() {
 }
 
 void ConditionVariable::TimedWait(const TimeDelta& max_time) {
-  internal::ScopedBlockingCallWithBaseSyncPrimitives scoped_blocking_call(
-      BlockingType::MAY_BLOCK);
+  Optional<internal::ScopedBlockingCallWithBaseSyncPrimitives>
+      scoped_blocking_call;
+  if (waiting_is_blocking_)
+    scoped_blocking_call.emplace(BlockingType::MAY_BLOCK);
+
   DWORD timeout = static_cast<DWORD>(max_time.InMilliseconds());
 
 #if DCHECK_IS_ON()

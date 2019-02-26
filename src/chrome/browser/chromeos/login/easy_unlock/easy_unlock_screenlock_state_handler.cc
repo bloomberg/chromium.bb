@@ -154,8 +154,7 @@ void EasyUnlockScreenlockStateHandler::ChangeState(ScreenlockState new_state) {
   if (IsLockedState(state_))
     did_see_locked_phone_ = true;
 
-  // No hardlock UI for trial run.
-  if (!is_trial_run_ && hardlock_state_ != NO_HARDLOCK) {
+  if (hardlock_state_ != NO_HARDLOCK) {
     ShowHardlockUI();
     return;
   }
@@ -173,10 +172,7 @@ void EasyUnlockScreenlockStateHandler::ChangeState(ScreenlockState new_state) {
   proximity_auth::ScreenlockBridge::UserPodCustomIconOptions icon_options;
   icon_options.SetIcon(icon);
 
-  // Don't hardlock on trial run.
-  if (is_trial_run_)
-    icon_options.SetTrialRun();
-  else if (HardlockOnClick(state_))
+  if (HardlockOnClick(state_))
     icon_options.SetHardlockOnClick();
 
   UpdateTooltipOptions(&icon_options);
@@ -215,20 +211,6 @@ void EasyUnlockScreenlockStateHandler::MaybeShowHardlockUI() {
     ShowHardlockUI();
 }
 
-void EasyUnlockScreenlockStateHandler::SetTrialRun() {
-  if (is_trial_run_)
-    return;
-  is_trial_run_ = true;
-  RefreshScreenlockState();
-  RecordEasyUnlockTrialRunEvent(EASY_UNLOCK_TRIAL_RUN_EVENT_LAUNCHED);
-}
-
-void EasyUnlockScreenlockStateHandler::RecordClickOnLockIcon() {
-  if (!is_trial_run_)
-    return;
-  RecordEasyUnlockTrialRunEvent(EASY_UNLOCK_TRIAL_RUN_EVENT_CLICKED_LOCK_ICON);
-}
-
 void EasyUnlockScreenlockStateHandler::OnScreenDidLock(
     proximity_auth::ScreenlockBridge::LockHandler::ScreenType screen_type) {
   did_see_locked_phone_ = IsLockedState(state_);
@@ -240,7 +222,6 @@ void EasyUnlockScreenlockStateHandler::OnScreenDidUnlock(
   if (hardlock_state_ == LOGIN_FAILED)
     hardlock_state_ = NO_HARDLOCK;
   hardlock_ui_shown_ = false;
-  is_trial_run_ = false;
 
   // Upon a successful unlock event, record whether the user's phone was locked
   // at any point while the lock screen was up.
@@ -332,13 +313,9 @@ void EasyUnlockScreenlockStateHandler::UpdateTooltipOptions(
     proximity_auth::ScreenlockBridge::UserPodCustomIconOptions* icon_options) {
   size_t resource_id = 0;
   base::string16 device_name;
-  if (is_trial_run_ && state_ == ScreenlockState::AUTHENTICATED) {
-    resource_id = IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_INITIAL_AUTHENTICATED;
-  } else {
-    resource_id = GetTooltipResourceId(state_);
-    if (TooltipContainsDeviceType(state_))
-      device_name = GetDeviceName();
-  }
+  resource_id = GetTooltipResourceId(state_);
+  if (TooltipContainsDeviceType(state_))
+    device_name = GetDeviceName();
 
   if (!resource_id)
     return;
@@ -353,8 +330,7 @@ void EasyUnlockScreenlockStateHandler::UpdateTooltipOptions(
   if (tooltip.empty())
     return;
 
-  bool autoshow_tooltip =
-      is_trial_run_ || state_ != ScreenlockState::AUTHENTICATED;
+  bool autoshow_tooltip = state_ != ScreenlockState::AUTHENTICATED;
   icon_options->SetTooltip(tooltip, autoshow_tooltip);
 }
 
@@ -363,7 +339,7 @@ base::string16 EasyUnlockScreenlockStateHandler::GetDeviceName() {
 }
 
 void EasyUnlockScreenlockStateHandler::UpdateScreenlockAuthType() {
-  if (!is_trial_run_ && hardlock_state_ != NO_HARDLOCK)
+  if (hardlock_state_ != NO_HARDLOCK)
     return;
 
   // Do not override online signin.

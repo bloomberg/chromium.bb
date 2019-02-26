@@ -51,13 +51,6 @@ constexpr net::BackoffEntry::Policy kRequestAccessTokenBackoffPolicy = {
 
 }  // namespace
 
-SyncAuthManager::SyncAccountInfo::SyncAccountInfo() = default;
-
-SyncAuthManager::SyncAccountInfo::SyncAccountInfo(
-    const AccountInfo& account_info,
-    bool is_primary)
-    : account_info(account_info), is_primary(is_primary) {}
-
 SyncAuthManager::SyncAuthManager(
     syncer::SyncPrefs* sync_prefs,
     identity::IdentityManager* identity_manager,
@@ -92,9 +85,9 @@ void SyncAuthManager::RegisterForAuthNotifications() {
   sync_account_ = DetermineAccountToUse();
 }
 
-SyncAuthManager::SyncAccountInfo SyncAuthManager::GetActiveAccountInfo() const {
+syncer::SyncAccountInfo SyncAuthManager::GetActiveAccountInfo() const {
   if (!registered_for_auth_notifications_) {
-    return SyncAccountInfo();
+    return syncer::SyncAccountInfo();
   }
 
 #if defined(OS_CHROMEOS)
@@ -117,6 +110,7 @@ syncer::SyncTokenStatus SyncAuthManager::GetSyncTokenStatus() const {
   DCHECK(partial_token_status_.next_token_request_time.is_null());
 
   syncer::SyncTokenStatus token_status = partial_token_status_;
+  token_status.has_token = !access_token_.empty();
   if (request_access_token_retry_timer_.IsRunning()) {
     base::TimeDelta delta =
         request_access_token_retry_timer_.desired_run_time() -
@@ -135,7 +129,6 @@ syncer::SyncCredentials SyncAuthManager::GetCredentials() const {
   credentials.account_id = account_info.account_id;
   credentials.email = account_info.email;
   credentials.sync_token = access_token_;
-  credentials.scope_set.insert(GaiaConstants::kChromeSyncOAuth2Scope);
 
   return credentials;
 }
@@ -219,8 +212,7 @@ void SyncAuthManager::InvalidateAccessToken() {
 
   identity_manager_->RemoveAccessTokenFromCache(
       sync_account_.account_info.account_id,
-      OAuth2TokenService::ScopeSet{GaiaConstants::kChromeSyncOAuth2Scope},
-      access_token_);
+      identity::ScopeSet{GaiaConstants::kChromeSyncOAuth2Scope}, access_token_);
 
   access_token_.clear();
   credentials_changed_callback_.Run();
@@ -277,7 +269,25 @@ void SyncAuthManager::OnRefreshTokenUpdatedForAccount(
     return;
   }
 
-  if (!is_valid) {
+  // Compute the validity of the new refresh token: The identity code sets an
+  // account's refresh token to be invalid (error
+  // CREDENTIALS_REJECTED_BY_CLIENT) if the user signs out of that account on
+  // the web.
+  // TODO(blundell): Hide this logic inside IdentityManager.
+  // NOTE: We don't use |is_valid| because we will shortly be eliminating that
+  // parameter. TODO(https://crbug.com/908412): Eliminate that parameter and
+  // this comment.
+  bool is_refresh_token_valid = true;
+  GoogleServiceAuthError token_error =
+      identity_manager_->GetErrorStateOfRefreshTokenForAccount(
+          account_info.account_id);
+  if (token_error == GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
+                         GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+                             CREDENTIALS_REJECTED_BY_CLIENT)) {
+    is_refresh_token_valid = false;
+  }
+
+  if (!is_refresh_token_valid) {
     // When the refresh token is replaced by an invalid token, Sync must be
     // stopped immediately, even if the current access token is still valid.
     // This happens e.g. when the user signs out of the web with Dice enabled.
@@ -352,36 +362,16 @@ void SyncAuthManager::ResetRequestAccessTokenBackoffForTest() {
   request_access_token_backoff_.Reset();
 }
 
-SyncAuthManager::SyncAccountInfo SyncAuthManager::DetermineAccountToUse()
-    const {
+syncer::SyncAccountInfo SyncAuthManager::DetermineAccountToUse() const {
   DCHECK(registered_for_auth_notifications_);
-
-  // If there is a "primary account", i.e. the user explicitly chose to
-  // sign-in to Chrome, then always use that account.
-  if (identity_manager_->HasPrimaryAccount()) {
-    return SyncAccountInfo(identity_manager_->GetPrimaryAccountInfo(),
-                           /*is_primary=*/true);
-  }
-
-  // Otherwise, fall back to the default content area signed-in account.
-  // TODO(crbug.com/871221): Add tests for this code path.
-  if (base::FeatureList::IsEnabled(switches::kSyncStandaloneTransport) &&
-      base::FeatureList::IsEnabled(switches::kSyncSupportSecondaryAccount)) {
-    // Check if there is a content area signed-in account, and we have a refresh
-    // token for it.
-    std::vector<AccountInfo> cookie_accounts =
-        identity_manager_->GetAccountsInCookieJar("SyncAuthManager");
-    if (!cookie_accounts.empty() &&
-        identity_manager_->HasAccountWithRefreshToken(
-            cookie_accounts[0].account_id)) {
-      return SyncAccountInfo(cookie_accounts[0], /*is_primary=*/false);
-    }
-  }
-  return SyncAccountInfo();
+  return syncer::DetermineAccountToUse(
+      identity_manager_,
+      base::FeatureList::IsEnabled(switches::kSyncStandaloneTransport) &&
+          base::FeatureList::IsEnabled(switches::kSyncSupportSecondaryAccount));
 }
 
 bool SyncAuthManager::UpdateSyncAccountIfNecessary() {
-  SyncAccountInfo new_account = DetermineAccountToUse();
+  syncer::SyncAccountInfo new_account = DetermineAccountToUse();
   // If we're already using this account and its |is_primary| bit hasn't changed
   // (or there was and is no account to use), then there's nothing to do.
   if (new_account.account_info.account_id ==
@@ -395,7 +385,7 @@ bool SyncAuthManager::UpdateSyncAccountIfNecessary() {
 
   // Sign out of the old account (if any).
   if (!sync_account_.account_info.account_id.empty()) {
-    sync_account_ = SyncAccountInfo();
+    sync_account_ = syncer::SyncAccountInfo();
     // Also clear any pending request or auth errors we might have, since they
     // aren't meaningful anymore.
     Clear();
@@ -426,7 +416,7 @@ void SyncAuthManager::RequestAccessToken() {
     request_access_token_retry_timer_.Stop();
   }
 
-  const OAuth2TokenService::ScopeSet kOAuth2ScopeSet{
+  const identity::ScopeSet kOAuth2ScopeSet{
       GaiaConstants::kChromeSyncOAuth2Scope};
 
   // Invalidate any previous token, otherwise the token service will return the

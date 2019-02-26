@@ -521,7 +521,7 @@ base::ProcessHandle ProcessesTerminateFunction::GetProcessHandleOnIO(
 
   auto* host = content::BrowserChildProcessHost::FromID(child_process_host_id);
   if (host)
-    return host->GetData().GetHandle();
+    return host->GetData().GetProcess().Handle();
 
   return base::kNullProcessHandle;
 }

@@ -17,22 +17,23 @@ namespace blink {
 
 // static
 MediaMetadata* MediaMetadata::Create(ScriptState* script_state,
-                                     const MediaMetadataInit& metadata,
+                                     const MediaMetadataInit* metadata,
                                      ExceptionState& exception_state) {
-  return new MediaMetadata(script_state, metadata, exception_state);
+  return MakeGarbageCollected<MediaMetadata>(script_state, metadata,
+                                             exception_state);
 }
 
 MediaMetadata::MediaMetadata(ScriptState* script_state,
-                             const MediaMetadataInit& metadata,
+                             const MediaMetadataInit* metadata,
                              ExceptionState& exception_state)
     : notify_session_timer_(ExecutionContext::From(script_state)
                                 ->GetTaskRunner(TaskType::kMiscPlatformAPI),
                             this,
                             &MediaMetadata::NotifySessionTimerFired) {
-  title_ = metadata.title();
-  artist_ = metadata.artist();
-  album_ = metadata.album();
-  SetArtworkInternal(script_state, metadata.artwork(), exception_state);
+  title_ = metadata->title();
+  artist_ = metadata->artist();
+  album_ = metadata->album();
+  SetArtworkInternal(script_state, metadata->artwork(), exception_state);
 }
 
 String MediaMetadata::title() const {
@@ -47,7 +48,7 @@ String MediaMetadata::album() const {
   return album_;
 }
 
-const HeapVector<MediaImage>& MediaMetadata::artwork() const {
+const HeapVector<Member<MediaImage>>& MediaMetadata::artwork() const {
   return artwork_;
 }
 
@@ -79,7 +80,7 @@ void MediaMetadata::setAlbum(const String& album) {
 }
 
 void MediaMetadata::setArtwork(ScriptState* script_state,
-                               const HeapVector<MediaImage>& artwork,
+                               const HeapVector<Member<MediaImage>>& artwork,
                                ExceptionState& exception_state) {
   SetArtworkInternal(script_state, artwork, exception_state);
   NotifySessionAsync();
@@ -101,19 +102,20 @@ void MediaMetadata::NotifySessionTimerFired(TimerBase*) {
   session_->OnMetadataChanged();
 }
 
-void MediaMetadata::SetArtworkInternal(ScriptState* script_state,
-                                       const HeapVector<MediaImage>& artwork,
-                                       ExceptionState& exception_state) {
-  HeapVector<MediaImage> processed_artwork(artwork);
+void MediaMetadata::SetArtworkInternal(
+    ScriptState* script_state,
+    const HeapVector<Member<MediaImage>>& artwork,
+    ExceptionState& exception_state) {
+  HeapVector<Member<MediaImage>> processed_artwork(artwork);
 
-  for (MediaImage& image : processed_artwork) {
-    KURL url = ExecutionContext::From(script_state)->CompleteURL(image.src());
+  for (MediaImage* image : processed_artwork) {
+    KURL url = ExecutionContext::From(script_state)->CompleteURL(image->src());
     if (!url.IsValid()) {
-      exception_state.ThrowTypeError("'" + image.src() +
+      exception_state.ThrowTypeError("'" + image->src() +
                                      "' can't be resolved to a valid URL.");
       return;
     }
-    image.setSrc(url);
+    image->setSrc(url);
   }
 
   DCHECK(!exception_state.HadException());

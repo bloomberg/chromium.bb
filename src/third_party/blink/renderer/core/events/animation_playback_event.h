@@ -22,7 +22,7 @@ class AnimationPlaybackEvent final : public Event {
   }
   static AnimationPlaybackEvent* Create(
       const AtomicString& type,
-      const AnimationPlaybackEventInit& initializer) {
+      const AnimationPlaybackEventInit* initializer) {
     return new AnimationPlaybackEvent(type, initializer);
   }
 
@@ -40,7 +40,7 @@ class AnimationPlaybackEvent final : public Event {
                          double current_time,
                          double timeline_time);
   AnimationPlaybackEvent(const AtomicString&,
-                         const AnimationPlaybackEventInit&);
+                         const AnimationPlaybackEventInit*);
 
   base::Optional<double> current_time_;
   base::Optional<double> timeline_time_;

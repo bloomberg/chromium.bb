@@ -10,9 +10,9 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/variations/variations_crash_keys.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -53,7 +53,7 @@ std::pair<std::string, std::string> MakeStringPair(const std::string& a,
 }  // namespace
 
 TEST(ChildProcessFieldTrialSyncerTest, FieldTrialState) {
-  base::MessageLoop message_loop;
+  base::test::ScopedTaskEnvironment task_environment;
   base::FieldTrialList field_trial_list(nullptr);
   // We don't use the descriptor here anyways so it's ok to pass -1.
   base::FieldTrialList::CreateTrialsFromCommandLine(

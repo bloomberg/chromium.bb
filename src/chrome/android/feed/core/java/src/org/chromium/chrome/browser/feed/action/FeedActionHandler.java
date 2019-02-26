@@ -9,10 +9,10 @@ import android.support.annotation.NonNull;
 import com.google.android.libraries.feed.api.knowncontent.ContentMetadata;
 import com.google.android.libraries.feed.host.action.ActionApi;
 
-import org.chromium.blink_public.web.WebReferrerPolicy;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.feed.FeedLoggingBridge;
 import org.chromium.chrome.browser.feed.FeedOfflineIndicator;
+import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.suggestions.NavigationRecorder;
 import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.Referrer;
+import org.chromium.network.mojom.ReferrerPolicy;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
@@ -123,7 +124,7 @@ public class FeedActionHandler implements ActionApi {
         params.setReferrer(
                 new Referrer(SuggestionsConfig.getReferrerUrl(
                                      ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS),
-                        WebReferrerPolicy.ALWAYS));
+                        ReferrerPolicy.ALWAYS));
         return params;
     }
 
@@ -167,10 +168,12 @@ public class FeedActionHandler implements ActionApi {
     private void openAndRecord(int disposition, LoadUrlParams loadUrlParams, boolean isOffline) {
         Tab loadingTab = mDelegate.openUrl(disposition, loadUrlParams);
         if (loadingTab != null) {
-            // Records how long the user spending on the suggested page.
+            // Records how long the user spending on the suggested page, and whether the user got
+            // back to the NTP.
             NavigationRecorder.record(loadingTab,
                     visitData
-                    -> mLoggingBridge.onContentTargetVisited(visitData.duration, isOffline));
+                    -> mLoggingBridge.onContentTargetVisited(
+                            visitData.duration, isOffline, NewTabPage.isNTPUrl(visitData.endUrl)));
         }
         mSuggestionConsumedObserver.run();
     }

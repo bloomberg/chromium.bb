@@ -11,10 +11,10 @@
 
 PerfOutputCall::PerfOutputCall(base::TimeDelta duration,
                                const std::vector<std::string>& perf_args,
-                               const DoneCallback& callback)
+                               DoneCallback callback)
     : duration_(duration),
       perf_args_(perf_args),
-      done_callback_(callback),
+      done_callback_(std::move(callback)),
       weak_factory_(this) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -37,7 +37,7 @@ PerfOutputCall::~PerfOutputCall() {}
 void PerfOutputCall::OnIOComplete(base::Optional<std::string> result) {
   DCHECK(thread_checker_.CalledOnValidThread());
   perf_data_pipe_reader_.reset();
-  done_callback_.Run(result.value_or(std::string()));
+  std::move(done_callback_).Run(result.value_or(std::string()));
   // The callback may delete us, so it's hammertime: Can't touch |this|.
 }
 
@@ -47,6 +47,6 @@ void PerfOutputCall::OnGetPerfOutput(bool success) {
   // Signal pipe reader to shut down.
   if (!success && perf_data_pipe_reader_.get()) {
     perf_data_pipe_reader_.reset();
-    done_callback_.Run(std::string());
+    std::move(done_callback_).Run(std::string());
   }
 }

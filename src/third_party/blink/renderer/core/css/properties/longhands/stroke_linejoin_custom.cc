@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/stroke_linejoin.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* StrokeLinejoin::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -16,5 +16,5 @@ const CSSValue* StrokeLinejoin::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(svg_style.JoinStyle());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

@@ -18,7 +18,6 @@ cast_source_set("base") {
     "buffering_state.h",
     "cast_decrypt_config_impl.cc",
     "cast_decrypt_config_impl.h",
-    "cma_logging.h",
     "coded_frame_provider.cc",
     "coded_frame_provider.h",
     "decoder_buffer_adapter.cc",
@@ -47,5 +46,6 @@ cast_source_set("base") {
     "//chromecast/media/base:media_codec_support",
     "//media",
     "//media:shared_memory_support",
+    "//ui/gfx",
   ]
 }

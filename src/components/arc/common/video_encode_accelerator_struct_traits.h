@@ -11,6 +11,16 @@
 namespace mojo {
 
 template <>
+struct EnumTraits<arc::mojom::VideoFrameStorageType,
+                  media::VideoEncodeAccelerator::Config::StorageType> {
+  static arc::mojom::VideoFrameStorageType ToMojom(
+      media::VideoEncodeAccelerator::Config::StorageType input);
+  static bool FromMojom(
+      arc::mojom::VideoFrameStorageType input,
+      media::VideoEncodeAccelerator::Config::StorageType* output);
+};
+
+template <>
 struct EnumTraits<arc::mojom::VideoEncodeAccelerator::Error,
                   media::VideoEncodeAccelerator::Error> {
   static arc::mojom::VideoEncodeAccelerator::Error ToMojom(
@@ -96,6 +106,18 @@ struct StructTraits<arc::mojom::VideoEncodeAcceleratorConfigDataView,
   static bool has_h264_output_level(
       const media::VideoEncodeAccelerator::Config& input) {
     return input.h264_output_level.has_value();
+  }
+
+  static arc::mojom::VideoFrameStorageType storage_type(
+      const media::VideoEncodeAccelerator::Config& input) {
+    auto storage_type = input.storage_type.value_or(
+        media::VideoEncodeAccelerator::Config::StorageType::kShmem);
+    switch (storage_type) {
+      case media::VideoEncodeAccelerator::Config::StorageType::kShmem:
+        return arc::mojom::VideoFrameStorageType::SHMEM;
+      case media::VideoEncodeAccelerator::Config::StorageType::kDmabuf:
+        return arc::mojom::VideoFrameStorageType::DMABUF;
+    }
   }
 
   static bool Read(arc::mojom::VideoEncodeAcceleratorConfigDataView input,

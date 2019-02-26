@@ -26,7 +26,7 @@ class LogoutConfirmationControllerTest : public testing::Test {
   LogoutConfirmationControllerTest();
   ~LogoutConfirmationControllerTest() override;
 
-  void LogOut();
+  void LogOut(LogoutConfirmationController::Source source);
 
   bool log_out_called_;
 
@@ -44,20 +44,23 @@ LogoutConfirmationControllerTest::LogoutConfirmationControllerTest()
       runner_(new base::TestMockTimeTaskRunner),
       runner_handle_(runner_) {
   controller_.SetClockForTesting(runner_->GetMockTickClock());
-  controller_.SetLogoutClosureForTesting(base::Bind(
+  controller_.SetLogoutCallbackForTesting(base::BindRepeating(
       &LogoutConfirmationControllerTest::LogOut, base::Unretained(this)));
 }
 
 LogoutConfirmationControllerTest::~LogoutConfirmationControllerTest() = default;
 
-void LogoutConfirmationControllerTest::LogOut() {
+void LogoutConfirmationControllerTest::LogOut(
+    LogoutConfirmationController::Source source) {
   log_out_called_ = true;
 }
 
 // Verifies that the user is logged out immediately if logout confirmation with
 // a zero-length countdown is requested.
 TEST_F(LogoutConfirmationControllerTest, ZeroDuration) {
-  controller_.ConfirmLogout(runner_->NowTicks());
+  controller_.ConfirmLogout(
+      runner_->NowTicks(),
+      LogoutConfirmationController::Source::kShelfExitButton);
   EXPECT_FALSE(log_out_called_);
   runner_->FastForwardBy(base::TimeDelta());
   EXPECT_TRUE(log_out_called_);
@@ -65,8 +68,9 @@ TEST_F(LogoutConfirmationControllerTest, ZeroDuration) {
 
 // Verifies that the user is logged out when the countdown expires.
 TEST_F(LogoutConfirmationControllerTest, DurationExpired) {
-  controller_.ConfirmLogout(runner_->NowTicks() +
-                            base::TimeDelta::FromSeconds(10));
+  controller_.ConfirmLogout(
+      runner_->NowTicks() + base::TimeDelta::FromSeconds(10),
+      LogoutConfirmationController::Source::kShelfExitButton);
   EXPECT_FALSE(log_out_called_);
   runner_->FastForwardBy(base::TimeDelta::FromSeconds(9));
   EXPECT_FALSE(log_out_called_);
@@ -78,13 +82,15 @@ TEST_F(LogoutConfirmationControllerTest, DurationExpired) {
 // request's countdown ends before the original request's, the user is logged
 // out when the new countdown expires.
 TEST_F(LogoutConfirmationControllerTest, DurationShortened) {
-  controller_.ConfirmLogout(runner_->NowTicks() +
-                            base::TimeDelta::FromSeconds(30));
+  controller_.ConfirmLogout(
+      runner_->NowTicks() + base::TimeDelta::FromSeconds(30),
+      LogoutConfirmationController::Source::kShelfExitButton);
   EXPECT_FALSE(log_out_called_);
   runner_->FastForwardBy(base::TimeDelta::FromSeconds(9));
   EXPECT_FALSE(log_out_called_);
-  controller_.ConfirmLogout(runner_->NowTicks() +
-                            base::TimeDelta::FromSeconds(10));
+  controller_.ConfirmLogout(
+      runner_->NowTicks() + base::TimeDelta::FromSeconds(10),
+      LogoutConfirmationController::Source::kShelfExitButton);
   runner_->FastForwardBy(base::TimeDelta::FromSeconds(9));
   EXPECT_FALSE(log_out_called_);
   runner_->FastForwardBy(base::TimeDelta::FromSeconds(2));
@@ -95,13 +101,15 @@ TEST_F(LogoutConfirmationControllerTest, DurationShortened) {
 // request's countdown ends after the original request's, the user is logged
 // out when the original countdown expires.
 TEST_F(LogoutConfirmationControllerTest, DurationExtended) {
-  controller_.ConfirmLogout(runner_->NowTicks() +
-                            base::TimeDelta::FromSeconds(10));
+  controller_.ConfirmLogout(
+      runner_->NowTicks() + base::TimeDelta::FromSeconds(10),
+      LogoutConfirmationController::Source::kShelfExitButton);
   EXPECT_FALSE(log_out_called_);
   runner_->FastForwardBy(base::TimeDelta::FromSeconds(9));
   EXPECT_FALSE(log_out_called_);
-  controller_.ConfirmLogout(runner_->NowTicks() +
-                            base::TimeDelta::FromSeconds(10));
+  controller_.ConfirmLogout(
+      runner_->NowTicks() + base::TimeDelta::FromSeconds(10),
+      LogoutConfirmationController::Source::kShelfExitButton);
   runner_->FastForwardBy(base::TimeDelta::FromSeconds(2));
   EXPECT_TRUE(log_out_called_);
 }
@@ -109,8 +117,9 @@ TEST_F(LogoutConfirmationControllerTest, DurationExtended) {
 // Verifies that when the screen is locked while the countdown is running, the
 // user is not logged out, even when the original countdown expires.
 TEST_F(LogoutConfirmationControllerTest, Lock) {
-  controller_.ConfirmLogout(runner_->NowTicks() +
-                            base::TimeDelta::FromSeconds(10));
+  controller_.ConfirmLogout(
+      runner_->NowTicks() + base::TimeDelta::FromSeconds(10),
+      LogoutConfirmationController::Source::kShelfExitButton);
   EXPECT_FALSE(log_out_called_);
   controller_.OnLockStateChanged(true);
   runner_->FastForwardUntilNoTasksRemain();
@@ -120,8 +129,9 @@ TEST_F(LogoutConfirmationControllerTest, Lock) {
 // Verifies that when the user confirms the logout request, the user is logged
 // out immediately.
 TEST_F(LogoutConfirmationControllerTest, UserAccepted) {
-  controller_.ConfirmLogout(runner_->NowTicks() +
-                            base::TimeDelta::FromSeconds(10));
+  controller_.ConfirmLogout(
+      runner_->NowTicks() + base::TimeDelta::FromSeconds(10),
+      LogoutConfirmationController::Source::kShelfExitButton);
   EXPECT_FALSE(log_out_called_);
   controller_.OnLogoutConfirmed();
   EXPECT_TRUE(log_out_called_);
@@ -130,8 +140,9 @@ TEST_F(LogoutConfirmationControllerTest, UserAccepted) {
 // Verifies that when the user denies the logout request, the user is not logged
 // out, even when the original countdown expires.
 TEST_F(LogoutConfirmationControllerTest, UserDenied) {
-  controller_.ConfirmLogout(runner_->NowTicks() +
-                            base::TimeDelta::FromSeconds(10));
+  controller_.ConfirmLogout(
+      runner_->NowTicks() + base::TimeDelta::FromSeconds(10),
+      LogoutConfirmationController::Source::kShelfExitButton);
   EXPECT_FALSE(log_out_called_);
   controller_.OnDialogClosed();
   runner_->FastForwardUntilNoTasksRemain();
@@ -142,15 +153,17 @@ TEST_F(LogoutConfirmationControllerTest, UserDenied) {
 // request is handled correctly and the user is logged out when the countdown
 // expires.
 TEST_F(LogoutConfirmationControllerTest, DurationExpiredAfterDeniedRequest) {
-  controller_.ConfirmLogout(runner_->NowTicks() +
-                            base::TimeDelta::FromSeconds(10));
+  controller_.ConfirmLogout(
+      runner_->NowTicks() + base::TimeDelta::FromSeconds(10),
+      LogoutConfirmationController::Source::kShelfExitButton);
   EXPECT_FALSE(log_out_called_);
   controller_.OnDialogClosed();
   runner_->FastForwardUntilNoTasksRemain();
   EXPECT_FALSE(log_out_called_);
 
-  controller_.ConfirmLogout(runner_->NowTicks() +
-                            base::TimeDelta::FromSeconds(10));
+  controller_.ConfirmLogout(
+      runner_->NowTicks() + base::TimeDelta::FromSeconds(10),
+      LogoutConfirmationController::Source::kShelfExitButton);
   EXPECT_FALSE(log_out_called_);
   runner_->FastForwardBy(base::TimeDelta::FromSeconds(9));
   EXPECT_FALSE(log_out_called_);

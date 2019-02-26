@@ -45,7 +45,7 @@ NavigatorStorageQuota& NavigatorStorageQuota::From(Navigator& navigator) {
   NavigatorStorageQuota* supplement =
       Supplement<Navigator>::From<NavigatorStorageQuota>(navigator);
   if (!supplement) {
-    supplement = new NavigatorStorageQuota(navigator);
+    supplement = MakeGarbageCollected<NavigatorStorageQuota>(navigator);
     ProvideTo(navigator, supplement);
   }
   return *supplement;
@@ -82,7 +82,7 @@ DeprecatedStorageQuota* NavigatorStorageQuota::webkitPersistentStorage() const {
 
 StorageManager* NavigatorStorageQuota::storage() const {
   if (!storage_manager_)
-    storage_manager_ = new StorageManager();
+    storage_manager_ = MakeGarbageCollected<StorageManager>();
   return storage_manager_.Get();
 }
 

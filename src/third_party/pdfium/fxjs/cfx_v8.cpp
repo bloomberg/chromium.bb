@@ -150,11 +150,7 @@ int CFX_V8::ToInt32(v8::Local<v8::Value> pValue) {
 bool CFX_V8::ToBoolean(v8::Local<v8::Value> pValue) {
   if (pValue.IsEmpty())
     return false;
-  v8::Local<v8::Context> context = m_pIsolate->GetCurrentContext();
-  v8::MaybeLocal<v8::Boolean> maybe_boolean = pValue->ToBoolean(context);
-  if (maybe_boolean.IsEmpty())
-    return false;
-  return maybe_boolean.ToLocalChecked()->Value();
+  return pValue->BooleanValue(m_pIsolate.Get());
 }
 
 double CFX_V8::ToDouble(v8::Local<v8::Value> pValue) {
@@ -206,20 +202,17 @@ v8::Local<v8::Array> CFX_V8::ToArray(v8::Local<v8::Value> pValue) {
 void* CFX_V8ArrayBufferAllocator::Allocate(size_t length) {
   if (length > kMaxAllowedBytes)
     return nullptr;
-  void* p = AllocateUninitialized(length);
-  if (p)
-    memset(p, 0, length);
-  return p;
+  return GetArrayBufferPartitionAllocator().root()->AllocFlags(
+      pdfium::base::PartitionAllocZeroFill, length, "CFX_V8ArrayBuffer");
 }
 
 void* CFX_V8ArrayBufferAllocator::AllocateUninitialized(size_t length) {
   if (length > kMaxAllowedBytes)
     return nullptr;
-  return pdfium::base::PartitionAllocGeneric(
-      gArrayBufferPartitionAllocator.root(), length, "CFX_V8ArrayBuffer");
+  return GetArrayBufferPartitionAllocator().root()->Alloc(length,
+                                                          "CFX_V8ArrayBuffer");
 }
 
 void CFX_V8ArrayBufferAllocator::Free(void* data, size_t length) {
-  pdfium::base::PartitionFreeGeneric(gArrayBufferPartitionAllocator.root(),
-                                     data);
+  GetArrayBufferPartitionAllocator().root()->Free(data);
 }

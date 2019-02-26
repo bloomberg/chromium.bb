@@ -38,7 +38,7 @@ double ClampToRange(const double value, const double min, const double max) {
 XRWebGLLayer* XRWebGLLayer::Create(
     XRSession* session,
     const WebGLRenderingContextOrWebGL2RenderingContext& context,
-    const XRWebGLLayerInit& initializer,
+    const XRWebGLLayerInit* initializer,
     ExceptionState& exception_state) {
   if (session->ended()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
@@ -68,15 +68,15 @@ XRWebGLLayer* XRWebGLLayer::Create(
     return nullptr;
   }
 
-  bool want_antialiasing = initializer.antialias();
-  bool want_depth_buffer = initializer.depth();
-  bool want_stencil_buffer = initializer.stencil();
-  bool want_alpha_channel = initializer.alpha();
-  bool want_multiview = initializer.multiview();
+  bool want_antialiasing = initializer->antialias();
+  bool want_depth_buffer = initializer->depth();
+  bool want_stencil_buffer = initializer->stencil();
+  bool want_alpha_channel = initializer->alpha();
+  bool want_multiview = initializer->multiview();
 
   double framebuffer_scale = 1.0;
 
-  if (initializer.hasFramebufferScaleFactor()) {
+  if (initializer->hasFramebufferScaleFactor()) {
     // The max size will be either the native resolution or the default
     // if that happens to be larger than the native res. (That can happen on
     // desktop systems.)
@@ -86,7 +86,7 @@ XRWebGLLayer* XRWebGLLayer::Create(
     // small to see or unreasonably large.
     // TODO: Would be best to have the max value communicated from the service
     // rather than limited to the native res.
-    framebuffer_scale = ClampToRange(initializer.framebufferScaleFactor(),
+    framebuffer_scale = ClampToRange(initializer->framebufferScaleFactor(),
                                      kFramebufferMinScale, max_scale);
   }
 
@@ -110,8 +110,9 @@ XRWebGLLayer* XRWebGLLayer::Create(
     return nullptr;
   }
 
-  return new XRWebGLLayer(session, webgl_context, std::move(drawing_buffer),
-                          framebuffer, framebuffer_scale);
+  return MakeGarbageCollected<XRWebGLLayer>(session, webgl_context,
+                                            std::move(drawing_buffer),
+                                            framebuffer, framebuffer_scale);
 }
 
 XRWebGLLayer::XRWebGLLayer(XRSession* session,
@@ -196,13 +197,13 @@ void XRWebGLLayer::UpdateViewports() {
   viewports_dirty_ = false;
 
   if (session()->immersive()) {
-    left_viewport_ =
-        new XRViewport(0, 0, framebuffer_width * 0.5 * viewport_scale_,
-                       framebuffer_height * viewport_scale_);
-    right_viewport_ =
-        new XRViewport(framebuffer_width * 0.5 * viewport_scale_, 0,
-                       framebuffer_width * 0.5 * viewport_scale_,
-                       framebuffer_height * viewport_scale_);
+    left_viewport_ = MakeGarbageCollected<XRViewport>(
+        0, 0, framebuffer_width * 0.5 * viewport_scale_,
+        framebuffer_height * viewport_scale_);
+    right_viewport_ = MakeGarbageCollected<XRViewport>(
+        framebuffer_width * 0.5 * viewport_scale_, 0,
+        framebuffer_width * 0.5 * viewport_scale_,
+        framebuffer_height * viewport_scale_);
 
     session()->device()->frameProvider()->UpdateWebGLLayerViewports(this);
 
@@ -243,8 +244,9 @@ void XRWebGLLayer::UpdateViewports() {
                                         FloatPoint(right, bottom));
     }
   } else {
-    left_viewport_ = new XRViewport(0, 0, framebuffer_width * viewport_scale_,
-                                    framebuffer_height * viewport_scale_);
+    left_viewport_ = MakeGarbageCollected<XRViewport>(
+        0, 0, framebuffer_width * viewport_scale_,
+        framebuffer_height * viewport_scale_);
   }
 }
 

@@ -56,6 +56,11 @@ ppapi::ScopedPPVar PepperTryCatch::FromV8(v8::Local<v8::Value> v8_value) {
   return result;
 }
 
+ppapi::ScopedPPVar PepperTryCatch::FromV8Maybe(
+    v8::MaybeLocal<v8::Value> v8_value) {
+  return FromV8(v8_value.FromMaybe(v8::Local<v8::Value>()));
+}
+
 PepperTryCatchV8::PepperTryCatchV8(PepperPluginInstanceImpl* instance,
                                    V8VarConverter* var_converter,
                                    v8::Isolate* isolate)

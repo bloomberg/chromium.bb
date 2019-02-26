@@ -9,9 +9,15 @@
 namespace ui {
 
 // static
-std::unique_ptr<KeyboardHook> KeyboardHook::Create(
+std::unique_ptr<KeyboardHook> KeyboardHook::CreateModifierKeyboardHook(
     base::Optional<base::flat_set<DomCode>> dom_codes,
     gfx::AcceleratedWidget accelerated_widget,
+    KeyEventCallback callback) {
+  return nullptr;
+}
+
+// static
+std::unique_ptr<KeyboardHook> KeyboardHook::CreateMediaKeyboardHook(
     KeyEventCallback callback) {
   return nullptr;
 }

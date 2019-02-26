@@ -20,7 +20,7 @@ const char HTMLIFrameElementPayments::kSupplementName[] =
 bool HTMLIFrameElementPayments::FastHasAttribute(
     const QualifiedName& name,
     const HTMLIFrameElement& element) {
-  DCHECK(name == HTMLNames::allowpaymentrequestAttr);
+  DCHECK(name == html_names::kAllowpaymentrequestAttr);
   return element.FastHasAttribute(name);
 }
 
@@ -28,7 +28,7 @@ bool HTMLIFrameElementPayments::FastHasAttribute(
 void HTMLIFrameElementPayments::SetBooleanAttribute(const QualifiedName& name,
                                                     HTMLIFrameElement& element,
                                                     bool value) {
-  DCHECK(name == HTMLNames::allowpaymentrequestAttr);
+  DCHECK(name == html_names::kAllowpaymentrequestAttr);
   element.SetBooleanAttribute(name, value);
 }
 
@@ -38,7 +38,7 @@ HTMLIFrameElementPayments& HTMLIFrameElementPayments::From(
   HTMLIFrameElementPayments* supplement =
       Supplement<HTMLIFrameElement>::From<HTMLIFrameElementPayments>(iframe);
   if (!supplement) {
-    supplement = new HTMLIFrameElementPayments();
+    supplement = MakeGarbageCollected<HTMLIFrameElementPayments>();
     ProvideTo(iframe, supplement);
   }
   return *supplement;
@@ -48,7 +48,7 @@ HTMLIFrameElementPayments& HTMLIFrameElementPayments::From(
 bool HTMLIFrameElementPayments::AllowPaymentRequest(
     HTMLIFrameElement& element) {
   return RuntimeEnabledFeatures::PaymentRequestEnabled() &&
-         element.FastHasAttribute(HTMLNames::allowpaymentrequestAttr);
+         element.FastHasAttribute(html_names::kAllowpaymentrequestAttr);
 }
 
 void HTMLIFrameElementPayments::Trace(blink::Visitor* visitor) {

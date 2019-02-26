@@ -81,7 +81,9 @@ int EventFlagsFromNative(const PlatformEvent& native_event) {
 }
 
 base::TimeTicks EventTimeFromNative(const PlatformEvent& native_event) {
-  return EventTimeFromXEvent(*native_event);
+  base::TimeTicks timestamp = EventTimeFromXEvent(*native_event);
+  ValidateEventTimeClock(&timestamp);
+  return timestamp;
 }
 
 gfx::PointF EventLocationFromNative(const PlatformEvent& native_event) {

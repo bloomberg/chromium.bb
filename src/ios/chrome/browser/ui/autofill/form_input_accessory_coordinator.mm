@@ -4,19 +4,34 @@
 
 #import "ios/chrome/browser/ui/autofill/form_input_accessory_coordinator.h"
 
+#include <vector>
+
 #include "base/mac/foundation_util.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/common/autofill_features.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
+#include "components/keyed_service/core/service_access_type.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view_controller.h"
+#include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
+#include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory_mediator.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/address_coordinator.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/card_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_accessory_view_controller.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_injection_handler.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/password_coordinator.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
+#include "ios/chrome/grit/ios_strings.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface FormInputAccessoryCoordinator ()<
+@interface FormInputAccessoryCoordinator () <
+    AutofillSecurityAlertPresenter,
+    AddressCoordinatorDelegate,
+    CardCoordinatorDelegate,
     ManualFillAccessoryViewControllerDelegate,
     PasswordCoordinatorDelegate>
 
@@ -27,10 +42,6 @@
 // The View Controller for the input accessory view.
 @property(nonatomic, strong)
     FormInputAccessoryViewController* formInputAccessoryViewController;
-
-// The manual fill accessory to show above the keyboard.
-@property(nonatomic, strong)
-    ManualFillAccessoryViewController* manualFillAccessoryViewController;
 
 // The object in charge of interacting with the web view. Used to fill the data
 // in the forms.
@@ -45,14 +56,6 @@
 
 @implementation FormInputAccessoryCoordinator
 
-@synthesize formInputAccessoryMediator = _formInputAccessoryMediator;
-@synthesize formInputAccessoryViewController =
-    _formInputAccessoryViewController;
-@synthesize manualFillAccessoryViewController =
-    _manualFillAccessoryViewController;
-@synthesize webStateList = _webStateList;
-@synthesize manualFillInjectionHandler = _manualFillInjectionHandler;
-
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                               browserState:
                                   (ios::ChromeBrowserState*)browserState
@@ -65,26 +68,29 @@
     _webStateList = webStateList;
 
     _manualFillInjectionHandler =
-        [[ManualFillInjectionHandler alloc] initWithWebStateList:webStateList];
+        [[ManualFillInjectionHandler alloc] initWithWebStateList:webStateList
+                                          securityAlertPresenter:self];
 
     _formInputAccessoryViewController =
-        [[FormInputAccessoryViewController alloc] init];
+        [[FormInputAccessoryViewController alloc]
+            initWithManualFillAccessoryViewControllerDelegate:self];
 
-    _manualFillAccessoryViewController =
-        [[ManualFillAccessoryViewController alloc] initWithDelegate:self];
+    auto passwordStore = IOSChromePasswordStoreFactory::GetForBrowserState(
+        browserState, ServiceAccessType::EXPLICIT_ACCESS);
+    autofill::PersonalDataManager* personalDataManager =
+        autofill::PersonalDataManagerFactory::GetForBrowserState(browserState);
 
     _formInputAccessoryMediator = [[FormInputAccessoryMediator alloc]
-        initWithConsumer:self.formInputAccessoryViewController
-            webStateList:webStateList];
-    _formInputAccessoryMediator.manualFillAccessoryViewController =
-        _manualFillAccessoryViewController;
+           initWithConsumer:self.formInputAccessoryViewController
+               webStateList:webStateList
+        personalDataManager:personalDataManager
+              passwordStore:passwordStore];
   }
   return self;
 }
 
 - (void)stop {
   [self stopChildren];
-  [self.manualFillAccessoryViewController reset];
   [self.formInputAccessoryViewController restoreOriginalKeyboardView];
 }
 
@@ -97,7 +103,7 @@
   [self.childCoordinators removeAllObjects];
 }
 
-- (void)startPasswords {
+- (void)startPasswordsFromButton:(UIButton*)button {
   ManualFillPasswordCoordinator* passwordCoordinator =
       [[ManualFillPasswordCoordinator alloc]
           initWithBaseViewController:self.baseViewController
@@ -105,11 +111,47 @@
                         webStateList:self.webStateList
                     injectionHandler:self.manualFillInjectionHandler];
   passwordCoordinator.delegate = self;
-  [self.formInputAccessoryViewController
-      presentView:passwordCoordinator.viewController.view];
-  [self.childCoordinators addObject:passwordCoordinator];
+  if (IsIPadIdiom()) {
+    [passwordCoordinator presentFromButton:button];
+  } else {
+    [self.formInputAccessoryViewController
+        presentView:passwordCoordinator.viewController.view];
+  }
 
-  [self.formInputAccessoryMediator disableSuggestions];
+  [self.childCoordinators addObject:passwordCoordinator];
+}
+
+- (void)startCardsFromButton:(UIButton*)button {
+  CardCoordinator* cardCoordinator = [[CardCoordinator alloc]
+      initWithBaseViewController:self.baseViewController
+                    browserState:self.browserState
+                    webStateList:self.webStateList
+                injectionHandler:self.manualFillInjectionHandler];
+  cardCoordinator.delegate = self;
+  if (IsIPadIdiom()) {
+    [cardCoordinator presentFromButton:button];
+  } else {
+    [self.formInputAccessoryViewController
+        presentView:cardCoordinator.viewController.view];
+  }
+
+  [self.childCoordinators addObject:cardCoordinator];
+}
+
+- (void)startAddressFromButton:(UIButton*)button {
+  AddressCoordinator* addressCoordinator = [[AddressCoordinator alloc]
+      initWithBaseViewController:self.baseViewController
+                    browserState:self.browserState
+                injectionHandler:self.manualFillInjectionHandler];
+  addressCoordinator.delegate = self;
+  if (IsIPadIdiom()) {
+    [addressCoordinator presentFromButton:button];
+  } else {
+    [self.formInputAccessoryViewController
+        presentView:addressCoordinator.viewController.view];
+  }
+
+  [self.childCoordinators addObject:addressCoordinator];
 }
 
 #pragma mark - ManualFillAccessoryViewControllerDelegate
@@ -117,27 +159,77 @@
 - (void)keyboardButtonPressed {
   [self stopChildren];
   [self.formInputAccessoryMediator enableSuggestions];
+  [self.formInputAccessoryViewController unlockManualFallbackView];
 }
 
-- (void)accountButtonPressed {
+- (void)accountButtonPressed:(UIButton*)sender {
   [self stopChildren];
-  // TODO(crbug.com/845472): implement.
+  [self startAddressFromButton:sender];
+  [self.formInputAccessoryViewController lockManualFallbackView];
+  [self.formInputAccessoryMediator disableSuggestions];
 }
 
-- (void)cardButtonPressed {
+- (void)cardButtonPressed:(UIButton*)sender {
   [self stopChildren];
-  // TODO(crbug.com/845472): implement.
+  [self startCardsFromButton:sender];
+  [self.formInputAccessoryViewController lockManualFallbackView];
+  [self.formInputAccessoryMediator disableSuggestions];
 }
 
-- (void)passwordButtonPressed {
+- (void)passwordButtonPressed:(UIButton*)sender {
   [self stopChildren];
-  [self startPasswords];
+  [self startPasswordsFromButton:sender];
+  [self.formInputAccessoryViewController lockManualFallbackView];
+  [self.formInputAccessoryMediator disableSuggestions];
+}
+
+#pragma mark - FallbackCoordinatorDelegate
+
+- (void)fallbackCoordinatorDidDismissPopover:
+    (FallbackCoordinator*)fallbackCoordinator {
+  [self.formInputAccessoryMediator enableSuggestions];
+  [self.formInputAccessoryViewController resetManualFallbackIcons];
 }
 
 #pragma mark - PasswordCoordinatorDelegate
 
 - (void)openPasswordSettings {
   [self.delegate openPasswordSettings];
+}
+
+#pragma mark - CardCoordinatorDelegate
+
+- (void)openCardSettings {
+  [self.delegate openCreditCardSettings];
+}
+
+#pragma mark - AddressCoordinatorDelegate
+
+- (void)openAddressSettings {
+  [self.delegate openAddressSettings];
+}
+
+#pragma mark - AutofillSecurityAlertPresenter
+
+- (void)presentSecurityWarningAlertWithText:(NSString*)body {
+  NSString* alertTitle =
+      l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_NOT_SECURE_TITLE);
+  NSString* defaltActionTitle =
+      l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_NOT_SECURE_OK_BUTTON);
+
+  UIAlertController* alert =
+      [UIAlertController alertControllerWithTitle:alertTitle
+                                          message:body
+                                   preferredStyle:UIAlertControllerStyleAlert];
+  UIAlertAction* defaultAction =
+      [UIAlertAction actionWithTitle:defaltActionTitle
+                               style:UIAlertActionStyleDefault
+                             handler:^(UIAlertAction* action){
+                             }];
+  [alert addAction:defaultAction];
+  [self.baseViewController presentViewController:alert
+                                        animated:YES
+                                      completion:nil];
 }
 
 @end

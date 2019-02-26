@@ -86,5 +86,28 @@ union FileChooserFileInfo {
   FileSystemFileInfo file_system;
 };
 
-// TODO(tkent): Add FileChooserFactory, FileChooser, and FileChooseClient.
-// crbug.com/869257
+// Represents the result of FileChooser::OpenFileChooser() or
+// EnumerateChosenDirectory().
+struct FileChooserResult {
+  // Selected files.
+  array<FileChooserFileInfo> files;
+
+  // Requested base directory.
+  // This is a user-chosen path in a case of OpenFileChooser() with
+  // mode=kUploadFolder.
+  // This is |directory_path| in a case of EnumerateChosenDirectory().
+  // Otherwise, it's an empty FilePath.
+  mojo_base.mojom.FilePath base_directory;
+};
+
+// An interface to receive file chooser requests.
+interface FileChooser {
+  // Ask a user to choose files interactively.  Null |result| is returned if the
+  // user canceled a dialog, or the request is not accepted.
+  OpenFileChooser(FileChooserParams params) => (FileChooserResult? result);
+
+  // Ask to enumerate files which are descendants of the specified directory.
+  // Null |result| is returned if the enumeration request is not accepted.
+  EnumerateChosenDirectory(mojo_base.mojom.FilePath directory_path)
+       => (FileChooserResult? result);
+};

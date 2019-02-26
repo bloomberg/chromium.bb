@@ -190,6 +190,10 @@ std::string BrowserDMTokenStorageWin::InitDMToken() {
   return dm_token;
 }
 
+bool BrowserDMTokenStorageWin::InitEnrollmentErrorOption() {
+  return InstallUtil::ShouldCloudManagementBlockOnFailure();
+}
+
 void BrowserDMTokenStorageWin::SaveDMToken(const std::string& token) {
   base::PostTaskAndReplyWithResult(
       com_sta_task_runner_.get(), FROM_HERE,

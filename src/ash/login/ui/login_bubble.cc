@@ -36,6 +36,7 @@
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/view_properties.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
@@ -96,8 +97,10 @@ class LoginErrorBubbleView : public LoginBaseBubbleView {
  public:
   LoginErrorBubbleView(views::View* content,
                        views::View* anchor_view,
-                       aura::Window* container)
-      : LoginBaseBubbleView(anchor_view, container) {
+                       aura::Window* container,
+                       bool show_persistently)
+      : LoginBaseBubbleView(anchor_view, container),
+        show_persistently_(show_persistently) {
     set_anchor_view_insets(
         gfx::Insets(kAnchorViewErrorBubbleVerticalSpacingDp, 0));
 
@@ -125,6 +128,9 @@ class LoginErrorBubbleView : public LoginBaseBubbleView {
 
   ~LoginErrorBubbleView() override = default;
 
+  // LoginBaseBubbleView:
+  bool IsPersistent() const override { return show_persistently_; }
+
   // views::View:
   const char* GetClassName() const override { return "LoginErrorBubbleView"; }
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
@@ -132,6 +138,8 @@ class LoginErrorBubbleView : public LoginBaseBubbleView {
   }
 
  private:
+  bool show_persistently_;
+
   DISALLOW_COPY_AND_ASSIGN(LoginErrorBubbleView);
 };
 
@@ -185,11 +193,13 @@ class LoginUserMenuView : public LoginBaseBubbleView,
                     user_manager::UserType type,
                     bool is_owner,
                     views::View* anchor_view,
+                    LoginButton* bubble_opener_,
                     bool show_remove_user,
                     base::OnceClosure on_remove_user_warning_shown,
                     base::OnceClosure on_remove_user_requested)
       : LoginBaseBubbleView(anchor_view),
         bubble_(bubble),
+        bubble_opener_(bubble_opener_),
         on_remove_user_warning_shown_(std::move(on_remove_user_warning_shown)),
         on_remove_user_requested_(std::move(on_remove_user_requested)) {
     // This view has content the user can interact with if the remove user
@@ -316,14 +326,30 @@ class LoginUserMenuView : public LoginBaseBubbleView,
       remove_user_button_->SetAccessibleName(remove_user_label_->text());
       container->AddChildView(remove_user_button_);
     }
+  }
 
-    // The user menu is focusable so that the we can detect when to refocus the
-    // lock window from tab navigation, otherwise focus will be trapped inside
-    // of the bubble.
-    SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
+  void RequestFocus() override {
+    // This view has no actual interesting contents to focus, so immediately
+    // forward to the button.
+    if (remove_user_button_)
+      remove_user_button_->RequestFocus();
+  }
+
+  void AddedToWidget() override {
+    LoginBaseBubbleView::AddedToWidget();
+    // Set up focus traversable parent so that keyboard focus can continue in
+    // the lock window, otherwise focus will be trapped inside the bubble.
+    if (GetAnchorView()) {
+      GetWidget()->SetFocusTraversableParent(
+          anchor_widget()->GetFocusTraversable());
+      GetWidget()->SetFocusTraversableParentView(GetAnchorView());
+    }
   }
 
   ~LoginUserMenuView() override = default;
+
+  // LoginBaseBubbleView:
+  LoginButton* GetBubbleOpener() const override { return bubble_opener_; }
 
   // views::View:
   const char* GetClassName() const override { return "LoginUserMenuView"; }
@@ -333,16 +359,6 @@ class LoginUserMenuView : public LoginBaseBubbleView,
     // the margin width here. Margin height is accounted for by the layout code.
     size.Enlarge(kUserMenuMarginWidth, 0);
     return size;
-  }
-  void OnFocus() override {
-    // This view has no actual interesting contents to focus, so immediately
-    // forward to the button.
-    remove_user_button_->RequestFocus();
-  }
-  void AboutToRequestFocusFromTabTraversal(bool reverse) override {
-    // Redirect the focus event to the lock screen.
-    Shell::Get()->focus_cycler()->FocusWidget(LockScreen::Get()->window());
-    LockScreen::Get()->window()->GetFocusManager()->AdvanceFocus(reverse);
   }
 
   // views::ButtonListener:
@@ -384,6 +400,7 @@ class LoginUserMenuView : public LoginBaseBubbleView,
 
  private:
   LoginBubble* bubble_ = nullptr;
+  LoginButton* bubble_opener_ = nullptr;
   base::OnceClosure on_remove_user_warning_shown_;
   base::OnceClosure on_remove_user_requested_;
   views::View* remove_user_confirm_data_ = nullptr;
@@ -447,14 +464,14 @@ LoginBubble::~LoginBubble() {
 
 void LoginBubble::ShowErrorBubble(views::View* content,
                                   views::View* anchor_view,
-                                  uint32_t flags) {
+                                  bool show_persistently) {
   if (bubble_view_)
     CloseImmediately();
 
-  flags_ = flags;
   aura::Window* menu_container = Shell::GetContainer(
       Shell::GetPrimaryRootWindow(), kShellWindowId_MenuContainer);
-  bubble_view_ = new LoginErrorBubbleView(content, anchor_view, menu_container);
+  bubble_view_ = new LoginErrorBubbleView(content, anchor_view, menu_container,
+                                          show_persistently);
 
   Show();
 }
@@ -471,13 +488,13 @@ void LoginBubble::ShowUserMenu(const base::string16& username,
   if (bubble_view_)
     CloseImmediately();
 
-  flags_ = kFlagsNone;
-  bubble_opener_ = bubble_opener;
-  bubble_view_ = new LoginUserMenuView(this, username, email, type, is_owner,
-                                       anchor_view, show_remove_user,
-                                       std::move(on_remove_user_warning_shown),
-                                       std::move(on_remove_user_requested));
-  bool had_focus = bubble_opener_->HasFocus();
+  bubble_view_ = new LoginUserMenuView(
+      this, username, email, type, is_owner, anchor_view, bubble_opener,
+      show_remove_user, std::move(on_remove_user_warning_shown),
+      std::move(on_remove_user_requested));
+  // Prevent focus from going into |bubble_view_|.
+  bool had_focus = bubble_view_->GetBubbleOpener() &&
+                   bubble_view_->GetBubbleOpener()->HasFocus();
   Show();
   if (had_focus) {
     // Try to focus the bubble view only if the bubble opener was focused.
@@ -490,19 +507,16 @@ void LoginBubble::ShowTooltip(const base::string16& message,
   if (bubble_view_)
     CloseImmediately();
 
-  flags_ = kFlagsNone;
   bubble_view_ = new LoginTooltipView(message, anchor_view);
   Show();
 }
 
-void LoginBubble::ShowSelectionMenu(LoginMenuView* menu,
-                                    LoginButton* bubble_opener) {
+void LoginBubble::ShowSelectionMenu(LoginMenuView* menu) {
   if (bubble_view_)
     CloseImmediately();
 
-  flags_ = kFlagsNone;
-  bubble_opener_ = bubble_opener;
-  const bool had_focus = bubble_opener_->HasFocus();
+  const bool had_focus =
+      menu->GetBubbleOpener() && menu->GetBubbleOpener()->HasFocus();
 
   // Transfer the ownership of |menu| to bubble widget.
   bubble_view_ = menu;
@@ -554,19 +568,27 @@ void LoginBubble::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void LoginBubble::OnKeyEvent(ui::KeyEvent* event) {
-  if (!bubble_view_ || event->type() != ui::ET_KEY_PRESSED)
+  // Ignore VKEY_PROCESSKEY; it is an IME event saying that the key has been
+  // processed. This event is also generated in tablet mode, ie, after
+  // submitting a password a VKEY_PROCESSKEY event is generated. If we treat
+  // that as a normal key event the password bubble will be dismissed
+  // immediately after submitting.
+  if (!bubble_view_ || event->type() != ui::ET_KEY_PRESSED ||
+      event->key_code() == ui::VKEY_PROCESSKEY) {
     return;
+  }
 
   // If current focus view is the button view, don't process the event here,
   // let the button logic handle the event and determine show/hide behavior.
-  if (bubble_opener_ && bubble_opener_->HasFocus())
+  if (bubble_view_->GetBubbleOpener() &&
+      bubble_view_->GetBubbleOpener()->HasFocus())
     return;
 
   // If |bubble_view_| is interactive do not close it.
   if (bubble_view_->GetWidget()->IsActive())
     return;
 
-  if (!(flags_ & kFlagPersistent)) {
+  if (!bubble_view_->IsPersistent()) {
     Close();
   }
 }
@@ -590,7 +612,7 @@ void LoginBubble::OnWindowFocused(aura::Window* gained_focus,
   if (gained_focus && bubble_window->Contains(gained_focus))
     return;
 
-  if (!(flags_ & kFlagPersistent))
+  if (!bubble_view_->IsPersistent())
     Close();
 }
 
@@ -625,13 +647,14 @@ void LoginBubble::ProcessPressedEvent(const ui::LocatedEvent* event) {
 
   // If the user clicks on the button view, don't process the event here,
   // let the button logic handle the event and determine show/hide behavior.
-  if (bubble_opener_) {
-    gfx::Rect bubble_opener_bounds = bubble_opener_->GetBoundsInScreen();
+  if (bubble_view_->GetBubbleOpener()) {
+    gfx::Rect bubble_opener_bounds =
+        bubble_view_->GetBubbleOpener()->GetBoundsInScreen();
     if (bubble_opener_bounds.Contains(screen_location))
       return;
   }
 
-  if (!(flags_ & kFlagPersistent))
+  if (!bubble_view_->IsPersistent())
     Close();
 }
 
@@ -639,10 +662,11 @@ void LoginBubble::ScheduleAnimation(bool visible) {
   if (!bubble_view_ || is_visible_ == visible)
     return;
 
-  if (bubble_opener_) {
-    bubble_opener_->AnimateInkDrop(visible ? views::InkDropState::ACTIVATED
-                                           : views::InkDropState::DEACTIVATED,
-                                   nullptr /*event*/);
+  if (bubble_view_->GetBubbleOpener()) {
+    bubble_view_->GetBubbleOpener()->AnimateInkDrop(
+        visible ? views::InkDropState::ACTIVATED
+                : views::InkDropState::DEACTIVATED,
+        nullptr /*event*/);
   }
 
   ui::Layer* layer = bubble_view_->layer();
@@ -678,9 +702,7 @@ void LoginBubble::Reset(bool widget_already_closing) {
   if (!widget_already_closing)
     bubble_view_->GetWidget()->Close();
   is_visible_ = false;
-  bubble_opener_ = nullptr;
   bubble_view_ = nullptr;
-  flags_ = kFlagsNone;
 }
 
 void LoginBubble::EnsureBubbleInScreen() {

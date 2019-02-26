@@ -10,11 +10,14 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -142,6 +145,57 @@ TEST_F(PasswordFormFillingTest, Autofill) {
               fill_data.additional_logins.begin()->second.password);
     // Realm is empty for non-psl match.
     EXPECT_TRUE(fill_data.additional_logins.begin()->second.realm.empty());
+  }
+}
+
+TEST_F(PasswordFormFillingTest, TestFillOnLoadSuggestion) {
+  const struct {
+    const char* description;
+    bool new_password_present;
+    bool current_password_present;
+  } kTestCases[] = {
+      {
+          .description = "No new, some current",
+          .new_password_present = false,
+          .current_password_present = true,
+      },
+      {
+          .description = "No current, some new",
+          .new_password_present = true,
+          .current_password_present = false,
+      },
+      {
+          .description = "Both",
+          .new_password_present = true,
+          .current_password_present = true,
+      },
+  };
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kNewPasswordFormParsing);
+
+  for (const auto& test_case : kTestCases) {
+    SCOPED_TRACE(test_case.description);
+    std::map<base::string16, const PasswordForm*> best_matches;
+    best_matches[saved_match_.username_value] = &saved_match_;
+
+    PasswordForm observed_form = observed_form_;
+    if (!test_case.new_password_present)
+      observed_form.new_password_element = ASCIIToUTF16("New Passwd");
+    if (!test_case.current_password_present)
+      observed_form.password_element.clear();
+
+    EXPECT_CALL(driver_, AllowPasswordGenerationForForm(observed_form));
+    PasswordFormFillData fill_data;
+    EXPECT_CALL(driver_, FillPasswordForm(_)).WillOnce(SaveArg<0>(&fill_data));
+    EXPECT_CALL(client_, PasswordWasAutofilled(_, _, _));
+
+    SendFillInformationToRenderer(client_, &driver_, false, observed_form,
+                                  best_matches, federated_matches_,
+                                  &saved_match_, metrics_recorder_.get());
+
+    // In all cases, fill on load should not be prevented. If there is no
+    // current-password field, the renderer will not fill anyway.
+    EXPECT_FALSE(fill_data.wait_for_username);
   }
 }
 

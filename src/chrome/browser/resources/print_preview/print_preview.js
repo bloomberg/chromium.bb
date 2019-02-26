@@ -761,22 +761,22 @@ cr.define('print_preview', function() {
      * @private
      */
     onCloudPrintEnable_: function(cloudPrintUrl, appKioskMode) {
-      this.cloudPrintInterface_ = new cloudprint.CloudPrintInterface(
+      this.cloudPrintInterface_ = cloudprint.getCloudPrintInterface(
           cloudPrintUrl, this.nativeLayer_, this.userInfo_, appKioskMode);
       this.tracker.add(
-          this.cloudPrintInterface_,
+          this.cloudPrintInterface_.getEventTarget(),
           cloudprint.CloudPrintInterfaceEventType.SUBMIT_DONE,
           this.onCloudPrintSubmitDone_.bind(this));
       this.tracker.add(
-          this.cloudPrintInterface_,
+          this.cloudPrintInterface_.getEventTarget(),
           cloudprint.CloudPrintInterfaceEventType.SEARCH_FAILED,
           this.onCloudPrintError_.bind(this));
       this.tracker.add(
-          this.cloudPrintInterface_,
+          this.cloudPrintInterface_.getEventTarget(),
           cloudprint.CloudPrintInterfaceEventType.SUBMIT_FAILED,
           this.onCloudPrintError_.bind(this));
       this.tracker.add(
-          this.cloudPrintInterface_,
+          this.cloudPrintInterface_.getEventTarget(),
           cloudprint.CloudPrintInterfaceEventType.PRINTER_FAILED,
           this.onCloudPrintError_.bind(this));
 
@@ -1388,6 +1388,9 @@ cr.define('print_preview', function() {
 // <include src="native_layer.js">
 // <include src="print_preview_animations.js">
 // <include src="cloud_print_interface.js">
+// <include src="cloud_print_interface_js.js">
+// <include src="cloud_print_interface_native.js">
+// <include src="cloud_print_interface_manager.js">
 // <include src="print_preview_utils.js">
 // <include src="print_header.js">
 // <include src="metrics.js">

@@ -91,6 +91,11 @@ bool FilteringNetworkManager::GetDefaultLocalAddress(
   return network_manager_->GetDefaultLocalAddress(family, ipaddress);
 }
 
+webrtc::MdnsResponderInterface* FilteringNetworkManager::GetMdnsResponder()
+    const {
+  return network_manager_->GetMdnsResponder();
+}
+
 void FilteringNetworkManager::CheckPermission() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!started_permission_check_);

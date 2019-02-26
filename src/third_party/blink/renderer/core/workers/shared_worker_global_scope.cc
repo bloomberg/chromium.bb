@@ -52,7 +52,7 @@ SharedWorkerGlobalScope::SharedWorkerGlobalScope(
 SharedWorkerGlobalScope::~SharedWorkerGlobalScope() = default;
 
 const AtomicString& SharedWorkerGlobalScope::InterfaceName() const {
-  return EventTargetNames::SharedWorkerGlobalScope;
+  return event_target_names::kSharedWorkerGlobalScope;
 }
 
 // https://html.spec.whatwg.org/multipage/workers.html#worker-processing-model
@@ -81,9 +81,10 @@ void SharedWorkerGlobalScope::ConnectPausable(MessagePortChannel channel) {
 
   MessagePort* port = MessagePort::Create(*this);
   port->Entangle(std::move(channel));
-  MessageEvent* event = MessageEvent::Create(new MessagePortArray(1, port),
-                                             String(), String(), port);
-  event->initEvent(EventTypeNames::connect, false, false);
+  MessageEvent* event =
+      MessageEvent::Create(MakeGarbageCollected<MessagePortArray>(1, port),
+                           String(), String(), port);
+  event->initEvent(event_type_names::kConnect, false, false);
   DispatchEvent(*event);
 }
 

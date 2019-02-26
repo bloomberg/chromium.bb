@@ -124,8 +124,6 @@ void WebContentsObserverSanityChecker::RenderFrameHostChanged(
           << "RenderFrameHostChanged called with old host that did not exist:"
           << Format(old_host);
     }
-    CHECK(!HasAnyChildren(old_host))
-        << "All children should be detached before a parent is detached.";
   }
 
   EnsureStableParentValue(new_host);
@@ -269,8 +267,7 @@ void WebContentsObserverSanityChecker::MediaStartedPlaying(
     const MediaPlayerInfo& media_info,
     const MediaPlayerId& id) {
   CHECK(!web_contents_destroyed_);
-  CHECK(std::find(active_media_players_.begin(), active_media_players_.end(),
-                  id) == active_media_players_.end());
+  CHECK(!base::ContainsValue(active_media_players_, id));
   active_media_players_.push_back(id);
 }
 
@@ -279,8 +276,7 @@ void WebContentsObserverSanityChecker::MediaStoppedPlaying(
     const MediaPlayerId& id,
     WebContentsObserver::MediaStoppedReason reason) {
   CHECK(!web_contents_destroyed_);
-  CHECK(std::find(active_media_players_.begin(), active_media_players_.end(),
-                  id) != active_media_players_.end());
+  CHECK(base::ContainsValue(active_media_players_, id));
   base::Erase(active_media_players_, id);
 }
 

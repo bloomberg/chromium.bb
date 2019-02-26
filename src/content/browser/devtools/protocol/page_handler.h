@@ -86,6 +86,7 @@ class PageHandler : public DevToolsDomainHandler,
                                  JavaScriptDialogCallback callback);
   void DidCloseJavaScriptDialog(bool success, const base::string16& user_input);
   void NavigationReset(NavigationRequest* navigation_request);
+  WebContentsImpl* GetWebContents();
 
   Response Enable() override;
   Response Disable() override;
@@ -114,6 +115,9 @@ class PageHandler : public DevToolsDomainHandler,
       Maybe<Page::Viewport> clip,
       Maybe<bool> from_surface,
       std::unique_ptr<CaptureScreenshotCallback> callback) override;
+  void CaptureSnapshot(
+      Maybe<std::string> format,
+      std::unique_ptr<CaptureSnapshotCallback> callback) override;
   void PrintToPDF(Maybe<bool> landscape,
                   Maybe<bool> display_header_footer,
                   Maybe<bool> print_background,
@@ -156,7 +160,6 @@ class PageHandler : public DevToolsDomainHandler,
  private:
   enum EncodingFormat { PNG, JPEG };
 
-  WebContentsImpl* GetWebContents();
   void NotifyScreencastVisibility(bool visible);
   void InnerSwapCompositorFrame();
   void OnFrameFromVideoConsumer(scoped_refptr<media::VideoFrame> frame);
@@ -165,7 +168,7 @@ class PageHandler : public DevToolsDomainHandler,
       const SkBitmap& bitmap);
   void ScreencastFrameEncoded(
       std::unique_ptr<Page::ScreencastFrameMetadata> metadata,
-      const std::string& data);
+      const protocol::Binary& data);
 
   void ScreenshotCaptured(
       std::unique_ptr<CaptureScreenshotCallback> callback,
@@ -219,6 +222,7 @@ class PageHandler : public DevToolsDomainHandler,
   scoped_refptr<DevToolsDownloadManagerDelegate> download_manager_delegate_;
   base::flat_map<base::UnguessableToken, std::unique_ptr<NavigateCallback>>
       navigate_callbacks_;
+
   base::WeakPtrFactory<PageHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PageHandler);

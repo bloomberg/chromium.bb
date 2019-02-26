@@ -652,17 +652,24 @@ CommandHandler.onCommand = function(command) {
     case 'readCurrentTitle':
       var target = ChromeVoxState.instance.currentRange.start.node;
       var output = new Output();
-      target = AutomationUtil.getTopLevelRoot(target) || target.parent;
 
-      // Search for a container (e.g. rootWebArea, window) with a title-like
-      // string.
-      while (target && !target.name && !target.docUrl)
-        target = target.parent;
+      if (!target)
+        return false;
+
+      if (target.root && target.root.role == RoleType.DESKTOP) {
+        // Search for the first container with a name.
+        while (target && (!target.name || !AutomationPredicate.root(target)))
+          target = target.parent;
+      } else {
+        // Search for a window with a title.
+        while (target && (!target.name || target.role != RoleType.WINDOW))
+          target = target.parent;
+      }
 
       if (!target)
         output.format('@no_title');
       else
-        output.withString(target.name || target.docUrl);
+        output.withString(target.name);
 
       output.go();
       return false;

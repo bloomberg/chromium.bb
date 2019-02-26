@@ -41,7 +41,7 @@ namespace blink {
 TextEncoder* TextEncoder::Create(ExecutionContext* context,
                                  ExceptionState& exception_state) {
   WTF::TextEncoding encoding("UTF-8");
-  return new TextEncoder(encoding);
+  return MakeGarbageCollected<TextEncoder>(encoding);
 }
 
 TextEncoder::TextEncoder(const WTF::TextEncoding& encoding)

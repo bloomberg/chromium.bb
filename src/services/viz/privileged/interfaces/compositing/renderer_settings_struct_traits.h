@@ -69,6 +69,10 @@ struct StructTraits<viz::mojom::RendererSettingsDataView,
     return input.use_skia_renderer;
   }
 
+  static bool record_sk_picture(const viz::RendererSettings& input) {
+    return input.record_sk_picture;
+  }
+
   static bool use_skia_deferred_display_list(
       const viz::RendererSettings& input) {
     return input.use_skia_deferred_display_list;

@@ -54,6 +54,23 @@ constexpr char kSetting[] = "setting";
 constexpr char kSource[] = "source";
 constexpr char kExtensionName[] = "Test Extension";
 
+const struct PatternContentTypeTestCase {
+  struct {
+    const char* const pattern;
+    const char* const content_type;
+  } arguments;
+  struct {
+    const bool validity;
+    const char* const reason;
+  } expected;
+} kPatternsAndContentTypeTestCases[]{
+    {{"https://google.com", "cookies"}, {true, ""}},
+    {{";", "cookies"}, {false, "Not a valid web address"}},
+    {{"*", "cookies"}, {false, "Not a valid web address"}},
+    {{"http://google.com", "location"}, {false, "Origin must be secure"}},
+    {{"http://127.0.0.1", "location"}, {true, ""}},  // Localhost is secure.
+    {{"http://[::1]", "location"}, {true, ""}}};
+
 #if BUILDFLAG(ENABLE_PLUGINS)
 // Waits until a change is observed in content settings.
 class FlashContentSettingsChangeWaiter : public content_settings::Observer {
@@ -270,7 +287,9 @@ class SiteSettingsHandlerTest : public testing::Test {
     EXPECT_EQ(0U, exceptions->GetSize());
   }
 
-  void ValidatePattern(bool expected_validity, size_t expected_total_calls) {
+  void ValidatePattern(bool expected_validity,
+                       size_t expected_total_calls,
+                       std::string expected_reason) {
     EXPECT_EQ(expected_total_calls, web_ui()->call_data().size());
 
     const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
@@ -284,9 +303,16 @@ class SiteSettingsHandlerTest : public testing::Test {
     ASSERT_TRUE(data.arg2()->GetAsBoolean(&success));
     ASSERT_TRUE(success);
 
-    bool valid;
-    ASSERT_TRUE(data.arg3()->GetAsBoolean(&valid));
+    const base::DictionaryValue* result = nullptr;
+    ASSERT_TRUE(data.arg3()->GetAsDictionary(&result));
+
+    bool valid = false;
+    ASSERT_TRUE(result->GetBoolean("isValid", &valid));
     EXPECT_EQ(expected_validity, valid);
+
+    std::string reason;
+    ASSERT_TRUE(result->GetString("reason", &reason));
+    EXPECT_EQ(expected_reason, reason);
   }
 
   void ValidateIncognitoExists(
@@ -973,30 +999,18 @@ TEST_F(SiteSettingsHandlerTest, ExtensionDisplayName) {
                  site_settings::SiteSettingSource::kDefault, 1U);
 }
 
-TEST_F(SiteSettingsHandlerTest, Patterns) {
-  base::ListValue args;
-  std::string pattern("[*.]google.com");
-  args.AppendString(kCallbackId);
-  args.AppendString(pattern);
-  handler()->HandleIsPatternValid(&args);
-  ValidatePattern(true, 1U);
-
-  base::ListValue invalid;
-  std::string bad_pattern(";");
-  invalid.AppendString(kCallbackId);
-  invalid.AppendString(bad_pattern);
-  handler()->HandleIsPatternValid(&invalid);
-  ValidatePattern(false, 2U);
-
-  // The wildcard pattern ('*') is a valid pattern, but not allowed to be
-  // entered in site settings as it changes the default setting.
-  // (crbug.com/709539).
-  base::ListValue invalid_wildcard;
-  std::string bad_pattern_wildcard("*");
-  invalid_wildcard.AppendString(kCallbackId);
-  invalid_wildcard.AppendString(bad_pattern_wildcard);
-  handler()->HandleIsPatternValid(&invalid_wildcard);
-  ValidatePattern(false, 3U);
+TEST_F(SiteSettingsHandlerTest, PatternsAndContentType) {
+  unsigned counter = 1;
+  for (const auto& test_case : kPatternsAndContentTypeTestCases) {
+    base::ListValue args;
+    args.AppendString(kCallbackId);
+    args.AppendString(test_case.arguments.pattern);
+    args.AppendString(test_case.arguments.content_type);
+    handler()->HandleIsPatternValidForType(&args);
+    ValidatePattern(test_case.expected.validity, counter,
+                    test_case.expected.reason);
+    ++counter;
+  }
 }
 
 TEST_F(SiteSettingsHandlerTest, Incognito) {

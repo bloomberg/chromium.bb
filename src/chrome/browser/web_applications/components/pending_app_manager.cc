@@ -13,50 +13,32 @@
 
 namespace web_app {
 
-const bool PendingAppManager::AppInfo::kDefaultCreateShortcuts = true;
-const bool PendingAppManager::AppInfo::kDefaultOverridePreviousUserUninstall =
-    false;
-const bool PendingAppManager::AppInfo::kDefaultBypassServiceWorkerCheck = false;
-const bool PendingAppManager::AppInfo::kDefaultRequireManifest = false;
-
-PendingAppManager::AppInfo::AppInfo(GURL url,
+PendingAppManager::AppInfo::AppInfo(const GURL& url,
                                     LaunchContainer launch_container,
-                                    InstallSource install_source,
-                                    bool create_shortcuts,
-                                    bool override_previous_user_uninstall,
-                                    bool bypass_service_worker_check,
-                                    bool require_manifest)
-    : url(std::move(url)),
+                                    InstallSource install_source)
+    : url(url),
       launch_container(launch_container),
-      install_source(install_source),
-      create_shortcuts(create_shortcuts),
-      override_previous_user_uninstall(override_previous_user_uninstall),
-      bypass_service_worker_check(bypass_service_worker_check),
-      require_manifest(require_manifest) {}
-
-PendingAppManager::AppInfo::AppInfo(PendingAppManager::AppInfo&& other) =
-    default;
+      install_source(install_source) {}
 
 PendingAppManager::AppInfo::~AppInfo() = default;
 
-std::unique_ptr<PendingAppManager::AppInfo> PendingAppManager::AppInfo::Clone()
-    const {
-  std::unique_ptr<AppInfo> other(new AppInfo(
-      url, launch_container, install_source, create_shortcuts,
-      override_previous_user_uninstall, bypass_service_worker_check));
-  DCHECK_EQ(*this, *other);
-  return other;
-}
+PendingAppManager::AppInfo::AppInfo(const AppInfo& other) = default;
+
+PendingAppManager::AppInfo::AppInfo(AppInfo&& other) = default;
+
+PendingAppManager::AppInfo& PendingAppManager::AppInfo::operator=(
+    const AppInfo& other) = default;
 
 bool PendingAppManager::AppInfo::operator==(
     const PendingAppManager::AppInfo& other) const {
   return std::tie(url, launch_container, install_source, create_shortcuts,
                   override_previous_user_uninstall, bypass_service_worker_check,
-                  require_manifest) ==
+                  require_manifest, always_update) ==
          std::tie(other.url, other.launch_container, other.install_source,
                   other.create_shortcuts,
                   other.override_previous_user_uninstall,
-                  other.bypass_service_worker_check, other.require_manifest);
+                  other.bypass_service_worker_check, other.require_manifest,
+                  other.always_update);
 }
 
 PendingAppManager::PendingAppManager() = default;

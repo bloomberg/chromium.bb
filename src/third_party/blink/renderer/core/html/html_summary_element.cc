@@ -34,16 +34,17 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 HTMLSummaryElement* HTMLSummaryElement::Create(Document& document) {
-  HTMLSummaryElement* summary = new HTMLSummaryElement(document);
+  HTMLSummaryElement* summary =
+      MakeGarbageCollected<HTMLSummaryElement>(document);
   summary->EnsureUserAgentShadowRoot();
   return summary;
 }
 
 HTMLSummaryElement::HTMLSummaryElement(Document& document)
-    : HTMLElement(summaryTag, document) {}
+    : HTMLElement(kSummaryTag, document) {}
 
 LayoutObject* HTMLSummaryElement::CreateLayoutObject(
     const ComputedStyle& style) {
@@ -62,7 +63,7 @@ LayoutObject* HTMLSummaryElement::CreateLayoutObject(
 void HTMLSummaryElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {
   DetailsMarkerControl* marker_control =
       DetailsMarkerControl::Create(GetDocument());
-  marker_control->SetIdAttribute(ShadowElementNames::DetailsMarker());
+  marker_control->SetIdAttribute(shadow_element_names::DetailsMarker());
   root.AppendChild(marker_control);
   root.AppendChild(HTMLSlotElement::CreateUserAgentDefaultSlot(GetDocument()));
 }
@@ -77,7 +78,7 @@ HTMLDetailsElement* HTMLSummaryElement::DetailsElement() const {
 
 Element* HTMLSummaryElement::MarkerControl() {
   return EnsureUserAgentShadowRoot().getElementById(
-      ShadowElementNames::DetailsMarker());
+      shadow_element_names::DetailsMarker());
 }
 
 bool HTMLSummaryElement::IsMainSummary() const {
@@ -103,7 +104,7 @@ bool HTMLSummaryElement::SupportsFocus() const {
 
 void HTMLSummaryElement::DefaultEventHandler(Event& event) {
   if (IsMainSummary()) {
-    if (event.type() == EventTypeNames::DOMActivate &&
+    if (event.type() == event_type_names::kDOMActivate &&
         !IsClickableControl(event.target()->ToNode())) {
       if (HTMLDetailsElement* details = DetailsElement())
         details->ToggleOpen();
@@ -112,13 +113,13 @@ void HTMLSummaryElement::DefaultEventHandler(Event& event) {
     }
 
     if (event.IsKeyboardEvent()) {
-      if (event.type() == EventTypeNames::keydown &&
+      if (event.type() == event_type_names::kKeydown &&
           ToKeyboardEvent(event).key() == " ") {
         SetActive(true);
         // No setDefaultHandled() - IE dispatches a keypress in this case.
         return;
       }
-      if (event.type() == EventTypeNames::keypress) {
+      if (event.type() == event_type_names::kKeypress) {
         switch (ToKeyboardEvent(event).charCode()) {
           case '\r':
             DispatchSimulatedClick(&event);
@@ -130,7 +131,7 @@ void HTMLSummaryElement::DefaultEventHandler(Event& event) {
             return;
         }
       }
-      if (event.type() == EventTypeNames::keyup &&
+      if (event.type() == event_type_names::kKeyup &&
           ToKeyboardEvent(event).key() == " ") {
         if (IsActive())
           DispatchSimulatedClick(&event);

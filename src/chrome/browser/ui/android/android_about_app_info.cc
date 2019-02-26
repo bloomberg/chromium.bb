@@ -8,7 +8,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "content/public/common/user_agent.h"
 #include "jni/ChromeVersionInfo_jni.h"
 

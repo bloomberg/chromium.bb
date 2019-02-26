@@ -26,8 +26,7 @@ struct ConfigurationParams {
   ConfigurationParams();
   ConfigurationParams(sync_pb::SyncEnums::GetUpdatesOrigin origin,
                       ModelTypeSet types_to_download,
-                      const base::Closure& ready_task,
-                      const base::Closure& retry_task);
+                      const base::Closure& ready_task);
   ConfigurationParams(const ConfigurationParams& other);
   ~ConfigurationParams();
 
@@ -37,8 +36,6 @@ struct ConfigurationParams {
   ModelTypeSet types_to_download;
   // Callback to invoke on configuration completion.
   base::Closure ready_task;
-  // Callback to invoke on configuration failure.
-  base::Closure retry_task;
 };
 
 struct ClearParams {

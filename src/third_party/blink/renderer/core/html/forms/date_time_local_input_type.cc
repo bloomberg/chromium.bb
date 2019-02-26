@@ -43,14 +43,14 @@
 namespace blink {
 
 using blink::WebLocalizedString;
-using namespace HTMLNames;
+using namespace html_names;
 
 static const int kDateTimeLocalDefaultStep = 60;
 static const int kDateTimeLocalDefaultStepBase = 0;
 static const int kDateTimeLocalStepScaleFactor = 1000;
 
 InputType* DateTimeLocalInputType::Create(HTMLInputElement& element) {
-  return new DateTimeLocalInputType(element);
+  return MakeGarbageCollected<DateTimeLocalInputType>(element);
 }
 
 void DateTimeLocalInputType::CountUsage() {
@@ -58,7 +58,7 @@ void DateTimeLocalInputType::CountUsage() {
 }
 
 const AtomicString& DateTimeLocalInputType::FormControlType() const {
-  return InputTypeNames::datetime_local;
+  return input_type_names::kDatetimeLocal;
 }
 
 double DateTimeLocalInputType::ValueAsDate() const {
@@ -170,10 +170,10 @@ void DateTimeLocalInputType::SetupLayoutParameters(
         layout_parameters.locale.DateTimeFormatWithoutSeconds();
     layout_parameters.fallback_date_time_format = "yyyy-MM-dd'T'HH:mm";
   }
-  if (!ParseToDateComponents(GetElement().FastGetAttribute(minAttr),
+  if (!ParseToDateComponents(GetElement().FastGetAttribute(kMinAttr),
                              &layout_parameters.minimum))
     layout_parameters.minimum = DateComponents();
-  if (!ParseToDateComponents(GetElement().FastGetAttribute(maxAttr),
+  if (!ParseToDateComponents(GetElement().FastGetAttribute(kMaxAttr),
                              &layout_parameters.maximum))
     layout_parameters.maximum = DateComponents();
   layout_parameters.placeholder_for_day = GetLocale().QueryString(

@@ -5,7 +5,6 @@
 #include "ash/test/ash_test_views_delegate.h"
 
 #include "ash/shell.h"
-#include "ash/test/ash_test_helper.h"
 
 namespace ash {
 
@@ -29,17 +28,6 @@ void AshTestViewsDelegate::OnBeforeWidgetInit(
   }
 
   TestViewsDelegate::OnBeforeWidgetInit(params, delegate);
-}
-
-void AshTestViewsDelegate::NotifyAccessibilityEvent(
-    views::View* view,
-    ax::mojom::Event event_type) {
-  TestViewsDelegate::NotifyAccessibilityEvent(view, event_type);
-
-  if (test_accessibility_event_delegate_) {
-    test_accessibility_event_delegate_->NotifyAccessibilityEvent(view,
-                                                                 event_type);
-  }
 }
 
 views::TestViewsDelegate::ProcessMenuAcceleratorResult

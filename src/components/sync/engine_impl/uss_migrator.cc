@@ -84,19 +84,11 @@ void AppendAllDescendantIds(const ReadTransaction* trans,
   }
 }
 
-}  // namespace
-
-bool MigrateDirectoryData(ModelType type,
-                          UserShare* user_share,
-                          ModelTypeWorker* worker) {
-  return MigrateDirectoryDataWithBatchSize(type, user_share, worker, 64);
-}
-
 bool MigrateDirectoryDataWithBatchSize(ModelType type,
+                                       int batch_size,
                                        UserShare* user_share,
                                        ModelTypeWorker* worker,
-                                       int batch_size) {
-  DCHECK_NE(PASSWORDS, type);
+                                       int* cumulative_migrated_entity_count) {
   ReadTransaction trans(FROM_HERE, user_share);
 
   ReadNode root(&trans);
@@ -116,6 +108,18 @@ bool MigrateDirectoryDataWithBatchSize(ModelType type,
 
   std::vector<int64_t> child_ids;
   AppendAllDescendantIds(&trans, root, &child_ids);
+
+  // If there are no entities to process, make sure we anyway call
+  // ProcessGetUpdatesResponse() at least one in order to feed the progress
+  // marker.
+  // TODO(crbug.com/921495): Remove the restriction for
+  // HISTORY_DELETE_DIRECTIVES and instead do it for all types, e.g. by
+  // replacing the while() below with a do {} while();
+  if (type == HISTORY_DELETE_DIRECTIVES && child_ids.empty()) {
+    worker->ProcessGetUpdatesResponse(progress, context, SyncEntityList(),
+                                      /*from_uss_migrator=*/true,
+                                      /*status=*/nullptr);
+  }
 
   // Process |batch_size| entities at a time to reduce memory usage.
   size_t i = 0;
@@ -143,11 +147,36 @@ bool MigrateDirectoryDataWithBatchSize(ModelType type,
       }
     }
 
-    worker->ProcessGetUpdatesResponse(progress, context, entity_ptrs, nullptr);
+    *cumulative_migrated_entity_count += entity_ptrs.size();
+
+    worker->ProcessGetUpdatesResponse(progress, context, entity_ptrs,
+                                      /*from_uss_migrator=*/true,
+                                      /*status=*/nullptr);
   }
 
   worker->PassiveApplyUpdates(nullptr);
   return true;
+}
+
+}  // namespace
+
+bool MigrateDirectoryData(ModelType type,
+                          UserShare* user_share,
+                          ModelTypeWorker* worker,
+                          int* migrated_entity_count) {
+  *migrated_entity_count = 0;
+  return MigrateDirectoryDataWithBatchSize(type, 64, user_share, worker,
+                                           migrated_entity_count);
+}
+
+bool MigrateDirectoryDataWithBatchSizeForTesting(
+    ModelType type,
+    int batch_size,
+    UserShare* user_share,
+    ModelTypeWorker* worker,
+    int* cumulative_migrated_entity_count) {
+  return MigrateDirectoryDataWithBatchSize(type, batch_size, user_share, worker,
+                                           cumulative_migrated_entity_count);
 }
 
 }  // namespace syncer

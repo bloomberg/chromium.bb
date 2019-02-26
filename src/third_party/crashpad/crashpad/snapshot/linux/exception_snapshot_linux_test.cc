@@ -254,7 +254,7 @@ void ExpectContext(const CPUContext& actual, const NativeCPUContext& expected) {
             0);
   EXPECT_EQ(actual.arm64->sp, expected.uc_mcontext.sp);
   EXPECT_EQ(actual.arm64->pc, expected.uc_mcontext.pc);
-  EXPECT_EQ(actual.arm64->pstate, expected.uc_mcontext.pstate);
+  EXPECT_EQ(actual.arm64->spsr, expected.uc_mcontext.pstate);
 
   auto test_context = reinterpret_cast<const TestCoprocessorContext*>(
       expected.uc_mcontext.__reserved);

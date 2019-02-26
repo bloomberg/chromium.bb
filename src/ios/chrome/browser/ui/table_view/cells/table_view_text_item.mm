@@ -7,7 +7,9 @@
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#include "ios/chrome/grit/ios_strings.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -21,9 +23,6 @@ const CGFloat kLabelCellVerticalSpacing = 11.0;
 #pragma mark - TableViewTextItem
 
 @implementation TableViewTextItem
-@synthesize text = _text;
-@synthesize textAlignment = _textAlignment;
-@synthesize textColor = _textColor;
 
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
@@ -38,10 +37,30 @@ const CGFloat kLabelCellVerticalSpacing = 11.0;
   [super configureCell:tableCell withStyler:styler];
   TableViewTextCell* cell =
       base::mac::ObjCCastStrict<TableViewTextCell>(tableCell);
-  cell.textLabel.text = self.text;
-  cell.textLabel.backgroundColor = styler.tableViewBackgroundColor;
-  // This item's text color takes precedence over the global styler.
-  // TODO(crbug.com/854249): redo the logic for this convoluted if clause.
+  // TODO(crbug.com/894791): set isAccessibilityElement = YES in TableViewItem.
+  cell.isAccessibilityElement = YES;
+
+  if (self.masked) {
+    cell.textLabel.text = kMaskedPassword;
+    cell.accessibilityLabel =
+        l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_HIDDEN_LABEL);
+  } else {
+    cell.textLabel.text = self.text;
+    cell.accessibilityLabel =
+        self.accessibilityLabel ? self.accessibilityLabel : self.text;
+  }
+
+  // Decide cell.textLabel.backgroundColor in order:
+  //   1. styler.cellBackgroundColor;
+  //   2. styler.tableViewBackgroundColor.
+  cell.textLabel.backgroundColor = styler.cellBackgroundColor
+                                       ? styler.cellBackgroundColor
+                                       : styler.tableViewBackgroundColor;
+
+  // Decide cell.textLabel.textColor in order:
+  //   1. this.textColor;
+  //   2. styler.cellTitleColor;
+  //   3. kTableViewTextLabelColorLightGrey.
   if (self.textColor) {
     cell.textLabel.textColor = self.textColor;
   } else if (styler.cellTitleColor) {
@@ -72,6 +91,7 @@ const CGFloat kLabelCellVerticalSpacing = 11.0;
     _textLabel.numberOfLines = 0;
     _textLabel.lineBreakMode = NSLineBreakByWordWrapping;
     _textLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+    _textLabel.isAccessibilityElement = NO;
 
     // Add subviews to View Hierarchy.
     [self.contentView addSubview:_textLabel];

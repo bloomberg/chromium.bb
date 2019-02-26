@@ -43,8 +43,8 @@ class ChannelMergerHandler final : public AudioHandler {
                                                     float sample_rate,
                                                     unsigned number_of_inputs);
 
-  void Process(size_t frames_to_process) override;
-  void SetChannelCount(unsigned long, ExceptionState&) final;
+  void Process(uint32_t frames_to_process) override;
+  void SetChannelCount(unsigned, ExceptionState&) final;
   void SetChannelCountMode(const String&, ExceptionState&) final;
 
   double TailTime() const override { return 0; }
@@ -66,7 +66,7 @@ class ChannelMergerNode final : public AudioNode {
                                    unsigned number_of_inputs,
                                    ExceptionState&);
   static ChannelMergerNode* Create(BaseAudioContext*,
-                                   const ChannelMergerOptions&,
+                                   const ChannelMergerOptions*,
                                    ExceptionState&);
 
  private:

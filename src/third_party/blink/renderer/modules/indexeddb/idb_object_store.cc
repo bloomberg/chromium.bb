@@ -30,7 +30,6 @@
 #include "base/feature_list.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/numerics/safe_conversions.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_key.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_key_range.h"
 #include "third_party/blink/public/platform/web_blob_info.h"
@@ -49,6 +48,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_path.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_tracing.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_value_wrapping.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_database.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/histogram.h"
@@ -348,7 +348,7 @@ IDBRequest* IDBObjectStore::add(ScriptState* script_state,
                                 ExceptionState& exception_state) {
   IDB_TRACE1("IDBObjectStore::addRequestSetup", "store_name",
              metadata_->name.Utf8());
-  return DoPut(script_state, kWebIDBPutModeAddOnly, value, key,
+  return DoPut(script_state, mojom::IDBPutMode::AddOnly, value, key,
                exception_state);
 }
 
@@ -358,12 +358,12 @@ IDBRequest* IDBObjectStore::put(ScriptState* script_state,
                                 ExceptionState& exception_state) {
   IDB_TRACE1("IDBObjectStore::putRequestSetup", "store_name",
              metadata_->name.Utf8());
-  return DoPut(script_state, kWebIDBPutModeAddOrUpdate, value, key,
+  return DoPut(script_state, mojom::IDBPutMode::AddOrUpdate, value, key,
                exception_state);
 }
 
 IDBRequest* IDBObjectStore::DoPut(ScriptState* script_state,
-                                  WebIDBPutMode put_mode,
+                                  mojom::IDBPutMode put_mode,
                                   const ScriptValue& value,
                                   const ScriptValue& key_value,
                                   ExceptionState& exception_state) {
@@ -380,20 +380,20 @@ IDBRequest* IDBObjectStore::DoPut(ScriptState* script_state,
 }
 
 IDBRequest* IDBObjectStore::DoPut(ScriptState* script_state,
-                                  WebIDBPutMode put_mode,
+                                  mojom::IDBPutMode put_mode,
                                   const IDBRequest::Source& source,
                                   const ScriptValue& value,
                                   const IDBKey* key,
                                   ExceptionState& exception_state) {
   const char* tracing_name = nullptr;
   switch (put_mode) {
-    case kWebIDBPutModeAddOrUpdate:
+    case mojom::IDBPutMode::AddOrUpdate:
       tracing_name = "IDBObjectStore::put";
       break;
-    case kWebIDBPutModeAddOnly:
+    case mojom::IDBPutMode::AddOnly:
       tracing_name = "IDBObjectStore::add";
       break;
-    case kWebIDBPutModeCursorUpdate:
+    case mojom::IDBPutMode::CursorUpdate:
       tracing_name = "IDBCursor::update";
       break;
   }
@@ -438,7 +438,7 @@ IDBRequest* IDBObjectStore::DoPut(ScriptState* script_state,
   const bool uses_in_line_keys = !key_path.IsNull();
   const bool has_key_generator = autoIncrement();
 
-  if (put_mode != kWebIDBPutModeCursorUpdate && uses_in_line_keys && key) {
+  if (put_mode != mojom::IDBPutMode::CursorUpdate && uses_in_line_keys && key) {
     exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
                                       "The object store uses in-line keys and "
                                       "the key parameter was provided.");
@@ -451,7 +451,7 @@ IDBRequest* IDBObjectStore::DoPut(ScriptState* script_state,
 
   // This test logically belongs in IDBCursor, but must operate on the cloned
   // value.
-  if (put_mode == kWebIDBPutModeCursorUpdate && uses_in_line_keys) {
+  if (put_mode == mojom::IDBPutMode::CursorUpdate && uses_in_line_keys) {
     DCHECK(key);
     DCHECK(clone.IsEmpty());
     value_wrapper.Clone(script_state, &clone);
@@ -482,7 +482,7 @@ IDBRequest* IDBObjectStore::DoPut(ScriptState* script_state,
   if (uses_in_line_keys) {
     if (clone.IsEmpty()) {
       // For an IDBCursor.update(), the value should have been cloned above.
-      DCHECK(put_mode != kWebIDBPutModeCursorUpdate);
+      DCHECK(put_mode != mojom::IDBPutMode::CursorUpdate);
       value_wrapper.Clone(script_state, &clone);
 
       DCHECK(!key_path_key);
@@ -500,7 +500,7 @@ IDBRequest* IDBObjectStore::DoPut(ScriptState* script_state,
     } else {
       // The clone was created in the large if block above. The block should
       // have thrown if key_path_key is not valid.
-      DCHECK(put_mode == kWebIDBPutModeCursorUpdate);
+      DCHECK(put_mode == mojom::IDBPutMode::CursorUpdate);
       DCHECK(key_path_key && key_path_key->IsValid());
     }
 
@@ -558,8 +558,8 @@ IDBRequest* IDBObjectStore::DoPut(ScriptState* script_state,
     key_type_histogram.Count(static_cast<int>(key->GetType()));
   }
 
-  WebVector<WebIDBIndexKeys> index_keys;
-  index_keys.reserve(Metadata().indexes.size());
+  Vector<WebIDBIndexKeys> index_keys;
+  index_keys.ReserveInitialCapacity(Metadata().indexes.size());
   for (const auto& it : Metadata().indexes) {
     if (clone.IsEmpty())
       value_wrapper.Clone(script_state, &clone);
@@ -584,8 +584,7 @@ IDBRequest* IDBObjectStore::DoPut(ScriptState* script_state,
   request->transit_blob_handles() = value_wrapper.TakeBlobDataHandles();
   BackendDB()->Put(
       transaction_->Id(), Id(), WebData(value_wrapper.TakeWireBytes()),
-      value_wrapper.TakeBlobInfo(), WebIDBKeyView(key),
-      static_cast<WebIDBPutMode>(put_mode),
+      value_wrapper.TakeBlobInfo(), WebIDBKeyView(key), put_mode,
       request->CreateWebCallbacks().release(), std::move(index_keys));
 
   return request;
@@ -727,13 +726,13 @@ class IndexPopulator final : public EventListener {
 
   const IDBIndexMetadata& IndexMetadata() const { return *index_metadata_; }
 
-  void handleEvent(ExecutionContext* execution_context, Event* event) override {
+  void Invoke(ExecutionContext* execution_context, Event* event) override {
     if (!script_state_->ContextIsValid())
       return;
-    IDB_TRACE("IDBObjectStore::IndexPopulator::handleEvent");
+    IDB_TRACE("IDBObjectStore::IndexPopulator::Invoke");
 
     DCHECK_EQ(ExecutionContext::From(script_state_), execution_context);
-    DCHECK_EQ(event->type(), EventTypeNames::success);
+    DCHECK_EQ(event->type(), event_type_names::kSuccess);
     EventTarget* target = event->target();
     IDBRequest* request = static_cast<IDBRequest*>(target);
 
@@ -754,8 +753,8 @@ class IndexPopulator final : public EventListener {
       const IDBKey* primary_key = cursor->IdbPrimaryKey();
       ScriptValue value = cursor->value(script_state_);
 
-      WebVector<WebIDBIndexKeys> index_keys;
-      index_keys.reserve(1);
+      Vector<WebIDBIndexKeys> index_keys;
+      index_keys.ReserveInitialCapacity(1);
       index_keys.emplace_back(
           IndexMetadata().id,
           GenerateIndexKeysForValue(script_state_->GetIsolate(),
@@ -786,7 +785,7 @@ class IndexPopulator final : public EventListener {
 IDBIndex* IDBObjectStore::createIndex(ScriptState* script_state,
                                       const String& name,
                                       const IDBKeyPath& key_path,
-                                      const IDBIndexParameters& options,
+                                      const IDBIndexParameters* options,
                                       ExceptionState& exception_state) {
   IDB_TRACE1("IDBObjectStore::createIndexRequestSetup", "store_name",
              metadata_->name.Utf8());
@@ -820,7 +819,7 @@ IDBIndex* IDBObjectStore::createIndex(ScriptState* script_state,
         "The keyPath argument contains an invalid key path.");
     return nullptr;
   }
-  if (key_path.GetType() == IDBKeyPath::kArrayType && options.multiEntry()) {
+  if (key_path.GetType() == IDBKeyPath::kArrayType && options->multiEntry()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidAccessError,
         "The keyPath argument was an array and the multiEntry option is true.");
@@ -835,13 +834,13 @@ IDBIndex* IDBObjectStore::createIndex(ScriptState* script_state,
   int64_t index_id = metadata_->max_index_id + 1;
   DCHECK_NE(index_id, IDBIndexMetadata::kInvalidId);
   BackendDB()->CreateIndex(transaction_->Id(), Id(), index_id, name, key_path,
-                           options.unique(), options.multiEntry());
+                           options->unique(), options->multiEntry());
 
   ++metadata_->max_index_id;
 
   scoped_refptr<IDBIndexMetadata> index_metadata =
       base::AdoptRef(new IDBIndexMetadata(
-          name, index_id, key_path, options.unique(), options.multiEntry()));
+          name, index_id, key_path, options->unique(), options->multiEntry()));
   IDBIndex* index = IDBIndex::Create(index_metadata, this, transaction_.Get());
   index_map_.Set(name, index);
   metadata_->indexes.Set(index_id, index_metadata);
@@ -851,8 +850,8 @@ IDBIndex* IDBObjectStore::createIndex(ScriptState* script_state,
     return nullptr;
 
   IDBRequest* index_request =
-      openCursor(script_state, nullptr, kWebIDBCursorDirectionNext,
-                 kWebIDBTaskTypePreemptive, std::move(metrics));
+      openCursor(script_state, nullptr, mojom::IDBCursorDirection::Next,
+                 mojom::IDBTaskType::Preemptive, std::move(metrics));
   index_request->PreventPropagation();
 
   // This is kept alive by being the success handler of the request, which is in
@@ -966,7 +965,7 @@ IDBRequest* IDBObjectStore::openCursor(ScriptState* script_state,
     return nullptr;
   }
 
-  WebIDBCursorDirection direction =
+  mojom::IDBCursorDirection direction =
       IDBCursor::StringToDirection(direction_string);
   IDBKeyRange* key_range = IDBKeyRange::FromScriptValue(
       ExecutionContext::From(script_state), range, exception_state);
@@ -979,18 +978,18 @@ IDBRequest* IDBObjectStore::openCursor(ScriptState* script_state,
     return nullptr;
   }
 
-  return openCursor(script_state, key_range, direction, kWebIDBTaskTypeNormal,
-                    std::move(metrics));
+  return openCursor(script_state, key_range, direction,
+                    mojom::IDBTaskType::Normal, std::move(metrics));
 }
 
 IDBRequest* IDBObjectStore::openCursor(ScriptState* script_state,
                                        IDBKeyRange* range,
-                                       WebIDBCursorDirection direction,
-                                       WebIDBTaskType task_type,
+                                       mojom::IDBCursorDirection direction,
+                                       mojom::IDBTaskType task_type,
                                        IDBRequest::AsyncTraceState metrics) {
   IDBRequest* request = IDBRequest::Create(
       script_state, this, transaction_.Get(), std::move(metrics));
-  request->SetCursorDetails(IndexedDB::kCursorKeyAndValue, direction);
+  request->SetCursorDetails(indexed_db::kCursorKeyAndValue, direction);
 
   BackendDB()->OpenCursor(transaction_->Id(), Id(),
                           IDBIndexMetadata::kInvalidId, range, direction, false,
@@ -1018,7 +1017,7 @@ IDBRequest* IDBObjectStore::openKeyCursor(ScriptState* script_state,
     return nullptr;
   }
 
-  WebIDBCursorDirection direction =
+  mojom::IDBCursorDirection direction =
       IDBCursor::StringToDirection(direction_string);
   IDBKeyRange* key_range = IDBKeyRange::FromScriptValue(
       ExecutionContext::From(script_state), range, exception_state);
@@ -1033,11 +1032,11 @@ IDBRequest* IDBObjectStore::openKeyCursor(ScriptState* script_state,
 
   IDBRequest* request = IDBRequest::Create(
       script_state, this, transaction_.Get(), std::move(metrics));
-  request->SetCursorDetails(IndexedDB::kCursorKeyOnly, direction);
+  request->SetCursorDetails(indexed_db::kCursorKeyOnly, direction);
 
   BackendDB()->OpenCursor(transaction_->Id(), Id(),
                           IDBIndexMetadata::kInvalidId, key_range, direction,
-                          true, kWebIDBTaskTypeNormal,
+                          true, mojom::IDBTaskType::Normal,
                           request->CreateWebCallbacks().release());
   return request;
 }

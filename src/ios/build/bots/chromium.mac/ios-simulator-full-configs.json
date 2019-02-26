@@ -3,9 +3,8 @@
     "Runs tests on 64-bit iOS 10, 11 and 12 tests on iPad, iPhone,",
     "@3x, and @2x on main waterfall ios-simulator-full-configs."
   ],
-  "xcode build version": "10a254a",
+  "xcode build version": "10b61",
   "gn_args": [
-    "additional_target_cpus=[\"x86\"]",
     "goma_dir=\"$(goma_dir)\"",
     "is_component_build=false",
     "is_debug=true",
@@ -21,19 +20,6 @@
   "tests": [
     {
       "include": "eg_tests.json",
-      "device type": "iPhone 6s Plus",
-      "os": "10.3",
-      "shards": 1,
-      "shard size": 8,
-      "dimensions": [
-        { "os": "Mac-10.13.4", "pool": "Chrome" },
-        { "os": "Mac-10.13.5", "pool": "Chrome" },
-        { "os": "Mac-10.13.6", "pool": "Chrome" }
-      ],
-      "priority": 29
-    },
-    {
-      "include": "eg_tests.json",
       "device type": "iPhone 7",
       "os": "11.4",
       "dimensions": [
@@ -41,18 +27,18 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "include": "eg_tests.json",
       "device type": "iPhone 7",
-      "os": "12.0",
+      "os": "12.1",
       "dimensions": [
         { "os": "Mac-10.13.4", "pool": "Chrome" },
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "include": "eg_tests.json",
@@ -63,31 +49,18 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "include": "eg_tests.json",
       "device type": "iPad Air 2",
-      "os": "12.0",
+      "os": "12.1",
       "dimensions": [
         { "os": "Mac-10.13.4", "pool": "Chrome" },
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
-    },
-    {
-      "include": "eg_tests.json",
-      "device type": "iPad Air 2",
-      "os": "10.3",
-      "shards": 1,
-      "shard size": 8,
-      "dimensions": [
-        { "os": "Mac-10.13.4", "pool": "Chrome" },
-        { "os": "Mac-10.13.5", "pool": "Chrome" },
-        { "os": "Mac-10.13.6", "pool": "Chrome" }
-      ],
-      "priority": 29
+      "priority": 30
     },
     {
       "include": "eg_tests.json",
@@ -98,31 +71,18 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "include": "eg_tests.json",
       "device type": "iPhone X",
-      "os": "12.0",
+      "os": "12.1",
       "dimensions": [
         { "os": "Mac-10.13.4", "pool": "Chrome" },
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
-    },
-    {
-      "include": "eg_cq_tests.json",
-      "device type": "iPad Air 2",
-      "os": "10.3",
-      "shards": 1,
-      "shard size": 8,
-      "dimensions": [
-        { "os": "Mac-10.13.4", "pool": "Chrome" },
-        { "os": "Mac-10.13.5", "pool": "Chrome" },
-        { "os": "Mac-10.13.6", "pool": "Chrome" }
-      ],
-      "priority": 29
+      "priority": 30
     },
     {
       "include": "eg_cq_tests.json",
@@ -133,18 +93,40 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
     },
     {
       "include": "eg_cq_tests.json",
       "device type": "iPhone X",
-      "os": "12.0",
+      "os": "12.1",
       "dimensions": [
         { "os": "Mac-10.13.4", "pool": "Chrome" },
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "priority": 29
+      "priority": 30
+    },
+    {
+      "include": "eg_cq_tests.json",
+      "device type": "iPad Air 2",
+      "os": "11.4",
+      "dimensions": [
+        { "os": "Mac-10.13.4", "pool": "Chrome" },
+        { "os": "Mac-10.13.5", "pool": "Chrome" },
+        { "os": "Mac-10.13.6", "pool": "Chrome" }
+      ],
+      "priority": 30
+    },
+    {
+      "include": "eg_cq_tests.json",
+      "device type": "iPad Air 2",
+      "os": "12.1",
+      "dimensions": [
+        { "os": "Mac-10.13.4", "pool": "Chrome" },
+        { "os": "Mac-10.13.5", "pool": "Chrome" },
+        { "os": "Mac-10.13.6", "pool": "Chrome" }
+      ],
+      "priority": 30
     }
   ]
 }

@@ -14,39 +14,8 @@
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event_rewriter.h"
 #include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/events/test/test_event_rewriter.h"
 #include "ui/platform_window/stub/stub_window.h"
-
-namespace {
-
-// Counts number of events observed.
-class CounterEventRewriter : public ui::EventRewriter {
- public:
-  CounterEventRewriter() : events_seen_(0) {}
-  ~CounterEventRewriter() override {}
-
-  int events_seen() const { return events_seen_; }
-
- private:
-  // ui::EventRewriter:
-  ui::EventRewriteStatus RewriteEvent(
-      const ui::Event& event,
-      std::unique_ptr<ui::Event>* new_event) override {
-    events_seen_++;
-    return ui::EVENT_REWRITE_CONTINUE;
-  }
-
-  ui::EventRewriteStatus NextDispatchEvent(
-      const ui::Event& last_event,
-      std::unique_ptr<ui::Event>* new_event) override {
-    return ui::EVENT_REWRITE_CONTINUE;
-  }
-
-  int events_seen_;
-
-  DISALLOW_COPY_AND_ASSIGN(CounterEventRewriter);
-};
-
-}  // namespace
 
 namespace aura {
 
@@ -99,7 +68,7 @@ TEST_F(WindowTreeHostTest, HoldPointerMovesOnChildResizing) {
 #endif
 
 TEST_F(WindowTreeHostTest, NoRewritesPostIME) {
-  CounterEventRewriter event_rewriter;
+  ui::test::TestEventRewriter event_rewriter;
   host()->AddEventRewriter(&event_rewriter);
 
   ui::KeyEvent key_event('A', ui::VKEY_A, ui::DomCode::NONE, 0);

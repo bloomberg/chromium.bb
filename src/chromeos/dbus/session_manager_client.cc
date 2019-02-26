@@ -412,7 +412,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
 
   void UpgradeArcContainer(
       const login_manager::UpgradeArcContainerRequest& request,
-      UpgradeArcContainerCallback success_callback,
+      base::OnceClosure success_callback,
       UpgradeErrorCallback error_callback) override {
     DCHECK(!success_callback.is_null());
     DCHECK(!error_callback.is_null());
@@ -473,18 +473,6 @@ class SessionManagerClientImpl : public SessionManagerClient {
     session_manager_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&SessionManagerClientImpl::OnGetArcStartTime,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-  }
-
-  void RemoveArcData(const cryptohome::AccountIdentifier& cryptohome_id,
-                     VoidDBusMethodCallback callback) override {
-    dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
-                                 login_manager::kSessionManagerRemoveArcData);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendString(cryptohome_id.account_id());
-    session_manager_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&SessionManagerClientImpl::OnVoidMethod,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
@@ -738,20 +726,8 @@ class SessionManagerClientImpl : public SessionManagerClient {
 
     auto reason = login_manager::ArcContainerStopReason::CRASH;
     uint32_t value = 0;
-    bool clean = false;
     if (reader.PopUint32(&value)) {
       reason = static_cast<login_manager::ArcContainerStopReason>(value);
-    } else if (reader.PopBool(&clean)) {
-      // This is for the transition period.
-      // We can think the change is virtually split into two;
-      // - bool becomes enum ArcContainerStopReason. true is mapped to
-      //   USER_REQUEST, false is to CRASH. Then,
-      // - USER_REQUEST cases are split into more precise categories.
-      // The only client of this signal, which is ArcSessionImpl, can handle
-      // this approach.
-      // TODO(b/76152951): Remove this.
-      reason = clean ? login_manager::ArcContainerStopReason::USER_REQUEST
-                     : login_manager::ArcContainerStopReason::CRASH;
     } else {
       LOG(ERROR) << "Invalid signal: " << signal->ToString();
       return;
@@ -835,7 +811,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
     std::move(callback).Run(std::move(container_instance_id));
   }
 
-  void OnUpgradeArcContainer(UpgradeArcContainerCallback success_callback,
+  void OnUpgradeArcContainer(base::OnceClosure success_callback,
                              UpgradeErrorCallback error_callback,
                              dbus::Response* response,
                              dbus::ErrorResponse* error) {
@@ -847,15 +823,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
                             login_manager::dbus_error::kLowFreeDisk);
       return;
     }
-
-    dbus::MessageReader reader(response);
-    base::ScopedFD server_socket;
-    if (!reader.PopFileDescriptor(&server_socket)) {
-      LOG(ERROR) << "Invalid response: " << response->ToString();
-      std::move(error_callback).Run(false);
-      return;
-    }
-    std::move(success_callback).Run(std::move(server_socket));
+    std::move(success_callback).Run();
   }
 
   dbus::ObjectProxy* session_manager_proxy_ = nullptr;

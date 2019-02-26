@@ -10,13 +10,11 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "net/test/gtest_util.h"
 #include "net/third_party/http2/hpack/hpack_string.h"
 #include "net/third_party/http2/hpack/http2_hpack_constants.h"
 #include "net/third_party/http2/http2_constants.h"
-#include "net/third_party/http2/platform/api/http2_string.h"
-#include "net/third_party/http2/tools/failure.h"
-#include "testing/gmock/include/gmock/gmock-matchers.h"
+#include "net/third_party/http2/platform/api/http2_string_piece.h"
+#include "net/third_party/http2/platform/api/http2_test_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,15 +35,6 @@ class HpackDecoderStatePeer {
 };
 
 namespace {
-
-// Define HasSubstr() for Http2StringPiece arguments.
-// This shadows ::testing::HasSubstr(), which only works on argument types
-// that can be implicilty converted to a Http2String.
-inline ::testing::PolymorphicMatcher<net::test::StringPieceHasSubstrMatcher>
-HasSubstr(const Http2String& substring) {
-  return ::testing::MakePolymorphicMatcher(
-      net::test::StringPieceHasSubstrMatcher(substring));
-}
 
 class MockHpackDecoderListener : public HpackDecoderListener {
  public:

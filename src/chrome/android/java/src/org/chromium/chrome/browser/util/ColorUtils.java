@@ -11,6 +11,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabThemeColorHelper;
 
 /**
  * Helper functions for working with colors.
@@ -98,10 +99,10 @@ public class ColorUtils {
      * @return Alpha for the textbox given a Tab.
      */
     public static float getTextBoxAlphaForToolbarBackground(Tab tab) {
-        int color = tab.getThemeColor();
         if (tab.getNativePage() instanceof NewTabPage) {
             if (((NewTabPage) tab.getNativePage()).isLocationBarShownInNTP()) return 0f;
         }
+        int color = TabThemeColorHelper.getColor(tab);
         return shouldUseOpaqueTextboxBackground(color)
                 ? 1f : LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA;
     }

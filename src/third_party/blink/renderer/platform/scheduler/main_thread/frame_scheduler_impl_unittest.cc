@@ -17,14 +17,13 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/renderer/platform/scheduler/child/features.h"
+#include "third_party/blink/renderer/platform/scheduler/common/features.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_task_queue_controller.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/resource_loading_task_runner_handle_impl.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
-#include "third_party/blink/renderer/platform/web_task_runner.h"
 
 using base::sequence_manager::TaskQueue;
 using testing::UnorderedElementsAre;
@@ -113,6 +112,11 @@ class FrameSchedulerImplTest : public testing::Test {
 
   scoped_refptr<TaskQueue> UnpausableTaskQueue() {
     return NonLoadingTaskQueue(FrameSchedulerImpl::UnpausableTaskQueueTraits());
+  }
+
+  scoped_refptr<TaskQueue> ForegroundOnlyTaskQueue() {
+    return NonLoadingTaskQueue(
+        FrameSchedulerImpl::ForegroundOnlyTaskQueueTraits());
   }
 
   scoped_refptr<MainThreadTaskQueue> GetTaskQueue(TaskType type) {
@@ -369,6 +373,24 @@ TEST_F(FrameSchedulerImplTest, PauseAndResume) {
   EXPECT_EQ(5, counter);
 }
 
+TEST_F(FrameSchedulerImplTest, FreezeForegroundOnlyTasks) {
+  int counter = 0;
+  ForegroundOnlyTaskQueue()->task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+
+  page_scheduler_->SetPageVisible(false);
+
+  EXPECT_EQ(0, counter);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0, counter);
+
+  page_scheduler_->SetPageVisible(true);
+
+  EXPECT_EQ(0, counter);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, counter);
+}
+
 TEST_F(FrameSchedulerImplStopNonTimersInBackgroundEnabledTest,
        PageFreezeAndUnfreezeFlagEnabled) {
   int counter = 0;
@@ -394,7 +416,7 @@ TEST_F(FrameSchedulerImplStopNonTimersInBackgroundEnabledTest,
   page_scheduler_->SetPageFrozen(false);
 
   EXPECT_EQ(1, counter);
-  // Same as RunUntilIdle but also advances the cock if necessary.
+  // Same as RunUntilIdle but also advances the clock if necessary.
   task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_EQ(5, counter);
 }
@@ -1581,6 +1603,8 @@ TEST_F(FrameSchedulerImplTest, TaskTypeToTaskQueueMapping) {
   EXPECT_EQ(GetTaskQueue(TaskType::kNetworking), LoadingTaskQueue());
   EXPECT_EQ(GetTaskQueue(TaskType::kNetworkingControl),
             LoadingControlTaskQueue());
+  EXPECT_EQ(GetTaskQueue(TaskType::kInternalTranslation),
+            ForegroundOnlyTaskQueue());
 }
 
 class ThrottleAndFreezeTaskTypesExperimentTest : public FrameSchedulerImplTest {

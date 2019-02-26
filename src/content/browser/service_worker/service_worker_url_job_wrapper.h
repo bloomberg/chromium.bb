@@ -46,16 +46,11 @@ class CONTENT_EXPORT ServiceWorkerURLJobWrapper {
     // the request should still continue, or if processing should be aborted.
     // When false is returned, this sets |*result| to an appropriate error.
     virtual bool RequestStillValid(
-        ServiceWorkerMetrics::URLRequestJobResult* result);
+        ServiceWorkerMetrics::URLRequestJobResult* result) = 0;
 
     // Called to signal that loading failed, and that the resource being loaded
     // was a main resource.
     virtual void MainResourceLoadFailed() {}
-
-    virtual void ReportDestination(
-        ServiceWorkerMetrics::MainResourceRequestDestination destination) {}
-
-    virtual void WillDispatchFetchEventForMainResource() {}
   };
 
   // Non-S13nServiceWorker.

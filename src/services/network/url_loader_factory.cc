@@ -31,10 +31,11 @@ URLLoaderFactory::URLLoaderFactory(
     NetworkContext* context,
     mojom::URLLoaderFactoryParamsPtr params,
     scoped_refptr<ResourceSchedulerClient> resource_scheduler_client,
-    cors::CORSURLLoaderFactory* cors_url_loader_factory)
+    cors::CorsURLLoaderFactory* cors_url_loader_factory)
     : context_(context),
       params_(std::move(params)),
       resource_scheduler_client_(std::move(resource_scheduler_client)),
+      header_client_(std::move(params_->header_client)),
       cors_url_loader_factory_(cors_url_loader_factory) {
   DCHECK(context);
   DCHECK_NE(mojom::kInvalidProcessId, params_->process_id);
@@ -80,16 +81,6 @@ void URLLoaderFactory::CreateLoaderAndStart(
     UMA_HISTOGRAM_BOOLEAN(
         "NetworkService.URLLoaderFactory.OriginHeaderSameAsRequestOrigin",
         origin_head_same_as_request_origin);
-  }
-
-  bool report_raw_headers = false;
-  if (url_request.report_raw_headers) {
-    const NetworkService* service = context_->network_service();
-    report_raw_headers =
-        service && service->HasRawHeadersAccess(params_->process_id);
-    if (!report_raw_headers)
-      DLOG(ERROR) << "Denying raw headers request by process "
-                  << params_->process_id;
   }
 
   mojom::NetworkServiceClient* network_service_client = nullptr;
@@ -140,14 +131,13 @@ void URLLoaderFactory::CreateLoaderAndStart(
 
   auto loader = std::make_unique<URLLoader>(
       context_->url_request_context(), network_service_client,
-      base::BindOnce(&cors::CORSURLLoaderFactory::DestroyURLLoader,
+      base::BindOnce(&cors::CorsURLLoaderFactory::DestroyURLLoader,
                      base::Unretained(cors_url_loader_factory_)),
-      std::move(request), options, url_request, report_raw_headers,
-      std::move(client),
+      std::move(request), options, url_request, std::move(client),
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
       params_.get(), request_id, resource_scheduler_client_,
       std::move(keepalive_statistics_recorder),
-      std::move(network_usage_accumulator));
+      std::move(network_usage_accumulator), header_client_.get());
   cors_url_loader_factory_->OnLoaderCreated(std::move(loader));
 }
 

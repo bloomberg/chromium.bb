@@ -26,9 +26,12 @@ import time
 import urllib
 import urlparse
 from cStringIO import StringIO
+from multiprocessing.pool import ThreadPool
 
 import auth
 import gclient_utils
+import metrics
+import metrics_utils
 import subprocess2
 from third_party import httplib2
 
@@ -42,21 +45,6 @@ TRY_LIMIT = 7
 # Controls the transport protocol used to communicate with gerrit.
 # This is parameterized primarily to enable GerritTestCase.
 GERRIT_PROTOCOL = 'https'
-
-
-# TODO(crbug.com/881860): Remove.
-GERRIT_ERR_LOGGER = logging.getLogger('GerritErrorLogs')
-GERRIT_ERR_LOG_FILE = os.path.join(tempfile.gettempdir(), 'GerritHeaders.txt')
-GERRIT_ERR_MESSAGE = (
-    'If you see this when running \'git cl upload\', please report this to '
-    'https://crbug.com/881860, and attach the failures in %s.\n' %
-    GERRIT_ERR_LOG_FILE)
-INTERESTING_HEADERS = frozenset([
-    'x-google-backends',
-    'x-google-errorfiltertrace',
-    'x-google-filter-grace',
-    'x-errorid',
-])
 
 
 class GerritError(Exception):
@@ -422,9 +410,16 @@ def ReadHttpResponse(conn, accept_statuses=frozenset([200])):
   Returns: A string buffer containing the connection's reply.
   """
   sleep_time = 1.5
-  failed = False
   for idx in range(TRY_LIMIT):
+    before_response = time.time()
     response, contents = conn.request(**conn.req_params)
+
+    response_time = time.time() - before_response
+    metrics.collector.add_repeated(
+        'http_requests',
+        metrics_utils.extract_http_metrics(
+            conn.req_params['uri'], conn.req_params['method'], response.status,
+            response_time))
 
     # Check if this is an authentication issue.
     www_authenticate = response.get('www-authenticate')
@@ -449,6 +444,14 @@ def ReadHttpResponse(conn, accept_statuses=frozenset([200])):
       if response.status == 404:
         contents = ''
       break
+    # A status >=500 is assumed to be a possible transient error; retry.
+    http_version = 'HTTP/%s' % ('1.1' if response.version == 11 else '1.0')
+    LOGGER.warn('A transient error occurred while querying %s:\n'
+                '%s %s %s\n'
+                '%s %d %s',
+                conn.req_host, conn.req_params['method'],
+                conn.req_params['uri'],
+                http_version, http_version, response.status, response.reason)
     if response.status == 404:
       # TODO(crbug/881860): remove this hack.
       # HACK: try different Gerrit mirror as a workaround for potentially
@@ -459,22 +462,6 @@ def ReadHttpResponse(conn, accept_statuses=frozenset([200])):
         # And don't increase sleep_time in this case, since we suspect we've
         # just asked wrong git mirror before.
         sleep_time /= 2.0
-        failed = True
-        rpc_headers = '\n'.join(
-            '  ' + header + ': ' + value
-            for header, value in response.iteritems()
-            if header.lower() in INTERESTING_HEADERS
-        )
-        GERRIT_ERR_LOGGER.info('Gerrit RPC failures:\n%s\n', rpc_headers)
-    else:
-      # A status >=500 is assumed to be a possible transient error; retry.
-      http_version = 'HTTP/%s' % ('1.1' if response.version == 11 else '1.0')
-      LOGGER.warn('A transient error occurred while querying %s:\n'
-                  '%s %s %s\n'
-                  '%s %d %s',
-                  conn.req_host, conn.req_params['method'],
-                  conn.req_params['uri'],
-                  http_version, http_version, response.status, response.reason)
 
     if TRY_LIMIT - idx > 1:
       LOGGER.info('Will retry in %d seconds (%d more times)...',
@@ -482,16 +469,11 @@ def ReadHttpResponse(conn, accept_statuses=frozenset([200])):
       time.sleep(sleep_time)
       sleep_time = sleep_time * 2
   # end of retries loop
-
-  if failed:
-    LOGGER.warn(GERRIT_ERR_MESSAGE)
   if response.status not in accept_statuses:
     if response.status in (401, 403):
       print('Your Gerrit credentials might be misconfigured. Try: \n'
             '  git cl creds-check')
     reason = '%s: %s' % (response.reason, contents)
-    if failed:
-      reason += '\n' + GERRIT_ERR_MESSAGE
     raise GerritError(response.status, reason)
   return StringIO(contents)
 
@@ -932,11 +914,34 @@ def GetAccountDetails(host, account_id='self'):
 
   Documentation:
     https://gerrit-review.googlesource.com/Documentation/rest-api-accounts.html#get-account
+
+  Returns None if account is not found (i.e., Gerrit returned 404).
   """
-  if account_id != 'self':
-    account_id = int(account_id)
   conn = CreateHttpConn(host, '/accounts/%s' % account_id)
-  return ReadHttpJsonResponse(conn)
+  return ReadHttpJsonResponse(conn, accept_statuses=[200, 404])
+
+
+def ValidAccounts(host, accounts, max_threads=10):
+  """Returns a mapping from valid account to its details.
+
+  Invalid accounts, either not existing or without unique match,
+  are not present as returned dictionary keys.
+  """
+  assert not isinstance(accounts, basestring), type(accounts)
+  accounts = list(set(accounts))
+  if not accounts:
+    return {}
+  def get_one(account):
+    try:
+      return account, GetAccountDetails(host, account)
+    except GerritError:
+      return None, None
+  valid = {}
+  with contextlib.closing(ThreadPool(min(max_threads, len(accounts)))) as pool:
+    for account, details in pool.map(get_one, accounts):
+      if account and details:
+        valid[account] = details
+  return valid
 
 
 def PercentEncodeForGitRef(original):
@@ -982,7 +987,7 @@ def ChangeIdentifier(project, change_number):
 
 
 # TODO(crbug/881860): remove this hack.
-_GERRIT_MIRROR_PREFIXES = ['us1', 'us2', 'us3']
+_GERRIT_MIRROR_PREFIXES = ['us1', 'us2', 'us3', 'eu1']
 assert all(3 == len(p) for p in _GERRIT_MIRROR_PREFIXES)
 
 

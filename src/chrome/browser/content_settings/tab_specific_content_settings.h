@@ -17,7 +17,6 @@
 #include "base/scoped_observer.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/local_shared_objects_container.h"
-#include "chrome/browser/ui/blocked_content/framebust_block_tab_helper.h"
 #include "chrome/common/custom_handlers/protocol_handler.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/browser/content_settings_usages_state.h"
@@ -147,7 +146,6 @@ class TabSpecificContentSettings
   static void IndexedDBAccessed(int render_process_id,
                                 int render_frame_id,
                                 const GURL& url,
-                                const base::string16& description,
                                 bool blocked_by_policy);
 
   // Called when a specific file system in the current page was accessed.
@@ -182,38 +180,26 @@ class TabSpecificContentSettings
   // information which are needed for navigation: CONTENT_SETTINGS_TYPE_COOKIES
   // for cookies and service workers, and CONTENT_SETTINGS_TYPE_JAVASCRIPT for
   // service workers.
-  // TODO(vabr): Only public for tests. Move to a test client.
+  // Only public for tests.
   void ClearContentSettingsExceptForNavigationRelatedSettings();
 
   // Resets navigation related information (CONTENT_SETTINGS_TYPE_COOKIES and
   // CONTENT_SETTINGS_TYPE_JAVASCRIPT).
-  // TODO(vabr): Only public for tests. Move to a test client.
+  // Only public for tests.
   void ClearNavigationRelatedContentSettings();
 
   // Notifies that a Flash download has been blocked.
   void FlashDownloadBlocked();
 
   // Changes the |content_blocked_| entry for popups.
-  void SetPopupsBlocked(bool blocked);
+  void ClearPopupsBlocked();
 
   // Called when audio has been blocked on the page.
   void OnAudioBlocked();
 
-  // Updates the blocked framebust icon in the location bar. The
-  // |click_callback| will be called (if it is non-null) if the blocked URL is
-  // ever clicked on in the resulting UI.
-  void OnFramebustBlocked(
-      const GURL& blocked_url,
-      FramebustBlockTabHelper::ClickCallback click_callback);
-
   // Returns whether a particular kind of content has been blocked for this
   // page.
   bool IsContentBlocked(ContentSettingsType content_type) const;
-
-  // Returns true if content blockage was indicated to the user.
-  bool IsBlockageIndicated(ContentSettingsType content_type) const;
-
-  void SetBlockageHasBeenIndicated(ContentSettingsType content_type);
 
   // Returns whether a particular kind of content has been allowed. Currently
   // only tracks cookies.
@@ -231,12 +217,12 @@ class TabSpecificContentSettings
     return media_stream_requested_video_device_;
   }
 
-  // TODO(vabr): Only public for tests. Move to a test client.
+  // Only public for tests.
   const std::string& media_stream_selected_audio_device() const {
     return media_stream_selected_audio_device_;
   }
 
-  // TODO(vabr): Only public for tests. Move to a test client.
+  // Only public for tests.
   const std::string& media_stream_selected_video_device() const {
     return media_stream_selected_video_device_;
   }
@@ -316,14 +302,14 @@ class TabSpecificContentSettings
   void SetPepperBrokerAllowed(bool allowed);
 
   // Message handlers.
-  // TODO(vabr): Only public for tests. Move to a test client.
+  // Only public for tests.
   void OnContentBlocked(ContentSettingsType type);
   void OnContentBlockedWithDetail(ContentSettingsType type,
                                   const base::string16& details);
   void OnContentAllowed(ContentSettingsType type);
 
   // These methods are invoked on the UI thread by the static functions above.
-  // TODO(vabr): Only public for tests. Move to a test client.
+  // Only public for tests.
   void OnCookiesRead(const GURL& url,
                      const GURL& first_party_url,
                      const net::CookieList& cookie_list,
@@ -334,9 +320,7 @@ class TabSpecificContentSettings
                       bool blocked_by_policy);
   void OnFileSystemAccessed(const GURL& url,
                             bool blocked_by_policy);
-  void OnIndexedDBAccessed(const GURL& url,
-                           const base::string16& description,
-                           bool blocked_by_policy);
+  void OnIndexedDBAccessed(const GURL& url, bool blocked_by_policy);
   void OnLocalStorageAccessed(const GURL& url,
                               bool local,
                               bool blocked_by_policy);
@@ -440,7 +424,6 @@ class TabSpecificContentSettings
 
   struct ContentSettingsStatus {
     bool blocked;
-    bool blockage_indicated_to_user;
     bool allowed;
   };
   // Stores which content setting types actually have blocked content.

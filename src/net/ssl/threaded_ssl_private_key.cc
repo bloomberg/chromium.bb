@@ -56,6 +56,10 @@ ThreadedSSLPrivateKey::ThreadedSSLPrivateKey(
       task_runner_(std::move(task_runner)),
       weak_factory_(this) {}
 
+std::string ThreadedSSLPrivateKey::GetProviderName() {
+  return core_->delegate()->GetProviderName();
+}
+
 std::vector<uint16_t> ThreadedSSLPrivateKey::GetAlgorithmPreferences() {
   return core_->delegate()->GetAlgorithmPreferences();
 }

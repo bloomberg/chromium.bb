@@ -23,7 +23,7 @@ class GrTexture;
 
 class GrSamplerState;
 class SkCachedData;
-struct SkYUVSizeInfo;
+struct SkYUVASizeInfo;
 
 enum {
     kNeedNewImageUniqueID = 0
@@ -54,12 +54,13 @@ public:
     virtual GrTextureProxy* peekProxy() const { return nullptr; }
     virtual sk_sp<GrTextureProxy> asTextureProxyRef() const { return nullptr; }
     virtual sk_sp<GrTextureProxy> asTextureProxyRef(GrContext*, const GrSamplerState&,
-                                                    SkColorSpace*, sk_sp<SkColorSpace>*,
                                                     SkScalar scaleAdjust[2]) const = 0;
     virtual sk_sp<GrTextureProxy> refPinnedTextureProxy(uint32_t* uniqueID) const {
         return nullptr;
     }
-
+    virtual bool isYUVA() const { return false; }
+    virtual bool asYUVATextureProxiesRef(sk_sp<GrTextureProxy>[4], SkYUVAIndex[4],
+                                         SkYUVColorSpace*) const { return false; }
     virtual GrTexture* onGetTexture() const { return nullptr; }
 #endif
     virtual GrBackendTexture onGetBackendTexture(bool flushPendingGrContextIO,
@@ -67,12 +68,12 @@ public:
 
     // return a read-only copy of the pixels. We promise to not modify them,
     // but only inspect them (or encode them).
-    virtual bool getROPixels(SkBitmap*, SkColorSpace* dstColorSpace,
-                             CachingHint = kAllow_CachingHint) const = 0;
+    virtual bool getROPixels(SkBitmap*, CachingHint = kAllow_CachingHint) const = 0;
 
     virtual sk_sp<SkImage> onMakeSubset(const SkIRect&) const = 0;
 
-    virtual sk_sp<SkCachedData> getPlanes(SkYUVSizeInfo*, SkYUVColorSpace*, const void* planes[3]);
+    virtual sk_sp<SkCachedData> getPlanes(SkYUVASizeInfo*, SkYUVAIndex[4],
+                                          SkYUVColorSpace*, const void* planes[4]);
     virtual sk_sp<SkData> onRefEncoded() const { return nullptr; }
 
     virtual bool onAsLegacyBitmap(SkBitmap*) const;
@@ -80,9 +81,12 @@ public:
     // True for picture-backed and codec-backed
     virtual bool onIsLazyGenerated() const { return false; }
 
+    // True for images instantiated in GPU memory
+    virtual bool onIsTextureBacked() const { return false; }
+
     // Call when this image is part of the key to a resourcecache entry. This allows the cache
     // to know automatically those entries can be purged when this SkImage deleted.
-    void notifyAddedToRasterCache() const {
+    virtual void notifyAddedToRasterCache() const {
         fAddedToRasterCache.store(true);
     }
 

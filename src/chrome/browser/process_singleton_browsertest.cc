@@ -257,8 +257,7 @@ IN_PROC_BROWSER_TEST_F(ProcessSingletonTest, MAYBE_StartupRaceCondition) {
       chrome_starters_[i]->Reset();
 
       ASSERT_TRUE(chrome_starter_threads_[i]->IsRunning());
-      ASSERT_NE(static_cast<base::MessageLoop*>(NULL),
-                chrome_starter_threads_[i]->message_loop());
+      ASSERT_TRUE(chrome_starter_threads_[i]->task_runner());
 
       chrome_starter_threads_[i]->task_runner()->PostTask(
           FROM_HERE,

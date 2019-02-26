@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/themes/browser_theme_pack.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/native_theme/native_theme.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -32,6 +33,74 @@ constexpr char kTilingNoRepeat[] = "no-repeat";
 constexpr char kTilingRepeatX[] = "repeat-x";
 constexpr char kTilingRepeatY[] = "repeat-y";
 constexpr char kTilingRepeat[] = "repeat";
+
+base::Optional<SkColor> GetDarkModeColor(int id) {
+  switch (id) {
+    case ThemeProperties::COLOR_BOOKMARK_TEXT:
+    case ThemeProperties::COLOR_TAB_TEXT:
+    case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT:
+    case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE:
+    case ThemeProperties::COLOR_NTP_TEXT:
+      return SK_ColorWHITE;
+    case ThemeProperties::COLOR_TOOLBAR:
+    case ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND:
+      return SkColorSetRGB(0x41, 0x41, 0x41);
+    case ThemeProperties::COLOR_FRAME:
+    case ThemeProperties::COLOR_BACKGROUND_TAB:
+      return SkColorSetRGB(0x2B, 0x2B, 0x2B);
+    case ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR:
+      return SK_ColorLTGRAY;
+    case ThemeProperties::COLOR_NTP_BACKGROUND:
+      return SK_ColorBLACK;
+    case ThemeProperties::COLOR_BUTTON_BACKGROUND:
+      return SkColorSetARGB(0xE5, 0x41, 0x41, 0x41);
+    case ThemeProperties::COLOR_FRAME_INACTIVE:
+    case ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE:
+      return gfx::kGoogleGrey800;
+    default:
+      return base::nullopt;
+  }
+}
+
+base::Optional<SkColor> GetIncognitoColor(int id) {
+  switch (id) {
+    case ThemeProperties::COLOR_FRAME:
+    case ThemeProperties::COLOR_BACKGROUND_TAB:
+      return gfx::kGoogleGrey900;
+    case ThemeProperties::COLOR_FRAME_INACTIVE:
+    case ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE:
+      return gfx::kGoogleGrey800;
+    case ThemeProperties::COLOR_TOOLBAR:
+    case ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND:
+    case ThemeProperties::COLOR_NTP_BACKGROUND:
+      return SkColorSetRGB(0x32, 0x36, 0x39);
+    case ThemeProperties::COLOR_BOOKMARK_TEXT:
+    case ThemeProperties::COLOR_TAB_TEXT:
+    case ThemeProperties::COLOR_TAB_CLOSE_BUTTON_ACTIVE:
+    case ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON:
+      return gfx::kGoogleGrey100;
+    case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT:
+    case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE:
+    case ThemeProperties::COLOR_TAB_CLOSE_BUTTON_INACTIVE:
+    case ThemeProperties::COLOR_TAB_ALERT_AUDIO:
+    case ThemeProperties::COLOR_TAB_ALERT_CAPTURING:
+    case ThemeProperties::COLOR_TAB_PIP_PLAYING:
+    case ThemeProperties::COLOR_TAB_ALERT_RECORDING:
+      return gfx::kGoogleGrey400;
+    case ThemeProperties::COLOR_TAB_CLOSE_BUTTON_BACKGROUND_HOVER:
+      return gfx::kGoogleGrey700;
+    case ThemeProperties::COLOR_TAB_CLOSE_BUTTON_BACKGROUND_PRESSED:
+      return gfx::kGoogleGrey600;
+    case ThemeProperties::COLOR_CONTROL_BACKGROUND:
+      return SK_ColorWHITE;
+    case ThemeProperties::COLOR_BOOKMARK_BAR_INSTRUCTIONS_TEXT:
+      return SkColorSetA(SK_ColorWHITE, 0x8A);
+    case ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR:
+      return SkColorSetRGB(0x28, 0x28, 0x28);
+    default:
+      return base::nullopt;
+  }
+}
 
 }  // namespace
 
@@ -104,7 +173,11 @@ color_utils::HSL ThemeProperties::GetDefaultTint(int id, bool incognito) {
   DCHECK(id != TINT_FRAME_INCOGNITO && id != TINT_FRAME_INCOGNITO_INACTIVE)
       << "These values should be queried via their respective non-incognito "
          "equivalents and an appropriate |incognito| value.";
-
+  if (!incognito &&
+      ui::NativeTheme::GetInstanceForNativeUi()->SystemDarkModeEnabled() &&
+      id == TINT_BUTTONS) {
+    return {0, 0, 1};
+  }
   // If you change these defaults, you must increment the version number in
   // browser_theme_pack.cc.
   if (incognito) {
@@ -122,6 +195,17 @@ color_utils::HSL ThemeProperties::GetDefaultTint(int id, bool incognito) {
 
 // static
 SkColor ThemeProperties::GetDefaultColor(int id, bool incognito) {
+  if (incognito) {
+    base::Optional<SkColor> incognito_color = GetIncognitoColor(id);
+    if (incognito_color.has_value())
+      return incognito_color.value();
+  }
+  if (ui::NativeTheme::GetInstanceForNativeUi()->SystemDarkModeEnabled()) {
+    base::Optional<SkColor> dark_mode_color = GetDarkModeColor(id);
+    if (dark_mode_color.has_value())
+      return dark_mode_color.value();
+  }
+
 #if defined(OS_WIN)
   const SkColor kDefaultColorNTPBackground =
       color_utils::GetSysSkColor(COLOR_WINDOW);
@@ -141,22 +225,20 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool incognito) {
     // increment the version number in browser_theme_pack.cc.
     case COLOR_FRAME:
     case COLOR_BACKGROUND_TAB:
-      return incognito ? gfx::kGoogleGrey900 : SkColorSetRGB(0xDE, 0xE1, 0xE6);
+      return SkColorSetRGB(0xDE, 0xE1, 0xE6);
     case COLOR_FRAME_INACTIVE:
     case COLOR_BACKGROUND_TAB_INACTIVE:
-      return incognito ? gfx::kGoogleGrey800 : SkColorSetRGB(0xE7, 0xEA, 0xED);
+      return SkColorSetRGB(0xE7, 0xEA, 0xED);
     case COLOR_TOOLBAR:
-      return incognito ? SkColorSetRGB(0x32, 0x36, 0x39) : SK_ColorWHITE;
+      return SK_ColorWHITE;
     case COLOR_BOOKMARK_TEXT:
     case COLOR_TAB_TEXT:
-    case COLOR_TAB_TEXT_INACTIVE:
-      return incognito ? gfx::kGoogleGrey100 : gfx::kGoogleGrey800;
+      return gfx::kGoogleGrey800;
     case COLOR_BACKGROUND_TAB_TEXT:
     case COLOR_BACKGROUND_TAB_TEXT_INACTIVE:
-      return incognito ? gfx::kGoogleGrey400 : gfx::kChromeIconGrey;
+      return gfx::kChromeIconGrey;
     case COLOR_NTP_BACKGROUND:
-      return incognito ? SkColorSetRGB(0x32, 0x36, 0x39)
-                       : kDefaultColorNTPBackground;
+      return kDefaultColorNTPBackground;
     case COLOR_NTP_TEXT:
       return kDefaultColorNTPText;
     case COLOR_NTP_LINK:
@@ -169,34 +251,32 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool incognito) {
     // Properties not stored in theme pack.
     case COLOR_TAB_CLOSE_BUTTON_ACTIVE:
     case COLOR_TOOLBAR_BUTTON_ICON:
-      return incognito ? gfx::kGoogleGrey100 : gfx::kChromeIconGrey;
+      return gfx::kChromeIconGrey;
     case COLOR_TAB_CLOSE_BUTTON_INACTIVE:
     case COLOR_TAB_ALERT_AUDIO:
-      return incognito ? gfx::kGoogleGrey400 : gfx::kChromeIconGrey;
+      return gfx::kChromeIconGrey;
     case COLOR_TAB_CLOSE_BUTTON_BACKGROUND_HOVER:
-      return incognito ? gfx::kGoogleGrey700 : gfx::kGoogleGrey200;
+      return gfx::kGoogleGrey200;
     case COLOR_TAB_CLOSE_BUTTON_BACKGROUND_PRESSED:
-      return incognito ? gfx::kGoogleGrey600 : gfx::kGoogleGrey300;
+      return gfx::kGoogleGrey300;
     case COLOR_TAB_ALERT_RECORDING:
-      return incognito ? gfx::kGoogleGrey400 : gfx::kGoogleRed600;
+      return gfx::kGoogleRed600;
     case COLOR_TAB_ALERT_CAPTURING:
     case COLOR_TAB_PIP_PLAYING:
-      return incognito ? gfx::kGoogleGrey400 : gfx::kGoogleBlue600;
+      return gfx::kGoogleBlue600;
     case COLOR_CONTROL_BACKGROUND:
       return SK_ColorWHITE;
     case COLOR_BOOKMARK_BAR_INSTRUCTIONS_TEXT:
-      return incognito ? SkColorSetA(SK_ColorWHITE, 0x8A)
-                       : SkColorSetRGB(0x64, 0x64, 0x64);
+      return SkColorSetRGB(0x64, 0x64, 0x64);
     case COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR:
       // We shouldn't reach this case because the color is calculated from
       // others.
       NOTREACHED();
       return gfx::kPlaceholderColor;
     case COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND:
-      return incognito ? SkColorSetRGB(0x32, 0x36, 0x39) : SK_ColorWHITE;
+      return SK_ColorWHITE;
     case COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR:
-      return incognito ? SkColorSetRGB(0x28, 0x28, 0x28)
-                       : SkColorSetRGB(0xB6, 0xB4, 0xB6);
+      return SkColorSetRGB(0xB6, 0xB4, 0xB6);
     case COLOR_TOOLBAR_TOP_SEPARATOR:
     case COLOR_TOOLBAR_TOP_SEPARATOR_INACTIVE:
       return SkColorSetA(SK_ColorBLACK, 0x40);
@@ -205,6 +285,10 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool incognito) {
       NOTREACHED();
       return gfx::kPlaceholderColor;
 #endif
+    case COLOR_FEATURE_PROMO_BUBBLE_TEXT:
+      return SK_ColorWHITE;
+    case COLOR_FEATURE_PROMO_BUBBLE_BACKGROUND:
+      return gfx::kGoogleBlue700;
 
     case COLOR_FRAME_INCOGNITO:
     case COLOR_FRAME_INCOGNITO_INACTIVE:

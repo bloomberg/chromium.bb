@@ -9,10 +9,12 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/policy/core/common/cloud/cloud_policy_service.h"
 
 namespace policy {
 
@@ -57,10 +59,12 @@ const int64_t CloudPolicyRefreshScheduler::kRefreshDelayMaxMs =
 CloudPolicyRefreshScheduler::CloudPolicyRefreshScheduler(
     CloudPolicyClient* client,
     CloudPolicyStore* store,
+    CloudPolicyService* service,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     network::NetworkConnectionTrackerGetter network_connection_tracker_getter)
     : client_(client),
       store_(store),
+      service_(service),
       task_runner_(task_runner),
       network_connection_tracker_(network_connection_tracker_getter.Run()),
       error_retry_delay_ms_(kInitialErrorRetryDelayMs),
@@ -333,9 +337,12 @@ void CloudPolicyRefreshScheduler::PerformRefresh() {
     // Update |last_refresh_| so another fetch isn't triggered inadvertently.
     UpdateLastRefresh();
 
-    // The result of this operation will be reported through a callback, at
-    // which point the next refresh will be scheduled.
-    client_->FetchPolicy();
+    // The result of this operation will be reported through OnPolicyFetched()
+    // and OnPolicyRefreshed() callbacks. Next refresh will be scheduled in
+    // OnPolicyFetched().
+    service_->RefreshPolicy(
+        base::BindRepeating(&CloudPolicyRefreshScheduler::OnPolicyRefreshed,
+                            base::Unretained(this)));
     return;
   }
 
@@ -372,6 +379,12 @@ void CloudPolicyRefreshScheduler::CancelRefresh() {
 void CloudPolicyRefreshScheduler::UpdateLastRefresh() {
   last_refresh_ = base::Time::NowFromSystemTime();
   last_refresh_ticks_ = base::TimeTicks::Now();
+}
+
+void CloudPolicyRefreshScheduler::OnPolicyRefreshed(bool success) {
+  // Next policy fetch is scheduled in OnPolicyFetched() callback.
+  VLOG(1) << "Scheduled policy refresh "
+          << (success ? "successful" : "unsuccessful");
 }
 
 }  // namespace policy

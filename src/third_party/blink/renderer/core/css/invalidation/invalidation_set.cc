@@ -106,7 +106,7 @@ bool InvalidationSet::InvalidatesElement(Element& element) const {
     }
   }
 
-  if (element.HasPartName() && invalidation_flags_.InvalidatesParts()) {
+  if (element.HasPart() && invalidation_flags_.InvalidatesParts()) {
     TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART_IF_ENABLED(
         element, kInvalidationSetMatchedPart, *this, "");
     return true;

@@ -89,6 +89,12 @@ class GLES2DecoderHelperImpl : public GLES2DecoderHelper {
     return mailbox;
   }
 
+  void ProduceTexture(const gpu::Mailbox& mailbox,
+                      AbstractTexture* texture) override {
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    mailbox_manager_->ProduceTexture(mailbox, texture->GetTextureBase());
+  }
+
  private:
   gpu::DecoderContext* decoder_;
   gpu::gles2::TextureManager* texture_manager_;

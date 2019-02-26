@@ -21,6 +21,7 @@
 #include "ios/chrome/browser/ui/webui/sync_internals/sync_internals_ui.h"
 #include "ios/chrome/browser/ui/webui/terms_ui.h"
 #include "ios/chrome/browser/ui/webui/ukm_internals_ui.h"
+#include "ios/chrome/browser/ui/webui/user_actions_ui.h"
 #include "ios/chrome/browser/ui/webui/version_ui.h"
 #include "url/gurl.h"
 
@@ -68,6 +69,8 @@ WebUIIOSFactoryFunction GetWebUIIOSFactoryFunction(WebUIIOS* web_ui,
     return &NewWebUIIOSWithHost<AboutUI>;
   if (url_host == kChromeUICrashesHost)
     return &NewWebUIIOS<CrashesUI>;
+  if (url_host == kChromeUIFlagsHost)
+    return &NewWebUIIOS<FlagsUI>;
   if (url_host == kChromeUIGCMInternalsHost)
     return &NewWebUIIOS<GCMInternalsUI>;
   if (url_host == kChromeUINetExportHost)
@@ -82,16 +85,16 @@ WebUIIOSFactoryFunction GetWebUIIOSFactoryFunction(WebUIIOS* web_ui,
     return &NewWebUIIOS<SignInInternalsUIIOS>;
   if (url.host_piece() == kChromeUISuggestionsHost)
     return &NewWebUIIOS<suggestions::SuggestionsUI>;
+  if (url_host == kChromeUIURLKeyedMetricsHost)
+    return &NewWebUIIOS<UkmInternalsUI>;
+  if (url_host == kChromeUIUserActionsHost)
+    return &NewWebUIIOS<UserActionsUI>;
   if (url_host == kChromeUISyncInternalsHost)
     return &NewWebUIIOS<SyncInternalsUI>;
   if (url_host == kChromeUITermsHost)
     return &NewWebUIIOSWithHost<TermsUI>;
   if (url_host == kChromeUIVersionHost)
     return &NewWebUIIOS<VersionUI>;
-  if (url_host == kChromeUIFlagsHost)
-    return &NewWebUIIOS<FlagsUI>;
-  if (url_host == kChromeUIURLKeyedMetricsHost)
-    return &NewWebUIIOS<UkmInternalsUI>;
 
   return nullptr;
 }

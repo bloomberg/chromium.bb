@@ -17,6 +17,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_timeouts.h"
+#include "build/build_config.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/wire_format_lite.h"
@@ -190,6 +191,7 @@ class GCMConnectionHandlerImplTest : public testing::Test {
   net::AddressList address_list_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   std::unique_ptr<network::NetworkService> network_service_;
   network::mojom::NetworkContextPtr network_context_ptr_;
   net::MockClientSocketFactory socket_factory_;
@@ -204,6 +206,7 @@ GCMConnectionHandlerImplTest::GCMConnectionHandlerImplTest()
     : last_error_(0),
       scoped_task_environment_(
           base::test::ScopedTaskEnvironment::MainThreadType::IO),
+      network_change_notifier_(net::NetworkChangeNotifier::CreateMock()),
       network_service_(network::NetworkService::CreateForTesting()),
       url_request_context_(true /* delay_initialization */) {
   address_list_ = net::AddressList::CreateFromIPAddress(
@@ -236,8 +239,11 @@ void GCMConnectionHandlerImplTest::BuildSocket(const ReadList& read_list,
   base::RunLoop run_loop;
   int net_error = net::ERR_FAILED;
   const GURL kDestination("https://example.com");
+  network::mojom::ProxyResolvingSocketOptionsPtr options =
+      network::mojom::ProxyResolvingSocketOptions::New();
+  options->use_tls = true;
   mojo_socket_factory_ptr_->CreateProxyResolvingSocket(
-      kDestination, true /* use_tls */,
+      kDestination, std::move(options),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
       mojo::MakeRequest(&mojo_socket_ptr_), nullptr /* observer */,
       base::BindLambdaForTesting(
@@ -429,7 +435,13 @@ TEST_F(GCMConnectionHandlerImplTest, ReInit) {
 }
 
 // Verify that messages can be received after initialization.
-TEST_F(GCMConnectionHandlerImplTest, RecvMsg) {
+// Flaky on Linux (crbug.com/906093)
+#if defined(OS_LINUX)
+#define MAYBE_RecvMsg DISABLED_RecvMsg
+#else
+#define MAYBE_RecvMsg RecvMsg
+#endif
+TEST_F(GCMConnectionHandlerImplTest, MAYBE_RecvMsg) {
   std::string handshake_request = EncodeHandshakeRequest();
   WriteList write_list(1, net::MockWrite(net::ASYNC,
                                          handshake_request.c_str(),

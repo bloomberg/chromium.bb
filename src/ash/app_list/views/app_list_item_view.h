@@ -198,6 +198,7 @@ class APP_LIST_EXPORT AppListItemView
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
+  bool SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) override;
   void OnFocus() override;
   void OnBlur() override;
 
@@ -258,6 +259,10 @@ class APP_LIST_EXPORT AppListItemView
 
   bool is_installing_ = false;
   bool is_highlighted_ = false;
+
+  // Whether |context_menu_| was cancelled as the result of a continuous drag
+  // gesture.
+  bool menu_close_initiated_from_drag_ = false;
 
   base::string16 tooltip_text_;
 

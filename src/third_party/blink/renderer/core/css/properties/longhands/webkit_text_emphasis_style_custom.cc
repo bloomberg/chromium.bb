@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* WebkitTextEmphasisStyle::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -19,23 +19,22 @@ const CSSValue* WebkitTextEmphasisStyle::ParseSingleValue(
     const CSSParserLocalContext&) const {
   CSSValueID id = range.Peek().Id();
   if (id == CSSValueNone)
-    return CSSPropertyParserHelpers::ConsumeIdent(range);
+    return css_property_parser_helpers::ConsumeIdent(range);
 
   if (CSSValue* text_emphasis_style =
-          CSSPropertyParserHelpers::ConsumeString(range))
+          css_property_parser_helpers::ConsumeString(range))
     return text_emphasis_style;
 
   CSSIdentifierValue* fill =
-      CSSPropertyParserHelpers::ConsumeIdent<CSSValueFilled, CSSValueOpen>(
+      css_property_parser_helpers::ConsumeIdent<CSSValueFilled, CSSValueOpen>(
           range);
-  CSSIdentifierValue* shape =
-      CSSPropertyParserHelpers::ConsumeIdent<CSSValueDot, CSSValueCircle,
-                                             CSSValueDoubleCircle,
-                                             CSSValueTriangle, CSSValueSesame>(
-          range);
+  CSSIdentifierValue* shape = css_property_parser_helpers::ConsumeIdent<
+      CSSValueDot, CSSValueCircle, CSSValueDoubleCircle, CSSValueTriangle,
+      CSSValueSesame>(range);
   if (!fill) {
-    fill = CSSPropertyParserHelpers::ConsumeIdent<CSSValueFilled, CSSValueOpen>(
-        range);
+    fill =
+        css_property_parser_helpers::ConsumeIdent<CSSValueFilled, CSSValueOpen>(
+            range);
   }
   if (fill && shape) {
     CSSValueList* parsed_values = CSSValueList::CreateSpaceSeparated();
@@ -138,5 +137,5 @@ void WebkitTextEmphasisStyle::ApplyValue(StyleResolverState& state,
   }
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

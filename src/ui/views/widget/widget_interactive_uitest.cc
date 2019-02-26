@@ -37,6 +37,7 @@
 #include "ui/views/test/widget_test.h"
 #include "ui/views/touchui/touch_selection_controller_impl.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_utils.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -328,7 +329,7 @@ TEST_F(WidgetTestInteractive, DesktopNativeWidgetAuraActivationAndFocusTest) {
   Widget* widget1 = CreateWidget();
   widget1->GetContentsView()->AddChildView(focusable_view1);
   widget1->Show();
-  aura::Window* root_window1 = widget1->GetNativeView()->GetRootWindow();
+  aura::Window* root_window1 = GetRootWindow(widget1);
   focusable_view1->RequestFocus();
 
   EXPECT_TRUE(root_window1 != NULL);
@@ -342,7 +343,7 @@ TEST_F(WidgetTestInteractive, DesktopNativeWidgetAuraActivationAndFocusTest) {
   Widget* widget2 = CreateWidget();
   widget1->GetContentsView()->AddChildView(focusable_view2);
   widget2->Show();
-  aura::Window* root_window2 = widget2->GetNativeView()->GetRootWindow();
+  aura::Window* root_window2 = GetRootWindow(widget2);
   focusable_view2->RequestFocus();
   ActivatePlatformWindow(widget2);
 
@@ -1064,7 +1065,7 @@ TEST_F(WidgetTestInteractive, WindowModalWindowDestroyedActivationTest) {
 
   gfx::NativeView modal_native_view = modal_dialog_widget->GetNativeView();
   ASSERT_EQ(3u, focus_changes.size());
-  EXPECT_EQ(nullptr, focus_changes[1]);
+  EXPECT_EQ(gfx::kNullNativeView, focus_changes[1]);
   EXPECT_EQ(modal_native_view, focus_changes[2]);
 
 #if defined(OS_MACOSX)
@@ -1078,7 +1079,7 @@ TEST_F(WidgetTestInteractive, WindowModalWindowDestroyedActivationTest) {
 #endif
 
   ASSERT_EQ(5u, focus_changes.size());
-  EXPECT_EQ(nullptr, focus_changes[3]);
+  EXPECT_EQ(gfx::kNullNativeView, focus_changes[3]);
   EXPECT_EQ(top_level_native_view, focus_changes[4]);
 
   top_level_widget.CloseNow();
@@ -1175,8 +1176,9 @@ TEST_F(WidgetTestInteractive, TouchSelectionQuickMenuIsNotActivated) {
 
   RunPendingMessages();
 
-  ui::test::EventGenerator generator(widget->GetNativeWindow());
-  generator.GestureTapAt(gfx::Point(10, 10));
+  ui::test::EventGenerator generator(GetRootWindow(widget));
+  generator.GestureTapAt(textfield->GetBoundsInScreen().origin() +
+                         gfx::Vector2d(10, 10));
   ShowQuickMenuImmediately(static_cast<TouchSelectionControllerImpl*>(
       textfield_test_api.touch_selection_controller()));
 
@@ -1683,7 +1685,7 @@ TEST_F(WidgetCaptureTest, FailedCaptureRequestIsNoop) {
 
   widget.Show();
   ui::test::EventGenerator generator(GetContext(), widget.GetNativeWindow());
-  generator.set_current_location(gfx::Point(300, 10));
+  generator.set_current_screen_location(gfx::Point(300, 10));
   generator.PressLeftButton();
 
   EXPECT_FALSE(mouse_view1->pressed());
@@ -1722,8 +1724,8 @@ TEST_F(WidgetCaptureTest, MAYBE_MouseExitOnCaptureGrab) {
   widget2.Show();
   widget2.SetBounds(gfx::Rect(400, 0, 300, 300));
 
-  ui::test::EventGenerator generator(widget1.GetNativeWindow());
-  generator.set_current_location(gfx::Point(100, 100));
+  ui::test::EventGenerator generator(GetRootWindow(&widget1));
+  generator.set_current_screen_location(gfx::Point(100, 100));
   generator.MoveMouseBy(0, 0);
 
   EXPECT_EQ(1, mouse_view1->EnteredCalls());

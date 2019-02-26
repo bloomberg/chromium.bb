@@ -27,8 +27,6 @@ class RoboConfiguration:
     self._gn_commit_title = "GN Configuration"
     # Title of the commit with chromium/patches/README.
     self._patches_commit_title = "Chromium patches file"
-    # Title of the commit with chromium/patches/config_flag_changes.txt
-    self._build_changes_commit_title = "Build Config Changes Summary"
     self.EnsureHostInfo()
     self.EnsureChromeSrc()
     self.EnsurePathContainsLLVM()
@@ -88,9 +86,6 @@ class RoboConfiguration:
 
   def patches_commit_title(self):
     return self._patches_commit_title
-
-  def build_changes_commit_title(self):
-    return self._build_changes_commit_title
 
   def EnsureHostInfo(self):
     """Ensure that the host architecture and platform are set."""

@@ -67,13 +67,15 @@ class PermissionBubbleInteractiveUITest : public InProcessBrowserTest {
 
     test_api_->AddSimpleRequest(CONTENT_SETTINGS_TYPE_GEOLOCATION);
 
-    EXPECT_TRUE([browser()->window()->GetNativeWindow() isKeyWindow]);
+    EXPECT_TRUE([browser()->window()->GetNativeWindow().GetNativeNSWindow()
+                     isKeyWindow]);
 
     // The PermissionRequestManager displays prompts asynchronously.
     base::RunLoop().RunUntilIdle();
 
     // The bubble should steal key focus when shown.
-    EnsureWindowActive(test_api_->GetPromptWindow(), "show permission bubble");
+    EnsureWindowActive(test_api_->GetPromptWindow().GetNativeNSWindow(),
+                       "show permission bubble");
   }
 
  protected:
@@ -87,7 +89,8 @@ class PermissionBubbleInteractiveUITest : public InProcessBrowserTest {
 // There is only one tab. Cmd+w will close it along with the browser window.
 IN_PROC_BROWSER_TEST_F(PermissionBubbleInteractiveUITest, CmdWClosesWindow) {
   base::scoped_nsobject<NSWindow> browser_window(
-      browser()->window()->GetNativeWindow(), base::scoped_policy::RETAIN);
+      browser()->window()->GetNativeWindow().GetNativeNSWindow(),
+      base::scoped_policy::RETAIN);
   EXPECT_TRUE([browser_window isVisible]);
 
   content::WindowedNotificationObserver observer(
@@ -104,7 +107,8 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleInteractiveUITest, CmdWClosesWindow) {
 // Add a tab, ensure we can switch away and back using Cmd+Alt+Left/Right and
 // curly braces.
 IN_PROC_BROWSER_TEST_F(PermissionBubbleInteractiveUITest, SwitchTabs) {
-  NSWindow* browser_window = browser()->window()->GetNativeWindow();
+  NSWindow* browser_window =
+      browser()->window()->GetNativeWindow().GetNativeNSWindow();
 
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
   EXPECT_TRUE(test_api_->GetPromptWindow());
@@ -132,7 +136,7 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleInteractiveUITest, SwitchTabs) {
 
   // Note we don't need to makeKeyAndOrderFront: the permission window will take
   // focus when it is shown again.
-  EnsureWindowActive(test_api_->GetPromptWindow(),
+  EnsureWindowActive(test_api_->GetPromptWindow().GetNativeNSWindow(),
                      "switched to permission tab with arrow");
   EXPECT_TRUE(test_api_->GetPromptWindow());
 
@@ -151,7 +155,7 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleInteractiveUITest, SwitchTabs) {
   chrome::FocusLocationBar(browser());
   SendAccelerator(ui::VKEY_OEM_4, true, false);
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
-  EnsureWindowActive(test_api_->GetPromptWindow(),
+  EnsureWindowActive(test_api_->GetPromptWindow().GetNativeNSWindow(),
                      "switch to permission tab with curly brace");
   EXPECT_TRUE(test_api_->GetPromptWindow());
 

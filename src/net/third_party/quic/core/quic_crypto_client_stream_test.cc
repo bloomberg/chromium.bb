@@ -52,7 +52,8 @@ class QuicCryptoClientStreamTest : public QuicTest {
     connection_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
 
     session_ = QuicMakeUnique<TestQuicSpdyClientSession>(
-        connection_, DefaultQuicConfig(), server_id_, &crypto_config_);
+        connection_, DefaultQuicConfig(), supported_versions_, server_id_,
+        &crypto_config_);
   }
 
   void CompleteCryptoHandshake() {
@@ -376,6 +377,37 @@ TEST_F(QuicCryptoClientStreamTest, NoTokenBindingInPrivacyMode) {
   EXPECT_EQ(0u, stream()->crypto_negotiated_params().token_binding_key_param);
 }
 
+TEST_F(QuicCryptoClientStreamTest, PreferredVersion) {
+  // This mimics the case where client receives version negotiation packet, such
+  // that, the preferred version is different from the packets' version.
+  connection_ = new PacketSavingConnection(
+      &client_helper_, &alarm_factory_, Perspective::IS_CLIENT,
+      ParsedVersionOfIndex(supported_versions_, 1));
+  connection_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
+
+  session_ = QuicMakeUnique<TestQuicSpdyClientSession>(
+      connection_, DefaultQuicConfig(), supported_versions_, server_id_,
+      &crypto_config_);
+  CompleteCryptoHandshake();
+  // 2 CHLOs are sent.
+  ASSERT_EQ(2u, session_->sent_crypto_handshake_messages().size());
+  // Verify preferred version is the highest version that session supports, and
+  // is different from connection's version.
+  QuicVersionLabel client_version_label;
+  EXPECT_EQ(QUIC_NO_ERROR,
+            session_->sent_crypto_handshake_messages()[0].GetVersionLabel(
+                kVER, &client_version_label));
+  EXPECT_EQ(CreateQuicVersionLabel(supported_versions_[0]),
+            client_version_label);
+  EXPECT_EQ(QUIC_NO_ERROR,
+            session_->sent_crypto_handshake_messages()[1].GetVersionLabel(
+                kVER, &client_version_label));
+  EXPECT_EQ(CreateQuicVersionLabel(supported_versions_[0]),
+            client_version_label);
+  EXPECT_NE(CreateQuicVersionLabel(connection_->version()),
+            client_version_label);
+}
+
 class QuicCryptoClientStreamStatelessTest : public QuicTest {
  public:
   QuicCryptoClientStreamStatelessTest()
@@ -418,15 +450,14 @@ class QuicCryptoClientStreamStatelessTest : public QuicTest {
   // Initializes the server_stream_ for stateless rejects.
   void InitializeFakeStatelessRejectServer() {
     TestQuicSpdyServerSession* server_session = nullptr;
-    CreateServerSessionForTest(server_id_, QuicTime::Delta::FromSeconds(100000),
-                               AllSupportedVersions(), &helper_,
-                               &alarm_factory_, &server_crypto_config_,
-                               &server_compressed_certs_cache_,
-                               &server_connection_, &server_session);
+    CreateServerSessionForTest(
+        server_id_, QuicTime::Delta::FromSeconds(100000),
+        ParsedVersionOfIndex(AllSupportedVersions(), 0), &helper_,
+        &alarm_factory_, &server_crypto_config_,
+        &server_compressed_certs_cache_, &server_connection_, &server_session);
     CHECK(server_session);
     server_session_.reset(server_session);
-    server_session_->OnSuccessfulVersionNegotiation(
-        AllSupportedVersions().front());
+    server_session_->OnSuccessfulVersionNegotiation(AllSupportedVersions()[0]);
     crypto_test_utils::FakeServerOptions options;
     crypto_test_utils::SetupCryptoServerConfigForTest(
         server_connection_->clock(), server_connection_->random_generator(),

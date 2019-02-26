@@ -28,7 +28,7 @@ InputMethodKeyboardControllerFuchsia::InputMethodKeyboardControllerFuchsia(
   DCHECK(ime_service_);
   DCHECK(input_method_);
 
-  ime_service_.set_error_handler([this]() {
+  ime_service_.set_error_handler([this](zx_status_t status) {
     LOG(ERROR) << "Lost connection to IME service.";
     ime_.Unbind();
     ime_client_binding_.Unbind();

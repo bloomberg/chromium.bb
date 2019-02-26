@@ -31,7 +31,7 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) URLLoaderCompletionStatus {
 
   // Sets ERR_FAILED to |error_code|, |error| to |cors_error_status|, and
   // base::TimeTicks::Now() to |completion_time|.
-  explicit URLLoaderCompletionStatus(const CORSErrorStatus& error);
+  explicit URLLoaderCompletionStatus(const CorsErrorStatus& error);
 
   ~URLLoaderCompletionStatus();
 
@@ -62,7 +62,7 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) URLLoaderCompletionStatus {
   int64_t decoded_body_length = 0;
 
   // Optional CORS error details.
-  base::Optional<CORSErrorStatus> cors_error_status;
+  base::Optional<CorsErrorStatus> cors_error_status;
 
   // Optional SSL certificate info.
   base::Optional<net::SSLInfo> ssl_info;

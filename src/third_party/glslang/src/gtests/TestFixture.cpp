@@ -60,6 +60,24 @@ EShLanguage GetShaderStage(const std::string& stage)
         return EShLangFragment;
     } else if (stage == "comp") {
         return EShLangCompute;
+#ifdef NV_EXTENSIONS
+    } else if (stage == "rgen") {
+        return EShLangRayGenNV;
+    } else if (stage == "rint") {
+        return EShLangIntersectNV;
+    } else if (stage == "rahit") {
+        return EShLangAnyHitNV;
+    } else if (stage == "rchit") {
+        return EShLangClosestHitNV;
+    } else if (stage == "rmiss") {
+        return EShLangMissNV;
+    } else if (stage == "rcall") {
+        return EShLangCallableNV;
+    } else if (stage == "task") {
+        return EShLangTaskNV;
+    } else if (stage == "mesh") {
+        return EShLangMeshNV;
+#endif
     } else {
         assert(0 && "Unknown shader stage");
         return EShLangCount;
@@ -68,13 +86,13 @@ EShLanguage GetShaderStage(const std::string& stage)
 
 EShMessages DeriveOptions(Source source, Semantics semantics, Target target)
 {
-    EShMessages result = EShMsgDefault;
+    EShMessages result = EShMsgCascadingErrors;
 
     switch (source) {
         case Source::GLSL:
             break;
         case Source::HLSL:
-            result = EShMsgReadHlsl;
+            result = static_cast<EShMessages>(result | EShMsgReadHlsl);
             break;
     }
 
@@ -84,9 +102,11 @@ EShMessages DeriveOptions(Source source, Semantics semantics, Target target)
             break;
         case Target::Spv:
             result = static_cast<EShMessages>(result | EShMsgSpvRules);
+            result = static_cast<EShMessages>(result | EShMsgKeepUncalled);
             break;
         case Target::BothASTAndSpv:
             result = static_cast<EShMessages>(result | EShMsgSpvRules | EShMsgAST);
+            result = static_cast<EShMessages>(result | EShMsgKeepUncalled);
             break;
     };
 
@@ -98,6 +118,8 @@ EShMessages DeriveOptions(Source source, Semantics semantics, Target target)
             break;
     }
 
+    result = static_cast<EShMessages>(result | EShMsgHlslLegalization);
+
     return result;
 }
 
@@ -107,13 +129,39 @@ std::pair<bool, std::string> ReadFile(const std::string& path)
     if (fstream) {
         std::string contents;
         fstream.seekg(0, std::ios::end);
-        contents.reserve(fstream.tellg());
+        contents.reserve((std::string::size_type)fstream.tellg());
         fstream.seekg(0, std::ios::beg);
         contents.assign((std::istreambuf_iterator<char>(fstream)),
                         std::istreambuf_iterator<char>());
         return std::make_pair(true, contents);
     }
     return std::make_pair(false, "");
+}
+
+std::pair<bool, std::vector<std::uint32_t> > ReadSpvBinaryFile(const std::string& path)
+{
+    std::ifstream fstream(path, std::fstream::in | std::fstream::binary);
+
+    if (!fstream)
+        return std::make_pair(false, std::vector<std::uint32_t>());
+
+    std::vector<std::uint32_t> contents;
+
+    // Reserve space (for efficiency, not for correctness)
+    fstream.seekg(0, fstream.end);
+    contents.reserve(size_t(fstream.tellg()) / sizeof(std::uint32_t));
+    fstream.seekg(0, fstream.beg);
+
+    // There is no istream iterator traversing by uint32_t, so we must loop.
+    while (!fstream.eof()) {
+        std::uint32_t inWord;
+        fstream.read((char *)&inWord, sizeof(inWord));
+
+        if (!fstream.eof())
+            contents.push_back(inWord);
+    }
+
+    return std::make_pair(true, contents); // hopefully, c++11 move semantics optimizes the copy away.
 }
 
 bool WriteFile(const std::string& path, const std::string& contents)

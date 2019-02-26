@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -61,6 +62,7 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
   const AtomicString& InterfaceName() const override;
 
   // WorkerGlobalScope
+  bool IsNestedWorker() const override;
   void ImportModuleScript(
       const KURL& module_url_record,
       FetchClientSettingsObjectSnapshot* outside_settings_object,
@@ -74,11 +76,11 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
                    ExceptionState&);
   void postMessage(ScriptState*,
                    const ScriptValue& message,
-                   const PostMessageOptions&,
+                   const PostMessageOptions*,
                    ExceptionState&);
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(messageerror);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(message, kMessage);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(messageerror, kMessageerror);
 
   void Trace(blink::Visitor*) override;
 
@@ -88,11 +90,12 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
   const String name_;
 };
 
-DEFINE_TYPE_CASTS(DedicatedWorkerGlobalScope,
-                  ExecutionContext,
-                  context,
-                  context->IsDedicatedWorkerGlobalScope(),
-                  context.IsDedicatedWorkerGlobalScope());
+template <>
+struct DowncastTraits<DedicatedWorkerGlobalScope> {
+  static bool AllowFrom(const ExecutionContext& context) {
+    return context.IsDedicatedWorkerGlobalScope();
+  }
+};
 
 }  // namespace blink
 

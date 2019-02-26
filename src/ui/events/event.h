@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/containers/flat_map.h"
 #include "base/gtest_prod_util.h"
@@ -40,7 +41,6 @@ class KeyEvent;
 class LocatedEvent;
 class MouseEvent;
 class MouseWheelEvent;
-class PointerEvent;
 class ScrollEvent;
 class TouchEvent;
 
@@ -70,9 +70,9 @@ class EVENTS_EXPORT Event {
     void set_result(int result) {
       event_->result_ = static_cast<EventResult>(result);
     }
+    void set_time_stamp(base::TimeTicks time) { event_->time_stamp_ = time; }
 
    private:
-    DispatcherApi();
     Event* event_;
 
     DISALLOW_COPY_AND_ASSIGN(DispatcherApi);
@@ -154,20 +154,6 @@ class EVENTS_EXPORT Event {
            type_ == ET_TOUCH_MOVED ||
            type_ == ET_TOUCH_CANCELLED;
   }
-
-  bool IsPointerEvent() const {
-    return type_ == ET_POINTER_DOWN || type_ == ET_POINTER_MOVED ||
-           type_ == ET_POINTER_UP || type_ == ET_POINTER_CANCELLED ||
-           type_ == ET_POINTER_ENTERED || type_ == ET_POINTER_EXITED ||
-           type_ == ET_POINTER_WHEEL_CHANGED ||
-           type_ == ET_POINTER_CAPTURE_CHANGED;
-  }
-
-  // Convenience methods to check pointer type of |this|. Returns false if
-  // |this| is not a PointerEvent.
-  bool IsMousePointerEvent() const;
-  bool IsTouchPointerEvent() const;
-  bool IsPenPointerEvent() const;
 
   bool IsGestureEvent() const {
     switch (type_) {
@@ -251,7 +237,7 @@ class EVENTS_EXPORT Event {
 
   bool IsLocatedEvent() const {
     return IsMouseEvent() || IsScrollEvent() || IsTouchEvent() ||
-           IsGestureEvent() || IsPointerEvent();
+           IsGestureEvent();
   }
 
   // Convenience methods to cast |this| to a CancelModeEvent.
@@ -285,11 +271,6 @@ class EVENTS_EXPORT Event {
   // methods.
   MouseWheelEvent* AsMouseWheelEvent();
   const MouseWheelEvent* AsMouseWheelEvent() const;
-
-  // Convenience methods to cast |this| to a PointerEvent. IsPointerEvent()
-  // must be true as a precondition to calling these methods.
-  PointerEvent* AsPointerEvent();
-  const PointerEvent* AsPointerEvent() const;
 
   // Convenience methods to cast |this| to a ScrollEvent. IsScrollEvent()
   // must be true as a precondition to calling these methods.
@@ -526,12 +507,6 @@ class EVENTS_EXPORT MouseEvent : public LocatedEvent {
   // void*, see PlatformEvent.
   explicit MouseEvent(const PlatformEvent& native_event);
 
-  // |pointer_event.IsMousePointerEvent()| must be true.
-  // Note: If |pointer_event| is a mouse wheel pointer event, use the
-  // MouseWheelEvent version of this function to convert to a MouseWheelEvent
-  // instead.
-  explicit MouseEvent(const PointerEvent& pointer_event);
-
   // Create a new MouseEvent based on the provided model.
   // Uses the provided |type| and |flags| for the new event.
   // If source / target windows are provided, the model location will be
@@ -659,7 +634,6 @@ class EVENTS_EXPORT MouseWheelEvent : public MouseEvent {
 
   explicit MouseWheelEvent(const PlatformEvent& native_event);
   explicit MouseWheelEvent(const ScrollEvent& scroll_event);
-  explicit MouseWheelEvent(const PointerEvent& pointer_event);
   MouseWheelEvent(const MouseEvent& mouse_event, int x_offset, int y_offset);
   MouseWheelEvent(const MouseWheelEvent& copy);
   ~MouseWheelEvent() override;
@@ -696,9 +670,6 @@ class EVENTS_EXPORT MouseWheelEvent : public MouseEvent {
 class EVENTS_EXPORT TouchEvent : public LocatedEvent {
  public:
   explicit TouchEvent(const PlatformEvent& native_event);
-
-  // |pointer_event.IsTouchPointerEvent()| must be true.
-  explicit TouchEvent(const PointerEvent& pointer_event);
 
   // Create a new TouchEvent which is identical to the provided model.
   // If source / target windows are provided, the model location will be
@@ -783,33 +754,6 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
   PointerDetails pointer_details_;
 };
 
-class EVENTS_EXPORT PointerEvent : public LocatedEvent {
- public:
-  // Returns true if a PointerEvent can be constructed from |event|. Currently,
-  // only mouse and touch events can be converted to pointer events.
-  static bool CanConvertFrom(const Event& event);
-
-  PointerEvent(const PointerEvent& pointer_event);
-  explicit PointerEvent(const MouseEvent& mouse_event);
-  explicit PointerEvent(const TouchEvent& touch_event);
-
-  PointerEvent(EventType type,
-               const gfx::Point& location,
-               const gfx::Point& root_location,
-               int flags,
-               int changed_button_flags,
-               const PointerDetails& pointer_details,
-               base::TimeTicks time_stamp);
-
-  int changed_button_flags() const { return changed_button_flags_; }
-  void set_changed_button_flags(int flags) { changed_button_flags_ = flags; }
-  const PointerDetails& pointer_details() const { return details_; }
-
- private:
-  int changed_button_flags_;
-  PointerDetails details_;
-};
-
 // A KeyEvent is really two distinct classes, melded together due to the
 // DOM legacy of Windows key events: a keystroke event (is_char_ == false),
 // or a character event (is_char_ == true).
@@ -850,6 +794,20 @@ class EVENTS_EXPORT PointerEvent : public LocatedEvent {
 //
 class EVENTS_EXPORT KeyEvent : public Event {
  public:
+  class KeyDispatcherApi {
+   public:
+    explicit KeyDispatcherApi(KeyEvent* event) : event_(event) {}
+
+    void set_async_callback(base::OnceCallback<void(bool)> callback) {
+      event_->async_callback_ = std::move(callback);
+    }
+
+   private:
+    KeyEvent* event_;
+
+    DISALLOW_COPY_AND_ASSIGN(KeyDispatcherApi);
+  };
+
   // Create a KeyEvent from a NativeEvent. For Windows this native event can
   // be either a keystroke message (WM_KEYUP/WM_KEYDOWN) or a character message
   // (WM_CHAR). Other systems have only keystroke events.
@@ -957,6 +915,12 @@ class EVENTS_EXPORT KeyEvent : public Event {
   // (Native X11 event flags describe the state before the event.)
   void NormalizeFlags();
 
+  // Called if the event is handled asynchronously. If the returned callback is
+  // non-null, it *must* be run once async handling is complete. The argument
+  // to the callback indicates if the event was handled or not.
+  base::OnceCallback<void(bool)> WillHandleAsync();
+  bool HasAsyncCallback() const { return !async_callback_.is_null(); }
+
  protected:
   friend class KeyEventTestApi;
 
@@ -994,6 +958,8 @@ class EVENTS_EXPORT KeyEvent : public Event {
   // This is not necessarily initialized when the event is constructed;
   // it may be set only if and when GetCharacter() or GetDomKey() is called.
   mutable DomKey key_ = DomKey::NONE;
+
+  base::OnceCallback<void(bool)> async_callback_;
 
   static KeyEvent* last_key_event_;
 #if defined(USE_X11)

@@ -22,7 +22,7 @@ namespace net {
 namespace {
 
 // TraceLog category for NetLog events.
-const char kNetLogTracingCategory[] = "netlog";
+constexpr const char kNetLogTracingCategory[] = "netlog";
 
 class TracedValue : public base::trace_event::ConvertableToTraceFormat {
  public:

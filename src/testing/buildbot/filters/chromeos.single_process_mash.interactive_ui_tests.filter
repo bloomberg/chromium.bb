@@ -1,31 +1,12 @@
 # These tests currently fail with SingleProcessMash enabled.
 # Bug: crbug.com/883523
 
-# Keyboard event related. See crbug.com/889101 and crbug.com/891489
--BrowserCommandControllerInteractiveTest.KeyEventsShouldBeConsumedByWebPageInBrowserFullscreen
--BrowserCommandControllerInteractiveTest.KeyEventsShouldBeConsumedByWebPageInJsFullscreenExceptForEsc
--BrowserCommandControllerInteractiveTest.KeyEventsShouldBeConsumedByWebPageInJsFullscreenExceptForF11
--BrowserCommandControllerInteractiveTest.ShortcutsShouldTakeEffectInBrowserFullscreen
--BrowserKeyEventsTest.CtrlKeyEvents
--BrowserKeyEventsTest.NormalKeyEvents
--KeyboardLockInteractiveBrowserTest.ActiveWithAllKeysLocked
--KeyboardLockInteractiveBrowserTest.ActiveWithSomeKeysLocked
--KeyboardLockInteractiveBrowserTest.CancelActiveKeyboardLockBeforeFullscreen
--KeyboardLockInteractiveBrowserTest.CancelActiveKeyboardLockInFullscreen
--KeyboardLockInteractiveBrowserTest.RequestedButNotActive
--KeyboardLockInteractiveBrowserTest.SubsequentLockCallSupersedesPreviousCall
--SitePerProcessTextInputManagerTest.CorrectlyShowVirtualKeyboardIfEnabled
--TextInput_SurroundingTextChangedTest.FocusToTextContainingTextAreaByClickingCase
--TextInput_SurroundingTextChangedTest.SurroundingTextChangedWithComposition
--TextInput_SurroundingTextChangedTest.SurroundingTextChangedWithInsertText
-
-# misc.
--DevToolsManagerDelegateTest.ShowMinimizedWindow
--OmniboxViewViewsTest.DeactivateTouchEditingOnExecuteCommand
--OmniboxViewViewsTest.SelectAllOnTap
--WindowActivityWatcherTest.Basic
--WindowActivityWatcherTest.MultipleWindows
--WindowActivityWatcherTest.WindowActivation
+# TODO(sky): this now fails because of differences in timing. In particular,
+# in classic mode an accelerator that moves focus is processed *after* text
+# is inserted, where as now the accelerator runs first, resulting in text
+# going to the wrong place. The right fix likely entails updating the test for
+# ChromeOS.
+-BrowserKeyEventsTest.AccessKeys
 
 # Broken tests related to accessibility. crbug.com/888750 and crbug.com/889093
 -GuestSpokenFeedbackTest.FocusToolbar
@@ -57,41 +38,10 @@
 -TestAsNormalAndGuestUser/SpokenFeedbackTest.OverviewMode/1
 
 # TabDragging: crbug.com/890071
--DetachToBrowserInSeparateDisplayAndCancelTabDragControllerTest.CancelDragTabToWindowIn1stDisplay
--TabDragging/DetachToBrowserInSeparateDisplayTabDragControllerTest.DragBrowserWindowWhenMajorityOfBoundsInSecondDisplay/0
--TabDragging/DetachToBrowserInSeparateDisplayTabDragControllerTest.DragSingleTabToSeparateWindowInSecondDisplay/0
--TabDragging/DetachToBrowserInSeparateDisplayTabDragControllerTest.DragTabToWindowInSeparateDisplay/0
--TabDragging/DetachToBrowserInSeparateDisplayTabDragControllerTest.DragTabToWindowOnSecondDisplay/0
--TabDragging/DetachToBrowserTabDragControllerTest.DeferredTargetTabStripTest/1
--TabDragging/DetachToBrowserTabDragControllerTest.DetachToOwnWindowFromMaximizedWindow/1
 -TabDragging/DetachToBrowserTabDragControllerTest.DetachToOwnWindowWhileInImmersiveFullscreenMode/1
--TabDragging/DetachToBrowserTabDragControllerTest.DoNotAttachToOtherWindowTest/1
--TabDragging/DetachToBrowserTabDragControllerTest.DoNotObserveDraggedWidgetAfterDragEnds/1
--TabDragging/DetachToBrowserTabDragControllerTest.DragToOverviewNewWindowItem/1
--TabDragging/DetachToBrowserTabDragControllerTest.DragToOverviewWindow/1
--TabDragging/DetachToBrowserTabDragControllerTest.DragToSeparateWindow/1
--TabDragging/DetachToBrowserTabDragControllerTest.DragWithMaskedWindows/0
--TabDragging/DetachToBrowserTabDragControllerTest.DragWithMaskedWindows/1
--TabDragging/DetachToBrowserTabDragControllerTestTouch.PressSecondFingerWhileDetached/0
--TabDragging/DetachToBrowserTabDragControllerTestTouch.SecondFingerPressTest/0
 
-# TabScrubber: crbug.com/889097
--TabScrubberTest.Bounds
--TabScrubberTest.CloseBrowser
--TabScrubberTest.DeleteBeforeHighlighted
--TabScrubberTest.DeleteHighlighted
--TabScrubberTest.FullScreenBrowser
--TabScrubberTest.MoveAfter
--TabScrubberTest.MoveBefore
--TabScrubberTest.MoveHighlighted
--TabScrubberTest.Multi
--TabScrubberTest.MultiBrowser
--TabScrubberTest.Repeated
--TabScrubberTest.RTLMoveBefore
--TabScrubberTest.RTLMulti
--TabScrubberTest.RTLSkipped
--TabScrubberTest.Single
--TabScrubberTest.Skipped
+# This test is flaky. https://crbug.com/897879
+-ExtensionApiTest.DisplayModeWindowIsInFullscreen
 
-# OobeInteractiveUITest: crbug.com/892263
--OobeInteractiveUITest.SimpleEndToEnd
+# This test is flaky. https://crbug.com/905789
+-PasswordManagerInteractiveTest.PromptForXHRWithoutOnSubmit

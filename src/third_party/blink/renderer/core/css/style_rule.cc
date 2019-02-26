@@ -22,6 +22,8 @@
 #include "third_party/blink/renderer/core/css/style_rule.h"
 
 #include "third_party/blink/renderer/core/css/css_font_face_rule.h"
+#include "third_party/blink/renderer/core/css/css_font_feature_values_rule.h"
+#include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_import_rule.h"
 #include "third_party/blink/renderer/core/css/css_keyframes_rule.h"
 #include "third_party/blink/renderer/core/css/css_media_rule.h"
@@ -29,6 +31,7 @@
 #include "third_party/blink/renderer/core/css/css_page_rule.h"
 #include "third_party/blink/renderer/core/css/css_style_rule.h"
 #include "third_party/blink/renderer/core/css/css_supports_rule.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/css_viewport_rule.h"
 #include "third_party/blink/renderer/core/css/style_rule_import.h"
 #include "third_party/blink/renderer/core/css/style_rule_keyframe.h"
@@ -87,6 +90,9 @@ void StyleRuleBase::Trace(blink::Visitor* visitor) {
     case kViewport:
       ToStyleRuleViewport(this)->TraceAfterDispatch(visitor);
       return;
+    case kFontFeatureValues:
+      ToStyleRuleFontFeatureValues(this)->TraceAfterDispatch(visitor);
+      return;
   }
   NOTREACHED();
 }
@@ -126,6 +132,9 @@ void StyleRuleBase::FinalizeGarbageCollectedObject() {
     case kViewport:
       ToStyleRuleViewport(this)->~StyleRuleViewport();
       return;
+    case kFontFeatureValues:
+      ToStyleRuleFontFeatureValues(this)->~StyleRuleFontFeatureValues();
+      return;
   }
   NOTREACHED();
 }
@@ -152,6 +161,8 @@ StyleRuleBase* StyleRuleBase::Copy() const {
       return ToStyleRuleViewport(this)->Copy();
     case kNamespace:
       return ToStyleRuleNamespace(this)->Copy();
+    case kFontFeatureValues:
+      return ToStyleRuleFontFeatureValues(this)->Copy();
     case kCharset:
     case kKeyframe:
       NOTREACHED();
@@ -192,6 +203,10 @@ CSSRule* StyleRuleBase::CreateCSSOMWrapper(CSSStyleSheet* parent_sheet,
       break;
     case kViewport:
       rule = CSSViewportRule::Create(ToStyleRuleViewport(self), parent_sheet);
+      break;
+    case kFontFeatureValues:
+      rule = CSSFontFeatureValuesRule::Create(
+          ToStyleRuleFontFeatureValues(self), parent_sheet);
       break;
     case kKeyframe:
     case kCharset:
@@ -394,6 +409,19 @@ MutableCSSPropertyValueSet& StyleRuleViewport::MutableProperties() {
 
 void StyleRuleViewport::TraceAfterDispatch(blink::Visitor* visitor) {
   visitor->Trace(properties_);
+  StyleRuleBase::TraceAfterDispatch(visitor);
+}
+
+StyleRuleFontFeatureValues::StyleRuleFontFeatureValues(
+    const CSSValueList* font_family,
+    const CSSIdentifierValue* font_display)
+    : StyleRuleBase(kFontFeatureValues),
+      font_family_(font_family),
+      font_display_(font_display) {}
+
+void StyleRuleFontFeatureValues::TraceAfterDispatch(blink::Visitor* visitor) {
+  visitor->Trace(font_family_);
+  visitor->Trace(font_display_);
   StyleRuleBase::TraceAfterDispatch(visitor);
 }
 

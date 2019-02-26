@@ -12,6 +12,7 @@
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_result.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
+#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/ui/omnibox/autocomplete_match_formatter.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_presenter.h"
@@ -60,7 +61,7 @@
 
   BOOL shortcutsEnabled = base::FeatureList::IsEnabled(
       omnibox::kOmniboxPopupShortcutIconsInZeroState);
-  BOOL isNTP = IsVisibleUrlNewTabPage(self.webStateList->GetActiveWebState());
+  BOOL isNTP = IsVisibleURLNewTabPage(self.webStateList->GetActiveWebState());
 
   if (!self.hasResults && (!shortcutsEnabled || isNTP)) {
     [self.presenter animateCollapse];
@@ -121,23 +122,27 @@
   const AutocompleteMatch& match =
       ((const AutocompleteResult&)_currentResult).match_at(row);
 
-  _delegate->OnMatchSelected(match, row);
+  _delegate->OnMatchSelected(match, row, WindowOpenDisposition::CURRENT_TAB);
 }
 
 - (void)autocompleteResultConsumer:(id<AutocompleteResultConsumer>)sender
-          didSelectRowForAppending:(NSUInteger)row {
+        didTapTrailingButtonForRow:(NSUInteger)row {
   const AutocompleteMatch& match =
       ((const AutocompleteResult&)_currentResult).match_at(row);
 
-  if (AutocompleteMatch::IsSearchType(match.type)) {
-    base::RecordAction(
-        base::UserMetricsAction("MobileOmniboxRefineSuggestion.Search"));
+  if (match.has_tab_match) {
+    _delegate->OnMatchSelected(match, row,
+                               WindowOpenDisposition::SWITCH_TO_TAB);
   } else {
-    base::RecordAction(
-        base::UserMetricsAction("MobileOmniboxRefineSuggestion.Url"));
+    if (AutocompleteMatch::IsSearchType(match.type)) {
+      base::RecordAction(
+          base::UserMetricsAction("MobileOmniboxRefineSuggestion.Search"));
+    } else {
+      base::RecordAction(
+          base::UserMetricsAction("MobileOmniboxRefineSuggestion.Url"));
+    }
+    _delegate->OnMatchSelectedForAppending(match);
   }
-
-  _delegate->OnMatchSelectedForAppending(match);
 }
 
 - (void)autocompleteResultConsumer:(id<AutocompleteResultConsumer>)sender

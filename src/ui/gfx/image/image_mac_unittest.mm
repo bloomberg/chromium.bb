@@ -40,7 +40,7 @@ bool NSImageStructureMatches(
     float scale = scales[i];
     bool found_match = false;
     for (size_t j = 0; j < [ns_image representations].count; ++j) {
-      NSImageRep* ns_image_rep = [[ns_image representations] objectAtIndex:j];
+      NSImageRep* ns_image_rep = [ns_image representations][j];
       if (ns_image_rep &&
           [ns_image_rep pixelsWide] == width * scale &&
           [ns_image_rep pixelsHigh] == height * scale) {
@@ -101,7 +101,7 @@ TEST_F(ImageMacTest, MultiResolutionNSImageToImageSkia) {
   [ns_image addRepresentation:ns_image_rep1];
   [ns_image addRepresentation:ns_image_rep2];
 
-  gfx::Image image(ns_image.release());
+  gfx::Image image(ns_image);
 
   EXPECT_EQ(1u, image.RepresentationCount());
 
@@ -132,7 +132,7 @@ TEST_F(ImageMacTest, UnalignedMultiResolutionNSImageToImageSkia) {
       [[NSImage alloc] initWithSize:NSMakeSize(kWidth1x, kHeight1x)]);
   [ns_image addRepresentation:ns_image_rep4];
 
-  gfx::Image image(ns_image.release());
+  gfx::Image image(ns_image);
 
   EXPECT_EQ(1u, image.RepresentationCount());
 

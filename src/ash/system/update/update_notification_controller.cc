@@ -4,7 +4,7 @@
 
 #include "ash/system/update/update_notification_controller.h"
 
-#include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -29,7 +29,6 @@ const char UpdateNotificationController::kNotificationId[] = "chrome://update";
 
 UpdateNotificationController::UpdateNotificationController()
     : model_(Shell::Get()->system_tray_model()->update_model()) {
-  DCHECK(features::IsSystemTrayUnifiedEnabled());
   model_->AddObserver(this);
   OnUpdateAvailable();
 }
@@ -50,20 +49,19 @@ void UpdateNotificationController::OnUpdateAvailable() {
        model_->notification_style() == mojom::NotificationStyle::ADMIN_REQUIRED)
           ? message_center::SystemNotificationWarningLevel::WARNING
           : message_center::SystemNotificationWarningLevel::NORMAL;
-  std::unique_ptr<Notification> notification =
-      Notification::CreateSystemNotification(
-          message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
-          GetNotificationTitle(), GetNotificationMessage(),
-          base::string16() /* display_source */, GURL(),
-          message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT, kNotifierId),
-          message_center::RichNotificationData(),
-          base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
-              base::BindRepeating(
-                  &UpdateNotificationController::HandleNotificationClick,
-                  weak_ptr_factory_.GetWeakPtr())),
-          model_->rollback() ? kSystemMenuRollbackIcon : kSystemMenuUpdateIcon,
-          warning_level);
+  std::unique_ptr<Notification> notification = ash::CreateSystemNotification(
+      message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
+      GetNotificationTitle(), GetNotificationMessage(),
+      base::string16() /* display_source */, GURL(),
+      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
+                                 kNotifierId),
+      message_center::RichNotificationData(),
+      base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
+          base::BindRepeating(
+              &UpdateNotificationController::HandleNotificationClick,
+              weak_ptr_factory_.GetWeakPtr())),
+      model_->rollback() ? kSystemMenuRollbackIcon : kSystemMenuUpdateIcon,
+      warning_level);
   notification->set_pinned(true);
 
   if (model_->notification_style() == mojom::NotificationStyle::ADMIN_REQUIRED)

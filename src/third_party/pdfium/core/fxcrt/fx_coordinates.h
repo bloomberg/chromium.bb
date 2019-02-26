@@ -13,8 +13,6 @@
 #include "core/fxcrt/fx_system.h"
 #include "third_party/base/numerics/safe_math.h"
 
-class CFX_Matrix;
-
 template <class BaseType>
 class CFX_PTemplate {
  public:
@@ -274,6 +272,10 @@ class CFX_FloatRect {
 
   float Width() const { return right - left; }
   float Height() const { return top - bottom; }
+  float Left() const { return left; }
+  float Bottom() const { return bottom; }
+  float Right() const { return right; }
+  float Top() const { return top; }
 
   void Inflate(float x, float y);
   void Inflate(float other_left,
@@ -426,6 +428,8 @@ class CFX_RectF {
     return rt.left >= left && rt.right() <= right() && rt.top >= top &&
            rt.bottom() <= bottom();
   }
+  float Left() const { return left; }
+  float Top() const { return top; }
   float Width() const { return width; }
   float Height() const { return height; }
   SizeType Size() const { return SizeType(width, height); }
@@ -536,6 +540,8 @@ class CFX_Matrix {
     f = other.f;
   }
 
+  std::tuple<float, float, float, float, float, float> AsTuple() const;
+
   void SetIdentity() {
     a = 1;
     b = 0;
@@ -584,11 +590,6 @@ class CFX_Matrix {
 
   CFX_PointF Transform(const CFX_PointF& point) const;
 
-  std::tuple<float, float, float, float> TransformRect(
-      const float& left,
-      const float& right,
-      const float& top,
-      const float& bottom) const;
   CFX_RectF TransformRect(const CFX_RectF& rect) const;
   CFX_FloatRect TransformRect(const CFX_FloatRect& rect) const;
 

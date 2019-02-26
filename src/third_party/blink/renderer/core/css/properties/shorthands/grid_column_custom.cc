@@ -12,12 +12,12 @@
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 
 namespace blink {
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool GridColumn::ParseShorthand(
     bool important,
     CSSParserTokenRange& range,
-    const CSSParserContext&,
+    const CSSParserContext& context,
     const CSSParserLocalContext&,
     HeapVector<CSSPropertyValue, 256>& properties) const {
   const StylePropertyShorthand& shorthand =
@@ -26,19 +26,21 @@ bool GridColumn::ParseShorthand(
 
   CSSValue* start_value = nullptr;
   CSSValue* end_value = nullptr;
-  if (!CSSParsingUtils::ConsumeGridItemPositionShorthand(
-          important, range, start_value, end_value)) {
+  if (!css_parsing_utils::ConsumeGridItemPositionShorthand(
+          important, range, context, start_value, end_value)) {
     return false;
   }
 
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       shorthand.properties()[0]->PropertyID(), CSSPropertyGridColumn,
       *start_value, important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
-  CSSPropertyParserHelpers::AddProperty(
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
+  css_property_parser_helpers::AddProperty(
       shorthand.properties()[1]->PropertyID(), CSSPropertyGridColumn,
       *end_value, important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
 
   return true;
 }
@@ -54,5 +56,5 @@ const CSSValue* GridColumn::CSSValueFromComputedStyleInternal(
       allow_visited_style);
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink

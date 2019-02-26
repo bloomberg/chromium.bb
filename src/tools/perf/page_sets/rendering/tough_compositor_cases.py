@@ -47,21 +47,7 @@ class CCScrollTextPage(ToughCompositorScrollPage):
 # Why: Baseline JS scrolling page. A long page with only text. """
 class JSScrollTextPage(ToughCompositorScrollPage):
   BASE_NAME = 'js_scroll_text_only'
-  URL = 'http://jsbin.com/wixadinu/2/quiet?JS_SCROLL_TEXT_ONLY'
-
-
-# Why: Scroll by a large number of CC layers """
-# TODO(crbug.com/878951): Remove after 'n_layer' tests below are fully landed.
-class CCScroll200LayerPage(ToughCompositorScrollPage):
-  BASE_NAME = 'cc_scroll_200_layer_grid'
-  URL = 'http://jsbin.com/yakagevo/1/quiet?CC_SCROLL_200_LAYER_GRID'
-
-
-# Why: Scroll by a large number of JS layers """
-# TODO(crbug.com/878951): Remove after 'n_layer' tests below are fully landed.
-class JSScroll200LayerPage(ToughCompositorScrollPage):
-  BASE_NAME = 'js_scroll_200_layer_grid'
-  URL = 'http://jsbin.com/jevibahi/4/quiet?JS_SCROLL_200_LAYER_GRID'
+  URL = 'http://jsbin.com/dozirar/quiet?JS_SCROLL_TEXT_ONLY'
 
 
 class ToughCompositorWaitPage(ToughCompositorPage):

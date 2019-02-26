@@ -34,27 +34,27 @@ bool ConvertHdcpVersion(const blink::WebString& hdcp_version_string,
 
   std::string hdcp_version_ascii = hdcp_version_string.Ascii();
 
-  // TODO(xhwang): This implementation assumes exact string match. Update this
-  // when we have the string format speced in the spec/registry.
+  // The strings are specified in the explainer doc:
+  // https://github.com/WICG/hdcp-detection/blob/master/explainer.md
   if (hdcp_version_ascii.empty())
     *hdcp_version = HdcpVersion::kHdcpVersionNone;
-  else if (hdcp_version_ascii == "hdcp-1.0")
+  else if (hdcp_version_ascii == "1.0")
     *hdcp_version = HdcpVersion::kHdcpVersion1_0;
-  else if (hdcp_version_ascii == "hdcp-1.1")
+  else if (hdcp_version_ascii == "1.1")
     *hdcp_version = HdcpVersion::kHdcpVersion1_1;
-  else if (hdcp_version_ascii == "hdcp-1.2")
+  else if (hdcp_version_ascii == "1.2")
     *hdcp_version = HdcpVersion::kHdcpVersion1_2;
-  else if (hdcp_version_ascii == "hdcp-1.3")
+  else if (hdcp_version_ascii == "1.3")
     *hdcp_version = HdcpVersion::kHdcpVersion1_3;
-  else if (hdcp_version_ascii == "hdcp-1.4")
+  else if (hdcp_version_ascii == "1.4")
     *hdcp_version = HdcpVersion::kHdcpVersion1_4;
-  else if (hdcp_version_ascii == "hdcp-2.0")
+  else if (hdcp_version_ascii == "2.0")
     *hdcp_version = HdcpVersion::kHdcpVersion2_0;
-  else if (hdcp_version_ascii == "hdcp-2.1")
+  else if (hdcp_version_ascii == "2.1")
     *hdcp_version = HdcpVersion::kHdcpVersion2_1;
-  else if (hdcp_version_ascii == "hdcp-2.2")
+  else if (hdcp_version_ascii == "2.2")
     *hdcp_version = HdcpVersion::kHdcpVersion2_2;
-  else if (hdcp_version_ascii == "hdcp-2.3")
+  else if (hdcp_version_ascii == "2.3")
     *hdcp_version = HdcpVersion::kHdcpVersion2_3;
   else
     return false;

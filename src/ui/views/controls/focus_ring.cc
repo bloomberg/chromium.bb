@@ -81,7 +81,7 @@ void FocusRing::OnPaint(gfx::Canvas* canvas) {
 
   SkPath path = path_;
   if (path.isEmpty()) {
-    gfx::Path* highlight_path = parent()->GetProperty(kHighlightPathKey);
+    SkPath* highlight_path = parent()->GetProperty(kHighlightPathKey);
     if (highlight_path)
       path = *highlight_path;
   }

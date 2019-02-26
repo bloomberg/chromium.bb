@@ -39,7 +39,7 @@ public final class SuggestionsConfig {
      * It must be kept in sync with //components/ntp_suggestions/features.cc
      */
     private static final String DEFAULT_CONTENT_SUGGESTIONS_REFERRER_URL =
-            "https://discover.google.com/";
+            "https://www.googleapis.com/auth/chrome-content-suggestions";
 
     /** Default value of referrer URL for contextual suggestions. */
     private static final String DEFAULT_CONTEXTUAL_SUGGESTIONS_REFERRER_URL =
@@ -54,9 +54,7 @@ public final class SuggestionsConfig {
         // The scroll to load feature does not work well for users who require accessibility mode.
         if (AccessibilityUtil.isAccessibilityEnabled()) return false;
 
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.SIMPLIFIED_NTP)
-                && ChromeFeatureList.isEnabled(
-                           ChromeFeatureList.CONTENT_SUGGESTIONS_SCROLL_TO_LOAD);
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.CONTENT_SUGGESTIONS_SCROLL_TO_LOAD);
     }
 
     /**

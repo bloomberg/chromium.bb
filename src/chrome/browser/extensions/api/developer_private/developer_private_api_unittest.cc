@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_with_install.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/extensions/permissions_test_util.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/ui/browser.h"
@@ -1437,9 +1438,10 @@ TEST_F(DeveloperPrivateApiUnitTest, RemoveHostPermission) {
 
   URLPattern new_pattern(Extension::kValidHostPermissionSchemes,
                          "https://*.google.com/*");
-  PermissionsUpdater(profile()).GrantRuntimePermissions(
-      *extension, PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
-                                URLPatternSet({new_pattern}), URLPatternSet()));
+  permissions_test_util::GrantRuntimePermissionsAndWaitForCompletion(
+      profile(), *extension,
+      PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
+                    URLPatternSet({new_pattern}), URLPatternSet()));
 
   const GURL kGoogleCom("https://google.com/");
   const GURL kMapsGoogleCom("https://maps.google.com/");
@@ -1643,8 +1645,9 @@ TEST_F(DeveloperPrivateApiUnitTest,
                                   "https://example.com/*")});
   PermissionSet permissions(APIPermissionSet(), ManifestPermissionSet(), hosts,
                             hosts);
-  PermissionsUpdater(profile()).GrantRuntimePermissions(*extension,
-                                                        permissions);
+  permissions_test_util::GrantRuntimePermissionsAndWaitForCompletion(
+      profile(), *extension, permissions);
+
   // The event router fetches icons from a blocking thread when sending the
   // update event; allow it to finish before verifying the event was dispatched.
   base::RunLoop().RunUntilIdle();
@@ -1653,8 +1656,8 @@ TEST_F(DeveloperPrivateApiUnitTest,
 
   test_observer.ClearEvents();
 
-  PermissionsUpdater(profile()).RevokeRuntimePermissions(*extension,
-                                                         permissions);
+  permissions_test_util::RevokeRuntimePermissionsAndWaitForCompletion(
+      profile(), *extension, permissions);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(
       WasPermissionsUpdatedEventDispatched(test_observer, extension->id()));
@@ -1688,8 +1691,9 @@ TEST_F(DeveloperPrivateApiUnitTest, ExtensionUpdatedEventOnPermissionsChange) {
   apis.insert(APIPermission::kTab);
   PermissionSet permissions(apis, ManifestPermissionSet(), URLPatternSet(),
                             URLPatternSet());
-  PermissionsUpdater(profile()).GrantOptionalPermissions(*dummy_extension,
-                                                         permissions);
+  permissions_test_util::GrantOptionalPermissionsAndWaitForCompletion(
+      profile(), *dummy_extension, permissions);
+
   // The event router fetches icons from a blocking thread when sending the
   // update event; allow it to finish before verifying the event was dispatched.
   base::RunLoop().RunUntilIdle();
@@ -1698,38 +1702,15 @@ TEST_F(DeveloperPrivateApiUnitTest, ExtensionUpdatedEventOnPermissionsChange) {
 
   test_observer.ClearEvents();
 
-  PermissionsUpdater(profile()).RevokeOptionalPermissions(
-      *dummy_extension, permissions, PermissionsUpdater::REMOVE_HARD);
+  permissions_test_util::RevokeOptionalPermissionsAndWaitForCompletion(
+      profile(), *dummy_extension, permissions,
+      PermissionsUpdater::REMOVE_HARD);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(WasPermissionsUpdatedEventDispatched(test_observer,
                                                    dummy_extension->id()));
 }
 
-class DeveloperPrivateZipInstallerUnitTest
-    : public DeveloperPrivateApiUnitTest {
- public:
-  DeveloperPrivateZipInstallerUnitTest() {
-    service_manager::TestConnectorFactory::NameToServiceMap services;
-    services.insert(std::make_pair("data_decoder",
-                                   data_decoder::DataDecoderService::Create()));
-    services.insert(
-        std::make_pair("unzip_service", unzip::UnzipService::CreateService()));
-    test_connector_factory_ =
-        service_manager::TestConnectorFactory::CreateForServices(
-            std::move(services));
-    connector_ = test_connector_factory_->CreateConnector();
-  }
-  ~DeveloperPrivateZipInstallerUnitTest() override {}
-
- private:
-  std::unique_ptr<service_manager::TestConnectorFactory>
-      test_connector_factory_;
-  std::unique_ptr<service_manager::Connector> connector_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeveloperPrivateZipInstallerUnitTest);
-};
-
-TEST_F(DeveloperPrivateZipInstallerUnitTest, InstallDroppedFileZip) {
+TEST_F(DeveloperPrivateApiUnitTest, InstallDroppedFileZip) {
   base::FilePath zip_path = data_dir().AppendASCII("simple_empty.zip");
   extensions::ExtensionInstallUI::set_disable_ui_for_tests();
   ScopedTestDialogAutoConfirm auto_confirm(ScopedTestDialogAutoConfirm::ACCEPT);

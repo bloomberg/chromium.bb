@@ -53,11 +53,11 @@ class CORE_EXPORT WorkerGlobalScopePerformance final
 
   static WorkerPerformance* performance(WorkerGlobalScope&);
 
+  explicit WorkerGlobalScopePerformance(WorkerGlobalScope&);
+
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit WorkerGlobalScopePerformance(WorkerGlobalScope&);
-
   WorkerPerformance* performance(WorkerGlobalScope*);
 
   TraceWrapperMember<WorkerPerformance> performance_;

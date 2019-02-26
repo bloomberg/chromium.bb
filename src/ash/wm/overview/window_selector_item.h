@@ -281,20 +281,6 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   FRIEND_TEST_ALL_PREFIXES(SplitViewWindowSelectorTest,
                            OverviewUnsnappableIndicatorVisibility);
 
-  // The different ways the overview header can fade in and be laid out.
-  // TODO(sammiequon): See if we can combine this with
-  // WindowSelector::OverviewTransition.
-  enum class HeaderFadeInMode {
-    // Used when entering overview mode, to fade in the header background color.
-    kEnter,
-    // Used when the overview header bounds change for the first time to
-    // skip animating.
-    kFirstUpdate,
-    // Used when the overview header bounds change, to animate or move the
-    // header to the desired bounds.
-    kUpdate,
-  };
-
   // Sets the bounds of this selector's items to |target_bounds| in
   // |root_window_|. The bounds change will be animated as specified
   // by |animation_type|.
@@ -304,13 +290,9 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // Creates the window label.
   void CreateWindowLabel(const base::string16& title);
 
-  // Updates the close button's and title label's bounds. Any change in bounds
-  // will be animated from the current bounds to the new bounds as per the
-  // |animation_type|. |mode| allows distinguishing the first time update which
-  // allows setting the initial bounds properly or exiting overview to fade out
-  // gradually.
-  void UpdateHeaderLayout(HeaderFadeInMode mode,
-                          OverviewAnimationType animation_type);
+  // Updates the |item_widget|'s bounds. Any change in bounds will be animated
+  // from the current bounds to the new bounds as per the |animation_type|.
+  void UpdateHeaderLayout(OverviewAnimationType animation_type);
 
   // Animates opacity of the |transform_window_| and its caption to |opacity|
   // using |animation_type|.

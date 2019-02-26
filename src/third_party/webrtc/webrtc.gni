@@ -9,6 +9,7 @@ import("//build/config/arm.gni")
 import("//build/config/features.gni")
 import("//build/config/mips.gni")
 import("//build/config/sanitizers/sanitizers.gni")
+import("//build/config/sysroot.gni")
 import("//build/config/ui.gni")
 import("//build_overrides/build.gni")
 
@@ -106,6 +107,9 @@ declare_args() {
 
   # Set this to false to skip building code that requires X11.
   rtc_use_x11 = use_x11
+
+  # Set this to use PipeWire on the Wayland display server.
+  rtc_use_pipewire = false
 
   # Enable to use the Mozilla internal settings.
   build_with_mozilla = false
@@ -229,7 +233,8 @@ rtc_libvpx_dir = "//third_party/libvpx"
 rtc_opus_dir = "//third_party/opus"
 
 # Desktop capturer is supported only on Windows, OSX and Linux.
-rtc_desktop_capture_supported = is_win || is_mac || (is_linux && rtc_use_x11)
+rtc_desktop_capture_supported =
+    is_win || is_mac || (is_linux && (rtc_use_x11 || rtc_use_pipewire))
 
 ###############################################################################
 # Templates
@@ -807,14 +812,14 @@ if (is_android) {
                                "visibility",
                              ])
 
-      javac_args = []
+      errorprone_args = []
 
       # Treat warnings as errors.
-      javac_args += [ "-Werror" ]
+      errorprone_args += [ "-Werror" ]
 
       # TODO(crbug.com/824679): Find out why this fails in Chromium
       if (!build_with_chromium) {
-        javac_args += [
+        errorprone_args += [
           "-Xep:ParameterNotNullable:ERROR",
           "-Xep:FieldMissingNullable:ERROR",
           "-Xep:ReturnMissingNullable:ERROR",
@@ -822,8 +827,8 @@ if (is_android) {
       }
 
       # Add any arguments defined by the invoker.
-      if (defined(invoker.javac_args)) {
-        javac_args += invoker.javac_args
+      if (defined(invoker.errorprone_args)) {
+        errorprone_args += invoker.errorprone_args
       }
 
       if (!defined(deps)) {
@@ -847,11 +852,11 @@ if (is_android) {
                              ])
 
       # Treat warnings as errors.
-      javac_args = [ "-Werror" ]
+      errorprone_args = [ "-Werror" ]
 
       # TODO(crbug.com/824679): Find out why this fails in Chromium
       if (!build_with_chromium) {
-        javac_args += [
+        errorprone_args += [
           "-Xep:ParameterNotNullable:ERROR",
           "-Xep:FieldMissingNullable:ERROR",
           "-Xep:ReturnMissingNullable:ERROR",
@@ -879,11 +884,11 @@ if (is_android) {
                              ])
 
       # Treat warnings as errors.
-      javac_args = [ "-Werror" ]
+      errorprone_args = [ "-Werror" ]
 
       # TODO(crbug.com/824679): Find out why this fails in Chromium
       if (!build_with_chromium) {
-        javac_args += [
+        errorprone_args += [
           "-Xep:ParameterNotNullable:ERROR",
           "-Xep:FieldMissingNullable:ERROR",
           "-Xep:ReturnMissingNullable:ERROR",

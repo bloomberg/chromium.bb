@@ -94,61 +94,68 @@
   "chrome/browser/resources/invalidations_resources.grd": {
     "includes": [12400],
   },
-  "chrome/browser/resources/md_extensions/extensions_resources_vulcanized.grd": {
+  "chrome/browser/resources/local_ntp_resources.grd": {
     "includes": [12440],
   },
+  "chrome/browser/resources/md_extensions/extensions_resources_vulcanized.grd": {
+    "includes": [12500],
+  },
   "chrome/browser/resources/md_extensions/extensions_resources.grd": {
-    "structures": [12450],
+    "structures": [12510],
   },
   "chrome/browser/resources/net_internals_resources.grd": {
-    "includes": [12540],
+    "includes": [12600],
   },
   "chrome/browser/resources/print_preview/print_preview_resources_vulcanized.grd": {
-    "includes": [12550],
+    "includes": [12610],
   },
   "chrome/browser/resources/print_preview/print_preview_resources.grd": {
-    "structures": [12560],
+    "structures": [12620],
   },
   "chrome/browser/resources/quota_internals_resources.grd": {
-    "includes": [12750],
+    "includes": [12810],
   },
   "chrome/browser/resources/settings/settings_resources_vulcanized.grd": {
-    "includes": [12770],
+    "includes": [12830],
   },
   "chrome/browser/resources/settings/settings_resources.grd": {
-    "structures": [12780],
+    "structures": [12840],
   },
   "chrome/browser/resources/sync_file_system_internals_resources.grd": {
-    "includes": [13280],
-  },
-  "chrome/browser/resources/task_scheduler_internals/resources.grd": {
-    "includes": [13310],
-  },
-  "chrome/browser/resources/translate_internals_resources.grd": {
-    "includes": [13320],
-  },
-  "chrome/browser/resources/webapks_ui_resources.grd": {
     "includes": [13340],
   },
+  "chrome/browser/resources/task_scheduler_internals/resources.grd": {
+    "includes": [13360],
+  },
+  "chrome/browser/resources/translate_internals_resources.grd": {
+    "includes": [13370],
+  },
+  "chrome/browser/resources/webapks_ui_resources.grd": {
+    "includes": [13380],
+  },
+  "chrome/browser/resources/welcome/onboarding_welcome/onboarding_welcome_resources.grd": {
+    "includes": [13390],
+    "structures": [13440],
+  },
   "chrome/browser/vr/testapp/vr_testapp_resources.grd": {
-    "includes": [13350],
+    "includes": [13480],
   },
   # END chrome/browser section.
 
   # START chrome/ miscellaneous section.
   "chrome/common/common_resources.grd": {
-    "includes": [13380],
+    "includes": [13650],
   },
   "chrome/credential_provider/gaiacp/gaia_resources.grd": {
-    "includes": [13400],
-    "messages": [13410],
+    "includes": [13670],
+    "messages": [13680],
   },
   "chrome/renderer/resources/renderer_resources.grd": {
-    "includes": [13500],
-    "structures": [13600],
+    "includes": [13720],
+    "structures": [13830],
   },
   "chrome/test/data/webui_test_resources.grd": {
-    "includes": [13650],
+    "includes": [13870],
   },
   # END chrome/ miscellaneous section.
 
@@ -162,10 +169,6 @@
   # END chromeos/ section.
 
   # START components/ section.
-  "components/autofill/android/autofill_strings.grd": {
-    "messages": [15000],
-  },
-
   "components/chrome_apps/chrome_apps_resources.grd": {
     "includes": [15020],
   },
@@ -289,139 +292,134 @@
     "messages": [23510],
   },
 
+  "ash/app_list/resources/app_list_resources.grd": {
+    "structures": [23520],
+  },
   "ash/ash_strings.grd": {
-    "messages": [23520],
+    "messages": [23530],
   },
   "ash/components/ash_components_strings.grd": {
-    "messages": [24050],
+    "messages": [24100],
   },
   "ash/components/resources/ash_components_resources.grd": {
-    "structures": [24250],
+    "structures": [24350],
+  },
+  "ash/login/resources/login_resources.grd": {
+    "structures": [24360],
   },
   "ash/public/cpp/resources/ash_public_unscaled_resources.grd": {
-    "includes": [24260],
+    "includes": [24370],
   },
   "ash/shell/ash_shell_resources.grd": {
-    "includes": [24290],
+    "includes": [24380],
   },
+
   "chromecast/browser/cast_browser_resources.grd": {
-    "includes": [24300],
+    "includes": [24400],
+  },
+  "chromecast/renderer/resources/extensions_renderer_resources.grd": {
+    "includes": [24410],
   },
 
   "cloud_print/virtual_driver/win/install/virtual_driver_setup_resources.grd": {
-    "includes": [24350],
-    "messages": [24360],
+    "includes": [24450],
+    "messages": [24460],
   },
 
   "device/bluetooth/bluetooth_strings.grd": {
-    "messages": [24400],
+    "messages": [24500],
   },
 
   "device/fido/fido_strings.grd": {
-    "messages": [24440],
+    "messages": [24540],
   },
 
   "extensions/browser/resources/extensions_browser_resources.grd": {
-    "structures": [24450],
+    "structures": [24550],
   },
   "extensions/extensions_resources.grd": {
-    "includes": [24460],
+    "includes": [24560],
   },
   "extensions/renderer/resources/extensions_renderer_resources.grd": {
-    "includes": [24470],
-    "structures": [24600],
+    "includes": [24570],
+    "structures": [24700],
   },
   "extensions/shell/app_shell_resources.grd": {
-    "includes": [24610],
+    "includes": [24710],
   },
   "extensions/strings/extensions_strings.grd": {
-    "messages": [24620],
+    "messages": [24720],
   },
 
   "headless/lib/resources/headless_lib_resources.grd": {
-    "includes": [24700],
+    "includes": [24800],
   },
 
   "mojo/public/js/mojo_bindings_resources.grd": {
-    "includes": [24750],
+    "includes": [24850],
   },
 
   "net/base/net_resources.grd": {
-    "includes": [24760],
+    "includes": [24860],
   },
 
   "remoting/resources/remoting_strings.grd": {
-    "messages": [24800],
+    "messages": [24900],
   },
 
   "third_party/blink/public/blink_image_resources.grd": {
-    "structures": [25300],
+    "structures": [25400],
   },
   "third_party/blink/public/blink_resources.grd": {
-    "includes": [25400],
+    "includes": [25500],
   },
   "third_party/blink/renderer/modules/media_controls/resources/media_controls_resources.grd": {
-    "includes": [25500],
-    "structures": [25600],
+    "includes": [25600],
+    "structures": [25700],
   },
 
   "third_party/libaddressinput/chromium/address_input_strings.grd": {
-    "messages": [25800],
-  },
-
-  "ash/app_list/resources/app_list_resources.grd": {
-    "structures": [25900],
-  },
-
-  "ash/login/resources/login_resources.grd": {
-    "structures": [25910],
+    "messages": [25900],
   },
 
   "ui/chromeos/resources/ui_chromeos_resources.grd": {
-    "structures": [25920],
+    "structures": [26000],
   },
   "ui/chromeos/ui_chromeos_strings.grd": {
-    "messages": [26020],
+    "messages": [26100],
   },
   "ui/file_manager/file_manager_resources.grd": {
-    "includes": [26450],
+    "includes": [26550],
   },
   "ui/keyboard/keyboard_resources.grd": {
-    "includes": [26700],
-  },
-  "ui/login/login_resources.grd": {
     "includes": [26800],
   },
+  "ui/login/login_resources.grd": {
+    "includes": [26900],
+  },
   "ui/resources/ui_resources.grd": {
-    "structures": [26900],
+    "structures": [27000],
   },
   "ui/resources/ui_unscaled_resources.grd": {
-    "includes": [27150],
+    "includes": [27250],
   },
   "ui/strings/app_locale_settings.grd": {
-    "messages": [27200],
+    "messages": [27300],
   },
   "ui/strings/ui_strings.grd": {
-    "messages": [27250],
+    "messages": [27350],
   },
   "ui/views/resources/views_resources.grd": {
-    "structures": [27450],
+    "structures": [27550],
   },
   "ui/webui/resources/webui_resources.grd": {
-    "includes": [27750],
-    "structures": [27950],
+    "includes": [27850],
+    "structures": [28050],
   },
 
   # This file is generated during the build.
   "<(SHARED_INTERMEDIATE_DIR)/devtools/devtools_resources.grd": {
-    "includes": [28750],
-  },
-  "devtools_resources.grd": {
-    "includes": [28750],
-  },
-
-  "chromecast/renderer/resources/extensions_renderer_resources.grd": {
-    "includes": [28900],
+    "includes": [28850],
   },
 
   # END "everything else" section.

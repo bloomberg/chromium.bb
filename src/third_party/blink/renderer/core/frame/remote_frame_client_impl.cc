@@ -41,7 +41,7 @@ RemoteFrameClientImpl::RemoteFrameClientImpl(WebRemoteFrameImpl* web_frame)
 
 RemoteFrameClientImpl* RemoteFrameClientImpl::Create(
     WebRemoteFrameImpl* web_frame) {
-  return new RemoteFrameClientImpl(web_frame);
+  return MakeGarbageCollected<RemoteFrameClientImpl>(web_frame);
 }
 
 void RemoteFrameClientImpl::Trace(blink::Visitor* visitor) {

@@ -36,7 +36,7 @@ namespace blink {
 
 V0CustomElementUpgradeCandidateMap*
 V0CustomElementUpgradeCandidateMap::Create() {
-  return new V0CustomElementUpgradeCandidateMap();
+  return MakeGarbageCollected<V0CustomElementUpgradeCandidateMap>();
 }
 
 V0CustomElementUpgradeCandidateMap::~V0CustomElementUpgradeCandidateMap() =
@@ -55,7 +55,8 @@ void V0CustomElementUpgradeCandidateMap::Add(
       unresolved_definitions_.find(descriptor);
   ElementSet* elements;
   if (it == unresolved_definitions_.end())
-    elements = unresolved_definitions_.insert(descriptor, new ElementSet())
+    elements = unresolved_definitions_
+                   .insert(descriptor, MakeGarbageCollected<ElementSet>())
                    .stored_value->value.Get();
   else
     elements = it->value.Get();

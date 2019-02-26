@@ -18,6 +18,7 @@
 #include "base/unguessable_token.h"
 #include "jni/MediaDrmStorageBridge_jni.h"
 #include "media/base/android/android_util.h"
+#include "media/base/android/media_drm_key_type.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
@@ -92,22 +93,30 @@ void MediaDrmStorageBridge::OnSaveInfo(
   DCHECK(impl_);
   std::vector<uint8_t> key_set_id;
   JavaByteArrayToByteVector(
-      env, Java_PersistentInfo_keySetId(env, j_persist_info).obj(),
-      &key_set_id);
+      env, Java_PersistentInfo_keySetId(env, j_persist_info), &key_set_id);
 
   std::string mime = ConvertJavaStringToUTF8(
       env, Java_PersistentInfo_mimeType(env, j_persist_info));
 
   std::string session_id;
-  JavaByteArrayToString(
-      env, Java_PersistentInfo_emeId(env, j_persist_info).obj(), &session_id);
+  JavaByteArrayToString(env, Java_PersistentInfo_emeId(env, j_persist_info),
+                        &session_id);
+
+  // This function should only be called for licenses needs persistent storage
+  // (e.g. persistent license). STREAMING license doesn't require persistent
+  // storage support.
+  auto key_type = static_cast<MediaDrmKeyType>(
+      Java_PersistentInfo_keyType(env, j_persist_info));
+  DCHECK(key_type == MediaDrmKeyType::OFFLINE ||
+         key_type == MediaDrmKeyType::RELEASE);
 
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
           &MediaDrmStorage::SavePersistentSession, impl_->AsWeakPtr(),
           session_id,
-          MediaDrmStorage::SessionData(std::move(key_set_id), std::move(mime)),
+          MediaDrmStorage::SessionData(std::move(key_set_id), std::move(mime),
+                                       key_type),
           base::BindOnce(&MediaDrmStorageBridge::RunAndroidBoolCallback,
                          weak_factory_.GetWeakPtr(),
                          base::Passed(CreateJavaObjectPtr(j_callback.obj())))));
@@ -164,9 +173,10 @@ void MediaDrmStorageBridge::OnSessionDataLoaded(
   ScopedJavaLocalRef<jstring> j_mime =
       ConvertUTF8ToJavaString(env, session_data->mime_type);
 
-  RunObjectCallbackAndroid(
-      *j_callback,
-      Java_PersistentInfo_create(env, j_eme_id, j_key_set_id, j_mime));
+  RunObjectCallbackAndroid(*j_callback,
+                           Java_PersistentInfo_create(
+                               env, j_eme_id, j_key_set_id, j_mime,
+                               static_cast<uint32_t>(session_data->key_type)));
 }
 
 }  // namespace media

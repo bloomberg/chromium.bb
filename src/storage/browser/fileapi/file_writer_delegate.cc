@@ -42,8 +42,8 @@ FileWriterDelegate::FileWriterDelegate(
 FileWriterDelegate::~FileWriterDelegate() = default;
 
 void FileWriterDelegate::Start(std::unique_ptr<BlobReader> blob_reader,
-                               const DelegateWriteCallback& write_callback) {
-  write_callback_ = write_callback;
+                               DelegateWriteCallback write_callback) {
+  write_callback_ = std::move(write_callback);
 
   if (!blob_reader) {
     OnReadError(base::File::FILE_ERROR_FAILED);
@@ -68,8 +68,8 @@ void FileWriterDelegate::Start(std::unique_ptr<BlobReader> blob_reader,
 }
 
 void FileWriterDelegate::Start(mojo::ScopedDataPipeConsumerHandle data_pipe,
-                               const DelegateWriteCallback& write_callback) {
-  write_callback_ = write_callback;
+                               DelegateWriteCallback write_callback) {
+  write_callback_ = std::move(write_callback);
 
   if (!data_pipe) {
     OnReadError(base::File::FILE_ERROR_FAILED);
@@ -93,9 +93,8 @@ void FileWriterDelegate::Cancel() {
   data_pipe_.reset();
   weak_factory_.InvalidateWeakPtrs();
 
-  const int status = file_stream_writer_->Cancel(
-      base::Bind(&FileWriterDelegate::OnWriteCancelled,
-                 weak_factory_.GetWeakPtr()));
+  const int status = file_stream_writer_->Cancel(base::BindOnce(
+      &FileWriterDelegate::OnWriteCancelled, weak_factory_.GetWeakPtr()));
   // Return true to finish immediately if we have no pending writes.
   // Otherwise we'll do the final cleanup in the Cancel callback.
   if (status != net::ERR_IO_PENDING) {
@@ -188,11 +187,10 @@ void FileWriterDelegate::OnDataReceived(int bytes_read) {
 void FileWriterDelegate::Write() {
   writing_started_ = true;
   int64_t bytes_to_write = bytes_read_ - bytes_written_;
-  int write_response =
-      file_stream_writer_->Write(cursor_.get(),
-                                 static_cast<int>(bytes_to_write),
-                                 base::Bind(&FileWriterDelegate::OnDataWritten,
-                                            weak_factory_.GetWeakPtr()));
+  int write_response = file_stream_writer_->Write(
+      cursor_.get(), static_cast<int>(bytes_to_write),
+      base::BindOnce(&FileWriterDelegate::OnDataWritten,
+                     weak_factory_.GetWeakPtr()));
   if (write_response > 0) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&FileWriterDelegate::OnDataWritten,
@@ -302,8 +300,8 @@ void FileWriterDelegate::MaybeFlushForCompletion(
   DCHECK(flush_policy_ == FlushPolicy::FLUSH_ON_COMPLETION);
 
   int flush_error = file_stream_writer_->Flush(
-      base::Bind(&FileWriterDelegate::OnFlushed, weak_factory_.GetWeakPtr(),
-                 error, bytes_written, progress_status));
+      base::BindOnce(&FileWriterDelegate::OnFlushed, weak_factory_.GetWeakPtr(),
+                     error, bytes_written, progress_status));
   if (flush_error != net::ERR_IO_PENDING)
     OnFlushed(error, bytes_written, progress_status, flush_error);
 }

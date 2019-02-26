@@ -31,7 +31,7 @@ class CORE_EXPORT TextSuggestionController final
  public:
   explicit TextSuggestionController(LocalFrame&);
 
-  void DocumentAttached(Document*);
+  void DidAttachDocument(Document*);
 
   bool IsMenuOpen() const;
 
@@ -47,6 +47,7 @@ class CORE_EXPORT TextSuggestionController final
   void Trace(blink::Visitor*) override;
 
  private:
+  friend class TextSuggestionControllerTest;
   Document& GetDocument() const;
   bool IsAvailable() const;
   LocalFrame& GetFrame() const;

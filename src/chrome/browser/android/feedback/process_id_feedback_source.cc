@@ -68,7 +68,7 @@ void ProcessIdFeedbackSource::PrepareProcessIdsOnIOThread() {
 
   for (content::BrowserChildProcessHostIterator iter; !iter.Done(); ++iter)
     process_ids_[iter.GetData().process_type].push_back(
-        iter.GetData().GetHandle());
+        iter.GetData().GetProcess().Handle());
 
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},

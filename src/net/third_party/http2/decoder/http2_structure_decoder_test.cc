@@ -20,6 +20,8 @@
 
 #include <stddef.h>
 
+#include <cstdint>
+
 #include "base/logging.h"
 #include "net/third_party/http2/decoder/decode_buffer.h"
 #include "net/third_party/http2/decoder/decode_status.h"
@@ -28,7 +30,7 @@
 #include "net/third_party/http2/platform/api/http2_reconstruct_object.h"
 #include "net/third_party/http2/platform/api/http2_string.h"
 #include "net/third_party/http2/platform/api/http2_string_piece.h"
-#include "net/third_party/http2/tools/failure.h"
+#include "net/third_party/http2/platform/api/http2_test_helpers.h"
 #include "net/third_party/http2/tools/http2_frame_builder.h"
 #include "net/third_party/http2/tools/random_decoder_test.h"
 #include "testing/gtest/include/gtest/gtest.h"

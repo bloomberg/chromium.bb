@@ -59,9 +59,10 @@ class PLATFORM_EXPORT Prerender final
                            const KURL& url,
                            unsigned rel_types,
                            const Referrer& referrer) {
-    return new Prerender(client, url, rel_types, referrer);
+    return MakeGarbageCollected<Prerender>(client, url, rel_types, referrer);
   }
 
+  Prerender(PrerenderClient*, const KURL&, unsigned rel_types, const Referrer&);
   ~Prerender();
   void Trace(blink::Visitor*);
 
@@ -74,7 +75,9 @@ class PLATFORM_EXPORT Prerender final
   const KURL& Url() const { return url_; }
   unsigned RelTypes() const { return rel_types_; }
   const String& GetReferrer() const { return referrer_.referrer; }
-  ReferrerPolicy GetReferrerPolicy() const { return referrer_.referrer_policy; }
+  network::mojom::ReferrerPolicy GetReferrerPolicy() const {
+    return referrer_.referrer_policy;
+  }
 
   void SetExtraData(scoped_refptr<ExtraData> extra_data) {
     extra_data_ = std::move(extra_data);
@@ -87,8 +90,6 @@ class PLATFORM_EXPORT Prerender final
   void DidSendDOMContentLoadedForPrerender();
 
  private:
-  Prerender(PrerenderClient*, const KURL&, unsigned rel_types, const Referrer&);
-
   // The embedder's prerendering support holds on to pending Prerender objects;
   // those references should not keep the PrerenderClient alive -- if the client
   // becomes otherwise unreachable it should be GCed (at which point it will

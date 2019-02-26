@@ -48,15 +48,14 @@ class V0CustomElementMicrotaskResolutionStep final
       Element*,
       const V0CustomElementDescriptor&);
 
+  V0CustomElementMicrotaskResolutionStep(V0CustomElementRegistrationContext*,
+                                         Element*,
+                                         const V0CustomElementDescriptor&);
   ~V0CustomElementMicrotaskResolutionStep() override;
 
   void Trace(blink::Visitor*) override;
 
  private:
-  V0CustomElementMicrotaskResolutionStep(V0CustomElementRegistrationContext*,
-                                         Element*,
-                                         const V0CustomElementDescriptor&);
-
   Result Process() override;
 
 #if !defined(NDEBUG)

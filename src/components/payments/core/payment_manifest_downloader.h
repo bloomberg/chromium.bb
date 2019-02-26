@@ -24,9 +24,11 @@ namespace network {
 class SharedURLLoaderFactory;
 class SimpleURLLoader;
 struct ResourceResponseHead;
-}
+}  // namespace network
 
 namespace payments {
+
+class ErrorLogger;
 
 // Called on completed download of a manifest. Download failure results in empty
 // contents. Failure to download the manifest can happen because of the
@@ -50,7 +52,8 @@ using PaymentManifestDownloadCallback =
 // HTTP response codes are 200 or 204.
 class PaymentManifestDownloader {
  public:
-  explicit PaymentManifestDownloader(
+  PaymentManifestDownloader(
+      std::unique_ptr<ErrorLogger> log,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
   virtual ~PaymentManifestDownloader();
@@ -131,6 +134,7 @@ class PaymentManifestDownloader {
                         int allowed_number_of_redirects,
                         PaymentManifestDownloadCallback callback);
 
+  std::unique_ptr<ErrorLogger> log_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // Downloads are identified by network::SimpleURLLoader pointers, because

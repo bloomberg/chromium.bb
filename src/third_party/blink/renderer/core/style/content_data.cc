@@ -35,11 +35,11 @@
 namespace blink {
 
 ContentData* ContentData::Create(StyleImage* image) {
-  return new ImageContentData(image);
+  return MakeGarbageCollected<ImageContentData>(image);
 }
 
 ContentData* ContentData::Create(const String& text) {
-  return new TextContentData(text);
+  return MakeGarbageCollected<TextContentData>(text);
 }
 
 ContentData* ContentData::Create(std::unique_ptr<CounterContent> counter) {
@@ -47,7 +47,7 @@ ContentData* ContentData::Create(std::unique_ptr<CounterContent> counter) {
 }
 
 ContentData* ContentData::Create(QuoteType quote) {
-  return new QuoteContentData(quote);
+  return MakeGarbageCollected<QuoteContentData>(quote);
 }
 
 ContentData* ContentData::Clone() const {
@@ -90,7 +90,7 @@ LayoutObject* TextContentData::CreateLayoutObject(
     PseudoElement& pseudo,
     ComputedStyle& pseudo_style) const {
   LayoutObject* layout_object =
-      LayoutTextFragment::CreateAnonymous(pseudo, text_.Impl());
+      LayoutTextFragment::CreateAnonymous(pseudo_style, pseudo, text_.Impl());
   layout_object->SetPseudoStyle(&pseudo_style);
   return layout_object;
 }

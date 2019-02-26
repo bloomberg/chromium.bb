@@ -75,8 +75,7 @@ void OverviewWindowDragController::Drag(const gfx::Point& location_in_screen) {
       return;
     }
 
-    if (IsOverviewSwipeToCloseEnabled() &&
-        std::abs(distance.x()) < std::abs(distance.y())) {
+    if (std::abs(distance.x()) < std::abs(distance.y())) {
       current_drag_behavior_ = DragBehavior::kDragToClose;
       original_opacity_ = item_->GetOpacity();
       window_selector_->GetGridWithRootWindow(item_->root_window())

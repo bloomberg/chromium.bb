@@ -17,11 +17,11 @@
 
 namespace base {
 class ListValue;
+class Token;
 }  // namespace base
 
 namespace service_manager {
 class Connector;
-class Identity;
 }  // namespace service_manager
 
 namespace extensions {
@@ -69,11 +69,13 @@ using IndexAndPersistRulesCallback =
     base::OnceCallback<void(IndexAndPersistRulesResult)>;
 // Same as IndexAndPersistRulesUnsafe but parses the JSON rules file out-of-
 // process. |connector| should be a connector to the ServiceManager usable on
-// the current sequence. Optionally clients can pass a valid |identity| to be
-// used when accessing the data decoder service which is used internally to
-// parse JSON. Note: This must be called on a sequence where file IO is allowed.
+// the current sequence. Optionally clients can pass a valid |decoder_batch_id|
+// to be used when accessing the data decoder service, which is used internally
+// to parse JSON.
+//
+// NOTE: This must be called on a sequence where file IO is allowed.
 void IndexAndPersistRules(service_manager::Connector* connector,
-                          service_manager::Identity* identity,
+                          const base::Optional<base::Token>& decoder_batch_id,
                           const Extension& extension,
                           IndexAndPersistRulesCallback callback);
 

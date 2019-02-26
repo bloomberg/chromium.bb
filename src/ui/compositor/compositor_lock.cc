@@ -21,11 +21,13 @@ CompositorLockManager::~CompositorLockManager() = default;
 std::unique_ptr<CompositorLock> CompositorLockManager::GetCompositorLock(
     CompositorLockClient* client,
     base::TimeDelta timeout,
-    std::unique_ptr<cc::ScopedDeferCommits> scoped_defer_commits) {
+    std::unique_ptr<cc::ScopedDeferMainFrameUpdate>
+        scoped_defer_main_frame_update) {
   // This uses the main WeakPtrFactory to break the connection from the lock to
   // the CompositorLockManager when the CompositorLockManager is destroyed.
   auto lock = std::make_unique<CompositorLock>(
-      client, weak_ptr_factory_.GetWeakPtr(), std::move(scoped_defer_commits));
+      client, weak_ptr_factory_.GetWeakPtr(),
+      std::move(scoped_defer_main_frame_update));
   bool was_empty = active_locks_.empty();
   active_locks_.push_back(lock.get());
 
@@ -71,22 +73,23 @@ void CompositorLockManager::TimeoutLocks() {
   DCHECK(active_locks_.empty());
 }
 
-CompositorLock::CompositorLock(
-    CompositorLockClient* client,
-    base::WeakPtr<CompositorLockManager> manager,
-    std::unique_ptr<cc::ScopedDeferCommits> scoped_defer_commits)
+CompositorLock::CompositorLock(CompositorLockClient* client,
+                               base::WeakPtr<CompositorLockManager> manager,
+                               std::unique_ptr<cc::ScopedDeferMainFrameUpdate>
+                                   scoped_defer_main_frame_update)
     : client_(client),
-      scoped_defer_commits_(std::move(scoped_defer_commits)),
+      scoped_defer_main_frame_update_(
+          std::move(scoped_defer_main_frame_update)),
       manager_(std::move(manager)) {}
 
 CompositorLock::~CompositorLock() {
-  scoped_defer_commits_ = nullptr;
+  scoped_defer_main_frame_update_ = nullptr;
   if (manager_)
     manager_->RemoveCompositorLock(this);
 }
 
 void CompositorLock::TimeoutLock() {
-  scoped_defer_commits_ = nullptr;
+  scoped_defer_main_frame_update_ = nullptr;
   manager_->RemoveCompositorLock(this);
   manager_ = nullptr;
   if (client_)

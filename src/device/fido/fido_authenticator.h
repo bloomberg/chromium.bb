@@ -15,11 +15,11 @@
 #include "base/strings/string16.h"
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/authenticator_make_credential_response.h"
+#include "device/fido/authenticator_supported_options.h"
 #include "device/fido/fido_transport_protocol.h"
 
 namespace device {
 
-class AuthenticatorSupportedOptions;
 class CtapGetAssertionRequest;
 class CtapMakeCredentialRequest;
 
@@ -42,17 +42,19 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
   // call is received, |callback| is invoked. Below MakeCredential() and
   // GetAssertion() must only called after |callback| is invoked.
   virtual void InitializeAuthenticator(base::OnceClosure callback) = 0;
-  virtual void MakeCredential(
-      CtapMakeCredentialRequest request,
-      MakeCredentialCallback callback) = 0;
+  virtual void MakeCredential(CtapMakeCredentialRequest request,
+                              MakeCredentialCallback callback) = 0;
   virtual void GetAssertion(CtapGetAssertionRequest request,
                             GetAssertionCallback callback) = 0;
   virtual void Cancel() = 0;
   virtual std::string GetId() const = 0;
   virtual base::string16 GetDisplayName() const = 0;
-  virtual const AuthenticatorSupportedOptions& Options() const = 0;
-  virtual FidoTransportProtocol AuthenticatorTransport() const = 0;
+  virtual const base::Optional<AuthenticatorSupportedOptions>& Options()
+      const = 0;
+  virtual base::Optional<FidoTransportProtocol> AuthenticatorTransport()
+      const = 0;
   virtual bool IsInPairingMode() const = 0;
+  virtual bool IsPaired() const = 0;
   virtual base::WeakPtr<FidoAuthenticator> GetWeakPtr() = 0;
 
  private:

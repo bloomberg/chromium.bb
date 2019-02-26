@@ -13,7 +13,7 @@
 <translation id="43113324827158664">You can't leave this empty.</translation>
 <translation id="4376888869070172068">This postcode format is not recognised.</translation>
 <translation id="4518701284698680367">You must provide a postcode, for example <ph name="EXAMPLE" />. Don't know your postcode? Find it out <ph name="BEGIN_LINK" />here<ph name="END_LINK" />.</translation>
-<translation id="5089810972385038852">County</translation>
+<translation id="5089810972385038852">State</translation>
 <translation id="5095208057601539847">Province</translation>
 <translation id="5327248766486351172">Name</translation>
 <translation id="5937097533660449554">Oblast</translation>
@@ -22,7 +22,7 @@
 <translation id="6247152910634872706">Organisation</translation>
 <translation id="6271429879296260742">PIN code</translation>
 <translation id="6282194474023008486">Postcode</translation>
-<translation id="6327653052522436195">City</translation>
+<translation id="6327653052522436195">Town/City</translation>
 <translation id="6403469950615936250">This postcode format is not recognised. Example of a valid postcode: <ph name="EXAMPLE" />. Don't know your postcode? Find it out <ph name="BEGIN_LINK" />here<ph name="END_LINK" />.</translation>
 <translation id="6735419622867539268"><ph name="FIELD_VALUE" /> is not recognised as a known value for this field.</translation>
 <translation id="6768780634682399515">Eircode</translation>

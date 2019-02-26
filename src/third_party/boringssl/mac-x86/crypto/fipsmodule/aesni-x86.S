@@ -1,10 +1,16 @@
+# This file is generated from a similarly-named Perl script in the BoringSSL
+# source tree. Do not edit by hand.
+
 #if defined(__i386__)
+#if defined(BORINGSSL_PREFIX)
+#include <boringssl_prefix_symbols_asm.h>
+#endif
 .text
-.globl	_aesni_encrypt
-.private_extern	_aesni_encrypt
+.globl	_aes_hw_encrypt
+.private_extern	_aes_hw_encrypt
 .align	4
-_aesni_encrypt:
-L_aesni_encrypt_begin:
+_aes_hw_encrypt:
+L_aes_hw_encrypt_begin:
 	movl	4(%esp),%eax
 	movl	12(%esp),%edx
 	movups	(%eax),%xmm2
@@ -26,11 +32,11 @@ L000enc1_loop_1:
 	movups	%xmm2,(%eax)
 	pxor	%xmm2,%xmm2
 	ret
-.globl	_aesni_decrypt
-.private_extern	_aesni_decrypt
+.globl	_aes_hw_decrypt
+.private_extern	_aes_hw_decrypt
 .align	4
-_aesni_decrypt:
-L_aesni_decrypt_begin:
+_aes_hw_decrypt:
+L_aes_hw_decrypt_begin:
 	movl	4(%esp),%eax
 	movl	12(%esp),%edx
 	movups	(%eax),%xmm2
@@ -346,11 +352,11 @@ L_aesni_decrypt6_enter:
 .byte	102,15,56,223,240
 .byte	102,15,56,223,248
 	ret
-.globl	_aesni_ecb_encrypt
-.private_extern	_aesni_ecb_encrypt
+.globl	_aes_hw_ecb_encrypt
+.private_extern	_aes_hw_ecb_encrypt
 .align	4
-_aesni_ecb_encrypt:
-L_aesni_ecb_encrypt_begin:
+_aes_hw_ecb_encrypt:
+L_aes_hw_ecb_encrypt_begin:
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -580,11 +586,11 @@ L012ecb_ret:
 	popl	%ebx
 	popl	%ebp
 	ret
-.globl	_aesni_ccm64_encrypt_blocks
-.private_extern	_aesni_ccm64_encrypt_blocks
+.globl	_aes_hw_ccm64_encrypt_blocks
+.private_extern	_aes_hw_ccm64_encrypt_blocks
 .align	4
-_aesni_ccm64_encrypt_blocks:
-L_aesni_ccm64_encrypt_blocks_begin:
+_aes_hw_ccm64_encrypt_blocks:
+L_aes_hw_ccm64_encrypt_blocks_begin:
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -667,11 +673,11 @@ L031ccm64_enc2_loop:
 	popl	%ebx
 	popl	%ebp
 	ret
-.globl	_aesni_ccm64_decrypt_blocks
-.private_extern	_aesni_ccm64_decrypt_blocks
+.globl	_aes_hw_ccm64_decrypt_blocks
+.private_extern	_aes_hw_ccm64_decrypt_blocks
 .align	4
-_aesni_ccm64_decrypt_blocks:
-L_aesni_ccm64_decrypt_blocks_begin:
+_aes_hw_ccm64_decrypt_blocks:
+L_aes_hw_ccm64_decrypt_blocks_begin:
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -789,11 +795,11 @@ L036enc1_loop_6:
 	popl	%ebx
 	popl	%ebp
 	ret
-.globl	_aesni_ctr32_encrypt_blocks
-.private_extern	_aesni_ctr32_encrypt_blocks
+.globl	_aes_hw_ctr32_encrypt_blocks
+.private_extern	_aes_hw_ctr32_encrypt_blocks
 .align	4
-_aesni_ctr32_encrypt_blocks:
-L_aesni_ctr32_encrypt_blocks_begin:
+_aes_hw_ctr32_encrypt_blocks:
+L_aes_hw_ctr32_encrypt_blocks_begin:
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -1026,11 +1032,11 @@ L040ctr32_ret:
 	popl	%ebx
 	popl	%ebp
 	ret
-.globl	_aesni_xts_encrypt
-.private_extern	_aesni_xts_encrypt
+.globl	_aes_hw_xts_encrypt
+.private_extern	_aes_hw_xts_encrypt
 .align	4
-_aesni_xts_encrypt:
-L_aesni_xts_encrypt_begin:
+_aes_hw_xts_encrypt:
+L_aes_hw_xts_encrypt_begin:
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -1385,11 +1391,11 @@ L056xts_enc_ret:
 	popl	%ebx
 	popl	%ebp
 	ret
-.globl	_aesni_xts_decrypt
-.private_extern	_aesni_xts_decrypt
+.globl	_aes_hw_xts_decrypt
+.private_extern	_aes_hw_xts_decrypt
 .align	4
-_aesni_xts_decrypt:
-L_aesni_xts_decrypt_begin:
+_aes_hw_xts_decrypt:
+L_aes_hw_xts_decrypt_begin:
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -1774,11 +1780,11 @@ L069xts_dec_ret:
 	popl	%ebx
 	popl	%ebp
 	ret
-.globl	_aesni_cbc_encrypt
-.private_extern	_aesni_cbc_encrypt
+.globl	_aes_hw_cbc_encrypt
+.private_extern	_aes_hw_cbc_encrypt
 .align	4
-_aesni_cbc_encrypt:
-L_aesni_cbc_encrypt_begin:
+_aes_hw_cbc_encrypt:
+L_aes_hw_cbc_encrypt_begin:
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -2366,21 +2372,21 @@ L095bad_keybits:
 	popl	%ebx
 	popl	%ebp
 	ret
-.globl	_aesni_set_encrypt_key
-.private_extern	_aesni_set_encrypt_key
+.globl	_aes_hw_set_encrypt_key
+.private_extern	_aes_hw_set_encrypt_key
 .align	4
-_aesni_set_encrypt_key:
-L_aesni_set_encrypt_key_begin:
+_aes_hw_set_encrypt_key:
+L_aes_hw_set_encrypt_key_begin:
 	movl	4(%esp),%eax
 	movl	8(%esp),%ecx
 	movl	12(%esp),%edx
 	call	__aesni_set_encrypt_key
 	ret
-.globl	_aesni_set_decrypt_key
-.private_extern	_aesni_set_decrypt_key
+.globl	_aes_hw_set_decrypt_key
+.private_extern	_aes_hw_set_decrypt_key
 .align	4
-_aesni_set_decrypt_key:
-L_aesni_set_decrypt_key_begin:
+_aes_hw_set_decrypt_key:
+L_aes_hw_set_decrypt_key_begin:
 	movl	4(%esp),%eax
 	movl	8(%esp),%ecx
 	movl	12(%esp),%edx

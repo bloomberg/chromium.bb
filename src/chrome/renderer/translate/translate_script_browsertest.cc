@@ -107,10 +107,6 @@ class TranslateScriptBrowserTest : public ChromeRenderViewTest {
   }
 
  private:
-  void SetUp() override { ChromeRenderViewTest::SetUp(); }
-
-  void TearDown() override { ChromeRenderViewTest::TearDown(); }
-
   double ExecuteScriptAndGetNumberResult(const std::string& script) {
     WebScriptSource source =
         WebScriptSource(blink::WebString::FromASCII(script));

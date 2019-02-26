@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "media/audio/audio_manager.h"
 #include "media/base/audio_timestamp_helper.h"
 
@@ -77,7 +78,13 @@ bool AudioOutputStreamSink::SetVolume(double volume) {
 }
 
 OutputDeviceInfo AudioOutputStreamSink::GetOutputDeviceInfo() {
-  return OutputDeviceInfo();
+  return OutputDeviceInfo(OUTPUT_DEVICE_STATUS_OK);
+}
+
+void AudioOutputStreamSink::GetOutputDeviceInfoAsync(
+    OutputDeviceInfoCB info_cb) {
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(info_cb), GetOutputDeviceInfo()));
 }
 
 bool AudioOutputStreamSink::IsOptimizedForHardwareParameters() {

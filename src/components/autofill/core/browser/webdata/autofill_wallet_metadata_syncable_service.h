@@ -130,15 +130,6 @@ class AutofillWalletMetadataSyncableService
   // is not present locally.
   syncer::SyncMergeResult MergeData(const syncer::SyncDataList& sync_data);
 
-  // Sends the autofill data model updates to the sync server if the local
-  // version is more recent. Used for both profiles and credit cards.
-  template <class DataType>
-  void AutofillDataModelUpdated(
-      const std::string& server_id,
-      const sync_pb::WalletMetadataSpecifics::Type& type,
-      const sync_pb::WalletMetadataSpecifics& remote,
-      const DataType& local);
-
   base::ThreadChecker thread_checker_;
   AutofillWebDataBackend* web_data_backend_;  // Weak ref.
   ScopedObserver<AutofillWebDataBackend, AutofillWalletMetadataSyncableService>
@@ -153,6 +144,11 @@ class AutofillWalletMetadataSyncableService
   // true, the service will prune metadata entries without corresponding wallet
   // data entry.
   bool track_wallet_data_;
+
+  // Indicates that we should ignore multiple changed notification. This is used
+  // to block reflection and not to act on notification that we've triggered
+  // ourselves.
+  bool ignore_multiple_changed_notification_;
 
   base::WeakPtrFactory<AutofillWalletMetadataSyncableService> weak_ptr_factory_;
 

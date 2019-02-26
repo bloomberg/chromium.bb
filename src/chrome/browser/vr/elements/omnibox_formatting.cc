@@ -44,9 +44,6 @@ TextFormatting ConvertClassification(
     if (classifications[i].style & ACMatchClassification::URL) {
       formatting.push_back(
           TextFormattingAttribute(color_scheme.hyperlink, current_range));
-    } else if (classifications[i].style & ACMatchClassification::INVISIBLE) {
-      formatting.push_back(
-          TextFormattingAttribute(SK_ColorTRANSPARENT, current_range));
     }
   }
   return formatting;

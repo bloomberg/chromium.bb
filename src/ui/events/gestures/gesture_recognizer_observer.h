@@ -13,12 +13,21 @@ namespace ui {
 
 class EVENTS_EXPORT GestureRecognizerObserver : public base::CheckedObserver {
  public:
+  // Called when CancelActiveTouchesExcept() is called.
   virtual void OnActiveTouchesCanceledExcept(
       GestureConsumer* not_cancelled) = 0;
+
+  // Called when TransferEventsTo() happened from |current_consumer| to
+  // |new_consumer|.
   virtual void OnEventsTransferred(
       GestureConsumer* current_consumer,
       GestureConsumer* new_consumer,
       TransferTouchesBehavior transfer_touches_behavior) = 0;
+
+  // Called when CancelActiveTouches() cancels touches on |consumer|. This is
+  // not called from CancelActiveTouchesExcept() causes cancel on |consumer|.
+  // Also this is not called when an invocation of CancelActiveTouches() doesn't
+  // cancel anything actually.
   virtual void OnActiveTouchesCanceled(GestureConsumer* consumer) = 0;
 
  protected:

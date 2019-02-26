@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
 <translation id="1002108253973310084">Eine inkompatible Protokollversion wurde erkannt. Überprüfen Sie, ob die neueste Version der Software auf beiden Computern installiert ist, und versuchen Sie es erneut.</translation>
+<translation id="1008557486741366299">Jetzt nicht</translation>
 <translation id="1050693411695664090">Schlecht</translation>
 <translation id="1152528166145813711">Auswählen...</translation>
 <translation id="1199593201721843963">Remote-Verbindungen deaktivieren</translation>
@@ -62,6 +63,7 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="2314101195544969792">Ihre Sitzung bei <ph name="APPLICATION_NAME" /> war längere Zeit inaktiv und wird in Kürze beendet.</translation>
 <translation id="2317666076142640974">Werfen Sie vorab einen Blick auf die Web-App <ph name="LINK_BEGIN" />Chrome Remote Desktop<ph name="LINK_END" />. Wir freuen uns über Feedback.</translation>
 <translation id="2320166752086256636">Tastatur ausblenden</translation>
+<translation id="2332192922827071008">Einstellungen öffnen</translation>
 <translation id="2353140552984634198">Mit Chromoting erhalten Sie sicheren Zugriff auf diesen Computer.</translation>
 <translation id="2359808026110333948">Weiter</translation>
 <translation id="2366718077645204424">Die Verbindung zum Host kann nicht hergestellt werden. Das von Ihnen verwendete Netzwerk ist möglicherweise nicht korrekt konfiguriert.</translation>
@@ -82,6 +84,7 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="2841013758207633010">Zeit</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2888969873284818612">Ein Netzwerkfehler ist aufgetreten. Die App wird neu gestartet, wenn Ihr Gerät wieder online ist.</translation>
+<translation id="2891243864890517178">Für Mac OS X Yosemite 10.10 und höher</translation>
 <translation id="289405675947420287">Sicherer Zugriff auf Ihren Computer über Ihr iOS-Gerät. Schnell, einfach und kostenlos.
 
 • Laden Sie die Chrome Remote Desktop App aus dem Chrome Web Store auf den Computer herunter, für den Sie den Remotezugriff einrichten möchten.
@@ -188,6 +191,9 @@ pc</translation>
 <translation id="4973800994433240357">Indem Sie das Chromoting Host-Installationsprogramm herunterladen, erklären Sie sich mit den <ph name="LINK_BEGIN" />Nutzungsbedingungen von Google<ph name="LINK_END" /> einverstanden.</translation>
 <translation id="4974476491460646149">Verbindung zwischen Client und <ph name="HOSTNAME" /> getrennt</translation>
 <translation id="4985296110227979402">Richten Sie zuerst Ihren Computer für den Remotezugriff ein</translation>
+<translation id="5059773780693835145">Bevor Sie auf dieses Gerät mithilfe von <ph name="PRODUCT_NAME" /> remote zugreifen können, ist ein zusätzlicher Konfigurationsschritt erforderlich.
+
+Wenn Sie diese Funktion aktivieren möchten, wählen Sie "<ph name="BUTTON_NAME" />" aus. Daraufhin öffnet sich das Sicherheits- und Datenschutzfenster. Klicken Sie dort das Kästchen neben "<ph name="SERVICE_SCRIPT_NAME" />" an.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">Der Remote-Host verlangt, dass Sie sich über eine Drittanbieter-Website authentifizieren. Um fortfahren zu können, geben Sie Chrome Remote Desktop zusätzliche Berechtigungen für den Zugriff auf die folgende Adresse:</translation>
 <translation id="507204348399810022">Möchten Sie die Remote-Verbindungen zu <ph name="HOSTNAME" /> wirklich deaktivieren?</translation>
@@ -249,7 +255,6 @@ pc</translation>
 <translation id="6542902059648396432">Problem melden...</translation>
 <translation id="6550675742724504774">Optionen</translation>
 <translation id="6570205395680337606">App zurücksetzen. Alle nicht gespeicherten Daten gehen verloren.</translation>
-<translation id="6572345186230665992">Für Mac OS X Mavericks 10.9 und höher</translation>
 <translation id="6583902294974160967">Hilfe</translation>
 <translation id="6612717000975622067">Strg-Alt-Entf senden</translation>
 <translation id="6654753848497929428">Teilen</translation>
@@ -313,6 +318,7 @@ pc</translation>
 <translation id="809687642899217504">Meine Computer</translation>
 <translation id="811307782653349804">Greifen Sie von überall aus auf Ihren Computer zu.</translation>
 <translation id="8116630183974937060">Ein Netzwerkfehler ist aufgetreten. Bitte überprüfen Sie, ob das Gerät online ist, und versuchen Sie es erneut.</translation>
+<translation id="8123581458650016326">Zulassen, dass Remote-Nutzer auf dieses Gerät zugreifen können</translation>
 <translation id="8178433417677596899">Die Bildschirmfreigabe für Nutzer eignet sich besonders für technischen Support per Remotezugriff.</translation>
 <translation id="8187079423890319756">Copyright 2013 Die Chromium-Autoren. Alle Rechte vorbehalten</translation>
 <translation id="8196755618196986400">Damit wir für weitere Informationen mit Ihnen Kontakt aufnehmen können, wird bei jedem von Ihnen gesendeten Feedback Ihre E-Mail-Adresse mitgesendet.</translation>

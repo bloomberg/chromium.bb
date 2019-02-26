@@ -20,6 +20,7 @@ viz_component("resource_format_utils") {
   sources = [
     "resources/resource_format_utils.cc",
     "resources/resource_format_utils.h",
+    "resources/resource_sizes.h",
     "viz_resource_format_export.h",
   ]
 
@@ -31,9 +32,37 @@ viz_component("resource_format_utils") {
 
   deps = [
     "//base",
+    "//cc/base:base",
     "//skia",
     "//ui/gfx:buffer_types",
+    "//ui/gfx/geometry:geometry",
   ]
+}
+
+if (enable_vulkan) {
+  viz_component("vulkan_context_provider") {
+    output_name = "viz_vulkan_context_provider"
+
+    defines = [ "VIZ_VULKAN_CONTEXT_PROVIDER_IMPLEMENTATION" ]
+
+    sources = [
+      "gpu/vulkan_context_provider.h",
+      "gpu/vulkan_in_process_context_provider.cc",
+      "gpu/vulkan_in_process_context_provider.h",
+      "viz_vulkan_context_provider_export.h",
+    ]
+    configs = [ "//third_party/vulkan:vulkan_config" ]
+
+    public_deps = [
+      "//skia",
+    ]
+
+    deps = [
+      "//base",
+      "//gpu/vulkan",
+      "//gpu/vulkan:buildflags",
+    ]
+  }
 }
 
 viz_component("common") {
@@ -64,6 +93,8 @@ viz_component("common") {
     "gl_helper.h",
     "gl_helper_scaling.cc",
     "gl_helper_scaling.h",
+    "gl_i420_converter.cc",
+    "gl_i420_converter.h",
     "gl_scaler.cc",
     "gl_scaler.h",
     "gpu/context_cache_controller.cc",
@@ -122,7 +153,6 @@ viz_component("common") {
     "resources/resource_id.h",
     "resources/resource_settings.cc",
     "resources/resource_settings.h",
-    "resources/resource_sizes.h",
     "resources/return_callback.h",
     "resources/returned_resource.h",
     "resources/shared_bitmap.cc",
@@ -141,6 +171,8 @@ viz_component("common") {
     "surfaces/frame_sink_id_allocator.h",
     "surfaces/local_surface_id.cc",
     "surfaces/local_surface_id.h",
+    "surfaces/local_surface_id_allocation.cc",
+    "surfaces/local_surface_id_allocation.h",
     "surfaces/parent_local_surface_id_allocator.cc",
     "surfaces/parent_local_surface_id_allocator.h",
     "surfaces/scoped_surface_id_allocator.cc",
@@ -180,16 +212,6 @@ viz_component("common") {
     "//ui/latency",
   ]
 
-  if (enable_vulkan) {
-    sources += [
-      "gpu/vulkan_context_provider.h",
-      "gpu/vulkan_in_process_context_provider.cc",
-      "gpu/vulkan_in_process_context_provider.h",
-    ]
-    configs = [ "//third_party/vulkan:vulkan_config" ]
-    deps += [ "//gpu/vulkan" ]
-  }
-
   if (is_win) {
     sources += [
       "display/use_layered_window.cc",
@@ -206,6 +228,9 @@ viz_component("common") {
     "//mojo/public/cpp/bindings",
     "//skia",
   ]
+  if (enable_vulkan) {
+    public_deps += [ ":vulkan_context_provider" ]
+  }
 }
 
 viz_source_set("unit_tests") {
@@ -218,6 +243,10 @@ viz_source_set("unit_tests") {
     "frame_sinks/copy_output_util_unittest.cc",
     "frame_sinks/delay_based_time_source_unittest.cc",
     "gl_helper_unittest.cc",
+    "gl_i420_converter_pixeltest.cc",
+    "gl_i420_converter_unittest.cc",
+    "gl_scaler_overscan_pixeltest.cc",
+    "gl_scaler_pixeltest.cc",
     "gl_scaler_shader_pixeltest.cc",
     "gl_scaler_test_util.cc",
     "gl_scaler_test_util.h",
@@ -273,6 +302,7 @@ viz_test("viz_benchmark") {
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/ipc:gl_in_process_context",
+    "//gpu/ipc:gpu_thread_holder",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/gfx",

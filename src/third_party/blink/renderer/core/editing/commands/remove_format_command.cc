@@ -39,7 +39,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 RemoveFormatCommand::RemoveFormatCommand(Document& document)
     : CompositeEditCommand(document) {}
@@ -48,10 +48,10 @@ static bool IsElementForRemoveFormatCommand(const Element* element) {
   DEFINE_STATIC_LOCAL(
       HashSet<QualifiedName>, elements,
       ({
-          acronymTag, bTag,   bdoTag,  bigTag,  citeTag,  codeTag,
-          dfnTag,     emTag,  fontTag, iTag,    insTag,   kbdTag,
-          nobrTag,    qTag,   sTag,    sampTag, smallTag, strikeTag,
-          strongTag,  subTag, supTag,  ttTag,   uTag,     varTag,
+          kAcronymTag, kBTag,   kBdoTag,  kBigTag,  kCiteTag,  kCodeTag,
+          kDfnTag,     kEmTag,  kFontTag, kITag,    kInsTag,   kKbdTag,
+          kNobrTag,    kQTag,   kSTag,    kSampTag, kSmallTag, kStrikeTag,
+          kStrongTag,  kSubTag, kSupTag,  kTtTag,   kUTag,     kVarTag,
       }));
   return elements.Contains(element->TagQName());
 }

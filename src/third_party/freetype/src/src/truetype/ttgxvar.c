@@ -68,8 +68,6 @@
 
 
   /* some macros we need */
-#define FT_FIXED_ONE  ( (FT_Fixed)0x10000 )
-
 #define FT_fdot14ToFixed( x )                \
         ( (FT_Fixed)( (FT_ULong)(x) << 2 ) )
 #define FT_intToFixed( i )                    \
@@ -884,7 +882,7 @@
     /* outer loop steps through master designs to be blended */
     for ( master = 0; master < varData->regionIdxCount; master++ )
     {
-      FT_Fixed  scalar      = FT_FIXED_ONE;
+      FT_Fixed  scalar      = 0x10000L;
       FT_UInt   regionIndex = varData->regionIndices[master];
 
       GX_AxisCoords  axis = itemStore->varRegionList[regionIndex].axisList;
@@ -893,47 +891,43 @@
       /* inner loop steps through axes in this region */
       for ( j = 0; j < itemStore->axisCount; j++, axis++ )
       {
-        FT_Fixed  axisScalar;
-
-
         /* compute the scalar contribution of this axis; */
         /* ignore invalid ranges                         */
         if ( axis->startCoord > axis->peakCoord ||
              axis->peakCoord > axis->endCoord   )
-          axisScalar = FT_FIXED_ONE;
+          continue;
 
         else if ( axis->startCoord < 0 &&
                   axis->endCoord > 0   &&
                   axis->peakCoord != 0 )
-          axisScalar = FT_FIXED_ONE;
+          continue;
 
         /* peak of 0 means ignore this axis */
         else if ( axis->peakCoord == 0 )
-          axisScalar = FT_FIXED_ONE;
+          continue;
+
+        else if ( face->blend->normalizedcoords[j] == axis->peakCoord )
+          continue;
 
         /* ignore this region if coords are out of range */
-        else if ( face->blend->normalizedcoords[j] < axis->startCoord ||
-                  face->blend->normalizedcoords[j] > axis->endCoord   )
-          axisScalar = 0;
-
-        /* calculate a proportional factor */
-        else
+        else if ( face->blend->normalizedcoords[j] <= axis->startCoord ||
+                  face->blend->normalizedcoords[j] >= axis->endCoord   )
         {
-          if ( face->blend->normalizedcoords[j] == axis->peakCoord )
-            axisScalar = FT_FIXED_ONE;
-          else if ( face->blend->normalizedcoords[j] < axis->peakCoord )
-            axisScalar =
-              FT_DivFix( face->blend->normalizedcoords[j] - axis->startCoord,
-                         axis->peakCoord - axis->startCoord );
-          else
-            axisScalar =
-              FT_DivFix( axis->endCoord - face->blend->normalizedcoords[j],
-                         axis->endCoord - axis->peakCoord );
+          scalar = 0;
+          break;
         }
 
-        /* take product of all the axis scalars */
-        scalar = FT_MulFix( scalar, axisScalar );
-
+        /* cumulative product of all the axis scalars */
+        else if ( face->blend->normalizedcoords[j] < axis->peakCoord )
+          scalar =
+            FT_MulDiv( scalar,
+                       face->blend->normalizedcoords[j] - axis->startCoord,
+                       axis->peakCoord - axis->startCoord );
+        else
+          scalar =
+            FT_MulDiv( scalar,
+                       axis->endCoord - face->blend->normalizedcoords[j],
+                       axis->endCoord - axis->peakCoord );
       } /* per-axis loop */
 
       /* get the scaled delta for this region */
@@ -1658,13 +1652,8 @@
 
     for ( i = 0; i < blend->num_axis; i++ )
     {
-      FT_TRACE6(( "    axis coordinate %d (%.5f):\n",
+      FT_TRACE6(( "    axis %d coordinate %.5f:\n",
                   i, blend->normalizedcoords[i] / 65536.0 ));
-      if ( !( tupleIndex & GX_TI_INTERMEDIATE_TUPLE ) )
-        FT_TRACE6(( "      intermediate coordinates %d (%.5f, %.5f):\n",
-                    i,
-                    im_start_coords[i] / 65536.0,
-                    im_end_coords[i] / 65536.0 ));
 
       /* It's not clear why (for intermediate tuples) we don't need     */
       /* to check against start/end -- the documentation says we don't. */
@@ -1673,7 +1662,7 @@
 
       if ( tuple_coords[i] == 0 )
       {
-        FT_TRACE6(( "      tuple coordinate is zero, ignored\n", i ));
+        FT_TRACE6(( "      tuple coordinate is zero, ignore\n", i ));
         continue;
       }
 
@@ -1686,7 +1675,7 @@
 
       if ( blend->normalizedcoords[i] == tuple_coords[i] )
       {
-        FT_TRACE6(( "      tuple coordinate value %.5f fits perfectly\n",
+        FT_TRACE6(( "      tuple coordinate %.5f fits perfectly\n",
                     tuple_coords[i] / 65536.0 ));
         /* `apply' does not change */
         continue;
@@ -1699,13 +1688,13 @@
         if ( blend->normalizedcoords[i] < FT_MIN( 0, tuple_coords[i] ) ||
              blend->normalizedcoords[i] > FT_MAX( 0, tuple_coords[i] ) )
         {
-          FT_TRACE6(( "      tuple coordinate value %.5f is exceeded, stop\n",
+          FT_TRACE6(( "      tuple coordinate %.5f is exceeded, stop\n",
                       tuple_coords[i] / 65536.0 ));
           apply = 0;
           break;
         }
 
-        FT_TRACE6(( "      tuple coordinate value %.5f fits\n",
+        FT_TRACE6(( "      tuple coordinate %.5f fits\n",
                     tuple_coords[i] / 65536.0 ));
         apply = FT_MulDiv( apply,
                            blend->normalizedcoords[i],
@@ -1715,10 +1704,10 @@
       {
         /* intermediate tuple */
 
-        if ( blend->normalizedcoords[i] < im_start_coords[i] ||
-             blend->normalizedcoords[i] > im_end_coords[i]   )
+        if ( blend->normalizedcoords[i] <= im_start_coords[i] ||
+             blend->normalizedcoords[i] >= im_end_coords[i]   )
         {
-          FT_TRACE6(( "      intermediate tuple range [%.5f;%.5f] is exceeded,"
+          FT_TRACE6(( "      intermediate tuple range ]%.5f;%.5f[ is exceeded,"
                       " stop\n",
                       im_start_coords[i] / 65536.0,
                       im_end_coords[i] / 65536.0 ));
@@ -1726,25 +1715,17 @@
           break;
         }
 
-        else if ( blend->normalizedcoords[i] < tuple_coords[i] )
-        {
-          FT_TRACE6(( "      intermediate tuple range [%.5f;%.5f] fits\n",
-                      im_start_coords[i] / 65536.0,
-                      im_end_coords[i] / 65536.0 ));
+        FT_TRACE6(( "      intermediate tuple range ]%.5f;%.5f[ fits\n",
+                    im_start_coords[i] / 65536.0,
+                    im_end_coords[i] / 65536.0 ));
+        if ( blend->normalizedcoords[i] < tuple_coords[i] )
           apply = FT_MulDiv( apply,
                              blend->normalizedcoords[i] - im_start_coords[i],
                              tuple_coords[i] - im_start_coords[i] );
-        }
-
         else
-        {
-          FT_TRACE6(( "      intermediate tuple range [%.5f;%.5f] fits\n",
-                      im_start_coords[i] / 65536.0,
-                      im_end_coords[i] / 65536.0 ));
           apply = FT_MulDiv( apply,
                              im_end_coords[i] - blend->normalizedcoords[i],
                              im_end_coords[i] - tuple_coords[i] );
-        }
       }
     }
 
@@ -3232,14 +3213,14 @@
     }
 
     FT_TRACE5(( "cvar: there %s %d tuple%s:\n",
-                ( tupleCount & 0xFFF ) == 1 ? "is" : "are",
-                tupleCount & 0xFFF,
-                ( tupleCount & 0xFFF ) == 1 ? "" : "s" ));
+                ( tupleCount & GX_TC_TUPLE_COUNT_MASK ) == 1 ? "is" : "are",
+                tupleCount & GX_TC_TUPLE_COUNT_MASK,
+                ( tupleCount & GX_TC_TUPLE_COUNT_MASK ) == 1 ? "" : "s" ));
 
     if ( FT_NEW_ARRAY( cvt_deltas, face->cvt_size ) )
       goto FExit;
 
-    for ( i = 0; i < ( tupleCount & 0xFFF ); i++ )
+    for ( i = 0; i < ( tupleCount & GX_TC_TUPLE_COUNT_MASK ); i++ )
     {
       FT_UInt   tupleDataSize;
       FT_UInt   tupleIndex;
@@ -3278,7 +3259,8 @@
 
         FT_MEM_COPY(
           tuple_coords,
-          &blend->tuplecoords[( tupleIndex & 0xFFF ) * blend->num_axis],
+          blend->tuplecoords +
+            ( tupleIndex & GX_TI_TUPLE_INDEX_MASK ) * blend->num_axis,
           blend->num_axis * sizeof ( FT_Fixed ) );
       }
 
@@ -3478,9 +3460,8 @@
   /* between `p1' and `p2', using `ref1' and `ref2' as the reference */
   /* point indices.                                                  */
 
-  /* modeled after `af_iup_interp', `_iup_worker_interpolate', and */
-  /* `Ins_IUP'                                                     */
-
+  /* modeled after `af_iup_interp', `_iup_worker_interpolate', and   */
+  /* `Ins_IUP' with spec differences in handling ill-defined cases.  */
   static void
   tt_delta_interpolate( int         p1,
                         int         p2,
@@ -3814,7 +3795,8 @@
       else
         FT_MEM_COPY(
           tuple_coords,
-          &blend->tuplecoords[( tupleIndex & 0xFFF ) * blend->num_axis],
+          blend->tuplecoords +
+            ( tupleIndex & GX_TI_TUPLE_INDEX_MASK ) * blend->num_axis,
           blend->num_axis * sizeof ( FT_Fixed ) );
 
       if ( tupleIndex & GX_TI_INTERMEDIATE_TUPLE )

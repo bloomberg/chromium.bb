@@ -10,9 +10,7 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
-#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
 #include "components/sync_preferences/pref_service_mock_factory.h"
@@ -28,13 +26,12 @@
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_delegate_fake.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
-#include "ios/chrome/browser/signin/fake_oauth2_token_service_builder.h"
-#include "ios/chrome/browser/signin/fake_signin_manager_builder.h"
+#import "ios/chrome/browser/signin/identity_manager_factory.h"
+#import "ios/chrome/browser/signin/identity_test_environment_chrome_browser_state_adaptor.h"
 #include "ios/chrome/browser/signin/ios_chrome_signin_client.h"
 #include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/signin_client_factory.h"
 #include "ios/chrome/browser/signin/signin_error_controller_factory.h"
-#include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_test_util.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
@@ -44,6 +41,8 @@
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
+#import "services/identity/public/cpp/identity_test_environment.h"
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -67,7 +66,6 @@ class FakeSigninClient : public IOSChromeSigninClient {
       scoped_refptr<content_settings::CookieSettings> cookie_settings,
       scoped_refptr<HostContentSettingsMap> host_content_settings_map)
       : IOSChromeSigninClient(browser_state,
-                              signin_error_controller,
                               cookie_settings,
                               host_content_settings_map) {}
   ~FakeSigninClient() override {}
@@ -93,14 +91,13 @@ std::unique_ptr<KeyedService> BuildMockSyncSetupService(
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
   return std::make_unique<SyncSetupServiceMock>(
-      ProfileSyncServiceFactory::GetForBrowserState(browser_state),
-      browser_state->GetPrefs());
+      ProfileSyncServiceFactory::GetForBrowserState(browser_state));
 }
 
 }  // namespace
 
 class AuthenticationServiceTest : public PlatformTest,
-                                  public OAuth2TokenService::Observer {
+                                  public identity::IdentityManager::Observer {
  protected:
   AuthenticationServiceTest()
       : scoped_browser_state_manager_(
@@ -123,20 +120,19 @@ class AuthenticationServiceTest : public PlatformTest,
     builder.AddTestingFactory(SigninClientFactory::GetInstance(),
                               base::BindRepeating(&BuildFakeTestSigninClient));
     builder.AddTestingFactory(
-        ProfileOAuth2TokenServiceFactory::GetInstance(),
-        base::BindRepeating(&BuildFakeOAuth2TokenService));
-    builder.AddTestingFactory(
-        ios::SigninManagerFactory::GetInstance(),
-        base::BindRepeating(&ios::BuildFakeSigninManager));
-    builder.AddTestingFactory(
         ProfileSyncServiceFactory::GetInstance(),
         base::BindRepeating(&BuildMockProfileSyncService));
     builder.AddTestingFactory(SyncSetupServiceFactory::GetInstance(),
                               base::BindRepeating(&BuildMockSyncSetupService));
-    browser_state_ = builder.Build();
+    builder.SetPrefService(CreatePrefService());
 
-    signin_manager_ =
-        ios::SigninManagerFactory::GetForBrowserState(browser_state_.get());
+    browser_state_ = IdentityTestEnvironmentChromeBrowserStateAdaptor::
+        CreateChromeBrowserStateForIdentityTestEnvironment(builder);
+
+    identity_test_environment_adaptor_ =
+        std::make_unique<IdentityTestEnvironmentChromeBrowserStateAdaptor>(
+            browser_state_.get());
+
     profile_sync_service_mock_ =
         static_cast<browser_sync::ProfileSyncServiceMock*>(
             ProfileSyncServiceFactory::GetForBrowserState(
@@ -144,8 +140,7 @@ class AuthenticationServiceTest : public PlatformTest,
     sync_setup_service_mock_ = static_cast<SyncSetupServiceMock*>(
         SyncSetupServiceFactory::GetForBrowserState(browser_state_.get()));
     CreateAuthenticationService();
-    ProfileOAuth2TokenServiceFactory::GetForBrowserState(browser_state_.get())
-        ->AddObserver(this);
+    identity_manager()->AddObserver(this);
   }
 
   std::unique_ptr<sync_preferences::PrefServiceSyncable> CreatePrefService() {
@@ -159,8 +154,8 @@ class AuthenticationServiceTest : public PlatformTest,
   }
 
   void TearDown() override {
-    ProfileOAuth2TokenServiceFactory::GetForBrowserState(browser_state_.get())
-        ->RemoveObserver(this);
+    identity_manager()->RemoveObserver(this);
+    identity_test_environment_adaptor_.reset();
     authentication_service_->Shutdown();
     authentication_service_.reset();
     browser_state_.reset();
@@ -183,7 +178,7 @@ class AuthenticationServiceTest : public PlatformTest,
         SyncSetupServiceFactory::GetForBrowserState(browser_state_.get()),
         ios::AccountTrackerServiceFactory::GetForBrowserState(
             browser_state_.get()),
-        ios::SigninManagerFactory::GetForBrowserState(browser_state_.get()),
+        IdentityManagerFactory::GetForBrowserState(browser_state_.get()),
         ProfileSyncServiceFactory::GetForBrowserState(browser_state_.get()));
     authentication_service_->Initialize(
         std::make_unique<AuthenticationServiceDelegateFake>());
@@ -233,8 +228,15 @@ class AuthenticationServiceTest : public PlatformTest,
                base::SysNSStringToUTF8([identity gaiaID])) > 0;
   }
 
-  void OnRefreshTokenAvailable(const std::string& account_id) override {
+  // IdentityManager::Observer
+  void OnRefreshTokenUpdatedForAccount(const AccountInfo& account_info,
+                                       bool is_valid) override {
     refresh_token_available_count_++;
+  }
+
+  identity::IdentityManager* identity_manager() {
+    return identity_test_environment_adaptor_->identity_test_env()
+        ->identity_manager();
   }
 
   web::TestWebThreadBundle thread_bundle_;
@@ -243,8 +245,9 @@ class AuthenticationServiceTest : public PlatformTest,
   ios::FakeChromeIdentityService* identity_service_;
   browser_sync::ProfileSyncServiceMock* profile_sync_service_mock_;
   SyncSetupServiceMock* sync_setup_service_mock_;
-  SigninManager* signin_manager_;
   std::unique_ptr<AuthenticationService> authentication_service_;
+  std::unique_ptr<IdentityTestEnvironmentChromeBrowserStateAdaptor>
+      identity_test_environment_adaptor_;
   ChromeIdentity* identity_;
   ChromeIdentity* identity2_;
   int refresh_token_available_count_;
@@ -297,7 +300,7 @@ TEST_F(AuthenticationServiceTest, OnAppEnterForegroundWithSyncSetupCompleted) {
   CreateAuthenticationService();
 
   EXPECT_EQ(base::SysNSStringToUTF8([identity_ userEmail]),
-            signin_manager_->GetAuthenticatedAccountInfo().email);
+            identity_manager()->GetPrimaryAccountInfo().email);
   EXPECT_NSEQ([identity_ userEmail],
               authentication_service_->GetAuthenticatedUserEmail());
   EXPECT_EQ(identity_, authentication_service_->GetAuthenticatedIdentity());
@@ -318,7 +321,7 @@ TEST_F(AuthenticationServiceTest, OnAppEnterForegroundWithSyncDisabled) {
   CreateAuthenticationService();
 
   EXPECT_EQ(base::SysNSStringToUTF8([identity_ userEmail]),
-            signin_manager_->GetAuthenticatedAccountInfo().email);
+            identity_manager()->GetPrimaryAccountInfo().email);
   EXPECT_NSEQ([identity_ userEmail],
               authentication_service_->GetAuthenticatedUserEmail());
   EXPECT_EQ(identity_, authentication_service_->GetAuthenticatedIdentity());
@@ -338,7 +341,7 @@ TEST_F(AuthenticationServiceTest, OnAppEnterForegroundWithSyncNotConfigured) {
 
   CreateAuthenticationService();
 
-  EXPECT_EQ("", signin_manager_->GetAuthenticatedAccountInfo().email);
+  EXPECT_EQ("", identity_manager()->GetPrimaryAccountInfo().email);
   EXPECT_NSEQ(nil, authentication_service_->GetAuthenticatedUserEmail());
   EXPECT_FALSE(authentication_service_->GetAuthenticatedIdentity());
 }
@@ -357,7 +360,7 @@ TEST_F(AuthenticationServiceTest, TestHandleForgottenIdentityNoPromptSignIn) {
 
   // User is signed out (no corresponding identity), but not prompted for sign
   // in (as the action was user initiated).
-  EXPECT_EQ("", signin_manager_->GetAuthenticatedAccountInfo().email);
+  EXPECT_EQ("", identity_manager()->GetPrimaryAccountInfo().email);
   EXPECT_FALSE(authentication_service_->GetAuthenticatedIdentity());
   EXPECT_FALSE(authentication_service_->ShouldPromptForSignIn());
 }
@@ -375,7 +378,7 @@ TEST_F(AuthenticationServiceTest, TestHandleForgottenIdentityPromptSignIn) {
 
   // User is signed out (no corresponding identity), but not prompted for sign
   // in (as the action was user initiated).
-  EXPECT_EQ("", signin_manager_->GetAuthenticatedAccountInfo().email);
+  EXPECT_EQ("", identity_manager()->GetPrimaryAccountInfo().email);
   EXPECT_FALSE(authentication_service_->GetAuthenticatedIdentity());
   EXPECT_TRUE(authentication_service_->ShouldPromptForSignIn());
 }
@@ -420,24 +423,27 @@ TEST_F(AuthenticationServiceTest,
   authentication_service_->SignIn(identity_, std::string());
 
   identity_service_->AddIdentities(@[ @"foo3" ]);
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForBrowserState(
-          browser_state_.get());
-  std::vector<std::string> accounts = token_service->GetAccounts();
-  std::sort(accounts.begin(), accounts.end());
+
+  auto account_compare_func = [](const AccountInfo& first,
+                                 const AccountInfo& second) {
+    return first.account_id < second.account_id;
+  };
+  std::vector<AccountInfo> accounts =
+      identity_manager()->GetAccountsWithRefreshTokens();
+  std::sort(accounts.begin(), accounts.end(), account_compare_func);
   ASSERT_EQ(2u, accounts.size());
   AccountTrackerService* account_tracker =
       ios::AccountTrackerServiceFactory::GetForBrowserState(
           browser_state_.get());
   switch (account_tracker->GetMigrationState()) {
     case AccountTrackerService::MIGRATION_NOT_STARTED:
-      EXPECT_EQ("foo2@foo.com", accounts[0]);
-      EXPECT_EQ("foo@foo.com", accounts[1]);
+      EXPECT_EQ("foo2@foo.com", accounts[0].account_id);
+      EXPECT_EQ("foo@foo.com", accounts[1].account_id);
       break;
     case AccountTrackerService::MIGRATION_IN_PROGRESS:
     case AccountTrackerService::MIGRATION_DONE:
-      EXPECT_EQ("foo2ID", accounts[0]);
-      EXPECT_EQ("fooID", accounts[1]);
+      EXPECT_EQ("foo2ID", accounts[0].account_id);
+      EXPECT_EQ("fooID", accounts[1].account_id);
       break;
     case AccountTrackerService::NUM_MIGRATION_STATES:
       FAIL() << "NUM_MIGRATION_STATES is not a real migration state.";
@@ -451,20 +457,20 @@ TEST_F(AuthenticationServiceTest,
 
   // Accounts are reloaded, "foo3@foo.com" is added as it is now in
   // ChromeIdentityService.
-  accounts = token_service->GetAccounts();
-  std::sort(accounts.begin(), accounts.end());
+  accounts = identity_manager()->GetAccountsWithRefreshTokens();
+  std::sort(accounts.begin(), accounts.end(), account_compare_func);
   ASSERT_EQ(3u, accounts.size());
   switch (account_tracker->GetMigrationState()) {
     case AccountTrackerService::MIGRATION_NOT_STARTED:
-      EXPECT_EQ("foo2@foo.com", accounts[0]);
-      EXPECT_EQ("foo3@foo.com", accounts[1]);
-      EXPECT_EQ("foo@foo.com", accounts[2]);
+      EXPECT_EQ("foo2@foo.com", accounts[0].account_id);
+      EXPECT_EQ("foo3@foo.com", accounts[1].account_id);
+      EXPECT_EQ("foo@foo.com", accounts[2].account_id);
       break;
     case AccountTrackerService::MIGRATION_IN_PROGRESS:
     case AccountTrackerService::MIGRATION_DONE:
-      EXPECT_EQ("foo2ID", accounts[0]);
-      EXPECT_EQ("foo3ID", accounts[1]);
-      EXPECT_EQ("fooID", accounts[2]);
+      EXPECT_EQ("foo2ID", accounts[0].account_id);
+      EXPECT_EQ("foo3ID", accounts[1].account_id);
+      EXPECT_EQ("fooID", accounts[2].account_id);
       break;
     case AccountTrackerService::NUM_MIGRATION_STATES:
       FAIL() << "NUM_MIGRATION_STATES is not a real migration state.";

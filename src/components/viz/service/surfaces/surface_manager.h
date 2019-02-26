@@ -38,22 +38,15 @@ class TickClock;
 
 namespace viz {
 
-namespace test {
-class CompositorFrameSinkSupportTest;
-class FrameSinkManagerTest;
-class HitTestAggregatorTest;
-class SurfaceReferencesTest;
-class SurfaceSynchronizationTest;
-}  // namespace test
-
 class Surface;
+class SurfaceManagerDelegate;
 struct BeginFrameAck;
 struct BeginFrameArgs;
 
 class VIZ_SERVICE_EXPORT SurfaceManager {
  public:
-  explicit SurfaceManager(
-      base::Optional<uint32_t> activation_deadline_in_frames);
+  SurfaceManager(SurfaceManagerDelegate* delegate,
+                 base::Optional<uint32_t> activation_deadline_in_frames);
   ~SurfaceManager();
 
 #if DCHECK_IS_ON()
@@ -178,11 +171,6 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // collection to delete unreachable surfaces.
   void RemoveSurfaceReferences(const std::vector<SurfaceReference>& references);
 
-  // Drops the temporary reference for |surface_id|. If a surface reference has
-  // already been added from the parent to |surface_id| then this will do
-  // nothing.
-  void DropTemporaryReference(const SurfaceId& surface_id);
-
   // Garbage collects all destroyed surfaces that aren't live.
   void GarbageCollectSurfaces();
 
@@ -205,13 +193,16 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // next display frame. We will notify SurfaceObservers accordingly.
   void SurfaceWillBeDrawn(Surface* surface);
 
+  // Removes temporary reference to |surface_id| and older surfaces.
+  void DropTemporaryReference(const SurfaceId& surface_id);
+
  private:
-  friend class test::CompositorFrameSinkSupportTest;
-  friend class test::FrameSinkManagerTest;
-  friend class test::HitTestAggregatorTest;
-  friend class test::SurfaceSynchronizationTest;
-  friend class test::SurfaceReferencesTest;
-  friend class test::SurfaceSynchronizationTest;
+  friend class CompositorFrameSinkSupportTest;
+  friend class FrameSinkManagerTest;
+  friend class HitTestAggregatorTest;
+  friend class SurfaceSynchronizationTest;
+  friend class SurfaceReferencesTest;
+  friend class SurfaceSynchronizationTest;
 
   using SurfaceIdSet = std::unordered_set<SurfaceId, SurfaceIdHash>;
 
@@ -260,11 +251,10 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // owner initially.
   void AddTemporaryReference(const SurfaceId& surface_id);
 
-  // Removes temporary reference to |surface_id|. The |reason| for removing will
-  // be recorded with UMA. If |reason| is EMBEDDED then older temporary
-  // references from the same FrameSinkId will also be removed.
-  void RemoveTemporaryReference(const SurfaceId& surface_id,
-                                RemovedReason reason);
+  // Removes temporary reference to |surface_id| and older surfaces. The
+  // |reason| for removing will be recorded with UMA.
+  void RemoveTemporaryReferenceImpl(const SurfaceId& surface_id,
+                                    RemovedReason reason);
 
   // Marks and then expires old temporary references. This function is run
   // periodically by a timer.
@@ -282,6 +272,9 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
 
   // Returns true if |surface_id| is in the garbage collector's queue.
   bool IsMarkedForDestruction(const SurfaceId& surface_id);
+
+  // Can be nullptr.
+  SurfaceManagerDelegate* const delegate_;
 
   base::Optional<uint32_t> activation_deadline_in_frames_;
 

@@ -14,7 +14,7 @@
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "components/drive/chromeos/file_cache.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/file_system_core_util.h"

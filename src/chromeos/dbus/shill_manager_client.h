@@ -29,8 +29,6 @@ class CHROMEOS_EXPORT ShillManagerClient : public DBusClient {
   typedef ShillClientHelper::PropertyChangedHandler PropertyChangedHandler;
   typedef ShillClientHelper::DictionaryValueCallback DictionaryValueCallback;
   typedef ShillClientHelper::ErrorCallback ErrorCallback;
-  typedef ShillClientHelper::StringCallback StringCallback;
-  typedef ShillClientHelper::BooleanCallback BooleanCallback;
 
   struct NetworkThrottlingStatus {
     // Enable or disable network bandwidth throttling.
@@ -102,40 +100,11 @@ class CHROMEOS_EXPORT ShillManagerClient : public DBusClient {
     // Returns the current network throttling status.
     virtual const NetworkThrottlingStatus& GetNetworkThrottlingStatus() = 0;
 
+    // Returns the current Fast Transition status.
+    virtual bool GetFastTransitionStatus() = 0;
+
    protected:
     virtual ~TestInterface() {}
-  };
-
-  // Properties used to verify the origin device.
-  struct VerificationProperties {
-    VerificationProperties();
-    ~VerificationProperties();
-
-    // A string containing a PEM-encoded X.509 certificate for use in verifying
-    // the signed data.
-    std::string certificate;
-
-    // A string containing a PEM-encoded RSA public key to be used to compare
-    // with the one in signedData
-    std::string public_key;
-
-    // A string containing a base64-encoded random binary data for use in
-    // verifying the signed data.
-    std::string nonce;
-
-    // A string containing the identifying data string signed by the device.
-    std::string signed_data;
-
-    // A string containing the serial number of the device.
-    std::string device_serial;
-
-    // A string containing the SSID of the device. Only set if the device has
-    // already been setup once.
-    std::string device_ssid;
-
-    // A string containing the BSSID of the device. Only set if the device has
-    // already been setup.
-    std::string device_bssid;
   };
 
   ~ShillManagerClient() override;
@@ -205,30 +174,6 @@ class CHROMEOS_EXPORT ShillManagerClient : public DBusClient {
   virtual void GetService(const base::DictionaryValue& properties,
                           const ObjectPathCallback& callback,
                           const ErrorCallback& error_callback) = 0;
-
-  // Verifies that the given data corresponds to a trusted device, and returns
-  // true to the callback if it is.
-  virtual void VerifyDestination(const VerificationProperties& properties,
-                                 const BooleanCallback& callback,
-                                 const ErrorCallback& error_callback) = 0;
-
-  // Verifies that the given data corresponds to a trusted device, and if it is,
-  // returns the encrypted credentials for connecting to the network represented
-  // by the given |service_path|, encrypted using the |public_key| for the
-  // trusted device. If the device is not trusted, returns the empty string.
-  virtual void VerifyAndEncryptCredentials(
-      const VerificationProperties& properties,
-      const std::string& service_path,
-      const StringCallback& callback,
-      const ErrorCallback& error_callback) = 0;
-
-  // Verifies that the given data corresponds to a trusted device, and returns
-  // the |data| encrypted using the |public_key| for the trusted device. If the
-  // device is not trusted, returns the empty string.
-  virtual void VerifyAndEncryptData(const VerificationProperties& properties,
-                                    const std::string& data,
-                                    const StringCallback& callback,
-                                    const ErrorCallback& error_callback) = 0;
 
   // For each technology present, connects to the "best" service available.
   // Called once the user is logged in and certificates are loaded.

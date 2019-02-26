@@ -9,7 +9,8 @@
 
 namespace content {
 
-const char kFileTracingEventCategoryGroup[] = TRACE_DISABLED_BY_DEFAULT("file");
+constexpr const char kFileTracingEventCategoryGroup[] =
+    TRACE_DISABLED_BY_DEFAULT("file");
 
 FileTracingProviderImpl::FileTracingProviderImpl() {}
 FileTracingProviderImpl::~FileTracingProviderImpl() {}

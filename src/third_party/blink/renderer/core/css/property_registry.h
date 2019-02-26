@@ -16,7 +16,9 @@ class CORE_EXPORT PropertyRegistry : public GarbageCollected<PropertyRegistry> {
   using RegistrationMap =
       HeapHashMap<AtomicString, Member<PropertyRegistration>>;
 
-  static PropertyRegistry* Create() { return new PropertyRegistry(); }
+  static PropertyRegistry* Create() {
+    return MakeGarbageCollected<PropertyRegistry>();
+  }
 
   void RegisterProperty(const AtomicString&, PropertyRegistration&);
   const PropertyRegistration* Registration(const AtomicString&) const;
@@ -35,6 +37,9 @@ class CORE_EXPORT PropertyRegistry : public GarbageCollected<PropertyRegistry> {
   static const CSSValue* ParseIfRegistered(const Document& document,
                                            const AtomicString& property_name,
                                            const CSSValue*);
+
+  void MarkReferenced(const AtomicString&) const;
+  bool WasReferenced(const AtomicString&) const;
 
  private:
   RegistrationMap registrations_;

@@ -43,6 +43,16 @@ class PasswordStore;
 class HttpCredentialCleaner : public PasswordStoreConsumer,
                               public CredentialsCleaner {
  public:
+  enum class HttpCredentialType {
+    kHasConflictingHttpsWithoutHsts = 0,
+    kHasConflictingHttpsWithHsts = 1,
+    kHasEquivalentHttpsWithoutHsts = 2,
+    kHasEquivalentHttpsWithHsts = 3,
+    kHasNoMatchingHttpsWithoutHsts = 4,
+    kHasNoMatchingHttpsWithHsts = 5,
+    kMaxValue = kHasNoMatchingHttpsWithHsts
+  };
+
   // The cleaning will be made for credentials from |store|.
   // |network_context_getter| should return nullptr if it can't get the network
   // context because whatever owns it is dead.
@@ -86,9 +96,9 @@ class HttpCredentialCleaner : public PasswordStoreConsumer,
                          FormKey key,
                          HSTSResult hsts_result);
 
-  // After metrics are reported, this function will inform the |observer_| about
-  // completion.
-  void ReportMetrics();
+  // After all HTTP credentials are processed, this function will inform the
+  // |observer_| about completion.
+  void SetPrefIfDone();
 
   // Clean-up is performed on |store_|.
   scoped_refptr<PasswordStore> store_;
@@ -112,24 +122,6 @@ class HttpCredentialCleaner : public PasswordStoreConsumer,
   // The number of HTTP credentials processed after HSTS query results are
   // received.
   size_t processed_results_ = 0;
-
-  // The next three counters are in pairs where [0] component means that HSTS is
-  // not enabled and [1] component means that HSTS is enabled for that HTTP type
-  // of credentials.
-
-  // Number of HTTP credentials for which no HTTPS credential for the same
-  // signon_realm excluding protocol, PasswordForm::scheme and username exists.
-  size_t https_credential_not_found_[2] = {0, 0};
-
-  // Number of HTTP credentials for which an equivalent (i.e. same signon_realm
-  // excluding protocol, PasswordForm::scheme (i.e. HTML, BASIC, etc.), username
-  // and password) HTTPS credential exists.
-  size_t same_password_[2] = {0, 0};
-
-  // Number of HTTP credentials for which a conflicting (i.e. same signon-realm
-  // excluding the protocol, PasswordForm::Scheme and username but different
-  // password) HTTPS credential exists.
-  size_t different_password_[2] = {0, 0};
 
   // Number of HTTP credentials from the password store. Used to know when all
   // credentials were processed.

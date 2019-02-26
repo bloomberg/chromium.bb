@@ -28,7 +28,7 @@ protected:
     void generateMetrics(SkGlyph*) override;
     void generateImage(const SkGlyph&) override;
     bool generatePath(SkGlyphID, SkPath*) override;
-    void generateFontMetrics(SkPaint::FontMetrics*) override;
+    void generateFontMetrics(SkFontMetrics*) override;
 
 private:
     SkRandomTypeface* getRandomTypeface() const {
@@ -140,7 +140,7 @@ bool SkRandomScalerContext::generatePath(SkGlyphID glyph, SkPath* path) {
     return fProxy->generatePath(glyph, path);
 }
 
-void SkRandomScalerContext::generateFontMetrics(SkPaint::FontMetrics* metrics) {
+void SkRandomScalerContext::generateFontMetrics(SkFontMetrics* metrics) {
     fProxy->getFontMetrics(metrics);
 }
 
@@ -160,7 +160,7 @@ SkScalerContext* SkRandomTypeface::onCreateScalerContext(const SkScalerContextEf
 
 void SkRandomTypeface::onFilterRec(SkScalerContextRec* rec) const {
     fProxy->filterRec(rec);
-    rec->setHinting(SkPaint::kNo_Hinting);
+    rec->setHinting(kNo_SkFontHinting);
     rec->fMaskFormat = SkMask::kARGB32_Format;
 }
 

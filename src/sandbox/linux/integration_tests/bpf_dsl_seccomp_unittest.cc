@@ -29,7 +29,7 @@
 #include "base/macros.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
@@ -689,7 +689,7 @@ BPF_TEST_C(SandboxBPF, SigBus, RedirectAllSyscallsPolicy) {
   sa.sa_sigaction = SigBusHandler;
   sa.sa_flags = SA_SIGINFO;
   BPF_ASSERT(sigaction(SIGBUS, &sa, NULL) == 0);
-  raise(SIGBUS);
+  kill(getpid(), SIGBUS);
   char c = '\000';
   BPF_ASSERT(read(fds[0], &c, 1) == 1);
   BPF_ASSERT(close(fds[0]) == 0);

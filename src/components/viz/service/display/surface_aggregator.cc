@@ -34,20 +34,9 @@
 namespace viz {
 namespace {
 
-// Maximum bucket size for the UMA stats.
-constexpr int kUmaStatMaxSurfaces = 30;
-
 // Used for determine when to treat opacity close to 1.f as opaque. The value is
 // chosen to be smaller than 1/255.
 constexpr float kOpacityEpsilon = 0.001f;
-
-const char kUmaValidSurface[] =
-    "Compositing.SurfaceAggregator.SurfaceDrawQuad.ValidSurface";
-const char kUmaUsingFallbackSurface[] =
-    "Compositing.SurfaceAggregator.SurfaceDrawQuad.UsingFallbackSurface";
-const char kUmaManhattanDistanceToPrimary[] =
-    "Compositing.SurfaceAggregator.LatestInFlightSurface."
-    "ManhattanDistanceToPrimary";
 
 void MoveMatchingRequests(
     RenderPassId render_pass_id,
@@ -212,34 +201,22 @@ void SurfaceAggregator::HandleSurfaceQuad(
     return;
   }
 
-  if (latest_surface->surface_id() != primary_surface_id) {
-    if (primary_surface_id.frame_sink_id() ==
-            latest_surface->surface_id().frame_sink_id() &&
-        primary_surface_id.local_surface_id().embed_token() ==
-            latest_surface->surface_id().local_surface_id().embed_token()) {
-      UMA_HISTOGRAM_COUNTS_100(
-          kUmaManhattanDistanceToPrimary,
-          latest_surface->surface_id().ManhattanDistanceTo(primary_surface_id));
-    }
+  if (latest_surface->surface_id() != primary_surface_id &&
+      !surface_quad->stretch_content_to_fill_bounds) {
+    const CompositorFrame& fallback_frame = latest_surface->GetActiveFrame();
 
-    if (!surface_quad->stretch_content_to_fill_bounds) {
-      const CompositorFrame& fallback_frame = latest_surface->GetActiveFrame();
+    gfx::Rect fallback_rect(latest_surface->GetActiveFrame().size_in_pixels());
 
-      gfx::Rect fallback_rect(
-          latest_surface->GetActiveFrame().size_in_pixels());
+    float scale_ratio =
+        parent_device_scale_factor / fallback_frame.device_scale_factor();
+    fallback_rect =
+        gfx::ScaleToEnclosingRect(fallback_rect, scale_ratio, scale_ratio);
+    fallback_rect = gfx::IntersectRects(fallback_rect, surface_quad->rect);
 
-      float scale_ratio =
-          parent_device_scale_factor / fallback_frame.device_scale_factor();
-      fallback_rect =
-          gfx::ScaleToEnclosingRect(fallback_rect, scale_ratio, scale_ratio);
-      fallback_rect = gfx::IntersectRects(fallback_rect, surface_quad->rect);
-
-      EmitGutterQuadsIfNecessary(
-          surface_quad->rect, fallback_rect, surface_quad->shared_quad_state,
-          target_transform, clip_rect,
-          fallback_frame.metadata.root_background_color, dest_pass);
-    }
-    ++uma_stats_.using_fallback_surface;
+    EmitGutterQuadsIfNecessary(
+        surface_quad->rect, fallback_rect, surface_quad->shared_quad_state,
+        target_transform, clip_rect,
+        fallback_frame.metadata.root_background_color, dest_pass);
   }
 
   EmitSurfaceContent(latest_surface, parent_device_scale_factor,
@@ -291,7 +268,6 @@ void SurfaceAggregator::EmitSurfaceContent(
   scaled_quad_to_target_transform.Scale(SK_MScalar1 / layer_to_content_scale_x,
                                         SK_MScalar1 / layer_to_content_scale_y);
 
-  ++uma_stats_.valid_surface;
   const CompositorFrame& frame = surface->GetActiveFrame();
   TRACE_EVENT_WITH_FLOW2(
       "viz,benchmark", "Graphics.Pipeline",
@@ -352,7 +328,7 @@ void SurfaceAggregator::EmitSurfaceContent(
     copy_pass->SetAll(
         remapped_pass_id, source.output_rect, source.output_rect,
         source.transform_to_root_target, source.filters,
-        source.background_filters, blending_color_space_,
+        source.backdrop_filters, blending_color_space_,
         source.has_transparent_background, source.cache_render_pass,
         source.has_damage_from_contributing_content, source.generate_mipmap);
 
@@ -756,7 +732,7 @@ void SurfaceAggregator::CopyPasses(const CompositorFrame& frame,
     copy_pass->SetAll(
         remapped_pass_id, source.output_rect, source.output_rect,
         source.transform_to_root_target, source.filters,
-        source.background_filters, blending_color_space_,
+        source.backdrop_filters, blending_color_space_,
         source.has_transparent_background, source.cache_render_pass,
         source.has_damage_from_contributing_content, source.generate_mipmap);
 
@@ -847,33 +823,38 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
                 RenderPassId parent_pass_id,
                 const gfx::Transform& target_to_surface_transform,
                 const gfx::Rect& quad_rect,
-                bool stretch_content_to_fill_bounds)
+                bool stretch_content_to_fill_bounds,
+                bool is_clipped,
+                const gfx::Rect& clip_rect_in_root_target_space)
         : surface_range(surface_range),
           has_moved_pixels(has_moved_pixels),
           parent_pass_id(parent_pass_id),
           target_to_surface_transform(target_to_surface_transform),
           quad_rect(quad_rect),
-          stretch_content_to_fill_bounds(stretch_content_to_fill_bounds) {}
-
+          stretch_content_to_fill_bounds(stretch_content_to_fill_bounds),
+          is_clipped(is_clipped),
+          clip_rect_in_root_target_space(clip_rect_in_root_target_space) {}
     SurfaceRange surface_range;
     bool has_moved_pixels;
     RenderPassId parent_pass_id;
     gfx::Transform target_to_surface_transform;
     gfx::Rect quad_rect;
     bool stretch_content_to_fill_bounds;
+    bool is_clipped;
+    gfx::Rect clip_rect_in_root_target_space;
   };
   std::vector<SurfaceInfo> child_surfaces;
 
-  gfx::Rect pixel_moving_background_filters_rect;
+  gfx::Rect pixel_moving_backdrop_filters_rect;
   // This data is created once and typically small or empty. Collect all items
   // and pass to a flat_vector to sort once.
   std::vector<RenderPassId> pixel_moving_background_filter_passes_data;
   for (const auto& render_pass : frame.render_pass_list) {
-    if (render_pass->background_filters.HasFilterThatMovesPixels()) {
+    if (render_pass->backdrop_filters.HasFilterThatMovesPixels()) {
       pixel_moving_background_filter_passes_data.push_back(
           RemapPassId(render_pass->id, surface->surface_id()));
 
-      pixel_moving_background_filters_rect.Union(
+      pixel_moving_backdrop_filters_rect.Union(
           cc::MathUtil::MapEnclosingClippedRect(
               render_pass->transform_to_root_target, render_pass->output_rect));
     }
@@ -898,10 +879,21 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
         gfx::Transform target_to_surface_transform(
             render_pass->transform_to_root_target,
             surface_quad->shared_quad_state->quad_to_target_transform);
+        gfx::Rect clip_rect_in_root_target_space;
+        if (surface_quad->shared_quad_state->is_clipped) {
+          // clip_rect is already in quad target space so only
+          // transform_to_root_target needs to be applied
+          clip_rect_in_root_target_space =
+              cc::MathUtil::MapEnclosingClippedRect(
+                  render_pass->transform_to_root_target,
+                  surface_quad->shared_quad_state->clip_rect);
+        }
         child_surfaces.emplace_back(
             surface_quad->surface_range, in_moved_pixel_pass, remapped_pass_id,
             target_to_surface_transform, surface_quad->rect,
-            surface_quad->stretch_content_to_fill_bounds);
+            surface_quad->stretch_content_to_fill_bounds,
+            surface_quad->shared_quad_state->is_clipped,
+            clip_rect_in_root_target_space);
       } else if (quad->material == DrawQuad::RENDER_PASS) {
         const auto* render_pass_quad = RenderPassDrawQuad::MaterialCast(quad);
         if (in_moved_pixel_pass) {
@@ -995,8 +987,14 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
       continue;
     }
 
-    damage_rect.Union(cc::MathUtil::MapEnclosingClippedRect(
-        surface_info.target_to_surface_transform, surface_damage));
+    gfx::Rect surface_damage_in_root_target_space =
+        cc::MathUtil::MapEnclosingClippedRect(
+            surface_info.target_to_surface_transform, surface_damage);
+    if (surface_info.is_clipped) {
+      surface_damage_in_root_target_space.Intersect(
+          surface_info.clip_rect_in_root_target_space);
+    }
+    damage_rect.Union(surface_damage_in_root_target_space);
   }
 
   if (!damage_rect.IsEmpty()) {
@@ -1046,8 +1044,8 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
   if (!damage_rect.IsEmpty() && frame.metadata.may_contain_video)
     result->may_contain_video = true;
 
-  if (damage_rect.Intersects(pixel_moving_background_filters_rect))
-    damage_rect.Union(pixel_moving_background_filters_rect);
+  if (damage_rect.Intersects(pixel_moving_backdrop_filters_rect))
+    damage_rect.Union(pixel_moving_backdrop_filters_rect);
 
   return damage_rect;
 }
@@ -1083,6 +1081,7 @@ void SurfaceAggregator::CopyUndrawnSurfaces(PrewalkResult* prewalk_result) {
         }
       }
     } else {
+      prewalk_result->undrawn_surfaces.erase(surface_id);
       referenced_surfaces_.insert(surface_id);
       CopyPasses(surface->GetActiveFrame(), surface);
       // CopyPasses may have mutated container, need to re-query to erase.
@@ -1113,8 +1112,6 @@ CompositorFrame SurfaceAggregator::Aggregate(
     base::TimeTicks expected_display_time,
     int64_t display_trace_id) {
   DCHECK(!expected_display_time.is_null());
-
-  uma_stats_.Reset();
 
   Surface* surface = manager_->GetSurfaceForId(surface_id);
   DCHECK(surface);
@@ -1153,6 +1150,7 @@ CompositorFrame SurfaceAggregator::Aggregate(
   frame.metadata.may_contain_video = prewalk_result.may_contain_video;
 
   CopyUndrawnSurfaces(&prewalk_result);
+  undrawn_surfaces_ = std::move(prewalk_result.undrawn_surfaces);
   referenced_surfaces_.insert(surface_id);
   CopyPasses(root_surface_frame, surface);
   // CopyPasses may have mutated container, need to re-query to erase.
@@ -1197,17 +1195,6 @@ CompositorFrame SurfaceAggregator::Aggregate(
       break;
     }
   }
-
-  // TODO(jamesr): Aggregate all resource references into the returned frame's
-  // resource list.
-
-  // Log UMA stats for SurfaceDrawQuads on the number of surfaces that were
-  // aggregated together and any failures.
-  UMA_HISTOGRAM_EXACT_LINEAR(kUmaValidSurface, uma_stats_.valid_surface,
-                             kUmaStatMaxSurfaces);
-  UMA_HISTOGRAM_EXACT_LINEAR(kUmaUsingFallbackSurface,
-                             uma_stats_.using_fallback_surface,
-                             kUmaStatMaxSurfaces);
   return frame;
 }
 

@@ -18,34 +18,34 @@ static int g_unique_id = 0;
 // PaymentItem and PaymentShippingOption have identical structure
 // except for the "id" field, which is present only in PaymentShippingOption.
 template <typename PaymentItemOrPaymentShippingOption>
-void SetValues(PaymentItemOrPaymentShippingOption& original,
+void SetValues(PaymentItemOrPaymentShippingOption* original,
                PaymentTestDataToChange data,
                PaymentTestModificationType modification_type,
                const String& value_to_use) {
-  PaymentCurrencyAmount item_amount;
+  PaymentCurrencyAmount* item_amount = PaymentCurrencyAmount::Create();
   if (data == kPaymentTestDataCurrencyCode) {
     if (modification_type == kPaymentTestOverwriteValue)
-      item_amount.setCurrency(value_to_use);
+      item_amount->setCurrency(value_to_use);
   } else {
-    item_amount.setCurrency("USD");
+    item_amount->setCurrency("USD");
   }
 
   if (data == kPaymentTestDataValue) {
     if (modification_type == kPaymentTestOverwriteValue)
-      item_amount.setValue(value_to_use);
+      item_amount->setValue(value_to_use);
   } else {
-    item_amount.setValue("9.99");
+    item_amount->setValue("9.99");
   }
 
   if (data != kPaymentTestDataAmount ||
       modification_type != kPaymentTestRemoveKey)
-    original.setAmount(item_amount);
+    original->setAmount(item_amount);
 
   if (data == kPaymentTestDataLabel) {
     if (modification_type == kPaymentTestOverwriteValue)
-      original.setLabel(value_to_use);
+      original->setLabel(value_to_use);
   } else {
-    original.setLabel("Label");
+    original->setLabel("Label");
   }
 }
 
@@ -54,21 +54,24 @@ void BuildPaymentDetailsBase(PaymentTestDetailToChange detail,
                              PaymentTestModificationType modification_type,
                              const String& value_to_use,
                              PaymentDetailsBase* details) {
-  PaymentItem item;
-  if (detail == kPaymentTestDetailItem)
+  PaymentItem* item = nullptr;
+  if (detail == kPaymentTestDetailItem) {
     item = BuildPaymentItemForTest(data, modification_type, value_to_use);
-  else
+  } else {
     item = BuildPaymentItemForTest();
+  }
+  DCHECK(item);
 
-  PaymentShippingOption shipping_option;
+  PaymentShippingOption* shipping_option = nullptr;
   if (detail == kPaymentTestDetailShippingOption) {
     shipping_option =
         BuildShippingOptionForTest(data, modification_type, value_to_use);
   } else {
     shipping_option = BuildShippingOptionForTest();
   }
+  DCHECK(shipping_option);
 
-  PaymentDetailsModifier modifier;
+  PaymentDetailsModifier* modifier = nullptr;
   if (detail == kPaymentTestDetailModifierTotal ||
       detail == kPaymentTestDetailModifierItem) {
     modifier = BuildPaymentDetailsModifierForTest(
@@ -76,115 +79,122 @@ void BuildPaymentDetailsBase(PaymentTestDetailToChange detail,
   } else {
     modifier = BuildPaymentDetailsModifierForTest();
   }
+  DCHECK(modifier);
 
-  details->setDisplayItems(HeapVector<PaymentItem>(1, item));
+  details->setDisplayItems(HeapVector<Member<PaymentItem>>(1, item));
   details->setShippingOptions(
-      HeapVector<PaymentShippingOption>(1, shipping_option));
-  details->setModifiers(HeapVector<PaymentDetailsModifier>(1, modifier));
+      HeapVector<Member<PaymentShippingOption>>(1, shipping_option));
+  details->setModifiers(
+      HeapVector<Member<PaymentDetailsModifier>>(1, modifier));
 }
 
 }  // namespace
 
-PaymentItem BuildPaymentItemForTest(
+PaymentItem* BuildPaymentItemForTest(
     PaymentTestDataToChange data,
     PaymentTestModificationType modification_type,
     const String& value_to_use) {
   DCHECK_NE(data, kPaymentTestDataId);
-  PaymentItem item;
+  PaymentItem* item = PaymentItem::Create();
   SetValues(item, data, modification_type, value_to_use);
   return item;
 }
 
-PaymentShippingOption BuildShippingOptionForTest(
+PaymentShippingOption* BuildShippingOptionForTest(
     PaymentTestDataToChange data,
     PaymentTestModificationType modification_type,
     const String& value_to_use) {
-  PaymentShippingOption shipping_option;
+  PaymentShippingOption* shipping_option = PaymentShippingOption::Create();
   if (data == kPaymentTestDataId) {
     if (modification_type == kPaymentTestOverwriteValue)
-      shipping_option.setId(value_to_use);
+      shipping_option->setId(value_to_use);
   } else {
-    shipping_option.setId("id" + String::Number(g_unique_id++));
+    shipping_option->setId("id" + String::Number(g_unique_id++));
   }
   SetValues(shipping_option, data, modification_type, value_to_use);
   return shipping_option;
 }
 
-PaymentDetailsModifier BuildPaymentDetailsModifierForTest(
+PaymentDetailsModifier* BuildPaymentDetailsModifierForTest(
     PaymentTestDetailToChange detail,
     PaymentTestDataToChange data,
     PaymentTestModificationType modification_type,
     const String& value_to_use) {
-  PaymentItem total;
-  if (detail == kPaymentTestDetailModifierTotal)
+  PaymentItem* total = nullptr;
+  if (detail == kPaymentTestDetailModifierTotal) {
     total = BuildPaymentItemForTest(data, modification_type, value_to_use);
-  else
+  } else {
     total = BuildPaymentItemForTest();
+  }
+  DCHECK(total);
 
-  PaymentItem item;
-  if (detail == kPaymentTestDetailModifierItem)
+  PaymentItem* item = nullptr;
+  if (detail == kPaymentTestDetailModifierItem) {
     item = BuildPaymentItemForTest(data, modification_type, value_to_use);
-  else
+  } else {
     item = BuildPaymentItemForTest();
+  }
+  DCHECK(item);
 
-  PaymentDetailsModifier modifier;
-  modifier.setSupportedMethod("foo");
-  modifier.setTotal(total);
-  modifier.setAdditionalDisplayItems(HeapVector<PaymentItem>(1, item));
+  PaymentDetailsModifier* modifier = PaymentDetailsModifier::Create();
+  modifier->setSupportedMethod("foo");
+  modifier->setTotal(total);
+  modifier->setAdditionalDisplayItems(HeapVector<Member<PaymentItem>>(1, item));
   return modifier;
 }
 
-PaymentDetailsInit BuildPaymentDetailsInitForTest(
+PaymentDetailsInit* BuildPaymentDetailsInitForTest(
     PaymentTestDetailToChange detail,
     PaymentTestDataToChange data,
     PaymentTestModificationType modification_type,
     const String& value_to_use) {
-  PaymentDetailsInit details;
+  PaymentDetailsInit* details = PaymentDetailsInit::Create();
   BuildPaymentDetailsBase(detail, data, modification_type, value_to_use,
-                          &details);
+                          details);
 
   if (detail == kPaymentTestDetailTotal) {
-    details.setTotal(
+    details->setTotal(
         BuildPaymentItemForTest(data, modification_type, value_to_use));
   } else {
-    details.setTotal(BuildPaymentItemForTest());
+    details->setTotal(BuildPaymentItemForTest());
   }
 
   return details;
 }
 
-PaymentDetailsUpdate BuildPaymentDetailsUpdateForTest(
+PaymentDetailsUpdate* BuildPaymentDetailsUpdateForTest(
     PaymentTestDetailToChange detail,
     PaymentTestDataToChange data,
     PaymentTestModificationType modification_type,
     const String& value_to_use) {
-  PaymentDetailsUpdate details;
+  PaymentDetailsUpdate* details = PaymentDetailsUpdate::Create();
   BuildPaymentDetailsBase(detail, data, modification_type, value_to_use,
-                          &details);
+                          details);
 
   if (detail == kPaymentTestDetailTotal) {
-    details.setTotal(
+    details->setTotal(
         BuildPaymentItemForTest(data, modification_type, value_to_use));
   } else {
-    details.setTotal(BuildPaymentItemForTest());
+    details->setTotal(BuildPaymentItemForTest());
   }
 
   if (detail == kPaymentTestDetailError)
-    details.setError(value_to_use);
+    details->setError(value_to_use);
 
   return details;
 }
 
-PaymentDetailsUpdate BuildPaymentDetailsErrorMsgForTest(
+PaymentDetailsUpdate* BuildPaymentDetailsErrorMsgForTest(
     const String& value_to_use) {
   return BuildPaymentDetailsUpdateForTest(
       kPaymentTestDetailError, kPaymentTestDataNone, kPaymentTestOverwriteValue,
       value_to_use);
 }
 
-HeapVector<PaymentMethodData> BuildPaymentMethodDataForTest() {
-  HeapVector<PaymentMethodData> method_data(1, PaymentMethodData());
-  method_data[0].setSupportedMethod("foo");
+HeapVector<Member<PaymentMethodData>> BuildPaymentMethodDataForTest() {
+  HeapVector<Member<PaymentMethodData>> method_data(
+      1, PaymentMethodData::Create());
+  method_data[0]->setSupportedMethod("foo");
   return method_data;
 }
 
@@ -214,19 +224,20 @@ PaymentRequestMockFunctionScope::~PaymentRequestMockFunctionScope() {
 
 v8::Local<v8::Function> PaymentRequestMockFunctionScope::ExpectCall(
     String* captor) {
-  mock_functions_.push_back(new MockFunction(script_state_, captor));
+  mock_functions_.push_back(
+      MakeGarbageCollected<MockFunction>(script_state_, captor));
   EXPECT_CALL(*mock_functions_.back(), Call(testing::_));
   return mock_functions_.back()->Bind();
 }
 
 v8::Local<v8::Function> PaymentRequestMockFunctionScope::ExpectCall() {
-  mock_functions_.push_back(new MockFunction(script_state_));
+  mock_functions_.push_back(MakeGarbageCollected<MockFunction>(script_state_));
   EXPECT_CALL(*mock_functions_.back(), Call(testing::_));
   return mock_functions_.back()->Bind();
 }
 
 v8::Local<v8::Function> PaymentRequestMockFunctionScope::ExpectNoCall() {
-  mock_functions_.push_back(new MockFunction(script_state_));
+  mock_functions_.push_back(MakeGarbageCollected<MockFunction>(script_state_));
   EXPECT_CALL(*mock_functions_.back(), Call(testing::_)).Times(0);
   return mock_functions_.back()->Bind();
 }

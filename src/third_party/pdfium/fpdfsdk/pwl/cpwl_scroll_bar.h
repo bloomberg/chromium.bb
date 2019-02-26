@@ -7,11 +7,10 @@
 #ifndef FPDFSDK_PWL_CPWL_SCROLL_BAR_H_
 #define FPDFSDK_PWL_CPWL_SCROLL_BAR_H_
 
+#include <memory>
+
 #include "core/fxcrt/unowned_ptr.h"
 #include "fpdfsdk/pwl/cpwl_wnd.h"
-
-class CPWL_SBButton;
-class CPWL_ScrollBar;
 
 struct PWL_SCROLL_INFO {
  public:
@@ -44,12 +43,13 @@ enum PWL_SBBUTTON_TYPE { PSBT_MIN, PSBT_MAX, PSBT_POS };
 
 class CPWL_SBButton final : public CPWL_Wnd {
  public:
-  CPWL_SBButton(PWL_SCROLLBAR_TYPE eScrollBarType,
+  CPWL_SBButton(const CreateParams& cp,
+                std::unique_ptr<PrivateData> pAttachedData,
+                PWL_SCROLLBAR_TYPE eScrollBarType,
                 PWL_SBBUTTON_TYPE eButtonType);
   ~CPWL_SBButton() override;
 
   // CPWL_Wnd
-  void OnCreate(CreateParams* pParamsToAdjust) override;
   void DrawThisAppearance(CFX_RenderDevice* pDevice,
                           const CFX_Matrix& mtUser2Device) override;
   bool OnLButtonDown(const CFX_PointF& point, uint32_t nFlag) override;
@@ -59,7 +59,7 @@ class CPWL_SBButton final : public CPWL_Wnd {
  private:
   PWL_SCROLLBAR_TYPE m_eScrollBarType;
   PWL_SBBUTTON_TYPE m_eSBButtonType;
-  bool m_bMouseDown;
+  bool m_bMouseDown = false;
 };
 
 struct PWL_FLOATRANGE {
@@ -114,11 +114,12 @@ struct PWL_SCROLL_PRIVATEDATA {
 
 class CPWL_ScrollBar final : public CPWL_Wnd {
  public:
-  explicit CPWL_ScrollBar(PWL_SCROLLBAR_TYPE sbType);
+  CPWL_ScrollBar(const CreateParams& cp,
+                 std::unique_ptr<PrivateData> pAttachedData,
+                 PWL_SCROLLBAR_TYPE sbType);
   ~CPWL_ScrollBar() override;
 
   // CPWL_Wnd:
-  void OnCreate(CreateParams* pParamsToAdjust) override;
   void OnDestroy() override;
   bool RePosChildWnd() override;
   void DrawThisAppearance(CFX_RenderDevice* pDevice,
@@ -171,11 +172,11 @@ class CPWL_ScrollBar final : public CPWL_Wnd {
   UnownedPtr<CPWL_SBButton> m_pMaxButton;
   UnownedPtr<CPWL_SBButton> m_pPosButton;
   PWL_SCROLL_PRIVATEDATA m_sData;
-  bool m_bMouseDown;
-  bool m_bMinOrMax;
-  bool m_bNotifyForever;
-  float m_nOldPos;
-  float m_fOldPosButton;
+  bool m_bMouseDown = false;
+  bool m_bMinOrMax = false;
+  bool m_bNotifyForever = true;
+  float m_nOldPos = 0.0f;
+  float m_fOldPosButton = 0.0f;
 };
 
 #endif  // FPDFSDK_PWL_CPWL_SCROLL_BAR_H_

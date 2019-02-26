@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/nacl/config.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 
 component("embedder_internal") {
@@ -31,7 +32,10 @@ template("core_impl_source_set") {
     if (invoker.for_shared_library) {
       visibility = [ ":shared_library" ]
     } else {
-      visibility = [ ":embedder_internal" ]
+      visibility = [
+        ":core_impl_for_fuzzers",
+        ":embedder_internal",
+      ]
     }
 
     public = [
@@ -108,7 +112,7 @@ template("core_impl_source_set") {
     if (is_fuchsia) {
       sources += [ "channel_fuchsia.cc" ]
 
-      public_deps += [ "//third_party/fuchsia-sdk:fdio" ]
+      public_deps += [ "//third_party/fuchsia-sdk/sdk:fdio" ]
     }
 
     if (is_posix) {
@@ -233,6 +237,9 @@ if (is_chromeos || is_linux || is_android || is_win) {
   }
 
   config("export_only_thunks_api") {
+    inputs = [
+      "export_only_thunks_api.lst",
+    ]
     ldflags = [ "-Wl,--version-script=" +
                 rebase_path("//mojo/core/export_only_thunks_api.lst",
                             root_build_dir) ]
@@ -249,6 +256,8 @@ if (is_chromeos || is_linux || is_android || is_win) {
         "//base",
         "//base/test:test_support",
         "//mojo/public/c/system",
+        "//mojo/public/cpp/platform",
+        "//mojo/public/cpp/system",
         "//testing/gtest",
       ]
 
@@ -321,5 +330,53 @@ source_set("test_sources") {
     "//mojo/public/cpp/system",
     "//testing/gmock",
     "//testing/gtest",
+  ]
+}
+
+group("core_impl_for_fuzzers") {
+  public_deps = [
+    ":impl_for_embedder",
+  ]
+}
+
+fuzzer_test("mojo_core_channel_fuzzer") {
+  sources = [
+    "channel_fuzzer.cc",
+  ]
+  deps = [
+    ":core_impl_for_fuzzers",
+    "//base",
+    "//mojo/public/cpp/platform",
+  ]
+}
+
+fuzzer_test("mojo_core_node_channel_fuzzer") {
+  sources = [
+    "node_channel_fuzzer.cc",
+  ]
+  deps = [
+    ":core_impl_for_fuzzers",
+    "//base",
+    "//mojo/public/cpp/platform",
+  ]
+}
+
+fuzzer_test("mojo_core_port_event_fuzzer") {
+  sources = [
+    "port_event_fuzzer.cc",
+  ]
+  deps = [
+    ":core_impl_for_fuzzers",
+    "//base",
+  ]
+}
+
+fuzzer_test("mojo_core_user_message_fuzzer") {
+  sources = [
+    "user_message_fuzzer.cc",
+  ]
+  deps = [
+    ":core_impl_for_fuzzers",
+    "//base",
   ]
 }

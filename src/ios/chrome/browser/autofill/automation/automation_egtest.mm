@@ -7,12 +7,32 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/values.h"
 #import "ios/chrome/browser/autofill/automation/automation_action.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+
+#include "base/guid.h"
+#include "base/mac/foundation_util.h"
+#include "base/strings/stringprintf.h"
+#include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
+#import "base/test/ios/wait_util.h"
+#include "components/autofill/core/browser/autofill_manager.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/ios/browser/autofill_driver_ios.h"
+#import "ios/chrome/browser/autofill/form_suggestion_label.h"
+#import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
+#import "ios/web/public/test/earl_grey/web_view_actions.h"
+#import "ios/web/public/test/earl_grey/web_view_matchers.h"
+#include "ios/web/public/test/element_selector.h"
+#import "ios/web/public/test/js_test_util.h"
+#include "ios/web/public/web_state/web_frame_util.h"
+#import "ios/web/public/web_state/web_frames_manager.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -26,6 +46,8 @@ static const char kAutofillAutomationSwitch[] = "autofillautomation";
 // captured web site. It gets the script from the command line.
 @interface AutofillAutomationTestCase : ChromeTestCase {
   NSMutableArray<AutomationAction*>* actions_;
+  std::map<const std::string, autofill::ServerFieldType>
+      string_to_field_type_map_;
 }
 @end
 
@@ -71,12 +93,120 @@ static const char kAutofillAutomationSwitch[] = "autofillautomation";
   return base::DictionaryValue::From(std::move(value));
 }
 
+// Converts a string (from the test recipe) to the autofill ServerFieldType it
+// represents.
+- (autofill::ServerFieldType)serverFieldTypeFromString:(const std::string&)str {
+  // Lazily init the string to autofill field type map on the first call.
+  // The test recipe can contain both server and html field types, as when
+  // creating the recipe either type can be returned from predictions.
+  // Therefore, we store both in this map.
+  if (string_to_field_type_map_.empty()) {
+    for (size_t i = autofill::NO_SERVER_DATA;
+         i < autofill::MAX_VALID_FIELD_TYPE; ++i) {
+      autofill::ServerFieldType field_type =
+          static_cast<autofill::ServerFieldType>(i);
+      string_to_field_type_map_[autofill::AutofillType(field_type).ToString()] =
+          field_type;
+    }
+
+    for (size_t i = autofill::HTML_TYPE_UNSPECIFIED;
+         i < autofill::HTML_TYPE_UNRECOGNIZED; ++i) {
+      autofill::AutofillType field_type(static_cast<autofill::HtmlFieldType>(i),
+                                        autofill::HTML_MODE_NONE);
+      string_to_field_type_map_[field_type.ToString()] =
+          field_type.GetStorableType();
+    }
+  }
+
+  if (string_to_field_type_map_.count(str) == 0) {
+    NSString* errorStr = [NSString
+        stringWithFormat:@"Unable to recognize autofill field type %@!",
+                         base::SysUTF8ToNSString(str)];
+    GREYAssert(false, errorStr);
+  }
+
+  return string_to_field_type_map_[str];
+}
+
+// Loads the defined autofill profile into the personal data manager, so that
+// autofill actions will be suggested when tapping on an autofillable form.
+// The autofill profile should be pulled from the test recipe, and consists of
+// a list of dictionaries, each mapping one autofill type to one value, like so:
+// "autofillProfile": [
+//   { "type": "NAME_FIRST", "value": "Satsuki" },
+//   { "type": "NAME_LAST", "value": "Yumizuka" },
+//  ],
+- (void)prepareAutofillProfileWithValues:(const base::Value*)autofillProfile {
+  autofill::AutofillProfile profile(base::GenerateGUID(),
+                                    "https://www.example.com/");
+  autofill::CreditCard credit_card(base::GenerateGUID(),
+                                   "https://www.example.com/");
+
+  const base::Value::ListStorage& profile_entries_list =
+      autofillProfile->GetList();
+
+  // For each type-value dictionary in the autofill profile list, validate it,
+  // then add it to the appropriate profile.
+  for (base::ListValue::const_iterator it_entry = profile_entries_list.begin();
+       it_entry != profile_entries_list.end(); ++it_entry) {
+    const base::DictionaryValue* entry;
+
+    GREYAssert(it_entry->GetAsDictionary(&entry),
+               @"Failed to extract an entry!");
+
+    const base::Value* type_container = entry->FindKey("type");
+    GREYAssert(base::Value::Type::STRING == type_container->type(),
+               @"Type is not a string!");
+    const std::string field_type = type_container->GetString();
+
+    const base::Value* value_container = entry->FindKey("value");
+    GREYAssert(base::Value::Type::STRING == value_container->type(),
+               @"Value is not a string!");
+    const std::string field_value = value_container->GetString();
+
+    autofill::ServerFieldType type =
+        [self serverFieldTypeFromString:field_type];
+
+    // TODO(crbug.com/895968): Autofill profile and credit card info should be
+    // loaded from separate fields in the recipe, instead of being grouped
+    // together. However, we need to make sure this change is also performed on
+    // desktop automation.
+    if (base::StartsWith(field_type, "HTML_TYPE_CREDIT_CARD_",
+                         base::CompareCase::INSENSITIVE_ASCII) ||
+        base::StartsWith(field_type, "CREDIT_CARD_",
+                         base::CompareCase::INSENSITIVE_ASCII)) {
+      credit_card.SetRawInfo(type, base::UTF8ToUTF16(field_value));
+    } else {
+      profile.SetRawInfo(type, base::UTF8ToUTF16(field_value));
+    }
+  }
+
+  // Save the profile and credit card generated to the personal data manager.
+  web::WebState* web_state = chrome_test_util::GetCurrentWebState();
+  web::WebFrame* main_frame = web::GetMainWebFrame(web_state);
+  autofill::AutofillManager* autofill_manager =
+      autofill::AutofillDriverIOS::FromWebStateAndWebFrame(web_state,
+                                                           main_frame)
+          ->autofill_manager();
+  autofill::PersonalDataManager* personal_data_manager =
+      autofill_manager->client()->GetPersonalDataManager();
+
+  personal_data_manager->AddCreditCard(credit_card);
+  personal_data_manager->SaveImportedProfile(profile);
+}
+
 - (void)setUp {
   [super setUp];
 
   const base::FilePath recipePath = [[self class] recipePath];
   std::unique_ptr<base::DictionaryValue> recipeRoot =
       [[self class] parseRecipeAtPath:recipePath];
+
+  const base::Value* autofillProfile =
+      recipeRoot->FindKeyOfType("autofillProfile", base::Value::Type::LIST);
+  if (autofillProfile) {
+    [self prepareAutofillProfileWithValues:autofillProfile];
+  }
 
   // Extract the starting URL.
   base::Value* startUrlValue =

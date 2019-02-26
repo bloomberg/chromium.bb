@@ -2,11 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromecast_build.gni")
 import("//media/webrtc/audio_processing.gni")
 import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
-import("//services/service_manager/public/tools/test/service_test.gni")
 import("//testing/test.gni")
 
 # Currently standalone service binaries are not supported on Android or iOS.
@@ -89,10 +89,12 @@ source_set("lib") {
     "user_input_monitor.h",
   ]
 
+  deps = [
+    "//components/crash/core/common:crash_key",  # Temporary: crbug.com/888478
+  ]
+
   if (audio_processing_in_audio_service_supported) {
-    deps = [
-      "//media/webrtc",
-    ]
+    deps += [ "//media/webrtc" ]
   }
 
   public_deps = [
@@ -124,6 +126,10 @@ source_set("lib") {
     "//media:media_config",
     "//media/audio:platform_config",
   ]
+
+  if (is_chromecast) {
+    defines = [ "IS_CHROMECAST" ]
+  }
 }
 
 source_set("tests") {
@@ -171,6 +177,7 @@ source_set("tests") {
   deps = [
     ":audio",
     ":lib",
+    ":tests_catalog_source",
     "//base/test:test_support",
     "//media:test_support",
     "//mojo/core/embedder",
@@ -178,7 +185,6 @@ source_set("tests") {
     "//services/audio/public/cpp:test_support",
     "//services/audio/public/mojom",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/cpp:service_test_support",
     "//services/service_manager/public/cpp/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
@@ -204,6 +210,12 @@ service_manifest("unittest_manifest") {
 catalog("tests_catalog") {
   testonly = true
   embedded_services = [ ":unittest_manifest" ]
+}
+
+catalog_cpp_source("tests_catalog_source") {
+  testonly = true
+  catalog = ":tests_catalog"
+  generated_function_name = "audio::CreateUnittestCatalog"
 }
 
 # Standalone tests support.

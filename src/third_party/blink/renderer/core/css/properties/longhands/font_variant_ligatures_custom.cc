@@ -10,14 +10,14 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* FontVariantLigatures::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   if (range.Peek().Id() == CSSValueNormal || range.Peek().Id() == CSSValueNone)
-    return CSSPropertyParserHelpers::ConsumeIdent(range);
+    return css_property_parser_helpers::ConsumeIdent(range);
 
   FontVariantLigaturesParser ligatures_parser;
   do {
@@ -38,5 +38,5 @@ const CSSValue* FontVariantLigatures::CSSValueFromComputedStyleInternal(
   return ComputedStyleUtils::ValueForFontVariantLigatures(style);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

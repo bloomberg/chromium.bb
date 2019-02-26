@@ -119,12 +119,16 @@ bool QuartcCryptoServerStreamHelper::CanAcceptClientHello(
 
 QuartcSession::QuartcSession(std::unique_ptr<QuicConnection> connection,
                              const QuicConfig& config,
+                             const ParsedQuicVersionVector& supported_versions,
                              const QuicString& unique_remote_server_id,
                              Perspective perspective,
                              QuicConnectionHelperInterface* helper,
                              const QuicClock* clock,
                              std::unique_ptr<QuartcPacketWriter> packet_writer)
-    : QuicSession(connection.get(), nullptr /*visitor*/, config),
+    : QuicSession(connection.get(),
+                  nullptr /*visitor*/,
+                  config,
+                  supported_versions),
       unique_remote_server_id_(unique_remote_server_id),
       perspective_(perspective),
       packet_writer_(std::move(packet_writer)),
@@ -177,9 +181,78 @@ QuartcStream* QuartcSession::CreateOutgoingBidirectionalStream() {
                                              QuicStream::kDefaultPriority));
 }
 
-QuartcStream* QuartcSession::CreateOutgoingUnidirectionalStream() {
-  DCHECK(false);
-  return nullptr;
+bool QuartcSession::SendOrQueueMessage(QuicString message) {
+  if (!CanSendMessage()) {
+    QUIC_LOG(ERROR) << "Quic session does not support SendMessage";
+    return false;
+  }
+
+  if (message.size() > GetLargestMessagePayload()) {
+    QUIC_LOG(ERROR) << "Message is too big, message_size=" << message.size()
+                    << ", GetLargestMessagePayload="
+                    << GetLargestMessagePayload();
+    return false;
+  }
+
+  // There may be other messages in send queue, so we have to add message
+  // to the queue and call queue processing helper.
+  send_message_queue_.emplace_back(std::move(message));
+
+  ProcessSendMessageQueue();
+
+  return true;
+}
+
+void QuartcSession::ProcessSendMessageQueue() {
+  while (!send_message_queue_.empty()) {
+    MessageResult result = SendMessage(send_message_queue_.front());
+
+    const size_t message_size = send_message_queue_.front().size();
+
+    // Handle errors.
+    switch (result.status) {
+      case MESSAGE_STATUS_SUCCESS:
+        QUIC_VLOG(1) << "Quartc message sent, message_id=" << result.message_id
+                     << ", message_size=" << message_size;
+        break;
+
+      // If connection is congestion controlled or not writable yet, stop
+      // send loop and we'll retry again when we get OnCanWrite notification.
+      case MESSAGE_STATUS_ENCRYPTION_NOT_ESTABLISHED:
+      case MESSAGE_STATUS_BLOCKED:
+        QUIC_VLOG(1) << "Quartc message not sent because connection is blocked"
+                     << ", message will be retried later, status="
+                     << result.status << ", message_size=" << message_size;
+
+        return;
+
+      // Other errors are unexpected. We do not propagate error to Quartc,
+      // because writes can be delayed.
+      case MESSAGE_STATUS_UNSUPPORTED:
+      case MESSAGE_STATUS_TOO_LARGE:
+      case MESSAGE_STATUS_INTERNAL_ERROR:
+        QUIC_DLOG(DFATAL)
+            << "Failed to send quartc message due to unexpected error"
+            << ", message will not be retried, status=" << result.status
+            << ", message_size=" << message_size;
+        break;
+    }
+
+    send_message_queue_.pop_front();
+  }
+}
+
+void QuartcSession::OnCanWrite() {
+  // TODO(b/119640244): Since we currently use messages for audio and streams
+  // for video, it makes sense to process queued messages first, then call quic
+  // core OnCanWrite, which will resend queued streams. Long term we may need
+  // better solution especially if quic connection is used for both data and
+  // media.
+
+  // Process quartc messages that were previously blocked.
+  ProcessSendMessageQueue();
+
+  QuicSession::OnCanWrite();
 }
 
 void QuartcSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
@@ -299,6 +372,10 @@ void QuartcSession::OnTransportReceived(const char* data, size_t data_len) {
                    packet);
 }
 
+void QuartcSession::OnMessageReceived(QuicStringPiece message) {
+  session_delegate_->OnMessageReceived(message);
+}
+
 void QuartcSession::OnProofValid(
     const QuicCryptoClientConfig::CachedState& cached) {
   // TODO(zhihuang): Handle the proof verification.
@@ -309,7 +386,7 @@ void QuartcSession::OnProofVerifyDetailsAvailable(
   // TODO(zhihuang): Handle the proof verification.
 }
 
-QuicStream* QuartcSession::CreateIncomingDynamicStream(QuicStreamId id) {
+QuicStream* QuartcSession::CreateIncomingStream(QuicStreamId id) {
   return ActivateDataStream(CreateDataStream(id, QuicStream::kDefaultPriority));
 }
 

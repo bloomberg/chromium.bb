@@ -49,7 +49,7 @@ class ScopedUserProfile {
   // Another option is CreateProcessWithLogonW(...LOGON_WITH_PROFILE...),
   // however a process running as SYSTEM is not permitted to call this.  The
   // workaround used in this class is to simply wait for the user's profile
-  // directtory and registry hive to be loaded by the system itself.  This
+  // directory and registry hive to be loaded by the system itself.  This
   // code must be run after the credprov tells winlogon to log the user in.
   ScopedUserProfile(const base::string16& sid,
                     const base::string16& username,

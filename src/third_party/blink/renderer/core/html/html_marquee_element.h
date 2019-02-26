@@ -37,6 +37,8 @@ class HTMLMarqueeElement final : public HTMLElement {
 
   static HTMLMarqueeElement* Create(Document&);
 
+  explicit HTMLMarqueeElement(Document&);
+
   InsertionNotificationRequest InsertedInto(ContainerNode&) final;
   void RemovedFrom(ContainerNode&) final;
 
@@ -55,7 +57,6 @@ class HTMLMarqueeElement final : public HTMLElement {
   void stop();
 
  private:
-  explicit HTMLMarqueeElement(Document&);
   void DidAddUserAgentShadowRoot(ShadowRoot&) override;
 
   bool IsPresentationAttribute(const QualifiedName&) const override;

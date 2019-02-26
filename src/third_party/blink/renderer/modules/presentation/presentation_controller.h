@@ -14,7 +14,6 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/presentation/presentation.h"
 #include "third_party/blink/renderer/modules/presentation/presentation_availability_callbacks.h"
-#include "third_party/blink/renderer/modules/presentation/presentation_request.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -39,6 +38,7 @@ class MODULES_EXPORT PresentationController
  public:
   static const char kSupplementName[];
 
+  PresentationController(LocalFrame&);
   ~PresentationController() override;
 
   static PresentationController* From(LocalFrame&);
@@ -77,9 +77,6 @@ class MODULES_EXPORT PresentationController
   // Marked virtual for testing.
   virtual void AddAvailabilityObserver(PresentationAvailabilityObserver*);
   virtual void RemoveAvailabilityObserver(PresentationAvailabilityObserver*);
-
- protected:
-  PresentationController(LocalFrame&);
 
  private:
   // Implementation of ContextLifecycleObserver.

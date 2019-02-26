@@ -9,7 +9,7 @@
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/arc/screen_capture/arc_screen_capture_session.h"
 #include "chrome/browser/media/webrtc/desktop_media_list_ash.h"
 #include "components/arc/arc_bridge_service.h"

@@ -52,7 +52,7 @@
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/mojom/constants.mojom.h"
+#include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/service_manager/runner/host/service_process_launcher.h"
 #include "services/service_manager/runner/host/service_process_launcher_factory.h"
@@ -373,7 +373,8 @@ bool ServiceUtilityProcessHost::StartProcess(bool sandbox) {
   service_manager::mojom::PIDReceiverPtr pid_receiver;
   service_manager_->RegisterService(
       service_manager::Identity(content::mojom::kBrowserServiceName,
-                                service_manager::mojom::kRootUserID),
+                                service_manager::kSystemInstanceGroup,
+                                base::Token{}, base::Token::CreateRandom()),
       std::move(browser_proxy), mojo::MakeRequest(&pid_receiver));
   pid_receiver->SetPID(base::GetCurrentProcId());
   pid_receiver.reset();
@@ -382,10 +383,13 @@ bool ServiceUtilityProcessHost::StartProcess(bool sandbox) {
   service_manager::mojom::ServicePtr utility_service;
   utility_service.Bind(service_manager::mojom::ServicePtrInfo(
       mojo_invitation_.AttachMessagePipe(mojo_bootstrap_token), 0u));
-  service_manager_->RegisterService(
+  utility_service_instance_identity_ =
       service_manager::Identity(content::mojom::kUtilityServiceName,
-                                service_manager::mojom::kRootUserID),
-      std::move(utility_service), mojo::MakeRequest(&pid_receiver));
+                                service_manager::kSystemInstanceGroup,
+                                base::Token{}, base::Token::CreateRandom());
+  service_manager_->RegisterService(utility_service_instance_identity_,
+                                    std::move(utility_service),
+                                    mojo::MakeRequest(&pid_receiver));
   pid_receiver->SetPID(base::GetCurrentProcId());
 
   service_manager_connection_->Start();
@@ -508,7 +512,8 @@ void ServiceUtilityProcessHost::BindInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   service_manager_connection_->GetConnector()->BindInterface(
-      service_manager::Identity(content::mojom::kUtilityServiceName),
+      service_manager::ServiceFilter::ForExactIdentity(
+          utility_service_instance_identity_),
       interface_name, std::move(interface_pipe));
 }
 

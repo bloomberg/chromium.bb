@@ -12,7 +12,7 @@
 #include "mojo/core/embedder/scoped_ipc_support.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-#include "base/mac/mach_port_broker.h"
+#include "mojo/core/embedder/default_mach_broker.h"
 #endif
 
 int main(int argc, char** argv) {
@@ -24,9 +24,8 @@ int main(int argc, char** argv) {
       mojo::core::ScopedIPCSupport::ShutdownPolicy::CLEAN);
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-  base::MachPortBroker mach_broker("mojo_test");
-  CHECK(mach_broker.Init());
-  mojo::core::SetMachPortProvider(&mach_broker);
+  mojo::core::SetMachPortProvider(
+      mojo::core::DefaultMachBroker::Get()->port_provider());
 #endif
 
   return base::LaunchUnitTests(

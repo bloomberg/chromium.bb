@@ -22,9 +22,11 @@ CSSPaintImageGenerator* CSSPaintImageGeneratorImpl::Create(
   DCHECK(paint_worklet);
   CSSPaintImageGeneratorImpl* generator;
   if (paint_worklet->GetDocumentDefinitionMap().Contains(name)) {
-    generator = new CSSPaintImageGeneratorImpl(paint_worklet, name);
+    generator =
+        MakeGarbageCollected<CSSPaintImageGeneratorImpl>(paint_worklet, name);
   } else {
-    generator = new CSSPaintImageGeneratorImpl(observer, paint_worklet, name);
+    generator = MakeGarbageCollected<CSSPaintImageGeneratorImpl>(
+        observer, paint_worklet, name);
     paint_worklet->AddPendingGenerator(name, generator);
   }
 
@@ -51,7 +53,7 @@ void CSSPaintImageGeneratorImpl::NotifyGeneratorReady() {
 
 scoped_refptr<Image> CSSPaintImageGeneratorImpl::Paint(
     const ImageResourceObserver& observer,
-    const IntSize& container_size,
+    const FloatSize& container_size,
     const CSSStyleValueVector* data) {
   return paint_worklet_->Paint(name_, observer, container_size, data);
 }
@@ -107,7 +109,7 @@ bool CSSPaintImageGeneratorImpl::HasAlpha() const {
   DocumentPaintDefinition* definition;
   if (!GetValidDocumentDefinition(definition))
     return false;
-  return definition->GetPaintRenderingContext2DSettings().alpha();
+  return definition->GetPaintRenderingContext2DSettings()->alpha();
 }
 
 const Vector<CSSSyntaxDescriptor>&

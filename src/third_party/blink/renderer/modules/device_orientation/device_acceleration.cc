@@ -24,40 +24,42 @@
  */
 
 #include "third_party/blink/renderer/modules/device_orientation/device_acceleration.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_acceleration_init.h"
 
 namespace blink {
 
-DeviceAcceleration::DeviceAcceleration(
-    DeviceMotionData::Acceleration* acceleration)
-    : acceleration_(acceleration) {}
+DeviceAcceleration* DeviceAcceleration::Create(double x, double y, double z) {
+  return MakeGarbageCollected<DeviceAcceleration>(x, y, z);
+}
 
-void DeviceAcceleration::Trace(blink::Visitor* visitor) {
-  visitor->Trace(acceleration_);
-  ScriptWrappable::Trace(visitor);
+DeviceAcceleration* DeviceAcceleration::Create(
+    const DeviceAccelerationInit* init) {
+  double x = init->hasX() ? init->x() : NAN;
+  double y = init->hasY() ? init->y() : NAN;
+  double z = init->hasZ() ? init->z() : NAN;
+  return DeviceAcceleration::Create(x, y, z);
+}
+
+DeviceAcceleration::DeviceAcceleration(double x, double y, double z)
+    : x_(x), y_(y), z_(z) {}
+
+bool DeviceAcceleration::HasAccelerationData() const {
+  return !std::isnan(x_) || !std::isnan(y_) || !std::isnan(z_);
 }
 
 double DeviceAcceleration::x(bool& is_null) const {
-  if (acceleration_->CanProvideX())
-    return acceleration_->X();
-
-  is_null = true;
-  return 0;
+  is_null = std::isnan(x_);
+  return x_;
 }
 
 double DeviceAcceleration::y(bool& is_null) const {
-  if (acceleration_->CanProvideY())
-    return acceleration_->Y();
-
-  is_null = true;
-  return 0;
+  is_null = std::isnan(y_);
+  return y_;
 }
 
 double DeviceAcceleration::z(bool& is_null) const {
-  if (acceleration_->CanProvideZ())
-    return acceleration_->Z();
-
-  is_null = true;
-  return 0;
+  is_null = std::isnan(z_);
+  return z_;
 }
 
 }  // namespace blink

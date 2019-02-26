@@ -34,8 +34,6 @@
 
 #include "base/macros.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_registration.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
@@ -50,14 +48,14 @@
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
-#include "third_party/blink/renderer/modules/service_worker/navigator_service_worker.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker.h"
-#include "third_party/blink/renderer/modules/service_worker/service_worker_container_client.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_error.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -96,18 +94,18 @@ class GetRegistrationCallback : public WebServiceWorkerProvider::
       : resolver_(resolver) {}
   ~GetRegistrationCallback() override = default;
 
-  void OnSuccess(
-      std::unique_ptr<WebServiceWorkerRegistration::Handle> handle) override {
+  void OnSuccess(WebServiceWorkerRegistrationObjectInfo info) override {
     if (!resolver_->GetExecutionContext() ||
         resolver_->GetExecutionContext()->IsContextDestroyed())
       return;
-    if (!handle) {
+    if (info.registration_id ==
+        mojom::blink::kInvalidServiceWorkerRegistrationId) {
       // Resolve the promise with undefined.
       resolver_->Resolve();
       return;
     }
-    resolver_->Resolve(ServiceWorkerRegistration::GetOrCreate(
-        resolver_->GetExecutionContext(), std::move(handle)));
+    resolver_->Resolve(
+        ServiceWorkerRegistration::Take(resolver_, std::move(info)));
   }
 
   void OnError(const WebServiceWorkerError& error) override {
@@ -132,14 +130,15 @@ class ServiceWorkerContainer::GetRegistrationForReadyCallback
       : ready_(ready) {}
   ~GetRegistrationForReadyCallback() override = default;
 
-  void OnSuccess(
-      std::unique_ptr<WebServiceWorkerRegistration::Handle> handle) override {
+  void OnSuccess(WebServiceWorkerRegistrationObjectInfo info) override {
     DCHECK_EQ(ready_->GetState(), ReadyProperty::kPending);
 
     if (ready_->GetExecutionContext() &&
         !ready_->GetExecutionContext()->IsContextDestroyed()) {
-      ready_->Resolve(ServiceWorkerRegistration::GetOrCreate(
-          ready_->GetExecutionContext(), std::move(handle)));
+      ready_->Resolve(
+          ServiceWorkerContainer::From(
+              To<Document>(ready_->GetExecutionContext()))
+              ->GetOrCreateServiceWorkerRegistration(std::move(info)));
     }
   }
 
@@ -148,10 +147,38 @@ class ServiceWorkerContainer::GetRegistrationForReadyCallback
   DISALLOW_COPY_AND_ASSIGN(GetRegistrationForReadyCallback);
 };
 
-ServiceWorkerContainer* ServiceWorkerContainer::Create(
-    ExecutionContext* execution_context,
-    NavigatorServiceWorker* navigator) {
-  return new ServiceWorkerContainer(execution_context, navigator);
+const char ServiceWorkerContainer::kSupplementName[] = "ServiceWorkerContainer";
+
+ServiceWorkerContainer* ServiceWorkerContainer::From(Document* document) {
+  if (!document)
+    return nullptr;
+
+  ServiceWorkerContainer* container =
+      Supplement<Document>::From<ServiceWorkerContainer>(document);
+  if (!container) {
+    // TODO(leonhsl): Figure out whether it's really necessary to create an
+    // instance when there's no frame or frame client for |document|.
+    container = MakeGarbageCollected<ServiceWorkerContainer>(document);
+    Supplement<Document>::ProvideTo(*document, container);
+    if (document->GetFrame() && document->GetFrame()->Client()) {
+      std::unique_ptr<WebServiceWorkerProvider> provider =
+          document->GetFrame()->Client()->CreateServiceWorkerProvider();
+      if (provider) {
+        provider->SetClient(container);
+        container->provider_ = std::move(provider);
+      }
+    }
+  }
+  return container;
+}
+
+ServiceWorkerContainer* ServiceWorkerContainer::CreateForTesting(
+    Document* document,
+    std::unique_ptr<WebServiceWorkerProvider> provider) {
+  ServiceWorkerContainer* container =
+      MakeGarbageCollected<ServiceWorkerContainer>(document);
+  container->provider_ = std::move(provider);
+  return container;
 }
 
 ServiceWorkerContainer::~ServiceWorkerContainer() {
@@ -164,21 +191,22 @@ void ServiceWorkerContainer::ContextDestroyed(ExecutionContext*) {
     provider_ = nullptr;
   }
   controller_ = nullptr;
-  navigator_->ClearServiceWorker();
 }
 
 void ServiceWorkerContainer::Trace(blink::Visitor* visitor) {
   visitor->Trace(controller_);
   visitor->Trace(ready_);
-  visitor->Trace(navigator_);
+  visitor->Trace(service_worker_registration_objects_);
+  visitor->Trace(service_worker_objects_);
   EventTargetWithInlineData::Trace(visitor);
+  Supplement<Document>::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
 }
 
 ScriptPromise ServiceWorkerContainer::registerServiceWorker(
     ScriptState* script_state,
     const String& url,
-    const RegistrationOptions& options) {
+    const RegistrationOptions* options) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
@@ -192,7 +220,7 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
 
   // TODO(asamidoi): Remove this check after module loading for
   // ServiceWorker is enabled by default (https://crbug.com/824647).
-  if (options.type() == "module" &&
+  if (options->type() == "module" &&
       !RuntimeEnabledFeatures::ModuleServiceWorkerEnabled()) {
     resolver->Reject(DOMException::Create(
         DOMExceptionCode::kNotSupportedError,
@@ -216,7 +244,7 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
   if (!SchemeRegistry::ShouldTreatURLSchemeAsAllowingServiceWorkers(
           page_url.Protocol())) {
     callbacks->OnError(WebServiceWorkerError(
-        mojom::blink::ServiceWorkerErrorType::kSecurity,
+        mojom::blink::ServiceWorkerErrorType::kType,
         String("Failed to register a ServiceWorker: The URL protocol of the "
                "current origin ('" +
                document_origin->ToString() + "') is not supported.")));
@@ -225,6 +253,16 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
 
   KURL script_url = execution_context->CompleteURL(url);
   script_url.RemoveFragmentIdentifier();
+
+  if (!SchemeRegistry::ShouldTreatURLSchemeAsAllowingServiceWorkers(
+          script_url.Protocol())) {
+    callbacks->OnError(WebServiceWorkerError(
+        mojom::blink::ServiceWorkerErrorType::kType,
+        String("Failed to register a ServiceWorker: The URL protocol of the "
+               "script ('" +
+               script_url.GetString() + "') is not supported.")));
+    return promise;
+  }
 
   if (!document_origin->CanRequest(script_url)) {
     scoped_refptr<const SecurityOrigin> script_origin =
@@ -238,47 +276,39 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
                                      document_origin->ToString() + "').")));
     return promise;
   }
+
+  KURL scope_url;
+  if (options->scope().IsNull())
+    scope_url = KURL(script_url, "./");
+  else
+    scope_url = execution_context->CompleteURL(options->scope());
+  scope_url.RemoveFragmentIdentifier();
+
   if (!SchemeRegistry::ShouldTreatURLSchemeAsAllowingServiceWorkers(
-          script_url.Protocol())) {
+          scope_url.Protocol())) {
     callbacks->OnError(WebServiceWorkerError(
-        mojom::blink::ServiceWorkerErrorType::kSecurity,
+        mojom::blink::ServiceWorkerErrorType::kType,
         String("Failed to register a ServiceWorker: The URL protocol of the "
-               "script ('" +
-               script_url.GetString() + "') is not supported.")));
+               "scope ('" +
+               scope_url.GetString() + "') is not supported.")));
     return promise;
   }
 
-  KURL pattern_url;
-  if (options.scope().IsNull())
-    pattern_url = KURL(script_url, "./");
-  else
-    pattern_url = execution_context->CompleteURL(options.scope());
-  pattern_url.RemoveFragmentIdentifier();
-
-  if (!document_origin->CanRequest(pattern_url)) {
-    scoped_refptr<const SecurityOrigin> pattern_origin =
-        SecurityOrigin::Create(pattern_url);
+  if (!document_origin->CanRequest(scope_url)) {
+    scoped_refptr<const SecurityOrigin> scope_origin =
+        SecurityOrigin::Create(scope_url);
     callbacks->OnError(
         WebServiceWorkerError(mojom::blink::ServiceWorkerErrorType::kSecurity,
                               String("Failed to register a ServiceWorker: The "
                                      "origin of the provided scope ('" +
-                                     pattern_origin->ToString() +
+                                     scope_origin->ToString() +
                                      "') does not match the current origin ('" +
                                      document_origin->ToString() + "').")));
     return promise;
   }
-  if (!SchemeRegistry::ShouldTreatURLSchemeAsAllowingServiceWorkers(
-          pattern_url.Protocol())) {
-    callbacks->OnError(WebServiceWorkerError(
-        mojom::blink::ServiceWorkerErrorType::kSecurity,
-        String("Failed to register a ServiceWorker: The URL protocol of the "
-               "scope ('" +
-               pattern_url.GetString() + "') is not supported.")));
-    return promise;
-  }
 
   WebString web_error_message;
-  if (!provider_->ValidateScopeAndScriptURL(pattern_url, script_url,
+  if (!provider_->ValidateScopeAndScriptURL(scope_url, script_url,
                                             &web_error_message)) {
     callbacks->OnError(WebServiceWorkerError(
         mojom::blink::ServiceWorkerErrorType::kType,
@@ -305,10 +335,10 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
   }
 
   mojom::ServiceWorkerUpdateViaCache update_via_cache =
-      ParseUpdateViaCache(options.updateViaCache());
-  mojom::ScriptType type = ParseScriptType(options.type());
+      ParseUpdateViaCache(options->updateViaCache());
+  mojom::ScriptType type = ParseScriptType(options->type());
 
-  provider_->RegisterServiceWorker(pattern_url, script_url, type,
+  provider_->RegisterServiceWorker(scope_url, script_url, type,
                                    update_via_cache, std::move(callbacks));
   return promise;
 }
@@ -440,7 +470,7 @@ void ServiceWorkerContainer::SetController(
                       WebFeature::kServiceWorkerControlledPage);
   }
   if (should_notify_controller_change)
-    DispatchEvent(*Event::Create(EventTypeNames::controllerchange));
+    DispatchEvent(*Event::Create(event_type_names::kControllerchange));
 }
 
 void ServiceWorkerContainer::DispatchMessageEvent(
@@ -476,26 +506,48 @@ void ServiceWorkerContainer::CountFeature(mojom::WebFeature feature) {
     Deprecation::CountDeprecation(GetExecutionContext(), feature);
 }
 
+ExecutionContext* ServiceWorkerContainer::GetExecutionContext() const {
+  return GetSupplementable();
+}
+
 const AtomicString& ServiceWorkerContainer::InterfaceName() const {
-  return EventTargetNames::ServiceWorkerContainer;
+  return event_target_names::kServiceWorkerContainer;
 }
 
-ServiceWorkerContainer::ServiceWorkerContainer(
-    ExecutionContext* execution_context,
-    NavigatorServiceWorker* navigator)
-    : ContextLifecycleObserver(execution_context),
-      provider_(nullptr),
-      navigator_(navigator) {
-  if (!execution_context)
-    return;
+ServiceWorkerRegistration*
+ServiceWorkerContainer::GetOrCreateServiceWorkerRegistration(
+    WebServiceWorkerRegistrationObjectInfo info) {
+  if (info.registration_id == mojom::blink::kInvalidServiceWorkerRegistrationId)
+    return nullptr;
 
-  if (ServiceWorkerContainerClient* client =
-          ServiceWorkerContainerClient::From(To<Document>(execution_context))) {
-    provider_ = client->Provider();
-    if (provider_)
-      provider_->SetClient(this);
+  ServiceWorkerRegistration* registration =
+      service_worker_registration_objects_.at(info.registration_id);
+  if (registration) {
+    registration->Attach(std::move(info));
+    return registration;
   }
+
+  registration = MakeGarbageCollected<ServiceWorkerRegistration>(
+      GetSupplementable(), std::move(info));
+  service_worker_registration_objects_.Set(info.registration_id, registration);
+  return registration;
 }
+
+ServiceWorker* ServiceWorkerContainer::GetOrCreateServiceWorker(
+    WebServiceWorkerObjectInfo info) {
+  if (info.version_id == mojom::blink::kInvalidServiceWorkerVersionId)
+    return nullptr;
+  ServiceWorker* worker = service_worker_objects_.at(info.version_id);
+  if (!worker) {
+    worker = MakeGarbageCollected<ServiceWorker>(GetSupplementable(),
+                                                 std::move(info));
+    service_worker_objects_.Set(info.version_id, worker);
+  }
+  return worker;
+}
+
+ServiceWorkerContainer::ServiceWorkerContainer(Document* document)
+    : Supplement<Document>(*document), ContextLifecycleObserver(document) {}
 
 ServiceWorkerContainer::ReadyProperty*
 ServiceWorkerContainer::CreateReadyProperty() {

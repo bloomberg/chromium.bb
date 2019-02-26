@@ -22,8 +22,9 @@ class PasswordStoreSigninNotifierImplTest : public testing::Test {
  public:
   PasswordStoreSigninNotifierImplTest() {
     TestingProfile::Builder builder;
-    builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
-                              base::BindRepeating(&BuildFakeSigninManagerBase));
+    builder.AddTestingFactory(
+        SigninManagerFactory::GetInstance(),
+        base::BindRepeating(&BuildFakeSigninManagerForTesting));
     testing_profile_.reset(builder.Build().release());
     fake_signin_manager_ = static_cast<FakeSigninManagerForTesting*>(
         SigninManagerFactory::GetForProfile(testing_profile_.get()));

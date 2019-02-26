@@ -42,7 +42,7 @@ class EventGeneratorDelegateAura : public ui::test::EventGeneratorDelegate {
   // coordinates used in EventGenerator. EventGenerator uses
   // root Window's coordinate if this returns NULL.
   virtual client::ScreenPositionClient* GetScreenPositionClient(
-      const aura::Window* window) const = 0;
+      const Window* window) const;
 
   // Overridden from ui::test::EventGeneratorDelegate:
   ui::EventSource* GetEventSource(ui::EventTarget* target) override;
@@ -52,14 +52,17 @@ class EventGeneratorDelegateAura : public ui::test::EventGeneratorDelegate {
                               gfx::Point* point) const override;
   void ConvertPointToTarget(const ui::EventTarget* target,
                             gfx::Point* point) const override;
+  void ConvertPointFromWindow(gfx::NativeWindow window,
+                              gfx::Point* point) const override;
   void ConvertPointFromHost(const ui::EventTarget* hosted_target,
                             gfx::Point* point) const override;
   ui::EventDispatchDetails DispatchKeyEventToIME(ui::EventTarget* target,
                                                  ui::KeyEvent* event) override;
-  void DispatchEventToPointerWatchers(ui::EventTarget* target,
-                                      const ui::PointerEvent& event) override;
 
  private:
+  gfx::Point CenterOfWindow(const Window* window) const;
+  void ConvertPointFromWindow(const Window* window, gfx::Point* point) const;
+
   DISALLOW_COPY_AND_ASSIGN(EventGeneratorDelegateAura);
 };
 

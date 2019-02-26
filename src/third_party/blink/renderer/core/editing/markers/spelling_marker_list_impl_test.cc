@@ -16,10 +16,12 @@ namespace blink {
 
 class SpellingMarkerListImplTest : public testing::Test {
  protected:
-  SpellingMarkerListImplTest() : marker_list_(new SpellingMarkerListImpl()) {}
+  SpellingMarkerListImplTest()
+      : marker_list_(MakeGarbageCollected<SpellingMarkerListImpl>()) {}
 
   DocumentMarker* CreateMarker(unsigned start_offset, unsigned end_offset) {
-    return new SpellingMarker(start_offset, end_offset, g_empty_string);
+    return MakeGarbageCollected<SpellingMarker>(start_offset, end_offset,
+                                                g_empty_string);
   }
 
   Persistent<SpellingMarkerListImpl> marker_list_;

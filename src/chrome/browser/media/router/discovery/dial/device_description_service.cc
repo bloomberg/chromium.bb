@@ -4,12 +4,15 @@
 
 #include "chrome/browser/media/router/discovery/dial/device_description_service.h"
 
+#include <map>
+#include <utility>
+#include <vector>
+
 #if DCHECK_IS_ON()
 #include <sstream>
 #endif
 
 #include "base/stl_util.h"
-#include "base/strings/string_util.h"
 #include "chrome/browser/media/router/data_decoder_util.h"
 #include "chrome/browser/media/router/discovery/dial/device_description_fetcher.h"
 #include "chrome/browser/media/router/discovery/dial/safe_dial_device_description_parser.h"
@@ -33,30 +36,6 @@ constexpr int kCacheCleanUpTimeoutMins = 30;
 constexpr int kCacheMaxEntries = 256;
 
 #if DCHECK_IS_ON()
-// Replaces "<element_name>content</element_name>" with
-// "<element_name>***</element_name>"
-void Scrub(const std::string& element_name, std::string* xml_text) {
-  size_t pos = xml_text->find("<" + element_name + ">");
-  size_t end_pos = xml_text->find("</" + element_name + ">");
-
-  if (pos == std::string::npos || end_pos == std::string::npos)
-    return;
-
-  size_t start_pos = pos + element_name.length() + 2;
-  if (end_pos > start_pos)
-    xml_text->replace(start_pos, end_pos - start_pos, "***");
-}
-
-// Removes unique identifiers from the device description.
-// |xml_text|: The device description XML.
-// Returns original XML text if <UDN> or <serialNumber> field does not exist.
-std::string ScrubDeviceDescriptionXml(const std::string& xml_text) {
-  std::string scrubbed_xml(xml_text);
-  Scrub("UDN", &scrubbed_xml);
-  Scrub("serialNumber", &scrubbed_xml);
-  return scrubbed_xml;
-}
-
 std::string CachedDeviceDescriptionToString(
     const media_router::DeviceDescriptionService::CacheEntry& cached_data) {
   std::stringstream ss;
@@ -72,15 +51,11 @@ std::string CachedDeviceDescriptionToString(
 }
 #endif
 
-bool IsValidAppUrl(const GURL& app_url, const std::string& ip_address) {
-  return app_url.SchemeIs(url::kHttpScheme) && app_url.host() == ip_address;
-}
-
 // Checks mandatory fields. Returns ParsingError::kNone if device description is
 // valid; Otherwise returns specific error type.
 ParsingError ValidateParsedDeviceDescription(
-    const std::string& expected_ip_address,
-    const media_router::ParsedDialDeviceDescription& description_data) {
+    const GURL& device_description_url,
+    const ParsedDialDeviceDescription& description_data) {
   if (description_data.unique_id.empty()) {
     return ParsingError::kMissingUniqueId;
   }
@@ -90,7 +65,12 @@ ParsingError ValidateParsedDeviceDescription(
   if (!description_data.app_url.is_valid()) {
     return ParsingError::kMissingAppUrl;
   }
-  if (!IsValidAppUrl(description_data.app_url, expected_ip_address)) {
+
+  // TODO(crbug.com/679432): Get the device IP from the SSDP response.
+  net::IPAddress device_ip;
+  if (!device_ip.AssignFromIPLiteral(
+          device_description_url.HostNoBracketsPiece()) ||
+      !DialDeviceData::IsValidDialAppUrl(description_data.app_url, device_ip)) {
     return ParsingError::kInvalidAppUrl;
   }
   return ParsingError::kNone;
@@ -242,7 +222,7 @@ void DeviceDescriptionService::OnParsedDeviceDescription(
   }
 
   ParsingError error = ValidateParsedDeviceDescription(
-      device_data.device_description_url().host(), device_description);
+      device_data.device_description_url(), device_description);
 
   if (error != ParsingError::kNone) {
     DLOG(WARNING) << "Device description failed to validate. "
@@ -265,12 +245,11 @@ void DeviceDescriptionService::OnParsedDeviceDescription(
   cached_description_data.description_data = device_description;
 
 #if DCHECK_IS_ON()
-  DVLOG(2) << "Got device description for " << device_data.label()
+  DVLOG(2) << "Caching device description for " << device_data.label()
            << "... device description was: "
            << CachedDeviceDescriptionToString(cached_description_data);
 #endif
 
-  DVLOG(2) << "Caching device description for " << device_data.label();
   description_cache_.insert(
       std::make_pair(device_data.label(), cached_description_data));
 
@@ -283,12 +262,6 @@ void DeviceDescriptionService::OnDeviceDescriptionFetchComplete(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   ParseDeviceDescription(device_data, description_data);
-
-#if DCHECK_IS_ON()
-  DVLOG(2) << "Device description: "
-           << ScrubDeviceDescriptionXml(description_data.device_description);
-#endif
-
   device_description_fetcher_map_.erase(device_data.label());
 }
 

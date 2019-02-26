@@ -103,11 +103,11 @@ TestingProfile* TestWithBrowserView::CreateProfile() {
   // TemplateURLService is normally null during testing. Instant extended
   // needs this service so set a custom factory function.
   TemplateURLServiceFactory::GetInstance()->SetTestingFactory(
-      profile, &CreateTemplateURLService);
+      profile, base::BindRepeating(&CreateTemplateURLService));
   // TODO(jamescook): Eliminate this by introducing a mock toolbar or mock
   // location bar.
   AutocompleteClassifierFactory::GetInstance()->SetTestingFactory(
-      profile, &CreateAutocompleteClassifier);
+      profile, base::BindRepeating(&CreateAutocompleteClassifier));
 
   // Configure the GaiaCookieManagerService to return no accounts.
   FakeGaiaCookieManagerService* gcms =

@@ -74,17 +74,24 @@ class MODULES_EXPORT UserMediaRequest final
   static UserMediaRequest* Create(ExecutionContext*,
                                   UserMediaController*,
                                   WebUserMediaRequest::MediaType media_type,
-                                  const MediaStreamConstraints& options,
+                                  const MediaStreamConstraints* options,
                                   Callbacks*,
                                   MediaErrorState&);
   static UserMediaRequest* Create(ExecutionContext*,
                                   UserMediaController*,
-                                  const MediaStreamConstraints& options,
+                                  const MediaStreamConstraints* options,
                                   V8NavigatorUserMediaSuccessCallback*,
                                   V8NavigatorUserMediaErrorCallback*,
                                   MediaErrorState&);
   static UserMediaRequest* CreateForTesting(const WebMediaConstraints& audio,
                                             const WebMediaConstraints& video);
+
+  UserMediaRequest(ExecutionContext*,
+                   UserMediaController*,
+                   WebUserMediaRequest::MediaType media_type,
+                   WebMediaConstraints audio,
+                   WebMediaConstraints video,
+                   Callbacks*);
   virtual ~UserMediaRequest();
 
   Document* OwnerDocument();
@@ -115,13 +122,6 @@ class MODULES_EXPORT UserMediaRequest final
   void Trace(blink::Visitor*) override;
 
  private:
-  UserMediaRequest(ExecutionContext*,
-                   UserMediaController*,
-                   WebUserMediaRequest::MediaType media_type,
-                   WebMediaConstraints audio,
-                   WebMediaConstraints video,
-                   Callbacks*);
-
   WebUserMediaRequest::MediaType media_type_;
   WebMediaConstraints audio_;
   WebMediaConstraints video_;

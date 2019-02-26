@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* OutlineColor::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -19,8 +19,8 @@ const CSSValue* OutlineColor::ParseSingleValue(
     const CSSParserLocalContext&) const {
   // Allow the special focus color even in HTML Standard parsing mode.
   if (range.Peek().Id() == CSSValueWebkitFocusRingColor)
-    return CSSPropertyParserHelpers::ConsumeIdent(range);
-  return CSSPropertyParserHelpers::ConsumeColor(range, context.Mode());
+    return css_property_parser_helpers::ConsumeIdent(range);
+  return css_property_parser_helpers::ConsumeColor(range, context.Mode());
 }
 
 const blink::Color OutlineColor::ColorIncludingFallback(
@@ -45,5 +45,5 @@ const CSSValue* OutlineColor::CSSValueFromComputedStyleInternal(
                                    style, style.OutlineColor());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

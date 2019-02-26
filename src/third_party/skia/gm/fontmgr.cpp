@@ -229,21 +229,21 @@ public:
         boundsPaint.setStyle(SkPaint::kStroke_Style);
         canvas->drawRect(fontBounds, boundsPaint);
 
-        SkPaint::FontMetrics fm;
+        SkFontMetrics fm;
         glyphPaint.getFontMetrics(&fm);
         SkPaint metricsPaint(boundsPaint);
         metricsPaint.setStyle(SkPaint::kFill_Style);
         metricsPaint.setAlpha(0x40);
-        if ((fm.fFlags & SkPaint::FontMetrics::kUnderlinePositionIsValid_Flag) &&
-            (fm.fFlags & SkPaint::FontMetrics::kUnderlinePositionIsValid_Flag))
+        if ((fm.fFlags & SkFontMetrics::kUnderlinePositionIsValid_Flag) &&
+            (fm.fFlags & SkFontMetrics::kUnderlinePositionIsValid_Flag))
         {
             SkRect underline{ fontBounds.fLeft,  fm.fUnderlinePosition+y,
                               fontBounds.fRight, fm.fUnderlinePosition+y + fm.fUnderlineThickness };
             canvas->drawRect(underline, metricsPaint);
         }
 
-        if ((fm.fFlags & SkPaint::FontMetrics::kStrikeoutPositionIsValid_Flag) &&
-            (fm.fFlags & SkPaint::FontMetrics::kStrikeoutPositionIsValid_Flag))
+        if ((fm.fFlags & SkFontMetrics::kStrikeoutPositionIsValid_Flag) &&
+            (fm.fFlags & SkFontMetrics::kStrikeoutPositionIsValid_Flag))
         {
             SkRect strikeout{ fontBounds.fLeft,  fm.fStrikeoutPosition+y - fm.fStrikeoutThickness,
                               fontBounds.fRight, fm.fStrikeoutPosition+y };

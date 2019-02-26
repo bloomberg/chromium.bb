@@ -24,7 +24,6 @@
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/common/resource_type.h"
-#include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/test_content_browser_client.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -52,7 +51,7 @@ class ServiceWorkerControlleeRequestHandlerTest
         const GURL& url,
         ResourceType type,
         network::mojom::FetchRequestMode fetch_type =
-            network::mojom::FetchRequestMode::kNoCORS)
+            network::mojom::FetchRequestMode::kNoCors)
         : test_(test),
           resource_type_(type),
           request_(test->url_request_context_.CreateRequest(
@@ -76,8 +75,7 @@ class ServiceWorkerControlleeRequestHandlerTest
           job_(nullptr) {}
 
     ServiceWorkerURLRequestJob* MaybeCreateJob() {
-      job_.reset(handler_->MaybeCreateJob(request_.get(), nullptr,
-                                          &test_->mock_resource_context_));
+      job_.reset(handler_->MaybeCreateJob(request_.get(), nullptr, nullptr));
       return static_cast<ServiceWorkerURLRequestJob*>(job_.get());
     }
 
@@ -86,8 +84,7 @@ class ServiceWorkerControlleeRequestHandlerTest
       resource_request.url = request_->url();
       resource_request.resource_type = resource_type_;
       resource_request.headers = request()->extra_request_headers();
-      handler_->MaybeCreateLoader(resource_request,
-                                  &test_->mock_resource_context_,
+      handler_->MaybeCreateLoader(resource_request, nullptr,
                                   base::DoNothing(), base::DoNothing());
     }
 
@@ -200,7 +197,6 @@ class ServiceWorkerControlleeRequestHandlerTest
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
   net::URLRequestContext url_request_context_;
   net::TestDelegate url_request_delegate_;
-  MockResourceContext mock_resource_context_;
   GURL scope_;
   GURL script_url_;
   std::vector<ServiceWorkerRemoteProviderEndpoint> remote_endpoints_;
@@ -213,7 +209,7 @@ class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {
       const GURL& scope,
       const GURL& first_party,
       content::ResourceContext* context,
-      const base::Callback<WebContents*(void)>& wc_getter) override {
+      base::RepeatingCallback<WebContents*()> wc_getter) override {
     return false;
   }
 };
@@ -462,7 +458,7 @@ TEST_P(ServiceWorkerControlleeRequestHandlerTest, FallbackWithNoFetchHandler) {
   // CORS request should be returned to renderer for CORS checking.
   ServiceWorkerRequestTestResources sub_test_resources_cors(
       this, GURL("https://host/scope/doc/subresource"), RESOURCE_TYPE_SCRIPT,
-      network::mojom::FetchRequestMode::kCORS);
+      network::mojom::FetchRequestMode::kCors);
   ServiceWorkerURLRequestJob* sub_cors_job =
       sub_test_resources_cors.MaybeCreateJob();
 

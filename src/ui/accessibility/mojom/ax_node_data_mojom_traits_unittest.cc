@@ -7,6 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/mojom/ax_node_data.mojom.h"
+#include "ui/accessibility/mojom/ax_relative_bounds_mojom_traits.h"
 
 using mojo::test::SerializeAndDeserialize;
 
@@ -106,29 +107,29 @@ TEST(AXNodeDataMojomTraitsTest, ChildIds) {
 
 TEST(AXNodeDataMojomTraitsTest, OffsetContainerID) {
   ui::AXNodeData input, output;
-  input.offset_container_id = 10;
+  input.relative_bounds.offset_container_id = 10;
   EXPECT_TRUE(SerializeAndDeserialize<ax::mojom::AXNodeData>(&input, &output));
-  EXPECT_EQ(10, output.offset_container_id);
+  EXPECT_EQ(10, output.relative_bounds.offset_container_id);
 }
 
-TEST(AXNodeDataMojomTraitsTest, Location) {
+TEST(AXNodeDataMojomTraitsTest, RelativeBounds) {
   ui::AXNodeData input, output;
-  input.location = gfx::RectF(1, 2, 3, 4);
+  input.relative_bounds.bounds = gfx::RectF(1, 2, 3, 4);
   EXPECT_TRUE(SerializeAndDeserialize<ax::mojom::AXNodeData>(&input, &output));
-  EXPECT_EQ(1, output.location.x());
-  EXPECT_EQ(2, output.location.y());
-  EXPECT_EQ(3, output.location.width());
-  EXPECT_EQ(4, output.location.height());
+  EXPECT_EQ(1, output.relative_bounds.bounds.x());
+  EXPECT_EQ(2, output.relative_bounds.bounds.y());
+  EXPECT_EQ(3, output.relative_bounds.bounds.width());
+  EXPECT_EQ(4, output.relative_bounds.bounds.height());
 }
 
 TEST(AXNodeDataMojomTraitsTest, Transform) {
   ui::AXNodeData input, output;
   EXPECT_TRUE(SerializeAndDeserialize<ax::mojom::AXNodeData>(&input, &output));
-  EXPECT_FALSE(output.transform);
+  EXPECT_FALSE(output.relative_bounds.transform);
 
-  input.transform = std::make_unique<gfx::Transform>();
-  input.transform->Scale(2.0, 2.0);
+  input.relative_bounds.transform = std::make_unique<gfx::Transform>();
+  input.relative_bounds.transform->Scale(2.0, 2.0);
   EXPECT_TRUE(SerializeAndDeserialize<ax::mojom::AXNodeData>(&input, &output));
-  EXPECT_TRUE(output.transform);
-  EXPECT_FALSE(output.transform->IsIdentity());
+  EXPECT_TRUE(output.relative_bounds.transform);
+  EXPECT_FALSE(output.relative_bounds.transform->IsIdentity());
 }

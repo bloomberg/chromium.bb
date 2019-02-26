@@ -45,7 +45,7 @@ class AURA_EXPORT EmbedRoot {
 
  private:
   friend class WindowTreeClient;
-  friend class WindowTreeClientPrivate;
+  friend class WindowTreeClientTestApi;
 
   EmbedRoot(WindowTreeClient* window_tree_client,
             EmbedRootDelegate* delegate,

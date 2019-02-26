@@ -22,6 +22,8 @@ class IdentityManagerFactory : public BrowserStateKeyedServiceFactory {
  public:
   static identity::IdentityManager* GetForBrowserState(
       ios::ChromeBrowserState* browser_state);
+  static identity::IdentityManager* GetForBrowserStateIfExists(
+      ios::ChromeBrowserState* browser_state);
 
   // Returns an instance of the IdentityManagerFactory singleton.
   static IdentityManagerFactory* GetInstance();

@@ -9,6 +9,7 @@ import("//third_party/protobuf/proto_library.gni")
 assert(is_chromeos, "Non-Chrome-OS builds must not depend on //chromeos")
 
 source_set("settings") {
+  configs += [ "//chromeos:chromeos_implementation" ]
   public_deps = [
     ":cros_settings_names",
   ]
@@ -17,14 +18,21 @@ source_set("settings") {
     "//base:i18n",
     "//chromeos:chromeos_constants",
     "//chromeos:chromeos_export",
+    "//chromeos:cryptohome_proto",
+    "//chromeos/dbus",
     "//chromeos/login",
+    "//components/policy/core/common:common_constants",
+    "//components/policy/proto",
     "//dbus",
+    "//google_apis",
     "//third_party/icu",
     "//third_party/protobuf:protobuf_lite",
   ]
   sources = [
     "cros_settings_provider.cc",
     "cros_settings_provider.h",
+    "install_attributes.cc",
+    "install_attributes.h",
     "system_settings_provider.cc",
     "system_settings_provider.h",
     "timezone_settings.cc",
@@ -32,10 +40,10 @@ source_set("settings") {
     "timezone_settings_helper.cc",
     "timezone_settings_helper.h",
   ]
-  defines = [ "CHROMEOS_IMPLEMENTATION" ]
 }
 
 source_set("cros_settings_names") {
+  configs += [ "//chromeos:chromeos_implementation" ]
   deps = [
     "//chromeos:chromeos_export",
   ]
@@ -43,7 +51,6 @@ source_set("cros_settings_names") {
     "cros_settings_names.cc",
     "cros_settings_names.h",
   ]
-  defines = [ "CHROMEOS_IMPLEMENTATION" ]
 }
 
 source_set("unit_tests") {
@@ -52,13 +59,20 @@ source_set("unit_tests") {
     ":settings",
     "//base",
     "//base:i18n",
+    "//base/test:test_support",
+    "//chromeos:chromeos_constants",
+    "//chromeos:cryptohome_proto",
+    "//chromeos/dbus",
+    "//components/policy/proto",
     "//dbus",
+    "//google_apis",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/icu",
     "//third_party/protobuf:protobuf_lite",
   ]
   sources = [
+    "install_attributes_unittest.cc",
     "timezone_settings_unittest.cc",
   ]
 }

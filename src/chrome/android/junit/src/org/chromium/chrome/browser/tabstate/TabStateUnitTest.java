@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.tabstate;
 
 import static org.junit.Assert.assertEquals;
 
+import android.support.annotation.Nullable;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -15,6 +17,7 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.TabState;
+import org.chromium.chrome.browser.tabmodel.TabModel;
 
 import java.io.DataOutputStream;
 import java.io.File;
@@ -36,6 +39,7 @@ public class TabStateUnitTest {
     private static final int THEME_COLOR = 4;
     private static final boolean SHOULD_PRESERVE = true;
     private static final String OPENER_APP_ID = "test";
+    private static final @Nullable @TabModel.TabLaunchType Integer LAUNCH_TYPE_AT_CREATION = null;
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -64,6 +68,7 @@ public class TabStateUnitTest {
             state.themeColor = THEME_COLOR;
             state.shouldPreserve = SHOULD_PRESERVE;
             state.openerAppId = OPENER_APP_ID;
+            state.tabLaunchTypeAtCreation = LAUNCH_TYPE_AT_CREATION;
         } finally {
             StreamUtil.closeQuietly(fileInputStream);
         }
@@ -77,6 +82,7 @@ public class TabStateUnitTest {
         assertEquals(VERSION, state.contentsState.version());
         assertEquals(SHOULD_PRESERVE, state.shouldPreserve);
         assertEquals(THEME_COLOR, state.getThemeColor());
+        assertEquals(LAUNCH_TYPE_AT_CREATION, state.tabLaunchTypeAtCreation);
         assertEquals(CONTENTS_STATE_BYTES.length, state.contentsState.buffer().remaining());
 
         byte[] bytesFromFile = new byte[CONTENTS_STATE_BYTES.length];

@@ -17,7 +17,6 @@
 <translation id="2647554856022461007">Chromium peut utiliser des services Web pour améliorer votre confort de navigation. Vous pouvez choisir de désactiver ces services. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="2687023731466035790">Bénéficiez des fonctionnalités intelligentes de Google dans Chromium</translation>
 <translation id="2730884209570016437">Chromium ne peut pas utiliser l'appareil photo, car celui-ci est utilisé par une autre application</translation>
-<translation id="2797210818057553964">Vous pouvez personnaliser cette option à tout moment dans les paramètres Chromium</translation>
 <translation id="2915596697727466327">Chromium utilise Face ID pour autoriser l'accès à vos mots de passe.</translation>
 <translation id="3256316712990552818">Copié dans Chromium</translation>
 <translation id="3413120535237193088">Connectez-vous à Chromium pour synchroniser vos favoris sur tous vos appareils.</translation>
@@ -31,8 +30,8 @@
 <translation id="4555020257205549924">Lorsque cette fonctionnalité est activée dans Chromium, un message s'affiche pour vous proposer que les pages de ce site rédigées dans d'autres langues soient traduites à l'aide de Google Traduction. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="4787850887676698916">Les onglets que vous avez ouverts dans Chromium sur vos autres appareils s'affichent ici.</translation>
 <translation id="495292094137889840">Commencer à utiliser le lecteur de code QR Chromium</translation>
+<translation id="4999538639245140991">Comme vous vous déconnectez d'un compte géré par <ph name="SIGNOUT_MANAGED_DOMAIN" />, vos données Chromium seront supprimées de cet appareil, mais elles seront conservées dans votre compte Google.</translation>
 <translation id="5231355151045086930">Se déconnecter de Chromium</translation>
-<translation id="5416919929805616771">Vous aimez Chromium ? <ph name="BEGIN_LINK" />Évaluez l'application.<ph name="END_LINK" /></translation>
 <translation id="5862307444128926510">Bienvenue dans Chromium</translation>
 <translation id="5945387852661427312">Vous vous connectez avec un compte géré par <ph name="DOMAIN" />, ce qui permettra à son administrateur de contrôler vos données Chromium. Celles-ci seront définitivement associées à ce compte. Si vous vous déconnectez de Chromium, vos données seront supprimées de cet appareil, mais elles seront conservées dans votre compte Google.</translation>
 <translation id="6068866989048414399">Conditions d'utilisation Chromium</translation>
@@ -47,10 +46,10 @@
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7357211569052832586">Les données sélectionnées ont été supprimées de Chromium et des appareils synchronisés. Votre compte Google conserve peut-être d'autres formes d'historique de navigation sur la page history.google.com concernant, par exemple, vos recherches ou vos activités via d'autres services Google.</translation>
 <translation id="7400689562045506105">Utilisez Chromium où que vous soyez</translation>
-<translation id="7499048969477415415">Les paramètres relatifs à la synchronisation, à la personnalisation et à d'autres services Google dans Chromium ont été modifiés, ce qui peut avoir une incidence sur votre configuration actuelle.</translation>
 <translation id="7674213385180944843">Ouvrez Paramètres &gt; Confidentialité &gt; Appareil photo &gt; Chromium, puis activez l'appareil photo.</translation>
 <translation id="7746854981345936341">Astuce Chromium. Certains boutons sont désormais affichés en bas de l'écran, tels que "Arrière", "Avant" et "Rechercher".</translation>
 <translation id="786327964234957808">Vous changez de compte synchronisé pour passer de <ph name="USER_EMAIL1" /> à <ph name="USER_EMAIL2" />. Vos données Chromium actuelles sont gérées par <ph name="DOMAIN" />. Cette opération entraînera la suppression de vos données de cet appareil, mais celles-ci seront conservées dans le compte <ph name="USER_EMAIL1" />.</translation>
+<translation id="8073677936375100957">Supprimer vos données Chromium sur cet appareil ?</translation>
 <translation id="8175055321229419309">Conseil : <ph name="BEGIN_LINK" />Placez Chromium dans le dock.<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Améliorez votre expérience Google dans Chromium grâce à votre position.</translation>
 <translation id="8508544542427105412">Nous pouvons nous appuyer sur le contenu des sites que vous consultez, ainsi que sur vos activités de navigation et vos interactions avec le navigateur pour personnaliser Chromium, les annonces qui vous sont proposées et d'autres de nos services comme Google Traduction et la recherche Google. Sachez toutefois que vous pouvez personnaliser les <ph name="BEGIN_LINK" />paramètres<ph name="END_LINK" /> à tout moment.</translation>

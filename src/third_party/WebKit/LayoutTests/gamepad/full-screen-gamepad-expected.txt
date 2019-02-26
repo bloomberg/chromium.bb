@@ -1,3 +1,0 @@
-CONSOLE MESSAGE: line 37: This test requires User Activation V2.
-END OF TEST
-

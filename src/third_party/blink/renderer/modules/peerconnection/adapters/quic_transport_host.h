@@ -13,11 +13,11 @@
 #include "base/threading/thread_checker.h"
 #include "net/third_party/quic/core/quic_types.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport.h"
+#include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport_factory.h"
 
 namespace blink {
 
 class IceTransportHost;
-class P2PQuicTransportFactory;
 class QuicStreamHost;
 class QuicTransportProxy;
 
@@ -50,10 +50,8 @@ class QuicTransportHost final : public P2PQuicTransport::Delegate {
       std::unique_ptr<P2PQuicTransportFactory> quic_transport_factory);
   ~QuicTransportHost() override;
 
-  void Initialize(
-      IceTransportHost* ice_transport_host,
-      quic::Perspective perspective,
-      const std::vector<rtc::scoped_refptr<rtc::RTCCertificate>>& certificates);
+  void Initialize(IceTransportHost* ice_transport_host,
+                  const P2PQuicTransportConfig& config);
 
   scoped_refptr<base::SingleThreadTaskRunner> proxy_thread() const;
   scoped_refptr<base::SingleThreadTaskRunner> host_thread() const;

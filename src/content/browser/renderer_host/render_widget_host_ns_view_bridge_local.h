@@ -18,28 +18,21 @@
 
 namespace content {
 
-// Bridge to a locally-hosted NSView -- this is always instantiated in the same
-// process as the NSView. The owner of this class may exist in another
-// process. Because the owner may exist in another process, this class must
-// be destroyed explicitly by its Destroy method.
+// Mojo bridge for a RenderWidgetHostViewMac's NSView. This class may be
+// instantiated in the same process as its RenderWidgetHostViewMac, or it may
+// be in a different process.
 class RenderWidgetHostNSViewBridgeLocal
     : public mojom::RenderWidgetHostNSViewBridge,
       public display::DisplayObserver {
  public:
-  // Create a bridge that will directly access its client in the same process
-  // via pointers. This object must be explicitly deleted.
   RenderWidgetHostNSViewBridgeLocal(
       mojom::RenderWidgetHostNSViewClient* client,
       RenderWidgetHostNSViewClientHelper* client_helper);
-
-  // Create a bridge that will access its client in another process via a mojo
-  // interface. This object will be deleted when |bridge_request|'s connection
-  // closes.
-  RenderWidgetHostNSViewBridgeLocal(
-      mojom::RenderWidgetHostNSViewClientAssociatedPtr client,
-      mojom::RenderWidgetHostNSViewBridgeAssociatedRequest bridge_request);
-
   ~RenderWidgetHostNSViewBridgeLocal() override;
+
+  // Bind to a remote request for a bridge interface.
+  void BindRequest(
+      mojom::RenderWidgetHostNSViewBridgeAssociatedRequest bridge_request);
 
   // TODO(ccameron): RenderWidgetHostViewMac and other functions currently use
   // this method to communicate directly with RenderWidgetHostViewCocoa. The
@@ -75,24 +68,11 @@ class RenderWidgetHostNSViewBridgeLocal
   void UnlockKeyboard() override;
 
  private:
-  void Initialize(mojom::RenderWidgetHostNSViewClient* client,
-                  RenderWidgetHostNSViewClientHelper* client_helper);
-
   bool IsPopup() const { return !!popup_window_; }
-
-  // Called on a mojo connection error, deletes |this|.
-  void OnConnectionError();
 
   // display::DisplayObserver implementation.
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
-
-  // If the client for |this| is in another process and to be accessed via
-  // mojo, then |remote_client_| and |binding_| maintain this interface, and
-  // |remote_client_helper_| is a wrapper around |remote_client_|.
-  mojom::RenderWidgetHostNSViewClientAssociatedPtr remote_client_;
-  mojo::AssociatedBinding<mojom::RenderWidgetHostNSViewBridge> binding_;
-  std::unique_ptr<RenderWidgetHostNSViewClientHelper> remote_client_helper_;
 
   // The NSView used for input and display.
   base::scoped_nsobject<RenderWidgetHostViewCocoa> cocoa_view_;
@@ -111,6 +91,9 @@ class RenderWidgetHostNSViewBridgeLocal
 
   // Cached copy of the tooltip text, to avoid redundant calls.
   base::string16 tooltip_text_;
+
+  // The binding for this object (only used when remotely instantiated).
+  mojo::AssociatedBinding<mojom::RenderWidgetHostNSViewBridge> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostNSViewBridgeLocal);
 };

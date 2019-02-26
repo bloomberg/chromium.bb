@@ -7,14 +7,8 @@
 #include <memory>
 
 #include "ash/accelerators/accelerator_controller.h"
-#include "ash/focus_cycler.h"
 #include "ash/public/cpp/ash_features.h"
-#include "ash/root_window_controller.h"
-#include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/system/status_area_widget.h"
-#include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -39,6 +33,7 @@
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/ash/chrome_keyboard_controller_client.h"
+#include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
@@ -453,15 +448,16 @@ bool WebUILoginView::HandleContextMenu(
 #endif
 }
 
-void WebUILoginView::HandleKeyboardEvent(content::WebContents* source,
+bool WebUILoginView::HandleKeyboardEvent(content::WebContents* source,
                                          const NativeWebKeyboardEvent& event) {
+  bool handled = false;
   if (forward_keyboard_event_) {
     // Disable arrow key traversal because arrow keys are handled via
     // accelerator when this view has focus.
     ScopedArrowKeyTraversal arrow_key_traversal(false);
 
-    unhandled_keyboard_event_handler_.HandleKeyboardEvent(event,
-                                                          GetFocusManager());
+    handled = unhandled_keyboard_event_handler_.HandleKeyboardEvent(
+        event, GetFocusManager());
   }
 
   // Make sure error bubble is cleared on keyboard event. This is needed
@@ -472,6 +468,7 @@ void WebUILoginView::HandleKeyboardEvent(content::WebContents* source,
     if (web_ui)
       web_ui->CallJavascriptFunctionUnsafe("cr.ui.Oobe.clearErrors");
   }
+  return handled;
 }
 
 bool WebUILoginView::TakeFocus(content::WebContents* source, bool reverse) {
@@ -556,38 +553,14 @@ void WebUILoginView::OnFocusLeavingSystemTray(bool reverse) {
 }
 
 bool WebUILoginView::MoveFocusToSystemTray(bool reverse) {
-  // Focus is accepted, but the Ash system tray is not available in Mash, so
-  // exit early. https://crbug.com/782072
-  if (features::IsMultiProcessMash())
-    return true;
-
-  // The focus should not move to the system tray if voice interaction OOOBE is
+  // The focus should not move to the system tray if voice interaction OOBE is
   // active.
   if (LoginDisplayHost::default_host() &&
       LoginDisplayHost::default_host()->IsVoiceInteractionOobe()) {
     return false;
   }
 
-  // If shift+tab is used (|reverse| is true) and views-based shelf is shown,
-  // focus goes to the shelf widget. If views-based shelf is disabled, focus
-  // goes to the system tray, because the web-UI shelf has already been
-  // traversed when we reach here.
-  ash::Shelf* shelf = ash::Shelf::ForWindow(GetWidget()->GetNativeWindow());
-  if (!reverse && ash::ShelfWidget::IsUsingViewsShelf()) {
-    shelf->shelf_widget()->set_default_last_focusable_child(reverse);
-    ash::Shell::Get()->focus_cycler()->FocusWidget(shelf->shelf_widget());
-    return true;
-  }
-
-  ash::RootWindowController* primary_controller =
-      ash::RootWindowController::ForWindow(GetWidget()->GetNativeWindow());
-  if (!primary_controller->IsSystemTrayVisible())
-    return false;
-
-  shelf->GetStatusAreaWidget()
-      ->status_area_widget_delegate()
-      ->set_default_last_focusable_child(reverse);
-  ash::Shell::Get()->focus_cycler()->FocusWidget(shelf->GetStatusAreaWidget());
+  LoginScreenClient::Get()->login_screen()->FocusLoginShelf(reverse);
   return true;
 }
 

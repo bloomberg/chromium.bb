@@ -69,8 +69,8 @@ TEST_P(AnimatedLayersTest, updateLayerShouldFlattenTransformWithAnimations) {
                               *CubicBezierTimingFunction::Preset(
                                   CubicBezierTimingFunction::EaseType::EASE)));
   std::unique_ptr<CompositorKeyframeModel> float_keyframe_model(
-      CompositorKeyframeModel::Create(*curve, CompositorTargetProperty::OPACITY,
-                                      0, 0));
+      CompositorKeyframeModel::Create(
+          *curve, compositor_target_property::OPACITY, 0, 0));
   int keyframe_model_id = float_keyframe_model->Id();
 
   std::unique_ptr<CompositorAnimationTimeline> compositor_timeline =

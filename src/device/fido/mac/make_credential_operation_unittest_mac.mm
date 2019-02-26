@@ -13,6 +13,7 @@
 
 #include "base/test/scoped_task_environment.h"
 #include "device/fido/fido_constants.h"
+#include "device/fido/fido_test_data.h"
 #include "device/fido/test_callback_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,7 +25,6 @@ namespace {
 
 using test::TestCallbackReceiver;
 
-const std::array<uint8_t, kClientDataHashLength> kClientDataHash = {};
 const std::string kRpId = "rp.example.com";
 const std::vector<uint8_t> kUserId = {10, 11, 12, 13, 14, 15};
 const char kKeychainAccessGroup[] =
@@ -32,7 +32,7 @@ const char kKeychainAccessGroup[] =
 
 CtapMakeCredentialRequest MakeTestRequest() {
   return CtapMakeCredentialRequest(
-      kClientDataHash, PublicKeyCredentialRpEntity(kRpId),
+      test_data::kClientDataJson, PublicKeyCredentialRpEntity(kRpId),
       PublicKeyCredentialUserEntity(kUserId),
       PublicKeyCredentialParams(
           {{PublicKeyCredentialParams::

@@ -33,15 +33,23 @@
 #  define _GNUC_VER_NEW 0
 #endif
 
-#define _LIBCPP_VERSION 7000
+#define _LIBCPP_VERSION 8000
 
 #ifndef _LIBCPP_ABI_VERSION
-#  ifdef __Fuchsia__
-#    define _LIBCPP_ABI_VERSION 2
-#  else
-#    define _LIBCPP_ABI_VERSION 1
-#  endif
+#  define _LIBCPP_ABI_VERSION 1
 #endif
+
+#ifndef _LIBCPP_STD_VER
+#  if  __cplusplus <= 201103L
+#    define _LIBCPP_STD_VER 11
+#  elif __cplusplus <= 201402L
+#    define _LIBCPP_STD_VER 14
+#  elif __cplusplus <= 201703L
+#    define _LIBCPP_STD_VER 17
+#  else
+#    define _LIBCPP_STD_VER 18  // current year, or date of c++2a ratification
+#  endif
+#endif  // _LIBCPP_STD_VER
 
 #if defined(__ELF__)
 #  define _LIBCPP_OBJECT_FORMAT_ELF   1
@@ -149,10 +157,8 @@
 
 #define __has_keyword(__x) !(__is_identifier(__x))
 
-#ifdef __has_include
-#  define __libcpp_has_include(__x) __has_include(__x)
-#else
-#  define __libcpp_has_include(__x) 0
+#ifndef __has_include
+#define __has_include(...) 0
 #endif
 
 #if defined(__clang__)
@@ -318,6 +324,31 @@
 #  define _LIBCPP_NO_CFI
 #endif
 
+#if __ISO_C_VISIBLE >= 2011 || __cplusplus >= 201103L
+#  if defined(__FreeBSD__)
+#    define _LIBCPP_HAS_QUICK_EXIT
+#    define _LIBCPP_HAS_C11_FEATURES
+#  elif defined(__Fuchsia__)
+#    define _LIBCPP_HAS_QUICK_EXIT
+#    define _LIBCPP_HAS_TIMESPEC_GET
+#    define _LIBCPP_HAS_C11_FEATURES
+#  elif defined(__linux__)
+#    if !defined(_LIBCPP_HAS_MUSL_LIBC)
+#      if _LIBCPP_GLIBC_PREREQ(2, 15) || defined(__BIONIC__)
+#        define _LIBCPP_HAS_QUICK_EXIT
+#      endif
+#      if _LIBCPP_GLIBC_PREREQ(2, 17)
+#        define _LIBCPP_HAS_C11_FEATURES
+#        define _LIBCPP_HAS_TIMESPEC_GET
+#      endif
+#    else // defined(_LIBCPP_HAS_MUSL_LIBC)
+#      define _LIBCPP_HAS_QUICK_EXIT
+#      define _LIBCPP_HAS_TIMESPEC_GET
+#      define _LIBCPP_HAS_C11_FEATURES
+#    endif
+#  endif // __linux__
+#endif
+
 #if defined(_LIBCPP_COMPILER_CLANG)
 
 // _LIBCPP_ALTERNATE_STRING_LAYOUT is an old name for
@@ -420,28 +451,6 @@ typedef __char32_t char32_t;
 #define _LIBCPP_HAS_NO_VARIABLE_TEMPLATES
 #endif
 
-#if __ISO_C_VISIBLE >= 2011 || __cplusplus >= 201103L
-#  if defined(__FreeBSD__)
-#    define _LIBCPP_HAS_QUICK_EXIT
-#    define _LIBCPP_HAS_C11_FEATURES
-#  elif defined(__Fuchsia__)
-#    define _LIBCPP_HAS_QUICK_EXIT
-#    define _LIBCPP_HAS_C11_FEATURES
-#  elif defined(__linux__)
-#    if !defined(_LIBCPP_HAS_MUSL_LIBC)
-#      if _LIBCPP_GLIBC_PREREQ(2, 15) || defined(__BIONIC__)
-#        define _LIBCPP_HAS_QUICK_EXIT
-#      endif
-#      if _LIBCPP_GLIBC_PREREQ(2, 17)
-#        define _LIBCPP_HAS_C11_FEATURES
-#      endif
-#    else // defined(_LIBCPP_HAS_MUSL_LIBC)
-#      define _LIBCPP_HAS_QUICK_EXIT
-#      define _LIBCPP_HAS_C11_FEATURES
-#    endif
-#  endif // __linux__
-#endif
-
 #if !(__has_feature(cxx_noexcept))
 #define _LIBCPP_HAS_NO_NOEXCEPT
 #endif
@@ -481,6 +490,8 @@ namespace std {
 #define _LIBCPP_HAS_UNIQUE_OBJECT_REPRESENTATIONS
 #endif
 
+#define _LIBCPP_ALWAYS_INLINE __attribute__ ((__always_inline__))
+
 #elif defined(_LIBCPP_COMPILER_GCC)
 
 #define _ALIGNAS(x) __attribute__((__aligned__(x)))
@@ -498,7 +509,7 @@ namespace std {
 #define _LIBCPP_HAS_IS_BASE_OF
 #endif
 
-#if !__EXCEPTIONS
+#if !__EXCEPTIONS && !defined(_LIBCPP_NO_EXCEPTIONS)
 #define _LIBCPP_NO_EXCEPTIONS
 #endif
 
@@ -572,6 +583,8 @@ namespace std {
 #define _LIBCPP_HAS_UNIQUE_OBJECT_REPRESENTATIONS
 #endif
 
+#define _LIBCPP_ALWAYS_INLINE __attribute__ ((__always_inline__))
+
 #elif defined(_LIBCPP_COMPILER_MSVC)
 
 #define _LIBCPP_TOSTRING2(x) #x
@@ -604,6 +617,10 @@ namespace std {
 
 #define _LIBCPP_HAS_NO_ASAN
 
+#define _LIBCPP_ALWAYS_INLINE __forceinline
+
+#define _LIBCPP_HAS_NO_VECTOR_EXTENSION
+
 #elif defined(_LIBCPP_COMPILER_IBM)
 
 #define _ALIGNAS(x) __attribute__((__aligned__(x)))
@@ -634,7 +651,25 @@ namespace std {
 
 #define _LIBCPP_HAS_NO_ASAN
 
+#define _LIBCPP_ALWAYS_INLINE __attribute__ ((__always_inline__))
+
+#define _LIBCPP_HAS_NO_VECTOR_EXTENSION
+
 #endif // _LIBCPP_COMPILER_[CLANG|GCC|MSVC|IBM]
+
+#if _LIBCPP_STD_VER >= 17
+#define _LIBCPP_BEGIN_NAMESPACE_FILESYSTEM \
+  _LIBCPP_BEGIN_NAMESPACE_STD inline namespace __fs { namespace filesystem {
+#else
+#define _LIBCPP_BEGIN_NAMESPACE_FILESYSTEM \
+  _LIBCPP_BEGIN_NAMESPACE_STD namespace __fs { namespace filesystem {
+#endif
+
+#define _LIBCPP_END_NAMESPACE_FILESYSTEM \
+  _LIBCPP_END_NAMESPACE_STD } }
+
+#define _VSTD_FS _VSTD::__fs::filesystem
+
 
 #if defined(_LIBCPP_OBJECT_FORMAT_COFF)
 
@@ -669,16 +704,6 @@ namespace std {
 #define _LIBCPP_METHOD_TEMPLATE_IMPLICIT_INSTANTIATION_VIS
 #define _LIBCPP_TEMPLATE_VIS
 #define _LIBCPP_ENUM_VIS
-
-#if defined(_LIBCPP_COMPILER_MSVC)
-#  define _LIBCPP_INLINE_VISIBILITY __forceinline
-#  define _LIBCPP_ALWAYS_INLINE     __forceinline
-#  define _LIBCPP_EXTERN_TEMPLATE_INLINE_VISIBILITY __forceinline
-#else
-#  define _LIBCPP_INLINE_VISIBILITY __attribute__ ((__always_inline__))
-#  define _LIBCPP_ALWAYS_INLINE     __attribute__ ((__always_inline__))
-#  define _LIBCPP_EXTERN_TEMPLATE_INLINE_VISIBILITY __attribute__ ((__always_inline__))
-#endif
 
 #endif // defined(_LIBCPP_OBJECT_FORMAT_COFF)
 
@@ -763,29 +788,41 @@ namespace std {
 #define _LIBCPP_CLASS_TEMPLATE_INSTANTIATION_VIS
 #endif
 
-#ifndef _LIBCPP_INLINE_VISIBILITY
-#  if !defined(_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS)
-#    define _LIBCPP_INLINE_VISIBILITY __attribute__ ((__visibility__("hidden"), __always_inline__))
+#if __has_attribute(internal_linkage)
+#  define _LIBCPP_INTERNAL_LINKAGE __attribute__ ((internal_linkage))
+#else
+#  define _LIBCPP_INTERNAL_LINKAGE _LIBCPP_ALWAYS_INLINE
+#endif
+
+#ifndef _LIBCPP_HIDE_FROM_ABI_PER_TU
+#  ifndef _LIBCPP_HIDE_FROM_ABI_PER_TU_BY_DEFAULT
+#    define _LIBCPP_HIDE_FROM_ABI_PER_TU 0
 #  else
-#    define _LIBCPP_INLINE_VISIBILITY __attribute__ ((__always_inline__))
+#    define _LIBCPP_HIDE_FROM_ABI_PER_TU 1
 #  endif
 #endif
 
-#ifndef _LIBCPP_ALWAYS_INLINE
-#  if !defined(_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS)
-#    define _LIBCPP_ALWAYS_INLINE  __attribute__ ((__visibility__("hidden"), __always_inline__))
+#ifndef _LIBCPP_HIDE_FROM_ABI
+#  if _LIBCPP_HIDE_FROM_ABI_PER_TU
+#    define _LIBCPP_HIDE_FROM_ABI _LIBCPP_HIDDEN _LIBCPP_INTERNAL_LINKAGE
 #  else
-#    define _LIBCPP_ALWAYS_INLINE  __attribute__ ((__always_inline__))
+#    define _LIBCPP_HIDE_FROM_ABI _LIBCPP_HIDDEN _LIBCPP_ALWAYS_INLINE
 #  endif
 #endif
 
-#ifndef _LIBCPP_EXTERN_TEMPLATE_INLINE_VISIBILITY
-#  if !defined(_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS)
-#    define _LIBCPP_EXTERN_TEMPLATE_INLINE_VISIBILITY __attribute__((__visibility__("default"), __always_inline__))
+#ifdef _LIBCPP_BUILDING_LIBRARY
+#  if _LIBCPP_ABI_VERSION > 1
+#    define _LIBCPP_HIDE_FROM_ABI_AFTER_V1 _LIBCPP_HIDE_FROM_ABI
 #  else
-#    define _LIBCPP_EXTERN_TEMPLATE_INLINE_VISIBILITY __attribute__((__always_inline__))
+#    define _LIBCPP_HIDE_FROM_ABI_AFTER_V1
 #  endif
+#else
+#  define _LIBCPP_HIDE_FROM_ABI_AFTER_V1 _LIBCPP_HIDE_FROM_ABI
 #endif
+
+// Just so we can migrate to the new macros gradually.
+#define _LIBCPP_INLINE_VISIBILITY _LIBCPP_HIDE_FROM_ABI
+#define _LIBCPP_EXTERN_TEMPLATE_INLINE_VISIBILITY _LIBCPP_HIDE_FROM_ABI_AFTER_V1
 
 #ifndef _LIBCPP_PREFERRED_OVERLOAD
 #  if __has_attribute(__enable_if__)
@@ -889,9 +926,9 @@ template <unsigned> struct __static_assert_check {};
 #  define _LIBCPP_DECLARE_STRONG_ENUM(x) struct _LIBCPP_TYPE_VIS x { enum __lx
 #  define _LIBCPP_DECLARE_STRONG_ENUM_EPILOG(x) \
      __lx __v_; \
-     _LIBCPP_ALWAYS_INLINE x(__lx __v) : __v_(__v) {} \
-     _LIBCPP_ALWAYS_INLINE explicit x(int __v) : __v_(static_cast<__lx>(__v)) {} \
-     _LIBCPP_ALWAYS_INLINE operator int() const {return __v_;} \
+     _LIBCPP_INLINE_VISIBILITY x(__lx __v) : __v_(__v) {} \
+     _LIBCPP_INLINE_VISIBILITY explicit x(int __v) : __v_(static_cast<__lx>(__v)) {} \
+     _LIBCPP_INLINE_VISIBILITY operator int() const {return __v_;} \
      };
 #else  // _LIBCPP_HAS_NO_STRONG_ENUMS
 #  define _LIBCPP_DECLARE_STRONG_ENUM(x) enum class _LIBCPP_ENUM_VIS x
@@ -947,7 +984,14 @@ template <unsigned> struct __static_assert_check {};
 // If we are getting operator new from the MSVC CRT, then allocation overloads
 // for align_val_t were added in 19.12, aka VS 2017 version 15.3.
 #if defined(_LIBCPP_MSVCRT) && defined(_MSC_VER) && _MSC_VER < 1912
-#define _LIBCPP_HAS_NO_ALIGNED_ALLOCATION
+#define _LIBCPP_HAS_NO_LIBRARY_ALIGNED_ALLOCATION
+#elif defined(_LIBCPP_ABI_MICROSOFT) && !defined(_LIBCPP_NO_VCRUNTIME)
+#define _LIBCPP_DEFER_NEW_TO_VCRUNTIME
+#if !defined(__cpp_aligned_new)
+// We're defering to Microsoft's STL to provide aligned new et al. We don't
+// have it unless the language feature test macro is defined.
+#define _LIBCPP_HAS_NO_LIBRARY_ALIGNED_ALLOCATION
+#endif
 #endif
 
 #if defined(__APPLE__)
@@ -957,11 +1001,16 @@ template <unsigned> struct __static_assert_check {};
 #  endif
 #  if defined(__MAC_OS_X_VERSION_MIN_REQUIRED)
 #    if __MAC_OS_X_VERSION_MIN_REQUIRED < 1060
-#      define _LIBCPP_HAS_NO_ALIGNED_ALLOCATION
+#      define _LIBCPP_HAS_NO_LIBRARY_ALIGNED_ALLOCATION
 #    endif
 #  endif
 #endif // defined(__APPLE__)
 
+#if !defined(_LIBCPP_HAS_NO_ALIGNED_ALLOCATION) && \
+    (defined(_LIBCPP_HAS_NO_LIBRARY_ALIGNED_ALLOCATION) || \
+    (!defined(__cpp_aligned_new) || __cpp_aligned_new < 201606))
+#  define _LIBCPP_HAS_NO_ALIGNED_ALLOCATION
+#endif
 
 #if defined(__APPLE__) || defined(__FreeBSD__)
 #define _LIBCPP_HAS_DEFAULTRUNELOCALE
@@ -971,30 +1020,42 @@ template <unsigned> struct __static_assert_check {};
 #define _LIBCPP_WCTYPE_IS_MASK
 #endif
 
-#ifndef _LIBCPP_STD_VER
-#  if  __cplusplus <= 201103L
-#    define _LIBCPP_STD_VER 11
-#  elif __cplusplus <= 201402L
-#    define _LIBCPP_STD_VER 14
-#  elif __cplusplus <= 201703L
-#    define _LIBCPP_STD_VER 17
+// Deprecation macros.
+// Deprecations warnings are only enabled when _LIBCPP_ENABLE_DEPRECATION_WARNINGS is defined.
+#if defined(_LIBCPP_ENABLE_DEPRECATION_WARNINGS)
+#  if __has_attribute(deprecated)
+#    define _LIBCPP_DEPRECATED __attribute__ ((deprecated))
+#  elif _LIBCPP_STD_VER > 11
+#    define _LIBCPP_DEPRECATED [[deprecated]]
 #  else
-#    define _LIBCPP_STD_VER 18  // current year, or date of c++2a ratification
+#    define _LIBCPP_DEPRECATED
 #  endif
-#endif  // _LIBCPP_STD_VER
-
-#if _LIBCPP_STD_VER > 11
-#  define _LIBCPP_DEPRECATED [[deprecated]]
 #else
 #  define _LIBCPP_DEPRECATED
 #endif
 
+#if !defined(_LIBCPP_CXX03_LANG)
+#  define _LIBCPP_DEPRECATED_IN_CXX11 _LIBCPP_DEPRECATED
+#else
+#  define _LIBCPP_DEPRECATED_IN_CXX11
+#endif
+
+#if _LIBCPP_STD_VER >= 14
+#  define _LIBCPP_DEPRECATED_IN_CXX14 _LIBCPP_DEPRECATED
+#else
+#  define _LIBCPP_DEPRECATED_IN_CXX14
+#endif
+
+#if _LIBCPP_STD_VER >= 17
+#  define _LIBCPP_DEPRECATED_IN_CXX17 _LIBCPP_DEPRECATED
+#else
+#  define _LIBCPP_DEPRECATED_IN_CXX17
+#endif
+
 #if _LIBCPP_STD_VER <= 11
 #  define _LIBCPP_EXPLICIT_AFTER_CXX11
-#  define _LIBCPP_DEPRECATED_AFTER_CXX11
 #else
 #  define _LIBCPP_EXPLICIT_AFTER_CXX11 explicit
-#  define _LIBCPP_DEPRECATED_AFTER_CXX11 [[deprecated]]
 #endif
 
 #if _LIBCPP_STD_VER > 11 && !defined(_LIBCPP_HAS_NO_CXX14_CONSTEXPR)
@@ -1015,8 +1076,30 @@ template <unsigned> struct __static_assert_check {};
 #  define _LIBCPP_CONSTEXPR_AFTER_CXX17
 #endif
 
-#if __has_cpp_attribute(nodiscard) && _LIBCPP_STD_VER > 17 && !defined(_LIBCPP_DISABLE_NODISCARD_AFTER_CXX17)
-#  define _LIBCPP_NODISCARD_AFTER_CXX17 [[nodiscard]]
+// The _LIBCPP_NODISCARD_ATTRIBUTE should only be used to define other
+// NODISCARD macros to the correct attribute.
+#if __has_cpp_attribute(nodiscard) || defined(_LIBCPP_COMPILER_MSVC)
+#  define _LIBCPP_NODISCARD_ATTRIBUTE [[nodiscard]]
+#elif defined(_LIBCPP_COMPILER_CLANG) && !defined(_LIBCPP_CXX03_LANG)
+#  define _LIBCPP_NODISCARD_ATTRIBUTE [[clang::warn_unused_result]]
+#else
+// We can't use GCC's [[gnu::warn_unused_result]] and
+// __attribute__((warn_unused_result)), because GCC does not silence them via
+// (void) cast.
+#  define _LIBCPP_NODISCARD_ATTRIBUTE
+#endif
+
+// _LIBCPP_NODISCARD_EXT may be used to apply [[nodiscard]] to entities not
+// specified as such as an extension.
+#if defined(_LIBCPP_ENABLE_NODISCARD) && !defined(_LIBCPP_DISABLE_NODISCARD_EXT)
+#  define _LIBCPP_NODISCARD_EXT _LIBCPP_NODISCARD_ATTRIBUTE
+#else
+#  define _LIBCPP_NODISCARD_EXT
+#endif
+
+#if !defined(_LIBCPP_DISABLE_NODISCARD_AFTER_CXX17) && \
+    (_LIBCPP_STD_VER > 17 || defined(_LIBCPP_ENABLE_NODISCARD))
+#  define _LIBCPP_NODISCARD_AFTER_CXX17 _LIBCPP_NODISCARD_ATTRIBUTE
 #else
 #  define _LIBCPP_NODISCARD_AFTER_CXX17
 #endif
@@ -1031,6 +1114,14 @@ template <unsigned> struct __static_assert_check {};
 #  define _LIBCPP_EXPLICIT_MOVE(x) _VSTD::move(x)
 #else
 #  define _LIBCPP_EXPLICIT_MOVE(x) (x)
+#endif
+
+#ifndef _LIBCPP_CONSTEXPR_IF_NODEBUG
+#if defined(_LIBCPP_DEBUG) || defined(_LIBCPP_HAS_NO_CXX14_CONSTEXPR)
+#define _LIBCPP_CONSTEXPR_IF_NODEBUG
+#else
+#define _LIBCPP_CONSTEXPR_IF_NODEBUG constexpr
+#endif
 #endif
 
 #ifndef _LIBCPP_HAS_NO_ASAN
@@ -1068,7 +1159,7 @@ _LIBCPP_FUNC_VIS extern "C" void __sanitizer_annotate_contiguous_container(
       defined(__APPLE__) || \
       defined(__CloudABI__) || \
       defined(__sun__) || \
-      (defined(__MINGW32__) && __libcpp_has_include(<pthread.h>))
+      (defined(__MINGW32__) && __has_include(<pthread.h>))
 #    define _LIBCPP_HAS_THREAD_API_PTHREAD
 #  elif defined(_LIBCPP_WIN32API)
 #    define _LIBCPP_HAS_THREAD_API_WIN32

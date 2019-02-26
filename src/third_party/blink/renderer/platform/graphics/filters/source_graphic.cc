@@ -32,7 +32,7 @@ SourceGraphic::SourceGraphic(Filter* filter) : FilterEffect(filter) {
 SourceGraphic::~SourceGraphic() = default;
 
 SourceGraphic* SourceGraphic::Create(Filter* filter) {
-  return new SourceGraphic(filter);
+  return MakeGarbageCollected<SourceGraphic>(filter);
 }
 
 FloatRect SourceGraphic::MapInputs(const FloatRect& rect) const {

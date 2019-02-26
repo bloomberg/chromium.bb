@@ -17,12 +17,16 @@ import("../../../gn/perfetto.gni")
 source_set("base") {
   sources = [
     "build_config.h",
+    "container_annotations.h",
     "event.h",
     "export.h",
     "file_utils.h",
+    "gtest_prod_util.h",
     "logging.h",
     "metatrace.h",
-    "page_allocator.h",
+    "optional.h",
+    "paged_memory.h",
+    "pipe.h",
     "scoped_file.h",
     "small_set.h",
     "string_splitter.h",
@@ -42,7 +46,10 @@ source_set("base") {
   if (is_android) {
     sources += [ "android_task_runner.h" ]
   }
-  if (!build_with_chromium) {
+  if (perfetto_build_standalone || perfetto_build_with_android) {
     sources += [ "unix_socket.h" ]
   }
+  public_deps = [
+    "../../../gn:gtest_prod_config",
+  ]
 }

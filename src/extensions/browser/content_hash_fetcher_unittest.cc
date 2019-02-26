@@ -62,7 +62,7 @@ class ContentHashWaiter {
   }
 
  private:
-  void CreatedCallback(const scoped_refptr<ContentHash>& content_hash,
+  void CreatedCallback(scoped_refptr<ContentHash> content_hash,
                        bool was_cancelled) {
     if (!reply_task_runner_->RunsTasksInCurrentSequence()) {
       reply_task_runner_->PostTask(

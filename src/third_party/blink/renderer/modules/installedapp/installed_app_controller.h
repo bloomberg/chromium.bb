@@ -31,6 +31,7 @@ class MODULES_EXPORT InstalledAppController final
  public:
   static const char kSupplementName[];
 
+  InstalledAppController(LocalFrame&, WebRelatedAppsFetcher*);
   virtual ~InstalledAppController();
 
   // Gets a list of related apps from the current page's manifest that belong
@@ -44,8 +45,6 @@ class MODULES_EXPORT InstalledAppController final
 
  private:
   class GetRelatedAppsCallbacks;
-
-  InstalledAppController(LocalFrame&, WebRelatedAppsFetcher*);
 
   // Inherited from ContextLifecycleObserver.
   void ContextDestroyed(ExecutionContext*) override;

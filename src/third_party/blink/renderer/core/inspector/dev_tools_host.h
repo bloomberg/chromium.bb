@@ -48,10 +48,12 @@ class CORE_EXPORT DevToolsHost final : public ScriptWrappable {
  public:
   static DevToolsHost* Create(InspectorFrontendClient* client,
                               LocalFrame* frontend_frame) {
-    return new DevToolsHost(client, frontend_frame);
+    return MakeGarbageCollected<DevToolsHost>(client, frontend_frame);
   }
 
+  DevToolsHost(InspectorFrontendClient*, LocalFrame* frontend_frame);
   ~DevToolsHost() override;
+
   void Trace(blink::Visitor*) override;
   void DisconnectClient();
 
@@ -85,7 +87,6 @@ class CORE_EXPORT DevToolsHost final : public ScriptWrappable {
  private:
   friend class FrontendMenuProvider;
 
-  DevToolsHost(InspectorFrontendClient*, LocalFrame* frontend_frame);
   void EvaluateScript(const String&);
 
   Member<InspectorFrontendClient> client_;

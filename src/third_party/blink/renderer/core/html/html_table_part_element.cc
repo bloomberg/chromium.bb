@@ -25,8 +25,8 @@
 #include "third_party/blink/renderer/core/html/html_table_part_element.h"
 
 #include "third_party/blink/renderer/core/css/css_image_value.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
-#include "third_party/blink/renderer/core/css_property_names.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
@@ -38,12 +38,12 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 bool HTMLTablePartElement::IsPresentationAttribute(
     const QualifiedName& name) const {
-  if (name == bgcolorAttr || name == backgroundAttr || name == valignAttr ||
-      name == alignAttr || name == heightAttr)
+  if (name == kBgcolorAttr || name == kBackgroundAttr || name == kValignAttr ||
+      name == kAlignAttr || name == kHeightAttr)
     return true;
   return HTMLElement::IsPresentationAttribute(name);
 }
@@ -52,9 +52,9 @@ void HTMLTablePartElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
-  if (name == bgcolorAttr) {
+  if (name == kBgcolorAttr) {
     AddHTMLColorToStyle(style, CSSPropertyBackgroundColor, value);
-  } else if (name == backgroundAttr) {
+  } else if (name == kBackgroundAttr) {
     String url = StripLeadingAndTrailingHTMLSpaces(value);
     if (!url.IsEmpty()) {
       UseCounter::Count(
@@ -67,7 +67,7 @@ void HTMLTablePartElement::CollectStyleForPresentationAttribute(
       style->SetProperty(
           CSSPropertyValue(GetCSSPropertyBackgroundImage(), *image_value));
     }
-  } else if (name == valignAttr) {
+  } else if (name == kValignAttr) {
     if (DeprecatedEqualIgnoringCase(value, "top"))
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyVerticalAlign,
                                               CSSValueTop);
@@ -83,7 +83,7 @@ void HTMLTablePartElement::CollectStyleForPresentationAttribute(
     else
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyVerticalAlign,
                                               value);
-  } else if (name == alignAttr) {
+  } else if (name == kAlignAttr) {
     if (DeprecatedEqualIgnoringCase(value, "middle") ||
         DeprecatedEqualIgnoringCase(value, "center"))
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
@@ -100,7 +100,7 @@ void HTMLTablePartElement::CollectStyleForPresentationAttribute(
     else
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
                                               value);
-  } else if (name == heightAttr) {
+  } else if (name == kHeightAttr) {
     if (!value.IsEmpty())
       AddHTMLLengthToStyle(style, CSSPropertyHeight, value);
   } else {

@@ -11,13 +11,13 @@
 #import "ios/chrome/browser/ui/infobars/test_infobar_delegate.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_egtest_util.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button.h"
-#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/primary_toolbar_view.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/secondary_toolbar_view.h"
-#include "ios/chrome/browser/ui/ui_util.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/top_view_controller.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/test/app/bookmarks_test_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
@@ -51,6 +51,9 @@ const char kPageURL3[] = "/test-page-3.html";
 const char kLinkID[] = "linkID";
 const char kTextID[] = "textID";
 const char kPageLoadedString[] = "Page loaded!";
+
+// The title of the test infobar.
+NSString* kTestInfoBarTitle = @"TestInfoBar";
 
 // Defines the visibility of an element, in relation to the toolbar.
 typedef NS_ENUM(NSInteger, ButtonVisibility) {
@@ -190,7 +193,9 @@ id<GREYMatcher> Spotlighted() {
 bool AddInfobar() {
   infobars::InfoBarManager* manager =
       InfoBarManagerImpl::FromWebState(chrome_test_util::GetCurrentWebState());
-  return TestInfoBarDelegate::Create(manager);
+  TestInfoBarDelegate* test_infobar_delegate =
+      new TestInfoBarDelegate(kTestInfoBarTitle);
+  return test_infobar_delegate->Create(manager);
 }
 
 // Rotate the device if it is an iPhone or change the trait collection to
@@ -577,7 +582,7 @@ void FocusOmnibox() {
                     [[EarlGrey
                         selectElementWithMatcher:
                             chrome_test_util::StaticTextWithAccessibilityLabel(
-                                base::SysUTF8ToNSString(kTestInfoBarTitle))]
+                                kTestInfoBarTitle)]
                         assertWithMatcher:grey_sufficientlyVisible()
                                     error:&error];
                     return error == nil;
@@ -599,10 +604,7 @@ void FocusOmnibox() {
             [window convertRect:element.frame fromView:element.superview]);
 
         CGFloat bottomSafeArea = CGFLOAT_MAX;
-        if (@available(iOS 11, *)) {
-          bottomSafeArea =
-              CGRectGetMaxY(window.safeAreaLayoutGuide.layoutFrame);
-        }
+        bottomSafeArea = CGRectGetMaxY(window.safeAreaLayoutGuide.layoutFrame);
         CGFloat infobarContentBottomPoint =
             MIN(bottomSafeArea, toolbarTopPoint);
         BOOL buttonIsAbove = buttonBottomPoint < infobarContentBottomPoint - 10;
@@ -760,7 +762,7 @@ void FocusOmnibox() {
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdleWithTimeout:2];
 
   [[self class] closeAllTabs];
-  chrome_test_util::OpenNewTab();
+  [ChromeEarlGrey openNewTab];
 
   // Check that the bottom toolbar is visible.
   [[EarlGrey selectElementWithMatcher:SearchButton()]

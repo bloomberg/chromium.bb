@@ -6,6 +6,7 @@
 
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -31,6 +32,14 @@ const char kPDFURL[] = "http://ios/testing/data/http_server_files/testpage.pdf";
 @end
 
 @implementation PopupMenuTestCase
+
+// Rotate the device back to portrait if needed, since some tests attempt to run
+// in landscape.
+- (void)tearDown {
+  [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
+                           errorOrNil:nil];
+  [super tearDown];
+}
 
 #pragma mark - TabHistory
 
@@ -103,6 +112,28 @@ const char kPDFURL[] = "http://ios/testing/data/http_server_files/testpage.pdf";
 }
 
 #pragma mark - Tools Menu
+
+// Tests that rotating the device will automatically dismiss the tools menu.
+- (void)testDismissToolsMenuOnDeviceRotation {
+  // TODO(crbug.com/652465): Enable the test for iPad when rotation bug is
+  // fixed.
+  if (IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Disabled for iPad due to device rotation bug.");
+  }
+
+  [ChromeEarlGreyUI openToolsMenu];
+
+  // Expect that the tools menu has appeared.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ToolsMenuView()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeRight
+                           errorOrNil:nil];
+
+  // Expect that the tools menu has disappeared.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ToolsMenuView()]
+      assertWithMatcher:grey_nil()];
+}
 
 // Tests that the menu is closed when tapping the close button or the scrim.
 - (void)testOpenAndCloseToolsMenu {

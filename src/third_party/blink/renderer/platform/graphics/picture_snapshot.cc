@@ -59,8 +59,7 @@ scoped_refptr<PictureSnapshot> PictureSnapshot::Load(
   pictures.ReserveCapacity(tiles.size());
   FloatRect union_rect;
   for (const auto& tile_stream : tiles) {
-    sk_sp<SkPicture> picture = SkPicture::MakeFromData(
-        tile_stream->data.begin(), tile_stream->data.size());
+    sk_sp<SkPicture> picture = std::move(tile_stream->picture);
     if (!picture)
       return nullptr;
     FloatRect cull_rect(picture->cullRect());

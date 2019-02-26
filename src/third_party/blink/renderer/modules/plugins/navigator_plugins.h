@@ -29,11 +29,11 @@ class NavigatorPlugins final : public GarbageCollected<NavigatorPlugins>,
   static DOMMimeTypeArray* mimeTypes(Navigator&);
   static bool javaEnabled(Navigator&);
 
+  explicit NavigatorPlugins(Navigator&);
+
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit NavigatorPlugins(Navigator&);
-
   DOMPluginArray* plugins(LocalFrame*) const;
   DOMMimeTypeArray* mimeTypes(LocalFrame*) const;
 

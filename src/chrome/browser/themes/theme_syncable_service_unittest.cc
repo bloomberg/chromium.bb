@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
@@ -209,7 +210,7 @@ class ThemeSyncableServiceTest : public testing::Test {
   FakeThemeService* BuildForProfile(Profile* profile) {
     return static_cast<FakeThemeService*>(
         ThemeServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-            profile, &BuildMockThemeService));
+            profile, base::BindRepeating(&BuildMockThemeService)));
   }
 
   syncer::SyncDataList MakeThemeDataList(
@@ -455,7 +456,7 @@ TEST_F(ThemeSyncableServiceTest, ProcessSyncThemeChange) {
   syncer::SyncChangeList change_list;
   change_list.push_back(syncer::SyncChange(
       FROM_HERE, syncer::SyncChange::ACTION_UPDATE,
-      syncer::SyncData::CreateRemoteData(1, entity_specifics, base::Time())));
+      syncer::SyncData::CreateRemoteData(1, entity_specifics)));
   error = theme_sync_service_->ProcessSyncChanges(FROM_HERE, change_list);
   EXPECT_FALSE(error.IsSet()) << error.message();
   EXPECT_EQ(fake_theme_service_->theme_extension(), theme_extension_.get());

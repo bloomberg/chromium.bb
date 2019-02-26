@@ -172,16 +172,16 @@ class PatternAttributesWrapper
     : public GarbageCollected<PatternAttributesWrapper> {
  public:
   static PatternAttributesWrapper* Create() {
-    return new PatternAttributesWrapper;
+    return MakeGarbageCollected<PatternAttributesWrapper>();
   }
+
+  PatternAttributesWrapper() = default;
 
   PatternAttributes& Attributes() { return attributes_; }
   void Set(const PatternAttributes& attributes) { attributes_ = attributes; }
   void Trace(blink::Visitor* visitor) { visitor->Trace(attributes_); }
 
  private:
-  PatternAttributesWrapper() = default;
-
   PatternAttributes attributes_;
 };
 

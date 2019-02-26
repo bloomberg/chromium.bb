@@ -36,7 +36,7 @@ namespace rx
 class GLImplFactory;
 class ProgramImpl;
 struct TranslatedAttribute;
-}
+}  // namespace rx
 
 namespace gl
 {
@@ -447,6 +447,9 @@ class ProgramState final : angle::NonCopyable
     int mGeometryShaderInvocations;
     int mGeometryShaderMaxVertices;
 
+    // GL_ANGLE_multi_draw
+    int mDrawIDLocation;
+
     // The size of the data written to each transform feedback buffer per vertex.
     std::vector<GLsizei> mTransformFeedbackStrides;
 
@@ -524,7 +527,7 @@ class Program final : angle::NonCopyable, public LabeledObject
     // KHR_parallel_shader_compile
     // Try to link the program asynchrously. As a result, background threads may be launched to
     // execute the linking tasks concurrently.
-    Error link(const Context *context);
+    angle::Result link(const Context *context);
 
     // Peek whether there is any running linking tasks.
     bool isLinking() const;
@@ -541,16 +544,16 @@ class Program final : angle::NonCopyable, public LabeledObject
         return mState.mLinkedShaderStages[shaderType];
     }
 
-    Error loadBinary(const Context *context,
-                     GLenum binaryFormat,
-                     const void *binary,
-                     GLsizei length);
-    Error saveBinary(const Context *context,
-                     GLenum *binaryFormat,
-                     void *binary,
-                     GLsizei bufSize,
-                     GLsizei *length) const;
-    GLint getBinaryLength(const Context *context) const;
+    angle::Result loadBinary(const Context *context,
+                             GLenum binaryFormat,
+                             const void *binary,
+                             GLsizei length);
+    angle::Result saveBinary(Context *context,
+                             GLenum *binaryFormat,
+                             void *binary,
+                             GLsizei bufSize,
+                             GLsizei *length) const;
+    GLint getBinaryLength(Context *context) const;
     void setBinaryRetrievableHint(bool retrievable);
     bool getBinaryRetrievableHint() const;
 
@@ -725,6 +728,9 @@ class Program final : angle::NonCopyable, public LabeledObject
     GLenum getTransformFeedbackBufferMode() const;
     GLuint getTransformFeedbackVaryingResourceIndex(const GLchar *name) const;
     const TransformFeedbackVarying &getTransformFeedbackVaryingResource(GLuint index) const;
+
+    bool hasDrawIDUniform() const;
+    void setDrawIDUniform(GLint drawid);
 
     ANGLE_INLINE void addRef()
     {

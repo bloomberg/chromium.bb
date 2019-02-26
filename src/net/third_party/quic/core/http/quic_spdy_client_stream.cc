@@ -96,7 +96,7 @@ void QuicSpdyClientStream::OnPromiseHeaderList(
   }
 }
 
-void QuicSpdyClientStream::OnDataAvailable() {
+void QuicSpdyClientStream::OnBodyAvailable() {
   // For push streams, visitor will not be set until the rendezvous
   // between server promise and client request is complete.
   if (visitor() == nullptr)
@@ -140,7 +140,7 @@ size_t QuicSpdyClientStream::SendRequest(SpdyHeaderBlock headers,
   bytes_sent += header_bytes_written_;
 
   if (!body.empty()) {
-    WriteOrBufferData(body, fin, nullptr);
+    WriteOrBufferBody(body, fin, nullptr);
   }
 
   return bytes_sent;

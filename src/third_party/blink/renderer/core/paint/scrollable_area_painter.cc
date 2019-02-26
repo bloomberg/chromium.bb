@@ -36,7 +36,7 @@ void ScrollableAreaPainter::PaintResizer(GraphicsContext& context,
   abs_rect.MoveBy(paint_offset);
 
   if (const auto* resizer = GetScrollableArea().Resizer()) {
-    if (!cull_rect.IntersectsCullRect(abs_rect))
+    if (!cull_rect.Intersects(abs_rect))
       return;
     ScrollbarPainter::PaintIntoRect(*resizer, context, paint_offset,
                                     LayoutRect(abs_rect));
@@ -133,7 +133,8 @@ void ScrollableAreaPainter::PaintOverflowControls(
   if (painting_overlay_controls)
     adjusted_paint_offset = GetScrollableArea().CachedOverlayScrollbarOffset();
 
-  CullRect adjusted_cull_rect(paint_info.GetCullRect(), -adjusted_paint_offset);
+  CullRect adjusted_cull_rect = paint_info.GetCullRect();
+  adjusted_cull_rect.MoveBy(-adjusted_paint_offset);
   // Overlay scrollbars paint in a second pass through the layer tree so that
   // they will paint on top of everything else. If this is the normal painting
   // pass, paintingOverlayControls will be false, and we should just tell the
@@ -214,18 +215,18 @@ bool ScrollableAreaPainter::OverflowControlsIntersectRect(
       GetScrollableArea().GetLayoutBox()->PixelSnappedBorderBoxRect(
           GetScrollableArea().Layer()->SubpixelAccumulation());
 
-  if (cull_rect.IntersectsCullRect(
+  if (cull_rect.Intersects(
           GetScrollableArea().RectForHorizontalScrollbar(border_box)))
     return true;
 
-  if (cull_rect.IntersectsCullRect(
+  if (cull_rect.Intersects(
           GetScrollableArea().RectForVerticalScrollbar(border_box)))
     return true;
 
-  if (cull_rect.IntersectsCullRect(GetScrollableArea().ScrollCornerRect()))
+  if (cull_rect.Intersects(GetScrollableArea().ScrollCornerRect()))
     return true;
 
-  if (cull_rect.IntersectsCullRect(GetScrollableArea().ResizerCornerRect(
+  if (cull_rect.Intersects(GetScrollableArea().ResizerCornerRect(
           border_box, kResizerForPointer)))
     return true;
 
@@ -242,7 +243,7 @@ void ScrollableAreaPainter::PaintScrollCorner(
   abs_rect.MoveBy(paint_offset);
 
   if (const auto* scroll_corner = GetScrollableArea().ScrollCorner()) {
-    if (!adjusted_cull_rect.IntersectsCullRect(abs_rect))
+    if (!adjusted_cull_rect.Intersects(abs_rect))
       return;
     ScrollbarPainter::PaintIntoRect(*scroll_corner, context, paint_offset,
                                     LayoutRect(abs_rect));

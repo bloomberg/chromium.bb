@@ -76,7 +76,7 @@ void StringImpl::DestroyIfNotStatic() const {
     delete this;
 }
 
-void StringImpl::UpdateContainsOnlyASCII() const {
+void StringImpl::UpdateContainsOnlyASCIIOrEmpty() const {
   contains_only_ascii_ = Is8Bit()
                              ? CharactersAreAllASCII(Characters8(), length())
                              : CharactersAreAllASCII(Characters16(), length());
@@ -275,7 +275,7 @@ scoped_refptr<StringImpl> StringImpl::Create(const LChar* string) {
   return Create(string, SafeCast<wtf_size_t>(length));
 }
 
-bool StringImpl::ContainsOnlyWhitespace() {
+bool StringImpl::ContainsOnlyWhitespaceOrEmpty() {
   // FIXME: The definition of whitespace here includes a number of characters
   // that are not whitespace from the point of view of LayoutText; I wonder if
   // that's a problem in practice.
@@ -418,7 +418,7 @@ scoped_refptr<StringImpl> StringImpl::LowerUnicode() {
 
     for (wtf_size_t i = first_index_to_be_lowered; i < length_; ++i) {
       LChar ch = Characters8()[i];
-      data8[i] = UNLIKELY(ch & ~0x7F) ? static_cast<LChar>(Unicode::ToLower(ch))
+      data8[i] = UNLIKELY(ch & ~0x7F) ? static_cast<LChar>(unicode::ToLower(ch))
                                       : ToASCIILower(ch);
     }
 
@@ -458,12 +458,12 @@ scoped_refptr<StringImpl> StringImpl::LowerUnicode() {
 
   bool error;
   int32_t real_length =
-      Unicode::ToLower(data16, length, Characters16(), length_, &error);
+      unicode::ToLower(data16, length, Characters16(), length_, &error);
   if (!error && real_length == length)
     return new_impl;
 
   new_impl = CreateUninitialized(real_length, data16);
-  Unicode::ToLower(data16, real_length, Characters16(), length_, &error);
+  unicode::ToLower(data16, real_length, Characters16(), length_, &error);
   if (error)
     return this;
   return new_impl;
@@ -503,7 +503,7 @@ scoped_refptr<StringImpl> StringImpl::UpperUnicode() {
       LChar c = Characters8()[i];
       if (UNLIKELY(c == kSmallLetterSharpSCharacter))
         ++number_sharp_s_characters;
-      UChar upper = static_cast<UChar>(Unicode::ToUpper(c));
+      UChar upper = static_cast<UChar>(unicode::ToUpper(c));
       if (UNLIKELY(upper > 0xff)) {
         // Since this upper-cased character does not fit in an 8-bit string, we
         // need to take the 16-bit path.
@@ -527,7 +527,7 @@ scoped_refptr<StringImpl> StringImpl::UpperUnicode() {
         *dest++ = 'S';
         *dest++ = 'S';
       } else {
-        *dest++ = static_cast<LChar>(Unicode::ToUpper(c));
+        *dest++ = static_cast<LChar>(unicode::ToUpper(c));
       }
     }
 
@@ -554,11 +554,11 @@ upconvert:
   // Do a slower implementation for cases that include non-ASCII characters.
   bool error;
   int32_t real_length =
-      Unicode::ToUpper(data16, length, source16, length_, &error);
+      unicode::ToUpper(data16, length, source16, length_, &error);
   if (!error && real_length == length)
     return new_impl;
   new_impl = CreateUninitialized(real_length, data16);
-  Unicode::ToUpper(data16, real_length, source16, length_, &error);
+  unicode::ToUpper(data16, real_length, source16, length_, &error);
   if (error)
     return this;
   return new_impl;
@@ -720,7 +720,7 @@ scoped_refptr<StringImpl> StringImpl::FoldCase() {
     // Do a slower implementation for cases that include non-ASCII Latin-1
     // characters.
     for (int32_t i = 0; i < length; ++i)
-      data[i] = static_cast<LChar>(Unicode::ToLower(Characters8()[i]));
+      data[i] = static_cast<LChar>(unicode::ToLower(Characters8()[i]));
 
     return new_impl;
   }
@@ -740,11 +740,11 @@ scoped_refptr<StringImpl> StringImpl::FoldCase() {
   // Do a slower implementation for cases that include non-ASCII characters.
   bool error;
   int32_t real_length =
-      Unicode::FoldCase(data, length, Characters16(), length_, &error);
+      unicode::FoldCase(data, length, Characters16(), length_, &error);
   if (!error && real_length == length)
     return new_impl;
   new_impl = CreateUninitialized(real_length, data);
-  Unicode::FoldCase(data, real_length, Characters16(), length_, &error);
+  unicode::FoldCase(data, real_length, Characters16(), length_, &error);
   if (error)
     return this;
   return new_impl;
@@ -1048,14 +1048,14 @@ bool DeprecatedEqualIgnoringCase(const UChar* a,
   DCHECK_GE(length, 0u);
   if (a == b)
     return true;
-  return !Unicode::Umemcasecmp(a, b, length);
+  return !unicode::Umemcasecmp(a, b, length);
 }
 
 bool DeprecatedEqualIgnoringCase(const UChar* a,
                                  const LChar* b,
                                  wtf_size_t length) {
   while (length--) {
-    if (Unicode::FoldCase(*a++) != StringImpl::kLatin1CaseFoldTable[*b++])
+    if (unicode::FoldCase(*a++) != StringImpl::kLatin1CaseFoldTable[*b++])
       return false;
   }
   return true;
@@ -1757,15 +1757,15 @@ scoped_refptr<StringImpl> StringImpl::Replace(const StringView& pattern,
   wtf_size_t src_segment_length;
   src_segment_start = 0;
   wtf_size_t dst_offset = 0;
-  bool src_is8_bit = Is8Bit();
-  bool replacement_is8_bit = replacement.Is8Bit();
+  bool src_is_8bit = Is8Bit();
+  bool replacement_is_8bit = replacement.Is8Bit();
 
   // There are 4 cases:
   // 1. This and replacement are both 8 bit.
   // 2. This and replacement are both 16 bit.
   // 3. This is 8 bit and replacement is 16 bit.
   // 4. This is 16 bit and replacement is 8 bit.
-  if (src_is8_bit && replacement_is8_bit) {
+  if (src_is_8bit && replacement_is_8bit) {
     // Case 1
     LChar* data;
     scoped_refptr<StringImpl> new_impl = CreateUninitialized(new_size, data);
@@ -1793,7 +1793,7 @@ scoped_refptr<StringImpl> StringImpl::Replace(const StringView& pattern,
   scoped_refptr<StringImpl> new_impl = CreateUninitialized(new_size, data);
   while ((src_segment_end = Find(pattern, src_segment_start)) != kNotFound) {
     src_segment_length = src_segment_end - src_segment_start;
-    if (src_is8_bit) {
+    if (src_is_8bit) {
       // Case 3.
       for (wtf_size_t i = 0; i < src_segment_length; ++i)
         data[i + dst_offset] = Characters8()[i + src_segment_start];
@@ -1803,7 +1803,7 @@ scoped_refptr<StringImpl> StringImpl::Replace(const StringView& pattern,
              src_segment_length * sizeof(UChar));
     }
     dst_offset += src_segment_length;
-    if (replacement_is8_bit) {
+    if (replacement_is_8bit) {
       // Cases 2 & 3.
       for (wtf_size_t i = 0; i < rep_str_length; ++i)
         data[i + dst_offset] = replacement.Characters8()[i];
@@ -1817,7 +1817,7 @@ scoped_refptr<StringImpl> StringImpl::Replace(const StringView& pattern,
   }
 
   src_segment_length = length_ - src_segment_start;
-  if (src_is8_bit) {
+  if (src_is_8bit) {
     // Case 3.
     for (wtf_size_t i = 0; i < src_segment_length; ++i)
       data[i + dst_offset] = Characters8()[i + src_segment_start];
@@ -2000,7 +2000,7 @@ UChar32 ToUpper(UChar32 c, const AtomicString& locale_identifier) {
     }
   }
 
-  return Unicode::ToUpper(c);
+  return unicode::ToUpper(c);
 }
 
 }  // namespace WTF

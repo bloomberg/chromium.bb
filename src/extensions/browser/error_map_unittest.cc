@@ -27,8 +27,6 @@ class ErrorMapUnitTest : public testing::Test {
   ErrorMapUnitTest() { }
   ~ErrorMapUnitTest() override {}
 
-  void SetUp() override { testing::Test::SetUp(); }
-
  protected:
   ErrorMap errors_;
 };

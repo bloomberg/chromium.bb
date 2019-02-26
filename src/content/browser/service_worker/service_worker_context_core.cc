@@ -92,8 +92,7 @@ void SuccessReportingCallback(
 bool IsSameOriginClientProviderHost(const GURL& origin,
                                     bool allow_reserved_client,
                                     ServiceWorkerProviderHost* host) {
-  return host->IsProviderForClient() &&
-         host->document_url().GetOrigin() == origin &&
+  return host->IsProviderForClient() && host->url().GetOrigin() == origin &&
          (allow_reserved_client || host->is_execution_ready());
 }
 
@@ -101,8 +100,7 @@ bool IsSameOriginWindowProviderHost(const GURL& origin,
                                     ServiceWorkerProviderHost* host) {
   return host->provider_type() ==
              blink::mojom::ServiceWorkerProviderType::kForWindow &&
-         host->document_url().GetOrigin() == origin &&
-         host->is_execution_ready();
+         host->url().GetOrigin() == origin && host->is_execution_ready();
 }
 
 // Returns true if any of the frames specified by |frames| is a top-level frame.
@@ -155,7 +153,7 @@ class ClearAllServiceWorkersHelper
     }
     for (const auto& registration_info : registrations) {
       context->UnregisterServiceWorker(
-          registration_info.pattern,
+          registration_info.scope,
           base::BindOnce(&ClearAllServiceWorkersHelper::OnResult, this));
     }
   }
@@ -245,8 +243,8 @@ bool ServiceWorkerContextCore::ProviderHostIterator::IsAtEnd() {
 
 ServiceWorkerContextCore::ProviderHostIterator::ProviderHostIterator(
     ProcessToProviderMap* map,
-    const ProviderHostPredicate& predicate)
-    : map_(map), predicate_(predicate) {
+    ProviderHostPredicate predicate)
+    : map_(map), predicate_(std::move(predicate)) {
   DCHECK(map);
   Initialize();
 }
@@ -481,12 +479,12 @@ void ServiceWorkerContextCore::UpdateServiceWorker(
 }
 
 void ServiceWorkerContextCore::UnregisterServiceWorker(
-    const GURL& pattern,
+    const GURL& scope,
     UnregistrationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   job_coordinator_->Unregister(
-      pattern, base::BindOnce(&ServiceWorkerContextCore::UnregistrationComplete,
-                              AsWeakPtr(), pattern, std::move(callback)));
+      scope, base::BindOnce(&ServiceWorkerContextCore::UnregistrationComplete,
+                            AsWeakPtr(), scope, std::move(callback)));
 }
 
 void ServiceWorkerContextCore::DeleteForOrigin(const GURL& origin,
@@ -522,8 +520,9 @@ void ServiceWorkerContextCore::DidGetRegistrationsForDeleteForOrigin(
     } else {
       barrier.Run();
     }
+    job_coordinator_->Abort(registration->scope());
     UnregisterServiceWorker(
-        registration->pattern(),
+        registration->scope(),
         base::BindOnce(&SuccessCollectorCallback, barrier, overall_success));
   }
 }
@@ -535,7 +534,7 @@ ServiceWorkerContextCore::GetProviderMapForProcess(int process_id) {
 }
 
 void ServiceWorkerContextCore::RegistrationComplete(
-    const GURL& pattern,
+    const GURL& scope,
     ServiceWorkerContextCore::RegistrationCallback callback,
     blink::ServiceWorkerStatusCode status,
     const std::string& status_message,
@@ -553,7 +552,7 @@ void ServiceWorkerContextCore::RegistrationComplete(
   // persisted anything to storage yet.
   observer_list_->Notify(
       FROM_HERE, &ServiceWorkerContextCoreObserver::OnRegistrationCompleted,
-      registration->id(), pattern);
+      registration->id(), scope);
 }
 
 void ServiceWorkerContextCore::UpdateComplete(
@@ -573,7 +572,7 @@ void ServiceWorkerContextCore::UpdateComplete(
 }
 
 void ServiceWorkerContextCore::UnregistrationComplete(
-    const GURL& pattern,
+    const GURL& scope,
     ServiceWorkerContextCore::UnregistrationCallback callback,
     int64_t registration_id,
     blink::ServiceWorkerStatusCode status) {
@@ -581,7 +580,7 @@ void ServiceWorkerContextCore::UnregistrationComplete(
   if (status == blink::ServiceWorkerStatusCode::kOk) {
     observer_list_->Notify(
         FROM_HERE, &ServiceWorkerContextCoreObserver::OnRegistrationDeleted,
-        registration_id, pattern);
+        registration_id, scope);
   }
 }
 
@@ -617,7 +616,7 @@ void ServiceWorkerContextCore::AddLiveRegistration(
   live_registrations_[registration->id()] = registration;
   observer_list_->Notify(
       FROM_HERE, &ServiceWorkerContextCoreObserver::OnNewLiveRegistration,
-      registration->id(), registration->pattern());
+      registration->id(), registration->scope());
 }
 
 void ServiceWorkerContextCore::RemoveLiveRegistration(int64_t id) {
@@ -758,11 +757,11 @@ int ServiceWorkerContextCore::GetVersionFailureCount(int64_t version_id) {
 }
 
 void ServiceWorkerContextCore::NotifyRegistrationStored(int64_t registration_id,
-                                                        const GURL& pattern) {
+                                                        const GURL& scope) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   observer_list_->Notify(
       FROM_HERE, &ServiceWorkerContextCoreObserver::OnRegistrationStored,
-      registration_id, pattern);
+      registration_id, scope);
 }
 
 void ServiceWorkerContextCore::OnStorageWiped() {
@@ -872,7 +871,7 @@ void ServiceWorkerContextCore::DidFindRegistrationForCheckHasServiceWorker(
     return;
   }
 
-  if (!ServiceWorkerUtils::ScopeMatches(registration->pattern(), other_url)) {
+  if (!ServiceWorkerUtils::ScopeMatches(registration->scope(), other_url)) {
     std::move(callback).Run(ServiceWorkerCapability::NO_SERVICE_WORKER);
     return;
   }
@@ -883,10 +882,10 @@ void ServiceWorkerContextCore::DidFindRegistrationForCheckHasServiceWorker(
   }
 
   if (!registration->active_version() && !registration->waiting_version()) {
-    registration->RegisterRegistrationFinishedCallback(base::Bind(
-        &ServiceWorkerContextCore::
-            OnRegistrationFinishedForCheckHasServiceWorker,
-        AsWeakPtr(), base::Passed(std::move(callback)), registration));
+    registration->RegisterRegistrationFinishedCallback(
+        base::BindOnce(&ServiceWorkerContextCore::
+                           OnRegistrationFinishedForCheckHasServiceWorker,
+                       AsWeakPtr(), std::move(callback), registration));
     return;
   }
 

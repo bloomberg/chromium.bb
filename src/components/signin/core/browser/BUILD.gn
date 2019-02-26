@@ -17,31 +17,81 @@ buildflag_header("signin_buildflags") {
   ]
 }
 
-# Split into its own target to allow the Identity Service to depend on it in
-# typemaps without introducing a dependency on all of
-# //components/signin/core/browser, which is undesirable. In the long term
-# this file will move to be part of the Identity Service client library.
-static_library("account_info") {
+# This target contains code that will be shared between the Identity Service
+# implementation and its client library/clients. Currently, this code is used
+# both by IdentityManager and by its clients.
+static_library("shared") {
   sources = [
     "account_info.cc",
     "account_info.h",
-  ]
-  deps = [
-    "//components/account_id",
-  ]
-}
-
-# Split into its own target to allow browser clients of the Identity Service to
-# record browser-specific signin metrics without having to depend on all of
-# //components/signin/core/browser.
-static_library("signin_metrics") {
-  sources = [
+    "identity_utils.cc",
+    "identity_utils.h",
     "signin_metrics.cc",
     "signin_metrics.h",
+    "signin_pref_names.cc",
+    "signin_pref_names.h",
+    "signin_switches.cc",
+    "signin_switches.h",
+  ]
+  deps = [
+    ":signin_buildflags",
+    "//components/account_id",
+    "//components/prefs:prefs",
+    "//third_party/icu:icui18n",
   ]
   public_deps = [
     "//base",
+
+    # TODO(blundell): Analyze this dependency.
     "//google_apis",
+  ]
+}
+
+# This target contains what will become the core of the Identity Service
+# implementation. It currently forms the core of the IdentityManager
+# implementation (//services/identity/public/cpp/identity_manager.*). We are
+# actively converting the codebase away from using the code in this target
+# directly to using IdentityManager (tracked in https://crbug.com/796544). Do
+# not add code to this target without consulting with blundell@chromium.org.
+static_library("internals") {
+  sources = [
+    "account_consistency_method.cc",
+    "account_consistency_method.h",
+    "account_tracker_service.cc",
+    "account_tracker_service.h",
+    "device_id_helper.cc",
+    "device_id_helper.h",
+    "gaia_cookie_manager_service.cc",
+    "gaia_cookie_manager_service.h",
+    "profile_oauth2_token_service.cc",
+    "profile_oauth2_token_service.h",
+    "signin_client.cc",
+    "signin_client.h",
+    "signin_error_controller.cc",
+    "signin_error_controller.h",
+    "signin_internals_util.cc",
+    "signin_internals_util.h",
+    "signin_manager.cc",
+    "signin_manager.h",
+    "signin_manager_base.cc",
+    "signin_manager_base.h",
+  ]
+
+  if (is_chromeos) {
+    sources -= [ "signin_manager.cc" ]
+  }
+
+  deps = [
+    ":shared",
+    "//base",
+    "//components/data_use_measurement/core",
+    "//components/keyed_service/core",
+    "//components/prefs",
+    "//google_apis",
+    "//net",
+    "//services/network/public/cpp",
+    "//services/network/public/mojom",
+    "//ui/gfx",
   ]
 }
 
@@ -59,8 +109,6 @@ static_library("browser") {
     "account_reconcilor.h",
     "account_reconcilor_delegate.cc",
     "account_reconcilor_delegate.h",
-    "account_tracker_service.cc",
-    "account_tracker_service.h",
     "avatar_icon_util.cc",
     "avatar_icon_util.h",
     "child_account_info_fetcher.cc",
@@ -73,44 +121,22 @@ static_library("browser") {
     "chrome_connected_header_helper.h",
     "cookie_settings_util.cc",
     "cookie_settings_util.h",
-    "device_id_helper.cc",
-    "device_id_helper.h",
     "dice_account_reconcilor_delegate.cc",
     "dice_account_reconcilor_delegate.h",
     "dice_header_helper.cc",
     "dice_header_helper.h",
-    "gaia_cookie_manager_service.cc",
-    "gaia_cookie_manager_service.h",
     "mirror_account_reconcilor_delegate.cc",
     "mirror_account_reconcilor_delegate.h",
-    "profile_management_switches.cc",
-    "profile_management_switches.h",
-    "profile_oauth2_token_service.cc",
-    "profile_oauth2_token_service.h",
-    "signin_client.cc",
-    "signin_client.h",
-    "signin_error_controller.cc",
-    "signin_error_controller.h",
     "signin_header_helper.cc",
     "signin_header_helper.h",
-    "signin_internals_util.cc",
-    "signin_internals_util.h",
     "signin_investigator.cc",
     "signin_investigator.h",
-    "signin_manager.cc",
-    "signin_manager.h",
-    "signin_manager_base.cc",
-    "signin_manager_base.h",
-    "signin_pref_names.cc",
-    "signin_pref_names.h",
     "signin_status_metrics_provider.cc",
     "signin_status_metrics_provider.h",
     "signin_status_metrics_provider_base.cc",
     "signin_status_metrics_provider_base.h",
     "signin_status_metrics_provider_delegate.cc",
     "signin_status_metrics_provider_delegate.h",
-    "signin_switches.cc",
-    "signin_switches.h",
     "signin_tracker.cc",
     "signin_tracker.h",
     "webdata/token_service_table.cc",
@@ -122,9 +148,9 @@ static_library("browser") {
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   public_deps = [
-    ":account_info",
+    ":internals",
+    ":shared",
     ":signin_buildflags",
-    ":signin_metrics",
     "//base",
     "//components/account_id",
     "//components/content_settings/core/browser",
@@ -147,6 +173,7 @@ static_library("browser") {
     "//components/os_crypt",
     "//components/webdata/common",
     "//crypto",
+    "//services/identity/public/cpp",
     "//services/network/public/cpp",
     "//skia",
     "//sql",
@@ -156,7 +183,6 @@ static_library("browser") {
 
   if (is_chromeos) {
     sources -= [
-      "signin_manager.cc",
       "signin_status_metrics_provider.cc",
       "signin_status_metrics_provider_delegate.cc",
     ]
@@ -180,13 +206,14 @@ static_library("browser") {
   }
 }
 
-static_library("test_support") {
+# This target contains test support that backs the test support for
+# IdentityManager (and eventually likely for the Identity Service). We are
+# actively converting the codebase away from using the code in this target
+# directly to using IdentityManager (tracked in https://crbug.com/796544). Do
+# not add code to this target without consulting with blundell@chromium.org.
+static_library("internals_test_support") {
   testonly = true
   sources = [
-    "fake_account_fetcher_service.cc",
-    "fake_account_fetcher_service.h",
-    "fake_auth_status_provider.cc",
-    "fake_auth_status_provider.h",
     "fake_gaia_cookie_manager_service.cc",
     "fake_gaia_cookie_manager_service.h",
     "fake_profile_oauth2_token_service.cc",
@@ -199,20 +226,41 @@ static_library("test_support") {
 
   deps = [
     "//base/test:test_support",
+    "//components/prefs",
+    "//google_apis:test_support",
+  ]
+
+  public_deps = [
+    ":internals",
+    ":shared",
+    "//base",
+    "//services/network:test_support",
+  ]
+}
+
+static_library("test_support") {
+  testonly = true
+  sources = [
+    "fake_account_fetcher_service.cc",
+    "fake_account_fetcher_service.h",
+    "fake_auth_status_provider.cc",
+    "fake_auth_status_provider.h",
+  ]
+
+  deps = [
     "//ui/gfx:test_support",
   ]
 
   public_deps = [
     ":browser",
+
+    # This public_dep is present to avoid requiring all consumers of this
+    # target to also depend on the below target. Once there are no direct
+    # consumers of the internals_test_support target, this dep should be
+    # removed. See https://crbug.com/796544.
+    ":internals_test_support",
     "//base",
     "//components/image_fetcher/core/",
-    "//components/prefs:test_support",
-    "//components/webdata/common",
-    "//google_apis:test_support",
-    "//net:test_support",
-    "//services/network:test_support",
-    "//services/network/public/cpp",
-    "//testing/gtest",
   ]
 }
 
@@ -221,12 +269,14 @@ source_set("unit_tests") {
   sources = [
     "account_info_unittest.cc",
     "account_investigator_unittest.cc",
+    "account_reconcilor_delegate_unittest.cc",
     "account_reconcilor_unittest.cc",
     "account_tracker_service_unittest.cc",
     "avatar_icon_util_unittest.cc",
     "device_id_helper_unittest.cc",
     "dice_account_reconcilor_delegate_unittest.cc",
     "gaia_cookie_manager_service_unittest.cc",
+    "identity_utils_unittest.cc",
     "signin_error_controller_unittest.cc",
     "signin_header_helper_unittest.cc",
     "signin_investigator_unittest.cc",
@@ -244,9 +294,15 @@ source_set("unit_tests") {
     "//components/content_settings/core/browser",
     "//components/os_crypt:test_support",
     "//components/prefs",
+    "//components/prefs:test_support",
     "//components/sync_preferences",
     "//components/sync_preferences:test_support",
+    "//components/webdata/common",
+    "//google_apis:test_support",
+    "//net:test_support",
+    "//services/identity/public/cpp:test_support",
     "//testing/gmock",
+    "//testing/gtest",
   ]
 
   if (is_chromeos) {

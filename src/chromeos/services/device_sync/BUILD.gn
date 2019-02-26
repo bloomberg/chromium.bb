@@ -2,9 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
-import("//services/service_manager/public/tools/test/service_test.gni")
 
 assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
 
@@ -92,7 +90,6 @@ source_set("unit_tests") {
     "//components/prefs:test_support",
     "//services/identity/public/cpp:test_support",
     "//services/network:test_support",
-    "//services/service_manager/public/cpp:service_test_support",
     "//services/service_manager/public/cpp/test:test_support",
     "//testing/gtest",
   ]

@@ -224,11 +224,11 @@ TEST_F(FunctionMockerTest, MocksBinaryFunction) {
 
 // Tests mocking a decimal function.
 TEST_F(FunctionMockerTest, MocksDecimalFunction) {
-  EXPECT_CALL(mock_foo_, Decimal(true, 'a', 0, 0, 1L, A<float>(),
-                                 Lt(100), 5U, NULL, "hi"))
+  EXPECT_CALL(mock_foo_, Decimal(true, 'a', 0, 0, 1L, A<float>(), Lt(100), 5U,
+                                 nullptr, "hi"))
       .WillOnce(Return(5));
 
-  EXPECT_EQ(5, foo_->Decimal(true, 'a', 0, 0, 1, 0, 0, 5, NULL, "hi"));
+  EXPECT_EQ(5, foo_->Decimal(true, 'a', 0, 0, 1, 0, 0, 5, nullptr, "hi"));
 }
 
 // Tests mocking a function that takes a non-const reference.
@@ -326,11 +326,11 @@ TEST_F(FunctionMockerTest, MocksUnaryFunctionWithCallType) {
 
 // Tests mocking a decimal function with calltype.
 TEST_F(FunctionMockerTest, MocksDecimalFunctionWithCallType) {
-  EXPECT_CALL(mock_foo_, CTDecimal(true, 'a', 0, 0, 1L, A<float>(),
-                                   Lt(100), 5U, NULL, "hi"))
+  EXPECT_CALL(mock_foo_, CTDecimal(true, 'a', 0, 0, 1L, A<float>(), Lt(100), 5U,
+                                   nullptr, "hi"))
       .WillOnce(Return(10));
 
-  EXPECT_EQ(10, foo_->CTDecimal(true, 'a', 0, 0, 1, 0, 0, 5, NULL, "hi"));
+  EXPECT_EQ(10, foo_->CTDecimal(true, 'a', 0, 0, 1, 0, 0, 5, nullptr, "hi"));
 }
 
 // Tests mocking functions overloaded on the const-ness of this object.
@@ -617,6 +617,17 @@ TEST(MockFunctionTest, AsStdFunctionReturnsReference) {
   value = 2;
   EXPECT_EQ(2, ref);
 }
+
+TEST(MockFunctionTest, AsStdFunctionWithReferenceParameter) {
+  MockFunction<int(int &)> foo;
+  auto call = [](const std::function<int(int& )> &f, int &i) {
+    return f(i);
+  };
+  int i = 42;
+  EXPECT_CALL(foo, Call(i)).WillOnce(Return(-1));
+  EXPECT_EQ(-1, call(foo.AsStdFunction(), i));
+}
+
 #endif  // GTEST_HAS_STD_FUNCTION_
 
 struct MockMethodSizes0 {

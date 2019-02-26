@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/modules/payments/payment_manager.h"
 #include "third_party/blink/renderer/modules/permissions/permission_utils.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -40,10 +41,6 @@ bool rejectError(ScriptPromiseResolver* resolver,
   switch (status) {
     case payments::mojom::blink::PaymentHandlerStatus::SUCCESS:
       return false;
-    case payments::mojom::blink::PaymentHandlerStatus::NOT_IMPLEMENTED:
-      resolver->Reject(DOMException::Create(
-          DOMExceptionCode::kNotSupportedError, "Not implemented yet"));
-      return true;
     case payments::mojom::blink::PaymentHandlerStatus::NOT_FOUND:
       resolver->Resolve();
       return true;
@@ -102,23 +99,23 @@ ScriptPromise RejectNotAllowedToUsePaymentFeatures(ScriptState* script_state) {
 class PaymentInstrumentParameter
     : public GarbageCollectedFinalized<PaymentInstrumentParameter> {
  public:
-  explicit PaymentInstrumentParameter(const PaymentInstrument& instrument)
-      : has_icons_(instrument.hasIcons()),
-        has_capabilities_(instrument.hasCapabilities()),
-        has_method_(instrument.hasMethod()),
-        has_name_(instrument.hasName()),
-        capabilities_(instrument.capabilities()),
-        method_(instrument.method()),
-        name_(instrument.name()) {
+  explicit PaymentInstrumentParameter(const PaymentInstrument* instrument)
+      : has_icons_(instrument->hasIcons()),
+        has_capabilities_(instrument->hasCapabilities()),
+        has_method_(instrument->hasMethod()),
+        has_name_(instrument->hasName()),
+        capabilities_(instrument->capabilities()),
+        method_(instrument->method()),
+        name_(instrument->name()) {
     if (has_icons_)
-      icons_ = instrument.icons();
+      icons_ = instrument->icons();
   }
 
   bool has_capabilities() const { return has_capabilities_; }
   ScriptValue capabilities() const { return capabilities_; }
 
   bool has_icons() const { return has_icons_; }
-  const HeapVector<ImageObject>& icons() const { return icons_; }
+  const HeapVector<Member<ImageObject>>& icons() const { return icons_; }
 
   bool has_method() const { return has_method_; }
   const String& method() const { return method_; }
@@ -135,7 +132,7 @@ class PaymentInstrumentParameter
   bool has_name_;
 
   ScriptValue capabilities_;
-  HeapVector<ImageObject> icons_;
+  HeapVector<Member<ImageObject>> icons_;
   String method_;
   String name_;
 };
@@ -229,7 +226,7 @@ ScriptPromise PaymentInstruments::has(ScriptState* script_state,
 
 ScriptPromise PaymentInstruments::set(ScriptState* script_state,
                                       const String& instrument_key,
-                                      const PaymentInstrument& details,
+                                      const PaymentInstrument* details,
                                       ExceptionState& exception_state) {
   if (!AllowedToUsePaymentFeatures(script_state))
     return RejectNotAllowedToUsePaymentFeatures(script_state);
@@ -252,10 +249,11 @@ ScriptPromise PaymentInstruments::set(ScriptState* script_state,
               mojom::blink::PermissionName::PAYMENT_HANDLER),
           LocalFrame::HasTransientUserActivation(doc ? doc->GetFrame()
                                                      : nullptr),
-          WTF::Bind(&PaymentInstruments::OnRequestPermission,
-                    WrapPersistent(this), WrapPersistent(resolver),
-                    instrument_key,
-                    WrapPersistent(new PaymentInstrumentParameter(details))));
+          WTF::Bind(
+              &PaymentInstruments::OnRequestPermission, WrapPersistent(this),
+              WrapPersistent(resolver), instrument_key,
+              WrapPersistent(
+                  MakeGarbageCollected<PaymentInstrumentParameter>(details))));
   return resolver->Promise();
 }
 
@@ -313,22 +311,22 @@ void PaymentInstruments::OnRequestPermission(
   if (details->has_icons()) {
     ExecutionContext* context =
         ExecutionContext::From(resolver->GetScriptState());
-    for (const ImageObject image_object : details->icons()) {
-      KURL parsed_url = context->CompleteURL(image_object.src());
+    for (const ImageObject* image_object : details->icons()) {
+      KURL parsed_url = context->CompleteURL(image_object->src());
       if (!parsed_url.IsValid() || !parsed_url.ProtocolIsInHTTPFamily()) {
         resolver->Reject(V8ThrowException::CreateTypeError(
             resolver->GetScriptState()->GetIsolate(),
-            "'" + image_object.src() + "' is not a valid URL."));
+            "'" + image_object->src() + "' is not a valid URL."));
         return;
       }
 
       mojom::blink::ManifestImageResourcePtr icon =
           mojom::blink::ManifestImageResource::New();
       icon->src = parsed_url;
-      icon->type = image_object.type();
+      icon->type = image_object->type();
       icon->purpose.push_back(blink::mojom::ManifestImageResource_Purpose::ANY);
       WebVector<WebSize> web_sizes =
-          WebIconSizesParser::ParseIconSizes(image_object.sizes());
+          WebIconSizesParser::ParseIconSizes(image_object->sizes());
       for (const auto& web_size : web_sizes) {
         icon->sizes.push_back(web_size);
       }
@@ -396,28 +394,28 @@ void PaymentInstruments::onGetPaymentInstrument(
 
   if (rejectError(resolver, status))
     return;
-  PaymentInstrument instrument;
-  instrument.setName(stored_instrument->name);
+  PaymentInstrument* instrument = PaymentInstrument::Create();
+  instrument->setName(stored_instrument->name);
 
-  HeapVector<ImageObject> icons;
+  HeapVector<Member<ImageObject>> icons;
   for (const auto& icon : stored_instrument->icons) {
-    ImageObject image_object;
-    image_object.setSrc(icon->src.GetString());
-    image_object.setType(icon->type);
+    ImageObject* image_object = ImageObject::Create();
+    image_object->setSrc(icon->src.GetString());
+    image_object->setType(icon->type);
     String sizes = WTF::g_empty_string;
     for (const auto& size : icon->sizes) {
       sizes = sizes + String::Format("%dx%d ", size.width, size.height);
     }
-    image_object.setSizes(sizes.StripWhiteSpace());
-    icons.emplace_back(image_object);
+    image_object->setSizes(sizes.StripWhiteSpace());
+    icons.push_back(image_object);
   }
-  instrument.setIcons(icons);
-  instrument.setMethod(stored_instrument->method);
+  instrument->setIcons(icons);
+  instrument->setMethod(stored_instrument->method);
   if (!stored_instrument->stringified_capabilities.IsEmpty()) {
     ExceptionState exception_state(resolver->GetScriptState()->GetIsolate(),
                                    ExceptionState::kGetterContext,
                                    "PaymentInstruments", "get");
-    instrument.setCapabilities(
+    instrument->setCapabilities(
         ScriptValue(resolver->GetScriptState(),
                     FromJSONString(resolver->GetScriptState()->GetIsolate(),
                                    resolver->GetScriptState()->GetContext(),

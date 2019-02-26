@@ -40,6 +40,8 @@ cast_source_set("connection") {
   sources = [
     "mixer_service_connection.cc",
     "mixer_service_connection.h",
+    "mixer_service_connection_factory.cc",
+    "mixer_service_connection_factory.h",
   ]
 
   deps = [

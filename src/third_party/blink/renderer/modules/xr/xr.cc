@@ -15,6 +15,8 @@
 #include "third_party/blink/renderer/modules/event_modules.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/xr/xr_device.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
+
 namespace blink {
 
 namespace {
@@ -54,7 +56,7 @@ ExecutionContext* XR::GetExecutionContext() const {
 }
 
 const AtomicString& XR::InterfaceName() const {
-  return EventTargetNames::XR;
+  return event_target_names::kXR;
 }
 
 ScriptPromise XR::requestDevice(ScriptState* script_state) {
@@ -125,13 +127,13 @@ ScriptPromise XR::requestDevice(ScriptState* script_state) {
 // the XRDevice might now be able to support immersive sessions, where it
 // couldn't before.
 void XR::OnDeviceChanged() {
-  DispatchEvent(*blink::Event::Create(EventTypeNames::devicechange));
+  DispatchEvent(*blink::Event::Create(event_type_names::kDevicechange));
 }
 
 void XR::OnRequestDeviceReturned(device::mojom::blink::XRDevicePtr device) {
   pending_sync_ = false;
   if (device) {
-    device_ = new XRDevice(this, std::move(device));
+    device_ = MakeGarbageCollected<XRDevice>(this, std::move(device));
   }
   ResolveRequestDevice();
 }
@@ -191,7 +193,7 @@ void XR::AddedEventListener(const AtomicString& event_type,
   // If we don't have device and there is no sync pending, then request the
   // device to ensure devices have been enumerated and register as a listener
   // for changes.
-  if (event_type == EventTypeNames::devicechange && !device_ &&
+  if (event_type == event_type_names::kDevicechange && !device_ &&
       !pending_sync_) {
     device::mojom::blink::VRServiceClientPtr client;
     binding_.Bind(mojo::MakeRequest(&client));

@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "net/base/ip_endpoint.h"
+#include "remoting/host/action_executor.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/client_session.h"
 #include "remoting/host/client_session_control.h"
@@ -38,6 +39,7 @@ class MockDesktopEnvironment : public DesktopEnvironment {
   MockDesktopEnvironment();
   ~MockDesktopEnvironment() override;
 
+  MOCK_METHOD0(CreateActionExecutorPtr, ActionExecutor*());
   MOCK_METHOD0(CreateAudioCapturerPtr, AudioCapturer*());
   MOCK_METHOD0(CreateInputInjectorPtr, InputInjector*());
   MOCK_METHOD0(CreateScreenControlsPtr, ScreenControls*());
@@ -49,6 +51,7 @@ class MockDesktopEnvironment : public DesktopEnvironment {
   MOCK_CONST_METHOD0(GetDesktopSessionId, uint32_t());
 
   // DesktopEnvironment implementation.
+  std::unique_ptr<ActionExecutor> CreateActionExecutor() override;
   std::unique_ptr<AudioCapturer> CreateAudioCapturer() override;
   std::unique_ptr<InputInjector> CreateInputInjector() override;
   std::unique_ptr<ScreenControls> CreateScreenControls() override;
@@ -68,6 +71,8 @@ class MockClientSessionControl : public ClientSessionControl {
   MOCK_METHOD1(OnLocalMouseMoved, void(const webrtc::DesktopVector&));
   MOCK_METHOD1(SetDisableInputs, void(bool));
   MOCK_METHOD0(ResetVideoPipeline, void());
+  MOCK_METHOD1(OnDesktopDisplayChanged,
+               void(std::unique_ptr<protocol::VideoLayout>));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockClientSessionControl);

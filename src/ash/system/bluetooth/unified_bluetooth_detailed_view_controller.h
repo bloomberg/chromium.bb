@@ -7,9 +7,10 @@
 
 #include <memory>
 
-#include "ash/system/bluetooth/bluetooth_observer.h"
+#include "ash/system/bluetooth/tray_bluetooth_helper.h"
 #include "ash/system/unified/detailed_view_controller.h"
 #include "base/macros.h"
+#include "base/timer/timer.h"
 
 namespace ash {
 
@@ -21,8 +22,9 @@ class DetailedViewDelegate;
 class UnifiedSystemTrayController;
 
 // Controller of Bluetooth detailed view in UnifiedSystemTray.
-class UnifiedBluetoothDetailedViewController : public DetailedViewController,
-                                               public BluetoothObserver {
+class UnifiedBluetoothDetailedViewController
+    : public DetailedViewController,
+      public TrayBluetoothHelper::Observer {
  public:
   explicit UnifiedBluetoothDetailedViewController(
       UnifiedSystemTrayController* tray_controller);
@@ -32,13 +34,22 @@ class UnifiedBluetoothDetailedViewController : public DetailedViewController,
   views::View* CreateView() override;
 
   // BluetoothObserver:
-  void OnBluetoothRefresh() override;
-  void OnBluetoothDiscoveringChanged() override;
+  void OnBluetoothSystemStateChanged() override;
+  void OnBluetoothScanStateChanged() override;
+  void OnBluetoothDeviceListChanged() override;
 
  private:
+  void UpdateDeviceListAndUI();
+  void UpdateBluetoothDeviceList();
+
   const std::unique_ptr<DetailedViewDelegate> detailed_view_delegate_;
 
   tray::BluetoothDetailedView* view_ = nullptr;
+
+  BluetoothDeviceList connected_devices_;
+  BluetoothDeviceList connecting_devices_;
+  BluetoothDeviceList paired_not_connected_devices_;
+  BluetoothDeviceList discovered_not_paired_devices_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedBluetoothDetailedViewController);
 };

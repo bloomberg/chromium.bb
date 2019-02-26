@@ -50,14 +50,9 @@ template("fuchsia_sdk_fidl_pkg") {
 #   deps         - List of dependencies.
 #   libs         - List of precompiled libraries.
 template("fuchsia_sdk_pkg") {
-  _package_name = target_name
-  if (defined(invoker.package_name)) {
-    _package_name = invoker.package_name
-  }
-
   config("${target_name}_config") {
+    forward_variables_from(invoker, [ "include_dirs" ])
     visibility = [ ":${invoker.target_name}" ]
-    include_dirs = [ "sdk/pkg/${_package_name}/include" ]
   }
 
   static_library(target_name) {
@@ -65,23 +60,17 @@ template("fuchsia_sdk_pkg") {
                            [
                              "data",
                              "deps",
+                             "libs",
                              "public_deps",
+                             "sources",
                              "testonly",
                              "visibility",
                            ])
 
-    sources = []
-    if (defined(invoker.sources)) {
-      foreach(src, invoker.sources) {
-        sources += [ "sdk/pkg/${_package_name}/${src}" ]
-      }
-    }
-
     public_configs = [ ":${invoker.target_name}_config" ]
 
-    if (defined(invoker.libs)) {
-      configs += [ ":sdk_lib_dirs_config" ]
-      libs = invoker.libs
+    if (defined(libs)) {
+      configs += [ "//third_party/fuchsia-sdk:sdk_lib_dirs_config" ]
     }
   }
 }

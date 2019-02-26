@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/time/default_tick_clock.h"
-#include "base/trace_event/auto_open_close_event.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/media_switches.h"
@@ -20,6 +19,9 @@ namespace media {
 // Amount of time to wait between UpdateCurrentFrame() callbacks before starting
 // background rendering to keep the Render() callbacks moving.
 const int kBackgroundRenderingTimeoutMs = 250;
+
+// static
+constexpr const char VideoFrameCompositor::kTracingCategory[];
 
 VideoFrameCompositor::VideoFrameCompositor(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
@@ -79,6 +81,7 @@ VideoFrameCompositor::~VideoFrameCompositor() {
 
 void VideoFrameCompositor::EnableSubmission(
     const viz::SurfaceId& id,
+    base::TimeTicks local_surface_id_allocation_time,
     media::VideoRotation rotation,
     bool force_submit,
     bool is_opaque,
@@ -92,7 +95,8 @@ void VideoFrameCompositor::EnableSubmission(
   submitter_->SetRotation(rotation);
   submitter_->SetForceSubmit(force_submit);
   submitter_->SetIsOpaque(is_opaque);
-  submitter_->EnableSubmission(id, std::move(frame_sink_destroyed_callback));
+  submitter_->EnableSubmission(id, local_surface_id_allocation_time,
+                               std::move(frame_sink_destroyed_callback));
   client_ = submitter_.get();
   if (rendering_)
     client_->StartRendering();
@@ -109,8 +113,9 @@ void VideoFrameCompositor::OnRendererStateUpdate(bool new_state) {
   rendering_ = new_state;
 
   if (!auto_open_close_) {
-    auto_open_close_.reset(new base::trace_event::AutoOpenCloseEvent(
-        base::trace_event::AutoOpenCloseEvent::Type::ASYNC, "media,rail",
+    auto_open_close_.reset(new base::trace_event::AutoOpenCloseEvent<
+                           kTracingCategory>(
+        base::trace_event::AutoOpenCloseEvent<kTracingCategory>::Type::ASYNC,
         "VideoPlayback"));
   }
 

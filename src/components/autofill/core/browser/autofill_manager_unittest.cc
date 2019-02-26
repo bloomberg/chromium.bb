@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/base64.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
@@ -32,6 +33,7 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/payments/test_payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/suggestion.h"
@@ -41,6 +43,8 @@
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/test_autofill_external_delegate.h"
 #include "components/autofill/core/browser/test_autofill_manager.h"
+#include "components/autofill/core/browser/test_credit_card_save_manager.h"
+#include "components/autofill/core/browser/test_form_data_importer.h"
 #include "components/autofill/core/browser/test_form_structure.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/browser/validation.h"
@@ -57,10 +61,12 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/variations/variations_params_manager.h"
+#include "components/version_info/channel.h"
 #include "net/base/url_util.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -74,7 +80,10 @@ using autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout;
 using base::ASCIIToUTF16;
 using base::UTF8ToUTF16;
 using testing::_;
+using testing::AnyOf;
 using testing::AtLeast;
+using testing::HasSubstr;
+using testing::Not;
 using testing::Return;
 using testing::SaveArg;
 using testing::UnorderedElementsAre;
@@ -86,11 +95,15 @@ const int kDefaultPageID = 137;
 
 class MockAutofillClient : public TestAutofillClient {
  public:
-  MockAutofillClient() {}
+  MockAutofillClient() {
+    ON_CALL(*this, GetChannel())
+        .WillByDefault(Return(version_info::Channel::UNKNOWN));
+  }
 
   ~MockAutofillClient() override {}
 
   MOCK_METHOD0(ShouldShowSigninPromo, bool());
+  MOCK_CONST_METHOD0(GetChannel, version_info::Channel());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAutofillClient);
@@ -296,6 +309,7 @@ class AutofillManagerTest : public testing::Test {
                         /*identity_manager=*/nullptr,
                         /*client_profile_validator=*/nullptr,
                         /*history_service=*/nullptr,
+                        /*cookie_manager_sevice=*/nullptr,
                         /*is_off_the_record=*/false);
     personal_data_.SetPrefService(autofill_client_.GetPrefs());
     autofill_driver_ =
@@ -303,6 +317,24 @@ class AutofillManagerTest : public testing::Test {
     request_context_ = new net::TestURLRequestContextGetter(
         base::ThreadTaskRunnerHandle::Get());
     autofill_driver_->SetURLRequestContext(request_context_.get());
+    payments::TestPaymentsClient* payments_client =
+        new payments::TestPaymentsClient(
+            autofill_driver_->GetURLLoaderFactory(),
+            autofill_client_.GetPrefs(), autofill_client_.GetIdentityManager(),
+            &personal_data_);
+    autofill_client_.set_test_payments_client(
+        std::unique_ptr<payments::TestPaymentsClient>(payments_client));
+    TestCreditCardSaveManager* credit_card_save_manager =
+        new TestCreditCardSaveManager(autofill_driver_.get(), &autofill_client_,
+                                      payments_client, &personal_data_);
+    credit_card_save_manager->SetCreditCardUploadEnabled(true);
+    TestFormDataImporter* test_form_data_importer = new TestFormDataImporter(
+        &autofill_client_, payments_client,
+        std::unique_ptr<CreditCardSaveManager>(credit_card_save_manager),
+        &personal_data_, "en-US");
+    autofill_client_.set_test_form_data_importer(
+        std::unique_ptr<autofill::TestFormDataImporter>(
+            test_form_data_importer));
     autofill_manager_ = std::make_unique<TestAutofillManager>(
         autofill_driver_.get(), &autofill_client_, &personal_data_);
     download_manager_ = new MockAutofillDownloadManager(
@@ -3940,8 +3972,8 @@ TEST_F(AutofillManagerTest, FormSubmittedSaveData) {
 // submissions are still received by AutocompleteHistoryManager.
 TEST_F(AutofillManagerTest, FormSubmittedAutocompleteEnabled) {
   TestAutofillClient client;
-  autofill_manager_.reset(
-      new TestAutofillManager(autofill_driver_.get(), &client, nullptr));
+  autofill_manager_.reset(new TestAutofillManager(autofill_driver_.get(),
+                                                  &client, &personal_data_));
   autofill_manager_->SetAutofillEnabled(false);
 
   // Set up our form data.
@@ -3957,8 +3989,8 @@ TEST_F(AutofillManagerTest, FormSubmittedAutocompleteEnabled) {
 // queried.
 TEST_F(AutofillManagerTest, AutocompleteSuggestions_SomeWhenAutofillDisabled) {
   TestAutofillClient client;
-  autofill_manager_.reset(
-      new TestAutofillManager(autofill_driver_.get(), &client, nullptr));
+  autofill_manager_.reset(new TestAutofillManager(autofill_driver_.get(),
+                                                  &client, &personal_data_));
   autofill_manager_->SetAutofillEnabled(false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
@@ -3981,8 +4013,8 @@ TEST_F(AutofillManagerTest, AutocompleteSuggestions_SomeWhenAutofillDisabled) {
 TEST_F(AutofillManagerTest,
        AutocompleteSuggestions_AutofillDisabledAndFieldShouldNotAutocomplete) {
   TestAutofillClient client;
-  autofill_manager_.reset(
-      new TestAutofillManager(autofill_driver_.get(), &client, nullptr));
+  autofill_manager_.reset(new TestAutofillManager(autofill_driver_.get(),
+                                                  &client, &personal_data_));
   autofill_manager_->SetAutofillEnabled(false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
@@ -4053,8 +4085,8 @@ TEST_F(AutofillManagerTest, AutocompleteSuggestions_SomeWhenAutofillEmpty) {
 TEST_F(AutofillManagerTest,
        AutocompleteSuggestions_CreditCardNameFieldShouldAutocomplete) {
   TestAutofillClient client;
-  autofill_manager_.reset(
-      new TestAutofillManager(autofill_driver_.get(), &client, nullptr));
+  autofill_manager_.reset(new TestAutofillManager(autofill_driver_.get(),
+                                                  &client, &personal_data_));
   autofill_manager_->SetAutofillEnabled(false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
@@ -4079,8 +4111,8 @@ TEST_F(AutofillManagerTest,
 TEST_F(AutofillManagerTest,
        AutocompleteSuggestions_CreditCardNumberShouldNotAutocomplete) {
   TestAutofillClient client;
-  autofill_manager_.reset(
-      new TestAutofillManager(autofill_driver_.get(), &client, nullptr));
+  autofill_manager_.reset(new TestAutofillManager(autofill_driver_.get(),
+                                                  &client, &personal_data_));
   autofill_manager_->SetAutofillEnabled(false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
@@ -4125,8 +4157,8 @@ TEST_F(
 
 TEST_F(AutofillManagerTest, AutocompleteOffRespectedForAutocomplete) {
   TestAutofillClient client;
-  autofill_manager_.reset(
-      new TestAutofillManager(autofill_driver_.get(), &client, nullptr));
+  autofill_manager_.reset(new TestAutofillManager(autofill_driver_.get(),
+                                                  &client, &personal_data_));
   autofill_manager_->SetAutofillEnabled(false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
@@ -4208,6 +4240,116 @@ TEST_F(AutofillManagerTest, OnLoadedServerPredictions) {
   EXPECT_EQ(NAME_FIRST, form_structure->field(0)->Type().GetStorableType());
 
   // We expect the server types to have been applied to the second form.
+  EXPECT_EQ(NAME_LAST, form_structure2->field(0)->Type().GetStorableType());
+  EXPECT_EQ(NAME_MIDDLE, form_structure2->field(1)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_ZIP,
+            form_structure2->field(2)->Type().GetStorableType());
+}
+
+// Test that OnLoadedServerPredictions can obtain the FormStructure with the
+// signature of the queried form from the API and apply type predictions.
+// What we test here:
+//  * The API response parser is used.
+//  * The query can be processed with a response from the API.
+TEST_F(AutofillManagerTest, OnLoadedServerPredictionsFromApi) {
+  // Set features.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      // Enabled
+      // We want to query the API rather than the legacy server.
+      {features::kAutofillUseApi},
+      // Disabled
+      {});
+
+  // First form on the page.
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.origin = GURL("http://myform.com/form.html");
+  form.action = GURL("http://myform.com/submit.html");
+  FormFieldData field;
+  test::CreateTestFormField(/*label=*/"City", /*name=*/"city",
+                            /*value=*/"", /*type=*/"text", /*field=*/&field);
+  form.fields.push_back(field);
+  test::CreateTestFormField(/*label=*/"State", /*name=*/"state",
+                            /*value=*/"", /*type=*/"text", /*field=*/&field);
+  form.fields.push_back(field);
+  test::CreateTestFormField(/*label=*/"Postal Code", /*name=*/"zipcode",
+                            /*value=*/"", /*type=*/"text", /*field=*/&field);
+  form.fields.push_back(field);
+  // Simulate having seen this form on page load.
+  // |form_structure_instance| will be owned by |autofill_manager_|.
+  auto form_structure_instance = std::make_unique<TestFormStructure>(form);
+  // This pointer is valid as long as autofill manager lives.
+  TestFormStructure* form_structure = form_structure_instance.get();
+  form_structure->DetermineHeuristicTypes();
+  autofill_manager_->AddSeenFormStructure(std::move(form_structure_instance));
+
+  // Second form on the page.
+  FormData form2;
+  form2.name = ASCIIToUTF16("MyForm2");
+  form2.origin = GURL("http://myform.com/form.html");
+  form2.action = GURL("http://myform.com/submit.html");
+  test::CreateTestFormField("Last Name", "lastname", "", "text", &field);
+  form2.fields.push_back(field);
+  test::CreateTestFormField("Middle Name", "middlename", "", "text", &field);
+  form2.fields.push_back(field);
+  test::CreateTestFormField("Postal Code", "zipcode", "", "text", &field);
+  form2.fields.push_back(field);
+  auto form_structure_instance2 = std::make_unique<TestFormStructure>(form2);
+  // This pointer is valid as long as autofill manager lives.
+  TestFormStructure* form_structure2 = form_structure_instance2.get();
+  form_structure2->DetermineHeuristicTypes();
+  autofill_manager_->AddSeenFormStructure(std::move(form_structure_instance2));
+
+  // Make API response with suggestions.
+  AutofillQueryResponse response;
+  AutofillQueryResponse::FormSuggestion* form_suggestion;
+  // Set suggestions for form 1.
+  form_suggestion = response.add_form_suggestions();
+  form_suggestion->add_field_suggestions()->set_primary_type_prediction(
+      ADDRESS_HOME_CITY);
+  form_suggestion->add_field_suggestions()->set_primary_type_prediction(
+      ADDRESS_HOME_STATE);
+  form_suggestion->add_field_suggestions()->set_primary_type_prediction(
+      ADDRESS_HOME_ZIP);
+  // Set suggestions for form 2.
+  form_suggestion = response.add_form_suggestions();
+  form_suggestion->add_field_suggestions()->set_primary_type_prediction(
+      NAME_LAST);
+  form_suggestion->add_field_suggestions()->set_primary_type_prediction(
+      NAME_MIDDLE);
+  form_suggestion->add_field_suggestions()->set_primary_type_prediction(
+      ADDRESS_HOME_ZIP);
+  std::string response_string;
+  ASSERT_TRUE(response.SerializeToString(&response_string));
+  std::string encoded_response_string;
+  base::Base64Encode(response_string, &encoded_response_string);
+
+  std::vector<std::string> signatures = {form_structure->FormSignatureAsStr(),
+                                         form_structure2->FormSignatureAsStr()};
+
+  // Run method under test.
+  base::HistogramTester histogram_tester;
+  autofill_manager_->OnLoadedServerPredictions(encoded_response_string,
+                                               signatures);
+
+  // Verify whether the relevant histograms were updated.
+  histogram_tester.ExpectBucketCount("Autofill.ServerQueryResponse",
+                                     AutofillMetrics::QUERY_RESPONSE_RECEIVED,
+                                     1);
+  histogram_tester.ExpectBucketCount("Autofill.ServerQueryResponse",
+                                     AutofillMetrics::QUERY_RESPONSE_PARSED, 1);
+
+  // We expect the server suggestions to have been applied to the first field of
+  // the first form.
+  EXPECT_EQ(ADDRESS_HOME_CITY,
+            form_structure->field(0)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_STATE,
+            form_structure->field(1)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_ZIP,
+            form_structure->field(2)->Type().GetStorableType());
+  // We expect the server suggestions to have been applied to the second form as
+  // well.
   EXPECT_EQ(NAME_LAST, form_structure2->field(0)->Type().GetStorableType());
   EXPECT_EQ(NAME_MIDDLE, form_structure2->field(1)->Type().GetStorableType());
   EXPECT_EQ(ADDRESS_HOME_ZIP,
@@ -6242,6 +6384,179 @@ TEST_F(AutofillManagerTest,
 
   // Test that we sent the right values to the external delegate.
   ASSERT_FALSE(external_delegate_->is_all_server_suggestions());
+}
+
+// If the rich query feature is enabled, the IsRichQueryEnabled methods only
+// returns true if the channel is neither STABLE not BETA.
+TEST_F(AutofillManagerTest, IsRichQueryEnabled_FeatureEnabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kAutofillRichMetadataQueries);
+
+  for (auto channel :
+       {version_info::Channel::STABLE, version_info::Channel::BETA,
+        version_info::Channel::CANARY, version_info::Channel::DEV,
+        version_info::Channel::UNKNOWN}) {
+    SCOPED_TRACE(::testing::Message()
+                 << "Channel " << static_cast<int>(channel));
+    EXPECT_CALL(autofill_client_, GetChannel()).WillOnce(Return(channel));
+    TestAutofillManager test_instance(autofill_driver_.get(), &autofill_client_,
+                                      &personal_data_);
+    switch (channel) {
+      case version_info::Channel::STABLE:
+      case version_info::Channel::BETA:
+        EXPECT_FALSE(AutofillManager::IsRichQueryEnabled(channel));
+        EXPECT_FALSE(test_instance.is_rich_query_enabled());
+        break;
+      case version_info::Channel::CANARY:
+      case version_info::Channel::DEV:
+      case version_info::Channel::UNKNOWN:
+        EXPECT_TRUE(AutofillManager::IsRichQueryEnabled(channel));
+        EXPECT_TRUE(test_instance.is_rich_query_enabled());
+        break;
+    }
+  }
+}
+
+// No matter what the channel, IsRichQueryEnabled returns false if the feature
+// is disabled.
+TEST_F(AutofillManagerTest, IsRichQueryEnabled_FeatureDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      features::kAutofillRichMetadataQueries);
+
+  for (auto channel :
+       {version_info::Channel::STABLE, version_info::Channel::BETA,
+        version_info::Channel::CANARY, version_info::Channel::DEV,
+        version_info::Channel::UNKNOWN}) {
+    SCOPED_TRACE(::testing::Message()
+                 << "Channel " << static_cast<int>(channel));
+    EXPECT_FALSE(AutofillManager::IsRichQueryEnabled(channel));
+    EXPECT_CALL(autofill_client_, GetChannel()).WillOnce(Return(channel));
+    TestAutofillManager test_instance(autofill_driver_.get(), &autofill_client_,
+                                      &personal_data_);
+    EXPECT_FALSE(test_instance.is_rich_query_enabled());
+  }
+}
+
+TEST_F(AutofillManagerTest, DidShowSuggestions_LogAutocompleteShownMetric) {
+  FormData form;
+  form.name = ASCIIToUTF16("NothingSpecial");
+
+  FormFieldData field;
+  test::CreateTestFormField("Something", "something", "", "text", &field);
+  form.fields.push_back(field);
+
+  base::HistogramTester histogram_tester;
+  autofill_manager_->DidShowSuggestions(/*has_autofill_suggestions=*/false,
+                                        form, field);
+  histogram_tester.ExpectBucketCount(
+      "Autocomplete.Events", AutofillMetrics::AUTOCOMPLETE_SUGGESTIONS_SHOWN,
+      1);
+
+  // No Autofill logs.
+  const std::string histograms = histogram_tester.GetAllHistogramsRecorded();
+  EXPECT_THAT(histograms,
+              Not(AnyOf(HasSubstr("Autofill.UserHappiness"),
+                        HasSubstr("Autofill.FormEvents.Address"),
+                        HasSubstr("Autofill.FormEvents.CreditCard"))));
+}
+
+TEST_F(AutofillManagerTest, DidShowSuggestions_LogAutofillAddressShownMetric) {
+  FormData form;
+  test::CreateTestAddressFormData(&form);
+
+  base::HistogramTester histogram_tester;
+  autofill_manager_->DidShowSuggestions(/*has_autofill_suggestions=*/true, form,
+                                        form.fields[0]);
+  histogram_tester.ExpectBucketCount("Autofill.UserHappiness",
+                                     AutofillMetrics::SUGGESTIONS_SHOWN, 1);
+  histogram_tester.ExpectBucketCount("Autofill.UserHappiness.Address",
+                                     AutofillMetrics::SUGGESTIONS_SHOWN, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.UserHappiness", AutofillMetrics::SUGGESTIONS_SHOWN_ONCE, 1);
+  histogram_tester.ExpectBucketCount("Autofill.UserHappiness.Address",
+                                     AutofillMetrics::SUGGESTIONS_SHOWN_ONCE,
+                                     1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.FormEvents.Address",
+      AutofillMetrics::FORM_EVENT_SUGGESTIONS_SHOWN, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.FormEvents.Address",
+      AutofillMetrics::FORM_EVENT_SUGGESTIONS_SHOWN_ONCE, 1);
+
+  // No Autocomplete or credit cards logs.
+  const std::string histograms = histogram_tester.GetAllHistogramsRecorded();
+  EXPECT_THAT(histograms,
+              Not(AnyOf(HasSubstr("Autocomplete.Events"),
+                        HasSubstr("Autofill.FormEvents.CreditCard"))));
+}
+
+TEST_F(AutofillManagerTest,
+       DidShowSuggestions_LogAutofillCreditCardShownMetric) {
+  FormData form;
+  CreateTestCreditCardFormData(&form, true, false);
+
+  base::HistogramTester histogram_tester;
+  autofill_manager_->DidShowSuggestions(/*has_autofill_suggestions=*/true, form,
+                                        form.fields[0]);
+  histogram_tester.ExpectBucketCount("Autofill.UserHappiness",
+                                     AutofillMetrics::SUGGESTIONS_SHOWN, 1);
+  histogram_tester.ExpectBucketCount("Autofill.UserHappiness.CreditCard",
+                                     AutofillMetrics::SUGGESTIONS_SHOWN, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.UserHappiness", AutofillMetrics::SUGGESTIONS_SHOWN_ONCE, 1);
+  histogram_tester.ExpectBucketCount("Autofill.UserHappiness.CreditCard",
+                                     AutofillMetrics::SUGGESTIONS_SHOWN_ONCE,
+                                     1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.FormEvents.CreditCard",
+      AutofillMetrics::FORM_EVENT_SUGGESTIONS_SHOWN, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.FormEvents.CreditCard",
+      AutofillMetrics::FORM_EVENT_SUGGESTIONS_SHOWN_ONCE, 1);
+
+  // No Autocomplete or address logs.
+  const std::string histograms = histogram_tester.GetAllHistogramsRecorded();
+  EXPECT_THAT(histograms, Not(AnyOf(HasSubstr("Autocomplete.Events"),
+                                    HasSubstr("Autofill.FormEvents.Address"))));
+}
+
+TEST_F(AutofillManagerTest,
+       DidSuppressPopup_LogAutofillAddressPopupSuppressed) {
+  FormData form;
+  test::CreateTestAddressFormData(&form);
+
+  base::HistogramTester histogram_tester;
+  autofill_manager_->DidSuppressPopup(form, form.fields[0]);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.FormEvents.Address",
+      AutofillMetrics::FORM_EVENT_POPUP_SUPPRESSED, 1);
+
+  // No Autocomplete or credit cards logs.
+  const std::string histograms = histogram_tester.GetAllHistogramsRecorded();
+  EXPECT_THAT(histograms,
+              Not(AnyOf(HasSubstr("Autofill.UserHappiness"),
+                        HasSubstr("Autocomplete.Events"),
+                        HasSubstr("Autofill.FormEvents.CreditCard"))));
+}
+
+TEST_F(AutofillManagerTest,
+       DidSuppressPopup_LogAutofillCreditCardPopupSuppressed) {
+  FormData form;
+  CreateTestCreditCardFormData(&form, true, false);
+
+  base::HistogramTester histogram_tester;
+  autofill_manager_->DidSuppressPopup(form, form.fields[0]);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.FormEvents.CreditCard",
+      AutofillMetrics::FORM_EVENT_POPUP_SUPPRESSED, 1);
+
+  // No Autocomplete or address logs.
+  const std::string histograms = histogram_tester.GetAllHistogramsRecorded();
+  EXPECT_THAT(histograms, Not(AnyOf(HasSubstr("Autofill.UserHappiness"),
+                                    HasSubstr("Autocomplete.Events"),
+                                    HasSubstr("Autofill.FormEvents.Address"))));
 }
 
 // Test param indicates if there is an active screen reader.

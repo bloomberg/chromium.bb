@@ -21,6 +21,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_SCRIPT_LOADER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_SCRIPT_LOADER_H_
 
+#include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_location_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -57,9 +58,11 @@ class CORE_EXPORT ScriptLoader final
   static ScriptLoader* Create(ScriptElementBase* element,
                               bool created_by_parser,
                               bool is_evaluated) {
-    return new ScriptLoader(element, created_by_parser, is_evaluated);
+    return MakeGarbageCollected<ScriptLoader>(element, created_by_parser,
+                                              is_evaluated);
   }
 
+  ScriptLoader(ScriptElementBase*, bool created_by_parser, bool is_evaluated);
   ~ScriptLoader() override;
   void Trace(blink::Visitor*) override;
   const char* NameInHeapSnapshot() const override { return "ScriptLoader"; }
@@ -72,9 +75,9 @@ class CORE_EXPORT ScriptLoader final
       const String& type_attribute_value,
       const String& language_attribute_value,
       LegacyTypeSupport support_legacy_types,
-      ScriptType& out_script_type);
+      mojom::ScriptType& out_script_type);
 
-  static bool BlockForNoModule(ScriptType, bool nomodule);
+  static bool BlockForNoModule(mojom::ScriptType, bool nomodule);
 
   static network::mojom::FetchCredentialsMode ModuleScriptCredentialsMode(
       CrossOriginAttributeValue);
@@ -97,7 +100,7 @@ class CORE_EXPORT ScriptLoader final
   bool IsParserInserted() const { return parser_inserted_; }
   bool AlreadyStarted() const { return already_started_; }
   bool IsNonBlocking() const { return non_blocking_; }
-  ScriptType GetScriptType() const { return script_type_; }
+  mojom::ScriptType GetScriptType() const { return script_type_; }
 
   // Helper functions used by our parent classes.
   void DidNotifySubtreeInsertionsToDocument();
@@ -111,9 +114,6 @@ class CORE_EXPORT ScriptLoader final
   // Only for ScriptRunner::MovePendingScript() and should be removed once
   // crbug.com/721914 is fixed.
   PendingScript* GetPendingScriptIfControlledByScriptRunnerForCrossDocMove();
-
- protected:
-  ScriptLoader(ScriptElementBase*, bool created_by_parser, bool is_evaluated);
 
  private:
   bool IgnoresLoadRequest() const;
@@ -169,7 +169,7 @@ class CORE_EXPORT ScriptLoader final
   // <spec
   // href="https://html.spec.whatwg.org/multipage/scripting.html#concept-script-type">
   // ... It is determined when the script is prepared, ...</spec>
-  ScriptType script_type_ = ScriptType::kClassic;
+  mojom::ScriptType script_type_ = mojom::ScriptType::kClassic;
 
   // <spec
   // href="https://html.spec.whatwg.org/multipage/scripting.html#concept-script-external">

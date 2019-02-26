@@ -18,9 +18,9 @@
 #include "chrome/browser/vr/gl_texture_location.h"
 #include "chrome/browser/vr/graphics_delegate.h"
 #include "chrome/browser/vr/model/assets.h"
+#include "chrome/browser/vr/model/location_bar_state.h"
 #include "chrome/browser/vr/model/model.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
-#include "chrome/browser/vr/model/toolbar_state.h"
 #include "chrome/browser/vr/render_info.h"
 #include "chrome/browser/vr/speech_recognizer.h"
 #include "chrome/browser/vr/test/constants.h"
@@ -36,7 +36,6 @@
 #include "chrome/grit/vr_testapp_resources.h"
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/security_state/core/security_state.h"
-#include "components/toolbar/vector_icons.h"
 #include "components/vector_icons/vector_icons.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -120,7 +119,6 @@ VrTestContext::VrTestContext(GraphicsDelegate* graphics_delegate)
                           base::Unretained(keyboard_delegate.get())));
 
   UiInitialState ui_initial_state;
-  ui_initial_state.create_tabs_view = true;
   ui_instance_ = std::make_unique<Ui>(
       this, nullptr, std::move(keyboard_delegate),
       std::move(text_input_delegate), nullptr, ui_initial_state);
@@ -148,17 +146,6 @@ VrTestContext::VrTestContext(GraphicsDelegate* graphics_delegate)
                                 potential_capturing);
   ui_instance_->input_manager()->set_hit_test_strategy(
       UiInputManager::PROJECT_TO_LASER_ORIGIN_FOR_TEST);
-  for (size_t i = 0; i < 5; i++) {
-    browser_ui->AddOrUpdateTab(
-        tab_id_++, false,
-        base::UTF8ToUTF16("Wikipedia, the free encyclopedia"));
-    browser_ui->AddOrUpdateTab(tab_id_++, false, base::UTF8ToUTF16("New tab"));
-    browser_ui->AddOrUpdateTab(tab_id_++, false, base::UTF8ToUTF16(""));
-    browser_ui->AddOrUpdateTab(tab_id_++, true,
-                               base::UTF8ToUTF16("Home - YouTube"));
-    browser_ui->AddOrUpdateTab(tab_id_++, true,
-                               base::UTF8ToUTF16("VR - Google Search"));
-  }
 
   InitializeGl();
 }
@@ -580,9 +567,9 @@ void VrTestContext::ExitFullscreen() {
 }
 
 void VrTestContext::Navigate(GURL gurl, NavigationMethod method) {
-  ToolbarState state(gurl, security_state::SecurityLevel::HTTP_SHOW_WARNING,
-                     &toolbar::kHttpIcon, true, false);
-  ui_->GetBrowserUiWeakPtr()->SetToolbarState(state);
+  LocationBarState state(gurl, security_state::SecurityLevel::HTTP_SHOW_WARNING,
+                         &omnibox::kHttpIcon, true, false);
+  ui_->GetBrowserUiWeakPtr()->SetLocationBarState(state);
   page_load_start_ = base::TimeTicks::Now();
 }
 
@@ -606,10 +593,8 @@ void VrTestContext::OpenNewTab(bool incognito) {
   incognito_ = incognito;
   auto browser_ui = ui_->GetBrowserUiWeakPtr();
   browser_ui->SetIncognito(incognito);
-  browser_ui->AddOrUpdateTab(tab_id_++, incognito, base::UTF8ToUTF16("test"));
+  model_->incognito_tabs_open = model_->incognito_tabs_open || incognito;
 }
-
-void VrTestContext::SelectTab(int id, bool incognito) {}
 
 void VrTestContext::OpenBookmarks() {}
 void VrTestContext::OpenRecentTabs() {}
@@ -618,21 +603,10 @@ void VrTestContext::OpenDownloads() {}
 void VrTestContext::OpenShare() {}
 void VrTestContext::OpenSettings() {}
 
-void VrTestContext::CloseTab(int id, bool incognito) {
-  ui_->GetBrowserUiWeakPtr()->RemoveTab(id, incognito);
-}
-
-void VrTestContext::CloseAllTabs() {
-  incognito_ = false;
-  ui_->GetBrowserUiWeakPtr()->SetIncognito(false);
-  model_->incognito_tabs.clear();
-  model_->regular_tabs.clear();
-}
-
 void VrTestContext::CloseAllIncognitoTabs() {
   incognito_ = false;
   ui_->GetBrowserUiWeakPtr()->SetIncognito(false);
-  model_->incognito_tabs.clear();
+  model_->incognito_tabs_open = false;
 }
 
 void VrTestContext::OpenFeedback() {}
@@ -687,14 +661,12 @@ void VrTestContext::StartAutocomplete(const AutocompleteRequest& request) {
   // Add a suggestion to exercise classification text styling.
   result->suggestions.emplace_back(OmniboxSuggestion(
       base::UTF8ToUTF16("Suggestion with classification"),
-      base::UTF8ToUTF16("none url match dim invsible"),
-      ACMatchClassifications(),
+      base::UTF8ToUTF16("none url match dim"), ACMatchClassifications(),
       {
           ACMatchClassification(0, ACMatchClassification::NONE),
           ACMatchClassification(5, ACMatchClassification::URL),
           ACMatchClassification(9, ACMatchClassification::MATCH),
           ACMatchClassification(15, ACMatchClassification::DIM),
-          ACMatchClassification(19, ACMatchClassification::INVISIBLE),
       },
       &vector_icons::kSearchIcon, GURL("http://www.test.com/"),
       base::string16(), base::string16()));
@@ -740,59 +712,59 @@ void VrTestContext::CycleIndicators() {
 }
 
 void VrTestContext::CycleOrigin() {
-  const std::vector<ToolbarState> states = {
+  const std::vector<LocationBarState> states = {
       {GURL("http://domain.com"),
-       security_state::SecurityLevel::HTTP_SHOW_WARNING, &toolbar::kHttpIcon,
+       security_state::SecurityLevel::HTTP_SHOW_WARNING, &omnibox::kHttpIcon,
        true, false},
       {GURL("https://www.domain.com/path/segment/directory/file.html"),
-       security_state::SecurityLevel::SECURE, &toolbar::kHttpsValidIcon, true,
+       security_state::SecurityLevel::SECURE, &omnibox::kHttpsValidIcon, true,
        false},
       {GURL("https://www.domain.com/path/segment/directory/file.html"),
-       security_state::SecurityLevel::DANGEROUS, &toolbar::kHttpsInvalidIcon,
+       security_state::SecurityLevel::DANGEROUS, &omnibox::kHttpsInvalidIcon,
        true, false},
       // Do not show URL
       {GURL(), security_state::SecurityLevel::HTTP_SHOW_WARNING,
-       &toolbar::kHttpIcon, false, false},
-      {GURL(), security_state::SecurityLevel::SECURE, &toolbar::kHttpsValidIcon,
+       &omnibox::kHttpIcon, false, false},
+      {GURL(), security_state::SecurityLevel::SECURE, &omnibox::kHttpsValidIcon,
        true, false},
       {GURL("file://very-very-very-long-file-hostname/path/path/path/path"),
-       security_state::SecurityLevel::HTTP_SHOW_WARNING, &toolbar::kHttpIcon,
+       security_state::SecurityLevel::HTTP_SHOW_WARNING, &omnibox::kHttpIcon,
        true, false},
       {GURL("file:///path/path/path/path/path/path/path/path/path"),
-       security_state::SecurityLevel::HTTP_SHOW_WARNING, &toolbar::kHttpIcon,
+       security_state::SecurityLevel::HTTP_SHOW_WARNING, &omnibox::kHttpIcon,
        true, false},
       // Elision-related cases.
       {GURL("http://domaaaaaaaaaaain.com"),
-       security_state::SecurityLevel::HTTP_SHOW_WARNING, &toolbar::kHttpIcon,
+       security_state::SecurityLevel::HTTP_SHOW_WARNING, &omnibox::kHttpIcon,
        true, false},
       {GURL("http://domaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaain.com"),
-       security_state::SecurityLevel::HTTP_SHOW_WARNING, &toolbar::kHttpIcon,
+       security_state::SecurityLevel::HTTP_SHOW_WARNING, &omnibox::kHttpIcon,
        true, false},
       {GURL("http://domain.com/a/"),
-       security_state::SecurityLevel::HTTP_SHOW_WARNING, &toolbar::kHttpIcon,
+       security_state::SecurityLevel::HTTP_SHOW_WARNING, &omnibox::kHttpIcon,
        true, false},
       {GURL("http://domain.com/aaaaaaa/"),
-       security_state::SecurityLevel::HTTP_SHOW_WARNING, &toolbar::kHttpIcon,
+       security_state::SecurityLevel::HTTP_SHOW_WARNING, &omnibox::kHttpIcon,
        true, false},
       {GURL("http://domain.com/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/"),
-       security_state::SecurityLevel::HTTP_SHOW_WARNING, &toolbar::kHttpIcon,
+       security_state::SecurityLevel::HTTP_SHOW_WARNING, &omnibox::kHttpIcon,
        true, false},
       {GURL("http://domaaaaaaaaaaaaaaaaain.com/aaaaaaaaaaaaaaaaaaaaaaaaaaaaa/"),
-       security_state::SecurityLevel::HTTP_SHOW_WARNING, &toolbar::kHttpIcon,
+       security_state::SecurityLevel::HTTP_SHOW_WARNING, &omnibox::kHttpIcon,
        true, false},
       {GURL("http://domaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaain.com/aaaaaaaaaa/"),
-       security_state::SecurityLevel::HTTP_SHOW_WARNING, &toolbar::kHttpIcon,
+       security_state::SecurityLevel::HTTP_SHOW_WARNING, &omnibox::kHttpIcon,
        true, false},
       {GURL("http://www.domain.com/path/segment/directory/file.html"),
-       security_state::SecurityLevel::HTTP_SHOW_WARNING, &toolbar::kHttpIcon,
+       security_state::SecurityLevel::HTTP_SHOW_WARNING, &omnibox::kHttpIcon,
        true, false},
       {GURL("http://subdomain.domain.com/"),
-       security_state::SecurityLevel::HTTP_SHOW_WARNING, &toolbar::kHttpIcon,
+       security_state::SecurityLevel::HTTP_SHOW_WARNING, &omnibox::kHttpIcon,
        true, false},
   };
 
   static int state = 0;
-  ui_->GetBrowserUiWeakPtr()->SetToolbarState(states[state]);
+  ui_->GetBrowserUiWeakPtr()->SetLocationBarState(states[state]);
   state = (state + 1) % states.size();
 }
 

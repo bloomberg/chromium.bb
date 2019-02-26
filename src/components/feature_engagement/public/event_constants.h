@@ -45,6 +45,8 @@ extern const char kIncognitoWindowSessionTimeMet[];
 // track user events (opening/closing tabs, focusing the omnibox, etc) on the
 // second level, it must be done manually.
 extern const char kReopenTabConditionsMet[];
+// The user reopened a previously closed tab.
+extern const char kTabReopened[];
 #endif  // BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
 
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_IOS)

@@ -17,7 +17,7 @@ WebGLExtensionName EXTsRGB::GetName() const {
 }
 
 EXTsRGB* EXTsRGB::Create(WebGLRenderingContextBase* context) {
-  return new EXTsRGB(context);
+  return MakeGarbageCollected<EXTsRGB>(context);
 }
 
 bool EXTsRGB::Supported(WebGLRenderingContextBase* context) {

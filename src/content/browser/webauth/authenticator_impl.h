@@ -104,12 +104,17 @@ class CONTENT_EXPORT AuthenticatorImpl : public blink::mojom::Authenticator,
   bool IsFocused() const;
 
   // Builds the CollectedClientData[1] dictionary with the given values,
-  // serializes it to JSON, and returns the resulting string.
+  // serializes it to JSON, and returns the resulting string. For legacy U2F
+  // requests coming from the CryptoToken U2F extension, modifies the object key
+  // 'type' as required[2].
   // [1] https://w3c.github.io/webauthn/#dictdef-collectedclientdata
+  // [2]
+  // https://fidoalliance.org/specs/fido-u2f-v1.2-ps-20170411/fido-u2f-raw-message-formats-v1.2-ps-20170411.html#client-data
   static std::string SerializeCollectedClientDataToJson(
       const std::string& type,
-      const url::Origin& origin,
-      base::span<const uint8_t> challenge);
+      const std::string& origin,
+      base::span<const uint8_t> challenge,
+      bool use_legacy_u2f_type_key = false);
 
   // mojom:Authenticator
   void MakeCredential(
@@ -130,7 +135,7 @@ class CONTENT_EXPORT AuthenticatorImpl : public blink::mojom::Authenticator,
   void OnRegisterResponse(
       device::FidoReturnCode status_code,
       base::Optional<device::AuthenticatorMakeCredentialResponse> response_data,
-      device::FidoTransportProtocol transport_used);
+      base::Optional<device::FidoTransportProtocol> transport_used);
 
   // Callback to complete the registration process once a decision about
   // whether or not to return attestation data has been made.
@@ -142,7 +147,7 @@ class CONTENT_EXPORT AuthenticatorImpl : public blink::mojom::Authenticator,
   void OnSignResponse(
       device::FidoReturnCode status_code,
       base::Optional<device::AuthenticatorGetAssertionResponse> response_data,
-      device::FidoTransportProtocol transport_used);
+      base::Optional<device::FidoTransportProtocol> transport_used);
 
   void FailWithNotAllowedErrorAndCleanup();
 
@@ -179,13 +184,10 @@ class CONTENT_EXPORT AuthenticatorImpl : public blink::mojom::Authenticator,
   GetAssertionCallback get_assertion_response_callback_;
   std::string client_data_json_;
   blink::mojom::AttestationConveyancePreference attestation_preference_;
+  url::Origin caller_origin_;
   std::string relying_party_id_;
   std::unique_ptr<base::OneShotTimer> timer_;
-  // If the "appid" extension is in use then this is the SHA-256 hash of a U2F
-  // AppID. This is used to detect when an assertion request was successfully
-  // retried with this value.
-  base::Optional<std::array<uint8_t, crypto::kSHA256Length>>
-      alternative_application_parameter_;
+  base::Optional<std::string> app_id_;
   // awaiting_attestation_response_ is true if the embedder has been queried
   // about an attestsation decision and the response is still pending.
   bool awaiting_attestation_response_ = false;

@@ -15,7 +15,7 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
@@ -28,6 +28,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "components/data_reduction_proxy/proto/pageload_metrics.pb.h"
+#include "components/previews/core/previews_lite_page_redirect.h"
 #include "content/public/common/child_process_host.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_change_notifier.h"
@@ -49,6 +50,7 @@ static const char kHistogramAttempted[] =
     "DataReductionProxy.Pingback.Attempted";
 static const char kSessionKey[] = "fake-session";
 static const char kFakeURL[] = "http://www.google.com/";
+static const char kChannel[] = "channel";
 static const int64_t kBytes = 10000;
 static const int64_t kBytesOriginal = 1000000;
 static const int64_t kTotalPageSizeBytes = 20000;
@@ -57,19 +59,7 @@ static const int kCrashProcessId = 1;
 static const int64_t kRendererMemory = 1024;
 static const int64_t kTouchCount = 10;
 static const int64_t kScrollCount = 20;
-static const int kNumRequestInfo = 2;
-static const DataReductionProxyData::RequestInfo first_request_info(
-    DataReductionProxyData::RequestInfo::Protocol::HTTP,
-    false,
-    base::TimeDelta::FromMilliseconds(1000),
-    base::TimeDelta::FromMilliseconds(1100),
-    base::TimeDelta::FromMilliseconds(1200));
-static const DataReductionProxyData::RequestInfo second_request_info(
-    DataReductionProxyData::RequestInfo::Protocol::HTTPS,
-    true,
-    base::TimeDelta::FromMilliseconds(1300),
-    base::TimeDelta::FromMilliseconds(1400),
-    base::TimeDelta::FromMilliseconds(1500));
+static const int64_t kRedirectCount = 1;
 
 }  // namespace
 
@@ -81,7 +71,8 @@ class TestDataReductionProxyPingbackClientImpl
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner)
       : DataReductionProxyPingbackClientImpl(url_loader_factory,
-                                             std::move(thread_task_runner)),
+                                             std::move(thread_task_runner),
+                                             kChannel),
         should_override_random_(false),
         override_value_(0.0f),
         current_time_(base::Time::Now()) {}
@@ -175,13 +166,20 @@ class DataReductionProxyPingbackClientImplTest : public testing::Test {
             base::TimeDelta::FromMilliseconds(2000)) /* parse_stop */,
         base::Optional<base::TimeDelta>(
             base::TimeDelta::FromMilliseconds(5000)) /* page_end_time */,
+        base::Optional<base::TimeDelta>(base::TimeDelta::FromMilliseconds(
+            6000)) /* lite_page_redirect_penalty */,
+        base::Optional<previews::ServerLitePageStatus>(
+            previews::ServerLitePageStatus::
+                kSuccess) /* lite_page_redirect_status */,
+        base::TimeDelta::FromMilliseconds(
+            100) /* navigation_start_to_main_frame_fetch_start */,
         kBytes /* network_bytes */, kBytesOriginal /* original_network_bytes */,
         kTotalPageSizeBytes /* total_page_size_bytes */,
         kCachedFraction /* cached_fraction */, app_background_occurred,
         opt_out_occurred, kRendererMemory,
         crash ? kCrashProcessId : content::ChildProcessHost::kInvalidUniqueID,
         PageloadMetrics_PageEndReason_END_NONE, kTouchCount /* touch_count */,
-        kScrollCount /* scroll_count */);
+        kScrollCount /* scroll_count */, kRedirectCount /* redirect_count */);
 
     DataReductionProxyData request_data;
     request_data.set_session_key(kSessionKey);
@@ -195,8 +193,6 @@ class DataReductionProxyPingbackClientImplTest : public testing::Test {
     request_data.set_client_lofi_requested(client_lofi_requested);
     request_data.set_lite_page_received(lite_page_received);
     request_data.set_page_id(page_id_);
-    request_data.add_request_info(first_request_info);
-    request_data.add_request_info(second_request_info);
     static_cast<DataReductionProxyPingbackClient*>(pingback_client())
         ->SendPingback(request_data, *timing_);
     page_id_++;
@@ -312,8 +308,19 @@ TEST_F(DataReductionProxyPingbackClientImplTest, VerifyPingbackContent) {
   EXPECT_EQ(
       timing().page_end_time.value(),
       protobuf_parser::DurationToTimeDelta(pageload_metrics.page_end_time()));
+  EXPECT_EQ(HTTPSLitePagePreviewInfo_Status_SUCCESS,
+            pageload_metrics.https_litepage_info().status());
+  EXPECT_EQ(
+      // base::TimeDelta::FromMilliseconds(6000),
+      timing().lite_page_redirect_penalty.value(),
+      protobuf_parser::DurationToTimeDelta(
+          pageload_metrics.https_litepage_info().navigation_restart_penalty()));
+  EXPECT_EQ(timing().navigation_start_to_main_frame_fetch_start,
+            protobuf_parser::DurationToTimeDelta(
+                pageload_metrics.navigation_start_to_main_frame_fetch_start()));
 
   EXPECT_EQ(kSessionKey, pageload_metrics.session_key());
+  EXPECT_EQ(kChannel, pageload_metrics.channel());
   EXPECT_EQ(kFakeURL, pageload_metrics.first_request_url());
   EXPECT_EQ(kBytes, pageload_metrics.compressed_page_size_bytes());
   EXPECT_EQ(kBytesOriginal, pageload_metrics.original_page_size_bytes());
@@ -321,38 +328,8 @@ TEST_F(DataReductionProxyPingbackClientImplTest, VerifyPingbackContent) {
   EXPECT_EQ(kTouchCount, pageload_metrics.touch_count());
   EXPECT_EQ(kScrollCount, pageload_metrics.scroll_count());
   EXPECT_EQ(kCachedFraction, pageload_metrics.cached_fraction());
+  EXPECT_EQ(kRedirectCount, pageload_metrics.redirect_count());
   EXPECT_EQ(data_page_id, pageload_metrics.page_id());
-  EXPECT_EQ(kNumRequestInfo,
-            pageload_metrics.main_frame_network_request_size());
-  EXPECT_EQ(protobuf_parser::ProtoRequestInfoProtocolFromRequestInfoProtocol(
-                first_request_info.protocol),
-            pageload_metrics.main_frame_network_request(0).protocol());
-  EXPECT_EQ(first_request_info.proxy_bypass,
-            pageload_metrics.main_frame_network_request(0).proxy_bypass());
-  EXPECT_EQ(first_request_info.dns_time,
-            protobuf_parser::DurationToTimeDelta(
-                pageload_metrics.main_frame_network_request(0).dns_time()));
-  EXPECT_EQ(first_request_info.connect_time,
-            protobuf_parser::DurationToTimeDelta(
-                pageload_metrics.main_frame_network_request(0).connect_time()));
-  EXPECT_EQ(first_request_info.http_time,
-            protobuf_parser::DurationToTimeDelta(
-                pageload_metrics.main_frame_network_request(0).http_time()));
-
-  EXPECT_EQ(protobuf_parser::ProtoRequestInfoProtocolFromRequestInfoProtocol(
-                second_request_info.protocol),
-            pageload_metrics.main_frame_network_request(1).protocol());
-  EXPECT_EQ(second_request_info.proxy_bypass,
-            pageload_metrics.main_frame_network_request(1).proxy_bypass());
-  EXPECT_EQ(second_request_info.dns_time,
-            protobuf_parser::DurationToTimeDelta(
-                pageload_metrics.main_frame_network_request(1).dns_time()));
-  EXPECT_EQ(second_request_info.connect_time,
-            protobuf_parser::DurationToTimeDelta(
-                pageload_metrics.main_frame_network_request(1).connect_time()));
-  EXPECT_EQ(second_request_info.http_time,
-            protobuf_parser::DurationToTimeDelta(
-                pageload_metrics.main_frame_network_request(1).http_time()));
 
   EXPECT_EQ(PageloadMetrics_PreviewsType_NONE,
             pageload_metrics.previews_type());
@@ -483,48 +460,27 @@ TEST_F(DataReductionProxyPingbackClientImplTest,
     EXPECT_EQ(
         timing().page_end_time.value(),
         protobuf_parser::DurationToTimeDelta(pageload_metrics.page_end_time()));
+    EXPECT_EQ(HTTPSLitePagePreviewInfo_Status_SUCCESS,
+              pageload_metrics.https_litepage_info().status());
+    EXPECT_EQ(timing().lite_page_redirect_penalty.value(),
+              protobuf_parser::DurationToTimeDelta(
+                  pageload_metrics.https_litepage_info()
+                      .navigation_restart_penalty()));
+    EXPECT_EQ(
+        timing().navigation_start_to_main_frame_fetch_start,
+        protobuf_parser::DurationToTimeDelta(
+            pageload_metrics.navigation_start_to_main_frame_fetch_start()));
 
     EXPECT_EQ(kSessionKey, pageload_metrics.session_key());
+    EXPECT_EQ(kChannel, pageload_metrics.channel());
     EXPECT_EQ(kFakeURL, pageload_metrics.first_request_url());
     EXPECT_EQ(kBytes, pageload_metrics.compressed_page_size_bytes());
     EXPECT_EQ(kBytesOriginal, pageload_metrics.original_page_size_bytes());
     EXPECT_EQ(kTotalPageSizeBytes, pageload_metrics.total_page_size_bytes());
     EXPECT_EQ(kTouchCount, pageload_metrics.touch_count());
     EXPECT_EQ(kScrollCount, pageload_metrics.scroll_count());
+    EXPECT_EQ(kRedirectCount, pageload_metrics.redirect_count());
     EXPECT_EQ(kCachedFraction, pageload_metrics.cached_fraction());
-    EXPECT_EQ(kNumRequestInfo,
-              pageload_metrics.main_frame_network_request_size());
-    EXPECT_EQ(protobuf_parser::ProtoRequestInfoProtocolFromRequestInfoProtocol(
-                  first_request_info.protocol),
-              pageload_metrics.main_frame_network_request(0).protocol());
-    EXPECT_EQ(first_request_info.proxy_bypass,
-              pageload_metrics.main_frame_network_request(0).proxy_bypass());
-    EXPECT_EQ(first_request_info.dns_time,
-              protobuf_parser::DurationToTimeDelta(
-                  pageload_metrics.main_frame_network_request(0).dns_time()));
-    EXPECT_EQ(
-        first_request_info.connect_time,
-        protobuf_parser::DurationToTimeDelta(
-            pageload_metrics.main_frame_network_request(0).connect_time()));
-    EXPECT_EQ(first_request_info.http_time,
-              protobuf_parser::DurationToTimeDelta(
-                  pageload_metrics.main_frame_network_request(0).http_time()));
-
-    EXPECT_EQ(protobuf_parser::ProtoRequestInfoProtocolFromRequestInfoProtocol(
-                  second_request_info.protocol),
-              pageload_metrics.main_frame_network_request(1).protocol());
-    EXPECT_EQ(second_request_info.proxy_bypass,
-              pageload_metrics.main_frame_network_request(1).proxy_bypass());
-    EXPECT_EQ(second_request_info.dns_time,
-              protobuf_parser::DurationToTimeDelta(
-                  pageload_metrics.main_frame_network_request(1).dns_time()));
-    EXPECT_EQ(
-        second_request_info.connect_time,
-        protobuf_parser::DurationToTimeDelta(
-            pageload_metrics.main_frame_network_request(1).connect_time()));
-    EXPECT_EQ(second_request_info.http_time,
-              protobuf_parser::DurationToTimeDelta(
-                  pageload_metrics.main_frame_network_request(1).http_time()));
 
     EXPECT_EQ(page_ids.front(), pageload_metrics.page_id());
     page_ids.pop_front();

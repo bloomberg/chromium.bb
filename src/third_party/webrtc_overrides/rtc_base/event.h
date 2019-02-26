@@ -16,6 +16,7 @@ class Event {
  public:
   static const int kForever = -1;
 
+  Event();
   Event(bool manual_reset, bool initially_signaled);
   ~Event();
 
@@ -28,7 +29,7 @@ class Event {
 
  private:
   base::WaitableEvent event_;
-  DISALLOW_IMPLICIT_CONSTRUCTORS(Event);
+  DISALLOW_COPY_AND_ASSIGN(Event);
 };
 
 // Pull ScopedAllowBaseSyncPrimitives into the rtc namespace.

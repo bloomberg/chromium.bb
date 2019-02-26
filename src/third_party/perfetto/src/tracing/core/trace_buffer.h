@@ -26,7 +26,7 @@
 #include <tuple>
 
 #include "perfetto/base/logging.h"
-#include "perfetto/base/page_allocator.h"
+#include "perfetto/base/paged_memory.h"
 #include "perfetto/tracing/core/basic_types.h"
 #include "perfetto/tracing/core/slice.h"
 
@@ -459,8 +459,11 @@ class TraceBuffer {
         (reinterpret_cast<uintptr_t>(ptr) & (alignof(ChunkRecord) - 1)) == 0);
   }
 
-  ChunkRecord* GetChunkRecordAt(uint8_t* ptr) const {
+  ChunkRecord* GetChunkRecordAt(uint8_t* ptr) {
     DcheckIsAlignedAndWithinBounds(ptr);
+    // We may be accessing a new (empty) record.
+    data_.EnsureCommitted(
+        static_cast<size_t>(ptr + sizeof(ChunkRecord) - begin()));
     return reinterpret_cast<ChunkRecord*>(ptr);
   }
 
@@ -481,6 +484,9 @@ class TraceBuffer {
     PERFETTO_CHECK(record.size <= size_to_end());
     DcheckIsAlignedAndWithinBounds(wptr_);
 
+    // We may be writing to this area for the first time.
+    data_.EnsureCommitted(static_cast<size_t>(wptr_ + record.size - begin()));
+
     // Deliberately not a *D*CHECK.
     PERFETTO_CHECK(wptr_ + sizeof(record) + size <= end());
     memcpy(wptr_, &record, sizeof(record));
@@ -493,11 +499,11 @@ class TraceBuffer {
     memset(wptr_ + sizeof(record) + size, 0, rounding_size);
   }
 
-  uint8_t* begin() const { return reinterpret_cast<uint8_t*>(data_.get()); }
+  uint8_t* begin() const { return reinterpret_cast<uint8_t*>(data_.Get()); }
   uint8_t* end() const { return begin() + size_; }
   size_t size_to_end() const { return static_cast<size_t>(end() - wptr_); }
 
-  base::PageAllocator::UniquePtr data_;
+  base::PagedMemory data_;
   size_t size_ = 0;            // Size in bytes of |data_|.
   size_t max_chunk_size_ = 0;  // Max size in bytes allowed for a chunk.
   uint8_t* wptr_ = nullptr;    // Write pointer.

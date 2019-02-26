@@ -22,7 +22,7 @@ class MockBrowsingDataIndexedDBHelper
  public:
   explicit MockBrowsingDataIndexedDBHelper(Profile* profile);
 
-  // Adds some IndexedDBInfo samples.
+  // Adds some StorageUsageInfo samples.
   void AddIndexedDBSamples();
 
   // Notifies the callback.
@@ -44,7 +44,7 @@ class MockBrowsingDataIndexedDBHelper
 
   FetchCallback callback_;
   std::map<GURL, bool> origins_;
-  std::list<content::IndexedDBInfo> response_;
+  std::list<content::StorageUsageInfo> response_;
 
   DISALLOW_COPY_AND_ASSIGN(MockBrowsingDataIndexedDBHelper);
 };

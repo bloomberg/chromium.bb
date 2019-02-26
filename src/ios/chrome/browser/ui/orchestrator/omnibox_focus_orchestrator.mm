@@ -29,17 +29,17 @@
 - (void)transitionToStateOmniboxFocused:(BOOL)omniboxFocused
                         toolbarExpanded:(BOOL)toolbarExpanded
                                animated:(BOOL)animated {
-  if (self.isAnimating) {
-    return;
-  }
-
-  self.isAnimating = animated;
-
   if (toolbarExpanded) {
     [self updateUIToExpandedState:animated];
   } else {
     [self updateUIToContractedState:animated];
   }
+
+  if (self.isAnimating) {
+    return;
+  }
+
+  self.isAnimating = animated;
 
   // Make the rest of the animation happen on the next runloop when this
   // animation have calculated the final frame for the location bar.

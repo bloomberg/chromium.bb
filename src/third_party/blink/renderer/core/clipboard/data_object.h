@@ -68,6 +68,7 @@ class CORE_EXPORT DataObject : public GarbageCollectedFinalized<DataObject>,
   static DataObject* Create();
   static DataObject* Create(WebDragData);
 
+  DataObject();
   virtual ~DataObject();
 
   // DataTransferItemList support.
@@ -128,8 +129,6 @@ class CORE_EXPORT DataObject : public GarbageCollectedFinalized<DataObject>,
   WebDragData ToWebDragData();
 
  private:
-  DataObject();
-
   DataObjectItem* FindStringItem(const String& type) const;
   bool InternalAddStringItem(DataObjectItem*);
   void InternalAddFileItem(DataObjectItem*);

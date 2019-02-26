@@ -197,6 +197,26 @@ TEST_F('CrExtensionsItemsTest', 'HtmlInName', function() {
 });
 
 ////////////////////////////////////////////////////////////////////////////////
+// Extension Activity Log Tests
+
+CrExtensionsActivityLogTest = class extends CrExtensionsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://extensions/activity_log.html';
+  }
+
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'activity_log_test.js',
+    ]);
+  }
+};
+
+TEST_F('CrExtensionsActivityLogTest', 'All', () => {
+  mocha.run();
+});
+
+////////////////////////////////////////////////////////////////////////////////
 // Extension Detail View Tests
 
 CrExtensionsDetailViewTest = class extends CrExtensionsBrowserTest {
@@ -439,6 +459,29 @@ TEST_F(
           extension_manager_tests.TestNames.UrlNavigationToDetails);
     });
 
+TEST_F(
+    'CrExtensionsManagerTestWithIdQueryParam', 'UrlNavigationToActivityLogFail',
+    function() {
+      this.runMochaTest(
+          extension_manager_tests.TestNames.UrlNavigationToActivityLogFail);
+    });
+
+CrExtensionsManagerTestWithActivityLogFlag =
+    class extends CrExtensionsManagerTestWithIdQueryParam {
+  /** @override */
+  get commandLineSwitches() {
+    return [{
+      switchName: 'enable-extension-activity-logging',
+    }];
+  }
+};
+
+TEST_F(
+    'CrExtensionsManagerTestWithActivityLogFlag',
+    'UrlNavigationToActivityLogSuccess', function() {
+      this.runMochaTest(
+          extension_manager_tests.TestNames.UrlNavigationToActivityLogSuccess);
+    });
 
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Keyboard Shortcuts Tests
@@ -508,6 +551,7 @@ CrExtensionsPackDialogTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
+      '../settings/test_util.js',
       'pack_dialog_test.js',
     ]);
   }
@@ -524,9 +568,7 @@ TEST_F('CrExtensionsPackDialogTest', 'Interaction', function() {
 
 // Disabling on Windows due to flaky timeout on some build bots.
 // http://crbug.com/832885
-// Temporarily disabling on Mac due to flaky dialog visibility failure.
-// http://crbug.com/877109
-GEN('#if defined(OS_WIN) || defined(OS_MACOSX)');
+GEN('#if defined(OS_WIN)');
 GEN('#define MAYBE_PackSuccess DISABLED_PackSuccess');
 GEN('#else');
 GEN('#define MAYBE_PackSuccess PackSuccess');
@@ -539,7 +581,14 @@ TEST_F('CrExtensionsPackDialogTest', 'PackError', function() {
   this.runMochaTest(extension_pack_dialog_tests.TestNames.PackError);
 });
 
-TEST_F('CrExtensionsPackDialogTest', 'PackWarning', function() {
+// Temporarily disabling on Mac due to flakiness.
+// http://crbug.com/877109
+GEN('#if defined(OS_MACOSX)');
+GEN('#define MAYBE_PackWarning DISABLED_PackWarning');
+GEN('#else');
+GEN('#define MAYBE_PackWarning PackWarning');
+GEN('#endif');
+TEST_F('CrExtensionsPackDialogTest', 'MAYBE_PackWarning', function() {
   this.runMochaTest(extension_pack_dialog_tests.TestNames.PackWarning);
 });
 
@@ -838,5 +887,26 @@ CrExtensionsRuntimeHostPermissionsTest = class extends CrExtensionsBrowserTest {
 };
 
 TEST_F('CrExtensionsRuntimeHostPermissionsTest', 'All', () => {
+  mocha.run();
+});
+
+////////////////////////////////////////////////////////////////////////////////
+// HostPermissionsToggleList tests
+
+CrExtensionsHostPermissionsToggleListTest =
+    class extends CrExtensionsBrowserTest {
+  /** @override */
+  get browserPreload() {
+    return 'chrome://extensions/host_permissions_toggle_list.html';
+  }
+
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'host_permissions_toggle_list_test.js',
+    ]);
+  }
+};
+
+TEST_F('CrExtensionsHostPermissionsToggleListTest', 'All', () => {
   mocha.run();
 });

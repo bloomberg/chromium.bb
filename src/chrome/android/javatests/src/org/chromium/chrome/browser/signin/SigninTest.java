@@ -215,7 +215,7 @@ public class SigninTest {
     @Before
     public void setUp() throws Exception {
         // Mock out the account manager on the device.
-        SigninTestUtil.setUpAuthForTest(InstrumentationRegistry.getInstrumentation());
+        SigninTestUtil.setUpAuthForTest();
 
         mActivityTestRule.startMainActivityOnBlankPage();
         mContext = InstrumentationRegistry.getTargetContext();

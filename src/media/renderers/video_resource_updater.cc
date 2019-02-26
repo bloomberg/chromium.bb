@@ -112,6 +112,8 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
     case PIXEL_FORMAT_YUV422P12:
     case PIXEL_FORMAT_YUV444P12:
     case PIXEL_FORMAT_Y16:
+    case PIXEL_FORMAT_ABGR:
+    case PIXEL_FORMAT_XBGR:
     case PIXEL_FORMAT_UNKNOWN:
       break;
   }
@@ -402,26 +404,24 @@ void VideoResourceUpdater::ReleaseFrameResources() {
 void VideoResourceUpdater::AppendQuads(viz::RenderPass* render_pass,
                                        scoped_refptr<VideoFrame> frame,
                                        gfx::Transform transform,
-                                       gfx::Size rotated_size,
-                                       gfx::Rect visible_layer_rect,
+                                       gfx::Rect quad_rect,
+                                       gfx::Rect visible_quad_rect,
                                        gfx::Rect clip_rect,
                                        bool is_clipped,
                                        bool contents_opaque,
                                        float draw_opacity,
-                                       int sorting_context_id,
-                                       gfx::Rect visible_quad_rect) {
+                                       int sorting_context_id) {
   DCHECK(frame.get());
 
   viz::SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
-  gfx::Rect rotated_size_rect(rotated_size);
-  shared_quad_state->SetAll(
-      transform, rotated_size_rect, visible_layer_rect, clip_rect, is_clipped,
-      contents_opaque, draw_opacity, SkBlendMode::kSrcOver, sorting_context_id);
+  shared_quad_state->SetAll(transform, quad_rect, visible_quad_rect, clip_rect,
+                            is_clipped, contents_opaque, draw_opacity,
+                            SkBlendMode::kSrcOver, sorting_context_id);
 
-  gfx::Rect quad_rect(rotated_size);
-  gfx::Rect visible_rect = frame->visible_rect();
   bool needs_blending = !contents_opaque;
+
+  gfx::Rect visible_rect = frame->visible_rect();
   gfx::Size coded_size = frame->coded_size();
 
   const float tex_width_scale =
@@ -479,10 +479,15 @@ void VideoResourceUpdater::AppendQuads(viz::RenderPass* render_pass,
           frame_resources_.size() > 3 ? frame_resources_[3].id : 0,
           frame->ColorSpace(), frame_resource_offset_,
           frame_resource_multiplier_, frame_bits_per_channel_);
-      yuv_video_quad->require_overlay =
-          frame->metadata()->IsTrue(VideoFrameMetadata::REQUIRE_OVERLAY);
-      yuv_video_quad->is_protected_video =
-          frame->metadata()->IsTrue(VideoFrameMetadata::PROTECTED_VIDEO);
+      if (frame->metadata()->IsTrue(VideoFrameMetadata::PROTECTED_VIDEO)) {
+        if (frame->metadata()->IsTrue(VideoFrameMetadata::HW_PROTECTED)) {
+          yuv_video_quad->protected_video_type =
+              ui::ProtectedVideoType::kHardwareProtected;
+        } else {
+          yuv_video_quad->protected_video_type =
+              ui::ProtectedVideoType::kSoftwareProtected;
+        }
+      }
 
       for (viz::ResourceId resource_id : yuv_video_quad->resources) {
         resource_provider_->ValidateResource(resource_id);
@@ -502,13 +507,22 @@ void VideoResourceUpdater::AppendQuads(viz::RenderPass* render_pass,
       float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
       bool flipped = false;
       bool nearest_neighbor = false;
+      ui::ProtectedVideoType protected_video_type =
+          ui::ProtectedVideoType::kClear;
+      if (frame->metadata()->IsTrue(VideoFrameMetadata::PROTECTED_VIDEO)) {
+        if (frame->metadata()->IsTrue(VideoFrameMetadata::HW_PROTECTED))
+          protected_video_type = ui::ProtectedVideoType::kHardwareProtected;
+        else
+          protected_video_type = ui::ProtectedVideoType::kSoftwareProtected;
+      }
+
       auto* texture_quad =
           render_pass->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
       texture_quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect,
                            needs_blending, frame_resources_[0].id,
                            premultiplied_alpha, uv_top_left, uv_bottom_right,
                            SK_ColorTRANSPARENT, opacity, flipped,
-                           nearest_neighbor, false);
+                           nearest_neighbor, false, protected_video_type);
       texture_quad->set_resource_size_in_pixels(coded_size);
       for (viz::ResourceId resource_id : texture_quad->resources) {
         resource_provider_->ValidateResource(resource_id);

@@ -70,7 +70,7 @@ extern const char kRlzPingDelaySeconds[];
 extern const char kApplicationLocaleBackup[];
 extern const char kApplicationLocaleAccepted[];
 extern const char kOwnerLocale[];
-extern const char kAllowedUILocales[];
+extern const char kAllowedLanguages[];
 #endif
 
 extern const char kDefaultCharset[];
@@ -177,6 +177,7 @@ extern const char kPromptForDownload[];
 extern const char kAlternateErrorPagesEnabled[];
 extern const char kQuicAllowed[];
 extern const char kNetworkQualities[];
+extern const char kNetworkEasterEggHighScore[];
 #if defined(OS_ANDROID)
 extern const char kLastPolicyCheckTime[];
 #endif
@@ -209,6 +210,7 @@ extern const char kLanguagePreloadEnginesSyncable[];
 extern const char kLanguageEnabledImes[];
 extern const char kLanguageEnabledImesSyncable[];
 extern const char kLanguageImeMenuActivated[];
+extern const char kLanguageInputMethodSpecificSettings[];
 extern const char kLanguageShouldMergeInputMethods[];
 extern const char kLanguageSendFunctionKeys[];
 extern const char kLanguageXkbAutoRepeatEnabled[];
@@ -265,6 +267,7 @@ extern const char kPinUnlockWeakPinsAllowed[];
 extern const char kInstantTetheringBleAdvertisingSupported[];
 extern const char kCastReceiverEnabled[];
 extern const char kMinimumAllowedChromeVersion[];
+extern const char kShowArcSettingsOnSessionStart[];
 extern const char kShowSyncSettingsOnSessionStart[];
 extern const char kTextToSpeechLangToVoiceName[];
 extern const char kTextToSpeechRate[];
@@ -282,6 +285,7 @@ extern const char kLastChildScreenTimeSaved[];
 extern const char kLastChildScreenTimeReset[];
 extern const char kNTLMShareAuthenticationEnabled[];
 extern const char kNetworkFileSharesPreconfiguredShares[];
+extern const char kMostRecentlyUsedNetworkFileShareURL[];
 #endif  // defined(OS_CHROMEOS)
 extern const char kShowHomeButton[];
 extern const char kSpeechRecognitionFilterProfanities[];
@@ -292,7 +296,6 @@ extern const char kMdHistoryMenuPromoShown[];
 #endif
 extern const char kForceGoogleSafeSearch[];
 extern const char kForceYouTubeRestrict[];
-extern const char kForceSessionSync[];
 extern const char kAllowedDomainsForApps[];
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 extern const char kUsesSystemTheme[];
@@ -439,9 +442,7 @@ extern const char kHasSeenWelcomePage[];
 #if defined(OS_WIN)
 extern const char kHasSeenWin10PromoPage[];
 #if defined(GOOGLE_CHROME_BUILD)
-extern const char kHasSeenGoogleAppsPromoPage[];
-extern const char kHasSeenEmailPromoPage[];
-extern const char kOnboardDuringNUX[];
+extern const char kNaviOnboardGroup[];
 #endif  // defined(GOOGLE_CHROME_BUILD)
 #endif  // defined(OS_WIN)
 
@@ -592,6 +593,7 @@ extern const char kVideoCaptureAllowedUrls[];
 
 #if defined(OS_CHROMEOS)
 extern const char kDemoModeConfig[];
+extern const char kDemoModeDefaultLocale[];
 extern const char kDeviceSettingsCache[];
 extern const char kHardwareKeyboardLayout[];
 extern const char kCarrierDealPromoShown[];
@@ -618,6 +620,7 @@ extern const char kInitialLocale[];
 extern const char kOobeComplete[];
 extern const char kOobeScreenPending[];
 extern const char kOobeControllerDetected[];
+extern const char kOobeMarketingOptInScreenFinished[];
 extern const char kCanShowOobeGoodiesPage[];
 extern const char kDeviceRegistered[];
 extern const char kEnrollmentRecoveryRequired[];
@@ -639,6 +642,11 @@ extern const char kArcAppInstallEventLoggingEnabled[];
 extern const char kRemoveUsersRemoteCommand[];
 extern const char kCameraMediaConsolidated[];
 extern const char kVpnConfigAllowed[];
+extern const char kAutoScreenBrightnessMetricsDailySample[];
+extern const char kAutoScreenBrightnessMetricsNoAlsUserAdjustmentCount[];
+extern const char kAutoScreenBrightnessMetricsSupportedAlsUserAdjustmentCount[];
+extern const char
+    kAutoScreenBrightnessMetricsUnsupportedAlsUserAdjustmentCount[];
 #endif  // defined(OS_CHROMEOS)
 
 extern const char kClearPluginLSODataEnabled[];
@@ -674,7 +682,6 @@ extern const char kNtlmV2Enabled[];
 
 extern const char kCertRevocationCheckingEnabled[];
 extern const char kCertRevocationCheckingRequiredLocalAnchors[];
-extern const char kCertEnableSha1LocalAnchors[];
 extern const char kCertEnableSymantecLegacyInfrastructure[];
 extern const char kSSLVersionMin[];
 extern const char kSSLVersionMax[];
@@ -782,6 +789,10 @@ extern const char kRegisteredSupervisedUserWhitelists[];
 
 extern const char kCloudPolicyOverridesMachinePolicy[];
 
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+extern const char kCloudReportingEnabled[];
+#endif
+
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)
 extern const char kRestartInBackground[];
 #endif
@@ -833,21 +844,6 @@ extern const char kDSEWasDisabledByPolicy[];
 extern const char kWebShareVisitedTargets[];
 
 #if defined(OS_WIN)
-extern const char kIOSPromotionEligible[];
-extern const char kIOSPromotionDone[];
-extern const char kIOSPromotionSMSEntryPoint[];
-extern const char kIOSPromotionShownEntryPoints[];
-extern const char kIOSPromotionLastImpression[];
-extern const char kIOSPromotionVariationId[];
-extern const char kNumberSavePasswordsBubbleIOSPromoShown[];
-extern const char kSavePasswordsBubbleIOSPromoDismissed[];
-extern const char kNumberBookmarksBubbleIOSPromoShown[];
-extern const char kBookmarksBubbleIOSPromoDismissed[];
-extern const char kNumberBookmarksFootNoteIOSPromoShown[];
-extern const char kBookmarksFootNoteIOSPromoDismissed[];
-extern const char kNumberHistoryPageIOSPromoShown[];
-extern const char kHistoryPageIOSPromoDismissed[];
-
 #if defined(GOOGLE_CHROME_BUILD)
 extern const char kIncompatibleApplications[];
 extern const char kModuleBlacklistCacheMD5Digest[];

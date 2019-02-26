@@ -9,8 +9,6 @@ component("cpp") {
   sources = [
     "accelerators.cc",
     "accelerators.h",
-    "app_list/answer_card_contents_registry.cc",
-    "app_list/answer_card_contents_registry.h",
     "app_list/app_list_config.cc",
     "app_list/app_list_config.h",
     "app_list/app_list_constants.cc",
@@ -47,6 +45,11 @@ component("cpp") {
     "ash_typography.cc",
     "ash_typography.h",
     "ash_view_ids.h",
+    "assistant/assistant_state_base.cc",
+    "assistant/assistant_state_base.h",
+    "assistant/assistant_state_proxy.cc",
+    "assistant/assistant_state_proxy.h",
+    "assistant/default_voice_interaction_observer.h",
     "caption_buttons/caption_button_model.h",
     "caption_buttons/caption_button_types.h",
     "caption_buttons/frame_back_button.cc",
@@ -69,13 +72,11 @@ component("cpp") {
     "frame_utils.h",
     "gesture_action_type.h",
     "immersive/immersive_context.h",
+    "immersive/immersive_focus_watcher.cc",
     "immersive/immersive_focus_watcher.h",
     "immersive/immersive_fullscreen_controller.cc",
     "immersive/immersive_fullscreen_controller.h",
     "immersive/immersive_fullscreen_controller_delegate.h",
-    "immersive/immersive_gesture_handler.h",
-    "immersive/immersive_handler_factory.cc",
-    "immersive/immersive_handler_factory.h",
     "immersive/immersive_revealed_lock.cc",
     "immersive/immersive_revealed_lock.h",
     "login_constants.h",
@@ -85,10 +86,14 @@ component("cpp") {
     "mus_property_mirror_ash.h",
     "network_icon_image_source.cc",
     "network_icon_image_source.h",
+    "notification_utils.cc",
+    "notification_utils.h",
     "power_utils.cc",
     "power_utils.h",
     "remote_shelf_item_delegate.cc",
     "remote_shelf_item_delegate.h",
+    "rounded_corner_decorator.cc",
+    "rounded_corner_decorator.h",
     "scale_utility.cc",
     "scale_utility.h",
     "session_types.h",
@@ -125,15 +130,19 @@ component("cpp") {
     "//ash/public/cpp/vector_icons",
     "//chromeos:power_manager_proto",
     "//components/prefs",
+    "//services/service_manager/public/cpp",
     "//services/ws/public/mojom",
     "//skia/public/interfaces",
     "//ui/aura",
     "//ui/chromeos/strings",
+    "//ui/compositor_extra",
     "//ui/display",
     "//ui/events/devices",
+    "//ui/message_center/public/cpp",
     "//ui/views",
     "//ui/views/mus",
     "//ui/wm",
+    "//ui/wm/public",
   ]
 
   public_deps = [
@@ -152,6 +161,7 @@ component("cpp") {
 # this after Deserialize(Serialize()) API works with handles.
 mojom("test_interfaces") {
   visibility = [ ":unit_tests" ]
+  disable_variants = true
 
   sources = [
     "shelf_struct_traits_test_service.mojom",
@@ -168,6 +178,7 @@ source_set("unit_tests") {
     "default_scale_factor_retriever_unittest.cc",
     "menu_utils_unittest.cc",
     "power_utils_unittest.cc",
+    "rounded_corner_decorator_unittest.cc",
     "shelf_model_unittest.cc",
     "shelf_struct_mojom_traits_unittest.cc",
   ]
@@ -177,6 +188,26 @@ source_set("unit_tests") {
     ":test_interfaces",
     "//base",
     "//testing/gtest",
+    "//ui/aura:test_support",
     "//ui/gfx:test_support",
+  ]
+}
+
+source_set("test_support") {
+  sources = [
+    "immersive/immersive_fullscreen_controller_test_api.cc",
+    "immersive/immersive_fullscreen_controller_test_api.h",
+    "test/test_keyboard_controller_observer.cc",
+    "test/test_keyboard_controller_observer.h",
+  ]
+
+  deps = [
+    ":cpp",
+    "//base",
+    "//services/service_manager/public/cpp",
+    "//ui/aura",
+    "//ui/gfx",
+    "//ui/keyboard:mojom",
+    "//ui/views",
   ]
 }

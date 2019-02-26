@@ -49,8 +49,7 @@ class SyncEncryptionPassphraseCollectionViewControllerTest
         ios::ChromeBrowserState::FromBrowserState(context);
     syncer::SyncService* sync_service =
         ProfileSyncServiceFactory::GetForBrowserState(chrome_browser_state);
-    return std::make_unique<SyncSetupServiceMock>(
-        sync_service, chrome_browser_state->GetPrefs());
+    return std::make_unique<SyncSetupServiceMock>(sync_service);
   }
 
   void TurnSyncPassphraseErrorOn() {

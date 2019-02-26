@@ -47,6 +47,7 @@ class DatabaseContext final : public GarbageCollectedFinalized<DatabaseContext>,
 
   static DatabaseContext* Create(ExecutionContext*);
 
+  explicit DatabaseContext(ExecutionContext*);
   ~DatabaseContext();
   void Trace(blink::Visitor*) override;
 
@@ -67,8 +68,6 @@ class DatabaseContext final : public GarbageCollectedFinalized<DatabaseContext>,
   bool IsContextThread() const;
 
  private:
-  explicit DatabaseContext(ExecutionContext*);
-
   Member<DatabaseThread> database_thread_;
   bool has_open_databases_;  // This never changes back to false, even after the
                              // database thread is closed.

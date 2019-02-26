@@ -82,7 +82,8 @@ class RTCRtpReceiverTest : public ::testing::Test {
   scoped_refptr<WebRTCStatsReportObtainer> GetStats() {
     scoped_refptr<WebRTCStatsReportObtainer> obtainer =
         new WebRTCStatsReportObtainer();
-    receiver_->GetStats(obtainer->GetStatsCallbackWrapper());
+    receiver_->GetStats(obtainer->GetStatsCallbackWrapper(),
+                        blink::RTCStatsFilter::kIncludeOnlyStandardMembers);
     return obtainer;
   }
 

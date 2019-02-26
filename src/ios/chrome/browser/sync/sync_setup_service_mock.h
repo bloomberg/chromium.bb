@@ -12,7 +12,7 @@
 // Mock for the class that allows configuring sync on iOS.
 class SyncSetupServiceMock : public SyncSetupService {
  public:
-  SyncSetupServiceMock(syncer::SyncService* sync_service, PrefService* prefs);
+  SyncSetupServiceMock(syncer::SyncService* sync_service);
   ~SyncSetupServiceMock();
 
   MOCK_CONST_METHOD0(IsSyncEnabled, bool());

@@ -12,12 +12,12 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
-#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/traced_value.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "components/exo/buffer.h"
-#include "components/exo/pointer.h"
 #include "components/exo/surface_delegate.h"
 #include "components/exo/surface_observer.h"
+#include "components/exo/wm_helper.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/quads/shared_quad_state.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
@@ -58,6 +58,9 @@ DEFINE_UI_CLASS_PROPERTY_KEY(Surface*, kSurfaceKey, nullptr);
 // A property key to store whether the surface should only consume
 // stylus input events.
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kStylusOnlyKey, false);
+
+// Surface Id set by the client.
+DEFINE_UI_CLASS_PROPERTY_KEY(int32_t, kClientSurfaceIdKey, 0);
 
 // Helper function that returns an iterator to the first entry in |list|
 // with |key|.
@@ -467,6 +470,17 @@ void Surface::SetParent(Surface* parent, const gfx::Point& position) {
     delegate_->OnSetParent(parent, position);
 }
 
+void Surface::SetClientSurfaceId(int32_t client_surface_id) {
+  if (client_surface_id)
+    window_->SetProperty(kClientSurfaceIdKey, client_surface_id);
+  else
+    window_->ClearProperty(kClientSurfaceIdKey);
+}
+
+int32_t Surface::GetClientSurfaceId() const {
+  return window_->GetProperty(kClientSurfaceIdKey);
+}
+
 void Surface::Commit() {
   TRACE_EVENT0("exo", "Surface::Commit");
 
@@ -500,6 +514,8 @@ void Surface::CommitSurfaceHierarchy(bool synchronized) {
         pending_state_.buffer_scale != state_.buffer_scale ||
         pending_state_.buffer_transform != state_.buffer_transform;
 
+    bool pending_invert_y = false;
+
     // If the current state is fully transparent, the last submitted frame will
     // not include the TextureDrawQuad for the resource, so the resource might
     // have been released and needs to be updated again.
@@ -517,13 +533,21 @@ void Surface::CommitSurfaceHierarchy(bool synchronized) {
     // We update contents if Attach() has been called since last commit.
     if (has_pending_contents_) {
       has_pending_contents_ = false;
+
+      bool current_invert_y =
+          current_buffer_.buffer() && current_buffer_.buffer()->y_invert();
+      pending_invert_y =
+          pending_buffer_.buffer() && pending_buffer_.buffer()->y_invert();
+      if (current_invert_y != pending_invert_y)
+        needs_update_buffer_transform = true;
+
       current_buffer_ = std::move(pending_buffer_);
       if (state_.alpha)
         needs_update_resource_ = true;
     }
 
     if (needs_update_buffer_transform)
-      UpdateBufferTransform();
+      UpdateBufferTransform(pending_invert_y);
 
     // Move pending frame callbacks to the end of |frame_callbacks_|.
     frame_callbacks_.splice(frame_callbacks_.end(), pending_frame_callbacks_);
@@ -788,7 +812,7 @@ void Surface::UpdateResource(LayerTreeFrameSinkHolder* frame_sink_holder) {
   }
 }
 
-void Surface::UpdateBufferTransform() {
+void Surface::UpdateBufferTransform(bool y_invert) {
   SkMatrix buffer_matrix;
   switch (state_.buffer_transform) {
     case Transform::NORMAL:
@@ -804,6 +828,8 @@ void Surface::UpdateBufferTransform() {
       buffer_matrix.setSinCos(1, 0, 0.5f, 0.5f);
       break;
   }
+  if (y_invert)
+    buffer_matrix.preScale(1, -1, 0.5f, 0.5f);
   buffer_matrix.postIDiv(state_.buffer_scale, state_.buffer_scale);
   buffer_transform_ = gfx::Transform(buffer_matrix);
 }
@@ -885,7 +911,7 @@ void Surface::AppendContentsToFrame(const gfx::Point& origin,
           uv_crop.origin(), uv_crop.bottom_right(),
           SK_ColorTRANSPARENT /* background_color */, vertex_opacity,
           false /* y_flipped */, false /* nearest_neighbor */,
-          state_.only_visible_on_secure_output);
+          state_.only_visible_on_secure_output, ui::ProtectedVideoType::kClear);
       if (current_resource_.is_overlay_candidate)
         texture_quad->set_resource_size_in_pixels(current_resource_.size);
       frame->resource_list.push_back(current_resource_);

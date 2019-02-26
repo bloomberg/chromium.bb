@@ -220,11 +220,11 @@ Polymer({
    * @private
    */
   onNumberTap_: function(event) {
-    let numberValue = event.target.getAttribute('value');
+    const numberValue = event.target.getAttribute('value');
 
     // Add the number where the caret is, then update the selection range of the
     // input element.
-    let selectionStart = this.selectionStart_;
+    const selectionStart = this.selectionStart_;
     this.value = this.value.substring(0, this.selectionStart_) + numberValue +
         this.value.substring(this.selectionEnd_);
 
@@ -274,6 +274,24 @@ Polymer({
     // Move the caret or selected region to the correct new place.
     this.selectionStart_ = selectionStart;
     this.selectionEnd_ = selectionStart;
+  },
+
+  /**
+   * Called when user taps the backspace the button. Only does something when
+   * the tap comes from the keyboard. onBackspacePointerDown_ and
+   * onBackspacePointerUp_ will handle the events if they come from mouse or
+   * touch. Note: This does not support repeatedly backspacing by holding down
+   * the space or enter key like touch or mouse does.
+   * @param {Event} event The event object.
+   * @private
+   */
+  onBackspaceTap_: function(event) {
+    if (!event.target.receivedFocusFromKeyboard)
+      return;
+
+    this.onPinClear_();
+    this.clearAndReset_();
+    event.stopImmediatePropagation();
   },
 
   /**

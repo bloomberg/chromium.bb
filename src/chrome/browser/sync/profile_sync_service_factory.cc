@@ -76,7 +76,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
-#include "components/sync_wifi/wifi_credential_syncable_service_factory.h"
 #endif  // defined(OS_CHROMEOS)
 
 using browser_sync::ProfileSyncService;
@@ -168,7 +167,6 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 #if defined(OS_CHROMEOS)
   DependsOn(chromeos::SyncedPrintersManagerFactory::GetInstance());
-  DependsOn(sync_wifi::WifiCredentialSyncableServiceFactory::GetInstance());
 #endif  // defined(OS_CHROMEOS)
 }
 
@@ -196,8 +194,6 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
       content::GetNetworkConnectionTracker();
   init_params.debug_identifier = profile->GetDebugName();
   init_params.channel = chrome::GetChannel();
-  init_params.user_events_separate_pref_group =
-      unified_consent::IsUnifiedConsentFeatureEnabled();
 
   bool local_sync_backend_enabled = false;
 // Since the local sync backend is currently only supported on Windows don't

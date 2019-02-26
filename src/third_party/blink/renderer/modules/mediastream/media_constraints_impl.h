@@ -42,22 +42,23 @@ class Dictionary;
 class ExecutionContext;
 class MediaTrackConstraints;
 
-namespace MediaConstraintsImpl {
+namespace media_constraints_impl {
 
 WebMediaConstraints Create();
 WebMediaConstraints Create(ExecutionContext*,
                            const Dictionary&,
                            MediaErrorState&);
 WebMediaConstraints Create(ExecutionContext*,
-                           const MediaTrackConstraints&,
+                           const MediaTrackConstraints*,
                            MediaErrorState&);
 
 // Exported with MODULES_EXPORT for testing
-MODULES_EXPORT void ConvertConstraints(const WebMediaConstraints& input,
-                                       MediaTrackConstraints& output);
+MODULES_EXPORT MediaTrackConstraints* ConvertConstraints(
+    const WebMediaConstraints& input);
+
 // Exported for testing only.
 MODULES_EXPORT WebMediaConstraints
-ConvertConstraintsToWeb(const MediaTrackConstraints&);
+ConvertConstraintsToWeb(const MediaTrackConstraints*);
 }
 
 }  // namespace blink

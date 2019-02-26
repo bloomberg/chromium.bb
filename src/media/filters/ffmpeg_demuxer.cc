@@ -191,8 +191,8 @@ static void RecordVideoCodecStats(container_names::MediaContainerName container,
                           video_config.visible_rect());
   UMA_HISTOGRAM_ENUMERATION("Media.VideoPixelFormatUnion",
                             video_config.format(), PIXEL_FORMAT_MAX + 1);
-  UMA_HISTOGRAM_ENUMERATION("Media.VideoFrameColorSpace",
-                            video_config.color_space(), COLOR_SPACE_MAX + 1);
+
+  // TODO(hubbe): make better color space statistics
 
   // Note the PRESUBMIT_IGNORE_UMA_MAX below, this silences the PRESUBMIT.py
   // check for uma enum max usage, since we're abusing
@@ -382,13 +382,19 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
   // video frame dropping is handled by the renderer when correcting for a/v
   // sync.
   if (is_audio && !fixup_chained_ogg_ && last_packet_pos_ != AV_NOPTS_VALUE) {
+    // Some containers have unknown position...
+    if (packet->pos == -1)
+      packet->pos = last_packet_pos_;
+
     if (packet->pos < last_packet_pos_) {
-      DVLOG(3) << "Dropped packet with out of order position";
+      DVLOG(3) << "Dropped packet with out of order position (" << packet->pos
+               << " < " << last_packet_pos_ << ")";
       return;
     }
     if (packet->pos == last_packet_pos_ && packet_dts <= last_packet_dts_) {
       DCHECK_NE(last_packet_dts_, AV_NOPTS_VALUE);
-      DVLOG(3) << "Dropped packet with out of order display timestamp";
+      DVLOG(3) << "Dropped packet with out of order display timestamp ("
+               << packet_dts << " < " << last_packet_dts_ << ")";
       return;
     }
   }
@@ -405,7 +411,7 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
     if (packet->flags & AV_PKT_FLAG_KEY)
       waiting_for_keyframe_ = false;
     else {
-      DVLOG(3) << "Dropped non-keyframe pts=" << packet->pts;
+      DLOG(WARNING) << "Dropped non-keyframe pts=" << packet->pts;
       return;
     }
   }

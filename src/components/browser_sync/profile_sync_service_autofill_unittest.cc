@@ -100,6 +100,8 @@ void RegisterAutofillPrefs(user_prefs::PrefRegistrySyncable* registry) {
                                 true);
   registry->RegisterIntegerPref(autofill::prefs::kAutofillLastVersionDeduped,
                                 atoi(version_info::GetVersionNumber().c_str()));
+  registry->RegisterIntegerPref(autofill::prefs::kAutofillLastVersionValidated,
+                                atoi(version_info::GetVersionNumber().c_str()));
   registry->RegisterDoublePref(autofill::prefs::kAutofillBillingCustomerNumber,
                                0.0);
   registry->RegisterBooleanPref(
@@ -353,8 +355,13 @@ class ProfileSyncServiceAutofillTest
   void OnDataTypeConfigureComplete(
       const std::vector<syncer::DataTypeConfigurationStats>&
           configuration_stats) override {
-    ASSERT_EQ(1u, configuration_stats.size());
-    association_stats_ = configuration_stats[0].association_stats;
+    for (const syncer::DataTypeConfigurationStats& stat : configuration_stats) {
+      if (stat.model_type == syncer::AUTOFILL_PROFILE) {
+        association_stats_ = stat.association_stats;
+        return;
+      }
+    }
+    ASSERT_TRUE(false) << "Autofill profile type did not get configured!";
   }
 
  protected:
@@ -389,6 +396,7 @@ class ProfileSyncServiceAutofillTest
                                  /*identity_manager=*/nullptr,
                                  /*client_profile_validator=*/nullptr,
                                  /*history_service=*/nullptr,
+                                 /*cookie_manager_sevice=*/nullptr,
                                  /*is_off_the_record=*/false);
 
     web_data_service_->StartSyncableService();
@@ -426,15 +434,13 @@ class ProfileSyncServiceAutofillTest
   }
 
   void StartAutofillProfileSyncService(base::OnceClosure callback) {
-    identity::MakePrimaryAccountAvailable(
-        profile_sync_service_bundle()->signin_manager(),
-        profile_sync_service_bundle()->auth_service(),
-        profile_sync_service_bundle()->identity_manager(),
-        "test_user@gmail.com");
+    profile_sync_service_bundle()
+        ->identity_test_env()
+        ->MakePrimaryAccountAvailable("test_user@gmail.com");
     CreateSyncService(std::move(sync_client_owned_), std::move(callback));
 
     EXPECT_CALL(*profile_sync_service_bundle()->component_factory(),
-                CreateCommonDataTypeControllers(_, _))
+                CreateCommonDataTypeControllers(_))
         .WillOnce(testing::InvokeWithoutArgs([=]() {
           syncer::DataTypeController::TypeVector controllers;
           controllers.push_back(

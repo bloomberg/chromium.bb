@@ -36,7 +36,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader.h"
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -47,6 +46,7 @@ namespace blink {
 class Blob;
 class ExceptionState;
 class ExecutionContext;
+enum class FileErrorCode;
 class StringOrArrayBuffer;
 
 class CORE_EXPORT FileReader final : public EventTargetWithInlineData,
@@ -59,6 +59,7 @@ class CORE_EXPORT FileReader final : public EventTargetWithInlineData,
  public:
   static FileReader* Create(ExecutionContext*);
 
+  explicit FileReader(ExecutionContext*);
   ~FileReader() override;
 
   enum ReadyState { kEmpty = 0, kLoading = 1, kDone = 2 };
@@ -90,21 +91,19 @@ class CORE_EXPORT FileReader final : public EventTargetWithInlineData,
   void DidStartLoading() override;
   void DidReceiveData() override;
   void DidFinishLoading() override;
-  void DidFail(FileError::ErrorCode) override;
+  void DidFail(FileErrorCode) override;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(loadstart);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(progress);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(load);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(abort);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(loadend);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(loadstart, kLoadstart);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(progress, kProgress);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(load, kLoad);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(abort, kAbort);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(loadend, kLoadend);
 
   void Trace(blink::Visitor*) override;
 
  private:
   class ThrottlingController;
-
-  explicit FileReader(ExecutionContext*);
 
   void Terminate();
   void ReadInternal(Blob*, FileReaderLoader::ReadType, ExceptionState&);

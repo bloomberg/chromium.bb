@@ -199,7 +199,7 @@ void ObjectPaintInvalidator::InvalidateDisplayItemClient(
     TRACE_EVENT_INSTANT1(
         TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),
         "PaintInvalidationTracking", TRACE_EVENT_SCOPE_THREAD, "data",
-        InspectorPaintInvalidationTrackingEvent::Data(object_));
+        inspector_paint_invalidation_tracking_event::Data(object_));
   }
 
   client.Invalidate(reason);
@@ -336,7 +336,10 @@ PaintInvalidationReason ObjectPaintInvalidatorWithContext::InvalidateSelection(
 
   if (full_invalidation)
     return reason;
-
+  // We should invalidate LayoutSVGText always.
+  // See layout_selection.cc SetShouldInvalidateIfNeeded for more detail.
+  if (object_.IsSVGText())
+    return PaintInvalidationReason::kSelection;
   const LayoutRect invalidation_rect =
       UnionRect(new_selection_rect, old_selection_rect);
   if (invalidation_rect.IsEmpty())

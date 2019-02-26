@@ -26,7 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_REMOVE_CSS_PROPERTY_COMMAND_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_REMOVE_CSS_PROPERTY_COMMAND_H_
 
-#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/editing/commands/edit_command.h"
 
 namespace blink {
@@ -38,13 +38,15 @@ class RemoveCSSPropertyCommand final : public SimpleEditCommand {
   static RemoveCSSPropertyCommand* Create(Document& document,
                                           Element* element,
                                           CSSPropertyID property) {
-    return new RemoveCSSPropertyCommand(document, element, property);
+    return MakeGarbageCollected<RemoveCSSPropertyCommand>(document, element,
+                                                          property);
   }
+
+  RemoveCSSPropertyCommand(Document&, Element*, CSSPropertyID);
 
   void Trace(blink::Visitor*) override;
 
  private:
-  RemoveCSSPropertyCommand(Document&, Element*, CSSPropertyID);
   ~RemoveCSSPropertyCommand() override;
 
   void DoApply(EditingState*) override;

@@ -6,7 +6,7 @@
 
 #include "base/android/application_status_listener.h"
 #include "base/logging.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 
 namespace offline_pages {
 

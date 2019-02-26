@@ -190,8 +190,6 @@ _PNG_FILE_EXTENSION = 'png'
 # This list should be in addition to files with FileType.NONE.  Files
 # with FileType.NONE are automatically skipped without warning.
 _SKIPPED_FILES_WITHOUT_WARNING = [
-    # TODO(tkent): Remove the item for LayoutTests.
-    'LayoutTests' + os.path.sep,
     'web_tests' + os.path.sep,
     'third_party' + os.path.sep + 'blink' + os.path.sep + 'renderer' + os.path.sep + 'devtools' + os.path.sep + 'protocol.json',
 ]
@@ -385,15 +383,13 @@ class CheckerDispatcher(object):
         """Return whether the given file should be skipped without a warning."""
         if not self._file_type(file_path):  # FileType.NONE.
             return True
-        # Since "LayoutTests" is in _SKIPPED_FILES_WITHOUT_WARNING, make
+        # Since "web_tests" is in _SKIPPED_FILES_WITHOUT_WARNING, make
         # an exception to prevent files like 'TestExpectations' from being skipped.
         #
         # FIXME: Figure out a good way to avoid having to add special logic
         #        for this special case.
         basename = os.path.basename(file_path)
         if basename == 'TestExpectations':
-            # TODO(qyearsley): Replace hard-coded "TestExpectations" with a
-            # list of known "TestExpectations" files. Maybe shared with Port.
             return False
         for skipped_file in _SKIPPED_FILES_WITHOUT_WARNING:
             if self._should_skip_file_path(file_path, skipped_file):

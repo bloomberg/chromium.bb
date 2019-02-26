@@ -17,7 +17,7 @@
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_item.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_layout.h"
 #import "ios/chrome/browser/ui/tab_grid/transitions/grid_transition_layout.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -112,12 +112,11 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   collectionView.backgroundView = [[UIView alloc] init];
   collectionView.backgroundView.backgroundColor =
       UIColorFromRGB(kGridBackgroundColor);
-  if (@available(iOS 11, *))
-    // CollectionView, in contrast to TableView, doesn’t inset the
-    // cell content to the safe area guide by default. We will just manage the
-    // collectionView contentInset manually to fit in the safe area instead.
-    collectionView.contentInsetAdjustmentBehavior =
-        UIScrollViewContentInsetAdjustmentNever;
+  // CollectionView, in contrast to TableView, doesn’t inset the
+  // cell content to the safe area guide by default. We will just manage the
+  // collectionView contentInset manually to fit in the safe area instead.
+  collectionView.contentInsetAdjustmentBehavior =
+      UIScrollViewContentInsetAdjustmentNever;
 
   self.itemReorderRecognizer = [[UILongPressGestureRecognizer alloc]
       initWithTarget:self
@@ -178,7 +177,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   emptyStateView.translatesAutoresizingMaskIntoConstraints = NO;
   [self.collectionView.backgroundView addSubview:emptyStateView];
   id<LayoutGuideProvider> safeAreaGuide =
-      SafeAreaLayoutGuideForView(self.collectionView.backgroundView);
+      self.collectionView.backgroundView.safeAreaLayoutGuide;
   [NSLayoutConstraint activateConstraints:@[
     [self.collectionView.backgroundView.centerXAnchor
         constraintEqualToAnchor:emptyStateView.centerXAnchor],

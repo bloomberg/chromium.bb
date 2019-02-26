@@ -18,7 +18,7 @@
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/process/kill.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
 #include "content/test/test_content_client.h"

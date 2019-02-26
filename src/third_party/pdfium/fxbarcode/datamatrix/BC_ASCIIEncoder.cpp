@@ -22,18 +22,17 @@
 
 #include "fxbarcode/datamatrix/BC_ASCIIEncoder.h"
 
+#include "core/fxcrt/fx_extension.h"
 #include "fxbarcode/datamatrix/BC_Encoder.h"
 #include "fxbarcode/datamatrix/BC_EncoderContext.h"
 #include "fxbarcode/datamatrix/BC_HighLevelEncoder.h"
 #include "fxbarcode/datamatrix/BC_SymbolInfo.h"
-#include "fxbarcode/utils.h"
 #include "third_party/base/optional.h"
 
 namespace {
 
 Optional<wchar_t> EncodeASCIIDigits(wchar_t digit1, wchar_t digit2) {
-  if (!CBC_HighLevelEncoder::isDigit(digit1) ||
-      !CBC_HighLevelEncoder::isDigit(digit2)) {
+  if (!FXSYS_IsDecimalDigit(digit1) || !FXSYS_IsDecimalDigit(digit2)) {
     // This could potentially return 0 as a sentinel value. Then this function
     // can just return wchar_t instead of Optional<wchar_t>.
     return {};
@@ -43,65 +42,64 @@ Optional<wchar_t> EncodeASCIIDigits(wchar_t digit1, wchar_t digit2) {
 
 }  // namespace
 
-CBC_ASCIIEncoder::CBC_ASCIIEncoder() {}
+CBC_ASCIIEncoder::CBC_ASCIIEncoder() = default;
 
-CBC_ASCIIEncoder::~CBC_ASCIIEncoder() {}
+CBC_ASCIIEncoder::~CBC_ASCIIEncoder() = default;
 
 int32_t CBC_ASCIIEncoder::getEncodingMode() {
   return ASCII_ENCODATION;
 }
 
-void CBC_ASCIIEncoder::Encode(CBC_EncoderContext& context, int32_t& e) {
+bool CBC_ASCIIEncoder::Encode(CBC_EncoderContext* context) {
   int32_t n = CBC_HighLevelEncoder::determineConsecutiveDigitCount(
-      context.m_msg, context.m_pos);
+      context->m_msg, context->m_pos);
   if (n >= 2) {
     Optional<wchar_t> code = EncodeASCIIDigits(
-        context.m_msg[context.m_pos], context.m_msg[context.m_pos + 1]);
-    if (!code) {
-      e = BCExceptionGeneric;
-      return;
-    }
-    context.writeCodeword(*code);
-    context.m_pos += 2;
-    return;
+        context->m_msg[context->m_pos], context->m_msg[context->m_pos + 1]);
+    if (!code)
+      return false;
+
+    context->writeCodeword(*code);
+    context->m_pos += 2;
+    return true;
   }
 
-  wchar_t c = context.getCurrentChar();
+  wchar_t c = context->getCurrentChar();
   int32_t newMode = CBC_HighLevelEncoder::lookAheadTest(
-      context.m_msg, context.m_pos, getEncodingMode());
+      context->m_msg, context->m_pos, getEncodingMode());
   if (newMode != getEncodingMode()) {
     switch (newMode) {
       case BASE256_ENCODATION:
-        context.writeCodeword(CBC_HighLevelEncoder::LATCH_TO_BASE256);
-        context.signalEncoderChange(BASE256_ENCODATION);
-        return;
+        context->writeCodeword(CBC_HighLevelEncoder::LATCH_TO_BASE256);
+        context->signalEncoderChange(BASE256_ENCODATION);
+        return true;
       case C40_ENCODATION:
-        context.writeCodeword(CBC_HighLevelEncoder::LATCH_TO_C40);
-        context.signalEncoderChange(C40_ENCODATION);
-        return;
+        context->writeCodeword(CBC_HighLevelEncoder::LATCH_TO_C40);
+        context->signalEncoderChange(C40_ENCODATION);
+        return true;
       case X12_ENCODATION:
-        context.writeCodeword(CBC_HighLevelEncoder::LATCH_TO_ANSIX12);
-        context.signalEncoderChange(X12_ENCODATION);
-        return;
+        context->writeCodeword(CBC_HighLevelEncoder::LATCH_TO_ANSIX12);
+        context->signalEncoderChange(X12_ENCODATION);
+        return true;
       case TEXT_ENCODATION:
-        context.writeCodeword(CBC_HighLevelEncoder::LATCH_TO_TEXT);
-        context.signalEncoderChange(TEXT_ENCODATION);
-        return;
+        context->writeCodeword(CBC_HighLevelEncoder::LATCH_TO_TEXT);
+        context->signalEncoderChange(TEXT_ENCODATION);
+        return true;
       case EDIFACT_ENCODATION:
-        context.writeCodeword(CBC_HighLevelEncoder::LATCH_TO_EDIFACT);
-        context.signalEncoderChange(EDIFACT_ENCODATION);
-        return;
+        context->writeCodeword(CBC_HighLevelEncoder::LATCH_TO_EDIFACT);
+        context->signalEncoderChange(EDIFACT_ENCODATION);
+        return true;
       default:
-        e = BCExceptionGeneric;
-        return;
+        return false;
     }
   }
 
   if (CBC_HighLevelEncoder::isExtendedASCII(c)) {
-    context.writeCodeword(CBC_HighLevelEncoder::UPPER_SHIFT);
-    context.writeCodeword(static_cast<wchar_t>(c - 128 + 1));
+    context->writeCodeword(CBC_HighLevelEncoder::UPPER_SHIFT);
+    context->writeCodeword(static_cast<wchar_t>(c - 128 + 1));
   } else {
-    context.writeCodeword(static_cast<wchar_t>(c + 1));
+    context->writeCodeword(static_cast<wchar_t>(c + 1));
   }
-  context.m_pos++;
+  context->m_pos++;
+  return true;
 }

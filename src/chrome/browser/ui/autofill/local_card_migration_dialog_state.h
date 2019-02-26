@@ -7,7 +7,7 @@
 
 namespace autofill {
 
-// The current state of the local card migration dialog.
+// The current view state of the local card migration dialog.
 enum class LocalCardMigrationDialogState {
   // Dialog that offers users to migrate browser-saved local cards.
   kOffered,

@@ -6,8 +6,10 @@
 #define COMPONENTS_EXO_NOTIFICATION_H_
 
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
+#include "base/optional.h"
 
 namespace exo {
 
@@ -19,7 +21,10 @@ class Notification {
                const std::string& display_source,
                const std::string& notification_id,
                const std::string& notifier_id,
-               const base::RepeatingCallback<void(bool)>& close_callback);
+               const std::vector<std::string>& buttons,
+               const base::RepeatingCallback<void(bool)>& close_callback,
+               const base::RepeatingCallback<void(const base::Optional<int>&)>&
+                   click_callback);
 
   // Closes this notification.
   void Close();

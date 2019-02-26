@@ -16,7 +16,6 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/escape.h"
 
@@ -38,7 +37,7 @@ GaiaWebAuthFlow::GaiaWebAuthFlow(Delegate* delegate,
                            "account_id",
                            token_key->account_id);
 
-  const char kOAuth2RedirectPathFormat[] = "/%s#";
+  const char kOAuth2RedirectPathFormat[] = "/%s";
   const char kOAuth2AuthorizeFormat[] =
       "?response_type=token&approval_prompt=force&authuser=0&"
       "client_id=%s&"
@@ -92,7 +91,7 @@ void GaiaWebAuthFlow::Start() {
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
   ubertoken_fetcher_.reset(
-      new UbertokenFetcher(token_service, this, GaiaConstants::kChromeSource,
+      new UbertokenFetcher(token_service, this, gaia::GaiaSource::kChrome,
                            profile_->GetURLLoaderFactory()));
   ubertoken_fetcher_->set_is_bound_to_channel_id(false);
   ubertoken_fetcher_->StartFetchingToken(account_id_);
@@ -172,17 +171,14 @@ void GaiaWebAuthFlow::OnAuthFlowURLChange(const GURL& url) {
 
   // The format of the target URL is:
   //     reversed.oauth.client.id:/extensionid#access_token=TOKEN
-  //
-  // Because there is no double slash, everything after the scheme is
-  // interpreted as a path, including the fragment.
 
   if (url.scheme() == redirect_scheme_ && !url.has_host() && !url.has_port() &&
       base::StartsWith(url.GetContent(), redirect_path_prefix_,
-                       base::CompareCase::SENSITIVE)) {
+                       base::CompareCase::SENSITIVE) &&
+      url.has_ref()) {
     web_flow_.release()->DetachDelegateAndDelete();
 
-    std::string fragment = url.GetContent().substr(
-        redirect_path_prefix_.length(), std::string::npos);
+    std::string fragment = url.ref();
     base::StringPairs pairs;
     base::SplitStringIntoKeyValuePairs(fragment, '=', '&', &pairs);
     std::string access_token;

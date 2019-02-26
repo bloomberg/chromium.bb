@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/color_interpolation.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* ColorInterpolation::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -16,5 +16,5 @@ const CSSValue* ColorInterpolation::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(svg_style.ColorInterpolation());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

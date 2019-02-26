@@ -6,6 +6,7 @@
 #define BASE_MEMORY_SHARED_MEMORY_MAPPING_H_
 
 #include <cstddef>
+#include <type_traits>
 
 #include "base/containers/span.h"
 #include "base/macros.h"
@@ -102,6 +103,9 @@ class BASE_EXPORT ReadOnlySharedMemoryMapping : public SharedMemoryMapping {
   // large enough to contain a T, or nullptr otherwise.
   template <typename T>
   const T* GetMemoryAs() const {
+    static_assert(std::is_trivially_copyable<T>::value,
+                  "Copying non-trivially-copyable object across memory spaces "
+                  "is dangerous");
     if (!IsValid())
       return nullptr;
     if (sizeof(T) > size())
@@ -117,6 +121,9 @@ class BASE_EXPORT ReadOnlySharedMemoryMapping : public SharedMemoryMapping {
   // page-aligned.
   template <typename T>
   span<const T> GetMemoryAsSpan() const {
+    static_assert(std::is_trivially_copyable<T>::value,
+                  "Copying non-trivially-copyable object across memory spaces "
+                  "is dangerous");
     if (!IsValid())
       return span<const T>();
     size_t count = size() / sizeof(T);
@@ -128,6 +135,9 @@ class BASE_EXPORT ReadOnlySharedMemoryMapping : public SharedMemoryMapping {
   // first element, if any, is guaranteed to be page-aligned.
   template <typename T>
   span<const T> GetMemoryAsSpan(size_t count) const {
+    static_assert(std::is_trivially_copyable<T>::value,
+                  "Copying non-trivially-copyable object across memory spaces "
+                  "is dangerous");
     if (!IsValid())
       return span<const T>();
     if (size() / sizeof(T) < count)
@@ -165,6 +175,9 @@ class BASE_EXPORT WritableSharedMemoryMapping : public SharedMemoryMapping {
   // enough to contain a T, or nullptr otherwise.
   template <typename T>
   T* GetMemoryAs() const {
+    static_assert(std::is_trivially_copyable<T>::value,
+                  "Copying non-trivially-copyable object across memory spaces "
+                  "is dangerous");
     if (!IsValid())
       return nullptr;
     if (sizeof(T) > size())
@@ -179,6 +192,9 @@ class BASE_EXPORT WritableSharedMemoryMapping : public SharedMemoryMapping {
   // The first element, if any, is guaranteed to be page-aligned.
   template <typename T>
   span<T> GetMemoryAsSpan() const {
+    static_assert(std::is_trivially_copyable<T>::value,
+                  "Copying non-trivially-copyable object across memory spaces "
+                  "is dangerous");
     if (!IsValid())
       return span<T>();
     size_t count = size() / sizeof(T);
@@ -190,6 +206,9 @@ class BASE_EXPORT WritableSharedMemoryMapping : public SharedMemoryMapping {
   // element, if any, is guaranteed to be page-aligned.
   template <typename T>
   span<T> GetMemoryAsSpan(size_t count) const {
+    static_assert(std::is_trivially_copyable<T>::value,
+                  "Copying non-trivially-copyable object across memory spaces "
+                  "is dangerous");
     if (!IsValid())
       return span<T>();
     if (size() / sizeof(T) < count)

@@ -83,7 +83,7 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
   }
 
   void TestSecurityOrigin() {
-    WorkletGlobalScope* global_scope = ToWorkletGlobalScope(GlobalScope());
+    WorkletGlobalScope* global_scope = To<WorkletGlobalScope>(GlobalScope());
     // The SecurityOrigin for a worklet should be a unique opaque origin, while
     // the owner Document's SecurityOrigin shouldn't.
     EXPECT_TRUE(global_scope->GetSecurityOrigin()->IsOpaque());
@@ -170,7 +170,7 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
  private:
   WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
       std::unique_ptr<GlobalScopeCreationParams> creation_params) final {
-    auto* global_scope = new WorkletGlobalScope(
+    auto* global_scope = MakeGarbageCollected<WorkletGlobalScope>(
         std::move(creation_params), GetWorkerReportingProxy(), this);
     EXPECT_FALSE(global_scope->IsMainThreadWorkletGlobalScope());
     EXPECT_TRUE(global_scope->IsThreadedWorkletGlobalScope());
@@ -203,7 +203,8 @@ class ThreadedWorkletMessagingProxyForTest
     std::unique_ptr<WorkerSettings> worker_settings = nullptr;
     InitializeWorkerThread(
         std::make_unique<GlobalScopeCreationParams>(
-            document->Url(), ScriptType::kModule, document->UserAgent(),
+            document->Url(), mojom::ScriptType::kModule, document->UserAgent(),
+            nullptr /* web_worker_fetch_context */,
             document->GetContentSecurityPolicy()->Headers(),
             document->GetReferrerPolicy(), document->GetSecurityOrigin(),
             document->IsSecureContext(), document->GetHttpsState(),
@@ -230,7 +231,8 @@ class ThreadedWorkletTest : public testing::Test {
     document->SetURL(KURL("https://example.com/"));
     document->UpdateSecurityOrigin(SecurityOrigin::Create(document->Url()));
     messaging_proxy_ =
-        new ThreadedWorkletMessagingProxyForTest(&page_->GetDocument());
+        MakeGarbageCollected<ThreadedWorkletMessagingProxyForTest>(
+            &page_->GetDocument());
     ThreadedWorkletThreadForTest::EnsureSharedBackingThread();
   }
 

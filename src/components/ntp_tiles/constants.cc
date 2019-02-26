@@ -25,7 +25,7 @@ const base::Feature kUsePopularSitesSuggestions{
     "UsePopularSitesSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kNtpCustomLinks{"NewTabPageCustomLinks",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsCustomLinksEnabled() {
 #if !defined(OS_ANDROID) && !defined(OS_IOS)

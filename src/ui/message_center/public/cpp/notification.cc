@@ -38,7 +38,8 @@ const gfx::ImageSkia CreateSolidColorImage(int width,
 gfx::Image DeepCopyImage(const gfx::Image& image) {
   if (image.IsEmpty())
     return gfx::Image();
-  std::unique_ptr<gfx::ImageSkia> image_skia(image.CopyImageSkia());
+  std::unique_ptr<gfx::ImageSkia> image_skia(
+      new gfx::ImageSkia(*image.ToImageSkia()));
   return gfx::Image(*image_skia);
 }
 
@@ -153,60 +154,6 @@ gfx::Image Notification::GenerateMaskedSmallIcon(int dip_size,
       masked, skia::ImageOperations::ResizeMethod::RESIZE_BEST,
       gfx::Size(dip_size, dip_size));
   return gfx::Image(resized);
-}
-
-// static
-std::unique_ptr<Notification> Notification::CreateSystemNotification(
-    const std::string& notification_id,
-    const base::string16& title,
-    const base::string16& message,
-    const std::string& system_component_id,
-    const base::RepeatingClosure& click_callback) {
-  DCHECK(!click_callback.is_null());
-  std::unique_ptr<Notification> notification = CreateSystemNotification(
-      NOTIFICATION_TYPE_SIMPLE, notification_id, title, message,
-      base::string16() /* display_source */, GURL(),
-      NotifierId(NotifierId::SYSTEM_COMPONENT, system_component_id),
-      RichNotificationData(),
-      new HandleNotificationClickDelegate(click_callback), gfx::kNoneIcon,
-      SystemNotificationWarningLevel::CRITICAL_WARNING);
-  notification->SetSystemPriority();
-  return notification;
-}
-
-// static
-std::unique_ptr<Notification> Notification::CreateSystemNotification(
-    NotificationType type,
-    const std::string& id,
-    const base::string16& title,
-    const base::string16& message,
-    const base::string16& display_source,
-    const GURL& origin_url,
-    const NotifierId& notifier_id,
-    const RichNotificationData& optional_fields,
-    scoped_refptr<NotificationDelegate> delegate,
-    const gfx::VectorIcon& small_image,
-    SystemNotificationWarningLevel color_type) {
-  DCHECK_EQ(NotifierId::SYSTEM_COMPONENT, notifier_id.type);
-  SkColor color = kSystemNotificationColorNormal;
-  switch (color_type) {
-    case SystemNotificationWarningLevel::NORMAL:
-      color = kSystemNotificationColorNormal;
-      break;
-    case SystemNotificationWarningLevel::WARNING:
-      color = kSystemNotificationColorWarning;
-      break;
-    case SystemNotificationWarningLevel::CRITICAL_WARNING:
-      color = kSystemNotificationColorCriticalWarning;
-      break;
-  }
-  std::unique_ptr<Notification> notification = std::make_unique<Notification>(
-      type, id, title, message, gfx::Image(), display_source, origin_url,
-      notifier_id, optional_fields, delegate);
-  notification->set_accent_color(color);
-  if (!small_image.is_empty())
-    notification->set_vector_small_image(small_image);
-  return notification;
 }
 
 // static

@@ -911,33 +911,6 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
             request->state()->selected_instrument());
 }
 
-IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
-                       RefuseExistingCardNumber) {
-  NavigateTo("/payment_request_no_shipping_test.html");
-  autofill::CreditCard card = autofill::test::GetCreditCard();
-  AddCreditCard(card);
-
-  InvokePaymentRequestUI();
-  OpenPaymentMethodScreen();
-  OpenCreditCardEditorScreen();
-
-  SetEditorTextfieldValue(card.number(), autofill::CREDIT_CARD_NUMBER);
-  ValidatingTextfield* textfield = static_cast<ValidatingTextfield*>(
-      dialog_view()->GetViewByID(EditorViewController::GetInputFieldViewId(
-          autofill::CREDIT_CARD_NUMBER)));
-  ASSERT_TRUE(textfield);
-  EXPECT_TRUE(textfield->invalid());
-  EXPECT_EQ(l10n_util::GetStringUTF16(
-                IDS_PAYMENTS_VALIDATION_ALREADY_USED_CREDIT_CARD_NUMBER),
-            GetErrorLabelForType(autofill::CREDIT_CARD_NUMBER));
-
-  // Now fix it.
-  ASSERT_NE(base::ASCIIToUTF16("4111111111111129"), card.number());
-  SetEditorTextfieldValue(base::ASCIIToUTF16("4111111111111129"),
-                          autofill::CREDIT_CARD_NUMBER);
-  EXPECT_FALSE(textfield->invalid());
-}
-
 IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EnteringEmptyData) {
   NavigateTo("/payment_request_no_shipping_test.html");
   InvokePaymentRequestUI();

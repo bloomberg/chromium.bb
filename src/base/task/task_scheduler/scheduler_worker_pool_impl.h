@@ -40,7 +40,6 @@ class SchedulerWorkerPoolParams;
 
 namespace internal {
 
-class DelayedTaskManager;
 class TaskTracker;
 
 // A pool of workers that run Tasks.
@@ -67,13 +66,12 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // be empty. |pool_label| is used to label the pool's threads, it must not be
   // empty. |priority_hint| is the preferred thread priority; the actual thread
   // priority depends on shutdown state and platform capabilities.
-  // |task_tracker| keeps track of tasks. |delayed_task_manager| handles tasks
-  // posted with a delay.
+  // |task_tracker| keeps track of tasks.
   SchedulerWorkerPoolImpl(StringPiece histogram_label,
                           StringPiece pool_label,
                           ThreadPriority priority_hint,
                           TrackedRef<TaskTracker> task_tracker,
-                          DelayedTaskManager* delayed_task_manager);
+                          TrackedRef<Delegate> delegate);
 
   // Creates workers following the |params| specification, allowing existing and
   // future tasks to run. The pool will run at most |max_best_effort_tasks|
@@ -97,6 +95,8 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
 
   // SchedulerWorkerPool:
   void JoinForTesting() override;
+  void ReEnqueueSequence(SequenceAndTransaction sequence_and_transaction,
+                         bool is_changing_pools) override;
 
   const HistogramBase* num_tasks_before_detach_histogram() const {
     return num_tasks_before_detach_histogram_;
@@ -148,6 +148,15 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // Records number of worker.
   void RecordNumWorkersHistogram() const;
 
+  // Updates the position of the Sequence in |sequence_and_transaction| in
+  // |shared_priority_queue| based on the Sequence's current traits.
+  void UpdateSortKey(SequenceAndTransaction sequence_and_transaction);
+
+  // Removes |sequence| from |shared_priority_queue_|. Returns true if
+  // successful, or false if |sequence| is not currently in
+  // |shared_priority_queue_|, such as when a worker is running a task from it.
+  bool RemoveSequence(scoped_refptr<Sequence> sequence);
+
  private:
   class SchedulerWorkerDelegateImpl;
 
@@ -156,14 +165,15 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   friend class TaskSchedulerWorkerPoolBlockingTest;
   friend class TaskSchedulerWorkerPoolMayBlockTest;
 
-  // The period between calls to AdjustMaxTasks() when the pool is at capacity.
-  // This value was set unscientifically based on intuition and may be adjusted
-  // in the future.
-  static constexpr TimeDelta kBlockedWorkersPollPeriod =
-      TimeDelta::FromMilliseconds(50);
-
   // SchedulerWorkerPool:
   void OnCanScheduleSequence(scoped_refptr<Sequence> sequence) override;
+  void OnCanScheduleSequence(
+      SequenceAndTransaction sequence_and_transaction) override;
+
+  // Pushes the Sequence in |sequence_and_transaction| to
+  // |shared_priority_queue_|.
+  void PushSequenceToPriorityQueue(
+      SequenceAndTransaction sequence_and_transaction);
 
   // Waits until at least |n| workers are idle. |lock_| must be held to call
   // this function.
@@ -321,9 +331,12 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // incremented.
   std::unique_ptr<ConditionVariable> num_workers_cleaned_up_for_testing_cv_;
 
-  // Used for testing and makes MayBlockThreshold() return the maximum
-  // TimeDelta.
-  AtomicFlag maximum_blocked_threshold_for_testing_;
+  // Threshold after which the max tasks is increased to compensate for a
+  // worker that is within a MAY_BLOCK ScopedBlockingCall.
+  TimeDelta may_block_threshold_;
+
+  // The period between calls to AdjustMaxTasks() when the pool is at capacity.
+  TimeDelta blocked_workers_poll_period_;
 
 #if DCHECK_IS_ON()
   // Set at the start of JoinForTesting().

@@ -33,7 +33,7 @@ public class CustomTabNavigationEventObserver extends EmptyTabObserver {
     }
 
     @Override
-    public void onPageLoadFinished(Tab tab) {
+    public void onPageLoadFinished(Tab tab, String url) {
         CustomTabsConnection.getInstance().notifyNavigationEvent(
                 mSessionToken, CustomTabsCallback.NAVIGATION_FINISHED);
     }

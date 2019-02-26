@@ -61,6 +61,13 @@ class CORE_EXPORT Range final : public ScriptWrappable {
                        unsigned end_offset);
   static Range* Create(Document&, const Position&, const Position&);
 
+  explicit Range(Document&);
+  Range(Document&,
+        Node* start_container,
+        unsigned start_offset,
+        Node* end_container,
+        unsigned end_offset);
+
   void Dispose();
 
   Document& OwnerDocument() const {
@@ -148,6 +155,11 @@ class CORE_EXPORT Range final : public ScriptWrappable {
   void NodeChildrenWillBeRemoved(ContainerNode&);
   void NodeWillBeRemoved(Node&);
 
+  // They are special fixups only for sequential focus navigation
+  // starting point.
+  void FixupRemovedChildrenAcrossShadowBoundary(ContainerNode& container);
+  void FixupRemovedNodeAcrossShadowBoundary(Node& node);
+
   void DidInsertText(const CharacterData&, unsigned offset, unsigned length);
   void DidRemoveText(const CharacterData&, unsigned offset, unsigned length);
   void DidMergeTextNodes(const NodeWithIndex& old_node, unsigned offset);
@@ -167,13 +179,6 @@ class CORE_EXPORT Range final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit Range(Document&);
-  Range(Document&,
-        Node* start_container,
-        unsigned start_offset,
-        Node* end_container,
-        unsigned end_offset);
-
   void SetDocument(Document&);
 
   void CheckNodeBA(Node*, ExceptionState&) const;

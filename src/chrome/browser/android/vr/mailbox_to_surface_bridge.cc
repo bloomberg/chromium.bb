@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/viz/common/gpu/context_provider.h"

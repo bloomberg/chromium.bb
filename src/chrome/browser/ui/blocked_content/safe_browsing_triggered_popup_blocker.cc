@@ -16,7 +16,6 @@
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/subresource_filter/content/browser/subresource_filter_safe_browsing_activation_throttle.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/console_message_level.h"
@@ -67,45 +66,41 @@ void SafeBrowsingTriggeredPopupBlocker::RegisterProfilePrefs(
 }
 
 // static
-std::unique_ptr<SafeBrowsingTriggeredPopupBlocker>
-SafeBrowsingTriggeredPopupBlocker::MaybeCreate(
+void SafeBrowsingTriggeredPopupBlocker::MaybeCreate(
     content::WebContents* web_contents) {
   if (!IsEnabled(web_contents))
-    return nullptr;
+    return;
 
   auto* observer_manager =
       subresource_filter::SubresourceFilterObserverManager::FromWebContents(
           web_contents);
   if (!observer_manager)
-    return nullptr;
-  return base::WrapUnique(
-      new SafeBrowsingTriggeredPopupBlocker(web_contents, observer_manager));
+    return;
+
+  if (FromWebContents(web_contents))
+    return;
+
+  web_contents->SetUserData(
+      UserDataKey(), base::WrapUnique(new SafeBrowsingTriggeredPopupBlocker(
+                         web_contents, observer_manager)));
 }
 
 SafeBrowsingTriggeredPopupBlocker::~SafeBrowsingTriggeredPopupBlocker() =
     default;
 
-bool SafeBrowsingTriggeredPopupBlocker::ShouldApplyStrongPopupBlocker(
-    const content::OpenURLParams* open_url_params) {
+bool SafeBrowsingTriggeredPopupBlocker::ShouldApplyAbusivePopupBlocker() {
   LogAction(Action::kConsidered);
   if (!current_page_data_->is_triggered())
     return false;
 
-  bool should_block = true;
-  if (open_url_params) {
-    should_block = open_url_params->triggering_event_info ==
-                   blink::WebTriggeringEventInfo::kFromUntrustedEvent;
-  }
   if (!IsEnabled(web_contents()))
     return false;
 
-  if (should_block) {
-    LogAction(Action::kBlocked);
-    current_page_data_->inc_num_popups_blocked();
-    web_contents()->GetMainFrame()->AddMessageToConsole(
-        content::CONSOLE_MESSAGE_LEVEL_ERROR, kAbusiveEnforceMessage);
-  }
-  return should_block;
+  LogAction(Action::kBlocked);
+  current_page_data_->inc_num_popups_blocked();
+  web_contents()->GetMainFrame()->AddMessageToConsole(
+      content::CONSOLE_MESSAGE_LEVEL_ERROR, kAbusiveEnforceMessage);
+  return true;
 }
 
 SafeBrowsingTriggeredPopupBlocker::SafeBrowsingTriggeredPopupBlocker(
@@ -185,7 +180,7 @@ void SafeBrowsingTriggeredPopupBlocker::OnSubresourceFilterGoingAway() {
 }
 
 bool SafeBrowsingTriggeredPopupBlocker::IsEnabled(
-    const content::WebContents* web_contents) {
+    content::WebContents* web_contents) {
   // If feature is disabled, return false. This is done so that if the feature
   // is broken it can be disabled irrespective of the policy.
   if (!base::FeatureList::IsEnabled(kAbusiveExperienceEnforce))

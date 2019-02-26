@@ -12,6 +12,8 @@
 #include "ios/web_view/internal/signin/web_view_profile_oauth2_token_service_ios_provider_impl.h"
 #import "ios/web_view/public/cwv_sync_controller.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 namespace browser_sync {
 class ProfileSyncService;
 }  // namespace browser_sync
@@ -19,15 +21,18 @@ class ProfileSyncService;
 class AccountTrackerService;
 class SigninManager;
 class ProfileOAuth2TokenService;
+class SigninErrorController;
 
 @interface CWVSyncController ()
 
 // All dependencies must out live this class.
 - (instancetype)
-initWithProfileSyncService:(browser_sync::ProfileSyncService*)profileSyncService
-     accountTrackerService:(AccountTrackerService*)accountTrackerService
-             signinManager:(SigninManager*)signinManager
-              tokenService:(ProfileOAuth2TokenService*)tokenService
+    initWithProfileSyncService:
+        (browser_sync::ProfileSyncService*)profileSyncService
+         accountTrackerService:(AccountTrackerService*)accountTrackerService
+                 signinManager:(SigninManager*)signinManager
+                  tokenService:(ProfileOAuth2TokenService*)tokenService
+         signinErrorController:(SigninErrorController*)SigninErrorController
     NS_DESIGNATED_INITIALIZER;
 
 // Called by WebViewProfileOAuth2TokenServiceIOSProviderImpl to obtain
@@ -39,9 +44,8 @@ initWithProfileSyncService:(browser_sync::ProfileSyncService*)profileSyncService
 // Called by IOSWebViewSigninClient when signing out.
 - (void)didSignoutWithSourceMetric:(signin_metrics::ProfileSignout)metric;
 
-// Called by IOSWebViewSigninClient when auth error changes.
-- (void)didUpdateAuthError:(const GoogleServiceAuthError&)authError;
-
 @end
+
+NS_ASSUME_NONNULL_END
 
 #endif  // IOS_WEB_VIEW_INTERNAL_SYNC_CWV_SYNC_CONTROLLER_INTERNAL_H_

@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.feed;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -18,13 +17,11 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ScrollView;
 
-import com.google.android.libraries.feed.api.common.ThreadUtils;
 import com.google.android.libraries.feed.api.scope.FeedProcessScope;
 import com.google.android.libraries.feed.api.scope.FeedStreamScope;
 import com.google.android.libraries.feed.api.stream.Header;
 import com.google.android.libraries.feed.api.stream.NonDismissibleHeader;
 import com.google.android.libraries.feed.api.stream.Stream;
-import com.google.android.libraries.feed.feedapplifecyclelistener.FeedAppLifecycleListener;
 import com.google.android.libraries.feed.host.action.ActionApi;
 import com.google.android.libraries.feed.host.stream.CardConfiguration;
 import com.google.android.libraries.feed.host.stream.SnackbarApi;
@@ -53,6 +50,7 @@ import org.chromium.chrome.browser.widget.displaystyle.HorizontalDisplayStyle;
 import org.chromium.chrome.browser.widget.displaystyle.MarginResizer;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.ui.UiUtils;
+import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.Arrays;
 
@@ -198,9 +196,11 @@ public class FeedNewTabPage extends NewTabPage {
 
         @Override
         public boolean onInterceptTouchEvent(MotionEvent ev) {
-            return (mMediator != null && !mMediator.getTouchEnabled())
-                    || (mFakeboxDelegate != null && mFakeboxDelegate.isUrlBarFocused())
-                    || super.onInterceptTouchEvent(ev);
+            if (super.onInterceptTouchEvent(ev)) return true;
+            if (mMediator != null && !mMediator.getTouchEnabled()) return true;
+
+            return !(mTab != null && DeviceFormFactor.isWindowOnTablet(mTab.getWindowAndroid()))
+                    && (mFakeboxDelegate != null && mFakeboxDelegate.isUrlBarFocused());
         }
     }
 
@@ -255,8 +255,9 @@ public class FeedNewTabPage extends NewTabPage {
         super.destroy();
         mMediator.destroy();
         if (mStreamLifecycleManager != null) mStreamLifecycleManager.destroy();
-        if (mImageLoader != null) mImageLoader.destroy();
         mTab.getWindowAndroid().removeContextMenuCloseListener(mContextMenuManager);
+        if (mImageLoader != null) mImageLoader.destroy();
+        mImageLoader = null;
     }
 
     @Override
@@ -281,6 +282,13 @@ public class FeedNewTabPage extends NewTabPage {
         mMediator.onThumbnailCaptured();
     }
 
+    /**
+     * @return The {@link StreamLifecycleManager} that manages the lifecycle of the {@link Stream}.
+     */
+    StreamLifecycleManager getStreamLifecycleManager() {
+        return mStreamLifecycleManager;
+    }
+
     /** @return The {@link Stream} that this class holds. */
     Stream getStream() {
         return mStream;
@@ -301,33 +309,37 @@ public class FeedNewTabPage extends NewTabPage {
         FeedAppLifecycle appLifecycle = FeedProcessScopeFactory.getFeedAppLifecycle();
         appLifecycle.onNTPOpened();
 
-        Activity activity = mTab.getActivity();
+        ChromeActivity chromeActivity = mTab.getActivity();
         Profile profile = mTab.getProfile();
 
-        mImageLoader = new FeedImageLoader(profile, activity);
+        mImageLoader = new FeedImageLoader(
+                chromeActivity, chromeActivity.getChromeApplication().getReferencePool());
         FeedLoggingBridge loggingBridge = FeedProcessScopeFactory.getFeedLoggingBridge();
         FeedOfflineIndicator offlineIndicator = FeedProcessScopeFactory.getFeedOfflineIndicator();
-        Runnable consumptionObserver =
-                () -> FeedProcessScopeFactory.getFeedScheduler().onSuggestionConsumed();
+        Runnable consumptionObserver = () -> {
+            FeedScheduler scheduler = FeedProcessScopeFactory.getFeedScheduler();
+            if (scheduler != null) {
+                scheduler.onSuggestionConsumed();
+            }
+        };
         ActionApi actionApi = new FeedActionHandler(mNewTabPageManager.getNavigationDelegate(),
                 consumptionObserver, offlineIndicator, OfflinePageBridge.getForProfile(profile),
                 loggingBridge);
 
         FeedStreamScope streamScope =
                 feedProcessScope
-                        .createFeedStreamScopeBuilder(activity, mImageLoader, actionApi,
+                        .createFeedStreamScopeBuilder(chromeActivity, mImageLoader, actionApi,
                                 new BasicStreamConfiguration(),
-                                new BasicCardConfiguration(activity.getResources(), mUiConfig),
+                                new BasicCardConfiguration(
+                                        chromeActivity.getResources(), mUiConfig),
                                 new BasicSnackbarApi(mNewTabPageManager.getSnackbarManager()),
-                                loggingBridge, offlineIndicator,
-                                (FeedAppLifecycleListener)
-                                        feedProcessScope.getAppLifecycleListener())
+                                loggingBridge, offlineIndicator)
                         .build();
 
         mStream = streamScope.getStream();
-        mStreamLifecycleManager = new StreamLifecycleManager(mStream, activity, mTab);
+        mStreamLifecycleManager = new StreamLifecycleManager(mStream, chromeActivity, mTab);
 
-        LayoutInflater inflater = LayoutInflater.from(activity);
+        LayoutInflater inflater = LayoutInflater.from(chromeActivity);
         mSectionHeaderView = (SectionHeaderView) inflater.inflate(
                 R.layout.new_tab_page_snippets_expandable_header, mRootView, false);
         mSectionHeaderViewMarginResizer = MarginResizer.createAndAttach(
@@ -342,6 +354,7 @@ public class FeedNewTabPage extends NewTabPage {
         if (mSigninPromoView != null) UiUtils.removeViewFromParent(mSigninPromoView);
         mStream.setHeaderViews(Arrays.asList(new NonDismissibleHeader(mNewTabPageLayout),
                 new NonDismissibleHeader(mSectionHeaderView)));
+        mStream.addScrollListener(new FeedLoggingBridge.ScrollEventReporter(loggingBridge));
         // Explicitly request focus on the scroll container to avoid UrlBar being focused after
         // the scroll container for policy is removed.
         view.requestFocus();
@@ -361,18 +374,25 @@ public class FeedNewTabPage extends NewTabPage {
     void createScrollViewForPolicy() {
         if (mStream != null) {
             mRootView.removeView(mStream.getView());
+            assert mStreamLifecycleManager
+                    != null
+                : "StreamLifecycleManager should not be null when the Stream is not null.";
             mStreamLifecycleManager.destroy();
             mStreamLifecycleManager = null;
             // Do not call mStream.onDestroy(), the mStreamLifecycleManager has done that for us.
             mStream = null;
-            mImageLoader.destroy();
-            mImageLoader = null;
             mSectionHeaderView = null;
             mSectionHeaderViewMarginResizer.detach();
             mSectionHeaderViewMarginResizer = null;
             mSigninPromoView = null;
-            if (mSignInPromoViewMarginResizer != null) mSignInPromoViewMarginResizer.detach();
-            mSignInPromoViewMarginResizer = null;
+            if (mSignInPromoViewMarginResizer != null) {
+                mSignInPromoViewMarginResizer.detach();
+                mSignInPromoViewMarginResizer = null;
+            }
+            if (mImageLoader != null) {
+                mImageLoader.destroy();
+                mImageLoader = null;
+            }
         }
 
         mScrollViewForPolicy = new ScrollView(mTab.getActivity());
@@ -419,27 +439,9 @@ public class FeedNewTabPage extends NewTabPage {
                                   new NonDismissibleHeader(mSectionHeaderView)));
     }
 
-    /**
-     * Configures the {@link FeedNewTabPage} for testing.
-     * @param inTestMode Whether test mode is enabled. If true, test implementations of Feed
-     *                   interfaces will be used to create the {@link FeedProcessScope}. If false,
-     *                   the FeedProcessScope will be reset.
-     */
     @VisibleForTesting
-    public static void setInTestMode(boolean inTestMode) {
-        if (inTestMode) {
-            FeedScheduler feedScheduler = new TestFeedScheduler();
-            FeedAppLifecycleListener lifecycleListener =
-                    new FeedAppLifecycleListener(new ThreadUtils());
-            Profile profile = Profile.getLastUsedProfile().getOriginalProfile();
-            FeedAppLifecycle feedAppLifecycle = new FeedAppLifecycle(
-                    lifecycleListener, new FeedLifecycleBridge(profile), feedScheduler);
-            FeedProcessScopeFactory.createFeedProcessScopeForTesting(feedScheduler,
-                    new TestNetworkClient(), new TestFeedOfflineIndicator(), feedAppLifecycle,
-                    lifecycleListener);
-        } else {
-            FeedProcessScopeFactory.clearFeedProcessScopeForTesting();
-        }
+    public static boolean isDummy() {
+        return false;
     }
 
     @VisibleForTesting

@@ -17,6 +17,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "api/array_view.h"
 #include "api/call/transport.h"
@@ -37,6 +38,7 @@
 
 namespace webrtc {
 
+class FrameEncryptorInterface;
 class OverheadObserver;
 class RateLimiter;
 class RtcEventLog;
@@ -62,7 +64,10 @@ class RTPSender {
             SendPacketObserver* send_packet_observer,
             RateLimiter* nack_rate_limiter,
             OverheadObserver* overhead_observer,
-            bool populate_network2_timestamp);
+            bool populate_network2_timestamp,
+            FrameEncryptorInterface* frame_encryptor,
+            bool require_frame_encryption,
+            bool extmap_allow_mixed);
 
   ~RTPSender();
 
@@ -74,7 +79,7 @@ class RTPSender {
   uint32_t FecOverheadRate() const;
   uint32_t NackOverheadRate() const;
 
-  int32_t RegisterPayload(const char* payload_name,
+  int32_t RegisterPayload(absl::string_view payload_name,
                           const int8_t payload_type,
                           const uint32_t frequency,
                           const size_t channels,
@@ -114,6 +119,8 @@ class RTPSender {
                         const RTPVideoHeader* rtp_header,
                         uint32_t* transport_frame_id_out,
                         int64_t expected_retransmission_time_ms);
+
+  void SetExtmapAllowMixed(bool extmap_allow_mixed);
 
   // RTP header extension
   int32_t RegisterRtpHeaderExtension(RTPExtensionType type, uint8_t id);

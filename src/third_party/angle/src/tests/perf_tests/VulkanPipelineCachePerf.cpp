@@ -15,6 +15,8 @@ using namespace rx;
 
 namespace
 {
+constexpr unsigned int kIterationsPerStep = 100;
+
 class VulkanPipelineCachePerfTest : public ANGLEPerfTest
 {
   public:
@@ -24,21 +26,20 @@ class VulkanPipelineCachePerfTest : public ANGLEPerfTest
     void SetUp() override;
     void step() override;
 
-    PipelineCache mCache;
+    GraphicsPipelineCache mCache;
     angle::RNG mRNG;
 
-    std::vector<vk::PipelineDesc> mCacheHits;
-    std::vector<vk::PipelineDesc> mCacheMisses;
+    std::vector<vk::GraphicsPipelineDesc> mCacheHits;
+    std::vector<vk::GraphicsPipelineDesc> mCacheMisses;
     size_t mMissIndex = 0;
 
   private:
-    void randomizeDesc(vk::PipelineDesc *desc);
+    void randomizeDesc(vk::GraphicsPipelineDesc *desc);
 };
 
 VulkanPipelineCachePerfTest::VulkanPipelineCachePerfTest()
-    : ANGLEPerfTest("VulkanPipelineCachePerf", "")
-{
-}
+    : ANGLEPerfTest("VulkanPipelineCachePerf", "", kIterationsPerStep)
+{}
 
 VulkanPipelineCachePerfTest::~VulkanPipelineCachePerfTest()
 {
@@ -51,7 +52,7 @@ void VulkanPipelineCachePerfTest::SetUp()
     for (int pipelineCount = 0; pipelineCount < 100; ++pipelineCount)
     {
         vk::Pipeline pipeline;
-        vk::PipelineDesc desc;
+        vk::GraphicsPipelineDesc desc;
         randomizeDesc(&desc);
 
         if (pipelineCount < 10)
@@ -63,17 +64,17 @@ void VulkanPipelineCachePerfTest::SetUp()
 
     for (int missCount = 0; missCount < 10000; ++missCount)
     {
-        vk::PipelineDesc desc;
+        vk::GraphicsPipelineDesc desc;
         randomizeDesc(&desc);
         mCacheMisses.push_back(desc);
     }
 }
 
-void VulkanPipelineCachePerfTest::randomizeDesc(vk::PipelineDesc *desc)
+void VulkanPipelineCachePerfTest::randomizeDesc(vk::GraphicsPipelineDesc *desc)
 {
-    std::vector<uint8_t> bytes(sizeof(vk::PipelineDesc));
+    std::vector<uint8_t> bytes(sizeof(vk::GraphicsPipelineDesc));
     FillVectorWithRandomUBytes(&mRNG, &bytes);
-    memcpy(desc, bytes.data(), sizeof(vk::PipelineDesc));
+    memcpy(desc, bytes.data(), sizeof(vk::GraphicsPipelineDesc));
 }
 
 void VulkanPipelineCachePerfTest::step()
@@ -85,7 +86,7 @@ void VulkanPipelineCachePerfTest::step()
     vk::PipelineAndSerial *result = nullptr;
     gl::AttributesMask am;
 
-    for (int iteration = 0; iteration < 100; ++iteration)
+    for (unsigned int iteration = 0; iteration < kIterationsPerStep; ++iteration)
     {
         for (const auto &hit : mCacheHits)
         {

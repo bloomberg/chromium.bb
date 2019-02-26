@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
 <translation id="1002108253973310084">A fost detectată o versiune de protocol incompatibilă. Asigură-te că ai cea mai recentă versiune de software pe ambele computere și încearcă din nou.</translation>
+<translation id="1008557486741366299">Nu acum</translation>
 <translation id="1050693411695664090">Slabă</translation>
 <translation id="1152528166145813711">Selectează...</translation>
 <translation id="1199593201721843963">Dezactivați conexiunile la distanță</translation>
@@ -62,6 +63,7 @@ Pentru informații privind confidențialitatea, accesați Politica de confidenț
 <translation id="2314101195544969792">Sesiunea <ph name="APPLICATION_NAME" /> este inactivă de ceva timp și în curând va fi deconectată.</translation>
 <translation id="2317666076142640974">Încearcă în avans noua <ph name="LINK_BEGIN" />aplicație web Desktop la distanță Chrome<ph name="LINK_END" />. Ne-ar face plăcere să primim feedbackul tău.</translation>
 <translation id="2320166752086256636">Ascunde tastatura</translation>
+<translation id="2332192922827071008">Deschide Preferințele</translation>
 <translation id="2353140552984634198">Puteți accesa acest computer în siguranță utilizând Chromoting.</translation>
 <translation id="2359808026110333948">Continuă</translation>
 <translation id="2366718077645204424">Gazda nu poate fi accesată. Acest lucru este cauzat, probabil, de configurația rețelei pe care o utilizați.</translation>
@@ -82,6 +84,7 @@ Pentru informații privind confidențialitatea, accesați Politica de confidenț
 <translation id="2841013758207633010">Oră</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2888969873284818612">A apărut o eroare de rețea. Vom reporni aplicația când dispozitivul va fi online din nou.</translation>
+<translation id="2891243864890517178">Pentru Mac (OS X Yosemite 10.10 și versiuni ulterioare)</translation>
 <translation id="289405675947420287">Accesează-ți în siguranță computerul de pe dispozitivul iOS. Este rapid, simplu și gratuit.
 
 • Pe computerul pe care dorești să îl accesezi de la distanță, descarcă aplicația Desktop la distanță Chrome din Magazinul web Chrome.
@@ -188,6 +191,9 @@ PC</translation>
 <translation id="4973800994433240357">Descărcând programul de instalare gazdă pentru Chromoting, accepți <ph name="LINK_BEGIN" />Termenii și condițiile<ph name="LINK_END" /> Google.</translation>
 <translation id="4974476491460646149">Conexiunea a fost închisă pentru <ph name="HOSTNAME" /></translation>
 <translation id="4985296110227979402">Mai întâi, trebuie să configurezi computerul pentru accesul la distanță</translation>
+<translation id="5059773780693835145">Este necesar încă un pas de configurare înainte să poți controla acest dispozitiv de la distanță folosind <ph name="PRODUCT_NAME" />.
+
+Pentru a activa această funcție, selectează „<ph name="BUTTON_NAME" />” pentru a afișa panoul de preferințe pentru securitate și confidențialitate, apoi bifează căsuța de lângă „<ph name="SERVICE_SCRIPT_NAME" />”.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">Gazda la distanță solicită să vă autentificați pe un site terță parte. Pentru a continua, trebuie să acordați permisiuni suplimentare aplicației Desktop la distanță Chrome pentru a accesa această adresă:</translation>
 <translation id="507204348399810022">Sigur dorești să dezactivezi conexiunile la distanță la <ph name="HOSTNAME" />?</translation>
@@ -249,7 +255,6 @@ PC</translation>
 <translation id="6542902059648396432">Raportează o problemă...</translation>
 <translation id="6550675742724504774">Opțiuni</translation>
 <translation id="6570205395680337606">Resetează aplicația. Orice conținut nesalvat se va pierde.</translation>
-<translation id="6572345186230665992">Pentru Mac (OS X Mavericks 10.9 și versiuni ulterioare)</translation>
 <translation id="6583902294974160967">Asistență</translation>
 <translation id="6612717000975622067">Trimite Ctrl-Alt-Del</translation>
 <translation id="6654753848497929428">Permite accesul</translation>
@@ -313,6 +318,7 @@ PC</translation>
 <translation id="809687642899217504">Computerele mele</translation>
 <translation id="811307782653349804">Accesați-vă computerul de oriunde.</translation>
 <translation id="8116630183974937060">A apărut o eroare de rețea. Verificați dacă dispozitivul este online și încercați din nou.</translation>
+<translation id="8123581458650016326">Permite utilizatorilor la distanță să controleze acest dispozitiv</translation>
 <translation id="8178433417677596899">Permiterea accesului la ecran de tip utilizator-la-utilizator, perfectă pentru asistența tehnică la distanță.</translation>
 <translation id="8187079423890319756">Copyright 2013 The Chromium Authors. Toate drepturile rezervate.</translation>
 <translation id="8196755618196986400">Pentru a putea să te contactăm pentru mai multe informații, adresa ta de e-mail va fi inclusă în orice feedback pe care îl trimiți.</translation>

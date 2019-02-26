@@ -66,13 +66,16 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   void UpdateStorageKey(const EntityData& entity_data,
                         const std::string& storage_key,
                         MetadataChangeList* metadata_change_list) override;
-  void UntrackEntity(const EntityData& entity_data) override;
   void UntrackEntityForStorageKey(const std::string& storage_key) override;
+  void UntrackEntityForClientTagHash(
+      const std::string& client_tag_hash) override;
+  bool IsEntityUnsynced(const std::string& storage_key) override;
   void OnModelStarting(ModelTypeSyncBridge* bridge) override;
   void ModelReadyToSync(std::unique_ptr<MetadataBatch> batch) override;
   bool IsTrackingMetadata() override;
   std::string TrackedAccountId() override;
   void ReportError(const ModelError& error) override;
+  base::Optional<ModelError> GetError() const override;
   base::WeakPtr<ModelTypeControllerDelegate> GetControllerDelegate() override;
 
   // ModelTypeProcessor implementation.
@@ -131,8 +134,9 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
                                            EntityChangeList* changes);
 
   // Recommit all entities for encryption except those in |already_updated|.
-  void RecommitAllForEncryption(std::unordered_set<std::string> already_updated,
-                                MetadataChangeList* metadata_changes);
+  void RecommitAllForEncryption(
+      const std::unordered_set<std::string>& already_updated,
+      MetadataChangeList* metadata_changes);
 
   // Validates the update specified by the input parameters and returns whether
   // it should get further processed. If the update is incorrect, this function

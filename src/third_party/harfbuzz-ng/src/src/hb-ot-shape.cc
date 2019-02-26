@@ -26,8 +26,6 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#define HB_SHAPER ot
-#define hb_ot_shape_plan_data_t hb_ot_shape_plan_t
 #include "hb-shaper-impl.hh"
 
 #include "hb-ot-shape.hh"
@@ -42,31 +40,189 @@
 #include "hb-aat-layout.hh"
 
 
+/**
+ * SECTION:hb-ot-shape
+ * @title: hb-ot-shape
+ * @short_description: OpenType shaping support
+ * @include: hb-ot.h
+ *
+ * Support functions for OpenType shaping related queries.
+ **/
+
+
+static void
+hb_ot_shape_collect_features (hb_ot_shape_planner_t          *planner,
+			      const hb_feature_t             *user_features,
+			      unsigned int                    num_user_features);
+
+static bool
+_hb_apply_morx (hb_face_t *face)
+{
+  if (hb_options ().aat &&
+      hb_aat_layout_has_substitution (face))
+    return true;
+
+  /* Ignore empty GSUB tables. */
+  return (!hb_ot_layout_has_substitution (face) ||
+	  !hb_ot_layout_table_get_script_tags (face,
+					       HB_OT_TAG_GSUB,
+					       0, nullptr, nullptr)) &&
+	 hb_aat_layout_has_substitution (face);
+}
+
+hb_ot_shape_planner_t::hb_ot_shape_planner_t (hb_face_t                     *face,
+					      const hb_segment_properties_t *props) :
+						face (face),
+						props (*props),
+						map (face, props),
+						aat_map (face, props),
+						apply_morx (_hb_apply_morx (face))
+{
+  shaper = hb_ot_shape_complex_categorize (this);
+
+  script_zero_marks = shaper->zero_width_marks != HB_OT_SHAPE_ZERO_WIDTH_MARKS_NONE;
+  script_fallback_mark_positioning = shaper->fallback_position;
+
+  if (apply_morx)
+    shaper = &_hb_ot_complex_shaper_default;
+}
+
 void
-hb_ot_shape_planner_t::compile (hb_ot_shape_plan_t &plan,
-				const int          *coords,
-				unsigned int        num_coords)
+hb_ot_shape_planner_t::compile (hb_ot_shape_plan_t           &plan,
+				const hb_ot_shape_plan_key_t &key)
 {
   plan.props = props;
   plan.shaper = shaper;
-  map.compile (plan.map, coords, num_coords);
+  map.compile (plan.map, key);
+  if (apply_morx)
+    aat_map.compile (plan.aat_map);
 
-  plan.rtlm_mask = plan.map.get_1_mask (HB_TAG ('r','t','l','m'));
   plan.frac_mask = plan.map.get_1_mask (HB_TAG ('f','r','a','c'));
   plan.numr_mask = plan.map.get_1_mask (HB_TAG ('n','u','m','r'));
   plan.dnom_mask = plan.map.get_1_mask (HB_TAG ('d','n','o','m'));
-
-  plan.kern_mask = plan.map.get_mask (HB_DIRECTION_IS_HORIZONTAL (plan.props.direction) ?
-				      HB_TAG ('k','e','r','n') : HB_TAG ('v','k','r','n'));
-
   plan.has_frac = plan.frac_mask || (plan.numr_mask && plan.dnom_mask);
-  plan.kerning_requested = !!plan.kern_mask;
-  plan.has_gpos_mark = !!plan.map.get_1_mask (HB_TAG ('m','a','r','k'));
+  plan.rtlm_mask = plan.map.get_1_mask (HB_TAG ('r','t','l','m'));
+  hb_tag_t kern_tag = HB_DIRECTION_IS_HORIZONTAL (props.direction) ?
+		      HB_TAG ('k','e','r','n') : HB_TAG ('v','k','r','n');
+  plan.kern_mask = plan.map.get_mask (kern_tag);
+  plan.trak_mask = plan.map.get_mask (HB_TAG ('t','r','a','k'));
 
+  plan.requested_kerning = !!plan.kern_mask;
+  plan.requested_tracking = !!plan.trak_mask;
+  bool has_gpos_kern = plan.map.get_feature_index (1, kern_tag) != HB_OT_LAYOUT_NO_FEATURE_INDEX;
   bool disable_gpos = plan.shaper->gpos_tag &&
 		      plan.shaper->gpos_tag != plan.map.chosen_script[1];
-  plan.fallback_positioning = disable_gpos || !hb_ot_layout_has_positioning (face);
-  plan.fallback_glyph_classes = !hb_ot_layout_has_glyph_classes (face);
+
+  /*
+   * Decide who provides glyph classes. GDEF or Unicode.
+   */
+
+  if (!hb_ot_layout_has_glyph_classes (face))
+    plan.fallback_glyph_classes = true;
+
+  /*
+   * Decide who does substitutions. GSUB, morx, or fallback.
+   */
+
+  plan.apply_morx = apply_morx;
+
+  /*
+   * Decide who does positioning. GPOS, kerx, kern, or fallback.
+   */
+
+  if (hb_options ().aat && hb_aat_layout_has_positioning (face))
+    plan.apply_kerx = true;
+  else if (!apply_morx && !disable_gpos && hb_ot_layout_has_positioning (face))
+    plan.apply_gpos = true;
+  else if (hb_aat_layout_has_positioning (face))
+    plan.apply_kerx = true;
+
+  if (!plan.apply_kerx && !has_gpos_kern)
+  {
+    /* Apparently Apple applies kerx if GPOS kern was not applied. */
+    if (hb_aat_layout_has_positioning (face))
+      plan.apply_kerx = true;
+    else if (hb_ot_layout_has_kerning (face))
+      plan.apply_kern = true;
+  }
+
+  plan.zero_marks = script_zero_marks &&
+		    !plan.apply_kerx &&
+		    (!plan.apply_kern || !hb_ot_layout_has_machine_kerning (face));
+  plan.has_gpos_mark = !!plan.map.get_1_mask (HB_TAG ('m','a','r','k'));
+
+  plan.adjust_mark_positioning_when_zeroing = !plan.apply_gpos &&
+					      !plan.apply_kerx &&
+					      (!plan.apply_kern || !hb_ot_layout_has_cross_kerning (face));
+
+  plan.fallback_mark_positioning = plan.adjust_mark_positioning_when_zeroing &&
+				   script_fallback_mark_positioning;
+
+  /* Currently we always apply trak. */
+  plan.apply_trak = plan.requested_tracking && hb_aat_layout_has_tracking (face);
+}
+
+bool
+hb_ot_shape_plan_t::init0 (hb_face_t                     *face,
+			   const hb_shape_plan_key_t     *key)
+{
+  map.init ();
+  aat_map.init ();
+
+  hb_ot_shape_planner_t planner (face,
+				 &key->props);
+
+  hb_ot_shape_collect_features (&planner,
+				key->user_features,
+				key->num_user_features);
+
+  planner.compile (*this, key->ot);
+
+  if (shaper->data_create)
+  {
+    data = shaper->data_create (this);
+    if (unlikely (!data))
+      return false;
+  }
+
+  return true;
+}
+
+void
+hb_ot_shape_plan_t::fini (void)
+{
+  if (shaper->data_destroy)
+    shaper->data_destroy (const_cast<void *> (data));
+
+  map.fini ();
+  aat_map.fini ();
+}
+
+void
+hb_ot_shape_plan_t::substitute (hb_font_t   *font,
+				hb_buffer_t *buffer) const
+{
+  if (unlikely (apply_morx))
+    hb_aat_layout_substitute (this, font, buffer);
+  else
+    map.substitute (this, font, buffer);
+}
+
+void
+hb_ot_shape_plan_t::position (hb_font_t   *font,
+			      hb_buffer_t *buffer) const
+{
+  if (this->apply_gpos)
+    map.position (this, font, buffer);
+  else if (this->apply_kerx)
+    hb_aat_layout_position (this, font, buffer);
+  else if (this->apply_kern)
+    hb_ot_layout_kern (this, font, buffer);
+  else
+    _hb_ot_shape_fallback_kern (this, font, buffer);
+
+  if (this->apply_trak)
+    hb_aat_layout_track (this, font, buffer);
 }
 
 
@@ -94,7 +250,6 @@ horizontal_features[] =
 
 static void
 hb_ot_shape_collect_features (hb_ot_shape_planner_t          *planner,
-			      const hb_segment_properties_t  *props,
 			      const hb_feature_t             *user_features,
 			      unsigned int                    num_user_features)
 {
@@ -103,7 +258,7 @@ hb_ot_shape_collect_features (hb_ot_shape_planner_t          *planner,
   map->enable_feature (HB_TAG('r','v','r','n'));
   map->add_gsub_pause (nullptr);
 
-  switch (props->direction) {
+  switch (planner->props.direction) {
     case HB_DIRECTION_LTR:
       map->enable_feature (HB_TAG ('l','t','r','a'));
       map->enable_feature (HB_TAG ('l','t','r','m'));
@@ -127,13 +282,22 @@ hb_ot_shape_collect_features (hb_ot_shape_planner_t          *planner,
   /* Random! */
   map->enable_feature (HB_TAG ('r','a','n','d'), F_RANDOM, HB_OT_MAP_MAX_VALUE);
 
+  /* Tracking.  We enable dummy feature here just to allow disabling
+   * AAT 'trak' table using features.
+   * https://github.com/harfbuzz/harfbuzz/issues/1303 */
+  map->enable_feature (HB_TAG ('t','r','a','k'), F_HAS_FALLBACK);
+
+  map->enable_feature (HB_TAG ('H','A','R','F'));
+
   if (planner->shaper->collect_features)
     planner->shaper->collect_features (planner);
+
+  map->enable_feature (HB_TAG ('B','U','Z','Z'));
 
   for (unsigned int i = 0; i < ARRAY_LENGTH (common_features); i++)
     map->add_feature (common_features[i]);
 
-  if (HB_DIRECTION_IS_HORIZONTAL (props->direction))
+  if (HB_DIRECTION_IS_HORIZONTAL (planner->props.direction))
     for (unsigned int i = 0; i < ARRAY_LENGTH (horizontal_features); i++)
       map->add_feature (horizontal_features[i]);
   else
@@ -156,6 +320,16 @@ hb_ot_shape_collect_features (hb_ot_shape_planner_t          *planner,
 		       feature->end == HB_FEATURE_GLOBAL_END) ?  F_GLOBAL : F_NONE,
 		      feature->value);
   }
+
+  if (planner->apply_morx)
+  {
+    hb_aat_map_builder_t *aat_map = &planner->aat_map;
+    for (unsigned int i = 0; i < num_user_features; i++)
+    {
+      const hb_feature_t *feature = &user_features[i];
+      aat_map->add_feature (feature->tag, feature->value);
+    }
+  }
 }
 
 
@@ -163,26 +337,23 @@ hb_ot_shape_collect_features (hb_ot_shape_planner_t          *planner,
  * shaper face data
  */
 
-HB_SHAPER_DATA_ENSURE_DEFINE(ot, face)
+struct hb_ot_face_data_t {};
 
 hb_ot_face_data_t *
 _hb_ot_shaper_face_data_create (hb_face_t *face)
 {
-  return _hb_ot_face_data_create (face);
+  return (hb_ot_face_data_t *) HB_SHAPER_DATA_SUCCEEDED;
 }
 
 void
 _hb_ot_shaper_face_data_destroy (hb_ot_face_data_t *data)
 {
-  _hb_ot_face_data_destroy (data);
 }
 
 
 /*
  * shaper font data
  */
-
-HB_SHAPER_DATA_ENSURE_DEFINE(ot, font)
 
 struct hb_ot_font_data_t {};
 
@@ -193,58 +364,8 @@ _hb_ot_shaper_font_data_create (hb_font_t *font HB_UNUSED)
 }
 
 void
-_hb_ot_shaper_font_data_destroy (hb_ot_font_data_t *data)
+_hb_ot_shaper_font_data_destroy (hb_ot_font_data_t *data HB_UNUSED)
 {
-}
-
-
-/*
- * shaper shape_plan data
- */
-
-hb_ot_shape_plan_data_t *
-_hb_ot_shaper_shape_plan_data_create (hb_shape_plan_t    *shape_plan,
-				      const hb_feature_t *user_features,
-				      unsigned int        num_user_features,
-				      const int          *coords,
-				      unsigned int        num_coords)
-{
-  hb_ot_shape_plan_t *plan = (hb_ot_shape_plan_t *) calloc (1, sizeof (hb_ot_shape_plan_t));
-  if (unlikely (!plan))
-    return nullptr;
-
-  plan->init ();
-
-  hb_ot_shape_planner_t planner (shape_plan);
-
-  planner.shaper = hb_ot_shape_complex_categorize (&planner);
-
-  hb_ot_shape_collect_features (&planner, &shape_plan->props,
-				user_features, num_user_features);
-
-  planner.compile (*plan, coords, num_coords);
-
-  if (plan->shaper->data_create) {
-    plan->data = plan->shaper->data_create (plan);
-    if (unlikely (!plan->data))
-    {
-      free (plan);
-      return nullptr;
-    }
-  }
-
-  return plan;
-}
-
-void
-_hb_ot_shaper_shape_plan_data_destroy (hb_ot_shape_plan_data_t *plan)
-{
-  if (plan->shaper->data_destroy)
-    plan->shaper->data_destroy (const_cast<void *> (plan->data));
-
-  plan->fini ();
-
-  free (plan);
 }
 
 
@@ -334,7 +455,6 @@ hb_insert_dotted_circle (hb_buffer_t *buffer, hb_font_t *font)
   buffer->output_info (info);
   while (buffer->idx < buffer->len && buffer->successful)
     buffer->next_glyph ();
-
   buffer->swap_buffers ();
 }
 
@@ -386,10 +506,12 @@ hb_ensure_native_direction (hb_buffer_t *buffer)
 }
 
 
-/* Substitute */
+/*
+ * Substitute
+ */
 
 static inline void
-hb_ot_mirror_chars (hb_ot_shape_context_t *c)
+hb_ot_mirror_chars (const hb_ot_shape_context_t *c)
 {
   if (HB_DIRECTION_IS_FORWARD (c->target_direction))
     return;
@@ -410,7 +532,7 @@ hb_ot_mirror_chars (hb_ot_shape_context_t *c)
 }
 
 static inline void
-hb_ot_shape_setup_masks_fraction (hb_ot_shape_context_t *c)
+hb_ot_shape_setup_masks_fraction (const hb_ot_shape_context_t *c)
 {
   if (!(c->buffer->scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_NON_ASCII) ||
       !c->plan->has_frac)
@@ -460,7 +582,7 @@ hb_ot_shape_setup_masks_fraction (hb_ot_shape_context_t *c)
 }
 
 static inline void
-hb_ot_shape_initialize_masks (hb_ot_shape_context_t *c)
+hb_ot_shape_initialize_masks (const hb_ot_shape_context_t *c)
 {
   hb_ot_map_t *map = &c->plan->map;
   hb_buffer_t *buffer = c->buffer;
@@ -470,7 +592,7 @@ hb_ot_shape_initialize_masks (hb_ot_shape_context_t *c)
 }
 
 static inline void
-hb_ot_shape_setup_masks (hb_ot_shape_context_t *c)
+hb_ot_shape_setup_masks (const hb_ot_shape_context_t *c)
 {
   hb_ot_map_t *map = &c->plan->map;
   hb_buffer_t *buffer = c->buffer;
@@ -492,10 +614,8 @@ hb_ot_shape_setup_masks (hb_ot_shape_context_t *c)
 }
 
 static void
-hb_ot_zero_width_default_ignorables (hb_ot_shape_context_t *c)
+hb_ot_zero_width_default_ignorables (const hb_buffer_t *buffer)
 {
-  hb_buffer_t *buffer = c->buffer;
-
   if (!(buffer->scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_DEFAULT_IGNORABLES) ||
       (buffer->flags & HB_BUFFER_FLAG_PRESERVE_DEFAULT_IGNORABLES) ||
       (buffer->flags & HB_BUFFER_FLAG_REMOVE_DEFAULT_IGNORABLES))
@@ -511,83 +631,29 @@ hb_ot_zero_width_default_ignorables (hb_ot_shape_context_t *c)
 }
 
 static void
-hb_ot_hide_default_ignorables (hb_ot_shape_context_t *c)
+hb_ot_hide_default_ignorables (hb_buffer_t *buffer,
+			       hb_font_t   *font)
 {
-  hb_buffer_t *buffer = c->buffer;
-
   if (!(buffer->scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_DEFAULT_IGNORABLES) ||
       (buffer->flags & HB_BUFFER_FLAG_PRESERVE_DEFAULT_IGNORABLES))
     return;
 
   unsigned int count = buffer->len;
   hb_glyph_info_t *info = buffer->info;
-  hb_glyph_position_t *pos = buffer->pos;
-  unsigned int i = 0;
-  for (i = 0; i < count; i++)
-  {
-    if (unlikely (_hb_glyph_info_is_default_ignorable (&info[i])))
-      break;
-  }
 
-  /* No default-ignorables found; return. */
-  if (i == count)
-    return;
-
-  hb_codepoint_t space;
+  hb_codepoint_t invisible = buffer->invisible;
   if (!(buffer->flags & HB_BUFFER_FLAG_REMOVE_DEFAULT_IGNORABLES) &&
-      c->font->get_nominal_glyph (' ', &space))
+      (invisible || font->get_nominal_glyph (' ', &invisible)))
   {
-    /* Replace default-ignorables with a zero-advance space glyph. */
-    for (/*continue*/; i < count; i++)
+    /* Replace default-ignorables with a zero-advance invisible glyph. */
+    for (unsigned int i = 0; i < count; i++)
     {
       if (_hb_glyph_info_is_default_ignorable (&info[i]))
-	info[i].codepoint = space;
+	info[i].codepoint = invisible;
     }
   }
   else
-  {
-    /* Merge clusters and delete default-ignorables.
-     * NOTE! We can't use out-buffer as we have positioning data. */
-    unsigned int j = i;
-    for (; i < count; i++)
-    {
-      if (_hb_glyph_info_is_default_ignorable (&info[i]))
-      {
-	/* Merge clusters.
-	 * Same logic as buffer->delete_glyph(), but for in-place removal. */
-
-	unsigned int cluster = info[i].cluster;
-	if (i + 1 < count && cluster == info[i + 1].cluster)
-	  continue; /* Cluster survives; do nothing. */
-
-	if (j)
-	{
-	  /* Merge cluster backward. */
-	  if (cluster < info[j - 1].cluster)
-	  {
-	    unsigned int mask = info[i].mask;
-	    unsigned int old_cluster = info[j - 1].cluster;
-	    for (unsigned k = j; k && info[k - 1].cluster == old_cluster; k--)
-	      buffer->set_cluster (info[k - 1], cluster, mask);
-	  }
-	  continue;
-	}
-
-	if (i + 1 < count)
-	  buffer->merge_clusters (i, i + 2); /* Merge cluster forward. */
-
-	continue;
-      }
-
-      if (j != i)
-      {
-	info[j] = info[i];
-	pos[j] = pos[i];
-      }
-      j++;
-    }
-    buffer->len = j;
-  }
+    hb_ot_layout_delete_glyphs_inplace (buffer, _hb_glyph_info_is_default_ignorable);
 }
 
 
@@ -604,10 +670,10 @@ hb_ot_map_glyphs_fast (hb_buffer_t  *buffer)
 }
 
 static inline void
-hb_synthesize_glyph_classes (hb_ot_shape_context_t *c)
+hb_synthesize_glyph_classes (hb_buffer_t *buffer)
 {
-  unsigned int count = c->buffer->len;
-  hb_glyph_info_t *info = c->buffer->info;
+  unsigned int count = buffer->len;
+  hb_glyph_info_t *info = buffer->info;
   for (unsigned int i = 0; i < count; i++)
   {
     hb_ot_layout_glyph_props_flags_t klass;
@@ -630,7 +696,7 @@ hb_synthesize_glyph_classes (hb_ot_shape_context_t *c)
 }
 
 static inline void
-hb_ot_substitute_default (hb_ot_shape_context_t *c)
+hb_ot_substitute_default (const hb_ot_shape_context_t *c)
 {
   hb_buffer_t *buffer = c->buffer;
 
@@ -643,8 +709,8 @@ hb_ot_substitute_default (hb_ot_shape_context_t *c)
   hb_ot_shape_setup_masks (c);
 
   /* This is unfortunate to go here, but necessary... */
-  if (c->plan->fallback_positioning)
-    _hb_ot_shape_fallback_position_recategorize_marks (c->plan, c->font, buffer);
+  if (c->plan->fallback_mark_positioning)
+    _hb_ot_shape_fallback_mark_position_recategorize_marks (c->plan, c->font, buffer);
 
   hb_ot_map_glyphs_fast (buffer);
 
@@ -652,23 +718,20 @@ hb_ot_substitute_default (hb_ot_shape_context_t *c)
 }
 
 static inline void
-hb_ot_substitute_complex (hb_ot_shape_context_t *c)
+hb_ot_substitute_complex (const hb_ot_shape_context_t *c)
 {
   hb_buffer_t *buffer = c->buffer;
 
   hb_ot_layout_substitute_start (c->font, buffer);
 
   if (c->plan->fallback_glyph_classes)
-    hb_synthesize_glyph_classes (c);
+    hb_synthesize_glyph_classes (c->buffer);
 
   c->plan->substitute (c->font, buffer);
-
-  if (0) /* XXX Call morx instead. */
-    hb_aat_layout_substitute (c->font, c->buffer);
 }
 
 static inline void
-hb_ot_substitute (hb_ot_shape_context_t *c)
+hb_ot_substitute_pre (const hb_ot_shape_context_t *c)
 {
   hb_ot_substitute_default (c);
 
@@ -677,7 +740,21 @@ hb_ot_substitute (hb_ot_shape_context_t *c)
   hb_ot_substitute_complex (c);
 }
 
-/* Position */
+static inline void
+hb_ot_substitute_post (const hb_ot_shape_context_t *c)
+{
+  hb_ot_hide_default_ignorables (c->buffer, c->font);
+  if (c->plan->apply_morx)
+    hb_aat_layout_remove_deleted_glyphs (c->buffer);
+
+  if (c->plan->shaper->postprocess_glyphs)
+    c->plan->shaper->postprocess_glyphs (c->plan, c->buffer, c->font);
+}
+
+
+/*
+ * Position
+ */
 
 static inline void
 adjust_mark_offsets (hb_glyph_position_t *pos)
@@ -708,7 +785,7 @@ zero_mark_widths_by_gdef (hb_buffer_t *buffer, bool adjust_offsets)
 }
 
 static inline void
-hb_ot_position_default (hb_ot_shape_context_t *c)
+hb_ot_position_default (const hb_ot_shape_context_t *c)
 {
   hb_direction_t direction = c->buffer->props.direction;
   unsigned int count = c->buffer->len;
@@ -742,23 +819,22 @@ hb_ot_position_default (hb_ot_shape_context_t *c)
 }
 
 static inline void
-hb_ot_position_complex (hb_ot_shape_context_t *c)
+hb_ot_position_complex (const hb_ot_shape_context_t *c)
 {
   unsigned int count = c->buffer->len;
   hb_glyph_info_t *info = c->buffer->info;
   hb_glyph_position_t *pos = c->buffer->pos;
 
-  /* If the font has no GPOS, AND, no fallback positioning will
-   * happen, AND, direction is forward, then when zeroing mark
-   * widths, we shift the mark with it, such that the mark
-   * is positioned hanging over the previous glyph.  When
+  /* If the font has no GPOS and direction is forward, then when
+   * zeroing mark widths, we shift the mark with it, such that the
+   * mark is positioned hanging over the previous glyph.  When
    * direction is backward we don't shift and it will end up
    * hanging over the next glyph after the final reordering.
-   * If fallback positinoing happens or GPOS is present, we don't
-   * care.
+   *
+   * Note: If fallback positinoing happens, we don't care about
+   * this as it will be overriden.
    */
-  bool adjust_offsets_when_zeroing = c->plan->fallback_positioning &&
-				     !c->plan->shaper->fallback_position &&
+  bool adjust_offsets_when_zeroing = c->plan->adjust_mark_positioning_when_zeroing &&
 				     HB_DIRECTION_IS_FORWARD (c->buffer->props.direction);
 
   /* We change glyph origin to what GPOS expects (horizontal), apply GPOS, change it back. */
@@ -772,36 +848,39 @@ hb_ot_position_complex (hb_ot_shape_context_t *c)
 
   hb_ot_layout_position_start (c->font, c->buffer);
 
-  switch (c->plan->shaper->zero_width_marks)
-  {
-    case HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_EARLY:
-      zero_mark_widths_by_gdef (c->buffer, adjust_offsets_when_zeroing);
-      break;
+  if (c->plan->zero_marks)
+    switch (c->plan->shaper->zero_width_marks)
+    {
+      case HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_EARLY:
+	zero_mark_widths_by_gdef (c->buffer, adjust_offsets_when_zeroing);
+	break;
 
-    default:
-    case HB_OT_SHAPE_ZERO_WIDTH_MARKS_NONE:
-    case HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_LATE:
-      break;
-  }
+      default:
+      case HB_OT_SHAPE_ZERO_WIDTH_MARKS_NONE:
+      case HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_LATE:
+	break;
+    }
 
-  if (likely (!c->plan->fallback_positioning))
-    c->plan->position (c->font, c->buffer);
+  c->plan->position (c->font, c->buffer);
 
-  switch (c->plan->shaper->zero_width_marks)
-  {
-    case HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_LATE:
-      zero_mark_widths_by_gdef (c->buffer, adjust_offsets_when_zeroing);
-      break;
+  if (c->plan->zero_marks)
+    switch (c->plan->shaper->zero_width_marks)
+    {
+      case HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_LATE:
+	zero_mark_widths_by_gdef (c->buffer, adjust_offsets_when_zeroing);
+	break;
 
-    default:
-    case HB_OT_SHAPE_ZERO_WIDTH_MARKS_NONE:
-    case HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_EARLY:
-      break;
-  }
+      default:
+      case HB_OT_SHAPE_ZERO_WIDTH_MARKS_NONE:
+      case HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_EARLY:
+	break;
+    }
 
-  /* Finishing off GPOS has to follow a certain order. */
+  /* Finish off.  Has to follow a certain order. */
   hb_ot_layout_position_finish_advances (c->font, c->buffer);
-  hb_ot_zero_width_default_ignorables (c);
+  hb_ot_zero_width_default_ignorables (c->buffer);
+  if (c->plan->apply_morx)
+    hb_aat_layout_zero_width_deleted_glyphs (c->buffer);
   hb_ot_layout_position_finish_offsets (c->font, c->buffer);
 
   /* The nil glyph_h_origin() func returns 0, so no need to apply it. */
@@ -810,10 +889,13 @@ hb_ot_position_complex (hb_ot_shape_context_t *c)
       c->font->subtract_glyph_h_origin (info[i].codepoint,
 					&pos[i].x_offset,
 					&pos[i].y_offset);
+
+  if (c->plan->fallback_mark_positioning)
+    _hb_ot_shape_fallback_mark_position (c->plan, c->font, c->buffer);
 }
 
 static inline void
-hb_ot_position (hb_ot_shape_context_t *c)
+hb_ot_position (const hb_ot_shape_context_t *c)
 {
   c->buffer->clear_positions ();
 
@@ -821,20 +903,10 @@ hb_ot_position (hb_ot_shape_context_t *c)
 
   hb_ot_position_complex (c);
 
-  if (c->plan->fallback_positioning && c->plan->shaper->fallback_position)
-    _hb_ot_shape_fallback_position (c->plan, c->font, c->buffer);
-
   if (HB_DIRECTION_IS_BACKWARD (c->buffer->props.direction))
     hb_buffer_reverse (c->buffer);
 
-  /* Visual fallback goes here. */
-
-  if (c->plan->fallback_positioning)
-    _hb_ot_shape_fallback_kern (c->plan, c->font, c->buffer);
-
   _hb_buffer_deallocate_gsubgpos_vars (c->buffer);
-
-  //hb_aat_layout_position (c->font, c->buffer);
 }
 
 static inline void
@@ -899,13 +971,9 @@ hb_ot_shape_internal (hb_ot_shape_context_t *c)
   if (c->plan->shaper->preprocess_text)
     c->plan->shaper->preprocess_text (c->plan, c->buffer, c->font);
 
-  hb_ot_substitute (c);
+  hb_ot_substitute_pre (c);
   hb_ot_position (c);
-
-  hb_ot_hide_default_ignorables (c);
-
-  if (c->plan->shaper->postprocess_glyphs)
-    c->plan->shaper->postprocess_glyphs (c->plan, c->buffer, c->font);
+  hb_ot_substitute_post (c);
 
   hb_propagate_flags (c->buffer);
 
@@ -926,7 +994,7 @@ _hb_ot_shape (hb_shape_plan_t    *shape_plan,
 	      const hb_feature_t *features,
 	      unsigned int        num_features)
 {
-  hb_ot_shape_context_t c = {HB_SHAPER_DATA_GET (shape_plan), font, font->face, buffer, features, num_features};
+  hb_ot_shape_context_t c = {&shape_plan->ot, font, font->face, buffer, features, num_features};
   hb_ot_shape_internal (&c);
 
   return true;
@@ -943,8 +1011,7 @@ hb_ot_shape_plan_collect_lookups (hb_shape_plan_t *shape_plan,
 				  hb_tag_t         table_tag,
 				  hb_set_t        *lookup_indexes /* OUT */)
 {
-  /* XXX Does the first part always succeed? */
-  HB_SHAPER_DATA_GET (shape_plan)->collect_lookups (table_tag, lookup_indexes);
+  shape_plan->ot.collect_lookups (table_tag, lookup_indexes);
 }
 
 

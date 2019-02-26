@@ -53,8 +53,10 @@ public:
 
     GrDrawOp::FixedFunctionFlags fixedFunctionFlags() const;
 
+    // noneAACompatibleWithCoverage should be set to true if the op can properly render a non-AA
+    // primitive merged into a coverage-based op.
     bool isCompatible(const GrSimpleMeshDrawOpHelper& that, const GrCaps&, const SkRect& thisBounds,
-                      const SkRect& thatBounds) const;
+                      const SkRect& thatBounds, bool noneAACompatibleWithCoverage = false) const;
 
     /**
      * Finalizes the processor set and determines whether the destination must be provided
@@ -77,7 +79,7 @@ public:
      */
     GrDrawOp::RequiresDstTexture xpRequiresDstTexture(const GrCaps&, const GrAppliedClip*,
                                                       GrProcessorAnalysisCoverage geometryCoverage,
-                                                      GrColor* geometryColor);
+                                                      SkPMColor4f* geometryColor);
 
     bool usesLocalCoords() const {
         SkASSERT(fDidAnalysis);
@@ -109,10 +111,16 @@ public:
         }
     }
 
+#ifdef SK_DEBUG
     SkString dumpInfo() const;
+#endif
+    GrAAType aaType() const { return static_cast<GrAAType>(fAAType); }
+
+    void setAAType(GrAAType aaType) {
+      fAAType = static_cast<unsigned>(aaType);
+    }
 
 protected:
-    GrAAType aaType() const { return static_cast<GrAAType>(fAAType); }
     uint32_t pipelineFlags() const { return fPipelineFlags; }
 
     GrPipeline::InitArgs pipelineInitArgs(GrMeshDrawOp::Target* target) const;
@@ -163,12 +171,17 @@ public:
     using GrSimpleMeshDrawOpHelper::compatibleWithAlphaAsCoverage;
 
     bool isCompatible(const GrSimpleMeshDrawOpHelperWithStencil& that, const GrCaps&,
-                      const SkRect& thisBounds, const SkRect& thatBounds) const;
+                      const SkRect& thisBounds, const SkRect& thatBounds,
+                      bool noneAACompatibleWithCoverage = false) const;
 
     PipelineAndFixedDynamicState makePipeline(GrMeshDrawOp::Target*,
                                               int numPrimitiveProcessorTextures = 0);
 
+#ifdef SK_DEBUG
     SkString dumpInfo() const;
+#endif
+    GrAAType aaType() const { return INHERITED::aaType(); }
+    void setAAType(GrAAType aaType) { INHERITED::setAAType(aaType); }
 
 private:
     const GrUserStencilSettings* fStencilSettings;
@@ -182,17 +195,16 @@ std::unique_ptr<GrDrawOp> GrSimpleMeshDrawOpHelper::FactoryHelper(GrContext* con
     GrOpMemoryPool* pool = context->contextPriv().opMemoryPool();
 
     MakeArgs makeArgs;
-    GrColor color = paint.getColor();
 
     if (paint.isTrivial()) {
         makeArgs.fProcessorSet = nullptr;
-        return pool->allocate<Op>(makeArgs, color, std::forward<OpArgs>(opArgs)...);
+        return pool->allocate<Op>(makeArgs, paint.getColor4f(), std::forward<OpArgs>(opArgs)...);
     } else {
         char* mem = (char*) pool->allocate(sizeof(Op) + sizeof(GrProcessorSet));
         char* setMem = mem + sizeof(Op);
         makeArgs.fProcessorSet = new (setMem) GrProcessorSet(std::move(paint));
 
-        return std::unique_ptr<GrDrawOp>(new (mem) Op(makeArgs, color,
+        return std::unique_ptr<GrDrawOp>(new (mem) Op(makeArgs, paint.getColor4f(),
                                                       std::forward<OpArgs>(opArgs)...));
     }
 }

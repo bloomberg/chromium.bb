@@ -141,7 +141,17 @@ def nanobench_flags(api, bot):
     # Ensure that the bot framework does not think we have timed out.
     args.extend(['--keepAlive', 'true'])
 
-  if 'QuadroP400' in bot or 'Adreno540' in bot:
+  if ('QuadroP400' in bot or
+      'Adreno540' in bot or
+      'IntelHD2000' in bot or   # gen 6 - sandy bridge
+      'IntelHD4400' in bot or   # gen 7 - haswell
+      'IntelHD405' in bot or    # gen 8 - cherryview braswell
+      'IntelIris6100' in bot or # gen 8 - broadwell
+      'IntelIris540' in bot or  # gen 9 - skylake
+      'IntelIris640' in bot or  # gen 9 - kaby lake
+      'MaliT760' in bot or
+      'MaliT860' in bot or
+      'MaliT880' in bot):
     args.extend(['--reduceOpListSplitting'])
 
   # Some people don't like verbose output.
@@ -162,29 +172,6 @@ def nanobench_flags(api, bot):
     match.append('~keymobi')
     match.append('~path_hairline')
     match.append('~GLInstancedArraysBench') # skia:4714
-  if 'Vulkan' in bot and 'IntelIris540' in bot and 'Win' in bot:
-    # skia:6398
-    match.append('~GM_varied_text_clipped_lcd')
-    match.append('~GM_varied_text_ignorable_clip_lcd')
-    match.append('~blendmode_mask_DstATop')
-    match.append('~blendmode_mask_SrcIn')
-    match.append('~blendmode_mask_SrcOut')
-    match.append('~blendmode_mask_Src')
-    match.append('~fontscaler_lcd')
-    match.append('~rotated_rects_aa_changing_transparent_src')
-    match.append('~rotated_rects_aa_same_transparent_src')
-    match.append('~srcmode_rects_1')
-    if 'Release' in bot:
-      match.append('~rotated_rects_aa_alternating_transparent_and_opaque_src')
-      match.append('~shadermask_LCD_FF')
-      match.append('~text_16_LCD_88')
-      match.append('~text_16_LCD_BK')
-      match.append('~text_16_LCD_FF')
-      match.append('~text_16_LCD_WT')
-    # skia:6863
-    match.append('~desk_skbug6850overlay2')
-    match.append('~desk_googlespreadsheet')
-    match.append('~desk_carsvg')
   if 'MoltenVK' in bot:
     # skbug.com/7962
     match.append('~^path_text_clipped_uncached$')
@@ -197,8 +184,13 @@ def nanobench_flags(api, bot):
     match.append('~desk_carsvg.skp_1')
     match.append('~desk_tiger8svg.skp_1')
     match.append('~desk_wowwiki.skp')
+    match.append('~desk_ynevsvg.skp_1.1')
     match.append('~keymobi_booking_com.skp_1')
     match.append('~keymobi_booking_com.skp_1_mpd')
+    match.append('~keymobi_cnn_article.skp_1')
+    match.append('~keymobi_cnn_article.skp_1_mpd')
+    match.append('~keymobi_forecast_io.skp_1')
+    match.append('~keymobi_forecast_io.skp_1_mpd')
     match.append('~keymobi_sfgate.skp_1')
     match.append('~keymobi_techcrunch_com.skp_1.1')
     match.append('~keymobi_techcrunch.skp_1.1')
@@ -379,8 +371,6 @@ TEST_BUILDERS = [
   ('Perf-Ubuntu17-GCC-Golo-GPU-QuadroP400-x86_64-Release-All-'
     'Valgrind_AbandonGpuContext_SK_CPU_LIMIT_SSE41'),
   'Perf-Win10-Clang-Golo-GPU-QuadroP400-x86_64-Release-All-ANGLE',
-  'Perf-Win10-Clang-NUC6i5SYK-GPU-IntelIris540-x86_64-Release-All-ANGLE',
-  'Perf-Win10-Clang-NUC6i5SYK-GPU-IntelIris540-x86_64-Release-All-Vulkan',
   'Perf-iOS-Clang-iPadPro-GPU-PowerVRGT7800-arm64-Release-All',
 ]
 

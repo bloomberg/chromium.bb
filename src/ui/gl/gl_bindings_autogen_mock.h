@@ -1237,6 +1237,29 @@ static void GL_BINDING_CALL Mock_glMemoryBarrier(GLbitfield barriers);
 static void GL_BINDING_CALL Mock_glMemoryBarrierByRegion(GLbitfield barriers);
 static void GL_BINDING_CALL Mock_glMemoryBarrierEXT(GLbitfield barriers);
 static void GL_BINDING_CALL Mock_glMinSampleShading(GLfloat value);
+static void GL_BINDING_CALL Mock_glMultiDrawArraysANGLE(GLenum mode,
+                                                        const GLint* firsts,
+                                                        const GLsizei* counts,
+                                                        GLsizei drawcount);
+static void GL_BINDING_CALL
+Mock_glMultiDrawArraysInstancedANGLE(GLenum mode,
+                                     const GLint* firsts,
+                                     const GLsizei* counts,
+                                     const GLsizei* instanceCounts,
+                                     GLsizei drawcount);
+static void GL_BINDING_CALL
+Mock_glMultiDrawElementsANGLE(GLenum mode,
+                              const GLsizei* counts,
+                              GLenum type,
+                              const GLvoid* const* indices,
+                              GLsizei drawcount);
+static void GL_BINDING_CALL
+Mock_glMultiDrawElementsInstancedANGLE(GLenum mode,
+                                       const GLsizei* counts,
+                                       GLenum type,
+                                       const GLvoid* const* indices,
+                                       const GLsizei* instanceCounts,
+                                       GLsizei drawcount);
 static void GL_BINDING_CALL Mock_glObjectLabel(GLenum identifier,
                                                GLuint name,
                                                GLsizei length,

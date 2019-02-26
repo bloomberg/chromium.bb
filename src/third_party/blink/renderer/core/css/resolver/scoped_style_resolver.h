@@ -52,8 +52,10 @@ class ScopedStyleResolver final
 
  public:
   static ScopedStyleResolver* Create(TreeScope& scope) {
-    return new ScopedStyleResolver(scope);
+    return MakeGarbageCollected<ScopedStyleResolver>(scope);
   }
+
+  explicit ScopedStyleResolver(TreeScope& scope) : scope_(scope) {}
 
   const TreeScope& GetTreeScope() const { return *scope_; }
   ScopedStyleResolver* Parent() const;
@@ -94,8 +96,6 @@ class ScopedStyleResolver final
   void Trace(blink::Visitor*);
 
  private:
-  explicit ScopedStyleResolver(TreeScope& scope) : scope_(scope) {}
-
   void AddTreeBoundaryCrossingRules(const RuleSet&,
                                     CSSStyleSheet*,
                                     unsigned sheet_index);
@@ -119,18 +119,17 @@ class ScopedStyleResolver final
     static RuleSubSet* Create(CSSStyleSheet* sheet,
                               unsigned index,
                               RuleSet* rules) {
-      return new RuleSubSet(sheet, index, rules);
+      return MakeGarbageCollected<RuleSubSet>(sheet, index, rules);
     }
+
+    RuleSubSet(CSSStyleSheet* sheet, unsigned index, RuleSet* rules)
+        : parent_style_sheet_(sheet), parent_index_(index), rule_set_(rules) {}
 
     Member<CSSStyleSheet> parent_style_sheet_;
     unsigned parent_index_;
     Member<RuleSet> rule_set_;
 
     void Trace(blink::Visitor*);
-
-   private:
-    RuleSubSet(CSSStyleSheet* sheet, unsigned index, RuleSet* rules)
-        : parent_style_sheet_(sheet), parent_index_(index), rule_set_(rules) {}
   };
   using CSSStyleSheetRuleSubSet = HeapVector<Member<RuleSubSet>>;
 

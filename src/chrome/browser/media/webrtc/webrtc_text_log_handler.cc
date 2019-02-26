@@ -13,10 +13,11 @@
 #include "base/cpu.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/media/webrtc/webrtc_log_uploader.h"
@@ -243,6 +244,8 @@ void WebRtcTextLogHandler::StartDone(const GenericDoneCallback& callback) {
 
   DCHECK_EQ(STARTING, logging_state_);
 
+  base::UmaHistogramSparse("WebRtcTextLogging.Start", web_app_id_);
+
   logging_started_time_ = base::Time::Now();
   logging_state_ = STARTED;
   FireGenericDoneCallback(callback, true, "");
@@ -305,6 +308,8 @@ void WebRtcTextLogHandler::DiscardLog() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(logging_state_ == STOPPED ||
          (channel_is_closing_ && logging_state_ != CLOSED));
+
+  base::UmaHistogramSparse("WebRtcTextLogging.Discard", web_app_id_);
 
   log_buffer_.reset();
   meta_data_.reset();
@@ -408,6 +413,11 @@ void WebRtcTextLogHandler::FireGenericDoneCallback(
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(callback, success, error_message_with_state));
+}
+
+void WebRtcTextLogHandler::SetWebAppId(int web_app_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  web_app_id_ = web_app_id;
 }
 
 void WebRtcTextLogHandler::LogInitialInfoOnIOThread(

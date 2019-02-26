@@ -114,24 +114,6 @@ void AddOsStrings(unsigned bitmask, base::ListValue* list) {
   }
 }
 
-// Adds the internal names for the specified entry to |names|.
-void AddInternalName(const FeatureEntry& e, std::set<std::string>* names) {
-  switch (e.type) {
-    case FeatureEntry::SINGLE_VALUE:
-    case FeatureEntry::SINGLE_DISABLE_VALUE:
-    case FeatureEntry::ORIGIN_LIST_VALUE:
-      names->insert(e.internal_name);
-      break;
-    case FeatureEntry::MULTI_VALUE:
-    case FeatureEntry::ENABLE_DISABLE_VALUE:
-    case FeatureEntry::FEATURE_VALUE:
-    case FeatureEntry::FEATURE_WITH_PARAMS_VALUE:
-      for (int i = 0; i < e.num_options; ++i)
-        names->insert(e.NameForOption(i));
-      break;
-  }
-}
-
 // Confirms that an entry is valid, used in a DCHECK in
 // SanitizeList below.
 bool ValidateFeatureEntry(const FeatureEntry& e) {
@@ -327,46 +309,30 @@ void FlagsState::ConvertFlagsToSwitches(
                            disable_features_flag_name);
 }
 
-std::set<std::string> FlagsState::GetSwitchesFromFlags(
-    FlagsStorage* flags_storage) {
+void FlagsState::GetSwitchesAndFeaturesFromFlags(
+    FlagsStorage* flags_storage,
+    std::set<std::string>* switches,
+    std::set<std::string>* features) const {
   std::set<std::string> enabled_entries;
   std::map<std::string, SwitchEntry> name_to_switch_map;
   GenerateFlagsToSwitchesMapping(flags_storage, &enabled_entries,
                                  &name_to_switch_map);
 
-  std::set<std::string> switches;
   for (const std::string& entry_name : enabled_entries) {
     const auto& entry_it = name_to_switch_map.find(entry_name);
     DCHECK(entry_it != name_to_switch_map.end());
 
     const SwitchEntry& entry = entry_it->second;
     if (!entry.switch_name.empty())
-      switches.insert("--" + entry.switch_name);
-  }
-  return switches;
-}
+      switches->insert("--" + entry.switch_name);
 
-std::set<std::string> FlagsState::GetFeaturesFromFlags(
-    FlagsStorage* flags_storage) {
-  std::set<std::string> enabled_entries;
-  std::map<std::string, SwitchEntry> name_to_switch_map;
-  GenerateFlagsToSwitchesMapping(flags_storage, &enabled_entries,
-                                 &name_to_switch_map);
-
-  std::set<std::string> features;
-  for (const std::string& entry_name : enabled_entries) {
-    const auto& entry_it = name_to_switch_map.find(entry_name);
-    DCHECK(entry_it != name_to_switch_map.end());
-
-    const SwitchEntry& entry = entry_it->second;
     if (!entry.feature_name.empty()) {
       if (entry.feature_state)
-        features.insert(entry.feature_name + ":enabled");
+        features->insert(entry.feature_name + ":enabled");
       else
-        features.insert(entry.feature_name + ":disabled");
+        features->insert(entry.feature_name + ":disabled");
     }
   }
-  return features;
 }
 
 bool FlagsState::IsRestartNeededToCommitChanges() {
@@ -699,7 +665,7 @@ void FlagsState::AddSwitchMapping(
     const std::string& key,
     const std::string& switch_name,
     const std::string& switch_value,
-    std::map<std::string, SwitchEntry>* name_to_switch_map) {
+    std::map<std::string, SwitchEntry>* name_to_switch_map) const {
   DCHECK(!base::ContainsKey(*name_to_switch_map, key));
 
   SwitchEntry* entry = &(*name_to_switch_map)[key];
@@ -711,7 +677,7 @@ void FlagsState::AddFeatureMapping(
     const std::string& key,
     const std::string& feature_name,
     bool feature_state,
-    std::map<std::string, SwitchEntry>* name_to_switch_map) {
+    std::map<std::string, SwitchEntry>* name_to_switch_map) const {
   DCHECK(!base::ContainsKey(*name_to_switch_map, key));
 
   SwitchEntry* entry = &(*name_to_switch_map)[key];
@@ -798,60 +764,60 @@ void FlagsState::MergeFeatureCommandLineSwitch(
     command_line->AppendSwitchASCII(switch_name, switch_value);
 }
 
-void FlagsState::SanitizeList(FlagsStorage* flags_storage) {
-  std::set<std::string> known_entries;
-  for (size_t i = 0; i < num_feature_entries_; ++i) {
-    DCHECK(ValidateFeatureEntry(feature_entries_[i]));
-    AddInternalName(feature_entries_[i], &known_entries);
+std::set<std::string> FlagsState::SanitizeList(
+    const std::set<std::string>& enabled_entries,
+    int platform_mask) const {
+  std::set<std::string> new_enabled_entries;
+
+  // For each entry in |enabled_entries|, check whether it exists in the list
+  // of supported features. Remove those that don't. Note: Even though this is
+  // an O(n^2) search, this is more efficient than creating a set from
+  // |feature_entries_| first because |feature_entries_| is large and
+  // |enabled_entries| should generally be small/empty.
+  const FeatureEntry* features_end = feature_entries_ + num_feature_entries_;
+  for (const std::string& entry_name : enabled_entries) {
+    if (features_end !=
+        std::find_if(feature_entries_, features_end,
+                     [entry_name, platform_mask](const FeatureEntry& e) {
+                       DCHECK(ValidateFeatureEntry(e));
+                       return (e.supported_platforms & platform_mask) &&
+                              e.InternalNameMatches(entry_name);
+                     })) {
+      new_enabled_entries.insert(entry_name);
+    }
   }
 
-  std::set<std::string> enabled_entries = flags_storage->GetFlags();
-
-  std::set<std::string> new_enabled_entries =
-      base::STLSetIntersection<std::set<std::string>>(known_entries,
-                                                      enabled_entries);
-
-  if (new_enabled_entries != enabled_entries)
-    flags_storage->SetFlags(new_enabled_entries);
+  return new_enabled_entries;
 }
 
 void FlagsState::GetSanitizedEnabledFlags(FlagsStorage* flags_storage,
-                                          std::set<std::string>* result) {
-  SanitizeList(flags_storage);
-  *result = flags_storage->GetFlags();
+                                          std::set<std::string>* result) const {
+  std::set<std::string> enabled_entries = flags_storage->GetFlags();
+  std::set<std::string> new_enabled_entries = SanitizeList(enabled_entries, -1);
+  if (new_enabled_entries.size() != enabled_entries.size())
+    flags_storage->SetFlags(new_enabled_entries);
+  result->swap(new_enabled_entries);
 }
 
 void FlagsState::GetSanitizedEnabledFlagsForCurrentPlatform(
     FlagsStorage* flags_storage,
-    std::set<std::string>* result) {
+    std::set<std::string>* result) const {
+  // TODO(asvitkine): Consider making GetSanitizedEnabledFlags() do the platform
+  // filtering by default so that we don't need two calls to SanitizeList().
   GetSanitizedEnabledFlags(flags_storage, result);
 
-  // Filter out any entries that aren't enabled on the current platform.  We
-  // don't remove these from prefs else syncing to a platform with a different
-  // set of entries would be lossy.
-  std::set<std::string> platform_entries;
-  int current_platform = GetCurrentPlatform();
-  for (size_t i = 0; i < num_feature_entries_; ++i) {
-    const FeatureEntry& entry = feature_entries_[i];
-    if (entry.supported_platforms & current_platform)
-      AddInternalName(entry, &platform_entries);
+  int platform_mask = GetCurrentPlatform();
 #if defined(OS_CHROMEOS)
-    if (feature_entries_[i].supported_platforms & kOsCrOSOwnerOnly)
-      AddInternalName(entry, &platform_entries);
+  platform_mask |= kOsCrOSOwnerOnly;
 #endif
-  }
-
-  std::set<std::string> new_enabled_entries =
-      base::STLSetIntersection<std::set<std::string>>(platform_entries,
-                                                      *result);
-
-  result->swap(new_enabled_entries);
+  std::set<std::string> platform_entries = SanitizeList(*result, platform_mask);
+  result->swap(platform_entries);
 }
 
 void FlagsState::GenerateFlagsToSwitchesMapping(
     FlagsStorage* flags_storage,
     std::set<std::string>* enabled_entries,
-    std::map<std::string, SwitchEntry>* name_to_switch_map) {
+    std::map<std::string, SwitchEntry>* name_to_switch_map) const {
   GetSanitizedEnabledFlagsForCurrentPlatform(flags_storage, enabled_entries);
 
   for (size_t i = 0; i < num_feature_entries_; ++i) {

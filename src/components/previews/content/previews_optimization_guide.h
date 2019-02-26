@@ -13,15 +13,16 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
-#include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/optimization_guide_service_observer.h"
 #include "components/previews/content/previews_optimization_guide.h"
 #include "components/previews/core/previews_experiments.h"
 #include "url/gurl.h"
 
 namespace optimization_guide {
+struct HintsComponentInfo;
+class OptimizationGuideService;
 namespace proto {
-class Configuration;
+class Hint;
 }  // namespace proto
 }  // namespace optimization_guide
 
@@ -42,16 +43,19 @@ class PreviewsOptimizationGuide
   // The embedder guarantees |optimization_guide_service| outlives |this|.
   PreviewsOptimizationGuide(
       optimization_guide::OptimizationGuideService* optimization_guide_service,
-      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner);
 
   ~PreviewsOptimizationGuide() override;
 
-  // Returns whether |type| is whitelisted for |url|.|previews_data| can be
-  // modified.
+  // Returns whether |type| is whitelisted for |url|. If so |out_ect_threshold|
+  // provides the maximum effective connection type to trigger the preview for.
+  // |previews_data| can be modified (for further details provided by hints).
   // Virtual so it can be mocked in tests.
-  virtual bool IsWhitelisted(PreviewsUserData* previews_data,
-                             const GURL& url,
-                             PreviewsType type) const;
+  virtual bool IsWhitelisted(
+      PreviewsUserData* previews_data,
+      const GURL& url,
+      PreviewsType type,
+      net::EffectiveConnectionType* out_ect_threshold) const;
 
   // Returns whether |type| is blacklisted for |url|.
   // Virtual so it can be mocked in tests.
@@ -72,9 +76,8 @@ class PreviewsOptimizationGuide
                          net::EffectiveConnectionType ect) const;
 
   // optimization_guide::OptimizationGuideServiceObserver implementation:
-  void OnHintsProcessed(
-      const optimization_guide::proto::Configuration& config,
-      const optimization_guide::ComponentInfo& component_info) override;
+  void OnHintsComponentAvailable(
+      const optimization_guide::HintsComponentInfo& info) override;
 
  private:
   // Updates the hints to the latest hints sent by the Component Updater.
@@ -91,8 +94,8 @@ class PreviewsOptimizationGuide
   // The OptimizationGuideService that this guide is listening to. Not owned.
   optimization_guide::OptimizationGuideService* optimization_guide_service_;
 
-  // Runner for IO thread tasks.
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  // Runner for UI thread tasks.
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
   // Background thread where hints processing should be performed.
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
@@ -100,8 +103,8 @@ class PreviewsOptimizationGuide
   // The current hints used for this optimization guide.
   std::unique_ptr<PreviewsHints> hints_;
 
-  // Used to get |weak_ptr_| to self on the IO thread.
-  base::WeakPtrFactory<PreviewsOptimizationGuide> io_weak_ptr_factory_;
+  // Used to get |weak_ptr_| to self on the UI thread.
+  base::WeakPtrFactory<PreviewsOptimizationGuide> ui_weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PreviewsOptimizationGuide);
 };

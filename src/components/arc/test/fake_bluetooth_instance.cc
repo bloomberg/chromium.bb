@@ -46,11 +46,6 @@ void FakeBluetoothInstance::OnAdapterProperties(
     mojom::BluetoothStatus status,
     std::vector<mojom::BluetoothPropertyPtr> properties) {}
 
-void FakeBluetoothInstance::OnRemoteDeviceProperties(
-    mojom::BluetoothStatus status,
-    mojom::BluetoothAddressPtr address,
-    std::vector<mojom::BluetoothPropertyPtr> properties) {}
-
 void FakeBluetoothInstance::OnDeviceFound(
     std::vector<mojom::BluetoothPropertyPtr> properties) {
   device_found_data_.push_back(std::move(properties));
@@ -63,11 +58,6 @@ void FakeBluetoothInstance::OnBondStateChanged(
     mojom::BluetoothStatus status,
     mojom::BluetoothAddressPtr remote_addr,
     mojom::BluetoothBondState state) {}
-
-void FakeBluetoothInstance::OnAclStateChanged(
-    mojom::BluetoothStatus status,
-    mojom::BluetoothAddressPtr remote_addr,
-    mojom::BluetoothAclState state) {}
 
 void FakeBluetoothInstance::OnLEDeviceFoundForN(
     mojom::BluetoothAddressPtr addr,

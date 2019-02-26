@@ -26,8 +26,6 @@ source_set("api") {
   sources = [
     "browser/browser_api.cc",
     "browser/browser_api.h",
-    "browser_context_keyed_service_factories.cc",
-    "browser_context_keyed_service_factories.h",
     "media_galleries/blob_data_source_factory.cc",
     "media_galleries/blob_data_source_factory.h",
     "media_galleries/media_galleries_api.cc",
@@ -61,12 +59,10 @@ source_set("api") {
 
   if (is_chromeos) {
     sources += [
-      "easy_unlock_private/easy_unlock_private_api.cc",
-      "easy_unlock_private/easy_unlock_private_api.h",
-      "easy_unlock_private/easy_unlock_private_connection.cc",
-      "easy_unlock_private/easy_unlock_private_connection.h",
-      "easy_unlock_private/easy_unlock_private_connection_manager.cc",
-      "easy_unlock_private/easy_unlock_private_connection_manager.h",
+      "webstore_widget_private/app_installer.cc",
+      "webstore_widget_private/app_installer.h",
+      "webstore_widget_private/webstore_widget_private_api.cc",
+      "webstore_widget_private/webstore_widget_private_api.h",
     ]
 
     deps += [

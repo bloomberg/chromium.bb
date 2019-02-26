@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
+#include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
 // Allow to retrieves an uber-auth token for the user. This class uses the
@@ -21,17 +22,16 @@
 //
 // This class can handle one request at a time.
 
-class GaiaAuthFetcher;
 class GoogleServiceAuthError;
 
 namespace network {
 class SharedURLLoaderFactory;
 }
 
-using GaiaAuthFetcherFactory = base::Callback<std::unique_ptr<GaiaAuthFetcher>(
-    GaiaAuthConsumer*,
-    const std::string&,
-    scoped_refptr<network::SharedURLLoaderFactory>)>;
+using GaiaAuthFetcherFactory =
+    base::RepeatingCallback<std::unique_ptr<GaiaAuthFetcher>(
+        GaiaAuthConsumer*,
+        scoped_refptr<network::SharedURLLoaderFactory>)>;
 
 // Callback for the |UbertokenFetcher| class.
 class UbertokenConsumer {
@@ -52,12 +52,11 @@ class UbertokenFetcher : public GaiaAuthConsumer,
   UbertokenFetcher(
       OAuth2TokenService* token_service,
       UbertokenConsumer* consumer,
-      const std::string& source,
+      gaia::GaiaSource source,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   UbertokenFetcher(
       OAuth2TokenService* token_service,
       UbertokenConsumer* consumer,
-      const std::string& source,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       GaiaAuthFetcherFactory factory);
   ~UbertokenFetcher() override;
@@ -91,7 +90,6 @@ class UbertokenFetcher : public GaiaAuthConsumer,
 
   OAuth2TokenService* token_service_;
   UbertokenConsumer* consumer_;
-  std::string source_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   bool is_bound_to_channel_id_;  // defaults to true
   GaiaAuthFetcherFactory gaia_auth_fetcher_factory_;

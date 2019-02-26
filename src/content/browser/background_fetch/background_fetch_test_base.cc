@@ -67,7 +67,7 @@ void DidUnregisterServiceWorker(base::Closure quit_closure,
   std::move(quit_closure).Run();
 }
 
-GURL GetPatternForId(int64_t id) {
+GURL GetScopeForId(int64_t id) {
   return GURL(kTestOrigin + base::IntToString(id));
 }
 
@@ -103,7 +103,7 @@ int64_t BackgroundFetchTestBase::RegisterServiceWorker() {
 
   {
     blink::mojom::ServiceWorkerRegistrationOptions options;
-    options.scope = GetPatternForId(next_pattern_id_++);
+    options.scope = GetScopeForId(next_pattern_id_++);
     base::RunLoop run_loop;
     embedded_worker_test_helper_.context()->RegisterServiceWorker(
         script_url, options,
@@ -150,12 +150,12 @@ void BackgroundFetchTestBase::UnregisterServiceWorker(
     int64_t service_worker_registration_id) {
   base::RunLoop run_loop;
   embedded_worker_test_helper_.context()->UnregisterServiceWorker(
-      GetPatternForId(service_worker_registration_id),
+      GetScopeForId(service_worker_registration_id),
       base::BindOnce(&DidUnregisterServiceWorker, run_loop.QuitClosure()));
   run_loop.Run();
 }
 
-ServiceWorkerFetchRequest
+blink::mojom::FetchAPIRequestPtr
 BackgroundFetchTestBase::CreateRequestWithProvidedResponse(
     const std::string& method,
     const GURL& url,
@@ -163,9 +163,15 @@ BackgroundFetchTestBase::CreateRequestWithProvidedResponse(
   // Register the |response| with the faked delegate.
   delegate_->RegisterResponse(url, std::move(response));
 
-  // Create a ServiceWorkerFetchRequest request with the same information.
-  return ServiceWorkerFetchRequest(url, method, ServiceWorkerHeaderMap(),
-                                   Referrer(), false /* is_reload */);
+  // Create a blink::mojom::FetchAPIRequestPtr request with the same
+  // information.
+  auto request = blink::mojom::FetchAPIRequest::New();
+  request->url = url;
+  request->method = method;
+  request->is_reload = false;
+  request->referrer = blink::mojom::Referrer::New();
+  request->headers = base::flat_map<std::string, std::string>();
+  return request;
 }
 
 std::unique_ptr<BackgroundFetchRegistration>

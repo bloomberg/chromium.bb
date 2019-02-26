@@ -80,13 +80,12 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
           websocket_handshake_throttle_provider,
       ThreadSafeSender* thread_safe_sender,
       std::unique_ptr<service_manager::Connector> service_manager_connection);
-  ~WebWorkerFetchContextImpl() override;
 
   // blink::WebWorkerFetchContext implementation:
-  std::unique_ptr<blink::WebWorkerFetchContext> CloneForNestedWorker() override;
+  scoped_refptr<blink::WebWorkerFetchContext> CloneForNestedWorker() override;
   void SetTerminateSyncLoadEvent(base::WaitableEvent*) override;
   void InitializeOnWorkerThread() override;
-  std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory() override;
+  blink::WebURLLoaderFactory* GetURLLoaderFactory() override;
   std::unique_ptr<blink::WebURLLoaderFactory> WrapURLLoaderFactory(
       mojo::ScopedMessagePipeHandle url_loader_factory_handle) override;
   std::unique_ptr<blink::CodeCacheLoader> CreateCodeCacheLoader() override;
@@ -134,6 +133,8 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
 
  private:
   class Factory;
+
+  ~WebWorkerFetchContextImpl() override;
 
   bool Send(IPC::Message* message);
 
@@ -230,8 +231,8 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   base::WaitableEvent* terminate_sync_load_event_ = nullptr;
 
   // The blink::WebURLLoaderFactory which was created and passed to
-  // Blink by CreateURLLoaderFactory().
-  base::WeakPtr<Factory> web_loader_factory_;
+  // Blink by GetURLLoaderFactory().
+  std::unique_ptr<Factory> web_loader_factory_;
 
   std::unique_ptr<URLLoaderThrottleProvider> throttle_provider_;
   std::unique_ptr<WebSocketHandshakeThrottleProvider>

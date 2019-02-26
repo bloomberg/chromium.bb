@@ -10,19 +10,9 @@ EncryptionKeyCreationUtilIOS::EncryptionKeyCreationUtilIOS() = default;
 
 EncryptionKeyCreationUtilIOS::~EncryptionKeyCreationUtilIOS() = default;
 
-bool EncryptionKeyCreationUtilIOS::KeyAlreadyCreated() {
-  return false;
-}
-
-bool EncryptionKeyCreationUtilIOS::ShouldPreventOverwriting() {
-  return false;
-}
-
 void EncryptionKeyCreationUtilIOS::OnKeyWasFound() {}
 
-void EncryptionKeyCreationUtilIOS::OnKeyWasStored() {}
-
-void EncryptionKeyCreationUtilIOS::OnOverwritingPrevented() {}
+void EncryptionKeyCreationUtilIOS::OnKeyNotFound(bool new_key_stored) {}
 
 void EncryptionKeyCreationUtilIOS::OnKeychainLookupFailed() {}
 

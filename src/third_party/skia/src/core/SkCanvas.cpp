@@ -15,7 +15,6 @@
 #include "SkColorFilter.h"
 #include "SkDraw.h"
 #include "SkDrawLooper.h"
-#include "SkDrawable.h"
 #include "SkGlyphCache.h"
 #include "SkGlyphRun.h"
 #include "SkImage.h"
@@ -1724,11 +1723,10 @@ void SkCanvas::drawImageRect(const SkImage* image, const SkIRect& isrc, const Sk
     this->drawImageRect(image, SkRect::Make(isrc), dst, paint, constraint);
 }
 
-void SkCanvas::drawImageRect(const SkImage* image, const SkRect& dst, const SkPaint* paint,
-                             SrcRectConstraint constraint) {
+void SkCanvas::drawImageRect(const SkImage* image, const SkRect& dst, const SkPaint* paint) {
     RETURN_ON_NULL(image);
     this->drawImageRect(image, SkRect::MakeIWH(image->width(), image->height()), dst, paint,
-                        constraint);
+                        kFast_SrcRectConstraint);
 }
 
 namespace {
@@ -1794,6 +1792,15 @@ void SkCanvas::drawImageLattice(const SkImage* image, const Lattice& lattice, co
     } else {
         this->drawImageRect(image, dst, paint);
     }
+}
+
+void SkCanvas::experimental_DrawImageSetV1(const ImageSetEntry imageSet[], int cnt,
+                                           SkFilterQuality filterQuality, SkBlendMode mode) {
+    TRACE_EVENT0("skia", TRACE_FUNC);
+    RETURN_ON_NULL(imageSet);
+    RETURN_ON_FALSE(cnt);
+
+    this->onDrawImageSet(imageSet, cnt, filterQuality, mode);
 }
 
 void SkCanvas::drawBitmap(const SkBitmap& bitmap, SkScalar dx, SkScalar dy, const SkPaint* paint) {
@@ -2397,6 +2404,16 @@ void SkCanvas::onDrawImageLattice(const SkImage* image, const Lattice& lattice, 
     LOOPER_END
 }
 
+void SkCanvas::onDrawImageSet(const ImageSetEntry imageSet[], int count,
+                              SkFilterQuality filterQuality, SkBlendMode mode) {
+    SkPaint paint;
+    LOOPER_BEGIN(paint, nullptr);
+    while (iter.next()) {
+        iter.fDevice->drawImageSet(imageSet, count, filterQuality, mode);
+    }
+    LOOPER_END
+}
+
 void SkCanvas::onDrawBitmapLattice(const SkBitmap& bitmap, const Lattice& lattice,
                                    const SkRect& dst, const SkPaint* paint) {
     SkPaint realPaint;
@@ -2512,7 +2529,17 @@ void SkCanvas::drawString(const SkString& string, SkScalar x, SkScalar y, const 
     this->drawText(string.c_str(), string.size(), x, y, paint);
 }
 
-// These will become non-virtual, so they always call the (virtual) onDraw... method
+// These call the (virtual) onDraw... method
+void SkCanvas::drawSimpleText(const void* text, size_t byteLength, SkTextEncoding,
+                              SkScalar x, SkScalar y, const SkFont& font, const SkPaint& paint) {
+    TRACE_EVENT0("skia", TRACE_FUNC);
+    if (byteLength) {
+        sk_msan_assert_initialized(text, SkTAddOffset<const void>(text, byteLength));
+        SkPaint tmp(paint);
+        font.LEGACY_applyToPaint(&tmp);
+        this->onDrawText(text, byteLength, x, y, tmp);
+    }
+}
 void SkCanvas::drawText(const void* text, size_t byteLength, SkScalar x, SkScalar y,
                         const SkPaint& paint) {
     TRACE_EVENT0("skia", TRACE_FUNC);
@@ -2624,7 +2651,7 @@ void SkCanvas::drawDrawable(SkDrawable* dr, const SkMatrix* matrix) {
 void SkCanvas::onDrawDrawable(SkDrawable* dr, const SkMatrix* matrix) {
     // drawable bounds are no longer reliable (e.g. android displaylist)
     // so don't use them for quick-reject
-    dr->draw(this, matrix);
+    this->getDevice()->drawDrawable(dr, matrix, this);
 }
 
 void SkCanvas::onDrawAtlas(const SkImage* atlas, const SkRSXform xform[], const SkRect tex[],
@@ -2713,7 +2740,13 @@ void SkCanvas::drawArc(const SkRect& oval, SkScalar startAngle,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+#ifdef SK_DISABLE_SKPICTURE
+void SkCanvas::drawPicture(const SkPicture* picture, const SkMatrix* matrix, const SkPaint* paint) {}
 
+
+void SkCanvas::onDrawPicture(const SkPicture* picture, const SkMatrix* matrix,
+                             const SkPaint* paint) {}
+#else
 /**
  *  This constant is trying to balance the speed of ref'ing a subpicture into a parent picture,
  *  against the playback cost of recursing into the subpicture to get at its actual ops.
@@ -2756,6 +2789,7 @@ void SkCanvas::onDrawPicture(const SkPicture* picture, const SkMatrix* matrix,
     SkAutoCanvasMatrixPaint acmp(this, matrix, paint, picture->cullRect());
     picture->playback(this);
 }
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////

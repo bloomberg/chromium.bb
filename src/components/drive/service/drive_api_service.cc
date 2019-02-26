@@ -223,14 +223,14 @@ void BatchRequestConfigurator::Commit() {
 }
 
 DriveAPIService::DriveAPIService(
-    OAuth2TokenService* oauth2_token_service,
+    identity::IdentityManager* identity_manager,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     base::SequencedTaskRunner* blocking_task_runner,
     const GURL& base_url,
     const GURL& base_thumbnail_url,
     const std::string& custom_user_agent,
     const net::NetworkTrafficAnnotationTag& traffic_annotation)
-    : oauth2_token_service_(oauth2_token_service),
+    : identity_manager_(identity_manager),
       url_loader_factory_(url_loader_factory),
       blocking_task_runner_(blocking_task_runner),
       url_generator_(base_url, base_thumbnail_url),
@@ -252,8 +252,8 @@ void DriveAPIService::Initialize(const std::string& account_id) {
   scopes.push_back(kDriveAppsScope);
 
   sender_ = std::make_unique<RequestSender>(
-      std::make_unique<google_apis::AuthService>(
-          oauth2_token_service_, account_id, url_loader_factory_, scopes),
+      std::make_unique<google_apis::AuthService>(identity_manager_, account_id,
+                                                 url_loader_factory_, scopes),
       url_loader_factory_, blocking_task_runner_.get(), custom_user_agent_,
       traffic_annotation_);
   sender_->auth_service()->AddObserver(this);

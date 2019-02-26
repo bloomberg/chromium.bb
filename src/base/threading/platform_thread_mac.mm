@@ -153,7 +153,7 @@ bool PlatformThread::CanIncreaseThreadPriority(ThreadPriority priority) {
 }
 
 // static
-void PlatformThread::SetCurrentThreadPriority(ThreadPriority priority) {
+void PlatformThread::SetCurrentThreadPriorityImpl(ThreadPriority priority) {
   // Changing the priority of the main thread causes performance regressions.
   // https://crbug.com/601270
   DCHECK(![[NSThread currentThread] isMainThread]);
@@ -172,15 +172,14 @@ void PlatformThread::SetCurrentThreadPriority(ThreadPriority priority) {
       break;
   }
 
-  [[[NSThread currentThread] threadDictionary]
-      setObject:@(static_cast<int>(priority))
-         forKey:kThreadPriorityKey];
+  [[NSThread currentThread] threadDictionary][kThreadPriorityKey] =
+      @(static_cast<int>(priority));
 }
 
 // static
 ThreadPriority PlatformThread::GetCurrentThreadPriority() {
-  NSNumber* priority = base::mac::ObjCCast<NSNumber>([[[NSThread currentThread]
-      threadDictionary] objectForKey:kThreadPriorityKey]);
+  NSNumber* priority = base::mac::ObjCCast<NSNumber>(
+      [[NSThread currentThread] threadDictionary][kThreadPriorityKey]);
 
   if (!priority)
     return ThreadPriority::NORMAL;

@@ -29,6 +29,7 @@
 
 import sys
 
+from blinkbuild.name_style_converter import NameStyleConverter
 import json5_generator
 import trie_builder
 import template_expander
@@ -53,6 +54,9 @@ class ElementLookupTrieWriter(json5_generator.Writer):
         'namespacePrefix': '',
         'namespaceURI': '',
     }
+    filters = {
+        'symbol': lambda symbol: 'k' + NameStyleConverter(symbol).to_upper_camel_case()
+    }
 
     def __init__(self, json5_file_paths, output_dir):
         super(ElementLookupTrieWriter, self).__init__(json5_file_paths, output_dir)
@@ -73,7 +77,7 @@ class ElementLookupTrieWriter(json5_generator.Writer):
             'namespace': self._namespace,
         }
 
-    @template_expander.use_jinja('templates/element_lookup_trie.cc.tmpl')
+    @template_expander.use_jinja('templates/element_lookup_trie.cc.tmpl', filters=filters)
     def generate_implementation(self):
         return {
             'input_files': self._input_files,

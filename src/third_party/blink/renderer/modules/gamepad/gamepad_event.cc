@@ -13,16 +13,16 @@ GamepadEvent::GamepadEvent(const AtomicString& type,
     : Event(type, bubbles, cancelable), gamepad_(gamepad) {}
 
 GamepadEvent::GamepadEvent(const AtomicString& type,
-                           const GamepadEventInit& initializer)
+                           const GamepadEventInit* initializer)
     : Event(type, initializer) {
-  if (initializer.hasGamepad())
-    gamepad_ = initializer.gamepad();
+  if (initializer->hasGamepad())
+    gamepad_ = initializer->gamepad();
 }
 
 GamepadEvent::~GamepadEvent() = default;
 
 const AtomicString& GamepadEvent::InterfaceName() const {
-  return EventNames::GamepadEvent;
+  return event_interface_names::kGamepadEvent;
 }
 
 void GamepadEvent::Trace(blink::Visitor* visitor) {

@@ -119,7 +119,7 @@ MutableCSSPropertyValueSet* CanvasFontCache::ParseFont(
   return parsed_style;
 }
 
-void CanvasFontCache::DidProcessTask() {
+void CanvasFontCache::DidProcessTask(const base::PendingTask& pending_task) {
   DCHECK(pruning_scheduled_);
   DCHECK(main_cache_purge_preventer_);
   while (fetched_fonts_.size() > MaxFonts()) {
@@ -128,7 +128,7 @@ void CanvasFontCache::DidProcessTask() {
     font_lru_list_.RemoveFirst();
   }
   main_cache_purge_preventer_.reset();
-  Platform::Current()->CurrentThread()->RemoveTaskObserver(this);
+  Thread::Current()->RemoveTaskObserver(this);
   pruning_scheduled_ = false;
 }
 
@@ -137,7 +137,7 @@ void CanvasFontCache::SchedulePruningIfNeeded() {
     return;
   DCHECK(!main_cache_purge_preventer_);
   main_cache_purge_preventer_ = std::make_unique<FontCachePurgePreventer>();
-  Platform::Current()->CurrentThread()->AddTaskObserver(this);
+  Thread::Current()->AddTaskObserver(this);
   pruning_scheduled_ = true;
 }
 
@@ -159,7 +159,7 @@ void CanvasFontCache::Trace(blink::Visitor* visitor) {
 void CanvasFontCache::Dispose() {
   main_cache_purge_preventer_.reset();
   if (pruning_scheduled_) {
-    Platform::Current()->CurrentThread()->RemoveTaskObserver(this);
+    Thread::Current()->RemoveTaskObserver(this);
   }
 }
 

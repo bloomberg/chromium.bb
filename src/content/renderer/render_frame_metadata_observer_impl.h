@@ -35,7 +35,8 @@ class CONTENT_EXPORT RenderFrameMetadataObserverImpl
   void BindToCurrentThread() override;
   void OnRenderFrameSubmission(
       const cc::RenderFrameMetadata& render_frame_metadata,
-      viz::CompositorFrameMetadata* compositor_frame_metadata) override;
+      viz::CompositorFrameMetadata* compositor_frame_metadata,
+      bool force_send) override;
 
   // mojom::RenderFrameMetadataObserver:
   void ReportAllFrameSubmissionsForTesting(bool enabled) override;

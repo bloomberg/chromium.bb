@@ -53,8 +53,6 @@ class PassthroughProgramCacheTest : public GpuServiceTest,
   int32_t blob_count() { return blob_count_; }
 
  protected:
-  void SetUp() override { GpuServiceTest::SetUp(); }
-
   std::string MakeKey(size_t len, uint8_t start_byte) {
     std::string binary_key(len, '.');
 

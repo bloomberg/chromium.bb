@@ -69,7 +69,10 @@ source_set("tests") {
   ]
   if (!is_ios) {
     sources += [ "pref_service_factory_unittest.cc" ]
-    deps += [ "//services/service_manager/public/cpp:service_test_support" ]
+    deps += [
+      ":tests_catalog_source",
+      "//services/service_manager/public/cpp/test:test_support",
+    ]
   }
 }
 
@@ -90,4 +93,10 @@ service_manifest("unittest_helper_manifest") {
 catalog("tests_catalog") {
   testonly = true
   embedded_services = [ ":unittest_manifest" ]
+}
+
+catalog_cpp_source("tests_catalog_source") {
+  testonly = true
+  catalog = ":tests_catalog"
+  generated_function_name = "prefs::CreateServiceTestCatalog"
 }

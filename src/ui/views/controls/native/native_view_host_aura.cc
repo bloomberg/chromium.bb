@@ -134,8 +134,12 @@ void NativeViewHostAura::AddedToWidget() {
 
 void NativeViewHostAura::RemovedFromWidget() {
   if (host_->native_view()) {
-    host_->native_view()->Hide();
+    // Clear kHostWindowKey before Hide() because it could be accessed during
+    // the call. In MUS aura, the hosting window could be destroyed at this
+    // point.
     host_->native_view()->ClearProperty(aura::client::kHostWindowKey);
+
+    host_->native_view()->Hide();
     if (host_->native_view()->parent())
       host_->native_view()->parent()->RemoveChild(host_->native_view());
     RemoveClippingWindow();
@@ -227,6 +231,13 @@ gfx::NativeCursor NativeViewHostAura::GetCursor(int x, int y) {
   if (host_->native_view())
     return host_->native_view()->GetCursor(gfx::Point(x, y));
   return gfx::kNullCursor;
+}
+
+void NativeViewHostAura::SetVisible(bool visible) {
+  if (!visible)
+    host_->native_view()->Hide();
+  else
+    host_->native_view()->Show();
 }
 
 void NativeViewHostAura::OnWindowBoundsChanged(

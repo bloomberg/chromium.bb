@@ -43,6 +43,7 @@ class NotificationPlatformBridgeMac : public NotificationPlatformBridge {
   void GetDisplayed(Profile* profile,
                     GetDisplayedNotificationsCallback callback) const override;
   void SetReadyCallback(NotificationBridgeReadyCallback callback) override;
+  void DisplayServiceShutDown(Profile* profile) override;
 
   // Processes a notification response generated from a user action
   // (click close, etc.).

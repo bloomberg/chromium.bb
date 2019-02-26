@@ -13,7 +13,6 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/service_test.h"
 #include "services/ws/common/util.h"
 #include "services/ws/ids.h"
 #include "services/ws/public/mojom/constants.mojom.h"
@@ -162,6 +161,8 @@ class TestWindowTreeClient2 : public TestWindowTreeClient {
     binding_.Bind(std::move(request));
   }
 
+  ClientSpecificId client_id() const { return client_id_; }
+
   // Runs a nested MessageLoop until |count| changes (calls to
   // WindowTreeClient functions) have been received.
   void WaitForChangeCount(size_t count) {
@@ -277,6 +278,7 @@ class TestWindowTreeClient2 : public TestWindowTreeClient {
   };
 
   // TestWindowTreeClient:
+  void OnClientId(ClientSpecificId id) override { client_id_ = id; }
   void OnChangeAdded() override {
     if (wait_state_.get() &&
         tracker_.changes()->size() >= wait_state_->change_count) {
@@ -372,7 +374,7 @@ class TestWindowTreeClient2 : public TestWindowTreeClient {
                           Id window_id,
                           int64_t display_id,
                           std::unique_ptr<ui::Event> event,
-                          bool matches_pointer_watcher) override {
+                          bool matches_event_observer) override {
     // Ack input events to clear the state on the server. These can be received
     // during test startup. X11Window::DispatchEvent sends a synthetic move
     // event to notify of entry.
@@ -380,9 +382,7 @@ class TestWindowTreeClient2 : public TestWindowTreeClient {
     // Don't log input events as none of the tests care about them and they
     // may come in at random points.
   }
-  void OnPointerEventObserved(std::unique_ptr<ui::Event>,
-                              Id window_id,
-                              int64_t display_id) override {}
+  void OnObservedInputEvent(std::unique_ptr<ui::Event> event) override {}
   void OnWindowSharedPropertyChanged(
       Id window,
       const std::string& name,
@@ -440,6 +440,7 @@ class TestWindowTreeClient2 : public TestWindowTreeClient {
   uint32_t waiting_change_id_;
   bool on_change_completed_result_;
   std::unique_ptr<base::RunLoop> change_completed_run_loop_;
+  ClientSpecificId client_id_ = 0u;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowTreeClient2);
 };
@@ -636,6 +637,10 @@ class WindowTreeClientTest : public WindowServerServiceTestBase {
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeClientTest);
 };
+
+TEST_F(WindowTreeClientTest, GotClientId) {
+  EXPECT_NE(0u, wt_client1_->client_id());
+}
 
 // Verifies two clients get different ids.
 TEST_F(WindowTreeClientTest, TwoClientsGetDifferentClientIds) {
@@ -1217,7 +1222,9 @@ TEST_F(WindowTreeClientTest, DISABLED_SetWindowBounds) {
   wt_client2_->set_track_root_bounds_changes(true);
 
   viz::ParentLocalSurfaceIdAllocator allocator;
-  viz::LocalSurfaceId local_surface_id = allocator.GetCurrentLocalSurfaceId();
+  allocator.GenerateId();
+  viz::LocalSurfaceId local_surface_id =
+      allocator.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
   wt1()->SetWindowBounds(10, window_1_1, gfx::Rect(0, 0, 100, 100),
                          local_surface_id);
   ASSERT_TRUE(wt_client1()->WaitForChangeCompleted(10));

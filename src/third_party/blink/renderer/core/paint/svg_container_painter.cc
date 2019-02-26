@@ -45,9 +45,10 @@ void SVGContainerPainter::Paint(const PaintInfo& paint_info) {
   // content, does this in PaintLayerPainter::PaintSingleFragment.
   if (layout_svg_container_.StyleRef().HasTransform()) {
     paint_info_before_filtering.ApplyInfiniteCullRect();
-  } else {
-    paint_info_before_filtering.UpdateCullRect(
-        layout_svg_container_.LocalToSVGParentTransform());
+  } else if (const auto* properties =
+                 layout_svg_container_.FirstFragment().PaintProperties()) {
+    if (const auto* transform = properties->Transform())
+      paint_info_before_filtering.TransformCullRect(transform);
   }
 
   ScopedSVGTransformState transform_state(

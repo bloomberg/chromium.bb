@@ -28,6 +28,7 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_origin.h"
 #include "chrome/browser/prerender/prerender_test_utils.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/prerender_types.h"
@@ -830,7 +831,7 @@ TEST_F(PrerenderTest, PendingPrerenderTest) {
           FINAL_STATUS_USED);
   prerender_link_manager()->OnAddPrerender(
       child_id, GetNextPrerenderID(), pending_url, kDefaultRelTypes,
-      Referrer(url, blink::kWebReferrerPolicyDefault), kSize, route_id);
+      Referrer(url, network::mojom::ReferrerPolicy::kDefault), kSize, route_id);
   EXPECT_FALSE(LauncherHasRunningPrerender(child_id, last_prerender_id()));
   EXPECT_FALSE(pending_prerender_contents->prerendering_has_started());
 
@@ -872,7 +873,7 @@ TEST_F(PrerenderTest, InvalidPendingPrerenderTest) {
           FINAL_STATUS_UNSUPPORTED_SCHEME);
   prerender_link_manager()->OnAddPrerender(
       child_id, GetNextPrerenderID(), pending_url, kDefaultRelTypes,
-      Referrer(url, blink::kWebReferrerPolicyDefault), kSize, route_id);
+      Referrer(url, network::mojom::ReferrerPolicy::kDefault), kSize, route_id);
   EXPECT_FALSE(LauncherHasRunningPrerender(child_id, last_prerender_id()));
   EXPECT_FALSE(pending_prerender_contents->prerendering_has_started());
 
@@ -905,7 +906,7 @@ TEST_F(PrerenderTest, CancelPendingPrerenderTest) {
   // Schedule a pending prerender launched from the prerender.
   prerender_link_manager()->OnAddPrerender(
       child_id, GetNextPrerenderID(), pending_url, kDefaultRelTypes,
-      Referrer(url, blink::kWebReferrerPolicyDefault), kSize, route_id);
+      Referrer(url, network::mojom::ReferrerPolicy::kDefault), kSize, route_id);
   EXPECT_FALSE(LauncherHasRunningPrerender(child_id, last_prerender_id()));
 
   // Cancel the pending prerender.
@@ -1062,6 +1063,9 @@ TEST_F(PrerenderTest, LinkRelAllowedOnCellular) {
   ASSERT_EQ(prerender_contents, entry.get());
 }
 
+// Verify that the external prerender requests are not allowed on cellular
+// connection when kPredictivePrefetchingAllowedOnAllConnectionTypes feature is
+// not enabled.
 TEST_F(PrerenderTest, PrerenderNotAllowedOnCellularWithExternalOrigin) {
   EnablePrerender();
   std::unique_ptr<net::NetworkChangeNotifier> mock(
@@ -1081,6 +1085,35 @@ TEST_F(PrerenderTest, PrerenderNotAllowedOnCellularWithExternalOrigin) {
   EXPECT_FALSE(prerender_contents->prerendering_has_started());
   histogram_tester().ExpectUniqueSample("Prerender.FinalStatus",
                                         FINAL_STATUS_CELLULAR_NETWORK, 1);
+}
+
+// Verify that the external prerender requests are allowed on cellular
+// connection when kPredictivePrefetchingAllowedOnAllConnectionTypes feature is
+// enabled.
+TEST_F(
+    PrerenderTest,
+    PrerenderAllowedOnCellularWithExternalOrigin_PredictivePrefetchingAllowedOnAllConnectionTypes) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kPredictivePrefetchingAllowedOnAllConnectionTypes);
+  EnablePrerender();
+  std::unique_ptr<net::NetworkChangeNotifier> mock(
+      new MockNetworkChangeNotifier4G);
+  EXPECT_TRUE(net::NetworkChangeNotifier::IsConnectionCellular(
+      net::NetworkChangeNotifier::GetConnectionType()));
+  GURL url("http://www.google.com/");
+  DummyPrerenderContents* prerender_contents =
+      prerender_manager()->CreateNextPrerenderContents(
+          url, ORIGIN_EXTERNAL_REQUEST, FINAL_STATUS_USED);
+  std::unique_ptr<PrerenderHandle> prerender_handle(
+      prerender_manager()->AddPrerenderFromExternalRequest(
+          url, content::Referrer(), nullptr, gfx::Rect(kSize)));
+  EXPECT_TRUE(prerender_handle);
+  EXPECT_TRUE(prerender_contents->prerendering_has_started());
+  EXPECT_EQ(prerender_contents, prerender_handle->contents());
+  std::unique_ptr<PrerenderContents> entry =
+      prerender_manager()->FindAndUseEntry(url);
+  ASSERT_EQ(prerender_contents, entry.get());
 }
 
 TEST_F(PrerenderTest, PrerenderAllowedForForcedCellular) {

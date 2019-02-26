@@ -103,8 +103,8 @@ OperationID FileSystemOperationRunner::Copy(
       src_url, dest_url, option, error_behavior,
       progress_callback.is_null()
           ? CopyProgressCallback()
-          : base::Bind(&FileSystemOperationRunner::OnCopyProgress, weak_ptr_,
-                       id, progress_callback),
+          : base::BindRepeating(&FileSystemOperationRunner::OnCopyProgress,
+                                weak_ptr_, id, progress_callback),
       base::BindOnce(&FileSystemOperationRunner::DidFinish, weak_ptr_, id,
                      std::move(callback)));
   return id;

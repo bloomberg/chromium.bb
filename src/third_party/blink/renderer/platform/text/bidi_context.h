@@ -38,15 +38,15 @@ class PLATFORM_EXPORT BidiContext : public ThreadSafeRefCounted<BidiContext> {
  public:
   static scoped_refptr<BidiContext> Create(
       unsigned char level,
-      WTF::Unicode::CharDirection,
+      WTF::unicode::CharDirection,
       bool override = false,
       BidiEmbeddingSource = kFromStyleOrDOM,
       BidiContext* parent = nullptr);
 
   BidiContext* Parent() const { return parent_.get(); }
   unsigned char Level() const { return level_; }
-  WTF::Unicode::CharDirection Dir() const {
-    return static_cast<WTF::Unicode::CharDirection>(direction_);
+  WTF::unicode::CharDirection Dir() const {
+    return static_cast<WTF::unicode::CharDirection>(direction_);
   }
   bool Override() const { return override_; }
   BidiEmbeddingSource Source() const {
@@ -62,7 +62,7 @@ class PLATFORM_EXPORT BidiContext : public ThreadSafeRefCounted<BidiContext> {
 
  private:
   BidiContext(unsigned char level,
-              WTF::Unicode::CharDirection direction,
+              WTF::unicode::CharDirection direction,
               bool override,
               BidiEmbeddingSource source,
               BidiContext* parent)
@@ -75,7 +75,7 @@ class PLATFORM_EXPORT BidiContext : public ThreadSafeRefCounted<BidiContext> {
   }
 
   static scoped_refptr<BidiContext> CreateUncached(unsigned char level,
-                                                   WTF::Unicode::CharDirection,
+                                                   WTF::unicode::CharDirection,
                                                    bool override,
                                                    BidiEmbeddingSource,
                                                    BidiContext* parent);

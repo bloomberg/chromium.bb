@@ -27,7 +27,6 @@
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_type.h"
 #include "third_party/blink/public/mojom/loader/code_cache.mojom.h"
 #include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_factory.h"
 #include "third_party/blink/public/platform/modules/webdatabase/web_database.mojom.h"
 
 #if defined(OS_LINUX)
@@ -125,7 +124,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   viz::FrameSinkId GenerateFrameSinkId() override;
   bool IsLockedToSite() const override;
 
-  std::unique_ptr<blink::WebIDBFactory> CreateIdbFactory() override;
   blink::WebString FileSystemCreateOriginIdentifier(
       const blink::WebSecurityOrigin& origin) override;
 
@@ -266,9 +264,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   std::unique_ptr<service_manager::Connector> connector_;
   scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
 
-#if !defined(OS_ANDROID) && !defined(OS_WIN) && !defined(OS_FUCHSIA)
-  class SandboxSupport;
-  std::unique_ptr<SandboxSupport> sandbox_support_;
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+  std::unique_ptr<blink::WebSandboxSupport> sandbox_support_;
 #endif
 
   // This counter keeps track of the number of times sudden termination is
@@ -303,6 +300,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   scoped_refptr<blink::mojom::ThreadSafeCodeCacheHostPtr> code_cache_host_;
 
 #if defined(OS_LINUX)
+  class SandboxSupport;
   sk_sp<font_service::FontLoader> font_loader_;
 #endif
 

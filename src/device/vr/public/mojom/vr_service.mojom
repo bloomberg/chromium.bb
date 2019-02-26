@@ -43,7 +43,7 @@ enum XRTargetRayMode {
 
 struct XRSessionOptions {
   bool immersive;
-  bool provide_passthrough_camera;
+  bool environment_integration;
 
   // A flag to indicate if there has been a user activation when the request
   // session is made.
@@ -73,7 +73,6 @@ struct XRSession {
   // info to more sensible places so that this doesn't need to be sent here.
   VRDisplayInfo display_info;
   XRPresentationConnection? submit_frame_sink;
-  XREnvironmentIntegrationProvider? environment_provider;
 };
 
 // This structure contains the infomation and interfaces needed to create a two
@@ -165,11 +164,11 @@ struct VRDisplayCapabilities {
   // Indicates whether the display can actively show imagery on a headset.
   bool canPresent;
 
-  // If true, this is an AR display that can provide a background image along
-  // with each pose. Clients who want them should send a frame image request
-  // via getFrameData instead of getPose.
-  // TODO(https://crbug.com/836349): this may need to change.
-  bool can_provide_pass_through_images;
+  // Whether the display gathers data about the environment (for AR like
+  // planes, point clouds, meshes, etc.). The backend will decide whether
+  // it needs to provide camera frames or not based on whether it is a
+  // see-through HMD or camera-based AR system.
+  bool canProvideEnvironmentIntegration;
 };
 
 // Information about the optical properties for an eye in a VRDisplay.
@@ -303,17 +302,6 @@ interface XRDevice {
   ExitPresent();
 };
 
-// Provides the necessary functionality for a WebXR session to get data for
-// drawing frames. The kind of data it gets depends on what kind of session was
-// requested.
-// This interface is hosted in the Browser process, but will move to a sandboxed
-// utility process on Windows.  The render process communicates with it.
-interface XRFrameDataProvider {
-  // frame_data is optional and will not be set if and only if the call fails
-  // for some reason, such as device disconnection.
-  GetFrameData() => (XRFrameData? frame_data);
-};
-
 // Provides functionality for integrating environment information into an
 // XRSession. For example, some AR sessions would implement hit test to allow
 // developers to get the information about the world that its sensors supply.
@@ -333,6 +321,19 @@ interface XREnvironmentIntegrationProvider {
   // An empty result list means there were no hits. If a nullopt is returned,
   // there was an error.
   RequestHitTest(XRRay ray) => (array<XRHitResult>? results);
+};
+
+// Provides the necessary functionality for a WebXR session to get data for
+// drawing frames. The kind of data it gets depends on what kind of session was
+// requested.
+// This interface is hosted in the Browser process, but will move to a sandboxed
+// utility process on Windows.  The render process communicates with it.
+interface XRFrameDataProvider {
+  // frame_data is optional and will not be set if and only if the call fails
+  // for some reason, such as device disconnection.
+  GetFrameData() => (XRFrameData? frame_data);
+  GetEnvironmentIntegrationProvider(
+      associated XREnvironmentIntegrationProvider& environment_provider);
 };
 
 // Provides the necessary functionality for sending frames to a headset.

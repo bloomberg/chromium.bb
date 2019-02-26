@@ -15,6 +15,8 @@ constexpr int kTaskTypeNone = 0;
 
 namespace internal {
 
+enum class WakeUpResolution { kLow, kHigh };
+
 // Wrapper around PostTask method arguments and the assigned task type.
 // Eventually it becomes a PendingTask once accepted by a TaskQueueImpl.
 struct BASE_EXPORT PostedTask {
@@ -31,6 +33,8 @@ struct BASE_EXPORT PostedTask {
   TimeDelta delay;
   Nestable nestable;
   int task_type;
+  // The time at which the task was queued.
+  TimeTicks queue_time;
 
   DISALLOW_COPY_AND_ASSIGN(PostedTask);
 };
@@ -68,7 +72,9 @@ struct BASE_EXPORT Task : public PendingTask {
   Task(internal::PostedTask posted_task,
        TimeTicks desired_run_time,
        internal::EnqueueOrder sequence_order,
-       internal::EnqueueOrder enqueue_order = internal::EnqueueOrder());
+       internal::EnqueueOrder enqueue_order = internal::EnqueueOrder(),
+       internal::WakeUpResolution wake_up_resolution =
+           internal::WakeUpResolution::kLow);
 
   internal::DelayedWakeUp delayed_wake_up() const {
     return internal::DelayedWakeUp{delayed_run_time, sequence_num};

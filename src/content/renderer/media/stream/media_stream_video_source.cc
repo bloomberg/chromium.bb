@@ -13,6 +13,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "content/child/child_process.h"
@@ -49,7 +50,7 @@ void MediaStreamVideoSource::AddTrack(
     const VideoCaptureDeliverFrameCB& frame_callback,
     const ConstraintsCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(std::find(tracks_.begin(), tracks_.end(), track) == tracks_.end());
+  DCHECK(!base::ContainsValue(tracks_, track));
   tracks_.push_back(track);
   secure_tracker_.Add(track, true);
 
@@ -310,6 +311,19 @@ MediaStreamVideoSource::GetCurrentCaptureParams() const {
   return base::Optional<media::VideoCaptureParams>();
 }
 
+void MediaStreamVideoSource::DoChangeSource(
+    const MediaStreamDevice& new_device) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DVLOG(1) << "MediaStreamVideoSource::DoChangeSource: "
+           << ", new device id = " << new_device.id
+           << ", session id = " << new_device.session_id;
+  if (state_ != STARTED) {
+    return;
+  }
+
+  ChangeSourceImpl(new_device);
+}
+
 void MediaStreamVideoSource::DoStopSource() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(3) << "DoStopSource()";
@@ -404,11 +418,14 @@ void MediaStreamVideoSource::UpdateTrackSettings(
   // Calculate resulting frame size if the source delivers frames
   // according to the current format. Note: Format may change later.
   gfx::Size desired_size;
-  VideoTrackAdapter::CalculateTargetSize(false /* is_rotated */,
-                                         GetCurrentFormat()->frame_size,
-                                         adapter_settings, &desired_size);
-  track->SetTargetSizeAndFrameRate(desired_size.width(), desired_size.height(),
-                                   adapter_settings.max_frame_rate);
+  if (VideoTrackAdapter::CalculateDesiredSize(
+          false /* is_rotated */, GetCurrentFormat()->frame_size,
+          adapter_settings, &desired_size)) {
+    track->SetTargetSizeAndFrameRate(desired_size.width(),
+                                     desired_size.height(),
+                                     adapter_settings.max_frame_rate());
+  }
+  track->SetTrackAdapterSettings(adapter_settings);
 }
 
 MediaStreamVideoSource::PendingTrackInfo::PendingTrackInfo(

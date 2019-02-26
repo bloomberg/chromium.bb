@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 
 namespace content {
@@ -150,7 +151,7 @@ void WebRtcAudioSink::Adapter::AddSink(webrtc::AudioTrackSinkInterface* sink) {
          signaling_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(sink);
   base::AutoLock auto_lock(lock_);
-  DCHECK(std::find(sinks_.begin(), sinks_.end(), sink) == sinks_.end());
+  DCHECK(!base::ContainsValue(sinks_, sink));
   sinks_.push_back(sink);
 }
 

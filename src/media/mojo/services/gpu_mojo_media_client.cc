@@ -8,10 +8,12 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "gpu/ipc/service/gpu_channel.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/cdm_factory.h"
+#include "media/base/fallback_video_decoder.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_decoder.h"
 #include "media/gpu/buildflags.h"
@@ -147,22 +149,26 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
       std::make_unique<VideoFrameFactoryImpl>(gpu_task_runner_,
                                               std::move(get_stub_cb)));
 #elif defined(OS_CHROMEOS) || defined(OS_MACOSX) || defined(OS_WIN)
-#if defined(OS_WIN)
-  if (base::FeatureList::IsEnabled(kD3D11VideoDecoder)) {
-    return D3D11VideoDecoder::Create(
-        gpu_task_runner_, media_log->Clone(), gpu_preferences_,
-        gpu_workarounds_,
-        base::BindRepeating(&GetCommandBufferStub, media_gpu_channel_manager_,
-                            command_buffer_id->channel_token,
-                            command_buffer_id->route_id));
-  }
-#endif  // defined(OS_WIN)
-  return VdaVideoDecoder::Create(
+  std::unique_ptr<VideoDecoder> vda_video_decoder = VdaVideoDecoder::Create(
       task_runner, gpu_task_runner_, media_log->Clone(), target_color_space,
       gpu_preferences_, gpu_workarounds_,
       base::BindRepeating(&GetCommandBufferStub, media_gpu_channel_manager_,
                           command_buffer_id->channel_token,
                           command_buffer_id->route_id));
+#if defined(OS_WIN)
+  if (base::FeatureList::IsEnabled(kD3D11VideoDecoder)) {
+    std::unique_ptr<VideoDecoder> d3d11_video_decoder =
+        D3D11VideoDecoder::Create(
+            gpu_task_runner_, media_log->Clone(), gpu_preferences_,
+            gpu_workarounds_,
+            base::BindRepeating(
+                &GetCommandBufferStub, media_gpu_channel_manager_,
+                command_buffer_id->channel_token, command_buffer_id->route_id));
+    return base::WrapUnique<VideoDecoder>(new FallbackVideoDecoder(
+        std::move(d3d11_video_decoder), std::move(vda_video_decoder)));
+  }
+#endif  // defined(OS_WIN)
+  return vda_video_decoder;
 #else
   return nullptr;
 #endif  // defined(OS_ANDROID)
@@ -181,7 +187,7 @@ std::unique_ptr<CdmFactory> GpuMojoMediaClient::CreateCdmFactory(
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 std::unique_ptr<CdmProxy> GpuMojoMediaClient::CreateCdmProxy(
-    const std::string& cdm_guid) {
+    const base::Token& cdm_guid) {
   if (cdm_proxy_factory_cb_)
     return cdm_proxy_factory_cb_.Run(cdm_guid);
 

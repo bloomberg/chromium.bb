@@ -10,12 +10,12 @@
 namespace blink {
 
 DOMMatrix* DOMMatrix::Create() {
-  return new DOMMatrix(TransformationMatrix());
+  return MakeGarbageCollected<DOMMatrix>(TransformationMatrix());
 }
 
 DOMMatrix* DOMMatrix::Create(ExecutionContext* execution_context,
                              ExceptionState& exception_state) {
-  return new DOMMatrix(TransformationMatrix());
+  return MakeGarbageCollected<DOMMatrix>(TransformationMatrix());
 }
 
 DOMMatrix* DOMMatrix::Create(ExecutionContext* execution_context,
@@ -28,7 +28,7 @@ DOMMatrix* DOMMatrix::Create(ExecutionContext* execution_context,
       return nullptr;
     }
 
-    DOMMatrix* matrix = new DOMMatrix(TransformationMatrix());
+    DOMMatrix* matrix = MakeGarbageCollected<DOMMatrix>(TransformationMatrix());
     matrix->SetMatrixValueFromString(execution_context, init.GetAsString(),
                                      exception_state);
     return matrix;
@@ -42,7 +42,7 @@ DOMMatrix* DOMMatrix::Create(ExecutionContext* execution_context,
           "for a 3D matrix.");
       return nullptr;
     }
-    return new DOMMatrix(sequence, sequence.size());
+    return MakeGarbageCollected<DOMMatrix>(sequence, sequence.size());
   }
 
   NOTREACHED();
@@ -51,17 +51,18 @@ DOMMatrix* DOMMatrix::Create(ExecutionContext* execution_context,
 
 DOMMatrix* DOMMatrix::Create(DOMMatrixReadOnly* other,
                              ExceptionState& exception_state) {
-  return new DOMMatrix(other->Matrix(), other->is2D());
+  return MakeGarbageCollected<DOMMatrix>(other->Matrix(), other->is2D());
 }
 
 DOMMatrix* DOMMatrix::Create(const SkMatrix44& matrix,
                              ExceptionState& exception_state) {
   TransformationMatrix transformation_matrix(matrix);
-  return new DOMMatrix(transformation_matrix, transformation_matrix.IsAffine());
+  return MakeGarbageCollected<DOMMatrix>(transformation_matrix,
+                                         transformation_matrix.IsAffine());
 }
 
 DOMMatrix* DOMMatrix::CreateForSerialization(double sequence[], int size) {
-  return new DOMMatrix(sequence, size);
+  return MakeGarbageCollected<DOMMatrix>(sequence, size);
 }
 
 DOMMatrix* DOMMatrix::fromFloat32Array(NotShared<DOMFloat32Array> float32_array,
@@ -73,8 +74,8 @@ DOMMatrix* DOMMatrix::fromFloat32Array(NotShared<DOMFloat32Array> float32_array,
         "for a 3D matrix.");
     return nullptr;
   }
-  return new DOMMatrix(float32_array.View()->Data(),
-                       float32_array.View()->length());
+  return MakeGarbageCollected<DOMMatrix>(float32_array.View()->Data(),
+                                         float32_array.View()->length());
 }
 
 DOMMatrix* DOMMatrix::fromFloat64Array(NotShared<DOMFloat64Array> float64_array,
@@ -86,8 +87,8 @@ DOMMatrix* DOMMatrix::fromFloat64Array(NotShared<DOMFloat64Array> float64_array,
         "for a 3D matrix.");
     return nullptr;
   }
-  return new DOMMatrix(float64_array.View()->Data(),
-                       float64_array.View()->length());
+  return MakeGarbageCollected<DOMMatrix>(float64_array.View()->Data(),
+                                         float64_array.View()->length());
 }
 
 template <typename T>
@@ -97,32 +98,26 @@ DOMMatrix::DOMMatrix(T sequence, int size)
 DOMMatrix::DOMMatrix(const TransformationMatrix& matrix, bool is2d)
     : DOMMatrixReadOnly(matrix, is2d) {}
 
-DOMMatrix* DOMMatrix::fromMatrix2D(DOMMatrix2DInit& other) {
-  if (!ValidateAndFixup2D(other)) {
-    return nullptr;
-  }
-  return new DOMMatrix({other.m11(), other.m12(), other.m21(), other.m22(),
-                        other.m41(), other.m42()},
-                       true);
-}
-
-DOMMatrix* DOMMatrix::fromMatrix(DOMMatrixInit& other,
+DOMMatrix* DOMMatrix::fromMatrix(DOMMatrixInit* other,
                                  ExceptionState& exception_state) {
   if (!ValidateAndFixup(other, exception_state)) {
     DCHECK(exception_state.HadException());
     return nullptr;
   }
-  if (other.is2D()) {
-    return new DOMMatrix({other.m11(), other.m12(), other.m21(), other.m22(),
-                          other.m41(), other.m42()},
-                         other.is2D());
+  if (other->is2D()) {
+    return MakeGarbageCollected<DOMMatrix>(
+        TransformationMatrix(other->m11(), other->m12(), other->m21(),
+                             other->m22(), other->m41(), other->m42()),
+        other->is2D());
   }
 
-  return new DOMMatrix({other.m11(), other.m12(), other.m13(), other.m14(),
-                        other.m21(), other.m22(), other.m23(), other.m24(),
-                        other.m31(), other.m32(), other.m33(), other.m34(),
-                        other.m41(), other.m42(), other.m43(), other.m44()},
-                       other.is2D());
+  return MakeGarbageCollected<DOMMatrix>(
+      TransformationMatrix(
+          other->m11(), other->m12(), other->m13(), other->m14(), other->m21(),
+          other->m22(), other->m23(), other->m24(), other->m31(), other->m32(),
+          other->m33(), other->m34(), other->m41(), other->m42(), other->m43(),
+          other->m44()),
+      other->is2D());
 }
 
 void DOMMatrix::SetIs2D(bool value) {
@@ -149,7 +144,7 @@ void DOMMatrix::SetNAN() {
   matrix_->SetM44(NAN);
 }
 
-DOMMatrix* DOMMatrix::multiplySelf(DOMMatrixInit& other,
+DOMMatrix* DOMMatrix::multiplySelf(DOMMatrixInit* other,
                                    ExceptionState& exception_state) {
   DOMMatrix* other_matrix = DOMMatrix::fromMatrix(other, exception_state);
   if (!other_matrix) {
@@ -168,7 +163,7 @@ DOMMatrix* DOMMatrix::multiplySelf(const DOMMatrix& other_matrix) {
   return this;
 }
 
-DOMMatrix* DOMMatrix::preMultiplySelf(DOMMatrixInit& other,
+DOMMatrix* DOMMatrix::preMultiplySelf(DOMMatrixInit* other,
                                       ExceptionState& exception_state) {
   DOMMatrix* other_matrix = DOMMatrix::fromMatrix(other, exception_state);
   if (!other_matrix) {

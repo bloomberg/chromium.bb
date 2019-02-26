@@ -119,7 +119,7 @@ void DeviceReenroller::AttemptReenrollmentIfNecessary() {
     return;
   }
 
-  PA_LOG(INFO)
+  PA_LOG(VERBOSE)
       << "Supported software feature mismatch. Attempting re-enrollment now."
       << std::endl
       << "    ---GcmDeviceInfo Supported Software Features---" << std::endl

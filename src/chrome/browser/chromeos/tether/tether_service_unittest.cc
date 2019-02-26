@@ -176,7 +176,6 @@ class TestTetherComponentFactory final
 
   // chromeos::tether::TetherComponentImpl::Factory:
   std::unique_ptr<chromeos::tether::TetherComponent> BuildInstance(
-      cryptauth::CryptAuthService* cryptauth_service,
       chromeos::device_sync::DeviceSyncClient* device_sync_client,
       chromeos::secure_channel::SecureChannelClient* secure_channel_client,
       chromeos::tether::TetherHostFetcher* tether_host_fetcher,
@@ -247,7 +246,6 @@ class FakeTetherHostFetcherFactory
 
   // chromeos::tether::TetherHostFetcherImpl::Factory :
   std::unique_ptr<chromeos::tether::TetherHostFetcher> BuildInstance(
-      cryptauth::RemoteDeviceProvider* remote_device_provider,
       chromeos::device_sync::DeviceSyncClient* device_sync_client,
       chromeos::multidevice_setup::MultiDeviceSetupClient*
           multidevice_setup_client) override {

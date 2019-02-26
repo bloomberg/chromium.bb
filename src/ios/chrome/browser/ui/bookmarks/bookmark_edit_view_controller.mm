@@ -29,11 +29,11 @@
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/image_util/image_util.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
-#include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
-#include "ios/chrome/browser/ui/ui_util.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#include "ios/chrome/browser/ui/util/rtl_geometry.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -444,11 +444,8 @@ const CGFloat kEstimatedTableSectionFooterHeight = 40;
                  selectedFolder:self.folder];
   folderViewController.delegate = self;
   self.folderViewController = folderViewController;
-  if (@available(iOS 11, *)) {
-    self.folderViewController.navigationItem.largeTitleDisplayMode =
-        UINavigationItemLargeTitleDisplayModeNever;
-  }
-
+  self.folderViewController.navigationItem.largeTitleDisplayMode =
+      UINavigationItemLargeTitleDisplayModeNever;
   [self.navigationController pushViewController:self.folderViewController
                                        animated:YES];
 }

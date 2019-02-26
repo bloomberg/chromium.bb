@@ -299,25 +299,32 @@ void FastUnloadController::Observe(
 ////////////////////////////////////////////////////////////////////////////////
 // FastUnloadController, TabStripModelObserver implementation:
 
-void FastUnloadController::TabInsertedAt(TabStripModel* tab_strip_model,
-                                         content::WebContents* contents,
-                                         int index,
-                                         bool foreground) {
-  TabAttachedImpl(contents);
-}
+void FastUnloadController::OnTabStripModelChanged(
+    TabStripModel* tab_strip_model,
+    const TabStripModelChange& change,
+    const TabStripSelectionChange& selection) {
+  if (change.type() != TabStripModelChange::kInserted &&
+      change.type() != TabStripModelChange::kRemoved &&
+      change.type() != TabStripModelChange::kReplaced)
+    return;
 
-void FastUnloadController::TabDetachedAt(content::WebContents* contents,
-                                         int index,
-                                         bool was_active) {
-  TabDetachedImpl(contents);
-}
+  for (const auto& delta : change.deltas()) {
+    content::WebContents* new_contents = nullptr;
+    content::WebContents* old_contents = nullptr;
+    if (change.type() == TabStripModelChange::kInserted) {
+      new_contents = delta.insert.contents;
+    } else if (change.type() == TabStripModelChange::kReplaced) {
+      new_contents = delta.replace.new_contents;
+      old_contents = delta.replace.old_contents;
+    } else {
+      old_contents = delta.remove.contents;
+    }
 
-void FastUnloadController::TabReplacedAt(TabStripModel* tab_strip_model,
-                                         content::WebContents* old_contents,
-                                         content::WebContents* new_contents,
-                                         int index) {
-  TabDetachedImpl(old_contents);
-  TabAttachedImpl(new_contents);
+    if (old_contents)
+      TabDetachedImpl(old_contents);
+    if (new_contents)
+      TabAttachedImpl(new_contents);
+  }
 }
 
 void FastUnloadController::TabStripEmpty() {

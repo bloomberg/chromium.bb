@@ -22,6 +22,8 @@ namespace offline_pages {
 // successfully or not.
 // Instances of this class are in-memory representations of items in (or to be
 // inserted into) the persistent prefetching data store.
+//
+// Only used in tests.
 struct PrefetchItem {
   PrefetchItem();
   PrefetchItem(PrefetchItem&& other);
@@ -61,6 +63,18 @@ struct PrefetchItem {
   // left empty if they are the same.
   GURL final_archived_url;
 
+  // The URL to the thumbnail image representing the article.
+  GURL thumbnail_url;
+
+  // The URL to the favicon image of the article's hosting web site.
+  GURL favicon_url;
+
+  // A snippet of the article's contents.
+  std::string snippet;
+
+  // The publisher name/web site the article is attributed to.
+  std::string attribution;
+
   // Number of attempts to request OPS to generate an archive for this item.
   int generate_bundle_attempts = 0;
 
@@ -91,8 +105,10 @@ struct PrefetchItem {
   // item. It holds a negative value otherwise.
   int64_t archive_body_length = -1;
 
-  // Time when this item was inserted into the store with the URL to be
-  // prefetched.
+  // The last time the URL was attempted to be added to the store. Normally this
+  // is just the time the item was added. If the same URL is added multiple
+  // times, this is the timestamp of the last time. creation_time
+  // is used as a proxy for priority.
   base::Time creation_time;
 
   // Time used for the expiration of the item depending on the applicable policy

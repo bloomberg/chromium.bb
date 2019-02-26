@@ -34,6 +34,8 @@ const char kTestFontName[] = "Arial";
 const char kSymbolFontName[] = "DejaVu Sans";
 #elif defined(OS_ANDROID)
 const char kSymbolFontName[] = "monospace";
+#elif defined(OS_WIN)
+const char kSymbolFontName[] = "Segoe UI Symbol";
 #else
 const char kSymbolFontName[] = "Symbol";
 #endif

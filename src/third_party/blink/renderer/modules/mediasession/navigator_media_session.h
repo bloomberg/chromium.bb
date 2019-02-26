@@ -26,11 +26,11 @@ class NavigatorMediaSession final
   static NavigatorMediaSession& From(Navigator&);
   static MediaSession* mediaSession(ScriptState*, Navigator&);
 
+  explicit NavigatorMediaSession(Navigator&);
+
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit NavigatorMediaSession(Navigator&);
-
   // The MediaSession instance of this Navigator.
   Member<MediaSession> session_;
 };

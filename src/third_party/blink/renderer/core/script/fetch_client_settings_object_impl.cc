@@ -24,7 +24,8 @@ const SecurityOrigin* FetchClientSettingsObjectImpl::GetSecurityOrigin() const {
   return execution_context_->GetSecurityOrigin();
 }
 
-ReferrerPolicy FetchClientSettingsObjectImpl::GetReferrerPolicy() const {
+network::mojom::ReferrerPolicy
+FetchClientSettingsObjectImpl::GetReferrerPolicy() const {
   DCHECK(execution_context_->IsContextThread());
   return execution_context_->GetReferrerPolicy();
 }

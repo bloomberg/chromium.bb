@@ -95,16 +95,15 @@ TEST_P(MultithreadingTest, MakeCurrentMultiContext)
     for (size_t thread = 0; thread < kThreadCount; thread++)
     {
         threads[thread] = std::thread([&, thread]() {
-            EGLSurface pbuffer= EGL_NO_SURFACE;
-            EGLConfig ctx= EGL_NO_CONTEXT;
+            EGLSurface pbuffer = EGL_NO_SURFACE;
+            EGLConfig ctx      = EGL_NO_CONTEXT;
 
             {
                 std::lock_guard<decltype(mutex)> lock(mutex);
 
                 // Initialize the pbuffer and context
                 EGLint pbufferAttributes[] = {
-                    EGL_WIDTH,          kPBufferSize,     EGL_HEIGHT,         kPBufferSize,
-                    EGL_NONE,           EGL_NONE,
+                    EGL_WIDTH, kPBufferSize, EGL_HEIGHT, kPBufferSize, EGL_NONE, EGL_NONE,
                 };
                 pbuffer = eglCreatePbufferSurface(dpy, config, pbufferAttributes);
                 EXPECT_EGL_SUCCESS();
@@ -161,6 +160,7 @@ ANGLE_INSTANTIATE_TEST(MultithreadingTest,
                        ES2_OPENGL(),
                        ES3_OPENGL(),
                        ES2_OPENGLES(),
-                       ES3_OPENGLES());
+                       ES3_OPENGLES(),
+                       ES2_VULKAN());
 
 }  // namespace angle

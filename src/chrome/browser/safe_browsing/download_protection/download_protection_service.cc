@@ -44,6 +44,7 @@ const double kWhitelistDownloadSampleRate = 0.01;
 
 // The number of user gestures we trace back for download attribution.
 const int kDownloadAttributionUserGestureLimit = 2;
+const int kDownloadAttributionUserGestureLimitForExtendedReporting = 5;
 
 void AddEventUrlToReferrerChain(const download::DownloadItem& item,
                                 ReferrerChain* out_referrer_chain) {
@@ -72,6 +73,26 @@ bool MatchesEnterpriseWhitelist(const Profile* profile,
       return true;
   }
   return false;
+}
+
+int GetDownloadAttributionUserGestureLimit(const download::DownloadItem& item) {
+  content::WebContents* web_contents =
+      content::DownloadItemUtils::GetWebContents(
+          const_cast<download::DownloadItem*>(&item));
+  if (!web_contents)
+    return kDownloadAttributionUserGestureLimit;
+
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  if (!profile)
+    return kDownloadAttributionUserGestureLimit;
+
+  const PrefService* prefs = profile->GetPrefs();
+  if (!prefs)
+    return kDownloadAttributionUserGestureLimit;
+  if (!IsExtendedReportingEnabled(*prefs))
+    return kDownloadAttributionUserGestureLimit;
+  return kDownloadAttributionUserGestureLimitForExtendedReporting;
 }
 
 }  // namespace
@@ -151,18 +172,18 @@ void DownloadProtectionService::CheckClientDownload(
     callback.Run(DownloadCheckResult::WHITELISTED_BY_POLICY);
     return;
   }
-  scoped_refptr<CheckClientDownloadRequest> request(
-      new CheckClientDownloadRequest(item, callback, this, database_manager_,
-                                     binary_feature_extractor_.get()));
-  download_requests_.insert(request);
-  request->Start();
+  auto request = std::make_unique<CheckClientDownloadRequest>(
+      item, callback, this, database_manager_, binary_feature_extractor_.get());
+  CheckClientDownloadRequest* request_copy = request.get();
+  download_requests_[request_copy] = std::move(request);
+  request_copy->Start();
 }
 
 void DownloadProtectionService::CheckDownloadUrl(
     download::DownloadItem* item,
     const CheckDownloadCallback& callback) {
   DCHECK(!item->GetUrlChain().empty());
-  const content::WebContents* web_contents =
+  content::WebContents* web_contents =
       content::DownloadItemUtils::GetWebContents(item);
   // |web_contents| can be null in tests.
   // Checks if this download is whitelisted by enterprise policy.
@@ -236,13 +257,8 @@ DownloadProtectionService::RegisterPPAPIDownloadRequestCallback(
 
 void DownloadProtectionService::CancelPendingRequests() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  for (auto it = download_requests_.begin(); it != download_requests_.end();) {
-    // We need to advance the iterator before we cancel because canceling
-    // the request will invalidate it when RequestFinished is called below.
-    scoped_refptr<CheckClientDownloadRequest> tmp = *it++;
-    tmp->Cancel(/*download_destropyed=*/false);
-  }
-  DCHECK(download_requests_.empty());
+  // It is sufficient to delete the list of CheckClientDownloadRequests.
+  download_requests_.clear();
 
   // It is sufficient to delete the list of PPAPI download requests.
   ppapi_download_requests_.clear();
@@ -253,7 +269,7 @@ void DownloadProtectionService::RequestFinished(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto it = download_requests_.find(request);
   DCHECK(it != download_requests_.end());
-  download_requests_.erase(*it);
+  download_requests_.erase(it);
 }
 
 void DownloadProtectionService::PPAPIDownloadCheckRequestFinished(
@@ -331,81 +347,6 @@ void DownloadProtectionService::MaybeSendDangerousDownloadOpenedReport(
   }
 }
 
-namespace {
-// Escapes a certificate attribute so that it can be used in a whitelist
-// entry.  Currently, we only escape slashes, since they are used as a
-// separator between attributes.
-std::string EscapeCertAttribute(const std::string& attribute) {
-  std::string escaped;
-  for (size_t i = 0; i < attribute.size(); ++i) {
-    if (attribute[i] == '%') {
-      escaped.append("%25");
-    } else if (attribute[i] == '/') {
-      escaped.append("%2F");
-    } else {
-      escaped.push_back(attribute[i]);
-    }
-  }
-  return escaped;
-}
-}  // namespace
-
-// static
-void DownloadProtectionService::GetCertificateWhitelistStrings(
-    const net::X509Certificate& certificate,
-    const net::X509Certificate& issuer,
-    std::vector<std::string>* whitelist_strings) {
-  // The whitelist paths are in the format:
-  // cert/<ascii issuer fingerprint>[/CN=common_name][/O=org][/OU=unit]
-  //
-  // Any of CN, O, or OU may be omitted from the whitelist entry, in which
-  // case they match anything.  However, the attributes that do appear will
-  // always be in the order shown above.  At least one attribute will always
-  // be present.
-
-  const net::CertPrincipal& subject = certificate.subject();
-  std::vector<std::string> ou_tokens;
-  for (size_t i = 0; i < subject.organization_unit_names.size(); ++i) {
-    ou_tokens.push_back(
-        "/OU=" + EscapeCertAttribute(subject.organization_unit_names[i]));
-  }
-
-  std::vector<std::string> o_tokens;
-  for (size_t i = 0; i < subject.organization_names.size(); ++i) {
-    o_tokens.push_back("/O=" +
-                       EscapeCertAttribute(subject.organization_names[i]));
-  }
-
-  std::string cn_token;
-  if (!subject.common_name.empty()) {
-    cn_token = "/CN=" + EscapeCertAttribute(subject.common_name);
-  }
-
-  std::set<std::string> paths_to_check;
-  if (!cn_token.empty()) {
-    paths_to_check.insert(cn_token);
-  }
-  for (size_t i = 0; i < o_tokens.size(); ++i) {
-    paths_to_check.insert(cn_token + o_tokens[i]);
-    paths_to_check.insert(o_tokens[i]);
-    for (size_t j = 0; j < ou_tokens.size(); ++j) {
-      paths_to_check.insert(cn_token + o_tokens[i] + ou_tokens[j]);
-      paths_to_check.insert(o_tokens[i] + ou_tokens[j]);
-    }
-  }
-  for (size_t i = 0; i < ou_tokens.size(); ++i) {
-    paths_to_check.insert(cn_token + ou_tokens[i]);
-    paths_to_check.insert(ou_tokens[i]);
-  }
-
-  std::string hashed = base::SHA1HashString(std::string(
-      net::x509_util::CryptoBufferAsStringPiece(issuer.cert_buffer())));
-  std::string issuer_fp = base::HexEncode(hashed.data(), hashed.size());
-  for (auto it = paths_to_check.begin(); it != paths_to_check.end(); ++it) {
-    whitelist_strings->push_back("cert/" + issuer_fp + *it);
-  }
-}
-
 std::unique_ptr<ReferrerChainData>
 DownloadProtectionService::IdentifyReferrerChain(
     const download::DownloadItem& item) {
@@ -426,8 +367,8 @@ DownloadProtectionService::IdentifyReferrerChain(
   // We look for the referrer chain that leads to the download url first.
   SafeBrowsingNavigationObserverManager::AttributionResult result =
       navigation_observer_manager_->IdentifyReferrerChainByEventURL(
-          item.GetURL(), download_tab_id, kDownloadAttributionUserGestureLimit,
-          referrer_chain.get());
+          item.GetURL(), download_tab_id,
+          GetDownloadAttributionUserGestureLimit(item), referrer_chain.get());
 
   // If no navigation event is found, this download is not triggered by regular
   // navigation (e.g. html5 file apis, etc). We look for the referrer chain
@@ -437,7 +378,7 @@ DownloadProtectionService::IdentifyReferrerChain(
       web_contents && web_contents->GetLastCommittedURL().is_valid()) {
     AddEventUrlToReferrerChain(item, referrer_chain.get());
     result = navigation_observer_manager_->IdentifyReferrerChainByWebContents(
-        web_contents, kDownloadAttributionUserGestureLimit,
+        web_contents, GetDownloadAttributionUserGestureLimit(item),
         referrer_chain.get());
   }
 

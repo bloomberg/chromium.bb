@@ -16,11 +16,11 @@ namespace blink {
 class SuggestionMarkerListImplTest : public testing::Test {
  protected:
   SuggestionMarkerListImplTest()
-      : marker_list_(new SuggestionMarkerListImpl()) {}
+      : marker_list_(MakeGarbageCollected<SuggestionMarkerListImpl>()) {}
 
   SuggestionMarker* CreateMarker(unsigned start_offset, unsigned end_offset) {
-    return new SuggestionMarker(start_offset, end_offset,
-                                SuggestionMarkerProperties());
+    return MakeGarbageCollected<SuggestionMarker>(start_offset, end_offset,
+                                                  SuggestionMarkerProperties());
   }
 
   Persistent<SuggestionMarkerListImpl> marker_list_;

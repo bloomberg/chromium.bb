@@ -31,7 +31,7 @@
 namespace blink {
 
 BiquadProcessor::BiquadProcessor(float sample_rate,
-                                 size_t number_of_channels,
+                                 uint32_t number_of_channels,
                                  AudioParamHandler& frequency,
                                  AudioParamHandler& q,
                                  AudioParamHandler& gain,
@@ -104,7 +104,7 @@ void BiquadProcessor::CheckForDirtyCoefficients() {
 
 void BiquadProcessor::Process(const AudioBus* source,
                               AudioBus* destination,
-                              size_t frames_to_process) {
+                              uint32_t frames_to_process) {
   if (!IsInitialized()) {
     destination->Zero();
     return;
@@ -128,10 +128,10 @@ void BiquadProcessor::Process(const AudioBus* source,
                          frames_to_process);
 }
 
-void BiquadProcessor::ProcessOnlyAudioParams(size_t frames_to_process) {
-  DCHECK_LE(frames_to_process, AudioUtilities::kRenderQuantumFrames);
+void BiquadProcessor::ProcessOnlyAudioParams(uint32_t frames_to_process) {
+  DCHECK_LE(frames_to_process, audio_utilities::kRenderQuantumFrames);
 
-  float values[AudioUtilities::kRenderQuantumFrames];
+  float values[audio_utilities::kRenderQuantumFrames];
 
   parameter1_->CalculateSampleAccurateValues(values, frames_to_process);
   parameter2_->CalculateSampleAccurateValues(values, frames_to_process);

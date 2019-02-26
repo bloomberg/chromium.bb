@@ -32,7 +32,7 @@
 
 namespace WTF {
 
-using ArenaTestHelpers::TrackedAllocator;
+using arena_test_helpers::TrackedAllocator;
 
 namespace {
 

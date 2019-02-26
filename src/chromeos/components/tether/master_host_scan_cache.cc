@@ -70,10 +70,10 @@ bool MasterHostScanCache::RemoveHostScanResultImpl(
 
   if (active_host_->GetTetherNetworkGuid() == tether_network_guid) {
     DCHECK(ExistsInCache(tether_network_guid));
-    PA_LOG(INFO) << "RemoveHostScanResult() called for Tether network with "
-                 << "GUID " << tether_network_guid << ", but the "
-                 << "corresponding device is the active host. Not removing "
-                 << "this scan result from the cache.";
+    PA_LOG(VERBOSE) << "RemoveHostScanResult() called for Tether network with "
+                    << "GUID " << tether_network_guid << ", but the "
+                    << "corresponding device is the active host. Not removing "
+                    << "this scan result from the cache.";
     return false;
   }
 
@@ -95,8 +95,8 @@ bool MasterHostScanCache::RemoveHostScanResultImpl(
   DCHECK(removed_from_network && removed_from_persistent &&
          removed_from_timer_map);
 
-  PA_LOG(INFO) << "Removed cache entry with GUID \"" << tether_network_guid
-               << "\".";
+  PA_LOG(VERBOSE) << "Removed cache entry with GUID \"" << tether_network_guid
+                  << "\".";
 
   // We already DCHECK()ed above that this evaluates to true, but we return the
   // AND'ed value here because without this, release builds (without DCHECK())
@@ -165,9 +165,10 @@ void MasterHostScanCache::StartTimer(const std::string& tether_network_guid) {
   DCHECK(found_iter != tether_guid_to_timer_map_.end());
   DCHECK(!found_iter->second->IsRunning());
 
-  PA_LOG(INFO) << "Starting host scan cache timer for Tether network with GUID "
-               << "\"" << tether_network_guid << "\". Will fire in "
-               << kNumMinutesBeforeCacheEntryExpires << " minutes.";
+  PA_LOG(VERBOSE)
+      << "Starting host scan cache timer for Tether network with GUID "
+      << "\"" << tether_network_guid << "\". Will fire in "
+      << kNumMinutesBeforeCacheEntryExpires << " minutes.";
 
   found_iter->second->Start(
       FROM_HERE,
@@ -193,8 +194,8 @@ void MasterHostScanCache::OnTimerFired(const std::string& tether_network_guid) {
     return;
   }
 
-  PA_LOG(INFO) << "Timer fired for Tether network GUID " << tether_network_guid
-               << ". Removing stale scan result.";
+  PA_LOG(VERBOSE) << "Timer fired for Tether network GUID "
+                  << tether_network_guid << ". Removing stale scan result.";
   RemoveHostScanResult(tether_network_guid);
 }
 

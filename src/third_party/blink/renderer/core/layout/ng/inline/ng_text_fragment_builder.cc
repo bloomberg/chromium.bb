@@ -8,32 +8,9 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_height_metrics.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 
 namespace blink {
-
-namespace {
-
-NGLineOrientation ToLineOrientation(WritingMode writing_mode) {
-  switch (writing_mode) {
-    case WritingMode::kHorizontalTb:
-      return NGLineOrientation::kHorizontal;
-    case WritingMode::kVerticalRl:
-    case WritingMode::kVerticalLr:
-    case WritingMode::kSidewaysRl:
-      return NGLineOrientation::kClockWiseVertical;
-    case WritingMode::kSidewaysLr:
-      return NGLineOrientation::kCounterClockWiseVertical;
-  }
-  NOTREACHED();
-  return NGLineOrientation::kHorizontal;
-}
-
-}  // namespace
-
-NGTextFragmentBuilder::NGTextFragmentBuilder(NGInlineNode node,
-                                             WritingMode writing_mode)
-    : NGBaseFragmentBuilder(writing_mode, TextDirection::kLtr),
-      inline_node_(node) {}
 
 void NGTextFragmentBuilder::SetItem(
     NGPhysicalTextFragment::NGTextType text_type,
@@ -62,7 +39,7 @@ void NGTextFragmentBuilder::SetText(
     const String& text,
     scoped_refptr<const ComputedStyle> style,
     bool is_ellipsis_style,
-    scoped_refptr<const ShapeResult> shape_result) {
+    scoped_refptr<const ShapeResultView> shape_result) {
   DCHECK(layout_object);
   DCHECK(style);
   DCHECK(shape_result);
@@ -70,8 +47,8 @@ void NGTextFragmentBuilder::SetText(
   text_type_ = NGPhysicalTextFragment::kGeneratedText;
   text_ = text;
   item_index_ = std::numeric_limits<unsigned>::max();
-  start_offset_ = shape_result->StartIndexForResult();
-  end_offset_ = shape_result->EndIndexForResult();
+  start_offset_ = shape_result->StartIndex();
+  end_offset_ = shape_result->EndIndex();
   SetStyle(style, is_ellipsis_style ? NGStyleVariant::kEllipsis
                                     : NGStyleVariant::kStandard);
   size_ = {shape_result->SnappedWidth(),
@@ -84,11 +61,7 @@ void NGTextFragmentBuilder::SetText(
 scoped_refptr<const NGPhysicalTextFragment>
 NGTextFragmentBuilder::ToTextFragment() {
   scoped_refptr<const NGPhysicalTextFragment> fragment =
-      base::AdoptRef(new NGPhysicalTextFragment(
-          layout_object_, Style(), style_variant_, text_type_, text_,
-          start_offset_, end_offset_, size_.ConvertToPhysical(GetWritingMode()),
-          ToLineOrientation(GetWritingMode()), end_effect_,
-          std::move(shape_result_)));
+      base::AdoptRef(new NGPhysicalTextFragment(this));
   return fragment;
 }
 

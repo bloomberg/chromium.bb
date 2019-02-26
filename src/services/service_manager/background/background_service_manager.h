@@ -34,9 +34,6 @@ class BackgroundServiceManager {
       std::unique_ptr<base::Value> catalog_contents);
   ~BackgroundServiceManager();
 
-  // Starts a service instance for |identity| if one is not already running.
-  void StartService(const Identity& identity);
-
   // Creates a service instance for |identity|. This is intended for use by the
   // Service Manager's embedder to register instances directly, without
   // requiring a Connector.
@@ -52,7 +49,6 @@ class BackgroundServiceManager {
       service_manager::ServiceProcessLauncherDelegate* launcher_delegate,
       std::unique_ptr<base::Value> catalog_contents);
   void ShutDownOnBackgroundThread(base::WaitableEvent* done_event);
-  void StartServiceOnBackgroundThread(const Identity& identity);
   void RegisterServiceOnBackgroundThread(
       const Identity& identity,
       mojom::ServicePtrInfo service_info,

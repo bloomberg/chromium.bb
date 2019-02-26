@@ -9,10 +9,9 @@
  */
 #include "modules/audio_processing/aec3/render_delay_controller.h"
 
+#include <stdlib.h>
 #include <algorithm>
 #include <memory>
-#include <numeric>
-#include <string>
 #include <vector>
 
 #include "api/audio/echo_canceller3_config.h"
@@ -20,7 +19,9 @@
 #include "modules/audio_processing/aec3/echo_path_delay_estimator.h"
 #include "modules/audio_processing/aec3/render_delay_controller_metrics.h"
 #include "modules/audio_processing/aec3/skew_estimator.h"
+#include "modules/audio_processing/logging/apm_data_dumper.h"
 #include "rtc_base/atomicops.h"
+#include "rtc_base/checks.h"
 #include "rtc_base/constructormagic.h"
 #include "rtc_base/logging.h"
 #include "system_wrappers/include/field_trial.h"
@@ -63,6 +64,7 @@ class RenderDelayControllerImpl final : public RenderDelayController {
       size_t render_delay_buffer_delay,
       const absl::optional<int>& echo_remover_delay,
       rtc::ArrayView<const float> capture) override;
+  bool HasClockdrift() const override;
 
  private:
   static int instance_count_;
@@ -284,7 +286,8 @@ absl::optional<DelayEstimate> RenderDelayControllerImpl::GetDelay(
 
   metrics_.Update(delay_samples_ ? absl::optional<size_t>(delay_samples_->delay)
                                  : absl::nullopt,
-                  delay_ ? delay_->delay : 0, skew_shift);
+                  delay_ ? delay_->delay : 0, skew_shift,
+                  delay_estimator_.Clockdrift());
 
   data_dumper_->DumpRaw("aec3_render_delay_controller_delay",
                         delay_samples ? delay_samples->delay : 0);
@@ -298,6 +301,10 @@ absl::optional<DelayEstimate> RenderDelayControllerImpl::GetDelay(
   data_dumper_->DumpRaw("aec3_render_delay_controller_offset", offset_blocks);
 
   return delay_;
+}
+
+bool RenderDelayControllerImpl::HasClockdrift() const {
+  return delay_estimator_.Clockdrift() != ClockdriftDetector::Level::kNone;
 }
 
 }  // namespace

@@ -49,7 +49,7 @@ class TestStream : public QuicSpdyStream {
       : QuicSpdyStream(id, session, BIDIRECTIONAL),
         should_process_data_(should_process_data) {}
 
-  void OnDataAvailable() override {
+  void OnBodyAvailable() override {
     if (!should_process_data_) {
       return;
     }
@@ -445,7 +445,7 @@ TEST_P(QuicSpdyStreamTest, StreamFlowControlBlocked) {
   EXPECT_CALL(*connection_, SendControlFrame(_));
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
       .WillOnce(Return(QuicConsumedData(kWindow, true)));
-  stream_->WriteOrBufferData(body, false, nullptr);
+  stream_->WriteOrBufferBody(body, false, nullptr);
 
   // Should have sent as much as possible, resulting in no send window left.
   EXPECT_EQ(0u,
@@ -667,7 +667,7 @@ TEST_P(QuicSpdyStreamTest, StreamFlowControlFinNotBlocked) {
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
       .WillOnce(Return(QuicConsumedData(0, fin)));
 
-  stream_->WriteOrBufferData(body, fin, nullptr);
+  stream_->WriteOrBufferBody(body, fin, nullptr);
 }
 
 TEST_P(QuicSpdyStreamTest, ReceivingTrailersViaHeaderList) {
@@ -890,7 +890,7 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersFinalOffset) {
 
   // Write non-zero body data to force a non-zero final offset.
   const int kBodySize = 1 * 1024;  // 1 MB
-  stream_->WriteOrBufferData(QuicString(kBodySize, 'x'), false, nullptr);
+  stream_->WriteOrBufferBody(QuicString(kBodySize, 'x'), false, nullptr);
 
   // The final offset field in the trailing headers is populated with the
   // number of body bytes written (including queued bytes).
@@ -918,7 +918,7 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersClosesWriteSide) {
 
   // Write non-zero body data.
   const int kBodySize = 1 * 1024;  // 1 MB
-  stream_->WriteOrBufferData(QuicString(kBodySize, 'x'), false, nullptr);
+  stream_->WriteOrBufferBody(QuicString(kBodySize, 'x'), false, nullptr);
   EXPECT_EQ(0u, stream_->BufferedDataBytes());
 
   // Headers and body have been fully written, there is no queued data. Writing
@@ -944,7 +944,7 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersWithQueuedBytes) {
   const int kBodySize = 1 * 1024;  // 1 KB
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
       .WillOnce(Return(QuicConsumedData(kBodySize - 1, false)));
-  stream_->WriteOrBufferData(QuicString(kBodySize, 'x'), false, nullptr);
+  stream_->WriteOrBufferBody(QuicString(kBodySize, 'x'), false, nullptr);
   EXPECT_EQ(1u, stream_->BufferedDataBytes());
 
   // Writing trailers will send a FIN, but not close the write side of the
@@ -999,15 +999,19 @@ TEST_P(QuicSpdyStreamTest, HeaderStreamNotiferCorrespondingSpdyStream) {
 
   session_->headers_stream()->WriteOrBufferData("Header1", false,
                                                 ack_listener1);
-  stream_->WriteOrBufferData("Test1", true, nullptr);
+  stream_->WriteOrBufferBody("Test1", true, nullptr);
 
   session_->headers_stream()->WriteOrBufferData("Header2", false,
                                                 ack_listener2);
-  stream2_->WriteOrBufferData("Test2", false, nullptr);
+  stream2_->WriteOrBufferBody("Test2", false, nullptr);
 
-  QuicStreamFrame frame1(kHeadersStreamId, false, 0, "Header1");
+  QuicStreamFrame frame1(
+      QuicUtils::GetHeadersStreamId(connection_->transport_version()), false, 0,
+      "Header1");
   QuicStreamFrame frame2(stream_->id(), true, 0, "Test1");
-  QuicStreamFrame frame3(kHeadersStreamId, false, 7, "Header2");
+  QuicStreamFrame frame3(
+      QuicUtils::GetHeadersStreamId(connection_->transport_version()), false, 7,
+      "Header2");
   QuicStreamFrame frame4(stream2_->id(), false, 0, "Test2");
 
   EXPECT_CALL(*ack_listener1, OnPacketRetransmitted(7));
@@ -1034,7 +1038,7 @@ TEST_P(QuicSpdyStreamTest, StreamBecomesZombieWithWriteThatCloses) {
       .WillRepeatedly(Invoke(MockQuicSession::ConsumeData));
   QuicStreamPeer::CloseReadSide(stream_);
   // This write causes stream to be closed.
-  stream_->WriteOrBufferData("Test1", true, nullptr);
+  stream_->WriteOrBufferBody("Test1", true, nullptr);
   // stream_ has unacked data and should become zombie.
   EXPECT_TRUE(QuicContainsKey(QuicSessionPeer::zombie_streams(session_.get()),
                               stream_->id()));
@@ -1052,7 +1056,7 @@ TEST_P(QuicSpdyStreamTest, OnPriorityFrameAfterSendingData) {
 
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
       .WillOnce(Return(QuicConsumedData(4, true)));
-  stream_->WriteOrBufferData("data", true, nullptr);
+  stream_->WriteOrBufferBody("data", true, nullptr);
   stream_->OnPriorityFrame(kV3HighestPriority);
   EXPECT_EQ(kV3HighestPriority, stream_->priority());
 }
@@ -1063,8 +1067,10 @@ TEST_P(QuicSpdyStreamTest, SetPriorityBeforeUpdateStreamPriority) {
       SupportedVersions(GetParam()));
   std::unique_ptr<TestMockUpdateStreamSession> session(
       new testing::StrictMock<TestMockUpdateStreamSession>(connection));
-  TestStream* stream = new TestStream(GetNthClientInitiatedId(0), session.get(),
-                                      /*should_process_data=*/true);
+  TestStream* stream = new TestStream(
+      QuicSpdySessionPeer::GetNthClientInitiatedStreamId(*session, 0),
+      session.get(),
+      /*should_process_data=*/true);
   session->ActivateStream(QuicWrapUnique(stream));
 
   // QuicSpdyStream::SetPriority() should eventually call UpdateStreamPriority()

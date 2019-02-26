@@ -807,7 +807,8 @@ virtual void ScheduleDCLayerCHROMIUM(GLsizei num_textures,
                                      GLuint edge_aa_mask,
                                      const GLfloat* bounds_rect,
                                      GLuint filter,
-                                     bool is_protected_video) = 0;
+                                     GLuint protected_video_type) = 0;
+virtual void SetActiveURLCHROMIUM(const char* url) = 0;
 virtual void MatrixLoadfCHROMIUM(GLenum matrixMode, const GLfloat* m) = 0;
 virtual void MatrixLoadIdentityCHROMIUM(GLenum matrixMode) = 0;
 virtual GLuint GenPathsCHROMIUM(GLsizei range) = 0;
@@ -957,4 +958,10 @@ virtual void FramebufferTextureMultiviewLayeredANGLE(GLenum target,
                                                      GLint baseViewIndex,
                                                      GLsizei numViews) = 0;
 virtual void MaxShaderCompilerThreadsKHR(GLuint count) = 0;
+virtual GLuint CreateAndTexStorage2DSharedImageCHROMIUM(
+    GLenum internalFormat,
+    const GLbyte* mailbox) = 0;
+virtual void BeginSharedImageAccessDirectCHROMIUM(GLuint texture,
+                                                  GLenum mode) = 0;
+virtual void EndSharedImageAccessDirectCHROMIUM(GLuint texture) = 0;
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_AUTOGEN_H_

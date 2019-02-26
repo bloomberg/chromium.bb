@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_app_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "chromeos/components/proximity_auth/switches.h"
@@ -49,44 +48,6 @@ std::string GetSessionKey() {
   return std::string(reinterpret_cast<const char*>(kSessionKey),
                      arraysize(kSessionKey));
 }
-
-// Fake app manager used by the EasyUnlockAuthAttempt during tests.
-// It tracks screenlockPrivate.onAuthAttempted events.
-class FakeAppManager : public EasyUnlockAppManager {
- public:
-  FakeAppManager()
-      : auth_attempt_count_(0u), auth_attempt_should_fail_(false) {}
-  ~FakeAppManager() override {}
-
-  void EnsureReady(const base::Closure& ready_callback) override {
-    ADD_FAILURE() << "Not reached";
-  }
-
-  void LaunchSetup() override { ADD_FAILURE() << "Not reached"; }
-
-  void LoadApp() override { ADD_FAILURE() << "Not reached"; }
-
-  void DisableAppIfLoaded() override { ADD_FAILURE() << "Not reached"; }
-
-  void ReloadApp() override { ADD_FAILURE() << "Not reached"; }
-
-  bool SendAuthAttemptEvent() override {
-    ++auth_attempt_count_;
-    return !auth_attempt_should_fail_;
-  }
-
-  size_t auth_attempt_count() const { return auth_attempt_count_; }
-
-  void set_auth_attempt_should_fail(bool value) {
-    auth_attempt_should_fail_ = value;
-  }
-
- private:
-  size_t auth_attempt_count_;
-  bool auth_attempt_should_fail_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeAppManager);
-};
 
 // Fake lock handler to be used in these tests.
 class TestLockHandler : public proximity_auth::ScreenlockBridge::LockHandler {
@@ -200,10 +161,8 @@ class EasyUnlockAuthAttemptUnlockTest : public testing::Test {
   ~EasyUnlockAuthAttemptUnlockTest() override {}
 
   void SetUp() override {
-    app_manager_.reset(new FakeAppManager());
-    auth_attempt_.reset(
-        new EasyUnlockAuthAttempt(app_manager_.get(), test_account_id1_,
-                                  EasyUnlockAuthAttempt::TYPE_UNLOCK));
+    auth_attempt_.reset(new EasyUnlockAuthAttempt(
+        test_account_id1_, EasyUnlockAuthAttempt::TYPE_UNLOCK));
   }
 
   void TearDown() override {
@@ -220,7 +179,6 @@ class EasyUnlockAuthAttemptUnlockTest : public testing::Test {
   }
 
   std::unique_ptr<EasyUnlockAuthAttempt> auth_attempt_;
-  std::unique_ptr<FakeAppManager> app_manager_;
   std::unique_ptr<TestLockHandler> lock_handler_;
 
   const AccountId test_account_id1_ = AccountId::FromUserEmail(kTestUser1);
@@ -234,7 +192,6 @@ TEST_F(EasyUnlockAuthAttemptUnlockTest, StartWhenNotLocked) {
   ASSERT_FALSE(proximity_auth::ScreenlockBridge::Get()->IsLocked());
 
   EXPECT_FALSE(auth_attempt_->Start());
-  EXPECT_EQ(0u, app_manager_->auth_attempt_count());
 }
 
 TEST_F(EasyUnlockAuthAttemptUnlockTest, StartWhenAuthTypeIsPassword) {
@@ -247,7 +204,6 @@ TEST_F(EasyUnlockAuthAttemptUnlockTest, StartWhenAuthTypeIsPassword) {
 
   EXPECT_FALSE(auth_attempt_->Start());
 
-  EXPECT_EQ(0u, app_manager_->auth_attempt_count());
   EXPECT_EQ(TestLockHandler::STATE_UNLOCK_CANCELED, lock_handler_->state());
 }
 
@@ -258,7 +214,6 @@ TEST_F(EasyUnlockAuthAttemptUnlockTest, ResetBeforeFinalizeUnlock) {
 
   ASSERT_TRUE(auth_attempt_->Start());
 
-  ASSERT_EQ(1u, app_manager_->auth_attempt_count());
   EXPECT_EQ(TestLockHandler::STATE_ATTEMPTING_UNLOCK, lock_handler_->state());
 
   auth_attempt_.reset();
@@ -273,7 +228,6 @@ TEST_F(EasyUnlockAuthAttemptUnlockTest, FinalizeUnlockFailure) {
 
   ASSERT_TRUE(auth_attempt_->Start());
 
-  ASSERT_EQ(1u, app_manager_->auth_attempt_count());
   EXPECT_EQ(TestLockHandler::STATE_ATTEMPTING_UNLOCK, lock_handler_->state());
 
   auth_attempt_->FinalizeUnlock(test_account_id1_, false);
@@ -288,7 +242,6 @@ TEST_F(EasyUnlockAuthAttemptUnlockTest, FinalizeSigninCalled) {
 
   ASSERT_TRUE(auth_attempt_->Start());
 
-  ASSERT_EQ(1u, app_manager_->auth_attempt_count());
   EXPECT_EQ(TestLockHandler::STATE_ATTEMPTING_UNLOCK, lock_handler_->state());
 
   // Wrapped secret and key should be irrelevant in this case.
@@ -305,7 +258,6 @@ TEST_F(EasyUnlockAuthAttemptUnlockTest, UnlockSucceeds) {
 
   ASSERT_TRUE(auth_attempt_->Start());
 
-  ASSERT_EQ(1u, app_manager_->auth_attempt_count());
   EXPECT_EQ(TestLockHandler::STATE_ATTEMPTING_UNLOCK, lock_handler_->state());
 
   auth_attempt_->FinalizeUnlock(test_account_id1_, true);
@@ -320,7 +272,6 @@ TEST_F(EasyUnlockAuthAttemptUnlockTest, FinalizeUnlockCalledForWrongUser) {
 
   ASSERT_TRUE(auth_attempt_->Start());
 
-  ASSERT_EQ(1u, app_manager_->auth_attempt_count());
   EXPECT_EQ(TestLockHandler::STATE_ATTEMPTING_UNLOCK, lock_handler_->state());
 
   auth_attempt_->FinalizeUnlock(test_account_id2_, true);
@@ -342,10 +293,8 @@ class EasyUnlockAuthAttemptSigninTest : public testing::Test {
   ~EasyUnlockAuthAttemptSigninTest() override {}
 
   void SetUp() override {
-    app_manager_.reset(new FakeAppManager());
-    auth_attempt_.reset(
-        new EasyUnlockAuthAttempt(app_manager_.get(), test_account_id1_,
-                                  EasyUnlockAuthAttempt::TYPE_SIGNIN));
+    auth_attempt_.reset(new EasyUnlockAuthAttempt(
+        test_account_id1_, EasyUnlockAuthAttempt::TYPE_SIGNIN));
   }
 
   void TearDown() override {
@@ -362,7 +311,6 @@ class EasyUnlockAuthAttemptSigninTest : public testing::Test {
   }
 
   std::unique_ptr<EasyUnlockAuthAttempt> auth_attempt_;
-  std::unique_ptr<FakeAppManager> app_manager_;
   std::unique_ptr<TestLockHandler> lock_handler_;
 
   const AccountId test_account_id1_ = AccountId::FromUserEmail(kTestUser1);
@@ -376,7 +324,6 @@ TEST_F(EasyUnlockAuthAttemptSigninTest, StartWhenNotLocked) {
   ASSERT_FALSE(proximity_auth::ScreenlockBridge::Get()->IsLocked());
 
   EXPECT_FALSE(auth_attempt_->Start());
-  EXPECT_EQ(0u, app_manager_->auth_attempt_count());
 }
 
 TEST_F(EasyUnlockAuthAttemptSigninTest, StartWhenAuthTypeIsPassword) {
@@ -389,7 +336,6 @@ TEST_F(EasyUnlockAuthAttemptSigninTest, StartWhenAuthTypeIsPassword) {
 
   EXPECT_FALSE(auth_attempt_->Start());
 
-  EXPECT_EQ(0u, app_manager_->auth_attempt_count());
   EXPECT_EQ(TestLockHandler::STATE_SIGNIN_CANCELED, lock_handler_->state());
 }
 
@@ -400,7 +346,6 @@ TEST_F(EasyUnlockAuthAttemptSigninTest, ResetBeforeFinalizeSignin) {
 
   ASSERT_TRUE(auth_attempt_->Start());
 
-  ASSERT_EQ(1u, app_manager_->auth_attempt_count());
   EXPECT_EQ(TestLockHandler::STATE_ATTEMPTING_SIGNIN, lock_handler_->state());
 
   auth_attempt_.reset();
@@ -415,7 +360,6 @@ TEST_F(EasyUnlockAuthAttemptSigninTest, FinalizeSigninWithEmtpySecret) {
 
   ASSERT_TRUE(auth_attempt_->Start());
 
-  ASSERT_EQ(1u, app_manager_->auth_attempt_count());
   EXPECT_EQ(TestLockHandler::STATE_ATTEMPTING_SIGNIN, lock_handler_->state());
 
   auth_attempt_->FinalizeSignin(test_account_id1_, "", GetSessionKey());
@@ -430,7 +374,6 @@ TEST_F(EasyUnlockAuthAttemptSigninTest, FinalizeSigninWithEmtpyKey) {
 
   ASSERT_TRUE(auth_attempt_->Start());
 
-  ASSERT_EQ(1u, app_manager_->auth_attempt_count());
   EXPECT_EQ(TestLockHandler::STATE_ATTEMPTING_SIGNIN, lock_handler_->state());
 
   auth_attempt_->FinalizeSignin(test_account_id1_, GetWrappedSecret(), "");
@@ -445,7 +388,6 @@ TEST_F(EasyUnlockAuthAttemptSigninTest, SigninSuccess) {
 
   ASSERT_TRUE(auth_attempt_->Start());
 
-  ASSERT_EQ(1u, app_manager_->auth_attempt_count());
   EXPECT_EQ(TestLockHandler::STATE_ATTEMPTING_SIGNIN, lock_handler_->state());
 
   lock_handler_->set_expected_secret(GetSecret());
@@ -462,7 +404,6 @@ TEST_F(EasyUnlockAuthAttemptSigninTest, WrongWrappedSecret) {
 
   ASSERT_TRUE(auth_attempt_->Start());
 
-  ASSERT_EQ(1u, app_manager_->auth_attempt_count());
   EXPECT_EQ(TestLockHandler::STATE_ATTEMPTING_SIGNIN, lock_handler_->state());
 
   auth_attempt_->FinalizeSignin(test_account_id1_, "wrong_secret",
@@ -478,7 +419,6 @@ TEST_F(EasyUnlockAuthAttemptSigninTest, InvalidSessionKey) {
 
   ASSERT_TRUE(auth_attempt_->Start());
 
-  ASSERT_EQ(1u, app_manager_->auth_attempt_count());
   EXPECT_EQ(TestLockHandler::STATE_ATTEMPTING_SIGNIN, lock_handler_->state());
 
   auth_attempt_->FinalizeSignin(test_account_id1_, GetWrappedSecret(),
@@ -494,7 +434,6 @@ TEST_F(EasyUnlockAuthAttemptSigninTest, FinalizeUnlockCalled) {
 
   ASSERT_TRUE(auth_attempt_->Start());
 
-  ASSERT_EQ(1u, app_manager_->auth_attempt_count());
   EXPECT_EQ(TestLockHandler::STATE_ATTEMPTING_SIGNIN, lock_handler_->state());
 
   auth_attempt_->FinalizeUnlock(test_account_id1_, true);
@@ -509,7 +448,6 @@ TEST_F(EasyUnlockAuthAttemptSigninTest, FinalizeSigninCalledForWrongUser) {
 
   ASSERT_TRUE(auth_attempt_->Start());
 
-  ASSERT_EQ(1u, app_manager_->auth_attempt_count());
   EXPECT_EQ(TestLockHandler::STATE_ATTEMPTING_SIGNIN, lock_handler_->state());
 
   lock_handler_->set_expected_secret(GetSecret());

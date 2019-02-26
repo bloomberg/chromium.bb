@@ -188,7 +188,9 @@ gfx::ColorSpace VideoColorSpace::ToGfxColorSpace() const {
 
   switch (matrix) {
     case MatrixID::RGB:
-      matrix_id = gfx::ColorSpace::MatrixID::RGB;
+      // RGB-encoded video actually puts the green in the Y channel,
+      // the blue in the Cb (U) channel and the red in the Cr (V) channel.
+      matrix_id = gfx::ColorSpace::MatrixID::GBR;
       break;
     case MatrixID::BT709:
       matrix_id = gfx::ColorSpace::MatrixID::BT709;

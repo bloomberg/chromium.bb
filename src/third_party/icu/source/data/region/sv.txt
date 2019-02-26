@@ -31,7 +31,7 @@ sv{
         151{"Östeuropa"}
         154{"Nordeuropa"}
         155{"Västeuropa"}
-        202{"202"}
+        202{"Subsahariska Afrika"}
         419{"Latinamerika"}
         AC{"Ascension"}
         AD{"Andorra"}
@@ -110,7 +110,7 @@ sv{
         EZ{"eurozonen"}
         FI{"Finland"}
         FJ{"Fiji"}
-        FK{"FK"}
+        FK{"Falklandsöarna"}
         FM{"Mikronesien"}
         FO{"Färöarna"}
         FR{"Frankrike"}
@@ -303,9 +303,8 @@ sv{
     Countries%variant{
         CD{"Demokratiska republiken Kongo"}
         CG{"Republiken Kongo"}
-        CI{"CI"}
-        CZ{"CZ"}
-        TL{"TL"}
+        CI{"Côte d’Ivoire"}
+        TL{"Timor-Leste"}
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.43.94"}
 }

@@ -10,6 +10,7 @@
 
 #include "fxjs/cfxjse_class.h"
 #include "fxjs/cfxjse_context.h"
+#include "fxjs/cfxjse_isolatetracker.h"
 
 namespace {
 
@@ -261,7 +262,8 @@ bool CFXJSE_Value::SetObjectOwnProperty(const ByteStringView& szPropName,
 
 bool CFXJSE_Value::SetFunctionBind(CFXJSE_Value* lpOldFunction,
                                    CFXJSE_Value* lpNewThis) {
-  ASSERT(lpOldFunction && lpNewThis);
+  ASSERT(lpOldFunction);
+  ASSERT(lpNewThis);
 
   CFXJSE_ScopeUtil_IsolateHandleRootContext scope(GetIsolate());
   v8::Local<v8::Value> rgArgs[2];
@@ -405,8 +407,7 @@ bool CFXJSE_Value::ToBoolean() const {
   CFXJSE_ScopeUtil_IsolateHandleRootContext scope(GetIsolate());
   v8::Local<v8::Value> hValue =
       v8::Local<v8::Value>::New(GetIsolate(), m_hValue);
-  return hValue->BooleanValue(GetIsolate()->GetCurrentContext())
-      .FromMaybe(false);
+  return hValue->BooleanValue(GetIsolate());
 }
 
 float CFXJSE_Value::ToFloat() const {

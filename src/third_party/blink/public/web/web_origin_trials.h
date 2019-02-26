@@ -12,13 +12,12 @@ namespace blink {
 class WebDocument;
 class WebString;
 
-// A namespace with tests for experimental features which can be enabled by the
+// A class with tests for experimental features which can be enabled by the
 // origin trials framework via origin trial tokens.
-namespace WebOriginTrials {
-
-CORE_EXPORT bool isTrialEnabled(const WebDocument*, const WebString&);
-
-}  // namespace WebOriginTrials
+class WebOriginTrials {
+ public:
+  CORE_EXPORT static bool isTrialEnabled(const WebDocument*, const WebString&);
+};
 
 }  // namespace blink
 

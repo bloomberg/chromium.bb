@@ -94,8 +94,8 @@ RemoteDeviceLoader::~RemoteDeviceLoader() {}
 void RemoteDeviceLoader::Load(const RemoteDeviceCallback& callback) {
   DCHECK(callback_.is_null());
   callback_ = callback;
-  PA_LOG(INFO) << "Loading " << remaining_devices_.size()
-               << " remote devices";
+  PA_LOG(VERBOSE) << "Loading " << remaining_devices_.size()
+                  << " remote devices";
 
   if (remaining_devices_.empty()) {
     callback_.Run(remote_devices_);
@@ -138,8 +138,8 @@ void RemoteDeviceLoader::OnPSKDerived(
   remote_devices_.push_back(remote_device);
 
   if (remaining_devices_.empty()) {
-    PA_LOG(INFO) << "Derived keys for " << remote_devices_.size()
-                 << " devices.";
+    PA_LOG(VERBOSE) << "Derived keys for " << remote_devices_.size()
+                    << " devices.";
     callback_.Run(remote_devices_);
   }
 }

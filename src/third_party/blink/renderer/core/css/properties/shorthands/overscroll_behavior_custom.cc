@@ -9,7 +9,7 @@
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 
 namespace blink {
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool OverscrollBehavior::ParseShorthand(
     bool important,
@@ -17,7 +17,7 @@ bool OverscrollBehavior::ParseShorthand(
     const CSSParserContext& context,
     const CSSParserLocalContext&,
     HeapVector<CSSPropertyValue, 256>& properties) const {
-  return CSSPropertyParserHelpers::ConsumeShorthandVia2Longhands(
+  return css_property_parser_helpers::ConsumeShorthandVia2Longhands(
       overscrollBehaviorShorthand(), important, context, range, properties);
 }
 
@@ -33,5 +33,5 @@ const CSSValue* OverscrollBehavior::CSSValueFromComputedStyleInternal(
   return list;
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink

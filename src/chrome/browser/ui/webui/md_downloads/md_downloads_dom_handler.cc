@@ -486,7 +486,7 @@ void MdDownloadsDOMHandler::RetryDownload(const base::ListValue* args) {
       render_frame_host->GetRoutingID(), traffic_annotation);
   dl_params->set_content_initiated(true);
   dl_params->set_initiator(url::Origin::Create(GURL("chrome://downloads")));
-  dl_params->set_download_source(download::DownloadSource::FROM_RENDERER);
+  dl_params->set_download_source(download::DownloadSource::RETRY);
 
   content::BrowserContext::GetDownloadManager(web_contents->GetBrowserContext())
       ->DownloadUrl(std::move(dl_params));

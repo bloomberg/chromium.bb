@@ -37,8 +37,8 @@ class NotificationImageLoaderTest : public PageTestBase {
   NotificationImageLoaderTest()
       :  // Use an arbitrary type, since it only affects which UMA bucket we
          // use.
-        loader_(
-            new NotificationImageLoader(NotificationImageLoader::Type::kIcon)) {
+        loader_(MakeGarbageCollected<NotificationImageLoader>(
+            NotificationImageLoader::Type::kIcon)) {
     EnablePlatform();
   }
 
@@ -54,7 +54,7 @@ class NotificationImageLoaderTest : public PageTestBase {
   // Registers a mocked URL. When fetched it will be loaded form the test data
   // directory.
   WebURL RegisterMockedURL(const String& file_name) {
-    WebURL registered_url = URLTestHelpers::RegisterMockedURLLoadFromBase(
+    WebURL registered_url = url_test_helpers::RegisterMockedURLLoadFromBase(
         kNotificationImageLoaderBaseUrl,
         test::CoreTestDataPath(kNotificationImageLoaderBaseDir), file_name,
         "image/png");

@@ -40,6 +40,10 @@ bool ImageElementBase::IsSVGSource() const {
   return CachedImage() && CachedImage()->GetImage()->IsSVGImage();
 }
 
+bool ImageElementBase::IsImageElement() const {
+  return CachedImage() && !CachedImage()->GetImage()->IsSVGImage();
+}
+
 scoped_refptr<Image> ImageElementBase::GetSourceImageForCanvas(
     SourceImageStatus* status,
     AccelerationHint,
@@ -133,7 +137,7 @@ ScriptPromise ImageElementBase::CreateImageBitmap(
     ScriptState* script_state,
     EventTarget& event_target,
     base::Optional<IntRect> crop_rect,
-    const ImageBitmapOptions& options) {
+    const ImageBitmapOptions* options) {
   DCHECK(event_target.ToLocalDOMWindow());
 
   ImageResourceContent* image_content = CachedImage();
@@ -148,7 +152,7 @@ ScriptPromise ImageElementBase::CreateImageBitmap(
   if (image->IsSVGImage()) {
     if (!ToSVGImage(image)->HasIntrinsicDimensions() &&
         (!crop_rect &&
-         (!options.hasResizeWidth() || !options.hasResizeHeight()))) {
+         (!options->hasResizeWidth() || !options->hasResizeHeight()))) {
       return ScriptPromise::RejectWithDOMException(
           script_state,
           DOMException::Create(

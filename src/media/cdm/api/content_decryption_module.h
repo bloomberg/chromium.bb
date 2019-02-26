@@ -667,7 +667,7 @@ class CDM_CLASS_API FileIO {
 // still call Close() to destroy the FileIO object.
 class CDM_CLASS_API FileIOClient {
  public:
-  enum Status : uint32_t { kSuccess = 0, kInUse, kError };
+  enum class Status : uint32_t { kSuccess = 0, kInUse, kError };
 
   // Response to a FileIO::Open() call with the open |status|.
   virtual void OnOpenComplete(Status status) = 0;
@@ -837,8 +837,8 @@ class CDM_CLASS_API ContentDecryptionModule_9 {
 
   // Decrypts the |encrypted_buffer| and decodes the decrypted buffer into a
   // |video_frame|. Upon end-of-stream, the caller should call this function
-  // repeatedly with empty |encrypted_buffer| (|data| == NULL) until only empty
-  // |video_frame| (|format| == kEmptyVideoFrame) is produced.
+  // repeatedly with empty |encrypted_buffer| (|data| == NULL) until
+  // kNeedMoreData is returned.
   //
   // Returns kSuccess if decryption and decoding both succeeded, in which case
   // the callee will have filled the |video_frame| and passed the ownership of
@@ -1057,8 +1057,8 @@ class CDM_CLASS_API ContentDecryptionModule_10 {
 
   // Decrypts the |encrypted_buffer| and decodes the decrypted buffer into a
   // |video_frame|. Upon end-of-stream, the caller should call this function
-  // repeatedly with empty |encrypted_buffer| (|data| == NULL) until only empty
-  // |video_frame| (|format| == kEmptyVideoFrame) is produced.
+  // repeatedly with empty |encrypted_buffer| (|data| == NULL) until
+  // kNeedMoreData is returned.
   //
   // Returns kSuccess if decryption and decoding both succeeded, in which case
   // the callee will have filled the |video_frame| and passed the ownership of
@@ -1283,8 +1283,8 @@ class CDM_CLASS_API ContentDecryptionModule_11 {
 
   // Decrypts the |encrypted_buffer| and decodes the decrypted buffer into a
   // |video_frame|. Upon end-of-stream, the caller should call this function
-  // repeatedly with empty |encrypted_buffer| (|data| == NULL) until only empty
-  // |video_frame| (|format| == kEmptyVideoFrame) is produced.
+  // repeatedly with empty |encrypted_buffer| (|data| == NULL) until
+  // kNeedMoreData is returned.
   //
   // Returns kSuccess if decryption and decoding both succeeded, in which case
   // the callee will have filled the |video_frame| and passed the ownership of

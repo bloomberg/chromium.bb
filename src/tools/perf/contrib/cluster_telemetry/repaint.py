@@ -5,15 +5,14 @@
 from contrib.cluster_telemetry import ct_benchmarks_util
 from contrib.cluster_telemetry import page_set
 from contrib.cluster_telemetry import repaint_helpers
+from telemetry.timeline import chrome_trace_category_filter
+from telemetry.web_perf import timeline_based_measurement
 
 from core import perf_benchmark
-from measurements import smoothness
 
 
 class RepaintCT(perf_benchmark.PerfBenchmark):
   """Measures repaint performance for Cluster Telemetry."""
-
-  test = smoothness.Smoothness
 
   @classmethod
   def Name(cls):
@@ -41,3 +40,9 @@ class RepaintCT(perf_benchmark.PerfBenchmark):
     return page_set.CTPageSet(
         options.urls_list, options.user_agent, options.archive_data_file,
         run_page_interaction_callback=repaint_helpers.WaitThenRepaint)
+
+  def CreateCoreTimelineBasedMeasurementOptions(self):
+    category_filter = chrome_trace_category_filter.CreateLowOverheadFilter()
+    options = timeline_based_measurement.Options(category_filter)
+    options.SetTimelineBasedMetrics(['renderingMetric'])
+    return options

@@ -75,7 +75,9 @@
             "UserPolicy": 1
          },
          "PSK": {
-            "Effective": "UserPolicy"
+          "DevicePolicy": "FAKE_CREDENTIAL_VPaJDV9x",
+          "Effective": "UserPolicy",
+          "UserPolicy": "FAKE_CREDENTIAL_VPaJDV9x"
          }
       },
       "OpenVPN": {

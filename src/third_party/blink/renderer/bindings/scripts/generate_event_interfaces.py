@@ -87,13 +87,12 @@ def write_event_interfaces_file(event_idl_files, destination_filename, suffix):
             for name in EXPORTED_EXTENDED_ATTRIBUTES
             if name in extended_attributes]
 
-        return (posixpath.join(relative_dir_posix, interface_name),
-                extended_attributes_list)
+        return (relative_dir_posix, interface_name, extended_attributes_list)
 
     lines = [
         '{',
         'metadata: {',
-        '  namespace: "Event",'
+        '  namespace: "event_interface_names",'
     ]
     if suffix:
         lines.append('  suffix: "' + suffix + '",')
@@ -107,10 +106,11 @@ def write_event_interfaces_file(event_idl_files, destination_filename, suffix):
     interface_lines = [interface_line(event_idl_file)
                        for event_idl_file in event_idl_files]
     interface_lines.sort()
-    for name, attributes in interface_lines:
+    for relative_dir, name, attributes in interface_lines:
         lines.extend([
             '  {',
-            '    name: "%s",' % name
+            '    name: "%s",' % name,
+            '    interfaceHeaderDir: "%s",' % relative_dir
         ])
         for param, value in attributes:
             if param == 'RuntimeEnabled':

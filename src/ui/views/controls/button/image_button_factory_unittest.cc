@@ -20,7 +20,6 @@ TEST_F(ImageButtonFactoryTest, CreateVectorImageButton) {
   ImageButton* button = CreateVectorImageButton(nullptr);
   EXPECT_EQ(ImageButton::ALIGN_CENTER, button->h_alignment_);
   EXPECT_EQ(ImageButton::ALIGN_MIDDLE, button->v_alignment_);
-  EXPECT_TRUE(test::InkDropHostViewTestApi(button).HasGestureHandler());
   delete button;
 }
 

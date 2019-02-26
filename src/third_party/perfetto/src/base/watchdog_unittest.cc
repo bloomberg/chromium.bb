@@ -18,10 +18,12 @@
 
 #include "gtest/gtest.h"
 #include "perfetto/base/logging.h"
-#include "perfetto/base/page_allocator.h"
+#include "perfetto/base/paged_memory.h"
 
 #include <time.h>
+
 #include <map>
+#include <memory>
 
 namespace perfetto {
 namespace base {
@@ -32,14 +34,21 @@ class TestWatchdog : public Watchdog {
   explicit TestWatchdog(uint32_t polling_interval_ms)
       : Watchdog(polling_interval_ms) {}
   ~TestWatchdog() override {}
-  TestWatchdog(TestWatchdog&& other) noexcept = default;
 };
+
+TEST(WatchdogTest, NoTimerCrashIfNotEnabled) {
+  // CreateFatalTimer should be a noop if the watchdog is not enabled.
+  TestWatchdog watchdog(100);
+  auto handle = watchdog.CreateFatalTimer(1);
+  usleep(100 * 1000);
+}
 
 TEST(WatchdogTest, TimerCrash) {
   // Create a timer for 20 ms and don't release wihin the time.
   EXPECT_DEATH(
       {
         TestWatchdog watchdog(100);
+        watchdog.Start();
         auto handle = watchdog.CreateFatalTimer(20);
         usleep(200 * 1000);
       },
@@ -51,6 +60,7 @@ TEST(WatchdogTest, CrashEvenWhenMove) {
   EXPECT_DEATH(
       {
         TestWatchdog watchdog(100);
+        watchdog.Start();
         timers.emplace(0, watchdog.CreateFatalTimer(20));
         usleep(200 * 1000);
       },
@@ -62,8 +72,8 @@ TEST(WatchdogTest, CrashMemory) {
       {
         // Allocate 8MB of data and use it to increase RSS.
         const size_t kSize = 8 * 1024 * 1024;
-        auto void_ptr = PageAllocator::Allocate(kSize);
-        volatile uint8_t* ptr = static_cast<volatile uint8_t*>(void_ptr.get());
+        auto void_ptr = PagedMemory::Allocate(kSize);
+        volatile uint8_t* ptr = static_cast<volatile uint8_t*>(void_ptr.Get());
         for (size_t i = 0; i < kSize; i += sizeof(size_t)) {
           *reinterpret_cast<volatile size_t*>(&ptr[i]) = i;
         }
@@ -85,7 +95,7 @@ TEST(WatchdogTest, CrashCpu) {
         watchdog.SetCpuLimit(10, 25);
         watchdog.Start();
         volatile int x = 0;
-        while (true) {
+        for (;;) {
           x++;
         }
       },

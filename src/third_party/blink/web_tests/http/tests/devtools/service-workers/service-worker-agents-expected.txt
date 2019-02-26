@@ -1,0 +1,15 @@
+Tests the way service workers don't enable DOM agent and does enable Debugger agent.
+
+Debugger-related command should be issued: {
+    "id": "<id>",
+    "method": "Debugger.enable",
+    "sessionId": "<id>"
+}
+Suspending targets.
+Resuming targets.
+Debugger-related command should be issued: {
+    "id": "<id>",
+    "method": "Debugger.enable",
+    "sessionId": "<id>"
+}
+

@@ -36,7 +36,7 @@ SensorProviderProxy* SensorProviderProxy::From(Document* document) {
   SensorProviderProxy* provider_proxy =
       Supplement<Document>::From<SensorProviderProxy>(*document);
   if (!provider_proxy) {
-    provider_proxy = new SensorProviderProxy(*document);
+    provider_proxy = MakeGarbageCollected<SensorProviderProxy>(*document);
     Supplement<Document>::ProvideTo(*document, provider_proxy);
   }
   provider_proxy->InitializeIfNeeded();
@@ -58,8 +58,10 @@ SensorProxy* SensorProviderProxy::CreateSensorProxy(
   SensorProxy* sensor =
       inspector_mode_
           ? static_cast<SensorProxy*>(
-                new SensorProxyInspectorImpl(type, this, page))
-          : static_cast<SensorProxy*>(new SensorProxyImpl(type, this, page));
+                MakeGarbageCollected<SensorProxyInspectorImpl>(type, this,
+                                                               page))
+          : static_cast<SensorProxy*>(
+                MakeGarbageCollected<SensorProxyImpl>(type, this, page));
   sensor_proxies_.insert(sensor);
 
   return sensor;

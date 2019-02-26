@@ -21,7 +21,7 @@ LocalSVGResource* SVGTreeScopeResources::ResourceForId(const AtomicString& id) {
     return nullptr;
   auto& entry = resources_.insert(id, nullptr).stored_value->value;
   if (!entry)
-    entry = new LocalSVGResource(*tree_scope_, id);
+    entry = MakeGarbageCollected<LocalSVGResource>(*tree_scope_, id);
   return entry;
 }
 

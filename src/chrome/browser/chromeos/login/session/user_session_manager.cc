@@ -13,6 +13,9 @@
 #include <utility>
 #include <vector>
 
+#include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/notification_utils.h"
+#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -24,7 +27,7 @@
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/about_flags.h"
@@ -57,6 +60,7 @@
 #include "chrome/browser/chromeos/login/quick_unlock/pin_backend.h"
 #include "chrome/browser/chromeos/login/saml/saml_offline_signin_limiter.h"
 #include "chrome/browser/chromeos/login/saml/saml_offline_signin_limiter_factory.h"
+#include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen.h"
 #include "chrome/browser/chromeos/login/screens/sync_consent_screen.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager_factory.h"
@@ -72,7 +76,6 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/install_attributes.h"
 #include "chrome/browser/chromeos/tether/tether_service.h"
 #include "chrome/browser/chromeos/tpm_firmware_update_notification.h"
 #include "chrome/browser/component_updater/crl_set_component_installer.h"
@@ -82,6 +85,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/net/nss_context.h"
+#include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
@@ -89,10 +93,11 @@
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
+#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/discover_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/modules/discover_module_pin_setup.h"
@@ -100,6 +105,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/assistant/buildflags.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
@@ -112,6 +118,7 @@
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "chromeos/network/portal_detector/network_portal_detector_strategy.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "chromeos/settings/install_attributes.h"
 #include "components/account_id/account_id.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
@@ -144,6 +151,9 @@
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/message_center/public/cpp/notification.h"
+#include "ui/message_center/public/cpp/notifier_id.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_RLZ)
@@ -158,6 +168,10 @@
 namespace chromeos {
 
 namespace {
+
+// http://crbug/866790: After Supervised Users are deprecated, remove this.
+const char kUserSessionManagerNotifier[] = "chrome://settings/people";
+const char kSupervisedUserDeprecated[] = "supervised_user_deprecated";
 
 // Milliseconds until we timeout our attempt to fetch flags from the child
 // account service.
@@ -247,13 +261,13 @@ void InitLocaleAndInputMethodsForNewUser(
       input_method_ids, &candidates);
   for (size_t i = 0; i < candidates.size(); ++i) {
     const std::string& candidate = candidates[i];
-    // Skip if it's already in language_codes.
+    // Add a candidate if it's not yet in language_codes and is allowed.
     if (std::count(language_codes.begin(), language_codes.end(), candidate) ==
-        0) {
+            0 &&
+        locale_util::IsAllowedLanguage(candidate, prefs)) {
       language_codes.push_back(candidate);
     }
   }
-
   // Save the preferred languages in the user's preferences.
   prefs->SetString(prefs::kLanguagePreferredLanguages,
                    base::JoinString(language_codes, ","));
@@ -440,11 +454,10 @@ void UserSessionManager::MaybeAppendPolicySwitches(
           ? isolate_origins_pref->GetValue()->GetString()
           : std::string();
 
-  // The admin should also be able to use these policies to override trials that
-  // will try to turn site isolation on per default.
-  // Note that disabling either SitePerProcess or IsolateOrigins via policy will
-  // disable both types of field trials.
-  bool disable_site_isolation_trials =
+  // The admin should also be able to use these policies to force site isolation
+  // off.  Note that disabling either SitePerProcess or IsolateOrigins via
+  // policy will disable both types of isolation.
+  bool disable_site_isolation =
       (site_per_process_pref->IsManaged() &&
        !site_per_process_pref->GetValue()->GetBool()) ||
       (isolate_origins_pref->IsManaged() && isolate_origins.empty());
@@ -458,8 +471,8 @@ void UserSessionManager::MaybeAppendPolicySwitches(
   // We use the policy-style sentinels because these values originate from
   // policy, and because login_manager uses the same sentinels when adding the
   // login-screen site isolation flags.
-  bool use_policy_sentinels = site_per_process || !isolate_origins.empty() ||
-                              disable_site_isolation_trials;
+  bool use_policy_sentinels =
+      site_per_process || !isolate_origins.empty() || disable_site_isolation;
   if (use_policy_sentinels)
     user_flags->AppendSwitch(chromeos::switches::kPolicySwitchesBegin);
 
@@ -475,8 +488,8 @@ void UserSessionManager::MaybeAppendPolicySwitches(
         user_profile_prefs->GetString(prefs::kIsolateOrigins));
   }
 
-  if (disable_site_isolation_trials) {
-    user_flags->AppendSwitch(::switches::kDisableSiteIsolationTrials);
+  if (disable_site_isolation) {
+    user_flags->AppendSwitch(::switches::kDisableSiteIsolation);
   }
 
   if (use_policy_sentinels) {
@@ -641,10 +654,9 @@ void UserSessionManager::RestoreAuthenticationSession(Profile* user_profile) {
   const user_manager::User* user =
       ProfileHelper::Get()->GetUserByProfile(user_profile);
 
-  const SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(user_profile);
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(user_profile);
   const bool account_id_valid =
-      signin_manager && !signin_manager->GetAuthenticatedAccountId().empty();
+      identity_manager && !identity_manager->GetPrimaryAccountId().empty();
   if (!account_id_valid)
     LOG(ERROR) << "No account is associated with sign-in manager on restore.";
   UMA_HISTOGRAM_BOOLEAN("UserSessionManager.RestoreOnCrash.AccountIdValid",
@@ -800,7 +812,7 @@ bool UserSessionManager::RespectLocalePreference(
   if (user_manager->GetLoggedInUsers().size() != 1)
     return false;
 
-  const PrefService* prefs = profile->GetPrefs();
+  PrefService* prefs = profile->GetPrefs();
   if (prefs == NULL)
     return false;
 
@@ -816,7 +828,7 @@ bool UserSessionManager::RespectLocalePreference(
 
   const std::string* account_locale = NULL;
   if (pref_locale.empty() && user->has_gaia_account() &&
-      prefs->GetList(prefs::kAllowedUILocales)->GetList().empty()) {
+      prefs->GetList(prefs::kAllowedLanguages)->GetList().empty()) {
     if (user->GetAccountLocale() == NULL)
       return false;  // wait until Account profile is loaded.
     account_locale = user->GetAccountLocale();
@@ -841,9 +853,9 @@ bool UserSessionManager::RespectLocalePreference(
           ? Profile::APP_LOCALE_CHANGED_VIA_PUBLIC_SESSION_LOGIN
           : Profile::APP_LOCALE_CHANGED_VIA_LOGIN;
 
-  // check if pref_locale is allowed by policy (AllowedUILocales)
-  if (!chromeos::locale_util::IsAllowedUILocale(pref_locale, prefs)) {
-    pref_locale = chromeos::locale_util::GetAllowedFallbackUILocale(prefs);
+  // check if pref_locale is allowed by policy (AllowedLanguages)
+  if (!chromeos::locale_util::IsAllowedUILanguage(pref_locale, prefs)) {
+    pref_locale = chromeos::locale_util::GetAllowedFallbackUILanguage(prefs);
     app_locale_changed_via = Profile::APP_LOCALE_CHANGED_VIA_POLICY;
   }
 
@@ -1181,6 +1193,52 @@ void UserSessionManager::OnProfileCreated(const UserContext& user_context,
   }
 }
 
+// http://crbug/866790: After Supervised Users are deprecated, remove this.
+void ShowSupervisedUserDeprecationNotification(Profile* profile) {
+  base::string16 title = l10n_util::GetStringUTF16(
+      IDS_SUPERVISED_USER_EXPIRING_NOTIFICATION_TITLE);
+  base::string16 message =
+      l10n_util::GetStringUTF16(IDS_SUPERVISED_USER_EXPIRING_NOTIFICATION_BODY);
+
+  auto delegate =
+      base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
+          base::BindRepeating([](base::Optional<int> button_index) {
+            if (button_index) {
+              user_manager::UserManager* user_manager =
+                  user_manager::UserManager::Get();
+              Profile* profile = ProfileHelper::Get()->GetProfileByUser(
+                  user_manager->GetPrimaryUser());
+
+              NavigateParams params(profile,
+                                    GURL("https://support.google.com/chrome/"
+                                         "?p=ui_supervised_user"),
+                                    ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
+              params.disposition = WindowOpenDisposition::SINGLETON_TAB;
+              Navigate(&params);
+            }
+          }));
+
+  message_center::RichNotificationData rich_notification_data;
+  rich_notification_data.buttons.push_back(
+      message_center::ButtonInfo(l10n_util::GetStringUTF16(
+          IDS_SUPERVISED_USER_EXPIRING_NOTIFICATION_LEARN_MORE)));
+
+  std::unique_ptr<message_center::Notification> notification =
+      ash::CreateSystemNotification(
+          message_center::NOTIFICATION_TYPE_SIMPLE, kSupervisedUserDeprecated,
+          title, message, base::string16(), GURL(),
+          message_center::NotifierId(
+              message_center::NotifierType::SYSTEM_COMPONENT,
+              kUserSessionManagerNotifier),
+          rich_notification_data, std::move(delegate),
+          ash::kNotificationWarningIcon,
+          message_center::SystemNotificationWarningLevel::NORMAL);
+  notification->set_priority(message_center::SYSTEM_PRIORITY);
+
+  NotificationDisplayService::GetForProfile(profile)->Display(
+      NotificationHandler::Type::TRANSIENT, *notification);
+}
+
 void UserSessionManager::InitProfilePreferences(
     Profile* profile,
     const UserContext& user_context) {
@@ -1261,9 +1319,10 @@ void UserSessionManager::InitProfilePreferences(
     AccountTrackerService* account_tracker =
         AccountTrackerServiceFactory::GetForProfile(profile);
     account_tracker->SetIsChildAccount(account_id, is_child);
-    VLOG(1) << "Seed IdentityManager and SigninManagerBase with the "
-            << "authenticated account info, success="
-            << SigninManagerFactory::GetForProfile(profile)->IsAuthenticated();
+    VLOG(1)
+        << "Seed IdentityManager and SigninManagerBase with the "
+        << "authenticated account info, success="
+        << IdentityManagerFactory::GetForProfile(profile)->HasPrimaryAccount();
 
     if (IsOnlineSignin(user_context)) {
       account_tracker->SetIsAdvancedProtectionAccount(
@@ -1284,6 +1343,11 @@ void UserSessionManager::InitProfilePreferences(
 void UserSessionManager::UserProfileInitialized(Profile* profile,
                                                 bool is_incognito_profile,
                                                 const AccountId& account_id) {
+  // http://crbug/866790: After Supervised Users are deprecated, remove this.
+  if (ash::features::IsSupervisedUserDeprecationNoticeEnabled() &&
+      user_manager::UserManager::Get()->IsLoggedInAsSupervisedUser())
+    ShowSupervisedUserDeprecationNotification(profile);
+
   // Demo user signed in.
   if (is_incognito_profile) {
     profile->OnLogin();
@@ -1328,14 +1392,13 @@ void UserSessionManager::UserProfileInitialized(Profile* profile,
     // Transfers authentication-related data from the profile that was used for
     // authentication to the user's profile. The proxy authentication state is
     // transferred unconditionally. If the user authenticated via an auth
-    // extension, authentication cookies and channel IDs will be transferred as
-    // well when the user's cookie jar is empty. If the cookie jar is not empty,
-    // the authentication states in the browser context and the user's profile
-    // must be merged using /MergeSession instead. Authentication cookies set by
-    // a SAML IdP will also be transferred when the user's cookie jar is not
-    // empty if |transfer_saml_auth_cookies_on_subsequent_login| is true.
-    const bool transfer_auth_cookies_and_channel_ids_on_first_login =
-        has_auth_cookies_;
+    // extension, authentication cookies will be transferred as well when the
+    // user's cookie jar is empty. If the cookie jar is not empty, the
+    // authentication states in the browser context and the user's profile must
+    // be merged using /MergeSession instead. Authentication cookies set by a
+    // SAML IdP will also be transferred when the user's cookie jar is not empty
+    // if |transfer_saml_auth_cookies_on_subsequent_login| is true.
+    const bool transfer_auth_cookies_on_first_login = has_auth_cookies_;
 
     content::StoragePartition* signin_partition = login::GetSigninPartition();
 
@@ -1345,7 +1408,7 @@ void UserSessionManager::UserProfileInitialized(Profile* profile,
       ProfileAuthData::Transfer(
           signin_partition,
           content::BrowserContext::GetDefaultStoragePartition(profile),
-          transfer_auth_cookies_and_channel_ids_on_first_login,
+          transfer_auth_cookies_on_first_login,
           transfer_saml_auth_cookies_on_subsequent_login,
           base::Bind(
               &UserSessionManager::CompleteProfileCreateAfterAuthTransfer,
@@ -1582,10 +1645,8 @@ bool UserSessionManager::InitializeUserSession(Profile* profile) {
   if (start_session_type_ == PRIMARY_USER_SESSION) {
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
     // Initialize Assistant early to be used in post login Oobe steps.
-    if (chromeos::switches::IsAssistantEnabled()) {
-      AssistantClient::Get()->MaybeInit(
-          content::BrowserContext::GetConnectorFor(profile));
-    }
+    if (chromeos::switches::IsAssistantEnabled())
+      AssistantClient::Get()->MaybeInit(profile);
 #endif
     UserFlow* user_flow = ChromeUserManager::Get()->GetCurrentUserFlow();
     WizardController* oobe_controller = WizardController::default_controller();
@@ -1665,27 +1726,9 @@ void UserSessionManager::RestoreAuthSessionImpl(
       OAuth2LoginManagerFactory::GetInstance()->GetForProfile(profile);
   login_manager->AddObserver(this);
 
-  scoped_refptr<network::SharedURLLoaderFactory> auth_url_loader_factory =
-      GetAuthURLLoaderFactory();
-
-  // Authentication URLLoaderFactory may not be available if user was not
-  // signing in with GAIA webview (i.e. webview instance hasn't been
-  // initialized at all). Use fallback URLLoaderFactory if authenticator was
-  // provided.
-  // Authenticator instance may not be initialized for session
-  // restore case when Chrome is restarting after crash or to apply custom user
-  // flags. In that case auth_url_loader_factory will be nullptr which is
-  // accepted by RestoreSession() for session restore case.
-  if (!auth_url_loader_factory &&
-      (authenticator_.get() && authenticator_->authentication_context())) {
-    auth_url_loader_factory =
-        content::BrowserContext::GetDefaultStoragePartition(
-            authenticator_->authentication_context())
-            ->GetURLLoaderFactoryForBrowserProcess();
-  }
-  login_manager->RestoreSession(
-      auth_url_loader_factory, session_restore_strategy_,
-      user_context_.GetRefreshToken(), user_context_.GetAccessToken());
+  login_manager->RestoreSession(session_restore_strategy_,
+                                user_context_.GetRefreshToken(),
+                                user_context_.GetAccessToken());
 }
 
 void UserSessionManager::InitRlzImpl(Profile* profile,
@@ -1930,15 +1973,6 @@ void UserSessionManager::UpdateEasyUnlockKeys(const UserContext& user_context) {
                  user_context.GetAccountId().GetUserEmail()));
 }
 
-scoped_refptr<network::SharedURLLoaderFactory>
-UserSessionManager::GetAuthURLLoaderFactory() const {
-  content::StoragePartition* signin_partition = login::GetSigninPartition();
-  if (!signin_partition)
-    return nullptr;
-
-  return signin_partition->GetURLLoaderFactoryForBrowserProcess();
-}
-
 void UserSessionManager::OnEasyUnlockKeyOpsFinished(const std::string& user_id,
                                                     bool success) {
   const user_manager::User* user = user_manager::UserManager::Get()->FindUser(
@@ -2076,8 +2110,10 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
   // and show the message accordingly.
   tpm_firmware_update::ShowNotificationIfNeeded(profile);
 
-  if (should_launch_browser_)
+  if (should_launch_browser_) {
+    ArcTermsOfServiceScreen::MaybeLaunchArcSettings(profile);
     SyncConsentScreen::MaybeLaunchSyncConsentSettings(profile);
+  }
 }
 
 void UserSessionManager::RespectLocalePreferenceWrapper(

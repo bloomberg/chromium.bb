@@ -39,7 +39,7 @@ FEFlood::FEFlood(Filter* filter, const Color& flood_color, float flood_opacity)
 FEFlood* FEFlood::Create(Filter* filter,
                          const Color& flood_color,
                          float flood_opacity) {
-  return new FEFlood(filter, flood_color, flood_opacity);
+  return MakeGarbageCollected<FEFlood>(filter, flood_color, flood_opacity);
 }
 
 Color FEFlood::FloodColor() const {

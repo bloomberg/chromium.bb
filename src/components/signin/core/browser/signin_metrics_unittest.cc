@@ -100,12 +100,12 @@ class SigninMetricsTest : public ::testing::Test {
         return "ReSigninInfobar";
       case AccessPoint::ACCESS_POINT_TAB_SWITCHER:
         return "TabSwitcher";
-      case AccessPoint::ACCESS_POINT_FORCE_SIGNIN_WARNING:
-        return "ForceSigninWarning";
       case AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE:
         return "SaveCardBubble";
       case AccessPoint::ACCESS_POINT_MANAGE_CARDS_BUBBLE:
         return "ManageCardsBubble";
+      case AccessPoint::ACCESS_POINT_MACHINE_LOGON:
+        return "MachineLogon";
       case AccessPoint::ACCESS_POINT_MAX:
         NOTREACHED();
         return "";
@@ -118,6 +118,9 @@ class SigninMetricsTest : public ::testing::Test {
     std::vector<AccessPoint> access_points;
     for (int ap = 0; ap < static_cast<int>(AccessPoint::ACCESS_POINT_MAX);
          ++ap) {
+      // Skip the deprecated ACCESS_POINT_FORCE_SIGNIN_WARNING
+      if (ap == 23)
+        continue;
       access_points.push_back(static_cast<AccessPoint>(ap));
     }
     return access_points;

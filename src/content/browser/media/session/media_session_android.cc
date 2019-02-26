@@ -101,7 +101,7 @@ void MediaSessionAndroid::MediaSessionMetadataChanged(
 }
 
 void MediaSessionAndroid::MediaSessionActionsChanged(
-    const std::set<blink::mojom::MediaSessionAction>& actions) {
+    const std::set<media_session::mojom::MediaSessionAction>& actions) {
   ScopedJavaLocalRef<jobject> j_local_session = GetJavaObject();
   if (j_local_session.is_null())
     return;
@@ -136,31 +136,21 @@ void MediaSessionAndroid::Stop(
   media_session()->Stop(MediaSession::SuspendType::kUI);
 }
 
-void MediaSessionAndroid::SeekForward(
+void MediaSessionAndroid::Seek(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& j_obj,
     const jlong millis) {
   DCHECK(media_session());
-  DCHECK_GE(millis, 0)
-      << "Attempted to seek by a negative number of milliseconds";
-  media_session()->SeekForward(base::TimeDelta::FromMilliseconds(millis));
-}
-
-void MediaSessionAndroid::SeekBackward(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& j_obj,
-    const jlong millis) {
-  DCHECK(media_session());
-  DCHECK_GE(millis, 0)
-      << "Attempted to seek by a negative number of milliseconds";
-  media_session()->SeekBackward(base::TimeDelta::FromMilliseconds(millis));
+  DCHECK_NE(millis, 0)
+      << "Attempted to seek by a missing number of milliseconds";
+  media_session()->Seek(base::TimeDelta::FromMilliseconds(millis));
 }
 
 void MediaSessionAndroid::DidReceiveAction(JNIEnv* env,
                                            const JavaParamRef<jobject>& obj,
                                            int action) {
   media_session()->DidReceiveAction(
-      static_cast<blink::mojom::MediaSessionAction>(action));
+      static_cast<media_session::mojom::MediaSessionAction>(action));
 }
 
 void MediaSessionAndroid::RequestSystemAudioFocus(

@@ -50,8 +50,9 @@ namespace blink {
 class FileWriterBase;
 
 DOMFileSystemSync* DOMFileSystemSync::Create(DOMFileSystemBase* file_system) {
-  return new DOMFileSystemSync(file_system->context_, file_system->name(),
-                               file_system->GetType(), file_system->RootURL());
+  return MakeGarbageCollected<DOMFileSystemSync>(
+      file_system->context_, file_system->name(), file_system->GetType(),
+      file_system->RootURL());
 }
 
 DOMFileSystemSync::DOMFileSystemSync(ExecutionContext* context,
@@ -143,7 +144,7 @@ File* DOMFileSystemSync::CreateFile(const FileEntrySync* file_entry,
       file_system_url, CreateFileHelper::Create(result, file_entry->name(),
                                                 file_system_url, GetType()));
   if (result->failed_) {
-    FileError::ThrowDOMException(
+    file_error::ThrowDOMException(
         exception_state, result->error_,
         "Could not create '" + file_entry->name() + "'.");
     return nullptr;

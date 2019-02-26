@@ -40,10 +40,10 @@
 namespace blink {
 
 TextDecoder* TextDecoder::Create(const String& label,
-                                 const TextDecoderOptions& options,
+                                 const TextDecoderOptions* options,
                                  ExceptionState& exception_state) {
   WTF::TextEncoding encoding(
-      label.StripWhiteSpace(&Encoding::IsASCIIWhiteSpace));
+      label.StripWhiteSpace(&encoding::IsASCIIWhiteSpace));
   // The replacement encoding is not valid, but the Encoding API also
   // rejects aliases of the replacement encoding.
   if (!encoding.IsValid() || !strcasecmp(encoding.GetName(), "replacement")) {
@@ -52,7 +52,8 @@ TextDecoder* TextDecoder::Create(const String& label,
     return nullptr;
   }
 
-  return new TextDecoder(encoding, options.fatal(), options.ignoreBOM());
+  return MakeGarbageCollected<TextDecoder>(encoding, options->fatal(),
+                                           options->ignoreBOM());
 }
 
 TextDecoder::TextDecoder(const WTF::TextEncoding& encoding,
@@ -77,29 +78,30 @@ String TextDecoder::encoding() const {
 }
 
 String TextDecoder::decode(const BufferSource& input,
-                           const TextDecodeOptions& options,
+                           const TextDecodeOptions* options,
                            ExceptionState& exception_state) {
+  DCHECK(options);
   DCHECK(!input.IsNull());
   if (input.IsArrayBufferView()) {
     const char* start = static_cast<const char*>(
         input.GetAsArrayBufferView().View()->BaseAddress());
-    size_t length = input.GetAsArrayBufferView().View()->byteLength();
+    uint32_t length = input.GetAsArrayBufferView().View()->byteLength();
     return decode(start, length, options, exception_state);
   }
   DCHECK(input.IsArrayBuffer());
   const char* start =
       static_cast<const char*>(input.GetAsArrayBuffer()->Data());
-  size_t length = input.GetAsArrayBuffer()->ByteLength();
+  uint32_t length = input.GetAsArrayBuffer()->ByteLength();
   return decode(start, length, options, exception_state);
 }
 
 String TextDecoder::decode(const char* start,
-                           size_t length,
-                           const TextDecodeOptions& options,
+                           uint32_t length,
+                           const TextDecodeOptions* options,
                            ExceptionState& exception_state) {
-  WTF::FlushBehavior flush =
-      options.stream() ? WTF::FlushBehavior::kDoNotFlush
-                       : WTF::FlushBehavior::kDataEOF;
+  DCHECK(options);
+  WTF::FlushBehavior flush = options->stream() ? WTF::FlushBehavior::kDoNotFlush
+                                               : WTF::FlushBehavior::kDataEOF;
 
   bool saw_error = false;
   String s = codec_->Decode(start, length, flush, fatal_, saw_error);
@@ -124,7 +126,7 @@ String TextDecoder::decode(const char* start,
 }
 
 String TextDecoder::decode(ExceptionState& exception_state) {
-  TextDecodeOptions options;
+  TextDecodeOptions* options = TextDecodeOptions::Create();
   return decode(nullptr, 0, options, exception_state);
 }
 

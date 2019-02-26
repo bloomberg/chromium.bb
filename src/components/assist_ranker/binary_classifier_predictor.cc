@@ -36,6 +36,8 @@ std::unique_ptr<BinaryClassifierPredictor> BinaryClassifierPredictor::Create(
   const GURL& model_url = predictor->GetModelUrl();
   DVLOG(1) << "Creating predictor instance for " << predictor->GetModelName();
   DVLOG(1) << "Model URL: " << model_url;
+  DVLOG(1) << "Using predict threshold replacement: "
+           << predictor->GetPredictThresholdReplacement();
   auto model_loader = std::make_unique<RankerModelLoaderImpl>(
       base::BindRepeating(&BinaryClassifierPredictor::ValidateModel),
       base::BindRepeating(&BinaryClassifierPredictor::OnModelAvailable,
@@ -52,7 +54,13 @@ bool BinaryClassifierPredictor::Predict(const RankerExample& example,
     return false;
   }
 
-  *prediction = inference_module_->Predict(PreprocessExample(example));
+  float predict_threshold_replacement = GetPredictThresholdReplacement();
+  if (predict_threshold_replacement != kNoPredictThresholdReplacement) {
+    *prediction = inference_module_->PredictScore(PreprocessExample(example)) >=
+                  predict_threshold_replacement;
+  } else {
+    *prediction = inference_module_->Predict(PreprocessExample(example));
+  }
   DVLOG(1) << "Predictor " << GetModelName() << " predicted: " << *prediction;
   return true;
 }

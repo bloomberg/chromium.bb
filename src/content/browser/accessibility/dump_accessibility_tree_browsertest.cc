@@ -140,6 +140,19 @@ class DumpAccessibilityTreeTest : public DumpAccessibilityTestBase {
         actual_contents, "\n",
         base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   }
+
+  void RunLanguageDetectionTest(const base::FilePath::CharType* file_path) {
+    base::FilePath test_path =
+        GetTestFilePath("accessibility", "language-detection");
+    {
+      base::ScopedAllowBlockingForTesting allow_blocking;
+      ASSERT_TRUE(base::PathExists(test_path)) << test_path.LossyDisplayName();
+    }
+    base::FilePath language_detection_file =
+        test_path.Append(base::FilePath(file_path));
+
+    RunTest(language_detection_file, "accessibility/language-detection");
+  }
 };
 
 void DumpAccessibilityTreeTest::AddDefaultFilters(
@@ -160,7 +173,6 @@ void DumpAccessibilityTreeTest::AddDefaultFilters(
   AddFilter(filters, "BUSY");
   AddFilter(filters, "CHECKED");
   AddFilter(filters, "COLLAPSED");
-  AddFilter(filters, "DEFAULT");
   AddFilter(filters, "EXPANDED");
   AddFilter(filters, "FLOATING");
   AddFilter(filters, "FOCUSABLE");
@@ -212,7 +224,6 @@ void DumpAccessibilityTreeTest::AddDefaultFilters(
   AddFilter(filters, "check*");
   AddFilter(filters, "descript*");
   AddFilter(filters, "collapsed");
-  AddFilter(filters, "default");
   AddFilter(filters, "haspopup");
   AddFilter(filters, "horizontal");
   AddFilter(filters, "invisible");
@@ -277,6 +288,16 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityCSSFontStyle) {
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityCSSFontFamily) {
   RunCSSTest(FILE_PATH_LITERAL("font-family.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityCSSDisplayToInline) {
+  RunCSSTest(FILE_PATH_LITERAL("display-to-inline.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityCSSDisplayToBlock) {
+  RunCSSTest(FILE_PATH_LITERAL("display-to-block.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
@@ -545,6 +566,16 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaHeading) {
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaHidden) {
   RunAriaTest(FILE_PATH_LITERAL("aria-hidden.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityAriaHiddenDescendants) {
+  RunAriaTest(FILE_PATH_LITERAL("aria-hidden-descendants.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityAriaHiddenDescendantTabindexChange) {
+  RunAriaTest(FILE_PATH_LITERAL("aria-hidden-descendant-tabindex-change.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
@@ -1038,6 +1069,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityBR) {
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityButton) {
   RunHtmlTest(FILE_PATH_LITERAL("button.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityButtonSubmit) {
+  RunHtmlTest(FILE_PATH_LITERAL("button-submit.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
@@ -1864,6 +1899,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("label-with-presentational-child.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityNestedList) {
+  RunHtmlTest(FILE_PATH_LITERAL("nestedlist.html"));
+}
+
 //
 // Regression tests. These don't test a specific web platform feature,
 // they test a specific web page that crashed or had some bad behavior
@@ -1872,6 +1911,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, XmlInIframeCrash) {
   RunRegressionTest(FILE_PATH_LITERAL("xml-in-iframe-crash.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       LanguageDetectionLangAttribute) {
+  RunLanguageDetectionTest(FILE_PATH_LITERAL("lang-attribute.html"));
 }
 
 }  // namespace content

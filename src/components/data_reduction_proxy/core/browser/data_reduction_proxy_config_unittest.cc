@@ -14,11 +14,11 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/strings/safe_sprintf.h"
@@ -26,6 +26,7 @@
 #include "base/strings/string_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/default_clock.h"
@@ -36,7 +37,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/network_properties_manager.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
@@ -51,7 +51,6 @@
 #include "net/base/network_change_notifier.h"
 #include "net/base/proxy_server.h"
 #include "net/http/http_status_code.h"
-#include "net/log/test_net_log.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -125,18 +124,18 @@ class DataReductionProxyConfigTest : public testing::Test {
       test_config()->ResetParamFlagsForTest();
   }
 
-  const scoped_refptr<base::SingleThreadTaskRunner>& task_runner() {
-    return message_loop_.task_runner();
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner() {
+    return task_environment_.GetMainThreadTaskRunner();
   }
 
   class TestResponder {
    public:
     void ExecuteCallback(SecureProxyCheckerCallback callback) {
-      callback.Run(response, status, http_response_code);
+      callback.Run(response, net_error, http_response_code);
     }
 
     std::string response;
-    net::URLRequestStatus status;
+    net::Error net_error;
     int http_response_code;
   };
 
@@ -145,7 +144,7 @@ class DataReductionProxyConfigTest : public testing::Test {
       const std::string& response,
       bool is_captive_portal,
       int response_code,
-      net::URLRequestStatus status,
+      net::Error net_error,
       SecureProxyCheckFetchResult expected_fetch_result,
       const std::vector<net::ProxyServer>& expected_proxies_for_http) {
     base::HistogramTester histogram_tester;
@@ -153,7 +152,7 @@ class DataReductionProxyConfigTest : public testing::Test {
 
     TestResponder responder;
     responder.response = response;
-    responder.status = status;
+    responder.net_error = net_error;
     responder.http_response_code = response_code;
     EXPECT_CALL(*mock_config(), SecureProxyCheck(_))
         .Times(1)
@@ -163,10 +162,9 @@ class DataReductionProxyConfigTest : public testing::Test {
     test_context_->RunUntilIdle();
     EXPECT_EQ(expected_proxies_for_http, GetConfiguredProxiesForHttp());
 
-    if (!status.is_success() &&
-        status.error() != net::ERR_INTERNET_DISCONNECTED) {
+    if (net_error != net::OK && net_error != net::ERR_INTERNET_DISCONNECTED) {
       histogram_tester.ExpectUniqueSample("DataReductionProxy.ProbeURLNetError",
-                                          std::abs(status.error()), 1);
+                                          std::abs(net_error), 1);
     } else {
       histogram_tester.ExpectTotalCount("DataReductionProxy.ProbeURLNetError",
                                         0);
@@ -182,9 +180,9 @@ class DataReductionProxyConfigTest : public testing::Test {
   std::unique_ptr<DataReductionProxyConfig> BuildConfig(
       std::unique_ptr<DataReductionProxyParams> params) {
     return std::make_unique<DataReductionProxyConfig>(
-        task_runner(), test_context_->net_log(),
+        task_runner(), task_runner(),
         network::TestNetworkConnectionTracker::GetInstance(), std::move(params),
-        test_context_->configurator(), test_context_->event_creator());
+        test_context_->configurator());
   }
 
   MockDataReductionProxyConfig* mock_config() {
@@ -205,12 +203,6 @@ class DataReductionProxyConfigTest : public testing::Test {
     return expected_params_.get();
   }
 
-  DataReductionProxyEventCreator* event_creator() const {
-    return test_context_->event_creator();
-  }
-
-  net::NetLog* net_log() const { return test_context_->net_log(); }
-
   void SetConnectionType(network::mojom::ConnectionType connection_type) {
     network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
         connection_type);
@@ -220,7 +212,8 @@ class DataReductionProxyConfigTest : public testing::Test {
     return test_context_->GetConfiguredProxiesForHttp();
   }
 
-  base::MessageLoopForIO message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
 
   std::unique_ptr<DataReductionProxyTestContext> test_context_;
 
@@ -249,7 +242,8 @@ TEST_F(DataReductionProxyConfigTest, TestReloadConfigHoldback) {
 }
 
 TEST_F(DataReductionProxyConfigTest, TestOnConnectionChangePersistedData) {
-  base::FieldTrialList field_trial_list(nullptr);
+  // The test manually controls the fetch of warmup URL and the response.
+  test_context_->DisableWarmupURLFetchCallback();
 
   const net::ProxyServer kHttpsProxy = net::ProxyServer::FromURI(
       "https://secure_origin.net:443", net::ProxyServer::SCHEME_HTTP);
@@ -292,12 +286,16 @@ TEST_F(DataReductionProxyConfigTest, TestOnConnectionChangePersistedData) {
 }
 
 TEST_F(DataReductionProxyConfigTest, TestOnNetworkChanged) {
+  // The test manually controls the fetch of warmup URL and the response.
+  test_context_->DisableWarmupURLFetchCallback();
+
   RecreateContextWithMockConfig();
-  const net::URLRequestStatus kSuccess(net::URLRequestStatus::SUCCESS, net::OK);
   const net::ProxyServer kHttpsProxy = net::ProxyServer::FromURI(
       "https://secure_origin.net:443", net::ProxyServer::SCHEME_HTTP);
   const net::ProxyServer kHttpProxy = net::ProxyServer::FromURI(
       "insecure_origin.net:80", net::ProxyServer::SCHEME_HTTP);
+
+  int kInvalidResponseCode = -1;
 
   SetProxiesForHttpOnCommandLine({kHttpsProxy, kHttpProxy});
   ResetSettings();
@@ -310,35 +308,35 @@ TEST_F(DataReductionProxyConfigTest, TestOnNetworkChanged) {
   // remains unrestricted.
   CheckSecureProxyCheckOnNetworkChange(
       network::mojom::ConnectionType::CONNECTION_WIFI, "OK", false,
-      net::HTTP_OK, kSuccess, SUCCEEDED_PROXY_ALREADY_ENABLED,
+      net::HTTP_OK, net::OK, SUCCEEDED_PROXY_ALREADY_ENABLED,
       {kHttpsProxy, kHttpProxy});
 
   // Connection change triggers a secure proxy check that succeeds but captive
   // portal fails. Proxy is restricted.
   CheckSecureProxyCheckOnNetworkChange(
       network::mojom::ConnectionType::CONNECTION_WIFI, "OK", true, net::HTTP_OK,
-      kSuccess, SUCCEEDED_PROXY_ALREADY_ENABLED,
+      net::OK, SUCCEEDED_PROXY_ALREADY_ENABLED,
       std::vector<net::ProxyServer>(1, kHttpProxy));
 
   // Connection change triggers a secure proxy check that fails. Proxy is
   // restricted.
   CheckSecureProxyCheckOnNetworkChange(
       network::mojom::ConnectionType::CONNECTION_WIFI, "Bad", false,
-      net::HTTP_OK, kSuccess, FAILED_PROXY_DISABLED,
+      net::HTTP_OK, net::OK, FAILED_PROXY_DISABLED,
       std::vector<net::ProxyServer>(1, kHttpProxy));
 
   // Connection change triggers a secure proxy check that succeeds. Proxies
   // are unrestricted.
   CheckSecureProxyCheckOnNetworkChange(
       network::mojom::ConnectionType::CONNECTION_WIFI, "OK", false,
-      net::HTTP_OK, kSuccess, SUCCEEDED_PROXY_ENABLED,
+      net::HTTP_OK, net::OK, SUCCEEDED_PROXY_ENABLED,
       {kHttpsProxy, kHttpProxy});
 
   // Connection change triggers a secure proxy check that fails. Proxy is
   // restricted.
   CheckSecureProxyCheckOnNetworkChange(
       network::mojom::ConnectionType::CONNECTION_WIFI, "Bad", true,
-      net::HTTP_OK, kSuccess, FAILED_PROXY_DISABLED,
+      net::HTTP_OK, net::OK, FAILED_PROXY_DISABLED,
       std::vector<net::ProxyServer>(1, kHttpProxy));
 
   // Connection change triggers a secure proxy check that fails due to the
@@ -346,23 +344,21 @@ TEST_F(DataReductionProxyConfigTest, TestOnNetworkChanged) {
   // unrestricted.
   CheckSecureProxyCheckOnNetworkChange(
       network::mojom::ConnectionType::CONNECTION_WIFI, std::string(), false,
-      net::URLFetcher::RESPONSE_CODE_INVALID,
-      net::URLRequestStatus(net::URLRequestStatus::FAILED,
-                            net::ERR_INTERNET_DISCONNECTED),
+      kInvalidResponseCode, net::ERR_INTERNET_DISCONNECTED,
       INTERNET_DISCONNECTED, std::vector<net::ProxyServer>(1, kHttpProxy));
 
   // Connection change triggers a secure proxy check that fails. Proxy remains
   // restricted.
   CheckSecureProxyCheckOnNetworkChange(
       network::mojom::ConnectionType::CONNECTION_WIFI, "Bad", false,
-      net::HTTP_OK, kSuccess, FAILED_PROXY_ALREADY_DISABLED,
+      net::HTTP_OK, net::OK, FAILED_PROXY_ALREADY_DISABLED,
       std::vector<net::ProxyServer>(1, kHttpProxy));
 
   // Connection change triggers a secure proxy check that succeeds. Proxy is
   // unrestricted.
   CheckSecureProxyCheckOnNetworkChange(
       network::mojom::ConnectionType::CONNECTION_WIFI, "OK", false,
-      net::HTTP_OK, kSuccess, SUCCEEDED_PROXY_ENABLED,
+      net::HTTP_OK, net::OK, SUCCEEDED_PROXY_ENABLED,
       {kHttpsProxy, kHttpProxy});
 
   // Connection change triggers a secure proxy check that fails due to the
@@ -370,23 +366,19 @@ TEST_F(DataReductionProxyConfigTest, TestOnNetworkChanged) {
   // unrestricted.
   CheckSecureProxyCheckOnNetworkChange(
       network::mojom::ConnectionType::CONNECTION_WIFI, std::string(), false,
-      net::URLFetcher::RESPONSE_CODE_INVALID,
-      net::URLRequestStatus(net::URLRequestStatus::FAILED,
-                            net::ERR_INTERNET_DISCONNECTED),
+      kInvalidResponseCode, net::ERR_INTERNET_DISCONNECTED,
       INTERNET_DISCONNECTED, {kHttpsProxy, kHttpProxy});
 
   // Connection change triggers a secure proxy check that fails because of a
   // redirect response, e.g. by a captive portal. Proxy is restricted.
   CheckSecureProxyCheckOnNetworkChange(
       network::mojom::ConnectionType::CONNECTION_WIFI, "Bad", false,
-      net::HTTP_FOUND,
-      net::URLRequestStatus(net::URLRequestStatus::CANCELED, net::ERR_ABORTED),
-      FAILED_PROXY_DISABLED, std::vector<net::ProxyServer>(1, kHttpProxy));
+      net::HTTP_FOUND, net::ERR_ABORTED, FAILED_PROXY_DISABLED,
+      std::vector<net::ProxyServer>(1, kHttpProxy));
 }
 
 // Verifies that the warm up URL is fetched correctly.
 TEST_F(DataReductionProxyConfigTest, WarmupURL) {
-  const net::URLRequestStatus kSuccess(net::URLRequestStatus::SUCCESS, net::OK);
   const net::ProxyServer kHttpsProxy = net::ProxyServer::FromURI(
       "https://secure_origin.net:443", net::ProxyServer::SCHEME_HTTP);
   const net::ProxyServer kHttpProxy = net::ProxyServer::FromURI(
@@ -419,7 +411,8 @@ TEST_F(DataReductionProxyConfigTest, WarmupURL) {
 
     variations::testing::ClearAllVariationParams();
     std::map<std::string, std::string> variation_params;
-    variation_params["warmup_url"] = warmup_url.spec();
+
+    test_context_->DisableWarmupURLFetchCallback();
 
     ASSERT_TRUE(variations::AssociateVariationParams(
         params::GetQuicFieldTrialName(), "Enabled", variation_params));
@@ -429,15 +422,18 @@ TEST_F(DataReductionProxyConfigTest, WarmupURL) {
                                            "Enabled");
 
     base::CommandLine::ForCurrentProcess()->InitFromArgv(0, nullptr);
-    TestDataReductionProxyConfig config(task_runner(), nullptr,
-                                        configurator(), event_creator());
+    TestDataReductionProxyConfig config(task_runner(), task_runner(),
+                                        configurator());
 
     NetworkPropertiesManager network_properties_manager(
         base::DefaultClock::GetInstance(), test_context_->pref_service(),
         test_context_->task_runner());
-    config.InitializeOnIOThread(test_context_->request_context_getter(),
-                                test_context_->url_loader_factory(),
-                                &network_properties_manager);
+    config.InitializeOnIOThread(
+        test_context_->url_loader_factory(),
+        base::BindRepeating([](const std::vector<DataReductionProxyServer>&) {
+          return network::mojom::CustomProxyConfig::New();
+        }),
+        &network_properties_manager);
     RunUntilIdle();
 
     {
@@ -471,16 +467,8 @@ TEST_F(DataReductionProxyConfigTest, WarmupURL) {
       RunUntilIdle();
 
       if (test.data_reduction_proxy_enabled) {
-        histogram_tester.ExpectUniqueSample(
-            "DataReductionProxy.WarmupURL.FetchInitiated", 1, 1);
-        histogram_tester.ExpectTotalCount(
-            "DataReductionProxy.WarmupURL.FetchAttemptEvent", 2);
-        histogram_tester.ExpectBucketCount(
-            "DataReductionProxy.WarmupURL.FetchAttemptEvent",
-            2 /* kProxyNotEnabledByUser */, 1);
-        histogram_tester.ExpectBucketCount(
-            "DataReductionProxy.WarmupURL.FetchAttemptEvent",
-            0 /* kFetchInitiated */, 1);
+        EXPECT_EQ(1, histogram_tester.GetBucketCount(
+                         "DataReductionProxy.WarmupURL.FetchInitiated", 1));
       } else {
         histogram_tester.ExpectTotalCount(
             "DataReductionProxy.WarmupURL.FetchInitiated", 0);
@@ -502,14 +490,9 @@ TEST_F(DataReductionProxyConfigTest, WarmupURL) {
       if (test.data_reduction_proxy_enabled) {
         histogram_tester.ExpectTotalCount(
             "DataReductionProxy.WarmupURL.FetchInitiated", 0);
-        histogram_tester.ExpectTotalCount(
-            "DataReductionProxy.WarmupURL.FetchAttemptEvent", 2);
-        histogram_tester.ExpectBucketCount(
-            "DataReductionProxy.WarmupURL.FetchAttemptEvent",
-            1 /* kConnectionTypeNone */, 1);
-        histogram_tester.ExpectBucketCount(
-            "DataReductionProxy.WarmupURL.FetchAttemptEvent",
-            2 /* kProxyNotEnabledByUser */, 1);
+        EXPECT_LE(1, histogram_tester.GetBucketCount(
+                         "DataReductionProxy.WarmupURL.FetchAttemptEvent",
+                         1 /* kConnectionTypeNone */));
 
       } else {
         histogram_tester.ExpectTotalCount(
@@ -783,9 +766,9 @@ TEST_F(DataReductionProxyConfigTest,
   ASSERT_LT(0U, expected_proxies.size());
 
   DataReductionProxyConfig config(
-      task_runner(), net_log(),
+      task_runner(), task_runner(),
       network::TestNetworkConnectionTracker::GetInstance(), std::move(params),
-      configurator(), event_creator());
+      configurator());
 
   for (size_t expected_proxy_index = 0U;
        expected_proxy_index < expected_proxies.size(); ++expected_proxy_index) {
@@ -858,9 +841,9 @@ TEST_F(DataReductionProxyConfigTest,
 
   config_values->UpdateValues(proxies_for_http);
   std::unique_ptr<DataReductionProxyConfig> config(new DataReductionProxyConfig(
-      task_runner(), net_log(),
+      task_runner(), task_runner(),
       network::TestNetworkConnectionTracker::GetInstance(),
-      std::move(config_values), configurator(), event_creator()));
+      std::move(config_values), configurator()));
   for (const auto& test : tests) {
     base::Optional<DataReductionProxyTypeInfo> proxy_type_info =
         config->FindConfiguredDataReductionProxy(
@@ -876,7 +859,6 @@ TEST_F(DataReductionProxyConfigTest,
 
 TEST_F(DataReductionProxyConfigTest, HandleWarmupFetcherResponse) {
   base::HistogramTester histogram_tester;
-  const net::URLRequestStatus kSuccess(net::URLRequestStatus::SUCCESS, net::OK);
   const net::ProxyServer kHttpsProxy = net::ProxyServer::FromURI(
       "https://origin.net:443", net::ProxyServer::SCHEME_HTTP);
   const net::ProxyServer kHttpProxy = net::ProxyServer::FromURI(
@@ -1026,7 +1008,6 @@ TEST_F(DataReductionProxyConfigTest, HandleWarmupFetcherResponse) {
 // as failed when the warmup fetched callback returns an invalid proxy.
 TEST_F(DataReductionProxyConfigTest,
        HandleWarmupFetcherResponse_InvalidProxyServer) {
-  const net::URLRequestStatus kSuccess(net::URLRequestStatus::SUCCESS, net::OK);
   const net::ProxyServer kHttpsProxy = net::ProxyServer::FromURI(
       "https://origin.net:443", net::ProxyServer::SCHEME_HTTP);
   const net::ProxyServer kHttpProxy = net::ProxyServer::FromURI(
@@ -1054,7 +1035,6 @@ TEST_F(DataReductionProxyConfigTest,
 // as failed when the warmup fetched callback returns a direct proxy.
 TEST_F(DataReductionProxyConfigTest,
        HandleWarmupFetcherResponse_DirectProxyServer) {
-  const net::URLRequestStatus kSuccess(net::URLRequestStatus::SUCCESS, net::OK);
   const net::ProxyServer kHttpsProxy = net::ProxyServer::FromURI(
       "https://origin.net:443", net::ProxyServer::SCHEME_HTTP);
   const net::ProxyServer kHttpProxy = net::ProxyServer::FromURI(
@@ -1081,8 +1061,10 @@ TEST_F(DataReductionProxyConfigTest,
 TEST_F(DataReductionProxyConfigTest, HandleWarmupFetcherRetry) {
   constexpr size_t kMaxWarmupURLFetchAttempts = 3;
 
+  // The test manually controls the fetch of warmup URL and the response.
+  test_context_->DisableWarmupURLFetchCallback();
+
   base::HistogramTester histogram_tester;
-  const net::URLRequestStatus kSuccess(net::URLRequestStatus::SUCCESS, net::OK);
   const net::ProxyServer kHttpsProxy = net::ProxyServer::FromURI(
       "https://origin.net:443", net::ProxyServer::SCHEME_HTTP);
   const net::ProxyServer kHttpProxy = net::ProxyServer::FromURI(
@@ -1220,8 +1202,10 @@ TEST_F(DataReductionProxyConfigTest, HandleWarmupFetcherRetry) {
 
 // Tests the behavior when warmup URL fetcher times out.
 TEST_F(DataReductionProxyConfigTest, HandleWarmupFetcherTimeout) {
+  // The test manually controls the fetch of warmup URL and the response.
+  test_context_->DisableWarmupURLFetchCallback();
+
   base::HistogramTester histogram_tester;
-  const net::URLRequestStatus kSuccess(net::URLRequestStatus::SUCCESS, net::OK);
   const net::ProxyServer kHttpsProxy = net::ProxyServer::FromURI(
       "https://origin.net:443", net::ProxyServer::SCHEME_HTTP);
   const net::ProxyServer kHttpProxy = net::ProxyServer::FromURI(
@@ -1276,10 +1260,12 @@ TEST_F(DataReductionProxyConfigTest, HandleWarmupFetcherTimeout) {
 
 TEST_F(DataReductionProxyConfigTest,
        HandleWarmupFetcherRetryWithConnectionChange) {
+  // The test manually controls the fetch of warmup URL and the response.
+  test_context_->DisableWarmupURLFetchCallback();
+
   constexpr size_t kMaxWarmupURLFetchAttempts = 3;
 
   base::HistogramTester histogram_tester;
-  const net::URLRequestStatus kSuccess(net::URLRequestStatus::SUCCESS, net::OK);
   const net::ProxyServer kHttpsProxy = net::ProxyServer::FromURI(
       "https://origin.net:443", net::ProxyServer::SCHEME_HTTP);
   const net::ProxyServer kHttpProxy = net::ProxyServer::FromURI(

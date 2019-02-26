@@ -24,8 +24,6 @@
 
 #include <utility>
 
-#include "fxbarcode/utils.h"
-
 CBC_QRCoderMode* CBC_QRCoderMode::sBYTE = nullptr;
 CBC_QRCoderMode* CBC_QRCoderMode::sNUMERIC = nullptr;
 CBC_QRCoderMode* CBC_QRCoderMode::sALPHANUMERIC = nullptr;
@@ -75,34 +73,6 @@ void CBC_QRCoderMode::Finalize() {
   delete sSTRUCTURED_APPEND;
 }
 
-CBC_QRCoderMode* CBC_QRCoderMode::ForBits(int32_t bits, int32_t& e) {
-  switch (bits) {
-    case 0x0:
-      return sTERMINATOR;
-    case 0x1:
-      return sNUMERIC;
-    case 0x2:
-      return sALPHANUMERIC;
-    case 0x3:
-      return sSTRUCTURED_APPEND;
-    case 0x4:
-      return sBYTE;
-    case 0x5:
-      return sFNC1_FIRST_POSITION;
-    case 0x7:
-      return sECI;
-    case 0x8:
-      return sKANJI;
-    case 0x9:
-      return sFNC1_SECOND_POSITION;
-    case 0x0D:
-      return sGBK;
-    default:
-      e = BCExceptionUnsupportedMode;
-      return nullptr;
-  }
-}
-
 int32_t CBC_QRCoderMode::GetBits() const {
   return m_bits;
 }
@@ -111,21 +81,21 @@ ByteString CBC_QRCoderMode::GetName() const {
   return m_name;
 }
 
-int32_t CBC_QRCoderMode::GetCharacterCountBits(int32_t number,
-                                               int32_t& e) const {
-  if (m_characterCountBitsForVersions.empty()) {
-    e = BCExceptionCharacterNotThisMode;
+int32_t CBC_QRCoderMode::GetCharacterCountBits(int32_t number) const {
+  if (m_characterCountBitsForVersions.empty())
     return 0;
-  }
+
   int32_t offset;
-  if (number <= 9) {
+  if (number <= 9)
     offset = 0;
-  } else if (number <= 26) {
+  else if (number <= 26)
     offset = 1;
-  } else {
+  else
     offset = 2;
-  }
-  return m_characterCountBitsForVersions[offset];
+
+  int32_t result = m_characterCountBitsForVersions[offset];
+  ASSERT(result != 0);
+  return result;
 }
 
 void CBC_QRCoderMode::Destroy() {

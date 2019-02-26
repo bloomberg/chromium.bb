@@ -83,6 +83,8 @@ const char kChromeUICrashDcheckURL[] = "chrome://crash/dcheck";
 // have a chrome:// scheme that might let it be confused with a WebUI page.
 const char kUnreachableWebDataURL[] = "chrome-error://chromewebdata/";
 
+const char kBlockedURL[] = "about:blank#blocked";
+
 const char kChromeUIResourcesURL[] = "chrome://resources/";
 const char kChromeUIShorthangURL[] = "chrome://shorthang/";
 

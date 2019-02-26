@@ -4,18 +4,19 @@
 
 #include "third_party/blink/renderer/modules/storage/storage_controller.h"
 
+#include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/platform/scheduler/test/fake_renderer_scheduler.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/renderer/modules/storage/storage_namespace.h"
 #include "third_party/blink/renderer/modules/storage/testing/fake_area_source.h"
 #include "third_party/blink/renderer/modules/storage/testing/mock_storage_area.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/uuid.h"
-#include "third_party/blink/renderer/platform/web_task_runner.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -54,9 +55,8 @@ TEST(StorageControllerTest, CacheLimit) {
   const String kKey("key");
   const String kValue("value");
   const KURL kPageUrl("http://dom_storage/page");
-  Persistent<FakeAreaSource> source_area = new FakeAreaSource(kPageUrl);
-
-  blink::scheduler::FakeRendererScheduler renderer_scheduler;
+  Persistent<FakeAreaSource> source_area =
+      MakeGarbageCollected<FakeAreaSource>(kPageUrl);
 
   mojom::blink::StoragePartitionServicePtr storage_partition_service_ptr;
   PostCrossThreadTask(
@@ -69,7 +69,7 @@ TEST(StorageControllerTest, CacheLimit) {
           },
           WTF::Passed(MakeRequest(&storage_partition_service_ptr))));
 
-  StorageController controller(renderer_scheduler.IPCTaskRunner(),
+  StorageController controller(scheduler::GetSingleThreadTaskRunnerForTesting(),
                                std::move(storage_partition_service_ptr),
                                kTestCacheLimit);
 
@@ -110,9 +110,9 @@ TEST(StorageControllerTest, CacheLimitSessionStorage) {
   const String kValue("value");
   const KURL kPageUrl("http://dom_storage/page");
 
-  Persistent<FakeAreaSource> source_area = new FakeAreaSource(kPageUrl);
+  Persistent<FakeAreaSource> source_area =
+      MakeGarbageCollected<FakeAreaSource>(kPageUrl);
 
-  blink::scheduler::FakeRendererScheduler renderer_scheduler;
   auto task_runner = base::CreateSequencedTaskRunnerWithTraits({});
 
   auto mock_storage_partition_service =
@@ -131,9 +131,8 @@ TEST(StorageControllerTest, CacheLimitSessionStorage) {
           },
           WTF::Passed(std::move(mock_storage_partition_service)),
           WTF::Passed(MakeRequest(&storage_partition_service_ptr))));
-  StorageController controller(renderer_scheduler.IPCTaskRunner(),
-                               std::move(storage_partition_service_ptr),
-                               kTestCacheLimit);
+  StorageController controller(
+      nullptr, std::move(storage_partition_service_ptr), kTestCacheLimit);
 
   StorageNamespace* ns1 = controller.CreateSessionStorageNamespace(kNamespace1);
   StorageNamespace* ns2 = controller.CreateSessionStorageNamespace(kNamespace2);

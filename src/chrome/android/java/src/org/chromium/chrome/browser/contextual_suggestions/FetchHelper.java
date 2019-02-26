@@ -190,7 +190,7 @@ class FetchHelper {
             }
 
             @Override
-            public void onPageLoadFinished(Tab tab) {
+            public void onPageLoadFinished(Tab tab, String url) {
                 setTimeBaselineAndMaybeFetch(tab);
             }
 

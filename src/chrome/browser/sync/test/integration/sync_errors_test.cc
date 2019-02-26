@@ -38,8 +38,8 @@ class SyncDisabledChecker : public SingleClientStatusChangeChecker {
   }
 
   bool IsExitConditionSatisfied() override {
-    bool satisfied =
-        !service()->IsSetupInProgress() && !service()->IsFirstSetupComplete();
+    bool satisfied = !service()->IsSetupInProgress() &&
+                     !service()->GetUserSettings()->IsFirstSetupComplete();
     if (satisfied && condition_satisfied_callback_) {
       std::move(condition_satisfied_callback_).Run();
     }

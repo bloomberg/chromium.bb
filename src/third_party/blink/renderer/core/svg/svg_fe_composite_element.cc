@@ -21,43 +21,39 @@
 #include "third_party/blink/renderer/core/svg/svg_fe_composite_element.h"
 
 #include "third_party/blink/renderer/core/svg/graphics/filters/svg_filter_builder.h"
+#include "third_party/blink/renderer/core/svg/svg_enumeration_map.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 
 namespace blink {
 
 template <>
-const SVGEnumerationStringEntries&
-GetStaticStringEntries<CompositeOperationType>() {
-  DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
-  if (entries.IsEmpty()) {
-    entries.push_back(std::make_pair(FECOMPOSITE_OPERATOR_OVER, "over"));
-    entries.push_back(std::make_pair(FECOMPOSITE_OPERATOR_IN, "in"));
-    entries.push_back(std::make_pair(FECOMPOSITE_OPERATOR_OUT, "out"));
-    entries.push_back(std::make_pair(FECOMPOSITE_OPERATOR_ATOP, "atop"));
-    entries.push_back(std::make_pair(FECOMPOSITE_OPERATOR_XOR, "xor"));
-    entries.push_back(
-        std::make_pair(FECOMPOSITE_OPERATOR_ARITHMETIC, "arithmetic"));
-    entries.push_back(std::make_pair(FECOMPOSITE_OPERATOR_LIGHTER, "lighter"));
-  }
+const SVGEnumerationMap& GetEnumerationMap<CompositeOperationType>() {
+  static const SVGEnumerationMap::Entry enum_items[] = {
+      {FECOMPOSITE_OPERATOR_OVER, "over"},
+      {FECOMPOSITE_OPERATOR_IN, "in"},
+      {FECOMPOSITE_OPERATOR_OUT, "out"},
+      {FECOMPOSITE_OPERATOR_ATOP, "atop"},
+      {FECOMPOSITE_OPERATOR_XOR, "xor"},
+      {FECOMPOSITE_OPERATOR_ARITHMETIC, "arithmetic"},
+      {FECOMPOSITE_OPERATOR_LIGHTER, "lighter"},
+  };
+  static const SVGEnumerationMap entries(enum_items,
+                                         FECOMPOSITE_OPERATOR_ARITHMETIC);
   return entries;
 }
 
-template <>
-unsigned short GetMaxExposedEnumValue<CompositeOperationType>() {
-  return FECOMPOSITE_OPERATOR_ARITHMETIC;
-}
-
 inline SVGFECompositeElement::SVGFECompositeElement(Document& document)
-    : SVGFilterPrimitiveStandardAttributes(SVGNames::feCompositeTag, document),
-      k1_(SVGAnimatedNumber::Create(this, SVGNames::k1Attr, 0.0f)),
-      k2_(SVGAnimatedNumber::Create(this, SVGNames::k2Attr, 0.0f)),
-      k3_(SVGAnimatedNumber::Create(this, SVGNames::k3Attr, 0.0f)),
-      k4_(SVGAnimatedNumber::Create(this, SVGNames::k4Attr, 0.0f)),
-      in1_(SVGAnimatedString::Create(this, SVGNames::inAttr)),
-      in2_(SVGAnimatedString::Create(this, SVGNames::in2Attr)),
+    : SVGFilterPrimitiveStandardAttributes(svg_names::kFECompositeTag,
+                                           document),
+      k1_(SVGAnimatedNumber::Create(this, svg_names::kK1Attr, 0.0f)),
+      k2_(SVGAnimatedNumber::Create(this, svg_names::kK2Attr, 0.0f)),
+      k3_(SVGAnimatedNumber::Create(this, svg_names::kK3Attr, 0.0f)),
+      k4_(SVGAnimatedNumber::Create(this, svg_names::kK4Attr, 0.0f)),
+      in1_(SVGAnimatedString::Create(this, svg_names::kInAttr)),
+      in2_(SVGAnimatedString::Create(this, svg_names::kIn2Attr)),
       svg_operator_(SVGAnimatedEnumeration<CompositeOperationType>::Create(
           this,
-          SVGNames::operatorAttr,
+          svg_names::kOperatorAttr,
           FECOMPOSITE_OPERATOR_OVER)) {
   AddToPropertyMap(k1_);
   AddToPropertyMap(k2_);
@@ -85,15 +81,15 @@ bool SVGFECompositeElement::SetFilterEffectAttribute(
     FilterEffect* effect,
     const QualifiedName& attr_name) {
   FEComposite* composite = static_cast<FEComposite*>(effect);
-  if (attr_name == SVGNames::operatorAttr)
+  if (attr_name == svg_names::kOperatorAttr)
     return composite->SetOperation(svg_operator_->CurrentValue()->EnumValue());
-  if (attr_name == SVGNames::k1Attr)
+  if (attr_name == svg_names::kK1Attr)
     return composite->SetK1(k1_->CurrentValue()->Value());
-  if (attr_name == SVGNames::k2Attr)
+  if (attr_name == svg_names::kK2Attr)
     return composite->SetK2(k2_->CurrentValue()->Value());
-  if (attr_name == SVGNames::k3Attr)
+  if (attr_name == svg_names::kK3Attr)
     return composite->SetK3(k3_->CurrentValue()->Value());
-  if (attr_name == SVGNames::k4Attr)
+  if (attr_name == svg_names::kK4Attr)
     return composite->SetK4(k4_->CurrentValue()->Value());
 
   return SVGFilterPrimitiveStandardAttributes::SetFilterEffectAttribute(
@@ -102,15 +98,15 @@ bool SVGFECompositeElement::SetFilterEffectAttribute(
 
 void SVGFECompositeElement::SvgAttributeChanged(
     const QualifiedName& attr_name) {
-  if (attr_name == SVGNames::operatorAttr || attr_name == SVGNames::k1Attr ||
-      attr_name == SVGNames::k2Attr || attr_name == SVGNames::k3Attr ||
-      attr_name == SVGNames::k4Attr) {
+  if (attr_name == svg_names::kOperatorAttr ||
+      attr_name == svg_names::kK1Attr || attr_name == svg_names::kK2Attr ||
+      attr_name == svg_names::kK3Attr || attr_name == svg_names::kK4Attr) {
     SVGElement::InvalidationGuard invalidation_guard(this);
     PrimitiveAttributeChanged(attr_name);
     return;
   }
 
-  if (attr_name == SVGNames::inAttr || attr_name == SVGNames::in2Attr) {
+  if (attr_name == svg_names::kInAttr || attr_name == svg_names::kIn2Attr) {
     SVGElement::InvalidationGuard invalidation_guard(this);
     Invalidate();
     return;

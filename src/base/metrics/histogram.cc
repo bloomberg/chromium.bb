@@ -93,7 +93,7 @@ typedef HistogramBase::Count Count;
 typedef HistogramBase::Sample Sample;
 
 // static
-const uint32_t Histogram::kBucketCount_MAX = 16384u;
+const uint32_t Histogram::kBucketCount_MAX = 10002u;
 
 class Histogram::Factory {
  public:
@@ -341,6 +341,7 @@ void Histogram::InitializeBucketRanges(Sample minimum,
   while (bucket_count > ++bucket_index) {
     double log_current;
     log_current = log(static_cast<double>(current));
+    debug::Alias(&log_current);
     // Calculate the count'th root of the range.
     log_ratio = (log_max - log_current) / (bucket_count - bucket_index);
     // See where the next bucket would start.
@@ -421,27 +422,37 @@ bool Histogram::InspectConstructionArguments(StringPiece name,
                                              Sample* minimum,
                                              Sample* maximum,
                                              uint32_t* bucket_count) {
+  bool check_okay = true;
+
+  // Checks below must be done after any min/max swap.
+  if (*minimum > *maximum) {
+    check_okay = false;
+    std::swap(*minimum, *maximum);
+  }
+
   // Defensive code for backward compatibility.
   if (*minimum < 1) {
     DVLOG(1) << "Histogram: " << name << " has bad minimum: " << *minimum;
     *minimum = 1;
+    if (*maximum < 1)
+      *maximum = 1;
   }
   if (*maximum >= kSampleType_MAX) {
     DVLOG(1) << "Histogram: " << name << " has bad maximum: " << *maximum;
     *maximum = kSampleType_MAX - 1;
   }
   if (*bucket_count >= kBucketCount_MAX) {
+    check_okay = false;
     DVLOG(1) << "Histogram: " << name << " has bad bucket_count: "
              << *bucket_count;
     *bucket_count = kBucketCount_MAX - 1;
   }
-
-  bool check_okay = true;
-
-  if (*minimum > *maximum) {
-    check_okay = false;
-    std::swap(*minimum, *maximum);
+  if (*bucket_count > 1002) {
+    UmaHistogramSparse("Histogram.TooManyBuckets.1000",
+                       static_cast<Sample>(HashMetricName(name)));
   }
+
+  // Ensure parameters are sane.
   if (*maximum == *minimum) {
     check_okay = false;
     *maximum = *minimum + 1;
@@ -449,13 +460,6 @@ bool Histogram::InspectConstructionArguments(StringPiece name,
   if (*bucket_count < 3) {
     check_okay = false;
     *bucket_count = 3;
-  }
-  // Very high bucket counts are wasteful. Use a sparse histogram instead.
-  // Value of 10002 equals a user-supplied value of 10k + 2 overflow buckets.
-  constexpr uint32_t kMaxBucketCount = 10002;
-  if (*bucket_count > kMaxBucketCount) {
-    check_okay = false;
-    *bucket_count = kMaxBucketCount;
   }
   if (*bucket_count > static_cast<uint32_t>(*maximum - *minimum + 2)) {
     check_okay = false;
@@ -921,6 +925,18 @@ HistogramBase* LinearHistogram::FactoryGetWithRangeDescription(
     uint32_t bucket_count,
     int32_t flags,
     const DescriptionPair descriptions[]) {
+  // Originally, histograms were required to have at least one sample value
+  // plus underflow and overflow buckets. For single-entry enumerations,
+  // that one value is usually zero (which IS the underflow bucket)
+  // resulting in a |maximum| value of 1 (the exclusive upper-bound) and only
+  // the two outlier buckets. Handle this by making max==2 and buckets==3.
+  // This usually won't have any cost since the single-value-optimization
+  // will be used until the count exceeds 16 bits.
+  if (maximum == 1 && bucket_count == 2) {
+    maximum = 2;
+    bucket_count = 3;
+  }
+
   bool valid_arguments = Histogram::InspectConstructionArguments(
       name, &minimum, &maximum, &bucket_count);
   DCHECK(valid_arguments);

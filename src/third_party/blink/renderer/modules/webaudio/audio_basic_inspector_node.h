@@ -44,7 +44,7 @@ class AudioBasicInspectorHandler : public AudioHandler {
                              unsigned output_channel_count);
 
   // AudioHandler
-  void PullInputs(size_t frames_to_process) final;
+  void PullInputs(uint32_t frames_to_process) final;
   void CheckNumberOfChannelsForInput(AudioNodeInput*) final;
 
   // AudioNode

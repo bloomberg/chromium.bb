@@ -21,13 +21,11 @@
 #include "media/base/unaligned_shared_memory.h"
 #include "media/base/video_frame.h"
 #include "media/filters/jpeg_parser.h"
+#include "media/gpu/macros.h"
 #include "media/gpu/vaapi/vaapi_picture.h"
 #include "media/gpu/vaapi/vaapi_utils.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "third_party/libyuv/include/libyuv.h"
-
-#define VLOGF(level) VLOG(level) << __func__ << "(): "
-#define DVLOGF(level) DVLOG(level) << __func__ << "(): "
 
 namespace media {
 
@@ -455,13 +453,13 @@ void VaapiJpegDecodeAccelerator::DecodeTask(
                            parse_result.frame_header.coded_height);
   if (new_coded_size != coded_size_ || va_surface_id_ == VA_INVALID_SURFACE ||
       picture_va_rt_format != va_rt_format_) {
-    vaapi_wrapper_->DestroySurfaces();
+    vaapi_wrapper_->DestroyContextAndSurfaces();
     va_surface_id_ = VA_INVALID_SURFACE;
     va_rt_format_ = picture_va_rt_format;
 
     std::vector<VASurfaceID> va_surfaces;
-    if (!vaapi_wrapper_->CreateSurfaces(va_rt_format_, new_coded_size, 1,
-                                        &va_surfaces)) {
+    if (!vaapi_wrapper_->CreateContextAndSurfaces(va_rt_format_, new_coded_size,
+                                                  1, &va_surfaces)) {
       VLOGF(1) << "Create VA surface failed";
       NotifyError(bitstream_buffer_id, PLATFORM_FAILURE);
       return;

@@ -91,14 +91,10 @@ class ArcVpnProviderTest : public AppListTestBase {
   }
 
   void AddArcPackage(const std::string& package_name, bool vpn_provider) {
-    arc::mojom::ArcPackageInfo package;
-    package.package_name = package_name;
-    package.package_version = 0;
-    package.last_backup_android_id = 0;
-    package.last_backup_time = 0;
-    package.sync = false;
-    package.vpn_provider = vpn_provider;
-    app_instance()->SendPackageAdded(package);
+    app_instance()->SendPackageAdded(arc::mojom::ArcPackageInfo::New(
+        package_name, 0 /* package_version */, 0 /* last_backup_android_id */,
+        0 /* last_backup_time */, false /* sync */, false /* system */,
+        vpn_provider));
   }
 
   void RemovePackage(const std::string& package_name) {
@@ -119,8 +115,7 @@ class ArcVpnProviderTest : public AppListTestBase {
 TEST_F(ArcVpnProviderTest, ArcVpnProviderUpdateCount) {
   // Starts with no arc vpn provider.
   app_instance()->SendRefreshAppList(std::vector<arc::mojom::AppInfo>());
-  app_instance()->SendRefreshPackageList(
-      std::vector<arc::mojom::ArcPackageInfo>());
+  app_instance()->SendRefreshPackageList({});
 
   // Arc Vpn Observer should observe Arc Vpn app installation.
   AddArcApp(kVpnAppName, kVpnPackageName, kVpnAppActivity);

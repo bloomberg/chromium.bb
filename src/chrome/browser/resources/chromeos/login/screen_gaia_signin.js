@@ -635,7 +635,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     onBeforeHide: function() {
       chrome.send('loginUIStateChanged', ['gaia-signin', false]);
-      $('login-header-bar').signinUIState = SIGNIN_UI_STATE.HIDDEN;
       $('offline-gaia').switchToEmailCard(false /* animated */);
     },
 
@@ -1101,16 +1100,10 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
         chrome.send(
             'completeOfflineAuthentication',
             [credentials.email, credentials.password]);
-      } else if (credentials.authCode) {
+      } else {
         chrome.send('completeAuthentication', [
           credentials.gaiaId, credentials.email, credentials.password,
-          credentials.authCode, credentials.usingSAML, credentials.gapsCookie,
-          credentials.services
-        ]);
-      } else {
-        chrome.send('completeLogin', [
-          credentials.gaiaId, credentials.email, credentials.password,
-          credentials.usingSAML
+          credentials.usingSAML, credentials.services
         ]);
       }
 

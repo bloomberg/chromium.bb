@@ -14,16 +14,30 @@
 
 import {DraftObject} from 'immer';
 
-import {defaultTraceTime, State, Status, TraceTime} from './state';
+import {assertExists} from '../base/logging';
+import {ConvertTrace} from '../controller/trace_converter';
+
+import {
+  createEmptyState,
+  RecordConfig,
+  SCROLLING_TRACK_GROUP,
+  State,
+  Status,
+  TraceTime,
+} from './state';
 
 type StateDraft = DraftObject<State>;
 
 
 function clearTraceState(state: StateDraft) {
-  state.traceTime = defaultTraceTime;
-  state.visibleTraceTime = defaultTraceTime;
-  state.pinnedTracks = [];
-  state.scrollingTracks = [];
+  const nextId = state.nextId;
+  const recordConfig = state.recordConfig;
+  const route = state.route;
+
+  Object.assign(state, createEmptyState());
+  state.nextId = nextId;
+  state.recordConfig = recordConfig;
+  state.route = route;
 }
 
 export const StateActions = {
@@ -43,6 +57,10 @@ export const StateActions = {
     state.route = `/viewer`;
   },
 
+  convertTraceToJson(_: StateDraft, args: {file: File}): void {
+    ConvertTrace(args.file);
+  },
+
   openTraceFromUrl(state: StateDraft, args: {url: string}): void {
     clearTraceState(state);
     const id = `${state.nextId++}`;
@@ -54,18 +72,39 @@ export const StateActions = {
     state.route = `/viewer`;
   },
 
-  addTrack(
-      state: StateDraft,
-      args: {engineId: string; kind: string; name: string; config: {};}): void {
-    const id = `${state.nextId++}`;
+  addTrack(state: StateDraft, args: {
+    id?: string; engineId: string; kind: string; name: string;
+    trackGroup?: string;
+    config: {};
+  }): void {
+    const id = args.id !== undefined ? args.id : `${state.nextId++}`;
     state.tracks[id] = {
       id,
       engineId: args.engineId,
       kind: args.kind,
       name: args.name,
+      trackGroup: args.trackGroup,
       config: args.config,
     };
-    state.scrollingTracks.push(id);
+    if (args.trackGroup === SCROLLING_TRACK_GROUP) {
+      state.scrollingTracks.push(id);
+    } else if (args.trackGroup !== undefined) {
+      assertExists(state.trackGroups[args.trackGroup]).tracks.push(id);
+    }
+  },
+
+  addTrackGroup(
+      state: StateDraft,
+      // Define ID in action so a track group can be referred to without running
+      // the reducer.
+      args: {
+        engineId: string; name: string; id: string; summaryTrackId: string;
+        collapsed: boolean;
+      }): void {
+    state.trackGroups[args.id] = {
+      ...args,
+      tracks: [],
+    };
   },
 
   reqTrackData(state: StateDraft, args: {
@@ -99,51 +138,64 @@ export const StateActions = {
   },
 
   moveTrack(
-      state: StateDraft, args: {trackId: string; direction: 'up' | 'down';}):
-      void {
-        const id = args.trackId;
-        const isPinned = state.pinnedTracks.includes(id);
-        const isScrolling = state.scrollingTracks.includes(id);
-        if (!isScrolling && !isPinned) {
-          throw new Error(`No track with id ${id}`);
+      state: StateDraft,
+      args: {srcId: string; op: 'before' | 'after', dstId: string}): void {
+    const moveWithinTrackList = (trackList: string[]) => {
+      const newList: string[] = [];
+      for (let i = 0; i < trackList.length; i++) {
+        const curTrackId = trackList[i];
+        if (curTrackId === args.dstId && args.op === 'before') {
+          newList.push(args.srcId);
         }
-        const tracks = isPinned ? state.pinnedTracks : state.scrollingTracks;
+        if (curTrackId !== args.srcId) {
+          newList.push(curTrackId);
+        }
+        if (curTrackId === args.dstId && args.op === 'after') {
+          newList.push(args.srcId);
+        }
+      }
+      trackList.splice(0);
+      newList.forEach(x => {
+        trackList.push(x);
+      });
+    };
 
-        const oldIndex: number = tracks.indexOf(id);
-        const newIndex = args.direction === 'up' ? oldIndex - 1 : oldIndex + 1;
-        const swappedTrackId = tracks[newIndex];
-        if (isPinned && newIndex === state.pinnedTracks.length) {
-          // Move from last element of pinned to first element of scrolling.
-          state.scrollingTracks.unshift(state.pinnedTracks.pop()!);
-        } else if (isScrolling && newIndex === -1) {
-          // Move first element of scrolling to last element of pinned.
-          state.pinnedTracks.push(state.scrollingTracks.shift()!);
-        } else if (swappedTrackId) {
-          tracks[newIndex] = id;
-          tracks[oldIndex] = swappedTrackId;
-        }
-      },
+    moveWithinTrackList(state.pinnedTracks);
+    moveWithinTrackList(state.scrollingTracks);
+  },
 
   toggleTrackPinned(state: StateDraft, args: {trackId: string}): void {
     const id = args.trackId;
     const isPinned = state.pinnedTracks.includes(id);
+    const trackGroup = assertExists(state.tracks[id]).trackGroup;
 
     if (isPinned) {
       state.pinnedTracks.splice(state.pinnedTracks.indexOf(id), 1);
-      state.scrollingTracks.unshift(id);
+      if (trackGroup === SCROLLING_TRACK_GROUP) {
+        state.scrollingTracks.unshift(id);
+      }
     } else {
-      state.scrollingTracks.splice(state.scrollingTracks.indexOf(id), 1);
+      if (trackGroup === SCROLLING_TRACK_GROUP) {
+        state.scrollingTracks.splice(state.scrollingTracks.indexOf(id), 1);
+      }
       state.pinnedTracks.push(id);
     }
   },
+
+  toggleTrackGroupCollapsed(state: StateDraft, args: {trackGroupId: string}):
+      void {
+        const id = args.trackGroupId;
+        const trackGroup = assertExists(state.trackGroups[id]);
+        trackGroup.collapsed = !trackGroup.collapsed;
+      },
 
   setEngineReady(state: StateDraft, args: {engineId: string; ready: boolean}):
       void {
         state.engines[args.engineId].ready = args.ready;
       },
 
-  createPermalink(state: StateDraft, args: {requestId: string}): void {
-    state.permalink = {requestId: args.requestId, hash: undefined};
+  createPermalink(state: StateDraft, _: {}): void {
+    state.permalink = {requestId: `${state.nextId++}`, hash: undefined};
   },
 
   setPermalink(state: StateDraft, args: {requestId: string; hash: string}):
@@ -153,10 +205,16 @@ export const StateActions = {
         state.permalink = args;
       },
 
-  loadPermalink(state: StateDraft, args: {requestId: string; hash: string}):
-      void {
-        state.permalink = args;
-      },
+  loadPermalink(state: StateDraft, args: {hash: string}): void {
+    state.permalink = {
+      requestId: `${state.nextId++}`,
+      hash: args.hash,
+    };
+  },
+
+  clearPermalink(state: StateDraft, _: {}): void {
+    state.permalink = {};
+  },
 
   setTraceTime(state: StateDraft, args: TraceTime): void {
     state.traceTime = args;
@@ -177,8 +235,48 @@ export const StateActions = {
     // so it appears on the proxy Actions class.
     throw new Error('Called setState on StateActions.');
   },
-};
 
+  setConfig(state: StateDraft, args: {config: RecordConfig;}): void {
+    state.recordConfig = args.config;
+  },
+
+  // TODO(hjd): Parametrize this to increase type safety. See comments on
+  // aosp/778194
+  setConfigControl(
+      state: StateDraft,
+      args: {name: string; value: string | number | boolean | null;}): void {
+    const config = state.recordConfig;
+    config[args.name] = args.value;
+  },
+
+  addConfigControl(
+      state: StateDraft, args: {name: string; optionsToAdd: string[];}): void {
+    // tslint:disable-next-line no-any
+    const config = state.recordConfig as any;
+    const options = config[args.name];
+    for (const option of args.optionsToAdd) {
+      if (options.includes(option)) continue;
+      options.push(option);
+    }
+  },
+
+  removeConfigControl(
+      state: StateDraft, args: {name: string; optionsToRemove: string[];}):
+      void {
+        // tslint:disable-next-line no-any
+        const config = state.recordConfig as any;
+        const options = config[args.name];
+        for (const option of args.optionsToRemove) {
+          const index = options.indexOf(option);
+          if (index === -1) continue;
+          options.splice(index, 1);
+        }
+      },
+
+  toggleDisplayConfigAsPbtxt(state: StateDraft, _: {}): void {
+    state.displayConfigAsPbtxt = !state.displayConfigAsPbtxt;
+  },
+};
 
 // When we are on the frontend side, we don't really want to execute the
 // actions above, we just want to serialize them and marshal their

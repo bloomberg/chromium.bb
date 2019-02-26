@@ -51,15 +51,25 @@ class SVGAnimatedInteger : public ScriptWrappable,
                                     const QualifiedName& attribute_name,
                                     int initial) {
     SVGInteger* initial_value = SVGInteger::Create(initial);
-    return new SVGAnimatedInteger(context_element, attribute_name,
-                                  initial_value);
+    return MakeGarbageCollected<SVGAnimatedInteger>(
+        context_element, attribute_name, initial_value);
   }
   static SVGAnimatedInteger* Create(SVGElement* context_element,
                                     const QualifiedName& attribute_name,
                                     SVGInteger* initial_value) {
-    return new SVGAnimatedInteger(context_element, attribute_name,
-                                  initial_value);
+    return MakeGarbageCollected<SVGAnimatedInteger>(
+        context_element, attribute_name, initial_value);
   }
+
+  SVGAnimatedInteger(SVGElement* context_element,
+                     const QualifiedName& attribute_name,
+                     SVGInteger* initial_value)
+      : SVGAnimatedProperty<SVGInteger>(context_element,
+                                        attribute_name,
+                                        initial_value,
+                                        CSSPropertyInvalid,
+                                        initial_value->Value()),
+        parent_integer_optional_integer_(nullptr) {}
 
   void SynchronizeAttribute() override;
 
@@ -71,16 +81,6 @@ class SVGAnimatedInteger : public ScriptWrappable,
   void Trace(blink::Visitor*) override;
 
  protected:
-  SVGAnimatedInteger(SVGElement* context_element,
-                     const QualifiedName& attribute_name,
-                     SVGInteger* initial_value)
-      : SVGAnimatedProperty<SVGInteger>(context_element,
-                                        attribute_name,
-                                        initial_value,
-                                        CSSPropertyInvalid,
-                                        initial_value->Value()),
-        parent_integer_optional_integer_(nullptr) {}
-
   Member<SVGAnimatedIntegerOptionalInteger> parent_integer_optional_integer_;
 };
 

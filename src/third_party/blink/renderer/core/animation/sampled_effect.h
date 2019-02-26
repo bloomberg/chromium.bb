@@ -20,8 +20,10 @@ class SampledEffect : public GarbageCollectedFinalized<SampledEffect> {
  public:
   static SampledEffect* Create(KeyframeEffect* effect,
                                unsigned sequence_number) {
-    return new SampledEffect(effect, sequence_number);
+    return MakeGarbageCollected<SampledEffect>(effect, sequence_number);
   }
+
+  SampledEffect(KeyframeEffect*, unsigned sequence_number);
 
   void Clear();
 
@@ -42,8 +44,6 @@ class SampledEffect : public GarbageCollectedFinalized<SampledEffect> {
   void Trace(blink::Visitor*);
 
  private:
-  SampledEffect(KeyframeEffect*, unsigned sequence_number);
-
   WeakMember<KeyframeEffect> effect_;
   HeapVector<Member<Interpolation>> interpolations_;
   const unsigned sequence_number_;

@@ -48,7 +48,8 @@ WorkerGlobalScopePerformance& WorkerGlobalScopePerformance::From(
       Supplement<WorkerGlobalScope>::From<WorkerGlobalScopePerformance>(
           worker_global_scope);
   if (!supplement) {
-    supplement = new WorkerGlobalScopePerformance(worker_global_scope);
+    supplement =
+        MakeGarbageCollected<WorkerGlobalScopePerformance>(worker_global_scope);
     ProvideTo(worker_global_scope, supplement);
   }
   return *supplement;

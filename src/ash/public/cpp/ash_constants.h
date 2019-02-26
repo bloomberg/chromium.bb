@@ -5,6 +5,7 @@
 #ifndef ASH_PUBLIC_CPP_ASH_CONSTANTS_H_
 #define ASH_PUBLIC_CPP_ASH_CONSTANTS_H_
 
+#include "ash/public/interfaces/accessibility_controller.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/color_palette.h"
 
@@ -38,6 +39,13 @@ constexpr int kDefaultLargeCursorSize = 64;
 
 // The default wait time between last mouse movement and sending autoclick.
 constexpr int kDefaultAutoclickDelayMs = 1000;
+
+constexpr mojom::AutoclickEventType kDefaultAutoclickEventType =
+    mojom::AutoclickEventType::kLeftClick;
+
+// The default threshold of mouse movement, measured in DIP, that will initiate
+// a new autoclick.
+constexpr int kDefaultAutoclickMovementThreshold = 20;
 
 // The default frame color.
 constexpr SkColor kDefaultFrameColor = SkColorSetRGB(0xFD, 0xFE, 0xFF);

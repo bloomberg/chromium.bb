@@ -334,14 +334,27 @@ void Window::SetBounds(const gfx::Rect& new_bounds) {
 
 void Window::SetBoundsInScreen(const gfx::Rect& new_bounds_in_screen,
                                const display::Display& dst_display) {
-  Window* root = GetRootWindow();
-  if (root) {
-    aura::client::ScreenPositionClient* screen_position_client =
-        aura::client::GetScreenPositionClient(root);
-    screen_position_client->SetBounds(this, new_bounds_in_screen, dst_display);
-    return;
+  WindowTreeHost* host = GetHost();
+  bool is_moving = false;
+  if (host && host->GetDisplayId() != dst_display.id()) {
+    is_moving = true;
+    for (auto& observer : observers_)
+      observer.OnWillMoveWindowToDisplay(this, dst_display.id());
   }
-  SetBounds(new_bounds_in_screen);
+
+  aura::client::ScreenPositionClient* screen_position_client = nullptr;
+  Window* root = GetRootWindow();
+  if (root)
+    screen_position_client = aura::client::GetScreenPositionClient(root);
+  if (screen_position_client)
+    screen_position_client->SetBounds(this, new_bounds_in_screen, dst_display);
+  else
+    SetBounds(new_bounds_in_screen);
+
+  if (is_moving) {
+    for (auto& observer : observers_)
+      observer.OnDidMoveWindowToDisplay(this);
+  }
 }
 
 gfx::Rect Window::GetTargetBounds() const {
@@ -537,12 +550,10 @@ bool Window::ShouldRestackTransientChildren() {
 }
 
 void Window::AddObserver(WindowObserver* observer) {
-  observer->OnObservingWindow(this);
   observers_.AddObserver(observer);
 }
 
 void Window::RemoveObserver(WindowObserver* observer) {
-  observer->OnUnobservingWindow(this);
   observers_.RemoveObserver(observer);
 }
 
@@ -874,11 +885,14 @@ void Window::SetVisible(bool visible) {
   NotifyWindowVisibilityChanged(this, visible);
 }
 
-void Window::SetOcclusionState(OcclusionState occlusion_state) {
-  if (occlusion_state != occlusion_state_) {
+void Window::SetOcclusionInfo(OcclusionState occlusion_state,
+                              const SkRegion& occluded_region) {
+  if (occlusion_state != occlusion_state_ ||
+      occluded_region_ != occluded_region) {
     occlusion_state_ = occlusion_state;
+    occluded_region_ = occluded_region;
     if (delegate_)
-      delegate_->OnWindowOcclusionChanged(occlusion_state);
+      delegate_->OnWindowOcclusionChanged(occlusion_state, occluded_region);
   }
 }
 
@@ -1102,21 +1116,19 @@ std::unique_ptr<cc::LayerTreeFrameSink> Window::CreateLayerTreeFrameSink() {
   auto sink = port_->CreateLayerTreeFrameSink();
   DCHECK(frame_sink_id_.is_valid());
   DCHECK(embeds_external_client_);
-  DCHECK(GetLocalSurfaceId().is_valid());
+  DCHECK(GetLocalSurfaceIdAllocation().local_surface_id().is_valid());
   created_layer_tree_frame_sink_ = true;
   return sink;
 }
 
 viz::SurfaceId Window::GetSurfaceId() const {
-  return viz::SurfaceId(GetFrameSinkId(), port_->GetLocalSurfaceId());
+  return viz::SurfaceId(
+      GetFrameSinkId(),
+      port_->GetLocalSurfaceIdAllocation().local_surface_id());
 }
 
 void Window::AllocateLocalSurfaceId() {
   port_->AllocateLocalSurfaceId();
-}
-
-bool Window::IsLocalSurfaceIdAllocationSuppressed() const {
-  return port_->IsLocalSurfaceIdAllocationSuppressed();
 }
 
 viz::ScopedSurfaceIdAllocator Window::GetSurfaceIdAllocator(
@@ -1124,16 +1136,21 @@ viz::ScopedSurfaceIdAllocator Window::GetSurfaceIdAllocator(
   return port_->GetSurfaceIdAllocator(std::move(allocation_task));
 }
 
-const viz::LocalSurfaceId& Window::GetLocalSurfaceId() const {
-  return port_->GetLocalSurfaceId();
+const viz::LocalSurfaceIdAllocation& Window::GetLocalSurfaceIdAllocation()
+    const {
+  return port_->GetLocalSurfaceIdAllocation();
+}
+
+void Window::InvalidateLocalSurfaceId() {
+  port_->InvalidateLocalSurfaceId();
 }
 
 void Window::UpdateLocalSurfaceIdFromEmbeddedClient(
-    const base::Optional<viz::LocalSurfaceId>&
-        embedded_client_local_surface_id) {
-  if (embedded_client_local_surface_id) {
+    const base::Optional<viz::LocalSurfaceIdAllocation>&
+        embedded_client_local_surface_id_allocation) {
+  if (embedded_client_local_surface_id_allocation) {
     port_->UpdateLocalSurfaceIdFromEmbeddedClient(
-        *embedded_client_local_surface_id);
+        *embedded_client_local_surface_id_allocation);
   } else {
     port_->AllocateLocalSurfaceId();
   }
@@ -1163,7 +1180,7 @@ bool Window::IsEmbeddingClient() const {
 }
 
 void Window::TrackOcclusionState() {
-  env_->GetWindowOcclusionTracker()->Track(this);
+  port_->TrackOcclusionState();
 }
 
 bool Window::RequiresDoubleTapGestureEvents() const {
@@ -1318,7 +1335,7 @@ std::unique_ptr<ui::Layer> Window::RecreateLayer() {
 }
 
 void Window::UpdateLayerName() {
-#if !defined(NDEBUG)
+#if DCHECK_IS_ON()
   DCHECK(layer());
 
   std::string layer_name(GetName());

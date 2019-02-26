@@ -57,7 +57,7 @@ TEST_F(SearchIPCRouterPolicyTest, ProcessFocusOmniboxAfterDownload) {
 
   // Now the visible URL corresponds to the download, but the last committed URL
   // is still the NTP.
-  const content::WebContents* tab =
+  content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_EQ(GURL("http://foo/download.zip"), tab->GetVisibleURL());
   ASSERT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl), tab->GetLastCommittedURL());

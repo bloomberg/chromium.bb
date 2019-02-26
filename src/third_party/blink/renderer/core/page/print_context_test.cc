@@ -72,21 +72,22 @@ class PrintContextTest : public PaintTestConfigurations, public RenderingTest {
 
   void SetUp() override {
     RenderingTest::SetUp();
-    print_context_ = new PrintContext(GetDocument().GetFrame(),
-                                      /*use_printing_layout=*/true);
+    print_context_ =
+        MakeGarbageCollected<PrintContext>(GetDocument().GetFrame(),
+                                           /*use_printing_layout=*/true);
   }
 
   PrintContext& GetPrintContext() { return *print_context_.Get(); }
 
   void SetBodyInnerHTML(String body_content) {
-    GetDocument().body()->setAttribute(HTMLNames::styleAttr, "margin: 0");
+    GetDocument().body()->setAttribute(html_names::kStyleAttr, "margin: 0");
     GetDocument().body()->SetInnerHTMLFromString(body_content);
   }
 
   void PrintSinglePage(MockPageContextCanvas& canvas) {
     IntRect page_rect(0, 0, kPageWidth, kPageHeight);
     GetPrintContext().BeginPrintMode(page_rect.Width(), page_rect.Height());
-    GetDocument().View()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhasesForTest();
     PaintRecordBuilder builder;
     GraphicsContext& context = builder.Context();
     context.SetPrinting(true);

@@ -162,12 +162,16 @@ bool IsTabDraggingSourceWindow(aura::Window* window) {
 }  // namespace
 
 // static
-void TabletModeWindowState::UpdateWindowPosition(
-    wm::WindowState* window_state) {
+void TabletModeWindowState::UpdateWindowPosition(wm::WindowState* window_state,
+                                                 bool animate) {
   gfx::Rect bounds_in_parent = GetBoundsInMaximizedMode(window_state);
   if (bounds_in_parent == window_state->window()->GetTargetBounds())
     return;
-  window_state->SetBoundsDirect(bounds_in_parent);
+
+  if (animate)
+    window_state->SetBoundsDirectAnimated(bounds_in_parent);
+  else
+    window_state->SetBoundsDirect(bounds_in_parent);
 }
 
 TabletModeWindowState::TabletModeWindowState(aura::Window* window,
@@ -219,6 +223,12 @@ void TabletModeWindowState::OnWMEvent(wm::WindowState* window_state,
         UpdateWindow(window_state, mojom::WindowStateType::PINNED,
                      true /* animated */);
       break;
+    case wm::WM_EVENT_PIP:
+      if (!window_state->IsPip()) {
+        UpdateWindow(window_state, mojom::WindowStateType::PIP,
+                     true /* animated */);
+      }
+      break;
     case wm::WM_EVENT_TRUSTED_PIN:
       if (!Shell::Get()->screen_pinning_controller()->IsPinned())
         UpdateWindow(window_state, mojom::WindowStateType::TRUSTED_PINNED,
@@ -259,6 +269,7 @@ void TabletModeWindowState::OnWMEvent(wm::WindowState* window_state,
                    true /* animated */);
       return;
     case wm::WM_EVENT_SHOW_INACTIVE:
+    case wm::WM_EVENT_SYSTEM_UI_AREA_CHANGED:
       return;
     case wm::WM_EVENT_SET_BOUNDS: {
       gfx::Rect bounds_in_parent =

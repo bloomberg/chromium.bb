@@ -94,10 +94,9 @@
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/net/cert_verify_proc_chromeos.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chromeos/network/dhcp_pac_file_fetcher_factory_chromeos.h"
-#include "chromeos/network/host_resolver_impl_chromeos.h"
+#include "services/network/cert_verify_proc_chromeos.h"
 #endif
 
 using content::BrowserThread;
@@ -142,7 +141,7 @@ class WrappedCertVerifierForIOThreadTesting : public net::CertVerifier {
 #if defined(OS_MACOSX)
 void ObserveKeychainEvents() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  net::CertDatabase::GetInstance()->SetMessageLoopForKeychainEvents();
+  net::CertDatabase::GetInstance()->StartListeningForKeychainEvents();
 }
 #endif
 
@@ -150,13 +149,9 @@ std::unique_ptr<net::HostResolver> CreateGlobalHostResolver(
     net::NetLog* net_log) {
   TRACE_EVENT0("startup", "IOThread::CreateGlobalHostResolver");
 
-#if defined(OS_CHROMEOS)
-  using resolver = chromeos::HostResolverImplChromeOS;
-#else
-  using resolver = net::HostResolver;
-#endif
   std::unique_ptr<net::HostResolver> global_host_resolver =
-      resolver::CreateSystemResolver(net::HostResolver::Options(), net_log);
+      net::HostResolver::CreateSystemResolver(net::HostResolver::Options(),
+                                              net_log);
 
   // If hostname remappings were specified on the command-line, layer these
   // rules on top of the real host resolver. This allows forwarding all requests
@@ -292,7 +287,7 @@ void IOThread::Init() {
   globals_->dns_probe_service =
       std::make_unique<chrome_browser_net::DnsProbeService>();
 
-  if (command_line.HasSwitch(switches::kIgnoreUrlFetcherCertRequests))
+  if (command_line.HasSwitch(network::switches::kIgnoreUrlFetcherCertRequests))
     net::URLFetcher::SetIgnoreCertificateRequests(true);
 
 #if defined(OS_MACOSX)
@@ -394,7 +389,7 @@ void IOThread::ConstructSystemRequestContext() {
       // Creates a CertVerifyProc that doesn't allow any profile-provided certs.
       cert_verifier = std::make_unique<net::CachingCertVerifier>(
           std::make_unique<net::MultiThreadedCertVerifier>(
-              base::MakeRefCounted<chromeos::CertVerifyProcChromeOS>()));
+              base::MakeRefCounted<network::CertVerifyProcChromeOS>()));
 #else
       cert_verifier = std::make_unique<net::CachingCertVerifier>(
           std::make_unique<net::MultiThreadedCertVerifier>(

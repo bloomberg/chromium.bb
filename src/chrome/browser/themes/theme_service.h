@@ -125,6 +125,11 @@ class ThemeService : public content::NotificationObserver, public KeyedService {
   // the same ThemeService.
   static const ui::ThemeProvider& GetThemeProviderForProfile(Profile* profile);
 
+  // Gets the ThemeProvider for |profile| that represents the default colour
+  // scheme for the OS.
+  static const ui::ThemeProvider& GetDefaultThemeProviderForProfile(
+      Profile* profile);
+
  protected:
   // Set a custom default theme instead of the normal default theme.
   virtual void SetCustomDefaultTheme(
@@ -176,7 +181,9 @@ class ThemeService : public content::NotificationObserver, public KeyedService {
   // track of the incognito state of the calling code.
   class BrowserThemeProvider : public ui::ThemeProvider {
    public:
-    BrowserThemeProvider(const ThemeService& theme_service, bool incognito);
+    BrowserThemeProvider(const ThemeService& theme_service,
+                         bool incognito,
+                         bool use_default);
     ~BrowserThemeProvider() override;
 
     // Overridden from ui::ThemeProvider:
@@ -191,8 +198,12 @@ class ThemeService : public content::NotificationObserver, public KeyedService {
         const override;
 
    private:
+    class DefaultScope;
+    friend class DefaultScope;
+
     const ThemeService& theme_service_;
     bool incognito_;
+    bool use_default_;
 
     DISALLOW_COPY_AND_ASSIGN(BrowserThemeProvider);
   };
@@ -300,6 +311,7 @@ class ThemeService : public content::NotificationObserver, public KeyedService {
 
   BrowserThemeProvider original_theme_provider_;
   BrowserThemeProvider incognito_theme_provider_;
+  BrowserThemeProvider default_theme_provider_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

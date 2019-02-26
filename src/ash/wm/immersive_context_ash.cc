@@ -10,10 +10,8 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/logging.h"
-#include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
-#include "ui/wm/core/cursor_manager.h"
 
 namespace ash {
 
@@ -28,8 +26,6 @@ void ImmersiveContextAsh::OnEnteringOrExitingImmersive(
   wm::WindowState* window_state = wm::GetWindowState(window);
   // Auto hide the shelf in immersive fullscreen instead of hiding it.
   window_state->SetHideShelfWhenFullscreen(!entering);
-  // Update the window's immersive mode state for the window manager.
-  window_state->SetInImmersiveFullscreen(entering);
 
   for (aura::Window* root_window : Shell::GetAllRootWindows())
     Shelf::ForWindow(root_window)->UpdateVisibilityState();
@@ -42,22 +38,8 @@ gfx::Rect ImmersiveContextAsh::GetDisplayBoundsInScreen(views::Widget* widget) {
   return display.bounds();
 }
 
-void ImmersiveContextAsh::AddPointerWatcher(
-    views::PointerWatcher* watcher,
-    views::PointerWatcherEventTypes events) {
-  Shell::Get()->AddPointerWatcher(watcher, events);
-}
-
-void ImmersiveContextAsh::RemovePointerWatcher(views::PointerWatcher* watcher) {
-  Shell::Get()->RemovePointerWatcher(watcher);
-}
-
 bool ImmersiveContextAsh::DoesAnyWindowHaveCapture() {
   return wm::GetCaptureWindow() != nullptr;
-}
-
-bool ImmersiveContextAsh::IsMouseEventsEnabled() {
-  return Shell::Get()->cursor_manager()->IsMouseEventsEnabled();
 }
 
 }  // namespace ash

@@ -94,6 +94,7 @@ class DownloadItemView : public views::InkDropHostView,
 
   // views::View:
   void Layout() override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   gfx::Size CalculatePreferredSize() const override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
@@ -105,12 +106,9 @@ class DownloadItemView : public views::InkDropHostView,
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // view::InkDropHostView:
-  void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
-  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
-  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
-      const override;
   void OnInkDropCreated() override;
+  SkColor GetInkDropBaseColor() const override;
 
   // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
@@ -312,6 +310,9 @@ class DownloadItemView : public views::InkDropHostView,
 
   // The download shelf that owns us.
   DownloadShelfView* shelf_;
+
+  // The focus ring for this Button.
+  std::unique_ptr<views::FocusRing> focus_ring_;
 
   // Elements of our particular download
   base::string16 status_text_;

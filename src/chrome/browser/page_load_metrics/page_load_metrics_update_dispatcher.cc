@@ -412,26 +412,63 @@ PageLoadMetricsUpdateDispatcher::PageLoadMetricsUpdateDispatcher(
       current_merged_page_timing_(CreatePageLoadTiming()),
       pending_merged_page_timing_(CreatePageLoadTiming()),
       main_frame_metadata_(mojom::PageLoadMetadata::New()),
-      subframe_metadata_(mojom::PageLoadMetadata::New()) {}
+      subframe_metadata_(mojom::PageLoadMetadata::New()),
+      main_frame_render_data_(mojom::PageRenderData::New()) {}
 
 PageLoadMetricsUpdateDispatcher::~PageLoadMetricsUpdateDispatcher() {
   ShutDown();
 }
 
 void PageLoadMetricsUpdateDispatcher::ShutDown() {
+  bool should_dispatch = false;
   if (timer_ && timer_->IsRunning()) {
     timer_->Stop();
-    DispatchTimingUpdates();
+    should_dispatch = true;
   }
   timer_ = nullptr;
+
+  if (largest_image_paint_) {
+    pending_merged_page_timing_->paint_timing->largest_image_paint.swap(
+        largest_image_paint_);
+    // Reset it so multiple shutdowns will have only one dispatch.
+    largest_image_paint_.reset();
+    should_dispatch = true;
+  }
+  if (last_image_paint_) {
+    pending_merged_page_timing_->paint_timing->last_image_paint.swap(
+        last_image_paint_);
+    // Reset it so multiple shutdowns will have only one dispatch.
+    last_image_paint_.reset();
+    should_dispatch = true;
+  }
+
+  if (largest_text_paint_) {
+    pending_merged_page_timing_->paint_timing->largest_text_paint.swap(
+        largest_text_paint_);
+    // Reset it so multiple shutdowns will have only one dispatch.
+    largest_text_paint_.reset();
+    should_dispatch = true;
+  }
+  if (last_text_paint_) {
+    pending_merged_page_timing_->paint_timing->last_text_paint.swap(
+        last_text_paint_);
+    // Reset it so multiple shutdowns will have only one dispatch.
+    last_text_paint_.reset();
+    should_dispatch = true;
+  }
+
+  if (should_dispatch) {
+    DispatchTimingUpdates();
+  }
 }
 
 void PageLoadMetricsUpdateDispatcher::UpdateMetrics(
     content::RenderFrameHost* render_frame_host,
-    const mojom::PageLoadTiming& new_timing,
-    const mojom::PageLoadMetadata& new_metadata,
-    const mojom::PageLoadFeatures& new_features,
-    const std::vector<mojom::ResourceDataUpdatePtr>& resources) {
+    mojom::PageLoadTimingPtr new_timing,
+    mojom::PageLoadMetadataPtr new_metadata,
+    mojom::PageLoadFeaturesPtr new_features,
+    const std::vector<mojom::ResourceDataUpdatePtr>& resources,
+    mojom::PageRenderDataPtr render_data) {
   if (render_frame_host->GetLastCommittedURL().SchemeIs(
           extensions::kExtensionScheme)) {
     // Extensions can inject child frames into a page. We don't want to track
@@ -443,13 +480,15 @@ void PageLoadMetricsUpdateDispatcher::UpdateMetrics(
   // both updates.
   client_->UpdateResourceDataUse(resources);
   if (render_frame_host->GetParent() == nullptr) {
-    UpdateMainFrameMetadata(new_metadata);
-    UpdateMainFrameTiming(new_timing);
+    UpdateMainFrameMetadata(std::move(new_metadata));
+    UpdateMainFrameTiming(std::move(new_timing));
+    UpdateMainFrameRenderData(std::move(render_data));
   } else {
-    UpdateSubFrameMetadata(new_metadata);
-    UpdateSubFrameTiming(render_frame_host, new_timing);
+    UpdateSubFrameMetadata(std::move(new_metadata));
+    UpdateSubFrameTiming(render_frame_host, std::move(new_timing));
+    // TODO: Handle subframe PageRenderData.
   }
-  client_->UpdateFeaturesUsage(new_features);
+  client_->UpdateFeaturesUsage(*new_features);
 }
 
 void PageLoadMetricsUpdateDispatcher::UpdateFeatures(
@@ -486,7 +525,7 @@ void PageLoadMetricsUpdateDispatcher::DidFinishSubFrameNavigation(
 
 void PageLoadMetricsUpdateDispatcher::UpdateSubFrameTiming(
     content::RenderFrameHost* render_frame_host,
-    const mojom::PageLoadTiming& new_timing) {
+    mojom::PageLoadTimingPtr new_timing) {
   const auto it = subframe_navigation_start_offset_.find(
       render_frame_host->GetFrameTreeNodeId());
   if (it == subframe_navigation_start_offset_.end()) {
@@ -494,22 +533,22 @@ void PageLoadMetricsUpdateDispatcher::UpdateSubFrameTiming(
     return;
   }
 
-  client_->OnSubFrameTimingChanged(render_frame_host, new_timing);
+  client_->OnSubFrameTimingChanged(render_frame_host, *new_timing);
 
   base::TimeDelta navigation_start_offset = it->second;
   PageLoadTimingMerger merger(pending_merged_page_timing_.get());
-  merger.Merge(navigation_start_offset, new_timing, false /* is_main_frame */);
+  merger.Merge(navigation_start_offset, *new_timing, false /* is_main_frame */);
 
   MaybeDispatchTimingUpdates(merger.should_buffer_timing_update_callback());
 }
 
 void PageLoadMetricsUpdateDispatcher::UpdateSubFrameMetadata(
-    const mojom::PageLoadMetadata& subframe_metadata) {
+    mojom::PageLoadMetadataPtr subframe_metadata) {
   // Merge the subframe loading behavior flags with any we've already observed,
   // possibly from other subframes.
   const int last_subframe_loading_behavior_flags =
       subframe_metadata_->behavior_flags;
-  subframe_metadata_->behavior_flags |= subframe_metadata.behavior_flags;
+  subframe_metadata_->behavior_flags |= subframe_metadata->behavior_flags;
   if (last_subframe_loading_behavior_flags ==
       subframe_metadata_->behavior_flags)
     return;
@@ -518,7 +557,7 @@ void PageLoadMetricsUpdateDispatcher::UpdateSubFrameMetadata(
 }
 
 void PageLoadMetricsUpdateDispatcher::UpdateMainFrameTiming(
-    const mojom::PageLoadTiming& new_timing) {
+    mojom::PageLoadTimingPtr new_timing) {
   // Throw away IPCs that are not relevant to the current navigation.
   // Two timing structures cannot refer to the same navigation if they indicate
   // that a navigation started at different times, so a new timing struct with a
@@ -526,13 +565,13 @@ void PageLoadMetricsUpdateDispatcher::UpdateMainFrameTiming(
   const bool valid_timing_descendent =
       pending_merged_page_timing_->navigation_start.is_null() ||
       pending_merged_page_timing_->navigation_start ==
-          new_timing.navigation_start;
+          new_timing->navigation_start;
   if (!valid_timing_descendent) {
     RecordInternalError(ERR_BAD_TIMING_IPC_INVALID_TIMING_DESCENDENT);
     return;
   }
 
-  internal::PageLoadTimingStatus status = IsValidPageLoadTiming(new_timing);
+  internal::PageLoadTimingStatus status = IsValidPageLoadTiming(*new_timing);
   UMA_HISTOGRAM_ENUMERATION(internal::kPageLoadTimingStatus, status,
                             internal::LAST_PAGE_LOAD_TIMING_STATUS);
   if (status != internal::VALID) {
@@ -546,35 +585,52 @@ void PageLoadMetricsUpdateDispatcher::UpdateMainFrameTiming(
   mojom::InteractiveTimingPtr last_interactive_timing =
       std::move(pending_merged_page_timing_->interactive_timing);
 
+  // Update the latest candidate to the corresponding buffers. We will dispatch
+  // the last candidate at the page load end. Because we don't want to dispatch
+  // the non-last candidate here, we clear it from |new_timing|.
+  largest_image_paint_.swap(new_timing->paint_timing->largest_image_paint);
+  new_timing->paint_timing->largest_image_paint.reset();
+  last_image_paint_.swap(new_timing->paint_timing->last_image_paint);
+  new_timing->paint_timing->last_image_paint.reset();
+  largest_text_paint_.swap(new_timing->paint_timing->largest_text_paint);
+  new_timing->paint_timing->largest_text_paint.reset();
+  last_text_paint_.swap(new_timing->paint_timing->last_text_paint);
+  new_timing->paint_timing->last_text_paint.reset();
+
   // Update the pending_merged_page_timing_, making sure to merge the previously
   // observed |paint_timing| and |interactive_timing|, which are tracked across
   // all frames in the page.
-  pending_merged_page_timing_ = new_timing.Clone();
+  pending_merged_page_timing_ = new_timing->Clone();
   pending_merged_page_timing_->paint_timing = std::move(last_paint_timing);
   pending_merged_page_timing_->interactive_timing =
       std::move(last_interactive_timing);
 
   PageLoadTimingMerger merger(pending_merged_page_timing_.get());
-  merger.Merge(base::TimeDelta(), new_timing, true /* is_main_frame */);
+  merger.Merge(base::TimeDelta(), *new_timing, true /* is_main_frame */);
   MaybeDispatchTimingUpdates(merger.should_buffer_timing_update_callback());
 }
 
 void PageLoadMetricsUpdateDispatcher::UpdateMainFrameMetadata(
-    const mojom::PageLoadMetadata& new_metadata) {
-  if (main_frame_metadata_->Equals(new_metadata))
+    mojom::PageLoadMetadataPtr new_metadata) {
+  if (main_frame_metadata_->Equals(*new_metadata))
     return;
 
   // Ensure flags sent previously are still present in the new metadata fields.
   const bool valid_behavior_descendent =
-      (main_frame_metadata_->behavior_flags & new_metadata.behavior_flags) ==
+      (main_frame_metadata_->behavior_flags & new_metadata->behavior_flags) ==
       main_frame_metadata_->behavior_flags;
   if (!valid_behavior_descendent) {
     RecordInternalError(ERR_BAD_TIMING_IPC_INVALID_BEHAVIOR_DESCENDENT);
     return;
   }
 
-  main_frame_metadata_ = new_metadata.Clone();
+  main_frame_metadata_ = std::move(new_metadata);
   client_->OnMainFrameMetadataChanged();
+}
+
+void PageLoadMetricsUpdateDispatcher::UpdateMainFrameRenderData(
+    mojom::PageRenderDataPtr render_data) {
+  main_frame_render_data_ = std::move(render_data);
 }
 
 void PageLoadMetricsUpdateDispatcher::MaybeDispatchTimingUpdates(
@@ -593,8 +649,6 @@ void PageLoadMetricsUpdateDispatcher::MaybeDispatchTimingUpdates(
 }
 
 void PageLoadMetricsUpdateDispatcher::DispatchTimingUpdates() {
-  DCHECK(!timer_->IsRunning());
-
   if (pending_merged_page_timing_->paint_timing->first_paint) {
     if (!pending_merged_page_timing_->parse_timing->parse_start ||
         !pending_merged_page_timing_->document_timing->first_layout) {

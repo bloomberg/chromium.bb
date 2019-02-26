@@ -142,16 +142,16 @@ void IntersectionObserver::SetThrottleDelayEnabledForTesting(bool enabled) {
 }
 
 IntersectionObserver* IntersectionObserver::Create(
-    const IntersectionObserverInit& observer_init,
+    const IntersectionObserverInit* observer_init,
     IntersectionObserverDelegate& delegate,
     ExceptionState& exception_state) {
-  Element* root = observer_init.root();
+  Element* root = observer_init->root();
 
   DOMHighResTimeStamp delay = 0;
   bool track_visibility = false;
   if (RuntimeEnabledFeatures::IntersectionObserverV2Enabled()) {
-    delay = observer_init.delay();
-    track_visibility = observer_init.trackVisibility();
+    delay = observer_init->delay();
+    track_visibility = observer_init->trackVisibility();
     if (track_visibility && delay < 100) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kNotSupportedError,
@@ -166,26 +166,28 @@ IntersectionObserver* IntersectionObserver::Create(
   }
 
   Vector<Length> root_margin;
-  ParseRootMargin(observer_init.rootMargin(), root_margin, exception_state);
+  ParseRootMargin(observer_init->rootMargin(), root_margin, exception_state);
   if (exception_state.HadException())
     return nullptr;
 
   Vector<float> thresholds;
-  ParseThresholds(observer_init.threshold(), thresholds, exception_state);
+  ParseThresholds(observer_init->threshold(), thresholds, exception_state);
   if (exception_state.HadException())
     return nullptr;
 
-  return new IntersectionObserver(delegate, root, root_margin, thresholds,
-                                  delay, track_visibility);
+  return MakeGarbageCollected<IntersectionObserver>(
+      delegate, root, root_margin, thresholds, kFractionOfTarget, delay,
+      track_visibility);
 }
 
 IntersectionObserver* IntersectionObserver::Create(
     ScriptState* script_state,
     V8IntersectionObserverCallback* callback,
-    const IntersectionObserverInit& observer_init,
+    const IntersectionObserverInit* observer_init,
     ExceptionState& exception_state) {
   V8IntersectionObserverDelegate* delegate =
-      new V8IntersectionObserverDelegate(callback, script_state);
+      MakeGarbageCollected<V8IntersectionObserverDelegate>(callback,
+                                                           script_state);
   return Create(observer_init, *delegate, exception_state);
 }
 
@@ -194,14 +196,15 @@ IntersectionObserver* IntersectionObserver::Create(
     const Vector<float>& thresholds,
     Document* document,
     EventCallback callback,
+    ThresholdInterpretation semantics,
     DOMHighResTimeStamp delay,
     bool track_visibility,
     ExceptionState& exception_state) {
   IntersectionObserverDelegateImpl* intersection_observer_delegate =
       new IntersectionObserverDelegateImpl(document, std::move(callback));
-  return new IntersectionObserver(*intersection_observer_delegate, nullptr,
-                                  root_margin, thresholds, delay,
-                                  track_visibility);
+  return MakeGarbageCollected<IntersectionObserver>(
+      *intersection_observer_delegate, nullptr, root_margin, thresholds,
+      semantics, delay, track_visibility);
 }
 
 IntersectionObserver::IntersectionObserver(
@@ -209,6 +212,7 @@ IntersectionObserver::IntersectionObserver(
     Element* root,
     const Vector<Length>& root_margin,
     const Vector<float>& thresholds,
+    ThresholdInterpretation semantics,
     DOMHighResTimeStamp delay,
     bool track_visibility)
     : ContextClient(delegate.GetExecutionContext()),
@@ -221,7 +225,8 @@ IntersectionObserver::IntersectionObserver(
       bottom_margin_(kFixed),
       left_margin_(kFixed),
       root_is_implicit_(root ? 0 : 1),
-      track_visibility_(track_visibility ? 1 : 0) {
+      track_visibility_(track_visibility ? 1 : 0),
+      track_fraction_of_root_(semantics == kFractionOfRoot) {
   switch (root_margin.size()) {
     case 0:
       break;
@@ -278,7 +283,7 @@ void IntersectionObserver::observe(Element* target,
     return;
 
   IntersectionObservation* observation =
-      new IntersectionObservation(*this, *target);
+      MakeGarbageCollected<IntersectionObservation>(*this, *target);
   target->EnsureIntersectionObserverData().AddObservation(*observation);
   observations_.insert(observation);
   if (target->isConnected()) {

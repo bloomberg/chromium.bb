@@ -44,14 +44,17 @@ using PerformanceEntryMap = HeapHashMap<AtomicString, PerformanceEntryVector>;
 class UserTiming final : public GarbageCollected<UserTiming> {
  public:
   static UserTiming* Create(Performance& performance) {
-    return new UserTiming(performance);
+    return MakeGarbageCollected<UserTiming>(performance);
   }
 
-  PerformanceMark* Mark(ScriptState*,
-                        const AtomicString& mark_name,
-                        const DOMHighResTimeStamp& start_time,
-                        const ScriptValue& detail,
-                        ExceptionState&);
+  explicit UserTiming(Performance&);
+
+  PerformanceMark* Mark(
+      ScriptState* script_state,
+      const AtomicString& mark_name,
+      DoubleOrPerformanceMarkOptions& start_time_or_mark_options,
+      ExceptionState& exception_state);
+
   void ClearMarks(const AtomicString& mark_name);
 
   PerformanceMeasure* Measure(ScriptState*,
@@ -71,8 +74,11 @@ class UserTiming final : public GarbageCollected<UserTiming> {
   void Trace(blink::Visitor*);
 
  private:
-  explicit UserTiming(Performance&);
-
+  PerformanceMark* MarkInternal(ScriptState*,
+                                const AtomicString& mark_name,
+                                const DOMHighResTimeStamp& start_time,
+                                const ScriptValue& detail,
+                                ExceptionState&);
   double FindExistingMarkStartTime(const AtomicString& mark_name,
                                    ExceptionState&);
   double FindStartMarkOrTime(const StringOrDouble& start, ExceptionState&);

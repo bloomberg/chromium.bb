@@ -97,17 +97,14 @@ testcase.driveOpenSidebarOffline = function() {
       remoteCall.callRemoteTestUtil(
         'selectVolume', appId, ['drive_offline'], this.next);
     },
-    // Wait until the file list is updated.
+    // Check: the file list should display the offline file set.
     function(result) {
       chrome.test.assertFalse(!result);
-      remoteCall.waitForFileListChange(appId, BASIC_DRIVE_ENTRY_SET.length).
-          then(this.next);
+      remoteCall
+          .waitForFiles(appId, TestEntryInfo.getExpectedRows(OFFLINE_ENTRY_SET))
+          .then(this.next);
     },
-    // Verify the file list.
-    function(actualFilesAfter) {
-      chrome.test.assertEq(
-          TestEntryInfo.getExpectedRows(OFFLINE_ENTRY_SET).sort(),
-          actualFilesAfter);
+    function() {
       checkIfNoErrorsOccured(this.next);
     }
   ]);
@@ -201,39 +198,33 @@ testcase.driveClickFirstSearchResult = function() {
   var appId;
   var steps = getStepsForSearchResultsAutoComplete();
   steps.push(
-    function(id) {
-      appId = id;
-      remoteCall.callRemoteTestUtil(
-          'fakeKeyDown', appId,
-          ['#autocomplete-list', 'ArrowDown', false, false, false],
-          this.next);
-    },
-    function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.waitForElement(
-          appId,
-          ['#autocomplete-list li[selected]']).
-          then(this.next);
-    },
-    function(result) {
-      remoteCall.callRemoteTestUtil(
-          'fakeMouseDown', appId,
-          ['#autocomplete-list li[selected]'],
-          this.next);
-    },
-    function(result)
-    {
-      remoteCall.waitForFileListChange(appId, BASIC_DRIVE_ENTRY_SET.length).
-      then(this.next);
-    },
-    function(actualFilesAfter)
-    {
-      chrome.test.assertEq(
-          TestEntryInfo.getExpectedRows(SEARCH_RESULTS_ENTRY_SET).sort(),
-          actualFilesAfter);
-      checkIfNoErrorsOccured(this.next);
-    }
-  );
+      function(id) {
+        appId = id;
+        remoteCall.callRemoteTestUtil(
+            'fakeKeyDown', appId,
+            ['#autocomplete-list', 'ArrowDown', false, false, false],
+            this.next);
+      },
+      function(result) {
+        chrome.test.assertTrue(!!result);
+        remoteCall.waitForElement(appId, ['#autocomplete-list li[selected]'])
+            .then(this.next);
+      },
+      function(result) {
+        remoteCall.callRemoteTestUtil(
+            'fakeMouseDown', appId, ['#autocomplete-list li[selected]'],
+            this.next);
+      },
+      function(result) {
+        chrome.test.assertTrue(!!result);
+        remoteCall
+            .waitForFiles(
+                appId, TestEntryInfo.getExpectedRows(SEARCH_RESULTS_ENTRY_SET))
+            .then(this.next);
+      },
+      function() {
+        checkIfNoErrorsOccured(this.next);
+      });
 
   StepsRunner.run(steps);
 };
@@ -252,18 +243,19 @@ testcase.drivePressEnterToSearch = function() {
             'fakeEvent', appId, ['#search-box cr-input', 'focus'], this.next);
       },
       function(result) {
+        chrome.test.assertTrue(!!result);
         remoteCall.callRemoteTestUtil(
             'fakeKeyDown', appId,
             ['#search-box cr-input', 'Enter', false, false, false], this.next);
       },
       function(result) {
-        remoteCall.waitForFileListChange(appId, BASIC_DRIVE_ENTRY_SET.length)
+        chrome.test.assertTrue(!!result);
+        remoteCall
+            .waitForFiles(
+                appId, TestEntryInfo.getExpectedRows(SEARCH_RESULTS_ENTRY_SET))
             .then(this.next);
       },
-      function(actualFilesAfter) {
-        chrome.test.assertEq(
-            TestEntryInfo.getExpectedRows(SEARCH_RESULTS_ENTRY_SET).sort(),
-            actualFilesAfter);
+      function() {
         checkIfNoErrorsOccured(this.next);
       });
 
@@ -664,7 +656,9 @@ testcase.driveRecoverDirtyFiles = function() {
     function() {
       return remoteCall
           .navigateWithDirectoryTree(
-              appId, '/Recovered files from Google Drive', 'Downloads')
+              appId,
+              RootPath.DOWNLOADS_PATH + '/Recovered files from Google Drive',
+              'My files/Downloads')
           .then(this.next);
     },
     // Ensure it contains never-sync.txt and never-sync (1).txt.
@@ -684,4 +678,55 @@ testcase.driveRecoverDirtyFiles = function() {
       checkIfNoErrorsOccured(this.next);
     },
   ]);
+};
+
+/**
+ * Verify that "Available Offline" is available from the gear menu for a drive
+ * file before the context menu has been opened.
+ */
+testcase.driveAvailableOfflineGearMenu = function() {
+  const pinnedMenuQuery = '#file-context-menu:not([hidden]) ' +
+      'cr-menu-item[command="#toggle-pinned"]:not([disabled])';
+  let appId;
+  let steps = [
+    function() {
+      setupAndWaitUntilReady(null, RootPath.DRIVE, this.next, []);
+    },
+    // Select a file in drive.
+    function(result) {
+      appId = result.windowId;
+      remoteCall.callRemoteTestUtil(
+          'selectFile', appId, ['hello.txt'], this.next);
+    },
+    // Wait for the entry to be selected.
+    function(result) {
+      chrome.test.assertTrue(!!result, 'selectFile failed');
+      remoteCall.waitForElement(appId, '.table-row[selected]').then(this.next);
+    },
+    // Click on the icon of the file to check select it
+    function(result) {
+      remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId,
+          ['#file-list .table-row[selected] .detail-checkmark'], this.next);
+    },
+    // Ensure gear button is available
+    function(result) {
+      remoteCall.waitForElement(appId, '#selection-menu-button')
+          .then(this.next);
+    },
+    // Cick on gear menu and ensure "Avaialble Offline" is shown.
+    function(result) {
+      remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId, ['#selection-menu-button'], this.next);
+    },
+    // Check that "Available Offline" is shown in the menu/
+    function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.waitForElement(appId, pinnedMenuQuery).then(this.next);
+    },
+    function(result) {
+      checkIfNoErrorsOccured(this.next);
+    }
+  ];
+  StepsRunner.run(steps);
 };

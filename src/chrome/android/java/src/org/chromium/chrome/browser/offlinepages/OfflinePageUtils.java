@@ -354,8 +354,10 @@ public class OfflinePageUtils {
      * @param result The result for publishing file.
      */
     public static void recordPublishPageResult(int result) {
+        // TODO(https://crbug.com/894714): Find a safer way to define the boundary value when
+        // using MAX_VALUE.
         RecordHistogram.recordEnumeratedHistogram("OfflinePages.Sharing.PublishInternalPageResult",
-                result, SavePageResult.RESULT_COUNT);
+                result, SavePageResult.MAX_VALUE + 1);
     }
 
     /**
@@ -792,7 +794,7 @@ public class OfflinePageUtils {
          * contents.
          */
         @Override
-        public void onPageLoadFinished(Tab tab) {
+        public void onPageLoadFinished(Tab tab, String url) {
             if (!tab.isBeingRestored()) return;
 
             // We first compute the bitwise tab restore context.

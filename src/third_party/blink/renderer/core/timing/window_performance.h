@@ -52,8 +52,10 @@ class CORE_EXPORT WindowPerformance final : public Performance,
 
  public:
   static WindowPerformance* Create(LocalDOMWindow* window) {
-    return new WindowPerformance(window);
+    return MakeGarbageCollected<WindowPerformance>(window);
   }
+
+  explicit WindowPerformance(LocalDOMWindow*);
   ~WindowPerformance() override;
 
   ExecutionContext* GetExecutionContext() const override;
@@ -68,6 +70,8 @@ class CORE_EXPORT WindowPerformance final : public Performance,
   void UpdateLongTaskInstrumentation() override;
 
   bool ShouldBufferEventTiming();
+
+  bool FirstInputDetected() const { return first_input_detected_; }
 
   // This method creates a PerformanceEventTiming and if needed creates a swap
   // promise to calculate the |duration| attribute when such promise is
@@ -87,8 +91,6 @@ class CORE_EXPORT WindowPerformance final : public Performance,
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit WindowPerformance(LocalDOMWindow*);
-
   PerformanceNavigationTiming* CreateNavigationTimingInstance() override;
 
   static std::pair<AtomicString, DOMWindow*> SanitizedAttribution(

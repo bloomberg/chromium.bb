@@ -102,10 +102,10 @@ SyncScheduler::SyncState SyncSchedulerImpl::GetSyncState() const {
 void SyncSchedulerImpl::OnTimerFired() {
   timer_.reset();
   if (strategy_ == Strategy::PERIODIC_REFRESH) {
-    PA_LOG(INFO) << "Timer fired for periodic refresh, making request...";
+    PA_LOG(VERBOSE) << "Timer fired for periodic refresh, making request...";
     sync_state_ = SyncState::SYNC_IN_PROGRESS;
   } else if (strategy_ == Strategy::AGGRESSIVE_RECOVERY) {
-    PA_LOG(INFO) << "Timer fired for aggressive recovery, making request...";
+    PA_LOG(VERBOSE) << "Timer fired for aggressive recovery, making request...";
     sync_state_ = SyncState::SYNC_IN_PROGRESS;
   } else {
     NOTREACHED();
@@ -128,16 +128,17 @@ void SyncSchedulerImpl::ScheduleNextSync(const base::TimeDelta& sync_delta) {
   }
 
   bool is_aggressive_recovery = (strategy_ == Strategy::AGGRESSIVE_RECOVERY);
-  PA_LOG(INFO) << "Scheduling next sync for " << scheduler_name_ << ":\n"
-               << "    Strategy: " << (is_aggressive_recovery
-                                           ? "Aggressive Recovery"
-                                           : "Periodic Refresh") << "\n"
-               << "    Time Delta: " << TimeDeltaToString(sync_delta)
-               << (is_aggressive_recovery
-                       ? base::StringPrintf(
-                             "\n    Previous Failures: %d",
-                             base::saturated_cast<int>(failure_count_))
-                       : "");
+  PA_LOG(VERBOSE) << "Scheduling next sync for " << scheduler_name_ << ":\n"
+                  << "    Strategy: "
+                  << (is_aggressive_recovery ? "Aggressive Recovery"
+                                             : "Periodic Refresh")
+                  << "\n"
+                  << "    Time Delta: " << TimeDeltaToString(sync_delta)
+                  << (is_aggressive_recovery
+                          ? base::StringPrintf(
+                                "\n    Previous Failures: %d",
+                                base::saturated_cast<int>(failure_count_))
+                          : "");
 
   timer_ = CreateTimer();
   timer_->Start(FROM_HERE, sync_delta,

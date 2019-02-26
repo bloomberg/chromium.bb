@@ -63,6 +63,7 @@ IPC_STRUCT_TRAITS_BEGIN(blink::WebImeTextSpan)
   IPC_STRUCT_TRAITS_MEMBER(thickness)
   IPC_STRUCT_TRAITS_MEMBER(background_color)
   IPC_STRUCT_TRAITS_MEMBER(suggestion_highlight_color)
+  IPC_STRUCT_TRAITS_MEMBER(remove_on_finish_composing)
   IPC_STRUCT_TRAITS_MEMBER(suggestions)
 IPC_STRUCT_TRAITS_END()
 

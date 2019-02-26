@@ -20,7 +20,7 @@
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/mus/window_tree_host_mus_init_params.h"
-#include "ui/aura/test/mus/window_tree_client_private.h"
+#include "ui/aura/test/mus/window_tree_client_test_api.h"
 #include "ui/aura/test/test_focus_client.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_features.h"
@@ -62,6 +62,7 @@ WMTestHelper::~WMTestHelper() {
     test_ws_->Shutdown(run_loop.QuitClosure());
     run_loop.Run();
   }
+  host_->window()->RemovePreTargetHandler(root_window_event_filter_.get());
 }
 
 aura::Window* WMTestHelper::GetDefaultParent(aura::Window* window,
@@ -131,10 +132,6 @@ void WMTestHelper::OnEmbedRootDestroyed(
     aura::WindowTreeHostMus* window_tree_host) {}
 
 void WMTestHelper::OnLostConnection(aura::WindowTreeClient* client) {}
-
-void WMTestHelper::OnPointerEventObserved(const ui::PointerEvent& event,
-                                          const gfx::Point& location_in_screen,
-                                          aura::Window* target) {}
 
 aura::PropertyConverter* WMTestHelper::GetPropertyConverter() {
   return property_converter_.get();

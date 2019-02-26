@@ -8,9 +8,9 @@
 #ifndef GrOpList_DEFINED
 #define GrOpList_DEFINED
 
-#include "GrColor.h"
 #include "GrProxyRef.h"
 #include "GrTextureProxy.h"
+#include "SkColorData.h"
 #include "SkRefCnt.h"
 #include "SkTDArray.h"
 
@@ -86,7 +86,6 @@ public:
      */
     SkDEBUGCODE(virtual void dump(bool printDependencies) const;)
 
-    SkDEBUGCODE(virtual int numOps() const = 0;)
     SkDEBUGCODE(virtual int numClips() const { return 0; })
 
     // TODO: it would be nice for this to be hidden
@@ -107,7 +106,7 @@ protected:
     GrAuditTrail*         fAuditTrail;
 
     GrLoadOp              fColorLoadOp    = GrLoadOp::kLoad;
-    GrColor               fLoadClearColor = 0x0;
+    SkPMColor4f           fLoadClearColor = SK_PMColor4fTRANSPARENT;
     GrLoadOp              fStencilLoadOp  = GrLoadOp::kLoad;
 
     // List of texture proxies whose contents are being prepared on a worker thread

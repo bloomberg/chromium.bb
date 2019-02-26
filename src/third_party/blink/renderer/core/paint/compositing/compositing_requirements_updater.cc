@@ -272,11 +272,18 @@ void CompositingRequirementsUpdater::UpdateRecursive(
   CompositingReasons reasons_to_composite = CompositingReason::kNone;
   CompositingReasons direct_reasons = CompositingReason::kNone;
 
-  bool has_non_root_composited_scrolling_ancestor =
-      layer->AncestorScrollingLayer() &&
-      layer->AncestorScrollingLayer()->GetScrollableArea() &&
-      layer->AncestorScrollingLayer()->NeedsCompositedScrolling() &&
-      !layer->AncestorScrollingLayer()->IsRootLayer();
+  bool has_non_root_composited_scrolling_ancestor = false;
+  const PaintLayer* ancestor_scrolling_layer = layer->AncestorScrollingLayer();
+  while (ancestor_scrolling_layer &&
+         ancestor_scrolling_layer->GetScrollableArea()) {
+    if (ancestor_scrolling_layer->NeedsCompositedScrolling() &&
+        !ancestor_scrolling_layer->IsRootLayer()) {
+      has_non_root_composited_scrolling_ancestor = true;
+      break;
+    }
+    ancestor_scrolling_layer =
+        ancestor_scrolling_layer->AncestorScrollingLayer();
+  }
 
   bool use_clipped_bounding_rect = !has_non_root_composited_scrolling_ancestor;
 
@@ -601,11 +608,6 @@ void CompositingRequirementsUpdater::UpdateRecursive(
       will_be_composited_or_squashed = true;
     }
 
-    if (will_be_composited_or_squashed) {
-      reasons_to_composite |= layer->PotentialCompositingReasonsFromStyle() &
-                              CompositingReason::kInlineTransform;
-    }
-
     if (will_be_composited_or_squashed &&
         layer->GetLayoutObject().StyleRef().HasBlendMode()) {
       current_recursion_data.has_unisolated_composited_blending_descendant_ =
@@ -624,12 +626,9 @@ void CompositingRequirementsUpdater::UpdateRecursive(
     bool is_composited_clipping_layer =
         can_be_composited && (reasons_to_composite &
                               CompositingReason::kClipsCompositingDescendants);
-    bool is_composited_with_inline_transform =
-        reasons_to_composite & CompositingReason::kInlineTransform;
     if ((!child_recursion_data.testing_overlap_ &&
          !is_composited_clipping_layer) ||
-        layer->GetLayoutObject().StyleRef().HasCurrentTransformAnimation() ||
-        is_composited_with_inline_transform)
+        layer->GetLayoutObject().StyleRef().HasCurrentTransformAnimation())
       current_recursion_data.testing_overlap_ = false;
 
     if (child_recursion_data.compositing_ancestor_ == layer)

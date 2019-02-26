@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/css/active_style_sheets.h"
 #include "third_party/blink/renderer/core/css/css_global_rule_set.h"
 #include "third_party/blink/renderer/core/css/document_style_sheet_collection.h"
+#include "third_party/blink/renderer/core/css/font_display.h"
 #include "third_party/blink/renderer/core/css/invalidation/pending_invalidations.h"
 #include "third_party/blink/renderer/core/css/invalidation/style_invalidator.h"
 #include "third_party/blink/renderer/core/css/layout_tree_rebuild_root.h"
@@ -69,6 +70,7 @@ class DocumentStyleEnvironmentVariables;
 class StyleRuleFontFace;
 class StyleRuleUsageTracker;
 class StyleSheetContents;
+class StyleInitialData;
 class ViewportStyleResolver;
 
 enum InvalidationScope { kInvalidateCurrentScope, kInvalidateAllScopes };
@@ -90,7 +92,10 @@ class CORE_EXPORT StyleEngine final
 
    public:
     IgnoringPendingStylesheet(StyleEngine& engine)
-        : scope_(&engine.ignore_pending_stylesheets_, true) {}
+        : scope_(&engine.ignore_pending_stylesheets_,
+                 !RuntimeEnabledFeatures::CSSInBodyDoesNotBlockPaintEnabled()) {
+    }
+
    private:
     base::AutoReset<bool> scope_;
   };
@@ -107,9 +112,10 @@ class CORE_EXPORT StyleEngine final
   };
 
   static StyleEngine* Create(Document& document) {
-    return new StyleEngine(document);
+    return MakeGarbageCollected<StyleEngine>(document);
   }
 
+  StyleEngine(Document&);
   ~StyleEngine() override;
 
   const HeapVector<TraceWrapperMember<StyleSheet>>&
@@ -268,8 +274,10 @@ class CORE_EXPORT StyleEngine final
     CollectUserStyleFeaturesTo(features);
     CollectScopedStyleFeaturesTo(features);
     for (CSSStyleSheet* sheet : custom_element_default_style_sheets_) {
-      if (sheet)
-        features.Add(RuleSetForSheet(*sheet)->Features());
+      if (!sheet)
+        continue;
+      if (RuleSet* rule_set = RuleSetForSheet(*sheet))
+        features.Add(rule_set->Features());
     }
   }
 
@@ -291,7 +299,7 @@ class CORE_EXPORT StyleEngine final
                            Element&);
   void PseudoStateChangedForElement(CSSSelector::PseudoType, Element&);
   void PartChangedForElement(Element&);
-  void PartmapChangedForElement(Element&);
+  void ExportpartsChangedForElement(Element&);
 
   void ScheduleSiblingInvalidationsForElement(Element&,
                                               ContainerNode& scheduling_parent,
@@ -342,6 +350,10 @@ class CORE_EXPORT StyleEngine final
       const AtomicString& animation_name);
 
   DocumentStyleEnvironmentVariables& EnsureEnvironmentVariables();
+  void AddDefaultFontDisplay(const StyleRuleFontFeatureValues*);
+  FontDisplay GetDefaultFontDisplay(const AtomicString& family) const;
+
+  scoped_refptr<StyleInitialData> MaybeCreateAndGetInitialData();
 
   void RecalcStyle(StyleRecalcChange change);
   void RebuildLayoutTree();
@@ -355,7 +367,6 @@ class CORE_EXPORT StyleEngine final
   void FontsNeedUpdate(FontSelector*) override;
 
  private:
-  StyleEngine(Document&);
   bool NeedsActiveStyleSheetUpdate() const {
     return all_tree_scopes_dirty_ || tree_scopes_removed_ ||
            document_scope_dirty_ || dirty_tree_scopes_.size() ||
@@ -420,6 +431,7 @@ class CORE_EXPORT StyleEngine final
       const HeapHashSet<Member<RuleSet>>& changed_rule_sets,
       unsigned changed_rule_flags,
       InvalidationScope invalidation_scope);
+  void InvalidateInitialData();
 
   void UpdateViewport();
   void UpdateActiveUserStyleSheets();
@@ -435,9 +447,9 @@ class CORE_EXPORT StyleEngine final
   void ClearFontCacheAndAddUserFonts();
   void ClearKeyframeRules() { keyframes_rule_map_.clear(); }
 
-  void AddFontFaceRules(const RuleSet&);
-  void AddKeyframeRules(const RuleSet&);
-  void AddKeyframeStyle(StyleRuleKeyframes*);
+  void AddUserFontFaceRules(const RuleSet&);
+  void AddUserKeyframeRules(const RuleSet&);
+  void AddUserKeyframeStyle(StyleRuleKeyframes*);
 
   Member<Document> document_;
   bool is_master_;
@@ -517,6 +529,12 @@ class CORE_EXPORT StyleEngine final
   KeyframesRuleMap keyframes_rule_map_;
 
   scoped_refptr<DocumentStyleEnvironmentVariables> environment_variables_;
+
+  scoped_refptr<StyleInitialData> initial_data_;
+
+  // Default font-display collected from @font-feature-values rules. The key is
+  // font-family.
+  HashMap<AtomicString, FontDisplay> default_font_display_map_;
 
   friend class StyleEngineTest;
 };

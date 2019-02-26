@@ -49,7 +49,7 @@ NavigatorDoNotTrack& NavigatorDoNotTrack::From(Navigator& navigator) {
   NavigatorDoNotTrack* supplement =
       Supplement<Navigator>::From<NavigatorDoNotTrack>(navigator);
   if (!supplement) {
-    supplement = new NavigatorDoNotTrack(navigator);
+    supplement = MakeGarbageCollected<NavigatorDoNotTrack>(navigator);
     ProvideTo(navigator, supplement);
   }
   return *supplement;

@@ -105,12 +105,14 @@ class SharedMemoryDataConsumerHandle::Context final
     lock_.AssertAcquired();
     result_ = r;
   }
-  void AcquireReaderLock(Client* client) {
+  void AcquireReaderLock(
+      Client* client,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
     lock_.AssertAcquired();
     // TODO(yhirano): Turn these CHECKs to DCHECKs once the crash is fixed.
     CHECK(!notification_task_runner_);
     CHECK(!client_);
-    notification_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+    notification_task_runner_ = std::move(task_runner);
     client_ = client;
     if (client && !(IsEmpty() && result() == kOk)) {
       // We cannot notify synchronously because the user doesn't have the reader
@@ -343,11 +345,12 @@ void SharedMemoryDataConsumerHandle::Writer::Fail() {
 
 SharedMemoryDataConsumerHandle::ReaderImpl::ReaderImpl(
     scoped_refptr<Context> context,
-    Client* client)
+    Client* client,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : context_(context) {
   base::AutoLock lock(context_->lock());
   DCHECK(!context_->is_handle_locked());
-  context_->AcquireReaderLock(client);
+  context_->AcquireReaderLock(client, std::move(task_runner));
 }
 
 SharedMemoryDataConsumerHandle::ReaderImpl::~ReaderImpl() {
@@ -457,7 +460,8 @@ std::unique_ptr<blink::WebDataConsumerHandle::Reader>
 SharedMemoryDataConsumerHandle::ObtainReader(
     Client* client,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  return base::WrapUnique(new ReaderImpl(context_, client));
+  return base::WrapUnique(
+      new ReaderImpl(context_, client, std::move(task_runner)));
 }
 
 const char* SharedMemoryDataConsumerHandle::DebugName() const {

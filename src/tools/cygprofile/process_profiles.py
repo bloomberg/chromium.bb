@@ -6,6 +6,7 @@
 """Lists all the reached symbols from an instrumentation dump."""
 
 import argparse
+import collections
 import logging
 import operator
 import os
@@ -15,6 +16,7 @@ _SRC_PATH = os.path.abspath(os.path.join(
     os.path.dirname(__file__), os.pardir, os.pardir))
 path = os.path.join(_SRC_PATH, 'tools', 'cygprofile')
 sys.path.append(path)
+import cygprofile_utils
 import symbol_extractor
 
 
@@ -147,19 +149,21 @@ class SymbolOffsetProcessor(object):
         symbols.append(self.OffsetToPrimaryMap()[o - 1].name)
       else:
         not_found += 1
-    logging.warning('%d offsets do not have matching symbol', not_found)
+    if not_found:
+      logging.warning('%d offsets do not have matching symbol', not_found)
     return symbols
 
-  def OffsetsPrimarySize(self, offsets):
-    """Computes the total primary size of a set of offsets.
+  def SymbolsSize(self, symbols):
+    """Computes the total size of a set of symbol names.
 
     Args:
-      offsets (int iterable) a set of offsets.
+      offsets (str iterable) a set of symbols.
 
     Returns
       int The sum of the primary size of the offsets.
     """
-    return sum(self.OffsetToPrimaryMap()[x].size for x in offsets)
+    name_map = self.NameToSymbolMap()
+    return sum(name_map[sym].size for sym in symbols)
 
   def GetReachedOffsetsFromDump(self, dump):
     """Find the symbol offsets from a list of binary offsets.
@@ -229,22 +233,15 @@ class SymbolOffsetProcessor(object):
       update: (lambda item, int) As described above.
     """
     dump_offset_to_symbol_info = self._GetDumpOffsetToSymbolInfo()
-    logging.info('Offset to Symbol size = %d', len(dump_offset_to_symbol_info))
-    reached_return_addresses_not_found = 0
     for i in items:
       dump_offset = get(i)
-      idx = dump_offset / 4
-      assert idx < len(dump_offset_to_symbol_info), (
+      idx = dump_offset / 2
+      assert dump_offset >= 0 and idx < len(dump_offset_to_symbol_info), (
           'Dump offset out of binary range')
       symbol_info = dump_offset_to_symbol_info[idx]
-      if symbol_info is None:
-        reached_return_addresses_not_found += 1
-        update(i, None)
-      else:
-        update(i, symbol_info.offset)
-    if reached_return_addresses_not_found:
-      logging.warning('%d return addresses don\'t map to any symbol',
-                      reached_return_addresses_not_found)
+      assert symbol_info, ('A return address (offset = 0x{:08x}) does not map '
+          'to any symbol'.format(dump_offset))
+      update(i, symbol_info.offset)
 
   def _GetDumpOffsetToSymbolInfo(self):
     """Computes an array mapping each word in .text to a symbol.
@@ -254,14 +251,28 @@ class SymbolOffsetProcessor(object):
         section, maps it to a symbol, or None.
     """
     if self._offset_to_symbol_info is None:
-      min_offset = min(s.offset for s in self.SymbolInfos())
+      start_syms = [s for s in self.SymbolInfos()
+                    if s.name == cygprofile_utils.START_OF_TEXT_SYMBOL]
+      assert len(start_syms) == 1, 'Can\'t find unique start of text symbol'
+      start_of_text = start_syms[0].offset
       max_offset = max(s.offset + s.size for s in self.SymbolInfos())
-      text_length_words = (max_offset - min_offset) / 4
-      self._offset_to_symbol_info = [None for _ in xrange(text_length_words)]
-      for s in self.SymbolInfos():
-        offset = s.offset - min_offset
-        for i in range(offset / 4, (offset + s.size) / 4):
-          self._offset_to_symbol_info[i] = s
+      text_length_halfwords = (max_offset - start_of_text) / 2
+      self._offset_to_symbol_info = [None] * text_length_halfwords
+      for sym in self.SymbolInfos():
+        offset = sym.offset - start_of_text
+        assert offset >= 0, ('Unexpected symbol before the start of text. '
+                             'Has the linker script broken?')
+        # The low bit of offset may be set to indicate a thumb instruction. The
+        # actual offset is still halfword aligned and so the low bit may be
+        # safely ignored in the division by two below.
+        for i in range(offset / 2, (offset + sym.size) / 2):
+          assert i < text_length_halfwords
+          other_symbol = self._offset_to_symbol_info[i]
+          # There may be overlapping symbols, for example fancy
+          # implementations for __ltsf2 and __gtsf2 (merging common tail
+          # code). In this case, keep the one that started first.
+          if other_symbol is None or other_symbol.offset > sym.offset:
+            self._offset_to_symbol_info[i] = sym
     return self._offset_to_symbol_info
 
 
@@ -411,6 +422,13 @@ class ProfileManager(object):
               phase, process)
     return offset_map.values()
 
+  def GetProcessOffsetLists(self):
+    """Returns all symbol offsets lists, grouped by process."""
+    offsets_by_process = collections.defaultdict(list)
+    for f in self._filenames:
+      offsets_by_process[self._ProcessName(f)].append(self._ReadOffsets(f))
+    return offsets_by_process
+
   def GetRunGroupOffsets(self, phase=None):
     """Merges files from each run group and returns offset list for each.
 
@@ -441,7 +459,7 @@ class ProfileManager(object):
   @classmethod
   def _ProcessName(cls, filename):
     # The filename starts with 'profile-hitmap-' and ends with
-    # '-PID-TIMESTAMP.text_X'. Anything in between is the process name. The
+    # '-PID-TIMESTAMP.txt_X'. Anything in between is the process name. The
     # browser has an empty process name, which is insterted here.
     process_name_parts = os.path.basename(filename).split('-')[2:-2]
     if not process_name_parts:

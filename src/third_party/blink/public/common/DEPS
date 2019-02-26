@@ -15,8 +15,4 @@ include_rules = [
     "+third_party/blink/public/mojom",
     "+ui/gfx/geometry",
     "+url",
-
-    # This file should not be included outside of blink, so it does not belong
-    # in blink/public.
-    "+third_party/blink/common/common_export.h",
 ]

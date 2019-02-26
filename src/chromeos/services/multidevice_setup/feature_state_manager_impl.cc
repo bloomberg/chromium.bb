@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
@@ -85,8 +86,54 @@ void ProcessSuiteEdgeCases(
     return;
 
   for (auto& map_entry : *feature_states_map) {
-    if (map_entry.second == mojom::FeatureState::kEnabledByUser)
+    if (map_entry.second == mojom::FeatureState::kEnabledByUser ||
+        map_entry.second == mojom::FeatureState::kFurtherSetupRequired) {
       map_entry.second = mojom::FeatureState::kUnavailableSuiteDisabled;
+    }
+  }
+}
+
+bool HasFeatureStateChanged(
+    const base::Optional<FeatureStateManager::FeatureStatesMap>&
+        previous_states,
+    const FeatureStateManager::FeatureStatesMap& new_states,
+    mojom::Feature feature) {
+  if (!previous_states)
+    return true;
+  return previous_states->find(feature)->second !=
+         new_states.find(feature)->second;
+}
+
+void LogFeatureStates(
+    const base::Optional<FeatureStateManager::FeatureStatesMap>&
+        previous_states,
+    const FeatureStateManager::FeatureStatesMap& new_states) {
+  if (HasFeatureStateChanged(previous_states, new_states,
+                             mojom::Feature::kBetterTogetherSuite)) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "MultiDevice.BetterTogetherSuite.MultiDeviceFeatureState",
+        new_states.find(mojom::Feature::kBetterTogetherSuite)->second);
+  }
+
+  if (HasFeatureStateChanged(previous_states, new_states,
+                             mojom::Feature::kInstantTethering)) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "InstantTethering.MultiDeviceFeatureState",
+        new_states.find(mojom::Feature::kInstantTethering)->second);
+  }
+
+  if (HasFeatureStateChanged(previous_states, new_states,
+                             mojom::Feature::kMessages)) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "AndroidSms.MultiDeviceFeatureState",
+        new_states.find(mojom::Feature::kMessages)->second);
+  }
+
+  if (HasFeatureStateChanged(previous_states, new_states,
+                             mojom::Feature::kSmartLock)) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "SmartLock.MultiDeviceFeatureState",
+        new_states.find(mojom::Feature::kSmartLock)->second);
   }
 }
 
@@ -165,6 +212,9 @@ FeatureStateManagerImpl::FeatureStateManagerImpl(
   // represent a true change of feature state values, so observers should not be
   // notified.
   UpdateFeatureStateCache(false /* notify_observers_of_changes */);
+
+  LogFeatureStates(base::nullopt /* previous_states */,
+                   cached_feature_state_map_ /* new_states */);
 }
 
 FeatureStateManagerImpl::~FeatureStateManagerImpl() {
@@ -223,9 +273,11 @@ void FeatureStateManagerImpl::UpdateFeatureStateCache(
 
   if (previous_cached_feature_state_map == cached_feature_state_map_)
     return;
-  PA_LOG(INFO) << "Feature states map changed. Old map: "
-               << previous_cached_feature_state_map
-               << ", new map: " << cached_feature_state_map_;
+  PA_LOG(VERBOSE) << "Feature states map changed. Old map: "
+                  << previous_cached_feature_state_map
+                  << ", new map: " << cached_feature_state_map_;
+  LogFeatureStates(previous_cached_feature_state_map /* previous_states */,
+                   cached_feature_state_map_ /* new_states */);
   NotifyFeatureStatesChange(cached_feature_state_map_);
 }
 

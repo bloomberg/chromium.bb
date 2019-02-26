@@ -58,8 +58,7 @@ BackgroundFetchTestDataManager::BackgroundFetchTestDataManager(
       mock_fill_response_(mock_fill_response) {}
 
 void BackgroundFetchTestDataManager::InitializeOnIOThread() {
-  ChromeBlobStorageContext* blob_storage_context(
-      ChromeBlobStorageContext::GetFor(browser_context_));
+  blob_storage_context_ = ChromeBlobStorageContext::GetFor(browser_context_);
   // Wait for ChromeBlobStorageContext to finish initializing.
   base::RunLoop().RunUntilIdle();
 
@@ -77,8 +76,7 @@ void BackgroundFetchTestDataManager::InitializeOnIOThread() {
   DCHECK(cache_manager_);
 
   cache_manager_->SetBlobParametersForCache(
-      storage_partition_->GetURLRequestContext(),
-      blob_storage_context->context()->AsWeakPtr());
+      blob_storage_context_->context()->AsWeakPtr());
 }
 
 BackgroundFetchTestDataManager::~BackgroundFetchTestDataManager() = default;

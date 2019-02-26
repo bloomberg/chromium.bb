@@ -23,7 +23,7 @@
 #include "base/metrics/histogram.h"
 #include "base/process/kill.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
 #include "base/win/startup_information.h"
@@ -239,9 +239,11 @@ Process LaunchProcess(const string16& cmdline,
     flags |= EXTENDED_STARTUPINFO_PRESENT;
   }
 
+  if (options.feedback_cursor_off)
+    startup_info->dwFlags |= STARTF_FORCEOFFFEEDBACK;
   if (options.empty_desktop_name)
     startup_info->lpDesktop = const_cast<wchar_t*>(L"");
-  startup_info->dwFlags = STARTF_USESHOWWINDOW;
+  startup_info->dwFlags |= STARTF_USESHOWWINDOW;
   startup_info->wShowWindow = options.start_hidden ? SW_HIDE : SW_SHOWNORMAL;
 
   if (options.stdin_handle || options.stdout_handle || options.stderr_handle) {

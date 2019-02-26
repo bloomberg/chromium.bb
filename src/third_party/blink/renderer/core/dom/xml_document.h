@@ -36,19 +36,19 @@ class XMLDocument final : public Document {
 
  public:
   static XMLDocument* Create(const DocumentInit& initializer) {
-    return new XMLDocument(initializer, kXMLDocumentClass);
+    return MakeGarbageCollected<XMLDocument>(initializer, kXMLDocumentClass);
   }
 
   static XMLDocument* CreateXHTML(const DocumentInit& initializer) {
-    return new XMLDocument(initializer,
-                           kXMLDocumentClass | kXHTMLDocumentClass);
+    return MakeGarbageCollected<XMLDocument>(
+        initializer, kXMLDocumentClass | kXHTMLDocumentClass);
   }
 
   static XMLDocument* CreateSVG(const DocumentInit& initializer) {
-    return new XMLDocument(initializer, kXMLDocumentClass | kSVGDocumentClass);
+    return MakeGarbageCollected<XMLDocument>(
+        initializer, kXMLDocumentClass | kSVGDocumentClass);
   }
 
- protected:
   XMLDocument(const DocumentInit&, DocumentClassFlags document_classes);
 };
 

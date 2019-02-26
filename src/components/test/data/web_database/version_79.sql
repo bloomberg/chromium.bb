@@ -2,8 +2,8 @@ PRAGMA foreign_keys=OFF;
 BEGIN TRANSACTION;
 CREATE TABLE meta(key LONGVARCHAR NOT NULL UNIQUE PRIMARY KEY, value LONGVARCHAR);
 INSERT INTO "meta" VALUES('mmap_status','-1');
-INSERT INTO "meta" VALUES('version','78');
-INSERT INTO "meta" VALUES('last_compatible_version','78');
+INSERT INTO "meta" VALUES('version','79');
+INSERT INTO "meta" VALUES('last_compatible_version','79');
 CREATE TABLE token_service (service VARCHAR PRIMARY KEY NOT NULL,encrypted_token BLOB);
 CREATE TABLE keywords (id INTEGER PRIMARY KEY,short_name VARCHAR NOT NULL,keyword VARCHAR NOT NULL,favicon_url VARCHAR NOT NULL,url VARCHAR NOT NULL,safe_for_autoreplace INTEGER,originating_url VARCHAR,date_created INTEGER DEFAULT 0,usage_count INTEGER DEFAULT 0,input_encodings VARCHAR,suggest_url VARCHAR,prepopulate_id INTEGER DEFAULT 0,created_by_policy INTEGER DEFAULT 0,last_modified INTEGER DEFAULT 0,sync_guid VARCHAR,alternate_urls VARCHAR,image_url VARCHAR,search_url_post_params VARCHAR,suggest_url_post_params VARCHAR,image_url_post_params VARCHAR,new_tab_url VARCHAR,last_visited INTEGER DEFAULT 0);
 CREATE TABLE autofill (name VARCHAR, value VARCHAR, value_lower VARCHAR, date_created INTEGER DEFAULT 0, date_last_used INTEGER DEFAULT 0, count INTEGER DEFAULT 1, PRIMARY KEY (name, value));
@@ -25,7 +25,4 @@ CREATE TABLE autofill_model_type_state (model_type INTEGER NOT NULL PRIMARY KEY,
 INSERT INTO autofill_model_type_state VALUES (1, 'state');
 CREATE INDEX autofill_name ON autofill (name);
 CREATE INDEX autofill_name_value_lower ON autofill (name, value_lower);
-CREATE TABLE ie7_logins (url_hash VARCHAR NOT NULL, UNIQUE(url_hash));
-CREATE INDEX ie7_logins_hash ON ie7_logins (url_hash);
-CREATE TABLE logins (url_hash VARCHAR NOT NULL, UNIQUE(url_hash));
 COMMIT;

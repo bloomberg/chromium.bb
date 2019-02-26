@@ -43,12 +43,15 @@ const uint8_t kHelloRetryRequest[SSL3_RANDOM_SIZE] = {
     0x8c, 0x5e, 0x07, 0x9e, 0x09, 0xe2, 0xc8, 0xa8, 0x33, 0x9c,
 };
 
+// See RFC 8446, section 4.1.3.
 const uint8_t kTLS12DowngradeRandom[8] = {0x44, 0x4f, 0x57, 0x4e,
                                           0x47, 0x52, 0x44, 0x00};
-
 const uint8_t kTLS13DowngradeRandom[8] = {0x44, 0x4f, 0x57, 0x4e,
                                           0x47, 0x52, 0x44, 0x01};
 
+// This is a non-standard randomly-generated value.
+const uint8_t kJDK11DowngradeRandom[8] = {0xed, 0xbf, 0xb4, 0xa8,
+                                          0xc2, 0x47, 0x10, 0xff};
 
 bool tls13_get_cert_verify_signature_input(
     SSL_HANDSHAKE *hs, Array<uint8_t> *out,
@@ -645,7 +648,8 @@ static bool tls13_receive_key_update(SSL *ssl, const SSLMessage &msg) {
 bool tls13_post_handshake(SSL *ssl, const SSLMessage &msg) {
   if (msg.type == SSL3_MT_KEY_UPDATE) {
     ssl->s3->key_update_count++;
-    if (ssl->s3->key_update_count > kMaxKeyUpdates) {
+    if (ssl->ctx->quic_method != nullptr ||
+        ssl->s3->key_update_count > kMaxKeyUpdates) {
       OPENSSL_PUT_ERROR(SSL, SSL_R_TOO_MANY_KEY_UPDATES);
       ssl_send_alert(ssl, SSL3_AL_FATAL, SSL_AD_UNEXPECTED_MESSAGE);
       return false;

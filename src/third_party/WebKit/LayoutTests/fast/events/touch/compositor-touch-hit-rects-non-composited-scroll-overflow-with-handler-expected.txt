@@ -1,6 +1,0 @@
-notclipped: #document scrolling (0, 0, 302, 102)
-
-clipped: #document scrolling (0, 0, 302, 102)
-clipped: #document scrolling (1, 176, 200, 25)
-
-

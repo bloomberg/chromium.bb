@@ -82,11 +82,10 @@ void SubresourceFilterComponentInstallerPolicy::ComponentReady(
       install_dir.Append(subresource_filter::kUnindexedRulesetDataFileName);
   ruleset_info.license_path =
       install_dir.Append(subresource_filter::kUnindexedRulesetLicenseFileName);
-  subresource_filter::ContentRulesetService* content_ruleset_service =
+  subresource_filter::RulesetService* ruleset_service =
       g_browser_process->subresource_filter_ruleset_service();
-  if (content_ruleset_service) {
-    content_ruleset_service->IndexAndStoreAndPublishRulesetIfNeeded(
-        ruleset_info);
+  if (ruleset_service) {
+    ruleset_service->IndexAndStoreAndPublishRulesetIfNeeded(ruleset_info);
   }
 }
 

@@ -28,9 +28,9 @@ class MODULES_EXPORT CanMakePaymentEvent final : public ExtendableEvent {
 
  public:
   static CanMakePaymentEvent* Create(const AtomicString& type,
-                                     const CanMakePaymentEventInit&);
+                                     const CanMakePaymentEventInit*);
   static CanMakePaymentEvent* Create(const AtomicString& type,
-                                     const CanMakePaymentEventInit&,
+                                     const CanMakePaymentEventInit*,
                                      RespondWithObserver*,
                                      WaitUntilObserver*);
   ~CanMakePaymentEvent() override;
@@ -39,8 +39,8 @@ class MODULES_EXPORT CanMakePaymentEvent final : public ExtendableEvent {
 
   const String& topOrigin() const;
   const String& paymentRequestOrigin() const;
-  const HeapVector<PaymentMethodData>& methodData() const;
-  const HeapVector<PaymentDetailsModifier>& modifiers() const;
+  const HeapVector<Member<PaymentMethodData>>& methodData() const;
+  const HeapVector<Member<PaymentDetailsModifier>>& modifiers() const;
 
   void respondWith(ScriptState*, ScriptPromise, ExceptionState&);
 
@@ -48,14 +48,14 @@ class MODULES_EXPORT CanMakePaymentEvent final : public ExtendableEvent {
 
  private:
   CanMakePaymentEvent(const AtomicString& type,
-                      const CanMakePaymentEventInit&,
+                      const CanMakePaymentEventInit*,
                       RespondWithObserver*,
                       WaitUntilObserver*);
 
   String top_origin_;
   String payment_request_origin_;
-  HeapVector<PaymentMethodData> method_data_;
-  HeapVector<PaymentDetailsModifier> modifiers_;
+  HeapVector<Member<PaymentMethodData>> method_data_;
+  HeapVector<Member<PaymentDetailsModifier>> modifiers_;
 
   Member<RespondWithObserver> observer_;
 };

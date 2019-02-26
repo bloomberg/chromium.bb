@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -34,6 +33,7 @@ _format_modules = {
   'data_package': 'data_pack',
   'gzipped_resource_file_map_source': 'resource_map',
   'gzipped_resource_map_header': 'resource_map',
+  'gzipped_resource_map_source': 'resource_map',
   'js_map_format': 'js_map_format',
   'policy_templates': 'policy_templates_json',
   'rc_all': 'rc',
@@ -163,6 +163,7 @@ are exported to translation interchange files (e.g. XMB files), etc.
     replace_ellipsis = True
     (own_opts, args) = getopt.getopt(args, 'a:p:o:D:E:f:w:t:',
         ('depdir=','depfile=','assert-file-list=',
+         'help',
          'output-all-resource-defines',
          'no-output-all-resource-defines',
          'no-replace-ellipsis',
@@ -209,6 +210,9 @@ are exported to translation interchange files (e.g. XMB files), etc.
         js_minifier = val
       elif key == '--whitelist-support':
         whitelist_support = True
+      elif key == '--help':
+        self.ShowUsage()
+        sys.exit(0)
 
     if len(args):
       print 'This tool takes no tool-specific arguments.'
@@ -332,10 +336,12 @@ are exported to translation interchange files (e.g. XMB files), etc.
     # Microsoft's RC compiler can only deal with single-byte or double-byte
     # files (no UTF-8), so we make all RC files UTF-16 to support all
     # character sets.
-    if output_type in ('rc_header', 'resource_map_header',
-                       'resource_map_source', 'resource_file_map_source',
+    if output_type in ('rc_header', 'resource_file_map_source',
+                       'resource_map_header', 'resource_map_source',
+                       'gzipped_resource_file_map_source',
                        'gzipped_resource_map_header',
-                       'gzipped_resource_file_map_source'):
+                       'gzipped_resource_map_source',
+                      ):
       return 'cp1252'
     if output_type in ('android', 'c_format', 'js_map_format', 'plist',
                        'plist_strings', 'doc', 'json', 'android_policy',

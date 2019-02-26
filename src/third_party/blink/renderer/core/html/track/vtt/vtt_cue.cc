@@ -30,7 +30,7 @@
 #include "third_party/blink/renderer/core/html/track/vtt/vtt_cue.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/double_or_auto_keyword.h"
-#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -530,8 +530,8 @@ class VTTTextRunIterator : public TextRunIterator {
     // Within a cue, paragraph boundaries are only denoted by Type B characters,
     // such as U+000A LINE FEED (LF), U+0085 NEXT LINE (NEL),
     // and U+2029 PARAGRAPH SEPARATOR.
-    return WTF::Unicode::Category(Current()) &
-           WTF::Unicode::kSeparator_Paragraph;
+    return WTF::unicode::Category(Current()) &
+           WTF::unicode::kSeparator_Paragraph;
   }
 };
 

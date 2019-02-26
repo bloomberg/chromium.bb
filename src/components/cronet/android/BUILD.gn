@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//base/android/jni_generator/jni_exception_list.gni")
 import("//build/buildflag_header.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
@@ -13,6 +12,9 @@ import("//testing/test.gni")
 import("//third_party/netty4/netty4.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("//url/features.gni")
+
+_jni_registration_header = "$target_gen_dir/cronet_jni_registration.h"
+_templates_dir = "$target_gen_dir/templates"
 
 declare_args() {
   # In integrated mode, CronetEngine will use the shared network task runner by
@@ -39,15 +41,17 @@ generate_jni("cronet_jni_headers") {
 }
 
 generate_jni_registration("cronet_jni_registration") {
-  target = ":cronet_jni_apk"
-  output = "$root_gen_dir/components/cronet/android/${target_name}.h"
-  exception_files = jni_exception_files
-
-  exception_files += [
+  target = ":cronet_impl_all_java"
+  header_output = _jni_registration_header
+  sources_blacklist = [
     "//base/android/java/src/org/chromium/base/library_loader/LibraryLoader.java",
     "//base/android/java/src/org/chromium/base/process_launcher/ChildProcessService.java",
     "//base/android/java/src/org/chromium/base/SysUtils.java",
   ]
+}
+
+java_library("cronet_jni_registration_java") {
+  srcjar_deps = [ ":cronet_jni_registration" ]
 }
 
 java_cpp_enum("effective_connection_type_java") {
@@ -106,13 +110,10 @@ java_cpp_template("integrated_mode_state") {
   }
 }
 
-_generated_api_version_java_dir =
-    "$target_gen_dir/templates/cronet_api_version_java"
-_generated_api_version_java =
-    "$_generated_api_version_java_dir/org/chromium/net/ApiVersion.java"
+_generated_api_version_java = "$_templates_dir/org/chromium/net/ApiVersion.java"
+_api_level = read_file("api_version.txt", "value")
 
-process_version("cronet_api_version_java") {
-  _api_level = read_file("api_version.txt", "value")
+process_version("api_version") {
   template_file = "api/src/org/chromium/net/ApiVersion.template"
   sources = [
     "//chrome/VERSION",
@@ -125,24 +126,10 @@ process_version("cronet_api_version_java") {
   output = _generated_api_version_java
 }
 
-zip("cronet_api_version_srcjar") {
-  inputs = [
-    _generated_api_version_java,
-  ]
-  output = "$target_gen_dir/$target_name.srcjar"
-  base_dir = _generated_api_version_java_dir
-  deps = [
-    ":cronet_api_version_java",
-  ]
-}
-
-_generated_impl_version_java_dir =
-    "$target_gen_dir/templates/cronet_impl_version_java"
 _generated_impl_version_java =
-    "$_generated_impl_version_java_dir/org/chromium/net/impl/ImplVersion.java"
+    "$_templates_dir/org/chromium/net/impl/ImplVersion.java"
 
-process_version("cronet_impl_version_java") {
-  _api_level = read_file("api_version.txt", "value")
+process_version("impl_version") {
   template_file = "java/src/org/chromium/net/impl/ImplVersion.template"
   sources = [
     "//chrome/VERSION",
@@ -153,17 +140,6 @@ process_version("cronet_impl_version_java") {
     "API_LEVEL=$_api_level",
   ]
   output = _generated_impl_version_java
-}
-
-zip("cronet_impl_version_srcjar") {
-  inputs = [
-    _generated_impl_version_java,
-  ]
-  output = "$target_gen_dir/$target_name.srcjar"
-  base_dir = _generated_impl_version_java_dir
-  deps = [
-    ":cronet_impl_version_java",
-  ]
 }
 
 _cronet_version_header_include_dir = "$target_gen_dir/cronet_version_header"
@@ -201,6 +177,7 @@ source_set("cronet_static") {
     "//components/cronet/android/metrics_util.h",
     "//components/cronet/android/url_request_error.cc",
     "//components/cronet/android/url_request_error.h",
+    _jni_registration_header,
   ]
 
   if (integrated_mode) {
@@ -250,8 +227,6 @@ shared_library("cronet") {
   configs += [ ":hide_all_but_jni_onload_and_cronet" ]
 }
 
-cronet_api_srcjar_deps = [ ":cronet_api_version_srcjar" ]
-
 # cronet_api_java.jar defines Cronet API.
 android_library("cronet_api_java") {
   java_files = [
@@ -275,17 +250,16 @@ android_library("cronet_api_java") {
     "api/src/org/chromium/net/UploadDataSink.java",
     "api/src/org/chromium/net/UrlRequest.java",
     "api/src/org/chromium/net/UrlResponseInfo.java",
+    _generated_api_version_java,
   ]
 
   deps = [
+    ":api_version",
     "//third_party/android_deps:android_support_annotations_java",
   ]
-
-  srcjar_deps = cronet_api_srcjar_deps
 }
 
 cronet_impl_common_java_srcjar_deps = [
-  ":cronet_impl_version_srcjar",
   ":effective_connection_type_java",
   ":http_cache_type_java",
   ":integrated_mode_state",
@@ -313,12 +287,14 @@ android_library("cronet_impl_common_base_java") {
     "java/src/org/chromium/net/impl/UrlResponseInfoImpl.java",
     "java/src/org/chromium/net/impl/UserAgent.java",
     "java/src/org/chromium/net/impl/VersionSafeCallbacks.java",
+    _generated_impl_version_java,
   ]
 
   # Adding deps here won't include those deps in the cronet_impl_common_java.jar.
   # Please add to cronet_impl_common_java_deps_to_package instead.
   deps = [
     ":cronet_api_java",
+    ":impl_version",
     "//third_party/android_deps:android_support_annotations_java",
   ]
   deps += cronet_impl_common_java_deps_to_package
@@ -339,6 +315,7 @@ android_library("cronet_impl_platform_base_java") {
   deps = [
     ":cronet_api_java",
     ":cronet_impl_common_base_java",
+    "//net/android:net_thread_stats_uid_java",
     "//third_party/android_deps:android_support_annotations_java",
     "//third_party/jsr-305:jsr_305_javalib",
   ]
@@ -409,17 +386,6 @@ java_group("cronet_impl_all_java") {
     ":cronet_impl_common_base_java",
     ":cronet_impl_native_base_java",
     ":cronet_impl_platform_base_java",
-  ]
-}
-
-# This target exists only to provide input to the generate_jni_registration
-# target previously declared.  It contains all Java with JNI declarations.
-android_apk("cronet_jni_apk") {
-  apk_name = "CronetJni"
-  android_manifest = "sample/AndroidManifest.xml"
-  deps = [
-    ":cronet_impl_all_java",
-    "//third_party/android_deps:android_support_v7_appcompat_java",
   ]
 }
 
@@ -507,6 +473,7 @@ android_java_prebuilt("package_impl_native_java") {
     ":package_api_java",
     ":package_impl_common_java",
     ":repackage_extracted_native_jars",
+    "//third_party/android_deps:android_support_v4_java",
     "//third_party/jsr-305:jsr_305_javalib",
   ]
 }
@@ -593,14 +560,19 @@ template("jar_src") {
 }
 
 jar_src("jar_cronet_api_source") {
-  src_search_dirs = [ "api/src" ]
+  src_search_dirs = [
+    "api/src",
+    _templates_dir,
+  ]
   source_deps = [ ":cronet_api_java" ]
-  srcjar_deps = cronet_api_srcjar_deps
   jar_path = "$_package_dir/cronet_api-src.jar"
 }
 
 jar_src("jar_cronet_impl_common_java_source") {
-  src_search_dirs = [ "java/src" ]
+  src_search_dirs = [
+    "java/src",
+    _templates_dir,
+  ]
   source_deps = [ ":cronet_impl_common_base_java" ]
   srcjar_deps = cronet_impl_common_java_srcjar_deps
   jar_path = "$_package_dir/cronet_impl_common_java-src.jar"
@@ -686,6 +658,7 @@ action("extract_cronet_native_jars") {
 
   deps = [
     ":cronet_impl_native_base_java",
+    ":cronet_jni_registration_java",
   ]
   deps += cronet_impl_native_java_deps_to_package
 
@@ -1030,7 +1003,9 @@ if (!is_component_build) {
     deps = [
       ":cronet_api_java",
       ":cronet_impl_all_java",
+      ":cronet_urlconnection_impl_java",
       "//third_party/android_support_test_runner:runner_java",
+      "//third_party/hamcrest:hamcrest_core_java",
       "//third_party/junit",
     ]
     deps += cronet_javatests_deps_to_package
@@ -1373,6 +1348,7 @@ if (!is_component_build) {
       "//url:url_java",
     ]
     srcjar_deps = cronet_impl_native_java_srcjar_deps + [
+                    ":cronet_jni_registration",
                     "//base:base_android_java_enums_srcjar",
                     "//net/android:net_android_java_enums_srcjar",
                     "//net/android:net_errors_java",
@@ -1534,9 +1510,11 @@ if (!is_component_build) {
   copy("cronet_package_copy_test_files") {
     testonly = true
     sources = [
+      "//net/data/ssl/certificates/expired_cert.pem",
       "//net/data/ssl/certificates/quic-chain.pem",
       "//net/data/ssl/certificates/quic-leaf-cert.key",
       "//net/data/ssl/certificates/quic-leaf-cert.key.pkcs8.pem",
+      "//net/data/ssl/certificates/root_ca_cert.pem",
     ]
     outputs = [
       "$_test_package_dir/assets/test_files/net/data/ssl/certificates/{{source_file_part}}",
@@ -1669,200 +1647,5 @@ if (!is_component_build) {
         ":repackage_extracted_test_jars",
       ]
     }
-  }
-
-  _maven_dir = "$_package_dir/maven-$current_cpu"
-  _maven_modules_dir = "$_maven_dir/org/chromium/net"
-  _maven_test_dir = "$_maven_dir/test"
-  _maven_version =
-      "$chrome_version_major.$chrome_version_build.$chrome_version_patch"
-
-  copy("cronet_maven_test_copy") {
-    sources = [
-      "maven/build.gradle",
-      "maven/local.properties",
-      "maven/settings.gradle",
-    ]
-    outputs = [
-      "$_maven_test_dir/{{source_file_part}}",
-    ]
-  }
-
-  process_version("cronet_maven_build_embedded_copy") {
-    template_file = "maven/test/build_embedded.gradle.template"
-    sources = [
-      "//chrome/VERSION",
-      lastchange_file,
-    ]
-    output = "$_maven_test_dir/test_embedded/build.gradle"
-  }
-
-  process_version("cronet_maven_build_fallback_copy") {
-    template_file = "maven/test/build_fallback.gradle.template"
-    sources = [
-      "//chrome/VERSION",
-      lastchange_file,
-    ]
-    output = "$_maven_test_dir/test_fallback/build.gradle"
-  }
-
-  if (use_platform_icu_alternatives) {
-    action("cronet_maven_test_build") {
-      script = "maven/test/build_with_gradle.py"
-      depfile = "$target_gen_dir/$target_name.d"
-      deps = [
-        ":cronet_maven_build_embedded_copy",
-        ":cronet_maven_build_fallback_copy",
-        ":cronet_maven_modules",
-        ":cronet_maven_test_copy",
-
-        # These deps ensure all source files of the sample app are deps.
-        ":cronet_sample_apk",
-        ":cronet_sample_test_apk",
-      ]
-      _stamp_file = "$target_gen_dir/$target_name.stamp"
-      outputs = [
-        _stamp_file,
-        "$_maven_test_dir/build/outputs/apk/debug/test-debug.apk",
-        "$_maven_test_dir/build/outputs/apk/androidTest/debug/test-debug-androidTest.apk",
-      ]
-      args = [
-        "--project-dir",
-        rebase_path("$_maven_test_dir"),
-        "--depfile",
-        rebase_path(depfile, root_build_dir),
-        "--stamp",
-        rebase_path(_stamp_file, root_build_dir),
-      ]
-      testonly = true
-    }
-  }
-
-  # Builds a maven module.
-  template("cronet_maven_module") {
-    _module_name = invoker.module_name
-
-    # Build POM file.
-    _pom_target_name = "pom_$target_name"
-    _deps = [ ":$_pom_target_name" ]
-    process_version(_pom_target_name) {
-      template_file = "maven/$_module_name.pom.template"
-      sources = [
-        "//chrome/VERSION",
-        lastchange_file,
-      ]
-      output = "$_maven_modules_dir/$_module_name/$_maven_version/$_module_name-$_maven_version.pom"
-    }
-
-    if (defined(invoker.resource_dir)) {
-      android_resources(invoker.module_name + "_resources") {
-        resource_dirs = [ invoker.resource_dir ]
-        android_manifest = "../../../build/android/AndroidManifest.xml"
-      }
-    }
-
-    # Build AAR file.
-    _aar_target_name = "aar_$target_name"
-    dist_aar(_aar_target_name) {
-      deps = [
-        ":cronet_package_copy",
-        invoker.aar_jar_dep,
-      ]
-      direct_deps_only = true
-      if (defined(invoker.aar_proguard_config)) {
-        proguard_configs = [ invoker.aar_proguard_config ]
-      }
-      if (defined(invoker.aar_native_lib_dep)) {
-        native_libraries = get_target_outputs(invoker.aar_native_lib_dep)
-        deps += [ invoker.aar_native_lib_dep ]
-      }
-      if (defined(invoker.resource_dir)) {
-        deps += [ ":" + invoker.module_name + "_resources" ]
-      }
-      output = "$root_build_dir/$_aar_target_name.aar"
-    }
-
-    _aar_copy_target_name = "$target_name.aar"
-    _deps += [ ":$_aar_copy_target_name" ]
-    copy(_aar_copy_target_name) {
-      sources = get_target_outputs(":$_aar_target_name")
-      outputs = [
-        "$_maven_modules_dir/$_module_name/$_maven_version/$_module_name-$_maven_version.aar",
-      ]
-      deps = [
-        ":$_aar_target_name",
-      ]
-    }
-
-    if (defined(invoker.src_jar_dep)) {
-      _copy_target_name = "$target_name-sources.jar"
-      _deps += [ ":$_copy_target_name" ]
-      copy(_copy_target_name) {
-        sources = get_target_outputs(invoker.src_jar_dep)
-        outputs = [
-          "$_maven_modules_dir/$_module_name/$_maven_version/$_module_name-$_maven_version-sources.jar",
-        ]
-        deps = [
-          invoker.src_jar_dep,
-        ]
-      }
-    }
-
-    if (defined(invoker.javadoc_jar_dep)) {
-      _copy_target_name = "$target_name-javadoc.jar"
-      _deps += [ ":$_copy_target_name" ]
-      copy(_copy_target_name) {
-        sources = get_target_outputs(invoker.javadoc_jar_dep)
-        outputs = [
-          "$_maven_modules_dir/$_module_name/$_maven_version/$_module_name-$_maven_version-javadoc.jar",
-        ]
-        deps = [
-          invoker.javadoc_jar_dep,
-        ]
-      }
-    }
-
-    group(target_name) {
-      deps = _deps
-    }
-  }
-
-  cronet_maven_module("cronet_maven_api_module") {
-    module_name = "cronet-api"
-    aar_jar_dep = ":package_api_java"
-    src_jar_dep = ":jar_cronet_api_source"
-    javadoc_jar_dep = ":generate_javadoc"
-    resource_dir = "api/res"
-  }
-
-  cronet_maven_module("cronet_maven_impl_common_module") {
-    module_name = "cronet-common"
-    aar_jar_dep = ":package_impl_common_java"
-    aar_proguard_config = "$_package_dir/cronet_impl_common_proguard.cfg"
-    src_jar_dep = ":jar_cronet_impl_common_java_source"
-  }
-
-  cronet_maven_module("cronet_maven_impl_native_module") {
-    module_name = "cronet-embedded"
-    aar_jar_dep = ":package_impl_native_java"
-    aar_proguard_config = "$_package_dir/cronet_impl_native_proguard.cfg"
-    aar_native_lib_dep = ":cronet_package_copy_native_lib"
-    src_jar_dep = ":jar_cronet_impl_native_java_source"
-  }
-
-  cronet_maven_module("cronet_maven_impl_platform_module") {
-    module_name = "cronet-fallback"
-    aar_jar_dep = ":package_impl_platform_java"
-    aar_proguard_config = "$_package_dir/cronet_impl_platform_proguard.cfg"
-    src_jar_dep = ":jar_cronet_impl_platform_java_source"
-  }
-
-  group("cronet_maven_modules") {
-    deps = [
-      ":cronet_maven_api_module",
-      ":cronet_maven_impl_common_module",
-      ":cronet_maven_impl_native_module",
-      ":cronet_maven_impl_platform_module",
-    ]
   }
 }

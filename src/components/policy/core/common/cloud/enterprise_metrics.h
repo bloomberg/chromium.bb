@@ -17,7 +17,8 @@ namespace policy {
 // This enum is used to define the buckets for an enumerated UMA histogram.
 // Hence,
 //   (a) existing enumerated constants should never be deleted or reordered, and
-//   (b) new constants should only be appended at the end of the enumeration.
+//   (b) new constants should only be appended at the end of the enumeration
+//       (update tools/metrics/histograms/enums.xml as well).
 enum MetricToken {
   // A cached token was successfully loaded from disk.
   kMetricTokenLoadSucceeded = 0,
@@ -62,7 +63,8 @@ enum MetricToken {
 // This enum is used to define the buckets for an enumerated UMA histogram.
 // Hence,
 //   (a) existing enumerated constants should never be deleted or reordered, and
-//   (b) new constants should only be appended at the end of the enumeration.
+//   (b) new constants should only be appended at the end of the enumeration
+//       (update tools/metrics/histograms/enums.xml as well).
 enum MetricPolicy {
   // A cached policy was successfully loaded from disk.
   kMetricPolicyLoadSucceeded = 0,
@@ -117,7 +119,8 @@ enum MetricPolicy {
 // This enum is used to define the buckets for an enumerated UMA histogram.
 // Hence,
 //   (a) existing enumerated constants should never be deleted or reordered, and
-//   (b) new constants should only be appended at the end of the enumeration.
+//   (b) new constants should only be appended at the end of the enumeration
+//       (update tools/metrics/histograms/enums.xml as well).
 enum MetricEnrollment {
   // User pressed 'Cancel' during the enrollment process.
   kMetricEnrollmentCancelled = 0,
@@ -234,13 +237,18 @@ enum MetricEnrollment {
   kMetricEnrollmentLicenseRequestFailed = 57,
   // Registration failed: Consumer account with packaged license.
   kMetricEnrollmentRegisterConsumerAccountWithPackagedLicense = 58,
+  // Device was not pre-provisioned for Zero-Touch.
+  kMetricEnrollmentDeviceNotPreProvisioned = 59,
+  // Max value for use with enumeration histogram UMA functions.
+  kMaxValue = kMetricEnrollmentDeviceNotPreProvisioned
 };
 
 // Events related to policy refresh.
 // This enum is used to define the buckets for an enumerated UMA histogram.
 // Hence,
 //   (a) existing enumerated constants should never be deleted or reordered, and
-//   (b) new constants should only be appended at the end of the enumeration.
+//   (b) new constants should only be appended at the end of the enumeration
+//       (update tools/metrics/histograms/enums.xml as well).
 enum MetricPolicyRefresh {
   // A refresh occurred while the policy was not invalidated and the policy was
   // changed. Invalidations were enabled.
@@ -265,7 +273,8 @@ enum MetricPolicyRefresh {
 // This enum is used to define the buckets for an enumerated UMA histogram.
 // Hence,
 //   (a) existing enumerated constants should never be deleted or reordered, and
-//   (b) new constants should only be appended at the end of the enumeration.
+//   (b) new constants should only be appended at the end of the enumeration
+//       (update tools/metrics/histograms/enums.xml as well).
 enum PolicyInvalidationType {
   // The invalidation contained no payload.
   POLICY_INVALIDATION_TYPE_NO_PAYLOAD = 0,
@@ -284,7 +293,8 @@ enum PolicyInvalidationType {
 // This enum is used to define the buckets for an enumerated UMA histogram.
 // Hence,
 //   (a) existing enumerated constants should never be deleted or reordered, and
-//   (b) new constants should only be appended at the end of the enumeration.
+//   (b) new constants should only be appended at the end of the enumeration
+//       (update tools/metrics/histograms/enums.xml as well).
 enum class MetricUserPolicyChromeOSSessionAbortType {
   // Abort of asynchronous user policy initialization when the user is managed
   // with the Google cloud management.

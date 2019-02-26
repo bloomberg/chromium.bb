@@ -34,10 +34,9 @@ class NavigatorInstalledApp final
 
   InstalledAppController* Controller();
 
-  void Trace(blink::Visitor*) override;
-
- private:
   explicit NavigatorInstalledApp(Navigator&);
+
+  void Trace(blink::Visitor*) override;
 };
 
 }  // namespace blink

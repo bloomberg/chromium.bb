@@ -11,13 +11,13 @@ namespace blink {
 
 class CSSParserLocalContext;
 
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* StrokeOpacity::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSPropertyParserHelpers::ConsumeNumber(range, kValueRangeAll);
+  return css_property_parser_helpers::ConsumeNumber(range, kValueRangeAll);
 }
 
 const CSSValue* StrokeOpacity::CSSValueFromComputedStyleInternal(
@@ -30,5 +30,5 @@ const CSSValue* StrokeOpacity::CSSValueFromComputedStyleInternal(
                                    CSSPrimitiveValue::UnitType::kNumber);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

@@ -354,7 +354,7 @@ public class ContextualSearchManager
     }
 
     /** @return Whether the {@code mSearchPanel} is not {@code null} and is showing. */
-    private boolean isSearchPanelShowing() {
+    boolean isSearchPanelShowing() {
         return mSearchPanel != null && mSearchPanel.isShowing();
     }
 

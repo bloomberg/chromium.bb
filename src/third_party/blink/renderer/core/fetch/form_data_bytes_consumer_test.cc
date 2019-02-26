@@ -126,9 +126,10 @@ class FormDataBytesConsumerTest : public PageTestBase {
 };
 
 TEST_F(FormDataBytesConsumerTest, TwoPhaseReadFromString) {
-  auto result = (new BytesConsumerTestUtil::TwoPhaseReader(
-                     new FormDataBytesConsumer("hello, world")))
-                    ->Run();
+  auto result =
+      (new BytesConsumerTestUtil::TwoPhaseReader(
+           MakeGarbageCollected<FormDataBytesConsumer>("hello, world")))
+          ->Run();
   EXPECT_EQ(Result::kDone, result.first);
   EXPECT_EQ("hello, world",
             BytesConsumerTestUtil::CharVectorToString(result.second));
@@ -137,7 +138,7 @@ TEST_F(FormDataBytesConsumerTest, TwoPhaseReadFromString) {
 TEST_F(FormDataBytesConsumerTest, TwoPhaseReadFromStringNonLatin) {
   constexpr UChar kCs[] = {0x3042, 0};
   auto result = (new BytesConsumerTestUtil::TwoPhaseReader(
-                     new FormDataBytesConsumer(String(kCs))))
+                     MakeGarbageCollected<FormDataBytesConsumer>(String(kCs))))
                     ->Run();
   EXPECT_EQ(Result::kDone, result.first);
   EXPECT_EQ("\xe3\x81\x82",
@@ -149,7 +150,7 @@ TEST_F(FormDataBytesConsumerTest, TwoPhaseReadFromArrayBuffer) {
                                      0x42, 0x30, 0x42, 0x99, 0x88};
   DOMArrayBuffer* buffer = DOMArrayBuffer::Create(kData, arraysize(kData));
   auto result = (new BytesConsumerTestUtil::TwoPhaseReader(
-                     new FormDataBytesConsumer(buffer)))
+                     MakeGarbageCollected<FormDataBytesConsumer>(buffer)))
                     ->Run();
   Vector<char> expected;
   expected.Append(kData, arraysize(kData));
@@ -163,10 +164,10 @@ TEST_F(FormDataBytesConsumerTest, TwoPhaseReadFromArrayBufferView) {
                                      0x42, 0x30, 0x42, 0x99, 0x88};
   constexpr size_t kOffset = 1, kSize = 4;
   DOMArrayBuffer* buffer = DOMArrayBuffer::Create(kData, arraysize(kData));
-  auto result =
-      (new BytesConsumerTestUtil::TwoPhaseReader(new FormDataBytesConsumer(
-           DOMUint8Array::Create(buffer, kOffset, kSize))))
-          ->Run();
+  auto result = (new BytesConsumerTestUtil::TwoPhaseReader(
+                     MakeGarbageCollected<FormDataBytesConsumer>(
+                         DOMUint8Array::Create(buffer, kOffset, kSize))))
+                    ->Run();
   Vector<char> expected;
   expected.Append(kData + kOffset, kSize);
 
@@ -179,9 +180,10 @@ TEST_F(FormDataBytesConsumerTest, TwoPhaseReadFromSimpleFormData) {
   data->AppendData("foo", 3);
   data->AppendData("hoge", 4);
 
-  auto result = (new BytesConsumerTestUtil::TwoPhaseReader(
-                     new FormDataBytesConsumer(&GetDocument(), data)))
-                    ->Run();
+  auto result =
+      (new BytesConsumerTestUtil::TwoPhaseReader(
+           MakeGarbageCollected<FormDataBytesConsumer>(&GetDocument(), data)))
+          ->Run();
   EXPECT_EQ(Result::kDone, result.first);
   EXPECT_EQ("foohoge",
             BytesConsumerTestUtil::CharVectorToString(result.second));
@@ -213,7 +215,8 @@ TEST_F(FormDataBytesConsumerTest, TwoPhaseReadFromComplexFormData) {
 }
 
 TEST_F(FormDataBytesConsumerTest, EndReadCanReturnDone) {
-  BytesConsumer* consumer = new FormDataBytesConsumer("hello, world");
+  BytesConsumer* consumer =
+      MakeGarbageCollected<FormDataBytesConsumer>("hello, world");
   const char* buffer = nullptr;
   size_t available = 0;
   ASSERT_EQ(Result::kOk, consumer->BeginRead(&buffer, &available));
@@ -226,7 +229,8 @@ TEST_F(FormDataBytesConsumerTest, EndReadCanReturnDone) {
 }
 
 TEST_F(FormDataBytesConsumerTest, DrainAsBlobDataHandleFromString) {
-  BytesConsumer* consumer = new FormDataBytesConsumer("hello, world");
+  BytesConsumer* consumer =
+      MakeGarbageCollected<FormDataBytesConsumer>("hello, world");
   scoped_refptr<BlobDataHandle> blob_data_handle =
       consumer->DrainAsBlobDataHandle();
   ASSERT_TRUE(blob_data_handle);
@@ -241,8 +245,8 @@ TEST_F(FormDataBytesConsumerTest, DrainAsBlobDataHandleFromString) {
 }
 
 TEST_F(FormDataBytesConsumerTest, DrainAsBlobDataHandleFromArrayBuffer) {
-  BytesConsumer* consumer =
-      new FormDataBytesConsumer(DOMArrayBuffer::Create("foo", 3));
+  BytesConsumer* consumer = MakeGarbageCollected<FormDataBytesConsumer>(
+      DOMArrayBuffer::Create("foo", 3));
   scoped_refptr<BlobDataHandle> blob_data_handle =
       consumer->DrainAsBlobDataHandle();
   ASSERT_TRUE(blob_data_handle);
@@ -263,8 +267,8 @@ TEST_F(FormDataBytesConsumerTest, DrainAsBlobDataHandleFromSimpleFormData) {
   scoped_refptr<EncodedFormData> input_form_data =
       data->EncodeMultiPartFormData();
 
-  BytesConsumer* consumer =
-      new FormDataBytesConsumer(&GetDocument(), input_form_data);
+  BytesConsumer* consumer = MakeGarbageCollected<FormDataBytesConsumer>(
+      &GetDocument(), input_form_data);
   scoped_refptr<BlobDataHandle> blob_data_handle =
       consumer->DrainAsBlobDataHandle();
   ASSERT_TRUE(blob_data_handle);
@@ -282,8 +286,8 @@ TEST_F(FormDataBytesConsumerTest, DrainAsBlobDataHandleFromSimpleFormData) {
 TEST_F(FormDataBytesConsumerTest, DrainAsBlobDataHandleFromComplexFormData) {
   scoped_refptr<EncodedFormData> input_form_data = ComplexFormData();
 
-  BytesConsumer* consumer =
-      new FormDataBytesConsumer(&GetDocument(), input_form_data);
+  BytesConsumer* consumer = MakeGarbageCollected<FormDataBytesConsumer>(
+      &GetDocument(), input_form_data);
   scoped_refptr<BlobDataHandle> blob_data_handle =
       consumer->DrainAsBlobDataHandle();
   ASSERT_TRUE(blob_data_handle);
@@ -296,7 +300,8 @@ TEST_F(FormDataBytesConsumerTest, DrainAsBlobDataHandleFromComplexFormData) {
 }
 
 TEST_F(FormDataBytesConsumerTest, DrainAsFormDataFromString) {
-  BytesConsumer* consumer = new FormDataBytesConsumer("hello, world");
+  BytesConsumer* consumer =
+      MakeGarbageCollected<FormDataBytesConsumer>("hello, world");
   scoped_refptr<EncodedFormData> form_data = consumer->DrainAsFormData();
   ASSERT_TRUE(form_data);
   EXPECT_EQ("hello, world", form_data->FlattenToString());
@@ -309,8 +314,8 @@ TEST_F(FormDataBytesConsumerTest, DrainAsFormDataFromString) {
 }
 
 TEST_F(FormDataBytesConsumerTest, DrainAsFormDataFromArrayBuffer) {
-  BytesConsumer* consumer =
-      new FormDataBytesConsumer(DOMArrayBuffer::Create("foo", 3));
+  BytesConsumer* consumer = MakeGarbageCollected<FormDataBytesConsumer>(
+      DOMArrayBuffer::Create("foo", 3));
   scoped_refptr<EncodedFormData> form_data = consumer->DrainAsFormData();
   ASSERT_TRUE(form_data);
   EXPECT_TRUE(form_data->IsSafeToSendToAnotherThread());
@@ -330,8 +335,8 @@ TEST_F(FormDataBytesConsumerTest, DrainAsFormDataFromSimpleFormData) {
   scoped_refptr<EncodedFormData> input_form_data =
       data->EncodeMultiPartFormData();
 
-  BytesConsumer* consumer =
-      new FormDataBytesConsumer(&GetDocument(), input_form_data);
+  BytesConsumer* consumer = MakeGarbageCollected<FormDataBytesConsumer>(
+      &GetDocument(), input_form_data);
   EXPECT_EQ(input_form_data, consumer->DrainAsFormData());
   EXPECT_FALSE(consumer->DrainAsBlobDataHandle());
   const char* buffer = nullptr;
@@ -343,8 +348,8 @@ TEST_F(FormDataBytesConsumerTest, DrainAsFormDataFromSimpleFormData) {
 TEST_F(FormDataBytesConsumerTest, DrainAsFormDataFromComplexFormData) {
   scoped_refptr<EncodedFormData> input_form_data = ComplexFormData();
 
-  BytesConsumer* consumer =
-      new FormDataBytesConsumer(&GetDocument(), input_form_data);
+  BytesConsumer* consumer = MakeGarbageCollected<FormDataBytesConsumer>(
+      &GetDocument(), input_form_data);
   EXPECT_EQ(input_form_data, consumer->DrainAsFormData());
   EXPECT_FALSE(consumer->DrainAsBlobDataHandle());
   const char* buffer = nullptr;
@@ -356,7 +361,8 @@ TEST_F(FormDataBytesConsumerTest, DrainAsFormDataFromComplexFormData) {
 TEST_F(FormDataBytesConsumerTest, BeginReadAffectsDraining) {
   const char* buffer = nullptr;
   size_t available = 0;
-  BytesConsumer* consumer = new FormDataBytesConsumer("hello, world");
+  BytesConsumer* consumer =
+      MakeGarbageCollected<FormDataBytesConsumer>("hello, world");
   ASSERT_EQ(Result::kOk, consumer->BeginRead(&buffer, &available));
   EXPECT_EQ("hello, world", String(buffer, available));
 
@@ -447,7 +453,8 @@ TEST_F(FormDataBytesConsumerTest, CancelWithComplexFormData) {
 // Tests consuming an EncodedFormData with data pipe elements.
 TEST_F(FormDataBytesConsumerTest, DataPipeFormData) {
   scoped_refptr<EncodedFormData> input_form_data = DataPipeFormData();
-  auto* consumer = new FormDataBytesConsumer(&GetDocument(), input_form_data);
+  auto* consumer = MakeGarbageCollected<FormDataBytesConsumer>(&GetDocument(),
+                                                               input_form_data);
   auto* reader = new BytesConsumerTestUtil::TwoPhaseReader(consumer);
   std::pair<BytesConsumer::Result, Vector<char>> result = reader->Run();
   EXPECT_EQ(Result::kDone, result.first);
@@ -458,7 +465,8 @@ TEST_F(FormDataBytesConsumerTest, DataPipeFormData) {
 // Tests DrainAsFormData() on an EncodedFormData with data pipe elements.
 TEST_F(FormDataBytesConsumerTest, DataPipeFormData_DrainAsFormData) {
   scoped_refptr<EncodedFormData> input_form_data = DataPipeFormData();
-  auto* consumer = new FormDataBytesConsumer(&GetDocument(), input_form_data);
+  auto* consumer = MakeGarbageCollected<FormDataBytesConsumer>(&GetDocument(),
+                                                               input_form_data);
   scoped_refptr<EncodedFormData> drained_form_data =
       consumer->DrainAsFormData();
   EXPECT_EQ(*input_form_data, *drained_form_data);
@@ -471,7 +479,8 @@ TEST_F(FormDataBytesConsumerTest,
        DataPipeFormData_DrainAsFormDataWhileReading) {
   // Create the consumer and start reading.
   scoped_refptr<EncodedFormData> input_form_data = DataPipeFormData();
-  auto* consumer = new FormDataBytesConsumer(&GetDocument(), input_form_data);
+  auto* consumer = MakeGarbageCollected<FormDataBytesConsumer>(&GetDocument(),
+                                                               input_form_data);
   const char* buffer = nullptr;
   size_t available = 0;
   EXPECT_EQ(BytesConsumer::Result::kOk,

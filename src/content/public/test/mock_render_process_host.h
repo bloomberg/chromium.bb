@@ -34,10 +34,17 @@
 #include "content/public/browser/android/child_process_importance.h"
 #endif
 
+namespace network {
+namespace mojom {
+
+class URLLoaderFactory;
+
+}  // namespace mojom
+}  // namespace network
+
 namespace content {
 
 class MockRenderProcessHostFactory;
-class RenderWidgetHost;
 class SiteInstance;
 class StoragePartition;
 
@@ -90,13 +97,16 @@ class MockRenderProcessHost : public RenderProcessHost {
   bool IsReady() const override;
   int GetID() const override;
   bool IsInitializedAndNotDead() const override;
-  void SetIgnoreInputEvents(bool ignore_input_events) override;
-  bool IgnoreInputEvents() const override;
+  void SetBlocked(bool blocked) override;
+  bool IsBlocked() const override;
+  std::unique_ptr<base::CallbackList<void(bool)>::Subscription>
+  RegisterBlockStateChangedCallback(
+      const base::RepeatingCallback<void(bool)>& cb) override;
   void Cleanup() override;
   void AddPendingView() override;
   void RemovePendingView() override;
-  void AddWidget(RenderWidgetHost* widget) override;
-  void RemoveWidget(RenderWidgetHost* widget) override;
+  void AddPriorityClient(PriorityClient* priority_client) override;
+  void RemovePriorityClient(PriorityClient* priority_client) override;
 #if defined(OS_ANDROID)
   ChildProcessImportance GetEffectiveImportance() override;
 #endif
@@ -117,7 +127,8 @@ class MockRenderProcessHost : public RenderProcessHost {
       bool incoming,
       bool outgoing,
       const WebRtcRtpPacketCallback& packet_callback) override;
-  void SetWebRtcEventLogOutput(int lid, bool enabled) override;
+  void EnableWebRtcEventLogOutput(int lid, int output_period_ms) override;
+  void DisableWebRtcEventLogOutput(int lid) override;
   void BindInterface(const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe) override;
   const service_manager::Identity& GetChildIdentity() const override;
@@ -137,6 +148,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   GetProcessResourceCoordinator() override;
   void CreateURLLoaderFactory(
       const url::Origin& origin,
+      network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
       network::mojom::URLLoaderFactoryRequest request) override;
 
   void SetIsNeverSuitableForReuse() override;
@@ -247,6 +259,10 @@ class MockRenderProcessHostFactory : public RenderProcessHostFactory {
   // for deleting all MockRenderProcessHosts that have not deleted by a test in
   // the destructor and prevent them from being leaked.
   mutable std::vector<std::unique_ptr<MockRenderProcessHost>> processes_;
+
+  // A mock URLLoaderFactory which just fails to create a loader.
+  std::unique_ptr<network::mojom::URLLoaderFactory>
+      default_mock_url_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderProcessHostFactory);
 };

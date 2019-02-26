@@ -14,8 +14,8 @@
 #include <map>
 #include <vector>
 
-#include "angle_gl.h"
 #include <GLSLANG/ShaderLang.h>
+#include "angle_gl.h"
 
 namespace sh
 {
@@ -33,8 +33,7 @@ struct BlockMemberInfo
           matrixStride(-1),
           isRowMajorMatrix(false),
           topLevelArrayStride(-1)
-    {
-    }
+    {}
 
     BlockMemberInfo(int offset, int arrayStride, int matrixStride, bool isRowMajorMatrix)
         : offset(offset),
@@ -42,8 +41,7 @@ struct BlockMemberInfo
           matrixStride(matrixStride),
           isRowMajorMatrix(isRowMajorMatrix),
           topLevelArrayStride(-1)
-    {
-    }
+    {}
 
     BlockMemberInfo(int offset,
                     int arrayStride,
@@ -55,8 +53,7 @@ struct BlockMemberInfo
           matrixStride(matrixStride),
           isRowMajorMatrix(isRowMajorMatrix),
           topLevelArrayStride(topLevelArrayStride)
-    {
-    }
+    {}
 
     static BlockMemberInfo getDefaultBlockInfo() { return BlockMemberInfo(-1, -1, -1, false, -1); }
 
@@ -78,6 +75,9 @@ class BlockLayoutEncoder
                                bool isRowMajorMatrix);
 
     size_t getBlockSize() const { return mCurrentOffset * BytesPerComponent; }
+    size_t getStructureBaseAlignment() const { return mStructureBaseAlignment; }
+    void increaseCurrentOffset(size_t offsetInBytes);
+    void setStructureBaseAlignment(size_t baseAlignment);
 
     virtual void enterAggregateType() = 0;
     virtual void exitAggregateType()  = 0;
@@ -90,8 +90,9 @@ class BlockLayoutEncoder
 
   protected:
     size_t mCurrentOffset;
+    size_t mStructureBaseAlignment;
 
-    void nextRegister();
+    virtual void nextRegister();
 
     virtual void getBlockLayoutInfo(GLenum type,
                                     const std::vector<unsigned int> &arraySizes,
@@ -129,12 +130,26 @@ class Std140BlockEncoder : public BlockLayoutEncoder
                        int matrixStride) override;
 };
 
+class Std430BlockEncoder : public Std140BlockEncoder
+{
+  public:
+    Std430BlockEncoder();
+
+  protected:
+    void nextRegister() override;
+    void getBlockLayoutInfo(GLenum type,
+                            const std::vector<unsigned int> &arraySizes,
+                            bool isRowMajorMatrix,
+                            int *arrayStrideOut,
+                            int *matrixStrideOut) override;
+};
+
 using BlockLayoutMap = std::map<std::string, BlockMemberInfo>;
 
-void GetUniformBlockInfo(const std::vector<InterfaceBlockField> &fields,
-                         const std::string &prefix,
-                         sh::BlockLayoutEncoder *encoder,
-                         BlockLayoutMap *blockInfoOut);
+void GetInterfaceBlockInfo(const std::vector<InterfaceBlockField> &fields,
+                           const std::string &prefix,
+                           sh::BlockLayoutEncoder *encoder,
+                           BlockLayoutMap *blockInfoOut);
 
 // Used for laying out the default uniform block on the Vulkan backend.
 void GetUniformBlockInfo(const std::vector<Uniform> &uniforms,

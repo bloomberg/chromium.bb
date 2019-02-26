@@ -154,9 +154,6 @@ class DataTypeManagerImpl : public DataTypeManager,
                      ModelTypeSet first_sync_types,
                      ModelTypeSet failed_configuration_types);
 
-  // Notification from the SBH that download failed due to a transient
-  // error and it will be retried.
-  void OnDownloadRetry();
   void NotifyStart();
   void NotifyDone(const ConfigureResult& result);
 

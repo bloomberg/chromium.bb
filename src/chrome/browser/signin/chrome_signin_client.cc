@@ -35,8 +35,8 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/metrics/metrics_service.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/cookie_settings_util.h"
-#include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_buildflags.h"
 #include "components/signin/core/browser/signin_header_helper.h"
@@ -66,64 +66,44 @@
 #endif
 
 namespace {
+
+// List of sources for which sign out is always allowed.
+signin_metrics::ProfileSignout kAlwaysAllowedSignoutSources[] = {
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+    // Allowed, because data has not been synced yet.
+    signin_metrics::ProfileSignout::ABORT_SIGNIN,
+#endif
+    // Allowed, because only used on Android and the primary account must be
+    // cleared when the account is removed from device
+    signin_metrics::ProfileSignout::ACCOUNT_REMOVED_FROM_DEVICE,
+    signin_metrics::ProfileSignout::FORCE_SIGNOUT_ALWAYS_ALLOWED_FOR_TEST};
+
 SigninClient::SignoutDecision IsSignoutAllowed(
     Profile* profile,
-    const signin_metrics::ProfileSignout signout_source_metric) {
-  // TODO(chcunningham): This logic should be reworked to only prohibit user-
-  // initiated sign-out. For now signin_util::IsUserSignoutAllowedForProfile()
-  // prohibits ALL sign-outs with the exception of ACCOUNT_REMOVED_FROM_DEVICE
-  // because this preserves the original behavior. A follow-up CL will make the
-  // slightly riskier change described above.
+    const signin_metrics::ProfileSignout signout_source) {
   if (signin_util::IsUserSignoutAllowedForProfile(profile))
     return SigninClient::SignoutDecision::ALLOW_SIGNOUT;
 
-  switch (signout_source_metric) {
-    case signin_metrics::ProfileSignout::ACCOUNT_REMOVED_FROM_DEVICE:
+  for (const auto& always_allowed_source : kAlwaysAllowedSignoutSources) {
+    if (signout_source == always_allowed_source)
       return SigninClient::SignoutDecision::ALLOW_SIGNOUT;
-
-    case signin_metrics::ProfileSignout::ABORT_SIGNIN:
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-      // Allowed, because data has not been synced yet.
-      return SigninClient::SignoutDecision::ALLOW_SIGNOUT;
-#else
-      // ABORT_SIGNIN is only used on Dice platforms.
-      NOTREACHED();
-      return SigninClient::SignoutDecision::DISALLOW_SIGNOUT;
-#endif
-
-    case signin_metrics::ProfileSignout::SIGNOUT_PREF_CHANGED:
-    case signin_metrics::ProfileSignout::GOOGLE_SERVICE_NAME_PATTERN_CHANGED:
-    case signin_metrics::ProfileSignout::SIGNIN_PREF_CHANGED_DURING_SIGNIN:
-    case signin_metrics::ProfileSignout::USER_CLICKED_SIGNOUT_SETTINGS:
-    case signin_metrics::ProfileSignout::SERVER_FORCED_DISABLE:
-    case signin_metrics::ProfileSignout::TRANSFER_CREDENTIALS:
-    case signin_metrics::ProfileSignout::
-        AUTHENTICATION_FAILED_WITH_FORCE_SIGNIN:
-    case signin_metrics::ProfileSignout::USER_TUNED_OFF_SYNC_FROM_DICE_UI:
-      return SigninClient::SignoutDecision::DISALLOW_SIGNOUT;
-
-    case signin_metrics::ProfileSignout::NUM_PROFILE_SIGNOUT_METRICS:
-      NOTREACHED();
-      return SigninClient::SignoutDecision::DISALLOW_SIGNOUT;
   }
+
+  return SigninClient::SignoutDecision::DISALLOW_SIGNOUT;
 }
+
 }  // namespace
 
-ChromeSigninClient::ChromeSigninClient(
-    Profile* profile,
-    SigninErrorController* signin_error_controller)
+ChromeSigninClient::ChromeSigninClient(Profile* profile)
     : OAuth2TokenService::Consumer("chrome_signin_client"),
       profile_(profile),
-      signin_error_controller_(signin_error_controller),
       weak_ptr_factory_(this) {
-  signin_error_controller_->AddObserver(this);
 #if !defined(OS_CHROMEOS)
   content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
 #endif
 }
 
 ChromeSigninClient::~ChromeSigninClient() {
-  signin_error_controller_->RemoveObserver(this);
 #if !defined(OS_CHROMEOS)
   content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(this);
 #endif
@@ -142,22 +122,6 @@ bool ChromeSigninClient::ProfileAllowsSigninCookies(Profile* profile) {
 }
 
 PrefService* ChromeSigninClient::GetPrefs() { return profile_->GetPrefs(); }
-
-void ChromeSigninClient::OnSignedOut() {
-  ProfileAttributesEntry* entry;
-  bool has_entry = g_browser_process->profile_manager()->
-      GetProfileAttributesStorage().
-      GetProfileAttributesWithPath(profile_->GetPath(), &entry);
-
-  // If sign out occurs because Sync setup was in progress and the Profile got
-  // deleted, then the profile's no longer in the ProfileAttributesStorage.
-  if (!has_entry)
-    return;
-
-  entry->SetLocalAuthCredentials(std::string());
-  entry->SetAuthInfo(std::string(), base::string16());
-  entry->SetIsSigninRequired(false);
-}
 
 scoped_refptr<network::SharedURLLoaderFactory>
 ChromeSigninClient::GetURLLoaderFactory() {
@@ -204,19 +168,6 @@ void ChromeSigninClient::RemoveContentSettingsObserver(
     content_settings::Observer* observer) {
   HostContentSettingsMapFactory::GetForProfile(profile_)
       ->RemoveObserver(observer);
-}
-
-void ChromeSigninClient::OnSignedIn(const std::string& account_id,
-                                    const std::string& gaia_id,
-                                    const std::string& username,
-                                    const std::string& password) {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  ProfileAttributesEntry* entry;
-  if (profile_manager->GetProfileAttributesStorage().
-          GetProfileAttributesWithPath(profile_->GetPath(), &entry)) {
-    entry->SetAuthInfo(gaia_id, base::UTF8ToUTF16(username));
-    ProfileMetrics::UpdateReportedProfilesStatistics(profile_manager);
-  }
 }
 
 void ChromeSigninClient::PostSignedIn(const std::string& account_id,
@@ -274,21 +225,6 @@ void ChromeSigninClient::PreSignOut(
     std::move(on_signout_decision_reached_)
         .Run(IsSignoutAllowed(profile_, signout_source_metric));
   }
-}
-
-void ChromeSigninClient::OnErrorChanged() {
-  // Some tests don't have a ProfileManager.
-  if (g_browser_process->profile_manager() == nullptr)
-    return;
-
-  ProfileAttributesEntry* entry;
-
-  if (!g_browser_process->profile_manager()->GetProfileAttributesStorage().
-          GetProfileAttributesWithPath(profile_->GetPath(), &entry)) {
-    return;
-  }
-
-  entry->SetIsAuthError(signin_error_controller_->HasError());
 }
 
 void ChromeSigninClient::OnGetTokenInfoResponse(
@@ -373,7 +309,7 @@ void ChromeSigninClient::DelayNetworkCall(const base::Closure& callback) {
 
 std::unique_ptr<GaiaAuthFetcher> ChromeSigninClient::CreateGaiaAuthFetcher(
     GaiaAuthConsumer* consumer,
-    const std::string& source,
+    gaia::GaiaSource source,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   return std::make_unique<GaiaAuthFetcher>(consumer, source,
                                            url_loader_factory);

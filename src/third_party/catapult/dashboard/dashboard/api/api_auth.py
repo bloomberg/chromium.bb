@@ -28,9 +28,10 @@ OAUTH_CLIENT_ID_WHITELIST = [
     # This oauth client id is used to upload histograms from Fuchsia dev
     # builders.
     'garnet-ci-builder-dev@fuchsia-infra.iam.gserviceaccount.com',
-    # This oauth client id is used from Fuchsia Garnet builders.
+    # These client id's are used from Fuchsia CI builders.
     'garnet-ci-builder@fuchsia-infra.iam.gserviceaccount.com',
-    # These are more fuschia builders.
+    'global-integration-ci-builder@fuchsia-infra.iam.gserviceaccount.com',
+    'fuchsia-ci-builder@fuchsia-infra.iam.gserviceaccount.com',
     'peridot-ci-builder@fuchsia-infra.iam.gserviceaccount.com',
     'topaz-ci-builder@fuchsia-infra.iam.gserviceaccount.com',
     'vendor-google-ci-builder@fuchsia-infra.iam.gserviceaccount.com',
@@ -38,6 +39,13 @@ OAUTH_CLIENT_ID_WHITELIST = [
     '113172445342431053212',
     # Used by luci builders to upload perf data.
     'chrome-ci-builder@chops-service-accounts.iam.gserviceaccount.com',
+    # These oauth client ids are used to upload Android performance metrics.
+    '528014426327-fptk0tpfi4orpcol559k77v7bi9onpq5.apps.googleusercontent.com',
+    'android-metrics-dashboard@android-metrics-dashboard.iam.gserviceaccount.com',
+    # This oauth client id is used by all LUCI binaries. In particular, it will
+    # allow accessing the APIs by authorized users that generate tokens via
+    # luci-auth command.
+    '446450136466-2hr92jrq8e6i4tnsa56b52vacp7t3936.apps.googleusercontent.com',
 ]
 
 

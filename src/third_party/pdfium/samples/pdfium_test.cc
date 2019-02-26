@@ -70,6 +70,7 @@
 
 enum OutputFormat {
   OUTPUT_NONE,
+  OUTPUT_PAGEINFO,
   OUTPUT_STRUCTURE,
   OUTPUT_TEXT,
   OUTPUT_PPM,
@@ -173,6 +174,10 @@ int ExampleAppAlert(IPDF_JSPLATFORM*,
   return 0;
 }
 
+void ExampleAppBeep(IPDF_JSPLATFORM*, int type) {
+  printf("BEEP!!! %d\n", type);
+}
+
 int ExampleAppResponse(IPDF_JSPLATFORM*,
                        FPDF_WIDESTRING question,
                        FPDF_WIDESTRING title,
@@ -196,12 +201,12 @@ int ExampleAppResponse(IPDF_JSPLATFORM*,
   return 4;
 }
 
-void ExampleAppBeep(IPDF_JSPLATFORM*, int type) {
-  printf("BEEP!!! %d\n", type);
-}
-
-void ExampleDocGotoPage(IPDF_JSPLATFORM*, int page_number) {
-  printf("Goto Page: %d\n", page_number);
+int ExampleDocGetFilePath(IPDF_JSPLATFORM*, void* file_path, int length) {
+  static const char kPath[] = "myfile.pdf";
+  constexpr int kRequired = static_cast<int>(sizeof(kPath));
+  if (file_path && length >= kRequired)
+    memcpy(file_path, kPath, kRequired);
+  return kRequired;
 }
 
 void ExampleDocMail(IPDF_JSPLATFORM*,
@@ -217,6 +222,38 @@ void ExampleDocMail(IPDF_JSPLATFORM*,
          GetPlatformWString(To).c_str(), GetPlatformWString(CC).c_str(),
          GetPlatformWString(BCC).c_str(), GetPlatformWString(Subject).c_str(),
          GetPlatformWString(Msg).c_str());
+}
+
+void ExampleDocPrint(IPDF_JSPLATFORM*,
+                     FPDF_BOOL bUI,
+                     int nStart,
+                     int nEnd,
+                     FPDF_BOOL bSilent,
+                     FPDF_BOOL bShrinkToFit,
+                     FPDF_BOOL bPrintAsImage,
+                     FPDF_BOOL bReverse,
+                     FPDF_BOOL bAnnotations) {
+  printf("Doc Print: %d, %d, %d, %d, %d, %d, %d, %d\n", bUI, nStart, nEnd,
+         bSilent, bShrinkToFit, bPrintAsImage, bReverse, bAnnotations);
+}
+
+void ExampleDocSubmitForm(IPDF_JSPLATFORM*,
+                          void* formData,
+                          int length,
+                          FPDF_WIDESTRING url) {
+  printf("Doc Submit Form: url=%ls\n", GetPlatformWString(url).c_str());
+}
+
+void ExampleDocGotoPage(IPDF_JSPLATFORM*, int page_number) {
+  printf("Goto Page: %d\n", page_number);
+}
+
+int ExampleFieldBrowse(IPDF_JSPLATFORM*, void* file_path, int length) {
+  static const char kPath[] = "selected.txt";
+  constexpr int kRequired = static_cast<int>(sizeof(kPath));
+  if (file_path && length >= kRequired)
+    memcpy(file_path, kPath, kRequired);
+  return kRequired;
 }
 #endif  // PDF_ENABLE_V8
 
@@ -402,6 +439,12 @@ bool ParseCommandLine(const std::vector<std::string>& args,
         return false;
       }
       options->scale_factor_as_string = cur_arg.substr(8);
+    } else if (cur_arg == "--show-pageinfo") {
+      if (options->output_format != OUTPUT_NONE) {
+        fprintf(stderr, "Duplicate or conflicting --show-pageinfo argument\n");
+        return false;
+      }
+      options->output_format = OUTPUT_PAGEINFO;
     } else if (cur_arg == "--show-structure") {
       if (options->output_format != OUTPUT_NONE) {
         fprintf(stderr, "Duplicate or conflicting --show-structure argument\n");
@@ -534,6 +577,11 @@ bool RenderPage(const std::string& name,
     SendPageEvents(form, page, events);
   if (options.save_images)
     WriteImages(page, name.c_str(), page_index);
+
+  if (options.output_format == OUTPUT_PAGEINFO) {
+    DumpPageInfo(page, page_index);
+    return true;
+  }
   if (options.output_format == OUTPUT_STRUCTURE) {
     DumpPageStructure(page, page_index);
     return true;
@@ -708,10 +756,14 @@ void RenderPdf(const std::string& name,
   IPDF_JSPLATFORM platform_callbacks = {};
   platform_callbacks.version = 3;
   platform_callbacks.app_alert = ExampleAppAlert;
-  platform_callbacks.app_response = ExampleAppResponse;
   platform_callbacks.app_beep = ExampleAppBeep;
-  platform_callbacks.Doc_gotoPage = ExampleDocGotoPage;
+  platform_callbacks.app_response = ExampleAppResponse;
+  platform_callbacks.Doc_getFilePath = ExampleDocGetFilePath;
   platform_callbacks.Doc_mail = ExampleDocMail;
+  platform_callbacks.Doc_print = ExampleDocPrint;
+  platform_callbacks.Doc_submitForm = ExampleDocSubmitForm;
+  platform_callbacks.Doc_gotoPage = ExampleDocGotoPage;
+  platform_callbacks.Field_browse = ExampleFieldBrowse;
 #endif  // PDF_ENABLE_V8
 
   FPDF_FORMFILLINFO_PDFiumTest form_callbacks = {};
@@ -814,6 +866,7 @@ constexpr char kUsageString[] =
     "Usage: pdfium_test [OPTION] [FILE]...\n"
     "  --show-config       - print build options and exit\n"
     "  --show-metadata     - print the file metadata\n"
+    "  --show-pageinfo     - print information about pages\n"
     "  --show-structure    - print the structure elements from the document\n"
     "  --send-events       - send input described by .evt file\n"
     "  --render-oneshot    - render image without using progressive renderer\n"
@@ -910,7 +963,8 @@ int main(int argc, const char* argv[]) {
     // This must be a static var to avoid explicit capture, so the lambda can be
     // converted to a function ptr.
     static time_t time_ret = options.time;
-    FSDK_SetTimeFunction([]() -> time_t { return time_ret; });
+    FSDK_SetTimeFunction([]() { return time_ret; });
+    FSDK_SetLocaltimeFunction([](const time_t* tp) { return gmtime(tp); });
   }
 
   for (const std::string& filename : files) {

@@ -111,11 +111,17 @@ class SchedulerWorkerDelegate : public SchedulerWorker::Delegate {
   void DidRunTask() override {}
 
   void ReEnqueueSequence(scoped_refptr<Sequence> sequence) override {
-    DCHECK(sequence);
-    const SequenceSortKey sequence_sort_key = sequence->GetSortKey();
+    ReEnqueueSequence(
+        SequenceAndTransaction::FromSequence(std::move(sequence)));
+  }
+
+  void ReEnqueueSequence(SequenceAndTransaction sequence_and_transaction) {
+    const SequenceSortKey sequence_sort_key =
+        sequence_and_transaction.transaction.GetSortKey();
     std::unique_ptr<PriorityQueue::Transaction> transaction(
         priority_queue_.BeginTransaction());
-    transaction->Push(std::move(sequence), sequence_sort_key);
+    transaction->Push(std::move(sequence_and_transaction.sequence),
+                      sequence_sort_key);
   }
 
   TimeDelta GetSleepTimeout() override { return TimeDelta::Max(); }
@@ -127,6 +133,10 @@ class SchedulerWorkerDelegate : public SchedulerWorker::Delegate {
   }
 
   void OnMainExit(SchedulerWorker* /* worker */) override {}
+
+  void EnableFlushPriorityQueueSequencesOnDestroyForTesting() {
+    priority_queue_.EnableFlushSequencesOnDestroyForTesting();
+  }
 
  private:
   const std::string thread_name_;
@@ -223,8 +233,8 @@ class SchedulerWorkerCOMDelegate : public SchedulerWorkerDelegate {
                              TimeDelta());
       if (task_tracker_->WillPostTask(&pump_message_task,
                                       TaskShutdownBehavior::SKIP_ON_SHUTDOWN)) {
-        bool was_empty =
-            message_pump_sequence_->PushTask(std::move(pump_message_task));
+        bool was_empty = message_pump_sequence_->BeginTransaction().PushTask(
+            std::move(pump_message_task));
         DCHECK(was_empty) << "GetWorkFromWindowsMessageQueue() does not expect "
                              "queueing of pump tasks.";
         return message_pump_sequence_;
@@ -274,8 +284,8 @@ class SchedulerSingleThreadTaskRunnerManager::SchedulerSingleThreadTaskRunner
     Task task(from_here, std::move(closure), delay);
     task.single_thread_task_runner_ref = this;
 
-    if (!outer_->task_tracker_->WillPostTask(
-            &task, sequence_->traits().shutdown_behavior())) {
+    if (!outer_->task_tracker_->WillPostTask(&task,
+                                             sequence_->shutdown_behavior())) {
       return false;
     }
 
@@ -330,11 +340,14 @@ class SchedulerSingleThreadTaskRunnerManager::SchedulerSingleThreadTaskRunner
   }
 
   void PostTaskNow(Task task) {
-    const bool sequence_was_empty = sequence_->PushTask(std::move(task));
+    auto sequence_and_transaction =
+        SequenceAndTransaction::FromSequence(sequence_);
+    const bool sequence_was_empty =
+        sequence_and_transaction.transaction.PushTask(std::move(task));
     if (sequence_was_empty) {
-      if (outer_->task_tracker_->WillScheduleSequence(sequence_,
-                                                      GetDelegate())) {
-        GetDelegate()->ReEnqueueSequence(sequence_);
+      if (outer_->task_tracker_->WillScheduleSequence(
+              sequence_and_transaction.transaction, GetDelegate())) {
+        GetDelegate()->ReEnqueueSequence(std::move(sequence_and_transaction));
         worker_->WakeUp();
       }
     }
@@ -484,8 +497,11 @@ void SchedulerSingleThreadTaskRunnerManager::JoinForTesting() {
     local_workers = std::move(workers_);
   }
 
-  for (const auto& worker : local_workers)
+  for (const auto& worker : local_workers) {
+    static_cast<SchedulerWorkerDelegate*>(worker->delegate())
+        ->EnableFlushPriorityQueueSequencesOnDestroyForTesting();
     worker->JoinForTesting();
+  }
 
   {
     AutoSchedulerLock auto_lock(lock_);

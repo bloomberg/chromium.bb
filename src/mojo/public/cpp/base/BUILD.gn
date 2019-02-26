@@ -40,6 +40,8 @@ component("shared_typemap_traits") {
     "shared_memory_mojom_traits.h",
     "time_mojom_traits.cc",
     "time_mojom_traits.h",
+    "token_mojom_traits.cc",
+    "token_mojom_traits.h",
     "unguessable_token_mojom_traits.cc",
     "unguessable_token_mojom_traits.h",
     "values_mojom_traits.cc",
@@ -72,6 +74,7 @@ source_set("tests") {
     "text_direction_unittest.cc",
     "thread_priority_unittest.cc",
     "time_unittest.cc",
+    "token_unittest.cc",
     "unguessable_token_unittest.cc",
     "values_unittest.cc",
   ]

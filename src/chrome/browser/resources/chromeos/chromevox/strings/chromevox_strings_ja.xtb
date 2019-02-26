@@ -20,7 +20,6 @@
 <translation id="1087788677726983142">イベント ストリーム フィルタを非表示にする</translation>
 <translation id="1088219014394087294">見出しがありません。</translation>
 <translation id="1106741348836243114">音声フィードバック（イアコン）をオンまたはオフにします。</translation>
-<translation id="1108651818222110612">副題</translation>
 <translation id="1120743664840974483">{"a": "アルファ", "b": "ブラボー", "c": "チャーリー", "d": "デルタ", "e": "エコー", "f": "フォックストロット", "g": "ゴルフ", "h": "ホテル", "i": "インディア", "j": "ジュリエット","k": "キロ", "l": "リマ", "m": "マイク", "n": "ノベンバー", "o": "オスカー","p": "パパ", "q": "ケベック", "r": "ロメオ", "s": "シエラ", "t": "タンゴ", "u": "ユニフォーム", "v": "ビクター", "w": "ウイスキー","x": "エックスレイ", "y": "ヤンキー", "z": "ズールー"}</translation>
 <translation id="1120938014254001895">2 本の指で上にスワイプします</translation>
 <translation id="1124771028211010580">現在の表示スタイルは横並びです。</translation>
@@ -44,12 +43,15 @@
 <translation id="1251750620252348585">次のレベル 6 見出し</translation>
 <translation id="1275718070701477396">選択されています</translation>
 <translation id="1286609444451033486">検索+スペースキーで切り替えます。</translation>
+<translation id="1291286136605998134">切り替えボタン</translation>
+<translation id="1303806948938513162">ChromeVox メニューを開くには 4 本の指でタップします</translation>
 <translation id="1319608975892113573">前の引用箇所はありません。</translation>
 <translation id="1321576897702511272">ChromeVox ヘルプを表示しない</translation>
 <translation id="1331702245475014624"><ph name="TOTAL" /> 分 の <ph name="INDEX" /></translation>
 <translation id="1334095593597963605">文字と単語の読み上げ</translation>
 <translation id="1339428534620983148">表の前の列</translation>
 <translation id="1342835525016946179">記事</translation>
+<translation id="1346059596910821859">ヒント</translation>
 <translation id="1346748346194534595">右</translation>
 <translation id="135978014023467274">ChromeVox 63 にアップデートしました。</translation>
 <translation id="136718599399906424">表の次の行</translation>
@@ -159,6 +161,7 @@
 <translation id="2422937916923936891">メニュー項目のチェックボックス</translation>
 <translation id="2428534162001909979">コマンド メニュー</translation>
 <translation id="2429669115401274487">PM</translation>
+<translation id="242998846562331953">字幕</translation>
 <translation id="2435413342408885429"><ph name="KEY" /> が新しい ChromeVox 修飾キーになりました。</translation>
 <translation id="2450814015951372393">チェックボックス</translation>
 <translation id="2462626033734746142">ラジオボタン グループ</translation>
@@ -194,7 +197,6 @@
 <translation id="2737520612859577214">上付き文字の末尾</translation>
 <translation id="2749275490991666823">オン</translation>
 <translation id="27527859628328957">次のフォーカス可能項目にジャンプ</translation>
-<translation id="276402504937943375">目次</translation>
 <translation id="2770781857296573485">グループ検索を入力</translation>
 <translation id="2777845298774924149">終了しました</translation>
 <translation id="2781264313200109999">リンクの開始</translation>
@@ -238,6 +240,7 @@
 <translation id="3046838483509668188">ChromeVox のオプション</translation>
 <translation id="3047143736589213134">テスト用キーマップ</translation>
 <translation id="3060756054951570867"><ph name="TITLE" /> メニューを開きました</translation>
+<translation id="3060880924447482063">項目間を移動するには左または右にスワイプします</translation>
 <translation id="3070245424257836917">3 本の指で上にスワイプします</translation>
 <translation id="3078345202707391975">次のレベル 2 見出し</translation>
 <translation id="3078740164268491126">表</translation>
@@ -331,6 +334,7 @@
 <translation id="3389259863310851658">前のフォーム フィールド</translation>
 <translation id="3390225400784126843">次の異なる要素。</translation>
 <translation id="3392045790598181549"><ph name="NAME" />、メニュー項目</translation>
+<translation id="3393605254399152980">テキストを読み上げるには 1 本の指でドラッグします</translation>
 <translation id="3406283310380167331">フォーム リストを表示</translation>
 <translation id="3423495725743882470">行 $1 列 $2</translation>
 <translation id="3457000393508828486">一部オン</translation>
@@ -346,6 +350,7 @@
 <translation id="3497063866483065785">{COUNT,plural, =1{疑問符}other{# 個の疑問符}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{キャレット}other{# 個のキャレット}}</translation>
 <translation id="352577523970648069">編集可能なテキスト欄</translation>
+<translation id="3549680091535286226">読み上げを一時停止するには 2 本の指でタップします</translation>
 <translation id="3568702578574425662"><ph name="NAME" />、オフのチェックボックス</translation>
 <translation id="3589661172894441357">用語集</translation>
 <translation id="3599054940393788245">数式の外部</translation>
@@ -383,6 +388,7 @@
 <translation id="3930498801443296724">引用</translation>
 <translation id="3941269780691800708">カーソル部分のテキストを読み上げます。</translation>
 <translation id="3962990492275676168">現在の場所から読み上げを開始</translation>
+<translation id="3989324057180830702">切り替えボタン</translation>
 <translation id="4004802134384979325">オン</translation>
 <translation id="4006140876663370126">画像</translation>
 <translation id="4038349100599457191">月の設定</translation>
@@ -396,6 +402,7 @@
 <translation id="4058278702844053247">ページの読み込み中</translation>
 <translation id="4065205963140826639">検索+右矢印キーを押して [次へ] ボタンまで移動し、検索+スペースキーを押してボタンをクリックしてみましょう。</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{チルダ}other{# 個のチルダ}}</translation>
+<translation id="4086311032171418648">学習モードを停止します。</translation>
 <translation id="409334809956508737">前のオブジェクト</translation>
 <translation id="4099274309791143834">サブメニューあり</translation>
 <translation id="4101527861445851766">チェックボックスがオン</translation>
@@ -408,6 +415,7 @@
 <translation id="4166192625054637755">下付き文字の末尾</translation>
 <translation id="4173994908659439270">次の編集可能テキスト フィールドはありません。</translation>
 <translation id="4176463684765177261">無効</translation>
+<translation id="4187322598335821254">行間を移動するには上または下にスワイプします</translation>
 <translation id="4188530942454211480">前の文</translation>
 <translation id="4191918948604314587">ボタン</translation>
 <translation id="419265409837491189">前の列に移動します</translation>
@@ -498,6 +506,7 @@
 <translation id="4877261390094455813">検索キーワードを入力してください。</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="489907760999452556">内部リンク</translation>
+<translation id="4915087353619183190">学習モードを開始しました。QWERTY キーまたは点字キーを押すか、タップ操作を行って、機能を認識させてください。終了するには Ctrl+W キーまたは Esc キーを押します。</translation>
 <translation id="492295894462528572">前書き</translation>
 <translation id="495170559598752135">操作</translation>
 <translation id="4953585991029886728">テキスト編集</translation>
@@ -693,6 +702,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{コロン}other{# 個のコロン}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />、メニュー</translation>
 <translation id="6444046323172968959">アラート ダイアログ</translation>
+<translation id="6452403590345320472">目次</translation>
 <translation id="6459511626086141404">フラット キーマップ</translation>
 <translation id="6468049171101508116">次のボタン</translation>
 <translation id="646954774886932461">索引</translation>
@@ -705,6 +715,7 @@
 <translation id="6583174818554398774">次の詳細レベルに移動します</translation>
 <translation id="6587021927234520429">次のレベル 4 見出しはありません。</translation>
 <translation id="6601344353291556895">詳細な説明を有効にする。</translation>
+<translation id="6609828810966525877">その他の操作については、学習モードをご利用になるか Chromebook ヘルプセンターをご覧ください</translation>
 <translation id="6615602925644411249">ページ内検索です。</translation>
 <translation id="6628427060004938651">部</translation>
 <translation id="6633350132811819843">次の表はありません。</translation>
@@ -756,6 +767,7 @@ Chrome ブラウザのアドレスバー（オムニボックスとも呼ばれ�
 開いているタブ間を移動するには、Ctrl+Tab キーを押します。
 Chrome ブラウザのメニューを開くには、Alt+F キーを押します。</translation>
 <translation id="7086377898680121060">明るさを上げる</translation>
+<translation id="7088743565397416204">フォーカスしている項目を有効にするにはダブルタップします</translation>
 <translation id="7095834689119144465">数字のみのテキスト編集</translation>
 <translation id="7096001299300236431">前のメディア</translation>
 <translation id="7116595520562830928">複数行</translation>
@@ -811,6 +823,7 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="7491962110804786152">タブ</translation>
 <translation id="7492049978501397201">ダイアログを入力しました</translation>
 <translation id="7518543783849163354">ChromeVox の読み上げを一時的に停止するには、Ctrl キーを押します。</translation>
+<translation id="7521682724501952239">タッチスクリーンで ChromeVox を使用できます。</translation>
 <translation id="7532613204005497612">6 月</translation>
 <translation id="7552432549459840808">Chrome の便利なショートカット</translation>
 <translation id="7579911500627256166">点 <ph name="DOT" /></translation>
@@ -824,7 +837,6 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="7625690649919402823">次の表</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" />（<ph name="VARIANT" />）、グレード <ph name="GRADE" /></translation>
 <translation id="7641134354185483015">前のレベル 3 見出しはありません。</translation>
-<translation id="7647456547678091388">ヒント</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />、<ph name="NAME" />、テキスト ボックス</translation>
 <translation id="7663318257180412551">見出し 2</translation>
 <translation id="7674576868851035240">次のリンク</translation>
@@ -870,6 +882,7 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="8076492880354921740">タブ</translation>
 <translation id="8091452896542422286">スペース</translation>
 <translation id="8110647606445335195">ARIA ランドマークはありません。</translation>
+<translation id="8138880386467279117">タップ</translation>
 <translation id="8153880621934657047">表の中ではありません。</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{アンダースコア}other{# 個のアンダースコア}}</translation>
 <translation id="8179976553408161302">Enter</translation>

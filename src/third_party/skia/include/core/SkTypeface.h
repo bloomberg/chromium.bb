@@ -176,7 +176,7 @@ public:
      */
     static sk_sp<SkTypeface> MakeDeserialize(SkStream*);
 
-    enum Encoding {
+    enum Encoding : uint8_t {
         kUTF8_Encoding,
         kUTF16_Encoding,
         kUTF32_Encoding
@@ -200,6 +200,14 @@ public:
      */
     int charsToGlyphs(const void* chars, Encoding encoding, SkGlyphID glyphs[],
                       int glyphCount) const;
+
+    /**
+     *  Return the glyphID that corresponds to the specified unicode code-point
+     *  (in UTF32 encoding). If the unichar is not supported, returns 0.
+     *
+     *  This is a short-cut for calling charsToGlyphs() with kUTF32_Encoding for one code-point.
+     */
+    SkGlyphID unicharToGlyph(SkUnichar unichar) const;
 
     /**
      *  Return the number of glyphs in the typeface.
@@ -426,6 +434,8 @@ private:
     };
     static SkFontStyle FromOldStyle(Style oldStyle);
     static SkTypeface* GetDefaultTypeface(Style style = SkTypeface::kNormal);
+
+    friend class SkFontPriv;       // GetDefaultTypeface
     friend class SkPaintPriv;      // GetDefaultTypeface
 
 private:

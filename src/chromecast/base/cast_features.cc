@@ -16,6 +16,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "build/build_config.h"
 
 namespace chromecast {
 namespace {
@@ -162,13 +163,15 @@ using Iterator = base::DictionaryValue::Iterator;
 std::vector<const base::Feature*> GetInternalFeatures();
 
 const std::vector<const base::Feature*>& GetFeatures() {
-  static const base::NoDestructor<std::vector<const base::Feature*>> features([] {
-    auto features = std::vector<const base::Feature*>(
-      kFeatures, kFeatures + sizeof(kFeatures) / sizeof(base::Feature*));
-    auto internal_features = GetInternalFeatures();
-    features.insert(features.end(), internal_features.begin(), internal_features.end());
-    return features;
-  }());
+  static const base::NoDestructor<std::vector<const base::Feature*>> features(
+      [] {
+        auto features = std::vector<const base::Feature*>(
+            kFeatures, kFeatures + sizeof(kFeatures) / sizeof(base::Feature*));
+        auto internal_features = GetInternalFeatures();
+        features.insert(features.end(), internal_features.begin(),
+                        internal_features.end());
+        return features;
+      }());
   if (GetTestFeatures().size() > 0)
     return GetTestFeatures();
   return *features;
@@ -177,15 +180,19 @@ const std::vector<const base::Feature*>& GetFeatures() {
 void InitializeFeatureList(const base::DictionaryValue& dcs_features,
                            const base::ListValue& dcs_experiment_ids,
                            const std::string& cmd_line_enable_features,
-                           const std::string& cmd_line_disable_features) {
+                           const std::string& cmd_line_disable_features,
+                           const std::string& extra_enable_features) {
   DCHECK(!base::FeatureList::GetInstance());
 
   // Set the experiments.
   SetExperimentIds(dcs_experiment_ids);
 
+  std::string all_enable_features =
+      cmd_line_enable_features + "," + extra_enable_features;
+
   // Initialize the FeatureList from the command line.
   auto feature_list = std::make_unique<base::FeatureList>();
-  feature_list->InitializeFromCommandLine(cmd_line_enable_features,
+  feature_list->InitializeFromCommandLine(all_enable_features,
                                           cmd_line_disable_features);
 
   // Override defaults from the DCS config.
@@ -270,19 +277,18 @@ bool IsFeatureEnabled(const base::Feature& feature) {
 }
 
 base::DictionaryValue GetOverriddenFeaturesForStorage(
-    const base::DictionaryValue& features) {
+    const base::Value& features) {
   base::DictionaryValue persistent_dict;
 
   // |features| maps feature names to either a boolean or a dict of params.
-  for (Iterator it(features); !it.IsAtEnd(); it.Advance()) {
-    bool enabled;
-    if (it.value().GetAsBoolean(&enabled)) {
-      persistent_dict.SetBoolean(it.key(), enabled);
+  for (const auto& feature : features.DictItems()) {
+    if (feature.second.is_bool()) {
+      persistent_dict.SetBoolean(feature.first, feature.second.GetBool());
       continue;
     }
 
     const base::DictionaryValue* params_dict;
-    if (it.value().GetAsDictionary(&params_dict)) {
+    if (feature.second.GetAsDictionary(&params_dict)) {
       auto params = std::make_unique<base::DictionaryValue>();
 
       bool bval;
@@ -301,18 +307,18 @@ base::DictionaryValue GetOverriddenFeaturesForStorage(
         } else if (param_val.GetAsString(&sval)) {
           params->SetString(param_key, sval);
         } else {
-          LOG(ERROR) << "Entry in params dict for \"" << it.key() << "\""
-                     << " is not of a supported type (key: " << p.key()
+          LOG(ERROR) << "Entry in params dict for \"" << feature.first << "\""
+                     << " is not of a supported type (key: " << param_key
                      << ", type: " << param_val.type();
         }
       }
-      persistent_dict.Set(it.key(), std::move(params));
+      persistent_dict.Set(feature.first, std::move(params));
       continue;
     }
 
     // Other base::Value types are not supported.
     LOG(ERROR) << "A DCS feature mapped to an unsupported value. key: "
-               << it.key() << " type: " << it.value().type();
+               << feature.first << " type: " << feature.second.type();
   }
 
   return persistent_dict;

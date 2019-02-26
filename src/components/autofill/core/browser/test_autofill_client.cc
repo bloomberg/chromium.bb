@@ -4,6 +4,7 @@
 
 #include "components/autofill/core/browser/test_autofill_client.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/local_card_migration_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
@@ -17,7 +18,7 @@ TestAutofillClient::~TestAutofillClient() {
 }
 
 PersonalDataManager* TestAutofillClient::GetPersonalDataManager() {
-  return nullptr;
+  return &test_personal_data_manager_;
 }
 
 scoped_refptr<AutofillWebDataService> TestAutofillClient::GetDatabase() {
@@ -36,8 +37,16 @@ identity::IdentityManager* TestAutofillClient::GetIdentityManager() {
   return identity_test_env_.identity_manager();
 }
 
-StrikeDatabase* TestAutofillClient::GetStrikeDatabase() {
-  return test_strike_database_.get();
+FormDataImporter* TestAutofillClient::GetFormDataImporter() {
+  return form_data_importer_.get();
+}
+
+payments::PaymentsClient* TestAutofillClient::GetPaymentsClient() {
+  return payments_client_.get();
+}
+
+LegacyStrikeDatabase* TestAutofillClient::GetLegacyStrikeDatabase() {
+  return test_legacy_strike_database_.get();
 }
 
 ukm::UkmRecorder* TestAutofillClient::GetUkmRecorder() {
@@ -94,6 +103,12 @@ void TestAutofillClient::ConfirmMigrateLocalCardToCloud(
   std::move(start_migrating_cards_callback).Run(migration_card_selection_);
 }
 
+void TestAutofillClient::ShowLocalCardMigrationResults(
+    const bool has_server_error,
+    const base::string16& tip_message,
+    const std::vector<MigratableCreditCard>& migratable_credit_cards,
+    MigrationDeleteCardCallback delete_local_card_callback) {}
+
 void TestAutofillClient::ConfirmSaveAutofillProfile(
     const AutofillProfile& profile,
     base::OnceClosure callback) {
@@ -111,20 +126,29 @@ void TestAutofillClient::ConfirmSaveCreditCardLocally(
   std::move(callback).Run();
 }
 
+#if defined(OS_ANDROID)
+void TestAutofillClient::ConfirmAccountNameFixFlow(
+    base::OnceCallback<void(const base::string16&)> callback) {
+  credit_card_name_fix_flow_bubble_was_shown_ = true;
+  std::move(callback).Run(base::string16(base::ASCIIToUTF16("Gaia Name")));
+}
+#endif  // defined(OS_ANDROID)
+
 void TestAutofillClient::ConfirmSaveCreditCardToCloud(
     const CreditCard& card,
     std::unique_ptr<base::DictionaryValue> legal_message,
     bool should_request_name_from_user,
+    bool should_request_expiration_date_from_user,
     bool show_prompt,
-    base::OnceCallback<void(const base::string16&)> callback) {
+    UserAcceptedUploadCallback callback) {
   offer_to_save_credit_card_bubble_was_shown_ = show_prompt;
-  std::move(callback).Run(base::string16());
+  std::move(callback).Run({});
 }
 
 void TestAutofillClient::ConfirmCreditCardFillAssist(
     const CreditCard& card,
-    const base::Closure& callback) {
-  callback.Run();
+    base::OnceClosure callback) {
+  std::move(callback).Run();
 }
 
 void TestAutofillClient::LoadRiskData(

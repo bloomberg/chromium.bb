@@ -13,7 +13,7 @@
 #include "ui/display/screen.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/views/animation/ink_drop_host.h"
+#include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/test/ink_drop_host_view_test_api.h"
 #include "ui/views/animation/test/test_ink_drop.h"
@@ -29,6 +29,7 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/test/views_test_base.h"
+#include "ui/views/widget/widget_utils.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/test/test_cursor_client.h"
@@ -78,7 +79,7 @@ class TestButton : public Button, public ButtonListener {
 
   void OnClickCanceled(const ui::Event& event) override { canceled_ = true; }
 
-  // InkDropHostView:
+  // Button:
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override {
     ++ink_drop_layer_add_count_;
     Button::AddInkDropLayer(ink_drop_layer);
@@ -177,7 +178,7 @@ class ButtonTest : public ViewsTestBase {
 
 // Tests that hover state changes correctly when visiblity/enableness changes.
 TEST_F(ButtonTest, HoverStateOnVisibilityChange) {
-  ui::test::EventGenerator generator(widget()->GetNativeWindow());
+  ui::test::EventGenerator generator(GetRootWindow(widget()));
 
   generator.PressLeftButton();
   EXPECT_EQ(Button::STATE_PRESSED, button()->state());
@@ -226,8 +227,7 @@ TEST_F(ButtonTest, HoverStateOnVisibilityChange) {
 // Disabling cursor events occurs for touch events and the Ash magnifier. There
 // is no touch on desktop Mac. Tracked in http://crbug.com/445520.
 #if !defined(OS_MACOSX) || defined(USE_AURA)
-  aura::test::TestCursorClient cursor_client(
-      widget()->GetNativeView()->GetRootWindow());
+  aura::test::TestCursorClient cursor_client(GetRootWindow(widget()));
 
   // In Aura views, no new hover effects are invoked if mouse events
   // are disabled.
@@ -250,7 +250,7 @@ TEST_F(ButtonTest, HoverStateOnVisibilityChange) {
 // Tests that the hover state is preserved during a view hierarchy update of a
 // button's child View.
 TEST_F(ButtonTest, HoverStatePreservedOnDescendantViewHierarchyChange) {
-  ui::test::EventGenerator generator(widget()->GetNativeWindow());
+  ui::test::EventGenerator generator(GetRootWindow(widget()));
   generator.MoveMouseTo(button()->GetBoundsInScreen().CenterPoint());
 
   EXPECT_EQ(Button::STATE_HOVERED, button()->state());
@@ -343,8 +343,7 @@ void PerformGesture(Button* button, ui::EventType event_type) {
 
 // Tests that gesture events correctly change the button state.
 TEST_F(ButtonTest, GestureEventsSetState) {
-  aura::test::TestCursorClient cursor_client(
-      widget()->GetNativeView()->GetRootWindow());
+  aura::test::TestCursorClient cursor_client(GetRootWindow(widget()));
 
   EXPECT_EQ(Button::STATE_NORMAL, button()->state());
 
@@ -364,10 +363,10 @@ TEST_F(ButtonTest, GestureEventsSetState) {
 TEST_F(ButtonTest, AsButton) {
   base::string16 text;
 
-  LabelButton label_button(NULL, text);
+  LabelButton label_button(nullptr, text);
   EXPECT_TRUE(Button::AsButton(&label_button));
 
-  ImageButton image_button(NULL);
+  ImageButton image_button(nullptr);
   EXPECT_TRUE(Button::AsButton(&image_button));
 
   Checkbox checkbox(text);
@@ -376,10 +375,10 @@ TEST_F(ButtonTest, AsButton) {
   RadioButton radio_button(text, 0);
   EXPECT_TRUE(Button::AsButton(&radio_button));
 
-  MenuButton menu_button(text, NULL, false);
+  MenuButton menu_button(text, nullptr);
   EXPECT_TRUE(Button::AsButton(&menu_button));
 
-  ToggleButton toggle_button(NULL);
+  ToggleButton toggle_button(nullptr);
   EXPECT_TRUE(Button::AsButton(&toggle_button));
 
   Label label;
@@ -400,8 +399,8 @@ TEST_F(ButtonTest, ButtonClickTogglesInkDrop) {
   TestInkDrop* ink_drop = new TestInkDrop();
   CreateButtonWithInkDrop(base::WrapUnique(ink_drop), false);
 
-  ui::test::EventGenerator generator(widget()->GetNativeWindow());
-  generator.set_current_location(gfx::Point(50, 50));
+  ui::test::EventGenerator generator(GetRootWindow(widget()));
+  generator.set_current_screen_location(gfx::Point(50, 50));
   generator.PressLeftButton();
   EXPECT_EQ(InkDropState::ACTION_PENDING, ink_drop->GetTargetInkDropState());
 
@@ -415,8 +414,8 @@ TEST_F(ButtonTest, CaptureLossHidesInkDrop) {
   TestInkDrop* ink_drop = new TestInkDrop();
   CreateButtonWithInkDrop(base::WrapUnique(ink_drop), false);
 
-  ui::test::EventGenerator generator(widget()->GetNativeWindow());
-  generator.set_current_location(gfx::Point(50, 50));
+  ui::test::EventGenerator generator(GetRootWindow(widget()));
+  generator.set_current_screen_location(gfx::Point(50, 50));
   generator.PressLeftButton();
   EXPECT_EQ(InkDropState::ACTION_PENDING, ink_drop->GetTargetInkDropState());
 
@@ -487,7 +486,7 @@ TEST_F(ButtonTest, HideInkDropHighlightOnDisable) {
   TestInkDrop* ink_drop = new TestInkDrop();
   CreateButtonWithInkDrop(base::WrapUnique(ink_drop), false);
 
-  ui::test::EventGenerator generator(widget()->GetNativeWindow());
+  ui::test::EventGenerator generator(GetRootWindow(widget()));
   generator.MoveMouseToInHost(10, 10);
   EXPECT_TRUE(ink_drop->is_hovered());
   button()->SetEnabled(false);
@@ -522,7 +521,7 @@ TEST_F(ButtonTest, HideInkDropHighlightWhenRemoved) {
   // Make sure that the button ink drop is hidden after the button gets removed.
   widget()->SetContentsView(&test_container);
   test_container.AddChildView(button());
-  ui::test::EventGenerator generator(widget()->GetNativeWindow());
+  ui::test::EventGenerator generator(GetRootWindow(widget()));
   generator.MoveMouseToInHost(2, 2);
   EXPECT_TRUE(ink_drop->is_hovered());
   // Set ink-drop state to ACTIVATED to make sure that removing the container

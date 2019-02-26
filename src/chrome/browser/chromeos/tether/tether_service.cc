@@ -29,7 +29,6 @@
 #include "chromeos/services/secure_channel/public/cpp/client/secure_channel_client.h"
 #include "components/cryptauth/cryptauth_enrollment_manager.h"
 #include "components/cryptauth/cryptauth_service.h"
-#include "components/cryptauth/remote_device_provider_impl.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -147,17 +146,8 @@ TetherService::TetherService(
       gms_core_notifications_state_tracker_(
           std::make_unique<
               chromeos::tether::GmsCoreNotificationsStateTrackerImpl>()),
-      remote_device_provider_(
-          base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)
-              ? nullptr
-              : cryptauth::RemoteDeviceProviderImpl::Factory::NewInstance(
-                    cryptauth_service->GetCryptAuthDeviceManager(),
-                    cryptauth_service->GetAccountId(),
-                    cryptauth_service->GetCryptAuthEnrollmentManager()
-                        ->GetUserPrivateKey())),
       tether_host_fetcher_(
           chromeos::tether::TetherHostFetcherImpl::Factory::NewInstance(
-              remote_device_provider_.get(),
               device_sync_client_,
               multidevice_setup_client_)),
       timer_(std::make_unique<base::OneShotTimer>()),
@@ -185,8 +175,9 @@ TetherService::TetherService(
 
   UMA_HISTOGRAM_BOOLEAN("InstantTethering.UserPreference.OnStartup",
                         IsEnabledByPreference());
-  PA_LOG(INFO) << "TetherService has started. Initial user preference value: "
-               << IsEnabledByPreference();
+  PA_LOG(VERBOSE)
+      << "TetherService has started. Initial user preference value: "
+      << IsEnabledByPreference();
 
   if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
     if (device_sync_client_->is_ready())
@@ -217,10 +208,10 @@ void TetherService::StartTetherIfPossible() {
   if (tether_component_)
     return;
 
-  PA_LOG(INFO) << "Starting up TetherComponent.";
+  PA_LOG(VERBOSE) << "Starting up TetherComponent.";
   tether_component_ =
       chromeos::tether::TetherComponentImpl::Factory::NewInstance(
-          cryptauth_service_, device_sync_client_, secure_channel_client_,
+          device_sync_client_, secure_channel_client_,
           tether_host_fetcher_.get(), notification_presenter_.get(),
           gms_core_notifications_state_tracker_.get(), profile_->GetPrefs(),
           network_state_handler_,
@@ -243,7 +234,7 @@ void TetherService::StopTetherIfNecessary() {
     return;
   }
 
-  PA_LOG(INFO) << "Shutting down TetherComponent.";
+  PA_LOG(VERBOSE) << "Shutting down TetherComponent.";
 
   chromeos::tether::TetherComponent::ShutdownReason shutdown_reason;
   switch (GetTetherFeatureState()) {
@@ -329,7 +320,6 @@ void TetherService::Shutdown() {
   tether_component_.reset();
 
   tether_host_fetcher_.reset();
-  remote_device_provider_.reset();
   notification_presenter_.reset();
 }
 
@@ -430,7 +420,7 @@ void TetherService::OnShutdownComplete() {
          chromeos::tether::TetherComponent::Status::SHUT_DOWN);
   tether_component_->RemoveObserver(this);
   tether_component_.reset();
-  PA_LOG(INFO) << "TetherComponent was shut down.";
+  PA_LOG(VERBOSE) << "TetherComponent was shut down.";
 
   // It is possible that the Tether TechnologyState was set to ENABLED while the
   // previous TetherComponent instance was shutting down. If that was the case,
@@ -820,8 +810,8 @@ bool TetherService::HandleFeatureStateMetricIfUninitialized() {
 void TetherService::LogUserPreferenceChanged(bool is_now_enabled) {
   UMA_HISTOGRAM_BOOLEAN("InstantTethering.UserPreference.OnToggle",
                         is_now_enabled);
-  PA_LOG(INFO) << "Tether user preference changed. New value: "
-               << is_now_enabled;
+  PA_LOG(VERBOSE) << "Tether user preference changed. New value: "
+                  << is_now_enabled;
 }
 
 void TetherService::SetTestDoubles(

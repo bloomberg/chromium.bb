@@ -44,8 +44,8 @@ class HTMLQuoteElement final : public HTMLElement {
 };
 
 inline bool IsHTMLQuoteElement(const HTMLElement& element) {
-  return element.HasTagName(HTMLNames::qTag) ||
-         element.HasTagName(HTMLNames::blockquoteTag);
+  return element.HasTagName(html_names::kQTag) ||
+         element.HasTagName(html_names::kBlockquoteTag);
 }
 
 DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLQuoteElement);

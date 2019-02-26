@@ -55,12 +55,13 @@ IPC_STRUCT_TRAITS_BEGIN(content::VisualProperties)
   IPC_STRUCT_TRAITS_MEMBER(scroll_focused_node_into_view)
   IPC_STRUCT_TRAITS_MEMBER(top_controls_height)
   IPC_STRUCT_TRAITS_MEMBER(bottom_controls_height)
-  IPC_STRUCT_TRAITS_MEMBER(local_surface_id)
+  IPC_STRUCT_TRAITS_MEMBER(local_surface_id_allocation)
   IPC_STRUCT_TRAITS_MEMBER(visible_viewport_size)
   IPC_STRUCT_TRAITS_MEMBER(is_fullscreen_granted)
   IPC_STRUCT_TRAITS_MEMBER(display_mode)
   IPC_STRUCT_TRAITS_MEMBER(capture_sequence_number)
   IPC_STRUCT_TRAITS_MEMBER(zoom_level)
+  IPC_STRUCT_TRAITS_MEMBER(page_scale_factor)
 IPC_STRUCT_TRAITS_END()
 
 // Traits for WebDeviceEmulationParams.
@@ -154,8 +155,9 @@ IPC_MESSAGE_ROUTED0(WidgetMsg_DisableDeviceEmulation)
 IPC_MESSAGE_ROUTED0(WidgetMsg_WasHidden)
 
 // Tells the render view that it is no longer hidden (see WasHidden).
-IPC_MESSAGE_ROUTED1(WidgetMsg_WasShown,
-                    base::TimeTicks /* show_request_timestamp */)
+IPC_MESSAGE_ROUTED2(WidgetMsg_WasShown,
+                    base::TimeTicks /* show_request_timestamp */,
+                    bool /* was_evicted */)
 
 // Activate/deactivate the RenderWidget (i.e., set its controls' tint
 // accordingly, etc.).
@@ -313,7 +315,31 @@ IPC_MESSAGE_ROUTED2(WidgetHostMsg_FrameSwapMessages,
 // Close message.
 IPC_MESSAGE_CONTROL1(WidgetHostMsg_Close_ACK, int /* old_route_id */)
 
+// Sent from an inactive renderer for the browser to route to the active
+// renderer, instructing it to close.
+//
+// TODO(http://crbug.com/419087): Move this thing to Frame as it's a signal
+// from a swapped out frame to the mainframe of the frame tree.
+IPC_MESSAGE_ROUTED0(WidgetHostMsg_RouteCloseEvent)
+
 // Sent in reply to WidgetMsg_WaitForNextFrameForTests.
 IPC_MESSAGE_ROUTED0(WidgetHostMsg_WaitForNextFrameForTests_ACK)
+
+// Sent once a paint happens after the first non empty layout. In other words,
+// after the frame widget has painted something.
+IPC_MESSAGE_ROUTED0(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint)
+
+// Sent once the RenderWidgetCompositor issues a draw command.
+IPC_MESSAGE_ROUTED0(WidgetHostMsg_DidCommitAndDrawCompositorFrame)
+
+// Notifies whether there are JavaScript touch event handlers or not.
+IPC_MESSAGE_ROUTED1(WidgetHostMsg_HasTouchEventHandlers,
+                    bool /* has_handlers */)
+
+// Sent by a widget to the browser to request a page scale animation in the
+// main-frame's widget.
+IPC_MESSAGE_ROUTED2(WidgetHostMsg_AnimateDoubleTapZoomInMainFrame,
+                    gfx::Point /* tap point */,
+                    gfx::Rect /* rect_to_zoom */)
 
 #endif  //  CONTENT_COMMON_WIDGET_MESSAGES_H_

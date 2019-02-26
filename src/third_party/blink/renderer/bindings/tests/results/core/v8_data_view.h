@@ -8,8 +8,8 @@
 // DO NOT MODIFY!
 
 // clang-format off
-#ifndef V8DataView_h
-#define V8DataView_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_V8_DATA_VIEW_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_V8_DATA_VIEW_H_
 
 #include "third_party/blink/renderer/bindings/core/v8/generated_code_helper.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits.h"
@@ -32,15 +32,15 @@ class V8DataView {
  public:
   CORE_EXPORT static TestDataView* ToImpl(v8::Local<v8::Object> object);
   CORE_EXPORT static TestDataView* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
-  CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
-  static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount;
+  CORE_EXPORT static const WrapperTypeInfo wrapper_type_info;
+  static constexpr int kInternalFieldCount = kV8DefaultWrapperInternalFieldCount;
 
   // Callback functions
 
-  CORE_EXPORT static void getUint8MethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  CORE_EXPORT static void getFloat64MethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  CORE_EXPORT static void setUint8MethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  CORE_EXPORT static void setFloat64MethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void GetUint8MethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void GetFloat64MethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void SetUint8MethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void SetFloat64MethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 };
 
 template <>
@@ -56,4 +56,4 @@ struct V8TypeOf<TestDataView> {
 
 }  // namespace blink
 
-#endif  // V8DataView_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_V8_DATA_VIEW_H_

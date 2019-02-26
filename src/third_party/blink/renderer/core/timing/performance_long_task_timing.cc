@@ -22,9 +22,9 @@ PerformanceLongTaskTiming* PerformanceLongTaskTiming::Create(
     const String& frame_id,
     const String& frame_name,
     const SubTaskAttribution::EntriesVector& sub_task_attributions) {
-  return new PerformanceLongTaskTiming(start_time, end_time, name, frame_src,
-                                       frame_id, frame_name,
-                                       sub_task_attributions);
+  return MakeGarbageCollected<PerformanceLongTaskTiming>(
+      start_time, end_time, name, frame_src, frame_id, frame_name,
+      sub_task_attributions);
 }
 
 PerformanceLongTaskTiming::PerformanceLongTaskTiming(
@@ -48,7 +48,7 @@ PerformanceLongTaskTiming::PerformanceLongTaskTiming(
   } else {
     // Only one possible task type exists currently: "script".
     TaskAttributionTiming* attribution_entry =
-        TaskAttributionTiming::Create("script", "iframe", culprit_frame_src,
+        TaskAttributionTiming::Create("unknown", "iframe", culprit_frame_src,
                                       culprit_frame_id, culprit_frame_name);
     attribution_.push_back(*attribution_entry);
   }
@@ -57,7 +57,7 @@ PerformanceLongTaskTiming::PerformanceLongTaskTiming(
 PerformanceLongTaskTiming::~PerformanceLongTaskTiming() = default;
 
 AtomicString PerformanceLongTaskTiming::entryType() const {
-  return PerformanceEntryNames::longtask;
+  return performance_entry_names::kLongtask;
 }
 
 PerformanceEntryType PerformanceLongTaskTiming::EntryTypeEnum() const {

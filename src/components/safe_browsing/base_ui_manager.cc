@@ -258,7 +258,7 @@ void BaseUIManager::ShowBlockingPageForResource(
 // users who are not in incognito mode.
 void BaseUIManager::MaybeReportSafeBrowsingHit(
     const HitReport& hit_report,
-    const content::WebContents* web_contents) {
+    content::WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return;
 }
@@ -305,7 +305,6 @@ const std::string BaseUIManager::app_locale() const {
 
 history::HistoryService* BaseUIManager::history_service(
     content::WebContents* web_contents) {
-  // TODO(jialiul): figure out how to get HistoryService from webview.
   return nullptr;
 }
 

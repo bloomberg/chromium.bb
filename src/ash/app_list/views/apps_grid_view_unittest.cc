@@ -592,6 +592,29 @@ TEST_F(AppsGridViewTest, CloseFolderByClickingBackground) {
   EXPECT_FALSE(apps_container_view->IsInFolderView());
 }
 
+TEST_F(AppsGridViewTest, TapsBetweenAppsWontCloseAppList) {
+  model_->PopulateApps(2);
+  gfx::Point between_apps = GetItemRectOnCurrentPageAt(0, 0).right_center();
+  gfx::Point empty_space = GetItemRectOnCurrentPageAt(0, 2).CenterPoint();
+
+  ui::GestureEvent tap_between(between_apps.x(), between_apps.y(), 0,
+                               base::TimeTicks(),
+                               ui::GestureEventDetails(ui::ET_GESTURE_TAP));
+  ui::GestureEvent tap_outside(empty_space.x(), empty_space.y(), 0,
+                               base::TimeTicks(),
+                               ui::GestureEventDetails(ui::ET_GESTURE_TAP));
+
+  // Taps between apps should be handled to prevent them from going into
+  // app_list
+  apps_grid_view_->OnGestureEvent(&tap_between);
+  EXPECT_TRUE(tap_between.handled());
+
+  // Taps outside of occupied tiles should not be handled, that they may close
+  // the app_list
+  apps_grid_view_->OnGestureEvent(&tap_outside);
+  EXPECT_FALSE(tap_outside.handled());
+}
+
 TEST_F(AppsGridViewTest, PageResetAfterOpenFolder) {
   const size_t kTotalItems = kMaxFolderPages * kMaxFolderItemsPerPage;
   model_->CreateAndPopulateFolderWithApps(kTotalItems);
@@ -1020,7 +1043,7 @@ TEST_P(AppsGridViewDragTest, MouseDragFlipPage) {
   gfx::Point from = GetItemRectOnCurrentPageAt(0, 0).CenterPoint();
   gfx::Point to;
   const gfx::Rect apps_grid_bounds = apps_grid_view_->GetLocalBounds();
-  to = gfx::Point(apps_grid_bounds.width() / 2, apps_grid_bounds.bottom());
+  to = gfx::Point(apps_grid_bounds.width() / 2, apps_grid_bounds.bottom() + 1);
 
   // For fullscreen/bubble launcher, drag to the bottom/right of bounds.
   page_flip_waiter.Reset();
@@ -1117,7 +1140,7 @@ class AppsGridGapTest : public AppsGridViewTest {
     const gfx::Rect apps_grid_bounds = apps_grid_view_->GetLocalBounds();
     gfx::Point point_in_page_flip_buffer =
         gfx::Point(apps_grid_bounds.width() / 2,
-                   next_page ? apps_grid_bounds.bottom() : 0);
+                   next_page ? apps_grid_bounds.bottom() + 1 : 0);
 
     // Build the drag event which will be triggered after page flip.
     gfx::Point root_to(to);

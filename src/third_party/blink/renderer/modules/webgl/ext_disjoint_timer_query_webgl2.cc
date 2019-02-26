@@ -16,7 +16,8 @@ WebGLExtensionName EXTDisjointTimerQueryWebGL2::GetName() const {
 
 EXTDisjointTimerQueryWebGL2* EXTDisjointTimerQueryWebGL2::Create(
     WebGLRenderingContextBase* context) {
-  EXTDisjointTimerQueryWebGL2* o = new EXTDisjointTimerQueryWebGL2(context);
+  EXTDisjointTimerQueryWebGL2* o =
+      MakeGarbageCollected<EXTDisjointTimerQueryWebGL2>(context);
   return o;
 }
 

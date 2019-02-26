@@ -27,13 +27,10 @@
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html/html_object_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
-#include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loading_log.h"
 
 namespace blink {
-
-using namespace HTMLNames;
 
 HTMLImageLoader::HTMLImageLoader(Element* element) : ImageLoader(element) {}
 
@@ -53,7 +50,7 @@ void HTMLImageLoader::DispatchLoadEvent() {
     error_occurred = (GetContent()->GetResponse().HttpStatusCode() >= 400);
   }
   GetElement()->DispatchEvent(*Event::Create(
-      error_occurred ? EventTypeNames::error : EventTypeNames::load));
+      error_occurred ? event_type_names::kError : event_type_names::kLoad));
 }
 
 void HTMLImageLoader::NoImageResourceToLoad() {
@@ -90,7 +87,7 @@ void HTMLImageLoader::ImageNotifyFinished(ImageResourceContent*) {
 
   if ((load_error || cached_image->GetResponse().HttpStatusCode() >= 400) &&
       IsHTMLObjectElement(*element))
-    ToHTMLObjectElement(element)->RenderFallbackContent();
+    ToHTMLObjectElement(element)->RenderFallbackContent(nullptr);
 }
 
 }  // namespace blink

@@ -85,11 +85,9 @@ void OnLoFiResponseReceivedOnUI(content::WebContents* web_contents) {
 
 std::unique_ptr<data_reduction_proxy::DataReductionProxyIOData>
 CreateDataReductionProxyChromeIOData(
-    net::NetLog* net_log,
     PrefService* prefs,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner) {
-  DCHECK(net_log);
   DCHECK(prefs);
 
   bool enabled =
@@ -98,7 +96,7 @@ CreateDataReductionProxyChromeIOData(
   std::unique_ptr<data_reduction_proxy::DataReductionProxyIOData>
       data_reduction_proxy_io_data(
           new data_reduction_proxy::DataReductionProxyIOData(
-              DataReductionProxyChromeSettings::GetClient(), prefs, net_log,
+              DataReductionProxyChromeSettings::GetClient(), prefs,
               content::GetNetworkConnectionTracker(), io_task_runner,
               ui_task_runner, enabled, GetUserAgent(),
               version_info::GetChannelString(chrome::GetChannel())));

@@ -21,4 +21,8 @@ void FakePipInstance::ClosePip() {
   num_closed_++;
 }
 
+void FakePipInstance::SetPipSuppressionStatus(bool suppressed) {
+  suppressed_ = suppressed;
+}
+
 }  // namespace arc

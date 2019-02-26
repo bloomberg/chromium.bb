@@ -114,6 +114,18 @@ if (org.chromium.base.BuildConfig.DCHECK_IS_ON) {
 }
 ```
 
+### Finalizers
+In line with [Google's Java style guide](https://google.github.io/styleguide/javaguide.html#s6.4-finalizers),
+never override `Object.finalize()`.
+
+Custom finalizers:
+* are called on a background thread, and at an unpredicatble point in time,
+* swallow all exceptions (asserts won't work),
+* causes additional garbage collector jank.
+
+Classes that need destructor logic should provide an explicit `destroy()`
+method.
+
 ### Other Android Support Library Annotations
 * Use them! They are [documented here](https://developer.android.com/studio/write/annotations).
   * They generally improve readability.

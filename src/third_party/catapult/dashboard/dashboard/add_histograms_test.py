@@ -24,6 +24,7 @@ from dashboard.models import sheriff
 from tracing.value import histogram as histogram_module
 from tracing.value import histogram_set
 from tracing.value.diagnostics import breakdown
+from tracing.value.diagnostics import date_range
 from tracing.value.diagnostics import generic_set
 from tracing.value.diagnostics import reserved_infos
 
@@ -52,61 +53,61 @@ def _CreateHistogram(
 
   histograms = histogram_set.HistogramSet(hists)
   if master:
-    histograms.AddSharedDiagnostic(
+    histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.MASTERS.name,
         generic_set.GenericSet([master]))
   if bot:
-    histograms.AddSharedDiagnostic(
+    histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.BOTS.name,
         generic_set.GenericSet([bot]))
   if commit_position:
-    histograms.AddSharedDiagnostic(
+    histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.CHROMIUM_COMMIT_POSITIONS.name,
         generic_set.GenericSet([commit_position]))
   if benchmark:
-    histograms.AddSharedDiagnostic(
+    histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.BENCHMARKS.name,
         generic_set.GenericSet([benchmark]))
   if benchmark_description:
-    histograms.AddSharedDiagnostic(
+    histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.BENCHMARK_DESCRIPTIONS.name,
         generic_set.GenericSet([benchmark_description]))
   if owner:
-    histograms.AddSharedDiagnostic(
+    histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.OWNERS.name,
         generic_set.GenericSet([owner]))
   if device:
-    histograms.AddSharedDiagnostic(
+    histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.DEVICE_IDS.name,
         generic_set.GenericSet([device]))
   if stories:
-    histograms.AddSharedDiagnostic(
+    histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.STORIES.name,
         generic_set.GenericSet(stories))
   if story_tags:
-    histograms.AddSharedDiagnostic(
+    histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.STORY_TAGS.name,
         generic_set.GenericSet(story_tags))
   if is_ref:
-    histograms.AddSharedDiagnostic(
+    histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.IS_REFERENCE_BUILD.name,
         generic_set.GenericSet([True]))
   if is_summary is not None:
-    histograms.AddSharedDiagnostic(
+    histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.SUMMARY_KEYS.name,
         generic_set.GenericSet(is_summary))
   if point_id is not None:
-    histograms.AddSharedDiagnostic(
+    histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.POINT_ID.name,
         generic_set.GenericSet([point_id]))
   if build_url is not None:
-    histograms.AddSharedDiagnostic(
+    histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.BUILD_URLS.name,
         generic_set.GenericSet([['build', build_url]]))
   if revision_timestamp is not None:
-    histograms.AddSharedDiagnostic(
+    histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.REVISION_TIMESTAMPS.name,
-        histogram_module.DateRange(revision_timestamp))
+        date_range.DateRange(revision_timestamp))
   return histograms
 
 
@@ -125,8 +126,12 @@ class AddHistogramsBaseTest(testing_common.TestCase):
     self.SetCurrentUser('foo@bar.com', is_admin=True)
     oauth_patcher = mock.patch.object(api_auth, 'oauth')
     self.addCleanup(oauth_patcher.stop)
-    mock_oauth = oauth_patcher.start()
-    SetGooglerOAuth(mock_oauth)
+    SetGooglerOAuth(oauth_patcher.start())
+
+    identity_patcher = mock.patch.object(utils, 'app_identity')
+    self.addCleanup(identity_patcher.stop)
+    self.mock_utils = identity_patcher.start()
+    self.mock_utils.get_application_id.return_value = 'chromeperf'
 
     patcher = mock.patch.object(add_histograms, 'cloudstorage')
     self.mock_cloudstorage = patcher.start()
@@ -732,19 +737,19 @@ class AddHistogramsTest(AddHistogramsBaseTest):
 
     hists = [_MakeHistogram('hist_%d' % i) for i in xrange(100)]
     histograms = histogram_set.HistogramSet(hists)
-    histograms.AddSharedDiagnostic(
+    histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.MASTERS.name,
         generic_set.GenericSet(['master']))
-    histograms.AddSharedDiagnostic(
+    histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.BOTS.name,
         generic_set.GenericSet(['bot']))
-    histograms.AddSharedDiagnostic(
+    histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.CHROMIUM_COMMIT_POSITIONS.name,
         generic_set.GenericSet([12345]))
-    histograms.AddSharedDiagnostic(
+    histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.BENCHMARKS.name,
         generic_set.GenericSet(['benchmark']))
-    histograms.AddSharedDiagnostic(
+    histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.DEVICE_IDS.name,
         generic_set.GenericSet(['devie_foo']))
 
@@ -763,19 +768,19 @@ class AddHistogramsTest(AddHistogramsBaseTest):
 
     hists = [_MakeHistogram('hist_%d' % i) for i in xrange(50)]
     histograms = histogram_set.HistogramSet(hists)
-    histograms.AddSharedDiagnostic(
+    histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.MASTERS.name,
         generic_set.GenericSet(['master']))
-    histograms.AddSharedDiagnostic(
+    histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.BOTS.name,
         generic_set.GenericSet(['bot']))
-    histograms.AddSharedDiagnostic(
+    histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.CHROMIUM_COMMIT_POSITIONS.name,
         generic_set.GenericSet([12345]))
-    histograms.AddSharedDiagnostic(
+    histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.BENCHMARKS.name,
         generic_set.GenericSet(['benchmark']))
-    histograms.AddSharedDiagnostic(
+    histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.DEVICE_IDS.name,
         generic_set.GenericSet(['devie_foo']))
 
@@ -1357,8 +1362,9 @@ class AddHistogramsTest(AddHistogramsBaseTest):
   def testFindHistogramLevelSparseDiagnostics(self):
     hist = histogram_module.Histogram('hist', 'count')
     histograms = histogram_set.HistogramSet([hist])
-    histograms.AddSharedDiagnostic('foo', generic_set.GenericSet(['bar']))
-    histograms.AddSharedDiagnostic(
+    histograms.AddSharedDiagnosticToAllHistograms(
+        'foo', generic_set.GenericSet(['bar']))
+    histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.DEVICE_IDS.name,
         generic_set.GenericSet([]))
     diagnostics = add_histograms.FindHistogramLevelSparseDiagnostics(hist)
@@ -1392,7 +1398,7 @@ class AddHistogramsTest(AddHistogramsBaseTest):
     hist = histogram_module.Histogram('hist', 'count')
     histograms = histogram_set.HistogramSet([hist])
     chromium_commit = generic_set.GenericSet(['123'])
-    histograms.AddSharedDiagnostic(
+    histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.CHROMIUM_COMMIT_POSITIONS.name, chromium_commit)
     with self.assertRaises(api_request_handler.BadRequestError):
       add_histograms.ComputeRevision(histograms)
@@ -1401,7 +1407,7 @@ class AddHistogramsTest(AddHistogramsBaseTest):
     hist = histogram_module.Histogram('hist', 'count')
     histograms = histogram_set.HistogramSet([hist])
     chromium_commit = generic_set.GenericSet([424242, 0])
-    histograms.AddSharedDiagnostic(
+    histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.CHROMIUM_COMMIT_POSITIONS.name, chromium_commit)
     with self.assertRaises(api_request_handler.BadRequestError):
       add_histograms.ComputeRevision(histograms)
@@ -1435,7 +1441,7 @@ class AddHistogramsTest(AddHistogramsBaseTest):
   def testSparseDiagnosticsAreNotInlined(self):
     hist = histogram_module.Histogram('hist', 'count')
     histograms = histogram_set.HistogramSet([hist])
-    histograms.AddSharedDiagnostic(
+    histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.BENCHMARKS.name,
         generic_set.GenericSet(['benchmark']))
     add_histograms.InlineDenseSharedDiagnostics(histograms)
@@ -1445,10 +1451,10 @@ class AddHistogramsTest(AddHistogramsBaseTest):
   def testLogDebugInfo_Succeeds(self, mock_log):
     hist = histogram_module.Histogram('hist', 'count')
     histograms = histogram_set.HistogramSet([hist])
-    histograms.AddSharedDiagnostic(
+    histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.LOG_URLS.name,
         generic_set.GenericSet(['http://foo']))
-    histograms.AddSharedDiagnostic(
+    histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.BUILD_URLS.name,
         generic_set.GenericSet(['http://bar']))
     add_histograms._LogDebugInfo(histograms)

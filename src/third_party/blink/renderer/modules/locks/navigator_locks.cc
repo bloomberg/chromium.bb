@@ -37,7 +37,7 @@ class NavigatorLocksImpl final : public GarbageCollected<NavigatorLocksImpl<T>>,
 
   LockManager* GetLockManager(ExecutionContext* context) const {
     if (!lock_manager_ && context) {
-      lock_manager_ = new LockManager(context);
+      lock_manager_ = MakeGarbageCollected<LockManager>(context);
     }
     return lock_manager_.Get();
   }

@@ -73,12 +73,12 @@ MediaValuesCached::MediaValuesCachedData::MediaValuesCachedData(
 }
 
 MediaValuesCached* MediaValuesCached::Create() {
-  return new MediaValuesCached();
+  return MakeGarbageCollected<MediaValuesCached>();
 }
 
 MediaValuesCached* MediaValuesCached::Create(
     const MediaValuesCachedData& data) {
-  return new MediaValuesCached(data);
+  return MakeGarbageCollected<MediaValuesCached>(data);
 }
 
 MediaValuesCached::MediaValuesCached() = default;
@@ -87,7 +87,7 @@ MediaValuesCached::MediaValuesCached(const MediaValuesCachedData& data)
     : data_(data) {}
 
 MediaValues* MediaValuesCached::Copy() const {
-  return new MediaValuesCached(data_);
+  return MakeGarbageCollected<MediaValuesCached>(data_);
 }
 
 bool MediaValuesCached::ComputeLength(double value,

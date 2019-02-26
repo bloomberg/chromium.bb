@@ -30,8 +30,10 @@ class MODULES_EXPORT MediaMetadata final : public ScriptWrappable {
 
  public:
   static MediaMetadata* Create(ScriptState*,
-                               const MediaMetadataInit&,
+                               const MediaMetadataInit*,
                                ExceptionState&);
+
+  MediaMetadata(ScriptState*, const MediaMetadataInit*, ExceptionState&);
 
   String title() const;
   String artist() const;
@@ -40,12 +42,14 @@ class MODULES_EXPORT MediaMetadata final : public ScriptWrappable {
 
   // Internal use only, returns a reference to m_artwork instead of a Frozen
   // copy of a MediaImage array.
-  const HeapVector<MediaImage>& artwork() const;
+  const HeapVector<Member<MediaImage>>& artwork() const;
 
   void setTitle(const String&);
   void setArtist(const String&);
   void setAlbum(const String&);
-  void setArtwork(ScriptState*, const HeapVector<MediaImage>&, ExceptionState&);
+  void setArtwork(ScriptState*,
+                  const HeapVector<Member<MediaImage>>&,
+                  ExceptionState&);
 
   // Called by MediaSession to associate or de-associate itself.
   void SetSession(MediaSession*);
@@ -53,8 +57,6 @@ class MODULES_EXPORT MediaMetadata final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  MediaMetadata(ScriptState*, const MediaMetadataInit&, ExceptionState&);
-
   // Called when one of the metadata fields is updated from script. It will
   // notify the session asynchronously in order to bundle multiple call in one
   // notification.
@@ -67,13 +69,13 @@ class MODULES_EXPORT MediaMetadata final : public ScriptWrappable {
   // Make an internal copy of the MediaImage vector with some internal steps
   // such as parsing of the src property.
   void SetArtworkInternal(ScriptState*,
-                          const HeapVector<MediaImage>&,
+                          const HeapVector<Member<MediaImage>>&,
                           ExceptionState&);
 
   String title_;
   String artist_;
   String album_;
-  HeapVector<MediaImage> artwork_;
+  HeapVector<Member<MediaImage>> artwork_;
 
   Member<MediaSession> session_;
   TaskRunnerTimer<MediaMetadata> notify_session_timer_;

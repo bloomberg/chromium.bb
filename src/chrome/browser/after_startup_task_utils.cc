@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/process/process_info.h"
+#include "base/process/process.h"
 #include "base/rand_util.h"
 #include "base/sequence_checker.h"
 #include "base/synchronization/atomic_flag.h"
@@ -91,8 +91,11 @@ void QueueTask(std::unique_ptr<AfterStartupTask> queued_task) {
   CHECK(queued_task->task);
 
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             base::BindOnce(QueueTask, std::move(queued_task)));
+    // Posted with USER_VISIBLE priority to avoid this becoming an after startup
+    // task itself.
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+        base::BindOnce(QueueTask, std::move(queued_task)));
     return;
   }
 
@@ -108,9 +111,9 @@ void QueueTask(std::unique_ptr<AfterStartupTask> queued_task) {
 void SetBrowserStartupIsComplete() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
-  // CurrentProcessInfo::CreationTime() is not available on all platforms.
+  // Process::Current().CreationTime() is not available on all platforms.
   const base::Time process_creation_time =
-      base::CurrentProcessInfo::CreationTime();
+      base::Process::Current().CreationTime();
   if (!process_creation_time.is_null()) {
     UMA_HISTOGRAM_LONG_TIMES("Startup.AfterStartupTaskDelayedUntilTime",
                              base::Time::Now() - process_creation_time);

@@ -40,6 +40,14 @@ content::WebUIDataSource* CreateManagementUIHtmlSource() {
                              IDS_MANAGEMENT_REPORT_DEVICE_NETWORK_INTERFACES);
   source->AddLocalizedString(kManagementReportUsers,
                              IDS_MANAGEMENT_REPORT_DEVICE_USERS);
+  source->AddLocalizedString("localTrustRoots",
+                             IDS_MANAGEMENT_LOCAL_TRUST_ROOTS);
+  source->AddLocalizedString("managementTrustRootsNotConfigured",
+                             IDS_MANAGEMENT_TRUST_ROOTS_NOT_CONFIGURED);
+#if defined(OS_CHROMEOS)
+  source->AddLocalizedString("managementTrustRootsConfigured",
+                             IDS_MANAGEMENT_TRUST_ROOTS_CONFIGURED);
+#endif  // defined(OS_CHROMEOS)
   source->SetJsonPath("strings.js");
   // Add required resources.
   source->AddResourcePath("management.css", IDR_MANAGEMENT_CSS);

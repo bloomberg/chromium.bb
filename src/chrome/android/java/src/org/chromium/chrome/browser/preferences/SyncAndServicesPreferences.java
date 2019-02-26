@@ -109,8 +109,6 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     private static final String PREF_NETWORK_PREDICTIONS = "network_predictions";
     private static final String PREF_NAVIGATION_ERROR = "navigation_error";
     private static final String PREF_SAFE_BROWSING = "safe_browsing";
-    private static final String PREF_SAFE_BROWSING_EXTENDED_REPORTING =
-            "safe_browsing_extended_reporting";
     private static final String PREF_SAFE_BROWSING_SCOUT_REPORTING =
             "safe_browsing_scout_reporting";
     private static final String PREF_USAGE_AND_CRASH_REPORTING = "usage_and_crash_reports";
@@ -256,16 +254,8 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         mSafeBrowsing.setOnPreferenceChangeListener(this);
         mSafeBrowsing.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
-        Preference extendedReporting = findPreference(PREF_SAFE_BROWSING_EXTENDED_REPORTING);
-        Preference scoutReporting = findPreference(PREF_SAFE_BROWSING_SCOUT_REPORTING);
-        // Remove the extended reporting preference that is NOT active.
-        if (mPrefServiceBridge.isSafeBrowsingScoutReportingActive()) {
-            removePreference(mNonpersonalizedServices, extendedReporting);
-            mSafeBrowsingReporting = (ChromeBaseCheckBoxPreference) scoutReporting;
-        } else {
-            removePreference(mNonpersonalizedServices, scoutReporting);
-            mSafeBrowsingReporting = (ChromeBaseCheckBoxPreference) extendedReporting;
-        }
+        mSafeBrowsingReporting =
+                (ChromeBaseCheckBoxPreference) findPreference(PREF_SAFE_BROWSING_SCOUT_REPORTING);
         mSafeBrowsingReporting.setOnPreferenceChangeListener(this);
         mSafeBrowsingReporting.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
@@ -329,7 +319,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menu_id_targeted_help) {
             HelpAndFeedback.getInstance(getActivity())
-                    .show(getActivity(), getString(R.string.help_context_privacy),
+                    .show(getActivity(), getString(R.string.help_context_sync_and_services),
                             Profile.getLastUsedProfile(), null);
             return true;
         }
@@ -360,7 +350,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         if (getActivity().isChangingConfigurations()) return;
         // Only save state if internal and external state match. If a stop and clear comes
         // while the dialog is open, this will be false and settings won't be saved.
-        if (mIsSyncEnabled && AndroidSyncSettings.isSyncEnabled()) {
+        if (mIsSyncEnabled && AndroidSyncSettings.get().isSyncEnabled()) {
             // Save the new data type state.
             configureSyncDataTypes();
             // Inform sync that the user has finished setting up sync at least once.
@@ -399,8 +389,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
             mPrefServiceBridge.setSearchSuggestEnabled((boolean) newValue);
         } else if (PREF_SAFE_BROWSING.equals(key)) {
             mPrefServiceBridge.setSafeBrowsingEnabled((boolean) newValue);
-        } else if (PREF_SAFE_BROWSING_EXTENDED_REPORTING.equals(key)
-                || PREF_SAFE_BROWSING_SCOUT_REPORTING.equals(key)) {
+        } else if (PREF_SAFE_BROWSING_SCOUT_REPORTING.equals(key)) {
             mPrefServiceBridge.setSafeBrowsingExtendedReportingEnabled((boolean) newValue);
         } else if (PREF_NETWORK_PREDICTIONS.equals(key)) {
             mPrefServiceBridge.setNetworkPredictionEnabled((boolean) newValue);
@@ -475,7 +464,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
      * updateSyncPreferences, which uses that as its source of truth.
      */
     private void updateSyncStateFromAndroidSyncSettings() {
-        mIsSyncEnabled = AndroidSyncSettings.isSyncEnabled();
+        mIsSyncEnabled = AndroidSyncSettings.get().isSyncEnabled();
         updateSyncPreferences();
     }
 
@@ -542,7 +531,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         if (!mIsSyncEnabled) return;
 
         boolean syncEverything = UnifiedConsentServiceBridge.isUnifiedConsentGiven();
-        mProfileSyncService.setPreferredDataTypes(syncEverything, getSelectedModelTypes());
+        mProfileSyncService.setChosenDataTypes(syncEverything, getSelectedModelTypes());
         // Update the invalidation listener with the set of types we are enabling.
         InvalidationController invController = InvalidationController.get();
         invController.ensureStartedAndUpdateRegisteredTypes();
@@ -700,13 +689,15 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         }
 
         Set<Integer> syncTypes =
-                mIsSyncEnabled ? mProfileSyncService.getPreferredDataTypes() : new ArraySet<>();
+                mIsSyncEnabled ? mProfileSyncService.getChosenDataTypes() : new ArraySet<>();
         mSyncAutofill.setChecked(syncTypes.contains(ModelType.AUTOFILL));
         mSyncAutofill.setEnabled(true);
         mSyncBookmarks.setChecked(syncTypes.contains(ModelType.BOOKMARKS));
         mSyncBookmarks.setEnabled(true);
         mSyncHistory.setChecked(syncTypes.contains(ModelType.TYPED_URLS));
         mSyncHistory.setEnabled(true);
+        mSyncPasswords.setChecked(syncTypes.contains(ModelType.PASSWORDS));
+        mSyncPasswords.setEnabled(true);
         mSyncRecentTabs.setChecked(syncTypes.contains(ModelType.PROXY_TABS));
         mSyncRecentTabs.setEnabled(true);
         mSyncSettings.setChecked(syncTypes.contains(ModelType.PREFERENCES));
@@ -717,11 +708,6 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         mSyncPaymentsIntegration.setChecked(
                 syncAutofill && PersonalDataManager.isPaymentsIntegrationEnabled());
         mSyncPaymentsIntegration.setEnabled(syncAutofill);
-
-        boolean passwordsConfigurable = mProfileSyncService.isEngineInitialized()
-                && mProfileSyncService.isCryptographerReady();
-        mSyncPasswords.setChecked(passwordsConfigurable && syncTypes.contains(ModelType.PASSWORDS));
-        mSyncPasswords.setEnabled(passwordsConfigurable);
 
         // USER_EVENTS sync type doesn't work with custom passphrase and needs history sync
         boolean userEventsConfigurable =
@@ -751,7 +737,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
 
     @SyncError
     private int getSyncError() {
-        if (!AndroidSyncSettings.isMasterSyncEnabled()) {
+        if (!AndroidSyncSettings.get().isMasterSyncEnabled()) {
             return SyncError.ANDROID_SYNC_DISABLED;
         }
 
@@ -924,8 +910,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
             if (PREF_SEARCH_SUGGESTIONS.equals(key)) {
                 return mPrefServiceBridge.isSearchSuggestManaged();
             }
-            if (PREF_SAFE_BROWSING_EXTENDED_REPORTING.equals(key)
-                    || PREF_SAFE_BROWSING_SCOUT_REPORTING.equals(key)) {
+            if (PREF_SAFE_BROWSING_SCOUT_REPORTING.equals(key)) {
                 return mPrefServiceBridge.isSafeBrowsingExtendedReportingManaged();
             }
             if (PREF_SAFE_BROWSING.equals(key)) {

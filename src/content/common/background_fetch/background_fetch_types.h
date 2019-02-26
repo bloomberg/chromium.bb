@@ -75,13 +75,15 @@ struct CONTENT_EXPORT BackgroundFetchRegistration {
 struct CONTENT_EXPORT BackgroundFetchSettledFetch {
   static blink::mojom::FetchAPIResponsePtr CloneResponse(
       const blink::mojom::FetchAPIResponsePtr& response);
+  static blink::mojom::FetchAPIRequestPtr CloneRequest(
+      const blink::mojom::FetchAPIRequestPtr& request);
   BackgroundFetchSettledFetch();
   BackgroundFetchSettledFetch(const BackgroundFetchSettledFetch& other);
   BackgroundFetchSettledFetch& operator=(
       const BackgroundFetchSettledFetch& other);
   ~BackgroundFetchSettledFetch();
 
-  ServiceWorkerFetchRequest request;
+  blink::mojom::FetchAPIRequestPtr request;
   blink::mojom::FetchAPIResponsePtr response;
 };
 

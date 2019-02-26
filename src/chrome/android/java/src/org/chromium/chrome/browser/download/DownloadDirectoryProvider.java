@@ -29,7 +29,7 @@ import java.util.ArrayList;
  *
  * This class uses an asynchronous task to retrieve the directories, and guarantee only one task
  * can execute at any time. Multiple tasks may cause certain device fail to retrieve download
- * directories.
+ * directories. Should be used on main thread.
  *
  * Also, this class listens to SD card insertion and removal events to update the directory
  * options accordingly.
@@ -117,7 +117,7 @@ public class DownloadDirectoryProvider {
 
     // Singleton instance.
     private static class LazyHolder {
-        private static final DownloadDirectoryProvider INSTANCE = new DownloadDirectoryProvider();
+        private static DownloadDirectoryProvider sInstance = new DownloadDirectoryProvider();
     }
 
     /**
@@ -125,7 +125,15 @@ public class DownloadDirectoryProvider {
      * @return The singleton directory provider instance.
      */
     public static DownloadDirectoryProvider getInstance() {
-        return LazyHolder.INSTANCE;
+        return LazyHolder.sInstance;
+    }
+
+    /**
+     * Sets the directory provider for testing.
+     * @param provider The directory provider used in tests.
+     */
+    public void setDirectoryProviderForTesting(DownloadDirectoryProvider provider) {
+        LazyHolder.sInstance = provider;
     }
 
     /**
@@ -154,9 +162,9 @@ public class DownloadDirectoryProvider {
     private ArrayList < Callback < ArrayList<DirectoryOption>>> mCallbacks = new ArrayList<>();
 
     // Should be bounded to UI thread.
-    private final Handler mHandler = new Handler(ThreadUtils.getUiThreadLooper());
+    protected final Handler mHandler = new Handler(ThreadUtils.getUiThreadLooper());
 
-    private DownloadDirectoryProvider() {
+    protected DownloadDirectoryProvider() {
         registerSDCardReceiver();
     }
 

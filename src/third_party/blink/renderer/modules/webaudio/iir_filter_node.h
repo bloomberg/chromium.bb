@@ -44,8 +44,13 @@ class IIRFilterNode : public AudioNode {
                                ExceptionState&);
 
   static IIRFilterNode* Create(BaseAudioContext*,
-                               const IIRFilterOptions&,
+                               const IIRFilterOptions*,
                                ExceptionState&);
+
+  IIRFilterNode(BaseAudioContext&,
+                const Vector<double>& denominator,
+                const Vector<double>& numerator,
+                bool is_filter_stable);
 
   void Trace(blink::Visitor*) override;
 
@@ -57,11 +62,6 @@ class IIRFilterNode : public AudioNode {
                             ExceptionState&);
 
  private:
-  IIRFilterNode(BaseAudioContext&,
-                const Vector<double>& denominator,
-                const Vector<double>& numerator,
-                bool is_filter_stable);
-
   IIRProcessor* GetIIRFilterProcessor() const;
 };
 

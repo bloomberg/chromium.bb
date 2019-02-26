@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.ACTIONS;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.ACTIVE_TAB;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BOTTOM_OFFSET_PX;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.SHOW_KEYBOARD_CALLBACK;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.TABS;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.TAB_SELECTION_CALLBACKS;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.VISIBLE;
@@ -102,6 +103,20 @@ class KeyboardAccessoryViewBinder {
 
     public static void bind(
             PropertyModel model, KeyboardAccessoryView view, PropertyKey propertyKey) {
+        boolean wasBound = bindInternal(model, view, propertyKey);
+        assert wasBound : "Every possible property update needs to be handled!";
+        requestLayoutPreKitkat(view);
+    }
+
+    /**
+     * Tries to bind the given property to the given view by using the value in the given model.
+     * @param model       A {@link PropertyModel}.
+     * @param view        A {@link KeyboardAccessoryView}.
+     * @param propertyKey A {@link PropertyKey}.
+     * @return True if the given propertyKey was bound to the given view.
+     */
+    protected static boolean bindInternal(
+            PropertyModel model, KeyboardAccessoryView view, PropertyKey propertyKey) {
         if (propertyKey == ACTIONS) {
             view.setActionsAdapter(
                     KeyboardAccessoryCoordinator.createActionsAdapter(model.get(ACTIONS)));
@@ -120,11 +135,17 @@ class KeyboardAccessoryViewBinder {
         } else if (propertyKey == TAB_SELECTION_CALLBACKS) {
             // Don't add null as listener. It's a valid state but an invalid argument.
             TabLayout.OnTabSelectedListener listener = model.get(TAB_SELECTION_CALLBACKS);
-            if (listener == null) return;
+            if (listener == null) return true;
             view.setTabSelectionAdapter(listener);
+        } else if (propertyKey == SHOW_KEYBOARD_CALLBACK) {
+            // No binding required.
         } else {
-            assert false : "Every possible property update needs to be handled!";
+            return false;
         }
+        return true;
+    }
+
+    protected static void requestLayoutPreKitkat(View view) {
         // Layout requests happen automatically since Kitkat and redundant requests cause warnings.
         if (view != null && Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
             view.post(() -> {

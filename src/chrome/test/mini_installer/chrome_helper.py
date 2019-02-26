@@ -36,6 +36,43 @@ def GetProcessIDs(process_path):
           path == process_path]
 
 
+def WaitForChromeExit():
+  """Waits for all chrome.exe processes to exit."""
+  def GetChromeProcesses():
+    """Returns a dict of all chrome.exe processes indexed by pid."""
+    chrome_processes = dict()
+    for process in psutil.process_iter():
+      try:
+        if process.name == 'chrome.exe':
+          chrome_processes[process.pid] = process
+      except psutil.Error:
+        pass
+    return chrome_processes
+
+  def GetBrowserProcess(chrome_processes):
+    """Returns a psutil.Process for the browser process in |chrome_processes|.
+    """
+    # Find the one whose parent isn't a chrome.exe process.
+    for process in chrome_processes.itervalues():
+      try:
+        if process.ppid not in chrome_processes:
+          return process
+      except psutil.Error:
+        pass
+    return None
+
+  chrome_processes = GetChromeProcesses()
+  while chrome_processes:
+    # Prefer waiting on the browser process.
+    process = GetBrowserProcess(chrome_processes)
+    if not process:
+      # Pick any process to wait on if no top-level parent was found.
+      process = next(chrome_processes.itervalues())
+    process.wait()
+    # Check for stragglers and keep waiting until all are gone.
+    chrome_processes = GetChromeProcesses()
+
+
 def GetWindowHandles(process_ids):
   """Returns a list of handles of windows owned by processes in |process_ids|.
 

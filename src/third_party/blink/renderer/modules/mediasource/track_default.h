@@ -29,6 +29,11 @@ class TrackDefault final : public ScriptWrappable {
                               const String& byte_stream_track_id,
                               ExceptionState&);
 
+  TrackDefault(const AtomicString& type,
+               const String& language,
+               const String& label,
+               const Vector<String>& kinds,
+               const String& byte_stream_track_id);
   ~TrackDefault() override;
 
   // Implement the IDL
@@ -39,12 +44,6 @@ class TrackDefault final : public ScriptWrappable {
   ScriptValue kinds(ScriptState*) const;
 
  private:
-  TrackDefault(const AtomicString& type,
-               const String& language,
-               const String& label,
-               const Vector<String>& kinds,
-               const String& byte_stream_track_id);
-
   const AtomicString type_;
   const String byte_stream_track_id_;
   const String language_;

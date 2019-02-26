@@ -6,8 +6,14 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
@@ -26,17 +32,32 @@ const char kSubE[] = "eeeee";
 const char kData0[] = "{ \"key\": \"value\" }";
 const char kData1[] = "{}";
 
+const int kMaxCacheSize = 1024 * 10;
+const std::string kData1Kb = std::string(1024, ' ');
+const std::string kData2Kb = std::string(1024 * 2, ' ');
+const std::string kData9Kb = std::string(1024 * 9, ' ');
+const std::string kData10Kb = std::string(1024 * 10, ' ');
+const std::string kData9KbUpdated = std::string(1024 * 9, '*');
+
 bool Matches(const std::string& expected, const std::string& subkey) {
   return subkey == expected;
 }
 
 }  // namespace
 
-TEST(ResourceCacheTest, StoreAndLoad) {
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  ResourceCache cache(temp_dir.GetPath(),
-                      base::MakeRefCounted<base::TestSimpleTaskRunner>());
+class ResourceCacheTest : public testing::Test {
+ protected:
+  void SetUp() override { ASSERT_TRUE(temp_dir_.CreateUniqueTempDir()); }
+
+  void TearDown() override { task_environment_.RunUntilIdle(); }
+
+  base::test::ScopedTaskEnvironment task_environment_;
+  base::ScopedTempDir temp_dir_;
+};
+
+TEST_F(ResourceCacheTest, StoreAndLoad) {
+  ResourceCache cache(temp_dir_.GetPath(), base::ThreadTaskRunnerHandle::Get(),
+                      /* max_cache_size */ base::nullopt);
 
   // No data initially.
   std::string data;
@@ -114,11 +135,9 @@ TEST(ResourceCacheTest, StoreAndLoad) {
   EXPECT_EQ(kData1, contents[kSubB]);
 }
 
-TEST(ResourceCacheTest, FilterSubkeys) {
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  ResourceCache cache(temp_dir.GetPath(),
-                      base::MakeRefCounted<base::TestSimpleTaskRunner>());
+TEST_F(ResourceCacheTest, FilterSubkeys) {
+  ResourceCache cache(temp_dir_.GetPath(), base::ThreadTaskRunnerHandle::Get(),
+                      /* max_cache_size */ base::nullopt);
 
   // Store some data.
   EXPECT_TRUE(cache.Store(kKey1, kSubA, kData0));
@@ -152,5 +171,76 @@ TEST(ResourceCacheTest, FilterSubkeys) {
   cache.LoadAllSubkeys(kKey3, &contents);
   EXPECT_EQ(2u, contents.size());
 }
+
+TEST_F(ResourceCacheTest, StoreWithEnabledCacheLimit) {
+  ResourceCache cache(temp_dir_.GetPath(), base::ThreadTaskRunnerHandle::Get(),
+                      kMaxCacheSize);
+  task_environment_.RunUntilIdle();
+
+  // Put first subkey with 9Kb data in cache.
+  EXPECT_TRUE(cache.Store(kKey1, kSubA, kData9Kb));
+  // Try to put second subkey with 2Kb data in cache, expected to fail while
+  // total size exceeds 10Kb.
+  EXPECT_FALSE(cache.Store(kKey2, kSubB, kData2Kb));
+  // Put second subkey with 1Kb data in cache.
+  EXPECT_TRUE(cache.Store(kKey2, kSubC, kData1Kb));
+  // Try to put third subkey with 2 bytes data in cache, expected to fail while
+  // total size exceeds 10Kb.
+  EXPECT_FALSE(cache.Store(kKey1, kSubB, kData1));
+
+  // Remove keys with all subkeys.
+  cache.Clear(kKey1);
+  cache.Clear(kKey2);
+
+  // Put first subkey with 9Kb data in cache.
+  EXPECT_TRUE(cache.Store(kKey3, kSubA, kData9Kb));
+  // Put second subkey with 1Kb data in cache.
+  EXPECT_TRUE(cache.Store(kKey3, kSubB, kData1Kb));
+  // Try to put third subkey with 2 bytes data in cache, expected to fail while
+  // total size exceeds 10Kb.
+  EXPECT_FALSE(cache.Store(kKey1, kSubB, kData1));
+
+  // Replace data in first subkey with another 9Kb data.
+  EXPECT_TRUE(cache.Store(kKey3, kSubA, kData9KbUpdated));
+
+  // Remove this key with 9Kb data.
+  cache.Delete(kKey3, kSubA);
+
+  // Put second subkey with 2 bytes data in cache.
+  EXPECT_TRUE(cache.Store(kKey1, kSubB, kData1));
+}
+
+#if defined(OS_POSIX)  // Because of symbolic links.
+
+TEST_F(ResourceCacheTest, StoreInDirectoryWithCycleSymlinks) {
+  base::FilePath inner_dir = temp_dir_.GetPath().AppendASCII("inner");
+  ASSERT_TRUE(base::CreateDirectory(inner_dir));
+  base::FilePath symlink_to_parent = inner_dir.AppendASCII("symlink");
+  ASSERT_TRUE(base::CreateSymbolicLink(temp_dir_.GetPath(), symlink_to_parent));
+
+  ResourceCache cache(temp_dir_.GetPath(), base::ThreadTaskRunnerHandle::Get(),
+                      kMaxCacheSize);
+  task_environment_.RunUntilIdle();
+
+  // Check if the cache is empty
+  EXPECT_TRUE(cache.Store(kKey1, kSubA, kData10Kb));
+}
+
+TEST_F(ResourceCacheTest, StoreInDirectoryWithSymlinkToRoot) {
+  base::FilePath inner_dir = temp_dir_.GetPath().AppendASCII("inner");
+  ASSERT_TRUE(base::CreateDirectory(inner_dir));
+  base::FilePath root_path(FILE_PATH_LITERAL("/"));
+  base::FilePath symlink_to_root = temp_dir_.GetPath().AppendASCII("symlink");
+  ASSERT_TRUE(base::CreateSymbolicLink(root_path, symlink_to_root));
+
+  ResourceCache cache(temp_dir_.GetPath(), base::ThreadTaskRunnerHandle::Get(),
+                      kMaxCacheSize);
+  task_environment_.RunUntilIdle();
+
+  // Check if the cache is empty
+  EXPECT_TRUE(cache.Store(kKey1, kSubA, kData10Kb));
+}
+
+#endif  // defined(OS_POSIX)
 
 }  // namespace policy

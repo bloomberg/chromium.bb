@@ -44,7 +44,7 @@ LocalSiteCharacteristicsWebContentsObserver::
     DCHECK(PageSignalReceiver::IsEnabled());
 
     TabLoadTracker::Get()->AddObserver(this);
-    page_signal_receiver_ = PageSignalReceiver::GetInstance();
+    page_signal_receiver_ = GetPageSignalReceiver();
     DCHECK(page_signal_receiver_);
     page_signal_receiver_->AddObserver(this);
   }
@@ -111,11 +111,14 @@ void LocalSiteCharacteristicsWebContentsObserver::DidFinishNavigation(
   DCHECK(profile);
   SiteCharacteristicsDataStore* data_store =
       LocalSiteCharacteristicsDataStoreFactory::GetForProfile(profile);
-  DCHECK(data_store);
-  auto rc_visibility =
-      ContentVisibilityToRCVisibility(web_contents()->GetVisibility());
-  writer_ = data_store->GetWriterForOrigin(new_origin, rc_visibility);
-  UpdateBackgroundedTime(rc_visibility);
+
+  // A data store might not be available in some unit tests.
+  if (data_store) {
+    auto rc_visibility =
+        ContentVisibilityToRCVisibility(web_contents()->GetVisibility());
+    writer_ = data_store->GetWriterForOrigin(new_origin, rc_visibility);
+    UpdateBackgroundedTime(rc_visibility);
+  }
 
   // The writer is initially in an unloaded state, load it if necessary.
   if (TabLoadTracker::Get()->GetLoadingState(web_contents()) ==

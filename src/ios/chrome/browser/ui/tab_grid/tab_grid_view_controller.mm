@@ -13,7 +13,6 @@
 #include "ios/chrome/browser/crash_report/breakpad_helper.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller.h"
-#import "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_commands.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_constants.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_consumer.h"
@@ -27,8 +26,9 @@
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_top_toolbar.h"
 #import "ios/chrome/browser/ui/tab_grid/transitions/grid_transition_layout.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
-#include "ios/chrome/browser/ui/ui_util.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/rtl_geometry.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/web_task_traits.h"
@@ -459,30 +459,24 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
                             : 0;
   UIEdgeInsets inset = UIEdgeInsetsMake(
       self.topToolbar.intrinsicContentSize.height, 0, bottomInset, 0);
-  if (@available(iOS 11, *)) {
-    // Left and right side could be missing correct safe area
-    // inset upon rotation. Manually correct it.
-    self.remoteTabsViewController.additionalSafeAreaInsets = UIEdgeInsetsZero;
-    UIEdgeInsets additionalSafeArea = inset;
-    UIEdgeInsets safeArea = self.scrollView.safeAreaInsets;
-    // If Remote Tabs isn't on the screen, it will not have the right safe area
-    // insets. Pass down the safe area insets of the scroll view.
-    if (self.currentPage != TabGridPageRemoteTabs) {
-      additionalSafeArea.right = safeArea.right;
-      additionalSafeArea.left = safeArea.left;
-    }
-
-    // Ensure that the View Controller doesn't have safe area inset that already
-    // covers the view's bounds.
-    DCHECK(!CGRectIsEmpty(UIEdgeInsetsInsetRect(
-        self.remoteTabsViewController.tableView.bounds,
-        self.remoteTabsViewController.tableView.safeAreaInsets)));
-    self.remoteTabsViewController.additionalSafeAreaInsets = additionalSafeArea;
-  } else {
-    // Must manually account for status bar in pre-iOS 11.
-    inset.top += self.topLayoutGuide.length;
-    self.remoteTabsViewController.tableView.contentInset = inset;
+  // Left and right side could be missing correct safe area
+  // inset upon rotation. Manually correct it.
+  self.remoteTabsViewController.additionalSafeAreaInsets = UIEdgeInsetsZero;
+  UIEdgeInsets additionalSafeArea = inset;
+  UIEdgeInsets safeArea = self.scrollView.safeAreaInsets;
+  // If Remote Tabs isn't on the screen, it will not have the right safe area
+  // insets. Pass down the safe area insets of the scroll view.
+  if (self.currentPage != TabGridPageRemoteTabs) {
+    additionalSafeArea.right = safeArea.right;
+    additionalSafeArea.left = safeArea.left;
   }
+
+  // Ensure that the View Controller doesn't have safe area inset that already
+  // covers the view's bounds.
+  DCHECK(!CGRectIsEmpty(UIEdgeInsetsInsetRect(
+      self.remoteTabsViewController.tableView.bounds,
+      self.remoteTabsViewController.tableView.safeAreaInsets)));
+  self.remoteTabsViewController.additionalSafeAreaInsets = additionalSafeArea;
 }
 
 // Sets the proper insets for the Grid ViewControllers to accomodate for the
@@ -500,15 +494,10 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
                             : 0;
   UIEdgeInsets inset = UIEdgeInsetsMake(
       self.topToolbar.intrinsicContentSize.height, 0, bottomInset, 0);
-  if (@available(iOS 11, *)) {
-    inset.left = self.scrollView.safeAreaInsets.left;
-    inset.right = self.scrollView.safeAreaInsets.right;
-    inset.top += self.scrollView.safeAreaInsets.top;
-    inset.bottom += self.scrollView.safeAreaInsets.bottom;
-  } else {
-    // Must manually account for status bar in pre-iOS 11.
-    inset.top += self.topLayoutGuide.length;
-  }
+  inset.left = self.scrollView.safeAreaInsets.left;
+  inset.right = self.scrollView.safeAreaInsets.right;
+  inset.top += self.scrollView.safeAreaInsets.top;
+  inset.bottom += self.scrollView.safeAreaInsets.bottom;
   self.incognitoTabsViewController.gridView.contentInset = inset;
   self.regularTabsViewController.gridView.contentInset = inset;
 }
@@ -609,12 +598,10 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   scrollView.scrollEnabled = YES;
   scrollView.pagingEnabled = YES;
   scrollView.delegate = self;
-  if (@available(iOS 11, *)) {
-    // Ensures that scroll view does not add additional margins based on safe
-    // areas.
-    scrollView.contentInsetAdjustmentBehavior =
-        UIScrollViewContentInsetAdjustmentNever;
-  }
+  // Ensures that scroll view does not add additional margins based on safe
+  // areas.
+  scrollView.contentInsetAdjustmentBehavior =
+      UIScrollViewContentInsetAdjustmentNever;
   UIView* contentView = [[UIView alloc] init];
   contentView.translatesAutoresizingMaskIntoConstraints = NO;
   [scrollView addSubview:contentView];
@@ -755,19 +742,10 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   ];
   [NSLayoutConstraint activateConstraints:constraints];
   // Set the height of the toolbar, including unsafe areas.
-  if (@available(iOS 11, *)) {
-    // SafeArea is only available in iOS  11+.
-    [topToolbar.bottomAnchor
-        constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor
-                       constant:topToolbar.intrinsicContentSize.height]
-        .active = YES;
-  } else {
-    // Top and bottom layout guides are deprecated starting in iOS 11.
-    [topToolbar.bottomAnchor
-        constraintEqualToAnchor:self.topLayoutGuide.bottomAnchor
-                       constant:topToolbar.intrinsicContentSize.height]
-        .active = YES;
-  }
+  [topToolbar.bottomAnchor
+      constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor
+                     constant:topToolbar.intrinsicContentSize.height]
+      .active = YES;
 }
 
 // Adds the bottom toolbar and sets constraints.
@@ -785,19 +763,10 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   ];
   [NSLayoutConstraint activateConstraints:constraints];
   // Adds the height of the toolbar above the bottom safe area.
-  if (@available(iOS 11, *)) {
-    // SafeArea is only available in iOS  11+.
-    [self.view.safeAreaLayoutGuide.bottomAnchor
-        constraintEqualToAnchor:bottomToolbar.topAnchor
-                       constant:bottomToolbar.intrinsicContentSize.height]
-        .active = YES;
-  } else {
-    // Top and bottom layout guides are deprecated starting in iOS 11.
-    [bottomToolbar.topAnchor
-        constraintEqualToAnchor:self.bottomLayoutGuide.topAnchor
-                       constant:-bottomToolbar.intrinsicContentSize.height]
-        .active = YES;
-  }
+  [self.view.safeAreaLayoutGuide.bottomAnchor
+      constraintEqualToAnchor:bottomToolbar.topAnchor
+                     constant:bottomToolbar.intrinsicContentSize.height]
+      .active = YES;
 }
 
 // Adds floating button and constraints.
@@ -816,7 +785,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
           UIUserInterfaceSizeClassRegular) {
     verticalInset = kTabGridFloatingButtonVerticalInsetLarge;
   }
-  id<LayoutGuideProvider> safeAreaGuide = SafeAreaLayoutGuideForView(self.view);
+  id<LayoutGuideProvider> safeAreaGuide = self.view.safeAreaLayoutGuide;
   [NSLayoutConstraint activateConstraints:@[
     [button.trailingAnchor
         constraintEqualToAnchor:safeAreaGuide.trailingAnchor

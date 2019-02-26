@@ -77,6 +77,12 @@ Polymer({
     debuggingLinkVisible: Boolean,
   },
 
+  /**
+   * Flag that ensures that OOBE configuration is applied only once.
+   * @private {boolean}
+   */
+  configuration_applied_: false,
+
   /** @override */
   ready: function() {
     this.updateLocalizedContent();
@@ -99,6 +105,8 @@ Polymer({
     let activeScreen = this.getActiveScreen_();
     if (activeScreen.show)
       activeScreen.show();
+
+    window.setTimeout(this.applyOobeConfiguration_.bind(this), 0);
   },
 
   /**
@@ -112,15 +120,59 @@ Polymer({
 
     this.$.welcomeScreen.i18nUpdateLocale();
     this.i18nUpdateLocale();
+
+    var currentLanguage = loadTimeData.getString('language');
+
+    // We might have changed language via configuration. In this case
+    // we need to proceed with rest of configuration after language change
+    // was fully resolved.
+    var configuration = Oobe.getInstance().getOobeConfiguration();
+    if (configuration && configuration.language &&
+        configuration.language == currentLanguage) {
+      window.setTimeout(this.applyOobeConfiguration_.bind(this), 0);
+    }
   },
 
-  /** Called when OOBE configuration is loaded.
+  /**
+   * Called when OOBE configuration is loaded.
    * @param {!OobeTypes.OobeConfiguration} configuration
    */
   updateOobeConfiguration: function(configuration) {
-    // TODO(antrim): apply a11y options, language selection
+    if (!this.configuration_applied_)
+      window.setTimeout(this.applyOobeConfiguration_.bind(this), 0);
+  },
+
+  /**
+   * Called when dialog is shown for the first time.
+   * @private
+   */
+  applyOobeConfiguration_: function() {
+    if (this.configuration_applied_)
+      return;
+    var configuration = Oobe.getInstance().getOobeConfiguration();
+    if (!configuration)
+      return;
+
+    if (configuration.language) {
+      var currentLanguage = loadTimeData.getString('language');
+      if (currentLanguage != configuration.language) {
+        this.screen.onLanguageSelected_(configuration.language);
+        // Trigger language change without marking it as applied.
+        // applyOobeConfiguration will be called again once language change
+        // was applied.
+        return;
+      }
+    }
+    if (configuration.inputMethod)
+      this.screen.onKeyboardSelected_(configuration.inputMethod);
+
     if (configuration.welcomeNext)
       this.onWelcomeNextButtonClicked_();
+
+    if (configuration.enableDemoMode)
+      Oobe.getInstance().startDemoModeFlow();
+
+    this.configuration_applied_ = true;
   },
 
   /**

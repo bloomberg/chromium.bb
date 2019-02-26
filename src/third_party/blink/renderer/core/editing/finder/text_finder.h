@@ -42,7 +42,7 @@
 
 namespace blink {
 
-class IdleDeadline;
+class FindTaskController;
 class LocalFrame;
 class Range;
 class WebLocalFrameImpl;
@@ -98,6 +98,12 @@ class CORE_EXPORT TextFinder final
 
   void FlushCurrentScoping();
 
+  // A match has been found by the current finding effort, so we should
+  // update the marker for that match and push it to our cache.
+  void DidFindMatch(int identifier,
+                    int current_total_matches,
+                    Range* result_range);
+
   void ResetActiveMatch() { active_match_ = nullptr; }
 
   bool FrameScoping() const { return frame_scoping_; }
@@ -105,6 +111,17 @@ class CORE_EXPORT TextFinder final
   bool ScopingInProgress() const { return scoping_in_progress_; }
   void IncreaseMarkerVersion() { ++find_match_markers_version_; }
 
+  // Finishes the current scoping effort and triggers any updates if
+  // appropriate.
+  void FinishCurrentScopingEffort(int identifier);
+
+  // A finding effort finished one run of scoping and found some matches,
+  // so we should update markers, match count, etc.
+  void UpdateMatches(int identifier,
+                     int found_match_count,
+                     bool finished_whole_request);
+
+  explicit TextFinder(WebLocalFrameImpl& owner_frame);
   ~TextFinder();
 
   class FindMatch {
@@ -128,11 +145,6 @@ class CORE_EXPORT TextFinder final
   void Trace(blink::Visitor*);
 
  private:
-  class IdleScopeStringMatchesCallback;
-  friend class IdleScopeStringMatchesCallback;
-
-  explicit TextFinder(WebLocalFrameImpl& owner_frame);
-
   // Notifies the delegate about a new selection rect.
   void ReportFindInPageSelection(const WebRect& selection_rect,
                                  int active_match_ordinal,
@@ -161,46 +173,10 @@ class CORE_EXPORT TextFinder final
   // Removes all markers.
   void UnmarkAllTextMatches();
 
-  // Determines whether the scoping effort is required for a particular frame.
-  // It is not necessary if the frame is invisible, for example, or if this
-  // is a repeat search that already returned nothing last time the same prefix
-  // was searched.
-  bool ShouldScopeMatches(const WTF::String& search_text,
-                          const mojom::blink::FindOptions&);
-
   // Removes the current frame from the global scoping effort and triggers any
   // updates if appropriate. This method does not mark the scoping operation
   // as finished.
   void FlushCurrentScopingEffort(int identifier);
-
-  // Finishes the current scoping effort and triggers any updates if
-  // appropriate.
-  void FinishCurrentScopingEffort(int identifier);
-
-  // Counts how many times a particular string occurs within the frame.  It
-  // also retrieves the location of the string and updates a vector in the
-  // frame so that tick-marks and highlighting can be drawn.  This function
-  // does its work asynchronously, by running for a certain time-slice and
-  // then scheduling itself (co-operative multitasking) to be invoked later
-  // (repeating the process until all matches have been found).  This allows
-  // multiple frames to be searched at the same time and provides a way to
-  // cancel at any time (see cancelPendingScopingEffort).  The parameter
-  // searchText specifies what to look for.
-  void ScopeStringMatches(IdleDeadline* deadline,
-                          int identifier,
-                          const WebString& search_text,
-                          const mojom::blink::FindOptions&);
-
-  // Queue up a deferred call to scopeStringMatches.
-  void ScopeStringMatchesSoon(int identifier,
-                              const WebString& search_text,
-                              const mojom::blink::FindOptions&);
-
-  // Called by an IdleScopeStringMatchesCallback instance.
-  void ResumeScopingStringMatches(IdleDeadline* deadline,
-                                  int identifier,
-                                  const WebString& search_text,
-                                  const mojom::blink::FindOptions&);
 
   // Determines whether to invalidate the content area and scrollbar.
   void InvalidateIfNecessary();
@@ -218,6 +194,8 @@ class CORE_EXPORT TextFinder final
 
   Member<WebLocalFrameImpl> owner_frame_;
 
+  Member<FindTaskController> find_task_controller_;
+
   // Indicates whether this frame currently has the active match.
   bool current_active_match_frame_;
 
@@ -226,25 +204,6 @@ class CORE_EXPORT TextFinder final
 
   // The index of the active match for the current frame.
   int active_match_index_;
-
-  // The scoping effort can time out and we need to keep track of where we
-  // ended our last search so we can continue from where we left of.
-  //
-  // This range is collapsed to the end position of the last successful
-  // search; the new search should start from this position.
-  Member<Range> resume_scoping_from_range_;
-
-  // Keeps track of the last string this frame searched for. This is used for
-  // short-circuiting searches in the following scenarios: When a frame has
-  // been searched and returned 0 results, we don't need to search that frame
-  // again if the user is just adding to the search (making it more specific).
-  WTF::String last_search_string_;
-
-  // Keeps track of how many matches this frame has found so far, so that we
-  // don't lose count between scoping efforts, and is also used (in conjunction
-  // with last_search_string_) to figure out if we need to search the frame
-  // again.
-  int last_match_count_;
 
   // This variable keeps a cumulative total of matches found so far in this
   // frame, and is only incremented by calling IncreaseMatchCount.
@@ -261,9 +220,6 @@ class CORE_EXPORT TextFinder final
   // Keeps track of when the scoping effort should next invalidate the scrollbar
   // and the frame area.
   int next_invalidate_after_;
-
-  // Pending call to scopeStringMatches.
-  Member<IdleScopeStringMatchesCallback> idle_scoping_callback_;
 
   // Version number incremented whenever this frame's find-in-page match
   // markers change.

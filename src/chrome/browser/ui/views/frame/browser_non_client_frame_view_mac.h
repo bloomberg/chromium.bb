@@ -12,6 +12,10 @@
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "components/prefs/pref_change_registrar.h"
 
+namespace views {
+class Label;
+}
+
 @class FullscreenToolbarControllerViews;
 
 class BrowserNonClientFrameViewMac : public BrowserNonClientFrameView {
@@ -36,7 +40,6 @@ class BrowserNonClientFrameViewMac : public BrowserNonClientFrameView {
       const gfx::Rect& client_bounds) const override;
   int NonClientHitTest(const gfx::Point& point) override;
   void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask) override;
-  void ResetWindowControls() override;
   void UpdateWindowIcon() override;
   void UpdateWindowTitle() override;
   void SizeConstraintsChanged() override;
@@ -47,9 +50,23 @@ class BrowserNonClientFrameViewMac : public BrowserNonClientFrameView {
  protected:
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
+  void Layout() override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewMacTest,
+                           GetCenteredTitleBounds);
+
+  static gfx::Rect GetCenteredTitleBounds(int frame_width,
+                                          int frame_height,
+                                          int left_inset_x,
+                                          int right_inset_x,
+                                          int title_width);
+
   void PaintThemedFrame(gfx::Canvas* canvas);
+
+  // Returns the color to use for text and other title bar elements given the
+  // frame background color for |active_state|.
+  SkColor GetReadableFrameForegroundColor(ActiveState active_state) const;
 
   CGFloat FullscreenBackingBarHeight() const;
 
@@ -59,6 +76,8 @@ class BrowserNonClientFrameViewMac : public BrowserNonClientFrameView {
 
   // Used to keep track of the update of kShowFullscreenToolbar preference.
   PrefChangeRegistrar pref_registrar_;
+
+  views::Label* window_title_ = nullptr;
 
   base::scoped_nsobject<FullscreenToolbarControllerViews>
       fullscreen_toolbar_controller_;

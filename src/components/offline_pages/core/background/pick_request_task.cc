@@ -4,10 +4,14 @@
 
 #include "components/offline_pages/core/background/pick_request_task.h"
 
+#include <memory>
 #include <unordered_set>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/time/clock.h"
 #include "base/time/time.h"
 #include "components/offline_pages/core/background/device_conditions.h"
 #include "components/offline_pages/core/background/offliner_policy.h"
@@ -16,6 +20,8 @@
 #include "components/offline_pages/core/background/request_notifier.h"
 #include "components/offline_pages/core/background/request_queue_store.h"
 #include "components/offline_pages/core/background/save_page_request.h"
+#include "components/offline_pages/core/client_policy_controller.h"
+#include "components/offline_pages/core/offline_clock.h"
 
 namespace {
 template <typename T>
@@ -31,9 +37,13 @@ bool kNonUserRequestsFound = true;
 
 namespace offline_pages {
 
+const base::TimeDelta PickRequestTask::kDeferInterval =
+    base::TimeDelta::FromMinutes(1);
+
 PickRequestTask::PickRequestTask(
     RequestQueueStore* store,
     OfflinerPolicy* policy,
+    ClientPolicyController* policy_controller,
     RequestPickedCallback picked_callback,
     RequestNotPickedCallback not_picked_callback,
     RequestCountCallback request_count_callback,
@@ -42,6 +52,7 @@ PickRequestTask::PickRequestTask(
     base::circular_deque<int64_t>* prioritized_requests)
     : store_(store),
       policy_(policy),
+      policy_controller_(policy_controller),
       picked_callback_(std::move(picked_callback)),
       not_picked_callback_(std::move(not_picked_callback)),
       request_count_callback_(std::move(request_count_callback)),
@@ -69,7 +80,7 @@ void PickRequestTask::Choose(
   if (requests.empty()) {
     std::move(request_count_callback_).Run(requests.size(), 0);
     std::move(not_picked_callback_)
-        .Run(!kNonUserRequestsFound, !kCleanupNeeded);
+        .Run(!kNonUserRequestsFound, !kCleanupNeeded, base::Time());
     TaskComplete();
     return;
   }
@@ -95,7 +106,9 @@ void PickRequestTask::Choose(
   size_t total_request_count = requests.size();
   // Request ids which are available for picking.
   std::unordered_set<int64_t> available_request_ids;
-
+  // If there was a deferred task, this records the earliest time a task will
+  // become available.
+  base::Time defer_available_time;
   // Iterate through the requests, filter out unavailable requests and get other
   // information (if cleanup is needed and number of non-user-requested
   // requests).
@@ -123,6 +136,15 @@ void PickRequestTask::Choose(
       available_requests->push_back(*request);
     if (!RequestConditionsSatisfied(*request))
       continue;
+    if (policy_controller_->GetPolicy(request->client_id().name_space)
+            .defer_background_fetch_while_page_is_active) {
+      if (!request->last_attempt_time().is_null() &&
+          OfflineClock()->Now() - request->last_attempt_time() <
+              kDeferInterval) {
+        defer_available_time = request->last_attempt_time() + kDeferInterval;
+        continue;
+      }
+    }
     available_request_ids.insert(request->request_id());
   }
   // Report the request queue counts.
@@ -169,7 +191,8 @@ void PickRequestTask::Choose(
         .Run(*picked_request, std::move(available_requests), cleanup_needed);
   } else {
     std::move(not_picked_callback_)
-        .Run(non_user_requested_tasks_remaining, cleanup_needed);
+        .Run(non_user_requested_tasks_remaining, cleanup_needed,
+             defer_available_time);
   }
 
   TaskComplete();

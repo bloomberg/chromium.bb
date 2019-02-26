@@ -40,7 +40,6 @@ class ThemeProperties {
     COLOR_BACKGROUND_TAB_INCOGNITO_INACTIVE,
     COLOR_TOOLBAR,
     COLOR_TAB_TEXT,
-    COLOR_TAB_TEXT_INACTIVE,
     COLOR_BACKGROUND_TAB_TEXT,
     COLOR_BACKGROUND_TAB_TEXT_INACTIVE,
     COLOR_BACKGROUND_TAB_TEXT_INCOGNITO,
@@ -160,6 +159,10 @@ class ThemeProperties {
 #endif  // OS_WIN
 
     SHOULD_FILL_BACKGROUND_TAB_COLOR,
+
+    // Colors for in-product help promo bubbles.
+    COLOR_FEATURE_PROMO_BUBBLE_TEXT,
+    COLOR_FEATURE_PROMO_BUBBLE_BACKGROUND,
   };
 
   // Represents the lookup values for a theme property.

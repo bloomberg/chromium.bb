@@ -16,18 +16,18 @@ class PixelExpectations(GpuTestExpectations):
     self.Flaky('Pixel_GpuRasterization_BlueBox',
         ['win', ('amd', 0x6613)], bug=653538)
 
-    # TODO(senorblanco) generate new reference images after Edge-AA tess change.
-    self.Fail('Pixel_OffscreenCanvasAccelerated2D')
-    self.Fail('Pixel_OffscreenCanvasAccelerated2DWorker')
-
-    # Software compositing is not supported on Android; so we skip these tests
-    # that disables gpu compositing on Android platforms.
+    # Software compositing is not supported on Android: we skip the tests that
+    # disable GPU compositing (--disable-gpu-compositing).
     self.Skip('Pixel_OffscreenCanvasUnaccelerated2D', ['android'])
     self.Skip('Pixel_OffscreenCanvasUnaccelerated2DWorker', ['android'])
+    self.Skip('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing', ['android'])
+    self.Skip('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker',
+              ['android'])
     self.Skip('Pixel_OffscreenCanvasWebGLSoftwareCompositing', ['android'])
     self.Skip('Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker',
               ['android'])
     self.Skip('Pixel_CanvasDisplayLinearRGBUnaccelerated2D', ['android'])
+    self.Skip('Pixel_CanvasUnacceleratedLowLatency2D', ['android'])
     self.Skip('Pixel_RepeatedWebGLTo2D_SoftwareCompositing', ['android'])
 
     # Tests running with SwiftShader are skipped on platforms where SwiftShader
@@ -46,15 +46,10 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_ScissorTestWithPreserveDrawingBuffer',
         ['android'], bug=521588)
 
-    # Tests crashing on marshmallow bot
-    self.Fail('Pixel_CanvasLowLatency2D', ['android'], bug=865957)
-    self.Fail('Pixel_CanvasUnacceleratedLowLatency2D', ['android'], bug=865957)
-
     # TODO(vmiura) check / generate reference images for Android devices
     self.Fail('Pixel_SolidColorBackground', ['mac', 'android'], bug=624256)
 
-    self.Fail('Pixel_CSSFilterEffects',
-        ['mac', ('nvidia', 0xfe9)], bug=690277)
+    self.Fail('Pixel_CSSFilterEffects', ['mac', ('nvidia', 0xfe9)], bug=690277)
 
     # Became flaky on 10.13.6. When it flakes, it flakes 3 times, so
     # mark failing, unfortunately.
@@ -75,9 +70,9 @@ class PixelExpectations(GpuTestExpectations):
 
     # TODO(junov): rebaselining
     self.Fail('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing',
-              ['mac', 'linux', 'win', 'android', 'chromeos'], bug=788439)
+              ['mac', 'linux', 'win', 'chromeos'], bug=788439)
     self.Fail('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker',
-              ['mac', 'linux', 'win', 'android', 'chromeos'], bug=788439)
+              ['mac', 'linux', 'win', 'chromeos'], bug=788439)
 
     # Flaky for unknown reasons only on macOS. Not planning to investigate
     # further.
@@ -140,5 +135,3 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_BackgroundImage',
         ['android', ('qualcomm', 'Adreno (TM) 430')], bug=883500)
 
-    # TODO(yiyix): remove expectation after rebaseline.
-    self.Fail("Pixel_CSS3DBlueBox", bug=879379)

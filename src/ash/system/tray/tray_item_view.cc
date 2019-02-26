@@ -6,8 +6,6 @@
 
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/shelf/shelf.h"
-#include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/compositor/layer.h"
@@ -34,8 +32,9 @@ void IconizedLabel::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetName(custom_accessible_name_);
 }
 
-TrayItemView::TrayItemView(SystemTrayItem* owner)
-    : owner_(owner), label_(NULL), image_view_(NULL) {
+TrayItemView::TrayItemView(Shelf* shelf)
+    : shelf_(shelf), label_(NULL), image_view_(NULL) {
+  DCHECK(shelf_);
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
   SetLayoutManager(std::make_unique<views::FillLayout>());
@@ -84,20 +83,20 @@ int TrayItemView::GetAnimationDurationMS() {
   return kTrayItemAnimationDurationMS;
 }
 
+bool TrayItemView::IsHorizontalAlignment() const {
+  return shelf_->IsHorizontalAlignment();
+}
+
 gfx::Size TrayItemView::CalculatePreferredSize() const {
   DCHECK_EQ(1, child_count());
-  gfx::Size inner_size = views::View::CalculatePreferredSize();
+  gfx::Size size = views::View::CalculatePreferredSize();
   if (image_view_) {
-    inner_size = gfx::Size(TrayConstants::GetTrayIconSize(),
-                           TrayConstants::GetTrayIconSize());
+    size = gfx::Size(kUnifiedTrayIconSize, kUnifiedTrayIconSize);
   }
-  gfx::Rect rect(inner_size);
-  if (label_)
-    rect.Inset(gfx::Insets(-kTrayImageItemPadding));
-  gfx::Size size = rect.size();
+
   if (!animation_.get() || !animation_->is_animating())
     return size;
-  if (!owner() || owner()->system_tray()->shelf()->IsHorizontalAlignment()) {
+  if (shelf_->IsHorizontalAlignment()) {
     size.set_width(std::max(
         1, static_cast<int>(size.width() * animation_->GetCurrentValue())));
   } else {
@@ -117,7 +116,7 @@ void TrayItemView::ChildPreferredSizeChanged(views::View* child) {
 
 void TrayItemView::AnimationProgressed(const gfx::Animation* animation) {
   gfx::Transform transform;
-  if (!owner() || owner()->system_tray()->shelf()->IsHorizontalAlignment()) {
+  if (shelf_->IsHorizontalAlignment()) {
     transform.Translate(0, animation->CurrentValueBetween(
                                static_cast<double>(height()) / 2, 0.));
   } else {

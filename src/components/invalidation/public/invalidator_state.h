@@ -9,21 +9,24 @@
 
 namespace syncer {
 
+// Used by UMA histogram, so entries shouldn't be reordered or removed.
 enum InvalidatorState {
+  // Invalidations are fully working.
+  INVALIDATIONS_ENABLED = 0,
+
   // Failure states
   // --------------
   // There is an underlying transient problem (e.g., network- or
   // XMPP-related).
-  TRANSIENT_INVALIDATION_ERROR,
+  TRANSIENT_INVALIDATION_ERROR = 1,
   DEFAULT_INVALIDATION_ERROR = TRANSIENT_INVALIDATION_ERROR,
   // Our credentials have been rejected.
-  INVALIDATION_CREDENTIALS_REJECTED,
+  INVALIDATION_CREDENTIALS_REJECTED = 2,
 
   // Called just before shutdown so handlers can unregister themselves.
-  INVALIDATOR_SHUTTING_DOWN,
+  INVALIDATOR_SHUTTING_DOWN = 3,
 
-  // Invalidations are fully working.
-  INVALIDATIONS_ENABLED
+  kMaxValue = INVALIDATOR_SHUTTING_DOWN
 };
 
 INVALIDATION_EXPORT const char* InvalidatorStateToString(

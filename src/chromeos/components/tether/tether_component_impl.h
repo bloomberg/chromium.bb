@@ -16,10 +16,6 @@
 
 class PrefService;
 
-namespace cryptauth {
-class CryptAuthService;
-}  // namespace cryptauth
-
 namespace session_manager {
 class SessionManager;
 }  // namespace session_manager
@@ -60,7 +56,6 @@ class TetherComponentImpl : public TetherComponent {
   class Factory {
    public:
     static std::unique_ptr<TetherComponent> NewInstance(
-        cryptauth::CryptAuthService* cryptauth_service,
         device_sync::DeviceSyncClient* device_sync_client,
         secure_channel::SecureChannelClient* secure_channel_client,
         TetherHostFetcher* tether_host_fetcher,
@@ -80,7 +75,6 @@ class TetherComponentImpl : public TetherComponent {
 
    protected:
     virtual std::unique_ptr<TetherComponent> BuildInstance(
-        cryptauth::CryptAuthService* cryptauth_service,
         device_sync::DeviceSyncClient* device_sync_client,
         secure_channel::SecureChannelClient* secure_channel_client,
         TetherHostFetcher* tether_host_fetcher,
@@ -107,7 +101,6 @@ class TetherComponentImpl : public TetherComponent {
 
  protected:
   TetherComponentImpl(
-      cryptauth::CryptAuthService* cryptauth_service,
       device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client,
       TetherHostFetcher* tether_host_fetcher,

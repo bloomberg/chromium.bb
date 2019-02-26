@@ -5,11 +5,13 @@
 #include "components/viz/service/display/dc_layer_overlay.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "build/build_config.h"
 #include "cc/base/math_util.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
 #include "components/viz/service/display/display_resource_provider.h"
+#include "components/viz/service/display/output_surface.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gl/gl_switches.h"
@@ -30,10 +32,7 @@ DCLayerOverlayProcessor::DCLayerResult FromYUVQuad(
   dc_layer_overlay->contents_rect = quad->ya_tex_coord_rect;
   dc_layer_overlay->filter = GL_LINEAR;
   dc_layer_overlay->color_space = quad->video_color_space;
-  dc_layer_overlay->require_overlay = quad->require_overlay;
-  dc_layer_overlay->is_protected_video = quad->is_protected_video;
-  if (dc_layer_overlay->is_protected_video)
-    DCHECK(dc_layer_overlay->require_overlay);
+  dc_layer_overlay->protected_video_type = quad->protected_video_type;
 
   return DCLayerOverlayProcessor::DC_LAYER_SUCCESS;
 }
@@ -76,11 +75,23 @@ gfx::RectF GetOcclusionBounds(const gfx::RectF& target_quad,
   return occlusion_bounding_box;
 }
 
-void RecordDCLayerResult(DCLayerOverlayProcessor::DCLayerResult result) {
-  UMA_HISTOGRAM_ENUMERATION("GPU.DirectComposition.DCLayerResult", result,
-                            DCLayerOverlayProcessor::DC_LAYER_FAILED_MAX);
+void RecordDCLayerResult(DCLayerOverlayProcessor::DCLayerResult result,
+                         ui::ProtectedVideoType protected_video_type) {
+  switch (protected_video_type) {
+    case ui::ProtectedVideoType::kClear:
+      UMA_HISTOGRAM_ENUMERATION("GPU.DirectComposition.DCLayerResult2.Clear",
+                                result);
+      break;
+    case ui::ProtectedVideoType::kSoftwareProtected:
+      UMA_HISTOGRAM_ENUMERATION(
+          "GPU.DirectComposition.DCLayerResult2.SoftwareProtected", result);
+      break;
+    case ui::ProtectedVideoType::kHardwareProtected:
+      UMA_HISTOGRAM_ENUMERATION(
+          "GPU.DirectComposition.DCLayerResult2.HardwareProtected", result);
+      break;
+  }
 }
-
 }  // namespace
 
 DCLayerOverlay::DCLayerOverlay() : filter(GL_LINEAR) {}
@@ -89,7 +100,18 @@ DCLayerOverlay::DCLayerOverlay(const DCLayerOverlay& other) = default;
 
 DCLayerOverlay::~DCLayerOverlay() {}
 
-DCLayerOverlayProcessor::DCLayerOverlayProcessor() = default;
+DCLayerOverlayProcessor::DCLayerOverlayProcessor(OutputSurface* surface) {
+#if defined(OS_WIN)
+  auto* context_provider = surface->context_provider();
+  if (context_provider) {
+    has_hw_overlay_support_ =
+        context_provider->ContextCapabilities().dc_layers &&
+        context_provider->ContextCapabilities().use_dc_overlays_for_video;
+  } else {
+    has_hw_overlay_support_ = false;
+  }
+#endif
+}
 
 DCLayerOverlayProcessor::~DCLayerOverlayProcessor() = default;
 
@@ -114,6 +136,14 @@ DCLayerOverlayProcessor::DCLayerResult DCLayerOverlayProcessor::FromDrawQuad(
   }
   if (result != DC_LAYER_SUCCESS)
     return result;
+
+  // To support software protected video on machines without hardware overlay
+  // capability. Don't do dc layer overlay if no hardware support.
+  if (!has_hw_overlay_support_ &&
+      dc_layer_overlay->protected_video_type !=
+          ui::ProtectedVideoType::kSoftwareProtected) {
+    return DC_LAYER_FAILED_NO_HW_OVERLAY_SUPPORT;
+  }
 
   scoped_refptr<DCLayerOverlaySharedState> overlay_shared_state(
       new DCLayerOverlaySharedState);
@@ -272,16 +302,17 @@ void DCLayerOverlayProcessor::ProcessRenderPass(
     DCLayerResult result = FromDrawQuad(resource_provider, display_rect,
                                         quad_list->begin(), it, &dc_layer);
     if (result != DC_LAYER_SUCCESS) {
-      RecordDCLayerResult(result);
+      RecordDCLayerResult(result, dc_layer.protected_video_type);
       continue;
     }
 
     if (!it->shared_quad_state->quad_to_target_transform
              .Preserves2dAxisAlignment() &&
-        !dc_layer.require_overlay &&
+        !dc_layer.RequiresOverlay() &&
         !base::FeatureList::IsEnabled(
             features::kDirectCompositionComplexOverlays)) {
-      RecordDCLayerResult(DC_LAYER_FAILED_COMPLEX_TRANSFORM);
+      RecordDCLayerResult(DC_LAYER_FAILED_COMPLEX_TRANSFORM,
+                          dc_layer.protected_video_type);
       continue;
     }
 
@@ -309,7 +340,7 @@ void DCLayerOverlayProcessor::ProcessRenderPass(
     // TODO(magchen): Collect all overlay candidates, and filter the list at the
     // end to find the best candidates (largest size?).
     if (is_root &&
-        (!processed_overlay_in_frame_ || dc_layer.is_protected_video) &&
+        (!processed_overlay_in_frame_ || dc_layer.RequiresOverlay()) &&
         ProcessForOverlay(display_rect, quad_list, quad_rectangle,
                           occlusion_bounding_box, &it, damage_rect)) {
       // ProcessForOverlay makes the iterator point to the next value on
@@ -328,7 +359,7 @@ void DCLayerOverlayProcessor::ProcessRenderPass(
           render_pass->transform_to_root_target, quad_rectangle);
       overlay_damage_rect->Union(rect_in_root);
 
-      RecordDCLayerResult(DC_LAYER_SUCCESS);
+      RecordDCLayerResult(DC_LAYER_SUCCESS, dc_layer.protected_video_type);
       dc_layer_overlays->push_back(dc_layer);
 
       // Only allow one overlay unless non-root overlays are enabled.
@@ -378,24 +409,28 @@ bool DCLayerOverlayProcessor::ProcessForUnderlay(
     gfx::Rect* this_frame_underlay_rect,
     gfx::Rect* this_frame_underlay_occlusion,
     DCLayerOverlay* dc_layer) {
-  if (!dc_layer->require_overlay) {
+  if (!dc_layer->RequiresOverlay()) {
     if (!base::FeatureList::IsEnabled(features::kDirectCompositionUnderlays)) {
-      RecordDCLayerResult(DC_LAYER_FAILED_OCCLUDED);
+      RecordDCLayerResult(DC_LAYER_FAILED_OCCLUDED,
+                          dc_layer->protected_video_type);
       return false;
     }
     if (!is_root && !base::FeatureList::IsEnabled(
                         features::kDirectCompositionNonrootOverlays)) {
-      RecordDCLayerResult(DC_LAYER_FAILED_NON_ROOT);
+      RecordDCLayerResult(DC_LAYER_FAILED_NON_ROOT,
+                          dc_layer->protected_video_type);
       return false;
     }
     if ((it->shared_quad_state->opacity < 1.0)) {
-      RecordDCLayerResult(DC_LAYER_FAILED_TRANSPARENT);
+      RecordDCLayerResult(DC_LAYER_FAILED_TRANSPARENT,
+                          dc_layer->protected_video_type);
       return false;
     }
     // Record this UMA only after we're absolutely sure this quad could be an
     // underlay.
     if (processed_overlay_in_frame_) {
-      RecordDCLayerResult(DC_LAYER_FAILED_TOO_MANY_OVERLAYS);
+      RecordDCLayerResult(DC_LAYER_FAILED_TOO_MANY_OVERLAYS,
+                          dc_layer->protected_video_type);
       return false;
     }
   }

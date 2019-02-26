@@ -40,7 +40,7 @@ class LayoutTextTest : public RenderingTest {
   void SetSelectionAndUpdateLayoutSelection(const std::string& selection_text) {
     const SelectionInDOMTree selection =
         SelectionSample::SetSelectionText(GetDocument().body(), selection_text);
-    UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhasesForTest();
     Selection().SetSelectionAndEndTyping(selection);
     Selection().CommitAppearanceIfNeeded();
   }
@@ -233,9 +233,7 @@ TEST_P(MapDOMOffsetToTextContentOffset, Basic) {
   }
 }
 
-// TODO(kojii): Include LayoutNG tests by switching to
-// ParameterizedLayoutTextTest when these functions support LayoutNG.
-TEST_F(LayoutTextTest, CharacterAfterWhitespaceCollapsing) {
+TEST_P(ParameterizedLayoutTextTest, CharacterAfterWhitespaceCollapsing) {
   SetBodyInnerHTML("a<span id=target> b </span>");
   LayoutText* layout_text = GetLayoutTextById("target");
   EXPECT_EQ(' ', layout_text->FirstCharacterAfterWhitespaceCollapsing());
@@ -272,6 +270,11 @@ TEST_F(LayoutTextTest, CharacterAfterWhitespaceCollapsing) {
   DCHECK(!layout_text->HasTextBoxes());
   EXPECT_EQ(0, layout_text->FirstCharacterAfterWhitespaceCollapsing());
   EXPECT_EQ(0, layout_text->LastCharacterAfterWhitespaceCollapsing());
+
+  SetBodyInnerHTML("<b id=target>&#x1F34C;_&#x1F34D;</b>");
+  layout_text = GetLayoutTextById("target");
+  EXPECT_EQ(0x1F34C, layout_text->FirstCharacterAfterWhitespaceCollapsing());
+  EXPECT_EQ(0x1F34D, layout_text->LastCharacterAfterWhitespaceCollapsing());
 }
 
 TEST_P(ParameterizedLayoutTextTest, CaretMinMaxOffset) {

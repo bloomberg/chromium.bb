@@ -2,6 +2,11 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+html {
+  /* The viewer implements a custom pinch zoom. */
+  touch-action: pan-x pan-y;
+}
+
 body {
   background-color: rgb(82, 86, 89);
   color: var(--primary-text-color);
@@ -23,8 +28,6 @@ viewer-pdf-toolbar {
 #plugin {
   height: 100%;
   position: fixed;
-  /* The viewer implements a custom pinch zoom. */
-  touch-action: pan-x pan-y;
   width: 100%;
   z-index: 1;
 }

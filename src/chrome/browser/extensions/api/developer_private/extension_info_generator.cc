@@ -14,6 +14,7 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
@@ -225,17 +226,17 @@ void ConstructCommands(CommandService* command_service,
 
 // Creates and returns a SpecificSiteControls object for the given
 // |granted_permissions| and |withheld_permissions|.
-std::unique_ptr<developer::SpecificSiteControls> GetSpecificSiteControls(
-    const PermissionSet& runtime_granted_permissions,
+std::vector<developer::SiteControl> GetSpecificSiteControls(
+    const PermissionSet& granted_permissions,
     const PermissionSet& withheld_permissions) {
-  auto controls = std::make_unique<developer::SpecificSiteControls>();
-  constexpr bool kIncludeApiPermissions = false;
-  controls->has_all_hosts =
-      withheld_permissions.ShouldWarnAllHosts(kIncludeApiPermissions) ||
-      runtime_granted_permissions.ShouldWarnAllHosts(kIncludeApiPermissions);
+  std::vector<developer::SiteControl> controls;
 
+  // NOTE(devlin): This is similar, but not identical, to our host collapsing
+  // for permission warnings. The primary difference is that this will not
+  // collapse permissions for sites with separate TLDs; i.e., google.com and
+  // google.net will remain distinct entities in this list.
   auto get_distinct_hosts = [](const URLPatternSet& patterns) {
-    std::set<std::string> distinct_hosts;
+    std::vector<URLPattern> pathless_hosts;
     for (URLPattern pattern : patterns) {
       // We only allow addition/removal of full hosts (since from a
       // permissions point of view, path is irrelevant). We always make the
@@ -244,27 +245,59 @@ std::unique_ptr<developer::SpecificSiteControls> GetSpecificSiteControls(
       // TODO(devlin): Investigate, and possibly change the optional
       // permissions API.
       pattern.SetPath("/*");
-      distinct_hosts.insert(pattern.GetAsString());
+      pathless_hosts.push_back(std::move(pattern));
     }
-    return distinct_hosts;
+
+    // Iterate over the list of hosts and add any that aren't entirely contained
+    // by another pattern. This is pretty inefficient, but the list of hosts
+    // should be reasonably small.
+    std::vector<const URLPattern*> distinct_hosts;
+    for (const URLPattern& host : pathless_hosts) {
+      // If the host is fully contained within the set, we don't add it again.
+      bool consumed_by_other = false;
+      for (const URLPattern* added_host : distinct_hosts) {
+        if (added_host->Contains(host)) {
+          consumed_by_other = true;
+          break;
+        }
+      }
+      if (consumed_by_other)
+        continue;
+
+      // Otherwise, add the host. This might mean we get to prune some hosts
+      // from |distinct_hosts|.
+      base::EraseIf(distinct_hosts, [host](const URLPattern* other_host) {
+        return host.Contains(*other_host);
+      });
+
+      distinct_hosts.push_back(&host);
+    }
+
+    std::vector<std::string> distinct_host_strings;
+    distinct_host_strings.reserve(distinct_hosts.size());
+    for (const URLPattern* host : distinct_hosts)
+      distinct_host_strings.push_back(host->GetAsString());
+
+    return distinct_host_strings;
   };
 
-  std::set<std::string> distinct_granted =
-      get_distinct_hosts(runtime_granted_permissions.effective_hosts());
-  std::set<std::string> distinct_withheld =
+  std::vector<std::string> distinct_granted =
+      get_distinct_hosts(granted_permissions.effective_hosts());
+  std::vector<std::string> distinct_withheld =
       get_distinct_hosts(withheld_permissions.effective_hosts());
-  controls->hosts.reserve(distinct_granted.size() + distinct_withheld.size());
+  controls.reserve(distinct_granted.size() + distinct_withheld.size());
+
   for (auto& host : distinct_granted) {
     developer::SiteControl host_control;
     host_control.host = std::move(host);
     host_control.granted = true;
-    controls->hosts.push_back(std::move(host_control));
+    controls.push_back(std::move(host_control));
   }
   for (auto& host : distinct_withheld) {
     developer::SiteControl host_control;
     host_control.host = std::move(host);
     host_control.granted = false;
-    controls->hosts.push_back(std::move(host_control));
+    controls.push_back(std::move(host_control));
   }
 
   return controls;
@@ -316,27 +349,40 @@ void AddPermissionsInfo(content::BrowserContext* browser_context,
                                             extension.GetType()));
   permissions->simple_permissions = get_permission_messages(api_messages);
 
+  auto runtime_host_permissions =
+      std::make_unique<developer::RuntimeHostPermissions>();
+
+  ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(browser_context);
+  // "Effective" granted permissions are stored in different prefs, based on
+  // whether host permissions are withheld.
+  // TODO(devlin): Create a common helper method to retrieve granted prefs based
+  // on whether host permissions are withheld?
+  std::unique_ptr<const PermissionSet> granted_permissions;
   // Add the host access data, including the mode and any runtime-granted
   // hosts.
   if (!permissions_modifier.HasWithheldHostPermissions()) {
-    permissions->host_access = developer::HOST_ACCESS_ON_ALL_SITES;
+    granted_permissions =
+        extension_prefs->GetGrantedPermissions(extension.id());
+    runtime_host_permissions->host_access = developer::HOST_ACCESS_ON_ALL_SITES;
   } else {
-    ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(browser_context);
-    std::unique_ptr<const PermissionSet> runtime_granted_permissions =
+    granted_permissions =
         extension_prefs->GetRuntimeGrantedPermissions(extension.id());
-    if (runtime_granted_permissions->effective_hosts().is_empty()) {
-      // TODO(devlin): This isn't quite right - it's possible the user just
-      // selected "on specific sites" from the dropdown, and hasn't yet added
-      // any sites. We'll need to handle this.
-      // https://crbug.com/844128.
-      permissions->host_access = developer::HOST_ACCESS_ON_CLICK;
-    } else {
-      permissions->host_access = developer::HOST_ACCESS_ON_SPECIFIC_SITES;
-      permissions->specific_site_controls = GetSpecificSiteControls(
-          *runtime_granted_permissions,
-          extension.permissions_data()->withheld_permissions());
-    }
+    runtime_host_permissions->host_access =
+        granted_permissions->effective_hosts().is_empty()
+            ? developer::HOST_ACCESS_ON_CLICK
+            : developer::HOST_ACCESS_ON_SPECIFIC_SITES;
   }
+
+  runtime_host_permissions->hosts = GetSpecificSiteControls(
+      *granted_permissions,
+      extension.permissions_data()->withheld_permissions());
+  constexpr bool kIncludeApiPermissions = false;
+  runtime_host_permissions->has_all_hosts =
+      extension.permissions_data()->withheld_permissions().ShouldWarnAllHosts(
+          kIncludeApiPermissions) ||
+      granted_permissions->ShouldWarnAllHosts(kIncludeApiPermissions);
+
+  permissions->runtime_host_permissions = std::move(runtime_host_permissions);
 }
 
 }  // namespace
@@ -675,8 +721,8 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
     gfx::Size max_size(128, 128);
     image_loader_->LoadImageAsync(
         &extension, icon, max_size,
-        base::Bind(&ExtensionInfoGenerator::OnImageLoaded,
-                   weak_factory_.GetWeakPtr(), base::Passed(&info)));
+        base::BindOnce(&ExtensionInfoGenerator::OnImageLoaded,
+                       weak_factory_.GetWeakPtr(), std::move(info)));
   }
 }
 

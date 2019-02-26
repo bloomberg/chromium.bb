@@ -78,10 +78,6 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
     // child view was closed).
     virtual void HideBubble(const TrayBubbleView* bubble_view);
 
-    // Called to process the gesture events that happened on the TrayBubbleView.
-    // Swiping down on the opened TrayBubbleView to close the bubble.
-    virtual void ProcessGestureEventForBubble(ui::GestureEvent* event);
-
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
@@ -181,7 +177,6 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  void OnGestureEvent(ui::GestureEvent* event) override;
 
   // Overridden from MouseWatcherListener
   void MouseMovedOutOfHost() override;

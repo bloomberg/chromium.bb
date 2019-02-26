@@ -633,8 +633,8 @@ void FileSystemContext::DidOpenFileSystemForResolveURL(
       FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY |
           FileSystemOperation::GET_METADATA_FIELD_SIZE |
           FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED,
-      base::Bind(&DidGetMetadataForResolveURL, path, base::Passed(&callback),
-                 info));
+      base::BindOnce(&DidGetMetadataForResolveURL, path, std::move(callback),
+                     info));
 }
 
 }  // namespace storage

@@ -30,7 +30,7 @@
 namespace blink {
 
 SourceAlpha* SourceAlpha::Create(FilterEffect* source_effect) {
-  return new SourceAlpha(source_effect);
+  return MakeGarbageCollected<SourceAlpha>(source_effect);
 }
 
 SourceAlpha::SourceAlpha(FilterEffect* source_effect)
@@ -40,8 +40,8 @@ SourceAlpha::SourceAlpha(FilterEffect* source_effect)
 }
 
 sk_sp<PaintFilter> SourceAlpha::CreateImageFilter() {
-  sk_sp<PaintFilter> source_graphic(
-      PaintFilterBuilder::Build(InputEffect(0), OperatingInterpolationSpace()));
+  sk_sp<PaintFilter> source_graphic(paint_filter_builder::Build(
+      InputEffect(0), OperatingInterpolationSpace()));
   SkScalar matrix[20] = {0, 0, 0, 0, 0, 0, 0, 0, 0,          0,
                          0, 0, 0, 0, 0, 0, 0, 0, SK_Scalar1, 0};
   sk_sp<SkColorFilter> color_filter =

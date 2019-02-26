@@ -55,6 +55,7 @@ std::vector<ObservationCategory> Observation::GetObservationCategories() const {
           ObservationCategory::OBSERVATION_CATEGORY_TRANSPORT);
       return observation_categories;
     case NETWORK_QUALITY_OBSERVATION_SOURCE_QUIC:
+    case NETWORK_QUALITY_OBSERVATION_SOURCE_H2_PINGS:
       observation_categories.push_back(
           ObservationCategory::OBSERVATION_CATEGORY_TRANSPORT);
       observation_categories.push_back(

@@ -7,6 +7,7 @@
 #include <iterator>
 
 #include "base/bind.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
@@ -14,7 +15,7 @@
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/appcache/appcache_service_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/devtools/render_frame_devtools_agent_host.h"
+#include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/frame_host/ancestor_throttle.h"
 #include "content/browser/frame_host/blocked_scheme_navigation_throttle.h"
 #include "content/browser/frame_host/debug_urls.h"
@@ -37,7 +38,6 @@
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
@@ -164,6 +164,7 @@ std::unique_ptr<NavigationHandleImpl> NavigationHandleImpl::Create(
     bool is_external_protocol,
     blink::mojom::RequestContextType request_context_type,
     blink::WebMixedContentContextType mixed_content_context_type,
+    const std::string& href_translate,
     base::TimeTicks input_start) {
   return std::unique_ptr<NavigationHandleImpl>(new NavigationHandleImpl(
       url, redirect_chain, frame_tree_node, is_renderer_initiated,
@@ -172,7 +173,7 @@ std::unique_ptr<NavigationHandleImpl> NavigationHandleImpl::Create(
       is_form_submission, std::move(navigation_ui_data), method,
       std::move(request_headers), resource_request_body, sanitized_referrer,
       has_user_gesture, transition, is_external_protocol, request_context_type,
-      mixed_content_context_type, input_start));
+      mixed_content_context_type, href_translate, input_start));
 }
 
 NavigationHandleImpl::NavigationHandleImpl(
@@ -196,6 +197,7 @@ NavigationHandleImpl::NavigationHandleImpl(
     bool is_external_protocol,
     blink::mojom::RequestContextType request_context_type,
     blink::WebMixedContentContextType mixed_content_context_type,
+    const std::string& href_translate,
     base::TimeTicks input_start)
     : url_(url),
       has_user_gesture_(has_user_gesture),
@@ -210,6 +212,7 @@ NavigationHandleImpl::NavigationHandleImpl(
       should_update_history_(false),
       subframe_entry_committed_(false),
       connection_info_(net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN),
+      href_translate_(href_translate),
       original_url_(url),
       method_(method),
       request_headers_(std::move(request_headers)),
@@ -234,6 +237,7 @@ NavigationHandleImpl::NavigationHandleImpl(
       is_download_(false),
       is_stream_(false),
       is_signed_exchange_inner_response_(false),
+      was_cached_(false),
       started_from_context_menu_(started_from_context_menu),
       is_same_process_(true),
       weak_factory_(this) {
@@ -552,17 +556,20 @@ NavigationHandleImpl::CallWillFailRequestForTesting(
 NavigationThrottle::ThrottleCheckResult
 NavigationHandleImpl::CallWillProcessResponseForTesting(
     RenderFrameHost* render_frame_host,
-    const std::string& raw_response_headers) {
+    const std::string& raw_response_headers,
+    bool was_cached,
+    const net::ProxyServer& proxy_server) {
   scoped_refptr<net::HttpResponseHeaders> headers =
       new net::HttpResponseHeaders(raw_response_headers);
   NavigationThrottle::ThrottleCheckResult result = NavigationThrottle::DEFER;
+  set_proxy_server(proxy_server);
   WillProcessResponse(static_cast<RenderFrameHostImpl*>(render_frame_host),
                       headers, net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN,
                       net::HostPortPair(), net::SSLInfo(), GlobalRequestID(),
                       /* should_replace_current_entry=*/false,
                       /* is_download=*/false,
                       /* is_stream=*/false,
-                      /* is_signed_exchange_inner_response=*/false,
+                      /* is_signed_exchange_inner_response=*/false, was_cached,
                       base::Bind(&UpdateThrottleCheckResult, &result));
 
   // Reset the callback to ensure it will not be called later.
@@ -652,8 +659,20 @@ bool NavigationHandleImpl::IsFormSubmission() {
   return is_form_submission_;
 }
 
+const std::string& NavigationHandleImpl::GetHrefTranslate() {
+  return href_translate_;
+}
+
 bool NavigationHandleImpl::IsSignedExchangeInnerResponse() {
   return is_signed_exchange_inner_response_;
+}
+
+bool NavigationHandleImpl::WasResponseCached() {
+  return was_cached_;
+}
+
+const net::ProxyServer& NavigationHandleImpl::GetProxyServer() {
+  return proxy_server_;
 }
 
 void NavigationHandleImpl::InitServiceWorkerHandle(
@@ -818,6 +837,7 @@ void NavigationHandleImpl::WillProcessResponse(
     bool is_download,
     bool is_stream,
     bool is_signed_exchange_inner_response,
+    bool was_cached,
     const ThrottleChecksFinishedCallback& callback) {
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
                                "WillProcessResponse");
@@ -831,6 +851,7 @@ void NavigationHandleImpl::WillProcessResponse(
   is_download_ = is_download;
   is_stream_ = is_stream;
   is_signed_exchange_inner_response_ = is_signed_exchange_inner_response;
+  was_cached_ = was_cached;
   state_ = WILL_PROCESS_RESPONSE;
   ssl_info_ = ssl_info;
   socket_address_ = socket_address;
@@ -847,8 +868,13 @@ void NavigationHandleImpl::WillProcessResponse(
   // If the navigation is done processing the response, then it's ready to
   // commit. Inform observers that the navigation is now ready to commit, unless
   // it is not set to commit (204/205s/downloads).
-  if (result.action() == NavigationThrottle::PROCEED && render_frame_host_)
+  if (result.action() == NavigationThrottle::PROCEED && render_frame_host_) {
+    base::WeakPtr<NavigationHandleImpl> weak_ptr = weak_factory_.GetWeakPtr();
     ReadyToCommitNavigation(render_frame_host_, false);
+    // TODO(https://crbug.com/880741): Remove this once the bug is fixed.
+    if (!weak_ptr)
+      base::debug::DumpWithoutCrashing();
+  }
 
   TRACE_EVENT_ASYNC_STEP_INTO1("navigation", "NavigationHandle", this,
                                "ProcessResponse", "result", result.action());
@@ -950,8 +976,8 @@ void NavigationHandleImpl::DidCommitNavigation(
                                  "DidCommitNavigation");
     state_ = DID_COMMIT;
   }
-  commit_timeout_timer_.Stop();
-  GetRenderFrameHost()->GetRenderWidgetHost()->RendererIsResponsive();
+
+  StopCommitTimeout();
 
   // Record metrics for the time it took to commit the navigation if it was to
   // another document without error.
@@ -1360,7 +1386,7 @@ void NavigationHandleImpl::RegisterNavigationThrottles() {
   AddThrottle(OriginPolicyThrottle::MaybeCreateThrottleFor(this));
 
   for (auto& throttle :
-       RenderFrameDevToolsAgentHost::CreateNavigationThrottles(this)) {
+       devtools_instrumentation::CreateNavigationThrottles(this)) {
     AddThrottle(std::move(throttle));
   }
 
@@ -1435,19 +1461,40 @@ NavigationThrottle* NavigationHandleImpl::GetDeferringThrottle() const {
   return throttles_[next_index_ - 1].get();
 }
 
+void NavigationHandleImpl::RenderProcessBlockedStateChanged(bool blocked) {
+  if (blocked)
+    StopCommitTimeout();
+  else
+    RestartCommitTimeout();
+}
+
+void NavigationHandleImpl::StopCommitTimeout() {
+  commit_timeout_timer_.Stop();
+  render_process_blocked_state_changed_subscription_.reset();
+  GetRenderFrameHost()->GetRenderWidgetHost()->RendererIsResponsive();
+}
+
 void NavigationHandleImpl::RestartCommitTimeout() {
   commit_timeout_timer_.Stop();
   if (state_ >= DID_COMMIT)
     return;
 
-  commit_timeout_timer_.Start(
-      FROM_HERE, g_commit_timeout,
-      base::BindRepeating(&NavigationHandleImpl::OnCommitTimeout,
-                          weak_factory_.GetWeakPtr()));
+  RenderProcessHost* renderer_host =
+      GetRenderFrameHost()->GetRenderWidgetHost()->GetProcess();
+  render_process_blocked_state_changed_subscription_ =
+      renderer_host->RegisterBlockStateChangedCallback(base::BindRepeating(
+          &NavigationHandleImpl::RenderProcessBlockedStateChanged,
+          base::Unretained(this)));
+  if (!renderer_host->IsBlocked())
+    commit_timeout_timer_.Start(
+        FROM_HERE, g_commit_timeout,
+        base::BindRepeating(&NavigationHandleImpl::OnCommitTimeout,
+                            weak_factory_.GetWeakPtr()));
 }
 
 void NavigationHandleImpl::OnCommitTimeout() {
   DCHECK_EQ(READY_TO_COMMIT, state_);
+  render_process_blocked_state_changed_subscription_.reset();
   GetRenderFrameHost()->GetRenderWidgetHost()->RendererIsUnresponsive(
       base::BindRepeating(&NavigationHandleImpl::RestartCommitTimeout,
                           weak_factory_.GetWeakPtr()));

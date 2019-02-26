@@ -43,12 +43,10 @@ namespace content {
 FlingController::Config::Config() {}
 
 FlingController::FlingController(
-    GestureEventQueue* gesture_event_queue,
     FlingControllerEventSenderClient* event_sender_client,
     FlingControllerSchedulerClient* scheduler_client,
     const Config& config)
-    : gesture_event_queue_(gesture_event_queue),
-      event_sender_client_(event_sender_client),
+    : event_sender_client_(event_sender_client),
       scheduler_client_(scheduler_client),
       touchpad_tap_suppression_controller_(
           config.touchpad_tap_suppression_config),
@@ -57,7 +55,6 @@ FlingController::FlingController(
       fling_in_progress_(false),
       clock_(base::DefaultTickClock::GetInstance()),
       weak_ptr_factory_(this) {
-  DCHECK(gesture_event_queue);
   DCHECK(event_sender_client);
   DCHECK(scheduler_client);
 }
@@ -154,25 +151,6 @@ bool FlingController::FilterGestureEvent(
   return !ShouldForwardForGFCFiltering(gesture_event) ||
          !ShouldForwardForTapSuppression(gesture_event) ||
          FilterGestureEventForFlingBoosting(gesture_event);
-}
-
-void FlingController::OnGestureEventAck(
-    const GestureEventWithLatencyInfo& acked_event,
-    InputEventAckState ack_result) {
-  bool processed = (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result);
-  switch (acked_event.event.GetType()) {
-    case WebInputEvent::kGestureScrollUpdate:
-      if (acked_event.event.data.scroll_update.inertial_phase ==
-              WebGestureEvent::kMomentumPhase &&
-          fling_curve_ && !processed &&
-          current_fling_parameters_.source_device !=
-              blink::kWebGestureDeviceSyntheticAutoscroll) {
-        CancelCurrentFling();
-      }
-      break;
-    default:
-      break;
-  }
 }
 
 void FlingController::ProcessGestureFlingStart(
@@ -375,7 +353,6 @@ void FlingController::CancelCurrentFling() {
   fling_curve_.reset();
   has_fling_animation_started_ = false;
   fling_in_progress_ = false;
-  gesture_event_queue_->FlingHasBeenHalted();
 
   // Extract the last event filtered by the fling booster if it exists.
   bool fling_cancellation_is_deferred =

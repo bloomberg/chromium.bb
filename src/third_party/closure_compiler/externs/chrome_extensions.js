@@ -10179,6 +10179,17 @@ chrome.bluetoothPrivate.setPairingResponse = function(options, callback) {};
 
 
 /**
+ * Connects to the given device. This will only throw an error if the device
+ * address is invalid or the device is already connected. Otherwise this will
+ * succeed and invoke |callback| with ConnectResultType.
+ * @param {string} deviceAddress
+ * @param {function(!chrome.bluetoothPrivate.ConnectResultType):void=} callback
+ */
+chrome.bluetoothPrivate.connect = function(deviceAddress, callback) {};
+
+
+
+/**
  * @param {string} deviceAddress
  * @param {function():void=} callback
  */

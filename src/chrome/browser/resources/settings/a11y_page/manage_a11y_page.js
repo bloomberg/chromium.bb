@@ -69,6 +69,73 @@ Polymer({
       },
     },
 
+    autoClickEventTypeOptions_: {
+      readOnly: true,
+      type: Array,
+      value: function() {
+        // These values correspond to the i18n values in settings_strings.grdp
+        // and the enums in accessibility_controller.mojom, AutoclickEventType.
+        // If these values get changed then those strings need to be changed as
+        // well.
+        return [
+          {
+            // mojom::AutoclickEventType::kLeftClick
+            value: 0,
+            name: loadTimeData.getString('autoclickEventTypeLeftClick')
+          },
+          {
+            // mojom::AutoclickEventType::kRightClick
+            value: 1,
+            name: loadTimeData.getString('autoclickEventTypeRightClick')
+          },
+          {
+            // mojom::AutoclickEventType::kDragAndDrop
+            value: 2,
+            name: loadTimeData.getString('autoclickEventTypeDragAndDrop')
+          },
+          {
+            // mojom::AutoclickEventType::kDoubleClick
+            value: 3,
+            name: loadTimeData.getString('autoclickEventTypeDoubleClick')
+          },
+          {
+            // mojom::AutoclickEventType::kNoAction
+            value: 4,
+            name: loadTimeData.getString('autoclickEventTypeNoAction')
+          },
+        ];
+      },
+    },
+
+    autoClickMovementThresholdOptions_: {
+      readOnly: true,
+      type: Array,
+      value: function() {
+        return [
+          {
+            value: 5,
+            name: loadTimeData.getString('autoclickMovementThresholdExtraSmall')
+          },
+          {
+            value: 10,
+            name: loadTimeData.getString('autoclickMovementThresholdSmall')
+          },
+          {
+            value: 20,
+            name: loadTimeData.getString('autoclickMovementThresholdDefault')
+          },
+          {
+            value: 30,
+            name: loadTimeData.getString('autoclickMovementThresholdLarge')
+          },
+          {
+            value: 40,
+            name: loadTimeData.getString('autoclickMovementThresholdExtraLarge')
+          },
+        ];
+      },
+    },
+
     /**
      * Whether to show experimental accessibility features.
      * @private {boolean}
@@ -77,6 +144,22 @@ Polymer({
       type: Boolean,
       value: function() {
         return loadTimeData.getBoolean('showExperimentalA11yFeatures');
+      },
+    },
+
+    showExperimentalAutoclick_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean(
+            'showExperimentalAccessibilityAutoclick');
+      },
+    },
+
+    showExperimentalSwitchAccess_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean(
+            'showExperimentalAccessibilitySwitchAccess');
       },
     },
 

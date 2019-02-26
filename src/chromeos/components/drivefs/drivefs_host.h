@@ -13,12 +13,16 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
+#include "base/time/clock.h"
 #include "base/timer/timer.h"
 #include "chromeos/components/drivefs/mojom/drivefs.mojom.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/account_id/account_id.h"
-#include "google_apis/gaia/oauth2_mint_token_flow.h"
 #include "services/identity/public/mojom/identity_manager.mojom.h"
+
+namespace drive {
+class DriveNotificationManager;
+}
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -27,6 +31,12 @@ class SharedURLLoaderFactory;
 namespace service_manager {
 class Connector;
 }  // namespace service_manager
+
+namespace chromeos {
+namespace disks {
+class DiskMountManager;
+}
+}  // namespace chromeos
 
 namespace drivefs {
 
@@ -53,11 +63,20 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost {
 
   class MountObserver {
    public:
+    enum class MountFailure {
+      kUnknown,
+      kNeedsRestart,
+      kIpcDisconnect,
+      kInvocation,
+      kTimeout,
+    };
+
     MountObserver() = default;
     virtual ~MountObserver() = default;
     virtual void OnMounted(const base::FilePath& mount_path) = 0;
     virtual void OnUnmounted(base::Optional<base::TimeDelta> remount_delay) = 0;
     virtual void OnMountFailed(
+        MountFailure failure,
         base::Optional<base::TimeDelta> remount_delay) = 0;
 
    private:
@@ -74,11 +93,7 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost {
     virtual service_manager::Connector* GetConnector() = 0;
     virtual const AccountId& GetAccountId() = 0;
     virtual std::string GetObfuscatedAccountId() = 0;
-    virtual std::unique_ptr<OAuth2MintTokenFlow> CreateMintTokenFlow(
-        OAuth2MintTokenFlow::Delegate* delegate,
-        const std::string& client_id,
-        const std::string& app_id,
-        const std::vector<std::string>& scopes);
+    virtual drive::DriveNotificationManager& GetDriveNotificationManager() = 0;
     virtual std::unique_ptr<MojoConnectionDelegate>
     CreateMojoConnectionDelegate();
 
@@ -89,6 +104,8 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost {
   DriveFsHost(const base::FilePath& profile_path,
               Delegate* delegate,
               MountObserver* mount_observer,
+              const base::Clock* clock,
+              chromeos::disks::DiskMountManager* disk_mount_manager,
               std::unique_ptr<base::OneShotTimer> timer);
   ~DriveFsHost();
 
@@ -112,7 +129,14 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost {
 
   mojom::DriveFs* GetDriveFsInterface() const;
 
+  // Starts DriveFs search query and returns whether it will be
+  // performed localy or remotely. Assumes DriveFS to be mounted.
+  mojom::QueryParameters::QuerySource PerformSearch(
+      mojom::QueryParametersPtr query,
+      mojom::SearchQuery::GetNextPageCallback callback);
+
  private:
+  class AccountTokenDelegate;
   class MountState;
 
   SEQUENCE_CHECKER(sequence_checker_);
@@ -122,8 +146,11 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost {
 
   Delegate* const delegate_;
   MountObserver* const mount_observer_;
-
+  const base::Clock* const clock_;
+  chromeos::disks::DiskMountManager* const disk_mount_manager_;
   std::unique_ptr<base::OneShotTimer> timer_;
+
+  std::unique_ptr<AccountTokenDelegate> account_token_delegate_;
 
   // State specific to the current mount, or null if not mounted.
   std::unique_ptr<MountState> mount_state_;

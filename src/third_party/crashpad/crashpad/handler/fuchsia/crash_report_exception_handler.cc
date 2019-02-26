@@ -30,20 +30,24 @@ namespace {
 
 class ScopedThreadResumeAfterException {
  public:
-  ScopedThreadResumeAfterException(const zx::thread& thread)
-      : thread_(thread) {}
+  ScopedThreadResumeAfterException(const zx::thread& thread,
+                                   const zx::unowned_port& exception_port)
+      : thread_(thread), exception_port_(exception_port) {}
   ~ScopedThreadResumeAfterException() {
     DCHECK(thread_->is_valid());
     // Resuming with ZX_RESUME_TRY_NEXT chains to the next handler. In normal
     // operation, there won't be another beyond this one, which will result in
     // the kernel terminating the process.
     zx_status_t status =
-        thread_->resume(ZX_RESUME_EXCEPTION | ZX_RESUME_TRY_NEXT);
-    ZX_LOG_IF(ERROR, status != ZX_OK, status) << "zx_task_resume";
+        thread_->resume_from_exception(*exception_port_, ZX_RESUME_TRY_NEXT);
+    ZX_LOG_IF(ERROR, status != ZX_OK, status)
+        << "zx_task_resume_from_exception";
   }
 
  private:
   zx::unowned_thread thread_;
+  const zx::unowned_port& exception_port_;
+
   DISALLOW_COPY_AND_ASSIGN(ScopedThreadResumeAfterException);
 };
 
@@ -63,15 +67,18 @@ CrashReportExceptionHandler::CrashReportExceptionHandler(
 
 CrashReportExceptionHandler::~CrashReportExceptionHandler() {}
 
-bool CrashReportExceptionHandler::HandleException(uint64_t process_id,
-                                                  uint64_t thread_id) {
+bool CrashReportExceptionHandler::HandleException(
+    uint64_t process_id,
+    uint64_t thread_id,
+    const zx::unowned_port& exception_port,
+    UUID* local_report_id) {
   // TODO(scottmg): This function needs to be instrumented with metrics calls,
   // https://crashpad.chromium.org/bug/230.
 
   zx::process process(GetProcessFromKoid(process_id));
   if (!process.is_valid()) {
-    // There's no way to zx_task_resume() the thread if the process retrieval
-    // fails. Assume that the process has been already killed, and bail.
+    // There's no way to resume the thread if the process retrieval fails.
+    // Assume that the process has been already killed, and bail.
     return false;
   }
 
@@ -80,16 +87,19 @@ bool CrashReportExceptionHandler::HandleException(uint64_t process_id,
     return false;
   }
 
-  return HandleExceptionHandles(process, thread);
+  return HandleExceptionHandles(
+      process, thread, exception_port, local_report_id);
 }
 
 bool CrashReportExceptionHandler::HandleExceptionHandles(
     const zx::process& process,
-    const zx::thread& thread) {
+    const zx::thread& thread,
+    const zx::unowned_port& exception_port,
+    UUID* local_report_id) {
   // Now that the thread has been successfully retrieved, it is possible to
-  // correctly call zx_task_resume() to continue exception processing, even if
-  // something else during this function fails.
-  ScopedThreadResumeAfterException resume(thread);
+  // correctly call zx_task_resume_from_exception() to continue exception
+  // processing, even if something else during this function fails.
+  ScopedThreadResumeAfterException resume(thread, exception_port);
 
   ProcessSnapshotFuchsia process_snapshot;
   if (!process_snapshot.Initialize(process)) {
@@ -99,82 +109,87 @@ bool CrashReportExceptionHandler::HandleExceptionHandles(
   CrashpadInfoClientOptions client_options;
   process_snapshot.GetCrashpadOptions(&client_options);
 
-  if (client_options.crashpad_handler_behavior != TriState::kDisabled) {
-    zx_exception_report_t report;
-    zx_status_t status = thread.get_info(ZX_INFO_THREAD_EXCEPTION_REPORT,
-                                         &report,
-                                         sizeof(report),
-                                         nullptr,
-                                         nullptr);
-    if (status != ZX_OK) {
-      ZX_LOG(ERROR, status)
-          << "zx_object_get_info ZX_INFO_THREAD_EXCEPTION_REPORT";
-      return false;
-    }
+  if (client_options.crashpad_handler_behavior == TriState::kDisabled) {
+    return true;
+  }
 
-    zx_koid_t thread_id = GetKoidForHandle(thread);
-    if (!process_snapshot.InitializeException(thread_id, report)) {
-      return false;
-    }
+  zx_exception_report_t report;
+  zx_status_t status = thread.get_info(ZX_INFO_THREAD_EXCEPTION_REPORT,
+                                       &report,
+                                       sizeof(report),
+                                       nullptr,
+                                       nullptr);
+  if (status != ZX_OK) {
+    ZX_LOG(ERROR, status)
+        << "zx_object_get_info ZX_INFO_THREAD_EXCEPTION_REPORT";
+    return false;
+  }
 
-    UUID client_id;
-    Settings* const settings = database_->GetSettings();
-    if (settings) {
-      // If GetSettings() or GetClientID() fails, something else will log a
-      // message and client_id will be left at its default value, all zeroes,
-      // which is appropriate.
-      settings->GetClientID(&client_id);
-    }
+  zx_koid_t thread_id = GetKoidForHandle(thread);
+  if (!process_snapshot.InitializeException(thread_id, report)) {
+    return false;
+  }
 
-    process_snapshot.SetClientID(client_id);
-    process_snapshot.SetAnnotationsSimpleMap(*process_annotations_);
+  UUID client_id;
+  Settings* const settings = database_->GetSettings();
+  if (settings) {
+    // If GetSettings() or GetClientID() fails, something else will log a
+    // message and client_id will be left at its default value, all zeroes,
+    // which is appropriate.
+    settings->GetClientID(&client_id);
+  }
 
-    std::unique_ptr<CrashReportDatabase::NewReport> new_report;
-    CrashReportDatabase::OperationStatus database_status =
-        database_->PrepareNewCrashReport(&new_report);
-    if (database_status != CrashReportDatabase::kNoError) {
-      return false;
-    }
+  process_snapshot.SetClientID(client_id);
+  process_snapshot.SetAnnotationsSimpleMap(*process_annotations_);
 
-    process_snapshot.SetReportID(new_report->ReportID());
+  std::unique_ptr<CrashReportDatabase::NewReport> new_report;
+  CrashReportDatabase::OperationStatus database_status =
+      database_->PrepareNewCrashReport(&new_report);
+  if (database_status != CrashReportDatabase::kNoError) {
+    return false;
+  }
 
-    MinidumpFileWriter minidump;
-    minidump.InitializeFromSnapshot(&process_snapshot);
-    AddUserExtensionStreams(
-        user_stream_data_sources_, &process_snapshot, &minidump);
+  process_snapshot.SetReportID(new_report->ReportID());
 
-    if (!minidump.WriteEverything(new_report->Writer())) {
-      return false;
-    }
+  MinidumpFileWriter minidump;
+  minidump.InitializeFromSnapshot(&process_snapshot);
+  AddUserExtensionStreams(
+      user_stream_data_sources_, &process_snapshot, &minidump);
 
-    if (process_attachments_) {
-      // Note that attachments are read at this point each time rather than once
-      // so that if the contents of the file has changed it will be re-read for
-      // each upload (e.g. in the case of a log file).
-      for (const auto& it : *process_attachments_) {
-        FileWriter* writer = new_report->AddAttachment(it.first);
-        if (writer) {
-          std::string contents;
-          if (!LoggingReadEntireFile(it.second, &contents)) {
-            // Not being able to read the file isn't considered fatal, and
-            // should not prevent the report from being processed.
-            continue;
-          }
-          writer->Write(contents.data(), contents.size());
+  if (!minidump.WriteEverything(new_report->Writer())) {
+    return false;
+  }
+
+  if (process_attachments_) {
+    // Note that attachments are read at this point each time rather than once
+    // so that if the contents of the file has changed it will be re-read for
+    // each upload (e.g. in the case of a log file).
+    for (const auto& it : *process_attachments_) {
+      FileWriter* writer = new_report->AddAttachment(it.first);
+      if (writer) {
+        std::string contents;
+        if (!LoggingReadEntireFile(it.second, &contents)) {
+          // Not being able to read the file isn't considered fatal, and
+          // should not prevent the report from being processed.
+          continue;
         }
+        writer->Write(contents.data(), contents.size());
       }
     }
+  }
 
-    UUID uuid;
-    database_status =
-        database_->FinishedWritingCrashReport(std::move(new_report), &uuid);
-    if (database_status != CrashReportDatabase::kNoError) {
-      return false;
-    }
+  UUID uuid;
+  database_status =
+      database_->FinishedWritingCrashReport(std::move(new_report), &uuid);
+  if (database_status != CrashReportDatabase::kNoError) {
+    return false;
+  }
+  if (local_report_id != nullptr) {
+    *local_report_id = uuid;
+  }
 
-    if (upload_thread_) {
-      upload_thread_->ReportPending(uuid);
-    }
+  if (upload_thread_) {
+    upload_thread_->ReportPending(uuid);
   }
 
   return true;

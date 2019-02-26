@@ -10,6 +10,7 @@
 #include <map>
 #include <string>
 
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/guid.h"
 #include "base/location.h"
@@ -35,7 +36,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/page_navigator.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/result_codes.h"
@@ -233,7 +233,7 @@ ServiceWorkerVersion::ServiceWorkerVersion(
       registration_id_(registration->id()),
       script_url_(script_url),
       script_origin_(url::Origin::Create(script_url_)),
-      scope_(registration->pattern()),
+      scope_(registration->scope()),
       script_type_(script_type),
       fetch_handler_existence_(FetchHandlerExistence::UNKNOWN),
       site_for_uma_(ServiceWorkerMetrics::SiteFromURL(scope_)),
@@ -630,9 +630,7 @@ bool ServiceWorkerVersion::StartExternalRequest(
   return true;
 }
 
-bool ServiceWorkerVersion::FinishRequest(int request_id,
-                                         bool was_handled,
-                                         base::TimeTicks dispatch_event_time) {
+bool ServiceWorkerVersion::FinishRequest(int request_id, bool was_handled) {
   InflightRequest* request = inflight_requests_.Lookup(request_id);
   if (!request)
     return false;
@@ -641,8 +639,6 @@ bool ServiceWorkerVersion::FinishRequest(int request_id,
   ServiceWorkerMetrics::RecordEventDuration(
       request->event_type, tick_clock_->NowTicks() - request->start_time_ticks,
       was_handled);
-  ServiceWorkerMetrics::RecordEventDispatchingDelay(
-      request->event_type, dispatch_event_time - request->start_time_ticks);
 
   RestartTick(&idle_time_);
   TRACE_EVENT_ASYNC_END1("ServiceWorker", "ServiceWorkerVersion::Request",
@@ -669,7 +665,7 @@ bool ServiceWorkerVersion::FinishExternalRequest(
   if (iter != external_request_uuid_to_request_id_.end()) {
     int request_id = iter->second;
     external_request_uuid_to_request_id_.erase(iter);
-    return FinishRequest(request_id, true, tick_clock_->NowTicks());
+    return FinishRequest(request_id, true);
   }
 
   // It is possible that the request was cancelled or timed out before and we
@@ -814,6 +810,8 @@ void ServiceWorkerVersion::Doom() {
 }
 
 void ServiceWorkerVersion::SetToPauseAfterDownload(base::OnceClosure callback) {
+  // TODO(asamidoi): Support pause after download in module workers.
+  DCHECK_EQ(blink::mojom::ScriptType::kClassic, script_type_);
   pause_after_download_callback_ = std::move(callback);
 }
 
@@ -1123,12 +1121,29 @@ void ServiceWorkerVersion::GetClient(const std::string& client_uuid,
   ServiceWorkerProviderHost* provider_host =
       context_->GetProviderHostByClientID(client_uuid);
   if (!provider_host ||
-      provider_host->document_url().GetOrigin() != script_url_.GetOrigin()) {
+      provider_host->url().GetOrigin() != script_url_.GetOrigin()) {
     // The promise will be resolved to 'undefined'.
     // Note that we don't BadMessage here since Clients#get() can be passed an
     // arbitrary UUID. The BadMessages for the origin mismatches below are
     // appropriate because the UUID is taken directly from a Client object so we
     // expect it to be valid.
+    std::move(callback).Run(nullptr);
+    return;
+  }
+  if (!provider_host->is_execution_ready()) {
+    provider_host->AddExecutionReadyCallback(
+        base::BindOnce(&ServiceWorkerVersion::GetClientInternal, this,
+                       client_uuid, std::move(callback)));
+    return;
+  }
+  service_worker_client_utils::GetClient(provider_host, std::move(callback));
+}
+
+void ServiceWorkerVersion::GetClientInternal(const std::string& client_uuid,
+                                             GetClientCallback callback) {
+  ServiceWorkerProviderHost* provider_host =
+      context_->GetProviderHostByClientID(client_uuid);
+  if (!provider_host || !provider_host->is_execution_ready()) {
     std::move(callback).Run(nullptr);
     return;
   }
@@ -1172,7 +1187,7 @@ void ServiceWorkerVersion::PostMessageToClient(
     // The client may already have been closed, just ignore.
     return;
   }
-  if (provider_host->document_url().GetOrigin() != script_url_.GetOrigin()) {
+  if (provider_host->url().GetOrigin() != script_url_.GetOrigin()) {
     mojo::ReportBadMessage(
         "Received Client#postMessage() request for a cross-origin client.");
     binding_.Close();
@@ -1200,7 +1215,7 @@ void ServiceWorkerVersion::FocusClient(const std::string& client_uuid,
     std::move(callback).Run(nullptr /* client */);
     return;
   }
-  if (provider_host->document_url().GetOrigin() != script_url_.GetOrigin()) {
+  if (provider_host->url().GetOrigin() != script_url_.GetOrigin()) {
     mojo::ReportBadMessage(
         "Received WindowClient#focus() request for a cross-origin client.");
     binding_.Close();
@@ -1255,7 +1270,7 @@ void ServiceWorkerVersion::NavigateClient(const std::string& client_uuid,
                             std::string("The client was not found."));
     return;
   }
-  if (provider_host->document_url().GetOrigin() != script_url_.GetOrigin()) {
+  if (provider_host->url().GetOrigin() != script_url_.GetOrigin()) {
     mojo::ReportBadMessage(
         "Received WindowClient#navigate() request for a cross-origin client.");
     binding_.Close();
@@ -1373,7 +1388,8 @@ void ServiceWorkerVersion::OpenWindow(
   }
 
   service_worker_client_utils::OpenWindow(
-      url, script_url_, embedded_worker_->process_id(), context_, type,
+      url, script_url_, embedded_worker_->embedded_worker_id(),
+      embedded_worker_->process_id(), context_, type,
       base::BindOnce(&OnOpenWindowFinished, std::move(callback)));
 }
 
@@ -1384,8 +1400,7 @@ bool ServiceWorkerVersion::HasWorkInBrowser() const {
 
 void ServiceWorkerVersion::OnSimpleEventFinished(
     int request_id,
-    blink::mojom::ServiceWorkerEventStatus status,
-    base::TimeTicks dispatch_event_time) {
+    blink::mojom::ServiceWorkerEventStatus status) {
   InflightRequest* request = inflight_requests_.Lookup(request_id);
   // |request| will be null when the request has been timed out.
   if (!request)
@@ -1394,8 +1409,7 @@ void ServiceWorkerVersion::OnSimpleEventFinished(
   StatusCallback callback = std::move(request->error_callback);
 
   FinishRequest(request_id,
-                status == blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-                dispatch_event_time);
+                status == blink::mojom::ServiceWorkerEventStatus::COMPLETED);
 
   std::move(callback).Run(
       mojo::ConvertTo<blink::ServiceWorkerStatusCode>(status));
@@ -1571,6 +1585,7 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   params->scope = scope_;
   params->script_url = script_url_;
   params->script_type = script_type_;
+  params->user_agent = GetContentClient()->GetUserAgent();
   params->is_installed = IsInstalled(status_);
   params->pause_after_download = pause_after_download();
 
@@ -1596,7 +1611,6 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   ServiceWorkerRegistration* registration =
       context_->GetLiveRegistration(registration_id_);
   DCHECK(registration);
-  provider_host_->SetDocumentUrl(script_url());
   service_worker_ptr_->InitializeGlobalScope(
       std::move(service_worker_host),
       provider_host_->CreateServiceWorkerRegistrationObjectInfo(
@@ -2047,7 +2061,7 @@ bool ServiceWorkerVersion::IsStartWorkerAllowed() const {
   if ((context_->wrapper()->resource_context() &&
        !GetContentClient()->browser()->AllowServiceWorker(
            scope_, scope_, context_->wrapper()->resource_context(),
-           base::Callback<WebContents*(void)>()))) {
+           base::NullCallback()))) {
     return false;
   }
 

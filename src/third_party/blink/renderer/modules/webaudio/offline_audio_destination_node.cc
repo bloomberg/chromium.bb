@@ -44,7 +44,7 @@ namespace blink {
 OfflineAudioDestinationHandler::OfflineAudioDestinationHandler(
     AudioNode& node,
     unsigned number_of_channels,
-    size_t frames_to_process,
+    uint32_t frames_to_process,
     float sample_rate)
     : AudioDestinationHandler(node),
       render_target_(nullptr),
@@ -68,7 +68,7 @@ OfflineAudioDestinationHandler::OfflineAudioDestinationHandler(
 scoped_refptr<OfflineAudioDestinationHandler>
 OfflineAudioDestinationHandler::Create(AudioNode& node,
                                        unsigned number_of_channels,
-                                       size_t frames_to_process,
+                                       uint32_t frames_to_process,
                                        float sample_rate) {
   return base::AdoptRef(new OfflineAudioDestinationHandler(
       node, number_of_channels, frames_to_process, sample_rate));
@@ -103,7 +103,7 @@ OfflineAudioContext* OfflineAudioDestinationHandler::Context() const {
   return static_cast<OfflineAudioContext*>(AudioDestinationHandler::Context());
 }
 
-unsigned long OfflineAudioDestinationHandler::MaxChannelCount() const {
+uint32_t OfflineAudioDestinationHandler::MaxChannelCount() const {
   return channel_count_;
 }
 
@@ -141,7 +141,7 @@ void OfflineAudioDestinationHandler::InitializeOfflineRenderThread(
 
   render_target_ = render_target;
   render_bus_ = AudioBus::Create(render_target->numberOfChannels(),
-                                 AudioUtilities::kRenderQuantumFrames);
+                                 audio_utilities::kRenderQuantumFrames);
   DCHECK(render_bus_);
 
   PrepareTaskRunnerForRendering();
@@ -166,7 +166,7 @@ void OfflineAudioDestinationHandler::StartOfflineRendering() {
     return;
 
   bool is_render_bus_allocated =
-      render_bus_->length() >= AudioUtilities::kRenderQuantumFrames;
+      render_bus_->length() >= audio_utilities::kRenderQuantumFrames;
   DCHECK(is_render_bus_allocated);
   if (!is_render_bus_allocated)
     return;
@@ -209,12 +209,11 @@ void OfflineAudioDestinationHandler::DoOfflineRendering() {
     // Suspend the rendering if a scheduled suspend found at the current
     // sample frame. Otherwise render one quantum.
     if (RenderIfNotSuspended(nullptr, render_bus_.get(),
-                             AudioUtilities::kRenderQuantumFrames))
+                             audio_utilities::kRenderQuantumFrames))
       return;
 
-    size_t frames_available_to_copy =
-        std::min(frames_to_process_,
-                 static_cast<size_t>(AudioUtilities::kRenderQuantumFrames));
+    uint32_t frames_available_to_copy =
+        std::min(frames_to_process_, audio_utilities::kRenderQuantumFrames);
 
     for (unsigned channel_index = 0; channel_index < number_of_channels;
          ++channel_index) {
@@ -279,7 +278,7 @@ void OfflineAudioDestinationHandler::NotifyComplete() {
 bool OfflineAudioDestinationHandler::RenderIfNotSuspended(
     AudioBus* source_bus,
     AudioBus* destination_bus,
-    size_t number_of_frames) {
+    uint32_t number_of_frames) {
   // We don't want denormals slowing down any of the audio processing
   // since they can very seriously hurt performance.
   // This will take care of all AudioNodes because they all process within this
@@ -340,8 +339,7 @@ bool OfflineAudioDestinationHandler::RenderIfNotSuspended(
   Context()->HandlePostOfflineRenderTasks();
 
   // Advance current sample-frame.
-  size_t new_sample_frame = current_sample_frame_ + number_of_frames;
-  ReleaseStore(&current_sample_frame_, new_sample_frame);
+  AdvanceCurrentSampleFrame(number_of_frames);
 
   Context()->UpdateWorkletGlobalScopeOnRenderingThread();
 
@@ -395,7 +393,7 @@ void OfflineAudioDestinationHandler::RestartRendering() {
 OfflineAudioDestinationNode::OfflineAudioDestinationNode(
     BaseAudioContext& context,
     unsigned number_of_channels,
-    size_t frames_to_process,
+    uint32_t frames_to_process,
     float sample_rate)
     : AudioDestinationNode(context) {
   SetHandler(OfflineAudioDestinationHandler::Create(
@@ -405,10 +403,10 @@ OfflineAudioDestinationNode::OfflineAudioDestinationNode(
 OfflineAudioDestinationNode* OfflineAudioDestinationNode::Create(
     BaseAudioContext* context,
     unsigned number_of_channels,
-    size_t frames_to_process,
+    uint32_t frames_to_process,
     float sample_rate) {
-  return new OfflineAudioDestinationNode(*context, number_of_channels,
-                                         frames_to_process, sample_rate);
+  return MakeGarbageCollected<OfflineAudioDestinationNode>(
+      *context, number_of_channels, frames_to_process, sample_rate);
 }
 
 }  // namespace blink

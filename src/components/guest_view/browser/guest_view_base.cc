@@ -109,13 +109,6 @@ class GuestViewBase::OwnerContentsObserver : public WebContentsObserver {
     }
   }
 
-  void OnPageScaleFactorChanged(float page_scale_factor) override {
-    if (destroyed_)
-      return;
-
-    guest_->web_contents()->SetPageScale(page_scale_factor);
-  }
-
   void DidUpdateAudioMutingState(bool muted) override {
     if (destroyed_)
       return;
@@ -137,7 +130,16 @@ class GuestViewBase::OwnerContentsObserver : public WebContentsObserver {
     if (destroyed_)
       return;
     destroyed_ = true;
-    guest_->Destroy(true);
+
+    bool also_delete = true;
+    WebContents* guest_web_contents = guest_->web_contents();
+    if (content::GuestMode::IsCrossProcessFrameGuest(guest_web_contents)) {
+      // The outer WebContents have ownership of attached OOPIF-based guests, so
+      // we are not responsible for their deletion.
+      if (guest_web_contents->GetOuterWebContents())
+        also_delete = false;
+    }
+    guest_->Destroy(also_delete);
   }
 
   DISALLOW_COPY_AND_ASSIGN(OwnerContentsObserver);
@@ -468,8 +470,6 @@ void GuestViewBase::Destroy(bool also_delete) {
   StopTrackingEmbedderZoomLevel();
   owner_web_contents_ = nullptr;
 
-  element_instance_id_ = kInstanceIDNone;
-
   DCHECK(web_contents());
 
   // Give the derived class an opportunity to perform some cleanup.
@@ -632,15 +632,15 @@ void GuestViewBase::ContentsZoomChange(bool zoom_in) {
   embedder_web_contents()->GetDelegate()->ContentsZoomChange(zoom_in);
 }
 
-void GuestViewBase::HandleKeyboardEvent(
+bool GuestViewBase::HandleKeyboardEvent(
     WebContents* source,
     const content::NativeWebKeyboardEvent& event) {
   if (!attached())
-    return;
+    return false;
 
   // Send the keyboard events back to the embedder to reprocess them.
-  embedder_web_contents()->GetDelegate()->
-      HandleKeyboardEvent(embedder_web_contents(), event);
+  return embedder_web_contents()->GetDelegate()->HandleKeyboardEvent(
+      embedder_web_contents(), event);
 }
 
 void GuestViewBase::LoadingStateChanged(WebContents* source,
@@ -691,7 +691,9 @@ bool GuestViewBase::PreHandleGestureEvent(WebContents* source,
   // Pinch events which cause a scale change should not be routed to a guest.
   // We still allow synthetic wheel events for touchpad pinch to go to the page.
   DCHECK(!blink::WebInputEvent::IsPinchGestureEventType(event.GetType()) ||
-         event.NeedsWheelEvent());
+         (event.SourceDevice() ==
+              blink::WebGestureDevice::kWebGestureDeviceTouchpad &&
+          event.NeedsWheelEvent()));
   return false;
 }
 

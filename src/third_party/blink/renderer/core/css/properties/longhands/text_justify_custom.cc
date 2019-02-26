@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/text_justify.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* TextJustify::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -16,5 +16,5 @@ const CSSValue* TextJustify::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.GetTextJustify());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

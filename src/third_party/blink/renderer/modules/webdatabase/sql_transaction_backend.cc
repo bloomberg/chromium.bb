@@ -369,7 +369,8 @@ SQLTransactionBackend* SQLTransactionBackend::Create(
     SQLTransaction* frontend,
     SQLTransactionWrapper* wrapper,
     bool read_only) {
-  return new SQLTransactionBackend(db, frontend, wrapper, read_only);
+  return MakeGarbageCollected<SQLTransactionBackend>(db, frontend, wrapper,
+                                                     read_only);
 }
 
 SQLTransactionBackend::SQLTransactionBackend(Database* db,
@@ -616,8 +617,7 @@ SQLTransactionState SQLTransactionBackend::OpenTransactionAndPreflight() {
   // callback if that fails.
   if (!sqlite_transaction_->InProgress()) {
     DCHECK(!database_->SqliteDatabase().TransactionInProgress());
-    database_->ReportStartTransactionResult(
-        2, SQLError::kDatabaseErr, database_->SqliteDatabase().LastError());
+    database_->ReportSqliteError(database_->SqliteDatabase().LastError());
     transaction_error_ = SQLErrorData::Create(
         SQLError::kDatabaseErr, "unable to begin transaction",
         database_->SqliteDatabase().LastError(),
@@ -632,8 +632,7 @@ SQLTransactionState SQLTransactionBackend::OpenTransactionAndPreflight() {
   // this is just a map lookup.
   String actual_version;
   if (!database_->GetActualVersionForTransaction(actual_version)) {
-    database_->ReportStartTransactionResult(
-        3, SQLError::kDatabaseErr, database_->SqliteDatabase().LastError());
+    database_->ReportSqliteError(database_->SqliteDatabase().LastError());
     transaction_error_ =
         SQLErrorData::Create(SQLError::kDatabaseErr, "unable to read version",
                              database_->SqliteDatabase().LastError(),
@@ -655,7 +654,6 @@ SQLTransactionState SQLTransactionBackend::OpenTransactionAndPreflight() {
     if (wrapper_->SqlError()) {
       transaction_error_ = SQLErrorData::Create(*wrapper_->SqlError());
     } else {
-      database_->ReportStartTransactionResult(4, SQLError::kUnknownErr, 0);
       transaction_error_ = SQLErrorData::Create(
           SQLError::kUnknownErr,
           "unknown error occurred during transaction preflight");
@@ -774,7 +772,6 @@ SQLTransactionState SQLTransactionBackend::NextStateForCurrentStatementError() {
     transaction_error_ =
         SQLErrorData::Create(*current_statement_backend_->SqlError());
   } else {
-    database_->ReportCommitTransactionResult(1, SQLError::kDatabaseErr, 0);
     transaction_error_ = SQLErrorData::Create(
         SQLError::kDatabaseErr, "the statement failed to execute");
   }
@@ -790,7 +787,6 @@ SQLTransactionState SQLTransactionBackend::PostflightAndCommit() {
     if (wrapper_->SqlError()) {
       transaction_error_ = SQLErrorData::Create(*wrapper_->SqlError());
     } else {
-      database_->ReportCommitTransactionResult(3, SQLError::kUnknownErr, 0);
       transaction_error_ = SQLErrorData::Create(
           SQLError::kUnknownErr,
           "unknown error occurred during transaction postflight");
@@ -810,16 +806,13 @@ SQLTransactionState SQLTransactionBackend::PostflightAndCommit() {
   if (sqlite_transaction_->InProgress()) {
     if (wrapper_)
       wrapper_->HandleCommitFailedAfterPostflight(this);
-    database_->ReportCommitTransactionResult(
-        4, SQLError::kDatabaseErr, database_->SqliteDatabase().LastError());
+    database_->ReportSqliteError(database_->SqliteDatabase().LastError());
     transaction_error_ = SQLErrorData::Create(
         SQLError::kDatabaseErr, "unable to commit transaction",
         database_->SqliteDatabase().LastError(),
         database_->SqliteDatabase().LastErrorMsg());
     return NextStateForTransactionError();
   }
-
-  database_->ReportCommitTransactionResult(0, -1, 0);  // OK
 
   // Vacuum the database if anything was deleted.
   if (database_->HadDeletes())

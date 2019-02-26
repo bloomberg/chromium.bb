@@ -6,18 +6,21 @@
 
 #include <utility>
 
+#include "components/services/filesystem/filesystem_service_unittests_catalog_source.h"
 #include "components/services/filesystem/public/interfaces/directory.mojom.h"
 #include "components/services/filesystem/public/interfaces/types.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace filesystem {
 
-FilesTestBase::FilesTestBase() : ServiceTest("filesystem_service_unittests") {}
+FilesTestBase::FilesTestBase()
+    : test_service_manager_(test::CreateTestCatalog()),
+      test_service_(test_service_manager_.RegisterTestInstance(
+          "filesystem_service_unittests")) {}
 
 FilesTestBase::~FilesTestBase() {}
 
 void FilesTestBase::SetUp() {
-  ServiceTest::SetUp();
   connector()->BindInterface("filesystem", &files_);
 }
 

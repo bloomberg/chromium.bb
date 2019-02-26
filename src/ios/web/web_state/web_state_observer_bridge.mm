@@ -125,12 +125,6 @@ void WebStateObserverBridge::DidChangeVisibleSecurityState(
   }
 }
 
-void WebStateObserverBridge::DidSuppressDialog(web::WebState* web_state) {
-  if ([observer_ respondsToSelector:@selector(webStateDidSuppressDialog:)]) {
-    [observer_ webStateDidSuppressDialog:web_state];
-  }
-}
-
 void WebStateObserverBridge::FaviconUrlUpdated(
     web::WebState* web_state,
     const std::vector<FaviconURL>& candidates) {

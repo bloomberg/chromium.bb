@@ -39,7 +39,7 @@ DragCaret::DragCaret() : display_item_client_(new CaretDisplayItemClient()) {}
 DragCaret::~DragCaret() = default;
 
 DragCaret* DragCaret::Create() {
-  return new DragCaret;
+  return MakeGarbageCollected<DragCaret>();
 }
 
 void DragCaret::ClearPreviousVisualRect(const LayoutBlock& block) {
@@ -66,7 +66,7 @@ bool DragCaret::IsContentRichlyEditable() const {
 }
 
 void DragCaret::SetCaretPosition(const PositionWithAffinity& position) {
-  position_ = CreateVisiblePosition(position).ToPositionWithAffinity();
+  position_ = position;
   Document* document = nullptr;
   if (Node* node = position_.AnchorNode()) {
     document = &node->GetDocument();

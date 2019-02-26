@@ -176,7 +176,4 @@ void AddOptionalVerticalPadding(UIView* outerView,
 
 #pragma mark - Safe Area.
 
-// Returns a safeAreaLayoutGuide for a given view.
-id<LayoutGuideProvider> SafeAreaLayoutGuideForView(UIView* view);
-
 #endif  // IOS_CHROME_COMMON_UI_UTIL_CONSTRAINTS_UI_UTIL_H_

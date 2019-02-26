@@ -39,6 +39,9 @@ class PLATFORM_EXPORT FEMorphology final : public FilterEffect {
                               MorphologyOperatorType,
                               float radius_x,
                               float radius_y);
+
+  FEMorphology(Filter*, MorphologyOperatorType, float radius_x, float radius_y);
+
   MorphologyOperatorType MorphologyOperator() const;
   bool SetMorphologyOperator(MorphologyOperatorType);
 
@@ -52,8 +55,6 @@ class PLATFORM_EXPORT FEMorphology final : public FilterEffect {
                                           int indention) const override;
 
  private:
-  FEMorphology(Filter*, MorphologyOperatorType, float radius_x, float radius_y);
-
   FloatRect MapEffect(const FloatRect&) const override;
 
   sk_sp<PaintFilter> CreateImageFilter() override;

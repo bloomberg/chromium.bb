@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/subresource_filter/content/browser/ruleset_service.h"
+#include "components/subresource_filter/content/browser/ruleset_publisher_impl.h"
 
 #include <utility>
 
@@ -23,12 +24,11 @@
 #include "base/task_runner_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/trace_event/trace_event.h"
-#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/traced_value.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
 #include "components/subresource_filter/core/browser/copying_file_stream.h"
-#include "components/subresource_filter/core/browser/ruleset_service_delegate.h"
 #include "components/subresource_filter/core/browser/subresource_filter_constants.h"
 #include "components/subresource_filter/core/common/common_features.h"
 #include "components/subresource_filter/core/common/indexed_ruleset.h"
@@ -261,19 +261,18 @@ decltype(&base::ReplaceFile) RulesetService::g_replace_file_func =
 RulesetService::RulesetService(
     PrefService* local_state,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner,
-    RulesetServiceDelegate* delegate,
-    const base::FilePath& indexed_ruleset_base_dir)
+    const base::FilePath& indexed_ruleset_base_dir,
+    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
+    std::unique_ptr<RulesetPublisher> publisher)
     : local_state_(local_state),
       background_task_runner_(std::move(background_task_runner)),
-      delegate_(delegate),
-      is_after_startup_(false),
+      is_initialized_(false),
       indexed_ruleset_base_dir_(indexed_ruleset_base_dir) {
-  DCHECK(delegate_);
   DCHECK_NE(local_state_->GetInitializationStatus(),
             PrefService::INITIALIZATION_STATUS_WAITING);
-}
-
-void RulesetService::Initialize() {
+  publisher_ = publisher ? std::move(publisher)
+                         : std::make_unique<RulesetPublisherImpl>(
+                               this, blocking_task_runner);
   IndexedRulesetVersion most_recently_indexed_version;
   most_recently_indexed_version.ReadFromPrefs(local_state_);
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("loading"),
@@ -286,8 +285,10 @@ void RulesetService::Initialize() {
     IndexedRulesetVersion().SaveToPrefs(local_state_);
   }
 
-  delegate_->PostAfterStartupTask(
-      base::BindOnce(&RulesetService::InitializeAfterStartup, AsWeakPtr()));
+  DCHECK(publisher_->BestEffortTaskRunner()->BelongsToCurrentThread());
+  publisher_->BestEffortTaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&RulesetService::FinishInitialization, AsWeakPtr()));
 }
 
 RulesetService::~RulesetService() {}
@@ -309,9 +310,9 @@ void RulesetService::IndexAndStoreAndPublishRulesetIfNeeded(
     return;
   }
 
-  // During start-up, retain information about the most recently supplied
-  // unindexed ruleset, to be processed after start-up is complete.
-  if (!is_after_startup_) {
+  // Before initialization, retain information about the most recently supplied
+  // unindexed ruleset, to be processed during initialization.
+  if (!is_initialized_) {
     queued_unindexed_ruleset_info_ = unindexed_ruleset_info;
     return;
   }
@@ -486,8 +487,8 @@ RulesetService::IndexAndWriteRulesetResult RulesetService::WriteRuleset(
   return IndexAndWriteRulesetResult::SUCCESS;
 }
 
-void RulesetService::InitializeAfterStartup() {
-  is_after_startup_ = true;
+void RulesetService::FinishInitialization() {
+  is_initialized_ = true;
 
   IndexedRulesetVersion most_recently_indexed_version;
   most_recently_indexed_version.ReadFromPrefs(local_state_);
@@ -532,7 +533,7 @@ void RulesetService::OpenAndPublishRuleset(
           IndexedRulesetLocator::GetSubdirectoryPathForVersion(
               indexed_ruleset_base_dir_, version));
 
-  delegate_->TryOpenAndSetRulesetFile(
+  publisher_->TryOpenAndSetRulesetFile(
       file_path, version.checksum,
       base::BindOnce(&RulesetService::OnRulesetSet, AsWeakPtr()));
 }
@@ -547,15 +548,20 @@ void RulesetService::OnRulesetSet(base::File file) {
     return;
   }
 
-  delegate_->PublishNewRulesetVersion(std::move(file));
+  publisher_->PublishNewRulesetVersion(std::move(file));
 }
 
-// ContentRulesetService ------------------------------------------------------
+// RulesetPublisherImpl ------------------------------------------------------
 
-ContentRulesetService::ContentRulesetService(
+RulesetPublisherImpl::RulesetPublisherImpl(
+    RulesetService* ruleset_service,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
-    : ruleset_dealer_(std::make_unique<VerifiedRulesetDealer::Handle>(
+    : ruleset_service_(ruleset_service),
+      ruleset_dealer_(std::make_unique<VerifiedRulesetDealer::Handle>(
           std::move(blocking_task_runner))) {
+  best_effort_task_runner_ = base::CreateSingleThreadTaskRunnerWithTraits(
+      {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT});
+  DCHECK(best_effort_task_runner_->BelongsToCurrentThread());
   // Must rely on notifications as RenderProcessHostObserver::RenderProcessReady
   // would only be called after queued IPC messages (potentially triggering a
   // navigation) had already been sent to the new renderer.
@@ -564,32 +570,24 @@ ContentRulesetService::ContentRulesetService(
       content::NotificationService::AllBrowserContextsAndSources());
 }
 
-ContentRulesetService::~ContentRulesetService() {
+RulesetPublisherImpl::~RulesetPublisherImpl() {
   CloseFileOnFileThread(&ruleset_data_);
 }
 
-void ContentRulesetService::SetRulesetPublishedCallbackForTesting(
+void RulesetPublisherImpl::SetRulesetPublishedCallbackForTesting(
     base::OnceClosure callback) {
   ruleset_published_callback_ = std::move(callback);
 }
 
-void ContentRulesetService::PostAfterStartupTask(base::OnceClosure task) {
-  content::BrowserThread::PostAfterStartupTask(
-      FROM_HERE,
-      base::CreateSingleThreadTaskRunnerWithTraits(
-          {content::BrowserThread::UI}),
-      std::move(task));
-}
-
-void ContentRulesetService::TryOpenAndSetRulesetFile(
+void RulesetPublisherImpl::TryOpenAndSetRulesetFile(
     const base::FilePath& file_path,
     int expected_checksum,
     base::OnceCallback<void(base::File)> callback) {
-  ruleset_dealer_->TryOpenAndSetRulesetFile(file_path, expected_checksum,
-                                            std::move(callback));
+  GetRulesetDealer()->TryOpenAndSetRulesetFile(file_path, expected_checksum,
+                                               std::move(callback));
 }
 
-void ContentRulesetService::PublishNewRulesetVersion(base::File ruleset_data) {
+void RulesetPublisherImpl::PublishNewRulesetVersion(base::File ruleset_data) {
   DCHECK(ruleset_data.IsValid());
   CloseFileOnFileThread(&ruleset_data_);
 
@@ -598,7 +596,7 @@ void ContentRulesetService::PublishNewRulesetVersion(base::File ruleset_data) {
   if (base::FeatureList::IsEnabled(kAdTagging)) {
     // Even though the handle will immediately be destroyed, it will still
     // validate the ruleset on its task runner.
-    VerifiedRuleset::Handle ruleset_handle(ruleset_dealer_.get());
+    VerifiedRuleset::Handle ruleset_handle(GetRulesetDealer());
   }
 
   ruleset_data_ = std::move(ruleset_data);
@@ -611,25 +609,23 @@ void ContentRulesetService::PublishNewRulesetVersion(base::File ruleset_data) {
     std::move(ruleset_published_callback_).Run();
 }
 
-void ContentRulesetService::SetAndInitializeRulesetService(
-    std::unique_ptr<RulesetService> ruleset_service) {
-  ruleset_service_ = std::move(ruleset_service);
-  ruleset_service_->Initialize();
+scoped_refptr<base::SingleThreadTaskRunner>
+RulesetPublisherImpl::BestEffortTaskRunner() {
+  return best_effort_task_runner_;
 }
 
-void ContentRulesetService::IndexAndStoreAndPublishRulesetIfNeeded(
+VerifiedRulesetDealer::Handle* RulesetPublisherImpl::GetRulesetDealer() {
+  return ruleset_dealer_.get();
+}
+
+void RulesetPublisherImpl::IndexAndStoreAndPublishRulesetIfNeeded(
     const UnindexedRulesetInfo& unindexed_ruleset_info) {
   DCHECK(ruleset_service_);
   ruleset_service_->IndexAndStoreAndPublishRulesetIfNeeded(
       unindexed_ruleset_info);
 }
 
-void ContentRulesetService::SetIsAfterStartupForTesting() {
-  DCHECK(ruleset_service_);
-  ruleset_service_->set_is_after_startup_for_testing();
-}
-
-void ContentRulesetService::Observe(
+void RulesetPublisherImpl::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {

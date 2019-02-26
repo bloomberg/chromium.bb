@@ -18,6 +18,7 @@ from chromite.lib import commandline
 from chromite.lib import osutils
 from chromite.lib import sudo
 from chromite.lib import sysroot_lib
+from chromite.lib import toolchain
 
 DEFAULT_NAME = 'sysroot_%(package)s.tar.xz'
 PACKAGE_SEPARATOR = '/'
@@ -28,9 +29,9 @@ def ParseCommandLine(argv):
   """Parse args, and run environment-independent checks."""
   parser = commandline.ArgumentParser(description=__doc__)
   parser.add_argument('--board', required=True,
-                      help=('The board to generate the sysroot for.'))
+                      help='The board to generate the sysroot for.')
   parser.add_argument('--package', required=True,
-                      help=('The packages to generate the sysroot for.'))
+                      help='The packages to generate the sysroot for.')
   parser.add_argument('--deps-only', action='store_true',
                       default=False,
                       help='Build dependencies only.')
@@ -75,9 +76,7 @@ class GenerateSysroot(object):
     # Create the sysroot's config.
     sysroot = sysroot_lib.Sysroot(self.sysroot)
     sysroot.WriteConfig(sysroot.GenerateBoardConfig(self.options.board))
-    cros_build_lib.RunCommand(
-        [os.path.join(constants.CROSUTILS_DIR, 'install_toolchain'),
-         '--noconfigure', '--sysroot', self.sysroot])
+    toolchain.InstallToolchain(sysroot, configure=False)
 
   def _InstallKernelHeaders(self):
     self._Emerge('sys-kernel/linux-headers')

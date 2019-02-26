@@ -20,7 +20,7 @@ class VRFrameData final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static VRFrameData* Create() { return new VRFrameData(); }
+  static VRFrameData* Create() { return MakeGarbageCollected<VRFrameData>(); }
 
   VRFrameData();
 

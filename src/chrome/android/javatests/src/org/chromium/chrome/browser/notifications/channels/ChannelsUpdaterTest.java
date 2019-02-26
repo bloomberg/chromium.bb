@@ -61,8 +61,7 @@ public class ChannelsUpdaterTest {
         mNativeLibraryTestRule.loadNativeLibraryNoBrowserProcess();
 
         Context context = InstrumentationRegistry.getTargetContext();
-        mNotificationManagerProxy = new NotificationManagerProxyImpl(
-                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE));
+        mNotificationManagerProxy = new NotificationManagerProxyImpl(context);
 
         mMockResources = context.getResources();
 

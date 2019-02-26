@@ -83,3 +83,72 @@ To build and run web_runner, follow these steps:
    $ tiles_ctl remove TILE_NUMBER
    ```
 
+### Debugging
+
+Rudimentary debugging is now possible with zxdb which is included in the SDK.
+It is still early and fairly manual to set up. After following the steps above:
+
+1. On device, run `sysinfo` to see your device's IP address.
+
+1. On device, run `debug_agent --port=2345`.
+
+1. On the host, run
+
+```
+third_party/fuchsia_sdk/sdk/tools/zxdb -s out/Debug/exe.unstripped -s out/Debug/lib.unstripped
+```
+
+1. In zxdb, `connect <ip-from-sysinfo-above> 2345`.
+
+1. On the host, run `ps` and find the pid of the process you want to debug, e.g.
+   `web_runner`.
+
+1. In zxdb, `attach <pid>`. You should be able to attach to multiple processes.
+
+1. In zxdb, `b ComponentControllerImpl::CreateForRequest` to set a breakpoint.
+
+1. On device, do something to make your breakpoint be hit. In this case
+   `tiles_ctl add https://www.google.com/` should cause a new request.
+
+At this point, you should hit the breakpoint in zxdb.
+
+```
+[zxdb] l
+   25     fuchsia::sys::Package package,
+   26     fuchsia::sys::StartupInfo startup_info,
+   27     fidl::InterfaceRequest<fuchsia::sys::ComponentController>
+   28         controller_request) {
+   29   std::unique_ptr<ComponentControllerImpl> result{
+ ▶ 30       new ComponentControllerImpl(runner)};
+   31   if (!result->BindToRequest(std::move(package), std::move(startup_info),
+   32                              std::move(controller_request))) {
+   33     return nullptr;
+   34   }
+   35   return result;
+   36 }
+   37
+   38 ComponentControllerImpl::ComponentControllerImpl(WebContentRunner* runner)
+   39     : runner_(runner), controller_binding_(this) {
+   40   DCHECK(runner);
+[zxdb] f
+▶ 0 webrunner::ComponentControllerImpl::CreateForRequest() • component_controller_impl.cc:30
+  1 webrunner::WebContentRunner::StartComponent() • web_content_runner.cc:34
+  2 fuchsia::sys::Runner_Stub::Dispatch_() • fidl.cc:1255
+  3 fidl::internal::StubController::OnMessage() • stub_controller.cc:38
+  4 fidl::internal::MessageReader::ReadAndDispatchMessage() • message_reader.cc:213
+  5 fidl::internal::MessageReader::OnHandleReady() • message_reader.cc:179
+  6 fidl::internal::MessageReader::CallHandler() • message_reader.cc:166
+  7 base::AsyncDispatcher::DispatchOrWaitUntil() • async_dispatcher.cc:183
+  8 base::MessagePumpFuchsia::HandleEvents() • message_pump_fuchsia.cc:236
+  9 base::MessagePumpFuchsia::Run() • message_pump_fuchsia.cc:282
+  10 base::MessageLoop::Run() + 0x22b (no line info)
+  11 base::RunLoop::Run() • run_loop.cc:102
+  12 main() • main.cc:74
+  13 0x472010320b8f
+  14 0x0
+[zxdb]
+```
+
+https://fuchsia.googlesource.com/garnet/+/master/docs/debugger.md#diagnosing-symbol-problems
+maybe be a useful reference if you do not see symbols. That page also has
+general help on using the debugger.

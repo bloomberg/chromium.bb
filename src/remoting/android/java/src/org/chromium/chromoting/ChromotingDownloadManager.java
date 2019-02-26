@@ -15,6 +15,8 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
 
+import org.chromium.base.ContextUtils;
+
 import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
@@ -67,7 +69,7 @@ public class ChromotingDownloadManager {
             if (needToBeDownloaded(i)) {
                 DownloadManager.Request request =
                         new DownloadManager.Request(Uri.parse(mUris[i]));
-                request.setDestinationInExternalFilesDir(mActivity.getApplicationContext(),
+                request.setDestinationInExternalFilesDir(ContextUtils.getApplicationContext(),
                         Environment.DIRECTORY_DOWNLOADS, mNames[i]);
                 mUnfinishedDownloadIds.add(mDownloadManager.enqueue(request));
             }

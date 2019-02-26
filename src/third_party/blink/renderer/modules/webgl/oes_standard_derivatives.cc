@@ -40,7 +40,7 @@ WebGLExtensionName OESStandardDerivatives::GetName() const {
 
 OESStandardDerivatives* OESStandardDerivatives::Create(
     WebGLRenderingContextBase* context) {
-  return new OESStandardDerivatives(context);
+  return MakeGarbageCollected<OESStandardDerivatives>(context);
 }
 
 bool OESStandardDerivatives::Supported(WebGLRenderingContextBase* context) {

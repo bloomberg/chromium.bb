@@ -71,7 +71,9 @@ class MAYBE_SyncHttpBridgeTest : public testing::Test {
   void RunSyncThreadBridgeUseTest(base::WaitableEvent* signal_when_created,
                                   base::WaitableEvent* signal_when_released);
 
-  base::MessageLoop* GetIOThreadLoop() { return io_thread_.message_loop(); }
+  scoped_refptr<base::SingleThreadTaskRunner> GetIOThreadTaskRunner() {
+    return io_thread_.task_runner();
+  }
 
   net::EmbeddedTestServer test_server_;
 
@@ -130,14 +132,13 @@ class ShuntedHttpBridge : public HttpBridge {
 
  protected:
   void MakeAsynchronousPost() override {
-    ASSERT_TRUE(
-        test_->GetIOThreadLoop()->task_runner()->BelongsToCurrentThread());
+    ASSERT_TRUE(test_->GetIOThreadTaskRunner()->BelongsToCurrentThread());
     if (never_finishes_)
       return;
 
     // We don't actually want to make a request for this test, so just callback
     // as if it completed.
-    test_->GetIOThreadLoop()->task_runner()->PostTask(
+    test_->GetIOThreadTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(&ShuntedHttpBridge::CallOnURLFetchComplete, this));
   }
@@ -146,8 +147,7 @@ class ShuntedHttpBridge : public HttpBridge {
   ~ShuntedHttpBridge() override {}
 
   void CallOnURLFetchComplete() {
-    ASSERT_TRUE(
-        test_->GetIOThreadLoop()->task_runner()->BelongsToCurrentThread());
+    ASSERT_TRUE(test_->GetIOThreadTaskRunner()->BelongsToCurrentThread());
 
     // Set up a dummy content response.
     OnURLLoadCompleteInternal(200, net::OK, 0 /* content length, irrelevant */,

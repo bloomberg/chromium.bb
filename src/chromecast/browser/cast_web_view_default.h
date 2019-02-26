@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chromecast/browser/cast_content_window.h"
+#include "chromecast/browser/cast_web_contents_impl.h"
 #include "chromecast/browser/cast_web_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -24,10 +25,6 @@ class SiteInstance;
 }  // namespace content
 
 namespace chromecast {
-
-namespace shell {
-class RemoteDebuggingServer;
-}
 
 class CastWebContentsManager;
 class CastWindowManager;
@@ -58,14 +55,7 @@ class CastWebViewDefault : public CastWebView,
 
  private:
   // WebContentsObserver implementation:
-  void RenderProcessGone(base::TerminationStatus status) override;
   void RenderViewCreated(content::RenderViewHost* render_view_host) override;
-  void DidFinishNavigation(
-      content::NavigationHandle* navigation_handle) override;
-  void DidFailLoad(content::RenderFrameHost* render_frame_host,
-                   const GURL& validated_url,
-                   int error_code,
-                   const base::string16& error_description) override;
   void DidFirstVisuallyNonEmptyPaint() override;
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
@@ -81,8 +71,6 @@ class CastWebViewDefault : public CastWebView,
       content::WebContents* source,
       const content::OpenURLParams& params) override;
   void CloseContents(content::WebContents* source) override;
-  void LoadingStateChanged(content::WebContents* source,
-                           bool to_different_document) override;
   void ActivateContents(content::WebContents* contents) override;
   bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host,
                                   const GURL& security_origin,
@@ -102,17 +90,16 @@ class CastWebViewDefault : public CastWebView,
 
   CastWebContentsManager* const web_contents_manager_;
   content::BrowserContext* const browser_context_;
-  shell::RemoteDebuggingServer* remote_debugging_server_;
   const scoped_refptr<content::SiteInstance> site_instance_;
 
   Delegate* const delegate_;
   const bool transparent_;
   const bool allow_media_access_;
-  const bool enabled_for_dev_;
 
   std::unique_ptr<content::WebContents> web_contents_;
+  CastWebContentsImpl cast_web_contents_;
   std::unique_ptr<shell::CastContentWindow> window_;
-  bool did_start_navigation_;
+  bool resize_window_when_navigation_starts_;
   base::TimeDelta shutdown_delay_;
 
   DISALLOW_COPY_AND_ASSIGN(CastWebViewDefault);

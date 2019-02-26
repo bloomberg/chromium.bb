@@ -145,7 +145,7 @@ void AudioOutputStreamFuchsia::OnMinLeadTimeChanged(int64_t min_lead_time) {
   }
 }
 
-void AudioOutputStreamFuchsia::OnRendererError() {
+void AudioOutputStreamFuchsia::OnRendererError(zx_status_t status) {
   LOG(WARNING) << "AudioRenderer has failed.";
   ReportError();
 }

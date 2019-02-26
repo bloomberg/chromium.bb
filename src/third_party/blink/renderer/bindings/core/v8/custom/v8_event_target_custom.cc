@@ -36,7 +36,7 @@
 
 namespace blink {
 
-void V8EventTarget::addEventListenerMethodPrologueCustom(
+void V8EventTarget::AddEventListenerMethodPrologueCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info,
     EventTarget*) {
   if (info.Length() >= 3 && info[2]->IsObject()) {
@@ -49,7 +49,7 @@ void V8EventTarget::addEventListenerMethodPrologueCustom(
   }
 }
 
-void V8EventTarget::removeEventListenerMethodPrologueCustom(
+void V8EventTarget::RemoveEventListenerMethodPrologueCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info,
     EventTarget*) {
   if (info.Length() >= 3 && info[2]->IsObject()) {

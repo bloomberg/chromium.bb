@@ -121,11 +121,6 @@ For more information about the package definition spec, see [the code][3].
 To actually create your package, you'll need:
 
  - the cipd.yaml file (described above)
- - a package version. For third-party packages, this should typically include
-   the version of the third-party package itself. If you want to support future
-   modifications within a given version of a third-party package (e.g., if you
-   want to make chromium-specific changes), it's best to include a suffix with
-   a numerical component.
  - [permission](#permissions-in-cipd).
 
 Once you have those, you can create your package like so:
@@ -134,8 +129,16 @@ Once you have those, you can create your package like so:
 # Assuming that the third-party dependency in question is at version 1.2.3
 # and this is the first chromium revision of that version.
 $ cipd auth-login  # One-time auth.
-$ cipd create --pkg-def cipd.yaml -tag version:1.2.3-cr0
+$ cipd create --pkg-def cipd.yaml
+...
+[P114210 10:14:17.215 client.go:931 I] cipd: instance
+chromium/third_party/sample_cipd_dep:TX7HeY1_1JLwFVx-xiETOpT8YK4W5CbyO26SpmaMA0IC was
+successfully registered
 ```
+
+Take note of the instance ID printed in the log
+(`TX7HeY1_1JLwFVx-xiETOpT8YK4W5CbyO26SpmaMA0IC` in the example above).
+You'll be adding it to DEPS momentarily.
 
 ### 5. Add your CIPD package to DEPS
 
@@ -154,7 +157,7 @@ deps = {
     'packages': [
       {
         'package': 'chromium/third_party/sample_cipd_dep',
-        'version': 'version:1.2.3-cr0',
+        'version': 'TX7HeY1_1JLwFVx-xiETOpT8YK4W5CbyO26SpmaMA0IC',
       },
     ],
 
@@ -168,8 +171,8 @@ deps = {
 ```
 
 This will result in CIPD package `chromium/third_party/sample_cipd_dep` at
-`version:1.2.3-cr0` being installed in `src/third_party/sample_cipd_dep`
-(relative to the gclient root directory).
+`TX7HeY1_1JLwFVx-xiETOpT8YK4W5CbyO26SpmaMA0IC` being installed in
+`src/third_party/sample_cipd_dep` (relative to the gclient root directory).
 
 ## Updating a CIPD dependency
 

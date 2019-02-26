@@ -13,7 +13,8 @@
 #include "base/allocator/partition_allocator/partition_oom.h"
 #include "base/allocator/partition_allocator/partition_page.h"
 #include "base/allocator/partition_allocator/spin_lock.h"
-#include "base/lazy_instance.h"
+#include "base/logging.h"
+#include "base/no_destructor.h"
 
 namespace base {
 
@@ -56,8 +57,10 @@ PartitionRootGeneric::~PartitionRootGeneric() = default;
 PartitionAllocatorGeneric::PartitionAllocatorGeneric() = default;
 PartitionAllocatorGeneric::~PartitionAllocatorGeneric() = default;
 
-static LazyInstance<subtle::SpinLock>::Leaky g_initialized_lock =
-    LAZY_INSTANCE_INITIALIZER;
+subtle::SpinLock& GetLock() {
+  static NoDestructor<subtle::SpinLock> s_initialized_lock;
+  return *s_initialized_lock;
+}
 static bool g_initialized = false;
 
 void (*internal::PartitionRootBase::gOomHandlingFunction)() = nullptr;
@@ -68,7 +71,7 @@ PartitionAllocHooks::FreeHook* PartitionAllocHooks::free_hook_ = nullptr;
 static void PartitionAllocBaseInit(internal::PartitionRootBase* root) {
   DCHECK(!root->initialized);
   {
-    subtle::SpinLock::Guard guard(g_initialized_lock.Get());
+    subtle::SpinLock::Guard guard(GetLock());
     if (!g_initialized) {
       g_initialized = true;
       // We mark the sentinel bucket/page as free to make sure it is skipped by
@@ -204,12 +207,10 @@ bool PartitionReallocDirectMappedInPlace(PartitionRootGeneric* root,
 
   // bucket->slot_size is the current size of the allocation.
   size_t current_size = page->bucket->slot_size;
-  if (new_size == current_size)
-    return true;
-
   char* char_ptr = static_cast<char*>(internal::PartitionPage::ToPointer(page));
-
-  if (new_size < current_size) {
+  if (new_size == current_size) {
+    // No need to move any memory around, but update size and cookie below.
+  } else if (new_size < current_size) {
     size_t map_size =
         internal::PartitionDirectMapExtent::FromPage(page)->map_size;
 
@@ -221,15 +222,13 @@ bool PartitionReallocDirectMappedInPlace(PartitionRootGeneric* root,
     // Shrink by decommitting unneeded pages and making them inaccessible.
     size_t decommit_size = current_size - new_size;
     root->DecommitSystemPages(char_ptr + new_size, decommit_size);
-    CHECK(SetSystemPagesAccess(char_ptr + new_size, decommit_size,
-                               PageInaccessible));
+    SetSystemPagesAccess(char_ptr + new_size, decommit_size, PageInaccessible);
   } else if (new_size <=
              internal::PartitionDirectMapExtent::FromPage(page)->map_size) {
     // Grow within the actually allocated memory. Just need to make the
     // pages accessible again.
     size_t recommit_size = new_size - current_size;
-    CHECK(SetSystemPagesAccess(char_ptr + current_size, recommit_size,
-                               PageReadWrite));
+    SetSystemPagesAccess(char_ptr + current_size, recommit_size, PageReadWrite);
     root->RecommitSystemPages(char_ptr + current_size, recommit_size);
 
 #if DCHECK_IS_ON()

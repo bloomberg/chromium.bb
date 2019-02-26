@@ -7,11 +7,11 @@
 
 #include <memory>
 #include "base/macros.h"
+#include "base/message_loop/message_pump.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "third_party/blink/public/platform/scheduler/single_thread_idle_task_runner.h"
 #include "third_party/blink/public/platform/scheduler/web_rail_mode_observer.h"
 #include "third_party/blink/public/platform/scheduler/web_render_widget_scheduling_state.h"
 #include "third_party/blink/public/platform/web_common.h"
@@ -22,7 +22,7 @@
 namespace base {
 namespace trace_event {
 class BlameContext;
-}
+}  // namespace trace_event
 }  // namespace base
 
 namespace blink {
@@ -32,12 +32,12 @@ class WebInputEvent;
 
 namespace viz {
 struct BeginFrameArgs;
-}
+}  // namespace viz
 
 namespace blink {
 namespace scheduler {
 
-enum class RendererProcessType;
+enum class WebRendererProcessType;
 
 class BLINK_PLATFORM_EXPORT WebThreadScheduler {
  public:
@@ -46,11 +46,6 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
   // ==== Functions for any scheduler =========================================
   //
   // Functions below work on a scheduler instance on any thread.
-
-  // Returns the idle task runner. Tasks posted to this runner may be reordered
-  // relative to other task types and may be starved for an arbitrarily long
-  // time if no idle time is available.
-  virtual scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() = 0;
 
   // Shuts down the scheduler by dropping any remaining pending work in the work
   // queues. After this call any work posted to the task runners will be
@@ -63,10 +58,13 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
   // the main thread. They have default implementation that only does
   // NOTREACHED(), and are overridden only by the main thread scheduler.
 
-  // If |initial_virtual_time| is specified then the scheduler will be created
-  // with virtual time enabled and paused, and base::Time will be overridden to
-  // start at |initial_virtual_time|.
+  // If |message_pump| is null caller must have registered one using
+  // base::MessageLoop.
+  // If |initial_virtual_time| is specified then the
+  // scheduler will be created with virtual time enabled and paused, and
+  // base::Time will be overridden to start at |initial_virtual_time|.
   static std::unique_ptr<WebThreadScheduler> CreateMainThreadScheduler(
+      std::unique_ptr<base::MessagePump> message_pump = nullptr,
       base::Optional<base::Time> initial_virtual_time = base::nullopt);
 
   // Returns compositor thread scheduler for the compositor thread
@@ -213,7 +211,7 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
 
   // Sets the kind of renderer process. Should be called on the main thread
   // once.
-  virtual void SetRendererProcessType(RendererProcessType type);
+  virtual void SetRendererProcessType(WebRendererProcessType type);
 
   // Returns a WebScopedVirtualTimePauser which can be used to vote for pausing
   // virtual time. Virtual time will be paused if any WebScopedVirtualTimePauser

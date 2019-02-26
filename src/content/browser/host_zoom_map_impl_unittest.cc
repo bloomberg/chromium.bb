@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,8 +20,7 @@ namespace content {
 class HostZoomMapTest : public testing::Test {
  public:
   HostZoomMapTest()
-      : ui_thread_(BrowserThread::UI,
-                   task_environment_.GetMainThreadTaskRunner()) {}
+      : ui_thread_(BrowserThread::UI, base::ThreadTaskRunnerHandle::Get()) {}
 
  protected:
   base::test::ScopedTaskEnvironment task_environment_;

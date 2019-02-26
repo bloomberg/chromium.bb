@@ -10,14 +10,14 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* FontVariantEastAsian::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   if (range.Peek().Id() == CSSValueNormal)
-    return CSSPropertyParserHelpers::ConsumeIdent(range);
+    return css_property_parser_helpers::ConsumeIdent(range);
 
   FontVariantEastAsianParser east_asian_parser;
   do {
@@ -38,5 +38,5 @@ const CSSValue* FontVariantEastAsian::CSSValueFromComputedStyleInternal(
   return ComputedStyleUtils::ValueForFontVariantEastAsian(style);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

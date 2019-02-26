@@ -40,12 +40,12 @@ class RtcDtmfSenderHandler::Observer :
   }
 
   void OnToneChangeOnMainThread(const std::string& tone) {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     if (handler_)
       handler_->OnToneChange(tone);
   }
 
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
   base::WeakPtr<RtcDtmfSenderHandler> handler_;
 };

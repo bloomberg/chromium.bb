@@ -2002,6 +2002,131 @@ TEST_F(AutofillTableTest, RemoveWrongServerCardMetadata) {
   ASSERT_EQ(1U, outputs.size());
 }
 
+TEST_F(AutofillTableTest, SetServerCardsData) {
+  // Set a card data.
+  std::vector<CreditCard> inputs;
+  inputs.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "card1"));
+  inputs[0].SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("Rick Roman"));
+  inputs[0].SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("12"));
+  inputs[0].SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("1997"));
+  inputs[0].SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("1111"));
+  inputs[0].SetNetworkForMaskedCard(kVisaCard);
+  inputs[0].SetServerStatus(CreditCard::EXPIRED);
+  table_->SetServerCardsData(inputs);
+
+  // Make sure the card was added correctly.
+  std::vector<std::unique_ptr<CreditCard>> outputs;
+  ASSERT_TRUE(table_->GetServerCreditCards(&outputs));
+  ASSERT_EQ(inputs.size(), outputs.size());
+
+  // GUIDs for server cards are dynamically generated so will be different
+  // after reading from the DB. Check they're valid, but otherwise don't count
+  // them in the comparison.
+  inputs[0].set_guid(std::string());
+  outputs[0]->set_guid(std::string());
+
+  EXPECT_EQ(inputs[0], *outputs[0]);
+  EXPECT_EQ(CreditCard::EXPIRED, outputs[0]->GetServerStatus());
+
+  // Make sure no metadata was added.
+  std::map<std::string, AutofillMetadata> metadata_map;
+  ASSERT_TRUE(table_->GetServerCardsMetadata(&metadata_map));
+  ASSERT_EQ(0U, metadata_map.size());
+
+  // Set a different card.
+  inputs[0] = CreditCard(CreditCard::MASKED_SERVER_CARD, "card2");
+  table_->SetServerCardsData(inputs);
+
+  // The original one should have been replaced.
+  ASSERT_TRUE(table_->GetServerCreditCards(&outputs));
+  ASSERT_EQ(1U, outputs.size());
+  EXPECT_EQ("card2", outputs[0]->server_id());
+
+  // Make sure no metadata was added.
+  ASSERT_TRUE(table_->GetServerCardsMetadata(&metadata_map));
+  ASSERT_EQ(0U, metadata_map.size());
+}
+
+// Tests that adding server cards data does not delete the existing metadata.
+TEST_F(AutofillTableTest, SetServerCardsData_ExistingMetadata) {
+  // Create and set some metadata.
+  AutofillMetadata input;
+  input.id = "server id";
+  input.use_count = 50;
+  input.use_date = Time::Now();
+  input.billing_address_id = "billing id";
+  table_->AddServerCardMetadata(input);
+
+  // Set a card data.
+  std::vector<CreditCard> inputs;
+  inputs.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "server id"));
+  table_->SetServerCardsData(inputs);
+
+  // Make sure the metadata is still intact.
+  std::map<std::string, AutofillMetadata> outputs;
+  ASSERT_TRUE(table_->GetServerCardsMetadata(&outputs));
+  ASSERT_EQ(1U, outputs.size());
+  EXPECT_EQ(input, outputs[input.id]);
+}
+
+TEST_F(AutofillTableTest, SetServerAddressesData) {
+  AutofillProfile one(AutofillProfile::SERVER_PROFILE, "a123");
+  std::vector<AutofillProfile> inputs;
+  inputs.push_back(one);
+  table_->SetServerAddressesData(inputs);
+
+  // Make sure the address was added correctly.
+  std::vector<std::unique_ptr<AutofillProfile>> outputs;
+  table_->GetServerProfiles(&outputs);
+  ASSERT_EQ(1u, outputs.size());
+  EXPECT_EQ(one.server_id(), outputs[0]->server_id());
+
+  outputs.clear();
+
+  // Make sure no metadata was added.
+  std::map<std::string, AutofillMetadata> metadata_map;
+  ASSERT_TRUE(table_->GetServerAddressesMetadata(&metadata_map));
+  ASSERT_EQ(0U, metadata_map.size());
+
+  // Set a different profile.
+  AutofillProfile two(AutofillProfile::SERVER_PROFILE, "b456");
+  inputs[0] = two;
+  table_->SetServerAddressesData(inputs);
+
+  // The original one should have been replaced.
+  table_->GetServerProfiles(&outputs);
+  ASSERT_EQ(1u, outputs.size());
+  EXPECT_EQ(two.server_id(), outputs[0]->server_id());
+
+  // Make sure no metadata was added.
+  ASSERT_TRUE(table_->GetServerAddressesMetadata(&metadata_map));
+  ASSERT_EQ(0U, metadata_map.size());
+}
+
+// Tests that adding server addresses data does not delete the existing
+// metadata.
+TEST_F(AutofillTableTest, SetServerAddressesData_ExistingMetadata) {
+  // Create and set some metadata.
+  AutofillMetadata input;
+  input.id = "server id";
+  input.use_count = 50;
+  input.use_date = Time::Now();
+  input.has_converted = true;
+  table_->AddServerAddressMetadata(input);
+
+  // Set an address data.
+  std::vector<AutofillProfile> inputs;
+  inputs.push_back(
+      AutofillProfile(AutofillProfile::SERVER_PROFILE, "server id"));
+  table_->SetServerAddressesData(inputs);
+
+  // Make sure the metadata is still intact.
+  std::map<std::string, AutofillMetadata> outputs;
+  ASSERT_TRUE(table_->GetServerAddressesMetadata(&outputs));
+  ASSERT_EQ(1U, outputs.size());
+  EXPECT_EQ(input, outputs[input.id]);
+}
+
 TEST_F(AutofillTableTest, RemoveWrongServerAddressMetadata) {
   // Crete and set some metadata.
   AutofillMetadata input;

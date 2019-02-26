@@ -39,15 +39,15 @@ class SpeechRecognitionResultList : public ScriptWrappable {
   static SpeechRecognitionResultList* Create(
       const HeapVector<Member<SpeechRecognitionResult>>&);
 
+  explicit SpeechRecognitionResultList(
+      const HeapVector<Member<SpeechRecognitionResult>>&);
+
   unsigned length() { return results_.size(); }
   SpeechRecognitionResult* item(unsigned index);
 
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit SpeechRecognitionResultList(
-      const HeapVector<Member<SpeechRecognitionResult>>&);
-
   HeapVector<Member<SpeechRecognitionResult>> results_;
 };
 

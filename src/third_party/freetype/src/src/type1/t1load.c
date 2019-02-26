@@ -384,23 +384,30 @@
     for ( n = 0; n < blend->num_designs; n++ )
     {
       FT_Fixed  result = 0x10000L;  /* 1.0 fixed */
+      FT_Fixed  factor;
 
 
       for ( m = 0; m < blend->num_axis; m++ )
       {
-        FT_Fixed  factor;
-
-
-        /* get current blend axis position;                  */
         /* use a default value if we don't have a coordinate */
-        factor = m < num_coords ? coords[m] : 0x8000;
-        if ( factor < 0 )
-          factor = 0;
-        if ( factor > 0x10000L )
-          factor = 0x10000L;
+        if ( m >= num_coords )
+        {
+          result >>= 1;
+          continue;
+        }
 
+        /* get current blend axis position */
+        factor = coords[m];
         if ( ( n & ( 1 << m ) ) == 0 )
           factor = 0x10000L - factor;
+
+        if ( factor <= 0 )
+        {
+          result = 0;
+          break;
+        }
+        else if ( factor >= 0x10000L )
+          continue;
 
         result = FT_MulFix( result, factor );
       }
@@ -468,6 +475,75 @@
       coords[i] = axiscoords[i];
     for ( ; i < num_coords; i++ )
       coords[i] = 0x8000;
+
+    return FT_Err_Ok;
+  }
+
+
+  FT_LOCAL_DEF( FT_Error )
+  T1_Set_MM_WeightVector( T1_Face    face,
+                          FT_UInt    len,
+                          FT_Fixed*  weightvector )
+  {
+    PS_Blend  blend = face->blend;
+    FT_UInt   i, n;
+
+
+    if ( !blend )
+     return FT_THROW( Invalid_Argument );
+
+    if ( !len && !weightvector )
+    {
+      for ( i = 0; i < blend->num_designs; i++ )
+        blend->weight_vector[i] = blend->default_weight_vector[i];
+    }
+    else
+    {
+      if ( !weightvector )
+        return FT_THROW( Invalid_Argument );
+
+      n = len < blend->num_designs ? len : blend->num_designs;
+
+      for ( i = 0; i < n; i++ )
+        blend->weight_vector[i] = weightvector[i];
+
+      for ( ; i < blend->num_designs; i++ )
+        blend->weight_vector[i] = (FT_Fixed)0;
+
+      if ( len )
+        face->root.face_flags |= FT_FACE_FLAG_VARIATION;
+      else
+        face->root.face_flags &= ~FT_FACE_FLAG_VARIATION;
+    }
+
+    return FT_Err_Ok;
+  }
+
+
+  FT_LOCAL_DEF( FT_Error )
+  T1_Get_MM_WeightVector( T1_Face    face,
+                          FT_UInt*   len,
+                          FT_Fixed*  weightvector )
+  {
+    PS_Blend  blend = face->blend;
+    FT_UInt   i;
+
+
+    if ( !blend )
+      return FT_THROW( Invalid_Argument );
+
+    if ( *len < blend->num_designs )
+    {
+      *len = blend->num_designs;
+      return FT_THROW( Invalid_Argument );
+    }
+
+    for ( i = 0; i < blend->num_designs; i++ )
+      weightvector[i] = blend->weight_vector[i];
+    for ( ; i < *len; i++ )
+      weightvector[i] = (FT_Fixed)0;
+
+    *len = blend->num_designs;
 
     return FT_Err_Ok;
   }
@@ -1062,16 +1138,22 @@
   parse_buildchar( T1_Face    face,
                    T1_Loader  loader )
   {
-    FT_UInt  i;
-
-
     face->len_buildchar = (FT_UInt)T1_ToFixedArray( &loader->parser,
                                                     0, NULL, 0 );
-    FT_TRACE4(( " [" ));
-    for ( i = 0; i < face->len_buildchar; i++ )
-      FT_TRACE4(( " 0" ));
 
-    FT_TRACE4(( "]\n" ));
+#ifdef FT_DEBUG_LEVEL_TRACE
+    {
+      FT_UInt  i;
+
+
+      FT_TRACE4(( " [" ));
+      for ( i = 0; i < face->len_buildchar; i++ )
+        FT_TRACE4(( " 0" ));
+
+      FT_TRACE4(( "]\n" ));
+    }
+#endif
+
     return;
   }
 

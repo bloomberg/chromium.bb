@@ -4,6 +4,10 @@
 
 #include "ash/screen_util.h"
 
+#include "ash/display/display_configuration_controller.h"
+#include "ash/display/mirror_window_controller.h"
+#include "ash/display/window_tree_host_manager.h"
+#include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "base/logging.h"
@@ -50,31 +54,21 @@ gfx::Rect GetDisplayBoundsWithShelf(aura::Window* window) {
   if (!Shell::Get()->display_manager()->IsInUnifiedMode())
     return window->GetRootWindow()->bounds();
 
-  const display::DisplayManager* display_manager =
-      Shell::Get()->display_manager();
-  // Calculate the unified height scale value.
-  const int unified_logical_height = window->GetRootWindow()->bounds().height();
-  const auto& unified_display_info = display_manager->GetDisplayInfo(
-      display::Screen::GetScreen()->GetPrimaryDisplay().id());
-  const int unified_physical_height =
-      unified_display_info.bounds_in_native().height();
-  const float unified_height_scale =
-      static_cast<float>(unified_logical_height) / unified_physical_height;
+  // In Unified Mode, the display that should contain the shelf depends on the
+  // current shelf alignment.
+  const display::Display shelf_display =
+      Shell::Get()
+          ->display_configuration_controller()
+          ->GetPrimaryMirroringDisplayForUnifiedDesktop();
+  DCHECK_NE(shelf_display.id(), display::kInvalidDisplayId);
+  gfx::RectF shelf_display_screen_bounds(shelf_display.bounds());
 
-  // In unified desktop mode, there is only one shelf in the primary mirroing
-  // display which exists in the first row in the top left cell.
-  const int row_index = 0;
-  const int row_physical_height =
-      display_manager->GetUnifiedDesktopRowMaxHeight(row_index);
-  const int row_logical_height = row_physical_height * unified_height_scale;
+  // Transform the bounds back to the unified host's coordinates.
+  auto inverse_unified_transform =
+      window->GetRootWindow()->GetHost()->GetInverseRootTransform();
+  inverse_unified_transform.TransformRect(&shelf_display_screen_bounds);
 
-  const display::Display* first_display =
-      display_manager->GetPrimaryMirroringDisplayForUnifiedDesktop();
-  DCHECK(first_display);
-  gfx::SizeF size(first_display->size());
-  const float scale = row_logical_height / size.height();
-  size.Scale(scale, scale);
-  return gfx::Rect(gfx::ToCeiledSize(size));
+  return gfx::ToEnclosingRect(shelf_display_screen_bounds);
 }
 
 gfx::Rect SnapBoundsToDisplayEdge(const gfx::Rect& bounds,

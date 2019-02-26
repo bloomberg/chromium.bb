@@ -50,7 +50,7 @@ class TracingControllerImpl : public TracingController,
   CONTENT_EXPORT static TracingControllerImpl* GetInstance();
 
   // Should be called on the UI thread.
-  TracingControllerImpl();
+  CONTENT_EXPORT TracingControllerImpl();
 
   // TracingController implementation.
   bool GetCategories(GetCategoriesDoneCallback callback) override;
@@ -66,6 +66,10 @@ class TracingControllerImpl : public TracingController,
   void UnregisterTracingUI(TracingUI* tracing_ui);
 
   CONTENT_EXPORT tracing::TraceEventAgent* GetTraceEventAgent() const;
+
+  // For unittests.
+  CONTENT_EXPORT void SetTracingDelegateForTesting(
+      std::unique_ptr<TracingDelegate> delegate);
 
  private:
   friend std::default_delete<TracingControllerImpl>;

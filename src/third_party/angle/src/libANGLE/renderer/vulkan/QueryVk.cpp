@@ -10,6 +10,7 @@
 #include "libANGLE/renderer/vulkan/QueryVk.h"
 #include "libANGLE/Context.h"
 #include "libANGLE/renderer/vulkan/ContextVk.h"
+#include "libANGLE/renderer/vulkan/RendererVk.h"
 
 #include "common/debug.h"
 
@@ -17,45 +18,83 @@ namespace rx
 {
 
 QueryVk::QueryVk(gl::QueryType type) : QueryImpl(type), mCachedResult(0), mCachedResultValid(false)
-{
-}
+{}
 
 QueryVk::~QueryVk() = default;
 
-gl::Error QueryVk::onDestroy(const gl::Context *context)
+void QueryVk::onDestroy(const gl::Context *context)
 {
-    ContextVk *contextVk = vk::GetImpl(context);
-    contextVk->getQueryPool(getType())->freeQuery(contextVk, &mQueryHelper);
-
-    return gl::NoError();
+    ContextVk *contextVk            = vk::GetImpl(context);
+    vk::DynamicQueryPool *queryPool = contextVk->getQueryPool(getType());
+    queryPool->freeQuery(contextVk, &mQueryHelper);
+    queryPool->freeQuery(contextVk, &mQueryHelperTimeElapsedBegin);
 }
 
-gl::Error QueryVk::begin(const gl::Context *context)
+angle::Result QueryVk::begin(const gl::Context *context)
 {
     ContextVk *contextVk = vk::GetImpl(context);
-
-    ANGLE_TRY(contextVk->getQueryPool(getType())->allocateQuery(contextVk, &mQueryHelper));
 
     mCachedResultValid = false;
 
-    mQueryHelper.beginQuery(contextVk, mQueryHelper.getQueryPool(), mQueryHelper.getQuery());
+    if (!mQueryHelper.getQueryPool())
+    {
+        ANGLE_TRY(contextVk->getQueryPool(getType())->allocateQuery(contextVk, &mQueryHelper));
+    }
 
-    return gl::NoError();
+    // Note: TimeElapsed is implemented by using two Timestamp queries and taking the diff.
+    if (getType() == gl::QueryType::TimeElapsed)
+    {
+        if (!mQueryHelperTimeElapsedBegin.getQueryPool())
+        {
+            ANGLE_TRY(contextVk->getQueryPool(getType())->allocateQuery(
+                contextVk, &mQueryHelperTimeElapsedBegin));
+        }
+
+        mQueryHelperTimeElapsedBegin.writeTimestamp(contextVk,
+                                                    mQueryHelperTimeElapsedBegin.getQueryPool(),
+                                                    mQueryHelperTimeElapsedBegin.getQuery());
+    }
+    else
+    {
+        mQueryHelper.beginQuery(contextVk, mQueryHelper.getQueryPool(), mQueryHelper.getQuery());
+    }
+
+    return angle::Result::Continue();
 }
 
-gl::Error QueryVk::end(const gl::Context *context)
+angle::Result QueryVk::end(const gl::Context *context)
 {
     ContextVk *contextVk = vk::GetImpl(context);
 
-    mQueryHelper.endQuery(contextVk, mQueryHelper.getQueryPool(), mQueryHelper.getQuery());
+    if (getType() == gl::QueryType::TimeElapsed)
+    {
+        mQueryHelper.writeTimestamp(contextVk, mQueryHelper.getQueryPool(),
+                                    mQueryHelper.getQuery());
+    }
+    else
+    {
+        mQueryHelper.endQuery(contextVk, mQueryHelper.getQueryPool(), mQueryHelper.getQuery());
+    }
 
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
-gl::Error QueryVk::queryCounter(const gl::Context *context)
+angle::Result QueryVk::queryCounter(const gl::Context *context)
 {
-    UNIMPLEMENTED();
-    return gl::InternalError();
+    ContextVk *contextVk = vk::GetImpl(context);
+
+    mCachedResultValid = false;
+
+    if (!mQueryHelper.getQueryPool())
+    {
+        ANGLE_TRY(contextVk->getQueryPool(getType())->allocateQuery(contextVk, &mQueryHelper));
+    }
+
+    ASSERT(getType() == gl::QueryType::Timestamp);
+
+    mQueryHelper.writeTimestamp(contextVk, mQueryHelper.getQueryPool(), mQueryHelper.getQuery());
+
+    return angle::Result::Continue();
 }
 
 angle::Result QueryVk::getResult(const gl::Context *context, bool wait)
@@ -66,80 +105,114 @@ angle::Result QueryVk::getResult(const gl::Context *context, bool wait)
     }
 
     ContextVk *contextVk = vk::GetImpl(context);
+    RendererVk *renderer = contextVk->getRenderer();
+
+    // glGetQueryObject* requires an implicit flush of the command buffers to guarantee execution in
+    // finite time.
+    // Note regarding time-elapsed: end should have been called after begin, so flushing when end
+    // has pending work should flush begin too.
+    if (mQueryHelper.hasPendingWork(renderer))
+    {
+        ANGLE_TRY(renderer->flush(contextVk));
+
+        ASSERT(!mQueryHelperTimeElapsedBegin.hasPendingWork(renderer));
+        ASSERT(!mQueryHelper.hasPendingWork(renderer));
+    }
+
+    // If the command buffer this query is being written to is still in flight, its reset command
+    // may not have been performed by the GPU yet.  To avoid a race condition in this case, wait
+    // for the batch to finish first before querying (or return not-ready if not waiting).
+    ANGLE_TRY(renderer->checkCompletedCommands(contextVk));
+    if (mQueryHelper.isResourceInUse(renderer))
+    {
+        if (!wait)
+        {
+            return angle::Result::Continue();
+        }
+        ANGLE_TRY(renderer->finishToSerial(contextVk, mQueryHelper.getStoredQueueSerial()));
+    }
 
     VkQueryResultFlags flags = (wait ? VK_QUERY_RESULT_WAIT_BIT : 0) | VK_QUERY_RESULT_64_BIT;
 
-    angle::Result result = mQueryHelper.getQueryPool()->getResults(
-        contextVk, mQueryHelper.getQuery(), 1, sizeof(mCachedResult), &mCachedResult,
+    VkResult result = mQueryHelper.getQueryPool()->getResults(
+        contextVk->getDevice(), mQueryHelper.getQuery(), 1, sizeof(mCachedResult), &mCachedResult,
         sizeof(mCachedResult), flags);
-    ANGLE_TRY(result);
-
-    if (result == angle::Result::Continue())
+    // If the results are not ready, do nothing.  mCachedResultValid remains false.
+    if (result == VK_NOT_READY)
     {
-        mCachedResultValid = true;
+        // If VK_QUERY_RESULT_WAIT_BIT was given, VK_NOT_READY cannot have been returned.
+        ASSERT(!wait);
+        return angle::Result::Continue();
+    }
+    ANGLE_VK_TRY(contextVk, result);
 
-        switch (getType())
+    // Fix up the results to what OpenGL expects.
+    switch (getType())
+    {
+        case gl::QueryType::AnySamples:
+        case gl::QueryType::AnySamplesConservative:
+            // OpenGL query result in these cases is binary
+            mCachedResult = !!mCachedResult;
+            break;
+        case gl::QueryType::Timestamp:
+            break;
+        case gl::QueryType::TimeElapsed:
         {
-            case gl::QueryType::AnySamples:
-            case gl::QueryType::AnySamplesConservative:
-                // OpenGL query result in these cases is binary
-                mCachedResult = !!mCachedResult;
-                break;
-            default:
-                UNREACHABLE();
-                break;
+            uint64_t timeElapsedEnd = mCachedResult;
+
+            result = mQueryHelperTimeElapsedBegin.getQueryPool()->getResults(
+                contextVk->getDevice(), mQueryHelperTimeElapsedBegin.getQuery(), 1,
+                sizeof(mCachedResult), &mCachedResult, sizeof(mCachedResult), flags);
+            // Since the result of the end query of time-elapsed is already available, the
+            // result of begin query must be available too.
+            ASSERT(result != VK_NOT_READY);
+            ANGLE_VK_TRY(contextVk, result);
+
+            mCachedResult = timeElapsedEnd - mCachedResult;
+            break;
         }
+        default:
+            UNREACHABLE();
+            break;
     }
 
+    mCachedResultValid = true;
     return angle::Result::Continue();
 }
-
-gl::Error QueryVk::getResult(const gl::Context *context, GLint *params)
+angle::Result QueryVk::getResult(const gl::Context *context, GLint *params)
 {
     ANGLE_TRY(getResult(context, true));
     *params = static_cast<GLint>(mCachedResult);
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
-gl::Error QueryVk::getResult(const gl::Context *context, GLuint *params)
+angle::Result QueryVk::getResult(const gl::Context *context, GLuint *params)
 {
     ANGLE_TRY(getResult(context, true));
     *params = static_cast<GLuint>(mCachedResult);
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
-gl::Error QueryVk::getResult(const gl::Context *context, GLint64 *params)
+angle::Result QueryVk::getResult(const gl::Context *context, GLint64 *params)
 {
     ANGLE_TRY(getResult(context, true));
     *params = static_cast<GLint64>(mCachedResult);
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
-gl::Error QueryVk::getResult(const gl::Context *context, GLuint64 *params)
+angle::Result QueryVk::getResult(const gl::Context *context, GLuint64 *params)
 {
     ANGLE_TRY(getResult(context, true));
     *params = mCachedResult;
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
-gl::Error QueryVk::isResultAvailable(const gl::Context *context, bool *available)
+angle::Result QueryVk::isResultAvailable(const gl::Context *context, bool *available)
 {
-    ContextVk *contextVk = vk::GetImpl(context);
-
-    // Make sure the command buffer for this query is submitted.  If not, *available should always
-    // be false. This is because the reset command is not yet executed (it's only put in the command
-    // graph), so actually checking the results may return "true" because of a previous submission.
-
-    if (mQueryHelper.hasPendingWork(contextVk->getRenderer()))
-    {
-        *available = false;
-        return gl::NoError();
-    }
-
     ANGLE_TRY(getResult(context, false));
     *available = mCachedResultValid;
 
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
 }  // namespace rx

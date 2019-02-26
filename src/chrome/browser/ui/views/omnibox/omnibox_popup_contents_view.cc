@@ -6,11 +6,13 @@
 
 #include <memory>
 
+#include "base/feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
 #include "chrome/browser/ui/views/omnibox/rounded_omnibox_results_frame.h"
 #include "chrome/browser/ui/views/theme_copying_widget.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/compositor/closure_animation_observer.h"
@@ -388,6 +390,14 @@ gfx::Rect OmniboxPopupContentsView::GetTargetBounds() {
   // amount of space between the text and the popup border as there is in the
   // interior between each row of text.
   popup_height += RoundedOmniboxResultsFrame::GetNonResultSectionHeight();
+
+  if (base::FeatureList::IsEnabled(omnibox::kUIExperimentVerticalMargin)) {
+    // If the vertical margin experiment uses a very small value (like a value
+    // similar to pre-Refresh), we need to pad up the popup height at the
+    // bottom (just like pre-Refresh) to prevent it from looking very bad.
+    if (OmniboxFieldTrial::GetSuggestionVerticalMargin() < 4)
+      popup_height += 4;
+  }
 
   // The rounded popup is always offset the same amount from the omnibox.
   gfx::Rect content_rect = location_bar_view_->GetBoundsInScreen();

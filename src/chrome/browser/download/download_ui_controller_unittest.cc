@@ -135,6 +135,9 @@ class DownloadUIControllerTest : public ChromeRenderViewHostTestHarness {
         const HistoryService::DownloadQueryCallback& callback) override {
       download_query_callback_ = callback;
     }
+
+    void UpdateDownload(const history::DownloadRow& data,
+                        bool should_commit_immediately) override {}
   };
 
   // Constructs and returns a TestDownloadCoreService.
@@ -247,6 +250,8 @@ DownloadUIControllerTest::CreateMockInProgressDownload() {
   EXPECT_CALL(*item, GetMimeType()).WillRepeatedly(Return(std::string()));
   EXPECT_CALL(*item, GetURL()).WillRepeatedly(ReturnRefOfCopy(GURL()));
   EXPECT_CALL(*item, IsTemporary()).WillRepeatedly(Return(false));
+  EXPECT_CALL(*item, GetDownloadCreationType())
+      .WillRepeatedly(Return(download::DownloadItem::TYPE_ACTIVE_DOWNLOAD));
   content::DownloadItemUtils::AttachInfo(item.get(), browser_context(),
                                          nullptr);
 
@@ -330,7 +335,11 @@ TEST_F(DownloadUIControllerTest, DownloadUIController_HistoryDownload) {
   GURL url;
   std::unique_ptr<MockDownloadItem> item = CreateMockInProgressDownload();
 
-  EXPECT_CALL(*item, GetOriginalMimeType());
+  EXPECT_CALL(*item, GetDownloadCreationType())
+      .WillRepeatedly(Return(download::DownloadItem::TYPE_HISTORY_IMPORT));
+  EXPECT_CALL(*item, GetState())
+      .WillRepeatedly(Return(download::DownloadItem::INTERRUPTED));
+  EXPECT_CALL(*item, IsDone()).WillRepeatedly(Return(false));
   EXPECT_CALL(
       *manager(),
       PostInitialization(content::DownloadManager::
@@ -367,6 +376,13 @@ TEST_F(DownloadUIControllerTest, DownloadUIController_HistoryDownload) {
 
   // Finally, the expectation we've been waiting for:
   EXPECT_FALSE(notified_item());
+
+  // Resume the download, and it should update the UI.
+  EXPECT_CALL(*item, GetOriginalMimeType());
+  EXPECT_CALL(*item, GetState())
+      .WillRepeatedly(Return(download::DownloadItem::IN_PROGRESS));
+  item->NotifyObserversDownloadUpdated();
+  EXPECT_EQ(static_cast<download::DownloadItem*>(item.get()), notified_item());
 }
 
 } // namespace

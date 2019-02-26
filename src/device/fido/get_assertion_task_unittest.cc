@@ -63,7 +63,7 @@ TEST_F(FidoGetAssertionTaskTest, TestGetAssertionSuccess) {
       test_data::kTestGetAssertionResponse);
 
   CtapGetAssertionRequest request_param(test_data::kRelyingPartyId,
-                                        test_data::kClientDataHash);
+                                        test_data::kClientDataJson);
   request_param.SetAllowList({{CredentialType::kPublicKey,
                                fido_parsing_utils::Materialize(
                                    test_data::kTestGetAssertionCredentialId)}});
@@ -88,7 +88,7 @@ TEST_F(FidoGetAssertionTaskTest, TestU2fSignSuccess) {
       test_data::kApduEncodedNoErrorSignResponse);
 
   CtapGetAssertionRequest request_param(test_data::kRelyingPartyId,
-                                        test_data::kClientDataHash);
+                                        test_data::kClientDataJson);
   request_param.SetAllowList(
       {{CredentialType::kPublicKey,
         fido_parsing_utils::Materialize(test_data::kU2fSignKeyHandle)}});
@@ -110,7 +110,7 @@ TEST_F(FidoGetAssertionTaskTest, TestSignSuccessWithFake) {
   auto hash = fido_parsing_utils::CreateSHA256Hash(public_key);
   std::vector<uint8_t> key_handle(hash.begin(), hash.end());
   CtapGetAssertionRequest request_param(test_data::kRelyingPartyId,
-                                        test_data::kClientDataHash);
+                                        test_data::kClientDataJson);
   request_param.SetAllowList({{CredentialType::kPublicKey, key_handle}});
 
   auto device = std::make_unique<VirtualCtap2Device>();
@@ -162,7 +162,7 @@ TEST_F(FidoGetAssertionTaskTest, TestU2fSignWithoutFlag) {
       test_data::kApduEncodedNoErrorSignResponse);
 
   CtapGetAssertionRequest request_param(test_data::kRelyingPartyId,
-                                        test_data::kClientDataHash);
+                                        test_data::kClientDataJson);
   request_param.SetAllowList(
       {{CredentialType::kPublicKey,
         fido_parsing_utils::Materialize(test_data::kU2fSignKeyHandle)}});
@@ -185,7 +185,7 @@ TEST_F(FidoGetAssertionTaskTest, TestIncorrectGetAssertionResponse) {
   auto task = std::make_unique<GetAssertionTask>(
       device.get(),
       CtapGetAssertionRequest(test_data::kRelyingPartyId,
-                              test_data::kClientDataHash),
+                              test_data::kClientDataJson),
       get_assertion_callback_receiver().callback());
 
   get_assertion_callback_receiver().WaitForCallback();
@@ -196,7 +196,7 @@ TEST_F(FidoGetAssertionTaskTest, TestIncorrectGetAssertionResponse) {
 
 TEST_F(FidoGetAssertionTaskTest, TestU2fSignRequestWithEmptyAllowedList) {
   auto request = CtapGetAssertionRequest(test_data::kRelyingPartyId,
-                                         test_data::kClientDataHash);
+                                         test_data::kClientDataJson);
 
   auto device = MockFidoDevice::MakeU2f();
   device->ExpectRequestAndRespondWith(
@@ -218,14 +218,13 @@ TEST_F(FidoGetAssertionTaskTest, TestU2fSignRequestWithEmptyAllowedList) {
 // of valid credentials via silent authentication.
 TEST_F(FidoGetAssertionTaskTest, TestSilentSignInWhenAppIdExtensionPresent) {
   CtapGetAssertionRequest request(test_data::kRelyingPartyId,
-                                  test_data::kClientDataHash);
+                                  test_data::kClientDataJson);
 
   std::vector<PublicKeyCredentialDescriptor> allowed_list;
   allowed_list.push_back(PublicKeyCredentialDescriptor(
       CredentialType::kPublicKey,
       fido_parsing_utils::Materialize(test_data::kU2fSignKeyHandle)));
-  request.SetAlternativeApplicationParameter(
-      test_data::kAlternativeApplicationParameter);
+  request.SetAppId(test_data::kAppId);
   request.SetAllowList(std::move(allowed_list));
 
   auto device = MockFidoDevice::MakeCtap();
@@ -245,14 +244,13 @@ TEST_F(FidoGetAssertionTaskTest, TestSilentSignInWhenAppIdExtensionPresent) {
 
 TEST_F(FidoGetAssertionTaskTest, TestU2fFallbackForAppIdExtension) {
   CtapGetAssertionRequest request(test_data::kRelyingPartyId,
-                                  test_data::kClientDataHash);
+                                  test_data::kClientDataJson);
 
   std::vector<PublicKeyCredentialDescriptor> allowed_list;
   allowed_list.push_back(PublicKeyCredentialDescriptor(
       CredentialType::kPublicKey,
       fido_parsing_utils::Materialize(test_data::kU2fSignKeyHandle)));
-  request.SetAlternativeApplicationParameter(
-      test_data::kAlternativeApplicationParameter);
+  request.SetAppId(test_data::kAppId);
   request.SetAllowList(std::move(allowed_list));
 
   ::testing::InSequence s;
@@ -287,15 +285,14 @@ TEST_F(FidoGetAssertionTaskTest, TestU2fFallbackForAppIdExtension) {
 
 TEST_F(FidoGetAssertionTaskTest, TestAvoidSilentSignInForCtapOnlyDevice) {
   CtapGetAssertionRequest request(test_data::kRelyingPartyId,
-                                  test_data::kClientDataHash);
+                                  test_data::kClientDataJson);
 
   std::vector<PublicKeyCredentialDescriptor> allowed_list;
   allowed_list.push_back(PublicKeyCredentialDescriptor(
       CredentialType::kPublicKey,
       fido_parsing_utils::Materialize(test_data::kU2fSignKeyHandle)));
 
-  request.SetAlternativeApplicationParameter(
-      test_data::kAlternativeApplicationParameter);
+  request.SetAppId(test_data::kAppId);
   request.SetAllowList(std::move(allowed_list));
 
   auto device = MockFidoDevice::MakeCtap(ReadCTAPGetInfoResponse(

@@ -78,6 +78,8 @@ class ImageContentData final : public ContentData {
   friend class ContentData;
 
  public:
+  ImageContentData(StyleImage* image) : image_(image) { DCHECK(image_); }
+
   const StyleImage* GetImage() const { return image_.Get(); }
   StyleImage* GetImage() { return image_.Get(); }
   void SetImage(StyleImage* image) {
@@ -99,8 +101,6 @@ class ImageContentData final : public ContentData {
   void Trace(blink::Visitor*) override;
 
  private:
-  ImageContentData(StyleImage* image) : image_(image) { DCHECK(image_); }
-
   ContentData* CloneInternal() const override {
     StyleImage* image = const_cast<StyleImage*>(this->GetImage());
     return Create(image);
@@ -115,6 +115,8 @@ class TextContentData final : public ContentData {
   friend class ContentData;
 
  public:
+  TextContentData(const String& text) : text_(text) {}
+
   const String& GetText() const { return text_; }
   void SetText(const String& text) { text_ = text; }
 
@@ -129,8 +131,6 @@ class TextContentData final : public ContentData {
   }
 
  private:
-  TextContentData(const String& text) : text_(text) {}
-
   ContentData* CloneInternal() const override { return Create(GetText()); }
 
   String text_;
@@ -177,6 +177,8 @@ class QuoteContentData final : public ContentData {
   friend class ContentData;
 
  public:
+  QuoteContentData(QuoteType quote) : quote_(quote) {}
+
   QuoteType Quote() const { return quote_; }
   void SetQuote(QuoteType quote) { quote_ = quote; }
 
@@ -191,8 +193,6 @@ class QuoteContentData final : public ContentData {
   }
 
  private:
-  QuoteContentData(QuoteType quote) : quote_(quote) {}
-
   ContentData* CloneInternal() const override { return Create(Quote()); }
 
   QuoteType quote_;

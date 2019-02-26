@@ -60,7 +60,8 @@ public abstract class VideoCapture {
 
     // Allocate necessary resources for capture.
     @CalledByNative
-    public abstract boolean allocate(int width, int height, int frameRate);
+    public abstract boolean allocate(
+            int width, int height, int frameRate, boolean enableFaceDetection);
 
     // Success is indicated by returning true and a callback to
     // nativeOnStarted(), which may occur synchronously or asynchronously.

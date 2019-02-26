@@ -53,6 +53,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/animation/bounds_animator.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
@@ -456,12 +457,6 @@ bool ShelfView::IsShowingOverflowBubble() const {
   return overflow_bubble_.get() && overflow_bubble_->IsShowing();
 }
 
-bool ShelfView::ShouldShowAppListButtonHighlight() const {
-  // In tablet mode, the app list is always shown as the home-cher, so we do
-  // not want to show a permanent highlight.
-  return !IsTabletModeEnabled();
-}
-
 AppListButton* ShelfView::GetAppListButton() const {
   for (int i = 0; i < model_->item_count(); ++i) {
     if (model_->items()[i].type == TYPE_APP_LIST) {
@@ -544,7 +539,7 @@ void ShelfView::ButtonPressed(views::Button* sender,
 
   // Close the overflow bubble if an item on either shelf is clicked. Press
   // events elsewhere will close the overflow shelf via OverflowBubble's
-  // PointerWatcher functionality.
+  // EventHandler functionality.
   ShelfView* shelf_view = main_shelf_ ? main_shelf_ : this;
   if (shelf_view->IsShowingOverflowBubble())
     shelf_view->ToggleOverflowBubble();
@@ -1271,8 +1266,9 @@ void ShelfView::ContinueDrag(const ui::LocatedEvent& event) {
     last_drag_index = last_visible_index_;
   int x = 0, y = 0;
   if (shelf_->IsHorizontalAlignment()) {
-    x = std::max(view_model_->ideal_bounds(indices.first).x(),
-                 drag_point.x() - drag_origin_.x());
+    int new_x = GetMirroredXWithWidthInView(drag_point.x() - drag_origin_.x(),
+                                            drag_view_->width());
+    x = std::max(view_model_->ideal_bounds(indices.first).x(), new_x);
     x = std::min(view_model_->ideal_bounds(last_drag_index).right() -
                      view_model_->ideal_bounds(current_index).width(),
                  x);
@@ -1627,19 +1623,14 @@ void ShelfView::UpdateOverflowRange(ShelfView* overflow_view) const {
 gfx::Rect ShelfView::GetMenuAnchorRect(const views::View& source,
                                        const gfx::Point& location,
                                        bool context_menu) const {
-  const bool for_item = ShelfItemForView(&source);
+  // Application menus for items are anchored on the icon bounds.
+  if (ShelfItemForView(&source) || !context_menu)
+    return source.GetBoundsInScreen();
+
   const gfx::Rect shelf_bounds_in_screen =
       is_overflow_mode()
           ? owner_overflow_bubble_->bubble_view()->GetBubbleBounds()
           : GetBoundsInScreen();
-  const gfx::Rect& source_bounds_in_screen = source.GetBoundsInScreen();
-  // Application menus and touchable menus for items are anchored on the icon
-  // bounds.
-  if ((features::IsTouchableAppContextMenuEnabled() && for_item) ||
-      !context_menu) {
-    return source_bounds_in_screen;
-  }
-
   gfx::Point origin;
   switch (shelf_->alignment()) {
     case SHELF_ALIGNMENT_BOTTOM:
@@ -1653,31 +1644,7 @@ gfx::Rect ShelfView::GetMenuAnchorRect(const views::View& source,
       origin = gfx::Point(shelf_bounds_in_screen.x(), location.y());
       break;
   }
-  return gfx::Rect(origin,
-                   for_item ? source_bounds_in_screen.size() : gfx::Size());
-}
-
-views::MenuAnchorPosition ShelfView::GetMenuAnchorPosition(
-    bool for_item,
-    bool context_menu) const {
-  if (features::IsTouchableAppContextMenuEnabled()) {
-    return shelf_->IsHorizontalAlignment()
-               ? views::MENU_ANCHOR_BUBBLE_TOUCHABLE_ABOVE
-               : views::MENU_ANCHOR_BUBBLE_TOUCHABLE_LEFT;
-  }
-  if (!context_menu) {
-    switch (shelf_->alignment()) {
-      case SHELF_ALIGNMENT_BOTTOM:
-      case SHELF_ALIGNMENT_BOTTOM_LOCKED:
-        return views::MENU_ANCHOR_BUBBLE_ABOVE;
-      case SHELF_ALIGNMENT_LEFT:
-        return views::MENU_ANCHOR_BUBBLE_RIGHT;
-      case SHELF_ALIGNMENT_RIGHT:
-        return views::MENU_ANCHOR_BUBBLE_LEFT;
-    }
-  }
-  return shelf_->IsHorizontalAlignment() ? views::MENU_ANCHOR_FIXED_BOTTOMCENTER
-                                         : views::MENU_ANCHOR_FIXED_SIDECENTER;
+  return gfx::Rect(origin, gfx::Size());
 }
 
 gfx::Rect ShelfView::GetBoundsForDragInsertInScreen() {
@@ -1812,14 +1779,6 @@ void ShelfView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 void ShelfView::OnGestureEvent(ui::GestureEvent* event) {
-  // Do not forward events to |shelf_| (which forwards events to the shelf
-  // layout manager) as we do not want gestures on the overflow to open the app
-  // list for example.
-  if (is_overflow_mode()) {
-    main_shelf_->overflow_bubble()->bubble_view()->ProcessGestureEvent(*event);
-    event->StopPropagation();
-    return;
-  }
 
   // Convert the event location from current view to screen, since swiping up on
   // the shelf can open the fullscreen app list. Updating the bounds of the app
@@ -1829,6 +1788,15 @@ void ShelfView::OnGestureEvent(ui::GestureEvent* event) {
   event->set_location(location_in_screen);
   if (shelf_->ProcessGestureEvent(*event))
     event->StopPropagation();
+  else if (is_overflow_mode()) {
+    // If the event hasn't been processed yet and the overflow shelf is showing,
+    // give the bubble a chance to process the event.
+    if (main_shelf_->overflow_bubble()->bubble_view()->ProcessGestureEvent(
+            *event)) {
+      event->StopPropagation();
+      return;
+    }
+  }
 }
 
 bool ShelfView::OnMouseWheel(const ui::MouseWheelEvent& event) {
@@ -2029,8 +1997,9 @@ void ShelfView::AfterItemSelected(
       ShowMenu(std::make_unique<ShelfApplicationMenuModel>(
                    item.title, std::move(*menu_items),
                    model_->GetShelfItemDelegate(item.id)),
-               sender, gfx::Point(), false,
+               sender, gfx::Point(), /*context_menu=*/false,
                ui::GetMenuSourceTypeForEvent(*event));
+      shelf_->UpdateVisibilityState();
     } else {
       ink_drop->AnimateToState(views::InkDropState::ACTION_TRIGGERED);
     }
@@ -2050,7 +2019,7 @@ void ShelfView::AfterGetContextMenuItems(
       std::make_unique<ShelfContextMenuModel>(
           std::move(menu_items), model_->GetShelfItemDelegate(shelf_id),
           display_id);
-  ShowMenu(std::move(menu_model), source, point, true /* context_menu */,
+  ShowMenu(std::move(menu_model), source, point, /*context_menu=*/true,
            source_type);
 }
 
@@ -2097,15 +2066,11 @@ void ShelfView::ShowMenu(std::unique_ptr<ui::SimpleMenuModel> menu_model,
   closing_event_time_ = base::TimeTicks();
 
   // NOTE: If you convert to HAS_MNEMONICS be sure to update menu building code.
-  int run_types = 0;
+  int run_types = views::MenuRunner::USE_TOUCHABLE_LAYOUT;
   if (context_menu) {
     run_types |=
         views::MenuRunner::CONTEXT_MENU | views::MenuRunner::FIXED_ANCHOR;
   }
-
-  // Only use the touchable layout if the menu is for an app.
-  if (features::IsTouchableAppContextMenuEnabled())
-    run_types |= views::MenuRunner::USE_TOUCHABLE_LAYOUT;
 
   const ShelfItem* item = ShelfItemForView(source);
   // Only selected shelf items with context menu opened can be dragged.
@@ -2120,7 +2085,10 @@ void ShelfView::ShowMenu(std::unique_ptr<ui::SimpleMenuModel> menu_model,
       base::BindOnce(&ShelfView::OnMenuClosed, base::Unretained(this), source));
   shelf_menu_model_adapter_->Run(
       GetMenuAnchorRect(*source, click_point, context_menu),
-      GetMenuAnchorPosition(item, context_menu), run_types);
+      shelf_->IsHorizontalAlignment()
+          ? views::MENU_ANCHOR_BUBBLE_TOUCHABLE_ABOVE
+          : views::MENU_ANCHOR_BUBBLE_TOUCHABLE_LEFT,
+      run_types);
 }
 
 void ShelfView::OnMenuClosed(views::View* source) {
@@ -2135,8 +2103,12 @@ void ShelfView::OnMenuClosed(views::View* source) {
 
   shelf_menu_model_adapter_.reset();
 
-  // Auto-hide or alignment might have changed, but only for this shelf.
-  shelf_->UpdateVisibilityState();
+  const bool is_in_drag = item && ShelfButtonIsInDrag(item->type, source);
+  // Update the shelf visibility since auto-hide or alignment might have
+  // changes, but don't update if shelf item is being dragged. Since shelf
+  // should be kept as visible during shelf item drag even menu is closed.
+  if (!is_in_drag)
+    shelf_->UpdateVisibilityState();
 }
 
 void ShelfView::OnBoundsAnimatorProgressed(views::BoundsAnimator* animator) {

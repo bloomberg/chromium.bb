@@ -160,7 +160,7 @@
         --cr-input-error-display: none;
         --cr-input-input: {
           font-size: 28px;
-          letter-spacing: 28px;
+          letter-spacing: 18px;
         };
         --cr-input-padding-bottom: 1px;
         --cr-input-padding-end: 0;
@@ -282,13 +282,15 @@
             <paper-icon-button id="backspaceButton" class="digit-button"
                 disabled$="[[!hasInput_(value)]]"
                 icon="pin-keyboard:backspace"
+                on-tap="onBackspaceTap_"
                 on-pointerdown="onBackspacePointerDown_"
                 on-pointerout="clearAndReset_"
                 on-pointerup="onBackspacePointerUp_"
                 title="[[i18n('pinKeyboardDeleteAccessibleName')]]"
                 noink>
             </paper-icon-button>
-            <paper-ripple class="circle" center></paper-ripple>
+            <paper-ripple class="circle" center hidden="[[!hasInput_(value)]]">
+            </paper-ripple>
           </div>
         </div>
       </div>

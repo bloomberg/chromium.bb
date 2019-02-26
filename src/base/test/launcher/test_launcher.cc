@@ -38,7 +38,7 @@
 #include "base/strings/stringize_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/task/task_scheduler/task_scheduler.h"
 #include "base/test/gtest_util.h"
@@ -67,6 +67,7 @@
 #endif
 
 #if defined(OS_FUCHSIA)
+#include <lib/fdio/namespace.h>
 #include <lib/zx/job.h>
 #include "base/atomic_sequence_num.h"
 #include "base/base_paths_fuchsia.h"
@@ -252,6 +253,7 @@ CommandLine PrepareCommandLineForGTest(const CommandLine& command_line,
 
   // Handled by the launcher process.
   switches.erase(kGTestRepeatFlag);
+  switches.erase(kIsolatedScriptTestRepeatFlag);
   switches.erase(kGTestShuffleFlag);
   switches.erase(kGTestRandomSeedFlag);
 
@@ -327,29 +329,41 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
   // Set the clone policy, deliberately omitting FDIO_SPAWN_CLONE_NAMESPACE so
   // that we can install a different /data.
   new_options.spawn_flags = FDIO_SPAWN_CLONE_STDIO | FDIO_SPAWN_CLONE_JOB;
-  new_options.paths_to_clone.push_back(base::FilePath("/config/ssl"));
-  new_options.paths_to_clone.push_back(base::FilePath("/dev/null"));
-  new_options.paths_to_clone.push_back(base::FilePath("/dev/zero"));
-  new_options.paths_to_clone.push_back(base::FilePath("/pkg"));
-  new_options.paths_to_clone.push_back(base::FilePath("/svc"));
-  new_options.paths_to_clone.push_back(base::FilePath("/tmp"));
+
+  const base::FilePath kDataPath("/data");
+
+  // Clone all namespace entries from the current process, except /data, which
+  // is overridden below.
+  fdio_flat_namespace_t* flat_namespace = nullptr;
+  zx_status_t result = fdio_ns_export_root(&flat_namespace);
+  ZX_CHECK(ZX_OK == result, result) << "fdio_ns_export_root";
+  for (size_t i = 0; i < flat_namespace->count; ++i) {
+    base::FilePath path(flat_namespace->path[i]);
+    if (path == kDataPath) {
+      result = zx_handle_close(flat_namespace->handle[i]);
+      ZX_CHECK(ZX_OK == result, result) << "zx_handle_close";
+    } else {
+      new_options.paths_to_transfer.push_back(
+          {path, flat_namespace->handle[i]});
+    }
+  }
+  free(flat_namespace);
 
   zx::job job_handle;
-  zx_status_t result = zx::job::create(*GetDefaultJob(), 0, &job_handle);
+  result = zx::job::create(*GetDefaultJob(), 0, &job_handle);
   ZX_CHECK(ZX_OK == result, result) << "zx_job_create";
   new_options.job_handle = job_handle.get();
 
   // Give this test its own isolated /data directory by creating a new temporary
   // subdirectory under data (/data/test-$PID) and binding that to /data on the
   // child process.
-  base::FilePath data_path("/data");
-  CHECK(base::PathExists(data_path));
+  CHECK(base::PathExists(kDataPath));
 
   // Create the test subdirectory with a name that is unique to the child test
   // process (qualified by parent PID and an autoincrementing test process
   // index).
   static base::AtomicSequenceNumber child_launch_index;
-  base::FilePath nested_data_path = data_path.AppendASCII(
+  base::FilePath nested_data_path = kDataPath.AppendASCII(
       base::StringPrintf("test-%" PRIuS "-%d", base::Process::Current().Pid(),
                          child_launch_index.GetNext()));
   CHECK(!base::DirectoryExists(nested_data_path));
@@ -358,7 +372,7 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
 
   // Bind the new test subdirectory to /data in the child process' namespace.
   new_options.paths_to_transfer.push_back(
-      {data_path, base::fuchsia::GetHandleFromFile(
+      {kDataPath, base::fuchsia::GetHandleFromFile(
                       base::File(nested_data_path,
                                  base::File::FLAG_OPEN | base::File::FLAG_READ |
                                      base::File::FLAG_DELETE_ON_CLOSE))
@@ -568,6 +582,20 @@ void DoLaunchChildTestProcess(
                output_file_contents));
 }
 
+std::vector<std::string> ExtractTestsFromFilter(const std::string& filter,
+                                                bool double_colon_supported) {
+  std::vector<std::string> tests;
+  if (double_colon_supported) {
+    tests =
+        SplitString(filter, "::", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  }
+  if (tests.size() <= 1) {
+    tests =
+        SplitString(filter, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  }
+  return tests;
+}
+
 }  // namespace
 
 const char kGTestBreakOnFailure[] = "gtest_break_on_failure";
@@ -580,6 +608,10 @@ const char kGTestRunDisabledTestsFlag[] = "gtest_also_run_disabled_tests";
 const char kGTestOutputFlag[] = "gtest_output";
 const char kGTestShuffleFlag[] = "gtest_shuffle";
 const char kGTestRandomSeedFlag[] = "gtest_random_seed";
+const char kIsolatedScriptRunDisabledTestsFlag[] =
+    "isolated-script-test-also-run-disabled-tests";
+const char kIsolatedScriptTestFilterFlag[] = "isolated-script-test-filter";
+const char kIsolatedScriptTestRepeatFlag[] = "isolated-script-test-repeat";
 
 TestLauncherDelegate::~TestLauncherDelegate() = default;
 
@@ -946,6 +978,13 @@ bool TestLauncher::Init() {
     LOG(ERROR) << "Invalid value for " << kGTestRepeatFlag;
     return false;
   }
+  if (command_line->HasSwitch(kIsolatedScriptTestRepeatFlag) &&
+      !StringToInt(
+          command_line->GetSwitchValueASCII(kIsolatedScriptTestRepeatFlag),
+          &cycles_)) {
+    LOG(ERROR) << "Invalid value for " << kIsolatedScriptTestRepeatFlag;
+    return false;
+  }
 
   if (command_line->HasSwitch(switches::kTestLauncherRetryLimit)) {
     int retry_limit = -1;
@@ -957,7 +996,22 @@ bool TestLauncher::Init() {
     }
 
     retry_limit_ = retry_limit;
-  } else if (!command_line->HasSwitch(kGTestFilterFlag) || BotModeEnabled()) {
+  } else if (command_line->HasSwitch(
+                 switches::kIsolatedScriptTestLauncherRetryLimit)) {
+    int retry_limit = -1;
+    if (!StringToInt(command_line->GetSwitchValueASCII(
+                         switches::kIsolatedScriptTestLauncherRetryLimit),
+                     &retry_limit) ||
+        retry_limit < 0) {
+      LOG(ERROR) << "Invalid value for "
+                 << switches::kIsolatedScriptTestLauncherRetryLimit;
+      return false;
+    }
+
+    retry_limit_ = retry_limit;
+  } else if (BotModeEnabled() ||
+             !(command_line->HasSwitch(kGTestFilterFlag) ||
+               command_line->HasSwitch(kIsolatedScriptTestFilterFlag))) {
     // Retry failures 3 times by default if we are running all of the tests or
     // in bot mode.
     retry_limit_ = 3;
@@ -1022,21 +1076,22 @@ bool TestLauncher::Init() {
 
   // Split --gtest_filter at '-', if there is one, to separate into
   // positive filter and negative filter portions.
-  std::string filter = command_line->GetSwitchValueASCII(kGTestFilterFlag);
+  bool double_colon_supported = !command_line->HasSwitch(kGTestFilterFlag);
+  std::string filter = command_line->GetSwitchValueASCII(
+      double_colon_supported ? kIsolatedScriptTestFilterFlag
+                             : kGTestFilterFlag);
   size_t dash_pos = filter.find('-');
   if (dash_pos == std::string::npos) {
     positive_gtest_filter =
-        SplitString(filter, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+        ExtractTestsFromFilter(filter, double_colon_supported);
   } else {
     // Everything up to the dash.
-    positive_gtest_filter =
-        SplitString(filter.substr(0, dash_pos), ":", base::TRIM_WHITESPACE,
-                    base::SPLIT_WANT_ALL);
+    positive_gtest_filter = ExtractTestsFromFilter(filter.substr(0, dash_pos),
+                                                   double_colon_supported);
 
     // Everything after the dash.
-    for (std::string pattern :
-         SplitString(filter.substr(dash_pos + 1), ":", base::TRIM_WHITESPACE,
-                     base::SPLIT_WANT_ALL)) {
+    for (std::string pattern : ExtractTestsFromFilter(
+             filter.substr(dash_pos + 1), double_colon_supported)) {
       negative_test_filter_.push_back(pattern);
     }
   }
@@ -1133,16 +1188,15 @@ void TestLauncher::CombinePositiveTestFilters(
   // If two positive filters are present, only run tests that match a pattern
   // in both filters.
   if (!filter_a.empty() && !filter_b.empty()) {
-    for (size_t i = 0; i < tests_.size(); i++) {
-      std::string test_name =
-          FormatFullTestName(tests_[i].test_case_name, tests_[i].test_name);
+    for (const auto& i : tests_) {
+      std::string test_name = FormatFullTestName(i.test_case_name, i.test_name);
       bool found_a = false;
       bool found_b = false;
-      for (size_t k = 0; k < filter_a.size(); ++k) {
-        found_a = found_a || MatchPattern(test_name, filter_a[k]);
+      for (const auto& k : filter_a) {
+        found_a = found_a || MatchPattern(test_name, k);
       }
-      for (size_t k = 0; k < filter_b.size(); ++k) {
-        found_b = found_b || MatchPattern(test_name, filter_b[k]);
+      for (const auto& k : filter_b) {
+        found_b = found_b || MatchPattern(test_name, k);
       }
       if (found_a && found_b) {
         positive_test_filter_.push_back(test_name);
@@ -1168,7 +1222,8 @@ void TestLauncher::RunTests() {
       results_tracker_.AddDisabledTest(test_name);
 
       // Skip disabled tests unless explicitly requested.
-      if (!command_line->HasSwitch(kGTestRunDisabledTestsFlag))
+      if (!command_line->HasSwitch(kGTestRunDisabledTestsFlag) &&
+          !command_line->HasSwitch(kIsolatedScriptRunDisabledTestsFlag))
         continue;
     }
 
@@ -1366,7 +1421,9 @@ size_t NumParallelJobs() {
     }
     return jobs;
   }
-  if (command_line->HasSwitch(kGTestFilterFlag) && !BotModeEnabled()) {
+  if (!BotModeEnabled() &&
+      (command_line->HasSwitch(kGTestFilterFlag) ||
+       command_line->HasSwitch(kIsolatedScriptTestFilterFlag))) {
     // Do not run jobs in parallel by default if we are running a subset of
     // the tests and if bot mode is off.
     return 1U;

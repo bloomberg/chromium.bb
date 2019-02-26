@@ -17,15 +17,14 @@ class CORE_EXPORT DOMPoint final : public DOMPointReadOnly {
 
  public:
   static DOMPoint* Create(double x, double y, double z = 0, double w = 1);
-  static DOMPoint* fromPoint(const DOMPointInit&);
+  static DOMPoint* fromPoint(const DOMPointInit*);
+
+  DOMPoint(double x, double y, double z, double w);
 
   void setX(double x) { x_ = x; }
   void setY(double y) { y_ = y; }
   void setZ(double z) { z_ = z; }
   void setW(double w) { w_ = w; }
-
- protected:
-  DOMPoint(double x, double y, double z, double w);
 };
 
 }  // namespace blink

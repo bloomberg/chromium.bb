@@ -33,6 +33,9 @@ class SchemePageLoadMetricsObserver
   void OnFirstMeaningfulPaintInMainFrameDocument(
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+  void OnPageInteractive(
+      const page_load_metrics::mojom::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SchemePageLoadMetricsObserver);

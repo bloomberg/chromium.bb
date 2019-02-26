@@ -49,7 +49,7 @@ WTF_EXPORT double ParseDouble(const UChar* string,
                               size_t length,
                               size_t& parsed_length);
 
-namespace Internal {
+namespace internal {
 double ParseDoubleFromLongString(const UChar* string,
                                  size_t length,
                                  size_t& parsed_length);
@@ -67,7 +67,7 @@ inline double ParseDouble(const UChar* string,
                           size_t& parsed_length) {
   const size_t kConversionBufferSize = 64;
   if (length > kConversionBufferSize)
-    return Internal::ParseDoubleFromLongString(string, length, parsed_length);
+    return internal::ParseDoubleFromLongString(string, length, parsed_length);
   LChar conversion_buffer[kConversionBufferSize];
   for (size_t i = 0; i < length; ++i)
     conversion_buffer[i] =

@@ -95,6 +95,8 @@ class PassthroughTouchEventQueueTest : public testing::Test,
   void OnFilteringTouchEvent(const blink::WebTouchEvent& touch_event) override {
   }
 
+  void FlushDeferredGestureQueue() override {}
+
  protected:
   void SetUpForTouchMoveSlopTesting(double slop_length_dips) {
     slop_length_dips_ = slop_length_dips;
@@ -141,21 +143,21 @@ class PassthroughTouchEventQueueTest : public testing::Test,
   void SendTouchEventAck(InputEventAckState ack_result) {
     DCHECK(!sent_events_ids_.empty());
     queue_->ProcessTouchAck(InputEventAckSource::COMPOSITOR_THREAD, ack_result,
-                            ui::LatencyInfo(), sent_events_ids_.front());
+                            ui::LatencyInfo(), sent_events_ids_.front(), true);
     sent_events_ids_.pop_front();
   }
 
   void SendTouchEventAckLast(InputEventAckState ack_result) {
     DCHECK(!sent_events_ids_.empty());
     queue_->ProcessTouchAck(InputEventAckSource::COMPOSITOR_THREAD, ack_result,
-                            ui::LatencyInfo(), sent_events_ids_.back());
+                            ui::LatencyInfo(), sent_events_ids_.back(), true);
     sent_events_ids_.pop_back();
   }
 
   void SendTouchEventAckWithID(InputEventAckState ack_result,
                                int unique_event_id) {
     queue_->ProcessTouchAck(InputEventAckSource::COMPOSITOR_THREAD, ack_result,
-                            ui::LatencyInfo(), unique_event_id);
+                            ui::LatencyInfo(), unique_event_id, true);
     base::Erase(sent_events_ids_, unique_event_id);
   }
 

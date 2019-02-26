@@ -56,8 +56,6 @@ class ChromeTranslateClientTest : public ChromeRenderViewHostTestHarness {
         {});
   }
 
-  void TearDown() override { ChromeRenderViewHostTestHarness::TearDown(); }
-
  protected:
   syncer::FakeUserEventService* GetUserEventService() {
     return fake_user_event_service_;

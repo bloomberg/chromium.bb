@@ -297,13 +297,14 @@ IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest, PostWithFileData) {
   ASSERT_LT(
       0, base::WriteFile(file_path, file_content.data(), file_content.size()));
 
+  base::RunLoop run_loop;
   // Fill out the form to refer to the test file.
   std::unique_ptr<FileChooserDelegate> delegate(
-      new FileChooserDelegate(file_path));
+      new FileChooserDelegate(file_path, run_loop.QuitClosure()));
   shell()->web_contents()->SetDelegate(delegate.get());
   EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
                             "document.getElementById('file').click();"));
-  EXPECT_TRUE(delegate->file_chosen());
+  run_loop.Run();
 
   // Remember the old process id for a sanity check below.
   int old_process_id =
@@ -390,14 +391,15 @@ IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest, MaliciousPostWithFileData) {
   ASSERT_LT(
       0, base::WriteFile(file_path, file_content.data(), file_content.size()));
 
+  base::RunLoop run_loop;
   // Fill out the form to refer to the test file.
   std::unique_ptr<FileChooserDelegate> delegate(
-      new FileChooserDelegate(file_path));
+      new FileChooserDelegate(file_path, run_loop.QuitClosure()));
   form_contents->Focus();
   form_contents->SetDelegate(delegate.get());
   EXPECT_TRUE(
       ExecuteScript(form_contents, "document.getElementById('file').click();"));
-  EXPECT_TRUE(delegate->file_chosen());
+  run_loop.Run();
   ChildProcessSecurityPolicyImpl* security_policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
   EXPECT_TRUE(security_policy->CanReadFile(

@@ -12,6 +12,7 @@
 #include "components/exo/shell_surface_base.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
+#include "components/exo/wm_helper_chromeos.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "ui/aura/client/cursor_client.h"
@@ -81,7 +82,7 @@ Pointer::Pointer(PointerDelegate* delegate)
       capture_ratio_(GetCaptureDisplayInfo().GetDensityRatio()),
       cursor_capture_source_id_(base::UnguessableToken::Create()),
       cursor_capture_weak_ptr_factory_(this) {
-  auto* helper = WMHelper::GetInstance();
+  WMHelperChromeOS* helper = WMHelperChromeOS::GetInstance();
   helper->AddPreTargetHandler(this);
   helper->AddDisplayConfigurationObserver(this);
   // TODO(sky): CursorClient does not exist in mash
@@ -98,7 +99,7 @@ Pointer::~Pointer() {
   }
   if (pinch_delegate_)
     pinch_delegate_->OnPointerDestroying(this);
-  auto* helper = WMHelper::GetInstance();
+  WMHelperChromeOS* helper = WMHelperChromeOS::GetInstance();
   helper->RemoveDisplayConfigurationObserver(this);
   helper->RemovePreTargetHandler(this);
   // TODO(sky): CursorClient does not exist in mash
@@ -471,7 +472,7 @@ void Pointer::OnCursorCaptured(const gfx::Point& hotspot,
 }
 
 void Pointer::UpdateCursor() {
-  auto* helper = WMHelper::GetInstance();
+  WMHelper* helper = WMHelper::GetInstance();
   aura::client::CursorClient* cursor_client = helper->GetCursorClient();
   // TODO(crbug.com/631103): CursorClient does not exist in mash yet.
   if (!cursor_client)

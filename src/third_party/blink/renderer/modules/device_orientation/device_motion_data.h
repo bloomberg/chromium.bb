@@ -31,115 +31,43 @@
 
 namespace blink {
 
-class DeviceAccelerationInit;
+class DeviceAcceleration;
+class DeviceRotationRate;
 class DeviceMotionEventInit;
-class DeviceRotationRateInit;
 
 class MODULES_EXPORT DeviceMotionData final
     : public GarbageCollected<DeviceMotionData> {
  public:
-  class Acceleration final
-      : public GarbageCollected<DeviceMotionData::Acceleration> {
-   public:
-    static Acceleration* Create(bool can_provide_x,
-                                double x,
-                                bool can_provide_y,
-                                double y,
-                                bool can_provide_z,
-                                double z);
-    static Acceleration* Create(const DeviceAccelerationInit&);
-    void Trace(blink::Visitor* visitor) {}
-
-    bool CanProvideX() const { return can_provide_x_; }
-    bool CanProvideY() const { return can_provide_y_; }
-    bool CanProvideZ() const { return can_provide_z_; }
-
-    double X() const { return x_; }
-    double Y() const { return y_; }
-    double Z() const { return z_; }
-
-   private:
-    Acceleration(bool can_provide_x,
-                 double x,
-                 bool can_provide_y,
-                 double y,
-                 bool can_provide_z,
-                 double z);
-
-    double x_;
-    double y_;
-    double z_;
-
-    bool can_provide_x_;
-    bool can_provide_y_;
-    bool can_provide_z_;
-  };
-
-  class RotationRate final
-      : public GarbageCollected<DeviceMotionData::RotationRate> {
-   public:
-    static RotationRate* Create(bool can_provide_alpha,
-                                double alpha,
-                                bool can_provide_beta,
-                                double beta,
-                                bool can_provide_gamma,
-                                double gamma);
-    static RotationRate* Create(const DeviceRotationRateInit&);
-    void Trace(blink::Visitor* visitor) {}
-
-    bool CanProvideAlpha() const { return can_provide_alpha_; }
-    bool CanProvideBeta() const { return can_provide_beta_; }
-    bool CanProvideGamma() const { return can_provide_gamma_; }
-
-    double Alpha() const { return alpha_; }
-    double Beta() const { return beta_; }
-    double Gamma() const { return gamma_; }
-
-   private:
-    RotationRate(bool can_provide_alpha,
-                 double alpha,
-                 bool can_provide_beta,
-                 double beta,
-                 bool can_provide_gamma,
-                 double gamma);
-
-    double alpha_;
-    double beta_;
-    double gamma_;
-
-    bool can_provide_alpha_;
-    bool can_provide_beta_;
-    bool can_provide_gamma_;
-  };
-
   static DeviceMotionData* Create();
-  static DeviceMotionData* Create(Acceleration*,
-                                  Acceleration* acceleration_including_gravity,
-                                  RotationRate*,
-                                  double interval);
-  static DeviceMotionData* Create(const DeviceMotionEventInit&);
+  static DeviceMotionData* Create(
+      DeviceAcceleration*,
+      DeviceAcceleration* acceleration_including_gravity,
+      DeviceRotationRate*,
+      double interval);
+  static DeviceMotionData* Create(const DeviceMotionEventInit*);
+
+  DeviceMotionData();
+  DeviceMotionData(DeviceAcceleration*,
+                   DeviceAcceleration* acceleration_including_gravity,
+                   DeviceRotationRate*,
+                   double interval);
+
   void Trace(blink::Visitor*);
 
-  Acceleration* GetAcceleration() const { return acceleration_.Get(); }
-  Acceleration* GetAccelerationIncludingGravity() const {
+  DeviceAcceleration* GetAcceleration() const { return acceleration_.Get(); }
+  DeviceAcceleration* GetAccelerationIncludingGravity() const {
     return acceleration_including_gravity_.Get();
   }
-  RotationRate* GetRotationRate() const { return rotation_rate_.Get(); }
+  DeviceRotationRate* GetRotationRate() const { return rotation_rate_.Get(); }
 
   double Interval() const { return interval_; }
 
   bool CanProvideEventData() const;
 
  private:
-  DeviceMotionData();
-  DeviceMotionData(Acceleration*,
-                   Acceleration* acceleration_including_gravity,
-                   RotationRate*,
-                   double interval);
-
-  Member<Acceleration> acceleration_;
-  Member<Acceleration> acceleration_including_gravity_;
-  Member<RotationRate> rotation_rate_;
+  Member<DeviceAcceleration> acceleration_;
+  Member<DeviceAcceleration> acceleration_including_gravity_;
+  Member<DeviceRotationRate> rotation_rate_;
   double interval_;
 };
 

@@ -6,7 +6,7 @@
 
 #include "ash/public/cpp/app_types.h"
 #include "components/exo/notification_surface_manager.h"
-#include "components/exo/shell_surface.h"
+#include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -39,8 +39,7 @@ const gfx::Size& NotificationSurface::GetContentSize() const {
 }
 
 void NotificationSurface::SetApplicationId(const char* application_id) {
-  exo::ShellSurface::SetApplicationId(host_window(),
-                                      base::make_optional(application_id));
+  SetShellApplicationId(host_window(), base::make_optional(application_id));
 }
 
 void NotificationSurface::OnSurfaceCommit() {

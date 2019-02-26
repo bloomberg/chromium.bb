@@ -13,6 +13,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
+#include "base/trace_event/trace_event.h"
 
 namespace base {
 namespace {
@@ -29,6 +30,7 @@ void RecordAction(const UserMetricsAction& action) {
 }
 
 void RecordComputedAction(const std::string& action) {
+  TRACE_EVENT_INSTANT1("ui", "UserEvent", TRACE_EVENT_SCOPE_GLOBAL, "action", action);
   if (!g_task_runner.Get()) {
     DCHECK(g_callbacks.Get().empty());
     return;

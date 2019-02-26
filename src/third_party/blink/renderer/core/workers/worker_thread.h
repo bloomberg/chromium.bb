@@ -41,11 +41,10 @@
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/workers/parent_execution_context_task_runners.h"
 #include "third_party/blink/renderer/core/workers/worker_backing_thread_startup_data.h"
-#include "third_party/blink/renderer/core/workers/worker_inspector_proxy.h"
-#include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_scheduler.h"
-#include "third_party/blink/renderer/platform/web_task_runner.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -63,6 +62,7 @@ class WorkerOrWorkletGlobalScope;
 class WorkerReportingProxy;
 struct CrossThreadFetchClientSettingsObjectData;
 struct GlobalScopeCreationParams;
+struct WorkerDevToolsParams;
 
 // WorkerThread is a kind of WorkerBackingThread client. Each worker mechanism
 // can access the lower thread infrastructure via an implementation of this
@@ -101,16 +101,22 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   // (https://crbug.com/710364)
   void Start(std::unique_ptr<GlobalScopeCreationParams>,
              const base::Optional<WorkerBackingThreadStartupData>&,
-             WorkerInspectorProxy::PauseOnWorkerStart,
+             std::unique_ptr<WorkerDevToolsParams>,
              ParentExecutionContextTaskRunners*);
 
   // Posts a task to evaluate a top-level classic script on the worker thread.
   // Called on the main thread after Start().
   void EvaluateClassicScript(const KURL& script_url,
-                             AccessControlStatus access_control_status,
                              const String& source_code,
                              std::unique_ptr<Vector<char>> cached_meta_data,
                              const v8_inspector::V8StackTraceId& stack_id);
+
+  // Posts a task to import a top-level classic script on the worker thread.
+  // Called on the main thread after start().
+  void ImportClassicScript(
+      const KURL& script_url,
+      FetchClientSettingsObjectSnapshot* outside_settings_object,
+      const v8_inspector::V8StackTraceId& stack_id);
 
   // Posts a task to import a top-level module script on the worker thread.
   // Called on the main thread after start().
@@ -140,8 +146,8 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   static void TerminateAllWorkersForTesting();
 
   // Thread::TaskObserver.
-  void WillProcessTask() override;
-  void DidProcessTask() override;
+  void WillProcessTask(const base::PendingTask&) override;
+  void DidProcessTask(const base::PendingTask&) override;
 
   virtual WorkerBackingThread& GetWorkerBackingThread() = 0;
   virtual void ClearWorkerBackingThread() = 0;
@@ -156,19 +162,9 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
     return worker_reporting_proxy_;
   }
 
-  // Only constructible on the main thread.
-  class CORE_EXPORT ScopedDebuggerTask {
-    STACK_ALLOCATED();
-
-   public:
-    explicit ScopedDebuggerTask(WorkerThread*);
-    ~ScopedDebuggerTask();
-
-   private:
-    WorkerThread* thread_;
-    DISALLOW_COPY_AND_ASSIGN(ScopedDebuggerTask);
-  };
-  InspectorTaskRunner* GetInspectorTaskRunner();
+  // Only callable on the parent thread.
+  void DebuggerTaskStarted();
+  void DebuggerTaskFinished();
 
   // Callable on both the main thread and the worker thread.
   const base::UnguessableToken& GetDevToolsWorkerToken() const {
@@ -290,13 +286,17 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   void InitializeOnWorkerThread(
       std::unique_ptr<GlobalScopeCreationParams>,
       const base::Optional<WorkerBackingThreadStartupData>&,
-      WorkerInspectorProxy::PauseOnWorkerStart) LOCKS_EXCLUDED(mutex_);
+      std::unique_ptr<WorkerDevToolsParams>) LOCKS_EXCLUDED(mutex_);
 
   void EvaluateClassicScriptOnWorkerThread(
       const KURL& script_url,
-      AccessControlStatus access_control_status,
       String source_code,
       std::unique_ptr<Vector<char>> cached_meta_data,
+      const v8_inspector::V8StackTraceId& stack_id);
+  void ImportClassicScriptOnWorkerThread(
+      const KURL& script_url,
+      std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
+          outside_settings_object,
       const v8_inspector::V8StackTraceId& stack_id);
   void ImportModuleScriptOnWorkerThread(
       const KURL& script_url,
@@ -325,7 +325,7 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   TimeDelta forcible_termination_delay_;
 
   scoped_refptr<InspectorTaskRunner> inspector_task_runner_;
-  const base::UnguessableToken devtools_worker_token_;
+  base::UnguessableToken devtools_worker_token_;
   int debugger_task_counter_ GUARDED_BY(mutex_) = 0;
 
   WorkerReportingProxy& worker_reporting_proxy_;

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/renderer/media/audio/audio_device_factory.h"
 #include "media/base/audio_capturer_source.h"
@@ -14,6 +15,7 @@
 #include "media/base/mock_audio_renderer_sink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 
 using testing::_;
 
@@ -69,7 +71,7 @@ class RendererWebAudioDeviceImplTest
     webaudio_device_.reset(new RendererWebAudioDeviceImplUnderTest(
         media::CHANNEL_LAYOUT_MONO, 1, latencyHint, this, 0));
     webaudio_device_->SetMediaTaskRunnerForTesting(
-        task_environment_.GetMainThreadTaskRunner());
+        blink::scheduler::GetSingleThreadTaskRunnerForTesting());
   }
 
   void SetupDevice(media::ChannelLayout layout, int channels) {
@@ -79,17 +81,18 @@ class RendererWebAudioDeviceImplTest
             blink::WebAudioLatencyHint::kCategoryInteractive),
         this, 0));
     webaudio_device_->SetMediaTaskRunnerForTesting(
-        task_environment_.GetMainThreadTaskRunner());
+        blink::scheduler::GetSingleThreadTaskRunnerForTesting());
   }
 
   MOCK_METHOD2(CreateAudioCapturerSource,
                scoped_refptr<media::AudioCapturerSource>(
                    int,
                    const media::AudioSourceParameters&));
-  MOCK_METHOD2(CreateFinalAudioRendererSink,
-               scoped_refptr<media::AudioRendererSink>(
-                   int,
-                   const media::AudioSinkParameters&));
+  MOCK_METHOD3(
+      CreateFinalAudioRendererSink,
+      scoped_refptr<media::AudioRendererSink>(int,
+                                              const media::AudioSinkParameters&,
+                                              base::TimeDelta));
   MOCK_METHOD3(CreateSwitchableAudioRendererSink,
                scoped_refptr<media::SwitchableAudioRendererSink>(
                    SourceType,

@@ -98,7 +98,7 @@ void VisualViewportPaintPropertyTreeBuilder::Update(
   context.fixed_position.scroll = visual_viewport.GetScrollNode();
 
 #if DCHECK_IS_ON()
-  PaintPropertyTreePrinter::UpdateDebugNames(visual_viewport);
+  paint_property_tree_printer::UpdateDebugNames(visual_viewport);
 #endif
 }
 
@@ -142,7 +142,7 @@ class FragmentPaintPropertyTreeBuilder {
     }
 #if DCHECK_IS_ON()
     if (properties_)
-      PaintPropertyTreePrinter::UpdateDebugNames(object_, *properties_);
+      paint_property_tree_printer::UpdateDebugNames(object_, *properties_);
 #endif
   }
 
@@ -322,7 +322,8 @@ static bool NeedsIsolationNodes(const LayoutObject& object) {
 
   // Layout view establishes isolation with the exception of local roots (since
   // they are already essentially isolated).
-  if (object.IsLayoutView()) {
+  if (RuntimeEnabledFeatures::LayoutViewIsolationNodesEnabled() &&
+      object.IsLayoutView()) {
     const auto* parent_frame = object.GetFrame()->Tree().Parent();
     return parent_frame && parent_frame->IsLocalFrame();
   }
@@ -588,8 +589,14 @@ static CompositingReasons CompositingReasonsForTransform(const LayoutBox& box) {
   if (CompositingReasonFinder::RequiresCompositingForTransform(box))
     compositing_reasons |= CompositingReason::k3DTransform;
 
-  if (CompositingReasonFinder::RequiresCompositingForTransformAnimation(style))
-    compositing_reasons |= CompositingReason::kActiveTransformAnimation;
+  // Currently, we create transform nodes for an element whenever any property
+  // is being animated so that the existence of the effect node implies the
+  // existence of all nodes.
+  // TODO(flackr): Check for nodes for each KeyframeModel target
+  // property instead of creating all nodes and only create a transform node
+  // if needed, https://crbug.com/900241
+  compositing_reasons |=
+      CompositingReasonFinder::CompositingReasonsForAnimation(style);
 
   if (style.HasWillChangeCompositingHint() &&
       !style.SubtreeWillChangeContents())
@@ -681,7 +688,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
                 ? TransformPaintPropertyNode::BackfaceVisibility::kHidden
                 : TransformPaintPropertyNode::BackfaceVisibility::kVisible;
         state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
-            object_.UniqueId(), CompositorElementIdNamespace::kPrimary);
+            object_.UniqueId(),
+            CompositorElementIdNamespace::kPrimaryTransform);
       }
 
       OnUpdate(properties_->UpdateTransform(*context_.current.transform,
@@ -769,7 +777,13 @@ static bool NeedsEffect(const LayoutObject& object) {
   if (style.Opacity() != 1.0f || style.HasWillChangeOpacityHint())
     return true;
 
-  if (CompositingReasonFinder::RequiresCompositingForOpacityAnimation(style))
+  // Currently, we create effect nodes for an element whenever any property
+  // is being animated so that the existence of the effect node implies the
+  // existence of all nodes.
+  // TODO(flackr): Check for nodes for each KeyframeModel target
+  // property instead of creating all nodes and only create an effect node
+  // if needed, https://crbug.com/900241
+  if (CompositingReasonFinder::CompositingReasonsForAnimation(style))
     return true;
 
   if (object.StyleRef().HasMask())
@@ -883,13 +897,25 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
         // We may begin to composite our subtree prior to an animation starts,
         // but a compositor element ID is only needed when an animation is
         // current.
-        if (CompositingReasonFinder::RequiresCompositingForOpacityAnimation(
-                style)) {
-          state.direct_compositing_reasons =
-              CompositingReason::kActiveOpacityAnimation;
+        //
+        // Currently, we use the existence of this id to check if effect nodes
+        // have been created for animations on this element.
+        // TODO(flackr): Check for nodes for each KeyframeModel target
+        // property instead of creating all nodes and create each type of
+        // node as needed, https://crbug.com/900241
+        state.direct_compositing_reasons =
+            CompositingReasonFinder::CompositingReasonsForAnimation(style);
+        if (state.direct_compositing_reasons) {
+          state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
+              object_.UniqueId(), CompositorElementIdNamespace::kPrimaryEffect);
+        } else {
+          // The effect node CompositorElementId is used to uniquely identify
+          // renderpasses so even if we don't need one for animations we still
+          // need to set an id. Using kPrimary avoids confusing cc::Animation
+          // into thinking the element has been composited for animations.
+          state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
+              object_.UniqueId(), CompositorElementIdNamespace::kPrimary);
         }
-        state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
-            object_.UniqueId(), CompositorElementIdNamespace::kPrimary);
       }
       OnUpdate(properties_->UpdateEffect(*context_.current_effect,
                                          std::move(state)));
@@ -984,15 +1010,18 @@ void FragmentPaintPropertyTreeBuilder::UpdateLinkHighlightEffect() {
 }
 
 static bool NeedsFilter(const LayoutObject& object) {
+  // Currently, we create filter nodes for an element whenever any property
+  // is being animated so that the existence of the effect node implies the
+  // existence of all animation nodes.
+  // TODO(flackr): Check for nodes for each KeyframeModel target
+  // property instead of creating all nodes and only create a filter node
+  // if needed, https://crbug.com/900241
   // TODO(trchen): SVG caches filters in SVGResources. Implement it.
-  if (object.IsBoxModelObject() && ToLayoutBoxModelObject(object).Layer() &&
-      (object.StyleRef().HasFilter() || object.HasReflection() ||
-       CompositingReasonFinder::RequiresCompositingForFilterAnimation(
-           object.StyleRef())))
-    return true;
-  if (object.IsLayoutImage() && ToLayoutImage(object).ShouldInvertColor())
-    return true;
-  return false;
+  return (object.IsBoxModelObject() && ToLayoutBoxModelObject(object).Layer() &&
+          (object.StyleRef().HasFilter() || object.HasReflection() ||
+           object.HasBackdropFilter() ||
+           CompositingReasonFinder::CompositingReasonsForAnimation(
+               object.StyleRef())));
 }
 
 void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
@@ -1005,23 +1034,15 @@ void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
       state.local_transform_space = context_.current.transform;
       state.filters_origin = FloatPoint(context_.current.paint_offset);
 
-      auto* layer = ToLayoutBoxModelObject(object_).Layer();
-      if (layer) {
+      if (auto* layer = ToLayoutBoxModelObject(object_).Layer()) {
         // Try to use the cached filter.
         if (properties_->Filter())
           state.filter = properties_->Filter()->Filter();
 
-        if (object_.IsLayoutImage() &&
-            ToLayoutImage(object_).ShouldInvertColor())
-          state.filter.AppendInvertFilter(1.0f);
-
         layer->UpdateCompositorFilterOperationsForFilter(state.filter);
+        layer->UpdateCompositorFilterOperationsForBackdropFilter(
+            state.backdrop_filter);
         layer->ClearFilterOnEffectNodeDirty();
-      } else {
-        DCHECK(object_.IsLayoutImage() &&
-               ToLayoutImage(object_).ShouldInvertColor());
-        state.filter = CompositorFilterOperations();
-        state.filter.AppendInvertFilter(1.0f);
       }
 
       // The CSS filter spec didn't specify how filters interact with overflow
@@ -1053,11 +1074,10 @@ void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
         // We may begin to composite our subtree prior to an animation starts,
         // but a compositor element ID is only needed when an animation is
         // current.
+        // TODO(flackr): Only set a compositing reason for filter animation
+        // once we no longer need to create all nodes, https://crbug.com/900241
         state.direct_compositing_reasons =
-            CompositingReasonFinder::RequiresCompositingForFilterAnimation(
-                style)
-                ? CompositingReason::kActiveFilterAnimation
-                : CompositingReason::kNone;
+            CompositingReasonFinder::CompositingReasonsForAnimation(style);
         DCHECK(!style.HasCurrentFilterAnimation() ||
                state.direct_compositing_reasons != CompositingReason::kNone);
 
@@ -1227,10 +1247,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateLocalBorderBoxContext() {
   if (!NeedsPaintPropertyUpdate())
     return;
 
-  if (!object_.HasLayer() && !NeedsPaintOffsetTranslation(object_) &&
-      !NeedsFilter(object_) && !NeedsOverflowClip(object_)) {
-    fragment_data_.ClearLocalBorderBoxProperties();
-  } else {
+  if (object_.HasLayer() || properties_) {
     PropertyTreeState local_border_box =
         PropertyTreeState(context_.current.transform, context_.current.clip,
                           context_.current_effect);
@@ -1240,6 +1257,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateLocalBorderBoxContext() {
       property_added_or_removed_ = true;
 
     fragment_data_.SetLocalBorderBoxProperties(std::move(local_border_box));
+  } else {
+    fragment_data_.ClearLocalBorderBoxProperties();
   }
 }
 

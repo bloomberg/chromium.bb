@@ -110,7 +110,11 @@ Polymer({
     networksChangeSubscriberSelectors_: {
       type: Array,
       value: function() {
-        return ['network-summary', 'settings-internet-detail-page'];
+        return [
+          'network-summary',
+          'settings-internet-detail-page',
+          'settings-internet-subpage',
+        ];
       }
     },
 

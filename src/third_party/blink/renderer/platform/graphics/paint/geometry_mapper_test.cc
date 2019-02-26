@@ -53,16 +53,16 @@ class GeometryMapperTest : public testing::Test,
 
 INSTANTIATE_PAINT_TEST_CASE_P(GeometryMapperTest);
 
-#define EXPECT_FLOAT_RECT_NEAR(expected, actual)                            \
-  do {                                                                      \
-    EXPECT_PRED_FORMAT2(GeometryTest::AssertAlmostEqual, (actual).X(),      \
-                        (expected).X());                                    \
-    EXPECT_PRED_FORMAT2(GeometryTest::AssertAlmostEqual, (actual).Y(),      \
-                        (expected).Y());                                    \
-    EXPECT_PRED_FORMAT2(GeometryTest::AssertAlmostEqual, (actual).Width(),  \
-                        (expected).Width());                                \
-    EXPECT_PRED_FORMAT2(GeometryTest::AssertAlmostEqual, (actual).Height(), \
-                        (expected).Height());                               \
+#define EXPECT_FLOAT_RECT_NEAR(expected, actual)                             \
+  do {                                                                       \
+    EXPECT_PRED_FORMAT2(geometry_test::AssertAlmostEqual, (actual).X(),      \
+                        (expected).X());                                     \
+    EXPECT_PRED_FORMAT2(geometry_test::AssertAlmostEqual, (actual).Y(),      \
+                        (expected).Y());                                     \
+    EXPECT_PRED_FORMAT2(geometry_test::AssertAlmostEqual, (actual).Width(),  \
+                        (expected).Width());                                 \
+    EXPECT_PRED_FORMAT2(geometry_test::AssertAlmostEqual, (actual).Height(), \
+                        (expected).Height());                                \
   } while (false)
 
 #define EXPECT_CLIP_RECT_EQ(expected, actual)                       \
@@ -392,6 +392,37 @@ TEST_P(GeometryMapperTest, SimpleClipInclusiveIntersect) {
       local_state, ancestor_state, actual_clip_rect,
       kIgnorePlatformOverlayScrollbarSize, kNonInclusiveIntersect);
   EXPECT_CLIP_RECT_EQ(FloatClipRect(FloatRect()), actual_clip_rect);
+}
+
+TEST_P(GeometryMapperTest, SimpleClipPlusOpacity) {
+  auto clip = CreateClip(c0(), &t0(), FloatRoundedRect(10, 10, 50, 50));
+  local_state.SetClip(clip.get());
+
+  auto opacity = CreateOpacityEffect(e0(), 0.99);
+  local_state.SetEffect(opacity.get());
+
+  FloatClipRect actual_clip_rect(FloatRect(60, 10, 10, 10));
+  auto intersects = GeometryMapper::LocalToAncestorVisualRect(
+      local_state, ancestor_state, actual_clip_rect);
+
+  EXPECT_TRUE(actual_clip_rect.Rect().IsEmpty());
+  EXPECT_FALSE(intersects);
+}
+
+TEST_P(GeometryMapperTest, SimpleClipPlusOpacityInclusiveIntersect) {
+  auto clip = CreateClip(c0(), &t0(), FloatRoundedRect(10, 10, 50, 50));
+  local_state.SetClip(clip.get());
+
+  auto opacity = CreateOpacityEffect(e0(), 0.99);
+  local_state.SetEffect(opacity.get());
+
+  FloatClipRect actual_clip_rect(FloatRect(10, 10, 10, 0));
+  auto intersects = GeometryMapper::LocalToAncestorVisualRect(
+      local_state, ancestor_state, actual_clip_rect,
+      kIgnorePlatformOverlayScrollbarSize, kInclusiveIntersect);
+
+  EXPECT_TRUE(actual_clip_rect.Rect().IsEmpty());
+  EXPECT_TRUE(intersects);
 }
 
 TEST_P(GeometryMapperTest, RoundedClip) {
@@ -743,7 +774,7 @@ TEST_P(GeometryMapperTest, FilterWithClipsAndTransformsWithAlias) {
 
 TEST_P(GeometryMapperTest, ReflectionWithPaintOffset) {
   CompositorFilterOperations filters;
-  filters.AppendReferenceFilter(PaintFilterBuilder::BuildBoxReflectFilter(
+  filters.AppendReferenceFilter(paint_filter_builder::BuildBoxReflectFilter(
       BoxReflection(BoxReflection::kHorizontalReflection, 0), nullptr));
   auto effect = CreateFilterEffect(e0(), filters, FloatPoint(100, 100));
   local_state.SetEffect(effect.get());

@@ -5,6 +5,7 @@
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
 
 #include <string>
+#include <utility>
 
 namespace blink {
 
@@ -23,10 +24,10 @@ namespace {
 // Very rough estimate of minimum key size overhead.
 const size_t kOverheadSize = 16;
 
-static size_t CalculateArraySize(const IndexedDBKey::KeyArray& keys) {
+size_t CalculateArraySize(const IndexedDBKey::KeyArray& keys) {
   size_t size(0);
-  for (size_t i = 0; i < keys.size(); ++i)
-    size += keys[i].size_estimate();
+  for (const auto& key : keys)
+    size += key.size_estimate();
   return size;
 }
 
@@ -38,16 +39,6 @@ int Compare(const T& a, const T& b) {
   if (a < b)
     return -1;
   return (b < a) ? 1 : 0;
-}
-
-template <typename T>
-static IndexedDBKey::KeyArray CopyKeyArray(const T& array) {
-  IndexedDBKey::KeyArray result;
-  result.reserve(array.size());
-  for (size_t i = 0; i < array.size(); ++i) {
-    result.push_back(IndexedDBKey(array[i]));
-  }
-  return result;
 }
 
 }  // namespace
@@ -67,22 +58,22 @@ IndexedDBKey::IndexedDBKey(double number, WebIDBKeyType type)
   DCHECK(type == kWebIDBKeyTypeNumber || type == kWebIDBKeyTypeDate);
 }
 
-IndexedDBKey::IndexedDBKey(const KeyArray& array)
+IndexedDBKey::IndexedDBKey(KeyArray array)
     : type_(kWebIDBKeyTypeArray),
-      array_(CopyKeyArray(array)),
-      size_estimate_(kOverheadSize + CalculateArraySize(array)) {}
+      array_(std::move(array)),
+      size_estimate_(kOverheadSize + CalculateArraySize(array_)) {}
 
-IndexedDBKey::IndexedDBKey(const std::string& binary)
+IndexedDBKey::IndexedDBKey(std::string binary)
     : type_(kWebIDBKeyTypeBinary),
-      binary_(binary),
+      binary_(std::move(binary)),
       size_estimate_(kOverheadSize +
-                     (binary.length() * sizeof(std::string::value_type))) {}
+                     (binary_.length() * sizeof(std::string::value_type))) {}
 
-IndexedDBKey::IndexedDBKey(const base::string16& string)
+IndexedDBKey::IndexedDBKey(base::string16 string)
     : type_(kWebIDBKeyTypeString),
-      string_(string),
+      string_(std::move(string)),
       size_estimate_(kOverheadSize +
-                     (string.length() * sizeof(base::string16::value_type))) {}
+                     (string_.length() * sizeof(base::string16::value_type))) {}
 
 IndexedDBKey::IndexedDBKey(const IndexedDBKey& other) = default;
 IndexedDBKey::~IndexedDBKey() = default;

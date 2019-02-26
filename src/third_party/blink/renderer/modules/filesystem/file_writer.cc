@@ -33,6 +33,7 @@
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/renderer/core/events/progress_event.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
+#include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/modules/filesystem/file_system_dispatcher.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -44,7 +45,7 @@ static const int kMaxRecursionDepth = 3;
 static const double kProgressNotificationIntervalMS = 50;
 
 FileWriter* FileWriter::Create(ExecutionContext* context) {
-  return new FileWriter(context);
+  return MakeGarbageCollected<FileWriter>(context);
 }
 
 FileWriter::FileWriter(ExecutionContext* context)
@@ -65,7 +66,7 @@ FileWriter::~FileWriter() {
 }
 
 const AtomicString& FileWriter::InterfaceName() const {
-  return EventTargetNames::FileWriter;
+  return event_target_names::kFileWriter;
 }
 
 void FileWriter::ContextDestroyed(ExecutionContext*) {
@@ -83,11 +84,11 @@ void FileWriter::write(Blob* data, ExceptionState& exception_state) {
   DCHECK(data);
   DCHECK_EQ(truncate_length_, -1);
   if (ready_state_ == kWriting) {
-    SetError(FileError::kInvalidStateErr, exception_state);
+    SetError(FileErrorCode::kInvalidStateErr, exception_state);
     return;
   }
   if (recursion_depth_ > kMaxRecursionDepth) {
-    SetError(FileError::kSecurityErr, exception_state);
+    SetError(FileErrorCode::kSecurityErr, exception_state);
     return;
   }
 
@@ -104,14 +105,14 @@ void FileWriter::write(Blob* data, ExceptionState& exception_state) {
   } else
     DoOperation(kOperationWrite);
 
-  FireEvent(EventTypeNames::writestart);
+  FireEvent(event_type_names::kWritestart);
 }
 
 void FileWriter::seek(long long position, ExceptionState& exception_state) {
   if (!GetExecutionContext())
     return;
   if (ready_state_ == kWriting) {
-    SetError(FileError::kInvalidStateErr, exception_state);
+    SetError(FileErrorCode::kInvalidStateErr, exception_state);
     return;
   }
 
@@ -125,11 +126,11 @@ void FileWriter::truncate(long long position, ExceptionState& exception_state) {
     return;
   DCHECK_EQ(truncate_length_, -1);
   if (ready_state_ == kWriting || position < 0) {
-    SetError(FileError::kInvalidStateErr, exception_state);
+    SetError(FileErrorCode::kInvalidStateErr, exception_state);
     return;
   }
   if (recursion_depth_ > kMaxRecursionDepth) {
-    SetError(FileError::kSecurityErr, exception_state);
+    SetError(FileErrorCode::kSecurityErr, exception_state);
     return;
   }
 
@@ -145,7 +146,7 @@ void FileWriter::truncate(long long position, ExceptionState& exception_state) {
     queued_operation_ = kOperationTruncate;
   } else
     DoOperation(kOperationTruncate);
-  FireEvent(EventTypeNames::writestart);
+  FireEvent(event_type_names::kWritestart);
 }
 
 void FileWriter::abort(ExceptionState& exception_state) {
@@ -187,7 +188,7 @@ void FileWriter::DidWriteImpl(int64_t bytes, bool complete) {
       (now - last_progress_notification_time_ms_ >
        kProgressNotificationIntervalMS)) {
     last_progress_notification_time_ms_ = now;
-    FireEvent(EventTypeNames::progress);
+    FireEvent(event_type_names::kProgress);
   }
 
   if (complete) {
@@ -295,14 +296,15 @@ void FileWriter::SignalCompletion(base::File::Error error) {
   ready_state_ = kDone;
   truncate_length_ = -1;
   if (error != base::File::FILE_OK) {
-    error_ = FileError::CreateDOMException(error);
+    error_ = file_error::CreateDOMException(error);
     if (base::File::FILE_ERROR_ABORT == error)
-      FireEvent(EventTypeNames::abort);
+      FireEvent(event_type_names::kAbort);
     else
-      FireEvent(EventTypeNames::error);
-  } else
-    FireEvent(EventTypeNames::write);
-  FireEvent(EventTypeNames::writeend);
+      FireEvent(event_type_names::kError);
+  } else {
+    FireEvent(event_type_names::kWrite);
+  }
+  FireEvent(event_type_names::kWriteend);
 
   probe::AsyncTaskCanceled(GetExecutionContext(), this);
 }
@@ -316,11 +318,11 @@ void FileWriter::FireEvent(const AtomicString& type) {
   DCHECK_GE(recursion_depth_, 0);
 }
 
-void FileWriter::SetError(FileError::ErrorCode error_code,
+void FileWriter::SetError(FileErrorCode error_code,
                           ExceptionState& exception_state) {
-  DCHECK(error_code);
-  FileError::ThrowDOMException(exception_state, error_code);
-  error_ = FileError::CreateDOMException(error_code);
+  DCHECK_NE(error_code, FileErrorCode::kOK);
+  file_error::ThrowDOMException(exception_state, error_code);
+  error_ = file_error::CreateDOMException(error_code);
 }
 
 void FileWriter::Dispose() {

@@ -61,6 +61,13 @@ AURA_EXPORT extern const WindowProperty<gfx::SizeF*>* const kAspectRatio;
 // frame to indicate the owner of the window when needed.
 AURA_EXPORT extern const WindowProperty<gfx::ImageSkia*>* const kAvatarIconKey;
 
+// A property key to indicate if a client window has content. The value is
+// based on whether the window has a drawn layer (i.e. layer type !=
+// LAYER_NOT_DRAWN) and is opaque. It is passed to the Window Service side for
+// the occlusion tracker to process since the info is only available at the
+// client side.
+AURA_EXPORT extern const WindowProperty<bool>* const kClientWindowHasContent;
+
 // A property key to store if a window is a constrained window or not.
 AURA_EXPORT extern const WindowProperty<bool>* const kConstrainedWindowKey;
 
@@ -77,12 +84,6 @@ AURA_EXPORT extern const WindowProperty<FocusClient*>* const kFocusClientKey;
 // A property key to store the host window of a window. This lets
 // WebContentsViews find the windows that should constrain NPAPI plugins.
 AURA_EXPORT extern const WindowProperty<Window*>* const kHostWindowKey;
-
-// A property key to indicate that a window should be in immersive mode when the
-// window enters the fullscreen mode. The immersive fullscreen mode is slightly
-// different from the normal fullscreen mode by allowing the user to reveal the
-// top portion of the window through a touch / mouse gesture.
-AURA_EXPORT extern const WindowProperty<bool>* const kImmersiveFullscreenKey;
 
 // A property key to store the minimum size of the window.
 AURA_EXPORT extern const WindowProperty<gfx::Size*>* const kMinimumSize;

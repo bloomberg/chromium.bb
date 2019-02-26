@@ -8,7 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -21,9 +21,11 @@
 #include "chrome/browser/chromeos/child_accounts/screen_time_controller_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_resources.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/lock/webui_screen_locker.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
+#include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen.h"
 #include "chrome/browser/chromeos/login/screens/sync_consent_screen.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
@@ -124,7 +126,7 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
     // In demo session, delay starting user session until the offline demo
     // session resources have been loaded.
     if (demo_session && demo_session->started() &&
-        !demo_session->offline_resources_loaded()) {
+        !demo_session->resources()->loaded()) {
       demo_session->EnsureOfflineResourcesLoaded(
           base::BindOnce(&StartUserSession, user_profile, login_user_id));
       LOG(WARNING) << "Delay demo user session start until offline demo "
@@ -195,6 +197,7 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
 
   UserSessionManager::GetInstance()->CheckEolStatus(user_profile);
   tpm_firmware_update::ShowNotificationIfNeeded(user_profile);
+  ArcTermsOfServiceScreen::MaybeLaunchArcSettings(user_profile);
   SyncConsentScreen::MaybeLaunchSyncConsentSettings(user_profile);
 }
 

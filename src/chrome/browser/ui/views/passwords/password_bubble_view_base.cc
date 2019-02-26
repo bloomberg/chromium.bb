@@ -8,7 +8,9 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
 #include "chrome/browser/ui/views/passwords/password_auto_sign_in_view.h"
 #include "chrome/browser/ui/views/passwords/password_items_view.h"
@@ -29,28 +31,28 @@ void PasswordBubbleViewBase::ShowBubble(content::WebContents* web_contents,
          !g_manage_passwords_bubble_->GetWidget()->IsVisible());
 
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-  bool is_fullscreen = browser_view->IsFullscreen();
   views::View* const anchor_view =
-      is_fullscreen ? nullptr : browser_view->GetLocationBarView();
+      browser_view->toolbar_button_provider()->GetAnchorView();
 
   PasswordBubbleViewBase* bubble =
       CreateBubble(web_contents, anchor_view, gfx::Point(), reason);
   DCHECK(bubble);
   DCHECK(bubble == g_manage_passwords_bubble_);
 
-  if (is_fullscreen)
-    g_manage_passwords_bubble_->set_parent_window(
-        web_contents->GetNativeView());
-
   if (anchor_view) {
     g_manage_passwords_bubble_->SetHighlightedButton(
-        browser_view->GetLocationBarView()->manage_passwords_icon_view());
+        browser_view->toolbar_button_provider()
+            ->GetPageActionIconContainerView()
+            ->GetPageActionIconView(PageActionIconType::kManagePasswords));
+  } else {
+    g_manage_passwords_bubble_->set_parent_window(
+        web_contents->GetNativeView());
   }
 
   views::BubbleDialogDelegateView::CreateBubble(g_manage_passwords_bubble_);
 
   // Adjust for fullscreen after creation as it relies on the content size.
-  if (is_fullscreen) {
+  if (!anchor_view) {
     g_manage_passwords_bubble_->AdjustForFullscreen(
         browser_view->GetBoundsInScreen());
   }

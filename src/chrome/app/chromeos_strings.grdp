@@ -17,9 +17,6 @@
   <message name="IDS_WALLPAPER_MANAGER_DELETE_COMMAND_LABEL" desc="Wallpaper delete command label.">
     Delete
   </message>
-  <message name="IDS_WALLPAPER_MANAGER_CUSTOM_CATEGORY_LABEL" desc="Wallpaper category label.">
-    Custom
-  </message>
   <message name="IDS_WALLPAPER_MANAGER_MY_IMAGES_CATEGORY_LABEL" desc="Wallpaper category label, the equivalent of the Custom category on the new wallpaper picker.">
     My Images
   </message>
@@ -41,20 +38,11 @@
   <message name="IDS_WALLPAPER_MANAGER_SHOW_CUSTOM_WALLPAPER_ON_START_WARNING" desc="The string displayed to user when set custom wallpaper.">
     Wallpapers appear on the Sign-in Screen.
   </message>
-  <message name="IDS_WALLPAPER_MANAGER_SURPRISE_ME_LABEL" desc="Wallpaper surprise me checkbox label. If the checkbox is checked, Chrome will automatically change wallpaper to either a random one available in wallpaper picker or a google pushed wallpaper (surprise factor).">
-    Surprise Me
-  </message>
   <message name="IDS_WALLPAPER_MANAGER_DAILY_REFRESH_LABEL" desc="Wallpaper daily refresh checkbox label. It is the equivalent of surprise me on the new wallpaper picker.">
     Daily Refresh
   </message>
-  <message name="IDS_WALLPAPER_MANAGER_ACCESS_FAIL" desc="The string displayed to user when access wallpaper server failed.">
-    Chrome cannot access wallpapers. Please connect to a network.
-  </message>
   <message name="IDS_WALLPAPER_MANAGER_NETWORK_ERROR" desc="The string displayed when user can't use wallpaper picker because they're not connected to the internet.">
     The images are currently not available. Please reconnect to the internet to see wallpaper collections.
-  </message>
-  <message name="IDS_WALLPAPER_MANAGER_DOWNLOAD_FAIL" desc="The string displayed to user when downloading the wallpaper failed.">
-    Chrome cannot download this wallpaper.
   </message>
   <message name="IDS_WALLPAPER_MANAGER_IMAGE_ERROR" desc="The string displayed to user when downloading the wallpaper failed on the new wallpaper picker.">
     There's an error. Please try again by choosing other images.
@@ -91,6 +79,9 @@
   </message>
   <message name="IDS_CURRENT_WALLPAPER_SET_BY_MESSAGE" desc="The string displayed to user if the current wallpaper is set by a third party wallpaper app/extension.">
     The current wallpaper is set by '<ph name="APP_NAME">$1</ph>'. You may need to uninstall '<ph name="APP_NAME">$1</ph>' before selecting a different wallpaper.
+  </message>
+  <message name="IDS_DEFAULT_WALLPAPER_ACCESSIBLE_LABEL" desc="Accessibility text read by chromevox when the default wallpaper is focused.">
+    Default wallpaper
   </message>
 
   <!-- Zip Archiver -->
@@ -529,6 +520,8 @@
   <message name="IDS_OOBE_EULA_ACCEPT_AND_CONTINUE_BUTTON_TEXT" desc="Label on a button on the Title of Terms of Service OOBE screen to accept EULA and continue.">
     Accept and continue
   </message>
+
+   <!-- Strings for the OOBE demo setup flow -->
   <message name="IDS_OOBE_DEMO_SETUP_PREFERENCES_SCREEN_TITLE" desc="The title of the dialog that allows to choose demo setup preferences.">
     Choose your demo preferences
   </message>
@@ -541,12 +534,135 @@
   <message name="IDS_OOBE_DEMO_SETUP_ERROR_SCREEN_TITLE" desc="The title of the dialog that is shown when demo mode setup failed.">
     Couldn't start demo mode
   </message>
-  <message name="IDS_OOBE_DEMO_SETUP_ERROR_SCREEN_SUBTITLE" desc="The subtitle of the dialog that is shown when demo mode setup failed.">
-    Please try again
-  </message>
   <message name="IDS_OOBE_DEMO_SETUP_ERROR_SCREEN_RETRY_BUTTON_LABEL" desc="The label of the button that is shown on error screen and that retries demo mode setup with the previously chosen configuration.">
     OK
   </message>
+  <!-- Demo setup flow errors -->
+  <message name="IDS_DEMO_SETUP_NO_OFFLINE_RESOURCES_ERROR" desc="Error message shown on demo setup screen when offline demo resources are not available.">
+    Offline demo mode resources unavailable.
+  </message>
+  <message name="IDS_DEMO_SETUP_OFFLINE_POLICY_ERROR" desc="Error message shown on demo setup screen when loading or parsing offline policy failed.">
+    Could not read offline demo mode policy.
+  </message>
+  <message name="IDS_DEMO_SETUP_OFFLINE_STORE_ERROR" desc="Error message shown on demo setup screen when loading or parsing offline policy failed.">
+    Failed to install offline policy on the device.
+  </message>
+  <message name="IDS_DEMO_SETUP_OFFLINE_UNAVAILABLE_ERROR" desc="Error message shown on demo setup screen when offline demo mode is not available on the device.">
+    This device cannot be set up in offline demo mode.
+  </message>
+  <message name="IDS_DEMO_SETUP_COMPONENT_ERROR" desc="Error message shown on demo setup screen when loading online component with demo resources failed.">
+    Could not load online component with demo mode resources.
+  </message>
+  <message name="IDS_DEMO_SETUP_NO_STATE_KEYS_ERROR" desc="Error message shown on demo setup screen when the system failed to determine server-backed state keys.">
+    The system failed to determine device identifiers for this device.
+  </message>
+  <message name="IDS_DEMO_SETUP_ROBOT_ERROR" desc="Error message shown on demo setup screen upon failure to fetch the OAuth2 token for device-level API access.">
+    The system failed to authorize API access for this device.
+  </message>
+  <message name="IDS_DEMO_SETUP_ROBOT_STORE_ERROR" desc="Error message shown on demo setup screen upon failure to store the OAuth2 refresh token for device-level API access.">
+    The system failed to store the long-term API access token for this device.
+  </message>
+  <message name="IDS_DEMO_SETUP_BAD_MODE_ERROR" desc="Error message shown on demo setup screen upon receiving a bad mode on device registration.">
+    The supplied enrollment mode is not supported by this version of the operating system. Please make sure you are running the newest version.
+  </message>
+  <message name="IDS_DEMO_SETUP_CERT_FETCH_ERROR" desc="Error message shown when a registration certificate could not be obtained.">
+    A registration certificate could not be obtained.
+  </message>
+  <message name="IDS_DEMO_SETUP_POLICY_FETCH_ERROR" desc="Error message shown on demo setup screen upon a failed policy fetch.">
+    Error when fetching policy from the server.
+  </message>
+  <message name="IDS_DEMO_SETUP_POLICY_VALIDATION_ERROR" desc="Error message shown on demo setup screen upon a failure to validate downloaded policy.">
+    The policy downloaded from the server is invalid.
+  </message>
+  <message name="IDS_DEMO_SETUP_LOCK_TIMEOUT_ERROR" desc="Error message shown on demo setup screen when the initialization of the lockbox is taking too long.">
+    The initialization of the installation-time attributes has timed out.
+  </message>
+  <message name="IDS_DEMO_SETUP_LOCK_ERROR" desc="Error message shown on demo setup screen upon failure to lock the device mode.">
+    The system failed to establish the device installation-time attributes lock.
+  </message>
+  <message name="IDS_DEMO_SETUP_ALREADY_LOCKED_ERROR" desc="Error message shown on demo setup screen when device is already locked with different domain or mode.">
+    This device was locked to different domain or mode.
+  </message>
+  <message name="IDS_DEMO_SETUP_ONLINE_STORE_ERROR" desc="Error message shown on demo setup screen when the installation of the policy on the device failed.">
+    Failed to install policy on the device.
+  </message>
+  <message name="IDS_DEMO_SETUP_NO_MACHINE_IDENTIFICATION_ERROR" desc="Error message shown on demo setup screen when the system failed to determine the device model or serial number.">
+    The system failed to determine device model or serial number.
+  </message>
+  <message name="IDS_DEMO_SETUP_DM_TOKEN_STORE_ERROR" desc="Error message shown on demo setup screen when the system failed to save some part of the device configuration. e.g. token from the device management server.">
+    The system failed to save device configuration.
+  </message>
+  <message name="IDS_DEMO_SETUP_UNEXPECTED_ERROR" desc="Error message to show shown on demo setup screen when there is an fatal/unexpected error.">
+    Oops! Something went wrong while setting up demo mode.
+  </message>
+  <message name="IDS_DEMO_SETUP_INVALID_REQUEST_ERROR" desc="Error message to show on demo setup screen when request issued to DMServer was invalid.">
+    A problem with demo registration request occurred.
+  </message>
+  <message name="IDS_DEMO_SETUP_NETWORK_ERROR" desc="Error message to show on demo setup screen when network error occurred.">
+    Network error occurred.
+  </message>
+  <message name="IDS_DEMO_SETUP_TEMPORARY_ERROR" desc="Error message to show on demo setup screen when temporary error occurred.">
+    Temporary server error occurred.
+  </message>
+  <message name="IDS_DEMO_SETUP_RESPONSE_ERROR" desc="Error message to show on demo setup screen when management service sent an abnormal HTTP code.">
+    Management service sent HTTP error.
+  </message>
+  <message name="IDS_DEMO_SETUP_RESPONSE_DECODING_ERROR" desc="Error message to show on demo setup screen when decoding management server response failed.">
+    A problem occurred when decoding server response.
+  </message>
+  <message name="IDS_DEMO_SETUP_ACCOUNT_ERROR" desc="Error message to show on demo setup screen when there is a problem with the demo mode account.">
+    A problem with demo mode account occurred.
+  </message>
+  <message name="IDS_DEMO_SETUP_DEVICE_NOT_FOUND_ERROR" desc="Error message to show on demo setup screen when management service could not find the device.">
+    Missing device record.
+  </message>
+  <message name="IDS_DEMO_SETUP_INVALID_DM_TOKEN_ERROR" desc="Error message to show on demo setup screen when device management token is invalid.">
+    Device management token is invalid.
+  </message>
+  <message name="IDS_DEMO_SETUP_INVALID_SERIAL_NUMBER_ERROR" desc="Error message to show on demo setup screen when provided serial number is invalid.">
+    Device serial number is invalid.
+  </message>
+  <message name="IDS_DEMO_SETUP_DEVICE_ID_ERROR" desc="Error message to show on demo setup screen in case of conflicting device id.">
+    Conflicting device identifier.
+  </message>
+  <message name="IDS_DEMO_SETUP_LICENSE_ERROR" desc="Error message to show on demo setup screen when the demo domain has expired or exhausted licenses.">
+    A problem with demo mode device licenses occurred.
+  </message>
+  <message name="IDS_DEMO_SETUP_DEPROVISIONED_ERROR" desc="Error message to show on demo setup screen when enrollment fails because device has been deprovisioned on the server side.">
+    This demo device has been placed into a deprovisioned state.
+  </message>
+  <message name="IDS_DEMO_SETUP_DOMAIN_MISMATCH_ERROR" desc="Error message shown on demo setup screen when the device belongs to the domain different than demo mode.">
+    This device is marked for management by a different domain. Deprovision it from that domain before setting up demo mode.
+  </message>
+  <message name="IDS_DEMO_SETUP_SIGNING_ERROR" desc="Error message shown on demo setup screen when failure to sign request occurred.">
+    Request could not be signed.
+  </message>
+  <message name="IDS_DEMO_SETUP_POLICY_NOT_FOUND_ERROR" desc="Error message shown on demo setup screen when management server failed to find the policy to be applied to the device.">
+    Policy not found.
+  </message>
+  <message name="IDS_DEMO_SETUP_ARC_ERROR" desc="Error message shown when ARC is disabled.">
+    A problem with ARC++ occurred.
+  </message>
+    <!-- Demo setup error recovery suggestions -->
+  <message name="IDS_DEMO_SETUP_RECOVERY_RETRY" desc="Error recovery recommendation to retry demo setup. Shown on demo setup screen.">
+    Please try again.
+  </message>
+  <message name="IDS_DEMO_SETUP_RECOVERY_REBOOT" desc="Error recovery recommendation to reboot and retry demo setup. Shown on demo setup screen.">
+    Please reboot the device and try again.
+  </message>
+  <message name="IDS_DEMO_SETUP_RECOVERY_POWERWASH" desc="Error recovery recommendation to powerwash and retry demo setup. Shown on demo setup screen.">
+    Please powerwash the device and try again.
+  </message>
+  <message name="IDS_DEMO_SETUP_RECOVERY_CHECK_NETWORK" desc="Error recovery recommendation to check network and retry demo setup. Shown on demo setup screen.">
+    Please check your network connection and try again.
+  </message>
+  <message name="IDS_DEMO_SETUP_RECOVERY_OFFLINE_FATAL" desc="Error recovery recommendation to contact support. Shown on demo setup screen.">
+    This device might be only eligible for online demo mode. Please contact your support representative for more details.
+  </message>
+  <message name="IDS_DEMO_SETUP_RECOVERY_FATAL" desc="Error recovery recommendation to contact support. Shown on demo setup screen.">
+    Please retry. If you see this error again please contact your support representative.
+  </message>
+
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_TITLE" desc="The title of the dialog that welcomes the user on the first log in, and explains Chrome Sync and privacy options.">
     You're signed in!
   </message>
@@ -700,8 +816,11 @@
   <message name="IDS_DISCOVER_PIN_SETUP_TITLE3" desc="A title of the dialog that finishes 'PIN-unlock' setup process suggesting that it was successful.">
     Your PIN is added
   </message>
-  <message name="IDS_DISCOVER_PIN_SETUP_SUBTITLE3" desc="A sub-title of the dialog that finishes 'PIN-unlock' setup process successfully suggesting how user can use the PIN that they have just set up.">
-    You can use PIN to unlock your device when you signed out.
+  <message name="IDS_DISCOVER_PIN_SETUP_SUBTITLE3_NO_LOGIN" desc="A sub-title of the dialog that finishes 'PIN-unlock' setup process successfully suggesting how user can use the PIN that they have just set up.">
+    You can use your PIN to unlock your device.
+  </message>
+  <message name="IDS_DISCOVER_PIN_SETUP_SUBTITLE3_WITH_LOGIN" desc="A sub-title of the dialog that finishes 'PIN-unlock' setup process successfully suggesting how user can use the PIN that they have just set up.">
+    You can use your PIN to sign in to or unlock your device.
   </message>
   <message name="IDS_DISCOVER_PIN_SETUP" desc="A label on the button that leads to Pin Unlock feature set up.">
     Pin setup
@@ -1038,6 +1157,16 @@
   </message>
   <message name="IDS_SUPERVISED_USER_IMPORT_BUBBLE_TEXT" desc="Text shown in notification bubble when user enters name of user that can be imported.">
     Looks like you're already managing a user by that name. Did you want to <ph name="LINK_START">$1<ex>&gt;a&lt;</ex></ph>import <ph name="USER_DISPLAY_NAME">$2<ex>John</ex></ph> to this device<ph name="LINK_END">$3<ex>&gt;/a&lt;</ex></ph>?
+  </message>
+  <!-- Supervised users deprecation notification -->
+  <message name="IDS_SUPERVISED_USER_EXPIRING_NOTIFICATION_TITLE" desc="Title of notification displayed on supervised user login indicating that the feature is expiring soon.">
+     Your supervised user account is expiring soon.
+  </message>
+  <message name="IDS_SUPERVISED_USER_EXPIRING_NOTIFICATION_BODY" desc="Body of notification displayed on supervised user login indicating that the feature is expiring soon.">
+    Please save your local files and set up a new account.
+  </message>
+  <message name="IDS_SUPERVISED_USER_EXPIRING_NOTIFICATION_LEARN_MORE" desc="Learn more text for button on Supervised User expiration notification.">
+    Learn more
   </message>
   <message name="IDS_MULTI_PROFILES_RESTRICTED_POLICY_TITLE" desc="Text that is shown on the title of the bubble shown for user pod which is not allowed in multi-profiles session.">
     Can't set up multiple sign-in
@@ -1675,529 +1804,6 @@
   <message name="IDS_RENAMING_OF_DEVICE_FINISHED_FAILURE_MESSAGE" desc="Text of notification message which is shown when there are some errors while renaming.">
     Aw, Snap! There was an error during renaming.
   </message>
-
-  <!-- Keyboard overlay UI -->
-  <message name="IDS_KEYBOARD_OVERLAY_TITLE" desc="The title of the keyboard overlay.">
-    Keyboard Overlay
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_INSTRUCTIONS" desc="The instructions for the keyboard overlay.">
-    Hold Control, Alt, Shift, or Search to see keyboard shortcuts for those modifiers.
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_INSTRUCTIONS_LAYOUT2" desc="The instructions for the keyboard overlay when device is using the 2017 keyboard layout.">
-    Hold Control, Alt, Shift, or Launcher to see keyboard shortcuts for those modifiers.
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_INSTRUCTIONS_HIDE" desc="The instruction for hiding the keyboard overlay.">
-    Type Ctrl+Alt+/ or Escape to hide
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_ASSISTANT_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'assistant' key.">
-    assistant
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_PLAY_PAUSE_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'play / pause' key.">
-    play / pause
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_SYSTEM_MENU_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'system menu' key.">
-    system menu
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_LAUNCHER_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'launcher / search' key.">
-    launcher
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_ESC_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'esc' (Escape) key.">
-    esc
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_BACK_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'back' key that when pressed the browser goes back to the previous page in the tab's browsing history.">
-    back
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_FORWARD_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'forward' key that when pressed the browser goes forward to the next page in the tab's browsing history.">
-    forward
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_RELOAD_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'reload' key that when pressed the browser reloads the current page.">
-    reload
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_FULL_SCREEN_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'full screen' key that when pressed the active window will become full screen.">
-    full screen
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_SWITCH_WIN_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'switch window' key that when pressed an overview of all windows will be shown on screen.">
-    switch window
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_BRIGHT_DOWN_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'bright down' key that turns the screen's brightness down.">
-    bright down
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_BRIGHT_UP_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'bright up' key that turns the screen's brightness up.">
-    bright up
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_MOVE_ACTIVE_WINDOW_BETWEEN_DISPLAYS" desc="The text in the keyboard overlay to explain the shortcut (move active window between displays).">
-    move window to another display
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_MUTE_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'mute' key that mutes the system's sound.">
-    mute
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_VOL_DOWN_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'volume down' key that turns the system's sound volume down.">
-    vol. down
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_VOL_UP_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'volume up' key that turns the system's sound volume up">
-    vol. up
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_POWER_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'power' key.">
-    power
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_BACKSPACE_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'backspace' key.">
-    backspace
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_TAB_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'tab' key.">
-    tab
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_SEARCH_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'search' key.">
-    search
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_ENTER_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'enter' key.">
-    enter
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_SHIFT_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'shift' key.">
-    shift
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_CTRL_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'ctrl' key.">
-    ctrl
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_ALT_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'alt' key.">
-    alt
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_LEFT_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'left' arrow key.">
-    left
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_RIGHT_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'right' arrow key.">
-    right
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_UP_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'up' arrow key.">
-    up
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_DOWN_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'down' arrow key.">
-    down
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_VOICE_INTERACTION" desc="The text in the keyboard overlay for voice interaction shortcut">
-    Start Assistant
-  </message>
-  <!-- BEGIN GENERATED KEYBOARD OVERLAY STRINGS -->
-  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_LAST_SHELF_ITEM" desc="The text in the keyboard overlay to explain the shortcut (Open the last shelf item).">
-    Last shelf item
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_LAST_TAB" desc="The text in the keyboard overlay to explain the shortcut.">
-    Last tab
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_SHELF_ITEM_1" desc="The text in the keyboard overlay to explain the shortcut (Open the shelf item at the specified position).">
-    Shelf item 1
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_SHELF_ITEM_2" desc="The text in the keyboard overlay to explain the shortcut (Open the shelf item at the specified position).">
-    Shelf item 2
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_SHELF_ITEM_3" desc="The text in the keyboard overlay to explain the shortcut (Open the shelf item at the specified position).">
-    Shelf item 3
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_SHELF_ITEM_4" desc="The text in the keyboard overlay to explain the shortcut (Open the shelf item at the specified position).">
-    Shelf item 4
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_SHELF_ITEM_5" desc="The text in the keyboard overlay to explain the shortcut (Open the shelf item at the specified position).">
-    Shelf item 5
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_SHELF_ITEM_6" desc="The text in the keyboard overlay to explain the shortcut (Open the shelf item at the specified position).">
-    Shelf item 6
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_SHELF_ITEM_7" desc="The text in the keyboard overlay to explain the shortcut (Open the shelf item at the specified position).">
-    Shelf item 7
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_SHELF_ITEM_8" desc="The text in the keyboard overlay to explain the shortcut (Open the shelf item at the specified position).">
-    Shelf item 8
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_NEXT_TAB" desc="The text in the keyboard overlay to explain the shortcut.">
-    Next tab
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_PREVIOUS_TAB" desc="The text in the keyboard overlay to explain the shortcut.">
-    Previous tab
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_TAB_1" desc="The text in the keyboard overlay to explain the shortcut.">
-    Tab 1
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_TAB_2" desc="The text in the keyboard overlay to explain the shortcut.">
-    Tab 2
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_TAB_3" desc="The text in the keyboard overlay to explain the shortcut.">
-    Tab 3
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_TAB_4" desc="The text in the keyboard overlay to explain the shortcut.">
-    Tab 4
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_TAB_5" desc="The text in the keyboard overlay to explain the shortcut.">
-    Tab 5
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_TAB_6" desc="The text in the keyboard overlay to explain the shortcut.">
-    Tab 6
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_TAB_7" desc="The text in the keyboard overlay to explain the shortcut.">
-    Tab 7
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_TAB_8" desc="The text in the keyboard overlay to explain the shortcut.">
-    Tab 8
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_ADD_WWW_AND_COM_AND_OPEN_ADDRESS" desc="The text in the keyboard overlay to explain the shortcut.">
-    Add www. and .com and open address
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_BOOKMARK_ALL_TABS" desc="The text in the keyboard overlay to explain the shortcut.">
-    Bookmark all tabs
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_BOOKMARK_CURRENT_PAGE" desc="The text in the keyboard overlay to explain the shortcut.">
-    Add bookmark
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_BOOKMARK_MANAGER" desc="The text in the keyboard overlay to explain the shortcut (open the bookmark manager).">
-    Bookmark manager
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_CENTER_WINDOW" desc="The text in the keyboard overlay to explain the shortcut (center the window).">
-    Center window
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_CLEAR_BROWSING_DATA_DIALOG" desc="The text in the keyboard overlay to explain the shortcut.">
-    "Clear browsing data" dialog
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_CLOSE_TAB" desc="The text in the keyboard overlay to explain the shortcut.">
-    Close tab
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_CLOSE_WINDOW" desc="The text in the keyboard overlay to explain the shortcut.">
-    Close window
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_CONTEXT_MENU" desc="The text in the keyboard overlay to explain the shortcut.">
-    Context menu
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_COPY" desc="The text in the keyboard overlay to explain the shortcut.">
-    Copy
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_CUT" desc="The text in the keyboard overlay to explain the shortcut.">
-    Cut
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_CYCLE_THROUGH_INPUT_METHODS" desc="The text in the keyboard overlay to explain the shortcut.">
-    Next input method
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_DECREASE_KEY_BRIGHTNESS" desc="The text in the keyboard overlay to explain the shortcut (decrease the keyboard brightness).">
-    Decrease key brightness
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_DELETE" desc="The text in the keyboard overlay to explain the shortcut (Delete).">
-    Delete
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_DELETE_WORD" desc="The text in the keyboard overlay to explain the shortcut.">
-    Delete word
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_DEVELOPER_TOOLS" desc="The text in the keyboard overlay to explain the shortcut.">
-    Developer tools
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_DOCK_WINDOW_LEFT" desc="The text in the keyboard overlay to explain the shortcut (dock the window to the left).">
-    Dock window left
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_DOCK_WINDOW_RIGHT" desc="The text in the keyboard overlay to explain the shortcut (dock the window to the right).">
-    Dock window right
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_DOM_INSPECTOR" desc="The text in the keyboard overlay to explain the shortcut.">
-    DOM inspector
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_DOWNLOADS" desc="The text in the keyboard overlay to explain the shortcut.">
-    Downloads
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_END" desc="The text in the keyboard overlay to explain the shortcut (End).">
-    End
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_F1" desc="The text in the keyboard overlay to explain the shortcut (F1).">
-    F1
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_F10" desc="The text in the keyboard overlay to explain the shortcut (F10).">
-    F10
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_F11" desc="The text in the keyboard overlay to explain the shortcut (F11).">
-    F11
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_F12" desc="The text in the keyboard overlay to explain the shortcut (F12).">
-    F12
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_F2" desc="The text in the keyboard overlay to explain the shortcut (F2).">
-    F2
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_F3" desc="The text in the keyboard overlay to explain the shortcut (F3).">
-    F3
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_F4" desc="The text in the keyboard overlay to explain the shortcut (F4).">
-    F4
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_F5" desc="The text in the keyboard overlay to explain the shortcut (F5).">
-    F5
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_F6" desc="The text in the keyboard overlay to explain the shortcut (F6).">
-    F6
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_F7" desc="The text in the keyboard overlay to explain the shortcut (F7).">
-    F7
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_F8" desc="The text in the keyboard overlay to explain the shortcut (F8).">
-    F8
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_F9" desc="The text in the keyboard overlay to explain the shortcut (F9).">
-    F9
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_FIND_PREVIOUS_TEXT" desc="The text in the keyboard overlay to explain the shortcut.">
-    Find previous text
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_FIND_TEXT" desc="The text in the keyboard overlay to explain the shortcut.">
-    Find text
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_FIND_TEXT_AGAIN" desc="The text in the keyboard overlay to explain the shortcut.">
-    Find again
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_FOCUS_ADDRESS_BAR" desc="The text in the keyboard overlay to explain the shortcut.">
-    Focus address bar
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_FOCUS_ADDRESS_BAR_IN_SEARCH_MODE" desc="The text in the keyboard overlay to explain the shortcut.">
-    Focus address bar for search
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_FOCUS_BOOKMARKS" desc="The text in the keyboard overlay to explain the shortcut.">
-    Focus bookmarks
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_FOCUS_SHELF" desc="The text in the keyboard overlay to explain the shortcut (focus the application shelf).">
-    Focus shelf
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_FOCUS_NEXT_PANE" desc="The text in the keyboard overlay to explain the shortcut (switch focus to the next keyboard-accessible pane).">
-    Next pane
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_FOCUS_PREVIOUS_PANE" desc="The text in the keyboard overlay to explain the shortcut (switch focus to the previous keyboard-accessible pane).">
-    Previous pane
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_FOCUS_TOOLBAR" desc="The text in the keyboard overlay to explain the shortcut.">
-    Focus toolbar
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_GO_BACK" desc="The text in the keyboard overlay to explain the shortcut.">
-    Go back
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_GO_FORWARD" desc="The text in the keyboard overlay to explain the shortcut.">
-    Go forward
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_HELP" desc="The text in the keyboard overlay to explain the shortcut.">
-    Help
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_HISTORY" desc="The text in the keyboard overlay to explain the shortcut.">
-    History
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_HOME" desc="The text in the keyboard overlay to explain the shortcut (Home).">
-    Home
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_INCREASE_KEY_BRIGHTNESS" desc="The text in the keyboard overlay to explain the shortcut (Increase the keyboard brightness).">
-    Increase key brightness
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_INPUT_UNICODE_CHARACTERS" desc="The text in the keyboard overlay to explain the shortcut.">
-    Input Unicode characters
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_INSERT" desc="The text in the keyboard overlay to explain the shortcut (Insert).">
-    Insert
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_JAVASCRIPT_CONSOLE" desc="The text in the keyboard overlay to explain the shortcut.">
-    JavaScript console
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_LOCK_SCREEN" desc="The text in the keyboard overlay to explain the shortcut (lock the screen).">
-    Lock screen
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_LOCK_SCREEN_OR_POWER_OFF" desc="The text in the keyboard overlay to explain the shortcut.">
-    Lock / power
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_MAGNIFIER_DECREASE_ZOOM" desc="The text in the keyboard overlay to explain the shortcut.">
-    Demagnify
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_MAGNIFIER_INCREASE_ZOOM" desc="The text in the keyboard overlay to explain the shortcut.">
-    Magnify
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_MAXIMIZE_WINDOW" desc="The text in the keyboard overlay to explain the shortcut (maximize or restore the window).">
-    Maximize
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_MINIMIZE_WINDOW" desc="The text in the keyboard overlay to explain the shortcut (minimize the window).">
-    Minimize
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_MIRROR_MONITORS" desc="The text in the keyboard overlay to explain the shortcut (Mirror the monitors).">
-    Mirror monitors
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_NEW_INCOGNITO_WINDOW" desc="The text in the keyboard overlay to explain the shortcut.">
-    New incognito window
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_NEW_TAB" desc="The text in the keyboard overlay to explain the shortcut.">
-    New tab
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_NEW_TERMINAL" desc="The text in the keyboard overlay to explain the shortcut (Open a new terminal tab).">
-    New terminal
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_NEW_WINDOW" desc="The text in the keyboard overlay to explain the shortcut.">
-    New window
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_NEXT_USER" desc="The text in the keyboard overlay to explain the shortcut (Switch to next user).">
-    Next user
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_NEXT_WINDOW" desc="The text in the keyboard overlay to explain the shortcut (go to the next window).">
-    Next window
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_NEXT_WORD" desc="The text in the keyboard overlay to explain the shortcut (move the text cursor to the end of the next word).">
-    Next word
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_OPEN" desc="The text in the keyboard overlay to explain the shortcut (open a file).">
-    Open
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_OPEN_ADDRESS_IN_NEW_TAB" desc="The text in the keyboard overlay to explain the shortcut.">
-    Open in new tab
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_OPEN_FILE_MANAGER" desc="The text in the keyboard overlay to explain the shortcut (Open the file manager).">
-    File manager
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_PAGE_DOWN" desc="The text in the keyboard overlay to explain the shortcut (Page down).">
-    Page down
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_PAGE_UP" desc="The text in the keyboard overlay to explain the shortcut (Page up).">
-    Page up
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_PASTE" desc="The text in the keyboard overlay to explain the shortcut.">
-    Paste
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_PASTE_AS_PLAIN_TEXT" desc="The text in the keyboard overlay to explain the shortcut.">
-    Paste as plain text
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_PREVIOUS_USER" desc="The text in the keyboard overlay to explain the shortcut (Switch to previous user).">
-    Previous user
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_PREVIOUS_WINDOW" desc="The text in the keyboard overlay to explain the shortcut (go to the previous window).">
-    Previous window
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_PREVIOUS_WORD" desc="The text in the keyboard overlay to explain the shortcut (move the text cursor to the start of the previous word).">
-    Previous word
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_PRINT" desc="The text in the keyboard overlay to explain the shortcut.">
-    Print
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_RELOAD_CURRENT_PAGE" desc="The text in the keyboard overlay to explain the shortcut.">
-    Reload
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_RELOAD_BYPASSING_CACHE" desc="The text in the keyboard overlay to explain the shortcut.">
-    Reload bypassing cache
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_REOPEN_LAST_CLOSED_TAB" desc="The text in the keyboard overlay to explain the shortcut.">
-    Reopen last-closed tab
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_REPORT_ISSUE" desc="The text in the keyboard overlay to explain the shortcut (report an issue).">
-    Report issue
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_RESET_SCREEN_ZOOM" desc="The text in the keyboard overlay to explain the shortcut (reset the screen zoom).">
-    Reset screen zoom
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_RESET_ZOOM" desc="The text in the keyboard overlay to explain the shortcut.">
-    Reset zoom
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_ROTATE_SCREEN" desc="The text in the keyboard overlay to explain the shortcut (rotate the screen).">
-    Rotate screen
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_ROTATE_WINDOW" desc="The text in the keyboard overlay to explain the shortcut (rotate the window).">
-    Rotate window
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_SAVE" desc="The text in the keyboard overlay to explain the shortcut (save page as a file).">
-    Save
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_SCREENSHOT_REGION" desc="The text in the keyboard overlay to explain the shortcut (take a screenshot of the selected region).">
-    Screenshot region
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_SCREENSHOT_WINDOW" desc="The text in the keyboard overlay to explain the shortcut.">
-    Screenshot window
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_SCROLL_UP_ONE_PAGE" desc="The text in the keyboard overlay to explain the shortcut.">
-    Scroll up one page
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_SELECT_ALL" desc="The text in the keyboard overlay to explain the shortcut.">
-    Select all
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_SELECT_PREVIOUS_INPUT_METHOD" desc="The text in the keyboard overlay to explain the shortcut.">
-    Previous input method
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_SELECT_WORD_AT_A_TIME" desc="The text in the keyboard overlay to explain the shortcut.">
-    Select "word at a time"
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_SHOW_IME_BUBBLE" desc="The text in the keyboard overlay to explain the shortcut (Show the input options menu bubble).">
-    Input options bubble
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_SHOW_MESSAGE_CENTER" desc="The text in the keyboard overlay to explain the shortcut (Show the message center).">
-    Message center
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_SHOW_STATUS_MENU" desc="The text in the keyboard overlay to explain the shortcut (show the status menu).">
-    Status menu
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_SHOW_STYLUS_TOOLS" desc="The text in the keyboard overlay to explain the shortcut (show the stylus tools).">
-    Stylus tools
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_SIGN_OUT" desc="The text in the keyboard overlay to explain the shortcut.">
-    Sign out
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_SUSPEND" desc="The text in the keyboard overlay to explain the shortcut.">
-    Suspend
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_SWAP_PRIMARY_MONITOR" desc="The text in the keyboard overlay to explain the shortcut (swap primary monitor).">
-    Swap primary monitor
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_TAKE_SCREENSHOT" desc="The text in the keyboard overlay to explain the shortcut.">
-    Screenshot
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_TASK_MANAGER" desc="The text in the keyboard overlay to explain the shortcut.">
-    Task manager
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_BOOKMARK_BAR" desc="The text in the keyboard overlay to explain the shortcut.">
-    Bookmark bar
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_CAPS_LOCK" desc="The text in the keyboard overlay to explain the shortcut (enable or disable caps lock).">
-    Caps Lock
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_DISABLE_CAPS_LOCK" desc="The text in the keyboard overlay to explain the shortcut (disable caps lock when it's enabled).">
-    Disable Caps Lock
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_CHROMEVOX_SPOKEN_FEEDBACK" desc="The text in the keyboard overlay to explain the shortcut (enable or disable spoken feedback).">
-    ChromeVox (spoken feedback)
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_DICTATION" desc="The text in the keyboard overlay to explain the shortcut (start or stop speak to type).">
-    Dictation
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_DOCKED_MAGNIFIER" desc="The text in the keyboard overlay to explain the shortcut (toggle the Docked Magnifier on/off).">
-    Toggle Docked Magnifier
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_FULLSCREEN_MAGNIFIER" desc="The text in the keyboard overlay to explain the shortcut (toggle the Fullscreen Magnifier on/off).">
-    Toggle Fullscreen Magnifier
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_HIGH_CONTRAST_MODE" desc="The text in the keyboard overlay to explain the shortcut (Toggle high contrast mode).">
-    Toggle High Contrast Mode
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_PROJECTION_TOUCH_HUD" desc="The text in the keyboard overlay to explain the shortcut to show the points where a user interfaces with the touch screen. This would be useful for someone doing a presentation where they need the audience to see the points on the screen that are touched.">
-    Show touch points
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_TOUCH_HUD_MODE_CHANGE" desc="The text in the keyboard overlay to explain the shortcut to change the mode of the debug touch HUD. 'HUD' stands for 'heads-up display'. 'Touch' refers to the touch interface.">
-    Change touch HUD mode
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_UNDO" desc="The text in the keyboard overlay to explain the shortcut.">
-    Undo
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_UNPIN" desc="The text in the keyboard overlay to explain the shortcut.">
-    Unpin
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_VIEW_KEYBOARD_OVERLAY" desc="The text in the keyboard overlay to explain the shortcut.">
-    Keyboard overlay
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_VIEW_SOURCE" desc="The text in the keyboard overlay to explain the shortcut.">
-    View source
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_WORD_MOVE" desc="The text in the keyboard overlay to explain the shortcut.">
-    Word move
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_ZOOM_IN" desc="The text in the keyboard overlay to explain the shortcut.">
-    Zoom in
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_ZOOM_OUT" desc="The text in the keyboard overlay to explain the shortcut.">
-    Zoom out
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_ZOOM_SCREEN_IN" desc="The text in the keyboard overlay to explain the shortcut (zoom in the screen).">
-    Zoom screen in
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_ZOOM_SCREEN_OUT" desc="The text in the keyboard overlay to explain the shortcut (zoom out the screen).">
-    Zoom screen out
-  </message>
-  <!-- END GENERATED KEYBOARD OVERLAY STRINGS -->
 
   <message name="IDS_LOGIN_ERROR_WHITELIST" desc="Couldn't sign in because user is not whitelisted by the device owner.">
     You are not authorized to use this device. Please contact the device owner for sign-in permission.
@@ -3008,9 +2614,10 @@
   <message name="IDS_ENTERPRISE_ENROLLMENT_SUCCESS_ILLUSTRATION_TITLE" desc="Accessible title of the enterprise enrollment screen illustration depicting successful enrollment.">
     Successful enrollment illustration
   </message>
-  <message name="IDS_ENTERPRISE_ENROLLMENT_ABE_SUCCESS" desc="Success message to be shown once attestation-based enterprise enrollment completes.">
+  <message name="IDS_ENTERPRISE_ENROLLMENT_SUCCESS_ABE_DOMAIN" desc="Success message to be shown once attestation-based enterprise enrollment completes.">
     Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> has successfully been enrolled for enterprise management by <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="DOMAIN">$2<ex>acmecorp.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph>.
-    <ph name="LINE_BREAK_AND_EMPTY_LINE">&lt;br&gt;&lt;br&gt;</ph>
+  </message>
+  <message name="IDS_ENTERPRISE_ENROLLMENT_SUCCESS_ABE_SUPPORT" desc="Recommendation to contact support. Shown once attestation-based enterprise enrollment completes.">
     If this is unexpected, please contact support.
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_ASSET_ID_LABEL" desc="Label for asset id text box on the device naming screen in the enterprise enrollment dialog.">
@@ -3281,19 +2888,7 @@
     Read and write access to <ph name="VOLUME_NAME">$1<ex>FooBar 4GB</ex></ph> has been granted.
   </message>
 
-  <!-- Webstore widget app -->
-  <message name="IDS_WEBSTORE_WIDGET_APP_NAME" desc="App name for Webstore Gallery Widget app. The app shows a filtered list of extensions from Chrome Web Store. Extensions from the list can be installed directly from the app.">
-    Chrome Web Store Gallery
-  </message>
-  <message name="IDS_WEBSTORE_WIDGET_APP_DESC" desc="Description of Chrome Webstore Gallery Widget app.">
-    An app that shows a filtered list of extensions from Chrome Web Store. Extensions in the list can be installed directly from the app.
-  </message>
-  <message name="IDS_WEBSTORE_WIDGET_TITLE_PRINTER_PROVIDERS" desc="Title for Chrome Web Store Gallery Widget which lists all print driver apps from Chrome Web Store for a specific printer.">
-    Select a printer driver app
-  </message>
-  <message name="IDS_WEBSTORE_WIDGET_DEFAULT_ERROR" desc="Default message shown when Chrome Web Store Widget app window content fails to load (e.g. if it fails to load Chrome Web Store Gallery in a webview).">
-    Could not connect to the Chrome Web Store.
-  </message>
+  <!-- Webstore widget -->
   <message name="IDS_WEBSTORE_WIDGET_LOADING_SPINNER_ALT" desc="Alt text for spinner shown in Chrome Web Store Gallery widget while the widget contents is loading. This is the text that will be read by screen reader when the spinner is focused. The string should be translated as a verb.">
     Loading
   </message>
@@ -3318,7 +2913,7 @@
     No thanks
   </message>
   <message name="IDS_ARC_OPT_IN_DIALOG_BUTTON_AGREE" desc="Agree button of the opt-in dialog for Android apps.">
-    I Agree
+    Accept
   </message>
   <message name="IDS_ARC_OPT_IN_DIALOG_BUTTON_CANCEL" desc="Cancel button of the opt-in dialog for Android apps.">
     Cancel
@@ -3345,62 +2940,114 @@
     Terms of Service
   </message>
   <message name="IDS_ARC_OPT_IN_DIALOG_METRICS_MANAGED_ENABLED" desc="Message in the opt-in dialog for Android apps in case metrics are managed on the device and on.">
-    Send system data. This device currently automatically sends diagnostic and device and app usage data to Google. This <ph name="BEGIN_LINK1">&lt;a href="#" id="settings-link"&gt;</ph>setting<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> is enforced by the owner. If you turned on additional Web &#38; App Activity, this information will be stored with your account so you can manage it in My Activity. <ph name="BEGIN_LINK2">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK2">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+    Send usage and diagnostic data. This device is currently automatically sending diagnostic, device, and app usage data to Google. This will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. This <ph name="BEGIN_LINK1">&lt;a href="#" id="settings-link"&gt;</ph>setting<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> is enforced by the owner. If your additional Web &#38; App Activity setting is turned on, this data may be saved to your Google account. <ph name="BEGIN_LINK2">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK2">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+  </message>
+  <message name="IDS_ARC_OPT_IN_DIALOG_METRICS_MANAGED_ENABLED_CHILD" desc="Message in the opt-in dialog for Android apps in case metrics are managed on the device and on, and a child account is in use.">
+    Send usage and diagnostic data. This device is currently automatically sending diagnostic, device, and app usage data to Google. This won't be used to identify your child and will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. This <ph name="BEGIN_LINK1">&lt;a href="#" id="settings-link"&gt;</ph>setting<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> is enforced by the owner. If additional Web &#38; App Activity setting is turned on for your child, this data may be saved to their Google account. <ph name="BEGIN_LINK2">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK2">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>
   <message name="IDS_ARC_OPT_IN_DIALOG_METRICS_MANAGED_DISABLED" desc="Message in the opt-in dialog for Android apps in case metrics are managed on the device and off.">
-    Send system data. Automatically send diagnostic and device and app usage data to Google. This setting is enforced by the owner. The owner may choose to send diagnostic and usage data for this device to Google. You may view this in <ph name="BEGIN_LINK1">&lt;a href="#" id="settings-link"&gt;</ph>settings<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>. If you turned on additional Web &#38; App Activity, this information will be stored with your account so you can manage it in My Activity. <ph name="BEGIN_LINK2">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK2">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+    Send usage and diagnostic data. Help improve your Android experience by automatically sending diagnostic, device, and app usage data to Google. This will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. This <ph name="BEGIN_LINK1">&lt;a href="#" id="settings-link"&gt;</ph>setting<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> is enforced by the owner. The owner may choose to send diagnostic and usage data for this device to Google. If your additional Web &#38; App Activity setting is turned on, this data may be saved to your Google account. <ph name="BEGIN_LINK2">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK2">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+  </message>
+  <message name="IDS_ARC_OPT_IN_DIALOG_METRICS_MANAGED_DISABLED_CHILD" desc="Message in the opt-in dialog for Android apps in case metrics are managed on the device and off, and a child account is in use.">
+    Send usage and diagnostic data. Help improve your child's Android experience by automatically sending diagnostic, device, and app usage data to Google. This won't be used to identify your child and will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. This <ph name="BEGIN_LINK1">&lt;a href="#" id="settings-link"&gt;</ph>setting<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> is enforced by the owner. The owner may choose to send diagnostic and usage data for this device to Google. If additional Web &#38; App Activity setting is turned on for your child, this data may be saved to their Google account. <ph name="BEGIN_LINK2">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK2">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>
   <message name="IDS_ARC_OPT_IN_DIALOG_METRICS_ENABLED" desc="Message in the opt-in dialog for Android apps in case metrics are already enabled on the device. User has no way to deactivate them using opt-in dialog.">
-    Send system data. This device currently automatically sends diagnostic and device and app usage data to Google. You can change this at any time in your device <ph name="BEGIN_LINK1">&lt;a href="#" id="settings-link"&gt;</ph>settings<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>. If you turned on additional Web &#38; App Activity, this information will be stored with your account so you can manage it in My Activity. <ph name="BEGIN_LINK2">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK2">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+    Send usage and diagnostic data. This device is currently automatically sending diagnostic, device, and app usage data to Google. This will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. If your additional Web &#38; App Activity setting is turned on, this data may be saved to your Google Account. <ph name="BEGIN_LINK2">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK2">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+  </message>
+  <message name="IDS_ARC_OPT_IN_DIALOG_METRICS_ENABLED_CHILD" desc="Message in the opt-in dialog for Android apps in case metrics are already enabled on the device, and a child account is in use. User has no way to deactivate them using opt-in dialog.">
+    Send usage and diagnostic data. This device is currently automatically sending diagnostic, device, and app usage data to Google. This won't be used to idenfity your child and will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. If additional Web &#38; App Activity setting is turned on for your child, this data may be saved to their Google Account. <ph name="BEGIN_LINK2">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK2">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>
   <message name="IDS_ARC_OPT_IN_DIALOG_METRICS_DISABLED" desc="Message in the opt-in dialog for Android apps in case metrics are disabled on the device. User has an option to active them using opt-in dialog">
-    Send system data. Automatically send diagnostic and device and app usage data to Google. You can change this at any time in your device <ph name="BEGIN_LINK1">&lt;a href="#" id="settings-link"&gt;</ph>settings<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>. If you turned on additional Web &#38; App Activity, this information will be stored with your account so you can manage it in My Activity. <ph name="BEGIN_LINK2">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK2">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+    Send usage and diagnostic data. Help improve your Android experience by automatically sending diagnostic, device, and app usage data to Google. This will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. If your additional Web &#38; App Activity setting is turned on, this data may be saved to your Google account. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+  </message>
+  <message name="IDS_ARC_OPT_IN_DIALOG_METRICS_DISABLED_CHILD" desc="Message in the opt-in dialog for Android apps in case metrics are disabled on the device, and a child account is in use. User has an option to active them using opt-in dialog">
+    Send usage and diagnostic data. Help improve your child's Android experience by automatically sending diagnostic, device, and app usage data to Google. This won't be used to identify your child and will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. If additional Web &#38; App Activity is turned on for you child, this data may be saved to their Google account. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>
   <message name="IDS_ARC_OPT_IN_DIALOG_BACKUP_RESTORE" desc="Message in the opt-in dialog for users to enable Backup and Restore for Android apps.">
-    Back up to Google Drive. Easily restore your data or switch device at any time. Your backup includes app data. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-backup-restore"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+    Back up to Google Drive. Easily restore your data or switch device at any time. Your backup includes app data. Your backups are uploaded to Google and encrypted using your Google Account password. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-backup-restore"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+  </message>
+  <message name="IDS_ARC_OPT_IN_DIALOG_BACKUP_RESTORE_CHILD" desc="Message in the opt-in dialog for users to enable Backup and Restore for Android apps, and a child account is in use.">
+    Back up to Google Drive. Easily restore data or switch device at any time. This backup includes app data. Backups are uploaded to Google and encrypted using your child's Google Account password. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-backup-restore"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>
   <message name="IDS_ARC_OOBE_TERMS_DIALOG_METRICS_MANAGED_ENABLED" desc="Message in the Arc Terms OOBE dialog in case metrics are managed on the device and on.">
-    Send system data. This device currently automatically sends diagnostic and device and app usage data to Google. This setting is enforced by the owner. If you turned on additional Web &#38; App Activity, this information will be stored with your account so you can manage it in My Activity. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+    Send usage and diagnostic data. This device is currently automatically sending diagnostic, device, and app usage data to Google. This will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. This setting is enforced by the owner. If your additional Web &#38; App Activity setting is turned on, this data may be saved to your Google Account. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+  </message>
+  <message name="IDS_ARC_OOBE_TERMS_DIALOG_METRICS_MANAGED_ENABLED_CHILD" desc="Message in the Arc Terms OOBE dialog in case metrics are managed on the device and on, and a child account is in use.">
+    Send usage and diagnostic data. This device is currently automatically sending diagnostic, device, and app usage data to Google. This won't be used to identify your child and  will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. This setting is enforced by the owner. If additional Web &#38; App Activity is turned on for your child, this data may be saved to their Google Account. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>
   <message name="IDS_ARC_OOBE_TERMS_DIALOG_METRICS_MANAGED_DISABLED" desc="Message in the Arc Terms OOBE dialog in case metrics are managed on the device and off.">
-    Send system data. Automatically send diagnostic and device and app usage data to Google. This setting is enforced by the owner. The owner may choose to send diagnostic and usage data for this device to Google. You may view this in settings. If you turned on additional Web &#38; App Activity, this information will be stored with your account so you can manage it in My Activity. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+    Send usage and diagnostic data. Help improve your Android experience by automatically sending diagnostic, device, and app usage data to Google. This will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. This setting is enforced by the owner. The owner may choose to send diagnostic and usage data for this device to Google. If your additional Web &#38; App Activity setting is turned on, this data may be saved to your Google Account. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+  </message>
+  <message name="IDS_ARC_OOBE_TERMS_DIALOG_METRICS_MANAGED_DISABLED_CHILD" desc="Message in the Arc Terms OOBE dialog in case metrics are managed on the device and off, and a child account is in use.">
+    Send usage and diagnostic data. Help improve your child's Android experience by automatically sending diagnostic, device, and app usage data to Google. This won't be used to identify your child and will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. This setting is enforced by the owner. The owner may choose to send diagnostic and usage data for this device to Google. If additional Web &#38; App Activity setting is turned on for your child, this data may be saved to their Google Account. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>
   <message name="IDS_ARC_OOBE_TERMS_DIALOG_METRICS_ENABLED" desc="Message in the Arc Terms OOBE dialog in case metrics are already enabled on the device.">
-    Send system data. This device currently automatically sends diagnostic and device and app usage data to Google. You can change this at any time in your device settings. If you turned on additional Web &#38; App Activity, this information will be stored with your account so you can manage it in My Activity. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+    Send usage and diagnostic data. This device is currently automatically sending diagnostic, device, and app usage data to Google. This will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. If your additional Web &#38; App Activity setting is turned on, this data may be saved to your Google Account. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+  </message>
+  <message name="IDS_ARC_OOBE_TERMS_DIALOG_METRICS_ENABLED_CHILD" desc="Message in the Arc Terms OOBE dialog in case metrics are already enabled on the device, and a child account is in use.">
+    Send usage and diagnostic data. This device is currently automatically sending diagnostic, device, and app usage data to Google. This won't be used to identify your child and will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. If additional Web &#38; App Activity setting is turned on for your child, this data may be saved to their Google Account. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+  </message>
+  <message name="IDS_ARC_OOBE_TERMS_DIALOG_METRICS_DISABLED" desc="Message in the Arc Terms OOBE dialog in case metrics are disabled on the device.">
+    Send usage and diagnostic data. Help improve your Android experience by automatically sending diagnostic, device, and app usage data to Google. This will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. If your additional Web &#38; App Activity setting is turned on, this data may be saved to your Google Account. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+  </message>
+  <message name="IDS_ARC_OOBE_TERMS_DIALOG_METRICS_DISABLED_CHILD" desc="Message in the Arc Terms OOBE dialog in case metrics disabled on the device, and a child account is in use.">
+    Send usage and diagnostic data. Help improve your child's Android experience by automatically sending diagnostic, device, and app usage data to Google. This won't be used to identify your child and will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. If additional Web &#38; App Activity setting is turned on for your child, this data may be saved to their Google Account. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>
   <message name="IDS_ARC_OPT_IN_LOCATION_SETTING" desc="Message in the opt-in dialog for Android apps for the user to turn on Google location services.">
-    Help apps find location. Use Google’s location service to help improve location for apps. Google may collect location data periodically and use this data in an anonymous way to improve location accuracy and location-based services. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-location-service"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+    Use location. Allow apps and services with location permission to use your device’s location. Google may collect location data periodically and use this data in an anonymous way to improve location accuracy and location-based services. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-location-service"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+  </message>
+  <message name="IDS_ARC_OPT_IN_LOCATION_SETTING_CHILD" desc="Message in the opt-in dialog for Android apps for the user to turn on Google location services, and a child account is in use.">
+    Use location. Allow apps and services with location permission to use this device’s location. Google may collect location data periodically and use this data in an anonymous way to improve location accuracy and location-based services. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-location-service"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>
   <message name="IDS_ARC_OPT_IN_PAI" desc="Message in the opt-in dialog for Play auto install.">
-    Install updates &#38; apps. By continuing, you agree that this device may also automatically download and install updates and apps from Google, your carrier, and your device's manufacturer, possibly using cellular data. Some of these apps may offer in-app purchases. You can remove these apps at any time. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-pai"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+    Install updates &#38; apps. By continuing, you agree that this device may also automatically download and install updates and apps from Google, your carrier, and your device's manufacturer, possibly using cellular data. Some of these apps may offer in-app purchases. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-pai"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>
   <message name="IDS_ARC_OPT_IN_GOOGLE_SERVICE_CONFIRMATION" desc="Message in the opt-in dialog for Accepting Google services.">
-    By clicking the "I Agree" button, you agree to the processing described above for these Google services.
+   Tap “Accept” to confirm your selection of these Google services settings.
   </message>
   <message name="IDS_ARC_OPT_IN_ACCEPT_AND_CONTINUE_GOOGLE_SERVICE_CONFIRMATION" desc="Message in the opt-in dialog for accepting Google services and continuing the setup.">
     By clicking the "Accept and continue" button, you agree to the processing described above for these Google services.
+  </message>
+  <message name="IDS_ARC_REVIEW_SETTINGS" desc="The label to the checkbox in the opt-in dialog explaining that when checked, it will trigger user settings screen opened after session start">
+    Review Google Play options following setup
   </message>
   <message name="IDS_ARC_OPT_IN_LEARN_MORE_CLOSE" desc="Text for close button in learn more dialog">
     Close
   </message>
   <message name="IDS_ARC_OPT_IN_LEARN_MORE_STATISTICS" desc="Message shown in pop up overlay dialog when user clicks learn more UMA">
-    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>This is general information about your device and how you use it (such as battery level, app usage, and network connectivity). The data will be used to improve Google's products and services for everyone. Some aggregated information will help partners, such as Android developers, make their apps and products better, too.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>This is general information about your device and how you use it (such as battery level, system and app activity, and errors). The data will be used to improve Android, and some aggregated information will also help Google apps and partners, such as Android developers, make their apps and products better.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
     <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>Turning off this feature doesn't affect your device's ability to send the information needed for essential services such as system updates and security.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
-    <ph name="BEGIN_PARAGRAPH3">&lt;p&gt;</ph>You can control this feature from Settings &gt; Google. Select Usage &#38; diagnostics from the menu.<ph name="END_PARAGRAPH3">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH3">&lt;p&gt;</ph>The owner can control this feature from Settings &gt; Advanced &gt; Automatically send diagnostic and usage data to Google.<ph name="END_PARAGRAPH3">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH4">&lt;p&gt;</ph>If your additional Web &amp; App Activity setting is turned on, this data may be saved to your Google Account. You can see your data, delete it, and change your account settings at account.google.com.<ph name="END_PARAGRAPH4">&lt;/p&gt;</ph>
+  </message>
+  <message name="IDS_ARC_OPT_IN_LEARN_MORE_STATISTICS_CHILD" desc="Message shown in pop up overlay dialog when user clicks learn more UMA, and a child account is in use">
+    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>This is general information about this device and how it's used (such as battery level, system and app activity, and errors). The data will be used to improve Android, and some aggregated information will also help Google apps and partners, such as Android developers, make their apps and products better.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>Turning off this feature doesn't affect this device's ability to send the information needed for essential services such as system updates and security.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH3">&lt;p&gt;</ph>The owner can control this feature from Settings &gt; Advanced &gt; Automatically send diagnostic and usage data to Google.<ph name="END_PARAGRAPH3">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH4">&lt;p&gt;</ph>If additional Web &amp; App Activity setting is turned on for your child, this data may be saved to their Google Account. Learn more about these settings and how to adjust them at families.google.com.<ph name="END_PARAGRAPH4">&lt;/p&gt;</ph>
   </message>
   <message name="IDS_ARC_OPT_IN_LEARN_MORE_BACKUP_AND_RESTORE" desc="Message shown in pop up overlay dialog when user clicks learn more backup and restore">
     <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Back up to Google Drive. Easily restore your data or switch device at any time. Your backup includes app data.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
-    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>App data can be any data that an app has saved (based on developer settings), including potentially sensitive data such as contacts, messages, and photos.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
-    <ph name="BEGIN_PARAGRAPH3">&lt;p&gt;</ph>Backup data will not count toward your Drive storage quota.<ph name="END_PARAGRAPH3">&lt;/p&gt;</ph>
-    <ph name="BEGIN_PARAGRAPH4">&lt;p&gt;</ph>You can turn this service off in Settings.<ph name="END_PARAGRAPH4">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>Your backups are uploaded to Google and encrypted using your Google Account password.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH3">&lt;p&gt;</ph>App data can be any data that an app has saved (based on developer settings), including data such as contacts, messages, and photos.<ph name="END_PARAGRAPH3">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH4">&lt;p&gt;</ph>Backup data will not count toward your Drive storage quota.<ph name="END_PARAGRAPH4">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH5">&lt;p&gt;</ph>You can turn this service off in Settings.<ph name="END_PARAGRAPH5">&lt;/p&gt;</ph>
+  </message>
+  <message name="IDS_ARC_OPT_IN_LEARN_MORE_BACKUP_AND_RESTORE_CHILD" desc="Message shown in pop up overlay dialog when user clicks learn more backup and restore, and a child account is in use">
+    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>App data can be any data that an app has saved (based on developer settings), including data such as contacts, messages, and photos.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>Backup data will not count toward your child's Drive storage quota.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH3">&lt;p&gt;</ph>You can turn this service off in Settings.<ph name="END_PARAGRAPH3">&lt;/p&gt;</ph>
   </message>
   <message name="IDS_ARC_OPT_IN_LEARN_MORE_LOCATION_SERVICES" desc="Message shown in pop up overlay dialog when user clicks learn more location services">
-    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Help apps find location. Use Google’s location service to help improve location for apps. Google may collect location data periodically and use this data in an anonymous way to improve location accuracy and location-based services.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
-    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>Google's location service uses sources like Wi-Fi, mobile networks, and sensors to help estimate your device’s location. This service is active when your device’s Location setting is on.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
-    <ph name="BEGIN_PARAGRAPH3">&lt;p&gt;</ph>You can turn off Location by turning off the main Location setting on your device. You can also turn off the use of Wi-Fi, mobile networks, and sensors for location in location settings.<ph name="END_PARAGRAPH3">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Google's location service uses sources like Wi-Fi, mobile networks, and sensors to help estimate your device’s location.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can turn off Location by turning off the main Location setting on your device. You can also turn off the use of Wi-Fi, mobile networks, and sensors for location in location settings.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
+  </message>
+  <message name="IDS_ARC_OPT_IN_LEARN_MORE_LOCATION_SERVICES_CHILD" desc="Message shown in pop up overlay dialog when user clicks learn more location services, and a child account is in use">
+    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Google's location service uses sources like Wi-Fi, mobile networks, and sensors to help estimate this device’s location.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can turn off Location by turning off the main Location setting on this device. You can also turn off the use of Wi-Fi, mobile networks, and sensors for location in location settings.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
   </message>
   <message name="IDS_ARC_OPT_IN_LEARN_MORE_PAI_SERVICE" desc="Message shown in pop up overlay dialog when user clicks learn more play auto install services.">
-    To remove apps, go to Settings &gt; Apps or Application manager. Then tap the app you want to uninstall (you may need to swipe right or left to find the app). Then tap Uninstall or Disable.
+    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>To remove apps, go to Settings &gt; Google Play Store &gt; Manage Android preferences &gt; Apps or Application manager. Then tap the app you want to uninstall (you may need to swipe right or left to find the app). Then tap Uninstall or Disable.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
   </message>
   <message name="IDS_ARC_OPT_IN_PRIVACY_POLICY_LINK" desc="Text of the Link to Goolge Privacy Policy in opt-in dialog">
     Google privacy policy
@@ -3469,7 +3116,7 @@
     Accept and continue
   </message>
     <message name="IDS_ARC_OOBE_TERMS_BUTTON_ACCEPT" desc="Accept button of the Arc Terms OOBE dialog.">
-    I Agree
+    Accept
   </message>
   <message name="IDS_ARC_OOBE_TERMS_BUTTON_SKIP" desc="Skip button of the Arc Terms OOBE dialog.">
     Skip
@@ -3574,7 +3221,7 @@
     Related info
   </message>
   <message name="IDS_ASSISTANT_SCREEN_CONTEXT_DESC" desc="Description for assistant screen context optin.">
-    Let the Assistant give suggestions based on what's on your screen
+    Let the Assistant show you info related to what's on your screen
   </message>
   <message name="IDS_ASSISTANT_GET_MORE_SCREEN_TITLE" desc="Title for assistant get more screen.">
     Get the most out of your Assistant
@@ -3585,8 +3232,8 @@
   <message name="IDS_ASSISTANT_READY_SCREEN_TITLE" desc="Title for assistant ready screen.">
     Your Assistant is ready
   </message>
-  <message name="IDS_ASSISTANT_READY_SCREEN_MESSAGE" desc="Message for assistant ready screen.">
-    When your Chromebook is set up, press the Assistant button or say "Ok Google" to get help from your Assistant anytime.
+  <message name="IDS_ASSISTANT_READY_SCREEN_MESSAGE" desc="Message for Assistant ready screen.">
+    When your Chromebook is set up, press the Assistant button or say "Ok Google", if turned on, to get help from your Assistant anytime.
   </message>
   <message name="IDS_ASSISTANT_CONTINUE_BUTTON" desc="Continue button for asssitant optin flow.">
     Continue
@@ -3599,6 +3246,60 @@
   </message>
   <message name="IDS_ASSISTANT_ACTIVITY_CONTROL_POPUP_LINK" desc="Link text for activity control details popup.">
     Learn more
+  </message>
+  <message name="IDS_ASSISTANT_VOICE_MATCH_TITLE" desc="Title for assistant voice match screen.">
+    Access your Assistant with Voice Match
+  </message>
+  <message name="IDS_ASSISTANT_VOICE_MATCH_MESSAGE" desc="Message for Assistant voice match screen.">
+    Your Assistant uses these recordings to create your voice model, which is stored in your device. Delete or retrain the model in Assistant settings. View or delete voice commands in your Google activity controls.
+  </message>
+  <message name="IDS_ASSISTANT_VOICE_MATCH_RECORDING" desc="Title for recording in assistant voice match screen.">
+    Teach the Assistant to recognize your voice
+  </message>
+  <message name="IDS_ASSISTANT_VOICE_MATCH_COMPLETED" desc="Title for completed assistant voice match screen.">
+    Ok Google is all set
+  </message>
+  <message name="IDS_ASSISTANT_VOICE_MATCH_FOOTER" desc="Footer message for Assistant voice match screen.">
+    Recording "Ok Google" 3 times creates your voice model, which is stored on your device. Delete or retrain the model in Assistant settings. View or delete voice commands in your Google activity controls.
+  </message>
+  <message name="IDS_ASSISTANT_VOICE_MATCH_INSTRUCTION0" desc="Instruction message for assistant voice match recording.">
+    Say "Ok Google"
+  </message>
+  <message name="IDS_ASSISTANT_VOICE_MATCH_INSTRUCTION1" desc="Instruction message for assistant voice match recording.">
+    Say "Ok Google" again
+  </message>
+  <message name="IDS_ASSISTANT_VOICE_MATCH_INSTRUCTION2" desc="Instruction message for assistant voice match recording.">
+    Now say "Hey Google"
+  </message>
+  <message name="IDS_ASSISTANT_VOICE_MATCH_INSTRUCTION3" desc="Instruction message for assistant voice match recording.">
+    Say "Hey Google" again
+  </message>
+  <message name="IDS_ASSISTANT_VOICE_MATCH_COMPLETE" desc="Complete message for assistant voice match recording.">
+    Complete
+  </message>
+  <message name="IDS_ASSISTANT_VOICE_MATCH_UPLOADING" desc="Uploading message for assistant voice match recording.">
+    Uploading...
+  </message>
+  <message name="IDS_ASSISTANT_VOICE_MATCH_ALREADY_SETUP_TITLE" desc="Title for assistant voice match already setup.">
+    Your Assistant can already recognize your voice
+  </message>
+  <message name="IDS_ASSISTANT_VOICE_MATCH_ALREADY_SETUP_MESSAGE" desc="Message for assistant voice match already setup.">
+    It looks like you've already set up Voice Match with your Google Assistant on another device. These previous recordings can be used to make a voice model on this device. This should take less than a minute.
+  </message>
+  <message name="IDS_ASSISTANT_NO_THANKS_BUTTON" desc="No thanks button for asssitant optin flow.">
+    No thanks
+  </message>
+  <message name="IDS_ASSISTANT_LATER_BUTTON" desc="Do it later button for asssitant optin flow.">
+    Do it later
+  </message>
+  <message name="IDS_ASSISTANT_AGREE_BUTTON" desc="Agree button for asssitant optin flow.">
+    I agree
+  </message>
+  <message name="IDS_ASSISTANT_SAVE_BUTTON" desc="Save button for asssitant optin flow.">
+    Save
+  </message>
+  <message name="IDS_ASSISTANT_WAIT_MESSAGE" desc="Wait message for asssitant optin flow.">
+    Please wait...
   </message>
 
   <!-- Print Job Notification -->
@@ -3751,6 +3452,9 @@
   <message name="IDS_CROSTINI_TERMINAL_APP_NAME" desc="Name of the Terminal app, which provides access to a Linux virtual machine.">
     Terminal
   </message>
+  <message name="IDS_CROSTINI_TERMINAL_APP_SEARCH_TERMS" desc="Additional search terms for the 'Terminal' app, which provides access to a Linux virtual machine.">
+    Linux
+  </message>
   <message name="IDS_CROSTINI_INSTALLER_TITLE" desc="Title of the Crostini installer, a dialog for installing Linux.">
     Set up Linux (Beta) on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
   </message>
@@ -3784,11 +3488,14 @@
   <message name="IDS_CROSTINI_INSTALLER_START_CONTAINER_MESSAGE" desc="Text shown in the Crostini installer dialog when the container inside the VM is starting">
     This process may take a few minutes. Starting the Linux container.
   </message>
+  <message name="IDS_CROSTINI_INSTALLER_SETUP_CONTAINER_MESSAGE" desc="Text shown in the Crostini installer dialog when the container inside the VM is being set up">
+    This process may take a few minutes. Setting up the Linux container.
+  </message>
   <message name="IDS_CROSTINI_INSTALLER_FETCH_SSH_KEYS_MESSAGE" desc="Text shown in the Crostini installer dialog when fetching ssh keys">
-    This process may take a few minutes. Starting the Linux container.
+    This process may take a few minutes. Setting up the Linux container.
   </message>
   <message name="IDS_CROSTINI_INSTALLER_MOUNT_CONTAINER_MESSAGE" desc="Text shown in the Crostini installer dialog when doing sshfs mount of container">
-    This process may take a few minutes. Starting the Linux container.
+    This process may take a few minutes. Setting up the Linux container.
   </message>
   <message name="IDS_CROSTINI_INSTALLER_RETRY_BUTTON" desc="Retry button of the Crostini installer dialog that starts the install steps again.">
     Retry
@@ -3810,6 +3517,9 @@
   </message>
   <message name="IDS_CROSTINI_INSTALLER_START_CONTAINER_ERROR" desc="Text shown in the Crostini installer dialog when the container fails to start inside the VM">
     The Linux container didn't start. Please try again.
+  </message>
+  <message name="IDS_CROSTINI_INSTALLER_SETUP_CONTAINER_ERROR" desc="Text shown in the Crostini installer dialog when the container fails to be set up inside the VM">
+    The Linux container setup did not complete. Please try again.
   </message>
   <message name="IDS_CROSTINI_INSTALLER_FETCH_SSH_KEYS_ERROR" desc="Text shown in the Crostini installer dialog when there is an error fetching ssh keys">
     Error configuring Linux files. Please try again.
@@ -3872,22 +3582,6 @@
   </message>
 
   <!-- Easy Unlock strings -->
-  <!-- Strings for the Easy Unlock promo notification -->
-  <message name="IDS_EASY_UNLOCK_SETUP_NOTIFICATION_TITLE" desc="Title for the notification inviting the user to use the Easy Unlock feature.">
-    Automatically unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
-  </message>
-  <message name="IDS_EASY_UNLOCK_SETUP_NOTIFICATION_MESSAGE" desc="The body text for the notification inviting the user to use the Easy Unlock feature.">
-    Try Smart Lock to unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> without a password when your phone is nearby.
-  </message>
-  <message name="IDS_EASY_UNLOCK_SETUP_NOTIFICATION_TITLE_ALTERNATE" desc="Title for the notification inviting the user to use the Easy Unlock feature.">
-    Screen lock required
-  </message>
-  <message name="IDS_EASY_UNLOCK_SETUP_NOTIFICATION_MESSAGE_ALTERNATE" desc="The body text for the notification inviting the user to use the Easy Unlock feature.">
-    Make your phone more secure before connecting your Chromebook. <ph name="LINK_BEGIN">&lt;a href="$1<ex>www.google.com</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
-  </message>
-  <message name="IDS_EASY_UNLOCK_SETUP_NOTIFICATION_BUTTON_TITLE" desc="The text to show on the button in the notification inviting the user to use the Easy Unlock feature.">
-    Start setup
-  </message>
   <!-- Strings for notification shown when the Chromebook is added to Easy Unlock -->
   <message name="IDS_EASY_UNLOCK_CHROMEBOOK_ADDED_NOTIFICATION_TITLE" desc="Title for notification shown when this Chromebook is added to Easy Unlock as an additional Easy Unlock device.">
     Smart Lock is turned on
@@ -3908,9 +3602,6 @@
   <message name="IDS_EASY_UNLOCK_PAIRING_CHANGED_NOTIFICATION_UPDATE_BUTTON" desc="Label of a button on the notification shown when the paired phone is changed to update Smart lock now.">
     Update now
   </message>
-  <message name="IDS_EASY_UNLOCK_NOTIFICATION_LEARN_MORE_BUTTON" desc="Label of a button on the notification to show Smart lock settings.">
-    Change settings
-  </message>
   <!-- Strings for the phone change applied notification -->
   <message name="IDS_EASY_UNLOCK_PAIRING_CHANGE_APPLIED_NOTIFICATION_TITLE" desc="Title for notification shown when the pairing change is applied.">
     Phone change updated
@@ -3918,119 +3609,8 @@
   <message name="IDS_EASY_UNLOCK_PAIRING_CHANGE_APPLIED_NOTIFICATION_MESSAGE" desc="Message for notification shown when the pairing change is applied.">
     Your <ph name="PHONE_NAME">$1<ex>Moto X</ex></ph> can now unlock this <ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph> too.
   </message>
-  <!-- Other -->
-  <message name="IDS_EASY_UNLOCK_DESCRIPTION" desc="Description of feature that automatically unlocks the user's Chromebook when their phone is nearby.">
-    Use your phone to unlock your <ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph>
-  </message>
-  <message name="IDS_EASY_UNLOCK_ON" desc="Tells the user they now have turned on the Smart Lock feature.">
-    Smart Lock is on
-  </message>
 
   <!-- Strings for the Easy Unlock setup dialog -->
-  <!-- Step 1: Intro -->
-  <message name="IDS_EASY_UNLOCK_SETUP_INTRO_HEADER_TITLE" desc="The text to show as the header title of the Easy Unlock dialog during the first, introductory step.">
-    Set up Smart Lock for your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
-  </message>
-  <message name="IDS_EASY_UNLOCK_SETUP_INTRO_HEADER_TEXT" desc="The text to show as the header body text of the Easy Unlock dialog during the first, introductory step. Note that the &lt;a&gt; element surrounds a link; these HTML elements should be preserved in the translation.">
-    Make sure your phone is nearby. To find your phone, Bluetooth will be turned on for all devices that have your account. &lt;a&gt;Learn more&lt;/a&gt;
-  </message>
-  <message name="IDS_EASY_UNLOCK_SETUP_INTRO_FIND_PHONE_BUTTON_LABEL" desc="The text to show as the 'Find phone' button label in the Easy Unlock dialog. This button is visible during the first, introductory step.">
-    Find your phone
-  </message>
-  <message name="IDS_EASY_UNLOCK_SETUP_INTRO_FINDING_PHONE_BUTTON_LABEL" desc="The text to show as the 'Finding phone...' button label in the Easy Unlock dialog. This button is visible during the first, introductory step.">
-    Finding your phone
-  </message>
-  <message name="IDS_EASY_UNLOCK_SETUP_INTRO_RETRY_FIND_PHONE_BUTTON_LABEL" desc="The text to show as a label for the button in Easy Unlock setup dialog when the setup app fails to find any phones to be used. Finding a phone is the first setup step. Clicking the button restarts the setup flow.">
-    Retry
-  </message>
-  <message name="IDS_EASY_UNLOCK_SETUP_INTRO_CLOSE_FIND_PHONE_BUTTON_LABEL" desc="The text to show as a label for the button in Easy Unlock setup dialog when the setup app finds only phones with out-of-date software. Finding a phone is the first setup step. Clicking the button closes the setup dialog.">
-    Close
-  </message>
-  <message name="IDS_EASY_UNLOCK_SETUP_INTRO_HOW_IS_THIS_SECURE_LINK_TEXT" desc="The displayed text for the link that explains how the Easy Unlock feature is secure. This link is visible during the first, introductory step of the Easy Unlock setup dialog.">
-    How this is secure
-  </message>
-  <!-- Step 1.5: "Secure this phone to continue" -->
-  <message name="IDS_EASY_UNLOCK_SETUP_SECURE_PHONE_HEADER_TITLE" desc="The text to show as the header title of the Easy Unlock dialog after a phone has been found but is not secured by a lock screen.">
-    Set a screen lock for safety
-  </message>
-  <message name="IDS_EASY_UNLOCK_SETUP_SECURE_PHONE_HEADER_TEXT" desc="The text to show as the header body text of the Easy Unlock dialog after a suitable phone has been found but is not secured by a lock screen. Note that the &lt;a&gt; element surrounds a link; these HTML elements should be preserved in the translation.">
-    The phone you used to unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> needs a screen lock for security. Usually, that’s a PIN, pattern, or password. Already have a screen lock? Select Check again to verify and continue setup.
-  </message>
-  <message name="IDS_EASY_UNLOCK_SETUP_SECURE_PHONE_BUTTON_LABEL" desc="The text to show as the 'How to secure the phone' button label in the Easy Unlock dialog. This button is visible during step 1.5, if the user is prompted to secure their phone.">
-    Set a Screen Lock
-  </message>
-  <message name="IDS_EASY_UNLOCK_SETUP_SECURE_PHONE_LINK_TEXT" desc="The text to show for the link to check the phone again, after the user has enabled a secure lock screen. This button is visible during the 1.5th step of the Easy Unlock dialog, when the user is prompted to secure their phone.">
-    Check again
-  </message>
-  <!-- Step 2: Phone Found -->
-  <message name="IDS_EASY_UNLOCK_SETUP_FOUND_PHONE_HEADER_TITLE" desc="The text to show as the header title of the Easy Unlock dialog during the second step, after a suitable phone has been found.">
-    Choose a phone to unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
-  </message>
-  <message name="IDS_EASY_UNLOCK_SETUP_FOUND_PHONE_HEADER_TEXT" desc="The text to show as the header body text of the Easy Unlock dialog during the second step, after a suitable phone has been found. Note that the &lt;a&gt; element surrounds a link; these HTML elements should be preserved in the translation.">
-    You’ll get a notification on this phone so keep the phone nearby.
-  </message>
-  <!-- TODO(isherman): Remove this duplicate string once proximity work is completed. -->
-  <message name="IDS_EASY_UNLOCK_SETUP_FOUND_PHONE_USE_THIS_PHONE_BUTTON_LABEL" desc="The text to show as the 'Use this phone' button label in the Easy Unlock dialog. This button is visible during the second step, after a suitable phone is found.">
-    Use this phone
-  </message>
-  <message name="IDS_EASY_UNLOCK_SETUP_FOUND_PHONE_DEVICE_FORMATTED_BUTTON_LABEL" desc="The text to show as the 'Use [insert_phone_name]' button label in the Easy Unlock dialog. This button is visible during the second step, after a suitable phone is found.">
-    <ph name="PHONE_NAME">$1<ex>Nexus 6</ex></ph>
-  </message>
-  <message name="IDS_EASY_UNLOCK_SETUP_FOUND_PHONE_SWITCH_PHONE_LINK_LABEL" desc="The text to show for the link to switch phones in the Easy Unlock dialog. This button is visible during the second step, after serveral suitable phones are found.">
-    Show another phone
-  </message>
-  <message name="IDS_EASY_UNLOCK_SETUP_PAIRING_PHONE_FAILED_BUTTON_LABEL" desc="Text to show as a label for the button in Easy Unlock setup dialog when pairing Chrome with the phone detected during setup fails. Pairing is the second step in the setup. Clicking the button restarts the whole setup flow.">
-    Restart
-  </message>
-  <!-- Step 2.5: "Recommended: Set up Smart Lock for Android" -->
-  <message name="IDS_EASY_UNLOCK_SETUP_ANDROID_SMART_LOCK_HEADER_TITLE" desc="The text to show as the header title of the Easy Unlock dialog to encourage the user to enable Smart Lock for Android if it is not currently enabled.">
-    Set up Smart Lock for Android
-  </message>
-  <message name="IDS_EASY_UNLOCK_SETUP_ANDROID_SMART_LOCK_HEADER_TEXT" desc="The text to show as the header body text of the Easy Unlock dialog to encourage the user to enable Smart Lock for Android if it is not currently enabled. Note that the &lt;a&gt; element surrounds a link; these HTML elements should be preserved in the translation.">
-    Update your phone's screen lock so it turns off when you're nearby. You'll unlock the phone faster, and enjoy a better Smart Lock experience on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
-  </message>
-  <message name="IDS_EASY_UNLOCK_SETUP_ANDROID_SMART_LOCK_DONE_BUTTON_LABEL" desc="The text to show as the button label in the Easy Unlock dialog step for encouraging the user to enable Smart Lock for Android. Clicking this button advances the dialog to step 3.">
-    Next
-  </message>
-  <!-- Step 3: "You're all set" -->
-  <message name="IDS_EASY_UNLOCK_SETUP_COMPLETE_HEADER_TITLE" desc="The text to show as the header title of the Easy Unlock dialog during the penultimate step, confirming success.">
-    Smart Lock is all set
-  </message>
-  <message name="IDS_EASY_UNLOCK_SETUP_COMPLETE_HEADER_TEXT" desc="The text to show as the header body text of the Easy Unlock dialog during the penultimate step, confirming success.">
-    Your phone also unlocks your other <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>s because they are automatically synced.
-  </message>
-  <message name="IDS_EASY_UNLOCK_SETUP_COMPLETE_TRY_IT_OUT_BUTTON_LABEL" desc="The text to show as the 'Try it out' button label in the Easy Unlock dialog. This button is visible during the penultimate step, once the Easy Unlock setup succeeds.">
-    Try Smart Lock
-  </message>
-  <message name="IDS_EASY_UNLOCK_SETUP_COMPLETE_SETTINGS_LINK_TEXT" desc="The text to show as the link text to access Easy Unlock settings. This button is visible during the penultimate step, once the Easy Unlock setup succeeds.">
-    Settings
-  </message>
-  <!-- Step 4: Post Lock Screen -->
-  <message name="IDS_EASY_UNLOCK_SETUP_POST_LOCK_DISMISS_BUTTON_LABEL" desc="The text to show as the button label in the Easy Unlock dialog during the post lockscreen step. Clicking this button dismisses the dialog.">
-    Done
-  </message>
-  <!-- Error strings for the Easy Unlock setup dialog -->
-  <message name="IDS_EASY_UNLOCK_SETUP_ERROR_BLUETOOTH_UNAVAILBLE" desc="The error message to display when the user's Chromebook might not have Bluetooth functionality during Easy Unlock setup. Note that the &lt;a&gt; element surrounds a link; these HTML elements should be preserved in the translation.">
-    Can’t find your phone. Make sure your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>'s Bluetooth is turned on. &lt;a&gt;Learn more&lt;/a&gt;
-  </message>
-  <message name="IDS_EASY_UNLOCK_SETUP_ERROR_OFFLINE" desc="The error message to display when the user's Chromebook appears to be offline during Easy Unlock setup. Note that the &lt;a&gt; element surrounds a link; these HTML elements should be preserved in the translation.">
-    Can’t find your phone. Make sure your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> is connected to Wi-Fi or a mobile network. &lt;a&gt;Learn more&lt;/a&gt;
-  </message>
-  <message name="IDS_EASY_UNLOCK_SETUP_ERROR_REMOTE_SOFTWARE_OUT_OF_DATE" desc="The error message to display when the user's phone software is too old for compatibility with Easy Unlock. Note that the &lt;a&gt; element surrounds a link; these HTML elements should be preserved in the translation.">
-    Found your <ph name="PHONE_TYPE">$1<ex>LGE Nexus 5</ex></ph>. But Smart Lock only works on devices with Android 5.0 and up. &lt;a&gt;Learn more&lt;/a&gt;
-  </message>
-  <message name="IDS_EASY_UNLOCK_SETUP_ERROR_REMOTE_SOFTWARE_OUT_OF_DATE_GENERIC" desc="The generic error message to display when the user's phone software is too old for compatibility with Easy Unlock. This is only shown when the user's phone type is not known. Note that the &lt;a&gt; element surrounds a link; these HTML elements should be preserved in the translation.">
-    Found your phone. But Smart Lock only works on devices with Android 5.0 and up. &lt;a&gt;Learn more&lt;/a&gt;
-  </message>
-  <message name="IDS_EASY_UNLOCK_SETUP_ERROR_FINDING_PHONE" desc="A generic catch-all error message to display when something goes wrong after the user clicks 'Find my phone' during Easy Unlock setup. Note that the &lt;a&gt; element surrounds a link; these HTML elements should be preserved in the translation.">
-    Can’t find your phone. Make sure you’re using a compatible Android phone that’s turned on and handy. &lt;a&gt;Learn more&lt;/a&gt;
-  </message>
-  <message name="IDS_EASY_UNLOCK_SETUP_ERROR_SYNC_PHONE_STATE_FAILED" desc="The error message to display when the Chromebook fails to sync the phone's state.">
-    Smart Lock is currently unavailable. Please try again later.
-  </message>
-  <message name="IDS_EASY_UNLOCK_SETUP_ERROR_CONNECTING_TO_PHONE" desc="A generic catch-all error message to display when something goes wrong after the user clicks 'Use this phone' during Easy Unlock setup. Note that the &lt;a&gt; element surrounds a link; these HTML elements should be preserved in the translation.">
-    Can't connect to your phone. Make sure you’re using a compatible Android phone that is turned on and handy. &lt;a&gt;Learn more&lt;/a&gt;
-  </message>
   <!-- Easy Unlock strings shown on the lock screen -->
   <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_NO_BLUETOOTH" desc="Tooltip for an icon on a user's lock screen pod shown by Easy Unlock when the Chromebook doesn't have Bluetooth enabled.">
     Bluetooth is off on this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. Enter your password, and turn on Bluetooth.
@@ -4052,9 +3632,6 @@
   </message>
   <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_PHONE_LOCKED_AND_RSSI_TOO_LOW" desc="Tooltip for an icon on a user's lock screen pod shown by Easy Unlock when a phone eligible to unlock the Chromebook is detected, but it's both (a) locked and (b) not in the Chromebook's proximity (> 1 foot away).">
     Unlock your phone and bring it closer to unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
-  </message>
-  <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_INITIAL_AUTHENTICATED" desc="Tooltip text shown on lock screen when a phone eligible to unlock the Chromebook via Easy Unlock is detected and authenticated for the first time.">
-    When your phone is unlocked and nearby, just select to unlock. Otherwise, enter your password or PIN.
   </message>
   <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_INSTRUCTIONS" desc="Tooltip for an icon on user's lock screen pod shown by Easy Unlock when a phone eligible to unlock the Chromebook is detected and authenticated. The tooltip shows instructions for hard-locking the Chromebook.">
     If you click this icon, you will manually lock this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. Next time, you’ll need to type your password to enter.

@@ -284,28 +284,3 @@ NSString* const kWebURLsWithTitlesPboardType  = @"WebURLsWithTitlesPboardType"; 
   return NO;
 }
 @end
-
-@implementation NSPasteboard(ChromiumHTMLUtils)
-
-// Convert the RTF to HTML via an NSAttributedString.
-- (NSString*)htmlFromRtf {
-  if (![[self types] containsObject:NSRTFPboardType])
-    return @"";
-
-  NSAttributedString* attributed =
-      [[[NSAttributedString alloc]
-             initWithRTF:[self dataForType:NSRTFPboardType]
-      documentAttributes:nil] autorelease];
-  NSDictionary* attributeDict =
-      [NSDictionary dictionaryWithObject:NSHTMLTextDocumentType
-                                  forKey:NSDocumentTypeDocumentAttribute];
-  NSData* htmlData =
-      [attributed dataFromRange:NSMakeRange(0, [attributed length])
-             documentAttributes:attributeDict
-                          error:nil];
-  // According to the docs, NSHTMLTextDocumentType is UTF8.
-  return [[[NSString alloc] 
-      initWithData:htmlData encoding:NSUTF8StringEncoding] autorelease];
-}
-
-@end

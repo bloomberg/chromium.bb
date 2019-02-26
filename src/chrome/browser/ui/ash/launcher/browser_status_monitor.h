@@ -55,21 +55,10 @@ class BrowserStatusMonitor : public BrowserTabStripTrackerDelegate,
   void OnBrowserRemoved(Browser* browser) override;
 
   // TabStripModelObserver overrides:
-  void ActiveTabChanged(content::WebContents* old_contents,
-                        content::WebContents* new_contents,
-                        int index,
-                        int reason) override;
-  void TabReplacedAt(TabStripModel* tab_strip_model,
-                     content::WebContents* old_contents,
-                     content::WebContents* new_contents,
-                     int index) override;
-  void TabInsertedAt(TabStripModel* tab_strip_model,
-                     content::WebContents* contents,
-                     int index,
-                     bool foreground) override;
-  void TabClosingAt(TabStripModel* tab_strip_mode,
-                    content::WebContents* contents,
-                    int index) override;
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override;
 
   // Called from our own |LocalWebContentsObserver| when web contents did go
   // away without any other notification. This might happen in case of
@@ -91,6 +80,15 @@ class BrowserStatusMonitor : public BrowserTabStripTrackerDelegate,
 
  private:
   class LocalWebContentsObserver;
+
+  // Called by TabStripModelChanged()
+  void OnActiveTabChanged(content::WebContents* old_contents,
+                          content::WebContents* new_contents);
+  void OnTabReplaced(TabStripModel* tab_strip_model,
+                     content::WebContents* old_contents,
+                     content::WebContents* new_contents);
+  void OnTabInserted(content::WebContents* contents);
+  void OnTabClosing(content::WebContents* contents);
 
   // Create LocalWebContentsObserver for |contents|.
   void AddWebContentsObserver(content::WebContents* contents);

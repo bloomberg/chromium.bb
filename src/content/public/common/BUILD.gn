@@ -118,8 +118,6 @@ jumbo_source_set("common_sources") {
     "bind_interface_helpers.h",
     "bindings_policy.h",
     "browser_controls_state.h",
-    "browser_side_navigation_policy.cc",
-    "browser_side_navigation_policy.h",
     "cdm_info.h",
     "child_process_host.h",
     "child_process_host_delegate.h",
@@ -169,6 +167,10 @@ jumbo_source_set("common_sources") {
     "mhtml_generation_params.h",
     "mime_handler_view_mode.cc",
     "mime_handler_view_mode.h",
+    "navigation_policy.cc",
+    "navigation_policy.h",
+    "network_service_util.cc",
+    "network_service_util.h",
     "origin_util.h",
     "page_importance_signals.h",
     "page_state.cc",
@@ -180,9 +182,13 @@ jumbo_source_set("common_sources") {
     "persistent_notification_status.h",
     "previews_state.h",
     "process_type.h",
+    "profiling.cc",
+    "profiling.h",
     "push_subscription_options.h",
     "referrer.cc",
     "referrer.h",
+    "referrer_type_converters.cc",
+    "referrer_type_converters.h",
     "renderer_preferences.cc",
     "renderer_preferences.h",
     "resource_request_body_android.cc",
@@ -242,7 +248,6 @@ jumbo_source_set("common_sources") {
     "//net",
     "//services/network:network_service",
     "//services/network/public/mojom",
-    "//services/service_manager/embedder",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
     "//third_party/blink/public:blink_headers",
@@ -340,11 +345,6 @@ mojom("interfaces") {
     "//extensions/common:mojo_blink",
   ]
 
-  # imports vs deps check is disabled for this target to work around
-  # windows multiple definitions linker error caused by having
-  # both a direct and an indirect dependency on the same target
-  skip_deps_check = true
-
   sources = [
     "appcache_info.mojom",
     "fullscreen_video_element.mojom",
@@ -372,7 +372,9 @@ mojom("interfaces") {
 
   public_deps = [
     ":resource_type_bindings",
+    "//mojo/public/mojom/base:base",
     "//services/network/public/mojom",
+    "//services/network/public/mojom:websocket_mojom",
     "//third_party/blink/public:mojo_bindings",
     "//ui/accessibility:ax_enums_mojo",
     "//url/mojom:url_mojom_gurl",

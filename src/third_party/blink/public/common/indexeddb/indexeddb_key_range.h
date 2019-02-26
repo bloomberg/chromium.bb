@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_INDEXEDDB_INDEXEDDB_KEY_RANGE_H_
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_INDEXEDDB_INDEXEDDB_KEY_RANGE_H_
 
-#include "third_party/blink/common/common_export.h"
+#include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
 
 namespace blink {

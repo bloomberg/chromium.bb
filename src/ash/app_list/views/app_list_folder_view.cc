@@ -449,8 +449,7 @@ AppListFolderView::AppListFolderView(AppsContainerView* container_view,
   AddChildView(background_view_);
   view_model_->Add(background_view_, kIndexBackground);
 
-  contents_container_->SetPaintToLayer();
-  contents_container_->layer()->SetFillsBoundsOpaquely(false);
+  contents_container_->SetPaintToLayer(ui::LAYER_NOT_DRAWN);
   AddChildView(contents_container_);
   view_model_->Add(contents_container_, kIndexContentsContainer);
 
@@ -578,7 +577,8 @@ void AppListFolderView::UpdatePreferredBounds() {
   // Calculate the folder icon's bounds relative to AppsContainerView.
   gfx::RectF rect(activated_folder_item_view->GetIconBounds());
   ConvertRectToTarget(activated_folder_item_view, container_view_, &rect);
-  gfx::Rect icon_bounds_in_container = gfx::ToEnclosingRect(rect);
+  gfx::Rect icon_bounds_in_container =
+      container_view_->GetMirroredRect(gfx::ToEnclosingRect(rect));
 
   // The opened folder view's center should try to overlap with the folder
   // item's center while it must fit within the bounds of AppsContainerView and

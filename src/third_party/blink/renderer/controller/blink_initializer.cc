@@ -67,8 +67,10 @@ namespace {
 
 class EndOfTaskRunner : public Thread::TaskObserver {
  public:
-  void WillProcessTask() override { AnimationClock::NotifyTaskStart(); }
-  void DidProcessTask() override {
+  void WillProcessTask(const base::PendingTask&) override {
+    AnimationClock::NotifyTaskStart();
+  }
+  void DidProcessTask(const base::PendingTask&) override {
     Microtask::PerformCheckpoint(V8PerIsolateData::MainThreadIsolate());
     V8Initializer::ReportRejectedPromisesOnMainThread();
   }
@@ -121,19 +123,14 @@ void InitializeCommon(Platform* platform,
 
   GetBlinkInitializer().RegisterInterfaces(*registry);
 
-  // currentThread is null if we are running on a thread without a message loop.
-  if (Thread* current_thread = platform->CurrentThread()) {
-    DCHECK(!g_end_of_task_runner);
-    g_end_of_task_runner = new EndOfTaskRunner;
-    current_thread->AddTaskObserver(g_end_of_task_runner);
-  }
+  DCHECK(!g_end_of_task_runner);
+  g_end_of_task_runner = new EndOfTaskRunner;
+  Thread::Current()->AddTaskObserver(g_end_of_task_runner);
 
-  if (Thread* main_thread = Platform::Current()->MainThread()) {
-    scoped_refptr<base::SequencedTaskRunner> task_runner =
-        main_thread->GetTaskRunner();
-    if (task_runner)
-      MemoryAblationExperiment::MaybeStartForRenderer(task_runner);
-  }
+  scoped_refptr<base::SequencedTaskRunner> task_runner =
+      Thread::MainThread()->GetTaskRunner();
+  if (task_runner)
+    MemoryAblationExperiment::MaybeStartForRenderer(task_runner);
 
 #if defined(OS_ANDROID)
   // Initialize CrashMemoryMetricsReporterImpl in order to assure that memory
@@ -162,10 +159,10 @@ void CreateMainThreadAndInitialize(Platform* platform,
 void BlinkInitializer::RegisterInterfaces(
     service_manager::BinderRegistry& registry) {
   ModulesInitializer::RegisterInterfaces(registry);
-  Thread* main_thread = Platform::Current()->MainThread();
+  Thread* main_thread = Thread::MainThread();
   // GetSingleThreadTaskRunner() uses GetTaskRunner() internally.
   // crbug.com/781664
-  if (!main_thread || !main_thread->GetTaskRunner())
+  if (!main_thread->GetTaskRunner())
     return;
 
 #if defined(OS_ANDROID)

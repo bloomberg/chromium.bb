@@ -11,6 +11,10 @@ namespace unified_consent {
 UnifiedConsentServiceClient::UnifiedConsentServiceClient() {}
 UnifiedConsentServiceClient::~UnifiedConsentServiceClient() {}
 
+bool UnifiedConsentServiceClient::IsServiceSupported(Service service) {
+  return GetServiceState(service) != ServiceState::kNotSupported;
+}
+
 void UnifiedConsentServiceClient::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
 }

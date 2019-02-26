@@ -35,27 +35,18 @@ class CONTENT_EXPORT ChildFrameCompositingHelper {
 
   virtual ~ChildFrameCompositingHelper();
 
-  void SetPrimarySurfaceId(const viz::SurfaceId& surface_id,
-                           const gfx::Size& frame_size_in_dip,
-                           const cc::DeadlinePolicy& deadline);
-  void SetFallbackSurfaceId(const viz::SurfaceId& surface_id,
-                            const gfx::Size& frame_size_in_dip);
+  void SetSurfaceId(const viz::SurfaceId& surface_id,
+                    const gfx::Size& frame_size_in_dip,
+                    const cc::DeadlinePolicy& deadline);
   void UpdateVisibility(bool visible);
   void ChildFrameGone(const gfx::Size& frame_size_in_dip,
                       float device_scale_factor);
 
-  const viz::SurfaceId& primary_surface_id() const {
-    return primary_surface_id_;
-  }
-
-  const viz::SurfaceId& fallback_surface_id() const {
-    return fallback_surface_id_;
-  }
+  const viz::SurfaceId& surface_id() const { return surface_id_; }
 
  private:
   ChildFrameCompositor* const child_frame_compositor_;
-  viz::SurfaceId primary_surface_id_;
-  viz::SurfaceId fallback_surface_id_;
+  viz::SurfaceId surface_id_;
   scoped_refptr<cc::SurfaceLayer> surface_layer_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildFrameCompositingHelper);

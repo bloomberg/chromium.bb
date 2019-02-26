@@ -259,20 +259,26 @@ void DatabaseTracker::CloseTrackerDatabaseAndClearCaches() {
   }
 }
 
-base::string16 DatabaseTracker::GetOriginDirectory(
+base::FilePath DatabaseTracker::GetOriginDirectory(
     const std::string& origin_identifier) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  if (!is_incognito_)
-    return base::UTF8ToUTF16(origin_identifier);
 
-  auto it = incognito_origin_directories_.find(origin_identifier);
-  if (it != incognito_origin_directories_.end())
-    return it->second;
+  base::string16 origin_directory;
 
-  base::string16 origin_directory =
-      base::IntToString16(incognito_origin_directories_generator_++);
-  incognito_origin_directories_[origin_identifier] = origin_directory;
-  return origin_directory;
+  if (!is_incognito_) {
+    origin_directory = base::UTF8ToUTF16(origin_identifier);
+  } else {
+    auto it = incognito_origin_directories_.find(origin_identifier);
+    if (it != incognito_origin_directories_.end()) {
+      origin_directory = it->second;
+    } else {
+      origin_directory =
+          base::IntToString16(incognito_origin_directories_generator_++);
+      incognito_origin_directories_[origin_identifier] = origin_directory;
+    }
+  }
+
+  return db_dir_.Append(base::FilePath::FromUTF16Unsafe(origin_directory));
 }
 
 base::FilePath DatabaseTracker::GetFullDBFilePath(
@@ -288,9 +294,8 @@ base::FilePath DatabaseTracker::GetFullDBFilePath(
   if (id < 0)
     return base::FilePath();
 
-  return db_dir_.Append(base::FilePath::FromUTF16Unsafe(
-      GetOriginDirectory(origin_identifier))).AppendASCII(
-          base::Int64ToString(id));
+  return GetOriginDirectory(origin_identifier)
+      .AppendASCII(base::Int64ToString(id));
 }
 
 bool DatabaseTracker::GetOriginInfo(const std::string& origin_identifier,
@@ -394,7 +399,7 @@ bool DatabaseTracker::DeleteOrigin(const std::string& origin_identifier,
   }
 
   origins_info_map_.erase(origin_identifier);
-  base::FilePath origin_dir = db_dir_.AppendASCII(origin_identifier);
+  base::FilePath origin_dir = GetOriginDirectory(origin_identifier);
 
   // Create a temporary directory to move possibly still existing databases to,
   // as we can't delete the origin directory on windows if it contains opened
@@ -414,6 +419,24 @@ bool DatabaseTracker::DeleteOrigin(const std::string& origin_identifier,
   }
   base::DeleteFile(origin_dir, true);
   base::DeleteFile(new_origin_dir, true); // might fail on windows.
+
+  if (is_incognito_) {
+    incognito_origin_directories_.erase(origin_identifier);
+
+    // TODO(jsbell): Consider alternate data structures to avoid this
+    // linear scan.
+    for (auto it = incognito_file_handles_.begin();
+         it != incognito_file_handles_.end();) {
+      std::string id;
+      if (DatabaseUtil::CrackVfsFileName(it->first, &id, nullptr, nullptr) &&
+          id == origin_identifier) {
+        delete it->second;
+        it = incognito_file_handles_.erase(it);
+      } else {
+        ++it;
+      }
+    }
+  }
 
   databases_table_->DeleteOriginIdentifier(origin_identifier);
 

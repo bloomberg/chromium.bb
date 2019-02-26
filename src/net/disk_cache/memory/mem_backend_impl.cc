@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/memory_usage_estimator.h"
@@ -121,7 +121,7 @@ bool MemBackendImpl::SetMaxSize(int64_t max_bytes) {
   return true;
 }
 
-int MemBackendImpl::MaxFileSize() const {
+int64_t MemBackendImpl::MaxFileSize() const {
   return max_size_ / 8;
 }
 

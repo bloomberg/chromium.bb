@@ -6,7 +6,7 @@
 
 #include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
-#include "content/browser/devtools/render_frame_devtools_agent_host.h"
+#include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/web_package/signed_exchange_envelope.h"
 #include "content/browser/web_package/signed_exchange_error.h"
@@ -41,7 +41,7 @@ void CertificateRequestSentOnUI(
       FrameTreeNode::GloballyFindByID(frame_tree_node_id_getter.Run());
   if (!frame_tree_node)
     return;
-  RenderFrameDevToolsAgentHost::OnSignedExchangeCertificateRequestSent(
+  devtools_instrumentation::OnSignedExchangeCertificateRequestSent(
       frame_tree_node, request_id, loader_id, request, signed_exchange_url);
 }
 
@@ -55,7 +55,7 @@ void CertificateResponseReceivedOnUI(
       FrameTreeNode::GloballyFindByID(frame_tree_node_id_getter.Run());
   if (!frame_tree_node)
     return;
-  RenderFrameDevToolsAgentHost::OnSignedExchangeCertificateResponseReceived(
+  devtools_instrumentation::OnSignedExchangeCertificateResponseReceived(
       frame_tree_node, request_id, loader_id, url, response->head);
 }
 
@@ -67,7 +67,7 @@ void CertificateRequestCompletedOnUI(
       FrameTreeNode::GloballyFindByID(frame_tree_node_id_getter.Run());
   if (!frame_tree_node)
     return;
-  RenderFrameDevToolsAgentHost::OnSignedExchangeCertificateRequestCompleted(
+  devtools_instrumentation::OnSignedExchangeCertificateRequestCompleted(
       frame_tree_node, request_id, status);
 }
 
@@ -84,7 +84,7 @@ void OnSignedExchangeReceivedOnUI(
       FrameTreeNode::GloballyFindByID(frame_tree_node_id_getter.Run());
   if (!frame_tree_node)
     return;
-  RenderFrameDevToolsAgentHost::OnSignedExchangeReceived(
+  devtools_instrumentation::OnSignedExchangeReceived(
       frame_tree_node, devtools_navigation_token, outer_request_url,
       outer_response->head, envelope, certificate, ssl_info, errors);
 }

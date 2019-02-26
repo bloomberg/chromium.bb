@@ -41,10 +41,10 @@
 #include "third_party/blink/public/web/devtools_agent.mojom-blink.h"
 #include "third_party/blink/public/web/web_history_commit_type.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_navigation_control.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
 #include "third_party/blink/renderer/core/exported/web_input_method_controller_impl.h"
-#include "third_party/blink/renderer/core/frame/content_settings_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
@@ -63,6 +63,7 @@ class TextFinder;
 class WebAssociatedURLLoader;
 struct WebAssociatedURLLoaderOptions;
 class WebAutofillClient;
+class WebContentSettingsClient;
 class WebDevToolsAgentImpl;
 class WebLocalFrameClient;
 class WebFrameWidgetBase;
@@ -82,7 +83,7 @@ class WebVector;
 // Implementation of WebFrame, note that this is a reference counted object.
 class CORE_EXPORT WebLocalFrameImpl final
     : public GarbageCollectedFinalized<WebLocalFrameImpl>,
-      public WebLocalFrame {
+      public WebNavigationControl {
  public:
   // WebFrame methods:
   // TODO(dcheng): Fix sorting here; a number of method have been moved to
@@ -262,40 +263,10 @@ class CORE_EXPORT WebLocalFrameImpl final
   WebLocalFrameImpl* LocalRoot() override;
   WebFrame* FindFrameByName(const WebString& name) override;
   void SendPings(const WebURL& destination_url) override;
-  bool DispatchBeforeUnloadEvent(bool) override;
-  void CommitNavigation(
-      const WebURLRequest&,
-      WebFrameLoadType,
-      const WebHistoryItem&,
-      bool is_client_redirect,
-      const base::UnguessableToken& devtools_navigation_token,
-      std::unique_ptr<WebNavigationParams> navigation_params,
-      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) override;
-  blink::mojom::CommitResult CommitSameDocumentNavigation(
-      const WebURL&,
-      WebFrameLoadType,
-      const WebHistoryItem&,
-      bool is_client_redirect,
-      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) override;
-  void LoadJavaScriptURL(const WebURL&) override;
-  void CommitDataNavigation(
-      const WebURLRequest&,
-      const WebData&,
-      const WebString& mime_type,
-      const WebString& text_encoding,
-      const WebURL& unreachable_url,
-      WebFrameLoadType,
-      const WebHistoryItem&,
-      bool is_client_redirect,
-      std::unique_ptr<WebNavigationParams> navigation_params,
-      std::unique_ptr<WebDocumentLoader::ExtraData> navigation_data) override;
-  FallbackContentResult MaybeRenderFallbackContent(
-      const WebURLError&) const override;
   void ReportContentSecurityPolicyViolation(
       const blink::WebContentSecurityPolicyViolation&) override;
   bool IsLoading() const override;
   bool IsNavigationScheduledWithin(double interval) const override;
-  void SetCommittedFirstRealLoad() override;
   void NotifyUserActivation() override;
   void BlinkFeatureUsageReport(const std::set<int>& features) override;
   void MixedContentFound(const WebURL& main_resource_url,
@@ -304,8 +275,6 @@ class CORE_EXPORT WebLocalFrameImpl final
                          bool was_allowed,
                          bool had_redirect,
                          const WebSourceLocation&) override;
-  void ClientDroppedNavigation() override;
-  void MarkAsLoading() override;
   void SendOrientationChangeEvent() override;
   WebSandboxFlags EffectiveSandboxFlags() const override;
   void DidCallAddSearchProvider() override;
@@ -335,6 +304,49 @@ class CORE_EXPORT WebLocalFrameImpl final
   void PerformMediaPlayerAction(const WebPoint&,
                                 const WebMediaPlayerAction&) override;
 
+  // WebNavigationControl methods:
+  bool DispatchBeforeUnloadEvent(bool) override;
+  void CommitNavigation(
+      const WebURLRequest&,
+      WebFrameLoadType,
+      const WebHistoryItem&,
+      bool is_client_redirect,
+      const base::UnguessableToken& devtools_navigation_token,
+      std::unique_ptr<WebNavigationParams> navigation_params,
+      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) override;
+  blink::mojom::CommitResult CommitSameDocumentNavigation(
+      const WebURL&,
+      WebFrameLoadType,
+      const WebHistoryItem&,
+      bool is_client_redirect,
+      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) override;
+  void LoadJavaScriptURL(const WebURL&) override;
+  void CommitDataNavigation(
+      const WebURLRequest&,
+      const WebData&,
+      const WebString& mime_type,
+      const WebString& text_encoding,
+      const WebURL& unreachable_url,
+      WebFrameLoadType,
+      const WebHistoryItem&,
+      bool is_client_redirect,
+      std::unique_ptr<WebNavigationParams> navigation_params,
+      std::unique_ptr<WebDocumentLoader::ExtraData> navigation_data) override;
+  FallbackContentResult MaybeRenderFallbackContent(
+      const WebURLError&) const override;
+  void RenderFallbackContent() const override;
+  void SetCommittedFirstRealLoad() override;
+  void ClientDroppedNavigation() override;
+  void MarkAsLoading() override;
+  bool CreatePlaceholderDocumentLoader(
+      const WebURLRequest&,
+      WebFrameLoadType,
+      WebNavigationType,
+      bool is_client_redirect,
+      const base::UnguessableToken& devtools_navigation_token,
+      std::unique_ptr<WebNavigationParams>,
+      std::unique_ptr<WebDocumentLoader::ExtraData>) override;
+
   void InitializeCoreFrame(Page&, FrameOwner*, const AtomicString& name);
   LocalFrame* GetFrame() const { return frame_.Get(); }
 
@@ -357,6 +369,12 @@ class CORE_EXPORT WebLocalFrameImpl final
                                               WebSandboxFlags,
                                               ParsedFeaturePolicy);
 
+  WebLocalFrameImpl(WebTreeScopeType,
+                    WebLocalFrameClient*,
+                    blink::InterfaceRegistry*);
+  WebLocalFrameImpl(WebRemoteFrame*,
+                    WebLocalFrameClient*,
+                    blink::InterfaceRegistry*);
   ~WebLocalFrameImpl() override;
 
   LocalFrame* CreateChildFrame(const AtomicString& name,
@@ -394,16 +412,11 @@ class CORE_EXPORT WebLocalFrameImpl final
                WebHistoryCommitType);
   void DidFinish();
 
-  // Sets whether the WebLocalFrameImpl allows its document to be scrolled.
-  // If the parameter is true, allow the document to be scrolled.
-  // Otherwise, disallow scrolling.
-  void SetCanHaveScrollbars(bool) override;
-
   void SetClient(WebLocalFrameClient* client) { client_ = client; }
 
   WebFrameWidgetBase* FrameWidgetImpl() { return frame_widget_; }
 
-  ContentSettingsClient& GetContentSettingsClient() {
+  WebContentSettingsClient* GetContentSettingsClient() {
     return content_settings_client_;
   }
 
@@ -428,9 +441,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   // Otherwise creates it and then returns.
   TextFinder& EnsureTextFinder();
 
-  // Returns a hit-tested VisiblePosition for the given point
-  VisiblePosition VisiblePositionForViewportPoint(const WebPoint&);
-
   void SetFrameWidget(WebFrameWidgetBase*);
 
   // TODO(dcheng): Remove this and make |FrameWidget()| always return something
@@ -447,13 +457,6 @@ class CORE_EXPORT WebLocalFrameImpl final
 
  private:
   friend LocalFrameClientImpl;
-
-  WebLocalFrameImpl(WebTreeScopeType,
-                    WebLocalFrameClient*,
-                    blink::InterfaceRegistry*);
-  WebLocalFrameImpl(WebRemoteFrame*,
-                    WebLocalFrameClient*,
-                    blink::InterfaceRegistry*);
 
   // Sets the local core frame and registers destruction observers.
   void SetCoreFrame(LocalFrame*);
@@ -492,7 +495,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   Member<WebDevToolsAgentImpl> dev_tools_agent_;
 
   WebAutofillClient* autofill_client_;
-  ContentSettingsClient content_settings_client_;
+  WebContentSettingsClient* content_settings_client_ = nullptr;
   std::unique_ptr<SharedWorkerRepositoryClientImpl>
       shared_worker_repository_client_;
 

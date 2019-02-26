@@ -31,12 +31,12 @@ class PLATFORM_EXPORT DrawingDisplayItem final : public DisplayItem {
   DrawingDisplayItem(const DisplayItemClient& client,
                      Type type,
                      sk_sp<const PaintRecord> record,
-                     bool known_to_be_opaque);
+                     bool known_to_be_opaque = false);
 
-  void Replay(GraphicsContext&) const override;
+  void Replay(GraphicsContext&) const final;
   void AppendToDisplayItemList(const FloatSize& visual_rect_offset,
-                               cc::DisplayItemList&) const override;
-  bool DrawsContent() const override;
+                               cc::DisplayItemList&) const final;
+  bool DrawsContent() const final;
 
   const sk_sp<const PaintRecord>& GetPaintRecord() const { return record_; }
 
@@ -49,7 +49,7 @@ class PLATFORM_EXPORT DrawingDisplayItem final : public DisplayItem {
 
  private:
 #if DCHECK_IS_ON()
-  void PropertiesAsJSON(JSONObject&) const override;
+  void PropertiesAsJSON(JSONObject&) const final;
 #endif
 
   sk_sp<const PaintRecord> record_;
@@ -63,7 +63,7 @@ DISABLE_CFI_PERF
 inline DrawingDisplayItem::DrawingDisplayItem(const DisplayItemClient& client,
                                               Type type,
                                               sk_sp<const PaintRecord> record,
-                                              bool known_to_be_opaque = false)
+                                              bool known_to_be_opaque)
     : DisplayItem(client, type, sizeof(*this)),
       record_(record && record->size() ? std::move(record) : nullptr),
       known_to_be_opaque_(known_to_be_opaque) {

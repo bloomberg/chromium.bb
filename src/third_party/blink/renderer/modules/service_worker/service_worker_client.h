@@ -27,6 +27,8 @@ class MODULES_EXPORT ServiceWorkerClient : public ScriptWrappable {
   static ServiceWorkerClient* Create(
       const mojom::blink::ServiceWorkerClientInfo&);
 
+  explicit ServiceWorkerClient(const WebServiceWorkerClientInfo&);
+  explicit ServiceWorkerClient(const mojom::blink::ServiceWorkerClientInfo&);
   ~ServiceWorkerClient() override;
 
   // Client.idl
@@ -40,13 +42,10 @@ class MODULES_EXPORT ServiceWorkerClient : public ScriptWrappable {
                    ExceptionState&);
   void postMessage(ScriptState*,
                    const ScriptValue& message,
-                   const PostMessageOptions&,
+                   const PostMessageOptions*,
                    ExceptionState&);
 
  protected:
-  explicit ServiceWorkerClient(const WebServiceWorkerClientInfo&);
-  explicit ServiceWorkerClient(const mojom::blink::ServiceWorkerClientInfo&);
-
   String Uuid() const { return uuid_; }
 
  private:

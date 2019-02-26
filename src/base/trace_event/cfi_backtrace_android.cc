@@ -8,6 +8,7 @@
 #include <sys/types.h>
 
 #include "base/android/apk_assets.h"
+#include "base/android/library_loader/anchor_functions.h"
 
 #if !defined(ARCH_CPU_ARMEL)
 #error This file should not be built for this architecture.
@@ -63,10 +64,6 @@ extern "C" {
 // of the instruction in binary from PC.
 extern char __executable_start;
 
-// The address |_etext| gives the end of the .text section in the binary. This
-// value is more accurate than parsing the memory map since the mapped
-// regions are usualy larger than the .text section.
-extern char _etext;
 }
 
 namespace base {
@@ -128,13 +125,18 @@ CFIBacktraceAndroid* CFIBacktraceAndroid::GetInitializedInstance() {
 }
 
 // static
+bool CFIBacktraceAndroid::is_chrome_address(uintptr_t pc) {
+  return pc >= base::android::kStartOfText && pc < executable_end_addr();
+}
+
+// static
 uintptr_t CFIBacktraceAndroid::executable_start_addr() {
   return reinterpret_cast<uintptr_t>(&__executable_start);
 }
 
 // static
 uintptr_t CFIBacktraceAndroid::executable_end_addr() {
-  return reinterpret_cast<uintptr_t>(&_etext);
+  return base::android::kEndOfText;
 }
 
 CFIBacktraceAndroid::CFIBacktraceAndroid()
@@ -197,11 +199,12 @@ size_t CFIBacktraceAndroid::Unwind(const void** out_trace, size_t max_depth) {
   asm volatile("mov %0, pc" : "=r"(pc));
   asm volatile("mov %0, sp" : "=r"(sp));
 
-  return Unwind(pc, sp, out_trace, max_depth);
+  return Unwind(pc, sp, /*lr=*/0, out_trace, max_depth);
 }
 
 size_t CFIBacktraceAndroid::Unwind(uintptr_t pc,
                                    uintptr_t sp,
+                                   uintptr_t lr,
                                    const void** out_trace,
                                    size_t max_depth) {
   if (!can_unwind_stack_frames())
@@ -214,8 +217,19 @@ size_t CFIBacktraceAndroid::Unwind(uintptr_t pc,
     // The offset of function from the start of the chrome.so binary:
     uintptr_t func_addr = pc - executable_start_addr();
     CFIRow cfi{};
-    if (!FindCFIRowForPC(func_addr, &cfi))
+    if (!FindCFIRowForPC(func_addr, &cfi)) {
+      if (depth == 1 && lr != 0 && pc != lr) {
+        // If CFI data is not found for the frame, then we stopped in prolog of
+        // a function. The return address is stored in LR when in function
+        // prolog. So, update the PC with address in LR and do not update SP
+        // since SP was not updated by the prolog yet.
+        // TODO(ssid): Write tests / add info to detect if we are actually in
+        // function prolog. https://crbug.com/898276
+        pc = lr;
+        continue;
+      }
       break;
+    }
 
     // The rules for unwinding using the CFI information are:
     // SP_prev = SP_cur + cfa_offset and

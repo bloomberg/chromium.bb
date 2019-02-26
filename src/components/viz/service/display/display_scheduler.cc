@@ -48,6 +48,9 @@ DisplayScheduler::DisplayScheduler(BeginFrameSource* begin_frame_source,
 }
 
 DisplayScheduler::~DisplayScheduler() {
+  // It is possible for DisplayScheduler to be destroyed while there's an
+  // in-flight swap. So always mark the gpu as not busy during destruction.
+  begin_frame_source_->SetIsGpuBusy(false);
   StopObservingBeginFrames();
 }
 
@@ -306,8 +309,6 @@ void DisplayScheduler::OnBeginFrameSourcePausedChanged(bool paused) {
     NOTIMPLEMENTED();
 }
 
-void DisplayScheduler::OnSurfaceCreated(const SurfaceId& surface_id) {}
-
 void DisplayScheduler::OnFirstSurfaceActivation(
     const SurfaceInfo& surface_info) {}
 
@@ -484,7 +485,6 @@ bool DisplayScheduler::AttemptDrawAndSwap() {
     if (pending_swaps_ < max_pending_swaps_)
       return DrawAndSwap();
   } else {
-    ReportNotDrawReason();
     // We are going idle, so reset expectations.
     // TODO(eseckler): Should we avoid going idle if
     // |expecting_root_surface_damage_because_of_resize_| is true?
@@ -506,33 +506,26 @@ void DisplayScheduler::OnBeginFrameDeadline() {
 void DisplayScheduler::DidFinishFrame(bool did_draw) {
   DCHECK(begin_frame_source_);
   begin_frame_source_->DidFinishFrame(this);
-
   BeginFrameAck ack(current_begin_frame_args_, did_draw);
   client_->DidFinishFrame(ack);
 }
 
 void DisplayScheduler::DidSwapBuffers() {
   pending_swaps_++;
+  if (pending_swaps_ == max_pending_swaps_)
+    begin_frame_source_->SetIsGpuBusy(true);
+
   uint32_t swap_id = next_swap_id_++;
   TRACE_EVENT_ASYNC_BEGIN0("viz", "DisplayScheduler:pending_swaps", swap_id);
 }
 
 void DisplayScheduler::DidReceiveSwapBuffersAck() {
+  begin_frame_source_->SetIsGpuBusy(false);
+
   uint32_t swap_id = next_swap_id_ - pending_swaps_;
   pending_swaps_--;
   TRACE_EVENT_ASYNC_END0("viz", "DisplayScheduler:pending_swaps", swap_id);
   ScheduleBeginFrameDeadline();
-}
-
-void DisplayScheduler::ReportNotDrawReason() {
-  DCHECK(!ShouldDraw());
-  UMA_HISTOGRAM_BOOLEAN("DisplayScheduler.ShouldNotDraw.DrawNotNeeded",
-                        !needs_draw_);
-  UMA_HISTOGRAM_BOOLEAN("DisplayScheduler.ShouldNotDraw.OutputSurfaceLost",
-                        output_surface_lost_);
-  UMA_HISTOGRAM_BOOLEAN("DisplayScheduler.ShouldNotDraw.NotVisible", !visible_);
-  UMA_HISTOGRAM_BOOLEAN("DisplayScheduler.ShouldNotDraw.RootFrameMissing",
-                        root_frame_missing_);
 }
 
 }  // namespace viz

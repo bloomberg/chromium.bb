@@ -15,11 +15,13 @@ mojom_component("mojom") {
     "service.mojom",
     "service_control.mojom",
     "service_factory.mojom",
+    "service_filter.mojom",
     "service_manager.mojom",
   ]
 
   public_deps = [
     ":constants",
+    "//mojo/public/mojom/base",
   ]
 }
 

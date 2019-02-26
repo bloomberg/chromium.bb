@@ -60,7 +60,7 @@ class AudioArray {
     // unsigned in zeroRange() and copyToRange(). Also check for integer
     // overflow.
     CHECK_LE(n, std::numeric_limits<unsigned>::max() / sizeof(T));
-    unsigned initial_size = sizeof(T) * n;
+    uint32_t initial_size = static_cast<uint32_t>(sizeof(T) * n);
 
 #if defined(ARCH_CPU_X86_FAMILY) || defined(WTF_USE_WEBAUDIO_FFMPEG) || \
     defined(WTF_USE_WEBAUDIO_OPENMAX_DL_FFT)
@@ -90,7 +90,7 @@ class AudioArray {
       if (aligned_data == allocation || extra_allocation_bytes == kAlignment) {
         allocation_ = allocation;
         aligned_data_ = aligned_data;
-        size_ = n;
+        size_ = static_cast<uint32_t>(n);
         is_allocation_good = true;
       } else {
         // always allocate extra after the first alignment failure.
@@ -102,7 +102,7 @@ class AudioArray {
 
   T* Data() { return aligned_data_; }
   const T* Data() const { return aligned_data_; }
-  size_t size() const { return size_; }
+  uint32_t size() const { return size_; }
 
   T& at(size_t i) {
     // Note that although it is a size_t, m_size is now guaranteed to be
@@ -148,7 +148,7 @@ class AudioArray {
 
   T* allocation_;
   T* aligned_data_;
-  size_t size_;
+  uint32_t size_;
 };
 
 typedef AudioArray<float> AudioFloatArray;

@@ -48,6 +48,7 @@ class Connector;
 
 namespace ui {
 class ContextFactory;
+class EventObserver;
 struct PropertyData;
 }
 
@@ -72,8 +73,8 @@ class TopmostWindowTracker;
 class WindowMus;
 class WindowPortMus;
 class WindowTreeClientDelegate;
-class WindowTreeClientPrivate;
 class WindowTreeClientObserver;
+class WindowTreeClientTestApi;
 class WindowTreeClientTestObserver;
 class WindowTreeHostMus;
 
@@ -125,6 +126,10 @@ class AURA_EXPORT WindowTreeClient
   // Blocks until the initial screen configuration is received.
   bool WaitForDisplays();
 
+  const base::Optional<uint32_t>& id() const { return id_; }
+
+  WindowMus* GetWindowByServerId(ws::Id id);
+
   void SetCanFocus(Window* window, bool can_focus);
   void SetCanAcceptDrops(WindowMus* window, bool can_accept_drops);
   void SetEventTargetingPolicy(WindowMus* window,
@@ -140,6 +145,9 @@ class AURA_EXPORT WindowTreeClient
   void SetHitTestInsets(WindowMus* window,
                         const gfx::Insets& mouse,
                         const gfx::Insets& touch);
+  void TrackOcclusionState(WindowMus* window);
+  void PauseWindowOcclusionTracking();
+  void UnpauseWindowOcclusionTracking();
 
   // See WindowPort for details on these.
   void RegisterFrameSinkId(WindowMus* window,
@@ -190,11 +198,14 @@ class AURA_EXPORT WindowTreeClient
   // race the asynchronous initialization; but in that case we return (0, 0).
   gfx::Point GetCursorScreenPoint();
 
-  // See description in window_tree.mojom. When an existing pointer watcher is
-  // updated or cleared then any future events from the server for that watcher
-  // will be ignored.
-  void StartPointerWatcher(bool want_moves);
-  void StopPointerWatcher();
+  // May be called to do early shutdown.
+  void OnEarlyShutdown();
+
+  // Called when the local aura::Env adds or removes EventObservers.
+  void OnEventObserverAdded(ui::EventObserver* observer,
+                            const std::set<ui::EventType>& types);
+  void OnEventObserverRemoved(ui::EventObserver* observer,
+                              const std::set<ui::EventType>& types);
 
   void AddObserver(WindowTreeClientObserver* observer);
   void RemoveObserver(WindowTreeClientObserver* observer);
@@ -211,7 +222,7 @@ class AURA_EXPORT WindowTreeClient
   friend class InFlightVisibleChange;
   friend class TopmostWindowTracker;
   friend class WindowPortMus;
-  friend class WindowTreeClientPrivate;
+  friend class WindowTreeClientTestApi;
 
   enum class Origin {
     CLIENT,
@@ -235,8 +246,6 @@ class AURA_EXPORT WindowTreeClient
       bool create_discardable_memory = true);
 
   void RegisterWindowMus(WindowMus* window);
-
-  WindowMus* GetWindowByServerId(ws::Id id);
 
   bool IsWindowKnown(aura::Window* window);
 
@@ -327,9 +336,8 @@ class AURA_EXPORT WindowTreeClient
   // TopmostWindowTracker.
   void StopObservingTopmostWindow();
 
-  void NotifyPointerEventObserved(ui::PointerEvent* event,
-                                  uint64_t display_id,
-                                  WindowMus* window_mus);
+  // Updates the set of event types requested for observation.
+  void UpdateObservedEventTypes();
 
   // Called from OnWindowMusBoundsChanged() and SetRootWindowBounds().
   void ScheduleInFlightBoundsChange(WindowMus* window,
@@ -360,6 +368,7 @@ class AURA_EXPORT WindowTreeClient
                                   std::unique_ptr<ui::PropertyData> data);
 
   // Overridden from WindowTreeClient:
+  void OnClientId(uint32_t client_id) override;
   void OnEmbed(
       ws::mojom::WindowDataPtr root,
       ws::mojom::WindowTreePtr tree,
@@ -419,10 +428,8 @@ class AURA_EXPORT WindowTreeClient
                           ws::Id window_id,
                           int64_t display_id,
                           std::unique_ptr<ui::Event> event,
-                          bool matches_pointer_watcher) override;
-  void OnPointerEventObserved(std::unique_ptr<ui::Event> event,
-                              ws::Id window_id,
-                              int64_t display_id) override;
+                          bool matches_event_observer) override;
+  void OnObservedInputEvent(std::unique_ptr<ui::Event> event) override;
   void OnWindowFocused(ws::Id focused_window_id) override;
   void OnWindowCursorChanged(ws::Id window_id, ui::CursorData cursor) override;
   void OnDragDropStart(const base::flat_map<std::string, std::vector<uint8_t>>&
@@ -452,6 +459,9 @@ class AURA_EXPORT WindowTreeClient
   void RequestClose(ws::Id window_id) override;
   void GetScreenProviderObserver(
       ws::mojom::ScreenProviderObserverAssociatedRequest observer) override;
+  void OnOcclusionStateChanged(
+      ws::Id window_id,
+      ws::mojom::OcclusionState occlusion_state) override;
 
   // ws::mojom::ScreenProviderObserver:
   void OnDisplaysChanged(std::vector<ws::mojom::WsDisplayPtr> ws_displays,
@@ -550,7 +560,8 @@ class AURA_EXPORT WindowTreeClient
 
   base::ObserverList<WindowTreeClientObserver>::Unchecked observers_;
 
-  bool has_pointer_watcher_ = false;
+  // Tracks the number of observers registered for each observed event type.
+  std::map<ui::EventType, int> event_type_to_observer_count_;
 
   // The current change id for the client.
   uint32_t current_move_loop_change_ = 0u;
@@ -583,6 +594,9 @@ class AURA_EXPORT WindowTreeClient
 
   mojo::AssociatedBinding<ws::mojom::ScreenProviderObserver>
       screen_provider_observer_binding_{this};
+
+  // Id for this connection. The server provides this value in OnClientId().
+  base::Optional<uint32_t> id_;
 
   base::WeakPtrFactory<WindowTreeClient> weak_factory_;
 

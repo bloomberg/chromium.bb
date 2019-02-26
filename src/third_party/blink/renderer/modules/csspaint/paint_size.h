@@ -16,15 +16,17 @@ class PaintSize : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static PaintSize* Create(FloatSize size) { return new PaintSize(size); }
+  static PaintSize* Create(FloatSize size) {
+    return MakeGarbageCollected<PaintSize>(size);
+  }
+
+  explicit PaintSize(FloatSize size) : size_(size) {}
   ~PaintSize() override = default;
 
   float width() const { return size_.Width(); }
   float height() const { return size_.Height(); }
 
  private:
-  explicit PaintSize(FloatSize size) : size_(size) {}
-
   FloatSize size_;
 };
 

@@ -13,8 +13,14 @@
 // limitations under the License.
 
 import {produce} from 'immer';
+
 import {StateActions} from './actions';
-import {createEmptyState, State, TrackState} from './state';
+import {
+  createEmptyState,
+  SCROLLING_TRACK_GROUP,
+  State,
+  TrackState
+} from './state';
 
 function fakeTrack(state: State, id: string): TrackState {
   const track: TrackState = {
@@ -22,6 +28,7 @@ function fakeTrack(state: State, id: string): TrackState {
     engineId: '1',
     kind: 'SOME_TRACK_KIND',
     name: 'A track',
+    trackGroup: SCROLLING_TRACK_GROUP,
     config: {},
   };
   state.tracks[id] = track;
@@ -35,12 +42,13 @@ test('navigate', () => {
   expect(after.route).toBe('/foo');
 });
 
-test('add tracks', () => {
+test('add scrolling tracks', () => {
   const once = produce(createEmptyState(), draft => {
     StateActions.addTrack(draft, {
       engineId: '1',
       kind: 'cpu',
       name: 'Cpu 1',
+      trackGroup: SCROLLING_TRACK_GROUP,
       config: {},
     });
   });
@@ -49,12 +57,41 @@ test('add tracks', () => {
       engineId: '2',
       kind: 'cpu',
       name: 'Cpu 2',
+      trackGroup: SCROLLING_TRACK_GROUP,
       config: {},
     });
   });
 
   expect(Object.values(twice.tracks).length).toBe(2);
   expect(twice.scrollingTracks.length).toBe(2);
+});
+
+test('add track to track group', () => {
+  const state = createEmptyState();
+  fakeTrack(state, 's');
+
+  const afterGroup = produce(state, draft => {
+    StateActions.addTrackGroup(draft, {
+      engineId: '1',
+      name: 'A track group',
+      id: '123-123-123',
+      summaryTrackId: 's',
+      collapsed: false,
+    });
+  });
+
+  const afterTrackAdd = produce(afterGroup, draft => {
+    StateActions.addTrack(draft, {
+      id: '1',
+      engineId: '1',
+      kind: 'slices',
+      name: 'renderer 1',
+      trackGroup: '123-123-123',
+      config: {},
+    });
+  });
+
+  expect(afterTrackAdd.trackGroups['123-123-123'].tracks[0]).toBe('1');
 });
 
 test('reorder tracks', () => {
@@ -78,8 +115,9 @@ test('reorder tracks', () => {
 
   const twice = produce(once, draft => {
     StateActions.moveTrack(draft, {
-      trackId: `${firstTrackId}`,
-      direction: 'down',
+      srcId: `${firstTrackId}`,
+      op: 'after',
+      dstId: `${secondTrackId}`,
     });
   });
 
@@ -97,8 +135,9 @@ test('reorder pinned to scrolling', () => {
 
   const after = produce(state, draft => {
     StateActions.moveTrack(draft, {
-      trackId: 'b',
-      direction: 'down',
+      srcId: 'b',
+      op: 'before',
+      dstId: 'c',
     });
   });
 
@@ -116,8 +155,9 @@ test('reorder scrolling to pinned', () => {
 
   const after = produce(state, draft => {
     StateActions.moveTrack(draft, {
-      trackId: 'b',
-      direction: 'up',
+      srcId: 'b',
+      op: 'after',
+      dstId: 'a',
     });
   });
 
@@ -135,8 +175,9 @@ test('reorder clamp bottom', () => {
 
   const after = produce(state, draft => {
     StateActions.moveTrack(draft, {
-      trackId: 'a',
-      direction: 'up',
+      srcId: 'a',
+      op: 'before',
+      dstId: 'a',
     });
   });
   expect(after).toEqual(state);
@@ -152,8 +193,9 @@ test('reorder clamp top', () => {
 
   const after = produce(state, draft => {
     StateActions.moveTrack(draft, {
-      trackId: 'c',
-      direction: 'down',
+      srcId: 'c',
+      op: 'after',
+      dstId: 'c',
     });
   });
   expect(after).toEqual(state);
@@ -194,16 +236,21 @@ test('unpin', () => {
 });
 
 test('open trace', () => {
-  const after = produce(createEmptyState(), draft => {
+  const state = createEmptyState();
+  state.nextId = 100;
+  const recordConfig = state.recordConfig;
+  const after = produce(state, draft => {
     StateActions.openTraceFromUrl(draft, {
       url: 'https://example.com/bar',
     });
   });
 
   const engineKeys = Object.keys(after.engines);
+  expect(after.nextId).toBe(101);
   expect(engineKeys.length).toBe(1);
   expect(after.engines[engineKeys[0]].source).toBe('https://example.com/bar');
   expect(after.route).toBe('/viewer');
+  expect(after.recordConfig).toBe(recordConfig);
 });
 
 test('open second trace from file', () => {
@@ -229,9 +276,8 @@ test('open second trace from file', () => {
   });
 
   const engineKeys = Object.keys(thrice.engines);
-  expect(engineKeys.length).toBe(2);
-  expect(thrice.engines[engineKeys[0]].source).toBe('https://example.com/bar');
-  expect(thrice.engines[engineKeys[1]].source).toBe('https://example.com/foo');
+  expect(engineKeys.length).toBe(1);
+  expect(thrice.engines[engineKeys[0]].source).toBe('https://example.com/foo');
   expect(thrice.pinnedTracks.length).toBe(0);
   expect(thrice.scrollingTracks.length).toBe(0);
   expect(thrice.route).toBe('/viewer');

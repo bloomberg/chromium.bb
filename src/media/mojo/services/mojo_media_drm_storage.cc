@@ -44,7 +44,8 @@ void MojoMediaDrmStorage::SavePersistentSession(const std::string& session_id,
   DVLOG(1) << __func__;
   media_drm_storage_ptr_->SavePersistentSession(
       session_id,
-      mojom::SessionData::New(session_data.key_set_id, session_data.mime_type),
+      mojom::SessionData::New(session_data.key_set_id, session_data.mime_type,
+                              session_data.key_type),
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(result_cb), false));
 }
 
@@ -75,10 +76,11 @@ void MojoMediaDrmStorage::OnPersistentSessionLoaded(
   DVLOG(1) << __func__ << ": success = " << !!session_data;
 
   std::move(load_persistent_session_cb)
-      .Run(session_data ? std::make_unique<SessionData>(
-                              std::move(session_data->key_set_id),
-                              std::move(session_data->mime_type))
-                        : nullptr);
+      .Run(session_data
+               ? std::make_unique<SessionData>(
+                     std::move(session_data->key_set_id),
+                     std::move(session_data->mime_type), session_data->key_type)
+               : nullptr);
 }
 
 }  // namespace media

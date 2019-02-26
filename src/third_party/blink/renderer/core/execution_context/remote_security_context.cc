@@ -24,7 +24,7 @@ RemoteSecurityContext::RemoteSecurityContext() : SecurityContext() {
 }
 
 RemoteSecurityContext* RemoteSecurityContext::Create() {
-  return new RemoteSecurityContext();
+  return MakeGarbageCollected<RemoteSecurityContext>();
 }
 
 void RemoteSecurityContext::Trace(blink::Visitor* visitor) {

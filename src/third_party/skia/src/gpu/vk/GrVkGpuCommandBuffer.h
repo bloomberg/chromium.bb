@@ -8,6 +8,8 @@
 #ifndef GrVkGpuCommandBuffer_DEFINED
 #define GrVkGpuCommandBuffer_DEFINED
 
+#include "GrVkVulkan.h"
+
 #include "GrGpuCommandBuffer.h"
 
 #include "GrColor.h"
@@ -74,6 +76,8 @@ public:
     void copy(GrSurface* src, GrSurfaceOrigin srcOrigin, const SkIRect& srcRect,
               const SkIPoint& dstPoint) override;
 
+    void executeDrawable(std::unique_ptr<SkDrawable::GpuDrawHandler>) override;
+
     void set(GrRenderTarget*, GrSurfaceOrigin,
              const GrGpuRTCommandBuffer::LoadAndStoreInfo&,
              const GrGpuRTCommandBuffer::StencilLoadAndStoreInfo&);
@@ -132,7 +136,7 @@ private:
                                        const GrBuffer* instanceBuffer, int instanceCount,
                                        int baseInstance, GrPrimitiveRestart) final;
 
-    void onClear(const GrFixedClip&, GrColor color) override;
+    void onClear(const GrFixedClip&, const SkPMColor4f& color) override;
 
     void onClearStencilClip(const GrFixedClip&, bool insideStencilMask) override;
 
@@ -199,7 +203,7 @@ private:
     VkAttachmentStoreOp         fVkColorStoreOp;
     VkAttachmentLoadOp          fVkStencilLoadOp;
     VkAttachmentStoreOp         fVkStencilStoreOp;
-    GrColor4f                   fClearColor;
+    SkPMColor4f                 fClearColor;
     GrVkPipelineState*          fLastPipelineState;
 
     typedef GrGpuRTCommandBuffer INHERITED;

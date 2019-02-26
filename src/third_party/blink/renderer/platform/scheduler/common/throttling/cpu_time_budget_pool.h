@@ -10,7 +10,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "third_party/blink/renderer/platform/scheduler/util/tracing_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/common/tracing_helper.h"
 
 namespace blink {
 namespace scheduler {
@@ -115,7 +115,7 @@ class PLATFORM_EXPORT CPUTimeBudgetPool : public BudgetPool {
   // See CPUTimeBudgetPool::SetMinBudgetLevelToRun.
   base::TimeDelta min_budget_level_to_run_;
 
-  TraceableCounter<base::TimeDelta, kTracingCategoryNameInfo>
+  TraceableCounter<base::TimeDelta, TracingCategoryName::kInfo>
       current_budget_level_;
   base::TimeTicks last_checkpoint_;
   double cpu_percentage_;

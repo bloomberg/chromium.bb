@@ -44,14 +44,14 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 static const int kMonthDefaultStep = 1;
 static const int kMonthDefaultStepBase = 0;
 static const int kMonthStepScaleFactor = 1;
 
 InputType* MonthInputType::Create(HTMLInputElement& element) {
-  return new MonthInputType(element);
+  return MakeGarbageCollected<MonthInputType>(element);
 }
 
 void MonthInputType::CountUsage() {
@@ -59,7 +59,7 @@ void MonthInputType::CountUsage() {
 }
 
 const AtomicString& MonthInputType::FormControlType() const {
-  return InputTypeNames::month;
+  return input_type_names::kMonth;
 }
 
 double MonthInputType::ValueAsDate() const {
@@ -149,10 +149,10 @@ void MonthInputType::SetupLayoutParameters(
     const DateComponents& date) const {
   layout_parameters.date_time_format = layout_parameters.locale.MonthFormat();
   layout_parameters.fallback_date_time_format = "yyyy-MM";
-  if (!ParseToDateComponents(GetElement().FastGetAttribute(minAttr),
+  if (!ParseToDateComponents(GetElement().FastGetAttribute(kMinAttr),
                              &layout_parameters.minimum))
     layout_parameters.minimum = DateComponents();
-  if (!ParseToDateComponents(GetElement().FastGetAttribute(maxAttr),
+  if (!ParseToDateComponents(GetElement().FastGetAttribute(kMaxAttr),
                              &layout_parameters.maximum))
     layout_parameters.maximum = DateComponents();
   layout_parameters.placeholder_for_month = "--";

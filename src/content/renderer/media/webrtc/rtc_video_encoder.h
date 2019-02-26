@@ -57,11 +57,9 @@ class CONTENT_EXPORT RTCVideoEncoder : public webrtc::VideoEncoder {
   int32_t RegisterEncodeCompleteCallback(
       webrtc::EncodedImageCallback* callback) override;
   int32_t Release() override;
-  int32_t SetChannelParameters(uint32_t packet_loss, int64_t rtt) override;
   int32_t SetRateAllocation(const webrtc::VideoBitrateAllocation& allocation,
                             uint32_t framerate) override;
-  bool SupportsNativeHandle() const override;
-  const char* ImplementationName() const override;
+  EncoderInfo GetEncoderInfo() const override;
 
  private:
   class Impl;

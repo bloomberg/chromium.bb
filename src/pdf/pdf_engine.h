@@ -343,9 +343,6 @@ class PDFEngine {
   // Gets the named destination by name.
   virtual base::Optional<PDFEngine::NamedDestination> GetNamedDestination(
       const std::string& destination) = 0;
-  // Transforms an (x, y) point in page coordinates to screen coordinates.
-  virtual gfx::PointF TransformPagePoint(int page_index,
-                                         const gfx::PointF& page_xy) = 0;
   // Gets the index of the most visible page, or -1 if none are visible.
   virtual int GetMostVisiblePage() = 0;
   // Gets the rectangle of the page including shadow.

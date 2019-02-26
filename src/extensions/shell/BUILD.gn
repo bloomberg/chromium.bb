@@ -374,7 +374,6 @@ source_set("browser_tests") {
   testonly = true
   sources = [
     "browser/api/runtime/runtime_apitest.cc",
-    "browser/geolocation/geolocation_apitest.cc",
     "browser/shell_browsertest.cc",
     "test/shell_apitest.cc",
     "test/shell_apitest.h",

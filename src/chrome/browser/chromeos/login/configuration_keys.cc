@@ -18,11 +18,35 @@ namespace configuration {
 // automatically.
 const char kWelcomeNext[] = "welcomeNext";
 
+// String value that contains preferred input method.
+const char kInputMethod[] = "inputMethod";
+
+// String value that contains preferred input method.
+const char kLanguage[] = "language";
+
+// Boolean value indicating if device should automatically run the demo mode
+// setup flow.
+const char kEnableDemoMode[] = "enableDemoMode";
+
+// == Demo mode preferences:
+
+// Boolean value indicating if "Ok" button on Demo mode prefs screen is pressed
+// automatically.
+const char kDemoModePreferencesNext[] = "demoPreferencesNext";
+
 // == Network screen:
 
 // String value specifying GUID of the network that would be automatically
 // selected.
 const char kNetworkSelectGUID[] = "networkSelectGuid";
+
+// Boolean value indicating if "Offline demo mode" should be automatically
+// selected.
+const char kNetworkOfflineDemo[] = "networkOfflineDemo";
+
+// Boolean value specifying that the first connected network would be
+// selected automatically.
+const char kNetworkUseConnected[] = "networkUseConnected";
 
 // == EULA screen:
 
@@ -31,6 +55,12 @@ const char kEULASendUsageStatistics[] = "eulaSendStatistics";
 
 // Boolean value indicating if the EULA is automatically accepted.
 const char kEULAAutoAccept[] = "eulaAutoAccept";
+
+// ARC++ TOS screen:
+
+// Boolean value indicating if ARC++ Terms of service should be accepted
+// automatically.
+const char kArcTosAutoAccept[] = "arcTosAutoAccept";
 
 // == Update screen:
 
@@ -47,6 +77,10 @@ const char kWizardAutoEnroll[] = "wizardAutoEnroll";
 const char kDeviceRequisition[] = "deviceRequisition";
 
 // == Enrollment screen
+
+// Boolean value, indicates that device is actually enrolled, so we only need
+// to perform specific enrollment-time actions (e.g. create robot accounts).
+const char kRestoreAfterRollback[] = "enrollmentRestoreAfterRollback";
 
 // String value indicating which license type should automatically be used if
 // license selection is done on a client side.
@@ -72,7 +106,11 @@ constexpr struct {
   ConfigurationHandlerSide side;
 } kAllConfigurationKeys[] = {
     {kWelcomeNext, ValueType::BOOLEAN, ConfigurationHandlerSide::HANDLER_JS},
+    {kLanguage, ValueType::STRING, ConfigurationHandlerSide::HANDLER_JS},
+    {kInputMethod, ValueType::STRING, ConfigurationHandlerSide::HANDLER_JS},
     {kNetworkSelectGUID, ValueType::STRING,
+     ConfigurationHandlerSide::HANDLER_JS},
+    {kNetworkUseConnected, ValueType::BOOLEAN,
      ConfigurationHandlerSide::HANDLER_JS},
     {kEULASendUsageStatistics, ValueType::BOOLEAN,
      ConfigurationHandlerSide::HANDLER_JS},
@@ -80,6 +118,8 @@ constexpr struct {
     {kUpdateSkipUpdate, ValueType::BOOLEAN,
      ConfigurationHandlerSide::HANDLER_JS},
     {kWizardAutoEnroll, ValueType::BOOLEAN,
+     ConfigurationHandlerSide::HANDLER_CPP},
+    {kRestoreAfterRollback, ValueType::BOOLEAN,
      ConfigurationHandlerSide::HANDLER_CPP},
     {kDeviceRequisition, ValueType::STRING,
      ConfigurationHandlerSide::HANDLER_CPP},
@@ -89,6 +129,13 @@ constexpr struct {
      ConfigurationHandlerSide::HANDLER_CPP},
     {kEnrollmentLocation, ValueType::BOOLEAN,
      ConfigurationHandlerSide::HANDLER_CPP},
+    {kEnableDemoMode, ValueType::BOOLEAN, ConfigurationHandlerSide::HANDLER_JS},
+    {kDemoModePreferencesNext, ValueType::BOOLEAN,
+     ConfigurationHandlerSide::HANDLER_JS},
+    {kNetworkOfflineDemo, ValueType::BOOLEAN,
+     ConfigurationHandlerSide::HANDLER_JS},
+    {kArcTosAutoAccept, ValueType::BOOLEAN,
+     ConfigurationHandlerSide::HANDLER_BOTH},
     {"desc", ValueType::STRING, ConfigurationHandlerSide::HANDLER_DOC},
     {"testValue", ValueType::STRING, ConfigurationHandlerSide::HANDLER_BOTH},
 };

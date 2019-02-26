@@ -4,6 +4,7 @@
 
 #include "chrome_elf/third_party_dlls/hook.h"
 
+#include <atomic>
 #include <limits>
 #include <memory>
 
@@ -18,6 +19,7 @@
 #include "chrome_elf/third_party_dlls/main.h"
 #include "chrome_elf/third_party_dlls/packed_list_file.h"
 #include "chrome_elf/third_party_dlls/packed_list_format.h"
+#include "chrome_elf/third_party_dlls/public_api.h"
 #include "sandbox/win/src/interception_internal.h"
 #include "sandbox/win/src/internal_types.h"
 #include "sandbox/win/src/nt_internals.h"
@@ -48,6 +50,12 @@ NtUnmapViewOfSectionFunction g_nt_unmap_view_of_section_func = nullptr;
 
 // Set if and when ApplyHook() has been successfully executed.
 bool g_hook_active = false;
+
+// Indicates if the hook was disabled after the hook was activated.
+std::atomic<bool> g_hook_disabled(false);
+
+// Set to a different NTSTATUS if an error occured while applying the hook.
+std::atomic<int32_t> g_apply_hook_result(STATUS_SUCCESS);
 
 // Set up NTDLL function pointers.
 bool InitImports() {
@@ -267,6 +275,9 @@ NTSTATUS NewNtMapViewOfSectionImpl(
                                        commit_size, offset, view_size, inherit,
                                        allocation_type, protect);
 
+  if (g_hook_disabled.load(std::memory_order_relaxed))
+    return ret;
+
   // If there was an OS-level failure, if the mapping target is NOT this
   // process, or if the section is not a (valid) Portable Executable,
   // we're not interested.  Return the OS-level result code.
@@ -294,25 +305,24 @@ NTSTATUS NewNtMapViewOfSectionImpl(
   }
 
   // Note that one of either image_name or section_basename can be empty.
-  std::string image_name_hash;
+  elf_sha1::Digest image_name_hash;
   if (!image_name.empty())
     image_name_hash = elf_sha1::SHA1HashString(image_name);
-  std::string section_basename_hash;
+  elf_sha1::Digest section_basename_hash;
   if (!section_basename.empty())
     section_basename_hash = elf_sha1::SHA1HashString(section_basename);
-  std::string fingerprint_hash =
-      GetFingerprintString(time_date_stamp, image_size);
-  fingerprint_hash = elf_sha1::SHA1HashString(fingerprint_hash);
+  elf_sha1::Digest fingerprint_hash = elf_sha1::SHA1HashString(
+      GetFingerprintString(time_date_stamp, image_size));
 
   // Check sources for blacklist decision.
   bool block = false;
 
-  if (!image_name_hash.empty() &&
+  if (!image_name.empty() &&
       IsModuleListed(image_name_hash, fingerprint_hash)) {
     // 1) Third-party DLL blacklist, check for image name from PE header.
     block = true;
-  } else if (!section_basename_hash.empty() &&
-             section_basename_hash.compare(image_name_hash) != 0 &&
+  } else if (!section_basename.empty() &&
+             section_basename_hash != image_name_hash &&
              IsModuleListed(section_basename_hash, fingerprint_hash)) {
     // 2) Third-party DLL blacklist, check for image name from the section.
     block = true;
@@ -455,8 +465,12 @@ ThirdPartyStatus ApplyHook() {
                    thunk_storage, sizeof(sandbox::ThunkData), nullptr);
 #endif  // defined(_WIN64)
 
-  if (!NT_SUCCESS(ntstatus))
+  if (!NT_SUCCESS(ntstatus)) {
+    // Remember the status code.
+    g_apply_hook_result.store(ntstatus, std::memory_order_relaxed);
+
     return ThirdPartyStatus::kHookApplyFailure;
+  }
 
   // Mark the thunk storage (original system service) as executable and prevent
   // any future writes to it.
@@ -486,3 +500,13 @@ bool GetDataFromImageForTesting(PVOID mapped_image,
 }
 
 }  // namespace third_party_dlls
+
+using namespace third_party_dlls;
+
+void DisableHook() {
+  g_hook_disabled.store(true, std::memory_order_relaxed);
+}
+
+int32_t GetApplyHookResult() {
+  return g_apply_hook_result.load(std::memory_order_relaxed);
+}

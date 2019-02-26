@@ -15,7 +15,7 @@
 ++++++++++[text] name='Always expose editable tables as tables.' editable
 ++++[list] editable
 ++++++[list item] editable
-++++++++[static] name='1. '
+++++++++[static] name='1. ' editable
 ++++++++[text] name='Editable list item.' editable
 ++[paragraph]
 ++++[text] name='Non-editable paragraph.'

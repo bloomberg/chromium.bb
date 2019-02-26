@@ -13,10 +13,12 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.history.HistoryManagerUtils;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
+import org.chromium.chrome.browser.invalidation.SessionsInvalidationManager;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSession;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSessionTab;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -116,7 +118,12 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
         mForeignSessionHelper.triggerSessionSync();
         registerObservers();
 
-        InvalidationController.get().onRecentTabsPageOpened();
+        if (ChromeFeatureList.isInitialized()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.FCM_INVALIDATIONS)) {
+            SessionsInvalidationManager.get(mForeignSessionHelper).onRecentTabsPageOpened();
+        } else {
+            InvalidationController.get().onRecentTabsPageOpened();
+        }
     }
 
     /**
@@ -124,7 +131,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
      */
     public void destroy() {
         mIsDestroyed = true;
-        AndroidSyncSettings.unregisterObserver(this);
+        AndroidSyncSettings.get().unregisterObserver(this);
 
         mSignInManager.removeSignInStateObserver(this);
         mSignInManager = null;
@@ -138,15 +145,21 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
         mRecentlyClosedTabManager.destroy();
         mRecentlyClosedTabManager = null;
 
-        mForeignSessionHelper.destroy();
-        mForeignSessionHelper = null;
 
         mUpdatedCallback = null;
 
         mPrefs.destroy();
         mPrefs = null;
 
-        InvalidationController.get().onRecentTabsPageClosed();
+        if (ChromeFeatureList.isInitialized()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.FCM_INVALIDATIONS)) {
+            SessionsInvalidationManager.get(mForeignSessionHelper).onRecentTabsPageClosed();
+        } else {
+            InvalidationController.get().onRecentTabsPageClosed();
+        }
+
+        mForeignSessionHelper.destroy();
+        mForeignSessionHelper = null;
     }
 
     private void registerForForeignSessionUpdates() {
@@ -157,7 +170,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
     }
 
     private void registerObservers() {
-        AndroidSyncSettings.registerObserver(this);
+        AndroidSyncSettings.get().registerObserver(this);
         mSignInManager.addSignInStateObserver(this);
 
         mProfileDataCache.addObserver(this);
@@ -351,8 +364,8 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
             return PromoState.PROMO_SIGNIN_PERSONALIZED;
         }
 
-        if (AndroidSyncSettings.isSyncEnabled() && AndroidSyncSettings.isChromeSyncEnabled()
-                && !mForeignSessions.isEmpty()) {
+        if (AndroidSyncSettings.get().isSyncEnabled()
+                && AndroidSyncSettings.get().isChromeSyncEnabled() && !mForeignSessions.isEmpty()) {
             return PromoState.PROMO_NONE;
         }
         return PromoState.PROMO_SYNC;

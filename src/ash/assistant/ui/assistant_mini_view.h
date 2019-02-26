@@ -58,9 +58,11 @@ class AssistantMiniView : public views::Button,
       const std::shared_ptr<AssistantResponse>& response) override;
 
   // AssistantUiModelObserver:
-  void OnUiVisibilityChanged(AssistantVisibility new_visibility,
-                             AssistantVisibility old_visibility,
-                             AssistantSource source) override;
+  void OnUiVisibilityChanged(
+      AssistantVisibility new_visibility,
+      AssistantVisibility old_visibility,
+      base::Optional<AssistantEntryPoint> entry_point,
+      base::Optional<AssistantExitPoint> exit_point) override;
 
   void set_delegate(AssistantMiniViewDelegate* delegate) {
     delegate_ = delegate;

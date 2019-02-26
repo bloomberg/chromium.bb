@@ -48,7 +48,7 @@ AnalyserHandler::~AnalyserHandler() {
   Uninitialize();
 }
 
-void AnalyserHandler::Process(size_t frames_to_process) {
+void AnalyserHandler::Process(uint32_t frames_to_process) {
   AudioBus* output_bus = Output(0).Bus();
 
   if (!IsInitialized()) {
@@ -205,7 +205,7 @@ AnalyserNode* AnalyserNode::Create(BaseAudioContext& context,
 }
 
 AnalyserNode* AnalyserNode::Create(BaseAudioContext* context,
-                                   const AnalyserOptions& options,
+                                   const AnalyserOptions* options,
                                    ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
@@ -216,13 +216,13 @@ AnalyserNode* AnalyserNode::Create(BaseAudioContext* context,
 
   node->HandleChannelOptions(options, exception_state);
 
-  node->setFftSize(options.fftSize(), exception_state);
-  node->setSmoothingTimeConstant(options.smoothingTimeConstant(),
+  node->setFftSize(options->fftSize(), exception_state);
+  node->setSmoothingTimeConstant(options->smoothingTimeConstant(),
                                  exception_state);
 
   // minDecibels and maxDecibels have default values.  Set both of the values
   // at once.
-  node->SetMinMaxDecibels(options.minDecibels(), options.maxDecibels(),
+  node->SetMinMaxDecibels(options->minDecibels(), options->maxDecibels(),
                           exception_state);
 
   return node;

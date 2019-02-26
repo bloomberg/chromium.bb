@@ -47,7 +47,7 @@ IN_PROC_BROWSER_TEST_F(ChromeAshMessageCenterClientBrowserTest,
       message_center::NOTIFICATION_TYPE_SIMPLE, id, base::string16(),
       base::string16(), gfx::Image(), base::ASCIIToUTF16("display_source"),
       GURL(),
-      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
+      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
                                  "notifier_id"),
       {}, delegate);
 

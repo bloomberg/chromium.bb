@@ -11,9 +11,7 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/test/aura_test_base.h"
-#include "ui/aura/test/event_generator_delegate_aura.h"
 #include "ui/aura/window.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/wm/core/default_screen_position_client.h"
@@ -35,29 +33,6 @@ constexpr int kNumSteps = 5;
 // constexpr gfx::Point kZeroPoint{0, 0};
 
 }  // namespace
-
-class TestEventGeneratorDelegate
-    : public aura::test::EventGeneratorDelegateAura {
- public:
-  explicit TestEventGeneratorDelegate(aura::Window* root_window)
-      : root_window_(root_window) {}
-  ~TestEventGeneratorDelegate() override = default;
-
-  // EventGeneratorDelegateAura overrides:
-  ui::EventTarget* GetTargetAt(const gfx::Point& point) override {
-    return root_window_->GetHost()->window();
-  }
-
-  aura::client::ScreenPositionClient* GetScreenPositionClient(
-      const aura::Window* window) const override {
-    return aura::client::GetScreenPositionClient(root_window_);
-  }
-
- private:
-  aura::Window* root_window_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestEventGeneratorDelegate);
-};
 
 class MockCastGestureHandler : public CastGestureHandler {
  public:
@@ -153,8 +128,8 @@ class SideSwipeDetectorTest : public aura::test::AuraTestBase {
 
   ui::test::EventGenerator& GetEventGenerator() {
     if (!event_generator_) {
-      event_generator_ = std::make_unique<ui::test::EventGenerator>(
-          std::make_unique<TestEventGeneratorDelegate>(root_window()));
+      event_generator_ =
+          std::make_unique<ui::test::EventGenerator>(root_window());
     }
     return *event_generator_.get();
   }

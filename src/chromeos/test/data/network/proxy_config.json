@@ -47,12 +47,12 @@
         }
       },
       "ExcludeDomains": [
-        "google.com",
-        "<local>"
+        "<local>",
+        "google.com"
       ]
     },
     "ProxyConfig": {
-      "bypass_list":"google.com;\u003Clocal\u003E;",
+      "bypass_list":"\u003Clocal\u003E;google.com;",
       "mode":"fixed_servers",
       "server":"ftp=ftp.example.com:5678;http=http.example.com:1234;socks=socks5://socks.example.com:7890;https=https.example.com:3456"
     }

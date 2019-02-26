@@ -153,8 +153,13 @@ void ExecuteCrostiniTask(
 
   std::vector<std::string> files;
   for (const storage::FileSystemURL& file_system_url : file_system_urls) {
-    files.emplace_back(util::ConvertFileSystemURLToPathInsideCrostini(
-        profile, file_system_url));
+    base::FilePath file;
+    if (!util::ConvertFileSystemURLToPathInsideCrostini(
+            profile, file_system_url, &file)) {
+      LOG(ERROR) << "Invalid file: " << file_system_url.DebugString();
+      return;
+    }
+    files.emplace_back(file.value());
   }
 
   crostini::LaunchCrostiniApp(profile, task.app_id, display::kInvalidDisplayId,

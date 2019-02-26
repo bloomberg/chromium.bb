@@ -29,7 +29,8 @@ import typ
 class RunTestsCommand(command_line.OptparseCommand):
   """Run unit tests"""
 
-  usage = '[test_name ...] [<options>]'
+  usage = ('[test_name_1 test_name_2 ...] [<options>] or '
+           '--test-filter=<test_name_1>::<test_name_2>::... [<options>]')
   xvfb_process = None
 
   def __init__(self):
@@ -50,17 +51,16 @@ class RunTestsCommand(command_line.OptparseCommand):
     parser.add_option('--disable-cloud-storage-io', action='store_true',
                       default=False, help=('Disable cloud storage IO when '
                                            'tests are run in parallel.'))
-    parser.add_option('--repeat-count', type='int', default=1,
-                      help='Repeats each a provided number of times.')
     parser.add_option('--no-browser', action='store_true', default=False,
                       help='Don\'t require an actual browser to run the tests.')
     parser.add_option('-d', '--also-run-disabled-tests',
                       dest='run_disabled_tests',
                       action='store_true', default=False,
                       help='Ignore @Disabled and @Enabled restrictions.')
-    parser.add_option('--exact-test-filter', action='store_true', default=False,
-                      help='Treat test filter as exact matches (default is '
-                           'substring matches).')
+    parser.add_option('--test-filter', metavar='TEST_NAMES',
+                      help=('a double-colon-separated ("::") list of'
+                            'exact test names, to run just that subset'
+                            'of tests'))
     parser.add_option('--client-config', dest='client_configs',
                       action='append', default=[])
     parser.add_option('--disable-logging-config', action='store_true',
@@ -84,6 +84,11 @@ class RunTestsCommand(command_line.OptparseCommand):
     # explicitly.
     if not args.retry_limit and not args.positional_args:
       args.retry_limit = 3
+
+    if args.test_filter and args.positional_args:
+      parser.error(
+          'Cannot specify test names in postitional args and use'
+          '--test-filter flag at the same time.')
 
     if args.no_browser:
       return
@@ -177,6 +182,7 @@ class RunTestsCommand(command_line.OptparseCommand):
     runner.args.top_level_dirs = args.top_level_dirs
     runner.args.write_full_results_to = args.write_full_results_to
     runner.args.write_trace_to = args.write_trace_to
+    runner.args.repeat = args.repeat
     runner.args.list_only = args.list_only
     runner.args.shard_index = args.shard_index
     runner.args.total_shards = args.total_shards
@@ -186,6 +192,7 @@ class RunTestsCommand(command_line.OptparseCommand):
     # Standard verbosity will only emit output on test failure. Higher verbosity
     # levels spam the output with logging, making it very difficult to figure
     # out what's going on when digging into test failures.
+    runner.args.timing = True
     runner.args.verbose = 1
 
     runner.classifier = GetClassifier(args, possible_browser)
@@ -206,6 +213,12 @@ def _SkipMatch(name, skipGlobs):
 
 
 def GetClassifier(args, possible_browser):
+  if args.test_filter:
+    selected_tests = args.test_filter.split('::')
+    selected_tests_are_exact = True
+  else:
+    selected_tests = args.positional_args
+    selected_tests_are_exact = False
 
   def ClassifyTestWithoutBrowser(test_set, test):
     name = test.id()
@@ -213,9 +226,8 @@ def GetClassifier(args, possible_browser):
       test_set.tests_to_skip.append(
           typ.TestInput(name, 'skipped because matched --skip'))
       return
-    if (not args.positional_args
-        or _MatchesSelectedTest(
-            name, args.positional_args, args.exact_test_filter)):
+    if (not selected_tests or
+        _MatchesSelectedTest(name, selected_tests, selected_tests_are_exact)):
       # TODO(telemetry-team): Make sure that all telemetry unittest that invokes
       # actual browser are subclasses of browser_test_case.BrowserTestCase
       # (crbug.com/537428)
@@ -231,9 +243,8 @@ def GetClassifier(args, possible_browser):
       test_set.tests_to_skip.append(
           typ.TestInput(name, 'skipped because matched --skip'))
       return
-    if (not args.positional_args
-        or _MatchesSelectedTest(name, args.positional_args,
-                                args.exact_test_filter)):
+    if (not selected_tests or
+        _MatchesSelectedTest(name, selected_tests, selected_tests_are_exact)):
       assert hasattr(test, '_testMethodName')
       method = getattr(
           test, test._testMethodName)  # pylint: disable=protected-access

@@ -56,43 +56,23 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
     source->AddResourcePath("sync_confirmation.js",
                             IDR_DICE_SYNC_CONFIRMATION_JS);
 
-    AddStringResource(source, "syncConfirmationChromeSyncBody",
-                      IDS_SYNC_CONFIRMATION_DICE_CHROME_SYNC_MESSAGE);
-    AddStringResource(source, "syncConfirmationPersonalizeServicesBody",
-                      IDS_SYNC_CONFIRMATION_DICE_PERSONALIZE_SERVICES_BODY);
-    AddStringResource(source, "syncConfirmationGoogleServicesBody",
-                      IDS_SYNC_CONFIRMATION_DICE_GOOGLE_SERVICES_BODY);
-    AddStringResource(source, "syncConfirmationSyncSettingsLinkBody",
-                      IDS_SYNC_CONFIRMATION_DICE_SYNC_SETTINGS_LINK_BODY);
-    AddStringResource(source, "syncConfirmationSyncSettingsDescription",
-                      IDS_SYNC_CONFIRMATION_DICE_SYNC_SETTINGS_DESCRIPTION);
+    AddStringResource(source, "syncConfirmationSyncInfoTitle",
+                      IDS_SYNC_CONFIRMATION_UNITY_SYNC_INFO_TITLE);
+    AddStringResource(source, "syncConfirmationSyncInfoDesc",
+                      IDS_SYNC_CONFIRMATION_UNITY_SYNC_INFO_DESC);
+    AddStringResource(source, "syncConfirmationSpellcheckInfoTitle",
+                      IDS_SYNC_CONFIRMATION_UNITY_SPELLCHECK_INFO_TITLE);
+    AddStringResource(source, "syncConfirmationSpellcheckInfoDesc",
+                      IDS_SYNC_CONFIRMATION_UNITY_SPELLCHECK_INFO_DESC);
+    AddStringResource(source, "syncConfirmationImproveChromeInfoTitle",
+                      IDS_SYNC_CONFIRMATION_UNITY_IMPROVE_CHROME_INFO_TITLE);
+    AddStringResource(source, "syncConfirmationImproveChromeInfoDesc",
+                      IDS_SYNC_CONFIRMATION_UNITY_IMPROVE_CHROME_INFO_DESC);
+    AddStringResource(source, "syncConfirmationSettingsInfo",
+                      IDS_SYNC_CONFIRMATION_UNITY_SETTINGS_INFO);
+
     AddStringResource(source, "syncConfirmationSettingsLabel",
                       IDS_SYNC_CONFIRMATION_DICE_SETTINGS_BUTTON_LABEL);
-
-    AddStringResource(source, "syncConfirmationMoreOptionsLabel",
-                      IDS_SYNC_CONFIRMATION_UNITY_MORE_OPTIONS_BUTTON_LABEL);
-    AddStringResource(source, "syncConfirmationOptionsTitle",
-                      IDS_SYNC_CONFIRMATION_UNITY_MORE_OPTIONS_TITLE);
-    AddStringResource(source, "syncConfirmationOptionsSubtitle",
-                      IDS_SYNC_CONFIRMATION_UNITY_MORE_OPTIONS_SUBTITLE);
-    AddStringResource(
-        source, "syncConfirmationOptionsReviewSettingsTitle",
-        IDS_SYNC_CONFIRMATION_UNITY_OPTIONS_REVIEW_SETTINGS_TITLE);
-    AddStringResource(
-        source, "syncConfirmationOptionsMakeNoChangesTitle",
-        IDS_SYNC_CONFIRMATION_UNITY_OPTIONS_MAKE_NO_CHANGES_TITLE);
-    AddStringResource(
-        source, "syncConfirmationOptionsMakeNoChangesSubtitle",
-        IDS_SYNC_CONFIRMATION_UNITY_OPTIONS_MAKE_NO_CHANGES_SUBTITLE);
-    AddStringResource(source, "syncConfirmationOptionsUseDefaultTitle",
-                      IDS_SYNC_CONFIRMATION_UNITY_OPTIONS_USE_DEFAULT_TITLE);
-    AddStringResource(source, "syncConfirmationOptionsUseDefaultSubtitle",
-                      IDS_SYNC_CONFIRMATION_UNITY_OPTIONS_USE_DEFAULT_SUBTITLE);
-    AddStringResource(source, "syncConfirmationOptionsConfirmLabel", IDS_OK);
-    AddStringResource(source, "syncConfirmationOptionsBackLabel",
-                      IDS_SYNC_CONFIRMATION_UNITY_OPTIONS_BACK_BUTTON_LABEL);
-    AddStringResource(source, "syncConsentBumpTitle",
-                      IDS_SYNC_CONFIRMATION_UNITY_CONSENT_BUMP_TITLE);
 
     constexpr int kAccountPictureSize = 68;
     std::string custom_picture_url = profiles::GetPlaceholderAvatarIconUrl();

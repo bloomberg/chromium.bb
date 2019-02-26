@@ -63,7 +63,7 @@ namespace blink {
 
 Notification* Notification::Create(ExecutionContext* context,
                                    const String& title,
-                                   const NotificationOptions& options,
+                                   const NotificationOptions* options,
                                    ExceptionState& exception_state) {
   // The Notification constructor may be disabled through a runtime feature when
   // the platform does not support non-persistent notifications.
@@ -80,7 +80,7 @@ Notification* Notification::Create(ExecutionContext* context,
     return nullptr;
   }
 
-  if (!options.actions().IsEmpty()) {
+  if (!options->actions().IsEmpty()) {
     exception_state.ThrowTypeError(
         "Actions are only supported for persistent notifications shown using "
         "ServiceWorkerRegistration.showNotification().");
@@ -113,8 +113,8 @@ Notification* Notification::Create(ExecutionContext* context,
     return nullptr;
   }
 
-  Notification* notification =
-      new Notification(context, Type::kNonPersistent, std::move(data));
+  Notification* notification = MakeGarbageCollected<Notification>(
+      context, Type::kNonPersistent, std::move(data));
 
   // TODO(https://crbug.com/595685): Make |token| a constructor parameter
   // once persistent notifications have been mojofied too.
@@ -141,8 +141,8 @@ Notification* Notification::Create(ExecutionContext* context,
                                    const String& notification_id,
                                    mojom::blink::NotificationDataPtr data,
                                    bool showing) {
-  Notification* notification =
-      new Notification(context, Type::kPersistent, std::move(data));
+  Notification* notification = MakeGarbageCollected<Notification>(
+      context, Type::kPersistent, std::move(data));
   notification->SetState(showing ? State::kShowing : State::kClosed);
   notification->SetNotificationId(notification_id);
   return notification;
@@ -182,7 +182,7 @@ void Notification::PrepareShow() {
     return;
   }
 
-  loader_ = new NotificationResourcesLoader(
+  loader_ = MakeGarbageCollected<NotificationResourcesLoader>(
       WTF::Bind(&Notification::DidLoadResources, WrapWeakPersistent(this)));
   loader_->Start(GetExecutionContext(), *data_);
 }
@@ -192,7 +192,10 @@ void Notification::DidLoadResources(NotificationResourcesLoader* loader) {
 
   mojom::blink::NonPersistentNotificationListenerPtr event_listener;
 
-  listener_binding_.Bind(mojo::MakeRequest(&event_listener));
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      GetExecutionContext()->GetTaskRunner(blink::TaskType::kInternalDefault);
+  listener_binding_.Bind(mojo::MakeRequest(&event_listener, task_runner),
+                         task_runner);
 
   NotificationManager::From(GetExecutionContext())
       ->DisplayNonPersistentNotification(token_, data_->Clone(),
@@ -224,18 +227,19 @@ void Notification::close() {
 }
 
 void Notification::OnShow() {
-  DispatchEvent(*Event::Create(EventTypeNames::show));
+  DispatchEvent(*Event::Create(event_type_names::kShow));
 }
 
 void Notification::OnClick(OnClickCallback completed_closure) {
   ExecutionContext* context = GetExecutionContext();
   Document* document = DynamicTo<Document>(context);
-  std::unique_ptr<UserGestureIndicator> gesture_indicator =
-      LocalFrame::NotifyUserActivation(
-          document ? document->GetFrame() : nullptr,
-          UserGestureToken::kNewGesture);
+  std::unique_ptr<UserGestureIndicator> gesture_indicator;
+  if (document && document->GetFrame()) {
+    gesture_indicator = LocalFrame::NotifyUserActivation(
+        document->GetFrame(), UserGestureToken::kNewGesture);
+  }
   ScopedWindowFocusAllowedIndicator window_focus_allowed(GetExecutionContext());
-  DispatchEvent(*Event::Create(EventTypeNames::click));
+  DispatchEvent(*Event::Create(event_type_names::kClick));
 
   std::move(completed_closure).Run();
 }
@@ -245,13 +249,13 @@ void Notification::OnClose(OnCloseCallback completed_closure) {
   // should be Closing if the developer initiated the close.
   if (state_ == State::kShowing || state_ == State::kClosing) {
     state_ = State::kClosed;
-    DispatchEvent(*Event::Create(EventTypeNames::close));
+    DispatchEvent(*Event::Create(event_type_names::kClose));
   }
   std::move(completed_closure).Run();
 }
 
 void Notification::DispatchErrorEvent() {
-  DispatchEvent(*Event::Create(EventTypeNames::error));
+  DispatchEvent(*Event::Create(event_type_names::kError));
 }
 
 String Notification::title() const {
@@ -347,23 +351,23 @@ Vector<v8::Local<v8::Value>> Notification::actions(
       data_->actions.value();
   result.Grow(actions.size());
   for (wtf_size_t i = 0; i < actions.size(); ++i) {
-    NotificationAction action;
+    NotificationAction* action = NotificationAction::Create();
 
     switch (actions[i]->type) {
       case mojom::blink::NotificationActionType::BUTTON:
-        action.setType("button");
+        action->setType("button");
         break;
       case mojom::blink::NotificationActionType::TEXT:
-        action.setType("text");
+        action->setType("text");
         break;
       default:
         NOTREACHED() << "Unknown action type: " << actions[i]->type;
     }
 
-    action.setAction(actions[i]->action);
-    action.setTitle(actions[i]->title);
-    action.setIcon(actions[i]->icon.GetString());
-    action.setPlaceholder(actions[i]->placeholder);
+    action->setAction(actions[i]->action);
+    action->setTitle(actions[i]->title);
+    action->setIcon(actions[i]->icon.GetString());
+    action->setPlaceholder(actions[i]->placeholder);
 
     // Both the Action dictionaries themselves and the sequence they'll be
     // returned in are expected to the frozen. This cannot be done with
@@ -448,7 +452,7 @@ ScriptPromise Notification::requestPermission(
       script_state, deprecated_callback);
 }
 
-size_t Notification::maxActions() {
+uint32_t Notification::maxActions() {
   return kWebNotificationMaxActions;
 }
 
@@ -458,7 +462,7 @@ DispatchEventResult Notification::DispatchEventInternal(Event& event) {
 }
 
 const AtomicString& Notification::InterfaceName() const {
-  return EventTargetNames::Notification;
+  return event_target_names::kNotification;
 }
 
 void Notification::ContextDestroyed(ExecutionContext* context) {

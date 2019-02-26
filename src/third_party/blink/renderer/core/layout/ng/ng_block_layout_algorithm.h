@@ -12,8 +12,8 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_child_layout_context.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float_vector.h"
@@ -39,14 +39,16 @@ struct NGInflowChildData {
   NGBfcOffset bfc_offset_estimate;
   NGMarginStrut margin_strut;
   NGBoxStrut margins;
+  bool margins_fully_resolved;
   bool force_clearance;
+  bool is_new_fc;
 };
 
 // A class for general block layout (e.g. a <div> with no special style).
 // Lays out the children in sequence.
 class CORE_EXPORT NGBlockLayoutAlgorithm
     : public NGLayoutAlgorithm<NGBlockNode,
-                               NGFragmentBuilder,
+                               NGBoxFragmentBuilder,
                                NGBlockBreakToken> {
  public:
   // Default constructor.
@@ -86,7 +88,9 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   }
 
   NGBoxStrut CalculateMargins(NGLayoutInputNode child,
-                              const NGBreakToken* child_break_token);
+                              bool is_new_fc,
+                              const NGBreakToken* child_break_token,
+                              bool* margins_fully_resolved);
 
   // Creates a new constraint space for the current child.
   NGConstraintSpace CreateConstraintSpaceForChild(
@@ -99,7 +103,8 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   NGInflowChildData ComputeChildData(const NGPreviousInflowPosition&,
                                      NGLayoutInputNode,
                                      const NGBreakToken* child_break_token,
-                                     bool force_clearance);
+                                     bool force_clearance,
+                                     bool is_new_fc);
 
   NGPreviousInflowPosition ComputeInflowPosition(
       const NGPreviousInflowPosition&,
@@ -123,6 +128,18 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
       const NGConstraintSpace& child_space,
       const NGInflowChildData& child_data,
       const NGLayoutResult&) const;
+
+  // Find the container of reusable line boxes. Returns nullptr if there are no
+  // reusable line boxes.
+  const NGPaintFragment* ReusableLineBoxContainer(NGInlineNode child) const;
+
+  // Try to reuse part of cached fragments. When reusing is possible, this
+  // function adds part of cached fragments to |container_builder_|, update
+  // |break_token_| to continue layout from the last reused fragment, and
+  // returns |true|. Otherwise returns |false|.
+  const NGBreakToken* TryReuseFragmentsFromCache(NGInlineNode child,
+                                                 NGPreviousInflowPosition*,
+                                                 bool* abort_out);
 
   void HandleOutOfFlowPositioned(const NGPreviousInflowPosition&, NGBlockNode);
   void HandleFloat(const NGPreviousInflowPosition&,

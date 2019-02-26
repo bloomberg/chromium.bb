@@ -110,13 +110,32 @@ message SharePathRequest {
 
   // The location where the path to be shared lives.
   enum StorageLocation {
-    // The user's Downloads/ directory.
+    // The user's Downloads/ directory /home/user/<owner_id>/Downloads.
     DOWNLOADS = 0;
+    // DriveFS directory /media/fuse/<drivefs_mount_name>/root.
+    DRIVEFS_MY_DRIVE = 1;
+    // DriveFS directory /media/fuse/<drivefs_mount_name>/team_drives.
+    DRIVEFS_TEAM_DRIVES = 2;
+    // DriveFS directory /media/fuse/<drivefs_mount_name>/Computers.
+    DRIVEFS_COMPUTERS = 3;
+    // Note: DriveFs .Trash directory must not ever be shared since it would
+    // allow linux apps to make permanent deletes to Drive.
+
+    // Removable media mount directory /media/removable.
+    REMOVABLE = 4;
+    // The user's MyFiles/ directory /home/user/<owner_id>/MyFiles.
+    MY_FILES = 5;
   }
   StorageLocation storage_location = 3;
 
   // The user's cryptohome.  This is the <hash> part of /home/user/<hash>.
+  // This field is required when storage_location=DOWNLOADS.
   string owner_id = 4;
+
+  // DriveFS mount name.  This is the directory name mounted at /media/fuse with
+  // format 'drivefs-<drivefs-hash>'.
+  // This field is required when storage_location=DRIVEFS_*.
+  string drivefs_mount_name = 5;
 }
 
 // Information sent back by seneschal when it receives a SharePath request.
@@ -131,4 +150,24 @@ message SharePathResponse {
   // The reason why the path could not be shared, if any.  Only valid when
   // |success| is false.
   string failure_reason = 3;
+}
+
+// Information that must be included with every UnsharePath request.
+message UnsharePathRequest {
+  // The handle to the server with whom the path should be unshared.
+  uint32 handle = 1;
+
+  // The path to be unshared.  Must match a value returned from
+  // SharePathResponse.path.
+  string path = 2;
+}
+
+// Information sent back by seneschal when it receives an UnsharePath request.
+message UnsharePathResponse {
+  // If true, then the path was unshared successfully.
+  bool success = 1;
+
+  // The reason why the path could not be unshared, if any.  Only valid when
+  // |success| is false.
+  string failure_reason = 2;
 }

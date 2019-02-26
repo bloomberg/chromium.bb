@@ -215,9 +215,15 @@ message LaunchVshdRequest {
 // Response sent back by vm_cicerone when it receives a LaunchVshd
 // call.
 message LaunchVshdResponse {
+  // True if vshd was successfully spawned in the VM.
   bool success = 1;
 
+  // The reason vshd could not be started, if |success| is false.
   string failure_reason = 2;
+
+  // The cid the LaunchVshd request was sent to. Only valid if |success|
+  // is true.
+  uint32 cid = 3;
 }
 
 // Request to get information about a Linux package file in the container.
@@ -401,7 +407,10 @@ message UninstallPackageProgressSignal {
     SUCCEEDED = 0;
 
     // Uninstall failed to complete, the specific reason will be in
-    // failure_details. No further signals will be sent after this one.
+    // failure_details. If the failure is due to another package(s) being
+    // dependent on this one, then dependency_list will also be populated with
+    // the list of those dependent packages.  No further signals will be sent
+    // after this one.
     FAILED = 1;
 
     // This is sent while the uninstall is in progress. progress_percent will be
@@ -417,6 +426,16 @@ message UninstallPackageProgressSignal {
 
   // Details relating to the failure state.
   string failure_details = 6;
+
+  message Dependency {
+    // The package that depends on this one.
+    string package_id = 1;
+    // A one-line, human-readable summary of the package. Should be localized
+    // but depends on the package.
+    string summary = 2;
+  }
+
+  repeated Dependency dependency_list = 7;
 }
 
 // Request for creating an LXD container.

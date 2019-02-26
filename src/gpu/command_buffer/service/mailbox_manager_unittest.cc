@@ -43,8 +43,6 @@ class MailboxManagerTest : public GpuServiceTest {
     DCHECK(manager_->UsesSync());
   }
 
-  void TearDown() override { GpuServiceTest::TearDown(); }
-
   Texture* CreateTexture() {
     return new Texture(1);
   }
@@ -303,7 +301,7 @@ TEST_F(MailboxManagerSyncTest, ProduceConsumeResize) {
       .WillOnce(SetArgPointee<1>(kNewTextureId));
   SetupUpdateTexParamExpectations(
       kNewTextureId, GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
-  Texture* new_texture = static_cast<Texture*>(manager2_->ConsumeTexture(name));
+  Texture* new_texture = Texture::CheckedCast(manager2_->ConsumeTexture(name));
   EXPECT_NE(nullptr, new_texture);
   EXPECT_NE(texture, new_texture);
   EXPECT_EQ(kNewTextureId, new_texture->service_id());
@@ -441,7 +439,7 @@ TEST_F(MailboxManagerSyncTest, ClearedStateSynced) {
       .WillOnce(SetArgPointee<1>(kNewTextureId));
   SetupUpdateTexParamExpectations(
       kNewTextureId, GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
-  Texture* new_texture = static_cast<Texture*>(manager2_->ConsumeTexture(name));
+  Texture* new_texture = Texture::CheckedCast(manager2_->ConsumeTexture(name));
   EXPECT_NE(nullptr, new_texture);
   EXPECT_NE(texture, new_texture);
   EXPECT_EQ(kNewTextureId, new_texture->service_id());
@@ -489,7 +487,7 @@ TEST_F(MailboxManagerSyncTest, SyncIncompleteTexture) {
   SetupUpdateTexParamExpectations(kNewTextureId, texture->min_filter(),
                                   texture->mag_filter(), texture->wrap_s(),
                                   texture->wrap_t());
-  Texture* new_texture = static_cast<Texture*>(manager2_->ConsumeTexture(name));
+  Texture* new_texture = Texture::CheckedCast(manager2_->ConsumeTexture(name));
   EXPECT_NE(nullptr, new_texture);
   EXPECT_NE(texture, new_texture);
   EXPECT_EQ(kNewTextureId, new_texture->service_id());
@@ -621,7 +619,7 @@ TEST_F(MailboxManagerSyncTest, ProduceTextureNotDefined) {
   EXPECT_EQ(kNewTextureId, new_texture->service_id());
 
   // Change something so that the push recreates the TextureDefinition.
-  SetParameter(static_cast<Texture*>(new_texture), GL_TEXTURE_MIN_FILTER,
+  SetParameter(Texture::CheckedCast(new_texture), GL_TEXTURE_MIN_FILTER,
                GL_NEAREST);
 
   // Synchronize manager2 -> manager
@@ -660,7 +658,7 @@ TEST_F(MailboxManagerSyncTest, ProduceTextureDefinedNotLevel0) {
   EXPECT_EQ(kNewTextureId, new_texture->service_id());
 
   // Change something so that the push recreates the TextureDefinition.
-  SetParameter(static_cast<Texture*>(new_texture), GL_TEXTURE_MIN_FILTER,
+  SetParameter(Texture::CheckedCast(new_texture), GL_TEXTURE_MIN_FILTER,
                GL_NEAREST);
 
   // Synchronize manager2 -> manager
@@ -699,7 +697,7 @@ TEST_F(MailboxManagerSyncTest, ProduceTextureDefined0Size) {
   EXPECT_EQ(kNewTextureId, new_texture->service_id());
 
   // Change something so that the push recreates the TextureDefinition.
-  SetParameter(static_cast<Texture*>(new_texture), GL_TEXTURE_MIN_FILTER,
+  SetParameter(Texture::CheckedCast(new_texture), GL_TEXTURE_MIN_FILTER,
                GL_NEAREST);
 
   // Synchronize manager2 -> manager

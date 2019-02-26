@@ -8,15 +8,15 @@
 #include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* StrokeDashoffset::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
-  return CSSPropertyParserHelpers::ConsumeLengthOrPercent(
+  return css_property_parser_helpers::ConsumeLengthOrPercent(
       range, kSVGAttributeMode, kValueRangeAll,
-      CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
+      css_property_parser_helpers::UnitlessQuirk::kForbid);
 }
 
 const CSSValue* StrokeDashoffset::CSSValueFromComputedStyleInternal(
@@ -29,5 +29,5 @@ const CSSValue* StrokeDashoffset::CSSValueFromComputedStyleInternal(
       style.StrokeDashOffset(), style);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

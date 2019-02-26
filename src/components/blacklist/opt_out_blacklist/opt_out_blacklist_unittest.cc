@@ -15,11 +15,11 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -271,7 +271,7 @@ class OptOutBlacklistTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
 
   // Observer to |black_list_|.
   TestOptOutBlacklistDelegate blacklist_delegate_;

@@ -70,7 +70,8 @@ URLRegistrable* MediaSourceRegistry::Lookup(const String& url) {
 }
 
 MediaSourceRegistry::MediaSourceRegistry()
-    : media_sources_(new HeapHashMap<String, Member<MediaSource>>) {
+    : media_sources_(
+          MakeGarbageCollected<HeapHashMap<String, Member<MediaSource>>>()) {
   HTMLMediaSource::SetRegistry(this);
 }
 

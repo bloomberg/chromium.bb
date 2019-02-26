@@ -8,12 +8,20 @@
 
 #include "base/bind.h"
 #include "content/public/common/content_client.h"
-#include "services/service_manager/embedder/embedded_service_runner.h"
+#include "services/service_manager/public/cpp/embedded_service_runner.h"
 
 namespace content {
 
 ServiceFactory::ServiceFactory() {}
 ServiceFactory::~ServiceFactory() {}
+
+void ServiceFactory::RegisterServices(ServiceMap* service) {}
+
+bool ServiceFactory::HandleServiceRequest(
+    const std::string& name,
+    service_manager::mojom::ServiceRequest request) {
+  return false;
+}
 
 void ServiceFactory::CreateService(
     service_manager::mojom::ServiceRequest request,
@@ -36,17 +44,20 @@ void ServiceFactory::CreateService(
   }
 
   auto it = services_.find(name);
-  if (it == services_.end()) {
-    // DCHECK in developer builds to make these errors easier to identify.
-    // Otherwise they result only in cryptic browser error messages.
-    NOTREACHED() << "Unable to start service \"" << name << "\". Did you "
-                 << "forget to register the service in the utility process's"
-                 << "ServiceFactory?";
-    OnLoadFailed();
+  if (it != services_.end()) {
+    it->second->BindServiceRequest(std::move(request));
     return;
   }
 
-  it->second->BindServiceRequest(std::move(request));
+  if (HandleServiceRequest(name, std::move(request)))
+    return;
+
+  // DCHECK in developer builds to make these errors easier to identify.
+  // Otherwise they result only in cryptic browser error messages.
+  NOTREACHED() << "Unable to start service \"" << name << "\". Did you "
+               << "forget to register the service in the utility process's"
+               << "ServiceFactory?";
+  OnLoadFailed();
 }
 
 }  // namespace content

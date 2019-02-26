@@ -51,6 +51,12 @@ const base::Feature kAccountManager{"ChromeOSAccountManager",
 const base::Feature kAssistantFeature{"ChromeOSAssistant",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kShowLanguageToggleInDemoMode{
+    "ShowLanguageToggleInDemoMode", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kShowPlayInDemoMode{"ShowPlayInDemoMode",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Please keep the order of these switches synchronized with the header file
 // (i.e. in alphabetical order).
 
@@ -95,6 +101,14 @@ const char kArcAvailable[] = "arc-available";
 
 // Flag that forces ARC data be cleaned on each start.
 const char kArcDataCleanupOnStart[] = "arc-data-cleanup-on-start";
+
+// Flag that disables ARC app sync flow that installs some apps silently. Used
+// in autotests to resolve racy conditions.
+const char kArcDisableAppSync[] = "arc-disable-app-sync";
+
+// Flag that disables ARC Play Auto Install flow that installs set of predefined
+// apps silently. Used in autotests to resolve racy conditions.
+const char kArcDisablePlayAutoInstall[] = "arc-disable-play-auto-install";
 
 // Flag that forces the OptIn ui to be shown. Used in tests.
 const char kArcForceShowOptInUi[] = "arc-force-show-optin-ui";
@@ -154,9 +168,6 @@ const char kCrosRegionsModeHide[] = "hide";
 
 // "Override" value for kCrosRegionsMode (region's data is read first).
 const char kCrosRegionsModeOverride[] = "override";
-
-// Enable Crostini file sharing in Files app.
-const char kCrostiniFiles[] = "crostini-files";
 
 // Optional value for Data Saver prompt on cellular networks.
 const char kDataSaverPromptDemoMode[] = "demo";
@@ -296,6 +307,9 @@ const char kEnableArc[] = "enable-arc";
 // Enables "hide Skip button" for ARC setup in the OOBE flow.
 const char kEnableArcOobeOptinNoSkip[] = "enable-arc-oobe-optin-no-skip";
 
+// Enables ARC VM.
+const char kEnableArcVm[] = "enable-arcvm";
+
 // Enables using a random url for captive portal detection.
 const char kEnableCaptivePortalRandomUrl[] = "enable-captive-portal-random-url";
 
@@ -315,19 +329,11 @@ const char kEnableDataSaverPrompt[] = "enable-datasaver-prompt";
 // Enables encryption migration for user's cryptohome to run latest Arc.
 const char kEnableEncryptionMigration[] = "enable-encryption-migration";
 
-// Shows additional checkboxes in Settings to enable Chrome OS accessibility
-// features that haven't launched yet.
-const char kEnableExperimentalAccessibilityFeatures[] =
-    "enable-experimental-accessibility-features";
-
 // Enables sharing assets for installed default apps.
 const char kEnableExtensionAssetsSharing[] = "enable-extension-assets-sharing";
 
 // Touchscreen-specific interactions of the Files app.
 const char kEnableFileManagerTouchMode[] = "enable-file-manager-touch-mode";
-
-// Enabled Discover app.
-const char kEnableDiscoverApp[] = "enable-discover-app";
 
 // Enables animated transitions during first-run tutorial.
 const char kEnableFirstRunUITransitions[] = "enable-first-run-ui-transitions";
@@ -488,7 +494,8 @@ const char kLoginManager[] = "login-manager";
 // to pass user_id hash for primary user.
 const char kLoginProfile[] = "login-profile";
 
-// Specifies the user which is already logged in.
+// Specifies the user which is already logged in. If kStubCrosSettings is set,
+// this user will also be treated as the owner (see kStubCrosSettings).
 const char kLoginUser[] = "login-user";
 
 // The memory pressure threshold selection which is used to decide whether and
@@ -544,21 +551,15 @@ const char kShowAndroidFilesInFilesApp[] = "show-android-files-in-files-app";
 // If true, files in Android internal storage will be hidden in Files app.
 const char kHideAndroidFilesInFilesApp[] = "hide-android-files-in-files-app";
 
-// If true, Files app navigation is NOT displayed with "My Files". Items are NOT
-// re-ordered and "Downloads" is NOT displayed inside section "My Files".
-const char kFilesAppDisableMyFilesNavigation[] = "disable-my-files-navigation";
-
 // If true, the developer tool overlay will be shown for the login/lock screen.
 // This makes it easier to test layout logic.
 const char kShowLoginDevOverlay[] = "show-login-dev-overlay";
 
-// Show Play Store in Demo Mode.
-const char kShowPlayInDemoMode[] = "show-play-in-demo-mode";
-
 // Indicates that a stub implementation of CrosSettings that stores settings in
 // memory without signing should be used, treating current user as the owner.
-// This also modifies OwnerSettingsServiceChromeOS::HandlesSetting such that no
-// settings are handled by OwnerSettingsServiceChromeOS.
+// The DeviceSettingsProvider class is replaced with StubCrosSettingsProvider
+// for reading the settings from memory, and OwnerSettingsServiceChromeOS is
+// replaced with FakeOwnerSettingsService for writing the settings to memory.
 // This option is for testing the chromeos build of chrome on the desktop only.
 const char kStubCrosSettings[] = "stub-cros-settings";
 
@@ -568,6 +569,13 @@ const char kTestEncryptionMigrationUI[] = "test-encryption-migration-ui";
 // Overrides Tether with stub service. Provide integer arguments for the number
 // of fake networks desired, e.g. 'tether-stub=2'.
 const char kTetherStub[] = "tether-stub";
+
+// Tells the Chromebook to scan for a tethering host even if there is already a
+// wired connection. This allows end-to-end tests to be deployed over ethernet
+// without that connection preventing scans and thereby blocking the testing of
+// cases with no preexisting connection. Should be used only for testing.
+const char kTetherHostScansIgnoreWiredConnections[] =
+    "tether-host-scans-ignore-wired-connecitons";
 
 // List of locales supported by voice interaction.
 const char kVoiceInteractionLocales[] = "voice-interaction-supported-locales";
@@ -700,11 +708,6 @@ bool IsSigninFrameClientCertUserSelectionEnabled() {
       kDisableSigninFrameClientCertUserSelection);
 }
 
-bool AreExperimentalAccessibilityFeaturesEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kEnableExperimentalAccessibilityFeatures);
-}
-
 bool ShouldHideActiveAppsFromShelf() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kHideActiveAppsFromShelf);
@@ -719,8 +722,13 @@ bool IsInstantTetheringBackgroundAdvertisingSupported() {
       kInstantTetheringBackgroundAdvertisementSupport);
 }
 
+bool ShouldTetherHostScansIgnoreWiredConnections() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kTetherHostScansIgnoreWiredConnections);
+}
+
 bool ShouldShowPlayStoreInDemoMode() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(kShowPlayInDemoMode);
+  return base::FeatureList::IsEnabled(kShowPlayInDemoMode);
 }
 
 }  // namespace switches

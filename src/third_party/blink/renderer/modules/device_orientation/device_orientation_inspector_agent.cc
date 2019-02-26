@@ -20,8 +20,8 @@ DeviceOrientationInspectorAgent::~DeviceOrientationInspectorAgent() = default;
 DeviceOrientationInspectorAgent::DeviceOrientationInspectorAgent(
     InspectedFrames* inspected_frames)
     : inspected_frames_(inspected_frames),
-      sensor_agent_(
-          new SensorInspectorAgent(inspected_frames->Root()->GetDocument())),
+      sensor_agent_(MakeGarbageCollected<SensorInspectorAgent>(
+          inspected_frames->Root()->GetDocument())),
       enabled_(&agent_state_, /*default_value=*/false),
       alpha_(&agent_state_, /*default_value=*/0.0),
       beta_(&agent_state_, /*default_value=*/0.0),

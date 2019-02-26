@@ -66,7 +66,14 @@ namespace mediaPerceptionPrivate {
   enum Feature {
     AUTOZOOM,
     HOTWORD_DETECTION,
-    OCCUPANCY_DETECTION
+    OCCUPANCY_DETECTION,
+    EDGE_EMBEDDINGS,
+    SOFTWARE_CROPPING
+  };
+
+  dictionary NamedTemplateArgument {
+    DOMString? name;
+    (DOMString or double)? value;
   };
 
   enum ComponentType {
@@ -207,6 +214,10 @@ namespace mediaPerceptionPrivate {
 
     // A list of enabled media perception features.
     Feature[]? features;
+
+    // A list of named parameters to be substituted at start-up. Will
+    // only have effect when setting state to <code>RUNNING</code>.
+    NamedTemplateArgument[]? namedTemplateArguments;
   };
 
   dictionary BoundingBox {

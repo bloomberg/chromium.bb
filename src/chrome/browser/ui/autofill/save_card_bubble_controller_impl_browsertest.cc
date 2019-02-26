@@ -68,8 +68,10 @@ class SaveCardBubbleControllerImplTest : public DialogBrowserTest {
     controller_ = SaveCardBubbleControllerImpl::FromWebContents(web_contents);
     DCHECK(controller_);
 
-    bool should_request_name_from_user =
+    const bool should_request_name_from_user =
         name.find("WithCardholderNameTextfield") != std::string::npos;
+    const bool should_request_expiration_date_from_user =
+        name.find("WithCardExpirationDateDropDownBox") != std::string::npos;
 
     BubbleType bubble_type = BubbleType::INACTIVE;
     if (name.find("Local") != std::string::npos)
@@ -90,6 +92,7 @@ class SaveCardBubbleControllerImplTest : public DialogBrowserTest {
         controller_->OfferUploadSave(test::GetMaskedServerCard(),
                                      GetTestLegalMessage(),
                                      should_request_name_from_user,
+                                     should_request_expiration_date_from_user,
                                      /*show_bubble=*/true, base::DoNothing());
         break;
       case BubbleType::SIGN_IN_PROMO:
@@ -127,6 +130,13 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleControllerImplTest, InvokeUi_Server) {
 // server, with an added textfield for entering/confirming cardholder name.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleControllerImplTest,
                        InvokeUi_Server_WithCardholderNameTextfield) {
+  ShowAndVerifyUi();
+}
+
+// Invokes a bubble asking the user if they want to save a credit card to the
+// server, with a pair of dropdowns for entering expiration date.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleControllerImplTest,
+                       InvokeUi_Server_WithCardExpirationDateDropDownBox) {
   ShowAndVerifyUi();
 }
 

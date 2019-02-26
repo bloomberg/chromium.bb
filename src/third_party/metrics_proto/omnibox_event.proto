@@ -14,7 +14,7 @@ package metrics;
 import "omnibox_input_type.proto";
 
 // Stores information about an omnibox interaction.
-// Next tag: 19
+// Next tag: 21
 message OmniboxEventProto {
   // The timestamp for the event, in seconds.
   // This value comes from Chromium's TimeTicks::Now(), which is an abstract
@@ -200,7 +200,7 @@ message OmniboxEventProto {
   }
 
   // The result set displayed on the completion popup
-  // Next tag: 9
+  // Next tag: 10
   message Suggestion {
     // Where does this result come from?
     optional ProviderType provider = 1;
@@ -296,6 +296,18 @@ message OmniboxEventProto {
     // Whether the suggestion presented in the match, regardless of type,
     // matched an open tab.
     optional bool has_tab_match = 8;
+
+    // Whether this suggestion came associated with a keyword.  Does not include
+    // suggestions that came from the default search engine unless the search
+    // engine was explicitly invoked.  As two common examples,
+    // |is_keyword_suggestion| will be true for suggestions from explicitly-
+    // invoked suggestions (whether from a search engine or an extension).  It
+    // will also be true for suggestions from a keyword that wasn't explicitly
+    // requested.  For example, if a user has Google as their default search
+    // engine, the input "bing testing" will often show a suggestion to "Search
+    // Bing for testing" in the dropdown.  This suggestion will be marked as
+    // |is_keyword_suggestion|.
+    optional bool is_keyword_suggestion = 9;
   }
   repeated Suggestion suggestion = 9;
 
@@ -336,4 +348,27 @@ message OmniboxEventProto {
   // A list of diagnostic information about each provider.  Providers
   // will appear at most once in this list.
   repeated ProviderInfo provider_info = 12;
+
+  // Whether the Omnibox was in keyword mode, however it was entered.
+  optional bool in_keyword_mode = 19;
+
+  // How the Omnibox got into keyword mode. Not present if not in keyword
+  // mode.
+  enum KeywordModeEntryMethod {
+    INVALID = 0;
+    TAB = 1;                // Select a suggestion that provides a keyword hint
+                            // and press Tab.
+    SPACE_AT_END = 2;       // Type a complete keyword and press Space.
+    SPACE_IN_MIDDLE = 3;    // Press Space in the middle of an input in order to
+                            // separate it into a keyword and other text.
+    KEYBOARD_SHORTCUT = 4;  // Press ^K.
+    QUESTION_MARK = 5;      // Press Question-mark without any other input.
+    CLICK_HINT_VIEW = 6;    // Select a suggestion that provides a keyword hint
+                            // and click the reminder that one can press Tab.
+    TAP_HINT_VIEW = 7;      // Select a suggestion that provides a keyword hint
+                            // and touch the reminder that one can press Tab.
+    SELECT_SUGGESTION = 8;  // Select a keyword suggestion, such as by arrowing
+                            // or tabbing to it.
+  }
+  optional KeywordModeEntryMethod keyword_mode_entry_method = 20;
 }

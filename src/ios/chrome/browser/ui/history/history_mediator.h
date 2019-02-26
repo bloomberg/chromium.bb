@@ -7,13 +7,13 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ios/chrome/browser/ui/history/history_image_data_source.h"
+#import "ios/chrome/browser/ui/table_view/table_view_favicon_data_source.h"
 
 namespace ios {
 class ChromeBrowserState;
 }
 
-@interface HistoryMediator : NSObject<HistoryImageDataSource>
+@interface HistoryMediator : NSObject<TableViewFaviconDataSource>
 
 // The coordinator's BrowserState.
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;

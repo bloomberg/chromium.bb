@@ -17,7 +17,7 @@
             },
             {
                 "domain": "Browser",
-                "include": ["close", "getWindowForTarget", "getWindowBounds", "setWindowBounds" ],
+                "include": ["close", "getWindowForTarget", "getWindowBounds", "setWindowBounds", "setDockTile" ],
                 "include_events": []
             },
             {

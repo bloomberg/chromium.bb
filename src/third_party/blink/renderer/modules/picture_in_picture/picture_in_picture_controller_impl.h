@@ -27,6 +27,7 @@ class PictureInPictureControllerImpl : public PictureInPictureController {
   WTF_MAKE_NONCOPYABLE(PictureInPictureControllerImpl);
 
  public:
+  explicit PictureInPictureControllerImpl(Document&);
   ~PictureInPictureControllerImpl() override;
 
   // Meant to be called internally by PictureInPictureController::From()
@@ -46,6 +47,7 @@ class PictureInPictureControllerImpl : public PictureInPictureController {
   Status IsDocumentAllowed() const;
 
   // Returns element currently in Picture-in-Picture if any. Null otherwise.
+  Element* PictureInPictureElement() const;
   Element* PictureInPictureElement(TreeScope&) const;
 
   // Implementation of PictureInPictureController.
@@ -66,8 +68,6 @@ class PictureInPictureControllerImpl : public PictureInPictureController {
                                  const WebSize& picture_in_picture_window_size);
   void OnExitedPictureInPicture(ScriptPromiseResolver*) override;
   void OnPictureInPictureControlClicked(const WebString& control_id) override;
-
-  explicit PictureInPictureControllerImpl(Document&);
 
   // The Picture-in-Picture element for the associated document.
   Member<HTMLVideoElement> picture_in_picture_element_;

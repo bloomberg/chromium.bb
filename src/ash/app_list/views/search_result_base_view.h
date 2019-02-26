@@ -22,6 +22,9 @@ class APP_LIST_EXPORT SearchResultBaseView : public views::Button,
 
   bool background_highlighted() const { return background_highlighted_; }
 
+  // views::Button:
+  bool SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) override;
+
  protected:
   ~SearchResultBaseView() override;
 

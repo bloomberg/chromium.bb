@@ -38,7 +38,10 @@ class PlatformSpeechSynthesizerMock final : public PlatformSpeechSynthesizer {
   static PlatformSpeechSynthesizerMock* Create(PlatformSpeechSynthesizerClient*,
                                                ExecutionContext*);
 
+  explicit PlatformSpeechSynthesizerMock(PlatformSpeechSynthesizerClient*,
+                                         ExecutionContext*);
   ~PlatformSpeechSynthesizerMock() override;
+
   void Speak(PlatformSpeechSynthesisUtterance*) override;
   void Pause() override;
   void Resume() override;
@@ -47,9 +50,6 @@ class PlatformSpeechSynthesizerMock final : public PlatformSpeechSynthesizer {
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit PlatformSpeechSynthesizerMock(PlatformSpeechSynthesizerClient*,
-                                         ExecutionContext*);
-
   void InitializeVoiceList() override;
 
   void SpeakNext();

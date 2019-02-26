@@ -28,10 +28,10 @@
 
 #include <memory>
 
+#include "third_party/blink/renderer/bindings/core/v8/script_streamer.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/loader/resource/text_resource.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string.h"
-#include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
 #include "third_party/blink/renderer/platform/loader/fetch/integrity_metadata.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
@@ -43,11 +43,34 @@ class FetchParameters;
 class KURL;
 class ResourceFetcher;
 
+// ScriptResource is a resource representing a JavaScript script. It is only
+// used for "classic" scripts, i.e. not modules.
+//
+// In addition to loading the script, a ScriptResource can optionally stream the
+// script to the JavaScript parser/compiler, using a ScriptStreamer. In this
+// case, clients of the ScriptResource will not receive the finished
+// notification until the streaming completes.
+//
+// See also:
+// https://docs.google.com/document/d/143GOPl_XVgLPFfO-31b_MdBcnjklLEX2OIg_6eN6fQ4
 class CORE_EXPORT ScriptResource final : public TextResource {
  public:
+  // For scripts fetched with kAllowStreaming, the ScriptResource expects users
+  // to call StartStreaming to start streaming the loaded data, and
+  // SetClientIsWaitingForFinished when they actually want the data to be
+  // available for execute. Note that StartStreaming can fail, so the client of
+  // an unfinished resource has to call SetClientIsWaitingForFinished to
+  // guarantee that it receives a finished callback.
+  //
+  // Scripts fetched with kNoStreaming will (asynchronously) call
+  // SetClientIsWaitingForFinished on the resource, so the user does not have to
+  // call it again. This is effectively the "legacy" behaviour.
+  enum StreamingAllowed { kNoStreaming, kAllowStreaming };
+
   static ScriptResource* Fetch(FetchParameters&,
                                ResourceFetcher*,
-                               ResourceClient*);
+                               ResourceClient*,
+                               StreamingAllowed);
 
   // Public for testing
   static ScriptResource* CreateForTest(const KURL& url,
@@ -58,29 +81,107 @@ class CORE_EXPORT ScriptResource final : public TextResource {
     ResourceLoaderOptions options;
     TextResourceDecoderOptions decoder_options(
         TextResourceDecoderOptions::kPlainTextContent, encoding);
-    return new ScriptResource(request, options, decoder_options);
+    return MakeGarbageCollected<ScriptResource>(request, options,
+                                                decoder_options);
   }
 
+  ScriptResource(const ResourceRequest&,
+                 const ResourceLoaderOptions&,
+                 const TextResourceDecoderOptions&);
   ~ScriptResource() override;
+
+  void Trace(blink::Visitor*) override;
 
   void OnMemoryDump(WebMemoryDumpLevelOfDetail,
                     WebProcessMemoryDump*) const override;
 
-  void DestroyDecodedDataForFailedRevalidation() override;
-
   void SetSerializedCachedMetadata(const char*, size_t) override;
+
+  // Returns true if streaming was successfully started (or if an active
+  // streamer is already running)
+  //
+  // TODO(leszeks): This value is only used for work stealing, so make this
+  // function return void if work stealing is removed.
+  bool StartStreaming(
+      scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner);
+
+  // State that a client of the script resource will no longer try to start
+  // streaming, and is now waiting for the resource to call the client's finish
+  // callback (regardless of whether the resource is finished loading or
+  // finished streaming). Specifically, it causes the kCanStartStreaming to
+  // kStreamingNotAllowed transition. Streaming cannot be started after this is
+  // called.
+  //
+  // If the resource is already streaming, this will be a no-op, and the client
+  // will still only get the finished notification when the streaming completes.
+  //
+  // This function should never be called synchronously (except by
+  // NotifyFinished) as it can trigger all clients' finished callbacks, which in
+  // turn can invoke JavaScript execution.
+  //
+  // TODO(leszeks): Eventually Fetch (with streaming allowed) will be the only
+  // way of starting streaming, and SetClientIsWaitingForFinished will not be
+  // part of the public interface.
+  void SetClientIsWaitingForFinished();
+
+  // Called (only) by ScriptStreamer when streaming completes.
+  //
+  // This function should never be called synchronously as it can trigger all
+  // clients' finished callbacks, which in turn can invoke JavaScript execution.
+  void StreamingFinished();
 
   const ParkableString& SourceText();
 
-  AccessControlStatus CalculateAccessControlStatus() const;
+  // Get the resource's current text. This can return partial data, so should
+  // not be used outside of the inspector.
+  String TextForInspector() const;
 
   SingleCachedMetadataHandler* CacheHandler();
+
+  // Gets the script streamer from the ScriptResource, clearing the resource's
+  // streamer so that it cannot be used twice.
+  ScriptStreamer* TakeStreamer();
+
+  ScriptStreamer::NotStreamingReason NoStreamerReason() const {
+    return not_streaming_reason_;
+  }
+
+  // Used in DCHECKs
+  bool HasStreamer() { return !!streamer_; }
+  bool HasFinishedStreamer() { return streamer_ && streamer_->IsFinished(); }
+
+  // Visible for tests.
+  void SetRevalidatingRequest(const ResourceRequest&) override;
 
  protected:
   CachedMetadataHandler* CreateCachedMetadataHandler(
       std::unique_ptr<CachedMetadataSender> send_callback) override;
 
+  void DestroyDecodedDataForFailedRevalidation() override;
+
+  void NotifyDataReceived(const char* data, size_t size) override;
+
+  // ScriptResources are considered finished when either:
+  //   1. Loading + streaming completes, or
+  //   2. Loading completes + streaming was never started + someone called
+  //      "SetClientIsWaitingForFinished" to block streaming from ever starting.
+  void NotifyFinished() override;
+  bool IsFinishedInternal() const override;
+
  private:
+  // Valid state transitions:
+  //
+  // kCanStartStreaming -> kStreaming -> kWaitingForStreamingToEnd
+  //                                                -> kFinishedNotificationSent
+  // kCanStartStreaming -> kStreamingNotAllowed -> kFinishedNotificationSent
+  enum class StreamingState {
+    kCanStartStreaming,         // Streaming can be started.
+    kStreamingNotAllowed,       // Streaming can no longer be started.
+    kStreaming,                 // Both loading the resource and streaming.
+    kWaitingForStreamingToEnd,  // Resource loaded but streaming not complete.
+    kFinishedNotificationSent   // Everything complete and finish sent.
+  };
+
   class ScriptResourceFactory : public ResourceFactory {
    public:
     ScriptResourceFactory()
@@ -91,17 +192,23 @@ class CORE_EXPORT ScriptResource final : public TextResource {
         const ResourceRequest& request,
         const ResourceLoaderOptions& options,
         const TextResourceDecoderOptions& decoder_options) const override {
-      return new ScriptResource(request, options, decoder_options);
+      return MakeGarbageCollected<ScriptResource>(request, options,
+                                                  decoder_options);
     }
   };
 
-  ScriptResource(const ResourceRequest&,
-                 const ResourceLoaderOptions&,
-                 const TextResourceDecoderOptions&);
-
   bool CanUseCacheValidator() const override;
 
+  void AdvanceStreamingState(StreamingState new_state);
+
+  // Check that invariants for the state hold.
+  void CheckStreamingState() const;
+
   ParkableString source_text_;
+  Member<ScriptStreamer> streamer_;
+  ScriptStreamer::NotStreamingReason not_streaming_reason_ =
+      ScriptStreamer::kDidntTryToStartStreaming;
+  StreamingState streaming_state_ = StreamingState::kCanStartStreaming;
 };
 
 DEFINE_RESOURCE_TYPE_CASTS(Script);

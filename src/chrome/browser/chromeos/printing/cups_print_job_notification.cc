@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -53,7 +54,7 @@ CupsPrintJobNotification::CupsPrintJobNotification(
       gfx::Image(),      // icon
       l10n_util::GetStringUTF16(IDS_PRINT_JOB_NOTIFICATION_DISPLAY_SOURCE),
       GURL(kCupsPrintJobNotificationId),
-      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
+      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
                                  kCupsPrintJobNotificationId),
       message_center::RichNotificationData(),
       base::MakeRefCounted<message_center::ThunkNotificationDelegate>(
@@ -197,19 +198,16 @@ void CupsPrintJobNotification::UpdateNotificationIcon() {
     case CupsPrintJob::State::STATE_PAGE_DONE:
     case CupsPrintJob::State::STATE_SUSPENDED:
     case CupsPrintJob::State::STATE_RESUMED:
-      notification_->set_accent_color(
-          message_center::kSystemNotificationColorNormal);
+      notification_->set_accent_color(ash::kSystemNotificationColorNormal);
       notification_->set_vector_small_image(ash::kNotificationPrintingIcon);
       break;
     case CupsPrintJob::State::STATE_DOCUMENT_DONE:
-      notification_->set_accent_color(
-          message_center::kSystemNotificationColorNormal);
+      notification_->set_accent_color(ash::kSystemNotificationColorNormal);
       notification_->set_vector_small_image(ash::kNotificationPrintingDoneIcon);
       break;
     case CupsPrintJob::State::STATE_CANCELLED:
     case CupsPrintJob::State::STATE_ERROR:
-      notification_->set_accent_color(
-          message_center::kSystemNotificationColorWarning);
+      notification_->set_accent_color(ash::kSystemNotificationColorWarning);
       notification_->set_vector_small_image(
           ash::kNotificationPrintingWarningIcon);
       break;

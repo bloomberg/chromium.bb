@@ -30,8 +30,6 @@ InkDropRipple::InkDropRipple()
 
 InkDropRipple::~InkDropRipple() {}
 
-void InkDropRipple::HostSizeChanged(const gfx::Size& new_size) {}
-
 void InkDropRipple::AnimateToState(InkDropState ink_drop_state) {
   // Does not return early if |target_ink_drop_state_| == |ink_drop_state| for
   // two reasons.
@@ -68,6 +66,20 @@ void InkDropRipple::AnimateToState(InkDropState ink_drop_state) {
   animation_observer->SetActive();
   // |this| may be deleted! |animation_observer| might synchronously call
   // AnimationEndedCallback which can delete |this|.
+}
+
+void InkDropRipple::SnapToState(InkDropState ink_drop_state) {
+  switch (ink_drop_state) {
+    case InkDropState::HIDDEN:
+      SnapToHidden();
+      break;
+    case InkDropState::ACTIVATED:
+      SnapToActivated();
+      break;
+    default:
+      AbortAllAnimations();
+      target_ink_drop_state_ = ink_drop_state;
+  }
 }
 
 void InkDropRipple::SnapToActivated() {

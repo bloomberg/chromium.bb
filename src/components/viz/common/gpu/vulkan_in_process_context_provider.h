@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "components/viz/common/gpu/vulkan_context_provider.h"
-#include "components/viz/common/viz_common_export.h"
+#include "components/viz/common/viz_vulkan_context_provider_export.h"
 #include "gpu/vulkan/buildflags.h"
 #if BUILDFLAG(ENABLE_VULKAN)
 #include "third_party/skia/include/gpu/vk/GrVkBackendContext.h"
@@ -21,7 +21,7 @@ class VulkanDeviceQueue;
 
 namespace viz {
 
-class VIZ_COMMON_EXPORT VulkanInProcessContextProvider
+class VIZ_VULKAN_CONTEXT_PROVIDER_EXPORT VulkanInProcessContextProvider
     : public VulkanContextProvider {
  public:
   static scoped_refptr<VulkanInProcessContextProvider> Create(

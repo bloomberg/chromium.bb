@@ -67,8 +67,6 @@ struct Elf64IntelTraits : public Elf64Traits {
 template <class Traits>
 class DisassemblerElf : public Disassembler {
  public:
-  using HeaderVector = std::vector<const typename Traits::Elf_Shdr*>;
-
   // Applies quick checks to determine whether |image| *may* point to the start
   // of an executable. Returns true iff the check passes.
   static bool QuickDetect(ConstBufferView image);
@@ -110,9 +108,8 @@ class DisassemblerElf : public Disassembler {
   // Processes rel32 data after they are extracted from executable sections.
   virtual void PostProcessRel32() = 0;
 
-  // The parsing routines below return true on success, and false on failure.
-
   // Parses ELF header and section headers, and performs basic validation.
+  // Returns whether parsing was successful.
   bool ParseHeader();
 
   // Extracts and stores section headers that we need.

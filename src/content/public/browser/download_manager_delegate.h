@@ -69,7 +69,8 @@ using DownloadOpenDelayedCallback = base::Callback<void(bool)>;
 // Called with the result of CheckForFileExistence().
 using CheckForFileExistenceCallback = base::OnceCallback<void(bool result)>;
 
-using DownloadIdCallback = base::Callback<void(uint32_t)>;
+// On failure, |next_id| is equal to kInvalidId.
+using DownloadIdCallback = base::Callback<void(uint32_t /* next_id */)>;
 
 // Called on whether a download is allowed to continue.
 using CheckDownloadAllowedCallback = base::OnceCallback<void(bool /*allow*/)>;
@@ -81,7 +82,8 @@ class CONTENT_EXPORT DownloadManagerDelegate {
   virtual void Shutdown() {}
 
   // Runs |callback| with a new download id when possible, perhaps
-  // synchronously.
+  // synchronously. If this call fails, |callback| will be called with
+  // kInvalidId.
   virtual void GetNextId(const DownloadIdCallback& callback);
 
   // Called to notify the delegate that a new download |item| requires a

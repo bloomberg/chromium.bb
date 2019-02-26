@@ -151,6 +151,9 @@ void NetExportFileWriter::StartNetLog(
   base::Value custom_constants = base::Value::FromUniquePtrValue(
       ChromeNetLog::GetPlatformConstants(command_line_string, channel_string));
 
+  net_log_exporter_.set_connection_error_handler(base::BindOnce(
+      &NetExportFileWriter::OnConnectionError, base::Unretained(this)));
+
   base::PostTaskAndReplyWithResult(
       file_task_runner_.get(), FROM_HERE,
       base::BindOnce(&NetExportFileWriter::CreateOutputFile, log_path_),
@@ -173,6 +176,12 @@ void NetExportFileWriter::StartNetLogAfterCreateFile(
     ResetExporterThenSetStateNotLogging();
     return;
   }
+
+  // It's possible that the network service crashed in the window between
+  // StartNetLog and here. In that case, OnConnectionError will have closed
+  // |net_log_exporter_|.
+  if (!net_log_exporter_)
+    return;
 
   network::mojom::NetLogCaptureMode rpc_capture_mode =
       network::mojom::NetLogCaptureMode::DEFAULT;
@@ -230,6 +239,10 @@ void NetExportFileWriter::StopNetLog(
 }
 
 void NetExportFileWriter::OnStopResult(int result) {
+  ResetExporterThenSetStateNotLogging();
+}
+
+void NetExportFileWriter::OnConnectionError() {
   ResetExporterThenSetStateNotLogging();
 }
 

@@ -10,7 +10,8 @@ namespace sequence_manager {
 Task::Task(internal::PostedTask posted_task,
            TimeTicks desired_run_time,
            internal::EnqueueOrder sequence_order,
-           internal::EnqueueOrder enqueue_order)
+           internal::EnqueueOrder enqueue_order,
+           internal::WakeUpResolution resolution)
     : PendingTask(posted_task.location,
                   std::move(posted_task.callback),
                   desired_run_time,
@@ -23,6 +24,8 @@ Task::Task(internal::PostedTask posted_task,
   // |PendingTask::sequence_num|'s type.
   static_assert(std::is_same<decltype(sequence_num), int>::value, "");
   sequence_num = static_cast<int>(sequence_order);
+  this->is_high_res = resolution == internal::WakeUpResolution::kHigh;
+  queue_time = posted_task.queue_time;
 }
 
 namespace internal {
@@ -43,7 +46,8 @@ PostedTask::PostedTask(PostedTask&& move_from) noexcept
       location(move_from.location),
       delay(move_from.delay),
       nestable(move_from.nestable),
-      task_type(move_from.task_type) {}
+      task_type(move_from.task_type),
+      queue_time(move_from.queue_time) {}
 
 PostedTask::~PostedTask() = default;
 

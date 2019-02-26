@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -38,6 +37,10 @@ class Tool(object):
 
   def __init__(self):
     self.o = None
+
+  def ShowUsage(self):
+    '''Show usage text for this tool.'''
+    print self.__doc__
 
   def SetOptions(self, opts):
     self.o = opts

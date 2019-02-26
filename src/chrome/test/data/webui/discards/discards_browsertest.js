@@ -48,13 +48,13 @@ TEST_F('DiscardsTest', 'CompareTabDiscardsInfo', function() {
    'isAutoDiscardable', 'discardCount', 'utilityRank', 'lastActiveSeconds']
       .forEach((sortKey) => {
         assertTrue(
-            discards.compareTabDiscardsInfos(sortKey, dummy1, dummy2) < 0);
+            discards_tab.compareTabDiscardsInfos(sortKey, dummy1, dummy2) < 0);
         assertTrue(
-            discards.compareTabDiscardsInfos(sortKey, dummy2, dummy1) > 0);
+            discards_tab.compareTabDiscardsInfos(sortKey, dummy2, dummy1) > 0);
         assertTrue(
-            discards.compareTabDiscardsInfos(sortKey, dummy1, dummy1) == 0);
+            discards_tab.compareTabDiscardsInfos(sortKey, dummy1, dummy1) == 0);
         assertTrue(
-            discards.compareTabDiscardsInfos(sortKey, dummy2, dummy2) == 0);
+            discards_tab.compareTabDiscardsInfos(sortKey, dummy2, dummy2) == 0);
       });
 });
 

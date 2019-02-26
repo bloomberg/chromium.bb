@@ -30,18 +30,22 @@ const base::Feature kVizDisplayCompositor{"VizDisplayCompositor",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables running the Viz-assisted hit-test logic.
-const base::Feature kEnableVizHitTestDrawQuad{
-    "VizHitTestDrawQuad", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kEnableVizHitTestDrawQuad{"VizHitTestDrawQuad",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kEnableVizHitTestSurfaceLayer{
     "VizHitTestSurfaceLayer", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Use the SkiaRenderer.
+// Use the Skia deferred display list.
 const base::Feature kUseSkiaDeferredDisplayList{
     "UseSkiaDeferredDisplayList", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Use the Skia deferred display list.
+// Use the SkiaRenderer.
 const base::Feature kUseSkiaRenderer{"UseSkiaRenderer",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Use the SkiaRenderer to record SkPicture.
+const base::Feature kRecordSkPicture{"RecordSkPicture",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsSurfaceSynchronizationEnabled() {
@@ -49,6 +53,12 @@ bool IsSurfaceSynchronizationEnabled() {
   return base::FeatureList::IsEnabled(kEnableSurfaceSynchronization) ||
          command_line->HasSwitch(switches::kEnableSurfaceSynchronization) ||
          base::FeatureList::IsEnabled(kVizDisplayCompositor);
+}
+
+bool IsVizHitTestingDebugEnabled() {
+  return features::IsVizHitTestingEnabled() &&
+         base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kEnableVizHitTestDebug);
 }
 
 bool IsVizHitTestingDrawQuadEnabled() {
@@ -76,6 +86,11 @@ bool IsDrawOcclusionEnabled() {
 
 bool IsUsingSkiaRenderer() {
   return base::FeatureList::IsEnabled(kUseSkiaRenderer);
+}
+
+bool IsRecordingSkPicture() {
+  return IsUsingSkiaRenderer() &&
+         base::FeatureList::IsEnabled(kRecordSkPicture);
 }
 
 bool IsUsingSkiaDeferredDisplayList() {

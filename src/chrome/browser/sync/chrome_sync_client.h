@@ -50,8 +50,7 @@ class ChromeSyncClient : public syncer::SyncClient {
   sync_sessions::SessionSyncService* GetSessionSyncService() override;
   bool HasPasswordStore() override;
   base::Closure GetPasswordStateChangedCallback() override;
-  syncer::DataTypeController::TypeVector CreateDataTypeControllers(
-      syncer::LocalDeviceInfoProvider* local_device_info_provider) override;
+  syncer::DataTypeController::TypeVector CreateDataTypeControllers() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   invalidation::InvalidationService* GetInvalidationService() override;
   BookmarkUndoService* GetBookmarkUndoServiceIfExists() override;

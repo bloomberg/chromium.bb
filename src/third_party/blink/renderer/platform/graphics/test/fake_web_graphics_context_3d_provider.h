@@ -38,6 +38,7 @@ class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
   const gpu::Capabilities& GetCapabilities() const override {
     return capabilities_;
   }
+  void SetCapabilities(const gpu::Capabilities& c) { capabilities_ = c; }
 
   const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const override {
     return gpu_feature_info_;
@@ -52,7 +53,9 @@ class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
   void SetLostContextCallback(base::Closure) override {}
   void SetErrorMessageCallback(
       base::RepeatingCallback<void(const char*, int32_t id)>) override {}
-  cc::ImageDecodeCache* ImageDecodeCache(SkColorType) override {
+  cc::ImageDecodeCache* ImageDecodeCache(
+      SkColorType color_type,
+      sk_sp<SkColorSpace> color_space) override {
     return image_decode_cache_;
   }
 

@@ -8,6 +8,7 @@ _src = get_path_info("../src", "abspath")
 _include = get_path_info("../include", "abspath")
 
 skia_gpu_sources = [
+  "$_include/gpu/GrBackendDrawableInfo.h",
   "$_include/gpu/GrBackendSemaphore.h",
   "$_include/gpu/GrBackendSurface.h",
   "$_include/gpu/GrBlend.h",
@@ -111,16 +112,10 @@ skia_gpu_sources = [
   "$_src/gpu/GrOpList.cpp",
   "$_src/gpu/GrPaint.cpp",
   "$_src/gpu/GrPaint.h",
-  "$_src/gpu/GrPath.cpp",
-  "$_src/gpu/GrPath.h",
-  "$_src/gpu/GrPathProcessor.cpp",
-  "$_src/gpu/GrPathProcessor.h",
   "$_src/gpu/GrPathRendererChain.cpp",
   "$_src/gpu/GrPathRendererChain.h",
   "$_src/gpu/GrPathRenderer.cpp",
   "$_src/gpu/GrPathRenderer.h",
-  "$_src/gpu/GrPathRendering.cpp",
-  "$_src/gpu/GrPathRendering.h",
   "$_src/gpu/GrPathUtils.cpp",
   "$_src/gpu/GrPathUtils.h",
   "$_src/gpu/GrPendingIOResource.h",
@@ -237,6 +232,8 @@ skia_gpu_sources = [
   "$_src/gpu/ops/GrAAConvexPathRenderer.cpp",
   "$_src/gpu/ops/GrAAConvexPathRenderer.h",
   "$_src/gpu/ops/GrAAFillRectOp.cpp",
+  "$_src/gpu/ops/GrAAFillRRectOp.cpp",
+  "$_src/gpu/ops/GrAAFillRRectOp.h",
   "$_src/gpu/ops/GrAAHairLinePathRenderer.cpp",
   "$_src/gpu/ops/GrAAHairLinePathRenderer.h",
   "$_src/gpu/ops/GrAALinearizingConvexPathRenderer.cpp",
@@ -258,13 +255,15 @@ skia_gpu_sources = [
   "$_src/gpu/ops/GrDefaultPathRenderer.h",
   "$_src/gpu/ops/GrDebugMarkerOp.cpp",
   "$_src/gpu/ops/GrDebugMarkerOp.h",
+  "$_src/gpu/ops/GrDrawableOp.cpp",
+  "$_src/gpu/ops/GrDrawableOp.h",
   "$_src/gpu/ops/GrDrawAtlasOp.cpp",
   "$_src/gpu/ops/GrDrawAtlasOp.h",
   "$_src/gpu/ops/GrDrawOp.h",
-  "$_src/gpu/ops/GrDrawPathOp.cpp",
-  "$_src/gpu/ops/GrDrawPathOp.h",
   "$_src/gpu/ops/GrDrawVerticesOp.cpp",
   "$_src/gpu/ops/GrDrawVerticesOp.h",
+  "$_src/gpu/ops/GrFillRectOp.cpp",
+  "$_src/gpu/ops/GrFillRectOp.h",
   "$_src/gpu/ops/GrMeshDrawOp.cpp",
   "$_src/gpu/ops/GrMeshDrawOp.h",
   "$_src/gpu/ops/GrNonAAFillRectOp.cpp",
@@ -275,6 +274,8 @@ skia_gpu_sources = [
   "$_src/gpu/ops/GrOp.h",
   "$_src/gpu/ops/GrOvalOpFactory.cpp",
   "$_src/gpu/ops/GrOvalOpFactory.h",
+  "$_src/gpu/ops/GrQuadPerEdgeAA.cpp",
+  "$_src/gpu/ops/GrQuadPerEdgeAA.h",
   "$_src/gpu/ops/GrRectOpFactory.h",
   "$_src/gpu/ops/GrRegionOp.cpp",
   "$_src/gpu/ops/GrRegionOp.h",
@@ -286,10 +287,6 @@ skia_gpu_sources = [
   "$_src/gpu/ops/GrSimpleMeshDrawOpHelper.h",
   "$_src/gpu/ops/GrSmallPathRenderer.cpp",
   "$_src/gpu/ops/GrSmallPathRenderer.h",
-  "$_src/gpu/ops/GrStencilAndCoverPathRenderer.cpp",
-  "$_src/gpu/ops/GrStencilAndCoverPathRenderer.h",
-  "$_src/gpu/ops/GrStencilPathOp.cpp",
-  "$_src/gpu/ops/GrStencilPathOp.h",
   "$_src/gpu/ops/GrTessellatingPathRenderer.cpp",
   "$_src/gpu/ops/GrTessellatingPathRenderer.h",
   "$_src/gpu/ops/GrTextureOp.cpp",
@@ -426,10 +423,6 @@ skia_gpu_sources = [
   "$_src/gpu/gl/GrGLExtensions.cpp",
   "$_src/gpu/gl/GrGLInterface.cpp",
   "$_src/gpu/gl/GrGLIRect.h",
-  "$_src/gpu/gl/GrGLPath.cpp",
-  "$_src/gpu/gl/GrGLPath.h",
-  "$_src/gpu/gl/GrGLPathRendering.cpp",
-  "$_src/gpu/gl/GrGLPathRendering.h",
   "$_src/gpu/gl/GrGLProgram.cpp",
   "$_src/gpu/gl/GrGLProgram.h",
   "$_src/gpu/gl/GrGLProgramDataManager.cpp",
@@ -554,13 +547,32 @@ skia_ccpr_sources = [
   "$_src/gpu/ccpr/GrCoverageCountingPathRenderer.h",
 ]
 
+skia_nvpr_sources = [
+  "$_src/gpu/GrPath.cpp",
+  "$_src/gpu/GrPath.h",
+  "$_src/gpu/GrPathProcessor.cpp",
+  "$_src/gpu/GrPathProcessor.h",
+  "$_src/gpu/GrPathRendering.cpp",
+  "$_src/gpu/GrPathRendering.h",
+  "$_src/gpu/gl/GrGLPath.cpp",
+  "$_src/gpu/gl/GrGLPath.h",
+  "$_src/gpu/gl/GrGLPathRendering.cpp",
+  "$_src/gpu/gl/GrGLPathRendering.h",
+  "$_src/gpu/ops/GrDrawPathOp.cpp",
+  "$_src/gpu/ops/GrDrawPathOp.h",
+  "$_src/gpu/ops/GrStencilAndCoverPathRenderer.cpp",
+  "$_src/gpu/ops/GrStencilAndCoverPathRenderer.h",
+  "$_src/gpu/ops/GrStencilPathOp.cpp",
+  "$_src/gpu/ops/GrStencilPathOp.h",
+]
+
 skia_gpu_sources += skia_ccpr_sources
+skia_gpu_sources += skia_nvpr_sources
 
 skia_null_gpu_sources = []
 
 skia_vk_sources = [
   "$_include/gpu/vk/GrVkBackendContext.h",
-  "$_include/gpu/vk/GrVkDefines.h",
   "$_include/gpu/vk/GrVkExtensions.h",
   "$_include/gpu/vk/GrVkMemoryAllocator.h",
   "$_include/gpu/vk/GrVkTypes.h",
@@ -644,6 +656,7 @@ skia_vk_sources = [
   "$_src/gpu/vk/GrVkVaryingHandler.h",
   "$_src/gpu/vk/GrVkVertexBuffer.cpp",
   "$_src/gpu/vk/GrVkVertexBuffer.h",
+  "$_src/gpu/vk/GrVkVulkan.h",
 ]
 
 skia_metal_sources = [

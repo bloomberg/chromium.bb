@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
 import org.chromium.chrome.browser.preferences.PrefChangeRegistrar.PrefObserver;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
+import org.chromium.chrome.browser.preferences.privacy.ClearBrowsingDataTabsFragment;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
@@ -356,8 +357,7 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
      */
     public void openClearBrowsingDataPreference() {
         recordUserAction("ClearBrowsingData");
-        Intent intent = PreferencesLauncher.createIntentForClearBrowsingDataPage(mActivity);
-        IntentUtils.safeStartActivity(mActivity, intent);
+        PreferencesLauncher.launchSettingsPage(mActivity, ClearBrowsingDataTabsFragment.class);
     }
 
     @Override

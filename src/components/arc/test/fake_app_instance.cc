@@ -17,6 +17,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_restrictions.h"
 #include "components/arc/app/arc_playstore_search_request_state.h"
 
 namespace mojo {
@@ -188,8 +189,11 @@ bool FakeAppInstance::GenerateIconResponse(int dimension,
           .AppendASCII("arc")
           .AppendASCII(base::StringPrintf(
               "icon_%s_%d.png", app_icon ? "app" : "shortcut", dimension));
-  CHECK(base::PathExists(icon_file_path)) << icon_file_path.MaybeAsASCII();
-  CHECK(base::ReadFileToString(icon_file_path, png_data_as_string));
+  {
+    base::ScopedAllowBlockingForTesting allow_io;
+    CHECK(base::PathExists(icon_file_path)) << icon_file_path.MaybeAsASCII();
+    CHECK(base::ReadFileToString(icon_file_path, png_data_as_string));
+  }
   icon_responses_[dimension] = *png_data_as_string;
   return true;
 }
@@ -251,20 +255,16 @@ void FakeAppInstance::SetTaskInfo(int32_t task_id,
 }
 
 void FakeAppInstance::SendRefreshPackageList(
-    const std::vector<mojom::ArcPackageInfo>& packages) {
-  std::vector<mojom::ArcPackageInfoPtr> v;
-  for (const auto& package : packages)
-    v.emplace_back(package.Clone());
-  app_host_->OnPackageListRefreshed(std::move(v));
+    std::vector<mojom::ArcPackageInfoPtr> packages) {
+  app_host_->OnPackageListRefreshed(std::move(packages));
 }
 
-void FakeAppInstance::SendPackageAdded(const mojom::ArcPackageInfo& package) {
-  app_host_->OnPackageAdded(mojom::ArcPackageInfoPtr(package.Clone()));
+void FakeAppInstance::SendPackageAdded(mojom::ArcPackageInfoPtr package) {
+  app_host_->OnPackageAdded(std::move(package));
 }
 
-void FakeAppInstance::SendPackageModified(
-    const mojom::ArcPackageInfo& package) {
-  app_host_->OnPackageModified(mojom::ArcPackageInfoPtr(package.Clone()));
+void FakeAppInstance::SendPackageModified(mojom::ArcPackageInfoPtr package) {
+  app_host_->OnPackageModified(std::move(package));
 }
 
 void FakeAppInstance::SendPackageUninstalled(const std::string& package_name) {

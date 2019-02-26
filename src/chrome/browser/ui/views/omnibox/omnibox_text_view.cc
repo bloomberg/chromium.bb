@@ -116,7 +116,7 @@ TextStyle GetTextStyle(int text_type) {
 const gfx::FontList& GetFontForType(int text_type) {
   const gfx::FontList& omnibox_font =
       views::style::GetFont(CONTEXT_OMNIBOX_PRIMARY, kTextStyle);
-  if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled()) {
+  if (ui::MaterialDesignController::touch_ui()) {
     int delta = GetTextStyle(text_type).touchable_size_delta;
     if (delta == 0)
       return omnibox_font;
@@ -354,8 +354,6 @@ void OmniboxTextView::ReapplyStyling() {
       render_text_->SetDirectionalityMode(gfx::DIRECTIONALITY_AS_URL);
     } else if (classifications[i].style & ACMatchClassification::DIM) {
       part = OmniboxPart::RESULTS_TEXT_DIMMED;
-    } else if (classifications[i].style & ACMatchClassification::INVISIBLE) {
-      part = OmniboxPart::RESULTS_TEXT_INVISIBLE;
     }
     render_text_->ApplyColor(result_view_->GetColor(part), current_range);
   }
@@ -401,7 +399,7 @@ void OmniboxTextView::AppendText(const SuggestionAnswer::TextField& field,
 
     // Baselines are always aligned under the touch UI. Font sizes change
     // instead.
-    if (!ui::MaterialDesignController::IsTouchOptimizedUiEnabled()) {
+    if (!ui::MaterialDesignController::touch_ui()) {
       render_text_->ApplyBaselineStyle(text_style.baseline, range);
     } else if (text_style.touchable_size_delta != 0) {
       render_text_->ApplyFontSizeOverride(

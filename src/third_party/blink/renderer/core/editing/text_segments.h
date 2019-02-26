@@ -51,11 +51,13 @@ class TextSegments final {
     virtual Position Find(const String text, unsigned offset) = 0;
   };
 
-  // TODO(editing-dev): We should have |FindBoundaryBackward()|.
-
   // Returns a boundary position found by |finder| followed by |position|
   // (inclusive). |finder| can be stateful or stateless.
   static PositionInFlatTree FindBoundaryForward(
+      const PositionInFlatTree& position,
+      Finder* finder);
+
+  static PositionInFlatTree FindBoundaryBackward(
       const PositionInFlatTree& position,
       Finder* finder);
 };

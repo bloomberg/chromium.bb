@@ -106,7 +106,7 @@ set_aom_config_var(CONFIG_FIX_GF_LENGTH 1 NUMBER
 set_aom_config_var(CONFIG_INSPECTION 0 NUMBER "Enables bitstream inspection.")
 set_aom_config_var(CONFIG_INTERNAL_STATS 0 NUMBER
                    "Enables internal encoder stats.")
-set_aom_config_var(CONFIG_LOWBITDEPTH 0 NUMBER
+set_aom_config_var(CONFIG_LOWBITDEPTH 1 NUMBER
                    "Enables 8-bit optimized pipeline.")
 set_aom_config_var(CONFIG_MAX_DECODE_PROFILE 2 NUMBER
                    "Max profile to support decoding.")
@@ -135,8 +135,8 @@ set_aom_config_var(CONFIG_INTER_STATS_ONLY 0 NUMBER "AV1 experiment flag.")
 set_aom_config_var(CONFIG_RD_DEBUG 0 NUMBER "AV1 experiment flag.")
 set_aom_config_var(CONFIG_2PASS_PARTITION_SEARCH_LVL 1 NUMBER
                    "AV1 experiment flag.")
-set_aom_config_var(CONFIG_SHARP_SETTINGS 0 NUMBER
-                   "Use sharper encoding settings")
+set_aom_config_var(CONFIG_SHARP_SETTINGS 0 NUMBER "AV1 experiment flag.")
+set_aom_config_var(CONFIG_ONE_PASS_SVM 0 NUMBER "AV1 experiment flag.")
 
 #
 # Variables in this section control optional features of the build system.

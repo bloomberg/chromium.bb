@@ -31,44 +31,11 @@ class WebDatabaseObserverImpl : public blink::WebDatabaseObserver {
                         const blink::WebString& database_name) override;
   void DatabaseClosed(const blink::WebSecurityOrigin& origin,
                       const blink::WebString& database_name) override;
-  void ReportOpenDatabaseResult(const blink::WebSecurityOrigin& origin,
-                                const blink::WebString& database_name,
-                                int callsite,
-                                int websql_error,
-                                int sqlite_error,
-                                base::TimeDelta call_time) override;
-  void ReportChangeVersionResult(const blink::WebSecurityOrigin& origin,
-                                 const blink::WebString& database_name,
-                                 int callsite,
-                                 int websql_error,
-                                 int sqlite_error) override;
-  void ReportStartTransactionResult(const blink::WebSecurityOrigin& origin,
-                                    const blink::WebString& database_name,
-                                    int callsite,
-                                    int websql_error,
-                                    int sqlite_error) override;
-  void ReportCommitTransactionResult(const blink::WebSecurityOrigin& origin,
-                                     const blink::WebString& database_name,
-                                     int callsite,
-                                     int websql_error,
-                                     int sqlite_error) override;
-  void ReportExecuteStatementResult(const blink::WebSecurityOrigin& origin,
-                                    const blink::WebString& database_name,
-                                    int callsite,
-                                    int websql_error,
-                                    int sqlite_error) override;
-  void ReportVacuumDatabaseResult(const blink::WebSecurityOrigin& origin,
-                                  const blink::WebString& database_name,
-                                  int sqlite_error) override;
+  void ReportSqliteError(const blink::WebSecurityOrigin& origin,
+                         const blink::WebString& database_name,
+                         int error) override;
 
  private:
-  void HandleSqliteError(const blink::WebSecurityOrigin& origin,
-                         const blink::WebString& database_name,
-                         int error);
-
-  // Return the mojo interface for making WebDatabaseHost calls.
-  blink::mojom::WebDatabaseHost& GetWebDatabaseHost();
-
   scoped_refptr<blink::mojom::ThreadSafeWebDatabaseHostPtr> web_database_host_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 

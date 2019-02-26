@@ -6,10 +6,11 @@
 
 #include <utility>
 
+#include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/sequence_manager/task_queue.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
-#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/traced_value.h"
 
 namespace blink {
 namespace scheduler {
@@ -55,7 +56,7 @@ SchedulerHelper::DefaultTaskRunner() {
   return default_task_runner_;
 }
 
-void SchedulerHelper::SetWorkBatchSizeForTesting(size_t work_batch_size) {
+void SchedulerHelper::SetWorkBatchSizeForTesting(int work_batch_size) {
   CheckOnValidThread();
   DCHECK(sequence_manager_.get());
   sequence_manager_->SetWorkBatchSize(work_batch_size);
@@ -70,15 +71,21 @@ bool SchedulerHelper::GetAndClearSystemIsQuiescentBit() {
 void SchedulerHelper::AddTaskObserver(
     base::MessageLoop::TaskObserver* task_observer) {
   CheckOnValidThread();
-  if (sequence_manager_)
-    sequence_manager_->AddTaskObserver(task_observer);
+  if (sequence_manager_) {
+    static_cast<base::sequence_manager::internal::SequenceManagerImpl*>(
+        sequence_manager_.get())
+        ->AddTaskObserver(task_observer);
+  }
 }
 
 void SchedulerHelper::RemoveTaskObserver(
     base::MessageLoop::TaskObserver* task_observer) {
   CheckOnValidThread();
-  if (sequence_manager_)
-    sequence_manager_->RemoveTaskObserver(task_observer);
+  if (sequence_manager_) {
+    static_cast<base::sequence_manager::internal::SequenceManagerImpl*>(
+        sequence_manager_.get())
+        ->RemoveTaskObserver(task_observer);
+  }
 }
 
 void SchedulerHelper::AddTaskTimeObserver(
@@ -148,7 +155,11 @@ base::TimeTicks SchedulerHelper::NowTicks() const {
 }
 
 void SchedulerHelper::SetTimerSlack(base::TimerSlack timer_slack) {
-  sequence_manager_->SetTimerSlack(timer_slack);
+  if (sequence_manager_) {
+    static_cast<base::sequence_manager::internal::SequenceManagerImpl*>(
+        sequence_manager_.get())
+        ->SetTimerSlack(timer_slack);
+  }
 }
 
 double SchedulerHelper::GetSamplingRateForRecordingCPUTime() const {

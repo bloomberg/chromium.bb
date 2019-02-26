@@ -25,7 +25,6 @@
 #include <memory>
 
 #include "fxbarcode/BC_TwoDimWriter.h"
-#include "fxbarcode/BC_UtilCodingConvert.h"
 #include "fxbarcode/BC_Writer.h"
 #include "fxbarcode/common/BC_CommonBitMatrix.h"
 #include "fxbarcode/common/BC_CommonByteMatrix.h"
@@ -114,29 +113,28 @@ uint8_t* CBC_DataMatrixWriter::Encode(const WideString& contents,
     return nullptr;
 
   WideString ecLevel;
-  int32_t e = BCExceptionNO;
-  WideString encoded =
-      CBC_HighLevelEncoder::encodeHighLevel(contents, ecLevel, false, e);
-  if (e != BCExceptionNO)
+  Optional<WideString> encoded =
+      CBC_HighLevelEncoder::EncodeHighLevel(contents, ecLevel, false);
+  if (!encoded.has_value())
     return nullptr;
-  CBC_SymbolInfo* symbolInfo =
-      CBC_SymbolInfo::lookup(encoded.GetLength(), false, e);
-  if (e != BCExceptionNO)
+  CBC_SymbolInfo* pSymbolInfo =
+      CBC_SymbolInfo::Lookup(encoded.value().GetLength(), false);
+  if (!pSymbolInfo)
     return nullptr;
-  WideString codewords =
-      CBC_ErrorCorrection::encodeECC200(encoded, symbolInfo, e);
-  if (e != BCExceptionNO)
+  Optional<WideString> codewords =
+      CBC_ErrorCorrection::EncodeECC200(encoded.value(), pSymbolInfo);
+  if (!codewords.has_value())
     return nullptr;
 
-  int32_t width = symbolInfo->getSymbolDataWidth();
+  int32_t width = pSymbolInfo->getSymbolDataWidth();
   ASSERT(width);
-  int32_t height = symbolInfo->getSymbolDataHeight();
+  int32_t height = pSymbolInfo->getSymbolDataHeight();
   ASSERT(height);
 
-  auto placement =
-      pdfium::MakeUnique<CBC_DefaultPlacement>(codewords, width, height);
+  auto placement = pdfium::MakeUnique<CBC_DefaultPlacement>(codewords.value(),
+                                                            width, height);
   placement->place();
-  auto bytematrix = encodeLowLevel(placement.get(), symbolInfo);
+  auto bytematrix = encodeLowLevel(placement.get(), pSymbolInfo);
   if (!bytematrix)
     return nullptr;
 

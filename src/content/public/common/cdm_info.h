@@ -10,6 +10,7 @@
 
 #include "base/containers/flat_set.h"
 #include "base/files/file_path.h"
+#include "base/token.h"
 #include "base/version.h"
 #include "content/common/content_export.h"
 #include "media/base/content_decryption_module.h"
@@ -38,6 +39,12 @@ struct CONTENT_EXPORT CdmCapability {
   // TODO(crbug.com/796725) Find a way to include profiles and levels.
   std::vector<media::VideoCodec> video_codecs;
 
+  // When VP9 is supported in |video_codecs|, whether profile 2 is supported.
+  // This is needed because there are older CDMs that only supports profile 0.
+  // TODO(xhwang): Remove this after older CDMs that only supports VP9 profile 0
+  // are obsolete.
+  bool supports_vp9_profile2 = false;
+
   // List of encryption schemes supported by the CDM (e.g. cenc).
   base::flat_set<media::EncryptionMode> encryption_schemes;
 
@@ -52,7 +59,7 @@ struct CONTENT_EXPORT CdmCapability {
 // Represents a Content Decryption Module implementation and its capabilities.
 struct CONTENT_EXPORT CdmInfo {
   CdmInfo(const std::string& name,
-          const std::string& guid,
+          const base::Token& guid,
           const base::Version& version,
           const base::FilePath& path,
           const std::string& file_system_id,
@@ -65,8 +72,8 @@ struct CONTENT_EXPORT CdmInfo {
   // Display name of the CDM (e.g. Widevine Content Decryption Module).
   std::string name;
 
-  // A version 4 GUID to uniquely identify this type of CDM.
-  std::string guid;
+  // A token to uniquely identify this type of CDM.
+  base::Token guid;
 
   // Version of the CDM. May be empty if the version is not known.
   base::Version version;

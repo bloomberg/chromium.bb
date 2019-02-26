@@ -35,14 +35,13 @@ class LabelsNodeList final : public LiveNodeList {
   static LabelsNodeList* Create(ContainerNode& owner_node,
                                 CollectionType type) {
     DCHECK_EQ(type, kLabelsNodeListType);
-    return new LabelsNodeList(owner_node);
+    return MakeGarbageCollected<LabelsNodeList>(owner_node);
   }
 
+  explicit LabelsNodeList(ContainerNode&);
   ~LabelsNodeList() override;
 
  protected:
-  explicit LabelsNodeList(ContainerNode&);
-
   bool ElementMatches(const Element&) const override;
 };
 

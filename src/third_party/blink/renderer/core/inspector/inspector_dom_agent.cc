@@ -87,7 +87,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
 using protocol::Maybe;
 using protocol::Response;
 
@@ -237,7 +236,7 @@ InspectorDOMAgent::InspectorDOMAgent(
       inspected_frames_(inspected_frames),
       v8_session_(v8_session),
       dom_listener_(nullptr),
-      document_node_to_id_map_(new NodeToIdMap()),
+      document_node_to_id_map_(MakeGarbageCollected<NodeToIdMap>()),
       last_node_id_(1),
       suppress_attribute_modified_event_(false),
       enabled_(&agent_state_, /*default_value=*/false) {}
@@ -451,8 +450,8 @@ Response InspectorDOMAgent::AssertEditableElement(int node_id,
 
 void InspectorDOMAgent::EnableAndReset() {
   enabled_.Set(true);
-  history_ = new InspectorHistory();
-  dom_editor_ = new DOMEditor(history_.Get());
+  history_ = MakeGarbageCollected<InspectorHistory>();
+  dom_editor_ = MakeGarbageCollected<DOMEditor>(history_.Get());
   document_ = inspected_frames_->Root()->GetDocument();
   instrumenting_agents_->addInspectorDOMAgent(this);
 }
@@ -713,7 +712,7 @@ int InspectorDOMAgent::PushNodePathToFrontend(Node* node_to_push) {
     node = parent;
 
   // Node being pushed is detached -> push subtree root.
-  NodeToIdMap* new_map = new NodeToIdMap;
+  NodeToIdMap* new_map = MakeGarbageCollected<NodeToIdMap>();
   NodeToIdMap* dangling_map = new_map;
   dangling_node_to_id_maps_.push_back(new_map);
   std::unique_ptr<protocol::Array<protocol::DOM::Node>> children =
@@ -1140,7 +1139,7 @@ Response InspectorDOMAgent::NodeForRemoteObjectId(const String& object_id,
   if (!v8_session_->unwrapObject(&error, ToV8InspectorStringView(object_id),
                                  &value, &context, nullptr))
     return Response::Error(ToCoreString(std::move(error)));
-  if (!V8Node::hasInstance(value, isolate_))
+  if (!V8Node::HasInstance(value, isolate_))
     return Response::Error("Object id doesn't reference a Node");
   node = V8Node::ToImpl(v8::Local<v8::Object>::Cast(value));
   if (!node) {
@@ -1270,7 +1269,7 @@ Response InspectorDOMAgent::setFileInputFiles(
   if (!response.isSuccess())
     return response;
   if (!IsHTMLInputElement(*node) ||
-      ToHTMLInputElement(*node).type() != InputTypeNames::file)
+      ToHTMLInputElement(*node).type() != input_type_names::kFile)
     return Response::Error("Node is not a file input element");
 
   Vector<String> paths;
@@ -1968,7 +1967,7 @@ void InspectorDOMAgent::CharacterDataModified(CharacterData* character_data) {
 
 InspectorRevalidateDOMTask* InspectorDOMAgent::RevalidateTask() {
   if (!revalidate_task_)
-    revalidate_task_ = new InspectorRevalidateDOMTask(this);
+    revalidate_task_ = MakeGarbageCollected<InspectorRevalidateDOMTask>(this);
   return revalidate_task_.Get();
 }
 

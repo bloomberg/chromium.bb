@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/token.h"
 #include "components/services/filesystem/public/interfaces/directory.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -59,7 +60,7 @@ class COMPONENT_EXPORT(CATALOG) Catalog {
   // to be relative to the current executable's path.
   static void LoadDefaultCatalogManifest(const base::FilePath& path);
 
-  Instance* GetInstanceForUserId(const std::string& user_id);
+  Instance* GetInstanceForGroup(const base::Token& instance_group);
 
  private:
   class DirectoryThreadState;
@@ -80,7 +81,7 @@ class COMPONENT_EXPORT(CATALOG) Catalog {
   std::unique_ptr<service_manager::ServiceContext> service_context_;
   ManifestProvider* service_manifest_provider_;
   EntryCache system_cache_;
-  std::map<std::string, std::unique_ptr<Instance>> instances_;
+  std::map<base::Token, std::unique_ptr<Instance>> instances_;
 
   // The TaskRunner used for directory requests. Directory requests run on a
   // separate thread as they run file io, which is not allowed on the thread the

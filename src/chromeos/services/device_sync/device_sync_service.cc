@@ -28,7 +28,7 @@ DeviceSyncService::DeviceSyncService(
 DeviceSyncService::~DeviceSyncService() = default;
 
 void DeviceSyncService::OnStart() {
-  PA_LOG(INFO) << "DeviceSyncService::OnStart()";
+  PA_LOG(VERBOSE) << "DeviceSyncService::OnStart()";
 
   // context() cannot be invoked until after the constructor is run, so
   // |device_sync_impl_| cannot be initialized until OnStart().
@@ -45,8 +45,8 @@ void DeviceSyncService::OnBindInterface(
     const service_manager::BindSourceInfo& source_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
-  PA_LOG(INFO) << "DeviceSyncService::OnBindInterface() from interface "
-               << interface_name << ".";
+  PA_LOG(VERBOSE) << "DeviceSyncService::OnBindInterface() from interface "
+                  << interface_name << ".";
   registry_.BindInterface(interface_name, std::move(interface_pipe));
 }
 

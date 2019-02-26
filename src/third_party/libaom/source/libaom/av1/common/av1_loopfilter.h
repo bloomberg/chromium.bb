@@ -33,11 +33,11 @@ enum lf_path {
   LF_PATH_SLOW,
 };
 
-#if LOOP_FILTER_BITMASK
 typedef struct {
   uint64_t bits[4];
 } FilterMask;
 
+#if LOOP_FILTER_BITMASK
 // This structure holds bit masks for all 4x4 blocks in a 64x64 region.
 // Each 1 bit represents a position in which we want to apply the loop filter.
 // For Y plane, 4x4 in 64x64 requires 16x16 = 256 bit, therefore we use 4
@@ -61,10 +61,12 @@ typedef struct {
   uint8_t lfl_y_ver[MI_SIZE_64X64][MI_SIZE_64X64];
 
   // U plane filter level
-  uint8_t lfl_u[MI_SIZE_64X64][MI_SIZE_64X64];
+  uint8_t lfl_u_ver[MI_SIZE_64X64][MI_SIZE_64X64];
+  uint8_t lfl_u_hor[MI_SIZE_64X64][MI_SIZE_64X64];
 
   // V plane filter level
-  uint8_t lfl_v[MI_SIZE_64X64][MI_SIZE_64X64];
+  uint8_t lfl_v_ver[MI_SIZE_64X64][MI_SIZE_64X64];
+  uint8_t lfl_v_hor[MI_SIZE_64X64][MI_SIZE_64X64];
 
   // other info
   FilterMask skip;
@@ -173,39 +175,23 @@ LoopFilterMask *get_loop_filter_mask(const struct AV1Common *const cm,
                                      int mi_row, int mi_col);
 int get_index_shift(int mi_col, int mi_row, int *index);
 
-static const FilterMask left_txform_mask[TX_SIZES] = {
-  { { 0x0000000000000001ULL,  // TX_4X4,
-      0x0000000000000000ULL, 0x0000000000000000ULL, 0x0000000000000000ULL } },
+void av1_build_bitmask_vert_info(
+    struct AV1Common *const cm, const struct macroblockd_plane *const plane_ptr,
+    int plane);
 
-  { { 0x0000000000010001ULL,  // TX_8X8,
-      0x0000000000000000ULL, 0x0000000000000000ULL, 0x0000000000000000ULL } },
+void av1_build_bitmask_horz_info(
+    struct AV1Common *const cm, const struct macroblockd_plane *const plane_ptr,
+    int plane);
 
-  { { 0x0001000100010001ULL,  // TX_16X16,
-      0x0000000000000000ULL, 0x0000000000000000ULL, 0x0000000000000000ULL } },
+void av1_filter_block_plane_bitmask_vert(
+    struct AV1Common *const cm, struct macroblockd_plane *const plane_ptr,
+    int pl, int mi_row, int mi_col);
 
-  { { 0x0001000100010001ULL,  // TX_32X32,
-      0x0001000100010001ULL, 0x0000000000000000ULL, 0x0000000000000000ULL } },
+void av1_filter_block_plane_bitmask_horz(
+    struct AV1Common *const cm, struct macroblockd_plane *const plane_ptr,
+    int pl, int mi_row, int mi_col);
 
-  { { 0x0001000100010001ULL,  // TX_64X64,
-      0x0001000100010001ULL, 0x0001000100010001ULL, 0x0001000100010001ULL } },
-};
-
-static const uint64_t above_txform_mask[2][TX_SIZES] = {
-  {
-      0x0000000000000001ULL,  // TX_4X4
-      0x0000000000000003ULL,  // TX_8X8
-      0x000000000000000fULL,  // TX_16X16
-      0x00000000000000ffULL,  // TX_32X32
-      0x000000000000ffffULL,  // TX_64X64
-  },
-  {
-      0x0000000000000001ULL,  // TX_4X4
-      0x0000000000000005ULL,  // TX_8X8
-      0x0000000000000055ULL,  // TX_16X16
-      0x0000000000005555ULL,  // TX_32X32
-      0x0000000055555555ULL,  // TX_64X64
-  },
-};
+#endif  // LOOP_FILTER_BITMASK
 
 extern const int mask_id_table_tx_4x4[BLOCK_SIZES_ALL];
 
@@ -215,10 +201,13 @@ extern const int mask_id_table_tx_16x16[BLOCK_SIZES_ALL];
 
 extern const int mask_id_table_tx_32x32[BLOCK_SIZES_ALL];
 
+// corresponds to entry id in table left_mask_univariant_reordered,
+// of block size mxn and TX_mxn.
+extern const int mask_id_table_vert_border[BLOCK_SIZES_ALL];
+
 extern const FilterMask left_mask_univariant_reordered[67];
 
 extern const FilterMask above_mask_univariant_reordered[67];
-#endif
 
 #ifdef __cplusplus
 }  // extern "C"

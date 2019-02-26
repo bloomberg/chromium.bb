@@ -29,7 +29,6 @@
 #include "fxbarcode/datamatrix/BC_EncoderContext.h"
 #include "fxbarcode/datamatrix/BC_HighLevelEncoder.h"
 #include "fxbarcode/datamatrix/BC_SymbolInfo.h"
-#include "fxbarcode/utils.h"
 
 namespace {
 
@@ -59,9 +58,7 @@ bool HandleEOD(CBC_EncoderContext* context, const WideString& buffer) {
     return false;
 
   if (count == 1) {
-    int32_t e = BCExceptionNO;
-    context->updateSymbolInfo(e);
-    if (e != BCExceptionNO)
+    if (!context->UpdateSymbolInfo())
       return false;
 
     int32_t available =
@@ -79,19 +76,17 @@ bool HandleEOD(CBC_EncoderContext* context, const WideString& buffer) {
   bool endOfSymbolReached = !context->hasMoreCharacters();
   bool restInAscii = endOfSymbolReached && restChars <= 2;
   if (restChars <= 2) {
-    int32_t e = BCExceptionNO;
-    context->updateSymbolInfo(context->getCodewordCount() + restChars, e);
-    if (e != BCExceptionNO)
+    if (!context->UpdateSymbolInfo(context->getCodewordCount() + restChars))
       return false;
 
     int32_t available =
         context->m_symbolInfo->dataCapacity() - context->getCodewordCount();
     if (available >= 3) {
       restInAscii = false;
-      context->updateSymbolInfo(
-          context->getCodewordCount() + encoded.GetLength(), e);
-      if (e != BCExceptionNO)
+      if (!context->UpdateSymbolInfo(context->getCodewordCount() +
+                                     encoded.GetLength())) {
         return false;
+      }
     }
   }
 
@@ -105,53 +100,54 @@ bool HandleEOD(CBC_EncoderContext* context, const WideString& buffer) {
   return true;
 }
 
-void encodeChar(wchar_t c, WideString* sb, int32_t& e) {
+bool AppendEncodedChar(wchar_t c, WideString* sb) {
   if (c >= ' ' && c <= '?') {
     *sb += c;
-  } else if (c >= '@' && c <= '^') {
-    *sb += (wchar_t)(c - 64);
-  } else {
-    e = BCExceptionIllegalArgument;
+    return true;
   }
+
+  if (c >= '@' && c <= '^') {
+    *sb += (c - 64);
+    return true;
+  }
+
+  return false;
 }
 
 }  // namespace
 
-CBC_EdifactEncoder::CBC_EdifactEncoder() {}
+CBC_EdifactEncoder::CBC_EdifactEncoder() = default;
 
-CBC_EdifactEncoder::~CBC_EdifactEncoder() {}
+CBC_EdifactEncoder::~CBC_EdifactEncoder() = default;
 
 int32_t CBC_EdifactEncoder::getEncodingMode() {
   return EDIFACT_ENCODATION;
 }
 
-void CBC_EdifactEncoder::Encode(CBC_EncoderContext& context, int32_t& e) {
+bool CBC_EdifactEncoder::Encode(CBC_EncoderContext* context) {
   WideString buffer;
-  while (context.hasMoreCharacters()) {
-    wchar_t c = context.getCurrentChar();
-    encodeChar(c, &buffer, e);
-    if (e != BCExceptionNO) {
-      return;
-    }
-    context.m_pos++;
+  while (context->hasMoreCharacters()) {
+    wchar_t c = context->getCurrentChar();
+    if (!AppendEncodedChar(c, &buffer))
+      return false;
+
+    context->m_pos++;
     int32_t count = buffer.GetLength();
     if (count >= 4) {
       WideString encoded = EncodeToEdifactCodewords(buffer, 0);
-      if (encoded.IsEmpty()) {
-        e = BCExceptionGeneric;
-        return;
-      }
-      context.writeCodewords(encoded);
+      if (encoded.IsEmpty())
+        return false;
+
+      context->writeCodewords(encoded);
       buffer.Delete(0, 4);
       int32_t newMode = CBC_HighLevelEncoder::lookAheadTest(
-          context.m_msg, context.m_pos, getEncodingMode());
+          context->m_msg, context->m_pos, getEncodingMode());
       if (newMode != getEncodingMode()) {
-        context.signalEncoderChange(ASCII_ENCODATION);
+        context->signalEncoderChange(ASCII_ENCODATION);
         break;
       }
     }
   }
   buffer += static_cast<wchar_t>(31);
-  if (!HandleEOD(&context, buffer))
-    e = BCExceptionGeneric;
+  return HandleEOD(context, buffer);
 }

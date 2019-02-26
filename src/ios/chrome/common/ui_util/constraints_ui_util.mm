@@ -101,17 +101,7 @@ void AddSameConstraints(id<LayoutGuideProvider> view1,
 }
 
 void PinToSafeArea(id<LayoutGuideProvider> innerView, UIView* outerView) {
-  id<LayoutGuideProvider> outerSafeAreaGuide =
-      SafeAreaLayoutGuideForView(outerView);
-  AddSameConstraints(innerView, outerSafeAreaGuide);
-}
-
-id<LayoutGuideProvider> SafeAreaLayoutGuideForView(UIView* view) {
-  if (@available(iOS 11, *)) {
-    return view.safeAreaLayoutGuide;
-  } else {
-    return view;
-  }
+  AddSameConstraints(innerView, outerView.safeAreaLayoutGuide);
 }
 
 void AddSameConstraintsToSides(id<LayoutGuideProvider> view1,

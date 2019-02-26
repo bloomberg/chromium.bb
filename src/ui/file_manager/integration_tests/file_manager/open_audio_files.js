@@ -14,19 +14,18 @@
  * @return {Promise<Object>} Promise to be fulfilled with a track details
  *     object containing {title:string, artist:string}.
  */
-function getTrackText(audioAppId, track) {
+async function getTrackText(audioAppId, track) {
   const titleElement = audioPlayerApp.callRemoteTestUtil(
       'deepQueryAllElements', audioAppId,
       [trackListQuery(track + ' > .data > .data-title')]);
   const artistElement = audioPlayerApp.callRemoteTestUtil(
       'deepQueryAllElements', audioAppId,
       [trackListQuery(track + ' > .data > .data-artist')]);
-  return Promise.all([titleElement, artistElement]).then((data) => {
-    return {
-      title: data[0][0] && data[0][0].text,
-      artist: data[1][0] && data[1][0].text
-    };
-  });
+  const [title, artist] = await Promise.all([titleElement, artistElement]);
+  return {
+    title: title[0] && title[0].text,
+    artist: artist[0] && artist[0].text,
+  };
 }
 
 /**
@@ -87,95 +86,57 @@ function audioTimeLeapForward(audioAppId) {
  *
  * @param {string} path Directory path to be tested.
  */
-function audioOpenClose(path) {
-  let appId;
-  let audioAppId;
-
+async function audioOpenClose(path) {
   const track = [ENTRIES.beautiful];
 
-  StepsRunner.run([
-    // Open Files.App on |path|, add an audio file to Downloads and Drive.
-    function() {
-      setupAndWaitUntilReady(null, path, this.next, track, track);
-    },
-    // Open an audio file from |path|.
-    function(result) {
-      appId = result.windowId;
-      remoteCall.callRemoteTestUtil(
-          'openFile', appId, ['Beautiful Song.ogg'], this.next);
-    },
-    // Wait for the Audio Player window.
-    function(result) {
-      chrome.test.assertTrue(result);
-      audioPlayerApp.waitForWindow('audio_player.html').then(this.next);
-    },
-    // Check: Audio Player should automatically play the file.
-    function(windowId) {
-      audioAppId = windowId;
-      const playFile = audioPlayingQuery('Beautiful Song.ogg');
-      audioPlayerApp.waitForElement(audioAppId, playFile).then(this.next);
-    },
-    // Close the Audio Player window.
-    function() {
-      audioPlayerApp.closeWindowAndWait(audioAppId).then(this.next);
-    },
-    // Check: Audio Player window should close.
-    function(result) {
-      chrome.test.assertTrue(!!result, 'Failed to close audio window');
-      this.next();
-    },
-    function() {
-      checkIfNoErrorsOccured(this.next);
-    }
-  ]);
+  // Open Files.App on |path|, add an audio file to Downloads and Drive.
+  const {appId} = await setupAndWaitUntilReady(null, path, null, track, track);
+
+  // Open an audio file from |path|.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'openFile', appId, ['Beautiful Song.ogg']));
+
+  // Wait for the Audio Player window.
+  const audioAppId = await audioPlayerApp.waitForWindow('audio_player.html');
+
+  // Check: Audio Player should automatically play the file.
+  const playFile = audioPlayingQuery('Beautiful Song.ogg');
+  await audioPlayerApp.waitForElement(audioAppId, playFile);
+
+  // Close the Audio Player window.
+  chrome.test.assertTrue(
+      !!await audioPlayerApp.closeWindowAndWait(audioAppId),
+      'Failed to close audio window');
 }
 
 /**
  * Tests an audio file opened from Downloads 1) auto-plays and 2) has the
  * correct track and artist details.
  */
-function audioOpenTrackDownloads() {
-  let appId;
-  let audioAppId;
-
+async function audioOpenTrackDownloads() {
   const track = [ENTRIES.beautiful];
 
-  StepsRunner.run([
-    // Open Files.App on Downloads, add an audio file to Downloads.
-    function() {
-      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next, track, []);
-    },
-    // Open an audio file from Downloads.
-    function(results) {
-      appId = results.windowId;
-      remoteCall.callRemoteTestUtil(
-          'openFile', appId, ['Beautiful Song.ogg'], this.next);
-    },
-    // Wait for the Audio Player window.
-    function(result) {
-      chrome.test.assertTrue(result);
-      audioPlayerApp.waitForWindow('audio_player.html').then(this.next);
-    },
-    // Check: Audio Player should automatically play the file.
-    function(windowId) {
-      audioAppId = windowId;
-      const playFile = audioPlayingQuery('Beautiful Song.ogg');
-      audioPlayerApp.waitForElement(audioAppId, playFile).then(this.next);
-    },
-    // Check: track 0 should be active.
-    function() {
-      getTrackText(audioAppId, '.track[index="0"][active]').then(this.next);
-    },
-    // Check: track 0 should have the correct title and artist.
-    function(song) {
-      chrome.test.assertEq('Beautiful Song', song.title);
-      chrome.test.assertEq('Unknown Artist', song.artist);
-      this.next();
-    },
-    function() {
-      checkIfNoErrorsOccured(this.next);
-    }
-  ]);
+  // Open Files.App on Downloads, add an audio file to Downloads.
+  const {appId} =
+      await setupAndWaitUntilReady(null, RootPath.DOWNLOADS, null, track, []);
+
+  // Open an audio file from Downloads.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'openFile', appId, ['Beautiful Song.ogg']));
+
+  // Wait for the Audio Player window.
+  const audioAppId = await audioPlayerApp.waitForWindow('audio_player.html');
+
+  // Check: Audio Player should automatically play the file.
+  const playFile = audioPlayingQuery('Beautiful Song.ogg');
+  await audioPlayerApp.waitForElement(audioAppId, playFile);
+
+  // Check: track 0 should be active.
+  let song = await getTrackText(audioAppId, '.track[index="0"][active]');
+
+  // Check: track 0 should have the correct title and artist.
+  chrome.test.assertEq('Beautiful Song', song.title);
+  chrome.test.assertEq('Unknown Artist', song.artist);
 }
 
 /**
@@ -183,81 +144,55 @@ function audioOpenTrackDownloads() {
  * track and artist details. Tests the same when another Drive audio track is
  * opened from Files app.
  */
-function audioOpenMultipleTracksDrive() {
-  let appId;
-  let audioAppId;
-
+async function audioOpenMultipleTracksDrive() {
   const tracks = [ENTRIES.beautiful, ENTRIES.newlyAdded];
 
-  StepsRunner.run([
-    // Open Files.App on Drive, add the audio files to Drive.
-    function() {
-      setupAndWaitUntilReady(null, RootPath.DRIVE, this.next, [], tracks);
-    },
-    // Open an audio file from Drive.
-    function(results) {
-      appId = results.windowId;
-      remoteCall.callRemoteTestUtil(
-          'openFile', appId, ['Beautiful Song.ogg'], this.next);
-    },
-    // Wait for the Audio Player window.
-    function(result) {
-      chrome.test.assertTrue(result);
-      audioPlayerApp.waitForWindow('audio_player.html').then(this.next);
-    },
-    // Check: Audio Player should automatically play the file.
-    function(windowId) {
-      audioAppId = windowId;
-      const playFile = audioPlayingQuery('Beautiful Song.ogg');
-      audioPlayerApp.waitForElement(audioAppId, playFile).then(this.next);
-    },
-    // Check: track 0 should be active.
-    function() {
-      getTrackText(audioAppId, '.track[index="0"][active]').then(this.next);
-    },
-    // Check: track 0 should have the correct title and artist.
-    function(song) {
-      chrome.test.assertEq('Beautiful Song', song.title);
-      chrome.test.assertEq('Unknown Artist', song.artist);
-      this.next();
-    },
-    // Check: track 1 should be inactive.
-    function() {
-      const inactive = trackListQuery('.track[index="1"]:not([active])');
-      audioPlayerApp.waitForElement(audioAppId, inactive).then(this.next);
-    },
-    // Open another audio file from Drive.
-    function(element) {
-      chrome.test.assertTrue(!!element);
-      remoteCall.callRemoteTestUtil(
-          'openFile', appId, ['newly added file.ogg'], this.next);
-    },
-    // Check: Audio Player should automatically play the file.
-    function(result) {
-      chrome.test.assertTrue(result);
-      const playFile = audioPlayingQuery('newly added file.ogg');
-      audioPlayerApp.waitForElement(audioAppId, playFile).then(this.next);
-    },
-    // Check: track 1 should be active.
-    function() {
-      getTrackText(audioAppId, '.track[index="1"][active]').then(this.next);
-    },
-    // Check: track 1 should have the correct title and artist.
-    function(song) {
-      chrome.test.assertEq('newly added file', song.title);
-      chrome.test.assertEq('Unknown Artist', song.artist);
-      this.next();
-    },
-    // Check: track 0 should be inactive.
-    function() {
-      const inactive = trackListQuery('.track[index="0"]:not([active])');
-      audioPlayerApp.waitForElement(audioAppId, inactive).then(this.next);
-    },
-    function(element) {
-      chrome.test.assertTrue(!!element);
-      checkIfNoErrorsOccured(this.next);
-    }
-  ]);
+  // Open Files.App on Drive, add the audio files to Drive.
+  const {appId} =
+      await setupAndWaitUntilReady(null, RootPath.DRIVE, null, [], tracks);
+
+  // Open an audio file from Drive.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'openFile', appId, ['Beautiful Song.ogg']));
+
+  // Wait for the Audio Player window.
+  const audioAppId = await audioPlayerApp.waitForWindow('audio_player.html');
+
+  // Check: Audio Player should automatically play the file.
+  const playFile = audioPlayingQuery('Beautiful Song.ogg');
+  await audioPlayerApp.waitForElement(audioAppId, playFile);
+
+  // Check: track 0 should be active.
+  let song = await getTrackText(audioAppId, '.track[index="0"][active]');
+
+  // Check: track 0 should have the correct title and artist.
+  chrome.test.assertEq('Beautiful Song', song.title);
+  chrome.test.assertEq('Unknown Artist', song.artist);
+
+  // Check: track 1 should be inactive.
+  const inactive = trackListQuery('.track[index="1"]:not([active])');
+  chrome.test.assertTrue(
+      !!await audioPlayerApp.waitForElement(audioAppId, inactive));
+
+  // Open another audio file from Drive.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'openFile', appId, ['newly added file.ogg']));
+
+  // Check: Audio Player should automatically play the file.
+  const playFile2 = audioPlayingQuery('newly added file.ogg');
+  await audioPlayerApp.waitForElement(audioAppId, playFile2);
+
+  // Check: track 1 should be active.
+  song = await getTrackText(audioAppId, '.track[index="1"][active]');
+
+  // Check: track 1 should have the correct title and artist.
+  chrome.test.assertEq('newly added file', song.title);
+  chrome.test.assertEq('Unknown Artist', song.artist);
+
+  // Check: track 0 should be inactive.
+  const inactive2 = trackListQuery('.track[index="0"]:not([active])');
+  chrome.test.assertTrue(
+      !!await audioPlayerApp.waitForElement(audioAppId, inactive2));
 }
 
 /**
@@ -266,53 +201,33 @@ function audioOpenMultipleTracksDrive() {
  *
  * @param {string} path Directory path to be tested.
  */
-function audioAutoAdvance(path) {
-  let appId;
-  let audioAppId;
-
+async function audioAutoAdvance(path) {
   const tracks = [ENTRIES.beautiful, ENTRIES.newlyAdded];
 
-  StepsRunner.run([
-    // Open Files.App on |path|, add audio files to Downloads and Drive.
-    function() {
-      setupAndWaitUntilReady(null, path, this.next, tracks, tracks);
-    },
-    // Open an audio file.
-    function(results) {
-      appId = results.windowId;
-      remoteCall.callRemoteTestUtil(
-          'openFile', appId, ['Beautiful Song.ogg'], this.next);
-    },
-    // Wait for the Audio Player window.
-    function(result) {
-      chrome.test.assertTrue(result);
-      audioPlayerApp.waitForWindow('audio_player.html').then(this.next);
-    },
-    // Check: Audio Player should automatically play the file.
-    function(windowId) {
-      audioAppId = windowId;
-      const playFile = audioPlayingQuery('Beautiful Song.ogg');
-      audioPlayerApp.waitForElement(audioAppId, playFile).then(this.next);
-    },
-    // Leap forward in time.
-    function() {
-      audioTimeLeapForward(audioAppId);
-      this.next();
-    },
-    // Check: the same file should still be playing.
-    function() {
-      const playFile = audioPlayingQuery('Beautiful Song.ogg');
-      audioPlayerApp.waitForElement(audioAppId, playFile).then(this.next);
-    },
-    // When it ends, Audio Player should play the next file (advance).
-    function() {
-      const playFile = audioPlayingQuery('newly added file.ogg');
-      audioPlayerApp.waitForElement(audioAppId, playFile).then(this.next);
-    },
-    function() {
-      checkIfNoErrorsOccured(this.next);
-    }
-  ]);
+  // Open Files.App on |path|, add audio files to Downloads and Drive.
+  const {appId} =
+      await setupAndWaitUntilReady(null, path, null, tracks, tracks);
+
+  // Open an audio file.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'openFile', appId, ['Beautiful Song.ogg']));
+
+  // Wait for the Audio Player window.
+  const audioAppId = await audioPlayerApp.waitForWindow('audio_player.html');
+
+  // Check: Audio Player should automatically play the file.
+  const playFile = audioPlayingQuery('Beautiful Song.ogg');
+  await audioPlayerApp.waitForElement(audioAppId, playFile);
+
+  // Leap forward in time.
+  audioTimeLeapForward(audioAppId);
+
+  // Check: the same file should still be playing.
+  await audioPlayerApp.waitForElement(audioAppId, playFile);
+
+  // When it ends, Audio Player should play the next file (advance).
+  const playFile2 = audioPlayingQuery('newly added file.ogg');
+  await audioPlayerApp.waitForElement(audioAppId, playFile2);
 }
 
 /**
@@ -320,62 +235,40 @@ function audioAutoAdvance(path) {
  *
  * @param {string} path Directory path to be tested.
  */
-function audioRepeatAllModeSingleFile(path) {
-  let appId;
-  let audioAppId;
-
+async function audioRepeatAllModeSingleFile(path) {
   const track = [ENTRIES.beautiful];
 
-  StepsRunner.run([
-    // Open Files.App on |path|, add an audio file to Downloads and Drive.
-    function() {
-      setupAndWaitUntilReady(null, path, this.next, track, track);
-    },
-    // Open an audio file.
-    function(results) {
-      appId = results.windowId;
-      remoteCall.callRemoteTestUtil(
-          'openFile', appId, ['Beautiful Song.ogg'], this.next);
-    },
-    // Wait for the Audio Player window.
-    function(result) {
-      chrome.test.assertTrue(result);
-      audioPlayerApp.waitForWindow('audio_player.html').then(this.next);
-    },
-    // Check: Audio Player should automatically play the file.
-    function(windowId) {
-      audioAppId = windowId;
-      const playFile = audioPlayingQuery('Beautiful Song.ogg');
-      audioPlayerApp.waitForElement(audioAppId, playFile).then(this.next);
-    },
-    // Click the repeat button for repeat-all.
-    function() {
-      const repeatButton = controlPanelQuery(['repeat-button', '.no-repeat']);
-      audioPlayerApp.callRemoteTestUtil(
-          'fakeMouseClick', audioAppId, [repeatButton], this.next);
-    },
-    // Leap forward in time.
-    function(result) {
-      chrome.test.assertTrue(result, 'Failed to click the repeat button');
-      audioTimeLeapForward(audioAppId);
-      this.next();
-    },
-    // Check: the same file should still be playing (non-repeated).
-    function() {
-      const playFile = audioPlayingQuery('Beautiful Song.ogg');
-      const initial = playFile + '[playcount="0"]';
-      audioPlayerApp.waitForElement(audioAppId, initial).then(this.next);
-    },
-    // When it ends, Audio Player should replay it (repeat-all).
-    function() {
-      const playFile = audioPlayingQuery('Beautiful Song.ogg');
-      const repeats = playFile + '[playcount="1"]';
-      audioPlayerApp.waitForElement(audioAppId, repeats).then(this.next);
-    },
-    function() {
-      checkIfNoErrorsOccured(this.next);
-    }
-  ]);
+  // Open Files.App on |path|, add an audio file to Downloads and Drive.
+  const {appId} = await setupAndWaitUntilReady(null, path, null, track, track);
+
+  // Open an audio file.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'openFile', appId, ['Beautiful Song.ogg']));
+
+  // Wait for the Audio Player window.
+  const audioAppId = await audioPlayerApp.waitForWindow('audio_player.html');
+
+  // Check: Audio Player should automatically play the file.
+  const playFile = audioPlayingQuery('Beautiful Song.ogg');
+  await audioPlayerApp.waitForElement(audioAppId, playFile);
+
+  // Click the repeat button for repeat-all.
+  const repeatButton = controlPanelQuery(['repeat-button', '.no-repeat']);
+  chrome.test.assertTrue(
+      await audioPlayerApp.callRemoteTestUtil(
+          'fakeMouseClick', audioAppId, [repeatButton]),
+      'Failed to click the repeat button');
+
+  // Leap forward in time.
+  audioTimeLeapForward(audioAppId);
+
+  // Check: the same file should still be playing (non-repeated).
+  const initial = playFile + '[playcount="0"]';
+  await audioPlayerApp.waitForElement(audioAppId, initial);
+
+  // When it ends, Audio Player should replay it (repeat-all).
+  const repeats = playFile + '[playcount="1"]';
+  await audioPlayerApp.waitForElement(audioAppId, repeats);
 }
 
 /**
@@ -383,54 +276,33 @@ function audioRepeatAllModeSingleFile(path) {
  *
  * @param {string} path Directory path to be tested.
  */
-function audioNoRepeatModeSingleFile(path) {
-  let appId;
-  let audioAppId;
-
+async function audioNoRepeatModeSingleFile(path) {
   const track = [ENTRIES.beautiful];
 
-  StepsRunner.run([
-    // Open Files.App on |path|, add an audio file to Downloads and Drive.
-    function() {
-      setupAndWaitUntilReady(null, path, this.next, track, track);
-    },
-    // Open an audio file.
-    function(results) {
-      appId = results.windowId;
-      remoteCall.callRemoteTestUtil(
-          'openFile', appId, ['Beautiful Song.ogg'], this.next);
-    },
-    // Wait for the Audio Player window.
-    function(result) {
-      chrome.test.assertTrue(result);
-      audioPlayerApp.waitForWindow('audio_player.html').then(this.next);
-    },
-    // Check: Audio Player should automatically play the file.
-    function(windowId) {
-      audioAppId = windowId;
-      const playFile = audioPlayingQuery('Beautiful Song.ogg');
-      audioPlayerApp.waitForElement(audioAppId, playFile).then(this.next);
-    },
-    // Leap forward in time.
-    function() {
-      audioTimeLeapForward(audioAppId);
-      this.next();
-    },
-    // Check: the same file should still be playing (non-repeated).
-    function() {
-      const playFile = audioPlayingQuery('Beautiful Song.ogg');
-      const initial = playFile + '[playcount="0"]';
-      audioPlayerApp.waitForElement(audioAppId, initial).then(this.next);
-    },
-    // When it ends, Audio Player should stop playing.
-    function() {
-      const playStop = 'audio-player[playcount="1"]:not([playing])';
-      audioPlayerApp.waitForElement(audioAppId, playStop).then(this.next);
-    },
-    function() {
-      checkIfNoErrorsOccured(this.next);
-    }
-  ]);
+  // Open Files.App on |path|, add an audio file to Downloads and Drive.
+  const {appId} = await setupAndWaitUntilReady(null, path, null, track, track);
+
+  // Open an audio file.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'openFile', appId, ['Beautiful Song.ogg']));
+
+  // Wait for the Audio Player window.
+  const audioAppId = await audioPlayerApp.waitForWindow('audio_player.html');
+
+  // Check: Audio Player should automatically play the file.
+  const playFile = audioPlayingQuery('Beautiful Song.ogg');
+  await audioPlayerApp.waitForElement(audioAppId, playFile);
+
+  // Leap forward in time.
+  audioTimeLeapForward(audioAppId);
+
+  // Check: the same file should still be playing (non-repeated).
+  const initial = playFile + '[playcount="0"]';
+  await audioPlayerApp.waitForElement(audioAppId, initial);
+
+  // When it ends, Audio Player should stop playing.
+  const playStop = 'audio-player[playcount="1"]:not([playing])';
+  await audioPlayerApp.waitForElement(audioAppId, playStop);
 }
 
 /**
@@ -438,69 +310,47 @@ function audioNoRepeatModeSingleFile(path) {
  *
  * @param {string} path Directory path to be tested.
  */
-function audioRepeatOneModeSingleFile(path) {
-  let appId;
-  let audioAppId;
-
+async function audioRepeatOneModeSingleFile(path) {
   const track = [ENTRIES.beautiful];
 
-  StepsRunner.run([
-    // Open Files.App on |path|, add an audio file to Downloads and Drive.
-    function() {
-      setupAndWaitUntilReady(null, path, this.next, track, track);
-    },
-    // Open an audio file.
-    function(results) {
-      appId = results.windowId;
-      remoteCall.callRemoteTestUtil(
-          'openFile', appId, ['Beautiful Song.ogg'], this.next);
-    },
-    // Wait for the Audio Player window.
-    function(result) {
-      chrome.test.assertTrue(result);
-      audioPlayerApp.waitForWindow('audio_player.html').then(this.next);
-    },
-    // Check: Audio Player should automatically play the file.
-    function(windowId) {
-      audioAppId = windowId;
-      const playFile = audioPlayingQuery('Beautiful Song.ogg');
-      audioPlayerApp.waitForElement(audioAppId, playFile).then(this.next);
-    },
-    // Click the repeat button for repeat-all.
-    function() {
-      const repeatButton = controlPanelQuery(['repeat-button', '.no-repeat']);
-      audioPlayerApp.callRemoteTestUtil(
-          'fakeMouseClick', audioAppId, [repeatButton], this.next);
-    },
-    // Click the repeat button again for repeat-once.
-    function(result) {
-      chrome.test.assertTrue(result, 'Failed to click the repeat button');
-      const repeatButton = controlPanelQuery(['repeat-button', '.repeat-all']);
-      audioPlayerApp.callRemoteTestUtil(
-          'fakeMouseClick', audioAppId, [repeatButton], this.next);
-    },
-    // Leap forward in time.
-    function(result) {
-      chrome.test.assertTrue(result, 'Failed to click the repeat button');
-      audioTimeLeapForward(audioAppId);
-      this.next();
-    },
-    // Check: the same file should still be playing (non-repeated).
-    function() {
-      const playFile = audioPlayingQuery('Beautiful Song.ogg');
-      const initial = playFile + '[playcount="0"]';
-      audioPlayerApp.waitForElement(audioAppId, initial).then(this.next);
-    },
-    // When it ends, Audio Player should replay it (repeat-once).
-    function() {
-      const playFile = audioPlayingQuery('Beautiful Song.ogg');
-      const repeats = playFile + '[playcount="1"]';
-      audioPlayerApp.waitForElement(audioAppId, repeats).then(this.next);
-    },
-    function() {
-      checkIfNoErrorsOccured(this.next);
-    }
-  ]);
+  // Open Files.App on |path|, add an audio file to Downloads and Drive.
+  const {appId} = await setupAndWaitUntilReady(null, path, null, track, track);
+
+  // Open an audio file.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'openFile', appId, ['Beautiful Song.ogg']));
+
+  // Wait for the Audio Player window.
+  const audioAppId = await audioPlayerApp.waitForWindow('audio_player.html');
+
+  // Check: Audio Player should automatically play the file.
+  const playFile = audioPlayingQuery('Beautiful Song.ogg');
+  await audioPlayerApp.waitForElement(audioAppId, playFile);
+
+  // Click the repeat button for repeat-all.
+  const repeatButton = controlPanelQuery(['repeat-button', '.no-repeat']);
+  chrome.test.assertTrue(
+      await audioPlayerApp.callRemoteTestUtil(
+          'fakeMouseClick', audioAppId, [repeatButton]),
+      'Failed to click the repeat button');
+
+  // Click the repeat button again for repeat-once.
+  const repeatButton2 = controlPanelQuery(['repeat-button', '.repeat-all']);
+  chrome.test.assertTrue(
+      await audioPlayerApp.callRemoteTestUtil(
+          'fakeMouseClick', audioAppId, [repeatButton2]),
+      'Failed to click the repeat button');
+
+  // Leap forward in time.
+  audioTimeLeapForward(audioAppId);
+
+  // Check: the same file should still be playing (non-repeated).
+  const initial = playFile + '[playcount="0"]';
+  await audioPlayerApp.waitForElement(audioAppId, initial);
+
+  // When it ends, Audio Player should replay it (repeat-once).
+  const repeats = playFile + '[playcount="1"]';
+  await audioPlayerApp.waitForElement(audioAppId, repeats);
 }
 
 /**
@@ -508,71 +358,47 @@ function audioRepeatOneModeSingleFile(path) {
  *
  * @param {string} path Directory path to be tested.
  */
-function audioRepeatAllModeMultipleFile(path) {
-  let appId;
-  let audioAppId;
-
+async function audioRepeatAllModeMultipleFile(path) {
   const tracks = [ENTRIES.beautiful, ENTRIES.newlyAdded];
 
-  StepsRunner.run([
-    // Open Files.App on |path|, add audio files to Downloads and Drive.
-    function() {
-      setupAndWaitUntilReady(null, path, this.next, tracks, tracks);
-    },
-    // Open an audio file.
-    function(results) {
-      appId = results.windowId;
-      remoteCall.callRemoteTestUtil(
-          'openFile', appId, ['newly added file.ogg'], this.next);
-    },
-    // Wait for the Audio Player window.
-    function(result) {
-      chrome.test.assertTrue(result);
-      audioPlayerApp.waitForWindow('audio_player.html').then(this.next);
-    },
-    // Check: Audio Player should automatically play the file.
-    function(windowId) {
-      audioAppId = windowId;
-      const playFile = audioPlayingQuery('newly added file.ogg');
-      audioPlayerApp.waitForElement(audioAppId, playFile).then(this.next);
-    },
-    // Click the repeat button for repeat-all.
-    function() {
-      const repeatButton = controlPanelQuery(['repeat-button', '.no-repeat']);
-      audioPlayerApp.callRemoteTestUtil(
-          'fakeMouseClick', audioAppId, [repeatButton], this.next);
-    },
-    // Leap forward in time.
-    function(result) {
-      chrome.test.assertTrue(result, 'Failed to click the repeat button');
-      audioTimeLeapForward(audioAppId);
-      this.next();
-    },
-    // Check: the same file should still be playing (non-repeated).
-    function() {
-      const playFile = audioPlayingQuery('newly added file.ogg');
-      const initial = playFile + '[playcount="0"]';
-      audioPlayerApp.waitForElement(audioAppId, initial).then(this.next);
-    },
-    // When it ends, Audio Player should play the next file.
-    function() {
-      const playFile = audioPlayingQuery('Beautiful Song.ogg');
-      audioPlayerApp.waitForElement(audioAppId, playFile).then(this.next);
-    },
-    // Leap forward in time.
-    function() {
-      audioTimeLeapForward(audioAppId);
-      this.next();
-    },
-    // When it ends, Audio Player should replay the first file (repeat-all).
-    function() {
-      const playFile = audioPlayingQuery('newly added file.ogg');
-      audioPlayerApp.waitForElement(audioAppId, playFile).then(this.next);
-    },
-    function() {
-      checkIfNoErrorsOccured(this.next);
-    }
-  ]);
+  // Open Files.App on |path|, add audio files to Downloads and Drive.
+  const {appId} =
+      await setupAndWaitUntilReady(null, path, null, tracks, tracks);
+
+  // Open an audio file.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'openFile', appId, ['newly added file.ogg']));
+
+  // Wait for the Audio Player window.
+  const audioAppId = await audioPlayerApp.waitForWindow('audio_player.html');
+
+  // Check: Audio Player should automatically play the file.
+  const playFile = audioPlayingQuery('newly added file.ogg');
+  await audioPlayerApp.waitForElement(audioAppId, playFile);
+
+  // Click the repeat button for repeat-all.
+  const repeatButton = controlPanelQuery(['repeat-button', '.no-repeat']);
+  chrome.test.assertTrue(
+      await audioPlayerApp.callRemoteTestUtil(
+          'fakeMouseClick', audioAppId, [repeatButton]),
+      'Failed to click the repeat button');
+
+  // Leap forward in time.
+  audioTimeLeapForward(audioAppId);
+
+  // Check: the same file should still be playing (non-repeated).
+  const initial = playFile + '[playcount="0"]';
+  await audioPlayerApp.waitForElement(audioAppId, initial);
+
+  // When it ends, Audio Player should play the next file.
+  const playFile2 = audioPlayingQuery('Beautiful Song.ogg');
+  await audioPlayerApp.waitForElement(audioAppId, playFile2);
+
+  // Leap forward in time.
+  audioTimeLeapForward(audioAppId);
+
+  // When it ends, Audio Player should replay the first file (repeat-all).
+  await audioPlayerApp.waitForElement(audioAppId, playFile);
 }
 
 /**
@@ -580,54 +406,34 @@ function audioRepeatAllModeMultipleFile(path) {
  *
  * @param {string} path Directory path to be tested.
  */
-function audioNoRepeatModeMultipleFile(path) {
-  let appId;
-  let audioAppId;
-
+async function audioNoRepeatModeMultipleFile(path) {
   const tracks = [ENTRIES.beautiful, ENTRIES.newlyAdded];
 
-  StepsRunner.run([
-    // Open Files.App on |path|, add audio files to Downloads and Drive.
-    function() {
-      setupAndWaitUntilReady(null, path, this.next, tracks, tracks);
-    },
-    // Open an audio file.
-    function(results) {
-      appId = results.windowId;
-      remoteCall.callRemoteTestUtil(
-          'openFile', appId, ['newly added file.ogg'], this.next);
-    },
-    // Wait for the Audio Player window.
-    function(result) {
-      chrome.test.assertTrue(result);
-      audioPlayerApp.waitForWindow('audio_player.html').then(this.next);
-    },
-    // Check: Audio Player should automatically play the file.
-    function(windowId) {
-      audioAppId = windowId;
-      const playFile = audioPlayingQuery('newly added file.ogg');
-      audioPlayerApp.waitForElement(audioAppId, playFile).then(this.next);
-    },
-    // Leap forward in time.
-    function() {
-      audioTimeLeapForward(audioAppId);
-      this.next();
-    },
-    // Check: the same file should still be playing (non-repeated).
-    function() {
-      const playFile = audioPlayingQuery('newly added file.ogg');
-      const initial = playFile + '[playcount="0"]';
-      audioPlayerApp.waitForElement(audioAppId, initial).then(this.next);
-    },
-    // When it ends, Audio Player should stop playing.
-    function() {
-      const playStop = 'audio-player[playcount="1"]:not([playing])';
-      audioPlayerApp.waitForElement(audioAppId, playStop).then(this.next);
-    },
-    function() {
-      checkIfNoErrorsOccured(this.next);
-    }
-  ]);
+  // Open Files.App on |path|, add audio files to Downloads and Drive.
+  const {appId} =
+      await setupAndWaitUntilReady(null, path, null, tracks, tracks);
+
+  // Open an audio file.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'openFile', appId, ['newly added file.ogg']));
+
+  // Wait for the Audio Player window.
+  const audioAppId = await audioPlayerApp.waitForWindow('audio_player.html');
+
+  // Check: Audio Player should automatically play the file.
+  const playFile = audioPlayingQuery('newly added file.ogg');
+  await audioPlayerApp.waitForElement(audioAppId, playFile);
+
+  // Leap forward in time.
+  audioTimeLeapForward(audioAppId);
+
+  // Check: the same file should still be playing (non-repeated).
+  const initial = playFile + '[playcount="0"]';
+  await audioPlayerApp.waitForElement(audioAppId, initial);
+
+  // When it ends, Audio Player should stop playing.
+  const playStop = 'audio-player[playcount="1"]:not([playing])';
+  await audioPlayerApp.waitForElement(audioAppId, playStop);
 }
 
 /**
@@ -635,113 +441,91 @@ function audioNoRepeatModeMultipleFile(path) {
  *
  * @param {string} path Directory path to be tested.
  */
-function audioRepeatOneModeMultipleFile(path) {
-  let appId;
-  let audioAppId;
-
+async function audioRepeatOneModeMultipleFile(path) {
   const tracks = [ENTRIES.beautiful, ENTRIES.newlyAdded];
 
-  StepsRunner.run([
-    // Open Files.App on |path|, add audio files to Downloads and Drive.
-    function() {
-      setupAndWaitUntilReady(null, path, this.next, tracks, tracks);
-    },
-    // Open an audio file.
-    function(results) {
-      appId = results.windowId;
-      remoteCall.callRemoteTestUtil(
-          'openFile', appId, ['newly added file.ogg'], this.next);
-    },
-    // Wait for the Audio Player window.
-    function(result) {
-      chrome.test.assertTrue(result);
-      audioPlayerApp.waitForWindow('audio_player.html').then(this.next);
-    },
-    // Check: Audio Player should automatically play the file.
-    function(windowId) {
-      audioAppId = windowId;
-      const playFile = audioPlayingQuery('newly added file.ogg');
-      audioPlayerApp.waitForElement(audioAppId, playFile).then(this.next);
-    },
-    // Click the repeat button for repeat-all.
-    function() {
-      const repeatButton = controlPanelQuery(['repeat-button', '.no-repeat']);
-      audioPlayerApp.callRemoteTestUtil(
-          'fakeMouseClick', audioAppId, [repeatButton], this.next);
-    },
-    // Click the repeat button again for repeat-once.
-    function(result) {
-      chrome.test.assertTrue(result, 'Failed to click the repeat button');
-      const repeatButton = controlPanelQuery(['repeat-button', '.repeat-all']);
-      audioPlayerApp.callRemoteTestUtil(
-          'fakeMouseClick', audioAppId, [repeatButton], this.next);
-    },
-    // Leap forward in time.
-    function(result) {
-      chrome.test.assertTrue(result, 'Failed to click the repeat button');
-      audioTimeLeapForward(audioAppId);
-      this.next();
-    },
-    // Check: the same file should still be playing (non-repeated).
-    function() {
-      const playFile = audioPlayingQuery('newly added file.ogg');
-      const initial = playFile + '[playcount="0"]';
-      audioPlayerApp.waitForElement(audioAppId, initial).then(this.next);
-    },
-    // When it ends, Audio Player should replay it (repeat-once).
-    function() {
-      const playFile = audioPlayingQuery('newly added file.ogg');
-      const repeats = playFile + '[playcount="1"]';
-      audioPlayerApp.waitForElement(audioAppId, repeats).then(this.next);
-    },
-    function() {
-      checkIfNoErrorsOccured(this.next);
-    }
-  ]);
+  // Open Files.App on |path|, add audio files to Downloads and Drive.
+  const {appId} =
+      await setupAndWaitUntilReady(null, path, null, tracks, tracks);
+
+  // Open an audio file.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'openFile', appId, ['newly added file.ogg']));
+
+  // Wait for the Audio Player window.
+  const audioAppId = await audioPlayerApp.waitForWindow('audio_player.html');
+
+  // Check: Audio Player should automatically play the file.
+  const playFile = audioPlayingQuery('newly added file.ogg');
+  await audioPlayerApp.waitForElement(audioAppId, playFile);
+
+  // Click the repeat button for repeat-all.
+  const repeatButton = controlPanelQuery(['repeat-button', '.no-repeat']);
+  chrome.test.assertTrue(
+      await audioPlayerApp.callRemoteTestUtil(
+          'fakeMouseClick', audioAppId, [repeatButton]),
+      'Failed to click the repeat button');
+
+  // Click the repeat button again for repeat-once.
+  const repeatButton2 = controlPanelQuery(['repeat-button', '.repeat-all']);
+  chrome.test.assertTrue(
+      await audioPlayerApp.callRemoteTestUtil(
+          'fakeMouseClick', audioAppId, [repeatButton2]),
+      'Failed to click the repeat button');
+
+  // Leap forward in time.
+  audioTimeLeapForward(audioAppId);
+
+  // Check: the same file should still be playing (non-repeated).
+  const initial = playFile + '[playcount="0"]';
+  await audioPlayerApp.waitForElement(audioAppId, initial);
+
+  // When it ends, Audio Player should replay it (repeat-once).
+  const repeats = playFile + '[playcount="1"]';
+  await audioPlayerApp.waitForElement(audioAppId, repeats);
 }
 
 testcase.audioOpenCloseDownloads = function() {
-  audioOpenClose(RootPath.DOWNLOADS);
+  return audioOpenClose(RootPath.DOWNLOADS);
 };
 
 testcase.audioOpenCloseDrive = function() {
-  audioOpenClose(RootPath.DRIVE);
+  return audioOpenClose(RootPath.DRIVE);
 };
 
 testcase.audioOpenDownloads = function() {
-  audioOpenTrackDownloads();
+  return audioOpenTrackDownloads();
 };
 
 testcase.audioOpenDrive = function() {
-  audioOpenMultipleTracksDrive();
+  return audioOpenMultipleTracksDrive();
 };
 
 testcase.audioAutoAdvanceDrive = function() {
-  audioAutoAdvance(RootPath.DRIVE);
+  return audioAutoAdvance(RootPath.DRIVE);
 };
 
 testcase.audioRepeatAllModeSingleFileDrive = function() {
-  audioRepeatAllModeSingleFile(RootPath.DRIVE);
+  return audioRepeatAllModeSingleFile(RootPath.DRIVE);
 };
 
 testcase.audioNoRepeatModeSingleFileDrive = function() {
-  audioNoRepeatModeSingleFile(RootPath.DRIVE);
+  return audioNoRepeatModeSingleFile(RootPath.DRIVE);
 };
 
 testcase.audioRepeatOneModeSingleFileDrive = function() {
-  audioRepeatOneModeSingleFile(RootPath.DRIVE);
+  return audioRepeatOneModeSingleFile(RootPath.DRIVE);
 };
 
 testcase.audioRepeatAllModeMultipleFileDrive = function() {
-  audioRepeatAllModeMultipleFile(RootPath.DRIVE);
+  return audioRepeatAllModeMultipleFile(RootPath.DRIVE);
 };
 
 testcase.audioNoRepeatModeMultipleFileDrive = function() {
-  audioNoRepeatModeMultipleFile(RootPath.DRIVE);
+  return audioNoRepeatModeMultipleFile(RootPath.DRIVE);
 };
 
 testcase.audioRepeatOneModeMultipleFileDrive = function() {
-  audioRepeatOneModeMultipleFile(RootPath.DRIVE);
+  return audioRepeatOneModeMultipleFile(RootPath.DRIVE);
 };
-
 })();

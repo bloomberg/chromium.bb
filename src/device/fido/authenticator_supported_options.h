@@ -8,7 +8,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "components/cbor/cbor_values.h"
+#include "components/cbor/values.h"
 
 namespace device {
 
@@ -33,7 +33,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorSupportedOptions {
   };
 
   AuthenticatorSupportedOptions();
+  AuthenticatorSupportedOptions(const AuthenticatorSupportedOptions& other);
   AuthenticatorSupportedOptions(AuthenticatorSupportedOptions&& other);
+  AuthenticatorSupportedOptions& operator=(
+      const AuthenticatorSupportedOptions& other);
   AuthenticatorSupportedOptions& operator=(
       AuthenticatorSupportedOptions&& other);
   ~AuthenticatorSupportedOptions();
@@ -74,12 +77,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorSupportedOptions {
   // optional if client pin capability is not supported by the authenticator.
   ClientPinAvailability client_pin_availability_ =
       ClientPinAvailability::kNotSupported;
-
-  DISALLOW_COPY_AND_ASSIGN(AuthenticatorSupportedOptions);
 };
 
 COMPONENT_EXPORT(DEVICE_FIDO)
-cbor::CBORValue ConvertToCBOR(const AuthenticatorSupportedOptions& options);
+cbor::Value ConvertToCBOR(const AuthenticatorSupportedOptions& options);
 
 }  // namespace device
 

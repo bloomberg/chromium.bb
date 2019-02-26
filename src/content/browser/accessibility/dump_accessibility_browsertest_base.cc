@@ -56,8 +56,8 @@ bool AccessibilityTreeContainsLoadedDocWithUrl(BrowserAccessibility* node,
       node->GetStringAttribute(ax::mojom::StringAttribute::kUrl) == url) {
     // Ensure the doc has finished loading and has a non-zero size.
     return node->manager()->GetTreeData().loaded &&
-           (node->GetData().location.width() > 0 &&
-            node->GetData().location.height() > 0);
+           (node->GetData().relative_bounds.bounds.width() > 0 &&
+            node->GetData().relative_bounds.bounds.height() > 0);
   }
   if (node->GetRole() == ax::mojom::Role::kWebArea &&
       node->GetStringAttribute(ax::mojom::StringAttribute::kUrl) == url) {
@@ -177,10 +177,10 @@ void DumpAccessibilityTestBase::ParseHtmlForExtraDirectives(
   }
 }
 
-AccessibilityTreeFormatter*
-    DumpAccessibilityTestBase::CreateAccessibilityTreeFormatter() {
+std::unique_ptr<AccessibilityTreeFormatter>
+DumpAccessibilityTestBase::CreateAccessibilityTreeFormatter() {
   if (is_blink_pass_)
-    return new AccessibilityTreeFormatterBlink();
+    return std::make_unique<AccessibilityTreeFormatterBlink>();
   else
     return AccessibilityTreeFormatter::Create();
 }
@@ -199,7 +199,7 @@ void DumpAccessibilityTestBase::RunTest(
 
 void DumpAccessibilityTestBase::RunTestForPlatform(
     const base::FilePath file_path, const char* file_dir) {
-  formatter_.reset(CreateAccessibilityTreeFormatter());
+  formatter_ = CreateAccessibilityTreeFormatter();
 
   // Disable the "hot tracked" state (set when the mouse is hovering over
   // an object) because it makes test output change based on the mouse position.

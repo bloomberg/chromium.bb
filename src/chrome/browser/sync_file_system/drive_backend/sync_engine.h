@@ -20,11 +20,10 @@
 #include "chrome/browser/sync_file_system/sync_direction.h"
 #include "components/drive/drive_notification_observer.h"
 #include "components/drive/service/drive_service_interface.h"
-#include "components/signin/core/browser/signin_manager_base.h"
+#include "components/signin/core/browser/account_info.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-
-class OAuth2TokenService;
 
 namespace base {
 class SequencedTaskRunner;
@@ -66,8 +65,8 @@ class SyncEngine
       public LocalChangeProcessor,
       public drive::DriveNotificationObserver,
       public drive::DriveServiceObserver,
-      public network::NetworkConnectionTracker::NetworkConnectionObserver,
-      public SigninManagerBase::Observer {
+      public identity::IdentityManager::Observer,
+      public network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
   typedef RemoteFileSyncService::Observer SyncServiceObserver;
 
@@ -76,7 +75,7 @@ class SyncEngine
     DriveServiceFactory() {}
     virtual ~DriveServiceFactory() {}
     virtual std::unique_ptr<drive::DriveServiceInterface> CreateDriveService(
-        OAuth2TokenService* oauth2_token_service,
+        identity::IdentityManager* identity_manager,
         scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
         base::SequencedTaskRunner* blocking_task_runner);
 
@@ -135,7 +134,8 @@ class SyncEngine
                         const SyncStatusCallback& callback) override;
 
   // drive::DriveNotificationObserver overrides.
-  void OnNotificationReceived(const std::set<std::string>& ids) override;
+  void OnNotificationReceived(
+      const std::map<std::string, int64_t>& invalidations) override;
   void OnNotificationTimerFired() override;
   void OnPushNotificationEnabled(bool enabled) override;
 
@@ -146,12 +146,12 @@ class SyncEngine
   // network::NetworkConnectionTracker::NetworkConnectionObserver overrides.
   void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
-  // SigninManagerBase::Observer overrides.
-  void GoogleSigninFailed(const GoogleServiceAuthError& error) override;
-  void GoogleSigninSucceeded(const std::string& account_id,
-                             const std::string& username) override;
-  void GoogleSignedOut(const std::string& account_id,
-                       const std::string& username) override;
+  // IdentityManager::Observer overrides.
+  void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override;
+  void OnPrimaryAccountCleared(
+      const AccountInfo& previous_primary_account_info) override;
+  void OnPrimaryAccountSigninFailed(
+      const GoogleServiceAuthError& error) override;
 
  private:
   class WorkerObserver;
@@ -167,8 +167,7 @@ class SyncEngine
              TaskLogger* task_logger,
              drive::DriveNotificationManager* notification_manager,
              extensions::ExtensionServiceInterface* extension_service,
-             SigninManagerBase* signin_manager,
-             OAuth2TokenService* token_service,
+             identity::IdentityManager* identity_manager,
              scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
              std::unique_ptr<DriveServiceFactory> drive_service_factory,
              leveldb::Env* env_override);
@@ -198,8 +197,7 @@ class SyncEngine
   // KeyedService::DependsOn().
   drive::DriveNotificationManager* notification_manager_;
   extensions::ExtensionServiceInterface* extension_service_;
-  SigninManagerBase* signin_manager_;
-  OAuth2TokenService* token_service_;
+  identity::IdentityManager* identity_manager_;
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 

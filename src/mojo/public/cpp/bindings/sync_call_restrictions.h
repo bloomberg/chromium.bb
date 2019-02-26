@@ -15,8 +15,6 @@
 #define ENABLE_SYNC_CALL_RESTRICTIONS 0
 #endif
 
-class ChromeSelectFileDialogFactory;
-
 namespace sync_preferences {
 class PrefServiceSyncable;
 }
@@ -85,8 +83,6 @@ class MOJO_CPP_BINDINGS_EXPORT SyncCallRestrictions {
   // Incognito pref service instances are created synchronously.
   friend class sync_preferences::PrefServiceSyncable;
   friend class mojo::ScopedAllowSyncCallForTesting;
-  // For file open and save dialogs created synchronously.
-  friend class ::ChromeSelectFileDialogFactory;
   // For synchronous system clipboard access.
   friend class ui::ClipboardClient;
   // For destroying the GL context/surface that draw to a platform window before
@@ -117,7 +113,7 @@ class MOJO_CPP_BINDINGS_EXPORT SyncCallRestrictions {
 
    private:
 #if ENABLE_SYNC_CALL_RESTRICTIONS
-    base::ThreadRestrictions::ScopedAllowWait allow_wait_;
+    base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait_;
 #endif
 
     DISALLOW_COPY_AND_ASSIGN(ScopedAllowSyncCall);

@@ -6,6 +6,7 @@ import BaseHTTPServer
 from collections import namedtuple
 import errno
 import gzip
+import logging
 import mimetypes
 import os
 import SimpleHTTPServer
@@ -13,12 +14,16 @@ import socket
 import SocketServer
 import StringIO
 import sys
+import traceback
 import urlparse
 
 from telemetry.core import local_server
 
 ByteRange = namedtuple('ByteRange', ['from_byte', 'to_byte'])
 ResourceAndRange = namedtuple('ResourceAndRange', ['resource', 'byte_range'])
+
+_MIME_TYPES_FILE = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), 'mime.types'))
 
 
 class MemoryCacheHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
@@ -155,6 +160,11 @@ class _MemoryCacheHTTPServerImpl(SocketServer.ThreadingMixIn,
   def __init__(self, host_port, handler, paths):
     BaseHTTPServer.HTTPServer.__init__(self, host_port, handler)
     self.resource_map = {}
+    # Use Telemetry's 'mime.types' file instead of relying on system files to
+    # ensure the mime type inference is deterministic
+    # (also see crbug.com/894868).
+    assert os.path.isfile(_MIME_TYPES_FILE)
+    mimetypes.init([_MIME_TYPES_FILE])
     for path in paths:
       if os.path.isdir(path):
         self.AddDirectoryToResourceMap(path)
@@ -205,6 +215,17 @@ class _MemoryCacheHTTPServerImpl(SocketServer.ThreadingMixIn,
     if os.path.basename(file_path) == index:
       dir_path = os.path.dirname(file_path)
       self.resource_map[dir_path] = self.resource_map[file_path]
+
+  def handle_error(self, request, client_address):
+    """Handle error in a thread-safe way
+
+    We override handle_error method of our base TCPServer class. It does the
+    same but uses thread-safe logging.error instead of print, because
+    SocketServer.ThreadingMixIn runs network operations on multiple threads and
+    there's a race condition on stdout.
+    """
+    logging.error('Exception happened during processing of request from '
+                  '%s\n%s%s', client_address, traceback.format_exc(), '-'*80)
 
 
 class MemoryCacheHTTPServerBackend(local_server.LocalServerBackend):

@@ -70,7 +70,7 @@ class PLATFORM_EXPORT RawResource final : public Resource {
   static RawResource* CreateForTest(ResourceRequest request,
                                     ResourceType type) {
     ResourceLoaderOptions options;
-    return new RawResource(request, type, options);
+    return MakeGarbageCollected<RawResource>(request, type, options);
   }
   static RawResource* CreateForTest(const KURL& url,
                                     scoped_refptr<const SecurityOrigin> origin,
@@ -79,6 +79,10 @@ class PLATFORM_EXPORT RawResource final : public Resource {
     request.SetRequestorOrigin(std::move(origin));
     return CreateForTest(request, type);
   }
+
+  RawResource(const ResourceRequest&,
+              ResourceType,
+              const ResourceLoaderOptions&);
 
   // Resource implementation
   MatchStatus CanReuse(const FetchParameters&) const override;
@@ -114,13 +118,9 @@ class PLATFORM_EXPORT RawResource final : public Resource {
 
     Resource* Create(const ResourceRequest& request,
                      const ResourceLoaderOptions& options) const override {
-      return new RawResource(request, type_, options);
+      return MakeGarbageCollected<RawResource>(request, type_, options);
     }
   };
-
-  RawResource(const ResourceRequest&,
-              ResourceType,
-              const ResourceLoaderOptions&);
 
   // Resource implementation
   void DidAddClient(ResourceClient*) override;

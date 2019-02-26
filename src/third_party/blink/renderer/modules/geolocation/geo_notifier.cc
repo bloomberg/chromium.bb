@@ -17,7 +17,7 @@ namespace blink {
 GeoNotifier::GeoNotifier(Geolocation* geolocation,
                          V8PositionCallback* success_callback,
                          V8PositionErrorCallback* error_callback,
-                         const PositionOptions& options)
+                         const PositionOptions* options)
     : geolocation_(geolocation),
       success_callback_(success_callback),
       error_callback_(error_callback),
@@ -33,11 +33,12 @@ GeoNotifier::GeoNotifier(Geolocation* geolocation,
   DEFINE_STATIC_LOCAL(CustomCountHistogram, timeout_histogram,
                       ("Geolocation.Timeout", 0,
                        1000 * 60 * 10 /* 10 minute max */, 20 /* buckets */));
-  timeout_histogram.Count(options_.timeout());
+  timeout_histogram.Count(options_->timeout());
 }
 
 void GeoNotifier::Trace(blink::Visitor* visitor) {
   visitor->Trace(geolocation_);
+  visitor->Trace(options_);
   visitor->Trace(success_callback_);
   visitor->Trace(error_callback_);
   visitor->Trace(timer_);
@@ -72,7 +73,7 @@ void GeoNotifier::RunErrorCallback(PositionError* error) {
 }
 
 void GeoNotifier::StartTimer() {
-  timer_->StartOneShot(TimeDelta::FromMilliseconds(options_.timeout()),
+  timer_->StartOneShot(TimeDelta::FromMilliseconds(options_->timeout()),
                        FROM_HERE);
 }
 
@@ -138,7 +139,7 @@ void GeoNotifier::TimerFired(TimerBase*) {
   DEFINE_STATIC_LOCAL(CustomCountHistogram, timeout_expired_histogram,
                       ("Geolocation.TimeoutExpired", 0,
                        1000 * 60 * 10 /* 10 minute max */, 20 /* buckets */));
-  timeout_expired_histogram.Count(options_.timeout());
+  timeout_expired_histogram.Count(options_->timeout());
 
   geolocation_->RequestTimedOut(this);
 }

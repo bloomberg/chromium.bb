@@ -43,7 +43,7 @@ class SocketTag;
 // longer works, so we have to use this API instead.
 // This class is meant to be used as a singleton. It exposes a few dynamically
 // loaded functions and a bool called "qwave_supported".
-class NET_EXPORT QwaveAPI {
+class NET_EXPORT QwaveApi {
   typedef BOOL(WINAPI* CreateHandleFn)(PQOS_VERSION, PHANDLE);
   typedef BOOL(WINAPI* CloseHandleFn)(HANDLE);
   typedef BOOL(WINAPI* AddSocketToFlowFn)(HANDLE,
@@ -65,12 +65,13 @@ class NET_EXPORT QwaveAPI {
                                   LPOVERLAPPED);
 
  public:
-  QwaveAPI();
-  virtual ~QwaveAPI() = default;
+  QwaveApi();
 
-  static QwaveAPI& Get();
+  static QwaveApi* GetDefault();
 
   virtual bool qwave_supported() const;
+  virtual void OnFatalError();
+
   virtual BOOL CreateHandle(PQOS_VERSION version, PHANDLE handle);
   virtual BOOL CloseHandle(HANDLE handle);
   virtual BOOL AddSocketToFlow(HANDLE handle,
@@ -92,16 +93,15 @@ class NET_EXPORT QwaveAPI {
                        LPOVERLAPPED overlapped);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(UDPSocketTest, SetDSCPFake);
+  std::atomic<bool> qwave_supported_;
 
-  bool qwave_supported_;
   CreateHandleFn create_handle_func_;
   CloseHandleFn close_handle_func_;
   AddSocketToFlowFn add_socket_to_flow_func_;
   RemoveSocketFromFlowFn remove_socket_from_flow_func_;
   SetFlowFn set_flow_func_;
 
-  DISALLOW_COPY_AND_ASSIGN(QwaveAPI);
+  DISALLOW_COPY_AND_ASSIGN(QwaveApi);
 };
 
 //-----------------------------------------------------------------------------
@@ -115,7 +115,7 @@ class NET_EXPORT QwaveAPI {
 // for Microsoft's documentation.
 class NET_EXPORT DscpManager {
  public:
-  DscpManager(QwaveAPI& qos, SOCKET socket, HANDLE qos_handle);
+  DscpManager(QwaveApi* api, SOCKET socket);
   ~DscpManager();
 
   // Remembers the latest |dscp| so PrepareToSend can add remote addresses to
@@ -128,15 +128,26 @@ class NET_EXPORT DscpManager {
   int PrepareForSend(const IPEndPoint& remote_address);
 
  private:
-  QwaveAPI& qos_;
-  SOCKET socket_;
-  HANDLE qos_handle_;
+  void RequestHandle();
+  static HANDLE DoCreateHandle(QwaveApi* api);
+  static void OnHandleCreated(QwaveApi* api,
+                              base::WeakPtr<DscpManager> dscp_manager,
+                              HANDLE handle);
+
+  QwaveApi* const api_;
+  const SOCKET socket_;
 
   DiffServCodePoint dscp_value_ = DSCP_NO_CHANGE;
   // The remote addresses currently in the flow.
   std::set<IPEndPoint> configured_;
+
+  HANDLE qos_handle_ = NULL;
+  bool handle_is_initializing_ = false;
   // 0 means no flow has been constructed.
   QOS_FLOWID flow_id_ = 0;
+  base::WeakPtrFactory<DscpManager> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(DscpManager);
 };
 
 //-----------------------------------------------------------------------------
@@ -205,8 +216,9 @@ class NET_EXPORT UDPSocketWin : public base::win::ObjectWatcher::Delegate {
   //   alive by the caller until the callback is placed.
   // |callback| is the callback on completion of the RecvFrom.
   // Returns a net error code, or ERR_IO_PENDING if the IO is in progress.
-  // If ERR_IO_PENDING is returned, the caller must keep |buf| and |address|,
-  // alive until the callback is called.
+  // If ERR_IO_PENDING is returned, this socket takes a ref to |buf| to keep
+  // it alive until the data is received. However, the caller must keep
+  // |address| alive until the callback is called.
   int RecvFrom(IOBuffer* buf,
                int buf_len,
                IPEndPoint* address,
@@ -218,8 +230,9 @@ class NET_EXPORT UDPSocketWin : public base::win::ObjectWatcher::Delegate {
   // |address| is the recipient address.
   // |callback| is the user callback function to call on complete.
   // Returns a net error code, or ERR_IO_PENDING if the IO is in progress.
-  // If ERR_IO_PENDING is returned, the caller must keep |buf| and |address|
-  // alive until the callback is called.
+  // If ERR_IO_PENDING is returned, this socket copies |address| for
+  // asynchronous sending, and takes a ref to |buf| to keep it alive until the
+  // data is sent.
   int SendTo(IOBuffer* buf,
              int buf_len,
              const IPEndPoint& address,
@@ -248,15 +261,29 @@ class NET_EXPORT UDPSocketWin : public base::win::ObjectWatcher::Delegate {
 
   const NetLogWithSource& NetLog() const { return net_log_; }
 
-  // Sets corresponding flags in |socket_options_| to allow the socket
-  // to share the local address to which the socket will be bound with
-  // other processes. Should be called between Open() and Bind().
-  // Returns a net error code.
+  // Sets socket options to allow the socket to share the local address to which
+  // the socket will be bound with other processes. If multiple processes are
+  // bound to the same local address at the same time, behavior is undefined;
+  // e.g., it is not guaranteed that incoming  messages will be sent to all
+  // listening sockets. Returns a net error code.
+  //
+  // Should be called between Open() and Bind().
   int AllowAddressReuse();
 
-  // Sets corresponding flags in |socket_options_| to allow sending
-  // and receiving packets to and from broadcast addresses.
+  // Sets socket options to allow sending and receiving packets to and from
+  // broadcast addresses.
   int SetBroadcast(bool broadcast);
+
+  // Sets socket options to allow the socket to share the local address to which
+  // the socket will be bound with other processes and attempt to allow all such
+  // sockets to receive the same multicast messages. Returns a net error code.
+  //
+  // For Windows, multicast messages should always be shared between sockets
+  // configured thusly as long as the sockets join the same multicast group and
+  // interface.
+  //
+  // Should be called between Open() and Bind().
+  int AllowAddressSharingForMulticast();
 
   // Joins the multicast group.
   // |group_address| is the group address to join, could be either
@@ -300,8 +327,10 @@ class NET_EXPORT UDPSocketWin : public base::win::ObjectWatcher::Delegate {
   // other applications on the same host. See MSDN: http://goo.gl/6vqbj
   int SetMulticastLoopbackMode(bool loopback);
 
-  // Sets the differentiated services flags on outgoing packets. May not
-  // do anything on some platforms.
+  // Sets the differentiated services flags on outgoing packets. May not do
+  // anything on some platforms.  A return value of ERR_INVALID_HANDLE indicates
+  // the value was not set but could succeed on a future call, because
+  // initialization is in progress.
   int SetDiffServCodePoint(DiffServCodePoint dscp);
 
   // Resets the thread to be used for thread-safety checks.
@@ -389,10 +418,10 @@ class NET_EXPORT UDPSocketWin : public base::win::ObjectWatcher::Delegate {
   // Binds to a random port on |address|.
   int RandomBind(const IPAddress& address);
 
-  // This is provided to allow QwaveAPI mocking in tests. |UDPSocketWin| method
-  // implementations should call |GetQwaveAPI()| instead of |QwaveAPI::Get()|
-  // directly.
-  virtual QwaveAPI& GetQwaveAPI();
+  // This is provided to allow QwaveApi mocking in tests. |UDPSocketWin| method
+  // implementations should call |GetQwaveApi()| instead of
+  // |QwaveApi::GetDefault()| directly.
+  virtual QwaveApi* GetQwaveApi() const;
 
   SOCKET socket_;
   int addr_family_;
@@ -452,9 +481,6 @@ class NET_EXPORT UDPSocketWin : public base::win::ObjectWatcher::Delegate {
   CompletionOnceCallback write_callback_;
 
   NetLogWithSource net_log_;
-
-  // QWAVE data. Used to set DSCP bits on outgoing packets.
-  HANDLE qos_handle_;
 
   // Maintains remote addresses for QWAVE qos management.
   std::unique_ptr<DscpManager> dscp_manager_;

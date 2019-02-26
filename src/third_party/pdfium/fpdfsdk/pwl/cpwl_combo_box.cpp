@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <sstream>
+#include <utility>
 
 #include "core/fxge/cfx_pathdata.h"
 #include "core/fxge/cfx_renderdevice.h"
@@ -25,6 +26,12 @@ constexpr float kComboBoxTriangleHalfLength = 3.0f;
 constexpr int kDefaultButtonWidth = 13;
 
 }  // namespace
+
+CPWL_CBListBox::CPWL_CBListBox(const CreateParams& cp,
+                               std::unique_ptr<PrivateData> pAttachedData)
+    : CPWL_ListBox(cp, std::move(pAttachedData)) {}
+
+CPWL_CBListBox::~CPWL_CBListBox() = default;
 
 bool CPWL_CBListBox::OnLButtonUp(const CFX_PointF& point, uint32_t nFlag) {
   CPWL_Wnd::OnLButtonUp(point, nFlag);
@@ -94,6 +101,12 @@ bool CPWL_CBListBox::OnCharNotify(uint16_t nChar, uint32_t nFlag) {
   return OnNotifySelectionChanged(true, nFlag);
 }
 
+CPWL_CBButton::CPWL_CBButton(const CreateParams& cp,
+                             std::unique_ptr<PrivateData> pAttachedData)
+    : CPWL_Wnd(cp, std::move(pAttachedData)) {}
+
+CPWL_CBButton::~CPWL_CBButton() = default;
+
 void CPWL_CBButton::DrawThisAppearance(CFX_RenderDevice* pDevice,
                                        const CFX_Matrix& mtUser2Device) {
   CPWL_Wnd::DrawThisAppearance(pDevice, mtUser2Device);
@@ -132,7 +145,6 @@ bool CPWL_CBButton::OnLButtonDown(const CFX_PointF& point, uint32_t nFlag) {
   CPWL_Wnd::OnLButtonDown(point, nFlag);
 
   SetCapture();
-
   if (CPWL_Wnd* pParent = GetParentWindow())
     pParent->NotifyLButtonDown(this, point);
 
@@ -143,18 +155,17 @@ bool CPWL_CBButton::OnLButtonUp(const CFX_PointF& point, uint32_t nFlag) {
   CPWL_Wnd::OnLButtonUp(point, nFlag);
 
   ReleaseCapture();
-
   return true;
 }
 
-CPWL_ComboBox::CPWL_ComboBox() {}
-
-CPWL_ComboBox::~CPWL_ComboBox() {}
-
-void CPWL_ComboBox::OnCreate(CreateParams* pParamsToAdjust) {
-  pParamsToAdjust->dwFlags &= ~PWS_HSCROLL;
-  pParamsToAdjust->dwFlags &= ~PWS_VSCROLL;
+CPWL_ComboBox::CPWL_ComboBox(const CreateParams& cp,
+                             std::unique_ptr<PrivateData> pAttachedData)
+    : CPWL_Wnd(cp, std::move(pAttachedData)) {
+  GetCreationParams()->dwFlags &= ~PWS_HSCROLL;
+  GetCreationParams()->dwFlags &= ~PWS_VSCROLL;
 }
+
+CPWL_ComboBox::~CPWL_ComboBox() = default;
 
 void CPWL_ComboBox::OnDestroy() {
   // Until cleanup takes place in the virtual destructor for CPWL_Wnd
@@ -262,11 +273,7 @@ void CPWL_ComboBox::CreateEdit(const CreateParams& cp) {
   if (m_pEdit)
     return;
 
-  m_pEdit = new CPWL_Edit();
-  m_pEdit->AttachFFLData(m_pFormFiller.Get());
-
   CreateParams ecp = cp;
-  ecp.pParentWnd = this;
   ecp.dwFlags = PWS_VISIBLE | PWS_CHILD | PWS_BORDER | PES_CENTER |
                 PES_AUTOSCROLL | PES_UNDO;
 
@@ -279,17 +286,19 @@ void CPWL_ComboBox::CreateEdit(const CreateParams& cp) {
   ecp.rcRectWnd = CFX_FloatRect();
   ecp.dwBorderWidth = 0;
   ecp.nBorderStyle = BorderStyle::SOLID;
-  m_pEdit->Create(ecp);
+
+  auto pEdit = pdfium::MakeUnique<CPWL_Edit>(ecp, CloneAttachedData());
+  m_pEdit = pEdit.get();
+  m_pEdit->AttachFFLData(m_pFormFiller.Get());
+  AddChild(std::move(pEdit));
+  m_pEdit->Realize();
 }
 
 void CPWL_ComboBox::CreateButton(const CreateParams& cp) {
   if (m_pButton)
     return;
 
-  m_pButton = new CPWL_CBButton;
-
   CreateParams bcp = cp;
-  bcp.pParentWnd = this;
   bcp.dwFlags = PWS_VISIBLE | PWS_CHILD | PWS_BORDER | PWS_BACKGROUND;
   bcp.sBackgroundColor = CFX_Color(CFX_Color::kRGB, 220.0f / 255.0f,
                                    220.0f / 255.0f, 220.0f / 255.0f);
@@ -297,18 +306,18 @@ void CPWL_ComboBox::CreateButton(const CreateParams& cp) {
   bcp.dwBorderWidth = 2;
   bcp.nBorderStyle = BorderStyle::BEVELED;
   bcp.eCursorType = FXCT_ARROW;
-  m_pButton->Create(bcp);
+
+  auto pButton = pdfium::MakeUnique<CPWL_CBButton>(bcp, CloneAttachedData());
+  m_pButton = pButton.get();
+  AddChild(std::move(pButton));
+  m_pButton->Realize();
 }
 
 void CPWL_ComboBox::CreateListBox(const CreateParams& cp) {
   if (m_pList)
     return;
 
-  m_pList = new CPWL_CBListBox();
-  m_pList->AttachFFLData(m_pFormFiller.Get());
-
   CreateParams lcp = cp;
-  lcp.pParentWnd = this;
   lcp.dwFlags =
       PWS_CHILD | PWS_BORDER | PWS_BACKGROUND | PLBS_HOVERSEL | PWS_VSCROLL;
   lcp.nBorderStyle = BorderStyle::SOLID;
@@ -325,7 +334,11 @@ void CPWL_ComboBox::CreateListBox(const CreateParams& cp) {
   if (cp.sBackgroundColor.nColorType == CFX_Color::kTransparent)
     lcp.sBackgroundColor = PWL_DEFAULT_WHITECOLOR;
 
-  m_pList->Create(lcp);
+  auto pList = pdfium::MakeUnique<CPWL_CBListBox>(lcp, CloneAttachedData());
+  m_pList = pList.get();
+  m_pList->AttachFFLData(m_pFormFiller.Get());
+  AddChild(std::move(pList));
+  m_pList->Realize();
 }
 
 bool CPWL_ComboBox::RePosChildWnd() {

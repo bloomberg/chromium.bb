@@ -30,6 +30,11 @@ class Lock final : public ScriptWrappable, public PausableObject {
                       mojom::blink::LockHandlePtr,
                       LockManager*);
 
+  Lock(ScriptState*,
+       const String& name,
+       mojom::blink::LockMode,
+       mojom::blink::LockHandlePtr,
+       LockManager*);
   ~Lock() override;
 
   void Trace(blink::Visitor*) override;
@@ -51,12 +56,6 @@ class Lock final : public ScriptWrappable, public PausableObject {
 
  private:
   class ThenFunction;
-
-  Lock(ScriptState*,
-       const String& name,
-       mojom::blink::LockMode,
-       mojom::blink::LockHandlePtr,
-       LockManager*);
 
   void ReleaseIfHeld();
 

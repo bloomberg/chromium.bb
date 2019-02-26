@@ -10,11 +10,6 @@ var ui = null;
 var driveFileSystem = null;
 var providedFileSystem = null;
 
-loadTimeData.data = {
-  DRIVE_DIRECTORY_LABEL: '',
-  DOWNLOADS_DIRECTORY_LABEL: ''
-};
-
 function MockFolderShortcutsModel() {
   this.has = false;
 }
@@ -29,14 +24,6 @@ MockFolderShortcutsModel.prototype.add = function(entry) {
 
 MockFolderShortcutsModel.prototype.remove = function(entry) {
   this.has = false;
-};
-
-MockDriveSyncHandler = function() {
-  this.syncSuppressed = false;
-};
-
-MockDriveSyncHandler.prototype.isSyncSuppressed = function() {
-  return this.syncSuppressed;
 };
 
 function MockUI() {
@@ -54,6 +41,8 @@ function MockUI() {
 }
 
 function setUp() {
+  window.loadTimeData.getString = id => id;
+  window.loadTimeData.data = {};
   window.chrome = {
     runtime: {
       lastError: null

@@ -134,18 +134,17 @@ FakeBluetoothAdapterClient::GetProperties(const dbus::ObjectPath& object_path) {
 
 void FakeBluetoothAdapterClient::StartDiscovery(
     const dbus::ObjectPath& object_path,
-    const base::Closure& callback,
-    ErrorCallback error_callback) {
+    ResponseCallback callback) {
   if (object_path != dbus::ObjectPath(kAdapterPath)) {
     PostDelayedTask(
-        base::BindOnce(std::move(error_callback), kNoResponseError, ""));
+        base::BindOnce(std::move(callback), Error(kNoResponseError, "")));
     return;
   }
 
   ++discovering_count_;
   VLOG(1) << "StartDiscovery: " << object_path.value() << ", "
           << "count is now " << discovering_count_;
-  PostDelayedTask(callback);
+  PostDelayedTask(base::BindOnce(std::move(callback), base::nullopt));
 
   if (discovering_count_ == 1) {
     properties_->discovering.ReplaceValue(true);
@@ -159,25 +158,24 @@ void FakeBluetoothAdapterClient::StartDiscovery(
 
 void FakeBluetoothAdapterClient::StopDiscovery(
     const dbus::ObjectPath& object_path,
-    const base::Closure& callback,
-    ErrorCallback error_callback) {
+    ResponseCallback callback) {
   if (object_path != dbus::ObjectPath(kAdapterPath)) {
     PostDelayedTask(
-        base::BindOnce(std::move(error_callback), kNoResponseError, ""));
+        base::BindOnce(std::move(callback), Error(kNoResponseError, "")));
     return;
   }
 
   if (!discovering_count_) {
     LOG(WARNING) << "StopDiscovery called when not discovering";
     PostDelayedTask(
-        base::BindOnce(std::move(error_callback), kNoResponseError, ""));
+        base::BindOnce(std::move(callback), Error(kNoResponseError, "")));
     return;
   }
 
   --discovering_count_;
   VLOG(1) << "StopDiscovery: " << object_path.value() << ", "
           << "count is now " << discovering_count_;
-  PostDelayedTask(callback);
+  PostDelayedTask(base::BindOnce(std::move(callback), base::nullopt));
 
   if (discovering_count_ == 0) {
     FakeBluetoothDeviceClient* device_client =

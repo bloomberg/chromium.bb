@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
@@ -35,6 +36,8 @@ class SchemePageLoadMetricsObserverTest
         base::TimeDelta::FromMilliseconds(600);
     timing->document_timing->load_event_start =
         base::TimeDelta::FromMilliseconds(1000);
+    timing->interactive_timing->interactive =
+        base::TimeDelta::FromMilliseconds(1200);
     PopulateRequiredTimingFields(timing);
   }
 
@@ -50,31 +53,86 @@ class SchemePageLoadMetricsObserverTest
     NavigateAndCommit(GURL(scheme.append("://example.com")));
   }
 
-  int CountTotalProtocolMetricsRecorded() {
+  // Excludes understat metrics.
+  int CountTotalProtocolMetricsRecorded(const std::string& protocol) {
     int count = 0;
-
     base::HistogramTester::CountsMap counts_map =
         histogram_tester().GetTotalCountsForPrefix("PageLoad.Clients.Scheme.");
     for (const auto& entry : counts_map)
       count += entry.second;
-    return count;
+
+    int understat_count = 0;
+    base::HistogramTester::CountsMap understat_counts_map =
+        histogram_tester().GetTotalCountsForPrefix(
+            "PageLoad.Clients.Scheme." + base::ToUpperASCII(protocol) +
+            ".PaintTiming.UnderStat");
+    for (const auto& entry : understat_counts_map)
+      understat_count += entry.second;
+
+    return count - understat_count;
+  }
+
+  // Returns the value of the sample present in |histogram_name|. Should be
+  // called only if |histogram_name| contains exactly 1 sample.
+  int32_t GetRecordedMetricValue(const std::string& histogram_name) const {
+    histogram_tester().ExpectTotalCount(histogram_name, 1);
+
+    std::vector<base::Bucket> buckets =
+        histogram_tester().GetAllSamples(histogram_name);
+    for (const auto& bucket : buckets) {
+      if (bucket.count == 1) {
+        return bucket.min;
+      }
+    }
+    NOTREACHED();
+    return 0;
   }
 
   void CheckHistograms(int expected_count, const std::string& protocol) {
-    EXPECT_EQ(expected_count, CountTotalProtocolMetricsRecorded());
+    EXPECT_EQ(expected_count, CountTotalProtocolMetricsRecorded(protocol));
     if (expected_count == 0)
       return;
 
     std::string prefix = "PageLoad.Clients.Scheme.";
     prefix += base::ToUpperASCII(protocol);
 
+    std::string fcp_histogram_name(
+        prefix + ".PaintTiming.NavigationToFirstContentfulPaint");
+    std::string fcp_understat_histogram_name(prefix + ".PaintTiming.UnderStat");
+
     histogram_tester().ExpectTotalCount(
         prefix + ".ParseTiming.NavigationToParseStart", 1);
-    histogram_tester().ExpectTotalCount(
-        prefix + ".PaintTiming.NavigationToFirstContentfulPaint", 1);
+    histogram_tester().ExpectTotalCount(fcp_histogram_name, 1);
     histogram_tester().ExpectTotalCount(
         prefix + ".Experimental.PaintTiming.NavigationToFirstMeaningfulPaint",
         1);
+
+    histogram_tester().ExpectBucketCount(fcp_understat_histogram_name, 0, 1);
+
+    // Must remain synchronized with the array of the same name in
+    // scheme_page_load_metrics_observer.cc.
+    static constexpr const int kUnderStatRecordingIntervalsSeconds[] = {1, 2, 5,
+                                                                        8, 10};
+
+    base::TimeDelta recorded_fcp_value = base::TimeDelta::FromMilliseconds(
+        GetRecordedMetricValue(fcp_histogram_name));
+
+    for (size_t index = 0;
+         index < base::size(kUnderStatRecordingIntervalsSeconds); ++index) {
+      base::TimeDelta threshold(base::TimeDelta::FromSeconds(
+          kUnderStatRecordingIntervalsSeconds[index]));
+      if (recorded_fcp_value <= threshold) {
+        histogram_tester().ExpectBucketCount(fcp_understat_histogram_name,
+                                             index + 1, 1);
+      }
+    }
+
+    // Overflow bucket should be empty. This also ensures that
+    // kUnderStatRecordingIntervalsSeconds above is synchronized with the array
+    // of the same name in scheme_page_load_metrics_observer.cc.
+    histogram_tester().ExpectBucketCount(
+        fcp_understat_histogram_name,
+        base::size(kUnderStatRecordingIntervalsSeconds) + 1, 0);
   }
 
   SchemePageLoadMetricsObserver* observer_;
@@ -82,12 +140,12 @@ class SchemePageLoadMetricsObserverTest
 
 TEST_F(SchemePageLoadMetricsObserverTest, HTTPNavigation) {
   SimulateNavigation(url::kHttpScheme);
-  CheckHistograms(3, url::kHttpScheme);
+  CheckHistograms(5, url::kHttpScheme);
 }
 
 TEST_F(SchemePageLoadMetricsObserverTest, HTTPSNavigation) {
   SimulateNavigation(url::kHttpsScheme);
-  CheckHistograms(3, url::kHttpsScheme);
+  CheckHistograms(5, url::kHttpsScheme);
 }
 
 // Make sure no metrics are recorded for an unobserved scheme.

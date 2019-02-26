@@ -45,7 +45,7 @@ void CanvasFontCacheTest::SetUp() {
   PageTestBase::SetUp();
   GetDocument().documentElement()->SetInnerHTMLFromString(
       "<body><canvas id='c'></canvas></body>");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   canvas_element_ = ToHTMLCanvasElement(GetDocument().getElementById("c"));
   String canvas_type("2d");
   CanvasContextCreationAttributesCore attributes;

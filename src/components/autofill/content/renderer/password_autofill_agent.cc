@@ -673,6 +673,20 @@ void PasswordAutofillAgent::SetPasswordGenerationAgent(
   password_generation_agent_ = generation_agent;
 }
 
+PasswordAutofillAgent::FormStructureInfo::FormStructureInfo() = default;
+
+PasswordAutofillAgent::FormStructureInfo::FormStructureInfo(
+    const FormStructureInfo& other) = default;
+
+PasswordAutofillAgent::FormStructureInfo::FormStructureInfo(
+    FormStructureInfo&& other) = default;
+
+PasswordAutofillAgent::FormStructureInfo::~FormStructureInfo() = default;
+
+PasswordAutofillAgent::FormStructureInfo&
+PasswordAutofillAgent::FormStructureInfo::operator=(
+    PasswordAutofillAgent::FormStructureInfo&& other) = default;
+
 PasswordAutofillAgent::FocusStateNotifier::FocusStateNotifier(
     PasswordAutofillAgent* agent)
     : was_fillable_(false), was_password_field_(false), agent_(agent) {}
@@ -735,7 +749,7 @@ void PasswordAutofillAgent::PasswordValueGatekeeper::ShowValue(
 
 bool PasswordAutofillAgent::TextDidChangeInTextField(
     const WebInputElement& element) {
-  // TODO(vabr): Get a mutable argument instead. http://crbug.com/397083
+  // TODO(crbug.com/415449): Do this through const WebInputElement.
   WebInputElement mutable_element = element;  // We need a non-const.
   mutable_element.SetAutofillState(WebAutofillState::kNotFilled);
 
@@ -754,7 +768,7 @@ void PasswordAutofillAgent::DidEndTextFieldEditing() {
 
 void PasswordAutofillAgent::UpdateStateForTextChange(
     const WebInputElement& element) {
-  // TODO(vabr): Get a mutable argument instead. http://crbug.com/397083
+  // TODO(crbug.com/415449): Do this through const WebInputElement.
   WebInputElement mutable_element = element;  // We need a non-const.
 
   if (element.IsTextField()) {
@@ -1086,7 +1100,7 @@ void PasswordAutofillAgent::OnDynamicFormsSeen() {
 }
 
 void PasswordAutofillAgent::FireSubmissionIfFormDisappear(
-    PasswordForm::SubmissionIndicatorEvent event) {
+    SubmissionIndicatorEvent event) {
   if (!provisionally_saved_form_.IsPasswordValid())
     return;
 
@@ -1098,7 +1112,7 @@ void PasswordAutofillAgent::FireSubmissionIfFormDisappear(
   const auto& password_form = provisionally_saved_form_.password_form();
   // TODO(crbug.com/720347): This method could be called often and checking form
   // visibility could be expesive. Add performance metrics for this.
-  if (event != PasswordForm::SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR) {
+  if (event != SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR) {
     if (form_util::IsFormVisible(frame,
                                  provisionally_saved_form_.form_element(),
                                  password_form.action, password_form.origin,
@@ -1116,6 +1130,8 @@ void PasswordAutofillAgent::FireSubmissionIfFormDisappear(
 }
 
 void PasswordAutofillAgent::UserGestureObserved() {
+  autofilled_elements_cache_.clear();
+
   gatekeeper_.OnUserGesture();
 }
 
@@ -1175,17 +1191,36 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
 
     std::unique_ptr<PasswordForm> password_form(
         GetPasswordFormFromWebForm(form));
-    if (password_form) {
-      if (logger) {
-        logger->LogPasswordForm(Logger::STRING_FORM_IS_PASSWORD,
-                                *password_form);
-      }
-      password_forms.push_back(*password_form);
+    if (!password_form)
+      continue;
+
+    if (logger)
+      logger->LogPasswordForm(Logger::STRING_FORM_IS_PASSWORD, *password_form);
+
+    FormStructureInfo form_structure_info =
+        ExtractFormStructureInfo(password_form->form_data);
+    if (only_visible || WasFormStructureChanged(form_structure_info)) {
+      forms_structure_cache_[form_structure_info.unique_renderer_id] =
+          std::move(form_structure_info);
+
+      password_forms.push_back(std::move(*password_form));
+      continue;
     }
+
+    WebVector<WebFormControlElement> control_elements_vector;
+    form.GetFormControlElements(control_elements_vector);
+
+    std::vector<WebFormControlElement> control_elements =
+        control_elements_vector.ReleaseVector();
+    // Sometimes JS can change autofilled forms. In this case we try to restore
+    // values for the changed elements.
+    TryFixAutofilledForm(&control_elements);
   }
 
   // See if there are any unattached input elements that could be used for
   // password submission.
+  // TODO(crbug/898109): Consider using TryFixAutofilledForm for the cases when
+  // there is no form tag.
   bool add_unowned_inputs = true;
   if (only_visible) {
     std::vector<WebFormControlElement> control_elements =
@@ -1198,6 +1233,7 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
                          add_unowned_inputs);
     }
   }
+
   if (add_unowned_inputs) {
     std::unique_ptr<PasswordForm> password_form(
         GetPasswordFormFromUnownedInputElements());
@@ -1206,7 +1242,7 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
         logger->LogPasswordForm(Logger::STRING_FORM_IS_PASSWORD,
                                 *password_form);
       }
-      password_forms.push_back(*password_form);
+      password_forms.push_back(std::move(*password_form));
     }
   }
 
@@ -1279,7 +1315,7 @@ void PasswordAutofillAgent::OnFrameDetached() {
       provisionally_saved_form_.IsPasswordValid()) {
     DCHECK(FrameCanAccessPasswordManager());
     provisionally_saved_form_.SetSubmissionIndicatorEvent(
-        PasswordForm::SubmissionIndicatorEvent::FRAME_DETACHED);
+        SubmissionIndicatorEvent::FRAME_DETACHED);
     GetPasswordManagerDriver()->SameDocumentNavigation(
         provisionally_saved_form_.password_form());
   }
@@ -1298,6 +1334,18 @@ void PasswordAutofillAgent::OnWillSubmitForm(const WebFormElement& form) {
   std::unique_ptr<PasswordForm> submitted_form =
       GetPasswordFormFromWebForm(form);
 
+  // As a site may clear field values, use a provisionally saved form as
+  // the submitted form.
+  if (provisionally_saved_form_.IsSet() &&
+      (!submitted_form ||
+       submitted_form->action ==
+           provisionally_saved_form_.password_form().action)) {
+    submitted_form.reset(
+        new PasswordForm(provisionally_saved_form_.password_form()));
+    if (logger)
+      logger->LogMessage(Logger::STRING_SUBMITTED_PASSWORD_REPLACED);
+  }
+
   // If there is a provisionally saved password, copy over the previous
   // password value so we get the user's typed password, not the value that
   // may have been transformed for submit.
@@ -1308,18 +1356,10 @@ void PasswordAutofillAgent::OnWillSubmitForm(const WebFormElement& form) {
       logger->LogPasswordForm(Logger::STRING_CREATED_PASSWORD_FORM,
                               *submitted_form);
     }
-    if (provisionally_saved_form_.IsSet() &&
-        submitted_form->action ==
-            provisionally_saved_form_.password_form().action) {
-      if (logger)
-        logger->LogMessage(Logger::STRING_SUBMITTED_PASSWORD_REPLACED);
-      const auto& saved_form = provisionally_saved_form_.password_form();
-      submitted_form->password_value = saved_form.password_value;
-      submitted_form->new_password_value = saved_form.new_password_value;
-      submitted_form->username_value = saved_form.username_value;
-      submitted_form->submission_event =
-          PasswordForm::SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
-    }
+    submitted_form->submission_event =
+        SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
+    submitted_form->form_data.submission_event =
+        SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
 
     if (FrameCanAccessPasswordManager()) {
       // Some observers depend on sending this information now instead of when
@@ -1393,7 +1433,7 @@ void PasswordAutofillAgent::OnProbablyFormSubmitted() {
                               provisionally_saved_form_.password_form());
     }
     provisionally_saved_form_.SetSubmissionIndicatorEvent(
-        PasswordForm::SubmissionIndicatorEvent::
+        SubmissionIndicatorEvent::
             PROVISIONALLY_SAVED_FORM_ON_START_PROVISIONAL_LOAD);
     GetPasswordManagerDriver()->PasswordFormSubmitted(
         provisionally_saved_form_.password_form());
@@ -1650,6 +1690,8 @@ void PasswordAutofillAgent::FrameClosing() {
   username_query_prefix_.clear();
   form_predictions_.clear();
   username_detector_cache_.clear();
+  forms_structure_cache_.clear();
+  autofilled_elements_cache_.clear();
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   page_passwords_analyser_.Reset();
 #endif
@@ -1805,6 +1847,15 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
 
   if (logger)
     logger->LogElementName(Logger::STRING_PASSWORD_FILLED, *password_element);
+
+  if (!username.empty() && !username_element->IsNull()) {
+    autofilled_elements_cache_.emplace(
+        username_element->UniqueRendererFormControlId(),
+        WebString::FromUTF16(username));
+  }
+  autofilled_elements_cache_.emplace(
+      password_element->UniqueRendererFormControlId(),
+      WebString::FromUTF16(password));
   return true;
 }
 
@@ -1897,9 +1948,8 @@ void PasswordAutofillAgent::OnInferredFormSubmission(SubmissionSource source) {
   if (source == SubmissionSource::FRAME_DETACHED) {
     OnFrameDetached();
   } else {
-    PasswordForm::SubmissionIndicatorEvent event =
-        ToSubmissionIndicatorEvent(source);
-    if (event == PasswordForm::SubmissionIndicatorEvent::NONE)
+    SubmissionIndicatorEvent event = ToSubmissionIndicatorEvent(source);
+    if (event == SubmissionIndicatorEvent::NONE)
       return;
     FireSubmissionIfFormDisappear(event);
   }
@@ -1994,6 +2044,74 @@ void PasswordAutofillAgent::MaybeStoreFallbackData(
   password_info.fill_data = form_data;
   web_input_to_password_info_[WebInputElement()] = password_info;
   last_supplied_password_info_iter_ = web_input_to_password_info_.begin();
+}
+
+PasswordAutofillAgent::FormStructureInfo
+PasswordAutofillAgent::ExtractFormStructureInfo(const FormData& form_data) {
+  FormStructureInfo result;
+  result.unique_renderer_id = form_data.unique_renderer_id;
+  result.fields.resize(form_data.fields.size());
+
+  for (size_t i = 0; i < form_data.fields.size(); ++i) {
+    const FormFieldData& form_field = form_data.fields[i];
+
+    FormFieldInfo& field_info = result.fields[i];
+    field_info.unique_renderer_id = form_field.unique_renderer_id;
+    field_info.form_control_type = form_field.form_control_type;
+    field_info.autocomplete_attribute = form_field.autocomplete_attribute;
+    field_info.is_focusable = form_field.is_focusable;
+  }
+
+  return result;
+}
+
+bool PasswordAutofillAgent::WasFormStructureChanged(
+    const FormStructureInfo& form_info) const {
+  if (form_info.unique_renderer_id == FormData::kNotSetFormRendererId)
+    return true;
+
+  auto cached_form = forms_structure_cache_.find(form_info.unique_renderer_id);
+  if (cached_form == forms_structure_cache_.end())
+    return true;
+
+  const FormStructureInfo& cached_form_info = cached_form->second;
+
+  if (form_info.fields.size() != cached_form_info.fields.size())
+    return true;
+
+  for (size_t i = 0; i < form_info.fields.size(); ++i) {
+    const FormFieldInfo& form_field = form_info.fields[i];
+    const FormFieldInfo& cached_form_field = cached_form_info.fields[i];
+
+    if (form_field.unique_renderer_id != cached_form_field.unique_renderer_id)
+      return true;
+
+    if (form_field.form_control_type != cached_form_field.form_control_type)
+      return true;
+
+    if (form_field.autocomplete_attribute !=
+        cached_form_field.autocomplete_attribute)
+      return true;
+
+    if (form_field.is_focusable != cached_form_field.is_focusable) {
+      return true;
+    }
+  }
+  return false;
+}
+
+void PasswordAutofillAgent::TryFixAutofilledForm(
+    std::vector<WebFormControlElement>* control_elements) const {
+  for (auto& element : *control_elements) {
+    const unsigned element_id = element.UniqueRendererFormControlId();
+    auto cached_element = autofilled_elements_cache_.find(element_id);
+    if (cached_element == autofilled_elements_cache_.end())
+      continue;
+
+    const WebString& cached_value = cached_element->second;
+    if (cached_value != element.SuggestedValue())
+      element.SetSuggestedValue(cached_value);
+  }
 }
 
 }  // namespace autofill

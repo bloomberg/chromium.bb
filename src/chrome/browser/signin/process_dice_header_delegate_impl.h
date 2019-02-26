@@ -12,14 +12,16 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "components/signin/core/browser/profile_management_switches.h"
+#include "components/signin/core/browser/account_consistency_method.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace content {
 class WebContents;
 }
 
-class SigninManager;
+namespace identity {
+class IdentityManager;
+}
 
 class ProcessDiceHeaderDelegateImpl : public ProcessDiceHeaderDelegate,
                                       public content::WebContentsObserver {
@@ -40,7 +42,7 @@ class ProcessDiceHeaderDelegateImpl : public ProcessDiceHeaderDelegate,
   ProcessDiceHeaderDelegateImpl(
       content::WebContents* web_contents,
       signin::AccountConsistencyMethod account_consistency,
-      SigninManager* signin_manager,
+      identity::IdentityManager* identity_manager,
       bool is_sync_signin_tab,
       EnableSyncCallback enable_sync_callback,
       ShowSigninErrorCallback show_signin_error_callback,
@@ -57,7 +59,7 @@ class ProcessDiceHeaderDelegateImpl : public ProcessDiceHeaderDelegate,
   bool ShouldEnableSync();
 
   signin::AccountConsistencyMethod account_consistency_;
-  SigninManager* signin_manager_;
+  identity::IdentityManager* identity_manager_;
   EnableSyncCallback enable_sync_callback_;
   ShowSigninErrorCallback show_signin_error_callback_;
   bool is_sync_signin_tab_;

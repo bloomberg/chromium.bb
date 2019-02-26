@@ -4,6 +4,7 @@
 
 #include "content/browser/background_fetch/storage/create_metadata_task.h"
 
+#include <numeric>
 #include <set>
 #include <utility>
 
@@ -14,8 +15,13 @@
 #include "content/browser/background_fetch/background_fetch_data_manager_observer.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
 #include "content/browser/background_fetch/storage/image_helpers.h"
+#include "content/browser/background_fetch/storage/mark_registration_for_deletion_task.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/common/background_fetch/background_fetch_types.h"
+#include "content/common/service_worker/service_worker_type_converter.h"
+#include "content/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
 
 namespace content {
 
@@ -123,14 +129,14 @@ class CanCreateRegistrationTask : public DatabaseTask {
 CreateMetadataTask::CreateMetadataTask(
     DatabaseTaskHost* host,
     const BackgroundFetchRegistrationId& registration_id,
-    const std::vector<ServiceWorkerFetchRequest>& requests,
+    std::vector<blink::mojom::FetchAPIRequestPtr> requests,
     const BackgroundFetchOptions& options,
     const SkBitmap& icon,
     bool start_paused,
     CreateMetadataCallback callback)
     : DatabaseTask(host),
       registration_id_(registration_id),
-      requests_(requests),
+      requests_(std::move(requests)),
       options_(options),
       icon_(icon),
       start_paused_(start_paused),
@@ -231,6 +237,11 @@ void CreateMetadataTask::InitializeMetadataProto() {
       proto::BackgroundFetchRegistration_BackgroundFetchResult_UNSET);
   registration_proto->set_failure_reason(
       proto::BackgroundFetchRegistration_BackgroundFetchFailureReason_NONE);
+  registration_proto->set_upload_total(
+      std::accumulate(requests_.begin(), requests_.end(), 0u,
+                      [](uint64_t sum, const auto& request) {
+                        return sum + (request->blob ? request->blob->size : 0u);
+                      }));
 
   // Set Options fields.
   auto* options_proto = metadata_proto_->mutable_options();
@@ -258,6 +269,10 @@ void CreateMetadataTask::InitializeMetadataProto() {
         case blink::Manifest::ImageResource::Purpose::BADGE:
           image_resource_proto->add_purpose(
               proto::BackgroundFetchOptions_ImageResource_Purpose_BADGE);
+          break;
+        case blink::Manifest::ImageResource::Purpose::MASKABLE:
+          image_resource_proto->add_purpose(
+              proto::BackgroundFetchOptions_ImageResource_Purpose_MASKABLE);
           break;
       }
     }
@@ -317,7 +332,8 @@ void CreateMetadataTask::StoreMetadata() {
     proto::BackgroundFetchPendingRequest pending_request_proto;
     pending_request_proto.set_unique_id(registration_id_.unique_id());
     pending_request_proto.set_request_index(i);
-    pending_request_proto.set_serialized_request(requests_[i].Serialize());
+    pending_request_proto.set_serialized_request(
+        ServiceWorkerUtils::SerializeFetchRequestToString(*requests_[i]));
     entries.emplace_back(PendingRequestKey(registration_id_.unique_id(), i),
                          pending_request_proto.SerializeAsString());
   }
@@ -339,6 +355,54 @@ void CreateMetadataTask::DidStoreMetadata(
       SetStorageErrorAndFinish(
           BackgroundFetchStorageError::kServiceWorkerStorageError);
       return;
+  }
+
+  // Create cache entries.
+  cache_manager()->OpenCache(registration_id_.origin(),
+                             CacheStorageOwner::kBackgroundFetch,
+                             registration_id_.unique_id() /* cache_name */,
+                             base::BindOnce(&CreateMetadataTask::DidOpenCache,
+                                            weak_factory_.GetWeakPtr()));
+}
+
+void CreateMetadataTask::DidOpenCache(CacheStorageCacheHandle handle,
+                                      blink::mojom::CacheStorageError error) {
+  if (error != blink::mojom::CacheStorageError::kSuccess) {
+    SetStorageErrorAndFinish(BackgroundFetchStorageError::kCacheStorageError);
+    return;
+  }
+
+  DCHECK(handle.value());
+
+  // Create batch PUT operations instead of putting them one-by-one.
+  std::vector<blink::mojom::BatchOperationPtr> operations;
+  operations.reserve(requests_.size());
+  for (auto& request : requests_) {
+    auto operation = blink::mojom::BatchOperation::New();
+    operation->operation_type = blink::mojom::OperationType::kPut;
+    operation->request = std::move(request);
+    // Empty response.
+    operation->response = blink::mojom::FetchAPIResponse::New();
+    operations.push_back(std::move(operation));
+  }
+
+  handle.value()->BatchOperation(
+      std::move(operations), /* fail_on_duplicates= */ false,
+      base::BindOnce(&CreateMetadataTask::DidStoreRequests,
+                     weak_factory_.GetWeakPtr(), handle.Clone()),
+      base::DoNothing());
+}
+
+void CreateMetadataTask::DidStoreRequests(
+    CacheStorageCacheHandle handle,
+    blink::mojom::CacheStorageVerboseErrorPtr error) {
+  if (error->value != blink::mojom::CacheStorageError::kSuccess) {
+    // Delete the metadata in the SWDB.
+    AddDatabaseTask(std::make_unique<MarkRegistrationForDeletionTask>(
+        data_manager(), registration_id_, /* check_for_failure= */ false,
+        base::DoNothing()));
+    SetStorageErrorAndFinish(BackgroundFetchStorageError::kCacheStorageError);
+    return;
   }
 
   FinishWithError(blink::mojom::BackgroundFetchError::NONE);

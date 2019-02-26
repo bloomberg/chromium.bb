@@ -76,7 +76,7 @@ class PNGImageSource : public ImageSkiaSource {
 
  private:
   struct Compare {
-    bool operator()(const ImageSkiaRep& rep1, const ImageSkiaRep& rep2) {
+    bool operator()(const ImageSkiaRep& rep1, const ImageSkiaRep& rep2) const {
       return rep1.scale() < rep2.scale();
     }
   };

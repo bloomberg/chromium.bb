@@ -19,9 +19,9 @@
 //
 // Name                 Index   Mask Register SysValue Format   Used
 // -------------------- ----- ------ -------- -------- ------ ------
-// SV_POSITION              0   xyzw        0      POS  float
-// SV_RENDERTARGETARRAYINDEX     0   x           1  RTINDEX   uint   x
-// TEXCOORD                 0   xyz         2     NONE  float   xy
+// SV_POSITION              0   xyzw        0      POS  float       
+// SV_RENDERTARGETARRAYINDEX     0   x           1  RTINDEX   uint   x   
+// TEXCOORD                 0   xyz         2     NONE  float   xy  
 //
 //
 // Output signature:
@@ -45,7 +45,7 @@ mov r0.w, l(0)
 ld r0.xyzw, r0.xyzw, t0.xyzw
 mov o0.x, r0.x
 mov o0.yzw, l(0,0,0,1)
-ret
+ret 
 // Approximately 10 instruction slots used
 #endif
 

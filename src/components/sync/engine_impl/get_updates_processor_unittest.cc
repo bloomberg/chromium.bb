@@ -335,7 +335,7 @@ TEST_F(GetUpdatesProcessorTest, InvalidResponse) {
       BuildGetUpdatesProcessor(normal_delegate));
   SyncerError error =
       processor->ProcessResponse(gu_response, enabled_types(), &status);
-  EXPECT_EQ(error, SERVER_RESPONSE_VALIDATION_FAILED);
+  EXPECT_EQ(error.value(), SyncerError::SERVER_RESPONSE_VALIDATION_FAILED);
 }
 
 // Verify that we correctly detect when there's more work to be done.
@@ -351,7 +351,7 @@ TEST_F(GetUpdatesProcessorTest, MoreToDownloadResponse) {
       BuildGetUpdatesProcessor(normal_delegate));
   SyncerError error =
       processor->ProcessResponse(gu_response, enabled_types(), &status);
-  EXPECT_EQ(error, SERVER_MORE_TO_DOWNLOAD);
+  EXPECT_EQ(error.value(), SyncerError::SERVER_MORE_TO_DOWNLOAD);
 }
 
 // A simple scenario: No updates returned and nothing more to download.
@@ -367,7 +367,7 @@ TEST_F(GetUpdatesProcessorTest, NormalResponseTest) {
       BuildGetUpdatesProcessor(normal_delegate));
   SyncerError error =
       processor->ProcessResponse(gu_response, enabled_types(), &status);
-  EXPECT_EQ(error, SYNCER_OK);
+  EXPECT_EQ(error.value(), SyncerError::SYNCER_OK);
 }
 
 // Variant of GetUpdatesProcessor test designed to test update application.

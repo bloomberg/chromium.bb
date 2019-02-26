@@ -10,6 +10,7 @@
 
 #include "base/debug/activity_tracker.h"
 #include "base/logging.h"
+#include "base/optional.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
@@ -162,10 +163,16 @@ bool WaitableEvent::TimedWait(const TimeDelta& wait_delta) {
 }
 
 bool WaitableEvent::TimedWaitUntil(const TimeTicks& end_time) {
-  internal::ScopedBlockingCallWithBaseSyncPrimitives scoped_blocking_call(
-      BlockingType::MAY_BLOCK);
-  // Record the event that this thread is blocking upon (for hang diagnosis).
-  base::debug::ScopedEventWaitActivity event_activity(this);
+  // Record the event that this thread is blocking upon (for hang diagnosis) and
+  // consider it blocked for scheduling purposes. Ignore this for non-blocking
+  // WaitableEvents.
+  Optional<debug::ScopedEventWaitActivity> event_activity;
+  Optional<internal::ScopedBlockingCallWithBaseSyncPrimitives>
+      scoped_blocking_call;
+  if (waiting_is_blocking_) {
+    event_activity.emplace(this);
+    scoped_blocking_call.emplace(BlockingType::MAY_BLOCK);
+  }
 
   const bool finite_time = !end_time.is_max();
 
@@ -182,6 +189,8 @@ bool WaitableEvent::TimedWaitUntil(const TimeTicks& end_time) {
   }
 
   SyncWaiter sw;
+  if (!waiting_is_blocking_)
+    sw.cv()->declare_only_used_while_idle();
   sw.lock()->Acquire();
 
   Enqueue(&sw);
@@ -241,7 +250,7 @@ size_t WaitableEvent::WaitMany(WaitableEvent** raw_waitables,
   internal::ScopedBlockingCallWithBaseSyncPrimitives scoped_blocking_call(
       BlockingType::MAY_BLOCK);
   // Record an event (the first) that this thread is blocking upon.
-  base::debug::ScopedEventWaitActivity event_activity(raw_waitables[0]);
+  debug::ScopedEventWaitActivity event_activity(raw_waitables[0]);
 
   // We need to acquire the locks in a globally consistent order. Thus we sort
   // the array of waitables by address. We actually sort a pairs so that we can
@@ -382,8 +391,8 @@ WaitableEvent::WaitableEventKernel::~WaitableEventKernel() = default;
 bool WaitableEvent::SignalAll() {
   bool signaled_at_least_one = false;
 
-  for (auto i = kernel_->waiters_.begin(); i != kernel_->waiters_.end(); ++i) {
-    if ((*i)->Fire(this))
+  for (auto* i : kernel_->waiters_) {
+    if (i->Fire(this))
       signaled_at_least_one = true;
   }
 

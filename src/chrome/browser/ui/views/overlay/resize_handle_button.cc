@@ -7,6 +7,7 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/grit/generated_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -16,7 +17,8 @@
 
 namespace {
 
-const int kResizeHandleButtonSize = 16;
+const int kResizeHandleButtonSize = 36;
+const int kResizeHandleImageSize = 18;
 
 constexpr SkColor kResizeHandleIconColor = SK_ColorWHITE;
 
@@ -26,8 +28,8 @@ namespace views {
 
 ResizeHandleButton::ResizeHandleButton(ButtonListener* listener)
     : ImageButton(listener) {
-  SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                    views::ImageButton::ALIGN_MIDDLE);
+  SetImageAlignment(views::ImageButton::ALIGN_LEFT,
+                    views::ImageButton::ALIGN_TOP);
   SetSize(gfx::Size(kResizeHandleButtonSize, kResizeHandleButtonSize));
   SetImageForQuadrant(OverlayWindowViews::WindowQuadrant::kBottomRight);
 
@@ -41,6 +43,22 @@ ResizeHandleButton::ResizeHandleButton(ButtonListener* listener)
 }
 
 ResizeHandleButton::~ResizeHandleButton() = default;
+
+int ResizeHandleButton::GetHTComponent() const {
+  if (!current_quadrant_)
+    return HTNOWHERE;
+
+  switch (current_quadrant_.value()) {
+    case OverlayWindowViews::WindowQuadrant::kBottomLeft:
+      return HTTOPRIGHT;
+    case OverlayWindowViews::WindowQuadrant::kBottomRight:
+      return HTTOPLEFT;
+    case OverlayWindowViews::WindowQuadrant::kTopLeft:
+      return HTBOTTOMRIGHT;
+    case OverlayWindowViews::WindowQuadrant::kTopRight:
+      return HTBOTTOMLEFT;
+  }
+}
 
 void ResizeHandleButton::SetPosition(
     const gfx::Size& size,
@@ -77,19 +95,27 @@ void ResizeHandleButton::SetImageForQuadrant(
   current_quadrant_ = quadrant;
 
   gfx::ImageSkia icon = gfx::CreateVectorIcon(
-      kResizeHandleIcon, kResizeHandleButtonSize, kResizeHandleIconColor);
+      kResizeHandleIcon, kResizeHandleImageSize, kResizeHandleIconColor);
   switch (quadrant) {
     case OverlayWindowViews::WindowQuadrant::kBottomLeft:
+      SetImageAlignment(views::ImageButton::ALIGN_RIGHT,
+                        views::ImageButton::ALIGN_TOP);
       break;
     case OverlayWindowViews::WindowQuadrant::kBottomRight:
+      SetImageAlignment(views::ImageButton::ALIGN_LEFT,
+                        views::ImageButton::ALIGN_TOP);
       icon = gfx::ImageSkiaOperations::CreateRotatedImage(
           icon, SkBitmapOperations::ROTATION_270_CW);
       break;
     case OverlayWindowViews::WindowQuadrant::kTopLeft:
+      SetImageAlignment(views::ImageButton::ALIGN_RIGHT,
+                        views::ImageButton::ALIGN_BOTTOM);
       icon = gfx::ImageSkiaOperations::CreateRotatedImage(
           icon, SkBitmapOperations::ROTATION_90_CW);
       break;
     case OverlayWindowViews::WindowQuadrant::kTopRight:
+      SetImageAlignment(views::ImageButton::ALIGN_LEFT,
+                        views::ImageButton::ALIGN_BOTTOM);
       icon = gfx::ImageSkiaOperations::CreateRotatedImage(
           icon, SkBitmapOperations::ROTATION_180_CW);
       break;

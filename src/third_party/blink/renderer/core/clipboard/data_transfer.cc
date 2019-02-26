@@ -122,9 +122,9 @@ class DraggedNodeImageBuilder {
             .AbsoluteToLocalQuad(FloatQuad(absolute_bounding_box),
                                  kUseTransforms)
             .BoundingBox();
-    PaintLayerPaintingInfo painting_info(layer, LayoutRect(bounding_box),
-                                         kGlobalPaintFlattenCompositingLayers,
-                                         LayoutSize());
+    PaintLayerPaintingInfo painting_info(
+        layer, CullRect(EnclosingIntRect(bounding_box)),
+        kGlobalPaintFlattenCompositingLayers, LayoutSize());
     PaintLayerFlags flags = kPaintLayerHaveTransparency |
                             kPaintLayerUncachedClipRects;
     PaintRecordBuilder builder;
@@ -232,7 +232,7 @@ DataTransfer* DataTransfer::Create() {
 DataTransfer* DataTransfer::Create(DataTransferType type,
                                    DataTransferAccessPolicy policy,
                                    DataObject* data_object) {
-  return new DataTransfer(type, policy, data_object);
+  return MakeGarbageCollected<DataTransfer>(type, policy, data_object);
 }
 
 DataTransfer::~DataTransfer() = default;
@@ -481,7 +481,7 @@ static void WriteImageToDataObject(DataObject* data_object,
   data_object->AddSharedBuffer(
       image_buffer, image_url, image->FilenameExtension(),
       cached_image->GetResponse().HttpHeaderFields().Get(
-          HTTPNames::Content_Disposition));
+          http_names::kContentDisposition));
 }
 
 void DataTransfer::DeclareAndWriteDragImage(Element* element,

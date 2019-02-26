@@ -105,14 +105,13 @@ class MEDIA_EXPORT VideoResourceUpdater
   void AppendQuads(viz::RenderPass* render_pass,
                    scoped_refptr<VideoFrame> frame,
                    gfx::Transform transform,
-                   gfx::Size rotated_size,
-                   gfx::Rect visible_layer_rect,
+                   gfx::Rect quad_rect,
+                   gfx::Rect visible_quad_rect,
                    gfx::Rect clip_rect,
                    bool is_clipped,
                    bool context_opaque,
                    float draw_opacity,
-                   int sorting_context_id,
-                   gfx::Rect visible_quad_rect);
+                   int sorting_context_id);
 
   // TODO(kylechar): This is only public for testing, make private.
   VideoFrameExternalResources CreateExternalResourcesFromVideoFrame(

@@ -56,6 +56,8 @@ source_set("audio") {
   visibility = [
     "//media",
 
+    "//media/renderers",
+
     # TODO(dalecurtis): CoreAudioUtil::IsCoreAudioSupported() should probably
     # move into media/base/win.
     "//media/device_monitors",
@@ -139,6 +141,8 @@ source_set("audio") {
     "audio_system_impl.cc",
     "audio_system_impl.h",
     "audio_thread.h",
+    "audio_thread_hang_monitor.cc",
+    "audio_thread_hang_monitor.h",
     "audio_thread_impl.cc",
     "audio_thread_impl.h",
     "clockless_audio_sink.cc",
@@ -398,6 +402,7 @@ source_set("unit_tests") {
     "audio_power_monitor_unittest.cc",
     "audio_sync_reader_unittest.cc",
     "audio_system_impl_unittest.cc",
+    "audio_thread_hang_monitor_unittest.cc",
     "power_observer_helper_unittest.cc",
     "simple_sources_unittest.cc",
     "virtual_audio_input_stream_unittest.cc",

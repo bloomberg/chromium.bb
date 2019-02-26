@@ -26,7 +26,8 @@
 #include "build/build_config.h"
 #include "services/catalog/catalog.h"
 #include "services/service_manager/connect_params.h"
-#include "services/service_manager/connect_util.h"
+#include "services/service_manager/public/cpp/constants.h"
+#include "services/service_manager/public/cpp/service_filter.h"
 #include "services/service_manager/runner/common/switches.h"
 #include "services/service_manager/runner/host/service_process_launcher_factory.h"
 #include "services/service_manager/service_manager.h"
@@ -34,10 +35,6 @@
 
 #if !defined(OS_IOS)
 #include "services/service_manager/runner/host/service_process_launcher.h"
-#endif
-
-#if defined(OS_MACOSX)
-#include "services/service_manager/public/cpp/standalone_service/mach_broker.h"
 #endif
 
 namespace service_manager {
@@ -106,9 +103,9 @@ void Context::Run(const std::string& name, base::RepeatingClosure on_quit) {
   service_manager_->SetInstanceQuitCallback(
       base::BindRepeating(&OnInstanceQuit, name, std::move(on_quit)));
 
-  std::unique_ptr<ConnectParams> params(new ConnectParams);
-  params->set_source(CreateServiceManagerIdentity());
-  params->set_target(Identity(name, mojom::kRootUserID));
+  auto params = std::make_unique<ConnectParams>();
+  params->set_source(GetServiceManagerInstanceIdentity());
+  params->set_target(ServiceFilter::ByNameInGroup(name, kSystemInstanceGroup));
   service_manager_->Connect(std::move(params));
 }
 

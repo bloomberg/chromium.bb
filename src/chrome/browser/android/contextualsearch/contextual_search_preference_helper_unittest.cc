@@ -37,18 +37,18 @@ TEST_F(ContextualSearchPreferenceHelperTest, GetMetadataWithoutGivingConsent) {
 }
 
 TEST_F(ContextualSearchPreferenceHelperTest, DisabledUsers) {
-  preference_->OnUnifiedConsentGiven(&pref_service_);
+  preference_->EnableIfUndecided(&pref_service_);
   EXPECT_EQ(WAS_DECIDED, helper_->GetPreferenceMetadata(nullptr, nullptr));
 }
 
 TEST_F(ContextualSearchPreferenceHelperTest, UndecidedUsers) {
   pref_service_.SetString("search.contextual_search_enabled", "");
-  preference_->OnUnifiedConsentGiven(&pref_service_);
+  preference_->EnableIfUndecided(&pref_service_);
   EXPECT_EQ(WAS_UNDECIDED, helper_->GetPreferenceMetadata(nullptr, nullptr));
 }
 
 TEST_F(ContextualSearchPreferenceHelperTest, DecidedUsers) {
   pref_service_.SetString("search.contextual_search_enabled", "true");
-  preference_->OnUnifiedConsentGiven(&pref_service_);
+  preference_->EnableIfUndecided(&pref_service_);
   EXPECT_EQ(WAS_DECIDED, helper_->GetPreferenceMetadata(nullptr, nullptr));
 }

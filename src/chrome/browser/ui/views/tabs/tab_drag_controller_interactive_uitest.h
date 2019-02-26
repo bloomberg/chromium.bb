@@ -50,9 +50,10 @@ class TabDragControllerTest : public InProcessBrowserTest {
  protected:
   void HandleGestureEvent(TabStrip* tab_strip, ui::GestureEvent* event);
 
+  bool HasDragStarted(const TabStrip* tab_strip) const;
+
   // InProcessBrowserTest:
   void SetUp() override;
-  void SetUpCommandLine(base::CommandLine* command_line) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TabDragControllerTest);

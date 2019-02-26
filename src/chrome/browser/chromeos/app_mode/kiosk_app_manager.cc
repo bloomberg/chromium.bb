@@ -17,7 +17,7 @@
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
@@ -165,8 +165,11 @@ base::FilePath GetCrxUnpackDir() {
 }
 
 scoped_refptr<base::SequencedTaskRunner> GetBackgroundTaskRunner() {
+  // TODO(eseckler): The ExternalCacheImpl that uses this TaskRunner seems to be
+  // important during startup, which is why we cannot currently use the
+  // BEST_EFFORT TaskPriority here.
   return base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 }
 

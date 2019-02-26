@@ -44,8 +44,8 @@ class Target : public service_manager::Service,
     std::move(callback).Run("connect_test_exe");
   }
 
-  void GetInstance(GetInstanceCallback callback) override {
-    std::move(callback).Run(context()->identity().instance());
+  void GetInstanceId(GetInstanceIdCallback callback) override {
+    std::move(callback).Run(context()->identity().instance_id());
   }
 
   service_manager::BinderRegistry registry_;

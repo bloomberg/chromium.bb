@@ -32,9 +32,11 @@ class UnifiedConsentServiceClient {
     kSearchSuggest,
     // Spell checking.
     kSpellCheck,
+    // Contextual search.
+    kContextualSearch,
 
     // Last element of the enum, used for iteration.
-    kLast = kSpellCheck,
+    kLast = kContextualSearch,
   };
 
   enum class ServiceState {
@@ -59,6 +61,9 @@ class UnifiedConsentServiceClient {
   virtual ServiceState GetServiceState(Service service) = 0;
   // Sets |service| enabled if it is supported on this platform.
   virtual void SetServiceEnabled(Service service, bool enabled) = 0;
+
+  // Returns whether |service| is supported on this platform.
+  bool IsServiceSupported(Service service);
 
   // Methods to register or remove observers.
   void AddObserver(Observer* observer);

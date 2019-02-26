@@ -36,7 +36,7 @@
 namespace blink {
 
 InputType* TelephoneInputType::Create(HTMLInputElement& element) {
-  return new TelephoneInputType(element);
+  return MakeGarbageCollected<TelephoneInputType>(element);
 }
 
 void TelephoneInputType::CountUsage() {
@@ -44,7 +44,7 @@ void TelephoneInputType::CountUsage() {
 }
 
 const AtomicString& TelephoneInputType::FormControlType() const {
-  return InputTypeNames::tel;
+  return input_type_names::kTel;
 }
 
 }  // namespace blink

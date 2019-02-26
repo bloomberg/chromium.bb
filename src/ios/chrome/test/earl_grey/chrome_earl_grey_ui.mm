@@ -10,10 +10,10 @@
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/settings/accounts_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data_ui_constants.h"
-#import "ios/chrome/browser/ui/settings/privacy_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/privacy_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_collection_view_controller.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #include "ios/chrome/test/app/navigation_test_util.h"
@@ -143,7 +143,7 @@ id<GREYAction> ScrollDown() {
       grey_allOf(buttonMatcher, grey_interactable(), nil);
   [[[EarlGrey selectElementWithMatcher:interactableButtonMatcher]
          usingSearchAction:ScrollDown()
-      onElementWithMatcher:grey_accessibilityID(kPrivacyCollectionViewId)]
+      onElementWithMatcher:grey_accessibilityID(kPrivacyTableViewId)]
       performAction:grey_tap()];
 }
 
@@ -155,13 +155,19 @@ id<GREYAction> ScrollDown() {
 }
 
 + (void)focusOmniboxAndType:(NSString*)text {
-  if (IsRefreshLocationBarEnabled()) {
     [[EarlGrey
         selectElementWithMatcher:chrome_test_util::DefocusedLocationView()]
         performAction:grey_tap()];
-  }
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
-      performAction:grey_typeText(text)];
+
+    if (text.length) {
+      [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+          performAction:grey_typeText(text)];
+    }
+}
+
++ (void)focusOmnibox {
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::DefocusedLocationView()]
+      performAction:grey_tap()];
 }
 
 + (void)openNewTab {

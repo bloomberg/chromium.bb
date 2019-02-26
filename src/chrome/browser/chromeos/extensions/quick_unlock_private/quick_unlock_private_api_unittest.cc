@@ -77,24 +77,14 @@ class FakeEasyUnlockService : public EasyUnlockServiceRegular {
       : EasyUnlockServiceRegular(profile,
                                  fake_secure_channel_client,
                                  fake_device_sync_client,
-                                 fake_multidevice_setup_client),
-        reauth_count_(0) {}
+                                 fake_multidevice_setup_client) {}
   ~FakeEasyUnlockService() override {}
 
   // EasyUnlockServiceRegular:
   void InitializeInternal() override {}
   void ShutdownInternal() override {}
-  void HandleUserReauth(const chromeos::UserContext& user_context) override {
-    ++reauth_count_;
-  }
-
-  void ResetReauthCount() { reauth_count_ = 0; }
-
-  int reauth_count() const { return reauth_count_; }
 
  private:
-  int reauth_count_;
-
   DISALLOW_COPY_AND_ASSIGN(FakeEasyUnlockService);
 };
 
@@ -586,14 +576,8 @@ TEST_P(QuickUnlockPrivateUnitTest, SetModes) {
   // Verify there is no active mode.
   EXPECT_EQ(GetActiveModes(), QuickUnlockModeList{});
 
-  FakeEasyUnlockService* easy_unlock_service =
-      static_cast<FakeEasyUnlockService*>(EasyUnlockService::Get(profile()));
-  easy_unlock_service->ResetReauthCount();
-  EXPECT_EQ(0, easy_unlock_service->reauth_count());
-
   RunSetModes(QuickUnlockModeList{QuickUnlockMode::QUICK_UNLOCK_MODE_PIN},
               {"111111"});
-  EXPECT_EQ(1, easy_unlock_service->reauth_count());
   EXPECT_EQ(GetActiveModes(),
             QuickUnlockModeList{QuickUnlockMode::QUICK_UNLOCK_MODE_PIN});
 }
@@ -603,17 +587,11 @@ TEST_P(QuickUnlockPrivateUnitTest, SetModesFailsWithInvalidPassword) {
   // Verify there is no active mode.
   EXPECT_EQ(GetActiveModes(), QuickUnlockModeList{});
 
-  FakeEasyUnlockService* easy_unlock_service =
-      static_cast<FakeEasyUnlockService*>(EasyUnlockService::Get(profile()));
-  easy_unlock_service->ResetReauthCount();
-  EXPECT_EQ(0, easy_unlock_service->reauth_count());
-
   // Try to enable PIN, but use an invalid password. Verify that no event is
   // raised and GetActiveModes still returns an empty set.
   FailIfModesChanged();
   std::string error = RunSetModesWithInvalidToken();
   EXPECT_FALSE(error.empty());
-  EXPECT_EQ(0, easy_unlock_service->reauth_count());
   EXPECT_EQ(GetActiveModes(), QuickUnlockModeList{});
 }
 

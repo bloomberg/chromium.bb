@@ -119,7 +119,7 @@ public class ContactView extends SelectableItemView<ContactDetails> {
      * Completes the initialization of the ContactView. Must be called before the
      * {@link ContactView} can respond to click events.
      * @param contactDetails The details about the contact represented by this ContactView.
-     * @param bitmap The icon to show for the contact (or null if not loaded yet).
+     * @param icon The icon to show for the contact (or null if not loaded yet).
      */
     public void initialize(ContactDetails contactDetails, Bitmap icon) {
         resetTile();
@@ -132,13 +132,10 @@ public class ContactView extends SelectableItemView<ContactDetails> {
         mDetailsView.setText(contactDetails.getContactDetailsAsString());
         if (icon == null) {
             icon = mCategoryView.getIconGenerator().generateIconForText(
-                    contactDetails.getDisplayNameAbbreviation(), 2);
+                    contactDetails.getDisplayNameAbbreviation());
             mImage.setImageBitmap(icon);
         } else {
-            Resources resources = mContext.getResources();
-            RoundedBitmapDrawable drawable = RoundedBitmapDrawableFactory.create(resources, icon);
-            drawable.setCircular(true);
-            mImage.setImageDrawable(drawable);
+            setIconBitmap(icon);
         }
 
         updateSelectionState();
@@ -149,7 +146,10 @@ public class ContactView extends SelectableItemView<ContactDetails> {
      * @param icon The icon to display.
      */
     public void setIconBitmap(Bitmap icon) {
-        mImage.setImageBitmap(icon);
+        Resources resources = mContext.getResources();
+        RoundedBitmapDrawable drawable = RoundedBitmapDrawableFactory.create(resources, icon);
+        drawable.setCircular(true);
+        mImage.setImageDrawable(drawable);
         mImage.setAlpha(0.0f);
         mImage.animate().alpha(1.0f).setDuration(IMAGE_FADE_IN_DURATION).start();
     }

@@ -28,9 +28,8 @@ class CONTENT_EXPORT BackgroundSyncNetworkObserver
   // (For preventing flakes in tests)
   static void SetIgnoreNetworkChangesForTests(bool ignore);
 
-  // Returns true if the state of the network meets the needs of
-  // |network_state|.
-  bool NetworkSufficient(SyncNetworkState network_state);
+  // Returns true if the network is online.
+  bool NetworkSufficient();
 
   // NetworkConnectionObserver overrides
   void OnConnectionChanged(

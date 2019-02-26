@@ -9,9 +9,10 @@
 #include <memory>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "third_party/blink/common/common_export.h"
+#include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 #include "url/origin.h"
 
@@ -92,6 +93,7 @@ struct BLINK_COMMON_EXPORT ParsedFeaturePolicyDeclaration {
   ParsedFeaturePolicyDeclaration(mojom::FeaturePolicyFeature feature,
                                  bool matches_all_origins,
                                  bool matches_opaque_src,
+                                 mojom::FeaturePolicyDisposition disposition,
                                  std::vector<url::Origin> origins);
   ParsedFeaturePolicyDeclaration(const ParsedFeaturePolicyDeclaration& rhs);
   ParsedFeaturePolicyDeclaration& operator=(
@@ -106,6 +108,8 @@ struct BLINK_COMMON_EXPORT ParsedFeaturePolicyDeclaration {
   // of the iframe to be present in |origins|, but for sandboxed iframes, this
   // flag is set instead.
   bool matches_opaque_src;
+  mojom::FeaturePolicyDisposition disposition;
+  // An alphabetically sorted list of all the origins allowed.
   std::vector<url::Origin> origins;
 };
 
@@ -113,6 +117,13 @@ using ParsedFeaturePolicy = std::vector<ParsedFeaturePolicyDeclaration>;
 
 bool BLINK_COMMON_EXPORT operator==(const ParsedFeaturePolicyDeclaration& lhs,
                                     const ParsedFeaturePolicyDeclaration& rhs);
+
+// ParsedFeaturePolicy objects can contain directives of both enforcing and
+// report-only dispositions. This utility function will extract just the items
+// of one disposition or the other.
+BLINK_COMMON_EXPORT std::unique_ptr<ParsedFeaturePolicy>
+DirectivesWithDisposition(mojom::FeaturePolicyDisposition disposition,
+                          const ParsedFeaturePolicy& policy);
 
 class BLINK_COMMON_EXPORT FeaturePolicy {
  public:
@@ -138,12 +149,12 @@ class BLINK_COMMON_EXPORT FeaturePolicy {
     // Returns true if the allowlist matches all origins.
     bool MatchesAll() const;
 
-    // Returns list of origins in the allowlist.
-    const std::vector<url::Origin>& Origins() const;
+    // Returns set of origins in the allowlist.
+    const base::flat_set<url::Origin>& Origins() const;
 
    private:
     bool matches_all_origins_;
-    std::vector<url::Origin> origins_;
+    base::flat_set<url::Origin> origins_;
   };
 
   // The FeaturePolicy::FeatureDefault enum defines the default enable state for

@@ -4,6 +4,7 @@
 
 #include "extensions/browser/extension_icon_placeholder.h"
 
+#include "base/i18n/rtl.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "extensions/grit/extensions_browser_resources.h"
@@ -68,11 +69,16 @@ gfx::Image GetBackgroundImageForIconSize(extension_misc::ExtensionIcons size) {
 
 ExtensionIconPlaceholder::ExtensionIconPlaceholder(
     extension_misc::ExtensionIcons size,
-    const std::string& letter)
+    const std::string& name)
     : gfx::CanvasImageSource(gfx::Size(size, size), false),
       icon_size_(size),
-      letter_(base::UTF8ToUTF16(letter.substr(0, 1))),
       base_image_(GetBackgroundImageForIconSize(size)) {
+  // Remove RTL formatting characters, if any, that may pad the extension name.
+  // See https://crbug.com/869358
+  base::string16 sanitized_name = base::UTF8ToUTF16(std::string(name));
+  base::i18n::UnadjustStringForLocaleDirection(&sanitized_name);
+
+  letter_ = sanitized_name.substr(0, 1);
 }
 
 ExtensionIconPlaceholder::~ExtensionIconPlaceholder() {

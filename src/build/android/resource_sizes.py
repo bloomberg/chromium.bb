@@ -41,6 +41,9 @@ _APK_PATCH_SIZE_ESTIMATOR_PATH = os.path.join(
 with host_paths.SysPath(host_paths.BUILD_COMMON_PATH):
   import perf_tests_results_helper # pylint: disable=import-error
 
+with host_paths.SysPath(host_paths.TRACING_PATH):
+  from tracing.value import convert_chart_json # pylint: disable=import-error
+
 with host_paths.SysPath(_BUILD_UTILS_PATH, 0):
   from util import build_utils # pylint: disable=import-error
 
@@ -177,23 +180,8 @@ def _ParseManifestAttributes(apk_path):
   # Dex decompression overhead varies by Android version.
   m = re.search(r'android:minSdkVersion\(\w+\)=\(type \w+\)(\w+)\n', output)
   sdk_version = int(m.group(1), 16)
-  # Pre-L: Dalvik - .odex file is simply decompressed/optimized dex file (~1x).
-  # L, M: ART - .odex file is compiled version of the dex file (~4x).
-  # N: ART - Uses Dalvik-like JIT for normal apps (~1x), full compilation for
-  #    shared apps (~4x).
-  # Actual multipliers calculated using "apk_operations.py disk-usage".
-  # Will need to update multipliers once apk obfuscation is enabled.
-  # E.g. with obfuscation, the 4.04 changes to 4.46.
-  if sdk_version < 21:
-    dex_multiplier = 1.16
-  elif sdk_version < 24:
-    dex_multiplier = 4.04
-  elif 'Monochrome' in apk_path or 'WebView' in apk_path:
-    dex_multiplier = 4.04  # compilation_filter=speed
-  else:
-    dex_multiplier = 1.17  # compilation_filter=speed-profile
 
-  return dex_multiplier, skip_extract_lib
+  return sdk_version, skip_extract_lib
 
 
 def CountStaticInitializers(so_path, tool_prefix):
@@ -376,7 +364,31 @@ def GenerateApkAnalysis(apk_filename, tool_prefix, out_dir,
   finally:
     apk.close()
 
-  dex_multiplier, skip_extract_lib = _ParseManifestAttributes(apk_filename)
+  sdk_version, skip_extract_lib = _ParseManifestAttributes(apk_filename)
+
+  # Pre-L: Dalvik - .odex file is simply decompressed/optimized dex file (~1x).
+  # L, M: ART - .odex file is compiled version of the dex file (~4x).
+  # N: ART - Uses Dalvik-like JIT for normal apps (~1x), full compilation for
+  #    shared apps (~4x).
+  # Actual multipliers calculated using "apk_operations.py disk-usage".
+  # Will need to update multipliers once apk obfuscation is enabled.
+  # E.g. with obfuscation, the 4.04 changes to 4.46.
+  speed_profile_dex_multiplier = 1.17
+  is_shared_apk = sdk_version >= 24 and (
+      'Monochrome' in apk_filename or 'WebView' in apk_filename)
+  if sdk_version < 21:
+    # JellyBean & KitKat
+    dex_multiplier = 1.16
+  elif sdk_version < 24:
+    # Lollipop & Marshmallow
+    dex_multiplier = 4.04
+  elif is_shared_apk:
+    # Oreo and above, compilation_filter=speed
+    dex_multiplier = 4.04
+  else:
+    # Oreo and above, compilation_filter=speed-profile
+    dex_multiplier = speed_profile_dex_multiplier
+
   total_apk_size = os.path.getsize(apk_filename)
   for member in apk_contents:
     filename = member.filename
@@ -417,23 +429,33 @@ def GenerateApkAnalysis(apk_filename, tool_prefix, out_dir,
       unknown.AddZipInfo(member)
 
   total_install_size = total_apk_size
+  total_install_size_android_go = total_apk_size
   zip_overhead = total_apk_size
 
   for group in file_groups:
     actual_size = group.ComputeZippedSize()
     install_size = group.ComputeInstallSize()
     uncompressed_size = group.ComputeUncompressedSize()
-
-    total_install_size += group.ComputeExtractedSize()
+    extracted_size = group.ComputeExtractedSize()
+    total_install_size += extracted_size
     zip_overhead -= actual_size
 
     yield ('Breakdown', group.name + ' size', actual_size, 'bytes')
-    yield ('InstallBreakdown', group.name + ' size', install_size, 'bytes')
+    yield ('InstallBreakdown', group.name + ' size', int(install_size), 'bytes')
     # Only a few metrics are compressed in the first place.
     # To avoid over-reporting, track uncompressed size only for compressed
     # entries.
     if uncompressed_size != actual_size:
       yield ('Uncompressed', group.name + ' size', uncompressed_size, 'bytes')
+
+    if group is java_code and is_shared_apk:
+      # Updates are compiled using quicken, but system image uses speed-profile.
+      extracted_size = uncompressed_size * speed_profile_dex_multiplier
+      total_install_size_android_go += extracted_size
+      yield ('InstallBreakdownGo', group.name + ' size',
+             actual_size + extracted_size, 'bytes')
+    else:
+      total_install_size_android_go += extracted_size
 
   # Per-file zip overhead is caused by:
   # * 30 byte entry header + len(file name)
@@ -441,7 +463,11 @@ def GenerateApkAnalysis(apk_filename, tool_prefix, out_dir,
   # * 0-3 bytes for zipalign.
   yield ('Breakdown', 'Zip Overhead', zip_overhead, 'bytes')
   yield ('InstallSize', 'APK size', total_apk_size, 'bytes')
-  yield ('InstallSize', 'Estimated installed size', total_install_size, 'bytes')
+  yield ('InstallSize', 'Estimated installed size', int(total_install_size),
+         'bytes')
+  if is_shared_apk:
+    yield ('InstallSize', 'Estimated installed size (Android Go)',
+           int(total_install_size_android_go), 'bytes')
   transfer_size = _CalculateCompressedSize(apk_filename)
   yield ('TransferSize', 'Transfer size (deflate)', transfer_size, 'bytes')
 
@@ -502,7 +528,13 @@ def GenerateApkAnalysis(apk_filename, tool_prefix, out_dir,
         apk_filename, arsc.GetNumEntries(), num_arsc_translations, out_dir))
 
   yield ('Specifics', 'normalized apk size', normalized_apk_size, 'bytes')
-  yield ('Specifics', 'file count', len(apk_contents), 'zip entries')
+  # The "file count" metric cannot be grouped with any other metrics when the
+  # end result is going to be uploaded to the perf dashboard in the HistogramSet
+  # format due to mixed units (bytes vs. zip entries) causing malformed
+  # summaries to be generated.
+  # TODO(https://crbug.com/903970): Remove this workaround if unit mixing is
+  # ever supported.
+  yield ('FileCount', 'file count', len(apk_contents), 'zip entries')
 
   if unknown_handler is not None:
     for info in unknown.AllEntries():
@@ -692,7 +724,12 @@ def main():
                          help='Location of the build artifacts.')
   argparser.add_argument('--chartjson',
                          action='store_true',
-                         help='Sets output mode to chartjson.')
+                         help='DEPRECATED. Use --output-format=chartjson '
+                              'instead.')
+  argparser.add_argument('--output-format',
+                         choices=['chartjson', 'histograms'],
+                         help='Output the results to a file in the given '
+                              'format instead of printing the results.')
   argparser.add_argument('--output-dir',
                          default='.',
                          help='Directory to save chartjson to.')
@@ -719,7 +756,11 @@ def main():
   argparser.add_argument('apk', help='APK file path.')
   args = argparser.parse_args()
 
-  chartjson = _BASE_CHART.copy() if args.chartjson else None
+  # TODO(bsheedy): Remove this once uses of --chartjson have been removed.
+  if args.chartjson:
+    args.output_format = 'chartjson'
+
+  chartjson = _BASE_CHART.copy() if args.output_format else None
   out_dir, tool_prefix = _ConfigOutDirAndToolsPrefix(args.out_dir)
   if args.dump_sis and not out_dir:
     argparser.error(
@@ -741,11 +782,30 @@ def main():
   if args.estimate_patch_size:
     _PrintPatchSizeEstimate(args.apk, args.reference_apk_builder,
                             args.reference_apk_bucket, chartjson=chartjson)
+
   if chartjson:
     results_path = os.path.join(args.output_dir, 'results-chart.json')
-    logging.critical('Dumping json to %s', results_path)
+    logging.critical('Dumping chartjson to %s', results_path)
     with open(results_path, 'w') as json_file:
       json.dump(chartjson, json_file)
+
+    # We would ideally generate a histogram set directly instead of generating
+    # chartjson then converting. However, perf_tests_results_helper is in
+    # //build, which doesn't seem to have any precedent for depending on
+    # anything in Catapult. This can probably be fixed, but since this doesn't
+    # need to be super fast or anything, converting is a good enough solution
+    # for the time being.
+    if args.output_format == 'histograms':
+      histogram_result = convert_chart_json.ConvertChartJson(results_path)
+      if histogram_result.returncode != 0:
+        logging.error('chartjson conversion failed with error: %s',
+            histogram_result.stdout)
+        return 1
+
+      histogram_path = os.path.join(args.output_dir, 'perf_results.json')
+      logging.critical('Dumping histograms to %s', histogram_path)
+      with open(histogram_path, 'w') as json_file:
+        json_file.write(histogram_result.stdout)
 
 
 if __name__ == '__main__':

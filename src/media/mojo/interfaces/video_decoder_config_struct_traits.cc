@@ -23,10 +23,6 @@ bool StructTraits<media::mojom::VideoDecoderConfigDataView,
   if (!input.ReadFormat(&format))
     return false;
 
-  media::ColorSpace color_space;
-  if (!input.ReadColorSpace(&color_space))
-    return false;
-
   media::VideoRotation rotation;
   if (!input.ReadVideoRotation(&rotation))
     return false;
@@ -51,8 +47,8 @@ bool StructTraits<media::mojom::VideoDecoderConfigDataView,
   if (!input.ReadEncryptionScheme(&encryption_scheme))
     return false;
 
-  media::VideoColorSpace color_space_info;
-  if (!input.ReadColorSpaceInfo(&color_space_info))
+  media::VideoColorSpace color_space;
+  if (!input.ReadColorSpaceInfo(&color_space))
     return false;
 
   base::Optional<media::HDRMetadata> hdr_metadata;
@@ -61,8 +57,6 @@ bool StructTraits<media::mojom::VideoDecoderConfigDataView,
 
   output->Initialize(codec, profile, format, color_space, rotation, coded_size,
                      visible_rect, natural_size, extra_data, encryption_scheme);
-
-  output->set_color_space_info(color_space_info);
 
   if (hdr_metadata)
     output->set_hdr_metadata(hdr_metadata.value());

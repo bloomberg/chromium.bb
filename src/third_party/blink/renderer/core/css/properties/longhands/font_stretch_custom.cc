@@ -10,13 +10,13 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* FontStretch::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ConsumeFontStretch(range, context.Mode());
+  return css_parsing_utils::ConsumeFontStretch(range, context.Mode());
 }
 
 const CSSValue* FontStretch::CSSValueFromComputedStyleInternal(
@@ -28,5 +28,5 @@ const CSSValue* FontStretch::CSSValueFromComputedStyleInternal(
   return ComputedStyleUtils::ValueForFontStretch(style);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

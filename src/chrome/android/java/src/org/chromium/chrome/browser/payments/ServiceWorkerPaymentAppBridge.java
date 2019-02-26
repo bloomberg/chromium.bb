@@ -248,7 +248,7 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
     public static void addTabObserverForPaymentRequestTab(Tab tab) {
         tab.addObserver(new EmptyTabObserver() {
             @Override
-            public void onPageLoadFinished(Tab tab) {
+            public void onPageLoadFinished(Tab tab, String url) {
                 // Notify closing payment app window so as to abort payment if unsecure.
                 WebContents webContents = tab.getWebContents();
                 if (!OriginSecurityChecker.isOriginSecure(webContents.getLastCommittedUrl())

@@ -131,7 +131,8 @@ class ASH_EXPORT ShelfView : public views::View,
   // will be returned.
   gfx::Rect GetIdealBoundsOfItemIcon(const ShelfID& id);
 
-  // Returns true if we're showing a menu.
+  // Returns true if we're showing a menu. Note the menu could be either the
+  // context menu or the application select menu.
   bool IsShowingMenu() const;
 
   // Returns true if we're showing a menu for |view|. |view| could be a
@@ -140,10 +141,6 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // Returns true if overflow bubble is shown.
   bool IsShowingOverflowBubble() const;
-
-  // Whether we should show a visual highlight on the app list button when
-  // the app list is shown.
-  bool ShouldShowAppListButtonHighlight() const;
 
   // Sets owner overflow bubble instance from which this shelf view pops
   // out as overflow.
@@ -384,13 +381,6 @@ class ASH_EXPORT ShelfView : public views::View,
   gfx::Rect GetMenuAnchorRect(const views::View& source,
                               const gfx::Point& location,
                               bool context_menu) const;
-
-  // Gets the menu anchor position for a menu. |for_item| is true if the menu is
-  // for an item on the shelf, or false if the menu is for the shelf view
-  // itself, |context_menu| is whether the menu will be an application menu or
-  // context menu, and |touch_menu| is whether the menu was initiated by touch.
-  views::MenuAnchorPosition GetMenuAnchorPosition(bool for_item,
-                                                  bool context_menu) const;
 
   // Overridden from views::View:
   gfx::Size CalculatePreferredSize() const override;

@@ -19,9 +19,6 @@ void RegisterDrivePrefs(PrefRegistrySimple* pref_registry) {
   pref_registry->RegisterBooleanPref(
       prefs::kDisableDriveOverCellular,
       true);
-  pref_registry->RegisterBooleanPref(
-      prefs::kDisableDriveHostedFiles,
-      false);
 }
 
 FakeNetworkChangeNotifier::FakeNetworkChangeNotifier()

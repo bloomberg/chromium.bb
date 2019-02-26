@@ -9,50 +9,6 @@ index 7a24999..4eefcba 100644
 -<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,300,300italic,400italic,500,500italic,700,700italic">
 -<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Mono:400,700">
 +<link rel="stylesheet" href="chrome://resources/css/roboto.css">
-diff --git a/components-chromium/paper-input/paper-input-extracted.js b/components-chromium/paper-input/paper-input-extracted.js
-index 754820fb5d0c..3f8e640ffa71 100644
---- a/components-chromium/paper-input/paper-input-extracted.js
-+++ b/components-chromium/paper-input/paper-input-extracted.js
-@@ -7,13 +7,7 @@ Polymer({
-     ],
- 
-     beforeRegister: function() {
--      // We need to tell which kind of of template to stamp based on
--      // what kind of `iron-input` we got, but because of polyfills and
--      // custom elements differences between v0 and v1, the safest bet is
--      // to check a particular method we know the iron-input#2.x can have.
--      // If it doesn't have it, then it's an iron-input#1.x.
--      var ironInput = document.createElement('iron-input');
--      var version = typeof ironInput._initSlottedInput == 'function' ? 'v1' : 'v0';
-+      var version = 'v1';  // Hard coded Polymer 2 style iron-input.
-       var template = Polymer.DomModule.import('paper-input', 'template');
-       var inputTemplate = Polymer.DomModule.import('paper-input', 'template#' + version);
-       var inputPlaceholder = template.content.querySelector('#template-placeholder');
-@@ -30,7 +24,8 @@ Polymer({
-      * @return {!HTMLElement}
-      */
-     get _focusableElement() {
--      return Polymer.Element ? this.inputElement._inputElement : this.inputElement;
-+      // TODO(hcarmona): remove this patch after polymer is v2.
-+      return this.inputElement._inputElement;
-     },
- 
-     // Note: This event is only available in the 1.0 version of this element.
-diff --git a/components-chromium/paper-input/paper-textarea-extracted.js b/components-chromium/paper-input/paper-textarea-extracted.js
-index 11bc05a37471..8d425e02c30b 100644
---- a/components-chromium/paper-input/paper-textarea-extracted.js
-+++ b/components-chromium/paper-input/paper-textarea-extracted.js
-@@ -57,8 +57,8 @@ Polymer({
-       this.$.input.textarea.selectionEnd = end;
-     },
-
--    _ariaLabelledByChanged: function(ariaLabelledBy) {
--      this._focusableElement.setAttribute('aria-labelledby', ariaLabelledBy);
-+    _ariaLabelledByChanged: function() {
-+      this._focusableElement.setAttribute('aria-label', this.label);
-     },
-
-     _ariaDescribedByChanged: function(ariaDescribedBy) {
 diff --git a/components-chromium/iron-list/iron-list-extracted.js b/components-chromium/iron-list/iron-list-extracted.js
 index 43c59653a39b..26652936735c 100644
 --- a/components-chromium/iron-list/iron-list-extracted.js
@@ -72,7 +28,45 @@ index 43c59653a39b..26652936735c 100644
        }
      },
 
-@@ -791,6 +799,15 @@
+@@ -786,11 +794,53 @@
+       newGrid && this._updateGridMetrics();
+     },
+
++    /**
++     * Finds and returns the focused element (both within self and children's
++     * Shadow DOM).
++     * @return {?HTMLElement}
++     */
++    _getFocusedElement: function() {
++      function doSearch(node, query) {
++        let result = null;
++        let type = node.nodeType;
++        if (type == Node.ELEMENT_NODE || type == Node.DOCUMENT_FRAGMENT_NODE)
++          result = node.querySelector(query);
++        if (result)
++          return result;
++
++        let child = node.firstChild;
++        while (child !== null && result === null) {
++          result = doSearch(child, query);
++          child = child.nextSibling;
++        }
++        if (result)
++          return result;
++
++        const shadowRoot = node.shadowRoot;
++        return shadowRoot ? doSearch(shadowRoot, query) : null;
++      }
++
++      // Find out if any of the items are focused first, and only search
++      // recursively in the item that contains focus, to avoid a slow
++      // search of the entire list.
++      const focusWithin = doSearch(this, ':focus-within');
++      return focusWithin ? doSearch(focusWithin, ':focus') : null;
++    },
++
+     /**
+      * Called when the items have changed. That is, reassignments
       * to `items`, splices or updates to a single item.
       */
      _itemsChanged: function(change) {
@@ -80,7 +74,7 @@ index 43c59653a39b..26652936735c 100644
 +      var lastFocusedIndex, focusedElement;
 +      if (rendering && this.preserveFocus) {
 +        lastFocusedIndex = this._focusedVirtualIndex;
-+        focusedElement = this.querySelector('* /deep/ *:focus');
++        focusedElement = this._getFocusedElement();
 +      }
 +
 +      var preservingFocus = rendering && this.preserveFocus && focusedElement;
@@ -88,7 +82,7 @@ index 43c59653a39b..26652936735c 100644
        if (change.path === 'items') {
          this._virtualStart = 0;
          this._physicalTop = 0;
-@@ -804,7 +821,7 @@
+@@ -804,7 +854,7 @@
          this._physicalItems = this._physicalItems || [];
          this._physicalSizes = this._physicalSizes || [];
          this._physicalStart = 0;
@@ -97,7 +91,7 @@ index 43c59653a39b..26652936735c 100644
            this._resetScrollPosition(0);
          }
          this._removeFocusedItem();
-@@ -826,6 +843,17 @@
+@@ -834,6 +884,17 @@
        } else if (change.path !== 'items.length') {
          this._forwardItemPath(change.path, change.value);
        }
@@ -115,18 +109,6 @@ index 43c59653a39b..26652936735c 100644
      },
 
      _forwardItemPath: function(path, value) {
-diff --git a/components-chromium/paper-radio-group/paper-radio-group.html b/components-chromium/paper-radio-group/paper-radio-group.html
-index f50638bf6175..d38cde355822 100644
---- a/components-chromium/paper-radio-group/paper-radio-group.html
-+++ b/components-chromium/paper-radio-group/paper-radio-group.html
-@@ -9,7 +9,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
- --><html><head><link rel="import" href="../polymer/polymer.html">
- <link rel="import" href="../iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
- <link rel="import" href="../iron-menu-behavior/iron-menubar-behavior.html">
--<link rel="import" href="../paper-radio-button/paper-radio-button.html">
- 
- <!--
- Material design: [Radio button](https://www.google.com/design/spec/components/selection-controls.html#selection-controls-radio-button)
 diff --git a/components-chromium/iron-flex-layout/iron-flex-layout.html b/components-chromium/iron-flex-layout/iron-flex-layout.html
 index 082b0c1e4af2..d985829702a2 100644
 --- a/components-chromium/iron-flex-layout/iron-flex-layout.html
@@ -140,10 +122,18 @@ index 082b0c1e4af2..d985829702a2 100644
 +</body></html>
 \ No newline at end of file
 diff --git a/components-chromium/paper-slider/paper-slider.html b/components-chromium/paper-slider/paper-slider.html
-index 646c22c2fb93..952818290c1e 100644
+index 233808adc822..4117f3590a61 100644
 --- a/components-chromium/paper-slider/paper-slider.html
 +++ b/components-chromium/paper-slider/paper-slider.html
-@@ -279,6 +279,7 @@ Custom property | Description | Default
+@@ -12,7 +12,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
+ <link rel="import" href="../iron-form-element-behavior/iron-form-element-behavior.html">
+ <link rel="import" href="../iron-range-behavior/iron-range-behavior.html">
+ <link rel="import" href="../paper-behaviors/paper-inky-focus-behavior.html">
+-<link rel="import" href="../paper-input/paper-input.html">
+ <link rel="import" href="../paper-progress/paper-progress.html">
+ <link rel="import" href="../paper-styles/color.html">
+ 
+@@ -279,6 +278,7 @@ Custom property | Description | Default
  
        .pin.expand > .slider-knob > .slider-knob-inner::after {
          transform: scale(1) translate(0, -17px);
@@ -151,6 +141,18 @@ index 646c22c2fb93..952818290c1e 100644
        }
  
        /* paper-input */
+@@ -330,11 +330,6 @@ Custom property | Description | Default
+           <div class="slider-knob-inner" value$="[[immediateValue]]"></div>
+       </div>
+     </div>
+-
+-    <template is="dom-if" if="[[editable]]">
+-      <paper-input id="input" type="number" step="[[step]]" min="[[min]]" max="[[max]]" class="slider-input" disabled$="[[disabled]]" value="[[immediateValue]]" on-change="_changeValue" on-keydown="_inputKeyDown" no-label-float="">
+-      </paper-input>
+-    </template>
+   </template>
+ 
+   </dom-module>
 diff --git a/components-chromium/paper-slider/paper-slider-extracted.js b/components-chromium/paper-slider/paper-slider-extracted.js
 index 2e63d3731be1..217c7ff1414c 100644
 --- a/components-chromium/paper-slider/paper-slider-extracted.js
@@ -180,3 +182,42 @@ index 2e63d3731be1..217c7ff1414c 100644
      });
  
      /**
+diff --git a/components-chromium/paper-input/paper-input-container.html b/components-chromium/paper-input/paper-input-container.html
+index 55714942c93c..46fb9adf6a04 100644
+--- a/components-chromium/paper-input/paper-input-container.html
++++ b/components-chromium/paper-input/paper-input-container.html
+@@ -254,8 +254,8 @@ This element is `display:block` by default, but you can set the `inline` attribu
+         @apply --paper-input-container-label-floating;
+       }
+ 
+-      :host(:dir(rtl)) .input-content.label-is-floating ::slotted(label),
+-      :host(:dir(rtl)) .input-content.label-is-floating ::slotted(.paper-input-label) {
++      :host-context([dir="rtl"]) .input-content.label-is-floating ::slotted(label),
++      :host-context([dir="rtl"]) .input-content.label-is-floating ::slotted(.paper-input-label) {
+         right: 0;
+         left: auto;
+         transform-origin: right top;
+diff --git a/components-chromium/polymer2/lib/legacy/legacy-element-mixin.html b/components-chromium/polymer2/lib/legacy/legacy-element-mixin.html
+index 7306c651407e..9c88699a3924 100644
+--- a/components-chromium/polymer2/lib/legacy/legacy-element-mixin.html
++++ b/components-chromium/polymer2/lib/legacy/legacy-element-mixin.html
+@@ -11,7 +11,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
+ <link rel="import" href="../../../shadycss/apply-shim.html">
+ <link rel="import" href="../mixins/element-mixin.html">
+ <link rel="import" href="../mixins/gesture-event-listeners.html">
+-<link rel="import" href="../mixins/dir-mixin.html">
+ <link rel="import" href="../utils/mixin.html">
+ <link rel="import" href="../utils/import-href.html">
+ <link rel="import" href="../utils/render-status.html">
+@@ -47,9 +46,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
+      * @extends {base}
+      * @implements {Polymer_ElementMixin}
+      * @implements {Polymer_GestureEventListeners}
+-     * @implements {Polymer_DirMixin}
+      * @private
+      */
+-    const legacyElementBase = Polymer.DirMixin(Polymer.GestureEventListeners(Polymer.ElementMixin(base)));
++    const legacyElementBase = Polymer.GestureEventListeners(Polymer.ElementMixin(base));
+ 
+     /**
+      * Map of simple names to touch action names

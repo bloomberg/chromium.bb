@@ -40,7 +40,6 @@ class OESElementIndexUint final : public WebGLExtension {
 
   WebGLExtensionName GetName() const override;
 
- private:
   explicit OESElementIndexUint(WebGLRenderingContextBase*);
 };
 

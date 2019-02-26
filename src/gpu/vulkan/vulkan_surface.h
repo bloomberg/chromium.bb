@@ -7,6 +7,7 @@
 
 #include <vulkan/vulkan.h>
 
+#include "base/callback.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_export.h"
 #include "gpu/vulkan/vulkan_swap_chain.h"
@@ -29,7 +30,9 @@ class VULKAN_EXPORT VulkanSurface {
     DEFAULT_SURFACE_FORMAT = FORMAT_RGBA_32
   };
 
-  VulkanSurface(VkInstance vk_instance, VkSurfaceKHR surface);
+  VulkanSurface(VkInstance vk_instance,
+                VkSurfaceKHR surface,
+                base::OnceClosure destruction_callback);
 
   ~VulkanSurface();
 
@@ -54,6 +57,9 @@ class VULKAN_EXPORT VulkanSurface {
   VkSurfaceFormatKHR surface_format_ = {};
   VulkanDeviceQueue* device_queue_ = nullptr;
   std::unique_ptr<VulkanSwapChain> swap_chain_;
+
+  // Called after destruction to clean up platform state, if any.
+  base::OnceClosure destruction_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(VulkanSurface);
 };

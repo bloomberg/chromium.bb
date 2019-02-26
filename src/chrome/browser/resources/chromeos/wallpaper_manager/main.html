@@ -43,7 +43,6 @@ found in the LICENSE file.
     <script src="js/constants.js"></script>
     <script src="js/util.js"></script>
     <script src="js/progress_manager.js"></script>
-    <script src="js/wallpaper_directories.js"></script>
     <script src="js/wallpaper_categories_list.js"></script>
     <script src="js/wallpaper_images_grid.js"></script>
     <script src="js/wallpaper_manager.js"></script>
@@ -55,11 +54,6 @@ found in the LICENSE file.
     <command id="delete" i18n-values="label:deleteCommandLabel"
         shortcut="Delete"></command>
   </commands>
-
-  <cr-menu id="wallpaper-context-menu" class="chrome-menu"
-      visibleif="custom surprise-me-disabled">
-    <cr-menu-item command="#delete"></cr-menu-item>
-  </cr-menu>
 
   <div id="error-container" class="overlay-container" hidden>
     <div class="page">
@@ -133,8 +127,8 @@ found in the LICENSE file.
               </div>
             </div>
           </div>
-          <grid id="wallpaper-grid" class="image-picker" tabIndex="-1"></grid>
-          <div id="spinner-container" hidden></div>
+          <grid id="wallpaper-grid" class="image-picker daily-refresh-disabled"
+              tabIndex="-1"></grid>
           <div class="progress-bar" hidden>
             <div class="progress-track"></div>
           </div>

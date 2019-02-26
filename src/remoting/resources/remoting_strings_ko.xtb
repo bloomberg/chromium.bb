@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
 <translation id="1002108253973310084">호환되지 않는 프로토콜 버전이 감지되었습니다. 양쪽 컴퓨터 모두에서 소프트웨어가 최신 버전인지 확인한 뒤 다시 시도해 주세요.</translation>
+<translation id="1008557486741366299">나중에 하기</translation>
 <translation id="1050693411695664090">나쁨</translation>
 <translation id="1152528166145813711">선택…</translation>
 <translation id="1199593201721843963">원격 연결 사용중지</translation>
@@ -62,6 +63,7 @@
 <translation id="2314101195544969792"><ph name="APPLICATION_NAME" /> 세션이 일정 시간 비활성화 상태였으므로 곧 연결 해제됩니다.</translation>
 <translation id="2317666076142640974">새로운 <ph name="LINK_BEGIN" />Chrome 원격 데스크톱 웹 앱<ph name="LINK_END" />을 미리 체험해 보시고 의견을 들려주세요.</translation>
 <translation id="2320166752086256636">키보드 숨기기</translation>
+<translation id="2332192922827071008">환경설정 열기</translation>
 <translation id="2353140552984634198">Chromoting을 사용하여 컴퓨터에 안전하게 액세스할 수 있습니다.</translation>
 <translation id="2359808026110333948">계속</translation>
 <translation id="2366718077645204424">호스트에 연결할 수 없습니다. 사용 중인 네트워크의 구성 때문일 수 있습니다.</translation>
@@ -82,6 +84,7 @@
 <translation id="2841013758207633010">시간</translation>
 <translation id="2851754573186462851">Chromium 앱 스트리밍</translation>
 <translation id="2888969873284818612">네트워크 오류가 발생했습니다. 기기가 다시 온라인 상태가 되면 앱을 다시 시작하겠습니다.</translation>
+<translation id="2891243864890517178">Mac용(OS X Yosemite 10.10 이상)</translation>
 <translation id="289405675947420287">iOS 기기에서 컴퓨터에 안전하게 액세스하세요. 빠르고 간편하게 무료로 이용할 수 있습니다.
 
 • Chrome 웹 스토어에서 원격으로 액세스하려는 컴퓨터에 Chrome 원격 데스크톱 앱을 다운로드합니다.
@@ -188,6 +191,9 @@ PC</translation>
 <translation id="4973800994433240357">Chromoting 호스트 설치 프로그램을 다운로드하면 Google <ph name="LINK_BEGIN" />서비스 약관<ph name="LINK_END" />에 동의하게 됩니다.</translation>
 <translation id="4974476491460646149"><ph name="HOSTNAME" /> 연결이 종료되었습니다</translation>
 <translation id="4985296110227979402">먼저 컴퓨터를 원격으로 액세스할 수 있도록 설정해야 합니다.</translation>
+<translation id="5059773780693835145"><ph name="PRODUCT_NAME" />을(를) 사용하여 이 기기를 원격으로 제어하려면 먼저 추가 구성 단계를 완료해야 합니다.
+
+이 기능을 사용하려면 '<ph name="BUTTON_NAME" />' 버튼을 선택하여 보안 및 개인정보 보호 환경설정 창을 표시한 후 '<ph name="SERVICE_SCRIPT_NAME" />' 옆의 체크박스를 선택하세요.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" />(오프라인)</translation>
 <translation id="5070121137485264635">원격 호스트는 타사 웹사이트에 대한 인증이 필요합니다. 계속하려면 이 주소에 액세스할 수 있도록 Chrome 원격 데스크톱에 추가 권한을 허용해야 합니다.</translation>
 <translation id="507204348399810022"><ph name="HOSTNAME" /> 원격 연결을 사용 중지하시겠습니까?</translation>
@@ -249,7 +255,6 @@ PC</translation>
 <translation id="6542902059648396432">문제 신고하기</translation>
 <translation id="6550675742724504774">옵션</translation>
 <translation id="6570205395680337606">애플리케이션을 재설정합니다. 저장하지 않은 작업을 잃게 됩니다.</translation>
-<translation id="6572345186230665992">Mac용(OS X Mavericks 10.9 이상)</translation>
 <translation id="6583902294974160967">지원</translation>
 <translation id="6612717000975622067">Ctrl-Alt-Del 전송</translation>
 <translation id="6654753848497929428">공유</translation>
@@ -313,6 +318,7 @@ PC</translation>
 <translation id="809687642899217504">내 컴퓨터</translation>
 <translation id="811307782653349804">어디서든 내 컴퓨터에 액세스할 수 있습니다.</translation>
 <translation id="8116630183974937060">네트워크 오류가 발생했습니다. 기기가 온라인 상태인지 확인하고 다시 시도하세요.</translation>
+<translation id="8123581458650016326">원격 사용자가 이 기기를 제어하도록 허용</translation>
 <translation id="8178433417677596899">사용자 간 화면 공유가 가능하며 원격 기술 지원에 적합합니다.</translation>
 <translation id="8187079423890319756">Copyright 2013 The Chromium Authors. All rights reserved.</translation>
 <translation id="8196755618196986400">Google이 더 자세한 내용을 확인하기 위해 연락할 수 있도록, 제출한 의견에 사용자의 이메일 주소를 포함해주시기 바랍니다.</translation>

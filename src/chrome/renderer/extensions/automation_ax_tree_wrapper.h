@@ -22,6 +22,10 @@ class AutomationAXTreeWrapper : public ui::AXEventGenerator {
                           AutomationInternalCustomBindings* owner);
   ~AutomationAXTreeWrapper() override;
 
+  // Returns the AutomationAXTreeWrapper that lists |tree_id| as one of its
+  // child trees, if any.
+  static AutomationAXTreeWrapper* GetParentOfTreeId(ui::AXTreeID tree_id);
+
   ui::AXTreeID tree_id() const { return tree_id_; }
   ui::AXTree* tree() { return &tree_; }
   AutomationInternalCustomBindings* owner() { return owner_; }

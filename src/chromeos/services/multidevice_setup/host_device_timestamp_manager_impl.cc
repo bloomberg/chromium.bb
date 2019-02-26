@@ -121,9 +121,10 @@ void HostDeviceTimestampManagerImpl::OnHostStatusChange(
     pref_service_->SetInt64(kSetupFlowCompletedPrefName,
                             clock_->Now().ToJavaTime());
     pref_service_->SetBoolean(kWasHostSetFromThisChromebookPrefName, true);
-    PA_LOG(INFO) << "HostDeviceTimestampManagerImpl::OnHostStatusChange(): "
-                 << "Setup flow successfully completed. Recording timestamp "
-                 << pref_service_->GetInt64(kSetupFlowCompletedPrefName) << ".";
+    PA_LOG(VERBOSE) << "HostDeviceTimestampManagerImpl::OnHostStatusChange(): "
+                    << "Setup flow successfully completed. Recording timestamp "
+                    << pref_service_->GetInt64(kSetupFlowCompletedPrefName)
+                    << ".";
   }
 
   // Check if a host has been verified.
@@ -131,10 +132,11 @@ void HostDeviceTimestampManagerImpl::OnHostStatusChange(
       mojom::HostStatus::kHostVerified) {
     pref_service_->SetInt64(kHostVerifiedUpdateReceivedPrefName,
                             clock_->Now().ToJavaTime());
-    PA_LOG(INFO) << "HostDeviceTimestampManagerImpl::OnHostStatusChange(): "
-                 << "New host verified. Recording timestamp "
-                 << pref_service_->GetInt64(kHostVerifiedUpdateReceivedPrefName)
-                 << ".";
+    PA_LOG(VERBOSE) << "HostDeviceTimestampManagerImpl::OnHostStatusChange(): "
+                    << "New host verified. Recording timestamp "
+                    << pref_service_->GetInt64(
+                           kHostVerifiedUpdateReceivedPrefName)
+                    << ".";
   }
 
   // If there is no host set, set the "was host set form this Chromebook" bit to

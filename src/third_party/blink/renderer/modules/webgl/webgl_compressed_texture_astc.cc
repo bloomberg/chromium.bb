@@ -49,7 +49,7 @@ WebGLExtensionName WebGLCompressedTextureASTC::GetName() const {
 
 WebGLCompressedTextureASTC* WebGLCompressedTextureASTC::Create(
     WebGLRenderingContextBase* context) {
-  return new WebGLCompressedTextureASTC(context);
+  return MakeGarbageCollected<WebGLCompressedTextureASTC>(context);
 }
 
 bool WebGLCompressedTextureASTC::Supported(WebGLRenderingContextBase* context) {

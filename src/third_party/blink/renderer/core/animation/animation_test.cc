@@ -135,7 +135,7 @@ class AnimationAnimationTest : public RenderingTest {
 
     // After creating the animation we need to clean the lifecycle so that the
     // animation can be pushed to the compositor.
-    UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhasesForTest();
 
     document->GetAnimationClock().UpdateTime(base::TimeTicks());
     document->GetPendingAnimations().Update(base::nullopt, true);
@@ -883,7 +883,7 @@ TEST_F(AnimationAnimationTest, NoCompositeWithoutCompositedElementId) {
   CompositorElementId expected_compositor_element_id =
       CompositorElementIdFromUniqueObjectId(
           ToLayoutBoxModelObject(object_composited)->UniqueId(),
-          CompositorElementIdNamespace::kPrimary);
+          CompositorElementIdNamespace::kPrimaryEffect);
   composited_element_ids->insert(expected_compositor_element_id);
 
   Timing timing;

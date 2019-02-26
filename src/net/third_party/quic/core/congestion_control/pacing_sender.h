@@ -1,7 +1,7 @@
 // Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
+
 // A send algorithm that adds pacing on top of an another send algorithm.
 // It uses the underlying sender's pacing rate to schedule packets.
 // It also takes into consideration the expected granularity of the underlying

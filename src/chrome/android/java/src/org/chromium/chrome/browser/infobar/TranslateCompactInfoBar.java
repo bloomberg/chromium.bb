@@ -6,11 +6,11 @@ package org.chromium.chrome.browser.infobar;
 
 import android.support.design.widget.TabLayout;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.widget.AppCompatImageButton;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLayoutChangeListener;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
 import org.chromium.base.annotations.CalledByNative;
@@ -105,7 +105,7 @@ public class TranslateCompactInfoBar extends InfoBar
     private TranslateMenuHelper mOverflowMenuHelper;
     private TranslateMenuHelper mLanguageMenuHelper;
 
-    private AppCompatImageButton mMenuButton;
+    private ImageButton mMenuButton;
     private InfoBarCompactLayout mParent;
 
     private TranslateSnackbarController mSnackbarController;
@@ -243,8 +243,7 @@ public class TranslateCompactInfoBar extends InfoBar
             }
         });
 
-        mMenuButton =
-                (AppCompatImageButton) content.findViewById(R.id.translate_infobar_menu_button);
+        mMenuButton = content.findViewById(R.id.translate_infobar_menu_button);
         mMenuButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -608,7 +607,7 @@ public class TranslateCompactInfoBar extends InfoBar
     private void recordInfobarLanguageData(String histogram, String langCode) {
         Integer hashCode = mOptions.getUMAHashCodeFromCode(langCode);
         if (hashCode != null) {
-            RecordHistogram.recordSparseSlowlyHistogram(histogram, hashCode);
+            RecordHistogram.recordSparseHistogram(histogram, hashCode);
         }
     }
 

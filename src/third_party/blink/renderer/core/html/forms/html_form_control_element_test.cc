@@ -75,7 +75,7 @@ TEST_F(HTMLFormControlElementTest, customValidationMessageTextDirection) {
   input->setCustomValidity(
       String::FromUTF8("\xD8\xB9\xD8\xB1\xD8\xA8\xD9\x89"));
   input->setAttribute(
-      HTMLNames::titleAttr,
+      html_names::kTitleAttr,
       AtomicString::FromUTF8("\xD8\xB9\xD8\xB1\xD8\xA8\xD9\x89"));
 
   String message = input->validationMessage().StripWhiteSpace();
@@ -135,7 +135,8 @@ TEST_F(HTMLFormControlElementTest, DoNotUpdateLayoutDuringDOMMutation) {
   GetDocument().documentElement()->SetInnerHTMLFromString("<select></select>");
   HTMLFormControlElement* const select =
       ToHTMLFormControlElement(GetDocument().QuerySelector("select"));
-  auto* const optgroup = GetDocument().CreateRawElement(HTMLNames::optgroupTag);
+  auto* const optgroup =
+      GetDocument().CreateRawElement(html_names::kOptgroupTag);
   auto* validation_client = new MockFormValidationMessageClient();
   GetDocument().GetPage()->SetValidationMessageClientForTesting(
       validation_client);

@@ -85,12 +85,10 @@ const GLuint kWidth  = 100;
 const GLuint kHeight = 100;
 
 class EXTBlendFuncExtendedTest : public ANGLETest
-{
-};
+{};
 
 class EXTBlendFuncExtendedTestES3 : public ANGLETest
-{
-};
+{};
 
 class EXTBlendFuncExtendedDrawTest : public ANGLETest
 {
@@ -592,7 +590,8 @@ ANGLE_INSTANTIATE_TEST(EXTBlendFuncExtendedTest,
                        ES2_OPENGL(),
                        ES2_OPENGLES(),
                        ES3_OPENGL(),
-                       ES3_OPENGLES());
+                       ES3_OPENGLES(),
+                       ES2_VULKAN());
 ANGLE_INSTANTIATE_TEST(EXTBlendFuncExtendedTestES3,
                        ES3_OPENGL(),
                        ES3_OPENGLES(),
@@ -602,7 +601,8 @@ ANGLE_INSTANTIATE_TEST(EXTBlendFuncExtendedDrawTest,
                        ES2_OPENGL(),
                        ES2_OPENGLES(),
                        ES3_OPENGL(),
-                       ES3_OPENGLES());
+                       ES3_OPENGLES(),
+                       ES2_VULKAN());
 ANGLE_INSTANTIATE_TEST(EXTBlendFuncExtendedDrawTestES3,
                        ES3_OPENGL(),
                        ES3_OPENGLES(),

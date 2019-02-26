@@ -162,7 +162,7 @@ class Manager(object):
                 run_results = self._run_test_loop(tests_to_run, tests_to_skip)
             else:
                 run_results = self._run_test_once(tests_to_run, tests_to_skip, should_retry_failures)
-            initial_results, all_retry_results, enabled_pixel_tests_in_retry = run_results
+            initial_results, all_retry_results = run_results
         finally:
             self._stop_servers()
             self._clean_up_run()
@@ -176,11 +176,10 @@ class Manager(object):
 
         self._printer.write_update('Summarizing results ...')
         summarized_full_results = test_run_results.summarize_results(
-            self._port, self._expectations, initial_results, all_retry_results,
-            enabled_pixel_tests_in_retry)
+            self._port, self._expectations, initial_results, all_retry_results)
         summarized_failing_results = test_run_results.summarize_results(
             self._port, self._expectations, initial_results, all_retry_results,
-            enabled_pixel_tests_in_retry, only_include_failing=True)
+            only_include_failing=True)
 
         exit_code = summarized_failing_results['num_regressions']
         if exit_code > exit_codes.MAX_FAILURES_EXIT_STATUS:
@@ -207,7 +206,7 @@ class Manager(object):
 
         return test_run_results.RunDetails(
             exit_code, summarized_full_results, summarized_failing_results,
-            initial_results, all_retry_results, enabled_pixel_tests_in_retry)
+            initial_results, all_retry_results)
 
     def _run_test_loop(self, tests_to_run, tests_to_skip):
         # Don't show results in a new browser window because we're already
@@ -215,7 +214,7 @@ class Manager(object):
         self._options.show_results = False
 
         while True:
-            initial_results, all_retry_results, enabled_pixel_tests_in_retry = self._run_test_once(
+            initial_results, all_retry_results = self._run_test_once(
                 tests_to_run, tests_to_skip, should_retry_failures=False)
             for name in initial_results.failures_by_name:
                 failure = initial_results.failures_by_name[name][0]
@@ -231,11 +230,9 @@ class Manager(object):
                 'Interactive watch mode: (q)uit (r)etry\n').lower()
 
             if user_input == 'q' or user_input == 'quit':
-                return (initial_results, all_retry_results, enabled_pixel_tests_in_retry)
+                return (initial_results, all_retry_results)
 
     def _run_test_once(self, tests_to_run, tests_to_skip, should_retry_failures):
-        enabled_pixel_tests_in_retry = False
-
         num_workers = self._port.num_workers(int(self._options.child_processes))
 
         initial_results = self._run_tests(
@@ -249,8 +246,6 @@ class Manager(object):
         tests_to_retry = self._tests_to_retry(initial_results)
         all_retry_results = []
         if should_retry_failures and tests_to_retry:
-            enabled_pixel_tests_in_retry = self._force_pixel_tests_if_needed()
-
             for retry_attempt in xrange(1, self._options.num_retries + 1):
                 if not tests_to_retry:
                     break
@@ -269,10 +264,7 @@ class Manager(object):
                 all_retry_results.append(retry_results)
 
                 tests_to_retry = self._tests_to_retry(retry_results)
-
-            if enabled_pixel_tests_in_retry:
-                self._options.pixel_tests = False
-        return (initial_results, all_retry_results, enabled_pixel_tests_in_retry)
+        return (initial_results, all_retry_results)
 
     def _collect_tests(self, args):
         return self._finder.find_tests(args, test_list=self._options.test_list,
@@ -384,7 +376,7 @@ class Manager(object):
         # Check that the system dependencies (themes, fonts, ...) are correct.
         if not self._options.nocheck_sys_deps:
             self._printer.write_update('Checking system dependencies ...')
-            exit_code = self._port.check_sys_deps(self._needs_servers(test_names))
+            exit_code = self._port.check_sys_deps()
             if exit_code:
                 return exit_code
 
@@ -438,12 +430,6 @@ class Manager(object):
         sys.stderr.flush()
         _log.debug('Cleaning up port')
         self._port.clean_up_test_run()
-
-    def _force_pixel_tests_if_needed(self):
-        if self._options.pixel_tests:
-            return False
-        self._options.pixel_tests = True
-        return True
 
     def _look_for_new_crash_logs(self, run_results, start_time):
         """Looks for and writes new crash logs, at the end of the test run.

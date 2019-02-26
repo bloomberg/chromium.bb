@@ -18,7 +18,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   blink::FuzzedDataProvider provider(data, size);
 
   const auto property_id =
-      blink::convertToCSSPropertyID(provider.ConsumeInt32InRange(
+      blink::convertToCSSPropertyID(provider.ConsumeIntegralInRange<int>(
           blink::firstCSSProperty, blink::lastCSSProperty));
   const auto data_string = provider.ConsumeRemainingBytes();
 
@@ -30,13 +30,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
                                            data_string.length()),
         static_cast<blink::CSSParserMode>(parser_mode));
   }
-
-#if defined(ADDRESS_SANITIZER)
-  // LSAN needs unreachable objects to be released to avoid reporting them
-  // incorrectly as a memory leak.
-  blink::ThreadState* currentThreadState = blink::ThreadState::Current();
-  currentThreadState->CollectAllGarbage();
-#endif
 
   return 0;
 }

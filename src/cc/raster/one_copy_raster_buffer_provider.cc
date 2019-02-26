@@ -366,61 +366,50 @@ gpu::SyncToken OneCopyRasterBufferProvider::CopyOnWorkerThread(
     bool mailbox_texture_is_overlay_candidate,
     const gpu::SyncToken& sync_token,
     const gfx::ColorSpace& color_space) {
-  viz::RasterContextProvider::ScopedRasterContextLock scoped_context(
-      worker_context_provider_);
-  gpu::raster::RasterInterface* ri = scoped_context.RasterInterface();
-  DCHECK(ri);
+  auto* sii = worker_context_provider_->SharedImageInterface();
+  DCHECK(sii);
+
+  if (!staging_buffer->gpu_memory_buffer.get()) {
+    // If GpuMemoryBuffer allocation failed (https://crbug.com/554541), then
+    // we don't have anything to give to copy into the resource. We report a
+    // zero mailbox that will result in checkerboarding, and be treated as OOM
+    // which should retry.
+    if (!mailbox->IsZero()) {
+      sii->DestroySharedImage(sync_token, *mailbox);
+      mailbox->SetZero();
+    }
+    return gpu::SyncToken();
+  }
 
   if (mailbox->IsZero()) {
-    auto* sii = worker_context_provider_->SharedImageInterface();
     uint32_t flags = gpu::SHARED_IMAGE_USAGE_RASTER;
     if (mailbox_texture_is_overlay_candidate)
       flags |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
     *mailbox = sii->CreateSharedImage(resource_format, resource_size,
                                       color_space, flags);
-    ri->WaitSyncTokenCHROMIUM(sii->GenUnverifiedSyncToken().GetConstData());
-  } else {
-    ri->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
   }
 
+  // Create staging shared image.
+  if (staging_buffer->mailbox.IsZero()) {
+    staging_buffer->mailbox = sii->CreateSharedImage(
+        staging_buffer->gpu_memory_buffer.get(), gpu_memory_buffer_manager_,
+        color_space, gpu::SHARED_IMAGE_USAGE_RASTER);
+  } else {
+    sii->UpdateSharedImage(staging_buffer->sync_token, staging_buffer->mailbox);
+  }
+
+  viz::RasterContextProvider::ScopedRasterContextLock scoped_context(
+      worker_context_provider_);
+  gpu::raster::RasterInterface* ri = scoped_context.RasterInterface();
+  DCHECK(ri);
+  ri->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
+  ri->WaitSyncTokenCHROMIUM(sii->GenUnverifiedSyncToken().GetConstData());
   GLuint mailbox_texture_id = ri->CreateAndConsumeTexture(
       mailbox_texture_is_overlay_candidate, gfx::BufferUsage::SCANOUT,
       resource_format, mailbox->name);
-
-  // Create and bind staging texture.
-  if (!staging_buffer->texture_id) {
-    staging_buffer->texture_id =
-        ri->CreateTexture(true, StagingBufferUsage(), staging_buffer->format);
-    ri->TexParameteri(staging_buffer->texture_id, GL_TEXTURE_MIN_FILTER,
-                      GL_NEAREST);
-    ri->TexParameteri(staging_buffer->texture_id, GL_TEXTURE_MAG_FILTER,
-                      GL_NEAREST);
-    ri->TexParameteri(staging_buffer->texture_id, GL_TEXTURE_WRAP_S,
-                      GL_CLAMP_TO_EDGE);
-    ri->TexParameteri(staging_buffer->texture_id, GL_TEXTURE_WRAP_T,
-                      GL_CLAMP_TO_EDGE);
-  }
-
-  // Create and bind image.
-  if (!staging_buffer->image_id) {
-    if (staging_buffer->gpu_memory_buffer) {
-      staging_buffer->image_id = ri->CreateImageCHROMIUM(
-          staging_buffer->gpu_memory_buffer->AsClientBuffer(),
-          staging_buffer->size.width(), staging_buffer->size.height(),
-          GLInternalFormat(staging_buffer->format));
-      ri->BindTexImage2DCHROMIUM(staging_buffer->texture_id,
-                                 staging_buffer->image_id);
-    }
-  } else {
-    ri->ReleaseTexImage2DCHROMIUM(staging_buffer->texture_id,
-                                  staging_buffer->image_id);
-    ri->BindTexImage2DCHROMIUM(staging_buffer->texture_id,
-                               staging_buffer->image_id);
-  }
-
-  // Unbind staging texture.
-  // TODO(vmiura): Need a way to ensure we don't hold onto bindings?
-  // ri->BindTexture(image_target, 0);
+  GLuint staging_texture_id = ri->CreateAndConsumeTexture(
+      true, StagingBufferUsage(), staging_buffer->format,
+      staging_buffer->mailbox.name);
 
   // Do not use queries unless COMMANDS_COMPLETED queries are supported, or
   // COMMANDS_ISSUED queries are sufficient.
@@ -467,8 +456,8 @@ gpu::SyncToken OneCopyRasterBufferProvider::CopyOnWorkerThread(
     int rows_to_copy = std::min(chunk_size_in_rows, height - y);
     DCHECK_GT(rows_to_copy, 0);
 
-    ri->CopySubTexture(staging_buffer->texture_id, mailbox_texture_id, 0, y, 0,
-                       y, rect_to_copy.width(), rows_to_copy);
+    ri->CopySubTexture(staging_texture_id, mailbox_texture_id, 0, y, 0, y,
+                       rect_to_copy.width(), rows_to_copy);
     y += rows_to_copy;
 
     // Increment |bytes_scheduled_since_last_flush_| by the amount of memory
@@ -484,11 +473,20 @@ gpu::SyncToken OneCopyRasterBufferProvider::CopyOnWorkerThread(
   if (query_target != GL_NONE)
     ri->EndQueryEXT(query_target);
 
-  ri->DeleteTextures(1, &mailbox_texture_id);
+  GLuint textures_to_delete[] = {mailbox_texture_id, staging_texture_id};
+  ri->DeleteTextures(2, textures_to_delete);
 
   // Generate sync token on the worker context that will be sent to and waited
   // for by the display compositor before using the content generated here.
-  return viz::ClientResourceProvider::GenerateSyncTokenHelper(ri);
+  // The same sync token is used to synchronize operations on the staging
+  // buffer. Note, the query completion is generally enough to guarantee
+  // ordering, but there are some paths (e.g.
+  // StagingBufferPool::ReduceMemoryUsage) that may destroy the staging buffer
+  // without waiting for the query completion.
+  gpu::SyncToken out_sync_token =
+      viz::ClientResourceProvider::GenerateSyncTokenHelper(ri);
+  staging_buffer->sync_token = out_sync_token;
+  return out_sync_token;
 }
 
 gfx::BufferUsage OneCopyRasterBufferProvider::StagingBufferUsage() const {

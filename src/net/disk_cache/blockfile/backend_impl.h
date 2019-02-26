@@ -165,7 +165,7 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
   int32_t GetCurrentEntryId() const;
 
   // Returns the maximum size for a file to reside on the cache.
-  int MaxFileSize() const;
+  int64_t MaxFileSize() const override;
 
   // A user data block is being created, extended or truncated.
   void ModifyStorageSize(int32_t old_size, int32_t new_size);

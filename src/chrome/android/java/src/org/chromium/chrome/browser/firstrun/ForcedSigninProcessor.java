@@ -4,10 +4,8 @@
 
 package org.chromium.chrome.browser.firstrun;
 
-import android.accounts.Account;
 import android.content.Context;
 
-import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
@@ -77,29 +75,26 @@ public final class ForcedSigninProcessor {
             Log.d(TAG, "Sign in disallowed");
             return;
         }
-        AccountManagerFacade.get().tryGetGoogleAccounts(new Callback<Account[]>() {
-            @Override
-            public void onResult(Account[] accounts) {
-                if (accounts.length != 1) {
-                    Log.d(TAG, "Incorrect number of accounts (%d)", accounts.length);
-                    return;
-                }
-                signinManager.signIn(accounts[0], null, new SigninManager.SignInCallback() {
-                    @Override
-                    public void onSignInComplete() {
-                        if (onComplete != null) {
-                            onComplete.run();
-                        }
-                    }
-
-                    @Override
-                    public void onSignInAborted() {
-                        if (onComplete != null) {
-                            onComplete.run();
-                        }
-                    }
-                });
+        AccountManagerFacade.get().tryGetGoogleAccounts(accounts -> {
+            if (accounts.size() != 1) {
+                Log.d(TAG, "Incorrect number of accounts (%d)", accounts.size());
+                return;
             }
+            signinManager.signIn(accounts.get(0), null, new SigninManager.SignInCallback() {
+                @Override
+                public void onSignInComplete() {
+                    if (onComplete != null) {
+                        onComplete.run();
+                    }
+                }
+
+                @Override
+                public void onSignInAborted() {
+                    if (onComplete != null) {
+                        onComplete.run();
+                    }
+                }
+            });
         });
     }
 

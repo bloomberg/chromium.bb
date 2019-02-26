@@ -33,7 +33,7 @@ std::unique_ptr<std::vector<ChildProcessData>> CollectChildProcessData() {
     const ChildProcessData& process_data = itr.GetData();
 
     // Only add processes that have already started, i.e. with valid handles.
-    if (!process_data.IsHandleValid())
+    if (!process_data.GetProcess().IsValid())
       continue;
 
     child_processes->push_back(process_data.Duplicate());
@@ -64,7 +64,7 @@ Task* ChildProcessTaskProvider::GetTaskOfUrlRequest(int child_id,
 void ChildProcessTaskProvider::BrowserChildProcessLaunchedAndConnected(
     const content::ChildProcessData& data) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!data.IsHandleValid())
+  if (!data.GetProcess().IsValid())
     return;
 
   CreateTask(data);
@@ -73,7 +73,7 @@ void ChildProcessTaskProvider::BrowserChildProcessLaunchedAndConnected(
 void ChildProcessTaskProvider::BrowserChildProcessHostDisconnected(
     const content::ChildProcessData& data) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DeleteTask(data.GetHandle());
+  DeleteTask(data.GetProcess().Handle());
 }
 
 void ChildProcessTaskProvider::StartUpdating() {
@@ -121,7 +121,7 @@ void ChildProcessTaskProvider::ChildProcessDataCollected(
 void ChildProcessTaskProvider::CreateTask(
     const content::ChildProcessData& data) {
   std::unique_ptr<ChildProcessTask>& task =
-      tasks_by_processid_[base::GetProcId(data.GetHandle())];
+      tasks_by_processid_[data.GetProcess().Pid()];
   if (task) {
     // This task is already known to us. This case can happen when some of the
     // child process data we collect upon StartUpdating() might be of

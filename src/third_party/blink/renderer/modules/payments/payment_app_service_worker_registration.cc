@@ -22,7 +22,8 @@ PaymentAppServiceWorkerRegistration& PaymentAppServiceWorkerRegistration::From(
           PaymentAppServiceWorkerRegistration>(registration);
 
   if (!supplement) {
-    supplement = new PaymentAppServiceWorkerRegistration(&registration);
+    supplement = MakeGarbageCollected<PaymentAppServiceWorkerRegistration>(
+        &registration);
     ProvideTo(registration, supplement);
   }
 

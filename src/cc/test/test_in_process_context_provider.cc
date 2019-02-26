@@ -21,12 +21,14 @@
 #include "gpu/command_buffer/common/skia_utils.h"
 #include "gpu/ipc/gl_in_process_context.h"
 #include "gpu/ipc/raster_in_process_context.h"
+#include "gpu/ipc/test_gpu_thread_holder.h"
 #include "gpu/skia_bindings/grcontext_for_gles2_interface.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 #include "ui/gfx/native_widget_types.h"
+
 namespace cc {
 
 namespace {
@@ -49,9 +51,9 @@ std::unique_ptr<gpu::GLInProcessContext> CreateGLInProcessContext(
 
   auto context = std::make_unique<gpu::GLInProcessContext>();
   auto result = context->Initialize(
-      nullptr, nullptr, is_offscreen, gpu::kNullSurfaceHandle, attribs,
-      gpu::SharedMemoryLimits(), gpu_memory_buffer_manager, image_factory,
-      std::move(task_runner));
+      gpu::GetTestGpuThreadHolder()->GetTaskExecutor(), nullptr, is_offscreen,
+      gpu::kNullSurfaceHandle, attribs, gpu::SharedMemoryLimits(),
+      gpu_memory_buffer_manager, image_factory, std::move(task_runner));
 
   DCHECK_EQ(result, gpu::ContextResult::kSuccess);
   return context;
@@ -94,10 +96,10 @@ gpu::ContextResult TestInProcessContextProvider::BindToCurrentThread() {
     attribs.enable_raster_interface = true;
     attribs.enable_gles2_interface = false;
 
-    raster_context_.reset(new gpu::RasterInProcessContext);
+    raster_context_ = std::make_unique<gpu::RasterInProcessContext>();
     auto result = raster_context_->Initialize(
-        /*service=*/nullptr, attribs, gpu::SharedMemoryLimits(),
-        &gpu_memory_buffer_manager_, &image_factory_,
+        gpu::GetTestGpuThreadHolder()->GetTaskExecutor(), attribs,
+        gpu::SharedMemoryLimits(), &gpu_memory_buffer_manager_, &image_factory_,
         /*gpu_channel_manager_delegate=*/nullptr, gr_shader_cache_,
         activity_flags_);
     DCHECK_EQ(result, gpu::ContextResult::kSuccess);
@@ -115,7 +117,6 @@ gpu::ContextResult TestInProcessContextProvider::BindToCurrentThread() {
     raster_implementation_gles2_ =
         std::make_unique<gpu::raster::RasterImplementationGLES>(
             gles2_context_->GetImplementation(),
-            gles2_context_->GetImplementation()->command_buffer(),
             gles2_context_->GetCapabilities());
   }
 

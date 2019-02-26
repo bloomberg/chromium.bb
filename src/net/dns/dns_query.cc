@@ -5,11 +5,13 @@
 #include "net/dns/dns_query.h"
 
 #include "base/big_endian.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/sys_byteorder.h"
 #include "net/base/io_buffer.h"
-#include "net/dns/dns_protocol.h"
 #include "net/dns/dns_util.h"
+#include "net/dns/public/dns_protocol.h"
 #include "net/dns/record_rdata.h"
 
 namespace net {
@@ -84,15 +86,16 @@ std::unique_ptr<DnsQuery> DnsQuery::CloneWithNewId(uint16_t id) const {
   return base::WrapUnique(new DnsQuery(*this, id));
 }
 
-bool DnsQuery::Parse() {
+bool DnsQuery::Parse(size_t valid_bytes) {
   if (io_buffer_ == nullptr || io_buffer_->data() == nullptr) {
     return false;
   }
+  CHECK(valid_bytes <= base::checked_cast<size_t>(io_buffer_->size()));
   // We should only parse the query once if the query is constructed from a raw
   // buffer. If we have constructed the query from data or the query is already
   // parsed after constructed from a raw buffer, |header_| is not null.
   DCHECK(header_ == nullptr);
-  base::BigEndianReader reader(io_buffer_->data(), io_buffer_->size());
+  base::BigEndianReader reader(io_buffer_->data(), valid_bytes);
   dns_protocol::Header header;
   if (!ReadHeader(&reader, &header)) {
     return false;

@@ -44,6 +44,8 @@ class CORE_EXPORT PointerLockController final
  public:
   static PointerLockController* Create(Page*);
 
+  explicit PointerLockController(Page*);
+
   void RequestPointerLock(Element* target);
   void RequestPointerUnlock();
   void ElementRemoved(Element*);
@@ -56,12 +58,12 @@ class CORE_EXPORT PointerLockController final
   void DidLosePointerLock();
   void DispatchLockedMouseEvent(const WebMouseEvent&,
                                 const Vector<WebMouseEvent>& coalesced_events,
+                                const Vector<WebMouseEvent>& predicted_events,
                                 const AtomicString& event_type);
 
   void Trace(blink::Visitor*);
 
  private:
-  explicit PointerLockController(Page*);
   void ClearElement();
   void EnqueueEvent(const AtomicString& type, Element*);
   void EnqueueEvent(const AtomicString& type, Document*);

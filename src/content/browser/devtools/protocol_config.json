@@ -49,9 +49,9 @@
                 "domain": "Page",
                 "include": ["enable", "disable", "reload", "navigate", "stopLoading", "getNavigationHistory", "navigateToHistoryEntry", "captureScreenshot",
                     "startScreencast", "stopScreencast", "screencastFrameAck", "handleJavaScriptDialog", "setColorPickerEnabled", "requestAppBanner",
-                    "printToPDF", "bringToFront", "setDownloadBehavior", "getAppManifest", "crash", "close", "setWebLifecycleState"],
+                    "printToPDF", "bringToFront", "setDownloadBehavior", "getAppManifest", "crash", "close", "setWebLifecycleState", "captureSnapshot"],
                 "include_events": ["colorPicked", "interstitialShown", "interstitialHidden", "javascriptDialogOpening", "javascriptDialogClosed", "screencastVisibilityChanged", "screencastFrame"],
-                "async": ["captureScreenshot", "printToPDF", "navigate", "getAppManifest", "reload"]
+                "async": ["captureScreenshot", "printToPDF", "navigate", "getAppManifest", "reload", "captureSnapshot"]
             },
             {
                 "domain": "Runtime",
@@ -74,7 +74,7 @@
             },
             {
                 "domain": "SystemInfo",
-                "async": ["getInfo"]
+                "async": ["getInfo", "getProcessInfo"]
             },
             {
                 "domain": "Target",
@@ -87,6 +87,10 @@
             {
                 "domain": "Tracing",
                 "async": ["start", "getCategories", "requestMemoryDump"]
+            },
+            {
+                "domain": "Fetch",
+                "async": ["continueRequest", "failRequest", "fulfillRequest", "continueWithAuth", "getResponseBody", "takeResponseBodyAsStream"]
             }
         ]
     },

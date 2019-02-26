@@ -4,68 +4,30 @@
 
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 
-#include <algorithm>
-#include <iterator>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/synchronization/lock.h"
+#include "base/thread_annotations.h"
 #include "base/time/time.h"
+#include "base/timer/elapsed_timer.h"
 #include "third_party/metrics_proto/chrome_user_metrics_extension.pb.h"
 
 namespace metrics {
 
 namespace {
 
-// Cap the number of pending profiles to avoid excessive memory usage when
-// profile uploads are delayed (e.g. due to being offline). 1250 profiles
-// corresponds to 80MB of storage. Capping at this threshold loses approximately
-// 0.5% of profiles on canary and dev.
-// TODO(chengx): Remove this threshold after moving to a more memory-efficient
-// profile representation.
+// Cap the number of pending profiles to avoid excessive performance overhead
+// due to profile deserialization when profile uploads are delayed (e.g. due to
+// being offline). Capping at this threshold loses approximately 0.5% of
+// profiles on canary and dev.
+//
+// TODO(wittman): Remove this threshold after crbug.com/903972 is fixed.
 const size_t kMaxPendingProfiles = 1250;
-
-// Cap the number of pending unserialized profiles to avoid excessive memory
-// usage when profile uploads are delayed (e.g., due to being offline). When the
-// number of pending unserialized profiles exceeds this cap, serialize all
-// additional unserialized profiles to save memory. Since profile serialization
-// and deserialization (required later for uploads) are expensive, we choose 250
-// as the capacity to balance speed and memory. 250 unserialized profiles
-// corresponds to 16MB of storage.
-// TODO(chengx): Remove this threshold after moving to a more memory-efficient
-// profile representation.
-constexpr size_t kMaxPendingUnserializedProfiles = 250;
-
-// Merges the serialized profiles into the unserialized ones, by appending them.
-// The params are not const& because they should be passed using std::move.
-// Implementation note: In order to maintain the invariant that profiles are
-// reported in correct temporal sequence, it's important to order the serialized
-// profiles to follow the unserialized profiles. This way, profiles that were
-// serialized simply for space efficiency will end up ordered correctly.
-std::vector<SampledProfile> MergeProfiles(
-    std::vector<SampledProfile> profiles,
-    std::vector<std::string> serialized_profiles) {
-  // Deserialize all serialized profiles, skipping over any that fail to parse.
-  std::vector<SampledProfile> deserialized_profiles;
-  deserialized_profiles.reserve(serialized_profiles.size());
-  for (const auto& serialized_profile : serialized_profiles) {
-    SampledProfile profile;
-    if (profile.ParseFromArray(serialized_profile.data(),
-                               serialized_profile.size())) {
-      deserialized_profiles.push_back(std::move(profile));
-    }
-  }
-
-  // Merge the profiles.
-  profiles.reserve(profiles.size() + deserialized_profiles.size());
-  std::move(deserialized_profiles.begin(), deserialized_profiles.end(),
-            std::back_inserter(profiles));
-
-  return profiles;
-}
 
 // PendingProfiles ------------------------------------------------------------
 
@@ -89,10 +51,9 @@ class PendingProfiles {
   // profiles provided to future invocations of MaybeCollect*Profile.
   void SetCollectionEnabled(bool enabled);
 
-  // Collects |profile|. It may be stored as it is, or in a serialized form, or
-  // ignored, depending on the pre-defined storage capacity and whether
-  // collection is enabled. |profile| is not const& because it must be passed
-  // with std::move.
+  // Collects |profile|. It may be stored in a serialized form, or ignored,
+  // depending on the pre-defined storage capacity and whether collection is
+  // enabled. |profile| is not const& because it must be passed with std::move.
   void MaybeCollectProfile(base::TimeTicks profile_start_time,
                            SampledProfile profile);
 
@@ -115,31 +76,25 @@ class PendingProfiles {
   // Returns true if collection is enabled for a given profile based on its
   // |profile_start_time|. The |lock_| must be held prior to calling this
   // method.
-  bool IsCollectionEnabledForProfile(base::TimeTicks profile_start_time) const;
-
-  // Whether there is spare capacity to store an additional profile.
-  // The |lock_| must be held prior to calling this method.
-  bool HasSpareCapacity() const;
+  bool IsCollectionEnabledForProfile(base::TimeTicks profile_start_time) const
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   mutable base::Lock lock_;
 
   // If true, profiles provided to MaybeCollect*Profile should be collected.
   // Otherwise they will be ignored.
-  bool collection_enabled_;
+  bool collection_enabled_ GUARDED_BY(lock_);
 
   // The last time collection was disabled. Used to determine if collection was
   // disabled at any point since a profile was started.
-  base::TimeTicks last_collection_disable_time_;
+  base::TimeTicks last_collection_disable_time_ GUARDED_BY(lock_);
 
   // The last time collection was enabled. Used to determine if collection was
   // enabled at any point since a profile was started.
-  base::TimeTicks last_collection_enable_time_;
-
-  // The set of completed unserialized profiles that should be reported.
-  std::vector<SampledProfile> unserialized_profiles_;
+  base::TimeTicks last_collection_enable_time_ GUARDED_BY(lock_);
 
   // The set of completed serialized profiles that should be reported.
-  std::vector<std::string> serialized_profiles_;
+  std::vector<std::string> serialized_profiles_ GUARDED_BY(lock_);
 
   DISALLOW_COPY_AND_ASSIGN(PendingProfiles);
 };
@@ -152,19 +107,28 @@ PendingProfiles* PendingProfiles::GetInstance() {
 }
 
 std::vector<SampledProfile> PendingProfiles::RetrieveProfiles() {
-  std::vector<SampledProfile> profiles;
   std::vector<std::string> serialized_profiles;
 
   {
     base::AutoLock scoped_lock(lock_);
-    profiles.swap(unserialized_profiles_);
     serialized_profiles.swap(serialized_profiles_);
   }
 
-  // Merge the serialized profiles by deserializing them. Note that this work is
-  // performed without holding the lock, to avoid blocking the lock for an
-  // extended period of time.
-  return MergeProfiles(std::move(profiles), std::move(serialized_profiles));
+  // Deserialize all serialized profiles, skipping over any that fail to parse.
+  base::ElapsedTimer timer;
+  std::vector<SampledProfile> profiles;
+  profiles.reserve(serialized_profiles.size());
+  for (const auto& serialized_profile : serialized_profiles) {
+    SampledProfile profile;
+    if (profile.ParseFromArray(serialized_profile.data(),
+                               serialized_profile.size())) {
+      profiles.push_back(std::move(profile));
+    }
+  }
+  UMA_HISTOGRAM_TIMES("StackSamplingProfiler.DeserializeAllPendingProfilesTime",
+                      timer.Elapsed());
+
+  return profiles;
 }
 
 void PendingProfiles::SetCollectionEnabled(bool enabled) {
@@ -173,7 +137,6 @@ void PendingProfiles::SetCollectionEnabled(bool enabled) {
   collection_enabled_ = enabled;
 
   if (!collection_enabled_) {
-    unserialized_profiles_.clear();
     serialized_profiles_.clear();
     last_collection_disable_time_ = base::TimeTicks::Now();
   } else {
@@ -208,12 +171,6 @@ bool PendingProfiles::IsCollectionEnabledForProfile(
   return true;
 }
 
-bool PendingProfiles::HasSpareCapacity() const {
-  lock_.AssertAcquired();
-  return (unserialized_profiles_.size() + serialized_profiles_.size()) <
-         kMaxPendingProfiles;
-}
-
 void PendingProfiles::MaybeCollectProfile(base::TimeTicks profile_start_time,
                                           SampledProfile profile) {
   {
@@ -221,26 +178,12 @@ void PendingProfiles::MaybeCollectProfile(base::TimeTicks profile_start_time,
 
     if (!IsCollectionEnabledForProfile(profile_start_time))
       return;
-
-    // Store the unserialized profile directly if there's room.
-    if (unserialized_profiles_.size() < kMaxPendingUnserializedProfiles) {
-      unserialized_profiles_.push_back(std::move(profile));
-      return;
-    }
-
-    // This early return is strictly a performance optimization to avoid doing
-    // unnecessary serialization below.  For correctness, since the
-    // serialization happens without holding the lock, it's necessary to check
-    // this condition again prior to actually collecting the serialized profile.
-    if (!HasSpareCapacity())
-      return;
   }
 
-  // There was no room to store the unserialized profile directly, but there was
-  // room to store it in serialized form. Serialize the profile without holding
-  // the lock, then try again to store it.
+  // Serialize the profile without holding the lock.
   std::string serialized_profile;
   profile.SerializeToString(&serialized_profile);
+
   MaybeCollectSerializedProfile(profile_start_time,
                                 std::move(serialized_profile));
 }
@@ -250,7 +193,11 @@ void PendingProfiles::MaybeCollectSerializedProfile(
     std::string serialized_profile) {
   base::AutoLock scoped_lock(lock_);
 
-  if (IsCollectionEnabledForProfile(profile_start_time) && HasSpareCapacity())
+  // There is no room for additional profiles.
+  if (serialized_profiles_.size() >= kMaxPendingProfiles)
+    return;
+
+  if (IsCollectionEnabledForProfile(profile_start_time))
     serialized_profiles_.push_back(std::move(serialized_profile));
 }
 
@@ -260,7 +207,6 @@ void PendingProfiles::ResetToDefaultStateForTesting() {
   collection_enabled_ = true;
   last_collection_disable_time_ = base::TimeTicks();
   last_collection_enable_time_ = base::TimeTicks();
-  unserialized_profiles_.clear();
   serialized_profiles_.clear();
 }
 
@@ -276,7 +222,7 @@ PendingProfiles::PendingProfiles() : collection_enabled_(true) {}
 // CallStackProfileMetricsProvider --------------------------------------------
 
 const base::Feature CallStackProfileMetricsProvider::kEnableReporting = {
-    "SamplingProfilerReporting", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SamplingProfilerReporting", base::FEATURE_ENABLED_BY_DEFAULT};
 
 CallStackProfileMetricsProvider::CallStackProfileMetricsProvider() {}
 

@@ -19,7 +19,7 @@
 <translation id="1710340000377843106">اکنون</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{۱ دقیقه}one{# دقیقه}other{# دقیقه}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> بایت</translation>
-<translation id="1801827354178857021">دوره زمانی</translation>
+<translation id="1801827354178857021">نقطه</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{۱ ماه}one{# ماه}other{# ماه}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> مگابایت/ثانیه</translation>
 <translation id="1812519734428420144">رتبه‌بندی ستاره‌ای <ph name="RATING_SCORE" /></translation>
@@ -30,16 +30,19 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" />٪</translation>
 <translation id="1901303067676059328">انتخاب &amp;همه</translation>
+<translation id="1938451708255335766">برای تنظیم تراکم نمایشگر پنجره، برنامه را بازراه‌اندازی کنید.</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{۱ روز}one{# روز}other{# روز}}</translation>
 <translation id="2148716181193084225">امروز</translation>
 <translation id="2168039046890040389">صفحه بالا</translation>
 <translation id="2190355936436201913">(خالی)</translation>
+<translation id="2192232475740621500">استفاده از تراکم پایین</translation>
 <translation id="219905428774326614">راه‌انداز، همه برنامه‌ها</translation>
 <translation id="2267918077332197517">مسدود کردن همه اعلان‌های این سایت</translation>
 <translation id="2289052229480071835">روی اهداف لمسی در صفحه‌تان ضربه بزنید.</translation>
 <translation id="2295140143284145483">نظرسنجی</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> ترابایت/ثانیه</translation>
 <translation id="24452542372838207">بزرگ کردن اعلان</translation>
+<translation id="2445449901874883781">استفاده از تراکم بالا</translation>
 <translation id="2482878487686419369">اعلان‌ها</translation>
 <translation id="2497284189126895209">همه فایل‌ها</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -60,6 +63,7 @@
 <translation id="3234408098842461169">پیکان پایین</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{۱ روز}one{# روز}other{# روز}}</translation>
 <translation id="335581015389089642">صدا</translation>
+<translation id="3479552764303398839">اکنون نه</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{۱ روز باقی مانده است}one{# روز باقی مانده است}other{# روز باقی مانده است}}</translation>
 <translation id="3618849550573277856">جستجوی «<ph name="LOOKUP_STRING" />»</translation>
 <translation id="364720409959344976">انتخاب پوشه برای بارگذاری</translation>
@@ -99,6 +103,7 @@
 <translation id="5613020302032141669">پیکان چپ</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{۱ دقیقه}one{# دقیقه}other{# دقیقه}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{۱ روز و }one{# روز و }other{# روز و }}</translation>
+<translation id="5895138241574237353">راه‌اندازی مجدد</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{۱ ثانیه باقی مانده است}one{# ثانیه باقی مانده است}other{# ثانیه باقی مانده است}}</translation>
 <translation id="5941711191222866238">کوچک کردن</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{۱ ساعت}one{# ساعت}other{# ساعت}}</translation>

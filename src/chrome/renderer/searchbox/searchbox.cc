@@ -43,7 +43,8 @@ bool AreMostVisitedItemsEqual(
 
   for (size_t i = 0; i < new_items.size(); ++i) {
     if (new_items[i].url != old_item_id_pairs[i].second.url ||
-        new_items[i].title != old_item_id_pairs[i].second.title) {
+        new_items[i].title != old_item_id_pairs[i].second.title ||
+        new_items[i].source != old_item_id_pairs[i].second.source) {
       return false;
     }
   }
@@ -203,11 +204,10 @@ bool TranslateIconRestrictedUrl(const GURL& transient_url,
   return true;
 }
 
-std::pair<GURL, bool> FixupAndValidateUrl(const std::string& url) {
+std::string FixupAndValidateUrl(const std::string& url) {
   GURL gurl = url_formatter::FixupURL(url, /*desired_tld=*/std::string());
   if (!gurl.is_valid())
-    return std::make_pair(GURL(), false);
-  bool default_https = false;
+    return std::string();
 
   // Unless "http" was specified, replaces FixupURL's default "http" with
   // "https".
@@ -216,10 +216,9 @@ std::pair<GURL, bool> FixupAndValidateUrl(const std::string& url) {
     GURL::Replacements replacements;
     replacements.SetSchemeStr(url::kHttpsScheme);
     gurl = gurl.ReplaceComponents(replacements);
-    default_https = true;
   }
 
-  return std::make_pair(gurl, default_https);
+  return gurl.spec();
 }
 
 }  // namespace internal
@@ -370,6 +369,13 @@ void SearchBox::UpdateCustomLink(InstantRestrictedID link_id,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
+void SearchBox::ReorderCustomLink(InstantRestrictedID link_id, int new_pos) {
+  GURL url = GetURLForMostVisitedItem(link_id);
+  if (!url.is_valid())
+    return;
+  embedded_search_service_->ReorderCustomLink(page_seq_no_, url, new_pos);
+}
+
 void SearchBox::DeleteCustomLink(InstantRestrictedID most_visited_item_id) {
   GURL url = GetURLForMostVisitedItem(most_visited_item_id);
   if (!url.is_valid()) {
@@ -390,19 +396,8 @@ void SearchBox::ResetCustomLinks() {
   embedded_search_service_->ResetCustomLinks(page_seq_no_);
 }
 
-std::string SearchBox::FixupAndValidateUrl(const std::string& url) {
-  std::pair<GURL, bool> fixed_url = internal::FixupAndValidateUrl(url);
-
-  // If URL is valid and we defaulted to https, notify whether the URL resolves.
-  if (fixed_url.first.is_valid() && fixed_url.second) {
-    embedded_search_service_->DoesUrlResolve(
-        page_seq_no_, fixed_url.first,
-        base::BindOnce(&SearchBox::DoesUrlResolveResult,
-                       weak_ptr_factory_.GetWeakPtr()));
-  } else {
-    DoesUrlResolveResult(/*resolves=*/true, /*timeout=*/false);
-  }
-  return fixed_url.first.spec();
+std::string SearchBox::FixupAndValidateUrl(const std::string& url) const {
+  return internal::FixupAndValidateUrl(url);
 }
 
 void SearchBox::SetCustomBackgroundURL(const GURL& background_url) {
@@ -489,14 +484,6 @@ void SearchBox::DeleteCustomLinkResult(bool success) {
   if (can_run_js_in_renderframe_) {
     SearchBoxExtension::DispatchDeleteCustomLinkResult(
         render_frame()->GetWebFrame(), success);
-  }
-}
-
-void SearchBox::DoesUrlResolveResult(bool resolves, bool timeout) const {
-  // Do not notify if the edit custom link dialog has already timed out.
-  if (can_run_js_in_renderframe_ && !timeout) {
-    SearchBoxExtension::DispatchDoesUrlResolveResult(
-        render_frame()->GetWebFrame(), resolves);
   }
 }
 

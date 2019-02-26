@@ -44,8 +44,10 @@ class WorkerGlobalScope;
 class WorkerPerformance final : public Performance {
  public:
   static WorkerPerformance* Create(WorkerGlobalScope* context) {
-    return new WorkerPerformance(context);
+    return MakeGarbageCollected<WorkerPerformance>(context);
   }
+
+  explicit WorkerPerformance(WorkerGlobalScope*);
 
   ExecutionContext* GetExecutionContext() const override {
     return execution_context_;
@@ -54,8 +56,6 @@ class WorkerPerformance final : public Performance {
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit WorkerPerformance(WorkerGlobalScope*);
-
   Member<ExecutionContext> execution_context_;
 };
 

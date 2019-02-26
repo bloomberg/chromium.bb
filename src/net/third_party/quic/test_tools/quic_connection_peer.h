@@ -93,8 +93,9 @@ class QuicConnectionPeer {
   static QuicAlarm* GetSendAlarm(QuicConnection* connection);
   static QuicAlarm* GetTimeoutAlarm(QuicConnection* connection);
   static QuicAlarm* GetMtuDiscoveryAlarm(QuicConnection* connection);
-  static QuicAlarm* GetRetransmittableOnWireAlarm(QuicConnection* connection);
   static QuicAlarm* GetPathDegradingAlarm(QuicConnection* connection);
+  static QuicAlarm* GetProcessUndecryptablePacketsAlarm(
+      QuicConnection* connection);
 
   static QuicPacketWriter* GetWriter(QuicConnection* connection);
   // If |owns_writer| is true, takes ownership of |writer|.
@@ -133,6 +134,8 @@ class QuicConnectionPeer {
   static void SetMaxConsecutiveNumPacketsWithNoRetransmittableFrames(
       QuicConnection* connection,
       size_t new_value);
+  static void SetNoVersionNegotiation(QuicConnection* connection,
+                                      bool no_version_negotiation);
 };
 
 }  // namespace test

@@ -13,6 +13,10 @@ namespace gfx {
 class Point;
 }
 
+namespace ui {
+class InputDeviceManager;
+}
+
 namespace aura {
 class WindowEventDispatcher;
 class WindowTreeHost;
@@ -23,6 +27,8 @@ const gfx::Point& QueryLatestMousePositionRequestInHost(WindowTreeHost* host);
 void SetHostDispatcher(WindowTreeHost* host,
                        std::unique_ptr<WindowEventDispatcher> dispatcher);
 void DisableIME(WindowTreeHost* host);
+
+std::unique_ptr<ui::InputDeviceManager> CreateTestInputDeviceManager();
 
 }  // namespace test
 }  // namespace aura

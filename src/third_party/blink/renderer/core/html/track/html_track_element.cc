@@ -38,7 +38,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 static String UrlForLoggingTrack(const KURL& url) {
   static const unsigned kMaximumURLLengthForLogging = 128;
@@ -49,7 +49,7 @@ static String UrlForLoggingTrack(const KURL& url) {
 }
 
 inline HTMLTrackElement::HTMLTrackElement(Document& document)
-    : HTMLElement(trackTag, document),
+    : HTMLElement(kTrackTag, document),
       load_timer_(document.GetTaskRunner(TaskType::kNetworking),
                   this,
                   &HTMLTrackElement::LoadTimerFired) {
@@ -89,13 +89,13 @@ void HTMLTrackElement::RemovedFrom(ContainerNode& insertion_point) {
 void HTMLTrackElement::ParseAttribute(
     const AttributeModificationParams& params) {
   const QualifiedName& name = params.name;
-  if (name == srcAttr) {
+  if (name == kSrcAttr) {
     ScheduleLoad();
 
     // 4.8.10.12.3 Sourcing out-of-band text tracks
     // As the kind, label, and srclang attributes are set, changed, or removed,
     // the text track must update accordingly...
-  } else if (name == kindAttr) {
+  } else if (name == kKindAttr) {
     AtomicString lower_case_value = params.new_value.LowerASCII();
     // 'missing value default' ("subtitles")
     if (lower_case_value.IsNull())
@@ -105,11 +105,11 @@ void HTMLTrackElement::ParseAttribute(
       lower_case_value = TextTrack::MetadataKeyword();
 
     track()->SetKind(lower_case_value);
-  } else if (name == labelAttr) {
+  } else if (name == kLabelAttr) {
     track()->SetLabel(params.new_value);
-  } else if (name == srclangAttr) {
+  } else if (name == kSrclangAttr) {
     track()->SetLanguage(params.new_value);
-  } else if (name == idAttr) {
+  } else if (name == kIdAttr) {
     track()->SetId(params.new_value);
   }
 
@@ -121,7 +121,7 @@ const AtomicString& HTMLTrackElement::kind() {
 }
 
 void HTMLTrackElement::setKind(const AtomicString& kind) {
-  setAttribute(kindAttr, kind);
+  setAttribute(kKindAttr, kind);
 }
 
 LoadableTextTrack* HTMLTrackElement::EnsureTrack() {
@@ -137,7 +137,7 @@ TextTrack* HTMLTrackElement::track() {
 }
 
 bool HTMLTrackElement::IsURLAttribute(const Attribute& attribute) const {
-  return attribute.GetName() == srcAttr ||
+  return attribute.GetName() == kSrcAttr ||
          HTMLElement::IsURLAttribute(attribute);
 }
 
@@ -175,7 +175,7 @@ void HTMLTrackElement::LoadTimerFired(TimerBase*) {
   DVLOG(TRACK_LOG_LEVEL) << "loadTimerFired";
 
   // 7. [X] Let URL be the track URL of the track element.
-  KURL url = GetNonEmptyURLAttribute(srcAttr);
+  KURL url = GetNonEmptyURLAttribute(kSrcAttr);
 
   // Whenever a track element has its src attribute set, changed,
   // or removed, the user agent must immediately empty the
@@ -265,7 +265,7 @@ void HTMLTrackElement::DidCompleteLoad(LoadStatus status) {
   // simple event named error at the track element.
   if (status == kFailure) {
     SetReadyState(kError);
-    DispatchEvent(*Event::Create(EventTypeNames::error));
+    DispatchEvent(*Event::Create(event_type_names::kError));
     return;
   }
 
@@ -275,7 +275,7 @@ void HTMLTrackElement::DidCompleteLoad(LoadStatus status) {
   // readiness state to loaded, and fire a simple event named load at the track
   // element.
   SetReadyState(kLoaded);
-  DispatchEvent(*Event::Create(EventTypeNames::load));
+  DispatchEvent(*Event::Create(event_type_names::kLoad));
 }
 
 void HTMLTrackElement::NewCuesAvailable(TextTrackLoader* loader) {
@@ -327,7 +327,7 @@ HTMLTrackElement::ReadyState HTMLTrackElement::getReadyState() {
 
 const AtomicString& HTMLTrackElement::MediaElementCrossOriginAttribute() const {
   if (HTMLMediaElement* parent = MediaElement())
-    return parent->FastGetAttribute(HTMLNames::crossoriginAttr);
+    return parent->FastGetAttribute(html_names::kCrossoriginAttr);
 
   return g_null_atom;
 }

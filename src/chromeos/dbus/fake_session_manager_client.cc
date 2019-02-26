@@ -471,7 +471,14 @@ void FakeSessionManagerClient::StorePolicy(
         base::FilePath key_path;
         GetStubPolicyFilePath(descriptor, &key_path);
         DCHECK(!key_path.empty());
-        StoreFiles({{key_path, response.new_public_key()}});
+
+        base::PostTaskWithTraits(
+            FROM_HERE,
+            {base::MayBlock(),
+             base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+            base::BindOnce(StoreFiles,
+                           std::map<base::FilePath, std::string>{
+                               {key_path, response.new_public_key()}}));
         for (auto& observer : observers_)
           observer.OwnerKeySet(true /* success */);
       }
@@ -524,7 +531,7 @@ void FakeSessionManagerClient::StartArcMiniContainer(
 
 void FakeSessionManagerClient::UpgradeArcContainer(
     const login_manager::UpgradeArcContainerRequest& request,
-    UpgradeArcContainerCallback success_callback,
+    base::OnceClosure success_callback,
     UpgradeErrorCallback error_callback) {
   last_upgrade_arc_request_ = request;
 
@@ -542,7 +549,8 @@ void FakeSessionManagerClient::UpgradeArcContainer(
     PostReply(FROM_HERE, std::move(error_callback), true);
     return;
   }
-  PostReply(FROM_HERE, std::move(success_callback), base::ScopedFD());
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                std::move(success_callback));
 }
 
 void FakeSessionManagerClient::StopArcInstance(
@@ -580,13 +588,6 @@ void FakeSessionManagerClient::GetArcStartTime(
   PostReply(
       FROM_HERE, std::move(callback),
       arc_available_ ? base::make_optional(arc_start_time_) : base::nullopt);
-}
-
-void FakeSessionManagerClient::RemoveArcData(
-    const cryptohome::AccountIdentifier& cryptohome_id,
-    VoidDBusMethodCallback callback) {
-  if (!callback.is_null())
-    PostReply(FROM_HERE, std::move(callback), arc_available_);
 }
 
 void FakeSessionManagerClient::NotifyArcInstanceStopped(

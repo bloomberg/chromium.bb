@@ -329,6 +329,13 @@ component("skia") {
     }
   }
 
+  if (is_win) {
+    sources += [
+      # Select the right BitmapPlatformDevice.
+      "ext/raster_handle_allocator_win.cc",
+    ]
+  }
+
   # The imported Skia gni source paths are made absolute by gn.
   defines = skia_core_defines
   sources += skia_utils_sources
@@ -379,21 +386,6 @@ component("skia") {
 
   if (current_cpu == "arm") {
     sources += [ "//third_party/skia/src/core/SkUtilsArm.cpp" ]
-  }
-
-  # GPU
-  if (skia_support_gpu) {
-    sources += skia_gpu_sources
-    sources += skia_null_gpu_sources
-    sources += skia_sksl_sources
-    if (enable_vulkan) {
-      sources += skia_vk_sources
-      sources += [
-        "//third_party/skia/third_party/vulkanmemoryallocator/GrVulkanMemoryAllocator.cpp",
-        "//third_party/skia/third_party/vulkanmemoryallocator/GrVulkanMemoryAllocator.h",
-      ]
-    }
-    deps += [ "//gpu/config:workaround_list" ]
   }
 
   # Remove unused util sources.
@@ -504,13 +496,6 @@ component("skia") {
     ]
   }
 
-  if (is_win) {
-    sources += [
-      # Select the right BitmapPlatformDevice.
-      "ext/raster_handle_allocator_win.cc",
-    ]
-  }
-
   if (is_clang && !is_nacl) {
     # Skia won't compile with some of the more strict clang warnings.
     # e.g. it does:
@@ -561,23 +546,6 @@ component("skia") {
     ]
   }
 
-  if (skia_support_pdf) {
-    deps += [
-      "//third_party/sfntly",
-      "//third_party/sfntly:sfntly_chromium",
-      "//third_party/zlib",
-    ]
-    sources += skia_pdf_sources
-  } else {
-    sources += [ "//third_party/skia/src/pdf/SkDocument_PDF_None.cpp" ]
-  }
-
-  if (skia_support_skottie) {
-    import("//third_party/skia/modules/skottie/skottie.gni")
-    import("//third_party/skia/modules/sksg/sksg.gni")
-    sources += skia_skottie_sources + skia_skottie_public + skia_sksg_sources
-  }
-
   if (!is_debug) {
     configs -= [ "//build/config/compiler:default_optimization" ]
     configs += [ "//build/config/compiler:optimize_max" ]
@@ -602,6 +570,37 @@ component("skia") {
 
   if (is_fuchsia) {
     deps += [ "//third_party/expat" ]
+  }
+
+  if (skia_support_gpu) {
+    sources += skia_gpu_sources
+    sources += skia_null_gpu_sources
+    sources += skia_sksl_sources
+    if (enable_vulkan) {
+      sources += skia_vk_sources
+      sources += [
+        "//third_party/skia/third_party/vulkanmemoryallocator/GrVulkanMemoryAllocator.cpp",
+        "//third_party/skia/third_party/vulkanmemoryallocator/GrVulkanMemoryAllocator.h",
+      ]
+    }
+    deps += [ "//gpu/config:workaround_list" ]
+  }
+
+  if (skia_support_pdf) {
+    deps += [
+      "//third_party/sfntly",
+      "//third_party/sfntly:sfntly_chromium",
+      "//third_party/zlib",
+    ]
+    sources += skia_pdf_sources
+  } else {
+    sources += [ "//third_party/skia/src/pdf/SkDocument_PDF_None.cpp" ]
+  }
+
+  if (skia_support_skottie) {
+    import("//third_party/skia/modules/skottie/skottie.gni")
+    import("//third_party/skia/modules/sksg/sksg.gni")
+    sources += skia_skottie_sources + skia_skottie_public + skia_sksg_sources
   }
 }
 
@@ -862,4 +861,10 @@ if (!is_ios) {
       "//build/win:default_exe_manifest",
     ]
   }
+}
+
+group("fuzzers") {
+  deps = [
+    "//skia/tools/fuzzers",
+  ]
 }

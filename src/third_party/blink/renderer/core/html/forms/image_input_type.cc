@@ -41,17 +41,17 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 inline ImageInputType::ImageInputType(HTMLInputElement& element)
     : BaseButtonInputType(element), use_fallback_content_(false) {}
 
 InputType* ImageInputType::Create(HTMLInputElement& element) {
-  return new ImageInputType(element);
+  return MakeGarbageCollected<ImageInputType>(element);
 }
 
 const AtomicString& ImageInputType::FormControlType() const {
-  return InputTypeNames::image;
+  return input_type_names::kImage;
 }
 
 bool ImageInputType::IsFormDataAppendable() const {
@@ -175,7 +175,7 @@ unsigned ImageInputType::Height() const {
   if (!GetElement().GetLayoutObject()) {
     // Check the attribute first for an explicit pixel value.
     unsigned height;
-    if (ParseHTMLNonNegativeInteger(GetElement().FastGetAttribute(heightAttr),
+    if (ParseHTMLNonNegativeInteger(GetElement().FastGetAttribute(kHeightAttr),
                                     height))
       return height;
 
@@ -200,7 +200,7 @@ unsigned ImageInputType::Width() const {
   if (!GetElement().GetLayoutObject()) {
     // Check the attribute first for an explicit pixel value.
     unsigned width;
-    if (ParseHTMLNonNegativeInteger(GetElement().FastGetAttribute(widthAttr),
+    if (ParseHTMLNonNegativeInteger(GetElement().FastGetAttribute(kWidthAttr),
                                     width))
       return width;
 
@@ -222,11 +222,11 @@ unsigned ImageInputType::Width() const {
 }
 
 bool ImageInputType::HasLegalLinkAttribute(const QualifiedName& name) const {
-  return name == srcAttr || BaseButtonInputType::HasLegalLinkAttribute(name);
+  return name == kSrcAttr || BaseButtonInputType::HasLegalLinkAttribute(name);
 }
 
 const QualifiedName& ImageInputType::SubResourceAttributeName() const {
-  return srcAttr;
+  return kSrcAttr;
 }
 
 void ImageInputType::EnsureFallbackContent() {

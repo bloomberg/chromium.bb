@@ -7,6 +7,7 @@
 #include <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
 
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_objc_class_swizzler.h"
 #include "base/run_loop.h"
@@ -137,6 +138,12 @@ void SendGlobalKeyEventsHelper::SendGlobalKeyEvent(int key_code,
   base::ScopedCFTypeRef<CGEventRef> key_event(
       CGEventCreateKeyboardEvent(event_source_, key_code, key_down));
   CGEventSetFlags(key_event, current_flags);
+
+  // Starting in 10.14, CGEventPost() pops up a modal that asks the user to
+  // confirm whether the app should be allowed to use accessibility APIs, which
+  // hangs tests on the bots. https://crbug.com/904403
+  DCHECK(base::mac::IsAtMostOS10_13());
+
   CGEventPost(event_tap_location_, key_event);
   if (key_down && !first_key_down_code_)
     first_key_down_code_ = key_code;
@@ -146,11 +153,13 @@ void SendGlobalKeyEventsHelper::SendGlobalKeyEvent(int key_code,
 
 namespace ui_test_utils {
 
-void HideNativeWindow(gfx::NativeWindow window) {
+void HideNativeWindow(gfx::NativeWindow native_window) {
+  NSWindow* window = native_window.GetNativeNSWindow();
   [window orderOut:nil];
 }
 
-bool ShowAndFocusNativeWindow(gfx::NativeWindow window) {
+bool ShowAndFocusNativeWindow(gfx::NativeWindow native_window) {
+  NSWindow* window = native_window.GetNativeNSWindow();
   // Make sure an unbundled program can get the input focus.
   ProcessSerialNumber psn = { 0, kCurrentProcess };
   TransformProcessType(&psn,kProcessTransformToForegroundApplication);

@@ -42,8 +42,10 @@ class XMLHttpRequestUpload final : public XMLHttpRequestEventTarget {
 
  public:
   static XMLHttpRequestUpload* Create(XMLHttpRequest* xml_http_request) {
-    return new XMLHttpRequestUpload(xml_http_request);
+    return MakeGarbageCollected<XMLHttpRequestUpload>(xml_http_request);
   }
+
+  explicit XMLHttpRequestUpload(XMLHttpRequest*);
 
   XMLHttpRequest* XmlHttpRequest() const { return xml_http_request_; }
 
@@ -61,8 +63,6 @@ class XMLHttpRequestUpload final : public XMLHttpRequestEventTarget {
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit XMLHttpRequestUpload(XMLHttpRequest*);
-
   Member<XMLHttpRequest> xml_http_request_;
 
   // Last progress event values; used when issuing the

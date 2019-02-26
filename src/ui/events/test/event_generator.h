@@ -5,7 +5,6 @@
 #ifndef UI_EVENTS_TEST_EVENT_GENERATOR_H_
 #define UI_EVENTS_TEST_EVENT_GENERATOR_H_
 
-#include <list>
 #include <memory>
 #include <vector>
 
@@ -17,10 +16,6 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/native_widget_types.h"
-
-namespace gfx {
-class PointF;
-}
 
 namespace ui {
 class EventSource;
@@ -49,13 +44,6 @@ class EventGeneratorDelegate {
           gfx::NativeWindow window)>;
   static void SetFactoryFunction(FactoryFunction factory);
 
-  // Creates an EventGeneratorDelegate using the factory set by way of
-  // SetFactoryFunction().
-  static std::unique_ptr<EventGeneratorDelegate> Create(
-      EventGenerator* owner,
-      gfx::NativeWindow root_window,
-      gfx::NativeWindow window);
-
   // The ui::EventTarget at the given |location|.
   virtual EventTarget* GetTargetAt(const gfx::Point& location) = 0;
 
@@ -66,11 +54,15 @@ class EventGeneratorDelegate {
   virtual gfx::Point CenterOfTarget(const EventTarget* target) const = 0;
   virtual gfx::Point CenterOfWindow(gfx::NativeWindow window) const = 0;
 
-  // Convert a point between API's coordinates and |target|'s coordinates.
+  // Convert a point between screen coordinates and |target|'s coordinates.
   virtual void ConvertPointFromTarget(const EventTarget* target,
                                       gfx::Point* point) const = 0;
   virtual void ConvertPointToTarget(const EventTarget* target,
                                     gfx::Point* point) const = 0;
+
+  // Converts |point| from |window|'s coordinates to screen coordinates.
+  virtual void ConvertPointFromWindow(gfx::NativeWindow window,
+                                      gfx::Point* point) const = 0;
 
   // Convert a point from the coordinate system in the host that contains
   // |hosted_target| into the root window's coordinate system.
@@ -83,11 +75,6 @@ class EventGeneratorDelegate {
   virtual ui::EventDispatchDetails DispatchKeyEventToIME(EventTarget* target,
                                                          ui::KeyEvent* event)
       WARN_UNUSED_RESULT = 0;
-
-  // Offers the event to pointer watchers on systems that provide them.
-  // Does not consume the event (pointer watchers cannot consume events).
-  virtual void DispatchEventToPointerWatchers(EventTarget* target,
-                                              const PointerEvent& event) {}
 };
 
 // ui::test::EventGenerator is a tool that generates and dispatches events.
@@ -114,15 +101,15 @@ class EventGeneratorDelegate {
 // EventGeneratorDelegate.
 class EventGenerator {
  public:
-  // Creates an EventGenerator with the mouse/touch location (0,0),
-  // which uses the |root_window|'s coordinates and the default delegate for
-  // this platform.
-  explicit EventGenerator(gfx::NativeWindow root_window);
-
   // Create an EventGenerator with EventGeneratorDelegate,
   // which uses the coordinates conversions and targeting provided by
   // |delegate|.
   explicit EventGenerator(std::unique_ptr<EventGeneratorDelegate> delegate);
+
+  // Creates an EventGenerator with the mouse/touch location (0,0),
+  // which uses the |root_window|'s coordinates and the default delegate for
+  // this platform.
+  explicit EventGenerator(gfx::NativeWindow root_window);
 
   // Creates an EventGenerator with the mouse/touch location
   // at |initial_location|, which uses the |root_window|'s coordinates.
@@ -135,16 +122,15 @@ class EventGenerator {
 
   virtual ~EventGenerator();
 
-  // Explicitly sets the location used by mouse/touch events. This is set by the
-  // various methods that take a location but can be manipulated directly,
-  // typically for touch.
-  void set_current_location(const gfx::Point& location) {
-    current_location_ = location;
+  // Explicitly sets the location used by mouse/touch events, in screen
+  // coordinates. This is set by the various methods that take a location but
+  // can be manipulated directly, typically for touch.
+  void set_current_screen_location(const gfx::Point& location) {
+    current_screen_location_ = location;
   }
-  const gfx::Point& current_location() const { return current_location_; }
-
-  void set_async(bool async) { async_ = async; }
-  bool async() const { return async_; }
+  const gfx::Point& current_screen_location() const {
+    return current_screen_location_;
+  }
 
   // Events could be dispatched using different methods. The choice is a
   // tradeoff between test robustness and coverage of OS internals that affect
@@ -175,7 +161,7 @@ class EventGenerator {
   // the root window to window coordinates when dispatching events.
   // Setting this to false skips that step, in which case the test must ensure
   // it correctly maps coordinates in window coordinates to root window (screen)
-  // coordinates when calling, e.g., set_current_location().
+  // coordinates when calling, e.g., set_current_screen_location().
   // Default is true. This only has any effect on Mac.
   void set_assume_window_at_origin(bool assume_window_at_origin) {
     assume_window_at_origin_ = assume_window_at_origin;
@@ -241,7 +227,7 @@ class EventGenerator {
   }
 
   void MoveMouseBy(int x, int y) {
-    MoveMouseTo(current_location_ + gfx::Vector2d(x, y));
+    MoveMouseTo(current_screen_location_ + gfx::Vector2d(x, y));
   }
 
   // Generates events to drag mouse to given |point|.
@@ -252,7 +238,7 @@ class EventGenerator {
   }
 
   void DragMouseBy(int dx, int dy) {
-    DragMouseTo(current_location_ + gfx::Vector2d(dx, dy));
+    DragMouseTo(current_screen_location_ + gfx::Vector2d(dx, dy));
   }
 
   // Generates events to move the mouse to the center of the window.
@@ -291,7 +277,7 @@ class EventGenerator {
 
   // Generates a ET_TOUCH_MOVED event moving by (x, y) from current location.
   void MoveTouchBy(int x, int y) {
-    MoveTouch(current_location_ + gfx::Vector2d(x, y));
+    MoveTouch(current_screen_location_ + gfx::Vector2d(x, y));
   }
 
   // Generates a ET_TOUCH_MOVED event to |point| with |touch_id|.
@@ -300,7 +286,7 @@ class EventGenerator {
   // Generates a ET_TOUCH_MOVED event moving (x, y) from current location with
   // |touch_id|.
   void MoveTouchIdBy(int touch_id, int x, int y) {
-    MoveTouchId(current_location_ + gfx::Vector2d(x, y), touch_id);
+    MoveTouchId(current_screen_location_ + gfx::Vector2d(x, y), touch_id);
   }
 
   // Generates a touch release event.
@@ -318,7 +304,7 @@ class EventGenerator {
   }
 
   void PressMoveAndReleaseTouchBy(int x, int y) {
-    PressMoveAndReleaseTouchTo(current_location_ + gfx::Vector2d(x, y));
+    PressMoveAndReleaseTouchTo(current_screen_location_ + gfx::Vector2d(x, y));
   }
 
   // Generates press, move and release events to move touch
@@ -416,13 +402,6 @@ class EventGenerator {
                       int steps,
                       int num_fingers);
 
-  // Generates scroll sequences of a FlingCancel, Scrolls, FlingStart, sending
-  // scrolls of each of the values in |offsets|.
-  void ScrollSequence(const gfx::Point& start,
-                      const base::TimeDelta& step_delay,
-                      const std::vector<gfx::PointF>& offsets,
-                      int num_fingers);
-
   // Generate a TrackPad "rest" event. That is, a user resting fingers on the
   // trackpad without moving. This may then be followed by a ScrollSequence(),
   // or a CancelTrackpadRest().
@@ -468,25 +447,13 @@ class EventGenerator {
   gfx::Point GetLocationInCurrentRoot() const;
   gfx::Point CenterOfWindow(const EventTarget* window) const;
 
-  void DispatchNextPendingEvent();
-  void DoDispatchEvent(Event* event, bool async);
-
-  // Offers event to pointer watchers (via delegate) if the event is a mouse or
-  // touch event.
-  void MaybeDispatchToPointerWatchers(const Event& event);
-
   std::unique_ptr<EventGeneratorDelegate> delegate_;
-  gfx::Point current_location_;
+  gfx::Point current_screen_location_;
   EventTarget* current_target_ = nullptr;
   int flags_ = 0;
   bool grab_ = false;
 
   ui::PointerDetails touch_pointer_details_;
-
-  std::list<std::unique_ptr<Event>> pending_events_;
-
-  // Set to true to cause events to be posted asynchronously.
-  bool async_ = false;
 
   // Whether to skip mapping of coordinates from the root window to a hit window
   // when dispatching events.

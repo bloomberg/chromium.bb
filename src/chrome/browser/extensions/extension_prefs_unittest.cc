@@ -176,7 +176,7 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
       value->AppendString("udp-send-to::8888");
       ASSERT_TRUE(permission->FromValue(value.get(), NULL, NULL));
     }
-    api_perm_set1_.insert(permission.release());
+    api_perm_set1_.insert(std::move(permission));
 
     api_perm_set2_.insert(APIPermission::kHistory);
 

@@ -51,9 +51,11 @@ class LocalWindowProxy final : public WindowProxy {
   static LocalWindowProxy* Create(v8::Isolate* isolate,
                                   LocalFrame& frame,
                                   scoped_refptr<DOMWrapperWorld> world) {
-    return new LocalWindowProxy(isolate, frame, std::move(world));
+    return MakeGarbageCollected<LocalWindowProxy>(isolate, frame,
+                                                  std::move(world));
   }
 
+  LocalWindowProxy(v8::Isolate*, LocalFrame&, scoped_refptr<DOMWrapperWorld>);
   void Trace(blink::Visitor*) override;
 
   v8::Local<v8::Context> ContextIfInitialized() const {
@@ -72,8 +74,6 @@ class LocalWindowProxy final : public WindowProxy {
   void UpdateSecurityOrigin(const SecurityOrigin*);
 
  private:
-  LocalWindowProxy(v8::Isolate*, LocalFrame&, scoped_refptr<DOMWrapperWorld>);
-
   bool IsLocal() const override { return true; }
   void Initialize() override;
   void DisposeContext(Lifecycle next_status, FrameReuseStatus) override;

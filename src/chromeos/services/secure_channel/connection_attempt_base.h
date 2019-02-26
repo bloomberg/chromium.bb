@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/stl_util.h"
+#include "base/time/default_clock.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/secure_channel/authenticated_channel.h"
 #include "chromeos/services/secure_channel/connect_to_device_operation.h"
@@ -48,8 +49,10 @@ class ConnectionAttemptBase : public ConnectionAttempt<FailureDetailType> {
  protected:
   ConnectionAttemptBase(
       ConnectionAttemptDelegate* delegate,
-      const ConnectionAttemptDetails& connection_attempt_details)
+      const ConnectionAttemptDetails& connection_attempt_details,
+      base::Clock* clock = base::DefaultClock::GetInstance())
       : ConnectionAttempt<FailureDetailType>(delegate,
+                                             clock,
                                              connection_attempt_details),
         weak_ptr_factory_(this) {}
 

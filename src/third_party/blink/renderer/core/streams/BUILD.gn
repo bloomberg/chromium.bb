@@ -6,6 +6,8 @@ import("//third_party/blink/renderer/core/core.gni")
 
 blink_core_sources("streams") {
   sources = [
+    "readable_stream.cc",
+    "readable_stream.h",
     "readable_stream_default_controller_wrapper.h",
     "readable_stream_operations.cc",
     "readable_stream_operations.h",
@@ -18,5 +20,7 @@ blink_core_sources("streams") {
     "transform_stream_transformer.h",
     "underlying_source_base.cc",
     "underlying_source_base.h",
+    "writable_stream.cc",
+    "writable_stream.h",
   ]
 }

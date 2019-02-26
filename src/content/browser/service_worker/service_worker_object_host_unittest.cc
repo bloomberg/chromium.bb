@@ -55,8 +55,7 @@ class ExtendableMessageEventTestHelper : public EmbeddedWorkerTestHelper {
       mojom::ServiceWorker::DispatchExtendableMessageEventCallback callback)
       override {
     events_.push_back(std::move(event));
-    std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-                            base::TimeTicks::Now());
+    std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
   }
 
   const std::vector<mojom::ExtendableMessageEventPtr>& events() {
@@ -215,10 +214,10 @@ class ServiceWorkerObjectHostTest : public testing::Test {
 
 TEST_F(ServiceWorkerObjectHostTest, OnVersionStateChanged) {
   const int64_t kProviderId = 99;
-  const GURL pattern("https://www.example.com/");
+  const GURL scope("https://www.example.com/");
   const GURL script_url("https://www.example.com/service_worker.js");
   Initialize(std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath()));
-  SetUpRegistration(pattern, script_url);
+  SetUpRegistration(scope, script_url);
   registration_->SetInstallingVersion(version_);
 
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
@@ -227,9 +226,9 @@ TEST_F(ServiceWorkerObjectHostTest, OnVersionStateChanged) {
           helper_->mock_render_process_id(), kProviderId,
           true /* is_parent_frame_secure */, helper_->context()->AsWeakPtr(),
           &remote_endpoint);
-  provider_host->SetDocumentUrl(pattern);
+  provider_host->UpdateUrls(scope, scope);
   blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info =
-      GetRegistrationFromRemote(remote_endpoint.host_ptr()->get(), pattern);
+      GetRegistrationFromRemote(remote_endpoint.host_ptr()->get(), scope);
   // |version_| is the installing version of |registration_| now.
   EXPECT_TRUE(registration_info->installing);
   EXPECT_EQ(version_->version_id(), registration_info->installing->version_id);
@@ -246,10 +245,10 @@ TEST_F(ServiceWorkerObjectHostTest, OnVersionStateChanged) {
 
 TEST_F(ServiceWorkerObjectHostTest,
        DispatchExtendableMessageEvent_FromServiceWorker) {
-  const GURL pattern("https://www.example.com/");
+  const GURL scope("https://www.example.com/");
   const GURL script_url("https://www.example.com/service_worker.js");
   Initialize(std::make_unique<ExtendableMessageEventTestHelper>());
-  SetUpRegistration(pattern, script_url);
+  SetUpRegistration(scope, script_url);
 
   base::SimpleTestTickClock tick_clock;
   // Set mock clock on version_ to check timeout behavior.
@@ -321,10 +320,10 @@ TEST_F(ServiceWorkerObjectHostTest,
 
 TEST_F(ServiceWorkerObjectHostTest, DispatchExtendableMessageEvent_FromClient) {
   const int64_t kProviderId = 99;
-  const GURL pattern("https://www.example.com/");
+  const GURL scope("https://www.example.com/");
   const GURL script_url("https://www.example.com/service_worker.js");
   Initialize(std::make_unique<ExtendableMessageEventTestHelper>());
-  SetUpRegistration(pattern, script_url);
+  SetUpRegistration(scope, script_url);
 
   // Prepare a ServiceWorkerProviderHost for a window client. A
   // WebContents/RenderFrameHost must be created too because it's needed for
@@ -340,7 +339,7 @@ TEST_F(ServiceWorkerObjectHostTest, DispatchExtendableMessageEvent_FromClient) {
       ServiceWorkerProviderHost::Create(frame_host->GetProcess()->GetID(),
                                         std::move(provider_host_info),
                                         helper_->context()->AsWeakPtr());
-  provider_host->SetDocumentUrl(pattern);
+  provider_host->UpdateUrls(scope, scope);
   // Prepare a ServiceWorkerObjectHost for the above |provider_host|.
   blink::mojom::ServiceWorkerObjectInfoPtr info =
       provider_host->GetOrCreateServiceWorkerObjectHost(version_)
@@ -376,10 +375,10 @@ TEST_F(ServiceWorkerObjectHostTest, DispatchExtendableMessageEvent_FromClient) {
 
 TEST_F(ServiceWorkerObjectHostTest, DispatchExtendableMessageEvent_Fail) {
   const int64_t kProviderId = 99;
-  const GURL pattern("https://www.example.com/");
+  const GURL scope("https://www.example.com/");
   const GURL script_url("https://www.example.com/service_worker.js");
   Initialize(std::make_unique<FailToStartWorkerTestHelper>());
-  SetUpRegistration(pattern, script_url);
+  SetUpRegistration(scope, script_url);
 
   // Prepare a ServiceWorkerProviderHost for a window client. A
   // WebContents/RenderFrameHost must be created too because it's needed for
@@ -395,7 +394,7 @@ TEST_F(ServiceWorkerObjectHostTest, DispatchExtendableMessageEvent_Fail) {
       ServiceWorkerProviderHost::Create(frame_host->GetProcess()->GetID(),
                                         std::move(provider_host_info),
                                         helper_->context()->AsWeakPtr());
-  provider_host->SetDocumentUrl(pattern);
+  provider_host->UpdateUrls(scope, scope);
   // Prepare a ServiceWorkerObjectHost for the above |provider_host|.
   blink::mojom::ServiceWorkerObjectInfoPtr info =
       provider_host->GetOrCreateServiceWorkerObjectHost(version_)

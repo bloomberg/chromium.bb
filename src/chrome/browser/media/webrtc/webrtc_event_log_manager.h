@@ -59,9 +59,13 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
   class PeerConnectionTrackerProxy {
    public:
     virtual ~PeerConnectionTrackerProxy() = default;
-    virtual void SetWebRtcEventLoggingState(
+
+    virtual void EnableWebRtcEventLogging(
         const WebRtcEventLogPeerConnectionKey& key,
-        bool event_logging_enabled) = 0;
+        int output_period_ms) = 0;
+
+    virtual void DisableWebRtcEventLogging(
+        const WebRtcEventLogPeerConnectionKey& key) = 0;
   };
 
   // Ensures that no previous instantiation of the class was performed, then
@@ -132,6 +136,7 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
       int render_process_id,
       const std::string& peer_connection_id,
       size_t max_file_size_bytes,
+      int output_period_ms,
       size_t web_app_id,
       base::OnceCallback<void(bool, const std::string&, const std::string&)>
           reply);
@@ -220,10 +225,13 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
 
   // WebRtcRemoteEventLogsObserver implementation:
   void OnRemoteLogStarted(PeerConnectionKey key,
-                          const base::FilePath& file_path) override;
+                          const base::FilePath& file_path,
+                          int output_period_ms) override;
   void OnRemoteLogStopped(PeerConnectionKey key) override;
 
-  void OnLoggingTargetStarted(LoggingTarget target, PeerConnectionKey key);
+  void OnLoggingTargetStarted(LoggingTarget target,
+                              PeerConnectionKey key,
+                              int output_period_ms);
   void OnLoggingTargetStopped(LoggingTarget target, PeerConnectionKey key);
 
   void StartListeningForPrefChangeForBrowserContext(
@@ -281,6 +289,7 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
       const std::string& peer_connection_id,
       const base::FilePath& browser_context_dir,
       size_t max_file_size_bytes,
+      int output_period_ms,
       size_t web_app_id,
       base::OnceCallback<void(bool, const std::string&, const std::string&)>
           reply);

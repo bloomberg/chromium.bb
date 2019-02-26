@@ -254,7 +254,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 - (void)insertTextInternal:(id)text;
 
 // Returns the native Widget's drag drop client. Possibly null.
-- (views_bridge_mac::DragDropClient*)dragDropClient;
+- (views_bridge_mac::DragDropClient*)dragDropClient NS_RETURNS_INNER_POINTER;
 
 // Menu action handlers.
 - (void)undo:(id)sender;
@@ -273,8 +273,8 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 @synthesize textInputClient = textInputClient_;
 @synthesize drawMenuBackgroundForBlur = drawMenuBackgroundForBlur_;
 
-- (id)initWithBridge:(views::BridgedNativeWidgetImpl*)bridge
-              bounds:(gfx::Rect)bounds {
+- (instancetype)initWithBridge:(views::BridgedNativeWidgetImpl*)bridge
+                        bounds:(gfx::Rect)bounds {
   // To keep things simple, assume the origin is (0, 0) until there exists a use
   // case for something other than that.
   DCHECK(bounds.origin().IsOrigin());
@@ -713,14 +713,14 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
     return NO;
   BOOL result = [super becomeFirstResponder];
   if (result && bridge_)
-    bridge_->host()->SetIsFirstResponder(true);
+    bridge_->host()->OnIsFirstResponderChanged(true);
   return result;
 }
 
 - (BOOL)resignFirstResponder {
   BOOL result = [super resignFirstResponder];
   if (result && bridge_)
-    bridge_->host()->SetIsFirstResponder(false);
+    bridge_->host()->OnIsFirstResponderChanged(false);
   return result;
 }
 
@@ -753,7 +753,8 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   [super setFrameSize:newSize];
 
   if (bridge_)
-    bridge_->host()->SetViewSize(gfx::Size(newSize.width, newSize.height));
+    bridge_->host()->OnViewSizeChanged(
+        gfx::Size(newSize.width, newSize.height));
 }
 
 - (BOOL)isOpaque {
@@ -1597,7 +1598,8 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 
 - (id)accessibilityAttributeValue:(NSString*)attribute {
   if ([attribute isEqualToString:NSAccessibilityChildrenAttribute]) {
-    return @[ bridge_->host_helper()->GetNativeViewAccessible() ];
+    if (id accessible = bridge_->host_helper()->GetNativeViewAccessible())
+      return @[ accessible ];
   }
 
   return [super accessibilityAttributeValue:attribute];
@@ -1609,6 +1611,9 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 }
 
 - (id)accessibilityFocusedUIElement {
+  // This function should almost-never be called because when |self| is the
+  // first responder for the key NSWindow, BridgedNativeWidgetHostImpl's
+  // AccessibilityFocusOverrider will override the accessibility focus query.
   if (!bridge_)
     return nil;
   return [bridge_->host_helper()->GetNativeViewAccessible()

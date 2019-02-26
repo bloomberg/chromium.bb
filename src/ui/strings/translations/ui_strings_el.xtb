@@ -30,16 +30,19 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">Επιλογή όλ&amp;ων</translation>
+<translation id="1938451708255335766">Για να προσαρμόσετε την πυκνότητα της προβολής του παραθύρου, επανεκκινήστε την εφαρμογή.</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1ημ.}other{#ημ.}}</translation>
 <translation id="2148716181193084225">Σήμερα</translation>
 <translation id="2168039046890040389">Προηγούμενη σελίδα</translation>
 <translation id="2190355936436201913">(κενό)</translation>
+<translation id="2192232475740621500">Χρήση χαμηλής πυκνότητας</translation>
 <translation id="219905428774326614">Εφαρμογή εκκίνησης, όλες οι εφαρμογές</translation>
 <translation id="2267918077332197517">Αποκλεισμός όλων των ειδοποιήσεων από αυτόν τον ιστότοπο</translation>
 <translation id="2289052229480071835">Πατήστε τους στόχους αφής στην οθόνη σας.</translation>
 <translation id="2295140143284145483">Έρευνα</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="24452542372838207">Ανάπτυξη ειδοποίησης</translation>
+<translation id="2445449901874883781">Χρήση υψηλής πυκνότητας</translation>
 <translation id="2482878487686419369">Ειδοποιήσεις</translation>
 <translation id="2497284189126895209">Όλα τα αρχεία</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -60,6 +63,7 @@
 <translation id="3234408098842461169">Κάτω βέλος</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 ημέρα}other{# ημέρες}}</translation>
 <translation id="335581015389089642">Ομιλία</translation>
+<translation id="3479552764303398839">Όχι τώρα</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Απομένει 1 ημέρα}other{Απομένουν # ημέρες}}</translation>
 <translation id="3618849550573277856">Αναζήτηση "<ph name="LOOKUP_STRING" />"</translation>
 <translation id="364720409959344976">Επιλέξτε φάκελο για μεταφόρτωση</translation>
@@ -99,6 +103,7 @@
 <translation id="5613020302032141669">Αριστερό βέλος</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 λεπτό}other{# λεπτά}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 ημέρα και }other{# ημέρες και }}</translation>
+<translation id="5895138241574237353">Επανεκκίνηση</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{Απομένει 1 δευτερόλεπτο}other{Απομένουν # δευτερόλεπτα}}</translation>
 <translation id="5941711191222866238">Ελαχιστοποίηση</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 ώρα}other{# ώρες}}</translation>

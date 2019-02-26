@@ -14,8 +14,12 @@
 
 namespace syncer {
 
-ProxyDataTypeController::ProxyDataTypeController(ModelType type)
-    : DataTypeController(type), state_(NOT_RUNNING) {
+ProxyDataTypeController::ProxyDataTypeController(
+    ModelType type,
+    const base::RepeatingCallback<void(State)>& state_changed_cb)
+    : DataTypeController(type),
+      state_changed_cb_(state_changed_cb),
+      state_(NOT_RUNNING) {
   DCHECK(ProxyTypes().Has(type));
 }
 
@@ -39,9 +43,9 @@ void ProxyDataTypeController::LoadModels(
     const ConfigureContext& configure_context,
     const ModelLoadCallback& model_load_callback) {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(configure_context.storage_option,
-            ConfigureContext::STORAGE_ON_DISK);
+  DCHECK_EQ(configure_context.storage_option, STORAGE_ON_DISK);
   state_ = MODEL_LOADED;
+  state_changed_cb_.Run(state_);
   model_load_callback.Run(type(), SyncError());
 }
 
@@ -54,6 +58,7 @@ void ProxyDataTypeController::StartAssociating(StartCallback start_callback) {
   SyncMergeResult local_merge_result(type());
   SyncMergeResult syncer_merge_result(type());
   state_ = RUNNING;
+  state_changed_cb_.Run(state_);
   std::move(start_callback)
       .Run(DataTypeController::OK, local_merge_result, syncer_merge_result);
 }
@@ -61,6 +66,7 @@ void ProxyDataTypeController::StartAssociating(StartCallback start_callback) {
 void ProxyDataTypeController::Stop(ShutdownReason shutdown_reason,
                                    StopCallback callback) {
   state_ = NOT_RUNNING;
+  state_changed_cb_.Run(state_);
   std::move(callback).Run();
 }
 

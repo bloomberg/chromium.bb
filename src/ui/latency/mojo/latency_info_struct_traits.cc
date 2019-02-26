@@ -12,23 +12,23 @@ namespace {
 
 ui::mojom::SourceEventType UISourceEventTypeToMojo(ui::SourceEventType type) {
   switch (type) {
-    case ui::UNKNOWN:
+    case ui::SourceEventType::UNKNOWN:
       return ui::mojom::SourceEventType::UNKNOWN;
-    case ui::WHEEL:
+    case ui::SourceEventType::WHEEL:
       return ui::mojom::SourceEventType::WHEEL;
-    case ui::MOUSE:
+    case ui::SourceEventType::MOUSE:
       return ui::mojom::SourceEventType::MOUSE;
-    case ui::TOUCH:
+    case ui::SourceEventType::TOUCH:
       return ui::mojom::SourceEventType::TOUCH;
-    case ui::INERTIAL:
+    case ui::SourceEventType::INERTIAL:
       return ui::mojom::SourceEventType::INERTIAL;
-    case ui::KEY_PRESS:
+    case ui::SourceEventType::KEY_PRESS:
       return ui::mojom::SourceEventType::KEY_PRESS;
-    case ui::TOUCHPAD:
+    case ui::SourceEventType::TOUCHPAD:
       return ui::mojom::SourceEventType::TOUCHPAD;
-    case ui::FRAME:
+    case ui::SourceEventType::FRAME:
       return ui::mojom::SourceEventType::FRAME;
-    case ui::OTHER:
+    case ui::SourceEventType::OTHER:
       return ui::mojom::SourceEventType::OTHER;
   }
   NOTREACHED();
@@ -38,23 +38,23 @@ ui::mojom::SourceEventType UISourceEventTypeToMojo(ui::SourceEventType type) {
 ui::SourceEventType MojoSourceEventTypeToUI(ui::mojom::SourceEventType type) {
   switch (type) {
     case ui::mojom::SourceEventType::UNKNOWN:
-      return ui::UNKNOWN;
+      return ui::SourceEventType::UNKNOWN;
     case ui::mojom::SourceEventType::WHEEL:
-      return ui::WHEEL;
+      return ui::SourceEventType::WHEEL;
     case ui::mojom::SourceEventType::MOUSE:
-      return ui::MOUSE;
+      return ui::SourceEventType::MOUSE;
     case ui::mojom::SourceEventType::TOUCH:
-      return ui::TOUCH;
+      return ui::SourceEventType::TOUCH;
     case ui::mojom::SourceEventType::INERTIAL:
-      return ui::INERTIAL;
+      return ui::SourceEventType::INERTIAL;
     case ui::mojom::SourceEventType::KEY_PRESS:
-      return ui::KEY_PRESS;
+      return ui::SourceEventType::KEY_PRESS;
     case ui::mojom::SourceEventType::TOUCHPAD:
-      return ui::TOUCHPAD;
+      return ui::SourceEventType::TOUCHPAD;
     case ui::mojom::SourceEventType::FRAME:
-      return ui::FRAME;
+      return ui::SourceEventType::FRAME;
     case ui::mojom::SourceEventType::OTHER:
-      return ui::OTHER;
+      return ui::SourceEventType::OTHER;
   }
   NOTREACHED();
   return ui::SourceEventType::UNKNOWN;
@@ -115,6 +115,13 @@ StructTraits<ui::mojom::LatencyInfoDataView,
 }
 
 // static
+float StructTraits<ui::mojom::LatencyInfoDataView,
+                   ui::LatencyInfo>::scroll_update_delta(const ui::LatencyInfo&
+                                                             info) {
+  return info.scroll_update_delta();
+}
+
+// static
 bool StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo>::Read(
     ui::mojom::LatencyInfoDataView data,
     ui::LatencyInfo* out) {
@@ -128,6 +135,7 @@ bool StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo>::Read(
   out->began_ = data.began();
   out->terminated_ = data.terminated();
   out->source_event_type_ = MojoSourceEventTypeToUI(data.source_event_type());
+  out->scroll_update_delta_ = data.scroll_update_delta();
 
   return true;
 }
@@ -184,6 +192,9 @@ EnumTraits<ui::mojom::LatencyComponentType, ui::LatencyComponentType>::ToMojom(
     case ui::INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT:
       return ui::mojom::LatencyComponentType::
           INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT;
+    case ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT_COMPONENT:
+      return ui::mojom::LatencyComponentType::
+          INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT_COMPONENT;
     case ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT:
       return ui::mojom::LatencyComponentType::
           INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT;
@@ -288,6 +299,10 @@ bool EnumTraits<ui::mojom::LatencyComponentType, ui::LatencyComponentType>::
     case ui::mojom::LatencyComponentType::
         INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT:
       *output = ui::INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT;
+      return true;
+    case ui::mojom::LatencyComponentType::
+        INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT_COMPONENT:
+      *output = ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT_COMPONENT;
       return true;
   }
   return false;

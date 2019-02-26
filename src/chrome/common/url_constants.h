@@ -101,9 +101,6 @@ extern const char kCloudPrintLearnMoreURL[];
 // "Learn more" URL for the Cloud Print Preview certificate error.
 extern const char kCloudPrintCertificateErrorLearnMoreURL[];
 
-// "Learn more" URL for the Cloud Print Preview No Destinations Promotion.
-extern const char kCloudPrintNoDestinationsLearnMoreURL[];
-
 extern const char kContentSettingsExceptionsLearnMoreURL[];
 
 // "Learn more" URL for "Aw snap" page when showing "Reload" button.
@@ -131,6 +128,12 @@ extern const char kExtensionInvalidRequestURL[];
 // URL of the 'Activity controls' section of the privacy settings page.
 extern const char kGoogleAccountActivityControlsURL[];
 
+// URL of the Google Account.
+extern const char kGoogleAccountURL[];
+
+// URL of the Google Password Manager.
+extern const char kGooglePasswordManagerURL[];
+
 // The URL for the "Learn more" page for the usage/crash reporting option in the
 // first run dialog.
 extern const char kLearnMoreReportingURL[];
@@ -141,6 +144,9 @@ extern const char kLegacySupervisedUserManagementDisplayURL[];
 
 // Management URL for Chrome Supervised Users.
 extern const char kLegacySupervisedUserManagementURL[];
+
+// The URL for the Learn More page about policies and enterprise enrollment.
+extern const char kManagedUiLearnMoreUrl[];
 
 // "myactivity.google.com" URL for the history checkbox in ClearBrowsingData.
 extern const char kMyActivityUrlInClearBrowsingData[];

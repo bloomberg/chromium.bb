@@ -22,6 +22,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "net/base/priority_queue.h"
 #include "net/base/request_priority.h"
 #include "net/nqe/effective_connection_type.h"
@@ -29,6 +30,7 @@
 
 namespace base {
 class SequencedTaskRunner;
+class TickClock;
 }
 
 namespace net {
@@ -81,7 +83,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceScheduler {
     base::OnceClosure resume_callback_;
   };
 
-  explicit ResourceScheduler(bool enabled);
+  explicit ResourceScheduler(bool enabled,
+                             const base::TickClock* tick_clock = nullptr);
   ~ResourceScheduler();
 
   // Requests that this ResourceScheduler schedule, and eventually loads, the
@@ -136,29 +139,18 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceScheduler {
   void ReprioritizeRequest(net::URLRequest* request,
                            net::RequestPriority new_priority);
 
+  // Returns true if the timer that dispatches long queued requests is running.
+  bool IsLongQueuedRequestsDispatchTimerRunning() const;
+
   bool priority_requests_delayable() const {
     return priority_requests_delayable_;
   }
   bool head_priority_requests_delayable() const {
     return head_priority_requests_delayable_;
   }
-  bool yielding_scheduler_enabled() const {
-    return yielding_scheduler_enabled_;
-  }
-  int max_requests_before_yielding() const {
-    return max_requests_before_yielding_;
-  }
-  base::TimeDelta yield_time() const { return yield_time_; }
   base::SequencedTaskRunner* task_runner() { return task_runner_.get(); }
 
   // Testing setters
-  void SetMaxRequestsBeforeYieldingForTesting(
-      int max_requests_before_yielding) {
-    max_requests_before_yielding_ = max_requests_before_yielding;
-  }
-  void SetYieldTimeForTesting(base::TimeDelta yield_time) {
-    yield_time_ = yield_time;
-  }
   void SetTaskRunnerForTesting(
       scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner) {
     task_runner_ = std::move(sequenced_task_runner);
@@ -168,6 +160,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceScheduler {
 
   void SetResourceSchedulerParamsManagerForTests(
       const ResourceSchedulerParamsManager& resource_scheduler_params_manager);
+
+  // Dispatch requests that have been queued for too long to network.
+  void DispatchLongQueuedRequestsForTesting();
 
  private:
   class Client;
@@ -192,8 +187,21 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceScheduler {
   // Returns the client for the given |child_id| and |route_id| combo.
   Client* GetClient(int child_id, int route_id);
 
+  // May start the timer that dispatches long queued requests
+  void StartLongQueuedRequestsDispatchTimerIfNeeded();
+
+  // Called when |long_queued_requests_dispatch_timer_| is fired. May start any
+  // pending requests that can be started.
+  void OnLongQueuedRequestsDispatchTimerFired();
+
   ClientMap client_map_;
   RequestSet unowned_requests_;
+
+  // Guaranteed to be non-null.
+  const base::TickClock* tick_clock_;
+
+  // Timer to dispatch requests that may have been queued for too long.
+  base::OneShotTimer long_queued_requests_dispatch_timer_;
 
   // Whether or not to enable ResourceScheduling. This will almost always be
   // enabled, except for some C++ headless embedders who may implement their own
@@ -207,12 +215,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceScheduler {
   // True if requests to servers that support priorities (e.g., H2/QUIC) can
   // be delayed while the parser is in head.
   bool head_priority_requests_delayable_;
-
-  // True if the scheduler should yield between several successive calls to
-  // start resource requests.
-  bool yielding_scheduler_enabled_;
-  int max_requests_before_yielding_;
-  base::TimeDelta yield_time_;
 
   ResourceSchedulerParamsManager resource_scheduler_params_manager_;
 

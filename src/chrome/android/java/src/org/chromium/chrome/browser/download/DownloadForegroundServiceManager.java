@@ -20,7 +20,7 @@ import com.google.ipc.invalidation.util.Preconditions;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.download.DownloadNotificationService2.DownloadStatus;
+import org.chromium.chrome.browser.download.DownloadNotificationService.DownloadStatus;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,12 +37,12 @@ public class DownloadForegroundServiceManager {
     private static class DownloadUpdate {
         int mNotificationId;
         Notification mNotification;
-        @DownloadNotificationService2.DownloadStatus
+        @DownloadNotificationService.DownloadStatus
         int mDownloadStatus;
         Context mContext;
 
         DownloadUpdate(int notificationId, Notification notification,
-                @DownloadNotificationService2.DownloadStatus int downloadStatus, Context context) {
+                @DownloadNotificationService.DownloadStatus int downloadStatus, Context context) {
             mNotificationId = notificationId;
             mNotification = notification;
             mDownloadStatus = downloadStatus;
@@ -84,9 +84,9 @@ public class DownloadForegroundServiceManager {
     public DownloadForegroundServiceManager() {}
 
     public void updateDownloadStatus(Context context,
-            @DownloadNotificationService2.DownloadStatus int downloadStatus, int notificationId,
+            @DownloadNotificationService.DownloadStatus int downloadStatus, int notificationId,
             Notification notification) {
-        if (downloadStatus != DownloadNotificationService2.DownloadStatus.IN_PROGRESS) {
+        if (downloadStatus != DownloadNotificationService.DownloadStatus.IN_PROGRESS) {
             Log.w(TAG,
                     "updateDownloadStatus status: " + downloadStatus + ", id: " + notificationId);
         }
@@ -183,8 +183,8 @@ public class DownloadForegroundServiceManager {
         return null;
     }
 
-    private boolean isActive(@DownloadNotificationService2.DownloadStatus int downloadStatus) {
-        return downloadStatus == DownloadNotificationService2.DownloadStatus.IN_PROGRESS;
+    private boolean isActive(@DownloadNotificationService.DownloadStatus int downloadStatus) {
+        return downloadStatus == DownloadNotificationService.DownloadStatus.IN_PROGRESS;
     }
 
     private void cleanDownloadUpdateQueue() {
@@ -266,16 +266,16 @@ public class DownloadForegroundServiceManager {
     /** Helper code to stop and unbind service. */
 
     @VisibleForTesting
-    void stopAndUnbindService(@DownloadNotificationService2.DownloadStatus int downloadStatus) {
+    void stopAndUnbindService(@DownloadNotificationService.DownloadStatus int downloadStatus) {
         Log.w(TAG, "stopAndUnbindService status: " + downloadStatus);
         Preconditions.checkNotNull(mBoundService);
         mIsServiceBound = false;
 
         @DownloadForegroundService.StopForegroundNotification
         int stopForegroundNotification;
-        if (downloadStatus == DownloadNotificationService2.DownloadStatus.CANCELLED) {
+        if (downloadStatus == DownloadNotificationService.DownloadStatus.CANCELLED) {
             stopForegroundNotification = DownloadForegroundService.StopForegroundNotification.KILL;
-        } else if (downloadStatus == DownloadNotificationService2.DownloadStatus.PAUSED) {
+        } else if (downloadStatus == DownloadNotificationService.DownloadStatus.PAUSED) {
             stopForegroundNotification =
                     DownloadForegroundService.StopForegroundNotification.DETACH_OR_PERSIST;
         } else {

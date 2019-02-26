@@ -6,8 +6,8 @@
 
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/location_bar/extended_touch_target_button.h"
-#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -100,6 +100,11 @@ const CGFloat kButtonTrailingSpacing = 10;
 
 @implementation LocationBarSteadyButton
 
+- (void)layoutSubviews {
+  [super layoutSubviews];
+  self.layer.cornerRadius = self.bounds.size.height / 2.0;
+}
+
 - (void)setHighlighted:(BOOL)highlighted {
   [super setHighlighted:highlighted];
   [UIView animateWithDuration:0.1
@@ -160,6 +165,7 @@ const CGFloat kButtonTrailingSpacing = 10;
     [_locationLabel
         setContentCompressionResistancePriority:UILayoutPriorityDefaultLow
                                         forAxis:UILayoutConstraintAxisVertical];
+    _locationLabel.font = [self locationLabelFont];
 
     // Container for location label and icon.
     _locationContainerView = [[UIView alloc] init];
@@ -191,7 +197,6 @@ const CGFloat kButtonTrailingSpacing = 10;
 
     _locationButton = [[LocationBarSteadyButton alloc] init];
     _locationButton.translatesAutoresizingMaskIntoConstraints = NO;
-    _locationButton.layer.cornerRadius = kAdaptiveLocationBarCornerRadius;
     [_locationButton addSubview:_trailingButton];
     [_locationButton addSubview:_locationContainerView];
 
@@ -328,8 +333,10 @@ const CGFloat kButtonTrailingSpacing = 10;
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
-  self.locationLabel.font =
-      [UIFont systemFontOfSize:kLocationBarSteadyFontSize];
+  if (previousTraitCollection.preferredContentSizeCategory !=
+      self.traitCollection.preferredContentSizeCategory) {
+    self.locationLabel.font = [self locationLabelFont];
+  }
 }
 
 #pragma mark - UIAccessibilityContainer
@@ -361,6 +368,13 @@ const CGFloat kButtonTrailingSpacing = 10;
     self.locationButton.accessibilityValue =
         [NSString stringWithFormat:@"%@", self.locationLabel.text];
   }
+}
+
+// Returns the font size for the location label.
+- (UIFont*)locationLabelFont {
+  return PreferredFontForTextStyleWithMaxCategory(
+      UIFontTextStyleBody, self.traitCollection.preferredContentSizeCategory,
+      UIContentSizeCategoryAccessibilityExtraLarge);
 }
 
 @end

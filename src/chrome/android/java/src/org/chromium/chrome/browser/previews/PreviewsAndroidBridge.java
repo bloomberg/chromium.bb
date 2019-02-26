@@ -6,6 +6,9 @@ package org.chromium.chrome.browser.previews;
 
 import org.chromium.content_public.browser.WebContents;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 /**
  * Java bridge class to C++ Previews code.
  */
@@ -30,11 +33,25 @@ public final class PreviewsAndroidBridge {
     }
 
     /**
-     * Returns the origin host name of the preview being shown.
+     * Returns the original host name for visibleURL. This should only be used on preview pages.
      */
-    public String getOriginalHost(WebContents webContents) {
-        assert shouldShowPreviewUI(webContents) : "getOriginalHost called on a non-preview page";
-        return nativeGetOriginalHost(mNativePreviewsAndroidBridge, webContents);
+    public String getOriginalHost(String visibleURL) {
+        try {
+            return new URI(getOriginalURL(visibleURL)).getHost();
+        } catch (URISyntaxException e) {
+        }
+        return "";
+    }
+
+    /**
+     * Returns the original URL of the given visible URL if the given URL is for a HTTPS Server
+     * Preview. Otherwise, the given visibleURL is returned.
+     */
+    public String getOriginalURL(String visibleURL) {
+        final String originalURL =
+                nativeGetLitePageRedirectOriginalURL(mNativePreviewsAndroidBridge, visibleURL);
+        if (originalURL == null) return visibleURL;
+        return originalURL;
     }
 
     /**
@@ -65,8 +82,8 @@ public final class PreviewsAndroidBridge {
     private native long nativeInit();
     private native boolean nativeShouldShowPreviewUI(
             long nativePreviewsAndroidBridge, WebContents webContents);
-    private native String nativeGetOriginalHost(
-            long nativePreviewsAndroidBridge, WebContents webContents);
+    private native String nativeGetLitePageRedirectOriginalURL(
+            long nativePreviewsAndroidBridge, String visibleURL);
     private native String nativeGetStalePreviewTimestamp(
             long nativePreviewsAndroidBridge, WebContents webContents);
     private native void nativeLoadOriginal(

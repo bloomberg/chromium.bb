@@ -44,22 +44,22 @@ void InstallOriginTrialFeaturesForCore(
   const DOMWrapperWorld& world = script_state->World();
   // TODO(iclelland): Unify ContextFeatureSettings with the rest of the
   // conditional features.
-  if (wrapper_type_info == &V8Window::wrapperTypeInfo) {
+  if (wrapper_type_info == &V8Window::wrapper_type_info) {
     auto* settings = ContextFeatureSettings::From(
         execution_context,
         ContextFeatureSettings::CreationMode::kDontCreateIfNotExists);
     if (settings && settings->isMojoJSEnabled()) {
       v8::Local<v8::Object> instance_object =
           script_state->GetContext()->Global();
-      V8Window::installMojoJS(isolate, world, instance_object, prototype_object,
+      V8Window::InstallMojoJS(isolate, world, instance_object, prototype_object,
                               interface_object);
     }
   }
   // TODO(iclelland): Extract this common code out of OriginTrialFeaturesForCore
   // and OriginTrialFeaturesForModules into a block.
-  if (wrapper_type_info == &V8TestObject::wrapperTypeInfo) {
-    if (OriginTrials::FeatureNameEnabled(execution_context)) {
-      V8TestObject::installFeatureName(
+  if (wrapper_type_info == &V8TestObject::wrapper_type_info) {
+    if (origin_trials::FeatureNameEnabled(execution_context)) {
+      V8TestObject::InstallFeatureName(
           isolate, world, v8::Local<v8::Object>(), prototype_object, interface_object);
     }
   }
@@ -76,10 +76,10 @@ void InstallPendingOriginTrialFeatureForCore(const String& feature,
   v8::Isolate* isolate = script_state->GetIsolate();
   const DOMWrapperWorld& world = script_state->World();
   V8PerContextData* context_data = script_state->PerContextData();
-  if (feature == OriginTrials::kFeatureNameTrialName) {
+  if (feature == origin_trials::kFeatureNameTrialName) {
     if (context_data->GetExistingConstructorAndPrototypeForType(
-            &V8TestObject::wrapperTypeInfo, &prototype_object, &interface_object)) {
-      V8TestObject::installFeatureName(
+            &V8TestObject::wrapper_type_info, &prototype_object, &interface_object)) {
+      V8TestObject::InstallFeatureName(
           isolate, world, v8::Local<v8::Object>(), prototype_object, interface_object);
     }
   }

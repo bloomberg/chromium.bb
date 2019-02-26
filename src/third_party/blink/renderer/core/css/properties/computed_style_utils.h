@@ -143,7 +143,6 @@ class ComputedStyleUtils {
   static CSSValueList* ValueForBorderRadiusShorthand(const ComputedStyle&);
   static CSSValue* StrokeDashArrayToCSSValueList(const SVGDashArray&,
                                                  const ComputedStyle&);
-  static CSSValue* PaintOrderToCSSValueList(const SVGComputedStyle&);
   static CSSValue* AdjustSVGPaintForCurrentColor(const SVGPaint&, const Color&);
   static CSSValue* ValueForSVGResource(const StyleSVGResource*);
   static CSSValue* ValueForShadowData(const ShadowData&,
@@ -189,7 +188,7 @@ class ComputedStyleUtils {
                                                 Node*,
                                                 bool allow_visited_style);
   static CSSValue* ScrollCustomizationFlagsToCSSValue(
-      ScrollCustomization::ScrollDirection);
+      scroll_customization::ScrollDirection);
   static CSSValue* ValueForGapLength(const GapLength&, const ComputedStyle&);
 };
 

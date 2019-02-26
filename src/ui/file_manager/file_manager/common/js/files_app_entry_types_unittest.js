@@ -37,13 +37,14 @@ function testEntryList(testReportCallback) {
   assertEquals('entry-list://my_files', entryList.toURL());
   assertEquals('my_files', entryList.rootType);
   assertFalse(entryList.isNativeType);
-  assertEquals(0, entryList.children.length);
+  assertEquals(null, entryList.getNativeEntry());
+  assertEquals(0, entryList.getUIChildren().length);
   assertTrue(entryList.isDirectory);
   assertFalse(entryList.isFile);
 
   entryList.addEntry(
       new EntryList('Child Entry', VolumeManagerCommon.RootType.MY_FILES));
-  assertEquals(1, entryList.children.length);
+  assertEquals(1, entryList.getUIChildren().length);
 
   const reader = entryList.createReader();
   // How many times the reader callback |accumulateResults| has been called?
@@ -91,27 +92,17 @@ function testEntryListGetParent(testReportCallback) {
 function testEntryListAddEntry() {
   const entryList =
       new EntryList('My files', VolumeManagerCommon.RootType.MY_FILES);
-  assertEquals(0, entryList.children.length);
+  assertEquals(0, entryList.getUIChildren().length);
 
   const childEntry = fakeVolumeEntry(VolumeManagerCommon.VolumeType.DOWNLOADS);
   entryList.addEntry(childEntry);
-  assertEquals(1, entryList.children.length);
-  assertEquals(childEntry, entryList.children[0]);
-}
-
-/** Tests methods to remove entries. */
-function testEntryListRemoveEntry() {
-  const entryList =
-      new EntryList('My files', VolumeManagerCommon.RootType.MY_FILES);
-
-  const childEntry = fakeVolumeEntry(VolumeManagerCommon.VolumeType.DOWNLOADS);
-  entryList.addEntry(childEntry);
-  assertTrue(entryList.removeEntry(childEntry));
-  assertEquals(0, entryList.children.length);
+  assertEquals(1, entryList.getUIChildren().length);
+  assertEquals(childEntry, entryList.getUIChildren()[0]);
 }
 
 /**
- * Tests methods findIndexByVolumeInfo, removeByVolumeType, removeByRootType.
+ * Tests EntryList's methods addEntry, findIndexByVolumeInfo,
+ * removeByVolumeType, removeByRootType.
  */
 function testEntryFindIndex() {
   const entryList =
@@ -139,7 +130,7 @@ function testEntryFindIndex() {
   // Test removeByVolumeType.
   assertTrue(
       entryList.removeByVolumeType(VolumeManagerCommon.VolumeType.CROSTINI));
-  assertEquals(1, entryList.children.length);
+  assertEquals(1, entryList.getUIChildren().length);
   // Now crostini volume doesn't exist anymore, so should return False.
   assertFalse(
       entryList.removeByVolumeType(VolumeManagerCommon.VolumeType.CROSTINI));
@@ -147,7 +138,54 @@ function testEntryFindIndex() {
   // Test removeByRootType.
   entryList.addEntry(fakeEntry);
   assertTrue(entryList.removeByRootType(VolumeManagerCommon.RootType.CROSTINI));
-  assertEquals(1, entryList.children.length);
+  assertEquals(1, entryList.getUIChildren().length);
+}
+
+/**
+ * Tests VolumeEntry's methods findIndexByVolumeInfo, removeByVolumeType,
+ * removeByRootType.
+ * @suppress {accessControls} to be able to access private properties.
+ */
+function testVolumeEntryFindIndex() {
+  const fakeRootEntry = createFakeDisplayRoot();
+  const volumeEntry =
+      fakeVolumeEntry(VolumeManagerCommon.VolumeType.DOWNLOADS, fakeRootEntry);
+
+  const crostini = fakeVolumeEntry(VolumeManagerCommon.VolumeType.CROSTINI);
+  const android = fakeVolumeEntry(VolumeManagerCommon.VolumeType.ANDROID_FILES);
+
+  const fakeEntry = /** @type{!Entry} */ ({
+    isDirectory: true,
+    rootType: VolumeManagerCommon.RootType.CROSTINI,
+    name: 'Linux files',
+    toURL: function() {
+      return 'fake-entry://linux-files';
+    }
+  });
+
+  volumeEntry.addEntry(crostini);
+  volumeEntry.addEntry(android);
+
+  // Test findIndexByVolumeInfo.
+  assertEquals(0, volumeEntry.findIndexByVolumeInfo(crostini.volumeInfo));
+  assertEquals(1, volumeEntry.findIndexByVolumeInfo(android.volumeInfo));
+  assertEquals(2, volumeEntry.getUIChildren().length);
+  assertEquals(crostini, volumeEntry.getUIChildren()[0]);
+  assertEquals(android, volumeEntry.getUIChildren()[1]);
+
+  // Test removeByVolumeType.
+  assertTrue(
+      volumeEntry.removeByVolumeType(VolumeManagerCommon.VolumeType.CROSTINI));
+  assertEquals(1, volumeEntry.children_.length);
+  // Now crostini volume doesn't exist anymore, so should return False.
+  assertFalse(
+      volumeEntry.removeByVolumeType(VolumeManagerCommon.VolumeType.CROSTINI));
+
+  // Test removeByRootType.
+  volumeEntry.addEntry(fakeEntry);
+  assertTrue(
+      volumeEntry.removeByRootType(VolumeManagerCommon.RootType.CROSTINI));
+  assertEquals(1, volumeEntry.children_.length);
 }
 
 /** Tests method EntryList.getMetadata. */
@@ -203,30 +241,93 @@ function testStaticReader(testReportCallback) {
       testReportCallback);
 }
 
+/** Tests CombinedReader.readEntries. */
+function testCombinedReader(testReportCallback) {
+  const innerReaders = [
+    new StaticReader(['file1']),
+    new StaticReader(['file2']),
+  ];
+  const reader = new CombinedReaders(innerReaders);
+  const testResults = [];
+  // How many times the reader callback |accumulateResults| has been called?
+  let callCounter = 0;
+  const accumulateResults = (readerResult) => {
+    callCounter++;
+    // merge on testResults.
+    readerResult.map(f => testResults.push(f));
+    if (readerResult.length > 0)
+      reader.readEntries(accumulateResults, () => {});
+  };
+
+  reader.readEntries(accumulateResults, () => {});
+  // readEntries runs asynchronously, so let's wait it to be called.
+  reportPromise(
+      waitUntil(() => {
+        // accumulateResults should be called 2x in normal conditions;
+        return callCounter >= 3;
+      }).then(() => {
+        // Now we can check the final result.
+        assertEquals(3, callCounter);
+        assertEquals(2, testResults.length);
+        assertEquals('file1', testResults[0]);
+        assertEquals('file2', testResults[1]);
+      }),
+      testReportCallback);
+}
+
+function testCombinedReaderError(testReportCallback) {
+  const expectedError = new Error('a fake error');
+  const alwaysFailReader = {
+    readEntries: (success, error) => {
+      error(expectedError);
+    },
+  };
+  const innerReaders = [
+    new StaticReader(['file1']),
+    alwaysFailReader,
+  ];
+  const reader = new CombinedReaders(innerReaders);
+  const errors = [];
+  const accumulateFailures = (error) => {
+    errors.push(error);
+  };
+
+  let callCounter = 0;
+  const testResults = [];
+  const accumulateResults = (readerResult) => {
+    callCounter++;
+    // merge on testResults.
+    readerResult.map(f => testResults.push(f));
+    if (readerResult.length > 0)
+      reader.readEntries(accumulateResults, accumulateFailures);
+  };
+
+
+  reader.readEntries(accumulateResults, accumulateFailures);
+  // readEntries runs asynchronously, so let's wait it to be called.
+  reportPromise(
+      waitUntil(() => {
+        // accumulateResults should be called 2x in normal conditions;
+        return callCounter >= 1 && errors.length >= 1;
+      }).then(() => {
+        // Now we can check the final result.
+        assertEquals(1, callCounter);
+        assertEquals(1, testResults.length);
+        assertEquals('file1', testResults[0]);
+
+        assertEquals(1, errors.length);
+        assertEquals(expectedError, errors[0]);
+      }),
+      testReportCallback);
+}
+
 /**
  * Returns an object that can be used as displayRoot on a FakeVolumeInfo.
  * VolumeEntry delegates many attributes and methods to displayRoot.
  */
 function createFakeDisplayRoot() {
-  const fakeRootEntry = {
-    filesystem: 'fake-filesystem://',
-    fullPath: '/fake/full/path',
-    isDirectory: true,
-    isFile: false,
-    name: 'fs-name',
-    toURL: () => {
-      return 'fake-filesystem://fake/full/path';
-    },
-    createReader: () => {
-      return 'FAKE READER';
-    },
-    getMetadata: (success, error) => {
-      // Returns static date as modificationTime for testing.
-      setTimeout(
-          () => success({modificationTime: new Date(Date.UTC(2018, 6, 27))}));
-    },
-  };
-  return fakeRootEntry;
+  const fs = new MockFileSystem('fake-fs');
+  return fs.root;
 }
 
 /**
@@ -237,16 +338,74 @@ function testVolumeEntry() {
   const volumeEntry =
       fakeVolumeEntry(VolumeManagerCommon.VolumeType.DOWNLOADS, fakeRootEntry);
 
-  assertEquals(fakeRootEntry, volumeEntry.rootEntry);
+  assertEquals(fakeRootEntry, volumeEntry.getNativeEntry());
   assertEquals(VolumeManagerCommon.VolumeType.DOWNLOADS, volumeEntry.iconName);
-  assertEquals('fake-filesystem://', volumeEntry.filesystem);
-  assertEquals('/fake/full/path', volumeEntry.fullPath);
-  assertEquals('fake-filesystem://fake/full/path', volumeEntry.toURL());
+  assertEquals('filesystem:fake-fs/', volumeEntry.filesystem.rootURL);
+  assertEquals('/', volumeEntry.fullPath);
+  assertEquals('filesystem:fake-fs/', volumeEntry.toURL());
   assertEquals('Fake Filesystem', volumeEntry.name);
-  assertEquals('FAKE READER', volumeEntry.createReader());
   assertTrue(volumeEntry.isNativeType);
+  assertEquals(fakeRootEntry, volumeEntry.getNativeEntry());
   assertTrue(volumeEntry.isDirectory);
   assertFalse(volumeEntry.isFile);
+}
+
+function testVolumeEntryCreateReader(testReportCallback) {
+  const fakeRootEntry = createFakeDisplayRoot();
+  fakeRootEntry.createReader = () => new StaticReader(['file1']);
+  const volumeEntry =
+      fakeVolumeEntry(VolumeManagerCommon.VolumeType.DOWNLOADS, fakeRootEntry);
+  const crostini = fakeVolumeEntry(VolumeManagerCommon.VolumeType.CROSTINI);
+  const android = fakeVolumeEntry(VolumeManagerCommon.VolumeType.ANDROID_FILES);
+
+  volumeEntry.addEntry(crostini);
+  volumeEntry.addEntry(android);
+  const reader = volumeEntry.createReader();
+
+  const readFiles = [];
+  const accumulateResults = (readerResult) => {
+    readerResult.map((f) => readFiles.push(f));
+    if (readerResult.length > 0)
+      reader.readEntries(accumulateResults);
+  };
+
+  reader.readEntries(accumulateResults);
+  // readEntries runs asynchronously, so let's wait it to be called.
+  reportPromise(
+      waitUntil(() => {
+        return readFiles.length >= 3;
+      }).then(() => {
+        // Now we can check the final result.
+        assertEquals(3, readFiles.length);
+        assertEquals('file1', readFiles[0]);
+        assertEquals(crostini, readFiles[1]);
+        assertEquals(android, readFiles[2]);
+      }),
+      testReportCallback);
+}
+
+/**
+ * Tests VolumeEntry getFile and getDirectory methods.
+ */
+function testVolumeEntryGetDirectory(testReportCallback) {
+  const root = createFakeDisplayRoot();
+  root.filesystem.populate(['/bla/', '/bla.txt']);
+
+  const volumeEntry = fakeVolumeEntry(null, root);
+  let foundDir = null;
+  let foundFile = null;
+  volumeEntry.getDirectory('/bla', {create: false}, (entry) => {
+    foundDir = entry;
+  });
+  volumeEntry.getFile('/bla.txt', {create: false}, (entry) => {
+    foundFile = entry;
+  });
+
+  reportPromise(
+      waitUntil(() => {
+        return foundDir !== null && foundFile !== null;
+      }),
+      testReportCallback);
 }
 
 /**
@@ -266,12 +425,13 @@ function testVolumeEntryDelayedDisplayRoot(testReportCallback) {
     }
   });
 
-  // rootEntry starts as null.
-  assertEquals(null, volumeEntry.rootEntry);
+  // rootEntry_ starts as null.
+  assertEquals(null, volumeEntry.rootEntry_);
+  assertEquals(null, volumeEntry.getNativeEntry());
   reportPromise(
       waitUntil(() => callbackTriggered).then(() => {
-        // Eventually rootEntry gets the value.
-        assertEquals(fakeRootEntry, volumeEntry.rootEntry);
+        // Eventually rootEntry_ gets the value.
+        assertEquals(fakeRootEntry, volumeEntry.getNativeEntry());
       }),
       testReportCallback);
 }
@@ -300,12 +460,6 @@ function testVolumeEntryGetMetadata(testReportCallback) {
   reportPromise(
       waitUntil(() => {
         return modificationTime !== null;
-      }).then(() => {
-        // Now we can check the final result.
-        assertEquals(2018, modificationTime.getUTCFullYear());
-        // Date() month is 0-based, so 6 == July. :-(
-        assertEquals(6, modificationTime.getUTCMonth());
-        assertEquals(27, modificationTime.getUTCDate());
       }),
       testReportCallback);
 }
@@ -319,7 +473,7 @@ function testEntryListAddEntrySetsPrefix() {
       new EntryList('My files', VolumeManagerCommon.RootType.MY_FILES);
 
   entryList.addEntry(volumeEntry);
-  assertEquals(1, entryList.children.length);
+  assertEquals(1, entryList.getUIChildren().length);
   // entryList is parent of volumeEntry so it should be its prefix.
   assertEquals(entryList, volumeEntry.volumeInfo.prefixEntry);
 }
@@ -328,8 +482,7 @@ function testEntryListAddEntrySetsPrefix() {
  * Test FakeEntry, which is only static data.
  */
 function testFakeEntry(testReportCallback) {
-  let fakeEntry =
-      new FakeEntry('label', VolumeManagerCommon.RootType.CROSTINI, true);
+  let fakeEntry = new FakeEntry('label', VolumeManagerCommon.RootType.CROSTINI);
 
   assertEquals(undefined, fakeEntry.sourceRestriction);
   assertEquals('FakeEntry', fakeEntry.type_name);
@@ -339,18 +492,16 @@ function testFakeEntry(testReportCallback) {
   assertEquals('crostini', fakeEntry.iconName);
   assertEquals(VolumeManagerCommon.RootType.CROSTINI, fakeEntry.rootType);
   assertFalse(fakeEntry.isNativeType);
+  assertEquals(null, fakeEntry.getNativeEntry());
   assertTrue(fakeEntry.isDirectory);
   assertFalse(fakeEntry.isFile);
 
-  // Check the isDirectory and sourceRestriction constructor args.
+  // Check sourceRestriction constructor args.
   const kSourceRestriction =
       /** @type{chrome.fileManagerPrivate.SourceRestriction} */ ('fake');
   fakeEntry = new FakeEntry(
-      'label', VolumeManagerCommon.RootType.CROSTINI, false,
-      kSourceRestriction);
+      'label', VolumeManagerCommon.RootType.CROSTINI, kSourceRestriction);
   assertEquals(kSourceRestriction, fakeEntry.sourceRestriction);
-  assertFalse(fakeEntry.isDirectory);
-  assertTrue(fakeEntry.isFile);
 
   let callCounter = 0;
 

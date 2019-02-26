@@ -65,7 +65,7 @@ SuggestionChipView::SuggestionChipView(const Params& params,
       text_view_(new views::Label()),
       assistant_style_(params.assistant_style) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
-  SetInkDropMode(InkDropHostView::InkDropMode::ON);
+  SetInkDropMode(InkDropMode::ON);
 
   // Set background blur for the chip and use mask layer to clip it into
   // rounded rect.

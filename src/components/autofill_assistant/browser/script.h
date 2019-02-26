@@ -25,6 +25,11 @@ struct ScriptHandle {
   // When set to true this script can be run in 'autostart mode'. Script won't
   // be shown.
   bool autostart;
+  bool highlight;
+
+  // If set, the script might be run during WaitForDom actions with
+  // allow_interrupt=true.
+  bool interrupt;
 };
 
 // Script represents a sequence of actions.

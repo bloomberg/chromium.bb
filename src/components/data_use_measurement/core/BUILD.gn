@@ -30,8 +30,8 @@ static_library("ascriber") {
     ":core",
     "//base",
     "//components/metrics",
-    "//google_apis",
     "//net",
+    "//services/network/public/cpp:cpp",
   ]
 }
 

@@ -19,6 +19,7 @@
 #include "components/sync/base/cancelation_observer.h"
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/base/passphrase_enums.h"
 #include "components/sync/engine/commit_queue.h"
 #include "components/sync/engine/non_blocking_sync_common.h"
 #include "components/sync/engine/sync_encryption_handler.h"
@@ -66,6 +67,7 @@ class ModelTypeWorker : public UpdateHandler,
                   const sync_pb::ModelTypeState& initial_state,
                   bool trigger_initial_sync,
                   std::unique_ptr<Cryptographer> cryptographer,
+                  PassphraseType passphrase_type,
                   NudgeHandler* nudge_handler,
                   std::unique_ptr<ModelTypeProcessor> model_type_processor,
                   DataTypeDebugInfoEmitter* debug_info_emitter,
@@ -83,6 +85,7 @@ class ModelTypeWorker : public UpdateHandler,
   ModelType GetModelType() const;
 
   void UpdateCryptographer(std::unique_ptr<Cryptographer> cryptographer);
+  void UpdatePassphraseType(PassphraseType type);
 
   // UpdateHandler implementation.
   bool IsInitialSyncEnded() const override;
@@ -104,6 +107,16 @@ class ModelTypeWorker : public UpdateHandler,
   std::unique_ptr<CommitContribution> GetContribution(
       size_t max_entries) override;
 
+  // Extended overload of ProcessGetUpdatesResponse() that allows specifying
+  // whether the updates are coming from the USS migrator, which influences how
+  // UMA metrics are logged.
+  SyncerError ProcessGetUpdatesResponse(
+      const sync_pb::DataTypeProgressMarker& progress_marker,
+      const sync_pb::DataTypeContext& mutated_context,
+      const SyncEntityList& applicable_updates,
+      bool from_uss_migrator,
+      StatusController* status);
+
   bool HasLocalChangesForTest() const;
 
   // An alternative way to drive sending data to the processor, that should be
@@ -124,7 +137,8 @@ class ModelTypeWorker : public UpdateHandler,
 
  private:
   // Attempts to decrypt the given specifics and return them in the |out|
-  // parameter. Assumes cryptographer.CanDecrypt(specifics) returned true.
+  // parameter. The cryptographer must know the decryption key, i.e.
+  // cryptographer.CanDecrypt(specifics.encrypted()) must return true.
   //
   // Returns false if the decryption failed. There are no guarantees about the
   // contents of |out| when that happens.
@@ -135,6 +149,20 @@ class ModelTypeWorker : public UpdateHandler,
   static bool DecryptSpecifics(const Cryptographer& cryptographer,
                                const sync_pb::EntitySpecifics& in,
                                sync_pb::EntitySpecifics* out);
+
+  // Attempts to decrypt the given password specifics and return them in the
+  // |out| parameter. The cryptographer must know the decryption key, i.e.
+  // cryptographer.CanDecrypt(in.password().encrypted()) must return true.
+  //
+  // Returns false if the decryption failed. There are no guarantees about the
+  // contents of |out| when that happens.
+  //
+  // In theory, this should never fail. Only corrupt or invalid entries could
+  // cause this to fail, and no clients are known to create such entries. The
+  // failure case is an attempt to be defensive against bad input.
+  static bool DecryptPasswordSpecifics(const Cryptographer& cryptographer,
+                                       const sync_pb::EntitySpecifics& in,
+                                       sync_pb::EntitySpecifics* out);
 
   // Helper function to actually send |pending_updates_| to the processor.
   void ApplyPendingUpdates();
@@ -199,6 +227,10 @@ class ModelTypeWorker : public UpdateHandler,
   // Initialized at construction time and updated with UpdateCryptographer().
   // null if encryption is not enabled for this type.
   std::unique_ptr<Cryptographer> cryptographer_;
+
+  // A private copy of the most recent passphrase type. Initialized at
+  // construction time and updated with UpdatePassphraseType().
+  PassphraseType passphrase_type_;
 
   // Interface used to access and send nudges to the sync scheduler. Not owned.
   NudgeHandler* nudge_handler_;

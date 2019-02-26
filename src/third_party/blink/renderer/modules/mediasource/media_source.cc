@@ -107,7 +107,7 @@ const AtomicString& MediaSource::EndedKeyword() {
 }
 
 MediaSource* MediaSource::Create(ExecutionContext* context) {
-  return new MediaSource(context);
+  return MakeGarbageCollected<MediaSource>(context);
 }
 
 MediaSource::MediaSource(ExecutionContext* context)
@@ -255,12 +255,12 @@ void MediaSource::removeSourceBuffer(SourceBuffer* buffer,
 void MediaSource::OnReadyStateChange(const AtomicString& old_state,
                                      const AtomicString& new_state) {
   if (IsOpen()) {
-    ScheduleEvent(EventTypeNames::sourceopen);
+    ScheduleEvent(event_type_names::kSourceopen);
     return;
   }
 
   if (old_state == OpenKeyword() && new_state == EndedKeyword()) {
-    ScheduleEvent(EventTypeNames::sourceended);
+    ScheduleEvent(event_type_names::kSourceended);
     return;
   }
 
@@ -275,7 +275,7 @@ void MediaSource::OnReadyStateChange(const AtomicString& old_state,
 
   attached_element_.Clear();
 
-  ScheduleEvent(EventTypeNames::sourceclose);
+  ScheduleEvent(event_type_names::kSourceclose);
 }
 
 bool MediaSource::IsUpdating() const {
@@ -332,7 +332,7 @@ bool MediaSource::isTypeSupported(const String& type) {
 }
 
 const AtomicString& MediaSource::InterfaceName() const {
-  return EventTargetNames::MediaSource;
+  return event_target_names::kMediaSource;
 }
 
 ExecutionContext* MediaSource::GetExecutionContext() const {

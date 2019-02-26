@@ -20,7 +20,9 @@ class OnRequestCanvasDrawListener final
   USING_GARBAGE_COLLECTED_MIXIN(OnRequestCanvasDrawListener);
 
  public:
+  OnRequestCanvasDrawListener(std::unique_ptr<WebCanvasCaptureHandler>);
   ~OnRequestCanvasDrawListener() override;
+
   static OnRequestCanvasDrawListener* Create(
       std::unique_ptr<WebCanvasCaptureHandler>);
   void SendNewFrame(
@@ -28,9 +30,6 @@ class OnRequestCanvasDrawListener final
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>) override;
 
   void Trace(blink::Visitor* visitor) override {}
-
- private:
-  OnRequestCanvasDrawListener(std::unique_ptr<WebCanvasCaptureHandler>);
 };
 
 }  // namespace blink

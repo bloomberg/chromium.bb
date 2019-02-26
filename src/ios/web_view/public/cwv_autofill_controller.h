@@ -11,12 +11,13 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class CWVAutofillForm;
 @class CWVAutofillSuggestion;
 @protocol CWVAutofillControllerDelegate;
 
 CWV_EXPORT
 // Exposes features that allow autofilling html forms. May include autofilling
-// of single fields, address forms, or credit card forms.
+// of single fields, address forms, credit card forms, or password forms.
 @interface CWVAutofillController : NSObject
 
 // Delegate to receive autofill callbacks.
@@ -37,16 +38,17 @@ CWV_EXPORT
                   frameID:(NSString*)frameID
         completionHandler:(nullable void (^)(void))completionHandler;
 
-// For the field named |fieldName|, identified by |fieldIdentifier| in the form
-// named |formName|, fetches suggestions that can be used to autofill.
+// For the field identified by |fieldIdentifier|, with type |fieldType| in the
+// form named |formName|, fetches suggestions that can be used to autofill.
 // No-op if no such form and field can be found in the current page.
 // |fieldIdentifier| identifies the field that had focus. It is passed to
 // CWVAutofillControllerDelegate and forwarded to this method.
 // |fieldType| is the 'type' attribute of the html field.
-// |completionHandler| will only be called on success.
 // |frameID| is the ID of the web frame containing the form.
+// |completionHandler| will only be called on success.
+// Note: It will return password suggestions over profile/credit card
+// suggestions.
 - (void)fetchSuggestionsForFormWithName:(NSString*)formName
-                              fieldName:(NSString*)fieldName
                         fieldIdentifier:(NSString*)fieldIdentifier
                               fieldType:(NSString*)fieldType
                                 frameID:(NSString*)frameID
@@ -55,15 +57,16 @@ CWV_EXPORT
                               completionHandler;
 
 // Takes the |suggestion| and finds the form matching its |formName| and
-// |fieldName| property. If found, autofills the values in to the page.
+// |fieldIdentifier| property. If found, autofills the values in to the page.
 // No-op if no such form and field can be found in the current page.
 // |completionHandler| will only be called on success.
 - (void)fillSuggestion:(CWVAutofillSuggestion*)suggestion
      completionHandler:(nullable void (^)(void))completionHandler;
 
-// Deletes a suggestion from the data store. This suggestion will not be fetched
-// again.
-- (void)removeSuggestion:(CWVAutofillSuggestion*)suggestion;
+// Deletes a suggestion from the data store.
+// Returns YES if suggestion exists and can be deleted.
+// Note that it may take a short while before |suggestion| is no longer fetched.
+- (BOOL)removeSuggestion:(CWVAutofillSuggestion*)suggestion;
 
 // Changes focus to the previous sibling of the currently focused field.
 // No-op if no field is currently focused or if previous field is not available.
@@ -77,6 +80,12 @@ CWV_EXPORT
 // |previous| and |next| indiciates if it is possible to focus.
 - (void)checkIfPreviousAndNextFieldsAreAvailableForFocusWithCompletionHandler:
     (void (^)(BOOL previous, BOOL next))completionHandler;
+
+// Finds all non-empty (at least 1 field) forms in the current page.
+// |completionHandler| will be called with an array if successful, nil
+// otherwise.
+- (void)findAllFormsWithCompletionHandler:
+    (void (^)(NSArray<CWVAutofillForm*>* _Nullable forms))completionHandler;
 
 @end
 

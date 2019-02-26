@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-shared.h"
 #include "third_party/blink/public/platform/code_cache_loader.h"
@@ -31,12 +32,23 @@ class WebDocumentSubresourceFilter;
 // the worker thread by InitializeOnWorkerThread(). It contains information
 // about the resource fetching context (ex: service worker provider id), and is
 // used to create a new WebURLLoader instance in the worker thread.
-class WebWorkerFetchContext {
+//
+// A single WebWorkerFetchContext is used for both worker
+// subresource fetch (i.e. "insideSettings") and off-the-main-thread top-level
+// worker script fetch (i.e. fetch as "outsideSettings"), as they both should be
+// e.g. controlled by the same ServiceWorker (if any) and thus can share a
+// single WebURLLoaderFactory.
+//
+// Note that WebWorkerFetchContext and WorkerFetchContext do NOT correspond 1:1
+// as multiple WorkerFetchContext can be created after crbug.com/880027.
+class WebWorkerFetchContext : public base::RefCounted<WebWorkerFetchContext> {
  public:
+  REQUIRE_ADOPTION_FOR_REFCOUNTED_TYPE();
+
   virtual ~WebWorkerFetchContext() = default;
 
   // Used to copy a worker fetch context between worker threads.
-  virtual std::unique_ptr<WebWorkerFetchContext> CloneForNestedWorker() {
+  virtual scoped_refptr<WebWorkerFetchContext> CloneForNestedWorker() {
     return nullptr;
   }
 
@@ -48,9 +60,9 @@ class WebWorkerFetchContext {
 
   virtual void InitializeOnWorkerThread() = 0;
 
-  // Returns a new WebURLLoaderFactory which is associated with the worker
-  // context. It can be called only once.
-  virtual std::unique_ptr<WebURLLoaderFactory> CreateURLLoaderFactory() = 0;
+  // Returns a WebURLLoaderFactory which is associated with the worker context.
+  // The returned WebURLLoaderFactory is owned by |this|.
+  virtual WebURLLoaderFactory* GetURLLoaderFactory() = 0;
 
   // Returns a new WebURLLoaderFactory that wraps the given
   // network::mojom::URLLoaderFactory.
@@ -64,12 +76,10 @@ class WebWorkerFetchContext {
     return nullptr;
   };
 
-  // Returns a new WebURLLoaderFactory for loading scripts in this worker
-  // context. Unlike CreateURLLoaderFactory(), this may return nullptr even on
-  // the first call.
-  virtual std::unique_ptr<WebURLLoaderFactory> CreateScriptLoaderFactory() {
-    return nullptr;
-  }
+  // Returns a WebURLLoaderFactory for loading scripts in this worker context.
+  // Unlike GetURLLoaderFactory(), this may return nullptr.
+  // The returned WebURLLoaderFactory is owned by |this|.
+  virtual WebURLLoaderFactory* GetScriptLoaderFactory() { return nullptr; }
 
   // Called when a request is about to be sent out to modify the request to
   // handle the request correctly in the loading stack later. (Example: service

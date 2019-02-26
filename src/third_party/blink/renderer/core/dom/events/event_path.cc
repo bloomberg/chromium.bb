@@ -30,7 +30,6 @@
 #include "third_party/blink/renderer/core/dom/events/window_event_context.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/v0_insertion_point.h"
-#include "third_party/blink/renderer/core/event_names.h"
 #include "third_party/blink/renderer/core/events/touch_event.h"
 #include "third_party/blink/renderer/core/events/touch_event_context.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
@@ -39,13 +38,13 @@
 
 namespace blink {
 
-EventTarget* EventPath::EventTargetRespectingTargetRules(Node& reference_node) {
+EventTarget& EventPath::EventTargetRespectingTargetRules(Node& reference_node) {
   if (reference_node.IsPseudoElement()) {
     DCHECK(reference_node.parentNode());
-    return reference_node.parentNode();
+    return *reference_node.parentNode();
   }
 
-  return &reference_node;
+  return reference_node;
 }
 
 static inline bool ShouldStopAtShadowRoot(Event& event,
@@ -134,8 +133,9 @@ void EventPath::CalculatePath() {
 
   node_event_contexts_.ReserveCapacity(nodes_in_path.size());
   for (Node* node_in_path : nodes_in_path) {
+    DCHECK(node_in_path);
     node_event_contexts_.push_back(NodeEventContext(
-        node_in_path, EventTargetRespectingTargetRules(*node_in_path)));
+        *node_in_path, EventTargetRespectingTargetRules(*node_in_path)));
   }
 }
 
@@ -154,7 +154,7 @@ void EventPath::CalculateTreeOrderAndSetNearestAncestorClosedTree() {
       continue;
     }
     TreeScopeEventContext* parent_tree_scope_event_context =
-        GetTreeScopeEventContext(parent);
+        GetTreeScopeEventContext(*parent);
     DCHECK(parent_tree_scope_event_context);
     parent_tree_scope_event_context->AddChild(*tree_scope_event_context.Get());
   }
@@ -163,8 +163,7 @@ void EventPath::CalculateTreeOrderAndSetNearestAncestorClosedTree() {
 }
 
 TreeScopeEventContext* EventPath::GetTreeScopeEventContext(
-    TreeScope* tree_scope) {
-  DCHECK(tree_scope);
+    TreeScope& tree_scope) {
   for (TreeScopeEventContext* tree_scope_event_context :
        tree_scope_event_contexts_) {
     if (tree_scope_event_context->GetTreeScope() == tree_scope) {
@@ -180,7 +179,7 @@ TreeScopeEventContext* EventPath::EnsureTreeScopeEventContext(
   if (!tree_scope)
     return nullptr;
   TreeScopeEventContext* tree_scope_event_context =
-      GetTreeScopeEventContext(tree_scope);
+      GetTreeScopeEventContext(*tree_scope);
   if (!tree_scope_event_context) {
     tree_scope_event_context = TreeScopeEventContext::Create(*tree_scope);
     tree_scope_event_contexts_.push_back(tree_scope_event_context);
@@ -190,7 +189,7 @@ TreeScopeEventContext* EventPath::EnsureTreeScopeEventContext(
     if (parent_tree_scope_event_context &&
         parent_tree_scope_event_context->Target()) {
       tree_scope_event_context->SetTarget(
-          parent_tree_scope_event_context->Target());
+          *parent_tree_scope_event_context->Target());
     } else if (current_target) {
       tree_scope_event_context->SetTarget(
           EventTargetRespectingTargetRules(*current_target));
@@ -207,11 +206,11 @@ void EventPath::CalculateAdjustedTargets() {
   TreeScopeEventContext* last_tree_scope_event_context = nullptr;
 
   for (auto& context : node_event_contexts_) {
-    Node* current_node = context.GetNode();
-    TreeScope& current_tree_scope = current_node->GetTreeScope();
+    Node& current_node = context.GetNode();
+    TreeScope& current_tree_scope = current_node.GetTreeScope();
     if (last_tree_scope != &current_tree_scope) {
       last_tree_scope_event_context =
-          EnsureTreeScopeEventContext(current_node, &current_tree_scope);
+          EnsureTreeScopeEventContext(&current_node, &current_tree_scope);
     }
     DCHECK(last_tree_scope_event_context);
     context.SetTreeScopeEventContext(last_tree_scope_event_context);
@@ -222,7 +221,7 @@ void EventPath::CalculateAdjustedTargets() {
 void EventPath::BuildRelatedNodeMap(const Node& related_node,
                                     RelatedTargetMap& related_target_map) {
   EventPath* related_target_event_path =
-      new EventPath(const_cast<Node&>(related_node));
+      MakeGarbageCollected<EventPath>(const_cast<Node&>(related_node));
   for (const auto& tree_scope_event_context :
        related_target_event_path->tree_scope_event_contexts_) {
     related_target_map.insert(&tree_scope_event_context->GetTreeScope(),
@@ -274,7 +273,7 @@ void EventPath::RetargetRelatedTarget(const Node& related_target_node) {
     EventTarget* adjusted_related_target = FindRelatedNode(
         tree_scope_event_context->GetTreeScope(), related_node_map);
     DCHECK(adjusted_related_target);
-    tree_scope_event_context.Get()->SetRelatedTarget(adjusted_related_target);
+    tree_scope_event_context.Get()->SetRelatedTarget(*adjusted_related_target);
   }
 }
 
@@ -307,7 +306,7 @@ bool ShouldStopEventPath(EventTarget& adjusted_target,
 void EventPath::ShrinkForRelatedTarget(const Node& event_target_node,
                                        const Node& event_related_target_node) {
   for (wtf_size_t i = 0; i < size(); ++i) {
-    if (ShouldStopEventPath(*at(i).Target(), *at(i).RelatedTarget(),
+    if (ShouldStopEventPath(*(*this)[i].Target(), *(*this)[i].RelatedTarget(),
                             event_target_node, event_related_target_node)) {
       Shrink(i);
       break;
@@ -323,11 +322,11 @@ void EventPath::AdjustForTouchEvent(const TouchEvent& touch_event) {
   HeapVector<Member<TreeScope>> tree_scopes;
 
   for (const auto& tree_scope_event_context : tree_scope_event_contexts_) {
-    TouchEventContext* touch_event_context =
+    TouchEventContext& touch_event_context =
         tree_scope_event_context->EnsureTouchEventContext();
-    adjusted_touches.push_back(&touch_event_context->Touches());
-    adjusted_target_touches.push_back(&touch_event_context->TargetTouches());
-    adjusted_changed_touches.push_back(&touch_event_context->ChangedTouches());
+    adjusted_touches.push_back(&touch_event_context.Touches());
+    adjusted_target_touches.push_back(&touch_event_context.TargetTouches());
+    adjusted_changed_touches.push_back(&touch_event_context.ChangedTouches());
     tree_scopes.push_back(&tree_scope_event_context->GetTreeScope());
   }
 
@@ -378,8 +377,7 @@ void EventPath::AdjustTouchList(
 
 bool EventPath::DisabledFormControlExistsInPath() const {
   for (const auto& context : node_event_contexts_) {
-    const Node* target_node = context.GetNode();
-    if (target_node && IsDisabledFormControl(target_node))
+    if (IsDisabledFormControl(&context.GetNode()))
       return true;
   }
   return false;
@@ -387,8 +385,7 @@ bool EventPath::DisabledFormControlExistsInPath() const {
 
 bool EventPath::HasEventListenersInPath(const AtomicString& event_type) const {
   for (const auto& context : node_event_contexts_) {
-    const Node* target_node = context.GetNode();
-    if (target_node && target_node->HasEventListeners(event_type))
+    if (context.GetNode().HasEventListeners(event_type))
       return true;
   }
   return false;
@@ -401,9 +398,10 @@ NodeEventContext& EventPath::TopNodeEventContext() {
 
 void EventPath::EnsureWindowEventContext() {
   DCHECK(event_);
-  if (!window_event_context_)
-    window_event_context_ =
-        new WindowEventContext(*event_, TopNodeEventContext());
+  if (!window_event_context_) {
+    window_event_context_ = MakeGarbageCollected<WindowEventContext>(
+        *event_, TopNodeEventContext());
+  }
 }
 
 #if DCHECK_IS_ON()

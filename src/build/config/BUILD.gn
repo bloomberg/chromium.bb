@@ -32,8 +32,11 @@ declare_args() {
   # Iterator debugging is generally useful for catching bugs. But it can
   # introduce extra locking to check the state of an iterator against the state
   # of the current object. For iterator- and thread-heavy code, this can
-  # significantly slow execution.
-  enable_iterator_debugging = true
+  # significantly slow execution - two orders of magnitude slowdown has been
+  # seen (crbug.com/903553) and iterator debugging also slows builds by making
+  # generation of snapshot_blob.bin take ~40-60 s longer. Therefore this
+  # defaults to off.
+  enable_iterator_debugging = false
 }
 
 # ==============================================
@@ -63,7 +66,7 @@ config("feature_flags") {
   if (dcheck_always_on) {
     defines += [ "DCHECK_ALWAYS_ON=1" ]
     if (dcheck_is_configurable) {
-      defines += [ "DCHECK_IS_CONFIGURABLE=1" ]
+      defines += [ "DCHECK_IS_CONFIGURABLE" ]
     }
   }
   if (use_udev) {
@@ -349,11 +352,11 @@ config("executable_config") {
       "//build/config/ios:ios_executable_flags",
     ]
   } else if (is_linux || is_android || current_os == "aix") {
-    configs += [ "//build/config/gcc:executable_ldconfig" ]
-    if (is_android) {
-      configs += [ "//build/config/android:executable_config" ]
-    } else if (is_chromecast) {
+    configs += [ "//build/config/gcc:executable_config" ]
+    if (is_chromecast) {
       configs += [ "//build/config/chromecast:executable_config" ]
+    } else if (is_fuchsia) {
+      configs += [ "//build/config/fuchsia:executable_config" ]
     }
   }
 

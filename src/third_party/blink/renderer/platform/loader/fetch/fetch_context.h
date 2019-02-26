@@ -43,6 +43,7 @@
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
 #include "third_party/blink/public/platform/scheduler/web_resource_loading_task_runner_handle.h"
 #include "third_party/blink/public/platform/web_application_cache_host.h"
+#include "third_party/blink/public/platform/web_loading_behavior_flag.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -61,6 +62,7 @@
 namespace blink {
 
 class ClientHintsPreferences;
+class FetchClientSettingsObject;
 class KURL;
 class MHTMLArchive;
 class PlatformProbeSink;
@@ -105,6 +107,9 @@ class PLATFORM_EXPORT FetchContext
   virtual bool IsFrameFetchContext() { return false; }
 
   virtual void AddAdditionalRequestHeaders(ResourceRequest&, FetchResourceType);
+
+  virtual const FetchClientSettingsObject* GetFetchClientSettingsObject()
+      const = 0;
 
   // Called when the ResourceFetcher observes a data: URI load that contains an
   // octothorpe ('#') character. This is a temporary method to support an Intent
@@ -152,9 +157,9 @@ class PLATFORM_EXPORT FetchContext
       ResourceResponseType);
   virtual void DispatchDidReceiveData(unsigned long identifier,
                                       const char* data,
-                                      int data_length);
+                                      size_t data_length);
   virtual void DispatchDidReceiveEncodedData(unsigned long identifier,
-                                             int encoded_data_length);
+                                             size_t encoded_data_length);
   virtual void DispatchDidDownloadToBlob(unsigned long identifier,
                                          BlobDataHandle*);
   virtual void DispatchDidFinishLoading(unsigned long identifier,
@@ -177,6 +182,7 @@ class PLATFORM_EXPORT FetchContext
                                      const AtomicString& fetch_initiator_name);
 
   virtual void DidLoadResource(Resource*);
+  virtual void DidObserveLoadingBehavior(WebLoadingBehaviorFlag);
 
   virtual void AddResourceTiming(const ResourceTimingInfo&);
   virtual bool AllowImage(bool, const KURL&) const { return false; }

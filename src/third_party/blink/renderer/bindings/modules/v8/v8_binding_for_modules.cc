@@ -84,7 +84,7 @@ v8::Local<v8::Value> ToV8(const IDBKey* key,
     // values as undefined, rather than the more typical (for DOM) null.
     // This appears on the |upper| and |lower| attributes of IDBKeyRange.
     // Spec: http://www.w3.org/TR/IndexedDB/#idl-def-IDBKeyRange
-    return V8Undefined();
+    return v8::Local<v8::Value>();
   }
 
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
@@ -93,7 +93,7 @@ v8::Local<v8::Value> ToV8(const IDBKey* key,
     case IDBKey::kInvalidType:
     case IDBKey::kTypeEnumMax:
       NOTREACHED();
-      return V8Undefined();
+      return v8::Local<v8::Value>();
     case IDBKey::kNumberType:
       return v8::Number::New(isolate, key->Number());
     case IDBKey::kStringType:
@@ -111,15 +111,18 @@ v8::Local<v8::Value> ToV8(const IDBKey* key,
             ToV8(key->Array()[i].get(), creation_context, isolate);
         if (value.IsEmpty())
           value = v8::Undefined(isolate);
-        if (!V8CallBoolean(array->CreateDataProperty(context, i, value)))
-          return V8Undefined();
+        bool created_property;
+        if (!array->CreateDataProperty(context, i, value)
+                 .To(&created_property) ||
+            !created_property)
+          return v8::Local<v8::Value>();
       }
       return array;
     }
   }
 
   NOTREACHED();
-  return V8Undefined();
+  return v8::Local<v8::Value>();
 }
 
 // IDBAny is a variant type used to hold the values produced by the |result|
@@ -219,7 +222,12 @@ static std::unique_ptr<IDBKey> CreateIDBKeyFromValue(
     v8::TryCatch block(isolate);
     v8::Local<v8::Context> context = isolate->GetCurrentContext();
     for (uint32_t i = 0; i < length; ++i) {
-      if (!V8CallBoolean(array->HasOwnProperty(context, i)))
+      bool has_own_property;
+      if (!array->HasOwnProperty(context, i).To(&has_own_property)) {
+        exception_state.RethrowV8Exception(block.Exception());
+        return nullptr;
+      }
+      if (!has_own_property)
         return nullptr;
       v8::Local<v8::Value> item;
       if (!array->Get(context, i).ToLocal(&item)) {
@@ -262,9 +270,9 @@ static bool IsImplicitProperty(v8::Isolate* isolate,
     return true;
   if (value->IsArray() && name == "length")
     return true;
-  if (V8Blob::hasInstance(value, isolate))
+  if (V8Blob::HasInstance(value, isolate))
     return name == "size" || name == "type";
-  if (V8File::hasInstance(value, isolate))
+  if (V8File::HasInstance(value, isolate))
     return name == "name" || name == "lastModified" ||
            name == "lastModifiedDate";
   return false;
@@ -313,7 +321,7 @@ static std::unique_ptr<IDBKey> CreateIDBKeyFromValueAndKeyPath(
       return nullptr;
     v8::Local<v8::Object> object = v8_value.As<v8::Object>();
 
-    if (V8Blob::hasInstance(object, isolate)) {
+    if (V8Blob::HasInstance(object, isolate)) {
       if (element == "size") {
         v8_value = v8::Number::New(isolate, V8Blob::ToImpl(object)->size());
         continue;
@@ -325,7 +333,7 @@ static std::unique_ptr<IDBKey> CreateIDBKeyFromValueAndKeyPath(
       // Fall through.
     }
 
-    if (V8File::hasInstance(object, isolate)) {
+    if (V8File::HasInstance(object, isolate)) {
       if (element == "name") {
         v8_value = V8String(isolate, V8File::ToImpl(object)->name());
         continue;
@@ -345,7 +353,12 @@ static std::unique_ptr<IDBKey> CreateIDBKeyFromValueAndKeyPath(
     }
 
     v8::Local<v8::String> key = V8String(isolate, element);
-    if (!V8CallBoolean(object->HasOwnProperty(context, key)))
+    bool has_own_property;
+    if (!object->HasOwnProperty(context, key).To(&has_own_property)) {
+      exception_state.RethrowV8Exception(block.Exception());
+      return nullptr;
+    }
+    if (!has_own_property)
       return nullptr;
     if (!object->Get(context, key).ToLocal(&v8_value)) {
       exception_state.RethrowV8Exception(block.Exception());
@@ -447,8 +460,11 @@ static v8::Local<v8::Value> DeserializeIDBValueArray(
         DeserializeIDBValue(isolate, creation_context, values[i].get());
     if (v8_value.IsEmpty())
       v8_value = v8::Undefined(isolate);
-    if (!V8CallBoolean(array->CreateDataProperty(context, i, v8_value)))
-      return V8Undefined();
+    bool created_property;
+    if (!array->CreateDataProperty(context, i, v8_value)
+             .To(&created_property) ||
+        !created_property)
+      return v8::Local<v8::Value>();
   }
 
   return array;
@@ -462,7 +478,7 @@ static v8::Local<v8::Value> DeserializeIDBValueArray(
 // the conceptual description in the spec states that the key produced by the
 // key generator is injected into the value before it is written to IndexedDB.
 //
-// We cannot implementing the spec's conceptual description. We need to assign
+// We cannot implement the spec's conceptual description. We need to assign
 // primary keys in the browser process, to ensure that multiple renderer
 // processes talking to the same database receive sequential keys. At the same
 // time, we want the value serialization code to live in the renderer process,
@@ -532,7 +548,10 @@ bool InjectV8KeyIntoV8Value(v8::Isolate* isolate,
         return false;
     } else {
       value = v8::Object::New(isolate);
-      if (!V8CallBoolean(object->CreateDataProperty(context, property, value)))
+      bool created_property;
+      if (!object->CreateDataProperty(context, property, value)
+               .To(&created_property) ||
+          !created_property)
         return false;
     }
   }
@@ -551,10 +570,11 @@ bool InjectV8KeyIntoV8Value(v8::Isolate* isolate,
 
   v8::Local<v8::Object> object = value.As<v8::Object>();
   v8::Local<v8::String> property = V8String(isolate, key_path_elements.back());
-  if (!V8CallBoolean(object->CreateDataProperty(context, property, key)))
-    return false;
 
-  return true;
+  bool created_property;
+  if (!object->CreateDataProperty(context, property, key).To(&created_property))
+    return false;
+  return created_property;
 }
 
 // Verify that an value can have an generated key inserted at the location

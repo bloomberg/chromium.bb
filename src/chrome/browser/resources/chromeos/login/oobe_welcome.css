@@ -74,6 +74,6 @@
 }
 
 #oobeAdvancedOptionsScreen .advanced-option-subtitle {
-  color: var(--google-grey-900);
+  color: var(--google-grey-refresh-700); /* #5F6368 */
   font-size: 13px;
 }

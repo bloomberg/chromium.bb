@@ -6,6 +6,7 @@ import unittest
 
 from tracing.value import histogram
 from tracing.value import histogram_grouping
+from tracing.value.diagnostics import date_range
 from tracing.value.diagnostics import generic_set
 from tracing.value.diagnostics import reserved_infos
 
@@ -27,6 +28,7 @@ class HistogramGroupingUnittest(unittest.TestCase):
     groupings = histogram_grouping.BuildFromTags(
         ['audio', 'video'], reserved_infos.STORY_TAGS.name)
     self.assertEqual(len(groupings), 2)
+    groupings.sort(key=lambda g: g.key)
     self.assertEqual(groupings[0].key, 'audioTag')
     self.assertEqual(groupings[1].key, 'videoTag')
     self.assertEqual(groupings[0].callback(a_hist), 'audio')
@@ -113,7 +115,7 @@ class HistogramGroupingUnittest(unittest.TestCase):
     grouping = histogram_grouping.DateRangeGrouping('foo')
     hist = histogram.Histogram('', 'count')
     self.assertEqual(grouping.callback(hist), '')
-    hist.diagnostics['foo'] = histogram.DateRange(15e11)
+    hist.diagnostics['foo'] = date_range.DateRange(15e11)
     self.assertEqual(grouping.callback(hist), str(hist.diagnostics['foo']))
 
   def testReservedDateRangeGroupings(self):

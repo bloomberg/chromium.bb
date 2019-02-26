@@ -26,7 +26,7 @@
 #include <memory>
 #include <vector>
 
-#include "fxbarcode/BC_UtilCodingConvert.h"
+#include "core/fxcrt/fx_extension.h"
 #include "fxbarcode/common/BC_CommonBitMatrix.h"
 #include "fxbarcode/datamatrix/BC_ASCIIEncoder.h"
 #include "fxbarcode/datamatrix/BC_Base256Encoder.h"
@@ -37,7 +37,6 @@
 #include "fxbarcode/datamatrix/BC_SymbolInfo.h"
 #include "fxbarcode/datamatrix/BC_TextEncoder.h"
 #include "fxbarcode/datamatrix/BC_X12Encoder.h"
-#include "fxbarcode/utils.h"
 #include "third_party/base/ptr_util.h"
 
 const wchar_t CBC_HighLevelEncoder::LATCH_TO_C40 = 230;
@@ -59,22 +58,20 @@ CBC_HighLevelEncoder::CBC_HighLevelEncoder() {}
 CBC_HighLevelEncoder::~CBC_HighLevelEncoder() {}
 
 std::vector<uint8_t>& CBC_HighLevelEncoder::getBytesForMessage(WideString msg) {
-  ByteString bytestr;
-  CBC_UtilCodingConvert::UnicodeToUTF8(msg, bytestr);
+  ByteString bytestr = msg.ToUTF8();
   m_bytearray.insert(m_bytearray.end(), bytestr.begin(), bytestr.end());
   return m_bytearray;
 }
 
 // static
-WideString CBC_HighLevelEncoder::encodeHighLevel(WideString msg,
-                                                 WideString ecLevel,
-                                                 bool allowRectangular,
-                                                 int32_t& e) {
-  CBC_EncoderContext context(msg, ecLevel, e);
-  if (e != BCExceptionNO)
-    return WideString();
+Optional<WideString> CBC_HighLevelEncoder::EncodeHighLevel(
+    const WideString& msg,
+    const WideString& ecLevel,
+    bool bAllowRectangular) {
+  CBC_EncoderContext context(msg, ecLevel, bAllowRectangular);
+  if (context.HasCharactersOutsideISO88591Encoding())
+    return {};
 
-  context.setAllowRectangular(allowRectangular);
   if ((msg.Left(6) == MACRO_05_HEADER) && (msg.Last() == MACRO_TRAILER)) {
     context.writeCodeword(MACRO_05);
     context.setSkipAtEnd(2);
@@ -95,9 +92,8 @@ WideString CBC_HighLevelEncoder::encodeHighLevel(WideString msg,
   encoders.push_back(pdfium::MakeUnique<CBC_Base256Encoder>());
   int32_t encodingMode = ASCII_ENCODATION;
   while (context.hasMoreCharacters()) {
-    encoders[encodingMode]->Encode(context, e);
-    if (e != BCExceptionNO)
-      return L"";
+    if (!encoders[encodingMode]->Encode(&context))
+      return {};
 
     if (context.m_newEncoding >= 0) {
       encodingMode = context.m_newEncoding;
@@ -105,9 +101,8 @@ WideString CBC_HighLevelEncoder::encodeHighLevel(WideString msg,
     }
   }
   int32_t len = context.m_codewords.GetLength();
-  context.updateSymbolInfo(e);
-  if (e != BCExceptionNO)
-    return L"";
+  if (!context.UpdateSymbolInfo())
+    return {};
 
   int32_t capacity = context.m_symbolInfo->dataCapacity();
   if (len < capacity) {
@@ -127,6 +122,7 @@ WideString CBC_HighLevelEncoder::encodeHighLevel(WideString msg,
   }
   return codewords;
 }
+
 int32_t CBC_HighLevelEncoder::lookAheadTest(const WideString& msg,
                                             int32_t startpos,
                                             int32_t currentMode) {
@@ -168,7 +164,7 @@ int32_t CBC_HighLevelEncoder::lookAheadTest(const WideString& msg,
     }
     wchar_t c = msg[startpos + charsProcessed];
     charsProcessed++;
-    if (isDigit(c)) {
+    if (FXSYS_IsDecimalDigit(c)) {
       charCounts[ASCII_ENCODATION] += 0.5;
     } else if (isExtendedASCII(c)) {
       charCounts[ASCII_ENCODATION] = (float)ceil(charCounts[ASCII_ENCODATION]);
@@ -262,9 +258,7 @@ int32_t CBC_HighLevelEncoder::lookAheadTest(const WideString& msg,
     }
   }
 }
-bool CBC_HighLevelEncoder::isDigit(wchar_t ch) {
-  return ch >= '0' && ch <= '9';
-}
+
 bool CBC_HighLevelEncoder::isExtendedASCII(wchar_t ch) {
   return ch >= 128 && ch <= 255;
 }
@@ -275,7 +269,7 @@ int32_t CBC_HighLevelEncoder::determineConsecutiveDigitCount(WideString msg,
   int32_t idx = startpos;
   if (idx < len) {
     wchar_t ch = msg[idx];
-    while (isDigit(ch) && idx < len) {
+    while (FXSYS_IsDecimalDigit(ch) && idx < len) {
       count++;
       idx++;
       if (idx < len) {

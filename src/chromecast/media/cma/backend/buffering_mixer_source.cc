@@ -287,9 +287,9 @@ BufferingMixerSource::RenderingDelay BufferingMixerSource::QueueData(
     // partial buffer.
     if (!locked->started_ && data->timestamp() < playback_start_pts_) {
       DCHECK(locked->queue_.empty());
-      VLOG(4) << "Dropping buffer with ts=" << data->timestamp()
-              << ", playback_start_pts=" << playback_start_pts_
-              << " difference=" << playback_start_pts_ - data->timestamp();
+      DVLOG(4) << "Dropping buffer with ts=" << data->timestamp()
+               << ", playback_start_pts=" << playback_start_pts_
+               << " difference=" << playback_start_pts_ - data->timestamp();
     } else {
       LOG_IF(INFO, (!locked->started_ &&
                     (data->timestamp() - playback_start_pts_) < 100000 &&

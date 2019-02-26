@@ -60,9 +60,11 @@ void QuitInstructionBubble::AnimationProgressed(
 
       // Set the bounds to that of the active browser window so that the widget
       // will be centered on the nearest monitor.
-      params.bounds = BrowserView::GetBrowserViewForBrowser(
-                          BrowserList::GetInstance()->GetLastActive())
-                          ->GetBounds();
+      const Browser* last_active = BrowserList::GetInstance()->GetLastActive();
+      if (last_active) {
+        params.bounds =
+            BrowserView::GetBrowserViewForBrowser(last_active)->GetBounds();
+      }
       params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
       params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
       params.accept_events = false;

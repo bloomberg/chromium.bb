@@ -25,6 +25,16 @@ void JSEventHandler::SetCompiledHandler(
     v8::Local<v8::Function> listener,
     const V8PrivateProperty::Symbol& property) {
   DCHECK(!HasCompiledHandler());
+
+  // https://html.spec.whatwg.org/multipage/webappapis.html#getting-the-current-value-of-the-event-handler
+  // Step 12: Set eventHandler's value to the result of creating a Web IDL
+  // EventHandler callback function object whose object reference is function
+  // and whose callback context is settings object.
+  //
+  // Push |script_state|'s context onto the backup incumbent settings object
+  // stack because appropriate incumbent realm does not always exist when
+  // content attribute gets lazily compiled. This context is the same one of the
+  // relevant realm of |listener| and its event target.
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       script_state->GetContext());
   event_handler_ = V8EventHandlerNonNull::Create(listener);
@@ -32,9 +42,9 @@ void JSEventHandler::SetCompiledHandler(
 }
 
 // https://html.spec.whatwg.org/C/webappapis.html#the-event-handler-processing-algorithm
-void JSEventHandler::CallListenerFunction(EventTarget& event_target,
-                                          Event& event,
-                                          v8::Local<v8::Value> js_event) {
+void JSEventHandler::InvokeInternal(EventTarget& event_target,
+                                    Event& event,
+                                    v8::Local<v8::Value> js_event) {
   DCHECK(!js_event.IsEmpty());
 
   // Step 1. Let callback be the result of getting the current value of the
@@ -51,7 +61,7 @@ void JSEventHandler::CallListenerFunction(EventTarget& event_target,
   // WindowOrWorkerGlobalScope mixin. Otherwise, let special error event
   // handling be false.
   const bool special_error_event_handling =
-      event.IsErrorEvent() && event.type() == EventTypeNames::error &&
+      event.IsErrorEvent() && event.type() == event_type_names::kError &&
       event.currentTarget()->IsWindowOrWorkerGlobalScope();
 
   // Step 4. Process the Event object event as follows:
@@ -81,7 +91,7 @@ void JSEventHandler::CallListenerFunction(EventTarget& event_target,
     // https://html.spec.whatwg.org/C/workers.html#runtime-script-errors-2
     ScriptValue error_attribute = error_event->error(script_state_of_listener);
     if (error_attribute.IsEmpty() ||
-        error_event->target()->InterfaceName() == EventTargetNames::Worker)
+        error_event->target()->InterfaceName() == event_target_names::kWorker)
       error_attribute = ScriptValue::CreateNull(script_state_of_listener);
 
     arguments = {
@@ -96,11 +106,11 @@ void JSEventHandler::CallListenerFunction(EventTarget& event_target,
 
   const bool is_beforeunload_event =
       event.IsBeforeUnloadEvent() &&
-      event.type() == EventTypeNames::beforeunload;
+      event.type() == event_type_names::kBeforeunload;
   const bool is_print_event =
       // TODO(yukishiino): Should check event.Is{Before,After}PrintEvent.
-      event.type() == EventTypeNames::beforeprint ||
-      event.type() == EventTypeNames::afterprint;
+      event.type() == event_type_names::kBeforeprint ||
+      event.type() == event_type_names::kAfterprint;
   if (!event_handler_->IsRunnableOrThrowException(
           (is_beforeunload_event || is_print_event)
               ? V8EventHandlerNonNull::IgnorePause::kIgnore
@@ -130,7 +140,7 @@ void JSEventHandler::CallListenerFunction(EventTarget& event_target,
   String result_for_beforeunload;
   if (IsOnBeforeUnloadEventHandler()) {
     // TODO(yukiy): use |NativeValueTraits|.
-    V8StringResource<> native_result(v8_return_value);
+    V8StringResource<kTreatNullAsNullString> native_result(v8_return_value);
 
     // |native_result.Prepare()| throws exception if it fails to convert
     // |native_result| to String.

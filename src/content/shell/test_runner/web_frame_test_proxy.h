@@ -44,8 +44,9 @@ class TEST_RUNNER_EXPORT WebFrameTestProxyBase {
   DISALLOW_COPY_AND_ASSIGN(WebFrameTestProxyBase);
 };
 
-// WebFrameTestProxy is used during LayoutTests instead of a RenderFrameImpl to
-// inject test-only behaviour by overriding methods in the base class.
+// WebFrameTestProxy is used during running web tests instead of a
+// RenderFrameImpl to inject test-only behaviour by overriding methods in the
+// base class.
 class TEST_RUNNER_EXPORT WebFrameTestProxy : public content::RenderFrameImpl,
                                              public WebFrameTestProxyBase {
  public:
@@ -88,18 +89,15 @@ class TEST_RUNNER_EXPORT WebFrameTestProxy : public content::RenderFrameImpl,
   void DidDispatchPingLoader(const blink::WebURL& url) override;
   void WillSendRequest(blink::WebURLRequest& request) override;
   void DidReceiveResponse(const blink::WebURLResponse& response) override;
-  blink::WebNavigationPolicy DecidePolicyForNavigation(
-      const blink::WebLocalFrameClient::NavigationPolicyInfo& info) override;
+  void BeginNavigation(std::unique_ptr<blink::WebNavigationInfo> info) override;
   void PostAccessibilityEvent(const blink::WebAXObject& object,
                               ax::mojom::Event event) override;
   void MarkWebAXObjectDirty(const blink::WebAXObject& object,
                             bool subtree) override;
   void CheckIfAudioSinkExistsAndIsAuthorized(
       const blink::WebString& sink_id,
-      blink::WebSetSinkIdCallbacks* web_callbacks) override;
+      std::unique_ptr<blink::WebSetSinkIdCallbacks> web_callbacks) override;
   void DidClearWindowObject() override;
-  bool RunFileChooser(const blink::WebFileChooserParams& params,
-                      blink::WebFileChooserCompletion* completion) override;
 
  private:
   std::unique_ptr<WebFrameTestClient> test_client_;

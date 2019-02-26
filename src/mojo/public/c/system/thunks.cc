@@ -36,24 +36,26 @@ base::ProtectedMemory<MojoGetSystemThunksFunction> g_get_thunks;
 PROTECTED_MEMORY_SECTION base::ProtectedMemory<MojoSystemThunks> g_thunks;
 
 MojoResult NotImplemented(const char* name) {
-  DLOG(ERROR) << "Function 'Mojo" << name
-              << "()' not supported in this version of Mojo Core.";
+  if (g_thunks->size > 0) {
+    DLOG(ERROR) << "Function 'Mojo" << name
+                << "()' not supported in this version of Mojo Core.";
+    return MOJO_RESULT_UNIMPLEMENTED;
+  }
+
+  LOG(FATAL)
+      << "Mojo has not been initialized in this process. You must call "
+      << "either mojo::core::Init() as an embedder, or |MojoInitialize()| if "
+      << "using the mojo_core shared library.";
   return MOJO_RESULT_UNIMPLEMENTED;
 }
 
 }  // namespace
 
-// Macro to verify that the thunk symbol |name| is actually present in the
-// runtime version of Mojo Core that is currently in use.
-#define FUNCTION_IS_IMPLEMENTED(name)                                       \
-  (reinterpret_cast<uintptr_t>(static_cast<const void*>(&g_thunks->name)) - \
-       reinterpret_cast<uintptr_t>(static_cast<const void*>(&g_thunks)) <   \
-   g_thunks->size)
-
-#define INVOKE_THUNK(name, ...)                                              \
-  FUNCTION_IS_IMPLEMENTED(name)                                              \
-  ? base::UnsanitizedCfiCall(g_thunks, &MojoSystemThunks::name)(__VA_ARGS__) \
-  : NotImplemented(#name)
+#define INVOKE_THUNK(name, ...)                                        \
+  offsetof(MojoSystemThunks, name) < g_thunks->size                    \
+      ? base::UnsanitizedCfiCall(g_thunks,                             \
+                                 &MojoSystemThunks::name)(__VA_ARGS__) \
+      : NotImplemented(#name)
 
 namespace mojo {
 
@@ -92,8 +94,21 @@ class CoreLibraryInitializer {
       library_path.emplace(kDefaultLibraryPathValue);
     }
 
+    // NOTE: |prefer_own_symbols| on POSIX implies that the library is loaded
+    // with RTLD_DEEPBIND, which is critical given that libmojo_core.so links
+    // against base's allocator shim. Essentially, this ensures that mojo_core
+    // internals get their own heap, and this is OK since heap pointer ownership
+    // is never passed across the ABI boundary.
     base::ScopedAllowBlocking allow_blocking;
-    library_.emplace(*library_path);
+    base::NativeLibraryOptions library_options;
+#if !defined(ADDRESS_SANITIZER) && !defined(THREAD_SANITIZER) && \
+    !defined(MEMORY_SANITIZER) && !defined(LEAK_SANITIZER)
+    // Sanitizer builds cannnot support RTLD_DEEPBIND, but they also disable
+    // allocator shims, so it's unnecessary there.
+    library_options.prefer_own_symbols = true;
+#endif
+    library_.emplace(base::LoadNativeLibraryWithOptions(
+        *library_path, library_options, nullptr));
     if (!application_provided_path) {
       CHECK(library_->is_valid())
           << "Unable to load the mojo_core library. Make sure the library is "
@@ -466,6 +481,10 @@ MojoResult MojoQueryQuota(MojoHandle handle,
                           uint64_t* limit,
                           uint64_t* usage) {
   return INVOKE_THUNK(QueryQuota, handle, type, options, limit, usage);
+}
+
+MojoResult MojoShutdown(const MojoShutdownOptions* options) {
+  return INVOKE_THUNK(Shutdown, options);
 }
 
 }  // extern "C"

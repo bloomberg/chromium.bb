@@ -120,8 +120,7 @@ class CompileTask : public angle::Closure
           mSource(source),
           mOptions(options),
           mResult(false)
-    {
-    }
+    {}
     void operator()() override
     {
         std::vector<const char *> srcStrings;
@@ -153,9 +152,7 @@ ShaderState::ShaderState(ShaderType shaderType)
     mLocalSize.fill(-1);
 }
 
-ShaderState::~ShaderState()
-{
-}
+ShaderState::~ShaderState() {}
 
 Shader::Shader(ShaderProgramManager *manager,
                rx::GLImplFactory *implFactory,
@@ -359,7 +356,7 @@ void Shader::compile(const Context *context)
     std::string sourcePath;
     ShCompileOptions options =
         mImplementation->prepareSourceAndReturnOptions(context, &sourceStream, &sourcePath);
-    options |= (SH_OBJECT_CODE | SH_VARIABLES);
+    options |= (SH_OBJECT_CODE | SH_VARIABLES | SH_EMULATE_GL_DRAW_ID);
     auto source = sourceStream.str();
 
     // Add default options to WebGL shaders to prevent unexpected behavior during compilation.
@@ -369,6 +366,7 @@ void Shader::compile(const Context *context)
         options |= SH_LIMIT_CALL_STACK_DEPTH;
         options |= SH_LIMIT_EXPRESSION_COMPLEXITY;
         options |= SH_ENFORCE_PACKING_RESTRICTIONS;
+        options |= SH_INIT_SHARED_VARIABLES;
     }
 
     // Some targets (eg D3D11 Feature Level 9_3 and below) do not support non-constant loop indexes

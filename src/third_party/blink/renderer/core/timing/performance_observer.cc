@@ -31,15 +31,13 @@ PerformanceObserver* PerformanceObserver::Create(
   ExecutionContext* context = ExecutionContext::From(script_state);
   if (window) {
     UseCounter::Count(context, WebFeature::kPerformanceObserverForWindow);
-    return new PerformanceObserver(
+    return MakeGarbageCollected<PerformanceObserver>(
         context, DOMWindowPerformance::performance(*window), callback);
   }
-  if (context->IsWorkerGlobalScope()) {
+  if (auto* scope = DynamicTo<WorkerGlobalScope>(context)) {
     UseCounter::Count(context, WebFeature::kPerformanceObserverForWorker);
-    return new PerformanceObserver(context,
-                                   WorkerGlobalScopePerformance::performance(
-                                       *ToWorkerGlobalScope(context)),
-                                   callback);
+    return MakeGarbageCollected<PerformanceObserver>(
+        context, WorkerGlobalScopePerformance::performance(*scope), callback);
   }
   V8ThrowException::ThrowTypeError(
       script_state->GetIsolate(),
@@ -62,7 +60,7 @@ PerformanceObserver::PerformanceObserver(
   DCHECK(performance_);
 }
 
-void PerformanceObserver::observe(const PerformanceObserverInit& observer_init,
+void PerformanceObserver::observe(const PerformanceObserverInit* observer_init,
                                   ExceptionState& exception_state) {
   if (!performance_) {
     exception_state.ThrowTypeError(
@@ -71,8 +69,8 @@ void PerformanceObserver::observe(const PerformanceObserverInit& observer_init,
   }
 
   PerformanceEntryTypeMask entry_types = PerformanceEntry::kInvalid;
-  if (observer_init.hasEntryTypes() && observer_init.entryTypes().size()) {
-    const Vector<String>& sequence = observer_init.entryTypes();
+  if (observer_init->hasEntryTypes() && observer_init->entryTypes().size()) {
+    const Vector<String>& sequence = observer_init->entryTypes();
     for (const auto& entry_type_string : sequence) {
       entry_types |=
           PerformanceEntry::ToEntryTypeEnum(AtomicString(entry_type_string));
@@ -131,7 +129,7 @@ void PerformanceObserver::Deliver() {
   PerformanceEntryVector performance_entries;
   performance_entries.swap(performance_entries_);
   PerformanceObserverEntryList* entry_list =
-      new PerformanceObserverEntryList(performance_entries);
+      MakeGarbageCollected<PerformanceObserverEntryList>(performance_entries);
   callback_->InvokeAndReportException(this, entry_list, this);
 }
 

@@ -49,7 +49,7 @@ bool IsEventExpired(const base::Time& event_time, double ttl_in_second) {
 // Helper function to determine if the URL type should be LANDING_REFERRER or
 // LANDING_PAGE, and modify AttributionResult accordingly.
 ReferrerChainEntry::URLType GetURLTypeAndAdjustAttributionResult(
-    bool at_user_gesture_limit,
+    size_t user_gesture_count,
     SafeBrowsingNavigationObserverManager::AttributionResult* out_result) {
   // Landing page refers to the page user directly interacts with to trigger
   // this event (e.g. clicking on download button). Landing referrer page is the
@@ -57,13 +57,19 @@ ReferrerChainEntry::URLType GetURLTypeAndAdjustAttributionResult(
   // Since we are tracing navigations backwards, if we've reached
   // user gesture limit before this navigation event, this is a navigation
   // leading to the landing referrer page, otherwise it leads to landing page.
-  if (at_user_gesture_limit) {
+  if (user_gesture_count == 0) {
+    *out_result = SafeBrowsingNavigationObserverManager::SUCCESS;
+    return ReferrerChainEntry::EVENT_URL;
+  } else if (user_gesture_count == 2) {
     *out_result =
         SafeBrowsingNavigationObserverManager::SUCCESS_LANDING_REFERRER;
     return ReferrerChainEntry::LANDING_REFERRER;
-  } else {
+  } else if (user_gesture_count == 1) {
     *out_result = SafeBrowsingNavigationObserverManager::SUCCESS_LANDING_PAGE;
     return ReferrerChainEntry::LANDING_PAGE;
+  } else {
+    *out_result = SafeBrowsingNavigationObserverManager::SUCCESS_REFERRER;
+    return ReferrerChainEntry::REFERRER;
   }
 }
 
@@ -160,6 +166,10 @@ NavigationEvent* NavigationEventList::FindNavigationEvent(
           // Adjust retargeting navigation event's attributes.
           retargeting_nav_event->server_redirect_urls.push_back(
               std::move(search_url));
+        } else {
+          // The retargeting_nav_event original request url is unreliable, since
+          // that navigation can be canceled.
+          retargeting_nav_event->original_request_url = std::move(search_url);
         }
         return retargeting_nav_event;
       } else {
@@ -424,8 +434,7 @@ SafeBrowsingNavigationObserverManager::IdentifyReferrerChainByHostingPage(
     user_gesture_count = 1;
     AddToReferrerChain(
         out_referrer_chain, nav_event, initiating_main_frame_url,
-        GetURLTypeAndAdjustAttributionResult(
-            user_gesture_count == user_gesture_count_limit, &result));
+        GetURLTypeAndAdjustAttributionResult(user_gesture_count, &result));
   } else {
     AddToReferrerChain(out_referrer_chain, nav_event, initiating_main_frame_url,
                        ReferrerChainEntry::CLIENT_REDIRECT);
@@ -667,11 +676,10 @@ void SafeBrowsingNavigationObserverManager::GetRemainingReferrerChain(
     if (!last_nav_event_traced)
       return;
 
-    AddToReferrerChain(
-        out_referrer_chain, last_nav_event_traced, last_main_frame_url_traced,
-        GetURLTypeAndAdjustAttributionResult(
-            current_user_gesture_count == user_gesture_count_limit,
-            out_result));
+    AddToReferrerChain(out_referrer_chain, last_nav_event_traced,
+                       last_main_frame_url_traced,
+                       GetURLTypeAndAdjustAttributionResult(
+                           current_user_gesture_count, out_result));
     // Stop searching if the size of out_referrer_chain already reached its
     // limit.
     if (out_referrer_chain->size() == kReferrerChainMaxLength)

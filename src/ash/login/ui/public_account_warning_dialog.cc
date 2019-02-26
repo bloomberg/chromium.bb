@@ -19,7 +19,7 @@ namespace ash {
 namespace {
 
 constexpr int kDialogWidthDp = 400;
-constexpr int kDialogHeightDp = 145;
+constexpr int kDialogHeightDp = 160;
 constexpr int kDialogContentMarginDp = 13;
 
 constexpr int kBulletRadiusDp = 2;

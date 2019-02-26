@@ -30,7 +30,7 @@ namespace blink {
 
 template <typename FunctionType, typename... Ps>
 WTF::CrossThreadFunction<base::MakeUnboundRunType<FunctionType, Ps...>>
-CrossThreadBind(FunctionType function, Ps&&... parameters) {
+CrossThreadBind(FunctionType&& function, Ps&&... parameters) {
   static_assert(
       WTF::internal::CheckGCedTypeRestrictions<std::index_sequence_for<Ps...>,
                                                std::decay_t<Ps>...>::ok,

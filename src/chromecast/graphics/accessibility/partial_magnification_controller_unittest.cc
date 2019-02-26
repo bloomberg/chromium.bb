@@ -5,7 +5,6 @@
 #include "chromecast/graphics/accessibility/partial_magnification_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/test/aura_test_base.h"
-#include "ui/aura/test/event_generator_delegate_aura.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/events/test/event_generator.h"
@@ -30,29 +29,6 @@ class CastTestWindowDelegate : public aura::test::TestWindowDelegate {
   ui::KeyboardCode key_code_;
 
   DISALLOW_COPY_AND_ASSIGN(CastTestWindowDelegate);
-};
-
-class TestEventGeneratorDelegate
-    : public aura::test::EventGeneratorDelegateAura {
- public:
-  explicit TestEventGeneratorDelegate(aura::Window* root_window)
-      : root_window_(root_window) {}
-  ~TestEventGeneratorDelegate() override = default;
-
-  // EventGeneratorDelegateAura overrides:
-  ui::EventTarget* GetTargetAt(const gfx::Point& point) override {
-    return root_window_->GetHost()->window();
-  }
-
-  aura::client::ScreenPositionClient* GetScreenPositionClient(
-      const aura::Window* window) const override {
-    return aura::client::GetScreenPositionClient(root_window_);
-  }
-
- private:
-  aura::Window* root_window_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestEventGeneratorDelegate);
 };
 
 // Wrapper for PartialMagnificationController that exposes internal state to
@@ -113,8 +89,8 @@ class PartialMagnificationControllerTest : public aura::test::AuraTestBase {
 
   ui::test::EventGenerator& GetEventGenerator() {
     if (!event_generator_) {
-      event_generator_ = std::make_unique<ui::test::EventGenerator>(
-          std::make_unique<TestEventGeneratorDelegate>(root_window()));
+      event_generator_ =
+          std::make_unique<ui::test::EventGenerator>(root_window());
     }
     return *event_generator_.get();
   }
@@ -177,24 +153,24 @@ TEST_F(PartialMagnificationControllerTest, MagnifierFollowsFinger) {
 
   // Move the pointer around, make sure the window follows it.
   GetEventGenerator().MoveTouch(gfx::Point(32, 32));
-  EXPECT_EQ(GetEventGenerator().current_location() + offset,
+  EXPECT_EQ(GetEventGenerator().current_screen_location() + offset,
             GetTestApi().GetWidgetOrigin());
 
   GetEventGenerator().MoveTouch(gfx::Point(0, 10));
-  EXPECT_EQ(GetEventGenerator().current_location() + offset,
+  EXPECT_EQ(GetEventGenerator().current_screen_location() + offset,
             GetTestApi().GetWidgetOrigin());
 
   GetEventGenerator().MoveTouch(gfx::Point(10, 0));
-  EXPECT_EQ(GetEventGenerator().current_location() + offset,
+  EXPECT_EQ(GetEventGenerator().current_screen_location() + offset,
             GetTestApi().GetWidgetOrigin());
 
   GetEventGenerator().ReleaseTouch();
 
   // Make sure the window is initially placed correctly.
-  GetEventGenerator().set_current_location(gfx::Point(50, 20));
+  GetEventGenerator().set_current_screen_location(gfx::Point(50, 20));
   EXPECT_FALSE(GetTestApi().is_active());
   GetEventGenerator().PressTouch();
-  EXPECT_EQ(GetEventGenerator().current_location() + offset,
+  EXPECT_EQ(GetEventGenerator().current_screen_location() + offset,
             GetTestApi().GetWidgetOrigin());
 }
 

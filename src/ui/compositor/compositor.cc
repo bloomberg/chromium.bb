@@ -16,7 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/animation/animation_host.h"
@@ -57,6 +57,11 @@
 #include "ui/gl/gl_switches.h"
 
 namespace ui {
+namespace {
+
+const char* kDefaultTraceEnvironmentName = "browser";
+
+}  // namespace
 
 Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
                        ui::ContextFactory* context_factory,
@@ -65,7 +70,8 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
                        bool enable_surface_synchronization,
                        bool enable_pixel_canvas,
                        bool external_begin_frames_enabled,
-                       bool force_software_compositor)
+                       bool force_software_compositor,
+                       const char* trace_environment_name)
     : context_factory_(context_factory),
       context_factory_private_(context_factory_private),
       frame_sink_id_(frame_sink_id),
@@ -76,11 +82,15 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
       layer_animator_collection_(this),
       is_pixel_canvas_(enable_pixel_canvas),
       lock_manager_(task_runner),
+      trace_environment_name_(trace_environment_name
+                                  ? trace_environment_name
+                                  : kDefaultTraceEnvironmentName),
       context_creation_weak_ptr_factory_(this) {
   if (context_factory_private) {
     auto* host_frame_sink_manager =
         context_factory_private_->GetHostFrameSinkManager();
-    host_frame_sink_manager->RegisterFrameSinkId(frame_sink_id_, this);
+    host_frame_sink_manager->RegisterFrameSinkId(
+        frame_sink_id_, this, viz::ReportFirstSurfaceActivation::kNo);
     host_frame_sink_manager->SetFrameSinkDebugLabel(frame_sink_id_,
                                                     "Compositor");
   }
@@ -96,22 +106,12 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
   settings.layers_always_allowed_lcd_text = true;
   // Use occlusion to allow more overlapping windows to take less memory.
   settings.use_occlusion_for_tile_prioritization = true;
-  refresh_rate_ = context_factory_->GetRefreshRate();
   settings.main_frame_before_activation_enabled = false;
   settings.delegated_sync_points_required =
       context_factory_->SyncTokensRequiredForDisplayCompositor();
 
   // Disable edge anti-aliasing in order to increase support for HW overlays.
   settings.enable_edge_anti_aliasing = false;
-
-  if (command_line->HasSwitch(switches::kLimitFps)) {
-    std::string fps_str =
-        command_line->GetSwitchValueASCII(switches::kLimitFps);
-    double fps;
-    if (base::StringToDouble(fps_str, &fps) && fps > 0) {
-      forced_refresh_rate_ = fps;
-    }
-  }
 
   if (command_line->HasSwitch(cc::switches::kUIShowCompositedLayerBorders)) {
     std::string layer_borders_string = command_line->GetSwitchValueASCII(
@@ -275,11 +275,6 @@ void Compositor::RemoveChildFrameSink(const viz::FrameSinkId& frame_sink_id) {
   child_frame_sinks_.erase(it);
 }
 
-void Compositor::SetLocalSurfaceId(
-    const viz::LocalSurfaceId& local_surface_id) {
-  host_->SetLocalSurfaceIdFromParent(local_surface_id);
-}
-
 void Compositor::SetLayerTreeFrameSink(
     std::unique_ptr<cc::LayerTreeFrameSink> layer_tree_frame_sink) {
   layer_tree_frame_sink_requested_ = false;
@@ -357,22 +352,28 @@ void Compositor::SetLatencyInfo(const ui::LatencyInfo& latency_info) {
   host_->QueueSwapPromise(std::move(swap_promise));
 }
 
-void Compositor::SetScaleAndSize(float scale,
-                                 const gfx::Size& size_in_pixel,
-                                 const viz::LocalSurfaceId& local_surface_id) {
+void Compositor::SetScaleAndSize(
+    float scale,
+    const gfx::Size& size_in_pixel,
+    const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {
   DCHECK_GT(scale, 0);
   bool device_scale_factor_changed = device_scale_factor_ != scale;
   device_scale_factor_ = scale;
 
-  if (size_ != size_in_pixel && local_surface_id.is_valid()) {
+  if (size_ != size_in_pixel && local_surface_id_allocation.IsValid()) {
     // A new LocalSurfaceId must be set when the compositor size changes.
-    DCHECK_NE(local_surface_id, host_->local_surface_id_from_parent());
+    DCHECK_NE(
+        local_surface_id_allocation.local_surface_id(),
+        host_->local_surface_id_allocation_from_parent().local_surface_id());
+    DCHECK_NE(local_surface_id_allocation,
+              host_->local_surface_id_allocation_from_parent());
   }
 
   if (!size_in_pixel.IsEmpty()) {
     bool size_changed = size_ != size_in_pixel;
     size_ = size_in_pixel;
-    host_->SetViewportSizeAndScale(size_in_pixel, scale, local_surface_id);
+    host_->SetViewportSizeAndScale(size_in_pixel, scale,
+                                   local_surface_id_allocation);
     root_web_layer_->SetBounds(size_in_pixel);
     // TODO(fsamuel): Get rid of ContextFactoryPrivate.
     if (context_factory_private_ &&
@@ -453,10 +454,6 @@ void Compositor::SetDisplayVSyncParameters(base::TimeTicks timebase,
   if (is_frame_rate_limit_disabled)
     return;
 
-  if (forced_refresh_rate_) {
-    timebase = base::TimeTicks();
-    interval = base::TimeDelta::FromSeconds(1) / forced_refresh_rate_;
-  }
   if (interval.is_zero()) {
     // TODO(brianderson): We should not be receiving 0 intervals.
     interval = viz::BeginFrameArgs::DefaultInterval();
@@ -470,8 +467,6 @@ void Compositor::SetDisplayVSyncParameters(base::TimeTicks timebase,
 
   vsync_timebase_ = timebase;
   vsync_interval_ = interval;
-  refresh_rate_ =
-      base::Time::kMillisecondsPerSecond / interval.InMillisecondsF();
   if (context_factory_private_) {
     context_factory_private_->SetDisplayVSyncParameters(this, timebase,
                                                         interval);
@@ -586,7 +581,7 @@ static void SendDamagedRectsRecursive(ui::Layer* layer) {
     SendDamagedRectsRecursive(child);
 }
 
-void Compositor::UpdateLayerTreeHost() {
+void Compositor::UpdateLayerTreeHost(bool record_main_frame_metrics) {
   if (!root_layer())
     return;
   SendDamagedRectsRecursive(root_layer());
@@ -620,16 +615,28 @@ void Compositor::DidReceiveCompositorFrameAck() {
     observer.OnCompositingEnded(this);
 }
 
+void Compositor::DidPresentCompositorFrame(
+    uint32_t frame_token,
+    const gfx::PresentationFeedback& feedback) {
+  TRACE_EVENT_MARK_WITH_TIMESTAMP1("cc,benchmark", "FramePresented",
+                                   feedback.timestamp, "environment",
+                                   trace_environment_name_);
+}
+
 void Compositor::DidSubmitCompositorFrame() {
   base::TimeTicks start_time = base::TimeTicks::Now();
   for (auto& observer : observer_list_)
     observer.OnCompositingStarted(this, start_time);
 }
 
+void Compositor::FrameIntervalUpdated(base::TimeDelta interval) {
+  refresh_rate_ =
+      base::Time::kMicrosecondsPerSecond / interval.InMicrosecondsF();
+}
+
 void Compositor::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
-  // TODO(fsamuel): Once surface synchronization is turned on, the fallback
-  // surface should be set here.
+  NOTREACHED();
 }
 
 void Compositor::OnFrameTokenChanged(uint32_t frame_token) {

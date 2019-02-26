@@ -12,8 +12,11 @@
 #define API_TEST_FAKE_MEDIA_TRANSPORT_H_
 
 #include <memory>
+#include <string>
 #include <utility>
+#include <vector>
 
+#include "absl/memory/memory.h"
 #include "api/media_transport_interface.h"
 
 namespace webrtc {
@@ -24,7 +27,8 @@ namespace webrtc {
 // could unit test audio / video integration.
 class FakeMediaTransport : public MediaTransportInterface {
  public:
-  explicit FakeMediaTransport(bool is_caller) : is_caller_(is_caller) {}
+  explicit FakeMediaTransport(const MediaTransportSettings& settings)
+      : settings_(settings) {}
   ~FakeMediaTransport() = default;
 
   RTCError SendAudioFrame(uint64_t channel_id,
@@ -45,11 +49,56 @@ class FakeMediaTransport : public MediaTransportInterface {
   void SetReceiveAudioSink(MediaTransportAudioSinkInterface* sink) override {}
   void SetReceiveVideoSink(MediaTransportVideoSinkInterface* sink) override {}
 
-  // Returns true if fake media trasport was created as a caller.
-  bool is_caller() const { return is_caller_; }
+  // Returns true if fake media transport was created as a caller.
+  bool is_caller() const { return settings_.is_caller; }
+  absl::optional<std::string> pre_shared_key() const {
+    return settings_.pre_shared_key;
+  }
+
+  RTCError SendData(int channel_id,
+                    const SendDataParams& params,
+                    const rtc::CopyOnWriteBuffer& buffer) override {
+    return RTCError::OK();
+  }
+
+  RTCError CloseChannel(int channel_id) override { return RTCError::OK(); }
+
+  void SetDataSink(DataChannelSink* sink) override {}
+
+  void SetMediaTransportStateCallback(
+      MediaTransportStateCallback* callback) override {
+    state_callback_ = callback;
+  }
+
+  void SetState(webrtc::MediaTransportState state) {
+    if (state_callback_) {
+      state_callback_->OnStateChanged(state);
+    }
+  }
+
+  void AddTargetTransferRateObserver(
+      webrtc::TargetTransferRateObserver* observer) override {
+    RTC_CHECK(std::find(target_rate_observers_.begin(),
+                        target_rate_observers_.end(),
+                        observer) == target_rate_observers_.end());
+    target_rate_observers_.push_back(observer);
+  }
+
+  void RemoveTargetTransferRateObserver(
+      webrtc::TargetTransferRateObserver* observer) override {
+    auto it = std::find(target_rate_observers_.begin(),
+                        target_rate_observers_.end(), observer);
+    if (it != target_rate_observers_.end()) {
+      target_rate_observers_.erase(it);
+    }
+  }
+
+  int target_rate_observers_size() { return target_rate_observers_.size(); }
 
  private:
-  const bool is_caller_;
+  const MediaTransportSettings settings_;
+  MediaTransportStateCallback* state_callback_;
+  std::vector<webrtc::TargetTransferRateObserver*> target_rate_observers_;
 };
 
 // Fake media transport factory creates fake media transport.
@@ -62,12 +111,17 @@ class FakeMediaTransportFactory : public MediaTransportFactory {
       rtc::PacketTransportInternal* packet_transport,
       rtc::Thread* network_thread,
       bool is_caller) override {
-    RTC_CHECK(network_thread != nullptr);
-    RTC_CHECK(packet_transport != nullptr);
+    MediaTransportSettings settings;
+    settings.is_caller = is_caller;
+    return CreateMediaTransport(packet_transport, network_thread, settings);
+  }
 
+  RTCErrorOr<std::unique_ptr<MediaTransportInterface>> CreateMediaTransport(
+      rtc::PacketTransportInternal* packet_transport,
+      rtc::Thread* network_thread,
+      const MediaTransportSettings& settings) override {
     std::unique_ptr<MediaTransportInterface> media_transport =
-        absl::make_unique<FakeMediaTransport>(is_caller);
-
+        absl::make_unique<FakeMediaTransport>(settings);
     return std::move(media_transport);
   }
 };

@@ -5,6 +5,7 @@
 <org.chromium.chrome.browser.ntp.NewTabPageLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/ntp_content"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -40,7 +41,9 @@
         android:orientation="horizontal"
         android:paddingStart="@dimen/location_bar_lateral_padding"
         android:paddingEnd="@dimen/location_bar_lateral_padding" >
+        <!-- TODO(crbug.com/900912): Fix and remove lint ignore -->
         <EditText
+            tools:ignore="Autofill,LabelFor"
             style="@style/TextAppearance.NewTabPageSearchBoxText"
             android:id="@+id/search_box_text"
             android:layout_width="0dp"
@@ -54,7 +57,7 @@
             android:gravity="center_vertical"
             android:inputType="text"
             android:singleLine="true" />
-        <android.support.v7.widget.AppCompatImageView
+        <org.chromium.ui.widget.ChromeImageView
             android:id="@+id/voice_search_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -62,13 +65,6 @@
             android:src="@drawable/btn_mic"
             app:tint="@color/dark_mode_tint" />
     </view>
-
-    <ViewStub
-        android:id="@+id/shortcuts_stub"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:inflatedId="@+id/shortcuts"
-        android:layout="@layout/ntp_shortcuts" />
 
     <!-- Middle spacer -->
     <View

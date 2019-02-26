@@ -6,8 +6,8 @@
 // script. It is specific to fetching a PAC script; enforces timeout, max-size,
 // status code.
 
-#ifndef NET_PROXY_PAC_FILE_FETCHER_H_
-#define NET_PROXY_PAC_FILE_FETCHER_H_
+#ifndef NET_PROXY_RESOLUTION_PAC_FILE_FETCHER_H_
+#define NET_PROXY_RESOLUTION_PAC_FILE_FETCHER_H_
 
 #include "base/strings/string16.h"
 #include "net/base/completion_once_callback.h"
@@ -66,4 +66,4 @@ class NET_EXPORT_PRIVATE PacFileFetcher {
 
 }  // namespace net
 
-#endif  // NET_PROXY_PAC_FILE_FETCHER_H_
+#endif  // NET_PROXY_RESOLUTION_PAC_FILE_FETCHER_H_

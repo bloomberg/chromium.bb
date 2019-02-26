@@ -6,11 +6,9 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "components/prefs/pref_service.h"
+#include "components/unified_consent/pref_names.h"
 
 namespace {
-
-// Histogram name for the consent bump action.
-const char kConsentBumpActionMetricName[] = "UnifiedConsent.ConsentBump.Action";
 
 // Histogram recorded at startup to log which Google services are enabled.
 const char kSyncAndGoogleServicesSettingsHistogram[] =
@@ -22,19 +20,26 @@ namespace unified_consent {
 
 namespace metrics {
 
-void RecordConsentBumpMetric(UnifiedConsentBumpAction action) {
-  UMA_HISTOGRAM_ENUMERATION(
-      kConsentBumpActionMetricName, action,
-      UnifiedConsentBumpAction::kUnifiedConsentBumpActionMoreOptionsMax);
-}
+void RecordSettingsHistogram(UnifiedConsentServiceClient* service_client,
+                             PrefService* pref_service) {
+  bool metric_recorded = false;
 
-void RecordConsentBumpEligibility(bool eligible) {
-  UMA_HISTOGRAM_BOOLEAN("UnifiedConsent.ConsentBump.EligibleAtStartup",
-                        eligible);
-}
+  metric_recorded |= RecordSettingsHistogramFromPref(
+      prefs::kAllUnifiedConsentServicesWereEnabled, pref_service,
+      metrics::SettingsHistogramValue::kAllServicesWereEnabled);
+  metric_recorded |= RecordSettingsHistogramFromPref(
+      prefs::kUrlKeyedAnonymizedDataCollectionEnabled, pref_service,
+      metrics::SettingsHistogramValue::kUrlKeyedAnonymizedDataCollection);
+  metric_recorded |= RecordSettingsHistogramFromService(
+      service_client,
+      UnifiedConsentServiceClient::Service::kSafeBrowsingExtendedReporting,
+      metrics::SettingsHistogramValue::kSafeBrowsingExtendedReporting);
+  metric_recorded |= RecordSettingsHistogramFromService(
+      service_client, UnifiedConsentServiceClient::Service::kSpellCheck,
+      metrics::SettingsHistogramValue::kSpellCheck);
 
-void RecordUnifiedConsentRevoked(UnifiedConsentRevokeReason reason) {
-  UMA_HISTOGRAM_ENUMERATION("UnifiedConsent.RevokeReason", reason);
+  if (!metric_recorded)
+    RecordSettingsHistogramSample(metrics::SettingsHistogramValue::kNone);
 }
 
 void RecordSettingsHistogramSample(SettingsHistogramValue value) {

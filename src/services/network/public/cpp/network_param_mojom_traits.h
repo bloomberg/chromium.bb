@@ -5,6 +5,7 @@
 #ifndef SERVICES_NETWORK_PUBLIC_CPP_NETWORK_PARAM_MOJOM_TRAITS_H_
 #define SERVICES_NETWORK_PUBLIC_CPP_NETWORK_PARAM_MOJOM_TRAITS_H_
 
+#include "base/memory/memory_pressure_listener.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "net/http/http_version.h"
@@ -40,6 +41,16 @@ struct EnumTraits<network::mojom::ApplicationState,
                         base::android::ApplicationState* output);
 };
 #endif
+
+template <>
+struct EnumTraits<network::mojom::MemoryPressureLevel,
+                  base::MemoryPressureListener::MemoryPressureLevel> {
+  static network::mojom::MemoryPressureLevel ToMojom(
+      base::MemoryPressureListener::MemoryPressureLevel input);
+  static bool FromMojom(
+      network::mojom::MemoryPressureLevel input,
+      base::MemoryPressureListener::MemoryPressureLevel* output);
+};
 
 }  // namespace mojo
 

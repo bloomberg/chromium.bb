@@ -6,6 +6,7 @@
 
 #include <limits>
 
+#include "base/logging.h"
 #include "chromecast/base/task_runner_impl.h"
 #include "chromecast/media/cma/backend/android/audio_decoder_android.h"
 #include "chromecast/media/cma/backend/video_decoder_null.h"
@@ -98,10 +99,10 @@ bool MediaPipelineBackendAndroid::SetPlaybackRate(float rate) {
 int64_t MediaPipelineBackendAndroid::GetCurrentPts() {
   if (audio_decoder_) {
     int64_t pts = audio_decoder_->current_pts();
-    VLOG(1) << __func__ << ": pts=" << pts;
+    LOG(INFO) << __func__ << ": pts=" << pts;
     return pts;
   }
-  VLOG(1) << __func__ << ": pts=<invalid>";
+  LOG(INFO) << __func__ << ": pts=<invalid>";
   return std::numeric_limits<int64_t>::min();
 }
 

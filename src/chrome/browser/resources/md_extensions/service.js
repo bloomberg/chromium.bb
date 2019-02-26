@@ -6,6 +6,7 @@ cr.define('extensions', function() {
   'use strict';
 
   /**
+   * @implements {extensions.ActivityLogDelegate}
    * @implements {extensions.ErrorPageDelegate}
    * @implements {extensions.ItemDelegate}
    * @implements {extensions.KeyboardShortcutDelegate}
@@ -328,15 +329,26 @@ cr.define('extensions', function() {
     /** @override */
     requestFileSource(args) {
       return new Promise(function(resolve, reject) {
-        chrome.developerPrivate.requestFileSource(args, function(code) {
-          resolve(code);
-        });
+        chrome.developerPrivate.requestFileSource(args, resolve);
       });
     }
 
     /** @override */
     showInFolder(id) {
       chrome.developerPrivate.showPath(id);
+    }
+
+    /** @override */
+    getExtensionActivityLog(extensionId) {
+      return new Promise(function(resolve, reject) {
+        chrome.activityLogPrivate.getExtensionActivities(
+            {
+              activityType:
+                  chrome.activityLogPrivate.ExtensionActivityFilter.ANY,
+              extensionId: extensionId
+            },
+            resolve);
+      });
     }
   }
 

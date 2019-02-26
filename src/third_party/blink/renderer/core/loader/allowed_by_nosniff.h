@@ -13,12 +13,11 @@ class ResourceResponse;
 
 class CORE_EXPORT AllowedByNosniff {
  public:
-  static bool MimeTypeAsScript(ExecutionContext*, const ResourceResponse&);
+  enum class MimeTypeCheck { kStrict, kLax };
 
-  // For testing:
-  static bool MimeTypeAsScriptForTesting(ExecutionContext*,
-                                         const ResourceResponse&,
-                                         bool is_worker_global_scope);
+  static bool MimeTypeAsScript(ExecutionContext*,
+                               const ResourceResponse&,
+                               MimeTypeCheck mime_type_check_mode);
 };
 
 }  // namespace blink

@@ -61,14 +61,14 @@ size_t AudioDelayDSPKernel::BufferLengthForDelay(double max_delay_time,
   // Compute the length of the buffer needed to handle a max delay of
   // |maxDelayTime|. One is added to handle the case where the actual delay
   // equals the maximum delay.
-  return 1 + AudioUtilities::TimeToSampleFrame(max_delay_time, sample_rate);
+  return 1 + audio_utilities::TimeToSampleFrame(max_delay_time, sample_rate);
 }
 
 bool AudioDelayDSPKernel::HasSampleAccurateValues() {
   return false;
 }
 
-void AudioDelayDSPKernel::CalculateSampleAccurateValues(float*, size_t) {
+void AudioDelayDSPKernel::CalculateSampleAccurateValues(float*, uint32_t) {
   NOTREACHED();
 }
 
@@ -78,7 +78,7 @@ double AudioDelayDSPKernel::DelayTime(float sample_rate) {
 
 void AudioDelayDSPKernel::Process(const float* source,
                                   float* destination,
-                                  size_t frames_to_process) {
+                                  uint32_t frames_to_process) {
   size_t buffer_length = buffer_.size();
   float* buffer = buffer_.Data();
 

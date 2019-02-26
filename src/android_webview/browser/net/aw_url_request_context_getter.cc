@@ -21,10 +21,11 @@
 #include "base/base_paths_android.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "components/network_session_configurator/common/network_switches.h"
@@ -65,6 +66,7 @@
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_intercepting_job_factory.h"
 #include "net/url_request/url_request_interceptor.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 
 using base::FilePath;
@@ -306,8 +308,13 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
                                       std::move(channel_id_service));
 
   net::URLRequestContextBuilder::HttpCacheParams cache_params;
+  // Note: we create this as IN_MEMORY when the network service is enabled
+  // only as a temporary measure, to avoid accessing the same HTTP cache from
+  // two spots in the code.
   cache_params.type =
-      net::URLRequestContextBuilder::HttpCacheParams::DISK_SIMPLE;
+      base::FeatureList::IsEnabled(network::features::kNetworkService)
+          ? net::URLRequestContextBuilder::HttpCacheParams::IN_MEMORY
+          : net::URLRequestContextBuilder::HttpCacheParams::DISK_SIMPLE;
   cache_params.max_size = 20 * 1024 * 1024;  // 20M
   cache_params.path = cache_path_;
   builder.EnableHttpCache(cache_params);

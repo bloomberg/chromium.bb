@@ -56,6 +56,11 @@ class XHRReplayData final : public GarbageCollectedFinalized<XHRReplayData> {
                                bool async,
                                bool include_credentials);
 
+  XHRReplayData(const AtomicString& method,
+                const KURL&,
+                bool async,
+                bool include_credentials);
+
   void AddHeader(const AtomicString& key, const AtomicString& value);
   const AtomicString& Method() const { return method_; }
   const KURL& Url() const { return url_; }
@@ -66,11 +71,6 @@ class XHRReplayData final : public GarbageCollectedFinalized<XHRReplayData> {
   virtual void Trace(blink::Visitor*) {}
 
  private:
-  XHRReplayData(const AtomicString& method,
-                const KURL&,
-                bool async,
-                bool include_credentials);
-
   AtomicString method_;
   KURL url_;
   bool async_;
@@ -152,11 +152,11 @@ class NetworkResourcesData final
     void SetCertificate(const Vector<AtomicString>& certificate) {
       certificate_ = certificate;
     }
-    int PendingEncodedDataLength() const {
+    int64_t PendingEncodedDataLength() const {
       return pending_encoded_data_length_;
     }
     void ClearPendingEncodedDataLength() { pending_encoded_data_length_ = 0; }
-    void AddPendingEncodedDataLength(int encoded_data_length) {
+    void AddPendingEncodedDataLength(size_t encoded_data_length) {
       pending_encoded_data_length_ += encoded_data_length;
     }
     void SetPostData(scoped_refptr<EncodedFormData> post_data) {
@@ -189,7 +189,7 @@ class NetworkResourcesData final
     String mime_type_;
     String text_encoding_name_;
     int64_t raw_header_size_;
-    int pending_encoded_data_length_;
+    int64_t pending_encoded_data_length_;
 
     scoped_refptr<SharedBuffer> buffer_;
     WeakMember<Resource> cached_resource_;
@@ -201,8 +201,11 @@ class NetworkResourcesData final
 
   static NetworkResourcesData* Create(size_t total_buffer_size,
                                       size_t resource_buffer_size) {
-    return new NetworkResourcesData(total_buffer_size, resource_buffer_size);
+    return MakeGarbageCollected<NetworkResourcesData>(total_buffer_size,
+                                                      resource_buffer_size);
   }
+
+  NetworkResourcesData(size_t total_buffer_size, size_t resource_buffer_size);
   ~NetworkResourcesData();
 
   void ResourceCreated(ExecutionContext*,
@@ -236,14 +239,12 @@ class NetworkResourcesData final
                       const Vector<AtomicString>& certificate);
   HeapVector<Member<ResourceData>> Resources();
 
-  int GetAndClearPendingEncodedDataLength(const String& request_id);
+  int64_t GetAndClearPendingEncodedDataLength(const String& request_id);
   void AddPendingEncodedDataLength(const String& request_id,
-                                   int encoded_data_length);
+                                   size_t encoded_data_length);
   void Trace(blink::Visitor*);
 
  private:
-  NetworkResourcesData(size_t total_buffer_size, size_t resource_buffer_size);
-
   ResourceData* ResourceDataForRequestId(const String& request_id) const;
   void EnsureNoDataForRequestId(const String& request_id);
   bool EnsureFreeSpace(size_t);

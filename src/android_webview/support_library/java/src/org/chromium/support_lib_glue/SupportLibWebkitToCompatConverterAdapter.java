@@ -4,6 +4,7 @@
 
 package org.chromium.support_lib_glue;
 
+import android.annotation.SuppressLint;
 import android.webkit.SafeBrowsingResponse;
 import android.webkit.ServiceWorkerWebSettings;
 import android.webkit.WebMessagePort;
@@ -48,6 +49,7 @@ class SupportLibWebkitToCompatConverterAdapter implements WebkitToCompatConverte
     }
 
     // ServiceWorkerWebSettingsBoundaryInterface
+    @SuppressLint("NewApi")
     @Override
     public InvocationHandler convertServiceWorkerSettings(
             /* ServiceWorkerWebSettings */ Object serviceWorkerWebSettings) {
@@ -66,6 +68,7 @@ class SupportLibWebkitToCompatConverterAdapter implements WebkitToCompatConverte
         return new ServiceWorkerSettingsAdapter(supportLibWebSettings.getAwServiceWorkerSettings());
     }
 
+    @SuppressLint("NewApi")
     @Override
     public /* SupportLibWebResourceError */ InvocationHandler convertWebResourceError(
             /* WebResourceError */ Object webResourceError) {
@@ -83,6 +86,7 @@ class SupportLibWebkitToCompatConverterAdapter implements WebkitToCompatConverte
         return new WebResourceErrorAdapter(supportLibError.getAwWebResourceError());
     }
 
+    @SuppressLint("NewApi")
     @Override
     public /* SupportLibSafeBrowsingResponse */ InvocationHandler convertSafeBrowsingResponse(
             /* SafeBrowsingResponse */ Object safeBrowsingResponse) {
@@ -102,6 +106,7 @@ class SupportLibWebkitToCompatConverterAdapter implements WebkitToCompatConverte
                 supportLibResponse.getAwSafeBrowsingResponseCallback());
     }
 
+    @SuppressLint("NewApi")
     @Override
     public /* SupportLibWebMessagePort */ InvocationHandler convertWebMessagePort(
             /* WebMessagePort */ Object webMessagePort) {

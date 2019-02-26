@@ -43,7 +43,9 @@ class TabStackTraceTest(tab_test_case.TabTestCase):
   # The breakpad file specific test only apply to platforms which use the
   # breakpad symbol format. This also must be tested in isolation because it can
   # potentially interfere with other tests symbol parsing.
-  @decorators.Enabled('mac', 'linux')
+  # @decorators.Enabled('mac', 'linux')
+  # Disabled tests due to flakiness: http://crbug.com/820282
+  @decorators.Disabled('all')
   @decorators.Isolated
   def testBadBreakpadFileIgnored(self):
     # pylint: disable=protected-access

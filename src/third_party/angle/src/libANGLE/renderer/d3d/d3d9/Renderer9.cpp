@@ -54,13 +54,13 @@
 #include "third_party/trace_event/trace_event.h"
 
 #if !defined(ANGLE_COMPILE_OPTIMIZATION_LEVEL)
-#define ANGLE_COMPILE_OPTIMIZATION_LEVEL D3DCOMPILE_OPTIMIZATION_LEVEL3
+#    define ANGLE_COMPILE_OPTIMIZATION_LEVEL D3DCOMPILE_OPTIMIZATION_LEVEL3
 #endif
 
 // Enable ANGLE_SUPPORT_SHADER_MODEL_2 if you wish devices with only shader model 2.
 // Such a device would not be conformant.
 #ifndef ANGLE_SUPPORT_SHADER_MODEL_2
-#define ANGLE_SUPPORT_SHADER_MODEL_2 0
+#    define ANGLE_SUPPORT_SHADER_MODEL_2 0
 #endif
 
 namespace rx
@@ -423,7 +423,9 @@ D3DPRESENT_PARAMETERS Renderer9::getDefaultPresentParameters()
 egl::ConfigSet Renderer9::generateConfigs()
 {
     static const GLenum colorBufferFormats[] = {
-        GL_BGR5_A1_ANGLEX, GL_BGRA8_EXT, GL_RGB565,
+        GL_BGR5_A1_ANGLEX,
+        GL_BGRA8_EXT,
+        GL_RGB565,
 
     };
 
@@ -964,6 +966,10 @@ angle::Result Renderer9::setSamplerState(const gl::Context *context,
                                            static_cast<DWORD>(samplerState.getMaxAnisotropy()));
             mDevice->SetSamplerState(d3dSampler, D3DSAMP_MAXANISOTROPY, maxAnisotropy);
         }
+
+        ASSERT(texture->getBorderColor().type == angle::ColorGeneric::Type::Float);
+        mDevice->SetSamplerState(d3dSampler, D3DSAMP_BORDERCOLOR,
+                                 gl_d3d9::ConvertColor(texture->getBorderColor().colorF));
     }
 
     appliedSampler.forceSet     = false;
@@ -979,7 +985,7 @@ angle::Result Renderer9::setTexture(const gl::Context *context,
                                     gl::Texture *texture)
 {
     int d3dSamplerOffset = (type == gl::ShaderType::Fragment) ? 0 : D3DVERTEXTEXTURESAMPLER0;
-    int d3dSampler                    = index + d3dSamplerOffset;
+    int d3dSampler       = index + d3dSamplerOffset;
     IDirect3DBaseTexture9 *d3dTexture = nullptr;
     bool forceSetTexture              = false;
 
@@ -1048,7 +1054,7 @@ angle::Result Renderer9::updateState(const gl::Context *context, gl::PrimitiveMo
     {
         ASSERT(firstColorAttachment->isAttached());
         RenderTarget9 *renderTarget = nullptr;
-        ANGLE_TRY_HANDLE(context, firstColorAttachment->getRenderTarget(context, &renderTarget));
+        ANGLE_TRY(firstColorAttachment->getRenderTarget(context, &renderTarget));
         samples = renderTarget->getSamples();
     }
     gl::RasterizerState rasterizer = glState.getRasterizerState();
@@ -1082,7 +1088,7 @@ angle::Result Renderer9::setBlendDepthRasterStates(const gl::Context *context,
     {
         ASSERT(firstColorAttachment->isAttached());
         RenderTarget9 *renderTarget = nullptr;
-        ANGLE_TRY_HANDLE(context, firstColorAttachment->getRenderTarget(context, &renderTarget));
+        ANGLE_TRY(firstColorAttachment->getRenderTarget(context, &renderTarget));
         samples = renderTarget->getSamples();
     }
     gl::RasterizerState rasterizer = glState.getRasterizerState();
@@ -1298,12 +1304,11 @@ angle::Result Renderer9::applyIndexBuffer(const gl::Context *context,
                                           GLenum type,
                                           TranslatedIndexData *indexInfo)
 {
-    gl::VertexArray *vao                     = context->getGLState().getVertexArray();
-    gl::Buffer *elementArrayBuffer           = vao->getElementArrayBuffer().get();
-    const gl::DrawCallParams &drawCallParams = context->getParams<gl::DrawCallParams>();
+    gl::VertexArray *vao           = context->getGLState().getVertexArray();
+    gl::Buffer *elementArrayBuffer = vao->getElementArrayBuffer();
 
     GLenum dstType = GL_NONE;
-    ANGLE_TRY(GetIndexTranslationDestType(context, drawCallParams, false, &dstType));
+    ANGLE_TRY(GetIndexTranslationDestType(context, count, type, indices, false, &dstType));
 
     ANGLE_TRY(mIndexDataManager->prepareIndexData(context, type, dstType, count, elementArrayBuffer,
                                                   indices, indexInfo));
@@ -1374,11 +1379,11 @@ angle::Result Renderer9::drawElementsImpl(const gl::Context *context,
 
     ANGLE_TRY(applyIndexBuffer(context, indices, count, mode, type, &indexInfo));
 
-    const auto &drawCallParams = context->getParams<gl::DrawCallParams>();
-    ANGLE_TRY_HANDLE(context, drawCallParams.ensureIndexRangeResolved(context));
+    gl::IndexRange indexRange;
+    ANGLE_TRY(context->getGLState().getVertexArray()->getIndexRange(context, type, count, indices,
+                                                                    &indexRange));
 
-    const gl::IndexRange &indexRange = drawCallParams.getIndexRange();
-    size_t vertexCount               = indexRange.vertexCount();
+    size_t vertexCount = indexRange.vertexCount();
     ANGLE_TRY(applyVertexBuffer(context, mode, static_cast<GLsizei>(indexRange.start),
                                 static_cast<GLsizei>(vertexCount), instances, &indexInfo));
 
@@ -1387,7 +1392,7 @@ angle::Result Renderer9::drawElementsImpl(const gl::Context *context,
     int minIndex = static_cast<int>(indexRange.start);
 
     gl::VertexArray *vao           = context->getGLState().getVertexArray();
-    gl::Buffer *elementArrayBuffer = vao->getElementArrayBuffer().get();
+    gl::Buffer *elementArrayBuffer = vao->getElementArrayBuffer();
 
     if (mode == gl::PrimitiveMode::Points)
     {
@@ -1445,7 +1450,7 @@ angle::Result Renderer9::drawLineLoop(const gl::Context *context,
                         (std::numeric_limits<unsigned int>::max() / sizeof(unsigned int)),
                     "Failed to create a 32-bit looping index buffer for "
                     "GL_LINE_LOOP, too many indices required.",
-                    E_OUTOFMEMORY);
+                    GL_OUT_OF_MEMORY);
 
         const unsigned int spaceNeeded =
             (static_cast<unsigned int>(count) + 1) * sizeof(unsigned int);
@@ -1511,7 +1516,7 @@ angle::Result Renderer9::drawLineLoop(const gl::Context *context,
                         (std::numeric_limits<unsigned short>::max() / sizeof(unsigned short)),
                     "Failed to create a 16-bit looping index buffer for "
                     "GL_LINE_LOOP, too many indices required.",
-                    E_OUTOFMEMORY);
+                    GL_OUT_OF_MEMORY);
 
         const unsigned int spaceNeeded =
             (static_cast<unsigned int>(count) + 1) * sizeof(unsigned short);
@@ -1606,9 +1611,7 @@ angle::Result Renderer9::drawIndexedPoints(const gl::Context *context,
             DrawPoints<GLuint>(mDevice, count, indices, minIndex);
             return angle::Result::Continue();
         default:
-            UNREACHABLE();
-            context->handleError(gl::InternalError());
-            return angle::Result::Stop();
+            ANGLE_HR_UNREACHABLE(GetImplAs<Context9>(context));
     }
 }
 
@@ -1673,7 +1676,7 @@ angle::Result Renderer9::getCountingIB(const gl::Context *context,
 
 angle::Result Renderer9::applyShaders(const gl::Context *context, gl::PrimitiveMode drawMode)
 {
-    const gl::State &state = context->getContextState().getState();
+    const gl::State &state   = context->getContextState().getState();
     d3d::Context *contextD3D = GetImplAs<ContextD3D>(context);
 
     // This method is called single-threaded.
@@ -2895,14 +2898,14 @@ bool Renderer9::getLUID(LUID *adapterLuid) const
     return false;
 }
 
-VertexConversionType Renderer9::getVertexConversionType(gl::VertexFormatType vertexFormatType) const
+VertexConversionType Renderer9::getVertexConversionType(angle::FormatID vertexFormatID) const
 {
-    return d3d9::GetVertexFormatInfo(getCapsDeclTypes(), vertexFormatType).conversionType;
+    return d3d9::GetVertexFormatInfo(getCapsDeclTypes(), vertexFormatID).conversionType;
 }
 
-GLenum Renderer9::getVertexComponentType(gl::VertexFormatType vertexFormatType) const
+GLenum Renderer9::getVertexComponentType(angle::FormatID vertexFormatID) const
 {
-    return d3d9::GetVertexFormatInfo(getCapsDeclTypes(), vertexFormatType).componentType;
+    return d3d9::GetVertexFormatInfo(getCapsDeclTypes(), vertexFormatID).componentType;
 }
 
 angle::Result Renderer9::getVertexSpaceRequired(const gl::Context *context,
@@ -2918,9 +2921,9 @@ angle::Result Renderer9::getVertexSpaceRequired(const gl::Context *context,
         return angle::Result::Continue();
     }
 
-    gl::VertexFormatType vertexFormatType = gl::GetVertexFormatType(attrib, GL_FLOAT);
+    angle::FormatID vertexFormatID = gl::GetVertexFormatID(attrib, GL_FLOAT);
     const d3d9::VertexFormat &d3d9VertexInfo =
-        d3d9::GetVertexFormatInfo(getCapsDeclTypes(), vertexFormatType);
+        d3d9::GetVertexFormatInfo(getCapsDeclTypes(), vertexFormatID);
 
     unsigned int elementCount  = 0;
     const unsigned int divisor = binding.getDivisor();
@@ -2937,7 +2940,7 @@ angle::Result Renderer9::getVertexSpaceRequired(const gl::Context *context,
     bool check = (d3d9VertexInfo.outputElementSize >
                   std::numeric_limits<unsigned int>::max() / elementCount);
     ANGLE_CHECK(GetImplAs<Context9>(context), !check,
-                "New vertex buffer size would result in an overflow.", E_OUTOFMEMORY);
+                "New vertex buffer size would result in an overflow.", GL_OUT_OF_MEMORY);
 
     *bytesRequiredOut = static_cast<unsigned int>(d3d9VertexInfo.outputElementSize) * elementCount;
     return angle::Result::Continue();
@@ -2964,8 +2967,7 @@ DeviceImpl *Renderer9::createEGLDevice()
 
 Renderer9::CurSamplerState::CurSamplerState()
     : forceSet(true), baseLevel(std::numeric_limits<size_t>::max()), samplerState()
-{
-}
+{}
 
 angle::Result Renderer9::genericDrawElements(const gl::Context *context,
                                              gl::PrimitiveMode mode,

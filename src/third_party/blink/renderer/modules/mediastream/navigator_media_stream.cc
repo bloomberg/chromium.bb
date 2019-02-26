@@ -41,7 +41,7 @@ namespace blink {
 
 void NavigatorMediaStream::getUserMedia(
     Navigator& navigator,
-    const MediaStreamConstraints& options,
+    const MediaStreamConstraints* options,
     V8NavigatorUserMediaSuccessCallback* success_callback,
     V8NavigatorUserMediaErrorCallback* error_callback,
     ExceptionState& exception_state) {

@@ -754,13 +754,7 @@ TEST(XFormTest, CanBlend180DegreeRotation) {
   }
 }
 
-#if defined(_WIN64)
-// https://crbug.com/406574
-#define MAYBE_BlendScale DISABLED_BlendScale
-#else
-#define MAYBE_BlendScale BlendScale
-#endif
-TEST(XFormTest, MAYBE_BlendScale) {
+TEST(XFormTest, BlendScale) {
   Transform from;
   for (int i = -5; i < 15; ++i) {
     Transform to;
@@ -800,13 +794,7 @@ TEST(XFormTest, ExtrapolateSkew) {
   }
 }
 
-#if defined(_WIN64)
-// http://crbug.com/406574
-#define MAYBE_BlendPerspective DISABLED_BlendPerspective
-#else
-#define MAYBE_BlendPerspective BlendPerspective
-#endif
-TEST(XFormTest, MAYBE_BlendPerspective) {
+TEST(XFormTest, BlendPerspective) {
   Transform from;
   from.ApplyPerspectiveDepth(200);
   for (int i = -1; i < 3; ++i) {
@@ -1016,13 +1004,7 @@ TEST(XFormTest, VerifyBlendForSkew) {
   EXPECT_ROW4_EQ(0.0f, 0.0f, 0.0f, 1.0f, to);
 }
 
-#if defined(_WIN64)
-// http://crbug.com/406574
-#define MAYBE_VerifyBlendForRotationAboutX DISABLED_VerifyBlendForRotationAboutX
-#else
-#define MAYBE_VerifyBlendForRotationAboutX VerifyBlendForRotationAboutX
-#endif
-TEST(XFormTest, MAYBE_VerifyBlendForRotationAboutX) {
+TEST(XFormTest, VerifyBlendForRotationAboutX) {
   // Even though.Blending uses quaternions, axis-aligned rotations should.
   // Blend the same with quaternions or Euler angles. So we can test
   // rotation.Blending by comparing against manually specified matrices from
@@ -1084,13 +1066,7 @@ TEST(XFormTest, MAYBE_VerifyBlendForRotationAboutX) {
   EXPECT_ROW4_EQ(0.0f, 0.0f, 0.0f, 1.0f, to);
 }
 
-#if defined(_WIN64)
-// http://crbug.com/406574
-#define MAYBE_VerifyBlendForRotationAboutY DISABLED_VerifyBlendForRotationAboutY
-#else
-#define MAYBE_VerifyBlendForRotationAboutY VerifyBlendForRotationAboutY
-#endif
-TEST(XFormTest, MAYBE_VerifyBlendForRotationAboutY) {
+TEST(XFormTest, VerifyBlendForRotationAboutY) {
   Transform from;
   from.RotateAbout(Vector3dF(0.0, 1.0, 0.0), 0.0);
 
@@ -1147,13 +1123,7 @@ TEST(XFormTest, MAYBE_VerifyBlendForRotationAboutY) {
   EXPECT_ROW4_EQ(0.0f, 0.0f, 0.0f, 1.0f, to);
 }
 
-#if defined(_WIN64)
-// http://crbug.com/406574
-#define MAYBE_VerifyBlendForRotationAboutZ DISABLED_VerifyBlendForRotationAboutZ
-#else
-#define MAYBE_VerifyBlendForRotationAboutZ VerifyBlendForRotationAboutZ
-#endif
-TEST(XFormTest, MAYBE_VerifyBlendForRotationAboutZ) {
+TEST(XFormTest, VerifyBlendForRotationAboutZ) {
   Transform from;
   from.RotateAbout(Vector3dF(0.0, 0.0, 1.0), 0.0);
 

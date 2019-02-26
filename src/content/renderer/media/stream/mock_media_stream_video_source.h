@@ -62,6 +62,9 @@ class MockMediaStreamVideoSource : public MediaStreamVideoSource {
   void OnHasConsumers(bool has_consumers) override;
 
  protected:
+  // Implements MediaStreamSource.
+  void DoChangeSource(const MediaStreamDevice& new_device) override;
+
   // Implements MediaStreamVideoSource.
   void StartSourceImpl(
       const VideoCaptureDeliverFrameCB& frame_callback) override;

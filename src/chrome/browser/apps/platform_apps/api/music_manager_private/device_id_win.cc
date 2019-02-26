@@ -23,7 +23,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/win/windows_version.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -89,7 +89,7 @@ class MacAddressProcessor {
 
 std::string GetMacAddressFromGetAdaptersAddresses(
     const IsValidMacAddressCallback& is_valid_mac_address) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   // MS recommends a default size of 15k.
   ULONG bufferSize = 15 * 1024;
@@ -124,7 +124,7 @@ std::string GetMacAddressFromGetAdaptersAddresses(
 
 std::string GetMacAddressFromGetIfTable2(
     const IsValidMacAddressCallback& is_valid_mac_address) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   // This is available on Vista+ only.
   base::ScopedNativeLibrary library(base::FilePath(L"Iphlpapi.dll"));
@@ -162,8 +162,6 @@ std::string GetMacAddressFromGetIfTable2(
 
 void GetMacAddress(const IsValidMacAddressCallback& is_valid_mac_address,
                    const DeviceId::IdCallback& callback) {
-  base::AssertBlockingAllowed();
-
   std::string mac_address =
       GetMacAddressFromGetAdaptersAddresses(is_valid_mac_address);
   if (mac_address.empty())

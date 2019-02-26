@@ -30,9 +30,7 @@ class BaseSafeBrowsingErrorUI {
     SBErrorDisplayOptions(bool is_main_frame_load_blocked,
                           bool is_extended_reporting_opt_in_allowed,
                           bool is_off_the_record,
-                          bool is_unified_consent_enabled,
                           bool is_extended_reporting_enabled,
-                          bool is_scout_reporting_enabled,
                           bool is_extended_reporting_policy_managed,
                           bool is_proceed_anyway_disabled,
                           bool should_open_links_in_new_tab,
@@ -50,22 +48,8 @@ class BaseSafeBrowsingErrorUI {
     // Indicates if user is in incognito mode.
     bool is_off_the_record;
 
-    // Indicates if user is enrolled in unified consent, if so, checkbox is not
-    // shown in SB interstitials.
-    bool is_unified_consent_enabled;
-
-    // Indicates if user opted in for SB extended reporting. This contains only
-    // the value of the pref that is currently active for the user (either the
-    // legacy SBER pref, or the Scout pref). Use |is_scout_reporting_enabled| to
-    // determine which of the prefs is being used.
+    // Indicates if user opted in for SB extended reporting.
     bool is_extended_reporting_enabled;
-
-    // Indicates if extended reporting is controlled by Scout or the legacy SBER
-    // setting. This does NOT indicate whether the user is opted-in to extended
-    // reporting, just the level of reporting that's available to the user. Use
-    // |is_extended_reporting_enabled| to see if the user is opted-in.
-    // TODO(lpz/scout): Remove this field, scout is the only setting now.
-    bool is_scout_reporting_enabled;
 
     // Whether the SBER pref is being managed by enterprise policy, meaning the
     // user is unable to change the pref.
@@ -108,20 +92,12 @@ class BaseSafeBrowsingErrorUI {
 
   bool is_off_the_record() const { return display_options_.is_off_the_record; }
 
-  bool is_unified_consent_enabled() const {
-    return display_options_.is_unified_consent_enabled;
-  }
-
   bool is_extended_reporting_enabled() const {
     return display_options_.is_extended_reporting_enabled;
   }
 
   void set_extended_reporting(bool pref) {
     display_options_.is_extended_reporting_enabled = pref;
-  }
-
-  bool is_scout_reporting_enabled() const {
-    return display_options_.is_scout_reporting_enabled;
   }
 
   bool is_extended_reporting_policy_managed() const {
@@ -155,8 +131,7 @@ class BaseSafeBrowsingErrorUI {
   // - if kSafeBrowsingExtendedReporting is managed by enterprise policy.
   bool CanShowExtendedReportingOption() {
     return !is_off_the_record() && is_extended_reporting_opt_in_allowed() &&
-           !is_extended_reporting_policy_managed() &&
-           !is_unified_consent_enabled();
+           !is_extended_reporting_policy_managed();
   }
 
   SBInterstitialReason interstitial_reason() const {

@@ -63,7 +63,7 @@ BlockingMethodCaller::CallMethodAndBlockWithError(
                                 base::Owned(signaler), base::Unretained(proxy_),
                                 method_call, error_out));
   // http://crbug.com/125360
-  base::ThreadRestrictions::ScopedAllowWait allow_wait;
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
   on_blocking_method_call_.Wait();
   return response;
 }

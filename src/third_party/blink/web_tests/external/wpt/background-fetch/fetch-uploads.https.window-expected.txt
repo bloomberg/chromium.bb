@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Fetch with an upload should work promise_test: Unhandled rejection with value: object "TypeError: Requests with a body are not yet supported. For updates check http://crbug.com/774054"
+Harness: the test ran to completion.
+

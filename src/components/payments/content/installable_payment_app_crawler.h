@@ -13,6 +13,7 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "components/payments/content/developer_console_logger.h"
 #include "components/payments/content/manifest_verifier.h"
 #include "components/payments/content/payment_manifest_web_data_service.h"
 #include "components/payments/content/utility/payment_manifest_parser.h"
@@ -85,8 +86,7 @@ class InstallablePaymentAppCrawler : public content::WebContentsObserver {
                                              const SkBitmap& icon);
   void FinishCrawlingPaymentAppsIfReady();
 
-  void WarnIfPossible(const std::string& message);
-
+  DeveloperConsoleLogger log_;
   PaymentManifestDownloader* downloader_;
   PaymentManifestParser* parser_;
   FinishedCrawlingCallback callback_;

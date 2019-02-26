@@ -89,6 +89,10 @@ void UpdateProvisioningResultUMA(ProvisioningResult result,
       GetHistogramName("Arc.Provisioning.Result.", profile), result);
 }
 
+void UpdateSecondarySigninResultUMA(ProvisioningResult result) {
+  UMA_HISTOGRAM_ENUMERATION("Arc.Secondary.Signin.Result", result);
+}
+
 void UpdateProvisioningTiming(const base::TimeDelta& elapsed_time,
                               bool success,
                               const Profile* profile) {
@@ -145,6 +149,11 @@ void UpdateSupervisionTransitionResultUMA(
 
 void UpdateReauthorizationSilentAuthCodeUMA(OptInSilentAuthCode state) {
   base::UmaHistogramSparse("Arc.OptInSilentAuthCode.Reauthorization",
+                           static_cast<int>(state));
+}
+
+void UpdateSecondaryAccountSilentAuthCodeUMA(OptInSilentAuthCode state) {
+  base::UmaHistogramSparse("Arc.OptInSilentAuthCode.SecondaryAccount",
                            static_cast<int>(state));
 }
 

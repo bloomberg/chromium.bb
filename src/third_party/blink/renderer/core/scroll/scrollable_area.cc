@@ -627,8 +627,8 @@ void ScrollableArea::ShowOverlayScrollbars() {
 
   if (!fade_overlay_scrollbars_timer_) {
     fade_overlay_scrollbars_timer_.reset(new TaskRunnerTimer<ScrollableArea>(
-        Platform::Current()->MainThread()->Scheduler()->CompositorTaskRunner(),
-        this, &ScrollableArea::FadeOverlayScrollbarsTimerFired));
+        ThreadScheduler::Current()->CompositorTaskRunner(), this,
+        &ScrollableArea::FadeOverlayScrollbarsTimerFired));
   }
 
   if (!scrollbar_captured_ && !mouse_over_scrollbar_) {

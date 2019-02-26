@@ -39,6 +39,10 @@ Optional<TimeDelta> RealTimeDomain::DelayTillNextTask(LazyNow* lazy_now) {
   return delay;
 }
 
+bool RealTimeDomain::MaybeFastForwardToNextTask(bool quit_when_idle_requested) {
+  return false;
+}
+
 const char* RealTimeDomain::GetName() const {
   return "RealTimeDomain";
 }

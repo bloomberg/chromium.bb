@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/login/screens/user_image_view.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
 #include "chrome/browser/chromeos/login/users/default_user_image/default_user_images.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -171,6 +172,10 @@ void UserImageScreen::Show() {
   if (!view_)
     return;
 
+  if (chrome_user_manager_util::IsPublicSessionOrEphemeralLogin()) {
+    ExitScreen();
+    return;
+  }
   DCHECK(!policy_registrar_);
   if (Profile* profile = ProfileHelper::Get()->GetProfileByUser(GetUser())) {
     policy::PolicyService* policy_service =

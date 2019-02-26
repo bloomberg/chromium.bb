@@ -28,6 +28,8 @@ struct StructTraits<viz::mojom::CompositorFrameDataView, viz::CompositorFrame> {
   }
 
   static const viz::RenderPassList& passes(const viz::CompositorFrame& input) {
+    DCHECK(!input.render_pass_list.empty());
+    DCHECK(!input.render_pass_list.back()->output_rect.size().IsEmpty());
     return input.render_pass_list;
   }
 

@@ -98,7 +98,7 @@ TEST_F(LayoutSVGForeignObjectTest, IframeInForeignObject) {
     </style>
     <div id='div' style='margin: 70px; width: 100px; height: 50px'></div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   const auto& svg = *GetDocument().getElementById("svg");
   const auto& foreign = *GetDocument().getElementById("foreign");
@@ -166,7 +166,7 @@ TEST_F(LayoutSVGForeignObjectTest, HitTestZoomedForeignObject) {
   SetBodyInnerHTML(R"HTML(
     <style>* { margin: 0; zoom: 150% }</style>
     <svg id='svg' style='width: 200px; height: 200px'>
-      <foreignObject id='foreign' x='10' y='10' width='100' height='150'>
+      <foreignObject id='foreign' x='10' y='10' width='100' height='150' style='overflow: visible'>
         <div id='div' style='margin: 50px; width: 50px; height: 50px'>
         </div>
       </foreignObject>

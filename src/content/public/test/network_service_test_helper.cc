@@ -22,6 +22,7 @@
 #include "net/cert/test_root_certs.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/transport_security_state.h"
+#include "net/http/transport_security_state_test_util.h"
 #include "net/nqe/network_quality_estimator.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
@@ -66,7 +67,12 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
     : public network::mojom::NetworkServiceTest,
       public base::MessageLoopCurrent::DestructionObserver {
  public:
-  NetworkServiceTestImpl() {
+  NetworkServiceTestImpl()
+      : memory_pressure_listener_(
+            base::DoNothing(),
+            base::BindRepeating(&NetworkServiceTestHelper::
+                                    NetworkServiceTestImpl::OnMemoryPressure,
+                                base::Unretained(this))) {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kUseMockCertVerifierForTesting)) {
       mock_cert_verifier_ = std::make_unique<net::MockCertVerifier>();
@@ -87,6 +93,10 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
           network::mojom::ResolverType::kResolverTypeFail) {
         test_host_resolver_.host_resolver()->AddSimulatedFailure(
             rule->host_pattern);
+      } else if (rule->resolver_type ==
+                 network::mojom::ResolverType::kResolverTypeIPLiteral) {
+        test_host_resolver_.host_resolver()->AddIPLiteralRule(
+            rule->host_pattern, rule->replacement, std::string());
       } else {
         test_host_resolver_.host_resolver()->AddRule(rule->host_pattern,
                                                      rule->replacement);
@@ -154,9 +164,27 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
     std::move(callback).Run();
   }
 
+  void SetTransportSecurityStateSource(
+      uint16_t reporting_port,
+      SetTransportSecurityStateSourceCallback callback) override {
+    if (reporting_port) {
+      transport_security_state_source_ =
+          std::make_unique<net::ScopedTransportSecurityStateSource>(
+              reporting_port);
+    } else {
+      transport_security_state_source_.reset();
+    }
+    std::move(callback).Run();
+  }
+
   void CrashOnResolveHost(const std::string& host) override {
     network::HostResolver::SetResolveHostCallbackForTesting(
         base::BindRepeating(CrashResolveHost, host));
+  }
+
+  void GetLatestMemoryPressureLevel(
+      GetLatestMemoryPressureLevelCallback callback) override {
+    std::move(callback).Run(latest_memory_pressure_level_);
   }
 
   void BindRequest(network::mojom::NetworkServiceTestRequest request) {
@@ -174,10 +202,21 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
   }
 
  private:
+  void OnMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
+    latest_memory_pressure_level_ = memory_pressure_level;
+  }
+
   bool registered_as_destruction_observer_ = false;
   mojo::BindingSet<network::mojom::NetworkServiceTest> bindings_;
   TestHostResolver test_host_resolver_;
   std::unique_ptr<net::MockCertVerifier> mock_cert_verifier_;
+  std::unique_ptr<net::ScopedTransportSecurityStateSource>
+      transport_security_state_source_;
+  base::MemoryPressureListener memory_pressure_listener_;
+  base::MemoryPressureListener::MemoryPressureLevel
+      latest_memory_pressure_level_ =
+          base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceTestImpl);
 };
@@ -206,13 +245,16 @@ void NetworkServiceTestHelper::RegisterNetworkBinders(
 #if defined(OS_ANDROID)
     base::InitAndroidTestPaths(base::android::GetIsolatedTestRoot());
 #endif
-    net::EmbeddedTestServer::RegisterTestCerts();
-    net::SpawnedTestServer::RegisterTestCerts();
 
-    // Also add the QUIC test certificate.
-    net::TestRootCerts* root_certs = net::TestRootCerts::GetInstance();
-    root_certs->AddFromFile(
-        net::GetTestCertsDirectory().AppendASCII("quic-root.pem"));
+    if (!command_line->HasSwitch(switches::kDisableTestCerts)) {
+      net::EmbeddedTestServer::RegisterTestCerts();
+      net::SpawnedTestServer::RegisterTestCerts();
+
+      // Also add the QUIC test certificate.
+      net::TestRootCerts* root_certs = net::TestRootCerts::GetInstance();
+      root_certs->AddFromFile(
+          net::GetTestCertsDirectory().AppendASCII("quic-root.pem"));
+    }
   }
 }
 

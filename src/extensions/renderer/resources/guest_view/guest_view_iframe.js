@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// --site-per-process overrides for guest_view.js.
+// GuestViewCrossProcessFrames overrides for guest_view.js.
 
-var GuestView = require('guestView').GuestView;
+var $HTMLIFrameElement = require('safeMethods').SafeMethods.$HTMLIFrameElement;
 var GuestViewImpl = require('guestView').GuestViewImpl;
 var GuestViewInternalNatives = requireNative('guest_view_internal');
 var ResizeEvent = require('guestView').ResizeEvent;
@@ -14,9 +14,9 @@ var getIframeContentWindow = function(viewInstanceId) {
   if (!view)
     return null;
 
-  var internalIframeElement = privates(view).internalElement;
+  var internalIframeElement = view.internalElement;
   if (internalIframeElement)
-    return internalIframeElement.contentWindow;
+    return $HTMLIFrameElement.contentWindow.get(internalIframeElement);
 
   return null;
 };
@@ -108,7 +108,7 @@ GuestViewImpl.prototype.createImpl$ = function(createParams, callback) {
 };
 
 // Internal implementation of destroy().
-GuestViewImpl.prototype.destroyImpl = function(callback) {
+GuestViewImpl.prototype.destroyImpl$ = function(callback) {
   // Check the current state.
   if (!this.checkState('destroy')) {
     this.handleCallback(callback);

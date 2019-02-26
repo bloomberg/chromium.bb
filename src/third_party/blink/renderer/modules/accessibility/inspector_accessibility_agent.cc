@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/modules/accessibility/inspector_accessibility_agent.h"
 
 #include <memory>
-#include "third_party/blink/renderer/core/accessibility/ax_context.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -36,7 +35,7 @@ using protocol::Accessibility::AXValue;
 using protocol::Maybe;
 using protocol::Response;
 
-using namespace HTMLNames;
+using namespace html_names;
 
 namespace {
 
@@ -153,6 +152,28 @@ void FillGlobalStates(AXObject& ax_object,
           CreateValue(ax_object.AriaInvalidValue(), AXValueTypeEnum::String)));
       break;
   }
+
+  if (ax_object.CanSetFocusAttribute()) {
+    properties.addItem(CreateProperty(
+        AXPropertyNameEnum::Focusable,
+        CreateBooleanValue(true, AXValueTypeEnum::BooleanOrUndefined)));
+  }
+  if (ax_object.IsFocused()) {
+    properties.addItem(CreateProperty(
+        AXPropertyNameEnum::Focused,
+        CreateBooleanValue(true, AXValueTypeEnum::BooleanOrUndefined)));
+  }
+  if (ax_object.IsEditable()) {
+    properties.addItem(CreateProperty(
+        AXPropertyNameEnum::Editable,
+        CreateValue(ax_object.IsRichlyEditable() ? "richtext" : "plaintext",
+                    AXValueTypeEnum::Token)));
+  }
+  if (ax_object.CanSetValueAttribute()) {
+    properties.addItem(CreateProperty(
+        AXPropertyNameEnum::Settable,
+        CreateBooleanValue(true, AXValueTypeEnum::BooleanOrUndefined)));
+  }
 }
 
 bool RoleAllowsModal(ax::mojom::Role role) {
@@ -216,7 +237,7 @@ void FillWidgetProperties(AXObject& ax_object,
   }
   int hierarchical_level = ax_object.HierarchicalLevel();
   if (hierarchical_level > 0 ||
-      ax_object.HasAttribute(HTMLNames::aria_levelAttr)) {
+      ax_object.HasAttribute(html_names::kAriaLevelAttr)) {
     properties.addItem(CreateProperty(AXPropertyNameEnum::Level,
                                       CreateValue(hierarchical_level)));
   }
@@ -434,11 +455,11 @@ class SparseAttributeAXPropertyAdapter
       case AXObjectVectorAttribute::kAriaControls:
         properties_.addItem(
             CreateRelatedNodeListProperty(AXPropertyNameEnum::Controls, objects,
-                                          aria_controlsAttr, *ax_object_));
+                                          kAriaControlsAttr, *ax_object_));
         break;
       case AXObjectVectorAttribute::kAriaFlowTo:
         properties_.addItem(CreateRelatedNodeListProperty(
-            AXPropertyNameEnum::Flowto, objects, aria_flowtoAttr, *ax_object_));
+            AXPropertyNameEnum::Flowto, objects, kAriaFlowtoAttr, *ax_object_));
         break;
     }
   }
@@ -451,14 +472,14 @@ void FillRelationships(AXObject& ax_object,
   if (!results.IsEmpty()) {
     properties.addItem(
         CreateRelatedNodeListProperty(AXPropertyNameEnum::Describedby, results,
-                                      aria_describedbyAttr, ax_object));
+                                      kAriaDescribedbyAttr, ax_object));
   }
   results.clear();
 
   ax_object.AriaOwnsElements(results);
   if (!results.IsEmpty()) {
     properties.addItem(CreateRelatedNodeListProperty(
-        AXPropertyNameEnum::Owns, results, aria_ownsAttr, ax_object));
+        AXPropertyNameEnum::Owns, results, kAriaOwnsAttr, ax_object));
   }
   results.clear();
 }
@@ -477,10 +498,22 @@ std::unique_ptr<AXValue> CreateRoleNameValue(ax::mojom::Role role) {
 
 }  // namespace
 
+using EnabledAgentsMultimap =
+    HeapHashMap<WeakMember<LocalFrame>,
+                HeapHashSet<Member<InspectorAccessibilityAgent>>>;
+
+EnabledAgentsMultimap& EnabledAgents() {
+  DEFINE_STATIC_LOCAL(Persistent<EnabledAgentsMultimap>, enabled_agents,
+                      (MakeGarbageCollected<EnabledAgentsMultimap>()));
+  return *enabled_agents;
+}
+
 InspectorAccessibilityAgent::InspectorAccessibilityAgent(
     InspectedFrames* inspected_frames,
     InspectorDOMAgent* dom_agent)
-    : inspected_frames_(inspected_frames), dom_agent_(dom_agent) {}
+    : inspected_frames_(inspected_frames),
+      dom_agent_(dom_agent),
+      enabled_(&agent_state_, /*default_value=*/false) {}
 
 Response InspectorAccessibilityAgent::getPartialAXTree(
     Maybe<int> dom_node_id,
@@ -806,6 +839,55 @@ void InspectorAccessibilityAgent::AddChildren(
         child_ax_object, inspected_ax_object, true, nodes, cache);
     nodes->addItem(std::move(child_node));
   }
+}
+
+void InspectorAccessibilityAgent::EnableAndReset() {
+  enabled_.Set(true);
+  LocalFrame* frame = inspected_frames_->Root();
+  if (!EnabledAgents().Contains(frame)) {
+    EnabledAgents().Set(frame,
+                        HeapHashSet<Member<InspectorAccessibilityAgent>>());
+  }
+  EnabledAgents().find(frame)->value.insert(this);
+  CreateAXContext();
+}
+
+protocol::Response InspectorAccessibilityAgent::enable() {
+  if (!enabled_.Get())
+    EnableAndReset();
+  return Response::OK();
+}
+
+protocol::Response InspectorAccessibilityAgent::disable() {
+  if (!enabled_.Get())
+    return Response::OK();
+  enabled_.Set(false);
+  context_ = nullptr;
+  LocalFrame* frame = inspected_frames_->Root();
+  DCHECK(EnabledAgents().Contains(frame));
+  auto it = EnabledAgents().find(frame);
+  it->value.erase(this);
+  if (it->value.IsEmpty())
+    EnabledAgents().erase(frame);
+  return Response::OK();
+}
+
+void InspectorAccessibilityAgent::Restore() {
+  if (enabled_.Get())
+    EnableAndReset();
+}
+
+void InspectorAccessibilityAgent::ProvideTo(LocalFrame* frame) {
+  if (!EnabledAgents().Contains(frame))
+    return;
+  for (InspectorAccessibilityAgent* agent : EnabledAgents().find(frame)->value)
+    agent->CreateAXContext();
+}
+
+void InspectorAccessibilityAgent::CreateAXContext() {
+  Document* document = inspected_frames_->Root()->GetDocument();
+  if (document)
+    context_ = std::make_unique<AXContext>(*document);
 }
 
 void InspectorAccessibilityAgent::Trace(blink::Visitor* visitor) {

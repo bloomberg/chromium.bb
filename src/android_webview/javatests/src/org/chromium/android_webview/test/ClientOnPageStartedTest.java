@@ -285,19 +285,21 @@ public class ClientOnPageStartedTest {
         int hangingRequestCount = mHangingRequestCallbackHelper.getCallCount();
         mActivityTestRule.loadUrlAsync(mAwContents, mHangingUrl);
 
-        // onPageStarted should be called, but not onPageFinished.
+        // onPageStarted and onPageFinished should not be called yet.
         mContentsClient.getOnLoadResourceHelper().waitForCallback(onLoadResourceCount);
         mHangingRequestCallbackHelper.waitForCallback(hangingRequestCount);
-        mContentsClient.getOnPageStartedHelper().waitForCallback(pageStartedCount);
         Assert.assertEquals(
                 mHangingUrl, mContentsClient.getOnLoadResourceHelper().getLastLoadedResource());
-        Assert.assertEquals(mHangingUrl, mContentsClient.getOnPageStartedHelper().getUrl());
+        Assert.assertEquals(
+                pageStartedCount, mContentsClient.getOnPageStartedHelper().getCallCount());
         Assert.assertEquals(
                 pageFinishedCount, mContentsClient.getOnPageFinishedHelper().getCallCount());
 
         // Release request on server. Should get onPageStarted/Finished after.
         mHangingRequestSemaphore.release();
+        mContentsClient.getOnPageStartedHelper().waitForCallback(pageStartedCount);
         mContentsClient.getOnPageFinishedHelper().waitForCallback(pageFinishedCount);
+        Assert.assertEquals(mHangingUrl, mContentsClient.getOnPageStartedHelper().getUrl());
         Assert.assertEquals(mHangingUrl, mContentsClient.getOnPageFinishedHelper().getUrl());
     }
 
@@ -356,24 +358,26 @@ public class ClientOnPageStartedTest {
         int hangingRequestCount = mHangingRequestCallbackHelper.getCallCount();
         mActivityTestRule.loadUrlAsync(mAwContents, mRedirectToHangingUrl);
 
-        // onPageStarted should be called, but not onPageFinished.
+        // onPageStarted and onPageFinished should not be called yet.
         mContentsClient.getShouldOverrideUrlLoadingHelper().waitForCallback(
                 shouldOverrideUrlLoadingCount);
         mContentsClient.getOnLoadResourceHelper().waitForCallback(onLoadResourceCount);
         mHangingRequestCallbackHelper.waitForCallback(hangingRequestCount);
-        mContentsClient.getOnPageStartedHelper().waitForCallback(pageStartedCount);
         Assert.assertEquals(mHangingUrl,
                 mContentsClient.getShouldOverrideUrlLoadingHelper()
                         .getShouldOverrideUrlLoadingUrl());
         Assert.assertEquals(mRedirectToHangingUrl,
                 mContentsClient.getOnLoadResourceHelper().getLastLoadedResource());
-        Assert.assertEquals(mHangingUrl, mContentsClient.getOnPageStartedHelper().getUrl());
+        Assert.assertEquals(
+                pageStartedCount, mContentsClient.getOnPageStartedHelper().getCallCount());
         Assert.assertEquals(
                 pageFinishedCount, mContentsClient.getOnPageFinishedHelper().getCallCount());
 
         // Release request on server. Should get onPageStarted/Finished after.
         mHangingRequestSemaphore.release();
+        mContentsClient.getOnPageStartedHelper().waitForCallback(pageStartedCount);
         mContentsClient.getOnPageFinishedHelper().waitForCallback(pageFinishedCount);
+        Assert.assertEquals(mHangingUrl, mContentsClient.getOnPageStartedHelper().getUrl());
         Assert.assertEquals(mHangingUrl, mContentsClient.getOnPageFinishedHelper().getUrl());
     }
 }

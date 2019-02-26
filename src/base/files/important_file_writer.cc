@@ -102,11 +102,11 @@ void LogFailure(const FilePath& path,
 void WriteScopedStringToFileAtomically(
     const FilePath& path,
     std::unique_ptr<std::string> data,
-    Closure before_write_callback,
-    Callback<void(bool success)> after_write_callback,
+    OnceClosure before_write_callback,
+    OnceCallback<void(bool success)> after_write_callback,
     const std::string& histogram_suffix) {
   if (!before_write_callback.is_null())
-    before_write_callback.Run();
+    std::move(before_write_callback).Run();
 
   TimeTicks start_time = TimeTicks::Now();
   bool result =
@@ -117,7 +117,7 @@ void WriteScopedStringToFileAtomically(
   }
 
   if (!after_write_callback.is_null())
-    after_write_callback.Run(result);
+    std::move(after_write_callback).Run(result);
 }
 
 void DeleteTmpFile(const FilePath& tmp_file_path,
@@ -297,10 +297,10 @@ void ImportantFileWriter::DoScheduledWrite() {
 }
 
 void ImportantFileWriter::RegisterOnNextWriteCallbacks(
-    const Closure& before_next_write_callback,
-    const Callback<void(bool success)>& after_next_write_callback) {
-  before_next_write_callback_ = before_next_write_callback;
-  after_next_write_callback_ = after_next_write_callback;
+    OnceClosure before_next_write_callback,
+    OnceCallback<void(bool success)> after_next_write_callback) {
+  before_next_write_callback_ = std::move(before_next_write_callback);
+  after_next_write_callback_ = std::move(after_next_write_callback);
 }
 
 void ImportantFileWriter::ClearPendingWrite() {

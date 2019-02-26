@@ -11,7 +11,6 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -158,7 +157,6 @@ void PageCaptureSaveAsMHTMLFunction::ResolvePermissionRequest(
 #endif
 
 void PageCaptureSaveAsMHTMLFunction::CreateTemporaryFile() {
-  base::AssertBlockingAllowed();
   bool success = base::CreateTemporaryFile(&mhtml_path_);
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},

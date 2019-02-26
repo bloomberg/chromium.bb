@@ -13,7 +13,6 @@
 
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -155,7 +154,7 @@ void GLContextCGL::Destroy() {
     }
   }
   if (discrete_pixelformat_) {
-    if (base::MessageLoop::current() != nullptr) {
+    if (base::ThreadTaskRunnerHandle::IsSet()) {
       // Delay releasing the pixel format for 10 seconds to reduce the number of
       // unnecessary GPU switches.
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(

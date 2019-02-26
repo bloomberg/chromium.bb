@@ -32,10 +32,16 @@ class CGaiaCredentialProviderModule
   // file variable substitutions.
   static HRESULT WINAPI UpdateRegistryAppId(BOOL do_register) throw();
 
+  // Called from DLL entry point to handle attaching and detaching from
+  // processes and threads.
   BOOL DllMain(HINSTANCE hinstance, DWORD reason, LPVOID reserved);
+
+  // Indicates if the instance is running in a test.
+  void set_is_testing(bool is_testing) { is_testing_ = is_testing; }
 
  private:
   std::unique_ptr<base::AtExitManager> exit_manager_;
+  bool is_testing_ = false;
 };
 
 }  // namespace credential_provider

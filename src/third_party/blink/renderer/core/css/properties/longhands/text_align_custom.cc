@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/text_align.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* TextAlign::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -43,5 +43,5 @@ void TextAlign::ApplyValue(StyleResolverState& state,
   }
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

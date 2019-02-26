@@ -14,7 +14,7 @@ class BasicShape;
 class CSSValue;
 class CSSToLengthConversionData;
 
-namespace BasicShapeInterpolationFunctions {
+namespace basic_shape_interpolation_functions {
 
 InterpolationValue MaybeConvertCSSValue(const CSSValue&);
 InterpolationValue MaybeConvertBasicShape(const BasicShape*, double zoom);
@@ -26,7 +26,7 @@ scoped_refptr<BasicShape> CreateBasicShape(const InterpolableValue&,
                                            const NonInterpolableValue&,
                                            const CSSToLengthConversionData&);
 
-}  // namespace BasicShapeInterpolationFunctions
+}  // namespace basic_shape_interpolation_functions
 
 }  // namespace blink
 

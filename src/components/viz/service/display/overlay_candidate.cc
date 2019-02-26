@@ -15,9 +15,11 @@
 #include "components/viz/common/quads/stream_video_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
+#include "components/viz/common/quads/yuv_video_draw_quad.h"
 #include "components/viz/service/display/display_resource_provider.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/vector3d_f.h"
+#include "ui/gl/dc_renderer_layer_params.h"
 
 namespace viz {
 
@@ -266,12 +268,26 @@ bool OverlayCandidate::IsOccluded(const OverlayCandidate& candidate,
 }
 
 // static
+bool OverlayCandidate::RequiresOverlay(const DrawQuad* quad) {
+  switch (quad->material) {
+    case DrawQuad::TEXTURE_CONTENT:
+      return TextureDrawQuad::MaterialCast(quad)->protected_video_type ==
+             ui::ProtectedVideoType::kHardwareProtected;
+    case DrawQuad::YUV_VIDEO_CONTENT:
+      return YUVVideoDrawQuad::MaterialCast(quad)->protected_video_type ==
+             ui::ProtectedVideoType::kHardwareProtected;
+    default:
+      return false;
+  }
+}
+
+// static
 bool OverlayCandidate::IsOccludedByFilteredQuad(
     const OverlayCandidate& candidate,
     QuadList::ConstIterator quad_list_begin,
     QuadList::ConstIterator quad_list_end,
     const base::flat_map<RenderPassId, cc::FilterOperations*>&
-        render_pass_background_filters) {
+        render_pass_backdrop_filters) {
   for (auto overlap_iter = quad_list_begin; overlap_iter != quad_list_end;
        ++overlap_iter) {
     if (overlap_iter->material == DrawQuad::RENDER_PASS) {
@@ -281,7 +297,7 @@ bool OverlayCandidate::IsOccludedByFilteredQuad(
       const RenderPassDrawQuad* render_pass_draw_quad =
           RenderPassDrawQuad::MaterialCast(*overlap_iter);
       if (candidate.display_rect.Intersects(overlap_rect) &&
-          render_pass_background_filters.count(
+          render_pass_backdrop_filters.count(
               render_pass_draw_quad->render_pass_id)) {
         return true;
       }

@@ -16,6 +16,7 @@
 #include "core/fpdfapi/render/cpdf_renderoptions.h"
 #include "core/fpdfapi/render/cpdf_renderstatus.h"
 #include "core/fpdfapi/render/cpdf_textrenderer.h"
+#include "core/fxge/cfx_defaultrenderdevice.h"
 #include "core/fxge/cfx_renderdevice.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
 #include "core/fxge/fx_dib.h"
@@ -80,7 +81,7 @@ void CPDF_RenderContext::Render(CFX_RenderDevice* pDevice,
       status.Initialize(nullptr, nullptr);
       status.RenderObjectList(layer.m_pObjectHolder.Get(), layer.m_Matrix);
     }
-    if (status.GetRenderOptions().HasFlag(RENDER_LIMITEDIMAGECACHE)) {
+    if (status.GetRenderOptions().GetOptions().bLimitedImageCache) {
       m_pPageCache->CacheOptimization(
           status.GetRenderOptions().GetCacheSizeLimit());
     }

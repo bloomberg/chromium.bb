@@ -496,27 +496,6 @@ static const CanonicalizationMap CANONICALIZE_MAP[] = {
     { "nl_BE_PREEURO",  "nl_BE", "currency", "BEF" },
     { "nl_NL_PREEURO",  "nl_NL", "currency", "NLG" },
     { "pt_PT_PREEURO",  "pt_PT", "currency", "PTE" },
-    // sgn entries are redundant tags with preferred values in
-    // https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry .
-    { "sgn_BR",         "bzs",   NULL, NULL },
-    { "sgn_CO",         "csn",   NULL, NULL },
-    { "sgn_DE",         "gsg",   NULL, NULL },
-    { "sgn_DK",         "dsl",   NULL, NULL },
-    { "sgn_ES",         "ssp",   NULL, NULL },
-    { "sgn_FR",         "fsl",   NULL, NULL },
-    { "sgn_GB",         "bfi",   NULL, NULL },
-    { "sgn_GR",         "gss",   NULL, NULL },
-    { "sgn_IE",         "isg",   NULL, NULL },
-    { "sgn_IT",         "ise",   NULL, NULL },
-    { "sgn_JP",         "jsl",   NULL, NULL },
-    { "sgn_MX",         "mfs",   NULL, NULL },
-    { "sgn_NI",         "ncs",   NULL, NULL },
-    { "sgn_NL",         "dse",   NULL, NULL },
-    { "sgn_NO",         "nsl",   NULL, NULL },
-    { "sgn_PT",         "psr",   NULL, NULL },
-    { "sgn_SE",         "swl",   NULL, NULL },
-    { "sgn_US",         "ase",   NULL, NULL },
-    { "sgn_ZA",         "sfs",   NULL, NULL },
     { "sr_SP_CYRL",     "sr_Cyrl_RS", NULL, NULL }, /* .NET name */
     { "sr_SP_LATN",     "sr_Latn_RS", NULL, NULL }, /* .NET name */
     { "sr_YU_CYRILLIC", "sr_Cyrl_RS", NULL, NULL }, /* Linux name */
@@ -819,7 +798,7 @@ _getKeywords(const char *localeID,
             }
             keywordsLen += keywordList[i].keywordLen + 1;
             if(valuesToo) {
-                if(keywordsLen + keywordList[i].valueLen < keywordCapacity) {
+                if(keywordsLen + keywordList[i].valueLen <= keywordCapacity) {
                     uprv_strncpy(keywords+keywordsLen, keywordList[i].valueStart, keywordList[i].valueLen);
                 }
                 keywordsLen += keywordList[i].valueLen;
@@ -1154,7 +1133,7 @@ uloc_setKeywordValue(const char* keywordName,
             keyValuePrefix = ';'; /* for any subsequent key-value pair */
             updatedKeysAndValues.append(localeKeywordNameBuffer, keyValueLen, *status);
             updatedKeysAndValues.append('=', *status);
-            updatedKeysAndValues.append(nextEqualsign, keyValueTail-nextEqualsign, *status);
+            updatedKeysAndValues.append(nextEqualsign, static_cast<int32_t>(keyValueTail-nextEqualsign), *status);
         }
         if (!nextSeparator && keywordValueLen > 0 && !handledInputKeyAndValue) {
             /* append new entry at the end, it sorts later than existing entries */
@@ -1521,7 +1500,7 @@ _deleteVariant(char* variants, int32_t variantsLen,
         }
         if (uprv_strncmp(variants, toDelete, toDeleteLen) == 0 &&
             (variantsLen == toDeleteLen ||
-             (flag=(variants[toDeleteLen] == '_'))))
+             (flag=(variants[toDeleteLen] == '_')) != 0))
         {
             int32_t d = toDeleteLen + (flag?1:0);
             variantsLen -= d;
@@ -2433,7 +2412,7 @@ uloc_acceptLanguageFromHTTP(char *result, int32_t resultAvailable, UAcceptResult
         /* eat spaces prior to semi */
         for(t=(paramEnd-1);(paramEnd>s)&&isspace(*t);t--)
             ;
-        int32_t slen = ((t+1)-s);
+        int32_t slen = static_cast<int32_t>(((t+1)-s));
         if(slen > ULOC_FULLNAME_CAPACITY) {
           *status = U_BUFFER_OVERFLOW_ERROR;
           return -1; // too big

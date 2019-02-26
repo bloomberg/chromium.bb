@@ -55,7 +55,12 @@ class VIZ_SERVICE_EXPORT OverlayCandidate {
       QuadList::ConstIterator quad_list_begin,
       QuadList::ConstIterator quad_list_end,
       const base::flat_map<RenderPassId, cc::FilterOperations*>&
-          render_pass_background_filters);
+          render_pass_backdrop_filters);
+
+  // Returns true if the |quad| cannot be displayed on the main plane. This is
+  // used in conjuction with protected content that can't be GPU composited and
+  // will be shown via an overlay.
+  static bool RequiresOverlay(const DrawQuad* quad);
 
   OverlayCandidate();
   OverlayCandidate(const OverlayCandidate& other);

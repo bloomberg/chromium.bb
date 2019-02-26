@@ -39,8 +39,8 @@ class AlsaVolumeControl::ScopedAlsaMixer {
                   const std::string& mixer_element_name)
       : alsa_(alsa) {
     DCHECK(alsa_);
-    VLOG(1) << "Opening mixer element \"" << mixer_element_name
-            << "\" on device \"" << mixer_device_name << "\"";
+    LOG(INFO) << "Opening mixer element \"" << mixer_element_name
+              << "\" on device \"" << mixer_device_name << "\"";
     int alsa_err = alsa_->MixerOpen(&mixer, 0);
     if (alsa_err < 0) {
       LOG(ERROR) << "MixerOpen error: " << alsa_->StrError(alsa_err);
@@ -216,12 +216,12 @@ AlsaVolumeControl::AlsaVolumeControl(Delegate* delegate)
       volume_range_max_(0),
       mute_mixer_ptr_(nullptr) {
   DCHECK(delegate_);
-  VLOG(1) << "Volume device = " << volume_mixer_device_name_
-          << ", element = " << volume_mixer_element_name_;
-  VLOG(1) << "Mute device = " << mute_mixer_device_name_
-          << ", element = " << mute_mixer_element_name_;
-  VLOG(1) << "Idle device = " << amp_mixer_device_name_
-          << ", element = " << amp_mixer_element_name_;
+  LOG(INFO) << "Volume device = " << volume_mixer_device_name_
+            << ", element = " << volume_mixer_element_name_;
+  LOG(INFO) << "Mute device = " << mute_mixer_device_name_
+            << ", element = " << mute_mixer_element_name_;
+  LOG(INFO) << "Idle device = " << amp_mixer_device_name_
+            << ", element = " << amp_mixer_element_name_;
 
   volume_mixer_ = std::make_unique<ScopedAlsaMixer>(
       alsa_.get(), volume_mixer_device_name_, volume_mixer_element_name_);

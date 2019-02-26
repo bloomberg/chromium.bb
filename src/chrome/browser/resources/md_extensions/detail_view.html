@@ -20,14 +20,16 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 <link rel="import" href="item_behavior.html">
 <link rel="import" href="item_util.html">
+<link rel="import" href="host_permissions_toggle_list.html">
 <link rel="import" href="navigation_helper.html">
 <link rel="import" href="runtime_host_permissions.html">
+<link rel="import" href="shared_style.html">
 <link rel="import" href="strings.html">
 <link rel="import" href="toggle_row.html">
 
 <dom-module id="extensions-detail-view">
   <template>
-    <style include="iron-flex cr-shared-style cr-icons action-link paper-button-style">
+    <style include="iron-flex cr-shared-style cr-icons action-link paper-button-style shared-style">
       :host {
         --iron-icon-fill-color: var(--google-grey-refresh-700);
         display: block;
@@ -49,28 +51,6 @@
 
       #enable-section .enabled-text {
         color: var(--google-blue-500);
-      }
-
-      #container {
-        height: 100%;
-        overflow: overlay;
-      }
-
-      #main {
-        @apply --cr-card-elevation;
-        background-color: white;
-        margin: auto;
-        min-height: 100%;
-        padding-bottom: 64px;
-        width: var(--cr-toolbar-field-width);
-      }
-
-      #top-bar {
-        align-items: center;
-        display: flex;
-        height: 40px;
-        margin-bottom: 12px;
-        padding: 8px 12px 0;
       }
 
       #icon {
@@ -165,6 +145,13 @@
         border-top: var(--cr-separator-line);
       }
 
+      extensions-toggle-row {
+        @apply --cr-section;
+        padding-inline-end: 0;
+        padding-inline-start: 0;
+        --toggle-row-label-padding: var(--cr-section-padding);
+      }
+
       #load-path {
         word-break: break-all;
       }
@@ -182,9 +169,9 @@
         @apply --cr-icon-height-width;
       }
     </style>
-    <div id="container">
-      <div id="main">
-        <div id="top-bar">
+    <div class="page-container" id="container">
+      <div class="page-content">
+        <div class="page-header">
           <paper-icon-button-light class="icon-arrow-back no-overlap">
             <button id="closeButton" aria-label="$i18n{back}"
                 on-click="onCloseButtonTap_"></button>
@@ -328,12 +315,21 @@
                 </li>
               </template>
             </ul>
-            <template is="dom-if" if="[[showRuntimeHostPermissions_(data.*)]]">
+            <template is="dom-if"
+                if="[[showFreeformRuntimeHostPermissions_(data.*)]]">
               <extensions-runtime-host-permissions
-                  permissions="[[data.permissions]]"
+                  permissions="[[data.permissions.runtimeHostPermissions]]"
                   delegate="[[delegate]]"
                   item-id="[[data.id]]">
               </extensions-runtime-host-permissions>
+            </template>
+            <template is="dom-if"
+                if="[[showHostPermissionsToggleList_(data.*)]]">
+              <extensions-host-permissions-toggle-list
+                  permissions="[[data.permissions.runtimeHostPermissions]]"
+                  delegate="[[delegate]]"
+                  item-id="[[data.id]]">
+              </extensions-host-permissions-toggle-list>
             </template>
           </div>
         </div>
@@ -380,11 +376,15 @@
             </template>
           </div>
         </template>
-        <cr-link-row class="hr" is="" id="extensions-options"
+        <cr-link-row class="hr" id="extensions-options"
             disabled="[[!isEnabled_(data.state)]]"
             hidden="[[!shouldShowOptionsLink_(data.*)]]"
             icon-class="icon-external" label="$i18n{itemOptions}"
             on-click="onExtensionOptionsTap_">
+        </cr-link-row>
+        <cr-link-row class="hr" icon-class="subpage-arrow"
+            id="extensions-activity-log-link" hidden$="[[!showActivityLog]]"
+            label="$i18n{viewActivityLog}" on-click="onActivityLogTap_">
         </cr-link-row>
         <cr-link-row class="hr" hidden="[[!data.manifestHomePageUrl.length]]"
             icon-class="icon-external" id="extensionWebsite"

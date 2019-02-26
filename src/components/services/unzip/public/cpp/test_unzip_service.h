@@ -11,6 +11,7 @@
 #include "components/services/unzip/public/interfaces/unzipper.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
 
 namespace unzip {
 
@@ -21,11 +22,10 @@ namespace unzip {
 class CrashyUnzipService : public service_manager::Service,
                            public mojom::Unzipper {
  public:
-  CrashyUnzipService();
+  explicit CrashyUnzipService(service_manager::mojom::ServiceRequest request);
   ~CrashyUnzipService() override;
 
   // service_manager::Service:
-  void OnStart() override;
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
@@ -40,6 +40,7 @@ class CrashyUnzipService : public service_manager::Service,
                        UnzipWithFilterCallback callback) override;
 
  private:
+  service_manager::ServiceBinding binding_;
   std::unique_ptr<mojo::Binding<mojom::Unzipper>> unzipper_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(CrashyUnzipService);

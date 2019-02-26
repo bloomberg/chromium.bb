@@ -21,6 +21,7 @@
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/crash_report/crash_report_flags.h"
 #import "ios/chrome/browser/crash_report/crash_report_user_application_state.h"
+#import "ios/chrome/browser/crash_report/main_thread_freeze_detector.h"
 
 // TODO(stuartmorgan): Move this up where it belongs once
 // https://crbug.com/google-breakpad/487 is fixed. For now, put it at the end to
@@ -124,6 +125,7 @@ void CacheUploadingEnabled(bool uploading_enabled) {
 void Start(const std::string& channel_name) {
   DCHECK(!g_crash_reporter_enabled);
   [[BreakpadController sharedInstance] start:YES];
+  [[MainThreadFreezeDetector sharedInstance] start];
   logging::SetLogMessageHandler(&FatalMessageHandler);
   g_crash_reporter_enabled = true;
   // Register channel information.
@@ -143,6 +145,9 @@ void Start(const std::string& channel_name) {
 }
 
 void SetEnabled(bool enabled) {
+  // It is necessary to always call |MainThreadFreezeDetector setEnabled| as
+  // the function will update its preference based on finch.
+  [[MainThreadFreezeDetector sharedInstance] setEnabled:enabled];
   if (g_crash_reporter_enabled == enabled)
     return;
   g_crash_reporter_enabled = enabled;
@@ -226,10 +231,13 @@ void RemoveReportParameter(NSString* key) {
 }
 
 void SetCurrentlyInBackground(bool background) {
-  if (background)
+  if (background) {
     AddReportParameter(kCrashedInBackground, @"yes", true);
-  else
+    [[MainThreadFreezeDetector sharedInstance] stop];
+  } else {
     RemoveReportParameter(kCrashedInBackground);
+    [[MainThreadFreezeDetector sharedInstance] start];
+  }
 }
 
 void SetMemoryWarningCount(int count) {

@@ -347,7 +347,7 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate,
             BookmarkUtils.setLastUsedUrl(mActivity, state.mUrl);
             // If a loading state is replaced by another loading state, do not notify this change.
             if (mNativePage != null) {
-                mNativePage.onStateChange(state.mUrl);
+                mNativePage.onStateChange(state.mUrl, false);
             }
         }
 

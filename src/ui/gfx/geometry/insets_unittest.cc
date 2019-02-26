@@ -31,6 +31,30 @@ TEST(InsetsTest, Insets) {
   EXPECT_FALSE(insets.IsEmpty());
 }
 
+TEST(InsetsTest, SetTop) {
+  gfx::Insets insets(1);
+  insets.set_top(2);
+  EXPECT_EQ(gfx::Insets(2, 1, 1, 1), insets);
+}
+
+TEST(InsetsTest, SetBottom) {
+  gfx::Insets insets(1);
+  insets.set_bottom(2);
+  EXPECT_EQ(gfx::Insets(1, 1, 2, 1), insets);
+}
+
+TEST(InsetsTest, SetLeft) {
+  gfx::Insets insets(1);
+  insets.set_left(2);
+  EXPECT_EQ(gfx::Insets(1, 2, 1, 1), insets);
+}
+
+TEST(InsetsTest, SetRight) {
+  gfx::Insets insets(1);
+  insets.set_right(2);
+  EXPECT_EQ(gfx::Insets(1, 1, 1, 2), insets);
+}
+
 TEST(InsetsTest, Set) {
   gfx::Insets insets;
   insets.Set(1, 2, 3, 4);

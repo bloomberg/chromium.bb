@@ -8,6 +8,7 @@
 
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/ime/ime_controller.h"
+#include "ash/keyboard/ash_keyboard_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -23,8 +24,8 @@
 #include "ui/events/devices/input_device_manager.h"
 #include "ui/events/devices/touchscreen_device.h"
 #include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_util.h"
+#include "ui/keyboard/public/keyboard_switches.h"
 
 namespace ash {
 namespace {
@@ -50,16 +51,15 @@ void ResetVirtualKeyboard() {
 void MoveKeyboardToDisplayInternal(const display::Display& display) {
   // Remove the keyboard from curent root window controller
   TRACE_EVENT0("vk", "MoveKeyboardToDisplayInternal");
-  RootWindowController::ForWindow(
-      keyboard::KeyboardController::Get()->GetRootWindow())
-      ->DeactivateKeyboard(keyboard::KeyboardController::Get());
+  auto* ash_keyboard_controller = Shell::Get()->ash_keyboard_controller();
+  ash_keyboard_controller->DeactivateKeyboard();
 
   for (RootWindowController* controller :
        Shell::Get()->GetAllRootWindowControllers()) {
     if (display::Screen::GetScreen()
             ->GetDisplayNearestWindow(controller->GetRootWindow())
             .id() == display.id()) {
-      controller->ActivateKeyboard(keyboard::KeyboardController::Get());
+      ash_keyboard_controller->ActivateKeyboardForRoot(controller);
       break;
     }
   }
@@ -103,9 +103,10 @@ VirtualKeyboardController::VirtualKeyboardController()
 
   keyboard::KeyboardController::Get()->AddObserver(this);
 
-  bluetooth_devices_observer_ = std::make_unique<BluetoothDevicesObserver>(
-      base::BindRepeating(&VirtualKeyboardController::UpdateBluetoothDevice,
-                          base::Unretained(this)));
+  bluetooth_devices_observer_ =
+      std::make_unique<BluetoothDevicesObserver>(base::BindRepeating(
+          &VirtualKeyboardController::OnBluetoothAdapterOrDeviceChanged,
+          base::Unretained(this)));
 }
 
 VirtualKeyboardController::~VirtualKeyboardController() {
@@ -257,8 +258,6 @@ void VirtualKeyboardController::SetKeyboardEnabled(bool enabled) {
   } else {
     Shell::Get()->DisableKeyboard();
   }
-  for (VirtualKeyboardControllerObserver& observer : observers_)
-    observer.OnVirtualKeyboardStateChanged(is_enabled);
 }
 
 void VirtualKeyboardController::ForceShowKeyboard() {
@@ -276,9 +275,13 @@ void VirtualKeyboardController::ForceShowKeyboard() {
   keyboard_controller->ShowKeyboard(false);
 }
 
-void VirtualKeyboardController::OnKeyboardDisabled() {
-  Shell::Get()->ime_controller()->OverrideKeyboardKeyset(
-      chromeos::input_method::mojom::ImeKeyset::kNone);
+void VirtualKeyboardController::OnKeyboardEnabledChanged(bool is_enabled) {
+  if (!is_enabled) {
+    // TODO(shend/shuchen): Consider moving this logic to ImeController.
+    // https://crbug.com/896284.
+    Shell::Get()->ime_controller()->OverrideKeyboardKeyset(
+        chromeos::input_method::mojom::ImeKeyset::kNone);
+  }
 }
 
 void VirtualKeyboardController::OnKeyboardHidden(bool is_temporary_hide) {
@@ -299,26 +302,15 @@ void VirtualKeyboardController::OnActiveUserSessionChanged(
     Shell::Get()->EnableKeyboard();
 }
 
-void VirtualKeyboardController::AddObserver(
-    VirtualKeyboardControllerObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void VirtualKeyboardController::RemoveObserver(
-    VirtualKeyboardControllerObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
-
-void VirtualKeyboardController::UpdateBluetoothDevice(
+void VirtualKeyboardController::OnBluetoothAdapterOrDeviceChanged(
     device::BluetoothDevice* device) {
   // We only care about keyboard type bluetooth device change.
-  if (device->GetDeviceType() != device::BluetoothDeviceType::KEYBOARD &&
-      device->GetDeviceType() !=
+  if (!device ||
+      device->GetDeviceType() == device::BluetoothDeviceType::KEYBOARD ||
+      device->GetDeviceType() ==
           device::BluetoothDeviceType::KEYBOARD_MOUSE_COMBO) {
-    return;
+    UpdateDevices();
   }
-
-  UpdateDevices();
 }
 
 }  // namespace ash

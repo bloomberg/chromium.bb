@@ -53,11 +53,9 @@ void SpellCheckContentBrowserClient::RunUntilBind() {
 void SpellCheckContentBrowserClient::BindSpellCheckPanelHostRequest(
     spellcheck::mojom::SpellCheckPanelHostRequest request,
     const service_manager::BindSourceInfo& source_info) {
-  service_manager::Identity renderer_identity(
-      content::mojom::kRendererServiceName, source_info.identity.user_id(),
-      source_info.identity.instance());
   content::RenderProcessHost* render_process_host =
-      content::RenderProcessHost::FromRendererIdentity(renderer_identity);
+      content::RenderProcessHost::FromRendererInstanceId(
+          source_info.identity.instance_id());
   auto spell_check_panel_host =
       std::make_unique<SpellCheckMockPanelHost>(render_process_host);
   spell_check_panel_host->SpellCheckPanelHostRequest(std::move(request));

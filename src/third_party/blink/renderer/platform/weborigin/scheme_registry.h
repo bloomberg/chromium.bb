@@ -87,10 +87,10 @@ class PLATFORM_EXPORT SchemeRegistry {
   static bool ShouldTreatURLSchemeAsNotAllowingJavascriptURLs(
       const String& scheme);
 
-  static bool ShouldTreatURLSchemeAsCORSEnabled(const String& scheme);
+  static bool ShouldTreatURLSchemeAsCorsEnabled(const String& scheme);
 
   // Serialize the registered schemes in a comma-separated list.
-  static String ListOfCORSEnabledURLSchemes();
+  static String ListOfCorsEnabledURLSchemes();
 
   // "Legacy" schemes (e.g. 'ftp:', 'gopher:') which we might want to treat
   // differently from "webby" schemes.

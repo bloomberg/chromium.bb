@@ -4,6 +4,7 @@
 
 #include "public/fpdf_edit.h"
 
+#include <utility>
 #include <vector>
 
 #include "core/fpdfapi/page/cpdf_path.h"
@@ -11,6 +12,7 @@
 #include "core/fxcrt/fx_system.h"
 #include "fpdfsdk/cpdfsdk_helpers.h"
 #include "third_party/base/ptr_util.h"
+#include "third_party/base/stl_util.h"
 
 // These checks are here because core/ and public/ cannot depend on each other.
 static_assert(CFX_GraphStateData::LineCapButt == FPDF_LINECAP_BUTT,
@@ -47,7 +49,7 @@ CPDF_PathObject* CPDFPathObjectFromFPDFPageObject(FPDF_PAGEOBJECT page_object) {
 FPDF_EXPORT FPDF_PAGEOBJECT FPDF_CALLCONV FPDFPageObj_CreateNewPath(float x,
                                                                     float y) {
   auto pPathObj = pdfium::MakeUnique<CPDF_PathObject>();
-  pPathObj->m_Path.AppendPoint(CFX_PointF(x, y), FXPT_TYPE::MoveTo, false);
+  pPathObj->path().AppendPoint(CFX_PointF(x, y), FXPT_TYPE::MoveTo, false);
   pPathObj->DefaultStates();
 
   // Caller takes ownership.
@@ -59,7 +61,7 @@ FPDF_EXPORT FPDF_PAGEOBJECT FPDF_CALLCONV FPDFPageObj_CreateNewRect(float x,
                                                                     float w,
                                                                     float h) {
   auto pPathObj = pdfium::MakeUnique<CPDF_PathObject>();
-  pPathObj->m_Path.AppendRect(x, y, x + w, y + h);
+  pPathObj->path().AppendRect(x, y, x + w, y + h);
   pPathObj->DefaultStates();
 
   // Caller takes ownership.
@@ -129,7 +131,7 @@ FPDF_EXPORT int FPDF_CALLCONV FPDFPath_CountSegments(FPDF_PAGEOBJECT path) {
   auto* pPathObj = CPDFPathObjectFromFPDFPageObject(path);
   if (!pPathObj)
     return -1;
-  return pdfium::CollectionSize<int>(pPathObj->m_Path.GetPoints());
+  return pdfium::CollectionSize<int>(pPathObj->path().GetPoints());
 }
 
 FPDF_EXPORT FPDF_PATHSEGMENT FPDF_CALLCONV
@@ -138,7 +140,7 @@ FPDFPath_GetPathSegment(FPDF_PAGEOBJECT path, int index) {
   if (!pPathObj)
     return nullptr;
 
-  const std::vector<FX_PATHPOINT>& points = pPathObj->m_Path.GetPoints();
+  const std::vector<FX_PATHPOINT>& points = pPathObj->path().GetPoints();
   if (!pdfium::IndexInBounds(points, index))
     return nullptr;
 
@@ -152,7 +154,7 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFPath_MoveTo(FPDF_PAGEOBJECT path,
   if (!pPathObj)
     return false;
 
-  pPathObj->m_Path.AppendPoint(CFX_PointF(x, y), FXPT_TYPE::MoveTo, false);
+  pPathObj->path().AppendPoint(CFX_PointF(x, y), FXPT_TYPE::MoveTo, false);
   pPathObj->SetDirty(true);
   return true;
 }
@@ -164,7 +166,7 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFPath_LineTo(FPDF_PAGEOBJECT path,
   if (!pPathObj)
     return false;
 
-  pPathObj->m_Path.AppendPoint(CFX_PointF(x, y), FXPT_TYPE::LineTo, false);
+  pPathObj->path().AppendPoint(CFX_PointF(x, y), FXPT_TYPE::LineTo, false);
   pPathObj->SetDirty(true);
   return true;
 }
@@ -180,9 +182,10 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFPath_BezierTo(FPDF_PAGEOBJECT path,
   if (!pPathObj)
     return false;
 
-  pPathObj->m_Path.AppendPoint(CFX_PointF(x1, y1), FXPT_TYPE::BezierTo, false);
-  pPathObj->m_Path.AppendPoint(CFX_PointF(x2, y2), FXPT_TYPE::BezierTo, false);
-  pPathObj->m_Path.AppendPoint(CFX_PointF(x3, y3), FXPT_TYPE::BezierTo, false);
+  CPDF_Path& cpath = pPathObj->path();
+  cpath.AppendPoint(CFX_PointF(x1, y1), FXPT_TYPE::BezierTo, false);
+  cpath.AppendPoint(CFX_PointF(x2, y2), FXPT_TYPE::BezierTo, false);
+  cpath.AppendPoint(CFX_PointF(x3, y3), FXPT_TYPE::BezierTo, false);
   pPathObj->SetDirty(true);
   return true;
 }
@@ -192,10 +195,11 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFPath_Close(FPDF_PAGEOBJECT path) {
   if (!pPathObj)
     return false;
 
-  if (pPathObj->m_Path.GetPoints().empty())
+  CPDF_Path& cpath = pPathObj->path();
+  if (cpath.GetPoints().empty())
     return false;
 
-  pPathObj->m_Path.ClosePath();
+  cpath.ClosePath();
   pPathObj->SetDirty(true);
   return true;
 }
@@ -207,13 +211,13 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFPath_SetDrawMode(FPDF_PAGEOBJECT path,
   if (!pPathObj)
     return false;
 
+  pPathObj->set_stroke(!!stroke);
   if (fillmode == FPDF_FILLMODE_ALTERNATE)
-    pPathObj->m_FillType = FXFILL_ALTERNATE;
+    pPathObj->set_filltype(FXFILL_ALTERNATE);
   else if (fillmode == FPDF_FILLMODE_WINDING)
-    pPathObj->m_FillType = FXFILL_WINDING;
+    pPathObj->set_filltype(FXFILL_WINDING);
   else
-    pPathObj->m_FillType = 0;
-  pPathObj->m_bStroke = stroke != 0;
+    pPathObj->set_filltype(0);
   pPathObj->SetDirty(true);
   return true;
 }
@@ -225,14 +229,14 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFPath_GetDrawMode(FPDF_PAGEOBJECT path,
   if (!pPathObj || !fillmode || !stroke)
     return false;
 
-  if (pPathObj->m_FillType == FXFILL_ALTERNATE)
+  if (pPathObj->filltype() == FXFILL_ALTERNATE)
     *fillmode = FPDF_FILLMODE_ALTERNATE;
-  else if (pPathObj->m_FillType == FXFILL_WINDING)
+  else if (pPathObj->filltype() == FXFILL_WINDING)
     *fillmode = FPDF_FILLMODE_WINDING;
   else
     *fillmode = FPDF_FILLMODE_NONE;
 
-  *stroke = pPathObj->m_bStroke;
+  *stroke = pPathObj->stroke();
   return true;
 }
 
@@ -250,13 +254,7 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFPath_GetMatrix(FPDF_PAGEOBJECT path,
   if (!pPathObj)
     return false;
 
-  *a = pPathObj->m_Matrix.a;
-  *b = pPathObj->m_Matrix.b;
-  *c = pPathObj->m_Matrix.c;
-  *d = pPathObj->m_Matrix.d;
-  *e = pPathObj->m_Matrix.e;
-  *f = pPathObj->m_Matrix.f;
-
+  std::tie(*a, *b, *c, *d, *e, *f) = pPathObj->matrix().AsTuple();
   return true;
 }
 
@@ -267,21 +265,12 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFPath_SetMatrix(FPDF_PAGEOBJECT path,
                                                        double d,
                                                        double e,
                                                        double f) {
-  if (!path)
-    return false;
-
   CPDF_PathObject* pPathObj = CPDFPathObjectFromFPDFPageObject(path);
   if (!pPathObj)
     return false;
 
-  pPathObj->m_Matrix.a = a;
-  pPathObj->m_Matrix.b = b;
-  pPathObj->m_Matrix.c = c;
-  pPathObj->m_Matrix.d = d;
-  pPathObj->m_Matrix.e = e;
-  pPathObj->m_Matrix.f = f;
+  pPathObj->set_matrix(CFX_Matrix(a, b, c, d, e, f));
   pPathObj->SetDirty(true);
-
   return true;
 }
 
@@ -311,14 +300,12 @@ FPDFPathSegment_GetPoint(FPDF_PATHSEGMENT segment, float* x, float* y) {
 
   *x = pPathPoint->m_Point.x;
   *y = pPathPoint->m_Point.y;
-
   return true;
 }
 
 FPDF_EXPORT int FPDF_CALLCONV
 FPDFPathSegment_GetType(FPDF_PATHSEGMENT segment) {
   auto* pPathPoint = FXPathPointFromFPDFPathSegment(segment);
-
   return pPathPoint ? static_cast<int>(pPathPoint->m_Type)
                     : FPDF_SEGMENT_UNKNOWN;
 }
@@ -326,6 +313,5 @@ FPDFPathSegment_GetType(FPDF_PATHSEGMENT segment) {
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
 FPDFPathSegment_GetClose(FPDF_PATHSEGMENT segment) {
   auto* pPathPoint = FXPathPointFromFPDFPathSegment(segment);
-
   return pPathPoint ? pPathPoint->m_CloseFigure : false;
 }

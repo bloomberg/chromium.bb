@@ -8,7 +8,6 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "build/build_config.h"
-#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_app_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "chromeos/components/proximity_auth/switches.h"
@@ -81,13 +80,9 @@ void OnAuthAttemptFinalized(EasyUnlockAuthAttempt::Type auth_attempt_type,
 
 }  // namespace
 
-EasyUnlockAuthAttempt::EasyUnlockAuthAttempt(EasyUnlockAppManager* app_manager,
-                                             const AccountId& account_id,
+EasyUnlockAuthAttempt::EasyUnlockAuthAttempt(const AccountId& account_id,
                                              Type type)
-    : app_manager_(app_manager),
-      state_(STATE_IDLE),
-      account_id_(account_id),
-      type_(type) {}
+    : state_(STATE_IDLE), account_id_(account_id), type_(type) {}
 
 EasyUnlockAuthAttempt::~EasyUnlockAuthAttempt() {
   if (state_ == STATE_RUNNING)
@@ -110,17 +105,6 @@ bool EasyUnlockAuthAttempt::Start() {
   }
 
   state_ = STATE_RUNNING;
-
-  // We need this workaround for ProximityAuthSystem, since we don't load the
-  // full background app anymore. The call to
-  // |app_manager_->SendAuthAttemptEvent()| returns false, as there is no
-  // observer registered for the |screenlock::OnAuthAttempted| event. As a
-  // result, the auth attempt will always fail.
-  // TODO(sacomoto): Clean this up when the background app is not needed
-  // anymore.
-  // TODO(jhawkins): Verify whether this method has important side effects or
-  // if it can be removed.
-  app_manager_->SendAuthAttemptEvent();
 
   return true;
 }

@@ -8,13 +8,11 @@
 #include "base/macros.h"
 #include "third_party/blink/renderer/bindings/core/v8/iterable.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/cssom/css_style_value.h"
-#include "third_party/blink/renderer/core/css_property_names.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
-
-class CSSProperty;
 
 class CORE_EXPORT StylePropertyMapReadOnly
     : public ScriptWrappable,
@@ -22,43 +20,17 @@ class CORE_EXPORT StylePropertyMapReadOnly
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  using StylePropertyMapEntry = std::pair<String, CSSStyleValueVector>;
-
-  ~StylePropertyMapReadOnly() override = default;
-
-  CSSStyleValue* get(const ExecutionContext*,
-                     const String& property_name,
-                     ExceptionState&);
-  CSSStyleValueVector getAll(const ExecutionContext*,
+  virtual CSSStyleValue* get(const ExecutionContext*,
                              const String& property_name,
-                             ExceptionState&);
-  bool has(const ExecutionContext*,
-           const String& property_name,
-           ExceptionState&);
+                             ExceptionState&) = 0;
+  virtual CSSStyleValueVector getAll(const ExecutionContext*,
+                                     const String& property_name,
+                                     ExceptionState&) = 0;
+  virtual bool has(const ExecutionContext*,
+                   const String& property_name,
+                   ExceptionState&) = 0;
 
   virtual unsigned int size() = 0;
-
- protected:
-  StylePropertyMapReadOnly() = default;
-
-  virtual const CSSValue* GetProperty(CSSPropertyID) = 0;
-  virtual const CSSValue* GetCustomProperty(AtomicString) = 0;
-
-  using IterationCallback =
-      std::function<void(const AtomicString&, const CSSValue&)>;
-  virtual void ForEachProperty(const IterationCallback&) = 0;
-
-  virtual String SerializationForShorthand(const CSSProperty&) = 0;
-
- private:
-  IterationSource* StartIteration(ScriptState*, ExceptionState&) override;
-
-  CSSStyleValue* GetShorthandProperty(const CSSProperty&);
-  const CSSValue* GetCustomProperty(const ExecutionContext&,
-                                    const AtomicString&);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(StylePropertyMapReadOnly);
 };
 
 }  // namespace blink

@@ -101,7 +101,7 @@ class OomInterventionImplTest : public testing::Test {
 
  protected:
   std::unique_ptr<MockOomInterventionImpl> intervention_;
-  FrameTestHelpers::WebViewHelper web_view_helper_;
+  frame_test_helpers::WebViewHelper web_view_helper_;
   std::unique_ptr<SimRequest> main_resource_;
 };
 

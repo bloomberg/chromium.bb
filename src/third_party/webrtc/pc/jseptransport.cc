@@ -115,9 +115,17 @@ JsepTransport::JsepTransport(
     RTC_DCHECK(!sdes_transport);
     dtls_srtp_transport_ = std::move(dtls_srtp_transport);
   }
+
+  if (media_transport_) {
+    media_transport_->SetMediaTransportStateCallback(this);
+  }
 }
 
-JsepTransport::~JsepTransport() {}
+JsepTransport::~JsepTransport() {
+  if (media_transport_) {
+    media_transport_->SetMediaTransportStateCallback(nullptr);
+  }
+}
 
 webrtc::RTCError JsepTransport::SetLocalJsepTransportDescription(
     const JsepTransportDescription& jsep_description,
@@ -316,8 +324,9 @@ webrtc::RTCError JsepTransport::VerifyCertificateFingerprint(
     return webrtc::RTCError(webrtc::RTCErrorType::INVALID_PARAMETER,
                             "Fingerprint provided but no identity available.");
   }
-  std::unique_ptr<rtc::SSLFingerprint> fp_tmp(rtc::SSLFingerprint::Create(
-      fingerprint->algorithm, certificate->identity()));
+  std::unique_ptr<rtc::SSLFingerprint> fp_tmp =
+      rtc::SSLFingerprint::CreateUnique(fingerprint->algorithm,
+                                        *certificate->identity());
   RTC_DCHECK(fp_tmp.get() != NULL);
   if (*fp_tmp == *fingerprint) {
     return webrtc::RTCError::OK();
@@ -506,7 +515,8 @@ webrtc::RTCError JsepTransport::NegotiateAndSetDtlsParameters(
         "Local fingerprint supplied when caller didn't offer DTLS.");
   } else {
     // We are not doing DTLS
-    remote_fingerprint = absl::make_unique<rtc::SSLFingerprint>("", nullptr, 0);
+    remote_fingerprint = absl::make_unique<rtc::SSLFingerprint>(
+        "", rtc::ArrayView<const uint8_t>());
   }
   // Now that we have negotiated everything, push it downward.
   // Note that we cache the result so that if we have race conditions
@@ -632,6 +642,14 @@ bool JsepTransport::GetTransportStats(DtlsTransportInternal* dtls_transport,
   }
   stats->channel_stats.push_back(substats);
   return true;
+}
+
+void JsepTransport::OnStateChanged(webrtc::MediaTransportState state) {
+  // TODO(bugs.webrtc.org/9719) This method currently fires on the network
+  // thread, but media transport does not make such guarantees. We need to make
+  // sure this callback is guaranteed to be executed on the network thread.
+  media_transport_state_ = state;
+  SignalMediaTransportStateChanged();
 }
 
 }  // namespace cricket

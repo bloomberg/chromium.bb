@@ -9,8 +9,10 @@
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_utils.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 using Type = network::mojom::FetchResponseType;
 
@@ -30,7 +32,7 @@ WebVector<WebString> HeaderSetToWebVector(const WebHTTPHeaderSet& headers) {
 
 Vector<String> HeaderSetToVector(const WebHTTPHeaderSet& headers) {
   Vector<String> result;
-  result.ReserveInitialCapacity(headers.size());
+  result.ReserveInitialCapacity(SafeCast<wtf_size_t>(headers.size()));
   // WebHTTPHeaderSet stores headers using Latin1 encoding.
   for (const auto& header : headers)
     result.push_back(String(header.data(), header.size()));
@@ -43,14 +45,15 @@ FetchResponseData* FetchResponseData::Create() {
   // "Unless stated otherwise, a response's url is null, status is 200, status
   // message is the empty byte sequence, header list is an empty header list,
   // and body is null."
-  return new FetchResponseData(Type::kDefault, 200, g_empty_atom);
+  return MakeGarbageCollected<FetchResponseData>(Type::kDefault, 200,
+                                                 g_empty_atom);
 }
 
 FetchResponseData* FetchResponseData::CreateNetworkErrorResponse() {
   // "A network error is a response whose status is always 0, status message
   // is always the empty byte sequence, header list is aways an empty list,
   // and body is always null."
-  return new FetchResponseData(Type::kError, 0, g_empty_atom);
+  return MakeGarbageCollected<FetchResponseData>(Type::kError, 0, g_empty_atom);
 }
 
 FetchResponseData* FetchResponseData::CreateWithBuffer(
@@ -65,8 +68,8 @@ FetchResponseData* FetchResponseData::CreateBasicFilteredResponse() const {
   // "A basic filtered response is a filtered response whose type is |basic|,
   // header list excludes any headers in internal response's header list whose
   // name is `Set-Cookie` or `Set-Cookie2`."
-  FetchResponseData* response =
-      new FetchResponseData(Type::kBasic, status_, status_message_);
+  FetchResponseData* response = MakeGarbageCollected<FetchResponseData>(
+      Type::kBasic, status_, status_message_);
   response->SetURLList(url_list_);
   for (const auto& header : header_list_->List()) {
     if (FetchUtils::IsForbiddenResponseHeaderName(header.first))
@@ -79,7 +82,7 @@ FetchResponseData* FetchResponseData::CreateBasicFilteredResponse() const {
   return response;
 }
 
-FetchResponseData* FetchResponseData::CreateCORSFilteredResponse(
+FetchResponseData* FetchResponseData::CreateCorsFilteredResponse(
     const WebHTTPHeaderSet& exposed_headers) const {
   DCHECK_EQ(type_, Type::kDefault);
   // "A CORS filtered response is a filtered response whose type is |CORS|,
@@ -89,12 +92,12 @@ FetchResponseData* FetchResponseData::CreateCORSFilteredResponse(
   // `Pragma`, and except those whose name is one of the values resulting from
   // parsing `Access-Control-Expose-Headers` in internal response's header
   // list."
-  FetchResponseData* response =
-      new FetchResponseData(Type::kCORS, status_, status_message_);
+  FetchResponseData* response = MakeGarbageCollected<FetchResponseData>(
+      Type::kCors, status_, status_message_);
   response->SetURLList(url_list_);
   for (const auto& header : header_list_->List()) {
     const String& name = header.first;
-    if (WebCORS::IsOnAccessControlResponseHeaderWhitelist(name) ||
+    if (cors::IsOnAccessControlResponseHeaderWhitelist(name) ||
         (exposed_headers.find(name.Ascii().data()) != exposed_headers.end() &&
          !FetchUtils::IsForbiddenResponseHeaderName(name))) {
       response->header_list_->Append(name, header.second);
@@ -116,7 +119,7 @@ FetchResponseData* FetchResponseData::CreateOpaqueFilteredResponse() const {
   //
   // https://fetch.spec.whatwg.org/#concept-filtered-response-opaque
   FetchResponseData* response =
-      new FetchResponseData(Type::kOpaque, 0, g_empty_atom);
+      MakeGarbageCollected<FetchResponseData>(Type::kOpaque, 0, g_empty_atom);
   response->internal_response_ = const_cast<FetchResponseData*>(this);
   return response;
 }
@@ -129,8 +132,8 @@ FetchResponseData* FetchResponseData::CreateOpaqueRedirectFilteredResponse()
   // header list is the empty list, body is null, and cache state is 'none'."
   //
   // https://fetch.spec.whatwg.org/#concept-filtered-response-opaque-redirect
-  FetchResponseData* response =
-      new FetchResponseData(Type::kOpaqueRedirect, 0, g_empty_atom);
+  FetchResponseData* response = MakeGarbageCollected<FetchResponseData>(
+      Type::kOpaqueRedirect, 0, g_empty_atom);
   response->SetURLList(url_list_);
   response->internal_response_ = const_cast<FetchResponseData*>(this);
   return response;
@@ -192,7 +195,7 @@ FetchResponseData* FetchResponseData::Clone(ScriptState* script_state,
 
   switch (type_) {
     case Type::kBasic:
-    case Type::kCORS:
+    case Type::kCors:
       DCHECK(internal_response_);
       DCHECK_EQ(buffer_, internal_response_->buffer_);
       DCHECK_EQ(internal_response_->type_, Type::kDefault);
@@ -291,7 +294,7 @@ FetchResponseData::FetchResponseData(Type type,
       response_time_(base::Time::Now()) {}
 
 void FetchResponseData::ReplaceBodyStreamBuffer(BodyStreamBuffer* buffer) {
-  if (type_ == Type::kBasic || type_ == Type::kCORS) {
+  if (type_ == Type::kBasic || type_ == Type::kCors) {
     DCHECK(internal_response_);
     internal_response_->buffer_ = buffer;
     buffer_ = buffer;

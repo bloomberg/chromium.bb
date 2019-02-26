@@ -13,11 +13,11 @@
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/server_backed_device_state.h"
-#include "chrome/browser/chromeos/settings/install_attributes.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/cros_settings_provider.h"
+#include "chromeos/settings/install_attributes.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/prefs/pref_service.h"
@@ -89,7 +89,7 @@ void DeviceDisablingManager::CacheDisabledMessageAndNotify(
 
 void DeviceDisablingManager::CheckWhetherDeviceDisabledDuringOOBE(
     const DeviceDisabledCheckCallback& callback) {
-  if (policy::GetRestoreMode() != policy::RESTORE_MODE_DISABLED ||
+  if (policy::GetDeviceStateMode() != policy::RESTORE_MODE_DISABLED ||
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableDeviceDisabling)) {
     // Indicate that the device is not disabled if it is not marked as such in

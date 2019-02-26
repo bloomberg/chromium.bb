@@ -7,6 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/chromeos/lock_screen_apps/focus_cycler_delegate.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -42,13 +43,14 @@ class ViewsScreenLocker : public LoginScreenClient::Delegate,
   void ShowErrorMessage(int error_msg_id,
                         HelpAppLauncher::HelpTopic help_topic_id) override;
   void ClearErrors() override;
-  void AnimateAuthenticationSuccess() override;
   void OnLockWebUIReady() override;
   void OnLockBackgroundDisplayed() override;
   void OnHeaderBarVisible() override;
   void OnAshLockAnimationFinished() override;
   void SetFingerprintState(const AccountId& account_id,
-                           ScreenLocker::FingerprintState state) override;
+                           ash::mojom::FingerprintState state) override;
+  void NotifyFingerprintAuthResult(const AccountId& account_id,
+                                   bool success) override;
   content::WebContents* GetWebContents() override;
 
   // LoginScreenClient::Delegate
@@ -60,10 +62,11 @@ class ViewsScreenLocker : public LoginScreenClient::Delegate,
   void HandleAuthenticateUserWithExternalBinary(
       const AccountId& account_id,
       AuthenticateUserWithExternalBinaryCallback callback) override;
+  void HandleEnrollUserWithExternalBinary(
+      EnrollUserWithExternalBinaryCallback) override;
   void HandleAuthenticateUserWithEasyUnlock(
       const AccountId& account_id) override;
   void HandleHardlockPod(const AccountId& account_id) override;
-  void HandleRecordClickOnLockIcon(const AccountId& account_id) override;
   void HandleOnFocusPod(const AccountId& account_id) override;
   void HandleOnNoPodFocused() override;
   bool HandleFocusLockScreenApps(bool reverse) override;
@@ -89,6 +92,8 @@ class ViewsScreenLocker : public LoginScreenClient::Delegate,
   void UpdatePinKeyboardState(const AccountId& account_id);
   void OnAllowedInputMethodsChanged();
   void OnPinCanAuthenticate(const AccountId& account_id, bool can_authenticate);
+  void OnExternalBinaryAuthTimeout();
+  void OnExternalBinaryEnrollmentTimeout();
 
   std::unique_ptr<UserBoardViewMojo> user_board_view_mojo_;
   std::unique_ptr<UserSelectionScreen> user_selection_screen_;
@@ -112,6 +117,9 @@ class ViewsScreenLocker : public LoginScreenClient::Delegate,
   AuthenticateUserWithExternalBinaryCallback
       authenticate_with_external_binary_callback_;
 
+  EnrollUserWithExternalBinaryCallback
+      enroll_user_with_external_binary_callback_;
+
   // Callback registered as a lock screen apps focus handler - it should be
   // called to hand focus over to lock screen apps.
   LockScreenAppFocusCallback lock_screen_app_focus_handler_;
@@ -120,6 +128,10 @@ class ViewsScreenLocker : public LoginScreenClient::Delegate,
   std::unique_ptr<MojoSystemInfoDispatcher> system_info_updater_;
 
   chromeos::MediaAnalyticsClient* media_analytics_client_;
+
+  // Timer for external binary auth/enrollment attempt. Allows repeated attempts
+  // up to a specific timeout.
+  base::OneShotTimer external_binary_timer_;
 
   ScopedObserver<chromeos::MediaAnalyticsClient, ViewsScreenLocker>
       scoped_observer_{this};

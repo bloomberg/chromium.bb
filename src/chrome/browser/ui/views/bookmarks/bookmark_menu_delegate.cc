@@ -23,6 +23,7 @@
 #include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/page_navigator.h"
+#include "ui/base/accelerators/menu_label_accelerator_util.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
@@ -91,6 +92,10 @@ void BookmarkMenuDelegate::Init(views::MenuDelegate* real_delegate,
   GetBookmarkModel()->AddObserver(this);
   real_delegate_ = real_delegate;
   location_ = location;
+  // Assume that the menu will only use mnemonics if there's already a parent
+  // menu and that parent uses them. In cases where the BookmarkMenuDelegate
+  // will be the root, client code does not current enable mnemonics.
+  menu_uses_mnemonics_ = parent && parent->GetRootMenuItem()->has_mnemonics();
   if (parent) {
     parent_menu_item_ = parent;
 
@@ -512,9 +517,9 @@ void BookmarkMenuDelegate::BuildMenuForPermanentNode(const BookmarkNode* node,
     menu->AppendSeparator();
   }
 
-  AddMenuToMaps(
-      menu->AppendSubMenuWithIcon(next_menu_id_++, node->GetTitle(), icon),
-      node);
+  AddMenuToMaps(menu->AppendSubMenuWithIcon(
+                    next_menu_id_++, MaybeEscapeLabel(node->GetTitle()), icon),
+                node);
 }
 
 void BookmarkMenuDelegate::BuildMenuForManagedNode(MenuItemView* menu) {
@@ -542,12 +547,12 @@ void BookmarkMenuDelegate::BuildMenu(const BookmarkNode* parent,
       const gfx::Image& image = GetBookmarkModel()->GetFavicon(node);
       const gfx::ImageSkia* icon = image.IsEmpty() ?
           rb->GetImageSkiaNamed(IDR_DEFAULT_FAVICON) : image.ToImageSkia();
-      child_menu_item =
-          menu->AppendMenuItemWithIcon(id, node->GetTitle(), *icon);
+      child_menu_item = menu->AppendMenuItemWithIcon(
+          id, MaybeEscapeLabel(node->GetTitle()), *icon);
     } else {
       DCHECK(node->is_folder());
-      child_menu_item =
-          menu->AppendSubMenuWithIcon(id, node->GetTitle(), folder_icon);
+      child_menu_item = menu->AppendSubMenuWithIcon(
+          id, MaybeEscapeLabel(node->GetTitle()), folder_icon);
     }
     AddMenuToMaps(child_menu_item, node);
   }
@@ -557,4 +562,9 @@ void BookmarkMenuDelegate::AddMenuToMaps(MenuItemView* menu,
                                          const BookmarkNode* node) {
   menu_id_to_node_map_[menu->GetCommand()] = node;
   node_to_menu_map_[node] = menu;
+}
+
+base::string16 BookmarkMenuDelegate::MaybeEscapeLabel(
+    const base::string16& label) {
+  return menu_uses_mnemonics_ ? ui::EscapeMenuLabelAmpersands(label) : label;
 }

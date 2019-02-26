@@ -8,14 +8,14 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* BackgroundClip::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext& local_context) const {
-  return CSSParsingUtils::ParseBackgroundBox(
-      range, local_context, CSSParsingUtils::AllowTextValue::kAllow);
+  return css_parsing_utils::ParseBackgroundBox(
+      range, local_context, css_parsing_utils::AllowTextValue::kAllow);
 }
 
 const CSSValue* BackgroundClip::CSSValueFromComputedStyleInternal(
@@ -33,5 +33,5 @@ const CSSValue* BackgroundClip::CSSValueFromComputedStyleInternal(
   return list;
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

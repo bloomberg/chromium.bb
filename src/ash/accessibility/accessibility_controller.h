@@ -65,9 +65,12 @@ class ASH_EXPORT AccessibilityController
   bool HasDockedMagnifierAcceleratorDialogBeenAccepted() const;
   void SetDictationAcceleratorDialogAccepted();
   bool HasDictationAcceleratorDialogBeenAccepted() const;
+  void SetDisplayRotationAcceleratorDialogBeenAccepted();
+  bool HasDisplayRotationAcceleratorDialogBeenAccepted() const;
 
   void SetAutoclickEnabled(bool enabled);
   bool IsAutoclickEnabled() const;
+  void SetAutoclickEventType(mojom::AutoclickEventType event_type);
 
   void SetCaretHighlightEnabled(bool enabled);
   bool IsCaretHighlightEnabled() const;
@@ -187,6 +190,9 @@ class ASH_EXPORT AccessibilityController
 
   void UpdateAutoclickFromPref();
   void UpdateAutoclickDelayFromPref();
+  void UpdateAutoclickEventTypeFromPref();
+  void UpdateAutoclickRevertToLeftClickFromPref();
+  void UpdateAutoclickMovementThresholdFromPref();
   void UpdateCaretHighlightFromPref();
   void UpdateCursorHighlightFromPref();
   void UpdateDictationFromPref();

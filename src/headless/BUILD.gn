@@ -564,6 +564,7 @@ group("headless_tests") {
 
 test("headless_unittests") {
   sources = [
+    "lib/browser/protocol/protocol_unittest.cc",
     "public/domains/types_unittest.cc",
     "public/util/error_reporter_unittest.cc",
   ]
@@ -706,7 +707,7 @@ test("headless_browsertests") {
     "lib/dom_tree_extraction_expected_styles.txt",
     "$root_out_dir/headless_lib.pak",
     "//net/tools/testserver/",
-    "//third_party/WebKit/LayoutTests/http/tests/inspector-protocol/",
+    "//third_party/blink/web_tests/http/tests/inspector-protocol/",
     "//third_party/pyftpdlib/",
     "//third_party/pywebsocket/",
     "//third_party/tlslite/",
@@ -852,8 +853,6 @@ jumbo_static_library("headless_shell_lib") {
   sources = [
     "app/headless_shell.cc",
     "app/headless_shell.h",
-    "lib/utility/headless_content_utility_client.cc",
-    "lib/utility/headless_content_utility_client.h",
     "public/headless_shell.h",
   ]
 
@@ -861,11 +860,14 @@ jumbo_static_library("headless_shell_lib") {
     sources += [
       "lib/browser/headless_content_browser_client.cc",
       "lib/browser/headless_content_browser_client.h",
+      "lib/utility/headless_content_utility_client.cc",
+      "lib/utility/headless_content_utility_client.h",
     ]
   }
 
   deps = [
     ":headless_renderer",
+    "//components/os_crypt",
     "//components/security_state/content",
     "//content/public/app:both",
     "//content/public/browser",

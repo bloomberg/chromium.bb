@@ -34,7 +34,8 @@ void RenderFrameMetadataObserverImpl::BindToCurrentThread() {
 
 void RenderFrameMetadataObserverImpl::OnRenderFrameSubmission(
     const cc::RenderFrameMetadata& render_frame_metadata,
-    viz::CompositorFrameMetadata* compositor_frame_metadata) {
+    viz::CompositorFrameMetadata* compositor_frame_metadata,
+    bool force_send) {
   // By default only report metadata changes for fields which have a low
   // frequency of change. However if there are changes in high frequency
   // fields these can be reported while testing is enabled.
@@ -54,6 +55,7 @@ void RenderFrameMetadataObserverImpl::OnRenderFrameSubmission(
                           *last_render_frame_metadata_, render_frame_metadata,
                           &needs_activation_notification);
     }
+    send_metadata |= force_send;
   }
 
   // Allways cache the full metadata, so that it can correctly be sent upon
@@ -113,12 +115,13 @@ bool RenderFrameMetadataObserverImpl::ShouldSendRenderFrameMetadata(
       rfm1.is_scroll_offset_at_top != rfm2.is_scroll_offset_at_top ||
       rfm1.selection != rfm2.selection ||
       rfm1.page_scale_factor != rfm2.page_scale_factor ||
+      rfm1.external_page_scale_factor != rfm2.external_page_scale_factor ||
       rfm1.is_mobile_optimized != rfm2.is_mobile_optimized ||
       rfm1.device_scale_factor != rfm2.device_scale_factor ||
       rfm1.viewport_size_in_pixels != rfm2.viewport_size_in_pixels ||
       rfm1.top_controls_height != rfm2.top_controls_height ||
       rfm1.top_controls_shown_ratio != rfm2.top_controls_shown_ratio ||
-      rfm1.local_surface_id != rfm2.local_surface_id) {
+      rfm1.local_surface_id_allocation != rfm2.local_surface_id_allocation) {
     *needs_activation_notification = true;
     return true;
   }

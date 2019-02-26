@@ -15,6 +15,8 @@
 
 #include <stddef.h>  // for size_t
 
+#include <cstdint>
+
 #include "net/third_party/http2/http2_constants.h"
 #include "net/third_party/http2/http2_structures.h"
 #include "net/third_party/http2/platform/api/http2_string.h"

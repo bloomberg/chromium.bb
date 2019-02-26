@@ -5,13 +5,18 @@
 #ifndef IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_PASSWORD_COORDINATOR_H_
 #define IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_PASSWORD_COORDINATOR_H_
 
-#import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/fallback_coordinator.h"
 
-@class ManualFillInjectionHandler;
 class WebStateList;
 
+namespace manual_fill {
+
+extern NSString* const PasswordDoneButtonAccessibilityIdentifier;
+
+}  // namespace manual_fill
+
 // Delegate for the coordinator actions.
-@protocol PasswordCoordinatorDelegate<NSObject>
+@protocol PasswordCoordinatorDelegate<FallbackCoordinatorDelegate>
 
 // Opens the passwords settings.
 - (void)openPasswordSettings;
@@ -21,12 +26,10 @@ class WebStateList;
 // Creates and manages a view controller to present passwords to the user.
 // Any selected password will be sent to the current field in the active web
 // state.
-@interface ManualFillPasswordCoordinator : ChromeCoordinator
+@interface ManualFillPasswordCoordinator : FallbackCoordinator
 
-// The view controller of this coordinator.
-@property(nonatomic, readonly) UIViewController* viewController;
-
-// The delegate for this coordinator.
+// The delegate for this coordinator. Delegate class extends
+// FallbackCoordinatorDelegate, and replaces super class delegate.
 @property(nonatomic, weak) id<PasswordCoordinatorDelegate> delegate;
 
 // Creates a coordinator that uses a |viewController|, |browserState|,
@@ -35,13 +38,19 @@ class WebStateList;
 initWithBaseViewController:(UIViewController*)viewController
               browserState:(ios::ChromeBrowserState*)browserState
               webStateList:(WebStateList*)webStateList
-          injectionHandler:(ManualFillInjectionHandler*)injectionHandler;
+          injectionHandler:(ManualFillInjectionHandler*)injectionHandler
+    NS_DESIGNATED_INITIALIZER;
 
-// Unavailable, use -initWithBaseViewController:browserState:webStateList:.
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:
-                                  (ios::ChromeBrowserState*)browserState
+// Unavailable, use
+// -initWithBaseViewController:browserState:webStateList:injectionHandler:.
+- (instancetype)
+initWithBaseViewController:(UIViewController*)viewController
+              browserState:(ios::ChromeBrowserState*)browserState
+          injectionHandler:(ManualFillInjectionHandler*)injectionHandler
     NS_UNAVAILABLE;
+
+// Presents the password view controller as a popover from the passed button.
+- (void)presentFromButton:(UIButton*)button;
 
 @end
 

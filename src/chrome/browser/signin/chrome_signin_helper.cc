@@ -26,8 +26,8 @@
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/dice_response_handler.h"
 #include "chrome/browser/signin/dice_tab_helper.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/process_dice_header_delegate_impl.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -35,9 +35,9 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/url_constants.h"
+#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/chrome_connected_header_helper.h"
-#include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/signin_buildflags.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -190,7 +190,7 @@ void ProcessMirrorHeaderUIThread(
     BrowserWindow::AvatarBubbleMode bubble_mode;
     switch (service_type) {
       case GAIA_SERVICE_TYPE_INCOGNITO:
-        chrome::NewIncognitoWindow(browser);
+        chrome::NewIncognitoWindow(profile);
         return;
       case GAIA_SERVICE_TYPE_ADDSESSION:
         bubble_mode = BrowserWindow::AVATAR_BUBBLE_MODE_ADD_ACCOUNT;
@@ -326,7 +326,7 @@ void ProcessDiceHeaderUIThread(
       dice_params,
       std::make_unique<ProcessDiceHeaderDelegateImpl>(
           web_contents, account_consistency,
-          SigninManagerFactory::GetForProfile(profile), is_sync_signin_tab,
+          IdentityManagerFactory::GetForProfile(profile), is_sync_signin_tab,
           base::BindOnce(&CreateDiceTurnOnSyncHelper, base::Unretained(profile),
                          access_point, promo_action, reason),
           base::BindOnce(&ShowDiceSigninError, base::Unretained(profile)),

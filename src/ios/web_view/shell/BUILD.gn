@@ -4,6 +4,19 @@
 
 import("//build/config/ios/rules.gni")
 
+declare_args() {
+  # Authorization service implementation used in ios_web_view_shell. Uses a fake
+  # implementation by default. Override this with a real implementation to make
+  # Sync feature work in the shell. The real implementation must provide
+  # implementation of ShellAuthService class.
+  ios_web_view_shell_auth_service =
+      "//ios/web_view/shell:shell_auth_service_fake_impl"
+
+  # Path to an entitlements file used in ios_web_view_shell. Can be overridden
+  # to provide an alternative.
+  ios_web_view_shell_entitlements_path = "//build/config/ios/entitlements.plist"
+}
+
 ios_app_bundle("ios_web_view_shell") {
   info_plist = "Info.plist"
 
@@ -11,6 +24,32 @@ ios_app_bundle("ios_web_view_shell") {
     ":shell",
   ]
   bundle_deps = [ "//ios/web_view:web_view+bundle" ]
+  entitlements_path = ios_web_view_shell_entitlements_path
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("shell_auth_service_interface") {
+  sources = [
+    "shell_auth_service.h",
+  ]
+
+  deps = [
+    "//ios/web_view:web_view+link",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("shell_auth_service_fake_impl") {
+  sources = [
+    "shell_auth_service_fake.m",
+  ]
+
+  deps = [
+    ":shell_auth_service_interface",
+    "//ios/web_view:web_view+link",
+  ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }
@@ -30,7 +69,9 @@ source_set("shell") {
 
   deps = [
     ":resources",
+    ":shell_auth_service_interface",
     "//ios/web_view:web_view+link",
+    ios_web_view_shell_auth_service,
   ]
 
   libs = [

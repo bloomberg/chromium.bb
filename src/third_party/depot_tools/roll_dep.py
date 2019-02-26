@@ -18,6 +18,8 @@ import subprocess
 import sys
 
 NEED_SHELL = sys.platform.startswith('win')
+GCLIENT_PATH = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), 'gclient.py')
 
 
 class Error(Exception):
@@ -70,22 +72,9 @@ def should_show_log(upstream_url):
   return True
 
 
-def get_gclient_root():
-  gclient = os.path.join(
-      os.path.dirname(os.path.abspath(__file__)), 'gclient.py')
-  return check_output([sys.executable, gclient, 'root']).strip()
-
-
-def get_deps(root):
-  """Returns the path and the content of the DEPS file."""
-  deps_path = os.path.join(root, 'DEPS')
-  try:
-    with open(deps_path, 'rb') as f:
-      deps_content = f.read()
-  except (IOError, OSError):
-    raise Error('Ensure the script is run in the directory '
-                'containing DEPS file.')
-  return deps_path, deps_content
+def gclient(args):
+  """Executes gclient with the given args and returns the stdout."""
+  return check_output([sys.executable, GCLIENT_PATH] + args).strip()
 
 
 def generate_commit_message(
@@ -130,11 +119,11 @@ def generate_commit_message(
   return header + log_section
 
 
-def calculate_roll(full_dir, dependency, gclient_dict, roll_to):
+def calculate_roll(full_dir, dependency, roll_to):
   """Calculates the roll for a dependency by processing gclient_dict, and
   fetching the dependency via git.
   """
-  head = gclient_eval.GetRevision(gclient_dict, dependency)
+  head = gclient(['getdep', '-r', dependency])
   if not head:
     raise Error('%s is unpinned.' % dependency)
   check_call(['git', 'fetch', 'origin', '--quiet'], cwd=full_dir)
@@ -142,7 +131,7 @@ def calculate_roll(full_dir, dependency, gclient_dict, roll_to):
   return head, roll_to
 
 
-def gen_commit_msg(logs, cmdline, rolls, reviewers, bug):
+def gen_commit_msg(logs, cmdline, reviewers, bug):
   """Returns the final commit message."""
   commit_msg = ''
   if len(logs) > 1:
@@ -150,25 +139,21 @@ def gen_commit_msg(logs, cmdline, rolls, reviewers, bug):
   commit_msg += '\n\n'.join(logs)
   commit_msg += '\nCreated with:\n  ' + cmdline + '\n'
   commit_msg += 'R=%s\n' % ','.join(reviewers) if reviewers else ''
-  commit_msg += 'BUG=%s\n' % bug if bug else ''
+  commit_msg += '\nBug: %s\n' % bug if bug else ''
   return commit_msg
 
 
-def finalize(commit_msg, deps_path, deps_content, rolls, is_relative, root_dir):
-  """Edits the DEPS file, commits it, then uploads a CL."""
+def finalize(commit_msg, current_dir, rolls):
+  """Commits changes to the DEPS file, then uploads a CL."""
   print('Commit message:')
   print('\n'.join('    ' + i for i in commit_msg.splitlines()))
 
-  with open(deps_path, 'wb') as f:
-    f.write(deps_content)
-  current_dir = os.path.dirname(deps_path)
   check_call(['git', 'add', 'DEPS'], cwd=current_dir)
   check_call(['git', 'commit', '--quiet', '-m', commit_msg], cwd=current_dir)
 
   # Pull the dependency to the right revision. This is surprising to users
   # otherwise.
-  for dependency, (_head, roll_to) in sorted(rolls.iteritems()):
-    full_dir = os.path.normpath(os.path.join(root_dir, dependency))
+  for _head, roll_to, full_dir in sorted(rolls.itervalues()):
     check_call(['git', 'checkout', '--quiet', roll_to], cwd=full_dir)
 
 
@@ -213,7 +198,7 @@ def main():
       if not '@' in r:
         reviewers[i] = r + '@chromium.org'
 
-  gclient_root = get_gclient_root()
+  gclient_root = gclient(['root'])
   current_dir = os.getcwd()
   dependencies = sorted(d.rstrip('/').rstrip('\\') for d in args.dep_path)
   cmdline = 'roll-dep ' + ' '.join(dependencies) + ''.join(
@@ -224,17 +209,17 @@ def main():
           'Ensure %s is clean first (no non-merged commits).' % current_dir)
     # First gather all the information without modifying anything, except for a
     # git fetch.
-    deps_path, deps_content = get_deps(current_dir)
-    gclient_dict = gclient_eval.Exec(deps_content, deps_path)
-    is_relative = gclient_dict.get('use_relative_paths', False)
-    root_dir = current_dir if is_relative else gclient_root
     rolls = {}
     for dependency in dependencies:
-      full_dir = os.path.normpath(os.path.join(root_dir, dependency))
+      full_dir = os.path.normpath(os.path.join(gclient_root, dependency))
       if not os.path.isdir(full_dir):
-        raise Error('Directory not found: %s (%s)' % (dependency, full_dir))
-      head, roll_to = calculate_roll(
-          full_dir, dependency, gclient_dict, args.roll_to)
+        print('Dependency %s not found at %s' % (dependency, full_dir))
+        full_dir = os.path.normpath(os.path.join(current_dir, dependency))
+        print('Will look for relative dependency at %s' % full_dir)
+        if not os.path.isdir(full_dir):
+          raise Error('Directory not found: %s (%s)' % (dependency, full_dir))
+
+      head, roll_to = calculate_roll(full_dir, dependency, args.roll_to)
       if roll_to == head:
         if len(dependencies) == 1:
           raise AlreadyRolledError('No revision to roll!')
@@ -242,20 +227,20 @@ def main():
       else:
         print(
             '%s: Rolling from %s to %s' % (dependency, head[:10], roll_to[:10]))
-        rolls[dependency] = (head, roll_to)
+        rolls[dependency] = (head, roll_to, full_dir)
 
     logs = []
-    for dependency, (head, roll_to) in sorted(rolls.iteritems()):
-      full_dir = os.path.normpath(os.path.join(root_dir, dependency))
+    setdep_args = []
+    for dependency, (head, roll_to, full_dir) in sorted(rolls.iteritems()):
       log = generate_commit_message(
           full_dir, dependency, head, roll_to, args.no_log, args.log_limit)
       logs.append(log)
-      gclient_eval.SetRevision(gclient_dict, dependency, roll_to)
+      setdep_args.extend(['-r', '{}@{}'.format(dependency, roll_to)])
 
-    deps_content = gclient_eval.RenderDEPSFile(gclient_dict)
+    gclient(['setdep'] + setdep_args)
 
-    commit_msg = gen_commit_msg(logs, cmdline, rolls, reviewers, args.bug)
-    finalize(commit_msg, deps_path, deps_content, rolls, is_relative, root_dir)
+    commit_msg = gen_commit_msg(logs, cmdline, reviewers, args.bug)
+    finalize(commit_msg, current_dir, rolls)
   except Error as e:
     sys.stderr.write('error: %s\n' % e)
     return 2 if isinstance(e, AlreadyRolledError) else 1

@@ -6,7 +6,6 @@ import("//build/config/features.gni")
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//services/catalog/public/tools/catalog.gni")
-import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 import("//tools/grit/repack.gni")
@@ -30,8 +29,6 @@ jumbo_component("mus") {
     "mus_property_mirror.h",
     "mus_views_delegate.cc",
     "mus_views_delegate.h",
-    "pointer_watcher_event_router.cc",
-    "pointer_watcher_event_router.h",
     "screen_mus.cc",
     "screen_mus.h",
     "screen_mus_delegate.h",
@@ -156,7 +153,6 @@ test("views_mus_unittests") {
     "ax_remote_host_unittest.cc",
     "ax_tree_source_mus_unittest.cc",
     "desktop_window_tree_host_mus_unittest.cc",
-    "pointer_watcher_event_router_unittest.cc",
     "run_all_unittests_mus.cc",
     "screen_mus_unittest.cc",
   ]
@@ -172,6 +168,7 @@ test("views_mus_unittests") {
     "//cc",
     "//net",
     "//services/ws/public/mojom",
+    "//services/ws/test_ws:mojom",
     "//skia",
     "//testing/gtest",
     "//third_party/icu",

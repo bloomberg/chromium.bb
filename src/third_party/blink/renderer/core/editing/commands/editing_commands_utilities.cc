@@ -351,7 +351,7 @@ bool LineBreakExistsAtVisiblePosition(const VisiblePosition& visible_position) {
 }
 
 HTMLElement* CreateHTMLElement(Document& document, const QualifiedName& name) {
-  DCHECK_EQ(name.NamespaceURI(), HTMLNames::xhtmlNamespaceURI)
+  DCHECK_EQ(name.NamespaceURI(), html_names::xhtmlNamespaceURI)
       << "Unexpected namespace: " << name;
   return ToHTMLElement(document.CreateElement(
       name, CreateElementFlags::ByCloneNode(), g_null_atom));
@@ -581,11 +581,11 @@ void DispatchEditableContentChangedEvents(Element* start_root,
                                           Element* end_root) {
   if (start_root) {
     start_root->DispatchEvent(
-        *Event::Create(EventTypeNames::webkitEditableContentChanged));
+        *Event::Create(event_type_names::kWebkitEditableContentChanged));
   }
   if (end_root && end_root != start_root) {
     end_root->DispatchEvent(
-        *Event::Create(EventTypeNames::webkitEditableContentChanged));
+        *Event::Create(event_type_names::kWebkitEditableContentChanged));
   }
 }
 

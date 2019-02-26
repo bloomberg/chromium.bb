@@ -10,7 +10,7 @@
 
 namespace blink {
 
-class ShapeResult;
+class ShapeResultView;
 
 // Bridge struct for painting text. Encapsulates info needed by the paint code.
 struct PLATFORM_EXPORT NGTextFragmentPaintInfo {
@@ -23,7 +23,7 @@ struct PLATFORM_EXPORT NGTextFragmentPaintInfo {
 
   // The |shape_result| may not contain all characters of the |text|, but is
   // guaranteed to contain |from| to |to|.
-  const ShapeResult* shape_result;
+  const ShapeResultView* shape_result;
 };
 
 }  // namespace blink

@@ -70,15 +70,14 @@ WebString WebHistoryItem::GetReferrer() const {
   return private_->GetReferrer().referrer;
 }
 
-WebReferrerPolicy WebHistoryItem::GetReferrerPolicy() const {
-  return static_cast<WebReferrerPolicy>(
-      private_->GetReferrer().referrer_policy);
+network::mojom::ReferrerPolicy WebHistoryItem::GetReferrerPolicy() const {
+  return private_->GetReferrer().referrer_policy;
 }
 
-void WebHistoryItem::SetReferrer(const WebString& referrer,
-                                 WebReferrerPolicy referrer_policy) {
-  private_->SetReferrer(
-      Referrer(referrer, static_cast<ReferrerPolicy>(referrer_policy)));
+void WebHistoryItem::SetReferrer(
+    const WebString& referrer,
+    network::mojom::ReferrerPolicy referrer_policy) {
+  private_->SetReferrer(Referrer(referrer, referrer_policy));
 }
 
 const WebString& WebHistoryItem::Target() const {

@@ -4,6 +4,8 @@
 
 #include "chromeos/services/assistant/fake_assistant_manager_service_impl.h"
 
+#include <utility>
+
 namespace chromeos {
 namespace assistant {
 
@@ -12,6 +14,7 @@ FakeAssistantManagerServiceImpl::FakeAssistantManagerServiceImpl() = default;
 FakeAssistantManagerServiceImpl::~FakeAssistantManagerServiceImpl() = default;
 
 void FakeAssistantManagerServiceImpl::Start(const std::string& access_token,
+                                            bool enable_hotword,
                                             base::OnceClosure callback) {
   state_ = State::RUNNING;
 
@@ -46,17 +49,26 @@ void FakeAssistantManagerServiceImpl::SendUpdateSettingsUiRequest(
     const std::string& update,
     UpdateSettingsUiResponseCallback callback) {}
 
+void FakeAssistantManagerServiceImpl::StartSpeakerIdEnrollment(
+    bool skip_cloud_enrollment,
+    mojom::SpeakerIdEnrollmentClientPtr client) {}
+
+void FakeAssistantManagerServiceImpl::StopSpeakerIdEnrollment(
+    AssistantSettingsManager::StopSpeakerIdEnrollmentCallback on_stopped) {}
+
 void FakeAssistantManagerServiceImpl::StartCachedScreenContextInteraction() {}
 
 void FakeAssistantManagerServiceImpl::StartMetalayerInteraction(
     const gfx::Rect& region) {}
 
+void FakeAssistantManagerServiceImpl::StartTextInteraction(
+    const std::string& query,
+    bool allow_tts) {}
+
 void FakeAssistantManagerServiceImpl::StartVoiceInteraction() {}
 
 void FakeAssistantManagerServiceImpl::StopActiveInteraction(
     bool cancel_conversation) {}
-
-void FakeAssistantManagerServiceImpl::SendTextQuery(const std::string& query) {}
 
 void FakeAssistantManagerServiceImpl::AddAssistantInteractionSubscriber(
     mojom::AssistantInteractionSubscriberPtr subscriber) {}

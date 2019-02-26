@@ -168,7 +168,7 @@ public class RecordHistogram {
      * @param sample sample to be recorded. All values of |sample| are valid, including negative
      *        values.
      */
-    public static void recordSparseSlowlyHistogram(String name, int sample) {
+    public static void recordSparseHistogram(String name, int sample) {
         if (sDisabledBy != null) return;
         long key = getCachedHistogramKey(name);
         long result = nativeRecordSparseHistogram(name, key, sample);

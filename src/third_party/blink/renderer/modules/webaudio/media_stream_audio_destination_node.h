@@ -40,21 +40,21 @@ class MediaStreamAudioDestinationHandler final
  public:
   static scoped_refptr<MediaStreamAudioDestinationHandler> Create(
       AudioNode&,
-      size_t number_of_channels);
+      uint32_t number_of_channels);
   ~MediaStreamAudioDestinationHandler() override;
 
   MediaStream* Stream() { return stream_.Get(); }
 
   // AudioHandler.
-  void Process(size_t frames_to_process) override;
-  void SetChannelCount(unsigned long, ExceptionState&) override;
+  void Process(uint32_t frames_to_process) override;
+  void SetChannelCount(unsigned, ExceptionState&) override;
 
-  unsigned long MaxChannelCount() const;
+  uint32_t MaxChannelCount() const;
 
   bool RequiresTailProcessing() const final { return false; }
 
  private:
-  MediaStreamAudioDestinationHandler(AudioNode&, size_t number_of_channels);
+  MediaStreamAudioDestinationHandler(AudioNode&, uint32_t number_of_channels);
   // As an audio source, we will never propagate silence.
   bool PropagatesSilence() const override { return false; }
 
@@ -79,16 +79,15 @@ class MediaStreamAudioDestinationNode final : public AudioBasicInspectorNode {
 
  public:
   static MediaStreamAudioDestinationNode* Create(AudioContext&,
-                                                 size_t number_of_channels,
+                                                 uint32_t number_of_channels,
                                                  ExceptionState&);
   static MediaStreamAudioDestinationNode* Create(AudioContext*,
-                                                 const AudioNodeOptions&,
+                                                 const AudioNodeOptions*,
                                                  ExceptionState&);
 
-  MediaStream* stream() const;
+  MediaStreamAudioDestinationNode(AudioContext&, uint32_t number_of_channels);
 
- private:
-  MediaStreamAudioDestinationNode(AudioContext&, size_t number_of_channels);
+  MediaStream* stream() const;
 };
 
 }  // namespace blink

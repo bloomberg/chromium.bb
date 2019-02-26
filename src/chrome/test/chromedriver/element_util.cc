@@ -358,6 +358,25 @@ Status IsElementFocused(
   return Status(kOk);
 }
 
+Status IsDocumentTypeXml(
+    Session* session,
+    WebView* web_view,
+    bool* is_xml_document) {
+
+  std::unique_ptr<base::Value> contentType;
+  Status status = web_view->EvaluateScript(
+      session->GetCurrentFrameId(),
+      "document.contentType", &contentType);
+  if (status.IsError())
+          return status;
+  if (base::LowerCaseEqualsASCII(contentType->GetString(),
+                                 "text/xml"))
+    *is_xml_document = true;
+  else
+    *is_xml_document = false;
+  return Status(kOk);
+}
+
 Status GetElementAttribute(Session* session,
                            WebView* web_view,
                            const std::string& element_id,

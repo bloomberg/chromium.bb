@@ -71,4 +71,45 @@ TEST_F(ProcessCoordinationUnitImplTest, OnAllFramesInProcessFrozen) {
   cu_graph.frame->SetLifecycleState(mojom::LifecycleState::kFrozen);
 }
 
+TEST_F(ProcessCoordinationUnitImplTest, ProcessLifeCycle) {
+  auto process_cu = CreateCoordinationUnit<ProcessCoordinationUnitImpl>();
+
+  // Test the potential lifecycles of a process CU.
+  // First go to exited without an intervening PID, as would happen
+  // in the case the process fails to start.
+  EXPECT_FALSE(process_cu->exit_status());
+  constexpr int32_t kExitStatus = 0xF00;
+  process_cu->SetProcessExitStatus(kExitStatus);
+  EXPECT_TRUE(process_cu->exit_status());
+  EXPECT_EQ(kExitStatus, process_cu->exit_status().value());
+
+  // Next go through PID->exit status.
+  constexpr base::ProcessId kTestPid = 0xCAFE;
+  process_cu->SetPID(kTestPid);
+  // Resurrection should clear the exit status.
+  EXPECT_FALSE(process_cu->exit_status());
+
+  EXPECT_EQ(base::Time(), process_cu->launch_time());
+  EXPECT_EQ(0U, process_cu->private_footprint_kb());
+  EXPECT_EQ(base::TimeDelta(), process_cu->cumulative_cpu_usage());
+
+  process_cu->SetLaunchTime(base::Time::Now());
+  process_cu->set_private_footprint_kb(10U);
+  process_cu->set_cumulative_cpu_usage(base::TimeDelta::FromMicroseconds(1));
+
+  // Kill it again and verify the properties above stick around.
+  process_cu->SetProcessExitStatus(kExitStatus);
+
+  EXPECT_NE(base::Time(), process_cu->launch_time());
+  EXPECT_NE(0U, process_cu->private_footprint_kb());
+  EXPECT_NE(base::TimeDelta(), process_cu->cumulative_cpu_usage());
+
+  // Resurrect again and verify the launch time and measurements
+  // are cleared.
+  process_cu->SetPID(kTestPid);
+  EXPECT_EQ(base::Time(), process_cu->launch_time());
+  EXPECT_EQ(0U, process_cu->private_footprint_kb());
+  EXPECT_EQ(base::TimeDelta(), process_cu->cumulative_cpu_usage());
+}
+
 }  // namespace resource_coordinator

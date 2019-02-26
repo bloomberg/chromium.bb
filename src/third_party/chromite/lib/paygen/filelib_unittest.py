@@ -15,56 +15,6 @@ from chromite.lib import osutils
 from chromite.lib.paygen import filelib
 
 
-class TestFileManipulation(cros_test_lib.TempDirTestCase):
-  """Test cases for filelib."""
-
-  FILE1 = 'file1a'
-  FILE2 = 'file2'
-  SUBDIR = 'subdir'
-  SUBFILE = '%s/file1b' % SUBDIR
-  FILE_GLOB = 'file1*'
-
-  FILE1_CONTENTS = 'Howdy doody there dandy'
-  FILE2_CONTENTS = 'Once upon a time in a galaxy far far away.'
-  SUBFILE_CONTENTS = 'Five little monkeys jumped on the bed.'
-
-  def _SetUpTempdir(self, tempdir):
-    with open(os.path.join(tempdir, self.FILE1), 'w') as out1:
-      out1.write(self.FILE1_CONTENTS)
-
-    with open(os.path.join(tempdir, self.FILE2), 'w') as out2:
-      out2.write(self.FILE2_CONTENTS)
-
-    subdir = os.path.join(tempdir, self.SUBDIR)
-    osutils.SafeMakedirs(subdir)
-
-    with open(os.path.join(tempdir, self.SUBFILE), 'w') as out3:
-      out3.write(self.SUBFILE_CONTENTS)
-
-  def testIntegrationScript(self):
-    dir1 = os.path.join(self.tempdir, 'filelib_unittest1-')
-    osutils.SafeMakedirs(dir1)
-
-    self._SetUpTempdir(dir1)
-
-    dir1_file1 = os.path.join(dir1, self.FILE1)
-    dir1_file2 = os.path.join(dir1, self.FILE2)
-    dir1_subfile = os.path.join(dir1, self.SUBFILE)
-    dir1_top_files = [dir1_file1, dir1_file2]
-    dir1_deep_files = dir1_top_files + [dir1_subfile]
-
-    # Test ListFiles with various options.
-    self.assertEqual(set(dir1_top_files),
-                     set(filelib.ListFiles(dir1)))
-    self.assertEqual(set(dir1_deep_files),
-                     set(filelib.ListFiles(dir1, recurse=True)))
-    self.assertEqual(sorted(dir1_deep_files),
-                     filelib.ListFiles(dir1, recurse=True, sort=True))
-    self.assertEqual(set([dir1_file1, dir1_subfile]),
-                     set(filelib.ListFiles(dir1, recurse=True,
-                                           filepattern=self.FILE_GLOB)))
-
-
 class TestFileLib(cros_test_lib.TempDirTestCase):
   """Test filelib module.
 

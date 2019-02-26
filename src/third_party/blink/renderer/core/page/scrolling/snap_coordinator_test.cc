@@ -19,7 +19,7 @@
 
 namespace blink {
 
-using HTMLNames::styleAttr;
+using html_names::kStyleAttr;
 
 class SnapCoordinatorTest : public testing::Test {
  protected:
@@ -110,7 +110,7 @@ class SnapCoordinatorTest : public testing::Test {
 
 TEST_F(SnapCoordinatorTest, SimpleSnapElement) {
   Element& snap_element = *GetDocument().getElementById("snap-element");
-  snap_element.setAttribute(styleAttr, "scroll-snap-align: start;");
+  snap_element.setAttribute(kStyleAttr, "scroll-snap-align: start;");
   GetDocument().UpdateStyleAndLayout();
 
   EXPECT_EQ(1U, SizeOfSnapAreas(SnapContainer()));
@@ -118,7 +118,7 @@ TEST_F(SnapCoordinatorTest, SimpleSnapElement) {
 
 TEST_F(SnapCoordinatorTest, NestedSnapElement) {
   Element& snap_element = *GetDocument().getElementById("nested-snap-element");
-  snap_element.setAttribute(styleAttr, "scroll-snap-align: start;");
+  snap_element.setAttribute(kStyleAttr, "scroll-snap-align: start;");
   GetDocument().UpdateStyleAndLayout();
 
   EXPECT_EQ(1U, SizeOfSnapAreas(SnapContainer()));
@@ -126,10 +126,10 @@ TEST_F(SnapCoordinatorTest, NestedSnapElement) {
 
 TEST_F(SnapCoordinatorTest, NestedSnapElementCaptured) {
   Element& snap_element = *GetDocument().getElementById("nested-snap-element");
-  snap_element.setAttribute(styleAttr, "scroll-snap-align: start;");
+  snap_element.setAttribute(kStyleAttr, "scroll-snap-align: start;");
 
   Element* intermediate = GetDocument().getElementById("intermediate");
-  intermediate->setAttribute(styleAttr, "overflow: scroll;");
+  intermediate->setAttribute(kStyleAttr, "overflow: scroll;");
 
   GetDocument().UpdateStyleAndLayout();
 
@@ -142,7 +142,7 @@ TEST_F(SnapCoordinatorTest, NestedSnapElementCaptured) {
 TEST_F(SnapCoordinatorTest, PositionFixedSnapElement) {
   Element& snap_element =
       *GetDocument().getElementById("snap-element-fixed-position");
-  snap_element.setAttribute(styleAttr, "scroll-snap-align: start;");
+  snap_element.setAttribute(kStyleAttr, "scroll-snap-align: start;");
   GetDocument().UpdateStyleAndLayout();
 
   // Position fixed elements are contained in document and not its immediate
@@ -157,7 +157,7 @@ TEST_F(SnapCoordinatorTest, PositionFixedSnapElement) {
 
 TEST_F(SnapCoordinatorTest, UpdateStyleForSnapElement) {
   Element& snap_element = *GetDocument().getElementById("snap-element");
-  snap_element.setAttribute(styleAttr, "scroll-snap-align: start;");
+  snap_element.setAttribute(kStyleAttr, "scroll-snap-align: start;");
   GetDocument().UpdateStyleAndLayout();
 
   EXPECT_EQ(1U, SizeOfSnapAreas(SnapContainer()));
@@ -319,7 +319,7 @@ TEST_F(SnapCoordinatorTest, SnapDataCalculation) {
   ScrollableArea* scrollable_area =
       scroller_element->GetLayoutBox()->GetScrollableArea();
   Element* area_element = GetDocument().getElementById("area");
-  area_element->setAttribute(styleAttr, "scroll-snap-align: start;");
+  area_element->setAttribute(kStyleAttr, "scroll-snap-align: start;");
   GetDocument().UpdateStyleAndLayout();
   SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
 
@@ -352,7 +352,7 @@ TEST_F(SnapCoordinatorTest, ScrolledSnapDataCalculation) {
   scroller_element->scrollBy(20, 20);
   EXPECT_EQ(FloatPoint(20, 20), scrollable_area->ScrollPosition());
   Element* area_element = GetDocument().getElementById("area");
-  area_element->setAttribute(styleAttr, "scroll-snap-align: start;");
+  area_element->setAttribute(kStyleAttr, "scroll-snap-align: start;");
   GetDocument().UpdateStyleAndLayout();
   SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
 
@@ -409,7 +409,7 @@ TEST_F(SnapCoordinatorTest, ScrolledSnapDataCalculationOnViewport) {
   body->scrollBy(20, 20);
   EXPECT_EQ(FloatPoint(20, 20), scrollable_area->ScrollPosition());
   Element* area_element = GetDocument().getElementById("area");
-  area_element->setAttribute(styleAttr, "scroll-snap-align: start;");
+  area_element->setAttribute(kStyleAttr, "scroll-snap-align: start;");
   GetDocument().UpdateStyleAndLayout();
   SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
   base::Optional<SnapContainerData> data =
@@ -438,12 +438,12 @@ TEST_F(SnapCoordinatorTest, ScrolledSnapDataCalculationOnViewport) {
 TEST_F(SnapCoordinatorTest, SnapDataCalculationWithBoxModel) {
   SetUpSingleSnapArea();
   Element* area_element = GetDocument().getElementById("area");
-  area_element->setAttribute(styleAttr,
+  area_element->setAttribute(kStyleAttr,
                              "scroll-snap-align: start; margin: 2px; border: "
                              "9px solid; padding: 5px;");
   Element* scroller_element = GetDocument().getElementById("scroller");
   scroller_element->setAttribute(
-      styleAttr, "margin: 3px; border: 10px solid; padding: 4px;");
+      kStyleAttr, "margin: 3px; border: 10px solid; padding: 4px;");
   GetDocument().UpdateStyleAndLayout();
   SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
   base::Optional<SnapContainerData> data =
@@ -483,7 +483,7 @@ TEST_F(SnapCoordinatorTest, SnapDataCalculationWithBoxModel) {
 TEST_F(SnapCoordinatorTest, NegativeMarginSnapDataCalculation) {
   SetUpSingleSnapArea();
   Element* area_element = GetDocument().getElementById("area");
-  area_element->setAttribute(styleAttr,
+  area_element->setAttribute(kStyleAttr,
                              "scroll-snap-align: start; scroll-margin: -8px;");
   GetDocument().UpdateStyleAndLayout();
   Element* scroller_element = GetDocument().getElementById("scroller");
@@ -516,7 +516,7 @@ TEST_F(SnapCoordinatorTest, NegativeMarginSnapDataCalculation) {
 TEST_F(SnapCoordinatorTest, AsymmetricalSnapDataCalculation) {
   SetUpSingleSnapArea();
   Element* area_element = GetDocument().getElementById("area");
-  area_element->setAttribute(styleAttr,
+  area_element->setAttribute(kStyleAttr,
                              R"HTML(
         scroll-snap-align: center;
         scroll-margin-top: 2px;
@@ -525,7 +525,7 @@ TEST_F(SnapCoordinatorTest, AsymmetricalSnapDataCalculation) {
         scroll-margin-left: 8px;
       )HTML");
   Element* scroller_element = GetDocument().getElementById("scroller");
-  scroller_element->setAttribute(styleAttr,
+  scroller_element->setAttribute(kStyleAttr,
                                  R"HTML(
         scroll-padding-top: 10px;
         scroll-padding-right: 12px;
@@ -562,7 +562,7 @@ TEST_F(SnapCoordinatorTest, AsymmetricalSnapDataCalculation) {
 TEST_F(SnapCoordinatorTest, ScaledSnapDataCalculation) {
   SetUpSingleSnapArea();
   Element* area_element = GetDocument().getElementById("area");
-  area_element->setAttribute(styleAttr,
+  area_element->setAttribute(kStyleAttr,
                              "scroll-snap-align: end; transform: scale(4, 4);");
   GetDocument().UpdateStyleAndLayout();
   Element* scroller_element = GetDocument().getElementById("scroller");
@@ -597,10 +597,10 @@ TEST_F(SnapCoordinatorTest, ScaledSnapDataCalculation) {
 TEST_F(SnapCoordinatorTest, VerticalRlSnapDataCalculation) {
   SetUpSingleSnapArea();
   Element* area_element = GetDocument().getElementById("area");
-  area_element->setAttribute(styleAttr,
+  area_element->setAttribute(kStyleAttr,
                              "scroll-snap-align: start; left: -200px;");
   Element* scroller_element = GetDocument().getElementById("scroller");
-  scroller_element->setAttribute(styleAttr, "writing-mode: vertical-rl;");
+  scroller_element->setAttribute(kStyleAttr, "writing-mode: vertical-rl;");
   GetDocument().UpdateStyleAndLayout();
   SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
   base::Optional<SnapContainerData> data =
@@ -629,74 +629,6 @@ TEST_F(SnapCoordinatorTest, VerticalRlSnapDataCalculation) {
 
   EXPECT_EQ_CONTAINER(expected_container, actual_container);
   EXPECT_EQ_AREA(expected_area, actual_container.at(0));
-}
-
-// The following tests check GetSnapPositionForPoint().
-TEST_F(SnapCoordinatorTest, SnapsIfScrolledAndSnappingAxesMatch) {
-  SetUpSingleSnapArea();
-  Element* area_element = GetDocument().getElementById("area");
-  Element* scroller_element = GetDocument().getElementById("scroller");
-  area_element->setAttribute(styleAttr, "scroll-snap-align: start;");
-  scroller_element->setAttribute(styleAttr, "scroll-snap-type: x mandatory");
-  GetDocument().UpdateStyleAndLayout();
-
-  SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
-  LayoutBox* snap_container = scroller_element->GetLayoutBox();
-  base::Optional<FloatPoint> snap_position =
-      snap_coordinator->GetSnapPositionForPoint(
-          *snap_container, FloatPoint(150, 150), true, false);
-  EXPECT_TRUE(snap_position.has_value());
-  EXPECT_EQ(200 - 8 - 10, snap_position.value().X());
-  EXPECT_EQ(150, snap_position.value().Y());
-}
-
-TEST_F(SnapCoordinatorTest, DoesNotSnapOnNonSnappingAxis) {
-  SetUpSingleSnapArea();
-  Element* area_element = GetDocument().getElementById("area");
-  Element* scroller_element = GetDocument().getElementById("scroller");
-  area_element->setAttribute(styleAttr, "scroll-snap-align: start;");
-  scroller_element->setAttribute(styleAttr, "scroll-snap-type: y mandatory");
-  GetDocument().UpdateStyleAndLayout();
-
-  SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
-  LayoutBox* snap_container = scroller_element->GetLayoutBox();
-  base::Optional<FloatPoint> snap_position =
-      snap_coordinator->GetSnapPositionForPoint(
-          *snap_container, FloatPoint(150, 150), true, false);
-  EXPECT_FALSE(snap_position.has_value());
-}
-
-TEST_F(SnapCoordinatorTest, DoesNotSnapOnEmptyContainer) {
-  SetUpSingleSnapArea();
-  Element* area_element = GetDocument().getElementById("area");
-  Element* scroller_element = GetDocument().getElementById("scroller");
-  area_element->setAttribute(styleAttr, "scroll-snap-align: none;");
-  scroller_element->setAttribute(styleAttr, "scroll-snap-type: x mandatory");
-  GetDocument().UpdateStyleAndLayout();
-
-  SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
-  LayoutBox* snap_container = scroller_element->GetLayoutBox();
-  base::Optional<FloatPoint> snap_position =
-      snap_coordinator->GetSnapPositionForPoint(
-          *snap_container, FloatPoint(150, 150), true, false);
-  ;
-  EXPECT_FALSE(snap_position.has_value());
-}
-
-TEST_F(SnapCoordinatorTest, DoesNotSnapOnNonSnapContainer) {
-  SetUpSingleSnapArea();
-  Element* area_element = GetDocument().getElementById("area");
-  Element* scroller_element = GetDocument().getElementById("scroller");
-  area_element->setAttribute(styleAttr, "scroll-snap-align: start;");
-  scroller_element->setAttribute(styleAttr, "scroll-snap-type: none");
-  GetDocument().UpdateStyleAndLayout();
-
-  SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
-  LayoutBox* snap_container = scroller_element->GetLayoutBox();
-  base::Optional<FloatPoint> snap_position =
-      snap_coordinator->GetSnapPositionForPoint(
-          *snap_container, FloatPoint(150, 150), true, false);
-  EXPECT_FALSE(snap_position.has_value());
 }
 
 }  // namespace

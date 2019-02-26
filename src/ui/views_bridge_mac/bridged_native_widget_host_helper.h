@@ -25,11 +25,8 @@ class VIEWS_BRIDGE_MAC_EXPORT BridgedNativeWidgetHostHelper {
  public:
   virtual ~BridgedNativeWidgetHostHelper() = default;
 
-  // Retrieve the NSView for accessibility for this widget.
-  // TODO(ccameron): This interface cannot be implemented over IPC. A scheme
-  // for implementing accessibility across processes needs to be designed and
-  // implemented.
-  virtual NSView* GetNativeViewAccessible() = 0;
+  // Retrieve the NSObject for accessibility for this widget.
+  virtual id GetNativeViewAccessible() = 0;
 
   // Synchronously dispatch a key event. Note that this function will modify
   // |event| based on whether or not it was handled.

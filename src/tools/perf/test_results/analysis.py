@@ -4,12 +4,8 @@
 
 import fnmatch
 
-try:
-  import numpy
-  import pandas
-except ImportError:
-  numpy = None
-  pandas = None
+import numpy  # pylint: disable=import-error
+import pandas  # pylint: disable=import-error
 
 
 SECONDS_IN_A_DAY = 60 * 60 * 24
@@ -79,7 +75,7 @@ def AggregateBuilds(df, half_life):
   days_ago = time_ago.dt.total_seconds() / SECONDS_IN_A_DAY
   df['weight'] = numpy.power(0.5, days_ago / half_life)
   df['flakiness'] *= df['weight']
-  latest_build = df['build_number'].max()
+  latest_build = df['build_number'].iloc[0]
 
   grouped = df.groupby(['builder', 'test_suite', 'test_case'])
   df = grouped['flakiness'].sum().to_frame()

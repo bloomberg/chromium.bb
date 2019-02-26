@@ -34,7 +34,7 @@
 
 namespace blink {
 
-void V8ErrorEvent::errorAttributeGetterCustom(
+void V8ErrorEvent::ErrorAttributeGetterCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   ErrorEvent* event = V8ErrorEvent::ToImpl(info.Holder());

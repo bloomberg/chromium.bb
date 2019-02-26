@@ -26,7 +26,7 @@
 #include "content/common/navigation_params.h"
 #include "content/common/net/record_load_histograms.h"
 #include "content/common/throttling_url_loader.h"
-#include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/common/navigation_policy.h"
 #include "content/public/common/resource_load_info.mojom.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/url_utils.h"
@@ -101,6 +101,7 @@ void NotifySubresourceStarted(
 
 void NotifyResourceLoadStarted(
     scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner,
+    const GURL& response_url,
     int render_frame_id,
     int request_id,
     const network::ResourceResponseHead& response_head,
@@ -111,8 +112,8 @@ void NotifyResourceLoadStarted(
   if (!thread_task_runner->BelongsToCurrentThread()) {
     thread_task_runner->PostTask(
         FROM_HERE, base::BindOnce(NotifyResourceLoadStarted, thread_task_runner,
-                                  render_frame_id, request_id, response_head,
-                                  resource_type));
+                                  response_url, render_frame_id, request_id,
+                                  response_head, resource_type));
     return;
   }
 
@@ -121,7 +122,8 @@ void NotifyResourceLoadStarted(
   if (!render_frame)
     return;
 
-  render_frame->DidStartResponse(request_id, response_head, resource_type);
+  render_frame->DidStartResponse(response_url, request_id, response_head,
+                                 resource_type);
 }
 
 void NotifyResourceLoadComplete(
@@ -361,10 +363,10 @@ void ResourceDispatcher::OnReceivedResponse(
   auto resource_response = base::MakeRefCounted<network::ResourceResponse>();
   resource_response->head = response_head;
   auto deep_copied_response = resource_response->DeepCopy();
-  NotifyResourceLoadStarted(RenderThreadImpl::DeprecatedGetMainTaskRunner(),
-                            request_info->render_frame_id, request_id,
-                            deep_copied_response->head,
-                            request_info->resource_type);
+  NotifyResourceLoadStarted(
+      RenderThreadImpl::DeprecatedGetMainTaskRunner(),
+      request_info->response_url, request_info->render_frame_id, request_id,
+      deep_copied_response->head, request_info->resource_type);
 }
 
 void ResourceDispatcher::OnReceivedCachedMetadata(

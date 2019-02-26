@@ -50,6 +50,7 @@ class CORE_EXPORT CSSSelectorWatch final
  public:
   static const char kSupplementName[];
 
+  explicit CSSSelectorWatch(Document&);
   virtual ~CSSSelectorWatch() = default;
 
   static CSSSelectorWatch& From(Document&);
@@ -66,7 +67,6 @@ class CORE_EXPORT CSSSelectorWatch final
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit CSSSelectorWatch(Document&);
   void CallbackSelectorChangeTimerFired(TimerBase*);
 
   HeapVector<Member<StyleRule>> watched_callback_selectors_;

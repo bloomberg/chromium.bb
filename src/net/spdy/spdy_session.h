@@ -88,6 +88,7 @@ const spdy::SpdyStreamId kLastStreamId = 0x7fffffff;
 
 struct LoadTimingInfo;
 class NetLog;
+class NetworkQualityEstimator;
 class SpdyStream;
 class SSLInfo;
 class TransportSecurityState;
@@ -226,6 +227,10 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
   // set a delegate for the returned stream (except for test code).
   base::WeakPtr<SpdyStream> ReleaseStream();
 
+  // Changes the priority of the stream, or changes the priority of the queued
+  // request in the session.
+  void SetPriority(RequestPriority priority);
+
   // Returns the estimate of dynamically allocated memory in bytes.
   size_t EstimateMemoryUsage() const;
 
@@ -304,6 +309,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
                   greased_http2_frame,
               TimeFunc time_func,
               ServerPushDelegate* push_delegate,
+              NetworkQualityEstimator* network_quality_estimator,
               NetLog* net_log);
 
   ~SpdySession() override;
@@ -604,8 +610,14 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
                    base::WeakPtr<SpdyStream>* stream);
 
   // Called by SpdyStreamRequest to remove |request| from the stream
-  // creation queue.
-  void CancelStreamRequest(const base::WeakPtr<SpdyStreamRequest>& request);
+  // creation queue. Returns whether a request was removed from the queue.
+  bool CancelStreamRequest(const base::WeakPtr<SpdyStreamRequest>& request);
+
+  // Removes |request| from the stream creation queue and reinserts it into the
+  // queue at the new |priority|.
+  void ChangeStreamRequestPriority(
+      const base::WeakPtr<SpdyStreamRequest>& request,
+      RequestPriority priority);
 
   // Returns the next pending stream request to process, or NULL if
   // there is none.
@@ -1139,6 +1151,10 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   TimeFunc time_func_;
 
   Http2PriorityDependencies priority_dependency_state_;
+
+  // Network quality estimator to which the ping RTTs should be reported. May be
+  // nullptr.
+  NetworkQualityEstimator* network_quality_estimator_;
 
   // Used for posting asynchronous IO tasks.  We use this even though
   // SpdySession is refcounted because we don't need to keep the SpdySession

@@ -5,23 +5,18 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CONTENT_BROWSER_FORM_SUBMISSION_TRACKER_UTIL_H_
 #define COMPONENTS_PASSWORD_MANAGER_CONTENT_BROWSER_FORM_SUBMISSION_TRACKER_UTIL_H_
 
-#include "base/macros.h"
-
-namespace content {
-class NavigationHandle;
-}  // namespace content
+#include "ui/base/page_transition_types.h"
 
 namespace password_manager {
 
 class FormSubmissionObserver;
-class PasswordManagerDriver;
 
-// Calls |observer_| if the navigation is interesting for the password
-// manager. |driver| is just passed to the observer. None content
-// initiated, none top level, hyperlinks navigations are ignored.
-void NotifyOnStartNavigation(content::NavigationHandle* navigation_handle,
-                             PasswordManagerDriver* driver,
-                             FormSubmissionObserver* observer);
+// Calls |observer| with information whether the navigation might be due to a
+// form submision.
+void NotifyDidNavigateMainFrame(bool is_renderer_initiated,
+                                ui::PageTransition transition,
+                                bool has_user_gesture,
+                                FormSubmissionObserver* observer);
 
 }  // namespace password_manager
 

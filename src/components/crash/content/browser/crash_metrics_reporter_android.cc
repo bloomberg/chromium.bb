@@ -147,9 +147,14 @@ void CrashMetricsReporter::CrashDumpProcessed(
   const uint64_t vm_size_kb = info.blink_oom_metrics.current_vm_size_kb;
   const uint64_t blink_usage_kb = info.blink_oom_metrics.current_blink_usage_kb;
 
-  if (info.process_type == content::PROCESS_TYPE_GPU && app_foreground &&
-      android_oom_kill) {
-    ReportCrashCount(ProcessedCrashCounts::kGpuForegroundOom, &reported_counts);
+  if (app_foreground && android_oom_kill) {
+    if (info.process_type == content::PROCESS_TYPE_GPU) {
+      ReportCrashCount(ProcessedCrashCounts::kGpuForegroundOom,
+                       &reported_counts);
+    } else if (info.process_type == content::PROCESS_TYPE_UTILITY) {
+      ReportCrashCount(ProcessedCrashCounts::kUtilityForegroundOom,
+                       &reported_counts);
+    }
   }
 
   if (info.process_type == content::PROCESS_TYPE_RENDERER &&
@@ -263,10 +268,15 @@ void CrashMetricsReporter::CrashDumpProcessed(
   }
 
   if (has_valid_dump) {
-    ReportCrashCount(info.process_type == content::PROCESS_TYPE_GPU
-                         ? ProcessedCrashCounts::kGpuCrashAll
-                         : ProcessedCrashCounts::kRendererCrashAll,
-                     &reported_counts);
+    if (info.process_type == content::PROCESS_TYPE_RENDERER) {
+      ReportCrashCount(ProcessedCrashCounts::kRendererCrashAll,
+                       &reported_counts);
+    } else if (info.process_type == content::PROCESS_TYPE_GPU) {
+      ReportCrashCount(ProcessedCrashCounts::kGpuCrashAll, &reported_counts);
+    } else if (info.process_type == content::PROCESS_TYPE_UTILITY) {
+      ReportCrashCount(ProcessedCrashCounts::kUtilityCrashAll,
+                       &reported_counts);
+    }
   }
 
   if (app_foreground && android_oom_kill &&

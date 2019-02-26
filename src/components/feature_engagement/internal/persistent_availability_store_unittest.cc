@@ -94,17 +94,6 @@ class PersistentAvailabilityStoreTest : public testing::Test {
 
 }  // namespace
 
-TEST_F(PersistentAvailabilityStoreTest, StorageDirectory) {
-  PersistentAvailabilityStore::LoadAndUpdateStore(
-      storage_dir_, CreateDB(), FeatureVector(), std::move(load_callback_),
-      14u);
-  db_->InitCallback(true);
-  EXPECT_EQ(storage_dir_, db_->GetDirectory());
-
-  // Finish the pipeline to ensure the test does not leak anything.
-  db_->LoadCallback(false);
-}
-
 TEST_F(PersistentAvailabilityStoreTest, InitFail) {
   PersistentAvailabilityStore::LoadAndUpdateStore(
       storage_dir_, CreateDB(), FeatureVector(), std::move(load_callback_),

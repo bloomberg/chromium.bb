@@ -18,6 +18,8 @@
 
 namespace blink {
 
+class Document;
+
 // Returns a map between feature name (string) and mojom::FeaturePolicyFeature
 // (enum).
 typedef HashMap<String, mojom::FeaturePolicyFeature> FeatureNameMap;
@@ -44,18 +46,20 @@ CORE_EXPORT ParsedFeaturePolicy
 ParseFeaturePolicyAttribute(const String& policy,
                             scoped_refptr<const SecurityOrigin> self_origin,
                             scoped_refptr<const SecurityOrigin> src_origin,
-                            Vector<String>* messages);
+                            Vector<String>* messages,
+                            Document* document = nullptr);
 
 // Converts a feature policy string into a vector of allowlists (see comments
 // above), with an explicit FeatureNameMap. This algorithm is called by both
-// header policy parsing and container policy parsing. |self_origin| and
-// |src_origin| are both nullable.
+// header policy parsing and container policy parsing. |self_origin|,
+// |src_origin|, and |document| are nullable.
 CORE_EXPORT ParsedFeaturePolicy
 ParseFeaturePolicy(const String& policy,
                    scoped_refptr<const SecurityOrigin> self_origin,
                    scoped_refptr<const SecurityOrigin> src_origin,
                    Vector<String>* messages,
-                   const FeatureNameMap& feature_names);
+                   const FeatureNameMap& feature_names,
+                   Document* document = nullptr);
 
 // Returns true iff any declaration in the policy is for the given feature.
 CORE_EXPORT bool IsFeatureDeclared(mojom::FeaturePolicyFeature,

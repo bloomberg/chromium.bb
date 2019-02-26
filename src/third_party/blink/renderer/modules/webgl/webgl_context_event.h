@@ -35,15 +35,21 @@ class WebGLContextEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static WebGLContextEvent* Create() { return new WebGLContextEvent; }
+  static WebGLContextEvent* Create() {
+    return MakeGarbageCollected<WebGLContextEvent>();
+  }
   static WebGLContextEvent* Create(const AtomicString& type,
                                    const String& status_message) {
-    return new WebGLContextEvent(type, status_message);
+    return MakeGarbageCollected<WebGLContextEvent>(type, status_message);
   }
   static WebGLContextEvent* Create(const AtomicString& type,
-                                   const WebGLContextEventInit& initializer) {
-    return new WebGLContextEvent(type, initializer);
+                                   const WebGLContextEventInit* initializer) {
+    return MakeGarbageCollected<WebGLContextEvent>(type, initializer);
   }
+
+  WebGLContextEvent();
+  WebGLContextEvent(const AtomicString& type, const String& status_message);
+  WebGLContextEvent(const AtomicString&, const WebGLContextEventInit*);
   ~WebGLContextEvent() override;
 
   const String& statusMessage() const { return status_message_; }
@@ -53,11 +59,6 @@ class WebGLContextEvent final : public Event {
   void Trace(blink::Visitor*) override;
 
  private:
-  WebGLContextEvent();
-  WebGLContextEvent(const AtomicString& type,
-                    const String& status_message);
-  WebGLContextEvent(const AtomicString&, const WebGLContextEventInit&);
-
   String status_message_;
 };
 

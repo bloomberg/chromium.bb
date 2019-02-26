@@ -11,6 +11,7 @@ include_rules = [
   "+gpu/command_buffer/client",
   "+gpu/command_buffer/common",
   "+gpu/GLES2",
+  "+gpu/config/gpu_finch_features.h",
   "+gpu/vulkan",
   "+media/base",
   "+mojo/public/cpp/system",

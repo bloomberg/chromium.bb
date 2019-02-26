@@ -21,9 +21,6 @@ namespace safe_browsing {
 // Features list
 extern const base::Feature kAdSamplerTriggerFeature;
 
-// Controls the safe browsing protection for advanced protection program.
-extern const base::Feature kAdvancedProtectionStatusFeature;
-
 // Controls the billing interstitial UI.
 extern const base::Feature kBillingInterstitial;
 
@@ -32,10 +29,6 @@ extern const base::Feature kCheckByURLLoaderThrottle;
 // Forces the chrome://reset-password page to be shown for review or testing
 // purpose.
 extern const base::Feature kForceEnableResetPasswordWebUI;
-
-// Controls whether .rar files downloaded by the user are inspected for being
-// unsafe.
-extern const base::Feature kInspectDownloadedRarFiles;
 
 // Controls the daily quota for the suspicious site trigger.
 extern const base::Feature kSuspiciousSiteTriggerQuotaFeature;

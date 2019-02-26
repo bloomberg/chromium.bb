@@ -5,8 +5,9 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_FRAME_CONNECTOR_DELEGATE_H_
 #define CONTENT_BROWSER_RENDERER_HOST_FRAME_CONNECTOR_DELEGATE_H_
 
+#include "base/time/time.h"
 #include "cc/input/touch_action.h"
-#include "components/viz/common/surfaces/local_surface_id.h"
+#include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "components/viz/host/hit_test/hit_test_query.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
@@ -79,8 +80,9 @@ class CONTENT_EXPORT FrameConnectorDelegate {
       const blink::WebIntrinsicSizingInfo&) {}
 
   // Sends new resize parameters to the sub-frame's renderer.
-  void SynchronizeVisualProperties(const viz::SurfaceId& surface_id,
-                                   const FrameVisualProperties& resize_params);
+  void SynchronizeVisualProperties(
+      const viz::FrameSinkId& frame_sink_id,
+      const FrameVisualProperties& visual_properties);
 
   // Return the size of the CompositorFrame to use in the child renderer.
   const gfx::Size& local_frame_size_in_pixels() const {
@@ -144,8 +146,9 @@ class CONTENT_EXPORT FrameConnectorDelegate {
       gfx::PointF* transformed_point,
       viz::EventSource source = viz::EventSource::ANY);
 
-  // Pass acked touchpad pinch gesture events to the root view for processing.
-  virtual void ForwardAckedTouchpadPinchGestureEvent(
+  // Pass acked touchpad pinch or double tap gesture events to the root view
+  // for processing.
+  virtual void ForwardAckedTouchpadZoomEvent(
       const blink::WebGestureEvent& event,
       InputEventAckState ack_result) {}
 
@@ -182,10 +185,10 @@ class CONTENT_EXPORT FrameConnectorDelegate {
   // CSS opacity or transform) in the parent view.
   bool occluded_or_obscured() const { return occluded_or_obscured_; }
 
-  // Returns the viz::LocalSurfaceId propagated from the parent to be used by
-  // this child frame.
-  const viz::LocalSurfaceId& local_surface_id() const {
-    return local_surface_id_;
+  // Returns the viz::LocalSurfaceIdAllocation propagated from the parent to be
+  // used by this child frame.
+  const viz::LocalSurfaceIdAllocation& local_surface_id_allocation() const {
+    return local_surface_id_allocation_;
   }
 
   // Returns the ScreenInfo propagated from the parent to be used by this
@@ -273,7 +276,7 @@ class CONTENT_EXPORT FrameConnectorDelegate {
   gfx::Rect screen_space_rect_in_dip_;
   gfx::Rect screen_space_rect_in_pixels_;
 
-  viz::LocalSurfaceId local_surface_id_;
+  viz::LocalSurfaceIdAllocation local_surface_id_allocation_;
 
   bool has_size_ = false;
   const bool use_zoom_for_device_scale_factor_;

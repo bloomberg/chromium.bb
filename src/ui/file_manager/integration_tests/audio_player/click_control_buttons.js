@@ -33,41 +33,125 @@ function controlPanelQuery(query) {
 testcase.togglePlayState = function() {
   var openAudio = launch('local', 'downloads', [ENTRIES.beautiful]);
   var appId;
-  return openAudio.then(function(args) {
-    appId = args[0];
-  }).then(function() {
-    // Audio player should start playing automatically,
-    return remoteCallAudioPlayer.waitForElement(
-        appId, 'audio-player[playing]');
-  }).then(function() {
-    // .. and the play button label should be 'Pause'.
-    return remoteCallAudioPlayer.waitForElement(
-        appId, [controlPanelQuery('#play[aria-label="Pause"]')]);
-  }).then(function() {
-    // Clicking on the play button should
-    return remoteCallAudioPlayer.callRemoteTestUtil(
-        'fakeMouseClick', appId, [controlPanelQuery('#play')]);
-  }).then(function() {
-    // ... change the audio playback state to pause,
-    return remoteCallAudioPlayer.waitForElement(
-        appId, 'audio-player:not([playing])');
-  }).then(function() {
-    // ... and the play button label should be 'Play'.
-    return remoteCallAudioPlayer.waitForElement(
-        appId, [controlPanelQuery('#play[aria-label="Play"]')]);
-  }).then(function() {
-    // Clicking on the play button again should
-    return remoteCallAudioPlayer.callRemoteTestUtil(
-        'fakeMouseClick', appId, [controlPanelQuery('#play')]);
-  }).then(function() {
-    // ... change the audio playback state to playing,
-    return remoteCallAudioPlayer.waitForElement(
-        appId, 'audio-player[playing]');
-  }).then(function() {
-    // ... and the play button label should be 'Pause'.
-    return remoteCallAudioPlayer.waitForElement(
-        appId, [controlPanelQuery('#play[aria-label="Pause"]')]);
-  });
+  return openAudio
+      .then(function(args) {
+        appId = args[0];
+      })
+      .then(function() {
+        // Audio player should start playing automatically,
+        return remoteCallAudioPlayer.waitForElement(
+            appId, 'audio-player[playing]');
+      })
+      .then(function() {
+        // .. and the play button label should be 'Pause'.
+        return remoteCallAudioPlayer.waitForElement(
+            appId, [controlPanelQuery('#play[aria-label="Pause"]')]);
+      })
+      .then(function() {
+
+        // First test a media key, before any element may have acquired focus.
+        return remoteCallAudioPlayer.fakeKeyDown(
+            appId, null, 'MediaPlayPause', false, false, false);
+      })
+      .then(function(result) {
+        chrome.test.assertTrue(!!result, 'fakeKeyDown failed.');
+        return remoteCallAudioPlayer.waitForElement(
+            appId, 'audio-player:not([playing])');
+      })
+      .then(function(element) {
+        chrome.test.assertTrue(!!element);
+        return remoteCallAudioPlayer.fakeKeyDown(
+            appId, null, 'MediaPlayPause', false, false, false);
+      })
+      .then(function(result) {
+        chrome.test.assertTrue(!!result, 'fakeKeyDown failed.');
+        return remoteCallAudioPlayer.waitForElement(
+            appId, 'audio-player[playing]');
+      })
+      .then(function(element) {
+        chrome.test.assertTrue(!!element);
+
+        // Clicking on the play button should Play.
+        return remoteCallAudioPlayer.callRemoteTestUtil(
+            'fakeMouseClick', appId, [controlPanelQuery('#play')]);
+      })
+      .then(function(result) {
+        chrome.test.assertTrue(!!result, 'fakeMouseClick failed.');
+        // ... change the audio playback state to pause,
+        return remoteCallAudioPlayer.waitForElement(
+            appId, 'audio-player:not([playing])');
+      })
+      .then(function() {
+        // ... and the play button label should be 'Play'.
+        return remoteCallAudioPlayer.waitForElement(
+            appId, [controlPanelQuery('#play[aria-label="Play"]')]);
+      })
+      .then(function() {
+        // Clicking on the play button again should
+        return remoteCallAudioPlayer.callRemoteTestUtil(
+            'fakeMouseClick', appId, [controlPanelQuery('#play')]);
+      })
+      .then(function(result) {
+        chrome.test.assertTrue(!!result, 'fakeMouseClick failed.');
+        // ... change the audio playback state to playing,
+        return remoteCallAudioPlayer.waitForElement(
+            appId, 'audio-player[playing]');
+      })
+      .then(function() {
+        // ... and the play button label should be 'Pause'.
+        return remoteCallAudioPlayer.waitForElement(
+            appId, [controlPanelQuery('#play[aria-label="Pause"]')]);
+      });
+};
+
+
+/**
+ * Confirms that native media keys are dispatched correctly.
+ * @return {Promise} Promise to be fulfilled on success.
+ */
+testcase.mediaKeyNative = function() {
+  const openAudio = launch('local', 'downloads', [ENTRIES.beautiful]);
+  let appId;
+  function ensurePlaying() {
+    return remoteCallAudioPlayer.waitForElement(appId, 'audio-player[playing]')
+        .then((element) => {
+          chrome.test.assertTrue(!!element, 'Not Playing.');
+        });
+  }
+  function ensurePaused() {
+    return remoteCallAudioPlayer
+        .waitForElement(appId, 'audio-player:not([playing])')
+        .then((element) => {
+          chrome.test.assertTrue(!!element, 'Not Paused.');
+        });
+  }
+  function sendMediaKey() {
+    return sendTestMessage({name: 'dispatchNativeMediaKey'}).then((result) => {
+      chrome.test.assertEq(
+          result, 'mediaKeyDispatched', 'Key dispatch failure');
+    });
+  }
+  function pauseAndUnpause() {
+    // Audio player should be playing when this is called,
+    return Promise.resolve()
+        .then(ensurePlaying)
+        .then(sendMediaKey)
+        .then(ensurePaused)
+        .then(sendMediaKey)
+        .then(ensurePlaying);
+  }
+  function enableTabletMode() {
+    return sendTestMessage({name: 'enableTabletMode'}).then((result) => {
+      chrome.test.assertEq(result, 'tabletModeEnabled');
+    });
+  }
+  return openAudio
+      .then((args) => {
+        appId = args[0];
+      })
+      .then(pauseAndUnpause)
+      .then(enableTabletMode)
+      .then(pauseAndUnpause);
 };
 
 /**

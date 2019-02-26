@@ -46,36 +46,37 @@ static unsigned g_hardware_context_count = 0;
 static unsigned g_context_id = 0;
 
 AudioContext* AudioContext::Create(Document& document,
-                                   const AudioContextOptions& context_options,
+                                   const AudioContextOptions* context_options,
                                    ExceptionState& exception_state) {
   DCHECK(IsMainThread());
+  LOG(ERROR) << __func__;
 
   UseCounter::CountCrossOriginIframe(
       document, WebFeature::kAudioContextCrossOriginIframe);
 
   WebAudioLatencyHint latency_hint(WebAudioLatencyHint::kCategoryInteractive);
-  if (context_options.latencyHint().IsAudioContextLatencyCategory()) {
+  if (context_options->latencyHint().IsAudioContextLatencyCategory()) {
     latency_hint = WebAudioLatencyHint(
-        context_options.latencyHint().GetAsAudioContextLatencyCategory());
-  } else if (context_options.latencyHint().IsDouble()) {
+        context_options->latencyHint().GetAsAudioContextLatencyCategory());
+  } else if (context_options->latencyHint().IsDouble()) {
     // This should be the requested output latency in seconds, without taking
     // into account double buffering (same as baseLatency).
     latency_hint =
-        WebAudioLatencyHint(context_options.latencyHint().GetAsDouble());
+        WebAudioLatencyHint(context_options->latencyHint().GetAsDouble());
   }
 
   AudioContext* audio_context = new AudioContext(document, latency_hint);
   audio_context->PauseIfNeeded();
 
-  if (!AudioUtilities::IsValidAudioBufferSampleRate(
+  if (!audio_utilities::IsValidAudioBufferSampleRate(
           audio_context->sampleRate())) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
         ExceptionMessages::IndexOutsideRange(
             "hardware sample rate", audio_context->sampleRate(),
-            AudioUtilities::MinAudioBufferSampleRate(),
+            audio_utilities::MinAudioBufferSampleRate(),
             ExceptionMessages::kInclusiveBound,
-            AudioUtilities::MaxAudioBufferSampleRate(),
+            audio_utilities::MaxAudioBufferSampleRate(),
             ExceptionMessages::kInclusiveBound));
     return audio_context;
   }
@@ -89,6 +90,7 @@ AudioContext* AudioContext::Create(Document& document,
   audio_context->MaybeAllowAutoplayWithUnlockType(
       AutoplayUnlockType::kContextConstructor);
   if (audio_context->IsAllowedToStart()) {
+    LOG(ERROR) << "starting";
     audio_context->StartRendering();
     audio_context->SetContextState(kRunning);
   }
@@ -125,12 +127,15 @@ AudioContext::AudioContext(Document& document,
     : BaseAudioContext(&document, kRealtimeContext),
       context_id_(g_context_id++) {
   destination_node_ = DefaultAudioDestinationNode::Create(this, latency_hint);
+  LOG(ERROR) << __func__;
 
   switch (GetAutoplayPolicy()) {
     case AutoplayPolicy::Type::kNoUserGestureRequired:
+      LOG(ERROR) << "no user gesture";
       break;
     case AutoplayPolicy::Type::kUserGestureRequired:
     case AutoplayPolicy::Type::kUserGestureRequiredForCrossOrigin:
+      LOG(ERROR) << "user gesture";
       if (document.GetFrame() &&
           document.GetFrame()->IsCrossOriginSubframe()) {
         autoplay_status_ = AutoplayStatus::kAutoplayStatusFailed;
@@ -138,6 +143,7 @@ AudioContext::AudioContext(Document& document,
       }
       break;
     case AutoplayPolicy::Type::kDocumentUserActivationRequired:
+      LOG(ERROR) << "document user activation";
       autoplay_status_ = AutoplayStatus::kAutoplayStatusFailed;
       user_gesture_required_ = true;
       break;
@@ -197,6 +203,7 @@ ScriptPromise AudioContext::suspendContext(ScriptState* script_state) {
 
 ScriptPromise AudioContext::resumeContext(ScriptState* script_state) {
   DCHECK(IsMainThread());
+  LOG(ERROR) << __func__;
 
   if (IsContextClosed()) {
     return ScriptPromise::RejectWithDOMException(
@@ -237,17 +244,19 @@ ScriptPromise AudioContext::resumeContext(ScriptState* script_state) {
   return promise;
 }
 
-void AudioContext::getOutputTimestamp(ScriptState* script_state,
-                                      AudioTimestamp& result) {
+AudioTimestamp* AudioContext::getOutputTimestamp(
+    ScriptState* script_state) const {
+  AudioTimestamp* result = AudioTimestamp::Create();
+
   DCHECK(IsMainThread());
   LocalDOMWindow* window = LocalDOMWindow::From(script_state);
   if (!window)
-    return;
+    return result;
 
   if (!destination()) {
-    result.setContextTime(0.0);
-    result.setPerformanceTime(0.0);
-    return;
+    result->setContextTime(0.0);
+    result->setPerformanceTime(0.0);
+    return result;
   }
 
   WindowPerformance* performance = DOMWindowPerformance::performance(*window);
@@ -266,8 +275,9 @@ void AudioContext::getOutputTimestamp(ScriptState* script_state,
   if (performance_time < 0.0)
     performance_time = 0.0;
 
-  result.setContextTime(position.position);
-  result.setPerformanceTime(performance_time);
+  result->setContextTime(position.position);
+  result->setPerformanceTime(performance_time);
+  return result;
 }
 
 ScriptPromise AudioContext::closeContext(ScriptState* script_state) {
@@ -423,6 +433,7 @@ void AudioContext::MaybeAllowAutoplayWithUnlockType(AutoplayUnlockType type) {
 }
 
 bool AudioContext::IsAllowedToStart() const {
+  LOG(ERROR) << __func__;
   if (!user_gesture_required_)
     return true;
 
@@ -504,33 +515,32 @@ void AudioContext::ContextDestroyed(ExecutionContext*) {
 void AudioContext::NotifyAudibleAudioStarted() {
   DCHECK(IsMainThread());
 
-  if (!audio_context_manager_) {
-    Document* document = GetDocument();
-
-    // If there's no document don't bother to try to create the mojom interface.
-    // This can happen if the document has been reloaded while the audio thread
-    // is still running.
-    if (!document) {
-      return;
-    }
-
-    document->GetFrame()->GetInterfaceProvider().GetInterface(
-        mojo::MakeRequest(&audio_context_manager_));
-  }
-
-  DCHECK(audio_context_manager_);
-  audio_context_manager_->AudioContextAudiblePlaybackStarted(context_id_);
+  EnsureAudioContextManagerService();
+  if (audio_context_manager_)
+    audio_context_manager_->AudioContextAudiblePlaybackStarted(context_id_);
 }
 
 void AudioContext::NotifyAudibleAudioStopped() {
   DCHECK(IsMainThread());
-  DCHECK(audio_context_manager_);
 
-  // If we don't have a document, we don't need to notify anyone that we've
-  // stopped.
-  if (GetDocument()) {
+  EnsureAudioContextManagerService();
+  if (audio_context_manager_)
     audio_context_manager_->AudioContextAudiblePlaybackStopped(context_id_);
-  }
+}
+
+void AudioContext::EnsureAudioContextManagerService() {
+  if (audio_context_manager_ || !GetDocument())
+    return;
+
+  GetDocument()->GetFrame()->GetInterfaceProvider().GetInterface(
+      mojo::MakeRequest(&audio_context_manager_));
+  audio_context_manager_.set_connection_error_handler(
+      WTF::Bind(&AudioContext::OnAudioContextManagerServiceConnectionError,
+                WrapWeakPersistent(this)));
+}
+
+void AudioContext::OnAudioContextManagerServiceConnectionError() {
+  audio_context_manager_ = nullptr;
 }
 
 }  // namespace blink

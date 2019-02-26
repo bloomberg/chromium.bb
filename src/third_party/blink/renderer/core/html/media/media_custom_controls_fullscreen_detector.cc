@@ -43,20 +43,21 @@ bool MediaCustomControlsFullscreenDetector::operator==(
 }
 
 void MediaCustomControlsFullscreenDetector::Attach() {
-  VideoElement().addEventListener(EventTypeNames::loadedmetadata, this, true);
+  VideoElement().addEventListener(event_type_names::kLoadedmetadata, this,
+                                  true);
   VideoElement().GetDocument().addEventListener(
-      EventTypeNames::webkitfullscreenchange, this, true);
+      event_type_names::kWebkitfullscreenchange, this, true);
   VideoElement().GetDocument().addEventListener(
-      EventTypeNames::fullscreenchange, this, true);
+      event_type_names::kFullscreenchange, this, true);
 }
 
 void MediaCustomControlsFullscreenDetector::Detach() {
-  VideoElement().removeEventListener(EventTypeNames::loadedmetadata, this,
+  VideoElement().removeEventListener(event_type_names::kLoadedmetadata, this,
                                      true);
   VideoElement().GetDocument().removeEventListener(
-      EventTypeNames::webkitfullscreenchange, this, true);
+      event_type_names::kWebkitfullscreenchange, this, true);
   VideoElement().GetDocument().removeEventListener(
-      EventTypeNames::fullscreenchange, this, true);
+      event_type_names::kFullscreenchange, this, true);
   check_viewport_intersection_timer_.Stop();
 
   VideoElement().SetIsEffectivelyFullscreen(
@@ -99,12 +100,11 @@ bool MediaCustomControlsFullscreenDetector::ComputeIsDominantVideoForTests(
          intersection_rect.Width();
 }
 
-void MediaCustomControlsFullscreenDetector::handleEvent(
-    ExecutionContext* context,
-    Event* event) {
-  DCHECK(event->type() == EventTypeNames::loadedmetadata ||
-         event->type() == EventTypeNames::webkitfullscreenchange ||
-         event->type() == EventTypeNames::fullscreenchange);
+void MediaCustomControlsFullscreenDetector::Invoke(ExecutionContext* context,
+                                                   Event* event) {
+  DCHECK(event->type() == event_type_names::kLoadedmetadata ||
+         event->type() == event_type_names::kWebkitfullscreenchange ||
+         event->type() == event_type_names::kFullscreenchange);
 
   // Video is not loaded yet.
   if (VideoElement().getReadyState() < HTMLMediaElement::kHaveMetadata)
@@ -129,6 +129,8 @@ void MediaCustomControlsFullscreenDetector::ContextDestroyed() {
 void MediaCustomControlsFullscreenDetector::
     OnCheckViewportIntersectionTimerFired(TimerBase*) {
   DCHECK(IsVideoOrParentFullscreen());
+
+  // TODO(crbug.com/906258): This can cause a crash when DCHECKs are enabled!
   IntersectionGeometry geometry(nullptr, VideoElement(), Vector<Length>(),
                                 true);
   geometry.ComputeGeometry();
@@ -146,7 +148,8 @@ void MediaCustomControlsFullscreenDetector::
   // Picture-in-Picture can be disabled by the website when the API is enabled.
   bool picture_in_picture_allowed =
       !RuntimeEnabledFeatures::PictureInPictureEnabled() &&
-      !VideoElement().FastHasAttribute(HTMLNames::disablepictureinpictureAttr);
+      !VideoElement().FastHasAttribute(
+          html_names::kDisablepictureinpictureAttr);
   if (picture_in_picture_allowed) {
     VideoElement().SetIsEffectivelyFullscreen(
         WebFullscreenVideoStatus::kFullscreenAndPictureInPictureEnabled);

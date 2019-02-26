@@ -13,14 +13,15 @@ namespace protocol {
 
 class BrowserHandler : public DomainHandler, public Browser::Backend {
  public:
-  explicit BrowserHandler(base::WeakPtr<HeadlessBrowserImpl> browser);
+  BrowserHandler(base::WeakPtr<HeadlessBrowserImpl> browser,
+                 const std::string& target_id);
   ~BrowserHandler() override;
 
   void Wire(UberDispatcher* dispatcher) override;
 
   // Browser::Backend implementation
   Response GetWindowForTarget(
-      const std::string& target_id,
+      Maybe<std::string> target_id,
       int* out_window_id,
       std::unique_ptr<Browser::Bounds>* out_bounds) override;
   Response GetWindowBounds(
@@ -30,8 +31,10 @@ class BrowserHandler : public DomainHandler, public Browser::Backend {
   Response SetWindowBounds(
       int window_id,
       std::unique_ptr<Browser::Bounds> out_bounds) override;
+  Response SetDockTile(Maybe<std::string> label, Maybe<Binary> image) override;
 
  private:
+  std::string target_id_;
   DISALLOW_COPY_AND_ASSIGN(BrowserHandler);
 };
 

@@ -10,6 +10,7 @@
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/autofill/core/browser/autofill_download_manager.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/form_structure.h"
@@ -31,6 +32,7 @@ using autofill::NEW_PASSWORD;
 using autofill::PASSWORD;
 using autofill::PasswordForm;
 using autofill::ServerFieldTypeSet;
+using autofill::SubmissionIndicatorEvent;
 using base::ASCIIToUTF16;
 using testing::_;
 using testing::AllOf;
@@ -80,7 +82,8 @@ class MockAutofillManager : public autofill::AutofillManager {
 
 class MockPasswordManagerClient : public StubPasswordManagerClient {
  public:
-  MOCK_METHOD0(GetAutofillManagerForMainFrame, autofill::AutofillManager*());
+  MOCK_METHOD0(GetAutofillDownloadManager,
+               autofill::AutofillDownloadManager*());
 };
 
 }  // namespace
@@ -103,8 +106,8 @@ class VotesUploaderTest : public testing::Test {
     // AutofillManager takes ownership of |mock_autofill_download_manager_|.
     mock_autofill_manager_.SetDownloadManager(mock_autofill_download_manager_);
 
-    EXPECT_CALL(client_, GetAutofillManagerForMainFrame())
-        .WillRepeatedly(Return(&mock_autofill_manager_));
+    EXPECT_CALL(client_, GetAutofillDownloadManager())
+        .WillRepeatedly(Return(mock_autofill_download_manager_));
 
     ON_CALL(*mock_autofill_download_manager_,
             StartUploadRequest(_, _, _, _, _, _))
@@ -127,6 +130,7 @@ class VotesUploaderTest : public testing::Test {
     return ASCIIToUTF16("field") + base::UintToString16(index);
   }
 
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   autofill::TestAutofillDriver test_autofill_driver_;
   autofill::TestAutofillClient test_autofill_client_;
   autofill::TestPersonalDataManager test_personal_data_manager_;
@@ -150,13 +154,13 @@ TEST_F(VotesUploaderTest, UploadPasswordVoteUpdate) {
   form_to_upload_.confirmation_password_element = confirmation_element;
   submitted_form_.confirmation_password_element = confirmation_element;
   submitted_form_.submission_event =
-      PasswordForm::SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
+      SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
   ServerFieldTypeSet expected_field_types = {NEW_PASSWORD,
                                              CONFIRMATION_PASSWORD};
   FieldTypeMap expected_types = {{new_password_element, NEW_PASSWORD},
                                  {confirmation_element, CONFIRMATION_PASSWORD}};
-  PasswordForm::SubmissionIndicatorEvent expected_submission_event =
-      PasswordForm::SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
+  SubmissionIndicatorEvent expected_submission_event =
+      SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
 
   EXPECT_CALL(
       *mock_autofill_download_manager_,
@@ -179,10 +183,10 @@ TEST_F(VotesUploaderTest, UploadPasswordVoteSave) {
   form_to_upload_.confirmation_password_element = confirmation_element;
   submitted_form_.confirmation_password_element = confirmation_element;
   submitted_form_.submission_event =
-      PasswordForm::SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
+      SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
   ServerFieldTypeSet expected_field_types = {PASSWORD, CONFIRMATION_PASSWORD};
-  PasswordForm::SubmissionIndicatorEvent expected_submission_event =
-      PasswordForm::SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
+  SubmissionIndicatorEvent expected_submission_event =
+      SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
 
   EXPECT_CALL(*mock_autofill_download_manager_,
               StartUploadRequest(

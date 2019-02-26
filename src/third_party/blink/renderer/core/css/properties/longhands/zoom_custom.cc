@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* Zoom::ParseSingleValue(CSSParserTokenRange& range,
                                        const CSSParserContext& context,
@@ -18,13 +18,13 @@ const CSSValue* Zoom::ParseSingleValue(CSSParserTokenRange& range,
   const CSSParserToken& token = range.Peek();
   CSSValue* zoom = nullptr;
   if (token.GetType() == kIdentToken) {
-    zoom = CSSPropertyParserHelpers::ConsumeIdent<CSSValueNormal>(range);
+    zoom = css_property_parser_helpers::ConsumeIdent<CSSValueNormal>(range);
   } else {
-    zoom =
-        CSSPropertyParserHelpers::ConsumePercent(range, kValueRangeNonNegative);
+    zoom = css_property_parser_helpers::ConsumePercent(range,
+                                                       kValueRangeNonNegative);
     if (!zoom) {
-      zoom = CSSPropertyParserHelpers::ConsumeNumber(range,
-                                                     kValueRangeNonNegative);
+      zoom = css_property_parser_helpers::ConsumeNumber(range,
+                                                        kValueRangeNonNegative);
     }
   }
   if (zoom) {
@@ -80,5 +80,5 @@ void Zoom::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
   }
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

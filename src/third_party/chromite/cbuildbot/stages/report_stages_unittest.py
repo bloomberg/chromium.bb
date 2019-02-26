@@ -131,7 +131,7 @@ class SlaveFailureSummaryStageTest(
         failure_message_lib_unittest.StageFailureHelper.CreateStageFailure(
             build_id=10,
             build_stage_id=11,
-            waterfall=waterfall.WATERFALL_EXTERNAL,
+            waterfall=waterfall.WATERFALL_SWARMING,
             builder_name='builder_name',
             build_number=12,
             build_config='build-config',
@@ -151,10 +151,10 @@ class BuildStartStageTest(generic_stages_unittest.AbstractStageTestCase):
     self.db = fake_cidb.FakeCIDBConnection()
     cidb.CIDBConnectionFactory.SetupMockCidb(self.db)
     retry_stats.SetupStats()
-    os.environ['BUILDBOT_MASTERNAME'] = waterfall.WATERFALL_EXTERNAL
+    os.environ['BUILDBOT_MASTERNAME'] = waterfall.WATERFALL_SWARMING
 
     master_build_id = self.db.InsertBuild(
-        'master_build', waterfall.WATERFALL_EXTERNAL, 1,
+        'master_build', waterfall.WATERFALL_SWARMING, 1,
         'master_build_config', 'bot_hostname')
 
     self.PatchObject(toolchain, 'GetToolchainsForBoard')

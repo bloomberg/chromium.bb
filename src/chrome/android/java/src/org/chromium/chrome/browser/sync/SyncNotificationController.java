@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.sync;
 
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
@@ -40,9 +39,8 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
     private final ProfileSyncService mProfileSyncService;
 
     public SyncNotificationController() {
-        mNotificationManager = new NotificationManagerProxyImpl(
-                (NotificationManager) ContextUtils.getApplicationContext().getSystemService(
-                        Context.NOTIFICATION_SERVICE));
+        mNotificationManager =
+                new NotificationManagerProxyImpl(ContextUtils.getApplicationContext());
         mProfileSyncService = ProfileSyncService.get();
         assert mProfileSyncService != null;
     }
@@ -55,7 +53,7 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
         ThreadUtils.assertOnUiThread();
 
         // Auth errors take precedence over passphrase errors.
-        if (!AndroidSyncSettings.isSyncEnabled()) {
+        if (!AndroidSyncSettings.get().isSyncEnabled()) {
             mNotificationManager.cancel(NotificationConstants.NOTIFICATION_ID_SYNC);
             return;
         }

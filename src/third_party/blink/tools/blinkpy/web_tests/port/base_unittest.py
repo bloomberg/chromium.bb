@@ -109,36 +109,75 @@ class PortTest(LoggingTestCase):
         self.assertEqual(port.output_filename(test_file, '-actual', '.png'),
                          'fast/test_include=HTML._-actual.png')
 
-    def test_expected_baselines(self):
+    def test_expected_baselines_basic(self):
         port = self.make_port(port_name='foo')
         port.FALLBACK_PATHS = {'': ['foo']}
         test_file = 'fast/test.html'
         port.host.filesystem.write_text_file(MOCK_WEB_TESTS + 'VirtualTestSuites', '[]')
 
-        # The default baseline
+        # The default baseline doesn't exist.
         self.assertEqual(port.expected_baselines(test_file, '.txt'),
                          [(None, 'fast/test-expected.txt')])
-        self.assertEqual(port.expected_filename(test_file, '.txt', return_default=False), None)
+        self.assertIsNone(port.expected_filename(test_file, '.txt', return_default=False))
         self.assertEqual(port.expected_filename(test_file, '.txt'),
                          MOCK_WEB_TESTS + 'fast/test-expected.txt')
+        self.assertIsNone(port.fallback_expected_filename(test_file, '.txt'))
 
-        # Mismatch baseline
+        # The default baseline exists.
+        port.host.filesystem.write_text_file(
+            MOCK_WEB_TESTS + 'fast/test-expected.txt', 'foo')
+        self.assertEqual(port.expected_baselines(test_file, '.txt'),
+                         [(MOCK_WEB_TESTS[:-1], 'fast/test-expected.txt')])
+        self.assertEqual(port.expected_filename(test_file, '.txt', return_default=False),
+                         MOCK_WEB_TESTS + 'fast/test-expected.txt')
+        self.assertEqual(port.expected_filename(test_file, '.txt'),
+                         MOCK_WEB_TESTS + 'fast/test-expected.txt')
+        self.assertIsNone(port.fallback_expected_filename(test_file, '.txt'))
+        port.host.filesystem.remove(MOCK_WEB_TESTS + 'fast/test-expected.txt')
+
+    def test_expected_baselines_mismatch(self):
+        port = self.make_port(port_name='foo')
+        port.FALLBACK_PATHS = {'': ['foo']}
+        test_file = 'fast/test.html'
+        port.host.filesystem.write_text_file(MOCK_WEB_TESTS + 'VirtualTestSuites', '[]')
+
         self.assertEqual(port.expected_baselines(test_file, '.txt', match=False),
                          [(None, 'fast/test-expected-mismatch.txt')])
         self.assertEqual(port.expected_filename(test_file, '.txt', match=False),
                          MOCK_WEB_TESTS + 'fast/test-expected-mismatch.txt')
 
-        # Platform-specific baseline
+    def test_expected_baselines_platform_specific(self):
+        port = self.make_port(port_name='foo')
+        port.FALLBACK_PATHS = {'': ['foo']}
+        test_file = 'fast/test.html'
+        port.host.filesystem.write_text_file(MOCK_WEB_TESTS + 'VirtualTestSuites', '[]')
+
         self.assertEqual(port.baseline_version_dir(),
                          MOCK_WEB_TESTS + 'platform/foo')
         port.host.filesystem.write_text_file(
             MOCK_WEB_TESTS + 'platform/foo/fast/test-expected.txt', 'foo')
+
+        # The default baseline doesn't exist.
         self.assertEqual(port.expected_baselines(test_file, '.txt'),
                          [(MOCK_WEB_TESTS + 'platform/foo', 'fast/test-expected.txt')])
         self.assertEqual(port.expected_filename(test_file, '.txt'),
                          MOCK_WEB_TESTS + 'platform/foo/fast/test-expected.txt')
         self.assertEqual(port.expected_filename(test_file, '.txt', return_default=False),
                          MOCK_WEB_TESTS + 'platform/foo/fast/test-expected.txt')
+        self.assertIsNone(port.fallback_expected_filename(test_file, '.txt'))
+
+        # The default baseline exists.
+        port.host.filesystem.write_text_file(
+            MOCK_WEB_TESTS + 'fast/test-expected.txt', 'foo')
+        self.assertEqual(port.expected_baselines(test_file, '.txt'),
+                         [(MOCK_WEB_TESTS + 'platform/foo', 'fast/test-expected.txt')])
+        self.assertEqual(port.expected_filename(test_file, '.txt'),
+                         MOCK_WEB_TESTS + 'platform/foo/fast/test-expected.txt')
+        self.assertEqual(port.expected_filename(test_file, '.txt', return_default=False),
+                         MOCK_WEB_TESTS + 'platform/foo/fast/test-expected.txt')
+        self.assertEquals(port.fallback_expected_filename(test_file, '.txt'),
+                          MOCK_WEB_TESTS + 'fast/test-expected.txt')
+        port.host.filesystem.remove(MOCK_WEB_TESTS + 'fast/test-expected.txt')
 
     def test_expected_baselines_flag_specific(self):
         port = self.make_port(port_name='foo')
@@ -156,24 +195,9 @@ class PortTest(LoggingTestCase):
         self.assertEqual(port.baseline_version_dir(),
                          MOCK_WEB_TESTS + 'flag-specific/special-flag/platform/foo')
 
-        # The default baseline
-        self.assertEqual(port.expected_baselines(test_file, '.txt'),
-                         [(None, 'fast/test-expected.txt')])
-        self.assertEqual(port.expected_filename(test_file, '.txt', return_default=False), None)
-        self.assertEqual(port.expected_filename(test_file, '.txt'),
-                         MOCK_WEB_TESTS + 'fast/test-expected.txt')
-
-        # Platform-specific baseline
+        # Flag-specific baseline
         port.host.filesystem.write_text_file(
             MOCK_WEB_TESTS + 'platform/foo/fast/test-expected.txt', 'foo')
-        self.assertEqual(port.expected_baselines(test_file, '.txt'),
-                         [(MOCK_WEB_TESTS + 'platform/foo', 'fast/test-expected.txt')])
-        self.assertEqual(port.expected_filename(test_file, '.txt'),
-                         MOCK_WEB_TESTS + 'platform/foo/fast/test-expected.txt')
-        self.assertEqual(port.expected_filename(test_file, '.txt', return_default=False),
-                         MOCK_WEB_TESTS + 'platform/foo/fast/test-expected.txt')
-
-        # Flag-specific baseline
         port.host.filesystem.write_text_file(
             MOCK_WEB_TESTS + 'flag-specific/special-flag/fast/test-expected.txt', 'foo')
         self.assertEqual(port.expected_baselines(test_file, '.txt'),
@@ -182,6 +206,8 @@ class PortTest(LoggingTestCase):
                          MOCK_WEB_TESTS + 'flag-specific/special-flag/fast/test-expected.txt')
         self.assertEqual(port.expected_filename(test_file, '.txt', return_default=False),
                          MOCK_WEB_TESTS + 'flag-specific/special-flag/fast/test-expected.txt')
+        self.assertEqual(port.fallback_expected_filename(test_file, '.txt'),
+                         MOCK_WEB_TESTS + 'platform/foo/fast/test-expected.txt')
 
         # Flag-specific platform-specific baseline
         port.host.filesystem.write_text_file(
@@ -195,6 +221,8 @@ class PortTest(LoggingTestCase):
         self.assertEqual(
             port.expected_filename(test_file, '.txt', return_default=False),
             MOCK_WEB_TESTS + 'flag-specific/special-flag/platform/foo/fast/test-expected.txt')
+        self.assertEqual(port.fallback_expected_filename(test_file, '.txt'),
+                         MOCK_WEB_TESTS + 'flag-specific/special-flag/fast/test-expected.txt')
 
     def test_expected_baselines_virtual(self):
         port = self.make_port(port_name='foo')
@@ -207,12 +235,13 @@ class PortTest(LoggingTestCase):
         # The default baseline for base test
         self.assertEqual(port.expected_baselines(virtual_test, '.txt'),
                          [(None, 'virtual/flag/fast/test-expected.txt')])
-        self.assertEqual(port.expected_filename(virtual_test, '.txt', return_default=False), None)
+        self.assertIsNone(port.expected_filename(virtual_test, '.txt', return_default=False))
         self.assertEqual(port.expected_filename(virtual_test, '.txt'),
                          MOCK_WEB_TESTS + 'fast/test-expected.txt')
-        self.assertEqual(port.expected_filename(virtual_test, '.txt', return_default=False, fallback_base_for_virtual=False), None)
+        self.assertIsNone(port.expected_filename(virtual_test, '.txt', return_default=False, fallback_base_for_virtual=False))
         self.assertEqual(port.expected_filename(virtual_test, '.txt', fallback_base_for_virtual=False),
                          MOCK_WEB_TESTS + 'virtual/flag/fast/test-expected.txt')
+        self.assertIsNone(port.fallback_expected_filename(virtual_test, '.txt'))
 
         # Platform-specific baseline for base test
         port.host.filesystem.write_text_file(
@@ -223,9 +252,11 @@ class PortTest(LoggingTestCase):
                          MOCK_WEB_TESTS + 'platform/foo/fast/test-expected.txt')
         self.assertEqual(port.expected_filename(virtual_test, '.txt'),
                          MOCK_WEB_TESTS + 'platform/foo/fast/test-expected.txt')
-        self.assertEqual(port.expected_filename(virtual_test, '.txt', return_default=False, fallback_base_for_virtual=False), None)
+        self.assertIsNone(port.expected_filename(virtual_test, '.txt', return_default=False, fallback_base_for_virtual=False))
         self.assertEqual(port.expected_filename(virtual_test, '.txt', fallback_base_for_virtual=False),
                          MOCK_WEB_TESTS + 'virtual/flag/fast/test-expected.txt')
+        self.assertEqual(port.fallback_expected_filename(virtual_test, '.txt'),
+                         MOCK_WEB_TESTS + 'platform/foo/fast/test-expected.txt')
 
         # The default baseline for virtual test
         port.host.filesystem.write_text_file(
@@ -240,6 +271,8 @@ class PortTest(LoggingTestCase):
                          MOCK_WEB_TESTS + 'virtual/flag/fast/test-expected.txt')
         self.assertEqual(port.expected_filename(virtual_test, '.txt', fallback_base_for_virtual=False),
                          MOCK_WEB_TESTS + 'virtual/flag/fast/test-expected.txt')
+        self.assertEqual(port.fallback_expected_filename(virtual_test, '.txt'),
+                         MOCK_WEB_TESTS + 'platform/foo/fast/test-expected.txt')
 
         # Platform-specific baseline for virtual test
         port.host.filesystem.write_text_file(
@@ -254,6 +287,8 @@ class PortTest(LoggingTestCase):
                          MOCK_WEB_TESTS + 'platform/foo/virtual/flag/fast/test-expected.txt')
         self.assertEqual(port.expected_filename(virtual_test, '.txt', fallback_base_for_virtual=False),
                          MOCK_WEB_TESTS + 'platform/foo/virtual/flag/fast/test-expected.txt')
+        self.assertEqual(port.fallback_expected_filename(virtual_test, '.txt'),
+                         MOCK_WEB_TESTS + 'virtual/flag/fast/test-expected.txt')
 
     def test_additional_platform_directory(self):
         port = self.make_port(port_name='foo')
@@ -602,20 +637,6 @@ class PortTest(LoggingTestCase):
         self.assertFalse(Port.should_use_wptserve('harness-tests/wpt/console_logging.html'))
         self.assertFalse(Port.should_use_wptserve('dom/domparsing/namespaces-1.html'))
 
-    def test_should_run_as_pixel_test_with_no_pixel_tests_in_args(self):
-        # With the --no-pixel-tests flag, no tests should run as pixel tests.
-        options = optparse.Values({'pixel_tests': False})
-        port = self.make_port(options=options)
-        self.assertFalse(port.should_run_as_pixel_test('fast/css/001.html'))
-
-    def test_should_run_as_pixel_test_default(self):
-        options = optparse.Values({'pixel_tests': True})
-        port = self.make_port(options=options)
-        self.assertFalse(port.should_run_as_pixel_test('external/wpt/dom/interfaces.html'))
-        self.assertFalse(port.should_run_as_pixel_test('virtual/a-name/external/wpt/dom/interfaces.html'))
-        self.assertFalse(port.should_run_as_pixel_test('harness-tests/wpt/console_logging.html'))
-        self.assertTrue(port.should_run_as_pixel_test('fast/css/001.html'))
-
     def test_is_slow_wpt_test(self):
         port = self.make_port(with_tests=True)
         PortTest._add_manifest_to_mock_file_system(port.host.filesystem)
@@ -648,25 +669,6 @@ class PortTest(LoggingTestCase):
         self.assertFalse(port.is_slow_wpt_test('dom/ranges/Range-attributes-slow.html'))
         self.assertFalse(port.is_slow_wpt_test('/dom/ranges/Range-attributes.html'))
         self.assertFalse(port.is_slow_wpt_test('/dom/ranges/Range-attributes-slow.html'))
-
-    def test_parse_reftest_list(self):
-        port = self.make_port(with_tests=True)
-        port.host.filesystem.files['bar/reftest.list'] = '\n'.join(['== test.html test-ref.html',
-                                                                    '',
-                                                                    '# some comment',
-                                                                    '!= test-2.html test-notref.html # more comments',
-                                                                    '== test-3.html test-ref.html',
-                                                                    '== test-3.html test-ref2.html',
-                                                                    '!= test-3.html test-notref.html',
-                                                                    'fuzzy(80,500) == test-3 test-ref.html'])
-
-        # Note that we don't support the syntax in the last line; the code should ignore it, rather than crashing.
-
-        reftest_list = Port._parse_reftest_list(port.host.filesystem, 'bar')
-        self.assertEqual(reftest_list, {
-            'bar/test.html': [('==', 'bar/test-ref.html')],
-            'bar/test-2.html': [('!=', 'bar/test-notref.html')],
-            'bar/test-3.html': [('==', 'bar/test-ref.html'), ('==', 'bar/test-ref2.html'), ('!=', 'bar/test-notref.html')]})
 
     def test_reference_files(self):
         port = self.make_port(with_tests=True)
@@ -805,7 +807,7 @@ class PortTest(LoggingTestCase):
     def test_can_load_actual_virtual_test_suite_file(self):
         port = Port(SystemHost(), 'baseport')
 
-        # If this call returns successfully, we found and loaded the LayoutTests/VirtualTestSuites.
+        # If this call returns successfully, we found and loaded the web_tests/VirtualTestSuites.
         _ = port.virtual_test_suites()
 
     def test_good_virtual_test_suite_file(self):
@@ -814,7 +816,7 @@ class PortTest(LoggingTestCase):
             port.host.filesystem.join(port.layout_tests_dir(), 'VirtualTestSuites'),
             '[{"prefix": "bar", "base": "fast/bar", "args": ["--bar"]}]')
 
-        # If this call returns successfully, we found and loaded the LayoutTests/VirtualTestSuites.
+        # If this call returns successfully, we found and loaded the web_tests/VirtualTestSuites.
         _ = port.virtual_test_suites()
 
     def test_duplicate_virtual_test_suite_in_file(self):
@@ -905,23 +907,6 @@ class PortTest(LoggingTestCase):
             port.path_to_never_fix_tests_file(),
             'Bug(test) failures/expected/image.html [ WontFix ]\n')
         self.assertTrue(port.skips_test('failures/expected/image.html'))
-
-    def test_should_run_pixel_test_first(self):
-        port = self.make_port(port_name='foo')
-        # pylint: disable=protected-access
-        port._options.image_first_tests = ['image-first', 'virtual/flag/additional-virtual-image-first']
-        port.host.filesystem.write_text_file(
-            MOCK_WEB_TESTS + 'VirtualTestSuites',
-            json.dumps([
-                { "prefix": "flag", "base": "image-first", "args": ["--flag"]},
-                { "prefix": "flag", "base": "non-image-first", "args": ["--flag"]}
-            ]))
-
-        self.assertTrue(port.should_run_pixel_test_first('image-first/test.html'))
-        self.assertTrue(port.should_run_pixel_test_first('virtual/flag/image-first/test.html'))
-        self.assertTrue(port.should_run_pixel_test_first('virtual/flag/additional-virtual-image-first/test.html'))
-        self.assertFalse(port.should_run_pixel_test_first('non-image-first/test.html'))
-        self.assertFalse(port.should_run_pixel_test_first('virtual/flag/non-image-first/test.html'))
 
 
 class NaturalCompareTest(unittest.TestCase):

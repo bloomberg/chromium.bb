@@ -43,8 +43,6 @@
 #include "chrome/browser/signin/signin_util.h"
 #endif
 
-const char kGaiaCookieManagerSource[] = "child_account_service";
-
 // Normally, re-check the family info once per day.
 const int kUpdateIntervalSeconds = 60 * 60 * 24;
 
@@ -144,10 +142,8 @@ void ChildAccountService::AddChildStatusReceivedCallback(
 ChildAccountService::AuthState ChildAccountService::GetGoogleAuthState() {
   std::vector<gaia::ListedAccount> accounts;
   std::vector<gaia::ListedAccount> signed_out_accounts;
-  if (!gaia_cookie_manager_->ListAccounts(&accounts, &signed_out_accounts,
-                                          kGaiaCookieManagerSource)) {
+  if (!gaia_cookie_manager_->ListAccounts(&accounts, &signed_out_accounts))
     return AuthState::PENDING;
-  }
   return (accounts.empty() || !accounts[0].valid) ? AuthState::NOT_AUTHENTICATED
                                                   : AuthState::AUTHENTICATED;
 }
@@ -168,10 +164,6 @@ bool ChildAccountService::SetActive(bool active) {
   if (active_) {
     SupervisedUserSettingsService* settings_service =
         SupervisedUserSettingsServiceFactory::GetForProfile(profile_);
-
-    settings_service->SetLocalSetting(
-        supervised_users::kRecordHistoryIncludesSessionSync,
-        std::make_unique<base::Value>(false));
 
     // In contrast to legacy SUs, child account SUs must sign in.
     settings_service->SetLocalSetting(supervised_users::kSigninAllowed,
@@ -215,8 +207,6 @@ bool ChildAccountService::SetActive(bool active) {
   } else {
     SupervisedUserSettingsService* settings_service =
         SupervisedUserSettingsServiceFactory::GetForProfile(profile_);
-    settings_service->SetLocalSetting(
-        supervised_users::kRecordHistoryIncludesSessionSync, nullptr);
     settings_service->SetLocalSetting(supervised_users::kSigninAllowed,
                                       nullptr);
     settings_service->SetLocalSetting(supervised_users::kCookiesAlwaysAllowed,
@@ -239,8 +229,10 @@ bool ChildAccountService::SetActive(bool active) {
   // The logic to do this lives in the SupervisedUserSyncDataTypeController.
   browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
-  if (sync_service->IsFirstSetupComplete())
-    sync_service->ReconfigureDatatypeManager();
+  if (sync_service->IsFirstSetupComplete()) {
+    sync_service->ReconfigureDatatypeManager(
+        /*bypass_setup_in_progress_check=*/false);
+  }
 
   return true;
 }

@@ -34,6 +34,7 @@
 namespace sh
 {
 
+class TIntermSwizzle;
 enum class SSBOMethod
 {
     LOAD,
@@ -43,7 +44,12 @@ enum class SSBOMethod
 class ShaderStorageBlockFunctionHLSL final : angle::NonCopyable
 {
   public:
-    TString registerShaderStorageBlockFunction(const TType &type, SSBOMethod method);
+    TString registerShaderStorageBlockFunction(const TType &type,
+                                               SSBOMethod method,
+                                               TLayoutBlockStorage storage,
+                                               bool rowMajor,
+                                               int matrixStride,
+                                               TIntermSwizzle *node);
 
     void shaderStorageBlockFunctionHeader(TInfoSinkBase &out);
 
@@ -55,6 +61,10 @@ class ShaderStorageBlockFunctionHLSL final : angle::NonCopyable
         TString typeString;
         SSBOMethod method;
         TType type;
+        bool rowMajor;
+        int matrixStride;
+        TVector<int> swizzleOffsets;
+        bool isDefaultSwizzle;
     };
 
     static void OutputSSBOLoadFunctionBody(TInfoSinkBase &out,

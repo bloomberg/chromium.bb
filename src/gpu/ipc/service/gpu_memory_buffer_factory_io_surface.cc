@@ -8,6 +8,7 @@
 
 #include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
+#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/mac/io_surface.h"
 #include "ui/gl/gl_bindings.h"
@@ -108,12 +109,13 @@ GpuMemoryBufferFactoryIOSurface::CreateImageForGpuMemoryBuffer(
     gfx::GpuMemoryBufferHandle handle,
     const gfx::Size& size,
     gfx::BufferFormat format,
-    unsigned internalformat,
     int client_id,
     SurfaceHandle surface_handle) {
+  if (handle.type != gfx::IO_SURFACE_BUFFER)
+    return nullptr;
+
   base::AutoLock lock(io_surfaces_lock_);
 
-  DCHECK_EQ(handle.type, gfx::IO_SURFACE_BUFFER);
   IOSurfaceMapKey key(handle.id, client_id);
   IOSurfaceMap::iterator it = io_surfaces_.find(key);
   if (it == io_surfaces_.end()) {
@@ -121,6 +123,7 @@ GpuMemoryBufferFactoryIOSurface::CreateImageForGpuMemoryBuffer(
     return scoped_refptr<gl::GLImage>();
   }
 
+  unsigned internalformat = gpu::InternalFormatForGpuMemoryBufferFormat(format);
   scoped_refptr<gl::GLImageIOSurface> image(
       gl::GLImageIOSurface::Create(size, internalformat));
   if (!image->Initialize(it->second.get(), handle.id, format)) {
@@ -135,7 +138,6 @@ scoped_refptr<gl::GLImage>
 GpuMemoryBufferFactoryIOSurface::CreateAnonymousImage(const gfx::Size& size,
                                                       gfx::BufferFormat format,
                                                       gfx::BufferUsage usage,
-                                                      unsigned internalformat,
                                                       bool* is_cleared) {
   bool should_clear = false;
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface(
@@ -167,6 +169,7 @@ GpuMemoryBufferFactoryIOSurface::CreateAnonymousImage(const gfx::Size& size,
     LOG(ERROR) << "Failed to create IOSurface mach port.";
   }
 
+  unsigned internalformat = gpu::InternalFormatForGpuMemoryBufferFormat(format);
   scoped_refptr<gl::GLImageIOSurface> image(
       gl::GLImageIOSurface::Create(size, internalformat));
   // Use an invalid GMB id so that we can differentiate between anonymous and

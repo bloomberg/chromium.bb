@@ -25,7 +25,6 @@
 #include "core/fpdfdoc/cpdf_annot.h"
 #include "fpdfsdk/cpdfsdk_helpers.h"
 #include "third_party/base/ptr_util.h"
-#include "third_party/base/stl_util.h"
 
 enum FPDF_TYPE { MAX, MIN };
 enum FPDF_VALUE { TOP, LEFT, RIGHT, BOTTOM };
@@ -91,7 +90,8 @@ int ParserAnnots(CPDF_Document* pSourceDoc,
   if (!pAnnots)
     return FLATTEN_NOTHINGTODO;
 
-  for (const auto& pAnnot : *pAnnots) {
+  CPDF_ArrayLocker locker(pAnnots);
+  for (const auto& pAnnot : locker) {
     CPDF_Dictionary* pAnnotDic = ToDictionary(pAnnot->GetDirect());
     if (!pAnnotDic)
       continue;
@@ -167,70 +167,78 @@ CFX_FloatRect CalculateRect(std::vector<CFX_FloatRect>* pRectArray) {
   return rcRet;
 }
 
-CPDF_Object* NewIndirectContentsStream(const ByteString& key,
-                                       CPDF_Document* pDocument) {
+ByteString GenerateFlattenedContent(const ByteString& key) {
+  return "q 1 0 0 1 0 0 cm /" + key + " Do Q";
+}
+
+CPDF_Object* NewIndirectContentsStream(CPDF_Document* pDocument,
+                                       const ByteString& contents) {
   CPDF_Stream* pNewContents = pDocument->NewIndirect<CPDF_Stream>(
-      nullptr, 0,
-      pdfium::MakeUnique<CPDF_Dictionary>(pDocument->GetByteStringPool()));
-  ByteString sStream =
-      ByteString::Format("q 1 0 0 1 0 0 cm /%s Do Q", key.c_str());
-  pNewContents->SetData(sStream.AsRawSpan());
+      nullptr, 0, pDocument->New<CPDF_Dictionary>());
+  pNewContents->SetData(contents.AsRawSpan());
   return pNewContents;
 }
 
 void SetPageContents(const ByteString& key,
                      CPDF_Dictionary* pPage,
                      CPDF_Document* pDocument) {
-  CPDF_Array* pContentsArray = nullptr;
+  CPDF_Array* pContentsArray =
+      pPage->GetArrayFor(pdfium::page_object::kContents);
   CPDF_Stream* pContentsStream =
       pPage->GetStreamFor(pdfium::page_object::kContents);
-  if (!pContentsStream) {
-    pContentsArray = pPage->GetArrayFor(pdfium::page_object::kContents);
-    if (!pContentsArray) {
-      if (!key.IsEmpty()) {
-        pPage->SetFor(pdfium::page_object::kContents,
-                      NewIndirectContentsStream(key, pDocument)
-                          ->MakeReference(pDocument));
-      }
-      return;
+  if (!pContentsStream && !pContentsArray) {
+    if (!key.IsEmpty()) {
+      pPage->SetFor(
+          pdfium::page_object::kContents,
+          NewIndirectContentsStream(pDocument, GenerateFlattenedContent(key))
+              ->MakeReference(pDocument));
     }
+    return;
   }
+
   pPage->ConvertToIndirectObjectFor(pdfium::page_object::kContents, pDocument);
-  if (!pContentsArray) {
-    pContentsArray = pDocument->NewIndirect<CPDF_Array>();
+  if (pContentsArray) {
+    pContentsArray->InsertAt(
+        0, NewIndirectContentsStream(pDocument, "q")->MakeReference(pDocument));
+    pContentsArray->Add(
+        NewIndirectContentsStream(pDocument, "Q")->MakeReference(pDocument));
+  } else {
     ByteString sStream = "q\n";
     {
       auto pAcc = pdfium::MakeRetain<CPDF_StreamAcc>(pContentsStream);
       pAcc->LoadAllDataFiltered();
-      sStream += ByteString(pAcc->GetData(), pAcc->GetSize());
+      sStream += ByteString(pAcc->GetSpan());
       sStream += "\nQ";
     }
     pContentsStream->SetDataAndRemoveFilter(sStream.AsRawSpan());
+
+    pContentsArray = pDocument->NewIndirect<CPDF_Array>();
     pContentsArray->Add(pContentsStream->MakeReference(pDocument));
     pPage->SetFor(pdfium::page_object::kContents,
                   pContentsArray->MakeReference(pDocument));
   }
   if (!key.IsEmpty()) {
     pContentsArray->Add(
-        NewIndirectContentsStream(key, pDocument)->MakeReference(pDocument));
+        NewIndirectContentsStream(pDocument, GenerateFlattenedContent(key))
+            ->MakeReference(pDocument));
   }
 }
 
-CFX_Matrix GetMatrix(CFX_FloatRect rcAnnot,
-                     CFX_FloatRect rcStream,
+CFX_Matrix GetMatrix(const CFX_FloatRect& rcAnnot,
+                     const CFX_FloatRect& rcStream,
                      const CFX_Matrix& matrix) {
   if (rcStream.IsEmpty())
     return CFX_Matrix();
 
-  rcStream = matrix.TransformRect(rcStream);
-  rcStream.Normalize();
+  CFX_FloatRect rcTransformed = matrix.TransformRect(rcStream);
+  rcTransformed.Normalize();
 
-  float a = rcAnnot.Width() / rcStream.Width();
-  float d = rcAnnot.Height() / rcStream.Height();
+  float a = rcAnnot.Width() / rcTransformed.Width();
+  float d = rcAnnot.Height() / rcTransformed.Height();
 
-  float e = rcAnnot.left - rcStream.left * a;
-  float f = rcAnnot.bottom - rcStream.bottom * d;
-  return CFX_Matrix(a, 0, 0, d, e, f);
+  float e = rcAnnot.left - rcTransformed.left * a;
+  float f = rcAnnot.bottom - rcTransformed.bottom * d;
+  return CFX_Matrix(a, 0.0f, 0.0f, d, e, f);
 }
 
 }  // namespace
@@ -252,7 +260,6 @@ FPDF_EXPORT int FPDF_CALLCONV FPDFPage_Flatten(FPDF_PAGE page, int nFlag) {
   if (iRet == FLATTEN_NOTHINGTODO || iRet == FLATTEN_FAIL)
     return iRet;
 
-  CFX_FloatRect rcOriginalCB;
   CFX_FloatRect rcMerger = CalculateRect(&RectArray);
   CFX_FloatRect rcOriginalMB =
       pPageDict->GetRectFor(pdfium::page_object::kMediaBox);
@@ -262,20 +269,19 @@ FPDF_EXPORT int FPDF_CALLCONV FPDFPage_Flatten(FPDF_PAGE page, int nFlag) {
   if (rcOriginalMB.IsEmpty())
     rcOriginalMB = CFX_FloatRect(0.0f, 0.0f, 612.0f, 792.0f);
 
+  CFX_FloatRect rcOriginalCB;
+  if (pPageDict->KeyExist(pdfium::page_object::kCropBox))
+    rcOriginalCB = pPageDict->GetRectFor(pdfium::page_object::kCropBox);
+  if (rcOriginalCB.IsEmpty())
+    rcOriginalCB = rcOriginalMB;
+
   rcMerger.left = std::max(rcMerger.left, rcOriginalMB.left);
   rcMerger.right = std::min(rcMerger.right, rcOriginalMB.right);
   rcMerger.bottom = std::max(rcMerger.bottom, rcOriginalMB.bottom);
   rcMerger.top = std::min(rcMerger.top, rcOriginalMB.top);
-  if (pPageDict->KeyExist("ArtBox"))
-    rcOriginalCB = pPageDict->GetRectFor("ArtBox");
-  else
-    rcOriginalCB = rcOriginalMB;
 
-  if (!rcOriginalMB.IsEmpty())
-    pPageDict->SetRectFor(pdfium::page_object::kMediaBox, rcOriginalMB);
-
-  if (!rcOriginalCB.IsEmpty())
-    pPageDict->SetRectFor("ArtBox", rcOriginalCB);
+  pPageDict->SetRectFor(pdfium::page_object::kMediaBox, rcOriginalMB);
+  pPageDict->SetRectFor(pdfium::page_object::kCropBox, rcOriginalCB);
 
   CPDF_Dictionary* pRes =
       pPageDict->GetDictFor(pdfium::page_object::kResources);
@@ -285,8 +291,7 @@ FPDF_EXPORT int FPDF_CALLCONV FPDFPage_Flatten(FPDF_PAGE page, int nFlag) {
   }
 
   CPDF_Stream* pNewXObject = pDocument->NewIndirect<CPDF_Stream>(
-      nullptr, 0,
-      pdfium::MakeUnique<CPDF_Dictionary>(pDocument->GetByteStringPool()));
+      nullptr, 0, pDocument->New<CPDF_Dictionary>());
 
   CPDF_Dictionary* pPageXObject = pRes->GetDictFor("XObject");
   if (!pPageXObject)
@@ -315,8 +320,7 @@ FPDF_EXPORT int FPDF_CALLCONV FPDFPage_Flatten(FPDF_PAGE page, int nFlag) {
     pNewOXbjectDic->SetNewFor<CPDF_Name>("Type", "XObject");
     pNewOXbjectDic->SetNewFor<CPDF_Name>("Subtype", "Form");
     pNewOXbjectDic->SetNewFor<CPDF_Number>("FormType", 1);
-    CFX_FloatRect rcBBox = pPageDict->GetRectFor(pdfium::page_object::kArtBox);
-    pNewOXbjectDic->SetRectFor("BBox", rcBBox);
+    pNewOXbjectDic->SetRectFor("BBox", rcOriginalCB);
   }
 
   for (size_t i = 0; i < ObjectArray.size(); ++i) {
@@ -341,8 +345,9 @@ FPDF_EXPORT int FPDF_CALLCONV FPDFPage_Flatten(FPDF_PAGE page, int nFlag) {
       if (!sAnnotState.IsEmpty()) {
         pAPStream = pAPDic->GetStreamFor(sAnnotState);
       } else {
-        if (pAPDic->GetCount() > 0) {
-          CPDF_Object* pFirstObj = pAPDic->begin()->second.get();
+        if (pAPDic->size() > 0) {
+          CPDF_DictionaryLocker locker(pAPDic);
+          CPDF_Object* pFirstObj = locker.begin()->second.get();
           if (pFirstObj) {
             if (pFirstObj->IsReference())
               pFirstObj = pFirstObj->GetDirect();

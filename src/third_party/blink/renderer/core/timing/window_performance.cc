@@ -173,16 +173,11 @@ MemoryInfo* WindowPerformance::memory() const {
 }
 
 bool WindowPerformance::shouldYield() const {
-  return Platform::Current()
-      ->CurrentThread()
-      ->Scheduler()
-      ->ShouldYieldForHighPriorityWork();
+  return ThreadScheduler::Current()->ShouldYieldForHighPriorityWork();
 }
 
 PerformanceNavigationTiming*
 WindowPerformance::CreateNavigationTimingInstance() {
-  if (!RuntimeEnabledFeatures::PerformanceNavigationTiming2Enabled())
-    return nullptr;
   if (!GetFrame())
     return nullptr;
   const DocumentLoader* document_loader =
@@ -196,8 +191,8 @@ WindowPerformance::CreateNavigationTimingInstance() {
       PerformanceServerTiming::ParseServerTiming(*info);
   if (!server_timing.empty())
     UseCounter::Count(GetFrame(), WebFeature::kPerformanceServerTiming);
-  return new PerformanceNavigationTiming(GetFrame(), info, time_origin_,
-                                         server_timing);
+  return MakeGarbageCollected<PerformanceNavigationTiming>(
+      GetFrame(), info, time_origin_, server_timing);
 }
 
 void WindowPerformance::UpdateLongTaskInstrumentation() {
@@ -325,9 +320,9 @@ void WindowPerformance::ReportLongTask(
         culprit_dom_window->GetFrame()->DeprecatedLocalOwner();
     AddLongTaskTiming(
         start_time, end_time, attribution.first,
-        GetFrameAttribute(frame_owner, HTMLNames::srcAttr, false),
-        GetFrameAttribute(frame_owner, HTMLNames::idAttr, false),
-        GetFrameAttribute(frame_owner, HTMLNames::nameAttr, true),
+        GetFrameAttribute(frame_owner, html_names::kSrcAttr, false),
+        GetFrameAttribute(frame_owner, html_names::kIdAttr, false),
+        GetFrameAttribute(frame_owner, html_names::kNameAttr, true),
         IsSameOrigin(attribution.first) ? sub_task_attributions : empty_vector);
   }
 }
@@ -343,7 +338,7 @@ void WindowPerformance::RegisterEventTiming(const AtomicString& event_type,
                                             TimeTicks processing_start,
                                             TimeTicks processing_end,
                                             bool cancelable) {
-  DCHECK(OriginTrials::EventTimingEnabled(GetExecutionContext()));
+  DCHECK(origin_trials::EventTimingEnabled(GetExecutionContext()));
 
   DCHECK(!start_time.is_null());
   DCHECK(!processing_start.is_null());
@@ -373,7 +368,7 @@ void WindowPerformance::RegisterEventTiming(const AtomicString& event_type,
 
 void WindowPerformance::ReportEventTimings(WebLayerTreeView::SwapResult result,
                                            TimeTicks timestamp) {
-  DCHECK(OriginTrials::EventTimingEnabled(GetExecutionContext()));
+  DCHECK(origin_trials::EventTimingEnabled(GetExecutionContext()));
 
   DOMHighResTimeStamp end_time = MonotonicTimeToDOMHighResTimeStamp(timestamp);
   for (const auto& entry : event_timings_) {
@@ -417,7 +412,7 @@ void WindowPerformance::AddElementTiming(const AtomicString& name,
 
 void WindowPerformance::DispatchFirstInputTiming(
     PerformanceEventTiming* entry) {
-  DCHECK(OriginTrials::EventTimingEnabled(GetExecutionContext()));
+  DCHECK(origin_trials::EventTimingEnabled(GetExecutionContext()));
   first_input_detected_ = true;
 
   if (!entry)

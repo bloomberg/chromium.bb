@@ -28,7 +28,9 @@ void Session::OnStart() {
   // (crbug.com/594852)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           quick_launch::mojom::kServiceName)) {
-    context()->connector()->StartService(quick_launch::mojom::kServiceName);
+    // TODO(https://crbug.com/904148): This should not use |WarmService()|.
+    context()->connector()->WarmService(service_manager::ServiceFilter::ByName(
+        quick_launch::mojom::kServiceName));
   }
 #endif  // defined(OS_CHROMEOS)
 }
@@ -36,7 +38,8 @@ void Session::OnStart() {
 void Session::StartWindowManager() {
   // TODO(beng): monitor this service for death & bring down the whole system
   // if necessary.
-  context()->connector()->StartService(common::GetWindowManagerServiceName());
+  context()->connector()->WarmService(service_manager::ServiceFilter::ByName(
+      common::GetWindowManagerServiceName()));
 }
 
 }  // namespace session

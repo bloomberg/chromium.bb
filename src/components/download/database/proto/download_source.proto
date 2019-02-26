@@ -21,4 +21,5 @@ enum DownloadSource {
   WEB_CONTENTS_API = 7;
   OFFLINE_PAGE = 8;
   CONTEXT_MENU = 9;
+  RETRY = 10;
 }

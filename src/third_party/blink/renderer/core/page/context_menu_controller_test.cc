@@ -35,7 +35,7 @@ class MockWebMediaPlayerForContextMenu : public EmptyWebMediaPlayer {
   }
 };
 
-class TestWebFrameClientImpl : public FrameTestHelpers::TestWebFrameClient {
+class TestWebFrameClientImpl : public frame_test_helpers::TestWebFrameClient {
  public:
   void ShowContextMenu(const WebContextMenuData& data) override {
     context_menu_data_ = data;
@@ -66,8 +66,9 @@ class ContextMenuControllerTest : public testing::Test {
     web_view_helper_.Initialize(&web_frame_client_);
 
     WebLocalFrameImpl* local_main_frame = web_view_helper_.LocalMainFrame();
-    local_main_frame->ViewImpl()->Resize(WebSize(640, 480));
-    local_main_frame->ViewImpl()->UpdateAllLifecyclePhases();
+    local_main_frame->ViewImpl()->MainFrameWidget()->Resize(WebSize(640, 480));
+    local_main_frame->ViewImpl()->MainFrameWidget()->UpdateAllLifecyclePhases(
+        WebWidget::LifecycleUpdateReason::kTest);
   }
 
   bool ShowContextMenu(const LayoutPoint& location, WebMenuSourceType source) {
@@ -97,7 +98,7 @@ class ContextMenuControllerTest : public testing::Test {
 
  private:
   TestWebFrameClientImpl web_frame_client_;
-  FrameTestHelpers::WebViewHelper web_view_helper_;
+  frame_test_helpers::WebViewHelper web_view_helper_;
 };
 
 TEST_F(ContextMenuControllerTest, VideoNotLoaded) {

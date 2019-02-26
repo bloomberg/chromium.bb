@@ -22,20 +22,18 @@ class FrameSinkElement : public UIElement {
                    UIElementDelegate* ui_element_delegate,
                    UIElement* parent,
                    bool is_root,
-                   bool is_registered,
-                   bool is_client_connected);
+                   bool has_created_frame_sink);
   ~FrameSinkElement() override;
 
   // Used by DOMAgentViz on updates when element is already present
   // in a tree but its properties need to be changed.
-  void SetRegistered(bool is_registered) { is_registered_ = is_registered; }
-  void SetClientConnected(bool is_client_connected) {
-    is_client_connected_ = is_client_connected;
+  void SetHasCreatedFrameSink(bool has_created_frame_sink) {
+    has_created_frame_sink_ = has_created_frame_sink;
   }
   void SetRoot(bool is_root) { is_root_ = is_root; }
 
-  bool is_registered() const { return is_registered_; }
-  bool is_client_connected() const { return is_client_connected_; }
+  const viz::FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
+  bool has_created_frame_sink() const { return has_created_frame_sink_; }
 
   // UIElement:
   std::vector<std::pair<std::string, std::string>> GetCustomProperties()
@@ -57,12 +55,9 @@ class FrameSinkElement : public UIElement {
   // Properties of the FrameSink. If element is a RootFrameSink then it has
   // |is_root_| = true. If element is not a root than it has |is_root_| = false.
   // If an element is a sibling of a RootFrameSink but has property |is_root_| =
-  // false then it is considered detached. If the FrameSink was registered then
-  // corresponding element's |is_registered_| = true. If a FrameSink was created
-  // then |is_client_connected_| = true.
+  // false then it is considered detached.
   bool is_root_;
-  bool is_registered_;
-  bool is_client_connected_;
+  bool has_created_frame_sink_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameSinkElement);
 };

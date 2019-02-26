@@ -47,8 +47,7 @@ class NotificationForwarder : public content::NotificationObserver {
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override {
     if (type == chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED) {
-      model_->UpdateFromWebContents(
-          content::Source<content::WebContents>(source).ptr());
+      model_->Update(content::Source<content::WebContents>(source).ptr());
     }
   }
 
@@ -62,7 +61,7 @@ class NotificationForwarder : public content::NotificationObserver {
 class ContentSettingImageModelTest : public ChromeRenderViewHostTestHarness {
 };
 
-TEST_F(ContentSettingImageModelTest, UpdateFromWebContents) {
+TEST_F(ContentSettingImageModelTest, Update) {
   TabSpecificContentSettings::CreateForWebContents(web_contents());
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
@@ -73,19 +72,19 @@ TEST_F(ContentSettingImageModelTest, UpdateFromWebContents) {
   EXPECT_TRUE(content_setting_image_model->get_tooltip().empty());
 
   content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES);
-  content_setting_image_model->UpdateFromWebContents(web_contents());
+  content_setting_image_model->Update(web_contents());
 
   EXPECT_TRUE(content_setting_image_model->is_visible());
   EXPECT_TRUE(HasIcon(*content_setting_image_model));
   EXPECT_FALSE(content_setting_image_model->get_tooltip().empty());
 }
 
-TEST_F(ContentSettingImageModelTest, RPHUpdateFromWebContents) {
+TEST_F(ContentSettingImageModelTest, RPHUpdate) {
   TabSpecificContentSettings::CreateForWebContents(web_contents());
   auto content_setting_image_model =
       ContentSettingImageModel::CreateForContentType(
           ContentSettingImageModel::ImageType::PROTOCOL_HANDLERS);
-  content_setting_image_model->UpdateFromWebContents(web_contents());
+  content_setting_image_model->Update(web_contents());
   EXPECT_FALSE(content_setting_image_model->is_visible());
 
   TabSpecificContentSettings* content_settings =
@@ -93,7 +92,7 @@ TEST_F(ContentSettingImageModelTest, RPHUpdateFromWebContents) {
   content_settings->set_pending_protocol_handler(
       ProtocolHandler::CreateProtocolHandler(
           "mailto", GURL("http://www.google.com/")));
-  content_setting_image_model->UpdateFromWebContents(web_contents());
+  content_setting_image_model->Update(web_contents());
   EXPECT_TRUE(content_setting_image_model->is_visible());
 }
 
@@ -116,7 +115,7 @@ TEST_F(ContentSettingImageModelTest, CookieAccessed) {
       net::CanonicalCookie::Create(origin, "A=B", base::Time::Now(), options));
   ASSERT_TRUE(cookie);
   content_settings->OnCookieChange(origin, origin, *cookie, false);
-  content_setting_image_model->UpdateFromWebContents(web_contents());
+  content_setting_image_model->Update(web_contents());
   EXPECT_TRUE(content_setting_image_model->is_visible());
   EXPECT_TRUE(HasIcon(*content_setting_image_model));
   EXPECT_FALSE(content_setting_image_model->get_tooltip().empty());
@@ -137,13 +136,14 @@ TEST_F(ContentSettingImageModelTest, SubresourceFilter) {
   TabSpecificContentSettings::CreateForWebContents(web_contents());
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
-  std::unique_ptr<ContentSettingImageModel> content_setting_image_model(
-      new ContentSettingSubresourceFilterImageModel());
+  auto content_setting_image_model =
+      ContentSettingImageModel::CreateForContentType(
+          ContentSettingImageModel::ImageType::ADS);
   EXPECT_FALSE(content_setting_image_model->is_visible());
   EXPECT_TRUE(content_setting_image_model->get_tooltip().empty());
 
   content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_ADS);
-  content_setting_image_model->UpdateFromWebContents(web_contents());
+  content_setting_image_model->Update(web_contents());
 
   EXPECT_TRUE(content_setting_image_model->is_visible());
   EXPECT_TRUE(HasIcon(*content_setting_image_model));

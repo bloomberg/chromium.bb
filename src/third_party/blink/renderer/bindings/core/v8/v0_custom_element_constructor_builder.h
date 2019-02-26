@@ -58,7 +58,7 @@ class V0CustomElementConstructorBuilder {
 
  public:
   V0CustomElementConstructorBuilder(ScriptState*,
-                                    const ElementRegistrationOptions&);
+                                    const ElementRegistrationOptions*);
 
   // The builder accumulates state and may run script at specific
   // points. These methods must be called in order. When one fails
@@ -85,7 +85,7 @@ class V0CustomElementConstructorBuilder {
   v8::MaybeLocal<v8::Function> RetrieveCallback(const char* name);
 
   Member<ScriptState> script_state_;
-  const ElementRegistrationOptions& options_;
+  Member<const ElementRegistrationOptions> options_;
   v8::Local<v8::Object> prototype_;
   v8::Local<v8::Function> constructor_;
   Member<V8V0CustomElementLifecycleCallbacks> callbacks_;

@@ -93,7 +93,6 @@ class ZoomBubbleView : public LocationBarBubbleDelegateView,
   ~ZoomBubbleView() override;
 
   // LocationBarBubbleDelegateView:
-  View* GetInitiallyFocusedView() override;
   base::string16 GetAccessibleWindowTitle() const override;
   int GetDialogButtons() const override;
   void OnFocus() override;
@@ -105,6 +104,7 @@ class ZoomBubbleView : public LocationBarBubbleDelegateView,
   void Init() override;
   void WindowClosing() override;
   void CloseBubble() override;
+  void Layout() override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

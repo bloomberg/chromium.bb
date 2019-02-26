@@ -270,7 +270,7 @@ void AXEventGenerator::OnBoolAttributeChanged(AXTree* tree,
     AddEvent(node, Event::SELECTED_CHANGED);
     ui::AXNode* container = node;
     while (container &&
-           !ui::IsContainerWithSelectableChildrenRole(container->data().role))
+           !ui::IsContainerWithSelectableChildren(container->data().role))
       container = container->parent();
     if (container)
       AddEvent(container, Event::SELECTED_CHILDREN_CHANGED);
@@ -461,7 +461,8 @@ void AXEventGenerator::FireRelationSourceEvents(AXTree* tree,
 // interested in under any circumstances, such as pages which have no size.
 bool AXEventGenerator::ShouldFireLoadEvents(AXNode* node) {
   const AXNodeData& data = node->data();
-  return data.location.width() || data.location.height();
+  return data.relative_bounds.bounds.width() ||
+         data.relative_bounds.bounds.height();
 }
 
 }  // namespace ui

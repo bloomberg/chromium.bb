@@ -27,7 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_SECURITY_POLICY_VIOLATION_EVENT_H_
 
 #include "third_party/blink/renderer/core/dom/events/event.h"
-#include "third_party/blink/renderer/core/event_names.h"
+#include "third_party/blink/renderer/core/event_interface_names.h"
 #include "third_party/blink/renderer/core/events/security_policy_violation_event_init.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
 
@@ -37,11 +37,21 @@ class SecurityPolicyViolationEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static SecurityPolicyViolationEvent* Create(const AtomicString& type) {
+    return MakeGarbageCollected<SecurityPolicyViolationEvent>(type);
+  }
+
   static SecurityPolicyViolationEvent* Create(
       const AtomicString& type,
-      const SecurityPolicyViolationEventInit& initializer) {
-    return new SecurityPolicyViolationEvent(type, initializer);
+      const SecurityPolicyViolationEventInit* initializer) {
+    return MakeGarbageCollected<SecurityPolicyViolationEvent>(type,
+                                                              initializer);
   }
+
+  explicit SecurityPolicyViolationEvent(const AtomicString& type);
+  SecurityPolicyViolationEvent(
+      const AtomicString& type,
+      const SecurityPolicyViolationEventInit* initializer);
 
   const String& documentURI() const { return document_uri_; }
   const String& referrer() const { return referrer_; }
@@ -57,16 +67,12 @@ class SecurityPolicyViolationEvent final : public Event {
   uint16_t statusCode() const { return status_code_; }
 
   const AtomicString& InterfaceName() const override {
-    return EventNames::SecurityPolicyViolationEvent;
+    return event_interface_names::kSecurityPolicyViolationEvent;
   }
 
   void Trace(blink::Visitor* visitor) override { Event::Trace(visitor); }
 
  private:
-  SecurityPolicyViolationEvent(
-      const AtomicString& type,
-      const SecurityPolicyViolationEventInit& initializer);
-
   String document_uri_;
   String referrer_;
   String blocked_uri_;

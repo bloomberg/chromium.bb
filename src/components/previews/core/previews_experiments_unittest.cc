@@ -135,24 +135,18 @@ TEST(PreviewsExperimentsTest, TestEnableClientLoFiWithDefaultParams) {
   EXPECT_EQ(0, params::ClientLoFiVersion());
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
             params::EffectiveConnectionTypeThresholdForClientLoFi());
-  EXPECT_EQ(std::vector<std::string>(),
-            params::GetBlackListedHostsForClientLoFiFieldTrial());
 }
 
 TEST(PreviewsExperimentsTest, TestEnableClientLoFiWithCustomParams) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       features::kClientLoFi,
-      {{"version", "10"},
-       {"max_allowed_effective_connection_type", "3G"},
-       {"short_host_blacklist", "some,hosts, to-blacklist ,,"}});
+      {{"version", "10"}, {"max_allowed_effective_connection_type", "3G"}});
 
   EXPECT_TRUE(params::IsClientLoFiEnabled());
   EXPECT_EQ(10, params::ClientLoFiVersion());
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_3G,
             params::EffectiveConnectionTypeThresholdForClientLoFi());
-  EXPECT_EQ(std::vector<std::string>({"some", "hosts", "to-blacklist"}),
-            params::GetBlackListedHostsForClientLoFiFieldTrial());
 }
 
 }  // namespace

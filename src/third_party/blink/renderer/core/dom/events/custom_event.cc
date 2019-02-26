@@ -27,7 +27,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value_factory.h"
-#include "third_party/blink/renderer/core/event_names.h"
+#include "third_party/blink/renderer/core/event_interface_names.h"
 
 namespace blink {
 
@@ -35,12 +35,12 @@ CustomEvent::CustomEvent() = default;
 
 CustomEvent::CustomEvent(ScriptState* script_state,
                          const AtomicString& type,
-                         const CustomEventInit& initializer)
+                         const CustomEventInit* initializer)
     : Event(type, initializer) {
   world_ = WrapRefCounted(&script_state->World());
-  if (initializer.hasDetail()) {
-    detail_.Set(initializer.detail().GetIsolate(),
-                initializer.detail().V8Value());
+  if (initializer->hasDetail()) {
+    detail_.Set(initializer->detail().GetIsolate(),
+                initializer->detail().V8Value());
   }
 }
 
@@ -72,7 +72,7 @@ ScriptValue CustomEvent::detail(ScriptState* script_state) const {
 }
 
 const AtomicString& CustomEvent::InterfaceName() const {
-  return EventNames::CustomEvent;
+  return event_interface_names::kCustomEvent;
 }
 
 void CustomEvent::Trace(blink::Visitor* visitor) {

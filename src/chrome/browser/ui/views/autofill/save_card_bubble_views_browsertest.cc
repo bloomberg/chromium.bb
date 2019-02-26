@@ -23,6 +23,7 @@
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/window/dialog_client_view.h"
@@ -121,6 +122,39 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   EXPECT_FALSE(GetSaveCardIconView()->visible());
   EXPECT_EQ(0, user_action_tester.GetActionCount(
                    "Signin_Impression_FromSaveCardBubble"));
+}
+
+// Tests the local save bubble. Ensures that clicking the [No thanks] button
+// successfully causes the bubble to go away.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
+                       Local_ClickingNoThanksClosesBubble) {
+  // Enable the updated UI.
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillSaveCardImprovedUserConsent);
+
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsDeclines();
+
+  // Submitting the form and having Payments decline offering to save should
+  // show the local save bubble.
+  // (Must wait for response from Payments before accessing the controller.)
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE,
+       DialogEvent::OFFERED_LOCAL_SAVE});
+  FillAndSubmitForm();
+  WaitForObservedEvent();
+  EXPECT_TRUE(
+      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)->visible());
+
+  // Clicking [No thanks] should cancel and close it.
+  base::HistogramTester histogram_tester;
+  ClickOnCancelButton();
+
+  // UMA should have recorded bubble rejection.
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SaveCreditCardPrompt.Local.FirstShow",
+      AutofillMetrics::SAVE_CARD_PROMPT_END_DENIED, 1);
 }
 
 // Tests the sign in promo bubble. Ensures that clicking the [Save] button
@@ -578,10 +612,14 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 }
 #endif
 
-// Tests the local save bubble. Ensures that the Harmony version of the bubble
-// does not have a [No thanks] button (it has an [X] Close button instead.)
+// Tests the local save bubble. Ensures that the bubble does not have a
+// [No thanks] button (it has an [X] Close button instead.)
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Local_ShouldNotHaveNoThanksButton) {
+  // Disable the updated UI.
+  scoped_feature_list_.InitAndDisableFeature(
+      features::kAutofillSaveCardImprovedUserConsent);
+
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsDeclines();
 
@@ -670,10 +708,46 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
       AutofillMetrics::SAVE_CARD_PROMPT_END_ACCEPTED, 1);
 }
 
-// Tests the upload save bubble. Ensures that the Harmony version of the bubble
-// does not have a [No thanks] button (it has an [X] Close button instead.)
+// Tests the upload save bubble. Ensures that clicking the [No thanks] button
+// successfully causes the bubble to go away.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
+                       Upload_ClickingNoThanksClosesBubble) {
+  // Enable the updated UI.
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillSaveCardImprovedUserConsent);
+
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsAccepts();
+
+  // Submitting the form should show the upload save bubble and legal footer.
+  // (Must wait for response from Payments before accessing the controller.)
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
+  FillAndSubmitForm();
+  WaitForObservedEvent();
+  EXPECT_TRUE(
+      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
+
+  // Clicking [No thanks] should cancel and close it.
+  base::HistogramTester histogram_tester;
+  ClickOnCancelButton();
+
+  // UMA should have recorded bubble rejection.
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SaveCreditCardPrompt.Upload.FirstShow",
+      AutofillMetrics::SAVE_CARD_PROMPT_END_DENIED, 1);
+}
+
+// Tests the upload save bubble. Ensures that the bubble does not have a
+// [No thanks] button (it has an [X] Close button instead.)
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Upload_ShouldNotHaveNoThanksButton) {
+  // Disable the updated UI.
+  scoped_feature_list_.InitAndDisableFeature(
+      features::kAutofillSaveCardImprovedUserConsent);
+
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
 
@@ -1231,6 +1305,243 @@ IN_PROC_BROWSER_TEST_F(
       "Autofill.UploadOfferedCardOrigin",
       AutofillMetrics::OFFERING_UPLOAD_OF_NEW_CARD, 1);
   histogram_tester.ExpectTotalCount("Autofill.UploadAcceptedCardOrigin", 0);
+}
+
+// Tests the upload save bubble. Ensures that the bubble surfaces a pair of
+// dropdowns requesting expiration date if expiration date is missing.
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTest,
+    Upload_SubmittingFormWithMissingExpirationDateRequestsExpirationDate) {
+  // Enable the EditableExpirationDate experiment.
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillUpstreamEditableExpirationDate);
+
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsAccepts();
+
+  // Submitting the form should still show the upload save bubble and legal
+  // footer, along with a pair of dropdowns specifically requesting the
+  // expiration date. (Must wait for response from Payments before accessing
+  // the controller.)
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
+  FillAndSubmitFormWithoutExpirationDate();
+  WaitForObservedEvent();
+  EXPECT_TRUE(
+      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
+  EXPECT_TRUE(
+      FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_VIEW)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_DROPBOX_YEAR)
+                  ->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_DROPBOX_MONTH)
+                  ->visible());
+  EXPECT_FALSE(FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_LABEL));
+}
+
+// Tests the upload save bubble. Ensures that the bubble surfaces a pair of
+// dropdowns requesting expiration date if expiration date is expired.
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTest,
+    Upload_SubmittingFormWithExpiredExpirationDateRequestsExpirationDate) {
+  // Enable the EditableExpirationDate experiment.
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillUpstreamEditableExpirationDate);
+
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsAccepts();
+
+  // Submitting the form should still show the upload save bubble and legal
+  // footer, along with a pair of dropdowns specifically requesting the
+  // expiration date. (Must wait for response from Payments before accessing
+  // the controller.)
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
+  FillAndSubmitFormWithExpiredExpirationDate();
+  WaitForObservedEvent();
+  EXPECT_TRUE(
+      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
+  EXPECT_TRUE(
+      FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_VIEW)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_DROPBOX_YEAR)
+                  ->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_DROPBOX_MONTH)
+                  ->visible());
+  EXPECT_FALSE(FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_LABEL));
+}
+
+// Tests the upload save bubble. Ensures that the bubble is not shown when
+// expiration date is passed, but the flag is disabled.
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTest,
+    Logic_ShouldNotOfferToSaveIfSubmittingExpiredExpirationDateAndExpOff) {
+  // Disable the EditableExpirationDate experiment.
+  scoped_feature_list_.InitAndDisableFeature(
+      features::kAutofillUpstreamEditableExpirationDate);
+
+  // The credit card will not be imported if the expiration date is expired and
+  // experiment is off.
+  FillAndSubmitFormWithExpiredExpirationDate();
+  EXPECT_FALSE(GetSaveCardBubbleViews());
+}
+
+// Tests the upload save bubble. Ensures that the bubble is not shown when
+// expiration date is missing, but the flag is disabled.
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTest,
+    Logic_ShouldNotOfferToSaveIfMissingExpirationDateAndExpOff) {
+  // Disable the EditableExpirationDate experiment.
+  scoped_feature_list_.InitAndDisableFeature(
+      features::kAutofillUpstreamEditableExpirationDate);
+
+  // The credit card will not be imported if there is no expiration date and
+  // experiment is off.
+  FillAndSubmitFormWithoutExpirationDate();
+  EXPECT_FALSE(GetSaveCardBubbleViews());
+}
+
+// Tests the upload save bubble. Ensures that the bubble does not surface the
+// expiration date dropdowns if it is not needed.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
+                       Upload_ShouldNotRequestExpirationDateInHappyPath) {
+  // Enable the EditableExpirationDate experiment.
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillUpstreamEditableExpirationDate);
+
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsAccepts();
+
+  // Submitting the form should show the upload save bubble and legal footer.
+  // (Must wait for response from Payments before accessing the controller.)
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
+  FillAndSubmitForm();
+  WaitForObservedEvent();
+  EXPECT_TRUE(
+      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
+  EXPECT_TRUE(
+      FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_LABEL)->visible());
+
+  // Assert that expiration date was not explicitly requested in the bubble.
+  EXPECT_FALSE(FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_VIEW));
+  EXPECT_FALSE(
+      FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_DROPBOX_YEAR));
+  EXPECT_FALSE(
+      FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_DROPBOX_MONTH));
+}
+
+// Tests the upload save bubble. Ensures that if the expiration date drop down
+// box is changing, [Save] button will change status correctly.
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTest,
+    Upload_SaveButtonStatusResetBetweenExpirationDateSelectionChanges) {
+  // Enable the EditableExpirationDate experiment.
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillUpstreamEditableExpirationDate);
+
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsAccepts();
+
+  // Submitting the form should still show the upload save bubble and legal
+  // footer, along with a pair of dropdowns specifically requesting the
+  // expiration date. (Must wait for response from Payments before accessing
+  // the controller.)
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
+  FillAndSubmitFormWithoutExpirationDate();
+  WaitForObservedEvent();
+  EXPECT_TRUE(
+      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
+  EXPECT_TRUE(
+      FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_VIEW)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_DROPBOX_YEAR)
+                  ->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_DROPBOX_MONTH)
+                  ->visible());
+
+  // [Save] button is disabled by default when requesting expiration date,
+  // because there are no preselected values in the dropdown lists.
+  views::LabelButton* save_button = static_cast<views::LabelButton*>(
+      FindViewInBubbleById(DialogViewId::OK_BUTTON));
+  EXPECT_EQ(save_button->state(),
+            views::LabelButton::ButtonState::STATE_DISABLED);
+
+  views::Combobox* year_input = static_cast<views::Combobox*>(
+      FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_DROPBOX_YEAR));
+  views::Combobox* month_input = static_cast<views::Combobox*>(
+      FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_DROPBOX_MONTH));
+
+  // Selecting only month or year will disable [Save] button.
+  year_input->SetSelectedRow(2);
+  EXPECT_EQ(save_button->state(),
+            views::LabelButton::ButtonState::STATE_DISABLED);
+  year_input->SetSelectedRow(0);
+  month_input->SetSelectedRow(2);
+  EXPECT_EQ(save_button->state(),
+            views::LabelButton::ButtonState::STATE_DISABLED);
+
+  // Selecting both month and year will enable [Save] button.
+  month_input->SetSelectedRow(2);
+  year_input->SetSelectedRow(2);
+  EXPECT_EQ(save_button->state(),
+            views::LabelButton::ButtonState::STATE_NORMAL);
+}
+
+// Tests the upload save bubble. Ensures that if the user is selecting an
+// expired expiration date, it is not allowed to click [Save].
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTest,
+    Upload_SaveButtonIsDisabledIfExpiredExpirationDateAndExpirationDateRequested) {
+  // Enable the EditableExpirationDate experiment.
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillUpstreamEditableExpirationDate);
+
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsAccepts();
+
+  // Submitting the form should still show the upload save bubble and legal
+  // footer, along with a pair of dropdowns specifically requesting the
+  // expiration date. (Must wait for response from Payments before accessing
+  // the controller.)
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
+  FillAndSubmitFormWithoutExpirationDate();
+  WaitForObservedEvent();
+  EXPECT_TRUE(
+      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
+  EXPECT_TRUE(
+      FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_VIEW)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_DROPBOX_YEAR)
+                  ->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_DROPBOX_MONTH)
+                  ->visible());
+
+  views::LabelButton* save_button = static_cast<views::LabelButton*>(
+      FindViewInBubbleById(DialogViewId::OK_BUTTON));
+  views::Combobox* year_input = static_cast<views::Combobox*>(
+      FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_DROPBOX_YEAR));
+  views::Combobox* month_input = static_cast<views::Combobox*>(
+      FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_DROPBOX_MONTH));
+
+  // Set now to next month. Setting test_clock will not affect the dropdown to
+  // be selected, so selecting the current January will always be expired.
+  autofill::TestAutofillClock test_clock;
+  test_clock.SetNow(base::Time::Now());
+  test_clock.Advance(base::TimeDelta::FromDays(40));
+  // Selecting expired date will disable [Save] button.
+  month_input->SetSelectedRow(1);
+  year_input->SetSelectedRow(1);
+  EXPECT_EQ(save_button->state(),
+            views::LabelButton::ButtonState::STATE_DISABLED);
 }
 
 }  // namespace autofill

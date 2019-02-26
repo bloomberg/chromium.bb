@@ -26,7 +26,7 @@ var Manager = (function() {
     if (copyAllPlayerButton) {
       copyAllPlayerButton.onclick = function() {
         this.clientRenderer_.showClipboard(
-          JSON.stringify(this.players_, null, 2));
+            JSON.stringify(this.players_, null, 2));
       }.bind(this);
     }
     if (copyAllAudioButton) {
@@ -131,10 +131,8 @@ var Manager = (function() {
       }
 
       this.players_[id].addPropertyNoRecord(timestamp, key, value);
-      this.clientRenderer_.playerUpdated(this.players_,
-                                         this.players_[id],
-                                         key,
-                                         value);
+      this.clientRenderer_.playerUpdated(
+          this.players_, this.players_[id], key, value);
     },
 
     /**
@@ -152,10 +150,8 @@ var Manager = (function() {
       }
 
       this.players_[id].addProperty(timestamp, key, value);
-      this.clientRenderer_.playerUpdated(this.players_,
-                                         this.players_[id],
-                                         key,
-                                         value);
+      this.clientRenderer_.playerUpdated(
+          this.players_, this.players_[id], key, value);
     },
 
     parseVideoCaptureFormat_: function(format) {
@@ -180,7 +176,7 @@ var Manager = (function() {
           }
           formatDict[kv[0]] = kv[1];
         } else {
-          kv = parts[i].split("@");
+          kv = parts[i].split('@');
           if (kv.length == 2) {
             formatDict['resolution'] = kv[0].replace(/[)(]/g, '');
             // Round down the FPS to 2 decimals.
@@ -199,12 +195,12 @@ var Manager = (function() {
         for (var j in videoCaptureCapabilities[i]['formats']) {
           videoCaptureCapabilities[i]['formats'][j] =
               this.parseVideoCaptureFormat_(
-                    videoCaptureCapabilities[i]['formats'][j]);
+                  videoCaptureCapabilities[i]['formats'][j]);
         }
       }
 
       // The keys of each device to be shown in order of appearance.
-      var videoCaptureDeviceKeys = ['name','formats','captureApi','id'];
+      var videoCaptureDeviceKeys = ['name', 'formats', 'captureApi', 'id'];
 
       this.clientRenderer_.redrawVideoCaptureCapabilities(
           videoCaptureCapabilities, videoCaptureDeviceKeys);

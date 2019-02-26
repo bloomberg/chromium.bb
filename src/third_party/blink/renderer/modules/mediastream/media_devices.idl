@@ -10,10 +10,18 @@
     ActiveScriptWrappable
 ] interface MediaDevices : EventTarget {
     [RuntimeEnabled=OnDeviceChange] attribute EventHandler ondevicechange;
-    [CallWith=ScriptState, MeasureAs=MediaDevicesEnumerateDevices] Promise<sequence<MediaDeviceInfo>> enumerateDevices();
+    [
+      CallWith = ScriptState, MeasureAs = MediaDevicesEnumerateDevices
+    ] Promise<sequence<MediaDeviceInfo>>
+    enumerateDevices();
     MediaTrackSupportedConstraints getSupportedConstraints();
-    [CallWith=ScriptState,
-     RaisesException,
-     MeasureAs=GetUserMediaPromise
-    ] Promise<MediaStream> getUserMedia(optional MediaStreamConstraints constraints);
+    [
+      CallWith = ScriptState, RaisesException, MeasureAs = GetUserMediaPromise
+    ] Promise<MediaStream>
+    getUserMedia(optional MediaStreamConstraints constraints);
+    [
+      RuntimeEnabled = GetDisplayMedia, CallWith = ScriptState, RaisesException,
+      MeasureAs = GetDisplayMedia
+    ] Promise<MediaStream>
+    getDisplayMedia(optional MediaStreamConstraints constraints);
 };

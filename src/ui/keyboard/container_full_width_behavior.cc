@@ -6,8 +6,7 @@
 
 #include "ui/aura/window.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
-#include "ui/keyboard/container_type.h"
-#include "ui/keyboard/keyboard_controller.h"
+#include "ui/gfx/transform.h"
 #include "ui/wm/core/window_animations.h"
 
 namespace keyboard {
@@ -15,14 +14,13 @@ namespace keyboard {
 // The virtual keyboard show/hide animation duration.
 constexpr int kFullWidthKeyboardAnimationDurationMs = 100;
 
-ContainerFullWidthBehavior::ContainerFullWidthBehavior(
-    KeyboardController* controller) {
-  controller_ = controller;
-}
+ContainerFullWidthBehavior::ContainerFullWidthBehavior(Delegate* delegate)
+    : ContainerBehavior(delegate) {}
+
 ContainerFullWidthBehavior::~ContainerFullWidthBehavior() {}
 
-ContainerType ContainerFullWidthBehavior::GetType() const {
-  return ContainerType::FULL_WIDTH;
+mojom::ContainerType ContainerFullWidthBehavior::GetType() const {
+  return mojom::ContainerType::kFullWidth;
 }
 
 void ContainerFullWidthBehavior::DoHidingAnimation(
@@ -79,7 +77,7 @@ gfx::Rect ContainerFullWidthBehavior::AdjustSetBoundsRequest(
 bool ContainerFullWidthBehavior::IsOverscrollAllowed() const {
   // TODO(blakeo): The locked keyboard is essentially its own behavior type and
   // should be refactored as such. Then this will simply return 'true'.
-  return controller_ && !controller_->keyboard_locked();
+  return delegate_ && !delegate_->IsKeyboardLocked();
 }
 
 void ContainerFullWidthBehavior::SavePosition(const gfx::Rect& keyboard_bounds,
@@ -109,7 +107,7 @@ void ContainerFullWidthBehavior::SetCanonicalBounds(
 }
 
 bool ContainerFullWidthBehavior::TextBlurHidesKeyboard() const {
-  return !controller_->keyboard_locked();
+  return !delegate_->IsKeyboardLocked();
 }
 
 void ContainerFullWidthBehavior::SetOccludedBounds(
@@ -125,14 +123,11 @@ gfx::Rect ContainerFullWidthBehavior::GetOccludedBounds(
 }
 
 bool ContainerFullWidthBehavior::OccludedBoundsAffectWorkspaceLayout() const {
-  return controller_->keyboard_locked();
+  return delegate_->IsKeyboardLocked();
 }
 
-bool ContainerFullWidthBehavior::SetDraggableArea(const gfx::Rect& rect) {
+void ContainerFullWidthBehavior::SetDraggableArea(const gfx::Rect& rect) {
   // Allow extension to call this function but does nothing here.
-  // To avoid unnecessary exception when VK calls this function to
-  // clear draggable area in full width mode.
-  return true;
 }
 
 }  //  namespace keyboard

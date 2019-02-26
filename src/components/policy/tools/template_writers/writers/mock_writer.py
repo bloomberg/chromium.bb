@@ -3,7 +3,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-
 from template_writer import TemplateWriter
 
 
@@ -11,7 +10,7 @@ class MockWriter(TemplateWriter):
   '''Helper class for unit tests in policy_template_generator_unittest.py
   '''
 
-  def __init__(self, platforms = [], config = {}):
+  def __init__(self, platforms=[], config={}):
     super(MockWriter, self).__init__(platforms, config)
 
   def WritePolicy(self, policy):

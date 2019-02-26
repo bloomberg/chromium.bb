@@ -144,24 +144,24 @@ TEST_F(PartialMagnificationControllerTest, MagnifierFollowsPointer) {
 
   // Move the pointer around, make sure the window follows it.
   event_generator->MoveTouch(gfx::Point(32, 32));
-  EXPECT_EQ(event_generator->current_location() + offset,
+  EXPECT_EQ(event_generator->current_screen_location() + offset,
             GetTestApi().GetWidgetOrigin());
 
   event_generator->MoveTouch(gfx::Point(0, 10));
-  EXPECT_EQ(event_generator->current_location() + offset,
+  EXPECT_EQ(event_generator->current_screen_location() + offset,
             GetTestApi().GetWidgetOrigin());
 
   event_generator->MoveTouch(gfx::Point(10, 0));
-  EXPECT_EQ(event_generator->current_location() + offset,
+  EXPECT_EQ(event_generator->current_screen_location() + offset,
             GetTestApi().GetWidgetOrigin());
 
   event_generator->ReleaseTouch();
 
   // Make sure the window is initially placed correctly.
-  event_generator->set_current_location(gfx::Point(50, 20));
+  event_generator->set_current_screen_location(gfx::Point(50, 20));
   EXPECT_FALSE(GetTestApi().is_active());
   event_generator->PressTouch();
-  EXPECT_EQ(event_generator->current_location() + offset,
+  EXPECT_EQ(event_generator->current_screen_location() + offset,
             GetTestApi().GetWidgetOrigin());
 }
 

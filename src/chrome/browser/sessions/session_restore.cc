@@ -81,7 +81,7 @@ namespace {
 bool HasSingleNewTabPage(Browser* browser) {
   if (browser->tab_strip_model()->count() != 1)
     return false;
-  const content::WebContents* active_tab =
+  content::WebContents* active_tab =
       browser->tab_strip_model()->GetWebContentsAt(0);
   return active_tab->GetURL() == chrome::kChromeUINewTabURL ||
          search::IsInstantNTP(active_tab);

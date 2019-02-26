@@ -31,6 +31,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/graphics/image_animation_policy.h"
 #include "third_party/blink/renderer/platform/graphics/image_observer.h"
@@ -73,7 +74,9 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
  public:
   virtual ~Image();
 
-  static cc::ImageDecodeCache& SharedCCDecodeCache(SkColorType);
+  static cc::ImageDecodeCache* SharedCCDecodeCache(
+      CanvasColorSpace color_space,
+      CanvasPixelFormat pixel_format);
 
   static scoped_refptr<Image> LoadPlatformResource(const char* name);
 

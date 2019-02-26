@@ -129,7 +129,7 @@ public:
      * This analyzes the processors given an op's input color and coverage as well as a clip. The
      * state of the processor set may change to an equivalent but more optimal set of processors.
      * This new state requires that the caller respect the returned 'inputColorOverride'. This is
-     * indicated by the returned Analysis's inputColorIsOverriden(). 'inputColorOverride' will not
+     * indicated by the returned Analysis's inputColorIsOverridden(). 'inputColorOverride' will not
      * be written if the analysis does not override the input color.
      *
      * This must be called before the processor set is used to construct a GrPipeline and may only
@@ -141,7 +141,7 @@ public:
      */
     Analysis finalize(const GrProcessorAnalysisColor& colorInput,
                       const GrProcessorAnalysisCoverage coverageInput, const GrAppliedClip*,
-                      bool isMixedSamples, const GrCaps&, GrColor* inputColorOverride);
+                      bool isMixedSamples, const GrCaps&, SkPMColor4f* inputColorOverride);
 
     bool isFinalized() const { return SkToBool(kFinalized_Flag & fFlags); }
 
@@ -150,7 +150,9 @@ public:
     static GrProcessorSet MakeEmptySet();
     static constexpr const Analysis EmptySetAnalysis() { return Analysis(Empty::kEmpty); }
 
+#ifdef SK_DEBUG
     SkString dumpProcessors() const;
+#endif
 
     void visitProxies(const std::function<void(GrSurfaceProxy*)>& func) const {
         for (int i = 0; i < this->numFragmentProcessors(); ++i) {

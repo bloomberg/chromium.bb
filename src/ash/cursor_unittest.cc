@@ -26,7 +26,7 @@ TEST_F(CursorTest, TopLevel) {
 
   // Make sure the WindowTreeClient receives events.
   EXPECT_EQ(0U, GetTestWindowTreeClient()->input_events().size());
-  ui::test::EventGenerator generator(window.get());
+  ui::test::EventGenerator generator(window->GetRootWindow());
   generator.MoveMouseToInHost(50, 50);
   ASSERT_EQ(1U, GetTestWindowTreeClient()->input_events().size());
   EXPECT_EQ(ui::EventType::ET_MOUSE_MOVED,
@@ -74,7 +74,7 @@ TEST_F(CursorTest, Embedded) {
   EXPECT_TRUE(embed_root->IsVisible());
 
   // Now put the cursor over it and the previously set cursor should be used.
-  ui::test::EventGenerator generator(toplevel.get());
+  ui::test::EventGenerator generator(toplevel->GetRootWindow());
   generator.MoveMouseToInHost(50, 50);
   EXPECT_EQ(ui::CursorType::kHelp,
             ash::Shell::Get()->cursor_manager()->GetCursor().native_type());
@@ -91,7 +91,7 @@ TEST_F(CursorTest, Custom) {
   std::unique_ptr<aura::Window> window =
       CreateTestWindow(gfx::Rect(0, 0, 100, 100));
   EXPECT_EQ(0U, GetTestWindowTreeClient()->input_events().size());
-  ui::test::EventGenerator generator(window.get());
+  ui::test::EventGenerator generator(window->GetRootWindow());
   generator.MoveMouseToInHost(50, 50);
 
   // Set a custom cursor.

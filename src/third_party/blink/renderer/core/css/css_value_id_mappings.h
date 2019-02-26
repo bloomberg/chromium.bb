@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_VALUE_ID_MAPPINGS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_VALUE_ID_MAPPINGS_H_
 
-#include "third_party/blink/renderer/core/css_value_id_mappings_generated.h"
+#include "third_party/blink/renderer/core/css/css_value_id_mappings_generated.h"
 
 namespace blink {
 

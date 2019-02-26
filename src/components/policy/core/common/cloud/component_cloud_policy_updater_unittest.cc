@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
@@ -117,7 +118,8 @@ ComponentCloudPolicyUpdaterTest::ComponentCloudPolicyUpdaterTest()
 void ComponentCloudPolicyUpdaterTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   cache_ = std::make_unique<ResourceCache>(temp_dir_.GetPath(),
-                                           task_env_.GetMainThreadTaskRunner());
+                                           task_env_.GetMainThreadTaskRunner(),
+                                           /* max_cache_size */ base::nullopt);
   store_ = std::make_unique<ComponentCloudPolicyStore>(
       &store_delegate_, cache_.get(), dm_protocol::kChromeExtensionPolicyType);
   store_->SetCredentials(PolicyBuilder::GetFakeAccountIdForTesting(),

@@ -7,12 +7,12 @@
  * @typedef {{
  *   advancedSettings: (boolean|undefined),
  *   appearance: (boolean|undefined|AppearancePageVisibility),
+ *   autofill: (boolean|undefined),
  *   dateTime: (boolean|undefined|DateTimePageVisibility),
  *   defaultBrowser: (boolean|undefined),
  *   downloads: (boolean|undefined|DownloadsPageVisibility),
  *   multidevice: (boolean|undefined),
  *   onStartup: (boolean|undefined),
- *   passwordsAndForms: (boolean|undefined),
  *   people: (boolean|undefined),
  *   privacy: (boolean|undefined|PrivacyPageVisibility),
  *   reset:(boolean|undefined),
@@ -65,7 +65,7 @@ cr.define('settings', function() {
     // to work around closure compiler.
     // <if expr="not chromeos">
     pageVisibility = {
-      passwordsAndForms: false,
+      autofill: false,
       people: false,
       onStartup: false,
       reset: false,
@@ -76,7 +76,7 @@ cr.define('settings', function() {
     // </if>
     // <if expr="chromeos">
     pageVisibility = {
-      passwordsAndForms: false,
+      autofill: false,
       people: false,
       onStartup: false,
       reset: false,
@@ -103,7 +103,7 @@ cr.define('settings', function() {
     // after a property is set.
     // <if expr="chromeos">
     pageVisibility = {
-      passwordsAndForms: true,
+      autofill: true,
       people: true,
       onStartup: true,
       reset: true,

@@ -52,10 +52,12 @@ class HeadlessRequestContextManager {
  private:
   void Initialize();
   void InitializeOnIO();
+  void MaybeSetUpOSCrypt();
 
   ::network::mojom::NetworkContextParamsPtr CreateNetworkContextParams();
 
   const bool network_service_enabled_;
+  const bool cookie_encryption_enabled_;
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 

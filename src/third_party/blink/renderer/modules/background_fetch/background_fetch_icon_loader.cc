@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/scheduler/public/background_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_impl.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -47,10 +48,11 @@ BackgroundFetchIconLoader::~BackgroundFetchIconLoader() {
   DCHECK(stopped_ || icon_callback_.is_null());
 }
 
-void BackgroundFetchIconLoader::Start(BackgroundFetchBridge* bridge,
-                                      ExecutionContext* execution_context,
-                                      HeapVector<ManifestImageResource> icons,
-                                      IconCallback icon_callback) {
+void BackgroundFetchIconLoader::Start(
+    BackgroundFetchBridge* bridge,
+    ExecutionContext* execution_context,
+    HeapVector<Member<ManifestImageResource>> icons,
+    IconCallback icon_callback) {
   DCHECK(!stopped_);
   DCHECK_GE(icons.size(), 1u);
   DCHECK(bridge);
@@ -95,13 +97,13 @@ void BackgroundFetchIconLoader::DidGetIconDisplaySizeIfSoLoadIcon(
   resource_request.SetPriority(ResourceLoadPriority::kMedium);
   resource_request.SetKeepalive(true);
   resource_request.SetFetchRequestMode(
-      network::mojom::FetchRequestMode::kNoCORS);
+      network::mojom::FetchRequestMode::kNoCors);
   resource_request.SetFetchCredentialsMode(
       network::mojom::FetchCredentialsMode::kInclude);
   resource_request.SetSkipServiceWorker(true);
 
-  threadable_loader_ =
-      new ThreadableLoader(*execution_context, this, resource_loader_options);
+  threadable_loader_ = MakeGarbageCollected<ThreadableLoader>(
+      *execution_context, this, resource_loader_options);
   threadable_loader_->SetTimeout(
       TimeDelta::FromMilliseconds(kIconFetchTimeoutInMs));
   threadable_loader_->Start(resource_request);
@@ -113,7 +115,7 @@ KURL BackgroundFetchIconLoader::PickBestIconForDisplay(
   for (auto& icon : icons_) {
     // Update the src of |icon| to include the base URL in case relative paths
     // were used.
-    icon.setSrc(execution_context->CompleteURL(icon.src()));
+    icon->setSrc(execution_context->CompleteURL(icon->src()));
     Manifest::ImageResource candidate_icon =
         blink::ConvertManifestImageResource(icon);
     // Provide default values for 'purpose' and 'sizes' if they are missing.
@@ -160,9 +162,9 @@ void BackgroundFetchIconLoader::DidFinishLoading(
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      Platform::Current()->CurrentThread()->GetTaskRunner();
+      Thread::Current()->GetTaskRunner();
 
-  BackgroundScheduler::PostOnBackgroundThread(
+  background_scheduler::PostOnBackgroundThread(
       FROM_HERE,
       CrossThreadBind(
           &BackgroundFetchIconLoader::DecodeAndResizeImageOnBackgroundThread,

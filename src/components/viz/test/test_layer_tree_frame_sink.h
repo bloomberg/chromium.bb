@@ -42,7 +42,7 @@ class TestLayerTreeFrameSinkClient {
       const LocalSurfaceId& local_surface_id) = 0;
   virtual void DisplayReceivedCompositorFrame(const CompositorFrame& frame) = 0;
   virtual void DisplayWillDrawAndSwap(bool will_draw_and_swap,
-                                      const RenderPassList& render_passes) = 0;
+                                      RenderPassList* render_passes) = 0;
   virtual void DisplayDidDrawAndSwap() = 0;
 };
 
@@ -90,7 +90,8 @@ class TestLayerTreeFrameSink : public cc::LayerTreeFrameSink,
   bool BindToClient(cc::LayerTreeFrameSinkClient* client) override;
   void DetachFromClient() override;
   void SetLocalSurfaceId(const LocalSurfaceId& local_surface_id) override;
-  void SubmitCompositorFrame(CompositorFrame frame) override;
+  void SubmitCompositorFrame(CompositorFrame frame,
+                             bool show_hit_test_borders) override;
   void DidNotProduceFrame(const BeginFrameAck& ack) override;
   void DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
                                const SharedBitmapId& id) override;
@@ -99,10 +100,9 @@ class TestLayerTreeFrameSink : public cc::LayerTreeFrameSink,
   // mojom::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(
       const std::vector<ReturnedResource>& resources) override;
-  void DidPresentCompositorFrame(
-      uint32_t presentation_token,
-      const gfx::PresentationFeedback& feedback) override;
-  void OnBeginFrame(const BeginFrameArgs& args) override;
+  void OnBeginFrame(const BeginFrameArgs& args,
+                    const base::flat_map<uint32_t, gfx::PresentationFeedback>&
+                        feedbacks) override;
   void ReclaimResources(
       const std::vector<ReturnedResource>& resources) override;
   void OnBeginFramePausedChanged(bool paused) override;
@@ -110,7 +110,7 @@ class TestLayerTreeFrameSink : public cc::LayerTreeFrameSink,
   // DisplayClient implementation.
   void DisplayOutputSurfaceLost() override;
   void DisplayWillDrawAndSwap(bool will_draw_and_swap,
-                              const RenderPassList& render_passes) override;
+                              RenderPassList* render_passes) override;
   void DisplayDidDrawAndSwap() override;
   void DisplayDidReceiveCALayerParams(
       const gfx::CALayerParams& ca_layer_params) override;

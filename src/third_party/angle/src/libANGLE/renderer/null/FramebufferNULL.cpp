@@ -18,72 +18,68 @@
 namespace rx
 {
 
-FramebufferNULL::FramebufferNULL(const gl::FramebufferState &state) : FramebufferImpl(state)
+FramebufferNULL::FramebufferNULL(const gl::FramebufferState &state) : FramebufferImpl(state) {}
+
+FramebufferNULL::~FramebufferNULL() {}
+
+angle::Result FramebufferNULL::discard(const gl::Context *context,
+                                       size_t count,
+                                       const GLenum *attachments)
 {
+    return angle::Result::Continue();
 }
 
-FramebufferNULL::~FramebufferNULL()
+angle::Result FramebufferNULL::invalidate(const gl::Context *context,
+                                          size_t count,
+                                          const GLenum *attachments)
 {
+    return angle::Result::Continue();
 }
 
-gl::Error FramebufferNULL::discard(const gl::Context *context,
-                                   size_t count,
-                                   const GLenum *attachments)
+angle::Result FramebufferNULL::invalidateSub(const gl::Context *context,
+                                             size_t count,
+                                             const GLenum *attachments,
+                                             const gl::Rectangle &area)
 {
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
-gl::Error FramebufferNULL::invalidate(const gl::Context *context,
-                                      size_t count,
-                                      const GLenum *attachments)
+angle::Result FramebufferNULL::clear(const gl::Context *context, GLbitfield mask)
 {
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
-gl::Error FramebufferNULL::invalidateSub(const gl::Context *context,
-                                         size_t count,
-                                         const GLenum *attachments,
-                                         const gl::Rectangle &area)
+angle::Result FramebufferNULL::clearBufferfv(const gl::Context *context,
+                                             GLenum buffer,
+                                             GLint drawbuffer,
+                                             const GLfloat *values)
 {
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
-gl::Error FramebufferNULL::clear(const gl::Context *context, GLbitfield mask)
+angle::Result FramebufferNULL::clearBufferuiv(const gl::Context *context,
+                                              GLenum buffer,
+                                              GLint drawbuffer,
+                                              const GLuint *values)
 {
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
-gl::Error FramebufferNULL::clearBufferfv(const gl::Context *context,
-                                         GLenum buffer,
-                                         GLint drawbuffer,
-                                         const GLfloat *values)
+angle::Result FramebufferNULL::clearBufferiv(const gl::Context *context,
+                                             GLenum buffer,
+                                             GLint drawbuffer,
+                                             const GLint *values)
 {
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
-gl::Error FramebufferNULL::clearBufferuiv(const gl::Context *context,
-                                          GLenum buffer,
-                                          GLint drawbuffer,
-                                          const GLuint *values)
+angle::Result FramebufferNULL::clearBufferfi(const gl::Context *context,
+                                             GLenum buffer,
+                                             GLint drawbuffer,
+                                             GLfloat depth,
+                                             GLint stencil)
 {
-    return gl::NoError();
-}
-
-gl::Error FramebufferNULL::clearBufferiv(const gl::Context *context,
-                                         GLenum buffer,
-                                         GLint drawbuffer,
-                                         const GLint *values)
-{
-    return gl::NoError();
-}
-
-gl::Error FramebufferNULL::clearBufferfi(const gl::Context *context,
-                                         GLenum buffer,
-                                         GLint drawbuffer,
-                                         GLfloat depth,
-                                         GLint stencil)
-{
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
 GLenum FramebufferNULL::getImplementationColorReadFormat(const gl::Context *context) const
@@ -112,11 +108,11 @@ GLenum FramebufferNULL::getImplementationColorReadType(const gl::Context *contex
     return format.info->getReadPixelsType(context->getClientVersion());
 }
 
-gl::Error FramebufferNULL::readPixels(const gl::Context *context,
-                                      const gl::Rectangle &origArea,
-                                      GLenum format,
-                                      GLenum type,
-                                      void *ptrOrOffset)
+angle::Result FramebufferNULL::readPixels(const gl::Context *context,
+                                          const gl::Rectangle &origArea,
+                                          GLenum format,
+                                          GLenum type,
+                                          void *ptrOrOffset)
 {
     const gl::PixelPackState &packState = context->getGLState().getPackState();
     gl::Buffer *packBuffer = context->getGLState().getTargetBuffer(gl::BufferBinding::PixelPack);
@@ -126,7 +122,7 @@ gl::Error FramebufferNULL::readPixels(const gl::Context *context,
     if (packBuffer != nullptr)
     {
         BufferNULL *packBufferGL = GetImplAs<BufferNULL>(packBuffer);
-        pixels                     = reinterpret_cast<GLubyte *>(packBufferGL->getDataPtr());
+        pixels                   = reinterpret_cast<GLubyte *>(packBufferGL->getDataPtr());
         pixels += reinterpret_cast<intptr_t>(ptrOrOffset);
     }
     else
@@ -141,7 +137,7 @@ gl::Error FramebufferNULL::readPixels(const gl::Context *context,
     if (!ClipRectangle(origArea, fbRect, &area))
     {
         // nothing to read
-        return gl::NoError();
+        return angle::Result::Continue();
     }
 
     // Compute size of unclipped rows and initial skip
@@ -171,16 +167,16 @@ gl::Error FramebufferNULL::readPixels(const gl::Context *context,
         pixels += rowBytes;
     }
 
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
-gl::Error FramebufferNULL::blit(const gl::Context *context,
-                                const gl::Rectangle &sourceArea,
-                                const gl::Rectangle &destArea,
-                                GLbitfield mask,
-                                GLenum filter)
+angle::Result FramebufferNULL::blit(const gl::Context *context,
+                                    const gl::Rectangle &sourceArea,
+                                    const gl::Rectangle &destArea,
+                                    GLbitfield mask,
+                                    GLenum filter)
 {
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
 bool FramebufferNULL::checkStatus(const gl::Context *context) const
@@ -194,11 +190,11 @@ angle::Result FramebufferNULL::syncState(const gl::Context *context,
     return angle::Result::Continue();
 }
 
-gl::Error FramebufferNULL::getSamplePosition(const gl::Context *context,
-                                             size_t index,
-                                             GLfloat *xy) const
+angle::Result FramebufferNULL::getSamplePosition(const gl::Context *context,
+                                                 size_t index,
+                                                 GLfloat *xy) const
 {
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
 }  // namespace rx

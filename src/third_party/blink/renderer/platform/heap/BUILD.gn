@@ -4,8 +4,8 @@
 
 import("//build/buildflag_header.gni")
 import("//build/config/jumbo.gni")
-import("//third_party/blink/renderer/platform/platform.gni")
 import("//testing/test.gni")
+import("//third_party/blink/renderer/platform/platform.gni")
 
 declare_args() {
   # Build Blink with incremental marking infrastructure for Oilpan.
@@ -52,8 +52,6 @@ blink_platform_sources("heap") {
     "heap_page.h",
     "heap_stats_collector.cc",
     "heap_stats_collector.h",
-    "heap_terminated_array.h",
-    "heap_terminated_array_builder.h",
     "heap_traits.h",
     "marking_verifier.h",
     "marking_visitor.cc",

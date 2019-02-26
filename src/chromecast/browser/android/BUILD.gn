@@ -11,8 +11,10 @@ assert(is_android)
 cast_shell_android_manifest =
     "$root_gen_dir/cast_shell_manifest/AndroidManifest.xml"
 
-manifest_variables =
-    [ "cast_build_enable_background_activities=$enable_background_activities" ]
+manifest_variables = [
+  "cast_build_enable_background_activities=$enable_background_activities",
+  "is_android_things_non_public=$is_android_things_non_public",
+]
 
 jinja_template("cast_shell_manifest") {
   input = "apk/AndroidManifest.xml.jinja2"
@@ -116,6 +118,7 @@ android_library("cast_shell_java") {
     "$java_src_dir/org/chromium/chromecast/shell/CastWebContentsIntentUtils.java",
     "$java_src_dir/org/chromium/chromecast/shell/CastWebContentsService.java",
     "$java_src_dir/org/chromium/chromecast/shell/CastWebContentsSurfaceHelper.java",
+    "$java_src_dir/org/chromium/chromecast/shell/CastWebContentsScopes.java",
     "$java_src_dir/org/chromium/chromecast/shell/CastWebContentsView.java",
     "$java_src_dir/org/chromium/chromecast/shell/LogcatElision.java",
     "$java_src_dir/org/chromium/chromecast/shell/ElidedLogcatProvider.java",
@@ -152,7 +155,7 @@ android_library("cast_shell_java") {
     deps += [ "//chromecast/media/cma/backend/android:audio_track_java" ]
   }
 
-  if (is_android_things_non_public) {
+  if (is_android_things_non_public && !build_for_android_things_n) {
     java_files += [ "$java_src_dir/org/chromium/chromecast/shell/CastSysInfoAndroidThings.java" ]
     deps += [ "//chromecast/internal/android/prebuilt/things:support_lib_java" ]
     if (enable_assistant) {

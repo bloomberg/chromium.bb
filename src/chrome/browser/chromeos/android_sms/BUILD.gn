@@ -71,6 +71,7 @@ source_set("unit_tests") {
     ":android_sms",
     ":android_sms_urls",
     ":test_support",
+    "//base/test:test_support",
     "//chromeos/services/multidevice_setup/public/cpp:test_support",
     "//content/public/browser",
     "//content/test:test_support",

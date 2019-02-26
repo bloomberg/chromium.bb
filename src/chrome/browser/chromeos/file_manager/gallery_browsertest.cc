@@ -345,4 +345,14 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, OneImageSlideshowNoPauseButtonOnDrive
   StartTest();
 }
 
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, ShiftSelectFromNothingSelectedOnDownloads) {
+  set_test_case_name("shiftSelectFromNothingSelectedOnDownloads");
+  StartTest();
+}
+
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, ShiftSelectFromNothingSelectedOnDrive) {
+  set_test_case_name("shiftSelectFromNothingSelectedOnDrive");
+  StartTest();
+}
+
 }  // namespace file_manager

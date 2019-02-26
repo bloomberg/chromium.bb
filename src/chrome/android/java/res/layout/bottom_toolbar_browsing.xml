@@ -3,7 +3,7 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<org.chromium.chrome.browser.toolbar.ScrollingBottomViewResourceFrameLayout
+<org.chromium.chrome.browser.toolbar.bottom.ScrollingBottomViewResourceFrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -44,7 +44,7 @@
 
             <include layout="@layout/toolbar_space" />
 
-            <org.chromium.chrome.browser.toolbar.ShareButton
+            <org.chromium.chrome.browser.toolbar.bottom.ShareButton
                 android:id="@+id/share_button"
                 style="@style/BottomToolbarButton"
                 android:src="@drawable/ic_share_white_24dp"
@@ -53,7 +53,7 @@
 
             <include layout="@layout/toolbar_space" />
 
-            <org.chromium.chrome.browser.toolbar.SearchAccelerator
+            <org.chromium.chrome.browser.toolbar.bottom.SearchAccelerator
                 android:id="@+id/search_accelerator"
                 android:layout_width="@dimen/search_accelerator_width"
                 android:layout_height="@dimen/search_accelerator_height"
@@ -78,4 +78,4 @@
 
     </org.chromium.chrome.browser.widget.bottomsheet.TouchRestrictingFrameLayout>
 
-</org.chromium.chrome.browser.toolbar.ScrollingBottomViewResourceFrameLayout>
+</org.chromium.chrome.browser.toolbar.bottom.ScrollingBottomViewResourceFrameLayout>

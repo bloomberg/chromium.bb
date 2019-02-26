@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "cc/base/region.h"
 #include "cc/paint/discardable_image_map.h"
 #include "cc/paint/draw_image.h"
@@ -24,6 +25,7 @@ class Size;
 
 namespace cc {
 class DisplayItemList;
+class SkottieWrapper;
 
 void DrawDisplayList(unsigned char* buffer,
                      const gfx::Rect& layer_rect,
@@ -58,6 +60,11 @@ PaintImage CreateAnimatedImage(
 
 PaintImage CreateBitmapImage(const gfx::Size& size,
                              SkColorType color_type = kN32_SkColorType);
+
+scoped_refptr<SkottieWrapper> CreateSkottie(const gfx::Size& size,
+                                            int duration_secs);
+
+PaintImage CreateNonDiscardablePaintImage(const gfx::Size& size);
 
 }  // namespace cc
 

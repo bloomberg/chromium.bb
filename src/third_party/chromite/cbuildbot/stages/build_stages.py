@@ -136,6 +136,23 @@ class CleanUpStage(generic_stages.BuilderStage):
     logging.info('Wiping old output.')
     commands.WipeOldOutput(self._build_root)
 
+  def _CleanWorkspace(self):
+    logging.info('Cleaning up workspace checkout.')
+    assert self._run.options.workspace
+    workspace = self._run.options.workspace
+
+    logging.info('Remove Chroot.')
+    chroot_dir = os.path.join(workspace, constants.DEFAULT_CHROOT_DIR)
+    if os.path.exists(chroot_dir) or os.path.exists(chroot_dir + '.img'):
+      cros_sdk_lib.CleanupChrootMount(chroot_dir, delete=True)
+
+    logging.info('Remove Chrome checkout.')
+    osutils.RmDir(os.path.join(workspace, '.cache', 'distfiles'),
+                  ignore_missing=True, sudo=True)
+
+    logging.info('Remove all workspace files except .repo and .cache.')
+    repository.ClearBuildRoot(workspace, ['.repo', '.cache'])
+
   def _GetPreviousBuildStatus(self):
     """Extract the status of the previous build from command-line arguments.
 
@@ -374,6 +391,8 @@ class CleanUpStage(generic_stages.BuilderStage):
         tasks.append(self._DeleteChroot)
       else:
         tasks.append(self._CleanChroot)
+      if self._run.options.workspace:
+        tasks.append(self._CleanWorkspace)
 
       # CancelObsoleteSlaveBuilds, if there are slave builds to cancel.
       if self._run.config.slave_configs:
@@ -423,14 +442,7 @@ class InitSDKStage(generic_stages.BuilderStage):
         logging.PrintBuildbotStepWarnings()
         replace = True
 
-    if chroot_exists and not replace:
-      # The chroot exists, we are not replacing it, and it is valid.
-      # Update the chroot.
-      usepkg_toolchain = (self._run.config.usepkg_toolchain and
-                          not self._latest_toolchain)
-      commands.UpdateChroot(self._build_root, usepkg=usepkg_toolchain,
-                            extra_env=self._portage_extra_env)
-    else:
+    if not chroot_exists or replace:
       use_sdk = (self._run.config.use_sdk and not self._run.options.nosdk)
       pre_ver = None
       commands.MakeChroot(
@@ -448,6 +460,23 @@ class InitSDKStage(generic_stages.BuilderStage):
       logging.PrintBuildbotStepText(post_ver)
 
 
+class UpdateSDKStage(generic_stages.BuilderStage):
+  """Stage that is responsible for updating the chroot."""
+
+  option_name = 'build'
+  category = constants.CI_INFRA_STAGE
+
+  def PerformStage(self):
+    """Do the work of updating the chroot."""
+    # Ensure we don't run on SDK builder. https://crbug.com/225509
+    assert self._run.config.build_type != constants.CHROOT_BUILDER_TYPE
+
+    usepkg_toolchain = (self._run.config.usepkg_toolchain and
+                        not self._latest_toolchain)
+    commands.UpdateChroot(self._build_root, usepkg=usepkg_toolchain,
+                          extra_env=self._portage_extra_env)
+
+
 class SetupBoardStage(generic_stages.BoardSpecificBuilderStage, InitSDKStage):
   """Stage that is responsible for building host pkgs and setting up a board."""
 
@@ -455,20 +484,15 @@ class SetupBoardStage(generic_stages.BoardSpecificBuilderStage, InitSDKStage):
   category = constants.CI_INFRA_STAGE
 
   def PerformStage(self):
-    _, _ = self._run.GetCIDBHandle()
-
-    # We need to run chroot updates on most builders because they uprev after
-    # the InitSDK stage. For the SDK builder, we can skip updates because uprev
-    # is run prior to InitSDK. This is not just an optimization: It helps
-    # workaround https://crbug.com/225509
+    # Ensure we don't run on SDK builder. https://crbug.com/225509
     if self._run.config.build_type != constants.CHROOT_BUILDER_TYPE:
+      # Setup board's toolchain.
       usepkg_toolchain = (self._run.config.usepkg_toolchain and
                           not self._latest_toolchain)
-      commands.UpdateChroot(
-          self._build_root, toolchain_boards=[self._current_board],
-          usepkg=usepkg_toolchain, extra_env=self._portage_extra_env)
+      commands.SetupToolchains(self._build_root, usepkg=usepkg_toolchain,
+                               targets='boards', boards=self._current_board)
 
-    # Always update the board.
+    # Update the board.
     usepkg = self._run.config.usepkg_build_packages
     commands.SetupBoard(
         self._build_root, board=self._current_board, usepkg=usepkg,
@@ -483,6 +507,8 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
 
   category = constants.PRODUCT_OS_STAGE
   option_name = 'build'
+  config_name = 'build_packages'
+
   def __init__(self, builder_run, board, suffix=None, afdo_generate_min=False,
                afdo_use=False, update_metadata=False, **kwargs):
     if afdo_use:

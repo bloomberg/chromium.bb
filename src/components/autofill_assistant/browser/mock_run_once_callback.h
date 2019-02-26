@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_MOCK_RUN_ONCE_CALLBACK_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_MOCK_RUN_ONCE_CALLBACK_H_
 
+#include <utility>
+
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill_assistant {
@@ -25,6 +27,12 @@ namespace autofill_assistant {
 
 ACTION_TEMPLATE(RunOnceCallback,
                 HAS_1_TEMPLATE_PARAMS(int, k),
+                AND_0_VALUE_PARAMS()) {
+  return std::move(std::get<k>(args)).Run();
+}
+
+ACTION_TEMPLATE(RunOnceCallback,
+                HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(p0)) {
   return std::move(std::get<k>(args)).Run(p0);
 }
@@ -39,6 +47,24 @@ ACTION_TEMPLATE(RunOnceCallback,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_3_VALUE_PARAMS(p0, p1, p2)) {
   return std::move(std::get<k>(args)).Run(p0, p1, p2);
+}
+
+ACTION_TEMPLATE(RunOnceCallback,
+                HAS_1_TEMPLATE_PARAMS(int, k),
+                AND_4_VALUE_PARAMS(p0, p1, p2, p3)) {
+  return std::move(std::get<k>(args)).Run(p0, p1, p2, p3);
+}
+
+ACTION_TEMPLATE(RunOnceCallback,
+                HAS_1_TEMPLATE_PARAMS(int, k),
+                AND_5_VALUE_PARAMS(p0, p1, p2, p3, p4)) {
+  return std::move(std::get<k>(args)).Run(p0, p1, p2, p3, p4);
+}
+
+ACTION_TEMPLATE(RunOnceCallback,
+                HAS_1_TEMPLATE_PARAMS(int, k),
+                AND_6_VALUE_PARAMS(p0, p1, p2, p3, p4, p5)) {
+  return std::move(std::get<k>(args)).Run(p0, p1, p2, p3, p4, p5);
 }
 
 // Template for capturing a base::OnceCallback passed to a mocked method

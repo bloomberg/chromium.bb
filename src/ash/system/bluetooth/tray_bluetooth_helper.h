@@ -15,23 +15,7 @@
 
 namespace ash {
 
-// Cached info from device::BluetoothDevice used for display in the UI.
-// Exists because it is not safe to cache pointers to device::BluetoothDevice
-// instances.
-struct ASH_EXPORT BluetoothDeviceInfo {
-  BluetoothDeviceInfo();
-  BluetoothDeviceInfo(const BluetoothDeviceInfo& other);
-  ~BluetoothDeviceInfo();
-
-  std::string address;
-  base::string16 display_name;
-  bool connected = false;
-  bool connecting = false;
-  bool paired = false;
-  device::BluetoothDeviceType device_type;
-};
-
-using BluetoothDeviceList = std::vector<BluetoothDeviceInfo>;
+using BluetoothDeviceList = std::vector<device::mojom::BluetoothDeviceInfoPtr>;
 
 // Maps UI concepts from the Bluetooth system tray (e.g. "Bluetooth is on") into
 // device concepts ("Bluetooth adapter enabled"). Note that most Bluetooth
@@ -40,16 +24,31 @@ using BluetoothDeviceList = std::vector<BluetoothDeviceInfo>;
 // This is a temporary virtual class used during the migration to the new
 // BluetoothSystem Mojo interface. Once the migration is over, we'll
 // de-virtualize this class and remove its legacy implementation.
-class TrayBluetoothHelper {
+class ASH_EXPORT TrayBluetoothHelper {
  public:
+  class Observer : public base::CheckedObserver {
+   public:
+    // Called when the state of Bluetooth in the system changes.
+    virtual void OnBluetoothSystemStateChanged() {}
+
+    // Called when a Bluetooth scan has started or stopped.
+    virtual void OnBluetoothScanStateChanged() {}
+
+    // Called when a device was added, removed, or changed.
+    virtual void OnBluetoothDeviceListChanged() {}
+  };
+
   TrayBluetoothHelper();
   virtual ~TrayBluetoothHelper();
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Initializes and gets the adapter asynchronously.
   virtual void Initialize() = 0;
 
   // Returns a list of available bluetooth devices.
-  virtual BluetoothDeviceList GetAvailableBluetoothDevices() const = 0;
+  const BluetoothDeviceList& GetAvailableBluetoothDevices() const;
 
   // Requests bluetooth start discovering devices, which happens asynchronously.
   virtual void StartBluetoothDiscovering() = 0;
@@ -75,7 +74,41 @@ class TrayBluetoothHelper {
   // Returns whether the delegate has initiated a bluetooth discovery session.
   virtual bool HasBluetoothDiscoverySession() = 0;
 
+ protected:
+  using GetBluetoothDevicesCallback =
+      base::OnceCallback<void(BluetoothDeviceList)>;
+
+  // Using a "push" pattern where the underlying API notifies of device changes
+  // is undesireable because there are hundreds or sometimes thousands of
+  // changes per second. This could result in significantly slowing down the UI.
+  // To avoid this we use a pull pattern where we retrieve the device list every
+  // second and notify observers.
+  //
+  // Implementations of TrayBluetoothHelper should call this whenever the state
+  // changes.
+  void StartOrStopRefreshingDeviceList();
+
+  void NotifyBluetoothSystemStateChanged();
+  void NotifyBluetoothScanStateChanged();
+
+  virtual void GetBluetoothDevices(
+      GetBluetoothDevicesCallback callback) const = 0;
+
+  base::ObserverList<Observer> observers_;
+
  private:
+  void UpdateDeviceCache();
+  void OnGetBluetoothDevices(BluetoothDeviceList devices);
+  void NotifyBluetoothDeviceListChanged();
+
+  // List of cached devices. Updated every second.
+  BluetoothDeviceList cached_devices_;
+
+  // Timer used to update |cached_devices_|.
+  base::RepeatingTimer timer_;
+
+  base::WeakPtrFactory<TrayBluetoothHelper> weak_ptr_factory_{this};
+
   DISALLOW_COPY_AND_ASSIGN(TrayBluetoothHelper);
 };
 

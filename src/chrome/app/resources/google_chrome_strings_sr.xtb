@@ -48,7 +48,6 @@
 <translation id="1915828456209461693">Ново ажурирање за Chrome је доступно и примениће се чим га поново покренете.</translation>
 <translation id="1919130412786645364">Дозволи пријављивање у Chrome</translation>
 <translation id="2063848847527508675">Треба да рестартујете Chrome OS да бисте применили ажурирање.</translation>
-<translation id="2084710999043359739">Додавање у Chrome</translation>
 <translation id="2094919256425865063">Желите ли ипак да затворите Chrome?</translation>
 <translation id="2120620239521071941">Овим ћете избрисати <ph name="ITEMS_COUNT" /> ставке(и) са овог уређаја. Да бисте касније вратили податке, пријавите се у Chrome као <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Помозите да побољшамо Chrome тако што ћете послати извештај о <ph name="BEGIN_LINK" />актуелним подешавањима<ph name="END_LINK" /></translation>
@@ -65,9 +64,7 @@
 
 Ако се ипак пријавите, Chrome информације као што су обележивачи, историја и друга подешавања ће бити обједињене на <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2348335408836342058">Chrome тражи дозволу да приступи камери и микрофону за овај сајт</translation>
-<translation id="2397416548179033562">Приказ Chrome менија</translation>
 <translation id="2429317896000329049">Google Chrome не може да синхронизује податке јер Синхронизација није доступна за домен.</translation>
-<translation id="2436117022029368436">Комуницира са Google-ом ради побољшања прегледања и Chrome-а</translation>
 <translation id="2467438592969358367">Google Chrome жели да извезе лозинке. Унесите лозинку за Windows да бисте то омогућили.</translation>
 <translation id="2485422356828889247">Деинсталирај</translation>
 <translation id="2534507159460261402">Google Pay (копирано у Chrome)</translation>
@@ -144,14 +141,12 @@
 <translation id="4600710005438004015">Chrome није успео да се ажурира на најновију верзију, па пропуштате нове функције и безбедносне исправке.</translation>
 <translation id="4631713731678262610">Сакриј у Chrome менију</translation>
 <translation id="4633000520311261472">Да бисмо учинили Chrome безбеднијим, онемогућили смо неке додатке које не наводи <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> и који су можда додати без вашег знања.</translation>
-<translation id="4664415150087723341">Посебно безбедносно ажурирање за Google Chrome је управо примењено. Сада треба поново да покренете Google Chrome да би ажурирање ступило на снагу (вратићемо картице).</translation>
 <translation id="4700157086864140907">Google Chrome може да пружи паметнију проверу правописа тако што оно што куцате у прегледач шаље Google серверима, што вам омогућава да користите исту технологију провере правописа коју користи Google претрага.</translation>
 <translation id="4728575227883772061">Инсталација није успела због неодређене грешке. Ако је Google Chrome тренутно отворен, затворите га и покушајте поново.</translation>
 <translation id="4750550185319565338">Поново покрените Chrome да бисте омогућили <ph name="PLUGIN_NAME" /></translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Ова датотека може да буде опасна, па ју је Chrome блокирао.</translation>
 <translation id="4794050651896644714">Сачувај детаље у Chrome-у</translation>
-<translation id="4804732725083176494">Пријављивање у Chrome је онемогућио администратор овог уређаја.</translation>
 <translation id="4891791193823137474">Нека Google Chrome ради у позадини</translation>
 <translation id="4895437082222824641">Отвори линк у новој Chrome &amp;картици</translation>
 <translation id="4921569541910214635">Делите рачунар? Сада можете да подесите Chrome баш онако како вама одговара.</translation>
@@ -225,7 +220,6 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="7242029209006116544">Пријављујете се помоћу налога којим се управља и дајете његовом администратору контролу над Google Chrome профилом. Chrome подаци, као што су апликације, обележивачи, историја, лозинке и друга подешавања, биће трајно повезани са налогом <ph name="USER_NAME" />. Моћи ћете да избришете те податке преко Контролне табле Google налога, али нећете моћи да их повежете са неким другим налогом. Можете опционално да направите нови профил да би постојећи Chrome подаци остали одвојени. <ph name="LEARN_MORE" /></translation>
 <translation id="7296210096911315575">Важне информације о употреби и безбедности</translation>
 <translation id="7308322188646931570">Chrome тражи приступ меморијском простору да би преузимао датотеке</translation>
-<translation id="7330164299247909639">Није успела потврда идентитета помоћу овог сертификата. Поново се пријавите у Google Chrome као <ph name="USER_NAME" /> или контактирајте администратора за више информација. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">Нови прозор</translation>
 <translation id="7398801000654795464">Били сте пријављени у Chrome као <ph name="USER_EMAIL_ADDRESS" />. Користите исти налог да бисте се поново пријавили.</translation>
 <translation id="7408085963519505752">Chrome ОС услови</translation>
@@ -270,8 +264,10 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="8380166467911888159">Да би исправио правописне грешке, Chrome шаље Google-овим серверима текст који уносите у поља за текст.</translation>
 <translation id="840084489713044809">Google Chrome жели да извезе лозинке.</translation>
 <translation id="8406086379114794905">Помозите нам да побољшамо Chrome</translation>
+<translation id="8432724323949790809">Рестартујте Google Chrome</translation>
 <translation id="8455999171311319804">Опционално: Помозите нам да побољшамо Chrome ОС тако што ћете аутоматски слати Google-у дијагностику и податке о коришћењу.</translation>
 <translation id="8478823064122749032">Инсталирајте Chrome на телефону. Послаћемо вам SMS на број телефона за враћање приступа налогу: <ph name="PHONE_NUMBER" /></translation>
+<translation id="8498858610309223613">Посебно безбедносно ажурирање за Google Chrome је управо примењено. Рестартујте га и вратићемо вам картице.</translation>
 <translation id="8521348052903287641">Правило за долазни саобраћај за програмерску верзију Google Chrome-а да бисте омогућили mDNS саобраћај.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8547799825197623713">Покретач Chrome апликација Canary</translation>
@@ -286,14 +282,12 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="873133009373065397">Google Chrome не може да одреди ни да подеси подразумевани прегледач</translation>
 <translation id="8736674169840206667">Администратор захтева да поново покренете Chrome да бисте применили ажурирање</translation>
 <translation id="8791470158600044404">{0,plural, =1{Chrome ОС ће се рестартовати за 1 минут}one{Chrome ОС ће се рестартовати за # минут}few{Chrome ОС ће се рестартовати за # минута}other{Chrome ОС ће се рестартовати за # минута}}</translation>
-<translation id="8796108026289707191">Сада треба поново да покренете Google Chrome.</translation>
 <translation id="8823341990149967727">Chrome је застарео</translation>
 <translation id="884296878221830158">Контролише и страницу која се приказује када покренете Chrome или кликнете на дугме Почетна.</translation>
 <translation id="8862326446509486874">Немате одговарајућа права за инсталацију на нивоу система. Пробајте поново да покренете програм за инсталацију, овога пута као администратор.</translation>
 <translation id="8914504000324227558">Поново покрени Chrome</translation>
 <translation id="9026991721384951619">Chrome ОС не може да синхронизује податке зато што су подаци за пријављивање на налог застарели.</translation>
 <translation id="9067395829937117663">За Google Chrome је потребан Windows 7 или новија верзија.</translation>
-<translation id="9084668267983921457">Није успела потврда идентитета помоћу овог сертификата. Поново се пријавите у Google Chrome или контактирајте администратора за више информација. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="909149346112452267">{0,plural, =1{Chrome ОС ће се рестартовати за један сат}one{Chrome ОС ће се рестартовати за # сат}few{Chrome ОС ће се рестартовати за # сата}other{Chrome ОС ће се рестартовати за # сати}}</translation>
 <translation id="911206726377975832">Желите ли да избришете и податке прегледања?</translation>
 <translation id="9138603949443464873">Да бисте применили промене, поново покрените Chrome</translation>

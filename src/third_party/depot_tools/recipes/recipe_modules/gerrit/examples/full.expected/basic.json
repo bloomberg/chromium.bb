@@ -275,9 +275,12 @@
     ]
   },
   {
-    "name": "$result",
-    "reason": "2 out of 2 aggregated steps failed. Failures: Error quering for branch of CL 122, Error querying for CL description: host:'https://chromium-review.googlesource.com' change:122; patchset:3",
-    "recipe_result": null,
-    "status_code": 1
+    "failure": {
+      "failure": {
+        "step": "Aggregate step failure."
+      },
+      "humanReason": "2 out of 2 aggregated steps failed. Failures: Error quering for branch of CL 122, Error querying for CL description: host:'https://chromium-review.googlesource.com' change:122; patchset:3"
+    },
+    "name": "$result"
   }
 ]

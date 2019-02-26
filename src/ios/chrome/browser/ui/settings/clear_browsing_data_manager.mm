@@ -16,7 +16,6 @@
 #include "components/google/core/common/google_util.h"
 #include "components/history/core/browser/web_history_service.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -26,7 +25,7 @@
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #include "ios/chrome/browser/history/web_history_service_factory.h"
-#include "ios/chrome/browser/signin/signin_manager_factory.h"
+#include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
@@ -38,18 +37,19 @@
 #import "ios/chrome/browser/ui/list_model/list_model.h"
 #import "ios/chrome/browser/ui/settings/cells/clear_browsing_data_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/clear_browsing_data_item.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_detail_item.h"
+#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_detail_item.h"
 #import "ios/chrome/browser/ui/settings/cells/table_view_clear_browsing_data_item.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data_ui_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_link_item.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/images/branded_image_provider.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -264,9 +264,9 @@ actionSheetCoordinatorWithDataTypesToRemove:
 // Add footers about user's account data.
 - (void)addSyncProfileItemsToModel:(ListModel*)model {
   // Google Account footer.
-  SigninManager* signinManager =
-      ios::SigninManagerFactory::GetForBrowserState(self.browserState);
-  if (signinManager->IsAuthenticated()) {
+  identity::IdentityManager* identityManager =
+      IdentityManagerFactory::GetForBrowserState(self.browserState);
+  if (identityManager->HasPrimaryAccount()) {
     // TODO(crbug.com/650424): Footer items must currently go into a separate
     // section, to work around a drawing bug in MDC.
     [model addSectionWithIdentifier:SectionIdentifierGoogleAccount];
@@ -291,7 +291,7 @@ actionSheetCoordinatorWithDataTypesToRemove:
   }
 
   // If not signed in, no need to continue with profile syncing.
-  if (!signinManager->IsAuthenticated()) {
+  if (!identityManager->HasPrimaryAccount()) {
     return;
   }
 
@@ -503,8 +503,8 @@ actionSheetCoordinatorWithDataTypesToRemove:
 - (ListItem*)timeRangeItem {
   ListItem* timeRangeItem;
   if (self.listType == ClearBrowsingDataListType::kListTypeCollectionView) {
-    SettingsDetailItem* collectionTimeRangeItem =
-        [[SettingsDetailItem alloc] initWithType:ItemTypeTimeRange];
+    LegacySettingsDetailItem* collectionTimeRangeItem =
+        [[LegacySettingsDetailItem alloc] initWithType:ItemTypeTimeRange];
     collectionTimeRangeItem.text = l10n_util::GetNSString(
         IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_SELECTOR_TITLE);
     NSString* detailText = [TimeRangeSelectorCollectionViewController
@@ -595,9 +595,9 @@ actionSheetCoordinatorWithDataTypesToRemove:
       "History.ClearBrowsingData.HistoryNoticeShownInFooterWhenUpdated",
       _shouldShowNoticeAboutOtherFormsOfBrowsingHistory);
 
-  SigninManager* signinManager =
-      ios::SigninManagerFactory::GetForBrowserState(_browserState);
-  if (!signinManager->IsAuthenticated()) {
+  identity::IdentityManager* identityManager =
+      IdentityManagerFactory::GetForBrowserState(_browserState);
+  if (!identityManager->HasPrimaryAccount()) {
     return;
   }
 

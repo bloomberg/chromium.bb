@@ -195,7 +195,6 @@ class RequestTrackerTest : public PlatformTest {
         response->ssl_info.cert = net::ImportCertFromFile(
             net::GetTestCertsDirectory(), "ok_cert.pem");
         response->ssl_info.cert_status = 0;  // No errors.
-        response->ssl_info.security_bits = 128;
 
         EXPECT_TRUE(requests_[i]->ssl_info().is_valid());
       }

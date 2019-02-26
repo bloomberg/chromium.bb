@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/binding_security.h"
 #include "third_party/blink/renderer/bindings/core/v8/referrer_script_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/rejected_promises.h"
+#include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
@@ -64,7 +65,6 @@
 #include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
 #include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
-#include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
@@ -198,7 +198,7 @@ static String ExtractMessageForConsole(v8::Isolate* isolate,
   if (V8DOMWrapper::IsWrapper(isolate, data)) {
     v8::Local<v8::Object> obj = v8::Local<v8::Object>::Cast(data);
     const WrapperTypeInfo* type = ToWrapperTypeInfo(obj);
-    if (V8DOMException::wrapperTypeInfo.IsSubclass(type)) {
+    if (V8DOMException::wrapper_type_info.IsSubclass(type)) {
       DOMException* exception = V8DOMException::ToImpl(obj);
       if (exception && !exception->MessageForConsole().IsEmpty())
         return exception->ToStringForConsole();
@@ -242,7 +242,7 @@ void V8Initializer::MessageHandlerInMainThread(v8::Local<v8::Message> message,
   DCHECK(IsMainThread());
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
 
-  if (isolate->GetEnteredContext().IsEmpty())
+  if (isolate->GetEnteredOrMicrotaskContext().IsEmpty())
     return;
 
   // If called during context initialization, there will be no entered context.
@@ -262,8 +262,9 @@ void V8Initializer::MessageHandlerInMainThread(v8::Local<v8::Message> message,
     return;
   }
 
-  AccessControlStatus access_control_status =
-      message->IsSharedCrossOrigin() ? kSharableCrossOrigin : kOpaqueResource;
+  const auto sanitize_script_errors = message->IsSharedCrossOrigin()
+                                          ? SanitizeScriptErrors::kDoNotSanitize
+                                          : SanitizeScriptErrors::kSanitize;
 
   ErrorEvent* event = ErrorEvent::Create(
       ToCoreStringWithNullCheck(message->Get()), std::move(location),
@@ -273,7 +274,7 @@ void V8Initializer::MessageHandlerInMainThread(v8::Local<v8::Message> message,
   if (!message_for_console.IsEmpty())
     event->SetUnsanitizedMessage("Uncaught " + message_for_console);
 
-  context->DispatchErrorEvent(event, access_control_status);
+  context->DispatchErrorEvent(event, sanitize_script_errors);
 }
 
 void V8Initializer::MessageHandlerInWorker(v8::Local<v8::Message> message,
@@ -310,14 +311,15 @@ void V8Initializer::MessageHandlerInWorker(v8::Local<v8::Message> message,
       ToCoreStringWithNullCheck(message->Get()), std::move(location),
       ScriptValue::From(script_state, data), &script_state->World());
 
-  AccessControlStatus access_control_status =
-      message->IsSharedCrossOrigin() ? kSharableCrossOrigin : kOpaqueResource;
+  const auto sanitize_script_errors = message->IsSharedCrossOrigin()
+                                          ? SanitizeScriptErrors::kDoNotSanitize
+                                          : SanitizeScriptErrors::kSanitize;
 
   // If execution termination has been triggered as part of constructing
   // the error event from the v8::Message, quietly leave.
   if (!isolate->IsExecutionTerminating()) {
     ExecutionContext::From(script_state)
-        ->DispatchErrorEvent(event, access_control_status);
+        ->DispatchErrorEvent(event, sanitize_script_errors);
   }
 
   per_isolate_data->SetReportingException(false);
@@ -370,7 +372,7 @@ static void PromiseRejectHandler(v8::PromiseRejectMessage data,
   }
 
   String error_message;
-  AccessControlStatus cors_status = kOpaqueResource;
+  SanitizeScriptErrors sanitize_script_errors = SanitizeScriptErrors::kSanitize;
   std::unique_ptr<SourceLocation> location;
 
   v8::Local<v8::Message> message =
@@ -380,7 +382,7 @@ static void PromiseRejectHandler(v8::PromiseRejectMessage data,
     error_message = ToCoreStringWithNullCheck(message->Get());
     location = SourceLocation::FromMessage(isolate, message, context);
     if (message->IsSharedCrossOrigin())
-      cors_status = kSharableCrossOrigin;
+      sanitize_script_errors = SanitizeScriptErrors::kDoNotSanitize;
   } else {
     location =
         SourceLocation::Create(context->Url().GetString(), 0, 0, nullptr);
@@ -392,7 +394,8 @@ static void PromiseRejectHandler(v8::PromiseRejectMessage data,
     error_message = "Uncaught " + message_for_console;
 
   rejected_promises.RejectedWithNoHandler(script_state, data, error_message,
-                                          std::move(location), cors_status);
+                                          std::move(location),
+                                          sanitize_script_errors);
 }
 
 static void PromiseRejectHandlerInMainThread(v8::PromiseRejectMessage data) {
@@ -429,9 +432,8 @@ static void PromiseRejectHandlerInWorker(v8::PromiseRejectMessage data) {
   if (!execution_context)
     return;
 
-  DCHECK(execution_context->IsWorkerGlobalScope());
-  WorkerOrWorkletScriptController* script_controller =
-      ToWorkerGlobalScope(execution_context)->ScriptController();
+  auto* script_controller =
+      To<WorkerGlobalScope>(execution_context)->ScriptController();
   DCHECK(script_controller);
 
   PromiseRejectHandler(data, *script_controller->GetRejectedPromises(),
@@ -502,7 +504,7 @@ static bool WasmThreadsEnabledCallback(v8::Local<v8::Context> context) {
   if (!execution_context)
     return false;
 
-  return OriginTrials::WebAssemblyThreadsEnabled(execution_context);
+  return origin_trials::WebAssemblyThreadsEnabled(execution_context);
 }
 
 v8::Local<v8::Value> NewRangeException(v8::Isolate* isolate,
@@ -696,9 +698,7 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
                                  v8_extras_mode, &array_buffer_allocator,
                                  reference_table);
 
-  // NOTE: Some threads (namely utility threads) don't have a scheduler.
-  ThreadScheduler* scheduler =
-      Platform::Current()->CurrentThread()->Scheduler();
+  ThreadScheduler* scheduler = ThreadScheduler::Current();
 
 #if defined(USE_V8_CONTEXT_SNAPSHOT)
   V8PerIsolateData::V8ContextSnapshotMode v8_context_snapshot_mode =
@@ -716,10 +716,8 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
       V8PerIsolateData::V8ContextSnapshotMode::kDontUseSnapshot;
 #endif  // USE_V8_CONTEXT_SNAPSHOT
 
-  v8::Isolate* isolate = V8PerIsolateData::Initialize(
-      scheduler ? scheduler->V8TaskRunner()
-                : Platform::Current()->CurrentThread()->GetTaskRunner(),
-      v8_context_snapshot_mode);
+  v8::Isolate* isolate = V8PerIsolateData::Initialize(scheduler->V8TaskRunner(),
+                                                      v8_context_snapshot_mode);
 
   // ThreadState::isolate_ needs to be set before setting the EmbedderHeapTracer
   // as setting the tracer indicates that a V8 garbage collection should trace
@@ -770,8 +768,6 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
 
   V8PerIsolateData::From(isolate)->SetThreadDebugger(
       std::make_unique<MainThreadDebugger>(isolate));
-
-  BindingSecurity::InitWrapperCreationSecurityCheck();
 }
 
 static void ReportFatalErrorInWorker(const char* location,

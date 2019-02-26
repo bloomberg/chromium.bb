@@ -209,7 +209,7 @@ struct GLRenderer::DrawRenderPassDrawQuadParams {
   gfx::Transform projection_matrix;
   gfx::Transform quad_to_target_transform;
   const cc::FilterOperations* filters = nullptr;
-  const cc::FilterOperations* background_filters = nullptr;
+  const cc::FilterOperations* backdrop_filters = nullptr;
 
   // Whether the texture to be sampled from needs to be flipped.
   bool source_needs_flip = false;
@@ -661,10 +661,10 @@ void GLRenderer::RestoreBlendFuncToDefault(SkBlendMode blend_mode) {
 
 bool GLRenderer::ShouldApplyBackgroundFilters(
     const RenderPassDrawQuad* quad,
-    const cc::FilterOperations* background_filters) {
-  if (!background_filters)
+    const cc::FilterOperations* backdrop_filters) {
+  if (!backdrop_filters)
     return false;
-  DCHECK(!background_filters->IsEmpty());
+  DCHECK(!backdrop_filters->IsEmpty());
 
   // TODO(hendrikw): Look into allowing background filters to see pixels from
   // other render targets.  See crbug.com/314867.
@@ -713,7 +713,7 @@ gfx::Rect GLRenderer::GetBackdropBoundingBoxForRenderPassQuad(
     const RenderPassDrawQuad* quad,
     const gfx::Transform& contents_device_transform,
     const cc::FilterOperations* filters,
-    const cc::FilterOperations* background_filters,
+    const cc::FilterOperations* backdrop_filters,
     const gfx::QuadF* clip_region,
     bool use_aa,
     gfx::Rect* unclipped_rect) {
@@ -725,7 +725,7 @@ gfx::Rect GLRenderer::GetBackdropBoundingBoxForRenderPassQuad(
   gfx::Rect backdrop_rect = gfx::ToEnclosingRect(cc::MathUtil::MapClippedRect(
       contents_device_transform, scaled_region.BoundingBox()));
 
-  if (ShouldApplyBackgroundFilters(quad, background_filters)) {
+  if (ShouldApplyBackgroundFilters(quad, backdrop_filters)) {
     SkMatrix matrix;
     matrix.setScale(quad->filters_scale.x(), quad->filters_scale.y());
     if (FlippedFramebuffer()) {
@@ -734,7 +734,7 @@ gfx::Rect GLRenderer::GetBackdropBoundingBoxForRenderPassQuad(
       // current_frame()->window_matrix and contents_device_transform?
       matrix.postScale(1, -1);
     }
-    backdrop_rect = background_filters->MapRectReverse(backdrop_rect, matrix);
+    backdrop_rect = backdrop_filters->MapRectReverse(backdrop_rect, matrix);
   }
 
   if (!backdrop_rect.IsEmpty() && use_aa) {
@@ -788,6 +788,7 @@ uint32_t GLRenderer::GetBackdropTexture(const gfx::Rect& window_rect) {
 
   uint32_t texture_id;
   gl_->GenTextures(1, &texture_id);
+  DCHECK(texture_id);
   gl_->BindTexture(GL_TEXTURE_2D, texture_id);
 
   gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -811,19 +812,19 @@ uint32_t GLRenderer::GetBackdropTexture(const gfx::Rect& window_rect) {
 
 sk_sp<SkImage> GLRenderer::ApplyBackgroundFilters(
     const RenderPassDrawQuad* quad,
-    const cc::FilterOperations& background_filters,
+    const cc::FilterOperations& backdrop_filters,
     uint32_t background_texture,
     const gfx::Rect& rect,
     const gfx::Rect& unclipped_rect,
     const float backdrop_filter_quality) {
-  DCHECK(ShouldApplyBackgroundFilters(quad, &background_filters));
+  DCHECK(ShouldApplyBackgroundFilters(quad, &backdrop_filters));
   auto use_gr_context = ScopedUseGrContext::Create(this);
 
   gfx::Vector2d clipping_offset =
       (rect.top_right() - unclipped_rect.top_right()) +
       (rect.bottom_left() - unclipped_rect.bottom_left());
   auto paint_filter = cc::RenderSurfaceFilters::BuildImageFilter(
-      background_filters, gfx::SizeF(rect.size()),
+      backdrop_filters, gfx::SizeF(rect.size()),
       gfx::Vector2dF(clipping_offset));
 
   // TODO(senorblanco): background filters should be moved to the
@@ -961,7 +962,7 @@ bool GLRenderer::InitializeRPDQParameters(
   local_matrix.setTranslate(quad->filters_origin.x(), quad->filters_origin.y());
   local_matrix.postScale(quad->filters_scale.x(), quad->filters_scale.y());
   params->filters = FiltersForPass(quad->render_pass_id);
-  params->background_filters = BackgroundFiltersForPass(quad->render_pass_id);
+  params->backdrop_filters = BackgroundFiltersForPass(quad->render_pass_id);
   gfx::Rect dst_rect = params->filters
                            ? params->filters->MapRect(quad->rect, local_matrix)
                            : quad->rect;
@@ -1024,7 +1025,7 @@ void GLRenderer::UpdateRPDQShadersForBlending(
   SkBlendMode blend_mode = quad->shared_quad_state->blend_mode;
   params->use_shaders_for_blending =
       !CanApplyBlendModeUsingBlendFunc(blend_mode) ||
-      ShouldApplyBackgroundFilters(quad, params->background_filters) ||
+      ShouldApplyBackgroundFilters(quad, params->backdrop_filters) ||
       settings_->force_blending_with_shaders;
 
   if (params->use_shaders_for_blending) {
@@ -1033,7 +1034,7 @@ void GLRenderer::UpdateRPDQShadersForBlending(
     gfx::Rect unclipped_rect;
     params->background_rect = GetBackdropBoundingBoxForRenderPassQuad(
         quad, params->contents_device_transform, params->filters,
-        params->background_filters, params->clip_region, params->use_aa,
+        params->backdrop_filters, params->clip_region, params->use_aa,
         &unclipped_rect);
 
     if (!params->background_rect.IsEmpty()) {
@@ -1048,12 +1049,11 @@ void GLRenderer::UpdateRPDQShadersForBlending(
       // LayerTreeHost::CalculateMemoryForRenderSurfaces.
       params->background_texture = GetBackdropTexture(params->background_rect);
 
-      if (ShouldApplyBackgroundFilters(quad, params->background_filters) &&
-          params->background_texture) {
+      if (ShouldApplyBackgroundFilters(quad, params->backdrop_filters)) {
         // Apply the background filters to R, so that it is applied in the
         // pixels' coordinate space.
         params->background_image = ApplyBackgroundFilters(
-            quad, *params->background_filters, params->background_texture,
+            quad, *params->backdrop_filters, params->background_texture,
             params->background_rect, unclipped_rect,
             params->backdrop_filter_quality);
         if (params->background_image) {
@@ -1062,24 +1062,23 @@ void GLRenderer::UpdateRPDQShadersForBlending(
           DCHECK(params->background_image_id || IsContextLost());
         }
       }
-    }
-
-    if (!params->background_texture) {
-      // Something went wrong with reading the backdrop.
-      DCHECK(!params->background_image_id);
-      params->use_shaders_for_blending = false;
-    } else if (params->background_image_id) {
-      // Reset original background texture if there is not any mask.
-      if (!quad->mask_resource_id()) {
+      if (params->background_image_id) {
+        // Reset original background texture if there is not any mask.
+        if (!quad->mask_resource_id()) {
+          gl_->DeleteTextures(1, &params->background_texture);
+          params->background_texture = 0;
+        }
+      } else if (CanApplyBlendModeUsingBlendFunc(blend_mode) &&
+                 ShouldApplyBackgroundFilters(quad, params->backdrop_filters)) {
+        // Something went wrong with applying background filters to the
+        // backdrop.
+        params->use_shaders_for_blending = false;
         gl_->DeleteTextures(1, &params->background_texture);
         params->background_texture = 0;
       }
-    } else if (CanApplyBlendModeUsingBlendFunc(blend_mode) &&
-               ShouldApplyBackgroundFilters(quad, params->background_filters)) {
-      // Something went wrong with applying background filters to the backdrop.
+    } else {  // params->background_rect.IsEmpty()
+      DCHECK(!params->background_image_id);
       params->use_shaders_for_blending = false;
-      gl_->DeleteTextures(1, &params->background_texture);
-      params->background_texture = 0;
     }
   }
 
@@ -1156,7 +1155,7 @@ bool GLRenderer::UpdateRPDQWithSkiaFilters(
                           use_gr_context->context(), params->flip_texture);
           params->filter_image = SkiaHelper::ApplyImageFilter(
               src_image, src_rect, params->dst_rect, quad->filters_scale,
-              std::move(filter), &offset, &subset, quad->filters_origin);
+              std::move(filter), &offset, &subset, quad->filters_origin, true);
         } else {
           DisplayResourceProvider::ScopedReadLockGL
               prefilter_bypass_quad_texture_lock(
@@ -1170,7 +1169,7 @@ bool GLRenderer::UpdateRPDQWithSkiaFilters(
                           use_gr_context->context(), params->flip_texture);
           params->filter_image = SkiaHelper::ApplyImageFilter(
               src_image, src_rect, params->dst_rect, quad->filters_scale,
-              std::move(filter), &offset, &subset, quad->filters_origin);
+              std::move(filter), &offset, &subset, quad->filters_origin, true);
         }
 
         if (!params->filter_image)
@@ -2383,9 +2382,7 @@ void GLRenderer::EnqueueTextureQuad(const TextureDrawQuad* quad,
   }
 
   // Generate the uv-transform
-  Float4 uv_transform = {{0.0f, 0.0f, 1.0f, 1.0f}};
-  if (!clip_region)
-    uv_transform = UVTransform(quad);
+  auto uv_transform = UVTransform(quad);
   if (sampler == SAMPLER_TYPE_2D_RECT) {
     // Un-normalize the texture coordiantes for rectangle targets.
     uv_transform.data[0] *= texture_size.width();
@@ -3122,7 +3119,7 @@ void GLRenderer::ScheduleCALayers() {
         ca_layer_overlay.edge_aa_mask, bounds_rect, filter);
   }
 
-  ReduceAvailableOverlayTextures(awaiting_swap_overlay_textures_);
+  ReduceAvailableOverlayTextures();
 }
 
 void GLRenderer::ScheduleDCLayers() {
@@ -3164,6 +3161,8 @@ void GLRenderer::ScheduleDCLayers() {
     GLfloat transform[16];
     dc_layer_overlay.shared_state->transform.asColMajorf(transform);
     unsigned filter = dc_layer_overlay.filter;
+    unsigned protected_video_type =
+        static_cast<unsigned>(dc_layer_overlay.protected_video_type);
 
     if (dc_layer_overlay.shared_state != shared_state) {
       shared_state = dc_layer_overlay.shared_state;
@@ -3179,7 +3178,7 @@ void GLRenderer::ScheduleDCLayers() {
     gl_->ScheduleDCLayerCHROMIUM(ids_to_send, texture_ids, contents_rect,
                                  dc_layer_overlay.background_color,
                                  dc_layer_overlay.edge_aa_mask, bounds_rect,
-                                 filter, dc_layer_overlay.is_protected_video);
+                                 filter, protected_video_type);
   }
 }
 
@@ -3405,8 +3404,7 @@ GLRenderer::FindOrCreateOverlayTexture(const RenderPassId& render_pass_id,
   return result;
 }
 
-void GLRenderer::ReduceAvailableOverlayTextures(
-    const std::vector<std::unique_ptr<OverlayTexture>>& most_recent) {
+void GLRenderer::ReduceAvailableOverlayTextures() {
   // Overlay resources may get returned back to the compositor at varying rates,
   // so we may get a number of resources returned at once, then none for a
   // while. As such, we want to hold onto enough resources to not have to create

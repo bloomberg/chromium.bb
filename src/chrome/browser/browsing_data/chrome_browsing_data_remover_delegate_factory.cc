@@ -55,7 +55,6 @@ ChromeBrowsingDataRemoverDelegateFactory::
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(autofill::PersonalDataManagerFactory::GetInstance());
   DependsOn(DataReductionProxyChromeSettingsFactory::GetInstance());
-  DependsOn(domain_reliability::DomainReliabilityServiceFactory::GetInstance());
   DependsOn(HistoryServiceFactory::GetInstance());
   DependsOn(HostContentSettingsMapFactory::GetInstance());
   DependsOn(PasswordStoreFactory::GetInstance());

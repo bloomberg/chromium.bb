@@ -46,6 +46,8 @@ import org.chromium.policy.CombinedPolicyProvider;
 import org.chromium.ui.resources.ResourceExtractor;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -59,6 +61,7 @@ public class ChromeBrowserInitializer {
     private static BrowserStartupController sBrowserStartupController;
     private final ChromeApplication mApplication;
     private final Locale mInitialLocale = Locale.getDefault();
+    private List<Runnable> mTasksToRunWithNative;
 
     private boolean mPreInflationStartupComplete;
     private boolean mPostInflationStartupComplete;
@@ -112,6 +115,24 @@ public class ChromeBrowserInitializer {
     }
 
     /**
+     * Either runs a task now, or queue it until native initialization is done.
+     *
+     * All Runnables added this way will run in a single UI thread task.
+     *
+     * @param task The task to run.
+     */
+    public void runNowOrAfterNativeInitialization(Runnable task) {
+        if (hasNativeInitializationCompleted()) {
+            task.run();
+        } else {
+            if (mTasksToRunWithNative == null) {
+                mTasksToRunWithNative = new ArrayList<Runnable>();
+            }
+            mTasksToRunWithNative.add(task);
+        }
+    }
+
+    /**
      * Initializes the Chrome browser process synchronously.
      *
      * @throws ProcessInitException if there is a problem with the native library.
@@ -149,21 +170,14 @@ public class ChromeBrowserInitializer {
      */
     public void handlePreNativeStartup(final BrowserParts parts) {
         ThreadUtils.checkUiThread();
-        try (TraceEvent e1 =
-                        TraceEvent.scoped("ChromeBrowserInitializer.handlePreNativeStartup()")) {
-            ProcessInitializationHandler.getInstance().initializePreNative();
-            try (TraceEvent e2 =
-                            TraceEvent.scoped("ChromeBrowserInitializer.preInflationStartup")) {
-                preInflationStartup();
-                parts.preInflationStartup();
-            }
-            if (parts.isActivityFinishing()) return;
-            preInflationStartupDone();
-            try (TraceEvent e3 = TraceEvent.scoped(
-                         "ChromeBrowserInitializer.setContentViewAndLoadLibrary")) {
-                parts.setContentViewAndLoadLibrary(() -> this.onInflationComplete(parts));
-            }
+        ProcessInitializationHandler.getInstance().initializePreNative();
+        try (TraceEvent e = TraceEvent.scoped("ChromeBrowserInitializer.preInflationStartup")) {
+            preInflationStartup();
+            parts.preInflationStartup();
         }
+        if (parts.isActivityFinishing()) return;
+        preInflationStartupDone();
+        parts.setContentViewAndLoadLibrary(() -> this.onInflationComplete(parts));
     }
 
     /**
@@ -196,25 +210,23 @@ public class ChromeBrowserInitializer {
      * Running in an AsyncTask as pre-loading itself may cause I/O.
      */
     private void warmUpSharedPrefs() {
-        try (TraceEvent e = TraceEvent.scoped("ChromeBrowserInitializer.warmUpSharedPrefs")) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                new AsyncTask<Void>() {
-                    @Override
-                    protected Void doInBackground() {
-                        ContextUtils.getAppSharedPreferences();
-                        DocumentTabModelImpl.warmUpSharedPrefs(mApplication);
-                        ActivityAssigner.warmUpSharedPrefs(mApplication);
-                        DownloadManagerService.warmUpSharedPrefs();
-                        return null;
-                    }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            new AsyncTask<Void>() {
+                @Override
+                protected Void doInBackground() {
+                    ContextUtils.getAppSharedPreferences();
+                    DocumentTabModelImpl.warmUpSharedPrefs(mApplication);
+                    ActivityAssigner.warmUpSharedPrefs(mApplication);
+                    DownloadManagerService.warmUpSharedPrefs();
+                    return null;
                 }
-                        .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-            } else {
-                ContextUtils.getAppSharedPreferences();
-                DocumentTabModelImpl.warmUpSharedPrefs(mApplication);
-                ActivityAssigner.warmUpSharedPrefs(mApplication);
-                DownloadManagerService.warmUpSharedPrefs();
             }
+                    .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        } else {
+            ContextUtils.getAppSharedPreferences();
+            DocumentTabModelImpl.warmUpSharedPrefs(mApplication);
+            ActivityAssigner.warmUpSharedPrefs(mApplication);
+            DownloadManagerService.warmUpSharedPrefs();
         }
     }
 
@@ -271,70 +283,41 @@ public class ChromeBrowserInitializer {
         // launch its required components.
         if (!delegate.startServiceManagerOnly()
                 && !ProcessInitializationHandler.getInstance().postNativeInitializationComplete()) {
-            tasks.add(new Runnable() {
-                @Override
-                public void run() {
-                    ProcessInitializationHandler.getInstance().initializePostNative();
-                }
-            });
+            tasks.add(() -> ProcessInitializationHandler.getInstance().initializePostNative());
         }
 
         if (!mNetworkChangeNotifierInitializationComplete) {
-            tasks.add(new Runnable() {
-                @Override
-                public void run() {
-                    initNetworkChangeNotifier();
-                }
-            });
+            tasks.add(this::initNetworkChangeNotifier);
         }
 
-        tasks.add(new Runnable() {
-            @Override
-            public void run() {
-                // This is not broken down as a separate task, since this:
-                // 1. Should happen as early as possible
-                // 2. Only submits asynchronous work
-                // 3. Is thus very cheap (profiled at 0.18ms on a Nexus 5 with Lollipop)
-                // It should also be in a separate task (and after) initNetworkChangeNotifier, as
-                // this posts a task to the UI thread that would interfere with preconneciton
-                // otherwise. By preconnecting afterwards, we make sure that this task has run.
-                delegate.maybePreconnect();
+        tasks.add(() -> {
+            // This is not broken down as a separate task, since this:
+            // 1. Should happen as early as possible
+            // 2. Only submits asynchronous work
+            // 3. Is thus very cheap (profiled at 0.18ms on a Nexus 5 with Lollipop)
+            // It should also be in a separate task (and after) initNetworkChangeNotifier, as
+            // this posts a task to the UI thread that would interfere with preconneciton
+            // otherwise. By preconnecting afterwards, we make sure that this task has run.
+            delegate.maybePreconnect();
 
-                onStartNativeInitialization();
-            }
+            onStartNativeInitialization();
         });
 
-        tasks.add(new Runnable() {
-            @Override
-            public void run() {
-                if (delegate.isActivityDestroyed()) return;
-                delegate.initializeCompositor();
-            }
+        tasks.add(() -> {
+            if (delegate.isActivityDestroyed()) return;
+            delegate.initializeCompositor();
         });
 
-        tasks.add(new Runnable() {
-            @Override
-            public void run() {
-                if (delegate.isActivityDestroyed()) return;
-                delegate.initializeState();
-            }
+        tasks.add(() -> {
+            if (delegate.isActivityDestroyed()) return;
+            delegate.initializeState();
         });
 
-        if (!mNativeInitializationComplete) {
-            tasks.add(new Runnable() {
-                @Override
-                public void run() {
-                    onFinishNativeInitialization();
-                }
-            });
-        }
+        if (!mNativeInitializationComplete) tasks.add(this::onFinishNativeInitialization);
 
-        tasks.add(new Runnable() {
-            @Override
-            public void run() {
-                if (delegate.isActivityDestroyed()) return;
-                delegate.finishNativeInitialization();
-            }
+        tasks.add(() -> {
+            if (delegate.isActivityDestroyed()) return;
+            delegate.finishNativeInitialization();
         });
 
         if (isAsync) {
@@ -422,6 +405,7 @@ public class ChromeBrowserInitializer {
 
         mNativeInitializationComplete = true;
         ContentUriUtils.setFileProviderUtil(new FileProviderHelper());
+        ServiceManagerStartupUtils.registerEnabledFeatures();
 
         // When a minidump is detected, extract and append a logcat to it, then upload it to the
         // crash server. Note that the logcat extraction might fail. This is ok; in that case, the
@@ -434,6 +418,10 @@ public class ChromeBrowserInitializer {
         });
 
         MemoryPressureUma.initializeForBrowser();
+        if (mTasksToRunWithNative != null) {
+            for (Runnable r : mTasksToRunWithNative) r.run();
+            mTasksToRunWithNative = null;
+        }
     }
 
     private ActivityStateListener createActivityStateListener() {

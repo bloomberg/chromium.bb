@@ -4,6 +4,8 @@
 
 #include "content/public/test/find_test_utils.h"
 
+#include "content/browser/find_request_manager.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -145,5 +147,14 @@ void FindTestWebContentsDelegate::FindMatchRectsReply(
     StopWaiting();
 }
 #endif
+
+std::unordered_set<RenderFrameHost*> GetRenderFrameHostsWithPendingFindResults(
+    WebContents* web_contents) {
+  if (auto* frm = static_cast<WebContentsImpl*>(web_contents)
+                      ->GetFindRequestManagerForTesting()) {
+    return frm->render_frame_hosts_pending_initial_reply_for_testing();
+  }
+  return std::unordered_set<RenderFrameHost*>();
+}
 
 }  // namespace content

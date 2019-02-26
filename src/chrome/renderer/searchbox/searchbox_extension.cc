@@ -355,6 +355,9 @@ v8::Local<v8::Object> GenerateThemeBackgroundInfo(
                 theme_info.custom_background_attribution_line_1);
     builder.Set("attribution2",
                 theme_info.custom_background_attribution_line_2);
+    // Clear the theme attribution url, as it shouldn't be shown when
+    // a custom background is set.
+    builder.Set("attributionUrl", std::string());
   }
 
   return builder.Build();
@@ -441,17 +444,6 @@ static const char kDispatchDeleteCustomLinkResult[] =
     "    typeof window.chrome.embeddedSearch.newTabPage"
     "        .ondeletecustomlinkdone === 'function') {"
     "  window.chrome.embeddedSearch.newTabPage.ondeletecustomlinkdone(%s);"
-    "  true;"
-    "}";
-
-static const char kDispatchDoesUrlResolveResultScript[] =
-    "if (window.chrome &&"
-    "    window.chrome.embeddedSearch &&"
-    "    window.chrome.embeddedSearch.newTabPage &&"
-    "    window.chrome.embeddedSearch.newTabPage.doesurlresolve &&"
-    "    typeof window.chrome.embeddedSearch.newTabPage.doesurlresolve =="
-    "        'function') {"
-    "  window.chrome.embeddedSearch.newTabPage.doesurlresolve(%s);"
     "  true;"
     "}";
 
@@ -638,6 +630,7 @@ class NewTabPageBindings : public gin::Wrappable<NewTabPageBindings> {
   static void UpdateCustomLink(int rid,
                                const std::string& url,
                                const std::string& title);
+  static void ReorderCustomLink(int rid, int new_pos);
   static void UndoCustomLinkAction();
   static void ResetCustomLinks();
   static std::string FixupAndValidateUrl(const std::string& url);
@@ -694,6 +687,7 @@ gin::ObjectTemplateBuilder NewTabPageBindings::GetObjectTemplateBuilder(
       .SetMethod("getMostVisitedItemData",
                  &NewTabPageBindings::GetMostVisitedItemData)
       .SetMethod("updateCustomLink", &NewTabPageBindings::UpdateCustomLink)
+      .SetMethod("reorderCustomLink", &NewTabPageBindings::ReorderCustomLink)
       .SetMethod("undoCustomLinkAction",
                  &NewTabPageBindings::UndoCustomLinkAction)
       .SetMethod("resetCustomLinks", &NewTabPageBindings::ResetCustomLinks)
@@ -900,6 +894,16 @@ void NewTabPageBindings::UpdateCustomLink(int rid,
 }
 
 // static
+void NewTabPageBindings::ReorderCustomLink(int rid, int new_pos) {
+  if (!ntp_tiles::IsCustomLinksEnabled())
+    return;
+  SearchBox* search_box = GetSearchBoxForCurrentContext();
+  if (!search_box || !HasOrigin(GURL(chrome::kChromeSearchMostVisitedUrl)))
+    return;
+  search_box->ReorderCustomLink(rid, new_pos);
+}
+
+// static
 void NewTabPageBindings::UndoCustomLinkAction() {
   if (!ntp_tiles::IsCustomLinksEnabled())
     return;
@@ -1040,7 +1044,7 @@ void SearchBoxExtension::Install(blink::WebLocalFrame* frame) {
   if (newtabpage_controller.IsEmpty())
     return;
 
-  v8::Handle<v8::Object> chrome =
+  v8::Local<v8::Object> chrome =
       content::GetOrCreateChromeObject(isolate, context->Global());
   v8::Local<v8::Object> embedded_search = v8::Object::New(isolate);
   embedded_search
@@ -1107,15 +1111,6 @@ void SearchBoxExtension::DispatchDeleteCustomLinkResult(
     bool success) {
   blink::WebString script(blink::WebString::FromUTF8(base::StringPrintf(
       kDispatchDeleteCustomLinkResult, success ? "true" : "false")));
-  Dispatch(frame, script);
-}
-
-// static
-void SearchBoxExtension::DispatchDoesUrlResolveResult(
-    blink::WebLocalFrame* frame,
-    bool resolves) {
-  blink::WebString script(blink::WebString::FromUTF8(base::StringPrintf(
-      kDispatchDoesUrlResolveResultScript, resolves ? "true" : "false")));
   Dispatch(frame, script);
 }
 

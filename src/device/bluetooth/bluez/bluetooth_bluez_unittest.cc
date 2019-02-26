@@ -11,6 +11,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -224,7 +225,7 @@ class BluetoothBlueZTest : public testing::Test {
   // without using this function.
   void DiscoverDevice(const std::string& address) {
     ASSERT_TRUE(adapter_.get() != nullptr);
-    ASSERT_TRUE(base::MessageLoop::current() != nullptr);
+    ASSERT_TRUE(base::MessageLoopCurrent::IsSet());
     fake_bluetooth_device_client_->SetSimulationIntervalMs(10);
 
     TestBluetoothAdapterObserver observer(adapter_);
@@ -981,10 +982,11 @@ TEST_F(BluetoothBlueZTest, UnexpectedChangesDuringMultipleDiscoverySessions) {
   // bluez::FakeBluetoothAdapterClient's count should be only 1 and a single
   // call to
   // bluez::FakeBluetoothAdapterClient::StopDiscovery should work.
-  fake_bluetooth_adapter_client_->StopDiscovery(
+  fake_bluetooth_adapter_client_->BluetoothAdapterClient::StopDiscovery(
       dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
-      GetCallback(), base::Bind(&BluetoothBlueZTest::DBusErrorCallback,
-                                base::Unretained(this)));
+      GetCallback(),
+      base::Bind(&BluetoothBlueZTest::DBusErrorCallback,
+                 base::Unretained(this)));
   base::RunLoop().Run();
   EXPECT_EQ(2, observer.discovering_changed_count());
   EXPECT_EQ(4, callback_count_);
@@ -1090,10 +1092,11 @@ TEST_F(BluetoothBlueZTest, UnexpectedChangesDuringMultipleDiscoverySessions) {
   // Stop discovery via D-Bus. The fake client's reference count will drop but
   // the discovery state won't change since our BluetoothAdapter also just
   // requested it via D-Bus.
-  fake_bluetooth_adapter_client_->StopDiscovery(
+  fake_bluetooth_adapter_client_->BluetoothAdapterClient::StopDiscovery(
       dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
-      GetCallback(), base::Bind(&BluetoothBlueZTest::DBusErrorCallback,
-                                base::Unretained(this)));
+      GetCallback(),
+      base::Bind(&BluetoothBlueZTest::DBusErrorCallback,
+                 base::Unretained(this)));
   base::RunLoop().Run();
   EXPECT_EQ(5, observer.discovering_changed_count());
   EXPECT_EQ(10, callback_count_);
@@ -1168,10 +1171,11 @@ TEST_F(BluetoothBlueZTest, InvalidatedDiscoverySessions) {
   // should become inactive, but more importantly, we shouldn't run into any
   // memory errors as the sessions that we explicitly deleted should get
   // cleaned up.
-  fake_bluetooth_adapter_client_->StopDiscovery(
+  fake_bluetooth_adapter_client_->BluetoothAdapterClient::StopDiscovery(
       dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
-      GetCallback(), base::Bind(&BluetoothBlueZTest::DBusErrorCallback,
-                                base::Unretained(this)));
+      GetCallback(),
+      base::Bind(&BluetoothBlueZTest::DBusErrorCallback,
+                 base::Unretained(this)));
   base::RunLoop().Run();
   EXPECT_EQ(2, observer.discovering_changed_count());
   EXPECT_EQ(4, callback_count_);
@@ -2433,6 +2437,36 @@ TEST_F(BluetoothBlueZTest, DeviceAdvertisementReceived) {
   properties->NotifyPropertyChanged(properties->rssi.name());
   EXPECT_EQ(1, observer.device_advertisement_received_count());
   EXPECT_EQ(eir, observer.device_eir());
+}
+
+TEST_F(BluetoothBlueZTest, DeviceConnectedStateChanged) {
+  GetAdapter();
+
+  fake_bluetooth_device_client_->CreateDevice(
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+  BluetoothDevice* device =
+      adapter_->GetDevice(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress);
+  ASSERT_TRUE(device);
+
+  // Install an observer; expect DeviceConnectedStateChanged method to be
+  // called.
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  bluez::FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(
+          dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+
+  // The device starts out disconnected.
+  EXPECT_FALSE(device->IsConnected());
+
+  properties->connected.ReplaceValue(true);
+  EXPECT_EQ(1u, observer.device_connected_state_changed_values().size());
+  EXPECT_TRUE(observer.device_connected_state_changed_values()[0]);
+
+  properties->connected.ReplaceValue(false);
+  EXPECT_EQ(2u, observer.device_connected_state_changed_values().size());
+  EXPECT_FALSE(observer.device_connected_state_changed_values()[1]);
 }
 #endif
 

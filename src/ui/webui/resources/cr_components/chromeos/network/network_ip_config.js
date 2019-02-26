@@ -81,21 +81,21 @@ Polymer({
     if (!this.networkProperties)
       return;
 
-    var properties = this.networkProperties;
+    const properties = this.networkProperties;
     if (newValue.GUID != (oldValue && oldValue.GUID))
       this.savedStaticIp_ = undefined;
 
     // Update the 'automatic' property.
     if (properties.IPAddressConfigType) {
-      var ipConfigType = CrOnc.getActiveValue(properties.IPAddressConfigType);
+      const ipConfigType = CrOnc.getActiveValue(properties.IPAddressConfigType);
       this.automatic_ = (ipConfigType != CrOnc.IPConfigType.STATIC);
     }
 
     if (properties.IPConfigs || properties.StaticIPConfig) {
       // Update the 'ipConfig' property.
-      var ipv4 = this.getIPConfigUIProperties_(
+      const ipv4 = this.getIPConfigUIProperties_(
           CrOnc.getIPConfigForType(properties, CrOnc.IPType.IPV4));
-      var ipv6 = this.getIPConfigUIProperties_(
+      let ipv6 = this.getIPConfigUIProperties_(
           CrOnc.getIPConfigForType(properties, CrOnc.IPType.IPV6));
       if (properties.ConnectionState == CrOnc.ConnectionState.CONNECTED &&
           ipv4 && ipv4.IPAddress) {
@@ -111,7 +111,7 @@ Polymer({
   /** @private */
   onAutomaticChange_: function() {
     if (!this.automatic_) {
-      var defaultIpv4 = {
+      const defaultIpv4 = {
         Gateway: '192.168.1.1',
         IPAddress: '192.168.1.1',
         RoutingPrefix: '255.255.255.0',
@@ -147,9 +147,9 @@ Polymer({
   getIPConfigUIProperties_: function(ipconfig) {
     if (!ipconfig)
       return undefined;
-    var result = {};
-    for (var key in ipconfig) {
-      var value = ipconfig[key];
+    const result = {};
+    for (const key in ipconfig) {
+      const value = ipconfig[key];
       if (key == 'RoutingPrefix')
         result.RoutingPrefix = CrOnc.getRoutingPrefixAsNetmask(value);
       else
@@ -165,9 +165,9 @@ Polymer({
    * @private
    */
   getIPConfigProperties_: function(ipconfig) {
-    var result = {};
-    for (var key in ipconfig) {
-      var value = ipconfig[key];
+    const result = {};
+    for (const key in ipconfig) {
+      const value = ipconfig[key];
       if (key == 'RoutingPrefix')
         result.RoutingPrefix = CrOnc.getRoutingPrefixAsLength(value);
       else
@@ -183,7 +183,7 @@ Polymer({
   hasIpConfigFields_: function() {
     if (!this.ipConfigFields_)
       return false;
-    for (var i = 0; i < this.ipConfigFields_.length; ++i) {
+    for (let i = 0; i < this.ipConfigFields_.length; ++i) {
       if (this.get(this.ipConfigFields_[i], this.ipConfig_) != undefined)
         return true;
     }
@@ -213,8 +213,8 @@ Polymer({
   onIPChange_: function(event) {
     if (!this.ipConfig_)
       return;
-    var field = event.detail.field;
-    var value = event.detail.value;
+    const field = event.detail.field;
+    const value = event.detail.value;
     // Note: |field| includes the 'ipv4.' prefix.
     this.set('ipConfig_.' + field, value);
     this.sendStaticIpConfig_();

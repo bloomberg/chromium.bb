@@ -152,4 +152,8 @@ bool MenuDelegate::ShouldReserveSpaceForSubmenuIndicator() const {
   return true;
 }
 
+bool MenuDelegate::ShouldTryPositioningBesideAnchor() const {
+  return true;
+}
+
 }  // namespace views

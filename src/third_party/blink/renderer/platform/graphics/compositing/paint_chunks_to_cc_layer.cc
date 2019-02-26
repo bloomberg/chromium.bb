@@ -497,6 +497,9 @@ void ConversionContext::StartEffect(const EffectPaintPropertyNode* effect) {
                            effect->GetColorFilter() != kColorFilterNone;
   DCHECK(!has_filter || !(has_opacity || has_other_effects));
 
+  // TODO(crbug.com/904592): Add support for non-composited backdrop-filter
+  // here.
+
   // Apply effects.
   cc_list_.StartPaint();
   if (!has_filter) {
@@ -525,7 +528,6 @@ void ConversionContext::StartEffect(const EffectPaintPropertyNode* effect) {
       cc_list_.push<cc::TranslateOp>(filter_origin.X(), filter_origin.Y());
       saved_count++;
     }
-
     // The size parameter is only used to computed the origin of zoom
     // operation, which we never generate.
     gfx::SizeF empty;
@@ -534,7 +536,6 @@ void ConversionContext::StartEffect(const EffectPaintPropertyNode* effect) {
         effect->Filter().AsCcFilterOperations(), empty));
     save_layer_id = cc_list_.push<cc::SaveLayerOp>(nullptr, &filter_flags);
     saved_count++;
-
     if (filter_origin != FloatPoint())
       cc_list_.push<cc::TranslateOp>(-filter_origin.X(), -filter_origin.Y());
   }
@@ -671,7 +672,9 @@ void ConversionContext::Convert(const PaintChunkSubset& paint_chunks,
     bool switched_to_chunk_state = false;
 
     for (const auto& item : display_items.ItemsInPaintChunk(chunk)) {
-      DCHECK(item.IsDrawing());
+      if (!item.IsDrawing())
+        continue;
+
       auto record =
           static_cast<const DrawingDisplayItem&>(item).GetPaintRecord();
       // If we have an empty paint record, then we would prefer not to draw it.

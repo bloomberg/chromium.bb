@@ -15,6 +15,7 @@ import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/service_manager/public/mojom/interface_provider.mojom";
+import "third_party/blink/public/mojom/script/script_type.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom";
@@ -42,6 +43,8 @@ struct EmbeddedWorkerStartParams {
   // This service worker's script type:
   // https://w3c.github.io/ServiceWorker/#dfn-type
   blink.mojom.ScriptType script_type;
+  // The string used for "user-agent" HTTP header.
+  string user_agent;
   // The id to talk with the DevTools agent for the worker.
   int32 worker_devtools_agent_route_id;
   // Unique token identifying this worker for DevTools.

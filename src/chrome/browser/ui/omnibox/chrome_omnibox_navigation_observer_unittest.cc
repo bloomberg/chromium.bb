@@ -14,6 +14,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory_test_util.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_data.h"
@@ -25,8 +26,6 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/test/test_browser_thread_bundle.h"
-#include "content/public/test/web_contents_tester.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -36,7 +35,6 @@
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 using network::TestURLLoaderFactory;
 
@@ -72,18 +70,18 @@ class MockChromeOmniboxNavigationObserver
   DISALLOW_COPY_AND_ASSIGN(MockChromeOmniboxNavigationObserver);
 };
 
-class ChromeOmniboxNavigationObserverTest : public testing::Test {
+class ChromeOmniboxNavigationObserverTest
+    : public ChromeRenderViewHostTestHarness {
  protected:
   ChromeOmniboxNavigationObserverTest() {}
   ~ChromeOmniboxNavigationObserverTest() override {}
 
   content::NavigationController* navigation_controller() {
-    return &(web_contents_->GetController());
+    return &(web_contents()->GetController());
   }
 
-  TestingProfile* profile() { return &profile_; }
   TemplateURLService* model() {
-    return TemplateURLServiceFactory::GetForProfile(&profile_);
+    return TemplateURLServiceFactory::GetForProfile(profile());
   }
 
   // Functions that return the name of certain search keywords that are part
@@ -105,21 +103,15 @@ class ChromeOmniboxNavigationObserverTest : public testing::Test {
   }
 
  private:
-  // testing::Test:
+  // ChromeRenderViewHostTestHarness:
   void SetUp() override;
-
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
-  TestingProfile profile_;
-  std::unique_ptr<content::WebContents> web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeOmniboxNavigationObserverTest);
 };
 
 void ChromeOmniboxNavigationObserverTest::SetUp() {
-  web_contents_ = content::WebContentsTester::CreateTestWebContents(
-      profile(), content::SiteInstance::Create(profile()));
-
-  InfoBarService::CreateForWebContents(web_contents_.get());
+  ChromeRenderViewHostTestHarness::SetUp();
+  InfoBarService::CreateForWebContents(web_contents());
 
   // Set up a series of search engines for later testing.
   TemplateURLServiceFactoryTestUtil factory_util(profile());

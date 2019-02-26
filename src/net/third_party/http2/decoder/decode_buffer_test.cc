@@ -4,8 +4,10 @@
 
 #include "net/third_party/http2/decoder/decode_buffer.h"
 
+#include <functional>
+
 #include "base/logging.h"
-#include "net/third_party/http2/tools/http2_random.h"
+#include "net/third_party/http2/test_tools/http2_random.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace http2 {
@@ -42,9 +44,6 @@ struct TestStruct {
 };
 
 class DecodeBufferTest : public ::testing::Test {
- public:
-  DecodeBufferTest() = default;
-
  protected:
   Http2Random random_;
   uint32_t decode_offset_;

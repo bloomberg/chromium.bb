@@ -7,11 +7,12 @@
 #include "components/google/core/common/google_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
-#include "ios/chrome/browser/ui/rtl_geometry.h"
-#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
-#include "ios/chrome/browser/ui/ui_util.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
 #import "ios/chrome/browser/ui/url_loader.h"
+#include "ios/chrome/browser/ui/util/rtl_geometry.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/string_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
@@ -51,18 +52,8 @@ GURL GetUrlWithLang(const GURL& url) {
 // Returns a font, scaled to the current dynamic type settings, that is suitable
 // for the title of the incognito page.
 UIFont* TitleFont() {
-  // On iOS 11, use UIFontMetrics to return a scalable font.
-  if (@available(iOS 11.0, *)) {
-    return [[UIFontMetrics defaultMetrics]
-        scaledFontForFont:[UIFont boldSystemFontOfSize:26.0]];
-  }
-
-  UIFontDescriptor* baseDescriptor = [UIFontDescriptor
-      preferredFontDescriptorWithTextStyle:UIFontTextStyleTitle1];
-  UIFontDescriptor* styleDescriptor = [baseDescriptor
-      fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitBold];
-  // Use a |size| of 0.0 to use the default size for the descriptor.
-  return [UIFont fontWithDescriptor:styleDescriptor size:0.0];
+  return [[UIFontMetrics defaultMetrics]
+      scaledFontForFont:[UIFont boldSystemFontOfSize:26.0]];
 }
 
 // Returns the color to use for body text.
@@ -154,11 +145,9 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
     _loader = loader;
 
     self.alwaysBounceVertical = YES;
-    if (@available(iOS 11.0, *)) {
-      // The bottom safe area is taken care of with the bottomUnsafeArea guides.
-      self.contentInsetAdjustmentBehavior =
-          UIScrollViewContentInsetAdjustmentNever;
-    }
+    // The bottom safe area is taken care of with the bottomUnsafeArea guides.
+    self.contentInsetAdjustmentBehavior =
+        UIScrollViewContentInsetAdjustmentNever;
 
     // Container to hold and vertically position the stack view.
     _containerView = [[UIView alloc] initWithFrame:frame];
@@ -177,10 +166,8 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
     UIImageView* incognitoImage = [[UIImageView alloc]
         initWithImage:[UIImage imageNamed:@"incognito_icon"]];
     [_stackView addArrangedSubview:incognitoImage];
-    if (@available(iOS 11.0, *)) {
-      [_stackView setCustomSpacing:kStackViewImageSpacing
-                         afterView:incognitoImage];
-    }
+    [_stackView setCustomSpacing:kStackViewImageSpacing
+                       afterView:incognitoImage];
 
     [self addTextSections];
 
@@ -284,8 +271,7 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
   if (!self.superview)
     return;
 
-  id<LayoutGuideProvider> safeAreaGuide =
-      SafeAreaLayoutGuideForView(self.superview);
+  id<LayoutGuideProvider> safeAreaGuide = self.superview.safeAreaLayoutGuide;
   _bottomUnsafeAreaGuideInSuperview = [[UILayoutGuide alloc] init];
   [self.superview addLayoutGuide:_bottomUnsafeAreaGuideInSuperview];
 
@@ -344,13 +330,10 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
   if (IsRegularXRegularSizeClass(self)) {
     _topToolbarMarginHeight.constant = 0;
   } else {
-    CGFloat topInset = 0;
-    if (@available(iOS 11, *)) {
-      topInset = self.safeAreaInsets.top;
-    } else {
-      topInset = StatusBarHeight();
-    }
-    _topToolbarMarginHeight.constant = topInset + kAdaptiveToolbarHeight;
+    CGFloat topInset = self.safeAreaInsets.top;
+    _topToolbarMarginHeight.constant =
+        topInset + ToolbarExpandedHeight(
+                       self.traitCollection.preferredContentSizeCategory);
   }
 
   if (IsSplitToolbarMode(self)) {
@@ -362,8 +345,7 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
 
 // Triggers a navigation to the help page.
 - (void)learnMoreButtonPressed {
-  web::NavigationManager::WebLoadParams params(
-      GetUrlWithLang(GURL(kLearnMoreIncognitoUrl)));
+  ChromeLoadParams params(GetUrlWithLang(GURL(kLearnMoreIncognitoUrl)));
   [_loader loadURLWithParams:params];
 }
 

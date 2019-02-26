@@ -15,6 +15,7 @@
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/display_embedder/gl_output_surface.h"
+#include "components/viz/service/display_embedder/gl_output_surface_offscreen.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/display_embedder/skia_output_surface_impl.h"
 #include "components/viz/service/display_embedder/software_output_surface.h"
@@ -23,6 +24,7 @@
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/service/image_factory.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "gpu/ipc/command_buffer_task_executor.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
@@ -128,7 +130,8 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
     return nullptr;
 #else
     output_surface = std::make_unique<SkiaOutputSurfaceImpl>(
-        gpu_service_impl_, surface_handle, synthetic_begin_frame_source);
+        gpu_service_impl_, surface_handle, synthetic_begin_frame_source,
+        renderer_settings.show_overdraw_feedback);
     skia_output_surface = static_cast<SkiaOutputSurface*>(output_surface.get());
 #endif
   } else {
@@ -162,7 +165,10 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
       }
     }
 
-    if (context_provider->ContextCapabilities().surfaceless) {
+    if (surface_handle == gpu::kNullSurfaceHandle) {
+      output_surface = std::make_unique<GLOutputSurfaceOffscreen>(
+          std::move(context_provider), synthetic_begin_frame_source);
+    } else if (context_provider->ContextCapabilities().surfaceless) {
 #if defined(USE_OZONE)
       output_surface = std::make_unique<GLOutputSurfaceOzone>(
           std::move(context_provider), surface_handle,
@@ -186,8 +192,12 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
     } else {
 #if defined(OS_WIN)
       const auto& capabilities = context_provider->ContextCapabilities();
+      const bool use_overlays_for_sw_protected_video =
+          base::FeatureList::IsEnabled(
+              features::kUseDCOverlaysForSoftwareProtectedVideo);
       const bool use_overlays =
-          capabilities.dc_layers && capabilities.use_dc_overlays_for_video;
+          capabilities.dc_layers && (capabilities.use_dc_overlays_for_video ||
+                                     use_overlays_for_sw_protected_video);
       output_surface = std::make_unique<GLOutputSurfaceWin>(
           std::move(context_provider), synthetic_begin_frame_source,
           use_overlays);

@@ -20,7 +20,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
-#include "components/signin/core/browser/profile_management_switches.h"
+#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/web_contents.h"
@@ -152,8 +152,7 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
     return;
 
   const SkColor kPromptBarBackgroundColor =
-      ui::GetSigninConfirmationPromptBarColor(
-          GetNativeTheme(), ui::kSigninConfirmationPromptBarBackgroundAlpha);
+      ui::GetSigninConfirmationPromptBarColor(GetNativeTheme(), 0x0A);
 
   // Create business icon.
   int business_icon_size = 20;
@@ -183,8 +182,7 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
   views::View* prompt_bar = new views::View;
   prompt_bar->SetBorder(views::CreateSolidSidedBorder(
       1, 0, 1, 0,
-      ui::GetSigninConfirmationPromptBarColor(
-          GetNativeTheme(), ui::kSigninConfirmationPromptBarBorderAlpha)));
+      ui::GetSigninConfirmationPromptBarColor(GetNativeTheme(), 0x1F)));
   prompt_bar->SetBackground(
       views::CreateSolidBackground(kPromptBarBackgroundColor));
 

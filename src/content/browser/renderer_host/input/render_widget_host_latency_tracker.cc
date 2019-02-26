@@ -70,7 +70,7 @@ void RenderWidgetHostLatencyTracker::ComputeInputLatencyHistograms(
 
   std::string event_name = WebInputEvent::GetName(type);
 
-  if (latency.source_event_type() == ui::KEY_PRESS)
+  if (latency.source_event_type() == ui::SourceEventType::KEY_PRESS)
     event_name = "KeyPress";
 
   std::string default_action_status =
@@ -112,7 +112,7 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
     active_multi_finger_gesture_ = touch_event.touches_length != 1;
   }
 
-  if (latency->source_event_type() == ui::KEY_PRESS) {
+  if (latency->source_event_type() == ui::SourceEventType::KEY_PRESS) {
     DCHECK(event.GetType() == WebInputEvent::kChar ||
            event.GetType() == WebInputEvent::kRawKeyDown);
   }
@@ -160,9 +160,14 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
               ? ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT
               : ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT,
           original_event_timestamp, 1);
+      latency->AddLatencyNumberWithTimestamp(
+          ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT_COMPONENT,
+          original_event_timestamp, 1);
     }
 
     has_seen_first_gesture_scroll_update_ = true;
+    latency->set_scroll_update_delta(
+        static_cast<const WebGestureEvent&>(event).data.scroll_update.delta_y);
   }
 }
 

@@ -7,6 +7,7 @@
 #include "chrome/browser/ui/passwords/manage_passwords_test.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/grit/generated_resources.h"
@@ -24,10 +25,13 @@ class ManagePasswordsIconViewTest : public ManagePasswordsTest {
   password_manager::ui::State ViewState() { return GetView()->state_; }
 
   ManagePasswordsIconViews* GetView() {
-    return BrowserView::GetBrowserViewForBrowser(browser())
-        ->toolbar()
-        ->location_bar()
-        ->manage_passwords_icon_view();
+    views::View* view =
+        BrowserView::GetBrowserViewForBrowser(browser())
+            ->toolbar_button_provider()
+            ->GetPageActionIconContainerView()
+            ->GetPageActionIconView(PageActionIconType::kManagePasswords);
+    DCHECK_EQ(view->GetClassName(), ManagePasswordsIconViews::kClassName);
+    return static_cast<ManagePasswordsIconViews*>(view);
   }
 
   base::string16 GetTooltipText() {

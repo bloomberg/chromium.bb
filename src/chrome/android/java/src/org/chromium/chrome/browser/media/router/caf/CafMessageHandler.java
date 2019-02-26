@@ -70,8 +70,6 @@ public class CafMessageHandler {
     private ArrayMap<String, Queue<Integer>> mStopRequests;
     private Queue<RequestRecord> mVolumeRequests;
 
-    // The reference to CastSession, only valid after calling {@link onSessionCreated}, and will be
-    // reset to null when calling {@link onApplicationStopped}.
     private final CastSessionController mSessionController;
     private final CafMediaRouteProvider mRouteProvider;
     private Handler mHandler;
@@ -216,7 +214,7 @@ public class CafMessageHandler {
         if (clientId == null || !mSessionController.isConnected()) return false;
 
         String sessionId = jsonMessage.getString("message");
-        if (!mSessionController.getSession().getSessionId().equals(sessionId)) return false;
+        if (!mSessionController.getSessionId().equals(sessionId)) return false;
 
         ClientRecord currentClient = mRouteProvider.getClientIdToRecords().get(clientId);
         if (currentClient == null) return false;
@@ -225,8 +223,8 @@ public class CafMessageHandler {
 
         // The web sender SDK doesn't actually recognize "leave_session" response, but this is to
         // acknowledge the "leave_session" request.
-        mRouteProvider.sendMessageToClient(clientId,
-                buildSimpleSessionMessage("leave_session", sequenceNumber, clientId, null));
+        mRouteProvider.sendMessageToClient(
+                clientId, buildSimpleSessionMessage("leave_session", sequenceNumber, clientId));
 
         List<ClientRecord> leavingClients = new ArrayList<>();
 
@@ -253,14 +251,13 @@ public class CafMessageHandler {
     }
 
     /** Builds a simple message for session-related events. */
-    private String buildSimpleSessionMessage(
-            String type, int sequenceNumber, String clientId, String message) throws JSONException {
+    private String buildSimpleSessionMessage(String type, int sequenceNumber, String clientId)
+            throws JSONException {
         JSONObject jsonMessage = new JSONObject();
         jsonMessage.put("type", type);
         jsonMessage.put("sequenceNumber", sequenceNumber);
         jsonMessage.put("timeoutMillis", TIMEOUT_IMMEDIATE);
         jsonMessage.put("clientId", clientId);
-        jsonMessage.put("message", message);
         return jsonMessage.toString();
     }
 
@@ -414,7 +411,7 @@ public class CafMessageHandler {
 
         JSONObject jsonAppMessageWrapper = jsonMessage.getJSONObject("message");
 
-        if (!mSessionController.getSession().getSessionId().equals(
+        if (!mSessionController.getSessionId().equals(
                     jsonAppMessageWrapper.getString("sessionId"))) {
             return false;
         }
@@ -522,7 +519,7 @@ public class CafMessageHandler {
     void onAppMessage(String message, String namespace, RequestRecord request) {
         try {
             JSONObject jsonMessage = new JSONObject();
-            jsonMessage.put("sessionId", mSessionController.getSession().getSessionId());
+            jsonMessage.put("sessionId", mSessionController.getSessionId());
             jsonMessage.put("namespaceName", namespace);
             jsonMessage.put("message", message);
             if (request != null) {
@@ -544,13 +541,13 @@ public class CafMessageHandler {
             Queue<Integer> sequenceNumbersForClient = mStopRequests.get(clientId);
             if (sequenceNumbersForClient == null) {
                 sendEnclosedMessageToClient(clientId, "remove_session",
-                        mSessionController.getSession().getSessionId(), VOID_SEQUENCE_NUMBER);
+                        mSessionController.getSessionId(), VOID_SEQUENCE_NUMBER);
                 continue;
             }
 
             for (int sequenceNumber : sequenceNumbersForClient) {
                 sendEnclosedMessageToClient(clientId, "remove_session",
-                        mSessionController.getSession().getSessionId(), sequenceNumber);
+                        mSessionController.getSessionId(), sequenceNumber);
             }
             mStopRequests.remove(clientId);
         }
@@ -688,7 +685,7 @@ public class CafMessageHandler {
             }
 
             JSONObject jsonMessage = new JSONObject();
-            jsonMessage.put("sessionId", mSessionController.getSession().getSessionId());
+            jsonMessage.put("sessionId", mSessionController.getSessionId());
             jsonMessage.put("statusText", mSessionController.getSession().getApplicationStatus());
             jsonMessage.put("receiver", jsonReceiver);
             jsonMessage.put("namespaces", jsonNamespaces);
@@ -714,12 +711,12 @@ public class CafMessageHandler {
      * Modifies the received MediaStatus message to match the format expected by the client.
      */
     private void sanitizeMediaStatusMessage(JSONObject object) throws JSONException {
-        object.put("sessionId", mSessionController.getSession().getSessionId());
+        object.put("sessionId", mSessionController.getSessionId());
 
         JSONArray mediaStatus = object.getJSONArray("status");
         for (int i = 0; i < mediaStatus.length(); ++i) {
             JSONObject status = mediaStatus.getJSONObject(i);
-            status.put("sessionId", mSessionController.getSession().getSessionId());
+            status.put("sessionId", mSessionController.getSessionId());
             if (!status.has("supportedMediaCommands")) continue;
 
             JSONArray commands = new JSONArray();
@@ -776,7 +773,7 @@ public class CafMessageHandler {
         return result;
     }
 
-    private boolean sendStringCastMessage(
+    boolean sendStringCastMessage(
             String message, String namespace, String clientId, int sequenceNumber) {
         if (!mSessionController.isConnected()) return false;
 
@@ -795,7 +792,7 @@ public class CafMessageHandler {
      * @param clientId The client id the message is sent from.
      * @param sequenceNumber The sequence number of the message.
      */
-    private void onSendAppMessageResult(Status result, String clientId, int sequenceNumber) {
+    void onSendAppMessageResult(Status result, String clientId, int sequenceNumber) {
         if (!result.isSuccess()) {
             // TODO(avayvod): should actually report back to the page.
             // See https://crbug.com/550445.

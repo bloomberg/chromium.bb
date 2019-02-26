@@ -308,6 +308,12 @@ void NavigationManagerImpl::AddTransientURLRewriter(
 
 void NavigationManagerImpl::Reload(ReloadType reload_type,
                                    bool check_for_reposts) {
+  if (IsRestoreSessionInProgress()) {
+    // Do not interrupt session restoration process. Last committed item will
+    // eventually reload once the session is restored.
+    return;
+  }
+
   if (!GetTransientItem() && !GetPendingItem() && !GetLastCommittedItem())
     return;
 
@@ -398,6 +404,11 @@ void NavigationManagerImpl::LoadIfNecessary() {
   delegate_->LoadIfNecessary();
 }
 
+void NavigationManagerImpl::AddRestoreCompletionCallback(
+    base::OnceClosure callback) {
+  std::move(callback).Run();
+}
+
 void NavigationManagerImpl::WillRestore(size_t item_count) {
   // It should be uncommon for the user to have more than 100 items in their
   // session, so bucketing 100+ logs together is fine.
@@ -415,29 +426,29 @@ NavigationManagerImpl::CreateNavigationItemWithRewriters(
     const {
   GURL loaded_url(url);
 
-  bool url_was_rewritten = false;
-  if (additional_rewriters && !additional_rewriters->empty()) {
-    url_was_rewritten = web::BrowserURLRewriter::RewriteURLWithWriters(
-        &loaded_url, browser_state_, *additional_rewriters);
+  // Do not rewrite placeholder URL. Navigation code relies on this special URL
+  // to implement native view and WebUI, and rewriter code should not be exposed
+  // to this special type of about:blank URL.
+  if (!IsPlaceholderUrl(url)) {
+    bool url_was_rewritten = false;
+    if (additional_rewriters && !additional_rewriters->empty()) {
+      url_was_rewritten = web::BrowserURLRewriter::RewriteURLWithWriters(
+          &loaded_url, browser_state_, *additional_rewriters);
+    }
+
+    if (!url_was_rewritten) {
+      web::BrowserURLRewriter::GetInstance()->RewriteURLIfNecessary(
+          &loaded_url, browser_state_);
+    }
   }
 
-  if (!url_was_rewritten) {
-    web::BrowserURLRewriter::GetInstance()->RewriteURLIfNecessary(
-        &loaded_url, browser_state_);
-  }
-
-  // The URL should not be changed to app-specific URL in two cases:
-  // 1) The load is renderer-initiated requested by non-app-specific URL. Pages
-  //    with app-specific urls have elevated previledges and should not be
-  //    allowed to open app-specific URLs.
-  // 2) The load is a placeholder URL. Navigation code relies on this special
-  //    URL to implement native view and WebUI.
-  bool is_renderer_initiated_app_specific_url_from_non_app_specific_url =
-      initiation_type == web::NavigationInitiationType::RENDERER_INITIATED &&
+  // The URL should not be changed to app-specific URL if the load is
+  // renderer-initiated requested by non-app-specific URL. Pages with
+  // app-specific urls have elevated previledges and should not be allowed to
+  // open app-specific URLs.
+  if (initiation_type == web::NavigationInitiationType::RENDERER_INITIATED &&
       loaded_url != url && web::GetWebClient()->IsAppSpecificURL(loaded_url) &&
-      !web::GetWebClient()->IsAppSpecificURL(previous_url);
-  if (is_renderer_initiated_app_specific_url_from_non_app_specific_url ||
-      IsPlaceholderUrl(url)) {
+      !web::GetWebClient()->IsAppSpecificURL(previous_url)) {
     loaded_url = url;
   }
 
@@ -447,19 +458,18 @@ NavigationManagerImpl::CreateNavigationItemWithRewriters(
   item->SetReferrer(referrer);
   item->SetTransitionType(transition);
   item->SetNavigationInitiationType(initiation_type);
-  if (web::GetWebClient()->IsAppSpecificURL(loaded_url)) {
+  if (!wk_navigation_util::URLNeedsUserAgentType(loaded_url)) {
     item->SetUserAgentType(web::UserAgentType::NONE);
   }
 
   return item;
 }
 
-NavigationItem* NavigationManagerImpl::GetLastCommittedNonAppSpecificItem()
+NavigationItem* NavigationManagerImpl::GetLastCommittedItemWithUserAgentType()
     const {
-  WebClient* client = GetWebClient();
   for (int index = GetLastCommittedItemIndex(); index >= 0; index--) {
     NavigationItem* item = GetItemAtIndex(index);
-    if (!client->IsAppSpecificURL(item->GetURL()))
+    if (wk_navigation_util::URLNeedsUserAgentType(item->GetURL()))
       return item;
   }
   return nullptr;

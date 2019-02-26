@@ -17,7 +17,19 @@ function filter_locale_data {
        /^    AuxExemplarCharacters\{$/, /^    \}$/d
        /^    ExemplarCharacters\{.*\}$/d
        /^    ExemplarCharacters\{$/, /^    \}$/d
-       /^        (mon|tue|wed|thu|fri|sat|sun)(|-short|-narrow)\{$/, /^        \}$/d' ${langpath}
+       /^    ExemplarCharactersNumbers\{.*\}$/d
+       /^    ExemplarCharactersPunctuation\{.*\}$/d
+       /^    ExemplarCharactersPunctuation\{$/, /^    \}$/d
+       /^        (mon|tue|wed|thu|fri|sat|sun)(|-short|-narrow)\{$/, /^        \}$/d
+       /^        (mon|tue|wed|thu|fri|sat|sun)(|-short|-narrow)\{.*\}$/d
+       /^        (mon|tue|wed|thu|fri|sat|sun)-(short|narrow):alias\{.*\}$/d' ${langpath}
+    # Delete empty blocks. Otherwise, locale fallback fails.
+    # See crbug.com/v8/8414 .
+    sed -r -i \
+      '/^    fields\{$/ {
+         N
+         /^    fields\{\n    \}/ d
+      }' "${langpath}"
   done
 }
 
@@ -130,8 +142,9 @@ function filter_currency_data {
     echo "Overwriting $i for $locale"
     sed -n -r -i \
       '1, /^'${locale}'\{$/ p
-       /^    "%%ALIAS"\{/p
-       /^    %%Parent\{/p
+       /^    "%%ALIAS"\{/ p
+       /^    ___\{..\}$/ p
+       /^    %%Parent\{/ p
        /^    Currencies\{$/, /^    \}$/ {
          /^    Currencies\{$/ p
          /^        '$KEEPLIST'\{$/, /^        \}$/ p
@@ -167,12 +180,13 @@ function filter_region_data {
   sed -i  '/[0-35-9][0-9][0-9]{/ d' ${dataroot}/region/*.txt
 }
 
-
-
+# This assumes that exemplar city ("ec") is only present in
+# non-meta zones and that meta zones are listed after non-meta
+# zones.
 function remove_exemplar_cities {
   for i in ${dataroot}/zone/*.txt
   do
-    [ $i != 'root.txt' ] && \
+    [ $i != "${dataroot}/zone/root.txt" ] && \
     sed -i '/^    zoneStrings/, /^        "meta:/ {
       /^    zoneStrings/ p
       /^        "meta:/ p
@@ -217,8 +231,6 @@ dataroot="${treeroot}/source/data"
 scriptdir="${treeroot}/scripts"
 localedatapath="${dataroot}/locales"
 langdatapath="${dataroot}/lang"
-
-
 
 filter_locale_data
 filter_display_language_names

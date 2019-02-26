@@ -7,9 +7,9 @@
 
 #include <memory>
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
-#include "third_party/blink/renderer/core/css_property_names.h"
 
 namespace blink {
 
@@ -88,6 +88,8 @@ class CORE_EXPORT CSSParser {
   static ImmutableCSSPropertyValueSet* ParseInlineStyleDeclaration(
       const String&,
       Element*);
+  static ImmutableCSSPropertyValueSet*
+  ParseInlineStyleDeclaration(const String&, CSSParserMode, SecureContextMode);
 
   static std::unique_ptr<Vector<double>> ParseKeyframeKeyList(const String&);
   static StyleRuleKeyframe* ParseKeyframeRule(const CSSParserContext*,

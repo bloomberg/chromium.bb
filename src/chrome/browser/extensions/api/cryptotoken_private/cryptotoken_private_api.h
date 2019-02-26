@@ -63,6 +63,17 @@ class CryptotokenPrivateCanAppIdGetAttestationFunction
   void Complete(bool result);
 };
 
+class CryptotokenPrivateCanProxyToWebAuthnFunction
+    : public UIThreadExtensionFunction {
+ public:
+  CryptotokenPrivateCanProxyToWebAuthnFunction();
+  DECLARE_EXTENSION_FUNCTION("cryptotokenPrivate.canProxyToWebAuthn",
+                             CRYPTOTOKENPRIVATE_CANPROXYTOWEBAUTHN)
+ protected:
+  ~CryptotokenPrivateCanProxyToWebAuthnFunction() override {}
+  ResponseAction Run() override;
+};
+
 }  // namespace api
 }  // namespace extensions
 

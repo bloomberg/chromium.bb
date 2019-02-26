@@ -42,12 +42,16 @@ class PopStateEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  PopStateEvent();
+  PopStateEvent(ScriptState*, const AtomicString&, const PopStateEventInit*);
+  PopStateEvent(scoped_refptr<SerializedScriptValue>, History*);
   ~PopStateEvent() override;
+
   static PopStateEvent* Create();
   static PopStateEvent* Create(scoped_refptr<SerializedScriptValue>, History*);
   static PopStateEvent* Create(ScriptState*,
                                const AtomicString&,
-                               const PopStateEventInit&);
+                               const PopStateEventInit*);
 
   ScriptValue state(ScriptState*) const;
   SerializedScriptValue* SerializedState() const {
@@ -61,10 +65,6 @@ class PopStateEvent final : public Event {
   void Trace(blink::Visitor*) override;
 
  private:
-  PopStateEvent();
-  PopStateEvent(ScriptState*, const AtomicString&, const PopStateEventInit&);
-  PopStateEvent(scoped_refptr<SerializedScriptValue>, History*);
-
   scoped_refptr<SerializedScriptValue> serialized_state_;
   scoped_refptr<DOMWrapperWorld> world_;
   TraceWrapperV8Reference<v8::Value> state_;

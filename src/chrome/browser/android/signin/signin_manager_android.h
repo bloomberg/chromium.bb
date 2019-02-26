@@ -13,19 +13,19 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "components/signin/core/browser/signin_manager_base.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 class Profile;
 
-// Android wrapper of the SigninManager which provides access from the Java
-// layer. Note that on Android, there's only a single profile, and therefore
-// a single instance of this wrapper. The name of the Java class is
-// SigninManager.
-// This class should only be accessed from the UI thread.
+// Android wrapper of Chrome's C++ identity management code which provides
+// access from the Java layer. Note that on Android, there's only a single
+// profile, and therefore a single instance of this wrapper. The name of the
+// Java class is SigninManager. This class should only be accessed from the UI
+// thread.
 //
 // This class implements parts of the sign-in flow, to make sure that policy
 // is available before sign-in completes.
-class SigninManagerAndroid : public SigninManagerBase::Observer {
+class SigninManagerAndroid : public identity::IdentityManager::Observer {
  public:
   SigninManagerAndroid(JNIEnv* env, jobject obj);
 
@@ -80,12 +80,9 @@ class SigninManagerAndroid : public SigninManagerBase::Observer {
   jboolean IsSignedInOnNative(JNIEnv* env,
                               const base::android::JavaParamRef<jobject>& obj);
 
-  // SigninManagerBase::Observer implementation.
-  void GoogleSigninFailed(const GoogleServiceAuthError& error) override;
-  void GoogleSigninSucceeded(const std::string& account_id,
-                             const std::string& username) override;
-  void GoogleSignedOut(const std::string& account_id,
-                       const std::string& username) override;
+  // identity::IdentityManager::Observer implementation.
+  void OnPrimaryAccountCleared(
+      const AccountInfo& previous_primary_account_info) override;
 
  private:
   friend class SigninManagerAndroidTest;

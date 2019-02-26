@@ -17,14 +17,14 @@ class CBC_C40Encoder : public CBC_Encoder {
 
   // CBC_Encoder
   int32_t getEncodingMode() override;
-  void Encode(CBC_EncoderContext& context, int32_t& e) override;
+  bool Encode(CBC_EncoderContext* context) override;
 
-  static void writeNextTriplet(CBC_EncoderContext& context, WideString& buffer);
+  static void WriteNextTriplet(CBC_EncoderContext* context, WideString* buffer);
 
-  virtual void handleEOD(CBC_EncoderContext& context,
-                         WideString& buffer,
-                         int32_t& e);
-  virtual int32_t encodeChar(wchar_t c, WideString& sb, int32_t& e);
+  virtual bool HandleEOD(CBC_EncoderContext* context, WideString* buffer);
+
+  // Returns the number of characters appended to |sb|, or 0 on failure.
+  virtual int32_t EncodeChar(wchar_t c, WideString* sb);
 
  private:
   // Moves back by 1 position in |context| and adjusts |buffer| accordingly

@@ -7,6 +7,7 @@
 #include "services/ws/embedding.h"
 #include "services/ws/server_window.h"
 #include "services/ws/window_properties.h"
+#include "services/ws/window_tree.h"
 #include "ui/aura/window.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/hit_test.h"
@@ -85,6 +86,15 @@ void WindowDelegateImpl::OnWindowDestroyed(aura::Window* window) {
 }
 
 void WindowDelegateImpl::OnWindowTargetVisibilityChanged(bool visible) {}
+
+void WindowDelegateImpl::OnWindowOcclusionChanged(
+    aura::Window::OcclusionState occlusion_state,
+    const SkRegion&) {
+  ServerWindow* const server_window = ServerWindow::GetMayBeNull(window_);
+  // TODO: Send occluded region.
+  if (server_window)
+    server_window->owning_window_tree()->SendOcclusionState(window_);
+}
 
 bool WindowDelegateImpl::HasHitTestMask() const {
   return false;

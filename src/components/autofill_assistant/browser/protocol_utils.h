@@ -25,7 +25,8 @@ class ProtocolUtils {
   // |url|.
   static std::string CreateGetScriptsRequest(
       const GURL& url,
-      const std::map<std::string, std::string>& parameters);
+      const std::map<std::string, std::string>& parameters,
+      const ClientContextProto& client_context);
 
   using Scripts = std::map<Script*, std::unique_ptr<Script>>;
   // Parse assistant scripts from the given |response|, which should not be an
@@ -39,24 +40,45 @@ class ProtocolUtils {
   static bool ParseScripts(const std::string& response,
                            std::vector<std::unique_ptr<Script>>* scripts);
 
+  // Convert |script_proto| to a script struct and if the script is valid, add
+  // it to |scripts|.
+  static void AddScript(const SupportedScriptProto& script_proto,
+                        std::vector<std::unique_ptr<Script>>* scripts);
+
   // Create initial request to get script actions for the given |script_path|.
+  //
+  // TODO(b/806868): Remove the script payload from initial requests once the
+  // server has transitioned to global payloads.
   static std::string CreateInitialScriptActionsRequest(
       const std::string& script_path,
-      const std::map<std::string, std::string>& parameters);
+      const GURL& url,
+      const std::map<std::string, std::string>& parameters,
+      const std::string& global_payload,
+      const std::string& script_payload,
+      const ClientContextProto& client_context);
 
   // Create request to get next sequence of actions for a script.
   static std::string CreateNextScriptActionsRequest(
-      const std::string& previous_server_payload,
-      const std::vector<ProcessedActionProto>& processed_actions);
+      const std::string& global_payload,
+      const std::string& script_payload,
+      const std::vector<ProcessedActionProto>& processed_actions,
+      const ClientContextProto& client_context);
 
   // Parse actions from the given |response|, which can be an empty string.
   //
-  // Pass in nullptr for |return_server_payload| to indicate no need to return
-  // server payload. Parsed actions are returned through |actions|, which should
-  // not be nullptr. Return false if parse failed, otherwise return true.
+  // Pass in nullptr for |return_global_payload| or |return_script_payload| to
+  // indicate no need to return that payload. Parsed actions are returned
+  // through |actions|, which should not be nullptr. Optionally, parsed scripts
+  // are returned through |scripts| and used to update the list of cached
+  // scripts. The bool |should_update_scripts| makes clear the destinction
+  // between an empty list of |scripts| or the scripts field not even set in the
+  // proto. Return false if parse failed, otherwise return true.
   static bool ParseActions(const std::string& response,
-                           std::string* return_server_payload,
-                           std::vector<std::unique_ptr<Action>>* actions);
+                           std::string* return_global_payload,
+                           std::string* return_script_payload,
+                           std::vector<std::unique_ptr<Action>>* actions,
+                           std::vector<std::unique_ptr<Script>>* scripts,
+                           bool* should_update_scripts);
 
  private:
   // To avoid instantiate this class by accident.

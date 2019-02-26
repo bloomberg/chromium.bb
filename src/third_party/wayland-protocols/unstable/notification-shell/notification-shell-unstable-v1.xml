@@ -56,6 +56,7 @@
       <arg name="message" type="string" />
       <arg name="display_source" type="string" summary="textual representation of who's shown the notification"/>
       <arg name="notification_key" type="string" />
+      <arg name="buttons" type="array" summary="array of 0-terminated button title names"/>
     </request>
 
     <request name="get_notification_surface">
@@ -111,6 +112,13 @@
 	Notifies the notification object that the notification is closed.
       </description>
       <arg name="by_user" type="uint" summary="1 if notification is closed by a user"/>
+    </event>
+
+    <event name="clicked">
+      <description summary="Notification is clicked">
+	Notifies the notification object that the notification or its button is clicked.
+      </description>
+      <arg name="button_index" type="int" summary="-1 if the body of the notification is cliked as opposed to a button"/>
     </event>
   </interface>
 </protocol>

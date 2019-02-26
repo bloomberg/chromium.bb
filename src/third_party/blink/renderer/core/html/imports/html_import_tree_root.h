@@ -20,6 +20,7 @@ class HTMLImportTreeRoot final : public HTMLImport, public NameClient {
  public:
   static HTMLImportTreeRoot* Create(Document*);
 
+  explicit HTMLImportTreeRoot(Document*);
   ~HTMLImportTreeRoot() final;
   void Dispose();
 
@@ -40,8 +41,6 @@ class HTMLImportTreeRoot final : public HTMLImport, public NameClient {
   }
 
  private:
-  explicit HTMLImportTreeRoot(Document*);
-
   void RecalcTimerFired(TimerBase*);
 
   TraceWrapperMember<Document> document_;

@@ -14,12 +14,12 @@
 #include "base/task/sequence_manager/task_queue.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
-#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/traced_value.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/renderer/platform/histogram.h"
-#include "third_party/blink/renderer/platform/scheduler/child/features.h"
-#include "third_party/blink/renderer/platform/scheduler/child/process_state.h"
+#include "third_party/blink/renderer/platform/scheduler/common/features.h"
+#include "third_party/blink/renderer/platform/scheduler/common/process_state.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/task_queue_throttler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_scheduler_helper.h"
@@ -206,6 +206,7 @@ void WorkerThreadScheduler::Shutdown() {
       "WorkerThread.Runtime", delta, base::TimeDelta::FromSeconds(1),
       base::TimeDelta::FromDays(1), 50 /* bucket count */);
   task_queue_throttler_.reset();
+  idle_helper_.Shutdown();
   helper()->Shutdown();
 }
 

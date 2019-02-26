@@ -185,7 +185,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void DidStopFlinging() override;
   void OnDidNavigateMainFrameToNewPage() override;
   const viz::FrameSinkId& GetFrameSinkId() const override;
-  const viz::LocalSurfaceId& GetLocalSurfaceId() const override;
+  const viz::LocalSurfaceIdAllocation& GetLocalSurfaceIdAllocation()
+      const override;
   bool TransformPointToLocalCoordSpaceLegacy(
       const gfx::PointF& point,
       const viz::SurfaceId& original_surface,
@@ -206,8 +207,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void OnSynchronizedDisplayPropertiesChanged() override;
   viz::ScopedSurfaceIdAllocator DidUpdateVisualProperties(
       const cc::RenderFrameMetadata& metadata) override;
-
-  bool IsLocalSurfaceIdAllocationSuppressed() const override;
 
   void DidNavigate() override;
   void TakeFallbackContentFrom(RenderWidgetHostView* view) override;
@@ -330,6 +329,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   gfx::Rect ConvertRectToScreen(const gfx::Rect& rect) const override;
   void ForwardKeyboardEventWithLatencyInfo(const NativeWebKeyboardEvent& event,
                                            const ui::LatencyInfo& latency,
+                                           ui::KeyEvent* original_key_event,
                                            bool* update_event) override;
   RenderFrameHostImpl* GetFocusedFrame() const;
   bool NeedsMouseCapture() override;
@@ -414,6 +414,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                            HitTestRegionListSubmitted);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
                            DiscardDelegatedFramesWithMemoryPressure);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraInputMethodTest,
+                           OnCaretBoundsChanged);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraKeyboardTest,
                            KeyboardObserverDestroyed);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraKeyboardTest,
@@ -465,9 +467,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   void UpdateCursorIfOverSelf();
 
-  bool SynchronizeVisualProperties(const cc::DeadlinePolicy& deadline_policy,
-                                   const base::Optional<viz::LocalSurfaceId>&
-                                       child_allocated_local_surface_id);
+  bool SynchronizeVisualProperties(
+      const cc::DeadlinePolicy& deadline_policy,
+      const base::Optional<viz::LocalSurfaceIdAllocation>&
+          child_local_surface_id_allocation);
 
   void OnDidUpdateVisualPropertiesComplete(
       const cc::RenderFrameMetadata& metadata);
@@ -531,7 +534,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   // Dismisses a Web Popup on a mouse or touch press outside the popup and its
   // parent.
-  void ApplyEventFilterForPopupExit(ui::LocatedEvent* event);
+  void ApplyEventObserverForPopupExit(const ui::LocatedEvent& event);
 
   // Converts |rect| from screen coordinate to window coordinate.
   gfx::Rect ConvertRectFromScreen(const gfx::Rect& rect) const;
@@ -554,6 +557,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   // Called when the window title is changed.
   void WindowTitleChanged();
+
+  void InvalidateLocalSurfaceIdOnEviction();
 
   const bool is_mus_browser_plugin_guest_;
 
@@ -583,9 +588,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Our child popup host. NULL if we do not have a child popup.
   RenderWidgetHostViewAura* popup_child_host_view_;
 
-  class EventFilterForPopupExit;
-  friend class EventFilterForPopupExit;
-  std::unique_ptr<ui::EventHandler> event_filter_for_popup_exit_;
+  class EventObserverForPopupExit;
+  std::unique_ptr<EventObserverForPopupExit> event_observer_for_popup_exit_;
 
   // True when content is being loaded. Used to show an hourglass cursor.
   bool is_loading_;

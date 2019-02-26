@@ -30,7 +30,6 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
   // The current authentication stage. Used to get more verbose logging.
   enum class AuthenticationStage {
     kIdle,
-    kGetSystemSalt,
     kDoAuthenticate,
     kUserCallback,
   };
@@ -63,9 +62,9 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
                                          OnAuthenticateCallback callback);
   void AuthenticateUserWithExternalBinary(const AccountId& account_id,
                                           OnAuthenticateCallback callback);
+  void EnrollUserWithExternalBinary(OnAuthenticateCallback callback);
   void AuthenticateUserWithEasyUnlock(const AccountId& account_id);
   void HardlockPod(const AccountId& account_id);
-  void RecordClickOnLockIcon(const AccountId& account_id);
   void OnFocusPod(const AccountId& account_id);
   void OnNoPodFocused();
   void LoadWallpaper(const AccountId& account_id);
@@ -120,6 +119,10 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
   void SetUserList(std::vector<mojom::LoginUserInfoPtr> users) override;
   void SetPinEnabledForUser(const AccountId& account_id,
                             bool is_enabled) override;
+  void SetFingerprintState(const AccountId& account_id,
+                           mojom::FingerprintState state) override;
+  void NotifyFingerprintAuthResult(const AccountId& account_id,
+                                   bool successful) override;
   void SetAvatarForUser(const AccountId& account_id,
                         mojom::UserAvatarPtr avatar) override;
   void SetAuthEnabledForUser(
@@ -142,8 +145,8 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
       const AccountId& account_id,
       const std::string& locale,
       std::vector<mojom::InputMethodItemPtr> keyboard_layouts) override;
-  void SetFingerprintUnlockState(const AccountId& account_id,
-                                 mojom::FingerprintUnlockState state) override;
+  void SetPublicSessionShowFullManagementDisclosure(
+      bool is_full_management_disclosure_needed) override;
   void SetKioskApps(std::vector<mojom::KioskAppInfoPtr> kiosk_apps) override;
   void ShowKioskAppError(const std::string& message) override;
   void NotifyOobeDialogState(mojom::OobeDialogState state) override;
@@ -160,14 +163,6 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
   }
 
  private:
-  using PendingDoAuthenticateUser =
-      base::OnceCallback<void(const std::string& system_salt)>;
-
-  void DoAuthenticateUser(const AccountId& account_id,
-                          const std::string& password,
-                          bool authenticated_by_pin,
-                          OnAuthenticateCallback callback,
-                          const std::string& system_salt);
   void OnAuthenticateComplete(OnAuthenticateCallback callback, bool success);
 
   // Returns the active data dispatcher or nullptr if there is no lock screen.

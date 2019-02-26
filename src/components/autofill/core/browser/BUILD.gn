@@ -8,6 +8,8 @@ import("//testing/libfuzzer/fuzzer_test.gni")
 
 jumbo_static_library("browser") {
   sources = [
+    "accessory_sheet_data.cc",
+    "accessory_sheet_data.h",
     "account_info_getter.h",
     "address.cc",
     "address.h",
@@ -30,6 +32,7 @@ jumbo_static_library("browser") {
     "autofill-inl.h",
     "autofill_address_util.cc",
     "autofill_address_util.h",
+    "autofill_client.cc",
     "autofill_client.h",
     "autofill_country.cc",
     "autofill_country.h",
@@ -98,6 +101,8 @@ jumbo_static_library("browser") {
     "credit_card_field.h",
     "credit_card_save_manager.cc",
     "credit_card_save_manager.h",
+    "credit_card_save_strike_database.cc",
+    "credit_card_save_strike_database.h",
     "email_field.cc",
     "email_field.h",
     "field_candidates.cc",
@@ -115,6 +120,8 @@ jumbo_static_library("browser") {
     "form_structure.h",
     "form_types.cc",
     "form_types.h",
+    "legacy_strike_database.cc",
+    "legacy_strike_database.h",
     "legal_message_line.cc",
     "legal_message_line.h",
     "local_card_migration_manager.cc",
@@ -167,6 +174,9 @@ jumbo_static_library("browser") {
     "subkey_requester.h",
     "suggestion.cc",
     "suggestion.h",
+    "suggestion_selection.cc",
+    "suggestion_selection.h",
+    "sync_utils.h",
     "ui/card_unmask_prompt_controller.h",
     "ui/card_unmask_prompt_controller_impl.cc",
     "ui/card_unmask_prompt_controller_impl.h",
@@ -181,6 +191,8 @@ jumbo_static_library("browser") {
     "webdata/autofill_entry.h",
     "webdata/autofill_profile_data_type_controller.cc",
     "webdata/autofill_profile_data_type_controller.h",
+    "webdata/autofill_profile_model_type_controller.cc",
+    "webdata/autofill_profile_model_type_controller.h",
     "webdata/autofill_profile_sync_bridge.cc",
     "webdata/autofill_profile_sync_bridge.h",
     "webdata/autofill_profile_sync_difference_tracker.cc",
@@ -229,6 +241,8 @@ jumbo_static_library("browser") {
       "autofill_save_card_infobar_delegate_mobile.cc",
       "autofill_save_card_infobar_delegate_mobile.h",
       "autofill_save_card_infobar_mobile.h",
+      "ui/card_name_fix_flow_view_delegate_mobile.cc",
+      "ui/card_name_fix_flow_view_delegate_mobile.h",
     ]
   }
 
@@ -264,6 +278,7 @@ jumbo_static_library("browser") {
   deps = [
     ":password_generator",
     ":password_generator_fips181",
+    "proto:legacy_proto_bridge",
     "//base",
     "//base:i18n",
     "//components/data_use_measurement/core",
@@ -274,7 +289,7 @@ jumbo_static_library("browser") {
     "//components/os_crypt",
     "//components/pref_registry",
     "//components/prefs",
-    "//components/signin/core/browser:signin_metrics",
+    "//components/signin/core/browser:shared",
     "//components/strings",
     "//components/sync",
     "//components/variations/net",
@@ -340,11 +355,15 @@ jumbo_static_library("test_support") {
     "test_autofill_provider.h",
     "test_credit_card_save_manager.cc",
     "test_credit_card_save_manager.h",
+    "test_credit_card_save_strike_database.cc",
+    "test_credit_card_save_strike_database.h",
     "test_event_waiter.h",
     "test_form_data_importer.cc",
     "test_form_data_importer.h",
     "test_form_structure.cc",
     "test_form_structure.h",
+    "test_legacy_strike_database.cc",
+    "test_legacy_strike_database.h",
     "test_local_card_migration_manager.cc",
     "test_local_card_migration_manager.h",
     "test_personal_data_manager.cc",
@@ -353,8 +372,6 @@ jumbo_static_library("test_support") {
     "test_region_data_loader.h",
     "test_strike_database.cc",
     "test_strike_database.h",
-    "test_sync_service.cc",
-    "test_sync_service.h",
     "webdata/autofill_sync_bridge_test_util.cc",
     "webdata/autofill_sync_bridge_test_util.h",
     "webdata/mock_autofill_webdata_backend.cc",
@@ -473,12 +490,14 @@ source_set("unit_tests") {
     "country_names_unittest.cc",
     "credit_card_field_unittest.cc",
     "credit_card_save_manager_unittest.cc",
+    "credit_card_save_strike_database_unittest.cc",
     "credit_card_unittest.cc",
     "field_candidates_unittest.cc",
     "field_filler_unittest.cc",
     "form_data_importer_unittest.cc",
     "form_field_unittest.cc",
     "form_structure_unittest.cc",
+    "legacy_strike_database_unittest.cc",
     "legal_message_line_unittest.cc",
     "local_card_migration_manager_unittest.cc",
     "name_field_unittest.cc",
@@ -493,12 +512,14 @@ source_set("unit_tests") {
     "phone_field_unittest.cc",
     "phone_number_i18n_unittest.cc",
     "phone_number_unittest.cc",
+    "proto/legacy_proto_bridge_unittest.cc",
     "randomized_encoder_unittest.cc",
     "rationalization_util_unittest.cc",
     "region_combobox_model_unittest.cc",
     "search_field_unittest.cc",
     "strike_database_unittest.cc",
     "subkey_requester_unittest.cc",
+    "suggestion_selection_unittest.cc",
     "ui/card_unmask_prompt_controller_impl_unittest.cc",
     "validation_unittest.cc",
     "webdata/autocomplete_sync_bridge_unittest.cc",
@@ -532,6 +553,7 @@ source_set("unit_tests") {
     ":password_generator_fips181",
     ":test_support",
     ":unit_tests_bundle_data",
+    "proto:legacy_proto_bridge",
     "//base",
     "//base/test:test_support",
     "//components/autofill/core/common",
@@ -548,6 +570,7 @@ source_set("unit_tests") {
     "//components/ukm:test_support",
     "//components/variations",
     "//components/variations:test_support",
+    "//components/version_info:version_info",
     "//components/webdata/common",
     "//components/webdata_services:test_support",
     "//google_apis",
@@ -577,6 +600,7 @@ fuzzer_test("form_structure_fuzzer") {
     "form_structure_fuzzer.cc",
   ]
   deps = [
+    # TODO(crbug.com/896313): Reduce the dependency on "browser".
     ":browser",
     "//base:base",
     "//components/autofill/core/common:common",
@@ -600,6 +624,7 @@ if (use_libfuzzer) {
       "form_structure_process_query_response_fuzzer.cc",
     ]
     deps = [
+      # TODO(crbug.com/896313): Reduce the dependency on "browser".
       ":browser",
       "//base:base",
       "//components/autofill/core/browser/proto",
@@ -618,4 +643,20 @@ if (use_libfuzzer) {
       "//third_party/libprotobuf-mutator",
     ]
   }
+}
+
+fuzzer_test("autofill_phone_number_i18n_fuzzer") {
+  sources = [
+    "phone_number_i18n_fuzzer.cc",
+  ]
+
+  deps = [
+    # TODO(crbug.com/896313): Reduce the dependency on "browser".
+    ":browser",
+    "//base",
+    "//base:i18n",
+    "//third_party/libphonenumber",
+  ]
+
+  dict = "phone_number_i18n_fuzzer.dict"
 }

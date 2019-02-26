@@ -32,8 +32,6 @@
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/native_widget_types.h"
 
-class GrContext;
-
 #if defined(OS_CHROMEOS)
 namespace arc {
 class ProtectedBufferManager;
@@ -51,6 +49,12 @@ class VulkanImplementation;
 namespace media {
 class MediaGpuChannelManager;
 }
+
+namespace gpu {
+namespace raster {
+struct RasterDecoderContextState;
+}  // namespace raster
+}  // namespace gpu
 
 namespace viz {
 
@@ -85,12 +89,10 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
       base::WaitableEvent* shutdown_event = nullptr);
   void Bind(mojom::GpuServiceRequest request);
 
-  // Get a GrContext and a GLContext for a given GL surface.
-  bool GetGrContextForGLSurface(gl::GLSurface* surface,
-                                GrContext** gr_context,
-                                gl::GLContext** gl_context);
-
-  GrContext* GetGrContextForVulkan();
+  scoped_refptr<gpu::raster::RasterDecoderContextState>
+  GetContextStateForGLSurface(gl::GLSurface* surface);
+  scoped_refptr<gpu::raster::RasterDecoderContextState>
+  GetContextStateForVulkan();
 
   // Notifies the GpuHost to stop using GPU compositing. This should be called
   // in response to an error in the GPU process that occurred after
@@ -117,8 +119,16 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
     return gpu_channel_manager_->mailbox_manager();
   }
 
+  gpu::SharedImageManager* shared_image_manager() {
+    return gpu_channel_manager_->shared_image_manager();
+  }
+
   gl::GLShareGroup* share_group() {
     return gpu_channel_manager_->share_group();
+  }
+
+  gpu::raster::GrShaderCache* gr_shader_cache() {
+    return gpu_channel_manager_->gr_shader_cache();
   }
 
   gpu::SyncPointManager* sync_point_manager() { return sync_point_manager_; }
@@ -253,6 +263,8 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
 
   void RequestHDRStatusOnMainThread(RequestHDRStatusCallback callback);
 
+  void OnBackgroundedOnMainThread();
+
   scoped_refptr<base::SingleThreadTaskRunner> main_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
 
@@ -286,10 +298,6 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
 
   // sequence id for running tasks from SkiaOutputSurface;
   gpu::SequenceId skia_output_surface_sequence_id_;
-
-  // GL and Gr contexts used by Skia only.
-  struct GrContextAndGLContext;
-  base::flat_map<unsigned long, GrContextAndGLContext> contexts_for_gl_;
 
 #if BUILDFLAG(ENABLE_VULKAN)
   gpu::VulkanImplementation* vulkan_implementation_;

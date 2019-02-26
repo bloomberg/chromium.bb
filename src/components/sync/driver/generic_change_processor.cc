@@ -53,8 +53,7 @@ SyncData BuildRemoteSyncData(int64_t sync_id, const ReadNode& read_node) {
       password_holder.mutable_password()
           ->mutable_client_only_encrypted_data()
           ->CopyFrom(read_node.GetPasswordSpecifics());
-      return SyncData::CreateRemoteData(sync_id, password_holder,
-                                        read_node.GetModificationTime());
+      return SyncData::CreateRemoteData(sync_id, password_holder);
     }
     case SESSIONS:
       // Include tag hashes for sessions data type to allow discarding during
@@ -66,12 +65,11 @@ SyncData BuildRemoteSyncData(int64_t sync_id, const ReadNode& read_node) {
       // another copy of this string around.
       return SyncData::CreateRemoteData(
           sync_id, read_node.GetEntitySpecifics(),
-          read_node.GetModificationTime(),
           read_node.GetEntry()->GetUniqueClientTag());
     default:
       // Use the specifics directly, encryption has already been handled.
-      return SyncData::CreateRemoteData(sync_id, read_node.GetEntitySpecifics(),
-                                        read_node.GetModificationTime());
+      return SyncData::CreateRemoteData(sync_id,
+                                        read_node.GetEntitySpecifics());
   }
 }
 
@@ -114,10 +112,10 @@ void GenericChangeProcessor::ApplyChangesFromSyncModel(
             ->mutable_client_only_encrypted_data()
             ->CopyFrom(it->extra->unencrypted());
       }
-      syncer_changes_.push_back(SyncChange(
-          FROM_HERE, SyncChange::ACTION_DELETE,
-          SyncData::CreateRemoteData(
-              it->id, specifics ? *specifics : it->specifics, base::Time())));
+      syncer_changes_.push_back(
+          SyncChange(FROM_HERE, SyncChange::ACTION_DELETE,
+                     SyncData::CreateRemoteData(
+                         it->id, specifics ? *specifics : it->specifics)));
     } else {
       SyncChange::SyncChangeType action =
           (it->action == ChangeRecord::ACTION_ADD) ? SyncChange::ACTION_ADD

@@ -17,21 +17,23 @@ namespace blink {
 
 class MediaControlTimelineElementTest : public PageTestBase {
  public:
-  static PointerEventInit GetValidPointerEventInit() {
-    PointerEventInit init;
-    init.setIsPrimary(true);
-    init.setButton(static_cast<int>(WebPointerProperties::Button::kLeft));
+  static PointerEventInit* GetValidPointerEventInit() {
+    PointerEventInit* init = PointerEventInit::Create();
+    init->setIsPrimary(true);
+    init->setButton(static_cast<int>(WebPointerProperties::Button::kLeft));
     return init;
   }
 
-  static TouchEventInit GetValidTouchEventInit() { return TouchEventInit(); }
+  static TouchEventInit* GetValidTouchEventInit() {
+    return TouchEventInit::Create();
+  }
 
   void SetUp() override {
     PageTestBase::SetUp(IntSize(100, 100));
 
     video_ = HTMLVideoElement::Create(GetDocument());
-    controls_ = new MediaControlsImpl(*video_);
-    timeline_ = new MediaControlTimelineElement(*controls_);
+    controls_ = MakeGarbageCollected<MediaControlsImpl>(*video_);
+    timeline_ = MakeGarbageCollected<MediaControlTimelineElement>(*controls_);
 
     controls_->InitializeControls();
 
@@ -63,8 +65,8 @@ TEST_F(MediaControlTimelineElementTest, PointerDownRightClickNoOp) {
   Video()->Play();
   ASSERT_FALSE(Video()->paused());
 
-  PointerEventInit init = GetValidPointerEventInit();
-  init.setButton(static_cast<int>(WebPointerProperties::Button::kRight));
+  PointerEventInit* init = GetValidPointerEventInit();
+  init->setButton(static_cast<int>(WebPointerProperties::Button::kRight));
   Timeline()->DispatchEvent(*PointerEvent::Create("pointerdown", init));
   EXPECT_FALSE(Video()->paused());
 }
@@ -73,8 +75,8 @@ TEST_F(MediaControlTimelineElementTest, PointerDownNotPrimaryNoOp) {
   Video()->Play();
   ASSERT_FALSE(Video()->paused());
 
-  PointerEventInit init = GetValidPointerEventInit();
-  init.setIsPrimary(false);
+  PointerEventInit* init = GetValidPointerEventInit();
+  init->setIsPrimary(false);
   Timeline()->DispatchEvent(*PointerEvent::Create("pointerdown", init));
   EXPECT_FALSE(Video()->paused());
 }
@@ -97,8 +99,8 @@ TEST_F(MediaControlTimelineElementTest, PointerUpRightClickNoOp) {
   Timeline()->DispatchEvent(
       *PointerEvent::Create("pointerdown", GetValidPointerEventInit()));
 
-  PointerEventInit init = GetValidPointerEventInit();
-  init.setButton(static_cast<int>(WebPointerProperties::Button::kRight));
+  PointerEventInit* init = GetValidPointerEventInit();
+  init->setButton(static_cast<int>(WebPointerProperties::Button::kRight));
   Timeline()->DispatchEvent(*PointerEvent::Create("pointerup", init));
   EXPECT_TRUE(Video()->paused());
 }
@@ -110,8 +112,8 @@ TEST_F(MediaControlTimelineElementTest, PointerUpNotPrimaryNoOp) {
   Timeline()->DispatchEvent(
       *PointerEvent::Create("pointerdown", GetValidPointerEventInit()));
 
-  PointerEventInit init = GetValidPointerEventInit();
-  init.setIsPrimary(false);
+  PointerEventInit* init = GetValidPointerEventInit();
+  init->setIsPrimary(false);
   Timeline()->DispatchEvent(*PointerEvent::Create("pointerup", init));
   EXPECT_TRUE(Video()->paused());
 }

@@ -104,7 +104,7 @@ std::vector<uint8_t> EncodeStringMessage(const base::string16& data) {
   return buffer;
 }
 
-bool DecodeStringMessage(const std::vector<uint8_t>& encoded_data,
+bool DecodeStringMessage(base::span<const uint8_t> encoded_data,
                          base::string16* result) {
   const uint8_t* ptr = encoded_data.data();
   const uint8_t* end = ptr + encoded_data.size();

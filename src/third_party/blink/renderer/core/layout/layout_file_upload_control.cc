@@ -25,7 +25,6 @@
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/fileapi/file_list.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
-#include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/paint/file_upload_control_painter.h"
@@ -34,8 +33,6 @@
 #include "third_party/blink/renderer/platform/text/text_run.h"
 
 namespace blink {
-
-using namespace HTMLNames;
 
 const int kDefaultWidthNumChars = 34;
 const int kButtonShadowHeight = 2;
@@ -48,7 +45,7 @@ LayoutFileUploadControl::~LayoutFileUploadControl() = default;
 
 void LayoutFileUploadControl::UpdateFromElement() {
   HTMLInputElement* input = ToHTMLInputElement(GetNode());
-  DCHECK_EQ(input->type(), InputTypeNames::file);
+  DCHECK_EQ(input->type(), input_type_names::kFile);
 
   if (HTMLInputElement* button = UploadButton()) {
     bool new_can_receive_dropped_files_state = input->CanReceiveDroppedFiles();

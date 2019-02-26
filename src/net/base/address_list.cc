@@ -28,6 +28,7 @@ std::unique_ptr<base::Value> NetLogAddressListCallback(
   }
 
   dict->Set("address_list", std::move(list));
+  dict->SetString("canonical_name", address_list->canonical_name());
   return std::move(dict);
 }
 

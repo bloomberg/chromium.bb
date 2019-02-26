@@ -6,7 +6,7 @@
 #define IOS_WEB_NET_COOKIES_WK_HTTP_SYSTEM_COOKIE_STORE_H_
 
 #import <Foundation/Foundation.h>
-#import <WebKit/Webkit.h>
+#import <WebKit/WebKit.h>
 
 #import "ios/net/cookies/system_cookie_store.h"
 

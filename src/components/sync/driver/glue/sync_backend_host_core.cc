@@ -115,9 +115,11 @@ void SyncBackendHostCore::OnInitializationComplete(
   // the initializing downloading control types or initializing the encryption
   // handler in order to receive notifications triggered during encryption
   // startup.
-  DCHECK(encryption_observer_proxy_);
-  sync_manager_->GetEncryptionHandler()->AddObserver(
-      encryption_observer_proxy_.get());
+  DCHECK(!encryption_observer_proxies_.empty());
+  for (const std::unique_ptr<SyncEncryptionHandler::Observer>& proxy_observer :
+       encryption_observer_proxies_) {
+    sync_manager_->GetEncryptionHandler()->AddObserver(proxy_observer.get());
+  }
 
   // Sync manager initialization is complete, so we can schedule recurring
   // SaveChanges.
@@ -167,8 +169,7 @@ void SyncBackendHostCore::OnInitializationComplete(
   sync_manager_->ConfigureSyncer(
       reason, new_control_types, SyncManager::SyncFeatureState::INITIALIZING,
       base::Bind(&SyncBackendHostCore::DoInitialProcessControlTypes,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Closure());
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SyncBackendHostCore::OnConnectionStatusChange(ConnectionStatus status) {
@@ -300,9 +301,9 @@ void SyncBackendHostCore::DoInitialize(SyncEngine::InitParams params) {
   DCHECK(params.registrar);
   registrar_ = std::move(params.registrar);
 
-  DCHECK(!encryption_observer_proxy_);
-  DCHECK(params.encryption_observer_proxy);
-  encryption_observer_proxy_ = std::move(params.encryption_observer_proxy);
+  DCHECK(encryption_observer_proxies_.empty());
+  DCHECK(!params.encryption_observer_proxies.empty());
+  encryption_observer_proxies_ = std::move(params.encryption_observer_proxies);
 
   sync_manager_ = params.sync_manager_factory->CreateSyncManager(name_);
   sync_manager_->AddObserver(this);
@@ -370,11 +371,9 @@ void SyncBackendHostCore::DoStartSyncing(base::Time last_poll_time) {
 }
 
 void SyncBackendHostCore::DoSetEncryptionPassphrase(
-    const std::string& passphrase,
-    bool is_explicit) {
+    const std::string& passphrase) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  sync_manager_->GetEncryptionHandler()->SetEncryptionPassphrase(passphrase,
-                                                                 is_explicit);
+  sync_manager_->GetEncryptionHandler()->SetEncryptionPassphrase(passphrase);
 }
 
 void SyncBackendHostCore::DoInitialProcessControlTypes() {
@@ -484,22 +483,18 @@ void SyncBackendHostCore::DoConfigureSyncer(
     ModelTypeConfigurer::ConfigureParams params) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!params.ready_task.is_null());
-  DCHECK(!params.retry_callback.is_null());
 
   registrar_->ConfigureDataTypes(params.enabled_types, params.disabled_types);
 
   base::Closure chained_ready_task(base::Bind(
       &SyncBackendHostCore::DoFinishConfigureDataTypes,
       weak_ptr_factory_.GetWeakPtr(), params.to_download, params.ready_task));
-  base::Closure chained_retry_task(
-      base::Bind(&SyncBackendHostCore::DoRetryConfiguration,
-                 weak_ptr_factory_.GetWeakPtr(), params.retry_callback));
 
   sync_manager_->ConfigureSyncer(params.reason, params.to_download,
                                  params.is_sync_feature_enabled
                                      ? SyncManager::SyncFeatureState::ON
                                      : SyncManager::SyncFeatureState::OFF,
-                                 chained_ready_task, chained_retry_task);
+                                 chained_ready_task);
 }
 
 void SyncBackendHostCore::DoFinishConfigureDataTypes(
@@ -521,13 +516,6 @@ void SyncBackendHostCore::DoFinishConfigureDataTypes(
              &SyncBackendHostImpl::FinishConfigureDataTypesOnFrontendLoop,
              enabled_types, succeeded_configuration_types,
              failed_configuration_types, ready_task);
-}
-
-void SyncBackendHostCore::DoRetryConfiguration(
-    const base::Closure& retry_callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  host_.Call(FROM_HERE, &SyncBackendHostImpl::RetryConfigurationOnFrontendLoop,
-             retry_callback);
 }
 
 void SyncBackendHostCore::SendBufferedProtocolEventsAndEnableForwarding() {

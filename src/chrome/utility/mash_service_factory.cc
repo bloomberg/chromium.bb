@@ -57,10 +57,12 @@ std::unique_ptr<service_manager::Service> CreateAshService() {
   return std::make_unique<ash::AshService>();
 }
 
-std::unique_ptr<service_manager::Service> CreateQuickLaunchApp() {
+std::unique_ptr<service_manager::Service> CreateQuickLaunchService(
+    service_manager::mojom::ServiceRequest request) {
   RecordMashServiceLaunch(MashService::kQuickLaunch);
   logging::SetLogPrefix("quick");
-  return std::make_unique<quick_launch::QuickLaunchApplication>();
+  return std::make_unique<quick_launch::QuickLaunchApplication>(
+      std::move(request));
 }
 
 std::unique_ptr<service_manager::Service> CreateShortcutViewerApp() {
@@ -84,8 +86,6 @@ MashServiceFactory::~MashServiceFactory() = default;
 
 void MashServiceFactory::RegisterOutOfProcessServices(
     content::ContentUtilityClient::StaticServiceMap* services) {
-  RegisterMashService(services, quick_launch::mojom::kServiceName,
-                      &CreateQuickLaunchApp);
   RegisterMashService(services, ash::mojom::kServiceName, &CreateAshService);
   RegisterMashService(services, shortcut_viewer::mojom::kServiceName,
                       &CreateShortcutViewerApp);
@@ -93,4 +93,14 @@ void MashServiceFactory::RegisterOutOfProcessServices(
                       &CreateTapVisualizerApp);
 
   keyboard_shortcut_viewer::ShortcutViewerApplication::RegisterForTraceEvents();
+}
+
+std::unique_ptr<service_manager::Service>
+MashServiceFactory::HandleServiceRequest(
+    const std::string& service_name,
+    service_manager::mojom::ServiceRequest request) {
+  if (service_name == quick_launch::mojom::kServiceName)
+    return CreateQuickLaunchService(std::move(request));
+
+  return nullptr;
 }

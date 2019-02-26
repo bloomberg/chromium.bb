@@ -13,7 +13,7 @@ namespace blink {
 VisualViewportScrollEvent::~VisualViewportScrollEvent() = default;
 
 VisualViewportScrollEvent::VisualViewportScrollEvent()
-    : Event(EventTypeNames::scroll, Bubbles::kNo, Cancelable::kNo) {}
+    : Event(event_type_names::kScroll, Bubbles::kNo, Cancelable::kNo) {}
 
 void VisualViewportScrollEvent::DoneDispatchingEventAtCurrentTarget() {
   UseCounter::Count(currentTarget()->GetExecutionContext(),

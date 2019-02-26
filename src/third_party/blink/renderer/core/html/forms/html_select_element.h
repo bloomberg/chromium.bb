@@ -53,6 +53,8 @@ class CORE_EXPORT HTMLSelectElement final
 
  public:
   static HTMLSelectElement* Create(Document&);
+
+  explicit HTMLSelectElement(Document&);
   ~HTMLSelectElement() override;
 
   int selectedIndex() const;
@@ -176,9 +178,6 @@ class CORE_EXPORT HTMLSelectElement final
   void CloneNonAttributePropertiesFrom(const Element&,
                                        CloneChildrenFlag) override;
 
- protected:
-  explicit HTMLSelectElement(Document&);
-
  private:
   const AtomicString& FormControlType() const override;
 
@@ -233,9 +232,9 @@ class CORE_EXPORT HTMLSelectElement final
   bool HasPlaceholderLabelOption() const;
 
   enum SelectOptionFlag {
-    kDeselectOtherOptions = 1 << 0,
-    kDispatchInputAndChangeEvent = 1 << 1,
-    kMakeOptionDirty = 1 << 2,
+    kDeselectOtherOptionsFlag = 1 << 0,
+    kDispatchInputAndChangeEventFlag = 1 << 1,
+    kMakeOptionDirtyFlag = 1 << 2,
   };
   typedef unsigned SelectOptionFlags;
   void SelectOption(HTMLOptionElement*, SelectOptionFlags);

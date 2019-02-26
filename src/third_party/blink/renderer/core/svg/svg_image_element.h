@@ -73,6 +73,10 @@ class CORE_EXPORT SVGImageElement final
     return is_default_overridden_intrinsic_size_;
   }
 
+  void SetImageForTest(ImageResourceContent* content) {
+    GetImageLoader().SetImageForTest(content);
+  }
+
  private:
   explicit SVGImageElement(Document&);
 

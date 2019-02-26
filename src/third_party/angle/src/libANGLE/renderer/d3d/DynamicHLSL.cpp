@@ -159,9 +159,7 @@ BuiltinInfo::~BuiltinInfo() = default;
 
 // DynamicHLSL implementation
 
-DynamicHLSL::DynamicHLSL(RendererD3D *const renderer) : mRenderer(renderer)
-{
-}
+DynamicHLSL::DynamicHLSL(RendererD3D *const renderer) : mRenderer(renderer) {}
 
 std::string DynamicHLSL::generateVertexShaderForInputLayout(
     const std::string &sourceShader,
@@ -204,8 +202,8 @@ std::string DynamicHLSL::generateVertexShaderForInputLayout(
         if (!shaderAttribute.name.empty())
         {
             ASSERT(inputIndex < MAX_VERTEX_ATTRIBS);
-            VertexFormatType vertexFormatType =
-                inputIndex < inputLayout.size() ? inputLayout[inputIndex] : VERTEX_FORMAT_INVALID;
+            angle::FormatID vertexFormatID =
+                inputIndex < inputLayout.size() ? inputLayout[inputIndex] : angle::FormatID::NONE;
 
             // HLSL code for input structure
             if (IsMatrixType(shaderAttribute.type))
@@ -216,7 +214,7 @@ std::string DynamicHLSL::generateVertexShaderForInputLayout(
             }
             else
             {
-                GLenum componentType = mRenderer->getVertexComponentType(vertexFormatType);
+                GLenum componentType = mRenderer->getVertexComponentType(vertexFormatID);
 
                 if (shaderAttribute.name == "gl_InstanceID" ||
                     shaderAttribute.name == "gl_VertexID")
@@ -258,9 +256,9 @@ std::string DynamicHLSL::generateVertexShaderForInputLayout(
             // data reinterpretation (eg for pure integer->float, float->pure integer)
             // TODO: issue warning with gl debug info extension, when supported
             if (IsMatrixType(shaderAttribute.type) ||
-                (mRenderer->getVertexConversionType(vertexFormatType) & VERTEX_CONVERT_GPU) != 0)
+                (mRenderer->getVertexConversionType(vertexFormatID) & VERTEX_CONVERT_GPU) != 0)
             {
-                GenerateAttributeConversionHLSL(vertexFormatType, shaderAttribute, initStream);
+                GenerateAttributeConversionHLSL(vertexFormatID, shaderAttribute, initStream);
             }
             else
             {
@@ -353,8 +351,9 @@ std::string DynamicHLSL::generatePixelShaderForOutputSignature(
                          "PS_OUTPUT generateOutput()\n"
                          "{\n"
                          "    PS_OUTPUT output;\n"
-                      << copyStream.str() << "    return output;\n"
-                                             "}\n";
+                      << copyStream.str()
+                      << "    return output;\n"
+                         "}\n";
 
     std::string pixelHLSL(sourceShader);
 
@@ -407,7 +406,7 @@ void DynamicHLSL::generateVaryingLinkHLSL(const VaryingPacking &varyingPacking,
     for (GLuint registerIndex = 0u; registerIndex < registerInfos.size(); ++registerIndex)
     {
         const PackedVaryingRegister &registerInfo = registerInfos[registerIndex];
-        const auto &varying = *registerInfo.packedVarying->varying;
+        const auto &varying                       = *registerInfo.packedVarying->varying;
         ASSERT(!varying.isStruct());
 
         // TODO: Add checks to ensure D3D interpolation modifiers don't result in too many
@@ -468,10 +467,10 @@ void DynamicHLSL::generateShaderLinkHLSL(const gl::Caps &caps,
     ASSERT((*shaderHLSL)[gl::ShaderType::Vertex].empty() &&
            (*shaderHLSL)[gl::ShaderType::Fragment].empty());
 
-    gl::Shader *vertexShaderGL         = programData.getAttachedShader(ShaderType::Vertex);
-    gl::Shader *fragmentShaderGL       = programData.getAttachedShader(ShaderType::Fragment);
-    const ShaderD3D *fragmentShader    = GetImplAs<ShaderD3D>(fragmentShaderGL);
-    const int shaderModel              = mRenderer->getMajorShaderModel();
+    gl::Shader *vertexShaderGL      = programData.getAttachedShader(ShaderType::Vertex);
+    gl::Shader *fragmentShaderGL    = programData.getAttachedShader(ShaderType::Fragment);
+    const ShaderD3D *fragmentShader = GetImplAs<ShaderD3D>(fragmentShaderGL);
+    const int shaderModel           = mRenderer->getMajorShaderModel();
 
     // usesViewScale() isn't supported in the D3D9 renderer
     ASSERT(shaderModel >= 4 || !programMetadata.usesViewScale());
@@ -586,8 +585,8 @@ void DynamicHLSL::generateShaderLinkHLSL(const gl::Caps &caps,
     for (GLuint registerIndex = 0u; registerIndex < registerInfos.size(); ++registerIndex)
     {
         const PackedVaryingRegister &registerInfo = registerInfos[registerIndex];
-        const auto &packedVarying = *registerInfo.packedVarying;
-        const auto &varying = *packedVarying.varying;
+        const auto &packedVarying                 = *registerInfo.packedVarying;
+        const auto &varying                       = *packedVarying.varying;
         ASSERT(!varying.isStruct());
 
         vertexGenerateOutput << "    output.v" << registerIndex << " = ";
@@ -782,8 +781,8 @@ void DynamicHLSL::generateShaderLinkHLSL(const gl::Caps &caps,
     for (GLuint registerIndex = 0u; registerIndex < registerInfos.size(); ++registerIndex)
     {
         const PackedVaryingRegister &registerInfo = registerInfos[registerIndex];
-        const auto &packedVarying = *registerInfo.packedVarying;
-        const auto &varying = *packedVarying.varying;
+        const auto &packedVarying                 = *registerInfo.packedVarying;
+        const auto &varying                       = *packedVarying.varying;
         ASSERT(!varying.isBuiltIn() && !varying.isStruct());
 
         // Don't reference VS-only transform feedback varyings in the PS. Note that we're relying on
@@ -978,8 +977,8 @@ std::string DynamicHLSL::generateGeometryShaderHLSL(const gl::Caps &caps,
     switch (primitiveType)
     {
         case gl::PrimitiveMode::Points:
-            inputPT         = "point";
-            inputSize       = 1;
+            inputPT   = "point";
+            inputSize = 1;
 
             if (pointSprites)
             {
@@ -1150,7 +1149,7 @@ std::string DynamicHLSL::generateGeometryShaderHLSL(const gl::Caps &caps,
 }
 
 // static
-void DynamicHLSL::GenerateAttributeConversionHLSL(gl::VertexFormatType vertexFormatType,
+void DynamicHLSL::GenerateAttributeConversionHLSL(angle::FormatID vertexFormatID,
                                                   const sh::ShaderVariable &shaderAttrib,
                                                   std::ostringstream &outStream)
 {
@@ -1161,9 +1160,9 @@ void DynamicHLSL::GenerateAttributeConversionHLSL(gl::VertexFormatType vertexFor
         return;
     }
 
-    GLenum shaderComponentType = VariableComponentType(shaderAttrib.type);
-    int shaderComponentCount   = VariableComponentCount(shaderAttrib.type);
-    const gl::VertexFormat &vertexFormat = gl::GetVertexFormatFromType(vertexFormatType);
+    GLenum shaderComponentType           = VariableComponentType(shaderAttrib.type);
+    int shaderComponentCount             = VariableComponentCount(shaderAttrib.type);
+    const gl::VertexFormat &vertexFormat = gl::GetVertexFormatFromID(vertexFormatID);
 
     // Perform integer to float conversion (if necessary)
     if (shaderComponentType == GL_FLOAT && vertexFormat.type != GL_FLOAT)
@@ -1230,8 +1229,8 @@ void DynamicHLSL::getPixelShaderOutputKey(const gl::ContextState &data,
             ASSERT(outputVariable.active);
 
             PixelShaderOutputVariable outputKeyVariable;
-            outputKeyVariable.type        = outputVariable.type;
-            outputKeyVariable.name        = variableName + elementString;
+            outputKeyVariable.type = outputVariable.type;
+            outputKeyVariable.name = variableName + elementString;
             outputKeyVariable.source =
                 variableName +
                 (outputVariable.isArray() ? ArrayString(outputLocation.arrayIndex) : "");
@@ -1243,9 +1242,7 @@ void DynamicHLSL::getPixelShaderOutputKey(const gl::ContextState &data,
 }
 
 // BuiltinVarying Implementation.
-BuiltinVarying::BuiltinVarying() : enabled(false), index(0), systemValue(false)
-{
-}
+BuiltinVarying::BuiltinVarying() : enabled(false), index(0), systemValue(false) {}
 
 std::string BuiltinVarying::str() const
 {

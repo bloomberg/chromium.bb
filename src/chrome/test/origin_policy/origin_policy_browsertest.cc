@@ -15,7 +15,7 @@ const base::FilePath::CharType kDataRoot[] =
 
 // The title of the Origin Policy error interstitial. This is used to determine
 // whether the page load was blocked by the origin policy throttle.
-const char kErrorInterstitialTitle[] = "Origin Policy Error Interstitial";
+const char kErrorInterstitialTitle[] = "Origin Policy Error";
 }  // namespace
 
 namespace content {

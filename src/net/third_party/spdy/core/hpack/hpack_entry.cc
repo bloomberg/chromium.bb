@@ -5,7 +5,6 @@
 #include "net/third_party/spdy/core/hpack/hpack_entry.h"
 
 #include "base/logging.h"
-#include "base/strings/string_number_conversions.h"
 #include "net/third_party/spdy/platform/api/spdy_estimate_memory_usage.h"
 #include "net/third_party/spdy/platform/api/spdy_string_utils.h"
 
@@ -72,7 +71,6 @@ HpackEntry::~HpackEntry() = default;
 size_t HpackEntry::Size(SpdyStringPiece name, SpdyStringPiece value) {
   return name.size() + value.size() + kSizeOverhead;
 }
-
 size_t HpackEntry::Size() const {
   return Size(name(), value());
 }

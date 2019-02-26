@@ -20,7 +20,7 @@
 #include "p2p/base/packettransportinternal.h"
 #include "p2p/base/port.h"
 #include "p2p/base/transportdescription.h"
-#include "rtc_base/stringencode.h"
+#include "rtc_base/system/rtc_export.h"
 
 namespace cricket {
 
@@ -182,9 +182,9 @@ enum IceProtocolType {
 
 // IceTransportInternal is an internal abstract class that does ICE.
 // Once the public interface is supported,
-// (https://www.w3.org/TR/webrtc/#rtcicetransport-interface)
+// (https://www.w3.org/TR/webrtc/#rtcicetransport)
 // the IceTransportInterface will be split from this class.
-class IceTransportInternal : public rtc::PacketTransportInternal {
+class RTC_EXPORT IceTransportInternal : public rtc::PacketTransportInternal {
  public:
   IceTransportInternal();
   ~IceTransportInternal() override;

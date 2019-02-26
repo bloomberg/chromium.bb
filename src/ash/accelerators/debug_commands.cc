@@ -13,8 +13,10 @@
 #include "ash/system/toast/toast_manager.h"
 #include "ash/touch/touch_devices_controller.h"
 #include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/wm/focus_rules.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/widget_finder.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/ws/window_service_owner.h"
 #include "base/command_line.h"
@@ -72,8 +74,10 @@ void PrintWindowHierarchy(ws::WindowService* window_service,
   const gfx::Vector2dF& subpixel_position_offset =
       window->layer()->subpixel_position_offset();
   *out << indent_str << name << " (" << window << ")"
-       << " type=" << window->type()
-       << ((window == active_window) ? " [active]" : "")
+       << " type=" << window->type();
+  if (ash::IsToplevelWindow(window))
+    *out << " " << wm::GetWindowState(window)->GetStateType();
+  *out << ((window == active_window) ? " [active]" : "")
        << ((window == focused_window) ? " [focused]" : "")
        << (window->IsVisible() ? " visible" : "") << " "
        << window->bounds().ToString();
@@ -111,7 +115,9 @@ void HandlePrintWindowHierarchy() {
 }
 
 void HandleShowQuickLaunch() {
-  Shell::Get()->connector()->StartService(quick_launch::mojom::kServiceName);
+  // TODO(https://crbug.com/904148): This should not use |WarmService()|.
+  Shell::Get()->connector()->WarmService(service_manager::ServiceFilter::ByName(
+      quick_launch::mojom::kServiceName));
 }
 
 gfx::ImageSkia CreateWallpaperImage(SkColor fill, SkColor rect) {

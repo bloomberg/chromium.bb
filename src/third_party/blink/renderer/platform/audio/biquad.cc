@@ -60,11 +60,11 @@ Biquad::Biquad() : has_sample_accurate_values_(false) {
 
   // Allocate enough space for the a-rate filter coefficients to handle a
   // rendering quantum of 128 frames.
-  b0_.Allocate(AudioUtilities::kRenderQuantumFrames);
-  b1_.Allocate(AudioUtilities::kRenderQuantumFrames);
-  b2_.Allocate(AudioUtilities::kRenderQuantumFrames);
-  a1_.Allocate(AudioUtilities::kRenderQuantumFrames);
-  a2_.Allocate(AudioUtilities::kRenderQuantumFrames);
+  b0_.Allocate(audio_utilities::kRenderQuantumFrames);
+  b1_.Allocate(audio_utilities::kRenderQuantumFrames);
+  b2_.Allocate(audio_utilities::kRenderQuantumFrames);
+  a1_.Allocate(audio_utilities::kRenderQuantumFrames);
+  a2_.Allocate(audio_utilities::kRenderQuantumFrames);
 
   // Initialize as pass-thru (straight-wire, no filter effect)
   SetNormalizedCoefficients(0, 1, 0, 0, 1, 0, 0);
@@ -76,7 +76,7 @@ Biquad::~Biquad() = default;
 
 void Biquad::Process(const float* source_p,
                      float* dest_p,
-                     size_t frames_to_process) {
+                     uint32_t frames_to_process) {
   // WARNING: sourceP and destP may be pointing to the same area of memory!
   // Be sure to read from sourceP before writing to destP!
   if (HasSampleAccurateValues()) {
@@ -195,7 +195,7 @@ void Biquad::Process(const float* source_p,
 
 void Biquad::ProcessFast(const float* source_p,
                          float* dest_p,
-                         size_t frames_to_process) {
+                         uint32_t frames_to_process) {
   double filter_coefficients[5];
   filter_coefficients[0] = b0_[0];
   filter_coefficients[1] = b1_[0];
@@ -233,7 +233,7 @@ void Biquad::ProcessFast(const float* source_p,
 void Biquad::ProcessSliceFast(double* source_p,
                               double* dest_p,
                               double* coefficients_p,
-                              size_t frames_to_process) {
+                              uint32_t frames_to_process) {
   // Use double-precision for filter stability
   vDSP_deq22D(source_p, 1, coefficients_p, dest_p, 1, frames_to_process);
 

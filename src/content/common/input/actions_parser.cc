@@ -29,28 +29,27 @@ SyntheticPointerActionParams::PointerActionType ToSyntheticPointerActionType(
 }
 
 SyntheticGestureParams::GestureSourceType ToSyntheticGestureSourceType(
-    std::string source_type) {
-  if (source_type == "touch")
+    std::string pointer_type) {
+  if (pointer_type == "touch")
     return SyntheticGestureParams::TOUCH_INPUT;
-  else if (source_type == "mouse")
+  else if (pointer_type == "mouse")
     return SyntheticGestureParams::MOUSE_INPUT;
-  else if (source_type == "pen")
+  else if (pointer_type == "pen")
     return SyntheticGestureParams::PEN_INPUT;
   else
     return SyntheticGestureParams::DEFAULT_INPUT;
 }
 
-SyntheticPointerActionParams::Button ToSyntheticMouseButton(
-    std::string button) {
-  if (button == "left")
+SyntheticPointerActionParams::Button ToSyntheticMouseButton(int button) {
+  if (button == 0)
     return SyntheticPointerActionParams::Button::LEFT;
-  if (button == "middle")
+  if (button == 1)
     return SyntheticPointerActionParams::Button::MIDDLE;
-  if (button == "right")
+  if (button == 2)
     return SyntheticPointerActionParams::Button::RIGHT;
-  if (button == "back")
+  if (button == 3)
     return SyntheticPointerActionParams::Button::BACK;
-  if (button == "forward")
+  if (button == 4)
     return SyntheticPointerActionParams::Button::FORWARD;
   NOTREACHED() << "Unexpected button";
   return SyntheticPointerActionParams::Button();
@@ -86,7 +85,7 @@ bool ActionsParser::ParsePointerActionSequence() {
   }
 
   gesture_params_.gesture_source_type =
-      ToSyntheticGestureSourceType(source_type_);
+      ToSyntheticGestureSourceType(pointer_type_);
   // Group a list of actions from all pointers into a
   // SyntheticPointerActionListParams object, which is a list of actions, which
   // will be dispatched together.
@@ -104,62 +103,149 @@ bool ActionsParser::ParsePointerActionSequence() {
 }
 
 bool ActionsParser::ParsePointerActions(const base::DictionaryValue& pointer) {
-  std::string source_type;
-  if (!pointer.GetString("source", &source_type)) {
-    error_message_ = std::string("source type is missing or not a string");
-    return false;
-  } else if (source_type != "touch" && source_type != "mouse" &&
-             source_type != "pen") {
-    error_message_ = std::string("source type is an unsupported input source");
-    return false;
-  }
-
-  if (source_type_.empty()) {
-    source_type_ = source_type;
-  }
-
-  if (source_type_ != source_type) {
-    error_message_ =
-        std::string("currently multiple input sources are not not supported");
-    return false;
-  }
-
-  if (source_type != "touch" && action_index_ > 0) {
-    error_message_ = std::string(
-        "for input source type of mouse and pen, we only support one device in "
-        "one sequence");
-    return false;
-  }
-
   int pointer_id = -1;
-  if (pointer.HasKey("id")) {
-    if (!pointer.GetInteger("id", &pointer_id)) {
-      error_message_ = std::string("pointer id is not an integer");
+  // If the json format of each pointer has "type" element, it is from the new
+  // Action API, otherwise it is from gpuBenchmarking.pointerActionSequence
+  // API. We have to keep both formats for now, but later on once we switch to
+  // the new Action API in all tests, we will remove the old format.
+  if (pointer.HasKey("type")) {
+    std::string source_type;
+    if (!pointer.GetString("type", &source_type)) {
+      error_message_ =
+          std::string("action sequence type is missing or not a string");
+      return false;
+    } else if (source_type == "") {
+      error_message_ = std::string("action sequence type cannot be empty");
+      return false;
+    } else if (source_type != "pointer") {
+      error_message_ =
+          std::string("we only support action sequence type of pointer");
       return false;
     }
 
-    if (pointer_id < 0) {
-      error_message_ = std::string("pointer id can not be negative");
-      return false;
-    }
-  }
+    if (source_type_.empty())
+      source_type_ = source_type;
 
-  if (pointer_id != -1) {
-    if (pointer_id_set_.find(pointer_id) != pointer_id_set_.end()) {
-      error_message_ = std::string("pointer id already exists");
+    if (source_type_ != source_type) {
+      error_message_ = std::string(
+          "currently multiple action sequence type are not supported");
       return false;
     }
 
-    if (action_index_ != static_cast<int>(pointer_id_set_.size())) {
-      error_message_ = std::string("some pointers do not have a pointer id");
+    if (source_type_ == "pointer" && !pointer.HasKey("parameters")) {
+      error_message_ =
+          std::string("action sequence parameters is missing for pointer type");
       return false;
     }
 
-    pointer_id_set_.insert(pointer_id);
+    const base::DictionaryValue* parameters;
+    std::string pointer_type;
+    if (!pointer.GetDictionary("parameters", &parameters)) {
+      error_message_ =
+          std::string("action sequence parameters is not a dictionary");
+      return false;
+    }
+
+    if (!parameters->GetString("pointerType", &pointer_type)) {
+      error_message_ = std::string(
+          "action sequence pointer type is missing or not a string");
+      return false;
+    } else if (pointer_type != "touch" && pointer_type != "mouse" &&
+               pointer_type != "pen") {
+      error_message_ = std::string(
+          "action sequence pointer type is an unsupported input type");
+      return false;
+    }
+
+    if (pointer_type_.empty()) {
+      pointer_type_ = pointer_type;
+    }
+
+    if (pointer_type_ != pointer_type) {
+      error_message_ = std::string(
+          "currently multiple action sequence pointer type are not supported");
+      return false;
+    }
+
+    if (pointer_type != "touch" && action_index_ > 0) {
+      error_message_ = std::string(
+          "for input type of mouse and pen, we only support one device");
+      return false;
+    }
+
+    std::string pointer_name;
+    if (!pointer.GetString("id", &pointer_name)) {
+      error_message_ = std::string("pointer name is missing or not a string");
+      return false;
+    }
+
+    if (pointer_name_set_.find(pointer_name) != pointer_name_set_.end()) {
+      error_message_ = std::string("pointer name already exists");
+      return false;
+    }
+
+    pointer_name_set_.insert(pointer_name);
+    pointer_id_set_.insert(action_index_);
+    pointer_id = action_index_;
   } else {
-    if (pointer_id_set_.size() > 0) {
-      error_message_ = std::string("this pointer does not have a pointer id");
+    std::string pointer_type;
+    if (!pointer.GetString("source", &pointer_type)) {
+      error_message_ = std::string("source type is missing or not a string");
       return false;
+    } else if (pointer_type != "touch" && pointer_type != "mouse" &&
+               pointer_type != "pen") {
+      error_message_ =
+          std::string("source type is an unsupported input source");
+      return false;
+    }
+
+    if (pointer_type_.empty()) {
+      pointer_type_ = pointer_type;
+    }
+
+    if (pointer_type_ != pointer_type) {
+      error_message_ =
+          std::string("currently multiple input sources are not not supported");
+      return false;
+    }
+
+    if (pointer_type != "touch" && action_index_ > 0) {
+      error_message_ = std::string(
+          "for input source type of mouse and pen, we only support one device "
+          "in "
+          "one sequence");
+      return false;
+    }
+
+    if (pointer.HasKey("id")) {
+      if (!pointer.GetInteger("id", &pointer_id)) {
+        error_message_ = std::string("pointer id is not an integer");
+        return false;
+      }
+
+      if (pointer_id < 0) {
+        error_message_ = std::string("pointer id can not be negative");
+        return false;
+      }
+    }
+
+    if (pointer_id != -1) {
+      if (pointer_id_set_.find(pointer_id) != pointer_id_set_.end()) {
+        error_message_ = std::string("pointer id already exists");
+        return false;
+      }
+
+      if (action_index_ != static_cast<int>(pointer_id_set_.size())) {
+        error_message_ = std::string("some pointers do not have a pointer id");
+        return false;
+      }
+
+      pointer_id_set_.insert(pointer_id);
+    } else {
+      if (pointer_id_set_.size() > 0) {
+        error_message_ = std::string("this pointer does not have a pointer id");
+        return false;
+      }
     }
   }
 
@@ -203,13 +289,21 @@ bool ActionsParser::ParseAction(
     int pointer_id) {
   SyntheticPointerActionParams::PointerActionType pointer_action_type =
       SyntheticPointerActionParams::PointerActionType::NOT_INITIALIZED;
-  std::string name;
-  if (!action.GetString("name", &name)) {
-    error_message_ = base::StringPrintf(
-        "actions[%d].actions.name is missing or not a string", action_index_);
-    return false;
+  std::string type;
+  if (action.HasKey("type")) {
+    if (!action.GetString("type", &type)) {
+      error_message_ = base::StringPrintf(
+          "actions[%d].actions.name is missing or not a string", action_index_);
+      return false;
+    }
+  } else {
+    if (!action.GetString("name", &type)) {
+      error_message_ = base::StringPrintf(
+          "actions[%d].actions.name is missing or not a string", action_index_);
+      return false;
+    }
   }
-  pointer_action_type = ToSyntheticPointerActionType(name);
+  pointer_action_type = ToSyntheticPointerActionType(type);
   if (pointer_action_type ==
       SyntheticPointerActionParams::PointerActionType::NOT_INITIALIZED) {
     error_message_ = base::StringPrintf(
@@ -232,20 +326,18 @@ bool ActionsParser::ParseAction(
     return false;
   }
 
-  std::string button_name = "left";
-  if (action.HasKey("button") && !action.GetString("button", &button_name)) {
+  int button_id = 0;
+  if (action.HasKey("button") && !action.GetInteger("button", &button_id)) {
     error_message_ = base::StringPrintf(
         "actions[%d].actions.button is not a string", action_index_);
     return false;
-  } else if (button_name != "left" && button_name != "middle" &&
-             button_name != "right" && button_name != "back" &&
-             button_name != "forward") {
+  } else if (button_id < 0 || button_id > 4) {
     error_message_ = base::StringPrintf(
         "actions[%d].actions.button is an unsupported button", action_index_);
     return false;
   }
   SyntheticPointerActionParams::Button button =
-      ToSyntheticMouseButton(button_name);
+      ToSyntheticMouseButton(button_id);
 
   double duration = 0;
   int num_idle = 0;

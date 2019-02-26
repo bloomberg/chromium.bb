@@ -24,6 +24,8 @@ struct TransferableMessage {
   CloneableMessage message;
   // Any ports being transferred as part of this message.
   array<handle<message_pipe>> ports;
+  // Channels used to transfer WHATWG streams (eg. ReadableStream).
+  array<handle<message_pipe>> stream_channels;
   // Any ArrayBuffers being transferred as part of this message.
   array<SerializedArrayBufferContents> array_buffer_contents_array;
   // Any ImageBitmaps being transferred as part of this message.

@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
+#include "base/task/task_scheduler/task_scheduler.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -19,63 +20,44 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
+#include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/optimization_guide_service.h"
-#include "components/optimization_guide/optimization_guide_service_observer.h"
 #include "components/optimization_guide/proto/hints.pb.h"
-#include "components/optimization_guide/test_component_creator.h"
+#include "components/optimization_guide/test_hints_component_creator.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/core/previews_black_list.h"
+#include "components/previews/core/previews_constants.h"
 #include "components/previews/core/previews_features.h"
+#include "components/previews/core/previews_switches.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "services/network/public/cpp/network_quality_tracker.h"
 
 namespace {
-
-// A test observer which can be configured to wait until the server hints are
-// processed.
-class TestOptimizationGuideServiceObserver
-    : public optimization_guide::OptimizationGuideServiceObserver {
- public:
-  TestOptimizationGuideServiceObserver()
-      : run_loop_(std::make_unique<base::RunLoop>()) {}
-
-  ~TestOptimizationGuideServiceObserver() override {}
-
-  void WaitForNotification() {
-    run_loop_->Run();
-    run_loop_.reset(new base::RunLoop());
-  }
-
- private:
-  void OnHintsProcessed(
-      const optimization_guide::proto::Configuration& config,
-      const optimization_guide::ComponentInfo& component_info) override {
-    run_loop_->Quit();
-  }
-
-  std::unique_ptr<base::RunLoop> run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestOptimizationGuideServiceObserver);
-};
 
 // Retries fetching |histogram_name| until it contains at least |count| samples.
 void RetryForHistogramUntilCountReached(base::HistogramTester* histogram_tester,
                                         const std::string& histogram_name,
                                         size_t count) {
-  base::RunLoop().RunUntilIdle();
-  for (size_t attempt = 0; attempt < 3; ++attempt) {
+  while (true) {
+    base::TaskScheduler::GetInstance()->FlushForTesting();
+    base::RunLoop().RunUntilIdle();
+
+    content::FetchHistogramsFromChildProcesses();
+    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+
     const std::vector<base::Bucket> buckets =
         histogram_tester->GetAllSamples(histogram_name);
     size_t total_count = 0;
-    for (const auto& bucket : buckets)
+    for (const auto& bucket : buckets) {
       total_count += bucket.count;
-    if (total_count >= count)
-      return;
-    content::FetchHistogramsFromChildProcesses();
-    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
-    base::RunLoop().RunUntilIdle();
+    }
+    if (total_count >= count) {
+      break;
+    }
   }
 }
 
@@ -88,6 +70,9 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
   ~ResourceLoadingNoFeaturesBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
+    g_browser_process->network_quality_tracker()
+        ->ReportEffectiveConnectionTypeForTesting(
+            net::EFFECTIVE_CONNECTION_TYPE_2G);
     // Set up https server with resource monitor.
     https_server_.reset(
         new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
@@ -127,30 +112,71 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
     cmd->AppendSwitch("enable-spdy-proxy-auth");
-    cmd->AppendSwitchASCII("force-effective-connection-type", "Slow-2G");
+
+    // Due to race conditions, it's possible that blacklist data is not loaded
+    // at the time of first navigation. That may prevent Preview from
+    // triggering, and causing the test to flake.
+    cmd->AppendSwitch(previews::switches::kIgnorePreviewsBlacklist);
   }
 
-  void SetResourceLoadingHints(const std::vector<std::string>& hints_sites) {
+  void ProcessHintsComponent(
+      const optimization_guide::HintsComponentInfo& component_info) {
+    base::HistogramTester histogram_tester;
+
+    g_browser_process->optimization_guide_service()->MaybeUpdateHintsComponent(
+        component_info);
+
+    RetryForHistogramUntilCountReached(
+        &histogram_tester,
+        previews::kPreviewsOptimizationGuideUpdateHintsResultHistogramString,
+        1);
+  }
+
+  void SetDefaultOnlyResourceLoadingHints(
+      const std::vector<std::string>& hints_sites) {
     std::vector<std::string> resource_patterns;
     resource_patterns.push_back("foo.jpg");
     resource_patterns.push_back("png");
     resource_patterns.push_back("woff2");
 
-    const optimization_guide::ComponentInfo& component_info =
-        test_component_creator_.CreateComponentInfoWithPageHints(
+    ProcessHintsComponent(
+        test_hints_component_creator_.CreateHintsComponentInfoWithPageHints(
             optimization_guide::proto::RESOURCE_LOADING, hints_sites,
-            resource_patterns);
-
-    g_browser_process->optimization_guide_service()->ProcessHints(
-        component_info);
-
-    // Wait for hints to be processed by PreviewsOptimizationGuide.
-    base::RunLoop().RunUntilIdle();
+            resource_patterns));
   }
 
-  void AddTestOptimizationGuideServiceObserver(
-      TestOptimizationGuideServiceObserver* observer) {
-    g_browser_process->optimization_guide_service()->AddObserver(observer);
+  // Sets the resource loading hints in optimization guide service. The hints
+  // are set as experimental.
+  void SetExperimentOnlyResourceLoadingHints(
+      const std::vector<std::string>& hints_sites) {
+    std::vector<std::string> resource_patterns;
+    resource_patterns.push_back("foo.jpg");
+    resource_patterns.push_back("png");
+    resource_patterns.push_back("woff2");
+
+    ProcessHintsComponent(
+        test_hints_component_creator_
+            .CreateHintsComponentInfoWithExperimentalPageHints(
+                optimization_guide::proto::RESOURCE_LOADING, hints_sites,
+                resource_patterns));
+  }
+
+  // Sets the resource loading hints in optimization guide service. Some hints
+  // are set as experimental, while others are set as default.
+  void SetMixResourceLoadingHints(const std::vector<std::string>& hints_sites) {
+    std::vector<std::string> experimental_resource_patterns;
+    experimental_resource_patterns.push_back("foo.jpg");
+    experimental_resource_patterns.push_back("png");
+    experimental_resource_patterns.push_back("woff2");
+
+    std::vector<std::string> default_resource_patterns;
+    default_resource_patterns.push_back("bar.jpg");
+    default_resource_patterns.push_back("woff2");
+
+    ProcessHintsComponent(
+        test_hints_component_creator_.CreateHintsComponentInfoWithMixPageHints(
+            optimization_guide::proto::RESOURCE_LOADING, hints_sites,
+            experimental_resource_patterns, default_resource_patterns));
   }
 
   const GURL& https_url() const { return https_url_; }
@@ -230,7 +256,8 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
     }
   }
 
-  optimization_guide::testing::TestComponentCreator test_component_creator_;
+  optimization_guide::testing::TestHintsComponentCreator
+      test_hints_component_creator_;
 
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
   std::unique_ptr<net::EmbeddedTestServer> http_server_;
@@ -264,7 +291,9 @@ class ResourceLoadingHintsBrowserTest
     scoped_feature_list_.InitWithFeatures(
         {previews::features::kPreviews, previews::features::kNoScriptPreviews,
          previews::features::kOptimizationHints,
-         previews::features::kResourceLoadingHints},
+         previews::features::kResourceLoadingHints,
+         data_reduction_proxy::features::
+             kDataReductionProxyEnabledWithNetworkService},
         {});
     ResourceLoadingNoFeaturesBrowserTest::SetUp();
   }
@@ -276,44 +305,20 @@ class ResourceLoadingHintsBrowserTest
 // Previews InfoBar (which these tests triggers) does not work on Mac.
 // See https://crbug.com/782322 for details. Also occasional flakes on win7
 // (https://crbug.com/789542).
-// Additionally, ResourceLoadingHintsHttpsWhitelistedRedirectToHttps is disabled
-// on all OS types until hints are made to work with redirects.
-// TODO(jegray): Re-enable ResourceLoadingHintsHttpsWhitelistedRedirectToHttps
-// when support for redirects is added: https://crbug.com/891752
-#if !defined(OS_MACOSX) && !defined(OS_WIN)
-#define MAYBE_ResourceLoadingHintsHttpsWhitelisted \
-  ResourceLoadingHintsHttpsWhitelisted
-#define MAYBE_ResourceLoadingHintsHttpsWhitelistedRedirectToHttps \
-  DISABLED_ResourceLoadingHintsHttpsWhitelistedRedirectToHttps
-#define MAYBE_ResourceLoadingHintsHttpsNoWhitelisted \
-  ResourceLoadingHintsHttpsNoWhitelisted
-#define MAYBE_ResourceLoadingHintsHttp ResourceLoadingHintsHttp
-#define MAYBE_ResourceLoadingHintsHttpsWhitelistedNoTransform \
-  ResourceLoadingHintsHttpsWhitelistedNoTransform
+#if defined(OS_WIN) || defined(OS_MACOSX)
+#define DISABLE_ON_WIN_MAC(x) DISABLED_##x
 #else
-#define MAYBE_ResourceLoadingHintsHttpsWhitelisted \
-  DISABLED_ResourceLoadingHintsHttpsWhitelisted
-#define MAYBE_ResourceLoadingHintsHttpsWhitelistedRedirectToHttps \
-  DISABLED_ResourceLoadingHintsHttpsWhitelistedRedirectToHttps
-#define MAYBE_ResourceLoadingHintsHttpsNoWhitelisted \
-  DISABLED_ResourceLoadingHintsHttpsNoWhitelisted
-#define MAYBE_ResourceLoadingHintsHttp DISABLED_ResourceLoadingHintsHttp
-#define MAYBE_ResourceLoadingHintsHttpsWhitelistedNoTransform \
-  DISABLED_ResourceLoadingHintsHttpsWhitelistedNoTransform
+#define DISABLE_ON_WIN_MAC(x) x
 #endif
 
-IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
-                       MAYBE_ResourceLoadingHintsHttpsWhitelisted) {
+IN_PROC_BROWSER_TEST_F(
+    ResourceLoadingHintsBrowserTest,
+    DISABLE_ON_WIN_MAC(ResourceLoadingHintsHttpsWhitelisted)) {
   SetExpectedFooJpgRequest(false);
   SetExpectedBarJpgRequest(true);
 
-  TestOptimizationGuideServiceObserver observer;
-  AddTestOptimizationGuideServiceObserver(&observer);
-  base::RunLoop().RunUntilIdle();
-
   // Whitelist test URL for resource loading hints.
-  SetResourceLoadingHints({https_url().host()});
-  observer.WaitForNotification();
+  SetDefaultOnlyResourceLoadingHints({https_url().host()});
 
   base::HistogramTester histogram_tester;
 
@@ -324,12 +329,14 @@ IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
       1);
   histogram_tester.ExpectUniqueSample(
       "ResourceLoadingHints.ResourcePatternsAvailableAtCommit", 1, 1);
+  histogram_tester.ExpectTotalCount(
+      "ResourceLoadingHints.ResourcePatternsAvailableAtCommitForRedirect", 0);
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.ResourceLoadingHints",
       static_cast<int>(previews::PreviewsEligibilityReason::ALLOWED), 1);
   histogram_tester.ExpectBucketCount(
       "Previews.InfoBarAction.ResourceLoadingHints", 0, 1);
-  // SetResourceLoadingHints sets 3 resource loading hints patterns.
+  // SetDefaultOnlyResourceLoadingHints sets 3 resource loading hints patterns.
   histogram_tester.ExpectBucketCount(
       "ResourceLoadingHints.CountBlockedSubresourcePatterns", 3, 1);
   EXPECT_TRUE(resource_loading_hint_intervention_header_seen());
@@ -347,29 +354,164 @@ IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
       2);
   histogram_tester.ExpectUniqueSample(
       "ResourceLoadingHints.ResourcePatternsAvailableAtCommit", 1, 2);
+  histogram_tester.ExpectTotalCount(
+      "ResourceLoadingHints.ResourcePatternsAvailableAtCommitForRedirect", 0);
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.ResourceLoadingHints",
       static_cast<int>(previews::PreviewsEligibilityReason::ALLOWED), 2);
   histogram_tester.ExpectBucketCount(
       "Previews.InfoBarAction.ResourceLoadingHints", 0, 2);
-  // SetResourceLoadingHints sets 3 resource loading hints patterns.
+  // SetDefaultOnlyResourceLoadingHints sets 3 resource loading hints patterns.
   histogram_tester.ExpectBucketCount(
       "ResourceLoadingHints.CountBlockedSubresourcePatterns", 3, 2);
   EXPECT_TRUE(resource_loading_hint_intervention_header_seen());
 }
 
+// Sets only the experimental hints, but does not enable the matching
+// experiment. Verifies that the hints are not used, and the resource loading is
+// not blocked.
 IN_PROC_BROWSER_TEST_F(
     ResourceLoadingHintsBrowserTest,
-    MAYBE_ResourceLoadingHintsHttpsWhitelistedRedirectToHttps) {
+    DISABLE_ON_WIN_MAC(ExperimentalHints_ExperimentIsNotEnabled)) {
+  SetExpectedFooJpgRequest(true);
+  SetExpectedBarJpgRequest(true);
+
+  // Whitelist test URL for resource loading hints.
+  SetExperimentOnlyResourceLoadingHints({https_url().host()});
+
+  base::HistogramTester histogram_tester;
+
+  ui_test_utils::NavigateToURL(browser(), https_url());
+
+  histogram_tester.ExpectBucketCount(
+      "Previews.EligibilityReason.ResourceLoadingHints",
+      static_cast<int>(previews::PreviewsEligibilityReason::ALLOWED), 1);
+  histogram_tester.ExpectTotalCount(
+      "Previews.InfoBarAction.ResourceLoadingHints", 0);
+  histogram_tester.ExpectTotalCount(
+      "ResourceLoadingHints.CountBlockedSubresourcePatterns", 0);
+  EXPECT_FALSE(resource_loading_hint_intervention_header_seen());
+}
+
+// Sets only the experimental hints, and enables the matching experiment.
+// Verifies that the hints are used, and the resource loading is blocked.
+IN_PROC_BROWSER_TEST_F(
+    ResourceLoadingHintsBrowserTest,
+    DISABLE_ON_WIN_MAC(ExperimentalHints_ExperimentIsEnabled)) {
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeatureWithParameters(
+      previews::features::kOptimizationHintsExperiments,
+      {{previews::features::kOptimizationHintsExperimentNameParam,
+        optimization_guide::testing::kFooExperimentName}});
   SetExpectedFooJpgRequest(false);
   SetExpectedBarJpgRequest(true);
 
-  TestOptimizationGuideServiceObserver observer;
-  AddTestOptimizationGuideServiceObserver(&observer);
-  base::RunLoop().RunUntilIdle();
+  // Whitelist test URL for resource loading hints.
+  SetExperimentOnlyResourceLoadingHints({https_url().host()});
 
-  SetResourceLoadingHints({https_url().host()});
-  observer.WaitForNotification();
+  base::HistogramTester histogram_tester;
+
+  ui_test_utils::NavigateToURL(browser(), https_url());
+
+  RetryForHistogramUntilCountReached(
+      &histogram_tester, "ResourceLoadingHints.CountBlockedSubresourcePatterns",
+      1);
+  histogram_tester.ExpectUniqueSample(
+      "ResourceLoadingHints.ResourcePatternsAvailableAtCommit", 1, 1);
+  histogram_tester.ExpectTotalCount(
+      "ResourceLoadingHints.ResourcePatternsAvailableAtCommitForRedirect", 0);
+  histogram_tester.ExpectBucketCount(
+      "Previews.EligibilityReason.ResourceLoadingHints",
+      static_cast<int>(previews::PreviewsEligibilityReason::ALLOWED), 1);
+  histogram_tester.ExpectBucketCount(
+      "Previews.InfoBarAction.ResourceLoadingHints", 0, 1);
+  // SetDefaultOnlyResourceLoadingHints sets 3 resource loading hints patterns.
+  histogram_tester.ExpectBucketCount(
+      "ResourceLoadingHints.CountBlockedSubresourcePatterns", 3, 1);
+  EXPECT_TRUE(resource_loading_hint_intervention_header_seen());
+}
+
+// Sets both the experimental and default hints, and enables the matching
+// experiment. Verifies that the hints are used, and the resource loading is
+// blocked.
+IN_PROC_BROWSER_TEST_F(
+    ResourceLoadingHintsBrowserTest,
+    DISABLE_ON_WIN_MAC(MixExperimentalHints_ExperimentIsEnabled)) {
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeatureWithParameters(
+      previews::features::kOptimizationHintsExperiments,
+      {{previews::features::kOptimizationHintsExperimentNameParam,
+        optimization_guide::testing::kFooExperimentName}});
+  SetExpectedFooJpgRequest(false);
+  SetExpectedBarJpgRequest(true);
+
+  // Whitelist test URL for resource loading hints. Set both experimental and
+  // non-experimental hints.
+  SetMixResourceLoadingHints({https_url().host()});
+
+  base::HistogramTester histogram_tester;
+
+  ui_test_utils::NavigateToURL(browser(), https_url());
+
+  RetryForHistogramUntilCountReached(
+      &histogram_tester, "ResourceLoadingHints.CountBlockedSubresourcePatterns",
+      1);
+  histogram_tester.ExpectUniqueSample(
+      "ResourceLoadingHints.ResourcePatternsAvailableAtCommit", 1, 1);
+  histogram_tester.ExpectTotalCount(
+      "ResourceLoadingHints.ResourcePatternsAvailableAtCommitForRedirect", 0);
+  histogram_tester.ExpectBucketCount(
+      "Previews.EligibilityReason.ResourceLoadingHints",
+      static_cast<int>(previews::PreviewsEligibilityReason::ALLOWED), 1);
+  histogram_tester.ExpectBucketCount(
+      "Previews.InfoBarAction.ResourceLoadingHints", 0, 1);
+  // SetDefaultOnlyResourceLoadingHints sets 3 resource loading hints patterns.
+  histogram_tester.ExpectBucketCount(
+      "ResourceLoadingHints.CountBlockedSubresourcePatterns", 3, 1);
+  EXPECT_TRUE(resource_loading_hint_intervention_header_seen());
+}
+
+// Sets both the experimental and default hints, but does not enable the
+// matching experiment. Verifies that the hints from the experiment are not
+// used.
+IN_PROC_BROWSER_TEST_F(
+    ResourceLoadingHintsBrowserTest,
+    DISABLE_ON_WIN_MAC(MixExperimentalHints_ExperimentIsNotEnabled)) {
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeatureWithParameters(
+      previews::features::kOptimizationHintsExperiments,
+      {{previews::features::kOptimizationHintsExperimentNameParam,
+        "some_other_experiment"}});
+  SetExpectedFooJpgRequest(true);
+  SetExpectedBarJpgRequest(false);
+
+  // Whitelist test URL for resource loading hints.
+  SetMixResourceLoadingHints({https_url().host()});
+
+  base::HistogramTester histogram_tester;
+
+  ui_test_utils::NavigateToURL(browser(), https_url());
+
+  RetryForHistogramUntilCountReached(
+      &histogram_tester, "ResourceLoadingHints.CountBlockedSubresourcePatterns",
+      1);
+  histogram_tester.ExpectBucketCount(
+      "Previews.EligibilityReason.ResourceLoadingHints",
+      static_cast<int>(previews::PreviewsEligibilityReason::ALLOWED), 1);
+  // Infobar would still be shown since there were at least one resource
+  // loading hints available, even though none of them matched.
+  histogram_tester.ExpectTotalCount(
+      "Previews.InfoBarAction.ResourceLoadingHints", 1);
+  EXPECT_TRUE(resource_loading_hint_intervention_header_seen());
+}
+
+IN_PROC_BROWSER_TEST_F(
+    ResourceLoadingHintsBrowserTest,
+    DISABLE_ON_WIN_MAC(ResourceLoadingHintsHttpsWhitelistedRedirectToHttps)) {
+  SetExpectedFooJpgRequest(false);
+  SetExpectedBarJpgRequest(true);
+
+  SetDefaultOnlyResourceLoadingHints({https_url().host()});
 
   base::HistogramTester histogram_tester;
 
@@ -378,28 +520,29 @@ IN_PROC_BROWSER_TEST_F(
   RetryForHistogramUntilCountReached(
       &histogram_tester, "ResourceLoadingHints.CountBlockedSubresourcePatterns",
       1);
+  histogram_tester.ExpectUniqueSample(
+      "ResourceLoadingHints.ResourcePatternsAvailableAtCommit", 1, 1);
+  histogram_tester.ExpectUniqueSample(
+      "ResourceLoadingHints.ResourcePatternsAvailableAtCommitForRedirect", 1,
+      1);
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.ResourceLoadingHints",
-      static_cast<int>(previews::PreviewsEligibilityReason::ALLOWED), 1);
+      static_cast<int>(previews::PreviewsEligibilityReason::ALLOWED), 2);
   histogram_tester.ExpectTotalCount(
       "Previews.InfoBarAction.ResourceLoadingHints", 1);
-  // SetResourceLoadingHints sets 3 resource loading hints patterns.
+  // SetDefaultOnlyResourceLoadingHints sets 3 resource loading hints patterns.
   histogram_tester.ExpectBucketCount(
       "ResourceLoadingHints.CountBlockedSubresourcePatterns", 3, 1);
   EXPECT_TRUE(resource_loading_hint_intervention_header_seen());
 }
 
-IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
-                       MAYBE_ResourceLoadingHintsHttpsNoWhitelisted) {
+IN_PROC_BROWSER_TEST_F(
+    ResourceLoadingHintsBrowserTest,
+    DISABLE_ON_WIN_MAC(ResourceLoadingHintsHttpsNoWhitelisted)) {
   SetExpectedFooJpgRequest(true);
   SetExpectedBarJpgRequest(true);
 
-  TestOptimizationGuideServiceObserver observer;
-  AddTestOptimizationGuideServiceObserver(&observer);
-  base::RunLoop().RunUntilIdle();
-
-  SetResourceLoadingHints({});
-  observer.WaitForNotification();
+  SetDefaultOnlyResourceLoadingHints({});
 
   base::HistogramTester histogram_tester;
 
@@ -420,17 +563,12 @@ IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
-                       MAYBE_ResourceLoadingHintsHttp) {
+                       DISABLE_ON_WIN_MAC(ResourceLoadingHintsHttp)) {
   SetExpectedFooJpgRequest(true);
   SetExpectedBarJpgRequest(true);
 
-  TestOptimizationGuideServiceObserver observer;
-  AddTestOptimizationGuideServiceObserver(&observer);
-  base::RunLoop().RunUntilIdle();
-
   // Whitelist test HTTP URL for resource loading hints.
-  SetResourceLoadingHints({https_url().host()});
-  observer.WaitForNotification();
+  SetDefaultOnlyResourceLoadingHints({https_url().host()});
 
   base::HistogramTester histogram_tester;
 
@@ -447,18 +585,14 @@ IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
   EXPECT_FALSE(resource_loading_hint_intervention_header_seen());
 }
 
-IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
-                       MAYBE_ResourceLoadingHintsHttpsWhitelistedNoTransform) {
+IN_PROC_BROWSER_TEST_F(
+    ResourceLoadingHintsBrowserTest,
+    DISABLE_ON_WIN_MAC(ResourceLoadingHintsHttpsWhitelistedNoTransform)) {
   SetExpectedFooJpgRequest(true);
   SetExpectedBarJpgRequest(true);
 
-  TestOptimizationGuideServiceObserver observer;
-  AddTestOptimizationGuideServiceObserver(&observer);
-  base::RunLoop().RunUntilIdle();
-
   // Whitelist test URL for resource loading hints.
-  SetResourceLoadingHints({https_url().host()});
-  observer.WaitForNotification();
+  SetDefaultOnlyResourceLoadingHints({https_url().host()});
 
   base::HistogramTester histogram_tester;
 

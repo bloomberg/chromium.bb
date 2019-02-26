@@ -385,9 +385,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
             mToolbar.showSearchView();
             return true;
         } else if (item.getItemId() == R.id.settings_menu_id) {
-            Intent intent = PreferencesLauncher.createIntentForSettingsPage(
-                    mActivity, DownloadPreferences.class.getName());
-            mActivity.startActivity(intent);
+            PreferencesLauncher.launchSettingsPage(mActivity, DownloadPreferences.class);
             return true;
         }
         return false;
@@ -418,7 +416,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
         for (Observer observer : mObservers) observer.onUrlChanged(url);
 
         if (mNativePage != null) {
-            mNativePage.onStateChange(DownloadFilter.getUrlForFilter(filter));
+            mNativePage.onStateChange(DownloadFilter.getUrlForFilter(filter), true);
         }
 
         RecordHistogram.recordEnumeratedHistogram(

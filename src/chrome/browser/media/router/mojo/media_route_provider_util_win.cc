@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"
+#include "base/task/task_traits.h"
 #include "base/task_runner_util.h"
 #include "chrome/installer/util/firewall_manager_win.h"
 
@@ -33,7 +34,8 @@ bool DoCanFirewallUseLocalPorts() {
 }  // namespace
 
 void CanFirewallUseLocalPorts(base::OnceCallback<void(bool)> callback) {
-  auto task_runner = base::CreateCOMSTATaskRunnerWithTraits({base::MayBlock()});
+  auto task_runner = base::CreateCOMSTATaskRunnerWithTraits(
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
   base::PostTaskAndReplyWithResult(task_runner.get(), FROM_HERE,
                                    base::BindOnce(&DoCanFirewallUseLocalPorts),
                                    std::move(callback));

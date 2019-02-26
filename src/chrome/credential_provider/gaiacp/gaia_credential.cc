@@ -34,18 +34,33 @@ HRESULT CGaiaCredential::FinishAuthentication(BSTR username,
   LOGFN(INFO);
   DCHECK(error_text);
 
-  OSUserManager* manager = OSUserManager::Get();
+  *error_text = nullptr;
+
   base::string16 comment(GetStringResource(IDS_USER_ACCOUNT_COMMENT));
-  HRESULT hr = CreateNewUser(manager, OLE2CW(username), OLE2CW(password),
-                     OLE2CW(fullname), comment.c_str(), true, sid);
-  if (FAILED(hr)) {
+  HRESULT hr = CreateNewUser(OSUserManager::Get(), OLE2CW(username),
+                             OLE2CW(password), OLE2CW(fullname),
+                             comment.c_str(), /*add_to_users_group=*/true, sid);
+  if (hr == HRESULT_FROM_WIN32(NERR_UserExists)) {
+    // The user signed in with a Google account that was already used to create
+    // a local account.  This is considered a success as long as the password
+    // matches the existing one.
+    base::win::ScopedHandle handle;
+    HRESULT hrLogon = OSUserManager::Get()->CreateLogonToken(
+        username, password, /*interactive=*/true, &handle);
+    if (SUCCEEDED(hrLogon)) {
+      hr = S_OK;
+    } else {
+      LOGFN(INFO) << "CreateLogonToken hr=" << putHR(hrLogon)
+                  << " account=" << OLE2CW(username) << " sid=" << sid;
+      *error_text = AllocErrorString(IDS_INVALID_PASSWORD);
+    }
+  } else if (FAILED(hr)) {
     LOGFN(ERROR) << "CreateNewUser hr=" << putHR(hr)
                  << " account=" << OLE2CW(username);
     *error_text = AllocErrorString(IDS_CANT_CREATE_USER);
-    return hr;
   }
 
-  return S_OK;
+  return hr;
 }
 
 }  // namespace credential_provider

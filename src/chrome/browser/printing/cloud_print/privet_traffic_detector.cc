@@ -19,8 +19,8 @@
 #include "net/base/address_family.h"
 #include "net/base/ip_address.h"
 #include "net/base/network_interfaces.h"
-#include "net/dns/dns_protocol.h"
-#include "net/dns/mdns_client.h"
+#include "net/dns/public/dns_protocol.h"
+#include "net/dns/public/util.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 
 namespace {
@@ -163,29 +163,26 @@ void PrivetTrafficDetector::Helper::Bind() {
       base::BindOnce(&CreateUDPSocketOnUIThread, profile_,
                      mojo::MakeRequest(&socket_), std::move(receiver_ptr)));
 
-  net::IPEndPoint multicast_addr =
-      net::GetMDnsIPEndPoint(net::ADDRESS_FAMILY_IPV4);
-  net::IPEndPoint bind_endpoint(
-      net::IPAddress::AllZeros(multicast_addr.address().size()),
-      multicast_addr.port());
-
   network::mojom::UDPSocketOptionsPtr socket_options =
       network::mojom::UDPSocketOptions::New();
-  socket_options->allow_address_reuse = true;
+  socket_options->allow_address_sharing_for_multicast = true;
   socket_options->multicast_loopback_mode = false;
 
-  socket_->Bind(bind_endpoint, std::move(socket_options),
-                base::BindOnce(&Helper::OnBindComplete,
-                               weak_ptr_factory_.GetWeakPtr(), multicast_addr));
+  socket_->Bind(
+      net::dns_util::GetMdnsReceiveEndPoint(net::ADDRESS_FAMILY_IPV4),
+      std::move(socket_options),
+      base::BindOnce(
+          &Helper::OnBindComplete, weak_ptr_factory_.GetWeakPtr(),
+          net::dns_util::GetMdnsGroupEndPoint(net::ADDRESS_FAMILY_IPV4)));
 }
 
 void PrivetTrafficDetector::Helper::OnBindComplete(
-    net::IPEndPoint multicast_addr,
+    net::IPEndPoint multicast_group_addr,
     int rv,
     const base::Optional<net::IPEndPoint>& ip_endpoint) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (rv == net::OK) {
-    socket_->JoinGroup(multicast_addr.address(),
+    socket_->JoinGroup(multicast_group_addr.address(),
                        base::BindOnce(&Helper::OnJoinGroupComplete,
                                       weak_ptr_factory_.GetWeakPtr()));
     return;

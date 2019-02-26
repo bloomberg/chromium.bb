@@ -29,7 +29,7 @@ struct SSLConfig {
   // SSL 2.0 and 3.0 are not supported. Note these lines must be kept in sync
   // with net/ssl/ssl_config.cc.
   SSLVersion version_min = kTLS1;
-  SSLVersion version_max = kTLS12;
+  SSLVersion version_max = kTLS13;
 
   TLS13Variant tls13_variant = kFinal;
 

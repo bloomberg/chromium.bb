@@ -8,16 +8,20 @@
 
 #include "base/stl_util.h"
 #include "base/win/registry.h"
-#include "chrome/credential_provider/gaiacp/gcp_strings.h"
+#include "chrome/credential_provider/common/gcp_strings.h"
 
 namespace credential_provider {
 
 namespace {
 
 // Root registry key for GCP configuration and state.
-// TODO(crbug.com/883943): This should be different between Chromium and
-// Google Chrome builds.
-const wchar_t kGcpRootKeyName[] = L"Software\\Google\\GCP";
+#if defined(GOOGLE_CHROME_BUILD)
+#define CREDENTIAL_PROVIDER_REGISTRY_KEY L"Software\\Google\\GCP"
+#else
+#define CREDENTIAL_PROVIDER_REGISTRY_KEY L"Software\\Chromium\\GCP"
+#endif  // defined(GOOGLE_CHROME_BUILD)
+
+const wchar_t kGcpRootKeyName[] = CREDENTIAL_PROVIDER_REGISTRY_KEY;
 
 HRESULT GetRegDWORD(const base::string16& key_name,
                     const base::string16& name,
@@ -175,6 +179,31 @@ HRESULT GetUserTokenHandles(std::map<base::string16, base::string16>* handles) {
       handles->emplace(sid, token_handle);
   }
   return S_OK;
+}
+
+HRESULT GetSidFromId(const base::string16& id, wchar_t* sid, ULONG length) {
+  DCHECK(sid);
+
+  wchar_t key_name[128];
+  swprintf_s(key_name, base::size(key_name), L"%ls\\Users", kGcpRootKeyName);
+
+  base::win::RegistryKeyIterator iter(HKEY_LOCAL_MACHINE, key_name);
+  for (; iter.Valid(); ++iter) {
+    const wchar_t* user_sid = iter.Name();
+    wchar_t user_id[256];
+    ULONG user_length = base::size(user_id);
+    HRESULT hr =
+        GetUserProperty(user_sid, kUserTokenHandle, user_id, &user_length);
+    if (SUCCEEDED(hr) && id == user_id) {
+      wcsncpy_s(sid, length, user_sid, wcslen(user_sid));
+      return S_OK;
+    }
+  }
+  return HRESULT_FROM_WIN32(ERROR_NONE_MAPPED);
+}
+
+const wchar_t* GetUsersRootKeyForTesting() {
+  return CREDENTIAL_PROVIDER_REGISTRY_KEY L"\\Users";
 }
 
 }  // namespace credential_provider

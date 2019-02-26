@@ -12,6 +12,7 @@
 #include "content/browser/devtools/protocol/network_handler.h"
 #include "content/browser/devtools/protocol/protocol.h"
 #include "content/browser/devtools/protocol/schema_handler.h"
+#include "content/browser/devtools/protocol/target_handler.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_version.h"
@@ -118,12 +119,14 @@ ServiceWorkerDevToolsAgentHost::~ServiceWorkerDevToolsAgentHost() {
   ServiceWorkerDevToolsManager::GetInstance()->AgentHostDestroyed(this);
 }
 
-bool ServiceWorkerDevToolsAgentHost::AttachSession(DevToolsSession* session,
-                                                   TargetRegistry* registry) {
+bool ServiceWorkerDevToolsAgentHost::AttachSession(DevToolsSession* session) {
   session->AddHandler(base::WrapUnique(new protocol::InspectorHandler()));
   session->AddHandler(base::WrapUnique(new protocol::NetworkHandler(
       GetId(), devtools_worker_token_, GetIOContext())));
   session->AddHandler(base::WrapUnique(new protocol::SchemaHandler()));
+  session->AddHandler(std::make_unique<protocol::TargetHandler>(
+      protocol::TargetHandler::AccessMode::kAutoAttachOnly, GetId(),
+      GetRendererChannel(), session->GetRootSession()));
   if (state_ == WORKER_READY && sessions().empty())
     UpdateIsAttached(true);
   return true;
@@ -142,9 +145,9 @@ void ServiceWorkerDevToolsAgentHost::WorkerReadyForInspection(
   state_ = WORKER_READY;
   blink::mojom::DevToolsAgentAssociatedPtr agent_ptr;
   agent_ptr.Bind(std::move(devtools_agent_ptr_info));
-  GetRendererChannel()->SetRenderer(std::move(agent_ptr),
-                                    std::move(host_request), worker_process_id_,
-                                    nullptr);
+  GetRendererChannel()->SetRendererAssociated(std::move(agent_ptr),
+                                              std::move(host_request),
+                                              worker_process_id_, nullptr);
   if (!sessions().empty())
     UpdateIsAttached(true);
 }
@@ -164,7 +167,7 @@ void ServiceWorkerDevToolsAgentHost::WorkerDestroyed() {
   state_ = WORKER_TERMINATED;
   for (auto* inspector : protocol::InspectorHandler::ForAgentHost(this))
     inspector->TargetCrashed();
-  GetRendererChannel()->SetRenderer(
+  GetRendererChannel()->SetRendererAssociated(
       nullptr, nullptr, ChildProcessHost::kInvalidUniqueID, nullptr);
   if (!sessions().empty())
     UpdateIsAttached(false);

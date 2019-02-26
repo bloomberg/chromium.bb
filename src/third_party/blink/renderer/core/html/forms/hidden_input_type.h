@@ -41,12 +41,14 @@ class HiddenInputType final : public InputType, private InputTypeView {
 
  public:
   static InputType* Create(HTMLInputElement&);
+
+  HiddenInputType(HTMLInputElement& element)
+      : InputType(element), InputTypeView(element) {}
+
   void Trace(blink::Visitor*) override;
   using InputType::GetElement;
 
  private:
-  HiddenInputType(HTMLInputElement& element)
-      : InputType(element), InputTypeView(element) {}
   InputTypeView* CreateView() override;
   const AtomicString& FormControlType() const override;
   bool ShouldSaveAndRestoreFormControlState() const override;

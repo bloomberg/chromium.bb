@@ -5,13 +5,31 @@
 Polymer({
   is: 'nux-set-as-default',
 
-  behaviors: [WebUIListenerBehavior],
+  behaviors: [
+    WebUIListenerBehavior,
+    welcome.NavigationBehavior,
+  ],
+
+  properties: {
+    /** @type {nux.stepIndicatorModel} */
+    indicatorModel: Object,
+
+    // <if expr="is_win">
+    isWin10: {
+      type: Boolean,
+      value: loadTimeData.getBoolean('is_win10'),
+    },
+    // </if>
+  },
 
   /** @private {nux.NuxSetAsDefaultProxy} */
   browserProxy_: null,
 
+  /** @private {boolean} */
+  finalized_: false,
+
   /** @override */
-  attached: function() {
+  ready: function() {
     this.browserProxy_ = nux.NuxSetAsDefaultProxyImpl.getInstance();
 
     this.addWebUIListener(
@@ -19,33 +37,59 @@ Polymer({
         this.onDefaultBrowserChange_.bind(this));
   },
 
+  onRouteEnter: function() {
+    this.finalized_ = false;
+    this.browserProxy_.recordPageShown();
+  },
+
+  onRouteExit: function() {
+    if (this.finalized_)
+      return;
+    this.finalized_ = true;
+    this.browserProxy_.recordNavigatedAwayThroughBrowserHistory();
+  },
+
+  onRouteUnload: function() {
+    if (this.finalized_)
+      return;
+    this.finalized_ = true;
+    this.browserProxy_.recordNavigatedAway();
+  },
+
   /** @private */
   onDeclineClick_: function() {
-    // TODO(scottchen): Add UMA collection here.
+    if (this.finalized_)
+      return;
 
+    this.browserProxy_.recordSkip();
     this.finished_();
   },
 
   /** @private */
   onSetDefaultClick_: function() {
+    if (this.finalized_)
+      return;
+
+    this.browserProxy_.recordBeginSetDefault();
     this.browserProxy_.setAsDefault();
   },
 
   /**
    * Automatically navigate to the next onboarding step once default changed.
-   * @param {boolean} isDefault
+   * @param {!nux.DefaultBrowserInfo} status
    * @private
    */
-  onDefaultBrowserChange_: function(isDefault) {
-    // TODO(scottchen): Add UMA collection here.
-
-    if (isDefault)
+  onDefaultBrowserChange_: function(status) {
+    if (status.isDefault) {
+      this.browserProxy_.recordSuccessfullySetDefault();
       this.finished_();
+    }
   },
 
   /** @private */
   finished_: function() {
-    // TODO(scottchen): use navigation behavior to go to next step once this
-    //     module is integrated with onboarding-welcome's welcome-app.
+    this.finalized_ = true;
+
+    welcome.navigateToNextStep();
   },
 });

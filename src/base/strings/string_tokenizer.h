@@ -89,6 +89,11 @@ class StringTokenizerT {
   enum {
     // Specifies the delimiters should be returned as tokens
     RETURN_DELIMS = 1 << 0,
+
+    // Specifies that empty tokens should be returned. Treats the beginning and
+    // ending of the string as implicit delimiters, though doesn't return them
+    // as tokens if RETURN_DELIMS is also used.
+    RETURN_EMPTY_TOKENS = 1 << 1,
   };
 
   // The string object must live longer than the tokenizer. In particular, this
@@ -137,7 +142,8 @@ class StringTokenizerT {
 
   // Returns true if token is a delimiter.  When the tokenizer is constructed
   // with the RETURN_DELIMS option, this method can be used to check if the
-  // returned token is actually a delimiter.
+  // returned token is actually a delimiter. Returns true before the first
+  // time GetNext() has been called, and after GetNext() returns false.
   bool token_is_delim() const { return token_is_delim_; }
 
   // If GetNext() returned true, then these methods may be used to read the
@@ -160,7 +166,7 @@ class StringTokenizerT {
     end_ = string_end;
     delims_ = delims;
     options_ = 0;
-    token_is_delim_ = false;
+    token_is_delim_ = true;
   }
 
   // Implementation of GetNext() for when we have no quote characters. We have
@@ -170,8 +176,10 @@ class StringTokenizerT {
     token_is_delim_ = false;
     for (;;) {
       token_begin_ = token_end_;
-      if (token_end_ == end_)
+      if (token_end_ == end_) {
+        token_is_delim_ = true;
         return false;
+      }
       ++token_end_;
       if (delims_.find(*token_begin_) == str::npos)
         break;
@@ -185,23 +193,61 @@ class StringTokenizerT {
   // Implementation of GetNext() for when we have to take quotes into account.
   bool FullGetNext() {
     AdvanceState state;
-    token_is_delim_ = false;
+
     for (;;) {
+      if (token_is_delim_) {
+        // Last token was a delimiter. Note: This is also the case at the start.
+        //
+        //    ... D T T T T D ...
+        //        ^ ^
+        //        | |
+        //        | |token_end_| : The next character to look at or |end_|.
+        //        |
+        //        |token_begin_| : Points to delimiter or |token_end_|.
+        //
+        // The next token is always a non-delimiting token. It could be empty,
+        // however.
+        token_is_delim_ = false;
+        token_begin_ = token_end_;
+
+        // Slurp all non-delimiter characters into the token.
+        while (token_end_ != end_ && AdvanceOne(&state, *token_end_)) {
+          ++token_end_;
+        }
+
+        // If it's non-empty, or empty tokens were requested, return the token.
+        if (token_begin_ != token_end_ || (options_ & RETURN_EMPTY_TOKENS))
+          return true;
+      }
+
+      DCHECK(!token_is_delim_);
+      // Last token was a regular token.
+      //
+      //    ... T T T D T T ...
+      //        ^     ^
+      //        |     |
+      //        |     token_end_ : The next character to look at. Always one
+      //        |                  char beyond the token boundary.
+      //        |
+      //        token_begin_ : Points to beginning of token. Note: token could
+      //                       be empty, in which case
+      //                       token_begin_ == token_end_.
+      //
+      // The next token is always a delimiter. It could be |end_| however, but
+      // |end_| is also an implicit delimiter.
+      token_is_delim_ = true;
       token_begin_ = token_end_;
+
       if (token_end_ == end_)
         return false;
+
+      // Look at the delimiter.
       ++token_end_;
-      if (AdvanceOne(&state, *token_begin_))
-        break;
-      if (options_ & RETURN_DELIMS) {
-        token_is_delim_ = true;
+      if (options_ & RETURN_DELIMS)
         return true;
-      }
-      // else skip over delimiter.
     }
-    while (token_end_ != end_ && AdvanceOne(&state, *token_end_))
-      ++token_end_;
-    return true;
+
+    return false;
   }
 
   bool IsDelim(char_type c) const {

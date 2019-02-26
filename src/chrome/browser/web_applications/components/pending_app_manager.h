@@ -37,43 +37,37 @@ class PendingAppManager {
       base::RepeatingCallback<void(const GURL& app_url, bool succeeded)>;
 
   struct AppInfo {
-    static const bool kDefaultCreateShortcuts;
-    static const bool kDefaultOverridePreviousUserUninstall;
-    static const bool kDefaultBypassServiceWorkerCheck;
-    static const bool kDefaultRequireManifest;
-
-    AppInfo(GURL url,
+    AppInfo(const GURL& url,
             LaunchContainer launch_container,
-            InstallSource install_source,
-            bool create_shortcuts = kDefaultCreateShortcuts,
-            bool override_previous_user_uninstall =
-                kDefaultOverridePreviousUserUninstall,
-            bool bypass_service_worker_check = kDefaultBypassServiceWorkerCheck,
-            bool require_manifest = kDefaultRequireManifest);
-    AppInfo(AppInfo&& other);
+            InstallSource install_source);
     ~AppInfo();
-
-    std::unique_ptr<AppInfo> Clone() const;
+    AppInfo(const AppInfo& other);
+    AppInfo(AppInfo&& other);
+    AppInfo& operator=(const AppInfo& other);
 
     bool operator==(const AppInfo& other) const;
 
-    const GURL url;
-    const LaunchContainer launch_container;
-    const InstallSource install_source;
-    const bool create_shortcuts;
-    const bool override_previous_user_uninstall;
+    GURL url;
+    LaunchContainer launch_container;
+    InstallSource install_source;
 
-    // This must only be used by pre-installed default apps that are valid PWAs
-    // if loading the real service worker is too costly to verify
+    bool create_shortcuts = true;
+
+    // Whether the app should be reinstalled even if the user has previously
+    // uninstalled it.
+    bool override_previous_user_uninstall = false;
+
+    // This must only be used by pre-installed default or system apps that are
+    // valid PWAs if loading the real service worker is too costly to verify
     // programmatically.
-    const bool bypass_service_worker_check;
+    bool bypass_service_worker_check = false;
 
     // This should be used for installing all default apps so that good metadata
     // is ensured.
-    const bool require_manifest;
+    bool require_manifest = false;
 
-   private:
-    DISALLOW_COPY_AND_ASSIGN(AppInfo);
+    // Whether the app should be reinstalled even if it is already installed.
+    bool always_update = false;
   };
 
   PendingAppManager();

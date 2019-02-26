@@ -47,9 +47,14 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_message_port.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_mojo_handle.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_offscreen_canvas.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_readable_stream.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_shared_array_buffer.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_writable_stream.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
+#include "third_party/blink/renderer/core/streams/readable_stream.h"
+#include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_shared_array_buffer.h"
 #include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
@@ -58,6 +63,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/dtoa/utils.h"
@@ -65,6 +71,7 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 
 namespace blink {
 
@@ -369,6 +376,39 @@ void SerializedScriptValue::TransferOffscreenCanvas(
     }
     visited.insert(offscreen_canvases[i].Get());
     offscreen_canvases[i].Get()->SetNeutered();
+    offscreen_canvases[i].Get()->RecordTransfer();
+  }
+}
+
+void SerializedScriptValue::TransferReadableStreams(
+    ScriptState* script_state,
+    const ReadableStreamArray& readable_streams,
+    ExceptionState& exception_state) {
+  auto* execution_context = ExecutionContext::From(script_state);
+  for (ReadableStream* readable_stream : readable_streams) {
+    mojo::MessagePipe pipe;
+    MessagePort* local_port = MessagePort::Create(*execution_context);
+    local_port->Entangle(std::move(pipe.handle0));
+    readable_stream->Serialize(script_state, local_port, exception_state);
+    if (exception_state.HadException())
+      return;
+    stream_channels_.push_back(MessagePortChannel(std::move(pipe.handle1)));
+  }
+}
+
+void SerializedScriptValue::TransferWritableStreams(
+    ScriptState* script_state,
+    const WritableStreamArray& writable_streams,
+    ExceptionState& exception_state) {
+  auto* execution_context = ExecutionContext::From(script_state);
+  for (WritableStream* writable_stream : writable_streams) {
+    mojo::MessagePipe pipe;
+    MessagePort* local_port = MessagePort::Create(*execution_context);
+    local_port->Entangle(std::move(pipe.handle0));
+    writable_stream->Serialize(script_state, local_port, exception_state);
+    if (exception_state.HadException())
+      return;
+    stream_channels_.push_back(MessagePortChannel(std::move(pipe.handle1)));
   }
 }
 
@@ -414,7 +454,7 @@ UnpackedSerializedScriptValue* SerializedScriptValue::Unpack(
   DCHECK(!value->was_unpacked_);
   value->was_unpacked_ = true;
 #endif
-  return new UnpackedSerializedScriptValue(std::move(value));
+  return MakeGarbageCollected<UnpackedSerializedScriptValue>(std::move(value));
 }
 
 bool SerializedScriptValue::HasPackedContents() const {
@@ -460,7 +500,7 @@ bool SerializedScriptValue::ExtractTransferables(
       return false;
     }
     // Validation of Objects implementing an interface, per WebIDL spec 4.1.15.
-    if (V8MessagePort::hasInstance(transferable_object, isolate)) {
+    if (V8MessagePort::HasInstance(transferable_object, isolate)) {
       MessagePort* port = V8MessagePort::ToImpl(
           v8::Local<v8::Object>::Cast(transferable_object));
       // Check for duplicate MessagePorts.
@@ -472,7 +512,7 @@ bool SerializedScriptValue::ExtractTransferables(
         return false;
       }
       transferables.message_ports.push_back(port);
-    } else if (V8MojoHandle::hasInstance(transferable_object, isolate)) {
+    } else if (V8MojoHandle::HasInstance(transferable_object, isolate)) {
       MojoHandle* handle = V8MojoHandle::ToImpl(
           v8::Local<v8::Object>::Cast(transferable_object));
       // Check for duplicate MojoHandles.
@@ -506,7 +546,7 @@ bool SerializedScriptValue::ExtractTransferables(
         return false;
       }
       transferables.array_buffers.push_back(shared_array_buffer);
-    } else if (V8ImageBitmap::hasInstance(transferable_object, isolate)) {
+    } else if (V8ImageBitmap::HasInstance(transferable_object, isolate)) {
       ImageBitmap* image_bitmap = V8ImageBitmap::ToImpl(
           v8::Local<v8::Object>::Cast(transferable_object));
       if (transferables.image_bitmaps.Contains(image_bitmap)) {
@@ -517,7 +557,7 @@ bool SerializedScriptValue::ExtractTransferables(
         return false;
       }
       transferables.image_bitmaps.push_back(image_bitmap);
-    } else if (V8OffscreenCanvas::hasInstance(transferable_object, isolate)) {
+    } else if (V8OffscreenCanvas::HasInstance(transferable_object, isolate)) {
       OffscreenCanvas* offscreen_canvas = V8OffscreenCanvas::ToImpl(
           v8::Local<v8::Object>::Cast(transferable_object));
       if (transferables.offscreen_canvases.Contains(offscreen_canvas)) {
@@ -528,6 +568,30 @@ bool SerializedScriptValue::ExtractTransferables(
         return false;
       }
       transferables.offscreen_canvases.push_back(offscreen_canvas);
+    } else if (RuntimeEnabledFeatures::TransferableStreamsEnabled() &&
+               V8ReadableStream::HasInstance(transferable_object, isolate)) {
+      ReadableStream* stream = V8ReadableStream::ToImpl(
+          v8::Local<v8::Object>::Cast(transferable_object));
+      if (transferables.readable_streams.Contains(stream)) {
+        exception_state.ThrowDOMException(
+            DOMExceptionCode::kDataCloneError,
+            "ReadableStream at index " + String::Number(i) +
+                " is a duplicate of an earlier ReadableStream.");
+        return false;
+      }
+      transferables.readable_streams.push_back(stream);
+    } else if (RuntimeEnabledFeatures::TransferableStreamsEnabled() &&
+               V8WritableStream::HasInstance(transferable_object, isolate)) {
+      WritableStream* stream = V8WritableStream::ToImpl(
+          v8::Local<v8::Object>::Cast(transferable_object));
+      if (transferables.writable_streams.Contains(stream)) {
+        exception_state.ThrowDOMException(
+            DOMExceptionCode::kDataCloneError,
+            "WritableStream at index " + String::Number(i) +
+                " is a duplicate of an earlier WritableStream.");
+        return false;
+      }
+      transferables.writable_streams.push_back(stream);
     } else {
       exception_state.ThrowTypeError("Value at index " + String::Number(i) +
                                      " does not have a transferable type.");

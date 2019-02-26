@@ -41,17 +41,16 @@ enum StreamCreationResult {
   STREAM_CREATION_RESULT_MAX = STREAM_CREATION_OPEN_FAILED,
 };
 
-void LogStreamCreationResult(bool for_device_change,
-                             StreamCreationResult result) {
-  if (for_device_change) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "Media.AudioOutputController.ProxyStreamCreationResultForDeviceChange",
-        result, STREAM_CREATION_RESULT_MAX + 1);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION(
-        "Media.AudioOutputController.ProxyStreamCreationResult", result,
-        STREAM_CREATION_RESULT_MAX + 1);
-  }
+void LogStreamCreationForDeviceChangeResult(StreamCreationResult result) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Media.AudioOutputController.ProxyStreamCreationResultForDeviceChange",
+      result, STREAM_CREATION_RESULT_MAX + 1);
+}
+
+void LogInitialStreamCreationResult(StreamCreationResult result) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Media.AudioOutputController.ProxyStreamCreationResult", result,
+      STREAM_CREATION_RESULT_MAX + 1);
 }
 
 void SanitizeAudioBus(media::AudioBus* bus) {
@@ -158,17 +157,38 @@ OutputController::~OutputController() {
                            base::TimeTicks::Now() - construction_time_);
 }
 
-bool OutputController::Create(bool is_for_device_change) {
+bool OutputController::CreateStream() {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  RecreateStreamWithTimingUMA(RecreateReason::INITIAL_STREAM);
+  return state_ == kCreated;
+}
+
+void OutputController::RecreateStreamWithTimingUMA(
+    OutputController::RecreateReason reason) {
   SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioOutputController.CreateTime");
-  TRACE_EVENT0("audio", "OutputController::Create");
-  handler_->OnLog(is_for_device_change
-                      ? "OutputController::Create (for device change)"
-                      : "OutputController::Create");
+  RecreateStream(reason);
+}
+
+void OutputController::RecreateStream(OutputController::RecreateReason reason) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  TRACE_EVENT1("audio", "OutputController::RecreateStream", "reason",
+               static_cast<int>(reason));
+
+  switch (reason) {
+    case RecreateReason::INITIAL_STREAM:
+      handler_->OnLog("OutputController::RecreateStream(initial stream)");
+      break;
+    case RecreateReason::DEVICE_CHANGE:
+      handler_->OnLog("OutputController::RecreateStream(device change)");
+      break;
+    case RecreateReason::LOCAL_OUTPUT_TOGGLE:
+      handler_->OnLog("OutputController::RecreateStream(local output toggle)");
+      break;
+  }
 
   // Close() can be called before Create() is executed.
   if (state_ == kClosed)
-    return false;
+    return;
 
   StopCloseAndClearStream();  // Calls RemoveOutputDeviceChangeListener().
   DCHECK_EQ(kEmpty, state_);
@@ -190,22 +210,53 @@ bool OutputController::Create(bool is_for_device_change) {
 
   if (!stream_) {
     state_ = kError;
-    LogStreamCreationResult(is_for_device_change,
-                            STREAM_CREATION_CREATE_FAILED);
+    // TODO(crbug.com/896484): Results should be counted iff the |stream_| is
+    // not a fake one. The |reason| for a non-fake stream to be created doesn't
+    // matter, right?
+    switch (reason) {
+      case RecreateReason::INITIAL_STREAM:
+        LogInitialStreamCreationResult(STREAM_CREATION_CREATE_FAILED);
+        break;
+      case RecreateReason::DEVICE_CHANGE:
+        LogStreamCreationForDeviceChangeResult(STREAM_CREATION_CREATE_FAILED);
+        break;
+      case RecreateReason::LOCAL_OUTPUT_TOGGLE:
+        break;  // Not counted in UMAs.
+    }
     handler_->OnControllerError();
-    return false;
+    return;
   }
 
   weak_this_for_stream_ = weak_factory_for_stream_.GetWeakPtr();
   if (!stream_->Open()) {
     StopCloseAndClearStream();
-    LogStreamCreationResult(is_for_device_change, STREAM_CREATION_OPEN_FAILED);
+    // TODO(crbug.com/896484): Here too.
+    switch (reason) {
+      case RecreateReason::INITIAL_STREAM:
+        LogInitialStreamCreationResult(STREAM_CREATION_OPEN_FAILED);
+        break;
+      case RecreateReason::DEVICE_CHANGE:
+        LogStreamCreationForDeviceChangeResult(STREAM_CREATION_OPEN_FAILED);
+        break;
+      case RecreateReason::LOCAL_OUTPUT_TOGGLE:
+        break;  // Not counted in UMAs.
+    }
     state_ = kError;
     handler_->OnControllerError();
-    return false;
+    return;
   }
 
-  LogStreamCreationResult(is_for_device_change, STREAM_CREATION_OK);
+  // TODO(crbug.com/896484): Here three.
+  switch (reason) {
+    case RecreateReason::INITIAL_STREAM:
+      LogInitialStreamCreationResult(STREAM_CREATION_OK);
+      break;
+    case RecreateReason::DEVICE_CHANGE:
+      LogStreamCreationForDeviceChangeResult(STREAM_CREATION_OK);
+      break;
+    case RecreateReason::LOCAL_OUTPUT_TOGGLE:
+      break;  // Not counted in UMAs.
+  }
 
   audio_manager_->AddOutputDeviceChangeListener(this);
 
@@ -227,8 +278,6 @@ bool OutputController::Create(bool is_for_device_change) {
             },
             this));
   }
-
-  return true;
 }
 
 void OutputController::Play() {
@@ -517,27 +566,30 @@ void OutputController::StopSnooping(Snooper* snooper, SnoopingMode mode) {
 void OutputController::StartMuting() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  if (disable_local_output_)
-    return;
-  disable_local_output_ = true;
-
-  // If there is an active |stream_| that plays out audio locally, invoke a
-  // device change to switch to a fake AudioOutputStream for muting.
-  if (state_ != kClosed && stream_)
-    OnDeviceChange();
+  if (!disable_local_output_)
+    ToggleLocalOutput();
 }
 
 void OutputController::StopMuting() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  if (!disable_local_output_)
-    return;
-  disable_local_output_ = false;
+  if (disable_local_output_)
+    ToggleLocalOutput();
+}
 
-  // If there is an active |stream_| and it is the fake stream for muting,
-  // invoke a device change to switch back to the normal AudioOutputStream.
-  if (state_ != kClosed && stream_)
-    OnDeviceChange();
+void OutputController::ToggleLocalOutput() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  disable_local_output_ = !disable_local_output_;
+
+  // If there is an active |stream_|, close it and re-create either: 1) a fake
+  // stream to prevent local audio output, or 2) a normal AudioOutputStream.
+  if (stream_) {
+    const bool restore_playback = (state_ == kPlaying);
+    RecreateStream(RecreateReason::LOCAL_OUTPUT_TOGGLE);
+    if (state_ == kCreated && restore_playback)
+      Play();
+  }
 }
 
 void OutputController::OnMemberJoinedGroup(StreamMonitor* monitor) {
@@ -551,8 +603,12 @@ void OutputController::OnMemberLeftGroup(StreamMonitor* monitor) {
 
 void OutputController::OnDeviceChange() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioOutputController.DeviceChangeTime");
   TRACE_EVENT0("audio", "OutputController::OnDeviceChange");
+
+  if (disable_local_output_)
+    return;  // No actions need to be taken while local output is disabled.
+
+  SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioOutputController.DeviceChangeTime");
 
   auto state_to_string = [](State state) {
     switch (state) {
@@ -580,25 +636,12 @@ void OutputController::OnDeviceChange() {
   // occurred.  Currently querying the hardware information here will lead to
   // crashes on OSX.  See http://crbug.com/158170.
 
-  // Recreate the stream (Create() will first shut down an existing stream).
-  // Exit if we ran into an error.
-  const State original_state = state_;
-  Create(true);
-  if (!stream_ || state_ == kError)
-    return;
-
-  // Get us back to the original state or an equivalent state.
-  switch (original_state) {
-    case kPlaying:
-      Play();
-      return;
-    case kCreated:
-    case kPaused:
-      // From the outside these two states are equivalent.
-      return;
-    default:
-      NOTREACHED() << "Invalid original state.";
-  }
+  const bool restore_playback = (state_ == kPlaying);
+  // TODO(crbug.com/896484): This will also add a UMA timing measurement to
+  // "Media.AudioOutputController.ChangeTime" which maybe is not desired?
+  RecreateStreamWithTimingUMA(RecreateReason::DEVICE_CHANGE);
+  if (state_ == kCreated && restore_playback)
+    Play();
 }
 
 std::pair<float, bool> OutputController::ReadCurrentPowerAndClip() {

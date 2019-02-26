@@ -8,9 +8,8 @@
 // DO NOT MODIFY!
 
 // clang-format off
-
-#ifndef V8TestLegacyCallbackInterface_h
-#define V8TestLegacyCallbackInterface_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_V8_TEST_LEGACY_CALLBACK_INTERFACE_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_V8_TEST_LEGACY_CALLBACK_INTERFACE_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/callback_interface_base.h"
@@ -25,7 +24,7 @@ class CORE_EXPORT V8TestLegacyCallbackInterface final : public CallbackInterface
  public:
   // Support of "legacy callback interface"
   static v8::Local<v8::FunctionTemplate> DomTemplate(v8::Isolate*, const DOMWrapperWorld&);
-  static const WrapperTypeInfo wrapperTypeInfo;
+  static const WrapperTypeInfo wrapper_type_info;
   // Constants
   static constexpr uint16_t CONST_VALUE_USHORT_42 = 42;
 
@@ -35,6 +34,11 @@ class CORE_EXPORT V8TestLegacyCallbackInterface final : public CallbackInterface
   // See also crbug.com/886588
   static V8TestLegacyCallbackInterface* CreateOrNull(v8::Local<v8::Object> callback_object);
 
+  explicit V8TestLegacyCallbackInterface(
+      v8::Local<v8::Object> callback_object,
+      v8::Local<v8::Context> callback_object_creation_context)
+      : CallbackInterfaceBase(callback_object, callback_object_creation_context,
+                              kSingleOperation) {}
   ~V8TestLegacyCallbackInterface() override = default;
 
   // NameClient overrides:
@@ -43,13 +47,6 @@ class CORE_EXPORT V8TestLegacyCallbackInterface final : public CallbackInterface
   // Performs "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
   v8::Maybe<uint16_t> acceptNode(ScriptWrappable* callback_this_value, Node* node) WARN_UNUSED_RESULT;
-
- private:
-  explicit V8TestLegacyCallbackInterface(
-      v8::Local<v8::Object> callback_object,
-      v8::Local<v8::Context> callback_object_creation_context)
-      : CallbackInterfaceBase(callback_object, callback_object_creation_context,
-                              kSingleOperation) {}
 };
 
 template <>
@@ -83,4 +80,4 @@ Persistent<V8TestLegacyCallbackInterface> WrapPersistent(V8TestLegacyCallbackInt
 
 }  // namespace blink
 
-#endif  // V8TestLegacyCallbackInterface_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_V8_TEST_LEGACY_CALLBACK_INTERFACE_H_

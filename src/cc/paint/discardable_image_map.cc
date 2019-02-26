@@ -349,7 +349,7 @@ class DiscardableImageGenerator {
                 const gfx::Rect& image_rect,
                 const SkMatrix& matrix,
                 SkFilterQuality filter_quality) {
-    if (!paint_image.IsLazyGenerated())
+    if (paint_image.IsTextureBacked())
       return;
 
     SkIRect src_irect;
@@ -452,7 +452,7 @@ DiscardableImageMap::TakeDecodingModeMap() {
 void DiscardableImageMap::GetDiscardableImagesInRect(
     const gfx::Rect& rect,
     std::vector<const DrawImage*>* images) const {
-  *images = images_rtree_.SearchRefs(rect);
+  images_rtree_.SearchRefs(rect, images);
 }
 
 const DiscardableImageMap::Rects& DiscardableImageMap::GetRectsForImage(

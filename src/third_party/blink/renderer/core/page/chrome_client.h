@@ -24,9 +24,11 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_CHROME_CLIENT_H_
 
 #include <memory>
+
 #include "base/gtest_prod_util.h"
 #include "base/optional.h"
 #include "cc/input/event_listener_properties.h"
+#include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
@@ -89,7 +91,6 @@ struct DateTimeChooserParameters;
 struct FrameLoadRequest;
 struct ViewportDescription;
 struct WebCursorInfo;
-struct WebPoint;
 struct WebScreenInfo;
 struct WebWindowFeatures;
 
@@ -140,7 +141,7 @@ class CORE_EXPORT ChromeClient
                              const WebDragData&,
                              WebDragOperationsMask,
                              const SkBitmap& drag_image,
-                             const WebPoint& drag_image_offset) = 0;
+                             const gfx::Point& drag_image_offset) = 0;
   virtual bool AcceptsLoadDrops() const = 0;
 
   // The LocalFrame pointer provides the ChromeClient with context about which
@@ -149,11 +150,12 @@ class CORE_EXPORT ChromeClient
   // created Page has its show method called.
   // The FrameLoadRequest parameter is only for ChromeClient to check if the
   // request could be fulfilled. The ChromeClient should not load the request.
-  virtual Page* CreateWindow(LocalFrame*,
-                             const FrameLoadRequest&,
-                             const WebWindowFeatures&,
-                             NavigationPolicy,
-                             SandboxFlags) = 0;
+  Page* CreateWindow(LocalFrame*,
+                     const FrameLoadRequest&,
+                     const WebWindowFeatures&,
+                     NavigationPolicy,
+                     SandboxFlags,
+                     const SessionStorageNamespaceId&);
   virtual void Show(NavigationPolicy) = 0;
 
   // All the parameters should be in viewport space. That is, if an event
@@ -217,6 +219,8 @@ class CORE_EXPORT ChromeClient
   virtual void DispatchViewportPropertiesDidChange(
       const ViewportDescription&) const {}
 
+  virtual bool DoubleTapToZoomEnabled() const { return false; }
+
   virtual void ContentsSizeChanged(LocalFrame*, const IntSize&) const = 0;
   virtual void PageScaleFactorChanged() const {}
   virtual float ClampPageScaleFactorToLimits(float scale) const {
@@ -253,10 +257,6 @@ class CORE_EXPORT ChromeClient
 
   virtual void OpenFileChooser(LocalFrame*, scoped_refptr<FileChooser>) = 0;
 
-  // Asychronous request to enumerate all files in a directory chosen by the
-  // user.
-  virtual void EnumerateChosenDirectory(FileChooser*) = 0;
-
   // Pass nullptr as the GraphicsLayer to detach the root layer.
   // This sets the graphics layer for the LocalFrame's WebWidget, if it has
   // one. Otherwise it sets it for the WebViewImpl.
@@ -274,7 +274,7 @@ class CORE_EXPORT ChromeClient
   virtual void DetachCompositorAnimationTimeline(CompositorAnimationTimeline*,
                                                  LocalFrame* local_root) {}
 
-  virtual void EnterFullscreen(LocalFrame&, const FullscreenOptions&) {}
+  virtual void EnterFullscreen(LocalFrame&, const FullscreenOptions*) {}
   virtual void ExitFullscreen(LocalFrame&) {}
   virtual void FullscreenElementChanged(Element* old_element,
                                         Element* new_element) {}
@@ -307,19 +307,19 @@ class CORE_EXPORT ChromeClient
 
   virtual String AcceptLanguages() = 0;
 
-  enum DialogType {
+  enum class UIElementType {
     kAlertDialog = 0,
     kConfirmDialog = 1,
     kPromptDialog = 2,
-    kHTMLDialog = 3,
-    kPrintDialog = 4
+    kPrintDialog = 3,
+    kPopup = 4
   };
-  virtual bool ShouldOpenModalDialogDuringPageDismissal(
+  virtual bool ShouldOpenUIElementDuringPageDismissal(
       LocalFrame&,
-      DialogType,
+      UIElementType,
       const String&,
       Document::PageDismissalType) const {
-    return true;
+    return false;
   }
 
   virtual bool IsSVGImageChromeClient() const { return false; }
@@ -384,11 +384,17 @@ class CORE_EXPORT ChromeClient
                                             const String& default_value,
                                             String& result) = 0;
   virtual void PrintDelegate(LocalFrame*) = 0;
+  virtual Page* CreateWindowDelegate(LocalFrame*,
+                                     const FrameLoadRequest&,
+                                     const WebWindowFeatures&,
+                                     NavigationPolicy,
+                                     SandboxFlags,
+                                     const SessionStorageNamespaceId&) = 0;
 
  private:
-  bool CanOpenModalIfDuringPageDismissal(Frame& main_frame,
-                                         DialogType,
-                                         const String& message);
+  bool CanOpenUIElementIfDuringPageDismissal(Frame& main_frame,
+                                             UIElementType,
+                                             const String& message);
   void SetToolTip(LocalFrame&, const HitTestLocation&, const HitTestResult&);
 
   WeakMember<Node> last_mouse_over_node_;

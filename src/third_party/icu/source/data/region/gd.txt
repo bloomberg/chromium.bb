@@ -31,6 +31,7 @@ gd{
         151{"An Roinn-Eòrpa an Ear"}
         154{"An Roinn-Eòrpa a Tuath"}
         155{"An Roinn-Eòrpa an Iar"}
+        202{"Afraga Deas air an t-Sathara"}
         419{"Aimeireaga Laidinneach"}
         AC{"Eilean na Deasgabhalach"}
         AD{"Andorra"}
@@ -305,5 +306,5 @@ gd{
         CZ{"Poblachd na Seice"}
         TL{"Tìomor an Ear"}
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.44.91"}
 }

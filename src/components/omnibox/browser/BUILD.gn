@@ -4,6 +4,7 @@
 
 import("//build/buildflag_header.gni")
 import("//build/config/jumbo.gni")
+import("//build/config/ui.gni")
 import("//device/vr/buildflags/buildflags.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("//components/vector_icons/vector_icons.gni")
@@ -27,6 +28,7 @@ aggregate_vector_icons("omnibox_vector_icons") {
     "answer_finance.icon",
     "answer_sunrise.icon",
     "answer_when_is.icon",
+    "blank.icon",
     "bookmark.icon",
     "clear.icon",
     "drive_docs.icon",
@@ -34,14 +36,33 @@ aggregate_vector_icons("omnibox_vector_icons") {
     "drive_logo.icon",
     "drive_sheets.icon",
     "drive_slides.icon",
-    "blank.icon",
     "calculator.icon",
     "extension_app.icon",
+    "find_in_page.icon",
+    "http.icon",
+    "https_invalid.icon",
+    "https_valid.icon",
+    "https_valid_in_chip.icon",
     "keyword_search.icon",
+    "offline_pin.icon",
+    "open_in_new.icon",
     "page.icon",
     "pedal.icon",
+    "product.icon",
+    "star_active.icon",
+    "star.icon",
     "switch.icon",
     "tab.icon",
+  ]
+}
+
+static_library("vector_icons") {
+  sources = get_target_outputs(":omnibox_vector_icons")
+  deps = [
+    ":omnibox_vector_icons",
+    "//components/vector_icons",
+    "//skia",
+    "//ui/gfx",
   ]
 }
 
@@ -62,6 +83,8 @@ jumbo_static_library("browser") {
     "autocomplete_match_type.h",
     "autocomplete_provider.cc",
     "autocomplete_provider.h",
+    "autocomplete_provider_client.cc",
+    "autocomplete_provider_client.h",
     "autocomplete_result.cc",
     "autocomplete_result.h",
     "autocomplete_scheme_classifier.h",
@@ -97,6 +120,11 @@ jumbo_static_library("browser") {
     "keyword_extensions_delegate.h",
     "keyword_provider.cc",
     "keyword_provider.h",
+    "location_bar_model.h",
+    "location_bar_model_delegate.cc",
+    "location_bar_model_delegate.h",
+    "location_bar_model_impl.cc",
+    "location_bar_model_impl.h",
     "match_compare.h",
     "omnibox_client.cc",
     "omnibox_client.h",
@@ -126,8 +154,6 @@ jumbo_static_library("browser") {
     "omnibox_popup_view.h",
     "omnibox_pref_names.cc",
     "omnibox_pref_names.h",
-    "omnibox_switches.cc",
-    "omnibox_switches.h",
     "omnibox_view.cc",
     "omnibox_view.h",
     "query_in_omnibox.cc",
@@ -165,14 +191,16 @@ jumbo_static_library("browser") {
   defines = [ "OMNIBOX_BROWSER_IMPLEMENTATION" ]
 
   public_deps = [
+    "//base",
     "//components/history/core/browser",
     "//components/omnibox/common",
+    "//components/security_state/core",
     "//third_party/metrics_proto",
+    "//url",
   ]
   deps = [
     ":buildflags",
     ":in_memory_url_index_cache_proto",
-    "//base",
     "//base:i18n",
     "//components/bookmarks/browser",
     "//components/data_use_measurement/core",
@@ -191,7 +219,6 @@ jumbo_static_library("browser") {
     "//components/sessions",
     "//components/strings",
     "//components/sync",
-    "//components/toolbar",
     "//components/url_formatter",
     "//components/variations",
     "//components/variations/net",
@@ -203,29 +230,44 @@ jumbo_static_library("browser") {
     "//third_party/protobuf:protobuf_lite",
     "//ui/base",
     "//ui/gfx",
-    "//url",
   ]
 
   if ((!is_android || enable_vr) && !is_ios) {
-    sources += get_target_outputs(":omnibox_vector_icons")
-    deps += [
-      ":omnibox_vector_icons",
-      "//components/vector_icons",
-    ]
+    deps += [ ":vector_icons" ]
+  }
+
+  if (is_android) {
+    deps += [ ":jni_headers" ]
   }
 }
 
 if (is_android) {
-  java_cpp_enum("autocomplete_match_javagen") {
+  android_library("browser_java") {
+    java_files = [
+      "android/java/src/org/chromium/components/omnibox/SuggestionAnswer.java",
+    ]
+
+    deps = [
+      "//base:base_java",
+      "//third_party/android_deps:android_support_compat_java",
+    ]
+
+    srcjar_deps = [ ":browser_java_enums_srcjar" ]
+  }
+
+  java_cpp_enum("browser_java_enums_srcjar") {
     sources = [
       "autocomplete_match.h",
+      "autocomplete_match_type.h",
+      "suggestion_answer.h",
     ]
   }
 
-  java_cpp_enum("autocomplete_match_type_javagen") {
+  generate_jni("jni_headers") {
     sources = [
-      "autocomplete_match_type.h",
+      "android/java/src/org/chromium/components/omnibox/SuggestionAnswer.java",
     ]
+    jni_package = "components/omnibox/browser"
   }
 }
 
@@ -250,6 +292,8 @@ jumbo_static_library("test_support") {
     "mock_autocomplete_provider_client.h",
     "shortcuts_provider_test_util.cc",
     "shortcuts_provider_test_util.h",
+    "test_location_bar_model.cc",
+    "test_location_bar_model.h",
     "test_omnibox_client.cc",
     "test_omnibox_client.h",
     "test_omnibox_edit_controller.cc",
@@ -262,24 +306,33 @@ jumbo_static_library("test_support") {
     "test_scheme_classifier.h",
   ]
 
-  deps = [
+  public_deps = [
     ":browser",
     "//base",
+  ]
+
+  deps = [
     "//base/test:test_support",
     "//components/bookmarks/browser",
     "//components/bookmarks/test",
     "//components/history/core/browser",
     "//components/history/core/test",
+    "//components/resources",
     "//components/search_engines",
     "//components/sessions",
-    "//components/toolbar:test_support",
     "//net",
     "//services/network:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/metrics_proto",
     "//ui/base",
+    "//ui/gfx",
   ]
+
+  if (toolkit_views) {
+    # Needed to get the TOOLKIT_VIEWS define.
+    deps += [ "//ui/views" ]
+  }
 }
 
 bundle_data("unit_tests_bundle_data") {
@@ -310,6 +363,7 @@ source_set("unit_tests") {
     "bookmark_provider_unittest.cc",
     "builtin_provider_unittest.cc",
     "clipboard_url_provider_unittest.cc",
+    "contextual_suggestions_service_unittest.cc",
     "document_provider_unittest.cc",
     "favicon_cache_unittest.cc",
     "history_provider_unittest.cc",
@@ -318,6 +372,7 @@ source_set("unit_tests") {
     "in_memory_url_index_types_unittest.cc",
     "in_memory_url_index_unittest.cc",
     "keyword_provider_unittest.cc",
+    "location_bar_model_impl_unittest.cc",
     "omnibox_controller_unittest.cc",
     "omnibox_edit_model_unittest.cc",
     "omnibox_field_trial_unittest.cc",
@@ -354,7 +409,6 @@ source_set("unit_tests") {
     "//components/search_engines",
     "//components/sessions",
     "//components/strings",
-    "//components/toolbar:test_support",
     "//components/url_formatter",
     "//components/variations",
     "//services/network:test_support",

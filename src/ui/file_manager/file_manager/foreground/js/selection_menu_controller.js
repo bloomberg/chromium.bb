@@ -29,24 +29,20 @@ function SelectionMenuController(selectionMenuButton, menu) {
 }
 
 /**
- * Class name to indicate if the menu was opened by the toolbar button or not.
- * @type {string}
- * @const
- */
-SelectionMenuController.TOOLBAR_MENU = 'toolbar-menu';
-
-/**
  * @private
  */
 SelectionMenuController.prototype.onShowMenu_ = function() {
-  this.menu_.classList.toggle(SelectionMenuController.TOOLBAR_MENU, true);
+  this.menu_.classList.toggle('toolbar-menu', true);
   this.toggleRipple_.activated = true;
+  // crbug.com 752035 focus still on button, get rid of the tooltip
+  document.querySelector('files-tooltip').hideTooltip();
 };
 
 /**
  * @private
  */
 SelectionMenuController.prototype.onHideMenu_ = function() {
-  this.menu_.classList.toggle(SelectionMenuController.TOOLBAR_MENU, false);
+  // Do not remove 'toolbar-menu' yet, it will be removed at the end of
+  // FilesMenuItem.setMenuAsAnimating_ to avoid flicker.  See crbug.com/862926.
   this.toggleRipple_.activated = false;
 };

@@ -48,4 +48,8 @@ dictionary RTCConfiguration {
     [EnforceRange] octet iceCandidatePoolSize = 0;
     // Nonstandard, added for Unified Plan migration
     [RuntimeEnabled=RTCUnifiedPlan] SdpSemantics sdpSemantics;
+    [OriginTrialEnabled=RtcAudioJitterBufferMaxPackets] long rtcAudioJitterBufferMaxPackets;
+    [OriginTrialEnabled=RtcAudioJitterBufferMaxPackets] boolean rtcAudioJitterBufferFastAccelerate;
+    [OriginTrialEnabled=RtcAudioJitterBufferMaxPackets] long rtcAudioJitterBufferMinDelayMs;
 };
+

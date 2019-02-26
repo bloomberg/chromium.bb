@@ -15,7 +15,6 @@
 #include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/path_service.h"
-#include "base/strings/pattern.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "content/public/browser/client_certificate_delegate.h"
@@ -161,30 +160,6 @@ BrowserMainParts* ShellContentBrowserClient::CreateBrowserMainParts(
   return shell_browser_main_parts_;
 }
 
-bool ShellContentBrowserClient::DoesSiteRequireDedicatedProcess(
-    BrowserContext* browser_context,
-    const GURL& effective_site_url) {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kIsolateSitesForTesting))
-    return false;
-  std::string pattern =
-      command_line->GetSwitchValueASCII(switches::kIsolateSitesForTesting);
-
-  url::Origin origin = url::Origin::Create(effective_site_url);
-
-  if (!origin.opaque()) {
-    // Schemes like blob or filesystem, which have an embedded origin, should
-    // already have been canonicalized to the origin site.
-    CHECK_EQ(origin.scheme(), effective_site_url.scheme())
-        << "a site url should have the same scheme as its origin.";
-  }
-
-  // Practically |origin.Serialize()| is the same as
-  // |effective_site_url.spec()|, except Origin serialization strips the
-  // trailing "/", which makes for cleaner wildcard patterns.
-  return base::MatchPattern(origin.Serialize(), pattern);
-}
-
 bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {
   if (!url.is_valid())
     return false;
@@ -222,13 +197,6 @@ void ShellContentBrowserClient::BindInterfaceRequestFromFrame(
 void ShellContentBrowserClient::RegisterInProcessServices(
     StaticServiceMap* services,
     content::ServiceManagerConnection* connection) {
-#if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-  {
-    service_manager::EmbeddedServiceInfo info;
-    info.factory = base::Bind(&media::CreateMediaServiceForTesting);
-    services->insert(std::make_pair(media::mojom::kMediaServiceName, info));
-  }
-#endif
 #if defined(OS_CHROMEOS)
   if (features::IsSingleProcessMash()) {
     service_manager::EmbeddedServiceInfo info;
@@ -254,6 +222,17 @@ void ShellContentBrowserClient::RegisterOutOfProcessServices(
   if (features::IsMultiProcessMash()) {
     (*services)[test_ws::mojom::kServiceName] =
         base::BindRepeating(&base::ASCIIToUTF16, "Test Window Service");
+  }
+#endif
+}
+
+void ShellContentBrowserClient::HandleServiceRequest(
+    const std::string& service_name,
+    service_manager::mojom::ServiceRequest request) {
+#if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
+  if (service_name == media::mojom::kMediaServiceName) {
+    service_manager::Service::RunAsyncUntilTermination(
+        media::CreateMediaServiceForTesting(std::move(request)));
   }
 #endif
 }
@@ -304,13 +283,6 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
         switches::kCrashDumpsDir,
         base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
             switches::kCrashDumpsDir));
-  }
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kIsolateSitesForTesting)) {
-    command_line->AppendSwitchASCII(
-        switches::kIsolateSitesForTesting,
-        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kIsolateSitesForTesting));
   }
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kRegisterFontFiles)) {
@@ -372,6 +344,15 @@ void ShellContentBrowserClient::GetQuotaSettings(
   std::move(callback).Run(storage::GetHardCodedSettings(100 * 1024 * 1024));
 }
 
+GeneratedCodeCacheSettings
+ShellContentBrowserClient::GetGeneratedCodeCacheSettings(
+    content::BrowserContext* context) {
+  // If we pass 0 for size, disk_cache will pick a default size using the
+  // heuristics based on available disk size. These are implemented in
+  // disk_cache::PreferredCacheSize in net/disk_cache/cache_util.cc.
+  return GeneratedCodeCacheSettings(true, 0, context->GetPath());
+}
+
 void ShellContentBrowserClient::SelectClientCertificate(
     WebContents* web_contents,
     net::SSLCertRequestInfo* cert_request_info,
@@ -396,13 +377,12 @@ ShellContentBrowserClient::GetDevToolsManagerDelegate() {
 }
 
 void ShellContentBrowserClient::OpenURL(
-    BrowserContext* browser_context,
+    SiteInstance* site_instance,
     const OpenURLParams& params,
     const base::Callback<void(WebContents*)>& callback) {
-  callback.Run(Shell::CreateNewWindow(browser_context,
-                                      params.url,
-                                      nullptr,
-                                      gfx::Size())->web_contents());
+  callback.Run(Shell::CreateNewWindow(site_instance->GetBrowserContext(),
+                                      params.url, nullptr, gfx::Size())
+                   ->web_contents());
 }
 
 scoped_refptr<LoginDelegate> ShellContentBrowserClient::CreateLoginDelegate(

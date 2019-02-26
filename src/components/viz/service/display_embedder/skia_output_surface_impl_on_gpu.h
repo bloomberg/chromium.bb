@@ -14,6 +14,7 @@
 #include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display/resource_metadata.h"
 #include "gpu/command_buffer/common/sync_token.h"
+#include "gpu/command_buffer/service/raster_decoder_context_state.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "gpu/ipc/service/image_transport_surface_delegate.h"
@@ -31,6 +32,7 @@ class GLSurface;
 
 namespace gpu {
 class SyncPointClientState;
+class SharedImageRepresentationSkia;
 
 #if BUILDFLAG(ENABLE_VULKAN)
 class VulkanSurface;
@@ -41,36 +43,6 @@ namespace viz {
 
 class GpuServiceImpl;
 
-// Metadata for YUV promise SkImage.
-class YUVResourceMetadata {
- public:
-  YUVResourceMetadata(std::vector<ResourceMetadata> metadatas,
-                      SkYUVColorSpace yuv_color_space);
-  YUVResourceMetadata(YUVResourceMetadata&& other);
-  ~YUVResourceMetadata();
-  YUVResourceMetadata& operator=(YUVResourceMetadata&& other);
-
-  const std::vector<ResourceMetadata>& metadatas() const { return metadatas_; }
-  SkYUVColorSpace yuv_color_space() const { return yuv_color_space_; }
-  const sk_sp<SkImage> image() const { return image_; }
-  void set_image(sk_sp<SkImage> image) { image_ = image; }
-  const gfx::Size size() const { return metadatas_[0].size; }
-
- private:
-  // Metadatas for YUV planes.
-  std::vector<ResourceMetadata> metadatas_;
-
-  SkYUVColorSpace yuv_color_space_;
-
-  // The image copied from YUV textures, it is for fullfilling the promise
-  // image.
-  // TODO(penghuang): Remove it when Skia supports drawing YUV textures
-  // directly.
-  sk_sp<SkImage> image_;
-
-  DISALLOW_COPY_AND_ASSIGN(YUVResourceMetadata);
-};
-
 // The SkiaOutputSurface implementation running on the GPU thread. This class
 // should be created, used and destroyed on the GPU thread.
 class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
@@ -80,11 +52,13 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
                                    const gfx::Size& pixel_size)>;
   using BufferPresentedCallback =
       base::RepeatingCallback<void(const gfx::PresentationFeedback& feedback)>;
+  using ContextLostCallback = base::RepeatingCallback<void()>;
   SkiaOutputSurfaceImplOnGpu(
       GpuServiceImpl* gpu_service,
       gpu::SurfaceHandle surface_handle,
       const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
-      const BufferPresentedCallback& buffer_presented_callback);
+      const BufferPresentedCallback& buffer_presented_callback,
+      const ContextLostCallback& context_lost_callback);
   ~SkiaOutputSurfaceImplOnGpu() override;
 
   gpu::CommandBufferId command_buffer_id() const { return command_buffer_id_; }
@@ -104,28 +78,30 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
                base::WaitableEvent* event);
   void FinishPaintCurrentFrame(
       std::unique_ptr<SkDeferredDisplayList> ddl,
-      std::vector<YUVResourceMetadata*> yuv_resource_metadatas,
+      std::unique_ptr<SkDeferredDisplayList> overdraw_ddl,
       uint64_t sync_fence_release);
   void SwapBuffers(OutputSurfaceFrame frame);
   void FinishPaintRenderPass(
       RenderPassId id,
       std::unique_ptr<SkDeferredDisplayList> ddl,
-      std::vector<YUVResourceMetadata*> yuv_resource_metadatas,
       uint64_t sync_fence_release);
   void RemoveRenderPassResource(std::vector<RenderPassId> ids);
   void CopyOutput(RenderPassId id,
                   const gfx::Rect& copy_rect,
                   std::unique_ptr<CopyOutputRequest> request);
 
-  // Fullfill callback for promise SkImage created from a resource.
-  void FullfillPromiseTexture(const ResourceMetadata& metadata,
-                              GrBackendTexture* backend_texture);
-  // Fullfill callback for promise SkImage created from YUV resources.
-  void FullfillPromiseTexture(const YUVResourceMetadata& metadata,
-                              GrBackendTexture* backend_texture);
-  // Fullfill callback for promise SkImage created from a render pass.
-  void FullfillPromiseTexture(const RenderPassId id,
-                              GrBackendTexture* backend_texture);
+  // Fulfill callback for promise SkImage created from a resource.
+  void FulfillPromiseTexture(
+      const ResourceMetadata& metadata,
+      std::unique_ptr<gpu::SharedImageRepresentationSkia>* shared_image_out,
+      GrBackendTexture* backend_texture);
+  // Fulfill callback for promise SkImage created from a render pass.
+  // |shared_image_out| is ignored for render passes, as these aren't based on
+  // SharedImage.
+  void FulfillPromiseTexture(
+      const RenderPassId id,
+      std::unique_ptr<gpu::SharedImageRepresentationSkia>* shared_image_out,
+      GrBackendTexture* backend_texture);
 
   sk_sp<GrContextThreadSafeProxy> GetGrContextThreadSafeProxy();
   const gl::GLVersionInfo* gl_version_info() const { return gl_version_info_; }
@@ -148,27 +124,35 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   void InitializeForVulkan();
 
   void BindOrCopyTextureIfNecessary(gpu::TextureBase* texture_base);
-  void PreprocessYUVResources(
-      std::vector<YUVResourceMetadata*> yuv_resource_metadatas);
 
   // Generage the next swap ID and push it to our pending swap ID queues.
   void OnSwapBuffers();
 
   void CreateSkSurfaceForVulkan();
 
+  // Make context current for GL, and return false if the context is lost.
+  // It will do nothing when Vulkan is used.
+  bool MakeCurrent();
+
+  GrContext* gr_context() { return context_state_->gr_context; }
+  gl::GLContext* gl_context() { return context_state_->context.get(); }
+
   const gpu::CommandBufferId command_buffer_id_;
   GpuServiceImpl* const gpu_service_;
   const gpu::SurfaceHandle surface_handle_;
   DidSwapBufferCompleteCallback did_swap_buffer_complete_callback_;
   BufferPresentedCallback buffer_presented_callback_;
+  ContextLostCallback context_lost_callback_;
+
   scoped_refptr<gpu::SyncPointClientState> sync_point_client_state_;
   gpu::GpuPreferences gpu_preferences_;
   scoped_refptr<gl::GLSurface> gl_surface_;
   sk_sp<SkSurface> sk_surface_;
-  GrContext* gr_context_ = nullptr;
-  scoped_refptr<gl::GLContext> gl_context_;
+  scoped_refptr<gpu::raster::RasterDecoderContextState> context_state_;
   const gl::GLVersionInfo* gl_version_info_ = nullptr;
   OutputSurface::Capabilities capabilities_;
+  std::unique_ptr<gpu::SharedImageRepresentationFactory>
+      shared_image_representation_factory_;
 
 #if BUILDFLAG(ENABLE_VULKAN)
   std::unique_ptr<gpu::VulkanSurface> vulkan_surface_;

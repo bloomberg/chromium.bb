@@ -7,8 +7,10 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/stl_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
+#include "build/build_config.h"
 #include "device/base/features.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
@@ -16,15 +18,22 @@
 #include "device/fido/ctap_get_assertion_request.h"
 #include "device/fido/device_response_converter.h"
 #include "device/fido/fake_fido_discovery.h"
+#include "device/fido/features.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
 #include "device/fido/fido_test_data.h"
 #include "device/fido/fido_transport_protocol.h"
 #include "device/fido/get_assertion_request_handler.h"
+#include "device/fido/hid/fake_hid_impl_for_testing.h"
 #include "device/fido/mock_fido_device.h"
 #include "device/fido/test_callback_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_WIN)
+#include "device/fido/win/authenticator.h"
+#include "device/fido/win/fake_webauthn_api.h"
+#endif  // defined(OS_WIN)
 
 namespace device {
 
@@ -35,7 +44,7 @@ constexpr uint8_t kBogusCredentialId[] = {0x01, 0x02, 0x03, 0x04};
 using TestGetAssertionRequestCallback = test::StatusAndValuesCallbackReceiver<
     FidoReturnCode,
     base::Optional<AuthenticatorGetAssertionResponse>,
-    FidoTransportProtocol>;
+    base::Optional<FidoTransportProtocol>>;
 
 }  // namespace
 
@@ -56,14 +65,14 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
 
   CtapGetAssertionRequest CreateTestRequestWithCableExtension() {
     CtapGetAssertionRequest request(test_data::kRelyingPartyId,
-                                    test_data::kClientDataHash);
+                                    test_data::kClientDataJson);
     request.SetCableExtension({});
     return request;
   }
 
   std::unique_ptr<GetAssertionRequestHandler> CreateGetAssertionHandlerU2f() {
     CtapGetAssertionRequest request(test_data::kRelyingPartyId,
-                                    test_data::kClientDataHash);
+                                    test_data::kClientDataJson);
     request.SetAllowList(
         {{CredentialType::kPublicKey,
           fido_parsing_utils::Materialize(test_data::kU2fSignKeyHandle)}});
@@ -72,7 +81,7 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
 
   std::unique_ptr<GetAssertionRequestHandler> CreateGetAssertionHandlerCtap() {
     CtapGetAssertionRequest request(test_data::kRelyingPartyId,
-                                    test_data::kClientDataHash);
+                                    test_data::kClientDataJson);
     request.SetAllowList({{CredentialType::kPublicKey,
                            fido_parsing_utils::Materialize(
                                test_data::kTestGetAssertionCredentialId)}});
@@ -183,7 +192,7 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
 TEST_F(FidoGetAssertionHandlerTest, TransportAvailabilityInfo) {
   auto request_handler =
       CreateGetAssertionHandlerWithRequest(CtapGetAssertionRequest(
-          test_data::kRelyingPartyId, test_data::kClientDataHash));
+          test_data::kRelyingPartyId, test_data::kClientDataJson));
 
   EXPECT_EQ(FidoRequestHandlerBase::RequestType::kGetAssertion,
             request_handler->transport_availability_info().request_type);
@@ -252,7 +261,7 @@ TEST_F(FidoGetAssertionHandlerTest, TestU2fSignWithoutCtapFlag) {
 
 TEST_F(FidoGetAssertionHandlerTest, TestIncompatibleUserVerificationSetting) {
   auto request = CtapGetAssertionRequest(test_data::kRelyingPartyId,
-                                         test_data::kClientDataHash);
+                                         test_data::kClientDataJson);
   request.SetUserVerification(UserVerificationRequirement::kRequired);
   auto request_handler =
       CreateGetAssertionHandlerWithRequest(std::move(request));
@@ -270,7 +279,7 @@ TEST_F(FidoGetAssertionHandlerTest, TestIncompatibleUserVerificationSetting) {
 TEST_F(FidoGetAssertionHandlerTest,
        TestU2fSignRequestWithUserVerificationRequired) {
   auto request = CtapGetAssertionRequest(test_data::kRelyingPartyId,
-                                         test_data::kClientDataHash);
+                                         test_data::kClientDataJson);
   request.SetAllowList(
       {{CredentialType::kPublicKey,
         fido_parsing_utils::Materialize(test_data::kU2fSignKeyHandle)}});
@@ -289,7 +298,7 @@ TEST_F(FidoGetAssertionHandlerTest,
 TEST_F(FidoGetAssertionHandlerTest, IncorrectRpIdHash) {
   auto request_handler =
       CreateGetAssertionHandlerWithRequest(CtapGetAssertionRequest(
-          test_data::kRelyingPartyId, test_data::kClientDataHash));
+          test_data::kRelyingPartyId, test_data::kClientDataJson));
   discovery()->WaitForCallToStartAndSimulateSuccess();
   auto device = MockFidoDevice::MakeCtapWithGetInfoExpectation();
   device->ExpectCtap2CommandAndRespondWith(
@@ -306,7 +315,7 @@ TEST_F(FidoGetAssertionHandlerTest, IncorrectRpIdHash) {
 // is not included in the allowed list.
 TEST_F(FidoGetAssertionHandlerTest, InvalidCredential) {
   CtapGetAssertionRequest request(test_data::kRelyingPartyId,
-                                  test_data::kClientDataHash);
+                                  test_data::kClientDataJson);
   request.SetAllowList(
       {{CredentialType::kPublicKey,
         fido_parsing_utils::Materialize(test_data::kKeyHandleAlpha)}});
@@ -358,7 +367,7 @@ TEST_F(FidoGetAssertionHandlerTest, IncorrectUserEntity) {
   // Use a GetAssertion request with an empty allow list.
   auto request_handler =
       CreateGetAssertionHandlerWithRequest(CtapGetAssertionRequest(
-          test_data::kRelyingPartyId, test_data::kClientDataHash));
+          test_data::kRelyingPartyId, test_data::kClientDataJson));
   discovery()->WaitForCallToStartAndSimulateSuccess();
   auto device = MockFidoDevice::MakeCtapWithGetInfoExpectation();
   device->ExpectCtap2CommandAndRespondWith(
@@ -434,7 +443,7 @@ TEST_F(FidoGetAssertionHandlerTest,
 TEST_F(FidoGetAssertionHandlerTest,
        CableDisabledIfAllowCredentialsListUndefinedButCableExtensionMissing) {
   CtapGetAssertionRequest request(test_data::kRelyingPartyId,
-                                  test_data::kClientDataHash);
+                                  test_data::kClientDataJson);
   ASSERT_FALSE(!!request.cable_extension());
   EXPECT_CALL(*mock_adapter_, IsPresent()).WillOnce(::testing::Return(true));
   auto request_handler =
@@ -449,7 +458,7 @@ TEST_F(FidoGetAssertionHandlerTest,
 TEST_F(FidoGetAssertionHandlerTest,
        CableDisabledIfExplicitlyAllowedButCableExtensionMissing) {
   CtapGetAssertionRequest request(test_data::kRelyingPartyId,
-                                  test_data::kClientDataHash);
+                                  test_data::kClientDataJson);
   ASSERT_FALSE(!!request.cable_extension());
   request.SetAllowList({
       {CredentialType::kPublicKey,
@@ -710,5 +719,64 @@ TEST_F(FidoGetAssertionHandlerTest,
   EXPECT_EQ(FidoReturnCode::kUserConsentDenied,
             get_assertion_callback().status());
 }
+
+#if defined(OS_WIN)
+class GetAssertionRequestHandlerWinTest : public ::testing::Test {
+ protected:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  ScopedFakeWinWebAuthnApi scoped_fake_win_webauthn_api_;
+};
+
+// Verify that the request handler instantiates a HID device backed
+// FidoDeviceAuthenticator or a WinNativeCrossPlatformAuthenticator, depending
+// on feature flag and API availability.
+TEST_F(GetAssertionRequestHandlerWinTest, TestWinUsbDiscovery) {
+  enum class DeviceType {
+    kHid,
+    kWinNative,
+  };
+  const struct TestCase {
+    bool enable_win_webauthn_api;
+    bool enable_feature_flag;
+    DeviceType expect_device_type;
+  } test_cases[] = {
+      {false, false, DeviceType::kHid},
+      {false, true, DeviceType::kHid},
+      {true, false, DeviceType::kHid},
+      {true, true, DeviceType::kWinNative},
+  };
+  size_t i = 0;
+  for (const auto& test : test_cases) {
+    SCOPED_TRACE(i++);
+    scoped_fake_win_webauthn_api_.set_available(test.enable_win_webauthn_api);
+    base::test::ScopedFeatureList scoped_feature_list;
+    // Feature is default off (even with API present).
+    if (test.enable_feature_flag)
+      scoped_feature_list.InitAndEnableFeature(kWebAuthUseNativeWinApi);
+
+    // Simulate a connected HID device.
+    ScopedFakeHidManager fake_hid_manager;
+    fake_hid_manager.AddFidoHidDevice("guid");
+
+    TestGetAssertionRequestCallback cb;
+    auto handler = std::make_unique<GetAssertionRequestHandler>(
+        fake_hid_manager.service_manager_connector(),
+        base::flat_set<FidoTransportProtocol>(
+            {FidoTransportProtocol::kUsbHumanInterfaceDevice}),
+        CtapGetAssertionRequest(test_data::kRelyingPartyId,
+                                test_data::kClientDataJson),
+
+        cb.callback());
+    scoped_task_environment_.RunUntilIdle();
+
+    EXPECT_EQ(1u, handler->AuthenticatorsForTesting().size());
+    // Crudely distinguish authenticator type by FidoAuthenticator::GetId.
+    EXPECT_EQ(test.expect_device_type == DeviceType::kHid
+                  ? "hid:guid"
+                  : WinWebAuthnApiAuthenticator::kAuthenticatorId,
+              handler->AuthenticatorsForTesting().begin()->second->GetId());
+  }
+}
+#endif  // defined(OS_WIN)
 
 }  // namespace device

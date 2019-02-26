@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//components/ui_devtools/devtools.gni")
 import("//components/viz/viz.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 
@@ -63,6 +64,10 @@ viz_component("host") {
 
   if (is_mac) {
     deps += [ "//ui/accelerated_widget_mac" ]
+  }
+
+  if (use_viz_devtools) {
+    defines += [ "USE_VIZ_DEVTOOLS" ]
   }
 }
 

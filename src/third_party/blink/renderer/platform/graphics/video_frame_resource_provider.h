@@ -25,9 +25,7 @@ namespace blink {
 
 // VideoFrameResourceProvider obtains required GPU resources for the video
 // frame.
-// VideoFrameResourceProvider methods are currently called on the media thread.
-// TODO(lethalantidote): Move the usage of this class off media thread
-// https://crbug.com/753605
+// This class is called from the thread to which |context_provider_| is bound.
 class PLATFORM_EXPORT VideoFrameResourceProvider {
  public:
   // |use_sync_primitives| controls whether we ScopedAllowBaseSyncPrimitives

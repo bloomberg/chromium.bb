@@ -26,7 +26,9 @@
 #include "base/unguessable_token.h"
 
 // On POSIX, the fd is shared using the mapping in GlobalDescriptors.
-#if defined(OS_POSIX) && !defined(OS_NACL)
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+#include "base/metrics/field_trial_memory_mac.h"
+#elif defined(OS_POSIX) && !defined(OS_NACL)
 #include "base/posix/global_descriptors.h"
 #endif
 
@@ -42,20 +44,6 @@ const char kPersistentStringSeparator = '/';  // Currently a slash.
 // Define a marker character to be used as a prefix to a trial name on the
 // command line which forces its activation.
 const char kActivationMarker = '*';
-
-// Use shared memory to communicate field trial (experiment) state. Set to false
-// for now while the implementation is fleshed out (e.g. data format, single
-// shared memory segment). See https://codereview.chromium.org/2365273004/ and
-// crbug.com/653874
-// The browser is the only process that has write access to the shared memory.
-// This is safe from race conditions because MakeIterable is a release operation
-// and GetNextOfType is an acquire operation, so memory writes before
-// MakeIterable happen before memory reads after GetNextOfType.
-#if defined(OS_FUCHSIA)  // TODO(752368): Not yet supported on Fuchsia.
-const bool kUseSharedMemoryForFieldTrials = false;
-#else
-const bool kUseSharedMemoryForFieldTrials = true;
-#endif
 
 // Constants for the field trial allocator.
 const char kAllocatorName[] = "FieldTrialAllocator";
@@ -240,10 +228,10 @@ SharedMemoryHandle GetSharedMemoryReadOnlyHandle(SharedMemory* shared_memory) {
   // writable mapping attempts, but the original one in |shm| survives
   // and is still usable in the current process.
   result.SetRegionReadOnly();
-#endif  // OS_ANDROID
+#endif  // defined(OS_ANDROID)
   return result;
 }
-#endif  // !OS_NACL
+#endif  // !defined(OS_NACL)
 
 }  // namespace
 
@@ -457,7 +445,7 @@ void FieldTrial::FinalizeGroupChoiceImpl(bool is_locked) {
   SetGroupChoice(default_group_name_, kDefaultGroupNumber);
 
   // Add the field trial to shared memory.
-  if (kUseSharedMemoryForFieldTrials && trial_registered_)
+  if (trial_registered_)
     FieldTrialList::OnGroupFinalized(is_locked, this);
 }
 
@@ -829,7 +817,8 @@ void FieldTrialList::CreateTrialsFromCommandLine(
     int fd_key) {
   global_->create_trials_from_command_line_called_ = true;
 
-#if defined(OS_WIN) || defined(OS_FUCHSIA)
+#if defined(OS_WIN) || defined(OS_FUCHSIA) || \
+    (defined(OS_MACOSX) && !defined(OS_IOS))
   if (cmd_line.HasSwitch(field_trial_handle_switch)) {
     std::string switch_value =
         cmd_line.GetSwitchValueASCII(field_trial_handle_switch);
@@ -869,8 +858,7 @@ void FieldTrialList::CreateFeaturesFromCommandLine(
     const char* disable_features_switch,
     FeatureList* feature_list) {
   // Fallback to command line if not using shared memory.
-  if (!kUseSharedMemoryForFieldTrials ||
-      !global_->field_trial_allocator_.get()) {
+  if (!global_->field_trial_allocator_.get()) {
     return feature_list->InitializeFromCommandLine(
         command_line.GetSwitchValueASCII(enable_features_switch),
         command_line.GetSwitchValueASCII(disable_features_switch));
@@ -886,18 +874,25 @@ void FieldTrialList::AppendFieldTrialHandleIfNeeded(
     HandlesToInheritVector* handles) {
   if (!global_)
     return;
-  if (kUseSharedMemoryForFieldTrials) {
-    InstantiateFieldTrialAllocatorIfNeeded();
-    if (global_->readonly_allocator_handle_.IsValid())
-      handles->push_back(global_->readonly_allocator_handle_.GetHandle());
-  }
+  InstantiateFieldTrialAllocatorIfNeeded();
+  if (global_->readonly_allocator_handle_.IsValid())
+    handles->push_back(global_->readonly_allocator_handle_.GetHandle());
 }
 #elif defined(OS_FUCHSIA)
 // TODO(fuchsia): Implement shared-memory configuration (crbug.com/752368).
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+// static
+FieldTrialMemoryServer* FieldTrialList::GetFieldTrialMemoryServer() {
+  if (global_) {
+    InstantiateFieldTrialAllocatorIfNeeded();
+    return global_->field_trial_server_.get();
+  }
+  return nullptr;
+}
 #elif defined(OS_POSIX) && !defined(OS_NACL)
 // static
 SharedMemoryHandle FieldTrialList::GetFieldTrialHandle() {
-  if (global_ && kUseSharedMemoryForFieldTrials) {
+  if (global_) {
     InstantiateFieldTrialAllocatorIfNeeded();
     // We check for an invalid handle where this gets called.
     return global_->readonly_allocator_handle_;
@@ -912,53 +907,37 @@ void FieldTrialList::CopyFieldTrialStateToFlags(
     const char* enable_features_switch,
     const char* disable_features_switch,
     CommandLine* cmd_line) {
-  // TODO(lawrencewu): Ideally, having the global would be guaranteed. However,
-  // content browser tests currently don't create a FieldTrialList because they
-  // don't run ChromeBrowserMainParts code where it's done for Chrome.
-  // Some tests depend on the enable and disable features flag switch, though,
-  // so we can still add those even though AllStatesToString() will be a no-op.
-  if (!global_) {
+#if !defined(OS_FUCHSIA)  // TODO(752368): Not yet supported on Fuchsia.
+  // Use shared memory to communicate field trial state to child processes.
+  // The browser is the only process that has write access to the shared memory.
+  InstantiateFieldTrialAllocatorIfNeeded();
+#endif  // !defined(OS_FUCHSIA)
+
+  // If the readonly handle did not get created, fall back to flags.
+  if (!global_ || !global_->readonly_allocator_handle_.IsValid()) {
     AddFeatureAndFieldTrialFlags(enable_features_switch,
                                  disable_features_switch, cmd_line);
     return;
   }
 
-  // Use shared memory to pass the state if the feature is enabled, otherwise
-  // fallback to passing it via the command line as a string.
-  if (kUseSharedMemoryForFieldTrials) {
-    InstantiateFieldTrialAllocatorIfNeeded();
-    // If the readonly handle didn't get duplicated properly, then fallback to
-    // original behavior.
-    if (!global_->readonly_allocator_handle_.IsValid()) {
-      AddFeatureAndFieldTrialFlags(enable_features_switch,
-                                   disable_features_switch, cmd_line);
-      return;
-    }
+  global_->field_trial_allocator_->UpdateTrackingHistograms();
+  std::string switch_value =
+      SerializeSharedMemoryHandleMetadata(global_->readonly_allocator_handle_);
+  cmd_line->AppendSwitchASCII(field_trial_handle_switch, switch_value);
 
-    global_->field_trial_allocator_->UpdateTrackingHistograms();
-    std::string switch_value = SerializeSharedMemoryHandleMetadata(
-        global_->readonly_allocator_handle_);
-    cmd_line->AppendSwitchASCII(field_trial_handle_switch, switch_value);
+  // Append --enable-features and --disable-features switches corresponding
+  // to the features enabled on the command-line, so that child and browser
+  // process command lines match and clearly show what has been specified
+  // explicitly by the user.
+  std::string enabled_features;
+  std::string disabled_features;
+  FeatureList::GetInstance()->GetCommandLineFeatureOverrides(
+      &enabled_features, &disabled_features);
 
-    // Append --enable-features and --disable-features switches corresponding
-    // to the features enabled on the command-line, so that child and browser
-    // process command lines match and clearly show what has been specified
-    // explicitly by the user.
-    std::string enabled_features;
-    std::string disabled_features;
-    FeatureList::GetInstance()->GetCommandLineFeatureOverrides(
-        &enabled_features, &disabled_features);
-
-    if (!enabled_features.empty())
-      cmd_line->AppendSwitchASCII(enable_features_switch, enabled_features);
-    if (!disabled_features.empty())
-      cmd_line->AppendSwitchASCII(disable_features_switch, disabled_features);
-
-    return;
-  }
-
-  AddFeatureAndFieldTrialFlags(enable_features_switch, disable_features_switch,
-                               cmd_line);
+  if (!enabled_features.empty())
+    cmd_line->AppendSwitchASCII(enable_features_switch, enabled_features);
+  if (!disabled_features.empty())
+    cmd_line->AppendSwitchASCII(disable_features_switch, disabled_features);
 }
 
 // static
@@ -1042,8 +1021,7 @@ void FieldTrialList::NotifyFieldTrialGroupSelection(FieldTrial* field_trial) {
     if (!field_trial->enable_field_trial_)
       return;
 
-    if (kUseSharedMemoryForFieldTrials)
-      ActivateFieldTrialEntryWhileLocked(field_trial);
+    ActivateFieldTrialEntryWhileLocked(field_trial);
   }
 
   // Recording for stability debugging has to be done inline as a task posted
@@ -1215,6 +1193,10 @@ std::string FieldTrialList::SerializeSharedMemoryHandleMetadata(
   ss << uintptr_handle << ",";
 #elif defined(OS_FUCHSIA)
   ss << shm.GetHandle() << ",";
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+  // The handle on Mac is looked up directly by the child, rather than being
+  // transferred to the child over the command line.
+  ss << "0,";
 #elif !defined(OS_POSIX)
 #error Unsupported OS
 #endif
@@ -1225,7 +1207,8 @@ std::string FieldTrialList::SerializeSharedMemoryHandleMetadata(
   return ss.str();
 }
 
-#if defined(OS_WIN) || defined(OS_FUCHSIA)
+#if defined(OS_WIN) || defined(OS_FUCHSIA) || \
+    (defined(OS_MACOSX) && !defined(OS_IOS))
 
 // static
 SharedMemoryHandle FieldTrialList::DeserializeSharedMemoryHandleMetadata(
@@ -1252,7 +1235,12 @@ SharedMemoryHandle FieldTrialList::DeserializeSharedMemoryHandleMetadata(
                     FALSE, DUPLICATE_SAME_ACCESS);
     CloseHandle(parent_handle);
   }
-#endif  // defined(OS_WIN)
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+  mac::ScopedMachSendRight scoped_handle =
+      FieldTrialMemoryClient::AcquireMemoryObject();
+  if (scoped_handle == MACH_PORT_NULL)
+    return SharedMemoryHandle();
+#endif
 
   base::UnguessableToken guid;
   if (!DeserializeGUIDFromStringPieces(tokens[1], tokens[2], &guid))
@@ -1261,6 +1249,11 @@ SharedMemoryHandle FieldTrialList::DeserializeSharedMemoryHandleMetadata(
   int size;
   if (!base::StringToInt(tokens[3], &size))
     return SharedMemoryHandle();
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  // Transfer ownership to SharedMemoryHandle.
+  mach_port_t handle = scoped_handle.release();
+#endif
 
   return SharedMemoryHandle(handle, static_cast<size_t>(size), guid);
 }
@@ -1291,7 +1284,8 @@ SharedMemoryHandle FieldTrialList::DeserializeSharedMemoryHandleMetadata(
 
 #endif
 
-#if defined(OS_WIN) || defined(OS_FUCHSIA)
+#if defined(OS_WIN) || defined(OS_FUCHSIA) || \
+    (defined(OS_MACOSX) && !defined(OS_IOS))
 // static
 bool FieldTrialList::CreateTrialsFromSwitchValue(
     const std::string& switch_value) {
@@ -1305,9 +1299,6 @@ bool FieldTrialList::CreateTrialsFromSwitchValue(
 bool FieldTrialList::CreateTrialsFromDescriptor(
     int fd_key,
     const std::string& switch_value) {
-  if (!kUseSharedMemoryForFieldTrials)
-    return false;
-
   if (fd_key == -1)
     return false;
 
@@ -1374,6 +1365,7 @@ bool FieldTrialList::CreateTrialsFromSharedMemory(
 void FieldTrialList::InstantiateFieldTrialAllocatorIfNeeded() {
   if (!global_)
     return;
+
   AutoLock auto_lock(global_->lock_);
   // Create the allocator if not already created and add all existing trials.
   if (global_->field_trial_allocator_ != nullptr)
@@ -1382,9 +1374,6 @@ void FieldTrialList::InstantiateFieldTrialAllocatorIfNeeded() {
   SharedMemoryCreateOptions options;
   options.size = kFieldTrialAllocationSize;
   options.share_read_only = true;
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  options.type = SharedMemoryHandle::POSIX;
-#endif
 
   std::unique_ptr<SharedMemory> shm(new SharedMemory());
   if (!shm->Create(options))
@@ -1410,6 +1399,13 @@ void FieldTrialList::InstantiateFieldTrialAllocatorIfNeeded() {
 #if !defined(OS_NACL)
   global_->readonly_allocator_handle_ = GetSharedMemoryReadOnlyHandle(
       global_->field_trial_allocator_->shared_memory());
+#endif
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  global_->field_trial_server_ = std::make_unique<FieldTrialMemoryServer>(
+      global_->readonly_allocator_handle_.GetMemoryObject());
+  bool ok = global_->field_trial_server_->Start();
+  DCHECK(ok);
 #endif
 }
 

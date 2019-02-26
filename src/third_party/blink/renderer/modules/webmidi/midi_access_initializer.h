@@ -49,14 +49,15 @@ class MODULES_EXPORT MIDIAccessInitializer : public ScriptPromiseResolver,
   };
 
   static ScriptPromise Start(ScriptState* script_state,
-                             const MIDIOptions& options) {
+                             const MIDIOptions* options) {
     MIDIAccessInitializer* resolver =
-        new MIDIAccessInitializer(script_state, options);
+        MakeGarbageCollected<MIDIAccessInitializer>(script_state, options);
     resolver->KeepAliveWhilePending();
     resolver->PauseIfNeeded();
     return resolver->Start();
   }
 
+  MIDIAccessInitializer(ScriptState*, const MIDIOptions*);
   ~MIDIAccessInitializer() override = default;
 
   // Eager finalization to allow dispose() operation access
@@ -84,9 +85,9 @@ class MODULES_EXPORT MIDIAccessInitializer : public ScriptPromiseResolver,
                           size_t length,
                           TimeTicks time_stamp) override {}
 
- private:
-  MIDIAccessInitializer(ScriptState*, const MIDIOptions&);
+  void Trace(Visitor*) override;
 
+ private:
   ExecutionContext* GetExecutionContext() const;
   ScriptPromise Start();
 
@@ -97,7 +98,7 @@ class MODULES_EXPORT MIDIAccessInitializer : public ScriptPromiseResolver,
 
   std::unique_ptr<MIDIAccessor> accessor_;
   Vector<PortDescriptor> port_descriptors_;
-  MIDIOptions options_;
+  Member<const MIDIOptions> options_;
 
   mojom::blink::PermissionServicePtr permission_service_;
 };

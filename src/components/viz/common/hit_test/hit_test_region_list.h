@@ -36,11 +36,40 @@ enum HitTestRegionFlags : uint32_t {
 
   // Client hasn't submitted its own hit-test data yet.
   kHitTestNotActive = 0x40,
+
+  // Hit-test debugging is enabled.
+  kHitTestDebug = 0x80,
+};
+
+// In viz hit testing surface layer, hit test regions are marked as kHitTestAsk
+// for various reasons. This is a class to track the reasons of why a
+// |HitTestRegion| cannot do synchronous targeting.
+enum AsyncHitTestReasons : uint32_t {
+  // The |HitTestRegion| does not have |kHitTestAsk| flag.
+  kNotAsyncHitTest = 0,
+  // The |HitTestRegion| is overlapped with its parent frame's elements.
+  kOverlappedRegion = 1 << 0,
+  // The |HitTestRegion| is clipped by irregular shape.
+  kIrregularClip = 1 << 1,
+  // The |HitTestRegion|'s surface has not been activated yet.
+  kRegionNotActive = 1 << 2,
+  // Synchronous event targeting aborts at the present of perspective transform.
+  kPerspectiveTransform = 1 << 3,
+  // The |HitTestRegion| is marked as |kHitTestAsk| because it comes from draw
+  // quad. This is a reason specifically for slow path |hit-test| with draw quad
+  // variant.
+  kUseDrawQuadData = 1 << 4,
+
+  // The maximum number of flags in this enum excluding itself.
+  kAsyncHitTestReasonCount = 5,
 };
 
 struct HitTestRegion {
   // HitTestRegionFlags to indicate the type of HitTestRegion.
   uint32_t flags = 0;
+
+  // AsyncHitTestReasons to indicate the reason of having |kHitTestAsk| flag.
+  uint32_t async_hit_test_reasons = AsyncHitTestReasons::kNotAsyncHitTest;
 
   // FrameSinkId of this region.
   FrameSinkId frame_sink_id;
@@ -65,6 +94,8 @@ struct VIZ_COMMON_EXPORT HitTestRegionList {
   // kHitTestMine routes un-matched events to this surface (opaque).
   // kHitTestIgnore keeps previous match in the parent (transparent).
   uint32_t flags = 0;
+
+  uint32_t async_hit_test_reasons = AsyncHitTestReasons::kNotAsyncHitTest;
 
   // The bounds of the surface.
   gfx::Rect bounds;

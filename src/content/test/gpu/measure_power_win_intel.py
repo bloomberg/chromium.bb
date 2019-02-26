@@ -39,10 +39,12 @@ CHROME_DEV_PATH = (
 CHROME_CANARY_PATH = r"Google\Chrome SxS\Application\chrome.exe"
 CHROMIUM_PATH = r"Chromium\Application\chrome.exe"
 
-SUPPORTED_BROWSERS = ['stable', 'beta', 'dev', 'canary', 'chromium']
+SUPPORTED_BROWSERS = ['stable', 'beta', 'dev', 'canary', 'chromium', 'edge']
 
 
 def LocateBrowser(options_browser):
+  if options_browser == 'edge':
+    return 'edge'
   browser = None
   if not options_browser or options_browser == 'stable':
     browser = CHROME_STABLE_PATH
@@ -70,19 +72,27 @@ def LocateBrowser(options_browser):
 
 
 def LaunchBrowser(browser, user_data_dir, url, extra_browser_args):
-  args = []
-  args.append(browser)
-  if url:
-    args.append(url)
-  if browser.endswith("chrome.exe"):
-    args.append('--user-data-dir=%s' % user_data_dir)
-    args.append('--no-first-run')
-    args.append('--no-default-browser-check')
-    args.append('--autoplay-policy=no-user-gesture-required')
-    if extra_browser_args:
-      args.extend(extra_browser_args.split(' '))
-  logging.debug(" ".join(args))
-  browser_proc = subprocess.Popen(args)
+  browser_proc = None
+  if browser == 'edge':
+    cmd = 'start microsoft-edge:'
+    if url:
+      cmd = cmd + '\"' + url + '\"'
+    logging.debug(cmd)
+    browser_proc = subprocess.Popen(cmd, shell=True)
+  else:
+    args = [browser]
+    if url:
+      args.append(url)
+    if browser.endswith("chrome.exe"):
+      args.append('--user-data-dir=%s' % user_data_dir)
+      args.append('--no-first-run')
+      args.append('--no-default-browser-check')
+      args.append('--autoplay-policy=no-user-gesture-required')
+      args.append('--start-maximized')
+      if len(extra_browser_args) > 0:
+        args.extend(extra_browser_args)
+    logging.debug(" ".join(args))
+    browser_proc = subprocess.Popen(args)
   return browser_proc
 
 
@@ -92,12 +102,15 @@ def MeasurePowerOnce(browser, logfile, duration, delay, resolution, url,
   user_data_dir = tempfile.mkdtemp()
   browser_proc = LaunchBrowser(browser, user_data_dir, url, extra_browser_args)
   ipg_utils.RunIPG(duration + delay, resolution, logfile)
-  browser_proc.kill()
-  for _ in range(100):
-    if browser_proc.poll() is not None:
-      break
-    logging.debug("Waiting for browser to exit")
-    time.sleep(0.05)
+  if browser == 'edge':
+    subprocess.call("taskkill /F /IM MicrosoftEdge.exe /T")
+  else:
+    browser_proc.kill()
+    for _ in range(100):
+      if browser_proc.poll() is not None:
+        break
+      logging.debug("Waiting for browser to exit")
+      time.sleep(0.05)
   try:
     shutil.rmtree(user_data_dir)
   except Exception as err:
@@ -141,6 +154,10 @@ def main(argv):
   parser.add_option("--extra-browser-args", dest="extra_browser_args",
                     help="specify extra command line switches for the browser "
                     "that are separated by spaces (quoted).")
+  parser.add_option("--extra-browser-args-filename",
+                    dest="extra_browser_args_filename", metavar="FILE",
+                    help="specify extra command line switches for the browser "
+                    "in a text file that are separated by whitespace.")
   # TODO(zmo): add an option --start-fullscreen
   (options, _) = parser.parse_args(args=argv)
   if options.verbose:
@@ -157,13 +174,25 @@ def main(argv):
 
   all_results = []
 
+  extra_brower_args = []
+  if options.extra_browser_args:
+    extra_browser_args = options.extra_browser_args.split()
+  if options.extra_browser_args_filename:
+    if not os.path.isfile(options.extra_browser_args_filename):
+      logging.error("Can't locate file at %s",
+                    options.extra_browser_args_filename)
+    else:
+      with open(options.extra_browser_args_filename, 'r') as file:
+        extra_browser_args.extend(file.read().split())
+        file.close()
+
   for run in range(1, options.repeat + 1):
     logfile = ipg_utils.GenerateIPGLogFilename(
         log_prefix, options.logdir, run, options.repeat, True)
     print "Iteration #%d out of %d" % (run, options.repeat)
     results = MeasurePowerOnce(browser, logfile, options.duration,
                                options.delay, options.resolution, options.url,
-                               options.extra_browser_args)
+                               extra_browser_args)
     print results
     all_results.append(results)
 

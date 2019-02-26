@@ -9,7 +9,6 @@
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "google_apis/gaia/gaia_constants.h"
 #include "ios/web_view/internal/signin/ios_web_view_signin_client.h"
 #include "ios/web_view/internal/signin/web_view_oauth2_token_service_factory.h"
 #include "ios/web_view/internal/signin/web_view_signin_client_factory.h"
@@ -50,7 +49,6 @@ WebViewGaiaCookieManagerServiceFactory::BuildServiceInstanceFor(
       WebViewBrowserState::FromBrowserState(context);
   return std::make_unique<GaiaCookieManagerService>(
       WebViewOAuth2TokenServiceFactory::GetForBrowserState(browser_state),
-      GaiaConstants::kChromeSource,
       WebViewSigninClientFactory::GetForBrowserState(browser_state));
 }
 

@@ -12,9 +12,9 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
-using namespace CSSPropertyParserHelpers;
+using namespace css_property_parser_helpers;
 
 const CSSValue* ShapeOutside::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -26,7 +26,7 @@ const CSSValue* ShapeOutside::ParseSingleValue(
   if (CSSValue* box_value = ConsumeShapeBox(range))
     list->Append(*box_value);
   if (CSSValue* shape_value =
-          CSSParsingUtils::ConsumeBasicShape(range, context)) {
+          css_parsing_utils::ConsumeBasicShape(range, context)) {
     list->Append(*shape_value);
     if (list->length() < 2) {
       if (CSSValue* box_value = ConsumeShapeBox(range))
@@ -47,5 +47,5 @@ const CSSValue* ShapeOutside::CSSValueFromComputedStyleInternal(
   return ComputedStyleUtils::ValueForShape(style, style.ShapeOutside());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

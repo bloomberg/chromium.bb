@@ -325,7 +325,7 @@ ScriptPromise USBDevice::selectAlternateInterface(ScriptState* script_state,
 
 ScriptPromise USBDevice::controlTransferIn(
     ScriptState* script_state,
-    const USBControlTransferParameters& setup,
+    const USBControlTransferParameters* setup,
     unsigned length) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
@@ -344,7 +344,7 @@ ScriptPromise USBDevice::controlTransferIn(
 
 ScriptPromise USBDevice::controlTransferOut(
     ScriptState* script_state,
-    const USBControlTransferParameters& setup) {
+    const USBControlTransferParameters* setup) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
   if (EnsureDeviceConfigured(resolver)) {
@@ -362,7 +362,7 @@ ScriptPromise USBDevice::controlTransferOut(
 
 ScriptPromise USBDevice::controlTransferOut(
     ScriptState* script_state,
-    const USBControlTransferParameters& setup,
+    const USBControlTransferParameters* setup,
     const ArrayBufferOrArrayBufferView& data) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
@@ -644,15 +644,15 @@ bool USBDevice::AnyInterfaceChangeInProgress() const {
 }
 
 UsbControlTransferParamsPtr USBDevice::ConvertControlTransferParameters(
-    const USBControlTransferParameters& parameters,
+    const USBControlTransferParameters* parameters,
     ScriptPromiseResolver* resolver) const {
   auto mojo_parameters = device::mojom::blink::UsbControlTransferParams::New();
 
-  if (parameters.requestType() == "standard") {
+  if (parameters->requestType() == "standard") {
     mojo_parameters->type = UsbControlTransferType::STANDARD;
-  } else if (parameters.requestType() == "class") {
+  } else if (parameters->requestType() == "class") {
     mojo_parameters->type = UsbControlTransferType::CLASS;
-  } else if (parameters.requestType() == "vendor") {
+  } else if (parameters->requestType() == "vendor") {
     mojo_parameters->type = UsbControlTransferType::VENDOR;
   } else {
     resolver->Reject(DOMException::Create(
@@ -661,20 +661,20 @@ UsbControlTransferParamsPtr USBDevice::ConvertControlTransferParameters(
     return nullptr;
   }
 
-  if (parameters.recipient() == "device") {
+  if (parameters->recipient() == "device") {
     mojo_parameters->recipient = UsbControlTransferRecipient::DEVICE;
-  } else if (parameters.recipient() == "interface") {
-    uint8_t interface_number = parameters.index() & 0xff;
+  } else if (parameters->recipient() == "interface") {
+    uint8_t interface_number = parameters->index() & 0xff;
     if (!EnsureInterfaceClaimed(interface_number, resolver))
       return nullptr;
     mojo_parameters->recipient = UsbControlTransferRecipient::INTERFACE;
-  } else if (parameters.recipient() == "endpoint") {
-    bool in_transfer = parameters.index() & 0x80;
-    uint8_t endpoint_number = parameters.index() & 0x0f;
+  } else if (parameters->recipient() == "endpoint") {
+    bool in_transfer = parameters->index() & 0x80;
+    uint8_t endpoint_number = parameters->index() & 0x0f;
     if (!EnsureEndpointAvailable(in_transfer, endpoint_number, resolver))
       return nullptr;
     mojo_parameters->recipient = UsbControlTransferRecipient::ENDPOINT;
-  } else if (parameters.recipient() == "other") {
+  } else if (parameters->recipient() == "other") {
     mojo_parameters->recipient = UsbControlTransferRecipient::OTHER;
   } else {
     resolver->Reject(DOMException::Create(
@@ -683,9 +683,9 @@ UsbControlTransferParamsPtr USBDevice::ConvertControlTransferParameters(
     return nullptr;
   }
 
-  mojo_parameters->request = parameters.request();
-  mojo_parameters->value = parameters.value();
-  mojo_parameters->index = parameters.index();
+  mojo_parameters->request = parameters->request();
+  mojo_parameters->value = parameters->value();
+  mojo_parameters->index = parameters->index();
   return mojo_parameters;
 }
 
@@ -926,7 +926,7 @@ void USBDevice::AsyncIsochronousTransferIn(
   DOMArrayBuffer* buffer = DOMArrayBuffer::Create(data.data(), data.size());
   HeapVector<Member<USBIsochronousInTransferPacket>> packets;
   packets.ReserveCapacity(mojo_packets.size());
-  size_t byte_offset = 0;
+  uint32_t byte_offset = 0;
   for (const auto& packet : mojo_packets) {
     DOMException* error = ConvertFatalTransferStatus(packet->status);
     if (error) {

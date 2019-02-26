@@ -59,13 +59,16 @@
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/gpu_preferences.h"
 #include "media/base/test_data_util.h"
+#include "media/base/video_frame.h"
 #include "media/gpu/buildflags.h"
 #include "media/gpu/fake_video_decode_accelerator.h"
 #include "media/gpu/format_utils.h"
 #include "media/gpu/gpu_video_decode_accelerator_factory.h"
 #include "media/gpu/test/rendering_helper.h"
+#include "media/gpu/test/texture_ref.h"
 #include "media/gpu/test/video_accelerator_unittest_helpers.h"
 #include "media/gpu/test/video_decode_accelerator_unittest_helpers.h"
+#include "media/gpu/test/video_frame_validator.h"
 #include "media/video/h264_parser.h"
 #include "mojo/core/embedder/embedder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -131,6 +134,10 @@ bool g_fake_decoder = 0;
 // Test buffer import into VDA, providing buffers allocated by us, instead of
 // requesting the VDA itself to allocate buffers.
 bool g_test_import = false;
+
+// VideoFrameValidator flags.
+// If this is set to non-zero, g_test_import becomes true.
+uint32_t g_frame_validator_flags = 0;
 
 // This is the location of the test files. If empty, they're in the current
 // working directory.
@@ -281,10 +288,12 @@ class GLRenderingVDAClient
 
   // Doesn't take ownership of |rendering_helper| or |note|, which must outlive
   // |*this|.
-  GLRenderingVDAClient(Config config,
-                       std::string encoded_data,
-                       RenderingHelper* rendering_helper,
-                       ClientStateNotification<ClientState>* note);
+  GLRenderingVDAClient(
+      Config config,
+      std::string encoded_data,
+      RenderingHelper* rendering_helper,
+      std::unique_ptr<media::test::VideoFrameValidator> video_frame_validator,
+      ClientStateNotification<ClientState>* note);
   ~GLRenderingVDAClient() override;
   void CreateAndStartDecoder();
 
@@ -304,6 +313,9 @@ class GLRenderingVDAClient
   void NotifyError(VideoDecodeAccelerator::Error error) override;
 
   void OutputFrameDeliveryTimes(base::File* output);
+
+  std::vector<media::test::VideoFrameValidator::MismatchedFrameInfo>
+  GetMismatchedFramesInfo();
 
   // Simple getters for inspecting the state of the Client.
   size_t num_done_bitstream_buffers() { return num_done_bitstream_buffers_; }
@@ -353,6 +365,7 @@ class GLRenderingVDAClient
   size_t num_queued_fragments_;
   size_t num_decoded_frames_;
   size_t num_done_bitstream_buffers_;
+  size_t frame_index_;
   base::TimeTicks initialize_done_ticks_;
   GLenum texture_target_;
   VideoPixelFormat pixel_format_;
@@ -370,13 +383,18 @@ class GLRenderingVDAClient
   TextureRefMap active_textures_;
 
   // A map of the textures that are still pending in the renderer.
+  // The texture might be sent multiple times to the renderer in the case of VP9
+  // show_existing_frame feature, so we track it by multimap.
   // We check this to ensure all frames are rendered before entering the
   // CS_RESET_State.
-  TextureRefMap pending_textures_;
+  std::multimap<int32_t, scoped_refptr<media::test::TextureRef>>
+      pending_textures_;
 
   int32_t next_picture_buffer_id_;
 
   const std::unique_ptr<media::test::EncodedDataHelper> encoded_data_helper_;
+  const std::unique_ptr<media::test::VideoFrameValidator>
+      video_frame_validator_;
 
   base::WeakPtr<GLRenderingVDAClient> weak_this_;
   base::WeakPtrFactory<GLRenderingVDAClient> weak_this_factory_;
@@ -395,6 +413,7 @@ GLRenderingVDAClient::GLRenderingVDAClient(
     Config config,
     std::string encoded_data,
     RenderingHelper* rendering_helper,
+    std::unique_ptr<media::test::VideoFrameValidator> video_frame_validator,
     ClientStateNotification<ClientState>* note)
     : config_(std::move(config)),
       rendering_helper_(rendering_helper),
@@ -408,12 +427,14 @@ GLRenderingVDAClient::GLRenderingVDAClient(
       num_queued_fragments_(0),
       num_decoded_frames_(0),
       num_done_bitstream_buffers_(0),
+      frame_index_(0),
       texture_target_(0),
       pixel_format_(PIXEL_FORMAT_UNKNOWN),
       next_picture_buffer_id_(1),
       encoded_data_helper_(std::make_unique<media::test::EncodedDataHelper>(
           std::move(encoded_data),
           config_.profile)),
+      video_frame_validator_(std::move(video_frame_validator)),
       weak_this_factory_(this) {
   DCHECK_NE(config.profile, VIDEO_CODEC_PROFILE_UNKNOWN);
   LOG_ASSERT(config_.num_in_flight_decodes > 0);
@@ -577,19 +598,27 @@ void GLRenderingVDAClient::PictureReady(const Picture& picture) {
       active_textures_.find(picture.picture_buffer_id());
   ASSERT_NE(active_textures_.end(), texture_it);
 
-  scoped_refptr<VideoFrameTexture> video_frame = new VideoFrameTexture(
+  scoped_refptr<VideoFrameTexture> video_frame_texture = new VideoFrameTexture(
       texture_target_, texture_it->second->texture_id(),
       base::Bind(&GLRenderingVDAClient::ReturnPicture, AsWeakPtr(),
                  picture.picture_buffer_id()));
-  ASSERT_TRUE(pending_textures_.insert(*texture_it).second);
+  pending_textures_.insert(*texture_it);
+  if (video_frame_validator_) {
+    auto video_frame = texture_it->second->CreateVideoFrame(visible_rect);
+    ASSERT_NE(video_frame.get(), nullptr);
+    video_frame_validator_->EvaluateVideoFrame(std::move(video_frame),
+                                               frame_index_);
+    frame_index_++;
+  }
   rendering_helper_->ConsumeVideoFrame(config_.window_id,
-                                       std::move(video_frame));
+                                       std::move(video_frame_texture));
 }
 
 void GLRenderingVDAClient::ReturnPicture(int32_t picture_buffer_id) {
-  // Remove TextureRef from pending_textures_ regardless whether decoder is
-  // deleted.
-  LOG_ASSERT(1U == pending_textures_.erase(picture_buffer_id));
+  auto it = pending_textures_.find(picture_buffer_id);
+  LOG_ASSERT(it != pending_textures_.end());
+  pending_textures_.erase(it);
+
   if (decoder_deleted())
     return;
 
@@ -681,6 +710,7 @@ void GLRenderingVDAClient::NotifyResetDone() {
   if (decoder_deleted())
     return;
 
+  frame_index_ = 0;
   switch (reset_point_) {
     case DONE_RESET_AFTER_FIRST_CONFIG_INFO:
     case MID_STREAM_RESET:
@@ -738,6 +768,14 @@ void GLRenderingVDAClient::OutputFrameDeliveryTimes(base::File* output) {
     t0 = frame_delivery_times_[i];
     output->WriteAtCurrentPos(s.data(), s.length());
   }
+}
+
+std::vector<media::test::VideoFrameValidator::MismatchedFrameInfo>
+GLRenderingVDAClient::GetMismatchedFramesInfo() {
+  if (!video_frame_validator_) {
+    return {};
+  }
+  return video_frame_validator_->GetMismatchedFramesInfo();
 }
 
 void GLRenderingVDAClient::SetState(ClientState new_state) {
@@ -1108,6 +1146,30 @@ static void AssertWaitForStateOrDeleted(
       << ", instead of " << expected_state;
 }
 
+std::unique_ptr<media::test::VideoFrameValidator>
+CreateAndInitializeVideoFrameValidator(
+    const base::FilePath::StringType& video_file) {
+  // Initialize prefix of yuv files.
+  base::FilePath prefix_output_yuv;
+  base::FilePath filepath(video_file);
+  if (g_frame_validator_flags & test::VideoFrameValidator::OUTPUTYUV) {
+    if (!g_thumbnail_output_dir.empty() &&
+        base::DirectoryExists(g_thumbnail_output_dir)) {
+      prefix_output_yuv = g_thumbnail_output_dir.Append(filepath.BaseName());
+    } else {
+      prefix_output_yuv = GetTestDataFile(filepath);
+    }
+  }
+#if BUILDFLAG(USE_VAAPI)
+  bool linear = false;
+#else
+  bool linear = true;
+#endif
+  return media::test::VideoFrameValidator::Create(
+      g_frame_validator_flags, prefix_output_yuv,
+      filepath.AddExtension(FILE_PATH_LITERAL(".frames.md5")), linear);
+}
+
 // Fails on Win only. crbug.com/849368
 #if defined(OS_WIN)
 #define MAYBE_TestSimpleDecode DISABLED_TestSimpleDecode
@@ -1144,6 +1206,16 @@ TEST_P(VideoDecodeAcceleratorParamTest, MAYBE_TestSimpleDecode) {
   notes_.resize(num_concurrent_decoders);
   clients_.resize(num_concurrent_decoders);
 
+  bool use_video_frame_validator = g_frame_validator_flags != 0;
+  if (use_video_frame_validator) {
+    LOG(INFO) << "Using Frame Validator..";
+#if !defined(OS_CHROMEOS)
+    LOG(FATAL) << "FrameValidator (g_frame_validator) cannot be used on "
+               << "non-Chrome OS platform.";
+    return;
+#endif  // !defined(OS_CHROMEOS)
+  }
+
   // First kick off all the decoders.
   for (size_t index = 0; index < num_concurrent_decoders; ++index) {
     TestVideoFile* video_file =
@@ -1171,9 +1243,15 @@ TEST_P(VideoDecodeAcceleratorParamTest, MAYBE_TestSimpleDecode) {
     config.delay_reuse_after_frame_num = delay_reuse_after_frame_num;
     config.num_frames = video_file->num_frames;
 
+    std::unique_ptr<media::test::VideoFrameValidator> video_frame_validator;
+    if (use_video_frame_validator) {
+      video_frame_validator =
+          CreateAndInitializeVideoFrameValidator(video_file->file_name);
+      ASSERT_NE(video_frame_validator.get(), nullptr);
+    }
     clients_[index] = std::make_unique<GLRenderingVDAClient>(
         std::move(config), video_file->data_str, &rendering_helper_,
-        notes_[index].get());
+        std::move(video_frame_validator), notes_[index].get());
   }
 
   RenderingHelperParams helper_params;
@@ -1326,6 +1404,17 @@ TEST_P(VideoDecodeAcceleratorParamTest, MAYBE_TestSimpleDecode) {
         << "Unknown thumbnails MD5: " << md5_string;
   }
 
+  for (size_t i = 0; i < num_concurrent_decoders; ++i) {
+    auto mismatched_frames = clients_[i]->GetMismatchedFramesInfo();
+    for (const auto& info : mismatched_frames) {
+      LOG(ERROR) << "Frame " << std::setw(4) << info.frame_index << " "
+                 << info.computed_md5 << " (expected: " << info.expected_md5
+                 << " )";
+    }
+    EXPECT_TRUE(mismatched_frames.empty())
+        << "# of MD5 mismatched frames (Decoder #" << i
+        << " ): " << mismatched_frames.size();
+  }
   // Output the frame delivery time to file
   // We can only make performance/correctness assertions if the decoder was
   // allowed to finish.
@@ -1520,7 +1609,7 @@ TEST_F(VideoDecodeAcceleratorTest, TestDecodeTimeMedian) {
   config.num_frames = video_file->num_frames;
 
   clients_.push_back(std::make_unique<GLRenderingVDAClient>(
-      std::move(config), video_file->data_str, &rendering_helper_,
+      std::move(config), video_file->data_str, &rendering_helper_, nullptr,
       notes_[0].get()));
   RenderingHelperParams helper_params;
   helper_params.num_windows = 1;
@@ -1537,7 +1626,7 @@ TEST_F(VideoDecodeAcceleratorTest, TestDecodeTimeMedian) {
 
   if (g_output_log != NULL)
     OutputLogFile(g_output_log, output_string);
-};
+}
 
 // This test passes as long as there is no crash. If VDA notifies an error, it
 // is not considered as a failure because the input may be unsupported or
@@ -1554,14 +1643,48 @@ TEST_F(VideoDecodeAcceleratorTest, NoCrash) {
   config.num_frames = video_file->num_frames;
 
   clients_.push_back(std::make_unique<GLRenderingVDAClient>(
-      std::move(config), video_file->data_str, &rendering_helper_,
+      std::move(config), video_file->data_str, &rendering_helper_, nullptr,
       notes_[0].get()));
   RenderingHelperParams helper_params;
   helper_params.num_windows = 1;
   InitializeRenderingHelper(helper_params);
   CreateAndStartDecoder(clients_[0].get(), notes_[0].get());
   WaitUntilDecodeFinish(notes_[0].get());
-};
+}
+
+#if defined(OS_CHROMEOS)
+// This is the case only for generating md5 values of video frames on stream.
+// This is disabled by default. To run this, you should run this test with
+// --gtest_filter=VideoDecodeAcceleratorTest.DISABLED_GenMD5 and
+// --gtest_also_run_disabled_tests
+TEST_F(VideoDecodeAcceleratorTest, DISABLED_GenMD5) {
+  g_frame_validator_flags = test::VideoFrameValidator::GENMD5;
+  g_test_import = true;
+
+  ASSERT_EQ(test_video_files_.size(), 1u);
+  notes_.push_back(std::make_unique<ClientStateNotification<ClientState>>());
+  const TestVideoFile* video_file = test_video_files_[0].get();
+  GLRenderingVDAClient::Config config;
+  config.frame_size = gfx::Size(video_file->width, video_file->height);
+  config.profile = video_file->profile;
+  config.fake_decoder = g_fake_decoder;
+  config.num_frames = video_file->num_frames;
+  auto video_frame_validator =
+      CreateAndInitializeVideoFrameValidator(video_file->file_name);
+  clients_.push_back(std::make_unique<GLRenderingVDAClient>(
+      std::move(config), video_file->data_str, &rendering_helper_,
+      std::move(video_frame_validator), notes_[0].get()));
+  RenderingHelperParams helper_params;
+  helper_params.num_windows = 1;
+  InitializeRenderingHelper(helper_params);
+  CreateAndStartDecoder(clients_[0].get(), notes_[0].get());
+  ClientState last_state = WaitUntilDecodeFinish(notes_[0].get());
+  EXPECT_NE(CS_ERROR, last_state);
+
+  g_test_import = false;
+  g_frame_validator_flags = 0;
+}
+#endif
 
 // TODO(fischman, vrk): add more tests!  In particular:
 // - Test life-cycle: Seek/Stop/Pause/Play for a single decoder.
@@ -1660,6 +1783,26 @@ int main(int argc, char** argv) {
       continue;
     if (it->first == "test_import") {
       media::g_test_import = true;
+      continue;
+    }
+    if (it->first == "frame_validator") {
+#if defined(OS_CHROMEOS)
+      auto flags = base::SplitString(it->second, ",", base::TRIM_WHITESPACE,
+                                     base::SPLIT_WANT_NONEMPTY);
+      for (auto& f : flags) {
+        if (f == "check") {
+          media::g_frame_validator_flags |=
+              media::test::VideoFrameValidator::CHECK;
+        } else if (f == "dump") {
+          media::g_frame_validator_flags |=
+              media::test::VideoFrameValidator::OUTPUTYUV;
+        } else {
+          LOG(FATAL) << "Unknown flag: " << f;
+        }
+      }
+
+      media::g_test_import = true;
+#endif
       continue;
     }
     if (it->first == "use-test-data-path") {

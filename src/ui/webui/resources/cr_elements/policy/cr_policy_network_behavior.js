@@ -7,7 +7,7 @@
  */
 
 /** @polymerBehavior */
-var CrPolicyNetworkBehavior = {
+const CrPolicyNetworkBehavior = {
   /**
    * @param {!CrOnc.ManagedProperty|undefined} property
    * @return {boolean} True if the network property is controlled by a policy
@@ -19,7 +19,7 @@ var CrPolicyNetworkBehavior = {
     if (typeof property != 'object' || !property.Effective)
       return false;
     // Enforced
-    var effective = property.Effective;
+    const effective = property.Effective;
     if (effective == 'UserPolicy' || effective == 'DevicePolicy')
       return true;
     // Recommended

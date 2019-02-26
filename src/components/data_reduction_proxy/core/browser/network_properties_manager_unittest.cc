@@ -5,13 +5,14 @@
 #include "components/data_reduction_proxy/core/browser/network_properties_manager.h"
 
 #include <map>
+#include "base/run_loop.h"
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
@@ -54,7 +55,8 @@ TEST(NetworkPropertyTest, TestSetterGetterCaptivePortal) {
   base::HistogramTester histogram_tester;
   TestingPrefServiceSimple test_prefs;
   test_prefs.registry()->RegisterDictionaryPref(prefs::kNetworkProperties);
-  base::MessageLoopForIO loop;
+  base::test::ScopedTaskEnvironment task_environment(
+      base::test::ScopedTaskEnvironment::MainThreadType::IO);
   TestNetworkPropertiesManager network_properties_manager(
       &test_prefs, base::ThreadTaskRunnerHandle::Get());
 
@@ -119,7 +121,8 @@ TEST(NetworkPropertyTest, TestSetterGetterCaptivePortal) {
 TEST(NetworkPropertyTest, TestSetterGetterDisallowedByCarrier) {
   TestingPrefServiceSimple test_prefs;
   test_prefs.registry()->RegisterDictionaryPref(prefs::kNetworkProperties);
-  base::MessageLoopForIO loop;
+  base::test::ScopedTaskEnvironment task_environment(
+      base::test::ScopedTaskEnvironment::MainThreadType::IO);
   TestNetworkPropertiesManager network_properties_manager(
       &test_prefs, base::ThreadTaskRunnerHandle::Get());
 
@@ -150,7 +153,8 @@ TEST(NetworkPropertyTest, TestSetterGetterDisallowedByCarrier) {
 TEST(NetworkPropertyTest, TestWarmupURLFailedOnSecureCoreProxy) {
   TestingPrefServiceSimple test_prefs;
   test_prefs.registry()->RegisterDictionaryPref(prefs::kNetworkProperties);
-  base::MessageLoopForIO loop;
+  base::test::ScopedTaskEnvironment task_environment(
+      base::test::ScopedTaskEnvironment::MainThreadType::IO);
   TestNetworkPropertiesManager network_properties_manager(
       &test_prefs, base::ThreadTaskRunnerHandle::Get());
 
@@ -189,7 +193,8 @@ TEST(NetworkPropertyTest, TestWarmupURLFailedOnSecureCoreProxy) {
 TEST(NetworkPropertyTest, TestWarmupURLFailedOnInSecureCoreProxy) {
   TestingPrefServiceSimple test_prefs;
   test_prefs.registry()->RegisterDictionaryPref(prefs::kNetworkProperties);
-  base::MessageLoopForIO loop;
+  base::test::ScopedTaskEnvironment task_environment(
+      base::test::ScopedTaskEnvironment::MainThreadType::IO);
   TestNetworkPropertiesManager network_properties_manager(
       &test_prefs, base::ThreadTaskRunnerHandle::Get());
 
@@ -230,7 +235,8 @@ TEST(NetworkPropertyTest, TestWarmupURLFailedOnInSecureCoreProxy) {
 TEST(NetworkPropertyTest, TestLimitPrefSize) {
   TestingPrefServiceSimple test_prefs;
   test_prefs.registry()->RegisterDictionaryPref(prefs::kNetworkProperties);
-  base::MessageLoopForIO loop;
+  base::test::ScopedTaskEnvironment task_environment(
+      base::test::ScopedTaskEnvironment::MainThreadType::IO);
   TestNetworkPropertiesManager network_properties_manager(
       &test_prefs, base::ThreadTaskRunnerHandle::Get());
 
@@ -291,7 +297,8 @@ TEST(NetworkPropertyTest, TestLimitPrefSize) {
 TEST(NetworkPropertyTest, TestChangeNetworkIDBackAndForth) {
   TestingPrefServiceSimple test_prefs;
   test_prefs.registry()->RegisterDictionaryPref(prefs::kNetworkProperties);
-  base::MessageLoopForIO loop;
+  base::test::ScopedTaskEnvironment task_environment(
+      base::test::ScopedTaskEnvironment::MainThreadType::IO);
   TestNetworkPropertiesManager network_properties_manager(
       &test_prefs, base::ThreadTaskRunnerHandle::Get());
 
@@ -340,7 +347,8 @@ TEST(NetworkPropertyTest, TestChangeNetworkIDBackAndForth) {
 TEST(NetworkPropertyTest, TestNetworkQualitiesOverwrite) {
   TestingPrefServiceSimple test_prefs;
   test_prefs.registry()->RegisterDictionaryPref(prefs::kNetworkProperties);
-  base::MessageLoopForIO loop;
+  base::test::ScopedTaskEnvironment task_environment(
+      base::test::ScopedTaskEnvironment::MainThreadType::IO);
   TestNetworkPropertiesManager network_properties_manager(
       &test_prefs, base::ThreadTaskRunnerHandle::Get());
 
@@ -391,7 +399,8 @@ TEST(NetworkPropertyTest, TestDeleteHistory) {
   base::HistogramTester histogram_tester;
   TestingPrefServiceSimple test_prefs;
   test_prefs.registry()->RegisterDictionaryPref(prefs::kNetworkProperties);
-  base::MessageLoopForIO loop;
+  base::test::ScopedTaskEnvironment task_environment(
+      base::test::ScopedTaskEnvironment::MainThreadType::IO);
   TestNetworkPropertiesManager network_properties_manager(
       &test_prefs, base::ThreadTaskRunnerHandle::Get());
 
@@ -451,7 +460,8 @@ TEST(NetworkPropertyTest, TestDeleteOldValues) {
 
   TestingPrefServiceSimple test_prefs;
   test_prefs.registry()->RegisterDictionaryPref(prefs::kNetworkProperties);
-  base::MessageLoopForIO loop;
+  base::test::ScopedTaskEnvironment task_environment(
+      base::test::ScopedTaskEnvironment::MainThreadType::IO);
   TestNetworkPropertiesManager network_properties_manager(
       &test_clock, &test_prefs, base::ThreadTaskRunnerHandle::Get());
 
@@ -516,7 +526,8 @@ TEST(NetworkPropertyTest,
 
     TestingPrefServiceSimple test_prefs;
     test_prefs.registry()->RegisterDictionaryPref(prefs::kNetworkProperties);
-    base::MessageLoopForIO loop;
+    base::test::ScopedTaskEnvironment task_environment(
+        base::test::ScopedTaskEnvironment::MainThreadType::IO);
     TestNetworkPropertiesManager network_properties_manager(
         &test_prefs, base::ThreadTaskRunnerHandle::Get());
 

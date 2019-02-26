@@ -54,7 +54,6 @@ class CONTENT_EXPORT ChildProcess {
   // Takes ownership of the pointer.
   void set_main_thread(ChildThreadImpl* thread);
 
-  base::MessageLoop* io_message_loop() { return io_thread_.message_loop(); }
   base::SingleThreadTaskRunner* io_task_runner() {
     return io_thread_.task_runner().get();
   }

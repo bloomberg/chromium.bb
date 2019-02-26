@@ -23,6 +23,7 @@
 #include "ash/shell_state.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -54,33 +55,32 @@ bool IsAssistantEnabled() {
          chromeos::switches::IsAssistantEnabled();
 }
 
+bool IsTabletMode() {
+  return Shell::Get()
+      ->tablet_mode_controller()
+      ->IsTabletModeWindowManagerEnabled();
+}
+
 }  // namespace
 
 AppListButton::AppListButton(InkDropButtonListener* listener,
                              ShelfView* shelf_view,
                              Shelf* shelf)
-    : views::ImageButton(nullptr),
+    : ShelfControlButton(),
       listener_(listener),
       shelf_view_(shelf_view),
-      shelf_(shelf),
-      voice_interaction_binding_(this) {
+      shelf_(shelf) {
   DCHECK(listener_);
   DCHECK(shelf_view_);
   DCHECK(shelf_);
   Shell::Get()->AddShellObserver(this);
   Shell::Get()->session_controller()->AddObserver(this);
 
-  mojom::VoiceInteractionObserverPtr ptr;
-  voice_interaction_binding_.Bind(mojo::MakeRequest(&ptr));
-  Shell::Get()->voice_interaction_controller()->AddObserver(std::move(ptr));
-  SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
-  set_ink_drop_base_color(kShelfInkDropBaseColor);
-  set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);
+  Shell::Get()->voice_interaction_controller()->AddLocalObserver(this);
   SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE));
-  SetSize(gfx::Size(kShelfControlSize, kShelfControlSize));
-  SetFocusPainter(TrayPopupUtils::CreateFocusPainter());
   set_notify_action(Button::NOTIFY_ON_PRESS);
+  set_has_ink_drop_action_on_click(false);
 
   // Initialize voice interaction overlay and sync the flags if active user
   // session has already started. This could happen when an external monitor
@@ -94,12 +94,13 @@ AppListButton::AppListButton(InkDropButtonListener* listener,
 AppListButton::~AppListButton() {
   Shell::Get()->RemoveShellObserver(this);
   Shell::Get()->session_controller()->RemoveObserver(this);
+  Shell::Get()->voice_interaction_controller()->RemoveLocalObserver(this);
 }
 
 void AppListButton::OnAppListShown() {
   // Do not show a highlight in tablet mode since the "homecher" view is always
   // open in the background.
-  if (shelf_view_->ShouldShowAppListButtonHighlight())
+  if (!IsTabletMode())
     AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
   is_showing_app_list_ = true;
   shelf_->UpdateAutoHideState();
@@ -114,19 +115,25 @@ void AppListButton::OnAppListDismissed() {
 void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
   // Handle gesture events that are on the app list circle.
   switch (event->type()) {
-    case ui::ET_GESTURE_SCROLL_BEGIN:
-      AnimateInkDrop(views::InkDropState::HIDDEN, event);
-      ImageButton::OnGestureEvent(event);
-      return;
     case ui::ET_GESTURE_TAP:
     case ui::ET_GESTURE_TAP_CANCEL:
       if (UseVoiceInteractionStyle()) {
         assistant_overlay_->EndAnimation();
         assistant_animation_delay_timer_->Stop();
       }
+      if (!Shell::Get()->app_list_controller()->IsVisible() || IsTabletMode())
+        AnimateInkDrop(views::InkDropState::ACTION_TRIGGERED, event);
+
       ImageButton::OnGestureEvent(event);
       return;
     case ui::ET_GESTURE_TAP_DOWN:
+      // If |!ShouldEnterPushedState|, ImageButton::OnGestureEvent will not set
+      // the event to be handled. This will cause the |ET_GESTURE_TAP| or
+      // |ET_GESTURE_TAP_CANCEL| not to be sent to |app_list_button|, therefore
+      // leaving the assistant overlay ripple stays visible.
+      if (!ShouldEnterPushedState(*event))
+        return;
+
       if (UseVoiceInteractionStyle()) {
         assistant_animation_delay_timer_->Start(
             FROM_HERE,
@@ -135,9 +142,14 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
             base::Bind(&AppListButton::StartVoiceInteractionAnimation,
                        base::Unretained(this)));
       }
-      if (!Shell::Get()->app_list_controller()->IsVisible())
+      if (!Shell::Get()->app_list_controller()->IsVisible() || IsTabletMode())
         AnimateInkDrop(views::InkDropState::ACTION_PENDING, event);
+
       ImageButton::OnGestureEvent(event);
+      // If assistant overlay animation starts, we need to make sure the event
+      // is handled in order to end the animation in |ET_GESTURE_TAP| or
+      // |ET_GESTURE_TAP_CANCEL|.
+      DCHECK(event->stopped_propagation());
       return;
     case ui::ET_GESTURE_LONG_PRESS:
       if (UseVoiceInteractionStyle()) {
@@ -149,7 +161,7 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
             GetWidget()->GetNativeWindow()->GetRootWindow());
         if (chromeos::switches::IsAssistantEnabled()) {
           Shell::Get()->assistant_controller()->ui_controller()->ShowUi(
-              AssistantSource::kLongPressLauncher);
+              AssistantEntryPoint::kLongPressLauncher);
         } else {
           Shell::Get()->app_list_controller()->StartVoiceInteractionSession();
         }
@@ -203,7 +215,7 @@ void AppListButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
 std::unique_ptr<views::InkDropRipple> AppListButton::CreateInkDropRipple()
     const {
-  const int app_list_button_radius = ShelfConstants::app_list_button_radius();
+  const int app_list_button_radius = ShelfConstants::control_border_radius();
   gfx::Point center = GetCenterPoint();
   gfx::Rect bounds(center.x() - app_list_button_radius,
                    center.y() - app_list_button_radius,
@@ -223,8 +235,6 @@ void AppListButton::NotifyClick(const ui::Event& event) {
 bool AppListButton::ShouldEnterPushedState(const ui::Event& event) {
   if (!shelf_view_->ShouldEventActivateButton(this, event))
     return false;
-  if (Shell::Get()->app_list_controller()->IsVisible())
-    return false;
   return views::ImageButton::ShouldEnterPushedState(event);
 }
 
@@ -237,7 +247,7 @@ std::unique_ptr<views::InkDrop> AppListButton::CreateInkDrop() {
 
 std::unique_ptr<views::InkDropMask> AppListButton::CreateInkDropMask() const {
   return std::make_unique<views::CircleInkDropMask>(
-      size(), GetCenterPoint(), ShelfConstants::app_list_button_radius());
+      size(), GetCenterPoint(), ShelfConstants::control_border_radius());
 }
 
 void AppListButton::PaintButtonContents(gfx::Canvas* canvas) {
@@ -262,9 +272,11 @@ void AppListButton::PaintButtonContents(gfx::Canvas* canvas) {
     fg_flags.setColor(kShelfIconColor);
 
     if (UseVoiceInteractionStyle()) {
-      mojom::VoiceInteractionState state = Shell::Get()
-                                               ->voice_interaction_controller()
-                                               ->voice_interaction_state();
+      mojom::VoiceInteractionState state =
+          Shell::Get()
+              ->voice_interaction_controller()
+              ->voice_interaction_state()
+              .value_or(mojom::VoiceInteractionState::STOPPED);
       // active: 100% alpha, inactive: 54% alpha
       fg_flags.setAlpha(state == mojom::VoiceInteractionState::RUNNING
                             ? kVoiceInteractionRunningAlpha
@@ -284,27 +296,6 @@ void AppListButton::PaintButtonContents(gfx::Canvas* canvas) {
       canvas->DrawCircle(circle_center, std::ceil(kCircleRadiusDp * dsf),
                          fg_flags);
     }
-  }
-}
-
-gfx::Point AppListButton::GetCenterPoint() const {
-  // For a bottom-aligned shelf, the button bounds could have a larger height
-  // than width (in the case of touch-dragging the shelf upwards) or a larger
-  // width than height (in the case of a shelf hide/show animation), so adjust
-  // the y-position of the circle's center to ensure correct layout. Similarly
-  // adjust the x-position for a left- or right-aligned shelf.
-  const int x_mid = width() / 2.f;
-  const int y_mid = height() / 2.f;
-
-  const ShelfAlignment alignment = shelf_->alignment();
-  if (alignment == SHELF_ALIGNMENT_BOTTOM ||
-      alignment == SHELF_ALIGNMENT_BOTTOM_LOCKED) {
-    return gfx::Point(x_mid, x_mid);
-  } else if (alignment == SHELF_ALIGNMENT_RIGHT) {
-    return gfx::Point(y_mid, y_mid);
-  } else {
-    DCHECK_EQ(alignment, SHELF_ALIGNMENT_LEFT);
-    return gfx::Point(width() - y_mid, y_mid);
   }
 }
 
@@ -383,12 +374,16 @@ void AppListButton::StartVoiceInteractionAnimation() {
   // voice interaction setup flow has completed.
   ShelfAlignment alignment = shelf_->alignment();
   mojom::VoiceInteractionState state =
-      Shell::Get()->voice_interaction_controller()->voice_interaction_state();
+      Shell::Get()
+          ->voice_interaction_controller()
+          ->voice_interaction_state()
+          .value_or(mojom::VoiceInteractionState::STOPPED);
   bool show_icon =
       (alignment == SHELF_ALIGNMENT_BOTTOM ||
        alignment == SHELF_ALIGNMENT_BOTTOM_LOCKED) &&
       state == mojom::VoiceInteractionState::STOPPED &&
-      Shell::Get()->voice_interaction_controller()->setup_completed() &&
+      Shell::Get()->voice_interaction_controller()->setup_completed().value_or(
+          false) &&
       chromeos::switches::IsVoiceInteractionEnabled();
   assistant_overlay_->StartAnimation(show_icon);
 }
@@ -396,8 +391,8 @@ void AppListButton::StartVoiceInteractionAnimation() {
 bool AppListButton::UseVoiceInteractionStyle() {
   VoiceInteractionController* controller =
       Shell::Get()->voice_interaction_controller();
-  bool settings_enabled = controller->settings_enabled();
-  bool setup_completed = controller->setup_completed();
+  bool settings_enabled = controller->settings_enabled().value_or(false);
+  bool setup_completed = controller->setup_completed().value_or(false);
   bool is_feature_allowed =
       controller->allowed_state() == mojom::AssistantAllowedState::ALLOWED;
   if (assistant_overlay_ && is_feature_allowed &&

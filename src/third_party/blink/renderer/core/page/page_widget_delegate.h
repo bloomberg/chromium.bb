@@ -53,6 +53,7 @@ class CORE_EXPORT PageWidgetEventHandler {
  public:
   virtual void HandleMouseMove(LocalFrame& main_frame,
                                const WebMouseEvent&,
+                               const std::vector<const WebInputEvent*>&,
                                const std::vector<const WebInputEvent*>&);
   virtual void HandleMouseLeave(LocalFrame& main_frame, const WebMouseEvent&);
   virtual void HandleMouseDown(LocalFrame& main_frame, const WebMouseEvent&);
@@ -65,6 +66,7 @@ class CORE_EXPORT PageWidgetEventHandler {
   virtual WebInputEventResult HandlePointerEvent(
       LocalFrame& main_frame,
       const WebPointerEvent&,
+      const std::vector<const WebInputEvent*>&,
       const std::vector<const WebInputEvent*>&);
   virtual ~PageWidgetEventHandler() {}
 };
@@ -80,7 +82,8 @@ class CORE_EXPORT PageWidgetDelegate {
   // See comment of WebWidget::UpdateLifecycle.
   static void UpdateLifecycle(Page&,
                               LocalFrame& root,
-                              WebWidget::LifecycleUpdate requested_update);
+                              WebWidget::LifecycleUpdate requested_update,
+                              WebWidget::LifecycleUpdateReason reason);
 
   // See documents of methods with the same names in FrameView class.
   static void PaintContent(Page&,

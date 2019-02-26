@@ -37,7 +37,8 @@ class HistoryBackendNotifier {
                                 base::Time visit_time) = 0;
 
   // Sends notification that |changed_urls| have been changed or added.
-  virtual void NotifyURLsModified(const URLRows& changed_urls) = 0;
+  virtual void NotifyURLsModified(const URLRows& changed_urls,
+                                  bool is_from_expiration) = 0;
 
   // Sends notification that some or the totality of the URLs have been
   // deleted.

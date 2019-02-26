@@ -655,6 +655,13 @@ TEST(VectorTest, emplace_back) {
   EXPECT_EQ(7, item.value2);
 }
 
+TEST(VectorTest, UninitializedFill) {
+  Vector<char> v(3, 42);
+  EXPECT_EQ(42, v[0]);
+  EXPECT_EQ(42, v[1]);
+  EXPECT_EQ(42, v[2]);
+}
+
 static_assert(VectorTraits<int>::kCanCopyWithMemcpy,
               "int should be copied with memcopy.");
 static_assert(VectorTraits<char>::kCanCopyWithMemcpy,

@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <limits>
 #include <string>
+#include <utility>
 
 #include "base/containers/flat_map.h"
 #include "base/logging.h"
@@ -16,8 +17,10 @@
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "base/trace_event/trace_event.h"
 #include "components/url_pattern_index/ngram_extractor.h"
 #include "components/url_pattern_index/url_pattern.h"
+#include "components/url_pattern_index/url_rule_util.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 #include "url/url_constants.h"
@@ -26,9 +29,6 @@ namespace url_pattern_index {
 
 namespace {
 
-using FlatStringOffset = flatbuffers::Offset<flatbuffers::String>;
-using FlatDomains = flatbuffers::Vector<FlatStringOffset>;
-using FlatDomainsOffset = flatbuffers::Offset<FlatDomains>;
 using FlatUrlRuleList = flatbuffers::Vector<flatbuffers::Offset<flat::UrlRule>>;
 
 using ActivationTypeMap =
@@ -134,8 +134,12 @@ class UrlRuleFlatBufferConverter {
   // the offset to the serialized rule. Returns an empty offset in case the rule
   // can't be converted. The conversion is not possible if the rule has
   // attributes not supported by this client version.
-  UrlRuleOffset SerializeConvertedRule(
-      flatbuffers::FlatBufferBuilder* builder) const {
+  //
+  // |domain_map| Should point to a non-nullptr map of domain vectors to their
+  // existing offsets. It is used to de-dupe domain vectors in the serialized
+  // rules.
+  UrlRuleOffset SerializeConvertedRule(flatbuffers::FlatBufferBuilder* builder,
+                                       FlatDomainMap* domain_map) const {
     if (!is_convertible_)
       return UrlRuleOffset();
 
@@ -144,7 +148,6 @@ class UrlRuleFlatBufferConverter {
     FlatDomainsOffset domains_included_offset;
     FlatDomainsOffset domains_excluded_offset;
     if (rule_.domains_size()) {
-      // TODO(pkalinnikov): Consider sharing the vectors between rules.
       std::vector<FlatStringOffset> domains_included;
       std::vector<FlatStringOffset> domains_excluded;
       // Reserve only for |domains_included| because it is expected to be the
@@ -169,25 +172,11 @@ class UrlRuleFlatBufferConverter {
         else
           domains_included.push_back(offset);
       }
-
-      // The comparator ensuring the domains order necessary for fast matching.
-      auto precedes = [&builder](FlatStringOffset lhs, FlatStringOffset rhs) {
-        return CompareDomains(ToStringPiece(flatbuffers::GetTemporaryPointer(
-                                  *builder, lhs)),
-                              ToStringPiece(flatbuffers::GetTemporaryPointer(
-                                  *builder, rhs))) < 0;
-      };
-
       // The domains are stored in sorted order to support fast matching.
-      if (!domains_included.empty()) {
-        // TODO(pkalinnikov): Don't sort if it is already sorted offline.
-        std::sort(domains_included.begin(), domains_included.end(), precedes);
-        domains_included_offset = builder->CreateVector(domains_included);
-      }
-      if (!domains_excluded.empty()) {
-        std::sort(domains_excluded.begin(), domains_excluded.end(), precedes);
-        domains_excluded_offset = builder->CreateVector(domains_excluded);
-      }
+      domains_included_offset =
+          SerializeDomainList(std::move(domains_included), builder, domain_map);
+      domains_excluded_offset =
+          SerializeDomainList(std::move(domains_excluded), builder, domain_map);
     }
 
     // Non-ascii characters in patterns are unsupported.
@@ -196,7 +185,7 @@ class UrlRuleFlatBufferConverter {
 
     // TODO(crbug.com/884063): Lower case case-insensitive patterns here if we
     // want to support case-insensitive rules for subresource filter.
-    auto url_pattern_offset = builder->CreateString(rule_.url_pattern());
+    auto url_pattern_offset = builder->CreateSharedString(rule_.url_pattern());
 
     return flat::CreateUrlRule(
         *builder, options_, element_types_, activation_types_,
@@ -205,6 +194,32 @@ class UrlRuleFlatBufferConverter {
   }
 
  private:
+  FlatDomainsOffset SerializeDomainList(std::vector<FlatStringOffset> domains,
+                                        flatbuffers::FlatBufferBuilder* builder,
+                                        FlatDomainMap* domain_map) const {
+    // The comparator ensuring the domains order necessary for fast matching.
+    auto precedes = [&builder](FlatStringOffset lhs, FlatStringOffset rhs) {
+      return CompareDomains(
+                 ToStringPiece(flatbuffers::GetTemporaryPointer(*builder, lhs)),
+                 ToStringPiece(
+                     flatbuffers::GetTemporaryPointer(*builder, rhs))) < 0;
+    };
+    if (domains.empty())
+      return FlatDomainsOffset();
+    std::sort(domains.begin(), domains.end(), precedes);
+
+    // Share domain lists if we've already serialized an exact duplicate. Note
+    // that this can share excluded and included domain lists.
+    DCHECK(domain_map);
+    auto it = domain_map->find(domains);
+    if (it == domain_map->end()) {
+      auto offset = builder->CreateVector(domains);
+      (*domain_map)[domains] = offset;
+      return offset;
+    }
+    return it->second;
+  }
+
   static bool ConvertAnchorType(proto::AnchorType anchor_type,
                                 flat::AnchorType* result) {
     switch (anchor_type) {
@@ -350,11 +365,26 @@ class UrlRuleFlatBufferConverter {
 
 // Helpers. --------------------------------------------------------------------
 
+bool OffsetVectorCompare::operator()(
+    const std::vector<FlatStringOffset>& a,
+    const std::vector<FlatStringOffset>& b) const {
+  auto compare = [](const FlatStringOffset a_offset,
+                    const FlatStringOffset b_offset) {
+    DCHECK(!a_offset.IsNull());
+    DCHECK(!b_offset.IsNull());
+    return a_offset.o < b_offset.o;
+  };
+  // |lexicographical_compare| is how vector::operator< is implemented.
+  return std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end(),
+                                      compare);
+}
+
 UrlRuleOffset SerializeUrlRule(const proto::UrlRule& rule,
-                               flatbuffers::FlatBufferBuilder* builder) {
+                               flatbuffers::FlatBufferBuilder* builder,
+                               FlatDomainMap* domain_map) {
   DCHECK(builder);
   UrlRuleFlatBufferConverter converter(rule);
-  return converter.SerializeConvertedRule(builder);
+  return converter.SerializeConvertedRule(builder, domain_map);
 }
 
 int CompareDomains(base::StringPiece lhs_domain, base::StringPiece rhs_domain) {
@@ -765,9 +795,15 @@ const flat::UrlRule* UrlPatternIndexMatcher::FindMatch(
     return nullptr;
   }
 
-  return FindMatchInFlatUrlPatternIndex(
+  auto* rule = FindMatchInFlatUrlPatternIndex(
       *flat_index_, UrlPattern::UrlInfo(url), first_party_origin, element_type,
       activation_type, is_third_party, disable_generic_rules, strategy);
+  if (rule) {
+    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("loading"),
+                 "UrlPatternIndexMatcher::FindMatch", "pattern",
+                 FlatUrlRuleToFilterlistString(rule));
+  }
+  return rule;
 }
 
 }  // namespace url_pattern_index

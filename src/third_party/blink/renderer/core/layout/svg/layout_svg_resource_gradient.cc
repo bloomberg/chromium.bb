@@ -29,7 +29,7 @@ namespace blink {
 LayoutSVGResourceGradient::LayoutSVGResourceGradient(SVGGradientElement* node)
     : LayoutSVGResourcePaintServer(node),
       should_collect_gradient_attributes_(true),
-      gradient_map_(new GradientMap) {}
+      gradient_map_(MakeGarbageCollected<GradientMap>()) {}
 
 void LayoutSVGResourceGradient::RemoveAllClientsFromCache(
     bool mark_for_invalidation) {

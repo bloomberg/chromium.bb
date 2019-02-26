@@ -4,19 +4,39 @@
 
 #include "ui/aura/test/window_occlusion_tracker_test_api.h"
 
-#include "ui/aura/env.h"
+#include "base/memory/ptr_util.h"
 #include "ui/aura/window_occlusion_tracker.h"
 
 namespace aura {
 namespace test {
 
-WindowOcclusionTrackerTestApi::WindowOcclusionTrackerTestApi(Env* env)
-    : tracker_(env->GetWindowOcclusionTracker()) {}
+WindowOcclusionTrackerTestApi::WindowOcclusionTrackerTestApi(
+    WindowOcclusionTracker* tracker)
+    : tracker_(tracker) {}
 
 WindowOcclusionTrackerTestApi::~WindowOcclusionTrackerTestApi() = default;
 
+// static
+std::unique_ptr<WindowOcclusionTracker>
+WindowOcclusionTrackerTestApi::Create() {
+  // Use base::WrapUnique + new because of the constructor is private.
+  return base::WrapUnique(new WindowOcclusionTracker());
+}
+
 int WindowOcclusionTrackerTestApi::GetNumTimesOcclusionRecomputed() const {
   return tracker_->num_times_occlusion_recomputed_;
+}
+
+void WindowOcclusionTrackerTestApi::Pause() {
+  tracker_->Pause();
+}
+
+void WindowOcclusionTrackerTestApi::Unpause() {
+  tracker_->Unpause();
+}
+
+bool WindowOcclusionTrackerTestApi::IsPaused() const {
+  return tracker_->num_pause_occlusion_tracking_;
 }
 
 }  // namespace test

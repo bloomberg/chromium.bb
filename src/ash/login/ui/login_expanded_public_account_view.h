@@ -58,6 +58,7 @@ class ASH_EXPORT LoginExpandedPublicAccountView : public NonAccessibleView {
   void Hide();
   void ShowWarningDialog();
   void OnWarningDialogClosed();
+  void SetShowFullManagementDisclosure(bool show_full_management_disclosure);
 
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;

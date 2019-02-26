@@ -5,7 +5,11 @@
 #include "third_party/blink/renderer/core/feature_policy/feature_policy.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/loader/empty_clients.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
+
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -62,6 +66,15 @@ class FeaturePolicyParserTest : public testing::Test {
   FeaturePolicyParserTest() = default;
 
   ~FeaturePolicyParserTest() override = default;
+
+  /*void SetUp() override {
+    chrome_client_ = new ConsoleCapturingChromeClient();
+    Page::PageClients clients;
+    FillWithEmptyClients(clients);
+    clients.chrome_client = chrome_client_.Get();
+    SetupPageWithClients(&clients);
+    Page::InsertOrdinaryPageForTesting(&GetPage());
+  }*/
 
   scoped_refptr<const SecurityOrigin> origin_a_ =
       SecurityOrigin::CreateFromString(ORIGIN_A);
@@ -331,6 +344,57 @@ TEST_F(FeaturePolicyParserTest, HistogramMultiple) {
       static_cast<int>(blink::mojom::FeaturePolicyFeature::kFullscreen), 1);
 }
 
+// Test histogram counting the use of feature policies via "allow"
+// attribute. This test parses two policies on the same document.
+TEST_F(FeaturePolicyParserTest, AllowHistogramSameDocument) {
+  const char* histogram_name = "Blink.UseCounter.FeaturePolicy.Allow";
+  HistogramTester tester;
+  Vector<String> messages;
+  std::unique_ptr<DummyPageHolder> dummy = DummyPageHolder::Create();
+
+  ParseFeaturePolicy("payment; fullscreen", origin_a_.get(), origin_b_.get(),
+                     &messages, test_feature_name_map, &dummy->GetDocument());
+  ParseFeaturePolicy("fullscreen; geolocation", origin_a_.get(),
+                     origin_b_.get(), &messages, test_feature_name_map,
+                     &dummy->GetDocument());
+  tester.ExpectTotalCount(histogram_name, 3);
+  tester.ExpectBucketCount(
+      histogram_name,
+      static_cast<int>(blink::mojom::FeaturePolicyFeature::kPayment), 1);
+  tester.ExpectBucketCount(
+      histogram_name,
+      static_cast<int>(blink::mojom::FeaturePolicyFeature::kFullscreen), 1);
+  tester.ExpectBucketCount(
+      histogram_name,
+      static_cast<int>(blink::mojom::FeaturePolicyFeature::kGeolocation), 1);
+}
+
+// Test histogram counting the use of feature policies via "allow"
+// attribute. This test parses two policies on different documents.
+TEST_F(FeaturePolicyParserTest, AllowHistogramDifferentDocument) {
+  const char* histogram_name = "Blink.UseCounter.FeaturePolicy.Allow";
+  HistogramTester tester;
+  Vector<String> messages;
+  std::unique_ptr<DummyPageHolder> dummy = DummyPageHolder::Create();
+  std::unique_ptr<DummyPageHolder> dummy2 = DummyPageHolder::Create();
+
+  ParseFeaturePolicy("payment; fullscreen", origin_a_.get(), origin_b_.get(),
+                     &messages, test_feature_name_map, &dummy->GetDocument());
+  ParseFeaturePolicy("fullscreen; geolocation", origin_a_.get(),
+                     origin_b_.get(), &messages, test_feature_name_map,
+                     &dummy2->GetDocument());
+  tester.ExpectTotalCount(histogram_name, 4);
+  tester.ExpectBucketCount(
+      histogram_name,
+      static_cast<int>(blink::mojom::FeaturePolicyFeature::kPayment), 1);
+  tester.ExpectBucketCount(
+      histogram_name,
+      static_cast<int>(blink::mojom::FeaturePolicyFeature::kFullscreen), 2);
+  tester.ExpectBucketCount(
+      histogram_name,
+      static_cast<int>(blink::mojom::FeaturePolicyFeature::kGeolocation), 1);
+}
+
 // Test policy mutation methods
 class FeaturePolicyMutationTest : public testing::Test {
  protected:
@@ -375,10 +439,12 @@ class FeaturePolicyMutationTest : public testing::Test {
   ParsedFeaturePolicy test_policy = {{mojom::FeaturePolicyFeature::kFullscreen,
                                       false,
                                       false,
+                                      mojom::FeaturePolicyDisposition::kEnforce,
                                       {url_origin_a_, url_origin_b_}},
                                      {mojom::FeaturePolicyFeature::kGeolocation,
                                       false,
                                       false,
+                                      mojom::FeaturePolicyDisposition::kEnforce,
                                       {url_origin_a_}}};
   ParsedFeaturePolicy empty_policy = {};
 };

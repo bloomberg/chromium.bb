@@ -58,24 +58,4 @@ void FakeVoiceInteractionController::NotifyLaunchWithMicOpen(
   launch_with_mic_open_ = launch_with_mic_open;
 }
 
-void FakeVoiceInteractionController::IsSettingEnabled(
-    IsSettingEnabledCallback callback) {
-  std::move(callback).Run(voice_interaction_settings_enabled_);
-}
-
-void FakeVoiceInteractionController::IsSetupCompleted(
-    IsSetupCompletedCallback callback) {
-  std::move(callback).Run(voice_interaction_setup_completed_);
-}
-
-void FakeVoiceInteractionController::IsContextEnabled(
-    IsContextEnabledCallback callback) {
-  std::move(callback).Run(voice_interaction_context_enabled_);
-}
-
-void FakeVoiceInteractionController::IsHotwordEnabled(
-    IsHotwordEnabledCallback callback) {
-  std::move(callback).Run(voice_interaction_hotword_enabled_);
-}
-
 }  // namespace arc

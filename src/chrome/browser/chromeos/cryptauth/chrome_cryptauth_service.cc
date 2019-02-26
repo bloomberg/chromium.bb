@@ -7,7 +7,7 @@
 #include "base/guid.h"
 #include "base/linux_util.h"
 #include "base/memory/ptr_util.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/time/default_clock.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
@@ -130,8 +130,8 @@ ChromeCryptAuthService::ChromeCryptAuthService(
                             weak_ptr_factory_.GetWeakPtr()));
 
   if (!identity_manager_->HasPrimaryAccountWithRefreshToken()) {
-    PA_LOG(INFO) << "Primary account with refresh token not yet available; "
-                 << "waiting before starting CryptAuth managers.";
+    PA_LOG(VERBOSE) << "Primary account with refresh token not yet available; "
+                    << "waiting before starting CryptAuth managers.";
     identity_manager_->AddObserver(this);
     return;
   }
@@ -185,8 +185,8 @@ void ChromeCryptAuthService::OnEnrollmentFinished(bool success) {
 
 void ChromeCryptAuthService::OnAuthenticationStateChanged() {
   if (!identity_manager_->HasPrimaryAccountWithRefreshToken()) {
-    PA_LOG(INFO) << "Primary account with refresh token not yet available; "
-                 << "waiting before starting CryptAuth managers.";
+    PA_LOG(VERBOSE) << "Primary account with refresh token not yet available; "
+                    << "waiting before starting CryptAuth managers.";
     return;
   }
 
@@ -213,7 +213,7 @@ void ChromeCryptAuthService::PerformEnrollmentAndDeviceSyncIfPossible() {
   // the CryptAuth back-end when the registration would never actually be used.
   if (!multidevice_setup::AreAnyMultiDeviceFeaturesAllowed(
           profile_->GetPrefs())) {
-    PA_LOG(INFO) << "CryptAuth enrollment is disabled by enterprise policy.";
+    PA_LOG(VERBOSE) << "CryptAuth enrollment is disabled by enterprise policy.";
     return;
   }
 

@@ -164,8 +164,8 @@ String CharacterData::nodeValue() const {
   return data_;
 }
 
-bool CharacterData::ContainsOnlyWhitespace() const {
-  return data_.ContainsOnlyWhitespace();
+bool CharacterData::ContainsOnlyWhitespaceOrEmpty() const {
+  return data_.ContainsOnlyWhitespaceOrEmpty();
 }
 
 void CharacterData::setNodeValue(const String& node_value) {
@@ -216,7 +216,7 @@ void CharacterData::DidModifyData(const String& old_data, UpdateSource source) {
     if (GetDocument().HasListenerType(
             Document::kDOMCharacterDataModifiedListener)) {
       DispatchScopedEvent(*MutationEvent::Create(
-          EventTypeNames::DOMCharacterDataModified, Event::Bubbles::kYes,
+          event_type_names::kDOMCharacterDataModified, Event::Bubbles::kYes,
           nullptr, old_data, data_));
     }
     DispatchSubtreeModifiedEvent();

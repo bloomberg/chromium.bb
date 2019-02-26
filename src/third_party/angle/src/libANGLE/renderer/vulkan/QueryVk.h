@@ -22,21 +22,24 @@ class QueryVk : public QueryImpl
     QueryVk(gl::QueryType type);
     ~QueryVk() override;
 
-    gl::Error onDestroy(const gl::Context *context) override;
+    void onDestroy(const gl::Context *context) override;
 
-    gl::Error begin(const gl::Context *context) override;
-    gl::Error end(const gl::Context *context) override;
-    gl::Error queryCounter(const gl::Context *context) override;
-    gl::Error getResult(const gl::Context *context, GLint *params) override;
-    gl::Error getResult(const gl::Context *context, GLuint *params) override;
-    gl::Error getResult(const gl::Context *context, GLint64 *params) override;
-    gl::Error getResult(const gl::Context *context, GLuint64 *params) override;
-    gl::Error isResultAvailable(const gl::Context *context, bool *available) override;
+    angle::Result begin(const gl::Context *context) override;
+    angle::Result end(const gl::Context *context) override;
+    angle::Result queryCounter(const gl::Context *context) override;
+    angle::Result getResult(const gl::Context *context, GLint *params) override;
+    angle::Result getResult(const gl::Context *context, GLuint *params) override;
+    angle::Result getResult(const gl::Context *context, GLint64 *params) override;
+    angle::Result getResult(const gl::Context *context, GLuint64 *params) override;
+    angle::Result isResultAvailable(const gl::Context *context, bool *available) override;
 
   private:
     angle::Result getResult(const gl::Context *context, bool wait);
 
+    // Used for AnySamples, AnySamplesConservative, Timestamp and TimeElapsed (end)
     vk::QueryHelper mQueryHelper;
+    // An additional query used for TimeElapsed (begin), as it is implemented using Timestamp
+    vk::QueryHelper mQueryHelperTimeElapsedBegin;
     uint64_t mCachedResult;
     bool mCachedResultValid;
 };

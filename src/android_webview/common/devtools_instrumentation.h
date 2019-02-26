@@ -12,22 +12,23 @@ namespace android_webview {
 namespace devtools_instrumentation {
 
 namespace internal {
-const char kCategory[] = "Java,devtools,disabled-by-default-devtools.timeline";
+constexpr const char* Category() {
+  // Declared as a constexpr function to have an external linkage and to be
+  // known at compile-time.
+  return "Java,devtools,disabled-by-default-devtools.timeline";
+}
 const char kEmbedderCallback[] = "EmbedderCallback";
 const char kCallbackNameArgument[] = "callbackName";
 }  // namespace internal
 
 class ScopedEmbedderCallbackTask {
  public:
-  ScopedEmbedderCallbackTask(const char* callback_name) {
-    TRACE_EVENT_BEGIN1(internal::kCategory,
-                       internal::kEmbedderCallback,
-                       internal::kCallbackNameArgument,
-                       callback_name);
+  explicit ScopedEmbedderCallbackTask(const char* callback_name) {
+    TRACE_EVENT_BEGIN1(internal::Category(), internal::kEmbedderCallback,
+                       internal::kCallbackNameArgument, callback_name);
   }
   ~ScopedEmbedderCallbackTask() {
-    TRACE_EVENT_END0(internal::kCategory,
-                     internal::kEmbedderCallback);
+    TRACE_EVENT_END0(internal::Category(), internal::kEmbedderCallback);
   }
 
  private:

@@ -27,6 +27,8 @@ class ResourceError;
 class MODULES_EXPORT NotificationImageLoader final
     : public GarbageCollectedFinalized<NotificationImageLoader>,
       public ThreadableLoaderClient {
+  USING_GARBAGE_COLLECTED_MIXIN(NotificationImageLoader);
+
  public:
   // Type names are used in UMAs, so do not rename.
   enum class Type { kImage, kIcon, kBadge, kActionIcon };
@@ -59,7 +61,10 @@ class MODULES_EXPORT NotificationImageLoader final
   void DidFail(const ResourceError& error) override;
   void DidFailRedirectCheck() override;
 
-  void Trace(blink::Visitor* visitor) { visitor->Trace(threadable_loader_); }
+  void Trace(blink::Visitor* visitor) override {
+    visitor->Trace(threadable_loader_);
+    ThreadableLoaderClient::Trace(visitor);
+  }
 
  private:
   void RunCallbackWithEmptyBitmap();

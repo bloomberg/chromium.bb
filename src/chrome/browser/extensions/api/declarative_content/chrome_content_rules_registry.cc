@@ -280,7 +280,7 @@ std::string ChromeContentRulesRegistry::AddRulesImpl(
       }
     }
 
-    new_rules[rule_id] = make_linked_ptr(rule.release());
+    new_rules[rule_id] = std::move(rule);
   }
 
   // Notify the evaluators about their new predicates.
@@ -289,7 +289,8 @@ std::string ChromeContentRulesRegistry::AddRulesImpl(
     evaluator->TrackPredicates(new_predicates[evaluator.get()]);
 
   // Wohoo, everything worked fine.
-  content_rules_.insert(new_rules.begin(), new_rules.end());
+  content_rules_.insert(std::make_move_iterator(new_rules.begin()),
+                        std::make_move_iterator(new_rules.end()));
 
   // Request evaluation for all WebContents, under the assumption that a
   // non-empty condition has been added.

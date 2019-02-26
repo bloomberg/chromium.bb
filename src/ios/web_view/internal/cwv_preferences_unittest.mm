@@ -52,11 +52,18 @@ class CWVPreferencesTest : public PlatformTest {
   CWVPreferences* preferences_;
 };
 
-// Tests CWVPreferences |autofillEnabled|.
-TEST_F(CWVPreferencesTest, AutofillEnabled) {
-  EXPECT_TRUE(preferences_.autofillEnabled);
-  preferences_.autofillEnabled = NO;
-  EXPECT_FALSE(preferences_.autofillEnabled);
+// Tests CWVPreferences |profileAutofillEnabled|.
+TEST_F(CWVPreferencesTest, ProfileAutofillEnabled) {
+  EXPECT_TRUE(preferences_.profileAutofillEnabled);
+  preferences_.profileAutofillEnabled = NO;
+  EXPECT_FALSE(preferences_.profileAutofillEnabled);
+}
+
+// Tests CWVPreferences |creditCardAutofillEnabled|.
+TEST_F(CWVPreferencesTest, CreditCardAutofillEnabled) {
+  EXPECT_TRUE(preferences_.creditCardAutofillEnabled);
+  preferences_.creditCardAutofillEnabled = NO;
+  EXPECT_FALSE(preferences_.creditCardAutofillEnabled);
 }
 
 // Tests CWVPreferences |translationEnabled|.

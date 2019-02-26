@@ -24,7 +24,8 @@ ServiceWorkerRegistrationPush& ServiceWorkerRegistrationPush::From(
       Supplement<ServiceWorkerRegistration>::From<
           ServiceWorkerRegistrationPush>(registration);
   if (!supplement) {
-    supplement = new ServiceWorkerRegistrationPush(&registration);
+    supplement =
+        MakeGarbageCollected<ServiceWorkerRegistrationPush>(&registration);
     ProvideTo(registration, supplement);
   }
   return *supplement;

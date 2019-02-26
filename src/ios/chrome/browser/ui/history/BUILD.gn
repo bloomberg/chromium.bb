@@ -49,7 +49,6 @@ source_set("history_ui") {
     "history_entry_item.mm",
     "history_entry_item_delegate.h",
     "history_entry_item_interface.h",
-    "history_image_data_source.h",
     "history_local_commands.h",
     "history_table_view_controller.h",
     "history_table_view_controller.mm",

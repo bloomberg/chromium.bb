@@ -139,8 +139,11 @@ TEST_P(GraphicsLayerTest, PaintRecursively) {
   layers_.graphics_layer_client().SetNeedsRepaint(true);
   layers_.graphics_layer().PaintRecursively();
 
-  EXPECT_FALSE(transform1->Changed(transform_root));
-  EXPECT_FALSE(transform2->Changed(transform_root));
+  // With BlinkGenPropertyTrees, these are not cleared until after paint.
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    EXPECT_FALSE(transform1->Changed(transform_root));
+    EXPECT_FALSE(transform2->Changed(transform_root));
+  }
 }
 
 TEST_P(GraphicsLayerTest, SetDrawsContentFalse) {

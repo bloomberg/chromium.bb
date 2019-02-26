@@ -30,9 +30,9 @@ bool LastLoadWasTransactionalReauthPage(const GURL& last_load_url) {
       GaiaUrls::GetInstance()->gaia_url().GetOrigin())
     return false;
 
-  // TODO(vabr): GAIA stops using the "rart" URL param, and instead includes a
-  // hidden form field with name "rart". http://crbug.com/543085
-  // "rart" is the transactional reauth paramter.
+  // TODO(crbug.com/543085): GAIA stops using the "rart" URL param, and instead
+  // includes a hidden form field with name "rart". "rart" is the transactional
+  // reauth paramter.
   std::string ignored_value;
   return net::GetValueForKeyInQuery(last_load_url, "rart", &ignored_value);
 }
@@ -42,10 +42,10 @@ bool LastLoadWasTransactionalReauthPage(const GURL& last_load_url) {
 SyncCredentialsFilter::SyncCredentialsFilter(
     const PasswordManagerClient* client,
     SyncServiceFactoryFunction sync_service_factory_function,
-    SigninManagerFactoryFunction signin_manager_factory_function)
+    IdentityManagerFactoryFunction identity_manager_factory_function)
     : client_(client),
       sync_service_factory_function_(sync_service_factory_function),
-      signin_manager_factory_function_(signin_manager_factory_function) {}
+      identity_manager_factory_function_(identity_manager_factory_function) {}
 
 SyncCredentialsFilter::~SyncCredentialsFilter() {}
 
@@ -77,16 +77,18 @@ std::vector<std::unique_ptr<PasswordForm>> SyncCredentialsFilter::FilterResults(
 
 bool SyncCredentialsFilter::ShouldSave(
     const autofill::PasswordForm& form) const {
-  return !form.is_gaia_with_skip_save_password_form &&
+  return !client_->IsIncognito() &&
+         !form.is_gaia_with_skip_save_password_form &&
          !sync_util::IsSyncAccountCredential(
              form, sync_service_factory_function_.Run(),
-             signin_manager_factory_function_.Run());
+             identity_manager_factory_function_.Run());
 }
 
 bool SyncCredentialsFilter::ShouldSaveGaiaPasswordHash(
     const autofill::PasswordForm& form) const {
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
-  return sync_util::IsGaiaCredentialPage(form.signon_realm);
+  return !client_->IsIncognito() &&
+         sync_util::IsGaiaCredentialPage(form.signon_realm);
 #else
   return false;
 #endif  // SYNC_PASSWORD_REUSE_DETECTION_ENABLED
@@ -94,14 +96,14 @@ bool SyncCredentialsFilter::ShouldSaveGaiaPasswordHash(
 
 bool SyncCredentialsFilter::ShouldSaveEnterprisePasswordHash(
     const autofill::PasswordForm& form) const {
-  return sync_util::ShouldSaveEnterprisePasswordHash(form,
-                                                     *client_->GetPrefs());
+  return !client_->IsIncognito() && sync_util::ShouldSaveEnterprisePasswordHash(
+                                        form, *client_->GetPrefs());
 }
 
 bool SyncCredentialsFilter::IsSyncAccountEmail(
     const std::string& username) const {
-  return sync_util::IsSyncAccountEmail(username,
-                                       signin_manager_factory_function_.Run());
+  return sync_util::IsSyncAccountEmail(
+      username, identity_manager_factory_function_.Run());
 }
 
 void SyncCredentialsFilter::ReportFormLoginSuccess(
@@ -110,7 +112,7 @@ void SyncCredentialsFilter::ReportFormLoginSuccess(
       sync_util::IsSyncAccountCredential(
           form_manager.GetPendingCredentials(),
           sync_service_factory_function_.Run(),
-          signin_manager_factory_function_.Run())) {
+          identity_manager_factory_function_.Run())) {
     base::RecordAction(base::UserMetricsAction(
         "PasswordManager_SyncCredentialFilledAndLoginSuccessfull"));
   }

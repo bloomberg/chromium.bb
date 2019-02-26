@@ -19,6 +19,7 @@
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/widget/widget_utils.h"
 
 namespace ash {
 
@@ -47,7 +48,7 @@ class MockNotificationMenuController
     return notification_menu_view_->GetSlideOutLayer();
   }
 
-  void OnSlideChanged() override {}
+  void OnSlideChanged(bool in_progress) override {}
 
   void OnSlideOut() override { slide_out_count_++; }
 
@@ -122,7 +123,7 @@ class NotificationMenuViewTest : public views::ViewsTestBase {
       const base::string16& title,
       const base::string16& message) {
     const message_center::NotifierId notifier_id(
-        message_center::NotifierId::APPLICATION, kTestAppId);
+        message_center::NotifierType::APPLICATION, kTestAppId);
     message_center::Notification notification(
         message_center::NOTIFICATION_TYPE_SIMPLE, notification_id, title,
         message, gfx::Image(), base::ASCIIToUTF16("www.test.org"), GURL(),
@@ -138,7 +139,7 @@ class NotificationMenuViewTest : public views::ViewsTestBase {
       const base::string16& title,
       const base::string16& message) {
     const message_center::NotifierId notifier_id(
-        message_center::NotifierId::APPLICATION, kTestAppId);
+        message_center::NotifierType::APPLICATION, kTestAppId);
     message_center::Notification notification(
         message_center::NOTIFICATION_TYPE_SIMPLE, notification_id, title,
         message, gfx::Image(), base::ASCIIToUTF16("www.test.org"), GURL(),
@@ -174,7 +175,7 @@ class NotificationMenuViewTest : public views::ViewsTestBase {
 
   void DispatchGesture(const ui::GestureEventDetails& details) {
     ui::test::EventGenerator generator(
-        notification_menu_view_->GetWidget()->GetNativeWindow());
+        GetRootWindow(notification_menu_view_->GetWidget()));
 
     ui::GestureEvent event(
         0,

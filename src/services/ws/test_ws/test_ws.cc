@@ -8,10 +8,8 @@
 #include "services/service_manager/public/cpp/service_runner.h"
 #include "services/ws/test_ws/test_window_service_factory.h"
 #include "ui/base/ui_base_paths.h"
-#include "ui/gfx/gfx_paths.h"
 
 MojoResult ServiceMain(MojoHandle service_request_handle) {
-  gfx::RegisterPathProvider();
   ui::RegisterPathProvider();
 
   // |runner| takes ownership of the created test_ws service.

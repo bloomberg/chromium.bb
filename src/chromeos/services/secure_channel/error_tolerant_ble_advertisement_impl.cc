@@ -188,8 +188,8 @@ void ErrorTolerantBleAdvertisementImpl::OnAdvertisementRegistered(
   advertisement_ = advertisement;
   advertisement_->AddObserver(this);
 
-  PA_LOG(INFO) << "Advertisement registered. Request: " << device_id_pair()
-               << ", Service data: " << advertisement_data_->DataInHex();
+  PA_LOG(VERBOSE) << "Advertisement registered. Request: " << device_id_pair()
+                  << ", Service data: " << advertisement_data_->DataInHex();
 
   UpdateRegistrationStatus();
 }

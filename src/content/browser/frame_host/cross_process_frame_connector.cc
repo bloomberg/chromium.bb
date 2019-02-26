@@ -223,15 +223,15 @@ bool CrossProcessFrameConnector::TransformPointToLocalCoordSpaceLegacy(
   // Transformations use physical pixels rather than DIP, so conversion
   // is necessary.
   *transformed_point =
-      gfx::ConvertPointToPixel(view_->current_surface_scale_factor(), point);
+      gfx::ConvertPointToPixel(view_->GetDeviceScaleFactor(), point);
   viz::SurfaceHittest hittest(nullptr,
                               GetFrameSinkManager()->surface_manager());
   if (!hittest.TransformPointToTargetSurface(original_surface, local_surface_id,
                                              transformed_point))
     return false;
 
-  *transformed_point = gfx::ConvertPointToDIP(
-      view_->current_surface_scale_factor(), *transformed_point);
+  *transformed_point =
+      gfx::ConvertPointToDIP(view_->GetDeviceScaleFactor(), *transformed_point);
   return true;
 }
 
@@ -260,27 +260,25 @@ bool CrossProcessFrameConnector::TransformPointToCoordSpaceForView(
       *transformed_point, target_view, transformed_point, source);
 }
 
-void CrossProcessFrameConnector::ForwardAckedTouchpadPinchGestureEvent(
+void CrossProcessFrameConnector::ForwardAckedTouchpadZoomEvent(
     const blink::WebGestureEvent& event,
     InputEventAckState ack_result) {
   auto* root_view = GetRootRenderWidgetHostView();
   if (!root_view)
     return;
 
-  blink::WebGestureEvent pinch_event(event);
+  blink::WebGestureEvent root_event(event);
   const gfx::PointF root_point =
       view_->TransformPointToRootCoordSpaceF(event.PositionInWidget());
-  pinch_event.SetPositionInWidget(root_point);
-  root_view->GestureEventAck(pinch_event, ack_result);
+  root_event.SetPositionInWidget(root_point);
+  root_view->GestureEventAck(root_event, ack_result);
 }
 
 void CrossProcessFrameConnector::BubbleScrollEvent(
     const blink::WebGestureEvent& event) {
   DCHECK(event.GetType() == blink::WebInputEvent::kGestureScrollBegin ||
          event.GetType() == blink::WebInputEvent::kGestureScrollUpdate ||
-         event.GetType() == blink::WebInputEvent::kGestureScrollEnd ||
-         event.GetType() == blink::WebInputEvent::kGestureFlingStart ||
-         event.GetType() == blink::WebInputEvent::kGestureFlingCancel);
+         event.GetType() == blink::WebInputEvent::kGestureScrollEnd);
   auto* parent_view = GetParentRenderWidgetHostView();
 
   if (!parent_view)
@@ -303,15 +301,11 @@ void CrossProcessFrameConnector::BubbleScrollEvent(
   if (event.GetType() == blink::WebInputEvent::kGestureScrollBegin) {
     event_router->BubbleScrollEvent(parent_view, resent_gesture_event, view_);
     is_scroll_bubbling_ = true;
-  } else if (is_scroll_bubbling_ ||
-             event.GetType() == blink::WebInputEvent::kGestureFlingCancel) {
-    // For GFC events the router decides whether to bubble them or not.
+  } else if (is_scroll_bubbling_) {
     event_router->BubbleScrollEvent(parent_view, resent_gesture_event, view_);
   }
-  if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd ||
-      event.GetType() == blink::WebInputEvent::kGestureFlingStart) {
+  if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd)
     is_scroll_bubbling_ = false;
-  }
 }
 
 bool CrossProcessFrameConnector::HasFocus() {
@@ -341,7 +335,7 @@ void CrossProcessFrameConnector::UnlockMouse() {
 }
 
 void CrossProcessFrameConnector::OnSynchronizeVisualProperties(
-    const viz::SurfaceId& surface_id,
+    const viz::FrameSinkId& frame_sink_id,
     const FrameVisualProperties& visual_properties) {
   // If the |screen_space_rect| or |screen_info| of the frame has changed, then
   // the viz::LocalSurfaceId must also change.
@@ -349,7 +343,8 @@ void CrossProcessFrameConnector::OnSynchronizeVisualProperties(
        screen_info_ != visual_properties.screen_info ||
        capture_sequence_number() != visual_properties.capture_sequence_number ||
        last_received_zoom_level_ != visual_properties.zoom_level) &&
-      local_surface_id_ == surface_id.local_surface_id()) {
+      local_surface_id_allocation_.local_surface_id() ==
+          visual_properties.local_surface_id_allocation.local_surface_id()) {
     bad_message::ReceivedBadMessage(
         frame_proxy_in_parent_renderer_->GetProcess(),
         bad_message::CPFC_RESIZE_PARAMS_CHANGED_LOCAL_SURFACE_ID_UNCHANGED);
@@ -358,7 +353,7 @@ void CrossProcessFrameConnector::OnSynchronizeVisualProperties(
 
   last_received_zoom_level_ = visual_properties.zoom_level;
   last_received_local_frame_size_ = visual_properties.local_frame_size;
-  SynchronizeVisualProperties(surface_id, visual_properties);
+  SynchronizeVisualProperties(frame_sink_id, visual_properties);
 }
 
 void CrossProcessFrameConnector::OnUpdateViewportIntersection(
@@ -520,7 +515,7 @@ void CrossProcessFrameConnector::SetScreenSpaceRect(
 }
 
 void CrossProcessFrameConnector::ResetScreenSpaceRect() {
-  local_surface_id_ = viz::LocalSurfaceId();
+  local_surface_id_allocation_ = viz::LocalSurfaceIdAllocation();
   // TODO(lfg): Why do we need to reset the screen_space_rect_ that comes from
   // the parent when setting the child? https://crbug.com/809275
   screen_space_rect_in_pixels_ = gfx::Rect();

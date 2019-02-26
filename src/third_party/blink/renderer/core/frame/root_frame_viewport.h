@@ -32,8 +32,12 @@ class CORE_EXPORT RootFrameViewport final
  public:
   static RootFrameViewport* Create(ScrollableArea& visual_viewport,
                                    ScrollableArea& layout_viewport) {
-    return new RootFrameViewport(visual_viewport, layout_viewport);
+    return MakeGarbageCollected<RootFrameViewport>(visual_viewport,
+                                                   layout_viewport);
   }
+
+  RootFrameViewport(ScrollableArea& visual_viewport,
+                    ScrollableArea& layout_viewport);
 
   void Trace(blink::Visitor*) override;
 
@@ -121,9 +125,6 @@ class CORE_EXPORT RootFrameViewport final
   ScrollbarTheme& GetPageScrollbarTheme() const override;
 
  private:
-  RootFrameViewport(ScrollableArea& visual_viewport,
-                    ScrollableArea& layout_viewport);
-
   enum ViewportToScrollFirst { kVisualViewport, kLayoutViewport };
 
   ScrollOffset ScrollOffsetFromScrollAnimators() const;

@@ -184,6 +184,7 @@ class RunAttributes(object):
       'debug_tarball_generated',      # Set by DebugSymbolsStage.
       'images_generated',             # Set by BuildImageStage.
       'test_artifacts_uploaded',      # Set by UploadHWTestArtifacts.
+      'autotest_tarball_generated',   # Set by ArchiveStage.
       'instruction_urls_per_channel', # Set by ArchiveStage
       'success',                      # Set by cbuildbot.py:Builder
       'packages_under_test',          # Set by BuildPackagesStage.
@@ -675,7 +676,7 @@ class _BuilderRunBase(object):
     # waterfall if no waterfall can be found.
     return (self.attrs.metadata.GetDict().get('buildbot-master-name') or
             os.environ.get('BUILDBOT_MASTERNAME') or
-            waterfall.WATERFALL_TRYBOT)
+            waterfall.WATERFALL_SWARMING)
 
   def GetBuildbotUrl(self):
     """Gets the URL of the waterfall hosting the current build."""
@@ -685,7 +686,7 @@ class _BuilderRunBase(object):
     # waterfall if no waterfall can be found.
     return (self.attrs.metadata.GetDict().get('buildbot-url') or
             os.environ.get('BUILDBOT_BUILDBOTURL') or
-            constants.TRYBOT_DASHBOARD)
+            constants.SWARMING_DASHBOARD)
 
   def GetBuilderName(self):
     """Get the name of this builder on the current waterfall."""

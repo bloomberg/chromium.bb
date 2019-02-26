@@ -17,7 +17,9 @@ class GamepadPose final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static GamepadPose* Create() { return new GamepadPose(); }
+  static GamepadPose* Create() { return MakeGarbageCollected<GamepadPose>(); }
+
+  GamepadPose();
 
   bool hasOrientation() const { return has_orientation_; }
   bool hasPosition() const { return has_position_; }
@@ -34,8 +36,6 @@ class GamepadPose final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  GamepadPose();
-
   bool has_orientation_;
   bool has_position_;
 

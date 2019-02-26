@@ -12,7 +12,6 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
-#include "components/safe_browsing/features.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -79,11 +78,6 @@ void AdvancedProtectionStatusManager::MaybeRefreshOnStartUp() {
         FROM_HERE, minimum_delay_, this,
         &AdvancedProtectionStatusManager::RefreshAdvancedProtectionStatus);
   }
-}
-
-// static
-bool AdvancedProtectionStatusManager::IsEnabled() {
-  return base::FeatureList::IsEnabled(kAdvancedProtectionStatusFeature);
 }
 
 void AdvancedProtectionStatusManager::Shutdown() {
@@ -193,7 +187,7 @@ void AdvancedProtectionStatusManager::RefreshAdvancedProtectionStatus() {
     return;
 
   // Refresh OAuth access token.
-  OAuth2TokenService::ScopeSet scopes;
+  identity::ScopeSet scopes;
   scopes.insert(GaiaConstants::kOAuth1LoginScope);
 
   access_token_fetcher_ =

@@ -72,6 +72,9 @@ Polymer({
 
     /** @private */
     lastFocused_: Object,
+
+    /** @private */
+    listBlurred_: Boolean,
   },
 
   /** @private {settings.LocalDataBrowserProxy} */
@@ -111,19 +114,6 @@ Polymer({
       ironList.scrollToIndex(0);
       this.browserProxy_.reloadCookies().then(this.updateSiteList_.bind(this));
     }
-  },
-
-  /**
-   * Returns the icon to use for a given site.
-   * @param {string} url The url of the site to fetch the icon for.
-   * @return {string} Value for background-image style.
-   * @private
-   */
-  favicon_: function(url) {
-    // If the url doesn't have a scheme, inject HTTP as the scheme. Otherwise,
-    // the URL isn't valid and no icon will be returned.
-    const urlWithScheme = url.includes('://') ? url : 'http://' + url;
-    return cr.icon.getFavicon(urlWithScheme);
   },
 
   /**

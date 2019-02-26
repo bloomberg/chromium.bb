@@ -44,6 +44,7 @@ class ScreenshotSyncIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
   @classmethod
   def AddCommandlineArgs(cls, parser):
+    super(ScreenshotSyncIntegrationTest, cls).AddCommandlineArgs(parser)
     parser.add_option(
       '--dont-restore-color-profile-after-test',
       dest='dont_restore_color_profile_after_test',

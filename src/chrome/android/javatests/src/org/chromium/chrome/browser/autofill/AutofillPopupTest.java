@@ -4,17 +4,24 @@
 
 package org.chromium.chrome.browser.autofill;
 
+import android.app.Activity;
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
+import android.support.annotation.Nullable;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.Callback;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -26,6 +33,7 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -148,20 +156,31 @@ public class AutofillPopupTest {
         Features.getInstance().enable(ChromeFeatureList.AUTOFILL_ALLOW_NON_HTTP_ACTIVATION);
     }
 
-    private void loadAndFillForm(final String formDataUrl, final String inputText)
+    @After
+    public void tearDown() throws Exception {
+        mActivityTestRule.getActivity().setRequestedOrientation(
+                ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+    }
+
+    private void loadForm(final String formDataUrl, final String inputText,
+            @Nullable Callback<Activity> updateActivity)
             throws InterruptedException, ExecutionException, TimeoutException {
         mActivityTestRule.startMainActivityWithURL(formDataUrl);
-        mHelper = new AutofillTestHelper();
+        if (updateActivity != null) {
+            updateActivity.onResult(mActivityTestRule.getActivity());
+            InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        }
 
         // The TestInputMethodManagerWrapper intercepts showSoftInput so that a keyboard is never
         // brought up.
         final WebContents webContents = mActivityTestRule.getActivity().getCurrentWebContents();
-        final ViewGroup view = webContents.getViewAndroidDelegate().getContainerView();
         final ImeAdapter imeAdapter = WebContentsUtils.getImeAdapter(webContents);
         TestInputMethodManagerWrapper immw = TestInputMethodManagerWrapper.create(imeAdapter);
         imeAdapter.setInputMethodManagerWrapper(immw);
 
         // Add an Autofill profile.
+        mHelper = new AutofillTestHelper();
         AutofillProfile profile = new AutofillProfile(
                 "" /* guid */, ORIGIN, FIRST_NAME + " " + LAST_NAME, COMPANY_NAME,
                 STREET_ADDRESS_TEXTAREA,
@@ -179,6 +198,16 @@ public class AutofillPopupTest {
 
         imeAdapter.setComposingTextForTest(inputText, 1);
 
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+    }
+
+    private void loadAndFillForm(final String formDataUrl, final String inputText,
+            @Nullable Callback<Activity> updateActivity)
+            throws InterruptedException, ExecutionException, TimeoutException {
+        loadForm(formDataUrl, inputText, updateActivity);
+
+        final WebContents webContents = mActivityTestRule.getActivity().getCurrentWebContents();
+        final ViewGroup view = webContents.getViewAndroidDelegate().getContainerView();
         waitForAnchorViewAdd(view);
         View anchorView = view.findViewById(R.id.dropdown_popup_window);
 
@@ -186,11 +215,16 @@ public class AutofillPopupTest {
         final DropdownPopupWindowInterface popup =
                 (DropdownPopupWindowInterface) anchorView.getTag();
 
-        waitForAutofillPopopShow(popup);
+        waitForAutofillPopupShow(popup);
 
         TouchCommon.singleClickView(popup.getListView(), 10, 10);
 
-        waitForInputFieldFill(webContents);
+        waitForInputFieldFill();
+    }
+
+    private void loadAndFillForm(final String formDataUrl, final String inputText)
+            throws InterruptedException, ExecutionException, TimeoutException {
+        loadAndFillForm(formDataUrl, inputText, null);
     }
 
     /**
@@ -299,6 +333,52 @@ public class AutofillPopupTest {
         // Country will not be logged since "US" is not a valid <option>.
     }
 
+    @Test
+    @MediumTest
+    @Feature({"autofill"})
+    @EnableFeatures(ChromeFeatureList.AUTOFILL_REFRESH_STYLE_ANDROID)
+    public void testScreenOrientationPortrait()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        runTestScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"autofill"})
+    @EnableFeatures(ChromeFeatureList.AUTOFILL_REFRESH_STYLE_ANDROID)
+    public void testScreenOrientationLandscape()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        runTestScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+    }
+
+    private void runTestScreenOrientation(int orientation)
+            throws InterruptedException, ExecutionException, TimeoutException {
+        // TODO(crbug.com/905081): Also test different screen sizes.
+        loadForm(BASIC_PAGE_DATA, "J", activity -> activity.setRequestedOrientation(orientation));
+
+        ChromeActivity activity = mActivityTestRule.getActivity();
+        final WebContents webContents = activity.getCurrentWebContents();
+        final Configuration config = activity.getResources().getConfiguration();
+        final boolean shouldShowPopup = config.orientation == Configuration.ORIENTATION_PORTRAIT
+                || config.isLayoutSizeAtLeast(Configuration.SCREENLAYOUT_SIZE_XLARGE);
+        final ViewGroup view = webContents.getViewAndroidDelegate().getContainerView();
+        if (shouldShowPopup) {
+            waitForAnchorViewAdd(view);
+        } else {
+            InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        }
+        final View popup = view.findViewById(R.id.dropdown_popup_window);
+
+        final String message = "Mismatched dropdown_popup_window for orientation: "
+                + (orientation == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE ? "landscape"
+                                                                            : "portrait");
+        if (shouldShowPopup) {
+            Assert.assertNotNull(message, popup);
+        } else {
+            Assert.assertNull(message, popup);
+        }
+    }
+
     // Wait and assert helper methods -------------------------------------------------------------
 
     private void waitForKeyboardShowRequest(final TestInputMethodManagerWrapper immw,
@@ -317,7 +397,7 @@ public class AutofillPopupTest {
         });
     }
 
-    private void waitForAutofillPopopShow(final DropdownPopupWindowInterface popup) {
+    private void waitForAutofillPopupShow(final DropdownPopupWindowInterface popup) {
         CriteriaHelper.pollUiThread(
                 new Criteria("Autofill Popup anchor view was never added.") {
                     @Override
@@ -329,14 +409,16 @@ public class AutofillPopupTest {
                 });
     }
 
-    private void waitForInputFieldFill(final WebContents webContents) {
+    private void waitForInputFieldFill() {
         CriteriaHelper.pollInstrumentationThread(
                 new Criteria("First name field was never filled.") {
                     @Override
                     public boolean isSatisfied() {
                         try {
                             return TextUtils.equals(FIRST_NAME,
-                                    DOMUtils.getNodeValue(webContents, "fn"));
+                                    DOMUtils.getNodeValue(
+                                            mActivityTestRule.getActivity().getCurrentWebContents(),
+                                            "fn"));
                         } catch (InterruptedException e) {
                             return false;
                         } catch (TimeoutException e) {

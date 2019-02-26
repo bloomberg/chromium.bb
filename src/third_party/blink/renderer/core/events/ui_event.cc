@@ -22,11 +22,12 @@
 
 #include "third_party/blink/renderer/core/events/ui_event.h"
 
+#include "third_party/blink/renderer/core/event_interface_names.h"
 #include "third_party/blink/renderer/core/input/input_device_capabilities.h"
 
 namespace blink {
 
-UIEvent::UIEvent() : detail_(0), source_capabilities_(nullptr) {}
+UIEvent::UIEvent() : detail_(0) {}
 
 UIEvent::UIEvent(const AtomicString& event_type,
                  Bubbles bubbles,
@@ -46,12 +47,12 @@ UIEvent::UIEvent(const AtomicString& event_type,
       source_capabilities_(source_capabilities_arg) {}
 
 UIEvent::UIEvent(const AtomicString& event_type,
-                 const UIEventInit& initializer,
+                 const UIEventInit* initializer,
                  TimeTicks platform_time_stamp)
     : Event(event_type, initializer, platform_time_stamp),
-      view_(initializer.view()),
-      detail_(initializer.detail()),
-      source_capabilities_(initializer.sourceCapabilities()) {}
+      view_(initializer->view()),
+      detail_(initializer->detail()),
+      source_capabilities_(initializer->sourceCapabilities()) {}
 
 UIEvent::~UIEvent() = default;
 
@@ -87,7 +88,7 @@ bool UIEvent::IsUIEvent() const {
 }
 
 const AtomicString& UIEvent::InterfaceName() const {
-  return EventNames::UIEvent;
+  return event_interface_names::kUIEvent;
 }
 
 unsigned UIEvent::which() const {

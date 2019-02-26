@@ -11,6 +11,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/base64url.h"
+#include "base/bind.h"
 #include "base/format_macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -30,6 +32,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/browser/randomized_encoder.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -42,16 +45,18 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/data_element.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/third_party/mozilla/url_parse.h"
 
-using base::ASCIIToUTF16;
-using net::test_server::EmbeddedTestServer;
+using base::UTF8ToUTF16;
 using net::test_server::BasicHttpResponse;
+using net::test_server::EmbeddedTestServer;
 using net::test_server::HttpRequest;
 using net::test_server::HttpResponse;
 namespace autofill {
@@ -69,6 +74,47 @@ std::vector<FormStructure*> ToRawPointerVector(
   for (const auto& item : list)
     result.push_back(item.get());
   return result;
+}
+
+// Puts all data elements within the response body together in a single
+// DataElement and return the buffered content as a string. This ensure all
+// the response body data is utilized.
+std::string GetStringFromDataElements(
+    const std::vector<network::DataElement>* data_elements) {
+  network::DataElement unified_data_element;
+  auto data_elements_it = data_elements->begin();
+  if (data_elements_it != data_elements->end()) {
+    unified_data_element.SetToBytes(data_elements_it->bytes(),
+                                    data_elements_it->length());
+  }
+  ++data_elements_it;
+  while (data_elements_it != data_elements->end()) {
+    unified_data_element.AppendBytes(data_elements_it->bytes(),
+                                     data_elements_it->length());
+    ++data_elements_it;
+  }
+  // Using the std::string constructor with length ensures that we don't rely
+  // on having a termination character to delimit the string. This is the
+  // safest approach.
+  return std::string(unified_data_element.bytes(),
+                     unified_data_element.length());
+}
+
+// Gets the AutofillUploadRequest proto from the HTTP loader request payload.
+// Will return false if failed to get the proto.
+bool GetUploadRequestProtoFromRequest(
+    network::TestURLLoaderFactory::PendingRequest* loader_request,
+    AutofillUploadRequest* upload_request) {
+  if (loader_request->request.request_body == nullptr) {
+    return false;
+  }
+
+  std::string request_body_content = GetStringFromDataElements(
+      loader_request->request.request_body->elements());
+  if (!upload_request->ParseFromString(request_body_content)) {
+    return false;
+  }
+  return true;
 }
 
 }  // namespace
@@ -157,38 +203,38 @@ TEST_F(AutofillDownloadManagerTest, QueryAndUploadTest) {
   FormData form;
 
   FormFieldData field;
-  field.label = ASCIIToUTF16("username");
-  field.name = ASCIIToUTF16("username");
+  field.label = UTF8ToUTF16("username");
+  field.name = UTF8ToUTF16("username");
   field.form_control_type = "text";
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("First Name");
-  field.name = ASCIIToUTF16("firstname");
+  field.label = UTF8ToUTF16("First Name");
+  field.name = UTF8ToUTF16("firstname");
   field.form_control_type = "text";
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Last Name");
-  field.name = ASCIIToUTF16("lastname");
+  field.label = UTF8ToUTF16("Last Name");
+  field.name = UTF8ToUTF16("lastname");
   field.form_control_type = "text";
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("email");
-  field.name = ASCIIToUTF16("email");
+  field.label = UTF8ToUTF16("email");
+  field.name = UTF8ToUTF16("email");
   field.form_control_type = "text";
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("email2");
-  field.name = ASCIIToUTF16("email2");
+  field.label = UTF8ToUTF16("email2");
+  field.name = UTF8ToUTF16("email2");
   field.form_control_type = "text";
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("password");
-  field.name = ASCIIToUTF16("password");
+  field.label = UTF8ToUTF16("password");
+  field.name = UTF8ToUTF16("password");
   field.form_control_type = "password";
   form.fields.push_back(field);
 
   field.label = base::string16();
-  field.name = ASCIIToUTF16("Submit");
+  field.name = UTF8ToUTF16("Submit");
   field.form_control_type = "submit";
   form.fields.push_back(field);
 
@@ -197,23 +243,23 @@ TEST_F(AutofillDownloadManagerTest, QueryAndUploadTest) {
 
   form.fields.clear();
 
-  field.label = ASCIIToUTF16("address");
-  field.name = ASCIIToUTF16("address");
+  field.label = UTF8ToUTF16("address");
+  field.name = UTF8ToUTF16("address");
   field.form_control_type = "text";
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("address2");
-  field.name = ASCIIToUTF16("address2");
+  field.label = UTF8ToUTF16("address2");
+  field.name = UTF8ToUTF16("address2");
   field.form_control_type = "text";
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("city");
-  field.name = ASCIIToUTF16("city");
+  field.label = UTF8ToUTF16("city");
+  field.name = UTF8ToUTF16("city");
   field.form_control_type = "text";
   form.fields.push_back(field);
 
   field.label = base::string16();
-  field.name = ASCIIToUTF16("Submit");
+  field.name = UTF8ToUTF16("Submit");
   field.form_control_type = "submit";
   form.fields.push_back(field);
 
@@ -221,44 +267,55 @@ TEST_F(AutofillDownloadManagerTest, QueryAndUploadTest) {
 
   form.fields.clear();
 
-  field.label = ASCIIToUTF16("username");
-  field.name = ASCIIToUTF16("username");
+  field.label = UTF8ToUTF16("username");
+  field.name = UTF8ToUTF16("username");
   field.form_control_type = "text";
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("password");
-  field.name = ASCIIToUTF16("password");
+  field.label = UTF8ToUTF16("password");
+  field.name = UTF8ToUTF16("password");
   field.form_control_type = "password";
   form.fields.push_back(field);
 
   field.label = base::string16();
-  field.name = ASCIIToUTF16("Submit");
+  field.name = UTF8ToUTF16("Submit");
   field.form_control_type = "submit";
   form.fields.push_back(field);
 
   form_structures.push_back(std::make_unique<FormStructure>(form));
 
+  // Make download manager.
+  AutofillDownloadManager download_manager(&driver_, this, "dummykey");
+
   // Request with id 0.
   base::HistogramTester histogram;
   EXPECT_TRUE(
-      download_manager_.StartQueryRequest(ToRawPointerVector(form_structures)));
+      download_manager.StartQueryRequest(ToRawPointerVector(form_structures)));
   histogram.ExpectUniqueSample("Autofill.ServerQueryResponse",
                                AutofillMetrics::QUERY_SENT, 1);
   histogram.ExpectUniqueSample("Autofill.Query.Method", METHOD_GET, 1);
 
+  // Validate if the API key is in the request headers.
+  network::TestURLLoaderFactory::PendingRequest* request =
+      test_url_loader_factory_.GetPendingRequest(0);
+  std::string api_key_header_value;
+  EXPECT_TRUE(request->request.headers.GetHeader("X-Goog-Api-Key",
+                                                 &api_key_header_value));
+  EXPECT_EQ(api_key_header_value, "dummykey");
+
   // Request with id 1.
-  EXPECT_TRUE(download_manager_.StartUploadRequest(
+  EXPECT_TRUE(download_manager.StartUploadRequest(
       *(form_structures[0]), true, ServerFieldTypeSet(), std::string(), true,
       pref_service_.get()));
   // Request with id 2.
-  EXPECT_TRUE(download_manager_.StartUploadRequest(
+  EXPECT_TRUE(download_manager.StartUploadRequest(
       *(form_structures[1]), false, ServerFieldTypeSet(), std::string(), true,
       pref_service_.get()));
   // Request with id 3. Upload request with a non-empty additional password form
   // signature.
-  EXPECT_TRUE(download_manager_.StartUploadRequest(*(form_structures[2]), false,
-                                                   ServerFieldTypeSet(), "42",
-                                                   true, pref_service_.get()));
+  EXPECT_TRUE(download_manager.StartUploadRequest(*(form_structures[2]), false,
+                                                  ServerFieldTypeSet(), "42",
+                                                  true, pref_service_.get()));
 
   const char* responses[] = {
       "<autofillqueryresponse>"
@@ -277,7 +334,7 @@ TEST_F(AutofillDownloadManagerTest, QueryAndUploadTest) {
   // Return them out of sequence.
 
   // Request 1: Successful upload.
-  auto* request = test_url_loader_factory_.GetPendingRequest(1);
+  request = test_url_loader_factory_.GetPendingRequest(1);
   test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
       request, responses[1]);
   histogram.ExpectBucketCount("Autofill.Upload.HttpResponseOrErrorCode",
@@ -328,15 +385,15 @@ TEST_F(AutofillDownloadManagerTest, QueryAndUploadTest) {
   responses_.pop_front();
 
   // Modify form structures to miss the cache.
-  field.label = ASCIIToUTF16("Address line 2");
-  field.name = ASCIIToUTF16("address2");
+  field.label = UTF8ToUTF16("Address line 2");
+  field.name = UTF8ToUTF16("address2");
   field.form_control_type = "text";
   form.fields.push_back(field);
   form_structures.push_back(std::make_unique<FormStructure>(form));
 
   // Request with id 4, not successful.
   EXPECT_TRUE(
-      download_manager_.StartQueryRequest(ToRawPointerVector(form_structures)));
+      download_manager.StartQueryRequest(ToRawPointerVector(form_structures)));
   request = test_url_loader_factory_.GetPendingRequest(4);
   histogram.ExpectUniqueSample("Autofill.ServerQueryResponse",
                                AutofillMetrics::QUERY_SENT, 2);
@@ -358,7 +415,7 @@ TEST_F(AutofillDownloadManagerTest, QueryAndUploadTest) {
 
   // Request with id 5. Let's pretend we hit the cache.
   EXPECT_TRUE(
-      download_manager_.StartQueryRequest(ToRawPointerVector(form_structures)));
+      download_manager.StartQueryRequest(ToRawPointerVector(form_structures)));
   histogram.ExpectBucketCount("Autofill.ServerQueryResponse",
                               AutofillMetrics::QUERY_SENT, 3);
   histogram.ExpectBucketCount("Autofill.Query.Method", METHOD_GET, 3);
@@ -381,15 +438,15 @@ TEST_F(AutofillDownloadManagerTest, QueryAndUploadTest) {
   fl2.InitAndDisableFeature(features::kAutofillCacheQueryResponses);
 
   // Don't hit the in-mem cache.
-  field.label = ASCIIToUTF16("Address line 3");
-  field.name = ASCIIToUTF16("address3");
+  field.label = UTF8ToUTF16("Address line 3");
+  field.name = UTF8ToUTF16("address3");
   field.form_control_type = "text";
   form.fields.push_back(field);
   form_structures.push_back(std::make_unique<FormStructure>(form));
 
   // Request with id 6
   EXPECT_TRUE(
-      download_manager_.StartQueryRequest(ToRawPointerVector(form_structures)));
+      download_manager.StartQueryRequest(ToRawPointerVector(form_structures)));
   histogram.ExpectBucketCount("Autofill.ServerQueryResponse",
                               AutofillMetrics::QUERY_SENT, 4);
   histogram.ExpectBucketCount("Autofill.Query.Method", METHOD_POST, 1);
@@ -399,26 +456,176 @@ TEST_F(AutofillDownloadManagerTest, QueryAndUploadTest) {
   histogram.ExpectBucketCount("Autofill.Query.WasInCache", CACHE_MISS, 2);
 }
 
+TEST_F(AutofillDownloadManagerTest, QueryAPITest) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      // Enabled
+      // We want to query the API rather than the legacy server.
+      {features::kAutofillUseApi},
+      // Disabled
+      {});
+
+  // Build the form structures that we want to query.
+  FormData form;
+  FormFieldData field;
+
+  field.label = UTF8ToUTF16("First Name");
+  field.name = UTF8ToUTF16("firstname");
+  field.form_control_type = "text";
+  form.fields.push_back(field);
+
+  field.label = UTF8ToUTF16("Last Name");
+  field.name = UTF8ToUTF16("lastname");
+  field.form_control_type = "text";
+  form.fields.push_back(field);
+
+  std::vector<std::unique_ptr<FormStructure>> form_structures;
+  form_structures.push_back(std::make_unique<FormStructure>(form));
+
+  AutofillDownloadManager download_manager(&driver_, this, "dummykey");
+
+  // Start the query request and look if it is successful. No response was
+  // received yet.
+  base::HistogramTester histogram;
+  EXPECT_TRUE(
+      download_manager.StartQueryRequest(ToRawPointerVector(form_structures)));
+
+  // Verify if histograms are right.
+  histogram.ExpectUniqueSample("Autofill.ServerQueryResponse",
+                               AutofillMetrics::QUERY_SENT, 1);
+  histogram.ExpectUniqueSample("Autofill.Query.Method", METHOD_GET, 1);
+
+  // Inspect the request that the test URL loader sent.
+  network::TestURLLoaderFactory::PendingRequest* request =
+      test_url_loader_factory_.GetPendingRequest(0);
+  // This is the URL we expect to query the API. The sub-path right after
+  // "/page" corresponds to the serialized AutofillPageQueryRequest proto (that
+  // we filled forms in) encoded in base64. The Autofill
+  // https://clients1.google.com/ domain URL corresponds to the default domain
+  // used by the download manager.
+  const std::string expected_url = {
+      "https://clients1.google.com/v1/pages/"
+      "Chc2LjEuMTcxNS4xNDQyL2VuIChHR0xMKRIlCU9O84MyjH9NEgsNeu"
+      "FP4BIAGgAiABILDZxOStASABoAIgAaAA==?"
+      "alt=proto"};
+  EXPECT_EQ(request->request.url, expected_url);
+  std::string api_key_header_value;
+  EXPECT_TRUE(request->request.headers.GetHeader("X-Goog-Api-Key",
+                                                 &api_key_header_value));
+  EXPECT_EQ(api_key_header_value, "dummykey");
+
+  test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
+      request, "dummy response");
+  // Upon reception of a suggestions query, we expect OnLoadedServerPredictions
+  // to be called back from the observer and some histograms be incremented.
+  EXPECT_EQ(1U, responses_.size());
+  EXPECT_EQ(responses_.front().type_of_response,
+            AutofillDownloadManagerTest::QUERY_SUCCESSFULL);
+  histogram.ExpectBucketCount("Autofill.Query.WasInCache", CACHE_MISS, 1);
+  histogram.ExpectBucketCount("Autofill.Query.HttpResponseOrErrorCode",
+                              net::HTTP_OK, 1);
+}
+
+// Test whether uploading vote content to the API is done right. We only do some
+// spot checks. No thorough testing is done here. Using the API does not add new
+// upload logic.
+//
+// We expect the download manager to do the following things:
+//   * Use the right API canonical URL when uploading.
+//   * Serialize the upload proto content using the API upload request proto.
+TEST_F(AutofillDownloadManagerTest, UploadToAPITest) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      // Enabled
+      // We want to query the API rather than the legacy server.
+      {features::kAutofillUseApi},
+      // Disabled
+      // We don't want upload throttling for testing purpose.
+      {features::kAutofillUploadThrottling});
+
+  // Build the form structures that we want to query.
+  FormData form;
+  FormFieldData field;
+
+  field.label = UTF8ToUTF16("First Name");
+  field.name = UTF8ToUTF16("firstname");
+  field.form_control_type = "text";
+  form.fields.push_back(field);
+
+  field.label = UTF8ToUTF16("Last Name");
+  field.name = UTF8ToUTF16("lastname");
+  field.form_control_type = "text";
+  form.fields.push_back(field);
+  FormStructure form_structure(form);
+  form_structure.set_submission_source(SubmissionSource::FORM_SUBMISSION);
+
+  std::unique_ptr<PrefService> pref_service = test::PrefServiceForTesting();
+  AutofillDownloadManager download_manager(&driver_, this, "dummykey");
+  EXPECT_TRUE(download_manager.StartUploadRequest(form_structure, true,
+                                                  ServerFieldTypeSet(), "",
+                                                  true, pref_service.get()));
+
+  // Inspect the request that the test URL loader sent.
+  network::TestURLLoaderFactory::PendingRequest* request =
+      test_url_loader_factory_.GetPendingRequest(0);
+
+  // This is the URL we expect to upload votes to the API. The Autofill
+  // https://clients1.google.com/ domain URL corresponds to the
+  // default one used by the download manager. Request upload data is in the
+  // payload when uploading.
+  const std::string expected_url =
+      "https://clients1.google.com/v1/forms:vote?alt=proto";
+  EXPECT_EQ(request->request.url, expected_url);
+  std::string api_key_header_value;
+  EXPECT_TRUE(request->request.headers.GetHeader("X-Goog-Api-Key",
+                                                 &api_key_header_value));
+  EXPECT_EQ(api_key_header_value, "dummykey");
+
+  // Assert some of the fields within the uploaded proto to make sure it was
+  // filled with something else than default data.
+  base::HistogramTester histogram;
+  AutofillUploadRequest upload_request;
+  EXPECT_TRUE(GetUploadRequestProtoFromRequest(request, &upload_request));
+  EXPECT_GT(upload_request.upload().client_version().size(), 0U);
+  EXPECT_EQ(upload_request.upload().form_signature(),
+            form_structure.form_signature());
+
+  // Trigger an upload response from the API and assert upload response content.
+  test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
+      request, "");
+  // Upon reception of a suggestions query, we expect
+  // OnUploadedPossibleFieldTypes  to be called back from the observer and some
+  // histograms be incremented.
+  EXPECT_EQ(1U, responses_.size());
+  // Request should be upload and successful.
+  EXPECT_EQ(AutofillDownloadManagerTest::UPLOAD_SUCCESSFULL,
+            responses_.front().type_of_response);
+  // We expect the request to be OK and corresponding response code to be
+  // counted.
+  histogram.ExpectBucketCount("Autofill.Upload.HttpResponseOrErrorCode",
+                              net::HTTP_OK, 1);
+}
+
 TEST_F(AutofillDownloadManagerTest, BackoffLogic_Query) {
   FormData form;
   FormFieldData field;
-  field.label = ASCIIToUTF16("address");
-  field.name = ASCIIToUTF16("address");
+  field.label = UTF8ToUTF16("address");
+  field.name = UTF8ToUTF16("address");
   field.form_control_type = "text";
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("address2");
-  field.name = ASCIIToUTF16("address2");
+  field.label = UTF8ToUTF16("address2");
+  field.name = UTF8ToUTF16("address2");
   field.form_control_type = "text";
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("city");
-  field.name = ASCIIToUTF16("city");
+  field.label = UTF8ToUTF16("city");
+  field.name = UTF8ToUTF16("city");
   field.form_control_type = "text";
   form.fields.push_back(field);
 
   field.label = base::string16();
-  field.name = ASCIIToUTF16("Submit");
+  field.name = UTF8ToUTF16("Submit");
   field.form_control_type = "submit";
   form.fields.push_back(field);
 
@@ -474,23 +681,23 @@ TEST_F(AutofillDownloadManagerTest, BackoffLogic_Query) {
 TEST_F(AutofillDownloadManagerTest, BackoffLogic_Upload) {
   FormData form;
   FormFieldData field;
-  field.label = ASCIIToUTF16("address");
-  field.name = ASCIIToUTF16("address");
+  field.label = UTF8ToUTF16("address");
+  field.name = UTF8ToUTF16("address");
   field.form_control_type = "text";
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("address2");
-  field.name = ASCIIToUTF16("address2");
+  field.label = UTF8ToUTF16("address2");
+  field.name = UTF8ToUTF16("address2");
   field.form_control_type = "text";
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("city");
-  field.name = ASCIIToUTF16("city");
+  field.label = UTF8ToUTF16("city");
+  field.name = UTF8ToUTF16("city");
   field.form_control_type = "text";
   form.fields.push_back(field);
 
   field.label = base::string16();
-  field.name = ASCIIToUTF16("Submit");
+  field.name = UTF8ToUTF16("Submit");
   field.form_control_type = "submit";
   form.fields.push_back(field);
 
@@ -607,32 +814,32 @@ TEST_F(AutofillDownloadManagerTest, CacheQueryTest) {
   FormFieldData field;
   field.form_control_type = "text";
 
-  field.label = ASCIIToUTF16("username");
-  field.name = ASCIIToUTF16("username");
+  field.label = UTF8ToUTF16("username");
+  field.name = UTF8ToUTF16("username");
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("First Name");
-  field.name = ASCIIToUTF16("firstname");
+  field.label = UTF8ToUTF16("First Name");
+  field.name = UTF8ToUTF16("firstname");
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Last Name");
-  field.name = ASCIIToUTF16("lastname");
+  field.label = UTF8ToUTF16("Last Name");
+  field.name = UTF8ToUTF16("lastname");
   form.fields.push_back(field);
 
   std::vector<std::unique_ptr<FormStructure>> form_structures0;
   form_structures0.push_back(std::make_unique<FormStructure>(form));
 
   // Add a slightly different form, which should result in a different request.
-  field.label = ASCIIToUTF16("email");
-  field.name = ASCIIToUTF16("email");
+  field.label = UTF8ToUTF16("email");
+  field.name = UTF8ToUTF16("email");
   form.fields.push_back(field);
   std::vector<std::unique_ptr<FormStructure>> form_structures1;
   form_structures1.push_back(std::make_unique<FormStructure>(form));
 
   // Add another slightly different form, which should also result in a
   // different request.
-  field.label = ASCIIToUTF16("email2");
-  field.name = ASCIIToUTF16("email2");
+  field.label = UTF8ToUTF16("email2");
+  field.name = UTF8ToUTF16("email2");
   form.fields.push_back(field);
   std::vector<std::unique_ptr<FormStructure>> form_structures2;
   form_structures2.push_back(std::make_unique<FormStructure>(form));
@@ -833,11 +1040,34 @@ class AutofillServerCommunicationTest
     run_loop_->QuitWhenIdle();
   }
 
+  // Helper to extract the value of a query param. Returns "*** not found ***"
+  // if the requested query param is not in the query string.
+  std::string GetQueryParam(const std::string& query_str,
+                            const std::string& param_name) {
+    url::Component query(0, query_str.length());
+    url::Component key, value;
+    while (url::ExtractQueryKeyValue(query_str.c_str(), &query, &key, &value)) {
+      base::StringPiece key_string(query_str.c_str() + key.begin, key.len);
+      base::StringPiece param_text(query_str.c_str() + value.begin, value.len);
+      std::string param_value;
+      if (key_string == param_name &&
+          base::Base64UrlDecode(param_text,
+                                base::Base64UrlDecodePolicy::REQUIRE_PADDING,
+                                &param_value)) {
+        return param_value;
+      }
+    }
+    return "*** not found ***";
+  }
+
   std::unique_ptr<HttpResponse> RequestHandler(const HttpRequest& request) {
     GURL absolute_url = server_.GetURL(request.relative_url);
     ++call_count_;
 
     if (absolute_url.path() == "/tbproxy/af/query") {
+      payloads_.push_back(!request.content.empty()
+                              ? request.content
+                              : GetQueryParam(absolute_url.query(), "q"));
       AutofillQueryResponseContents proto;
       proto.add_field()->set_overall_type_prediction(NAME_FIRST);
 
@@ -855,6 +1085,7 @@ class AutofillServerCommunicationTest
     }
 
     if (absolute_url.path() == "/tbproxy/af/upload") {
+      payloads_.push_back(request.content);
       auto response = std::make_unique<BasicHttpResponse>();
       response->set_code(net::HTTP_OK);
       return response;
@@ -907,6 +1138,7 @@ class AutofillServerCommunicationTest
   scoped_refptr<network::TestSharedURLLoaderFactory> shared_url_loader_factory_;
   std::unique_ptr<TestAutofillDriver> driver_;
   std::unique_ptr<PrefService> pref_service_;
+  std::vector<std::string> payloads_;
 };
 
 }  // namespace
@@ -920,8 +1152,8 @@ TEST_P(AutofillServerCommunicationTest, Query) {
   FormData form;
   FormFieldData field;
 
-  field.label = ASCIIToUTF16("First Name:");
-  field.name = ASCIIToUTF16("firstname");
+  field.label = UTF8ToUTF16("First Name:");
+  field.name = UTF8ToUTF16("firstname");
   field.form_control_type = "text";
   form.fields.push_back(field);
 
@@ -935,18 +1167,18 @@ TEST_P(AutofillServerCommunicationTest, Upload) {
   FormData form;
   FormFieldData field;
 
-  field.label = ASCIIToUTF16("First Name:");
-  field.name = ASCIIToUTF16("firstname");
+  field.label = UTF8ToUTF16("First Name:");
+  field.name = UTF8ToUTF16("firstname");
   field.form_control_type = "text";
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Last Name:");
-  field.name = ASCIIToUTF16("lastname");
+  field.label = UTF8ToUTF16("Last Name:");
+  field.name = UTF8ToUTF16("lastname");
   field.form_control_type = "text";
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Email:");
-  field.name = ASCIIToUTF16("email");
+  field.label = UTF8ToUTF16("Email:");
+  field.name = UTF8ToUTF16("email");
   field.form_control_type = "text";
   form.fields.push_back(field);
 
@@ -967,8 +1199,8 @@ using AutofillQueryTest = AutofillServerCommunicationTest;
 
 TEST_P(AutofillQueryTest, CacheableResponse) {
   FormFieldData field;
-  field.label = ASCIIToUTF16("First Name:");
-  field.name = ASCIIToUTF16("firstname");
+  field.label = UTF8ToUTF16("First Name:");
+  field.name = UTF8ToUTF16("firstname");
   field.form_control_type = "text";
 
   FormData form;
@@ -1007,8 +1239,8 @@ TEST_P(AutofillQueryTest, CacheableResponse) {
 
 TEST_P(AutofillQueryTest, ExpiredCacheInResponse) {
   FormFieldData field;
-  field.label = ASCIIToUTF16("First Name:");
-  field.name = ASCIIToUTF16("firstname");
+  field.label = UTF8ToUTF16("First Name:");
+  field.name = UTF8ToUTF16("firstname");
   field.form_control_type = "text";
 
   FormData form;
@@ -1055,6 +1287,185 @@ TEST_P(AutofillQueryTest, ExpiredCacheInResponse) {
   }
 }
 
+TEST_P(AutofillQueryTest, RichMetadata_Enabled) {
+  // Initialize a form. Note that this state is post-parse.
+  FormData form;
+  form.origin = GURL("https://origin.com");
+  form.action = GURL("https://origin.com/submit-me");
+  form.id_attribute = UTF8ToUTF16("form-id-attribute");
+  form.name_attribute = UTF8ToUTF16("form-name-attribute");
+  form.name = form.name_attribute;
+
+  // Add field 0.
+  FormFieldData field;
+  field.id_attribute = UTF8ToUTF16("field-id-attribute-1");
+  field.name_attribute = UTF8ToUTF16("field-name-attribute-1");
+  field.name = field.name_attribute;
+  field.label = UTF8ToUTF16("field-label");
+  field.aria_label = UTF8ToUTF16("field-aria-label");
+  field.aria_description = UTF8ToUTF16("field-aria-description");
+  field.form_control_type = "text";
+  field.css_classes = UTF8ToUTF16("field-css-classes");
+  field.placeholder = UTF8ToUTF16("field-placeholder");
+  form.fields.push_back(field);
+
+  // Add field 1.
+  field.id_attribute = UTF8ToUTF16("field-id-attribute-2");
+  field.name_attribute = UTF8ToUTF16("field-name-attribute-2");
+  field.name = field.name_attribute;
+  field.label = UTF8ToUTF16("field-label");
+  field.aria_label = UTF8ToUTF16("field-aria-label");
+  field.aria_description = UTF8ToUTF16("field-aria-description");
+  field.form_control_type = "text";
+  field.css_classes = UTF8ToUTF16("field-css-classes");
+  field.placeholder = UTF8ToUTF16("field-placeholder");
+  form.fields.push_back(field);
+
+  // Add field 2.
+  field.id_attribute = UTF8ToUTF16("field-id-attribute-3");
+  field.name_attribute = UTF8ToUTF16("field-name-attribute-3");
+  field.name = field.name_attribute;
+  field.label = UTF8ToUTF16("field-label");
+  field.aria_label = UTF8ToUTF16("field-aria-label");
+  field.aria_description = UTF8ToUTF16("field-aria-description");
+  field.form_control_type = "text";
+  field.css_classes = UTF8ToUTF16("field-css-classes");
+  field.placeholder = UTF8ToUTF16("field-placeholder");
+  form.fields.push_back(field);
+
+  // Setup the form structures to query.
+  AutofillDownloadManager download_manager(driver_.get(), this);
+  std::vector<std::unique_ptr<FormStructure>> form_structures;
+  form_structures.push_back(std::make_unique<FormStructure>(form));
+
+  // Turn on rich query encoding.
+  form_structures.front()->set_is_rich_query_enabled(true);
+
+  // Generate a query request.
+  ASSERT_TRUE(SendQueryRequest(form_structures));
+  EXPECT_EQ(1u, call_count_);
+
+  // We should have intercepted exactly on query request. Parse it.
+  ASSERT_EQ(1u, payloads_.size());
+  AutofillQueryContents query;
+  ASSERT_TRUE(query.ParseFromString(payloads_.front()));
+
+  // Validate that we have one form in the query.
+  ASSERT_EQ(query.form_size(), 1);
+  const auto& query_form = query.form(0);
+
+  // The form should have metadata, and the metadata value should be equal
+  // those initialized above.
+  ASSERT_TRUE(query_form.has_form_metadata());
+  EXPECT_EQ(UTF8ToUTF16(query_form.form_metadata().id().encoded_bits()),
+            form.id_attribute);
+  EXPECT_EQ(UTF8ToUTF16(query_form.form_metadata().name().encoded_bits()),
+            form.name_attribute);
+
+  // The form should have 3 fields, and their metadata value should be equal
+  // those initialized above.
+  ASSERT_EQ(3, query_form.field_size());
+  ASSERT_EQ(static_cast<int>(form.fields.size()), query_form.field_size());
+  for (int i = 0; i < query_form.field_size(); ++i) {
+    const auto& query_field = query_form.field(i);
+    const auto& form_field = form.fields[i];
+    ASSERT_TRUE(query_field.has_field_metadata());
+    const auto& meta = query_field.field_metadata();
+    EXPECT_EQ(UTF8ToUTF16(meta.id().encoded_bits()), form_field.id_attribute);
+    EXPECT_EQ(UTF8ToUTF16(meta.name().encoded_bits()),
+              form_field.name_attribute);
+    EXPECT_EQ(meta.type().encoded_bits(), form_field.form_control_type);
+    EXPECT_EQ(UTF8ToUTF16(meta.label().encoded_bits()), form_field.label);
+    EXPECT_EQ(UTF8ToUTF16(meta.aria_label().encoded_bits()),
+              form_field.aria_label);
+    EXPECT_EQ(UTF8ToUTF16(meta.aria_description().encoded_bits()),
+              form_field.aria_description);
+    EXPECT_EQ(UTF8ToUTF16(meta.css_class().encoded_bits()),
+              form_field.css_classes);
+    EXPECT_EQ(UTF8ToUTF16(meta.placeholder().encoded_bits()),
+              form_field.placeholder);
+  }
+}
+
+TEST_P(AutofillQueryTest, RichMetadata_Disabled) {
+  // Initialize a form. Note that this state is post-parse.
+  FormData form;
+  form.origin = GURL("https://origin.com");
+  form.action = GURL("https://origin.com/submit-me");
+  form.id_attribute = UTF8ToUTF16("form-id-attribute");
+  form.name_attribute = UTF8ToUTF16("form-name-attribute");
+  form.name = form.name_attribute;
+
+  // Add field 0.
+  FormFieldData field;
+  field.id_attribute = UTF8ToUTF16("field-id-attribute-1");
+  field.name_attribute = UTF8ToUTF16("field-name-attribute-1");
+  field.name = field.name_attribute;
+  field.label = UTF8ToUTF16("field-label");
+  field.aria_label = UTF8ToUTF16("field-aria-label");
+  field.aria_description = UTF8ToUTF16("field-aria-description");
+  field.form_control_type = "text";
+  field.css_classes = UTF8ToUTF16("field-css-classes");
+  field.placeholder = UTF8ToUTF16("field-placeholder");
+  form.fields.push_back(field);
+
+  // Add field 1.
+  field.id_attribute = UTF8ToUTF16("field-id-attribute-2");
+  field.name_attribute = UTF8ToUTF16("field-name-attribute-2");
+  field.name = field.name_attribute;
+  field.label = UTF8ToUTF16("field-label");
+  field.aria_label = UTF8ToUTF16("field-aria-label");
+  field.aria_description = UTF8ToUTF16("field-aria-description");
+  field.form_control_type = "text";
+  field.css_classes = UTF8ToUTF16("field-css-classes");
+  field.placeholder = UTF8ToUTF16("field-placeholder");
+  form.fields.push_back(field);
+
+  // Add field 2.
+  field.id_attribute = UTF8ToUTF16("field-id-attribute-3");
+  field.name_attribute = UTF8ToUTF16("field-name-attribute-3");
+  field.name = field.name_attribute;
+  field.label = UTF8ToUTF16("field-label");
+  field.aria_label = UTF8ToUTF16("field-aria-label");
+  field.aria_description = UTF8ToUTF16("field-aria-description");
+  field.form_control_type = "text";
+  field.css_classes = UTF8ToUTF16("field-css-classes");
+  field.placeholder = UTF8ToUTF16("field-placeholder");
+  form.fields.push_back(field);
+
+  // Setup the form structures to query.
+  AutofillDownloadManager download_manager(driver_.get(), this);
+  std::vector<std::unique_ptr<FormStructure>> form_structures;
+  form_structures.push_back(std::make_unique<FormStructure>(form));
+
+  // Turn off rich query encoding.
+  form_structures.front()->set_is_rich_query_enabled(false);
+
+  // Generate a query request.
+  ASSERT_TRUE(SendQueryRequest(form_structures));
+  EXPECT_EQ(1u, call_count_);
+
+  // We should have intercepted exactly on query request. Parse it.
+  ASSERT_EQ(1u, payloads_.size());
+  AutofillQueryContents query;
+  ASSERT_TRUE(query.ParseFromString(payloads_.front()));
+
+  // Validate that we have one form in the query.
+  ASSERT_EQ(query.form_size(), 1);
+  const auto& query_form = query.form(0);
+
+  // There should be no encoded metadata for the form.
+  EXPECT_FALSE(query_form.has_form_metadata());
+
+  // There should be three fields, none of which have encoded metadata.
+  ASSERT_EQ(3, query_form.field_size());
+  ASSERT_EQ(static_cast<int>(form.fields.size()), query_form.field_size());
+  for (int i = 0; i < query_form.field_size(); ++i) {
+    const auto& query_field = query_form.field(i);
+    EXPECT_FALSE(query_field.has_field_metadata());
+  }
+}
+
 // Note that we omit DEFAULT_URL from the test params. We don't actually want
 // the tests to hit the production server. We also excluded DISABLED, since
 // these tests exercise "enabled" functionality.
@@ -1064,24 +1475,121 @@ INSTANTIATE_TEST_CASE_P(All,
 
 using AutofillUploadTest = AutofillServerCommunicationTest;
 
+TEST_P(AutofillUploadTest, RichMetadata) {
+  base::test::ScopedFeatureList local_feature;
+  local_feature.InitAndEnableFeature(features::kAutofillMetadataUploads);
+
+  FormData form;
+  form.origin = GURL("https://origin.com");
+  form.action = GURL("https://origin.com/submit-me");
+  form.id_attribute = UTF8ToUTF16("form-id_attribute");
+  form.name_attribute = UTF8ToUTF16("form-id_attribute");
+  form.name = form.name_attribute;
+
+  FormFieldData field;
+  field.id_attribute = UTF8ToUTF16("field-id-attribute-1");
+  field.name_attribute = UTF8ToUTF16("field-name-attribute-1");
+  field.name = field.name_attribute;
+  field.label = UTF8ToUTF16("field-label");
+  field.aria_label = UTF8ToUTF16("field-aria-label");
+  field.aria_description = UTF8ToUTF16("field-aria-descriptionm");
+  field.form_control_type = "text";
+  field.css_classes = UTF8ToUTF16("field-css-classes");
+  field.placeholder = UTF8ToUTF16("field-placeholder");
+  form.fields.push_back(field);
+
+  field.id_attribute = UTF8ToUTF16("field-id-attribute-2");
+  field.name_attribute = UTF8ToUTF16("field-name-attribute-2");
+  field.name = field.name_attribute;
+  field.label = UTF8ToUTF16("field-label");
+  field.aria_label = UTF8ToUTF16("field-aria-label");
+  field.aria_description = UTF8ToUTF16("field-aria-descriptionm");
+  field.form_control_type = "text";
+  field.css_classes = UTF8ToUTF16("field-css-classes");
+  field.placeholder = UTF8ToUTF16("field-placeholder");
+  form.fields.push_back(field);
+
+  field.id_attribute = UTF8ToUTF16("field-id-attribute-3");
+  field.name_attribute = UTF8ToUTF16("field-name-attribute-3");
+  field.name = field.name_attribute;
+  field.label = UTF8ToUTF16("field-label");
+  field.aria_label = UTF8ToUTF16("field-aria-label");
+  field.aria_description = UTF8ToUTF16("field-aria-descriptionm");
+  field.form_control_type = "text";
+  field.css_classes = UTF8ToUTF16("field-css-classes");
+  field.placeholder = UTF8ToUTF16("field-placeholder");
+  form.fields.push_back(field);
+
+  AutofillDownloadManager download_manager(driver_.get(), this);
+  FormStructure form_structure(form);
+  form_structure.set_page_language("fr-ca");
+
+  for (int i = 0; i < 8; ++i) {
+    SCOPED_TRACE(base::StringPrintf("submission source = %d", i));
+    base::HistogramTester histogram_tester;
+    auto submission_source = static_cast<SubmissionSource>(i);
+    form_structure.set_submission_source(submission_source);
+    form_structure.set_randomized_encoder(
+        RandomizedEncoder::Create(pref_service_.get()));
+
+    payloads_.clear();
+
+    // The first attempt should succeed.
+    EXPECT_TRUE(SendUploadRequest(form_structure, true, {}, "", true));
+
+    // The second attempt should always fail.
+    EXPECT_FALSE(SendUploadRequest(form_structure, true, {}, "", true));
+
+    // One upload was sent.
+    histogram_tester.ExpectBucketCount("Autofill.UploadEvent", 1, 1);
+    histogram_tester.ExpectBucketCount(
+        AutofillMetrics::SubmissionSourceToUploadEventMetric(submission_source),
+        1, 1);
+
+    // Three encoding events should be sent.
+    histogram_tester.ExpectUniqueSample("Autofill.Upload.MetadataConfigIsValid",
+                                        true, 1);
+
+    ASSERT_EQ(1u, payloads_.size());
+    AutofillUploadContents upload;
+    ASSERT_TRUE(upload.ParseFromString(payloads_.front()));
+    EXPECT_EQ(upload.language(), form_structure.page_language());
+    ASSERT_TRUE(upload.has_randomized_form_metadata());
+    EXPECT_TRUE(upload.randomized_form_metadata().has_id());
+    EXPECT_TRUE(upload.randomized_form_metadata().has_name());
+    EXPECT_EQ(3, upload.field_size());
+    for (const auto& f : upload.field()) {
+      ASSERT_TRUE(f.has_randomized_field_metadata());
+      EXPECT_TRUE(f.randomized_field_metadata().has_id());
+      EXPECT_TRUE(f.randomized_field_metadata().has_name());
+      EXPECT_TRUE(f.randomized_field_metadata().has_type());
+      EXPECT_TRUE(f.randomized_field_metadata().has_label());
+      EXPECT_TRUE(f.randomized_field_metadata().has_aria_label());
+      EXPECT_TRUE(f.randomized_field_metadata().has_aria_description());
+      EXPECT_TRUE(f.randomized_field_metadata().has_css_class());
+      EXPECT_TRUE(f.randomized_field_metadata().has_placeholder());
+    }
+  }
+}
+
 TEST_P(AutofillUploadTest, Throttling) {
   ASSERT_NE(DISABLED, GetParam());
 
   FormData form;
   FormFieldData field;
 
-  field.label = ASCIIToUTF16("First Name:");
-  field.name = ASCIIToUTF16("firstname");
+  field.label = UTF8ToUTF16("First Name:");
+  field.name = UTF8ToUTF16("firstname");
   field.form_control_type = "text";
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Last Name:");
-  field.name = ASCIIToUTF16("lastname");
+  field.label = UTF8ToUTF16("Last Name:");
+  field.name = UTF8ToUTF16("lastname");
   field.form_control_type = "text";
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Email:");
-  field.name = ASCIIToUTF16("email");
+  field.label = UTF8ToUTF16("Email:");
+  field.name = UTF8ToUTF16("email");
   field.form_control_type = "text";
   form.fields.push_back(field);
 
@@ -1119,18 +1627,18 @@ TEST_P(AutofillUploadTest, ThrottlingDisabled) {
   FormData form;
   FormFieldData field;
 
-  field.label = ASCIIToUTF16("First Name:");
-  field.name = ASCIIToUTF16("firstname");
+  field.label = UTF8ToUTF16("First Name:");
+  field.name = UTF8ToUTF16("firstname");
   field.form_control_type = "text";
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Last Name:");
-  field.name = ASCIIToUTF16("lastname");
+  field.label = UTF8ToUTF16("Last Name:");
+  field.name = UTF8ToUTF16("lastname");
   field.form_control_type = "text";
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Email:");
-  field.name = ASCIIToUTF16("email");
+  field.label = UTF8ToUTF16("Email:");
+  field.name = UTF8ToUTF16("email");
   field.form_control_type = "text";
   form.fields.push_back(field);
 
@@ -1171,18 +1679,18 @@ TEST_P(AutofillUploadTest, PeriodicReset) {
   FormData form;
   FormFieldData field;
 
-  field.label = ASCIIToUTF16("First Name:");
-  field.name = ASCIIToUTF16("firstname");
+  field.label = UTF8ToUTF16("First Name:");
+  field.name = UTF8ToUTF16("firstname");
   field.form_control_type = "text";
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Last Name:");
-  field.name = ASCIIToUTF16("lastname");
+  field.label = UTF8ToUTF16("Last Name:");
+  field.name = UTF8ToUTF16("lastname");
   field.form_control_type = "text";
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Email:");
-  field.name = ASCIIToUTF16("email");
+  field.label = UTF8ToUTF16("Email:");
+  field.name = UTF8ToUTF16("email");
   field.form_control_type = "text";
   form.fields.push_back(field);
 
@@ -1229,18 +1737,18 @@ TEST_P(AutofillUploadTest, ResetOnClearUploadHisotry) {
   FormData form;
   FormFieldData field;
 
-  field.label = ASCIIToUTF16("First Name:");
-  field.name = ASCIIToUTF16("firstname");
+  field.label = UTF8ToUTF16("First Name:");
+  field.name = UTF8ToUTF16("firstname");
   field.form_control_type = "text";
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Last Name:");
-  field.name = ASCIIToUTF16("lastname");
+  field.label = UTF8ToUTF16("Last Name:");
+  field.name = UTF8ToUTF16("lastname");
   field.form_control_type = "text";
   form.fields.push_back(field);
 
-  field.label = ASCIIToUTF16("Email:");
-  field.name = ASCIIToUTF16("email");
+  field.label = UTF8ToUTF16("Email:");
+  field.name = UTF8ToUTF16("email");
   field.form_control_type = "text";
   form.fields.push_back(field);
 

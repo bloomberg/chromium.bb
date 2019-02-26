@@ -61,6 +61,8 @@ public class OfflineIndicatorController implements ConnectivityDetector.Observer
     private boolean mIsShowingOfflineIndicator;
     // Set to true if the offline indicator has been shown once since the activity has resumed.
     private boolean mHasOfflineIndicatorShownSinceActivityResumed;
+    // Set to true if the user has been continuously online for the required duration.
+    private boolean mWasOnlineForRequiredDuration;
     private ConnectivityDetector mConnectivityDetector;
     private ChromeActivity mObservedActivity;
 
@@ -120,9 +122,14 @@ public class OfflineIndicatorController implements ConnectivityDetector.Observer
 
     @Override
     public void onApplicationStateChange(int newState) {
+        // Note that the paused state can happen when the activity is temporarily covered by another
+        // activity's Fragment, in which case we should still treat the app as in foreground.
+        if (newState != ApplicationState.HAS_RUNNING_ACTIVITIES
+                && newState != ApplicationState.HAS_PAUSED_ACTIVITIES) {
+            mHasOfflineIndicatorShownSinceActivityResumed = false;
+        }
         // If the application is resumed, update the connection state and show indicator if needed.
         if (newState == ApplicationState.HAS_RUNNING_ACTIVITIES) {
-            mHasOfflineIndicatorShownSinceActivityResumed = false;
             mConnectivityDetector.detect();
             updateOfflineIndicator(mConnectivityDetector.getConnectionState()
                     == ConnectivityDetector.ConnectionState.VALIDATED);
@@ -132,7 +139,11 @@ public class OfflineIndicatorController implements ConnectivityDetector.Observer
     private void updateOfflineIndicator(boolean isOnline) {
         if (isOnline != mIsOnline) {
             if (isOnline) {
+                mWasOnlineForRequiredDuration = false;
                 mLastOnlineTime = SystemClock.elapsedRealtime();
+            } else {
+                mWasOnlineForRequiredDuration = SystemClock.elapsedRealtime() - mLastOnlineTime
+                        >= getTimeToWaitForStableOffline();
             }
             mIsOnline = isOnline;
         }
@@ -224,9 +235,7 @@ public class OfflineIndicatorController implements ConnectivityDetector.Observer
         // be shown if the user has been continuously online for the required duration, then goes
         // back to being offline.
         // TODO(jianli): keep these values in shared prefernces. (http://crbug.com/879725)
-        if (mHasOfflineIndicatorShownSinceActivityResumed
-                && SystemClock.elapsedRealtime() - mLastOnlineTime
-                        < getTimeToWaitForStableOffline()) {
+        if (mHasOfflineIndicatorShownSinceActivityResumed && !mWasOnlineForRequiredDuration) {
             return;
         }
 
@@ -257,7 +266,8 @@ public class OfflineIndicatorController implements ConnectivityDetector.Observer
         mHasOfflineIndicatorShownSinceActivityResumed = true;
     }
 
-    private void hideOfflineIndicator(ChromeActivity chromeActivity) {
+    @VisibleForTesting
+    void hideOfflineIndicator(ChromeActivity chromeActivity) {
         if (!mIsShowingOfflineIndicator) return;
 
         if (isUsingTopSnackbar()) {

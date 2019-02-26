@@ -62,6 +62,8 @@ PrefService* GetPrefService() {
 // Registers power prefs whose default values are the same in user prefs and
 // signin prefs.
 void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
+  registry->RegisterIntegerPref(prefs::kPowerAcScreenBrightnessPercent, -1,
+                                PrefRegistry::PUBLIC);
   registry->RegisterIntegerPref(prefs::kPowerAcScreenDimDelayMs, 420000,
                                 PrefRegistry::PUBLIC);
   registry->RegisterIntegerPref(prefs::kPowerAcScreenOffDelayMs, 450000,
@@ -71,6 +73,8 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   registry->RegisterIntegerPref(prefs::kPowerAcIdleWarningDelayMs, 0,
                                 PrefRegistry::PUBLIC);
   registry->RegisterIntegerPref(prefs::kPowerAcIdleDelayMs, 510000,
+                                PrefRegistry::PUBLIC);
+  registry->RegisterIntegerPref(prefs::kPowerBatteryScreenBrightnessPercent, -1,
                                 PrefRegistry::PUBLIC);
   registry->RegisterIntegerPref(prefs::kPowerBatteryScreenDimDelayMs, 300000,
                                 PrefRegistry::PUBLIC);
@@ -215,6 +219,8 @@ void PowerPrefs::UpdatePowerPolicyFromPrefs() {
                           screen_idle_off_time_ > screen_lock_time_);
 
   chromeos::PowerPolicyController::PrefValues values;
+  values.ac_brightness_percent =
+      prefs->GetInteger(prefs::kPowerAcScreenBrightnessPercent);
   values.ac_screen_dim_delay_ms =
       prefs->GetInteger(use_lock_delays ? prefs::kPowerLockScreenDimDelayMs
                                         : prefs::kPowerAcScreenDimDelayMs);
@@ -226,6 +232,8 @@ void PowerPrefs::UpdatePowerPolicyFromPrefs() {
   values.ac_idle_warning_delay_ms =
       prefs->GetInteger(prefs::kPowerAcIdleWarningDelayMs);
   values.ac_idle_delay_ms = prefs->GetInteger(prefs::kPowerAcIdleDelayMs);
+  values.battery_brightness_percent =
+      prefs->GetInteger(prefs::kPowerBatteryScreenBrightnessPercent);
   values.battery_screen_dim_delay_ms =
       prefs->GetInteger(use_lock_delays ? prefs::kPowerLockScreenDimDelayMs
                                         : prefs::kPowerBatteryScreenDimDelayMs);
@@ -271,6 +279,8 @@ void PowerPrefs::ObservePrefs(PrefService* prefs) {
 
   pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
   pref_change_registrar_->Init(prefs);
+  pref_change_registrar_->Add(prefs::kPowerAcScreenBrightnessPercent,
+                              update_callback);
   pref_change_registrar_->Add(prefs::kPowerAcScreenDimDelayMs, update_callback);
   pref_change_registrar_->Add(prefs::kPowerAcScreenOffDelayMs, update_callback);
   pref_change_registrar_->Add(prefs::kPowerAcScreenLockDelayMs,
@@ -278,6 +288,8 @@ void PowerPrefs::ObservePrefs(PrefService* prefs) {
   pref_change_registrar_->Add(prefs::kPowerAcIdleWarningDelayMs,
                               update_callback);
   pref_change_registrar_->Add(prefs::kPowerAcIdleDelayMs, update_callback);
+  pref_change_registrar_->Add(prefs::kPowerBatteryScreenBrightnessPercent,
+                              update_callback);
   pref_change_registrar_->Add(prefs::kPowerBatteryScreenDimDelayMs,
                               update_callback);
   pref_change_registrar_->Add(prefs::kPowerBatteryScreenOffDelayMs,

@@ -8,9 +8,11 @@ import "ash/public/interfaces/menu.mojom";
 import "components/sync/mojo/syncer.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
+import "services/content/public/mojom/navigable_contents_factory.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/image/mojo/image.mojom";
 import "ui/gfx/range/mojo/range.mojom";
+import "url/mojom/url.mojom";
 
 // A structure holding the common information which is sent between ash and,
 // chrome representing an app list item.
@@ -30,13 +32,14 @@ struct AppListItemMetadata {
 
 // A structure holding the common information which is sent from chrome to ash,
 // representing a search result.
-// This structure should be kept as small as possible so that ash can get and
-// render search results as early as possible.
 struct SearchResultMetadata {
   string id;                  // The id of the result.
   mojo_base.mojom.String16 title;    // The title of the result, e.g. an app's
                                      // name, an autocomplete query, etc.
   mojo_base.mojom.String16 details;  // A detail string of this result.
+  mojo_base.mojom.String16 accessible_name;
+                                     // An text to be announced by a screen
+                                     // reader app.
   array<SearchResultTag> title_tags;    // How the title matches the query. See
                                         // the SearchResultTag section for
                                         // more details.
@@ -58,17 +61,18 @@ struct SearchResultMetadata {
   double display_score;       // A score to determine the result display order.
   bool is_omnibox_search;     // Whether this result is searched from Omnibox.
   bool is_installing;         // Whether this result is installing.
-  mojo_base.mojom.UnguessableToken? answer_card_contents_token;
-                              // A token used to render answer card, which is
-                              // empty before initialized. It's illegal to pass
-                              // an empty UnguessableToken across processes. So
-                              // we use a null value when it's empty here.
-  gfx.mojom.Size? answer_card_size;  // Preferred size of answer card. It is
-                                     // unset for non-answer-card results. For
-                                     // answer card results, it is set when
-                                     // the answer card WebContents finishes
-                                     // loading and its renderer notifies it
-                                     // about a new contents size.
+
+  url.mojom.Url? query_url;  // A query URL associated with this result. The
+                             // meaning and treatment of the URL
+                             // (e.g. displaying inline web contents) is
+                             // dependent on the result type.
+
+  string? equivalent_result_id;  // An optional id that identifies an equivalent
+                                 // result to this result. Answer card result
+                                 // has this set to remove the equivalent
+                                 // omnibox search-what-you-typed result when
+                                 // there is an answer card for the query.
+
   gfx.mojom.ImageSkia? icon;  // The icon of this result.
   gfx.mojom.ImageSkia? chip_icon;  // The icon of this result in a smaller
                                    // dimension to be rendered in suggestion
@@ -371,4 +375,9 @@ interface AppListClient {
   StartVoiceInteractionSession();
   // Starts or stops voice interaction session based on current state.
   ToggleVoiceInteractionSession();
+
+  // Acquires a NavigableContentsFactory (indirectly) from the Content Service
+  // to allow the app list to display embedded web contents. Currently used only
+  // for answer card search results.
+  GetNavigableContentsFactory(content.mojom.NavigableContentsFactory& request);
 };

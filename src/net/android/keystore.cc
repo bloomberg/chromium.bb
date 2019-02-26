@@ -13,6 +13,7 @@
 #include "jni/AndroidKeyStore_jni.h"
 
 using base::android::AttachCurrentThread;
+using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::HasException;
 using base::android::JavaByteArrayToByteVector;
@@ -22,6 +23,13 @@ using base::android::ToJavaByteArray;
 
 namespace net {
 namespace android {
+
+std::string GetPrivateKeyClassName(const base::android::JavaRef<jobject>& key) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> name =
+      Java_AndroidKeyStore_getPrivateKeyClassName(env, key);
+  return ConvertJavaStringToUTF8(env, name);
+}
 
 bool SignWithPrivateKey(const base::android::JavaRef<jobject>& private_key_ref,
                         base::StringPiece algorithm,
@@ -46,7 +54,7 @@ bool SignWithPrivateKey(const base::android::JavaRef<jobject>& private_key_ref,
     return false;
 
   // Write signature to string.
-  JavaByteArrayToByteVector(env, signature_ref.obj(), signature);
+  JavaByteArrayToByteVector(env, signature_ref, signature);
   return true;
 }
 

@@ -88,10 +88,10 @@
       {
         "args": [
           "-v",
-          "--browser=android-webview",
+          "--browser=android-webview-google",
           "--upload-results",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk",
-          "--test-shard-map-filename=android_go_webview_shard_map.json"
+          "--test-shard-map-filename=android-go_webview-perf_map.json"
         ],
         "isolate_name": "performance_webview_test_suite",
         "merge": {
@@ -113,7 +113,7 @@
             }
           ],
           "expiration": 7200,
-          "hard_timeout": 25200,
+          "hard_timeout": 36000,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 25,
@@ -134,10 +134,10 @@
       {
         "args": [
           "-v",
+          "--browser=android-chrome",
           "--upload-results",
           "--output-format=histograms",
-          "--browser=android-chromium",
-          "--test-shard-map-filename=android_nexus5x_fyi_4_shard_map.json"
+          "--test-shard-map-filename=android-nexus5x-perf-fyi_map.json"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
@@ -179,10 +179,10 @@
       {
         "args": [
           "-v",
-          "--browser=android-chromium",
+          "--browser=android-chrome",
           "--upload-results",
           "--run-ref-build",
-          "--test-shard-map-filename=android_pixel2_shard_map.json"
+          "--test-shard-map-filename=android-pixel2-perf_map.json"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
@@ -204,7 +204,7 @@
             }
           ],
           "expiration": 7200,
-          "hard_timeout": 25200,
+          "hard_timeout": 36000,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 7,
@@ -225,10 +225,10 @@
       {
         "args": [
           "-v",
-          "--browser=android-webview",
+          "--browser=android-webview-google",
           "--upload-results",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk",
-          "--test-shard-map-filename=android_pixel2_webview_shard_map.json"
+          "--test-shard-map-filename=android-pixel2_webview-perf_map.json"
         ],
         "isolate_name": "performance_webview_test_suite",
         "merge": {
@@ -250,7 +250,7 @@
             }
           ],
           "expiration": 7200,
-          "hard_timeout": 25200,
+          "hard_timeout": 36000,
           "ignore_task_failure": false,
           "io_timeout": 1800,
           "shards": 7,

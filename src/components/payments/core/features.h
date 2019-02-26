@@ -34,6 +34,9 @@ extern const base::Feature kWebPaymentsSingleAppUiSkip;
 // Used to control whether allow crawling just-in-time installable payment app.
 extern const base::Feature kWebPaymentsJustInTimePaymentApp;
 
+// Used to control whether canMakePayment() quota is per-method.
+extern const base::Feature kWebPaymentsPerMethodCanMakePaymentQuota;
+
 }  // namespace features
 }  // namespace payments
 

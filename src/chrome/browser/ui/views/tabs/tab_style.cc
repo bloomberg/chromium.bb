@@ -23,6 +23,7 @@
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/scoped_canvas.h"
+#include "ui/views/style/platform_style.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -143,11 +144,7 @@ int GetContentsHorizontalInsetSize() {
 
 // Returns the height of the separator between tabs.
 int GetSeparatorHeight() {
-  constexpr int kTabSeparatorHeight = 20;
-  constexpr int kTabSeparatorTouchHeight = 24;
-  return ui::MaterialDesignController::IsTouchOptimizedUiEnabled()
-             ? kTabSeparatorTouchHeight
-             : kTabSeparatorHeight;
+  return ui::MaterialDesignController::touch_ui() ? 24 : 20;
 }
 
 void DrawHighlight(gfx::Canvas* canvas,
@@ -277,6 +274,16 @@ gfx::Path GM2TabStyle::GetPath(PathType path_type,
   if (path_type == PathType::kInteriorClip) {
     // Clip path is a simple rectangle.
     path.addRect(tab_left, tab_top, tab_right, tab_bottom);
+  } else if (path_type == PathType::kHighlight) {
+    // The path is a round rect inset by the focus ring thickness. The
+    // radius is also adjusted by the inset.
+    const float inset = views::PlatformStyle::kFocusHaloThickness +
+                        views::PlatformStyle::kFocusHaloInset;
+    SkRRect rrect = SkRRect::MakeRectXY(
+        SkRect::MakeLTRB(tab_left + inset, tab_top + inset, tab_right - inset,
+                         tab_bottom - inset),
+        radius - inset, radius - inset);
+    path.addRRect(rrect);
   } else {
     // We will go clockwise from the lower left. We start in the overlap region,
     // preventing a gap between toolbar and tabstrip.

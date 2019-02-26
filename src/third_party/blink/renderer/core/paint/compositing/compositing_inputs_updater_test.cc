@@ -73,7 +73,7 @@ TEST_F(CompositingInputsUpdaterTest,
   EXPECT_FALSE(sticky->Layer()->AncestorOverflowLayer()->GetScrollableArea());
   EXPECT_EQ(sticky->Layer()->AncestorOverflowLayer(), outer_scroller->Layer());
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Both scrollers must still have a layer.
   EXPECT_TRUE(outer_scroller->Layer());
@@ -106,7 +106,7 @@ TEST_F(CompositingInputsUpdaterTest, UnclippedAndClippedRectsUnderScroll) {
       ->GetLayoutView()
       ->Layer()
       ->SetNeedsCompositingInputsUpdate();
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(IntRect(8, 8, 200, 200),
             target->Layer()->ClippedAbsoluteBoundingBox());
   EXPECT_EQ(IntRect(8, 8, 200, 200),
@@ -133,7 +133,7 @@ TEST_F(CompositingInputsUpdaterTest,
       ->Layer()
       ->SetNeedsCompositingInputsUpdate();
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(IntRect(8, 8, 200, 200),
             target->Layer()->ClippedAbsoluteBoundingBox());
   EXPECT_EQ(IntRect(8, 8, 200, 200),

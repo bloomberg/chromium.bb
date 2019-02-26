@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 
 namespace base {
 
@@ -118,10 +119,10 @@ Win32StackFrameUnwinder::~Win32StackFrameUnwinder() {}
 bool Win32StackFrameUnwinder::TryUnwind(CONTEXT* context,
                                         ScopedModuleHandle* module) {
 #ifdef _WIN64
-  // TODO(chengx): update base::ModuleCache to return a ScopedModuleHandle and
+  // TODO(wittman): update base::ModuleCache to return a ScopedModuleHandle and
   // use it for this module lookup.
   ScopedModuleHandle frame_module =
-      unwind_functions_->GetModuleForProgramCounter(context->Rip);
+      unwind_functions_->GetModuleForProgramCounter(ContextPC(context));
   if (!frame_module.IsValid()) {
     // There's no loaded module containing the instruction pointer. This can be
     // due to executing code that is not in a module. In particular,
@@ -142,20 +143,31 @@ bool Win32StackFrameUnwinder::TryUnwind(CONTEXT* context,
   ULONG64 image_base;
   // Try to look up unwind metadata for the current function.
   PRUNTIME_FUNCTION runtime_function =
-      unwind_functions_->LookupFunctionEntry(context->Rip, &image_base);
+      unwind_functions_->LookupFunctionEntry(ContextPC(context), &image_base);
 
   if (runtime_function) {
-    unwind_functions_->VirtualUnwind(image_base, context->Rip, runtime_function,
-                                     context);
+    unwind_functions_->VirtualUnwind(image_base, ContextPC(context),
+                                     runtime_function, context);
     at_top_frame_ = false;
   } else {
     if (at_top_frame_) {
       at_top_frame_ = false;
 
       // This is a leaf function (i.e. a function that neither calls a function,
-      // nor allocates any stack space itself) so the return address is at RSP.
+      // nor allocates any stack space itself).
+#if defined(ARCH_CPU_X86_64)
+      // For X64, return address is at RSP.
       context->Rip = *reinterpret_cast<DWORD64*>(context->Rsp);
       context->Rsp += 8;
+#elif defined(ARCH_CPU_ARM64)
+      // For leaf function on Windows ARM64, return address is at LR(X30).
+      // Add CONTEXT_UNWOUND_TO_CALL flag to avoid unwind ambiguity for tailcall
+      // on ARM64, because padding after tailcall is not guaranteed.
+      context->Pc = context->Lr;
+      context->ContextFlags |= CONTEXT_UNWOUND_TO_CALL;
+#else
+#error Unsupported Windows 64-bit Arch
+#endif
     } else {
       // In theory we shouldn't get here, as it means we've encountered a
       // function without unwind information below the top of the stack, which

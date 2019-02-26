@@ -45,6 +45,7 @@ source_set("unit_tests") {
     "//components/crash/content/browser",
     "//components/data_reduction_proxy/core/browser:test_support",
     "//components/data_reduction_proxy/core/common:test_support",
+    "//components/previews/core",
     "//content/public/browser",
     "//content/public/common",
     "//content/test:test_support",

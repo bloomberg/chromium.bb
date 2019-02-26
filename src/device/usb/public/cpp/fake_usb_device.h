@@ -77,6 +77,8 @@ class FakeUsbDevice : public mojom::UsbDevice,
   // FakeUsbDeviceInfo::Observer implementation:
   void OnDeviceRemoved(scoped_refptr<FakeUsbDeviceInfo> device) override;
 
+  void OnClientConnectionError();
+
   void CloseHandle();
 
   const scoped_refptr<FakeUsbDeviceInfo> device_;

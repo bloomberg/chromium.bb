@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -97,6 +98,21 @@ class GLScalerTestUtil {
   // expected output of the single-channel export shaders, and thus can be
   // considered a reference implementation of that.
   static SkBitmap CreatePackedPlanarBitmap(const SkBitmap& source, int channel);
+
+  // Performs the inverse operation to CreatePackedPlanarBitmap(). This takes
+  // all of the data in |plane| and uses it to populate a single color channel
+  // of all the pixels of |out|. The |plane| can be a full-size or half-size
+  // (subsampled) plane.
+  static void UnpackPlanarBitmap(const SkBitmap& plane,
+                                 int channel,
+                                 SkBitmap* out);
+
+  // Returns the |source| bitmap, but with its content vertically flipped.
+  static SkBitmap CreateVerticallyFlippedBitmap(const SkBitmap& source);
+
+  // Loads a PNG test image from the test directory, and converts it to the same
+  // SkImageInfo format used by AllocateRGBABitmap() (i.e., GL_RGBA byte order).
+  static SkBitmap LoadPNGTestImage(const std::string& basename);
 
   // The area and color of the bars in a 1920x1080 HD SMPTE color bars test
   // image (https://commons.wikimedia.org/wiki/File:SMPTE_Color_Bars_16x9.svg).

@@ -5,6 +5,7 @@
 #include "content/common/render_frame_metadata_struct_traits.h"
 
 #include "build/build_config.h"
+#include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "services/viz/public/cpp/compositing/selection_struct_traits.h"
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
 #include "ui/gfx/mojo/selection_bound_struct_traits.h"
@@ -21,6 +22,7 @@ bool StructTraits<content::mojom::RenderFrameMetadataDataView,
   out->is_mobile_optimized = data.is_mobile_optimized();
   out->device_scale_factor = data.device_scale_factor();
   out->page_scale_factor = data.page_scale_factor();
+  out->external_page_scale_factor = data.external_page_scale_factor();
   out->top_controls_height = data.top_controls_height();
   out->top_controls_shown_ratio = data.top_controls_shown_ratio();
 #if defined(OS_ANDROID)
@@ -38,7 +40,7 @@ bool StructTraits<content::mojom::RenderFrameMetadataDataView,
          data.ReadRootLayerSize(&out->root_layer_size) &&
 #endif
          data.ReadViewportSizeInPixels(&out->viewport_size_in_pixels) &&
-         data.ReadLocalSurfaceId(&out->local_surface_id);
+         data.ReadLocalSurfaceIdAllocation(&out->local_surface_id_allocation);
 }
 
 }  // namespace mojo

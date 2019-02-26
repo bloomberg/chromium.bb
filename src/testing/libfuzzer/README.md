@@ -4,8 +4,8 @@
 
 *** aside
 [Getting Started](getting_started.md)
-| [Buildbot](https://build.chromium.org/p/chromium.fyi/buildslaves/slave43-c1)
-| [ClusterFuzz Status](https://clusterfuzz.com/v2/fuzzer-stats)
+| [Buildbot]
+| [ClusterFuzz Stats]
 | [Cover Bug]
 ***
 
@@ -14,8 +14,8 @@ LibFuzzer is an in-process coverage-driven evolutionary fuzzing engine. It helps
 engineers to uncover potential security & stability problems.
 
 *** note
-**Requirements:** libFuzzer in Chromium is supported with Linux, Mac, and
-  Windows only.
+**Requirements:** libFuzzer in Chromium is supported with Linux, Chrome OS, Mac,
+and Windows.
 ***
 
 ## Integration Status
@@ -36,8 +36,12 @@ code that requires multiple mutated inputs, or to generate inputs defined by a
 grammar.
 * [ClusterFuzz Integration] describes integration between ClusterFuzz and
 libFuzzer.
-* [Reproducing] contains information on how to reproduce bugs reported by
-  ClusterFuzz.
+* [Reproducing on Windows] describes how to reproduce bugs found by libFuzzer
+  and reported by ClusterFuzz.
+* [Reproducing on Linux, Mac, and Android] describes how to reproduce bugs
+  reported by ClusterFuzz on Linux, Mac, and Android.
+* [Fuzzing on Chrome OS] describes how to write fuzzers for the non-browser
+  parts of Chrome OS.
 * [Reference] contains detailed references for different integration parts.
 
 ## Trophies
@@ -53,18 +57,22 @@ libFuzzer.
 ## Project Links
 * [libFuzzer Infrastructure Bugs]
 
-[libFuzzer]: http://llvm.org/docs/LibFuzzer.html
-[crbug.com/539572]: https://bugs.chromium.org/p/chromium/issues/detail?id=539572
+[Buildbot]: https://ci.chromium.org/p/chromium/g/chromium.fuzz/builders
 [Cover Bug]: https://bugs.chromium.org/p/chromium/issues/detail?id=539572
 [Getting Started Guide]: getting_started.md
 [Efficient Fuzzer Guide]: efficient_fuzzer.md
 [Guide to libprotobuf-mutator]: libprotobuf-mutator.md
 [ClusterFuzz Integration]: clusterfuzz.md
-[Reproducing]: https://github.com/google/clusterfuzz-tools
+[Reproducing on Windows]: reproducing_on_windows.md
+[Reproducing on Linux, Mac, and Android]: https://github.com/google/clusterfuzz-tools
 [Reference]: reference.md
 [ClusterFuzz Bugs]: https://bugs.chromium.org/p/chromium/issues/list?can=1&q=label:Stability-LibFuzzer%20label:ClusterFuzz&sort=-modified&colspec=ID%20Pri%20M%20Stars%20ReleaseBlock%20Component%20Status%20Owner%20Summary%20OS%20Modified
+[ClusterFuzz Stats]: https://clusterfuzz.com/fuzzer-stats/by-fuzzer/fuzzer/libFuzzer/job/libfuzzer_chrome_asan
 [Pdfium Bugs]: https://bugs.chromium.org/p/pdfium/issues/list?can=1&q=libfuzzer&colspec=ID+Type+Status+Priority+Milestone+Owner+Summary&cells=tiles
 [Manual Bugs]: https://bugs.chromium.org/p/chromium/issues/list?can=1&q=label%3AStability-LibFuzzer+-label%3AClusterFuzz&sort=-modified&colspec=ID+Pri+M+Stars+ReleaseBlock+Component+Status+Owner+Summary+OS+Modified&x=m&y=releaseblock&cells=ids
 [OSS Trophies]: http://llvm.org/docs/LibFuzzer.html#trophies
 [Guided in-process fuzzing of Chrome components]: https://security.googleblog.com/2016/08/guided-in-process-fuzzing-of-chrome.html
+[crbug.com/539572]: https://bugs.chromium.org/p/chromium/issues/detail?id=539572
+[libFuzzer]: http://llvm.org/docs/LibFuzzer.html
 [libFuzzer Infrastructure Bugs]: https://bugs.chromium.org/p/chromium/issues/list?q=label:LibFuzzer-Infra
+[Fuzzing on Chrome OS]: https://chromium.googlesource.com/chromiumos/docs/+/master/fuzzing.md

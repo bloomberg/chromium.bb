@@ -40,7 +40,7 @@ TEST_F(ReplaceSelectionCommandTest, pastingEmptySpan) {
       SetSelectionOptions());
 
   DocumentFragment* fragment = GetDocument().createDocumentFragment();
-  fragment->AppendChild(GetDocument().CreateRawElement(HTMLNames::spanTag));
+  fragment->AppendChild(GetDocument().CreateRawElement(html_names::kSpanTag));
 
   // |options| are taken from |Editor::replaceSelectionWithFragment()| with
   // |selectReplacement| and |smartReplace|.
@@ -86,7 +86,7 @@ TEST_F(ReplaceSelectionCommandTest, pasteSpanInText) {
 // This is a regression test for https://crbug.com/121163
 TEST_F(ReplaceSelectionCommandTest, styleTagsInPastedHeadIncludedInContent) {
   GetDocument().setDesignMode("on");
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   GetDummyPageHolder().GetFrame().Selection().SetSelection(
       SelectionInDOMTree::Builder()
           .Collapse(Position(GetDocument().body(), 0))

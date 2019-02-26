@@ -142,6 +142,7 @@ class CoverageExecutor(object):
       test_spec = COVERAGE_TESTS[name]
       if test_spec.use_test_runner:
         binary_path = os.path.join(testing_tools_directory, test_spec.binary)
+        build_targets.add('pdfium_diff')
         build_targets.add('pdfium_test')
       else:
         binary_path = os.path.join(self.build_directory, test_spec.binary)
@@ -236,7 +237,7 @@ class CoverageExecutor(object):
     coverage_args += ['-f', 'xfa']
 
     # Blacklist test files
-    coverage_args += ['-i', '.*test*.']
+    coverage_args += ['-i', '.*test.*']
 
     return self.call([coverage_bin] + coverage_args) == 0
 

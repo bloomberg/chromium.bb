@@ -28,7 +28,6 @@ void SkippedFrameTracker::BeginFrame(base::TimeTicks frame_time,
 }
 
 void SkippedFrameTracker::FinishFrame() {
-  DCHECK(inside_begin_frame_);
   inside_begin_frame_ = false;
 
   // Assume the source is idle if it hasn't attempted to produce for an entire
@@ -91,6 +90,15 @@ void SkippedFrameTracker::DidProduceFrame() {
   will_produce_frame_time_ = frame_time_ + interval_;
   active_state_ = ActiveState::WasActive;
   did_produce_this_frame_ = true;
+}
+
+void SkippedFrameTracker::WillNotProduceFrame() {
+  if (active_state_ != ActiveState::Idle) {
+    inside_begin_frame_ = false;
+    did_produce_this_frame_ = false;
+    will_produce_frame_time_ = base::TimeTicks();
+    active_state_ = ActiveState::Idle;
+  }
 }
 
 }  // namespace ui

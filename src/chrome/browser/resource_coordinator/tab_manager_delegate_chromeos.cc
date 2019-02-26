@@ -579,25 +579,24 @@ void TabManagerDelegate::LowMemoryKillImpl(
                       << " KB";
     if (target_memory_to_free_kb <= 0)
       break;
-    // Never kill selected tab, foreground app, and important apps regardless of
-    // whether they're in the active window. Since the user experience would be
-    // bad.
-    ProcessType process_type = it->process_type();
-    if (process_type <= ProcessType::IMPORTANT_APP) {
-      if (it->app()) {
-        MEMORY_LOG(ERROR) << "Skipped killing " << it->app()->process_name();
-      } else if (it->lifecycle_unit()) {
-        MEMORY_LOG(ERROR) << "Skipped killing "
-                          << it->lifecycle_unit()->GetTitle();
-      }
-      continue;
-    }
+
+    const ProcessType process_type = it->process_type();
+
     if (it->app()) {
-      if (IsRecentlyKilledArcProcess(it->app()->process_name(), now)) {
+      if (process_type == ProcessType::FOCUSED_APP) {
+        MEMORY_LOG(ERROR) << "Skipped killing focused app "
+                          << it->app()->process_name();
+        continue;
+      } else if (process_type == ProcessType::IMPORTANT_APP) {
+        MEMORY_LOG(ERROR) << "Skipped killing important app "
+                          << it->app()->process_name();
+        continue;
+      } else if (IsRecentlyKilledArcProcess(it->app()->process_name(), now)) {
         MEMORY_LOG(ERROR) << "Avoided killing " << it->app()->process_name()
                           << " too often";
         continue;
       }
+
       int estimated_memory_freed_kb =
           mem_stat_->EstimatedMemoryFreedKB(it->app()->pid());
       if (KillArcProcess(it->app()->nspid())) {
@@ -616,6 +615,12 @@ void TabManagerDelegate::LowMemoryKillImpl(
         MEMORY_LOG(ERROR) << "Failed to kill " << it->app()->process_name();
       }
     } else if (it->lifecycle_unit()) {
+      if (process_type == ProcessType::FOCUSED_TAB) {
+        MEMORY_LOG(ERROR) << "Skipped killing focused tab "
+                          << it->lifecycle_unit()->GetTitle();
+        continue;
+      }
+
       // The estimation is problematic since multiple tabs may share the same
       // process, while the calculation counts memory used by the whole process.
       // So |estimated_memory_freed_kb| is an over-estimation.

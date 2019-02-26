@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* Display::ParseSingleValue(CSSParserTokenRange& range,
                                           const CSSParserContext& context,
@@ -30,9 +30,9 @@ const CSSValue* Display::ParseSingleValue(CSSParserTokenRange& range,
 
   CSSParserTokenRange range_copy = range;
   CSSParserTokenRange args =
-      CSSPropertyParserHelpers::ConsumeFunction(range_copy);
+      css_property_parser_helpers::ConsumeFunction(range_copy);
   CSSCustomIdentValue* name =
-      CSSPropertyParserHelpers::ConsumeCustomIdent(args);
+      css_property_parser_helpers::ConsumeCustomIdent(args, context);
 
   // If we didn't get a custom-ident or didn't exhaust the function arguments
   // return nothing.
@@ -92,5 +92,5 @@ void Display::ApplyValue(StyleResolverState& state,
   state.Style()->SetDisplayLayoutCustomName(layout_function_value.GetName());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/threading/scoped_blocking_call.h"
 
 namespace device {
 
@@ -16,6 +17,7 @@ void UdevWatcher::Observer::OnDeviceAdded(ScopedUdevDevicePtr device) {}
 void UdevWatcher::Observer::OnDeviceRemoved(ScopedUdevDevicePtr device) {}
 
 std::unique_ptr<UdevWatcher> UdevWatcher::StartWatching(Observer* observer) {
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   ScopedUdevPtr udev(udev_new());
   if (!udev) {
     LOG(ERROR) << "Failed to initialize udev.";
@@ -50,6 +52,7 @@ UdevWatcher::~UdevWatcher() {
 
 void UdevWatcher::EnumerateExistingDevices() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   ScopedUdevEnumeratePtr enumerate(udev_enumerate_new(udev_.get()));
   if (!enumerate) {
     LOG(ERROR) << "Failed to initialize a udev enumerator.";
@@ -84,6 +87,7 @@ UdevWatcher::UdevWatcher(ScopedUdevPtr udev,
 }
 
 void UdevWatcher::OnMonitorReadable() {
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   ScopedUdevDevicePtr device(udev_monitor_receive_device(udev_monitor_.get()));
   if (!device)
     return;

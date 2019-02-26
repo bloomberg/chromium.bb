@@ -156,8 +156,6 @@ static INLINE int is_masked_compound_type(COMPOUND_TYPE type) {
    modes for the Y blocks to the left and above us; for interframes, there
    is a single probability table. */
 
-typedef int8_t MV_REFERENCE_FRAME;
-
 typedef struct {
   // Number of base colors for Y (0) and UV (1)
   uint8_t palette_size[2];
@@ -192,6 +190,11 @@ typedef struct RD_STATS {
   int64_t ref_rdcost;
   int zero_rate;
   uint8_t invalid_rate;
+#if CONFIG_ONE_PASS_SVM
+  int eob, eob_0, eob_1, eob_2, eob_3;
+  int64_t rd, rd_0, rd_1, rd_2, rd_3;
+  int64_t y_sse, sse_0, sse_1, sse_2, sse_3;
+#endif
 #if CONFIG_RD_DEBUG
   int txb_coeff_cost[MAX_MB_PLANE];
   int txb_coeff_cost_map[MAX_MB_PLANE][TXB_COEFF_COST_MAP_SIZE]
@@ -406,7 +409,7 @@ typedef struct macroblockd_plane {
   ENTROPY_CONTEXT *above_context;
   ENTROPY_CONTEXT *left_context;
 
-  // The dequantizers below are true dequntizers used only in the
+  // The dequantizers below are true dequantizers used only in the
   // dequantization process.  They have the same coefficient
   // shift/scale as TX.
   int16_t seg_dequant_QTX[MAX_SEGMENTS][2];
@@ -429,7 +432,7 @@ typedef struct macroblockd_plane {
   ((x) + (i) * (1 << (tx_size_wide_log2[0] + tx_size_high_log2[0])))
 
 typedef struct RefBuffer {
-  int idx;      // frame buf idx
+  int idx;      // Index into 'cm->buffer_pool->frame_bufs'.
   int map_idx;  // frame map idx
   YV12_BUFFER_CONFIG *buf;
   struct scale_factors sf;
@@ -1135,6 +1138,7 @@ typedef struct {
   int plane_height;
   uint8_t *color_map;
   MapCdf map_cdf;
+  MapCdf map_pb_cdf;
   ColorCost color_cost;
 } Av1ColorMapParam;
 

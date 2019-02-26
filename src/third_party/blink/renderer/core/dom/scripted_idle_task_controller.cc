@@ -38,10 +38,7 @@ class IdleRequestCallbackWrapper
             callback_wrapper->Controller()) {
       // If we are going to yield immediately, reschedule the callback for
       // later.
-      if (Platform::Current()
-              ->CurrentThread()
-              ->Scheduler()
-              ->ShouldYieldForHighPriorityWork()) {
+      if (ThreadScheduler::Current()->ShouldYieldForHighPriorityWork()) {
         controller->ScheduleCallback(std::move(callback_wrapper),
                                      /* timeout_millis */ 0);
         return;
@@ -94,7 +91,7 @@ void ScriptedIdleTaskController::V8IdleTask::invoke(IdleDeadline* deadline) {
 ScriptedIdleTaskController::ScriptedIdleTaskController(
     ExecutionContext* context)
     : PausableObject(context),
-      scheduler_(Platform::Current()->CurrentThread()->Scheduler()),
+      scheduler_(ThreadScheduler::Current()),
       next_callback_id_(0),
       paused_(false) {
   PauseIfNeeded();
@@ -122,12 +119,12 @@ int ScriptedIdleTaskController::NextCallbackId() {
 ScriptedIdleTaskController::CallbackId
 ScriptedIdleTaskController::RegisterCallback(
     IdleTask* idle_task,
-    const IdleRequestOptions& options) {
+    const IdleRequestOptions* options) {
   DCHECK(idle_task);
 
   CallbackId id = NextCallbackId();
   idle_tasks_.Set(id, idle_task);
-  long long timeout_millis = options.timeout();
+  long long timeout_millis = options->timeout();
 
   probe::AsyncTaskScheduled(GetExecutionContext(), "requestIdleCallback",
                             idle_task);
@@ -137,7 +134,7 @@ ScriptedIdleTaskController::RegisterCallback(
   ScheduleCallback(std::move(callback_wrapper), timeout_millis);
   TRACE_EVENT_INSTANT1("devtools.timeline", "RequestIdleCallback",
                        TRACE_EVENT_SCOPE_THREAD, "data",
-                       InspectorIdleCallbackRequestEvent::Data(
+                       inspector_idle_callback_request_event::Data(
                            GetExecutionContext(), id, timeout_millis));
   return id;
 }
@@ -163,7 +160,7 @@ void ScriptedIdleTaskController::CancelCallback(CallbackId id) {
   TRACE_EVENT_INSTANT1(
       "devtools.timeline", "CancelIdleCallback", TRACE_EVENT_SCOPE_THREAD,
       "data",
-      InspectorIdleCallbackCancelEvent::Data(GetExecutionContext(), id));
+      inspector_idle_callback_cancel_event::Data(GetExecutionContext(), id));
   if (!IsValidCallbackId(id))
     return;
 
@@ -214,7 +211,7 @@ void ScriptedIdleTaskController::RunCallback(
 
   TRACE_EVENT1(
       "devtools.timeline", "FireIdleCallback", "data",
-      InspectorIdleCallbackFireEvent::Data(
+      inspector_idle_callback_fire_event::Data(
           GetExecutionContext(), id, allotted_time.InMillisecondsF(),
           callback_type == IdleDeadline::CallbackType::kCalledByTimeout));
   idle_task->invoke(IdleDeadline::Create(deadline, callback_type));

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // This file has been auto-generated from the Jinja2 template
-// third_party/blink/renderer/bindings/templates/union_container.cpp.tmpl
+// third_party/blink/renderer/bindings/templates/union_container.cc.tmpl
 // by the script code_generator_v8.py.
 // DO NOT MODIFY!
 
@@ -36,18 +36,18 @@ LongOrTestDictionary LongOrTestDictionary::FromLong(int32_t value) {
   return container;
 }
 
-const TestDictionary& LongOrTestDictionary::GetAsTestDictionary() const {
+TestDictionary* LongOrTestDictionary::GetAsTestDictionary() const {
   DCHECK(IsTestDictionary());
   return test_dictionary_;
 }
 
-void LongOrTestDictionary::SetTestDictionary(const TestDictionary& value) {
+void LongOrTestDictionary::SetTestDictionary(TestDictionary* value) {
   DCHECK(IsNull());
   test_dictionary_ = value;
   type_ = SpecificType::kTestDictionary;
 }
 
-LongOrTestDictionary LongOrTestDictionary::FromTestDictionary(const TestDictionary& value) {
+LongOrTestDictionary LongOrTestDictionary::FromTestDictionary(TestDictionary* value) {
   LongOrTestDictionary container;
   container.SetTestDictionary(value);
   return container;
@@ -61,44 +61,47 @@ void LongOrTestDictionary::Trace(blink::Visitor* visitor) {
   visitor->Trace(test_dictionary_);
 }
 
-void V8LongOrTestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, LongOrTestDictionary& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
-  if (v8Value.IsEmpty())
+void V8LongOrTestDictionary::ToImpl(
+    v8::Isolate* isolate,
+    v8::Local<v8::Value> v8_value,
+    LongOrTestDictionary& impl,
+    UnionTypeConversionMode conversion_mode,
+    ExceptionState& exception_state) {
+  if (v8_value.IsEmpty())
     return;
 
-  if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
+  if (conversion_mode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8_value))
     return;
 
-  if (IsUndefinedOrNull(v8Value)) {
-    TestDictionary cppValue;
-    V8TestDictionary::ToImpl(isolate, v8Value, cppValue, exceptionState);
-    if (exceptionState.HadException())
+  if (IsUndefinedOrNull(v8_value)) {
+    TestDictionary* cpp_value = NativeValueTraits<TestDictionary>::NativeValue(isolate, v8_value, exception_state);
+    if (exception_state.HadException())
       return;
-    impl.SetTestDictionary(cppValue);
+    impl.SetTestDictionary(cpp_value);
     return;
   }
 
-  if (v8Value->IsObject()) {
-    TestDictionary cppValue;
-    V8TestDictionary::ToImpl(isolate, v8Value, cppValue, exceptionState);
-    if (exceptionState.HadException())
+  if (v8_value->IsObject()) {
+    TestDictionary* cpp_value = NativeValueTraits<TestDictionary>::NativeValue(isolate, v8_value, exception_state);
+    if (exception_state.HadException())
       return;
-    impl.SetTestDictionary(cppValue);
+    impl.SetTestDictionary(cpp_value);
     return;
   }
 
-  if (v8Value->IsNumber()) {
-    int32_t cppValue = NativeValueTraits<IDLLong>::NativeValue(isolate, v8Value, exceptionState, kNormalConversion);
-    if (exceptionState.HadException())
+  if (v8_value->IsNumber()) {
+    int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(isolate, v8_value, exception_state);
+    if (exception_state.HadException())
       return;
-    impl.SetLong(cppValue);
+    impl.SetLong(cpp_value);
     return;
   }
 
   {
-    int32_t cppValue = NativeValueTraits<IDLLong>::NativeValue(isolate, v8Value, exceptionState, kNormalConversion);
-    if (exceptionState.HadException())
+    int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(isolate, v8_value, exception_state);
+    if (exception_state.HadException())
       return;
-    impl.SetLong(cppValue);
+    impl.SetLong(cpp_value);
     return;
   }
 }
@@ -117,9 +120,10 @@ v8::Local<v8::Value> ToV8(const LongOrTestDictionary& impl, v8::Local<v8::Object
   return v8::Local<v8::Value>();
 }
 
-LongOrTestDictionary NativeValueTraits<LongOrTestDictionary>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+LongOrTestDictionary NativeValueTraits<LongOrTestDictionary>::NativeValue(
+    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
   LongOrTestDictionary impl;
-  V8LongOrTestDictionary::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
+  V8LongOrTestDictionary::ToImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exception_state);
   return impl;
 }
 

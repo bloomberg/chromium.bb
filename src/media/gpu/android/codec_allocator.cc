@@ -10,7 +10,7 @@
 
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/task/task_traits.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread.h"
@@ -152,9 +152,11 @@ void CodecAllocator::StartThread(CodecAllocatorClient* client) {
     // Register the hang detector to observe the thread's MessageLoop.
     thread->thread.task_runner()->PostTask(
         FROM_HERE,
-        base::BindOnce(&base::MessageLoop::AddTaskObserver,
-                       base::Unretained(thread->thread.message_loop()),
-                       &thread->hang_detector));
+        base::BindOnce(
+            [](base::MessageLoop::TaskObserver* observer) {
+              base::MessageLoopCurrent::Get()->AddTaskObserver(observer);
+            },
+            base::Unretained(&thread->hang_detector)));
   }
 
   clients_.insert(client);

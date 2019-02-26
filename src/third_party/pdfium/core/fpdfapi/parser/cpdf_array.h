@@ -37,7 +37,7 @@ class CPDF_Array final : public CPDF_Object {
                const CPDF_Encryptor* encryptor) const override;
 
   bool IsEmpty() const { return m_Objects.empty(); }
-  size_t GetCount() const { return m_Objects.size(); }
+  size_t size() const { return m_Objects.size(); }
   CPDF_Object* GetObjectAt(size_t index);
   const CPDF_Object* GetObjectAt(size_t index) const;
   CPDF_Object* GetDirectObjectAt(size_t index);
@@ -108,17 +108,38 @@ class CPDF_Array final : public CPDF_Object {
   void Clear();
   void RemoveAt(size_t index);
   void ConvertToIndirectObjectAt(size_t index, CPDF_IndirectObjectHolder* pDoc);
-
-  const_iterator begin() const { return m_Objects.begin(); }
-  const_iterator end() const { return m_Objects.end(); }
+  bool IsLocked() const { return !!m_LockCount; }
 
  private:
+  friend class CPDF_ArrayLocker;
+
   std::unique_ptr<CPDF_Object> CloneNonCyclic(
       bool bDirect,
       std::set<const CPDF_Object*>* pVisited) const override;
 
   std::vector<std::unique_ptr<CPDF_Object>> m_Objects;
   WeakPtr<ByteStringPool> m_pPool;
+  mutable uint32_t m_LockCount = 0;
+};
+
+class CPDF_ArrayLocker {
+ public:
+  using const_iterator = CPDF_Array::const_iterator;
+
+  explicit CPDF_ArrayLocker(const CPDF_Array* pArray);
+  ~CPDF_ArrayLocker();
+
+  const_iterator begin() const {
+    CHECK(m_pArray->IsLocked());
+    return m_pArray->m_Objects.begin();
+  }
+  const_iterator end() const {
+    CHECK(m_pArray->IsLocked());
+    return m_pArray->m_Objects.end();
+  }
+
+ private:
+  UnownedPtr<const CPDF_Array> const m_pArray;
 };
 
 inline CPDF_Array* ToArray(CPDF_Object* obj) {

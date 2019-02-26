@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/platform/bindings/to_v8.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -78,16 +79,96 @@ class CountUseForBindings : public ScriptFunction {
   }
 };
 
+void AddCountUse(ScriptState* script_state, v8::Local<v8::Object> binding) {
+  v8::Local<v8::Function> fn =
+      CountUseForBindings::CreateFunction(script_state);
+  v8::Local<v8::String> name =
+      V8AtomicString(script_state->GetIsolate(), "countUse");
+  binding->Set(script_state->GetContext(), name, fn).ToChecked();
+}
+
+void AddOriginals(ScriptState* script_state, v8::Local<v8::Object> binding) {
+  // These values are only used when serialization is enabled.
+  if (!RuntimeEnabledFeatures::TransferableStreamsEnabled())
+    return;
+
+  v8::Local<v8::Object> global = script_state->GetContext()->Global();
+  v8::Local<v8::Context> context = script_state->GetContext();
+  v8::Isolate* isolate = script_state->GetIsolate();
+
+  const auto ObjectGet = [&context, &isolate](v8::Local<v8::Value> object,
+                                              const char* property) {
+    DCHECK(object->IsObject());
+    return object.As<v8::Object>()
+        ->Get(context, V8AtomicString(isolate, property))
+        .ToLocalChecked();
+  };
+
+  const auto GetPrototype = [&ObjectGet](v8::Local<v8::Value> object) {
+    return ObjectGet(object, "prototype");
+  };
+
+  const auto GetOwnPD = [&context, &isolate](v8::Local<v8::Value> object,
+                                             const char* property) {
+    DCHECK(object->IsObject());
+    return object.As<v8::Object>()
+        ->GetOwnPropertyDescriptor(context, V8AtomicString(isolate, property))
+        .ToLocalChecked();
+  };
+
+  const auto GetOwnPDGet = [&ObjectGet, &GetOwnPD](v8::Local<v8::Value> object,
+                                                   const char* property) {
+    return ObjectGet(GetOwnPD(object, property), "get");
+  };
+
+  const auto Bind = [&context, &isolate, &binding](const char* name,
+                                                   v8::Local<v8::Value> value) {
+    bool result =
+        binding
+            ->CreateDataProperty(context, V8AtomicString(isolate, name), value)
+            .ToChecked();
+    DCHECK(result);
+  };
+
+  v8::Local<v8::Value> message_port = ObjectGet(global, "MessagePort");
+
+  // Some Worklets don't have MessagePort. In this case, serialization will
+  // be disabled.
+  if (message_port->IsUndefined())
+    return;
+
+  v8::Local<v8::Value> event_target_prototype =
+      GetPrototype(ObjectGet(global, "EventTarget"));
+  Bind("EventTarget_addEventListener",
+       ObjectGet(event_target_prototype, "addEventListener"));
+
+  v8::Local<v8::Value> message_port_prototype = GetPrototype(message_port);
+  Bind("MessagePort_postMessage",
+       ObjectGet(message_port_prototype, "postMessage"));
+  Bind("MessagePort_close", ObjectGet(message_port_prototype, "close"));
+  Bind("MessagePort_start", ObjectGet(message_port_prototype, "start"));
+
+  v8::Local<v8::Value> message_event_prototype =
+      GetPrototype(ObjectGet(global, "MessageEvent"));
+
+  Bind("MessageEvent_data_get", GetOwnPDGet(message_event_prototype, "data"));
+
+  v8::Local<v8::Value> dom_exception = ObjectGet(global, "DOMException");
+  Bind("DOMException", dom_exception);
+
+  v8::Local<v8::Value> dom_exception_prototype = GetPrototype(dom_exception);
+  Bind("DOMException_message_get",
+       GetOwnPDGet(dom_exception_prototype, "message"));
+  Bind("DOMException_name_get", GetOwnPDGet(dom_exception_prototype, "name"));
+}
+
 }  // namespace
 
 void InitializeV8ExtrasBinding(ScriptState* script_state) {
   v8::Local<v8::Object> binding =
       script_state->GetContext()->GetExtrasBindingObject();
-  v8::Local<v8::Function> fn =
-      CountUseForBindings::CreateFunction(script_state);
-  v8::Local<v8::String> name =
-      V8AtomicString(script_state->GetIsolate(), "countUse");
-  binding->Set(script_state->GetContext(), name, fn).FromJust();
+  AddCountUse(script_state, binding);
+  AddOriginals(script_state, binding);
 }
 
 }  // namespace blink

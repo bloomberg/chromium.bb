@@ -32,7 +32,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICE_WORKER_WEB_SERVICE_WORKER_PROVIDER_H_
 
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom-shared.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_registration.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_registration_object_info.h"
 #include "third_party/blink/public/platform/web_callbacks.h"
 #include "third_party/blink/public/platform/web_vector.h"
 
@@ -50,10 +50,9 @@ struct WebServiceWorkerError;
 //
 // It is implemented by content::WebServiceWorkerProviderImpl.
 //
-// WebServiceWorkerProvider is created in ServiceWorkerContainerClient::From(),
-// which is used to instantiate navigator.serviceWorker. It is
-// owned by ServiceWorkerContainerClient, which is a
-// garbage collected Supplement for Document.
+// WebServiceWorkerProvider is created in ServiceWorkerContainer::From(),
+// which is used to instantiate navigator.serviceWorker. It is owned by
+// ServiceWorkerContainer, which is a garbage collected Supplement for Document.
 //
 // Each ServiceWorkerContainer instance has a WebServiceWorkerProvider.
 // ServiceWorkerContainer is called the "client" of the
@@ -66,19 +65,17 @@ class WebServiceWorkerProvider {
   virtual void SetClient(WebServiceWorkerProviderClient*) {}
 
   using WebServiceWorkerRegistrationCallbacks =
-      WebCallbacks<std::unique_ptr<WebServiceWorkerRegistration::Handle>,
+      WebCallbacks<WebServiceWorkerRegistrationObjectInfo,
                    const WebServiceWorkerError&>;
   using WebServiceWorkerGetRegistrationCallbacks =
-      WebCallbacks<std::unique_ptr<WebServiceWorkerRegistration::Handle>,
+      WebCallbacks<WebServiceWorkerRegistrationObjectInfo,
                    const WebServiceWorkerError&>;
 
-  using WebServiceWorkerRegistrationHandles =
-      WebVector<std::unique_ptr<WebServiceWorkerRegistration::Handle>>;
   using WebServiceWorkerGetRegistrationsCallbacks =
-      WebCallbacks<std::unique_ptr<WebServiceWorkerRegistrationHandles>,
+      WebCallbacks<WebVector<WebServiceWorkerRegistrationObjectInfo>,
                    const WebServiceWorkerError&>;
   using WebServiceWorkerGetRegistrationForReadyCallbacks =
-      WebCallbacks<std::unique_ptr<WebServiceWorkerRegistration::Handle>, void>;
+      WebCallbacks<WebServiceWorkerRegistrationObjectInfo, void>;
 
   // For ServiceWorkerContainer#register(). Requests the embedder to register a
   // service worker.

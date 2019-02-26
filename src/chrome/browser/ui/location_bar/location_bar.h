@@ -53,9 +53,6 @@ class LocationBar {
   // Updates the state of the images showing the content settings status.
   virtual void UpdateContentSettingsIcons() = 0;
 
-  // Updates the password icon and pops up a bubble from the icon if needed.
-  virtual void UpdateManagePasswordsIconAndBubble() = 0;
-
   // Updates the visibility and toggled state of the save credit card icon.
   virtual void UpdateSaveCreditCardIcon() = 0;
 
@@ -64,10 +61,6 @@ class LocationBar {
 
   // Updates the visibility of the bookmark star.
   virtual void UpdateBookmarkStarVisibility() = 0;
-
-  // Updates the visibility of the location bar. Animates the transition if
-  // |animate| is true.
-  virtual void UpdateLocationBarVisibility(bool visible, bool animate) = 0;
 
   // Saves the state of the location bar to the specified WebContents, so that
   // it can be restored later. (Done when switching tabs).

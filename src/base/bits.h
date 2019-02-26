@@ -75,9 +75,22 @@ ALWAYS_INLINE
     CountLeadingZeroBits(T x) {
   static_assert(bits > 0, "invalid instantiation");
   unsigned long index;
+// MSVC only supplies _BitScanReverse64 when building for a 64-bit target.
+#if defined(ARCH_CPU_64_BITS)
   return LIKELY(_BitScanReverse64(&index, static_cast<uint64_t>(x)))
              ? (63 - index)
              : 64;
+#else
+  uint32_t left = static_cast<uint32_t>(x >> 32);
+  if (LIKELY(_BitScanReverse(&index, left)))
+    return 31 - index;
+
+  uint32_t right = static_cast<uint32_t>(x);
+  if (LIKELY(_BitScanReverse(&index, right)))
+    return 63 - index;
+
+  return 64;
+#endif
 }
 
 template <typename T, unsigned bits = sizeof(T) * 8>
@@ -98,22 +111,30 @@ ALWAYS_INLINE
     CountTrailingZeroBits(T x) {
   static_assert(bits > 0, "invalid instantiation");
   unsigned long index;
+// MSVC only supplies _BitScanForward64 when building for a 64-bit target.
+#if defined(ARCH_CPU_64_BITS)
   return LIKELY(_BitScanForward64(&index, static_cast<uint64_t>(x))) ? index
                                                                      : 64;
+#else
+  uint32_t right = static_cast<uint32_t>(x);
+  if (LIKELY(_BitScanForward(&index, right)))
+    return index;
+
+  uint32_t left = static_cast<uint32_t>(x >> 32);
+  if (LIKELY(_BitScanForward(&index, left)))
+    return 32 + index;
+
+  return 64;
+#endif
 }
 
 ALWAYS_INLINE uint32_t CountLeadingZeroBits32(uint32_t x) {
   return CountLeadingZeroBits(x);
 }
 
-#if defined(ARCH_CPU_64_BITS)
-
-// MSVC only supplies _BitScanForward64 when building for a 64-bit target.
 ALWAYS_INLINE uint64_t CountLeadingZeroBits64(uint64_t x) {
   return CountLeadingZeroBits(x);
 }
-
-#endif
 
 #elif defined(COMPILER_GCC)
 
@@ -149,13 +170,9 @@ ALWAYS_INLINE uint32_t CountLeadingZeroBits32(uint32_t x) {
   return CountLeadingZeroBits(x);
 }
 
-#if defined(ARCH_CPU_64_BITS)
-
 ALWAYS_INLINE uint64_t CountLeadingZeroBits64(uint64_t x) {
   return CountLeadingZeroBits(x);
 }
-
-#endif
 
 #endif
 

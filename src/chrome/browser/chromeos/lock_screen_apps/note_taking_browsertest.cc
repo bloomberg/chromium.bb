@@ -17,6 +17,8 @@
 #include "chromeos/chromeos_switches.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/common/api/app_runtime.h"
 #include "extensions/common/switches.h"
 #include "extensions/test/extension_test_message_listener.h"
@@ -83,6 +85,26 @@ class LockScreenNoteTakingTest : public extensions::ExtensionBrowserTest {
     extensions::ExtensionBrowserTest::SetUpCommandLine(cmd_line);
   }
 
+  void CreatedBrowserMainParts(
+      content::BrowserMainParts* browser_main_parts) override {
+    // Creating result catcher to be used by tests eary on to avoid flaky hangs
+    // in the DataAvailableOnRestart test.
+    // The tests expects the test app (which is installed in the tests PRE_
+    // part) to run in response to the
+    // lockScreen.data.onDataItemsAvailable event which is dispatched early on,
+    // during "user" session start-up, which happens before test body is run.
+    // This means that result catchers created in the test body might miss test
+    // completion notifications from the app.
+    result_catcher_ = std::make_unique<extensions::ResultCatcher>();
+    extensions::ExtensionBrowserTest::CreatedBrowserMainParts(
+        browser_main_parts);
+  }
+
+  void TearDownOnMainThread() override {
+    result_catcher_.reset();
+    extensions::ExtensionBrowserTest::TearDownOnMainThread();
+  }
+
   bool EnableLockScreenAppLaunch(const std::string& app_id) {
     chromeos::NoteTakingHelper::Get()->SetPreferredApp(profile(), app_id);
     chromeos::NoteTakingHelper::Get()->SetPreferredAppEnabledOnLockScreen(
@@ -117,7 +139,6 @@ class LockScreenNoteTakingTest : public extensions::ExtensionBrowserTest {
     ExtensionTestMessageListener ready_to_close("readyToClose",
                                                 true /* will_reply */);
 
-    extensions::ResultCatcher catcher;
     lock_screen_apps::StateController::Get()->RequestNewLockScreenNote(
         ash::mojom::LockScreenNoteOrigin::kLockScreenButtonTap);
 
@@ -134,8 +155,8 @@ class LockScreenNoteTakingTest : public extensions::ExtensionBrowserTest {
     //    wait for it to be closed
     // Test runner should wait for both of those to finish (test result message
     // will be sent for each set of tests).
-    if (!catcher.GetNextResult()) {
-      *error = catcher.message();
+    if (!result_catcher_->GetNextResult()) {
+      *error = result_catcher_->message();
       if (ready_to_close.was_satisfied())
         ready_to_close.Reply("failed");
       return false;
@@ -149,15 +170,19 @@ class LockScreenNoteTakingTest : public extensions::ExtensionBrowserTest {
     // Close the app window created by the API test.
     ready_to_close.Reply("close");
 
-    if (!catcher.GetNextResult()) {
-      *error = catcher.message();
+    if (!result_catcher_->GetNextResult()) {
+      *error = result_catcher_->message();
       return false;
     }
 
     return true;
   }
 
+  extensions::ResultCatcher* result_catcher() { return result_catcher_.get(); }
+
  private:
+  std::unique_ptr<extensions::ResultCatcher> result_catcher_;
+
   DISALLOW_COPY_AND_ASSIGN(LockScreenNoteTakingTest);
 };
 
@@ -186,7 +211,6 @@ IN_PROC_BROWSER_TEST_F(LockScreenNoteTakingTest, LaunchInNonLockScreenContext) {
   ASSERT_TRUE(app);
   ASSERT_TRUE(EnableLockScreenAppLaunch(app->id()));
 
-  extensions::ResultCatcher catcher;
 
   // Get the lock screen apps state controller to the state where lock screen
   // enabled app window creation is allowed (provided the window is created
@@ -209,7 +233,7 @@ IN_PROC_BROWSER_TEST_F(LockScreenNoteTakingTest, LaunchInNonLockScreenContext) {
   apps::LaunchPlatformAppWithAction(profile(), app.get(),
                                     std::move(action_data), base::FilePath());
 
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+  ASSERT_TRUE(result_catcher()->GetNextResult()) << result_catcher()->message();
 }
 
 IN_PROC_BROWSER_TEST_F(LockScreenNoteTakingTest, DataCreation) {
@@ -223,14 +247,13 @@ IN_PROC_BROWSER_TEST_F(LockScreenNoteTakingTest, DataCreation) {
   EXPECT_EQ(ash::mojom::TrayActionState::kAvailable,
             lock_screen_apps::StateController::Get()->GetLockScreenNoteState());
 
-  extensions::ResultCatcher catcher;
   session_manager::SessionManager::Get()->SetSessionState(
       session_manager::SessionState::ACTIVE);
 
   // Unlocking the session should trigger onDataItemsAvailable event, which
   // should be catched by the background page in the main app - the event should
   // start another test sequence.
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+  ASSERT_TRUE(result_catcher()->GetNextResult()) << result_catcher()->message();
 }
 
 IN_PROC_BROWSER_TEST_F(LockScreenNoteTakingTest, PRE_DataAvailableOnRestart) {
@@ -252,8 +275,7 @@ IN_PROC_BROWSER_TEST_F(LockScreenNoteTakingTest, DataAvailableOnRestart) {
   // lock screen app's data storage is not empty), which should in turn run a
   // sequence of API tests (in the test app background page).
   // This test is intended to catch the result of these tests.
-  extensions::ResultCatcher catcher;
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+  ASSERT_TRUE(result_catcher()->GetNextResult()) << result_catcher()->message();
 }
 
 IN_PROC_BROWSER_TEST_F(LockScreenNoteTakingTest, AppLaunchActionDataParams) {
@@ -264,7 +286,6 @@ IN_PROC_BROWSER_TEST_F(LockScreenNoteTakingTest, AppLaunchActionDataParams) {
   ASSERT_TRUE(app);
   ASSERT_TRUE(EnableLockScreenAppLaunch(app->id()));
 
-  extensions::ResultCatcher catcher;
 
   lock_screen_apps::StateController::Get()->RequestNewLockScreenNote(
       ash::mojom::LockScreenNoteOrigin::kLockScreenButtonTap);
@@ -278,7 +299,7 @@ IN_PROC_BROWSER_TEST_F(LockScreenNoteTakingTest, AppLaunchActionDataParams) {
   expected_action_data.Reply(R"({"actionType": "new_note",
                                  "isLockScreenAction": true,
                                  "restoreLastActionState": true})");
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+  ASSERT_TRUE(result_catcher()->GetNextResult()) << result_catcher()->message();
   expected_action_data.Reset();
 
   // Reset the lock screen app state by resetting screen lock, so the app is
@@ -299,5 +320,5 @@ IN_PROC_BROWSER_TEST_F(LockScreenNoteTakingTest, AppLaunchActionDataParams) {
   expected_action_data.Reply(R"({"actionType": "new_note",
                                  "isLockScreenAction": true,
                                  "restoreLastActionState": false})");
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+  ASSERT_TRUE(result_catcher()->GetNextResult()) << result_catcher()->message();
 }

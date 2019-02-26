@@ -822,7 +822,7 @@ static SkUniqueCFRef<CTFontDescriptorRef> create_descriptor(const char familyNam
         CFDictionaryAddValue(cfTraits.get(), kCTFontWeightTrait, cfFontWeight.get());
     }
     // CTFontTraits (width)
-    CGFloat ctWidth = fontstyle_to_ct_width(style.weight());
+    CGFloat ctWidth = fontstyle_to_ct_width(style.width());
     SkUniqueCFRef<CFNumberRef> cfFontWidth(
             CFNumberCreate(kCFAllocatorDefault, kCFNumberCGFloatType, &ctWidth));
     if (cfFontWidth) {
@@ -905,13 +905,10 @@ protected:
     void generateMetrics(SkGlyph* glyph) override;
     void generateImage(const SkGlyph& glyph) override;
     bool generatePath(SkGlyphID glyph, SkPath* path) override;
-    void generateFontMetrics(SkPaint::FontMetrics*) override;
+    void generateFontMetrics(SkFontMetrics*) override;
 
 private:
     static void CTPathElement(void *info, const CGPathElement *element);
-
-    /** Returns the offset from the horizontal origin to the vertical origin in SkGlyph units. */
-    void getVerticalOffset(CGGlyph glyphID, SkPoint* offset) const;
 
     Offscreen fOffscreen;
 
@@ -942,7 +939,6 @@ private:
     SkUniqueCFRef<CGFontRef> fCGFont;
     uint16_t fGlyphCount;
     const bool fDoSubPosition;
-    const bool fVertical;
 
     friend class Offscreen;
 
@@ -976,7 +972,6 @@ SkScalerContext_Mac::SkScalerContext_Mac(sk_sp<SkTypeface_Mac> typeface,
                                          const SkDescriptor* desc)
         : INHERITED(std::move(typeface), effects, desc)
         , fDoSubPosition(SkToBool(fRec.fFlags & kSubpixelPositioning_Flag))
-        , fVertical(SkToBool(fRec.fFlags & kVertical_Flag))
 
 {
     AUTO_CG_LOCK();
@@ -1105,14 +1100,6 @@ CGRGBPixel* Offscreen::getCG(const SkScalerContext_Mac& context, const SkGlyph& 
         subY = SkFixedToFloat(glyph.getSubYFixed());
     }
 
-    // CoreText and CoreGraphics always draw using the horizontal baseline origin.
-    if (context.fVertical) {
-        SkPoint offset;
-        context.getVerticalOffset(glyphID, &offset);
-        subX += offset.fX;
-        subY += offset.fY;
-    }
-
     CGPoint point = CGPointMake(-glyph.fLeft + subX, glyph.fTop + glyph.fHeight - subY);
     // Prior to 10.10, CTFontDrawGlyphs acted like CGContextShowGlyphsAtPositions and took
     // 'positions' which are in text space. The glyph location (in device space) must be
@@ -1128,17 +1115,6 @@ CGRGBPixel* Offscreen::getCG(const SkScalerContext_Mac& context, const SkGlyph& 
     SkASSERT(rowBytesPtr);
     *rowBytesPtr = rowBytes;
     return image;
-}
-
-void SkScalerContext_Mac::getVerticalOffset(CGGlyph glyphID, SkPoint* offset) const {
-    // CTFontGetVerticalTranslationsForGlyphs produces cgVertOffset in CG units (pixels, y up).
-    CGSize cgVertOffset;
-    CTFontGetVerticalTranslationsForGlyphs(fCTFont.get(), &glyphID, &cgVertOffset, 1);
-    cgVertOffset = CGSizeApplyAffineTransform(cgVertOffset, fTransform);
-    SkPoint skVertOffset = { CGToScalar(cgVertOffset.width), CGToScalar(cgVertOffset.height) };
-    // From CG units (pixels, y up) to SkGlyph units (pixels, y down).
-    skVertOffset.fY = -skVertOffset.fY;
-    *offset = skVertOffset;
 }
 
 unsigned SkScalerContext_Mac::generateGlyphCount(void) {
@@ -1176,17 +1152,8 @@ void SkScalerContext_Mac::generateMetrics(SkGlyph* glyph) {
 
     // The following block produces cgAdvance in CG units (pixels, y up).
     CGSize cgAdvance;
-    if (fVertical) {
-        CTFontGetAdvancesForGlyphs(fCTFont.get(), kCTFontOrientationVertical,
-                                   &cgGlyph, &cgAdvance, 1);
-        // Vertical advances are returned as widths instead of heights.
-        using std::swap;
-        swap(cgAdvance.height, cgAdvance.width);
-        cgAdvance.height = -cgAdvance.height;
-    } else {
-        CTFontGetAdvancesForGlyphs(fCTFont.get(), kCTFontOrientationHorizontal,
-                                   &cgGlyph, &cgAdvance, 1);
-    }
+    CTFontGetAdvancesForGlyphs(fCTFont.get(), kCTFontOrientationHorizontal,
+                               &cgGlyph, &cgAdvance, 1);
     cgAdvance = CGSizeApplyAffineTransform(cgAdvance, fTransform);
     glyph->fAdvanceX =  CGToFloat(cgAdvance.width);
     glyph->fAdvanceY = -CGToFloat(cgAdvance.height);
@@ -1226,14 +1193,6 @@ void SkScalerContext_Mac::generateMetrics(SkGlyph* glyph) {
         // Convert cgBounds to SkGlyph units (pixels, y down).
         skBounds = SkRect::MakeXYWH(cgBounds.origin.x, -cgBounds.origin.y - cgBounds.size.height,
                                     cgBounds.size.width, cgBounds.size.height);
-    }
-
-    if (fVertical) {
-        // Due to possible vertical bounds bugs and simplicity, skBounds is the horizontal bounds.
-        // Convert these horizontal bounds into vertical bounds.
-        SkPoint offset;
-        this->getVerticalOffset(cgGlyph, &offset);
-        skBounds.offset(offset);
     }
 
     // Currently the bounds are based on being rendered at (0,0).
@@ -1362,7 +1321,7 @@ void SkScalerContext_Mac::generateImage(const SkGlyph& glyph) {
     CGGlyph cgGlyph = SkTo<CGGlyph>(glyph.getGlyphID());
 
     // FIXME: lcd smoothed un-hinted rasterization unsupported.
-    bool requestSmooth = fRec.getHinting() != SkPaint::kNo_Hinting;
+    bool requestSmooth = fRec.getHinting() != kNo_SkFontHinting;
 
     // Draw the glyph
     size_t cgRowBytes;
@@ -1375,7 +1334,7 @@ void SkScalerContext_Mac::generateImage(const SkGlyph& glyph) {
     if ((glyph.fMaskFormat == SkMask::kLCD16_Format) ||
         (glyph.fMaskFormat == SkMask::kA8_Format
          && requestSmooth
-         && smooth_behavior() == SmoothBehavior::subpixel))
+         && smooth_behavior() != SmoothBehavior::none))
     {
         const uint8_t* linear = gLinearCoverageFromCGLCDValue.data();
 
@@ -1498,15 +1457,10 @@ bool SkScalerContext_Mac::generatePath(SkGlyphID glyph, SkPath* path) {
         m.setScale(SkScalarInvert(scaleX), SkScalarInvert(scaleY));
         path->transform(m);
     }
-    if (fVertical) {
-        SkPoint offset;
-        getVerticalOffset(cgGlyph, &offset);
-        path->offset(offset.fX, offset.fY);
-    }
     return true;
 }
 
-void SkScalerContext_Mac::generateFontMetrics(SkPaint::FontMetrics* metrics) {
+void SkScalerContext_Mac::generateFontMetrics(SkFontMetrics* metrics) {
     if (nullptr == metrics) {
         return;
     }
@@ -1530,8 +1484,8 @@ void SkScalerContext_Mac::generateFontMetrics(SkPaint::FontMetrics* metrics) {
     metrics->fUnderlinePosition = -CGToScalar( CTFontGetUnderlinePosition(fCTFont.get()));
 
     metrics->fFlags = 0;
-    metrics->fFlags |= SkPaint::FontMetrics::kUnderlineThicknessIsValid_Flag;
-    metrics->fFlags |= SkPaint::FontMetrics::kUnderlinePositionIsValid_Flag;
+    metrics->fFlags |= SkFontMetrics::kUnderlineThicknessIsValid_Flag;
+    metrics->fFlags |= SkFontMetrics::kUnderlinePositionIsValid_Flag;
 
     // See https://bugs.chromium.org/p/skia/issues/detail?id=6203
     // At least on 10.12.3 with memory based fonts the x-height is always 0.6666 of the ascent and
@@ -2263,7 +2217,7 @@ void SkTypeface_Mac::onFilterRec(SkScalerContextRec* rec) const {
         // The above turns off subpixel rendering, but the user requested it.
         // Normal hinting will cause the A8 masks to be generated from CoreGraphics subpixel masks.
         // See comments below for more details.
-        rec->setHinting(SkPaint::kNormal_Hinting);
+        rec->setHinting(kNormal_SkFontHinting);
     }
 
     unsigned flagsWeDontSupport = SkScalerContext::kForceAutohinting_Flag  |
@@ -2278,11 +2232,11 @@ void SkTypeface_Mac::onFilterRec(SkScalerContextRec* rec) const {
     // kNo_Hinting means avoid CoreGraphics outline dilation.
     // kNormal_Hinting means CoreGraphics outline dilation is allowed.
     // If there is no lcd support, hinting (dilation) cannot be supported.
-    SkPaint::Hinting hinting = rec->getHinting();
-    if (SkPaint::kSlight_Hinting == hinting || smoothBehavior == SmoothBehavior::none) {
-        hinting = SkPaint::kNo_Hinting;
-    } else if (SkPaint::kFull_Hinting == hinting) {
-        hinting = SkPaint::kNormal_Hinting;
+    SkFontHinting hinting = rec->getHinting();
+    if (kSlight_SkFontHinting == hinting || smoothBehavior == SmoothBehavior::none) {
+        hinting = kNo_SkFontHinting;
+    } else if (kFull_SkFontHinting == hinting) {
+        hinting = kNormal_SkFontHinting;
     }
     rec->setHinting(hinting);
 
@@ -2309,11 +2263,11 @@ void SkTypeface_Mac::onFilterRec(SkScalerContextRec* rec) const {
         if (smoothBehavior == SmoothBehavior::subpixel) {
             //CoreGraphics creates 555 masks for smoothed text anyway.
             rec->fMaskFormat = SkMask::kLCD16_Format;
-            rec->setHinting(SkPaint::kNormal_Hinting);
+            rec->setHinting(kNormal_SkFontHinting);
         } else {
             rec->fMaskFormat = SkMask::kA8_Format;
             if (smoothBehavior == SmoothBehavior::some) {
-                rec->setHinting(SkPaint::kNormal_Hinting);
+                rec->setHinting(kNormal_SkFontHinting);
             }
         }
     }
@@ -2327,7 +2281,7 @@ void SkTypeface_Mac::onFilterRec(SkScalerContextRec* rec) const {
 
     // Unhinted A8 masks (those not derived from LCD masks) must respect SK_GAMMA_APPLY_TO_A8.
     // All other masks can use regular gamma.
-    if (SkMask::kA8_Format == rec->fMaskFormat && SkPaint::kNo_Hinting == hinting) {
+    if (SkMask::kA8_Format == rec->fMaskFormat && kNo_SkFontHinting == hinting) {
 #ifndef SK_GAMMA_APPLY_TO_A8
         // SRGBTODO: Is this correct? Do we want contrast boost?
         rec->ignorePreBlend();

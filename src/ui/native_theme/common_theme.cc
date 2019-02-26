@@ -18,6 +18,22 @@ namespace ui {
 
 SkColor GetAuraColor(NativeTheme::ColorId color_id,
                      const NativeTheme* base_theme) {
+  // TODO(lgrey): High contrast dark mode.
+  if (base_theme->SystemDarkModeEnabled()) {
+    switch (color_id) {
+      case NativeTheme::kColorId_LabelEnabledColor:
+      case NativeTheme::kColorId_TextfieldDefaultColor:
+        return SK_ColorWHITE;
+      case NativeTheme::kColorId_UnfocusedBorderColor:
+        return gfx::kGoogleGrey900;
+      case NativeTheme::kColorId_ButtonEnabledColor:
+      case NativeTheme::kColorId_ButtonHoverColor:
+        return gfx::kGoogleGrey200;
+      default:
+        break;
+    }
+  }
+
   // High contrast overrides the normal colors for certain ColorIds to be much
   // darker or lighter.
   if (base_theme->UsesHighContrastColors()) {
@@ -90,14 +106,6 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
     case NativeTheme::kColorId_ButtonEnabledColor:
     case NativeTheme::kColorId_ButtonHoverColor:
       return kButtonEnabledColor;
-    // TODO(estade): remove the BlueButton colors.
-    case NativeTheme::kColorId_BlueButtonEnabledColor:
-    case NativeTheme::kColorId_BlueButtonDisabledColor:
-    case NativeTheme::kColorId_BlueButtonPressedColor:
-    case NativeTheme::kColorId_BlueButtonHoverColor:
-      return SK_ColorWHITE;
-    case NativeTheme::kColorId_BlueButtonShadowColor:
-      return SkColorSetRGB(0x53, 0x8C, 0xEA);
     case NativeTheme::kColorId_ProminentButtonColor:
       return gfx::kGoogleBlue500;
     case NativeTheme::kColorId_TextOnProminentButtonColor:
@@ -127,6 +135,12 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       return kDisabledTextColor;
     case NativeTheme::kColorId_MenuItemMinorTextColor:
       return SkColorSetA(SK_ColorBLACK, 0x89);
+    case NativeTheme::kColorId_HighlightedMenuItemBackgroundColor:
+      return gfx::kGoogleGrey050;
+    case NativeTheme::kColorId_HighlightedMenuItemForegroundColor:
+      return gfx::kGoogleGrey900;
+    case NativeTheme::kColorId_FocusedHighlightedMenuItemBackgroundColor:
+      return gfx::kGoogleGrey200;
 
     // Label
     case NativeTheme::kColorId_LabelEnabledColor:

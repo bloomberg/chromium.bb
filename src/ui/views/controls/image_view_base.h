@@ -40,12 +40,14 @@ class VIEWS_EXPORT ImageViewBase : public View {
   Alignment GetVerticalAlignment() const;
 
   // Set / Get the tooltip text.
-  void SetTooltipText(const base::string16& tooltip);
-  base::string16 GetTooltipText() const;
+  void set_tooltip_text(const base::string16& tooltip) {
+    tooltip_text_ = tooltip;
+  }
+  const base::string16& tooltip_text() const { return tooltip_text_; }
 
   // Set / Get the accessible name text.
   void SetAccessibleName(const base::string16& name);
-  base::string16 GetAccessibleName() const;
+  const base::string16& GetAccessibleName() const;
 
   // Overridden from View:
   void OnPaint(gfx::Canvas* canvas) override = 0;

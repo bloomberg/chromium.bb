@@ -93,15 +93,22 @@ void DriveNotificationManager::OnIncomingInvalidation(
   syncer::ObjectIdSet ids = invalidation_map.GetObjectIds();
 
   for (const auto& id : ids) {
-    if (id.name() == kDriveInvalidationObjectId) {
-      // Empty string indicates default change list.
-      invalidated_change_ids_.insert("");
-    } else if (base::StartsWith(id.name(), kTeamDriveChangePrefix,
-                                base::CompareCase::SENSITIVE)) {
-      invalidated_change_ids_.insert(
-          id.name().substr(kTeamDriveChangePrefixLength));
-    } else {
-      NOTREACHED() << "Unexpected ID " << id.name();
+    // Empty string indicates default change list.
+    std::string unpacked_id;
+    if (id.name() != kDriveInvalidationObjectId) {
+      DCHECK(base::StartsWith(id.name(), kTeamDriveChangePrefix,
+                              base::CompareCase::SENSITIVE))
+          << "Unexpected ID " << id.name();
+      unpacked_id = id.name().substr(kTeamDriveChangePrefixLength);
+    }
+    auto invalidations = invalidation_map.ForObject(id);
+    int64_t& invalidation_version =
+        invalidated_change_ids_.emplace(unpacked_id, -1).first->second;
+    for (auto& invalidation : invalidations) {
+      if (!invalidation.is_unknown_version() &&
+          invalidation.version() > invalidation_version) {
+        invalidation_version = invalidation.version();
+      }
     }
   }
 
@@ -171,7 +178,7 @@ void DriveNotificationManager::RestartPollingTimer() {
       FROM_HERE, base::TimeDelta::FromSeconds(interval_secs + jitter),
       base::BindOnce(&DriveNotificationManager::NotifyObserversToUpdate,
                      weak_ptr_factory_.GetWeakPtr(), NOTIFICATION_POLLING,
-                     std::set<std::string>()));
+                     std::map<std::string, int64_t>()));
 }
 
 void DriveNotificationManager::RestartBatchTimer() {
@@ -189,13 +196,20 @@ void DriveNotificationManager::RestartBatchTimer() {
 
 void DriveNotificationManager::NotifyObserversToUpdate(
     NotificationSource source,
-    const std::set<std::string> ids) {
+    std::map<std::string, int64_t> invalidations) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(1) << "Notifying observers: " << NotificationSourceToString(source);
 
   if (source == NOTIFICATION_XMPP) {
+    auto my_drive_invalidation = invalidations.find("");
+    if (my_drive_invalidation != invalidations.end() &&
+        my_drive_invalidation->second != -1) {
+      // The invalidation version for My Drive is smaller than what's expected
+      // for fetch requests by 1. Increment it unless it hasn't been set.
+      ++my_drive_invalidation->second;
+    }
     for (auto& observer : observers_)
-      observer.OnNotificationReceived(ids);
+      observer.OnNotificationReceived(invalidations);
   } else {
     for (auto& observer : observers_)
       observer.OnNotificationTimerFired();
@@ -251,10 +265,10 @@ void DriveNotificationManager::UpdateRegisteredDriveNotifications() {
 void DriveNotificationManager::OnBatchTimerExpired() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  std::set<std::string> change_ids_to_update;
+  std::map<std::string, int64_t> change_ids_to_update;
   invalidated_change_ids_.swap(change_ids_to_update);
   if (!change_ids_to_update.empty()) {
-    NotifyObserversToUpdate(NOTIFICATION_XMPP, change_ids_to_update);
+    NotifyObserversToUpdate(NOTIFICATION_XMPP, std::move(change_ids_to_update));
   }
 }
 

@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "components/payments/content/developer_console_logger.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 #include "content/public/browser/payment_app_provider.h"
@@ -72,13 +73,6 @@ class ManifestVerifier final : public WebDataServiceConsumer {
               base::OnceClosure finished_using_resources);
 
  private:
-  class DevToolsHelper : public content::WebContentsObserver {
-   public:
-    explicit DevToolsHelper(content::WebContents* web_contents);
-    ~DevToolsHelper() override;
-    void WarnIfPossible(const std::string& message);
-  };
-
   // Called when a manifest is retrieved from cache.
   void OnWebDataServiceRequestDone(
       WebDataServiceBase::Handle h,
@@ -98,8 +92,7 @@ class ManifestVerifier final : public WebDataServiceConsumer {
   // Called immediately preceding the verification callback invocation.
   void RemoveInvalidPaymentApps();
 
-  // Logs messages to the DevTools console.
-  DevToolsHelper dev_tools_;
+  DeveloperConsoleLogger log_;
 
   // Downloads the manifests.
   PaymentManifestDownloader* downloader_;

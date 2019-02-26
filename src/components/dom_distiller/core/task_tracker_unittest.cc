@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/dom_distiller/core/article_distillation_update.h"
 #include "components/dom_distiller/core/article_entry.h"
 #include "components/dom_distiller/core/distilled_content_store.h"
@@ -61,7 +61,6 @@ class MockSaveCallback {
 class DomDistillerTaskTrackerTest : public testing::Test {
  public:
   void SetUp() override {
-    message_loop_.reset(new base::MessageLoop());
     entry_id_ = "id0";
     page_0_url_ = GURL("http://www.example.com/1");
     page_1_url_ = GURL("http://www.example.com/2");
@@ -78,7 +77,7 @@ class DomDistillerTaskTrackerTest : public testing::Test {
   }
 
  protected:
-  std::unique_ptr<base::MessageLoop> message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   std::string entry_id_;
   GURL page_0_url_;
   GURL page_1_url_;

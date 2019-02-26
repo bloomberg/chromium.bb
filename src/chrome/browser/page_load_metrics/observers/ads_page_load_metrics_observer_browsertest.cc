@@ -9,8 +9,11 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/page_load_metrics/observers/ads_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/use_counter_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_test_waiter.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/subresource_filter/subresource_filter_browser_test_harness.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_features.h"
@@ -25,18 +28,37 @@
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/download_test_observer.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/download/download_stats.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
 namespace {
+
 const char kCrossOriginHistogramId[] =
     "PageLoad.Clients.Ads.Google.FrameCounts.AdFrames.PerFrame.OriginStatus";
+
+enum class Origin {
+  kNavigation,
+  kAnchorAttribute,
+};
+
+std::ostream& operator<<(std::ostream& os, Origin origin) {
+  switch (origin) {
+    case Origin::kNavigation:
+      return os << "Navigation";
+    case Origin::kAnchorAttribute:
+      return os << "AnchorAttribute";
+  }
+}
+
 }  // namespace
 
 class AdsPageLoadMetricsObserverBrowserTest
@@ -194,12 +216,28 @@ class AdsPageLoadMetricsObserverResourceBrowserTest
 
   ~AdsPageLoadMetricsObserverResourceBrowserTest() override {}
   void SetUpOnMainThread() override {
-    g_browser_process->subresource_filter_ruleset_service()
-        ->SetIsAfterStartupForTesting();
     host_resolver()->AddRule("*", "127.0.0.1");
     SetRulesetWithRules(
         {subresource_filter::testing::CreateSuffixRule("ad_script.js"),
-         subresource_filter::testing::CreateSuffixRule("create_frame.js")});
+         subresource_filter::testing::CreateSuffixRule("ad_script_2.js"),
+         subresource_filter::testing::CreateSuffixRule("disallow.zip")});
+  }
+
+  void OpenLinkInFrame(const content::ToRenderFrameHost& adapter,
+                       const std::string& link_id,
+                       bool gesture) {
+    std::string open_link_script = base::StringPrintf(
+        R"(
+            var evt = document.createEvent("MouseEvent");
+            evt.initMouseEvent('click', true, true);
+            document.getElementById('%s').dispatchEvent(evt);
+        )",
+        link_id.c_str());
+    if (gesture) {
+      EXPECT_TRUE(ExecuteScript(adapter, open_link_script));
+    } else {
+      EXPECT_TRUE(ExecuteScriptWithoutUserGesture(adapter, open_link_script));
+    }
   }
 
  protected:
@@ -225,7 +263,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   ui_test_utils::NavigateToURL(
       browser(),
       embedded_test_server()->GetURL("foo.com", "/frame_factory.html"));
-  // Both subresources should have been reported as ads.
+  // Two subresources should have been reported as ads.
   waiter->AddMinimumAdResourceExpectation(2);
   waiter->Wait();
 }
@@ -246,9 +284,9 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
       browser(),
       embedded_test_server()->GetURL("foo.com", "/frame_factory.html"));
   contents->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::ASCIIToUTF16("createFrame('frame_factory.html', '');"));
-  // Both pages subresources should have been reported as ad. The iframe
-  // resource should also be reported as an ad.
+      base::ASCIIToUTF16("createAdFrame('frame_factory.html', '');"));
+  // Two pages subresources should have been reported as ad. The iframe resource
+  // should also be reported as an ad.
   waiter->AddMinimumAdResourceExpectation(5);
   waiter->Wait();
 }
@@ -269,14 +307,14 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
       browser(),
       embedded_test_server()->GetURL("foo.com", "/frame_factory.html"));
   contents->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::ASCIIToUTF16("createFrame('frame_factory.html', 'test');"));
+      base::ASCIIToUTF16("createAdFrame('frame_factory.html', 'test');"));
   waiter->AddMinimumAdResourceExpectation(5);
   waiter->Wait();
   NavigateIframeToURL(
       web_contents(), "test",
       embedded_test_server()->GetURL("foo.com", "/frame_factory.html"));
-  // All resources except the top-level main resource should be reported as an
-  // ad.
+  // The new subframe as well as two of its page subresources should be reported
+  // as an ad.
   waiter->AddMinimumAdResourceExpectation(8);
   waiter->Wait();
 }
@@ -339,7 +377,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   vanilla_script_response->WaitForRequest();
   vanilla_script_response->Send(kHttpResponseHeader);
   vanilla_script_response->Send(std::string(1024, ' '));
-  waiter->AddMinimumResourceBytesExpectation(4000);
+  waiter->AddMinimumNetworkBytesExpectation(4000);
   waiter->Wait();
 
   // Verify correct numbers of resources are recorded.
@@ -437,7 +475,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   GURL url = embedded_test_server()->GetURL("foo.com", "/frame_factory.html");
   ui_test_utils::NavigateToURL(browser(), url);
   contents->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::ASCIIToUTF16("createFrame('multiple_mimes.html', 'test');"));
+      base::ASCIIToUTF16("createAdFrame('multiple_mimes.html', 'test');"));
   waiter->AddMinimumAdResourceExpectation(8);
   waiter->Wait();
 
@@ -485,3 +523,186 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
                 entries.front(), ukm::builders::AdPageLoad::kAdVideoBytesName),
             0);
 }
+
+// Download gets blocked when LoadPolicy is DISALLOW for the navigation
+// to download
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
+                       DownloadBlocked) {
+  ResetConfiguration(subresource_filter::Configuration(
+      subresource_filter::mojom::ActivationLevel::kEnabled,
+      subresource_filter::ActivationScope::ALL_SITES));
+
+  base::HistogramTester histogram_tester;
+
+  embedded_test_server()->ServeFilesFromSourceDirectory(
+      "chrome/test/data/ad_tagging");
+  content::SetupCrossSiteRedirector(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  std::string host_name = "foo.com";
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL(host_name, "/frame_factory.html"));
+  content::TestNavigationObserver navigation_observer(web_contents());
+  contents->GetMainFrame()->ExecuteJavaScriptForTests(
+      base::ASCIIToUTF16("createFrame('download.html', 'test');"));
+  navigation_observer.Wait();
+
+  content::RenderFrameHost* rfh = content::FrameMatchingPredicate(
+      web_contents(), base::BindRepeating(&content::FrameMatchesName, "test"));
+  OpenLinkInFrame(rfh, "blocked_nav_download_id", false /* gesture*/);
+
+  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  histogram_tester.ExpectTotalCount("Download.FrameGesture", 0);
+}
+
+class MainFrameDownloadHasGestureBrowserTest
+    : public AdsPageLoadMetricsObserverResourceBrowserTest,
+      public ::testing::WithParamInterface<
+          std::tuple<Origin, bool /* gesture */>> {};
+
+// Main frame download events are reported correctly.
+IN_PROC_BROWSER_TEST_P(MainFrameDownloadHasGestureBrowserTest, Download) {
+  Origin origin;
+  bool gesture;
+  std::tie(origin, gesture) = GetParam();
+  SCOPED_TRACE(::testing::Message() << "origin = " << origin << ", "
+                                    << "gesture = " << gesture);
+
+  base::HistogramTester histogram_tester;
+  std::unique_ptr<content::DownloadTestObserver> download_observer(
+      new content::DownloadTestObserverTerminal(
+          content::BrowserContext::GetDownloadManager(browser()->profile()),
+          1 /* wait_count */,
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
+
+  embedded_test_server()->ServeFilesFromSourceDirectory(
+      "chrome/test/data/ad_tagging");
+  content::SetupCrossSiteRedirector(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("foo.com", "/download.html"));
+
+  std::string link_id =
+      origin == Origin::kNavigation ? "nav_download_id" : "anchor_download_id";
+
+  OpenLinkInFrame(web_contents(), link_id, gesture);
+
+  download_observer->WaitForFinished();
+  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  histogram_tester.ExpectUniqueSample("Download.MainFrame.HasGesture", gesture,
+                                      1 /* expected_count */);
+}
+
+INSTANTIATE_TEST_CASE_P(
+    /* no prefix */,
+    MainFrameDownloadHasGestureBrowserTest,
+    ::testing::Combine(::testing::Values(Origin::kNavigation,
+                                         Origin::kAnchorAttribute),
+                       ::testing::Bool()));
+
+class SubframeDownloadSandboxOriginAdGestureBrowserTest
+    : public AdsPageLoadMetricsObserverResourceBrowserTest,
+      public ::testing::WithParamInterface<std::tuple<Origin,
+                                                      bool /* sandbox */,
+                                                      bool /* cross_origin */,
+                                                      bool /* ad_frame */,
+                                                      bool /* gesture */>> {};
+
+// Subframe download events are reported correctly.
+IN_PROC_BROWSER_TEST_P(SubframeDownloadSandboxOriginAdGestureBrowserTest,
+                       Download) {
+  Origin origin;
+  bool sandbox;
+  bool cross_origin;
+  bool ad_frame;
+  bool gesture;
+  std::tie(origin, sandbox, cross_origin, ad_frame, gesture) = GetParam();
+  SCOPED_TRACE(::testing::Message() << "sandbox = " << sandbox << ", "
+                                    << "cross_origin = " << cross_origin << ", "
+                                    << "ad_frame = " << ad_frame << ", "
+                                    << "gesture = " << gesture);
+
+  base::HistogramTester histogram_tester;
+  std::unique_ptr<content::DownloadTestObserver> download_observer(
+      new content::DownloadTestObserverTerminal(
+          content::BrowserContext::GetDownloadManager(browser()->profile()),
+          1 /* wait_count */,
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
+
+  embedded_test_server()->ServeFilesFromSourceDirectory(
+      "chrome/test/data/ad_tagging");
+  content::SetupCrossSiteRedirector(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  std::string host_name = "foo.com";
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL(host_name, "/frame_factory.html"));
+
+  std::string link_id =
+      origin == Origin::kNavigation ? "nav_download_id" : "anchor_download_id";
+
+  const char* method = ad_frame ? "createAdFrame" : "createFrame";
+  std::string url =
+      embedded_test_server()
+          ->GetURL(cross_origin ? "bar.com" : host_name, "/download.html")
+          .spec();
+  const char* id = "test";
+  const char* sandbox_param =
+      sandbox ? "'allow-scripts allow-same-origin'" : "undefined";
+
+  content::TestNavigationObserver navigation_observer(web_contents());
+  std::string script = base::StringPrintf("%s('%s','%s',%s);", method,
+                                          url.c_str(), id, sandbox_param);
+
+  contents->GetMainFrame()->ExecuteJavaScriptForTests(
+      base::ASCIIToUTF16(script));
+  navigation_observer.Wait();
+
+  content::RenderFrameHost* rfh = content::FrameMatchingPredicate(
+      web_contents(), base::BindRepeating(&content::FrameMatchesName, id));
+  OpenLinkInFrame(rfh, link_id, gesture);
+
+  download_observer->WaitForFinished();
+  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+
+  unsigned expected_value = 0;
+  if (sandbox)
+    expected_value |= blink::DownloadStats::kSandboxBit;
+  if (cross_origin)
+    expected_value |= blink::DownloadStats::kCrossOriginBit;
+  if (ad_frame)
+    expected_value |= blink::DownloadStats::kAdBit;
+  if (gesture)
+    expected_value |= blink::DownloadStats::kGestureBit;
+
+  histogram_tester.ExpectUniqueSample(
+      "Download.Subframe.SandboxOriginAdGesture", expected_value,
+      1 /* expected_count */);
+
+  if (sandbox && origin == Origin::kNavigation) {
+    blink::mojom::WebFeature feature =
+        gesture ? blink::mojom::WebFeature::
+                      kNavigationDownloadInSandboxWithUserGesture
+                : blink::mojom::WebFeature::
+                      kNavigationDownloadInSandboxWithoutUserGesture;
+    histogram_tester.ExpectBucketCount(internal::kFeaturesHistogramName,
+                                       feature, 1 /* expected_count */);
+  }
+}
+
+INSTANTIATE_TEST_CASE_P(
+    /* no prefix */,
+    SubframeDownloadSandboxOriginAdGestureBrowserTest,
+    ::testing::Combine(::testing::Values(Origin::kNavigation,
+                                         Origin::kAnchorAttribute),
+                       ::testing::Bool(),
+                       ::testing::Bool(),
+                       ::testing::Bool(),
+                       ::testing::Bool()));

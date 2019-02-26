@@ -76,8 +76,6 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     Mock::VerifyAndClearExpectations(this);
   }
 
-  void TearDown() override { DeviceSettingsTestBase::TearDown(); }
-
   void BuildAndInstallDevicePolicy() {
     EXPECT_CALL(*this, SettingChanged(_)).Times(AtLeast(1));
     device_policy_.Build();

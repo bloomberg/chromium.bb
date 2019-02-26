@@ -9,6 +9,7 @@
 #include "base/json/json_writer.h"
 #include "base/run_loop.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/payments/core/error_logger.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace payments {
@@ -45,7 +46,9 @@ std::string CreatePaymentMethodManifestJson(
 // Test fixture for payment manifest parser.
 class PaymentManifestParserTest : public InProcessBrowserTest {
  public:
-  PaymentManifestParserTest() : all_origins_supported_(false) {}
+  PaymentManifestParserTest()
+      : parser_(std::make_unique<ErrorLogger>()),
+        all_origins_supported_(false) {}
   ~PaymentManifestParserTest() override {}
 
   // Sends the |content| to the utility process to parse as a web app manifest

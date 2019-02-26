@@ -62,22 +62,23 @@
 #include "third_party/trace_event/trace_event.h"
 
 #ifdef ANGLE_ENABLE_WINDOWS_STORE
-#include "libANGLE/renderer/d3d/d3d11/winrt/NativeWindow11WinRT.h"
+#    include "libANGLE/renderer/d3d/d3d11/winrt/NativeWindow11WinRT.h"
 #else
-#include "libANGLE/renderer/d3d/d3d11/win32/NativeWindow11Win32.h"
+#    include "libANGLE/renderer/d3d/d3d11/converged/CompositorNativeWindow11.h"
+#    include "libANGLE/renderer/d3d/d3d11/win32/NativeWindow11Win32.h"
 #endif
 
 // Include the D3D9 debug annotator header for use by the desktop D3D11 renderer
 // because the D3D11 interface method ID3DUserDefinedAnnotation::GetStatus
 // doesn't work with the Graphics Diagnostics tools in Visual Studio 2013.
 #ifdef ANGLE_ENABLE_D3D9
-#include "libANGLE/renderer/d3d/d3d9/DebugAnnotator9.h"
+#    include "libANGLE/renderer/d3d/d3d9/DebugAnnotator9.h"
 #endif
 
 // Enable ANGLE_SKIP_DXGI_1_2_CHECK if there is not a possibility of using cross-process
 // HWNDs or the Windows 7 Platform Update (KB2670838) is expected to be installed.
 #ifndef ANGLE_SKIP_DXGI_1_2_CHECK
-#define ANGLE_SKIP_DXGI_1_2_CHECK 0
+#    define ANGLE_SKIP_DXGI_1_2_CHECK 0
 #endif
 
 namespace rx
@@ -556,7 +557,7 @@ Renderer11::~Renderer11()
 }
 
 #ifndef __d3d11_1_h__
-#define D3D11_MESSAGE_ID_DEVICE_DRAW_RENDERTARGETVIEW_NOT_SET ((D3D11_MESSAGE_ID)3146081)
+#    define D3D11_MESSAGE_ID_DEVICE_DRAW_RENDERTARGETVIEW_NOT_SET ((D3D11_MESSAGE_ID)3146081)
 #endif
 
 egl::Error Renderer11::initialize()
@@ -566,7 +567,7 @@ egl::Error Renderer11::initialize()
     ANGLE_TRY(initializeD3DDevice());
 
 #if !defined(ANGLE_ENABLE_WINDOWS_STORE)
-#if !ANGLE_SKIP_DXGI_1_2_CHECK
+#    if !ANGLE_SKIP_DXGI_1_2_CHECK
     {
         TRACE_EVENT0("gpu.angle", "Renderer11::initialize (DXGICheck)");
         // In order to create a swap chain for an HWND owned by another process, DXGI 1.2 is
@@ -598,7 +599,7 @@ egl::Error Renderer11::initialize()
             SafeRelease(dxgiDevice2);
         }
     }
-#endif
+#    endif
 #endif
 
     {
@@ -1186,6 +1187,12 @@ void Renderer11::generateDisplayExtensions(egl::DisplayExtensions *outExtensions
 
     // All D3D feature levels support robust resource init
     outExtensions->robustResourceInitialization = true;
+
+    // Compositor Native Window capabilies require WinVer >= 1803
+    if (CompositorNativeWindow11::IsSupportedWinRelease())
+    {
+        outExtensions->windowsUIComposition = true;
+    }
 }
 
 angle::Result Renderer11::flush(Context11 *context11)
@@ -1230,7 +1237,8 @@ angle::Result Renderer11::finish(Context11 *context11)
         if (checkDeviceLost && testDeviceLost())
         {
             mDisplay->notifyDeviceLost();
-            ANGLE_CHECK(context11, false, "Device was lost while waiting for sync.", E_OUTOFMEMORY);
+            ANGLE_CHECK(context11, false, "Device was lost while waiting for sync.",
+                        GL_OUT_OF_MEMORY);
         }
     } while (result == S_FALSE);
 
@@ -1239,10 +1247,18 @@ angle::Result Renderer11::finish(Context11 *context11)
 
 bool Renderer11::isValidNativeWindow(EGLNativeWindowType window) const
 {
+    static_assert(sizeof(ABI::Windows::UI::Composition::SpriteVisual *) == sizeof(HWND),
+                  "Pointer size must match Window Handle size");
+
 #ifdef ANGLE_ENABLE_WINDOWS_STORE
     return NativeWindow11WinRT::IsValidNativeWindow(window);
 #else
-    return NativeWindow11Win32::IsValidNativeWindow(window);
+    if (NativeWindow11Win32::IsValidNativeWindow(window))
+    {
+        return true;
+    }
+
+    return CompositorNativeWindow11::IsValidNativeWindow(window);
 #endif
 }
 
@@ -1250,14 +1266,23 @@ NativeWindowD3D *Renderer11::createNativeWindow(EGLNativeWindowType window,
                                                 const egl::Config *config,
                                                 const egl::AttributeMap &attribs) const
 {
+    auto useWinUiComp = window != nullptr && !NativeWindow11Win32::IsValidNativeWindow(window);
+
+    if (useWinUiComp)
+    {
+        return new CompositorNativeWindow11(window, config->alphaSize > 0);
+    }
+    else
+    {
 #ifdef ANGLE_ENABLE_WINDOWS_STORE
-    ANGLE_UNUSED_VARIABLE(attribs);
-    return new NativeWindow11WinRT(window, config->alphaSize > 0);
+        UNUSED_VARIABLE(attribs);
+        return new NativeWindow11WinRT(window, config->alphaSize > 0);
 #else
-    return new NativeWindow11Win32(
-        window, config->alphaSize > 0,
-        attribs.get(EGL_DIRECT_COMPOSITION_ANGLE, EGL_FALSE) == EGL_TRUE);
+        return new NativeWindow11Win32(
+            window, config->alphaSize > 0,
+            attribs.get(EGL_DIRECT_COMPOSITION_ANGLE, EGL_FALSE) == EGL_TRUE);
 #endif
+    }
 }
 
 egl::Error Renderer11::getD3DTextureInfo(const egl::Config *configuration,
@@ -1446,7 +1471,11 @@ angle::Result Renderer11::drawWithGeometryShaderAndTransformFeedback(Context11 *
     return angle::Result::Continue();
 }
 
-angle::Result Renderer11::drawArrays(const gl::Context *context, const gl::DrawCallParams &params)
+angle::Result Renderer11::drawArrays(const gl::Context *context,
+                                     gl::PrimitiveMode mode,
+                                     GLint firstVertex,
+                                     GLsizei vertexCount,
+                                     GLsizei instanceCount)
 {
     if (mStateManager.getCullEverything())
     {
@@ -1454,25 +1483,24 @@ angle::Result Renderer11::drawArrays(const gl::Context *context, const gl::DrawC
     }
 
     ProgramD3D *programD3D        = mStateManager.getProgramD3D();
-    GLsizei adjustedInstanceCount = GetAdjustedInstanceCount(programD3D, params.instances());
+    GLsizei adjustedInstanceCount = GetAdjustedInstanceCount(programD3D, instanceCount);
 
     // Note: vertex indexes can be arbitrarily large.
-    UINT clampedVertexCount = params.getClampedVertexCount<UINT>();
+    UINT clampedVertexCount = gl::GetClampedVertexCount<UINT>(vertexCount);
 
     const auto &glState = context->getGLState();
     if (glState.getCurrentTransformFeedback() && glState.isTransformFeedbackActiveUnpaused())
     {
         ANGLE_TRY(markTransformFeedbackUsage(context));
 
-        if (programD3D->usesGeometryShader(params.mode()))
+        if (programD3D->usesGeometryShader(mode))
         {
-            return drawWithGeometryShaderAndTransformFeedback(GetImplAs<Context11>(context),
-                                                              params.mode(), adjustedInstanceCount,
-                                                              clampedVertexCount);
+            return drawWithGeometryShaderAndTransformFeedback(
+                GetImplAs<Context11>(context), mode, adjustedInstanceCount, clampedVertexCount);
         }
     }
 
-    switch (params.mode())
+    switch (mode)
     {
         case gl::PrimitiveMode::LineLoop:
             return drawLineLoop(context, clampedVertexCount, GL_NONE, nullptr, 0,
@@ -1501,10 +1529,10 @@ angle::Result Renderer11::drawArrays(const gl::Context *context, const gl::DrawC
                 // calculated and applied on each iteration to ensure all instances are rendered
                 // correctly. Each instance being rendered requires the inputlayout cache to reapply
                 // buffers and offsets.
-                for (GLsizei i = 0; i < params.instances(); i++)
+                for (GLsizei i = 0; i < instanceCount; i++)
                 {
                     ANGLE_TRY(mStateManager.updateVertexOffsetsForPointSpritesEmulation(
-                        context, params.baseVertex(), i));
+                        context, firstVertex, i));
                     mDeviceContext->DrawIndexedInstanced(6, clampedVertexCount, 0, 0, 0);
                 }
 
@@ -1530,7 +1558,13 @@ angle::Result Renderer11::drawArrays(const gl::Context *context, const gl::DrawC
     return angle::Result::Continue();
 }
 
-angle::Result Renderer11::drawElements(const gl::Context *context, const gl::DrawCallParams &params)
+angle::Result Renderer11::drawElements(const gl::Context *context,
+                                       gl::PrimitiveMode mode,
+                                       GLint startVertex,
+                                       GLsizei indexCount,
+                                       GLenum indexType,
+                                       const void *indices,
+                                       GLsizei instanceCount)
 {
     if (mStateManager.getCullEverything())
     {
@@ -1539,40 +1573,38 @@ angle::Result Renderer11::drawElements(const gl::Context *context, const gl::Dra
 
     // Transform feedback is not allowed for DrawElements, this error should have been caught at the
     // API validation layer.
-    const auto &glState = context->getGLState();
+    const gl::State &glState = context->getGLState();
     ASSERT(!glState.isTransformFeedbackActiveUnpaused());
 
     // If this draw call is coming from an indirect call, offset by the indirect call's base vertex.
     // No base vertex parameter exists for a normal drawElements, so params.baseVertex will be zero.
-    int startVertex = static_cast<int>(params.firstVertex() - params.baseVertex());
-    int baseVertex  = -startVertex;
+    int baseVertex = -startVertex;
 
     const ProgramD3D *programD3D  = mStateManager.getProgramD3D();
-    GLsizei adjustedInstanceCount = GetAdjustedInstanceCount(programD3D, params.instances());
+    GLsizei adjustedInstanceCount = GetAdjustedInstanceCount(programD3D, instanceCount);
 
-    if (params.mode() == gl::PrimitiveMode::LineLoop)
+    if (mode == gl::PrimitiveMode::LineLoop)
     {
-        return drawLineLoop(context, params.indexCount(), params.type(), params.indices(),
-                            baseVertex, adjustedInstanceCount);
+        return drawLineLoop(context, indexCount, indexType, indices, baseVertex,
+                            adjustedInstanceCount);
     }
 
-    if (params.mode() == gl::PrimitiveMode::TriangleFan)
+    if (mode == gl::PrimitiveMode::TriangleFan)
     {
-        return drawTriangleFan(context, params.indexCount(), params.type(), params.indices(),
-                               baseVertex, adjustedInstanceCount);
+        return drawTriangleFan(context, indexCount, indexType, indices, baseVertex,
+                               adjustedInstanceCount);
     }
 
-    if (params.mode() != gl::PrimitiveMode::Points ||
-        !programD3D->usesInstancedPointSpriteEmulation())
+    if (mode != gl::PrimitiveMode::Points || !programD3D->usesInstancedPointSpriteEmulation())
     {
         if (adjustedInstanceCount == 0)
         {
-            mDeviceContext->DrawIndexed(params.indexCount(), 0, baseVertex);
+            mDeviceContext->DrawIndexed(indexCount, 0, baseVertex);
         }
         else
         {
-            mDeviceContext->DrawIndexedInstanced(params.indexCount(), adjustedInstanceCount, 0,
-                                                 baseVertex, 0);
+            mDeviceContext->DrawIndexedInstanced(indexCount, adjustedInstanceCount, 0, baseVertex,
+                                                 0);
         }
         return angle::Result::Continue();
     }
@@ -1590,9 +1622,9 @@ angle::Result Renderer11::drawElements(const gl::Context *context, const gl::Dra
     // Indexed pointsprite emulation replicates data for duplicate entries found in the index
     // buffer. This is not an efficent rendering mechanism and is only used on downlevel renderers
     // that do not support geometry shaders.
-    if (params.instances() == 0)
+    if (instanceCount == 0)
     {
-        mDeviceContext->DrawIndexedInstanced(6, params.indexCount(), 0, 0, 0);
+        mDeviceContext->DrawIndexedInstanced(6, indexCount, 0, 0, 0);
         return angle::Result::Continue();
     }
 
@@ -1600,10 +1632,14 @@ angle::Result Renderer11::drawElements(const gl::Context *context, const gl::Dra
     // efficent code path. Instanced rendering of emulated pointsprites requires a loop to draw each
     // batch of points. An offset into the instanced data buffer is calculated and applied on each
     // iteration to ensure all instances are rendered correctly.
-    UINT clampedVertexCount = params.getClampedVertexCount<UINT>();
+    gl::IndexRange indexRange;
+    ANGLE_TRY(glState.getVertexArray()->getIndexRange(context, indexType, indexCount, indices,
+                                                      &indexRange));
+
+    UINT clampedVertexCount = gl::clampCast<UINT>(indexRange.vertexCount());
 
     // Each instance being rendered requires the inputlayout cache to reapply buffers and offsets.
-    for (GLsizei i = 0; i < params.instances(); i++)
+    for (GLsizei i = 0; i < instanceCount; i++)
     {
         ANGLE_TRY(
             mStateManager.updateVertexOffsetsForPointSpritesEmulation(context, startVertex, i));
@@ -1613,8 +1649,7 @@ angle::Result Renderer11::drawElements(const gl::Context *context, const gl::Dra
     return angle::Result::Continue();
 }
 
-angle::Result Renderer11::drawArraysIndirect(const gl::Context *context,
-                                             const gl::DrawCallParams &params)
+angle::Result Renderer11::drawArraysIndirect(const gl::Context *context, const void *indirect)
 {
     if (mStateManager.getCullEverything())
     {
@@ -1628,7 +1663,7 @@ angle::Result Renderer11::drawArraysIndirect(const gl::Context *context,
     ASSERT(drawIndirectBuffer);
     Buffer11 *storage = GetImplAs<Buffer11>(drawIndirectBuffer);
 
-    uintptr_t offset = reinterpret_cast<uintptr_t>(params.indirect());
+    uintptr_t offset = reinterpret_cast<uintptr_t>(indirect);
 
     ID3D11Buffer *buffer = nullptr;
     ANGLE_TRY(storage->getBuffer(context, BUFFER_USAGE_INDIRECT, &buffer));
@@ -1636,8 +1671,7 @@ angle::Result Renderer11::drawArraysIndirect(const gl::Context *context,
     return angle::Result::Continue();
 }
 
-angle::Result Renderer11::drawElementsIndirect(const gl::Context *context,
-                                               const gl::DrawCallParams &params)
+angle::Result Renderer11::drawElementsIndirect(const gl::Context *context, const void *indirect)
 {
     if (mStateManager.getCullEverything())
     {
@@ -1650,7 +1684,7 @@ angle::Result Renderer11::drawElementsIndirect(const gl::Context *context,
     gl::Buffer *drawIndirectBuffer = glState.getTargetBuffer(gl::BufferBinding::DrawIndirect);
     ASSERT(drawIndirectBuffer);
     Buffer11 *storage = GetImplAs<Buffer11>(drawIndirectBuffer);
-    uintptr_t offset  = reinterpret_cast<uintptr_t>(params.indirect());
+    uintptr_t offset  = reinterpret_cast<uintptr_t>(indirect);
 
     ID3D11Buffer *buffer = nullptr;
     ANGLE_TRY(storage->getBuffer(context, BUFFER_USAGE_INDIRECT, &buffer));
@@ -1667,7 +1701,7 @@ angle::Result Renderer11::drawLineLoop(const gl::Context *context,
 {
     const gl::State &glState       = context->getGLState();
     gl::VertexArray *vao           = glState.getVertexArray();
-    gl::Buffer *elementArrayBuffer = vao->getElementArrayBuffer().get();
+    gl::Buffer *elementArrayBuffer = vao->getElementArrayBuffer();
 
     const void *indices = indexPointer;
 
@@ -1696,7 +1730,7 @@ angle::Result Renderer11::drawLineLoop(const gl::Context *context,
     ANGLE_CHECK(GetImplAs<Context11>(context), !indexCheck,
                 "Failed to create a 32-bit looping index buffer for "
                 "GL_LINE_LOOP, too many indices required.",
-                E_OUTOFMEMORY);
+                GL_OUT_OF_MEMORY);
 
     GetLineLoopIndices(indices, type, static_cast<GLuint>(count),
                        glState.isPrimitiveRestartEnabled(), &mScratchIndexDataBuffer);
@@ -1744,7 +1778,7 @@ angle::Result Renderer11::drawTriangleFan(const gl::Context *context,
 {
     const gl::State &glState       = context->getGLState();
     gl::VertexArray *vao           = glState.getVertexArray();
-    gl::Buffer *elementArrayBuffer = vao->getElementArrayBuffer().get();
+    gl::Buffer *elementArrayBuffer = vao->getElementArrayBuffer();
 
     const void *indexPointer = indices;
 
@@ -1777,7 +1811,7 @@ angle::Result Renderer11::drawTriangleFan(const gl::Context *context,
     ANGLE_CHECK(GetImplAs<Context11>(context), !indexCheck,
                 "Failed to create a scratch index buffer for GL_TRIANGLE_FAN, "
                 "too many indices required.",
-                E_OUTOFMEMORY);
+                GL_OUT_OF_MEMORY);
 
     GetTriFanIndices(indexPointer, type, count, glState.isPrimitiveRestartEnabled(),
                      &mScratchIndexDataBuffer);
@@ -2174,7 +2208,7 @@ angle::Result Renderer11::copyImageInternal(const gl::Context *context,
     ASSERT(colorAttachment);
 
     RenderTarget11 *sourceRenderTarget = nullptr;
-    ANGLE_TRY_HANDLE(context, colorAttachment->getRenderTarget(context, &sourceRenderTarget));
+    ANGLE_TRY(colorAttachment->getRenderTarget(context, &sourceRenderTarget));
     ASSERT(sourceRenderTarget);
 
     const d3d11::RenderTargetView &dest =
@@ -3078,7 +3112,7 @@ angle::Result Renderer11::readFromAttachment(const gl::Context *context,
     const bool invertTexture = UsePresentPathFast(this, &srcAttachment);
 
     RenderTarget11 *rt11 = nullptr;
-    ANGLE_TRY_HANDLE(context, srcAttachment.getRenderTarget(context, &rt11));
+    ANGLE_TRY(srcAttachment.getRenderTarget(context, &rt11));
     ASSERT(rt11->getTexture().valid());
 
     const TextureHelper11 &textureHelper = rt11->getTexture();
@@ -3090,7 +3124,7 @@ angle::Result Renderer11::readFromAttachment(const gl::Context *context,
     bool reverseRowOrder     = pack.reverseRowOrder;
     if (invertTexture)
     {
-        actualArea.y = texSize.height - actualArea.y - actualArea.height;
+        actualArea.y    = texSize.height - actualArea.y - actualArea.height;
         reverseRowOrder = !reverseRowOrder;
     }
 
@@ -3595,17 +3629,16 @@ bool Renderer11::getLUID(LUID *adapterLuid) const
     return true;
 }
 
-VertexConversionType Renderer11::getVertexConversionType(
-    gl::VertexFormatType vertexFormatType) const
+VertexConversionType Renderer11::getVertexConversionType(angle::FormatID vertexFormatID) const
 {
-    return d3d11::GetVertexFormatInfo(vertexFormatType, mRenderer11DeviceCaps.featureLevel)
+    return d3d11::GetVertexFormatInfo(vertexFormatID, mRenderer11DeviceCaps.featureLevel)
         .conversionType;
 }
 
-GLenum Renderer11::getVertexComponentType(gl::VertexFormatType vertexFormatType) const
+GLenum Renderer11::getVertexComponentType(angle::FormatID vertexFormatID) const
 {
     const auto &format =
-        d3d11::GetVertexFormatInfo(vertexFormatType, mRenderer11DeviceCaps.featureLevel);
+        d3d11::GetVertexFormatInfo(vertexFormatID, mRenderer11DeviceCaps.featureLevel);
     return d3d11::GetComponentType(format.nativeFormat);
 }
 
@@ -3637,16 +3670,16 @@ angle::Result Renderer11::getVertexSpaceRequired(const gl::Context *context,
 
     ASSERT(elementCount > 0);
 
-    gl::VertexFormatType formatType      = gl::GetVertexFormatType(attrib);
+    angle::FormatID formatID             = gl::GetVertexFormatID(attrib);
     const D3D_FEATURE_LEVEL featureLevel = mRenderer11DeviceCaps.featureLevel;
     const d3d11::VertexFormat &vertexFormatInfo =
-        d3d11::GetVertexFormatInfo(formatType, featureLevel);
+        d3d11::GetVertexFormatInfo(formatID, featureLevel);
     const d3d11::DXGIFormatSize &dxgiFormatInfo =
         d3d11::GetDXGIFormatSizeInfo(vertexFormatInfo.nativeFormat);
     unsigned int elementSize = dxgiFormatInfo.pixelBytes;
     bool check = (elementSize > std::numeric_limits<unsigned int>::max() / elementCount);
     ANGLE_CHECK(GetImplAs<Context11>(context), !check,
-                "New vertex buffer size would result in an overflow.", E_OUTOFMEMORY);
+                "New vertex buffer size would result in an overflow.", GL_OUT_OF_MEMORY);
 
     *bytesRequiredOut = elementSize * elementCount;
     return angle::Result::Continue();
@@ -3685,7 +3718,7 @@ angle::Result Renderer11::getScratchMemoryBuffer(Context11 *context11,
                                                  size_t requestedSize,
                                                  angle::MemoryBuffer **bufferOut)
 {
-    ANGLE_CHECK_HR_ALLOC(context11, mScratchMemoryBuffer.get(requestedSize, bufferOut));
+    ANGLE_CHECK_GL_ALLOC(context11, mScratchMemoryBuffer.get(requestedSize, bufferOut));
     return angle::Result::Continue();
 }
 

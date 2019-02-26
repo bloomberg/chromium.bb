@@ -139,10 +139,6 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   void OnSyncConfirmationUIClosed(
       LoginUIService::SyncConfirmationUIClosedResult result) override;
 
-  // This function enables all unified consent services when the unified consent
-  // feature is enabled.
-  void EnableUnifiedConsentIfNeeded();
-
   // User input handler for the signin confirmation dialog.
   class SigninDialogDelegate
     : public ui::ProfileSigninConfirmationDelegate {

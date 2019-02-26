@@ -643,9 +643,6 @@ void ParseCommandLineAndFieldTrials(const base::CommandLine& command_line,
     params->host_mapping_rules.SetRulesFromString(
         command_line.GetSwitchValueASCII(switches::kHostRules));
   }
-
-  params->enable_channel_id =
-      base::FeatureList::IsEnabled(features::kChannelID);
 }
 
 net::URLRequestContextBuilder::HttpCacheParams::Type ChooseCacheType(

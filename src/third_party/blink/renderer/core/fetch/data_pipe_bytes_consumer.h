@@ -18,9 +18,34 @@ namespace blink {
 
 class ExecutionContext;
 
+// An adapter for mojo::DataPipe. As mojo::DataPipe lacks signals completion and
+// error signals, we define another interface, CompletionNotifier, for the
+// signals.
 class CORE_EXPORT DataPipeBytesConsumer final : public BytesConsumer {
+  USING_PRE_FINALIZER(DataPipeBytesConsumer, Dispose);
+
  public:
-  DataPipeBytesConsumer(ExecutionContext*, mojo::ScopedDataPipeConsumerHandle);
+  class CORE_EXPORT CompletionNotifier final
+      : public GarbageCollected<CompletionNotifier> {
+   public:
+    explicit CompletionNotifier(DataPipeBytesConsumer* bytes_consumer)
+        : bytes_consumer_(bytes_consumer) {}
+
+    // One of these methods must be called to signal the end of the data
+    // stream.  We cannot assume that the end of the pipe completes the
+    // stream successfully since errors can occur after the last byte is
+    // written into the pipe.
+    void SignalComplete();
+    void SignalError(const BytesConsumer::Error& error);
+    void Trace(blink::Visitor*);
+
+   private:
+    const WeakMember<DataPipeBytesConsumer> bytes_consumer_;
+  };
+
+  DataPipeBytesConsumer(ExecutionContext*,
+                        mojo::ScopedDataPipeConsumerHandle,
+                        CompletionNotifier** notifier);
   ~DataPipeBytesConsumer() override;
 
   Result BeginRead(const char** buffer, size_t* available) override;
@@ -39,19 +64,15 @@ class CORE_EXPORT DataPipeBytesConsumer final : public BytesConsumer {
 
   void Trace(blink::Visitor*) override;
 
-  // One of these methods must be called to signal the end of the data
-  // stream.  We cannot assume that the end of the pipe completes the
-  // stream successfully since errors can occur after the last byte is
-  // written into the pipe.
-  void SignalComplete();
-  void SignalError();
-
  private:
   bool IsReadableOrWaiting() const;
   void MaybeClose();
-  void SetError();
+  void SetError(const Error& error);
   void Notify(MojoResult);
   void ClearDataPipe();
+  void SignalComplete();
+  void SignalError(const Error& error);
+  void Dispose();
 
   Member<ExecutionContext> execution_context_;
   mojo::ScopedDataPipeConsumerHandle data_pipe_;

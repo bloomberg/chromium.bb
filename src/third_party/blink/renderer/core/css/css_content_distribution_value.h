@@ -18,8 +18,13 @@ class CSSContentDistributionValue : public CSSValue {
   static CSSContentDistributionValue* Create(CSSValueID distribution,
                                              CSSValueID position,
                                              CSSValueID overflow) {
-    return new CSSContentDistributionValue(distribution, position, overflow);
+    return MakeGarbageCollected<CSSContentDistributionValue>(
+        distribution, position, overflow);
   }
+
+  CSSContentDistributionValue(CSSValueID distribution,
+                              CSSValueID position,
+                              CSSValueID overflow);
   ~CSSContentDistributionValue();
 
   CSSValueID Distribution() const { return distribution_; }
@@ -37,10 +42,6 @@ class CSSContentDistributionValue : public CSSValue {
   }
 
  private:
-  CSSContentDistributionValue(CSSValueID distribution,
-                              CSSValueID position,
-                              CSSValueID overflow);
-
   CSSValueID distribution_;
   CSSValueID position_;
   CSSValueID overflow_;

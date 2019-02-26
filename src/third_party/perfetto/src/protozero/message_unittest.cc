@@ -207,6 +207,28 @@ TEST_F(MessageTest, NestedMessagesSimple) {
   ASSERT_EQ("2803", GetNextSerializedBytes(2));
 }
 
+// Tests using a AppendScatteredBytes to append raw bytes to
+// a message using multiple individual buffers.
+TEST_F(MessageTest, AppendScatteredBytes) {
+  Message* root_msg = NewMessage();
+
+  uint8_t buffer[42];
+  memset(buffer, 0x42, sizeof(buffer));
+
+  ContiguousMemoryRange ranges[] = {{buffer, buffer + sizeof(buffer)},
+                                    {buffer, buffer + sizeof(buffer)}};
+  root_msg->AppendScatteredBytes(1 /* field_id */, ranges, 2);
+  EXPECT_EQ(86u, root_msg->Finalize());
+  EXPECT_EQ(86u, GetNumSerializedBytes());
+
+  // field_id
+  EXPECT_EQ("0A", GetNextSerializedBytes(1));
+  // field length
+  EXPECT_EQ("54", GetNextSerializedBytes(1));
+  // start of contents
+  EXPECT_EQ("42424242", GetNextSerializedBytes(4));
+}
+
 // Checks that the size field of root and nested messages is properly written
 // on finalization.
 TEST_F(MessageTest, BackfillSizeOnFinalization) {
@@ -265,7 +287,7 @@ TEST_F(MessageTest, StressTest) {
   // here on the full buffer hash.
   std::string full_buf = GetNextSerializedBytes(GetNumSerializedBytes());
   size_t buf_hash = SimpleHash(full_buf);
-  EXPECT_EQ(0xfd19cc0a, buf_hash);
+  EXPECT_EQ(0xf9e32b65, buf_hash);
 }
 
 TEST_F(MessageTest, DestructInvalidMessageHandle) {

@@ -9,6 +9,10 @@ import logging
 import os
 import re
 
+
+START_OF_TEXT_SYMBOL = 'linker_script_start_of_text'
+
+
 class WarningCollector(object):
   """Collects warnings, but limits the number printed to a set value."""
   def __init__(self, max_warnings, level=logging.WARNING):

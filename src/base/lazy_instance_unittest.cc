@@ -13,7 +13,7 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/lazy_instance.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
 #include "base/time/time.h"

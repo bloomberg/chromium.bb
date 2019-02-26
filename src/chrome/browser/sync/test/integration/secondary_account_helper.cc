@@ -6,11 +6,9 @@
 
 #include "base/bind.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/fake_gaia_cookie_manager_service_builder.h"
 #include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
@@ -69,8 +67,6 @@ void SignInSecondaryAccount(Profile* profile, const std::string& email) {
   identity::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   AccountInfo account_info = identity::MakeAccountAvailable(
-      AccountTrackerServiceFactory::GetForProfile(profile),
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
       identity_manager, email);
   FakeGaiaCookieManagerService* fake_cookie_service =
       static_cast<FakeGaiaCookieManagerService*>(

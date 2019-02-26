@@ -34,7 +34,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
-#include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
@@ -69,8 +69,8 @@ AudioScheduledSourceHandler::UpdateSchedulingInfo(size_t quantum_frame_size,
   }
 
   DCHECK_EQ(quantum_frame_size,
-            static_cast<size_t>(AudioUtilities::kRenderQuantumFrames));
-  if (quantum_frame_size != AudioUtilities::kRenderQuantumFrames) {
+            static_cast<size_t>(audio_utilities::kRenderQuantumFrames));
+  if (quantum_frame_size != audio_utilities::kRenderQuantumFrames) {
     return std::make_tuple(quantum_frame_offset, non_silent_frames_to_process,
                            start_frame_offset);
   }
@@ -84,11 +84,11 @@ AudioScheduledSourceHandler::UpdateSchedulingInfo(size_t quantum_frame_size,
   size_t quantum_start_frame = Context()->CurrentSampleFrame();
   size_t quantum_end_frame = quantum_start_frame + quantum_frame_size;
   size_t start_frame =
-      AudioUtilities::TimeToSampleFrame(start_time_, sample_rate);
+      audio_utilities::TimeToSampleFrame(start_time_, sample_rate);
   size_t end_frame =
       end_time_ == kUnknownTime
           ? 0
-          : AudioUtilities::TimeToSampleFrame(end_time_, sample_rate);
+          : audio_utilities::TimeToSampleFrame(end_time_, sample_rate);
 
   // If we know the end time and it's already passed, then don't bother doing
   // any more rendering this cycle.
@@ -252,7 +252,7 @@ void AudioScheduledSourceHandler::NotifyEnded() {
   if (!Context() || !Context()->GetExecutionContext())
     return;
   if (GetNode())
-    GetNode()->DispatchEvent(*Event::Create(EventTypeNames::ended));
+    GetNode()->DispatchEvent(*Event::Create(event_type_names::kEnded));
 }
 
 // ----------------------------------------------------------------
@@ -284,11 +284,11 @@ void AudioScheduledSourceNode::stop(double when,
 }
 
 EventListener* AudioScheduledSourceNode::onended() {
-  return GetAttributeEventListener(EventTypeNames::ended);
+  return GetAttributeEventListener(event_type_names::kEnded);
 }
 
 void AudioScheduledSourceNode::setOnended(EventListener* listener) {
-  SetAttributeEventListener(EventTypeNames::ended, listener);
+  SetAttributeEventListener(event_type_names::kEnded, listener);
 }
 
 bool AudioScheduledSourceNode::HasPendingActivity() const {

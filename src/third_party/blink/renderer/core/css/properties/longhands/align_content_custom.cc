@@ -9,14 +9,14 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* AlignContent::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ConsumeContentDistributionOverflowPosition(
-      range, CSSParsingUtils::IsContentPositionKeyword);
+  return css_parsing_utils::ConsumeContentDistributionOverflowPosition(
+      range, css_parsing_utils::IsContentPositionKeyword);
 }
 
 const CSSValue* AlignContent::CSSValueFromComputedStyleInternal(
@@ -30,5 +30,5 @@ const CSSValue* AlignContent::CSSValueFromComputedStyleInternal(
           style.AlignContent());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

@@ -66,9 +66,9 @@ void LayoutRubyBase::MoveChildren(LayoutRubyBase* to_base,
     MoveBlockChildren(to_base, before_child);
 
   SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-      LayoutInvalidationReason::kUnknown);
+      layout_invalidation_reason::kUnknown);
   to_base->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-      LayoutInvalidationReason::kUnknown);
+      layout_invalidation_reason::kUnknown);
 }
 
 void LayoutRubyBase::MoveInlineChildren(LayoutRubyBase* to_base,

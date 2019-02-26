@@ -7,7 +7,17 @@
 
 #include <string>
 
-class URLRequestContextGetter;
+#include "base/memory/scoped_refptr.h"
+
+namespace base {
+class SequencedTaskRunner;
+}
+
+namespace network {
+namespace mojom {
+class URLLoaderFactory;
+}
+}  // namespace network
 
 class NetAddress {
  public:
@@ -29,10 +39,13 @@ class NetAddress {
   int port_;
 };
 
+void SetIOCapableTaskRunnerForTest(
+    scoped_refptr<base::SequencedTaskRunner> task_runner);
+
 // Synchronously fetches data from a GET HTTP request to the given URL.
 // Returns true if response is 200 OK and sets response body to |response|.
 bool FetchUrl(const std::string& url,
-              URLRequestContextGetter* getter,
+              network::mojom::URLLoaderFactory* factory,
               std::string* response);
 
 #endif  // CHROME_TEST_CHROMEDRIVER_NET_NET_UTIL_H_

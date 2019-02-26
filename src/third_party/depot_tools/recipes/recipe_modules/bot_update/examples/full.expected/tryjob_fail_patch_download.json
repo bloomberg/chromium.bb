@@ -168,9 +168,12 @@
     ]
   },
   {
-    "name": "$result",
-    "reason": "Infra Failure: Step('Patch failure') returned 1",
-    "recipe_result": null,
-    "status_code": 1
+    "failure": {
+      "failure": {
+        "step": "Patch failure"
+      },
+      "humanReason": "Infra Failure: Step('Patch failure') returned 1"
+    },
+    "name": "$result"
   }
 ]

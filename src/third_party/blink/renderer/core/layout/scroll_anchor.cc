@@ -153,14 +153,14 @@ static const AtomicString UniqueClassnameAmongSiblings(Element* element) {
                               *sibling_element->ToNode())) {
     if (sibling_element->HasClass() && sibling_element != element) {
       const SpaceSplitString& class_names = sibling_element->ClassNames();
-      for (size_t i = 0; i < class_names.size(); ++i) {
+      for (wtf_size_t i = 0; i < class_names.size(); ++i) {
         classname_filter->Add(class_names[i]);
       }
     }
   }
 
   const SpaceSplitString& class_names = element->ClassNames();
-  for (size_t i = 0; i < class_names.size(); ++i) {
+  for (wtf_size_t i = 0; i < class_names.size(); ++i) {
     // MayContain allows for false positives, but a false positive is relatively
     // harmless; it just means we have to choose a different classname, or in
     // the worst case a different selector.

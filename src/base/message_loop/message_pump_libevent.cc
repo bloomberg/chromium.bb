@@ -306,9 +306,7 @@ void MessagePumpLibevent::OnLibeventNotification(int fd,
                                                  void* context) {
   FdWatchController* controller = static_cast<FdWatchController*>(context);
   DCHECK(controller);
-  TRACE_EVENT2("toplevel", "MessagePumpLibevent::OnLibeventNotification",
-               "src_file", controller->created_from_location().file_name(),
-               "src_func", controller->created_from_location().function_name());
+  TRACE_EVENT0("toplevel", "OnLibevent");
   TRACE_HEAP_PROFILER_API_SCOPED_TASK_EXECUTION heap_profiler_scope(
       controller->created_from_location().file_name());
 

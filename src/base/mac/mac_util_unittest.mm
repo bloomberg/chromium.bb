@@ -15,7 +15,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -105,8 +105,7 @@ TEST_F(MacUtilTest, DISABLED_TestExcludeFileFromBackups) {
   // Dump something real into the file.
   ASSERT_EQ(static_cast<int>(arraysize(dummy_data)),
             WriteFile(dummy_file_path, dummy_data, arraysize(dummy_data)));
-  NSString* fileURLString =
-      [NSString stringWithUTF8String:dummy_file_path.value().c_str()];
+  NSString* fileURLString = base::mac::FilePathToNSString(dummy_file_path);
   NSURL* fileURL = [NSURL URLWithString:fileURLString];
   // Initial state should be non-excluded.
   EXPECT_FALSE(CSBackupIsItemExcluded(base::mac::NSToCFCast(fileURL), NULL));

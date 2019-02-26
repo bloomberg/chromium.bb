@@ -106,7 +106,7 @@ ReverbConvolverStage::ReverbConvolverStage(
 }
 
 void ReverbConvolverStage::ProcessInBackground(ReverbConvolver* convolver,
-                                               size_t frames_to_process) {
+                                               uint32_t frames_to_process) {
   ReverbInputBuffer* input_buffer = convolver->InputBuffer();
   float* source =
       input_buffer->DirectReadFrom(&input_read_index_, frames_to_process);
@@ -114,7 +114,7 @@ void ReverbConvolverStage::ProcessInBackground(ReverbConvolver* convolver,
 }
 
 void ReverbConvolverStage::Process(const float* source,
-                                   size_t frames_to_process) {
+                                   uint32_t frames_to_process) {
   DCHECK(source);
   if (!source)
     return;

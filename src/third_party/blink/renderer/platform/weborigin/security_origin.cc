@@ -99,11 +99,13 @@ static bool ShouldTreatAsOpaqueOrigin(const KURL& url) {
   if (!url.IsValid())
     return true;
 
-  // FIXME: Do we need to unwrap the URL further?
   KURL relevant_url;
   if (SecurityOrigin::ShouldUseInnerURL(url)) {
     relevant_url = SecurityOrigin::ExtractInnerURL(url);
     if (!relevant_url.IsValid())
+      return true;
+    // If the inner URL is also wrapped, the URL is invalid, so treat as opqaue.
+    if (SecurityOrigin::ShouldUseInnerURL(relevant_url))
       return true;
   } else {
     relevant_url = url;
@@ -215,8 +217,8 @@ scoped_refptr<SecurityOrigin> SecurityOrigin::CreateOpaque(
 scoped_refptr<SecurityOrigin> SecurityOrigin::CreateFromUrlOrigin(
     const url::Origin& origin) {
   const url::SchemeHostPort& tuple = origin.GetTupleOrPrecursorTupleIfOpaque();
-  DCHECK(String::FromUTF8(tuple.scheme().c_str()).ContainsOnlyASCII());
-  DCHECK(String::FromUTF8(tuple.host().c_str()).ContainsOnlyASCII());
+  DCHECK(String::FromUTF8(tuple.scheme().c_str()).ContainsOnlyASCIIOrEmpty());
+  DCHECK(String::FromUTF8(tuple.host().c_str()).ContainsOnlyASCIIOrEmpty());
 
   scoped_refptr<SecurityOrigin> tuple_origin;
   if (!tuple.IsInvalid()) {

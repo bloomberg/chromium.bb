@@ -241,9 +241,9 @@ gfx::Rect RenderWidgetHostViewGuest::GetBoundsInRootWindow() {
 
 gfx::PointF RenderWidgetHostViewGuest::TransformPointToRootCoordSpaceF(
     const gfx::PointF& point) {
+  viz::SurfaceId surface_id = GetCurrentSurfaceId();
   // LocalSurfaceId is not needed in Viz hit-test.
-  if (!guest_ ||
-      (!use_viz_hit_test_ && !last_activated_surface_info_.is_valid())) {
+  if (!guest_ || (!use_viz_hit_test_ && !surface_id.is_valid())) {
     return point;
   }
 
@@ -255,8 +255,8 @@ gfx::PointF RenderWidgetHostViewGuest::TransformPointToRootCoordSpaceF(
   // TODO(wjmaclean): If we knew that TransformPointToLocalCoordSpace would
   // guarantee not to change transformed_point on failure, then we could skip
   // checking the function return value and directly return transformed_point.
-  if (!root_rwhv->TransformPointToLocalCoordSpace(
-          point, last_activated_surface_info_.id(), &transformed_point)) {
+  if (!root_rwhv->TransformPointToLocalCoordSpace(point, surface_id,
+                                                  &transformed_point)) {
     return point;
   }
   return transformed_point;
@@ -266,25 +266,24 @@ bool RenderWidgetHostViewGuest::TransformPointToLocalCoordSpaceLegacy(
     const gfx::PointF& point,
     const viz::SurfaceId& original_surface,
     gfx::PointF* transformed_point) {
+  viz::SurfaceId surface_id = GetCurrentSurfaceId();
   *transformed_point = point;
-  if (!guest_ || !last_activated_surface_info_.is_valid())
+  if (!guest_ || !surface_id.is_valid())
     return false;
 
-  if (original_surface == last_activated_surface_info_.id())
+  if (original_surface == surface_id)
     return true;
 
-  *transformed_point =
-      gfx::ConvertPointToPixel(current_surface_scale_factor(), point);
+  *transformed_point = gfx::ConvertPointToPixel(GetDeviceScaleFactor(), point);
   viz::SurfaceHittest hittest(nullptr,
                               GetFrameSinkManager()->surface_manager());
-  if (!hittest.TransformPointToTargetSurface(original_surface,
-                                             last_activated_surface_info_.id(),
+  if (!hittest.TransformPointToTargetSurface(original_surface, surface_id,
                                              transformed_point)) {
     return false;
   }
 
-  *transformed_point = gfx::ConvertPointToDIP(current_surface_scale_factor(),
-                                              *transformed_point);
+  *transformed_point =
+      gfx::ConvertPointToDIP(GetDeviceScaleFactor(), *transformed_point);
   return true;
 }
 
@@ -338,18 +337,6 @@ base::string16 RenderWidgetHostViewGuest::GetSelectedText() {
   return platform_view_->GetSelectedText();
 }
 
-base::string16 RenderWidgetHostViewGuest::GetSurroundingText() {
-  return platform_view_->GetSurroundingText();
-}
-
-gfx::Range RenderWidgetHostViewGuest::GetSelectedRange() {
-  return platform_view_->GetSelectedRange();
-}
-
-size_t RenderWidgetHostViewGuest::GetOffsetForSurroundingText() {
-  return platform_view_->GetOffsetForSurroundingText();
-}
-
 void RenderWidgetHostViewGuest::SetNeedsBeginFrames(bool needs_begin_frames) {
   if (platform_view_)
     platform_view_->SetNeedsBeginFrames(needs_begin_frames);
@@ -390,16 +377,6 @@ void RenderWidgetHostViewGuest::OnAttached() {
   }
 #endif
   SendSurfaceInfoToEmbedder();
-}
-
-bool RenderWidgetHostViewGuest::OnMessageReceived(const IPC::Message& msg) {
-  if (!platform_view_) {
-    // In theory, we can get here if there's a delay between Destroy()
-    // being called and when our destructor is invoked.
-    return false;
-  }
-
-  return platform_view_->OnMessageReceived(msg);
 }
 
 RenderWidgetHostViewBase* RenderWidgetHostViewGuest::GetRootView() {
@@ -568,11 +545,11 @@ viz::FrameSinkId RenderWidgetHostViewGuest::GetRootFrameSinkId() {
   return viz::FrameSinkId();
 }
 
-const viz::LocalSurfaceId& RenderWidgetHostViewGuest::GetLocalSurfaceId()
-    const {
+const viz::LocalSurfaceIdAllocation&
+RenderWidgetHostViewGuest::GetLocalSurfaceIdAllocation() const {
   if (guest_)
-    return guest_->local_surface_id();
-  return viz::ParentLocalSurfaceIdAllocator::InvalidLocalSurfaceId();
+    return guest_->local_surface_id_allocation();
+  return viz::ParentLocalSurfaceIdAllocator::InvalidLocalSurfaceIdAllocation();
 }
 
 void RenderWidgetHostViewGuest::DidCreateNewRendererCompositorFrameSink(
@@ -665,6 +642,10 @@ void RenderWidgetHostViewGuest::WheelEventAck(
 void RenderWidgetHostViewGuest::GestureEventAck(
     const blink::WebGestureEvent& event,
     InputEventAckState ack_result) {
+  // Stops flinging if a GSU event with momentum phase is sent to the renderer
+  // but not consumed.
+  StopFlingingIfNecessary(event, ack_result);
+
   bool not_consumed = ack_result == INPUT_EVENT_ACK_STATE_NOT_CONSUMED ||
                       ack_result == INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
   // GestureScrollBegin/End are always consumed by the guest, so we only
@@ -679,24 +660,24 @@ void RenderWidgetHostViewGuest::GestureEventAck(
     GetOwnerRenderWidgetHostView()->GestureEventAck(event, ack_result);
   }
 
-  if (blink::WebInputEvent::IsPinchGestureEventType(event.GetType()))
-    ProcessTouchpadPinchAckInRoot(event, ack_result);
+  if (event.IsTouchpadZoomEvent())
+    ProcessTouchpadZoomEventAckInRoot(event, ack_result);
 }
 
-void RenderWidgetHostViewGuest::ProcessTouchpadPinchAckInRoot(
+void RenderWidgetHostViewGuest::ProcessTouchpadZoomEventAckInRoot(
     const blink::WebGestureEvent& event,
     InputEventAckState ack_result) {
-  DCHECK(blink::WebInputEvent::IsPinchGestureEventType(event.GetType()));
+  DCHECK(event.IsTouchpadZoomEvent());
 
   RenderWidgetHostViewBase* root_rwhv = GetRootView(this);
   if (!root_rwhv)
     return;
 
-  blink::WebGestureEvent pinch_event(event);
+  blink::WebGestureEvent root_event(event);
   const gfx::PointF root_point =
       TransformPointToRootCoordSpaceF(event.PositionInWidget());
-  pinch_event.SetPositionInWidget(root_point);
-  root_rwhv->GestureEventAck(pinch_event, ack_result);
+  root_event.SetPositionInWidget(root_point);
+  root_rwhv->GestureEventAck(root_event, ack_result);
 }
 
 InputEventAckState RenderWidgetHostViewGuest::FilterInputEvent(

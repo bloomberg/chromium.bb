@@ -34,8 +34,8 @@
 
 namespace WTF {
 
-using TreeTestHelpers::InitRandom;
-using TreeTestHelpers::NextRandom;
+using tree_test_helpers::InitRandom;
+using tree_test_helpers::NextRandom;
 
 #ifndef NDEBUG
 template <>

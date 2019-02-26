@@ -6,6 +6,7 @@
 
 #include "base/no_destructor.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
+#include "ui/base/cocoa/remote_accessibility_api.h"
 #include "ui/views_bridge_mac/bridged_native_widget_host_helper.h"
 #include "ui/views_bridge_mac/bridged_native_widget_impl.h"
 
@@ -36,10 +37,39 @@ class Bridge : public BridgedNativeWidgetHostHelper {
   void OnConnectionError() { delete this; }
 
   // BridgedNativeWidgetHostHelper:
-  NSView* GetNativeViewAccessible() override { return nil; }
-  void DispatchKeyEvent(ui::KeyEvent* event) override {}
+  id GetNativeViewAccessible() override {
+    if (!remote_accessibility_element_) {
+      int64_t browser_pid = 0;
+      std::vector<uint8_t> element_token;
+      host_ptr_->GetAccessibilityTokens(
+          ui::RemoteAccessibility::GetTokenForLocalElement(
+              bridge_impl_->ns_window()),
+          ui::RemoteAccessibility::GetTokenForLocalElement(
+              bridge_impl_->ns_view()),
+          &browser_pid, &element_token);
+      [NSAccessibilityRemoteUIElement
+          registerRemoteUIProcessIdentifier:browser_pid];
+      remote_accessibility_element_ =
+          ui::RemoteAccessibility::GetRemoteElementFromToken(element_token);
+    }
+    return remote_accessibility_element_.get();
+  }
+  void DispatchKeyEvent(ui::KeyEvent* event) override {
+    bool event_handled = false;
+    host_ptr_->DispatchKeyEventRemote(std::make_unique<ui::KeyEvent>(*event),
+                                      &event_handled);
+    if (event_handled)
+      event->SetHandled();
+  }
   bool DispatchKeyEventToMenuController(ui::KeyEvent* event) override {
-    return false;
+    bool event_swallowed = false;
+    bool event_handled = false;
+    host_ptr_->DispatchKeyEventToMenuControllerRemote(
+        std::make_unique<ui::KeyEvent>(*event), &event_swallowed,
+        &event_handled);
+    if (event_handled)
+      event->SetHandled();
+    return event_swallowed;
   }
   void GetWordAt(const gfx::Point& location_in_content,
                  bool* found_word,
@@ -55,6 +85,8 @@ class Bridge : public BridgedNativeWidgetHostHelper {
 
   mojom::BridgedNativeWidgetHostAssociatedPtr host_ptr_;
   std::unique_ptr<BridgedNativeWidgetImpl> bridge_impl_;
+  base::scoped_nsobject<NSAccessibilityRemoteUIElement>
+      remote_accessibility_element_;
 };
 
 }  // namespace
@@ -67,7 +99,8 @@ BridgeFactoryImpl* BridgeFactoryImpl::Get() {
 
 void BridgeFactoryImpl::BindRequest(
     mojom::BridgeFactoryAssociatedRequest request) {
-  binding_.Bind(std::move(request));
+  binding_.Bind(std::move(request),
+                ui::WindowResizeHelperMac::Get()->task_runner());
 }
 
 void BridgeFactoryImpl::CreateBridgedNativeWidget(

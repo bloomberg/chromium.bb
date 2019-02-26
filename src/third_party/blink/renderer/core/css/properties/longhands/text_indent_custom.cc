@@ -12,7 +12,7 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* TextIndent::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -25,9 +25,9 @@ const CSSValue* TextIndent::ParseSingleValue(
   CSSValue* each_line = nullptr;
   do {
     if (!length_percentage) {
-      length_percentage = CSSPropertyParserHelpers::ConsumeLengthOrPercent(
+      length_percentage = css_property_parser_helpers::ConsumeLengthOrPercent(
           range, context.Mode(), kValueRangeAll,
-          CSSPropertyParserHelpers::UnitlessQuirk::kAllow);
+          css_property_parser_helpers::UnitlessQuirk::kAllow);
       if (length_percentage) {
         continue;
       }
@@ -36,11 +36,11 @@ const CSSValue* TextIndent::ParseSingleValue(
     if (RuntimeEnabledFeatures::CSS3TextEnabled()) {
       CSSValueID id = range.Peek().Id();
       if (!hanging && id == CSSValueHanging) {
-        hanging = CSSPropertyParserHelpers::ConsumeIdent(range);
+        hanging = css_property_parser_helpers::ConsumeIdent(range);
         continue;
       }
       if (!each_line && id == CSSValueEachLine) {
-        each_line = CSSPropertyParserHelpers::ConsumeIdent(range);
+        each_line = css_property_parser_helpers::ConsumeIdent(range);
         continue;
       }
     }
@@ -122,5 +122,5 @@ void TextIndent::ApplyValue(StyleResolverState& state,
   state.Style()->SetTextIndentType(text_indent_type_value);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

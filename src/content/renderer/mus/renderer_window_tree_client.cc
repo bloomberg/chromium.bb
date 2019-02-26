@@ -188,6 +188,8 @@ void RendererWindowTreeClient::DestroyFrame(uint32_t frame_routing_id) {
   pending_frames_.erase(frame_routing_id);
 }
 
+void RendererWindowTreeClient::OnClientId(uint32_t client_id) {}
+
 void RendererWindowTreeClient::OnEmbed(
     ws::mojom::WindowDataPtr root,
     ws::mojom::WindowTreePtr tree,
@@ -316,14 +318,12 @@ void RendererWindowTreeClient::OnWindowInputEvent(
     ws::Id window_id,
     int64_t display_id,
     std::unique_ptr<ui::Event> event,
-    bool matches_pointer_watcher) {
+    bool matches_event_observer) {
   NOTREACHED();
 }
 
-void RendererWindowTreeClient::OnPointerEventObserved(
-    std::unique_ptr<ui::Event> event,
-    ws::Id window_id,
-    int64_t display_id) {
+void RendererWindowTreeClient::OnObservedInputEvent(
+    std::unique_ptr<ui::Event> event) {
   NOTREACHED();
 }
 
@@ -378,5 +378,9 @@ void RendererWindowTreeClient::RequestClose(ws::Id window_id) {}
 
 void RendererWindowTreeClient::GetScreenProviderObserver(
     ws::mojom::ScreenProviderObserverAssociatedRequest observer) {}
+
+void RendererWindowTreeClient::OnOcclusionStateChanged(
+    ws::Id window_id,
+    ws::mojom::OcclusionState occlusion_state) {}
 
 }  // namespace content

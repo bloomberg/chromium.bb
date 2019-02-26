@@ -53,7 +53,7 @@ enum attach_type_t {
 
 typedef HBUINT16 Value;
 
-typedef Value ValueRecord[VAR];
+typedef UnsizedArrayOf<Value> ValueRecord;
 
 struct ValueFormat : HBUINT16
 {
@@ -103,56 +103,58 @@ struct ValueFormat : HBUINT16
   inline unsigned int get_size (void) const
   { return get_len () * Value::static_size; }
 
-  void apply_value (hb_ot_apply_context_t   *c,
+  bool apply_value (hb_ot_apply_context_t   *c,
 		    const void           *base,
 		    const Value          *values,
 		    hb_glyph_position_t  &glyph_pos) const
   {
+    bool ret = false;
     unsigned int format = *this;
-    if (!format) return;
+    if (!format) return ret;
 
     hb_font_t *font = c->font;
-    hb_bool_t horizontal = HB_DIRECTION_IS_HORIZONTAL (c->direction);
+    bool horizontal = HB_DIRECTION_IS_HORIZONTAL (c->direction);
 
-    if (format & xPlacement) glyph_pos.x_offset  += font->em_scale_x (get_short (values++));
-    if (format & yPlacement) glyph_pos.y_offset  += font->em_scale_y (get_short (values++));
+    if (format & xPlacement) glyph_pos.x_offset  += font->em_scale_x (get_short (values++, &ret));
+    if (format & yPlacement) glyph_pos.y_offset  += font->em_scale_y (get_short (values++, &ret));
     if (format & xAdvance) {
-      if (likely (horizontal)) glyph_pos.x_advance += font->em_scale_x (get_short (values));
+      if (likely (horizontal)) glyph_pos.x_advance += font->em_scale_x (get_short (values, &ret));
       values++;
     }
     /* y_advance values grow downward but font-space grows upward, hence negation */
     if (format & yAdvance) {
-      if (unlikely (!horizontal)) glyph_pos.y_advance -= font->em_scale_y (get_short (values));
+      if (unlikely (!horizontal)) glyph_pos.y_advance -= font->em_scale_y (get_short (values, &ret));
       values++;
     }
 
-    if (!has_device ()) return;
+    if (!has_device ()) return ret;
 
     bool use_x_device = font->x_ppem || font->num_coords;
     bool use_y_device = font->y_ppem || font->num_coords;
 
-    if (!use_x_device && !use_y_device) return;
+    if (!use_x_device && !use_y_device) return ret;
 
     const VariationStore &store = c->var_store;
 
     /* pixel -> fractional pixel */
     if (format & xPlaDevice) {
-      if (use_x_device) glyph_pos.x_offset  += (base + get_device (values)).get_x_delta (font, store);
+      if (use_x_device) glyph_pos.x_offset  += (base + get_device (values, &ret)).get_x_delta (font, store);
       values++;
     }
     if (format & yPlaDevice) {
-      if (use_y_device) glyph_pos.y_offset  += (base + get_device (values)).get_y_delta (font, store);
+      if (use_y_device) glyph_pos.y_offset  += (base + get_device (values, &ret)).get_y_delta (font, store);
       values++;
     }
     if (format & xAdvDevice) {
-      if (horizontal && use_x_device) glyph_pos.x_advance += (base + get_device (values)).get_x_delta (font, store);
+      if (horizontal && use_x_device) glyph_pos.x_advance += (base + get_device (values, &ret)).get_x_delta (font, store);
       values++;
     }
     if (format & yAdvDevice) {
       /* y_advance values grow downward but font-space grows upward, hence negation */
-      if (!horizontal && use_y_device) glyph_pos.y_advance -= (base + get_device (values)).get_y_delta (font, store);
+      if (!horizontal && use_y_device) glyph_pos.y_advance -= (base + get_device (values, &ret)).get_y_delta (font, store);
       values++;
     }
+    return ret;
   }
 
   private:
@@ -175,11 +177,17 @@ struct ValueFormat : HBUINT16
 
   static inline OffsetTo<Device>& get_device (Value* value)
   { return *CastP<OffsetTo<Device> > (value); }
-  static inline const OffsetTo<Device>& get_device (const Value* value)
-  { return *CastP<OffsetTo<Device> > (value); }
+  static inline const OffsetTo<Device>& get_device (const Value* value, bool *worked=nullptr)
+  {
+    if (worked) *worked |= *value;
+    return *CastP<OffsetTo<Device> > (value);
+  }
 
-  static inline const HBINT16& get_short (const Value* value)
-  { return *CastP<HBINT16> (value); }
+  static inline const HBINT16& get_short (const Value* value, bool *worked=nullptr)
+  {
+    if (worked) *worked |= *value;
+    return *CastP<HBINT16> (value);
+  }
 
   public:
 
@@ -199,13 +207,13 @@ struct ValueFormat : HBUINT16
     TRACE_SANITIZE (this);
     unsigned int len = get_len ();
 
-    if (!c->check_array (values, count, get_size ())) return_trace (false);
+    if (!c->check_range (values, count, get_size ())) return_trace (false);
 
     if (!has_device ()) return_trace (true);
 
     for (unsigned int i = 0; i < count; i++) {
       if (!sanitize_value_devices (c, base, values))
-        return_trace (false);
+	return_trace (false);
       values += len;
     }
 
@@ -221,7 +229,7 @@ struct ValueFormat : HBUINT16
 
     for (unsigned int i = 0; i < count; i++) {
       if (!sanitize_value_devices (c, base, values))
-        return_trace (false);
+	return_trace (false);
       values += stride;
     }
 
@@ -263,10 +271,10 @@ struct AnchorFormat2
     unsigned int x_ppem = font->x_ppem;
     unsigned int y_ppem = font->y_ppem;
     hb_position_t cx = 0, cy = 0;
-    hb_bool_t ret;
+    bool ret;
 
     ret = (x_ppem || y_ppem) &&
-	   font->get_glyph_contour_point_for_origin (glyph_id, anchorPoint, HB_DIRECTION_LTR, &cx, &cy);
+	  font->get_glyph_contour_point_for_origin (glyph_id, anchorPoint, HB_DIRECTION_LTR, &cx, &cy);
     *x = ret && x_ppem ? cx : font->em_fscale_x (xCoordinate);
     *y = ret && y_ppem ? cy : font->em_fscale_y (yCoordinate);
   }
@@ -626,7 +634,7 @@ struct PairSet
     for (unsigned int i = 0; i < count; i++)
     {
       if (glyphs->has (record->secondGlyph))
-        return true;
+	return true;
       record = &StructAtOffset<const PairValueRecord> (record, record_size);
     }
     return false;
@@ -663,18 +671,19 @@ struct PairSet
     int min = 0, max = (int) count - 1;
     while (min <= max)
     {
-      int mid = (min + max) / 2;
+      int mid = ((unsigned int) min + (unsigned int) max) / 2;
       const PairValueRecord *record = &StructAtOffset<PairValueRecord> (&firstPairValueRecord, record_size * mid);
       hb_codepoint_t mid_x = record->secondGlyph;
       if (x < mid_x)
-        max = mid - 1;
+	max = mid - 1;
       else if (x > mid_x)
-        min = mid + 1;
+	min = mid + 1;
       else
       {
-        buffer->unsafe_to_break (buffer->idx, pos + 1);
-	valueFormats[0].apply_value (c, this, &record->values[0], buffer->cur_pos());
-	valueFormats[1].apply_value (c, this, &record->values[len1], buffer->pos[pos]);
+	/* Note the intentional use of "|" instead of short-circuit "||". */
+	if (valueFormats[0].apply_value (c, this, &record->values[0], buffer->cur_pos()) |
+	    valueFormats[1].apply_value (c, this, &record->values[len1], buffer->pos[pos]))
+	  buffer->unsafe_to_break (buffer->idx, pos + 1);
 	if (len2)
 	  pos++;
 	buffer->idx = pos;
@@ -697,7 +706,10 @@ struct PairSet
   {
     TRACE_SANITIZE (this);
     if (!(c->check_struct (this)
-       && c->check_array (&firstPairValueRecord, len, HBUINT16::static_size * closure->stride))) return_trace (false);
+       && c->check_range (&firstPairValueRecord,
+			  len,
+			  HBUINT16::static_size,
+			  closure->stride))) return_trace (false);
 
     unsigned int count = len;
     const PairValueRecord *record = &firstPairValueRecord;
@@ -719,13 +731,13 @@ struct PairPosFormat1
   inline bool intersects (const hb_set_t *glyphs) const
   {
     unsigned int count = pairSet.len;
-    for (hb_auto_t<Coverage::Iter> iter (this+coverage); iter.more (); iter.next ())
+    for (Coverage::Iter iter (this+coverage); iter.more (); iter.next ())
     {
       if (unlikely (iter.get_coverage () >= count))
-        break; /* Work around malicious fonts. https://github.com/harfbuzz/harfbuzz/issues/363 */
+	break; /* Work around malicious fonts. https://github.com/harfbuzz/harfbuzz/issues/363 */
       if (glyphs->has (iter.get_glyph ()) &&
 	  (this+pairSet[iter.get_coverage ()]).intersects (glyphs, valueFormat))
-        return true;
+	return true;
     }
     return false;
   }
@@ -837,10 +849,11 @@ struct PairPosFormat2
     unsigned int klass2 = (this+classDef2).get_class (buffer->info[skippy_iter.idx].codepoint);
     if (unlikely (klass1 >= class1Count || klass2 >= class2Count)) return_trace (false);
 
-    buffer->unsafe_to_break (buffer->idx, skippy_iter.idx + 1);
     const Value *v = &values[record_len * (klass1 * class2Count + klass2)];
-    valueFormat1.apply_value (c, this, v, buffer->cur_pos());
-    valueFormat2.apply_value (c, this, v + len1, buffer->pos[skippy_iter.idx]);
+    /* Note the intentional use of "|" instead of short-circuit "||". */
+    if (valueFormat1.apply_value (c, this, v, buffer->cur_pos()) |
+	valueFormat2.apply_value (c, this, v + len1, buffer->pos[skippy_iter.idx]))
+      buffer->unsafe_to_break (buffer->idx, skippy_iter.idx + 1);
 
     buffer->idx = skippy_iter.idx;
     if (len2)
@@ -869,7 +882,9 @@ struct PairPosFormat2
     unsigned int stride = len1 + len2;
     unsigned int record_size = valueFormat1.get_size () + valueFormat2.get_size ();
     unsigned int count = (unsigned int) class1Count * (unsigned int) class2Count;
-    return_trace (c->check_array (values, count, record_size) &&
+    return_trace (c->check_range ((const void *) values,
+				  count,
+				  record_size) &&
 		  valueFormat1.sanitize_values_stride_unsafe (c, this, &values[0], count, stride) &&
 		  valueFormat2.sanitize_values_stride_unsafe (c, this, &values[len1], count, stride));
   }
@@ -973,22 +988,22 @@ struct CursivePosFormat1
     hb_buffer_t *buffer = c->buffer;
 
     const EntryExitRecord &this_record = entryExitRecord[(this+coverage).get_coverage  (buffer->cur().codepoint)];
-    if (!this_record.exitAnchor) return_trace (false);
+    if (!this_record.entryAnchor) return_trace (false);
 
     hb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_input;
     skippy_iter.reset (buffer->idx, 1);
-    if (!skippy_iter.next ()) return_trace (false);
+    if (!skippy_iter.prev ()) return_trace (false);
 
-    const EntryExitRecord &next_record = entryExitRecord[(this+coverage).get_coverage  (buffer->info[skippy_iter.idx].codepoint)];
-    if (!next_record.entryAnchor) return_trace (false);
+    const EntryExitRecord &prev_record = entryExitRecord[(this+coverage).get_coverage  (buffer->info[skippy_iter.idx].codepoint)];
+    if (!prev_record.exitAnchor) return_trace (false);
 
-    unsigned int i = buffer->idx;
-    unsigned int j = skippy_iter.idx;
+    unsigned int i = skippy_iter.idx;
+    unsigned int j = buffer->idx;
 
     buffer->unsafe_to_break (i, j);
     float entry_x, entry_y, exit_x, exit_y;
-    (this+this_record.exitAnchor).get_anchor (c, buffer->info[i].codepoint, &exit_x, &exit_y);
-    (this+next_record.entryAnchor).get_anchor (c, buffer->info[j].codepoint, &entry_x, &entry_y);
+    (this+prev_record.exitAnchor).get_anchor (c, buffer->info[i].codepoint, &exit_x, &exit_y);
+    (this+this_record.entryAnchor).get_anchor (c, buffer->info[j].codepoint, &entry_x, &entry_y);
 
     hb_glyph_position_t *pos = buffer->pos;
 
@@ -1035,7 +1050,7 @@ struct CursivePosFormat1
      * parent.
      *
      * Optimize things for the case of RightToLeft, as that's most common in
-     * Arabinc. */
+     * Arabic. */
     unsigned int child  = i;
     unsigned int parent = j;
     hb_position_t x_offset = entry_x - exit_x;
@@ -1064,7 +1079,7 @@ struct CursivePosFormat1
     else
       pos[child].x_offset = x_offset;
 
-    buffer->idx = j;
+    buffer->idx++;
     return_trace (true);
   }
 
@@ -1164,7 +1179,7 @@ struct MarkBasePosFormat1
 	   ))
 	break;
       skippy_iter.reject ();
-    } while (1);
+    } while (true);
 
     /* Checking that matched glyph is actually a base glyph by GDEF is too strong; disabled */
     //if (!_hb_glyph_info_is_base_glyph (&buffer->info[skippy_iter.idx])) { return_trace (false); }
@@ -1406,7 +1421,7 @@ struct MarkMarkPosFormat1
       if (id1 == 0) /* Marks belonging to the same base. */
 	goto good;
       else if (comp1 == comp2) /* Marks belonging to the same ligature component. */
-        goto good;
+	goto good;
     } else {
       /* If ligature ids don't match, it may be the case that one of the marks
        * itself is a ligature.  In which case match. */
@@ -1628,6 +1643,9 @@ struct GPOS : GSUBGPOS
   inline bool sanitize (hb_sanitize_context_t *c) const
   { return GSUBGPOS::sanitize<PosLookup> (c); }
 
+  HB_INTERNAL bool is_blacklisted (hb_blob_t *blob,
+				   hb_face_t *face) const;
+
   typedef GSUBGPOS::accelerator_t<GPOS> accelerator_t;
 };
 
@@ -1658,7 +1676,10 @@ reverse_cursive_minor_offset (hb_glyph_position_t *pos, unsigned int i, hb_direc
   pos[j].attach_type() = type;
 }
 static void
-propagate_attachment_offsets (hb_glyph_position_t *pos, unsigned int i, hb_direction_t direction)
+propagate_attachment_offsets (hb_glyph_position_t *pos,
+			      unsigned int len,
+			      unsigned int i,
+			      hb_direction_t direction)
 {
   /* Adjusts offsets of attached glyphs (both cursive and mark) to accumulate
    * offset of glyph they are attached to. */
@@ -1666,11 +1687,14 @@ propagate_attachment_offsets (hb_glyph_position_t *pos, unsigned int i, hb_direc
   if (likely (!chain))
     return;
 
-  unsigned int j = (int) i + chain;
-
   pos[i].attach_chain() = 0;
 
-  propagate_attachment_offsets (pos, j, direction);
+  unsigned int j = (int) i + chain;
+
+  if (unlikely (j >= len))
+    return;
+
+  propagate_attachment_offsets (pos, len, j, direction);
 
   assert (!!(type & ATTACH_TYPE_MARK) ^ !!(type & ATTACH_TYPE_CURSIVE));
 
@@ -1709,7 +1733,7 @@ GPOS::position_start (hb_font_t *font HB_UNUSED, hb_buffer_t *buffer)
 }
 
 void
-GPOS::position_finish_advances (hb_font_t *font HB_UNUSED, hb_buffer_t *buffer)
+GPOS::position_finish_advances (hb_font_t *font HB_UNUSED, hb_buffer_t *buffer HB_UNUSED)
 {
   //_hb_buffer_assert_gsubgpos_vars (buffer);
 }
@@ -1726,8 +1750,11 @@ GPOS::position_finish_offsets (hb_font_t *font HB_UNUSED, hb_buffer_t *buffer)
   /* Handle attachments */
   if (buffer->scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT)
     for (unsigned int i = 0; i < len; i++)
-      propagate_attachment_offsets (pos, i, direction);
+      propagate_attachment_offsets (pos, len, i, direction);
 }
+
+
+struct GPOS_accelerator_t : GPOS::accelerator_t {};
 
 
 /* Out-of-class implementation for methods recursing */
@@ -1735,13 +1762,13 @@ GPOS::position_finish_offsets (hb_font_t *font HB_UNUSED, hb_buffer_t *buffer)
 template <typename context_t>
 /*static*/ inline typename context_t::return_t PosLookup::dispatch_recurse_func (context_t *c, unsigned int lookup_index)
 {
-  const PosLookup &l = _get_gpos_relaxed (c->face)->get_lookup (lookup_index);
+  const PosLookup &l = c->face->table.GPOS.get_relaxed ()->table->get_lookup (lookup_index);
   return l.dispatch (c);
 }
 
 /*static*/ inline bool PosLookup::apply_recurse_func (hb_ot_apply_context_t *c, unsigned int lookup_index)
 {
-  const PosLookup &l = _get_gpos_relaxed (c->face).get_lookup (lookup_index);
+  const PosLookup &l = c->face->table.GPOS.get_relaxed ()->table->get_lookup (lookup_index);
   unsigned int saved_lookup_props = c->lookup_props;
   unsigned int saved_lookup_index = c->lookup_index;
   c->set_lookup_index (lookup_index);
@@ -1751,12 +1778,6 @@ template <typename context_t>
   c->set_lookup_props (saved_lookup_props);
   return ret;
 }
-
-struct GPOS_accelerator_t : GPOS::accelerator_t {};
-
-
-#undef attach_chain
-#undef attach_type
 
 
 } /* namespace OT */

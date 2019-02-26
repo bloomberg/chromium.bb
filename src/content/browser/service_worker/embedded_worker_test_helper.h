@@ -100,6 +100,10 @@ class EmbeddedWorkerTestHelper {
   explicit EmbeddedWorkerTestHelper(const base::FilePath& user_data_directory);
   virtual ~EmbeddedWorkerTestHelper();
 
+  // Simulates Mojo calls to the browser process.
+  void SimulateRequestTermination(int embedded_worker_id,
+                                  base::OnceCallback<void(bool)> callback);
+
   // Registers a Mojo endpoint object derived from
   // MockEmbeddedWorkerInstanceClient.
   void RegisterMockInstanceClient(

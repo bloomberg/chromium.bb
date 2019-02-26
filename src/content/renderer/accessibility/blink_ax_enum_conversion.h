@@ -13,8 +13,6 @@
 
 namespace content {
 
-ax::mojom::TextStyle AXTextStyleFromBlink(blink::WebAXTextStyle text_style);
-
 // Provides a conversion between the WebAXObject state
 // accessors and a state bitmask stored in an AXNodeData.
 // (Note that some rare states are sent as boolean attributes

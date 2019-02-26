@@ -45,10 +45,10 @@ class SVGPointListTearOff final
       SVGPointList* target,
       SVGAnimatedPropertyBase* binding,
       PropertyIsAnimValType property_is_anim_val) {
-    return new SVGPointListTearOff(target, binding, property_is_anim_val);
+    return MakeGarbageCollected<SVGPointListTearOff>(target, binding,
+                                                     property_is_anim_val);
   }
 
- private:
   SVGPointListTearOff(SVGPointList* target,
                       SVGAnimatedPropertyBase* binding,
                       PropertyIsAnimValType property_is_anim_val)

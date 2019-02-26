@@ -30,8 +30,10 @@ class LoginSettingsTest : public ::testing::Test {
 
 TEST_F(LoginSettingsTest, Basic) {
   const LoginSettings login_settings(
-      buzz::XmppClientSettings(), NULL, servers_, false /* try_ssltcp_first */,
-      kAuthMechanism, TRAFFIC_ANNOTATION_FOR_TESTS);
+      buzz::XmppClientSettings(),
+      jingle_glue::GetProxyResolvingSocketFactoryCallback(), servers_,
+      false /* try_ssltcp_first */, kAuthMechanism,
+      TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(base::Time(), login_settings.GetRedirectExpirationForTest());
   const ServerList& servers = login_settings.GetServers();
   ASSERT_EQ(servers_.size(), servers.size());
@@ -42,9 +44,11 @@ TEST_F(LoginSettingsTest, Basic) {
 }
 
 TEST_F(LoginSettingsTest, Redirect) {
-  LoginSettings login_settings(buzz::XmppClientSettings(), NULL, servers_,
-                               false /* try_ssltcp_first */, kAuthMechanism,
-                               TRAFFIC_ANNOTATION_FOR_TESTS);
+  LoginSettings login_settings(
+      buzz::XmppClientSettings(),
+      jingle_glue::GetProxyResolvingSocketFactoryCallback(), servers_,
+      false /* try_ssltcp_first */, kAuthMechanism,
+      TRAFFIC_ANNOTATION_FOR_TESTS);
   const ServerInformation redirect_server(
       net::HostPortPair("redirect.com", 200),
       SUPPORTS_SSLTCP);

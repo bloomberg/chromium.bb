@@ -54,8 +54,11 @@ class XMLHttpRequestProgressEventThrottle final
  public:
   static XMLHttpRequestProgressEventThrottle* Create(
       XMLHttpRequest* event_target) {
-    return new XMLHttpRequestProgressEventThrottle(event_target);
+    return MakeGarbageCollected<XMLHttpRequestProgressEventThrottle>(
+        event_target);
   }
+
+  explicit XMLHttpRequestProgressEventThrottle(XMLHttpRequest*);
   ~XMLHttpRequestProgressEventThrottle() override;
 
   enum DeferredEventAction {
@@ -90,8 +93,6 @@ class XMLHttpRequestProgressEventThrottle final
   void Trace(blink::Visitor*);
 
  private:
-  explicit XMLHttpRequestProgressEventThrottle(XMLHttpRequest*);
-
   // Dispatches a "progress" progress event and usually a readyStateChange
   // event as well.
   void DispatchProgressProgressEvent(Event*);

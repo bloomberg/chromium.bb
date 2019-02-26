@@ -15,6 +15,7 @@
 #include "content/renderer/pepper/ppb_graphics_3d_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
+#include "media/base/media_util.h"
 #include "media/gpu/ipc/client/gpu_video_decode_accelerator_host.h"
 #include "media/video/picture.h"
 #include "media/video/video_decode_accelerator.h"
@@ -249,6 +250,7 @@ void PPB_VideoDecoder_Impl::ProvidePictureBuffers(
   if (!GetPPP())
     return;
 
+  coded_size_ = dimensions;
   PP_Size out_dim = PP_MakeSize(dimensions.width(), dimensions.height());
   GetPPP()->ProvidePictureBuffers(pp_instance(), pp_resource(),
                                   requested_num_of_buffers, &out_dim,
@@ -261,6 +263,8 @@ void PPB_VideoDecoder_Impl::PictureReady(const media::Picture& picture) {
   DCHECK(RenderThreadImpl::current());
   if (!GetPPP())
     return;
+
+  media::ReportPepperVideoDecoderOutputPictureCountHW(coded_size_.height());
 
   PP_Picture_Dev output;
   output.picture_buffer_id = picture.picture_buffer_id();

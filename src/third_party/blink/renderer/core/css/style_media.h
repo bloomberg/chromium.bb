@@ -41,15 +41,16 @@ class StyleMedia final : public ScriptWrappable, public ContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(StyleMedia);
 
  public:
-  static StyleMedia* Create(LocalFrame* frame) { return new StyleMedia(frame); }
+  static StyleMedia* Create(LocalFrame* frame) {
+    return MakeGarbageCollected<StyleMedia>(frame);
+  }
+
+  explicit StyleMedia(LocalFrame*);
 
   AtomicString type() const;
   bool matchMedium(const String&) const;
 
   void Trace(blink::Visitor*) override;
-
- private:
-  explicit StyleMedia(LocalFrame*);
 };
 
 }  // namespace blink

@@ -15,7 +15,6 @@
 std::string ProfileNotification::GetProfileNotificationId(
     const std::string& delegate_id,
     ProfileID profile_id) {
-  DCHECK(profile_id);
   return base::StringPrintf("notification-ui-manager#%p#%s",
                             profile_id,  // Each profile has its unique instance
                                          // including incognito profile.
@@ -37,10 +36,11 @@ ProfileNotification::ProfileNotification(
           notification),
       original_id_(notification.id()),
       type_(type) {
-  DCHECK(profile);
 #if defined(OS_CHROMEOS)
-  notification_.set_profile_id(
-      multi_user_util::GetAccountIdFromProfile(profile).GetUserEmail());
+  if (profile_) {
+    notification_.set_profile_id(
+        multi_user_util::GetAccountIdFromProfile(profile).GetUserEmail());
+  }
 #else
   // This ScopedKeepAlive prevents the browser process from shutting down when
   // the last browser window is closed and there are open notifications. It's

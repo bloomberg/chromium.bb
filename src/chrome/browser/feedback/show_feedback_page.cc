@@ -15,9 +15,9 @@
 #include "extensions/browser/api/feedback_private/feedback_private_api.h"
 
 #if defined(OS_CHROMEOS)
-#include "base/sys_info.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
-#include "components/signin/core/browser/signin_manager.h"
+#include "base/system/sys_info.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #endif
 
 namespace feedback_private = extensions::api::feedback_private;
@@ -85,10 +85,9 @@ void ShowFeedbackPage(Browser* browser,
           : feedback_private::FeedbackFlow::FEEDBACK_FLOW_REGULAR;
 
 #if defined(OS_CHROMEOS)
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(profile);
-  if (signin_manager &&
-      base::EndsWith(signin_manager->GetAuthenticatedAccountInfo().email,
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
+  if (identity_manager &&
+      base::EndsWith(identity_manager->GetPrimaryAccountInfo().email,
                      kGoogleDotCom, base::CompareCase::INSENSITIVE_ASCII) &&
       IsFromUserInteraction(source) && IsBluetoothLoggingAllowedByBoard()) {
     flow = feedback_private::FeedbackFlow::FEEDBACK_FLOW_GOOGLEINTERNAL;

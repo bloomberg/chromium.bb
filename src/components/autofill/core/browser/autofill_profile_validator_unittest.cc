@@ -82,7 +82,7 @@ class AutofillProfileValidatorTest : public testing::Test {
 
   ~AutofillProfileValidatorTest() override {}
 
-  void OnValidated(AutofillProfile* profile) {
+  void OnValidated(const AutofillProfile* profile) {
     // Make sure the profile has the expected validity state.
     for (auto expectation : expected_validity_) {
       EXPECT_EQ(expectation.second,
@@ -165,8 +165,8 @@ TEST_F(AutofillProfileValidatorTest,
 
   // Set up the test expectations.
   expected_validity_ = {{ADDRESS_HOME_COUNTRY, AutofillProfile::INVALID},
-                        {ADDRESS_HOME_STATE, AutofillProfile::UNVALIDATED},
-                        {ADDRESS_HOME_ZIP, AutofillProfile::UNVALIDATED},
+                        {ADDRESS_HOME_STATE, AutofillProfile::INVALID},
+                        {ADDRESS_HOME_ZIP, AutofillProfile::INVALID},
                         {PHONE_HOME_WHOLE_NUMBER, AutofillProfile::UNVALIDATED},
                         {EMAIL_ADDRESS, AutofillProfile::VALID}};
 
@@ -196,7 +196,6 @@ TEST_F(AutofillProfileValidatorTest, ValidateAddress_RuleNotExists) {
 
 // When country code is empty, the profile is unvalidated.
 TEST_F(AutofillProfileValidatorTest, ValidateAddress_EmptyCountryCode) {
-  ;
   AutofillProfile profile(autofill::test::GetFullValidProfileForCanada());
   profile.SetRawInfo(ADDRESS_HOME_COUNTRY, base::string16());
 
@@ -205,8 +204,8 @@ TEST_F(AutofillProfileValidatorTest, ValidateAddress_EmptyCountryCode) {
   // Set up the test expectations.
   // The phone is validated for the US.
   expected_validity_ = {{ADDRESS_HOME_COUNTRY, AutofillProfile::EMPTY},
-                        {ADDRESS_HOME_STATE, AutofillProfile::UNVALIDATED},
-                        {ADDRESS_HOME_ZIP, AutofillProfile::UNVALIDATED},
+                        {ADDRESS_HOME_STATE, AutofillProfile::INVALID},
+                        {ADDRESS_HOME_ZIP, AutofillProfile::INVALID},
                         {PHONE_HOME_WHOLE_NUMBER, AutofillProfile::UNVALIDATED},
                         {EMAIL_ADDRESS, AutofillProfile::VALID}};
 

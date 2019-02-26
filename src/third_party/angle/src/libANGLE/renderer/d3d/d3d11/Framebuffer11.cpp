@@ -61,9 +61,7 @@ Framebuffer11::Framebuffer11(const gl::FramebufferState &data, Renderer11 *rende
     ASSERT(mRenderer != nullptr);
 }
 
-Framebuffer11::~Framebuffer11()
-{
-}
+Framebuffer11::~Framebuffer11() {}
 
 angle::Result Framebuffer11::markAttachmentsDirty(const gl::Context *context) const
 {
@@ -113,16 +111,16 @@ angle::Result Framebuffer11::clearImpl(const gl::Context *context,
     return angle::Result::Continue();
 }
 
-gl::Error Framebuffer11::invalidate(const gl::Context *context,
-                                    size_t count,
-                                    const GLenum *attachments)
+angle::Result Framebuffer11::invalidate(const gl::Context *context,
+                                        size_t count,
+                                        const GLenum *attachments)
 {
     return invalidateBase(context, count, attachments, false);
 }
 
-gl::Error Framebuffer11::discard(const gl::Context *context,
-                                 size_t count,
-                                 const GLenum *attachments)
+angle::Result Framebuffer11::discard(const gl::Context *context,
+                                     size_t count,
+                                     const GLenum *attachments)
 {
     return invalidateBase(context, count, attachments, true);
 }
@@ -219,13 +217,13 @@ angle::Result Framebuffer11::invalidateBase(const gl::Context *context,
     return angle::Result::Continue();
 }
 
-gl::Error Framebuffer11::invalidateSub(const gl::Context *context,
-                                       size_t,
-                                       const GLenum *,
-                                       const gl::Rectangle &)
+angle::Result Framebuffer11::invalidateSub(const gl::Context *context,
+                                           size_t count,
+                                           const GLenum *attachments,
+                                           const gl::Rectangle &area)
 {
     // A no-op implementation conforms to the spec, so don't call UNIMPLEMENTED()
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
 angle::Result Framebuffer11::invalidateAttachment(const gl::Context *context,
@@ -236,7 +234,7 @@ angle::Result Framebuffer11::invalidateAttachment(const gl::Context *context,
     ASSERT(attachment && attachment->isAttached());
 
     RenderTarget11 *renderTarget = nullptr;
-    ANGLE_TRY_HANDLE(context, attachment->getRenderTarget(context, &renderTarget));
+    ANGLE_TRY(attachment->getRenderTarget(context, &renderTarget));
     const auto &rtv = renderTarget->getRenderTargetView();
 
     if (rtv.valid())
@@ -290,7 +288,7 @@ angle::Result Framebuffer11::blitImpl(const gl::Context *context,
         ASSERT(readBuffer);
 
         RenderTargetD3D *readRenderTarget = nullptr;
-        ANGLE_TRY_HANDLE(context, readBuffer->getRenderTarget(context, &readRenderTarget));
+        ANGLE_TRY(readBuffer->getRenderTarget(context, &readRenderTarget));
         ASSERT(readRenderTarget);
 
         const auto &colorAttachments = mState.getColorAttachments();
@@ -304,7 +302,7 @@ angle::Result Framebuffer11::blitImpl(const gl::Context *context,
             if (drawBuffer.isAttached() && drawBufferStates[colorAttachment] != GL_NONE)
             {
                 RenderTargetD3D *drawRenderTarget = nullptr;
-                ANGLE_TRY_HANDLE(context, drawBuffer.getRenderTarget(context, &drawRenderTarget));
+                ANGLE_TRY(drawBuffer.getRenderTarget(context, &drawRenderTarget));
                 ASSERT(drawRenderTarget);
 
                 const bool invertColorSource   = UsePresentPathFast(mRenderer, readBuffer);
@@ -337,7 +335,7 @@ angle::Result Framebuffer11::blitImpl(const gl::Context *context,
         const gl::FramebufferAttachment *readBuffer = sourceFramebuffer->getDepthOrStencilbuffer();
         ASSERT(readBuffer);
         RenderTargetD3D *readRenderTarget = nullptr;
-        ANGLE_TRY_HANDLE(context, readBuffer->getRenderTarget(context, &readRenderTarget));
+        ANGLE_TRY(readBuffer->getRenderTarget(context, &readRenderTarget));
         ASSERT(readRenderTarget);
 
         const bool invertSource        = UsePresentPathFast(mRenderer, readBuffer);
@@ -352,7 +350,7 @@ angle::Result Framebuffer11::blitImpl(const gl::Context *context,
         const gl::FramebufferAttachment *drawBuffer = mState.getDepthOrStencilAttachment();
         ASSERT(drawBuffer);
         RenderTargetD3D *drawRenderTarget = nullptr;
-        ANGLE_TRY_HANDLE(context, drawBuffer->getRenderTarget(context, &drawRenderTarget));
+        ANGLE_TRY(drawBuffer->getRenderTarget(context, &drawRenderTarget));
         ASSERT(drawRenderTarget);
 
         bool invertDest              = UsePresentPathFast(mRenderer, drawBuffer);
@@ -397,16 +395,16 @@ angle::Result Framebuffer11::syncState(const gl::Context *context,
     return angle::Result::Continue();
 }
 
-gl::Error Framebuffer11::getSamplePosition(const gl::Context *context,
-                                           size_t index,
-                                           GLfloat *xy) const
+angle::Result Framebuffer11::getSamplePosition(const gl::Context *context,
+                                               size_t index,
+                                               GLfloat *xy) const
 {
     const gl::FramebufferAttachment *attachment = mState.getFirstNonNullAttachment();
     ASSERT(attachment);
     GLsizei sampleCount = attachment->getSamples();
 
     d3d11_gl::GetSamplePosition(sampleCount, index, xy);
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
 RenderTarget11 *Framebuffer11::getFirstRenderTarget() const

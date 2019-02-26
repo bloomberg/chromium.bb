@@ -20,6 +20,7 @@
 #include "content/common/content_export.h"
 #include "content/common/frame_owner_properties.h"
 #include "content/common/frame_replication_state.h"
+#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/common/frame/user_activation_state.h"
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
@@ -33,6 +34,7 @@ class FrameTree;
 class NavigationRequest;
 class Navigator;
 class RenderFrameHostImpl;
+class NavigationEntryImpl;
 struct ContentSecurityPolicyHeader;
 
 // When a page contains iframes, its renderer process maintains a tree structure
@@ -76,7 +78,8 @@ class CONTENT_EXPORT FrameTreeNode {
                 const std::string& unique_name,
                 bool is_created_by_script,
                 const base::UnguessableToken& devtools_frame_token,
-                const FrameOwnerProperties& frame_owner_properties);
+                const FrameOwnerProperties& frame_owner_properties,
+                blink::FrameOwnerElementType owner_type);
 
   ~FrameTreeNode();
 
@@ -84,9 +87,6 @@ class CONTENT_EXPORT FrameTreeNode {
   void RemoveObserver(Observer* observer);
 
   bool IsMainFrame() const;
-
-  // Clears process specific-state in this node to prepare for a new process.
-  void ResetForNewProcess();
 
   // Clears any state in this node which was set by the document itself (CSP
   // Headers, Feature Policy Headers, and CSP-set sandbox flags), and notifies
@@ -403,6 +403,11 @@ class CONTENT_EXPORT FrameTreeNode {
     return user_activation_state_.IsActive();
   }
 
+  // Remove history entries for all frames created by script in this frame's
+  // subtree. If a frame created by a script is removed, then its history entry
+  // will never be reused - this saves memory.
+  void PruneChildFrameNavigationEntries(NavigationEntryImpl* entry);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessFeaturePolicyBrowserTest,
                            ContainerPolicyDynamic);
@@ -416,6 +421,8 @@ class CONTENT_EXPORT FrameTreeNode {
   bool NotifyUserActivation();
 
   bool ConsumeTransientUserActivation();
+
+  bool ClearUserActivation();
 
   // The next available browser-global FrameTreeNode ID.
   static int next_frame_tree_node_id_;

@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "apps/app_lifetime_monitor.h"
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
@@ -25,16 +26,20 @@ class Profile;
 
 namespace base {
 class FilePath;
-}
+}  // namespace base
 
 namespace content {
 class BrowserContext;
-}
+}  // namespace content
 
 namespace extensions {
 class AppWindow;
 class Extension;
-}
+}  // namespace extensions
+
+namespace views {
+class BridgeFactoryHost;
+}  // namespace views
 
 namespace apps {
 
@@ -49,10 +54,12 @@ class ExtensionAppShimHandler : public AppShimHandler,
    public:
     virtual ~Delegate() {}
 
+    virtual base::FilePath GetFullProfilePath(
+        const base::FilePath& relative_path);
     virtual bool ProfileExistsForPath(const base::FilePath& path);
     virtual Profile* ProfileForPath(const base::FilePath& path);
     virtual void LoadProfileAsync(const base::FilePath& path,
-                                  base::Callback<void(Profile*)> callback);
+                                  base::OnceCallback<void(Profile*)> callback);
     virtual bool IsProfileLockedForPath(const base::FilePath& path);
 
     virtual extensions::AppWindowRegistry::AppWindowList GetWindows(
@@ -62,6 +69,8 @@ class ExtensionAppShimHandler : public AppShimHandler,
     virtual const extensions::Extension* MaybeGetAppExtension(
         content::BrowserContext* context,
         const std::string& extension_id);
+    virtual Host* CreateHost(const std::string& app_id,
+                             const base::FilePath& profile_path);
     virtual void EnableExtension(Profile* profile,
                                  const std::string& extension_id,
                                  const base::Callback<void()>& callback);
@@ -87,9 +96,15 @@ class ExtensionAppShimHandler : public AppShimHandler,
   virtual AppShimHandler::Host* FindHost(Profile* profile,
                                          const std::string& app_id);
 
-  // Get the host corresponding to a browser instance, or nullptr if none
-  // exists.
-  AppShimHandler::Host* FindHostForBrowser(Browser* browser);
+  // Return the host corresponding to |profile| and |app_id|, or create one if
+  // needed.
+  AppShimHandler::Host* FindOrCreateHost(Profile* profile,
+                                         const std::string& app_id);
+
+  // Get the ViewBridgeFactoryHost, which may be used to create remote
+  // NSWindows, corresponding to a browser instance (or nullptr if none exists).
+  views::BridgeFactoryHost* GetViewsBridgeFactoryHostForBrowser(
+      Browser* browser);
 
   void SetHostedAppHidden(Profile* profile,
                           const std::string& app_id,
@@ -119,9 +134,7 @@ class ExtensionAppShimHandler : public AppShimHandler,
   void OnChromeWillHide();
 
   // AppShimHandler overrides:
-  void OnShimLaunch(Host* host,
-                    AppShimLaunchType launch_type,
-                    const std::vector<base::FilePath>& files) override;
+  void OnShimLaunch(std::unique_ptr<AppShimHostBootstrap> bootstrap) override;
   void OnShimClose(Host* host) override;
   void OnShimFocus(Host* host,
                    AppShimFocusType focus_type,
@@ -173,9 +186,7 @@ class ExtensionAppShimHandler : public AppShimHandler,
 
   // This is passed to Delegate::LoadProfileAsync for shim-initiated launches
   // where the profile was not yet loaded.
-  void OnProfileLoaded(Host* host,
-                       AppShimLaunchType launch_type,
-                       const std::vector<base::FilePath>& files,
+  void OnProfileLoaded(std::unique_ptr<AppShimHostBootstrap> bootstrap,
                        Profile* profile);
 
   // This is passed to Delegate::EnableViaPrompt for shim-initiated launches

@@ -21,8 +21,6 @@ class SecureChannelClient;
 
 namespace tether {
 
-class BleConnectionManager;
-
 // Operation which sends a disconnect message to a tether host.
 class DisconnectTetheringOperation : public MessageTransferOperation {
  public:
@@ -31,8 +29,7 @@ class DisconnectTetheringOperation : public MessageTransferOperation {
     static std::unique_ptr<DisconnectTetheringOperation> NewInstance(
         cryptauth::RemoteDeviceRef device_to_connect,
         device_sync::DeviceSyncClient* device_sync_client,
-        secure_channel::SecureChannelClient* secure_channel_client,
-        BleConnectionManager* connection_manager);
+        secure_channel::SecureChannelClient* secure_channel_client);
 
     static void SetInstanceForTesting(Factory* factory);
 
@@ -40,8 +37,7 @@ class DisconnectTetheringOperation : public MessageTransferOperation {
     virtual std::unique_ptr<DisconnectTetheringOperation> BuildInstance(
         cryptauth::RemoteDeviceRef device_to_connect,
         device_sync::DeviceSyncClient* device_sync_client,
-        secure_channel::SecureChannelClient* secure_channel_client,
-        BleConnectionManager* connection_manager);
+        secure_channel::SecureChannelClient* secure_channel_client);
 
    private:
     static Factory* factory_instance_;
@@ -65,8 +61,7 @@ class DisconnectTetheringOperation : public MessageTransferOperation {
   DisconnectTetheringOperation(
       cryptauth::RemoteDeviceRef device_to_connect,
       device_sync::DeviceSyncClient* device_sync_client,
-      secure_channel::SecureChannelClient* secure_channel_client,
-      BleConnectionManager* connection_manager);
+      secure_channel::SecureChannelClient* secure_channel_client);
 
   void NotifyObserversOperationFinished(bool success);
 

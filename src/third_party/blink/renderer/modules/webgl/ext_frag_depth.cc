@@ -37,7 +37,7 @@ WebGLExtensionName EXTFragDepth::GetName() const {
 }
 
 EXTFragDepth* EXTFragDepth::Create(WebGLRenderingContextBase* context) {
-  return new EXTFragDepth(context);
+  return MakeGarbageCollected<EXTFragDepth>(context);
 }
 
 bool EXTFragDepth::Supported(WebGLRenderingContextBase* context) {

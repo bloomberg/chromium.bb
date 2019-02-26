@@ -77,6 +77,7 @@ class CORE_EXPORT WorkerShadowPage : public WebLocalFrameClient {
   std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory() override;
   base::UnguessableToken GetDevToolsFrameToken() override;
   void WillSendRequest(WebURLRequest&) override;
+  void BeginNavigation(std::unique_ptr<WebNavigationInfo> info) override;
 
   Document* GetDocument() { return main_frame_->GetFrame()->GetDocument(); }
   WebSettings* GetSettings() { return web_view_->GetSettings(); }

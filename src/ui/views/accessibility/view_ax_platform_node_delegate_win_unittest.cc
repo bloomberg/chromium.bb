@@ -363,7 +363,7 @@ TEST_F(ViewAXPlatformNodeDelegateWinTest, Overrides) {
   alert_view->GetViewAccessibility().OverrideRole(ax::mojom::Role::kAlert);
   alert_view->GetViewAccessibility().OverrideName(L"Name");
   alert_view->GetViewAccessibility().OverrideDescription("Description");
-  alert_view->GetViewAccessibility().OverrideIsLeaf();
+  alert_view->GetViewAccessibility().OverrideIsLeaf(true);
   contents_view->AddChildView(alert_view);
 
   // Descendant should be ignored because the parent uses OverrideIsLeaf().

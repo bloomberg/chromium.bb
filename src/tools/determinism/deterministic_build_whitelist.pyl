@@ -11,8 +11,6 @@
 # List of files that are known to be _not_ deterministic. This is a "temporary"
 # workaround to find regression on the deterministic builders.
 #
-# PNaCl general bug: https://crbug.com/429358
-#
 # TODO(sebmarchand): Remove this once all the files are deterministic.
 {
   # https://crbug.com/383340
@@ -21,63 +19,64 @@
 
   # https://crbug.com/330263
   'linux': [
-    'ppapi_nacl_tests_pnacl_newlib_x64.nexe',
+    # https://crbug.com/908463
+    'fontconfig_caches/df1acc8c-39d5-4a8b-8507-b1a7396ac3ac-le64.cache-7',
 
-    # TODO(tikuta): Remove this when crbug.com/870611 is fixed.
-    'remoting-webapp.v2.zip',
-
-    'zucchini_apply_fuzzer_seed_corpus.zip',
-
-    'browser_tests.isolated',
-
-    'mr_extension',
-    'mr_extension/release',
+    # nacl stuff, https://crbug.com/429358
+    'nacl_helper_nonsfi',
+    'nacl_helper_nonsfi_unittests_main',
+    'nacl_test_data/nonsfi/irt_exception_test_pnacl_newlib_x32_nonsfi.nexe',
+    'nacl_test_data/nonsfi/irt_manifest_file_pnacl_newlib_x32_nonsfi.nexe',
+    'ppapi_nacl_tests_pnacl_newlib_x32_nonsfi.nexe',
+    'test_data/ppapi/tests/extensions/packaged_app/nonsfi/ppapi_tests_extensions_packaged_app_pnacl_newlib_x32_nonsfi.nexe',
   ],
 
   'linux_component': [
-   # TODO(tikuta): Remove this when crbug.com/870584 is fixed.
-    'v8_context_snapshot.bin',
+    # https://crbug.com/900696
+    'remoting-webapp.v2.zip',
 
-    'app_shell_unittests.isolated',
-    'blink_heap_unittests.isolated',
-    'chrome_app_unittests.isolated',
-    'chromedriver_py_tests.isolated',
-    'components_browsertests.isolated',
-    'components_perftests.isolated',
-    'components_unittests.isolated',
-    'content_browsertests.isolated',
-    'content_shell_crash_test.isolated',
-    'content_unittests.isolated',
-    'extensions_browsertests.isolated',
-    'extensions_unittests.isolated',
-    'gin_unittests.isolated',
-    'headless_browsertests.isolated',
-    'headless_unittests.isolated',
-    'interactive_ui_tests.isolated',
-    'media_blink_unittests.isolated',
-    'performance_browser_tests.isolated',
-    'performance_test_suite.isolated',
-    'performance_webview_test_suite.isolated',
-    'services_unittests.isolated',
-    'sync_integration_tests.isolated',
-    'telemetry_gpu_integration_test.isolated',
-    'telemetry_perf_unittests.isolated',
-    'telemetry_unittests.isolated',
-    'unit_tests.isolated',
-    'vr_common_perftests.isolated',
-    'vr_common_unittests.isolated',
-    'vr_pixeltests.isolated',
-    'webkit_layout_tests.isolated',
-    'webkit_layout_tests_exparchive.isolated',
-    'webkit_unit_tests.isolated',
+    # https://crbug.com/908474
+    'app_shell_unittests',
+    'browser_tests',
+    'chrome',
+    'chrome_app_unittests',
+    'components_browsertests',
+    'components_unittests',
+    'content_browsertests',
+    'content_shell',
+    'crashpad_tests',
+    'extensions_browsertests',
+    'extensions_unittests',
+    'headless_browsertests',
+    'headless_unittests',
+    'interactive_ui_tests',
+    'libboringssl.so',
+    'libcrashpad_snapshot_test_module.so',
+    'libcrashpad_snapshot_test_module_large.so',
+    'libcrashpad_snapshot_test_module_small.so',
+    'libheadless.so',
+    'performance_browser_tests',
+    'sync_integration_tests',
+    'unit_tests',
+
+    # additional nacl stuff, https://crbug.com/429358
+    'nacl_helper',
+    'nacl_helper_bootstrap',
+    'nacl_loader_unittests',
   ],
 
   # https://crbug.com/330262
   'mac': [
+    # ld64 in current Xcode versions is not deterministic. Most smaller binaries
+    # are fine, but larger binaries often get different outputs.
+    # To reduce flakiness, list most binaries here.
+    # TODO(erikchen): Once our fix for this has made it into Xcode and that
+    # is on all the bots, remove most binaries.
     'accelerated_widget_mac_unittests',
     'accessibility_unittests',
     'angle_end2end_tests',
     'angle_unittests',
+    'angle_white_box_tests',
     'App Shell',
     'app_shell_unittests',
     'ar_sample_test_driver',
@@ -200,20 +199,13 @@
     'viz_benchmark',
     'webkit_unit_tests',
     'wtf_unittests',
-
-    # TODO(tikuta): Remove this when crbug.com/870584 is fixed.
-    'v8_context_snapshot.bin',
   ],
 
   # https://crbug.com/330260
   'win': [
-    # These two targets force symbol_level to be at least 1, they will work
-    # once we've figured out the PDB aging field.
-    'crashpad_snapshot_test_image_reader.exe',
-    'crashpad_snapshot_test_image_reader_module.dll',
-
-    # TODO(thakis): Figure out what's up with these two.
+    # TODO(thakis): Figure out what's up with these three (and their isolate).
     'mini_installer.exe',
+    'mini_installer.exe.pdb',
     'previous_version_mini_installer.exe',
 
     # These probably have mtimes in the zip headers and the scripts creating
@@ -221,52 +213,10 @@
     'mini_installer_tests.zip',
     'policy_templates.zip',
 
-    # TODO(tikuta): Remove this when crbug.com/870611 is fixed.
-    'remoting-me2me-host-win.zip',
-    'remoting-webapp.v2.zip',
-
-    # TODO(tikuta): Remove this when crbug.com/870584 is fixed.
-    'v8_context_snapshot.bin',
-
-    # TODO(thakis): Figure out what's up with these two.
-    'ppapi_nacl_tests_pnacl_newlib_x32.nexe',
-    'ppapi_nacl_tests_pnacl_newlib_x64.nexe',
-
-
-    'app_shell_unittests.isolated',
-    'blink_heap_unittests.isolated',
-    'browser_tests.isolated',
-    'chrome_app_unittests.isolated',
-    'chrome_elf_import_unittests.isolated',
-    'chromedriver_py_tests.isolated',
-    'components_browsertests.isolated',
-    'components_perftests.isolated',
-    'components_unittests.isolated',
-    'content_browsertests.isolated',
-    'content_shell_crash_test.isolated',
-    'content_unittests.isolated',
-    'crashpad_tests.isolated',
-    'extensions_browsertests.isolated',
-    'extensions_unittests.isolated',
-    'gin_unittests.isolated',
-    'headless_browsertests.isolated',
-    'interactive_ui_tests.isolated',
-    'media_blink_unittests.isolated',
-    'mini_installer_tests.isolated',
-    'performance_browser_tests.isolated',
-    'performance_test_suite.isolated',
-    'performance_webview_test_suite.isolated',
-    'services_unittests.isolated',
-    'sync_integration_tests.isolated',
-    'telemetry_gpu_integration_test.isolated',
-    'telemetry_perf_unittests.isolated',
-    'telemetry_unittests.isolated',
-    'unit_tests.isolated',
-    'vr_common_perftests.isolated',
-    'vr_common_unittests.isolated',
-    'vr_pixeltests.isolated',
-    'webkit_layout_tests.isolated',
-    'webkit_layout_tests_exparchive.isolated',
-    'webkit_unit_tests.isolated',
+    # These two started being non-deterministic days 2 out of 3 builds days
+    # after we switched to using two distinct build dirs, for no apparent
+    # reason.
+    'nacl_irt_x86_32.nexe',
+    'nacl_irt_x86_32.nexe.debug',
   ],
 }

@@ -37,7 +37,6 @@
 #endif
 
 using l10n_util::GetNSString;
-using unified_consent::prefs::kUnifiedConsentGiven;
 
 typedef NSArray<CollectionViewItem*>* ItemArray;
 
@@ -73,7 +72,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   SyncSettingsItemType,
   SyncReadingListItemType,
   AutocompleteWalletItemType,
-  SyncActivityAndInteractionsItemType,
   SyncGoogleActivityControlsItemType,
   EncryptionItemType,
   ManageSyncedDataItemType,
@@ -88,12 +86,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }  // namespace
 
 @interface GoogleServicesSettingsMediator ()<BooleanObserver,
-                                             PrefObserverDelegate,
                                              SyncObserverModelBridge> {
-  // Bridge to listen to pref changes.
-  std::unique_ptr<PrefObserverBridge> prefObserverBridge_;
-  // Registrar for pref changes notifications.
-  PrefChangeRegistrar prefChangeRegistrar_;
   std::unique_ptr<SyncObserverBridge> _syncObserver;
 }
 
@@ -202,10 +195,6 @@ initWithUserPrefService:(PrefService*)userPrefService
     _syncSetupService = syncSetupService;
     _unifiedConsentService = unifiedConsentService;
     _syncObserver.reset(new SyncObserverBridge(self, syncService));
-    prefObserverBridge_ = std::make_unique<PrefObserverBridge>(self);
-    prefChangeRegistrar_.Init(userPrefService);
-    prefObserverBridge_->ObserveChangesForPreference(kUnifiedConsentGiven,
-                                                     &prefChangeRegistrar_);
     _autocompleteWalletPreference = [[PrefBackedBoolean alloc]
         initWithPrefService:userPrefService
                    prefName:autofill::prefs::kAutofillWalletImportEnabled];
@@ -292,7 +281,7 @@ initWithUserPrefService:(PrefService*)userPrefService
 }
 
 - (BOOL)isConsentGiven {
-  return self.unifiedConsentService->IsUnifiedConsentGiven();
+  return NO;
 }
 
 - (SettingsImageDetailTextItem*)syncErrorItem {
@@ -382,14 +371,6 @@ initWithUserPrefService:(PrefService*)userPrefService
                 detailStringID:0
                      commandID:GoogleServicesSettingsCommandIDToggleDataTypeSync
                       dataType:SyncSetupService::kSyncReadingList];
-    SyncSwitchItem* syncActivityAndInteractionsItem = [self
-        switchItemWithItemType:SyncActivityAndInteractionsItemType
-                  textStringID:
-                      IDS_IOS_GOOGLE_SERVICES_SETTINGS_ACTIVITY_AND_INTERACTIONS_TEXT
-                detailStringID:
-                    IDS_IOS_GOOGLE_SERVICES_SETTINGS_ACTIVITY_AND_INTERACTIONS_DETAIL
-                     commandID:GoogleServicesSettingsCommandIDToggleDataTypeSync
-                      dataType:SyncSetupService::kSyncUserEvent];
     CollectionViewTextItem* syncGoogleActivityControlsItem = [self
         textItemWithItemType:SyncGoogleActivityControlsItemType
                 textStringID:
@@ -417,8 +398,8 @@ initWithUserPrefService:(PrefService*)userPrefService
     _personalizedItems = @[
       syncBookmarksItem, syncHistoryItem, syncPasswordsItem, syncOpenTabsItem,
       syncAutofillItem, syncSettingsItem, syncReadingListItem,
-      self.autocompleteWalletItem, syncActivityAndInteractionsItem,
-      syncGoogleActivityControlsItem, encryptionItem, manageSyncedDataItem
+      self.autocompleteWalletItem, syncGoogleActivityControlsItem,
+      encryptionItem, manageSyncedDataItem
     ];
   }
   return _personalizedItems;
@@ -611,7 +592,9 @@ textItemWithItemType:(NSInteger)itemType
   BOOL enabled = self.isAuthenticated && !self.isConsentGiven;
   [self updateSectionWithCollapsibleItem:self.syncPersonalizationItem
                                    items:self.personalizedItems
-                                 enabled:enabled];
+                  collapsibleItemEnabled:enabled
+                       switchItemEnabled:enabled
+                         textItemEnabled:self.isAuthenticated];
   syncer::ModelType autofillModelType =
       _syncSetupService->GetModelType(SyncSetupService::kSyncAutofill);
   BOOL isAutofillOn = _syncSetupService->IsDataTypePreferred(autofillModelType);
@@ -627,16 +610,21 @@ textItemWithItemType:(NSInteger)itemType
   BOOL enabled = !self.isAuthenticated || !self.isConsentGiven;
   [self updateSectionWithCollapsibleItem:self.nonPersonalizedServicesItem
                                    items:self.nonPersonalizedItems
-                                 enabled:enabled];
+                  collapsibleItemEnabled:enabled
+                       switchItemEnabled:enabled
+                         textItemEnabled:enabled];
 }
 
-// Set a section (collapsible item, with all the items inside) to be enabled
-// or disabled.
+// Updates |collapsibleItem| and |items| using |collapsibleItemEnabled|,
+// |switchItemEnabled| and |textItemEnabled|.
 - (void)updateSectionWithCollapsibleItem:
             (SettingsCollapsibleItem*)collapsibleItem
                                    items:(ItemArray)items
-                                 enabled:(BOOL)enabled {
-  UIColor* textColor = enabled ? nil : [[MDCPalette greyPalette] tint500];
+                  collapsibleItemEnabled:(BOOL)collapsibleItemEnabled
+                       switchItemEnabled:(BOOL)switchItemEnabled
+                         textItemEnabled:(BOOL)textItemEnabled {
+  UIColor* textColor =
+      collapsibleItemEnabled ? nil : [[MDCPalette greyPalette] tint500];
   collapsibleItem.textColor = textColor;
   for (CollectionViewItem* item in items) {
     if ([item isKindOfClass:[SyncSwitchItem class]]) {
@@ -672,11 +660,11 @@ textItemWithItemType:(NSInteger)itemType
           NOTREACHED();
           break;
       }
-      switchItem.enabled = enabled;
+      switchItem.enabled = switchItemEnabled;
     } else if ([item isKindOfClass:[CollectionViewTextItem class]]) {
       CollectionViewTextItem* textItem =
           base::mac::ObjCCast<CollectionViewTextItem>(item);
-      textItem.enabled = enabled;
+      textItem.enabled = textItemEnabled;
     } else {
       NOTREACHED();
     }
@@ -704,7 +692,6 @@ textItemWithItemType:(NSInteger)itemType
     return;
   // Mark the switch has being animated to avoid being reloaded.
   base::AutoReset<BOOL> autoReset(&_syncEverythingSwitchBeingAnimated, YES);
-  self.unifiedConsentService->SetUnifiedConsentGiven(value);
 }
 
 - (void)toggleSyncDataSync:(NSInteger)dataTypeInt withValue:(BOOL)value {
@@ -743,46 +730,14 @@ textItemWithItemType:(NSInteger)itemType
   self.anonymizedDataCollectionPreference.value = value;
 }
 
-#pragma mark - PrefObserverDelegate
-
-- (void)onPreferenceChanged:(const std::string&)preferenceName {
-  DCHECK_EQ(kUnifiedConsentGiven, preferenceName);
-  self.syncEverythingItem.on = self.isConsentGiven;
-  [self updatePersonalizedSection];
-  [self updateNonPersonalizedSection];
-  CollectionViewModel* model = self.consumer.collectionViewModel;
-  if (!self.isConsentGiven) {
-    // If the consent is removed, both collapsible sections should be expanded.
-    [model setSection:PersonalizedSectionIdentifier collapsed:NO];
-    [self syncPersonalizationItem].collapsed = NO;
-    [model setSection:NonPersonalizedSectionIdentifier collapsed:NO];
-    [self nonPersonalizedServicesItem].collapsed = NO;
-  }
-  // Reload sections.
-  NSMutableIndexSet* sectionIndexToReload = [NSMutableIndexSet indexSet];
-  if (!self.syncEverythingSwitchBeingAnimated) {
-    // The sync everything section can be reloaded only if the switch for
-    // syncEverythingItem is not currently animated. Otherwise the animation
-    // would be stopped before the end.
-    [sectionIndexToReload addIndex:[model sectionForSectionIdentifier:
-                                              SyncEverythingSectionIdentifier]];
-  }
-  if (!self.personalizedSectionBeingAnimated) {
-    // The sync everything section can be reloaded only if none of the switches
-    // in the personalized section are not currently animated. Otherwise the
-    // animation would be stopped before the end.
-    [sectionIndexToReload addIndex:[model sectionForSectionIdentifier:
-                                              PersonalizedSectionIdentifier]];
-  }
-  [sectionIndexToReload addIndex:[model sectionForSectionIdentifier:
-                                            NonPersonalizedSectionIdentifier]];
-  [self.consumer reloadSections:sectionIndexToReload];
-}
-
 #pragma mark - SyncObserverModelBridge
 
 - (void)onSyncStateChanged {
   [self updatePersonalizedSection];
+  // TODO(crbug.com/899791): Should reloads only the updated items (instead of
+  // reload the full section), and get ride of
+  // |self.personalizedSectionBeingAnimated|. This will get a smoother animation
+  // for "Autocomplete wall" switch switch when being tapped by the user.
   if (!self.personalizedSectionBeingAnimated) {
     CollectionViewModel* model = self.consumer.collectionViewModel;
     NSMutableIndexSet* sectionIndexToReload = [NSMutableIndexSet indexSet];
@@ -790,8 +745,8 @@ textItemWithItemType:(NSInteger)itemType
                                               PersonalizedSectionIdentifier]];
     [self.consumer reloadSections:sectionIndexToReload];
   } else {
-    // Needs to reload only the autocomplete wallet item (which is part of the
-    // personalized section), if the autofill feature changed state.
+    // |self.autocompleteWalletItem| needs to be reloaded in case the autofill
+    // data type changed state.
     [self.consumer reloadItem:self.autocompleteWalletItem];
   }
   [self updateSyncErrorSectionAndNotifyConsumer:YES];

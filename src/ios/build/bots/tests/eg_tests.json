@@ -5,12 +5,13 @@
   "tests": [
     {
       "app": "ios_chrome_bookmarks_egtests",
+      "shard size": 2,
       "xctest": true
     },
     {
       "app": "ios_chrome_manual_fill_egtests",
       "test args": [
-        "--enable-features=AutofillManualFallback"
+        "--enable-features=AutofillManualFallback,WebFrameMessaging"
       ],
       "xctest": true
     },
@@ -23,17 +24,7 @@
       "xctest": true
     },
     {
-      "app": "ios_chrome_payments_egtests",
-      "test args": [
-        "--enable-features=WebPayments"
-      ],
-      "xctest": true
-    },
-    {
       "app": "ios_chrome_reading_list_egtests",
-      "test args": [
-        "--enable-reading-list"
-      ],
       "xctest": true
     },
     {

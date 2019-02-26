@@ -59,7 +59,6 @@ namespace net {
 
 class CTPolicyEnforcer;
 class CertVerifier;
-class ChannelIDService;
 class ClientSocketFactory;
 class CTVerifier;
 class HostResolver;
@@ -154,6 +153,10 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
   // returns the amount of time waiting job should be delayed.
   base::TimeDelta GetTimeDelayForWaitingJob() const;
 
+  // If host resolution is underway, changes the priority of the host resolver
+  // request.
+  void SetPriority(RequestPriority priority);
+
   // Releases the handle to the QUIC session retrieved as a result of Request().
   std::unique_ptr<QuicChromiumClientSession::Handle> ReleaseSessionHandle();
 
@@ -230,7 +233,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       HttpServerProperties* http_server_properties,
       CertVerifier* cert_verifier,
       CTPolicyEnforcer* ct_policy_enforcer,
-      ChannelIDService* channel_id_service,
       TransportSecurityState* transport_security_state,
       CTVerifier* cert_transparency_verifier,
       SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
@@ -261,7 +263,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       bool headers_include_h2_stream_dependency,
       const quic::QuicTagVector& connection_options,
       const quic::QuicTagVector& client_connection_options,
-      bool enable_channel_id,
       bool enable_socket_recv_optimization);
   ~QuicStreamFactory() override;
 
@@ -297,6 +298,9 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   // Cancels a pending request.
   void CancelRequest(QuicStreamRequest* request);
+
+  // Sets priority of a request.
+  void SetRequestPriority(QuicStreamRequest* request, RequestPriority priority);
 
   // Closes all current sessions with specified network, QUIC error codes.
   // It sends connection close packet when closing connections.

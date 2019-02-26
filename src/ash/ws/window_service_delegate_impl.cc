@@ -16,6 +16,7 @@
 #include "ash/wm/window_finder.h"
 #include "ash/wm/window_util.h"
 #include "ash/ws/ash_window_manager.h"
+#include "ash/ws/multi_user_window_manager_bridge.h"
 #include "base/bind.h"
 #include "mojo/public/cpp/bindings/map.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
@@ -218,13 +219,6 @@ ui::SystemInputInjector* WindowServiceDelegateImpl::GetSystemInputInjector() {
   return system_input_injector_.get();
 }
 
-aura::WindowTreeHost* WindowServiceDelegateImpl::GetWindowTreeHostForDisplayId(
-    int64_t display_id) {
-  RootWindowController* root_window_controller =
-      Shell::GetRootWindowControllerWithDisplayId(display_id);
-  return root_window_controller ? root_window_controller->GetHost() : nullptr;
-}
-
 aura::Window* WindowServiceDelegateImpl::GetTopmostWindowAtPoint(
     const gfx::Point& location_in_screen,
     const std::set<aura::Window*>& ignore,
@@ -237,10 +231,14 @@ WindowServiceDelegateImpl::CreateWindowManagerInterface(
     ws::WindowTree* tree,
     const std::string& name,
     mojo::ScopedInterfaceEndpointHandle handle) {
-  if (name != mojom::AshWindowManager::Name_)
-    return nullptr;
+  if (name == mojom::AshWindowManager::Name_)
+    return std::make_unique<AshWindowManager>(tree, std::move(handle));
 
-  return std::make_unique<AshWindowManager>(tree, std::move(handle));
+  if (name == mojom::MultiUserWindowManager::Name_) {
+    return std::make_unique<MultiUserWindowManagerBridge>(tree,
+                                                          std::move(handle));
+  }
+  return nullptr;
 }
 
 }  // namespace ash

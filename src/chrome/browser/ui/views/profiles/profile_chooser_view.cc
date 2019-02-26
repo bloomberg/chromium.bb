@@ -29,7 +29,6 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -40,6 +39,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
@@ -60,7 +60,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/browser_sync/profile_sync_service.h"
-#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
@@ -69,6 +68,7 @@
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
+#include "components/signin/core/browser/signin_pref_names.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "services/identity/public/cpp/identity_manager.h"
@@ -91,7 +91,6 @@
 #include "ui/gfx/text_elider.h"
 #include "ui/native_theme/common_theme.h"
 #include "ui/native_theme/native_theme.h"
-#include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/label_button_border.h"
@@ -199,7 +198,7 @@ BadgedProfilePhoto::BadgeType GetProfileBadgeType(Profile* profile) {
   // policy.
   if (AccountConsistencyModeManager::IsDiceEnabledForProfile(profile) &&
       profile->IsSyncAllowed() &&
-      SigninManagerFactory::GetForProfile(profile)->IsAuthenticated()) {
+      IdentityManagerFactory::GetForProfile(profile)->HasPrimaryAccount()) {
     return BadgedProfilePhoto::BADGE_TYPE_SYNC_COMPLETE;
   }
   return BadgedProfilePhoto::BADGE_TYPE_NONE;
@@ -383,12 +382,7 @@ ProfileChooserView::ProfileChooserView(views::Button* anchor_button,
   chrome::RecordDialogCreation(chrome::DialogIdentifier::PROFILE_CHOOSER);
 }
 
-ProfileChooserView::~ProfileChooserView() {
-  ProfileOAuth2TokenService* oauth2_token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(browser_->profile());
-  if (oauth2_token_service)
-    oauth2_token_service->RemoveObserver(this);
-}
+ProfileChooserView::~ProfileChooserView() = default;
 
 void ProfileChooserView::ResetView() {
   open_other_profile_indexes_map_.clear();
@@ -580,6 +574,16 @@ void ProfileChooserView::WindowClosing() {
   profile_bubble_ = NULL;
 }
 
+void ProfileChooserView::OnWidgetClosing(views::Widget* widget) {
+  // Unsubscribe from everything early so that the updates do not reach the
+  // bubble and change its state.
+  avatar_menu_.reset();
+  ProfileOAuth2TokenService* oauth2_token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(browser_->profile());
+  if (oauth2_token_service)
+    oauth2_token_service->RemoveObserver(this);
+}
+
 bool ProfileChooserView::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
   if (accelerator.key_code() != ui::VKEY_DOWN &&
@@ -620,7 +624,8 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
   if (sender == passwords_button_) {
     base::RecordAction(
         base::UserMetricsAction("ProfileChooser_PasswordsClicked"));
-    chrome::ShowSettingsSubPage(browser_, chrome::kPasswordManagerSubPage);
+    NavigateToManagePasswordsPage(
+        browser_, password_manager::ManagePasswordsReferrer::kProfileChooser);
   } else if (sender == credit_cards_button_) {
     base::RecordAction(
         base::UserMetricsAction("ProfileChooser_PaymentsClicked"));
@@ -628,7 +633,7 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
   } else if (sender == addresses_button_) {
     base::RecordAction(
         base::UserMetricsAction("ProfileChooser_AddressesClicked"));
-    chrome::ShowSettingsSubPage(browser_, chrome::kAutofillSubPage);
+    chrome::ShowSettingsSubPage(browser_, chrome::kAddressesSubPage);
   } else if (sender == guest_profile_button_) {
     PrefService* service = g_browser_process->local_state();
     DCHECK(service);
@@ -648,7 +653,7 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_OPEN_USER_MANAGER);
   } else if (sender == go_incognito_button_) {
     DCHECK(ShouldShowGoIncognito());
-    chrome::NewIncognitoWindow(browser_);
+    chrome::NewIncognitoWindow(browser_->profile());
     PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_GO_INCOGNITO);
   } else if (sender == lock_button_) {
     profiles::LockProfile(browser_->profile());
@@ -669,9 +674,11 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
           browser_sync::ProfileSyncService::SyncEvent(
               browser_sync::ProfileSyncService::STOP_FROM_OPTIONS);
         }
-        SigninManagerFactory::GetForProfile(browser_->profile())
-            ->SignOut(signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS,
-                      signin_metrics::SignoutDelete::IGNORE_METRIC);
+        IdentityManagerFactory::GetForProfile(browser_->profile())
+            ->ClearPrimaryAccount(
+                identity::IdentityManager::ClearAccountTokensAction::kDefault,
+                signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS,
+                signin_metrics::SignoutDelete::IGNORE_METRIC);
         ShowViewFromMode(profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN);
         break;
       case sync_ui_util::SUPERVISED_USER_AUTH_ERROR:
@@ -703,15 +710,15 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     // The account management view is only available with the
     // --account-consistency=mirror flag.
     bool account_management_available =
-        SigninManagerFactory::GetForProfile(profile)->IsAuthenticated() &&
+        IdentityManagerFactory::GetForProfile(profile)->HasPrimaryAccount() &&
         AccountConsistencyModeManager::IsMirrorEnabledForProfile(profile);
     ShowViewFromMode(account_management_available ?
         profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT :
         profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER);
   } else if (sender == current_profile_card_) {
     if (dice_enabled_ &&
-        SigninManagerFactory::GetForProfile(browser_->profile())
-            ->IsAuthenticated()) {
+        IdentityManagerFactory::GetForProfile(browser_->profile())
+            ->HasPrimaryAccount()) {
       chrome::ShowSettingsSubPage(browser_, chrome::kPeopleSubPage);
     } else {
       // Open settings to edit profile name and image. The profile doesn't need
@@ -787,7 +794,9 @@ void ProfileChooserView::RemoveAccount() {
   ProfileOAuth2TokenService* oauth2_token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(browser_->profile());
   if (oauth2_token_service) {
-    oauth2_token_service->RevokeCredentials(account_id_to_remove_);
+    oauth2_token_service->RevokeCredentials(
+        account_id_to_remove_, signin_metrics::SourceForRefreshTokenOperation::
+                                   kUserMenu_RemoveAccount);
     PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_REMOVE_ACCT);
   }
   account_id_to_remove_.clear();
@@ -905,11 +914,11 @@ views::View* ProfileChooserView::CreateProfileChooserView(
 views::View* ProfileChooserView::CreateSyncErrorViewIfNeeded(
     const AvatarMenu::Item& avatar_item) {
   int content_string_id, button_string_id;
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(browser_->profile());
+  auto* identity_manager =
+      IdentityManagerFactory::GetForProfile(browser_->profile());
   sync_ui_util::AvatarSyncErrorType error =
       sync_ui_util::GetMessagesForAvatarSyncError(
-          browser_->profile(), *signin_manager, &content_string_id,
+          browser_->profile(), *identity_manager, &content_string_id,
           &button_string_id);
   if (error == sync_ui_util::NO_SYNC_ERROR)
     return nullptr;
@@ -1116,8 +1125,9 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
     return view;
   }
 
-  if (!dice_enabled_ &&
-      SigninManagerFactory::GetForProfile(profile)->IsSigninAllowed()) {
+  bool is_signin_allowed =
+      profile->GetPrefs()->GetBoolean(prefs::kSigninAllowed);
+  if (!dice_enabled_ && is_signin_allowed) {
     views::View* extra_links_view = new views::View();
     extra_links_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::kVertical,
@@ -1381,11 +1391,8 @@ views::View* ProfileChooserView::CreateSupervisedUserDisclaimerView() {
 }
 
 views::View* ProfileChooserView::CreateAutofillHomeView() {
-  if (!base::FeatureList::IsEnabled(
-          password_manager::features::kAutofillHome) ||
-      browser_->profile()->IsGuestSession()) {
+  if (browser_->profile()->IsGuestSession())
     return nullptr;
-  }
 
   views::View* view = new views::View();
   view->SetLayoutManager(
@@ -1538,8 +1545,9 @@ views::View* ProfileChooserView::CreateAccountRemovalView() {
       views::CreateEmptyBorder(0, dialog_insets.left(),
                                dialog_insets.bottom(), dialog_insets.right()));
 
-  const std::string& primary_account = SigninManagerFactory::GetForProfile(
-      browser_->profile())->GetAuthenticatedAccountId();
+  const std::string& primary_account =
+      IdentityManagerFactory::GetForProfile(browser_->profile())
+          ->GetPrimaryAccountId();
   bool is_primary_account = primary_account == account_id_to_remove_;
 
   const int unrelated_vertical_spacing =
@@ -1639,7 +1647,8 @@ void ProfileChooserView::EnableSync(
 void ProfileChooserView::SignOutAllWebAccounts() {
   Hide();
   ProfileOAuth2TokenServiceFactory::GetForProfile(browser_->profile())
-      ->RevokeAllCredentials();
+      ->RevokeAllCredentials(signin_metrics::SourceForRefreshTokenOperation::
+                                 kUserMenu_SignOutAllAccounts);
 }
 
 int ProfileChooserView::GetDiceSigninPromoShowCount() const {

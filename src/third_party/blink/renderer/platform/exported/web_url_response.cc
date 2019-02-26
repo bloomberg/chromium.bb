@@ -261,6 +261,10 @@ void WebURLResponse::SetIsLegacySymantecCert(bool value) {
   resource_response_->SetIsLegacySymantecCert(value);
 }
 
+void WebURLResponse::SetIsLegacyTLSVersion(bool value) {
+  resource_response_->SetIsLegacyTLSVersion(value);
+}
+
 void WebURLResponse::SetSecurityStyle(WebSecurityStyle security_style) {
   resource_response_->SetSecurityStyle(
       static_cast<ResourceResponse::SecurityStyle>(security_style));
@@ -445,6 +449,10 @@ void WebURLResponse::SetConnectionInfo(
 
 void WebURLResponse::SetAsyncRevalidationRequested(bool requested) {
   resource_response_->SetAsyncRevalidationRequested(requested);
+}
+
+void WebURLResponse::SetNetworkAccessed(bool network_accessed) {
+  resource_response_->SetNetworkAccessed(network_accessed);
 }
 
 WebURLResponse::WebURLResponse(ResourceResponse& r) : resource_response_(&r) {}

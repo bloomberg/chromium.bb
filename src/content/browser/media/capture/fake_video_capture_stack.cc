@@ -118,9 +118,10 @@ SkBitmap FakeVideoCaptureStack::NextCapturedFrame() {
   SkBitmap bitmap;
   bitmap.allocN32Pixels(frame.visible_rect().width(),
                         frame.visible_rect().height());
-  // TODO(crbug/810131): This is not Rec.709 colorspace conversion, and so will
-  // introduce inaccuracies.
-  libyuv::I420ToARGB(frame.visible_data(media::VideoFrame::kYPlane),
+  // TODO(crbug/810131): CHECK_EQ(frame.ColorSpace(), REC709);
+  // libyuv::H420ToARGB() converts from I420 planes in the REC709 color space to
+  // sRGB.
+  libyuv::H420ToARGB(frame.visible_data(media::VideoFrame::kYPlane),
                      frame.stride(media::VideoFrame::kYPlane),
                      frame.visible_data(media::VideoFrame::kUPlane),
                      frame.stride(media::VideoFrame::kUPlane),

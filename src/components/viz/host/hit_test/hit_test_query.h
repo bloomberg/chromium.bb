@@ -130,6 +130,8 @@ class VIZ_HOST_EXPORT HitTestQuery {
 
   void ReceivedBadMessageFromGpuProcess() const;
 
+  void RecordSlowPathHitTestReasons(uint32_t) const;
+
   std::vector<AggregatedHitTestRegion> hit_test_data_;
 
   // Log bad message and shut down Viz process when it is compromised.

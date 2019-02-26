@@ -29,9 +29,9 @@ bool OnMessageLoopForInterceptorAddition() {
 
 // When removing interceptors, DCHECK that this function returns true.
 bool OnMessageLoopForInterceptorRemoval() {
-  // Checking for a MessageLoopForIO is a best effort at determining whether the
-  // current thread is a networking thread.
-  return base::MessageLoopForIO::IsCurrent();
+  // Checking for a MessageLoopCurrentForIO is a best effort at determining
+  // whether the current thread is a networking thread.
+  return base::MessageLoopCurrentForIO::IsSet();
 }
 
 }  // namespace

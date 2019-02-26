@@ -8,8 +8,8 @@ namespace service_manager {
 
 ConnectParams::ConnectParams() {}
 ConnectParams::~ConnectParams() {
-  if (!start_service_callback_.is_null())
-    std::move(start_service_callback_).Run(result_, resolved_identity_);
+  if (!connection_callback_.is_null())
+    std::move(connection_callback_).Run(result_, resolved_identity_);
 }
 
 }  // namespace service_manager

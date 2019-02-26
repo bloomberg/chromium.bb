@@ -7,8 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/autofill/manual_fill/fallback_view_controller.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/password_consumer.h"
-#import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 
 namespace manual_fill {
 
@@ -19,15 +19,13 @@ extern NSString* const PasswordTableViewAccessibilityIdentifier;
 
 // This class presents a list of usernames and passwords in a table view.
 @interface PasswordViewController
-    : ChromeTableViewController<ManualFillPasswordConsumer>
+    : FallbackViewController<ManualFillPasswordConsumer>
 
 - (instancetype)initWithSearchController:(UISearchController*)searchController
     NS_DESIGNATED_INITIALIZER;
 
-- (instancetype)initWithTableViewStyle:(UITableViewStyle)style
-                           appBarStyle:
-                               (ChromeTableViewControllerStyle)appBarStyle
-    NS_UNAVAILABLE;
+- (instancetype)init NS_UNAVAILABLE;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_PASSWORD_VIEW_CONTROLLER_H_

@@ -28,6 +28,8 @@ static_library("background_offliner") {
     "mark_attempt_aborted_task.h",
     "mark_attempt_completed_task.cc",
     "mark_attempt_completed_task.h",
+    "mark_attempt_deferred_task.cc",
+    "mark_attempt_deferred_task.h",
     "mark_attempt_started_task.cc",
     "mark_attempt_started_task.h",
     "offliner.h",
@@ -86,6 +88,7 @@ static_library("test_support") {
     "scheduler_stub.h",
     "test_request_queue_store.cc",
     "test_request_queue_store.h",
+    "test_util.cc",
   ]
 
   deps = [

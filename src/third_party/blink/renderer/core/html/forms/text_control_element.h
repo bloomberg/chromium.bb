@@ -264,6 +264,7 @@ DEFINE_TEXT_CONTROL_CASTS(const TextControlElement, const Node);
 #undef DEFINE_TEXT_CONTROL_CASTS
 
 TextControlElement* EnclosingTextControl(const Position&);
+TextControlElement* EnclosingTextControl(const PositionInFlatTree&);
 TextControlElement* EnclosingTextControl(const Node*);
 
 }  // namespace blink

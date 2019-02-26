@@ -12,11 +12,21 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/values.h"
-
 #include "third_party/perfetto/include/perfetto/tracing/core/consumer.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/tracing_service.h"
 
+namespace perfetto {
+namespace protos {
+class ChromeTracedValue;
+}  // namespace protos
+}  // namespace perfetto
+
 namespace tracing {
+
+// Serializes the supplied proto into JSON, using the same
+// format as TracedValue::AppendAsTraceFormat.
+void AppendProtoDictAsJSON(std::string* out,
+                           const perfetto::protos::ChromeTracedValue& dict);
 
 // This is a Perfetto consumer which will enable Perfetto tracing
 // and subscribe to ChromeTraceEvent data sources. Any received
@@ -52,6 +62,8 @@ class JSONTraceExporter : public perfetto::Consumer {
   bool has_output_first_event_ = false;
   std::string config_;
   std::unique_ptr<base::DictionaryValue> metadata_;
+  std::string legacy_system_ftrace_output_;
+  std::string legacy_system_trace_events_;
 
   // Keep last to avoid edge-cases where its callbacks come in mid-destruction.
   std::unique_ptr<perfetto::TracingService::ConsumerEndpoint>

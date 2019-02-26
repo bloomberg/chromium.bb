@@ -27,7 +27,6 @@
 #include "components/policy/core/common/cloud/dm_auth.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
-#include "google_apis/gaia/gaia_constants.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace {
@@ -52,7 +51,7 @@ class TokenRevoker : public GaiaAuthConsumer {
 
 TokenRevoker::TokenRevoker()
     : gaia_fetcher_(this,
-                    GaiaConstants::kChromeOSSource,
+                    gaia::GaiaSource::kChromeOS,
                     g_browser_process->system_network_context_manager()
                         ->GetSharedURLLoaderFactory()) {}
 
@@ -123,11 +122,86 @@ void EnterpriseEnrollmentHelperImpl::EnrollUsingAttestation() {
   DoEnroll(policy::DMAuth::NoAuth());
 }
 
+void EnterpriseEnrollmentHelperImpl::EnrollUsingEnrollmentToken(
+    const std::string& token) {
+  CHECK_EQ(enrollment_config_.mode,
+           policy::EnrollmentConfig::MODE_ATTESTATION_ENROLLMENT_TOKEN);
+  DoEnroll(policy::DMAuth::FromEnrollmentToken(token));
+}
+
 void EnterpriseEnrollmentHelperImpl::EnrollForOfflineDemo() {
   CHECK_EQ(enrollment_config_.mode,
            policy::EnrollmentConfig::MODE_OFFLINE_DEMO);
   // The tokens are not used in offline demo mode.
   DoEnroll(policy::DMAuth::NoAuth());
+}
+
+void EnterpriseEnrollmentHelperImpl::RestoreAfterRollback() {
+  CHECK_EQ(enrollment_config_.mode,
+           policy::EnrollmentConfig::MODE_ENROLLED_ROLLBACK);
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  DCHECK(connector->IsCloudManaged());
+
+  auto* manager = connector->GetDeviceCloudPolicyManager();
+
+  if (manager->core()->client()) {
+    RestoreAfterRollbackInitialized();
+  } else {
+    manager->AddDeviceCloudPolicyManagerObserver(this);
+  }
+}
+
+void EnterpriseEnrollmentHelperImpl::OnDeviceCloudPolicyManagerConnected() {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  connector->GetDeviceCloudPolicyManager()
+      ->RemoveDeviceCloudPolicyManagerObserver(this);
+  RestoreAfterRollbackInitialized();
+}
+
+void EnterpriseEnrollmentHelperImpl::OnDeviceCloudPolicyManagerDisconnected() {}
+
+void EnterpriseEnrollmentHelperImpl::RestoreAfterRollbackInitialized() {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  auto* manager = connector->GetDeviceCloudPolicyManager();
+  auto* client = manager->core()->client();
+  DCHECK(client);
+
+  device_account_initializer_ =
+      std::make_unique<policy::DeviceAccountInitializer>(client, this);
+  device_account_initializer_->FetchToken();
+}
+
+void EnterpriseEnrollmentHelperImpl::OnDeviceAccountTokenFetched(
+    bool empty_token) {
+  if (empty_token) {
+    status_consumer()->OnRestoreAfterRollbackCompleted();
+    return;
+  }
+  device_account_initializer_->StoreToken();
+}
+
+void EnterpriseEnrollmentHelperImpl::OnDeviceAccountTokenStored() {
+  status_consumer()->OnRestoreAfterRollbackCompleted();
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
+      FROM_HERE, device_account_initializer_.release());
+}
+
+void EnterpriseEnrollmentHelperImpl::OnDeviceAccountTokenError(
+    policy::EnrollmentStatus status) {
+  OnEnrollmentFinished(status);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
+      FROM_HERE, device_account_initializer_.release());
+}
+
+void EnterpriseEnrollmentHelperImpl::OnDeviceAccountClientError(
+    policy::DeviceManagementStatus status) {
+  OnEnrollmentFinished(
+      policy::EnrollmentStatus::ForRobotAuthFetchError(status));
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
+      FROM_HERE, device_account_initializer_.release());
 }
 
 void EnterpriseEnrollmentHelperImpl::ClearAuth(const base::Closure& callback) {

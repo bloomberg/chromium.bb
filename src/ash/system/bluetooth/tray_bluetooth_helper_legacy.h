@@ -38,13 +38,13 @@ class ASH_EXPORT TrayBluetoothHelperLegacy
 
   // TrayBluetoothHelper:
   void Initialize() override;
-  BluetoothDeviceList GetAvailableBluetoothDevices() const override;
   void StartBluetoothDiscovering() override;
   void StopBluetoothDiscovering() override;
   void ConnectToBluetoothDevice(const std::string& address) override;
   device::mojom::BluetoothSystem::State GetBluetoothState() override;
   void SetBluetoothEnabled(bool enabled) override;
   bool HasBluetoothDiscoverySession() override;
+  void GetBluetoothDevices(GetBluetoothDevicesCallback callback) const override;
 
   // BluetoothAdapter::Observer:
   void AdapterPresentChanged(device::BluetoothAdapter* adapter,
@@ -53,12 +53,6 @@ class ASH_EXPORT TrayBluetoothHelperLegacy
                              bool powered) override;
   void AdapterDiscoveringChanged(device::BluetoothAdapter* adapter,
                                  bool discovering) override;
-  void DeviceAdded(device::BluetoothAdapter* adapter,
-                   device::BluetoothDevice* device) override;
-  void DeviceChanged(device::BluetoothAdapter* adapter,
-                     device::BluetoothDevice* device) override;
-  void DeviceRemoved(device::BluetoothAdapter* adapter,
-                     device::BluetoothDevice* device) override;
 
  private:
   void OnStartDiscoverySession(
@@ -67,6 +61,15 @@ class ASH_EXPORT TrayBluetoothHelperLegacy
   bool should_run_discovery_ = false;
   scoped_refptr<device::BluetoothAdapter> adapter_;
   std::unique_ptr<device::BluetoothDiscoverySession> discovery_session_;
+
+  // AdapterPoweredChanged gets called right after AdapterPresentChanged when an
+  // adapter is added or removed. This causes us to call
+  // Observer::OnBluetoothStateChanged() a second time without the state
+  // actually changing. To avoid this, we cache the state whenever
+  // AdapterPresentChanged and AdapterPoweredChanged get called and only notify
+  // if the new state is different than the cached state.
+  device::mojom::BluetoothSystem::State last_state_ =
+      device::mojom::BluetoothSystem::State::kUnavailable;
 
   // Object could be deleted during a prolonged Bluetooth operation.
   base::WeakPtrFactory<TrayBluetoothHelperLegacy> weak_ptr_factory_;

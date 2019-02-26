@@ -22,6 +22,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "components/autofill/core/browser/legacy_strike_database.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/history/core/browser/history_service.h"
@@ -36,6 +37,7 @@
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/signin/ios/browser/account_consistency_service.h"
 #include "ios/chrome/browser/application_context.h"
+#include "ios/chrome/browser/autofill/legacy_strike_database_factory.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/bookmarks/bookmark_remover_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -83,6 +85,18 @@ enum CookieOrCacheDeletionChoice {
   BOTH_COOKIES_AND_CACHE,
   MAX_CHOICE_VALUE
 };
+
+template <typename T>
+void IgnoreArgumentHelper(base::OnceClosure callback, T unused_argument) {
+  std::move(callback).Run();
+}
+
+// A convenience method to turn a callback without arguments into one that
+// accepts (and ignores) a single argument.
+template <typename T>
+base::OnceCallback<void(T)> IgnoreArgument(base::OnceClosure callback) {
+  return base::BindOnce(&IgnoreArgumentHelper<T>, std::move(callback));
+}
 
 bool AllDomainsPredicate(const std::string& domain) {
   return true;
@@ -464,6 +478,14 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
                                                        delete_end);
       web_data_service->RemoveAutofillDataModifiedBetween(delete_begin,
                                                           delete_end);
+
+      // Clear out the Autofill LegacyStrikeDatabase in its entirety.
+      autofill::LegacyStrikeDatabase* legacy_strike_database =
+          autofill::LegacyStrikeDatabaseFactory::GetForBrowserState(
+              browser_state_);
+      if (legacy_strike_database)
+        legacy_strike_database->ClearAllStrikes(AdaptCallbackForRepeating(
+            IgnoreArgument<bool>(CreatePendingTaskCompletionClosure())));
 
       // Ask for a call back when the above calls are finished.
       web_data_service->GetDBTaskRunner()->PostTaskAndReply(

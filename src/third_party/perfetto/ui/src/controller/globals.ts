@@ -27,10 +27,19 @@ import {
   destroyWasmEngine,
 } from './wasm_engine_proxy';
 
+
+export interface App {
+  state: State;
+  dispatch(action: DeferredAction): void;
+  publish(
+      what: 'OverviewData'|'TrackData'|'Threads'|'QueryResult'|'LegacyTrace',
+      data: {}, transferList?: Array<{}>): void;
+}
+
 /**
  * Global accessors for state/dispatch in the controller.
  */
-class Globals {
+class Globals implements App {
   private _state?: State;
   private _rootController?: ControllerAny;
   private _frontend?: Remote;
@@ -65,13 +74,11 @@ class Globals {
     let runAgain = false;
     let summary = this._queuedActions.map(action => action.type).join(', ');
     summary = `Controllers loop (${summary})`;
-    console.time(summary);
     for (let iter = 0; runAgain || this._queuedActions.length > 0; iter++) {
       if (iter > 100) throw new Error('Controllers are stuck in a livelock');
       const actions = this._queuedActions;
       this._queuedActions = new Array<DeferredAction>();
       for (const action of actions) {
-        console.debug('Applying action', action);
         this.applyAction(action);
       }
       this._runningControllers = true;
@@ -82,7 +89,6 @@ class Globals {
       }
     }
     assertExists(this._frontend).send<void>('updateState', [this.state]);
-    console.timeEnd(summary);
   }
 
   createEngine(): Engine {
@@ -96,8 +102,11 @@ class Globals {
   }
 
   // TODO: this needs to be cleaned up.
-  publish(what: 'OverviewData'|'TrackData'|'Threads'|'QueryResult', data: {}) {
-    assertExists(this._frontend).send<void>(`publish${what}`, [data]);
+  publish(
+      what: 'OverviewData'|'TrackData'|'Threads'|'QueryResult'|'LegacyTrace',
+      data: {}, transferList?: Array<{}>) {
+    assertExists(this._frontend)
+        .send<void>(`publish${what}`, [data], transferList);
   }
 
   get state(): State {

@@ -17,7 +17,6 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
@@ -232,7 +231,7 @@ void RecoveryComponent::UnpackComponent(const base::FilePath& crx_file) {
 }
 
 void RecoveryComponent::FetchOnIOThread() {
-  DCHECK_EQ(base::MessageLoop::current(), recovery_io_thread_.message_loop());
+  DCHECK(recovery_io_thread_.task_runner()->BelongsToCurrentThread());
   std::unique_ptr<chrome_cleaner::HttpAgent> http_agent =
       GetHttpAgentFactory()->CreateHttpAgent();
 

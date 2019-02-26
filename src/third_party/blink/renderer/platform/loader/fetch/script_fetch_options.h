@@ -5,13 +5,13 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_SCRIPT_FETCH_OPTIONS_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_SCRIPT_FETCH_OPTIONS_H_
 
+#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/platform/cross_origin_attribute_value.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/integrity_metadata.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -35,14 +35,14 @@ class PLATFORM_EXPORT ScriptFetchOptions final {
   ScriptFetchOptions()
       : parser_state_(ParserDisposition::kNotParserInserted),
         credentials_mode_(network::mojom::FetchCredentialsMode::kOmit),
-        referrer_policy_(kReferrerPolicyDefault) {}
+        referrer_policy_(network::mojom::ReferrerPolicy::kDefault) {}
 
   ScriptFetchOptions(const String& nonce,
                      const IntegrityMetadataSet& integrity_metadata,
                      const String& integrity_attribute,
                      ParserDisposition parser_state,
                      network::mojom::FetchCredentialsMode credentials_mode,
-                     ReferrerPolicy referrer_policy)
+                     network::mojom::ReferrerPolicy referrer_policy)
       : nonce_(nonce),
         integrity_metadata_(integrity_metadata),
         integrity_attribute_(integrity_attribute),
@@ -62,7 +62,9 @@ class PLATFORM_EXPORT ScriptFetchOptions final {
   network::mojom::FetchCredentialsMode CredentialsMode() const {
     return credentials_mode_;
   }
-  ReferrerPolicy GetReferrerPolicy() const { return referrer_policy_; }
+  network::mojom::ReferrerPolicy GetReferrerPolicy() const {
+    return referrer_policy_;
+  }
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-classic-script
   // Steps 1 and 3.
@@ -87,7 +89,7 @@ class PLATFORM_EXPORT ScriptFetchOptions final {
   const network::mojom::FetchCredentialsMode credentials_mode_;
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-fetch-options-referrer-policy
-  const ReferrerPolicy referrer_policy_;
+  const network::mojom::ReferrerPolicy referrer_policy_;
 };
 
 }  // namespace blink

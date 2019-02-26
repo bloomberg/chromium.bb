@@ -4,19 +4,14 @@
 
 package org.chromium.components.gcm_driver.instance_id;
 
-import android.content.SharedPreferences;
 import android.os.Bundle;
 
-import org.chromium.base.ContextUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.components.gcm_driver.LazySubscriptionsManager;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -25,7 +20,6 @@ import java.util.concurrent.ExecutionException;
  */
 @JNINamespace("instance_id")
 public class InstanceIDBridge {
-    private static final String FCM_LAZY_SUBSCRIPTIONS = "fcm_lazy_subscriptions";
     private final String mSubtype;
     private long mNativeInstanceIDAndroid;
     /**
@@ -39,37 +33,6 @@ public class InstanceIDBridge {
     private InstanceIDBridge(long nativeInstanceIDAndroid, String subtype) {
         mSubtype = subtype;
         mNativeInstanceIDAndroid = nativeInstanceIDAndroid;
-    }
-
-    /**
-     * Stores the information about lazy subscriptions in SharedPreferences.
-     */
-    @VisibleForTesting
-    public void storeLazinessInformation(final String authorizedEntity, boolean isLazy) {
-        if (isLazy) {
-            SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
-            Set<String> lazyIds = new HashSet<>(
-                    sharedPrefs.getStringSet(FCM_LAZY_SUBSCRIPTIONS, Collections.emptySet()));
-            lazyIds.add(buildSubscriptionUniqueId(mSubtype, authorizedEntity));
-            sharedPrefs.edit().putStringSet(FCM_LAZY_SUBSCRIPTIONS, lazyIds).apply();
-        }
-        // TODO(https://crbug.com/882887): Check if that
-        // subscription was marked lazy before and handle the change
-        // accordingly.
-    }
-
-    /**
-     * Returns whether the subscription with the |appId| and |senderId| is lazy.
-     */
-    public static boolean isSubscriptionLazy(final String appId, final String senderId) {
-        SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
-        Set<String> lazyIds = new HashSet<>(
-                sharedPrefs.getStringSet(FCM_LAZY_SUBSCRIPTIONS, Collections.emptySet()));
-        return lazyIds.contains(buildSubscriptionUniqueId(appId, senderId));
-    }
-
-    private static String buildSubscriptionUniqueId(final String appId, final String senderId) {
-        return appId + senderId;
     }
 
     /**
@@ -149,7 +112,10 @@ public class InstanceIDBridge {
             @Override
             protected String doBackgroundWork() {
                 try {
-                    storeLazinessInformation(authorizedEntity, isLazy);
+                    LazySubscriptionsManager.storeLazinessInformation(
+                            LazySubscriptionsManager.buildSubscriptionUniqueId(
+                                    mSubtype, authorizedEntity),
+                            isLazy);
                     return mInstanceID.getToken(authorizedEntity, scope, extras);
                 } catch (IOException ex) {
                     return "";
@@ -171,6 +137,12 @@ public class InstanceIDBridge {
             protected Boolean doBackgroundWork() {
                 try {
                     mInstanceID.deleteToken(authorizedEntity, scope);
+                    String subscriptionId = LazySubscriptionsManager.buildSubscriptionUniqueId(
+                            mSubtype, authorizedEntity);
+                    if (LazySubscriptionsManager.isSubscriptionLazy(subscriptionId)) {
+                        LazySubscriptionsManager.deletePersistedMessagesForSubscriptionId(
+                                subscriptionId);
+                    }
                     return true;
                 } catch (IOException ex) {
                     return false;

@@ -113,6 +113,7 @@ TypeConverter<device::mojom::UsbDeviceInfoPtr, device::UsbDevice>::Convert(
   info->manufacturer_name = device.manufacturer_string();
   info->product_name = device.product_string();
   info->serial_number = device.serial_number();
+  info->webusb_landing_page = device.webusb_landing_page();
   const device::UsbConfigDescriptor* config = device.active_configuration();
   info->active_configuration = config ? config->configuration_value : 0;
   info->configurations =

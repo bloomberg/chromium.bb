@@ -14,10 +14,10 @@
 #include "third_party/blink/public/platform/web_thread_type.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/common/metrics_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/common/thread_load_tracker.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/use_case.h"
-#include "third_party/blink/renderer/platform/scheduler/renderer/frame_status.h"
-#include "third_party/blink/renderer/platform/scheduler/util/thread_load_tracker.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_status.h"
 
 namespace blink {
 namespace scheduler {

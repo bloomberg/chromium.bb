@@ -352,6 +352,7 @@ std::string SimpleEntryImpl::GetKey() const {
 
 Time SimpleEntryImpl::GetLastUsed() const {
   DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK(cache_type_ != net::APP_CACHE);
   return last_used_;
 }
 
@@ -433,7 +434,7 @@ int SimpleEntryImpl::WriteData(int stream_index,
     RecordWriteResult(cache_type_, SIMPLE_ENTRY_WRITE_RESULT_INVALID_ARGUMENT);
     return net::ERR_INVALID_ARGUMENT;
   }
-  if (backend_.get() && offset + buf_len > backend_->GetMaxFileSize()) {
+  if (backend_.get() && offset + buf_len > backend_->MaxFileSize()) {
     if (net_log_.IsCapturing()) {
       net_log_.AddEvent(net::NetLogEventType::SIMPLE_CACHE_ENTRY_WRITE_END,
                         CreateNetLogReadWriteCompleteCallback(net::ERR_FAILED));

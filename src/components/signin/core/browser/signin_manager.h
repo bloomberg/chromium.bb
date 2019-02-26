@@ -31,12 +31,13 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/strings/string_piece.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_member.h"
+#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_internals_util.h"
@@ -53,7 +54,7 @@ class SigninErrorController;
 
 namespace identity {
 class IdentityManager;
-}
+}  // namespace identity
 
 class SigninManager : public SigninManagerBase,
                       public AccountTrackerService::Observer,
@@ -63,7 +64,8 @@ class SigninManager : public SigninManagerBase,
   // but before the profile transitions to the "signed-in" state. This allows
   // callers to load policy and prompt the user appropriately before completing
   // signin. The callback is passed the just-fetched OAuth login refresh token.
-  typedef base::Callback<void(const std::string&)> OAuthTokenFetchedCallback;
+  using OAuthTokenFetchedCallback =
+      base::OnceCallback<void(const std::string&)>;
 
   // Used to remove accounts from the token service and the account tracker.
   enum class RemoveAccountsOption {
@@ -90,10 +92,6 @@ class SigninManager : public SigninManagerBase,
                 signin::AccountConsistencyMethod account_consistency);
   ~SigninManager() override;
 
-  // Returns true if the username is allowed based on the policy string.
-  static bool IsUsernameAllowedByPolicy(const std::string& username,
-                                        const std::string& policy);
-
   // Returns |manager| as a SigninManager instance. Relies on the fact that on
   // platforms where signin_manager.* is built, all SigninManagerBase instances
   // are actually SigninManager instances.
@@ -111,7 +109,7 @@ class SigninManager : public SigninManagerBase,
       const std::string& gaia_id,
       const std::string& username,
       const std::string& password,
-      const OAuthTokenFetchedCallback& oauth_fetched_callback);
+      OAuthTokenFetchedCallback oauth_fetched_callback);
 
   // Copies auth credentials from one SigninManager to this one. This is used
   // when creating a new profile during the signin process to transfer the
@@ -163,11 +161,12 @@ class SigninManager : public SigninManagerBase,
   // Returns true if there's a signin in progress.
   bool AuthInProgress() const override;
 
+  // Returns whether sign-in is allowed.
+  // TODO(crbug.com/806778): Remove method in super-class.
   bool IsSigninAllowed() const override;
 
-  // Returns true if the passed username is allowed by policy. Virtual for
-  // mocking in tests.
-  virtual bool IsAllowedUsername(const std::string& username) const;
+  // Sets whether sign-in is allowed or not.
+  void SetSigninAllowed(bool allowed);
 
   // If an authentication is in progress, return the account id being
   // authenticated. Returns an empty string if no auth is in progress.
@@ -180,11 +179,6 @@ class SigninManager : public SigninManagerBase,
   // If an authentication is in progress, return the username being
   // authenticated. Returns an empty string if no auth is in progress.
   const std::string& GetUsernameForAuthInProgress() const;
-
-  // Set the preference to turn off one-click sign-in so that it won't ever
-  // show it again for the user associated with |prefs| (even if the user tries
-  // a new account).
-  static void DisableOneClickSignIn(PrefService* prefs);
 
  protected:
   // The sign out process which is started by SigninClient::PreSignOut()
@@ -204,9 +198,8 @@ class SigninManager : public SigninManagerBase,
   std::string SigninTypeToString(SigninType type);
   friend class FakeSigninManager;
   friend class identity::IdentityManager;
-  FRIEND_TEST_ALL_PREFIXES(SigninManagerTest, ClearTransientSigninData);
-  FRIEND_TEST_ALL_PREFIXES(SigninManagerTest, ProvideSecondFactorSuccess);
-  FRIEND_TEST_ALL_PREFIXES(SigninManagerTest, ProvideSecondFactorFailure);
+  FRIEND_TEST_ALL_PREFIXES(SigninManagerTest, Prohibited);
+  FRIEND_TEST_ALL_PREFIXES(SigninManagerTest, TestAlternateWildcard);
 
   // Called to setup the transient signin data during one of the
   // StartSigninXXX methods.  |type| indicates which of the methods is being
@@ -227,8 +220,7 @@ class SigninManager : public SigninManagerBase,
   void FireGoogleSigninSucceeded();
 
   // Send all observers |GoogleSignedOut| notifications.
-  void FireGoogleSignedOut(const std::string& account_id,
-                           const AccountInfo& account_info);
+  void FireGoogleSignedOut(const AccountInfo& account_info);
 
   // Waits for the AccountTrackerService, then sends GoogleSigninSucceeded to
   // the client and clears the local password.
@@ -258,6 +250,9 @@ class SigninManager : public SigninManagerBase,
 
   void OnSigninAllowedPrefChanged();
   void OnGoogleServicesUsernamePatternChanged();
+
+  // Returns true if the passed username is allowed by policy.
+  bool IsAllowedUsername(const std::string& username) const;
 
   std::string possibly_invalid_account_id_;
   std::string possibly_invalid_gaia_id_;

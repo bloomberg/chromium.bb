@@ -309,31 +309,6 @@ const char kPageInfoTimeActionPrefix[] = "Security.PageInfo.TimeOpen.Action";
 const char kPageInfoTimeNoActionPrefix[] =
     "Security.PageInfo.TimeOpen.NoAction";
 
-std::string GetHistogramSuffixForSecurityLevel(
-    security_state::SecurityLevel level) {
-  switch (level) {
-    case security_state::EV_SECURE:
-      return "EV_SECURE";
-    case security_state::SECURE:
-      return "SECURE";
-    case security_state::NONE:
-      return "NONE";
-    case security_state::HTTP_SHOW_WARNING:
-      return "HTTP_SHOW_WARNING";
-    case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
-      return "SECURE_WITH_POLICY_INSTALLED_CERT";
-    case security_state::DANGEROUS:
-      return "DANGEROUS";
-    default:
-      return "OTHER";
-  }
-}
-
-std::string GetHistogramName(const char* prefix,
-                             security_state::SecurityLevel level) {
-  return std::string(prefix) + "." + GetHistogramSuffixForSecurityLevel(level);
-}
-
 }  // namespace
 
 PageInfo::PageInfo(PageInfoUI* ui,
@@ -394,18 +369,21 @@ PageInfo::~PageInfo() {
   // Record the total time the Page Info UI was open for all opens as well as
   // split between whether any action was taken.
   base::UmaHistogramCustomTimes(
-      GetHistogramName(kPageInfoTimePrefix, security_level_),
+      security_state::GetSecurityLevelHistogramName(
+          kPageInfoTimePrefix, security_level_),
       base::TimeTicks::Now() - start_time_,
       base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromHours(1), 100);
   if (did_perform_action_) {
     base::UmaHistogramCustomTimes(
-        GetHistogramName(kPageInfoTimeActionPrefix, security_level_),
+        security_state::GetSecurityLevelHistogramName(
+            kPageInfoTimeActionPrefix, security_level_),
         base::TimeTicks::Now() - start_time_,
         base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromHours(1),
         100);
   } else {
     base::UmaHistogramCustomTimes(
-        GetHistogramName(kPageInfoTimeNoActionPrefix, security_level_),
+        security_state::GetSecurityLevelHistogramName(
+            kPageInfoTimeNoActionPrefix, security_level_),
         base::TimeTicks::Now() - start_time_,
         base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromHours(1),
         100);
@@ -783,15 +761,9 @@ void PageInfo::Init(const GURL& url,
     site_connection_details_.assign(l10n_util::GetStringFUTF16(
         IDS_PAGE_INFO_SECURITY_TAB_NOT_ENCRYPTED_CONNECTION_TEXT,
         subject_name));
-  } else if (security_info.security_bits < 0) {
-    // Security strength is unknown.  Say nothing.
-    site_connection_status_ = SITE_CONNECTION_STATUS_ENCRYPTED_ERROR;
-  } else if (security_info.security_bits == 0) {
+  } else if (!security_info.connection_info_initialized) {
     DCHECK_NE(security_info.security_level, security_state::NONE);
     site_connection_status_ = SITE_CONNECTION_STATUS_ENCRYPTED_ERROR;
-    site_connection_details_.assign(l10n_util::GetStringFUTF16(
-        IDS_PAGE_INFO_SECURITY_TAB_NOT_ENCRYPTED_CONNECTION_TEXT,
-        subject_name));
   } else {
     site_connection_status_ = SITE_CONNECTION_STATUS_ENCRYPTED;
 
@@ -810,7 +782,7 @@ void PageInfo::Init(const GURL& url,
 
   uint16_t cipher_suite =
       net::SSLConnectionStatusToCipherSuite(security_info.connection_status);
-  if (security_info.security_bits > 0 && cipher_suite) {
+  if (security_info.connection_info_initialized && cipher_suite) {
     int ssl_version =
         net::SSLConnectionStatusToVersion(security_info.connection_status);
     const char* ssl_version_str;

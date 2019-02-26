@@ -47,21 +47,21 @@ class SVGAnimatedPreserveAspectRatio
   static SVGAnimatedPreserveAspectRatio* Create(
       SVGElement* context_element,
       const QualifiedName& attribute_name) {
-    return new SVGAnimatedPreserveAspectRatio(context_element, attribute_name);
+    return MakeGarbageCollected<SVGAnimatedPreserveAspectRatio>(context_element,
+                                                                attribute_name);
   }
 
-  void Trace(blink::Visitor* visitor) override {
-    SVGAnimatedProperty<SVGPreserveAspectRatio>::Trace(visitor);
-    ScriptWrappable::Trace(visitor);
-  }
-
- protected:
   SVGAnimatedPreserveAspectRatio(SVGElement* context_element,
                                  const QualifiedName& attribute_name)
       : SVGAnimatedProperty<SVGPreserveAspectRatio>(
             context_element,
             attribute_name,
             SVGPreserveAspectRatio::Create()) {}
+
+  void Trace(blink::Visitor* visitor) override {
+    SVGAnimatedProperty<SVGPreserveAspectRatio>::Trace(visitor);
+    ScriptWrappable::Trace(visitor);
+  }
 };
 
 }  // namespace blink

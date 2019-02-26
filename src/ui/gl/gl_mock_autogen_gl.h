@@ -872,6 +872,30 @@ MOCK_METHOD1(MaxShaderCompilerThreadsKHR, void(GLuint count));
 MOCK_METHOD1(MemoryBarrierByRegion, void(GLbitfield barriers));
 MOCK_METHOD1(MemoryBarrierEXT, void(GLbitfield barriers));
 MOCK_METHOD1(MinSampleShading, void(GLfloat value));
+MOCK_METHOD4(MultiDrawArraysANGLE,
+             void(GLenum mode,
+                  const GLint* firsts,
+                  const GLsizei* counts,
+                  GLsizei drawcount));
+MOCK_METHOD5(MultiDrawArraysInstancedANGLE,
+             void(GLenum mode,
+                  const GLint* firsts,
+                  const GLsizei* counts,
+                  const GLsizei* instanceCounts,
+                  GLsizei drawcount));
+MOCK_METHOD5(MultiDrawElementsANGLE,
+             void(GLenum mode,
+                  const GLsizei* counts,
+                  GLenum type,
+                  const GLvoid* const* indices,
+                  GLsizei drawcount));
+MOCK_METHOD6(MultiDrawElementsInstancedANGLE,
+             void(GLenum mode,
+                  const GLsizei* counts,
+                  GLenum type,
+                  const GLvoid* const* indices,
+                  const GLsizei* instanceCounts,
+                  GLsizei drawcount));
 MOCK_METHOD4(
     ObjectLabel,
     void(GLenum identifier, GLuint name, GLsizei length, const char* label));

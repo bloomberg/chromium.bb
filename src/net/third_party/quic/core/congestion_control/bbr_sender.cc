@@ -127,6 +127,8 @@ BbrSender::BbrSender(const RttStats* rtt_stats,
       is_app_limited_recovery_(false),
       slower_startup_(false),
       rate_based_startup_(false),
+      startup_rate_reduction_multiplier_(0),
+      startup_bytes_lost_(0),
       initial_conservation_in_startup_(CONSERVATION),
       enable_ack_aggregation_during_startup_(false),
       expire_ack_aggregation_in_startup_(false),
@@ -266,6 +268,18 @@ void BbrSender::SetFromConfig(const QuicConfig& config,
   }
   if (config.HasClientRequestedIndependentOption(kBBS3, perspective)) {
     initial_conservation_in_startup_ = GROWTH;
+  }
+  if (GetQuicReloadableFlag(quic_bbr_startup_rate_reduction) &&
+      config.HasClientRequestedIndependentOption(kBBS4, perspective)) {
+    rate_based_startup_ = true;
+    // Hits 1.25x pacing multiplier when ~2/3 CWND is lost.
+    startup_rate_reduction_multiplier_ = 1;
+  }
+  if (GetQuicReloadableFlag(quic_bbr_startup_rate_reduction) &&
+      config.HasClientRequestedIndependentOption(kBBS5, perspective)) {
+    rate_based_startup_ = true;
+    // Hits 1.25x pacing multiplier when ~1/3 CWND is lost.
+    startup_rate_reduction_multiplier_ = 2;
   }
   if (config.HasClientRequestedIndependentOption(kBBR4, perspective)) {
     max_ack_height_.SetWindowLength(2 * kBandwidthWindowSize);
@@ -446,6 +460,9 @@ void BbrSender::EnterProbeBandwidthMode(QuicTime now) {
 void BbrSender::DiscardLostPackets(const LostPacketVector& lost_packets) {
   for (const LostPacket& packet : lost_packets) {
     sampler_.OnPacketLost(packet.packet_number);
+    if (startup_rate_reduction_multiplier_ != 0 && mode_ == STARTUP) {
+      startup_bytes_lost_ += packet.bytes_lost;
+    }
   }
 }
 
@@ -749,7 +766,21 @@ void BbrSender::CalculatePacingRate() {
     return;
   }
 
-  // Do not decrease the pacing rate during the startup.
+  // Slow the pacing rate in STARTUP by the bytes_lost / CWND.
+  if (startup_rate_reduction_multiplier_ != 0 && has_ever_detected_loss &&
+      has_non_app_limited_sample_) {
+    pacing_rate_ =
+        (1 - (startup_bytes_lost_ * startup_rate_reduction_multiplier_ * 1.0f /
+              congestion_window_)) *
+        target_rate;
+    // Ensure the pacing rate doesn't drop below the startup growth target times
+    // the bandwidth estimate.
+    pacing_rate_ =
+        std::max(pacing_rate_, kStartupGrowthTarget * BandwidthEstimate());
+    return;
+  }
+
+  // Do not decrease the pacing rate during startup.
   pacing_rate_ = std::max(pacing_rate_, target_rate);
 }
 
@@ -773,11 +804,15 @@ void BbrSender::CalculateCongestionWindow(QuicByteCount bytes_acked,
   // Instead of immediately setting the target CWND as the new one, BBR grows
   // the CWND towards |target_window| by only increasing it |bytes_acked| at a
   // time.
+  const bool add_bytes_acked =
+      !GetQuicReloadableFlag(quic_bbr_no_bytes_acked_in_startup_recovery) ||
+      !InRecovery();
   if (is_at_full_bandwidth_) {
     congestion_window_ =
         std::min(target_window, congestion_window_ + bytes_acked);
-  } else if (congestion_window_ < target_window ||
-             sampler_.total_bytes_acked() < initial_congestion_window_) {
+  } else if (add_bytes_acked &&
+             (congestion_window_ < target_window ||
+              sampler_.total_bytes_acked() < initial_congestion_window_)) {
     // If the connection is not yet out of startup phase, do not decrease the
     // window.
     congestion_window_ = congestion_window_ + bytes_acked;

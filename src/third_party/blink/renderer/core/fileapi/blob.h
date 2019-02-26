@@ -62,7 +62,7 @@ class CORE_EXPORT Blob : public ScriptWrappable,
   static Blob* Create(
       ExecutionContext*,
       const HeapVector<ArrayBufferOrArrayBufferViewOrBlobOrUSVString>&,
-      const BlobPropertyBag&,
+      const BlobPropertyBag*,
       ExceptionState&);
 
   static Blob* Create(scoped_refptr<BlobDataHandle> blob_data_handle) {

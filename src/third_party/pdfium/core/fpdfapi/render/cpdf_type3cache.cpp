@@ -14,6 +14,7 @@
 #include "core/fpdfapi/font/cpdf_type3font.h"
 #include "core/fpdfapi/render/cpdf_type3glyphs.h"
 #include "core/fxcrt/fx_safe_types.h"
+#include "core/fxge/dib/cfx_dibitmap.h"
 #include "core/fxge/fx_dib.h"
 #include "core/fxge/fx_font.h"
 #include "third_party/base/ptr_util.h"
@@ -145,7 +146,8 @@ std::unique_ptr<CFX_GlyphBitmap> CPDF_Type3Cache::RenderGlyph(
         return nullptr;
 
       pResBitmap = pBitmap->StretchTo(static_cast<int>(image_matrix.a),
-                                      safe_height.ValueOrDie(), 0, nullptr);
+                                      safe_height.ValueOrDie(),
+                                      FXDIB_ResampleOptions(), nullptr);
       top = top_line;
       if (image_matrix.a < 0)
         left = FXSYS_round(image_matrix.e + image_matrix.a);
@@ -154,7 +156,7 @@ std::unique_ptr<CFX_GlyphBitmap> CPDF_Type3Cache::RenderGlyph(
     }
   }
   if (!pResBitmap)
-    pResBitmap = pBitmap->TransformTo(&image_matrix, &left, &top);
+    pResBitmap = pBitmap->TransformTo(image_matrix, &left, &top);
   if (!pResBitmap)
     return nullptr;
 

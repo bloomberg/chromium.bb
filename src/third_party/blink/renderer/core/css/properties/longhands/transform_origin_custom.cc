@@ -13,7 +13,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* TransformOrigin::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -21,20 +21,17 @@ const CSSValue* TransformOrigin::ParseSingleValue(
     const CSSParserLocalContext&) const {
   CSSValue* result_x = nullptr;
   CSSValue* result_y = nullptr;
-  if (CSSPropertyParserHelpers::ConsumeOneOrTwoValuedPosition(
+  if (css_property_parser_helpers::ConsumeOneOrTwoValuedPosition(
           range, context.Mode(),
-          CSSPropertyParserHelpers::UnitlessQuirk::kForbid, result_x,
+          css_property_parser_helpers::UnitlessQuirk::kForbid, result_x,
           result_y)) {
     CSSValueList* list = CSSValueList::CreateSpaceSeparated();
     list->Append(*result_x);
     list->Append(*result_y);
-    CSSValue* result_z = CSSPropertyParserHelpers::ConsumeLength(
+    CSSValue* result_z = css_property_parser_helpers::ConsumeLength(
         range, context.Mode(), kValueRangeAll);
-    if (!result_z) {
-      result_z =
-          CSSPrimitiveValue::Create(0, CSSPrimitiveValue::UnitType::kPixels);
-    }
-    list->Append(*result_z);
+    if (result_z)
+      list->Append(*result_z);
     return list;
   }
   return nullptr;
@@ -74,5 +71,5 @@ const CSSValue* TransformOrigin::CSSValueFromComputedStyleInternal(
   return list;
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

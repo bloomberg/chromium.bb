@@ -217,6 +217,11 @@ bool ssl_get_version_range(const SSL_HANDSHAKE *hs, uint16_t *out_min_version,
   uint16_t min_version = hs->config->conf_min_version;
   uint16_t max_version = hs->config->conf_max_version;
 
+  // QUIC requires TLS 1.3.
+  if (hs->ssl->ctx->quic_method && min_version < TLS1_3_VERSION) {
+    min_version = TLS1_3_VERSION;
+  }
+
   // OpenSSL's API for controlling versions entails blacklisting individual
   // protocols. This has two problems. First, on the client, the protocol can
   // only express a contiguous range of versions. Second, a library consumer
@@ -332,6 +337,18 @@ bool ssl_negotiate_version(SSL_HANDSHAKE *hs, uint8_t *out_alert,
   get_method_versions(hs->ssl->method, &versions, &num_versions);
   for (size_t i = 0; i < num_versions; i++) {
     if (!ssl_supports_version(hs, versions[i])) {
+      continue;
+    }
+
+    // JDK 11, prior to 11.0.2, has a buggy TLS 1.3 implementation which fails
+    // to send SNI when offering 1.3 sessions. Disable TLS 1.3 for such
+    // clients. We apply this logic here rather than |ssl_supports_version| so
+    // the downgrade signal continues to query the true capabilities. (The
+    // workaround is a limitation of the peer's capabilities rather than our
+    // own.)
+    //
+    // See https://bugs.openjdk.java.net/browse/JDK-8211806.
+    if (versions[i] == TLS1_3_VERSION && hs->apply_jdk11_workaround) {
       continue;
     }
 

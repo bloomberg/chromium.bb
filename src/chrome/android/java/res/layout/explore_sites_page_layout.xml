@@ -11,4 +11,4 @@
     android:scrollbars="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="@dimen/explore_sites_page_padding" />
+    android:paddingHorizontal="@dimen/explore_sites_page_padding" />

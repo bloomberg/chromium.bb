@@ -91,15 +91,24 @@ void LoginScreenClient::AuthenticateUserWithPasswordOrPin(
 void LoginScreenClient::AuthenticateUserWithExternalBinary(
     const AccountId& account_id,
     AuthenticateUserWithExternalBinaryCallback callback) {
-  if (delegate_) {
-    delegate_->HandleAuthenticateUserWithExternalBinary(account_id,
-                                                        std::move(callback));
-    // TODO(jdufault): Record auth method attempt here
-    NOTIMPLEMENTED() << "Missing UMA recording for external binary auth";
-  } else {
-    LOG(ERROR) << "Failed AuthenticateUserWithExternalBinary; no delegate";
-    std::move(callback).Run(false);
-  }
+  if (!delegate_)
+    LOG(FATAL) << "Failed AuthenticateUserWithExternalBinary; no delegate";
+
+  delegate_->HandleAuthenticateUserWithExternalBinary(account_id,
+                                                      std::move(callback));
+  // TODO: Record auth method attempt here
+  NOTIMPLEMENTED() << "Missing UMA recording for external binary auth";
+}
+
+void LoginScreenClient::EnrollUserWithExternalBinary(
+    EnrollUserWithExternalBinaryCallback callback) {
+  if (!delegate_)
+    LOG(FATAL) << "Failed EnrollUserWithExternalBinary; no delegate";
+
+  delegate_->HandleEnrollUserWithExternalBinary(std::move(callback));
+
+  // TODO: Record enrollment attempt here
+  NOTIMPLEMENTED() << "Missing UMA recording for external binary enrollment";
 }
 
 void LoginScreenClient::AuthenticateUserWithEasyUnlock(
@@ -114,11 +123,6 @@ void LoginScreenClient::AuthenticateUserWithEasyUnlock(
 void LoginScreenClient::HardlockPod(const AccountId& account_id) {
   if (delegate_)
     delegate_->HandleHardlockPod(account_id);
-}
-
-void LoginScreenClient::RecordClickOnLockIcon(const AccountId& account_id) {
-  if (delegate_)
-    delegate_->HandleRecordClickOnLockIcon(account_id);
 }
 
 void LoginScreenClient::OnFocusPod(const AccountId& account_id) {

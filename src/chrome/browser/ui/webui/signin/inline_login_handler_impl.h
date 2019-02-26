@@ -47,6 +47,13 @@ class InlineLoginHandlerImpl : public InlineLoginHandler,
   void HandleLoginError(const std::string& error_msg,
                         const base::string16& email);
 
+  // Calls the javascript function 'sendLSTFetchResults' with the given
+  // base::Value result. This value will be passed to another
+  // WebUiMessageHandler which needs to handle the 'lstFetchResults' message
+  // with a single argument that is the dictionary of values relevant for the
+  // sign in of the user.
+  void SendLSTFetchResultsMessage(const base::Value& arg);
+
  private:
   // InlineLoginHandler overrides:
   void SetExtraInitParams(base::DictionaryValue& params) override;

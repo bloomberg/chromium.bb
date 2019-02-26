@@ -36,7 +36,7 @@ namespace content {
 
 class ScopedAllowWaitForDebugURL {
  private:
-  base::ThreadRestrictions::ScopedAllowWait wait;
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope wait;
 };
 
 namespace {

@@ -36,19 +36,19 @@ class WebGLActiveInfo final : public ScriptWrappable {
 
  public:
   static WebGLActiveInfo* Create(const String& name, GLenum type, GLint size) {
-    return new WebGLActiveInfo(name, type, size);
+    return MakeGarbageCollected<WebGLActiveInfo>(name, type, size);
   }
-  String name() const { return name_; }
-  GLenum type() const { return type_; }
-  GLint size() const { return size_; }
-
- private:
   WebGLActiveInfo(const String& name, GLenum type, GLint size)
       : name_(name), type_(type), size_(size) {
     DCHECK(name.length());
     DCHECK(type);
     DCHECK(size);
   }
+  String name() const { return name_; }
+  GLenum type() const { return type_; }
+  GLint size() const { return size_; }
+
+ private:
   String name_;
   GLenum type_;
   GLint size_;

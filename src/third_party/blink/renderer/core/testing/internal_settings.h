@@ -76,11 +76,13 @@ class InternalSettings final : public InternalSettingsGenerated,
   };
 
   static InternalSettings* Create(Page& page) {
-    return new InternalSettings(page);
+    return MakeGarbageCollected<InternalSettings>(page);
   }
   static InternalSettings* From(Page&);
 
+  explicit InternalSettings(Page&);
   ~InternalSettings() override;
+
   void ResetToConsistentState();
 
   void setStandardFontFamily(const AtomicString& family,
@@ -145,8 +147,6 @@ class InternalSettings final : public InternalSettingsGenerated,
   void SetPreloadLogging(bool, ExceptionState&);
 
  private:
-  explicit InternalSettings(Page&);
-
   Settings* GetSettings() const;
   Page* GetPage() const { return GetSupplementable(); }
 

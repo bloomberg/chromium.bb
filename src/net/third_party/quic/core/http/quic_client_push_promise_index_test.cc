@@ -25,9 +25,11 @@ namespace {
 class MockQuicSpdyClientSession : public QuicSpdyClientSession {
  public:
   explicit MockQuicSpdyClientSession(
+      const ParsedQuicVersionVector& supported_versions,
       QuicConnection* connection,
       QuicClientPushPromiseIndex* push_promise_index)
       : QuicSpdyClientSession(DefaultQuicConfig(),
+                              supported_versions,
                               connection,
                               QuicServerId("example.com", 443, false),
                               &crypto_config_,
@@ -51,7 +53,7 @@ class QuicClientPushPromiseIndexTest : public QuicTest {
       : connection_(new StrictMock<MockQuicConnection>(&helper_,
                                                        &alarm_factory_,
                                                        Perspective::IS_CLIENT)),
-        session_(connection_, &index_),
+        session_(connection_->supported_versions(), connection_, &index_),
         promised_(
             &session_,
             QuicSpdySessionPeer::GetNthServerInitiatedStreamId(session_, 0),

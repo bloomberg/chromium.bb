@@ -23,6 +23,7 @@ namespace blink {
 
 class EncodedFormData;
 class ExceptionState;
+class ReadableStream;
 class ScriptState;
 
 class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
@@ -37,11 +38,9 @@ class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
   BodyStreamBuffer(ScriptState*,
                    BytesConsumer* /* consumer */,
                    AbortSignal* /* signal */);
-  // |ReadableStreamOperations::isReadableStream(stream)| must hold.
-  // This function must be called with entering an appropriate V8 context.
-  BodyStreamBuffer(ScriptState*, ScriptValue stream, ExceptionState&);
+  BodyStreamBuffer(ScriptState*, ReadableStream* stream);
 
-  ScriptValue Stream();
+  ReadableStream* Stream() { return stream_; }
 
   // Callable only when neither locked nor disturbed.
   scoped_refptr<BlobDataHandle> DrainAsBlobDataHandle(
@@ -67,9 +66,9 @@ class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
   base::Optional<bool> IsStreamClosed(ExceptionState&);
   base::Optional<bool> IsStreamErrored(ExceptionState&);
   base::Optional<bool> IsStreamLocked(ExceptionState&);
-  bool IsStreamLockedForDCheck();
+  bool IsStreamLockedForDCheck(ExceptionState&);
   base::Optional<bool> IsStreamDisturbed(ExceptionState&);
-  bool IsStreamDisturbedForDCheck();
+  bool IsStreamDisturbedForDCheck(ExceptionState&);
   void CloseAndLockAndDisturb(ExceptionState&);
   ScriptState* GetScriptState() { return script_state_; }
 
@@ -90,17 +89,16 @@ class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
   void StopLoading();
 
   // Implementation of IsStream*() methods. Delegates to |predicate|, one of the
-  // methods defined in ReadableStreamOperations. Sets |stream_broken_| and
-  // throws if |predicate| throws. Throws an exception if called when
-  // |stream_broken_| is already true.
+  // methods defined in ReadableStream. Sets |stream_broken_| and throws if
+  // |predicate| throws. Throws an exception if called when |stream_broken_|
+  // is already true.
   base::Optional<bool> BooleanStreamOperation(
-      base::Optional<bool> (*predicate)(ScriptState*,
-                                        ScriptValue,
-                                        ExceptionState&),
+      base::Optional<bool> (ReadableStream::*predicate)(ScriptState*,
+                                                        ExceptionState&) const,
       ExceptionState& exception_state);
 
   Member<ScriptState> script_state_;
-  TraceWrapperV8Reference<v8::Object> stream_;
+  TraceWrapperMember<ReadableStream> stream_;
   TraceWrapperMember<BytesConsumer> consumer_;
   // We need this member to keep it alive while loading.
   TraceWrapperMember<FetchDataLoader> loader_;

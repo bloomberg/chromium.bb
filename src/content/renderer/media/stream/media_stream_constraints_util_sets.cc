@@ -43,7 +43,7 @@ bool IsGreaterOrEqual(double d1, double d2) {
   return d1 > d2 || AreApproximatelyEqual(d1, d2);
 }
 
-int ToValidDimension(long dimension) {
+int ToValidDimension(int dimension) {
   if (dimension > ResolutionSet::kMaxDimension)
     return ResolutionSet::kMaxDimension;
   if (dimension < 0)
@@ -470,6 +470,15 @@ ResolutionSet ResolutionSet::FromExactAspectRatio(double value) {
   return ResolutionSet(0, kMaxDimension, 0, kMaxDimension, value, value);
 }
 
+// static
+ResolutionSet ResolutionSet::FromExactResolution(int width, int height) {
+  double aspect_ratio = ToValidAspectRatio(static_cast<double>(width) / height);
+  return ResolutionSet(ToValidDimension(height), ToValidDimension(height),
+                       ToValidDimension(width), ToValidDimension(width),
+                       std::isnan(aspect_ratio) ? 0.0 : aspect_ratio,
+                       std::isnan(aspect_ratio) ? HUGE_VAL : aspect_ratio);
+}
+
 std::vector<Point> ResolutionSet::ComputeVertices() const {
   std::vector<Point> vertices;
   // Add vertices in counterclockwise order
@@ -552,6 +561,29 @@ DiscreteSet<bool> BoolSetFromConstraint(
     return DiscreteSet<bool>::UniversalSet();
 
   return DiscreteSet<bool>({constraint.Exact()});
+}
+
+DiscreteSet<bool> RescaleSetFromConstraint(
+    const blink::StringConstraint& resize_mode_constraint) {
+  DCHECK_EQ(resize_mode_constraint.GetName(),
+            blink::WebMediaTrackConstraintSet().resize_mode.GetName());
+  bool contains_none = resize_mode_constraint.Matches(
+      blink::WebString::FromASCII(blink::WebMediaStreamTrack::kResizeModeNone));
+  bool contains_rescale =
+      resize_mode_constraint.Matches(blink::WebString::FromASCII(
+          blink::WebMediaStreamTrack::kResizeModeRescale));
+  if (resize_mode_constraint.Exact().empty() ||
+      (contains_none && contains_rescale)) {
+    return DiscreteSet<bool>::UniversalSet();
+  }
+
+  if (contains_none)
+    return DiscreteSet<bool>({false});
+
+  if (contains_rescale)
+    return DiscreteSet<bool>({true});
+
+  return DiscreteSet<bool>::EmptySet();
 }
 
 }  // namespace media_constraints

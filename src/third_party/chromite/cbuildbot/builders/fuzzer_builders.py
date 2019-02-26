@@ -22,6 +22,7 @@ class FuzzerBuilder(simple_builders.SimpleBuilder):
 
     self._RunStage(build_stages.UprevStage)
     self._RunStage(build_stages.InitSDKStage)
+    self._RunStage(build_stages.UpdateSDKStage)
     self._RunStage(build_stages.RegenPortageCacheStage)
     self._RunStage(build_stages.SetupBoardStage, board)
     self._RunStage(build_stages.BuildPackagesStage, board)

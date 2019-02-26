@@ -64,8 +64,8 @@ class DnsRequest {
       std::vector<std::unique_ptr<DnsRequest>>* dns_requests) {
     if (dns_requests->empty())
       return;
-    uint32_t index =
-        data_provider->ConsumeUint32InRange(0, dns_requests->size() - 1);
+    uint32_t index = data_provider->ConsumeIntegralInRange<uint32_t>(
+        0, dns_requests->size() - 1);
 
     // Remove the request from the list before waiting on it - this prevents one
     // of the other callbacks from deleting the callback being waited on.
@@ -83,8 +83,8 @@ class DnsRequest {
       std::vector<std::unique_ptr<DnsRequest>>* dns_requests) {
     if (dns_requests->empty())
       return;
-    uint32_t index =
-        data_provider->ConsumeUint32InRange(0, dns_requests->size() - 1);
+    uint32_t index = data_provider->ConsumeIntegralInRange<uint32_t>(
+        0, dns_requests->size() - 1);
     auto request = dns_requests->begin() + index;
     (*request)->Cancel();
     dns_requests->erase(request);
@@ -112,7 +112,7 @@ class DnsRequest {
 
     while (true) {
       bool done = false;
-      switch (data_provider_->ConsumeInt32InRange(0, 2)) {
+      switch (data_provider_->ConsumeIntegralInRange(0, 2)) {
         case 0:
           // Quit on 0, or when no data is left.
           done = true;
@@ -141,9 +141,9 @@ class DnsRequest {
     if (data_provider_->ConsumeBool())
       info.set_host_resolver_flags(net::HOST_RESOLVER_CANONNAME);
 
-    net::RequestPriority priority =
-        static_cast<net::RequestPriority>(data_provider_->ConsumeInt32InRange(
-            net::MINIMUM_PRIORITY, net::MAXIMUM_PRIORITY));
+    net::RequestPriority priority = static_cast<net::RequestPriority>(
+        data_provider_->ConsumeIntegralInRange<int32_t>(net::MINIMUM_PRIORITY,
+                                                        net::MAXIMUM_PRIORITY));
 
     // Decide if should be a cache-only resolution.
     if (data_provider_->ConsumeBool()) {
@@ -206,7 +206,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     net::TestNetLog net_log;
 
     net::HostResolver::Options options;
-    options.max_concurrent_resolves = data_provider.ConsumeUint32InRange(1, 8);
+    options.max_concurrent_resolves =
+        data_provider.ConsumeIntegralInRange(1, 8);
     options.enable_caching = data_provider.ConsumeBool();
     net::FuzzedHostResolver host_resolver(options, &net_log, &data_provider);
     host_resolver.SetDnsClientEnabled(data_provider.ConsumeBool());
@@ -214,7 +215,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     std::vector<std::unique_ptr<DnsRequest>> dns_requests;
     bool done = false;
     while (!done) {
-      switch (data_provider.ConsumeInt32InRange(0, 3)) {
+      switch (data_provider.ConsumeIntegralInRange(0, 3)) {
         case 0:
           // Quit on 0, or when no data is left.
           done = true;

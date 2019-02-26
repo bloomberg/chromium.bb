@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
@@ -46,13 +45,14 @@ void ContentSettingImageView::Update() {
       delegate_->GetContentSettingWebContents();
   // Note: We explicitly want to call this even if |web_contents| is NULL, so we
   // get hidden properly while the user is editing the omnibox.
-  content_setting_image_model_->UpdateFromWebContents(web_contents);
+  content_setting_image_model_->Update(web_contents);
+  SetTooltipText(content_setting_image_model_->get_tooltip());
 
   if (!content_setting_image_model_->is_visible()) {
     SetVisible(false);
     return;
   }
-
+  DCHECK(web_contents);
   UpdateImage();
   SetVisible(true);
 
@@ -88,12 +88,6 @@ void ContentSettingImageView::OnBoundsChanged(
   if (bubble_view_)
     bubble_view_->OnAnchorBoundsChanged();
   IconLabelBubbleView::OnBoundsChanged(previous_bounds);
-}
-
-bool ContentSettingImageView::GetTooltipText(const gfx::Point& p,
-                                             base::string16* tooltip) const {
-  *tooltip = content_setting_image_model_->get_tooltip();
-  return !tooltip->empty();
 }
 
 bool ContentSettingImageView::OnMousePressed(const ui::MouseEvent& event) {
@@ -134,8 +128,7 @@ bool ContentSettingImageView::ShowBubble(const ui::Event& event) {
     views::View* const anchor = parent();
     bubble_view_ = new ContentSettingBubbleContents(
         content_setting_image_model_->CreateBubbleModel(
-            delegate_->GetContentSettingBubbleModelDelegate(), web_contents,
-            Profile::FromBrowserContext(web_contents->GetBrowserContext())),
+            delegate_->GetContentSettingBubbleModelDelegate(), web_contents),
         web_contents, anchor, views::BubbleBorder::TOP_RIGHT);
     bubble_view_->SetHighlightedButton(this);
     views::Widget* bubble_widget =

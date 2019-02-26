@@ -16,8 +16,6 @@ class ChromeExtensionsDispatcherDelegate
 
  private:
   // extensions::DispatcherDelegate implementation.
-  void AddOriginAccessPermissions(const extensions::Extension& extension,
-                                  bool is_extension_active) override;
   void RegisterNativeHandlers(
       extensions::Dispatcher* dispatcher,
       extensions::ModuleSystem* module_system,

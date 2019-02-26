@@ -61,8 +61,8 @@ Mutex& ProcessHeap::CrossThreadPersistentMutex() {
   return mutex;
 }
 
-size_t ProcessHeap::total_allocated_space_ = 0;
-size_t ProcessHeap::total_allocated_object_size_ = 0;
-size_t ProcessHeap::total_marked_object_size_ = 0;
+std::atomic_size_t ProcessHeap::total_allocated_space_{0};
+std::atomic_size_t ProcessHeap::total_allocated_object_size_{0};
+std::atomic_size_t ProcessHeap::total_marked_object_size_{0};
 
 }  // namespace blink

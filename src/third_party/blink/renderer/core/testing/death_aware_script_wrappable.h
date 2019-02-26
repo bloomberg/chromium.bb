@@ -45,7 +45,7 @@ class DeathAwareScriptWrappable : public ScriptWrappable {
   typedef TraceWrapperMember<DeathAwareScriptWrappable> Wrapper;
 
   static DeathAwareScriptWrappable* Create() {
-    return new DeathAwareScriptWrappable();
+    return MakeGarbageCollected<DeathAwareScriptWrappable>();
   }
 
   static bool HasDied() { return has_died_; }
@@ -54,6 +54,7 @@ class DeathAwareScriptWrappable : public ScriptWrappable {
     instance_ = instance;
   }
 
+  DeathAwareScriptWrappable() = default;
   ~DeathAwareScriptWrappable() override {
     if (this == instance_) {
       has_died_ = true;
@@ -86,8 +87,6 @@ class DeathAwareScriptWrappable : public ScriptWrappable {
   }
 
  private:
-  DeathAwareScriptWrappable() = default;
-
   Wrapper wrapped_dependency_;
   HeapVector<Wrapper> wrapped_vector_dependency_;
   HeapHashMap<Wrapper, Wrapper> wrapped_hash_map_dependency_;

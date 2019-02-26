@@ -22,8 +22,9 @@ public class ContentSettingException implements Serializable {
              Type.SOUND})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Type {
-        // Values used to address array index below, inside Website and SingleWebsitePreferences.
-        // Should be enumerated from 0 and can't have gaps.
+        // Values used to address array index - should be enumerated from 0 and can't have gaps.
+        // All updates here must also be reflected in {@link #getContentSettingsType(int)
+        // getContentSettingsType} and {@link SingleWebsitePreferences.PERMISSION_PREFERENCE_KEYS}.
         int ADS = 0;
         int AUTOPLAY = 1;
         int BACKGROUND_SYNC = 2;
@@ -37,19 +38,6 @@ public class ContentSettingException implements Serializable {
          */
         int NUM_ENTRIES = 8;
     }
-
-    // Mapping from {@link Type} to ContentSettingType.
-    // TODO(https://crbug.com/616321) Add a unit test to verify that Type and
-    // CONTENT_TYPES are in sync.
-    final static int[] CONTENT_TYPES = {
-            ContentSettingsType.CONTENT_SETTINGS_TYPE_ADS,
-            ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOPLAY,
-            ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC,
-            ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES,
-            ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT,
-            ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS,
-            ContentSettingsType.CONTENT_SETTINGS_TYPE_SOUND,
-            ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS};
 
     private final int mContentSettingType;
     private final String mPattern;
@@ -89,5 +77,29 @@ public class ContentSettingException implements Serializable {
     public void setContentSetting(ContentSetting value) {
         PrefServiceBridge.getInstance().nativeSetContentSettingForPattern(mContentSettingType,
                 mPattern, value.toInt());
+    }
+
+    public static @ContentSettingsType int getContentSettingsType(@Type int type) {
+        switch (type) {
+            case Type.ADS:
+                return ContentSettingsType.CONTENT_SETTINGS_TYPE_ADS;
+            case Type.AUTOMATIC_DOWNLOADS:
+                return ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS;
+            case Type.AUTOPLAY:
+                return ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOPLAY;
+            case Type.BACKGROUND_SYNC:
+                return ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC;
+            case Type.COOKIE:
+                return ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES;
+            case Type.JAVASCRIPT:
+                return ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT;
+            case Type.POPUP:
+                return ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS;
+            case Type.SOUND:
+                return ContentSettingsType.CONTENT_SETTINGS_TYPE_SOUND;
+            default:
+                assert false;
+                return ContentSettingsType.CONTENT_SETTINGS_TYPE_DEFAULT;
+        }
     }
 }

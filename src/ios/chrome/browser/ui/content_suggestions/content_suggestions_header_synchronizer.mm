@@ -13,7 +13,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_controlling.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -22,17 +22,6 @@
 namespace {
 const CGFloat kShiftTilesDownAnimationDuration = 0.2;
 const CGFloat kShiftTilesUpAnimationDuration = 0.25;
-
-UIEdgeInsets SafeAreaInsetsForViewWithinNTP(UIView* view) {
-  UIEdgeInsets insets = SafeAreaInsetsForView(view);
-  if (!base::ios::IsRunningOnIOS11OrLater()) {
-    // TODO(crbug.com/826369) Replace this when the NTP is contained by the
-    // BVC with |self.collectionController.topLayoutGuide.length|.
-    insets = UIEdgeInsetsMake(StatusBarHeight(), 0, 0, 0);
-  }
-  return insets;
-}
-
 }  // namespace
 
 @interface ContentSuggestionsHeaderSynchronizer ()<UIGestureRecognizerDelegate>
@@ -131,6 +120,9 @@ initWithCollectionController:
     return;
   }
 
+  if (CGSizeEqualToSize(self.collectionView.contentSize, CGSizeZero))
+    [self.collectionView layoutIfNeeded];
+
   CGFloat pinnedOffsetY = [self.headerController pinnedOffsetY];
   self.collectionShiftingOffset =
       MAX(0, pinnedOffsetY - self.collectionView.contentOffset.y);
@@ -177,7 +169,7 @@ initWithCollectionController:
   }
 
   if (self.shouldAnimateHeader) {
-    UIEdgeInsets insets = SafeAreaInsetsForViewWithinNTP(self.collectionView);
+    UIEdgeInsets insets = self.collectionView.safeAreaInsets;
     [self.headerController
         updateFakeOmniboxForOffset:self.collectionView.contentOffset.y
                        screenWidth:self.collectionView.frame.size.width
@@ -193,8 +185,7 @@ initWithCollectionController:
     // updated safeAreaInsets, but VC.collectionView does not until a layer
     // -viewDidLayoutSubviews.  Since self.collectionView and it's superview
     // should always have the same safeArea, this should be safe.
-    UIEdgeInsets insets =
-        SafeAreaInsetsForViewWithinNTP(self.collectionView.superview);
+    UIEdgeInsets insets = self.collectionView.superview.safeAreaInsets;
     [self.headerController
         updateFakeOmniboxForOffset:self.collectionView.contentOffset.y
                        screenWidth:width
@@ -218,6 +209,14 @@ initWithCollectionController:
 
 - (CGFloat)headerHeight {
   return [self.headerController headerHeight];
+}
+
+- (void)setShowing:(BOOL)showing {
+  self.headerController.showing = showing;
+}
+
+- (BOOL)isShowing {
+  return self.headerController.isShowing;
 }
 
 #pragma mark - Private

@@ -160,6 +160,9 @@ public final class EventConstants {
     /** The pinned homepage tile in MV tiles was clicked. */
     public static final String HOMEPAGE_TILE_CLICKED = "homepage_tile_clicked";
 
+    /** The `Translate` app menu button was clicked. */
+    public static final String TRANSLATE_MENU_BUTTON_CLICKED = "translate_menu_button_clicked";
+
     /**
      * Do not instantiate.
      */

@@ -40,12 +40,11 @@ class WebGLDebugShaders final : public WebGLExtension {
   static bool Supported(WebGLRenderingContextBase*);
   static const char* ExtensionName();
 
+  explicit WebGLDebugShaders(WebGLRenderingContextBase*);
+
   WebGLExtensionName GetName() const override;
 
   String getTranslatedShaderSource(WebGLShader*);
-
- private:
-  explicit WebGLDebugShaders(WebGLRenderingContextBase*);
 };
 
 }  // namespace blink

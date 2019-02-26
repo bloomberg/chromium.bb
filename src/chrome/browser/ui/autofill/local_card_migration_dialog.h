@@ -16,7 +16,6 @@ class LocalCardMigrationDialog {
  public:
   virtual void ShowDialog() = 0;
   virtual void CloseDialog() = 0;
-  virtual void OnMigrationFinished() = 0;
 
  protected:
   LocalCardMigrationDialog() {}

@@ -20,7 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -35,6 +35,9 @@
 #include "chrome/test/chromedriver/version.h"
 #include "net/server/http_server_request_info.h"
 #include "net/server/http_server_response_info.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/transitional_url_loader_factory_owner.h"
 #include "url/url_util.h"
 
 #if defined(OS_MACOSX)
@@ -48,6 +51,50 @@ const char kSessionStorage[] = "sessionStorage";
 const char kShutdownPath[] = "shutdown";
 
 }  // namespace
+
+// WrapperURLLoaderFactory subclasses mojom::URLLoaderFactory as non-mojo, cross
+// thread class. It basically posts ::CreateLoaderAndStart calls over to the UI
+// thread, to call them on the real mojo object.
+class WrapperURLLoaderFactory : public network::mojom::URLLoaderFactory {
+ public:
+  WrapperURLLoaderFactory(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+      : url_loader_factory_(std::move(url_loader_factory)),
+        network_task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
+
+  void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader,
+                            int32_t routing_id,
+                            int32_t request_id,
+                            uint32_t options,
+                            const network::ResourceRequest& request,
+                            network::mojom::URLLoaderClientPtr client,
+                            const net::MutableNetworkTrafficAnnotationTag&
+                                traffic_annotation) override {
+    if (network_task_runner_->RunsTasksInCurrentSequence()) {
+      url_loader_factory_->CreateLoaderAndStart(
+          std::move(loader), routing_id, request_id, options, request,
+          std::move(client), traffic_annotation);
+    } else {
+      network_task_runner_->PostTask(
+          FROM_HERE,
+          base::BindOnce(&WrapperURLLoaderFactory::CreateLoaderAndStart,
+                         base::Unretained(this), std::move(loader), routing_id,
+                         request_id, options, request, std::move(client),
+                         traffic_annotation));
+    }
+  }
+  void Clone(network::mojom::URLLoaderFactoryRequest factory) override {
+    NOTIMPLEMENTED();
+  }
+
+ private:
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+
+  // Runner for URLRequestContextGetter network thread.
+  scoped_refptr<base::SequencedTaskRunner> network_task_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(WrapperURLLoaderFactory);
+};
 
 CommandMapping::CommandMapping(HttpMethod method,
                                const std::string& path_pattern,
@@ -80,21 +127,26 @@ HttpHandler::HttpHandler(
   socket_factory_ = CreateSyncWebSocketFactory(context_getter_.get());
   adb_.reset(new AdbImpl(io_task_runner, adb_port));
   device_manager_.reset(new DeviceManager(adb_.get()));
+  url_loader_factory_owner_ =
+      std::make_unique<network::TransitionalURLLoaderFactoryOwner>(
+          context_getter_.get());
 
+  wrapper_url_loader_factory_ = std::make_unique<WrapperURLLoaderFactory>(
+      url_loader_factory_owner_->GetURLLoaderFactory());
   CommandMapping commands[] = {
       //
       // W3C standard endpoints
       //
-
-      CommandMapping(kPost, internal::kNewSessionPathPattern,
-                     base::BindRepeating(
-                         &ExecuteCreateSession, &session_thread_map_,
-                         WrapToCommand("InitSession",
-                                       base::BindRepeating(
-                                           &ExecuteInitSession,
-                                           InitSessionParams(
-                                               context_getter_, socket_factory_,
-                                               device_manager_.get()))))),
+      CommandMapping(
+          kPost, internal::kNewSessionPathPattern,
+          base::BindRepeating(
+              &ExecuteCreateSession, &session_thread_map_,
+              WrapToCommand("InitSession",
+                            base::BindRepeating(
+                                &ExecuteInitSession,
+                                InitSessionParams(
+                                    wrapper_url_loader_factory_.get(),
+                                    socket_factory_, device_manager_.get()))))),
       CommandMapping(kDelete, "session/:sessionId",
                      base::BindRepeating(
                          &ExecuteSessionCommand, &session_thread_map_, "Quit",
@@ -264,7 +316,7 @@ HttpHandler::HttpHandler(
       CommandMapping(
           kPost, "session/:sessionId/actions",
           WrapToCommand("PerformActions",
-                        base::BindRepeating(&ExecuteUnimplementedCommand))),
+                        base::BindRepeating(&ExecutePerformActions))),
       CommandMapping(
           kDelete, "session/:sessionId/actions",
           WrapToCommand("DeleteActions",
@@ -687,12 +739,6 @@ HttpHandler::HttpHandler(
       // Commands of unknown origins.
       //
 
-      // Similar to W3C POST /session/:sessionId/window/minimize.
-      CommandMapping(
-          kPost, "session/:sessionId/window/:windowHandle/minimize",
-          WrapToCommand("MinimizeWindow",
-                        base::BindRepeating(&ExecuteMinimizeWindow))),
-
       CommandMapping(kGet, "session/:sessionId/alert",
                      WrapToCommand("IsAlertOpen",
                                    base::BindRepeating(
@@ -1009,15 +1055,22 @@ HttpHandler::PrepareStandardResponse(
   base::DictionaryValue body_params;
   if (status.IsError()){
     // Separates status default message from additional details.
-    std::vector<std::string> status_details = base::SplitString(
-        status.message(), ":\n", base::TRIM_WHITESPACE,
-        base::SPLIT_WANT_NONEMPTY);
-    std::string message;
-    for (size_t i=1; i<status_details.size();++i)
-      message += status_details[i];
+    std::string error;
+    std::string message(status.message());
+    std::string::size_type separator = message.find_first_of(":\n");
+    if (separator == std::string::npos) {
+      error = message;
+      message.clear();
+    } else {
+      error = message.substr(0, separator);
+      separator++;
+      while (separator < message.length() && message[separator] == ' ')
+        separator++;
+      message = message.substr(separator);
+    }
     std::unique_ptr<base::DictionaryValue> inner_params(
         new base::DictionaryValue());
-    inner_params->SetString("error", status_details[0]);
+    inner_params->SetString("error", error);
     inner_params->SetString("message", message);
     inner_params->SetString("stacktrace", status.stack_trace());
     body_params.SetDictionary("value", std::move(inner_params));

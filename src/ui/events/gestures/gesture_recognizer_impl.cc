@@ -60,11 +60,9 @@ bool RemoveValueFromMap(std::map<Key, T>* map, const Value& value) {
 ////////////////////////////////////////////////////////////////////////////////
 // GestureRecognizerImpl, public:
 
-GestureRecognizerImpl::GestureRecognizerImpl() {
-}
+GestureRecognizerImpl::GestureRecognizerImpl() = default;
 
-GestureRecognizerImpl::~GestureRecognizerImpl() {
-}
+GestureRecognizerImpl::~GestureRecognizerImpl() = default;
 
 // Checks if this finger is already down, if so, returns the current target.
 // Otherwise, returns NULL.
@@ -74,7 +72,8 @@ GestureConsumer* GestureRecognizerImpl::GetTouchLockedTarget(
 }
 
 GestureConsumer* GestureRecognizerImpl::GetTargetForLocation(
-    const gfx::PointF& location, int source_device_id) {
+    const gfx::PointF& location,
+    int source_device_id) {
   const float max_distance =
       GestureConfiguration::GetInstance()
           ->max_separation_for_gesture_touches_in_pixels();
@@ -111,6 +110,14 @@ void GestureRecognizerImpl::CancelActiveTouchesExcept(
   CancelActiveTouchesExceptImpl(not_cancelled, kNotifyObservers);
 }
 
+void GestureRecognizerImpl::CancelActiveTouchesOn(
+    const std::vector<GestureConsumer*>& consumers) {
+  for (auto* consumer : consumers) {
+    if (base::ContainsKey(consumer_gesture_provider_, consumer))
+      CancelActiveTouchesImpl(consumer, kNotifyObservers);
+  }
+}
+
 void GestureRecognizerImpl::TransferEventsTo(
     GestureConsumer* current_consumer,
     GestureConsumer* new_consumer,
@@ -137,7 +144,7 @@ void GestureRecognizerImpl::TransferEventsTo(
 
   std::vector<int> touchids_targeted_at_current;
 
-  for (const auto& touch_id_target: touch_id_target_) {
+  for (const auto& touch_id_target : touch_id_target_) {
     if (touch_id_target.second == current_consumer)
       touchids_targeted_at_current.push_back(touch_id_target.first);
   }
@@ -337,17 +344,18 @@ bool GestureRecognizerImpl::CancelActiveTouchesImpl(
 
   std::vector<std::unique_ptr<TouchEvent>> cancelling_touches =
       GetEventPerPointForConsumer(consumer, ET_TOUCH_CANCELLED);
+  if (cancelling_touches.empty())
+    return false;
   for (const std::unique_ptr<TouchEvent>& cancelling_touch : cancelling_touches)
     helper->DispatchSyntheticTouchEvent(cancelling_touch.get());
   if (should_notify == kNotifyObservers) {
     for (GestureRecognizerObserver& observer : observers())
       observer.OnActiveTouchesCanceled(consumer);
   }
-  return !cancelling_touches.empty();
+  return true;
 }
 
-bool GestureRecognizerImpl::CleanupStateForConsumer(
-    GestureConsumer* consumer) {
+bool GestureRecognizerImpl::CleanupStateForConsumer(GestureConsumer* consumer) {
   bool state_cleaned_up = false;
   state_cleaned_up |= RemoveValueFromMap(&touch_id_target_, consumer);
 

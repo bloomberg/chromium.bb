@@ -63,7 +63,7 @@ Polymer({
    * event when the photo is completed.
    */
   takePhoto: function() {
-    var camera = /** @type {?CrCameraElement} */ (this.$$('#camera'));
+    const camera = /** @type {?CrCameraElement} */ (this.$$('#camera'));
     if (camera)
       camera.takePhoto();
   },
@@ -87,7 +87,7 @@ Polymer({
 
   /** @private */
   cameraActiveChanged_: function() {
-    var camera = /** @type {?CrCameraElement} */ (this.$$('#camera'));
+    const camera = /** @type {?CrCameraElement} */ (this.$$('#camera'));
     if (!camera)
       return;  // Camera will be started when attached.
     if (this.cameraActive_)
@@ -109,13 +109,13 @@ Polymer({
      * Data URLs for PNG images can be large. Create an object URL to avoid
      * URL length limits.
      */
-    var image = /** @type {!HTMLImageElement} */ (this.$$('#image'));
+    const image = /** @type {!HTMLImageElement} */ (this.$$('#image'));
     if (this.imageSrc.startsWith('data:image/png')) {
-      var byteString = atob(this.imageSrc.split(',')[1]);
-      var bytes = new Uint8Array(byteString.length);
-      for (var i = 0; i < byteString.length; i++)
+      const byteString = atob(this.imageSrc.split(',')[1]);
+      const bytes = new Uint8Array(byteString.length);
+      for (let i = 0; i < byteString.length; i++)
         bytes[i] = byteString.charCodeAt(i);
-      var blob = new Blob([bytes], {'type': 'image/png'});
+      const blob = new Blob([bytes], {'type': 'image/png'});
       // Use first frame as placeholder while rest of image loads.
       image.style.backgroundImage = 'url(' +
           CrPngBehavior.convertImageSequenceToPng([this.imageSrc]) + ')';

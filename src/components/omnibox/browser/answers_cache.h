@@ -14,10 +14,9 @@
 
 struct AnswersQueryData {
   AnswersQueryData();
-  AnswersQueryData(const base::string16& full_query_text,
-                   const base::string16& query_type);
+  AnswersQueryData(const base::string16& full_query_text, int query_type);
   base::string16 full_query_text;
-  base::string16 query_type;
+  int query_type;
 };
 
 // Cache for the most-recently seen answer for Answers in Suggest.
@@ -32,7 +31,7 @@ class AnswersCache {
 
   // Registers a query that received an answer suggestion.
   void UpdateRecentAnswers(const base::string16& full_query_text,
-                           const base::string16& query_type);
+                           int query_type);
 
   // Signals if cache is empty.
   bool empty() const { return cache_.empty(); }

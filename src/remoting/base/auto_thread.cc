@@ -152,7 +152,7 @@ scoped_refptr<AutoThreadTaskRunner> AutoThread::StartWithType(
   // the thread lifetime is controlled by the AutoThreadTaskRunner, we would
   // ideally return the AutoThreadTaskRunner to the caller without waiting for
   // the thread to signal us.
-  base::ThreadRestrictions::ScopedAllowWait allow_wait;
+  base::ScopedAllowBaseSyncPrimitives allow_wait;
   startup_data.event.Wait();
 
   // set it to NULL so we don't keep a pointer to some object on the stack.
@@ -212,8 +212,8 @@ void AutoThread::ThreadMain() {
   // Allow threads running a MessageLoopForIO to use FileDescriptorWatcher.
   std::unique_ptr<base::FileDescriptorWatcher> file_descriptor_watcher;
   if (message_loop.type() == base::MessageLoop::TYPE_IO) {
-    file_descriptor_watcher.reset(new base::FileDescriptorWatcher(
-        static_cast<base::MessageLoopForIO*>(&message_loop)));
+    file_descriptor_watcher.reset(
+        new base::FileDescriptorWatcher(message_loop.task_runner()));
   }
 #endif
 

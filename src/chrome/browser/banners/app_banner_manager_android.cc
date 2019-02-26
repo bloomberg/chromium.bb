@@ -283,7 +283,7 @@ void AppBannerManagerAndroid::ShowBannerUi(WebappInstallSource install_source) {
     ui_delegate_ = AppBannerUiDelegateAndroid::Create(
         GetWeakPtr(), native_app_title_,
         base::android::ScopedJavaLocalRef<jobject>(native_app_data_),
-        primary_icon_, native_app_package_, referrer_);
+        primary_icon_, native_app_package_);
   }
 
   bool banner_shown = false;

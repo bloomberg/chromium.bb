@@ -38,7 +38,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/public/common/page_zoom.h"
@@ -57,6 +56,8 @@
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_types.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
+#include "extensions/browser/process_manager.h"
+#include "extensions/browser/url_loader_factory_manager.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_constants.h"
@@ -416,6 +417,20 @@ void WebViewGuest::DidInitialize(const base::DictionaryValue& create_params) {
   ApplyAttributes(create_params);
 }
 
+void WebViewGuest::ClearCodeCache(base::Time remove_since,
+                                  uint32_t removal_mask,
+                                  const base::Closure& callback) {
+  content::StoragePartition* partition =
+      content::BrowserContext::GetStoragePartition(
+          web_contents()->GetBrowserContext(),
+          web_contents()->GetSiteInstance());
+  DCHECK(partition);
+  base::OnceClosure code_cache_removal_done_callback = base::BindOnce(
+      &WebViewGuest::ClearDataInternal, weak_ptr_factory_.GetWeakPtr(),
+      remove_since, removal_mask, callback);
+  partition->ClearCodeCaches(std::move(code_cache_removal_done_callback));
+}
+
 void WebViewGuest::ClearDataInternal(base::Time remove_since,
                                      uint32_t removal_mask,
                                      const base::Closure& callback) {
@@ -448,6 +463,8 @@ void WebViewGuest::ClearDataInternal(base::Time remove_since,
         network::mojom::CookieDeletionSessionControl::PERSISTENT_COOKIES;
   }
 
+  bool perform_cleanup = remove_since.is_null();
+
   content::StoragePartition* partition =
       content::BrowserContext::GetStoragePartition(
           web_contents()->GetBrowserContext(),
@@ -456,8 +473,8 @@ void WebViewGuest::ClearDataInternal(base::Time remove_since,
       storage_partition_removal_mask,
       content::StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
       content::StoragePartition::OriginMatcherFunction(),
-      std::move(cookie_delete_filter), remove_since, base::Time::Now(),
-      callback);
+      std::move(cookie_delete_filter), perform_cleanup, remove_since,
+      base::Time::Max(), callback);
 }
 
 void WebViewGuest::GuestViewDidStopLoading() {
@@ -489,7 +506,9 @@ int WebViewGuest::GetTaskPrefix() const {
 }
 
 void WebViewGuest::GuestDestroyed() {
-  RemoveWebViewStateFromIOThread(web_contents());
+  WebViewRendererState::GetInstance()->RemoveGuest(
+      web_contents()->GetRenderViewHost()->GetProcess()->GetID(),
+      web_contents()->GetRenderViewHost()->GetRoutingID());
 }
 
 void WebViewGuest::GuestReady() {
@@ -588,13 +607,13 @@ bool WebViewGuest::HandleContextMenu(
          web_view_guest_delegate_->HandleContextMenu(params);
 }
 
-void WebViewGuest::HandleKeyboardEvent(
+bool WebViewGuest::HandleKeyboardEvent(
     WebContents* source,
     const content::NativeWebKeyboardEvent& event) {
   if (HandleKeyboardShortcuts(event))
-    return;
+    return true;
 
-  GuestViewBase::HandleKeyboardEvent(source, event);
+  return GuestViewBase::HandleKeyboardEvent(source, event);
 }
 
 bool WebViewGuest::PreHandleGestureEvent(WebContents* source,
@@ -747,8 +766,8 @@ bool WebViewGuest::ClearData(base::Time remove_since,
     return false;
 
   if (removal_mask & webview::WEB_VIEW_REMOVE_DATA_MASK_CACHE) {
-    // First clear http cache data and then clear the rest in
-    // |ClearDataInternal|.
+    // First clear http cache data and then clear the code cache in
+    // |ClearCodeCache| and the rest is cleared in |ClearDataInternal|.
     int render_process_id =
         web_contents()->GetMainFrame()->GetProcess()->GetID();
     // We need to clear renderer cache separately for our process because
@@ -757,7 +776,7 @@ bool WebViewGuest::ClearData(base::Time remove_since,
         render_process_id);
 
     base::OnceClosure cache_removal_done_callback = base::BindOnce(
-        &WebViewGuest::ClearDataInternal, weak_ptr_factory_.GetWeakPtr(),
+        &WebViewGuest::ClearCodeCache, weak_ptr_factory_.GetWeakPtr(),
         remove_since, removal_mask, callback);
 
     // We cannot use |BrowsingDataRemover| here since it doesn't support
@@ -803,6 +822,39 @@ WebViewGuest::WebViewGuest(WebContents* owner_web_contents)
 }
 
 WebViewGuest::~WebViewGuest() {
+}
+
+void WebViewGuest::ReadyToCommitNavigation(
+    content::NavigationHandle* navigation_handle) {
+  // Return early if no declarative content scripts are present.
+  //
+  // Note - more granular checks (e.g. against URL patterns) are desirable for
+  // performance (to avoid creating unnecessary URLLoaderFactory), but not
+  // necessarily for security (because there are anyway no OOPIFs inside the
+  // GuestView process - https://crbug.com/614463).  At the same time, more
+  // granular checks are difficult to achieve, because the UserScript objects
+  // are not retained (i.e. only UserScriptIDs are available) by
+  // WebViewContentScriptManager.
+  WebViewContentScriptManager* script_manager =
+      WebViewContentScriptManager::Get(browser_context());
+  int embedder_process_id =
+      owner_web_contents()->GetMainFrame()->GetProcess()->GetID();
+  std::set<int> script_ids = script_manager->GetContentScriptIDSet(
+      embedder_process_id, view_instance_id());
+  if (script_ids.empty())
+    return;
+
+  // At ReadyToCommitNavigation time there is no need to trigger an explicit
+  // push of URLLoaderFactoryBundle to the renderer - it is sufficient if the
+  // factories are pushed slightly later - during the commit.
+  constexpr bool kPushToRendererNow = false;
+
+  // |request_initiator| in fetches initiated by content scripts should use the
+  // origin of the <webview> embedder.
+  navigation_handle->GetRenderFrameHost()
+      ->MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
+          {owner_web_contents()->GetMainFrame()->GetLastCommittedOrigin()},
+          kPushToRendererNow);
 }
 
 void WebViewGuest::DidFinishNavigation(
@@ -868,6 +920,15 @@ void WebViewGuest::DocumentOnLoadCompletedInMainFrame() {
 
 void WebViewGuest::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
+  WebViewGuest* opener = GetOpener();
+  if (opener && navigation_handle->IsInMainFrame()) {
+    auto it = opener->pending_new_windows_.find(this);
+    if (it != opener->pending_new_windows_.end()) {
+      NewWindowInfo& info = it->second;
+      info.did_start_navigating_away_from_initial_url = true;
+    }
+  }
+
   // loadStart shouldn't be sent for same document navigations.
   if (navigation_handle->IsSameDocument())
     return;
@@ -965,24 +1026,9 @@ void WebViewGuest::PushWebViewStateToIOThread() {
   web_view_info.content_script_ids = manager->GetContentScriptIDSet(
       web_view_info.embedder_process_id, web_view_info.instance_id);
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::Bind(&WebViewRendererState::AddGuest,
-                 base::Unretained(WebViewRendererState::GetInstance()),
-                 web_contents()->GetRenderViewHost()->GetProcess()->GetID(),
-                 web_contents()->GetRenderViewHost()->GetRoutingID(),
-                 web_view_info));
-}
-
-// static
-void WebViewGuest::RemoveWebViewStateFromIOThread(
-    WebContents* web_contents) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::Bind(&WebViewRendererState::RemoveGuest,
-                 base::Unretained(WebViewRendererState::GetInstance()),
-                 web_contents->GetRenderViewHost()->GetProcess()->GetID(),
-                 web_contents->GetRenderViewHost()->GetRoutingID()));
+  WebViewRendererState::GetInstance()->AddGuest(
+      web_contents()->GetRenderViewHost()->GetProcess()->GetID(),
+      web_contents()->GetRenderViewHost()->GetRoutingID(), web_view_info);
 }
 
 void WebViewGuest::RequestMediaAccessPermission(
@@ -1147,8 +1193,11 @@ void WebViewGuest::ApplyAttributes(const base::DictionaryValue& params) {
     auto it = opener->pending_new_windows_.find(this);
     if (it != opener->pending_new_windows_.end()) {
       const NewWindowInfo& new_window_info = it->second;
-      if (new_window_info.changed || !web_contents()->HasOpener())
+      if (!new_window_info.did_start_navigating_away_from_initial_url &&
+          (new_window_info.url_changed_via_open_url ||
+           !web_contents()->HasOpener())) {
         NavigateGuest(new_window_info.url.spec(), false /* force_navigation */);
+      }
 
       // Once a new guest is attached to the DOM of the embedder page, then the
       // lifetime of the new guest is no longer managed by the opener guest.
@@ -1324,7 +1373,8 @@ WebContents* WebViewGuest::OpenURLFromTab(
         return nullptr;
       const NewWindowInfo& info = it->second;
       NewWindowInfo new_window_info(params.url, info.name);
-      new_window_info.changed = new_window_info.url != info.url;
+      new_window_info.url_changed_via_open_url =
+          new_window_info.url != info.url;
       it->second = new_window_info;
       return nullptr;
     }

@@ -23,9 +23,13 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/night_light/time_of_day.h"
+#include "ash/system/toast/toast_manager.h"
 #include "ash/wallpaper/wallpaper_controller.h"
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/user_manager/user.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/callback_layer_animation_observer.h"
 #include "ui/compositor/layer_animation_sequence.h"
@@ -150,6 +154,68 @@ void DecorateOnlineSignInMessage(views::LabelButton* label_button) {
   label_button->SetBorder(views::CreateEmptyBorder(gfx::Insets(9, 0)));
 }
 
+// The label shown below the fingerprint icon.
+class FingerprintLabel : public views::Label {
+ public:
+  FingerprintLabel() {
+    SetSubpixelRenderingEnabled(false);
+    SetAutoColorReadabilityEnabled(false);
+    SetEnabledColor(login_constants::kAuthMethodsTextColor);
+
+    SetTextBasedOnState(mojom::FingerprintState::AVAILABLE);
+  }
+
+  void SetTextBasedOnAuthAttempt(bool success) {
+    SetText(l10n_util::GetStringUTF16(
+        success ? IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_AUTH_SUCCESS
+                : IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_AUTH_FAILED));
+    SetAccessibleName(l10n_util::GetStringUTF16(
+        success ? IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_ACCESSIBLE_AUTH_SUCCESS
+                : IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_ACCESSIBLE_AUTH_FAILED));
+  }
+
+  void SetTextBasedOnState(mojom::FingerprintState state) {
+    auto get_displayed_id = [&]() {
+      switch (state) {
+        case mojom::FingerprintState::UNAVAILABLE:
+        case mojom::FingerprintState::AVAILABLE:
+          return IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_AVAILABLE;
+        case mojom::FingerprintState::DISABLED_FROM_ATTEMPTS:
+          return IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_DISABLED_FROM_ATTEMPTS;
+        case mojom::FingerprintState::DISABLED_FROM_TIMEOUT:
+          return IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_DISABLED_FROM_TIMEOUT;
+      }
+      NOTREACHED();
+    };
+
+    auto get_accessible_id = [&]() {
+      if (state == mojom::FingerprintState::DISABLED_FROM_ATTEMPTS)
+        return IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_ACCESSIBLE_AUTH_DISABLED_FROM_ATTEMPTS;
+      return get_displayed_id();
+    };
+
+    SetText(l10n_util::GetStringUTF16(get_displayed_id()));
+    SetAccessibleName(l10n_util::GetStringUTF16(get_accessible_id()));
+  }
+
+  // views::View:
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    node_data->role = ax::mojom::Role::kStaticText;
+    node_data->SetName(accessible_name_);
+  }
+
+ private:
+  void SetAccessibleName(const base::string16& name) {
+    accessible_name_ = name;
+    NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged,
+                             true /*send_native_event*/);
+  }
+
+  base::string16 accessible_name_;
+
+  DISALLOW_COPY_AND_ASSIGN(FingerprintLabel);
+};
+
 }  // namespace
 
 // Consists of fingerprint icon view and a label.
@@ -173,31 +239,77 @@ class LoginAuthUserView::FingerprintView : public views::View {
         kLockScreenFingerprintIcon, kFingerprintIconSizeDp, SK_ColorWHITE));
     AddChildView(icon_);
 
-    label_ = new views::Label(
-        l10n_util::GetStringUTF16(IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_MESSAGE));
-    label_->SetSubpixelRenderingEnabled(false);
-    label_->SetAutoColorReadabilityEnabled(false);
-    label_->SetEnabledColor(login_constants::kAuthMethodsTextColor);
+    label_ = new FingerprintLabel();
     AddChildView(label_);
+
+    DisplayCurrentState();
   }
 
   ~FingerprintView() override = default;
 
-  void SetIcon(mojom::FingerprintUnlockState state) {
+  void SetState(mojom::FingerprintState state) {
+    if (state_ == state)
+      return;
+
+    reset_state_.Stop();
+    state_ = state;
+
+    DisplayCurrentState();
+
+    if (ShouldFireChromeVoxAlert(state))
+      FireAlert();
+  }
+
+  void NotifyFingerprintAuthResult(bool success) {
+    reset_state_.Stop();
+    label_->SetTextBasedOnAuthAttempt(success);
+
+    if (success) {
+      icon_->SetImage(gfx::CreateVectorIcon(kLockScreenFingerprintSuccessIcon,
+                                            kFingerprintIconSizeDp,
+                                            gfx::kGoogleGreenDark500));
+    } else {
+      SetIcon(mojom::FingerprintState::DISABLED_FROM_ATTEMPTS);
+      // base::Unretained is safe because reset_state_ is owned by |this|.
+      reset_state_.Start(
+          FROM_HERE,
+          base::TimeDelta::FromMilliseconds(kResetToDefaultIconDelayMs),
+          base::BindRepeating(&FingerprintView::DisplayCurrentState,
+                              base::Unretained(this)));
+
+      FireAlert();
+    }
+  }
+
+  // views::View:
+  gfx::Size CalculatePreferredSize() const override {
+    gfx::Size size = views::View::CalculatePreferredSize();
+    size.set_width(kFingerprintViewWidthDp);
+    return size;
+  }
+
+ private:
+  void DisplayCurrentState() {
+    SetVisible(state_ != mojom::FingerprintState::UNAVAILABLE &&
+               state_ != mojom::FingerprintState::DISABLED_FROM_TIMEOUT);
+    SetIcon(state_);
+    label_->SetTextBasedOnState(state_);
+  }
+
+  void FireAlert() {
+    label_->NotifyAccessibilityEvent(ax::mojom::Event::kAlert,
+                                     true /*send_native_event*/);
+  }
+
+  void SetIcon(mojom::FingerprintState state) {
     switch (state) {
-      case mojom::FingerprintUnlockState::UNAVAILABLE:
-      case mojom::FingerprintUnlockState::AVAILABLE:
-      case mojom::FingerprintUnlockState::AUTH_DISABLED_FROM_TIMEOUT:
+      case mojom::FingerprintState::UNAVAILABLE:
+      case mojom::FingerprintState::AVAILABLE:
+      case mojom::FingerprintState::DISABLED_FROM_TIMEOUT:
         icon_->SetImage(gfx::CreateVectorIcon(
             kLockScreenFingerprintIcon, kFingerprintIconSizeDp, SK_ColorWHITE));
         break;
-      case mojom::FingerprintUnlockState::AUTH_SUCCESS:
-        icon_->SetImage(gfx::CreateVectorIcon(kLockScreenFingerprintSuccessIcon,
-                                              kFingerprintIconSizeDp,
-                                              gfx::kGoogleGreenDark500));
-        break;
-      case mojom::FingerprintUnlockState::AUTH_FAILED:
-      case mojom::FingerprintUnlockState::AUTH_DISABLED:
+      case mojom::FingerprintState::DISABLED_FROM_ATTEMPTS:
         icon_->SetAnimationDecoder(
             std::make_unique<HorizontalImageSequenceAnimationDecoder>(
                 *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
@@ -210,60 +322,15 @@ class LoginAuthUserView::FingerprintView : public views::View {
     }
   }
 
-  void SetText(mojom::FingerprintUnlockState state) {
-    auto get_label_id = [&]() -> int {
-      switch (state) {
-        case mojom::FingerprintUnlockState::UNAVAILABLE:
-        case mojom::FingerprintUnlockState::AVAILABLE:
-          return IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_MESSAGE;
-        case mojom::FingerprintUnlockState::AUTH_SUCCESS:
-          return IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_AGE_AUTH_SUCCESS;
-        case mojom::FingerprintUnlockState::AUTH_FAILED:
-          return IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_FAILED_MESSAGE;
-        case mojom::FingerprintUnlockState::AUTH_DISABLED:
-        case mojom::FingerprintUnlockState::AUTH_DISABLED_FROM_TIMEOUT:
-          return IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_DISABLED_MESSAGE;
-      }
-    };
-
-    label_->SetText(l10n_util::GetStringUTF16(get_label_id()));
+  bool ShouldFireChromeVoxAlert(mojom::FingerprintState state) {
+    return state == mojom::FingerprintState::DISABLED_FROM_ATTEMPTS ||
+           state == mojom::FingerprintState::DISABLED_FROM_TIMEOUT;
   }
 
-  void SetState(mojom::FingerprintUnlockState state) {
-    if (state_ == state)
-      return;
-
-    state_ = state;
-    SetVisible(state != mojom::FingerprintUnlockState::UNAVAILABLE &&
-               state !=
-                   mojom::FingerprintUnlockState::AUTH_DISABLED_FROM_TIMEOUT);
-    SetIcon(state);
-    SetText(state);
-
-    // Fingerprint icon reset to default sometime after AUTH_FAILED.
-    reset_state_.Stop();
-    if (state == mojom::FingerprintUnlockState::AUTH_FAILED) {
-      reset_state_.Start(
-          FROM_HERE,
-          base::TimeDelta::FromMilliseconds(kResetToDefaultIconDelayMs),
-          base::BindRepeating(&FingerprintView::SetState,
-                              base::Unretained(this),
-                              mojom::FingerprintUnlockState::AVAILABLE));
-    }
-  }
-
-  gfx::Size CalculatePreferredSize() const override {
-    gfx::Size size = views::View::CalculatePreferredSize();
-    size.set_width(kFingerprintViewWidthDp);
-    return size;
-  }
-
- private:
-  views::Label* label_ = nullptr;
+  FingerprintLabel* label_ = nullptr;
   AnimatedRoundedImageView* icon_ = nullptr;
   base::OneShotTimer reset_state_;
-  mojom::FingerprintUnlockState state_ =
-      mojom::FingerprintUnlockState::UNAVAILABLE;
+  mojom::FingerprintState state_ = mojom::FingerprintState::AVAILABLE;
 
   DISALLOW_COPY_AND_ASSIGN(FingerprintView);
 };
@@ -393,6 +460,15 @@ views::View* LoginAuthUserView::TestApi::disabled_auth_message() const {
   return view_->disabled_auth_message_;
 }
 
+views::Button* LoginAuthUserView::TestApi::external_binary_auth_button() const {
+  return view_->external_binary_auth_button_;
+}
+
+views::Button* LoginAuthUserView::TestApi::external_binary_enrollment_button()
+    const {
+  return view_->external_binary_enrollment_button_;
+}
+
 LoginAuthUserView::Callbacks::Callbacks() = default;
 
 LoginAuthUserView::Callbacks::Callbacks(const Callbacks& other) = default;
@@ -456,6 +532,8 @@ LoginAuthUserView::LoginAuthUserView(const mojom::LoginUserInfoPtr& user,
   // TODO(jdufault): Implement real UI.
   external_binary_auth_button_ = views::MdTextButton::Create(
       this, base::ASCIIToUTF16("Authenticate with external binary"));
+  external_binary_enrollment_button_ = views::MdTextButton::Create(
+      this, base::ASCIIToUTF16("Enroll with external binary"));
 
   SetPaintToLayer(ui::LayerType::LAYER_NOT_DRAWN);
 
@@ -479,6 +557,9 @@ LoginAuthUserView::LoginAuthUserView(const mojom::LoginUserInfoPtr& user,
       login_views_utils::WrapViewForPreferredSize(fingerprint_view_);
   auto* wrapped_external_binary_view =
       login_views_utils::WrapViewForPreferredSize(external_binary_auth_button_);
+  auto* wrapped_external_binary_enrollment_view =
+      login_views_utils::WrapViewForPreferredSize(
+          external_binary_enrollment_button_);
   auto* wrapped_padding_below_password_view =
       login_views_utils::WrapViewForPreferredSize(padding_below_password_view_);
 
@@ -489,6 +570,7 @@ LoginAuthUserView::LoginAuthUserView(const mojom::LoginUserInfoPtr& user,
   AddChildView(wrapped_pin_view);
   AddChildView(wrapped_fingerprint_view);
   AddChildView(wrapped_external_binary_view);
+  AddChildView(wrapped_external_binary_enrollment_view);
   AddChildView(wrapped_user_view);
   AddChildView(wrapped_padding_below_password_view);
 
@@ -519,6 +601,7 @@ LoginAuthUserView::LoginAuthUserView(const mojom::LoginUserInfoPtr& user,
   add_view(wrapped_pin_view);
   add_view(wrapped_fingerprint_view);
   add_view(wrapped_external_binary_view);
+  add_view(wrapped_external_binary_enrollment_view);
   add_padding(kDistanceFromPinKeyboardToBigUserViewBottomDp);
 
   // Update authentication UI.
@@ -565,6 +648,12 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
   pin_view_->SetVisible(has_pin);
   fingerprint_view_->SetVisible(has_fingerprint);
   external_binary_auth_button_->SetVisible(has_external_binary);
+  external_binary_enrollment_button_->SetVisible(has_external_binary);
+
+  if (has_external_binary) {
+    power_manager_client_observer_.Add(
+        chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
+  }
 
   int padding_view_height = kDistanceBetweenPasswordFieldAndPinKeyboardDp;
   if (has_fingerprint && !has_pin) {
@@ -743,9 +832,12 @@ void LoginAuthUserView::UpdateForUser(const mojom::LoginUserInfoPtr& user) {
       base::UTF8ToUTF16(user->basic_user_info->display_name));
 }
 
-void LoginAuthUserView::SetFingerprintState(
-    mojom::FingerprintUnlockState state) {
+void LoginAuthUserView::SetFingerprintState(mojom::FingerprintState state) {
   fingerprint_view_->SetState(state);
+}
+
+void LoginAuthUserView::NotifyFingerprintAuthResult(bool success) {
+  fingerprint_view_->NotifyFingerprintAuthResult(success);
 }
 
 void LoginAuthUserView::SetAuthReenabledTime(
@@ -776,12 +868,22 @@ void LoginAuthUserView::ButtonPressed(views::Button* sender,
   if (sender == online_sign_in_message_) {
     OnOnlineSignInMessageTap();
   } else if (sender == external_binary_auth_button_) {
+    AttemptAuthenticateWithExternalBinary();
+  } else if (sender == external_binary_enrollment_button_) {
     password_view_->SetReadOnly(true);
-    Shell::Get()->login_screen_controller()->AuthenticateUserWithExternalBinary(
-        current_user()->basic_user_info->account_id,
-        base::BindOnce(&LoginAuthUserView::OnAuthComplete,
+    external_binary_auth_button_->SetEnabled(false);
+    external_binary_enrollment_button_->SetEnabled(false);
+    Shell::Get()->login_screen_controller()->EnrollUserWithExternalBinary(
+        base::BindOnce(&LoginAuthUserView::OnEnrollmentComplete,
                        weak_factory_.GetWeakPtr()));
   }
+}
+
+void LoginAuthUserView::LidEventReceived(
+    chromeos::PowerManagerClient::LidState state,
+    const base::TimeTicks& timestamp) {
+  if (state == chromeos::PowerManagerClient::LidState::OPEN)
+    AttemptAuthenticateWithExternalBinary();
 }
 
 void LoginAuthUserView::OnAuthSubmit(const base::string16& password) {
@@ -802,19 +904,37 @@ void LoginAuthUserView::OnAuthSubmit(const base::string16& password) {
 }
 
 void LoginAuthUserView::OnAuthComplete(base::Optional<bool> auth_success) {
-  if (!auth_success.has_value())
-    return;
-
   // Clear the password only if auth fails. Make sure to keep the password view
   // disabled even if auth succeededs, as if the user submits a password while
   // animating the next lock screen will not work as expected. See
   // https://crbug.com/808486.
-  if (!auth_success.value()) {
+  if (!auth_success.has_value() || !auth_success.value()) {
     password_view_->Clear();
     password_view_->SetReadOnly(false);
+    external_binary_auth_button_->SetEnabled(true);
+    external_binary_enrollment_button_->SetEnabled(true);
   }
 
   on_auth_.Run(auth_success.value());
+}
+
+void LoginAuthUserView::OnEnrollmentComplete(
+    base::Optional<bool> enrollment_success) {
+  password_view_->SetReadOnly(false);
+  external_binary_auth_button_->SetEnabled(true);
+  external_binary_enrollment_button_->SetEnabled(true);
+
+  std::string result_message;
+  if (!enrollment_success.has_value()) {
+    result_message = "Enrollment attempt failed to received response.";
+  } else {
+    result_message = enrollment_success.value() ? "Enrollment successful."
+                                                : "Enrollment failed.";
+  }
+
+  ToastData toast_data("EnrollmentToast", base::ASCIIToUTF16(result_message),
+                       2000, base::nullopt, true /*visible_on_lock_screen*/);
+  Shell::Get()->toast_manager()->Show(toast_data);
 }
 
 void LoginAuthUserView::OnUserViewTap() {
@@ -836,6 +956,16 @@ void LoginAuthUserView::OnOnlineSignInMessageTap() {
 
 bool LoginAuthUserView::HasAuthMethod(AuthMethods auth_method) const {
   return (auth_methods_ & auth_method) != 0;
+}
+
+void LoginAuthUserView::AttemptAuthenticateWithExternalBinary() {
+  password_view_->SetReadOnly(true);
+  external_binary_auth_button_->SetEnabled(false);
+  external_binary_enrollment_button_->SetEnabled(false);
+  Shell::Get()->login_screen_controller()->AuthenticateUserWithExternalBinary(
+      current_user()->basic_user_info->account_id,
+      base::BindOnce(&LoginAuthUserView::OnAuthComplete,
+                     weak_factory_.GetWeakPtr()));
 }
 
 }  // namespace ash

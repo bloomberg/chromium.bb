@@ -17,12 +17,14 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/process/launch.h"
 #include "base/strings/string16.h"
+#include "base/strings/stringprintf.h"
 #include "base/syslog_logging.h"
 #include "base/test/scoped_path_override.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
 #include "build/build_config.h"
-#include "chrome/credential_provider/gaiacp/gcp_strings.h"
+#include "chrome/credential_provider/common/gcp_strings.h"
+#include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
 #include "chrome/credential_provider/setup/setup_lib.h"
 #include "chrome/credential_provider/test/gcp_fakes.h"
@@ -39,13 +41,14 @@ class GcpSetupTest : public ::testing::Test {
 
   void ExpectAllFilesToExist(bool exist, const base::string16& product_version);
   void ExpectCredentialProviderToBeRegistered(
-    bool registered,
-    const base::string16& product_version);
+      bool registered,
+      const base::string16& product_version);
 
   base::FilePath installed_path_for_version(
       const base::string16& product_version) {
     return scoped_temp_prog_dir_.GetPath()
-        .Append(FILE_PATH_LITERAL("Google\\Credential Provider"))
+        .Append(GetInstallParentDirectoryName())
+        .Append(FILE_PATH_LITERAL("Credential Provider"))
         .Append(product_version);
   }
 
@@ -118,10 +121,15 @@ void GcpSetupTest::ExpectAllFilesToExist(
 void GcpSetupTest::ExpectCredentialProviderToBeRegistered(
     bool registered,
     const base::string16& product_version) {
+  wchar_t guid_in_wchar[64];
+  StringFromGUID2(CLSID_GaiaCredentialProvider, guid_in_wchar,
+                  base::size(guid_in_wchar));
+
   // Make sure COM object is registered.
-  base::string16 subkey(
-      L"CLSID\\{0B5BFDF0-4594-47AC-940A-CFC69ABC561C}\\InprocServer32");
-  base::win::RegKey clsid_key(HKEY_CLASSES_ROOT, subkey.c_str(), KEY_READ);
+  base::string16 register_key_path =
+      base::StringPrintf(L"CLSID\\%ls\\InprocServer32", guid_in_wchar);
+  base::win::RegKey clsid_key(HKEY_CLASSES_ROOT, register_key_path.c_str(),
+                              KEY_READ);
   EXPECT_EQ(registered, clsid_key.Valid());
 
   if (registered) {
@@ -132,12 +140,12 @@ void GcpSetupTest::ExpectCredentialProviderToBeRegistered(
     EXPECT_EQ(path.value(), value);
   }
 
+  base::string16 cp_key_path = base::StringPrintf(
+      L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\"
+      L"Authentication\\Credential Providers\\%ls", guid_in_wchar);
+
   // Make sure credential provider is registered.
-  base::win::RegKey cp_key(HKEY_LOCAL_MACHINE,
-                           L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\"
-                           L"Authentication\\Credential Providers\\"
-                           L"{0B5BFDF0-4594-47AC-940A-CFC69ABC561C}",
-                           KEY_READ);
+  base::win::RegKey cp_key(HKEY_LOCAL_MACHINE, cp_key_path.c_str(), KEY_READ);
   EXPECT_EQ(registered, cp_key.Valid());
 
   // Make sure eventlog source is registered.
@@ -228,8 +236,8 @@ TEST_F(GcpSetupTest, DoInstallOverOldInstall) {
 
   FakeOSUserManager::UserInfo old_user_info =
       fake_os_user_manager()->GetUserInfo(kGaiaAccountName);
-  base::string16 old_password = fake_scoped_lsa_policy_factory()
-      ->private_data()[kLsaKeyGaiaPassword];
+  base::string16 old_password =
+      fake_scoped_lsa_policy_factory()->private_data()[kLsaKeyGaiaPassword];
   EXPECT_FALSE(old_password.empty());
 
   logging::ResetEventSourceForTesting();
@@ -245,9 +253,9 @@ TEST_F(GcpSetupTest, DoInstallOverOldInstall) {
   // Make sure kGaiaAccountName info and private data are unchanged.
   EXPECT_EQ(old_user_info,
             fake_os_user_manager()->GetUserInfo(kGaiaAccountName));
-  EXPECT_EQ(old_password,
-            fake_scoped_lsa_policy_factory()
-                ->private_data()[kLsaKeyGaiaPassword]);
+  EXPECT_EQ(
+      old_password,
+      fake_scoped_lsa_policy_factory()->private_data()[kLsaKeyGaiaPassword]);
 }
 
 TEST_F(GcpSetupTest, DoInstallOverOldLockedInstall) {

@@ -14,6 +14,7 @@ const ImageEncodingMimeType ImageEncoderUtils::kDefaultEncodingMimeType =
     kMimeTypePng;
 const char ImageEncoderUtils::kDefaultRequestedMimeType[] = "image/png";
 
+namespace {
 // This enum is used in a UMA histogram; the values should not be changed.
 enum RequestedImageMimeType {
   kRequestedImageMimeTypePng = 0,
@@ -24,8 +25,10 @@ enum RequestedImageMimeType {
   kRequestedImageMimeTypeIco = 5,
   kRequestedImageMimeTypeTiff = 6,
   kRequestedImageMimeTypeUnknown = 7,
-  kNumberOfRequestedImageMimeTypes
+  kMaxValue = kRequestedImageMimeTypeUnknown,
 };
+
+}  // namespace
 
 ImageEncodingMimeType ImageEncoderUtils::ToEncodingMimeType(
     const String& mime_type_name,
@@ -57,24 +60,15 @@ ImageEncodingMimeType ImageEncoderUtils::ToEncodingMimeType(
   }
 
   if (encode_reason == kEncodeReasonToDataURL) {
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram,
-                                    to_data_url_requested_mime_type_histogram,
-                                    ("Canvas.RequestedImageMimeTypes_toDataURL",
-                                     kNumberOfRequestedImageMimeTypes));
-    to_data_url_requested_mime_type_histogram.Count(requested_mime_type);
+    UMA_HISTOGRAM_ENUMERATION("Blink.Canvas.RequestedImageMimeTypes_toDataURL",
+                              requested_mime_type);
   } else if (encode_reason == kEncodeReasonToBlobCallback) {
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(
-        EnumerationHistogram, to_blob_callback_requested_mime_type_histogram,
-        ("Canvas.RequestedImageMimeTypes_toBlobCallback",
-         kNumberOfRequestedImageMimeTypes));
-    to_blob_callback_requested_mime_type_histogram.Count(requested_mime_type);
+    UMA_HISTOGRAM_ENUMERATION(
+        "Blink.Canvas.RequestedImageMimeTypes_toBlobCallback",
+        requested_mime_type);
   } else if (encode_reason == kEncodeReasonConvertToBlobPromise) {
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(
-        EnumerationHistogram,
-        convert_to_blob_promise_requested_mime_type_histogram,
-        ("Canvas.RequestedImageMimeTypes_convertToBlobPromise",
-         kNumberOfRequestedImageMimeTypes));
-    convert_to_blob_promise_requested_mime_type_histogram.Count(
+    UMA_HISTOGRAM_ENUMERATION(
+        "Blink.Canvas.RequestedImageMimeTypes_convertToBlobPromise",
         requested_mime_type);
   }
 

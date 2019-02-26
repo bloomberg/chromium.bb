@@ -15,7 +15,9 @@
 import("../swiftshader.gni")
 
 declare_args() {
-  use_swiftshader_with_subzero = true
+  # Subzero produces smaller binaries, but doesn't support ARM64 and MIPS64.
+  use_swiftshader_with_subzero =
+      target_cpu != "arm64" && target_cpu != "mips64el"
 }
 
 # Need a separate config to ensure the warnings are added to the end.
@@ -40,10 +42,15 @@ config("swiftshader_subzero_common_private_config") {
       "SZTARGET=X8664",
       "SUBZERO_TARGET=X8664",
     ]
-  } else {
+  } else if (target_cpu == "x86") {
     defines += [
       "SZTARGET=X8632",
       "SUBZERO_TARGET=X8632",
+    ]
+  } else if (target_cpu == "mipsel") {
+    defines += [
+      "SZTARGET=MIPS32",
+      "SUBZERO_TARGET=MIPS32",
     ]
   }
 
@@ -152,16 +159,16 @@ config("swiftshader_reactor_private_config") {
       "/wd4201",  # nameless struct/union
       "/wd4245",  # conversion from int to unsigned int (llvm)
     ]
-  } else if (target_cpu == "x86" || target_cpu == "x64") {
-    cflags = [
-      "-Wno-unused-local-typedef",
-      "-msse2",
-    ]
-
+  } else {
+    cflags = [ "-Wno-unused-local-typedef" ]
     defines = [
       "__STDC_CONSTANT_MACROS",
       "__STDC_LIMIT_MACROS",
     ]
+
+    if (target_cpu == "x86" || target_cpu == "x64") {
+        cflags += [ "-msse2" ]
+    }
   }
 }
 
@@ -246,10 +253,16 @@ if (use_swiftshader_with_subzero) {
         "$subzero_dir/src/IceInstX8664.cpp",
         "$subzero_dir/src/IceTargetLoweringX8664.cpp",
       ]
-    } else {
+    } else if (target_cpu == "x86") {
       sources += [
         "$subzero_dir/src/IceInstX8632.cpp",
         "$subzero_dir/src/IceTargetLoweringX8632.cpp",
+      ]
+    } else if (target_cpu == "mipsel") {
+      sources += [
+        "$subzero_dir/src/IceAssemblerMIPS32.cpp",
+        "$subzero_dir/src/IceInstMIPS32.cpp",
+        "$subzero_dir/src/IceTargetLoweringMIPS32.cpp",
       ]
     }
 
@@ -267,6 +280,8 @@ swiftshader_source_set("swiftshader_reactor") {
 
   sources = [
     "Routine.cpp",
+    "Debug.cpp",
+    "ExecutableMemory.cpp",
   ]
 
   if (use_swiftshader_with_subzero) {
@@ -283,23 +298,38 @@ swiftshader_source_set("swiftshader_reactor") {
     ]
 
     include_dirs = [
-      "..",
     ]
   } else {
-    deps += [ "../../third_party/LLVM:swiftshader_llvm" ]
+    llvm7_dir = "../../third_party/llvm-7.0"
+
+    deps += [ "$llvm7_dir:swiftshader_llvm" ]
+
+    defines = [ "REACTOR_LLVM_VERSION=7" ]
 
     sources += [
       "LLVMReactor.cpp",
       "LLVMRoutine.cpp",
       "LLVMRoutineManager.cpp",
+      "CPUID.cpp",
     ]
 
     configs = [ ":swiftshader_reactor_private_config" ]
 
     include_dirs = [
-      "..",
-      "../Common",
-      "../../third_party/LLVM/include/",
+      "$llvm7_dir/llvm/include/",
+      "$llvm7_dir/configs/common/include/",
     ]
+
+    if (is_linux) {
+      include_dirs += [ "$llvm7_dir/configs/linux/include/" ]
+    } else if (is_fuchsia) {
+      include_dirs += [ "$llvm7_dir/configs/fuchsia/include/" ]
+    } else if (is_win) {
+      include_dirs += [ "$llvm7_dir/configs/windows/include/" ]
+    } else if (is_android) {
+      include_dirs += [ "$llvm7_dir/configs/android/include/" ]
+    } else {
+      assert(false, "llvm-7.0 not configured for target platform")
+    }
   }
 }

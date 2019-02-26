@@ -44,28 +44,28 @@ UIEventWithKeyState::UIEventWithKeyState(
       modifiers_(modifiers) {}
 
 UIEventWithKeyState::UIEventWithKeyState(const AtomicString& type,
-                                         const EventModifierInit& initializer,
+                                         const EventModifierInit* initializer,
                                          TimeTicks platform_time_stamp)
     : UIEvent(type, initializer, platform_time_stamp), modifiers_(0) {
-  if (initializer.ctrlKey())
+  if (initializer->ctrlKey())
     modifiers_ |= WebInputEvent::kControlKey;
-  if (initializer.shiftKey())
+  if (initializer->shiftKey())
     modifiers_ |= WebInputEvent::kShiftKey;
-  if (initializer.altKey())
+  if (initializer->altKey())
     modifiers_ |= WebInputEvent::kAltKey;
-  if (initializer.metaKey())
+  if (initializer->metaKey())
     modifiers_ |= WebInputEvent::kMetaKey;
-  if (initializer.modifierAltGraph())
+  if (initializer->modifierAltGraph())
     modifiers_ |= WebInputEvent::kAltGrKey;
-  if (initializer.modifierFn())
+  if (initializer->modifierFn())
     modifiers_ |= WebInputEvent::kFnKey;
-  if (initializer.modifierCapsLock())
+  if (initializer->modifierCapsLock())
     modifiers_ |= WebInputEvent::kCapsLockOn;
-  if (initializer.modifierScrollLock())
+  if (initializer->modifierScrollLock())
     modifiers_ |= WebInputEvent::kScrollLockOn;
-  if (initializer.modifierNumLock())
+  if (initializer->modifierNumLock())
     modifiers_ |= WebInputEvent::kNumLockOn;
-  if (initializer.modifierSymbol())
+  if (initializer->modifierSymbol())
     modifiers_ |= WebInputEvent::kSymbolKey;
 }
 
@@ -84,28 +84,28 @@ void UIEventWithKeyState::DidCreateEventInIsolatedWorld(bool ctrl_key,
 }
 
 void UIEventWithKeyState::SetFromWebInputEventModifiers(
-    EventModifierInit& initializer,
+    EventModifierInit* initializer,
     WebInputEvent::Modifiers modifiers) {
   if (modifiers & WebInputEvent::kControlKey)
-    initializer.setCtrlKey(true);
+    initializer->setCtrlKey(true);
   if (modifiers & WebInputEvent::kShiftKey)
-    initializer.setShiftKey(true);
+    initializer->setShiftKey(true);
   if (modifiers & WebInputEvent::kAltKey)
-    initializer.setAltKey(true);
+    initializer->setAltKey(true);
   if (modifiers & WebInputEvent::kMetaKey)
-    initializer.setMetaKey(true);
+    initializer->setMetaKey(true);
   if (modifiers & WebInputEvent::kAltGrKey)
-    initializer.setModifierAltGraph(true);
+    initializer->setModifierAltGraph(true);
   if (modifiers & WebInputEvent::kFnKey)
-    initializer.setModifierFn(true);
+    initializer->setModifierFn(true);
   if (modifiers & WebInputEvent::kCapsLockOn)
-    initializer.setModifierCapsLock(true);
+    initializer->setModifierCapsLock(true);
   if (modifiers & WebInputEvent::kScrollLockOn)
-    initializer.setModifierScrollLock(true);
+    initializer->setModifierScrollLock(true);
   if (modifiers & WebInputEvent::kNumLockOn)
-    initializer.setModifierNumLock(true);
+    initializer->setModifierNumLock(true);
   if (modifiers & WebInputEvent::kSymbolKey)
-    initializer.setModifierSymbol(true);
+    initializer->setModifierSymbol(true);
 }
 
 bool UIEventWithKeyState::getModifierState(const String& key_identifier) const {

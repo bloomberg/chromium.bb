@@ -55,6 +55,8 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile,
       content::WebUIDataSource::Create(chrome::kChromeUIHistoryHost);
 
   // Localized strings (alphabetical order).
+  source->AddLocalizedString("actionMenuDescription",
+                             IDS_HISTORY_ACTION_MENU_DESCRIPTION);
   source->AddLocalizedString("bookmarked", IDS_HISTORY_ENTRY_BOOKMARKED);
   source->AddLocalizedString("cancel", IDS_CANCEL);
   source->AddLocalizedString("clearBrowsingData",
@@ -82,8 +84,6 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile,
   source->AddLocalizedString("itemsSelected", IDS_MD_HISTORY_ITEMS_SELECTED);
   source->AddLocalizedString("loading", IDS_HISTORY_LOADING);
   source->AddLocalizedString("menuPromo", IDS_MD_HISTORY_MENU_PROMO);
-  source->AddLocalizedString("moreActionsButton",
-                             IDS_HISTORY_ACTION_MENU_DESCRIPTION);
   source->AddLocalizedString("moreFromSite", IDS_HISTORY_MORE_FROM_SITE);
   source->AddLocalizedString("openAll", IDS_HISTORY_OTHER_SESSIONS_OPEN_ALL);
   source->AddLocalizedString("openTabsMenuItem",

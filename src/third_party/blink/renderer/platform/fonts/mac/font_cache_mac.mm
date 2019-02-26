@@ -39,9 +39,9 @@
 #include "third_party/blink/renderer/platform/fonts/font_platform_data.h"
 #include "third_party/blink/renderer/platform/fonts/mac/font_matcher_mac.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
@@ -63,12 +63,12 @@ const char kColorEmojiFontMac[] = "Apple Color Emoji";
 
 // static
 const AtomicString& FontCache::LegacySystemFontFamily() {
-  return FontFamilyNames::BlinkMacSystemFont;
+  return font_family_names::kBlinkMacSystemFont;
 }
 
 static void InvalidateFontCache() {
   if (!IsMainThread()) {
-    Platform::Current()->MainThread()->GetTaskRunner()->PostTask(
+    Thread::MainThread()->GetTaskRunner()->PostTask(
         FROM_HERE, WTF::Bind(&InvalidateFontCache));
     return;
   }
@@ -87,9 +87,9 @@ static void FontCacheRegisteredFontsChangedNotificationCallback(
 }
 
 static bool UseHinting() {
-  // Enable hinting only when antialiasing is disabled in layout tests.
-  return (LayoutTestSupport::IsRunningLayoutTest() &&
-          !LayoutTestSupport::IsFontAntialiasingEnabledForTest());
+  // Enable hinting only when antialiasing is disabled in web tests.
+  return (WebTestSupport::IsRunningWebTest() &&
+          !WebTestSupport::IsFontAntialiasingEnabledForTest());
 }
 
 void FontCache::PlatformInit() {
@@ -232,7 +232,7 @@ scoped_refptr<SimpleFontData> FontCache::GetLastResortFallbackFont(
   // For now we'll pick the default that the user would get without changing
   // any prefs.
   scoped_refptr<SimpleFontData> simple_font_data =
-      GetFontData(font_description, FontFamilyNames::Times,
+      GetFontData(font_description, font_family_names::kTimes,
                   AlternateFontName::kAllowAlternate, should_retain);
   if (simple_font_data)
     return simple_font_data;
@@ -241,7 +241,7 @@ scoped_refptr<SimpleFontData> FontCache::GetLastResortFallbackFont(
   // where the user doesn't have it, we fall back on Lucida Grande because
   // that's guaranteed to be there, according to Nathan Taylor. This is good
   // enough to avoid a crash at least.
-  return GetFontData(font_description, FontFamilyNames::Lucida_Grande,
+  return GetFontData(font_description, font_family_names::kLucidaGrande,
                      AlternateFontName::kAllowAlternate, should_retain);
 }
 

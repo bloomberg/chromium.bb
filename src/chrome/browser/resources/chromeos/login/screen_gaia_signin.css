@@ -70,6 +70,7 @@
   height: 44px;
   justify-content: center;
   left: 0;
+  min-height: 0;
   position: absolute;
   right: 0;
   top: 0;

@@ -12,7 +12,7 @@ using NotifierIdStructTraits =
                  message_center::NotifierId>;
 
 // static
-const message_center::NotifierId::NotifierType& NotifierIdStructTraits::type(
+message_center::NotifierType NotifierIdStructTraits::type(
     const message_center::NotifierId& n) {
   return n.type;
 }

@@ -187,12 +187,6 @@ void WebStateImpl::OnTitleChanged() {
     observer.TitleWasSet(this);
 }
 
-void WebStateImpl::OnDialogSuppressed() {
-  DCHECK(ShouldSuppressDialogs());
-  for (auto& observer : observers_)
-    observer.DidSuppressDialog(this);
-}
-
 void WebStateImpl::OnRenderProcessGone() {
   for (auto& observer : observers_)
     observer.RenderProcessGone(this);
@@ -237,6 +231,9 @@ bool WebStateImpl::IsLoading() const {
 }
 
 double WebStateImpl::GetLoadingProgress() const {
+  if (navigation_manager_->IsRestoreSessionInProgress())
+    return 0.0;
+
   return [web_controller_ loadingProgress];
 }
 
@@ -569,14 +566,6 @@ void WebStateImpl::SetWebUsageEnabled(bool enabled) {
   [web_controller_ setWebUsageEnabled:enabled];
 }
 
-bool WebStateImpl::ShouldSuppressDialogs() const {
-  return [web_controller_ shouldSuppressDialogs];
-}
-
-void WebStateImpl::SetShouldSuppressDialogs(bool should_suppress) {
-  [web_controller_ setShouldSuppressDialogs:should_suppress];
-}
-
 UIView* WebStateImpl::GetView() {
   return [web_controller_ view];
 }
@@ -611,6 +600,11 @@ void WebStateImpl::OpenURL(const WebState::OpenURLParams& params) {
 }
 
 void WebStateImpl::Stop() {
+  if (navigation_manager_->IsRestoreSessionInProgress()) {
+    // Do not interrupt session restoration process. For embedder session
+    // restoration is opaque and WebState acts like ut's idle.
+    return;
+  }
   [web_controller_ stopLoading];
 }
 
@@ -690,9 +684,22 @@ const GURL& WebStateImpl::GetLastCommittedURL() const {
 
 GURL WebStateImpl::GetCurrentURL(URLVerificationTrustLevel* trust_level) const {
   GURL URL = [web_controller_ currentURLWithTrustLevel:trust_level];
-  bool equalOrigins = URL.GetOrigin() == GetLastCommittedURL().GetOrigin();
+
+  GURL lastCommittedUrl = GetLastCommittedURL();
+  bool equalOrigins;
+  if (URL.SchemeIs(url::kAboutScheme) &&
+      web::GetWebClient()->IsAppSpecificURL(lastCommittedUrl)) {
+    // This special case is added for any app specific URLs that have been
+    // rewritten to about:// URLs.  In this case, an about scheme does not have
+    // an origin to compare, only a path.
+    web::NavigationItem* item = navigation_manager_->GetLastCommittedItem();
+    GURL lastCommittedUrl = item ? item->GetURL() : GURL::EmptyGURL();
+    equalOrigins = URL.path() == lastCommittedUrl.path();
+  } else {
+    equalOrigins = URL.GetOrigin() == lastCommittedUrl.GetOrigin();
+  }
   DCHECK(equalOrigins) << "Origin mismatch. URL: " << URL.spec()
-                       << " Last committed: " << GetLastCommittedURL().spec();
+                       << " Last committed: " << lastCommittedUrl.spec();
   UMA_HISTOGRAM_BOOLEAN("Web.CurrentOriginEqualsLastCommittedOrigin",
                         equalOrigins);
   return URL;
@@ -736,23 +743,27 @@ void WebStateImpl::TakeSnapshot(CGRect rect, SnapshotCallback callback) {
                 }];
 }
 
-void WebStateImpl::OnNavigationStarted(web::NavigationContext* context) {
+void WebStateImpl::OnNavigationStarted(web::NavigationContextImpl* context) {
   // Navigation manager loads internal URLs to restore session history and
   // create back-forward entries for Native View and WebUI. Do not trigger
   // external callbacks.
-  if (wk_navigation_util::IsWKInternalUrl(context->GetUrl()))
+  if (context->IsPlaceholderNavigation() ||
+      wk_navigation_util::IsRestoreSessionUrl(context->GetUrl())) {
     return;
+  }
 
   for (auto& observer : observers_)
     observer.DidStartNavigation(this, context);
 }
 
-void WebStateImpl::OnNavigationFinished(web::NavigationContext* context) {
+void WebStateImpl::OnNavigationFinished(web::NavigationContextImpl* context) {
   // Navigation manager loads internal URLs to restore session history and
   // create back-forward entries for Native View and WebUI. Do not trigger
   // external callbacks.
-  if (wk_navigation_util::IsWKInternalUrl(context->GetUrl()))
+  if (context->IsPlaceholderNavigation() ||
+      wk_navigation_util::IsRestoreSessionUrl(context->GetUrl())) {
     return;
+  }
 
   for (auto& observer : observers_)
     observer.DidFinishNavigation(this, context);
@@ -825,7 +836,7 @@ void WebStateImpl::LoadIfNecessary() {
 }
 
 void WebStateImpl::Reload() {
-  [web_controller_ reload];
+  [web_controller_ reloadWithRendererInitiatedNavigation:NO];
 }
 
 void WebStateImpl::OnNavigationItemsPruned(size_t pruned_item_count) {

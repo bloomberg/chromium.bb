@@ -11,32 +11,33 @@
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 
 namespace blink {
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool GridArea::ParseShorthand(
     bool important,
     CSSParserTokenRange& range,
-    const CSSParserContext&,
+    const CSSParserContext& context,
     const CSSParserLocalContext&,
     HeapVector<CSSPropertyValue, 256>& properties) const {
   DCHECK_EQ(gridAreaShorthand().length(), 4u);
 
-  CSSValue* row_start_value = CSSParsingUtils::ConsumeGridLine(range);
+  CSSValue* row_start_value =
+      css_parsing_utils::ConsumeGridLine(range, context);
   if (!row_start_value)
     return false;
   CSSValue* column_start_value = nullptr;
   CSSValue* row_end_value = nullptr;
   CSSValue* column_end_value = nullptr;
-  if (CSSPropertyParserHelpers::ConsumeSlashIncludingWhitespace(range)) {
-    column_start_value = CSSParsingUtils::ConsumeGridLine(range);
+  if (css_property_parser_helpers::ConsumeSlashIncludingWhitespace(range)) {
+    column_start_value = css_parsing_utils::ConsumeGridLine(range, context);
     if (!column_start_value)
       return false;
-    if (CSSPropertyParserHelpers::ConsumeSlashIncludingWhitespace(range)) {
-      row_end_value = CSSParsingUtils::ConsumeGridLine(range);
+    if (css_property_parser_helpers::ConsumeSlashIncludingWhitespace(range)) {
+      row_end_value = css_parsing_utils::ConsumeGridLine(range, context);
       if (!row_end_value)
         return false;
-      if (CSSPropertyParserHelpers::ConsumeSlashIncludingWhitespace(range)) {
-        column_end_value = CSSParsingUtils::ConsumeGridLine(range);
+      if (css_property_parser_helpers::ConsumeSlashIncludingWhitespace(range)) {
+        column_end_value = css_parsing_utils::ConsumeGridLine(range, context);
         if (!column_end_value)
           return false;
       }
@@ -60,19 +61,21 @@ bool GridArea::ParseShorthand(
                            : CSSIdentifierValue::Create(CSSValueAuto);
   }
 
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyGridRowStart, CSSPropertyGridArea, *row_start_value, important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
-  CSSPropertyParserHelpers::AddProperty(
-      CSSPropertyGridColumnStart, CSSPropertyGridArea, *column_start_value,
-      important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
+      CSSPropertyGridColumnStart, CSSPropertyGridArea, *column_start_value,
+      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
+  css_property_parser_helpers::AddProperty(
       CSSPropertyGridRowEnd, CSSPropertyGridArea, *row_end_value, important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
-  CSSPropertyParserHelpers::AddProperty(
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
+  css_property_parser_helpers::AddProperty(
       CSSPropertyGridColumnEnd, CSSPropertyGridArea, *column_end_value,
-      important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   return true;
 }
@@ -88,5 +91,5 @@ const CSSValue* GridArea::CSSValueFromComputedStyleInternal(
                                                     allow_visited_style);
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink

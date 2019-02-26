@@ -54,6 +54,8 @@ class FilteringNetworkManager : public rtc::NetworkManagerBase,
   bool GetDefaultLocalAddress(int family,
                               rtc::IPAddress* ipaddress) const override;
 
+  webrtc::MdnsResponderInterface* GetMdnsResponder() const override;
+
  private:
   // Check mic/camera permission.
   void CheckPermission();

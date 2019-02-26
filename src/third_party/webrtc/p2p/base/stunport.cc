@@ -319,9 +319,9 @@ bool UDPPort::HandleIncomingPacket(rtc::AsyncPacketSocket* socket,
                                    const char* data,
                                    size_t size,
                                    const rtc::SocketAddress& remote_addr,
-                                   const rtc::PacketTime& packet_time) {
+                                   int64_t packet_time_us) {
   // All packets given to UDP port will be consumed.
-  OnReadPacket(socket, data, size, remote_addr, packet_time);
+  OnReadPacket(socket, data, size, remote_addr, packet_time_us);
   return true;
 }
 
@@ -358,11 +358,15 @@ void UDPPort::OnLocalAddressReady(rtc::AsyncPacketSocket* socket,
   MaybePrepareStunCandidate();
 }
 
+void UDPPort::PostAddAddress(bool is_final) {
+  MaybeSetPortCompleteOrError();
+}
+
 void UDPPort::OnReadPacket(rtc::AsyncPacketSocket* socket,
                            const char* data,
                            size_t size,
                            const rtc::SocketAddress& remote_addr,
-                           const rtc::PacketTime& packet_time) {
+                           const int64_t& packet_time_us) {
   RTC_DCHECK(socket == socket_);
   RTC_DCHECK(!remote_addr.IsUnresolvedIP());
 
@@ -376,7 +380,7 @@ void UDPPort::OnReadPacket(rtc::AsyncPacketSocket* socket,
   }
 
   if (Connection* conn = GetConnection(remote_addr)) {
-    conn->OnReadPacket(data, size, packet_time);
+    conn->OnReadPacket(data, size, packet_time_us);
   } else {
     Port::OnReadPacket(data, size, remote_addr, PROTO_UDP);
   }
@@ -517,8 +521,14 @@ void UDPPort::OnStunBindingOrResolveRequestFailed(
 }
 
 void UDPPort::MaybeSetPortCompleteOrError() {
-  if (ready_)
+  if (mdns_name_registration_status() ==
+      MdnsNameRegistrationStatus::kInProgress) {
     return;
+  }
+
+  if (ready_) {
+    return;
+  }
 
   // Do not set port ready if we are still waiting for bind responses.
   const size_t servers_done_bind_request =

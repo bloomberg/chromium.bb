@@ -14,6 +14,7 @@
 #include "absl/memory/memory.h"
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
 #include "api/audio_codecs/builtin_audio_encoder_factory.h"
+#include "api/create_peerconnection_factory.h"
 #include "api/jsep.h"
 #include "api/mediastreaminterface.h"
 #include "api/peerconnectioninterface.h"
@@ -117,6 +118,8 @@ class PeerConnectionRtpBaseTest : public testing::Test {
     auto observer = absl::make_unique<MockPeerConnectionObserver>();
     auto pc = pc_factory_->CreatePeerConnection(config, nullptr, nullptr,
                                                 observer.get());
+    EXPECT_TRUE(pc.get());
+    observer->SetPeerConnectionInterface(pc.get());
     return absl::make_unique<PeerConnectionWrapper>(pc_factory_, pc,
                                                     std::move(observer));
   }
@@ -450,6 +453,33 @@ TEST_F(PeerConnectionRtpTestUnifiedPlan,
   ASSERT_TRUE(callee->SetLocalDescription(callee->CreateAnswer()));
   EXPECT_EQ(1u, callee->observer()->add_track_events_.size());
   EXPECT_EQ(1u, callee->observer()->remove_track_events_.size());
+}
+
+TEST_F(PeerConnectionRtpTestUnifiedPlan, ChangeMsidWhileReceiving) {
+  auto caller = CreatePeerConnection();
+  caller->AddAudioTrack("audio_track", {"stream1"});
+  auto callee = CreatePeerConnection();
+  ASSERT_TRUE(callee->SetRemoteDescription(caller->CreateOffer()));
+
+  ASSERT_EQ(1u, callee->observer()->on_track_transceivers_.size());
+  auto transceiver = callee->observer()->on_track_transceivers_[0];
+  ASSERT_EQ(1u, transceiver->receiver()->streams().size());
+  EXPECT_EQ("stream1", transceiver->receiver()->streams()[0]->id());
+
+  ASSERT_TRUE(callee->SetLocalDescription(callee->CreateAnswer()));
+
+  // Change the stream ID in the offer.
+  // TODO(https://crbug.com/webrtc/10129): When RtpSenderInterface::SetStreams
+  // is supported, this can use that instead of munging the SDP.
+  auto offer = caller->CreateOffer();
+  auto contents = offer->description()->contents();
+  ASSERT_EQ(1u, contents.size());
+  auto& stream_params = contents[0].media_description()->mutable_streams();
+  ASSERT_EQ(1u, stream_params.size());
+  stream_params[0].set_stream_ids({"stream2"});
+  ASSERT_TRUE(callee->SetRemoteDescription(std::move(offer)));
+  ASSERT_EQ(1u, transceiver->receiver()->streams().size());
+  EXPECT_EQ("stream2", transceiver->receiver()->streams()[0]->id());
 }
 
 // These tests examine the state of the peer connection as a result of

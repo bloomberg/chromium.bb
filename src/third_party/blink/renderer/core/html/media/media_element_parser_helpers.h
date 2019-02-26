@@ -10,10 +10,9 @@
 namespace blink {
 
 class Element;
-class Document;
 class LayoutObject;
 
-namespace MediaElementParserHelpers {
+namespace media_element_parser_helpers {
 
 // Parses the intrinsicSize attribute of HTMLImageElement, HTMLVideoElement, and
 // SVGImageElement. Returns true if the value is updated.
@@ -28,13 +27,9 @@ bool ParseIntrinsicSizeAttribute(const String& value,
 // are not in an image or media document; returns false otherwise.
 bool IsMediaElement(const Element* element);
 
-// Returns if the document is allowed to use
-// FeaturePolicyFeature::kUnsizedMedia.
-bool IsUnsizedMediaEnabled(const Document& document);
-
 void ReportUnsizedMediaViolation(const LayoutObject* layout_object);
 
-}  // namespace MediaElementParserHelpers
+}  // namespace media_element_parser_helpers
 
 }  // namespace blink
 

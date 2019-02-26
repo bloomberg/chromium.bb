@@ -34,14 +34,12 @@
 namespace blink {
 
 enum WebNavigationPolicy {
-  kWebNavigationPolicyIgnore,
   kWebNavigationPolicyDownload,
   kWebNavigationPolicyCurrentTab,
   kWebNavigationPolicyNewBackgroundTab,
   kWebNavigationPolicyNewForegroundTab,
   kWebNavigationPolicyNewWindow,
   kWebNavigationPolicyNewPopup,
-  kWebNavigationPolicyHandledByClient,
 };
 
 }  // namespace blink

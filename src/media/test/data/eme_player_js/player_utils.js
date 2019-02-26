@@ -103,8 +103,8 @@ PlayerUtils.registerEMEEventListeners = function(player) {
         // ClearKeyCdm::GetStatusForPolicy() for details.
         return Promise.all([
           getStatusForHdcpPolicy(mediaKeys, '', 'usable'),
-          getStatusForHdcpPolicy(mediaKeys, 'hdcp-1.0', 'usable'),
-          getStatusForHdcpPolicy(mediaKeys, 'hdcp-2.3', 'output-restricted'),
+          getStatusForHdcpPolicy(mediaKeys, '1.0', 'usable'),
+          getStatusForHdcpPolicy(mediaKeys, '2.3', 'output-restricted'),
         ]);
       }
 
@@ -113,7 +113,7 @@ PlayerUtils.registerEMEEventListeners = function(player) {
         // is always rejected.
         return Promise.all([
           getStatusForHdcpPolicy(mediaKeys, '', 'rejected'),
-          getStatusForHdcpPolicy(mediaKeys, 'hdcp-1.0', 'rejected'),
+          getStatusForHdcpPolicy(mediaKeys, '1.0', 'rejected'),
         ]);
       }
 
@@ -123,7 +123,7 @@ PlayerUtils.registerEMEEventListeners = function(player) {
         // so we cannot enforce it.
         return Promise.all([
           getStatusForHdcpPolicy(mediaKeys, '', 'usable'),
-          getStatusForHdcpPolicy(mediaKeys, 'hdcp-1.0', 'resolved'),
+          getStatusForHdcpPolicy(mediaKeys, '1.0', 'resolved'),
         ]);
       }
 

@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.suggestions;
 
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.blink_public.web.WebReferrerPolicy;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
@@ -24,6 +23,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.Referrer;
+import org.chromium.network.mojom.ReferrerPolicy;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
@@ -121,7 +121,7 @@ public class SuggestionsNavigationDelegate extends NativePageNavigationDelegateI
         if (article.mCategory == KnownCategories.ARTICLES) {
             loadUrlParams.setReferrer(new Referrer(
                     SuggestionsConfig.getReferrerUrl(ChromeFeatureList.NTP_ARTICLE_SUGGESTIONS),
-                    WebReferrerPolicy.ALWAYS));
+                    ReferrerPolicy.ALWAYS));
         }
 
         // Set appropriate referrer for contextual suggestions to distinguish them from navigation
@@ -130,7 +130,7 @@ public class SuggestionsNavigationDelegate extends NativePageNavigationDelegateI
             loadUrlParams.setReferrer(
                     new Referrer(SuggestionsConfig.getReferrerUrl(
                                          ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON),
-                            WebReferrerPolicy.ALWAYS));
+                            ReferrerPolicy.ALWAYS));
         }
 
         Tab loadingTab = openUrl(windowOpenDisposition, loadUrlParams);

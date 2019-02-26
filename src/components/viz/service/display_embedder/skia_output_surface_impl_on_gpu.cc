@@ -6,17 +6,24 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/callback_helpers.h"
+#include "base/optional.h"
 #include "base/synchronization/waitable_event.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
+#include "components/viz/common/skia_helper.h"
 #include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
+#include "gpu/command_buffer/service/gr_shader_cache.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/scheduler.h"
+#include "gpu/command_buffer/service/shared_image_factory.h"
+#include "gpu/command_buffer/service/shared_image_representation.h"
+#include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/command_buffer/service/texture_base.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/config/gpu_preferences.h"
+#include "gpu/ipc/common/gpu_client_ids.h"
 #include "gpu/ipc/common/gpu_surface_lookup.h"
 #include "gpu/ipc/service/image_transport_surface.h"
 #include "gpu/vulkan/buildflags.h"
@@ -24,6 +31,7 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_version_info.h"
 #include "ui/gl/init/gl_factory.h"
@@ -39,31 +47,24 @@ base::AtomicSequenceNumber g_next_command_buffer_id;
 
 }  // namespace
 
-YUVResourceMetadata::YUVResourceMetadata(
-    std::vector<ResourceMetadata> metadatas,
-    SkYUVColorSpace yuv_color_space)
-    : metadatas_(std::move(metadatas)), yuv_color_space_(yuv_color_space) {
-  DCHECK(metadatas_.size() == 2 || metadatas_.size() == 3);
-}
-
-YUVResourceMetadata::YUVResourceMetadata(YUVResourceMetadata&& other) = default;
-
-YUVResourceMetadata::~YUVResourceMetadata() = default;
-
-YUVResourceMetadata& YUVResourceMetadata::operator=(
-    YUVResourceMetadata&& other) = default;
-
 SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
     GpuServiceImpl* gpu_service,
     gpu::SurfaceHandle surface_handle,
     const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
-    const BufferPresentedCallback& buffer_presented_callback)
+    const BufferPresentedCallback& buffer_presented_callback,
+    const ContextLostCallback& context_lost_callback)
     : command_buffer_id_(gpu::CommandBufferId::FromUnsafeValue(
           g_next_command_buffer_id.GetNext() + 1)),
       gpu_service_(gpu_service),
       surface_handle_(surface_handle),
       did_swap_buffer_complete_callback_(did_swap_buffer_complete_callback),
       buffer_presented_callback_(buffer_presented_callback),
+      context_lost_callback_(context_lost_callback),
+      // TODO(https://crbug.com/899905): Use a real MemoryTracker, not nullptr.
+      shared_image_representation_factory_(
+          std::make_unique<gpu::SharedImageRepresentationFactory>(
+              gpu_service_->shared_image_manager(),
+              nullptr)),
       weak_ptr_factory_(this) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
@@ -107,10 +108,8 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(
   }
 
   if (!gpu_service_->is_using_vulkan()) {
-    if (!gl_context_->MakeCurrent(gl_surface_.get())) {
-      LOG(FATAL) << "Failed to make current.";
-      // TODO(penghuang): Handle the failure.
-    }
+    if (!MakeCurrent())
+      return;
     gl::GLSurface::ColorSpace surface_color_space =
         color_space == gfx::ColorSpace::CreateSCRGBLinear()
             ? gl::GLSurface::ColorSpace::SCRGB_LINEAR
@@ -120,8 +119,8 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(
       LOG(FATAL) << "Failed to resize.";
       // TODO(penghuang): Handle the failure.
     }
-    DCHECK(gl_context_->IsCurrent(gl_surface_.get()));
-    DCHECK(gr_context_);
+    DCHECK(gl_context()->IsCurrent(gl_surface_.get()));
+    DCHECK(gr_context());
 
     SkSurfaceProps surface_props =
         SkSurfaceProps(0, SkSurfaceProps::kLegacyFontHost_InitType);
@@ -135,7 +134,7 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(
                                         framebuffer_info);
 
     sk_surface_ = SkSurface::MakeFromBackendRenderTarget(
-        gr_context_, render_target, kBottomLeft_GrSurfaceOrigin,
+        gr_context(), render_target, kBottomLeft_GrSurfaceOrigin,
         kBGRA_8888_SkColorType, nullptr, &surface_props);
     DCHECK(sk_surface_);
   } else {
@@ -183,38 +182,57 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(
 
 void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
     std::unique_ptr<SkDeferredDisplayList> ddl,
-    std::vector<YUVResourceMetadata*> yuv_resource_metadatas,
+    std::unique_ptr<SkDeferredDisplayList> overdraw_ddl,
     uint64_t sync_fence_release) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(ddl);
   DCHECK(sk_surface_);
 
-  if (!gpu_service_->is_using_vulkan() &&
-      !gl_context_->MakeCurrent(gl_surface_.get())) {
-    LOG(FATAL) << "Failed to make current.";
-    // TODO(penghuang): Handle the failure.
-  }
+  if (!MakeCurrent())
+    return;
 
-  PreprocessYUVResources(std::move(yuv_resource_metadatas));
-  sk_surface_->draw(ddl.get());
-  gr_context_->flush();
+  {
+    base::Optional<gpu::raster::GrShaderCache::ScopedCacheUse> cache_use;
+    if (gpu_service_->gr_shader_cache())
+      cache_use.emplace(gpu_service_->gr_shader_cache(),
+                        gpu::kInProcessCommandBufferClientId);
+    sk_surface_->draw(ddl.get());
+    gr_context()->flush();
+  }
   sync_point_client_state_->ReleaseFenceSync(sync_fence_release);
+
+  if (overdraw_ddl) {
+    sk_sp<SkSurface> overdraw_surface = SkSurface::MakeRenderTarget(
+        gr_context(), overdraw_ddl->characterization(), SkBudgeted::kNo);
+    overdraw_surface->draw(overdraw_ddl.get());
+
+    SkPaint paint;
+    sk_sp<SkImage> overdraw_image = overdraw_surface->makeImageSnapshot();
+
+    sk_sp<SkColorFilter> colorFilter = SkiaHelper::MakeOverdrawColorFilter();
+    paint.setColorFilter(colorFilter);
+    // TODO(xing.xu): move below to the thread where skia record happens.
+    sk_surface_->getCanvas()->drawImage(overdraw_image.get(), 0, 0, &paint);
+    gr_context()->flush();
+  }
 }
 
 void SkiaOutputSurfaceImplOnGpu::SwapBuffers(OutputSurfaceFrame frame) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(sk_surface_);
+  base::TimeTicks swap_start, swap_end;
   if (!gpu_service_->is_using_vulkan()) {
-    if (!gl_context_->MakeCurrent(gl_surface_.get())) {
-      LOG(FATAL) << "Failed to make current.";
-      // TODO(penghuang): Handle the failure.
-    }
+    if (!MakeCurrent())
+      return;
+    swap_start = base::TimeTicks::Now();
     OnSwapBuffers();
     gl_surface_->SwapBuffers(frame.need_presentation_feedback
                                  ? buffer_presented_callback_
                                  : base::DoNothing());
+    swap_end = base::TimeTicks::Now();
   } else {
 #if BUILDFLAG(ENABLE_VULKAN)
+    swap_start = base::TimeTicks::Now();
     OnSwapBuffers();
     auto backend = sk_surface_->getBackendRenderTarget(
         SkSurface::kFlushRead_BackendHandleAccess);
@@ -231,27 +249,28 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(OutputSurfaceFrame frame) {
     DidSwapBuffersComplete(params);
 
     CreateSkSurfaceForVulkan();
+    swap_end = base::TimeTicks::Now();
 #else
     NOTREACHED();
 #endif
+  }
+  for (auto& latency : frame.latency_info) {
+    latency.AddLatencyNumberWithTimestamp(
+        ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, swap_start, 1);
+    latency.AddLatencyNumberWithTimestamp(
+        ui::INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT, swap_end, 1);
   }
 }
 
 void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
     RenderPassId id,
     std::unique_ptr<SkDeferredDisplayList> ddl,
-    std::vector<YUVResourceMetadata*> yuv_resource_metadatas,
     uint64_t sync_fence_release) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(ddl);
 
-  if (!gpu_service_->is_using_vulkan() &&
-      !gl_context_->MakeCurrent(gl_surface_.get())) {
-    LOG(FATAL) << "Failed to make current.";
-    // TODO(penghuang): Handle the failure.
-  }
-
-  PreprocessYUVResources(std::move(yuv_resource_metadatas));
+  if (!MakeCurrent())
+    return;
 
   auto& surface = offscreen_surfaces_[id];
   SkSurfaceCharacterization characterization;
@@ -259,12 +278,18 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
   // the SkSurfaceCharacterization::operator!= is implemented in Skia.
   if (!surface || !surface->characterize(&characterization) ||
       characterization != ddl->characterization()) {
-    surface = SkSurface::MakeRenderTarget(gr_context_, ddl->characterization(),
+    surface = SkSurface::MakeRenderTarget(gr_context(), ddl->characterization(),
                                           SkBudgeted::kNo);
     DCHECK(surface);
   }
-  surface->draw(ddl.get());
-  surface->flush();
+  {
+    base::Optional<gpu::raster::GrShaderCache::ScopedCacheUse> cache_use;
+    if (gpu_service_->gr_shader_cache())
+      cache_use.emplace(gpu_service_->gr_shader_cache(),
+                        gpu::kInProcessCommandBufferClientId);
+    surface->draw(ddl.get());
+    gr_context()->flush();
+  }
   sync_point_client_state_->ReleaseFenceSync(sync_fence_release);
 }
 
@@ -284,6 +309,11 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
     const gfx::Rect& copy_rect,
     std::unique_ptr<CopyOutputRequest> request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (!MakeCurrent()) {
+    request->SendResult(
+        std::make_unique<CopyOutputSkBitmapResult>(gfx::Rect(), SkBitmap()));
+    return;
+  }
 
   // TODO(crbug.com/644851): Complete the implementation for all request types,
   // scaling, etc.
@@ -304,58 +334,64 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
       std::make_unique<CopyOutputSkBitmapResult>(copy_rect, bitmap));
 }
 
-void SkiaOutputSurfaceImplOnGpu::FullfillPromiseTexture(
+void SkiaOutputSurfaceImplOnGpu::FulfillPromiseTexture(
     const ResourceMetadata& metadata,
+    std::unique_ptr<gpu::SharedImageRepresentationSkia>* shared_image_out,
     GrBackendTexture* backend_texture) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (gpu_service_->is_using_vulkan()) {
-    // TODO(https://crbug.com/838899): Use SkSurface as raster decoder target.
-    // NOTIMPLEMENTED();
+  DCHECK(!*shared_image_out);
+  if (shared_image_representation_factory_->IsSharedImage(metadata.mailbox)) {
+    std::unique_ptr<gpu::SharedImageRepresentationSkia> shared_image =
+        shared_image_representation_factory_->ProduceSkia(metadata.mailbox);
+    DCHECK(shared_image);
+    if (!shared_image->BeginReadAccess(metadata.color_type, backend_texture)) {
+      DLOG(ERROR)
+          << "Failed to begin read access for SharedImageRepresentationSkia";
+      return;
+    }
+    *shared_image_out = std::move(shared_image);
     return;
   }
+
+  if (gpu_service_->is_using_vulkan()) {
+    // Probably this texture is created with wrong inteface (GLES2Interface).
+    DLOG(ERROR) << "Failed to fulfill the promise texture whose backend is not "
+                   "compitable with vulkan.";
+    return;
+  }
+
   auto* mailbox_manager = gpu_service_->mailbox_manager();
   auto* texture_base = mailbox_manager->ConsumeTexture(metadata.mailbox);
   if (!texture_base) {
-    DLOG(ERROR) << "Failed to full fill the promise texture.";
+    DLOG(ERROR) << "Failed to fulfill the promise texture.";
     return;
   }
   BindOrCopyTextureIfNecessary(texture_base);
-  GrGLTextureInfo texture_info;
-  texture_info.fTarget = texture_base->target();
-  texture_info.fID = texture_base->service_id();
-  texture_info.fFormat = *metadata.backend_format.getGLFormat();
-  *backend_texture =
-      GrBackendTexture(metadata.size.width(), metadata.size.height(),
-                       metadata.mip_mapped, texture_info);
+  gpu::GetGrBackendTexture(texture_base->target(), metadata.size,
+                           *metadata.backend_format.getGLFormat(),
+                           *metadata.driver_backend_format.getGLFormat(),
+                           texture_base->service_id(), metadata.color_type,
+                           backend_texture);
 }
 
-void SkiaOutputSurfaceImplOnGpu::FullfillPromiseTexture(
-    const YUVResourceMetadata& yuv_metadata,
-    GrBackendTexture* backend_texture) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  if (yuv_metadata.image())
-    *backend_texture = yuv_metadata.image()->getBackendTexture(true);
-  DLOG_IF(ERROR, !backend_texture->isValid())
-      << "Failed to full fill the promise texture from yuv resources.";
-}
-
-void SkiaOutputSurfaceImplOnGpu::FullfillPromiseTexture(
+void SkiaOutputSurfaceImplOnGpu::FulfillPromiseTexture(
     const RenderPassId id,
+    std::unique_ptr<gpu::SharedImageRepresentationSkia>* shared_image_out,
     GrBackendTexture* backend_texture) {
+  DCHECK(!*shared_image_out);
   auto it = offscreen_surfaces_.find(id);
   DCHECK(it != offscreen_surfaces_.end());
   sk_sp<SkSurface>& surface = it->second;
   *backend_texture =
       surface->getBackendTexture(SkSurface::kFlushRead_BackendHandleAccess);
   DLOG_IF(ERROR, !backend_texture->isValid())
-      << "Failed to full fill the promise texture created from RenderPassId:"
+      << "Failed to fulfill the promise texture created from RenderPassId:"
       << id;
 }
 
 sk_sp<GrContextThreadSafeProxy>
 SkiaOutputSurfaceImplOnGpu::GetGrContextThreadSafeProxy() {
-  return gr_context_->threadSafeProxy();
+  return gr_context()->threadSafeProxy();
 }
 
 #if defined(OS_WIN)
@@ -416,27 +452,21 @@ void SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
   }
   DCHECK(gl_surface_);
 
-  gl::GLContext* gl_context = nullptr;
-  if (!gpu_service_->GetGrContextForGLSurface(gl_surface_.get(), &gr_context_,
-                                              &gl_context)) {
+  context_state_ = gpu_service_->GetContextStateForGLSurface(gl_surface_.get());
+  if (!context_state_) {
     LOG(FATAL) << "Failed to create GrContext";
     // TODO(penghuang): handle the failure.
   }
-  gl_context_ = gl_context;
-  DCHECK(gr_context_);
-  DCHECK(gl_context_);
 
-  if (!gl_context_->MakeCurrent(gl_surface_.get())) {
-    LOG(FATAL) << "Failed to make current.";
-    // TODO(penghuang): Handle the failure.
-  }
+  if (!MakeCurrent())
+    return;
 
-  gl_version_info_ = gl_context_->GetVersionInfo();
+  gl_version_info_ = gl_context()->GetVersionInfo();
 
   capabilities_.flipped_output_surface = gl_surface_->FlipsVertically();
 
   // Get stencil bits from the default frame buffer.
-  auto* current_gl = gl_context_->GetCurrentGL();
+  auto* current_gl = gl_context()->GetCurrentGL();
   const auto* version = current_gl->Version;
   auto* api = current_gl->Api;
   GLint stencil_bits = 0;
@@ -452,21 +482,21 @@ void SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
 }
 
 void SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
-  gr_context_ = gpu_service_->GetGrContextForVulkan();
-  DCHECK(gr_context_);
+  context_state_ = gpu_service_->GetContextStateForVulkan();
+  DCHECK(context_state_);
 }
 
 void SkiaOutputSurfaceImplOnGpu::BindOrCopyTextureIfNecessary(
     gpu::TextureBase* texture_base) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (gpu_service_->gpu_preferences().use_passthrough_cmd_decoder)
+  if (texture_base->GetType() != gpu::TextureBase::Type::kValidated)
     return;
-  // If a texture created with non-passthrough command buffer and bind with
-  // an image, the Chrome will defer copying the image to the texture until
-  // the texture is used. It is for implementing low latency drawing and
-  // avoiding unnecessary texture copy. So we need check the texture image
-  // state, and bind or copy the image to the texture if necessary.
-  auto* texture = static_cast<gpu::gles2::Texture*>(texture_base);
+  // If a texture is validated and bound to an image, we may defer copying the
+  // image to the texture until the texture is used. It is for implementing low
+  // latency drawing (e.g. fast ink) and avoiding unnecessary texture copy. So
+  // we need check the texture image state, and bind or copy the image to the
+  // texture if necessary.
+  auto* texture = gpu::gles2::Texture::CheckedCast(texture_base);
   gpu::gles2::Texture::ImageState image_state;
   auto* image = texture->GetLevelImage(GL_TEXTURE_2D, 0, &image_state);
   if (image && image_state == gpu::gles2::Texture::UNBOUND) {
@@ -478,55 +508,6 @@ void SkiaOutputSurfaceImplOnGpu::BindOrCopyTextureIfNecessary(
       if (!image->CopyTexImage(texture_base->target()))
         LOG(ERROR) << "Failed to copy a gl image to texture.";
     }
-  }
-}
-
-void SkiaOutputSurfaceImplOnGpu::PreprocessYUVResources(
-    std::vector<YUVResourceMetadata*> yuv_resource_metadatas) {
-  if (gpu_service_->is_using_vulkan()) {
-    // TODO(https://crbug.com/838899): Use VkImage for video.
-    // NOTIMPLEMENTED();
-    return;
-  }
-  // Create SkImage for fullfilling YUV promise image, before drawing the ddl.
-  // TODO(penghuang): Remove the extra step when Skia supports drawing YUV
-  // textures directly.
-  auto* mailbox_manager = gpu_service_->mailbox_manager();
-  for (auto* yuv_metadata : yuv_resource_metadatas) {
-    const auto& metadatas = yuv_metadata->metadatas();
-    DCHECK(metadatas.size() == 2 || metadatas.size() == 3);
-    GrBackendTexture backend_textures[3];
-    size_t i = 0;
-    for (const auto& metadata : metadatas) {
-      auto* texture_base = mailbox_manager->ConsumeTexture(metadata.mailbox);
-      if (!texture_base)
-        break;
-      BindOrCopyTextureIfNecessary(texture_base);
-      GrGLTextureInfo texture_info;
-      texture_info.fTarget = texture_base->target();
-      texture_info.fID = texture_base->service_id();
-      texture_info.fFormat = *metadata.backend_format.getGLFormat();
-      backend_textures[i++] =
-          GrBackendTexture(metadata.size.width(), metadata.size.height(),
-                           GrMipMapped::kNo, texture_info);
-    }
-
-    if (i != metadatas.size())
-      continue;
-
-    sk_sp<SkImage> image;
-    if (metadatas.size() == 2) {
-      image = SkImage::MakeFromNV12TexturesCopy(
-          gr_context_, yuv_metadata->yuv_color_space(), backend_textures,
-          kTopLeft_GrSurfaceOrigin, nullptr /* image_color_space */);
-      DCHECK(image);
-    } else {
-      image = SkImage::MakeFromYUVTexturesCopy(
-          gr_context_, yuv_metadata->yuv_color_space(), backend_textures,
-          kTopLeft_GrSurfaceOrigin, nullptr /* image_color_space */);
-      DCHECK(image);
-    }
-    yuv_metadata->set_image(std::move(image));
   }
 }
 
@@ -557,7 +538,7 @@ void SkiaOutputSurfaceImplOnGpu::CreateSkSurfaceForVulkan() {
                                         vulkan_surface_->size().height(), 0, 0,
                                         vk_image_info);
     sk_surface = SkSurface::MakeFromBackendRenderTarget(
-        gr_context_, render_target, kTopLeft_GrSurfaceOrigin,
+        gr_context(), render_target, kTopLeft_GrSurfaceOrigin,
         kBGRA_8888_SkColorType, nullptr, &surface_props);
   } else {
     auto backend = sk_surface->getBackendRenderTarget(
@@ -567,6 +548,20 @@ void SkiaOutputSurfaceImplOnGpu::CreateSkSurfaceForVulkan() {
 
   sk_surface_ = sk_surface;
 #endif
+}
+
+bool SkiaOutputSurfaceImplOnGpu::MakeCurrent() {
+  if (!gpu_service_->is_using_vulkan()) {
+    if (context_state_->context_lost ||
+        !gl_context()->MakeCurrent(gl_surface_.get())) {
+      LOG(ERROR) << "Failed to make current.";
+      context_state_->context_lost = true;
+      context_lost_callback_.Run();
+      return false;
+    }
+    context_state_->need_context_state_reset = true;
+  }
+  return true;
 }
 
 }  // namespace viz

@@ -129,7 +129,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       public mojom::ServiceWorkerContainerHost,
       public service_manager::mojom::InterfaceProvider {
  public:
-  using WebContentsGetter = base::Callback<WebContents*(void)>;
+  using WebContentsGetter = base::RepeatingCallback<WebContents*()>;
+  using ExecutionReadyCallback = base::OnceClosure;
 
   // Used to pre-create a ServiceWorkerProviderHost for a navigation. The
   // ServiceWorkerNetworkProvider will later be created in the renderer, should
@@ -145,7 +146,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   static base::WeakPtr<ServiceWorkerProviderHost> PreCreateNavigationHost(
       base::WeakPtr<ServiceWorkerContextCore> context,
       bool are_ancestors_secure,
-      const WebContentsGetter& web_contents_getter);
+      WebContentsGetter web_contents_getter);
 
   // Used for starting a service worker. Returns a provider host for the service
   // worker and partially fills |out_provider_info|.  The host stays alive as
@@ -199,8 +200,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // worker intercepts main resource requests, this check must be done
   // browser-side once the URL is known (see comments in
   // ServiceWorkerNetworkProvider::CreateForNavigation). This function uses
-  // |document_url_| and |is_parent_frame_secure_| to determine context
-  // security, so they must be set properly before calling this function.
+  // |url_| and |is_parent_frame_secure_| to determine context security, so they
+  // must be set properly before calling this function.
   bool IsContextSecureForServiceWorker() const;
 
   // For service worker clients. Describes whether the client has a controller
@@ -270,24 +271,28 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // for posting messages.
   mojom::ControllerServiceWorkerPtr GetControllerServiceWorkerPtr();
 
-  // Sets the |document_url_|.  When this object is for a client,
-  // |matching_registrations_| gets also updated to ensure that |document_url_|
-  // is in scope of all |matching_registrations_|.
-  // |document_url_| is the service worker script URL if this is for a
-  // service worker execution context. It will be used when creating
-  // ServiceWorkerObjectHost or handling ServiceWorkerRegistration#{*} calls
-  // etc.
-  // TODO(leonhsl): We should rename |document_url_| to something more
-  // appropriate and/or split this class into one for clients vs one for service
-  // workers.
-  void SetDocumentUrl(const GURL& url);
-  const GURL& document_url() const { return document_url_; }
+  // For service worker clients. Sets |url_| and |site_for_cookies_| and updates
+  // the client uuid if it's a cross-origin transition.
+  void UpdateUrls(const GURL& url, const GURL& site_for_cookies);
 
-  // For service worker clients. Sets the |topmost_frame_url|.
-  void SetTopmostFrameUrl(const GURL& url);
-  // For service worker clients, used for permission checks. Use document_url()
-  // instead if |this| is for a service worker execution context.
-  const GURL& topmost_frame_url() const;
+  // The URL of this context. For service worker clients, this is the document
+  // URL (for documents) or script URL (for workers). For service worker
+  // execution contexts, this is the script URL.
+  //
+  // For clients, url() may be empty if loading has not started, or our custom
+  // loading handler didn't see the load (because e.g. another handler did
+  // first, or the initial request URL was such that
+  // OriginCanAccessServiceWorkers returned false).
+  //
+  // The URL may also change on redirects during loading. Once
+  // is_execution_ready() is true, the URL should no longer change.
+  const GURL& url() const;
+
+  // The URL representing the first-party site for this context. See
+  // |network::ResourceRequest::site_for_cookies| for details.
+  // For service worker execution contexts, site_for_cookies() always
+  // returns the service worker script URL.
+  const GURL& site_for_cookies() const;
 
   blink::mojom::ServiceWorkerProviderType provider_type() const {
     return info_->type;
@@ -458,6 +463,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // activity and schedules an update at a convenient time.
   void AddServiceWorkerToUpdate(scoped_refptr<ServiceWorkerVersion> version);
 
+  // For service worker clients. |callback| is called when this client becomes
+  // execution ready or if it is destroyed first.
+  void AddExecutionReadyCallback(ExecutionReadyCallback callback);
+
   bool is_execution_ready() const { return is_execution_ready_; }
 
  private:
@@ -598,8 +607,13 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
                                     const char* error_prefix,
                                     Args... args);
 
+  // Sets |execution_ready_| and runs execution ready callbacks.
+  void SetExecutionReady();
+
+  void RunExecutionReadyCallbacks();
+
   // A GUID that is web-exposed as FetchEvent.clientId.
-  const std::string client_uuid_;
+  std::string client_uuid_;
 
   // For window clients. A token used internally to identify this context in
   // requests. Corresponds to the Fetch specification's concept of a request's
@@ -625,13 +639,14 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // tab where the navigation occurs.
   WebContentsGetter web_contents_getter_;
 
-  GURL document_url_;
-  GURL topmost_frame_url_;
+  // For service worker clients. See comments for the getter functions.
+  GURL url_;
+  GURL site_for_cookies_;
 
   // Keyed by registration scope URL length.
   using ServiceWorkerRegistrationMap =
       std::map<size_t, scoped_refptr<ServiceWorkerRegistration>>;
-  // Contains all living registrations whose pattern this document's URL
+  // Contains all living registrations whose scope this document's URL
   // starts with, used for .ready and claim(). It is empty if
   // IsContextSecureForServiceWorker() is false. See also
   // AddMatchingRegistration().
@@ -698,10 +713,11 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   mojo::Binding<service_manager::mojom::InterfaceProvider>
       interface_provider_binding_;
 
-  // For service worker clients. True if the main resource for this host has
-  // finished loading. When false, the document URL may still change due to
-  // redirects.
+  // For service worker clients. |is_execution_ready_| is true if the main
+  // resource for this host has finished loading. When false, the document URL
+  // may still change due to redirects.
   bool is_execution_ready_ = false;
+  std::vector<ExecutionReadyCallback> execution_ready_callbacks_;
 
   // For service worker clients. The service workers in the chain of redirects
   // during the main resource request for this client. These workers should be

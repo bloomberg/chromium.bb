@@ -5,11 +5,13 @@
 
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/bottom_toolbar_tab_switcher"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:visibility="gone" >
+    android:visibility="gone"
+    android:clickable="true" >
 
     <ImageView
         android:id="@+id/bottom_toolbar_top_shadow"
@@ -30,28 +32,27 @@
         android:paddingEnd="@dimen/bottom_toolbar_end_padding"
         android:layout_marginTop="@dimen/toolbar_shadow_height" >
 
-        <org.chromium.chrome.browser.widget.newtab.NewTabButton
-            android:id="@+id/new_tab_button"
-            style="@style/ToolbarButton"
-            android:layout_gravity="center"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
-            android:background="?attr/selectableItemBackground"
-            android:contentDescription="@string/accessibility_toolbar_btn_new_tab" />
+      <org.chromium.chrome.browser.toolbar.bottom.CloseAllTabsButton
+          android:id="@+id/close_all_tabs_button"
+          style="@style/BottomToolbarButton"
+          android:src="@drawable/ic_close_all_tabs"
+          android:contentDescription="@string/menu_close_all_tabs"
+          app:tint="@color/dark_mode_tint" />
 
-        <include layout="@layout/toolbar_space" />
+      <include layout="@layout/toolbar_space" />
 
-        <ViewStub
-            android:id="@+id/incognito_tabs_stub"
-            android:inflatedId="@+id/incognito_toggle_tabs"
-            android:layout="@layout/incognito_toggle_tabs"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_gravity="center" />
+      <org.chromium.chrome.browser.toolbar.bottom.BottomToolbarNewTabButton
+          android:id="@+id/tab_switcher_new_tab_button"
+          android:layout_width="@dimen/search_accelerator_height"
+          android:layout_height="@dimen/search_accelerator_height"
+          android:layout_gravity="center"
+          android:paddingTop="@dimen/search_accelerator_height_padding"
+          android:paddingBottom="@dimen/search_accelerator_height_padding"
+          android:contentDescription="@string/accessibility_toolbar_btn_new_tab" />
 
-        <include layout="@layout/toolbar_space" />
+      <include layout="@layout/toolbar_space" />
 
-        <include layout="@layout/menu_button" />
+      <include layout="@layout/menu_button" />
 
     </LinearLayout>
 

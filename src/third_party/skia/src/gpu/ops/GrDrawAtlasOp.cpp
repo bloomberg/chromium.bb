@@ -15,7 +15,7 @@
 
 static sk_sp<GrGeometryProcessor> make_gp(const GrShaderCaps* shaderCaps,
                                           bool hasColors,
-                                          GrColor color,
+                                          const SkPMColor4f& color,
                                           const SkMatrix& viewMatrix) {
     using namespace GrDefaultGeoProcFactory;
     Color gpColor(color);
@@ -27,7 +27,7 @@ static sk_sp<GrGeometryProcessor> make_gp(const GrShaderCaps* shaderCaps,
                                          LocalCoords::kHasExplicit_Type, viewMatrix);
 }
 
-GrDrawAtlasOp::GrDrawAtlasOp(const Helper::MakeArgs& helperArgs, GrColor color,
+GrDrawAtlasOp::GrDrawAtlasOp(const Helper::MakeArgs& helperArgs, const SkPMColor4f& color,
                              const SkMatrix& viewMatrix, GrAAType aaType, int spriteCount,
                              const SkRSXform* xforms, const SkRect* rects, const SkColor* colors)
         : INHERITED(ClassID()), fHelper(helperArgs, aaType), fColor(color) {
@@ -55,7 +55,8 @@ GrDrawAtlasOp::GrDrawAtlasOp(const Helper::MakeArgs& helperArgs, GrColor color,
     uint8_t* currVertex = installedGeo.fVerts.begin();
 
     SkRect bounds = SkRectPriv::MakeLargestInverted();
-    int paintAlpha = GrColorUnpackA(installedGeo.fColor);
+    // TODO4F: Preserve float colors
+    int paintAlpha = GrColorUnpackA(installedGeo.fColor.toBytes_RGBA());
     for (int spriteIndex = 0; spriteIndex < spriteCount; ++spriteIndex) {
         // Transform rect
         SkPoint strip[4];
@@ -108,15 +109,18 @@ GrDrawAtlasOp::GrDrawAtlasOp(const Helper::MakeArgs& helperArgs, GrColor color,
     this->setTransformedBounds(bounds, viewMatrix, HasAABloat::kNo, IsZeroArea::kNo);
 }
 
+#ifdef SK_DEBUG
 SkString GrDrawAtlasOp::dumpInfo() const {
     SkString string;
     for (const auto& geo : fGeoData) {
-        string.appendf("Color: 0x%08x, Quads: %d\n", geo.fColor, geo.fVerts.count() / 4);
+        string.appendf("Color: 0x%08x, Quads: %d\n", geo.fColor.toBytes_RGBA(),
+                       geo.fVerts.count() / 4);
     }
     string += fHelper.dumpInfo();
     string += INHERITED::dumpInfo();
     return string;
 }
+#endif
 
 void GrDrawAtlasOp::onPrepareDraws(Target* target) {
     // Setup geometry processor
@@ -126,9 +130,7 @@ void GrDrawAtlasOp::onPrepareDraws(Target* target) {
                                           this->viewMatrix()));
 
     int instanceCount = fGeoData.count();
-    size_t vertexStride =
-            sizeof(SkPoint) + sizeof(SkPoint) + (this->hasColors() ? sizeof(GrColor) : 0);
-    SkASSERT(vertexStride == gp->debugOnly_vertexStride());
+    size_t vertexStride = gp->vertexStride();
 
     int numQuads = this->quadCount();
     QuadHelper helper(target, vertexStride, numQuads);
@@ -173,7 +175,6 @@ GrOp::CombineResult GrDrawAtlasOp::onCombineIfPossible(GrOp* t, const GrCaps& ca
     fGeoData.push_back_n(that->fGeoData.count(), that->fGeoData.begin());
     fQuadCount += that->quadCount();
 
-    this->joinBounds(*that);
     return CombineResult::kMerged;
 }
 

@@ -30,6 +30,10 @@ std::unique_ptr<service_manager::Connector> CreateConnector() {
   return service_manager::Connector::Create(&request);
 }
 
+std::string DummyGetSessionId(std::string /* audio_group_id */) {
+  return "";
+}
+
 }  // namespace
 
 namespace chromecast {
@@ -109,6 +113,7 @@ class MockCastAudioManager : public CastAudioManager {
             nullptr,
             base::BindRepeating(&MockCastAudioManager::GetCmaBackendFactory,
                                 base::Unretained(this)),
+            base::BindRepeating(&DummyGetSessionId),
             media_task_runner,
             media_task_runner,
             connector,
@@ -119,9 +124,10 @@ class MockCastAudioManager : public CastAudioManager {
   }
   media::CmaBackendFactory* GetCmaBackendFactory() { return nullptr; }
 
-  MOCK_METHOD1(
+  MOCK_METHOD2(
       MakeMixerOutputStream,
-      ::media::AudioOutputStream*(const ::media::AudioParameters& params));
+      ::media::AudioOutputStream*(const ::media::AudioParameters& params,
+                                  const std::string& device_id));
   MOCK_METHOD1(ReleaseOutputStream, void(::media::AudioOutputStream* stream));
 
  private:
@@ -146,7 +152,7 @@ class CastAudioMixerTest : public ::testing::Test {
         connector_.get(), scoped_task_environment_.GetMainThreadTaskRunner()));
     mock_mixer_stream_.reset(new StrictMock<MockMediaAudioOutputStream>());
 
-    ON_CALL(*mock_manager_, MakeMixerOutputStream(_))
+    ON_CALL(*mock_manager_, MakeMixerOutputStream(_, _))
         .WillByDefault(Return(mock_mixer_stream_.get()));
     ON_CALL(*mock_mixer_stream_, Start(_))
         .WillByDefault(SaveArg<0>(&source_callback_));
@@ -195,7 +201,7 @@ TEST_F(CastAudioMixerTest, MixerCallsCloseOnFailedOpen) {
   ::media::AudioOutputStream* stream = CreateMixerStream();
   ASSERT_TRUE(stream);
 
-  EXPECT_CALL(mock_manager(), MakeMixerOutputStream(_))
+  EXPECT_CALL(mock_manager(), MakeMixerOutputStream(_, _))
       .WillOnce(Return(&mock_mixer_stream()));
   EXPECT_CALL(mock_mixer_stream(), Open()).WillOnce(Return(false));
   EXPECT_CALL(mock_mixer_stream(), Close());
@@ -221,7 +227,7 @@ TEST_F(CastAudioMixerTest, StreamControlOrderMisuse) {
   stream->Stop();
   stream->Start(&source);
 
-  EXPECT_CALL(mock_manager(), MakeMixerOutputStream(_))
+  EXPECT_CALL(mock_manager(), MakeMixerOutputStream(_, _))
       .WillOnce(Return(&mock_mixer_stream()));
   EXPECT_CALL(mock_mixer_stream(), Open()).WillOnce(Return(false));
   EXPECT_CALL(mock_mixer_stream(), Close());
@@ -231,7 +237,7 @@ TEST_F(CastAudioMixerTest, StreamControlOrderMisuse) {
   stream->Start(&source);
   stream->Stop();
 
-  EXPECT_CALL(mock_manager(), MakeMixerOutputStream(_))
+  EXPECT_CALL(mock_manager(), MakeMixerOutputStream(_, _))
       .WillOnce(Return(&mock_mixer_stream()));
   EXPECT_CALL(mock_mixer_stream(), Open()).WillOnce(Return(true));
   ASSERT_TRUE(stream->Open());
@@ -251,7 +257,7 @@ TEST_F(CastAudioMixerTest, SingleStreamCycle) {
   ::media::AudioOutputStream* stream = CreateMixerStream();
   ASSERT_TRUE(stream);
 
-  EXPECT_CALL(mock_manager(), MakeMixerOutputStream(_))
+  EXPECT_CALL(mock_manager(), MakeMixerOutputStream(_, _))
       .WillOnce(Return(&mock_mixer_stream()));
   EXPECT_CALL(mock_mixer_stream(), Open()).WillOnce(Return(true));
   ASSERT_TRUE(stream->Open());
@@ -274,12 +280,12 @@ TEST_F(CastAudioMixerTest, MultiStreamCycle) {
   std::vector<std::unique_ptr<MockAudioSourceCallback>> sources(streams.size());
   std::generate(streams.begin(), streams.end(),
                 [this] { return CreateMixerStream(); });
-  std::generate(sources.begin(), sources.end(), [this] {
+  std::generate(sources.begin(), sources.end(), [] {
     return std::unique_ptr<MockAudioSourceCallback>(
         new StrictMock<MockAudioSourceCallback>());
   });
 
-  EXPECT_CALL(mock_manager(), MakeMixerOutputStream(_))
+  EXPECT_CALL(mock_manager(), MakeMixerOutputStream(_, _))
       .WillOnce(Return(&mock_mixer_stream()));
   EXPECT_CALL(mock_mixer_stream(), Open()).WillOnce(Return(true));
   for (auto* stream : streams)
@@ -320,7 +326,7 @@ TEST_F(CastAudioMixerTest, TwoStreamRestart) {
     ASSERT_TRUE(stream1);
     ASSERT_TRUE(stream2);
 
-    EXPECT_CALL(mock_manager(), MakeMixerOutputStream(_))
+    EXPECT_CALL(mock_manager(), MakeMixerOutputStream(_, _))
         .WillOnce(Return(&mock_mixer_stream()));
     EXPECT_CALL(mock_mixer_stream(), Open()).WillOnce(Return(true));
     ASSERT_TRUE(stream1->Open());
@@ -349,7 +355,7 @@ TEST_F(CastAudioMixerTest, OnError) {
   for (auto* stream : streams)
     ASSERT_TRUE(stream);
 
-  EXPECT_CALL(mock_manager(), MakeMixerOutputStream(_))
+  EXPECT_CALL(mock_manager(), MakeMixerOutputStream(_, _))
       .WillOnce(Return(&mock_mixer_stream()));
   EXPECT_CALL(mock_mixer_stream(), Open()).WillOnce(Return(true));
   for (auto* stream : streams)
@@ -379,7 +385,7 @@ TEST_F(CastAudioMixerTest, OnError) {
 
   // Now that the state has been refreshed, attempt to open a stream.
   streams.push_back(CreateMixerStream());
-  EXPECT_CALL(mock_manager(), MakeMixerOutputStream(_))
+  EXPECT_CALL(mock_manager(), MakeMixerOutputStream(_, _))
       .WillOnce(Return(&mock_mixer_stream()));
   EXPECT_CALL(mock_mixer_stream(), Open()).WillOnce(Return(true));
   ASSERT_TRUE(streams.front()->Open());
@@ -397,7 +403,7 @@ TEST_F(CastAudioMixerTest, Delay) {
   MockAudioSourceCallback source;
   ::media::AudioOutputStream* stream = CreateMixerStream();
 
-  EXPECT_CALL(mock_manager(), MakeMixerOutputStream(_))
+  EXPECT_CALL(mock_manager(), MakeMixerOutputStream(_, _))
       .WillOnce(Return(&mock_mixer_stream()));
   EXPECT_CALL(mock_mixer_stream(), Open()).WillOnce(Return(true));
   ASSERT_TRUE(stream->Open());

@@ -443,35 +443,37 @@ function initListeners(filter, extraInfoSpec) {
 
   chrome.webRequest.onBeforeRequest.addListener(
       onBeforeRequest, filter,
-      intersect(extraInfoSpec, ["blocking", "requestBody"]));
+      intersect(extraInfoSpec, ['blocking', 'requestBody']));
 
   chrome.webRequest.onBeforeSendHeaders.addListener(
       onBeforeSendHeaders, filter,
-      intersect(extraInfoSpec, ["blocking", "requestHeaders"]));
+      intersect(extraInfoSpec, ['blocking', 'requestHeaders', 'extraHeaders']));
 
   chrome.webRequest.onSendHeaders.addListener(
       onSendHeaders, filter,
-      intersect(extraInfoSpec, ["requestHeaders"]));
+      intersect(extraInfoSpec, ['requestHeaders', 'extraHeaders']));
 
   chrome.webRequest.onHeadersReceived.addListener(
       onHeadersReceived, filter,
-      intersect(extraInfoSpec, ["blocking", "responseHeaders"]));
+      intersect(extraInfoSpec, ['blocking', 'responseHeaders',
+                                'extraHeaders']));
 
   chrome.webRequest.onAuthRequired.addListener(
       onAuthRequired, filter,
-      intersect(extraInfoSpec, ["asyncBlocking", "blocking",
-                                "responseHeaders"]));
+      intersect(extraInfoSpec, ['asyncBlocking', 'blocking',
+                                'responseHeaders', 'extraHeaders']));
 
   chrome.webRequest.onResponseStarted.addListener(
       onResponseStarted, filter,
-      intersect(extraInfoSpec, ["responseHeaders"]));
+      intersect(extraInfoSpec, ['responseHeaders', 'extraHeaders']));
 
   chrome.webRequest.onBeforeRedirect.addListener(
-      onBeforeRedirect, filter, intersect(extraInfoSpec, ["responseHeaders"]));
+      onBeforeRedirect, filter, intersect(extraInfoSpec,
+      ['responseHeaders','extraHeaders']));
 
   chrome.webRequest.onCompleted.addListener(
       onCompleted, filter,
-      intersect(extraInfoSpec, ["responseHeaders"]));
+      intersect(extraInfoSpec, ['responseHeaders', 'extraHeaders']));
 
   chrome.webRequest.onErrorOccurred.addListener(onErrorOccurred, filter);
 }

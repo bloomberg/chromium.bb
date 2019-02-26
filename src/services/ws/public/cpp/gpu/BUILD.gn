@@ -35,6 +35,7 @@ source_set("gpu") {
     "//gpu/command_buffer/client:gles2_cmd_helper",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/client:raster",
+    "//gpu/command_buffer/client:raster_interface",
     "//gpu/command_buffer/client:webgpu",
     "//gpu/command_buffer/common:raster",
     "//gpu/skia_bindings",
@@ -43,4 +44,10 @@ source_set("gpu") {
     "//services/ws/public/mojom",
     "//ui/gl",
   ]
+
+  if (use_aura || is_mac) {
+    public += [ "shared_worker_context_provider_factory.h" ]
+
+    sources += [ "shared_worker_context_provider_factory.cc" ]
+  }
 }

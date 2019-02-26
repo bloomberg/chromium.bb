@@ -94,7 +94,7 @@ private:
         return RequiresDstTexture::kNo;
     }
     void onPrepare(GrOpFlushState*) override {}
-    void onExecute(GrOpFlushState*) override;
+    void onExecute(GrOpFlushState*, const SkRect& chainBounds) override;
 
     CCPRGeometryView* fView;
 
@@ -182,13 +182,17 @@ void CCPRGeometryView::onDrawContent(SkCanvas* canvas) {
 
         GrOpMemoryPool* pool = ctx->contextPriv().opMemoryPool();
 
+        const GrBackendFormat format =
+                ctx->contextPriv().caps()->getBackendFormatFromGrColorType(GrColorType::kAlpha_F16,
+                                                                           GrSRGBEncoded::kNo);
         sk_sp<GrRenderTargetContext> ccbuff =
-                ctx->contextPriv().makeDeferredRenderTargetContext(SkBackingFit::kApprox,
+                ctx->contextPriv().makeDeferredRenderTargetContext(format, SkBackingFit::kApprox,
                                                                    this->width(), this->height(),
                                                                    kAlpha_half_GrPixelConfig,
                                                                    nullptr);
         SkASSERT(ccbuff);
-        ccbuff->clear(nullptr, 0, GrRenderTargetContext::CanClearFullscreen::kYes);
+        ccbuff->clear(nullptr, SK_PMColor4fTRANSPARENT,
+                      GrRenderTargetContext::CanClearFullscreen::kYes);
         ccbuff->priv().testingOnly_addDrawOp(pool->allocate<DrawCoverageCountOp>(this));
 
         // Visualize coverage count in main canvas.
@@ -317,10 +321,11 @@ void CCPRGeometryView::updateGpuData() {
     }
 }
 
-void CCPRGeometryView::DrawCoverageCountOp::onExecute(GrOpFlushState* state) {
+void CCPRGeometryView::DrawCoverageCountOp::onExecute(GrOpFlushState* state,
+                                                      const SkRect& chainBounds) {
     GrResourceProvider* rp = state->resourceProvider();
     GrContext* context = state->gpu()->getContext();
-    GrGLGpu* glGpu = kOpenGL_GrBackend == context->contextPriv().getBackend()
+    GrGLGpu* glGpu = GrBackendApi::kOpenGL == context->contextPriv().getBackend()
                              ? static_cast<GrGLGpu*>(state->gpu())
                              : nullptr;
     if (glGpu) {

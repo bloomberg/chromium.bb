@@ -5,20 +5,9 @@
 module blink.mojom;
 
 import "mojo/public/mojom/base/string16.mojom";
+import "services/media_session/public/mojom/media_session.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "url/mojom/url.mojom";
-
-// Spec: https://wicg.github.io/mediasession/
-enum MediaSessionAction {
-     PLAY,
-     PAUSE,
-     PREVIOUS_TRACK,
-     NEXT_TRACK,
-     SEEK_BACKWARD,
-     SEEK_FORWARD,
-
-     LAST = SEEK_FORWARD,
-};
 
 enum MediaSessionPlaybackState {
      NONE,
@@ -46,7 +35,7 @@ struct MediaMetadata {
 interface MediaSessionClient {
   // Notifies the Blink side that a MediaSessionAction has been fired from the
   // UI or the platform.
-  DidReceiveAction(MediaSessionAction action);
+  DidReceiveAction(media_session.mojom.MediaSessionAction action);
 };
 
 interface MediaSessionService {
@@ -64,9 +53,10 @@ interface MediaSessionService {
   // Notifies the browser that the event handler for |action| has been set,
   // browser needs to show a media button in the UI or register listeners to the
   // platform.
-  EnableAction(MediaSessionAction action);
+  EnableAction(media_session.mojom.MediaSessionAction action);
+
   // Notifies the browser that the event handler for |action| has been set,
   // browser needs to hide the media button in the UI and unregister listeners
   // from the platform.
-  DisableAction(MediaSessionAction action);
+  DisableAction(media_session.mojom.MediaSessionAction action);
 };

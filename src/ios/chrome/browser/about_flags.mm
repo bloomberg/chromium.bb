@@ -15,11 +15,11 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/ios/browser/autofill_switches.h"
@@ -46,6 +46,7 @@
 #include "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/crash_report/crash_report_flags.h"
+#include "ios/chrome/browser/download/features.h"
 #include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
 #include "ios/chrome/browser/ios_chrome_flag_descriptions.h"
 #include "ios/chrome/browser/itunes_urls/itunes_urls_flag.h"
@@ -53,8 +54,9 @@
 #include "ios/chrome/browser/search_engines/feature_flags.h"
 #include "ios/chrome/browser/signin/feature_flags.h"
 #include "ios/chrome/browser/ssl/captive_portal_features.h"
-#include "ios/chrome/browser/ui/external_search/features.h"
+#import "ios/chrome/browser/ui/dialogs/dialog_features.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
+#include "ios/chrome/browser/ui/sad_tab/features.h"
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
 #import "ios/chrome/browser/ui/toolbar_container/toolbar_container_features.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
@@ -95,16 +97,16 @@ const FeatureEntry::FeatureParam
 
 const FeatureEntry::FeatureVariation kMarkHttpAsFeatureVariations[] = {
     {"(mark as actively dangerous)", kMarkHttpAsDangerous,
-     arraysize(kMarkHttpAsDangerous), nullptr},
+     base::size(kMarkHttpAsDangerous), nullptr},
     {"(mark with a Not Secure warning)", kMarkHttpAsWarning,
-     arraysize(kMarkHttpAsWarning), nullptr},
+     base::size(kMarkHttpAsWarning), nullptr},
     {"(mark with a Not Secure warning and dangerous on form edits)",
      kMarkHttpAsWarningAndDangerousOnFormEdits,
-     arraysize(kMarkHttpAsWarningAndDangerousOnFormEdits), nullptr},
+     base::size(kMarkHttpAsWarningAndDangerousOnFormEdits), nullptr},
     {"(mark with a Not Secure warning and dangerous on passwords and credit "
      "card fields)",
      kMarkHttpAsWarningAndDangerousOnPasswordsAndCreditCards,
-     arraysize(kMarkHttpAsWarningAndDangerousOnPasswordsAndCreditCards),
+     base::size(kMarkHttpAsWarningAndDangerousOnPasswordsAndCreditCards),
      nullptr}};
 
 const FeatureEntry::Choice kUseDdljsonApiChoices[] = {
@@ -151,6 +153,29 @@ const FeatureEntry::FeatureVariation kIconForSearchButtonVariations[] = {
     {"Magnifying glass", kIconForSearchButtonMagnifying,
      base::size(kIconForSearchButtonMagnifying), nullptr}};
 
+const FeatureEntry::FeatureParam kDetectMainThreadFreezeTimeout3s[] = {
+    {crash_report::kDetectMainThreadFreezeParameterName,
+     crash_report::kDetectMainThreadFreezeParameter3s}};
+const FeatureEntry::FeatureParam kDetectMainThreadFreezeTimeout5s[] = {
+    {crash_report::kDetectMainThreadFreezeParameterName,
+     crash_report::kDetectMainThreadFreezeParameter5s}};
+const FeatureEntry::FeatureParam kDetectMainThreadFreezeTimeout7s[] = {
+    {crash_report::kDetectMainThreadFreezeParameterName,
+     crash_report::kDetectMainThreadFreezeParameter7s}};
+const FeatureEntry::FeatureParam kDetectMainThreadFreezeTimeout9s[] = {
+    {crash_report::kDetectMainThreadFreezeParameterName,
+     crash_report::kDetectMainThreadFreezeParameter9s}};
+
+const FeatureEntry::FeatureVariation kDetectMainThreadFreezeVariations[] = {
+    {"3s", kDetectMainThreadFreezeTimeout3s,
+     base::size(kDetectMainThreadFreezeTimeout3s), nullptr},
+    {"5s", kDetectMainThreadFreezeTimeout5s,
+     base::size(kDetectMainThreadFreezeTimeout5s), nullptr},
+    {"7s", kDetectMainThreadFreezeTimeout7s,
+     base::size(kDetectMainThreadFreezeTimeout7s), nullptr},
+    {"9s", kDetectMainThreadFreezeTimeout9s,
+     base::size(kDetectMainThreadFreezeTimeout9s), nullptr}};
+
 // To add a new entry, add to the end of kFeatureEntries. There are four
 // distinct types of entries:
 // . ENABLE_DISABLE_VALUE: entry is either enabled, disabled, or uses the
@@ -191,26 +216,23 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
          feature_engagement::kIPHDemoMode,
          feature_engagement::kIPHDemoModeChoiceVariations,
          "IPH_DemoMode")},
+    {"preview-usdz", flag_descriptions::kUsdzPreviewName,
+     flag_descriptions::kUsdzPreviewDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(download::kUsdzPreview)},
     {"use-ddljson-api", flag_descriptions::kUseDdljsonApiName,
      flag_descriptions::kUseDdljsonApiDescription, flags_ui::kOsIos,
      MULTI_VALUE_TYPE(kUseDdljsonApiChoices)},
-    {"omnibox-ui-elide-suggestion-url-after-host",
-     flag_descriptions::kOmniboxUIElideSuggestionUrlAfterHostName,
-     flag_descriptions::kOmniboxUIElideSuggestionUrlAfterHostDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(omnibox::kUIExperimentElideSuggestionUrlAfterHost)},
     {"drag_and_drop", flag_descriptions::kDragAndDropName,
      flag_descriptions::kDragAndDropDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kDragAndDrop)},
-    {"external-search", flag_descriptions::kExternalSearchName,
-     flag_descriptions::kExternalSearchDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kExternalSearch)},
+    {"ignores-viewport-scale-limits",
+     flag_descriptions::kIgnoresViewportScaleLimitsName,
+     flag_descriptions::kIgnoresViewportScaleLimitsDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(web::features::kIgnoresViewportScaleLimits)},
     {"slim-navigation-manager", flag_descriptions::kSlimNavigationManagerName,
      flag_descriptions::kSlimNavigationManagerDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kSlimNavigationManager)},
-    {"web-error-pages", flag_descriptions::kWebErrorPagesName,
-     flag_descriptions::kWebErrorPagesDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(web::features::kWebErrorPages)},
     {"memex-tab-switcher", flag_descriptions::kMemexTabSwitcherName,
      flag_descriptions::kMemexTabSwitcherDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kMemexTabSwitcher)},
@@ -279,10 +301,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"unified-consent", flag_descriptions::kUnifiedConsentName,
      flag_descriptions::kUnifiedConsentDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(unified_consent::kUnifiedConsent)},
-    {"force-unified-consent-bump",
-     flag_descriptions::kForceUnifiedConsentBumpName,
-     flag_descriptions::kForceUnifiedConsentBumpDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(unified_consent::kForceUnifiedConsentBump)},
     {"autofill-dynamic-forms", flag_descriptions::kAutofillDynamicFormsName,
      flag_descriptions::kAutofillDynamicFormsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillDynamicForms)},
@@ -303,6 +321,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout)},
+    {"autofill-rich-metadata-queries",
+     flag_descriptions::kAutofillRichMetadataQueriesName,
+     flag_descriptions::kAutofillRichMetadataQueriesDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillRichMetadataQueries)},
     {"fullscreen-viewport-adjustment-experiment",
      flag_descriptions::kFullscreenViewportAdjustmentExperimentName,
      flag_descriptions::kFullscreenViewportAdjustmentExperimentDescription,
@@ -382,6 +405,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"toolbar-container", flag_descriptions::kToolbarContainerName,
      flag_descriptions::kToolbarContainerDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(toolbar_container::kToolbarContainerEnabled)},
+    {"present-sad-tab-in-view-controller",
+     flag_descriptions::kPresentSadTabInViewControllerName,
+     flag_descriptions::kPresentSadTabInViewControllerDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kPresentSadTabInViewController)},
     {"omnibox-popup-shortcuts",
      flag_descriptions::kOmniboxPopupShortcutIconsInZeroStateName,
      flag_descriptions::kOmniboxPopupShortcutIconsInZeroStateDescription,
@@ -411,6 +438,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"fcm-invalidations", flag_descriptions::kFCMInvalidationsName,
      flag_descriptions::kFCMInvalidationsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(invalidation::switches::kFCMInvalidations)},
+    {"browser-container-contains-ntp",
+     flag_descriptions::kBrowserContainerContainsNTPName,
+     flag_descriptions::kBrowserContainerContainsNTPDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kBrowserContainerContainsNTP)},
     {"search-icon-toggle", flag_descriptions::kSearchIconToggleName,
      flag_descriptions::kSearchIconToggleDescription, flags_ui::kOsIos,
      FEATURE_WITH_PARAMS_VALUE_TYPE(kIconForSearchButtonFeature,
@@ -421,6 +452,45 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBreakpadNoDelayInitialUploadDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(crash_report::kBreakpadNoDelayInitialUpload)},
+    {"non-modal-dialogs", flag_descriptions::kNonModalDialogsName,
+     flag_descriptions::kNonModalDialogsDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(dialogs::kNonModalDialogs)},
+    {"sync-pseudo-uss-favicons", flag_descriptions::kSyncPseudoUSSFaviconsName,
+     flag_descriptions::kSyncPseudoUSSFaviconsDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(switches::kSyncPseudoUSSFavicons)},
+    {"sync-pseudo-uss-history-delete-directives",
+     flag_descriptions::kSyncPseudoUSSHistoryDeleteDirectivesName,
+     flag_descriptions::kSyncPseudoUSSHistoryDeleteDirectivesDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(switches::kSyncPseudoUSSHistoryDeleteDirectives)},
+    {"sync-pseudo-uss-passwords",
+     flag_descriptions::kSyncPseudoUSSPasswordsName,
+     flag_descriptions::kSyncPseudoUSSPasswordsDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(switches::kSyncPseudoUSSPasswords)},
+    {"sync-pseudo-uss-preferences",
+     flag_descriptions::kSyncPseudoUSSPreferencesName,
+     flag_descriptions::kSyncPseudoUSSPreferencesDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(switches::kSyncPseudoUSSPreferences)},
+    {"sync-pseudo-uss-priority-preferences",
+     flag_descriptions::kSyncPseudoUSSPriorityPreferencesName,
+     flag_descriptions::kSyncPseudoUSSPriorityPreferencesDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(switches::kSyncPseudoUSSPriorityPreferences)},
+    {"sync-pseudo-uss-supervised-users",
+     flag_descriptions::kSyncPseudoUSSSupervisedUsersName,
+     flag_descriptions::kSyncPseudoUSSSupervisedUsersDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(switches::kSyncPseudoUSSSupervisedUsers)},
+    {"detect-main-thread-freeze",
+     flag_descriptions::kDetectMainThreadFreezeName,
+     flag_descriptions::kDetectMainThreadFreezeDescription, flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(crash_report::kDetectMainThreadFreeze,
+                                    kDetectMainThreadFreezeVariations,
+                                    "DetectMainThreadFreeze")},
+    {"enable-sync-uss-bookmarks",
+     flag_descriptions::kEnableSyncUSSBookmarksName,
+     flag_descriptions::kEnableSyncUSSBookmarksDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(switches::kSyncUSSBookmarks)},
 };
 
 // Add all switches from experimental flags to |command_line|.
@@ -484,7 +554,7 @@ bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {
 class FlagsStateSingleton {
  public:
   FlagsStateSingleton()
-      : flags_state_(kFeatureEntries, arraysize(kFeatureEntries)) {}
+      : flags_state_(kFeatureEntries, base::size(kFeatureEntries)) {}
   ~FlagsStateSingleton() {}
 
   static FlagsStateSingleton* GetInstance() {
@@ -540,7 +610,7 @@ void ResetAllFlags(flags_ui::FlagsStorage* flags_storage) {
 namespace testing {
 
 const flags_ui::FeatureEntry* GetFeatureEntries(size_t* count) {
-  *count = arraysize(kFeatureEntries);
+  *count = base::size(kFeatureEntries);
   return kFeatureEntries;
 }
 

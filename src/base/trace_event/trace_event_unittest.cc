@@ -64,7 +64,8 @@ const char kAsyncId2Str[] = "0x6";
 const int kFlowId = 7;
 const char kFlowIdStr[] = "0x7";
 
-const  char kRecordAllCategoryFilter[] = "*";
+constexpr const char kRecordAllCategoryFilter[] = "*";
+constexpr const char kAllCategory[] = "all";
 
 class TraceEventTestFixture : public testing::Test {
  public:
@@ -391,7 +392,7 @@ std::vector<const DictionaryValue*> FindTraceEntries(
   return hits;
 }
 
-const char kControlCharacters[] = "\001\002\003\n\r";
+constexpr const char kControlCharacters[] = "\001\002\003\n\r";
 
 void TraceWithAllMacroVariants(WaitableEvent* task_complete_event) {
   {
@@ -486,8 +487,8 @@ void TraceWithAllMacroVariants(WaitableEvent* task_complete_event) {
         "all", "tracked object 1", 0x42, "hello");
     TRACE_EVENT_OBJECT_DELETED_WITH_ID("all", "tracked object 1", 0x42);
 
-    TraceScopedTrackableObject<int> trackable("all", "tracked object 2",
-                                              0x2128506);
+    TraceScopedTrackableObject<int, kAllCategory> trackable("tracked object 2",
+                                                            0x2128506);
     trackable.snapshot("world");
 
     TRACE_EVENT_OBJECT_CREATED_WITH_ID(
@@ -2146,7 +2147,13 @@ TEST_F(TraceEventTestFixture, TraceWithDefaultCategoryFilters) {
   trace_log->SetDisabled();
 }
 
-TEST_F(TraceEventTestFixture, TraceWithDisabledByDefaultCategoryFilters) {
+// Flaky on iOS device, see crbug.com/908002
+#if defined(OS_IOS) && !(TARGET_OS_SIMULATOR)
+#define MAYBE_TraceWithDisabledByDefaultCategoryFilters DISABLED_TraceWithDisabledByDefaultCategoryFilters
+#else
+#define MAYBE_TraceWithDisabledByDefaultCategoryFilters TraceWithDisabledByDefaultCategoryFilters
+#endif  // defined(OS_IOS) && !(TARGET_OS_SIMULATOR)
+TEST_F(TraceEventTestFixture, MAYBE_TraceWithDisabledByDefaultCategoryFilters) {
   TraceLog* trace_log = TraceLog::GetInstance();
 
   trace_log->SetEnabled(TraceConfig("foo,disabled-by-default-foo", ""),
@@ -2872,7 +2879,13 @@ bool MockLogMessageHandler(int, const char*, int, size_t,
   return false;
 }
 
-TEST_F(TraceEventTestFixture, EchoToConsole) {
+// Flaky on iOS device, see crbug.com/908002
+#if defined(OS_IOS) && !(TARGET_OS_SIMULATOR)
+#define MAYBE_EchoToConsole DISABLED_EchoToConsole
+#else
+#define MAYBE_EchoToConsole EchoToConsole
+#endif  // defined(OS_IOS) && !(TARGET_OS_SIMULATOR)
+TEST_F(TraceEventTestFixture, MAYBE_EchoToConsole) {
   logging::LogMessageHandlerFunction old_log_message_handler =
       logging::GetLogMessageHandler();
   logging::SetLogMessageHandler(MockLogMessageHandler);
@@ -2957,7 +2970,13 @@ TEST_F(TraceEventTestFixture, TimeOffset) {
   }
 }
 
-TEST_F(TraceEventTestFixture, TraceFilteringMode) {
+// Flaky on iOS device, see crbug.com/908002
+#if defined(OS_IOS) && !(TARGET_OS_SIMULATOR)
+#define MAYBE_TraceFilteringMode DISABLED_TraceFilteringMode
+#else
+#define MAYBE_TraceFilteringMode TraceFilteringMode
+#endif  // defined(OS_IOS) && !(TARGET_OS_SIMULATOR)
+TEST_F(TraceEventTestFixture, MAYBE_TraceFilteringMode) {
   const char config_json[] =
       "{"
       "  \"event_filters\": ["
@@ -3058,7 +3077,13 @@ TEST_F(TraceEventTestFixture, TraceFilteringMode) {
   Clear();
 }
 
-TEST_F(TraceEventTestFixture, EventFiltering) {
+// Flaky on iOS device, see crbug.com/908002
+#if defined(OS_IOS) && !(TARGET_OS_SIMULATOR)
+#define MAYBE_EventFiltering DISABLED_EventFiltering
+#else
+#define MAYBE_EventFiltering EventFiltering
+#endif  // defined(OS_IOS) && !(TARGET_OS_SIMULATOR)
+TEST_F(TraceEventTestFixture, MAYBE_EventFiltering) {
   const char config_json[] =
       "{"
       "  \"included_categories\": ["
@@ -3102,7 +3127,13 @@ TEST_F(TraceEventTestFixture, EventFiltering) {
   EXPECT_EQ(1u, filter_hits_counter.end_event_hit_count);
 }
 
-TEST_F(TraceEventTestFixture, EventWhitelistFiltering) {
+// Flaky on iOS device, see crbug.com/908002
+#if defined(OS_IOS) && !(TARGET_OS_SIMULATOR)
+#define MAYBE_EventWhitelistFiltering DISABLED_EventWhitelistFiltering
+#else
+#define MAYBE_EventWhitelistFiltering EventWhitelistFiltering
+#endif  // defined(OS_IOS) && !(TARGET_OS_SIMULATOR)
+TEST_F(TraceEventTestFixture, MAYBE_EventWhitelistFiltering) {
   std::string config_json = StringPrintf(
       "{"
       "  \"included_categories\": ["
@@ -3144,7 +3175,13 @@ TEST_F(TraceEventTestFixture, EventWhitelistFiltering) {
   EXPECT_FALSE(FindMatchingValue("name", "a pony"));
 }
 
-TEST_F(TraceEventTestFixture, HeapProfilerFiltering) {
+// Flaky on iOS device, see crbug.com/908002
+#if defined(OS_IOS) && !(TARGET_OS_SIMULATOR)
+#define MAYBE_HeapProfilerFiltering DISABLED_HeapProfilerFiltering
+#else
+#define MAYBE_HeapProfilerFiltering HeapProfilerFiltering
+#endif  // defined(OS_IOS) && !(TARGET_OS_SIMULATOR)
+TEST_F(TraceEventTestFixture, MAYBE_HeapProfilerFiltering) {
   std::string config_json = StringPrintf(
       "{"
       "  \"included_categories\": ["

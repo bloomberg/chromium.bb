@@ -66,11 +66,8 @@
 // |tab| started loading a new URL.
 - (void)tabModel:(TabModel*)model didStartLoadingTab:(Tab*)tab;
 
-// |tab| finished loading a new URL. |success| is YES if the load was
-// successful.
-- (void)tabModel:(TabModel*)model
-    didFinishLoadingTab:(Tab*)tab
-                success:(BOOL)success;
+// |tab| finished loading a new URL.
+- (void)tabModel:(TabModel*)model didFinishLoadingTab:(Tab*)tab;
 
 // |tab| has been added to the tab model and will open. If |tab| isn't the
 // active tab, |inBackground| is YES, NO otherwise.

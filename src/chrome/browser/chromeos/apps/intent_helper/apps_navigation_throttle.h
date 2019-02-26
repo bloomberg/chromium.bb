@@ -13,8 +13,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/apps/foundation/app_service/public/mojom/types.mojom.h"
 #include "chrome/browser/chromeos/apps/intent_helper/apps_navigation_types.h"
+#include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "url/gurl.h"
 
@@ -22,6 +22,8 @@ namespace content {
 class NavigationHandle;
 class WebContents;
 }  // namespace content
+
+class IntentPickerAutoDisplayService;
 
 namespace chromeos {
 
@@ -42,20 +44,25 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
 
   // Queries for installed apps which can handle |url|, and displays the intent
   // picker bubble for |web_contents|.
-  static void ShowIntentPickerBubble(content::WebContents* web_contents,
-                                     const GURL& url);
+  static void ShowIntentPickerBubble(
+      content::WebContents* web_contents,
+      IntentPickerAutoDisplayService* ui_auto_display_service,
+      const GURL& url);
 
   // Called when the intent picker is closed for |url|, in |web_contents|, with
   // |launch_name| as the (possibly empty) action to be triggered based on
   // |app_type|. |close_reason| gives the reason for the picker being closed,
   // and |should_persist| is true if the user indicated they wish to remember
-  // the choice made.
-  static void OnIntentPickerClosed(content::WebContents* web_contents,
-                                   const GURL& url,
-                                   const std::string& launch_name,
-                                   apps::mojom::AppType app_type,
-                                   IntentPickerCloseReason close_reason,
-                                   bool should_persist);
+  // the choice made. |ui_auto_display_service| keeps track of whether or not
+  // the user dismissed the ui without engaging with it.
+  static void OnIntentPickerClosed(
+      content::WebContents* web_contents,
+      IntentPickerAutoDisplayService* ui_auto_display_service,
+      const GURL& url,
+      const std::string& launch_name,
+      apps::mojom::AppType app_type,
+      IntentPickerCloseReason close_reason,
+      bool should_persist);
 
   static void RecordUma(const std::string& selected_app_package,
                         apps::mojom::AppType app_type,
@@ -135,6 +142,7 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
 
   static void FindPwaForUrlAndShowIntentPickerForApps(
       content::WebContents* web_contents,
+      IntentPickerAutoDisplayService* ui_auto_display_service,
       const GURL& url,
       std::vector<IntentPickerAppInfo> apps);
 
@@ -147,6 +155,7 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
 
   static void ShowIntentPickerBubbleForApps(
       content::WebContents* web_contents,
+      IntentPickerAutoDisplayService* ui_auto_display_service,
       const GURL& url,
       std::vector<IntentPickerAppInfo> apps);
 
@@ -165,6 +174,13 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
 
   void CloseTab();
 
+  // Whether or not the intent picker UI should be displayed without the user
+  // clicking in the omnibox's icon.
+  bool ShouldAutoDisplayUi(
+      const std::vector<IntentPickerAppInfo>& apps_for_picker,
+      content::WebContents* web_contents,
+      const GURL& url);
+
   // A reference to the starting GURL.
   GURL starting_url_;
 
@@ -177,6 +193,10 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
   // preferred app or asked the UI to be shown, this flag ensures we never
   // trigger the UI twice for the same throttle.
   bool ui_displayed_;
+
+  // Points to the service in charge of controlling auto-display for the related
+  // UI.
+  IntentPickerAutoDisplayService* ui_auto_display_service_;
 
   base::WeakPtrFactory<AppsNavigationThrottle> weak_factory_;
 

@@ -420,7 +420,7 @@ public:
         - rowBytes is positive and less than imageInfo.width() times imageInfo.bytesPerPixel()
 
         @param imageInfo  contains width, height, SkAlphaType, SkColorType, SkColorSpace
-        @param rowBytes   imageInfo.minRowBytes or larger; or zero
+        @param rowBytes   imageInfo.minRowBytes() or larger; or zero
         @return           true if SkImageInfo set successfully
     */
     bool setInfo(const SkImageInfo& imageInfo, size_t rowBytes = 0);
@@ -643,7 +643,7 @@ public:
         SkPixelRef containing pixmap.addr() and pixmap.rowBytes().
 
         If SkImageInfo could not be set, or pixmap.rowBytes() is less than
-        SkImageInfo::minRowBytes: calls reset(), and returns false.
+        SkImageInfo::minRowBytes(): calls reset(), and returns false.
 
         Otherwise, if pixmap.addr() equals nullptr: sets SkImageInfo, returns true.
 
@@ -654,14 +654,14 @@ public:
     */
     bool installPixels(const SkPixmap& pixmap);
 
-    /** To be deprecated soon.
+    /** Deprecated.
     */
     bool installMaskPixels(const SkMask& mask);
 
     /** Replaces SkPixelRef with pixels, preserving SkImageInfo and rowBytes().
         Sets SkPixelRef origin to (0, 0).
 
-        If pixels is nullptr, or if info().colorType equals kUnknown_SkColorType;
+        If pixels is nullptr, or if info().colorType() equals kUnknown_SkColorType;
         release reference to SkPixelRef, and set SkPixelRef to nullptr.
 
         Caller is responsible for handling ownership pixel memory for the lifetime
@@ -674,7 +674,7 @@ public:
     /** Allocates pixel memory with HeapAllocator, and replaces existing SkPixelRef.
         The allocation size is determined by SkImageInfo width, height, and SkColorType.
 
-        Returns false if info().colorType is kUnknown_SkColorType, or allocation fails.
+        Returns false if info().colorType() is kUnknown_SkColorType, or allocation fails.
 
         @return  true if the allocation succeeds
     */
@@ -685,7 +685,7 @@ public:
     /** Allocates pixel memory with HeapAllocator, and replaces existing SkPixelRef.
         The allocation size is determined by SkImageInfo width, height, and SkColorType.
 
-        Aborts if info().colorType is kUnknown_SkColorType, or allocation fails.
+        Aborts if info().colorType() is kUnknown_SkColorType, or allocation fails.
         Abort steps may be provided by the user at compile
         time by defining SK_ABORT.
     */
@@ -778,7 +778,7 @@ public:
     void notifyPixelsChanged() const;
 
     /** Replaces pixel values with c. All pixels contained by bounds() are affected.
-        If the colorType() is kGray_8_SkColorType or k565_SkColorType, then alpha
+        If the colorType() is kGray_8_SkColorType or kRGB_565_SkColorType, then alpha
         is ignored; RGB is treated as opaque. If colorType() is kAlpha_8_SkColorType,
         then RGB is ignored.
 
@@ -788,7 +788,7 @@ public:
 
     /** Replaces pixel values with unpremultiplied color built from a, r, g, and b.
         All pixels contained by bounds() are affected.
-        If the colorType() is kGray_8_SkColorType or k565_SkColorType, then a
+        If the colorType() is kGray_8_SkColorType or kRGB_565_SkColorType, then a
         is ignored; r, g, and b are treated as opaque. If colorType() is kAlpha_8_SkColorType,
         then r, g, and b are ignored.
 
@@ -804,7 +804,7 @@ public:
     /** Replaces pixel values inside area with c. If area does not intersect bounds(),
         call has no effect.
 
-        If the colorType() is kGray_8_SkColorType or k565_SkColorType, then alpha
+        If the colorType() is kGray_8_SkColorType or kRGB_565_SkColorType, then alpha
         is ignored; RGB is treated as opaque. If colorType() is kAlpha_8_SkColorType,
         then RGB is ignored.
 
@@ -934,7 +934,7 @@ public:
         dstInfo specifies width, height, SkColorType, SkAlphaType, and SkColorSpace of
         destination. dstRowBytes specifics the gap from one destination row to the next.
         Returns true if pixels are copied. Returns false if:
-        - dstInfo.addr() equals nullptr
+        - dstInfo has no address
         - dstRowBytes is less than dstInfo.minRowBytes()
         - SkPixelRef is nullptr
 
@@ -966,7 +966,7 @@ public:
         and row bytes of destination. dst.rowBytes() specifics the gap from one destination
         row to the next. Returns true if pixels are copied. Returns false if:
         - dst pixel storage equals nullptr
-        - dst.rowBytes is less than SkImageInfo::minRowBytes
+        - dst.rowBytes is less than SkImageInfo::minRowBytes()
         - SkPixelRef is nullptr
 
         Pixels are copied only if pixel conversion is possible. If SkBitmap colorType() is
@@ -994,7 +994,7 @@ public:
         and row bytes of destination. dst.rowBytes() specifics the gap from one destination
         row to the next. Returns true if pixels are copied. Returns false if:
         - dst pixel storage equals nullptr
-        - dst.rowBytes is less than SkImageInfo::minRowBytes
+        - dst.rowBytes is less than SkImageInfo::minRowBytes()
         - SkPixelRef is nullptr
 
         Pixels are copied only if pixel conversion is possible. If SkBitmap colorType() is
@@ -1018,7 +1018,7 @@ public:
         and row bytes of source. src.rowBytes() specifics the gap from one source
         row to the next. Returns true if pixels are copied. Returns false if:
         - src pixel storage equals nullptr
-        - src.rowBytes is less than SkImageInfo::minRowBytes
+        - src.rowBytes is less than SkImageInfo::minRowBytes()
         - SkPixelRef is nullptr
 
         Pixels are copied only if pixel conversion is possible. If SkBitmap colorType() is
@@ -1046,7 +1046,7 @@ public:
         and row bytes of source. src.rowBytes() specifics the gap from one source
         row to the next. Returns true if pixels are copied. Returns false if:
         - src pixel storage equals nullptr
-        - src.rowBytes is less than SkImageInfo::minRowBytes
+        - src.rowBytes is less than SkImageInfo::minRowBytes()
         - SkPixelRef is nullptr
 
         Pixels are copied only if pixel conversion is possible. If SkBitmap colorType() is
@@ -1062,28 +1062,6 @@ public:
     bool writePixels(const SkPixmap& src) {
         return this->writePixels(src, 0, 0);
     }
-
-#ifdef SK_BUILD_FOR_ANDROID_FRAMEWORK
-    /** For use by Android framework only.
-
-        @return  true if setHasHardwareMipMap() has been called with true
-    */
-    bool hasHardwareMipMap() const {
-        return (fFlags & kHasHardwareMipMap_Flag) != 0;
-    }
-
-    /** For use by Android framework only.
-
-        @param hasHardwareMipMap  sets state
-    */
-    void setHasHardwareMipMap(bool hasHardwareMipMap) {
-        if (hasHardwareMipMap) {
-            fFlags |= kHasHardwareMipMap_Flag;
-        } else {
-            fFlags &= ~kHasHardwareMipMap_Flag;
-        }
-    }
-#endif
 
     /** Sets dst to alpha described by pixels. Returns false if dst cannot be written to
         or dst pixels cannot be allocated.
@@ -1188,13 +1166,6 @@ public:
 private:
     enum Flags {
         kImageIsVolatile_Flag   = 0x02,
-#ifdef SK_BUILD_FOR_ANDROID
-        /* A hint for the renderer responsible for drawing this bitmap
-         * indicating that it should attempt to use mipmaps when this bitmap
-         * is drawn scaled down.
-         */
-        kHasHardwareMipMap_Flag = 0x08,
-#endif
     };
 
     sk_sp<SkPixelRef>   fPixelRef;

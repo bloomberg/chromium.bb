@@ -148,6 +148,7 @@ void LazyLoadImageObserver::StartMonitoringVisibility(
         WTF::BindRepeating(&LazyLoadImageObserver::OnVisibilityChanged,
                            WrapWeakPersistent(this)));
   }
+  visible_load_time_metrics.record_visibility_metrics = true;
   visibility_metrics_observer_->observe(image_element);
 }
 
@@ -156,10 +157,10 @@ void LazyLoadImageObserver::OnLoadFinished(HTMLImageElement* image_element) {
 
   VisibleLoadTimeMetrics& visible_load_time_metrics =
       image_element->EnsureVisibleLoadTimeMetrics();
-  if (visible_load_time_metrics.has_visibility_metrics_been_recorded)
+  if (!visible_load_time_metrics.record_visibility_metrics)
     return;
 
-  visible_load_time_metrics.has_visibility_metrics_been_recorded = true;
+  visible_load_time_metrics.record_visibility_metrics = false;
   visibility_metrics_observer_->unobserve(image_element);
 
   TimeDelta visible_load_delay;

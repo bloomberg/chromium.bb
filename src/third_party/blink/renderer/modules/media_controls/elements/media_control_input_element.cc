@@ -199,7 +199,7 @@ void MediaControlInputElement::UpdateShownState() {
 }
 
 void MediaControlInputElement::DefaultEventHandler(Event& event) {
-  if (event.type() == EventTypeNames::click)
+  if (event.type() == event_type_names::kClick)
     MaybeRecordInteracted();
 
   HTMLInputElement::DefaultEventHandler(event);
@@ -272,7 +272,7 @@ WebSize MediaControlInputElement::GetSizeOrDefault() const {
 }
 
 bool MediaControlInputElement::IsDisabled() const {
-  return hasAttribute(HTMLNames::disabledAttr);
+  return hasAttribute(html_names::kDisabledAttr);
 }
 
 void MediaControlInputElement::Trace(blink::Visitor* visitor) {

@@ -7,6 +7,7 @@
 
 #include "third_party/blink/public/platform/web_encrypted_media_key_information.h"
 #include "third_party/blink/public/platform/web_encrypted_media_types.h"
+#include "third_party/blink/public/platform/web_media_key_system_configuration.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -26,6 +27,11 @@ class EncryptedMediaUtils {
 
   static String ConvertKeyStatusToString(
       const WebEncryptedMediaKeyInformation::KeyStatus);
+
+  static WebMediaKeySystemConfiguration::Requirement
+  ConvertToMediaKeysRequirement(const String&);
+  static String ConvertMediaKeysRequirementToString(
+      WebMediaKeySystemConfiguration::Requirement);
 };
 
 }  // namespace blink

@@ -74,7 +74,7 @@ void DataConsumerHandleTestUtil::Thread::Initialize() {
                                 DOMWrapperWorld::WorldType::kTesting));
   }
   if (initialization_policy_ >= kWithExecutionContext) {
-    execution_context_ = new NullExecutionContext();
+    execution_context_ = MakeGarbageCollected<NullExecutionContext>();
   }
   waitable_event_->Signal();
 }
@@ -129,7 +129,7 @@ void DataConsumerHandleTestUtil::ReplayingHandle::Context::AttachReader(
   MutexLocker locker(mutex_);
   DCHECK(!reader_thread_);
   DCHECK(!client_);
-  reader_thread_ = Platform::Current()->CurrentThread();
+  reader_thread_ = blink::Thread::Current();
   client_ = client;
 
   if (client_ && !(IsEmpty() && result_ == kShouldWait))

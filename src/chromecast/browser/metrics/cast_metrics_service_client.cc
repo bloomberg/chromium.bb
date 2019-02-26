@@ -35,6 +35,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/histogram_fetcher.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/common/content_switches.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -355,7 +356,8 @@ void CastMetricsServiceClient::Initialize() {
             new ::metrics::ScreenInfoMetricsProvider));
   }
   metrics_service_->RegisterMetricsProvider(
-      std::make_unique<::metrics::NetworkMetricsProvider>());
+      std::make_unique<::metrics::NetworkMetricsProvider>(
+          content::CreateNetworkConnectionTrackerAsyncGetter()));
   shell::CastBrowserProcess::GetInstance()->browser_client()->
       RegisterMetricsProviders(metrics_service_.get());
 

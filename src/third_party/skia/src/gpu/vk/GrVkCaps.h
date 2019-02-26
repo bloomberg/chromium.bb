@@ -8,9 +8,10 @@
 #ifndef GrVkCaps_DEFINED
 #define GrVkCaps_DEFINED
 
+#include "GrVkVulkan.h"
+
 #include "GrCaps.h"
 #include "GrVkStencilAttachment.h"
-#include "vk/GrVkDefines.h"
 
 class GrShaderCaps;
 class GrVkExtensions;
@@ -160,6 +161,13 @@ public:
 
     bool getConfigFromBackendFormat(const GrBackendFormat&, SkColorType,
                                     GrPixelConfig*) const override;
+    bool getYUVAConfigFromBackendTexture(const GrBackendTexture&,
+                                         GrPixelConfig*) const override;
+    bool getYUVAConfigFromBackendFormat(const GrBackendFormat&,
+                                        GrPixelConfig*) const override;
+
+    GrBackendFormat getBackendFormatFromGrColorType(GrColorType ct,
+                                                    GrSRGBEncoded srgbEncoded) const override;
 
 private:
     enum VkVendor {
@@ -181,9 +189,7 @@ private:
                     const GrVkExtensions&);
     void initShaderCaps(const VkPhysicalDeviceProperties&, const VkPhysicalDeviceFeatures2&);
 
-#ifdef GR_TEST_UTILS
     GrBackendFormat onCreateFormatFromBackendTexture(const GrBackendTexture&) const override;
-#endif
 
     void initConfigTable(const GrVkInterface*, VkPhysicalDevice, const VkPhysicalDeviceProperties&);
     void initStencilFormat(const GrVkInterface* iface, VkPhysicalDevice physDev);

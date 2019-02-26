@@ -15,6 +15,7 @@ JNI_QueryInOmnibox_GetDisplaySearchTerms(JNIEnv* env,
                                          const JavaParamRef<jclass>&,
                                          const JavaParamRef<jobject>& j_profile,
                                          jint j_security_level,
+                                         jboolean j_ignore_security_level,
                                          const JavaParamRef<jstring>& j_url) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   security_state::SecurityLevel security_level =
@@ -24,20 +25,10 @@ JNI_QueryInOmnibox_GetDisplaySearchTerms(JNIEnv* env,
   base::string16 search_terms;
   bool should_display =
       QueryInOmniboxFactory::GetForProfile(profile)->GetDisplaySearchTerms(
-          security_level, url, &search_terms);
+          security_level, j_ignore_security_level, url, &search_terms);
 
   if (!should_display)
     return nullptr;
 
   return base::android::ConvertUTF16ToJavaString(env, search_terms);
-}
-
-void JNI_QueryInOmnibox_SetIgnoreSecurityLevel(
-    JNIEnv* env,
-    const JavaParamRef<jclass>&,
-    const JavaParamRef<jobject>& j_profile,
-    jboolean ignore) {
-  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
-  QueryInOmniboxFactory::GetForProfile(profile)->set_ignore_security_level(
-      ignore);
 }

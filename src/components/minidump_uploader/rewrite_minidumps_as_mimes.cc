@@ -5,7 +5,9 @@
 #include <utility>
 
 #include "base/android/jni_string.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "jni/CrashReportMimeWriter_jni.h"
 #include "third_party/crashpad/crashpad/client/crash_report_database.h"
 #include "third_party/crashpad/crashpad/handler/minidump_to_upload_parameters.h"
@@ -17,6 +19,18 @@
 namespace minidump_uploader {
 
 namespace {
+
+#if defined(OS_ANDROID)
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class ProcessedMinidumpCounts {
+  kOther = 0,
+  kBrowser = 1,
+  kRenderer = 2,
+  kGpu = 3,
+  kMaxValue = kGpu
+};
+#endif  // OS_ANDROID
 
 bool MimeifyReport(const crashpad::CrashReportDatabase::UploadReport* report,
                    const base::FilePath& dest_dir) {
@@ -44,6 +58,7 @@ bool MimeifyReport(const crashpad::CrashReportDatabase::UploadReport* report,
   crashpad::HTTPMultipartBuilder http_multipart_builder;
 
   static constexpr char kMinidumpKey[] = "upload_file_minidump";
+  static constexpr char kPtypeKey[] = "ptype";
 
   for (const auto& kv : parameters) {
     if (kv.first == kMinidumpKey) {
@@ -51,6 +66,22 @@ bool MimeifyReport(const crashpad::CrashReportDatabase::UploadReport* report,
                    << kv.second;
     } else {
       http_multipart_builder.SetFormData(kv.first, kv.second);
+#if defined(OS_ANDROID)
+      if (kv.first == kPtypeKey) {
+        ProcessedMinidumpCounts count_type;
+        if (kv.second == "browser") {
+          count_type = ProcessedMinidumpCounts::kBrowser;
+        } else if (kv.second == "renderer") {
+          count_type = ProcessedMinidumpCounts::kRenderer;
+        } else if (kv.second == "gpu-process") {
+          count_type = ProcessedMinidumpCounts::kGpu;
+        } else {
+          count_type = ProcessedMinidumpCounts::kOther;
+        }
+        UMA_HISTOGRAM_ENUMERATION("Stability.Android.ProcessedMinidumps",
+                                  count_type);
+      }
+#endif  // OS_ANDROID
     }
   }
 

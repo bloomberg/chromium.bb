@@ -51,6 +51,11 @@ cr.define('extensions', function() {
         value: () => loadTimeData.getBoolean('inDevMode'),
       },
 
+      showActivityLog: {
+        type: Boolean,
+        value: () => loadTimeData.getBoolean('showActivityLog'),
+      },
+
       devModeControlledByPolicy: {
         type: Boolean,
         value: false,
@@ -88,6 +93,12 @@ cr.define('extensions', function() {
        * @private {!chrome.developerPrivate.ExtensionInfo|undefined}
        */
       detailViewItem_: Object,
+
+      /**
+       * The id of the item for the activity log view subpage.
+       * See also errorPageItem_.
+       */
+      activityLogItemId_: String,
 
       /** @private {!Array<!chrome.developerPrivate.ExtensionInfo>} */
       extensions_: Array,
@@ -380,6 +391,8 @@ cr.define('extensions', function() {
           this.errorPageItem_ && this.errorPageItem_.id == item.id &&
           this.currentPage_.page == Page.ERRORS) {
         this.errorPageItem_ = item;
+      } else if (this.currentPage_.page == Page.ACTIVITY_LOG) {
+        this.activityLogItemId_ = item.id;
       }
     },
 
@@ -400,7 +413,8 @@ cr.define('extensions', function() {
       // We should never try and remove a non-existent item.
       assert(index >= 0);
       this.splice(listId, index, 1);
-      if ((this.currentPage_.page == Page.DETAILS ||
+      if ((this.currentPage_.page == Page.ACTIVITY_LOG ||
+           this.currentPage_.page == Page.DETAILS ||
            this.currentPage_.page == Page.ERRORS) &&
           this.currentPage_.extensionId == itemId) {
         // Leave the details page (the 'list' page is a fine choice).
@@ -453,6 +467,17 @@ cr.define('extensions', function() {
         this.detailViewItem_ = assert(data);
       else if (toPage == Page.ERRORS)
         this.errorPageItem_ = assert(data);
+      else if (toPage == Page.ACTIVITY_LOG) {
+        if (!this.showActivityLog) {
+          // Redirect back to the details page if we try to view the
+          // activity log of an extension but the flag is not set.
+          extensions.navigation.replaceWith(
+              {page: Page.DETAILS, extensionId: newPage.extensionId});
+          return;
+        }
+
+        this.activityLogItemId_ = assert(data.id);
+      }
 
       if (fromPage != toPage) {
         /** @type {CrViewManagerElement} */ (this.$.viewManager)
@@ -487,7 +512,7 @@ cr.define('extensions', function() {
     onCloseDrawer_: function() {
       const drawer = this.$$('#drawer');
       if (drawer && drawer.open) {
-        drawer.closeDrawer();
+        drawer.close();
       }
     },
 
@@ -505,7 +530,8 @@ cr.define('extensions', function() {
     onViewExitFinish_: function(e) {
       const viewType = e.path[0].tagName;
       if (viewType == 'EXTENSIONS-ITEM-LIST' ||
-          viewType == 'EXTENSIONS-KEYBOARD-SHORTCUTS') {
+          viewType == 'EXTENSIONS-KEYBOARD-SHORTCUTS' ||
+          viewType == 'EXTENSIONS-ACTIVITY-LOG') {
         return;
       }
 

@@ -167,6 +167,8 @@ class VizSerializationPerfTest : public testing::Test {
     bool arbitrary_bool4 = true;
     bool arbitrary_bool5 = false;
     bool arbitrary_bool6 = true;
+    ui::ProtectedVideoType arbitrary_protected_video_type =
+        ui::ProtectedVideoType::kClear;
     int arbitrary_context_id1 = 12;
     int arbitrary_context_id2 = 57;
     int arbitrary_context_id3 = -503;
@@ -210,36 +212,36 @@ class VizSerializationPerfTest : public testing::Test {
           arbitrary_blend_mode1, arbitrary_context_id1);
 
       auto* texture_in = pass_in->CreateAndAppendDrawQuad<TextureDrawQuad>();
-      texture_in->SetAll(shared_state1_in, arbitrary_rect2,
-                         arbitrary_rect1_inside_rect2, arbitrary_bool1,
-                         arbitrary_resourceid1, arbitrary_size1,
-                         arbitrary_bool1, arbitrary_pointf1, arbitrary_pointf2,
-                         arbitrary_color, arbitrary_float_array,
-                         arbitrary_bool4, arbitrary_bool5, arbitrary_bool6);
+      texture_in->SetAll(
+          shared_state1_in, arbitrary_rect2, arbitrary_rect1_inside_rect2,
+          arbitrary_bool1, arbitrary_resourceid1, arbitrary_size1,
+          arbitrary_bool1, arbitrary_pointf1, arbitrary_pointf2,
+          arbitrary_color, arbitrary_float_array, arbitrary_bool4,
+          arbitrary_bool5, arbitrary_bool6, arbitrary_protected_video_type);
 
       auto* texture_in2 = pass_in->CreateAndAppendDrawQuad<TextureDrawQuad>();
-      texture_in2->SetAll(shared_state1_in, arbitrary_rect2,
-                          arbitrary_rect1_inside_rect2, arbitrary_bool1,
-                          arbitrary_resourceid2, arbitrary_size1,
-                          arbitrary_bool3, arbitrary_pointf1, arbitrary_pointf2,
-                          arbitrary_color, arbitrary_float_array,
-                          arbitrary_bool4, arbitrary_bool5, arbitrary_bool6);
+      texture_in2->SetAll(
+          shared_state1_in, arbitrary_rect2, arbitrary_rect1_inside_rect2,
+          arbitrary_bool1, arbitrary_resourceid2, arbitrary_size1,
+          arbitrary_bool3, arbitrary_pointf1, arbitrary_pointf2,
+          arbitrary_color, arbitrary_float_array, arbitrary_bool4,
+          arbitrary_bool5, arbitrary_bool6, arbitrary_protected_video_type);
 
       auto* texture_in3 = pass_in->CreateAndAppendDrawQuad<TextureDrawQuad>();
-      texture_in3->SetAll(shared_state1_in, arbitrary_rect2,
-                          arbitrary_rect1_inside_rect2, arbitrary_bool1,
-                          arbitrary_resourceid3, arbitrary_size1,
-                          arbitrary_bool2, arbitrary_pointf1, arbitrary_pointf2,
-                          arbitrary_color, arbitrary_float_array,
-                          arbitrary_bool4, arbitrary_bool6, arbitrary_bool6);
+      texture_in3->SetAll(
+          shared_state1_in, arbitrary_rect2, arbitrary_rect1_inside_rect2,
+          arbitrary_bool1, arbitrary_resourceid3, arbitrary_size1,
+          arbitrary_bool2, arbitrary_pointf1, arbitrary_pointf2,
+          arbitrary_color, arbitrary_float_array, arbitrary_bool4,
+          arbitrary_bool6, arbitrary_bool6, arbitrary_protected_video_type);
 
       auto* texture_in4 = pass_in->CreateAndAppendDrawQuad<TextureDrawQuad>();
-      texture_in4->SetAll(shared_state1_in, arbitrary_rect2,
-                          arbitrary_rect1_inside_rect2, arbitrary_bool1,
-                          arbitrary_resourceid4, arbitrary_size2,
-                          arbitrary_bool4, arbitrary_pointf1, arbitrary_pointf2,
-                          arbitrary_color, arbitrary_float_array,
-                          arbitrary_bool4, arbitrary_bool5, arbitrary_bool6);
+      texture_in4->SetAll(
+          shared_state1_in, arbitrary_rect2, arbitrary_rect1_inside_rect2,
+          arbitrary_bool1, arbitrary_resourceid4, arbitrary_size2,
+          arbitrary_bool4, arbitrary_pointf1, arbitrary_pointf2,
+          arbitrary_color, arbitrary_float_array, arbitrary_bool4,
+          arbitrary_bool5, arbitrary_bool6, arbitrary_protected_video_type);
     }
 
     // Tiled quads

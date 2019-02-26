@@ -128,6 +128,16 @@
     Update credit card autofill info in Chrome settings
   </message>
 
+  <message name="IDS_OMNIBOX_PEDAL_LAUNCH_INCOGNITO_HINT" desc="The button text contents to suggest pedal action, launch incognito.">
+    Open Incognito Window
+  </message>
+  <message name="IDS_OMNIBOX_PEDAL_LAUNCH_INCOGNITO_HINT_SHORT" desc="The short one-word button text contents to suggest pedal action, launch incognito.">
+    Open
+  </message>
+  <message name="IDS_OMNIBOX_PEDAL_LAUNCH_INCOGNITO_SUGGESTION_CONTENTS" desc="The suggestion content text to suggest pedal action, launch incognito.">
+    Open new Chrome incognito window
+  </message>
+
   <message name="IDS_OMNIBOX_PEDAL_TRANSLATE_HINT" desc="The button text contents to suggest pedal action, translate.">
     Translate Page
   </message>
@@ -136,6 +146,16 @@
   </message>
   <message name="IDS_OMNIBOX_PEDAL_TRANSLATE_SUGGESTION_CONTENTS" desc="The suggestion content text to suggest pedal action, translate.">
     Translate this page
+  </message>
+
+  <message name="IDS_OMNIBOX_PEDAL_UPDATE_CHROME_HINT" desc="The button text contents to suggest pedal action, update chrome.">
+    Relaunch to Update
+  </message>
+  <message name="IDS_OMNIBOX_PEDAL_UPDATE_CHROME_HINT_SHORT" desc="The short one-word button text contents to suggest pedal action, update chrome.">
+    Relaunch
+  </message>
+  <message name="IDS_OMNIBOX_PEDAL_UPDATE_CHROME_SUGGESTION_CONTENTS" desc="The suggestion content text to suggest pedal action, update chrome.">
+    Relaunch
   </message>
 
   <!-- Accessibility labels for autocomplete match types.

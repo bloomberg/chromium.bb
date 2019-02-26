@@ -50,6 +50,10 @@ void WebContentsNSViewBridge::Show(const gfx::Rect& bounds_in_window) {
   NSRect ns_bounds_in_superview =
       [[cocoa_view_ superview] convertRect:ns_bounds_in_window fromView:nil];
   [cocoa_view_ setFrame:ns_bounds_in_superview];
+  // Ensure that the child RenderWidgetHostViews have the same frame as the
+  // WebContentsView.
+  for (NSView* child in [cocoa_view_ subviews])
+    [child setFrame:[cocoa_view_ bounds]];
   [cocoa_view_ setHidden:NO];
 }
 

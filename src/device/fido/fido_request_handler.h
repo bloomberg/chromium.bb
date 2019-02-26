@@ -25,10 +25,10 @@ namespace device {
 template <class Response>
 class FidoRequestHandler : public FidoRequestHandlerBase {
  public:
-  using CompletionCallback =
-      base::OnceCallback<void(FidoReturnCode status_code,
-                              base::Optional<Response> response_data,
-                              FidoTransportProtocol transport_used)>;
+  using CompletionCallback = base::OnceCallback<void(
+      FidoReturnCode status_code,
+      base::Optional<Response> response_data,
+      base::Optional<FidoTransportProtocol> transport_used)>;
 
   // The |available_transports| should be the intersection of transports
   // supported by the client and allowed by the relying party.

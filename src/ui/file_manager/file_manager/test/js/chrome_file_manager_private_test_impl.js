@@ -16,7 +16,7 @@ const mockVolumeManager = new MockVolumeManager();
     mockVolumeManager
         .getCurrentProfileVolumeInfo(VolumeManagerCommon.VolumeType.DRIVE)
         .fileSystem)
-    .populate(['/root/', '/team_drives/']);
+    .populate(['/root/', '/team_drives/', '/Computers/']);
 
 /**
  * Suppress compiler warning for overwriting chrome.fileManagerPrivate.
@@ -35,7 +35,6 @@ chrome.fileManagerPrivate = {
     allowRedeemOffers: true,
     cellularDisabled: true,
     driveEnabled: true,
-    hostedFilesDisabled: true,
     searchSuggestEnabled: true,
     timezone: 'Australia/Sydney',
     use24hourClock: false,
@@ -90,8 +89,15 @@ chrome.fileManagerPrivate = {
     setTimeout(callback, 0, results);
   },
   getCrostiniSharedPaths: (callback) => {
-    // Returns Entry[].
-    setTimeout(callback, 0, []);
+    // Returns Entry[], firstForSession.
+    setTimeout(callback, 0, true, []);
+  },
+  getLinuxPackageInfo: (entry, callback) => {
+    // Returns chrome.fileManagerPrivate.LinuxPackageInfo.
+    setTimeout(callback, 0, {
+      name: 'dummy-package',
+      version: '1.0',
+    });
   },
   getPreferences: (callback) => {
     setTimeout(callback, 0, chrome.fileManagerPrivate.preferences_);
@@ -147,6 +153,7 @@ chrome.fileManagerPrivate = {
   },
   onAppsUpdated: new test.Event(),
   onCopyProgress: new test.Event(),
+  onCrostiniSharedPathsChanged: new test.Event(),
   onDeviceChanged: new test.Event(),
   onDirectoryChanged: new test.Event(),
   onDriveConnectionStatusChanged: new test.Event(),
@@ -180,7 +187,7 @@ chrome.fileManagerPrivate = {
     // highlightedBaseName: string }
     setTimeout(callback, 0, []);
   },
-  sharePathWithCrostini: (entry, callback) => {
+  sharePathsWithCrostini: (entries, persist, callback) => {
     setTimeout(callback, 0);
   },
   nextCopyId_: 0,

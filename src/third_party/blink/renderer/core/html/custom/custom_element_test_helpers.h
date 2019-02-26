@@ -49,9 +49,12 @@ class TestCustomElementDefinition : public CustomElementDefinition {
       : CustomElementDefinition(descriptor) {}
 
   TestCustomElementDefinition(const CustomElementDescriptor& descriptor,
-                              HashSet<AtomicString>&& observed_attributes)
+                              HashSet<AtomicString>&& observed_attributes,
+                              const Vector<String>& disabled_features)
       : CustomElementDefinition(descriptor,
-                                std::move(observed_attributes)) {}
+                                std::move(observed_attributes),
+                                disabled_features,
+                                FormAssociationFlag::kNo) {}
 
   ~TestCustomElementDefinition() override = default;
 
@@ -74,6 +77,8 @@ class TestCustomElementDefinition : public CustomElementDefinition {
   bool HasConnectedCallback() const override { return false; }
   bool HasDisconnectedCallback() const override { return false; }
   bool HasAdoptedCallback() const override { return false; }
+  bool HasFormAssociatedCallback() const override { return false; }
+  bool HasDisabledStateChangedCallback() const override { return false; }
 
   void RunConnectedCallback(Element*) override {
     NOTREACHED() << "definition does not have connected callback";
@@ -95,6 +100,14 @@ class TestCustomElementDefinition : public CustomElementDefinition {
                                    const AtomicString& new_value) override {
     NOTREACHED() << "definition does not have attribute changed callback";
   }
+  void RunFormAssociatedCallback(Element* element,
+                                 HTMLFormElement* nullable_form) override {
+    NOTREACHED() << "definition does not have formAssociatedCallback";
+  }
+  void RunDisabledStateChangedCallback(Element* element,
+                                       bool is_disabled) override {
+    NOTREACHED() << "definition does not have disabledStateChangedCallback";
+  }
 
   DISALLOW_COPY_AND_ASSIGN(TestCustomElementDefinition);
 };
@@ -104,7 +117,8 @@ class CreateElement {
 
  public:
   CreateElement(const AtomicString& local_name)
-      : namespace_uri_(HTMLNames::xhtmlNamespaceURI), local_name_(local_name) {}
+      : namespace_uri_(html_names::xhtmlNamespaceURI),
+        local_name_(local_name) {}
 
   CreateElement& InDocument(Document* document) {
     document_ = document;
@@ -117,7 +131,7 @@ class CreateElement {
   }
 
   CreateElement& WithId(const AtomicString& id) {
-    attributes_.push_back(std::make_pair(HTMLNames::idAttr, id));
+    attributes_.push_back(std::make_pair(html_names::kIdAttr, id));
     return *this;
   }
 

@@ -33,6 +33,7 @@
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/platform/bindings/to_v8.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
+#include "third_party/webrtc/rtc_base/sslcertificate.h"
 
 namespace blink {
 
@@ -44,21 +45,21 @@ DOMTimeStamp RTCCertificate::expires() const {
   return static_cast<DOMTimeStamp>(certificate_->Expires());
 }
 
-HeapVector<RTCDtlsFingerprint> RTCCertificate::getFingerprints() {
+HeapVector<Member<RTCDtlsFingerprint>> RTCCertificate::getFingerprints() {
   std::unique_ptr<rtc::SSLCertificateStats> first_certificate_stats =
       certificate_->ssl_certificate().GetStats();
 
-  HeapVector<RTCDtlsFingerprint> fingerprints;
+  HeapVector<Member<RTCDtlsFingerprint>> fingerprints;
   for (rtc::SSLCertificateStats* certificate_stats =
            first_certificate_stats.get();
        certificate_stats; certificate_stats = certificate_stats->issuer.get()) {
-    fingerprints.emplace_back();
-    auto& fingerprint = fingerprints.back();
-    fingerprint.setAlgorithm(WTF::String::FromUTF8(
+    RTCDtlsFingerprint* fingerprint = RTCDtlsFingerprint::Create();
+    fingerprint->setAlgorithm(WTF::String::FromUTF8(
         certificate_stats->fingerprint_algorithm.c_str()));
-    fingerprint.setValue(
+    fingerprint->setValue(
         WTF::String::FromUTF8(certificate_stats->fingerprint.c_str())
             .LowerASCII());
+    fingerprints.push_back(fingerprint);
   }
 
   return fingerprints;

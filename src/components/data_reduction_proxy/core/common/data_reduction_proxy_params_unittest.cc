@@ -28,7 +28,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_ANDROID)
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #endif
 
 namespace data_reduction_proxy {
@@ -249,6 +249,7 @@ TEST_F(DataReductionProxyParamsTest, QuicFieldTrial) {
                 params::GetWarmupURL());
     }
     EXPECT_TRUE(params::FetchWarmupProbeURLEnabled());
+    EXPECT_TRUE(params::IsWarmupURLFetchCallbackEnabled());
   }
 }
 
@@ -480,48 +481,6 @@ TEST(DataReductionProxyParamsStandaloneTest, OverrideProxiesForHttp) {
       ProxyServer::UNSPECIFIED_TYPE));
 
   EXPECT_EQ(expected_override_proxies_for_http, params.proxies_for_http());
-}
-
-TEST(DataReductionProxyParamsStandaloneTest, TestMissingViaHeaderParams) {
-  EXPECT_TRUE(
-      params::ShouldBypassMissingViaHeader(true /* connection_is_cellular */));
-  EXPECT_TRUE(
-      params::ShouldBypassMissingViaHeader(false /* connection_is_cellular */));
-  std::pair<base::TimeDelta, base::TimeDelta> cell_range =
-      params::GetMissingViaHeaderBypassDurationRange(
-          true /* connection_is_cellular */);
-  EXPECT_EQ(base::TimeDelta::FromMinutes(1), cell_range.first);
-  EXPECT_EQ(base::TimeDelta::FromMinutes(5), cell_range.second);
-  std::pair<base::TimeDelta, base::TimeDelta> wifi_range =
-      params::GetMissingViaHeaderBypassDurationRange(
-          false /* connection_is_cellular */);
-  EXPECT_EQ(base::TimeDelta::FromMinutes(1), wifi_range.first);
-  EXPECT_EQ(base::TimeDelta::FromMinutes(5), wifi_range.second);
-
-  std::map<std::string, std::string> feature_parameters = {
-      {"should_bypass_missing_via_cellular", "false"},
-      {"missing_via_min_bypass_cellular_in_seconds", "10"},
-      {"missing_via_max_bypass_cellular_in_seconds", "20"},
-      {"should_bypass_missing_via_wifi", "false"},
-      {"missing_via_min_bypass_wifi_in_seconds", "30"},
-      {"missing_via_max_bypass_wifi_in_seconds", "40"}};
-
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      features::kMissingViaHeaderShortDuration, feature_parameters);
-
-  EXPECT_FALSE(
-      params::ShouldBypassMissingViaHeader(true /* connection_is_cellular */));
-  EXPECT_FALSE(
-      params::ShouldBypassMissingViaHeader(false /* connection_is_cellular */));
-  cell_range = params::GetMissingViaHeaderBypassDurationRange(
-      true /* connection_is_cellular */);
-  EXPECT_EQ(base::TimeDelta::FromSeconds(10), cell_range.first);
-  EXPECT_EQ(base::TimeDelta::FromSeconds(20), cell_range.second);
-  wifi_range = params::GetMissingViaHeaderBypassDurationRange(
-      false /* connection_is_cellular */);
-  EXPECT_EQ(base::TimeDelta::FromSeconds(30), wifi_range.first);
-  EXPECT_EQ(base::TimeDelta::FromSeconds(40), wifi_range.second);
 }
 
 }  // namespace data_reduction_proxy

@@ -14,6 +14,7 @@
 #include "android_webview/browser/test/rendering_test.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
@@ -473,7 +474,7 @@ class SwitchLayerTreeFrameSinkIdTest : public ResourceRenderingTest {
         // Second output surface.
         {1u, 1u}, {1u, 1u}, {1u, 2u}, {1u, 2u}, {1u, 3u}, {1u, 3u}, {1u, 4u},
     };
-    if (frame_number >= static_cast<int>(arraysize(infos))) {
+    if (frame_number >= static_cast<int>(base::size(infos))) {
       return nullptr;
     }
 

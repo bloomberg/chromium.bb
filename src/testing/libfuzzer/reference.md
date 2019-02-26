@@ -4,11 +4,11 @@
 
 ### MSan
 
-You need to [download prebuilt instrumented libraries](https://www.chromium.org/developers/testing/memorysanitizer#TOC-How-to-build-and-run)
-to use MSan ([crbug/653712](https://bugs.chromium.org/p/chromium/issues/detail?id=653712)):
-```bash
-GYP_DEFINES='use_goma=1 msan=1 use_prebuilt_instrumented_libraries=1' gclient runhooks
-```
+Memory Sanitizer (MSan) in Chromium only supports Ubuntu Precise/Trusty and not
+Rodete.
+Thus, our [reproduce tool] cannot reproduce bugs found using MSan.
+You can try to reproduce them manually by using [these instructions] on how to
+run MSan-instrumented code in docker.
 
 ### UBSan
 
@@ -31,12 +31,13 @@ running:
 
 | Builder | Description |
 |---------|-------------|
-|Linux ASan | `tools/mb/mb.py gen -m chromium.fyi -b 'Libfuzzer Upload Linux ASan' out/Directory` |
-|Linux ASan Debug | `tools/mb/mb.py gen -m chromium.fyi -b 'Libfuzzer Upload Linux ASan Debug' out/Directory` |
-|Linux MSan \[[*](#MSan)\] | `tools/mb/mb.py gen -m chromium.fyi -b 'Libfuzzer Upload Linux MSan' out/Directory` |
-|Linux UBSan \[[*](#UBSan)\]| `tools/mb/mb.py gen -m chromium.fyi -b 'Libfuzzer Upload Linux UBSan' out/Directory` |
-|Mac ASan | `tools/mb/mb.py gen -m chromium.fyi -b 'Libfuzzer Upload Mac ASan' out/Directory` |
-|Windows ASan | `tools/mb/mb.py gen -m chromium.fyi -b 'Libfuzzer Upload Windows ASan' out/Directory` |
+|Linux ASan | `tools/mb/mb.py gen -m chromium.fuzz -b 'Libfuzzer Upload Linux ASan' out/Directory` |
+|Linux ASan Debug | `tools/mb/mb.py gen -m chromium.fuzz -b 'Libfuzzer Upload Linux ASan Debug' out/Directory` |
+|Linux MSan \[[*](#MSan)\] | `tools/mb/mb.py gen -m chromium.fuzz -b 'Libfuzzer Upload Linux MSan' out/Directory` |
+|Linux UBSan \[[*](#UBSan)\]| `tools/mb/mb.py gen -m chromium.fuzz -b 'Libfuzzer Upload Linux UBSan' out/Directory` |
+|Chrome OS ASan | `tools/mb/mb.py gen -m chromium.fuzz -b 'Libfuzzer Upload Chrome OS ASan' out/Directory` |
+|Mac ASan | `tools/mb/mb.py gen -m chromium.fuzz -b 'Libfuzzer Upload Mac ASan' out/Directory` |
+|Windows ASan | `python tools\mb\mb.py gen -m chromium.fuzz -b "Libfuzzer Upload Windows ASan" out\Directory` |
 
 
 ### Linux
@@ -56,6 +57,19 @@ Configuration example:
 gn gen out/libfuzzer '--args=use_libfuzzer=true is_asan=true' --check
 ```
 
+### Chrome OS
+Chrome OS is supported by libFuzzer with `is_asan` configuration.
+
+Configuration example:
+
+```bash
+gn gen out/libfuzzer '--args=use_libfuzzer=true is_asan=true target_os="chromeos"' --check
+```
+
+To do a Chrome OS build on Linux (not just for libFuzzer), your `.gclient` file
+must be configured appropriately, see the [Chrome OS build docs] for more
+details.
+
 ### Mac
 
 Mac is supported by libFuzzer with `is_asan` configuration.
@@ -73,7 +87,7 @@ Windows is supported by libFuzzer with `is_asan` configuration.
 Configuration example:
 
 ```bash
-gn gen out/libfuzzer '--args=use_libfuzzer=true is_asan=true is_debug=false is_component_build=false' --check
+gn gen out/libfuzzer "--args=use_libfuzzer=true is_asan=true is_debug=false is_component_build=false" --check
 ```
 
 On Windows you must use `is_component_build=true` as libFuzzer does not support
@@ -142,4 +156,7 @@ fuzzer_test("my_fuzzer") {
 [Address Sanitizer]: http://clang.llvm.org/docs/AddressSanitizer.html
 [Memory Sanitizer]: http://clang.llvm.org/docs/MemorySanitizer.html
 [Undefined Behavior Sanitizer]: http://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
+[reproduce tool]: https://github.com/google/clusterfuzz-tools
+[these instructions]: https://www.chromium.org/developers/testing/memorysanitizer#TOC-Running-on-other-distros-using-Docker
+[Chrome OS build docs]: https://chromium.googlesource.com/chromium/src/+/HEAD/docs/chromeos_build_instructions.md#updating-your-gclient-config
 

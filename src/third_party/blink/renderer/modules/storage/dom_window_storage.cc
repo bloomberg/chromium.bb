@@ -4,7 +4,9 @@
 
 #include "third_party/blink/renderer/modules/storage/dom_window_storage.h"
 
+#include "base/feature_list.h"
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -35,7 +37,7 @@ DOMWindowStorage& DOMWindowStorage::From(LocalDOMWindow& window) {
   DOMWindowStorage* supplement =
       Supplement<LocalDOMWindow>::From<DOMWindowStorage>(window);
   if (!supplement) {
-    supplement = new DOMWindowStorage(window);
+    supplement = MakeGarbageCollected<DOMWindowStorage>(window);
     ProvideTo(window, supplement);
   }
   return *supplement;
@@ -89,11 +91,22 @@ StorageArea* DOMWindowStorage::sessionStorage(
   if (!page)
     return nullptr;
 
-  auto storage_area = StorageNamespace::From(page)->GetWebStorageArea(
-      document->GetSecurityOrigin());
-  session_storage_ =
-      StorageArea::Create(document->GetFrame(), std::move(storage_area),
-                          StorageArea::StorageType::kSessionStorage);
+  StorageNamespace* storage_namespace = StorageNamespace::From(page);
+  if (!storage_namespace)
+    return nullptr;
+  if (base::FeatureList::IsEnabled(features::kOnionSoupDOMStorage)) {
+    auto storage_area =
+        storage_namespace->GetCachedArea(document->GetSecurityOrigin());
+    session_storage_ =
+        StorageArea::Create(document->GetFrame(), std::move(storage_area),
+                            StorageArea::StorageType::kSessionStorage);
+  } else {
+    auto storage_area =
+        storage_namespace->GetWebStorageArea(document->GetSecurityOrigin());
+    session_storage_ =
+        StorageArea::Create(document->GetFrame(), std::move(storage_area),
+                            StorageArea::StorageType::kSessionStorage);
+  }
   if (!session_storage_->CanAccessStorage()) {
     exception_state.ThrowSecurityError(access_denied_message);
     return nullptr;
@@ -136,11 +149,20 @@ StorageArea* DOMWindowStorage::localStorage(
   Page* page = document->GetPage();
   if (!page || !page->GetSettings().GetLocalStorageEnabled())
     return nullptr;
-  auto storage_area = StorageController::GetInstance()->GetWebLocalStorageArea(
-      document->GetSecurityOrigin());
-  local_storage_ =
-      StorageArea::Create(document->GetFrame(), std::move(storage_area),
-                          StorageArea::StorageType::kLocalStorage);
+  if (base::FeatureList::IsEnabled(features::kOnionSoupDOMStorage)) {
+    auto storage_area = StorageController::GetInstance()->GetLocalStorageArea(
+        document->GetSecurityOrigin());
+    local_storage_ =
+        StorageArea::Create(document->GetFrame(), std::move(storage_area),
+                            StorageArea::StorageType::kLocalStorage);
+  } else {
+    auto storage_area =
+        StorageController::GetInstance()->GetWebLocalStorageArea(
+            document->GetSecurityOrigin());
+    local_storage_ =
+        StorageArea::Create(document->GetFrame(), std::move(storage_area),
+                            StorageArea::StorageType::kLocalStorage);
+  }
   if (!local_storage_->CanAccessStorage()) {
     exception_state.ThrowSecurityError(access_denied_message);
     return nullptr;

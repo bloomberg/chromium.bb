@@ -15,7 +15,6 @@
 #include "components/sync/model/model_error.h"
 #include "components/sync/model/model_type_store.h"
 #include "components/sync/model/model_type_sync_bridge.h"
-#include "components/sync_sessions/abstract_sessions_sync_manager.h"
 #include "components/sync_sessions/favicon_cache.h"
 #include "components/sync_sessions/local_session_event_handler_impl.h"
 #include "components/sync_sessions/open_tabs_ui_delegate_impl.h"
@@ -36,23 +35,20 @@ class SyncSessionsClient;
 // sync server. See
 // https://chromium.googlesource.com/chromium/src/+/lkcr/docs/sync/model_api.md#Implementing-ModelTypeSyncBridge
 // for details.
-class SessionSyncBridge : public AbstractSessionsSyncManager,
-                          public syncer::ModelTypeSyncBridge,
+class SessionSyncBridge : public syncer::ModelTypeSyncBridge,
                           public LocalSessionEventHandlerImpl::Delegate {
  public:
   // Raw pointers must not be null and their pointees must outlive this object.
   SessionSyncBridge(
+      const base::RepeatingClosure& notify_foreign_session_updated_cb,
       SyncSessionsClient* sessions_client,
       std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor);
   ~SessionSyncBridge() override;
 
-  // AbstractSessionsSyncManager implementation.
-  void ScheduleGarbageCollection() override;
-  FaviconCache* GetFaviconCache() override;
-  SessionsGlobalIdMapper* GetGlobalIdMapper() override;
-  OpenTabsUIDelegate* GetOpenTabsUIDelegate() override;
-  syncer::SyncableService* GetSyncableService() override;
-  syncer::ModelTypeSyncBridge* GetModelTypeSyncBridge() override;
+  void ScheduleGarbageCollection();
+  FaviconCache* GetFaviconCache();
+  SessionsGlobalIdMapper* GetGlobalIdMapper();
+  OpenTabsUIDelegate* GetOpenTabsUIDelegate();
 
   // ModelTypeSyncBridge implementation.
   void OnSyncStarting(
@@ -76,6 +72,7 @@ class SessionSyncBridge : public AbstractSessionsSyncManager,
   // LocalSessionEventHandlerImpl::Delegate implementation.
   std::unique_ptr<LocalSessionEventHandlerImpl::WriteBatch>
   CreateLocalSessionWriteBatch() override;
+  bool IsTabNodeUnsynced(int tab_node_id) override;
   void TrackLocalNavigationId(base::Time timestamp, int unique_id) override;
   void OnPageFaviconUpdated(const GURL& page_url) override;
   void OnFaviconVisited(const GURL& page_url, const GURL& favicon_url) override;
@@ -94,6 +91,7 @@ class SessionSyncBridge : public AbstractSessionsSyncManager,
   void ResubmitLocalSession();
   void ReportError(const syncer::ModelError& error);
 
+  const base::RepeatingClosure notify_foreign_session_updated_cb_;
   SyncSessionsClient* const sessions_client_;
   LocalSessionEventRouter* const local_session_event_router_;
 

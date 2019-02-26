@@ -13,7 +13,7 @@
 namespace net {
 
 // Observes changes in effective connection type.
-class NET_EXPORT EffectiveConnectionTypeObserver {
+class NET_EXPORT_PRIVATE EffectiveConnectionTypeObserver {
  public:
   // Notifies the observer of a change in the effective connection type.
   // NetworkQualityEstimator computes the effective connection type once in

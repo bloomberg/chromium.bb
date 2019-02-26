@@ -34,6 +34,26 @@ extern const size_t kMouseSize;
 extern const uint8_t kLogitechUnifyingReceiver[];
 extern const size_t kLogitechUnifyingReceiverSize;
 
+// Sony Dualshock 3 USB descriptor
+extern const uint8_t kSonyDualshock3[];
+extern const size_t kSonyDualshock3Size;
+
+// Sony Dualshock 4 USB descriptor
+extern const uint8_t kSonyDualshock4[];
+extern const size_t kSonyDualshock4Size;
+
+// Microsoft Xbox Wireless Controller Bluetooth descriptor
+extern const uint8_t kMicrosoftXboxWirelessController[];
+extern const size_t kMicrosoftXboxWirelessControllerSize;
+
+// Nintendo Switch Pro Controller USB descriptor
+extern const uint8_t kNintendoSwitchProController[];
+extern const size_t kNintendoSwitchProControllerSize;
+
+// Microsoft Xbox Adaptive Controller Bluetooth descriptor
+extern const uint8_t kMicrosoftXboxAdaptiveController[];
+extern const size_t kMicrosoftXboxAdaptiveControllerSize;
+
 }  // namespace device
 
 #endif  // SERVICES_DEVICE_HID_TEST_REPORT_DESCRIPTORS_H_

@@ -27,14 +27,14 @@ class CORE_EXPORT PostMessageHelper {
   static scoped_refptr<SerializedScriptValue> SerializeMessageByMove(
       v8::Isolate*,
       const ScriptValue& message,
-      const PostMessageOptions& options,
+      const PostMessageOptions* options,
       Transferables& transferables,
       ExceptionState&);
 
   static scoped_refptr<SerializedScriptValue> SerializeMessageByCopy(
       v8::Isolate*,
       const ScriptValue& message,
-      const PostMessageOptions& options,
+      const PostMessageOptions* options,
       Transferables& transferables,
       ExceptionState&);
 
@@ -42,7 +42,7 @@ class CORE_EXPORT PostMessageHelper {
   // execution context is not a window.
   static mojom::blink::UserActivationSnapshotPtr CreateUserActivationSnapshot(
       ExecutionContext*,
-      const PostMessageOptions&);
+      const PostMessageOptions*);
 };
 
 }  // namespace blink

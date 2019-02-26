@@ -11,10 +11,8 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/renderer_context_menu/render_view_context_menu_mac_cocoa.h"
-#include "chrome/browser/ui/cocoa/renderer_context_menu/render_view_context_menu_mac_views.h"
 #include "chrome/browser/ui/cocoa/tab_contents/web_drag_bookmark_handler_mac.h"
 #include "chrome/browser/ui/tab_contents/chrome_web_contents_view_delegate.h"
-#include "chrome/browser/ui/views_mode_controller.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #import "ui/base/cocoa/focus_tracker.h"
@@ -130,7 +128,8 @@ ChromeWebContentsViewDelegateMac::CreateRenderViewContextMenu(
   gfx::NativeView parent_view =
       GetActiveRenderWidgetHostView()->GetNativeView();
 
-  return new RenderViewContextMenuMacCocoa(focused_frame, params, parent_view);
+  return new RenderViewContextMenuMacCocoa(focused_frame, params,
+                                           parent_view.GetNativeNSView());
 }
 
 content::RenderWidgetHostView*
@@ -142,5 +141,5 @@ ChromeWebContentsViewDelegateMac::GetActiveRenderWidgetHostView() const {
 
 NSWindow* ChromeWebContentsViewDelegateMac::GetNSWindowForFocusTracker() const {
   content::RenderWidgetHostView* rwhv = GetActiveRenderWidgetHostView();
-  return rwhv ? [rwhv->GetNativeView() window] : nil;
+  return rwhv ? [rwhv->GetNativeView().GetNativeNSView() window] : nil;
 }

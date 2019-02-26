@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/command_line.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/tabs/fake_base_tab_strip_controller.h"
@@ -18,16 +17,17 @@
 #include "chrome/browser/ui/views/tabs/tab_strip_observer.h"
 #include "chrome/browser/ui/views/tabs/tab_style.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chrome/test/views/chrome_test_views_delegate.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/material_design/material_design_controller.h"
-#include "ui/base/ui_base_switches.h"
+#include "ui/base/test/material_design_controller_test_api.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/views/accessibility/ax_event_manager.h"
+#include "ui/views/accessibility/ax_event_observer.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/view.h"
 #include "ui/views/view_targeter.h"
@@ -45,18 +45,16 @@ views::View* FindTabView(views::View* view) {
   return current;
 }
 
-// Generates the test names suffixes based on the value of the test param.
-std::string TouchOptimizedUiStatusToString(
-    const ::testing::TestParamInfo<bool>& info) {
-  return info.param ? "TouchOptimizedUiEnabled" : "TouchOptimizedUiDisabled";
-}
-
-class TabStripTestViewsDelegate : public ChromeTestViewsDelegate {
+class TestAXEventObserver : public views::AXEventObserver {
  public:
-  TabStripTestViewsDelegate() = default;
-  ~TabStripTestViewsDelegate() override = default;
-  void NotifyAccessibilityEvent(views::View* view,
-                                ax::mojom::Event event_type) override {
+  TestAXEventObserver() { views::AXEventManager::Get()->AddObserver(this); }
+
+  ~TestAXEventObserver() override {
+    views::AXEventManager::Get()->RemoveObserver(this);
+  }
+
+  // views::AXEventObserver:
+  void OnViewEvent(views::View* view, ax::mojom::Event event_type) override {
     if (event_type == ax::mojom::Event::kSelectionRemove) {
       remove_count_++;
     }
@@ -71,7 +69,8 @@ class TabStripTestViewsDelegate : public ChromeTestViewsDelegate {
  private:
   int add_count_ = 0;
   int remove_count_ = 0;
-  DISALLOW_COPY_AND_ASSIGN(TabStripTestViewsDelegate);
+
+  DISALLOW_COPY_AND_ASSIGN(TestAXEventObserver);
 };
 
 class AnimationWaiter {
@@ -147,17 +146,11 @@ class TestTabStripObserver : public TabStripObserver {
 class TabStripTest : public ChromeViewsTestBase,
                      public testing::WithParamInterface<bool> {
  public:
-  TabStripTest() {}
+  TabStripTest() : test_api_(GetParam()) {}
 
   ~TabStripTest() override {}
 
   void SetUp() override {
-    if (GetParam()) {
-      base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-          switches::kTopChromeMD,
-          switches::kTopChromeMDMaterialRefreshTouchOptimized);
-    }
-
     ChromeViewsTestBase::SetUp();
 
     controller_ = new FakeBaseTabStripController;
@@ -183,13 +176,6 @@ class TabStripTest : public ChromeViewsTestBase,
   }
 
  protected:
-  std::unique_ptr<views::TestViewsDelegate> CreateTestViewsDelegate() override {
-    std::unique_ptr<TabStripTestViewsDelegate> delegate =
-        std::make_unique<TabStripTestViewsDelegate>();
-    test_views_delegate_ = delegate.get();
-    return delegate;
-  }
-
   bool IsShowingAttentionIndicator(Tab* tab) {
     return tab->icon_->ShowingAttentionIndicator();
   }
@@ -235,10 +221,11 @@ class TabStripTest : public ChromeViewsTestBase,
   // Owns |tab_strip_|.
   views::View parent_;
   TabStrip* tab_strip_ = nullptr;
-  TabStripTestViewsDelegate* test_views_delegate_ = nullptr;
   std::unique_ptr<views::Widget> widget_;
 
  private:
+  ui::test::MaterialDesignControllerTestAPI test_api_;
+
   DISALLOW_COPY_AND_ASSIGN(TabStripTest);
 };
 
@@ -247,6 +234,8 @@ TEST_P(TabStripTest, GetModelCount) {
 }
 
 TEST_P(TabStripTest, AccessibilityEvents) {
+  TestAXEventObserver observer;
+
   // When adding tabs, SetSelection() is called after AddTabAt(), as
   // otherwise the index would not be meaningful.
   tab_strip_->AddTabAt(0, TabRendererData(), false);
@@ -254,16 +243,16 @@ TEST_P(TabStripTest, AccessibilityEvents) {
   ui::ListSelectionModel selection;
   selection.SetSelectedIndex(1);
   tab_strip_->SetSelection(selection);
-  EXPECT_EQ(1, test_views_delegate_->add_count());
-  EXPECT_EQ(0, test_views_delegate_->remove_count());
+  EXPECT_EQ(1, observer.add_count());
+  EXPECT_EQ(0, observer.remove_count());
 
   // When removing tabs, SetSelection() is called before RemoveTabAt(), as
   // otherwise the index would not be meaningful.
   selection.SetSelectedIndex(0);
   tab_strip_->SetSelection(selection);
   tab_strip_->RemoveTabAt(nullptr, 1, true);
-  EXPECT_EQ(2, test_views_delegate_->add_count());
-  EXPECT_EQ(1, test_views_delegate_->remove_count());
+  EXPECT_EQ(2, observer.add_count());
+  EXPECT_EQ(1, observer.remove_count());
 }
 
 TEST_P(TabStripTest, IsValidModelIndex) {
@@ -320,6 +309,40 @@ TEST_P(TabStripTest, RemoveTab) {
   // the TabStrip is destroyed and an animation is ongoing.
   controller_->RemoveTab(0);
   EXPECT_EQ(0, observer.last_tab_removed());
+}
+
+namespace {
+
+bool TabViewsInOrder(TabStrip* tab_strip) {
+  for (int i = 1; i < tab_strip->tab_count(); ++i) {
+    Tab* left = tab_strip->tab_at(i - 1);
+    Tab* right = tab_strip->tab_at(i);
+
+    if (tab_strip->GetIndexOf(right) < tab_strip->GetIndexOf(left)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+}  // namespace
+
+// Verifies child view order matches model order.
+TEST_P(TabStripTest, TabViewOrder) {
+  controller_->AddTab(0, false);
+  controller_->AddTab(1, false);
+  controller_->AddTab(2, false);
+  EXPECT_TRUE(TabViewsInOrder(tab_strip_));
+
+  tab_strip_->MoveTab(0, 1, TabRendererData());
+  EXPECT_TRUE(TabViewsInOrder(tab_strip_));
+  tab_strip_->MoveTab(1, 2, TabRendererData());
+  EXPECT_TRUE(TabViewsInOrder(tab_strip_));
+  tab_strip_->MoveTab(1, 0, TabRendererData());
+  EXPECT_TRUE(TabViewsInOrder(tab_strip_));
+  tab_strip_->MoveTab(0, 2, TabRendererData());
+  EXPECT_TRUE(TabViewsInOrder(tab_strip_));
 }
 
 TEST_P(TabStripTest, VisibilityInOverflow) {
@@ -415,7 +438,8 @@ TEST_P(TabStripTest, TabForEventWhenStacked) {
 // the tabstrip is in stacked tab mode.
 TEST_P(TabStripTest, TabCloseButtonVisibilityWhenStacked) {
   // Touch-optimized UI requires a larger width for tabs to show close buttons.
-  tab_strip_->SetBounds(0, 0, GetParam() ? 442 : 346, 20);
+  const bool touch_ui = ui::MaterialDesignController::touch_ui();
+  tab_strip_->SetBounds(0, 0, touch_ui ? 442 : 346, 20);
   controller_->AddTab(0, false);
   controller_->AddTab(1, true);
   controller_->AddTab(2, false);
@@ -486,7 +510,8 @@ TEST_P(TabStripTest, TabCloseButtonVisibilityWhenNotStacked) {
   // Set the tab strip width to be wide enough for three tabs to show all
   // three icons, but not enough for five tabs to show all three icons.
   // Touch-optimized UI requires a larger width for tabs to show close buttons.
-  tab_strip_->SetBounds(0, 0, GetParam() ? 442 : 346, 20);
+  const bool touch_ui = ui::MaterialDesignController::touch_ui();
+  tab_strip_->SetBounds(0, 0, touch_ui ? 442 : 346, 20);
   controller_->AddTab(0, false);
   controller_->AddTab(1, true);
   controller_->AddTab(2, false);
@@ -833,11 +858,7 @@ TEST_P(TabStripTest, TabNeedsAttentionGeneric) {
   EXPECT_TRUE(IsShowingAttentionIndicator(tab1));
 }
 
-// Defines an alias to be used for tests that are only relevant to the touch-
-// optimized UI mode.
-using TabStripTouchOptimizedUiOnlyTest = TabStripTest;
-
-TEST_P(TabStripTouchOptimizedUiOnlyTest, NewTabButtonInkDrop) {
+TEST_P(TabStripTest, NewTabButtonInkDrop) {
   constexpr int kTabStripWidth = 500;
   tab_strip_->SetBounds(0, 0, kTabStripWidth, GetLayoutConstant(TAB_HEIGHT));
 
@@ -855,12 +876,4 @@ TEST_P(TabStripTouchOptimizedUiOnlyTest, NewTabButtonInkDrop) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        TabStripTest,
-                        ::testing::Values(true, false),
-                        &TouchOptimizedUiStatusToString);
-
-INSTANTIATE_TEST_CASE_P(,
-                        TabStripTouchOptimizedUiOnlyTest,
-                        ::testing::Values(true),
-                        &TouchOptimizedUiStatusToString);
+INSTANTIATE_TEST_CASE_P(, TabStripTest, ::testing::Values(false, true));

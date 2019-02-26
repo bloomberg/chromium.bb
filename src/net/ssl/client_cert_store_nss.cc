@@ -169,9 +169,9 @@ void ClientCertStoreNSS::GetPlatformCertsOnWorkerThread(
     ClientCertIdentityList* identities) {
   crypto::EnsureNSSInit();
 
-  CERTCertList* found_certs =
-      CERT_FindUserCertsByUsage(CERT_GetDefaultCertDB(), certUsageSSLClient,
-                                PR_FALSE, PR_FALSE, password_delegate.get());
+  CERTCertList* found_certs = CERT_FindUserCertsByUsage(
+      CERT_GetDefaultCertDB(), certUsageSSLClient, PR_FALSE, PR_FALSE,
+      password_delegate ? password_delegate->wincx() : nullptr);
   if (!found_certs) {
     DVLOG(2) << "No client certs found.";
     return;

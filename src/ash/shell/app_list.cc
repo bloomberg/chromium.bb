@@ -329,9 +329,9 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     return true;
   }
 
-  ws::WindowService* GetWindowService() override {
+  void GetNavigableContentsFactory(
+      content::mojom::NavigableContentsFactoryRequest request) override {
     NOTIMPLEMENTED();
-    return nullptr;
   }
 
   std::unique_ptr<app_list::AppListModel> model_;

@@ -60,12 +60,12 @@ class ScriptProcessorHandler final : public AudioHandler {
   ~ScriptProcessorHandler() override;
 
   // AudioHandler
-  void Process(size_t frames_to_process) override;
+  void Process(uint32_t frames_to_process) override;
   void Initialize() override;
 
-  size_t BufferSize() const { return buffer_size_; }
+  uint32_t BufferSize() const { return static_cast<uint32_t>(buffer_size_); }
 
-  void SetChannelCount(unsigned long, ExceptionState&) override;
+  void SetChannelCount(unsigned, ExceptionState&) override;
   void SetChannelCountMode(const String&, ExceptionState&) override;
 
   unsigned NumberOfOutputChannels() const override {
@@ -139,20 +139,19 @@ class ScriptProcessorNode final
                                      unsigned number_of_output_channels,
                                      ExceptionState&);
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(audioprocess);
-  size_t bufferSize() const;
-
-  // ScriptWrappable
-  bool HasPendingActivity() const final;
-
-  void Trace(blink::Visitor* visitor) override { AudioNode::Trace(visitor); }
-
- private:
   ScriptProcessorNode(BaseAudioContext&,
                       float sample_rate,
                       size_t buffer_size,
                       unsigned number_of_input_channels,
                       unsigned number_of_output_channels);
+
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(audioprocess, kAudioprocess);
+  uint32_t bufferSize() const;
+
+  // ScriptWrappable
+  bool HasPendingActivity() const final;
+
+  void Trace(blink::Visitor* visitor) override { AudioNode::Trace(visitor); }
 };
 
 }  // namespace blink

@@ -104,7 +104,7 @@ void DidGetClients(ScriptPromiseResolver* resolver,
 }  // namespace
 
 ServiceWorkerClients* ServiceWorkerClients::Create() {
-  return new ServiceWorkerClients();
+  return MakeGarbageCollected<ServiceWorkerClients>();
 }
 
 ServiceWorkerClients::ServiceWorkerClients() = default;
@@ -125,7 +125,7 @@ ScriptPromise ServiceWorkerClients::get(ScriptState* script_state,
 
 ScriptPromise ServiceWorkerClients::matchAll(
     ScriptState* script_state,
-    const ClientQueryOptions& options) {
+    const ClientQueryOptions* options) {
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   // FIXME: May be null due to worker termination: http://crbug.com/413518.
   if (!execution_context)
@@ -135,7 +135,7 @@ ScriptPromise ServiceWorkerClients::matchAll(
   ServiceWorkerGlobalScopeClient::From(execution_context)
       ->GetClients(
           mojom::blink::ServiceWorkerClientQueryOptions::New(
-              options.includeUncontrolled(), GetClientType(options.type())),
+              options->includeUncontrolled(), GetClientType(options->type())),
           WTF::Bind(&DidGetClients, WrapPersistent(resolver)));
   return resolver->Promise();
 }
@@ -159,7 +159,8 @@ ScriptPromise ServiceWorkerClients::openWindow(ScriptState* script_state,
   ScriptPromise promise = resolver->Promise();
   ExecutionContext* context = ExecutionContext::From(script_state);
 
-  KURL parsed_url = KURL(ToWorkerGlobalScope(context)->location()->Url(), url);
+  KURL parsed_url =
+      KURL(To<WorkerGlobalScope>(context)->location()->Url(), url);
   if (!parsed_url.IsValid()) {
     resolver->Reject(V8ThrowException::CreateTypeError(
         script_state->GetIsolate(), "'" + url + "' is not a valid URL."));

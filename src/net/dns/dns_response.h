@@ -36,13 +36,31 @@ struct Header;
 struct NET_EXPORT_PRIVATE DnsResourceRecord {
   DnsResourceRecord();
   explicit DnsResourceRecord(const DnsResourceRecord& other);
+  DnsResourceRecord(DnsResourceRecord&& other);
   ~DnsResourceRecord();
+
+  DnsResourceRecord& operator=(const DnsResourceRecord& other);
+  DnsResourceRecord& operator=(DnsResourceRecord&& other);
+
+  // A helper to set |owned_rdata| that also sets |rdata| to point to it.
+  // See the definition of |owned_rdata| below.
+  void SetOwnedRdata(std::string value);
+
+  // NAME (variable length) + TYPE (2 bytes) + CLASS (2 bytes) + TTL (4 bytes) +
+  // RDLENGTH (2 bytes) + RDATA (variable length)
+  //
+  // Uses |owned_rdata| for RDATA if non-empty.
+  size_t CalculateRecordSize() const;
 
   std::string name;  // in dotted form
   uint16_t type = 0;
   uint16_t klass = 0;
   uint32_t ttl = 0;
-  base::StringPiece rdata;  // points to the original response buffer
+  // Points to the original response buffer or otherwise to |owned_rdata|.
+  base::StringPiece rdata;
+  // Used to construct a DnsResponse from data. This field is empty if |rdata|
+  // points to the response buffer.
+  std::string owned_rdata;
 };
 
 // Iterator to walk over resource records of the DNS response packet.

@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/native_library.h"
 #include "base/path_service.h"
+#include "base/token.h"
 #include "content/public/browser/cdm_registry.h"
 #include "content/public/common/cdm_info.h"
 #include "media/base/media_switches.h"
@@ -28,12 +29,12 @@ void RegisterClearKeyCdm(base::CommandLine* command_line,
                                    cdm_path.value());
 }
 
-bool IsLibraryCdmRegistered(const std::string& cdm_guid) {
+bool IsLibraryCdmRegistered(const base::Token& cdm_guid) {
   std::vector<content::CdmInfo> cdm_info_vector =
       content::CdmRegistry::GetInstance()->GetAllRegisteredCdms();
   for (const auto& cdm_info : cdm_info_vector) {
     if (cdm_info.guid == cdm_guid) {
-      DVLOG(2) << "CDM registered for " << cdm_guid << " with path "
+      DVLOG(2) << "CDM registered for " << cdm_guid.ToString() << " with path "
                << cdm_info.path.value();
       return true;
     }

@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/webauthn/sheet_models.h"
 
 #include <memory>
-#include <vector>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
@@ -480,15 +480,21 @@ base::string16 AuthenticatorBleDeviceSelectionSheetModel::GetStepDescription()
 
 // AuthenticatorBlePinEntrySheetModel -----------------------------------------
 
+void AuthenticatorBlePinEntrySheetModel::SetPinCode(base::string16 pin_code) {
+  pin_code_ = std::move(pin_code);
+}
+
 gfx::ImageSkia* AuthenticatorBlePinEntrySheetModel::GetStepIllustration()
     const {
   return GetImage(IDR_WEBAUTHN_ILLUSTRATION_BLE_PIN);
 }
 
 base::string16 AuthenticatorBlePinEntrySheetModel::GetStepTitle() const {
-  base::string16 device_display_name;
-  const auto* const ble_authenticator =
-      dialog_model()->selected_authenticator();
+  const auto& authenticator_id = dialog_model()->selected_authenticator_id();
+  DCHECK(authenticator_id);
+  const auto* ble_authenticator =
+      dialog_model()->saved_authenticators().GetAuthenticator(
+          *authenticator_id);
   DCHECK(ble_authenticator);
   return l10n_util::GetStringFUTF16(
       IDS_WEBAUTHN_BLE_PIN_ENTRY_TITLE,
@@ -510,6 +516,10 @@ bool AuthenticatorBlePinEntrySheetModel::IsAcceptButtonEnabled() const {
 base::string16 AuthenticatorBlePinEntrySheetModel::GetAcceptButtonLabel()
     const {
   return l10n_util::GetStringUTF16(IDS_WEBAUTHN_BLE_PIN_ENTRY_NEXT);
+}
+
+void AuthenticatorBlePinEntrySheetModel::OnAccept() {
+  dialog_model()->FinishPairingWithPin(pin_code_);
 }
 
 // AuthenticatorBleVerifyingSheetModel ----------------------------------------

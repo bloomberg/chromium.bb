@@ -44,58 +44,16 @@ static_assert(static_cast<NSScrollerStyle>(kScrollerStyleOverlay) ==
                   NSScrollerStyleOverlay,
               "ScrollerStyleOverlay must match NSScrollerStyleOverlay");
 
-typedef WTF::HashSet<WebScrollbarThemeClient*> ClientSet;
-
-static ClientSet& GetClientSet() {
-  DEFINE_STATIC_LOCAL(ClientSet, set, ());
-  return set;
-}
-
-static float s_initial_button_delay = 0.5f;
-static float s_autoscroll_button_delay = 0.05f;
-static ScrollerStyle s_preferred_scroller_style = kScrollerStyleLegacy;
-static bool s_jump_on_track_click = false;
-
 void WebScrollbarTheme::UpdateScrollbarsWithNSDefaults(
     float initial_button_delay,
     float autoscroll_button_delay,
     ScrollerStyle preferred_scroller_style,
     bool redraw,
     bool jump_on_track_click) {
-  s_initial_button_delay = initial_button_delay;
-  s_autoscroll_button_delay = autoscroll_button_delay;
-  s_preferred_scroller_style = preferred_scroller_style;
-  s_jump_on_track_click = jump_on_track_click;
-
-  if (redraw && !GetClientSet().IsEmpty()) {
-    for (auto* client : GetClientSet()) {
-      client->PreferencesChanged();
-    }
-  }
-}
-
-float WebScrollbarTheme::InitialButtonDelay() {
-  return s_initial_button_delay;
-}
-
-float WebScrollbarTheme::AutoscrollButtonDelay() {
-  return s_autoscroll_button_delay;
-}
-
-ScrollerStyle WebScrollbarTheme::PreferredScrollerStyle() {
-  return s_preferred_scroller_style;
-}
-
-bool WebScrollbarTheme::JumpOnTrackClick() {
-  return s_jump_on_track_click;
-}
-
-void WebScrollbarTheme::RegisterClient(WebScrollbarThemeClient& client) {
-  GetClientSet().insert(&client);
-}
-
-void WebScrollbarTheme::UnregisterClient(WebScrollbarThemeClient& client) {
-  GetClientSet().erase(&client);
+  ScrollbarThemeMac::UpdateScrollbarsWithNSDefaults(
+      initial_button_delay, autoscroll_button_delay,
+      static_cast<NSScrollerStyle>(preferred_scroller_style), redraw,
+      jump_on_track_click);
 }
 
 }  // namespace blink

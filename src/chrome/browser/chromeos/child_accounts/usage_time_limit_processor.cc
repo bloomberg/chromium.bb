@@ -395,13 +395,15 @@ bool UsageTimeLimitProcessor::IsUsageLimitOverridden(
       usage_limit_entry->last_updated > time_limit_override_->created_at)
     return false;
 
+  base::Time last_reset_time = ConvertPolicyTime(LockOverrideResetTime(), 0);
   bool usage_limit_enforced_previously =
       previous_state_->is_time_usage_limit_enabled &&
       previous_state_->remaining_usage <= base::TimeDelta::FromMinutes(0);
   bool override_created_after_usage_limit_start =
       !previous_state_->time_usage_limit_started.is_null() &&
       time_limit_override_->created_at >
-          previous_state_->time_usage_limit_started;
+          previous_state_->time_usage_limit_started &&
+      time_limit_override_->created_at >= last_reset_time;
   return usage_limit_enforced_previously &&
          override_created_after_usage_limit_start;
 }
@@ -474,7 +476,7 @@ UsageTimeLimitProcessor::GetEnabledTimeUsageLimit() {
     return base::nullopt;
 
   internal::Weekday current_usage_limit_day =
-      current_time_ > ConvertPolicyTime(UsageLimitResetTime(), 0)
+      current_time_ >= ConvertPolicyTime(UsageLimitResetTime(), 0)
           ? current_weekday_
           : internal::WeekdayShift(current_weekday_, -1);
   return time_usage_limit_->entries[current_usage_limit_day];
@@ -545,7 +547,21 @@ bool UsageTimeLimitProcessor::HasActiveOverride() {
       has_lock_override && time_limit_override_->created_at > last_reset_time &&
       !override_cancelled_by_window_limit;
 
-  return has_valid_lock_override;
+  if (!has_valid_lock_override)
+    return false;
+
+  // Check if the usage time was increased before the override creation, which
+  // invalidates it.
+  if (previous_state_ && previous_state_->is_time_usage_limit_enabled &&
+      previous_state_->remaining_usage <= base::TimeDelta::FromMinutes(0)) {
+    if (enabled_time_usage_limit_ &&
+        time_limit_override_->created_at <
+            enabled_time_usage_limit_->last_updated) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 bool UsageTimeLimitProcessor::IsLocked() {
@@ -705,9 +721,8 @@ base::Time UsageTimeLimitProcessor::GetNextStateChangeTime(
     }
   }
 
-  // Minimum time when the time usage quota could end. Not calculated when
-  // time usage limit has already finished. If there is no active time usage
-  // limit on the current day, we search on the following days.
+  // Minimum time when the current time usage quota could end. Not calculated
+  // when time usage limit has already finished.
   if (time_usage_limit_ && !active_time_usage_limit_ &&
       !overridden_usage_limit_ && !active_time_window_limit_) {
     // If there is an active time usage, we just look when it would lock the
@@ -719,22 +734,24 @@ base::Time UsageTimeLimitProcessor::GetNextStateChangeTime(
         next_change = quota_ends;
         *out_next_active = ActivePolicies::kUsageLimit;
       }
-    } else {
-      // Look for the next time usage, and calculate when the minimum time it
-      // could end.
-      for (int i = 0; i < static_cast<int>(internal::Weekday::kCount); i++) {
-        base::Optional<internal::TimeUsageLimitEntry> usage_limit_entry =
-            time_usage_limit_
-                ->entries[internal::WeekdayShift(current_weekday_, i)];
-        if (usage_limit_entry) {
-          base::Time quota_ends = ConvertPolicyTime(UsageLimitResetTime(), i) +
-                                  usage_limit_entry->usage_quota;
-          if (IsBefore(quota_ends, next_change)) {
-            next_change = quota_ends;
-            *out_next_active = ActivePolicies::kUsageLimit;
-          }
-          break;
+    }
+  }
+
+  // Look for the next time usage, and calculate the minimum time when it could
+  // end.
+  if (time_usage_limit_) {
+    for (int i = 1; i < static_cast<int>(internal::Weekday::kCount); i++) {
+      base::Optional<internal::TimeUsageLimitEntry> usage_limit_entry =
+          time_usage_limit_
+              ->entries[internal::WeekdayShift(current_weekday_, i)];
+      if (usage_limit_entry) {
+        base::Time quota_ends = ConvertPolicyTime(UsageLimitResetTime(), i) +
+                                usage_limit_entry->usage_quota;
+        if (IsBefore(quota_ends, next_change)) {
+          next_change = quota_ends;
+          *out_next_active = ActivePolicies::kUsageLimit;
         }
+        break;
       }
     }
   }
@@ -991,7 +1008,9 @@ TimeLimitOverride::TimeLimitOverride(const base::Value& override_list) {
     return;
   }
 
+  // The most recent override created.
   const base::Value* last_override = nullptr;
+  int64_t last_override_created_at_millis;
   for (const base::Value& override_value : override_list.GetList()) {
     if (!override_value.is_dict()) {
       LOG(ERROR) << "Override entry is not a dictionary";
@@ -1005,11 +1024,28 @@ TimeLimitOverride::TimeLimitOverride(const base::Value& override_list) {
       LOG(ERROR) << "Override entry is missing created_at_millis field.";
       continue;
     }
-    if (!last_override ||
-        created_at_value->GetString().compare(
-            last_override->FindKey(kOverrideActionCreatedAt)->GetString()) >
-            0) {
+
+    if (!last_override) {
+      // Check if the creation time is a valid number.
+      if (!base::StringToInt64(created_at_value->GetString(),
+                               &last_override_created_at_millis)) {
+        LOG(ERROR) << "Invalid override created_at_millis.";
+        continue;
+      }
       last_override = &override_value;
+      continue;
+    }
+
+    int64_t current_override_created_at_millis;
+    if (!base::StringToInt64(created_at_value->GetString(),
+                             &current_override_created_at_millis)) {
+      LOG(ERROR) << "Invalid override created_at_millis.";
+      continue;
+    }
+
+    if (current_override_created_at_millis > last_override_created_at_millis) {
+      last_override = &override_value;
+      last_override_created_at_millis = current_override_created_at_millis;
     }
   }
 
@@ -1021,20 +1057,10 @@ TimeLimitOverride::TimeLimitOverride(const base::Value& override_list) {
   if (!action_value)
     return;
 
-  const base::Value* created_at_value =
-      last_override->FindKey(kOverrideActionCreatedAt);
-
-  int64_t created_at_millis;
-  if (!base::StringToInt64(created_at_value->GetString(), &created_at_millis)) {
-    LOG(ERROR) << "Invalid override created_at_millis.";
-    // Cannot process entry without a valid creation time.
-    return;
-  }
-
   action = action_value->GetString() == kOverrideActionLock ? Action::kLock
                                                             : Action::kUnlock;
-  created_at = base::Time::UnixEpoch() +
-               base::TimeDelta::FromMilliseconds(created_at_millis);
+  created_at = base::Time::UnixEpoch() + base::TimeDelta::FromMilliseconds(
+                                             last_override_created_at_millis);
 
   const base::Value* duration_value = last_override->FindPath(
       {kOverrideActionSpecificData, kOverrideActionDurationMins});

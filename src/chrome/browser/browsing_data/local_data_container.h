@@ -32,6 +32,10 @@ class BrowsingDataFlashLSOHelper;
 class CookiesTreeModel;
 class LocalDataContainer;
 
+namespace content {
+struct StorageUsageInfo;
+}
+
 namespace net {
 class CanonicalCookie;
 }
@@ -45,16 +49,15 @@ typedef std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo>
     LocalStorageInfoList;
 typedef std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo>
     SessionStorageInfoList;
-typedef std::list<content::IndexedDBInfo>
-    IndexedDBInfoList;
+typedef std::list<content::StorageUsageInfo> IndexedDBInfoList;
 typedef std::list<BrowsingDataFileSystemHelper::FileSystemInfo>
     FileSystemInfoList;
 typedef std::list<BrowsingDataQuotaHelper::QuotaInfo> QuotaInfoList;
 typedef net::ChannelIDStore::ChannelIDList ChannelIDList;
-typedef std::list<content::ServiceWorkerUsageInfo> ServiceWorkerUsageInfoList;
+typedef std::list<content::StorageUsageInfo> ServiceWorkerUsageInfoList;
 typedef std::list<BrowsingDataSharedWorkerHelper::SharedWorkerInfo>
     SharedWorkerInfoList;
-typedef std::list<content::CacheStorageUsageInfo> CacheStorageUsageInfoList;
+typedef std::list<content::StorageUsageInfo> CacheStorageUsageInfoList;
 typedef std::map<url::Origin, std::list<content::AppCacheInfo>> AppCacheInfoMap;
 typedef std::vector<std::string> FlashLSODomainList;
 typedef std::list<BrowsingDataMediaLicenseHelper::MediaLicenseInfo>

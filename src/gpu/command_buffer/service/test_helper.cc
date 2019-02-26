@@ -517,7 +517,8 @@ void TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
       .WillOnce(Return(reinterpret_cast<const uint8_t*>(gl_renderer)))
       .RetiresOnSaturation();
 
-  if (enable_es3 ||
+  if (gl_info.is_es3 || gl_info.is_desktop_core_profile ||
+      gfx::HasExtension(extension_set, "GL_ARB_pixel_buffer_object") ||
       gfx::HasExtension(extension_set, "GL_NV_pixel_buffer_object")) {
     EXPECT_CALL(*gl, GetIntegerv(GL_PIXEL_UNPACK_BUFFER_BINDING, _))
       .WillOnce(SetArgPointee<1>(0))

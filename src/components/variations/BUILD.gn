@@ -58,6 +58,8 @@ static_library("variations") {
     "variations_http_header_provider.h",
     "variations_id_collection.cc",
     "variations_id_collection.h",
+    "variations_murmur_hash.cc",
+    "variations_murmur_hash.h",
     "variations_request_scheduler.cc",
     "variations_request_scheduler.h",
     "variations_seed_processor.cc",
@@ -147,6 +149,7 @@ source_set("unit_tests") {
     "variations_crash_keys_unittest.cc",
     "variations_http_header_provider_unittest.cc",
     "variations_id_collection_unittest.cc",
+    "variations_murmur_hash_unittest.cc",
     "variations_request_scheduler_unittest.cc",
     "variations_seed_processor_unittest.cc",
     "variations_seed_simulator_unittest.cc",
@@ -167,6 +170,7 @@ source_set("unit_tests") {
     "//components/variations/field_trial_config:field_trial_config",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/smhasher:murmurhash3",
     "//third_party/zlib/google:compression_utils",
   ]
 }

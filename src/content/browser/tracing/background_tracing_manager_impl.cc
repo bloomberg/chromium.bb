@@ -504,10 +504,27 @@ void BackgroundTracingManagerImpl::StartTracing(
   TraceConfig config = GetConfigForCategoryPreset(preset, record_mode);
   if (requires_anonymized_data_)
     config.EnableArgumentFilter();
+#if defined(OS_ANDROID)
+  // Set low trace buffer size on Android in order to upload small trace files.
+  if (config_->tracing_mode() == BackgroundTracingConfigImpl::PREEMPTIVE)
+    config.SetTraceBufferSizeInEvents(20000);
+#endif
 
   is_tracing_ = TracingControllerImpl::GetInstance()->StartTracing(
-      config, base::Bind(&BackgroundTracingManagerImpl::OnStartTracingDone,
-                         base::Unretained(this), preset));
+      config, base::BindOnce(&BackgroundTracingManagerImpl::OnStartTracingDone,
+                             base::Unretained(this), preset));
+
+  // Activate the categories immediately. StartTracing eventually does this
+  // itself, but asynchronously via PostTask, and in the meantime events will be
+  // dropped. This ensures that we start recording events for those categories
+  // immediately.
+  if (is_tracing_) {
+    uint8_t modes = base::trace_event::TraceLog::RECORDING_MODE;
+    if (!config.event_filters().empty())
+      modes |= base::trace_event::TraceLog::FILTERING_MODE;
+    base::trace_event::TraceLog::GetInstance()->SetEnabled(config, modes);
+  }
+
   RecordBackgroundTracingMetric(RECORDING_ENABLED);
 }
 
@@ -635,7 +652,8 @@ void BackgroundTracingManagerImpl::AbortScenario() {
   config_.reset();
   tracing_timer_.reset();
 
-  content::TracingControllerImpl::GetInstance()->StopTracing(nullptr);
+  if (is_tracing_)
+    content::TracingControllerImpl::GetInstance()->StopTracing(nullptr);
 
   for (auto* observer : background_tracing_observers_)
     observer->OnScenarioAborted();
@@ -674,8 +692,7 @@ TraceConfig BackgroundTracingManagerImpl::GetConfigForCategoryPreset(
     case BackgroundTracingConfigImpl::CategoryPreset::BENCHMARK_NAVIGATION: {
       auto config = TraceConfig(
           "benchmark,toplevel,ipc,base,browser,navigation,omnibox,ui,shutdown,"
-          "safe_browsing,task_scheduler,"
-          "disabled-by-default-task_scheduler_diagnostics,"
+          "safe_browsing,Java,EarlyJava,loading,startup,"
           "disabled-by-default-system_stats,disabled-by-default-cpu_profiler",
           record_mode);
       // Filter only browser process events.
@@ -684,6 +701,20 @@ TraceConfig BackgroundTracingManagerImpl::GetConfigForCategoryPreset(
       config.SetProcessFilterConfig(process_config);
       return config;
     }
+    case BackgroundTracingConfigImpl::CategoryPreset::BENCHMARK_RENDERERS:
+      return TraceConfig(
+          "benchmark,toplevel,ipc,base,ui,v8,renderer,blink,blink_gc,"
+          "disabled-by-default-v8.gc,"
+          "disabled-by-default-blink_gc,"
+          "disabled-by-default-renderer.scheduler,"
+          "disabled-by-default-system_stats,disabled-by-default-cpu_profiler",
+          record_mode);
+    case BackgroundTracingConfigImpl::CategoryPreset::BENCHMARK_SERVICEWORKER:
+      return TraceConfig(
+          "benchmark,toplevel,ipc,base,ServiceWorker,CacheStorage,Blob,"
+          "loader,loading,navigation,blink.user_timing,"
+          "disabled-by-default-network",
+          record_mode);
     case BackgroundTracingConfigImpl::CategoryPreset::BLINK_STYLE:
       return TraceConfig("blink_style", record_mode);
 
@@ -699,7 +730,6 @@ TraceConfig BackgroundTracingManagerImpl::GetConfigForCategoryPreset(
       config.ResetMemoryDumpConfig(memory_config);
       return config;
     }
-
     case BackgroundTracingConfigImpl::CategoryPreset::CATEGORY_PRESET_UNSET:
       NOTREACHED();
   }

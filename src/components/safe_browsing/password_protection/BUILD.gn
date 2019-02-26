@@ -33,6 +33,7 @@ source_set("password_protection") {
       "//components/safe_browsing/db:whitelist_checker_client",
       "//components/safe_browsing/web_ui:web_ui",
       "//components/sessions",
+      "//components/zoom",
       "//content/public/browser:browser",
       "//net:net",
       "//third_party/protobuf:protobuf_lite",

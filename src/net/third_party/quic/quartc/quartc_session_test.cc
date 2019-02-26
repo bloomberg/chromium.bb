@@ -5,12 +5,13 @@
 #include "net/third_party/quic/quartc/quartc_session.h"
 
 #include "build/build_config.h"
-#include "net/third_party/quic/core/crypto/crypto_server_config_protobuf.h"
+#include "net/third_party/quic/core/proto/crypto_server_config.pb.h"
 #include "net/third_party/quic/core/quic_simple_buffer_allocator.h"
 #include "net/third_party/quic/core/quic_types.h"
 #include "net/third_party/quic/core/tls_client_handshaker.h"
 #include "net/third_party/quic/core/tls_server_handshaker.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
+#include "net/third_party/quic/platform/api/quic_string_utils.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
 #include "net/third_party/quic/platform/api/quic_test_mem_slice_vector.h"
 #include "net/third_party/quic/quartc/counting_packet_filter.h"
@@ -50,29 +51,45 @@ class FakeQuartcSessionDelegate : public QuartcSession::Delegate {
   void OnIncomingStream(QuartcStream* quartc_stream) override {
     last_incoming_stream_ = quartc_stream;
     last_incoming_stream_->SetDelegate(stream_delegate_);
-    quartc_stream->set_deliver_on_complete(false);
+  }
+
+  void OnMessageReceived(QuicStringPiece message) override {
+    incoming_messages_.emplace_back(message);
   }
 
   void OnCongestionControlChange(QuicBandwidth bandwidth_estimate,
                                  QuicBandwidth pacing_rate,
                                  QuicTime::Delta latest_rtt) override {}
 
-  QuartcStream* incoming_stream() { return last_incoming_stream_; }
+  QuartcStream* last_incoming_stream() { return last_incoming_stream_; }
+
+  // Returns all received messages.
+  const std::vector<QuicString>& incoming_messages() {
+    return incoming_messages_;
+  }
 
   bool connected() { return connected_; }
 
  private:
   QuartcStream* last_incoming_stream_;
+  std::vector<QuicString> incoming_messages_;
   bool connected_ = true;
   QuartcStream::Delegate* stream_delegate_;
 };
 
 class FakeQuartcStreamDelegate : public QuartcStream::Delegate {
  public:
-  void OnReceived(QuartcStream* stream,
-                  const char* data,
-                  size_t size) override {
-    received_data_[stream->id()] += QuicString(data, size);
+  size_t OnReceived(QuartcStream* stream,
+                    iovec* iov,
+                    size_t iov_length,
+                    bool fin) override {
+    size_t bytes_consumed = 0;
+    for (size_t i = 0; i < iov_length; ++i) {
+      received_data_[stream->id()] +=
+          QuicString(static_cast<const char*>(iov[i].iov_base), iov[i].iov_len);
+      bytes_consumed += iov[i].iov_len;
+    }
+    return bytes_consumed;
   }
 
   void OnClose(QuartcStream* stream) override {
@@ -96,6 +113,9 @@ class QuartcSessionTest : public QuicTest {
   ~QuartcSessionTest() override {}
 
   void Init() {
+    // To enable SendMessage.
+    SetQuicReloadableFlag(quic_enable_version_45, true);
+
     client_transport_ =
         QuicMakeUnique<simulator::SimulatedQuartcPacketTransport>(
             &simulator_, "client_transport", "server_transport",
@@ -146,9 +166,11 @@ class QuartcSessionTest : public QuicTest {
         CreateConnection(perspective, writer.get());
     QuicString remote_fingerprint_value = "value";
     QuicConfig config;
+
     return QuicMakeUnique<QuartcSession>(
-        std::move(quic_connection), config, remote_fingerprint_value,
-        perspective, &simulator_, simulator_.GetClock(), std::move(writer));
+        std::move(quic_connection), config, CurrentSupportedVersions(),
+        remote_fingerprint_value, perspective, &simulator_,
+        simulator_.GetClock(), std::move(writer));
   }
 
   std::unique_ptr<QuicConnection> CreateConnection(Perspective perspective,
@@ -157,7 +179,8 @@ class QuartcSessionTest : public QuicTest {
     ip.FromString("0.0.0.0");
     return QuicMakeUnique<QuicConnection>(
         0, QuicSocketAddress(ip, 0), &simulator_, simulator_.GetAlarmFactory(),
-        writer, /*owns_writer=*/false, perspective, CurrentSupportedVersions());
+        writer, /*owns_writer=*/false, perspective,
+        ParsedVersionOfIndex(CurrentSupportedVersions(), 0));
   }
 
   // Runs all tasks scheduled in the next 200 ms.
@@ -171,7 +194,7 @@ class QuartcSessionTest : public QuicTest {
 
   // Test handshake establishment and sending/receiving of data for two
   // directions.
-  void TestStreamConnection() {
+  void TestSendReceiveStreams() {
     ASSERT_TRUE(server_peer_->IsCryptoHandshakeConfirmed());
     ASSERT_TRUE(client_peer_->IsCryptoHandshakeConfirmed());
     ASSERT_TRUE(server_peer_->IsEncryptionEstablished());
@@ -185,7 +208,6 @@ class QuartcSessionTest : public QuicTest {
     EXPECT_TRUE(server_peer_->HasOpenDynamicStreams());
 
     outgoing_stream->SetDelegate(server_stream_delegate_.get());
-    outgoing_stream->set_deliver_on_complete(false);
 
     // Send a test message from peer 1 to peer 2.
     char kTestMessage[] = "Hello";
@@ -197,7 +219,7 @@ class QuartcSessionTest : public QuicTest {
     // Wait for peer 2 to receive messages.
     ASSERT_TRUE(client_stream_delegate_->has_data());
 
-    QuartcStream* incoming = client_session_delegate_->incoming_stream();
+    QuartcStream* incoming = client_session_delegate_->last_incoming_stream();
     ASSERT_TRUE(incoming);
     EXPECT_EQ(incoming->id(), stream_id);
     EXPECT_TRUE(client_peer_->HasOpenDynamicStreams());
@@ -213,6 +235,95 @@ class QuartcSessionTest : public QuicTest {
     ASSERT_TRUE(server_stream_delegate_->has_data());
 
     EXPECT_EQ(server_stream_delegate_->data()[stream_id], kTestResponse);
+  }
+
+  // Test sending/receiving of messages for two directions.
+  void TestSendReceiveMessage() {
+    ASSERT_TRUE(server_peer_->CanSendMessage());
+    ASSERT_TRUE(client_peer_->CanSendMessage());
+
+    // Send message from peer 1 to peer 2.
+    ASSERT_TRUE(server_peer_->SendOrQueueMessage("Message from server"));
+
+    // First message in each direction should not be queued.
+    EXPECT_EQ(server_peer_->send_message_queue_size(), 0u);
+
+    // Wait for peer 2 to receive message.
+    RunTasks();
+
+    EXPECT_THAT(client_session_delegate_->incoming_messages(),
+                testing::ElementsAre("Message from server"));
+
+    // Send message from peer 2 to peer 1.
+    ASSERT_TRUE(client_peer_->SendOrQueueMessage("Message from client"));
+
+    // First message in each direction should not be queued.
+    EXPECT_EQ(client_peer_->send_message_queue_size(), 0u);
+
+    // Wait for peer 1 to receive message.
+    RunTasks();
+
+    EXPECT_THAT(server_session_delegate_->incoming_messages(),
+                testing::ElementsAre("Message from client"));
+  }
+
+  // Test for sending multiple messages that also result in queueing.
+  // This is one-way test, which is run in given direction.
+  void TestSendReceiveQueuedMessages(bool direction_from_server) {
+    // Send until queue_size number of messages are queued.
+    constexpr size_t queue_size = 10;
+
+    ASSERT_TRUE(server_peer_->CanSendMessage());
+    ASSERT_TRUE(client_peer_->CanSendMessage());
+
+    QuartcSession* const peer_sending =
+        direction_from_server ? server_peer_.get() : client_peer_.get();
+
+    FakeQuartcSessionDelegate* const delegate_receiving =
+        direction_from_server ? client_session_delegate_.get()
+                              : server_session_delegate_.get();
+
+    // There should be no messages in the queue before we start sending.
+    EXPECT_EQ(peer_sending->send_message_queue_size(), 0u);
+
+    // Send messages from peer 1 to peer 2 until required number of messages
+    // are queued in unsent message queue.
+    std::vector<QuicString> sent_messages;
+    while (peer_sending->send_message_queue_size() < queue_size) {
+      sent_messages.push_back(
+          QuicStrCat("Sending message, index=", sent_messages.size()));
+      ASSERT_TRUE(peer_sending->SendOrQueueMessage(sent_messages.back()));
+    }
+
+    // Wait for peer 2 to receive all messages.
+    RunTasks();
+
+    EXPECT_EQ(delegate_receiving->incoming_messages(), sent_messages);
+  }
+
+  // Test sending long messages:
+  // - message of maximum allowed length should succeed
+  // - message of > maximum allowed length should fail.
+  void TestSendLongMessage() {
+    ASSERT_TRUE(server_peer_->CanSendMessage());
+    ASSERT_TRUE(client_peer_->CanSendMessage());
+
+    // Send message of maximum allowed length.
+    QuicString message_max_long =
+        QuicString(server_peer_->GetLargestMessagePayload(), 'A');
+    ASSERT_TRUE(server_peer_->SendOrQueueMessage(message_max_long));
+
+    // Send long message which should fail.
+    QuicString message_too_long =
+        QuicString(server_peer_->GetLargestMessagePayload() + 1, 'B');
+    ASSERT_FALSE(server_peer_->SendOrQueueMessage(message_too_long));
+
+    // Wait for peer 2 to receive message.
+    RunTasks();
+
+    // Client should only receive one message of allowed length.
+    EXPECT_THAT(client_session_delegate_->incoming_messages(),
+                testing::ElementsAre(message_max_long));
   }
 
   // Test that client and server are not connected after handshake failure.
@@ -246,10 +357,29 @@ class QuartcSessionTest : public QuicTest {
   std::unique_ptr<FakeQuartcSessionDelegate> server_session_delegate_;
 };
 
-TEST_F(QuartcSessionTest, StreamConnection) {
+TEST_F(QuartcSessionTest, SendReceiveStreams) {
   CreateClientAndServerSessions();
   StartHandshake();
-  TestStreamConnection();
+  TestSendReceiveStreams();
+}
+
+TEST_F(QuartcSessionTest, SendReceiveMessages) {
+  CreateClientAndServerSessions();
+  StartHandshake();
+  TestSendReceiveMessage();
+}
+
+TEST_F(QuartcSessionTest, SendReceiveQueuedMessages) {
+  CreateClientAndServerSessions();
+  StartHandshake();
+  TestSendReceiveQueuedMessages(/*direction_from_server=*/true);
+  TestSendReceiveQueuedMessages(/*direction_from_server=*/false);
+}
+
+TEST_F(QuartcSessionTest, SendMessageFails) {
+  CreateClientAndServerSessions();
+  StartHandshake();
+  TestSendLongMessage();
 }
 
 TEST_F(QuartcSessionTest, PreSharedKeyHandshake) {
@@ -257,7 +387,8 @@ TEST_F(QuartcSessionTest, PreSharedKeyHandshake) {
   client_peer_->SetPreSharedKey("foo");
   server_peer_->SetPreSharedKey("foo");
   StartHandshake();
-  TestStreamConnection();
+  TestSendReceiveStreams();
+  TestSendReceiveMessage();
 }
 
 // Test that data streams are not created before handshake.

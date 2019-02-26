@@ -139,6 +139,10 @@ namespace std {
   private:
     T *val; // exposition only
   };
+
+template<class T>
+  optional(T) -> optional<T>;
+
 } // namespace std
 
 */
@@ -152,6 +156,7 @@ namespace std {
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
+#include <version>
 
 #if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #pragma GCC system_header
@@ -1002,6 +1007,11 @@ private:
         return &__x;
     }
 };
+
+#ifndef _LIBCPP_HAS_NO_DEDUCTION_GUIDES
+template<class T>
+    optional(T) -> optional<T>;
+#endif
 
 // Comparisons between optionals
 template <class _Tp, class _Up>

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/network/data_promo_notification.h"
 
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/command_line.h"
 #include "base/metrics/user_metrics.h"
@@ -251,12 +252,13 @@ void DataPromoNotification::ShowOptionalMobileDataPromoNotification() {
   }
 
   std::unique_ptr<message_center::Notification> notification =
-      message_center::Notification::CreateSystemNotification(
+      ash::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kDataPromoNotificationId,
           l10n_util::GetStringUTF16(IDS_MOBILE_DATA_NOTIFICATION_TITLE),
           message, base::string16() /* display_source */, GURL(),
           message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT, kNotifierDataPromo),
+              message_center::NotifierType::SYSTEM_COMPONENT,
+              kNotifierDataPromo),
           message_center::RichNotificationData(),
           new message_center::HandleNotificationClickDelegate(base::Bind(
               &NotificationClicked, default_network->guid(), info_url)),
@@ -290,11 +292,12 @@ bool DataPromoNotification::ShowDataSaverNotification() {
   base::string16 message = l10n_util::GetStringUTF16(IDS_3G_DATASAVER_MESSAGE);
 
   std::unique_ptr<message_center::Notification> notification =
-      message_center::Notification::CreateSystemNotification(
+      ash::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kDataSaverNotificationId,
           title, message, base::string16() /* display_source */, GURL(),
           message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT, kNotifierDataSaver),
+              message_center::NotifierType::SYSTEM_COMPONENT,
+              kNotifierDataSaver),
           message_center::RichNotificationData(),
           new message_center::HandleNotificationClickDelegate(
               base::Bind(&NotificationClicked, "", kDataSaverExtensionUrl)),

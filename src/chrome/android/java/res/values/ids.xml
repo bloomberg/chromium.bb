@@ -78,9 +78,10 @@
     <item type="id" name="contextmenu_open_in_browser_id" />
 
     <!-- Link Group -->
-    <item type="id" name="contextmenu_open_in_other_window" />
     <item type="id" name="contextmenu_open_in_new_tab" />
     <item type="id" name="contextmenu_open_in_incognito_tab" />
+    <item type="id" name="contextmenu_open_in_other_window" />
+    <item type="id" name="contextmenu_open_in_ephemeral_tab" />
     <item type="id" name="contextmenu_copy_link_address" />
     <item type="id" name="contextmenu_copy_link_text" />
     <item type="id" name="contextmenu_save_link_as" />
@@ -91,6 +92,7 @@
     <item type="id" name="contextmenu_save_image" />
     <item type="id" name="contextmenu_open_image" />
     <item type="id" name="contextmenu_open_image_in_new_tab" />
+    <item type="id" name="contextmenu_open_image_in_ephemeral_tab" />
     <item type="id" name="contextmenu_search_by_image" />
     <item type="id" name="contextmenu_share_image" />
 
@@ -130,4 +132,5 @@
     <item type="id" name="highlight_state" />
     <item type="id" name="item_animator" />
     <item type="id" name="highlight_color" />
+    <item type="id" name="view_model" />
 </resources>

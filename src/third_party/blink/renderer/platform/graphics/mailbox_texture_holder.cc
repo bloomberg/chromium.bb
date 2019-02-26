@@ -9,7 +9,7 @@
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/skia_texture_holder.h"
-#include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 
 namespace blink {
@@ -118,7 +118,7 @@ void MailboxTextureHolder::Sync(MailboxSyncMode mode) {
 }
 
 void MailboxTextureHolder::InitCommon() {
-  Thread* thread = Platform::Current()->CurrentThread();
+  Thread* thread = Thread::Current();
   thread_id_ = thread->ThreadId();
   texture_thread_task_runner_ = thread->GetTaskRunner();
 }
@@ -133,7 +133,7 @@ bool MailboxTextureHolder::IsValid() const {
 }
 
 bool MailboxTextureHolder::IsCrossThread() const {
-  return thread_id_ != Platform::Current()->CurrentThread()->ThreadId();
+  return thread_id_ != Thread::Current()->ThreadId();
 }
 
 MailboxTextureHolder::~MailboxTextureHolder() {
@@ -143,7 +143,7 @@ MailboxTextureHolder::~MailboxTextureHolder() {
 
   if (!IsAbandoned()) {
     if (texture_thread_task_runner_ &&
-        thread_id_ != Platform::Current()->CurrentThread()->ThreadId()) {
+        thread_id_ != Thread::Current()->ThreadId()) {
       PostCrossThreadTask(
           *texture_thread_task_runner_, FROM_HERE,
           CrossThreadBind(&ReleaseTexture, is_converted_from_skia_texture_,

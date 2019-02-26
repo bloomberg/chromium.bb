@@ -116,10 +116,14 @@ experimental domain Accessibility
     enum
       busy
       disabled
+      editable
+      focusable
+      focused
       hidden
       hiddenRoot
       invalid
       keyshortcuts
+      settable
       roledescription
       live
       atomic
@@ -173,6 +177,13 @@ experimental domain Accessibility
       optional array of AXNodeId childIds
       # The backend ID for the associated DOM node, if any.
       optional DOM.BackendNodeId backendDOMNodeId
+
+  # Disables the accessibility domain.
+  command disable
+
+  # Enables the accessibility domain which causes `AXNodeId`s to remain consistent between method calls.
+  # This turns on accessibility for the page, which can impact performance until accessibility is disabled.
+  command enable
 
   # Fetches the accessibility node and partial accessibility tree for this DOM node, if it exists.
   experimental command getPartialAXTree
@@ -452,7 +463,7 @@ experimental domain Audits
       optional boolean sizeOnly
     returns
       # The encoded body as a base64 string. Omitted if sizeOnly is true.
-      optional string body
+      optional binary body
       # Size before re-encoding.
       integer originalSize
       # Size after re-encoding.
@@ -490,6 +501,7 @@ domain Browser
       accessibilityEvents
       audioCapture
       backgroundSync
+      backgroundFetch
       clipboardRead
       clipboardWrite
       durableStorage
@@ -605,8 +617,8 @@ domain Browser
   # Get the browser window that contains the devtools target.
   experimental command getWindowForTarget
     parameters
-      # Devtools agent host id.
-      Target.TargetID targetId
+      # Devtools agent host id. If called as a part of the session, associated targetId is used.
+      optional Target.TargetID targetId
     returns
       # Browser window id.
       WindowID windowId
@@ -622,6 +634,13 @@ domain Browser
       # New window bounds. The 'minimized', 'maximized' and 'fullscreen' states cannot be combined
       # with 'left', 'top', 'width' or 'height'. Leaves unspecified fields unchanged.
       Bounds bounds
+
+  # Set dock tile details, platform-specific.
+  experimental command setDockTile
+    parameters
+      optional string badgeLabel
+      # Png encoded image.
+      optional binary image
 
 # This domain exposes CSS read/write operations. All CSS objects (stylesheets, rules, and styles)
 # have an associated `id` used in subsequent operations on the related object. Each object type has
@@ -1143,6 +1162,16 @@ experimental domain CacheStorage
   # Unique identifier of the Cache object.
   type CacheId extends string
 
+  # type of HTTP response cached
+  type CachedResponseType extends string
+    enum
+      basic
+      cors
+      default
+      error
+      opaqueResponse
+      opaqueRedirect
+
   # Data entry.
   type DataEntry extends object
     properties
@@ -1158,6 +1187,8 @@ experimental domain CacheStorage
       integer responseStatus
       # HTTP response status text.
       string responseStatusText
+      # HTTP response type
+      CachedResponseType responseType
       # Response headers
       array of Header responseHeaders
 
@@ -1180,7 +1211,7 @@ experimental domain CacheStorage
   type CachedResponse extends object
     properties
       # Entry content, base64-encoded.
-      string body
+      binary body
 
   # Deletes a cache.
   command deleteCache
@@ -2683,7 +2714,7 @@ experimental domain HeadlessExperimental
       # display. Reported for diagnostic uses, may be removed in the future.
       boolean hasDamage
       # Base64-encoded image data of the screenshot, if one was requested and successfully taken.
-      optional string screenshotData
+      optional binary screenshotData
 
   # Disables headless events for the target.
   command disable
@@ -3190,7 +3221,7 @@ experimental domain LayerTree
       # Offset from owning layer top boundary
       number y
       # Base64-encoded snapshot data.
-      string picture
+      binary picture
 
   # Information about a compositing layer.
   type Layer extends object
@@ -4030,7 +4061,7 @@ domain Network
       optional ErrorReason errorReason
       # If set the requests completes using with the provided base64 encoded raw response, including
       # HTTP status line and headers etc... Must not be set in response to an authChallenge.
-      optional string rawResponse
+      optional binary rawResponse
       # If set the request url will be modified in a way that's not observable by page. Must not be
       # set in response to an authChallenge.
       optional string url
@@ -4127,7 +4158,7 @@ domain Network
       # Identifier of the network request to get content for.
       RequestId requestId
     returns
-      # Base64-encoded request body.
+      # Request body string, omitting files from multipart requests
       string postData
 
   # Returns content served for the given currently intercepted request.
@@ -4627,6 +4658,12 @@ experimental domain Overlay
       # True for showing scroll bottleneck rects
       boolean show
 
+  # Requests that backend shows hit-test borders on layers
+  command setShowHitTestBorders
+    parameters
+      # True for showing hit-test borders
+      boolean show
+
   # Paints viewport size upon main frame resize.
   command setShowViewportSizeOnResize
     parameters
@@ -4902,6 +4939,17 @@ domain Page
       experimental optional boolean fromSurface
     returns
       # Base64-encoded image data.
+      binary data
+
+  # Returns a snapshot of the page as a string. For MHTML format, the serialization includes
+  # iframes, shadow DOM, external resources, and element-inline styles.
+  experimental command captureSnapshot
+    parameters
+      # Format (defaults to mhtml).
+      optional enum format
+        mhtml
+    returns
+      # Serialized page data.
       string data
 
   # Clears the overriden device metrics.
@@ -5089,7 +5137,7 @@ domain Page
       optional boolean preferCSSPageSize
     returns
       # Base64-encoded pdf data.
-      string data
+      binary data
 
   # Reloads given page optionally ignoring the cache.
   command reload
@@ -5304,7 +5352,7 @@ domain Page
     parameters
       string url
       # Base64-encoded data
-      string data
+      binary data
 
   # Clears seeded compilation cache.
   experimental command clearCompilationCache
@@ -5441,7 +5489,7 @@ domain Page
   experimental event screencastFrame
     parameters
       # Base64-encoded compressed image.
-      string data
+      binary data
       # Screencast frame metadata.
       ScreencastFrameMetadata metadata
       # Frame number.
@@ -5472,7 +5520,7 @@ domain Page
     parameters
       string url
       # Base64-encoded data
-      string data
+      binary data
 
 
 domain Performance
@@ -5555,6 +5603,8 @@ domain Security
       MixedContentType mixedContentType
       # Page certificate.
       array of string certificate
+      # Recommendations to fix any issues.
+      optional array of string recommendations
 
   # Information about insecure content on the page.
   type InsecureContentStatus extends object
@@ -5875,6 +5925,17 @@ experimental domain SystemInfo
       # An optional array of GPU driver bug workarounds.
       array of string driverBugWorkarounds
 
+  # Represents process info.
+  type ProcessInfo extends object
+    properties
+      # Specifies process type.
+      string type
+      # Specifies process id.
+      integer id
+      # Specifies cumulative CPU usage in seconds across all threads of the
+      # process since the process start.
+      number cpuTime
+
   # Returns information about the system.
   command getInfo
     returns
@@ -5889,6 +5950,12 @@ experimental domain SystemInfo
       # The command line string used to launch the browser. Will be the empty string if not
       # supported.
       string commandLine
+
+  # Returns information about all running processes.
+  command getProcessInfo
+    returns
+      # An array of process info blocks.
+      array of ProcessInfo processInfo
 
 # Supports additional targets discovery and allows to attach to them.
 domain Target
@@ -6243,3 +6310,199 @@ experimental domain Testing
       string message
       # Specifies the endpoint group to deliver the report to.
       optional string group
+
+# A domain for letting clients substitute browser's network layer with client code.
+experimental domain Fetch
+  depends on Network
+  depends on IO
+  depends on Page
+
+  # Unique request identifier.
+  type RequestId extends string
+
+  # Stages of the request to handle. Request will intercept before the request is
+  # sent. Response will intercept after the response is received (but before response
+  # body is received.
+  experimental type RequestStage extends string
+    enum
+      Request
+      Response
+
+  experimental type RequestPattern extends object
+    properties
+      # Wildcards ('*' -> zero or more, '?' -> exactly one) are allowed. Escape character is
+      # backslash. Omitting is equivalent to "*".
+      optional string urlPattern
+      # If set, only requests for matching resource types will be intercepted.
+      optional Network.ResourceType resourceType
+      # Stage at wich to begin intercepting requests. Default is Request.
+      optional RequestStage requestStage
+
+  # Response HTTP header entry
+  type HeaderEntry extends object
+    properties
+      string name
+      string value
+
+  # Authorization challenge for HTTP status code 401 or 407.
+  experimental type AuthChallenge extends object
+    properties
+      # Source of the authentication challenge.
+      optional enum source
+        Server
+        Proxy
+      # Origin of the challenger.
+      string origin
+      # The authentication scheme used, such as basic or digest
+      string scheme
+      # The realm of the challenge. May be empty.
+      string realm
+
+  # Response to an AuthChallenge.
+  experimental type AuthChallengeResponse extends object
+    properties
+      # The decision on what to do in response to the authorization challenge.  Default means
+      # deferring to the default behavior of the net stack, which will likely either the Cancel
+      # authentication or display a popup dialog box.
+      enum response
+        Default
+        CancelAuth
+        ProvideCredentials
+      # The username to provide, possibly empty. Should only be set if response is
+      # ProvideCredentials.
+      optional string username
+      # The password to provide, possibly empty. Should only be set if response is
+      # ProvideCredentials.
+      optional string password
+
+  # Disables the fetch domain.
+  command disable
+
+  # Enables issuing of requestPaused events. A request will be paused until client
+  # calls one of failRequest, fulfillRequest or continueRequest/continueWithAuth.
+  command enable
+    parameters
+      # If specified, only requests matching any of these patterns will produce
+      # fetchRequested event and will be paused until clients response. If not set,
+      # all requests will be affected.
+      optional array of RequestPattern patterns
+      # If true, authRequired events will be issued and requests will be paused
+      # expecting a call to continueWithAuth.
+      optional boolean handleAuthRequests
+
+  # Causes the request to fail with specified reason.
+  command failRequest
+    parameters
+      # An id the client received in requestPaused event.
+      RequestId requestId
+      # Causes the request to fail with the given reason.
+      Network.ErrorReason errorReason
+
+  # Provides response to the request.
+  command fulfillRequest
+    parameters
+      # An id the client received in requestPaused event.
+      RequestId requestId
+      # An HTTP response code.
+      integer responseCode
+      # Response headers.
+      array of HeaderEntry responseHeaders
+      # A response body.
+      optional binary body
+      # A textual representation of responseCode.
+      # If absent, a standard phrase mathcing responseCode is used.
+      optional string responsePhrase
+
+  # Continues the request, optionally modifying some of its parameters.
+  command continueRequest
+    parameters
+      # An id the client received in requestPaused event.
+      RequestId requestId
+      # If set, the request url will be modified in a way that's not observable by page.
+      optional string url
+      # If set, the request method is overridden.
+      optional string method
+      # If set, overrides the post data in the request.
+      optional string postData
+      # If set, overrides the request headrts.
+      optional array of HeaderEntry headers
+
+  # Continues a request supplying authChallengeResponse following authRequired event.
+  command continueWithAuth
+    parameters
+      # An id the client received in authRequired event.
+      RequestId requestId
+      # Response to  with an authChallenge.
+      AuthChallengeResponse authChallengeResponse
+
+  # Causes the body of the response to be received from the server and
+  # returned as a single string. May only be issued for a request that
+  # is paused in the Response stage and is mutually exclusive with
+  # takeResponseBodyForInterceptionAsStream. Calling other methods that
+  # affect the request or disabling fetch domain before body is received
+  # results in an undefined behavior.
+  command getResponseBody
+    parameters
+      # Identifier for the intercepted request to get body for.
+      RequestId requestId
+    returns
+      # Response body.
+      string body
+      # True, if content was sent as base64.
+      boolean base64Encoded
+
+  # Returns a handle to the stream representing the response body.
+  # The request must be paused in the HeadersReceived stage.
+  # Note that after this command the request can't be continued
+  # as is -- client either needs to cancel it or to provide the
+  # response body.
+  # The stream only supports sequential read, IO.read will fail if the position
+  # is specified.
+  # This method is mutually exclusive with getResponseBody.
+  # Calling other methods that affect the request or disabling fetch
+  # domain before body is received results in an undefined behavior.
+  command takeResponseBodyAsStream
+    parameters
+      RequestId requestId
+    returns
+      IO.StreamHandle stream
+
+  # Issued when the domain is enabled and the request URL matches the
+  # specified filter. The request is paused until the client responds
+  # with one of continueRequest, failRequest or fulfillRequest.
+  # The stage of the request can be determined by presence of responseErrorReason
+  # and responseStatusCode -- the request is at the response stage if either
+  # of these fields is present and in the request stage otherwise.
+  event requestPaused
+    parameters
+      # Each request the page makes will have a unique id.
+      RequestId requestId
+      # The details of the request.
+      Network.Request request
+      # The id of the frame that initiated the request.
+      Page.FrameId frameId
+      # How the requested resource will be used.
+      Network.ResourceType resourceType
+      # Response error if intercepted at response stage.
+      optional Network.ErrorReason responseErrorReason
+      # Response code if intercepted at response stage.
+      optional integer responseStatusCode
+      # Response headers if intercepted at the response stage.
+      optional array of HeaderEntry responseHeaders
+
+  # Issued when the domain is enabled with handleAuthRequests set to true.
+  # The request is paused until client responds with continueWithAuth.
+  event authRequired
+    parameters
+      # Each request the page makes will have a unique id.
+      RequestId requestId
+      # The details of the request.
+      Network.Request request
+      # The id of the frame that initiated the request.
+      Page.FrameId frameId
+      # How the requested resource will be used.
+      Network.ResourceType resourceType
+      # Details of the Authorization Challenge encountered.
+      # If this is set, client should respond with continueRequest that
+      # contains AuthChallengeResponse.
+      AuthChallenge authChallenge

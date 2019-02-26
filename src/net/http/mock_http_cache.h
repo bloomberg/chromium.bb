@@ -100,6 +100,9 @@ class MockDiskEntry : public disk_cache::Entry,
   // |resume_return_code_|.
   void ResumeDiskEntryOperation();
 
+  // Sets the maximum length of a stream. This is only applied to stream 1.
+  void set_max_file_size(int val) { max_file_size_ = val; }
+
  private:
   friend class base::RefCounted<MockDiskEntry>;
   struct CallbackInfo;
@@ -126,6 +129,7 @@ class MockDiskEntry : public disk_cache::Entry,
   std::vector<char> data_[kNumCacheEntryDataIndices];
   uint8_t in_memory_data_;
   int test_mode_;
+  int max_file_size_;
   bool doomed_;
   bool sparse_;
   bool fail_requests_;
@@ -176,6 +180,7 @@ class MockDiskCache : public disk_cache::Backend {
       const std::string& parent_absolute_name) const override;
   uint8_t GetEntryInMemoryData(const std::string& key) override;
   void SetEntryInMemoryData(const std::string& key, uint8_t data) override;
+  int64_t MaxFileSize() const override;
 
   // Returns number of times a cache entry was successfully opened.
   int open_count() const { return open_count_; }
@@ -192,6 +197,12 @@ class MockDiskCache : public disk_cache::Backend {
   // Return entries that fail some of their requests.
   void set_soft_failures(bool value) { soft_failures_ = value; }
 
+  // Returns entries that fail some of their requests, but only until
+  // the entry is re-created.
+  void set_soft_failures_one_instance(bool value) {
+    soft_failures_one_instance_ = value;
+  }
+
   // Makes sure that CreateEntry is not called twice for a given key.
   void set_double_create_check(bool value) { double_create_check_ = value; }
 
@@ -203,6 +214,10 @@ class MockDiskCache : public disk_cache::Backend {
 
   // Makes all requests for data ranges to fail as not implemented.
   void set_fail_sparse_requests() { fail_sparse_requests_ = true; }
+
+  // Sets the limit on how big entry streams can get. Only stream 1 enforces
+  // this, but MaxFileSize() will still report it.
+  void set_max_file_size(int new_size) { max_file_size_ = new_size; }
 
   void ReleaseAll();
 
@@ -230,8 +245,10 @@ class MockDiskCache : public disk_cache::Backend {
   int open_count_;
   int create_count_;
   int doomed_count_;
+  int max_file_size_;
   bool fail_requests_;
   bool soft_failures_;
+  bool soft_failures_one_instance_;
   bool double_create_check_;
   bool fail_sparse_requests_;
   bool support_in_memory_entry_data_;

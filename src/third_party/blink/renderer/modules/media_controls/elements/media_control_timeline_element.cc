@@ -34,6 +34,7 @@
 namespace {
 
 const double kCurrentTimeBufferedDelta = 1.0;
+const int kThumbRadius = 6;
 
 // Only respond to main button of primary pointer(s).
 bool IsValidPointerEvent(const blink::Event& event) {
@@ -81,13 +82,13 @@ bool MediaControlTimelineElement::WillRespondToMouseClickEvents() {
 void MediaControlTimelineElement::SetPosition(double current_time) {
   setValue(String::Number(current_time));
   setAttribute(
-      HTMLNames::aria_valuetextAttr,
+      html_names::kAriaValuetextAttr,
       AtomicString(GetMediaControls().CurrentTimeDisplay().textContent(true)));
   RenderBarSegments();
 }
 
 void MediaControlTimelineElement::SetDuration(double duration) {
-  SetFloatingPointAttribute(HTMLNames::maxAttr,
+  SetFloatingPointAttribute(html_names::kMaxAttr,
                             std::isfinite(duration) ? duration : 0);
   RenderBarSegments();
 }
@@ -116,7 +117,7 @@ void MediaControlTimelineElement::DefaultEventHandler(Event& event) {
         UserMetricsAction("Media.Controls.ScrubbingBegin"));
     GetMediaControls().BeginScrubbing(MediaControlsImpl::IsTouchEvent(&event));
     Element* thumb = UserAgentShadowRoot()->getElementById(
-        ShadowElementNames::SliderThumb());
+        shadow_element_names::SliderThumb());
     bool started_from_thumb = thumb && thumb == event.target()->ToNode();
     metrics_.StartGesture(started_from_thumb);
   } else if (EndScrubbingEvent(event)) {
@@ -126,10 +127,10 @@ void MediaControlTimelineElement::DefaultEventHandler(Event& event) {
     metrics_.RecordEndGesture(TrackWidth(), MediaElement().duration());
   }
 
-  if (event.type() == EventTypeNames::keydown) {
+  if (event.type() == event_type_names::kKeydown) {
     metrics_.StartKey();
   }
-  if (event.type() == EventTypeNames::keyup && event.IsKeyboardEvent()) {
+  if (event.type() == event_type_names::kKeyup && event.IsKeyboardEvent()) {
     metrics_.RecordEndKey(TrackWidth(), ToKeyboardEvent(event).keyCode());
   }
 
@@ -141,7 +142,7 @@ void MediaControlTimelineElement::DefaultEventHandler(Event& event) {
   }
 
   // Update the value based on the touchmove event.
-  if (is_touching_ && event.type() == EventTypeNames::touchmove) {
+  if (is_touching_ && event.type() == event_type_names::kTouchmove) {
     auto& touch_event = ToTouchEvent(event);
     if (touch_event.touches()->length() != 1)
       return;
@@ -150,7 +151,7 @@ void MediaControlTimelineElement::DefaultEventHandler(Event& event) {
     double position =
         max(0.0, fmin(1.0, touch->clientX() / TrackWidth() * ZoomFactor()));
     SetPosition(position * MediaElement().duration());
-  } else if (event.type() != EventTypeNames::input) {
+  } else if (event.type() != event_type_names::kInput) {
     return;
   }
 
@@ -198,6 +199,18 @@ void MediaControlTimelineElement::RenderBarSegments() {
   }
 
   double current_position = current_time / duration;
+
+  // Transform the current_position to always align with the center of thumb
+  // At time 0, the thumb's center is 6px away from beginning of progress bar
+  // At the end of video, thumb's center is -6px away from end of progress bar
+  // Convert 6px into ratio respect to progress bar width since
+  // current_position is range from 0 to 1
+  double width = TrackWidth() / ZoomFactor();
+  if (width != 0) {
+    double offset = kThumbRadius / width;
+    current_position += offset - 2 * offset * current_position;
+  }
+
   MediaControlSliderElement::Position before_segment(0, 0);
   MediaControlSliderElement::Position after_segment(0, 0);
 
@@ -259,11 +272,11 @@ void MediaControlTimelineElement::Trace(blink::Visitor* visitor) {
 }
 
 bool MediaControlTimelineElement::BeginScrubbingEvent(Event& event) {
-  if (event.type() == EventTypeNames::touchstart) {
+  if (event.type() == event_type_names::kTouchstart) {
     is_touching_ = true;
     return true;
   }
-  if (event.type() == EventTypeNames::pointerdown)
+  if (event.type() == event_type_names::kPointerdown)
     return IsValidPointerEvent(event);
 
   return false;
@@ -282,14 +295,14 @@ void MediaControlTimelineElement::OnControlsShown() {
 
 bool MediaControlTimelineElement::EndScrubbingEvent(Event& event) {
   if (is_touching_) {
-    if (event.type() == EventTypeNames::touchend ||
-        event.type() == EventTypeNames::touchcancel ||
-        event.type() == EventTypeNames::change) {
+    if (event.type() == event_type_names::kTouchend ||
+        event.type() == event_type_names::kTouchcancel ||
+        event.type() == event_type_names::kChange) {
       is_touching_ = false;
       return true;
     }
-  } else if (event.type() == EventTypeNames::pointerup ||
-             event.type() == EventTypeNames::pointercancel) {
+  } else if (event.type() == event_type_names::kPointerup ||
+             event.type() == event_type_names::kPointercancel) {
     return IsValidPointerEvent(event);
   }
 

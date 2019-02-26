@@ -57,7 +57,7 @@ void ResourceMultiBuffer::OnEmpty() {
   url_data_->OnEmpty();
 }
 
-UrlData::UrlData(const GURL& url, CORSMode cors_mode, UrlIndex* url_index)
+UrlData::UrlData(const GURL& url, CorsMode cors_mode, UrlIndex* url_index)
     : url_(url),
       have_data_origin_(false),
       cors_mode_(cors_mode),
@@ -77,7 +77,7 @@ UrlData::~UrlData() {
   DCHECK_EQ(0, preloading_);
 }
 
-std::pair<GURL, UrlData::CORSMode> UrlData::key() const {
+std::pair<GURL, UrlData::CorsMode> UrlData::key() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return std::make_pair(url(), cors_mode());
 }
@@ -130,6 +130,12 @@ void UrlData::RedirectTo(const scoped_refptr<UrlData>& url_data) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Copy any cached data over to the new location.
   url_data->multibuffer()->MergeFrom(multibuffer());
+
+  // All |bytes_received_callbacks_| should also listen for bytes on the
+  // redirect UrlData.
+  for (const auto& cb : bytes_received_callbacks_) {
+    url_data->AddBytesReceivedCallback(cb);
+  }
 
   std::vector<RedirectCB> redirect_callbacks;
   redirect_callbacks.swap(redirect_callbacks_);
@@ -219,6 +225,18 @@ ResourceMultiBuffer* UrlData::multibuffer() {
   return &multibuffer_;
 }
 
+void UrlData::AddBytesReceivedCallback(BytesReceivedCB bytes_received_cb) {
+  bytes_received_callbacks_.emplace_back(std::move(bytes_received_cb));
+}
+
+void UrlData::AddBytesReadFromNetwork(int64_t b) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  bytes_read_from_network_ += b;
+  for (const auto& cb : bytes_received_callbacks_) {
+    cb.Run(b);
+  }
+}
+
 size_t UrlData::CachedSize() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return multibuffer()->map().size();
@@ -298,29 +316,33 @@ void UrlData::WaitToLoad(base::OnceClosure cb) {
   } else {
     waiting_load_callbacks_.emplace_back(std::move(cb));
     if (waiting_load_callbacks_.size() == 1)
-      url_index_->WaitToLoad(this);
+      url_index_->WaitToLoad(this, true);
   }
 }
 
-void UrlData::LoadNow() {
+void UrlData::LoadNow(bool immediate) {
   // Move the callbacks into local variables in case
   // any of the callbacks decide to call WaitToLoad().
   std::vector<base::OnceClosure> waiting_load_callbacks;
   std::swap(waiting_load_callbacks, waiting_load_callbacks_);
-  for (auto& i : waiting_load_callbacks)
-    std::move(i).Run();
+  for (auto& i : waiting_load_callbacks) {
+    if (immediate) {
+      std::move(i).Run();
+    } else {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(i));
+    }
+  }
 }
 
-
-void UrlIndex::WaitToLoad(UrlData* url_data) {
+void UrlIndex::WaitToLoad(UrlData* url_data, bool immediate) {
   if (loading_.find(url_data) != loading_.end()) {
     // Already loading
-    url_data->LoadNow();
+    url_data->LoadNow(immediate);
     return;
   }
   if (loading_.size() < GetMaxParallelPreload()) {
     loading_.insert(url_data);
-    url_data->LoadNow();
+    url_data->LoadNow(immediate);
     return;
   }
   loading_queue_.push_back(url_data);
@@ -335,11 +357,15 @@ void UrlIndex::RemoveLoading(UrlData* url_data) {
     auto url_data = loading_queue_.front();
     loading_queue_.pop_front();
     if (url_data->IsPreloading()) {
-      WaitToLoad(url_data.get());
+      WaitToLoad(url_data.get(), false);
     } else {
-      url_data->LoadNow();
+      url_data->LoadNow(false);
     }
   }
+}
+
+bool UrlIndex::HasReachedMaxParallelPreload() const {
+  return loading_.size() >= kMaxParallelPreload;
 }
 
 UrlIndex::UrlIndex(ResourceFetchContext* fetch_context)
@@ -373,7 +399,7 @@ void UrlIndex::RemoveUrlData(const scoped_refptr<UrlData>& url_data) {
 }
 
 scoped_refptr<UrlData> UrlIndex::GetByUrl(const GURL& gurl,
-                                          UrlData::CORSMode cors_mode) {
+                                          UrlData::CorsMode cors_mode) {
   auto i = indexed_data_.find(std::make_pair(gurl, cors_mode));
   if (i != indexed_data_.end() && i->second->Valid()) {
     return i->second;
@@ -383,7 +409,7 @@ scoped_refptr<UrlData> UrlIndex::GetByUrl(const GURL& gurl,
 }
 
 scoped_refptr<UrlData> UrlIndex::NewUrlData(const GURL& url,
-                                            UrlData::CORSMode cors_mode) {
+                                            UrlData::CorsMode cors_mode) {
   return new UrlData(url, cors_mode, this);
 }
 

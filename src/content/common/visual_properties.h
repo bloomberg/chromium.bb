@@ -6,7 +6,8 @@
 #define CONTENT_COMMON_VISUAL_PROPERTIES_H_
 
 #include "base/optional.h"
-#include "components/viz/common/surfaces/local_surface_id.h"
+#include "base/time/time.h"
+#include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "content/common/content_export.h"
 #include "content/public/common/screen_info.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
@@ -56,8 +57,8 @@ struct CONTENT_EXPORT VisualProperties {
   // The height of the bottom controls.
   float bottom_controls_height = 0.f;
 
-  // The local surface ID to use (if valid).
-  base::Optional<viz::LocalSurfaceId> local_surface_id;
+  // The local surface ID to use (if valid) and its allocation time.
+  base::Optional<viz::LocalSurfaceIdAllocation> local_surface_id_allocation;
 
   // The size of the visible viewport, which may be smaller than the view if the
   // view is partially occluded (e.g. by a virtual keyboard).  The size is in
@@ -78,6 +79,10 @@ struct CONTENT_EXPORT VisualProperties {
   // This represents the page zoom level for a WebContents.
   // (0 is the default value which results in 1.0 zoom factor).
   double zoom_level = 0;
+
+  // This represents the page's scale factor, which changes during pinch zoom.
+  // It needs to be shared with subframes.
+  float page_scale_factor = 1.f;
 };
 
 }  // namespace content

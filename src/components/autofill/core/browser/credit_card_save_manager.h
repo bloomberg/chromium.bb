@@ -56,9 +56,9 @@ class CreditCardSaveManager {
     COUNTRY_CODE = 1 << 7,
     // Set if the user is already syncing data from a Google Payments account.
     HAS_GOOGLE_PAYMENTS_ACCOUNT = 1 << 8,
-    // Card expiration month (not currently used).
+    // Card expiration month.
     CARD_EXPIRATION_MONTH = 1 << 9,
-    // Card expiration year (not currently used).
+    // Card expiration year.
     CARD_EXPIRATION_YEAR = 1 << 10,
     // Phone number was found on any address (not currently used).
     PHONE_NUMBER = 1 << 11,
@@ -66,6 +66,10 @@ class CreditCardSaveManager {
     // dialog.  In general, this should happen when name is conflicting/missing
     // and the user does not have a Google Payments account.
     USER_PROVIDED_NAME = 1 << 12,
+    // Set if expiration date was explicitly requested in the offer-to-save
+    // dialog. In general, this should happen when expiration date month or year
+    // is missing.
+    USER_PROVIDED_EXPIRATION_DATE = 1 << 13,
   };
 
   // An observer class used by browsertests that gets notified whenever
@@ -171,8 +175,27 @@ class CreditCardSaveManager {
 
   // Sets |user_did_accept_upload_prompt_| and calls SendUploadCardRequest if
   // the risk data is available. Sets the cardholder name on the upload request
+  // if |user_provided_card_details.cardholder_name| is set. Sets the expiration
+  // date on the upload request if
+  // |user_provided_card_details.expiration_date_month| and
+  // |user_provided_card_details.expiration_date_year| are both set.
+  void OnUserDidAcceptUpload(const AutofillClient::UserProvidedCardDetails&
+                                 user_provided_card_details);
+
+#if defined(OS_ANDROID)
+  // Sets |user_did_accept_upload_prompt_| and calls SendUploadCardRequest if
+  // the risk data is available. Sets the cardholder name on the upload request
   // if |cardholder_name| is set.
-  void OnUserDidAcceptUpload(const base::string16& cardholder_name);
+  // Only relevant for mobile as fix flow is two steps on mobile compared to
+  // one step on desktop.
+  void OnUserDidAcceptAccountNameFixFlow(const base::string16& cardholder_name);
+#endif  // defined(OS_ANDROID)
+
+  // Helper function that calls SendUploadCardRequest by setting
+  // UserProvidedCardDetails.
+  void OnUserDidAcceptUploadHelper(
+      const AutofillClient::UserProvidedCardDetails&
+          user_provided_card_details);
 
   // Saves risk data in |uploading_risk_data_| and calls SendUploadCardRequest
   // if the user has accepted the prompt.
@@ -196,6 +219,9 @@ class CreditCardSaveManager {
   // |upload_decision_metrics| is a bitmask of
   // |AutofillMetrics::CardUploadDecisionMetric|.
   void LogCardUploadDecisions(int upload_decision_metrics);
+
+  // Logs the reason why expiration date was explicitly requested.
+  void LogSaveCardRequestExpirationDateReasonMetric();
 
   // For testing.
   void SetEventObserverForTesting(ObserverForTest* observer) {
@@ -238,6 +264,10 @@ class CreditCardSaveManager {
   // |true| if the user has opted to upload save their credit card to Google.
   bool user_did_accept_upload_prompt_ = false;
 
+  // |should_request_expiration_date_from_user_| is |true| if the upload save
+  // dialog should request expiration date from the user.
+  bool should_request_expiration_date_from_user_ = false;
+
   // |should_request_name_from_user_| is |true| if the upload save dialog should
   // request cardholder name from the user (prefilled with Google Account name).
   bool should_request_name_from_user_ = false;
@@ -267,6 +297,9 @@ class CreditCardSaveManager {
   FRIEND_TEST_ALL_PREFIXES(
       CreditCardSaveManagerTest,
       UploadCreditCard_ShouldRequestCardholderName_ResetBetweenConsecutiveSaves);
+  FRIEND_TEST_ALL_PREFIXES(
+      CreditCardSaveManagerTest,
+      UploadCreditCard_ShouldRequestExpirationDate_ResetBetweenConsecutiveSaves);
 
   DISALLOW_COPY_AND_ASSIGN(CreditCardSaveManager);
 };

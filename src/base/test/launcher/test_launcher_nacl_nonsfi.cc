@@ -16,7 +16,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/test/launcher/test_launcher.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_switches.h"
@@ -147,7 +147,7 @@ int TestLauncherNonSfiMain(const std::string& test_binary) {
 
   base::MessageLoopForIO message_loop;
 #if defined(OS_POSIX)
-  FileDescriptorWatcher file_descriptor_watcher(&message_loop);
+  FileDescriptorWatcher file_descriptor_watcher(message_loop.task_runner());
 #endif
 
   NonSfiUnitTestPlatformDelegate platform_delegate;

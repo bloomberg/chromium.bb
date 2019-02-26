@@ -270,9 +270,11 @@ class MetricsWebContentsObserverTest : public ChromeRenderViewHostTestHarness {
   void SimulateTimingUpdateWithoutFiringDispatchTimer(
       const mojom::PageLoadTiming& timing,
       content::RenderFrameHost* render_frame_host) {
-    observer()->OnTimingUpdated(
-        render_frame_host, timing, mojom::PageLoadMetadata(),
-        mojom::PageLoadFeatures(), std::vector<mojom::ResourceDataUpdatePtr>());
+    observer()->OnTimingUpdated(render_frame_host, timing.Clone(),
+                                mojom::PageLoadMetadataPtr(base::in_place),
+                                mojom::PageLoadFeaturesPtr(base::in_place),
+                                std::vector<mojom::ResourceDataUpdatePtr>(),
+                                mojom::PageRenderDataPtr(base::in_place));
   }
 
   void AttachObserver() {

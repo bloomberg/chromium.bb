@@ -144,7 +144,7 @@ class TestSyncedWindowDelegate : public SyncedWindowDelegate {
   const SessionID window_id_;
   const sync_pb::SessionWindow_BrowserType window_type_;
 
-  std::map<int, SyncedTabDelegate*> tab_delegates_;
+  std::vector<SyncedTabDelegate*> tab_delegates_;
   bool is_session_restore_in_progress_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSyncedWindowDelegate);

@@ -96,6 +96,9 @@ class CORE_EXPORT CSSParserSelector {
   CSSSelector::PseudoType GetPseudoType() const {
     return selector_->GetPseudoType();
   }
+  bool IsTreeAbidingPseudoElement() const {
+    return selector_->IsTreeAbidingPseudoElement();
+  }
   const CSSSelectorList* SelectorList() const {
     return selector_->SelectorList();
   }

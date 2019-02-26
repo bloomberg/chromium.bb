@@ -15,14 +15,15 @@
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/common/stack_sampling_configuration.h"
+#include "components/metrics/call_stack_profile_builder.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/public/cpp/connector.h"
 
+using CallStackProfileBuilder = metrics::CallStackProfileBuilder;
 using CallStackProfileParams = metrics::CallStackProfileParams;
-using LegacyCallStackProfileBuilder = metrics::LegacyCallStackProfileBuilder;
 using StackSamplingProfiler = base::StackSamplingProfiler;
 
 namespace {
@@ -62,6 +63,14 @@ CallStackProfileParams::Process GetProcess() {
   if (process_type == switches::kPpapiBrokerProcess)
     return CallStackProfileParams::PPAPI_BROKER_PROCESS;
   return CallStackProfileParams::UNKNOWN_PROCESS;
+}
+
+std::unique_ptr<base::StackSamplingProfiler::ProfileBuilder>
+CreateProfileBuilder(
+    const CallStackProfileParams& params,
+    base::OnceClosure completed_callback = base::OnceClosure()) {
+  return std::make_unique<CallStackProfileBuilder>(
+      params, std::move(completed_callback));
 }
 
 }  // namespace
@@ -151,8 +160,7 @@ void ThreadProfiler::StartOnChildThread(CallStackProfileParams::Thread thread) {
 void ThreadProfiler::SetBrowserProcessReceiverCallback(
     const base::RepeatingCallback<void(base::TimeTicks,
                                        metrics::SampledProfile)>& callback) {
-  metrics::LegacyCallStackProfileBuilder::SetBrowserProcessReceiverCallback(
-      callback);
+  CallStackProfileBuilder::SetBrowserProcessReceiverCallback(callback);
 }
 
 // static
@@ -166,7 +174,7 @@ void ThreadProfiler::SetServiceManagerConnectorForChildProcess(
   metrics::mojom::CallStackProfileCollectorPtr browser_interface;
   connector->BindInterface(content::mojom::kBrowserServiceName,
                            &browser_interface);
-  LegacyCallStackProfileBuilder::SetParentProfileCollectorForChildProcess(
+  CallStackProfileBuilder::SetParentProfileCollectorForChildProcess(
       std::move(browser_interface));
 }
 
@@ -191,21 +199,16 @@ void ThreadProfiler::SetServiceManagerConnectorForChildProcess(
 ThreadProfiler::ThreadProfiler(
     CallStackProfileParams::Thread thread,
     scoped_refptr<base::SingleThreadTaskRunner> owning_thread_task_runner)
-    : owning_thread_task_runner_(owning_thread_task_runner),
-      periodic_profile_params_(GetProcess(),
-                               thread,
-                               CallStackProfileParams::PERIODIC_COLLECTION),
+    : thread_(thread),
+      owning_thread_task_runner_(owning_thread_task_runner),
       weak_factory_(this) {
   if (!StackSamplingConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
     return;
 
-  auto profile_builder =
-      std::make_unique<LegacyCallStackProfileBuilder>(CallStackProfileParams(
-          GetProcess(), thread, CallStackProfileParams::PROCESS_STARTUP));
-
   startup_profiler_ = std::make_unique<StackSamplingProfiler>(
       base::PlatformThread::CurrentId(), kSamplingParams,
-      std::move(profile_builder));
+      CreateProfileBuilder(CallStackProfileParams(
+          GetProcess(), thread, CallStackProfileParams::PROCESS_STARTUP)));
 
   startup_profiler_->Start();
 
@@ -246,14 +249,14 @@ void ThreadProfiler::ScheduleNextPeriodicCollection() {
 void ThreadProfiler::StartPeriodicSamplingCollection() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // NB: Destroys the previous profiler as side effect.
-  auto profile_builder = std::make_unique<LegacyCallStackProfileBuilder>(
-      periodic_profile_params_,
-      base::BindOnce(&ThreadProfiler::OnPeriodicCollectionCompleted,
-                     owning_thread_task_runner_, weak_factory_.GetWeakPtr()));
-
   periodic_profiler_ = std::make_unique<StackSamplingProfiler>(
       base::PlatformThread::CurrentId(), kSamplingParams,
-      std::move(profile_builder));
+      CreateProfileBuilder(
+          CallStackProfileParams(GetProcess(), thread_,
+                                 CallStackProfileParams::PERIODIC_COLLECTION),
+          base::BindOnce(&ThreadProfiler::OnPeriodicCollectionCompleted,
+                         owning_thread_task_runner_,
+                         weak_factory_.GetWeakPtr())));
 
   periodic_profiler_->Start();
 }

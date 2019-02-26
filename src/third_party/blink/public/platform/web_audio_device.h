@@ -58,6 +58,16 @@ class WebAudioDevice {
 
   virtual void Start() = 0;
   virtual void Stop() = 0;
+
+  // Pause an audio device so that the device doesn't produce
+  // requests for audio frames. This is used when a web frame is
+  // frozen. This shouldn't be observable to the web application.
+  virtual void Pause() = 0;
+
+  // Resume an audio device that was previously paused. Used
+  // for frozen frames.
+  virtual void Resume() = 0;
+
   virtual double SampleRate() = 0;
   virtual int FramesPerBuffer() = 0;
 };

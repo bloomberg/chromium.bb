@@ -50,7 +50,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 inline static bool HasVerticalAppearance(HTMLInputElement* input) {
   return input->ComputedStyleRef().Appearance() == kSliderVerticalPart;
@@ -62,8 +62,9 @@ inline SliderThumbElement::SliderThumbElement(Document& document)
 }
 
 SliderThumbElement* SliderThumbElement::Create(Document& document) {
-  SliderThumbElement* element = new SliderThumbElement(document);
-  element->setAttribute(idAttr, ShadowElementNames::SliderThumb());
+  SliderThumbElement* element =
+      MakeGarbageCollected<SliderThumbElement>(document);
+  element->setAttribute(kIdAttr, shadow_element_names::SliderThumb());
   return element;
 }
 
@@ -71,9 +72,10 @@ void SliderThumbElement::SetPositionFromValue() {
   // Since the code to calculate position is in the LayoutSliderThumb layout
   // path, we don't actually update the value here. Instead, we poke at the
   // layoutObject directly to trigger layout.
-  if (GetLayoutObject())
+  if (GetLayoutObject()) {
     GetLayoutObject()->SetNeedsLayoutAndFullPaintInvalidation(
-        LayoutInvalidationReason::kSliderValueChanged);
+        layout_invalidation_reason::kSliderValueChanged);
+  }
 }
 
 LayoutObject* SliderThumbElement::CreateLayoutObject(
@@ -105,7 +107,7 @@ void SliderThumbElement::DragFrom(const LayoutPoint& point) {
 void SliderThumbElement::SetPositionFromPoint(const LayoutPoint& point) {
   HTMLInputElement* input(HostInput());
   Element* track_element = input->UserAgentShadowRoot()->getElementById(
-      ShadowElementNames::SliderTrack());
+      shadow_element_names::SliderTrack());
 
   if (!input->GetLayoutObject() || !GetLayoutBox() ||
       !track_element->GetLayoutBox())
@@ -179,9 +181,10 @@ void SliderThumbElement::SetPositionFromPoint(const LayoutPoint& point) {
   // FIXME: This is no longer being set from renderer. Consider updating the
   // method name.
   input->SetValueFromRenderer(value_string);
-  if (GetLayoutObject())
+  if (GetLayoutObject()) {
     GetLayoutObject()->SetNeedsLayoutAndFullPaintInvalidation(
-        LayoutInvalidationReason::kSliderValueChanged);
+        layout_invalidation_reason::kSliderValueChanged);
+  }
 }
 
 void SliderThumbElement::StartDragging() {
@@ -204,16 +207,17 @@ void SliderThumbElement::StopDragging() {
         PointerEventFactory::kMouseId, this);
   }
   in_drag_mode_ = false;
-  if (GetLayoutObject())
+  if (GetLayoutObject()) {
     GetLayoutObject()->SetNeedsLayoutAndFullPaintInvalidation(
-        LayoutInvalidationReason::kSliderValueChanged);
+        layout_invalidation_reason::kSliderValueChanged);
+  }
   if (HostInput())
     HostInput()->DispatchFormControlChangeEvent();
 }
 
 void SliderThumbElement::DefaultEventHandler(Event& event) {
   if (event.IsPointerEvent() &&
-      event.type() == EventTypeNames::lostpointercapture) {
+      event.type() == event_type_names::kLostpointercapture) {
     StopDragging();
     return;
   }
@@ -241,15 +245,15 @@ void SliderThumbElement::DefaultEventHandler(Event& event) {
   // We intentionally do not call event->setDefaultHandled() here because
   // MediaControlTimelineElement::defaultEventHandler() wants to handle these
   // mouse events.
-  if (event_type == EventTypeNames::mousedown && is_left_button) {
+  if (event_type == event_type_names::kMousedown && is_left_button) {
     StartDragging();
     return;
   }
-  if (event_type == EventTypeNames::mouseup && is_left_button) {
+  if (event_type == event_type_names::kMouseup && is_left_button) {
     StopDragging();
     return;
   }
-  if (event_type == EventTypeNames::mousemove) {
+  if (event_type == event_type_names::kMousemove) {
     if (in_drag_mode_)
       SetPositionFromPoint(LayoutPoint(mouse_event.AbsoluteLocation()));
     return;
@@ -370,7 +374,7 @@ void SliderContainerElement::HandleTouchEvent(TouchEvent* event) {
   if (!input || input->IsDisabledFormControl() || !event)
     return;
 
-  if (event->type() == EventTypeNames::touchend) {
+  if (event->type() == event_type_names::kTouchend) {
     // TODO: Also do this for touchcancel?
     input->DispatchFormControlChangeEvent();
     event->SetDefaultHandled();
@@ -387,12 +391,12 @@ void SliderContainerElement::HandleTouchEvent(TouchEvent* event) {
 
   TouchList* touches = event->targetTouches();
   SliderThumbElement* thumb = ToSliderThumbElement(
-      GetTreeScope().getElementById(ShadowElementNames::SliderThumb()));
+      GetTreeScope().getElementById(shadow_element_names::SliderThumb()));
   if (!thumb || !touches)
     return;
 
   if (touches->length() == 1) {
-    if (event->type() == EventTypeNames::touchstart) {
+    if (event->type() == event_type_names::kTouchstart) {
       start_point_ = touches->item(0)->AbsoluteLocation();
       sliding_direction_ = kNoMove;
       touch_started_ = true;

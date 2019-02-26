@@ -14,10 +14,14 @@
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/auth/arc_auth_code_fetcher.h"
 #include "chrome/browser/chromeos/arc/auth/arc_auth_context.h"
-#include "google_apis/gaia/oauth2_token_service.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 class Profile;
+
+namespace identity {
+class AccessTokenFetcher;
+struct AccessTokenInfo;
+}  // namespace identity
 
 namespace net {
 class URLRequestContextGetter;
@@ -35,15 +39,15 @@ extern const char kAuthTokenExchangeEndPoint[];
 
 // The instance is not reusable, so for each Fetch(), the instance must be
 // re-created. Deleting the instance cancels inflight operation.
-class ArcBackgroundAuthCodeFetcher : public ArcAuthCodeFetcher,
-                                     public OAuth2TokenService::Consumer {
+class ArcBackgroundAuthCodeFetcher : public ArcAuthCodeFetcher {
  public:
   // |account_id| is the id used by the OAuth Token Service chain.
   ArcBackgroundAuthCodeFetcher(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       Profile* profile,
       const std::string& account_id,
-      bool initial_signin);
+      bool initial_signin,
+      bool is_primary_account);
   ~ArcBackgroundAuthCodeFetcher() override;
 
   // ArcAuthCodeFetcher:
@@ -55,12 +59,8 @@ class ArcBackgroundAuthCodeFetcher : public ArcAuthCodeFetcher,
   void ResetFetchers();
   void OnPrepared(net::URLRequestContextGetter* request_context_getter);
 
-  // OAuth2TokenService::Consumer:
-  void OnGetTokenSuccess(
-      const OAuth2TokenService::Request* request,
-      const OAuth2AccessTokenConsumer::TokenResponse& token_response) override;
-  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                         const GoogleServiceAuthError& error) override;
+  void OnAccessTokenFetchComplete(GoogleServiceAuthError error,
+                                  identity::AccessTokenInfo token_info);
 
   void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
 
@@ -73,12 +73,16 @@ class ArcBackgroundAuthCodeFetcher : public ArcAuthCodeFetcher,
   ArcAuthContext context_;
   FetchCallback callback_;
 
-  std::unique_ptr<OAuth2TokenService::Request> login_token_request_;
+  std::unique_ptr<identity::AccessTokenFetcher> access_token_fetcher_;
   std::unique_ptr<network::SimpleURLLoader> simple_url_loader_;
 
   // Keeps context of account code request. |initial_signin_| is true if request
   // is made for initial sign-in flow.
-  bool initial_signin_;
+  const bool initial_signin_;
+
+  // Is this fetcher being used to fetch auth codes for the Device/Primary
+  // Account on Chrome OS.
+  const bool is_primary_account_;
 
   base::WeakPtrFactory<ArcBackgroundAuthCodeFetcher> weak_ptr_factory_;
 

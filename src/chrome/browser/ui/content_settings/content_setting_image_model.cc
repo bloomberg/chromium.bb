@@ -20,6 +20,7 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/blocked_content/framebust_block_tab_helper.h"
+#include "chrome/browser/ui/content_settings/content_setting_image_model_states.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/chromium_strings.h"
@@ -49,7 +50,6 @@ using content::WebContents;
 //     ContentSettingClipboardReadImageModel     - clipboard read
 //     ContentSettingSensorsImageModel           - sensors
 //   ContentSettingMediaImageModel             - media
-//   ContentSettingSubresourceFilterImageModel - deceptive content
 //   ContentSettingFramebustBlockImageModel    - blocked framebust
 
 class ContentSettingBlockedImageModel : public ContentSettingSimpleImageModel {
@@ -57,7 +57,7 @@ class ContentSettingBlockedImageModel : public ContentSettingSimpleImageModel {
   ContentSettingBlockedImageModel(ImageType image_type,
                                   ContentSettingsType content_type);
 
-  void UpdateFromWebContents(WebContents* web_contents) override;
+  bool UpdateAndGetVisibility(WebContents* web_contents) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ContentSettingBlockedImageModel);
@@ -68,7 +68,7 @@ class ContentSettingGeolocationImageModel
  public:
   ContentSettingGeolocationImageModel();
 
-  void UpdateFromWebContents(WebContents* web_contents) override;
+  bool UpdateAndGetVisibility(WebContents* web_contents) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ContentSettingGeolocationImageModel);
@@ -78,7 +78,7 @@ class ContentSettingRPHImageModel : public ContentSettingSimpleImageModel {
  public:
   ContentSettingRPHImageModel();
 
-  void UpdateFromWebContents(WebContents* web_contents) override;
+  bool UpdateAndGetVisibility(WebContents* web_contents) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ContentSettingRPHImageModel);
@@ -89,7 +89,7 @@ class ContentSettingMIDISysExImageModel
  public:
   ContentSettingMIDISysExImageModel();
 
-  void UpdateFromWebContents(WebContents* web_contents) override;
+  bool UpdateAndGetVisibility(WebContents* web_contents) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ContentSettingMIDISysExImageModel);
@@ -100,7 +100,7 @@ class ContentSettingDownloadsImageModel
  public:
   ContentSettingDownloadsImageModel();
 
-  void UpdateFromWebContents(WebContents* web_contents) override;
+  bool UpdateAndGetVisibility(WebContents* web_contents) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ContentSettingDownloadsImageModel);
@@ -111,7 +111,7 @@ class ContentSettingClipboardReadImageModel
  public:
   ContentSettingClipboardReadImageModel();
 
-  void UpdateFromWebContents(WebContents* web_contents) override;
+  bool UpdateAndGetVisibility(WebContents* web_contents) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ContentSettingClipboardReadImageModel);
@@ -122,15 +122,11 @@ class ContentSettingMediaImageModel : public ContentSettingImageModel {
  public:
   ContentSettingMediaImageModel();
 
-  void UpdateFromWebContents(WebContents* web_contents) override;
+  bool UpdateAndGetVisibility(WebContents* web_contents) override;
 
-  ContentSettingBubbleModel* CreateBubbleModelImpl(
+  std::unique_ptr<ContentSettingBubbleModel> CreateBubbleModelImpl(
       ContentSettingBubbleModel::Delegate* delegate,
-      WebContents* web_contents,
-      Profile* profile) override;
-
-  bool ShouldRunAnimation(WebContents* web_contents) override;
-  void SetAnimationHasRun(WebContents* web_contents) override;
+      WebContents* web_contents) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ContentSettingMediaImageModel);
@@ -140,13 +136,37 @@ class ContentSettingSensorsImageModel : public ContentSettingSimpleImageModel {
  public:
   ContentSettingSensorsImageModel();
 
-  void UpdateFromWebContents(WebContents* web_contents) override;
+  bool UpdateAndGetVisibility(WebContents* web_contents) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ContentSettingSensorsImageModel);
 };
 
+class ContentSettingPopupImageModel : public ContentSettingSimpleImageModel {
+ public:
+  ContentSettingPopupImageModel();
+
+  bool UpdateAndGetVisibility(WebContents* web_contents) override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ContentSettingPopupImageModel);
+};
+
 namespace {
+
+bool ShouldShowPluginExplanation(content::WebContents* web_contents,
+                                 HostContentSettingsMap* map) {
+  const GURL& url = web_contents->GetURL();
+  ContentSetting setting = map->GetContentSetting(
+      url, url, CONTENT_SETTINGS_TYPE_PLUGINS, std::string());
+
+  // For plugins, show the animated explanation in these cases:
+  //  - The plugin is blocked despite the user having content setting ALLOW.
+  //  - The user has disabled Flash using BLOCK and HTML5 By Default feature.
+  return setting == CONTENT_SETTING_ALLOW ||
+         (setting == CONTENT_SETTING_BLOCK &&
+          PluginUtils::ShouldPreferHtmlOverPlugins(map));
+}
 
 struct ContentSettingsImageDetails {
   ContentSettingsType content_type;
@@ -165,13 +185,13 @@ const ContentSettingsImageDetails kImageDetails[] = {
      IDS_BLOCKED_JAVASCRIPT_MESSAGE, 0, 0},
     {CONTENT_SETTINGS_TYPE_PLUGINS, kExtensionIcon, IDS_BLOCKED_PLUGINS_MESSAGE,
      IDS_BLOCKED_PLUGIN_EXPLANATORY_TEXT, 0},
-    {CONTENT_SETTINGS_TYPE_POPUPS, kWebIcon, IDS_BLOCKED_POPUPS_TOOLTIP,
-     IDS_BLOCKED_POPUPS_EXPLANATORY_TEXT, 0},
     {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, kMixedContentIcon,
      IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT, 0, 0},
     {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, kExtensionIcon,
      IDS_BLOCKED_PPAPI_BROKER_MESSAGE, 0, IDS_ALLOWED_PPAPI_BROKER_MESSAGE},
     {CONTENT_SETTINGS_TYPE_SOUND, kTabAudioIcon, IDS_BLOCKED_SOUND_TITLE, 0, 0},
+    {CONTENT_SETTINGS_TYPE_ADS, kAdsIcon, IDS_BLOCKED_ADS_PROMPT_TOOLTIP,
+     IDS_BLOCKED_ADS_PROMPT_TITLE, 0},
 };
 
 const ContentSettingsImageDetails* GetImageDetails(ContentSettingsType type) {
@@ -191,39 +211,12 @@ ContentSettingSimpleImageModel::ContentSettingSimpleImageModel(
     ContentSettingsType content_type)
     : ContentSettingImageModel(image_type), content_type_(content_type) {}
 
-ContentSettingBubbleModel*
+std::unique_ptr<ContentSettingBubbleModel>
 ContentSettingSimpleImageModel::CreateBubbleModelImpl(
     ContentSettingBubbleModel::Delegate* delegate,
-    WebContents* web_contents,
-    Profile* profile) {
+    WebContents* web_contents) {
   return ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-      delegate,
-      web_contents,
-      profile,
-      content_type());
-}
-
-bool ContentSettingSimpleImageModel::ShouldRunAnimation(
-    WebContents* web_contents) {
-  if (!web_contents)
-    return false;
-
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents);
-  if (!content_settings)
-    return false;
-
-  return !content_settings->IsBlockageIndicated(content_type());
-}
-
-void ContentSettingSimpleImageModel::SetAnimationHasRun(
-    WebContents* web_contents) {
-  if (!web_contents)
-    return;
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents);
-  if (content_settings)
-    content_settings->SetBlockageHasBeenIndicated(content_type());
+      delegate, web_contents, content_type());
 }
 
 // static
@@ -246,8 +239,7 @@ ContentSettingImageModel::CreateForContentType(ImageType image_type) {
       return std::make_unique<ContentSettingBlockedImageModel>(
           ImageType::PLUGINS, CONTENT_SETTINGS_TYPE_PLUGINS);
     case ImageType::POPUPS:
-      return std::make_unique<ContentSettingBlockedImageModel>(
-          ImageType::POPUPS, CONTENT_SETTINGS_TYPE_POPUPS);
+      return std::make_unique<ContentSettingPopupImageModel>();
     case ImageType::GEOLOCATION:
       return std::make_unique<ContentSettingGeolocationImageModel>();
     case ImageType::MIXEDSCRIPT:
@@ -258,7 +250,8 @@ ContentSettingImageModel::CreateForContentType(ImageType image_type) {
     case ImageType::MEDIASTREAM:
       return std::make_unique<ContentSettingMediaImageModel>();
     case ImageType::ADS:
-      return std::make_unique<ContentSettingSubresourceFilterImageModel>();
+      return std::make_unique<ContentSettingBlockedImageModel>(
+          ImageType::ADS, CONTENT_SETTINGS_TYPE_ADS);
     case ImageType::AUTOMATIC_DOWNLOADS:
       return std::make_unique<ContentSettingDownloadsImageModel>();
     case ImageType::MIDI_SYSEX:
@@ -279,6 +272,29 @@ ContentSettingImageModel::CreateForContentType(ImageType image_type) {
   return nullptr;
 }
 
+void ContentSettingImageModel::Update(content::WebContents* contents) {
+  bool new_visibility = contents ? UpdateAndGetVisibility(contents) : false;
+  is_visible_ = new_visibility;
+  if (contents && !is_visible_) {
+    ContentSettingImageModelStates::Get(contents)->SetAnimationHasRun(
+        image_type(), false);
+  }
+}
+
+bool ContentSettingImageModel::ShouldRunAnimation(
+    content::WebContents* contents) {
+  DCHECK(contents);
+  return !ContentSettingImageModelStates::Get(contents)->AnimationHasRun(
+      image_type());
+}
+
+void ContentSettingImageModel::SetAnimationHasRun(
+    content::WebContents* contents) {
+  DCHECK(contents);
+  ContentSettingImageModelStates::Get(contents)->SetAnimationHasRun(
+      image_type(), true);
+}
+
 // Generic blocked content settings --------------------------------------------
 
 ContentSettingBlockedImageModel::ContentSettingBlockedImageModel(
@@ -286,12 +302,8 @@ ContentSettingBlockedImageModel::ContentSettingBlockedImageModel(
     ContentSettingsType content_type)
     : ContentSettingSimpleImageModel(image_type, content_type) {}
 
-void ContentSettingBlockedImageModel::UpdateFromWebContents(
+bool ContentSettingBlockedImageModel::UpdateAndGetVisibility(
     WebContents* web_contents) {
-  set_visible(false);
-  if (!web_contents)
-    return;
-
   const ContentSettingsType type = content_type();
   const ContentSettingsImageDetails* image_details = GetImageDetails(type);
   DCHECK(image_details) << "No entry for " << type << " in kImageDetails[].";
@@ -299,45 +311,38 @@ void ContentSettingBlockedImageModel::UpdateFromWebContents(
   int tooltip_id = image_details->blocked_tooltip_id;
   int explanation_id = image_details->blocked_explanatory_text_id;
 
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  HostContentSettingsMap* map =
-      HostContentSettingsMapFactory::GetForProfile(profile);
-  if (type == CONTENT_SETTINGS_TYPE_PLUGINS) {
-    GURL url = web_contents->GetURL();
-    ContentSetting setting =
-        map->GetContentSetting(url, url, type, std::string());
-
-    // For plugins, show the animated explanation in these cases:
-    //  - The plugin is blocked despite the user having content setting ALLOW.
-    //  - The user has disabled Flash using BLOCK and HTML5 By Default feature.
-    bool show_explanation = setting == CONTENT_SETTING_ALLOW ||
-                            (setting == CONTENT_SETTING_BLOCK &&
-                             PluginUtils::ShouldPreferHtmlOverPlugins(map));
-    if (!show_explanation)
-      explanation_id = 0;
-  }
-
   // If a content type is blocked by default and was accessed, display the
   // content blocked page action.
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents);
   if (!content_settings)
-    return;
-  if (!content_settings->IsContentBlocked(type)) {
-    if (!content_settings->IsContentAllowed(type))
-      return;
+    return false;
 
-    // For cookies, only show the cookie blocked page action if cookies are
-    // blocked by default.
-    if (type == CONTENT_SETTINGS_TYPE_COOKIES &&
-        (map->GetDefaultContentSetting(type, nullptr) != CONTENT_SETTING_BLOCK))
-      return;
+  bool is_blocked = content_settings->IsContentBlocked(type);
+  bool is_allowed = content_settings->IsContentAllowed(type);
+  if (!is_blocked && !is_allowed)
+    return false;
 
+  HostContentSettingsMap* map = HostContentSettingsMapFactory::GetForProfile(
+      Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+
+  // For allowed cookies, don't show the cookie page action unless cookies are
+  // blocked by default.
+  if (!is_blocked && type == CONTENT_SETTINGS_TYPE_COOKIES &&
+      map->GetDefaultContentSetting(type, nullptr) != CONTENT_SETTING_BLOCK) {
+    return false;
+  }
+
+  if (!is_blocked) {
     tooltip_id = image_details->accessed_tooltip_id;
     explanation_id = 0;
   }
-  set_visible(true);
+
+  if (type == CONTENT_SETTINGS_TYPE_PLUGINS &&
+      !ShouldShowPluginExplanation(web_contents, map)) {
+    explanation_id = 0;
+  }
+
   const gfx::VectorIcon* badge_id = &gfx::kNoneIcon;
   if (type == CONTENT_SETTINGS_TYPE_PPAPI_BROKER)
     badge_id = &kWarningBadgeIcon;
@@ -347,13 +352,14 @@ void ContentSettingBlockedImageModel::UpdateFromWebContents(
   const gfx::VectorIcon* icon = &image_details->icon;
   // Touch mode uses a different tab audio icon.
   if (image_details->content_type == CONTENT_SETTINGS_TYPE_SOUND &&
-      ui::MaterialDesignController::IsTouchOptimizedUiEnabled()) {
+      ui::MaterialDesignController::touch_ui()) {
     icon = &kTabAudioRoundedIcon;
   }
   set_icon(*icon, *badge_id);
   set_explanatory_string_id(explanation_id);
   DCHECK(tooltip_id);
   set_tooltip(l10n_util::GetStringUTF16(tooltip_id));
+  return true;
 }
 
 // Geolocation -----------------------------------------------------------------
@@ -362,20 +368,16 @@ ContentSettingGeolocationImageModel::ContentSettingGeolocationImageModel()
     : ContentSettingSimpleImageModel(ImageType::GEOLOCATION,
                                      CONTENT_SETTINGS_TYPE_GEOLOCATION) {}
 
-void ContentSettingGeolocationImageModel::UpdateFromWebContents(
+bool ContentSettingGeolocationImageModel::UpdateAndGetVisibility(
     WebContents* web_contents) {
-  set_visible(false);
-  if (!web_contents)
-    return;
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents);
   if (!content_settings)
-    return;
+    return false;
   const ContentSettingsUsagesState& usages_state = content_settings->
       geolocation_usages_state();
   if (usages_state.state_map().empty())
-    return;
-  set_visible(true);
+    return false;
 
   // If any embedded site has access the allowed icon takes priority over the
   // blocked icon.
@@ -387,6 +389,7 @@ void ContentSettingGeolocationImageModel::UpdateFromWebContents(
   set_tooltip(l10n_util::GetStringUTF16(allowed
                                             ? IDS_GEOLOCATION_ALLOWED_TOOLTIP
                                             : IDS_GEOLOCATION_BLOCKED_TOOLTIP));
+  return true;
 }
 
 // Protocol handlers -----------------------------------------------------------
@@ -398,20 +401,16 @@ ContentSettingRPHImageModel::ContentSettingRPHImageModel()
   set_tooltip(l10n_util::GetStringUTF16(IDS_REGISTER_PROTOCOL_HANDLER_TOOLTIP));
 }
 
-void ContentSettingRPHImageModel::UpdateFromWebContents(
+bool ContentSettingRPHImageModel::UpdateAndGetVisibility(
     WebContents* web_contents) {
-  set_visible(false);
-  if (!web_contents)
-    return;
-
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents);
   if (!content_settings)
-    return;
+    return false;
   if (content_settings->pending_protocol_handler().IsEmpty())
-    return;
+    return false;
 
-  set_visible(true);
+  return true;
 }
 
 // MIDI SysEx ------------------------------------------------------------------
@@ -420,20 +419,16 @@ ContentSettingMIDISysExImageModel::ContentSettingMIDISysExImageModel()
     : ContentSettingSimpleImageModel(ImageType::MIDI_SYSEX,
                                      CONTENT_SETTINGS_TYPE_MIDI_SYSEX) {}
 
-void ContentSettingMIDISysExImageModel::UpdateFromWebContents(
+bool ContentSettingMIDISysExImageModel::UpdateAndGetVisibility(
     WebContents* web_contents) {
-  set_visible(false);
-  if (!web_contents)
-    return;
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents);
   if (!content_settings)
-    return;
+    return false;
   const ContentSettingsUsagesState& usages_state =
       content_settings->midi_usages_state();
   if (usages_state.state_map().empty())
-    return;
-  set_visible(true);
+    return false;
 
   // If any embedded site has access the allowed icon takes priority over the
   // blocked icon.
@@ -446,6 +441,7 @@ void ContentSettingMIDISysExImageModel::UpdateFromWebContents(
   set_tooltip(l10n_util::GetStringUTF16(allowed
                                             ? IDS_MIDI_SYSEX_ALLOWED_TOOLTIP
                                             : IDS_MIDI_SYSEX_BLOCKED_TOOLTIP));
+  return true;
 }
 
 // Automatic downloads ---------------------------------------------------------
@@ -455,35 +451,29 @@ ContentSettingDownloadsImageModel::ContentSettingDownloadsImageModel()
           ImageType::AUTOMATIC_DOWNLOADS,
           CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS) {}
 
-void ContentSettingDownloadsImageModel::UpdateFromWebContents(
+bool ContentSettingDownloadsImageModel::UpdateAndGetVisibility(
     WebContents* web_contents) {
-  set_visible(false);
-  if (!web_contents)
-    return;
-
   DownloadRequestLimiter* download_request_limiter =
       g_browser_process->download_request_limiter();
 
   // DownloadRequestLimiter can be absent in unit_tests.
   if (!download_request_limiter)
-    return;
+    return false;
 
   switch (download_request_limiter->GetDownloadUiStatus(web_contents)) {
     case DownloadRequestLimiter::DOWNLOAD_UI_ALLOWED:
-      set_visible(true);
       set_icon(kFileDownloadIcon, gfx::kNoneIcon);
       set_explanatory_string_id(0);
       set_tooltip(l10n_util::GetStringUTF16(IDS_ALLOWED_DOWNLOAD_TITLE));
-      return;
+      return true;
     case DownloadRequestLimiter::DOWNLOAD_UI_BLOCKED:
-      set_visible(true);
       set_icon(kFileDownloadIcon, kBlockedBadgeIcon);
       set_explanatory_string_id(IDS_BLOCKED_DOWNLOADS_EXPLANATION);
       set_tooltip(l10n_util::GetStringUTF16(IDS_BLOCKED_DOWNLOAD_TITLE));
-      return;
+      return true;
     case DownloadRequestLimiter::DOWNLOAD_UI_DEFAULT:
       // No need to show icon otherwise.
-      return;
+      return false;
   }
 }
 
@@ -493,25 +483,22 @@ ContentSettingClipboardReadImageModel::ContentSettingClipboardReadImageModel()
     : ContentSettingSimpleImageModel(ImageType::CLIPBOARD_READ,
                                      CONTENT_SETTINGS_TYPE_CLIPBOARD_READ) {}
 
-void ContentSettingClipboardReadImageModel::UpdateFromWebContents(
+bool ContentSettingClipboardReadImageModel::UpdateAndGetVisibility(
     WebContents* web_contents) {
-  set_visible(false);
-  if (!web_contents)
-    return;
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents);
   if (!content_settings)
-    return;
+    return false;
   ContentSettingsType content_type = CONTENT_SETTINGS_TYPE_CLIPBOARD_READ;
   bool blocked = content_settings->IsContentBlocked(content_type);
   bool allowed = content_settings->IsContentAllowed(content_type);
   if (!blocked && !allowed)
-    return;
-  set_visible(true);
+    return false;
 
   set_icon(kContentPasteIcon, allowed ? gfx::kNoneIcon : kBlockedBadgeIcon);
   set_tooltip(l10n_util::GetStringUTF16(
       allowed ? IDS_ALLOWED_CLIPBOARD_MESSAGE : IDS_BLOCKED_CLIPBOARD_MESSAGE));
+  return true;
 }
 
 // Media -----------------------------------------------------------------------
@@ -519,24 +506,19 @@ void ContentSettingClipboardReadImageModel::UpdateFromWebContents(
 ContentSettingMediaImageModel::ContentSettingMediaImageModel()
     : ContentSettingImageModel(ImageType::MEDIASTREAM) {}
 
-void ContentSettingMediaImageModel::UpdateFromWebContents(
+bool ContentSettingMediaImageModel::UpdateAndGetVisibility(
     WebContents* web_contents) {
-  set_visible(false);
-
-  if (!web_contents)
-    return;
-
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents);
   if (!content_settings)
-    return;
+    return false;
   TabSpecificContentSettings::MicrophoneCameraState state =
       content_settings->GetMicrophoneCameraState();
 
   // If neither the microphone nor the camera stream was accessed then no icon
   // is displayed in the omnibox.
   if (state == TabSpecificContentSettings::MICROPHONE_CAMERA_NOT_ACCESSED)
-    return;
+    return false;
 
   bool is_mic = (state & TabSpecificContentSettings::MICROPHONE_ACCESSED) != 0;
   bool is_cam = (state & TabSpecificContentSettings::CAMERA_ACCESSED) != 0;
@@ -555,144 +537,39 @@ void ContentSettingMediaImageModel::UpdateFromWebContents(
       id = is_cam ? IDS_MICROPHONE_CAMERA_ALLOWED : IDS_MICROPHONE_ACCESSED;
   }
   set_tooltip(l10n_util::GetStringUTF16(id));
-  set_visible(true);
+  return true;
 }
 
-ContentSettingBubbleModel* ContentSettingMediaImageModel::CreateBubbleModelImpl(
+std::unique_ptr<ContentSettingBubbleModel>
+ContentSettingMediaImageModel::CreateBubbleModelImpl(
     ContentSettingBubbleModel::Delegate* delegate,
-    WebContents* web_contents,
-    Profile* profile) {
-  return new ContentSettingMediaStreamBubbleModel(delegate,
-                                                  web_contents,
-                                                  profile);
-}
-
-bool ContentSettingMediaImageModel::ShouldRunAnimation(
     WebContents* web_contents) {
-  if (!web_contents)
-    return false;
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents);
-  if (!content_settings)
-    return false;
-  return (!content_settings->IsBlockageIndicated(
-              CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC) &&
-          !content_settings->IsBlockageIndicated(
-              CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA));
-}
-
-void ContentSettingMediaImageModel::SetAnimationHasRun(
-    WebContents* web_contents) {
-  if (!web_contents)
-    return;
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents);
-  if (content_settings) {
-    content_settings->SetBlockageHasBeenIndicated(
-        CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
-    content_settings->SetBlockageHasBeenIndicated(
-        CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
-  }
-}
-
-// Subresource Filter ----------------------------------------------------------
-
-ContentSettingSubresourceFilterImageModel::
-    ContentSettingSubresourceFilterImageModel()
-    : ContentSettingImageModel(ImageType::ADS) {}
-
-void ContentSettingSubresourceFilterImageModel::UpdateFromWebContents(
-    WebContents* web_contents) {
-  set_visible(false);
-
-  if (!web_contents)
-    return;
-
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents);
-  if (!content_settings ||
-      !content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_ADS)) {
-    return;
-  }
-
-  set_icon(kAdsIcon, kBlockedBadgeIcon);
-  set_explanatory_string_id(IDS_BLOCKED_ADS_PROMPT_TITLE);
-  set_tooltip(l10n_util::GetStringUTF16(IDS_BLOCKED_ADS_PROMPT_TOOLTIP));
-  set_visible(true);
-}
-
-ContentSettingBubbleModel*
-ContentSettingSubresourceFilterImageModel::CreateBubbleModelImpl(
-    ContentSettingBubbleModel::Delegate* delegate,
-    WebContents* web_contents,
-    Profile* profile) {
-  return new ContentSettingSubresourceFilterBubbleModel(delegate, web_contents,
-                                                        profile);
-}
-
-bool ContentSettingSubresourceFilterImageModel::ShouldRunAnimation(
-    WebContents* web_contents) {
-  if (!web_contents)
-    return false;
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents);
-  return content_settings &&
-         !content_settings->IsBlockageIndicated(CONTENT_SETTINGS_TYPE_ADS);
-}
-
-void ContentSettingSubresourceFilterImageModel::SetAnimationHasRun(
-    WebContents* web_contents) {
-  if (!web_contents)
-    return;
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents);
-  if (content_settings) {
-    content_settings->SetBlockageHasBeenIndicated(CONTENT_SETTINGS_TYPE_ADS);
-  }
+  return std::make_unique<ContentSettingMediaStreamBubbleModel>(delegate,
+                                                                web_contents);
 }
 
 // Blocked Framebust -----------------------------------------------------------
 ContentSettingFramebustBlockImageModel::ContentSettingFramebustBlockImageModel()
     : ContentSettingImageModel(ImageType::FRAMEBUST) {}
 
-void ContentSettingFramebustBlockImageModel::UpdateFromWebContents(
+bool ContentSettingFramebustBlockImageModel::UpdateAndGetVisibility(
     WebContents* web_contents) {
-  set_visible(false);
-
-  if (!web_contents)
-    return;
-
   // Early exit if no blocked Framebust.
   if (!FramebustBlockTabHelper::FromWebContents(web_contents)->HasBlockedUrls())
-    return;
+    return false;
 
   set_icon(kBlockedRedirectIcon, kBlockedBadgeIcon);
   set_explanatory_string_id(IDS_REDIRECT_BLOCKED_TITLE);
   set_tooltip(l10n_util::GetStringUTF16(IDS_REDIRECT_BLOCKED_TOOLTIP));
-  set_visible(true);
+  return true;
 }
 
-ContentSettingBubbleModel*
+std::unique_ptr<ContentSettingBubbleModel>
 ContentSettingFramebustBlockImageModel::CreateBubbleModelImpl(
     ContentSettingBubbleModel::Delegate* delegate,
-    WebContents* web_contents,
-    Profile* profile) {
-  return new ContentSettingFramebustBlockBubbleModel(delegate, web_contents,
-                                                     profile);
-}
-
-bool ContentSettingFramebustBlockImageModel::ShouldRunAnimation(
     WebContents* web_contents) {
-  return web_contents && !FramebustBlockTabHelper::FromWebContents(web_contents)
-                              ->animation_has_run();
-}
-
-void ContentSettingFramebustBlockImageModel::SetAnimationHasRun(
-    WebContents* web_contents) {
-  if (!web_contents)
-    return;
-  FramebustBlockTabHelper::FromWebContents(web_contents)
-      ->set_animation_has_run();
+  return std::make_unique<ContentSettingFramebustBlockBubbleModel>(
+      delegate, web_contents);
 }
 
 // Sensors ---------------------------------------------------------------------
@@ -701,25 +578,40 @@ ContentSettingSensorsImageModel::ContentSettingSensorsImageModel()
     : ContentSettingSimpleImageModel(ImageType::SENSORS,
                                      CONTENT_SETTINGS_TYPE_SENSORS) {}
 
-void ContentSettingSensorsImageModel::UpdateFromWebContents(
+bool ContentSettingSensorsImageModel::UpdateAndGetVisibility(
     WebContents* web_contents) {
-  set_visible(false);
-  if (!web_contents)
-    return;
   auto* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents);
   if (!content_settings)
-    return;
+    return false;
 
   bool blocked = content_settings->IsContentBlocked(content_type());
   bool allowed = content_settings->IsContentAllowed(content_type());
   if (!blocked && !allowed)
-    return;
+    return false;
 
-  set_visible(true);
   set_icon(kSensorsIcon, allowed ? gfx::kNoneIcon : kBlockedBadgeIcon);
   set_tooltip(l10n_util::GetStringUTF16(allowed ? IDS_SENSORS_ALLOWED_TOOLTIP
                                                 : IDS_SENSORS_BLOCKED_TOOLTIP));
+  return true;
+}
+
+// Popups ---------------------------------------------------------------------
+
+ContentSettingPopupImageModel::ContentSettingPopupImageModel()
+    : ContentSettingSimpleImageModel(ImageType::POPUPS,
+                                     CONTENT_SETTINGS_TYPE_POPUPS) {}
+
+bool ContentSettingPopupImageModel::UpdateAndGetVisibility(
+    WebContents* web_contents) {
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents);
+  if (!content_settings || !content_settings->IsContentBlocked(content_type()))
+    return false;
+  set_icon(kWebIcon, kBlockedBadgeIcon);
+  set_explanatory_string_id(IDS_BLOCKED_POPUPS_EXPLANATORY_TEXT);
+  set_tooltip(l10n_util::GetStringUTF16(IDS_BLOCKED_POPUPS_TOOLTIP));
+  return true;
 }
 
 // Base class ------------------------------------------------------------------
@@ -737,14 +629,15 @@ ContentSettingImageModel::ContentSettingImageModel(ImageType image_type)
       explanatory_string_id_(0),
       image_type_(image_type) {}
 
-ContentSettingBubbleModel* ContentSettingImageModel::CreateBubbleModel(
+std::unique_ptr<ContentSettingBubbleModel>
+ContentSettingImageModel::CreateBubbleModel(
     ContentSettingBubbleModel::Delegate* delegate,
-    content::WebContents* web_contents,
-    Profile* profile) {
+    content::WebContents* web_contents) {
+  DCHECK(web_contents);
   UMA_HISTOGRAM_ENUMERATION(
       "ContentSettings.ImagePressed", image_type(),
       ContentSettingImageModel::ImageType::NUM_IMAGE_TYPES);
-  return CreateBubbleModelImpl(delegate, web_contents, profile);
+  return CreateBubbleModelImpl(delegate, web_contents);
 }
 
 // static
@@ -791,13 +684,3 @@ size_t ContentSettingImageModel::GetContentSettingImageModelIndexForTesting(
   NOTREACHED();
   return models.size();
 }
-
-#if defined(OS_MACOSX)
-bool ContentSettingImageModel::UpdateFromWebContentsAndCheckIfIconChanged(
-    content::WebContents* web_contents) {
-  const gfx::VectorIcon* old_icon = icon_;
-  const gfx::VectorIcon* old_badge_icon = icon_badge_;
-  UpdateFromWebContents(web_contents);
-  return old_icon != icon_ && old_badge_icon != icon_badge_;
-}
-#endif

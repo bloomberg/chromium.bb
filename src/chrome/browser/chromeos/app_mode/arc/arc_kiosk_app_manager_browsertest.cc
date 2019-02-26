@@ -163,6 +163,7 @@ IN_PROC_BROWSER_TEST_F(ArcKioskAppManagerTest, Basic) {
     ASSERT_EQ(app2.display_name(), apps[1]->name());
     EXPECT_FALSE(manager()->GetAutoLaunchAccountId().is_valid());
     EXPECT_FALSE(manager()->current_app_was_auto_launched_with_zero_delay());
+    CleanApps();
   }
 
   // Set auto-launch app.

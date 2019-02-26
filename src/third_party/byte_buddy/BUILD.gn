@@ -7,17 +7,20 @@ import("//build/config/android/rules.gni")
 java_prebuilt("byte_buddy_java") {
   supports_android = true
   testonly = true
+  enable_bytecode_checks = false
   jar_path = "lib/byte-buddy.jar"
 }
 
 java_prebuilt("byte_buddy_agent_java") {
   supports_android = true
   testonly = true
+  enable_bytecode_checks = false
   jar_path = "lib/byte-buddy-agent.jar"
 }
 
 android_java_prebuilt("byte_buddy_android_java") {
   testonly = true
+  enable_bytecode_checks = false
   deps = [
     "//third_party/android_tools:dx_25_0_2_java",
   ]

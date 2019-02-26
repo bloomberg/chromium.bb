@@ -51,6 +51,7 @@ UnifiedConsentServiceClientImpl::GetServiceState(Service service) {
     case Service::kSafeBrowsing:
     case Service::kSafeBrowsingExtendedReporting:
     case Service::kSpellCheck:
+    case Service::kContextualSearch:
       return ServiceState::kNotSupported;
   }
   return enabled ? ServiceState::kEnabled : ServiceState::kDisabled;
@@ -87,6 +88,7 @@ void UnifiedConsentServiceClientImpl::SetServiceEnabled(Service service,
     case Service::kSafeBrowsing:
     case Service::kSafeBrowsingExtendedReporting:
     case Service::kSpellCheck:
+    case Service::kContextualSearch:
       NOTIMPLEMENTED() << "Feature not available on iOS";
       break;
   }

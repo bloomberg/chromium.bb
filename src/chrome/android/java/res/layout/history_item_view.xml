@@ -15,7 +15,7 @@
 
         <include layout="@layout/modern_list_item_view" />
 
-        <android.support.v7.widget.AppCompatImageButton
+        <org.chromium.ui.widget.ChromeImageButton
             android:id="@+id/remove"
             style="@style/ListItemEndIconSmall"
             android:contentDescription="@string/remove"

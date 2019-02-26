@@ -120,7 +120,9 @@ DriveShareAction.prototype.canExecute = function() {
   const canShareItem = metadata[0].canShare !== false;
   return this.volumeManager_.getDriveConnectionState().type !==
       VolumeManagerCommon.DriveConnectionType.OFFLINE &&
-      !util.isTeamDriveRoot(this.entry_) && canShareItem;
+      (loadTimeData.getBoolean('DRIVE_FS_ENABLED') ||
+       !util.isTeamDriveRoot(this.entry_)) &&
+      canShareItem;
 };
 
 /**
@@ -509,7 +511,8 @@ DriveManageAction.prototype.execute = function() {
 DriveManageAction.prototype.canExecute = function() {
   return this.volumeManager_.getDriveConnectionState().type !==
       VolumeManagerCommon.DriveConnectionType.OFFLINE &&
-      !util.isTeamDriveRoot(this.entry_);
+      (loadTimeData.getBoolean('DRIVE_FS_ENABLED') ||
+       !util.isTeamDriveRoot(this.entry_));
 };
 
 /**

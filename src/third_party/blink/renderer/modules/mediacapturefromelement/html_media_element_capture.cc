@@ -15,7 +15,6 @@
 #include "third_party/blink/renderer/modules/encryptedmedia/html_media_element_encrypted_media.h"
 #include "third_party/blink/renderer/modules/encryptedmedia/media_keys.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
-#include "third_party/blink/renderer/modules/mediastream/media_stream_registry.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_center.h"
 
 namespace blink {
@@ -35,7 +34,7 @@ class MediaElementEventListener final : public EventListener {
 
  private:
   // EventListener implementation.
-  void handleEvent(ExecutionContext*, Event*) override;
+  void Invoke(ExecutionContext*, Event*) override;
   bool operator==(const EventListener& other) const override {
     return this == &other;
   }
@@ -53,12 +52,12 @@ MediaElementEventListener::MediaElementEventListener(HTMLMediaElement* element,
   UpdateSources(element->GetExecutionContext());
 }
 
-void MediaElementEventListener::handleEvent(ExecutionContext* context,
-                                            Event* event) {
+void MediaElementEventListener::Invoke(ExecutionContext* context,
+                                       Event* event) {
   DVLOG(2) << __func__ << " " << event->type();
   DCHECK(media_stream_);
 
-  if (event->type() == EventTypeNames::ended) {
+  if (event->type() == event_type_names::kEnded) {
     const MediaStreamTrackVector tracks = media_stream_->getTracks();
     for (const auto& track : tracks) {
       track->stopTrack(context);
@@ -68,7 +67,7 @@ void MediaElementEventListener::handleEvent(ExecutionContext* context,
     media_stream_->StreamEnded();
     return;
   }
-  if (event->type() != EventTypeNames::loadedmetadata)
+  if (event->type() != event_type_names::kLoadedmetadata)
     return;
 
   // If |media_element_| is a MediaStream, clone the new tracks.
@@ -78,11 +77,7 @@ void MediaElementEventListener::handleEvent(ExecutionContext* context,
       track->stopTrack(context);
       media_stream_->RemoveTrackByComponentAndFireEvents(track->Component());
     }
-    MediaStreamDescriptor* const descriptor =
-        media_element_->currentSrc().IsEmpty()
-            ? media_element_->GetSrcObject()
-            : MediaStreamRegistry::Registry().LookupMediaStreamDescriptor(
-                  media_element_->currentSrc().GetString());
+    MediaStreamDescriptor* const descriptor = media_element_->GetSrcObject();
     DCHECK(descriptor);
     for (unsigned i = 0; i < descriptor->NumberOfAudioComponents(); i++) {
       media_stream_->AddTrackByComponentAndFireEvents(
@@ -130,8 +125,7 @@ void MediaElementEventListener::UpdateSources(ExecutionContext* context) {
     sources_.insert(track->Component()->Source());
 
   if (!media_element_->currentSrc().IsEmpty() &&
-      !media_element_->IsMediaDataCORSSameOrigin(
-          context->GetSecurityOrigin())) {
+      !media_element_->IsMediaDataCorsSameOrigin()) {
     for (auto source : sources_)
       MediaStreamCenter::Instance().DidStopMediaStreamSource(source);
   }
@@ -161,8 +155,7 @@ MediaStream* HTMLMediaElementCapture::captureStream(
   }
 
   ExecutionContext* context = ExecutionContext::From(script_state);
-  if (!element.currentSrc().IsEmpty() &&
-      !element.IsMediaDataCORSSameOrigin(context->GetSecurityOrigin())) {
+  if (!element.currentSrc().IsEmpty() && !element.IsMediaDataCorsSameOrigin()) {
     exception_state.ThrowSecurityError(
         "Cannot capture from element with cross-origin data");
     return nullptr;
@@ -177,16 +170,12 @@ MediaStream* HTMLMediaElementCapture::captureStream(
 
   MediaElementEventListener* listener =
       new MediaElementEventListener(&element, stream);
-  element.addEventListener(EventTypeNames::loadedmetadata, listener, false);
-  element.addEventListener(EventTypeNames::ended, listener, false);
+  element.addEventListener(event_type_names::kLoadedmetadata, listener, false);
+  element.addEventListener(event_type_names::kEnded, listener, false);
 
   // If |element| is actually playing a MediaStream, just clone it.
   if (element.GetLoadType() == WebMediaPlayer::kLoadTypeMediaStream) {
-    MediaStreamDescriptor* const descriptor =
-        element.currentSrc().IsEmpty()
-            ? element.GetSrcObject()
-            : MediaStreamRegistry::Registry().LookupMediaStreamDescriptor(
-                  element.currentSrc().GetString());
+    MediaStreamDescriptor* const descriptor = element.GetSrcObject();
     DCHECK(descriptor);
     return MediaStream::Create(context, descriptor);
   }

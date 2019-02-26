@@ -16,7 +16,7 @@ PresentationConnectionList::PresentationConnectionList(
     : ContextClient(context) {}
 
 const AtomicString& PresentationConnectionList::InterfaceName() const {
-  return EventTargetNames::PresentationConnectionList;
+  return event_target_names::kPresentationConnectionList;
 }
 
 const HeapVector<Member<ReceiverPresentationConnection>>&
@@ -29,7 +29,7 @@ void PresentationConnectionList::AddedEventListener(
     RegisteredEventListener& registered_listener) {
   EventTargetWithInlineData::AddedEventListener(event_type,
                                                 registered_listener);
-  if (event_type == EventTypeNames::connectionavailable) {
+  if (event_type == event_type_names::kConnectionavailable) {
     UseCounter::Count(
         GetExecutionContext(),
         WebFeature::kPresentationRequestConnectionAvailableEventListener);
@@ -55,7 +55,7 @@ bool PresentationConnectionList::RemoveConnection(
 void PresentationConnectionList::DispatchConnectionAvailableEvent(
     PresentationConnection* connection) {
   DispatchEvent(*PresentationConnectionAvailableEvent::Create(
-      EventTypeNames::connectionavailable, connection));
+      event_type_names::kConnectionavailable, connection));
 }
 
 bool PresentationConnectionList::IsEmpty() {

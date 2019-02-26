@@ -32,6 +32,7 @@
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_state_manager.h"
+#include "components/metrics/net/network_metrics_provider.h"
 #include "components/metrics/ui/screen_info_metrics_provider.h"
 #include "components/metrics/url_constants.h"
 #include "components/metrics/version_utils.h"
@@ -39,6 +40,7 @@
 #include "components/version_info/android/channel_getter.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_service_instance.h"
 
 namespace android_webview {
 
@@ -85,8 +87,9 @@ bool IsInSample(const std::string& client_id) {
 
 // static
 AwMetricsServiceClient* AwMetricsServiceClient::GetInstance() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  return g_lazy_instance_.Pointer();
+  AwMetricsServiceClient* client = g_lazy_instance_.Pointer();
+  DCHECK(client->sequence_checker_.CalledOnValidSequence());
+  return client;
 }
 
 void AwMetricsServiceClient::LoadOrCreateClientId() {
@@ -135,7 +138,7 @@ std::string AwMetricsServiceClient::GetClientId() {
 }
 
 void AwMetricsServiceClient::Initialize(PrefService* pref_service) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   DCHECK(pref_service_ == nullptr);  // Initialize should only happen once.
   pref_service_ = pref_service;
@@ -166,7 +169,8 @@ void AwMetricsServiceClient::InitializeWithClientId() {
 
   metrics_service_->RegisterMetricsProvider(
       std::unique_ptr<metrics::MetricsProvider>(
-          new metrics::NetworkMetricsProvider));
+          new metrics::NetworkMetricsProvider(
+              content::CreateNetworkConnectionTrackerAsyncGetter())));
 
   metrics_service_->RegisterMetricsProvider(
       std::unique_ptr<metrics::MetricsProvider>(
@@ -192,7 +196,7 @@ AwMetricsServiceClient::CreateLowEntropyProvider() {
 }
 
 bool AwMetricsServiceClient::IsConsentGiven() const {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return consent_;
 }
 
@@ -201,7 +205,7 @@ bool AwMetricsServiceClient::IsReportingEnabled() const {
 }
 
 void AwMetricsServiceClient::SetHaveMetricsConsent(bool consent) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   consent_ = consent;
   // Receiving this call is the last step in determining whether metrics should
   // be enabled; if so, start metrics. There's no need for a matching Stop()
@@ -236,7 +240,7 @@ bool AwMetricsServiceClient::GetBrand(std::string* brand_code) {
 }
 
 metrics::SystemProfileProto::Channel AwMetricsServiceClient::GetChannel() {
-  return metrics::AsProtobufChannel(version_info::GetChannel());
+  return metrics::AsProtobufChannel(version_info::android::GetChannel());
 }
 
 std::string AwMetricsServiceClient::GetVersionString() {

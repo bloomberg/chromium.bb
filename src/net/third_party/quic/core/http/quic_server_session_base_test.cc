@@ -30,6 +30,7 @@
 #include "net/third_party/quic/test_tools/quic_server_session_base_peer.h"
 #include "net/third_party/quic/test_tools/quic_session_peer.h"
 #include "net/third_party/quic/test_tools/quic_spdy_session_peer.h"
+#include "net/third_party/quic/test_tools/quic_stream_id_manager_peer.h"
 #include "net/third_party/quic/test_tools/quic_stream_peer.h"
 #include "net/third_party/quic/test_tools/quic_sustained_bandwidth_recorder_peer.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
@@ -38,6 +39,9 @@
 
 using testing::_;
 using testing::StrictMock;
+
+using testing::AtLeast;
+using testing::Return;
 
 namespace quic {
 namespace test {
@@ -53,6 +57,7 @@ class TestServerSession : public QuicServerSessionBase {
                     QuicCompressedCertsCache* compressed_certs_cache,
                     QuicSimpleServerBackend* quic_simple_server_backend)
       : QuicServerSessionBase(config,
+                              CurrentSupportedVersions(),
                               connection,
                               visitor,
                               helper,
@@ -63,8 +68,8 @@ class TestServerSession : public QuicServerSessionBase {
   ~TestServerSession() override { delete connection(); };
 
  protected:
-  QuicSpdyStream* CreateIncomingDynamicStream(QuicStreamId id) override {
-    if (!ShouldCreateIncomingDynamicStream(id)) {
+  QuicSpdyStream* CreateIncomingStream(QuicStreamId id) override {
+    if (!ShouldCreateIncomingStream(id)) {
       return nullptr;
     }
     QuicSpdyStream* stream = new QuicSimpleServerStream(
@@ -79,7 +84,7 @@ class TestServerSession : public QuicServerSessionBase {
   }
 
   QuicSpdyStream* CreateOutgoingUnidirectionalStream() override {
-    if (!ShouldCreateOutgoingDynamicStream()) {
+    if (!ShouldCreateOutgoingStream()) {
       return nullptr;
     }
 
@@ -150,6 +155,10 @@ class QuicServerSessionBaseTest : public QuicTestWithParam<ParsedQuicVersion> {
 
   QuicStreamId GetNthServerInitiatedId(int n) {
     return QuicSpdySessionPeer::GetNthServerInitiatedStreamId(*session_, n);
+  }
+
+  QuicTransportVersion transport_version() const {
+    return connection_->transport_version();
   }
 
   StrictMock<MockQuicSessionVisitor> owner_;
@@ -267,17 +276,20 @@ TEST_P(QuicServerSessionBaseTest, AcceptClosedStream) {
 
 TEST_P(QuicServerSessionBaseTest, MaxOpenStreams) {
   // Test that the server refuses if a client attempts to open too many data
-  // streams.  The server accepts slightly more than the negotiated stream limit
-  // to deal with rare cases where a client FIN/RST is lost.
+  // streams.  For versions other than version 99, the server accepts slightly
+  // more than the negotiated stream limit to deal with rare cases where a
+  // client FIN/RST is lost.
 
-  // The slightly increased stream limit is set during config negotiation.  It
-  // is either an increase of 10 over negotiated limit, or a fixed percentage
-  // scaling, whichever is larger. Test both before continuing.
   session_->OnConfigNegotiated();
-  EXPECT_LT(kMaxStreamsMultiplier * kMaxStreamsForTest,
-            kMaxStreamsForTest + kMaxStreamsMinimumIncrement);
-  EXPECT_EQ(kMaxStreamsForTest + kMaxStreamsMinimumIncrement,
-            session_->max_open_incoming_streams());
+  if (transport_version() != QUIC_VERSION_99) {
+    // The slightly increased stream limit is set during config negotiation.  It
+    // is either an increase of 10 over negotiated limit, or a fixed percentage
+    // scaling, whichever is larger. Test both before continuing.
+    EXPECT_LT(kMaxStreamsMultiplier * kMaxStreamsForTest,
+              kMaxStreamsForTest + kMaxStreamsMinimumIncrement);
+    EXPECT_EQ(kMaxStreamsForTest + kMaxStreamsMinimumIncrement,
+              session_->max_open_incoming_streams());
+  }
   EXPECT_EQ(0u, session_->GetNumOpenIncomingStreams());
   QuicStreamId stream_id = GetNthClientInitiatedId(0);
   // Open the max configured number of streams, should be no problem.
@@ -287,18 +299,29 @@ TEST_P(QuicServerSessionBaseTest, MaxOpenStreams) {
     stream_id += QuicSpdySessionPeer::NextStreamId(*session_);
   }
 
-  // Open more streams: server should accept slightly more than the limit.
-  for (size_t i = 0; i < kMaxStreamsMinimumIncrement; ++i) {
-    EXPECT_TRUE(QuicServerSessionBasePeer::GetOrCreateDynamicStream(
-        session_.get(), stream_id));
-    stream_id += QuicSpdySessionPeer::NextStreamId(*session_);
+  if (transport_version() != QUIC_VERSION_99) {
+    // Open more streams: server should accept slightly more than the limit.
+    // Excess streams are for non-version-99 only.
+    for (size_t i = 0; i < kMaxStreamsMinimumIncrement; ++i) {
+      EXPECT_TRUE(QuicServerSessionBasePeer::GetOrCreateDynamicStream(
+          session_.get(), stream_id));
+      stream_id += QuicSpdySessionPeer::NextStreamId(*session_);
+    }
   }
-
   // Now violate the server's internal stream limit.
   stream_id += QuicSpdySessionPeer::NextStreamId(*session_);
-  EXPECT_CALL(*connection_, CloseConnection(_, _, _)).Times(0);
-  EXPECT_CALL(*connection_, SendControlFrame(_));
-  EXPECT_CALL(*connection_, OnStreamReset(stream_id, QUIC_REFUSED_STREAM));
+
+  if (transport_version() != QUIC_VERSION_99) {
+    // For non-version 99, QUIC responds to an attempt to exceed the stream
+    // limit by resetting the stream.
+    EXPECT_CALL(*connection_, CloseConnection(_, _, _)).Times(0);
+    EXPECT_CALL(*connection_, SendControlFrame(_));
+    EXPECT_CALL(*connection_, OnStreamReset(stream_id, QUIC_REFUSED_STREAM));
+  } else {
+    // In version 99 QUIC responds to an attempt to exceed the stream limit by
+    // closing the connection.
+    EXPECT_CALL(*connection_, CloseConnection(_, _, _)).Times(1);
+  }
   // Even if the connection remains open, the stream creation should fail.
   EXPECT_FALSE(QuicServerSessionBasePeer::GetOrCreateDynamicStream(
       session_.get(), stream_id));
@@ -326,12 +349,20 @@ TEST_P(QuicServerSessionBaseTest, MaxAvailableStreams) {
   QuicStreamId next_id = QuicSpdySessionPeer::NextStreamId(*session_);
   const int kLimitingStreamId =
       GetNthClientInitiatedId(kAvailableStreamLimit + 1);
-  EXPECT_TRUE(QuicServerSessionBasePeer::GetOrCreateDynamicStream(
-      session_.get(), kLimitingStreamId));
+  if (transport_version() != QUIC_VERSION_99) {
+    // This exceeds the stream limit. In versions other than 99
+    // this is allowed. Version 99 hews to the IETF spec and does
+    // not allow it.
+    EXPECT_TRUE(QuicServerSessionBasePeer::GetOrCreateDynamicStream(
+        session_.get(), kLimitingStreamId));
+    // A further available stream will result in connection close.
+    EXPECT_CALL(*connection_,
+                CloseConnection(QUIC_TOO_MANY_AVAILABLE_STREAMS, _, _));
+  } else {
+    // A further available stream will result in connection close.
+    EXPECT_CALL(*connection_, CloseConnection(QUIC_INVALID_STREAM_ID, _, _));
+  }
 
-  // A further available stream will result in connection close.
-  EXPECT_CALL(*connection_,
-              CloseConnection(QUIC_TOO_MANY_AVAILABLE_STREAMS, _, _));
   // This forces stream kLimitingStreamId + 2 to become available, which
   // violates the quota.
   EXPECT_FALSE(QuicServerSessionBasePeer::GetOrCreateDynamicStream(
@@ -355,7 +386,7 @@ TEST_P(QuicServerSessionBaseTest, GetStreamDisconnected) {
   QuicConnectionPeer::TearDownLocalConnectionState(connection_);
   EXPECT_QUIC_BUG(QuicServerSessionBasePeer::GetOrCreateDynamicStream(
                       session_.get(), GetNthClientInitiatedId(0)),
-                  "ShouldCreateIncomingDynamicStream called when disconnected");
+                  "ShouldCreateIncomingStream called when disconnected");
 }
 
 class MockQuicCryptoServerStream : public QuicCryptoServerStream {
@@ -400,14 +431,17 @@ TEST_P(QuicServerSessionBaseTest, BandwidthEstimates) {
   const QuicString serving_region = "not a real region";
   session_->set_serving_region(serving_region);
 
-  session_->UnregisterStreamPriority(kHeadersStreamId, /*is_static=*/true);
+  session_->UnregisterStreamPriority(
+      QuicUtils::GetHeadersStreamId(connection_->transport_version()),
+      /*is_static=*/true);
   QuicServerSessionBasePeer::SetCryptoStream(session_.get(), nullptr);
   MockQuicCryptoServerStream* crypto_stream =
       new MockQuicCryptoServerStream(&crypto_config_, &compressed_certs_cache_,
                                      session_.get(), &stream_helper_);
   QuicServerSessionBasePeer::SetCryptoStream(session_.get(), crypto_stream);
-  session_->RegisterStreamPriority(kHeadersStreamId, /*is_static=*/true,
-                                   QuicStream::kDefaultPriority);
+  session_->RegisterStreamPriority(
+      QuicUtils::GetHeadersStreamId(connection_->transport_version()),
+      /*is_static=*/true, QuicStream::kDefaultPriority);
 
   // Set some initial bandwidth values.
   QuicSentPacketManager* sent_packet_manager =
@@ -425,7 +459,8 @@ TEST_P(QuicServerSessionBaseTest, BandwidthEstimates) {
       &bandwidth_recorder, max_bandwidth_estimate_kbytes_per_second,
       max_bandwidth_estimate_timestamp);
   // Queue up some pending data.
-  session_->MarkConnectionLevelWriteBlocked(kCryptoStreamId);
+  session_->MarkConnectionLevelWriteBlocked(QuicUtils::GetCryptoStreamId(
+      session_->connection()->transport_version()));
   EXPECT_TRUE(session_->HasDataToWrite());
 
   // There will be no update sent yet - not enough time has passed.
@@ -597,11 +632,10 @@ TEST_P(StreamMemberLifetimeTest, Basic) {
   SetQuicReloadableFlag(quic_use_cheap_stateless_rejects, true);
 
   const QuicClock* clock = helper_.GetClock();
-  ParsedQuicVersion version = AllSupportedVersions().front();
   CryptoHandshakeMessage chlo = crypto_test_utils::GenerateDefaultInchoateCHLO(
-      clock, version.transport_version, &crypto_config_);
+      clock, GetParam().transport_version, &crypto_config_);
   chlo.SetVector(kCOPT, QuicTagVector{kSREJ});
-  std::vector<ParsedQuicVersion> packet_version_list = {version};
+  std::vector<ParsedQuicVersion> packet_version_list = {GetParam()};
   std::unique_ptr<QuicEncryptedPacket> packet(ConstructEncryptedPacket(
       1, 0, true, false, 1, QuicString(chlo.GetSerialized().AsStringPiece()),
       PACKET_8BYTE_CONNECTION_ID, PACKET_0BYTE_CONNECTION_ID,

@@ -18,15 +18,19 @@ KeyboardUI::KeyboardUI() = default;
 KeyboardUI::~KeyboardUI() = default;
 
 void KeyboardUI::ShowKeyboardWindow() {
-  if (HasKeyboardWindow()) {
+  DVLOG(1) << "ShowKeyboardWindow";
+  aura::Window* window = GetKeyboardWindow();
+  if (window) {
     TRACE_EVENT0("vk", "ShowKeyboardWindow");
-    GetKeyboardWindow()->Show();
+    window->Show();
   }
 }
 
 void KeyboardUI::HideKeyboardWindow() {
-  if (HasKeyboardWindow())
-    GetKeyboardWindow()->Hide();
+  DVLOG(1) << "HideKeyboardWindow";
+  aura::Window* window = GetKeyboardWindow();
+  if (window)
+    window->Hide();
 }
 
 void KeyboardUI::SetController(KeyboardController* controller) {

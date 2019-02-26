@@ -480,8 +480,8 @@ void MenuController::Run(Widget* parent,
   SetSelection(root, SELECTION_OPEN_SUBMENU | SELECTION_UPDATE_IMMEDIATELY);
 
   if (button) {
-    pressed_lock_ = std::make_unique<MenuButton::PressedLock>(
-        button, false, ui::LocatedEvent::FromIfValid(event));
+    pressed_lock_ = button->menu_button_event_handler()->TakeLock(
+        false, ui::LocatedEvent::FromIfValid(event));
   }
 
   if (for_drop_) {
@@ -1118,7 +1118,23 @@ ui::PostDispatchAction MenuController::OnWillDispatchKeyEvent(
 
   if (event->type() == ui::ET_KEY_PRESSED) {
     base::WeakPtr<MenuController> this_ref = AsWeakPtr();
+#if defined(OS_MACOSX)
+    // Special handling for Option-Up and Option-Down, which should behave like
+    // Home and End respectively in menus.
+    if ((event->flags() & ui::EF_ALT_DOWN)) {
+      if (event->key_code() == ui::VKEY_UP) {
+        OnKeyDown(ui::VKEY_HOME);
+      } else if (event->key_code() == ui::VKEY_DOWN) {
+        OnKeyDown(ui::VKEY_END);
+      } else {
+        OnKeyDown(event->key_code());
+      }
+    } else {
+      OnKeyDown(event->key_code());
+    }
+#else
     OnKeyDown(event->key_code());
+#endif
     // Key events can lead to this being deleted.
     if (!this_ref)
       return ui::POST_DISPATCH_NONE;
@@ -1348,6 +1364,14 @@ void MenuController::OnKeyDown(ui::KeyboardCode key_code) {
     return;
 
   switch (key_code) {
+    case ui::VKEY_HOME:
+      MoveSelectionToFirstOrLastItem(INCREMENT_SELECTION_DOWN);
+      break;
+
+    case ui::VKEY_END:
+      MoveSelectionToFirstOrLastItem(INCREMENT_SELECTION_UP);
+      break;
+
     case ui::VKEY_UP:
       IncrementSelection(INCREMENT_SELECTION_UP);
       break;
@@ -1601,7 +1625,7 @@ bool MenuController::ShowSiblingMenu(SubmenuView* source,
 
   // There is a sibling menu, update the button state, hide the current menu
   // and show the new one.
-  pressed_lock_.reset(new MenuButton::PressedLock(button, true, nullptr));
+  pressed_lock_ = button->menu_button_event_handler()->TakeLock(true, nullptr);
 
   // Need to reset capture when we show the menu again, otherwise we aren't
   // going to get any events.
@@ -2155,7 +2179,7 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
       // Menu fits above anchor bounds.
       menu_bounds.set_y(above_anchor);
       item->set_actual_menu_position(MenuItemView::POSITION_ABOVE_BOUNDS);
-    } else {
+    } else if (item->GetDelegate()->ShouldTryPositioningBesideAnchor()) {
       const int left_of_anchor = anchor_bounds.x() - menu_bounds.width();
       const int right_of_anchor = anchor_bounds.right();
 
@@ -2173,6 +2197,11 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
         if (menu_bounds.x() < monitor_bounds.x())
           menu_bounds.set_x(right_of_anchor);
       }
+    } else {
+      // The delegate doesn't want the menu repositioned to the side, and it
+      // doesn't fit on the screen in any orientation - just clip the menu to
+      // the screen and let the scrolling arrows appear.
+      menu_bounds.Intersect(monitor_bounds);
     }
   }
 
@@ -2410,6 +2439,27 @@ void MenuController::IncrementSelection(
       }
     }
   }
+}
+
+void MenuController::MoveSelectionToFirstOrLastItem(
+    SelectionIncrementDirectionType direction) {
+  MenuItemView* item = pending_state_.item;
+  DCHECK(item);
+  MenuItemView* submenu = nullptr;
+
+  if (pending_state_.submenu_open && item->SubmenuIsShowing()) {
+    if (!item->GetSubmenu()->GetMenuItemCount())
+      return;
+
+    // A menu is selected and open, but none of its children are selected,
+    // select the first or last menu item that is visible and enabled.
+    submenu = item;
+  } else {
+    submenu = item->GetParentMenuItem();
+  }
+
+  MenuItemView* to_select = FindInitialSelectableMenuItem(submenu, direction);
+  SetInitialHotTrackedView(to_select, direction);
 }
 
 MenuItemView* MenuController::FindInitialSelectableMenuItem(
@@ -2788,7 +2838,7 @@ MenuItemView* MenuController::ExitTopMostMenu() {
   }
 #endif
 
-  std::unique_ptr<MenuButton::PressedLock> nested_pressed_lock;
+  std::unique_ptr<MenuButtonEventHandler::PressedLock> nested_pressed_lock;
   bool nested_menu = !menu_stack_.empty();
   if (nested_menu) {
     DCHECK(!menu_stack_.empty());

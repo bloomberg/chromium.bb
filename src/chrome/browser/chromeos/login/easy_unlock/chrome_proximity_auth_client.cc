@@ -7,7 +7,7 @@
 #include <stdint.h>
 
 #include "base/logging.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/version.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/cryptauth/chrome_cryptauth_service_factory.h"

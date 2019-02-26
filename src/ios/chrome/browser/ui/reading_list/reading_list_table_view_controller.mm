@@ -23,6 +23,7 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_toolbar_button_commands.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_toolbar_button_manager.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -137,21 +138,6 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
   if (!editing) {
     self.editingWithToolbarButtons = NO;
     if (self.needsSectionCleanupAfterEditing) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-variable"
-      // |removedSectionCount| is only used in iOS10, so unused variable
-      // warnings should be ignored in order to allow compilation until the
-      // iOS10 fix is removed.
-      NSUInteger removedSectionCount = [self removeEmptySections];
-#pragma clang diagnostic pop
-#if !defined(__IPHONE_11_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_11_0
-      // The swipe-to-delete gesture on iOS 10 erroneously attempts to reload
-      // deleted row's section upon completion of its animation, regardless of
-      // whether the row was the last in the section.  If the section was
-      // removed force a full table reload so that the updated model is used.
-      if (removedSectionCount && !base::ios::IsRunningOnIOS11OrLater())
-        [self.tableView reloadData];
-#endif
       self.needsSectionCleanupAfterEditing = NO;
     }
   }
@@ -237,6 +223,15 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
            (id<UIViewControllerTransitionCoordinator>)coordinator {
   if (self.editingWithSwipe)
     [self exitEditingModeAnimated:YES];
+}
+
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+  if (!self.dataSource.hasElements &&
+      self.traitCollection.preferredContentSizeCategory !=
+          previousTraitCollection.preferredContentSizeCategory) {
+    [self tableIsEmpty];
+  }
 }
 
 #pragma mark - UITableViewDataSource

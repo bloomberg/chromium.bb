@@ -31,6 +31,7 @@
 #include "mojo/public/cpp/system/core.h"
 
 namespace mojo {
+
 namespace internal {
 
 class MOJO_CPP_BINDINGS_EXPORT BindingStateBase {
@@ -117,6 +118,7 @@ class BindingState : public BindingStateBase {
   }
 
   InterfaceRequest<Interface> Unbind() {
+    weak_ptr_factory_.InvalidateWeakPtrs();
     endpoint_client_.reset();
     InterfaceRequest<Interface> request(router_->PassMessagePipe());
     router_ = nullptr;
@@ -136,7 +138,7 @@ class BindingState : public BindingStateBase {
   DISALLOW_COPY_AND_ASSIGN(BindingState);
 };
 
-}  // namesapce internal
+}  // namespace internal
 }  // namespace mojo
 
 #endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_BINDING_STATE_H_

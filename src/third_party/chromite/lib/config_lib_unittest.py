@@ -105,6 +105,17 @@ class BuildConfigClassTest(cros_test_lib.TestCase):
         name='deep', nested=[1, 2, 3], deep=3,
         child_configs=[self.fooConfig, self.barConfig])
 
+  def testAppendUseflags(self):
+    base_config = config_lib.BuildConfig(useflags=[])
+    inherited_config_1 = base_config.derive(
+        useflags=config_lib.append_useflags(
+            ['foo', 'bar', '-baz']))
+    inherited_config_2 = inherited_config_1.derive(
+        useflags=config_lib.append_useflags(['-bar', 'baz']))
+    self.assertEqual(base_config.useflags, [])
+    self.assertEqual(inherited_config_1.useflags, ['-baz', 'bar', 'foo'])
+    self.assertEqual(inherited_config_2.useflags, ['-bar', 'baz', 'foo'])
+
   def testMockSiteConfig(self):
     """Make sure Mock generator fucntion doesn't crash."""
     site_config = MockSiteConfig()

@@ -10,6 +10,7 @@
 #include "base/unguessable_token.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
+#include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "content/common/frame_message_structs.h"
@@ -22,7 +23,6 @@
 #include "ui/accessibility/ax_mode.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/events/blink/web_input_event_traits.h"
-#include "url/ipc/url_param_traits.h"
 // #include "ui/gfx/ipc/geometry/gfx_param_traits.h"
 
 namespace IPC {
@@ -211,6 +211,7 @@ void ParamTraits<scoped_refptr<base::RefCountedData<
   WriteParam(m, p->data.stack_trace_debugger_id_first);
   WriteParam(m, p->data.stack_trace_debugger_id_second);
   WriteParam(m, p->data.ports);
+  WriteParam(m, p->data.stream_channels);
   WriteParam(m, p->data.has_user_gesture);
   WriteParam(m, !!p->data.user_activation);
   if (p->data.user_activation) {
@@ -241,6 +242,7 @@ bool ParamTraits<
       !ReadParam(m, iter, &(*r)->data.stack_trace_debugger_id_first) ||
       !ReadParam(m, iter, &(*r)->data.stack_trace_debugger_id_second) ||
       !ReadParam(m, iter, &(*r)->data.ports) ||
+      !ReadParam(m, iter, &(*r)->data.stream_channels) ||
       !ReadParam(m, iter, &(*r)->data.has_user_gesture) ||
       !ReadParam(m, iter, &has_activation)) {
     return false;
@@ -334,6 +336,38 @@ void ParamTraits<viz::LocalSurfaceId>::Log(const param_type& p,
   l->append(")");
 }
 
+void ParamTraits<viz::LocalSurfaceIdAllocation>::Write(base::Pickle* m,
+                                                       const param_type& p) {
+  DCHECK(p.IsValid());
+  WriteParam(m, p.local_surface_id());
+  WriteParam(m, p.allocation_time());
+}
+
+bool ParamTraits<viz::LocalSurfaceIdAllocation>::Read(
+    const base::Pickle* m,
+    base::PickleIterator* iter,
+    param_type* p) {
+  viz::LocalSurfaceId local_surface_id;
+  if (!ReadParam(m, iter, &local_surface_id))
+    return false;
+
+  base::TimeTicks allocation_time;
+  if (!ReadParam(m, iter, &allocation_time))
+    return false;
+
+  *p = viz::LocalSurfaceIdAllocation(local_surface_id, allocation_time);
+  return p->IsValid();
+}
+
+void ParamTraits<viz::LocalSurfaceIdAllocation>::Log(const param_type& p,
+                                                     std::string* l) {
+  l->append("viz::LocalSurfaceIdAllocation(");
+  LogParam(p.local_surface_id(), l);
+  l->append(", ");
+  LogParam(p.allocation_time(), l);
+  l->append(")");
+}
+
 void ParamTraits<viz::SurfaceId>::Write(base::Pickle* m, const param_type& p) {
   WriteParam(m, p.frame_sink_id());
   WriteParam(m, p.local_surface_id());
@@ -396,78 +430,6 @@ void ParamTraits<viz::SurfaceInfo>::Log(const param_type& p, std::string* l) {
   l->append(", ");
   LogParam(p.size_in_pixels(), l);
   l->append(")");
-}
-
-void ParamTraits<blink::mojom::FileChooserFileInfoPtr>::Write(
-    base::Pickle* m,
-    const param_type& p) {
-  WriteParam(m, p->is_native_file());
-  if (p->is_native_file()) {
-    WriteParam(m, p->get_native_file()->file_path);
-    WriteParam(m, p->get_native_file()->display_name);
-  } else {
-    WriteParam(m, p->get_file_system()->url);
-    WriteParam(m, p->get_file_system()->modification_time);
-    WriteParam(m, p->get_file_system()->length);
-  }
-}
-
-bool ParamTraits<blink::mojom::FileChooserFileInfoPtr>::Read(
-    const base::Pickle* m,
-    base::PickleIterator* iter,
-    param_type* p) {
-  bool is_native;
-  if (!ReadParam(m, iter, &is_native))
-    return false;
-
-  if (is_native) {
-    base::FilePath file_path;
-    if (!ReadParam(m, iter, &file_path))
-      return false;
-
-    base::string16 display_name;
-    if (!ReadParam(m, iter, &display_name))
-      return false;
-
-    *p = blink::mojom::FileChooserFileInfo::NewNativeFile(
-        blink::mojom::NativeFileInfo::New(file_path, display_name));
-  } else {
-    GURL file_system_url;
-    if (!ReadParam(m, iter, &file_system_url))
-      return false;
-
-    base::Time modification_time;
-    if (!ReadParam(m, iter, &modification_time))
-      return false;
-
-    int64_t length;
-    if (!ReadParam(m, iter, &length))
-      return false;
-
-    *p = blink::mojom::FileChooserFileInfo::NewFileSystem(
-        blink::mojom::FileSystemFileInfo::New(file_system_url,
-                                              modification_time, length));
-  }
-  return true;
-}
-
-void ParamTraits<blink::mojom::FileChooserFileInfoPtr>::Log(const param_type& p,
-                                                            std::string* l) {
-  l->append("blink::mojom::FileChooserFileInfo(");
-  if (p->is_native_file()) {
-    l->append("NativeFileInfo(");
-    LogParam(p->get_native_file()->file_path, l);
-    l->append(", ");
-    LogParam(p->get_native_file()->display_name, l);
-  } else {
-    l->append("FileSystemFileInfo(");
-    LogParam(p->get_file_system()->url, l);
-    l->append(", ");
-    LogParam(p->get_file_system()->modification_time, l);
-    l->append(", ");
-    LogParam(p->get_file_system()->length, l);
-  }
-  l->append("))");
 }
 
 }  // namespace IPC

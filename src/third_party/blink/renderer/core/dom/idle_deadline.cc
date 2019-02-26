@@ -16,10 +16,8 @@ IdleDeadline::IdleDeadline(TimeTicks deadline, CallbackType callback_type)
 
 double IdleDeadline::timeRemaining() const {
   TimeDelta time_remaining = deadline_ - CurrentTimeTicks();
-  if (time_remaining < TimeDelta() || Platform::Current()
-                                          ->CurrentThread()
-                                          ->Scheduler()
-                                          ->ShouldYieldForHighPriorityWork()) {
+  if (time_remaining < TimeDelta() ||
+      ThreadScheduler::Current()->ShouldYieldForHighPriorityWork()) {
     return 0;
   }
 

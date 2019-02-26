@@ -20,7 +20,7 @@
 
 #include "third_party/blink/renderer/core/svg/svg_component_transfer_function_element.h"
 
-#include "third_party/blink/renderer/core/dom/attribute.h"
+#include "third_party/blink/renderer/core/svg/svg_enumeration_map.h"
 #include "third_party/blink/renderer/core/svg/svg_fe_component_transfer_element.h"
 #include "third_party/blink/renderer/core/svg/svg_number_list.h"
 #include "third_party/blink/renderer/core/svg_names.h"
@@ -28,19 +28,15 @@
 namespace blink {
 
 template <>
-const SVGEnumerationStringEntries&
-GetStaticStringEntries<ComponentTransferType>() {
-  DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
-  if (entries.IsEmpty()) {
-    entries.push_back(
-        std::make_pair(FECOMPONENTTRANSFER_TYPE_IDENTITY, "identity"));
-    entries.push_back(std::make_pair(FECOMPONENTTRANSFER_TYPE_TABLE, "table"));
-    entries.push_back(
-        std::make_pair(FECOMPONENTTRANSFER_TYPE_DISCRETE, "discrete"));
-    entries.push_back(
-        std::make_pair(FECOMPONENTTRANSFER_TYPE_LINEAR, "linear"));
-    entries.push_back(std::make_pair(FECOMPONENTTRANSFER_TYPE_GAMMA, "gamma"));
-  }
+const SVGEnumerationMap& GetEnumerationMap<ComponentTransferType>() {
+  static const SVGEnumerationMap::Entry enum_items[] = {
+      {FECOMPONENTTRANSFER_TYPE_IDENTITY, "identity"},
+      {FECOMPONENTTRANSFER_TYPE_TABLE, "table"},
+      {FECOMPONENTTRANSFER_TYPE_DISCRETE, "discrete"},
+      {FECOMPONENTTRANSFER_TYPE_LINEAR, "linear"},
+      {FECOMPONENTTRANSFER_TYPE_GAMMA, "gamma"},
+  };
+  static const SVGEnumerationMap entries(enum_items);
   return entries;
 }
 
@@ -49,16 +45,16 @@ SVGComponentTransferFunctionElement::SVGComponentTransferFunctionElement(
     Document& document)
     : SVGElement(tag_name, document),
       table_values_(
-          SVGAnimatedNumberList::Create(this, SVGNames::tableValuesAttr)),
-      slope_(SVGAnimatedNumber::Create(this, SVGNames::slopeAttr, 1)),
+          SVGAnimatedNumberList::Create(this, svg_names::kTableValuesAttr)),
+      slope_(SVGAnimatedNumber::Create(this, svg_names::kSlopeAttr, 1)),
       intercept_(
-          SVGAnimatedNumber::Create(this, SVGNames::interceptAttr, 0.0f)),
-      amplitude_(SVGAnimatedNumber::Create(this, SVGNames::amplitudeAttr, 1)),
-      exponent_(SVGAnimatedNumber::Create(this, SVGNames::exponentAttr, 1)),
-      offset_(SVGAnimatedNumber::Create(this, SVGNames::offsetAttr, 0.0f)),
+          SVGAnimatedNumber::Create(this, svg_names::kInterceptAttr, 0.0f)),
+      amplitude_(SVGAnimatedNumber::Create(this, svg_names::kAmplitudeAttr, 1)),
+      exponent_(SVGAnimatedNumber::Create(this, svg_names::kExponentAttr, 1)),
+      offset_(SVGAnimatedNumber::Create(this, svg_names::kOffsetAttr, 0.0f)),
       type_(SVGAnimatedEnumeration<ComponentTransferType>::Create(
           this,
-          SVGNames::typeAttr,
+          svg_names::kTypeAttr,
           FECOMPONENTTRANSFER_TYPE_IDENTITY)) {
   AddToPropertyMap(table_values_);
   AddToPropertyMap(slope_);
@@ -82,13 +78,13 @@ void SVGComponentTransferFunctionElement::Trace(blink::Visitor* visitor) {
 
 void SVGComponentTransferFunctionElement::SvgAttributeChanged(
     const QualifiedName& attr_name) {
-  if (attr_name == SVGNames::typeAttr ||
-      attr_name == SVGNames::tableValuesAttr ||
-      attr_name == SVGNames::slopeAttr ||
-      attr_name == SVGNames::interceptAttr ||
-      attr_name == SVGNames::amplitudeAttr ||
-      attr_name == SVGNames::exponentAttr ||
-      attr_name == SVGNames::offsetAttr) {
+  if (attr_name == svg_names::kTypeAttr ||
+      attr_name == svg_names::kTableValuesAttr ||
+      attr_name == svg_names::kSlopeAttr ||
+      attr_name == svg_names::kInterceptAttr ||
+      attr_name == svg_names::kAmplitudeAttr ||
+      attr_name == svg_names::kExponentAttr ||
+      attr_name == svg_names::kOffsetAttr) {
     SVGElement::InvalidationGuard invalidation_guard(this);
     InvalidateFilterPrimitiveParent(*this);
     return;

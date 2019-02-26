@@ -22,7 +22,6 @@ class NGConstraintSpace;
 class NGLayoutResult;
 class NGPaintFragment;
 class NGPhysicalFragment;
-struct NGBaseline;
 struct NGInlineNodeData;
 struct NGPhysicalOffset;
 
@@ -59,14 +58,14 @@ class LayoutNGMixin : public Base {
   // Returns the last layout result for this block flow with the given
   // constraint space and break token, or null if it is not up-to-date or
   // otherwise unavailable.
-  scoped_refptr<NGLayoutResult> CachedLayoutResult(
-      const NGConstraintSpace&,
-      const NGBreakToken*) const final;
+  scoped_refptr<NGLayoutResult> CachedLayoutResult(const NGConstraintSpace&,
+                                                   const NGBreakToken*) final;
 
   void SetCachedLayoutResult(const NGConstraintSpace&,
                              const NGBreakToken*,
                              const NGLayoutResult&) final;
   void ClearCachedLayoutResult() final;
+  bool AreCachedLinesValidFor(const NGConstraintSpace&) const final;
 
   // For testing only.
   scoped_refptr<const NGLayoutResult> CachedLayoutResultForTesting() final;
@@ -83,7 +82,9 @@ class LayoutNGMixin : public Base {
  protected:
   bool IsOfType(LayoutObject::LayoutObjectType) const override;
 
-  void AddVisualOverflowFromChildren() final;
+  void ComputeVisualOverflow(const LayoutRect&, bool recompute_floats) final;
+
+  void AddVisualOverflowFromChildren();
   void AddLayoutOverflowFromChildren() final;
 
  private:
@@ -99,7 +100,7 @@ class LayoutNGMixin : public Base {
 
   const NGPhysicalBoxFragment* CurrentFragment() const final;
 
-  const NGBaseline* FragmentBaseline(NGBaselineAlgorithmType) const;
+  base::Optional<LayoutUnit> FragmentBaseline(NGBaselineAlgorithmType) const;
 
   void DirtyLinesFromChangedChild(LayoutObject* child,
                                   MarkingBehavior marking_behavior) final;

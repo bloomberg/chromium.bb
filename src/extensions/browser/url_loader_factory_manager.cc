@@ -5,6 +5,7 @@
 #include "extensions/browser/url_loader_factory_manager.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -70,10 +71,13 @@ bool IsSpecialURLLoaderFactoryRequired(const Extension& extension,
 network::mojom::URLLoaderFactoryPtrInfo CreateURLLoaderFactory(
     content::RenderProcessHost* process,
     network::mojom::NetworkContext* network_context,
+    network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
     const Extension& extension) {
   // Compute relaxed CORB config to be used by |extension|.
   network::mojom::URLLoaderFactoryParamsPtr params =
       network::mojom::URLLoaderFactoryParams::New();
+  if (header_client)
+    params->header_client = std::move(*header_client);
   params->process_id = process->GetID();
   // TODO(lukasza): https://crbug.com/846346: Use more granular CORB enforcement
   // based on the specific |extension|'s permissions.
@@ -92,11 +96,8 @@ void MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
     bool push_to_renderer_now) {
   DCHECK(!request_initiators.empty());
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    // TODO(lukasza): https://crbug.com/894766: Re-enable after a real fix for
-    // this bug.  For now, let's just avoid using separate URLLoaderFactories
-    // for extensions.
-    // frame->MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
-    //    std::move(request_initiators), push_to_renderer_now);
+    frame->MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
+        std::move(request_initiators), push_to_renderer_now);
   } else {
     // TODO(lukasza): In non-NetworkService implementation of CORB, make an
     // exception only for specific extensions (e.g. based on process id,
@@ -233,7 +234,7 @@ void URLLoaderFactoryManager::ReadyToCommitNavigation(
   if (!initiators_requiring_separate_factory.empty()) {
     // At ReadyToCommitNavigation time there is no need to trigger an explicit
     // push of URLLoaderFactoryBundle to the renderer - it is sufficient if the
-    // factories are pushed during the commit.
+    // factories are pushed slightly later - during the commit.
     constexpr bool kPushToRendererNow = false;
 
     MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
@@ -275,11 +276,8 @@ void URLLoaderFactoryManager::WillExecuteCode(content::RenderFrameHost* frame,
 network::mojom::URLLoaderFactoryPtrInfo URLLoaderFactoryManager::CreateFactory(
     content::RenderProcessHost* process,
     network::mojom::NetworkContext* network_context,
+    network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
     const url::Origin& initiator_origin) {
-  // TODO(lukasza): https://crbug.com/894766: Re-enable after a real fix for
-  // this bug.  For now, we should never reach CreateFactory method.
-  NOTREACHED();
-
   content::BrowserContext* browser_context = process->GetBrowserContext();
   const ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context);
   DCHECK(registry);  // CreateFactory shouldn't happen during shutdown.
@@ -315,7 +313,8 @@ network::mojom::URLLoaderFactoryPtrInfo URLLoaderFactoryManager::CreateFactory(
   // Create the factory (but only if really needed).
   if (!IsSpecialURLLoaderFactoryRequired(*extension, factory_user))
     return network::mojom::URLLoaderFactoryPtrInfo();
-  return CreateURLLoaderFactory(process, network_context, *extension);
+  return CreateURLLoaderFactory(process, network_context, header_client,
+                                *extension);
 }
 
 }  // namespace extensions

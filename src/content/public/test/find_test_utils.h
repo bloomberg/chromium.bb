@@ -137,6 +137,14 @@ class FindTestWebContentsDelegate : public WebContentsDelegate {
   DISALLOW_COPY_AND_ASSIGN(FindTestWebContentsDelegate);
 };
 
+// Finds the set of all RenderFrameHosts that the FindRequestManager associated
+// with |web_contents| has an ongoing find request. Note that the
+// FindRequestManager could be owned by an outer WebContents of |web_contents|
+// and the returned RenderFrameHosts are not necessarily part of |web_contents|
+// frame tree.
+std::unordered_set<RenderFrameHost*> GetRenderFrameHostsWithPendingFindResults(
+    WebContents* web_contents);
+
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_TEST_FIND_TEST_UTILS_H_a

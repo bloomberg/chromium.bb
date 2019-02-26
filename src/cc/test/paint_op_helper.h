@@ -145,6 +145,14 @@ class PaintOpHelper {
             << ", flags=" << PaintOpHelper::FlagsToString(op->flags) << ")";
         break;
       }
+      case PaintOpType::DrawSkottie: {
+        const auto* op = static_cast<const DrawSkottieOp*>(base_op);
+        str << "DrawSkottieOp("
+            << "skottie=" << PaintOpHelper::SkottieToString(op->skottie)
+            << ", dst=" << PaintOpHelper::SkiaTypeToString(op->dst)
+            << ", t=" << op->t << ")";
+        break;
+      }
       case PaintOpType::DrawTextBlob: {
         const auto* op = static_cast<const DrawTextBlobOp*>(base_op);
         str << "DrawTextBlobOp(blob="
@@ -485,6 +493,8 @@ class PaintOpHelper {
 
   static std::string EnumToString(PaintShader::Type type) {
     switch (type) {
+      case PaintShader::Type::kEmpty:
+        return "kEmpty";
       case PaintShader::Type::kColor:
         return "kColor";
       case PaintShader::Type::kLinearGradient:
@@ -509,13 +519,24 @@ class PaintOpHelper {
     return "<paint image>";
   }
 
+  static std::string SkottieToString(scoped_refptr<SkottieWrapper> skottie) {
+    std::ostringstream str;
+    str << "<skottie [";
+    str << "duration=" << skottie->duration() << " seconds";
+    str << ", width="
+        << PaintOpHelper::SkiaTypeToString(skottie->size().width());
+    str << ", height="
+        << PaintOpHelper::SkiaTypeToString(skottie->size().height());
+    str << "]";
+    return str.str();
+  }
+
   static std::string RecordToString(const sk_sp<const PaintRecord>& record) {
     return record ? "<paint record>" : "(nil)";
   }
 
-  static std::string TextBlobToString(
-      const scoped_refptr<PaintTextBlob>& blob) {
-    return blob ? "<paint text blob>" : "(nil)";
+  static std::string TextBlobToString(const sk_sp<SkTextBlob>& blob) {
+    return blob ? "<sk text blob>" : "(nil)";
   }
 
   static std::string PaintShaderToString(const PaintShader* shader) {
@@ -587,7 +608,6 @@ class PaintOpHelper {
     str << ", blendMode="
         << PaintOpHelper::SkiaTypeToString(flags.getBlendMode());
     str << ", isAntiAlias=" << flags.isAntiAlias();
-    str << ", isVerticalText=" << flags.isVerticalText();
     str << ", isSubpixelText=" << flags.isSubpixelText();
     str << ", isLCDRenderText=" << flags.isLCDRenderText();
     str << ", hinting=" << PaintOpHelper::SkiaTypeToString(flags.getHinting());

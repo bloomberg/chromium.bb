@@ -43,7 +43,7 @@ InputType* CheckboxInputType::Create(HTMLInputElement& element) {
 }
 
 const AtomicString& CheckboxInputType::FormControlType() const {
-  return InputTypeNames::checkbox;
+  return input_type_names::kCheckbox;
 }
 
 bool CheckboxInputType::ValueMissing(const String&) const {

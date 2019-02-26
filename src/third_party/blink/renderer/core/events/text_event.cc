@@ -31,31 +31,32 @@
 namespace blink {
 
 TextEvent* TextEvent::Create() {
-  return new TextEvent;
+  return MakeGarbageCollected<TextEvent>();
 }
 
 TextEvent* TextEvent::Create(AbstractView* view,
                              const String& data,
                              TextEventInputType input_type) {
-  return new TextEvent(view, data, input_type);
+  return MakeGarbageCollected<TextEvent>(view, data, input_type);
 }
 
 TextEvent* TextEvent::CreateForPlainTextPaste(AbstractView* view,
                                               const String& data,
                                               bool should_smart_replace) {
-  return new TextEvent(view, data, nullptr, should_smart_replace, false);
+  return MakeGarbageCollected<TextEvent>(view, data, nullptr,
+                                         should_smart_replace, false);
 }
 
 TextEvent* TextEvent::CreateForFragmentPaste(AbstractView* view,
                                              DocumentFragment* data,
                                              bool should_smart_replace,
                                              bool should_match_style) {
-  return new TextEvent(view, "", data, should_smart_replace,
-                       should_match_style);
+  return MakeGarbageCollected<TextEvent>(view, "", data, should_smart_replace,
+                                         should_match_style);
 }
 
 TextEvent* TextEvent::CreateForDrop(AbstractView* view, const String& data) {
-  return new TextEvent(view, data, kTextEventInputDrop);
+  return MakeGarbageCollected<TextEvent>(view, data, kTextEventInputDrop);
 }
 
 TextEvent::TextEvent()
@@ -66,7 +67,7 @@ TextEvent::TextEvent()
 TextEvent::TextEvent(AbstractView* view,
                      const String& data,
                      TextEventInputType input_type)
-    : UIEvent(EventTypeNames::textInput,
+    : UIEvent(event_type_names::kTextInput,
               Bubbles::kYes,
               Cancelable::kYes,
               ComposedMode::kComposed,
@@ -85,7 +86,7 @@ TextEvent::TextEvent(AbstractView* view,
                      DocumentFragment* pasting_fragment,
                      bool should_smart_replace,
                      bool should_match_style)
-    : UIEvent(EventTypeNames::textInput,
+    : UIEvent(event_type_names::kTextInput,
               Bubbles::kYes,
               Cancelable::kYes,
               ComposedMode::kComposed,
@@ -115,7 +116,7 @@ void TextEvent::initTextEvent(const AtomicString& type,
 }
 
 const AtomicString& TextEvent::InterfaceName() const {
-  return EventNames::TextEvent;
+  return event_interface_names::kTextEvent;
 }
 
 void TextEvent::Trace(blink::Visitor* visitor) {

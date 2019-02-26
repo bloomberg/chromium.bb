@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/custom/layout_worklet_global_scope_proxy.h"
 
+#include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -36,13 +37,12 @@ LayoutWorkletGlobalScopeProxy::LayoutWorkletGlobalScopeProxy(
       std::make_unique<MainThreadWorkletReportingProxy>(document);
 
   WorkerClients* worker_clients = WorkerClients::Create();
-  ProvideWorkerFetchContextToWorker(
-      worker_clients, frame->Client()->CreateWorkerFetchContext());
   ProvideContentSettingsClientToWorker(
       worker_clients, frame->Client()->CreateWorkerContentSettingsClient());
 
   auto creation_params = std::make_unique<GlobalScopeCreationParams>(
-      document->Url(), ScriptType::kModule, document->UserAgent(),
+      document->Url(), mojom::ScriptType::kModule, document->UserAgent(),
+      frame->Client()->CreateWorkerFetchContext(),
       document->GetContentSecurityPolicy()->Headers(),
       document->GetReferrerPolicy(), document->GetSecurityOrigin(),
       document->IsSecureContext(), document->GetHttpsState(), worker_clients,

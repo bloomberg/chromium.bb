@@ -62,6 +62,9 @@ class SearchIPCRouter : public content::WebContentsObserver,
                                     const GURL& new_url,
                                     const std::string& new_title) = 0;
 
+    // Called when the EmbeddedSearch wants to reorder a custom link.
+    virtual bool OnReorderCustomLink(const GURL& url, int new_pos) = 0;
+
     // Called when the EmbeddedSearch wants to delete a custom link.
     virtual bool OnDeleteCustomLink(const GURL& url) = 0;
 
@@ -72,11 +75,6 @@ class SearchIPCRouter : public content::WebContentsObserver,
     // Called when the EmbeddedSearch wants to delete all custom links and
     // use Most Visited sites instead.
     virtual void OnResetCustomLinks() = 0;
-
-    // Called when the EmbeddedSearch wants to check if |url| resolves to an
-    // existing page.
-    virtual void OnDoesUrlResolve(const GURL& url,
-                                  DoesUrlResolveCallback callback) = 0;
 
     // Called to signal that an event has occurred on the New Tab Page at a
     // particular time since navigation start.
@@ -137,10 +135,10 @@ class SearchIPCRouter : public content::WebContentsObserver,
     virtual bool ShouldProcessUndoAllMostVisitedDeletions() = 0;
     virtual bool ShouldProcessAddCustomLink() = 0;
     virtual bool ShouldProcessUpdateCustomLink() = 0;
+    virtual bool ShouldProcessReorderCustomLink() = 0;
     virtual bool ShouldProcessDeleteCustomLink() = 0;
     virtual bool ShouldProcessUndoCustomLinkAction() = 0;
     virtual bool ShouldProcessResetCustomLinks() = 0;
-    virtual bool ShouldProcessDoesUrlResolve() = 0;
     virtual bool ShouldProcessLogEvent() = 0;
     virtual bool ShouldProcessPasteIntoOmnibox(bool is_active_tab) = 0;
     virtual bool ShouldProcessChromeIdentityCheck() = 0;
@@ -209,14 +207,14 @@ class SearchIPCRouter : public content::WebContentsObserver,
                         const GURL& new_url,
                         const std::string& new_title,
                         UpdateCustomLinkCallback callback) override;
+  void ReorderCustomLink(int page_seq_no,
+                         const GURL& url,
+                         int new_pos) override;
   void DeleteCustomLink(int page_seq_no,
                         const GURL& url,
                         DeleteCustomLinkCallback callback) override;
   void UndoCustomLinkAction(int page_seq_no) override;
   void ResetCustomLinks(int page_seq_no) override;
-  void DoesUrlResolve(int page_seq_no,
-                      const GURL& url,
-                      DoesUrlResolveCallback callback) override;
   void LogEvent(int page_seq_no,
                 NTPLoggingEventType event,
                 base::TimeDelta time) override;

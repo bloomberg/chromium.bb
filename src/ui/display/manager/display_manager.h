@@ -375,11 +375,11 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   // current mode to Unified Desktop.
   void SetUnifiedDesktopMatrix(const UnifiedDesktopLayoutMatrix& matrix);
 
-  // In Unified Desktop mode, we consider the first mirroring display to be the
-  // primary. It's also the top-left display in the layout matrix, and it's
-  // where the shelf is placed.
-  // This returns nullptr if we're not in unified desktop mode.
-  const Display* GetPrimaryMirroringDisplayForUnifiedDesktop() const;
+  // Returns the Unified Desktop mode mirroring display according to the
+  // supplied |cell_position| in the matrix. Returns invalid display if we're
+  // not in Unified mode.
+  Display GetMirroringDisplayForUnifiedDesktop(
+      DisplayPositionInUnifiedMatrix cell_position) const;
 
   // Returns the index of the row in the Unified Mode layout matrix which
   // contains the display with |display_id|.
@@ -420,7 +420,8 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
 
   // Used to emulate display change when run in a desktop environment instead
   // of on a device.
-  void AddRemoveDisplay();
+  void AddRemoveDisplay(
+      ManagedDisplayInfo::ManagedDisplayModeList display_modes = {});
   void ToggleDisplayScaleFactor();
 
 // SoftwareMirroringController override:

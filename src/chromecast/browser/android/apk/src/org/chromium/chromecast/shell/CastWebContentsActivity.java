@@ -11,6 +11,7 @@ import android.graphics.Color;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -60,6 +61,7 @@ public class CastWebContentsActivity extends Activity {
     // Set at creation. Handles destroying SurfaceHelper.
     private final Controller<CastWebContentsSurfaceHelper> mSurfaceHelperState = new Controller<>();
 
+    @Nullable
     private CastWebContentsSurfaceHelper mSurfaceHelper;
 
     {
@@ -86,8 +88,8 @@ public class CastWebContentsActivity extends Activity {
 
             setContentView(R.layout.cast_web_contents_activity);
 
-            mSurfaceHelperState.set(new CastWebContentsSurfaceHelper(this /* hostActivity */,
-                    CastWebContentsView.onLayoutActivity(this,
+            mSurfaceHelperState.set(new CastWebContentsSurfaceHelper(
+                    CastWebContentsScopes.onLayoutActivity(this,
                             (FrameLayout) findViewById(R.id.web_contents_container),
                             CastSwitches.getSwitchValueColor(
                                     CastSwitches.CAST_APP_BACKGROUND_COLOR, Color.BLACK)),
@@ -97,7 +99,7 @@ public class CastWebContentsActivity extends Activity {
         mSurfaceHelperState.subscribe((CastWebContentsSurfaceHelper surfaceHelper) -> {
             mSurfaceHelper = surfaceHelper;
             return () -> {
-                mSurfaceHelper.onDestroy();
+                surfaceHelper.onDestroy();
                 mSurfaceHelper = null;
             };
         });
@@ -166,6 +168,11 @@ public class CastWebContentsActivity extends Activity {
         super.onCreate(savedInstanceState);
         mCreatedState.set(Unit.unit());
         mGotIntentState.set(getIntent());
+
+        // Whenever our app is visible, volume controls should modify the music stream.
+        // For more information read:
+        // http://developer.android.com/training/managing-audio/volume-playback.html
+        setVolumeControlStream(AudioManager.STREAM_MUSIC);
     }
 
     @Override
@@ -236,14 +243,19 @@ public class CastWebContentsActivity extends Activity {
 
         // Similar condition for all single-click events.
         if (action == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0) {
-            if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER
+            if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER || keyCode == KeyEvent.KEYCODE_DPAD_LEFT
+                    || keyCode == KeyEvent.KEYCODE_MEDIA_REWIND
+                    || keyCode == KeyEvent.KEYCODE_DPAD_RIGHT
+                    || keyCode == KeyEvent.KEYCODE_MEDIA_FAST_FORWARD
                     || keyCode == KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE
                     || keyCode == KeyEvent.KEYCODE_MEDIA_PLAY
                     || keyCode == KeyEvent.KEYCODE_MEDIA_PAUSE
                     || keyCode == KeyEvent.KEYCODE_MEDIA_STOP
                     || keyCode == KeyEvent.KEYCODE_MEDIA_NEXT
                     || keyCode == KeyEvent.KEYCODE_MEDIA_PREVIOUS) {
-                CastWebContentsComponent.onKeyDown(mSurfaceHelper.getInstanceId(), keyCode);
+                if (mSurfaceHelper != null) {
+                    CastWebContentsComponent.onKeyDown(mSurfaceHelper.getSessionId(), keyCode);
+                }
                 return true;
             }
         }
@@ -266,7 +278,7 @@ public class CastWebContentsActivity extends Activity {
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
-        if (mSurfaceHelper.isTouchInputEnabled()) {
+        if (mSurfaceHelper != null && mSurfaceHelper.isTouchInputEnabled()) {
             return super.dispatchTouchEvent(ev);
         } else {
             return false;

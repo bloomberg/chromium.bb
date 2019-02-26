@@ -113,7 +113,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSecondaryAccountSyncTest,
             GetSyncService(0)->GetTransportState());
 
   ASSERT_EQ(browser_defaults::kSyncAutoStarts,
-            GetSyncService(0)->IsFirstSetupComplete());
+            GetSyncService(0)->GetUserSettings()->IsFirstSetupComplete());
 
   EXPECT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
   EXPECT_FALSE(GetSyncService(0)->IsSyncFeatureActive());
@@ -146,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSecondaryAccountSyncTest,
   // Simulate the user opting in to full Sync: Make the account primary, and
   // set first-time setup to complete.
   secondary_account_helper::MakeAccountPrimary(profile(), "user@email.com");
-  GetSyncService(0)->SetFirstSetupComplete();
+  GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete();
 
   EXPECT_TRUE(GetClient(0)->AwaitSyncSetupCompletion(
       /*skip_passphrase_verification=*/false));
@@ -158,8 +158,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientSecondaryAccountSyncTest,
   // Make sure that some model type which is not allowed in transport-only mode
   // got activated.
   ASSERT_FALSE(AllowedTypesInStandaloneTransportMode().Has(syncer::BOOKMARKS));
-  ASSERT_TRUE(
-      GetSyncService(0)->GetPreferredDataTypes().Has(syncer::BOOKMARKS));
+  ASSERT_TRUE(GetSyncService(0)->GetUserSettings()->GetChosenDataTypes().Has(
+      syncer::BOOKMARKS));
   EXPECT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::BOOKMARKS));
 }
 #endif  // !defined(OS_CHROMEOS)

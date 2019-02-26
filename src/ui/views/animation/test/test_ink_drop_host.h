@@ -6,7 +6,7 @@
 #define UI_VIEWS_ANIMATION_TEST_TEST_INK_DROP_HOST_H_
 
 #include "base/macros.h"
-#include "ui/views/animation/ink_drop_host.h"
+#include "ui/views/animation/ink_drop_host_view.h"
 
 namespace views {
 
@@ -14,7 +14,7 @@ namespace views {
 // tests.  Tracks the number of hosted ink drop layers.
 //
 // Note that CreateInkDrop() is not supported.
-class TestInkDropHost : public InkDropHost {
+class TestInkDropHost : public InkDropHostView {
  public:
   TestInkDropHost();
   ~TestInkDropHost() override;
@@ -24,21 +24,41 @@ class TestInkDropHost : public InkDropHost {
     return num_ink_drop_layers_added_ - num_ink_drop_layers_removed_;
   }
 
+  int num_ink_drop_ripples_created() const {
+    return num_ink_drop_ripples_created_;
+  }
+  int num_ink_drop_highlights_created() const {
+    return num_ink_drop_highlights_created_;
+  }
+
+  const InkDropRipple* last_ink_drop_ripple() const {
+    return last_ink_drop_ripple_;
+  }
+  const InkDropHighlight* last_ink_drop_highlight() const {
+    return last_ink_drop_highlight_;
+  }
+
   void set_disable_timers_for_test(bool disable_timers_for_test) {
     disable_timers_for_test_ = disable_timers_for_test;
   }
 
-  // TestInkDropHost:
+  // InkDropHostView:
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
-  // Not supported.
-  std::unique_ptr<InkDrop> CreateInkDrop() override;
   std::unique_ptr<InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<InkDropHighlight> CreateInkDropHighlight() const override;
 
  private:
   int num_ink_drop_layers_added_;
   int num_ink_drop_layers_removed_;
+
+  // CreateInkDrop{Ripple,Highlight} are const, so these members must be
+  // mutable.
+  mutable int num_ink_drop_ripples_created_;
+  mutable int num_ink_drop_highlights_created_;
+
+  mutable const InkDropRipple* last_ink_drop_ripple_;
+  mutable const InkDropHighlight* last_ink_drop_highlight_;
 
   // When true, the InkDropRipple/InkDropHighlight instances will have their
   // timers disabled after creation.

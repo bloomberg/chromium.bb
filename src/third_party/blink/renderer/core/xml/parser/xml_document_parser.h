@@ -72,13 +72,17 @@ class XMLDocumentParser final : public ScriptableDocumentParser,
 
  public:
   static XMLDocumentParser* Create(Document& document, LocalFrameView* view) {
-    return new XMLDocumentParser(document, view);
+    return MakeGarbageCollected<XMLDocumentParser>(document, view);
   }
   static XMLDocumentParser* Create(DocumentFragment* fragment,
                                    Element* element,
                                    ParserContentPolicy parser_content_policy) {
-    return new XMLDocumentParser(fragment, element, parser_content_policy);
+    return MakeGarbageCollected<XMLDocumentParser>(fragment, element,
+                                                   parser_content_policy);
   }
+
+  explicit XMLDocumentParser(Document&, LocalFrameView* = nullptr);
+  XMLDocumentParser(DocumentFragment*, Element*, ParserContentPolicy);
   ~XMLDocumentParser() override;
   void Trace(blink::Visitor*) override;
 
@@ -116,9 +120,6 @@ class XMLDocumentParser final : public ScriptableDocumentParser,
   void SetScriptStartPosition(TextPosition);
 
  private:
-  explicit XMLDocumentParser(Document&, LocalFrameView* = nullptr);
-  XMLDocumentParser(DocumentFragment*, Element*, ParserContentPolicy);
-
   // From DocumentParser
   void insert(const String&) override { NOTREACHED(); }
   void Append(const String&) override;

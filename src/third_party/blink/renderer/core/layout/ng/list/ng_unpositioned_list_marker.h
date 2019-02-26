@@ -13,11 +13,12 @@
 
 namespace blink {
 
+class ComputedStyle;
 class LayoutNGListMarker;
 class LayoutUnit;
 class NGBlockNode;
 class NGConstraintSpace;
-class NGFragmentBuilder;
+class NGBoxFragmentBuilder;
 class NGLayoutResult;
 class NGPhysicalFragment;
 
@@ -50,7 +51,7 @@ class CORE_EXPORT NGUnpositionedListMarker final {
                 FontBaseline,
                 const NGPhysicalFragment& content,
                 NGLogicalOffset* content_offset,
-                NGFragmentBuilder*,
+                NGBoxFragmentBuilder*,
                 const NGBoxStrut&) const;
 
   // Add a fragment for an outside list marker when the list item has no line
@@ -58,16 +59,17 @@ class CORE_EXPORT NGUnpositionedListMarker final {
   // Returns the block size of the list marker.
   LayoutUnit AddToBoxWithoutLineBoxes(const NGConstraintSpace&,
                                       FontBaseline,
-                                      NGFragmentBuilder*) const;
+                                      NGBoxFragmentBuilder*) const;
   LayoutUnit InlineOffset(const LayoutUnit marker_inline_size) const;
 
  private:
   bool IsImage() const;
 
-  scoped_refptr<NGLayoutResult> Layout(const NGConstraintSpace&,
+  scoped_refptr<NGLayoutResult> Layout(const NGConstraintSpace& parent_space,
+                                       const ComputedStyle& parent_style,
                                        FontBaseline) const;
   LayoutUnit ComputeIntrudedFloatOffset(const NGConstraintSpace&,
-                                        const NGFragmentBuilder*,
+                                        const NGBoxFragmentBuilder*,
                                         const NGBoxStrut&,
                                         LayoutUnit) const;
 

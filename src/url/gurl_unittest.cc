@@ -771,7 +771,52 @@ TEST(GURLTest, SchemeIsBlob) {
   EXPECT_FALSE(GURL("http://bar/").SchemeIsBlob());
 }
 
-TEST(GURLTest, ContentAndPathForNonStandardURLs) {
+// Tests that the 'content' of the URL is properly extracted. This can be
+// complex in cases such as multiple schemes (view-source:http:) or for
+// javascript URLs. See GURL::GetContent for more details.
+TEST(GURLTest, ContentForNonStandardURLs) {
+  struct TestCase {
+    const char* url;
+    const char* expected;
+  } cases[] = {
+      {"null", ""},
+      {"not-a-standard-scheme:this is arbitrary content",
+       "this is arbitrary content"},
+
+      // When there are multiple schemes, only the first is excluded from the
+      // content. Note also that for e.g. 'http://', the '//' is part of the
+      // content not the scheme.
+      {"view-source:http://example.com/path", "http://example.com/path"},
+      {"blob:http://example.com/GUID", "http://example.com/GUID"},
+      {"blob://http://example.com/GUID", "//http://example.com/GUID"},
+      {"blob:http://user:password@example.com/GUID",
+       "http://user:password@example.com/GUID"},
+
+      // The octothorpe character ('#') marks the end of the URL content, and
+      // the start of the fragment. It should not be included in the content.
+      {"http://www.example.com/GUID#ref", "www.example.com/GUID"},
+      {"http://me:secret@example.com/GUID/#ref", "me:secret@example.com/GUID/"},
+      {"data:text/html,Question?<div style=\"color: #bad\">idea</div>",
+       "text/html,Question?<div style=\"color: "},
+
+      // TODO(mkwst): This seems like a bug. https://crbug.com/513600
+      {"filesystem:http://example.com/path", "/"},
+
+      // Javascript URLs include '#' symbols in their content.
+      {"javascript:#", "#"},
+      {"javascript:alert('#');", "alert('#');"},
+  };
+
+  for (const auto& test : cases) {
+    GURL url(test.url);
+    EXPECT_EQ(test.expected, url.GetContent()) << test.url;
+  }
+}
+
+// Tests that the URL path is properly extracted for unusual URLs. This can be
+// complex in cases such as multiple schemes (view-source:http:) or when
+// octothorpes ('#') are involved.
+TEST(GURLTest, PathForNonStandardURLs) {
   struct TestCase {
     const char* url;
     const char* expected;
@@ -785,6 +830,11 @@ TEST(GURLTest, ContentAndPathForNonStandardURLs) {
       {"blob:http://user:password@example.com/GUID",
        "http://user:password@example.com/GUID"},
 
+      {"http://www.example.com/GUID#ref", "/GUID"},
+      {"http://me:secret@example.com/GUID/#ref", "/GUID/"},
+      {"data:text/html,Question?<div style=\"color: #bad\">idea</div>",
+       "text/html,Question"},
+
       // TODO(mkwst): This seems like a bug. https://crbug.com/513600
       {"filesystem:http://example.com/path", "/"},
   };
@@ -792,7 +842,6 @@ TEST(GURLTest, ContentAndPathForNonStandardURLs) {
   for (const auto& test : cases) {
     GURL url(test.url);
     EXPECT_EQ(test.expected, url.path()) << test.url;
-    EXPECT_EQ(test.expected, url.GetContent()) << test.url;
   }
 }
 

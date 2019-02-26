@@ -90,13 +90,24 @@ id<GREYMatcher> TabletTabSwitcherOpenButton();
 id<GREYMatcher> ShowTabsButton();
 
 // Matcher for SettingsSwitchCell.
-id<GREYMatcher> SettingsSwitchCell(NSString* accessibilityIdentifier,
-                                   BOOL isToggledOn);
+id<GREYMatcher> SettingsSwitchCell(NSString* accessibility_identifier,
+                                   BOOL is_toggled_on);
 
 // Matcher for SettingsSwitchCell.
-id<GREYMatcher> SettingsSwitchCell(NSString* accessibilityIdentifier,
-                                   BOOL isToggledOn,
-                                   BOOL isEnabled);
+id<GREYMatcher> SettingsSwitchCell(NSString* accessibility_identifier,
+                                   BOOL is_toggled_on,
+                                   BOOL is_enabled);
+
+// Matcher for LegacySettingsSwitchCell.
+// TODO(crbug.com/894800): Remove this.
+id<GREYMatcher> LegacySettingsSwitchCell(NSString* accessibility_identifier,
+                                         BOOL is_toggled_on);
+
+// Matcher for LegacySettingsSwitchCell.
+// TODO(crbug.com/894800): Remove this.
+id<GREYMatcher> LegacySettingsSwitchCell(NSString* accessibility_identifier,
+                                         BOOL is_toggled_on,
+                                         BOOL is_enabled);
 
 // Matcher for SyncSwitchCell.
 id<GREYMatcher> SyncSwitchCell(NSString* accessibilityLabel, BOOL isToggledOn);
@@ -122,6 +133,13 @@ id<GREYMatcher> AddAccountButton();
 
 // Returns matcher for the sign out accounts button.
 id<GREYMatcher> SignOutAccountsButton();
+
+// Returns matcher for the Clear Browsing Data cell on the Privacy screen.
+id<GREYMatcher> ClearBrowsingDataCell();
+
+// Returns matcher for the clear browsing data button on the clear browsing data
+// panel.
+id<GREYMatcher> ClearBrowsingDataButton();
 
 // Returns matcher for the clear browsing data collection view.
 id<GREYMatcher> ClearBrowsingDataCollectionView();

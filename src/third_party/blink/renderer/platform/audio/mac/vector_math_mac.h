@@ -11,8 +11,8 @@
 #include "third_party/blink/renderer/platform/audio/audio_array.h"
 
 namespace blink {
-namespace VectorMath {
-namespace Mac {
+namespace vector_math {
+namespace mac {
 
 // On the Mac we use the highly optimized versions in Accelerate.framework
 // In 32-bit mode (__ppc__ or __i386__) <Accelerate/Accelerate.h> includes
@@ -26,7 +26,7 @@ static ALWAYS_INLINE void Conv(const float* source_p,
                                int filter_stride,
                                float* dest_p,
                                int dest_stride,
-                               size_t frames_to_process,
+                               uint32_t frames_to_process,
                                size_t filter_size,
                                const AudioFloatArray* /*prepared_filter*/) {
 #if defined(ARCH_CPU_X86)
@@ -44,7 +44,7 @@ static ALWAYS_INLINE void Vadd(const float* source1p,
                                int source_stride2,
                                float* dest_p,
                                int dest_stride,
-                               size_t frames_to_process) {
+                               uint32_t frames_to_process) {
 #if defined(ARCH_CPU_X86)
   ::vadd(source1p, source_stride1, source2p, source_stride2, dest_p,
          dest_stride, frames_to_process);
@@ -60,7 +60,7 @@ static ALWAYS_INLINE void Vclip(const float* source_p,
                                 const float* high_threshold_p,
                                 float* dest_p,
                                 int dest_stride,
-                                size_t frames_to_process) {
+                                uint32_t frames_to_process) {
   vDSP_vclip(source_p, source_stride, low_threshold_p, high_threshold_p, dest_p,
              dest_stride, frames_to_process);
 }
@@ -68,7 +68,7 @@ static ALWAYS_INLINE void Vclip(const float* source_p,
 static ALWAYS_INLINE void Vmaxmgv(const float* source_p,
                                   int source_stride,
                                   float* max_p,
-                                  size_t frames_to_process) {
+                                  uint32_t frames_to_process) {
   vDSP_maxmgv(source_p, source_stride, max_p, frames_to_process);
 }
 
@@ -78,7 +78,7 @@ static ALWAYS_INLINE void Vmul(const float* source1p,
                                int source_stride2,
                                float* dest_p,
                                int dest_stride,
-                               size_t frames_to_process) {
+                               uint32_t frames_to_process) {
 #if defined(ARCH_CPU_X86)
   ::vmul(source1p, source_stride1, source2p, source_stride2, dest_p,
          dest_stride, frames_to_process);
@@ -93,7 +93,7 @@ static ALWAYS_INLINE void Vsma(const float* source_p,
                                const float* scale,
                                float* dest_p,
                                int dest_stride,
-                               size_t frames_to_process) {
+                               uint32_t frames_to_process) {
   vDSP_vsma(source_p, source_stride, scale, dest_p, dest_stride, dest_p,
             dest_stride, frames_to_process);
 }
@@ -103,7 +103,7 @@ static ALWAYS_INLINE void Vsmul(const float* source_p,
                                 const float* scale,
                                 float* dest_p,
                                 int dest_stride,
-                                size_t frames_to_process) {
+                                uint32_t frames_to_process) {
 #if defined(ARCH_CPU_X86)
   ::vsmul(source_p, source_stride, scale, dest_p, dest_stride,
           frames_to_process);
@@ -116,7 +116,7 @@ static ALWAYS_INLINE void Vsmul(const float* source_p,
 static ALWAYS_INLINE void Vsvesq(const float* source_p,
                                  int source_stride,
                                  float* sum_p,
-                                 size_t frames_to_process) {
+                                 uint32_t frames_to_process) {
   vDSP_svesq(source_p, source_stride, sum_p, frames_to_process);
 }
 
@@ -126,7 +126,7 @@ static ALWAYS_INLINE void Zvmul(const float* real1p,
                                 const float* imag2p,
                                 float* real_dest_p,
                                 float* imag_dest_p,
-                                size_t frames_to_process) {
+                                uint32_t frames_to_process) {
   DSPSplitComplex sc1;
   DSPSplitComplex sc2;
   DSPSplitComplex dest;
@@ -143,8 +143,8 @@ static ALWAYS_INLINE void Zvmul(const float* real1p,
 #endif
 }
 
-}  // namespace Mac
-}  // namespace VectorMath
+}  // namespace mac
+}  // namespace vector_math
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_MAC_VECTOR_MATH_MAC_H_

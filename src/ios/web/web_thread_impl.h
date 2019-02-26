@@ -51,10 +51,6 @@ class WebThreadImpl : public WebThread, public base::Thread {
   // Common initialization code for the constructors.
   void Initialize();
 
-  // Performs cleanup that needs to happen on the IO thread before calling the
-  // embedder's CleanUp function.
-  void IOThreadPreCleanUp();
-
   // For testing.
   friend class TestWebThreadBundle;
   friend class TestWebThreadBundleImpl;

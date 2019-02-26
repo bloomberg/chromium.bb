@@ -31,8 +31,17 @@ class ScrollableAreaStub : public GarbageCollectedFinalized<ScrollableAreaStub>,
  public:
   static ScrollableAreaStub* Create(const IntSize& viewport_size,
                                     const IntSize& contents_size) {
-    return new ScrollableAreaStub(viewport_size, contents_size);
+    return MakeGarbageCollected<ScrollableAreaStub>(viewport_size,
+                                                    contents_size);
   }
+
+  ScrollableAreaStub(const IntSize& viewport_size, const IntSize& contents_size)
+      : user_input_scrollable_x_(true),
+        user_input_scrollable_y_(true),
+        viewport_size_(viewport_size),
+        contents_size_(contents_size),
+        timer_task_runner_(
+            blink::scheduler::GetSingleThreadTaskRunnerForTesting()) {}
 
   void SetViewportSize(const IntSize& viewport_size) {
     viewport_size_ = viewport_size;
@@ -87,14 +96,6 @@ class ScrollableAreaStub : public GarbageCollectedFinalized<ScrollableAreaStub>,
   }
 
  protected:
-  ScrollableAreaStub(const IntSize& viewport_size, const IntSize& contents_size)
-      : user_input_scrollable_x_(true),
-        user_input_scrollable_y_(true),
-        viewport_size_(viewport_size),
-        contents_size_(contents_size),
-        timer_task_runner_(
-            blink::scheduler::GetSingleThreadTaskRunnerForTesting()) {}
-
   CompositorElementId GetCompositorElementId() const override {
     return CompositorElementId();
   }
@@ -143,8 +144,13 @@ class RootLayoutViewportStub : public ScrollableAreaStub {
  public:
   static RootLayoutViewportStub* Create(const IntSize& viewport_size,
                                         const IntSize& contents_size) {
-    return new RootLayoutViewportStub(viewport_size, contents_size);
+    return MakeGarbageCollected<RootLayoutViewportStub>(viewport_size,
+                                                        contents_size);
   }
+
+  RootLayoutViewportStub(const IntSize& viewport_size,
+                         const IntSize& contents_size)
+      : ScrollableAreaStub(viewport_size, contents_size) {}
 
   ScrollOffset MaximumScrollOffset() const override {
     return ScrollOffset(ContentsSize() - ViewportSize());
@@ -157,10 +163,6 @@ class RootLayoutViewportStub : public ScrollableAreaStub {
   }
 
  private:
-  RootLayoutViewportStub(const IntSize& viewport_size,
-                         const IntSize& contents_size)
-      : ScrollableAreaStub(viewport_size, contents_size) {}
-
   int VisibleWidth() const override { return viewport_size_.Width(); }
   int VisibleHeight() const override { return viewport_size_.Height(); }
 };
@@ -169,8 +171,12 @@ class VisualViewportStub : public ScrollableAreaStub {
  public:
   static VisualViewportStub* Create(const IntSize& viewport_size,
                                     const IntSize& contents_size) {
-    return new VisualViewportStub(viewport_size, contents_size);
+    return MakeGarbageCollected<VisualViewportStub>(viewport_size,
+                                                    contents_size);
   }
+
+  VisualViewportStub(const IntSize& viewport_size, const IntSize& contents_size)
+      : ScrollableAreaStub(viewport_size, contents_size), scale_(1) {}
 
   ScrollOffset MaximumScrollOffset() const override {
     ScrollOffset visible_viewport(ViewportSize());
@@ -183,9 +189,6 @@ class VisualViewportStub : public ScrollableAreaStub {
   void SetScale(float scale) { scale_ = scale; }
 
  private:
-  VisualViewportStub(const IntSize& viewport_size, const IntSize& contents_size)
-      : ScrollableAreaStub(viewport_size, contents_size), scale_(1) {}
-
   int VisibleWidth() const override { return viewport_size_.Width() / scale_; }
   int VisibleHeight() const override {
     return viewport_size_.Height() / scale_;

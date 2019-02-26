@@ -21,10 +21,10 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/settings/autofill_credit_card_edit_collection_view_controller.h"
-#import "ios/chrome/browser/ui/settings/cells/autofill_data_item.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
+#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_autofill_data_item.h"
+#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
@@ -139,8 +139,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (CollectionViewItem*)cardSwitchItem {
-  SettingsSwitchItem* switchItem =
-      [[SettingsSwitchItem alloc] initWithType:ItemTypeAutofillCardSwitch];
+  LegacySettingsSwitchItem* switchItem = [[LegacySettingsSwitchItem alloc]
+      initWithType:ItemTypeAutofillCardSwitch];
   switchItem.text =
       l10n_util::GetNSString(IDS_AUTOFILL_ENABLE_CREDIT_CARDS_TOGGLE_LABEL);
   switchItem.on = [self isAutofillCreditCardEnabled];
@@ -178,7 +178,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   NSString* creditCardName = autofill::GetCreditCardName(
       creditCard, GetApplicationContext()->GetApplicationLocale());
 
-  AutofillDataItem* item = [[AutofillDataItem alloc] initWithType:ItemTypeCard];
+  LegacyAutofillDataItem* item =
+      [[LegacyAutofillDataItem alloc] initWithType:ItemTypeCard];
   item.text = creditCardName;
   item.leadingDetailText = autofill::GetCreditCardObfuscatedNumber(creditCard);
   item.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
@@ -216,8 +217,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemType itemType = static_cast<ItemType>(
       [self.collectionViewModel itemTypeForIndexPath:indexPath]);
   if (itemType == ItemTypeAutofillCardSwitch) {
-    SettingsSwitchCell* switchCell =
-        base::mac::ObjCCastStrict<SettingsSwitchCell>(cell);
+    LegacySettingsSwitchCell* switchCell =
+        base::mac::ObjCCastStrict<LegacySettingsSwitchCell>(cell);
     [switchCell.switchView addTarget:self
                               action:@selector(autofillCardSwitchChanged:)
                     forControlEvents:UIControlEventValueChanged];
@@ -241,8 +242,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   NSIndexPath* switchPath =
       [self.collectionViewModel indexPathForItemType:switchItemType
                                    sectionIdentifier:SectionIdentifierSwitches];
-  SettingsSwitchItem* switchItem =
-      base::mac::ObjCCastStrict<SettingsSwitchItem>(
+  LegacySettingsSwitchItem* switchItem =
+      base::mac::ObjCCastStrict<LegacySettingsSwitchItem>(
           [self.collectionViewModel itemAtIndexPath:switchPath]);
   switchItem.on = on;
 }
@@ -260,8 +261,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   NSIndexPath* switchPath =
       [model indexPathForItemType:switchItemType
                 sectionIdentifier:SectionIdentifierSwitches];
-  SettingsSwitchItem* switchItem =
-      base::mac::ObjCCastStrict<SettingsSwitchItem>(
+  LegacySettingsSwitchItem* switchItem =
+      base::mac::ObjCCastStrict<LegacySettingsSwitchItem>(
           [model itemAtIndexPath:switchPath]);
   [switchItem setEnabled:enabled];
   [self reconfigureCellsForItems:@[ switchItem ]];
@@ -344,9 +345,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // Only autofill data cells are editable.
   CollectionViewItem* item =
       [self.collectionViewModel itemAtIndexPath:indexPath];
-  if ([item isKindOfClass:[AutofillDataItem class]]) {
-    AutofillDataItem* autofillItem =
-        base::mac::ObjCCastStrict<AutofillDataItem>(item);
+  if ([item isKindOfClass:[LegacyAutofillDataItem class]]) {
+    LegacyAutofillDataItem* autofillItem =
+        base::mac::ObjCCastStrict<LegacyAutofillDataItem>(item);
     return [autofillItem isDeletable];
   }
   return NO;
@@ -356,8 +357,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
     willDeleteItemsAtIndexPaths:(NSArray*)indexPaths {
   _deletionInProgress = YES;
   for (NSIndexPath* indexPath in indexPaths) {
-    AutofillDataItem* item = base::mac::ObjCCastStrict<AutofillDataItem>(
-        [self.collectionViewModel itemAtIndexPath:indexPath]);
+    LegacyAutofillDataItem* item =
+        base::mac::ObjCCastStrict<LegacyAutofillDataItem>(
+            [self.collectionViewModel itemAtIndexPath:indexPath]);
     _personalDataManager->RemoveByGUID([item GUID]);
   }
   // Must call super at the end of the child implementation.

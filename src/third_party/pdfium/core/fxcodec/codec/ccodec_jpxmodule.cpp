@@ -17,6 +17,7 @@
 #include "core/fxcrt/fx_memory.h"
 #include "core/fxcrt/fx_safe_types.h"
 #include "third_party/base/ptr_util.h"
+#include "third_party/base/stl_util.h"
 #include "third_party/libopenjpeg20/openjpeg.h"
 #include "third_party/libopenjpeg20/opj_malloc.h"
 
@@ -24,13 +25,12 @@ namespace {
 
 void fx_ignore_callback(const char* msg, void* client_data) {}
 
-opj_stream_t* fx_opj_stream_create_memory_stream(DecodeData* data,
-                                                 OPJ_SIZE_T p_size,
-                                                 OPJ_BOOL p_is_read_stream) {
+opj_stream_t* fx_opj_stream_create_memory_stream(DecodeData* data) {
   if (!data || !data->src_data || data->src_size <= 0)
     return nullptr;
 
-  opj_stream_t* stream = opj_stream_create(p_size, p_is_read_stream);
+  opj_stream_t* stream = opj_stream_create(OPJ_J2K_STREAM_CHUNK_SIZE,
+                                           /*p_is_input=*/OPJ_TRUE);
   if (!stream)
     return nullptr;
 
@@ -483,9 +483,7 @@ bool CJPX_Decoder::Init(pdfium::span<const uint8_t> src_data) {
   m_SrcData = src_data;
   m_DecodeData =
       pdfium::MakeUnique<DecodeData>(src_data.data(), src_data.size());
-  m_Stream = fx_opj_stream_create_memory_stream(
-      m_DecodeData.get(), static_cast<unsigned int>(OPJ_J2K_STREAM_CHUNK_SIZE),
-      1);
+  m_Stream = fx_opj_stream_create_memory_stream(m_DecodeData.get());
   if (!m_Stream)
     return false;
 
@@ -516,7 +514,10 @@ bool CJPX_Decoder::Init(pdfium::span<const uint8_t> src_data) {
 
   m_Image = pTempImage;
   m_Image->pdfium_use_colorspace = !!m_ColorSpace;
+  return true;
+}
 
+bool CJPX_Decoder::StartDecode() {
   if (!m_Parameters.nb_tile_to_decode) {
     if (!opj_set_decode_area(m_Codec.Get(), m_Image.Get(), m_Parameters.DA_x0,
                              m_Parameters.DA_y0, m_Parameters.DA_x1,
@@ -553,7 +554,6 @@ bool CJPX_Decoder::Init(pdfium::span<const uint8_t> src_data) {
     m_Image->icc_profile_buf = nullptr;
     m_Image->icc_profile_len = 0;
   }
-
   return true;
 }
 

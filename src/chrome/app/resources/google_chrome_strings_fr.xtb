@@ -47,7 +47,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="1915828456209461693">Une nouvelle mise à jour est disponible pour Chrome et sera installée dès que vous le relancerez.</translation>
 <translation id="1919130412786645364">Autoriser la connexion à Chrome</translation>
 <translation id="2063848847527508675">Redémarrez Chrome OS pour appliquer la mise à jour.</translation>
-<translation id="2084710999043359739">Ajouter à Chrome</translation>
 <translation id="2094919256425865063">Quitter Chrome quand même ?</translation>
 <translation id="2120620239521071941">Cette action aura pour effet de supprimer <ph name="ITEMS_COUNT" /> éléments de cet appareil. Pour récupérer vos données ultérieurement, connectez-vous à Chrome en tant que <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Aidez-nous à améliorer Chrome en nous signalant vos <ph name="BEGIN_LINK" />paramètres actuels<ph name="END_LINK" /></translation>
@@ -64,9 +63,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 
 Si vous vous connectez quand même, toutes les informations Chrome, comme les favoris, l'historique et les autres paramètres, seront fusionnées avec <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2348335408836342058">Chrome a besoin de votre autorisation pour accéder à votre appareil photo et à votre micro pour ce site</translation>
-<translation id="2397416548179033562">Afficher le menu Chrome</translation>
 <translation id="2429317896000329049">Impossible de synchroniser vos données dans Google Chrome, car la synchronisation n'est pas disponible pour votre domaine.</translation>
-<translation id="2436117022029368436">Communique avec Google pour améliorer la navigation et Chrome</translation>
 <translation id="2467438592969358367">Google Chrome veut exporter vos mots de passe. Pour autoriser cette action, saisissez votre mot de passe Windows.</translation>
 <translation id="2485422356828889247">Désinstaller</translation>
 <translation id="2534507159460261402">Google Pay (copiée dans Chrome)</translation>
@@ -144,14 +141,12 @@ Pour obtenir plus d'informations, veuillez consulter votre compte de messagerie 
 <translation id="4600710005438004015">Échec de l'installation de la dernière version de Chrome. Vous ne disposez donc pas des nouvelles fonctionnalités, ni des correctifs de sécurité.</translation>
 <translation id="4631713731678262610">Masquer dans le menu Chrome</translation>
 <translation id="4633000520311261472">Afin de rendre Chrome plus sûr, nous avons désactivé certaines extensions qui ne sont pas répertoriées sur le <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> et qui ont pu être ajoutées à votre insu.</translation>
-<translation id="4664415150087723341">Une mise à jour spéciale de sécurité pour Google Chrome vient d'être installée. Redémarrez maintenant pour qu'elle soit prise en compte (vos onglets seront restaurés).</translation>
 <translation id="4700157086864140907">Google Chrome peut fournir une correction orthographique plus intelligente en envoyant ce que vous saisissez dans le navigateur aux serveurs Google, ce qui vous permet d'utiliser la même technologie de correction orthographique que la recherche Google.</translation>
 <translation id="4728575227883772061">Échec de l'installation suite à une erreur non spécifiée. Si Google Chrome est en cours d'exécution, fermez-le puis réessayez.</translation>
 <translation id="4750550185319565338">Redémarrer Chrome pour activer <ph name="PLUGIN_NAME" /></translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Chrome a bloqué ce fichier, car ce dernier peut être dangereux.</translation>
 <translation id="4794050651896644714">Enregistrer les détails dans Google Chrome</translation>
-<translation id="4804732725083176494">L'option de connexion à Chrome a été désactivée par l'administrateur de cet appareil.</translation>
 <translation id="4891791193823137474">Laisser Google Chrome s'exécuter en arrière-plan</translation>
 <translation id="4895437082222824641">Ouvrir le lien dans un nouvel ongle&amp;t Chrome</translation>
 <translation id="4921569541910214635">Vous partagez un ordinateur ? Vous pouvez désormais configurer Chrome selon vos besoins.</translation>
@@ -225,7 +220,6 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="7242029209006116544">Vous vous connectez avec un compte géré et donnez le contrôle de votre profil Google Chrome à son administrateur. Vos données Chrome, telles que les applications, les favoris, l'historique, les mots de passe et les autres paramètres, vont être définitivement associées à <ph name="USER_NAME" />. Vous pouvez supprimer ces données via le tableau de bord des comptes Google, mais vous ne pouvez pas les associer à un autre compte. Vous pouvez éventuellement créer un nouveau profil pour maintenir vos données Chrome séparées. <ph name="LEARN_MORE" /></translation>
 <translation id="7296210096911315575">Informations importantes concernant l'utilisation et la sécurité</translation>
 <translation id="7308322188646931570">Pour télécharger des fichiers, Chrome a besoin d'accéder à l'espace de stockage</translation>
-<translation id="7330164299247909639">Échec du certificat d'authentification. Pour en savoir plus, connectez-vous de nouveau à Google Chrome en tant que <ph name="USER_NAME" /> ou contactez votre administrateur. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">Nouvelle fenêtre</translation>
 <translation id="7398801000654795464">Vous étiez connecté à Google Chrome en tant que <ph name="USER_EMAIL_ADDRESS" />. Veuillez utiliser le même compte pour vous reconnecter.</translation>
 <translation id="7408085963519505752">Conditions d'utilisation de Chrome OS</translation>
@@ -270,8 +264,10 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="8380166467911888159">Pour corriger les fautes d'orthographe, Chrome envoie à Google le texte que vous saisissez dans les champs</translation>
 <translation id="840084489713044809">Google Chrome veut exporter vos mots de passe.</translation>
 <translation id="8406086379114794905">Aidez-nous à améliorer Chrome</translation>
+<translation id="8432724323949790809">Redémarrez Google Chrome maintenant</translation>
 <translation id="8455999171311319804">Facultatif : contribuez à améliorer Google Chrome OS en envoyant automatiquement des données de diagnostic et d'utilisation à Google.</translation>
 <translation id="8478823064122749032">Installez Chrome sur votre téléphone. Vous recevrez un SMS au numéro que vous avez indiqué pour la récupération de compte (<ph name="PHONE_NUMBER" />).</translation>
+<translation id="8498858610309223613">Une mise à jour spéciale de sécurité pour Google Chrome vient d'être installée. Veuillez redémarrer le navigateur. Vos onglets seront restaurés.</translation>
 <translation id="8521348052903287641">Règle de trafic entrant pour Google Chrome pour les développeurs autorisant le trafic mDNS.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8547799825197623713">Lanceur d'applications Chrome – Canary</translation>
@@ -286,14 +282,12 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="873133009373065397">Impossible d'identifier ou de définir le navigateur par défaut avec Google Chrome</translation>
 <translation id="8736674169840206667">À la demande de votre administrateur, vous devez relancer Chrome pour installer une mise à jour</translation>
 <translation id="8791470158600044404">{0,plural, =1{Chrome OS va redémarrer dans 1 minute}one{Chrome OS va redémarrer dans # minute}other{Chrome OS va redémarrer dans # minutes}}</translation>
-<translation id="8796108026289707191">Redémarrez Google Chrome maintenant</translation>
 <translation id="8823341990149967727">Version de Chrome obsolète</translation>
 <translation id="884296878221830158">Elle contrôle également la page qui s'affiche au démarrage de Chrome ou lorsque vous cliquez sur le bouton Accueil.</translation>
 <translation id="8862326446509486874">Vous ne disposez pas des droits requis pour installer la version système. Relancez l'installation en vous connectant comme administrateur.</translation>
 <translation id="8914504000324227558">Relancer Google Chrome</translation>
 <translation id="9026991721384951619">Impossible de synchroniser vos données dans Chrome OS, car les informations de connexion de votre compte ne sont plus à jour.</translation>
 <translation id="9067395829937117663">Vous devez disposer de Windows 7 ou version ultérieure pour utiliser Google Chrome.</translation>
-<translation id="9084668267983921457">Échec du certificat d'authentification. Pour en savoir plus, connectez-vous de nouveau à Google Chrome ou contactez votre administrateur. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="909149346112452267">{0,plural, =1{Chrome OS va redémarrer dans une heure}one{Chrome OS va redémarrer dans # heure}other{Chrome OS va redémarrer dans # heures}}</translation>
 <translation id="911206726377975832">Supprimer également vos données de navigation ?</translation>
 <translation id="9138603949443464873">Pour appliquer vos modifications, relancez Chrome</translation>

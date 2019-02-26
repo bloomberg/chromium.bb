@@ -11,6 +11,7 @@
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "remoting/base/logging.h"
+#include "remoting/host/action_executor.h"
 #include "remoting/host/client_session_control.h"
 #include "remoting/host/curtain_mode.h"
 #include "remoting/host/desktop_resizer.h"
@@ -29,10 +30,21 @@
 #include <unistd.h>
 #endif  // defined(OS_POSIX)
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif  // defined(OS_WIN)
+
 namespace remoting {
 
 Me2MeDesktopEnvironment::~Me2MeDesktopEnvironment() {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
+}
+
+std::unique_ptr<ActionExecutor>
+Me2MeDesktopEnvironment::CreateActionExecutor() {
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+
+  return ActionExecutor::Create();
 }
 
 std::unique_ptr<ScreenControls>
@@ -60,6 +72,17 @@ std::string Me2MeDesktopEnvironment::GetCapabilities() const {
     capabilities += " ";
     capabilities += protocol::kFileTransferCapability;
   }
+
+#if defined(OS_WIN)
+  capabilities += " ";
+  capabilities += protocol::kSendAttentionSequenceAction;
+
+  if (base::win::OSInfo::GetInstance()->version_type() !=
+      base::win::VersionType::SUITE_HOME) {
+    capabilities += " ";
+    capabilities += protocol::kLockWorkstationAction;
+  }
+#endif  // defined(OS_WIN)
 
   return capabilities;
 }

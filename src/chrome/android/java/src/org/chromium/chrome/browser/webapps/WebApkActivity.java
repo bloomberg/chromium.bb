@@ -87,7 +87,7 @@ public class WebApkActivity extends WebappActivity {
 
     @Override
     public String getNativeClientPackageName() {
-        return getWebappInfo().apkPackageName();
+        return getWebappInfo().webApkPackageName();
     }
 
     @Override
@@ -164,5 +164,12 @@ public class WebApkActivity extends WebappActivity {
         super.initializeStartupMetrics();
         mWebApkSplashscreenMetrics = new WebApkSplashscreenMetrics();
         addSplashscreenObserver(mWebApkSplashscreenMetrics);
+    }
+
+    @Override
+    protected boolean loadUrlIfPostShareTarget(WebappInfo webappInfo) {
+        WebApkInfo webApkInfo = (WebApkInfo) webappInfo;
+        return WebApkPostShareTargetNavigator.navigateIfPostShareTarget(
+                webApkInfo, getActivityTab().getWebContents());
     }
 }

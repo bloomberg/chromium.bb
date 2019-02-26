@@ -35,7 +35,6 @@
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source_type.h"
-#include "net/quic/crypto/channel_id_chromium.h"
 #include "net/quic/crypto/proof_verifier_chromium.h"
 #include "net/quic/properties_based_quic_server_info.h"
 #include "net/quic/quic_chromium_alarm_factory.h"
@@ -192,6 +191,11 @@ quic::QuicConfig InitializeQuicConfig(
   config.SetConnectionOptionsToSend(connection_options);
   config.SetClientConnectionOptions(client_connection_options);
   return config;
+}
+
+bssl::UniquePtr<SSL_CTX> QuicStreamFactoryCreateSslCtx() {
+  crypto::EnsureOpenSSLInit();
+  return quic::TlsClientHandshaker::CreateSslCtx();
 }
 
 // An implementation of quic::QuicCryptoClientConfig::ServerIdFilter that wraps
@@ -368,9 +372,23 @@ class QuicStreamFactory::Job {
     stream_requests_.erase(request_iter);
   }
 
+  void SetPriority(RequestPriority priority) {
+    if (priority_ == priority)
+      return;
+
+    priority_ = priority;
+    if (io_state_ == STATE_RESOLVE_HOST_COMPLETE &&
+        !host_resolution_finished_) {
+      DCHECK(request_);
+      request_->ChangeRequestPriority(priority);
+    }
+  }
+
   const std::set<QuicStreamRequest*>& stream_requests() {
     return stream_requests_;
   }
+
+  RequestPriority priority() const { return priority_; }
 
   bool IsHostResolutionComplete() const { return host_resolution_finished_; }
 
@@ -414,7 +432,7 @@ class QuicStreamFactory::Job {
   HostResolver* host_resolver_;
   std::unique_ptr<HostResolver::Request> request_;
   const QuicSessionAliasKey key_;
-  const RequestPriority priority_;
+  RequestPriority priority_;
   const int cert_verify_flags_;
   const bool was_alternative_service_recently_broken_;
   const bool retry_on_alternate_network_before_handshake_;
@@ -423,6 +441,7 @@ class QuicStreamFactory::Job {
   int num_sent_client_hellos_;
   bool dns_race_ongoing_;
   bool host_resolution_finished_;
+  bool connection_retried_;
   QuicChromiumClientSession* session_;
   // If connection migraiton is supported, |network_| denotes the network on
   // which |session_| is created.
@@ -467,6 +486,7 @@ QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
       num_sent_client_hellos_(0),
       dns_race_ongoing_(false),
       host_resolution_finished_(false),
+      connection_retried_(false),
       session_(nullptr),
       network_(NetworkChangeNotifier::kInvalidNetworkHandle),
       weak_factory_(this) {
@@ -497,7 +517,7 @@ int QuicStreamFactory::Job::Run(CompletionOnceCallback callback) {
 }
 
 int QuicStreamFactory::Job::DoLoop(int rv) {
-  TRACE_EVENT0(kNetTracingCategory, "QuicStreamFactory::Job::DoLoop");
+  TRACE_EVENT0(NetTracingCategory(), "QuicStreamFactory::Job::DoLoop");
 
   do {
     IoState state = io_state_;
@@ -770,7 +790,22 @@ int QuicStreamFactory::Job::DoConfirmConnection(int rv) {
       // with network idle time out or handshake time out.
       DCHECK(network_ != NetworkChangeNotifier::kInvalidNetworkHandle);
       network_ = factory_->FindAlternateNetwork(network_);
-      if (network_ != NetworkChangeNotifier::kInvalidNetworkHandle) {
+      connection_retried_ =
+          network_ != NetworkChangeNotifier::kInvalidNetworkHandle;
+      UMA_HISTOGRAM_BOOLEAN(
+          "Net.QuicStreamFactory.AttemptMigrationBeforeHandshake",
+          connection_retried_);
+      UMA_HISTOGRAM_ENUMERATION(
+          "Net.QuicStreamFactory.AttemptMigrationBeforeHandshake."
+          "FailedConnectionType",
+          NetworkChangeNotifier::GetNetworkConnectionType(
+              factory_->default_network()),
+          NetworkChangeNotifier::ConnectionType::CONNECTION_LAST + 1);
+      if (connection_retried_) {
+        UMA_HISTOGRAM_ENUMERATION(
+            "Net.QuicStreamFactory.MigrationBeforeHandshake.NewConnectionType",
+            NetworkChangeNotifier::GetNetworkConnectionType(network_),
+            NetworkChangeNotifier::ConnectionType::CONNECTION_LAST + 1);
         net_log_.AddEvent(
             NetLogEventType::
                 QUIC_STREAM_FACTORY_JOB_RETRY_ON_ALTERNATE_NETWORK);
@@ -778,12 +813,29 @@ int QuicStreamFactory::Job::DoConfirmConnection(int rv) {
         for (auto* request : stream_requests_) {
           request->OnConnectionFailedOnDefaultNetwork();
         }
-        DVLOG(1) << "Retry connection on alternate network";
+        DVLOG(1) << "Retry connection on alternate network: " << network_;
         session_ = nullptr;
         io_state_ = STATE_CONNECT;
         return OK;
       }
     }
+  }
+
+  if (connection_retried_) {
+    UMA_HISTOGRAM_BOOLEAN("Net.QuicStreamFactory.MigrationBeforeHandshake2",
+                          rv == OK);
+    if (rv == OK) {
+      UMA_HISTOGRAM_BOOLEAN(
+          "Net.QuicStreamFactory.NetworkChangeDuringMigrationBeforeHandshake",
+          network_ == factory_->default_network());
+    } else {
+      base::UmaHistogramSparse(
+          "Net.QuicStreamFactory.MigrationBeforeHandshakeFailedReason", -rv);
+    }
+  } else if (network_ != NetworkChangeNotifier::kInvalidNetworkHandle &&
+             network_ != factory_->default_network()) {
+    UMA_HISTOGRAM_BOOLEAN("Net.QuicStreamFactory.ConnectionOnNonDefaultNetwork",
+                          rv == OK);
   }
 
   if (rv != OK)
@@ -896,6 +948,11 @@ base::TimeDelta QuicStreamRequest::GetTimeDelayForWaitingJob() const {
   return factory_->GetTimeDelayForWaitingJob(session_key_.server_id());
 }
 
+void QuicStreamRequest::SetPriority(RequestPriority priority) {
+  if (factory_)
+    factory_->SetRequestPriority(this, priority);
+}
+
 std::unique_ptr<QuicChromiumClientSession::Handle>
 QuicStreamRequest::ReleaseSessionHandle() {
   if (!session_ || !session_->IsConnected())
@@ -912,7 +969,6 @@ QuicStreamFactory::QuicStreamFactory(
     HttpServerProperties* http_server_properties,
     CertVerifier* cert_verifier,
     CTPolicyEnforcer* ct_policy_enforcer,
-    ChannelIDService* channel_id_service,
     TransportSecurityState* transport_security_state,
     CTVerifier* cert_transparency_verifier,
     SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
@@ -943,7 +999,6 @@ QuicStreamFactory::QuicStreamFactory(
     bool headers_include_h2_stream_dependency,
     const quic::QuicTagVector& connection_options,
     const quic::QuicTagVector& client_connection_options,
-    bool enable_channel_id,
     bool enable_socket_recv_optimization)
     : require_confirmation_(true),
       net_log_(net_log),
@@ -970,7 +1025,7 @@ QuicStreamFactory::QuicStreamFactory(
                                                   ct_policy_enforcer,
                                                   transport_security_state,
                                                   cert_transparency_verifier),
-          quic::TlsClientHandshaker::CreateSslCtx()),
+          QuicStreamFactoryCreateSslCtx()),
       mark_quic_broken_when_network_blackholes_(
           mark_quic_broken_when_network_blackholes),
       store_server_configs_in_properties_(store_server_configs_in_properties),
@@ -1018,18 +1073,9 @@ QuicStreamFactory::QuicStreamFactory(
   crypto_config_.AddCanonicalSuffix(".ggpht.com");
   crypto_config_.AddCanonicalSuffix(".googlevideo.com");
   crypto_config_.AddCanonicalSuffix(".googleusercontent.com");
-  // TODO(rtenneti): http://crbug.com/487355. Temporary fix for b/20760730 until
-  // channel_id_service is supported in cronet.
-  if (enable_channel_id && channel_id_service) {
-    crypto_config_.SetChannelIDSource(
-        new ChannelIDSourceChromium(channel_id_service));
-  }
-  crypto::EnsureOpenSSLInit();
-  bool has_aes_hardware_support = !!EVP_has_aes_hardware();
-  UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.PreferAesGcm",
-                        has_aes_hardware_support);
-  if (has_aes_hardware_support)
-    crypto_config_.PreferAesGcm();
+  bool prefer_aes_gcm =
+      !crypto_config_.aead.empty() && (crypto_config_.aead[0] == quic::kAESG);
+  UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.PreferAesGcm", prefer_aes_gcm);
 
   if (migrate_sessions_early_v2 || retry_on_alternate_network_before_handshake)
     DCHECK(migrate_sessions_on_network_change_v2);
@@ -1400,6 +1446,14 @@ void QuicStreamFactory::CancelRequest(QuicStreamRequest* request) {
   job_iter->second->RemoveRequest(request);
 }
 
+void QuicStreamFactory::SetRequestPriority(QuicStreamRequest* request,
+                                           RequestPriority priority) {
+  auto job_iter = active_jobs_.find(request->session_key());
+  if (job_iter == active_jobs_.end())
+    return;
+  job_iter->second->SetPriority(priority);
+}
+
 void QuicStreamFactory::CloseAllSessions(int error,
                                          quic::QuicErrorCode quic_error) {
   base::UmaHistogramSparse("Net.QuicSession.CloseAllSessionsError", -error);
@@ -1660,7 +1714,7 @@ int QuicStreamFactory::CreateSession(
     const NetLogWithSource& net_log,
     QuicChromiumClientSession** session,
     NetworkChangeNotifier::NetworkHandle* network) {
-  TRACE_EVENT0(kNetTracingCategory, "QuicStreamFactory::CreateSession");
+  TRACE_EVENT0(NetTracingCategory(), "QuicStreamFactory::CreateSession");
   IPEndPoint addr = *address_list.begin();
   const quic::QuicServerId& server_id = key.server_id();
   std::unique_ptr<DatagramClientSocket> socket(

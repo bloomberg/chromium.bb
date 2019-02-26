@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/modules/accessibility/testing/accessibility_test.h"
 
 namespace blink {
+namespace test {
 
 TEST_F(AccessibilityTest, IsDescendantOf) {
   SetBodyInnerHTML(R"HTML(<button id="button">button</button>)HTML");
@@ -164,4 +165,5 @@ TEST_F(AccessibilityTest, AXObjectInOrderTraversalIterator) {
   EXPECT_EQ(GetAXObjectCache().InOrderTraversalBegin(), iter);
 }
 
+}  // namespace test
 }  // namespace blink

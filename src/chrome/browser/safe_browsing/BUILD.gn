@@ -27,6 +27,7 @@ static_library("safe_browsing") {
     sources += [
       "chrome_cleaner/chrome_cleaner_controller_impl_win.cc",
       "chrome_cleaner/chrome_cleaner_controller_impl_win.h",
+      "chrome_cleaner/chrome_cleaner_controller_win.cc",
       "chrome_cleaner/chrome_cleaner_controller_win.h",
       "chrome_cleaner/chrome_cleaner_dialog_controller_impl_win.cc",
       "chrome_cleaner/chrome_cleaner_dialog_controller_impl_win.h",
@@ -150,6 +151,8 @@ static_library("safe_browsing") {
         "download_protection/download_protection_util.h",
         "download_protection/download_url_sb_client.cc",
         "download_protection/download_url_sb_client.h",
+        "download_protection/file_analyzer.cc",
+        "download_protection/file_analyzer.h",
         "download_protection/path_sanitizer.cc",
         "download_protection/path_sanitizer.h",
         "download_protection/ppapi_download_request.cc",

@@ -7,18 +7,12 @@
 
 #include <vector>
 
-#include "ash/display/window_tree_host_manager.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "ui/aura/client/drag_drop_delegate.h"
+#include "ui/aura/env.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/compositor/compositor_vsync_manager.h"
-
-namespace ash {
-class AccessibilityObserver;
-class TabletModeObserver;
-class VirtualKeyboardControllerObserver;
-}
 
 namespace aura {
 class env;
@@ -48,7 +42,7 @@ class ActivationChangeObserver;
 
 namespace exo {
 
-// A helper class for accessing WindowManager related features.
+// Helper interface for accessing WindowManager related features.
 class WMHelper : public aura::client::DragDropDelegate {
  public:
   class DragDropObserver {
@@ -62,71 +56,58 @@ class WMHelper : public aura::client::DragDropDelegate {
     virtual ~DragDropObserver() {}
   };
 
-  explicit WMHelper(aura::Env* env);
+  WMHelper();
   ~WMHelper() override;
 
   static void SetInstance(WMHelper* helper);
   static WMHelper* GetInstance();
   static bool HasInstance();
 
-  aura::Env* env() { return env_; }
+  virtual aura::Env* env() = 0;
 
-  void AddAccessibilityObserver(ash::AccessibilityObserver* observer);
-  void RemoveAccessibilityObserver(ash::AccessibilityObserver* observer);
-  void AddActivationObserver(wm::ActivationChangeObserver* observer);
-  void RemoveActivationObserver(wm::ActivationChangeObserver* observer);
-  void AddFocusObserver(aura::client::FocusChangeObserver* observer);
-  void RemoveFocusObserver(aura::client::FocusChangeObserver* observer);
-  void AddTabletModeObserver(ash::TabletModeObserver* observer);
-  void RemoveTabletModeObserver(ash::TabletModeObserver* observer);
-  void AddVirtualKeyboardControllerObserver(
-      ash::VirtualKeyboardControllerObserver* observer);
-  void RemoveVirtualKeyboardControllerObserver(
-      ash::VirtualKeyboardControllerObserver* observer);
+  virtual void AddActivationObserver(
+      wm::ActivationChangeObserver* observer) = 0;
+  virtual void RemoveActivationObserver(
+      wm::ActivationChangeObserver* observer) = 0;
+  virtual void AddFocusObserver(
+      aura::client::FocusChangeObserver* observer) = 0;
+  virtual void RemoveFocusObserver(
+      aura::client::FocusChangeObserver* observer) = 0;
 
-  void AddDisplayConfigurationObserver(
-      ash::WindowTreeHostManager::Observer* observer);
-  void RemoveDisplayConfigurationObserver(
-      ash::WindowTreeHostManager::Observer* observer);
-  void AddDragDropObserver(DragDropObserver* observer);
-  void RemoveDragDropObserver(DragDropObserver* observer);
-  void SetDragDropDelegate(aura::Window*);
-  void ResetDragDropDelegate(aura::Window*);
-  void AddVSyncObserver(ui::CompositorVSyncManager::Observer* observer);
-  void RemoveVSyncObserver(ui::CompositorVSyncManager::Observer* observer);
+  virtual void AddDragDropObserver(DragDropObserver* observer) = 0;
+  virtual void RemoveDragDropObserver(DragDropObserver* observer) = 0;
+  virtual void SetDragDropDelegate(aura::Window*) = 0;
+  virtual void ResetDragDropDelegate(aura::Window*) = 0;
+  virtual void AddVSyncObserver(
+      ui::CompositorVSyncManager::Observer* observer) = 0;
+  virtual void RemoveVSyncObserver(
+      ui::CompositorVSyncManager::Observer* observer) = 0;
 
-  const display::ManagedDisplayInfo& GetDisplayInfo(int64_t display_id) const;
-  const std::vector<uint8_t>& GetDisplayIdentificationData(
-      int64_t display_id) const;
+  virtual const display::ManagedDisplayInfo& GetDisplayInfo(
+      int64_t display_id) const = 0;
+  virtual const std::vector<uint8_t>& GetDisplayIdentificationData(
+      int64_t display_id) const = 0;
 
-  aura::Window* GetPrimaryDisplayContainer(int container_id);
-  aura::Window* GetActiveWindow() const;
-  aura::Window* GetFocusedWindow() const;
-  aura::client::CursorClient* GetCursorClient();
-  void AddPreTargetHandler(ui::EventHandler* handler);
-  void PrependPreTargetHandler(ui::EventHandler* handler);
-  void RemovePreTargetHandler(ui::EventHandler* handler);
-  void AddPostTargetHandler(ui::EventHandler* handler);
-  void RemovePostTargetHandler(ui::EventHandler* handler);
-  bool IsTabletModeWindowManagerEnabled() const;
-  double GetDefaultDeviceScaleFactor() const;
-  bool IsAccessibilityKeyboardEnabled() const;
+  virtual aura::Window* GetPrimaryDisplayContainer(int container_id) = 0;
+  virtual aura::Window* GetActiveWindow() const = 0;
+  virtual aura::Window* GetFocusedWindow() const = 0;
+  virtual aura::Window* GetRootWindowForNewWindows() const = 0;
+  virtual aura::client::CursorClient* GetCursorClient() = 0;
+  virtual void AddPreTargetHandler(ui::EventHandler* handler) = 0;
+  virtual void PrependPreTargetHandler(ui::EventHandler* handler) = 0;
+  virtual void RemovePreTargetHandler(ui::EventHandler* handler) = 0;
+  virtual void AddPostTargetHandler(ui::EventHandler* handler) = 0;
+  virtual void RemovePostTargetHandler(ui::EventHandler* handler) = 0;
+  virtual bool IsTabletModeWindowManagerEnabled() const = 0;
+  virtual double GetDefaultDeviceScaleFactor() const = 0;
 
   // Overridden from aura::client::DragDropDelegate:
-  void OnDragEntered(const ui::DropTargetEvent& event) override;
-  int OnDragUpdated(const ui::DropTargetEvent& event) override;
-  void OnDragExited() override;
-  int OnPerformDrop(const ui::DropTargetEvent& event) override;
+  void OnDragEntered(const ui::DropTargetEvent& event) override = 0;
+  int OnDragUpdated(const ui::DropTargetEvent& event) override = 0;
+  void OnDragExited() override = 0;
+  int OnPerformDrop(const ui::DropTargetEvent& event) override = 0;
 
- private:
-  base::ObserverList<DragDropObserver>::Unchecked drag_drop_observers_;
-
-  // The most recently cached VSync parameters, sent to observers on addition.
-  base::TimeTicks vsync_timebase_;
-  base::TimeDelta vsync_interval_;
-  scoped_refptr<ui::CompositorVSyncManager> vsync_manager_;
-  aura::Env* const env_;
-
+ protected:
   DISALLOW_COPY_AND_ASSIGN(WMHelper);
 };
 

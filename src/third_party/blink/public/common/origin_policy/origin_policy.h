@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/strings/string_piece.h"
-#include "third_party/blink/common/common_export.h"
+#include "third_party/blink/public/common/common_export.h"
 
 namespace blink {
 
@@ -28,12 +28,17 @@ class BLINK_COMMON_EXPORT OriginPolicy {
   };
   const std::vector<CSP>& GetContentSecurityPolicies() const { return csp_; }
 
+  const std::vector<std::string>& GetFeaturePolicies() const {
+    return features_;
+  }
+
  private:
   friend class OriginPolicyParser;
 
   OriginPolicy();
 
   std::vector<CSP> csp_;
+  std::vector<std::string> features_;
 };
 
 }  // namespace blink

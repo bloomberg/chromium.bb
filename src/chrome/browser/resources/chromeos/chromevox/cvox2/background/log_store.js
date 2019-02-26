@@ -160,6 +160,9 @@ LogStore.prototype.getLogs = function() {
  * @param {!TextLog.LogType} logType
  */
 LogStore.prototype.writeTextLog = function(logContent, logType) {
+  if (this.shouldSkipOutput_())
+    return;
+
   var log = new TextLog(logContent, logType);
   this.logs_[this.startIndex_] = log;
   this.startIndex_ += 1;
@@ -173,6 +176,9 @@ LogStore.prototype.writeTextLog = function(logContent, logType) {
  * @param {!TreeDumper} logContent
  */
 LogStore.prototype.writeTreeLog = function(logContent) {
+  if (this.shouldSkipOutput_())
+    return;
+
   var log = new TreeLog(logContent);
   this.logs_[this.startIndex_] = log;
   this.startIndex_ += 1;
@@ -187,6 +193,19 @@ LogStore.prototype.writeTreeLog = function(logContent) {
 LogStore.prototype.clearLog = function() {
   this.logs_ = Array(LogStore.LOG_LIMIT);
   this.startIndex_ = 0;
+};
+
+/** @private @return {boolean} */
+LogStore.prototype.shouldSkipOutput_ = function() {
+  var ChromeVoxState = chrome.extension.getBackgroundPage()['ChromeVoxState'];
+  if (ChromeVoxState.instance.currentRange &&
+      ChromeVoxState.instance.currentRange.start &&
+      ChromeVoxState.instance.currentRange.start.node &&
+      ChromeVoxState.instance.currentRange.start.node.root) {
+    return ChromeVoxState.instance.currentRange.start.node.root.docUrl.indexOf(
+               chrome.extension.getURL('cvox2/background/log.html')) == 0;
+  }
+  return false;
 };
 
 /**

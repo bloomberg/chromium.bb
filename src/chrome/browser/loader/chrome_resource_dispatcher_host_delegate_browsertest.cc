@@ -22,9 +22,11 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_command_line.h"
 #include "build/buildflag.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/download/download_browsertest.h"
 #include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/policy/cloud/policy_header_service_factory.h"
@@ -37,6 +39,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
+#include "components/google/core/common/google_util.h"
+#include "components/network_session_configurator/common/network_switches.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/policy_header_service.h"
 #include "components/policy/core/common/policy_switches.h"
@@ -51,11 +55,14 @@
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/url_loader_throttle.h"
 #include "content/public/test/browser_test_utils.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/http/http_request_headers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "net/test/embedded_test_server/request_handler_util.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_filter.h"
@@ -68,8 +75,6 @@
 #endif
 
 using content::ResourceType;
-using testing::HasSubstr;
-using testing::Not;
 
 namespace {
 
@@ -91,33 +96,6 @@ class TestDispatcherHostDelegate : public ChromeResourceDispatcherHostDelegate {
   ~TestDispatcherHostDelegate() override {}
 
   // ResourceDispatcherHostDelegate implementation:
-  void RequestBeginning(net::URLRequest* request,
-                        content::ResourceContext* resource_context,
-                        content::AppCacheService* appcache_service,
-                        ResourceType resource_type,
-                        std::vector<std::unique_ptr<content::ResourceThrottle>>*
-                            throttles) override {
-    ChromeResourceDispatcherHostDelegate::RequestBeginning(
-        request,
-        resource_context,
-        appcache_service,
-        resource_type,
-        throttles);
-    request_headers_.MergeFrom(request->extra_request_headers());
-  }
-
-  void OnRequestRedirected(const GURL& redirect_url,
-                           net::URLRequest* request,
-                           content::ResourceContext* resource_context,
-                           network::ResourceResponse* response) override {
-    ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
-        redirect_url,
-        request,
-        resource_context,
-        response);
-    request_headers_.MergeFrom(request->extra_request_headers());
-  }
-
   content::NavigationData* GetNavigationData(
       net::URLRequest* request) const override {
     if (request && should_add_data_reduction_proxy_data_) {
@@ -147,10 +125,6 @@ class TestDispatcherHostDelegate : public ChromeResourceDispatcherHostDelegate {
         should_add_data_reduction_proxy_data;
   }
 
-  const net::HttpRequestHeaders& request_headers() const {
-    return request_headers_;
-  }
-
   // Writes the number of times the standard set of throttles have been added
   // for requests for the speficied URL to |count|.
   void GetTimesStandardThrottlesAddedForURL(const GURL& url, int* count) {
@@ -160,7 +134,6 @@ class TestDispatcherHostDelegate : public ChromeResourceDispatcherHostDelegate {
 
  private:
   bool should_add_data_reduction_proxy_data_;
-  net::HttpRequestHeaders request_headers_;
 
   std::map<GURL, int> times_stardard_throttles_added_for_url_;
 
@@ -270,139 +243,69 @@ IN_PROC_BROWSER_TEST_F(ChromeResourceDispatcherHostDelegateBrowserTest,
 // Mirror is not supported on Dice platforms.
 #if !BUILDFLAG(ENABLE_DICE_SUPPORT)
 
-namespace {
-
-// A URLRequestMockHTTPJob to that reports HTTP request headers of outgoing
-// requests.
-class MirrorMockURLRequestJob : public net::URLRequestMockHTTPJob {
- public:
-  // Callback function on the UI thread to report a (URL, request headers)
-  // pair. Indicating that the |request headers| will be sent for the |URL|.
-  using ReportResponseHeadersOnUI =
-      base::Callback<void(const std::string&, const std::string&)>;
-
-  MirrorMockURLRequestJob(net::URLRequest* request,
-                          net::NetworkDelegate* network_delegate,
-                          const base::FilePath& file_path,
-                          ReportResponseHeadersOnUI report_on_ui)
-      : net::URLRequestMockHTTPJob(request, network_delegate, file_path),
-        report_on_ui_(report_on_ui) {}
-
-  void Start() override {
-    // Report the observed request headers on the UI thread.
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(report_on_ui_, request_->url().spec(),
-                       request_->extra_request_headers().ToString()));
-
-    URLRequestMockHTTPJob::Start();
-  }
-
- protected:
-  const ReportResponseHeadersOnUI report_on_ui_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MirrorMockURLRequestJob);
-};
-
-// A URLRequestInterceptor to inject MirrorMockURLRequestJobs.
-class MirrorMockJobInterceptor : public net::URLRequestInterceptor {
- public:
-  using ReportResponseHeadersOnUI =
-      MirrorMockURLRequestJob::ReportResponseHeadersOnUI;
-
-  MirrorMockJobInterceptor(const base::FilePath& root_http,
-                           ReportResponseHeadersOnUI report_on_ui)
-      : root_http_(root_http), report_on_ui_(report_on_ui) {}
-  ~MirrorMockJobInterceptor() override = default;
-
-  // URLRequestInterceptor implementation
-  net::URLRequestJob* MaybeInterceptRequest(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
-    return new MirrorMockURLRequestJob(
-        request, network_delegate, root_http_,
-        report_on_ui_);
-  }
-
-  static void Register(const GURL& url,
-                       const base::FilePath& root_http,
-                       ReportResponseHeadersOnUI report_on_ui) {
-    EXPECT_TRUE(
-        content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-    base::FilePath file_path(root_http);
-    file_path =
-        file_path.AppendASCII(url.scheme() + "." + url.host() + ".html");
-    net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
-        url, base::WrapUnique(
-                 new MirrorMockJobInterceptor(file_path, report_on_ui)));
-  }
-
-  static void Unregister(const GURL& url) {
-    EXPECT_TRUE(
-        content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-    net::URLRequestFilter::GetInstance()->RemoveUrlHandler(url);
-  }
-
- private:
-  const base::FilePath root_http_;
-  ReportResponseHeadersOnUI report_on_ui_;
-
-  DISALLOW_COPY_AND_ASSIGN(MirrorMockJobInterceptor);
-};
-
-// Used in MirrorMockURLRequestJob to store HTTP request header for all received
-// URLs in the given map.
-void ReportRequestHeaders(std::map<std::string, std::string>* request_headers,
-                          const std::string& url,
-                          const std::string& headers) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // Ensure that a previous value is not overwritten.
-  EXPECT_FALSE(base::ContainsKey(*request_headers, url));
-  (*request_headers)[url] = headers;
-}
-
-}  // namespace
-
 // A delegate to insert a user generated X-Chrome-Connected header
 // to a specifict URL.
-class HeaderTestDispatcherHostDelegate
-    : public ChromeResourceDispatcherHostDelegate {
+class HeaderModifyingThrottle : public content::URLLoaderThrottle {
  public:
-  explicit HeaderTestDispatcherHostDelegate(const GURL& watch_url)
-      : watch_url_(watch_url) {}
-  ~HeaderTestDispatcherHostDelegate() override {}
+  HeaderModifyingThrottle() = default;
+  ~HeaderModifyingThrottle() override = default;
 
-  void RequestBeginning(net::URLRequest* request,
-                        content::ResourceContext* resource_context,
-                        content::AppCacheService* appcache_service,
-                        ResourceType resource_type,
-                        std::vector<std::unique_ptr<content::ResourceThrottle>>*
-                            throttles) override {
-    ChromeResourceDispatcherHostDelegate::RequestBeginning(
-        request, resource_context, appcache_service, resource_type, throttles);
-    if (request->url() == watch_url_) {
-      request->SetExtraRequestHeaderByName(signin::kChromeConnectedHeader,
-                                           "User Data", false);
-    }
+  void WillStartRequest(network::ResourceRequest* request,
+                        bool* defer) override {
+    request->headers.SetHeader(signin::kChromeConnectedHeader, "User Data");
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(HeaderModifyingThrottle);
+};
+
+class ThrottleContentBrowserClient : public ChromeContentBrowserClient {
+ public:
+  explicit ThrottleContentBrowserClient(const GURL& watch_url)
+      : watch_url_(watch_url) {}
+  ~ThrottleContentBrowserClient() override = default;
+
+  // ContentBrowserClient overrides:
+  std::vector<std::unique_ptr<content::URLLoaderThrottle>>
+  CreateURLLoaderThrottles(
+      const network::ResourceRequest& request,
+      content::ResourceContext* resource_context,
+      const base::RepeatingCallback<content::WebContents*()>& wc_getter,
+      content::NavigationUIData* navigation_ui_data,
+      int frame_tree_node_id) override {
+    std::vector<std::unique_ptr<content::URLLoaderThrottle>> throttles;
+    if (request.url == watch_url_)
+      throttles.push_back(std::make_unique<HeaderModifyingThrottle>());
+    return throttles;
   }
 
  private:
   const GURL watch_url_;
 
-  DISALLOW_COPY_AND_ASSIGN(HeaderTestDispatcherHostDelegate);
+  DISALLOW_COPY_AND_ASSIGN(ThrottleContentBrowserClient);
 };
-
-// Sets a new one on IO thread
-void SetDelegateOnIO(content::ResourceDispatcherHostDelegate* new_delegate) {
-  content::ResourceDispatcherHost::Get()->SetDelegate(new_delegate);
-}
 
 // Subclass of ChromeResourceDispatcherHostDelegateBrowserTest with Mirror
 // enabled.
 class ChromeResourceDispatcherHostDelegateMirrorBrowserTest
     : public ChromeResourceDispatcherHostDelegateBrowserTest {
  private:
+  void SetUpOnMainThread() override {
+    // The test makes requests to google.com and other domains which we want to
+    // redirect to the test server.
+    host_resolver()->AddRule("*", "127.0.0.1");
+
+    // The production code only allows known ports (80 for http and 443 for
+    // https), but the test server runs on a random port.
+    google_util::IgnorePortNumbersForGoogleURLChecksForTesting();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // HTTPS server only serves a valid cert for localhost, so this is needed to
+    // load pages from "www.google.com" without an interstitial.
+    command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
+  }
+
   ScopedAccountConsistencyMirror scoped_mirror_;
 };
 
@@ -421,113 +324,114 @@ IN_PROC_BROWSER_TEST_F(ChromeResourceDispatcherHostDelegateMirrorBrowserTest,
   browser()->profile()->GetPrefs()->SetString(
       prefs::kGoogleServicesUserAccountId, "account_id");
 
+  base::Lock lock;
+  // Map from the path of the URLs that test server sees to the request header.
+  // This is the path, and not URL, because the requests use different domains
+  // which the mock HostResolver converts to 127.0.0.1.
+  std::map<std::string, net::test_server::HttpRequest::HeaderMap> header_map;
+  embedded_test_server()->RegisterRequestMonitor(base::BindLambdaForTesting(
+      [&](const net::test_server::HttpRequest& request) {
+        base::AutoLock auto_lock(lock);
+        header_map[request.GetURL().path()] = request.headers;
+      }));
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  https_server.RegisterRequestMonitor(base::BindLambdaForTesting(
+      [&](const net::test_server::HttpRequest& request) {
+        base::AutoLock auto_lock(lock);
+        header_map[request.GetURL().path()] = request.headers;
+      }));
+  ASSERT_TRUE(https_server.Start());
+
   base::FilePath root_http;
   base::PathService::Get(chrome::DIR_TEST_DATA, &root_http);
   root_http = root_http.AppendASCII("mirror_request_header");
 
   struct TestCase {
     GURL original_url;       // The URL from which the request begins.
-    GURL redirected_to_url;  // The URL to which naviagtion is redirected.
+    // The path to which navigation is redirected.
+    std::string redirected_to_path;
     bool inject_header;  // Should X-Chrome-Connected header be injected to the
                          // original request.
     bool original_url_expects_header;       // Expectation: The header should be
                                             // visible in original URL.
     bool redirected_to_url_expects_header;  // Expectation: The header should be
                                             // visible in redirected URL.
-  } all_tests[] = {
-      // Neither should have the header.
-      {GURL("http://www.google.com"), GURL("http://www.redirected.com"), false,
-       false, false},
-      // First one should have the header, but not transfered to second one.
-      {GURL("https://www.google.com"), GURL("https://www.redirected.com"),
-       false, true, false},
-      // First one adds the header and transfers it to the second.
-      {GURL("http://www.header_adder.com"),
-       GURL("http://www.redirected_from_header_adder.com"), true, true, true}};
+  };
+
+  std::vector<TestCase> all_tests;
+
+  // Neither should have the header.
+  // Note we need to replace the port of the redirect's URL.
+  base::StringPairs replacement_text;
+  std::string replacement_path;
+  replacement_text.push_back(std::make_pair(
+      "{{PORT}}", base::UintToString(embedded_test_server()->port())));
+  net::test_server::GetFilePathWithReplacements(
+      "/mirror_request_header/http.www.google.com.html", replacement_text,
+      &replacement_path);
+  all_tests.push_back(
+      {embedded_test_server()->GetURL("www.google.com", replacement_path),
+       "/simple.html", false, false, false});
+
+  // First one adds the header and transfers it to the second.
+  net::test_server::GetFilePathWithReplacements(
+      "/mirror_request_header/http.www.header_adder.com.html", replacement_text,
+      &replacement_path);
+  all_tests.push_back(
+      {embedded_test_server()->GetURL("www.header_adder.com", replacement_path),
+       "/simple.html", true, true, true});
+
+  // First one should have the header, but not transfered to second one.
+  replacement_text.clear();
+  replacement_text.push_back(
+      std::make_pair("{{PORT}}", base::UintToString(https_server.port())));
+  net::test_server::GetFilePathWithReplacements(
+      "/mirror_request_header/https.www.google.com.html", replacement_text,
+      &replacement_path);
+  all_tests.push_back({https_server.GetURL("www.google.com", replacement_path),
+                       "/simple.html", false, true, false});
 
   for (const auto& test_case : all_tests) {
     SCOPED_TRACE(test_case.original_url);
 
-    // The HTTP Request headers (i.e. the ones that are managed on the
-    // URLRequest layer, not on the URLRequestJob layer) sent from the browser
-    // are collected in this map. The keys are URLs the values the request
-    // headers.
-    std::map<std::string, std::string> request_headers;
-    MirrorMockURLRequestJob::ReportResponseHeadersOnUI report_request_headers =
-        base::Bind(&ReportRequestHeaders, &request_headers);
-
-    // If test case requires adding header for the first url,
-    // change the delegate.
-    std::unique_ptr<HeaderTestDispatcherHostDelegate> dispatcher_host_delegate;
-    if (test_case.inject_header) {
-      dispatcher_host_delegate =
-          std::make_unique<HeaderTestDispatcherHostDelegate>(
-              test_case.original_url);
-      base::PostTaskWithTraits(
-          FROM_HERE, {content::BrowserThread::IO},
-          base::BindOnce(&SetDelegateOnIO, dispatcher_host_delegate.get()));
-    }
-
-    // Set up mockup interceptors.
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                             base::BindOnce(&MirrorMockJobInterceptor::Register,
-                                            test_case.original_url, root_http,
-                                            report_request_headers));
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                             base::BindOnce(&MirrorMockJobInterceptor::Register,
-                                            test_case.redirected_to_url,
-                                            root_http, report_request_headers));
+    // If test case requires adding header for the first url add a throttle.
+    ThrottleContentBrowserClient browser_client(test_case.original_url);
+    content::ContentBrowserClient* old_browser_client = nullptr;
+    if (test_case.inject_header)
+      old_browser_client = content::SetBrowserClientForTesting(&browser_client);
 
     // Navigate to first url.
     ui_test_utils::NavigateToURL(browser(), test_case.original_url);
 
-    // Cleanup before verifying the observed headers.
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::IO},
-        base::BindOnce(&MirrorMockJobInterceptor::Unregister,
-                       test_case.original_url));
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::IO},
-        base::BindOnce(&MirrorMockJobInterceptor::Unregister,
-                       test_case.redirected_to_url));
+    if (test_case.inject_header)
+      content::SetBrowserClientForTesting(old_browser_client);
 
-    // If delegate is changed, remove it.
-    if (test_case.inject_header) {
-      base::RunLoop run_loop;
-      base::PostTaskWithTraitsAndReply(
-          FROM_HERE, {content::BrowserThread::IO},
-          base::BindOnce(&SetDelegateOnIO, nullptr), run_loop.QuitClosure());
-      run_loop.Run();
-    }
-
-    // Ensure that the response headers have been reported to the UI thread
-    // and unregistration has been processed on the IO thread.
-    base::RunLoop run_loop;
-    base::PostTaskWithTraitsAndReply(FROM_HERE, {content::BrowserThread::IO},
-                                     // Flush IO thread...
-                                     base::DoNothing(),
-                                     // ... and UI thread.
-                                     run_loop.QuitClosure());
-    run_loop.Run();
+    base::AutoLock auto_lock(lock);
 
     // Check if header exists and X-Chrome-Connected is correctly provided.
-    ASSERT_EQ(1u, request_headers.count(test_case.original_url.spec()));
+    ASSERT_EQ(1u, header_map.count(test_case.original_url.path()));
     if (test_case.original_url_expects_header) {
-      EXPECT_THAT(request_headers[test_case.original_url.spec()],
-                  HasSubstr(signin::kChromeConnectedHeader));
+      ASSERT_TRUE(!!header_map[test_case.original_url.path()].count(
+          signin::kChromeConnectedHeader));
     } else {
-      EXPECT_THAT(request_headers[test_case.original_url.spec()],
-                  Not(HasSubstr(signin::kChromeConnectedHeader)));
+      ASSERT_FALSE(!!header_map[test_case.original_url.path()].count(
+          signin::kChromeConnectedHeader));
     }
 
-    ASSERT_EQ(1u, request_headers.count(test_case.redirected_to_url.spec()));
+    ASSERT_EQ(1u, header_map.count(test_case.redirected_to_path));
     if (test_case.redirected_to_url_expects_header) {
-      EXPECT_THAT(request_headers[test_case.redirected_to_url.spec()],
-                  HasSubstr(signin::kChromeConnectedHeader));
+      ASSERT_TRUE(!!header_map[test_case.redirected_to_path].count(
+          signin::kChromeConnectedHeader));
     } else {
-      EXPECT_THAT(request_headers[test_case.redirected_to_url.spec()],
-                  Not(HasSubstr(signin::kChromeConnectedHeader)));
+      ASSERT_FALSE(!!header_map[test_case.redirected_to_path].count(
+          signin::kChromeConnectedHeader));
     }
+
+    header_map.clear();
   }
 }
 

@@ -8,7 +8,6 @@
 #include "build/build_config.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/default_style.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect.h"
@@ -17,7 +16,6 @@
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/view_properties.h"
-#include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/dialog_client_view.h"
@@ -135,7 +133,6 @@ bool BubbleDialogDelegateView::ShouldShowCloseButton() const {
 
 ClientView* BubbleDialogDelegateView::CreateClientView(Widget* widget) {
   DialogClientView* client = new DialogClientView(widget, GetContentsView());
-  widget->non_client_view()->set_mirror_client_in_rtl(mirror_arrow_in_rtl_);
   return client;
 }
 
@@ -149,7 +146,7 @@ NonClientFrameView* BubbleDialogDelegateView::CreateNonClientFrameView(
   frame->SetFootnoteView(CreateFootnoteView());
 
   BubbleBorder::Arrow adjusted_arrow = arrow();
-  if (base::i18n::IsRTL() && mirror_arrow_in_rtl_)
+  if (base::i18n::IsRTL())
     adjusted_arrow = BubbleBorder::horizontal_mirror(adjusted_arrow);
   std::unique_ptr<BubbleBorder> border =
       std::make_unique<BubbleBorder>(adjusted_arrow, GetShadow(), color());
@@ -193,7 +190,7 @@ void BubbleDialogDelegateView::OnWidgetActivationChanged(Widget* widget,
   // Install |mac_bubble_closer_| the first time the widget becomes active.
   if (active && !mac_bubble_closer_ && GetWidget()) {
     mac_bubble_closer_ = std::make_unique<ui::BubbleCloser>(
-        GetWidget()->GetNativeWindow(),
+        GetWidget()->GetNativeWindow().GetNativeNSWindow(),
         base::BindRepeating(&BubbleDialogDelegateView::OnDeactivate,
                             base::Unretained(this)));
   }
@@ -224,7 +221,7 @@ void BubbleDialogDelegateView::SetHighlightedButton(
   bool visible = GetWidget() && GetWidget()->IsVisible();
   // If the Widget is visible, ensure the old highlight (if any) is removed
   // when the highlighted view changes.
-  if (visible)
+  if (visible && highlighted_button != highlighted_button_tracker_.view())
     UpdateHighlightedButton(false);
   highlighted_button_tracker_.SetView(highlighted_button);
   if (visible)
@@ -266,16 +263,6 @@ void BubbleDialogDelegateView::OnAnchorBoundsChanged() {
   SizeToContents();
 }
 
-void BubbleDialogDelegateView::EnableFocusTraversalFromAnchorView() {
-  DCHECK(GetWidget());
-  DCHECK(GetAnchorView());
-  GetWidget()->SetFocusTraversableParent(
-      anchor_widget()->GetFocusTraversable());
-  GetWidget()->SetFocusTraversableParentView(GetAnchorView());
-  GetAnchorView()->SetProperty(kAnchoredDialogKey,
-                               static_cast<BubbleDialogDelegateView*>(this));
-}
-
 BubbleDialogDelegateView::BubbleDialogDelegateView()
     : BubbleDialogDelegateView(nullptr, BubbleBorder::TOP_LEFT) {}
 
@@ -286,8 +273,6 @@ BubbleDialogDelegateView::BubbleDialogDelegateView(View* anchor_view,
       anchor_view_tracker_(std::make_unique<ViewTracker>()),
       anchor_widget_(nullptr),
       arrow_(arrow),
-      mirror_arrow_in_rtl_(
-          ViewsDelegate::GetInstance()->ShouldMirrorArrowsInRTL()),
       shadow_(shadow),
       color_explicitly_set_(false),
       accept_events_(true),
@@ -377,8 +362,12 @@ void BubbleDialogDelegateView::SetAnchorView(View* anchor_view) {
     // point. (It's safe to skip this, since if we were to update the
     // bounds when |anchor_view| is NULL, the bubble won't move.)
     OnAnchorBoundsChanged();
+  }
 
-    EnableFocusTraversalFromAnchorView();
+  if (anchor_view) {
+    // Make sure that focus can move into here from the anchor view (but not
+    // out, focus will cycle inside the dialog once it gets here).
+    anchor_view->SetProperty(kAnchoredDialogKey, this);
   }
 }
 

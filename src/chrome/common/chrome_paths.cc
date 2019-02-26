@@ -5,12 +5,12 @@
 #include "chrome/common/chrome_paths.h"
 
 #include "base/files/file_util.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/native_library.h"
+#include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/version.h"
 #include "build/build_config.h"
@@ -77,8 +77,10 @@ const base::FilePath::CharType kChromeOSTPMFirmwareUpdateSRKVulnerableROCA[] =
     FILE_PATH_LITERAL("/run/tpm_firmware_update_srk_vulnerable_roca");
 #endif  // defined(OS_CHROMEOS)
 
-static base::LazyInstance<base::FilePath>::DestructorAtExit
-    g_invalid_specified_user_data_dir = LAZY_INSTANCE_INITIALIZER;
+base::FilePath& GetInvalidSpecifiedUserDataDirInternal() {
+  static base::NoDestructor<base::FilePath> s;
+  return *s;
+}
 
 // Gets the path for internal plugins.
 bool GetInternalPluginsDirectory(base::FilePath* result) {
@@ -606,11 +608,11 @@ void RegisterPathProvider() {
 }
 
 void SetInvalidSpecifiedUserDataDir(const base::FilePath& user_data_dir) {
-  g_invalid_specified_user_data_dir.Get() = user_data_dir;
+  GetInvalidSpecifiedUserDataDirInternal() = user_data_dir;
 }
 
 const base::FilePath& GetInvalidSpecifiedUserDataDir() {
-  return g_invalid_specified_user_data_dir.Get();
+  return GetInvalidSpecifiedUserDataDirInternal();
 }
 
 }  // namespace chrome

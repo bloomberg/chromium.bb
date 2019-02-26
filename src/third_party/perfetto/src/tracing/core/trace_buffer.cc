@@ -83,8 +83,9 @@ bool TraceBuffer::Initialize(size_t size) {
       base::kPageSize % sizeof(ChunkRecord) == 0,
       "sizeof(ChunkRecord) must be an integer divider of a page size");
   PERFETTO_CHECK(size % base::kPageSize == 0);
-  data_ = base::PageAllocator::AllocateMayFail(size);
-  if (!data_) {
+  data_ = base::PagedMemory::Allocate(
+      size, base::PagedMemory::kMayFail | base::PagedMemory::kDontCommit);
+  if (!data_.IsValid()) {
     PERFETTO_ELOG("Trace buffer allocation failed (size: %zu)", size);
     return false;
   }

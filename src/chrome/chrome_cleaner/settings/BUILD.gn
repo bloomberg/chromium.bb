@@ -74,6 +74,7 @@ source_set("unittest_sources") {
     "//chrome/chrome_cleaner/constants:common_strings",
     "//chrome/chrome_cleaner/test:test_util",
     "//components/chrome_cleaner/public/constants:constants",
+    "//components/chrome_cleaner/test:test_name_helper",
     "//testing/gtest",
   ]
 }

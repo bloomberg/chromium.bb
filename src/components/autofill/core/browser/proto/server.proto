@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Data models to interface with legacy Autofill API.
+
 syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
@@ -10,26 +12,30 @@ package autofill;
 
 import "password_requirements.proto";
 
-// The message is sent when a client needs to autofill forms on web pages and
-// asks the server about known field types.
-// Next available id: 11
+// Request to query field suggestions for forms in a page from legacy Autofill
+// API.
+// Next available id: 14
 message AutofillQueryContents {
+  reserved 11;  // Reserved for server use.
   required string client_version = 1;
   repeated group Form = 2 {
     required fixed64 signature = 3;
+    optional AutofillRandomizedFormMetadata form_metadata = 12;
     repeated group Field = 4 {
       required fixed32 signature = 5;
       optional string name = 8;
       optional string type = 9;  // Control type.
+      optional AutofillRandomizedFieldMetadata field_metadata = 13;
     }
   }
 }
 
-// This message is the result of an Autofill query. It holds the field type
-// information.
+// Response from Autofill query on the legacy API that gives field suggestions
+// for forms of a page in a flattened representation. The fields are returned in
+// the exact same order as filled in the request.
 // Next available id: 10
 message AutofillQueryResponseContents {
-  optional bool upload_required = 1;
+  optional bool upload_required = 1 [deprecated = true];
   repeated group Field = 2 {
     required fixed32 overall_type_prediction = 3;
     // Detailed list of all possible predictions (including
@@ -179,7 +185,7 @@ message AutofillRandomizedFieldMetadata {
 
 // This message contains information about the field types in a single form.
 // It is sent by the toolbar to contribute to the field type statistics.
-// Next available id: 35
+// Next available id: 36
 message AutofillUploadContents {
   required string client_version = 1;
   required fixed64 form_signature = 2;
@@ -284,9 +290,19 @@ message AutofillUploadContents {
     optional VoteType vote_type = 23;
 
     message AutofillTypeValiditiesPair {
+      // Type of the field, e.g. what type of personal data the user entered in
+      // that field before form submission. A list of all data types can be
+      // found in:
       required int32 type = 1;
+      // The validity of the type, which is determined based on the validity of
+      // the user's profile data. A list of all validity states can be found
+      // here: components/autofill/core/browser/field_types.h
+      // The validity state of a type is used to experiment if only using valid
+      // data would result in better predictions.
       repeated int32 validity = 2;
     }
+    // A list of possible types for the field with their corresponding validity
+    // states based on the user's data.
     repeated AutofillTypeValiditiesPair autofill_type_validities = 35;
   }
   // Signature of the form action host (e.g. Hash64Bit("example.com")).
@@ -330,7 +346,7 @@ message AutofillUploadContents {
 
   // Event observed by the password manager which indicated that the form was
   // successfully submitted. Corresponds to
-  // |PasswordForm::SubmissionIndicatorEvent|.
+  // |SubmissionIndicatorEvent|.
   enum SubmissionIndicatorEvent {
     NONE = 0;
     HTML_FORM_SUBMISSION = 1;

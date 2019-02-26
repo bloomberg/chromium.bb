@@ -10,8 +10,7 @@
 #include "core/fxcrt/widestring.h"
 
 enum class JSMessage {
-  kRunSuccess = 0,
-  kAlert,
+  kAlert = 1,
   kParamError,
   kInvalidInputError,
   kParamTooLongError,
@@ -31,9 +30,12 @@ enum class JSMessage {
   kPermissionError,
   kBadObjectError,
   kObjectTypeError,
-  kTooManyOccurances,
   kUnknownProperty,
+  kInvalidSetError,
+#ifdef PDF_ENABLE_XFA
+  kTooManyOccurances,
   kUnknownMethod,
+#endif
 };
 
 WideString JSGetStringFromID(JSMessage msg);

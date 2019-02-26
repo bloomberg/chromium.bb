@@ -59,7 +59,8 @@ DedicatedWorkerThread::DedicatedWorkerThread(
     DedicatedWorkerObjectProxy& worker_object_proxy)
     : WorkerThread(worker_object_proxy),
       name_(name.IsolatedCopy()),
-      worker_object_proxy_(worker_object_proxy) {
+      worker_object_proxy_(worker_object_proxy),
+      is_nested_worker_(parent_execution_context->IsWorkerGlobalScope()) {
   FrameOrWorkerScheduler* scheduler =
       parent_execution_context ? parent_execution_context->GetScheduler()
                                : nullptr;
@@ -76,8 +77,8 @@ void DedicatedWorkerThread::ClearWorkerBackingThread() {
 
 WorkerOrWorkletGlobalScope* DedicatedWorkerThread::CreateWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params) {
-  return new DedicatedWorkerGlobalScope(name_, std::move(creation_params), this,
-                                        time_origin_);
+  return MakeGarbageCollected<DedicatedWorkerGlobalScope>(
+      name_, std::move(creation_params), this, time_origin_);
 }
 
 }  // namespace blink

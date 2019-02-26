@@ -30,8 +30,10 @@ class CORE_EXPORT FindInPage final
  public:
   static FindInPage* Create(WebLocalFrameImpl& frame,
                             InterfaceRegistry* interface_registry) {
-    return new FindInPage(frame, interface_registry);
+    return MakeGarbageCollected<FindInPage>(frame, interface_registry);
   }
+
+  FindInPage(WebLocalFrameImpl& frame, InterfaceRegistry* interface_registry);
 
   bool FindInternal(int identifier,
                     const WebString& search_text,
@@ -101,8 +103,6 @@ class CORE_EXPORT FindInPage final
   }
 
  private:
-  FindInPage(WebLocalFrameImpl& frame, InterfaceRegistry* interface_registry);
-
   // Will be initialized after first call to ensureTextFinder().
   Member<TextFinder> text_finder_;
 

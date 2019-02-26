@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/flex_wrap.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* FlexWrap::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -16,5 +16,5 @@ const CSSValue* FlexWrap::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.FlexWrap());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

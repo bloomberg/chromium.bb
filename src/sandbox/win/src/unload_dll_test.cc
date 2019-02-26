@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/win/scoped_handle.h"
+#include "build/build_config.h"
 #include "sandbox/win/src/sandbox.h"
 #include "sandbox/win/src/sandbox_factory.h"
 #include "sandbox/win/src/target_services.h"
@@ -40,7 +41,13 @@ SBOX_TESTS_COMMAND int SimpleOpenEvent(int argc, wchar_t** argv) {
   return event_open.Get() ? SBOX_TEST_SUCCEEDED : SBOX_TEST_FAILED;
 }
 
-TEST(UnloadDllTest, BaselineAvicapDll) {
+// Fails on Windows ARM64: https://crbug.com/905526
+#if defined(ARCH_CPU_ARM64)
+#define MAYBE_BaselineAvicapDll DISABLED_BaselineAvicapDll
+#else
+#define MAYBE_BaselineAvicapDll BaselineAvicapDll
+#endif
+TEST(UnloadDllTest, MAYBE_BaselineAvicapDll) {
   TestRunner runner;
   runner.SetTestState(BEFORE_REVERT);
   runner.SetTimeout(2000);

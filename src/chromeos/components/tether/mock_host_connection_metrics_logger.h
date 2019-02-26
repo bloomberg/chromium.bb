@@ -15,12 +15,10 @@ namespace chromeos {
 namespace tether {
 
 class ActiveHost;
-class BleConnectionManager;
 
 class MockHostConnectionMetricsLogger : public HostConnectionMetricsLogger {
  public:
-  MockHostConnectionMetricsLogger(BleConnectionManager* connection_manager,
-                                  ActiveHost* active_host);
+  MockHostConnectionMetricsLogger(ActiveHost* active_host);
   ~MockHostConnectionMetricsLogger() override;
 
   MOCK_METHOD2(RecordConnectionToHostResult,

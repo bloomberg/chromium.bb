@@ -16,7 +16,7 @@ URLLoaderCompletionStatus::URLLoaderCompletionStatus(int error_code)
     : error_code(error_code), completion_time(base::TimeTicks::Now()) {}
 
 URLLoaderCompletionStatus::URLLoaderCompletionStatus(
-    const CORSErrorStatus& error)
+    const CorsErrorStatus& error)
     : URLLoaderCompletionStatus(net::ERR_FAILED) {
   cors_error_status = error;
 }

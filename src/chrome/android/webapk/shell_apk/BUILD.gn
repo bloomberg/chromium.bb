@@ -4,7 +4,15 @@
 
 import("//build/config/android/rules.gni")
 import("current_version/current_version.gni")
-import("manifest_processor.gni")
+import("manifest/manifest_mustache_pass.gni")
+
+webapk_manifest_to_upload_output =
+    "${target_gen_dir}/webapk_manifest_to_upload/AndroidManifest.xml"
+h2o_junit_manifest_output =
+    "${target_gen_dir}/junit_manifest/AndroidManifest.xml"
+
+# GN breaks with a mysterious error if the target has the word "junit" in it.
+h2o_junit_manifest_target_name = "h2o_j_unit_manifest_target"
 
 android_resources("new_splash_resources") {
   custom_package = "org.chromium.webapk.shell_apk.h2o"
@@ -42,9 +50,11 @@ template("webapk_java") {
       "src/org/chromium/webapk/shell_apk/IdentityService.java",
       "src/org/chromium/webapk/shell_apk/InstallHostBrowserDialog.java",
       "src/org/chromium/webapk/shell_apk/LaunchHostBrowserSelector.java",
-      "src/org/chromium/webapk/shell_apk/TransparentHostBrowserLauncherActivity.java",
+      "src/org/chromium/webapk/shell_apk/MainActivity.java",
+      "src/org/chromium/webapk/shell_apk/TransparentLauncherActivity.java",
       "src/org/chromium/webapk/shell_apk/WebApkServiceFactory.java",
       "src/org/chromium/webapk/shell_apk/WebApkServiceImplWrapper.java",
+      "src/org/chromium/webapk/shell_apk/WebApkSharedPreferences.java",
       "src/org/chromium/webapk/shell_apk/WebApkUtils.java",
     ]
     deps += [
@@ -57,16 +67,18 @@ template("webapk_java") {
       java_files += [
         "src/org/chromium/webapk/shell_apk/h2o/H2OLauncher.java",
         "src/org/chromium/webapk/shell_apk/h2o/H2OMainActivity.java",
+        "src/org/chromium/webapk/shell_apk/h2o/H2OTransparentLauncherActivity.java",
         "src/org/chromium/webapk/shell_apk/h2o/SplashActivity.java",
       ]
       deps += [ "//chrome/android/webapk/libs/common:splash_java" ]
-    } else {
-      java_files += [ "src/org/chromium/webapk/shell_apk/MainActivity.java" ]
     }
   }
 }
 
 template("webapk_tmpl") {
+  _manifest_to_upload_target_name = "${target_name}_manifest_to_upload"
+  _manifest_to_upload_output =
+      "${target_gen_dir}/${_manifest_to_upload_target_name}/AndroidManifest.xml"
   _manifest_target_name = "${target_name}_generate_manifest"
   _manifest_output =
       "${target_gen_dir}/${_manifest_target_name}/AndroidManifest.xml"
@@ -78,15 +90,41 @@ template("webapk_tmpl") {
     _use_new_splash = invoker.use_new_splash
   }
 
-  manifest_processor_template(_manifest_target_name) {
-    forward_variables_from(invoker, [ "config_file" ])
+  if (defined(invoker.manifest_to_upload_output)) {
+    _manifest_to_upload_output = invoker.manifest_to_upload_output
+  }
+  if (defined(invoker.manifest_output)) {
+    _manifest_output = invoker.manifest_output
+  }
+  if (defined(invoker.manifest_target_name)) {
+    _manifest_target_name = invoker.manifest_target_name
+  }
 
+  # Generate manifest to upload to WebAPK server. Fills in all of the fields
+  # that the server cannot customize on a per-site basis.
+  manifest_mustache_pass(_manifest_to_upload_target_name) {
     input = "AndroidManifest.xml"
-    output = _manifest_output
-
+    output = _manifest_to_upload_output
     extra_variables = [
       "shell_apk_version=$current_shell_apk_version",
       "use_new_splash=$_use_new_splash",
+    ]
+  }
+
+  # Generate manifest with test values.
+  manifest_mustache_pass(_manifest_target_name) {
+    forward_variables_from(invoker,
+                           [
+                             "apk_package_name",
+                             "config_file",
+                             "delta_config_file",
+                           ])
+
+    input = _manifest_to_upload_output
+    output = _manifest_output
+    extra_variables = [ "manifest_package=$apk_package_name" ]
+    deps = [
+      ":$_manifest_to_upload_target_name",
     ]
   }
 
@@ -193,29 +231,46 @@ java_strings_grd("webapk_strings_grd") {
 # - Android manifest is customized to the website.
 # - App icon is extracted from the website and added to the APK's resources.
 webapk_tmpl("webapk") {
-  config_file = "bound_manifest_config.json"
+  config_file = "manifest/bound_manifest_config.json"
   apk_name = "WebApk"
+  apk_package_name = "org.chromium.webapk"
+  manifest_to_upload_output = webapk_manifest_to_upload_output
 }
 
 webapk_tmpl("maps_go_webapk") {
-  config_file = "maps_go_manifest_config.json"
+  config_file = "manifest/maps_go_manifest_config.json"
   apk_name = "MapsWebApk"
+  apk_package_name = "org.chromium.maps_go_webapk"
 }
 
 webapk_tmpl("unbound_webapk") {
-  config_file = "unbound_manifest_config.json"
+  config_file = "manifest/unbound_manifest_config.json"
   apk_name = "UnboundWebApk"
+  apk_package_name = "org.chromium.arbitrarypackage"
 }
 
 webapk_tmpl("http_webapk") {
-  config_file = "http_manifest_config.json"
+  config_file = "manifest/bound_manifest_config.json"
+  delta_config_file = "manifest/http_manifest_config_delta.json"
   apk_name = "HttpWebApk"
+  apk_package_name = "org.chromium.webapk.http"
 }
 
 webapk_tmpl("new_splash_webapk") {
   use_new_splash = true
-  config_file = "new_splash_manifest_config.json"
+  config_file = "manifest/bound_manifest_config.json"
   apk_name = "NewSplashWebApk"
+  apk_package_name = "org.chromium.webapk.new.splash"
+}
+
+# Used by webapk_shell_apk_h2o_junit_tests
+webapk_tmpl("h2o_j_unit_webapk") {
+  use_new_splash = true
+  config_file = "manifest/bound_manifest_config.json"
+  apk_name = "H2OJUnitWebApk"
+  apk_package_name = "org.chromium.webapk.h2o.junit_webapk"
+  manifest_output = h2o_junit_manifest_output
+  manifest_target_name = h2o_junit_manifest_target_name
 }
 
 android_library("shell_apk_javatests") {
@@ -251,4 +306,18 @@ junit_binary("webapk_shell_apk_junit_tests") {
     "//chrome/android/webapk/libs/runtime_library:runtime_library_for_tests_java",
     "//chrome/android/webapk/test:junit_test_support",
   ]
+}
+
+junit_binary("webapk_shell_apk_h2o_junit_tests") {
+  java_files = [ "junit/src/org/chromium/webapk/shell_apk/h2o/LaunchTest.java" ]
+  deps = [
+    ":${h2o_junit_manifest_target_name}",
+    ":h2o_j_unit_webapk_java",
+    "//chrome/android/webapk/libs/common:common_java",
+    "//chrome/android/webapk/test:junit_test_support",
+  ]
+  data_deps = [
+    ":${h2o_junit_manifest_target_name}",
+  ]
+  android_manifest_path = h2o_junit_manifest_output
 }

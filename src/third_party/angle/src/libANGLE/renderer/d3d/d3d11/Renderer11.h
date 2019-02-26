@@ -27,7 +27,7 @@ namespace gl
 {
 class FramebufferAttachment;
 class ImageIndex;
-}
+}  // namespace gl
 
 namespace rx
 {
@@ -48,16 +48,16 @@ struct Renderer11DeviceCaps
     Renderer11DeviceCaps();
 
     D3D_FEATURE_LEVEL featureLevel;
-    bool supportsDXGI1_2;                // Support for DXGI 1.2
-    bool supportsClearView;              // Support for ID3D11DeviceContext1::ClearView
-    bool supportsConstantBufferOffsets;  // Support for Constant buffer offset
+    bool supportsDXGI1_2;                         // Support for DXGI 1.2
+    bool supportsClearView;                       // Support for ID3D11DeviceContext1::ClearView
+    bool supportsConstantBufferOffsets;           // Support for Constant buffer offset
     bool supportsVpRtIndexWriteFromVertexShader;  // VP/RT can be selected in the Vertex Shader
                                                   // stage.
     bool supportsMultisampledDepthStencilSRVs;  // D3D feature level 10.0 no longer allows creation
                                                 // of textures with both the bind SRV and DSV flags
                                                 // when multisampled.  Textures will need to be
                                                 // resolved before reading. crbug.com/656989
-    UINT B5G6R5support;    // Bitfield of D3D11_FORMAT_SUPPORT values for DXGI_FORMAT_B5G6R5_UNORM
+    UINT B5G6R5support;     // Bitfield of D3D11_FORMAT_SUPPORT values for DXGI_FORMAT_B5G6R5_UNORM
     UINT B5G6R5maxSamples;  // Maximum number of samples supported by DXGI_FORMAT_B5G6R5_UNORM
     UINT B4G4R4A4support;  // Bitfield of D3D11_FORMAT_SUPPORT values for DXGI_FORMAT_B4G4R4A4_UNORM
     UINT B4G4R4A4maxSamples;  // Maximum number of samples supported by DXGI_FORMAT_B4G4R4A4_UNORM
@@ -355,9 +355,8 @@ class Renderer11 : public RendererD3D
                              uint8_t *pixelsOut);
 
     bool getLUID(LUID *adapterLuid) const override;
-    VertexConversionType getVertexConversionType(
-        gl::VertexFormatType vertexFormatType) const override;
-    GLenum getVertexComponentType(gl::VertexFormatType vertexFormatType) const override;
+    VertexConversionType getVertexConversionType(angle::FormatID vertexFormatID) const override;
+    GLenum getVertexComponentType(angle::FormatID vertexFormatID) const override;
 
     // Warning: you should ensure binding really matches attrib.bindingIndex before using this
     // function.
@@ -400,11 +399,20 @@ class Renderer11 : public RendererD3D
 
     DeviceImpl *createEGLDevice() override;
 
-    angle::Result drawArrays(const gl::Context *context, const gl::DrawCallParams &params);
-    angle::Result drawElements(const gl::Context *context, const gl::DrawCallParams &params);
-    angle::Result drawArraysIndirect(const gl::Context *context, const gl::DrawCallParams &params);
-    angle::Result drawElementsIndirect(const gl::Context *context,
-                                       const gl::DrawCallParams &params);
+    angle::Result drawArrays(const gl::Context *context,
+                             gl::PrimitiveMode mode,
+                             GLint firstVertex,
+                             GLsizei vertexCount,
+                             GLsizei instanceCount);
+    angle::Result drawElements(const gl::Context *context,
+                               gl::PrimitiveMode mode,
+                               GLint startVertex,
+                               GLsizei indexCount,
+                               GLenum indexType,
+                               const void *indices,
+                               GLsizei instanceCount);
+    angle::Result drawArraysIndirect(const gl::Context *context, const void *indirect);
+    angle::Result drawElementsIndirect(const gl::Context *context, const void *indirect);
 
     // Necessary hack for default framebuffers in D3D.
     FramebufferImpl *createDefaultFramebuffer(const gl::FramebufferState &state) override;

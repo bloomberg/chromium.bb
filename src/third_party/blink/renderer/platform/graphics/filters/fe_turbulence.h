@@ -40,6 +40,8 @@ class PLATFORM_EXPORT FETurbulence final : public FilterEffect {
   static FETurbulence*
   Create(Filter*, TurbulenceType, float, float, int, float, bool);
 
+  FETurbulence(Filter*, TurbulenceType, float, float, int, float, bool);
+
   TurbulenceType GetType() const;
   bool SetType(TurbulenceType);
 
@@ -62,8 +64,6 @@ class PLATFORM_EXPORT FETurbulence final : public FilterEffect {
                                           int indention) const override;
 
  private:
-  FETurbulence(Filter*, TurbulenceType, float, float, int, float, bool);
-
   sk_sp<PaintFilter> CreateImageFilter() override;
 
   TurbulenceType type_;

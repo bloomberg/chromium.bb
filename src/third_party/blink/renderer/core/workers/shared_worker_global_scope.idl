@@ -34,7 +34,7 @@
     Global=(Worker,SharedWorker),
     Exposed=SharedWorker
 ] interface SharedWorkerGlobalScope : WorkerGlobalScope {
-    readonly attribute DOMString name;
+    [Replaceable] readonly attribute DOMString name;
     // TODO(foolip): readonly attribute ApplicationCache applicationCache;
 
     void close();

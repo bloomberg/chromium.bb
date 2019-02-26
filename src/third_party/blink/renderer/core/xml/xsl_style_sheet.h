@@ -38,13 +38,14 @@ class XSLStyleSheet final : public StyleSheet {
                                const String& original_url,
                                const KURL& final_url) {
     DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
-    return new XSLStyleSheet(parent_node, original_url, final_url, false);
+    return MakeGarbageCollected<XSLStyleSheet>(parent_node, original_url,
+                                               final_url, false);
   }
   static XSLStyleSheet* CreateEmbedded(ProcessingInstruction* parent_node,
                                        const KURL& final_url) {
     DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
-    return new XSLStyleSheet(parent_node, final_url.GetString(), final_url,
-                             true);
+    return MakeGarbageCollected<XSLStyleSheet>(
+        parent_node, final_url.GetString(), final_url, true);
   }
 
   // Taking an arbitrary node is unsafe, because owner node pointer can become
@@ -55,10 +56,22 @@ class XSLStyleSheet final : public StyleSheet {
                                                const String& original_url,
                                                const KURL& final_url) {
     DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
-    return new XSLStyleSheet(document, stylesheet_root_node, original_url,
-                             final_url, false);
+    return MakeGarbageCollected<XSLStyleSheet>(document, stylesheet_root_node,
+                                               original_url, final_url, false);
   }
 
+  XSLStyleSheet(Node* parent_node,
+                const String& original_url,
+                const KURL& final_url,
+                bool embedded);
+  XSLStyleSheet(Document* owner_document,
+                Node* style_sheet_root_node,
+                const String& original_url,
+                const KURL& final_url,
+                bool embedded);
+  XSLStyleSheet(XSLStyleSheet* parent_style_sheet,
+                const String& original_url,
+                const KURL& final_url);
   ~XSLStyleSheet() override;
 
   bool ParseString(const String&);
@@ -94,19 +107,6 @@ class XSLStyleSheet final : public StyleSheet {
   void Trace(blink::Visitor*) override;
 
  private:
-  XSLStyleSheet(Node* parent_node,
-                const String& original_url,
-                const KURL& final_url,
-                bool embedded);
-  XSLStyleSheet(Document* owner_document,
-                Node* style_sheet_root_node,
-                const String& original_url,
-                const KURL& final_url,
-                bool embedded);
-  XSLStyleSheet(XSLStyleSheet* parent_style_sheet,
-                const String& original_url,
-                const KURL& final_url);
-
   void LoadChildSheets();
   void LoadChildSheet(const String& href);
 

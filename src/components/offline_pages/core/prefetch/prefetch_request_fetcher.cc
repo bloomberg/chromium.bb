@@ -68,8 +68,9 @@ PrefetchRequestFetcher::PrefetchRequestFetcher(
         policy {
           cookies_allowed: NO
           setting:
-            "Users can enable or disable the offline prefetch by toggling"
-            "chrome://flags#offline-prefetch in Chromium on Android."
+            "Users can enable or disable offline prefetch by toggling "
+            "'Download articles for you' in settings under Downloads or "
+            "by toggling chrome://flags#offline-prefetch."
           policy_exception_justification:
             "Not implemented, considered not useful."
         })");

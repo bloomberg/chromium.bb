@@ -51,18 +51,21 @@ uniform half blurRadius;
         sk_sp<GrTextureProxy> mask(proxyProvider->findOrCreateProxyByUniqueKey(
                                                                  key, kBottomLeft_GrSurfaceOrigin));
         if (!mask) {
+            GrBackendFormat format =
+                context->contextPriv().caps()->getBackendFormatFromColorType(kAlpha_8_SkColorType);
             // TODO: this could be approx but the texture coords will need to be updated
             sk_sp<GrRenderTargetContext> rtc(
                     context->contextPriv().makeDeferredRenderTargetContextWithFallback(
-                                                SkBackingFit::kExact, size.fWidth, size.fHeight,
-                                                kAlpha_8_GrPixelConfig, nullptr));
+                                                format, SkBackingFit::kExact, size.fWidth,
+                                                size.fHeight, kAlpha_8_GrPixelConfig, nullptr));
             if (!rtc) {
                 return nullptr;
             }
 
             GrPaint paint;
 
-            rtc->clear(nullptr, 0x0, GrRenderTargetContext::CanClearFullscreen::kYes);
+            rtc->clear(nullptr, SK_PMColor4fTRANSPARENT,
+                       GrRenderTargetContext::CanClearFullscreen::kYes);
             rtc->drawRRect(GrNoClip(), std::move(paint), GrAA::kYes, SkMatrix::I(), rrectToDraw,
                            GrStyle::SimpleFill());
 

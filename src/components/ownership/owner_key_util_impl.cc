@@ -9,7 +9,7 @@
 
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "build/build_config.h"
 #include "crypto/nss_key_util.h"
 

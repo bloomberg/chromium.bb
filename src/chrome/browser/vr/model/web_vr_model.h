@@ -27,13 +27,27 @@ enum WebVrState {
   kWebVrPresenting,
 };
 
+// Type of permission prompt visible out-of-headset on a desktop display that
+// the user may want to respond to.
+enum class ExternalPromptNotificationType {
+  kPromptNone = 0,
+  kPromptAudio,
+  kPromptBluetooth,
+};
+
 struct VR_EXPORT WebVrModel {
   WebVrState state = kWebVrNoTimeoutPending;
   bool has_received_permissions = false;
   bool showing_hosted_ui = false;
-  bool presenting_web_vr() const {
-    return state == kWebVrPresenting && !showing_hosted_ui;
+  bool IsImmersiveWebXrVisible() const {
+    return state == kWebVrPresenting && !showing_hosted_ui &&
+           external_prompt_notification ==
+               ExternalPromptNotificationType::kPromptNone;
   }
+
+  // Desktop permission requests.
+  ExternalPromptNotificationType external_prompt_notification =
+      ExternalPromptNotificationType::kPromptNone;
 };
 
 }  // namespace vr

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // This file has been auto-generated from the Jinja2 template
-// third_party/blink/renderer/bindings/templates/interface.cpp.tmpl
+// third_party/blink/renderer/bindings/templates/interface.cc.tmpl
 // by the script code_generator_v8.py.
 // DO NOT MODIFY!
 
@@ -27,9 +27,9 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestInterfaceCustomConstructor::wrapperTypeInfo = {
+const WrapperTypeInfo V8TestInterfaceCustomConstructor::wrapper_type_info = {
     gin::kEmbedderBlink,
-    V8TestInterfaceCustomConstructor::domTemplate,
+    V8TestInterfaceCustomConstructor::DomTemplate,
     nullptr,
     "TestInterfaceCustomConstructor",
     nullptr,
@@ -44,7 +44,7 @@ const WrapperTypeInfo V8TestInterfaceCustomConstructor::wrapperTypeInfo = {
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestInterfaceCustomConstructor.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // platform/bindings/ScriptWrappable.h.
-const WrapperTypeInfo& TestInterfaceCustomConstructor::wrapper_type_info_ = V8TestInterfaceCustomConstructor::wrapperTypeInfo;
+const WrapperTypeInfo& TestInterfaceCustomConstructor::wrapper_type_info_ = V8TestInterfaceCustomConstructor::wrapper_type_info;
 
 // not [ActiveScriptWrappable]
 static_assert(
@@ -59,15 +59,15 @@ static_assert(
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
 
-namespace TestInterfaceCustomConstructorV8Internal {
+namespace test_interface_custom_constructor_v8_internal {
 
-} // namespace TestInterfaceCustomConstructorV8Internal
-
-void V8TestInterfaceCustomConstructor::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+CORE_EXPORT void ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceCustomConstructor_Constructor");
 
   if (!info.IsConstructCall()) {
-    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::ConstructorNotCallableAsFunction("TestInterfaceCustomConstructor"));
+    V8ThrowException::ThrowTypeError(
+        info.GetIsolate(),
+        ExceptionMessages::ConstructorNotCallableAsFunction("TestInterfaceCustomConstructor"));
     return;
   }
 
@@ -76,31 +76,33 @@ void V8TestInterfaceCustomConstructor::constructorCallback(const v8::FunctionCal
     return;
   }
 
-  V8TestInterfaceCustomConstructor::constructorCustom(info);
+  V8TestInterfaceCustomConstructor::ConstructorCustom(info);
 }
 
-static void installV8TestInterfaceCustomConstructorTemplate(
+}  // namespace test_interface_custom_constructor_v8_internal
+
+static void InstallV8TestInterfaceCustomConstructorTemplate(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
-    v8::Local<v8::FunctionTemplate> interfaceTemplate) {
+    v8::Local<v8::FunctionTemplate> interface_template) {
   // Initialize the interface object's template.
-  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterfaceCustomConstructor::wrapperTypeInfo.interface_name, v8::Local<v8::FunctionTemplate>(), V8TestInterfaceCustomConstructor::internalFieldCount);
-  interfaceTemplate->SetCallHandler(V8TestInterfaceCustomConstructor::constructorCallback);
-  interfaceTemplate->SetLength(0);
+  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestInterfaceCustomConstructor::wrapper_type_info.interface_name, v8::Local<v8::FunctionTemplate>(), V8TestInterfaceCustomConstructor::kInternalFieldCount);
+  interface_template->SetCallHandler(test_interface_custom_constructor_v8_internal::ConstructorCallback);
+  interface_template->SetLength(0);
 
-  v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
+  v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interface_template);
   ALLOW_UNUSED_LOCAL(signature);
-  v8::Local<v8::ObjectTemplate> instanceTemplate = interfaceTemplate->InstanceTemplate();
-  ALLOW_UNUSED_LOCAL(instanceTemplate);
-  v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
-  ALLOW_UNUSED_LOCAL(prototypeTemplate);
+  v8::Local<v8::ObjectTemplate> instance_template = interface_template->InstanceTemplate();
+  ALLOW_UNUSED_LOCAL(instance_template);
+  v8::Local<v8::ObjectTemplate> prototype_template = interface_template->PrototypeTemplate();
+  ALLOW_UNUSED_LOCAL(prototype_template);
 
   // Register IDL constants, attributes and operations.
 
   // Custom signature
 
   V8TestInterfaceCustomConstructor::InstallRuntimeEnabledFeaturesOnTemplate(
-      isolate, world, interfaceTemplate);
+      isolate, world, interface_template);
 }
 
 void V8TestInterfaceCustomConstructor::InstallRuntimeEnabledFeaturesOnTemplate(
@@ -119,29 +121,36 @@ void V8TestInterfaceCustomConstructor::InstallRuntimeEnabledFeaturesOnTemplate(
   // Custom signature
 }
 
-v8::Local<v8::FunctionTemplate> V8TestInterfaceCustomConstructor::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
-  return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestInterfaceCustomConstructorTemplate);
+v8::Local<v8::FunctionTemplate> V8TestInterfaceCustomConstructor::DomTemplate(
+    v8::Isolate* isolate, const DOMWrapperWorld& world) {
+  return V8DOMConfiguration::DomClassTemplate(
+      isolate, world, const_cast<WrapperTypeInfo*>(&wrapper_type_info),
+      InstallV8TestInterfaceCustomConstructorTemplate);
 }
 
-bool V8TestInterfaceCustomConstructor::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
-  return V8PerIsolateData::From(isolate)->HasInstance(&wrapperTypeInfo, v8Value);
+bool V8TestInterfaceCustomConstructor::HasInstance(v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
+  return V8PerIsolateData::From(isolate)->HasInstance(&wrapper_type_info, v8_value);
 }
 
-v8::Local<v8::Object> V8TestInterfaceCustomConstructor::findInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate) {
-  return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
+v8::Local<v8::Object> V8TestInterfaceCustomConstructor::FindInstanceInPrototypeChain(
+    v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
+  return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(
+      &wrapper_type_info, v8_value);
 }
 
-TestInterfaceCustomConstructor* V8TestInterfaceCustomConstructor::ToImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value) {
-  return hasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+TestInterfaceCustomConstructor* V8TestInterfaceCustomConstructor::ToImplWithTypeCheck(
+    v8::Isolate* isolate, v8::Local<v8::Value> value) {
+  return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-TestInterfaceCustomConstructor* NativeValueTraits<TestInterfaceCustomConstructor>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
-  TestInterfaceCustomConstructor* nativeValue = V8TestInterfaceCustomConstructor::ToImplWithTypeCheck(isolate, value);
-  if (!nativeValue) {
-    exceptionState.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+TestInterfaceCustomConstructor* NativeValueTraits<TestInterfaceCustomConstructor>::NativeValue(
+    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
+  TestInterfaceCustomConstructor* native_value = V8TestInterfaceCustomConstructor::ToImplWithTypeCheck(isolate, value);
+  if (!native_value) {
+    exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
         "TestInterfaceCustomConstructor"));
   }
-  return nativeValue;
+  return native_value;
 }
 
 }  // namespace blink

@@ -103,7 +103,7 @@ namespace automationInternal {
 
   // Returns the accessibility tree id of the web contents who's accessibility
   // was enabled using enableTab().
-  callback EnableTabCallback = void(long tree_id);
+  callback EnableTabCallback = void(DOMString tree_id);
 
   // Callback called when enableDesktop() returns.
   callback EnableDesktopCallback = void();
@@ -119,7 +119,7 @@ namespace automationInternal {
                           EnableTabCallback callback);
 
     // Enable automation of the frame with the given tree id.
-    static void enableFrame(DOMString treeId);
+    static void enableFrame(DOMString tree_id);
 
     // Enables desktop automation.
     static void enableDesktop(EnableDesktopCallback callback);
@@ -144,7 +144,7 @@ namespace automationInternal {
                              long nodeID,
                              DOMString changeType);
 
-    static void onChildTreeID(DOMString treeID, long nodeID);
+    static void onChildTreeID(DOMString treeID);
 
     static void onNodesRemoved(DOMString treeID, long[] nodeIDs);
 

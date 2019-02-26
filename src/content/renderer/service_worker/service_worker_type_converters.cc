@@ -144,4 +144,31 @@ TypeConverter<blink::WebServiceWorkerObjectInfo,
       input->host_ptr_info.PassHandle(), input->request.PassHandle());
 }
 
+blink::WebServiceWorkerRegistrationObjectInfo
+TypeConverter<blink::WebServiceWorkerRegistrationObjectInfo,
+              blink::mojom::ServiceWorkerRegistrationObjectInfoPtr>::
+    Convert(const blink::mojom::ServiceWorkerRegistrationObjectInfoPtr& input) {
+  if (!input) {
+    return blink::WebServiceWorkerRegistrationObjectInfo(
+        blink::mojom::kInvalidServiceWorkerRegistrationId, blink::WebURL(),
+        blink::mojom::ScriptType::kClassic,
+        blink::mojom::ServiceWorkerUpdateViaCache::kImports,
+        mojo::ScopedInterfaceEndpointHandle() /* host_ptr_info */,
+        mojo::ScopedInterfaceEndpointHandle() /* request */,
+        blink::mojom::ServiceWorkerObjectInfoPtr()
+            .To<blink::WebServiceWorkerObjectInfo>() /* installing */,
+        blink::mojom::ServiceWorkerObjectInfoPtr()
+            .To<blink::WebServiceWorkerObjectInfo>() /* waiting */,
+        blink::mojom::ServiceWorkerObjectInfoPtr()
+            .To<blink::WebServiceWorkerObjectInfo>() /* active */);
+  }
+  return blink::WebServiceWorkerRegistrationObjectInfo(
+      input->registration_id, input->options->scope, input->options->type,
+      input->options->update_via_cache, input->host_ptr_info.PassHandle(),
+      input->request.PassHandle(),
+      input->installing.To<blink::WebServiceWorkerObjectInfo>(),
+      input->waiting.To<blink::WebServiceWorkerObjectInfo>(),
+      input->active.To<blink::WebServiceWorkerObjectInfo>());
+}
+
 }  // namespace mojo

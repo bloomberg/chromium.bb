@@ -83,6 +83,7 @@ AuthCredentials CreateASCIICredentials(const char* username,
 // Test adding and looking-up cache entries (both by realm and by path).
 TEST(HttpAuthCacheTest, Basic) {
   GURL origin("http://www.google.com");
+  GURL origin2("http://www.foobar.com");
   HttpAuthCache cache;
   HttpAuthCache::Entry* entry;
 
@@ -129,7 +130,18 @@ TEST(HttpAuthCacheTest, Basic) {
                                    "realm4-basic-password"),
             "/");
 
-  // There is no Realm5
+  std::unique_ptr<HttpAuthHandler> origin2_realm5_handler(new MockAuthHandler(
+      HttpAuth::AUTH_SCHEME_BASIC, kRealm5, HttpAuth::AUTH_SERVER));
+  cache.Add(origin2, origin2_realm5_handler->realm(),
+            origin2_realm5_handler->auth_scheme(), "Basic realm=Realm5",
+            CreateASCIICredentials("realm5-user", "realm5-password"), "/");
+  cache.Add(
+      origin2, realm3_basic_handler->realm(),
+      realm3_basic_handler->auth_scheme(), "Basic realm=Realm3",
+      CreateASCIICredentials("realm3-basic-user", "realm3-basic-password"),
+      std::string());
+
+  // There is no Realm5 in origin
   entry = cache.Lookup(origin, kRealm5, HttpAuth::AUTH_SCHEME_BASIC);
   EXPECT_TRUE(NULL == entry);
 
@@ -153,6 +165,12 @@ TEST(HttpAuthCacheTest, Basic) {
   EXPECT_EQ(ASCIIToUTF16("realm3-basic-user"), entry->credentials().username());
   EXPECT_EQ(ASCIIToUTF16("realm3-basic-password"),
             entry->credentials().password());
+
+  // Same realm, scheme with different origins
+  HttpAuthCache::Entry* entry2 = cache.Lookup(
+      GURL("http://www.foobar.com:80"), kRealm3, HttpAuth::AUTH_SCHEME_BASIC);
+  ASSERT_FALSE(NULL == entry2);
+  EXPECT_NE(entry, entry2);
 
   // Valid lookup by origin, realm, scheme when there's a duplicate
   // origin, realm in the cache
@@ -698,22 +716,37 @@ class HttpAuthCacheEvictionTest : public testing::Test {
 
 // Add the maxinim number of realm entries to the cache. Each of these entries
 // must still be retrievable. Next add three more entries -- since the cache is
-// full this causes FIFO eviction of the first three entries.
+// full this causes FIFO eviction of the first three entries by time of last
+// use.
 TEST_F(HttpAuthCacheEvictionTest, RealmEntryEviction) {
-  for (int i = 0; i < kMaxRealms; ++i)
+  base::SimpleTestTickClock test_clock;
+  test_clock.SetNowTicks(base::TimeTicks::Now());
+  cache_.set_tick_clock_for_testing(&test_clock);
+
+  for (int i = 0; i < kMaxRealms; ++i) {
     AddRealm(i);
+    test_clock.Advance(base::TimeDelta::FromSeconds(1));
+  }
 
-  for (int i = 0; i < kMaxRealms; ++i)
+  for (int i = 0; i < kMaxRealms; ++i) {
     CheckRealmExistence(i, true);
+    test_clock.Advance(base::TimeDelta::FromSeconds(1));
+  }
 
-  for (int i = 0; i < 3; ++i)
+  for (int i = 0; i < 3; ++i) {
     AddRealm(i + kMaxRealms);
+    test_clock.Advance(base::TimeDelta::FromSeconds(1));
+  }
 
-  for (int i = 0; i < 3; ++i)
+  for (int i = 0; i < 3; ++i) {
     CheckRealmExistence(i, false);
+    test_clock.Advance(base::TimeDelta::FromSeconds(1));
+  }
 
-  for (int i = 0; i < kMaxRealms; ++i)
+  for (int i = 0; i < kMaxRealms; ++i) {
     CheckRealmExistence(i + 3, true);
+    test_clock.Advance(base::TimeDelta::FromSeconds(1));
+  }
 }
 
 // Add the maximum number of paths to a single realm entry. Each of these

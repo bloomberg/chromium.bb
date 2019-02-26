@@ -4,6 +4,7 @@
 
 #include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
 
+#include "build/build_config.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 
 namespace browser_switcher {
@@ -25,11 +26,19 @@ const char kUrlList[] = "browser_switcher.url_list";
 // List of hosts that should not trigger a transition in either browser.
 const char kUrlGreylist[] = "browser_switcher.url_greylist";
 
+#if defined(OS_WIN)
+// If set to true, use the IE Enterprise Mode Sitelist policy.
+const char kUseIeSitelist[] = "browser_switcher.use_ie_sitelist";
+#endif
+
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterStringPref(prefs::kAlternativeBrowserPath, "");
   registry->RegisterListPref(prefs::kAlternativeBrowserParameters);
   registry->RegisterListPref(prefs::kUrlList);
   registry->RegisterListPref(prefs::kUrlGreylist);
+#if defined(OS_WIN)
+  registry->RegisterBooleanPref(prefs::kUseIeSitelist, false);
+#endif
 }
 
 }  // namespace prefs

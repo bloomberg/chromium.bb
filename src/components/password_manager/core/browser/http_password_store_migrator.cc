@@ -9,6 +9,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
+#include "base/strings/strcat.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
@@ -63,11 +64,15 @@ autofill::PasswordForm HttpPasswordStoreMigrator::MigrateHttpFormToHttps(
   GURL::Replacements rep;
   rep.SetSchemeStr(url::kHttpsScheme);
   https_form.origin = http_form.origin.ReplaceComponents(rep);
-  https_form.signon_realm =
-      std::string(url::kHttpsScheme) +
-      std::string(url::kStandardSchemeSeparator) +
-      std::string(
-          password_manager_util::GetSignonRealmWithProtocolExcluded(http_form));
+
+  // Only replace the scheme of the signon_realm in case it is HTTP. Do not
+  // change the signon_realm for federated credentials.
+  if (GURL(http_form.signon_realm).SchemeIs(url::kHttpScheme)) {
+    https_form.signon_realm =
+        base::StrCat({url::kHttpsScheme, url::kStandardSchemeSeparator,
+                      password_manager_util::GetSignonRealmWithProtocolExcluded(
+                          https_form)});
+  }
   // If |action| is not HTTPS then it's most likely obsolete. Otherwise, it
   // may still be valid.
   if (!http_form.action.SchemeIs(url::kHttpsScheme))

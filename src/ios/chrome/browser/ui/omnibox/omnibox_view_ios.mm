@@ -17,17 +17,17 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
+#include "components/omnibox/browser/location_bar_model.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
-#include "components/toolbar/toolbar_model.h"
 #include "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/ui/omnibox/chrome_omnibox_client_ios.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_text_field_paste_delegate.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_util.h"
 #include "ios/chrome/browser/ui/omnibox/web_omnibox_edit_controller.h"
-#include "ios/chrome/browser/ui/ui_util.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #include "ios/web/public/referrer.h"
@@ -218,10 +218,8 @@ OmniboxViewIOS::OmniboxViewIOS(OmniboxTextFieldIOS* field,
   field_delegate_ =
       [[AutocompleteTextFieldDelegate alloc] initWithEditView:this];
 
-  if (@available(iOS 11.0, *)) {
-    paste_delegate_ = [[OmniboxTextFieldPasteDelegate alloc] init];
-    [field_ setPasteDelegate:paste_delegate_];
-  }
+  paste_delegate_ = [[OmniboxTextFieldPasteDelegate alloc] init];
+  [field_ setPasteDelegate:paste_delegate_];
 
   [field_ setDelegate:field_delegate_];
   [field_ addTarget:field_delegate_
@@ -720,7 +718,7 @@ void OmniboxViewIOS::UpdateSchemeStyle(const gfx::Range& range) {
     return;
 
   const security_state::SecurityLevel security_level =
-      controller()->GetToolbarModel()->GetSecurityLevel(false);
+      controller()->GetLocationBarModel()->GetSecurityLevel(false);
 
   if ((security_level == security_state::NONE) ||
       (security_level == security_state::HTTP_SHOW_WARNING)) {
@@ -944,7 +942,7 @@ int OmniboxViewIOS::GetIcon(bool offlinePage) const {
       return IDR_IOS_OMNIBOX_OFFLINE;
     }
     return GetIconForSecurityState(
-        controller()->GetToolbarModel()->GetSecurityLevel(false));
+        controller()->GetLocationBarModel()->GetSecurityLevel(false));
   }
   return GetIconForAutocompleteMatchType(
       model() ? model()->CurrentMatch(nullptr).type

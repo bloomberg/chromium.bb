@@ -116,8 +116,8 @@ void FileReaderSync::StartLoading(FileReaderLoader& loader,
                                   const Blob& blob,
                                   ExceptionState& exception_state) {
   loader.Start(blob.GetBlobDataHandle());
-  if (loader.GetErrorCode())
-    FileError::ThrowDOMException(exception_state, loader.GetErrorCode());
+  if (loader.GetErrorCode() != FileErrorCode::kOK)
+    file_error::ThrowDOMException(exception_state, loader.GetErrorCode());
 }
 
 }  // namespace blink

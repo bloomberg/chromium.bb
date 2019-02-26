@@ -9,7 +9,6 @@
 
 #include "core/fxcrt/cfx_datetime.h"
 #include "core/fxcrt/fx_stream.h"
-#include "third_party/base/span.h"
 
 // Output stream operator so GTEST macros work with CFX_DateTime objects.
 std::ostream& operator<<(std::ostream& os, const CFX_DateTime& dt);
@@ -20,7 +19,9 @@ class CFX_InvalidSeekableReadStream final : public IFX_SeekableReadStream {
   friend RetainPtr<T> pdfium::MakeRetain(Args&&... args);
 
   // IFX_SeekableReadStream overrides:
-  bool ReadBlock(void* buffer, FX_FILESIZE offset, size_t size) override {
+  bool ReadBlockAtOffset(void* buffer,
+                         FX_FILESIZE offset,
+                         size_t size) override {
     return false;
   }
   FX_FILESIZE GetSize() override { return data_size_; }

@@ -33,6 +33,8 @@ namespace content {
 #define MAYBE_GetTrackCapabilities GetTrackCapabilities
 #define MAYBE_GetTrackSettings GetTrackSettings
 #define MAYBE_ManipulateZoom DISABLED_ManipulateZoom
+#define MAYBE_ManipulateExposureTime DISABLED_ManipulateExposureTime
+#define MAYBE_ManipulateFocusDistance DISABLED_ManipulateFocusDistance
 #else
 #define MAYBE_GetPhotoCapabilities GetPhotoCapabilities
 #define MAYBE_GetPhotoSettings GetPhotoSettings
@@ -41,6 +43,8 @@ namespace content {
 #define MAYBE_GetTrackCapabilities GetTrackCapabilities
 #define MAYBE_GetTrackSettings GetTrackSettings
 #define MAYBE_ManipulateZoom ManipulateZoom
+#define MAYBE_ManipulateExposureTime ManipulateExposureTime
+#define MAYBE_ManipulateFocusDistance ManipulateFocusDistance
 #endif
 
 namespace {
@@ -87,10 +91,6 @@ class WebRtcImageCaptureBrowserTestBase
     ASSERT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kUseFakeDeviceForMediaStream));
 
-    // "GetUserMedia": enables navigator.mediaDevices.getUserMedia();
-    // TODO(mcasas): remove GetUserMedia after https://crbug.com/503227.
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kEnableBlinkFeatures, "GetUserMedia");
   }
 
   void SetUp() override {
@@ -229,6 +229,18 @@ IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureSucceedsBrowserTest,
                        MAYBE_ManipulateZoom) {
   embedded_test_server()->StartAcceptingConnections();
   ASSERT_TRUE(RunImageCaptureTestCase("testManipulateZoom()"));
+}
+
+IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureSucceedsBrowserTest,
+                       MAYBE_ManipulateExposureTime) {
+  embedded_test_server()->StartAcceptingConnections();
+  ASSERT_TRUE(RunImageCaptureTestCase("testManipulateExposureTime()"));
+}
+
+IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureSucceedsBrowserTest,
+                       MAYBE_ManipulateFocusDistance) {
+  embedded_test_server()->StartAcceptingConnections();
+  ASSERT_TRUE(RunImageCaptureTestCase("testManipulateFocusDistance()"));
 }
 
 INSTANTIATE_TEST_CASE_P(

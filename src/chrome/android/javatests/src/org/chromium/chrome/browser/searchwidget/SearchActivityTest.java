@@ -36,9 +36,9 @@ import org.chromium.chrome.browser.locale.DefaultSearchEnginePromoDialog;
 import org.chromium.chrome.browser.locale.DefaultSearchEnginePromoDialog.DefaultSearchEnginePromoDialogObserver;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;
-import org.chromium.chrome.browser.omnibox.OmniboxSuggestion;
-import org.chromium.chrome.browser.omnibox.OmniboxSuggestion.MatchClassification;
 import org.chromium.chrome.browser.omnibox.UrlBar;
+import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
+import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion.MatchClassification;
 import org.chromium.chrome.browser.search_engines.TemplateUrl;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.searchwidget.SearchActivity.SearchActivityDelegate;
@@ -299,11 +299,11 @@ public class SearchActivityTest {
         List<MatchClassification> classifications = new ArrayList<>();
         classifications.add(new MatchClassification(0, MatchClassificationStyle.NONE));
         OmniboxSuggestion mockSuggestion = new OmniboxSuggestion(0, true, 0, 0,
-                "https://google.com", classifications, "https://google.com", classifications, "",
-                "", "", "https://google.com", false, false);
+                "https://google.com", classifications, "https://google.com", classifications, null,
+                "", "https://google.com", false, false);
         OmniboxSuggestion mockSuggestion2 = new OmniboxSuggestion(0, true, 0, 0,
-                "https://android.com", classifications, "https://android.com", classifications, "",
-                "", "", "https://android.com", false, false);
+                "https://android.com", classifications, "https://android.com", classifications,
+                null, "", "https://android.com", false, false);
         List<OmniboxSuggestion> list = new ArrayList<>();
         list.add(mockSuggestion);
         list.add(mockSuggestion2);

@@ -15,16 +15,14 @@
 #include "base/logging.h"
 #include "base/task/post_task.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_generator_delegate.h"
 #import "ios/chrome/browser/snapshots/snapshot_overlay.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#import "ios/public/provider/chrome/browser/ui/fullscreen_provider.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/web/public/features.h"
 #import "ios/web/public/features.h"
-#import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "ios/web/public/web_task_traits.h"
@@ -222,19 +220,12 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
 
 - (void)updateWebViewSnapshotWithCompletion:(void (^)(UIImage*))completion {
   DCHECK(_webState);
-  CGRect webViewSnapshotFrame = [self snapshotFrameVisibleFrameOnly:YES];
-
-  bool usesContentInset =
-      ios::GetChromeBrowserProvider()
-          ->GetFullscreenProvider()
-          ->IsInitialized() ||
-      _webState->GetWebViewProxy().shouldUseViewContentInset;
-
-  if (!usesContentInset) {
-    webViewSnapshotFrame.origin = CGPointZero;
-  }
-
-  if (CGRectIsEmpty(webViewSnapshotFrame)) {
+  UIView* snapshotView = [self.delegate snapshotGenerator:self
+                                      baseViewForWebState:_webState];
+  CGRect snapshotFrame = [self snapshotFrameVisibleFrameOnly:YES];
+  snapshotFrame =
+      [_webState->GetView() convertRect:snapshotFrame fromView:snapshotView];
+  if (CGRectIsEmpty(snapshotFrame)) {
     if (completion) {
       base::PostTaskWithTraits(FROM_HERE, {web::WebThread::UI},
                                base::BindOnce(^{
@@ -243,13 +234,13 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
     }
     return;
   }
-  CGSize size = webViewSnapshotFrame.size;
+  CGSize size = snapshotFrame.size;
   DCHECK(std::isnormal(size.width) && (size.width > 0))
-      << ": webViewSnapshotFrame.size.width=" << size.width;
+      << ": snapshotFrame.size.width=" << size.width;
   DCHECK(std::isnormal(size.height) && (size.height > 0))
-      << ": webViewSnapshotFrame.size.height=" << size.height;
-  NSArray<SnapshotOverlay*>* overlays =
-      [_delegate snapshotOverlaysForWebState:_webState];
+      << ": snapshotFrame.size.height=" << size.height;
+  NSArray<SnapshotOverlay*>* overlays = [_delegate snapshotGenerator:self
+                                         snapshotOverlaysForWebState:_webState];
   UIImage* snapshot =
       [_coalescingSnapshotContext cachedSnapshotWithOverlays:overlays
                                             visibleFrameOnly:YES];
@@ -263,10 +254,10 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
     return;
   }
 
-  [_delegate willUpdateSnapshotForWebState:_webState];
+  [_delegate snapshotGenerator:self willUpdateSnapshotForWebState:_webState];
   __weak SnapshotGenerator* weakSelf = self;
   _webState->TakeSnapshot(
-      webViewSnapshotFrame, base::BindOnce(^(gfx::Image image) {
+      snapshotFrame, base::BindOnce(^(gfx::Image image) {
         SnapshotGenerator* strongSelf = weakSelf;
         if (!strongSelf || !_webState)
           return;
@@ -276,7 +267,7 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
           if (overlays.count > 0) {
             snapshot = [strongSelf snapshotWithOverlays:overlays
                                                snapshot:snapshot
-                                                  frame:webViewSnapshotFrame];
+                                                  frame:snapshotFrame];
           }
         }
         [strongSelf.snapshotCache setImage:snapshot
@@ -284,7 +275,9 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
         [_coalescingSnapshotContext setCachedSnapshot:snapshot
                                          withOverlays:overlays
                                      visibleFrameOnly:YES];
-        [_delegate didUpdateSnapshotForWebState:_webState withImage:snapshot];
+        [_delegate snapshotGenerator:self
+            didUpdateSnapshotForWebState:_webState
+                               withImage:snapshot];
         if (completion)
           completion(snapshot);
       }));
@@ -297,7 +290,8 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
     return nil;
 
   NSArray<SnapshotOverlay*>* overlays =
-      shouldAddOverlay ? [_delegate snapshotOverlaysForWebState:_webState]
+      shouldAddOverlay ? [_delegate snapshotGenerator:self
+                             snapshotOverlaysForWebState:_webState]
                        : nil;
   UIImage* snapshot =
       [_coalescingSnapshotContext cachedSnapshotWithOverlays:overlays
@@ -306,21 +300,17 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
   if (snapshot)
     return snapshot;
 
-  [_delegate willUpdateSnapshotForWebState:_webState];
-  UIView* view = nil;
-  if (base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen)) {
-    // The webstate view is getting resized because of fullscreen. Using its
-    // superview ensure that we have a view with a with a consistent size.
-    view = _webState->GetView().superview;
-  } else {
-    view = _webState->GetView();
-  }
+  [_delegate snapshotGenerator:self willUpdateSnapshotForWebState:_webState];
+  UIView* view = [_delegate snapshotGenerator:self
+                          baseViewForWebState:_webState];
   snapshot =
       [self generateSnapshotForView:view withRect:frame overlays:overlays];
   [_coalescingSnapshotContext setCachedSnapshot:snapshot
                                    withOverlays:overlays
                                visibleFrameOnly:visibleFrameOnly];
-  [_delegate didUpdateSnapshotForWebState:_webState withImage:snapshot];
+  [_delegate snapshotGenerator:self
+      didUpdateSnapshotForWebState:_webState
+                         withImage:snapshot];
   return snapshot;
 }
 
@@ -355,21 +345,17 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
 
   // Do not generate a snapshot if the delegate says the WebState view is
   // not ready (this generally mean a placeholder is displayed).
-  if (_delegate && ![_delegate canTakeSnapshotForWebState:_webState])
+  if (_delegate && ![_delegate snapshotGenerator:self
+                       canTakeSnapshotForWebState:_webState])
     return CGRectZero;
 
-  UIView* view = nil;
-  if (base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen)) {
-    // The webstate view is getting resized because of fullscreen. Using its
-    // superview ensure that we have a view with a with a consistent size.
-    view = _webState->GetView().superview;
-  } else {
-    view = _webState->GetView();
-  }
+  UIView* view = [_delegate snapshotGenerator:self
+                          baseViewForWebState:_webState];
   CGRect frame = [view bounds];
   UIEdgeInsets headerInsets = UIEdgeInsetsZero;
   if (visibleFrameOnly) {
-    headerInsets = [_delegate snapshotEdgeInsetsForWebState:_webState];
+    headerInsets = [_delegate snapshotGenerator:self
+                  snapshotEdgeInsetsForWebState:_webState];
   } else if (base::FeatureList::IsEnabled(
                  web::features::kBrowserContainerFullscreen)) {
     headerInsets = UIEdgeInsetsMake(StatusBarHeight(), 0, 0, 0);
@@ -418,7 +404,11 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
       // drawing to context.
       CGContextSaveGState(context);
       CGContextTranslateCTM(context, 0, overlay.yOffset);
-      if (useDrawViewHierarchy) {
+      // |drawViewHierarchyInRect:| has undefined behavior when the view is not
+      // in the visible view hierarchy. In practice, when this method is called
+      // on a view that is part of view controller containment, an
+      // UIViewControllerHierarchyInconsistency exception will be thrown.
+      if (useDrawViewHierarchy && overlay.view.window) {
         [overlay.view drawViewHierarchyInRect:overlay.view.bounds
                            afterScreenUpdates:YES];
       } else {
@@ -456,8 +446,16 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
     // drawing to context.
     CGContextSaveGState(context);
     CGContextTranslateCTM(context, 0, overlay.yOffset - frame.origin.y);
-    [overlay.view drawViewHierarchyInRect:overlay.view.bounds
-                       afterScreenUpdates:YES];
+    // |drawViewHierarchyInRect:| has undefined behavior when the view is not in
+    // the visible view hierarchy. In practice, when this method is called on a
+    // view that is part of view controller containment, an
+    // UIViewControllerHierarchyInconsistency exception will be thrown.
+    if (overlay.view.window) {
+      [overlay.view drawViewHierarchyInRect:overlay.view.bounds
+                         afterScreenUpdates:YES];
+    } else {
+      [[overlay.view layer] renderInContext:context];
+    }
     CGContextRestoreGState(context);
   }
   UIImage* snapshotWithOverlays = UIGraphicsGetImageFromCurrentImageContext();

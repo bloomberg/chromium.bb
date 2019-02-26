@@ -139,11 +139,10 @@ mr.MockClock = class {
   }
 
   /**
-   * Takes a promise and then ticks the mock clock. If the promise
-   * rejects, returns the error produced by the promise. If the
-   * promise is rejected, it throws the rejection as an exception. If
-   * the promise is not rejected at all, throws an exception.  Also
-   * ticks the general clock by the specified amount.
+   * Takes a promise and then ticks the mock clock. If the promise rejects,
+   * returns the error produced by the promise. If the promise is rejected at
+   * all, throws an exception.  Also ticks the general clock by the specified
+   * amount.
    *
    * @param {!mr.MockPromise<T>} promise A promise that should be
    *     rejected after the mockClock is ticked for the given

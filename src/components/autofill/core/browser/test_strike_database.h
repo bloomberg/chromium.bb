@@ -22,12 +22,11 @@ class TestStrikeDatabase : public StrikeDatabase {
   ~TestStrikeDatabase() override;
 
   // StrikeDatabase:
-  void GetStrikes(const std::string key,
-                  const StrikesCallback& outer_callback) override;
-  void AddStrike(const std::string key,
-                 const StrikesCallback& outer_callback) override;
-  void ClearAllStrikes(const ClearStrikesCallback& outer_callback) override;
-  void ClearAllStrikesForKey(
+  void GetProtoStrikes(const std::string key,
+                       const StrikesCallback& outer_callback) override;
+  void ClearAllProtoStrikes(
+      const ClearStrikesCallback& outer_callback) override;
+  void ClearAllProtoStrikesForKey(
       const std::string& key,
       const ClearStrikesCallback& outer_callback) override;
 

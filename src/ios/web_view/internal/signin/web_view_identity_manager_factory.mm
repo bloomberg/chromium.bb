@@ -8,13 +8,13 @@
 
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "ios/web_view/internal/signin/web_view_account_tracker_service_factory.h"
 #include "ios/web_view/internal/signin/web_view_gaia_cookie_manager_service_factory.h"
 #include "ios/web_view/internal/signin/web_view_oauth2_token_service_factory.h"
 #include "ios/web_view/internal/signin/web_view_signin_manager_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/primary_account_mutator_impl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -39,7 +39,12 @@ class IdentityManagerWrapper : public KeyedService,
             WebViewAccountTrackerServiceFactory::GetForBrowserState(
                 browser_state),
             WebViewGaiaCookieManagerServiceFactory::GetForBrowserState(
-                browser_state)) {}
+                browser_state),
+            std::make_unique<identity::PrimaryAccountMutatorImpl>(
+                WebViewAccountTrackerServiceFactory::GetForBrowserState(
+                    browser_state),
+                WebViewSigninManagerFactory::GetForBrowserState(
+                    browser_state))) {}
 };
 
 WebViewIdentityManagerFactory::WebViewIdentityManagerFactory()

@@ -76,7 +76,15 @@ identity::IdentityManager* AwAutofillClient::GetIdentityManager() {
   return nullptr;
 }
 
-autofill::StrikeDatabase* AwAutofillClient::GetStrikeDatabase() {
+autofill::payments::PaymentsClient* AwAutofillClient::GetPaymentsClient() {
+  return nullptr;
+}
+
+autofill::FormDataImporter* AwAutofillClient::GetFormDataImporter() {
+  return nullptr;
+}
+
+autofill::LegacyStrikeDatabase* AwAutofillClient::GetLegacyStrikeDatabase() {
   return nullptr;
 }
 
@@ -273,6 +281,11 @@ void AwAutofillClient::ShowLocalCardMigrationDialog(
   NOTIMPLEMENTED();
 }
 
+void AwAutofillClient::ConfirmAccountNameFixFlow(
+    base::OnceCallback<void(const base::string16&)> callback) {
+  NOTIMPLEMENTED();
+}
+
 void AwAutofillClient::ConfirmMigrateLocalCardToCloud(
     std::unique_ptr<base::DictionaryValue> legal_message,
     const std::vector<autofill::MigratableCreditCard>& migratable_credit_cards,
@@ -299,14 +312,23 @@ void AwAutofillClient::ConfirmSaveCreditCardToCloud(
     const autofill::CreditCard& card,
     std::unique_ptr<base::DictionaryValue> legal_message,
     bool should_request_name_from_user,
+    bool should_request_expiration_date_from_user,
     bool show_prompt,
-    base::OnceCallback<void(const base::string16&)> callback) {
+    UserAcceptedUploadCallback callback) {
+  NOTIMPLEMENTED();
+}
+
+void AwAutofillClient::ShowLocalCardMigrationResults(
+    const bool has_server_error,
+    const base::string16& tip_message,
+    const std::vector<autofill::MigratableCreditCard>& migratable_credit_cards,
+    MigrationDeleteCardCallback delete_local_card_callback) {
   NOTIMPLEMENTED();
 }
 
 void AwAutofillClient::ConfirmCreditCardFillAssist(
     const autofill::CreditCard& card,
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   NOTIMPLEMENTED();
 }
 

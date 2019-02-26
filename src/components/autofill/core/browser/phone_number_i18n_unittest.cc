@@ -61,6 +61,15 @@ struct ParseNumberTestCase {
   std::string deduced_region;
 };
 
+namespace {
+
+// Returns a string which is too long to be considered a phone number.
+std::string GenerateTooLongString() {
+  return std::string(i18n::kMaxPhoneNumberSize + 1, '7');
+}
+
+}  // namespace
+
 class ParseNumberTest : public testing::TestWithParam<ParseNumberTestCase> {};
 
 TEST_P(ParseNumberTest, ParsePhoneNumber) {
@@ -72,7 +81,7 @@ TEST_P(ParseNumberTest, ParsePhoneNumber) {
   ::i18n::phonenumbers::PhoneNumber unused_i18n_number;
   EXPECT_EQ(
       test_case.isPossibleNumber,
-      ParsePhoneNumber(ASCIIToUTF16(test_case.input), test_case.assumed_region,
+      ParsePhoneNumber(UTF8ToUTF16(test_case.input), test_case.assumed_region,
                        &country_code, &city_code, &number, &deduced_region,
                        &unused_i18n_number));
   EXPECT_EQ(ASCIIToUTF16(test_case.number), number);
@@ -90,6 +99,8 @@ INSTANTIATE_TEST_CASE_P(
         // Test for string with less than 7 digits.  Should give back empty
         // strings.
         ParseNumberTestCase{false, "1234", "US"},
+        // Too long strings should not be parsed.
+        ParseNumberTestCase{false, GenerateTooLongString(), "US"},
         // Test for string with exactly 7 digits.
         // Still a possible number with unknown("ZZ") deduced region.
         ParseNumberTestCase{true, "17134567", "US", "7134567", "", "1", "ZZ"},
@@ -106,6 +117,19 @@ INSTANTIATE_TEST_CASE_P(
         // separators.
         // Should fail parsing in US.
         ParseNumberTestCase{false, "12.345-6789", "US"},
+        // Non-printable ASCII.
+        ParseNumberTestCase{false, "123\x11", "US"},
+        ParseNumberTestCase{false,
+                            "123\x7F"
+                            "567",
+                            "US"},
+        // Unicode noncharacters.
+        ParseNumberTestCase{false,
+                            "1\xEF\xB7\xAF"
+                            "23",
+                            "US"},
+        // Invalid UTF8.
+        ParseNumberTestCase{false, "1\xC0", "US"},
         // Test for string with exactly 10 digits.
         // Should give back phone number and city code.
         // This one going to fail because of the incorrect area code.

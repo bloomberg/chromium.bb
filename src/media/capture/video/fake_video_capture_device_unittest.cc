@@ -363,17 +363,17 @@ TEST_F(FakeVideoCaptureDeviceTest, GetAndSetCapabilities) {
   const mojom::PhotoState* state = image_capture_client_->state();
   ASSERT_TRUE(state);
   EXPECT_EQ(mojom::MeteringMode::NONE, state->current_white_balance_mode);
-  EXPECT_EQ(mojom::MeteringMode::NONE, state->current_exposure_mode);
-  EXPECT_EQ(mojom::MeteringMode::NONE, state->current_focus_mode);
+  EXPECT_EQ(mojom::MeteringMode::MANUAL, state->current_exposure_mode);
+  EXPECT_EQ(mojom::MeteringMode::MANUAL, state->current_focus_mode);
 
   EXPECT_EQ(0, state->exposure_compensation->min);
   EXPECT_EQ(0, state->exposure_compensation->max);
   EXPECT_EQ(0, state->exposure_compensation->current);
   EXPECT_EQ(0, state->exposure_compensation->step);
-  EXPECT_EQ(0, state->exposure_time->min);
-  EXPECT_EQ(0, state->exposure_time->max);
-  EXPECT_EQ(0, state->exposure_time->current);
-  EXPECT_EQ(0, state->exposure_time->step);
+  EXPECT_EQ(10, state->exposure_time->min);
+  EXPECT_EQ(100, state->exposure_time->max);
+  EXPECT_EQ(50, state->exposure_time->current);
+  EXPECT_EQ(5, state->exposure_time->step);
   EXPECT_EQ(0, state->color_temperature->min);
   EXPECT_EQ(0, state->color_temperature->max);
   EXPECT_EQ(0, state->color_temperature->current);
@@ -403,10 +403,10 @@ TEST_F(FakeVideoCaptureDeviceTest, GetAndSetCapabilities) {
   EXPECT_FALSE(state->supports_torch);
   EXPECT_FALSE(state->torch);
 
-  EXPECT_EQ(1.0, state->focus_distance->min);
-  EXPECT_EQ(5.0, state->focus_distance->max);
-  EXPECT_EQ(3.0, state->focus_distance->current);
-  EXPECT_EQ(1.0, state->focus_distance->step);
+  EXPECT_EQ(10, state->focus_distance->min);
+  EXPECT_EQ(100, state->focus_distance->max);
+  EXPECT_EQ(50, state->focus_distance->current);
+  EXPECT_EQ(5, state->focus_distance->step);
 
   EXPECT_EQ(mojom::RedEyeReduction::NEVER, state->red_eye_reduction);
   EXPECT_EQ(capture_params.requested_format.frame_size.height(),

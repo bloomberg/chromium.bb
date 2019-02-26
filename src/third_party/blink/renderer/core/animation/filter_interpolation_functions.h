@@ -15,7 +15,7 @@ class FilterOperation;
 class CSSValue;
 class StyleResolverState;
 
-namespace FilterInterpolationFunctions {
+namespace filter_interpolation_functions {
 
 InterpolationValue MaybeConvertCSSFilter(const CSSValue&);
 InterpolationValue MaybeConvertFilter(const FilterOperation&, double zoom);
@@ -26,7 +26,7 @@ FilterOperation* CreateFilter(const InterpolableValue&,
                               const NonInterpolableValue&,
                               const StyleResolverState&);
 
-}  // namespace FilterInterpolationFunctions
+}  // namespace filter_interpolation_functions
 
 }  // namespace blink
 

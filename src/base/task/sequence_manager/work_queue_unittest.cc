@@ -36,7 +36,11 @@ class WorkQueueTest : public testing::Test {
  public:
   void SetUp() override {
     dummy_sequence_manager_ = SequenceManagerImpl::CreateUnbound(nullptr);
+    scoped_refptr<AssociatedThreadId> thread_checker =
+        dummy_sequence_manager_->associated_thread();
+    thread_checker->BindToCurrentThread();
     time_domain_.reset(new RealTimeDomain());
+    dummy_sequence_manager_->RegisterTimeDomain(time_domain_.get());
     task_queue_ = std::make_unique<TaskQueueImpl>(dummy_sequence_manager_.get(),
                                                   time_domain_.get(),
                                                   TaskQueue::Spec("test"));
@@ -49,8 +53,8 @@ class WorkQueueTest : public testing::Test {
 
   void TearDown() override {
     work_queue_sets_->RemoveQueue(work_queue_.get());
-
-    task_queue_->ClearSequenceManagerForTesting();
+    task_queue_->UnregisterTaskQueue();
+    dummy_sequence_manager_->UnregisterTimeDomain(time_domain_.get());
   }
 
  protected:

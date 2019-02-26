@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/html/custom/ce_reactions_scope.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_definition.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_form_associated_callback_reaction.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_reaction_stack.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_registry.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element.h"
@@ -98,7 +99,7 @@ bool CustomElement::ShouldCreateCustomElement(const AtomicString& name) {
 
 bool CustomElement::ShouldCreateCustomElement(const QualifiedName& tag_name) {
   return ShouldCreateCustomElement(tag_name.LocalName()) &&
-         tag_name.NamespaceURI() == HTMLNames::xhtmlNamespaceURI;
+         tag_name.NamespaceURI() == html_names::xhtmlNamespaceURI;
 }
 
 bool CustomElement::ShouldCreateCustomizedBuiltinElement(
@@ -110,7 +111,7 @@ bool CustomElement::ShouldCreateCustomizedBuiltinElement(
 bool CustomElement::ShouldCreateCustomizedBuiltinElement(
     const QualifiedName& tag_name) {
   return ShouldCreateCustomizedBuiltinElement(tag_name.LocalName()) &&
-         tag_name.NamespaceURI() == HTMLNames::xhtmlNamespaceURI;
+         tag_name.NamespaceURI() == html_names::xhtmlNamespaceURI;
 }
 
 static CustomElementDefinition* DefinitionFor(
@@ -175,7 +176,7 @@ Element* CustomElement::CreateUncustomizedOrUndefinedElementTemplate(
   // custom element state to "undefined".
   if (level == kQNameIsValid)
     element->SetCustomElementState(CustomElementState::kUndefined);
-  else if (tag_name.NamespaceURI() == HTMLNames::xhtmlNamespaceURI &&
+  else if (tag_name.NamespaceURI() == html_names::xhtmlNamespaceURI &&
            (CustomElement::IsValidName(tag_name.LocalName()) ||
             !is_value.IsNull()))
     element->SetCustomElementState(CustomElementState::kUndefined);
@@ -259,6 +260,17 @@ void CustomElement::EnqueueAttributeChangedCallback(
   if (definition->HasAttributeChangedCallback(name))
     definition->EnqueueAttributeChangedCallback(element, name, old_value,
                                                 new_value);
+}
+
+void CustomElement::EnqueueFormAssociatedCallback(
+    Element& element,
+    HTMLFormElement* nullable_form) {
+  auto* definition = DefinitionForElementWithoutCheck(element);
+  if (definition->HasFormAssociatedCallback()) {
+    Enqueue(&element,
+            MakeGarbageCollected<CustomElementFormAssociatedCallbackReaction>(
+                definition, nullable_form));
+  }
 }
 
 void CustomElement::TryToUpgrade(Element* element,

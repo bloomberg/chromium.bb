@@ -53,6 +53,11 @@ class CORE_EXPORT MutationObserverRegistration final
       Node*,
       MutationObserverOptions,
       const HashSet<AtomicString>& attribute_filter);
+
+  MutationObserverRegistration(MutationObserver&,
+                               Node*,
+                               MutationObserverOptions,
+                               const HashSet<AtomicString>& attribute_filter);
   ~MutationObserverRegistration();
 
   void ResetObservation(MutationObserverOptions,
@@ -89,11 +94,6 @@ class CORE_EXPORT MutationObserverRegistration final
   }
 
  private:
-  MutationObserverRegistration(MutationObserver&,
-                               Node*,
-                               MutationObserverOptions,
-                               const HashSet<AtomicString>& attribute_filter);
-
   TraceWrapperMember<MutationObserver> observer_;
   WeakMember<Node> registration_node_;
   Member<Node> registration_node_keep_alive_;

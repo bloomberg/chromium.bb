@@ -26,7 +26,7 @@ std::string CommitResponseEvent::GetType() const {
 }
 
 std::string CommitResponseEvent::GetDetails() const {
-  return base::StringPrintf("Result: %s", GetSyncerErrorString(result_));
+  return "Result: " + result_.ToString();
 }
 
 std::unique_ptr<base::DictionaryValue> CommitResponseEvent::GetProtoMessage(

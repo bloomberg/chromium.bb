@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/css/css_test_helper.h"
+#include "third_party/blink/renderer/core/css/css_test_helpers.h"
 #include "third_party/blink/renderer/core/css/rule_set.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
+using namespace css_test_helpers;
+
 TEST(CSSSelector, Representations) {
-  CSSTestHelper helper;
+  TestStyleSheet sheet;
 
   const char* css_rules =
       "summary::-webkit-details-marker { }"
@@ -46,11 +48,11 @@ TEST(CSSSelector, Representations) {
 
       ".a.b .c {}";
 
-  helper.AddCSSRules(css_rules);
+  sheet.AddCSSRules(css_rules);
   EXPECT_EQ(30u,
-            helper.GetRuleSet().RuleCount());  // .a, .b counts as two rules.
+            sheet.GetRuleSet().RuleCount());  // .a, .b counts as two rules.
 #ifndef NDEBUG
-  helper.GetRuleSet().Show();
+  sheet.GetRuleSet().Show();
 #endif
 }
 

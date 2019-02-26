@@ -91,7 +91,6 @@ class DownloadsApiUnitTest : public ExtensionApiUnittest {
     ASSERT_TRUE(download_core_service);
     download_core_service->set_download_history(std::move(download_history));
   }
-  void TearDown() override { ExtensionApiUnittest::TearDown(); }
 
  private:
   // A private empty history adapter that does nothing on QueryDownloads().

@@ -85,9 +85,11 @@ int AssistantMainView::GetHeightForWidth(int width) const {
   height = std::max(height, min_height_dip_);
 
   // |height| should not exceed the height of the usable work area.
+  // |height| >= |kMinHeightDip|.
   gfx::Rect usable_work_area =
       assistant_controller_->ui_controller()->model()->usable_work_area();
-  height = std::min(height, usable_work_area.height());
+  if (height > usable_work_area.height())
+    height = std::max(kMinHeightDip, usable_work_area.height());
 
   return height;
 }
@@ -154,7 +156,8 @@ void AssistantMainView::InitLayout() {
 void AssistantMainView::OnUiVisibilityChanged(
     AssistantVisibility new_visibility,
     AssistantVisibility old_visibility,
-    AssistantSource source) {
+    base::Optional<AssistantEntryPoint> entry_point,
+    base::Optional<AssistantExitPoint> exit_point) {
   if (assistant::util::IsStartingSession(new_visibility, old_visibility)) {
     // When Assistant is starting a new session, we animate in the appearance of
     // the caption bar and dialog plate.

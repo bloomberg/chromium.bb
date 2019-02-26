@@ -39,7 +39,8 @@ class MediaControlToggleClosedCaptionsButtonElementTest : public PageTestBase {
     media_controls_ =
         static_cast<MediaControlsImpl*>(media_element_->GetMediaControls());
     captions_overflow_button_ =
-        new MediaControlToggleClosedCaptionsButtonElement(*media_controls_);
+        MakeGarbageCollected<MediaControlToggleClosedCaptionsButtonElement>(
+            *media_controls_);
   }
 
  protected:

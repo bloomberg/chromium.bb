@@ -85,7 +85,7 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   bool SetMaxSize(int64_t max_bytes);
 
   // Returns the maximum file size permitted in this backend.
-  int GetMaxFileSize() const;
+  int64_t MaxFileSize() const override;
 
   // Flush our SequencedWorkerPool.
   static void FlushWorkerPoolForTesting();

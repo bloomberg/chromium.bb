@@ -9,7 +9,7 @@
 namespace blink {
 
 SimWebViewClient::SimWebViewClient(content::LayerTreeViewDelegate* delegate)
-    : FrameTestHelpers::TestWebViewClient(delegate) {}
+    : frame_test_helpers::TestWebViewClient(delegate) {}
 
 void SimWebViewClient::DidMeaningfulLayout(
     WebMeaningfulLayout meaningful_layout) {
@@ -32,7 +32,8 @@ WebView* SimWebViewClient::CreateView(WebLocalFrame* opener,
                                       const WebString& name,
                                       WebNavigationPolicy,
                                       bool,
-                                      WebSandboxFlags) {
+                                      WebSandboxFlags,
+                                      const SessionStorageNamespaceId&) {
   return web_view_helper_.InitializeWithOpener(opener);
 }
 

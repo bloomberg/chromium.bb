@@ -19,6 +19,17 @@ class AXNode;
 // This helper class computes info about tables and grids in AXTrees.
 class AX_EXPORT AXTableInfo {
  public:
+  struct CellData {
+    AXNode* cell;
+    int32_t cell_id;
+    int32_t col_index;
+    int32_t row_index;
+    int32_t col_span;
+    int32_t row_span;
+    int32_t aria_col_index;
+    int32_t aria_row_index;
+  };
+
   // Returns nullptr if the node is not a valid table or grid node.
   static AXTableInfo* Create(AXTree* tree, AXNode* table_node);
 
@@ -36,11 +47,11 @@ class AX_EXPORT AXTableInfo {
 
   // The real row count, guaranteed to be at least as large as the
   // maximum row index of any cell.
-  int row_count = 0;
+  int32_t row_count = 0;
 
   // The real column count, guaranteed to be at least as large as the
   // maximum column index of any cell.
-  int col_count = 0;
+  int32_t col_count = 0;
 
   // List of column header nodes IDs for each column index.
   std::vector<std::vector<int32_t>> col_headers;
@@ -57,6 +68,9 @@ class AX_EXPORT AXTableInfo {
   // really is missing from the table.
   std::vector<std::vector<int32_t>> cell_ids;
 
+  // Array of cell data for every unique cell in the table.
+  std::vector<CellData> cell_data_vector;
+
   // Set of all unique cell node IDs in the table.
   std::vector<int32_t> unique_cell_ids;
 
@@ -68,9 +82,19 @@ class AX_EXPORT AXTableInfo {
   // Map from each cell's node ID to its index in unique_cell_ids.
   base::hash_map<int32_t, int32_t> cell_id_to_index;
 
+  // The ARIA row count and column count, if any ARIA table or grid
+  // attributes are used in the table at all.
+  int32_t aria_row_count = 0;
+  int32_t aria_col_count = 0;
+
  private:
   AXTableInfo(AXTree* tree, AXNode* table_node);
 
+  void ClearVectors();
+  void BuildCellDataVectorFromRowAndCellNodes(
+      const std::vector<AXNode*>& row_nodes,
+      const std::vector<std::vector<AXNode*>>& cell_nodes_per_row);
+  void BuildCellAndHeaderVectorsFromCellData();
   void UpdateExtraMacNodes();
   void ClearExtraMacNodes();
   AXNode* CreateExtraMacColumnNode(int col_index);

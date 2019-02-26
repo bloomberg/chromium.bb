@@ -12,9 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/common/available_offline_content.mojom.h"
 
-namespace content {
-class BrowserContext;
-}
+class Profile;
 
 namespace offline_items_collection {
 class OfflineContentAggregator;
@@ -28,8 +26,7 @@ class AvailableOfflineContentProvider
     : public chrome::mojom::AvailableOfflineContentProvider {
  public:
   // Public for testing.
-  explicit AvailableOfflineContentProvider(
-      content::BrowserContext* browser_context);
+  explicit AvailableOfflineContentProvider(Profile* profile);
   ~AvailableOfflineContentProvider() override;
 
   // chrome::mojom::AvailableOfflineContentProvider methods.
@@ -38,9 +35,10 @@ class AvailableOfflineContentProvider
   void LaunchItem(const std::string& item_id,
                   const std::string& name_space) override;
   void LaunchDownloadsPage(bool open_prefetched_articles_tab) override;
+  void ListVisibilityChanged(bool is_visible) override;
 
   static void Create(
-      content::BrowserContext* browser_context,
+      Profile* profile,
       chrome::mojom::AvailableOfflineContentProviderRequest request);
 
  private:
@@ -53,7 +51,7 @@ class AvailableOfflineContentProvider
       offline_items_collection::OfflineContentAggregator* aggregator,
       const std::vector<offline_items_collection::OfflineItem>& all_items);
 
-  content::BrowserContext* browser_context_;
+  Profile* profile_;
 
   base::WeakPtrFactory<AvailableOfflineContentProvider> weak_ptr_factory_;
 

@@ -36,8 +36,8 @@ class MODULES_EXPORT HTMLMediaElementEncryptedMedia final
   static ScriptPromise setMediaKeys(ScriptState*,
                                     HTMLMediaElement&,
                                     MediaKeys*);
-  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(encrypted);
-  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(waitingforkey);
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(encrypted, kEncrypted);
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(waitingforkey, kWaitingforkey);
 
   // WebMediaPlayerEncryptedMediaClient methods
   void Encrypted(WebEncryptedMediaInitDataType,
@@ -49,14 +49,13 @@ class MODULES_EXPORT HTMLMediaElementEncryptedMedia final
 
   static HTMLMediaElementEncryptedMedia& From(HTMLMediaElement&);
 
+  HTMLMediaElementEncryptedMedia(HTMLMediaElement&);
   ~HTMLMediaElementEncryptedMedia();
 
   void Trace(blink::Visitor*) override;
 
  private:
   friend class SetMediaKeysHandler;
-
-  HTMLMediaElementEncryptedMedia(HTMLMediaElement&);
 
   // EventTarget
   bool SetAttributeEventListener(const AtomicString& event_type,

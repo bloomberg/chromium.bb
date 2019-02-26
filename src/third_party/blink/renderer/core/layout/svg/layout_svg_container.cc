@@ -25,10 +25,10 @@
 
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_analyzer.h"
-#include "third_party/blink/renderer/core/layout/svg/layout_svg_foreign_object.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
+#include "third_party/blink/renderer/core/layout/svg/transformed_hit_test_location.h"
 #include "third_party/blink/renderer/core/paint/svg_container_painter.h"
 
 namespace blink {
@@ -180,34 +180,17 @@ bool LayoutSVGContainer::NodeAtPoint(
     const LayoutPoint& accumulated_offset,
     HitTestAction hit_test_action) {
   DCHECK_EQ(accumulated_offset, LayoutPoint());
-  base::Optional<HitTestLocation> local_storage;
-  const HitTestLocation* local_location =
-      SVGLayoutSupport::TransformToUserSpaceAndCheckClipping(
-          *this, LocalToSVGParentTransform(), location_in_container,
-          local_storage);
+  TransformedHitTestLocation local_location(location_in_container,
+                                            LocalToSVGParentTransform());
   if (!local_location)
     return false;
+  if (!SVGLayoutSupport::IntersectsClipPath(*this, *local_location))
+    return false;
 
-  for (LayoutObject* child = LastChild(); child;
-       child = child->PreviousSibling()) {
-    bool found = false;
-    if (child->IsSVGForeignObject()) {
-      found = ToLayoutSVGForeignObject(child)->NodeAtPointFromSVG(
-          result, *local_location, accumulated_offset, hit_test_action);
-    } else {
-      found = child->NodeAtPoint(result, *local_location, accumulated_offset,
-                                 hit_test_action);
-    }
-    if (found) {
-      const LayoutPoint& local_layout_point =
-          LayoutPoint(local_location->TransformedPoint());
-      UpdateHitTestResult(result, local_layout_point);
-      if (result.AddNodeToListBasedTestResult(
-              child->GetNode(), *local_location) == kStopHitTesting) {
-        return true;
-      }
-    }
-  }
+  if (SVGLayoutSupport::HitTestChildren(LastChild(), result, *local_location,
+                                        accumulated_offset, hit_test_action))
+    return true;
+
   // pointer-events: bounding-box makes it possible for containers to be direct
   // targets.
   if (StyleRef().PointerEvents() == EPointerEvents::kBoundingBox) {

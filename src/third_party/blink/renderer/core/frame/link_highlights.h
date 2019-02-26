@@ -24,7 +24,11 @@ class LayoutObject;
 class CORE_EXPORT LinkHighlights final
     : public GarbageCollectedFinalized<LinkHighlights> {
  public:
-  static LinkHighlights* Create(Page& page) { return new LinkHighlights(page); }
+  static LinkHighlights* Create(Page& page) {
+    return MakeGarbageCollected<LinkHighlights>(page);
+  }
+
+  explicit LinkHighlights(Page&);
   virtual ~LinkHighlights();
 
   virtual void Trace(blink::Visitor*);
@@ -57,8 +61,6 @@ class CORE_EXPORT LinkHighlights final
   FRIEND_TEST_ALL_PREFIXES(LinkHighlightImplTest, resetLayerTreeView);
   FRIEND_TEST_ALL_PREFIXES(LinkHighlightImplTest, multipleHighlights);
   FRIEND_TEST_ALL_PREFIXES(LinkHighlightImplTest, HighlightLayerEffectNode);
-
-  explicit LinkHighlights(Page&);
 
   void RemoveAllHighlights();
 

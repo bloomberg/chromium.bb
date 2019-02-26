@@ -51,7 +51,9 @@
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/system/invitation.h"
+#include "services/network/public/mojom/mdns_responder.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/resource_coordinator/public/cpp/process_resource_coordinator.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/viz/public/interfaces/compositing/compositing_mode_watcher.mojom.h"
@@ -62,7 +64,6 @@
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 #include "ui/gfx/gpu_memory_buffer.h"
-#include "ui/gl/gpu_switching_observer.h"
 
 #if defined(OS_ANDROID)
 #include "content/public/browser/android/child_process_importance.h"
@@ -70,7 +71,6 @@
 
 namespace base {
 class CommandLine;
-class MessageLoop;
 class SharedPersistentMemoryAllocator;
 }
 
@@ -93,8 +93,6 @@ class PushMessagingManager;
 class RenderFrameMessageFilter;
 class RenderProcessHostFactory;
 class RenderWidgetHelper;
-class RenderWidgetHost;
-class RenderWidgetHostImpl;
 class ResourceMessageFilter;
 class ServiceWorkerDispatcherHost;
 class SiteInstance;
@@ -128,7 +126,6 @@ typedef base::Thread* (*RendererMainThreadFactoryFunction)(
 class CONTENT_EXPORT RenderProcessHostImpl
     : public RenderProcessHost,
       public ChildProcessLauncher::Client,
-      public ui::GpuSwitchingObserver,
       public mojom::RouteProvider,
       public blink::mojom::AssociatedInterfaceProvider,
       public mojom::RendererHost {
@@ -173,13 +170,16 @@ class CONTENT_EXPORT RenderProcessHostImpl
   bool InSameStoragePartition(StoragePartition* partition) const override;
   int GetID() const override;
   bool IsInitializedAndNotDead() const override;
-  void SetIgnoreInputEvents(bool ignore_input_events) override;
-  bool IgnoreInputEvents() const override;
+  void SetBlocked(bool blocked) override;
+  bool IsBlocked() const override;
+  std::unique_ptr<base::CallbackList<void(bool)>::Subscription>
+  RegisterBlockStateChangedCallback(
+      const base::RepeatingCallback<void(bool)>& cb) override;
   void Cleanup() override;
   void AddPendingView() override;
   void RemovePendingView() override;
-  void AddWidget(RenderWidgetHost* widget) override;
-  void RemoveWidget(RenderWidgetHost* widget) override;
+  void AddPriorityClient(PriorityClient* priority_client) override;
+  void RemovePriorityClient(PriorityClient* priority_client) override;
 #if defined(OS_ANDROID)
   ChildProcessImportance GetEffectiveImportance() override;
 #endif
@@ -199,7 +199,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
       bool incoming,
       bool outgoing,
       const WebRtcRtpPacketCallback& packet_callback) override;
-  void SetWebRtcEventLogOutput(int lid, bool enabled) override;
+  void EnableWebRtcEventLogOutput(int lid, int output_period_ms) override;
+  void DisableWebRtcEventLogOutput(int lid) override;
   void BindInterface(const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe) override;
   const service_manager::Identity& GetChildIdentity() const override;
@@ -220,6 +221,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   GetProcessResourceCoordinator() override;
   void CreateURLLoaderFactory(
       const url::Origin& origin,
+      network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
       network::mojom::URLLoaderFactoryRequest request) override;
 
   void SetIsNeverSuitableForReuse() override;
@@ -352,7 +354,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
     kMaxValue = kRefusedBySiteInstance
   };
 
-  static base::MessageLoop* GetInProcessRendererThreadForTesting();
+  static scoped_refptr<base::SingleThreadTaskRunner>
+  GetInProcessRendererThreadTaskRunnerForTesting();
 
   // This forces a renderer that is running "in process" to shut down.
   static void ShutDownInProcessRenderer();
@@ -384,8 +387,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Launch the zygote early in the browser startup.
   static void EarlyZygoteLaunch();
 #endif  // defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
-
-  void RecomputeAndUpdateWebKitPreferences();
 
   RendererAudioOutputStreamFactoryContext*
   GetRendererAudioOutputStreamFactoryContext() override;
@@ -575,9 +576,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // any other that hang off it.
   void ResetIPC();
 
-  // GpuSwitchingObserver implementation.
-  void OnGpuSwitched() override;
-
   void RecordKeepAliveDuration(RenderProcessHost::KeepAliveClientType,
                                base::TimeTicks start,
                                base::TimeTicks end);
@@ -604,6 +602,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
       mojom::MediaStreamDispatcherHostRequest request);
   void CreateMediaStreamTrackMetricsHost(
       mojom::MediaStreamTrackMetricsHostRequest request);
+
+#if BUILDFLAG(ENABLE_MDNS)
+  void CreateMdnsResponder(network::mojom::MdnsResponderRequest request);
+#endif  // BUILDFLAG(ENABLE_MDNS)
 
   void OnRegisterAecDumpConsumer(int id);
   void OnUnregisterAecDumpConsumer(int id);
@@ -712,11 +714,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   ChildProcessImportance effective_importance_ = ChildProcessImportance::NORMAL;
 #endif
 
-  // Clients that contribute priority to this proces.
+  // Clients that contribute priority to this process.
   base::flat_set<PriorityClient*> priority_clients_;
-
-  // The set of widgets in this RenderProcessHostImpl.
-  std::set<RenderWidgetHostImpl*> widgets_;
 
   ChildProcessLauncherPriority priority_;
 
@@ -748,12 +747,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // The globally-unique identifier for this RPH.
   const int id_;
 
-  // A secondary ID used by the Service Manager to distinguish different
-  // incarnations of the same RPH from each other. Unlike |id_| this is not
-  // globally unique, but it is guaranteed to change every time ProcessDied() is
-  // called.
-  int instance_id_ = 1;
-
   BrowserContext* const browser_context_;
 
   // Owned by |browser_context_|.
@@ -770,9 +763,12 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // the same process doesn't.
   bool sudden_termination_allowed_;
 
-  // Set to true if we shouldn't send input events.  We actually do the
-  // filtering for this at the render widget level.
-  bool ignore_input_events_;
+  // Set to true if this process is blocked and shouldn't be sent input events.
+  // The checking of this actually happens in the RenderWidgetHost.
+  bool is_blocked_;
+
+  // The clients who want to know when the blocked state has changed.
+  base::CallbackList<void(bool)> blocked_state_changed_callback_list_;
 
   // Records the last time we regarded the child process active.
   base::TimeTicks child_process_activity_time_;
@@ -785,10 +781,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // not committed any web content, and it has not been given to a SiteInstance
   // that has a site assigned.
   bool is_unused_;
-
-  // Prevents the class from being added as a GpuDataManagerImpl observer more
-  // than once.
-  bool gpu_observer_registered_;
 
   // Set if a call to Cleanup is required once the RenderProcessHostImpl is no
   // longer within the RenderProcessHostObserver::RenderProcessExited callbacks.
@@ -845,15 +837,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   bool channel_connected_;
   bool sent_render_process_ready_;
 
-#if defined(OS_ANDROID)
-  // UI thread is the source of sync IPCs and all shutdown signals.
-  // Therefore a proper shutdown event to unblock the UI thread is not
-  // possible without massive refactoring shutdown code.
-  // Luckily Android never performs a clean shutdown. So explicitly
-  // ignore this problem.
-  base::WaitableEvent never_signaled_;
-#endif
-
   scoped_refptr<ResourceMessageFilter> resource_message_filter_;
   std::unique_ptr<FileSystemManagerImpl, BrowserThread::DeleteOnIOThread>
       file_system_manager_impl_;
@@ -874,7 +857,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // determine if if a process should be backgrounded.
   int media_stream_count_ = 0;
 
-  std::unique_ptr<resource_coordinator::ProcessResourceCoordinator>
+  resource_coordinator::ProcessResourceCoordinator
       process_resource_coordinator_;
 
   // A WeakPtrFactory which is reset every time Cleanup() runs. Used to vend

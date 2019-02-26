@@ -6,13 +6,16 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/search_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="horizontal"
     android:visibility="gone" >
 
+    <!-- TODO(crbug.com/900912): Fix and remove lint ignore -->
     <EditText
+        tools:ignore="Autofill,LabelFor"
         android:id="@+id/search_text"
         android:layout_width="0dp"
         android:layout_height="match_parent"
@@ -24,7 +27,7 @@
         android:textAppearance="@style/BlackTitle1"
         android:textColorHint="@color/search_box_hint"/>
 
-    <android.support.v7.widget.AppCompatImageButton
+    <org.chromium.ui.widget.ChromeImageButton
         android:id="@+id/clear_text_button"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"

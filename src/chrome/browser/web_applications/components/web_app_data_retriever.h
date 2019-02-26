@@ -5,14 +5,23 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_DATA_RETRIEVER_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_DATA_RETRIEVER_H_
 
+#include <map>
 #include <memory>
 #include <vector>
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
-#include "chrome/common/web_application_info.h"
+
+class GURL;
+struct InstallableData;
+struct WebApplicationInfo;
+
+namespace blink {
+struct Manifest;
+}
 
 namespace content {
 class WebContents;
@@ -20,14 +29,20 @@ class WebContents;
 
 namespace web_app {
 
+class WebAppIconDownloader;
+
 // Class used by BookmarkAppInstallationTask to retrieve the necessary
 // information to install an app. Should only be called from the UI thread.
 class WebAppDataRetriever {
  public:
+  // Returns nullptr for WebApplicationInfo if error.
   using GetWebApplicationInfoCallback =
       base::OnceCallback<void(std::unique_ptr<WebApplicationInfo>)>;
-  using GetIconsCallback =
-      base::OnceCallback<void(std::vector<WebApplicationInfo::IconInfo>)>;
+  // |is_installable| is false if installability check failed.
+  using CheckInstallabilityCallback =
+      base::OnceCallback<void(const blink::Manifest&, bool is_installable)>;
+  // Returns empty map if error.
+  using GetIconsCallback = base::OnceCallback<void(IconsMap)>;
 
   WebAppDataRetriever();
   virtual ~WebAppDataRetriever();
@@ -37,11 +52,16 @@ class WebAppDataRetriever {
   virtual void GetWebApplicationInfo(content::WebContents* web_contents,
                                      GetWebApplicationInfoCallback callback);
 
-  // Downloads icons from |icon_urls|. If icons are missing for certain required
-  // sizes, generates them based on |app_url|. Runs |callback| with a vector of
-  // the retrieved and generated icons.
-  virtual void GetIcons(const GURL& app_url,
+  // Performs installability check and invokes |callback| with manifest.
+  virtual void CheckInstallabilityAndRetrieveManifest(
+      content::WebContents* web_contents,
+      CheckInstallabilityCallback callback);
+
+  // Downloads icons from |icon_urls|. Runs |callback| with a map of
+  // the retrieved icons.
+  virtual void GetIcons(content::WebContents* web_contents,
                         const std::vector<GURL>& icon_urls,
+                        bool skip_page_fav_icons,
                         GetIconsCallback callback);
 
  private:
@@ -52,8 +72,17 @@ class WebAppDataRetriever {
       const WebApplicationInfo& web_app_info);
   void OnGetWebApplicationInfoFailed();
 
+  void OnDidPerformInstallableCheck(CheckInstallabilityCallback callback,
+                                    const InstallableData& data);
+
+  void OnIconsDownloaded(GetIconsCallback callback,
+                         bool success,
+                         const IconsMap& icons_map);
+
   // Saved callback from GetWebApplicationInfo().
   GetWebApplicationInfoCallback get_web_app_info_callback_;
+
+  std::unique_ptr<WebAppIconDownloader> icon_downloader_;
 
   base::WeakPtrFactory<WebAppDataRetriever> weak_ptr_factory_{this};
 

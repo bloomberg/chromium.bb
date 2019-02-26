@@ -48,6 +48,13 @@ class PLATFORM_EXPORT FEComposite final : public FilterEffect {
                              float,
                              float);
 
+  FEComposite(Filter*,
+              const CompositeOperationType&,
+              float,
+              float,
+              float,
+              float);
+
   CompositeOperationType Operation() const;
   bool SetOperation(CompositeOperationType);
 
@@ -72,13 +79,6 @@ class PLATFORM_EXPORT FEComposite final : public FilterEffect {
   }
 
  private:
-  FEComposite(Filter*,
-              const CompositeOperationType&,
-              float,
-              float,
-              float,
-              float);
-
   FloatRect MapInputs(const FloatRect&) const override;
 
   bool AffectsTransparentPixels() const override;

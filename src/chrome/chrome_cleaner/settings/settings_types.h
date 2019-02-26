@@ -14,7 +14,7 @@ enum class SandboxType {
   kNonSandboxed = 0,
   kTest,
   kEset,
-  kJsonParser,
+  kParser,
   kZipArchiver,
   kNumValues,
 };

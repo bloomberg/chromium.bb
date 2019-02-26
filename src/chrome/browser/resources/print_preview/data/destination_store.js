@@ -189,6 +189,13 @@ cr.define('print_preview', function() {
       this.pdfPrinterEnabled_ = false;
 
       /**
+       * Whether to select the first printer that is found. Used when
+       * pdfPrinterEnabled_ is false.
+       * @private {boolean}
+       */
+      this.selectFirstDestination_ = false;
+
+      /**
        * ID of the system default destination.
        * @private {string}
        */
@@ -331,7 +338,7 @@ cr.define('print_preview', function() {
         return true;
 
       let isCloudDestinationSearchInProgress = !!this.cloudPrintInterface_ &&
-          this.cloudPrintInterface_.isCloudDestinationSearchInProgress;
+          this.cloudPrintInterface_.isCloudDestinationSearchInProgress();
       return isCloudDestinationSearchInProgress;
     }
 
@@ -391,7 +398,7 @@ cr.define('print_preview', function() {
 
       if (this.systemDefaultDestinationId_.length == 0 &&
           !isRecentDestinationValid) {
-        this.selectPdfDestination_();
+        this.selectFinalFallbackDestination_();
         return;
       }
 
@@ -453,7 +460,7 @@ cr.define('print_preview', function() {
         return;
       }
 
-      this.selectPdfDestination_();
+      this.selectFinalFallbackDestination_();
     }
 
     /**
@@ -650,23 +657,23 @@ cr.define('print_preview', function() {
       assert(this.cloudPrintInterface_ == null);
       this.cloudPrintInterface_ = cloudPrintInterface;
       this.tracker_.add(
-          this.cloudPrintInterface_,
+          this.cloudPrintInterface_.getEventTarget(),
           cloudprint.CloudPrintInterfaceEventType.SEARCH_DONE,
           this.onCloudPrintSearchDone_.bind(this));
       this.tracker_.add(
-          this.cloudPrintInterface_,
+          this.cloudPrintInterface_.getEventTarget(),
           cloudprint.CloudPrintInterfaceEventType.SEARCH_FAILED,
           this.onCloudPrintSearchDone_.bind(this));
       this.tracker_.add(
-          this.cloudPrintInterface_,
+          this.cloudPrintInterface_.getEventTarget(),
           cloudprint.CloudPrintInterfaceEventType.PRINTER_DONE,
           this.onCloudPrintPrinterDone_.bind(this));
       this.tracker_.add(
-          this.cloudPrintInterface_,
+          this.cloudPrintInterface_.getEventTarget(),
           cloudprint.CloudPrintInterfaceEventType.PRINTER_FAILED,
           this.onCloudPrintPrinterFailed_.bind(this));
       this.tracker_.add(
-          this.cloudPrintInterface_,
+          this.cloudPrintInterface_.getEventTarget(),
           cloudprint.CloudPrintInterfaceEventType.PROCESS_INVITE_DONE,
           this.onCloudPrintProcessInviteDone_.bind(this));
     }
@@ -789,20 +796,37 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * Selects 'Save to PDF' destination (since it always exists).
+     * Selects the Save as PDF fallback if it is available. If not, selects the
+     * first destination if it exists. If the store is empty, starts loading all
+     * printers to find one to select.
      * @private
      */
-    selectPdfDestination_() {
-      const saveToPdfKey = this.getDestinationKey_(
-          print_preview.DestinationOrigin.LOCAL,
-          print_preview.Destination.GooglePromotedId.SAVE_AS_PDF, '');
-      this.selectDestination(
-          this.destinationMap_[saveToPdfKey] || this.destinations_[0] || null);
+    selectFinalFallbackDestination_() {
+      // Save as PDF should always exist if it is enabled.
+      if (this.pdfPrinterEnabled_) {
+        const saveToPdfKey = this.getDestinationKey_(
+            print_preview.DestinationOrigin.LOCAL,
+            print_preview.Destination.GooglePromotedId.SAVE_AS_PDF, '');
+        this.selectDestination(assert(this.destinationMap_[saveToPdfKey]));
+        return;
+      }
+
+      // Try selecting the first destination if there is at least one
+      // destination already loaded.
+      if (this.destinations_.length > 0) {
+        this.selectDestination(this.destinations_[0]);
+        return;
+      }
+
+      // Load all destinations to find one to select.
+      this.selectFirstDestination_ = true;
+      this.startLoadAllDestinations();
     }
 
     /**
-     * Attempts to select system default destination with a fallback to
-     * 'Save to PDF' destination.
+     * Attempts to select system default destination with a fallback to the
+     * 'Save to PDF' destination and a final fallback to the first destination
+     * in the store.
      * @private
      */
     selectDefaultDestination_() {
@@ -818,7 +842,7 @@ cr.define('print_preview', function() {
           }
         }
       }
-      this.selectPdfDestination_();
+      this.selectFinalFallbackDestination_();
     }
 
     /**
@@ -1129,6 +1153,8 @@ cr.define('print_preview', function() {
       this.autoSelectTimeout_ = setTimeout(
           this.selectDefaultDestination_.bind(this),
           DestinationStore.AUTO_SELECT_TIMEOUT_);
+      cr.dispatchSimpleEvent(
+          this, DestinationStore.EventType.DESTINATIONS_RESET);
     }
 
 
@@ -1144,6 +1170,7 @@ cr.define('print_preview', function() {
           this, DestinationStore.EventType.DESTINATION_SEARCH_DONE);
       if (type === print_preview.PrinterType.EXTENSION_PRINTER)
         this.endExtensionPrinterSearch_();
+      this.sendNoPrinterEventIfNeeded_();
     }
 
     /**
@@ -1224,12 +1251,17 @@ cr.define('print_preview', function() {
     /**
      * Called when the /search call completes, either successfully or not.
      * In case of success, stores fetched destinations.
-     * @param {Event} event Contains the request result.
+     * @param {!cloudprint.CloudPrintInterfaceSearchDoneEvent} event Contains
+     *     the request result.
      * @private
      */
     onCloudPrintSearchDone_(event) {
-      if (event.printers) {
+      if (event.printers && event.printers.length > 0) {
         this.insertDestinations_(event.printers);
+        if (this.selectFirstDestination_) {
+          this.selectDestination(this.destinations_[0]);
+          this.selectFirstDestination_ = false;
+        }
       }
       if (event.searchDone) {
         const origins = this.loadedCloudOrigins_[event.user] || [];
@@ -1239,13 +1271,30 @@ cr.define('print_preview', function() {
       }
       cr.dispatchSimpleEvent(
           this, DestinationStore.EventType.DESTINATION_SEARCH_DONE);
+      this.sendNoPrinterEventIfNeeded_();
+    }
+
+    /**
+     * Checks if the search is done and no printers are found. If so, fires a
+     * DestinationStore.EventType.NO_DESTINATIONS_FOUND event.
+     * @private
+     */
+    sendNoPrinterEventIfNeeded_() {
+      if (this.isPrintDestinationSearchInProgress ||
+          !this.selectFirstDestination_) {
+        return;
+      }
+
+      this.selectFirstDestination_ = false;
+      cr.dispatchSimpleEvent(
+          this, DestinationStore.EventType.NO_DESTINATIONS_FOUND);
     }
 
     /**
      * Called when /printer call completes. Updates the specified destination's
      * print capabilities.
-     * @param {Event} event Contains detailed information about the
-     *     destination.
+     * @param {!cloudprint.CloudPrintInterfacePrinterDoneEvent} event Contains
+     *     detailed information about the destination.
      * @private
      */
     onCloudPrintPrinterDone_(event) {
@@ -1256,8 +1305,8 @@ cr.define('print_preview', function() {
      * Called when the Google Cloud Print interface fails to lookup a
      * destination. Selects another destination if the failed destination was
      * the initial destination.
-     * @param {Object} event Contains the ID of the destination that was failed
-     *     to be looked up.
+     * @param {!cloudprint.CloudPrintInterfacePrinterFailedEvent} event
+     *     Contains the ID of the destination that was failed to be looked up.
      * @private
      */
     onCloudPrintPrinterFailed_(event) {
@@ -1306,6 +1355,11 @@ cr.define('print_preview', function() {
       }
       this.insertDestinations_(printers.map(
           printer => print_preview.parseDestination(type, printer)));
+
+      if (this.selectFirstDestination_) {
+        this.selectDestination(this.destinations_[0]);
+        this.selectFirstDestination_ = false;
+      }
     }
 
     /**
@@ -1354,12 +1408,15 @@ cr.define('print_preview', function() {
     DESTINATION_SEARCH_STARTED:
         'print_preview.DestinationStore.DESTINATION_SEARCH_STARTED',
     DESTINATION_SELECT: 'print_preview.DestinationStore.DESTINATION_SELECT',
+    DESTINATIONS_RESET: 'print_preview.DestinationStore.DESTINATIONS_RESET',
     DESTINATIONS_INSERTED:
         'print_preview.DestinationStore.DESTINATIONS_INSERTED',
     PROVISIONAL_DESTINATION_RESOLVED:
         'print_preview.DestinationStore.PROVISIONAL_DESTINATION_RESOLVED',
     CACHED_SELECTED_DESTINATION_INFO_READY:
         'print_preview.DestinationStore.CACHED_SELECTED_DESTINATION_INFO_READY',
+    NO_DESTINATIONS_FOUND:
+        'print_preview.DestinationStore.NO_DESTINATIONS_FOUND',
     SELECTED_DESTINATION_CAPABILITIES_READY: 'print_preview.DestinationStore' +
         '.SELECTED_DESTINATION_CAPABILITIES_READY',
     SELECTED_DESTINATION_INVALID:

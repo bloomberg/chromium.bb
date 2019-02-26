@@ -45,6 +45,7 @@
       <include name="IDR_MESSAGING_UTILS_JS" file="messaging_utils.js" type="BINDATA" />
       <include name="IDR_MIME_HANDLER_PRIVATE_CUSTOM_BINDINGS_JS" file="mime_handler_private_custom_bindings.js" type="BINDATA" />
       <include name="IDR_MIME_HANDLER_MOJOM_JS" file="${mojom_root}\extensions\common\api\mime_handler.mojom.js" use_base_dir="false" type="BINDATA" />
+      <include name="IDR_SAFE_METHODS_JS" file="guest_view/safe_methods.js" type="BINDATA" />
       <include name="IDR_SCHEMA_UTILS_JS" file="schema_utils.js" type="BINDATA" />
       <include name="IDR_SEND_REQUEST_JS" file="send_request.js" type="BINDATA" />
       <include name="IDR_SET_ICON_JS" file="set_icon.js" type="BINDATA" />

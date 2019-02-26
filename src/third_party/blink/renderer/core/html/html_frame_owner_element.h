@@ -21,6 +21,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_FRAME_OWNER_ELEMENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_FRAME_OWNER_ELEMENT_H_
 
+#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/feature_policy/feature_policy.h"
@@ -62,6 +63,8 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   // is, to remove it from the layout as if it did not exist.
   virtual void SetCollapsed(bool) {}
 
+  virtual FrameOwnerElementType OwnerType() const = 0;
+
   Document* getSVGDocument(ExceptionState&) const;
 
   void SetEmbeddedContentView(EmbeddedContentView*);
@@ -98,10 +101,10 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   void DispatchLoad() final;
   SandboxFlags GetSandboxFlags() const final { return sandbox_flags_; }
   bool CanRenderFallbackContent() const override { return false; }
-  void RenderFallbackContent() override {}
+  void RenderFallbackContent(Frame*) override {}
   void IntrinsicSizingInfoChanged() override {}
   AtomicString BrowsingContextContainerName() const override {
-    return getAttribute(HTMLNames::nameAttr);
+    return getAttribute(html_names::kNameAttr);
   }
   ScrollbarMode ScrollingMode() const override { return kScrollbarAuto; }
   int MarginWidth() const override { return -1; }
@@ -166,8 +169,8 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
 
   bool IsFrameOwnerElement() const final { return true; }
 
-  virtual ReferrerPolicy ReferrerPolicyAttribute() {
-    return kReferrerPolicyDefault;
+  virtual network::mojom::ReferrerPolicy ReferrerPolicyAttribute() {
+    return network::mojom::ReferrerPolicy::kDefault;
   }
 
   Member<Frame> content_frame_;

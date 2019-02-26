@@ -29,12 +29,9 @@
 #include "third_party/blink/renderer/core/html/html_collection.h"
 #include "third_party/blink/renderer/core/html/html_table_element.h"
 #include "third_party/blink/renderer/core/html/html_table_row_element.h"
-#include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
-
-using namespace HTMLNames;
 
 inline HTMLTableSectionElement::HTMLTableSectionElement(
     const QualifiedName& tag_name,

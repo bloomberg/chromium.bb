@@ -15,7 +15,7 @@ component("common") {
 
   public_deps = [
     "//third_party/blink/public/common:headers",
-    "//third_party/blink/public/mojom:mojom_core",
+    "//third_party/blink/public/mojom:mojom_modules",
   ]
   deps = [
     "//third_party/blink/common",
@@ -38,29 +38,35 @@ source_set("headers") {
     "blob/blob_utils.h",
     "cache_storage/cache_storage_utils.h",
     "client_hints/client_hints.h",
+    "common_export.h",
     "device_memory/approximated_device_memory.h",
     "dom_storage/session_storage_namespace_id.h",
+    "download/download_stats.h",
     "experiments/memory_ablation_experiment.h",
     "feature_policy/feature_policy.h",
     "features.h",
+    "frame/frame_owner_element_type.h",
     "frame/frame_policy.h",
+    "frame/from_ad_state.h",
     "frame/sandbox_flags.h",
     "frame/user_activation_state.h",
     "frame/user_activation_update_source.h",
     "frame/user_activation_update_type.h",
+    "indexeddb/indexed_db_default_mojom_traits.h",
     "indexeddb/indexeddb_key.h",
     "indexeddb/indexeddb_key_path.h",
     "indexeddb/indexeddb_key_range.h",
     "indexeddb/indexeddb_metadata.h",
-    "indexeddb/indexeddb_struct_traits.h",
     "indexeddb/web_idb_types.h",
     "manifest/manifest.h",
     "manifest/manifest_icon_selector.h",
     "manifest/web_display_mode.h",
     "messaging/cloneable_message.h",
+    "messaging/cloneable_message_struct_traits.h",
     "messaging/message_port_channel.h",
     "messaging/string_message_codec.h",
     "messaging/transferable_message.h",
+    "messaging/transferable_message_struct_traits.h",
     "mime_util/mime_util.h",
     "notifications/notification_resources.h",
     "notifications/notification_struct_traits.h",
@@ -73,7 +79,6 @@ source_set("headers") {
     "page/launching_process_state.h",
     "picture_in_picture/picture_in_picture_control_info.h",
     "privacy_preferences.h",
-    "screen_orientation/web_screen_orientation_enum_traits.h",
     "screen_orientation/web_screen_orientation_lock_type.h",
     "screen_orientation/web_screen_orientation_type.h",
     "service_worker/service_worker_status_code.h",
@@ -83,12 +88,14 @@ source_set("headers") {
 
   public_deps = [
     "//skia",
-    "//third_party/blink/public/mojom:mojom_core_headers",
+    "//third_party/blink/public/mojom:mojom_modules_headers",
   ]
 
   deps = [
     "//base",
+    "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
+    "//mojo/public/mojom/base",
     "//net",
   ]
 
@@ -105,9 +112,17 @@ source_set("headers") {
     deps += [ ":font_unique_name_table_proto" ]
   }
 
+  if (is_mac) {
+    sources += [ "sandbox_support/sandbox_support_mac.h" ]
+  }
+
   if (is_win) {
     sources += [ "dwrite_rasterizer_support/dwrite_rasterizer_support.h" ]
   }
+
+  # common_export.h is an implementation detail of component builds,
+  # not part of the public API.
+  public = sources - [ "common_export.h" ]
 }
 
 if (is_android) {

@@ -39,12 +39,13 @@
 #include "third_party/blink/renderer/core/layout/order_iterator.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/geometry/layout_point.h"
-#include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
 class FlexItem;
+class FlexLine;
 class FlexLayoutAlgorithm;
 class LayoutBox;
 struct MinMaxSize;
@@ -97,7 +98,7 @@ class FlexItem {
 
   ItemPosition Alignment() const;
 
-  bool HasOrthogonalFlow() const;
+  bool MainAxisIsInlineAxis() const;
 
   LayoutUnit FlowAwareMarginStart() const;
   LayoutUnit FlowAwareMarginEnd() const;
@@ -106,13 +107,20 @@ class FlexItem {
 
   LayoutUnit MarginBoxAscent() const;
 
-  LayoutUnit AvailableAlignmentSpace(LayoutUnit) const;
+  LayoutUnit AvailableAlignmentSpace() const;
 
   bool HasAutoMarginsInCrossAxis() const;
 
   void UpdateAutoMarginsInMainAxis(LayoutUnit auto_margin_offset);
 
+  // Computes the cross-axis size that a stretched item should have and stores
+  // it in cross_axis_size. DCHECKs if the item is not stretch aligned.
+  void ComputeStretchedSize();
+
+  inline const FlexLine* Line() const;
+
   FlexLayoutAlgorithm* algorithm;
+  wtf_size_t line_number;
   LayoutBox* box;
   const LayoutUnit flex_base_content_size;
   const MinMaxSize min_max_sizes;
@@ -147,6 +155,11 @@ class FlexItemVectorView {
   const FlexItem& operator[](wtf_size_t i) const {
     return vector_->at(start_ + i);
   }
+
+  FlexItem* begin() { return vector_->begin() + start_; }
+  const FlexItem* begin() const { return vector_->begin() + start_; }
+  FlexItem* end() { return vector_->begin() + end_; }
+  const FlexItem* end() const { return vector_->begin() + end_; }
 
  private:
   FlexItemVector* vector_;
@@ -284,6 +297,7 @@ class FlexLayoutAlgorithm {
 
   bool IsHorizontalFlow() const;
   bool IsColumnFlow() const;
+  bool IsMultiline() const { return style_->FlexWrap() != EFlexWrap::kNowrap; }
   static bool IsHorizontalFlow(const ComputedStyle&);
   bool IsLeftToRightFlow() const;
   TransformedWritingMode GetTransformedWritingMode() const;
@@ -309,7 +323,6 @@ class FlexLayoutAlgorithm {
 
  private:
   EOverflow MainAxisOverflowForChild(const LayoutBox& child) const;
-  bool IsMultiline() const { return style_->FlexWrap() != EFlexWrap::kNowrap; }
 
   const ComputedStyle* style_;
   const LayoutUnit line_break_length_;
@@ -318,6 +331,10 @@ class FlexLayoutAlgorithm {
   size_t next_item_index_;
   DISALLOW_COPY_AND_ASSIGN(FlexLayoutAlgorithm);
 };
+
+inline const FlexLine* FlexItem::Line() const {
+  return &algorithm->FlexLines()[line_number];
+}
 
 }  // namespace blink
 

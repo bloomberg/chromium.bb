@@ -62,7 +62,8 @@ DateTimeChooserImpl* DateTimeChooserImpl::Create(
     ChromeClient* chrome_client,
     DateTimeChooserClient* client,
     const DateTimeChooserParameters& parameters) {
-  return new DateTimeChooserImpl(chrome_client, client, parameters);
+  return MakeGarbageCollected<DateTimeChooserImpl>(chrome_client, client,
+                                                   parameters);
 }
 
 DateTimeChooserImpl::~DateTimeChooserImpl() = default;
@@ -85,15 +86,15 @@ AXObject* DateTimeChooserImpl::RootAXObject() {
 
 static String ValueToDateTimeString(double value, AtomicString type) {
   DateComponents components;
-  if (type == InputTypeNames::date)
+  if (type == input_type_names::kDate)
     components.SetMillisecondsSinceEpochForDate(value);
-  else if (type == InputTypeNames::datetime_local)
+  else if (type == input_type_names::kDatetimeLocal)
     components.SetMillisecondsSinceEpochForDateTimeLocal(value);
-  else if (type == InputTypeNames::month)
+  else if (type == input_type_names::kMonth)
     components.SetMonthsSinceEpoch(value);
-  else if (type == InputTypeNames::time)
+  else if (type == input_type_names::kTime)
     components.SetMillisecondsSinceMidnight(value);
-  else if (type == InputTypeNames::week)
+  else if (type == input_type_names::kWeek)
     components.SetMillisecondsSinceEpochForWeek(value);
   else
     NOTREACHED();
@@ -107,12 +108,12 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
   String step_base_string = String::Number(parameters_.step_base, 11);
   String today_label_string;
   String other_date_label_string;
-  if (parameters_.type == InputTypeNames::month) {
+  if (parameters_.type == input_type_names::kMonth) {
     today_label_string =
         GetLocale().QueryString(WebLocalizedString::kThisMonthButtonLabel);
     other_date_label_string =
         GetLocale().QueryString(WebLocalizedString::kOtherMonthLabel);
-  } else if (parameters_.type == InputTypeNames::week) {
+  } else if (parameters_.type == input_type_names::kWeek) {
     today_label_string =
         GetLocale().QueryString(WebLocalizedString::kThisWeekButtonLabel);
     other_date_label_string =

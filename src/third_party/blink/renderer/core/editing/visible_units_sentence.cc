@@ -40,26 +40,72 @@ namespace blink {
 
 namespace {
 
-unsigned PreviousSentencePositionBoundary(const UChar* characters,
-                                          unsigned length,
-                                          unsigned,
-                                          BoundarySearchContextAvailability,
-                                          bool&) {
-  // FIXME: This is identical to startSentenceBoundary. I'm pretty sure that's
-  // not right.
-  TextBreakIterator* iterator = SentenceBreakIterator(characters, length);
-  // FIXME: The following function can return -1; we don't handle that.
-  return iterator->preceding(length);
+PositionInFlatTree PreviousSentencePositionInternal(
+    const PositionInFlatTree& position) {
+  class Finder final : public TextSegments::Finder {
+    STACK_ALLOCATED();
+
+   public:
+    Position Find(const String text, unsigned passed_offset) final {
+      DCHECK_LE(passed_offset, text.length());
+      // "move_by_sentence_boundary.html" requires to skip a space characters
+      // between sentences.
+      const unsigned offset = FindLastNonSpaceCharacter(text, passed_offset);
+      TextBreakIterator* iterator =
+          SentenceBreakIterator(text.Characters16(), text.length());
+      const int result = iterator->preceding(offset);
+      if (result == kTextBreakDone)
+        return Position();
+      return Position::Before(result);
+    }
+
+   private:
+    static unsigned FindLastNonSpaceCharacter(const String text,
+                                              unsigned passed_offset) {
+      for (unsigned offset = passed_offset; offset; --offset) {
+        if (text[offset - 1] != ' ')
+          return offset;
+      }
+      return 0;
+    }
+  } finder;
+  return TextSegments::FindBoundaryBackward(position, &finder);
 }
 
-unsigned StartSentenceBoundary(const UChar* characters,
-                               unsigned length,
-                               unsigned,
-                               BoundarySearchContextAvailability,
-                               bool&) {
-  TextBreakIterator* iterator = SentenceBreakIterator(characters, length);
-  // FIXME: The following function can return -1; we don't handle that.
-  return iterator->preceding(length);
+PositionInFlatTree StartOfSentenceInternal(const PositionInFlatTree& position) {
+  class Finder final : public TextSegments::Finder {
+    STACK_ALLOCATED();
+
+   public:
+    Position Find(const String text, unsigned passed_offset) final {
+      DCHECK_LE(passed_offset, text.length());
+      // "move_by_sentence_boundary.html" requires to skip a space characters
+      // between sentences.
+      const unsigned offset = FindNonSpaceCharacter(text, passed_offset);
+      TextBreakIterator* iterator =
+          SentenceBreakIterator(text.Characters16(), text.length());
+      const int result = iterator->preceding(offset);
+      if (result == kTextBreakDone) {
+        if (text.length()) {
+          // Block boundaries are also sentence boundaries.
+          return Position::Before(0);
+        }
+        return Position();
+      }
+      return Position::Before(result);
+    }
+
+   private:
+    static unsigned FindNonSpaceCharacter(const String text,
+                                          unsigned passed_offset) {
+      for (unsigned offset = passed_offset; offset; --offset) {
+        if (text[offset - 1] != ' ')
+          return offset;
+      }
+      return 0;
+    }
+  } finder;
+  return TextSegments::FindBoundaryBackward(position, &finder);
 }
 
 // TODO(yosin) This includes the space after the punctuation that marks the end
@@ -77,8 +123,13 @@ PositionInFlatTree EndOfSentenceInternal(const PositionInFlatTree& position) {
       // between sentences.
       const unsigned offset = FindNonSpaceCharacter(text, passed_offset);
       const int result = iterator->following(offset);
-      if (result == kTextBreakDone)
+      if (result == kTextBreakDone) {
+        if (text.length()) {
+          // Block boundaries are also sentence boundaries.
+          return Position::After(text.length());
+        }
         return Position();
+      }
       return result == 0 ? Position::Before(0) : Position::After(result - 1);
     }
 
@@ -141,13 +192,6 @@ PositionInFlatTree NextSentencePositionInternal(
   return TextSegments::FindBoundaryForward(position, &finder);
 }
 
-template <typename Strategy>
-VisiblePositionTemplate<Strategy> StartOfSentenceAlgorithm(
-    const VisiblePositionTemplate<Strategy>& c) {
-  DCHECK(c.IsValid()) << c;
-  return CreateVisiblePosition(PreviousBoundary(c, StartSentenceBoundary));
-}
-
 }  // namespace
 
 PositionInFlatTreeWithAffinity EndOfSentence(const PositionInFlatTree& start) {
@@ -172,10 +216,8 @@ VisiblePositionInFlatTree EndOfSentence(const VisiblePositionInFlatTree& c) {
 
 EphemeralRange ExpandEndToSentenceBoundary(const EphemeralRange& range) {
   DCHECK(range.IsNotNull());
-  const VisiblePosition& visible_end =
-      CreateVisiblePosition(range.EndPosition());
-  DCHECK(visible_end.IsNotNull());
-  const Position& sentence_end = EndOfSentence(visible_end).DeepEquivalent();
+  const Position sentence_end =
+      EndOfSentence(range.EndPosition()).GetPosition();
   // TODO(editing-dev): |sentenceEnd < range.endPosition()| is possible,
   // which would trigger a DCHECK in EphemeralRange's constructor if we return
   // it directly. However, this shouldn't happen and needs to be fixed.
@@ -188,11 +230,8 @@ EphemeralRange ExpandEndToSentenceBoundary(const EphemeralRange& range) {
 
 EphemeralRange ExpandRangeToSentenceBoundary(const EphemeralRange& range) {
   DCHECK(range.IsNotNull());
-  const VisiblePosition& visible_start =
-      CreateVisiblePosition(range.StartPosition());
-  DCHECK(visible_start.IsNotNull());
-  const Position& sentence_start =
-      StartOfSentence(visible_start).DeepEquivalent();
+  const Position sentence_start =
+      StartOfSentencePosition(range.StartPosition());
   // TODO(editing-dev): |sentenceStart > range.startPosition()| is possible,
   // which would trigger a DCHECK in EphemeralRange's constructor if we return
   // it directly. However, this shouldn't happen and needs to be fixed.
@@ -233,20 +272,43 @@ VisiblePositionInFlatTree NextSentencePosition(
 
 // ----
 
-VisiblePosition PreviousSentencePosition(const VisiblePosition& c) {
-  DCHECK(c.IsValid()) << c;
-  VisiblePosition prev = CreateVisiblePosition(
-      PreviousBoundary(c, PreviousSentencePositionBoundary));
+PositionInFlatTree PreviousSentencePosition(
+    const PositionInFlatTree& position) {
+  const PositionInFlatTree result = PreviousSentencePositionInternal(position);
   return AdjustBackwardPositionToAvoidCrossingEditingBoundaries(
-      prev, c.DeepEquivalent());
+             PositionInFlatTreeWithAffinity(result), position)
+      .GetPosition();
+}
+
+Position PreviousSentencePosition(const Position& position) {
+  return ToPositionInDOMTree(
+      PreviousSentencePosition(ToPositionInFlatTree(position)));
+}
+
+VisiblePosition PreviousSentencePosition(const VisiblePosition& c) {
+  return CreateVisiblePosition(PreviousSentencePosition(c.DeepEquivalent()));
+}
+
+// ----
+
+PositionInFlatTree StartOfSentencePosition(const PositionInFlatTree& position) {
+  const PositionInFlatTree result = StartOfSentenceInternal(position);
+  return AdjustBackwardPositionToAvoidCrossingEditingBoundaries(
+             PositionInFlatTreeWithAffinity(result), position)
+      .GetPosition();
+}
+
+Position StartOfSentencePosition(const Position& position) {
+  return ToPositionInDOMTree(
+      StartOfSentencePosition(ToPositionInFlatTree(position)));
 }
 
 VisiblePosition StartOfSentence(const VisiblePosition& c) {
-  return StartOfSentenceAlgorithm<EditingStrategy>(c);
+  return CreateVisiblePosition(StartOfSentencePosition(c.DeepEquivalent()));
 }
 
 VisiblePositionInFlatTree StartOfSentence(const VisiblePositionInFlatTree& c) {
-  return StartOfSentenceAlgorithm<EditingInFlatTreeStrategy>(c);
+  return CreateVisiblePosition(StartOfSentencePosition(c.DeepEquivalent()));
 }
 
 }  // namespace blink

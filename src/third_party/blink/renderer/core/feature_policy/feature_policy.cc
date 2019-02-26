@@ -6,6 +6,10 @@
 #include <algorithm>
 
 #include "base/metrics/histogram_macros.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
+#include "third_party/blink/renderer/platform/json/json_values.h"
+#include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/bit_vector.h"
@@ -13,6 +17,9 @@
 #include "url/origin.h"
 
 namespace blink {
+
+constexpr char kReportOnlySuffix[] = "-report-only";
+constexpr size_t kReportOnlySuffixLength = 12;
 
 ParsedFeaturePolicy ParseFeaturePolicyHeader(
     const String& policy,
@@ -26,9 +33,10 @@ ParsedFeaturePolicy ParseFeaturePolicyAttribute(
     const String& policy,
     scoped_refptr<const SecurityOrigin> self_origin,
     scoped_refptr<const SecurityOrigin> src_origin,
-    Vector<String>* messages) {
+    Vector<String>* messages,
+    Document* document) {
   return ParseFeaturePolicy(policy, self_origin, src_origin, messages,
-                            GetDefaultFeatureNameMap());
+                            GetDefaultFeatureNameMap(), document);
 }
 
 ParsedFeaturePolicy ParseFeaturePolicy(
@@ -36,7 +44,8 @@ ParsedFeaturePolicy ParseFeaturePolicy(
     scoped_refptr<const SecurityOrigin> self_origin,
     scoped_refptr<const SecurityOrigin> src_origin,
     Vector<String>* messages,
-    const FeatureNameMap& feature_names) {
+    const FeatureNameMap& feature_names,
+    Document* document) {
   ParsedFeaturePolicy allowlists;
   BitVector features_specified(
       static_cast<int>(mojom::FeaturePolicyFeature::kMaxValue));
@@ -59,26 +68,51 @@ ParsedFeaturePolicy ParseFeaturePolicy(
       // Empty policy. Skip.
       if (tokens.IsEmpty())
         continue;
-      if (!feature_names.Contains(tokens[0])) {
-        if (messages)
+      mojom::FeaturePolicyDisposition disposition =
+          mojom::FeaturePolicyDisposition::kEnforce;
+      String feature_name;
+      if (RuntimeEnabledFeatures::FeaturePolicyReportingEnabled() &&
+          tokens[0].EndsWith(kReportOnlySuffix)) {
+        feature_name = tokens[0].Substring(
+            0, tokens[0].length() - kReportOnlySuffixLength);
+        disposition = mojom::FeaturePolicyDisposition::kReport;
+      } else {
+        feature_name = tokens[0];
+      }
+      if (!feature_names.Contains(feature_name)) {
+        if (messages) {
+          // Console message should display the entire string, with
+          // "-report-only" suffix if it was originally included.
           messages->push_back("Unrecognized feature: '" + tokens[0] + "'.");
+        }
         continue;
       }
 
-      mojom::FeaturePolicyFeature feature = feature_names.at(tokens[0]);
+      mojom::FeaturePolicyFeature feature = feature_names.at(feature_name);
       // If a policy has already been specified for the current feature, drop
       // the new policy.
+      // TODO(crbug.com/904880): Allow a report-only and an enforcing version in
+      // the same parsed policy.
       if (features_specified.QuickGet(static_cast<int>(feature)))
         continue;
 
       // Count the use of this feature policy.
-      if (!src_origin) {
+      if (src_origin) {
+        if (!document || !document->IsParsedFeaturePolicy(feature)) {
+          UMA_HISTOGRAM_ENUMERATION("Blink.UseCounter.FeaturePolicy.Allow",
+                                    feature);
+          if (document) {
+            document->SetParsedFeaturePolicy(feature);
+          }
+        }
+      } else {
         UMA_HISTOGRAM_ENUMERATION("Blink.UseCounter.FeaturePolicy.Header",
                                   feature);
       }
 
       ParsedFeaturePolicyDeclaration allowlist;
       allowlist.feature = feature;
+      allowlist.disposition = disposition;
       features_specified.QuickSet(static_cast<int>(feature));
       std::vector<url::Origin> origins;
       // If a policy entry has no (optional) values (e,g,
@@ -99,7 +133,7 @@ ParsedFeaturePolicy ParseFeaturePolicy(
       }
 
       for (wtf_size_t i = 1; i < tokens.size(); i++) {
-        if (!tokens[i].ContainsOnlyASCII()) {
+        if (!tokens[i].ContainsOnlyASCIIOrEmpty()) {
           messages->push_back("Non-ASCII characters in origin.");
           continue;
         }
@@ -123,6 +157,7 @@ ParsedFeaturePolicy ParseFeaturePolicy(
           continue;
         } else if (tokens[i] == "*") {
           allowlist.matches_all_origins = true;
+          origins.clear();
           break;
         } else {
           scoped_refptr<SecurityOrigin> target_origin =
@@ -133,7 +168,10 @@ ParsedFeaturePolicy ParseFeaturePolicy(
             messages->push_back("Unrecognized origin: '" + tokens[i] + "'.");
         }
       }
-      allowlist.origins = origins;
+      std::sort(origins.begin(), origins.end());
+      auto new_end = std::unique(origins.begin(), origins.end());
+      origins.erase(new_end, origins.end());
+      allowlist.origins = std::move(origins);
       allowlists.push_back(allowlist);
     }
   }
@@ -168,6 +206,7 @@ bool DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature feature,
   allowlist.feature = feature;
   allowlist.matches_all_origins = false;
   allowlist.matches_opaque_src = false;
+  allowlist.disposition = mojom::FeaturePolicyDisposition::kEnforce;
   policy.push_back(allowlist);
   return true;
 }
@@ -180,6 +219,7 @@ bool AllowFeatureEverywhereIfNotPresent(mojom::FeaturePolicyFeature feature,
   allowlist.feature = feature;
   allowlist.matches_all_origins = true;
   allowlist.matches_opaque_src = true;
+  allowlist.disposition = mojom::FeaturePolicyDisposition::kEnforce;
   policy.push_back(allowlist);
   return true;
 }
@@ -233,22 +273,26 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
                                  mojom::FeaturePolicyFeature::kSyncXHR);
     // Under origin trial: Should be made conditional on WebVR and WebXR
     // runtime flags once it is out of trial.
+    ASSERT_ORIGIN_TRIAL(WebVR);
+    ASSERT_ORIGIN_TRIAL(WebXR);
     default_feature_name_map.Set("vr", mojom::FeaturePolicyFeature::kWebVr);
     if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled()) {
-      default_feature_name_map.Set("animations",
-                                   mojom::FeaturePolicyFeature::kAnimations);
+      default_feature_name_map.Set(
+          "layout-animations", mojom::FeaturePolicyFeature::kLayoutAnimations);
       default_feature_name_map.Set("document-write",
                                    mojom::FeaturePolicyFeature::kDocumentWrite);
       default_feature_name_map.Set(
-          "image-compression", mojom::FeaturePolicyFeature::kImageCompression);
+          "document-domain", mojom::FeaturePolicyFeature::kDocumentDomain);
+      default_feature_name_map.Set(
+          "unoptimized-images",
+          mojom::FeaturePolicyFeature::kUnoptimizedImages);
       default_feature_name_map.Set("lazyload",
                                    mojom::FeaturePolicyFeature::kLazyLoad);
       default_feature_name_map.Set(
           "legacy-image-formats",
           mojom::FeaturePolicyFeature::kLegacyImageFormats);
       default_feature_name_map.Set(
-          "max-downscaling-image",
-          mojom::FeaturePolicyFeature::kMaxDownscalingImage);
+          "oversized-images", mojom::FeaturePolicyFeature::kOversizedImages);
       default_feature_name_map.Set("unsized-media",
                                    mojom::FeaturePolicyFeature::kUnsizedMedia);
       default_feature_name_map.Set(

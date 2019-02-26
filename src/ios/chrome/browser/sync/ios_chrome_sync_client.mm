@@ -29,10 +29,11 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/sync/history_model_worker.h"
 #include "components/history/core/browser/sync/typed_url_sync_bridge.h"
+#include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/keyed_service/core/service_access_type.h"
-#include "components/password_manager/core/browser/password_model_worker.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/sync/password_model_worker.h"
 #include "components/reading_list/core/reading_list_model.h"
 #include "components/search_engines/search_engine_data_type_controller.h"
 #include "components/sync/base/report_unrecoverable_error.h"
@@ -55,6 +56,7 @@
 #include "ios/chrome/browser/favicon/favicon_service_factory.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/invalidation/ios_chrome_deprecated_profile_invalidation_provider_factory.h"
+#include "ios/chrome/browser/invalidation/ios_chrome_profile_invalidation_provider_factory.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
@@ -81,7 +83,13 @@ syncer::ModelTypeSet GetDisabledTypesFromCommandLine() {
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kDisableSyncTypes);
 
-  return syncer::ModelTypeSetFromString(disabled_types_str);
+  syncer::ModelTypeSet disabled_types =
+      syncer::ModelTypeSetFromString(disabled_types_str);
+  if (disabled_types.Has(syncer::DEVICE_INFO)) {
+    DLOG(WARNING) << "DEVICE_INFO cannot be disabled via a command-line switch";
+    disabled_types.Remove(syncer::DEVICE_INFO);
+  }
+  return disabled_types;
 }
 
 }  // namespace
@@ -178,11 +186,10 @@ base::Closure IOSChromeSyncClient::GetPasswordStateChangedCallback() {
 }
 
 syncer::DataTypeController::TypeVector
-IOSChromeSyncClient::CreateDataTypeControllers(
-    syncer::LocalDeviceInfoProvider* local_device_info_provider) {
+IOSChromeSyncClient::CreateDataTypeControllers() {
   // The iOS port does not have any platform-specific datatypes.
   return component_factory_->CreateCommonDataTypeControllers(
-      GetDisabledTypesFromCommandLine(), local_device_info_provider);
+      GetDisabledTypesFromCommandLine());
 }
 
 BookmarkUndoService* IOSChromeSyncClient::GetBookmarkUndoServiceIfExists() {
@@ -192,9 +199,15 @@ BookmarkUndoService* IOSChromeSyncClient::GetBookmarkUndoServiceIfExists() {
 
 invalidation::InvalidationService*
 IOSChromeSyncClient::GetInvalidationService() {
-  invalidation::ProfileInvalidationProvider* provider =
-      IOSChromeDeprecatedProfileInvalidationProviderFactory::GetForBrowserState(
-          browser_state_);
+  invalidation::ProfileInvalidationProvider* provider;
+
+  if (base::FeatureList::IsEnabled(invalidation::switches::kFCMInvalidations)) {
+    provider = IOSChromeProfileInvalidationProviderFactory::GetForBrowserState(
+        browser_state_);
+  } else {
+    provider = IOSChromeDeprecatedProfileInvalidationProviderFactory::
+        GetForBrowserState(browser_state_);
+  }
   if (provider)
     return provider->GetInvalidationService();
   return nullptr;
@@ -256,11 +269,6 @@ IOSChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
       NOTREACHED();
       return base::WeakPtr<syncer::SyncableService>();
     }
-    case syncer::SESSIONS: {
-      return SessionSyncServiceFactory::GetForBrowserState(browser_state_)
-          ->GetSyncableService()
-          ->AsWeakPtr();
-    }
     case syncer::PASSWORDS: {
       return password_store_ ? password_store_->GetPasswordSyncableService()
                              : base::WeakPtr<syncer::SyncableService>();
@@ -274,9 +282,6 @@ IOSChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
 base::WeakPtr<syncer::ModelTypeControllerDelegate>
 IOSChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
   switch (type) {
-    case syncer::DEVICE_INFO:
-      return ProfileSyncServiceFactory::GetForBrowserState(browser_state_)
-          ->GetDeviceInfoSyncControllerDelegate();
     case syncer::READING_LIST: {
       ReadingListModel* reading_list_model =
           ReadingListModelFactory::GetForBrowserState(browser_state_);
@@ -300,6 +305,7 @@ IOSChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
     case syncer::AUTOFILL_WALLET_DATA:
     case syncer::AUTOFILL_WALLET_METADATA:
     case syncer::BOOKMARKS:
+    case syncer::DEVICE_INFO:
     case syncer::SESSIONS:
     case syncer::TYPED_URLS:
       NOTREACHED();

@@ -53,13 +53,37 @@ class CORE_EXPORT Touch final : public ScriptWrappable {
                        float rotation_angle,
                        float force,
                        String region) {
-    return new Touch(frame, target, identifier, screen_pos, page_pos, radius,
-                     rotation_angle, force, region);
+    return MakeGarbageCollected<Touch>(frame, target, identifier, screen_pos,
+                                       page_pos, radius, rotation_angle, force,
+                                       region);
   }
 
-  static Touch* Create(const Document& document, const TouchInit& initializer) {
-    return new Touch(document.GetFrame(), initializer);
+  static Touch* Create(const Document& document, const TouchInit* initializer) {
+    return MakeGarbageCollected<Touch>(document.GetFrame(), initializer);
   }
+
+  Touch(LocalFrame*,
+        EventTarget*,
+        int identifier,
+        const FloatPoint& screen_pos,
+        const FloatPoint& page_pos,
+        const FloatSize& radius,
+        float rotation_angle,
+        float force,
+        String region);
+
+  Touch(EventTarget*,
+        int identifier,
+        const FloatPoint& client_pos,
+        const FloatPoint& screen_pos,
+        const FloatPoint& page_pos,
+        const FloatSize& radius,
+        float rotation_angle,
+        float force,
+        String region,
+        LayoutPoint absolute_location);
+
+  Touch(LocalFrame*, const TouchInit*);
 
   // DOM Touch implementation
   EventTarget* target() const { return target_.Get(); }
@@ -84,29 +108,6 @@ class CORE_EXPORT Touch final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  Touch(LocalFrame*,
-        EventTarget*,
-        int identifier,
-        const FloatPoint& screen_pos,
-        const FloatPoint& page_pos,
-        const FloatSize& radius,
-        float rotation_angle,
-        float force,
-        String region);
-
-  Touch(EventTarget*,
-        int identifier,
-        const FloatPoint& client_pos,
-        const FloatPoint& screen_pos,
-        const FloatPoint& page_pos,
-        const FloatSize& radius,
-        float rotation_angle,
-        float force,
-        String region,
-        LayoutPoint absolute_location);
-
-  Touch(LocalFrame*, const TouchInit&);
-
   Member<EventTarget> target_;
   int identifier_;
   // Position relative to the viewport in CSS px.

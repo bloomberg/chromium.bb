@@ -17,11 +17,12 @@
 #include "net/third_party/http2/hpack/decoder/hpack_decoder_state.h"
 #include "net/third_party/http2/hpack/decoder/hpack_decoder_tables.h"
 #include "net/third_party/http2/hpack/tools/hpack_block_builder.h"
-#include "net/third_party/http2/tools/http2_random.h"
+#include "net/third_party/http2/test_tools/http2_random.h"
 #include "net/third_party/spdy/core/hpack/hpack_constants.h"
 #include "net/third_party/spdy/core/hpack/hpack_encoder.h"
 #include "net/third_party/spdy/core/hpack/hpack_output_stream.h"
 #include "net/third_party/spdy/core/spdy_test_utils.h"
+#include "net/third_party/spdy/platform/api/spdy_arraysize.h"
 #include "net/third_party/spdy/platform/api/spdy_string.h"
 #include "net/third_party/spdy/platform/api/spdy_string_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -586,8 +587,8 @@ TEST_P(HpackDecoderAdapterTest, LiteralHeaderNoIndexing) {
   // First header with indexed name, second header with string literal
   // name.
   const char input[] = "\x04\x0c/sample/path\x00\x06:path2\x0e/sample/path/2";
-  const SpdyHeaderBlock& header_set =
-      DecodeBlockExpectingSuccess(SpdyStringPiece(input, arraysize(input) - 1));
+  const SpdyHeaderBlock& header_set = DecodeBlockExpectingSuccess(
+      SpdyStringPiece(input, SPDY_ARRAYSIZE(input) - 1));
 
   SpdyHeaderBlock expected_header_set;
   expected_header_set[":path"] = "/sample/path";
@@ -599,8 +600,8 @@ TEST_P(HpackDecoderAdapterTest, LiteralHeaderNoIndexing) {
 // indexing and string literal names should work.
 TEST_P(HpackDecoderAdapterTest, LiteralHeaderIncrementalIndexing) {
   const char input[] = "\x44\x0c/sample/path\x40\x06:path2\x0e/sample/path/2";
-  const SpdyHeaderBlock& header_set =
-      DecodeBlockExpectingSuccess(SpdyStringPiece(input, arraysize(input) - 1));
+  const SpdyHeaderBlock& header_set = DecodeBlockExpectingSuccess(
+      SpdyStringPiece(input, SPDY_ARRAYSIZE(input) - 1));
 
   SpdyHeaderBlock expected_header_set;
   expected_header_set[":path"] = "/sample/path";
@@ -635,7 +636,7 @@ TEST_P(HpackDecoderAdapterTest, LiteralHeaderNeverIndexedInvalidNameIndex) {
 TEST_P(HpackDecoderAdapterTest, TruncatedIndex) {
   // Indexed Header, varint for index requires multiple bytes,
   // but only one provided.
-  EXPECT_FALSE(DecodeHeaderBlock(SpdyStringPiece("\xff", 1)));
+  EXPECT_FALSE(DecodeHeaderBlock("\xff"));
 }
 
 TEST_P(HpackDecoderAdapterTest, TruncatedHuffmanLiteral) {
@@ -1013,8 +1014,8 @@ TEST_P(HpackDecoderAdapterTest, SectionC6ResponseHuffmanExamples) {
 }
 
 // Regression test: Found that entries with dynamic indexed names and literal
-// values caused "use after free" memory sanity checker failures if the name
-// was evicted as it was being re-used.
+// values caused "use after free" MSAN failures if the name was evicted as it
+// was being re-used.
 TEST_P(HpackDecoderAdapterTest, ReuseNameOfEvictedEntry) {
   // Each entry is measured as 32 bytes plus the sum of the lengths of the name
   // and the value. Set the size big enough for at most one entry, and a fairly

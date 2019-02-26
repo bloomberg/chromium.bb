@@ -135,8 +135,12 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(BasicDrawOpAtlas, reporter, ctxInfo) {
     GrOnFlushResourceProvider onFlushResourceProvider(drawingManager);
     TestingUploadTarget uploadTarget;
 
+    GrBackendFormat format =
+            context->contextPriv().caps()->getBackendFormatFromColorType(kAlpha_8_SkColorType);
+
     std::unique_ptr<GrDrawOpAtlas> atlas = GrDrawOpAtlas::Make(
                                                 proxyProvider,
+                                                format,
                                                 kAlpha_8_GrPixelConfig,
                                                 kAtlasSize, kAtlasSize,
                                                 kNumPlots, kNumPlots,
@@ -184,7 +188,11 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrAtlasTextOpPreparation, reporter, ctxInfo) 
     auto textContext = drawingManager->getTextContext();
     auto opMemoryPool = context->contextPriv().opMemoryPool();
 
-    auto rtc =  context->contextPriv().makeDeferredRenderTargetContext(SkBackingFit::kApprox,
+    GrBackendFormat format =
+            context->contextPriv().caps()->getBackendFormatFromColorType(kRGBA_8888_SkColorType);
+
+    auto rtc =  context->contextPriv().makeDeferredRenderTargetContext(format,
+                                                                       SkBackingFit::kApprox,
                                                                        32, 32,
                                                                        kRGBA_8888_GrPixelConfig,
                                                                        nullptr);
@@ -203,7 +211,8 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrAtlasTextOpPreparation, reporter, ctxInfo) 
 
     TestingUploadTarget uploadTarget;
 
-    GrOpFlushState flushState(gpu, resourceProvider, uploadTarget.writeableTokenTracker());
+    GrOpFlushState flushState(gpu, resourceProvider, uploadTarget.writeableTokenTracker(), nullptr,
+                              nullptr);
     GrOpFlushState::OpArgs opArgs = {
         op.get(),
         rtc->asRenderTargetProxy(),
@@ -222,4 +231,13 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrAtlasTextOpPreparation, reporter, ctxInfo) 
     op->prepare(&flushState);
     flushState.setOpArgs(nullptr);
     opMemoryPool->release(std::move(op));
+}
+
+DEF_GPUTEST(GrDrawOpAtlasConfig_Basic, reporter, options) {
+    REPORTER_ASSERT(reporter, GrDrawOpAtlasConfig::PlotsPerLongDimensionForARGB(   1) == 1);
+    REPORTER_ASSERT(reporter, GrDrawOpAtlasConfig::PlotsPerLongDimensionForARGB( 256) == 1);
+    REPORTER_ASSERT(reporter, GrDrawOpAtlasConfig::PlotsPerLongDimensionForARGB( 512) == 2);
+    REPORTER_ASSERT(reporter, GrDrawOpAtlasConfig::PlotsPerLongDimensionForARGB(1024) == 4);
+    REPORTER_ASSERT(reporter, GrDrawOpAtlasConfig::PlotsPerLongDimensionForARGB(2048) == 8);
+    REPORTER_ASSERT(reporter, GrDrawOpAtlasConfig::PlotsPerLongDimensionForARGB(4096) == 8);
 }

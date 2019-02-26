@@ -23,6 +23,10 @@ mojom("mojo") {
     "//mojo/public/mojom/base",
     "//ui/gfx/geometry/mojo",
   ]
+
+  if (is_linux || is_chromeos) {
+    enabled_features = [ "supports_native_pixmap" ]
+  }
 }
 
 mojom("test_interfaces") {

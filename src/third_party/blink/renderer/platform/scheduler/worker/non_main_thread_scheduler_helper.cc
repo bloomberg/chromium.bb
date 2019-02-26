@@ -51,7 +51,7 @@ scoped_refptr<TaskQueue> NonMainThreadSchedulerHelper::ControlTaskQueue() {
 
 scoped_refptr<NonMainThreadTaskQueue>
 NonMainThreadSchedulerHelper::NewTaskQueue(const TaskQueue::Spec& spec) {
-  return sequence_manager_->CreateTaskQueue<NonMainThreadTaskQueue>(
+  return sequence_manager_->CreateTaskQueueWithType<NonMainThreadTaskQueue>(
       spec, non_main_thread_scheduler_);
 }
 

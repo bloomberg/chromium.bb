@@ -6,6 +6,7 @@
 #define COMPONENTS_DOWNLOAD_PUBLIC_COMMON_IN_PROGRESS_DOWNLOAD_MANAGER_H_
 
 #include <memory>
+#include <set>
 #include <vector>
 
 #include "base/memory/scoped_refptr.h"
@@ -14,6 +15,7 @@
 #include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_file_factory.h"
 #include "components/download/public/common/download_item_impl_delegate.h"
+#include "components/download/public/common/download_utils.h"
 #include "components/download/public/common/url_download_handler.h"
 #include "url/gurl.h"
 
@@ -31,7 +33,6 @@ class DownloadDBCache;
 class DownloadStartObserver;
 class DownloadURLLoaderFactoryGetter;
 class DownloadUrlParameters;
-class InProgressCache;
 struct DownloadDBEntry;
 
 // Manager for handling all active downloads.
@@ -41,7 +42,8 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
  public:
   using StartDownloadItemCallback =
       base::OnceCallback<void(std::unique_ptr<DownloadCreateInfo> info,
-                              DownloadItemImpl*)>;
+                              DownloadItemImpl*,
+                              bool /* should_persist_new_download */)>;
 
   // Class to be notified when download starts/stops.
   class COMPONENTS_DOWNLOAD_EXPORT Delegate {
@@ -70,8 +72,9 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
 
   using IsOriginSecureCallback = base::RepeatingCallback<bool(const GURL&)>;
   InProgressDownloadManager(Delegate* delegate,
-                            const base::FilePath& metadata_cache_dir,
-                            const IsOriginSecureCallback& is_origin_secure_cb);
+                            const base::FilePath& in_progress_db_dir,
+                            const IsOriginSecureCallback& is_origin_secure_cb,
+                            const URLSecurityPolicy& url_security_policy);
   ~InProgressDownloadManager() override;
   // Called to start a download.
   void BeginDownload(
@@ -135,6 +138,11 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   virtual std::vector<std::unique_ptr<download::DownloadItemImpl>>
   TakeInProgressDownloads();
 
+  // Called when all the DownloadItem is loaded.
+  // TODO(qinmin): remove this once features::kDownloadDBForNewDownloads is
+  // enabled by default.
+  void OnAllInprogressDownloadsLoaded();
+
   void set_file_factory(std::unique_ptr<DownloadFileFactory> file_factory) {
     file_factory_ = std::move(file_factory);
   }
@@ -153,7 +161,7 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   }
 
  private:
-  void Initialize(const base::FilePath& metadata_cache_dir);
+  void Initialize(const base::FilePath& in_progress_db_dir);
 
   // UrlDownloadHandler::Delegate implementations.
   void OnUrlDownloadStarted(
@@ -165,9 +173,6 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   void OnUrlDownloadHandlerCreated(
       UrlDownloadHandler::UniqueUrlDownloadHandlerPtr downloader) override;
 
-  // Called when |download_metadata_cache_| is initialized.
-  void OnMetadataCacheInitialized(const base::FilePath& metadata_cache_dir);
-
   // Called when the object is initialized.
   void OnInitialized(bool success,
                      std::unique_ptr<std::vector<DownloadDBEntry>> entries);
@@ -177,7 +182,8 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
       std::unique_ptr<InputStream> stream,
       scoped_refptr<DownloadURLLoaderFactoryGetter> url_loader_factory_getter,
       std::unique_ptr<DownloadCreateInfo> info,
-      DownloadItemImpl* download);
+      DownloadItemImpl* download,
+      bool should_persist_new_download);
 
   // Whether |download_db_cache_| is initialized.
   bool is_initialized_;
@@ -192,11 +198,15 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   // Factory for the creation of download files.
   std::unique_ptr<DownloadFileFactory> file_factory_;
 
-  // Cache for storing metadata about in progress downloads.
-  std::unique_ptr<InProgressCache> download_metadata_cache_;
-
   // Cache for DownloadDB.
   std::unique_ptr<DownloadDBCache> download_db_cache_;
+
+  using DownloadEntryMap = std::map<std::string, DownloadEntry>;
+  // DownloadEntries to provide persistent information when creating download
+  // item.
+  // TODO(qinmin): remove this once features::kDownloadDBForNewDownloads is
+  // enabled by default.
+  DownloadEntryMap download_entries_;
 
   // listens to information about in-progress download items.
   std::unique_ptr<DownloadItem::Observer> in_progress_download_observer_;
@@ -214,9 +224,15 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   // is managing all downloads.
   std::vector<std::unique_ptr<DownloadItemImpl>> in_progress_downloads_;
 
+  // A list of download GUIDs that should not be persisted.
+  std::set<std::string> non_persistent_download_guids_;
+
   // URLLoaderFactoryGetter for issuing network request when DownloadMangerImpl
   // is not available.
   scoped_refptr<DownloadURLLoaderFactoryGetter> url_loader_factory_getter_;
+
+  // Used to check if the URL is safe.
+  URLSecurityPolicy url_security_policy_;
 
   base::WeakPtrFactory<InProgressDownloadManager> weak_factory_;
 

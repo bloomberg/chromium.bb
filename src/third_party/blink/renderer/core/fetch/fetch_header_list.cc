@@ -13,7 +13,7 @@
 namespace blink {
 
 FetchHeaderList* FetchHeaderList::Create() {
-  return new FetchHeaderList();
+  return MakeGarbageCollected<FetchHeaderList>();
 }
 
 FetchHeaderList* FetchHeaderList::Clone() const {

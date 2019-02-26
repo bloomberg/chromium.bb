@@ -1,8 +1,4 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/animations/slide-up-animation.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/animations/transform-animation.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animation-runner-behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/web-animations.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-progress/paper-progress.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
@@ -127,6 +123,13 @@
         </div>
 
         <div id="buttons" class="invisible">
+          <template is="dom-if" if="[[pdfAnnotationsEnabled]]">
+            <paper-icon-button id="annotate" icon="pdf:create"
+                aria-label$="{{strings.tooltipAnnotate}}"
+                title$="{{strings.tooltipAnnotate}}">
+            </paper-icon-button>
+          </template>
+
           <paper-icon-button id="rotate-right" icon="pdf:rotate-right"
               on-click="rotateRight"
               aria-label$="{{strings.tooltipRotateCW}}"

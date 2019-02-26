@@ -50,6 +50,10 @@ AudioDeviceFactory::SourceType GetLatencyHintSourceType(
 int GetOutputBufferSize(const blink::WebAudioLatencyHint& latency_hint,
                         media::AudioLatency::LatencyType latency,
                         const media::AudioParameters& hardware_params) {
+  media::AudioParameters::HardwareCapabilities hardware_capabilities =
+      hardware_params.hardware_capabilities().value_or(
+          media::AudioParameters::HardwareCapabilities());
+
   // Adjust output buffer size according to the latency requirement.
   switch (latency) {
     case media::AudioLatency::LATENCY_INTERACTIVE:
@@ -67,7 +71,9 @@ int GetOutputBufferSize(const blink::WebAudioLatencyHint& latency_hint,
     case media::AudioLatency::LATENCY_EXACT_MS:
       return media::AudioLatency::GetExactBufferSize(
           base::TimeDelta::FromSecondsD(latency_hint.Seconds()),
-          hardware_params.sample_rate(), hardware_params.frames_per_buffer());
+          hardware_params.sample_rate(), hardware_params.frames_per_buffer(),
+          hardware_capabilities.min_frames_per_buffer,
+          hardware_capabilities.max_frames_per_buffer);
       break;
     default:
       NOTREACHED();
@@ -180,6 +186,18 @@ void RendererWebAudioDeviceImpl::Start() {
 
   sink_->Start();
   sink_->Play();
+}
+
+void RendererWebAudioDeviceImpl::Pause() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (sink_)
+    sink_->Pause();
+}
+
+void RendererWebAudioDeviceImpl::Resume() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (sink_)
+    sink_->Play();
 }
 
 void RendererWebAudioDeviceImpl::Stop() {

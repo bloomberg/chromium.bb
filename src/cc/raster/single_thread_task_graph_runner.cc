@@ -18,7 +18,9 @@ SingleThreadTaskGraphRunner::SingleThreadTaskGraphRunner()
     : lock_(),
       has_ready_to_run_tasks_cv_(&lock_),
       has_namespaces_with_finished_running_tasks_cv_(&lock_),
-      shutdown_(false) {}
+      shutdown_(false) {
+  has_ready_to_run_tasks_cv_.declare_only_used_while_idle();
+}
 
 SingleThreadTaskGraphRunner::~SingleThreadTaskGraphRunner() = default;
 
@@ -81,7 +83,8 @@ void SingleThreadTaskGraphRunner::WaitForTasksToFinishRunning(
 
   {
     base::AutoLock lock(lock_);
-    base::ThreadRestrictions::ScopedAllowWait allow_wait;
+    // http://crbug.com/902823
+    base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
 
     auto* task_namespace = work_queue_.GetNamespaceForToken(token);
 

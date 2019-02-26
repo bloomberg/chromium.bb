@@ -13,6 +13,7 @@
 namespace {
 bool g_is_input_source_dvorak_qwerty = false;
 bool g_is_input_source_czech = false;
+bool g_is_input_source_abc_azerty = false;
 }  // namespace
 
 void SetIsInputSourceDvorakQwertyForTesting(bool is_dvorak_qwerty) {
@@ -21,6 +22,10 @@ void SetIsInputSourceDvorakQwertyForTesting(bool is_dvorak_qwerty) {
 
 void SetIsInputSourceCzechForTesting(bool is_czech) {
   g_is_input_source_czech = is_czech;
+}
+
+void SetIsInputSourceAbcAzertyForTesting(bool is_abc_azerty) {
+  g_is_input_source_abc_azerty = is_abc_azerty;
 }
 
 @interface KeyboardInputSourceListener : NSObject
@@ -55,6 +60,9 @@ void SetIsInputSourceCzechForTesting(bool is_czech) {
   g_is_input_source_czech =
       [inputSourceID rangeOfString:@"com.apple.keylayout.Czech"].location !=
       NSNotFound;
+  g_is_input_source_abc_azerty =
+      [inputSourceID rangeOfString:@"com.apple.keylayout.ABC-AZERTY"]
+          .location != NSNotFound;
 }
 
 - (void)inputSourceDidChange:(NSNotification*)notification {
@@ -163,7 +171,8 @@ void SetIsInputSourceCzechForTesting(bool is_czech) {
   } else {
     // Clear shift key for printable characters, excluding tab.
     if ((eventModifiers & (NSNumericPadKeyMask | NSFunctionKeyMask)) == 0 &&
-        [[self keyEquivalent] characterAtIndex:0] != '\r') {
+        [[self keyEquivalent] characterAtIndex:0] != '\r' &&
+        [[self keyEquivalent] characterAtIndex:0] != '\x9') {
       eventModifiers &= ~NSShiftKeyMask;
     }
   }
@@ -182,6 +191,19 @@ void SetIsInputSourceCzechForTesting(bool is_czech) {
     if (eventModifiers == NSCommandKeyMask &&
         [eventString isEqualToString:@"+"]) {
       eventString = @"1";
+    }
+  }
+
+  // On ABC-AZERTY kebyards, we want to interpet cmd + '&' as cmd + '1'. Ditto
+  // for other keyCodes that would produce a numerical key.
+  if (g_is_input_source_abc_azerty) {
+    if (eventModifiers == NSCommandKeyMask) {
+      ui::KeyboardCode windows_keycode =
+          ui::KeyboardCodeFromKeyCode(event.keyCode);
+      if (windows_keycode >= ui::VKEY_0 && windows_keycode <= ui::VKEY_9) {
+        eventString =
+            [NSString stringWithFormat:@"%d", windows_keycode - ui::VKEY_0];
+      }
     }
   }
 

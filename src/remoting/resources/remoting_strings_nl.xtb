@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
 <translation id="1002108253973310084">Er is een incompatibele versie gedetecteerd. Controleer of de nieuwste versie van de software is geïnstalleerd op beide computers en probeer het opnieuw.</translation>
+<translation id="1008557486741366299">Niet nu</translation>
 <translation id="1050693411695664090">Slecht</translation>
 <translation id="1152528166145813711">Selecteren…</translation>
 <translation id="1199593201721843963">Externe verbindingen uitschakelen</translation>
@@ -62,6 +63,7 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 <translation id="2314101195544969792">Je <ph name="APPLICATION_NAME" />-sessie is al enige tijd inactief. Binnenkort wordt de verbinding verbroken.</translation>
 <translation id="2317666076142640974">Bekijk een voorproefje van de nieuwe <ph name="LINK_BEGIN" />Chrome Remote Desktop-webapp<ph name="LINK_END" />. We horen graag wat je ervan vindt.</translation>
 <translation id="2320166752086256636">Toetsenbord verbergen</translation>
+<translation id="2332192922827071008">Voorkeuren openen</translation>
 <translation id="2353140552984634198">Je kunt beveiligd toegang krijgen tot deze computer via Chromoting.</translation>
 <translation id="2359808026110333948">Doorgaan</translation>
 <translation id="2366718077645204424">Kan de host niet bereiken. Dit komt waarschijnlijk door de configuratie van het netwerk dat je gebruikt.</translation>
@@ -82,6 +84,7 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 <translation id="2841013758207633010">Tijd</translation>
 <translation id="2851754573186462851">Streaming via Chromium-app</translation>
 <translation id="2888969873284818612">Er is een netwerkfout opgetreden. We starten de app opnieuw wanneer je apparaat weer online is.</translation>
+<translation id="2891243864890517178">Voor Mac (OS X Yosemite 10.10 en hoger)</translation>
 <translation id="289405675947420287">Krijg op een beveiligde manier toegang tot je computer vanaf je iOS-apparaat. Het is snel, gemakkelijk en eenvoudig.
 
 • Download de Chrome Remote Desktop-app vanuit de Chrome Web Store naar de computer waartoe je extern toegang wilt.
@@ -188,6 +191,9 @@ Pc</translation>
 <translation id="4973800994433240357">Door het installatieprogramma voor de Chromoting-host te downloaden, ga je akkoord met de <ph name="LINK_BEGIN" />Servicevoorwaarden<ph name="LINK_END" /> van Google.</translation>
 <translation id="4974476491460646149">Verbinding verbroken voor <ph name="HOSTNAME" /></translation>
 <translation id="4985296110227979402">Je moet eerst je computer instellen voor externe toegang</translation>
+<translation id="5059773780693835145">Er is een aanvullende configuratiestap vereist voordat je deze machine extern kunt beheren met <ph name="PRODUCT_NAME" />.
+
+Als je deze functionaliteit wilt inschakelen, selecteer je '<ph name="BUTTON_NAME" />' om het deelvenster met beveiligings- en privacyvoorkeuren weer te geven en vink je vervolgens het selectievakje naast '<ph name="SERVICE_SCRIPT_NAME" />' aan.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">De externe host vereist dat je op een website van derden wordt geverifieerd. Als je wilt doorgaan, moet je Chrome Remote Desktop aanvullende machtigingen geven om toegang tot dit adres te krijgen:</translation>
 <translation id="507204348399810022">Weet je zeker dat je externe verbindingen met <ph name="HOSTNAME" /> wilt uitschakelen?</translation>
@@ -249,7 +255,6 @@ Pc</translation>
 <translation id="6542902059648396432">Een probleem melden…</translation>
 <translation id="6550675742724504774">Opties</translation>
 <translation id="6570205395680337606">De app opnieuw instellen. Al je niet-opgeslagen werk gaat verloren.</translation>
-<translation id="6572345186230665992">Voor Mac (OS X Mavericks 10.9 en hoger)</translation>
 <translation id="6583902294974160967">Ondersteuning</translation>
 <translation id="6612717000975622067">Ctrl-Alt-Del verzenden</translation>
 <translation id="6654753848497929428">Delen</translation>
@@ -313,6 +318,7 @@ Pc</translation>
 <translation id="809687642899217504">Mijn computers</translation>
 <translation id="811307782653349804">Krijg overal toegang tot je eigen computer.</translation>
 <translation id="8116630183974937060">Er is een netwerkfout opgetreden. Controleer of je apparaat online is en probeer het opnieuw.</translation>
+<translation id="8123581458650016326">Externe gebruikers toestaan om deze machine te beheren</translation>
 <translation id="8178433417677596899">Schermen delen tussen gebruikers, perfect voor externe ondersteuning.</translation>
 <translation id="8187079423890319756">Copyright 2013 De auteurs van Chromium. Alle rechten voorbehouden.</translation>
 <translation id="8196755618196986400">Je e-mailadres wordt opgenomen in alle feedback die je verzendt zodat we contact met je kunnen opnemen voor meer informatie.</translation>

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
 <translation id="1002108253973310084">S'ha detectat una versió del protocol incompatible. Assegureu-vos que tingueu instal·lada la versió més recent del programari als dos ordinadors i torneu-ho a provar.</translation>
+<translation id="1008557486741366299">Ara no</translation>
 <translation id="1050693411695664090">Deficient</translation>
 <translation id="1152528166145813711">Seleccioneu...</translation>
 <translation id="1199593201721843963">Desactiva les connexions remotes</translation>
@@ -62,6 +63,7 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="2314101195544969792">La vostra sessió de <ph name="APPLICATION_NAME" /> ha estat inactiva durant una estona i es desconnectarà aviat.</translation>
 <translation id="2317666076142640974">Dona un cop d'ull a la nova <ph name="LINK_BEGIN" />aplicació web Escriptori remot de Chrome<ph name="LINK_END" />. Ens agradaria saber la teva opinió.</translation>
 <translation id="2320166752086256636">Amaga el teclat</translation>
+<translation id="2332192922827071008">Obre les preferències</translation>
 <translation id="2353140552984634198">Podeu accedir de manera segura a aquest ordinador mitjançant Chromoting.</translation>
 <translation id="2359808026110333948">Continua</translation>
 <translation id="2366718077645204424">No es pot connectar amb l'amfitrió. Probablement, això passa a causa de la configuració de la xarxa que esteu fent servir.</translation>
@@ -82,6 +84,7 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="2841013758207633010">Hora</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2888969873284818612">S'ha produït un error a la xarxa. Reiniciarem l'aplicació quan el dispositiu torni a estar en línia.</translation>
+<translation id="2891243864890517178">Per a Mac (OS X Yosemite 10.10 i versions posteriors)</translation>
 <translation id="289405675947420287">Accedeix de manera segura al teu ordinador des d'un dispositiu iOS. És ràpid, senzill i gratuït.
 
 • Baixa l'aplicació Escriptori remot de Chrome des de Chrome Web Store a l'ordinador al qual vulguis accedir de manera remota.
@@ -188,6 +191,9 @@ PC</translation>
 <translation id="4973800994433240357">En baixar l'instal·lador de l'amfitrió de Chromoting accepteu les <ph name="LINK_BEGIN" />Condicions del servei<ph name="LINK_END" /> de Google.</translation>
 <translation id="4974476491460646149">La connexió amb <ph name="HOSTNAME" /> s'ha tancat</translation>
 <translation id="4985296110227979402">Primer heu de configurar l'accés remot al vostre ordinador.</translation>
+<translation id="5059773780693835145">Per poder controlar aquest ordinador de manera remota amb <ph name="PRODUCT_NAME" />, primer has de dur a terme un pas addicional de configuració.
+
+Si vols activar aquesta funcionalitat, selecciona <ph name="BUTTON_NAME" /> per mostrar el tauler de preferències Seguretat i privacitat. Tot seguit, marca la casella "<ph name="SERVICE_SCRIPT_NAME" />".</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (fora de línia)</translation>
 <translation id="5070121137485264635">L'amfitrió remot necessita que us autentiqueu en un lloc web de tercers. Per continuar, cal que concediu permisos addicionals a l'escriptori remot de Chrome per accedir a aquesta adreça:</translation>
 <translation id="507204348399810022">Confirmes que vols desactivar les connexions remotes a <ph name="HOSTNAME" />?</translation>
@@ -249,7 +255,6 @@ PC</translation>
 <translation id="6542902059648396432">Informa d'un problema...</translation>
 <translation id="6550675742724504774">Opcions</translation>
 <translation id="6570205395680337606">Restabliu l'aplicació. Els treballs que no s'hagin desat es perdran.</translation>
-<translation id="6572345186230665992">Per a Mac (OS X Mavericks 10.9 i versions posteriors)</translation>
 <translation id="6583902294974160967">Assistència</translation>
 <translation id="6612717000975622067">Envia Ctrl-Alt-Supr</translation>
 <translation id="6654753848497929428">Comparteix</translation>
@@ -313,6 +318,7 @@ PC</translation>
 <translation id="809687642899217504">Els meus ordinadors</translation>
 <translation id="811307782653349804">Accediu al vostre ordinador des de qualsevol lloc.</translation>
 <translation id="8116630183974937060">S'ha produït un error de xarxa. Comproveu que el dispositiu estigui en línia i torneu-ho a provar.</translation>
+<translation id="8123581458650016326">Permet que els usuaris remots controlin aquest ordinador</translation>
 <translation id="8178433417677596899">Pantalla compartida entre usuaris, una opció perfecta per a l'assistència tècnica remota.</translation>
 <translation id="8187079423890319756">Copyright 2013 Els autors de Chromium. Tots els drets reservats.</translation>
 <translation id="8196755618196986400">La vostra adreça electrònica s'inclourà en tots els suggeriments que envieu perquè us puguem escriure i proporcionar-vos més informació.</translation>

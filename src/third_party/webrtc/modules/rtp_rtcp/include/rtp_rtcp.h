@@ -28,6 +28,7 @@
 namespace webrtc {
 
 // Forward declarations.
+class FrameEncryptorInterface;
 class OverheadObserver;
 class RateLimiter;
 class ReceiveStatisticsProvider;
@@ -92,10 +93,19 @@ class RtpRtcp : public Module, public RtcpFeedbackSenderInterface {
     RateLimiter* retransmission_rate_limiter = nullptr;
     OverheadObserver* overhead_observer = nullptr;
     RtpKeepAliveConfig keepalive_config;
-    RtcpIntervalConfig rtcp_interval_config;
+
+    int rtcp_report_interval_ms = 0;
 
     // Update network2 instead of pacer_exit field of video timing extension.
     bool populate_network2_timestamp = false;
+
+    // E2EE Custom Video Frame Encryption
+    FrameEncryptorInterface* frame_encryptor = nullptr;
+    // Require all outgoing frames to be encrypted with a FrameEncryptor.
+    bool require_frame_encryption = false;
+
+    // Corresponds to extmap-allow-mixed in SDP negotiation.
+    bool extmap_allow_mixed = false;
 
    private:
     RTC_DISALLOW_COPY_AND_ASSIGN(Configuration);
@@ -135,6 +145,8 @@ class RtpRtcp : public Module, public RtcpFeedbackSenderInterface {
   // |payload_type| - payload type of codec
   // Returns -1 on failure else 0.
   virtual int32_t DeRegisterSendPayload(int8_t payload_type) = 0;
+
+  virtual void SetExtmapAllowMixed(bool extmap_allow_mixed) = 0;
 
   // (De)registers RTP header extension type and id.
   // Returns -1 on failure else 0.

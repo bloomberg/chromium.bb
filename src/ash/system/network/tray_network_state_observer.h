@@ -52,9 +52,6 @@ class TrayNetworkStateObserver
   // Unowned Delegate pointer (must outlive this instance).
   Delegate* delegate_;
 
-  // Set to true when we should purge stale icons in the cache.
-  bool purge_icons_;
-
   // Frequency at which to push NetworkStateChanged updates. This avoids
   // unnecessarily frequent UI updates (which can be expensive). We set this
   // to 0 for tests to eliminate timing variance.

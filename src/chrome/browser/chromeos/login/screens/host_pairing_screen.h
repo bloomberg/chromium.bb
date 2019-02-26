@@ -79,6 +79,7 @@ class HostPairingScreen
   void OnDeviceEnrolled(const std::string& additional_token) override;
   void OnDeviceAttributeUploadCompleted(bool success) override;
   void OnDeviceAttributeUpdatePermission(bool granted) override;
+  void OnRestoreAfterRollbackCompleted() override;
 
   // Used as a callback for EnterpriseEnrollmentHelper::ClearAuth.
   void OnAuthCleared();

@@ -128,10 +128,11 @@ public class VrBrowserNavigationTest {
      * navigation. This is desirable since we are testing navigation transitions end-to-end.
      */
     private void navigateTo(final @Page int to) throws InterruptedException {
-        ChromeTabUtils.waitForTabPageLoaded(mTestRule.getActivity().getActivityTab(), () -> {
-            mVrBrowserTestFramework.runJavaScriptOrFail(
-                    "window.location.href = '" + getUrl(to) + "';", POLL_TIMEOUT_SHORT_MS);
-        }, POLL_TIMEOUT_LONG_MS);
+        ChromeTabUtils.waitForTabPageLoaded(
+                mTestRule.getActivity().getActivityTab(), getUrl(to), () -> {
+                    mVrBrowserTestFramework.runJavaScriptOrFail(
+                            "window.location.href = '" + getUrl(to) + "';", POLL_TIMEOUT_SHORT_MS);
+                }, POLL_TIMEOUT_LONG_MS);
     }
 
     private void enterFullscreenOrFail(WebContents webContents)
@@ -525,6 +526,34 @@ public class VrBrowserNavigationTest {
     }
 
     /**
+     * Tests that the refresh button in the overflow menu properly refreshes the page.
+     */
+    @Test
+    @MediumTest
+    public void testRefreshButton() throws InterruptedException {
+        // The navigationStart time should change anytime we refresh, so save the value and compare
+        // later.
+        // Use a double because apparently returning Unix timestamps as floating point is a logical
+        // thing for JavaScript to do and Long.valueOf is afraid of decimal points.
+        String navStart = "window.performance.timing.navigationStart";
+        final double navigationTimestamp =
+                Double.valueOf(mVrBrowserTestFramework.runJavaScriptOrFail(
+                                       navStart, POLL_TIMEOUT_SHORT_MS))
+                        .doubleValue();
+        NativeUiUtils.clickElementAndWaitForUiQuiescence(
+                UserFriendlyElementName.OVERFLOW_MENU, new PointF());
+        NativeUiUtils.clickElement(UserFriendlyElementName.RELOAD_BUTTON, new PointF());
+
+        // Wait for the navigationStart time to be newer than our saved time.
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            return Double.valueOf(mVrBrowserTestFramework.runJavaScriptOrFail(
+                                          navStart, POLL_TIMEOUT_SHORT_MS))
+                           .doubleValue()
+                    > navigationTimestamp;
+        }, "Refresh button did not refresh page");
+    }
+
+    /**
      * Tests that navigation to/from native pages works properly and that interacting with the
      * screen doesn't cause issues. See crbug.com/737167.
      */
@@ -693,8 +722,8 @@ public class VrBrowserNavigationTest {
         // having suggestions present, waiting for a number of frames before committing seemed
         // stable. Adding an operation to listen for suggestion changes would also work, but
         // would add some pretty niche test-only code to the native side.
-        NativeUiUtils.performActionAndWaitForVisibilityChange(
-                UserFriendlyElementName.SUGGESTION_BOX,
+        NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                UserFriendlyElementName.SUGGESTION_BOX, true /* visible */,
                 () -> { NativeUiUtils.inputString("chrome://version/"); });
         NativeUiUtils.inputEnter();
         ChromeTabUtils.waitForTabPageLoaded(
@@ -728,8 +757,8 @@ public class VrBrowserNavigationTest {
     private void testSuggestionClickTriggersNavigationImpl() throws InterruptedException {
         NativeUiUtils.enableMockedKeyboard();
         NativeUiUtils.clickElementAndWaitForUiQuiescence(UserFriendlyElementName.URL, new PointF());
-        NativeUiUtils.performActionAndWaitForVisibilityChange(
-                UserFriendlyElementName.SUGGESTION_BOX,
+        NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                UserFriendlyElementName.SUGGESTION_BOX, true /* visible */,
                 () -> { NativeUiUtils.inputString("chrome://"); });
         // Blindly clicking in the center of the suggestion box should end up clicking the middle
         // suggestion, which for "chrome://" should be a valid chrome:// URL.

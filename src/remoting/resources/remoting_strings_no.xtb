@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
 <translation id="1002108253973310084">Det ble oppdaget en ikke-kompatibel protokollversjon. Kontrollér at du har nyeste programvareversjon installert på begge datamaskinene, og prøv igjen.</translation>
+<translation id="1008557486741366299">Ikke nå</translation>
 <translation id="1050693411695664090">Dårlig</translation>
 <translation id="1152528166145813711">Velg</translation>
 <translation id="1199593201721843963">Deaktiver eksterne tilkoblinger</translation>
@@ -62,6 +63,7 @@ Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl
 <translation id="2314101195544969792"><ph name="APPLICATION_NAME" />-økten din har vært inaktiv en stund og kommer snart til å bli koblet fra.</translation>
 <translation id="2317666076142640974">Ta en sniktitt på det nye <ph name="LINK_BEGIN" />Chrome Eksternt skrivebord-nettprogrammet<ph name="LINK_END" />. Vi vil gjerne høre hva du synes.</translation>
 <translation id="2320166752086256636">Skjul tastaturet</translation>
+<translation id="2332192922827071008">Åpne Innstillinger</translation>
 <translation id="2353140552984634198">Du kan trygt bruke denne datamaskinen med Chromoting.</translation>
 <translation id="2359808026110333948">Fortsett</translation>
 <translation id="2366718077645204424">Kunne ikke nå verten. Dette er sannsynligvis på grunn av innstillingene for nettverket du bruker.</translation>
@@ -82,6 +84,7 @@ Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl
 <translation id="2841013758207633010">Klokkeslett</translation>
 <translation id="2851754573186462851">Chromium-appstrømming</translation>
 <translation id="2888969873284818612">En nettverksfeil oppsto. Appen blir startet på nytt når enheten din er på nettet igjen.</translation>
+<translation id="2891243864890517178">For Mac (OS X Yosemite 10.10 eller nyere)</translation>
 <translation id="289405675947420287">Få sikker tilgang til datamaskinen din fra iOS-enheter. Det er raskt, enkelt og gratis.
 
 • Last ned Chrome Eksternt skrivebord-appen fra Chrome Nettmarked på datamaskinen du vil ha ekstern tilgang til.
@@ -188,6 +191,9 @@ PC</translation>
 <translation id="4973800994433240357">Ved å laste ned installasjonsprogrammet for Chromoting-verten samtykker du i Googles <ph name="LINK_BEGIN" />vilkår for bruk<ph name="LINK_END" />.</translation>
 <translation id="4974476491460646149">Koblet fra <ph name="HOSTNAME" /></translation>
 <translation id="4985296110227979402">Du må først konfigurere en datamaskin for ekstern tilgang.</translation>
+<translation id="5059773780693835145">Du må fullføre enda et konfigureringstrinn før du kan styre denne maskinen eksternt ved bruk av <ph name="PRODUCT_NAME" />.
+
+For å slå på denne funksjonaliteten, velg «<ph name="BUTTON_NAME" />» for å åpne innstillingspanelet for sikkerhet og personvern. Merk deretter av i boksen ved «<ph name="SERVICE_SCRIPT_NAME" />».</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (ikke på nett)</translation>
 <translation id="5070121137485264635">Den eksterne verten krever at du godkjenner via et tredjepartsnettsted. For å fortsette må du gi Chrome Eksternt skrivebord ytterligere tillatelser til å åpne denne adressen:</translation>
 <translation id="507204348399810022">Er du sikker på at du vil deaktivere eksterne forbindelser til <ph name="HOSTNAME" />?</translation>
@@ -249,7 +255,6 @@ PC</translation>
 <translation id="6542902059648396432">Rapportér et problem</translation>
 <translation id="6550675742724504774">Alternativer</translation>
 <translation id="6570205395680337606">Tilbakestill programmet. Du mister alt arbeid som ikke er lagret.</translation>
-<translation id="6572345186230665992">For Mac (OS X Mavericks 10.9 og nyere)</translation>
 <translation id="6583902294974160967">Brukerstøtte</translation>
 <translation id="6612717000975622067">Send Ctrl-Alt-Del</translation>
 <translation id="6654753848497929428">Del</translation>
@@ -313,6 +318,7 @@ PC</translation>
 <translation id="809687642899217504">Mine datamaskiner</translation>
 <translation id="811307782653349804">Bruk din egen datamaskin uansett hvor du er.</translation>
 <translation id="8116630183974937060">Det oppsto en nettverksfeil. Kontrollér at enheten er tilkoblet nettet, og prøv på nytt.</translation>
+<translation id="8123581458650016326">La eksterne brukere styre denne maskinen</translation>
 <translation id="8178433417677596899">Skjermdeling bruker-til-bruker, perfekt for ekstern teknisk støttte.</translation>
 <translation id="8187079423890319756">Copyright 2013 – The Chromium Authors. Med enerett.</translation>
 <translation id="8196755618196986400">Hvis du gir oss tillatelse til å kontakte deg for å be om ytterligere informasjon, blir e-postadressen din inkludert i eventuelle tilbakemeldinger du sender inn.</translation>

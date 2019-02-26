@@ -13,7 +13,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/settings_test_util.h"
 #import "ios/chrome/test/app/web_view_interaction_test_util.h"
@@ -110,13 +110,14 @@ void AssertURLIs(const GURL& expectedURL) {
   }
   if (base::FeatureList::IsEnabled(
           web::features::kBrowserContainerFullscreen) &&
-      base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen)) {
-    if (@available(iOS 11, *)) {
-      yOffset -=
-          chrome_test_util::GetCurrentWebState()->GetView().safeAreaInsets.top;
-    } else {
-      yOffset -= StatusBarHeight();
-    }
+      base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen) &&
+      base::ios::IsRunningOnIOS12OrLater()) {
+    // In the fullscreen browser implementation, the safe area is included in
+    // the top inset as well as the toolbar heights.  Due to crbug.com/903635,
+    // however, this only occurs on iOS 12; pdf rendering does not correctly
+    // account for the safe area on iOS 11.
+    yOffset -=
+        chrome_test_util::GetCurrentWebState()->GetView().safeAreaInsets.top;
   }
   DCHECK_LT(yOffset, 0);
   [[EarlGrey
@@ -170,6 +171,10 @@ void AssertURLIs(const GURL& expectedURL) {
 // Verifies that the toolbar properly appears/disappears when scrolling up/down
 // on a PDF that is long in length and wide in width.
 - (void)testLongPDFScroll {
+  // TODO(crbug.com/904694): This test is failing on iOS11.
+  if (!base::ios::IsRunningOnIOS12OrLater())
+    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.");
+
 // TODO(crbug.com/714329): Re-enable this test on devices.
 #if !TARGET_IPHONE_SIMULATOR
   EARL_GREY_TEST_DISABLED(@"Test disabled on device.");

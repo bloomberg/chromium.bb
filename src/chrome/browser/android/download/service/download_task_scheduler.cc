@@ -5,6 +5,7 @@
 #include "chrome/browser/android/download/service/download_task_scheduler.h"
 
 #include "base/android/jni_android.h"
+#include "base/trace_event/trace_event.h"
 #include "jni/DownloadTaskScheduler_jni.h"
 
 namespace download {
@@ -28,6 +29,8 @@ void DownloadTaskScheduler::ScheduleTask(DownloadTaskType task_type,
 }
 
 void DownloadTaskScheduler::CancelTask(DownloadTaskType task_type) {
+  TRACE_EVENT0("download_service", "DownloadTaskScheduler.CancelTask");
+
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_DownloadTaskScheduler_cancelTask(env, static_cast<jint>(task_type));
 }

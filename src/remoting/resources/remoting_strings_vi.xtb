@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
 <translation id="1002108253973310084">Đã phát hiện một phiên bản giao thức không tương thích. Vui lòng đảm bảo rằng bạn đã cài đặt phiên bản mới nhất của phần mềm trên cả hai máy tính và thử lại.</translation>
+<translation id="1008557486741366299">Không phải Bây giờ</translation>
 <translation id="1050693411695664090">Kém</translation>
 <translation id="1152528166145813711">Chọn…</translation>
 <translation id="1199593201721843963">Tắt kết nối từ xa</translation>
@@ -62,6 +63,7 @@ Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể 
 <translation id="2314101195544969792">Phiên <ph name="APPLICATION_NAME" /> của bạn đã không hoạt động một thời gian và sẽ sớm bị ngắt kết nối.</translation>
 <translation id="2317666076142640974">Hãy xem trước <ph name="LINK_BEGIN" />ứng dụng web Chrome Remote Desktop<ph name="LINK_END" /> mới. Chúng tôi rất mong nhận được ý kiến phản hồi của bạn.</translation>
 <translation id="2320166752086256636">Ẩn bàn phím</translation>
+<translation id="2332192922827071008">Mở Tùy chọn</translation>
 <translation id="2353140552984634198">Bạn có thể truy cập an toàn vào máy tính này bằng Kết nối từ xa trên Chrome.</translation>
 <translation id="2359808026110333948">Tiếp tục</translation>
 <translation id="2366718077645204424">Không thể kết nối với máy chủ. Điều này có thể do cấu hình của mạng bạn đang sử dụng.</translation>
@@ -82,6 +84,7 @@ Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể 
 <translation id="2841013758207633010">Thời gian</translation>
 <translation id="2851754573186462851">Phát trực tuyến ứng dụng Chromium</translation>
 <translation id="2888969873284818612">Đã xảy ra lỗi mạng. Chúng tôi sẽ khởi động lại ứng dụng khi thiết bị của bạn trực tuyến trở lại.</translation>
+<translation id="2891243864890517178">Dành cho máy Mac (phiên bản OS X Yosemite 10.10 trở lên)</translation>
 <translation id="289405675947420287">Truy cập vào máy tính của bạn một cách an toàn từ thiết bị iOS. Thật nhanh chóng, đơn giản và miễn phí!
 
 • Tải xuống ứng dụng Chrome Remote Desktop từ Cửa hàng Chrome trực tuyến trên máy tính mà bạn muốn truy cập từ xa.
@@ -188,6 +191,9 @@ PC</translation>
 <translation id="4973800994433240357">Khi tải xuống Trình cài đặt máy chủ kết nối từ xa trên Chrome, bạn đồng ý với <ph name="LINK_BEGIN" />Điều khoản dịch vụ<ph name="LINK_END" /> của Google.</translation>
 <translation id="4974476491460646149">Đã ngắt kết nối khỏi <ph name="HOSTNAME" /></translation>
 <translation id="4985296110227979402">Trước tiên, bạn cần thiết lập máy tính để truy cập từ xa</translation>
+<translation id="5059773780693835145">Bạn cần thực hiện bước cấu hình bổ sung để có thể điều khiển máy này từ xa bằng <ph name="PRODUCT_NAME" />.
+
+Để bật chức năng này, hãy chọn '<ph name="BUTTON_NAME" />' để hiển thị ngăn tùy chọn Bảo mật và Quyền riêng tư. Sau đó, chọn hộp bên cạnh '<ph name="SERVICE_SCRIPT_NAME" />'.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (ngoại tuyến)</translation>
 <translation id="5070121137485264635">Máy chủ lưu trữ từ xa yêu cầu bạn xác thực với một trang web của bên thứ ba. Để tiếp tục, bạn phải cấp cho Chrome Remote Desktop thêm quyền truy cập vào địa chỉ sau:</translation>
 <translation id="507204348399810022">Bạn có chắc chắn muốn tắt kết nối từ xa với <ph name="HOSTNAME" /> không?</translation>
@@ -249,7 +255,6 @@ PC</translation>
 <translation id="6542902059648396432">Báo cáo sự cố…</translation>
 <translation id="6550675742724504774">Tùy chọn</translation>
 <translation id="6570205395680337606">Đặt lại ứng dụng. Bạn sẽ mất mọi công việc chưa lưu.</translation>
-<translation id="6572345186230665992">Dành cho Mac (OS X Mavericks 10.9 trở lên)</translation>
 <translation id="6583902294974160967">Hỗ trợ</translation>
 <translation id="6612717000975622067">Gửi Ctrl-Alt-Del</translation>
 <translation id="6654753848497929428">Chia sẻ</translation>
@@ -313,6 +318,7 @@ PC</translation>
 <translation id="809687642899217504">Máy tính của tôi</translation>
 <translation id="811307782653349804">Truy cập vào máy tính của chính bạn ở mọi nơi.</translation>
 <translation id="8116630183974937060">Đã xảy ra lỗi mạng. Hãy kiểm tra xem thiết bị của bạn có trực tuyến hay không và thử lại.</translation>
+<translation id="8123581458650016326">Cho phép người dùng từ xa điều khiển máy này</translation>
 <translation id="8178433417677596899">Chia sẻ màn hình giữa người dùng, hoàn hảo để hỗ trợ kỹ thuật từ xa.</translation>
 <translation id="8187079423890319756">Bản quyền 2012 Tác giả Chromium. Mọi quyền được bảo lưu.</translation>
 <translation id="8196755618196986400">Để cho phép chúng tôi liên hệ với bạn để biết thêm thông tin, địa chỉ email của bạn sẽ được bao gồm trong mọi phản hồi mà bạn gửi.</translation>

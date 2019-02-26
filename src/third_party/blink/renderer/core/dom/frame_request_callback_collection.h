@@ -59,17 +59,19 @@ class GC_PLUGIN_IGNORE("crbug.com/841830")
   class CORE_EXPORT V8FrameCallback : public FrameCallback {
    public:
     static V8FrameCallback* Create(V8FrameRequestCallback* callback) {
-      return new V8FrameCallback(callback);
+      return MakeGarbageCollected<V8FrameCallback>(callback);
     }
     void Trace(blink::Visitor*) override;
     const char* NameInHeapSnapshot() const override {
       return "V8FrameCallback";
     }
+
+    explicit V8FrameCallback(V8FrameRequestCallback*);
     ~V8FrameCallback() override = default;
+
     void Invoke(double) override;
 
    private:
-    explicit V8FrameCallback(V8FrameRequestCallback*);
     TraceWrapperMember<V8FrameRequestCallback> callback_;
   };
 

@@ -9,9 +9,9 @@
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
+#include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/mojom/service_factory.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -51,8 +51,9 @@ TEST_F(ServiceManagerConnectionImplTest, ServiceLaunchThreading) {
   connection.AddEmbeddedService(kTestServiceName, info);
   connection.Start();
   service_manager::BindSourceInfo source_info(
-      {service_manager::mojom::kServiceName,
-       service_manager::mojom::kRootUserID},
+      service_manager::Identity{service_manager::mojom::kServiceName,
+                                service_manager::kSystemInstanceGroup,
+                                base::Token{}, base::Token::CreateRandom()},
       service_manager::CapabilitySet());
   service_manager::mojom::ServiceFactoryPtr factory;
   service->OnBindInterface(

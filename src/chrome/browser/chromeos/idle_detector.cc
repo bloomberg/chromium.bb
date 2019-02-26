@@ -4,14 +4,15 @@
 
 #include "chrome/browser/chromeos/idle_detector.h"
 
-#include "base/bind.h"
-#include "base/logging.h"
+#include "base/location.h"
+#include "base/time/default_tick_clock.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 
 namespace chromeos {
 
-IdleDetector::IdleDetector(const base::Closure& on_idle_callback)
-    : idle_callback_(on_idle_callback) {}
+IdleDetector::IdleDetector(const base::RepeatingClosure& on_idle_callback,
+                           const base::TickClock* tick_clock)
+    : timer_(tick_clock), idle_callback_(on_idle_callback) {}
 
 IdleDetector::~IdleDetector() {
   ui::UserActivityDetector* user_activity_detector =

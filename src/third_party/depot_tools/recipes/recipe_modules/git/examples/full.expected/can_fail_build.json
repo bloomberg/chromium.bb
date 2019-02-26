@@ -162,9 +162,12 @@
     ]
   },
   {
-    "name": "$result",
-    "reason": "Infra Failure: Step('git status can_fail_build') returned 1",
-    "recipe_result": null,
-    "status_code": 1
+    "failure": {
+      "failure": {
+        "step": "git status can_fail_build"
+      },
+      "humanReason": "Infra Failure: Step('git status can_fail_build') returned 1"
+    },
+    "name": "$result"
   }
 ]

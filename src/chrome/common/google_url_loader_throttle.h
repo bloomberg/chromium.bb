@@ -5,6 +5,7 @@
 #ifndef CHROME_COMMON_GOOGLE_URL_LOADER_THROTTLE_H_
 #define CHROME_COMMON_GOOGLE_URL_LOADER_THROTTLE_H_
 
+#include "chrome/common/renderer_configuration.mojom.h"
 #include "content/public/common/url_loader_throttle.h"
 #include "extensions/buildflags/buildflags.h"
 
@@ -16,10 +17,7 @@ class GoogleURLLoaderThrottle
       public base::SupportsWeakPtr<GoogleURLLoaderThrottle> {
  public:
   GoogleURLLoaderThrottle(bool is_off_the_record,
-                          bool force_safe_search,
-                          int32_t youtube_restrict,
-                          const std::string& allowed_domains_for_apps,
-                          const std::string& variation_ids_header);
+                          chrome::mojom::DynamicParams dynamic_params);
   ~GoogleURLLoaderThrottle() override;
 
  private:
@@ -27,7 +25,7 @@ class GoogleURLLoaderThrottle
   void DetachFromCurrentSequence() override;
   void WillStartRequest(network::ResourceRequest* request,
                         bool* defer) override;
-  void WillRedirectRequest(const net::RedirectInfo& redirect_info,
+  void WillRedirectRequest(net::RedirectInfo* redirect_info,
                            const network::ResourceResponseHead& response_head,
                            bool* defer,
                            std::vector<std::string>* to_be_removed_headers,
@@ -39,10 +37,7 @@ class GoogleURLLoaderThrottle
 #endif
 
   bool is_off_the_record_;
-  bool force_safe_search_;
-  int32_t youtube_restrict_;
-  std::string allowed_domains_for_apps_;
-  std::string variation_ids_header_;
+  const chrome::mojom::DynamicParams dynamic_params_;
 };
 
 #endif  // CHROME_COMMON_GOOGLE_URL_LOADER_THROTTLE_H_

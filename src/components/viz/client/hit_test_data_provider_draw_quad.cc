@@ -43,6 +43,10 @@ base::Optional<HitTestRegionList> HitTestDataProviderDrawQuad::GetHitTestData(
         const SurfaceDrawQuad* surface_quad =
             SurfaceDrawQuad::MaterialCast(quad);
 
+        // Skip the quad if it has pointer-events:none set.
+        if (surface_quad->ignores_input_event)
+          continue;
+
         // Skip the quad if the FrameSinkId between fallback and primary is not
         // the same, because we don't know which FrameSinkId would be used to
         // draw this quad.
@@ -69,8 +73,11 @@ base::Optional<HitTestRegionList> HitTestDataProviderDrawQuad::GetHitTestData(
         hit_test_region.flags = HitTestRegionFlags::kHitTestMouse |
                                 HitTestRegionFlags::kHitTestTouch |
                                 HitTestRegionFlags::kHitTestChildSurface;
-        if (should_ask_for_child_region_)
+        if (should_ask_for_child_region_) {
           hit_test_region.flags |= HitTestRegionFlags::kHitTestAsk;
+          hit_test_region.async_hit_test_reasons =
+              AsyncHitTestReasons::kUseDrawQuadData;
+        }
         hit_test_region.rect = surface_quad->rect;
         hit_test_region.transform =
             target_to_quad_transform * transform_from_root_target;

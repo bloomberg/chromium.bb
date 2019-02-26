@@ -65,14 +65,18 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 
 namespace blink {
 
 class PagePopupChromeClient final : public EmptyChromeClient {
  public:
   static PagePopupChromeClient* Create(WebPagePopupImpl* popup) {
-    return new PagePopupChromeClient(popup);
+    return MakeGarbageCollected<PagePopupChromeClient>(popup);
+  }
+
+  explicit PagePopupChromeClient(WebPagePopupImpl* popup) : popup_(popup) {
+    DCHECK(popup_->WidgetClient());
   }
 
   void SetWindowRect(const IntRect& rect, LocalFrame&) override {
@@ -82,10 +86,6 @@ class PagePopupChromeClient final : public EmptyChromeClient {
   bool IsPopup() override { return true; }
 
  private:
-  explicit PagePopupChromeClient(WebPagePopupImpl* popup) : popup_(popup) {
-    DCHECK(popup_->WidgetClient());
-  }
-
   void CloseWindowSoon() override { popup_->ClosePopup(); }
 
   IntRect RootWindowRect() override { return popup_->WindowRectInScreen(); }
@@ -127,7 +127,7 @@ class PagePopupChromeClient final : public EmptyChromeClient {
   void ScheduleAnimation(const LocalFrameView*) override {
     // Calling scheduleAnimation on m_webView so WebViewTestProxy will call
     // beginFrame.
-    if (LayoutTestSupport::IsRunningLayoutTest()) {
+    if (WebTestSupport::IsRunningWebTest()) {
       popup_->web_view_->MainFrameImpl()
           ->FrameWidgetImpl()
           ->ScheduleAnimation();
@@ -153,9 +153,7 @@ class PagePopupChromeClient final : public EmptyChromeClient {
   }
 
   WebScreenInfo GetScreenInfo() const override {
-    return popup_->web_view_->Client()
-               ? popup_->web_view_->WidgetClient()->GetScreenInfo()
-               : WebScreenInfo();
+    return popup_->web_view_->Client()->GetScreenInfo();
   }
 
   WebViewImpl* GetWebView() const override { return popup_->web_view_; }
@@ -280,6 +278,7 @@ void WebPagePopupImpl::Initialize(WebViewImpl* web_view,
 
   Settings& main_settings = web_view_->GetPage()->GetSettings();
   page_ = Page::Create(page_clients);
+  page_->GetSettings().SetAcceleratedCompositingEnabled(true);
   page_->GetSettings().SetScriptEnabled(true);
   page_->GetSettings().SetAllowScriptsToCloseWindows(true);
   page_->GetSettings().SetDeviceSupportsTouch(
@@ -313,7 +312,6 @@ void WebPagePopupImpl::Initialize(WebViewImpl* web_view,
   DCHECK_EQ(popup_client_->OwnerElement().GetDocument().ExistingAXObjectCache(),
             frame->GetDocument()->ExistingAXObjectCache());
 
-  layer_tree_view_->SetVisible(true);
   page_->LayerTreeViewInitialized(*layer_tree_view_, nullptr);
 
   scoped_refptr<SharedBuffer> data = SharedBuffer::Create();
@@ -403,10 +401,14 @@ void WebPagePopupImpl::WillCloseLayerTreeView() {
   animation_host_ = nullptr;
 }
 
-void WebPagePopupImpl::UpdateLifecycle(LifecycleUpdate requested_update) {
+void WebPagePopupImpl::UpdateLifecycle(LifecycleUpdate requested_update,
+                                       LifecycleUpdateReason reason) {
   if (!page_)
     return;
-  PageWidgetDelegate::UpdateLifecycle(*page_, MainFrame(), requested_update);
+  // Popups always update their lifecycle in the context of the containing
+  // document's lifecycle, so explicitly override the reason.
+  PageWidgetDelegate::UpdateLifecycle(*page_, MainFrame(), requested_update,
+                                      WebWidget::LifecycleUpdateReason::kOther);
 }
 
 void WebPagePopupImpl::UpdateAllLifecyclePhasesAndCompositeForTesting(

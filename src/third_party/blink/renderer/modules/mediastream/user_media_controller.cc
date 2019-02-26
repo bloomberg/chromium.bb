@@ -40,7 +40,8 @@ void UserMediaController::Trace(blink::Visitor* visitor) {
 void ProvideUserMediaTo(LocalFrame& frame,
                         std::unique_ptr<UserMediaClient> client) {
   UserMediaController::ProvideTo(
-      frame, new UserMediaController(frame, std::move(client)));
+      frame,
+      MakeGarbageCollected<UserMediaController>(frame, std::move(client)));
 }
 
 }  // namespace blink

@@ -36,6 +36,9 @@ class TabActivityWatcher : public BrowserListObserver,
   base::Optional<float> CalculateReactivationScore(
       content::WebContents* web_contents);
 
+  // Log TabFeatures for oldest n tabs.
+  void LogOldestNTabFeatures();
+
   // Returns the single instance, creating it if necessary.
   static TabActivityWatcher* GetInstance();
 
@@ -45,6 +48,9 @@ class TabActivityWatcher : public BrowserListObserver,
   // Helper class to observe WebContents.
   // TODO(michaelpg): Merge this into TabLifecycleUnit.
   class WebContentsData;
+
+  // Returns all WebContentsData* sorted by MoreRecentlyUsed.
+  std::vector<WebContentsData*> GetSortedWebContentsData();
 
   // Called When A Tab is closed, log necessary metrics and erase the
   // |web_contents_data| pointer in |all_closing_tabs_|.

@@ -36,11 +36,9 @@ enum SVGStitchOptions {
   kSvgStitchtypeStitch = 1,
   kSvgStitchtypeNostitch = 2
 };
-template <>
-const SVGEnumerationStringEntries& GetStaticStringEntries<SVGStitchOptions>();
+DECLARE_SVG_ENUM_MAP(SVGStitchOptions);
 
-template <>
-const SVGEnumerationStringEntries& GetStaticStringEntries<TurbulenceType>();
+DECLARE_SVG_ENUM_MAP(TurbulenceType);
 
 class SVGFETurbulenceElement final
     : public SVGFilterPrimitiveStandardAttributes {

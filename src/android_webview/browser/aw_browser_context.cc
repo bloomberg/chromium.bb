@@ -88,14 +88,6 @@ CreateSafeBrowsingWhitelistManager() {
       background_task_runner, io_task_runner);
 }
 
-base::FilePath GetCacheDirForAw() {
-  FilePath cache_path;
-  base::PathService::Get(base::DIR_CACHE, &cache_path);
-  cache_path =
-      cache_path.Append(FILE_PATH_LITERAL("org.chromium.android_webview"));
-  return cache_path;
-}
-
 }  // namespace
 
 AwBrowserContext::AwBrowserContext(
@@ -136,9 +128,21 @@ AwBrowserContext* AwBrowserContext::FromWebContents(
   return static_cast<AwBrowserContext*>(web_contents->GetBrowserContext());
 }
 
-void AwBrowserContext::PreMainMessageLoopRun(net::NetLog* net_log) {
-  FilePath cache_path = GetCacheDirForAw();
+// static
+base::FilePath AwBrowserContext::GetCacheDir() {
+  FilePath cache_path;
+  base::PathService::Get(base::DIR_CACHE, &cache_path);
+  cache_path =
+      cache_path.Append(FILE_PATH_LITERAL("org.chromium.android_webview"));
+  return cache_path;
+}
 
+void AwBrowserContext::PreMainMessageLoopRun(net::NetLog* net_log) {
+  FilePath cache_path = GetCacheDir();
+
+  // TODO(ntfschr): set this to nullptr when the NetworkService is disabled,
+  // once we remove a dependency on url_request_context_getter_
+  // (http://crbug.com/887538).
   url_request_context_getter_ = new AwURLRequestContextGetter(
       cache_path, context_storage_path_.Append(kChannelIDFilename),
       CreateProxyConfigService(), user_pref_service_.get(), net_log);
@@ -209,10 +213,6 @@ base::FilePath AwBrowserContext::GetPath() const {
   return context_storage_path_;
 }
 
-base::FilePath AwBrowserContext::GetCachePath() const {
-  return GetCacheDirForAw();
-}
-
 bool AwBrowserContext::IsOffTheRecord() const {
   // Android WebView does not support off the record profile yet.
   return false;
@@ -220,8 +220,7 @@ bool AwBrowserContext::IsOffTheRecord() const {
 
 content::ResourceContext* AwBrowserContext::GetResourceContext() {
   if (!resource_context_) {
-    resource_context_.reset(
-        new AwResourceContext(url_request_context_getter_.get()));
+    resource_context_.reset(new AwResourceContext);
   }
   return resource_context_.get();
 }

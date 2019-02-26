@@ -15,13 +15,14 @@ class CSSParserContext;
 class CSSParserLocalContext;
 class CSSParserTokenRange;
 
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* BorderTopColor::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext& local_context) const {
-  return CSSParsingUtils::ConsumeBorderColorSide(range, context, local_context);
+  return css_parsing_utils::ConsumeBorderColorSide(range, context,
+                                                   local_context);
 }
 
 const blink::Color BorderTopColor::ColorIncludingFallback(
@@ -47,5 +48,5 @@ const CSSValue* BorderTopColor::CSSValueFromComputedStyleInternal(
                    style, style.BorderTopColor());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

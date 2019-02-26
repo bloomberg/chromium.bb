@@ -54,7 +54,8 @@ class QuicDispatcherPeer {
   static void SendPublicReset(QuicDispatcher* dispatcher,
                               const QuicSocketAddress& server_address,
                               const QuicSocketAddress& client_address,
-                              QuicConnectionId connection_id);
+                              QuicConnectionId connection_id,
+                              bool ietf_quic);
 
   static std::unique_ptr<QuicDispatcher::PerPacketContext> GetPerPacketContext(
       QuicDispatcher* dispatcher);

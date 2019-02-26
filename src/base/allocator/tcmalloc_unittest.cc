@@ -8,7 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/process/process_metrics.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

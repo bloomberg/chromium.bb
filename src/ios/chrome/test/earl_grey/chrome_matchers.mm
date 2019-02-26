@@ -25,16 +25,17 @@
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/settings/accounts_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/cells/clear_browsing_data_constants.h"
+#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data_ui_constants.h"
-#import "ios/chrome/browser/ui/settings/import_data_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/import_data_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync_settings_collection_view_controller.h"
 #import "ios/chrome/browser/ui/static_content/static_html_view_controller.h"
-#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/web/public/block_types.h"
@@ -48,35 +49,53 @@
 
 namespace {
 
-id<GREYMatcher> SettingsSwitchIsToggledOn(BOOL isToggledOn) {
+// TODO(crbug.com/894800): Remove |use_new_cell|.
+id<GREYMatcher> SettingsSwitchIsToggledOn(BOOL is_toggled_on,
+                                          BOOL use_new_cell) {
   MatchesBlock matches = ^BOOL(id element) {
-    SettingsSwitchCell* switch_cell =
-        base::mac::ObjCCastStrict<SettingsSwitchCell>(element);
-    UISwitch* switch_view = switch_cell.switchView;
-    return (switch_view.on && isToggledOn) || (!switch_view.on && !isToggledOn);
+    UISwitch* switch_view;
+    if (use_new_cell) {
+      SettingsSwitchCell* switch_cell =
+          base::mac::ObjCCastStrict<SettingsSwitchCell>(element);
+      switch_view = switch_cell.switchView;
+    } else {
+      LegacySettingsSwitchCell* switch_cell =
+          base::mac::ObjCCastStrict<LegacySettingsSwitchCell>(element);
+      switch_view = switch_cell.switchView;
+    }
+    return (switch_view.on && is_toggled_on) ||
+           (!switch_view.on && !is_toggled_on);
   };
   DescribeToBlock describe = ^void(id<GREYDescription> description) {
     NSString* name =
         [NSString stringWithFormat:@"settingsSwitchToggledState(%@)",
-                                   isToggledOn ? @"ON" : @"OFF"];
+                                   is_toggled_on ? @"ON" : @"OFF"];
     [description appendText:name];
   };
   return [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
                                               descriptionBlock:describe];
 }
 
-id<GREYMatcher> SettingsSwitchIsEnabled(BOOL isEnabled) {
+// TODO(crbug.com/894800): Remove |use_new_cell|.
+id<GREYMatcher> SettingsSwitchIsEnabled(BOOL is_enabled, BOOL use_new_cell) {
   MatchesBlock matches = ^BOOL(id element) {
-    SettingsSwitchCell* switch_cell =
-        base::mac::ObjCCastStrict<SettingsSwitchCell>(element);
-    UISwitch* switch_view = switch_cell.switchView;
-    return (switch_view.enabled && isEnabled) ||
-           (!switch_view.enabled && !isEnabled);
+    UISwitch* switch_view;
+    if (use_new_cell) {
+      SettingsSwitchCell* switch_cell =
+          base::mac::ObjCCastStrict<SettingsSwitchCell>(element);
+      switch_view = switch_cell.switchView;
+    } else {
+      LegacySettingsSwitchCell* switch_cell =
+          base::mac::ObjCCastStrict<LegacySettingsSwitchCell>(element);
+      switch_view = switch_cell.switchView;
+    }
+    return (switch_view.enabled && is_enabled) ||
+           (!switch_view.enabled && !is_enabled);
   };
   DescribeToBlock describe = ^void(id<GREYDescription> description) {
     NSString* name =
         [NSString stringWithFormat:@"settingsSwitchEnabledState(%@)",
-                                   isEnabled ? @"YES" : @"NO"];
+                                   is_enabled ? @"YES" : @"NO"];
     [description appendText:name];
   };
   return [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
@@ -254,26 +273,41 @@ id<GREYMatcher> ShowTabsButton() {
                     grey_sufficientlyVisible(), nil);
 }
 
-id<GREYMatcher> SettingsSwitchCell(NSString* accessibilityIdentifier,
-                                   BOOL isToggledOn) {
-  return SettingsSwitchCell(accessibilityIdentifier, isToggledOn, YES);
+id<GREYMatcher> SettingsSwitchCell(NSString* accessibility_identifier,
+                                   BOOL is_toggled_on) {
+  return SettingsSwitchCell(accessibility_identifier, is_toggled_on, YES);
 }
 
-id<GREYMatcher> SettingsSwitchCell(NSString* accessibilityIdentifier,
-                                   BOOL isToggledOn,
-                                   BOOL isEnabled) {
-  return grey_allOf(grey_accessibilityID(accessibilityIdentifier),
-                    SettingsSwitchIsToggledOn(isToggledOn),
-                    SettingsSwitchIsEnabled(isEnabled),
+id<GREYMatcher> SettingsSwitchCell(NSString* accessibility_identifier,
+                                   BOOL is_toggled_on,
+                                   BOOL is_enabled) {
+  return grey_allOf(grey_accessibilityID(accessibility_identifier),
+                    SettingsSwitchIsToggledOn(is_toggled_on, YES),
+                    SettingsSwitchIsEnabled(is_enabled, YES),
                     grey_sufficientlyVisible(), nil);
 }
 
-id<GREYMatcher> SyncSwitchCell(NSString* accessibilityLabel, BOOL isToggledOn) {
+id<GREYMatcher> LegacySettingsSwitchCell(NSString* accessibility_identifier,
+                                         BOOL is_toggled_on) {
+  return LegacySettingsSwitchCell(accessibility_identifier, is_toggled_on, YES);
+}
+
+id<GREYMatcher> LegacySettingsSwitchCell(NSString* accessibility_identifier,
+                                         BOOL is_toggled_on,
+                                         BOOL is_enabled) {
+  return grey_allOf(grey_accessibilityID(accessibility_identifier),
+                    SettingsSwitchIsToggledOn(is_toggled_on, NO),
+                    SettingsSwitchIsEnabled(is_enabled, NO),
+                    grey_sufficientlyVisible(), nil);
+}
+
+id<GREYMatcher> SyncSwitchCell(NSString* accessibilityLabel,
+                               BOOL is_toggled_on) {
   return grey_allOf(
       grey_accessibilityLabel(accessibilityLabel),
       grey_accessibilityValue(
-          isToggledOn ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
-                      : l10n_util::GetNSString(IDS_IOS_SETTING_OFF)),
+          is_toggled_on ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
+                        : l10n_util::GetNSString(IDS_IOS_SETTING_OFF)),
       grey_sufficientlyVisible(), nil);
 }
 
@@ -307,6 +341,14 @@ id<GREYMatcher> AddAccountButton() {
 
 id<GREYMatcher> SignOutAccountsButton() {
   return grey_accessibilityID(kSettingsAccountsSignoutCellId);
+}
+
+id<GREYMatcher> ClearBrowsingDataCell() {
+  return ButtonWithAccessibilityLabelId(IDS_IOS_CLEAR_BROWSING_DATA_TITLE);
+}
+
+id<GREYMatcher> ClearBrowsingDataButton() {
+  return ButtonWithAccessibilityLabelId(IDS_IOS_CLEAR_BUTTON);
 }
 
 id<GREYMatcher> ClearBrowsingDataCollectionView() {

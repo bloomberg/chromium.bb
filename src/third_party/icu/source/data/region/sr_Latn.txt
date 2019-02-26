@@ -308,5 +308,5 @@ sr_Latn{
         CZ{"Češka Republika"}
         TL{"Istočni Timor"}
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.44.50"}
 }

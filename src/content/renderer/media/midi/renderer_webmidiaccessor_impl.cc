@@ -5,7 +5,7 @@
 #include "content/renderer/media/midi/renderer_webmidiaccessor_impl.h"
 
 #include "base/logging.h"
-#include "content/renderer/media/midi/midi_message_filter.h"
+#include "content/renderer/media/midi/midi_session_client_impl.h"
 #include "content/renderer/render_thread_impl.h"
 
 namespace content {
@@ -18,11 +18,11 @@ RendererWebMIDIAccessorImpl::RendererWebMIDIAccessorImpl(
 
 RendererWebMIDIAccessorImpl::~RendererWebMIDIAccessorImpl() {
   if (is_client_added_)
-    midi_message_filter()->RemoveClient(client_);
+    midi_session_client_impl()->RemoveClient(client_);
 }
 
 void RendererWebMIDIAccessorImpl::StartSession() {
-  midi_message_filter()->AddClient(client_);
+  midi_session_client_impl()->AddClient(client_);
   is_client_added_ = true;
 }
 
@@ -30,15 +30,11 @@ void RendererWebMIDIAccessorImpl::SendMIDIData(unsigned port_index,
                                                const unsigned char* data,
                                                size_t length,
                                                base::TimeTicks timestamp) {
-  midi_message_filter()->SendMidiData(
-      port_index,
-      data,
-      length,
-      timestamp);
+  midi_session_client_impl()->SendMidiData(port_index, data, length, timestamp);
 }
 
-MidiMessageFilter* RendererWebMIDIAccessorImpl::midi_message_filter() {
-  return RenderThreadImpl::current()->midi_message_filter();
+MidiSessionClientImpl* RendererWebMIDIAccessorImpl::midi_session_client_impl() {
+  return RenderThreadImpl::current()->midi_session_client_impl();
 }
 
 }  // namespace content

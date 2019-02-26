@@ -27,6 +27,7 @@ nodejs_bin = rebase_path("$nodejs_root/bin", root_build_dir)
 group("ui") {
   deps = [
     ":assets_dist",
+    ":catapult_dist",
     ":controller_bundle_dist",
     ":engine_bundle_dist",
     ":frontend_bundle_dist",
@@ -250,18 +251,20 @@ node_bin("transpile_all_ts") {
 # | Build css.                                                                 |
 # +----------------------------------------------------------------------------+
 
+scss_root = "src/assets/perfetto.scss"
+scss_srcs = [
+  "src/assets/sidebar.scss",
+  "src/assets/topbar.scss",
+  "src/assets/record.scss",
+  "src/assets/common.scss",
+]
+
 # Build css.
 node_bin("scss") {
   deps = [
     ":dist_symlink",
   ]
-  main_css = "src/assets/perfetto.scss"
-  inputs = [
-    main_css,
-    "src/assets/sidebar.scss",
-    "src/assets/topbar.scss",
-    "src/assets/record.scss",
-  ]
+  inputs = [ scss_root ] + scss_srcs
   outputs = [
     "$ui_dir/perfetto.css",
   ]
@@ -269,7 +272,7 @@ node_bin("scss") {
   node_cmd = "node-sass"
   args = [
     "--quiet",
-    rebase_path(main_css, root_build_dir),
+    rebase_path(scss_root, root_build_dir),
     rebase_path(outputs[0], root_build_dir),
   ]
 }
@@ -288,13 +291,9 @@ copy("index_dist") {
 
 copy("assets_dist") {
   sources = [
-    "src/assets/flamegraph.svg",
-    "src/assets/logo-3d.png",
-    "src/assets/logo.png",
-    "src/assets/perfetto.scss",
-    "src/assets/sidebar.scss",
-    "src/assets/topbar.scss",
-  ]
+              "src/assets/logo-3d.png",
+              "src/assets/logo.png",
+            ] + [ scss_root ] + scss_srcs
   outputs = [
     "$ui_dir/assets/{{source_file_part}}",
   ]
@@ -327,9 +326,11 @@ sorcery("engine_bundle_dist") {
 copy("wasm_dist") {
   deps = [
     "//src/trace_processor:trace_processor.wasm($wasm_toolchain)",
+    "//tools/trace_to_text:trace_to_text.wasm($wasm_toolchain)",
   ]
   sources = [
     "$root_build_dir/wasm/trace_processor.wasm",
+    "$root_build_dir/wasm/trace_to_text.wasm",
   ]
   outputs = [
     "$ui_dir/{{source_file_part}}",
@@ -339,20 +340,47 @@ copy("wasm_dist") {
 copy("wasm_gen") {
   deps = [
     ":dist_symlink",
+
+    # trace_processor
     "//src/trace_processor:trace_processor.d.ts($wasm_toolchain)",
     "//src/trace_processor:trace_processor.js($wasm_toolchain)",
     "//src/trace_processor:trace_processor.wasm($wasm_toolchain)",
+
+    # trace_to_text
+    "//tools/trace_to_text:trace_to_text.d.ts($wasm_toolchain)",
+    "//tools/trace_to_text:trace_to_text.js($wasm_toolchain)",
+    "//tools/trace_to_text:trace_to_text.wasm($wasm_toolchain)",
   ]
   sources = [
+    # trace_processor
     "$root_build_dir/wasm/trace_processor.d.ts",
     "$root_build_dir/wasm/trace_processor.js",
     "$root_build_dir/wasm/trace_processor.wasm",
+
+    # trace_to_text
+    "$root_build_dir/wasm/trace_to_text.d.ts",
+    "$root_build_dir/wasm/trace_to_text.js",
+    "$root_build_dir/wasm/trace_to_text.wasm",
   ]
   if (is_debug) {
-    sources += [ "$root_build_dir/wasm/trace_processor.wasm.map" ]
+    sources += [
+      "$root_build_dir/wasm/trace_processor.wasm.map",
+      "$root_build_dir/wasm/trace_to_text.wasm.map",
+    ]
   }
   outputs = [
     "$ui_gen_dir/{{source_file_part}}",
+  ]
+}
+
+# Copy over the vulcanized legacy trace viewer.
+copy("catapult_dist") {
+  sources = [
+    "../buildtools/catapult_trace_viewer/catapult_trace_viewer.html",
+    "../buildtools/catapult_trace_viewer/catapult_trace_viewer.js",
+  ]
+  outputs = [
+    "$ui_dir/assets/{{source_file_part}}",
   ]
 }
 

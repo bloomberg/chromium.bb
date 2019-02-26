@@ -6,14 +6,17 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -31,8 +34,10 @@ namespace chromeos {
 namespace {
 
 std::string GetErrorNameForShillError(const std::string& shill_error_name) {
-  if (shill_error_name == shill::kErrorResultFailure)
+  if (shill_error_name == shill::kErrorResultFailure ||
+      shill_error_name == shill::kErrorResultInvalidArguments) {
     return NetworkDeviceHandler::kErrorFailure;
+  }
   if (shill_error_name == shill::kErrorResultNotSupported)
     return NetworkDeviceHandler::kErrorNotSupported;
   if (shill_error_name == shill::kErrorResultIncorrectPin)
@@ -431,6 +436,22 @@ void NetworkDeviceHandlerImpl::AddWifiWakeOnPacketConnection(
                  error_callback));
 }
 
+void NetworkDeviceHandlerImpl::AddWifiWakeOnPacketOfTypes(
+    const std::vector<std::string>& types,
+    const base::Closure& callback,
+    const network_handler::ErrorCallback& error_callback) {
+  const DeviceState* device_state = GetWifiDeviceState(error_callback);
+  if (!device_state)
+    return;
+
+  NET_LOG(USER) << "Device.AddWifiWakeOnPacketOfTypes: " << device_state->path()
+                << " Types: " << base::JoinString(types, " ");
+  DBusThreadManager::Get()->GetShillDeviceClient()->AddWakeOnPacketOfTypes(
+      dbus::ObjectPath(device_state->path()), types, callback,
+      base::Bind(&HandleShillCallFailure, device_state->path(),
+                 error_callback));
+}
+
 void NetworkDeviceHandlerImpl::RemoveWifiWakeOnPacketConnection(
     const net::IPEndPoint& ip_endpoint,
     const base::Closure& callback,
@@ -446,6 +467,23 @@ void NetworkDeviceHandlerImpl::RemoveWifiWakeOnPacketConnection(
           dbus::ObjectPath(device_state->path()), ip_endpoint, callback,
           base::Bind(&HandleShillCallFailure, device_state->path(),
                      error_callback));
+}
+
+void NetworkDeviceHandlerImpl::RemoveWifiWakeOnPacketOfTypes(
+    const std::vector<std::string>& types,
+    const base::Closure& callback,
+    const network_handler::ErrorCallback& error_callback) {
+  const DeviceState* device_state = GetWifiDeviceState(error_callback);
+  if (!device_state)
+    return;
+
+  NET_LOG(USER) << "Device.RemoveWifiWakeOnPacketOfTypes: "
+                << device_state->path()
+                << " Types: " << base::JoinString(types, " ");
+  DBusThreadManager::Get()->GetShillDeviceClient()->RemoveWakeOnPacketOfTypes(
+      dbus::ObjectPath(device_state->path()), types, callback,
+      base::Bind(&HandleShillCallFailure, device_state->path(),
+                 error_callback));
 }
 
 void NetworkDeviceHandlerImpl::RemoveAllWifiWakeOnPacketConnections(

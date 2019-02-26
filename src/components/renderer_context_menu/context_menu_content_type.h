@@ -67,7 +67,7 @@ class ContextMenuContentType {
  protected:
   const content::ContextMenuParams& params() const { return params_; }
 
-  const content::WebContents* source_web_contents() const {
+  content::WebContents* source_web_contents() const {
     return source_web_contents_;
   }
 

@@ -27,7 +27,6 @@
 #include "core/fxge/win32/cfx_windowsdib.h"
 #include "core/fxge/win32/win32_int.h"
 #include "third_party/base/ptr_util.h"
-#include "third_party/base/stl_util.h"
 
 #ifndef _SKIA_SUPPORT_
 #include "core/fxge/agg/fx_agg_driver.h"
@@ -590,7 +589,7 @@ void* CFX_Win32FontInfo::MapFont(int weight,
   if (face.EqualNoCase(facebuf))
     return hFont;
 
-  WideString wsFace = WideString::FromLocal(facebuf);
+  WideString wsFace = WideString::FromDefANSI(facebuf);
   for (size_t i = 0; i < FX_ArraySize(g_VariantNames); ++i) {
     if (face != g_VariantNames[i].m_pFaceName)
       continue;
@@ -768,7 +767,7 @@ void CGdiDeviceDriver::RestoreState(bool bKeepSaved) {
 }
 
 bool CGdiDeviceDriver::GDI_SetDIBits(const RetainPtr<CFX_DIBitmap>& pBitmap1,
-                                     const FX_RECT* pSrcRect,
+                                     const FX_RECT& src_rect,
                                      int left,
                                      int top) {
   if (m_DeviceClass == FXDC_PRINTER) {
@@ -779,32 +778,31 @@ bool CGdiDeviceDriver::GDI_SetDIBits(const RetainPtr<CFX_DIBitmap>& pBitmap1,
     if (pBitmap->IsCmykImage() && !pBitmap->ConvertFormat(FXDIB_Rgb))
       return false;
 
-    int width = pSrcRect->Width(), height = pSrcRect->Height();
     LPBYTE pBuffer = pBitmap->GetBuffer();
     ByteString info = CFX_WindowsDIB::GetBitmapInfo(pBitmap);
     ((BITMAPINFOHEADER*)info.c_str())->biHeight *= -1;
-    FX_RECT dst_rect(0, 0, width, height);
+    FX_RECT dst_rect(0, 0, src_rect.Width(), src_rect.Height());
     dst_rect.Intersect(0, 0, pBitmap->GetWidth(), pBitmap->GetHeight());
     int dst_width = dst_rect.Width();
     int dst_height = dst_rect.Height();
     ::StretchDIBits(m_hDC, left, top, dst_width, dst_height, 0, 0, dst_width,
                     dst_height, pBuffer, (BITMAPINFO*)info.c_str(),
                     DIB_RGB_COLORS, SRCCOPY);
-  } else {
-    RetainPtr<CFX_DIBitmap> pBitmap = pBitmap1;
-    if (pBitmap->IsCmykImage()) {
-      pBitmap = pBitmap->CloneConvert(FXDIB_Rgb);
-      if (!pBitmap)
-        return false;
-    }
-    int width = pSrcRect->Width(), height = pSrcRect->Height();
-    LPBYTE pBuffer = pBitmap->GetBuffer();
-    ByteString info = CFX_WindowsDIB::GetBitmapInfo(pBitmap);
-    ::SetDIBitsToDevice(m_hDC, left, top, width, height, pSrcRect->left,
-                        pBitmap->GetHeight() - pSrcRect->bottom, 0,
-                        pBitmap->GetHeight(), pBuffer,
-                        (BITMAPINFO*)info.c_str(), DIB_RGB_COLORS);
+    return true;
   }
+
+  RetainPtr<CFX_DIBitmap> pBitmap = pBitmap1;
+  if (pBitmap->IsCmykImage()) {
+    pBitmap = pBitmap->CloneConvert(FXDIB_Rgb);
+    if (!pBitmap)
+      return false;
+  }
+  LPBYTE pBuffer = pBitmap->GetBuffer();
+  ByteString info = CFX_WindowsDIB::GetBitmapInfo(pBitmap);
+  ::SetDIBitsToDevice(m_hDC, left, top, src_rect.Width(), src_rect.Height(),
+                      src_rect.left, pBitmap->GetHeight() - src_rect.bottom, 0,
+                      pBitmap->GetHeight(), pBuffer, (BITMAPINFO*)info.c_str(),
+                      DIB_RGB_COLORS);
   return true;
 }
 
@@ -814,7 +812,7 @@ bool CGdiDeviceDriver::GDI_StretchDIBits(
     int dest_top,
     int dest_width,
     int dest_height,
-    uint32_t flags) {
+    const FXDIB_ResampleOptions& options) {
   RetainPtr<CFX_DIBitmap> pBitmap = pBitmap1;
   if (!pBitmap || dest_width == 0 || dest_height == 0)
     return false;
@@ -825,7 +823,7 @@ bool CGdiDeviceDriver::GDI_StretchDIBits(
   ByteString info = CFX_WindowsDIB::GetBitmapInfo(pBitmap);
   if ((int64_t)abs(dest_width) * abs(dest_height) <
           (int64_t)pBitmap1->GetWidth() * pBitmap1->GetHeight() * 4 ||
-      (flags & FXDIB_INTERPOL) || (flags & FXDIB_BICUBIC_INTERPOL)) {
+      options.bInterpolateBilinear || options.bInterpolateBicubic) {
     SetStretchBltMode(m_hDC, HALFTONE);
   } else {
     SetStretchBltMode(m_hDC, COLORONCOLOR);
@@ -834,7 +832,8 @@ bool CGdiDeviceDriver::GDI_StretchDIBits(
   if (m_DeviceClass == FXDC_PRINTER &&
       ((int64_t)pBitmap->GetWidth() * pBitmap->GetHeight() >
        (int64_t)abs(dest_width) * abs(dest_height))) {
-    pToStrechBitmap = pBitmap->StretchTo(dest_width, dest_height, 0, nullptr);
+    pToStrechBitmap = pBitmap->StretchTo(dest_width, dest_height,
+                                         FXDIB_ResampleOptions(), nullptr);
   }
   ByteString toStrechBitmapInfo =
       CFX_WindowsDIB::GetBitmapInfo(pToStrechBitmap);
@@ -852,8 +851,7 @@ bool CGdiDeviceDriver::GDI_StretchBitMask(
     int dest_top,
     int dest_width,
     int dest_height,
-    uint32_t bitmap_color,
-    uint32_t flags) {
+    uint32_t bitmap_color) {
   RetainPtr<CFX_DIBitmap> pBitmap = pBitmap1;
   if (!pBitmap || dest_width == 0 || dest_height == 0)
     return false;
@@ -960,8 +958,8 @@ bool CGdiDeviceDriver::DrawPath(const CFX_PathData* pPathData,
                                 uint32_t fill_color,
                                 uint32_t stroke_color,
                                 int fill_mode,
-                                int blend_type) {
-  if (blend_type != FXDIB_BLEND_NORMAL)
+                                BlendMode blend_type) {
+  if (blend_type != BlendMode::kNormal)
     return false;
 
   CWin32Platform* pPlatform =
@@ -976,12 +974,12 @@ bool CGdiDeviceDriver::DrawPath(const CFX_PathData* pPathData,
     if (bbox.Width() <= 0) {
       return DrawCosmeticLine(CFX_PointF(bbox.left, bbox.top),
                               CFX_PointF(bbox.left, bbox.bottom + 1),
-                              fill_color, FXDIB_BLEND_NORMAL);
+                              fill_color, BlendMode::kNormal);
     }
     if (bbox.Height() <= 0) {
       return DrawCosmeticLine(CFX_PointF(bbox.left, bbox.top),
                               CFX_PointF(bbox.right + 1, bbox.top), fill_color,
-                              FXDIB_BLEND_NORMAL);
+                              BlendMode::kNormal);
     }
   }
   int fill_alpha = FXARGB_A(fill_color);
@@ -1062,8 +1060,8 @@ bool CGdiDeviceDriver::DrawPath(const CFX_PathData* pPathData,
 
 bool CGdiDeviceDriver::FillRectWithBlend(const FX_RECT& rect,
                                          uint32_t fill_color,
-                                         int blend_type) {
-  if (blend_type != FXDIB_BLEND_NORMAL)
+                                         BlendMode blend_type) {
+  if (blend_type != BlendMode::kNormal)
     return false;
 
   int alpha;
@@ -1117,8 +1115,8 @@ bool CGdiDeviceDriver::SetClip_PathStroke(
 bool CGdiDeviceDriver::DrawCosmeticLine(const CFX_PointF& ptMoveTo,
                                         const CFX_PointF& ptLineTo,
                                         uint32_t color,
-                                        int blend_type) {
-  if (blend_type != FXDIB_BLEND_NORMAL)
+                                        BlendMode blend_type) {
+  if (blend_type != BlendMode::kNormal)
     return false;
 
   int alpha;
@@ -1189,11 +1187,11 @@ bool CGdiDisplayDriver::GetDIBits(const RetainPtr<CFX_DIBitmap>& pBitmap,
 
 bool CGdiDisplayDriver::SetDIBits(const RetainPtr<CFX_DIBBase>& pSource,
                                   uint32_t color,
-                                  const FX_RECT* pSrcRect,
+                                  const FX_RECT& src_rect,
                                   int left,
                                   int top,
-                                  int blend_type) {
-  ASSERT(blend_type == FXDIB_BLEND_NORMAL);
+                                  BlendMode blend_type) {
+  ASSERT(blend_type == BlendMode::kNormal);
   if (pSource->IsAlphaMask()) {
     int width = pSource->GetWidth(), height = pSource->GetHeight();
     int alpha = FXARGB_A(color);
@@ -1202,36 +1200,38 @@ bool CGdiDisplayDriver::SetDIBits(const RetainPtr<CFX_DIBBase>& pSource,
       if (!background->Create(width, height, FXDIB_Rgb32) ||
           !GetDIBits(background, left, top) ||
           !background->CompositeMask(0, 0, width, height, pSource, color, 0, 0,
-                                     FXDIB_BLEND_NORMAL, nullptr, false, 0)) {
+                                     BlendMode::kNormal, nullptr, false, 0)) {
         return false;
       }
-      FX_RECT src_rect(0, 0, width, height);
-      return SetDIBits(background, 0, &src_rect, left, top, FXDIB_BLEND_NORMAL);
+      FX_RECT alpha_src_rect(0, 0, width, height);
+      return SetDIBits(background, 0, alpha_src_rect, left, top,
+                       BlendMode::kNormal);
     }
-    FX_RECT clip_rect(left, top, left + pSrcRect->Width(),
-                      top + pSrcRect->Height());
-    return StretchDIBits(pSource, color, left - pSrcRect->left,
-                         top - pSrcRect->top, width, height, &clip_rect, 0,
-                         FXDIB_BLEND_NORMAL);
+    FX_RECT clip_rect(left, top, left + src_rect.Width(),
+                      top + src_rect.Height());
+    return StretchDIBits(pSource, color, left - src_rect.left,
+                         top - src_rect.top, width, height, &clip_rect,
+                         FXDIB_ResampleOptions(), BlendMode::kNormal);
   }
-  int width = pSrcRect->Width(), height = pSrcRect->Height();
+  int width = src_rect.Width();
+  int height = src_rect.Height();
   if (pSource->HasAlpha()) {
     auto bitmap = pdfium::MakeRetain<CFX_DIBitmap>();
     if (!bitmap->Create(width, height, FXDIB_Rgb) ||
         !GetDIBits(bitmap, left, top) ||
-        !bitmap->CompositeBitmap(0, 0, width, height, pSource, pSrcRect->left,
-                                 pSrcRect->top, FXDIB_BLEND_NORMAL, nullptr,
+        !bitmap->CompositeBitmap(0, 0, width, height, pSource, src_rect.left,
+                                 src_rect.top, BlendMode::kNormal, nullptr,
                                  false)) {
       return false;
     }
-    FX_RECT src_rect(0, 0, width, height);
-    return SetDIBits(bitmap, 0, &src_rect, left, top, FXDIB_BLEND_NORMAL);
+    FX_RECT alpha_src_rect(0, 0, width, height);
+    return SetDIBits(bitmap, 0, alpha_src_rect, left, top, BlendMode::kNormal);
   }
   CFX_DIBExtractor temp(pSource);
   RetainPtr<CFX_DIBitmap> pBitmap = temp.GetBitmap();
   if (!pBitmap)
     return false;
-  return GDI_SetDIBits(pBitmap, pSrcRect, left, top);
+  return GDI_SetDIBits(pBitmap, src_rect, left, top);
 }
 
 bool CGdiDisplayDriver::UseFoxitStretchEngine(
@@ -1242,7 +1242,7 @@ bool CGdiDisplayDriver::UseFoxitStretchEngine(
     int dest_width,
     int dest_height,
     const FX_RECT* pClipRect,
-    int render_flags) {
+    const FXDIB_ResampleOptions& options) {
   FX_RECT bitmap_clip = *pClipRect;
   if (dest_width < 0)
     dest_left += dest_width;
@@ -1252,13 +1252,13 @@ bool CGdiDisplayDriver::UseFoxitStretchEngine(
 
   bitmap_clip.Offset(-dest_left, -dest_top);
   RetainPtr<CFX_DIBitmap> pStretched =
-      pSource->StretchTo(dest_width, dest_height, render_flags, &bitmap_clip);
+      pSource->StretchTo(dest_width, dest_height, options, &bitmap_clip);
   if (!pStretched)
     return true;
 
   FX_RECT src_rect(0, 0, pStretched->GetWidth(), pStretched->GetHeight());
-  return SetDIBits(pStretched, color, &src_rect, pClipRect->left,
-                   pClipRect->top, FXDIB_BLEND_NORMAL);
+  return SetDIBits(pStretched, color, src_rect, pClipRect->left, pClipRect->top,
+                   BlendMode::kNormal);
 }
 
 bool CGdiDisplayDriver::StretchDIBits(const RetainPtr<CFX_DIBBase>& pSource,
@@ -1268,13 +1268,15 @@ bool CGdiDisplayDriver::StretchDIBits(const RetainPtr<CFX_DIBBase>& pSource,
                                       int dest_width,
                                       int dest_height,
                                       const FX_RECT* pClipRect,
-                                      uint32_t flags,
-                                      int blend_type) {
-  ASSERT(pSource && pClipRect);
-  if (flags || dest_width > 10000 || dest_width < -10000 ||
+                                      const FXDIB_ResampleOptions& options,
+                                      BlendMode blend_type) {
+  ASSERT(pSource);
+  ASSERT(pClipRect);
+
+  if (options.HasAnyOptions() || dest_width > 10000 || dest_width < -10000 ||
       dest_height > 10000 || dest_height < -10000) {
     return UseFoxitStretchEngine(pSource, color, dest_left, dest_top,
-                                 dest_width, dest_height, pClipRect, flags);
+                                 dest_width, dest_height, pClipRect, options);
   }
   if (pSource->IsAlphaMask()) {
     FX_RECT image_rect;
@@ -1286,8 +1288,8 @@ bool CGdiDisplayDriver::StretchDIBits(const RetainPtr<CFX_DIBBase>& pSource,
     clip_rect.Intersect(*pClipRect);
     clip_rect.Offset(-image_rect.left, -image_rect.top);
     int clip_width = clip_rect.Width(), clip_height = clip_rect.Height();
-    RetainPtr<CFX_DIBitmap> pStretched(
-        pSource->StretchTo(dest_width, dest_height, flags, &clip_rect));
+    RetainPtr<CFX_DIBitmap> pStretched(pSource->StretchTo(
+        dest_width, dest_height, FXDIB_ResampleOptions(), &clip_rect));
     if (!pStretched)
       return true;
 
@@ -1296,14 +1298,14 @@ bool CGdiDisplayDriver::StretchDIBits(const RetainPtr<CFX_DIBBase>& pSource,
         !GetDIBits(background, image_rect.left + clip_rect.left,
                    image_rect.top + clip_rect.top) ||
         !background->CompositeMask(0, 0, clip_width, clip_height, pStretched,
-                                   color, 0, 0, FXDIB_BLEND_NORMAL, nullptr,
+                                   color, 0, 0, BlendMode::kNormal, nullptr,
                                    false, 0)) {
       return false;
     }
 
     FX_RECT src_rect(0, 0, clip_width, clip_height);
-    return SetDIBits(background, 0, &src_rect, image_rect.left + clip_rect.left,
-                     image_rect.top + clip_rect.top, FXDIB_BLEND_NORMAL);
+    return SetDIBits(background, 0, src_rect, image_rect.left + clip_rect.left,
+                     image_rect.top + clip_rect.top, BlendMode::kNormal);
   }
   if (pSource->HasAlpha()) {
     CWin32Platform* pPlatform =
@@ -1315,26 +1317,27 @@ bool CGdiDisplayDriver::StretchDIBits(const RetainPtr<CFX_DIBBase>& pSource,
         return false;
       return pPlatform->m_GdiplusExt.StretchDIBits(
           m_hDC, pBitmap, dest_left, dest_top, dest_width, dest_height,
-          pClipRect, flags);
+          pClipRect, FXDIB_ResampleOptions());
     }
     return UseFoxitStretchEngine(pSource, color, dest_left, dest_top,
-                                 dest_width, dest_height, pClipRect, flags);
+                                 dest_width, dest_height, pClipRect,
+                                 FXDIB_ResampleOptions());
   }
   CFX_DIBExtractor temp(pSource);
   RetainPtr<CFX_DIBitmap> pBitmap = temp.GetBitmap();
   if (!pBitmap)
     return false;
   return GDI_StretchDIBits(pBitmap, dest_left, dest_top, dest_width,
-                           dest_height, flags);
+                           dest_height, FXDIB_ResampleOptions());
 }
 
 bool CGdiDisplayDriver::StartDIBits(const RetainPtr<CFX_DIBBase>& pBitmap,
                                     int bitmap_alpha,
                                     uint32_t color,
-                                    const CFX_Matrix* pMatrix,
-                                    uint32_t render_flags,
+                                    const CFX_Matrix& matrix,
+                                    const FXDIB_ResampleOptions& options,
                                     std::unique_ptr<CFX_ImageRenderer>* handle,
-                                    int blend_type) {
+                                    BlendMode blend_type) {
   return false;
 }
 

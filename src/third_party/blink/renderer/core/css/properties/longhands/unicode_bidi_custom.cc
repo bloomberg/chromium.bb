@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/unicode_bidi.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* UnicodeBidi::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -16,5 +16,5 @@ const CSSValue* UnicodeBidi::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.GetUnicodeBidi());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

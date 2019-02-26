@@ -18,13 +18,13 @@ class SpeechSynthesisErrorEvent : public SpeechSynthesisEvent {
  public:
   static SpeechSynthesisErrorEvent* Create(
       const AtomicString& type,
-      const SpeechSynthesisErrorEventInit& init);
+      const SpeechSynthesisErrorEventInit* init);
 
   const String error() const { return error_; }
 
  private:
   SpeechSynthesisErrorEvent(const AtomicString& type,
-                            const SpeechSynthesisErrorEventInit& init);
+                            const SpeechSynthesisErrorEventInit* init);
   const String error_;
 };
 

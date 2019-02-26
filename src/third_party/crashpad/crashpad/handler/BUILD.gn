@@ -67,14 +67,16 @@ static_library("handler") {
 
   public_configs = [ "..:crashpad_config" ]
 
-  deps = [
+  public_deps = [
     "../client",
-    "../compat",
+    "../third_party/mini_chromium:base",
+    "../util",
+  ]
+
+  deps = [
     "../minidump",
     "../snapshot",
-    "../third_party/mini_chromium:base",
     "../tools:tool_support",
-    "../util",
   ]
 
   if (crashpad_is_win) {
@@ -157,7 +159,7 @@ crashpad_executable("crashpad_handler") {
   }
 
   if (crashpad_is_win) {
-    if (crashpad_is_in_chromium) {
+    if (crashpad_is_in_chromium || crashpad_is_in_dart) {
       remove_configs = [ "//build/config/win:console" ]
       configs = [ "//build/config/win:windowed" ]
     } else {

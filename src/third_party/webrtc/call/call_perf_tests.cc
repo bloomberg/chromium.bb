@@ -16,6 +16,7 @@
 #include "absl/memory/memory.h"
 #include "api/audio_codecs/builtin_audio_encoder_factory.h"
 #include "api/test/simulated_network.h"
+#include "api/video/builtin_video_bitrate_allocator_factory.h"
 #include "api/video/video_bitrate_allocation.h"
 #include "api/video_codecs/video_encoder_config.h"
 #include "call/call.h"
@@ -231,7 +232,8 @@ void CallPerfTest::TestAudioVideoSync(FecMode fec,
     CreateSendConfig(1, 0, 0, video_send_transport.get());
     CreateMatchingReceiveConfigs(receive_transport.get());
 
-    AudioSendStream::Config audio_send_config(audio_send_transport.get());
+    AudioSendStream::Config audio_send_config(audio_send_transport.get(),
+                                              /*media_transport=*/nullptr);
     audio_send_config.rtp.ssrc = kAudioSendSsrc;
     audio_send_config.send_codec_spec = AudioSendStream::Config::SendCodecSpec(
         kAudioSendPayloadType, {"ISAC", 16000, 1});
@@ -478,8 +480,8 @@ void CallPerfTest::TestCaptureNtpTime(
   RunBaseTest(&test);
 }
 
-// Flaky tests, disabled on Mac due to webrtc:8291.
-#if !(defined(WEBRTC_MAC))
+// Flaky tests, disabled on Mac and Windows due to webrtc:8291.
+#if !(defined(WEBRTC_MAC) || defined(WEBRTC_WIN))
 TEST_F(CallPerfTest, CaptureNtpTimeWithNetworkDelay) {
   BuiltInNetworkBehaviorConfig net_config;
   net_config.queue_delay_ms = 100;
@@ -724,12 +726,13 @@ TEST_F(CallPerfTest, MAYBE_KeepsHighBitrateWhenReconfiguringSender) {
     BitrateObserver()
         : EndToEndTest(kDefaultTimeoutMs),
           FakeEncoder(Clock::GetRealTimeClock()),
-          time_to_reconfigure_(false, false),
           encoder_inits_(0),
           last_set_bitrate_kbps_(0),
           send_stream_(nullptr),
           frame_generator_(nullptr),
-          encoder_factory_(this) {}
+          encoder_factory_(this),
+          bitrate_allocator_factory_(
+              CreateBuiltinVideoBitrateAllocatorFactory()) {}
 
     int32_t InitEncode(const VideoCodec* config,
                        int32_t number_of_cores,
@@ -767,8 +770,9 @@ TEST_F(CallPerfTest, MAYBE_KeepsHighBitrateWhenReconfiguringSender) {
       return FakeEncoder::SetRateAllocation(rate_allocation, framerate);
     }
 
-    void ModifySenderCallConfig(Call::Config* config) override {
-      config->bitrate_config.start_bitrate_bps = kInitialBitrateKbps * 1000;
+    void ModifySenderBitrateConfig(
+        BitrateConstraints* bitrate_config) override {
+      bitrate_config->start_bitrate_bps = kInitialBitrateKbps * 1000;
     }
 
     void ModifyVideoConfigs(
@@ -776,6 +780,8 @@ TEST_F(CallPerfTest, MAYBE_KeepsHighBitrateWhenReconfiguringSender) {
         std::vector<VideoReceiveStream::Config>* receive_configs,
         VideoEncoderConfig* encoder_config) override {
       send_config->encoder_settings.encoder_factory = &encoder_factory_;
+      send_config->encoder_settings.bitrate_allocator_factory =
+          bitrate_allocator_factory_.get();
       encoder_config->max_bitrate_bps = 2 * kReconfigureThresholdKbps * 1000;
       encoder_config->video_stream_factory =
           new rtc::RefCountedObject<VideoStreamFactory>();
@@ -811,6 +817,7 @@ TEST_F(CallPerfTest, MAYBE_KeepsHighBitrateWhenReconfiguringSender) {
     VideoSendStream* send_stream_;
     test::FrameGeneratorCapturer* frame_generator_;
     test::VideoEncoderProxyFactory encoder_factory_;
+    std::unique_ptr<VideoBitrateAllocatorFactory> bitrate_allocator_factory_;
     VideoEncoderConfig encoder_config_;
   } test;
 

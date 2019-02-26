@@ -21,7 +21,7 @@ TEST_F(LockWindowVirtualKeyboardTest, VirtualKeyboardDoesNotCoverAuthView) {
       LockScreen::TestApi(LockScreen::Get()).contents_view();
   ASSERT_NE(nullptr, lock_contents);
 
-  LoadUsers(1);
+  SetUserCount(1);
 
   LoginBigUserView* auth_view =
       MakeLockContentsViewTestApi(lock_contents).primary_big_view();

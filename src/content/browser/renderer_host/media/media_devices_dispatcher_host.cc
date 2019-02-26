@@ -275,7 +275,7 @@ void MediaDevicesDispatcherHost::EnumerateVideoDevicesForFormats(
   media_stream_manager_->video_capture_manager()->EnumerateDevices(
       base::BindOnce(
           &MediaDevicesDispatcherHost::FinalizeGetVideoInputDeviceFormats,
-          weak_factory_.GetWeakPtr(), base::Passed(&client_callback), device_id,
+          weak_factory_.GetWeakPtr(), std::move(client_callback), device_id,
           try_in_use_first, salt_and_origin.device_id_salt,
           salt_and_origin.origin));
 }

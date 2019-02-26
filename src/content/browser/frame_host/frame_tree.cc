@@ -108,7 +108,8 @@ FrameTree::FrameTree(Navigator* navigator,
                               std::string(),
                               false,
                               base::UnguessableToken::Create(),
-                              FrameOwnerProperties())),
+                              FrameOwnerProperties(),
+                              blink::FrameOwnerElementType::kNone)),
       focused_frame_tree_node_id_(FrameTreeNode::kFrameTreeNodeInvalidId),
       load_progress_(0.0) {}
 
@@ -181,7 +182,8 @@ bool FrameTree::AddFrame(
     const base::UnguessableToken& devtools_frame_token,
     const blink::FramePolicy& frame_policy,
     const FrameOwnerProperties& frame_owner_properties,
-    bool was_discarded) {
+    bool was_discarded,
+    blink::FrameOwnerElementType owner_type) {
   CHECK_NE(new_routing_id, MSG_ROUTING_NONE);
 
   // A child frame always starts with an initial empty document, which means
@@ -193,7 +195,8 @@ bool FrameTree::AddFrame(
 
   std::unique_ptr<FrameTreeNode> new_node = base::WrapUnique(new FrameTreeNode(
       this, parent->navigator(), parent, scope, frame_name, frame_unique_name,
-      is_created_by_script, devtools_frame_token, frame_owner_properties));
+      is_created_by_script, devtools_frame_token, frame_owner_properties,
+      owner_type));
 
   // Set sandbox flags and container policy and make them effective immediately,
   // since initial sandbox flags and feature policy should apply to the initial
@@ -299,7 +302,6 @@ FrameTreeNode* FrameTree::GetFocusedFrame() {
 void FrameTree::SetFocusedFrame(FrameTreeNode* node, SiteInstance* source) {
   if (node == GetFocusedFrame())
     return;
-
 
   std::set<SiteInstance*> frame_tree_site_instances =
       CollectSiteInstances(this);

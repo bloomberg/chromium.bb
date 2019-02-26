@@ -26,7 +26,7 @@
 
 #include "third_party/blink/renderer/core/events/transition_event.h"
 
-#include "third_party/blink/renderer/core/event_names.h"
+#include "third_party/blink/renderer/core/event_interface_names.h"
 
 namespace blink {
 
@@ -42,14 +42,14 @@ TransitionEvent::TransitionEvent(const AtomicString& type,
       pseudo_element_(pseudo_element) {}
 
 TransitionEvent::TransitionEvent(const AtomicString& type,
-                                 const TransitionEventInit& initializer)
+                                 const TransitionEventInit* initializer)
     : Event(type, initializer), elapsed_time_(0) {
-  if (initializer.hasPropertyName())
-    property_name_ = initializer.propertyName();
-  if (initializer.hasElapsedTime())
-    elapsed_time_ = initializer.elapsedTime();
-  if (initializer.hasPseudoElement())
-    pseudo_element_ = initializer.pseudoElement();
+  if (initializer->hasPropertyName())
+    property_name_ = initializer->propertyName();
+  if (initializer->hasElapsedTime())
+    elapsed_time_ = initializer->elapsedTime();
+  if (initializer->hasPseudoElement())
+    pseudo_element_ = initializer->pseudoElement();
 }
 
 TransitionEvent::~TransitionEvent() = default;
@@ -67,7 +67,7 @@ const String& TransitionEvent::pseudoElement() const {
 }
 
 const AtomicString& TransitionEvent::InterfaceName() const {
-  return EventNames::TransitionEvent;
+  return event_interface_names::kTransitionEvent;
 }
 
 void TransitionEvent::Trace(blink::Visitor* visitor) {

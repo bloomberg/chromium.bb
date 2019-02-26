@@ -22,82 +22,6 @@ namespace vk
 {
 class ImageHelper;
 
-// This is a very simple RefCount class that has no autoreleasing. Used in the descriptor set and
-// pipeline layout caches.
-template <typename T>
-class RefCounted : angle::NonCopyable
-{
-  public:
-    RefCounted() : mRefCount(0) {}
-    explicit RefCounted(T &&newObject) : mRefCount(0), mObject(std::move(newObject)) {}
-    ~RefCounted() { ASSERT(mRefCount == 0 && !mObject.valid()); }
-
-    RefCounted(RefCounted &&copy) : mRefCount(copy.mRefCount), mObject(std::move(copy.mObject))
-    {
-        copy.mRefCount = 0;
-    }
-
-    RefCounted &operator=(RefCounted &&rhs)
-    {
-        std::swap(mRefCount, rhs.mRefCount);
-        mObject = std::move(rhs.mObject);
-        return *this;
-    }
-
-    void addRef()
-    {
-        ASSERT(mRefCount != std::numeric_limits<uint32_t>::max());
-        mRefCount++;
-    }
-    void releaseRef()
-    {
-        ASSERT(isReferenced());
-        mRefCount--;
-    }
-    bool isReferenced() const { return mRefCount != 0; }
-
-    T &get() { return mObject; }
-    const T &get() const { return mObject; }
-
-  private:
-    uint32_t mRefCount;
-    T mObject;
-};
-
-template <typename T>
-class BindingPointer final : angle::NonCopyable
-{
-  public:
-    BindingPointer() : mRefCounted(nullptr) {}
-
-    ~BindingPointer() { reset(); }
-
-    void set(RefCounted<T> *refCounted)
-    {
-        if (mRefCounted)
-        {
-            mRefCounted->releaseRef();
-        }
-
-        mRefCounted = refCounted;
-
-        if (mRefCounted)
-        {
-            mRefCounted->addRef();
-        }
-    }
-
-    void reset() { set(nullptr); }
-
-    T &get() { return mRefCounted->get(); }
-    const T &get() const { return mRefCounted->get(); }
-
-    bool valid() const { return mRefCounted != nullptr; }
-
-  private:
-    RefCounted<T> *mRefCounted;
-};
-
 using RenderPassAndSerial = ObjectAndSerial<RenderPass>;
 using PipelineAndSerial   = ObjectAndSerial<Pipeline>;
 
@@ -121,16 +45,10 @@ using SharedPipelineLayout      = RefCounted<PipelineLayout>;
 // packing nicely into the desired space. This is something we could also potentially fix
 // with a redesign to use bitfields or bit mask operations.
 
-struct alignas(4) PackedAttachmentDesc
-{
-    uint8_t flags;
-    uint8_t samples;
-    uint16_t format;
-};
+// Enable struct padding warnings for the code below since it is used in caches.
+ANGLE_ENABLE_STRUCT_PADDING_WARNINGS
 
-static_assert(sizeof(PackedAttachmentDesc) == 4, "Size check failed");
-
-class RenderPassDesc final
+class alignas(4) RenderPassDesc final
 {
   public:
     RenderPassDesc();
@@ -138,29 +56,35 @@ class RenderPassDesc final
     RenderPassDesc(const RenderPassDesc &other);
     RenderPassDesc &operator=(const RenderPassDesc &other);
 
-    // Depth stencil attachments must be packed after color attachments.
-    void packColorAttachment(const ImageHelper &imageHelper);
-    void packDepthStencilAttachment(const ImageHelper &imageHelper);
+    // The caller must pack the depth/stencil attachment last.
+    void packAttachment(const Format &format);
 
     size_t hash() const;
 
-    uint32_t attachmentCount() const;
-    uint32_t colorAttachmentCount() const;
-    uint32_t depthStencilAttachmentCount() const;
-    const PackedAttachmentDesc &operator[](size_t index) const;
+    size_t colorAttachmentCount() const;
+    size_t attachmentCount() const;
+
+    void setSamples(GLint samples);
+
+    uint8_t samples() const { return mSamples; }
+
+    angle::FormatID operator[](size_t index) const
+    {
+        ASSERT(index < gl::IMPLEMENTATION_MAX_DRAW_BUFFERS + 1);
+        return static_cast<angle::FormatID>(mAttachmentFormats[index]);
+    }
 
   private:
-    void packAttachment(uint32_t index, const ImageHelper &imageHelper);
-
-    uint32_t mColorAttachmentCount;
-    uint32_t mDepthStencilAttachmentCount;
-    gl::AttachmentArray<PackedAttachmentDesc> mAttachmentDescs;
-    uint32_t mPadding[4];
+    uint8_t mSamples;
+    uint8_t mColorAttachmentCount : 4;
+    uint8_t mDepthStencilAttachmentCount : 4;
+    gl::AttachmentArray<uint8_t> mAttachmentFormats;
 };
 
 bool operator==(const RenderPassDesc &lhs, const RenderPassDesc &rhs);
 
-static_assert(sizeof(RenderPassDesc) == 64, "Size check failed");
+constexpr size_t kRenderPassDescSize = sizeof(RenderPassDesc);
+static_assert(kRenderPassDescSize == 12, "Size check failed");
 
 struct alignas(8) PackedAttachmentOpsDesc final
 {
@@ -200,7 +124,7 @@ bool operator==(const AttachmentOpsArray &lhs, const AttachmentOpsArray &rhs);
 
 static_assert(sizeof(AttachmentOpsArray) == 80, "Size check failed");
 
-struct alignas(8) PackedShaderStageInfo final
+struct PackedShaderStageInfo final
 {
     uint32_t stage;
     uint32_t moduleSerial;
@@ -209,7 +133,7 @@ struct alignas(8) PackedShaderStageInfo final
 
 static_assert(sizeof(PackedShaderStageInfo) == 8, "Size check failed");
 
-struct alignas(4) PackedVertexInputBindingDesc final
+struct PackedVertexInputBindingDesc final
 {
     // Although techncially stride can be any value in ES 2.0, in practice supporting stride
     // greater than MAX_USHORT should not be that helpful. Note that stride limits are
@@ -220,32 +144,21 @@ struct alignas(4) PackedVertexInputBindingDesc final
 
 static_assert(sizeof(PackedVertexInputBindingDesc) == 4, "Size check failed");
 
-struct alignas(8) PackedVertexInputAttributeDesc final
-{
-    uint16_t location;
-    uint16_t format;
-    uint32_t offset;
-};
-
-static_assert(sizeof(PackedVertexInputAttributeDesc) == 8, "Size check failed");
-
-struct alignas(8) PackedInputAssemblyInfo
-{
-    uint32_t topology;
-    uint32_t primitiveRestartEnable;
-};
-
-static_assert(sizeof(PackedInputAssemblyInfo) == 8, "Size check failed");
-
-struct alignas(32) PackedRasterizationStateInfo
+struct PackedRasterizationAndMultisampleStateInfo final
 {
     // Padded to ensure there's no gaps in this structure or those that use it.
-    uint32_t depthClampEnable;
-    uint32_t rasterizationDiscardEnable;
-    uint16_t polygonMode;
-    uint16_t cullMode;
-    uint16_t frontFace;
-    uint16_t depthBiasEnable;
+    uint32_t depthClampEnable : 4;
+    uint32_t rasterizationDiscardEnable : 4;
+    uint32_t polygonMode : 4;
+    uint32_t cullMode : 4;
+    uint32_t frontFace : 4;
+    uint32_t depthBiasEnable : 4;
+    uint32_t rasterizationSamples : 4;
+    uint32_t sampleShadingEnable : 1;
+    uint32_t alphaToCoverageEnable : 1;
+    uint32_t alphaToOneEnable : 2;
+    float minSampleShading;
+    uint32_t sampleMask[gl::MAX_SAMPLE_MASK_WORDS];
     float depthBiasConstantFactor;
     // Note: depth bias clamp is only exposed in a 3.1 extension, but left here for completeness.
     float depthBiasClamp;
@@ -253,93 +166,95 @@ struct alignas(32) PackedRasterizationStateInfo
     float lineWidth;
 };
 
-static_assert(sizeof(PackedRasterizationStateInfo) == 32, "Size check failed");
+static constexpr size_t kPackedRasterizationAndMultisampleStateSize =
+    sizeof(PackedRasterizationAndMultisampleStateInfo);
+static_assert(kPackedRasterizationAndMultisampleStateSize == 32, "Size check failed");
 
-struct alignas(16) PackedMultisampleStateInfo final
+struct PackedStencilOpState final
 {
-    uint8_t rasterizationSamples;
-    uint8_t sampleShadingEnable;
-    uint8_t alphaToCoverageEnable;
-    uint8_t alphaToOneEnable;
-    float minSampleShading;
-    uint32_t sampleMask[gl::MAX_SAMPLE_MASK_WORDS];
+    uint8_t failOp : 4;
+    uint8_t passOp : 4;
+    uint8_t depthFailOp : 4;
+    uint8_t compareOp : 4;
+    uint8_t compareMask;
+    uint8_t writeMask;
 };
 
-static_assert(sizeof(PackedMultisampleStateInfo) == 16, "Size check failed");
-
-struct alignas(16) PackedStencilOpState final
-{
-    uint8_t failOp;
-    uint8_t passOp;
-    uint8_t depthFailOp;
-    uint8_t compareOp;
-    uint32_t compareMask;
-    uint32_t writeMask;
-    uint32_t reference;
-};
-
-static_assert(sizeof(PackedStencilOpState) == 16, "Size check failed");
+static constexpr size_t kPackedStencilOpSize = sizeof(PackedStencilOpState);
+static_assert(sizeof(PackedStencilOpState) == 4, "Size check failed");
 
 struct PackedDepthStencilStateInfo final
 {
-    uint8_t depthTestEnable;
-    uint8_t depthWriteEnable;
-    uint8_t depthCompareOp;
-    uint8_t depthBoundsTestEnable;
-    // 32-bits to pad the alignments.
-    uint32_t stencilTestEnable;
+    uint8_t depthTestEnable : 1;
+    uint8_t depthWriteEnable : 1;
+    uint8_t depthCompareOp : 4;
+    uint8_t depthBoundsTestEnable : 1;
+    uint8_t stencilTestEnable : 1;
+    uint8_t frontStencilReference;
+    uint8_t backStencilReference;
+    uint8_t padding;
     float minDepthBounds;
     float maxDepthBounds;
     PackedStencilOpState front;
     PackedStencilOpState back;
 };
 
-static_assert(sizeof(PackedDepthStencilStateInfo) == 48, "Size check failed");
+constexpr size_t kPackedDepthStencilStateSize = sizeof(PackedDepthStencilStateInfo);
+static_assert(kPackedDepthStencilStateSize == 20, "Size check failed");
 
-struct alignas(8) PackedColorBlendAttachmentState final
+struct PackedColorBlendAttachmentState final
 {
-    uint8_t blendEnable;
-    uint8_t srcColorBlendFactor;
-    uint8_t dstColorBlendFactor;
-    uint8_t colorBlendOp;
-    uint8_t srcAlphaBlendFactor;
-    uint8_t dstAlphaBlendFactor;
-    uint8_t alphaBlendOp;
-    uint8_t colorWriteMask;
+    uint16_t srcColorBlendFactor : 5;
+    uint16_t dstColorBlendFactor : 5;
+    uint16_t colorBlendOp : 6;
+    uint16_t srcAlphaBlendFactor : 5;
+    uint16_t dstAlphaBlendFactor : 5;
+    uint16_t alphaBlendOp : 6;
 };
 
-static_assert(sizeof(PackedColorBlendAttachmentState) == 8, "Size check failed");
+static_assert(sizeof(PackedColorBlendAttachmentState) == 4, "Size check failed");
 
-struct PackedColorBlendStateInfo final
+struct PackedInputAssemblyAndColorBlendStateInfo final
 {
-    // Padded to round the strut size.
-    uint32_t logicOpEnable;
-    uint32_t logicOp;
-    uint32_t attachmentCount;
-    float blendConstants[4];
+    uint8_t logicOpEnable : 1;
+    uint8_t logicOp : 7;
+    uint8_t blendEnableMask;
+    uint8_t colorWriteMaskBits[gl::IMPLEMENTATION_MAX_DRAW_BUFFERS / 2];
     PackedColorBlendAttachmentState attachments[gl::IMPLEMENTATION_MAX_DRAW_BUFFERS];
+    uint16_t topology : 15;
+    uint16_t primitiveRestartEnable : 1;
+    float blendConstants[4];
 };
 
-static_assert(sizeof(PackedColorBlendStateInfo) == 96, "Size check failed");
+constexpr size_t kPackedInputAssemblyAndColorBlendStateSize =
+    sizeof(PackedInputAssemblyAndColorBlendStateInfo);
+static_assert(kPackedInputAssemblyAndColorBlendStateSize == 56, "Size check failed");
 
-using ShaderStageInfo       = vk::ShaderMap<PackedShaderStageInfo>;
-using VertexInputBindings   = gl::AttribArray<PackedVertexInputBindingDesc>;
-using VertexInputAttributes = gl::AttribArray<PackedVertexInputAttributeDesc>;
+using VertexInputBindings = gl::AttribArray<PackedVertexInputBindingDesc>;
 
-class PipelineDesc final
+struct VertexInputAttributes final
+{
+    uint8_t formats[gl::MAX_VERTEX_ATTRIBS];
+    uint16_t offsets[gl::MAX_VERTEX_ATTRIBS];  // can only take 11 bits on NV
+};
+
+constexpr size_t kVertexInputBindingsSize   = sizeof(VertexInputBindings);
+constexpr size_t kVertexInputAttributesSize = sizeof(VertexInputAttributes);
+
+class GraphicsPipelineDesc final
 {
   public:
     // Use aligned allocation and free so we can use the alignas keyword.
     void *operator new(std::size_t size);
     void operator delete(void *ptr);
 
-    PipelineDesc();
-    ~PipelineDesc();
-    PipelineDesc(const PipelineDesc &other);
-    PipelineDesc &operator=(const PipelineDesc &other);
+    GraphicsPipelineDesc();
+    ~GraphicsPipelineDesc();
+    GraphicsPipelineDesc(const GraphicsPipelineDesc &other);
+    GraphicsPipelineDesc &operator=(const GraphicsPipelineDesc &other);
 
     size_t hash() const;
-    bool operator==(const PipelineDesc &other) const;
+    bool operator==(const GraphicsPipelineDesc &other) const;
 
     void initDefaults();
 
@@ -351,17 +266,6 @@ class PipelineDesc final
                                      const ShaderModule &vertexModule,
                                      const ShaderModule &fragmentModule,
                                      Pipeline *pipelineOut) const;
-
-    void updateViewport(FramebufferVk *framebufferVk,
-                        const gl::Rectangle &viewport,
-                        float nearPlane,
-                        float farPlane,
-                        bool invertViewport);
-    void updateDepthRange(float nearPlane, float farPlane);
-
-    // Shader stage info
-    const ShaderStageInfo &getShaderStageInfo() const;
-    void updateShaders(Serial vertexSerial, Serial fragmentSerial);
 
     // Vertex input state
     void updateVertexInputInfo(const VertexInputBindings &bindings,
@@ -378,12 +282,6 @@ class PipelineDesc final
     // RenderPass description.
     const RenderPassDesc &getRenderPassDesc() const;
     void updateRenderPassDesc(const RenderPassDesc &renderPassDesc);
-
-    // Scissor support
-    const VkRect2D &getScissor() const { return mScissor; }
-    void updateScissor(const gl::Rectangle &rect,
-                       bool invertScissor,
-                       const gl::Rectangle &renderArea);
 
     // Blend states
     void updateBlendEnabled(bool isBlendEnabled);
@@ -415,35 +313,26 @@ class PipelineDesc final
     void updatePolygonOffset(const gl::RasterizerState &rasterState);
 
   private:
-    // TODO(jmadill): Use gl::ShaderMap when we can pack into fewer bits. http://anglebug.com/2522
-    ShaderStageInfo mShaderStageInfo;
     VertexInputBindings mVertexInputBindings;
     VertexInputAttributes mVertexInputAttribs;
-    PackedInputAssemblyInfo mInputAssemblyInfo;
-    // TODO(jmadill): Consider using dynamic state for viewport/scissor.
-    VkViewport mViewport;
-    VkRect2D mScissor;
-    PackedRasterizationStateInfo mRasterizationStateInfo;
-    PackedMultisampleStateInfo mMultisampleStateInfo;
-    PackedDepthStencilStateInfo mDepthStencilStateInfo;
-    PackedColorBlendStateInfo mColorBlendStateInfo;
-    // TODO(jmadill): Dynamic state.
-    // TODO(jmadill): Pipeline layout
     RenderPassDesc mRenderPassDesc;
+    PackedRasterizationAndMultisampleStateInfo mRasterizationAndMultisampleStateInfo;
+    PackedDepthStencilStateInfo mDepthStencilStateInfo;
+    PackedInputAssemblyAndColorBlendStateInfo mInputAssembltyAndColorBlendStateInfo;
+    // Viewport and scissor are applied as dynamic state.
 };
 
 // Verify the packed pipeline description has no gaps in the packing.
 // This is not guaranteed by the spec, but is validated by a compile-time check.
 // No gaps or padding at the end ensures that hashing and memcmp checks will not run
 // into uninitialized memory regions.
-constexpr size_t kPipelineDescSumOfSizes =
-    sizeof(ShaderStageInfo) + sizeof(VertexInputBindings) + sizeof(VertexInputAttributes) +
-    sizeof(PackedInputAssemblyInfo) + sizeof(VkViewport) + sizeof(VkRect2D) +
-    sizeof(PackedRasterizationStateInfo) + sizeof(PackedMultisampleStateInfo) +
-    sizeof(PackedDepthStencilStateInfo) + sizeof(PackedColorBlendStateInfo) +
-    sizeof(RenderPassDesc);
+constexpr size_t kGraphicsPipelineDescSumOfSizes =
+    kVertexInputBindingsSize + kVertexInputAttributesSize +
+    kPackedInputAssemblyAndColorBlendStateSize + kPackedRasterizationAndMultisampleStateSize +
+    kPackedDepthStencilStateSize + kRenderPassDescSize;
 
-static_assert(sizeof(PipelineDesc) == kPipelineDescSumOfSizes, "Size mismatch");
+static constexpr size_t kGraphicsPipelineDescSize = sizeof(GraphicsPipelineDesc);
+static_assert(kGraphicsPipelineDescSize == kGraphicsPipelineDescSumOfSizes, "Size mismatch");
 
 constexpr uint32_t kMaxDescriptorSetLayoutBindings = gl::IMPLEMENTATION_MAX_ACTIVE_TEXTURES;
 
@@ -451,8 +340,8 @@ using DescriptorSetLayoutBindingVector =
     angle::FixedVector<VkDescriptorSetLayoutBinding, kMaxDescriptorSetLayoutBindings>;
 
 // A packed description of a descriptor set layout. Use similarly to RenderPassDesc and
-// PipelineDesc. Currently we only need to differentiate layouts based on sampler usage. In the
-// future we could generalize this.
+// GraphicsPipelineDesc. Currently we only need to differentiate layouts based on sampler usage. In
+// the future we could generalize this.
 class DescriptorSetLayoutDesc final
 {
   public:
@@ -535,6 +424,9 @@ static_assert(sizeof(PipelineLayoutDesc) ==
                   (sizeof(DescriptorSetLayoutArray<DescriptorSetLayoutDesc>) +
                    sizeof(std::array<PackedPushConstantRange, kMaxPushConstantRanges>)),
               "Unexpected Size");
+
+// Disable warnings about struct padding.
+ANGLE_DISABLE_STRUCT_PADDING_WARNINGS
 }  // namespace vk
 }  // namespace rx
 
@@ -554,9 +446,9 @@ struct hash<rx::vk::AttachmentOpsArray>
 };
 
 template <>
-struct hash<rx::vk::PipelineDesc>
+struct hash<rx::vk::GraphicsPipelineDesc>
 {
-    size_t operator()(const rx::vk::PipelineDesc &key) const { return key.hash(); }
+    size_t operator()(const rx::vk::GraphicsPipelineDesc &key) const { return key.hash(); }
 };
 
 template <>
@@ -603,15 +495,16 @@ class RenderPassCache final : angle::NonCopyable
 };
 
 // TODO(jmadill): Add cache trimming/eviction.
-class PipelineCache final : angle::NonCopyable
+class GraphicsPipelineCache final : angle::NonCopyable
 {
   public:
-    PipelineCache();
-    ~PipelineCache();
+    GraphicsPipelineCache();
+    ~GraphicsPipelineCache();
 
     void destroy(VkDevice device);
+    void release(RendererVk *renderer);
 
-    void populate(const vk::PipelineDesc &desc, vk::Pipeline &&pipeline);
+    void populate(const vk::GraphicsPipelineDesc &desc, vk::Pipeline &&pipeline);
     angle::Result getPipeline(vk::Context *context,
                               const vk::PipelineCache &pipelineCacheVk,
                               const vk::RenderPass &compatibleRenderPass,
@@ -619,11 +512,11 @@ class PipelineCache final : angle::NonCopyable
                               const gl::AttributesMask &activeAttribLocationsMask,
                               const vk::ShaderModule &vertexModule,
                               const vk::ShaderModule &fragmentModule,
-                              const vk::PipelineDesc &desc,
+                              const vk::GraphicsPipelineDesc &desc,
                               vk::PipelineAndSerial **pipelineOut);
 
   private:
-    std::unordered_map<vk::PipelineDesc, vk::PipelineAndSerial> mPayload;
+    std::unordered_map<vk::GraphicsPipelineDesc, vk::PipelineAndSerial> mPayload;
 };
 
 class DescriptorSetLayoutCache final : angle::NonCopyable

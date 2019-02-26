@@ -11,7 +11,7 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "dbus/bus.h"
 #include "dbus/exported_object.h"

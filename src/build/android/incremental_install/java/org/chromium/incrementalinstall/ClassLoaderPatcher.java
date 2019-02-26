@@ -67,7 +67,9 @@ final class ClassLoaderPatcher {
             dexDir = incrementalDexesDir;
         }
 
-        File[] dexFilesArr = dexDir.listFiles((File f) -> f.isFile()); // Ignore "oat" directory.
+        // Ignore "oat" directory.
+        // Also ignore files that sometimes show up (e.g. .jar.arm.flock).
+        File[] dexFilesArr = dexDir.listFiles(f -> f.getName().endsWith(".jar"));
         if (dexFilesArr == null) {
             throw new FileNotFoundException("Dex dir does not exist: " + dexDir);
         }

@@ -50,7 +50,8 @@
       },
       {
         "args": [
-          "--test-launcher-jobs=1"
+          "--test-launcher-jobs=1",
+          "--gtest_filter=-*UsingRealWebcam_CaptureMjpeg*"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -250,7 +251,7 @@
             {
               "cipd_package": "infra/tools/luci/vpython/linux-amd64",
               "location": "vpython_dir_linux_amd64",
-              "revision": "git_revision:e1abc57be62d198b5c2f487bfb2fa2d2eb0e867c"
+              "revision": "git_revision:9a931a5307c46b16b1c12e01e8239d4a73830b89"
             }
           ],
           "dimension_sets": [
@@ -365,9 +366,7 @@
           "--browser=cros-chrome",
           "--remote=127.0.0.1",
           "--remote-ssh-port=9222",
-          "--xvfb",
-          "--skip=core.perf_benchmark_unittest.PerfBenchmarkTest.testVariationArgs",
-          "--skip=measurements.clock_domain_test.ClockDomainTest.testTelemetryUsesChromeClockDomain"
+          "--xvfb"
         ],
         "isolate_name": "telemetry_perf_unittests",
         "name": "telemetry_perf_unittests",
@@ -383,6 +382,29 @@
           "hard_timeout": 1200,
           "idempotent": false,
           "shards": 6
+        }
+      },
+      {
+        "args": [
+          "--jobs=1",
+          "--browser=cros-chrome",
+          "--remote=127.0.0.1",
+          "--remote-ssh-port=9222"
+        ],
+        "isolate_name": "telemetry_unittests",
+        "name": "telemetry_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-14.04",
+              "pool": "Chrome-CrOS-VM"
+            }
+          ],
+          "hard_timeout": 1200,
+          "idempotent": false,
+          "shards": 12
         }
       }
     ]
@@ -492,7 +514,7 @@
       {
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 20
+          "shards": 21
         },
         "test": "browser_tests"
       },
@@ -552,6 +574,9 @@
         "test": "cacheinvalidation_unittests"
       },
       {
+        "args": [
+          "--gtest_filter=-*UsingRealWebcam*"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -592,12 +617,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "chromeos_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "chromevox_tests"
       },
       {
         "swarming": {
@@ -723,7 +742,8 @@
       },
       {
         "args": [
-          "--enable-features=SingleProcessMash"
+          "--enable-features=SingleProcessMash",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.single_process_mash.exo_unittests.filter"
         ],
         "name": "single_process_mash_exo_unittests",
         "swarming": {
@@ -786,6 +806,18 @@
         "test": "gpu_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 3
+        },
+        "test": "interactive_ui_tests"
+      },
+      {
+        "args": [
+          "--enable-features=SingleProcessMash",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.single_process_mash.interactive_ui_tests.filter"
+        ],
+        "name": "single_process_mash_interactive_ui_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 3
@@ -956,12 +988,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "sandbox_linux_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "select_to_speak_extension_tests"
       },
       {
         "swarming": {
@@ -1254,6 +1280,9 @@
         "test": "cacheinvalidation_unittests"
       },
       {
+        "args": [
+          "--gtest_filter=-*UsingRealWebcam*"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -1294,12 +1323,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "chromeos_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "chromevox_tests"
       },
       {
         "swarming": {
@@ -1425,7 +1448,8 @@
       },
       {
         "args": [
-          "--enable-features=SingleProcessMash"
+          "--enable-features=SingleProcessMash",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.single_process_mash.exo_unittests.filter"
         ],
         "name": "single_process_mash_exo_unittests",
         "swarming": {
@@ -1488,6 +1512,18 @@
         "test": "gpu_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 3
+        },
+        "test": "interactive_ui_tests"
+      },
+      {
+        "args": [
+          "--enable-features=SingleProcessMash",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.single_process_mash.interactive_ui_tests.filter"
+        ],
+        "name": "single_process_mash_interactive_ui_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 3
@@ -1657,12 +1693,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "sandbox_linux_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "select_to_speak_extension_tests"
       },
       {
         "swarming": {

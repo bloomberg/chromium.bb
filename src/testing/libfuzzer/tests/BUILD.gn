@@ -7,26 +7,30 @@
 import("//testing/test.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 
-test("libfuzzer_tests") {
-  sources = [
-    "fuzzer_launcher_test.cc",
-  ]
-  deps = [
-    ":test_config_and_dict",
-    ":test_config_and_seed_corpus",
-    ":test_config_and_seed_corpuses",
-    ":test_config_only",
-    ":test_dict_from_subdir",
-    ":test_dict_only",
-    "//base",
-    "//testing/gmock",
-    "//testing/gtest",
-    "//testing/gtest:gtest_main",
-  ]
-  data_deps = [
-    ":check_fuzzer_config",
-    ":check_seed_corpus_archive",
-  ]
+# TODO(crbug.com/906751): Get the tests working on Windows. Disable them for now
+# becaue they cause the Windows clang ToT builder to fail.
+if (!is_win) {
+  test("libfuzzer_tests") {
+    sources = [
+      "fuzzer_launcher_test.cc",
+    ]
+    deps = [
+      ":test_config_and_dict",
+      ":test_config_and_seed_corpus",
+      ":test_config_and_seed_corpuses",
+      ":test_config_only",
+      ":test_dict_from_subdir",
+      ":test_dict_only",
+      "//base",
+      "//testing/gmock",
+      "//testing/gtest",
+      "//testing/gtest:gtest_main",
+    ]
+    data_deps = [
+      ":check_fuzzer_config",
+      ":check_seed_corpus_archive",
+    ]
+  }
 }
 
 fuzzer_test("test_dict_only") {

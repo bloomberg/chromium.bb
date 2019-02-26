@@ -26,11 +26,16 @@ class MODULES_EXPORT PaymentRequestEvent final : public ExtendableEvent {
 
  public:
   static PaymentRequestEvent* Create(const AtomicString& type,
-                                     const PaymentRequestEventInit&);
+                                     const PaymentRequestEventInit*);
   static PaymentRequestEvent* Create(const AtomicString& type,
-                                     const PaymentRequestEventInit&,
+                                     const PaymentRequestEventInit*,
                                      RespondWithObserver*,
                                      WaitUntilObserver*);
+
+  PaymentRequestEvent(const AtomicString& type,
+                      const PaymentRequestEventInit*,
+                      RespondWithObserver*,
+                      WaitUntilObserver*);
   ~PaymentRequestEvent() override;
 
   const AtomicString& InterfaceName() const override;
@@ -38,9 +43,9 @@ class MODULES_EXPORT PaymentRequestEvent final : public ExtendableEvent {
   const String& topOrigin() const;
   const String& paymentRequestOrigin() const;
   const String& paymentRequestId() const;
-  const HeapVector<PaymentMethodData>& methodData() const;
+  const HeapVector<Member<PaymentMethodData>>& methodData() const;
   const ScriptValue total(ScriptState*) const;
-  const HeapVector<PaymentDetailsModifier>& modifiers() const;
+  const HeapVector<Member<PaymentDetailsModifier>>& modifiers() const;
   const String& instrumentKey() const;
 
   ScriptPromise openWindow(ScriptState*, const String& url);
@@ -49,17 +54,12 @@ class MODULES_EXPORT PaymentRequestEvent final : public ExtendableEvent {
   void Trace(blink::Visitor*) override;
 
  private:
-  PaymentRequestEvent(const AtomicString& type,
-                      const PaymentRequestEventInit&,
-                      RespondWithObserver*,
-                      WaitUntilObserver*);
-
   String top_origin_;
   String payment_request_origin_;
   String payment_request_id_;
-  HeapVector<PaymentMethodData> method_data_;
-  PaymentCurrencyAmount total_;
-  HeapVector<PaymentDetailsModifier> modifiers_;
+  HeapVector<Member<PaymentMethodData>> method_data_;
+  Member<PaymentCurrencyAmount> total_;
+  HeapVector<Member<PaymentDetailsModifier>> modifiers_;
   String instrument_key_;
 
   Member<RespondWithObserver> observer_;

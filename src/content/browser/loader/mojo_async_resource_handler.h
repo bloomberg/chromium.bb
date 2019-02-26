@@ -84,10 +84,11 @@ class CONTENT_EXPORT MojoAsyncResourceHandler
       std::unique_ptr<ResourceController> controller) override;
 
   // network::mojom::URLLoader implementation:
-  void FollowRedirect(const base::Optional<std::vector<std::string>>&
-                          to_be_removed_request_headers,
-                      const base::Optional<net::HttpRequestHeaders>&
-                          modified_request_headers) override;
+  void FollowRedirect(
+      const base::Optional<std::vector<std::string>>&
+          to_be_removed_request_headers,
+      const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
+      const base::Optional<GURL>& new_url) override;
   void ProceedWithResponse() override;
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override;
@@ -148,12 +149,14 @@ class CONTENT_EXPORT MojoAsyncResourceHandler
   bool has_checked_for_sufficient_resources_ = false;
   bool sent_received_response_message_ = false;
   bool is_using_io_buffer_not_from_writer_ = false;
+  bool was_proceed_with_response_called_ = false;
   // True if OnWillRead was deferred, in order to wait to be able to allocate a
   // buffer.
   bool did_defer_on_will_read_ = false;
   bool did_defer_on_writing_ = false;
   bool did_defer_on_redirect_ = false;
   bool did_defer_on_response_started_ = false;
+  bool did_check_for_intermediary_buffer_ = false;
 
   int64_t total_written_bytes_ = 0;
 

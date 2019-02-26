@@ -58,8 +58,8 @@ public class SnackbarManager implements OnClickListener, InfoBarContainer.InfoBa
         default void onDismissNoAction(Object actionData) { }
     }
 
-    private static final int DEFAULT_SNACKBAR_DURATION_MS = 3000;
-    private static final int ACCESSIBILITY_MODE_SNACKBAR_DURATION_MS = 6000;
+    public static final int DEFAULT_SNACKBAR_DURATION_MS = 3000;
+    private static final int ACCESSIBILITY_MODE_SNACKBAR_DURATION_MS = 10000;
 
     // Used instead of the constant so tests can override the value.
     private static int sSnackbarDurationMs = DEFAULT_SNACKBAR_DURATION_MS;
@@ -114,7 +114,7 @@ public class SnackbarManager implements OnClickListener, InfoBarContainer.InfoBa
      */
     public void showSnackbar(Snackbar snackbar) {
         if (!mActivityInForeground || mIsDisabledForTesting) return;
-        RecordHistogram.recordSparseSlowlyHistogram("Snackbar.Shown", snackbar.getIdentifier());
+        RecordHistogram.recordSparseHistogram("Snackbar.Shown", snackbar.getIdentifier());
 
         mSnackbars.add(snackbar);
         updateView();
@@ -235,10 +235,14 @@ public class SnackbarManager implements OnClickListener, InfoBarContainer.InfoBa
 
     private int getDuration(Snackbar snackbar) {
         int durationMs = snackbar.getDuration();
-        if (durationMs == 0) {
-            durationMs = AccessibilityUtil.isAccessibilityEnabled()
-                    ? sAccessibilitySnackbarDurationMs : sSnackbarDurationMs;
+        if (durationMs == 0) durationMs = sSnackbarDurationMs;
+
+        if (AccessibilityUtil.isAccessibilityEnabled()) {
+            durationMs *= 2;
+            if (durationMs < sAccessibilitySnackbarDurationMs)
+                durationMs = sAccessibilitySnackbarDurationMs;
         }
+
         return durationMs;
     }
 

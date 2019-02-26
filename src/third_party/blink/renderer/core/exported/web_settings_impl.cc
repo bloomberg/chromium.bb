@@ -290,8 +290,8 @@ void WebSettingsImpl::SetPreferHiddenVolumeControls(bool enabled) {
   settings_->SetPreferHiddenVolumeControls(enabled);
 }
 
-void WebSettingsImpl::SetShouldThrottlePushState(bool enabled) {
-  settings_->SetShouldThrottlePushState(enabled);
+void WebSettingsImpl::SetShouldProtectAgainstIpcFlooding(bool enabled) {
+  settings_->SetShouldProtectAgainstIpcFlooding(enabled);
 }
 
 void WebSettingsImpl::SetDOMPasteAllowed(bool enabled) {
@@ -471,10 +471,6 @@ void WebSettingsImpl::SetShowPaintRects(bool show) {
 
 void WebSettingsImpl::SetEditingBehavior(EditingBehavior behavior) {
   settings_->SetEditingBehaviorType(static_cast<EditingBehaviorType>(behavior));
-}
-
-void WebSettingsImpl::SetAcceleratedCompositingEnabled(bool enabled) {
-  settings_->SetAcceleratedCompositingEnabled(enabled);
 }
 
 void WebSettingsImpl::SetMockScrollbarsEnabled(bool enabled) {
@@ -715,6 +711,10 @@ void WebSettingsImpl::SetLowPriorityIframesThreshold(
   settings_->SetLowPriorityIframesThreshold(effective_connection_type);
 }
 
+void WebSettingsImpl::SetLazyLoadEnabled(bool enabled) {
+  settings_->SetLazyLoadEnabled(enabled);
+}
+
 void WebSettingsImpl::SetLazyFrameLoadingDistanceThresholdPxUnknown(
     int distance_px) {
   settings_->SetLazyFrameLoadingDistanceThresholdPxUnknown(distance_px);
@@ -775,11 +775,11 @@ void WebSettingsImpl::SetLazyImageLoadingDistanceThresholdPx4G(
   settings_->SetLazyImageLoadingDistanceThresholdPx4G(distance_px);
 }
 
-STATIC_ASSERT_ENUM(WebSettings::kImageAnimationPolicyAllowed,
+STATIC_ASSERT_ENUM(WebSettings::ImageAnimationPolicy::kAllowed,
                    kImageAnimationPolicyAllowed);
-STATIC_ASSERT_ENUM(WebSettings::kImageAnimationPolicyAnimateOnce,
+STATIC_ASSERT_ENUM(WebSettings::ImageAnimationPolicy::kAnimateOnce,
                    kImageAnimationPolicyAnimateOnce);
-STATIC_ASSERT_ENUM(WebSettings::kImageAnimationPolicyNoAnimation,
+STATIC_ASSERT_ENUM(WebSettings::ImageAnimationPolicy::kNoAnimation,
                    kImageAnimationPolicyNoAnimation);
 
 }  // namespace blink

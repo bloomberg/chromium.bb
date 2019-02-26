@@ -38,10 +38,15 @@ namespace {
 // numeric values should never be reused.
 enum class InitiatorAccess {
   kAbsent = 0,
-  kNoAccess = 1,
-  kHasAccess = 2,
+  kOpaque = 1,
+  kNoAccess = 2,
+  kHasAccess = 3,
   kMaxValue = kHasAccess,
 };
+
+void LogInitiatorAccess(InitiatorAccess access) {
+  UMA_HISTOGRAM_ENUMERATION("Extensions.WebRequest.InitiatorAccess2", access);
+}
 
 // Returns true if the scheme is one we want to allow extensions to have access
 // to. Extensions still need specific permissions for a given URL, which is
@@ -139,8 +144,18 @@ PermissionsData::PageAccess CanExtensionAccessURLInternal(
     case WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL_AND_INITIATOR: {
       PermissionsData::PageAccess request_access =
           GetHostAccessForURL(*extension, url, tab_id);
-      if (!initiator || initiator->opaque() ||
-          request_access == PermissionsData::PageAccess::kDenied) {
+      if (request_access == PermissionsData::PageAccess::kDenied)
+        return request_access;
+
+      // For cases, where an extension has (allowed or withheld) access to the
+      // request url, log if it has access to the request initiator.
+      if (!initiator) {
+        LogInitiatorAccess(InitiatorAccess::kAbsent);
+        return request_access;
+      }
+
+      if (initiator->opaque()) {
+        LogInitiatorAccess(InitiatorAccess::kOpaque);
         return request_access;
       }
 
@@ -163,7 +178,13 @@ PermissionsData::PageAccess CanExtensionAccessURLInternal(
       // access to the request. This is important for extensions with webRequest
       // to work well with runtime host permissions. See crbug.com/851722.
 
-      return GetHostAccessForURL(*extension, initiator->GetURL(), tab_id);
+      PermissionsData::PageAccess initiator_access =
+          GetHostAccessForURL(*extension, initiator->GetURL(), tab_id);
+      LogInitiatorAccess(initiator_access ==
+                                 PermissionsData::PageAccess::kDenied
+                             ? InitiatorAccess::kNoAccess
+                             : InitiatorAccess::kHasAccess);
+      return initiator_access;
       break;
     }
     case WebRequestPermissions::REQUIRE_ALL_URLS:
@@ -332,32 +353,9 @@ PermissionsData::PageAccess WebRequestPermissions::CanExtensionAccessURL(
     bool crosses_incognito,
     HostPermissionsCheck host_permissions_check,
     const base::Optional<url::Origin>& initiator) {
-  PermissionsData::PageAccess access = CanExtensionAccessURLInternal(
-      extension_info_map, extension_id, url, tab_id, crosses_incognito,
-      host_permissions_check, initiator);
-
-  // For clients only checking host permissions for |url| (e.g. the web request
-  // API), log metrics to see whether they have host permissions to |initiator|,
-  // given they have access to |url|.
-  bool log_metrics =
-      host_permissions_check == REQUIRE_HOST_PERMISSION_FOR_URL &&
-      access != PermissionsData::PageAccess::kDenied;
-  if (!log_metrics)
-    return access;
-
-  InitiatorAccess initiator_access = InitiatorAccess::kAbsent;
-  if (initiator) {
-    PermissionsData::PageAccess access = CanExtensionAccessURLInternal(
-        extension_info_map, extension_id, initiator->GetURL(), tab_id,
-        crosses_incognito, REQUIRE_HOST_PERMISSION_FOR_URL, base::nullopt);
-    initiator_access = access == PermissionsData::PageAccess::kDenied
-                           ? InitiatorAccess::kNoAccess
-                           : InitiatorAccess::kHasAccess;
-  }
-
-  UMA_HISTOGRAM_ENUMERATION("Extensions.WebRequest.InitiatorAccess",
-                            initiator_access);
-  return access;
+  return CanExtensionAccessURLInternal(extension_info_map, extension_id, url,
+                                       tab_id, crosses_incognito,
+                                       host_permissions_check, initiator);
 }
 
 // static

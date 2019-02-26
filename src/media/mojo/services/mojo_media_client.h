@@ -18,6 +18,7 @@
 
 namespace base {
 class SingleThreadTaskRunner;
+class Token;
 }  // namespace base
 
 namespace gfx {
@@ -81,7 +82,7 @@ class MEDIA_MOJO_EXPORT MojoMediaClient {
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   // Creates a CdmProxy that proxies part of CDM functionalities to a different
   // entity, e.g. hardware CDM modules.
-  virtual std::unique_ptr<CdmProxy> CreateCdmProxy(const std::string& cdm_guid);
+  virtual std::unique_ptr<CdmProxy> CreateCdmProxy(const base::Token& cdm_guid);
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
  protected:

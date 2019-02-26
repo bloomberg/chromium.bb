@@ -6,8 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_PARSER_CONTEXT_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_mode.h"
-#include "third_party/blink/renderer/core/css_property_names.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/web_feature_forward.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -20,6 +20,7 @@ namespace blink {
 
 class CSSStyleSheet;
 class Document;
+class StyleRuleKeyframe;
 class StyleSheetContents;
 
 class CORE_EXPORT CSSParserContext
@@ -41,12 +42,13 @@ class CORE_EXPORT CSSParserContext
   static CSSParserContext* Create(const CSSParserContext* other,
                                   const Document* use_counter_document);
 
-  static CSSParserContext* Create(const CSSParserContext* other,
-                                  const KURL& base_url_override,
-                                  bool is_opaque_response_from_service_worker,
-                                  ReferrerPolicy referrer_policy_override,
-                                  const WTF::TextEncoding& charset_override,
-                                  const Document* use_counter_document);
+  static CSSParserContext* Create(
+      const CSSParserContext* other,
+      const KURL& base_url_override,
+      bool is_opaque_response_from_service_worker,
+      network::mojom::ReferrerPolicy referrer_policy_override,
+      const WTF::TextEncoding& charset_override,
+      const Document* use_counter_document);
 
   static CSSParserContext* Create(
       CSSParserMode,
@@ -58,11 +60,24 @@ class CORE_EXPORT CSSParserContext
       const Document&,
       const KURL& base_url_override,
       bool is_opaque_response_from_service_worker,
-      ReferrerPolicy referrer_policy_override,
+      network::mojom::ReferrerPolicy referrer_policy_override,
       const WTF::TextEncoding& charset = WTF::TextEncoding(),
       SelectorProfile = kLiveProfile);
   // This is used for workers, where we don't have a document.
   static CSSParserContext* Create(const ExecutionContext&);
+
+  CSSParserContext(const KURL& base_url,
+                   bool is_opaque_response_from_service_worker,
+                   const WTF::TextEncoding& charset,
+                   CSSParserMode,
+                   CSSParserMode match_mode,
+                   SelectorProfile,
+                   const Referrer&,
+                   bool is_html_document,
+                   bool use_legacy_background_size_shorthand_behavior,
+                   SecureContextMode,
+                   ContentSecurityPolicyDisposition,
+                   const Document* use_counter_document);
 
   bool operator==(const CSSParserContext&) const;
   bool operator!=(const CSSParserContext& other) const {
@@ -110,22 +125,16 @@ class CORE_EXPORT CSSParserContext
     return should_check_content_security_policy_;
   }
 
+  // TODO(ekaramad): We currently only report @keyframes violations. We need to
+  // report CSS transitions as well (https://crbug.com/906147).
+  // TODO(ekaramad): We should provide a source location in the violation
+  // report (https://crbug.com/906150, ).
+  bool IsLayoutAnimationsPolicyEnforced() const;
+  void ReportLayoutAnimationsViolationIfNeeded(const StyleRuleKeyframe&) const;
+
   void Trace(blink::Visitor*);
 
  private:
-  CSSParserContext(const KURL& base_url,
-                   bool is_opaque_response_from_service_worker,
-                   const WTF::TextEncoding& charset,
-                   CSSParserMode,
-                   CSSParserMode match_mode,
-                   SelectorProfile,
-                   const Referrer&,
-                   bool is_html_document,
-                   bool use_legacy_background_size_shorthand_behavior,
-                   SecureContextMode,
-                   ContentSecurityPolicyDisposition,
-                   const Document* use_counter_document);
-
   KURL base_url_;
   const bool is_opaque_response_from_service_worker_;
   WTF::TextEncoding charset_;

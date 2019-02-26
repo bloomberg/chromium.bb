@@ -154,40 +154,37 @@ std::unique_ptr<base::Value> BluetoothManifestPermission::ToValue() const {
   return bluetooth.ToValue();
 }
 
-ManifestPermission* BluetoothManifestPermission::Diff(
+std::unique_ptr<ManifestPermission> BluetoothManifestPermission::Diff(
     const ManifestPermission* rhs) const {
   const BluetoothManifestPermission* other =
       static_cast<const BluetoothManifestPermission*>(rhs);
 
-  std::unique_ptr<BluetoothManifestPermission> result(
-      new BluetoothManifestPermission());
+  auto result = std::make_unique<BluetoothManifestPermission>();
   result->uuids_ = base::STLSetDifference<BluetoothUuidSet>(
       uuids_, other->uuids_);
-  return result.release();
+  return result;
 }
 
-ManifestPermission* BluetoothManifestPermission::Union(
+std::unique_ptr<ManifestPermission> BluetoothManifestPermission::Union(
     const ManifestPermission* rhs) const {
   const BluetoothManifestPermission* other =
       static_cast<const BluetoothManifestPermission*>(rhs);
 
-  std::unique_ptr<BluetoothManifestPermission> result(
-      new BluetoothManifestPermission());
+  auto result = std::make_unique<BluetoothManifestPermission>();
   result->uuids_ = base::STLSetUnion<BluetoothUuidSet>(
       uuids_, other->uuids_);
-  return result.release();
+  return result;
 }
 
-ManifestPermission* BluetoothManifestPermission::Intersect(
+std::unique_ptr<ManifestPermission> BluetoothManifestPermission::Intersect(
     const ManifestPermission* rhs) const {
   const BluetoothManifestPermission* other =
       static_cast<const BluetoothManifestPermission*>(rhs);
 
-  std::unique_ptr<BluetoothManifestPermission> result(
-      new BluetoothManifestPermission());
+  auto result = std::make_unique<BluetoothManifestPermission>();
   result->uuids_ = base::STLSetIntersection<BluetoothUuidSet>(
       uuids_, other->uuids_);
-  return result.release();
+  return result;
 }
 
 void BluetoothManifestPermission::AddPermission(const std::string& uuid) {

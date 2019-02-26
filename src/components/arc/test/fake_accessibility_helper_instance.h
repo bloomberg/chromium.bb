@@ -38,6 +38,8 @@ class FakeAccessibilityHelperInstance
 
   mojom::AccessibilityFilterType filter_type() { return filter_type_; }
   bool explore_by_touch_enabled() { return explore_by_touch_enabled_; }
+  void RefreshWithExtraData(mojom::AccessibilityActionDataPtr action_data_ptr,
+                            RefreshWithExtraDataCallback callback) override;
 
  private:
   mojom::AccessibilityFilterType filter_type_ =

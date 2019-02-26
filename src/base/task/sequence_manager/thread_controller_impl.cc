@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump.h"
 #include "base/run_loop.h"
 #include "base/task/sequence_manager/lazy_now.h"
 #include "base/task/sequence_manager/sequenced_task_source.h"
@@ -19,14 +20,14 @@ namespace sequence_manager {
 namespace internal {
 
 ThreadControllerImpl::ThreadControllerImpl(
-    MessageLoop* message_loop,
+    MessageLoopBase* message_loop_base,
     scoped_refptr<SingleThreadTaskRunner> task_runner,
     const TickClock* time_source)
-    : message_loop_(message_loop),
+    : message_loop_base_(message_loop_base),
       task_runner_(task_runner),
       associated_thread_(AssociatedThreadId::CreateUnbound()),
-      message_loop_task_runner_(message_loop ? message_loop->task_runner()
-                                             : nullptr),
+      message_loop_task_runner_(
+          message_loop_base ? message_loop_base->GetTaskRunner() : nullptr),
       time_source_(time_source),
       weak_factory_(this) {
   immediate_do_work_closure_ =
@@ -48,10 +49,11 @@ ThreadControllerImpl::MainSequenceOnly::MainSequenceOnly() = default;
 ThreadControllerImpl::MainSequenceOnly::~MainSequenceOnly() = default;
 
 std::unique_ptr<ThreadControllerImpl> ThreadControllerImpl::Create(
-    MessageLoop* message_loop,
+    MessageLoopBase* message_loop_base,
     const TickClock* time_source) {
   return WrapUnique(new ThreadControllerImpl(
-      message_loop, message_loop ? message_loop->task_runner() : nullptr,
+      message_loop_base,
+      message_loop_base ? message_loop_base->GetTaskRunner() : nullptr,
       time_source));
 }
 
@@ -64,9 +66,9 @@ void ThreadControllerImpl::SetSequencedTaskSource(
 }
 
 void ThreadControllerImpl::SetTimerSlack(TimerSlack timer_slack) {
-  if (!message_loop_)
+  if (!message_loop_base_)
     return;
-  message_loop_->SetTimerSlack(timer_slack);
+  message_loop_base_->SetTimerSlack(timer_slack);
 }
 
 void ThreadControllerImpl::ScheduleWork() {
@@ -140,26 +142,37 @@ void ThreadControllerImpl::SetDefaultTaskRunner(
 #if DCHECK_IS_ON()
   default_task_runner_set_ = true;
 #endif
-  if (!message_loop_)
+  if (!message_loop_base_)
     return;
-  message_loop_->SetTaskRunner(task_runner);
+  message_loop_base_->SetTaskRunner(task_runner);
+}
+
+scoped_refptr<SingleThreadTaskRunner>
+ThreadControllerImpl::GetDefaultTaskRunner() {
+  return message_loop_base_->GetTaskRunner();
 }
 
 void ThreadControllerImpl::RestoreDefaultTaskRunner() {
-  if (!message_loop_)
+  if (!message_loop_base_)
     return;
-  message_loop_->SetTaskRunner(message_loop_task_runner_);
+  message_loop_base_->SetTaskRunner(message_loop_task_runner_);
 }
 
-void ThreadControllerImpl::SetMessageLoop(MessageLoop* message_loop) {
-  DCHECK(!message_loop_);
-  DCHECK(message_loop);
+void ThreadControllerImpl::BindToCurrentThread(
+    MessageLoopBase* message_loop_base) {
+  DCHECK(!message_loop_base_);
+  DCHECK(message_loop_base);
 #if DCHECK_IS_ON()
   DCHECK(!default_task_runner_set_) << "This would undo SetDefaultTaskRunner";
 #endif
-  message_loop_ = message_loop;
-  task_runner_ = message_loop->task_runner();
-  message_loop_task_runner_ = message_loop->task_runner();
+  message_loop_base_ = message_loop_base;
+  task_runner_ = message_loop_base->GetTaskRunner();
+  message_loop_task_runner_ = message_loop_base->GetTaskRunner();
+}
+
+void ThreadControllerImpl::BindToCurrentThread(
+    std::unique_ptr<MessagePump> message_pump) {
+  NOTREACHED();
 }
 
 void ThreadControllerImpl::WillQueueTask(PendingTask* pending_task) {
@@ -210,7 +223,8 @@ void ThreadControllerImpl::DoWork(WorkType work_type) {
     // will be called later. Since we must implement ThreadController and
     // SequenceManager in conformance with MessageLoop task runners, we need
     // to disable this batching optimization while nested.
-    // Implementing RunLoop::Delegate ourselves will help to resolve this issue.
+    // Implementing MessagePump::Delegate ourselves will help to resolve this
+    // issue.
     if (main_sequence_only().nesting_depth > 0)
       break;
   }
@@ -223,13 +237,17 @@ void ThreadControllerImpl::DoWork(WorkType work_type) {
     DCHECK_GE(any_sequence().do_work_running_count, 0);
     LazyNow lazy_now(time_source_);
     TimeDelta delay_till_next_task = sequence_->DelayTillNextTask(&lazy_now);
-    if (delay_till_next_task <= TimeDelta()) {
+    // The OnSystemIdle callback allows the TimeDomains to advance virtual time
+    // in which case we now have immediate word to do.
+    if (delay_till_next_task <= TimeDelta() || sequence_->OnSystemIdle()) {
       // The next task needs to run immediately, post a continuation if needed.
       if (!any_sequence().immediate_do_work_posted) {
         any_sequence().immediate_do_work_posted = true;
         task_runner_->PostTask(FROM_HERE, immediate_do_work_closure_);
       }
-    } else if (delay_till_next_task < TimeDelta::Max()) {
+      return;
+    }
+    if (delay_till_next_task < TimeDelta::Max()) {
       // The next task needs to run after a delay, post a continuation if
       // needed.
       TimeTicks next_task_at = lazy_now.Now() + delay_till_next_task;
@@ -240,10 +258,10 @@ void ThreadControllerImpl::DoWork(WorkType work_type) {
             FROM_HERE, cancelable_delayed_do_work_closure_.callback(),
             delay_till_next_task);
       }
-    } else {
-      // There is no next task scheduled.
-      main_sequence_only().next_delayed_do_work = TimeTicks::Max();
+      return;
     }
+    // There is no next task scheduled.
+    main_sequence_only().next_delayed_do_work = TimeTicks::Max();
   }
 }
 
@@ -299,6 +317,29 @@ void ThreadControllerImpl::OnExitNestedRunLoop() {
 void ThreadControllerImpl::SetWorkBatchSize(int work_batch_size) {
   main_sequence_only().work_batch_size_ = work_batch_size;
 }
+
+void ThreadControllerImpl::SetTaskExecutionAllowed(bool allowed) {
+  NOTREACHED();
+}
+
+bool ThreadControllerImpl::IsTaskExecutionAllowed() const {
+  return true;
+}
+
+bool ThreadControllerImpl::ShouldQuitRunLoopWhenIdle() {
+  // The MessageLoop does not expose the API needed to support this query.
+  return false;
+}
+
+MessagePump* ThreadControllerImpl::GetBoundMessagePump() const {
+  return nullptr;
+}
+
+#if defined(OS_IOS) || defined(OS_ANDROID)
+void ThreadControllerImpl::AttachToMessagePump() {
+  NOTREACHED();
+}
+#endif
 
 }  // namespace internal
 }  // namespace sequence_manager

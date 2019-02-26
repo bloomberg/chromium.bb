@@ -42,7 +42,7 @@ ClientSocketPoolManagerImpl::ClientSocketPoolManagerImpl(
     NetLog* net_log,
     ClientSocketFactory* socket_factory,
     SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
-    NetworkQualityProvider* network_quality_provider,
+    NetworkQualityEstimator* network_quality_estimator,
     HostResolver* host_resolver,
     CertVerifier* cert_verifier,
     ChannelIDService* channel_id_service,
@@ -56,7 +56,7 @@ ClientSocketPoolManagerImpl::ClientSocketPoolManagerImpl(
     : net_log_(net_log),
       socket_factory_(socket_factory),
       socket_performance_watcher_factory_(socket_performance_watcher_factory),
-      network_quality_provider_(network_quality_provider),
+      network_quality_estimator_(network_quality_estimator),
       host_resolver_(host_resolver),
       cert_verifier_(cert_verifier),
       channel_id_service_(channel_id_service),
@@ -304,7 +304,7 @@ ClientSocketPoolManagerImpl::GetSocketPoolForHTTPProxy(
                           sockets_per_proxy_server, sockets_per_group,
                           tcp_http_ret.first->second.get(),
                           ssl_https_ret.first->second.get(),
-                          network_quality_provider_, net_log_)));
+                          network_quality_estimator_, net_log_)));
 
   return ret.first->second.get();
 }

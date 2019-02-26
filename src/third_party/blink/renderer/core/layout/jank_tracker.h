@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_JANK_TRACKER_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/jank_region.h"
 #include "third_party/blink/renderer/platform/geometry/region.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -58,6 +59,9 @@ class CORE_EXPORT JankTracker {
 
   // The per-frame jank region.
   Region region_;
+
+  // Experimental jank region implementation using sweep-line algorithm.
+  JankRegion region_experimental_;
 
   // Tracks the short period after an input event during which we ignore jank.
   TaskRunnerTimer<JankTracker> timer_;

@@ -10,11 +10,13 @@
 #include "base/bind.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/clock.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
 #include "components/offline_pages/core/background/request_queue_store.h"
 #include "components/offline_pages/core/background/request_queue_task_test_base.h"
 #include "components/offline_pages/core/background/save_page_request.h"
 #include "components/offline_pages/core/background/test_request_queue_store.h"
+#include "components/offline_pages/core/offline_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
@@ -116,7 +118,7 @@ void ReconcileTaskTest::MakeTask() {
 }
 
 TEST_F(ReconcileTaskTest, Reconcile) {
-  base::Time creation_time = base::Time::Now();
+  base::Time creation_time = OfflineClock()->Now();
   // Request2 will be expired, request1 will be current.
   SavePageRequest request1(kRequestId1, kUrl1, kClientId1, creation_time,
                            kUserRequested);
@@ -151,7 +153,7 @@ TEST_F(ReconcileTaskTest, Reconcile) {
 }
 
 TEST_F(ReconcileTaskTest, NothingToReconcile) {
-  base::Time creation_time = base::Time::Now();
+  base::Time creation_time = OfflineClock()->Now();
   // Request2 will be expired, request1 will be current.
   SavePageRequest request1(kRequestId1, kUrl1, kClientId1, creation_time,
                            kUserRequested);

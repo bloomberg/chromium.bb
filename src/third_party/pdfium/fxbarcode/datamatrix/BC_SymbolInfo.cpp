@@ -25,11 +25,10 @@
 #include "fxbarcode/common/BC_CommonBitMatrix.h"
 #include "fxbarcode/datamatrix/BC_DataMatrixSymbolInfo144.h"
 #include "fxbarcode/datamatrix/BC_Encoder.h"
-#include "fxbarcode/utils.h"
 
 namespace {
 
-const size_t kSymbolsCount = 30;
+constexpr size_t kSymbolsCount = 30;
 
 CBC_SymbolInfo* g_symbols[kSymbolsCount] = {
     nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
@@ -108,20 +107,18 @@ CBC_SymbolInfo::CBC_SymbolInfo(int32_t dataCapacity,
       m_rsBlockData(rsBlockData),
       m_rsBlockError(rsBlockError) {}
 
-CBC_SymbolInfo::~CBC_SymbolInfo() {}
+CBC_SymbolInfo::~CBC_SymbolInfo() = default;
 
-CBC_SymbolInfo* CBC_SymbolInfo::lookup(int32_t dataCodewords,
-                                       bool allowRectangular,
-                                       int32_t& e) {
+CBC_SymbolInfo* CBC_SymbolInfo::Lookup(int32_t iDataCodewords,
+                                       bool bAllowRectangular) {
   for (size_t i = 0; i < kSymbolsCount; i++) {
     CBC_SymbolInfo* symbol = g_symbols[i];
-    if (symbol->m_rectangular && !allowRectangular)
+    if (symbol->m_rectangular && !bAllowRectangular)
       continue;
 
-    if (dataCodewords <= symbol->dataCapacity())
+    if (iDataCodewords <= symbol->dataCapacity())
       return symbol;
   }
-  e = BCExceptionIllegalDataCodewords;
   return nullptr;
 }
 

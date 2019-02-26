@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sr">
 <translation id="1002108253973310084">Откривена је некомпатибилна верзија протокола. Проверите да ли је на оба рачунара инсталирана најновија верзија софтвера и покушајте поново.</translation>
+<translation id="1008557486741366299">Не сада</translation>
 <translation id="1050693411695664090">Лоша</translation>
 <translation id="1152528166145813711">Изаберите...</translation>
 <translation id="1199593201721843963">Онемогући даљинско повезивање</translation>
@@ -62,8 +63,9 @@
 <translation id="2314101195544969792">Сесија апликације <ph name="APPLICATION_NAME" /> је неактивна неко време и веза ће ускоро бити прекинута.</translation>
 <translation id="2317666076142640974">Погледајте нову <ph name="LINK_BEGIN" />веб-апликацију Chrome удаљени рачунар<ph name="LINK_END" />. Желели бисмо да добијемо повратне информације.</translation>
 <translation id="2320166752086256636">Сакриј тастатуру</translation>
+<translation id="2332192922827071008">Отвори Подешавања</translation>
 <translation id="2353140552984634198">Овом рачунару можете безбедно да приступите помоћу Chromoting-а.</translation>
-<translation id="2359808026110333948">Настави</translation>
+<translation id="2359808026110333948">Наставите</translation>
 <translation id="2366718077645204424">Није могуће успоставити везу са хостом. До овога је вероватно дошло због конфигурације мреже коју користите.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> Последњи пут је виђен онлајн <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Ова апликација више није подржана. Да бисте били сигурни да добијате најновије функције и ажурирања безбедности, користите <ph name="LINK_BEGIN" />веб-апликацију Chrome удаљени рачунар<ph name="LINK_END" />.</translation>
@@ -82,6 +84,7 @@
 <translation id="2841013758207633010">Време</translation>
 <translation id="2851754573186462851">Стримовање Chromium апликација</translation>
 <translation id="2888969873284818612">Дошло је до грешке на мрежи. Поново ћемо покренути апликацију када уређај поново буде онлајн.</translation>
+<translation id="2891243864890517178">За Mac (OS X Yosemite 10.10 и новији)</translation>
 <translation id="289405675947420287">Безбедно приступајте рачунарима са iOS уређаја. Брзо је, једноставно и бесплатно.
 
 • На рачунару ком желите да приступате даљински преузмите апликацију Chrome удаљени рачунар из Chrome веб-продавнице.
@@ -188,6 +191,9 @@ PC</translation>
 <translation id="4973800994433240357">Преузимањем програма за инсталацију хоста за Chromoting прихватате Google <ph name="LINK_BEGIN" />услове коришћења<ph name="LINK_END" />.</translation>
 <translation id="4974476491460646149">Прекинута је веза са <ph name="HOSTNAME" /></translation>
 <translation id="4985296110227979402">Прво треба да подесите рачунар за даљински приступ</translation>
+<translation id="5059773780693835145">Обавезан је додатни конфигурациони корак да бисте могли да даљински управљате уређајем помоћу услуге <ph name="PRODUCT_NAME" />.
+
+Да бисте омогућили ову функцију, изаберите „<ph name="BUTTON_NAME" />“ да би се приказао оквир Безбедност и приватност, па означите поље поред ставке „<ph name="SERVICE_SCRIPT_NAME" />“.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (ван мреже)</translation>
 <translation id="5070121137485264635">Удаљени хост захтева да потврдите аутентичност на веб-сајту треће стране. Да бисте наставили, морате да дате Chrome удаљеном рачунару додатне дозволе за приступ овој адреси:</translation>
 <translation id="507204348399810022">Желите ли стварно да онемогућите даљинско повезивање са хостом <ph name="HOSTNAME" />?</translation>
@@ -237,7 +243,7 @@ PC</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (застарело)</translation>
 <translation id="6221358653751391898">Нисте пријављени у Chrome. Пријавите се и покушајте поново.</translation>
 <translation id="6284412385303060032">Хост који је покренут на екрану за пријављивање на конзолу је искључен да би подржао режим завесе преласком на хоста који је покренут у сесији одређеног корисника.</translation>
-<translation id="629730747756840877">Налог</translation>
+<translation id="629730747756840877">налог</translation>
 <translation id="6304318647555713317">Клијент</translation>
 <translation id="6381670701864002291">Нешто друго.</translation>
 <translation id="6398765197997659313">Изађи из режима целог екрана</translation>
@@ -249,7 +255,6 @@ PC</translation>
 <translation id="6542902059648396432">Пријави проблем...</translation>
 <translation id="6550675742724504774">Опције</translation>
 <translation id="6570205395680337606">Ресетујте апликацију. Изгубићете све податке које нисте сачували.</translation>
-<translation id="6572345186230665992">За Mac (OS X Mavericks 10.9 и новије верзије)</translation>
 <translation id="6583902294974160967">Подршка</translation>
 <translation id="6612717000975622067">Пошаљи Ctrl-Alt-Del</translation>
 <translation id="6654753848497929428">Дели</translation>
@@ -313,6 +318,7 @@ PC</translation>
 <translation id="809687642899217504">Моји рачунари</translation>
 <translation id="811307782653349804">Приступите сопственом рачунару са било које локације.</translation>
 <translation id="8116630183974937060">Дошло је до грешке на мрежи. Уверите се да је уређај онлајн и покушајте поново.</translation>
+<translation id="8123581458650016326">Дозволи да удаљени корисници управљају овим уређајем</translation>
 <translation id="8178433417677596899">Дељење екрана између корисника, савршено за даљинску техничку подршку.</translation>
 <translation id="8187079423890319756">Ауторска права 2013. Аутори Chromium-а. Сва права су задржана.</translation>
 <translation id="8196755618196986400">Да бисмо могли да вас контактирамо ради додатних информација, имејл адреса ће бити уврштена у све повратне информације које пошаљете.</translation>

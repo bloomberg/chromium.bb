@@ -197,12 +197,21 @@ IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest,
   EXPECT_FALSE(item.hidden);
 }
 
+// crbug.com/899935
+#if defined(OS_WIN)
+#define MAYBE_NoSpellingServiceWhenOffTheRecord \
+  DISABLED_NoSpellingServiceWhenOffTheRecord
+#else
+#define MAYBE_NoSpellingServiceWhenOffTheRecord \
+  NoSpellingServiceWhenOffTheRecord
+#endif
+
 // Test that "Ask Google For Suggestions" is grayed out when using an
 // off the record profile.
 // TODO(rlp): Include graying out of autocorrect in this test when autocorrect
 // is functional.
 IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest,
-                       NoSpellingServiceWhenOffTheRecord) {
+                       MAYBE_NoSpellingServiceWhenOffTheRecord) {
   // Create a menu in an incognito profile.
   Reset(true);
 
@@ -243,9 +252,17 @@ IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest,
   EXPECT_FALSE(item.hidden);
 }
 
+// crbug.com/899935
+#if defined(OS_WIN)
+#define MAYBE_SuggestionsForceTopSeparator DISABLED_SuggestionsForceTopSeparator
+#else
+#define MAYBE_SuggestionsForceTopSeparator SuggestionsForceTopSeparator
+#endif
+
 // Test that the menu is preceeded by a separator if there are any suggestions,
 // or if the SpellingServiceClient is available
-IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest, SuggestionsForceTopSeparator) {
+IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest,
+                       MAYBE_SuggestionsForceTopSeparator) {
   menu()->GetPrefs()->SetBoolean(
       spellcheck::prefs::kSpellCheckUseSpellingService, false);
 

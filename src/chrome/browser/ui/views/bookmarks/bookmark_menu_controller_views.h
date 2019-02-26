@@ -114,6 +114,7 @@ class BookmarkMenuController : public bookmarks::BaseBookmarkModelObserver,
                                       views::MenuButton** button) override;
   int GetMaxWidthForMenu(views::MenuItemView* view) override;
   void WillShowMenu(views::MenuItemView* menu) override;
+  bool ShouldTryPositioningBesideAnchor() const override;
 
   // bookmarks::BaseBookmarkModelObserver:
   void BookmarkModelChanged() override;

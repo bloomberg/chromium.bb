@@ -25,26 +25,23 @@ MenuPreTargetHandlerAura::MenuPreTargetHandlerAura(MenuController* controller,
                                                    Widget* owner)
     : controller_(controller), root_(GetOwnerRootWindow(owner)) {
   if (root_) {
-    root_->env()->AddPreTargetHandler(this, ui::EventTarget::Priority::kSystem);
+    aura_env_ = root_->env();
     wm::GetActivationClient(root_)->AddObserver(this);
     root_->AddObserver(this);
   } else {
-    // TODO(mukai): check if this code path can run in ChromeOS and find the
-    // solution for SingleProcessMash.
-    if (features::IsUsingWindowService()) {
-      LOG(WARNING) << "MenuPreTargetHandlerAura is created without owner "
-                   << "widget. This may not work well in SingleProcessMash.";
-    }
-    aura::Env::GetInstance()->AddPreTargetHandler(
-        this, ui::EventTarget::Priority::kSystem);
+    // This should only happen in cases like when context menus are shown for
+    // Windows OS system tray items and there is no parent window. This should
+    // not be hit on Chrome OS, where Window Service clients need to install a
+    // pre-target handler on the aura::Env associated with their app window.
+    DCHECK(!features::IsUsingWindowService())
+        << "MenuPreTargetHandlerAura may not work correctly without an owner.";
+    aura_env_ = aura::Env::GetInstance();
   }
+  aura_env_->AddPreTargetHandler(this, ui::EventTarget::Priority::kSystem);
 }
 
 MenuPreTargetHandlerAura::~MenuPreTargetHandlerAura() {
-  if (root_)
-    root_->env()->RemovePreTargetHandler(this);
-  else
-    aura::Env::GetInstance()->RemovePreTargetHandler(this);
+  aura_env_->RemovePreTargetHandler(this);
   Cleanup();
 }
 

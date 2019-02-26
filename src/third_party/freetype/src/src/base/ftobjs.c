@@ -393,40 +393,38 @@
 #if 1
       /* x */
 
-      /* undocumented but confirmed: bbox values get rounded;  */
-      /* for narrow glyphs bbox is extended to one pixel first */
-      if ( pbox.xMax - pbox.xMin <= 1 )
-      {
-        if ( pbox.xMax - pbox.xMin == 0 )
-        {
-          cbox.xMin = ( cbox.xMin + cbox.xMax ) / 2 - 32;
-          cbox.xMax = cbox.xMin + 64;
-        }
-        else if ( cbox.xMax - cbox.xMin < 0 )
-          cbox.xMin = cbox.xMax = ( cbox.xMin + cbox.xMax ) / 2;
-      }
-
-      /* we do asymmetric rounding so that the center */
-      /* of a pixel gets always included              */
+      /* undocumented but confirmed: bbox values get rounded;    */
+      /* we do asymmetric rounding so that the center of a pixel */
+      /* gets always included                                    */
 
       pbox.xMin += ( cbox.xMin + 31 ) >> 6;
       pbox.xMax += ( cbox.xMax + 32 ) >> 6;
 
-      /* y */
+      /* if the bbox collapsed, we add a pixel based on the total */
+      /* rounding remainder to cover most of the original cbox    */
 
-      if ( pbox.yMax - pbox.yMin <= 1 )
+      if ( pbox.xMin == pbox.xMax )
       {
-        if ( pbox.yMax - pbox.yMin == 0 )
-        {
-          cbox.yMin = ( cbox.yMin + cbox.yMax ) / 2 - 32;
-          cbox.yMax = cbox.yMin + 64;
-        }
-        else if ( cbox.yMax - cbox.yMin < 0 )
-          cbox.yMin = cbox.yMax = ( cbox.yMin + cbox.yMax ) / 2;
+        if ( ( ( cbox.xMin + 31 ) & 63 ) - 31 +
+             ( ( cbox.xMax + 32 ) & 63 ) - 32 < 0 )
+          pbox.xMin -= 1;
+        else
+          pbox.xMax += 1;
       }
+
+      /* y */
 
       pbox.yMin += ( cbox.yMin + 31 ) >> 6;
       pbox.yMax += ( cbox.yMax + 32 ) >> 6;
+
+      if ( pbox.yMin == pbox.yMax )
+      {
+        if ( ( ( cbox.yMin + 31 ) & 63 ) - 31 +
+             ( ( cbox.yMax + 32 ) & 63 ) - 32 < 0 )
+          pbox.yMin -= 1;
+        else
+          pbox.yMax += 1;
+      }
 
       break;
 #else
@@ -492,7 +490,7 @@
     if ( pbox.xMin < -0x8000 || pbox.xMax > 0x7FFF ||
          pbox.yMin < -0x8000 || pbox.yMax > 0x7FFF )
     {
-      FT_TRACE3(( "ft_glyphslot_peset_bitmap: [%ld %ld %ld %ld]\n",
+      FT_TRACE3(( "ft_glyphslot_preset_bitmap: [%ld %ld %ld %ld]\n",
                   pbox.xMin, pbox.yMin, pbox.xMax, pbox.yMax ));
       return 1;
     }

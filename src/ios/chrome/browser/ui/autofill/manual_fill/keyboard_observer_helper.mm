@@ -10,8 +10,15 @@
 
 @interface KeyboardObserverHelper ()
 
-// Boolean to check if the keyboard was actually dismissed.
-@property(nonatomic) BOOL keyboardOnScreen;
+// Flag that indicates if the keyboard is on screen.
+@property(nonatomic, getter=isKeyboardOnScreen) BOOL keyboardOnScreen;
+
+// Flag that indicates if the next keyboard did hide notification should be
+// ignored. This happens when the keyboard is on screen and the device rotates.
+// Causing keyboard notifications to be sent, but the keyboard never leaves the
+// screen.
+@property(nonatomic, getter=shouldIgnoreNextKeyboardDidHide)
+    BOOL ignoreNextKeyboardDidHide;
 
 @end
 
@@ -35,29 +42,68 @@
            selector:@selector(keyboardDidHide:)
                name:UIKeyboardDidHideNotification
              object:nil];
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(keyboardWillChangeFrame:)
+               name:UIKeyboardWillChangeFrameNotification
+             object:nil];
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(orientationDidChange:)
+               name:UIApplicationDidChangeStatusBarOrientationNotification
+             object:nil];
   }
   return self;
 }
 
+- (void)keyboardWillChangeFrame:(NSNotification*)notification {
+  // Work around UIKeyboardWillShowNotification notification not being sent in
+  // iPad on unmerged keyboards.
+  CGRect keyboardFrame = [[notification.userInfo
+      objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
+  if (CGRectGetMaxY(keyboardFrame) < [UIScreen mainScreen].bounds.size.height) {
+    [self.consumer keyboardWillShowWithHardwareKeyboardAttached:NO];
+  }
+}
+
 - (void)keyboardWillShow:(NSNotification*)notification {
   self.keyboardOnScreen = YES;
+  CGRect keyboardFrame = [[notification.userInfo
+      objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
+  BOOL hardwareKeyboard =
+      !CGRectContainsRect([UIScreen mainScreen].bounds, keyboardFrame);
+  [self.consumer keyboardWillShowWithHardwareKeyboardAttached:hardwareKeyboard];
 }
 
 - (void)keyboardWillHide:(NSNotification*)notification {
   self.keyboardOnScreen = NO;
   dispatch_async(dispatch_get_main_queue(), ^{
     if (self.keyboardOnScreen) {
-      [self.delegate keyboardDidStayOnScreen];
+      [self.consumer keyboardDidStayOnScreen];
     }
   });
 }
 
 - (void)keyboardDidHide:(NSNotification*)notification {
+  // If UIKeyboardDidHideNotification was sent because of a orientation
+  // change, reset the flag and ignore.
+  if (self.shouldIgnoreNextKeyboardDidHide) {
+    self.ignoreNextKeyboardDidHide = NO;
+    return;
+  }
   dispatch_async(dispatch_get_main_queue(), ^{
     if (!self.keyboardOnScreen) {
-      [self.delegate keyboardDidHide];
+      [self.consumer keyboardDidHide];
     }
   });
+}
+
+- (void)orientationDidChange:(NSNotification*)notification {
+  // If the keyboard is on screen, set the flag to ignore next keyboard did
+  // hide.
+  if (self.keyboardOnScreen) {
+    self.ignoreNextKeyboardDidHide = YES;
+  }
 }
 
 @end

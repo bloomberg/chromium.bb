@@ -32,6 +32,9 @@ class UnlockManager {
   // |auth_type|.
   // Exposed for testing.
   virtual void OnAuthAttempted(mojom::AuthType auth_type) = 0;
+
+  // Disable attempts to get RemoteStatus from host devices.
+  virtual void CancelConnectionAttempt() = 0;
 };
 
 }  // namespace proximity_auth

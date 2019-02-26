@@ -15,13 +15,13 @@
 #include "components/zucchini/disassembler_dex.h"
 #endif  // BUILDFLAG(ENABLE_DEX)
 
-#if BUILDFLAG(ENABLE_WIN)
-#include "components/zucchini/disassembler_win32.h"
-#endif  // BUILDFLAG(ENABLE_WIN)
-
 #if BUILDFLAG(ENABLE_ELF)
 #include "components/zucchini/disassembler_elf.h"
 #endif  // BUILDFLAG(ENABLE_ELF)
+
+#if BUILDFLAG(ENABLE_WIN)
+#include "components/zucchini/disassembler_win32.h"
+#endif  // BUILDFLAG(ENABLE_WIN)
 
 #if BUILDFLAG(ENABLE_ZTF)
 #include "components/zucchini/disassembler_ztf.h"

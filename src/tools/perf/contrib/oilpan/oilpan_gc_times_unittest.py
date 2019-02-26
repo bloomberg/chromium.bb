@@ -86,6 +86,7 @@ class OilpanGCTimesTest(page_test_test_case.PageTestTestCase):
   def setUp(self):
     self._options = options_for_unittests.GetCopy()
 
+  @decorators.Disabled('all')  # crbug.com/909752
   # Disable for accessing private API of _OilpanGCTimesBase.
   # pylint: disable=protected-access
   def testForParsingOldFormat(self):
@@ -119,6 +120,7 @@ class OilpanGCTimesTest(page_test_test_case.PageTestTestCase):
     self.assertEquals(2, len(getMetric(results,
                                        'oilpan_forced_complete_sweep')))
 
+  @decorators.Disabled('all')  # crbug.com/909752
   # Disable for accessing private API of _OilpanGCTimesBase.
   # pylint: disable=protected-access
   def testForParsing(self):

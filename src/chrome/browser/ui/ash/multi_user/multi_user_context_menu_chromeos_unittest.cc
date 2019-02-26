@@ -76,14 +76,14 @@ void MultiUserContextMenuChromeOSTest::SetUp() {
   multi_user_window_manager_ =
       new MultiUserWindowManagerChromeOS(AccountId::FromUserEmail("A"));
   multi_user_window_manager_->Init();
-  MultiUserWindowManager::SetInstanceForTest(multi_user_window_manager_);
+  ::MultiUserWindowManager::SetInstanceForTest(multi_user_window_manager_);
   EXPECT_TRUE(multi_user_window_manager_);
 }
 
 void MultiUserContextMenuChromeOSTest::TearDown() {
   delete window_;
 
-  MultiUserWindowManager::DeleteInstance();
+  ::MultiUserWindowManager::DeleteInstance();
   AshTestBase::TearDown();
 }
 

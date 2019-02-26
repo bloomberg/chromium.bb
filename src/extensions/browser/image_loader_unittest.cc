@@ -111,11 +111,9 @@ TEST_F(ImageLoaderTest, LoadImage) {
   gfx::Size max_size(extension_misc::EXTENSION_ICON_SMALLISH,
                      extension_misc::EXTENSION_ICON_SMALLISH);
   ImageLoader loader;
-  loader.LoadImageAsync(extension.get(),
-                        image_resource,
-                        max_size,
-                        base::Bind(&ImageLoaderTest::OnImageLoaded,
-                                   base::Unretained(this)));
+  loader.LoadImageAsync(
+      extension.get(), image_resource, max_size,
+      base::BindOnce(&ImageLoaderTest::OnImageLoaded, base::Unretained(this)));
 
   // The image isn't cached, so we should not have received notification.
   EXPECT_EQ(0, image_loaded_count());
@@ -147,11 +145,9 @@ TEST_F(ImageLoaderTest, DeleteExtensionWhileWaitingForCache) {
   ImageLoader loader;
   std::set<int> sizes;
   sizes.insert(extension_misc::EXTENSION_ICON_SMALLISH);
-  loader.LoadImageAsync(extension.get(),
-                        image_resource,
-                        max_size,
-                        base::Bind(&ImageLoaderTest::OnImageLoaded,
-                                   base::Unretained(this)));
+  loader.LoadImageAsync(
+      extension.get(), image_resource, max_size,
+      base::BindOnce(&ImageLoaderTest::OnImageLoaded, base::Unretained(this)));
 
   // The image isn't cached, so we should not have received notification.
   EXPECT_EQ(0, image_loaded_count());
@@ -193,9 +189,9 @@ TEST_F(ImageLoaderTest, MultipleImages) {
   }
 
   ImageLoader loader;
-  loader.LoadImagesAsync(extension.get(), info_list,
-                         base::Bind(&ImageLoaderTest::OnImageLoaded,
-                                    base::Unretained(this)));
+  loader.LoadImagesAsync(
+      extension.get(), info_list,
+      base::BindOnce(&ImageLoaderTest::OnImageLoaded, base::Unretained(this)));
 
   // The image isn't cached, so we should not have received notification.
   EXPECT_EQ(0, image_loaded_count());
@@ -248,10 +244,10 @@ TEST_F(ImageLoaderTest, LoadImageFamily) {
       2.f));
 
   ImageLoader loader;
-  loader.LoadImageFamilyAsync(extension.get(),
-                              info_list,
-                              base::Bind(&ImageLoaderTest::OnImageFamilyLoaded,
-                                         base::Unretained(this)));
+  loader.LoadImageFamilyAsync(
+      extension.get(), info_list,
+      base::BindOnce(&ImageLoaderTest::OnImageFamilyLoaded,
+                     base::Unretained(this)));
 
   // The image isn't cached, so we should not have received notification.
   EXPECT_EQ(0, image_loaded_count());

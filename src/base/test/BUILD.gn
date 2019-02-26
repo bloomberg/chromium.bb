@@ -48,7 +48,6 @@ static_library("test_support") {
     "android/url_utils.h",
     "bind_test_util.h",
     "copy_only_int.h",
-    "fuzzed_data_provider.cc",
     "fuzzed_data_provider.h",
     "gtest_util.cc",
     "gtest_util.h",
@@ -116,6 +115,7 @@ static_library("test_support") {
     "simple_test_tick_clock.h",
     "task_runner_test_template.cc",
     "task_runner_test_template.h",
+    "task_scheduler_test_helpers_android.cc",
     "test_discardable_memory_allocator.cc",
     "test_discardable_memory_allocator.h",
     "test_file_util.cc",
@@ -203,7 +203,7 @@ static_library("test_support") {
   }
 
   if (is_fuchsia) {
-    deps += [ "//third_party/fuchsia-sdk:zx" ]
+    deps += [ "//third_party/fuchsia-sdk/sdk:zx" ]
   }
 
   if (is_linux) {
@@ -412,6 +412,7 @@ if (is_android) {
     sources = [
       "android/java/src/org/chromium/base/MainReturnCodeResult.java",
       "android/java/src/org/chromium/base/MultiprocessTestClientLauncher.java",
+      "android/javatests/src/org/chromium/base/test/task/TaskSchedulerTestHelpers.java",
       "android/javatests/src/org/chromium/base/test/util/UrlUtils.java",
     ]
     jni_package = "base"
@@ -436,6 +437,11 @@ if (is_android) {
       "android/java/src/org/chromium/base/MultiprocessTestClientService2.java",
       "android/java/src/org/chromium/base/MultiprocessTestClientService3.java",
       "android/java/src/org/chromium/base/MultiprocessTestClientService4.java",
+      "android/java/src/org/chromium/base/MultiprocessTestClientService5.java",
+      "android/java/src/org/chromium/base/MultiprocessTestClientService6.java",
+      "android/java/src/org/chromium/base/MultiprocessTestClientService7.java",
+      "android/java/src/org/chromium/base/MultiprocessTestClientService8.java",
+      "android/java/src/org/chromium/base/MultiprocessTestClientService9.java",
       "android/java/src/org/chromium/base/MultiprocessTestClientServiceDelegate.java",
     ]
   }

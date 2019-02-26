@@ -9,6 +9,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
+#include "components/autofill/core/browser/suggestion.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
@@ -89,12 +90,6 @@ class AutofillAgentTests : public PlatformTest {
                                           webState:&test_web_state_];
   }
 
-  void TearDown() override {
-    [autofill_agent_ detachFromWebState];
-
-    PlatformTest::TearDown();
-  }
-
   web::TestWebThreadBundle thread_bundle_;
   web::TestBrowserState test_browser_state_;
   web::TestWebState test_web_state_;
@@ -119,6 +114,12 @@ TEST_F(AutofillAgentTests, OnFormDataFilledTest) {
       autofill::features::kAutofillEnableIFrameSupportOniOS);
   disabled_features.push_back(web::features::kWebFrameMessaging);
   scoped_feature_list.InitWithFeatures(enabled_features, disabled_features);
+
+  std::string locale("en");
+  autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
+      &test_web_state_, &client_, nil, locale,
+      autofill::AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
+
   autofill::FormData form;
   form.origin = GURL("https://myform.com");
   form.action = GURL("https://myform.com/submit");
@@ -128,25 +129,33 @@ TEST_F(AutofillAgentTests, OnFormDataFilledTest) {
   field.form_control_type = "text";
   field.label = base::ASCIIToUTF16("Card number");
   field.name = base::ASCIIToUTF16("number");
-  field.id = base::ASCIIToUTF16("number");
+  field.name_attribute = field.name;
+  field.id_attribute = base::ASCIIToUTF16("number");
+  field.unique_id = field.id_attribute;
   field.value = base::ASCIIToUTF16("number_value");
   field.is_autofilled = true;
   form.fields.push_back(field);
   field.label = base::ASCIIToUTF16("Name on Card");
   field.name = base::ASCIIToUTF16("name");
-  field.id = base::ASCIIToUTF16("name");
+  field.name_attribute = field.name;
+  field.id_attribute = base::ASCIIToUTF16("name");
+  field.unique_id = field.id_attribute;
   field.value = base::ASCIIToUTF16("name_value");
   field.is_autofilled = true;
   form.fields.push_back(field);
   field.label = base::ASCIIToUTF16("Expiry Month");
   field.name = base::ASCIIToUTF16("expiry_month");
-  field.id = base::ASCIIToUTF16("expiry_month");
+  field.name_attribute = field.name;
+  field.id_attribute = base::ASCIIToUTF16("expiry_month");
+  field.unique_id = field.id_attribute;
   field.value = base::ASCIIToUTF16("01");
   field.is_autofilled = false;
   form.fields.push_back(field);
   field.label = base::ASCIIToUTF16("Unknown field");
   field.name = base::ASCIIToUTF16("unknown");
-  field.id = base::ASCIIToUTF16("unknown");
+  field.name_attribute = field.name;
+  field.id_attribute = base::ASCIIToUTF16("unknown");
+  field.unique_id = field.id_attribute;
   field.value = base::ASCIIToUTF16("");
   field.is_autofilled = true;
   form.fields.push_back(field);
@@ -158,8 +167,8 @@ TEST_F(AutofillAgentTests, OnFormDataFilledTest) {
           @"\"number\":{\"section\":\"\",\"value\":\"number_value\"}},"
           @"\"formName\":\"CC form\"}, \"\");"
       completionHandler:[OCMArg any]];
-  [autofill_agent_ onFormDataFilled:form
-                            inFrame:web::GetMainWebFrame(&test_web_state_)];
+  [autofill_agent_ fillFormData:form
+                        inFrame:web::GetMainWebFrame(&test_web_state_)];
   test_web_state_.WasShown();
 
   EXPECT_OCMOCK_VERIFY(mock_js_injection_receiver_);
@@ -177,6 +186,12 @@ TEST_F(AutofillAgentTests, OnFormDataFilledTestWithFrameMessaging) {
       autofill::features::kAutofillEnableIFrameSupportOniOS);
   enabled_features.push_back(web::features::kWebFrameMessaging);
   scoped_feature_list.InitWithFeatures(enabled_features, disabled_features);
+
+  std::string locale("en");
+  autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
+      &test_web_state_, &client_, nil, locale,
+      autofill::AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
+
   autofill::FormData form;
   form.origin = GURL("https://myform.com");
   form.action = GURL("https://myform.com/submit");
@@ -186,30 +201,38 @@ TEST_F(AutofillAgentTests, OnFormDataFilledTestWithFrameMessaging) {
   field.form_control_type = "text";
   field.label = base::ASCIIToUTF16("Card number");
   field.name = base::ASCIIToUTF16("number");
-  field.id = base::ASCIIToUTF16("number");
+  field.name_attribute = field.name;
+  field.id_attribute = base::ASCIIToUTF16("number");
+  field.unique_id = field.id_attribute;
   field.value = base::ASCIIToUTF16("number_value");
   field.is_autofilled = true;
   form.fields.push_back(field);
   field.label = base::ASCIIToUTF16("Name on Card");
   field.name = base::ASCIIToUTF16("name");
-  field.id = base::ASCIIToUTF16("name");
+  field.name_attribute = field.name;
+  field.id_attribute = base::ASCIIToUTF16("name");
+  field.unique_id = field.id_attribute;
   field.value = base::ASCIIToUTF16("name_value");
   field.is_autofilled = true;
   form.fields.push_back(field);
   field.label = base::ASCIIToUTF16("Expiry Month");
   field.name = base::ASCIIToUTF16("expiry_month");
-  field.id = base::ASCIIToUTF16("expiry_month");
+  field.name_attribute = field.name;
+  field.id_attribute = base::ASCIIToUTF16("expiry_month");
+  field.unique_id = field.id_attribute;
   field.value = base::ASCIIToUTF16("01");
   field.is_autofilled = false;
   form.fields.push_back(field);
   field.label = base::ASCIIToUTF16("Unknown field");
   field.name = base::ASCIIToUTF16("unknown");
-  field.id = base::ASCIIToUTF16("unknown");
+  field.name_attribute = field.name;
+  field.id_attribute = base::ASCIIToUTF16("unknown");
+  field.unique_id = field.id_attribute;
   field.value = base::ASCIIToUTF16("");
   field.is_autofilled = true;
   form.fields.push_back(field);
-  [autofill_agent_ onFormDataFilled:form
-                            inFrame:web::GetMainWebFrame(&test_web_state_)];
+  [autofill_agent_ fillFormData:form
+                        inFrame:web::GetMainWebFrame(&test_web_state_)];
   test_web_state_.WasShown();
   EXPECT_EQ(
       "__gCrWeb.autofill.fillForm({\"fields\":{\"name\":{\"section\":\"\","
@@ -230,6 +253,12 @@ TEST_F(AutofillAgentTests, OnFormDataFilledWithNameCollisionTest) {
       autofill::features::kAutofillEnableIFrameSupportOniOS);
   disabled_features.push_back(web::features::kWebFrameMessaging);
   scoped_feature_list.InitWithFeatures(enabled_features, disabled_features);
+
+  std::string locale("en");
+  autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
+      &test_web_state_, &client_, nil, locale,
+      autofill::AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
+
   autofill::FormData form;
   form.origin = GURL("https://myform.com");
   form.action = GURL("https://myform.com/submit");
@@ -238,19 +267,25 @@ TEST_F(AutofillAgentTests, OnFormDataFilledWithNameCollisionTest) {
   field.form_control_type = "text";
   field.label = base::ASCIIToUTF16("State");
   field.name = base::ASCIIToUTF16("region");
-  field.id = base::ASCIIToUTF16("region");
+  field.name_attribute = field.name;
+  field.id_attribute = base::ASCIIToUTF16("region");
+  field.unique_id = field.id_attribute;
   field.value = base::ASCIIToUTF16("California");
   field.is_autofilled = true;
   form.fields.push_back(field);
   field.label = base::ASCIIToUTF16("Other field");
   field.name = base::ASCIIToUTF16("field1");
-  field.id = base::ASCIIToUTF16("field1");
+  field.name_attribute = field.name;
+  field.id_attribute = base::ASCIIToUTF16("field1");
+  field.unique_id = field.id_attribute;
   field.value = base::ASCIIToUTF16("value 1");
   field.is_autofilled = true;
   form.fields.push_back(field);
   field.label = base::ASCIIToUTF16("Other field");
   field.name = base::ASCIIToUTF16("field1");
-  field.id = base::ASCIIToUTF16("field1");
+  field.name_attribute = field.name;
+  field.id_attribute = base::ASCIIToUTF16("field1");
+  field.unique_id = field.id_attribute;
   field.value = base::ASCIIToUTF16("value 2");
   field.is_autofilled = true;
   form.fields.push_back(field);
@@ -262,8 +297,8 @@ TEST_F(AutofillAgentTests, OnFormDataFilledWithNameCollisionTest) {
           @"2\"},\"region\":{\"section\":\"\",\"value\":\"California\"}},"
           @"\"formName\":\"\"}, \"\");"
       completionHandler:[OCMArg any]];
-  [autofill_agent_ onFormDataFilled:form
-                            inFrame:web::GetMainWebFrame(&test_web_state_)];
+  [autofill_agent_ fillFormData:form
+                        inFrame:web::GetMainWebFrame(&test_web_state_)];
   test_web_state_.WasShown();
 
   EXPECT_OCMOCK_VERIFY(mock_js_injection_receiver_);
@@ -281,6 +316,12 @@ TEST_F(AutofillAgentTests,
       autofill::features::kAutofillEnableIFrameSupportOniOS);
   enabled_features.push_back(web::features::kWebFrameMessaging);
   scoped_feature_list.InitWithFeatures(enabled_features, disabled_features);
+
+  std::string locale("en");
+  autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
+      &test_web_state_, &client_, nil, locale,
+      autofill::AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
+
   autofill::FormData form;
   form.origin = GURL("https://myform.com");
   form.action = GURL("https://myform.com/submit");
@@ -289,25 +330,31 @@ TEST_F(AutofillAgentTests,
   field.form_control_type = "text";
   field.label = base::ASCIIToUTF16("State");
   field.name = base::ASCIIToUTF16("region");
-  field.id = base::ASCIIToUTF16("region");
+  field.name_attribute = field.name;
+  field.id_attribute = base::ASCIIToUTF16("region");
+  field.unique_id = field.id_attribute;
   field.value = base::ASCIIToUTF16("California");
   field.is_autofilled = true;
   form.fields.push_back(field);
   field.label = base::ASCIIToUTF16("Other field");
   field.name = base::ASCIIToUTF16("field1");
-  field.id = base::ASCIIToUTF16("field1");
+  field.name_attribute = field.name;
+  field.id_attribute = base::ASCIIToUTF16("field1");
+  field.unique_id = field.id_attribute;
   field.value = base::ASCIIToUTF16("value 1");
   field.is_autofilled = true;
   form.fields.push_back(field);
   field.label = base::ASCIIToUTF16("Other field");
   field.name = base::ASCIIToUTF16("field1");
-  field.id = base::ASCIIToUTF16("field1");
+  field.name_attribute = field.name;
+  field.id_attribute = base::ASCIIToUTF16("field1");
+  field.unique_id = field.id_attribute;
   field.value = base::ASCIIToUTF16("value 2");
   field.is_autofilled = true;
   form.fields.push_back(field);
   // Fields are in alphabetical order.
-  [autofill_agent_ onFormDataFilled:form
-                            inFrame:web::GetMainWebFrame(&test_web_state_)];
+  [autofill_agent_ fillFormData:form
+                        inFrame:web::GetMainWebFrame(&test_web_state_)];
   test_web_state_.WasShown();
   EXPECT_EQ(
       "__gCrWeb.autofill.fillForm({\"fields\":{\"field1\":{\"section\":"
@@ -335,7 +382,6 @@ TEST_F(AutofillAgentTests, CheckIfSuggestionsAvailable_UserInitiatedActivity1) {
       executeJavaScript:@"__gCrWeb.autofill.extractForms(1, true);"
       completionHandler:[OCMArg any]];
   [autofill_agent_ checkIfSuggestionsAvailableForForm:@"form"
-                                            fieldName:@"address"
                                       fieldIdentifier:@"address"
                                             fieldType:@"text"
                                                  type:@"focus"
@@ -365,7 +411,6 @@ TEST_F(AutofillAgentTests,
       autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout);
   scoped_feature_list.InitWithFeatures(enabled_features, disabled_features);
   [autofill_agent_ checkIfSuggestionsAvailableForForm:@"form"
-                                            fieldName:@"address"
                                       fieldIdentifier:@"address"
                                             fieldType:@"text"
                                                  type:@"focus"
@@ -399,7 +444,6 @@ TEST_F(AutofillAgentTests, CheckIfSuggestionsAvailable_UserInitiatedActivity2) {
       executeJavaScript:@"__gCrWeb.autofill.extractForms(1, false);"
       completionHandler:[OCMArg any]];
   [autofill_agent_ checkIfSuggestionsAvailableForForm:@"form"
-                                            fieldName:@"address"
                                       fieldIdentifier:@"address"
                                             fieldType:@"text"
                                                  type:@"focus"
@@ -434,7 +478,6 @@ TEST_F(AutofillAgentTests,
       executeJavaScript:@"__gCrWeb.autofill.extractForms(1, false);"
       completionHandler:[OCMArg any]];
   [autofill_agent_ checkIfSuggestionsAvailableForForm:@"form"
-                                            fieldName:@"address"
                                       fieldIdentifier:@"address"
                                             fieldType:@"text"
                                                  type:@"focus"
@@ -458,7 +501,6 @@ TEST_F(AutofillAgentTests,
   __block BOOL completion_handler_called = NO;
 
   [autofill_agent_ checkIfSuggestionsAvailableForForm:@"form"
-                                            fieldName:@"address"
                                       fieldIdentifier:@"address"
                                             fieldType:@"text"
                                                  type:@"focus"
@@ -480,31 +522,22 @@ TEST_F(AutofillAgentTests,
   EXPECT_FALSE(completion_handler_success);
 }
 
-// Tests that when Autofill suggestions are made available to AutofillManager
+// Tests that when Autofill suggestions are made available to AutofillAgent
 // "Clear Form" is moved to the start of the list and the order of other
 // suggestions remains unchanged.
 TEST_F(AutofillAgentTests, onSuggestionsReady_ClearForm) {
   __block NSArray<FormSuggestion*>* completion_handler_suggestions = nil;
   __block BOOL completion_handler_called = NO;
 
-  // Make the suggestions available to AutofillManager.
-  NSArray* suggestions = @[
-    [FormSuggestion suggestionWithValue:@""
-                     displayDescription:nil
-                                   icon:@""
-                             identifier:123],
-    [FormSuggestion suggestionWithValue:@""
-                     displayDescription:nil
-                                   icon:@""
-                             identifier:321],
-    [FormSuggestion suggestionWithValue:@""
-                     displayDescription:nil
-                                   icon:@""
-                             identifier:autofill::POPUP_ITEM_ID_CLEAR_FORM]
-  ];
+  // Make the suggestions available to AutofillAgent.
+  std::vector<autofill::Suggestion> suggestions;
+  suggestions.push_back(autofill::Suggestion("", "", "", 123));
+  suggestions.push_back(autofill::Suggestion("", "", "", 321));
+  suggestions.push_back(
+      autofill::Suggestion("", "", "", POPUP_ITEM_ID_CLEAR_FORM));
   [autofill_agent_
-      onSuggestionsReady:suggestions
-           popupDelegate:base::WeakPtr<autofill::AutofillPopupDelegate>()];
+      showAutofillPopup:suggestions
+          popupDelegate:base::WeakPtr<autofill::AutofillPopupDelegate>()];
 
   // Retrieves the suggestions.
   auto completionHandler = ^(NSArray<FormSuggestion*>* suggestions,
@@ -513,7 +546,6 @@ TEST_F(AutofillAgentTests, onSuggestionsReady_ClearForm) {
     completion_handler_called = YES;
   };
   [autofill_agent_ retrieveSuggestionsForForm:@"form"
-                                    fieldName:@"address"
                               fieldIdentifier:@"address"
                                     fieldType:@"text"
                                          type:@"focus"
@@ -537,34 +569,23 @@ TEST_F(AutofillAgentTests, onSuggestionsReady_ClearForm) {
   EXPECT_EQ(321, completion_handler_suggestions[2].identifier);
 }
 
-// Tests that when Autofill suggestions are made available to AutofillManager
+// Tests that when Autofill suggestions are made available to AutofillAgent
 // GPay icon remains as the first suggestion.
 TEST_F(AutofillAgentTests, onSuggestionsReady_ClearFormWithGPay) {
   __block NSArray<FormSuggestion*>* completion_handler_suggestions = nil;
   __block BOOL completion_handler_called = NO;
 
-  // Make the suggestions available to AutofillManager.
-  NSArray* suggestions = @[
-    [FormSuggestion suggestionWithValue:@""
-                     displayDescription:nil
-                                   icon:@""
-                             identifier:POPUP_ITEM_ID_GOOGLE_PAY_BRANDING],
-    [FormSuggestion suggestionWithValue:@""
-                     displayDescription:nil
-                                   icon:@""
-                             identifier:123],
-    [FormSuggestion suggestionWithValue:@""
-                     displayDescription:nil
-                                   icon:@""
-                             identifier:321],
-    [FormSuggestion suggestionWithValue:@""
-                     displayDescription:nil
-                                   icon:@""
-                             identifier:POPUP_ITEM_ID_CLEAR_FORM]
-  ];
+  // Make the suggestions available to AutofillAgent.
+  std::vector<autofill::Suggestion> suggestions;
+  suggestions.push_back(
+      autofill::Suggestion("", "", "", POPUP_ITEM_ID_GOOGLE_PAY_BRANDING));
+  suggestions.push_back(autofill::Suggestion("", "", "", 123));
+  suggestions.push_back(autofill::Suggestion("", "", "", 321));
+  suggestions.push_back(
+      autofill::Suggestion("", "", "", POPUP_ITEM_ID_CLEAR_FORM));
   [autofill_agent_
-      onSuggestionsReady:suggestions
-           popupDelegate:base::WeakPtr<autofill::AutofillPopupDelegate>()];
+      showAutofillPopup:suggestions
+          popupDelegate:base::WeakPtr<autofill::AutofillPopupDelegate>()];
 
   // Retrieves the suggestions.
   auto completionHandler = ^(NSArray<FormSuggestion*>* suggestions,
@@ -573,7 +594,6 @@ TEST_F(AutofillAgentTests, onSuggestionsReady_ClearFormWithGPay) {
     completion_handler_called = YES;
   };
   [autofill_agent_ retrieveSuggestionsForForm:@"form"
-                                    fieldName:@"address"
                               fieldIdentifier:@"address"
                                     fieldType:@"text"
                                          type:@"focus"
@@ -615,6 +635,7 @@ TEST_F(AutofillAgentTests, FrameInitializationOrder) {
       &test_web_state_, &client_, nil, locale,
       autofill::AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
 
+  // Remove the current main frame.
   test_web_state_.RemoveWebFrame(fake_main_frame_->GetFrameId());
 
   // Add frame when page is loading.
@@ -687,7 +708,8 @@ TEST_F(AutofillAgentTests, FrameInitializationOrderFrames) {
   autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
       &test_web_state_, &client_, nil, locale,
       autofill::AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
-  // Remove the current main frame
+
+  // Remove the current main frame.
   test_web_state_.RemoveWebFrame(fake_main_frame_->GetFrameId());
 
   // Both frames available, then page loaded.

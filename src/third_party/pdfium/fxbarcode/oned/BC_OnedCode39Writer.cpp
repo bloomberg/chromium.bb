@@ -22,8 +22,10 @@
 
 #include "fxbarcode/oned/BC_OnedCode39Writer.h"
 
+#include <algorithm>
 #include <memory>
 
+#include "core/fxcrt/fx_extension.h"
 #include "fxbarcode/BC_Writer.h"
 #include "fxbarcode/common/BC_CommonBitMatrix.h"
 #include "fxbarcode/oned/BC_OneDimWriter.h"
@@ -50,6 +52,12 @@ const int16_t kOnedCode39CharacterEncoding[] = {
     0x0085, 0x0184, 0x00C4, 0x0094, 0x00A8, 0x00A2, 0x008A, 0x002A};
 static_assert(FX_ArraySize(kOnedCode39CharacterEncoding) == 44, "Wrong size");
 
+bool IsInOnedCode39Alphabet(wchar_t ch) {
+  return FXSYS_IsDecimalDigit(ch) || (ch >= L'A' && ch <= L'Z') || ch == L'-' ||
+         ch == L'.' || ch == L' ' || ch == L'*' || ch == L'$' || ch == L'/' ||
+         ch == L'+' || ch == L'%';
+}
+
 }  // namespace
 
 CBC_OnedCode39Writer::CBC_OnedCode39Writer() = default;
@@ -58,16 +66,7 @@ CBC_OnedCode39Writer::~CBC_OnedCode39Writer() = default;
 
 bool CBC_OnedCode39Writer::CheckContentValidity(
     const WideStringView& contents) {
-  for (size_t i = 0; i < contents.GetLength(); i++) {
-    wchar_t ch = contents[i];
-    if ((ch >= L'0' && ch <= L'9') || (ch >= L'A' && ch <= L'Z') ||
-        ch == L'-' || ch == L'.' || ch == L' ' || ch == L'*' || ch == L'$' ||
-        ch == L'/' || ch == L'+' || ch == L'%') {
-      continue;
-    }
-    return false;
-  }
-  return true;
+  return std::all_of(contents.begin(), contents.end(), IsInOnedCode39Alphabet);
 }
 
 WideString CBC_OnedCode39Writer::FilterContents(
@@ -83,12 +82,9 @@ WideString CBC_OnedCode39Writer::FilterContents(
       i++;
       continue;
     }
-    ch = Upper(ch);
-    if ((ch >= L'0' && ch <= L'9') || (ch >= L'A' && ch <= L'Z') ||
-        ch == L'-' || ch == L'.' || ch == L' ' || ch == L'*' || ch == L'$' ||
-        ch == L'/' || ch == L'+' || ch == L'%') {
+    ch = FXSYS_ToUpperASCII(ch);
+    if (IsInOnedCode39Alphabet(ch))
       filtercontents += ch;
-    }
   }
   return filtercontents;
 }
@@ -105,11 +101,8 @@ WideString CBC_OnedCode39Writer::RenderTextContents(
       i++;
       continue;
     }
-    if ((ch >= L'0' && ch <= L'9') || (ch >= L'A' && ch <= L'Z') ||
-        (ch >= L'a' && ch <= L'z') || ch == L'-' || ch == L'.' || ch == L' ' ||
-        ch == L'*' || ch == L'$' || ch == L'/' || ch == L'+' || ch == L'%') {
+    if (IsInOnedCode39Alphabet(FXSYS_ToUpperASCII(ch)))
       renderContents += ch;
-    }
   }
   return renderContents;
 }
@@ -194,15 +187,10 @@ uint8_t* CBC_OnedCode39Writer::EncodeImpl(const ByteString& contents,
   outlength = codeWidth;
   std::unique_ptr<uint8_t, FxFreeDeleter> result(FX_Alloc(uint8_t, codeWidth));
   ToIntArray(kOnedCode39CharacterEncoding[39], widths);
-  int32_t e = BCExceptionNO;
-  int32_t pos = AppendPattern(result.get(), 0, widths, 9, 1, e);
-  if (e != BCExceptionNO)
-    return nullptr;
+  int32_t pos = AppendPattern(result.get(), 0, widths, 9, true);
 
   int8_t narrowWhite[] = {1};
-  pos += AppendPattern(result.get(), pos, narrowWhite, 1, 0, e);
-  if (e != BCExceptionNO)
-    return nullptr;
+  pos += AppendPattern(result.get(), pos, narrowWhite, 1, false);
 
   for (int32_t l = m_iContentLen - 1; l >= 0; l--) {
     for (size_t i = 0; i < kOnedCode39AlphabetLen; i++) {
@@ -210,18 +198,12 @@ uint8_t* CBC_OnedCode39Writer::EncodeImpl(const ByteString& contents,
         continue;
 
       ToIntArray(kOnedCode39CharacterEncoding[i], widths);
-      pos += AppendPattern(result.get(), pos, widths, 9, 1, e);
-      if (e != BCExceptionNO)
-        return nullptr;
+      pos += AppendPattern(result.get(), pos, widths, 9, true);
     }
-    pos += AppendPattern(result.get(), pos, narrowWhite, 1, 0, e);
-    if (e != BCExceptionNO)
-      return nullptr;
+    pos += AppendPattern(result.get(), pos, narrowWhite, 1, false);
   }
   ToIntArray(kOnedCode39CharacterEncoding[39], widths);
-  pos += AppendPattern(result.get(), pos, widths, 9, 1, e);
-  if (e != BCExceptionNO)
-    return nullptr;
+  pos += AppendPattern(result.get(), pos, widths, 9, true);
 
   auto* result_ptr = result.get();
   for (int32_t i = 0; i < codeWidth / 2; i++) {
@@ -237,7 +219,7 @@ bool CBC_OnedCode39Writer::encodedContents(const WideStringView& contents,
   *result = WideString(contents);
   if (m_bCalcChecksum && m_bPrintChecksum) {
     WideString checksumContent = FilterContents(contents);
-    ByteString str = checksumContent.UTF8Encode();
+    ByteString str = checksumContent.ToUTF8();
     char checksum;
     checksum = CalcCheckSum(str);
     if (checksum == '*')

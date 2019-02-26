@@ -15,29 +15,17 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "net/proxy_resolution/proxy_config.h"
 
-namespace net {
-class NetLog;
-class ProxyServer;
-}
-
 namespace data_reduction_proxy {
 
-class DataReductionProxyEventCreator;
 class NetworkPropertiesManager;
 
 class DataReductionProxyConfigurator {
  public:
-  // Constructs a configurator. |net_log| and |event_creator| are used to
-  // track network and Data Reduction Proxy events respectively, must not be
-  // null, and must outlive this instance.
-  DataReductionProxyConfigurator(net::NetLog* net_log,
-                                 DataReductionProxyEventCreator* event_creator);
+  DataReductionProxyConfigurator();
 
   ~DataReductionProxyConfigurator();
 
   // Enables data reduction using the proxy servers in |proxies_for_http|.
-  // TODO: crbug.com/675764: Pass a vector of DataReductionProxyServer
-  // instead of net::ProxyServer.
   void Enable(const NetworkPropertiesManager& network_properties_manager,
               const std::vector<DataReductionProxyServer>& proxies_for_http);
 
@@ -80,10 +68,6 @@ class DataReductionProxyConfigurator {
   // acceptable data reduction proxies and bypass rules, or DIRECT if DRP is not
   // enabled. It should be accessed only on the IO thread.
   net::ProxyConfig config_;
-
-  // Used for logging of network- and Data Reduction Proxy-related events.
-  net::NetLog* net_log_;
-  DataReductionProxyEventCreator* data_reduction_proxy_event_creator_;
 
   base::RepeatingClosure config_updated_callback_;
 

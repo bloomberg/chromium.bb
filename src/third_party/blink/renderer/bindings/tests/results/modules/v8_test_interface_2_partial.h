@@ -8,8 +8,8 @@
 // DO NOT MODIFY!
 
 // clang-format off
-#ifndef V8TestInterface2Partial_h
-#define V8TestInterface2Partial_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_MODULES_V8_TEST_INTERFACE_2_PARTIAL_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_MODULES_V8_TEST_INTERFACE_2_PARTIAL_H_
 
 #include "third_party/blink/renderer/bindings/core/v8/generated_code_helper.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits.h"
@@ -26,7 +26,7 @@ namespace blink {
 class V8TestInterface2Partial {
   STATIC_ONLY(V8TestInterface2Partial);
  public:
-  static void initialize();
+  static void Initialize();
 
   static void InstallRuntimeEnabledFeaturesOnTemplate(
       v8::Isolate*,
@@ -35,13 +35,13 @@ class V8TestInterface2Partial {
 
   // Callback functions
 
-  static void voidMethodPartial1MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info);
-  static void voidMethodPartial2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info);
+  static void VoidMethodPartial1MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info);
+  static void VoidMethodPartial2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info);
 
  private:
-  static void installV8TestInterface2Template(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::FunctionTemplate> interfaceTemplate);
+  static void InstallV8TestInterface2Template(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::FunctionTemplate> interface_template);
 };
 
 }  // namespace blink
 
-#endif  // V8TestInterface2Partial_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_MODULES_V8_TEST_INTERFACE_2_PARTIAL_H_

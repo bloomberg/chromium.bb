@@ -47,20 +47,20 @@ class SVGAnimatedNumberList final : public ScriptWrappable,
  public:
   static SVGAnimatedNumberList* Create(SVGElement* context_element,
                                        const QualifiedName& attribute_name) {
-    return new SVGAnimatedNumberList(context_element, attribute_name);
+    return MakeGarbageCollected<SVGAnimatedNumberList>(context_element,
+                                                       attribute_name);
   }
 
-  void Trace(blink::Visitor* visitor) override {
-    SVGAnimatedProperty<SVGNumberList>::Trace(visitor);
-    ScriptWrappable::Trace(visitor);
-  }
-
- protected:
   SVGAnimatedNumberList(SVGElement* context_element,
                         const QualifiedName& attribute_name)
       : SVGAnimatedProperty<SVGNumberList>(context_element,
                                            attribute_name,
                                            SVGNumberList::Create()) {}
+
+  void Trace(blink::Visitor* visitor) override {
+    SVGAnimatedProperty<SVGNumberList>::Trace(visitor);
+    ScriptWrappable::Trace(visitor);
+  }
 };
 
 }  // namespace blink

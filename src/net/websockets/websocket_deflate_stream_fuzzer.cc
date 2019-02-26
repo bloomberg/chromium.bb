@@ -67,22 +67,25 @@ class WebSocketFuzzedStream final : public WebSocketStream {
  private:
   std::unique_ptr<WebSocketFrame> CreateFrame() {
     WebSocketFrameHeader::OpCode opcode =
-        fuzzed_data_provider_->ConsumeUint32InRange(
-            WebSocketFrameHeader::kOpCodeContinuation,
-            WebSocketFrameHeader::kOpCodeControlUnused);
+        fuzzed_data_provider_
+            ->ConsumeIntegralInRange<WebSocketFrameHeader::OpCode>(
+                WebSocketFrameHeader::kOpCodeContinuation,
+                WebSocketFrameHeader::kOpCodeControlUnused);
     auto frame = std::make_unique<WebSocketFrame>(opcode);
     // Bad news: ConsumeBool actually consumes a whole byte per call, so do
     // something hacky to conserve precious bits.
-    uint8_t flags = fuzzed_data_provider_->ConsumeUint8();
+    uint8_t flags = fuzzed_data_provider_->ConsumeIntegral<uint8_t>();
     frame->header.final = flags & 0x1;
     frame->header.reserved1 = (flags >> 1) & 0x1;
     frame->header.reserved2 = (flags >> 2) & 0x1;
     frame->header.reserved3 = (flags >> 3) & 0x1;
     frame->header.masked = (flags >> 4) & 0x1;
     uint64_t payload_length =
-        fuzzed_data_provider_->ConsumeUint32InRange(0, 64);
-    std::string payload = fuzzed_data_provider_->ConsumeBytes(payload_length);
-    frame->data = base::MakeRefCounted<StringIOBuffer>(payload);
+        fuzzed_data_provider_->ConsumeIntegralInRange(0, 64);
+    std::vector<char> payload =
+        fuzzed_data_provider_->ConsumeBytes<char>(payload_length);
+    frame->data = base::MakeRefCounted<IOBufferWithSize>(payload.size());
+    memcpy(frame->data->data(), payload.data(), payload.size());
     frame->header.payload_length = payload.size();
     return frame;
   }
@@ -92,10 +95,10 @@ class WebSocketFuzzedStream final : public WebSocketStream {
 
 void WebSocketDeflateStreamFuzz(const uint8_t* data, size_t size) {
   base::FuzzedDataProvider fuzzed_data_provider(data, size);
-  uint8_t flags = fuzzed_data_provider.ConsumeUint8();
+  uint8_t flags = fuzzed_data_provider.ConsumeIntegral<uint8_t>();
   bool server_no_context_takeover = flags & 0x1;
   bool client_no_context_takeover = (flags >> 1) & 0x1;
-  uint8_t window_bits = fuzzed_data_provider.ConsumeUint8();
+  uint8_t window_bits = fuzzed_data_provider.ConsumeIntegral<uint8_t>();
   int server_max_window_bits = (window_bits & 0x7) + 8;
   int client_max_window_bits = ((window_bits >> 3) & 0x7) + 8;
   // WebSocketDeflateStream needs to be constructed on each call because it

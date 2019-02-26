@@ -60,6 +60,8 @@ jumbo_static_library("content_common") {
 
 jumbo_static_library("utils") {
   sources = [
+    "developer_console_logger.cc",
+    "developer_console_logger.h",
     "installable_payment_app_crawler.cc",
     "installable_payment_app_crawler.h",
     "manifest_verifier.cc",

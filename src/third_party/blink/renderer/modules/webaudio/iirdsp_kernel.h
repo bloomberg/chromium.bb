@@ -20,7 +20,7 @@ class IIRDSPKernel final : public AudioDSPKernel {
   // AudioDSPKernel
   void Process(const float* source,
                float* dest,
-               size_t frames_to_process) override;
+               uint32_t frames_to_process) override;
   void Reset() override { iir_.Reset(); }
 
   // Get the magnitude and phase response of the filter at the given

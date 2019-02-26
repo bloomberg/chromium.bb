@@ -33,7 +33,7 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
         AuthenticatorTransport::kNearFieldCommunication,
         AuthenticatorTransport::kInternal,
         AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy};
-    model->StartFlow(std::move(transport_availability), base::nullopt);
+    model->StartFlow(std::move(transport_availability), base::nullopt, nullptr);
 
     // The dialog should immediately close as soon as it is displayed.
     if (name == "closed") {
@@ -69,11 +69,11 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
       model->SetCurrentStep(
           AuthenticatorRequestDialogModel::Step::kBleDeviceSelection);
     } else if (name == "ble_pin_entry") {
-      test_authenticator_ = std::make_unique<AuthenticatorReference>(
-          "authenticator" /* authenticator_id */,
+      model->SetSelectedAuthenticatorForTesting(AuthenticatorReference(
+          "test_authenticator_id" /* authenticator_id */,
           base::string16() /* authenticator_display_name */,
-          AuthenticatorTransport::kInternal, false /* is_in_pairing_mode */);
-      model->SetSelectedAuthenticatorForTesting(test_authenticator_.get());
+          AuthenticatorTransport::kInternal, false /* is_in_pairing_mode */,
+          false /* is_paired */));
       model->SetCurrentStep(
           AuthenticatorRequestDialogModel::Step::kBlePinEntry);
     } else if (name == "ble_verifying") {
@@ -94,8 +94,6 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
   }
 
  private:
-  std::unique_ptr<AuthenticatorReference> test_authenticator_;
-
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorDialogTest);
 };
 

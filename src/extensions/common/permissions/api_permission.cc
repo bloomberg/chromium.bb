@@ -50,23 +50,25 @@ class SimpleAPIPermission : public APIPermission {
     return std::unique_ptr<base::Value>();
   }
 
-  APIPermission* Clone() const override {
-    return new SimpleAPIPermission(info());
+  std::unique_ptr<APIPermission> Clone() const override {
+    return std::make_unique<SimpleAPIPermission>(info());
   }
 
-  APIPermission* Diff(const APIPermission* rhs) const override {
+  std::unique_ptr<APIPermission> Diff(const APIPermission* rhs) const override {
     CHECK_EQ(info(), rhs->info());
-    return NULL;
+    return nullptr;
   }
 
-  APIPermission* Union(const APIPermission* rhs) const override {
+  std::unique_ptr<APIPermission> Union(
+      const APIPermission* rhs) const override {
     CHECK_EQ(info(), rhs->info());
-    return new SimpleAPIPermission(info());
+    return std::make_unique<SimpleAPIPermission>(info());
   }
 
-  APIPermission* Intersect(const APIPermission* rhs) const override {
+  std::unique_ptr<APIPermission> Intersect(
+      const APIPermission* rhs) const override {
     CHECK_EQ(info(), rhs->info());
-    return new SimpleAPIPermission(info());
+    return std::make_unique<SimpleAPIPermission>(info());
   }
 
   void Write(base::Pickle* m) const override {}
@@ -110,9 +112,10 @@ APIPermissionInfo::APIPermissionInfo(const APIPermissionInfo::InitInfo& info)
 
 APIPermissionInfo::~APIPermissionInfo() { }
 
-APIPermission* APIPermissionInfo::CreateAPIPermission() const {
-  return api_permission_constructor_ ?
-    api_permission_constructor_(this) : new SimpleAPIPermission(this);
+std::unique_ptr<APIPermission> APIPermissionInfo::CreateAPIPermission() const {
+  if (api_permission_constructor_)
+    return api_permission_constructor_(this);
+  return std::make_unique<SimpleAPIPermission>(this);
 }
 
 }  // namespace extensions

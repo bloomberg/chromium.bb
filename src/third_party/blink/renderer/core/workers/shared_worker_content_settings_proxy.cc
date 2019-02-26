@@ -15,10 +15,9 @@ SharedWorkerContentSettingsProxy::SharedWorkerContentSettingsProxy(
 SharedWorkerContentSettingsProxy::~SharedWorkerContentSettingsProxy() = default;
 
 bool SharedWorkerContentSettingsProxy::AllowIndexedDB(
-    const WebString& name,
     const WebSecurityOrigin& origin) {
   bool result = false;
-  GetService()->AllowIndexedDB(name, &result);
+  GetService()->AllowIndexedDB(&result);
   return result;
 }
 

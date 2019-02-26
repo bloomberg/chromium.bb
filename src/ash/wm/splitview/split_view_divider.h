@@ -29,8 +29,11 @@ class ScopedWindowTargeter;
 
 namespace ash {
 
-class SplitViewController;
+namespace mojom {
 enum class OrientationLockType;
+}
+
+class SplitViewController;
 
 // Split view divider. It passes the mouse/gesture events to SplitViewController
 // to resize the left and right windows accordingly. The divider widget should
@@ -45,13 +48,13 @@ class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
   // Gets the size of the divider widget. The divider widget is enlarged during
   // dragging. For now, it's a vertical rectangle.
   static gfx::Size GetDividerSize(const gfx::Rect& work_area_bounds,
-                                  OrientationLockType screen_orientation,
+                                  mojom::OrientationLockType screen_orientation,
                                   bool is_dragging);
 
   // static version of GetDividerBoundsInScreen(bool is_dragging) function.
   static gfx::Rect GetDividerBoundsInScreen(
       const gfx::Rect& work_area_bounds_in_screen,
-      OrientationLockType screen_orientation,
+      mojom::OrientationLockType screen_orientation,
       int divider_position,
       bool is_dragging);
 

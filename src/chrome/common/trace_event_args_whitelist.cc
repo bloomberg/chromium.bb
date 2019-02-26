@@ -18,9 +18,11 @@ struct WhitelistEntry {
   const char* const* arg_name_filter;
 };
 
+const char* const kBaseAllowedArgs[] = {"blocking_type", nullptr};
 const char* const kGPUAllowedArgs[] = {nullptr};
 const char* const kInputLatencyAllowedArgs[] = {"data", nullptr};
 const char* const kMemoryDumpAllowedArgs[] = {"dumps", nullptr};
+const char* const kV8GCAllowedArgs[] = {"num_items", "num_tasks", nullptr};
 
 const WhitelistEntry kEventArgsWhitelist[] = {
     {"__metadata", "thread_name", nullptr},
@@ -30,21 +32,29 @@ const WhitelistEntry kEventArgsWhitelist[] = {
     {"__metadata", "chrome_library_module", nullptr},
     {"__metadata", "stackFrames", nullptr},
     {"__metadata", "typeNames", nullptr},
+    {"base", "*", kBaseAllowedArgs},
+    {"browser", "KeyedServiceFactory::GetServiceForContext", nullptr},
     {"GPU", "*", kGPUAllowedArgs},
     {"ipc", "GpuChannelHost::Send", nullptr},
     {"ipc", "SyncChannel::Send", nullptr},
     {"latencyInfo", "*", kInputLatencyAllowedArgs},
     {"shutdown", "*", nullptr},
+    {"startup", "PrefProvider::PrefProvider", nullptr},
     {"task_scheduler", "*", nullptr},
     {"toplevel", "*", nullptr},
-    {TRACE_DISABLED_BY_DEFAULT("cpu_profiler"), "StackCpuSampling", nullptr},
+    {TRACE_DISABLED_BY_DEFAULT("cpu_profiler"), "*", nullptr},
     // Redefined the string since MemoryDumpManager::kTraceCategory causes
     // static initialization of this struct.
     {TRACE_DISABLED_BY_DEFAULT("memory-infra"), "*", kMemoryDumpAllowedArgs},
     {TRACE_DISABLED_BY_DEFAULT("system_stats"), "*", nullptr},
+    {TRACE_DISABLED_BY_DEFAULT("v8.gc"), "*", kV8GCAllowedArgs},
+    {"ui", "CachedFontLinkSettings::GetLinkedFonts", nullptr},
+    {"ui", "QueryLinkedFontsFromRegistry", nullptr},
+    {"ui", "UserEvent", nullptr},
     {nullptr, nullptr, nullptr}};
 
-const char* kMetadataWhitelist[] = {"chrome-library-name",
+const char* kMetadataWhitelist[] = {"chrome-bitness",
+                                    "chrome-library-name",
                                     "clock-domain",
                                     "config",
                                     "cpu-*",

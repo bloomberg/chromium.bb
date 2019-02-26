@@ -10,9 +10,11 @@
 
 namespace content {
 
-class TargetRegistry;
-
 class BrowserDevToolsAgentHost : public DevToolsAgentHostImpl {
+ public:
+  // TODO(caseq,dgozman): this should probably be a singleton.
+  static const std::set<BrowserDevToolsAgentHost*>& Instances();
+
  private:
   friend class DevToolsAgentHost;
   BrowserDevToolsAgentHost(
@@ -22,13 +24,8 @@ class BrowserDevToolsAgentHost : public DevToolsAgentHostImpl {
   ~BrowserDevToolsAgentHost() override;
 
   // DevToolsAgentHostImpl overrides.
-  bool AttachSession(DevToolsSession* session,
-                     TargetRegistry* registry) override;
+  bool AttachSession(DevToolsSession* session) override;
   void DetachSession(DevToolsSession* session) override;
-  bool DispatchProtocolMessage(
-      DevToolsAgentHostClient* client,
-      const std::string& message,
-      std::unique_ptr<base::DictionaryValue> parsed_message) override;
 
   // DevToolsAgentHost implementation.
   std::string GetType() override;
@@ -41,8 +38,6 @@ class BrowserDevToolsAgentHost : public DevToolsAgentHostImpl {
   scoped_refptr<base::SingleThreadTaskRunner> tethering_task_runner_;
   CreateServerSocketCallback socket_callback_;
   bool only_discovery_;
-  base::flat_map<DevToolsAgentHostClient*, std::unique_ptr<TargetRegistry>>
-      target_registries_;
 };
 
 }  // namespace content

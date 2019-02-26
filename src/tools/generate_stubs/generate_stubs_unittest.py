@@ -6,7 +6,7 @@
 """Unittest for the generate_stubs.py.
 
 Since generate_stubs.py is a code generator, it is hard to do a very good
-test.  Instead of creating a golden-file test, which might be flakey, this
+test.  Instead of creating a golden-file test, which might be flaky, this
 test elects instead to verify that various components "exist" within the
 generated file as a sanity check.  In particular, there is a simple hit
 test to make sure that umbrella functions, etc., do try and include every
@@ -40,6 +40,8 @@ SIMPLE_SIGNATURES = [
     ('void quux(void)', _MakeSignature('void', 'quux', ['void'])),
     ('void waldo(void);', _MakeSignature('void', 'waldo', ['void'])),
     ('int corge(void);', _MakeSignature('int', 'corge', ['void'])),
+    ('int ferda(char **argv[]);',
+     _MakeSignature('int', 'ferda', ['char **argv[]'])),
     ]
 
 TRICKY_SIGNATURES = [
@@ -165,7 +167,8 @@ class PosixStubWriterUnittest(unittest.TestCase):
     self.module_name = 'my_module-1'
     self.signatures = [sig[1] for sig in SIMPLE_SIGNATURES]
     self.out_dir = 'out_dir'
-    self.writer = gs.PosixStubWriter(self.module_name, '', self.signatures)
+    self.writer = gs.PosixStubWriter(self.module_name, '', self.signatures,
+                                     'VLOG(1)', 'base/logging.h')
 
   def testEnumName(self):
     self.assertEqual('kModuleMy_module1',
@@ -211,6 +214,13 @@ int* TEST_EXPORT foo(bool b) {
   return foo_ptr(b);
 }""", gs.PosixStubWriter.StubFunction(sig))
 
+    # Test for a signature where an array is passed. It should be passed without
+    # square brackets otherwise the compilation failure will occur..
+    self.assertEqual("""extern int ferda(char **argv[]) __attribute__((weak));
+int  ferda(char **argv[]) {
+  return ferda_ptr(argv);
+}""", gs.PosixStubWriter.StubFunction(SIMPLE_SIGNATURES[6][1]))
+
   def testWriteImplemenationContents(self):
     outfile = StringIO.StringIO()
     self.writer.WriteImplementationContents('my_namespace', outfile)
@@ -250,7 +260,7 @@ int* TEST_EXPORT foo(bool b) {
     # Make the header.
     outfile = StringIO.StringIO()
     self.writer.WriteHeaderContents(module_names, 'my_namespace', 'GUARD_',
-                                    outfile)
+                                    outfile, 'base/logging.h')
     contents = outfile.getvalue()
 
     # Check for namespace and header guard.
@@ -284,7 +294,8 @@ int* TEST_EXPORT foo(bool b) {
 
     # Make the header.
     outfile = StringIO.StringIO()
-    self.writer.WriteUmbrellaInitializer(module_names, 'my_namespace', outfile)
+    self.writer.WriteUmbrellaInitializer(module_names, 'my_namespace', outfile,
+                                         'VLOG(1)')
     contents = outfile.getvalue()
 
     # Check for umbrella initializer declaration.

@@ -7,9 +7,11 @@
 #include <memory>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "components/data_use_measurement/core/data_use_ascriber.h"
 #include "components/data_use_measurement/core/url_request_classifier.h"
 #include "net/url_request/url_request.h"
+#include "services/network/public/cpp/features.h"
 
 namespace data_use_measurement {
 DataUseNetworkDelegate::DataUseNetworkDelegate(
@@ -20,6 +22,7 @@ DataUseNetworkDelegate::DataUseNetworkDelegate(
       ascriber_(ascriber),
       data_use_measurement_(std::move(data_use_measurement)) {
   DCHECK(ascriber);
+  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
 }
 
 DataUseNetworkDelegate::~DataUseNetworkDelegate() {}

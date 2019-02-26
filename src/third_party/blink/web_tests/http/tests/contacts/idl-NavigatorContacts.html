@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+test(function() {
+  assert_true('contacts' in navigator,
+              'navigator.contacts exists in navigator.');
+  assert_true('ContactInfo' in window,
+              'ContactInfo exists in window.');
+}, 'navigator.contacts IDL test');
+</script>

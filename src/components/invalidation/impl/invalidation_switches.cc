@@ -7,9 +7,10 @@
 namespace invalidation {
 namespace switches {
 
-// Invalidation service should use GCM network channel even if experiment is not
-// enabled.
+#if defined(OS_CHROMEOS)
+// Device invalidation service should use GCM network channel.
 const char kInvalidationUseGCMChannel[] = "invalidation-use-gcm-channel";
+#endif  // OS_CHROMEOS
 
 // Overrides the default host:port used for notifications.
 const char kSyncNotificationHostPort[] = "sync-notification-host-port";

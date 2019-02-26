@@ -140,9 +140,8 @@ class AudioServiceOutputDeviceTest : public testing::Test {
     service_manager::mojom::ConnectorRequest connector_request;
     connector_ = service_manager::Connector::Create(&connector_request);
     stream_factory_ = std::make_unique<FakeOutputStreamFactory>();
-    service_manager::Connector::TestApi connector_test_api(connector_.get());
-    connector_test_api.OverrideBinderForTesting(
-        service_manager::Identity(audio::mojom::kServiceName),
+    connector_->OverrideBinderForTesting(
+        service_manager::ServiceFilter::ByName(audio::mojom::kServiceName),
         audio::mojom::StreamFactory::Name_,
         base::BindRepeating(&AudioServiceOutputDeviceTest::BindStreamFactory,
                             base::Unretained(this)));

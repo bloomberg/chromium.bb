@@ -57,6 +57,7 @@ class NGInlineItemsBuilderTest : public NGLayoutTest {
       }
       builder.Append(input.text, input.layout_text->Style(), input.layout_text);
     }
+    builder.ExitBlock();
     text_ = builder.ToString();
     ValidateItems();
     CheckReuseItemsProducesSameResult(inputs);
@@ -97,23 +98,21 @@ class NGInlineItemsBuilderTest : public NGLayoutTest {
     for (Input& input : inputs) {
       // Collect items for this LayoutObject.
       DCHECK(input.layout_text);
-      Vector<NGInlineItem*> previous_items;
       for (auto& item : items_) {
         if (item.GetLayoutObject() == input.layout_text)
-          previous_items.push_back(&item);
+          input.layout_text->AddInlineItem(&item);
       }
 
       // Try to re-use previous items, or Append if it was not re-usable.
-      bool reused =
-          !previous_items.IsEmpty() &&
-          reuse_builder.Append(text_, ToLayoutNGText(input.layout_text),
-                               previous_items);
+      bool reused = input.layout_text->HasValidInlineItems() &&
+                    reuse_builder.Append(text_, input.layout_text);
       if (!reused) {
         reuse_builder.Append(input.text, input.layout_text->Style(),
                              input.layout_text);
       }
     }
 
+    reuse_builder.ExitBlock();
     String reuse_text = reuse_builder.ToString();
     EXPECT_EQ(text_, reuse_text);
   }
@@ -406,6 +405,7 @@ static std::unique_ptr<LayoutInline> CreateLayoutInline(
   initialize_style(style.get());
   std::unique_ptr<LayoutInline> node = std::make_unique<LayoutInline>(nullptr);
   node->SetStyleInternal(std::move(style));
+  node->SetIsInLayoutNGInlineFormattingContext(true);
   return node;
 }
 

@@ -31,6 +31,12 @@ class LoadGoogleStory(_LoadingStory):
   TAGS = [story_tags.YEAR_2016]
 
 
+class LoadGoogleStory2018(_LoadingStory):
+  NAME = 'load:search:google:2018'
+  URL = 'https://www.google.co.uk/search?q=pepper'
+  TAGS = [story_tags.YEAR_2018]
+
+
 class LoadBaiduStory(_LoadingStory):
   NAME = 'load:search:baidu'
   URL = 'https://www.baidu.com/s?word=google'
@@ -38,10 +44,24 @@ class LoadBaiduStory(_LoadingStory):
           story_tags.YEAR_2016]
 
 
+class LoadBaiduStory2018(_LoadingStory):
+  NAME = 'load:search:baidu:2018'
+  URL = 'https://www.baidu.com/s?word=google'
+  TAGS = [story_tags.INTERNATIONAL, story_tags.HEALTH_CHECK,
+          story_tags.YEAR_2018]
+
+
 class LoadYahooStory(_LoadingStory):
   NAME = 'load:search:yahoo'
   URL = 'https://search.yahoo.com/search;_ylt=?p=google'
   TAGS = [story_tags.YEAR_2016]
+
+
+class LoadYahooStory2018(_LoadingStory):
+  NAME = 'load:search:yahoo:2018'
+  # Use additional parameter to bypass consent screen.
+  URL = 'https://search.yahoo.com/search;_ylt=?p=google&_guc_consent_skip=1541794498'
+  TAGS = [story_tags.YEAR_2018]
 
 
 class LoadAmazonDesktopStory(_LoadingStory):
@@ -72,6 +92,13 @@ class LoadTaobaoDesktopStory2018(_LoadingStory):
   TAGS = [story_tags.INTERNATIONAL, story_tags.YEAR_2018]
 
 
+class LoadFlipkartDesktop2018(_LoadingStory):
+  NAME = 'load:search:flipkart:2018'
+  URL = 'https://www.flipkart.com/search?q=sneakers'
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  TAGS = [story_tags.INTERNATIONAL, story_tags.YEAR_2018]
+
+
 class LoadTaobaoMobileStory(_LoadingStory):
   NAME = 'load:search:taobao'
   # "ali_trackid" in the URL suppresses "Download app" interstitial.
@@ -87,11 +114,23 @@ class LoadYandexStory(_LoadingStory):
   TAGS = [story_tags.INTERNATIONAL, story_tags.YEAR_2016]
 
 
+class LoadYandexStory2018(_LoadingStory):
+  NAME = 'load:search:yandex:2018'
+  URL = 'https://yandex.ru/touchsearch?text=science'
+  TAGS = [story_tags.INTERNATIONAL, story_tags.YEAR_2018]
+
+
 class LoadEbayStory(_LoadingStory):
   NAME = 'load:search:ebay'
   # Redirects to the "http://" version.
   URL = 'https://www.ebay.com/sch/i.html?_nkw=headphones'
   TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
+
+
+class LoadEbayStory2018(_LoadingStory):
+  NAME = 'load:search:ebay:2018'
+  URL = 'https://www.ebay.com/sch/i.html?_nkw=headphones'
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2018]
 
 
 ################################################################################
@@ -285,6 +324,12 @@ class LoadWikipediaStory(_LoadingStory):
   TAGS = [story_tags.EMERGING_MARKET, story_tags.YEAR_2016]
 
 
+class LoadWikipediaStory2018(_LoadingStory):
+  NAME = 'load:news:wikipedia:2018'
+  URL = 'https://en.wikipedia.org/wiki/Science'
+  TAGS = [story_tags.EMERGING_MARKET, story_tags.YEAR_2018]
+
+
 class LoadIrctcStory(_LoadingStory):
   NAME = 'load:news:irctc'
   URL = 'https://www.irctc.co.in'
@@ -307,6 +352,14 @@ class LoadYouTubeStory(_LoadingStory):
           story_tags.YEAR_2016]
 
 
+class LoadYouTubeStory2018(_LoadingStory):
+  # No way to disable autoplay on desktop.
+  NAME = 'load:media:youtube:2018'
+  URL = 'https://www.youtube.com/watch?v=QGfhS1hfTWw&autoplay=false'
+  TAGS = [story_tags.EMERGING_MARKET, story_tags.HEALTH_CHECK,
+          story_tags.YEAR_2018]
+
+
 class LoadDailymotionStory(_LoadingStory):
   # The side panel with related videos doesn't show on desktop due to
   # https://github.com/chromium/web-page-replay/issues/74.
@@ -322,12 +375,25 @@ class LoadGoogleImagesStory(_LoadingStory):
   TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
 
 
+class LoadGoogleImagesStory2018(_LoadingStory):
+  NAME = 'load:media:google_images:2018'
+  URL = 'https://www.google.co.uk/search?tbm=isch&q=love'
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2018]
+
+
 class LoadSoundCloudStory(_LoadingStory):
   # No way to disable autoplay on desktop. Album artwork doesn't load due to
   # https://github.com/chromium/web-page-replay/issues/73.
   NAME = 'load:media:soundcloud'
   URL = 'https://soundcloud.com/lifeofdesiigner/desiigner-panda'
   TAGS = [story_tags.YEAR_2016]
+
+
+class LoadSoundCloudStory2018(_LoadingStory):
+  # No way to disable autoplay on desktop. Album artwork doesn't load due to
+  NAME = 'load:media:soundcloud:2018'
+  URL = 'https://soundcloud.com/lifeofdesiigner/desiigner-panda'
+  TAGS = [story_tags.YEAR_2018]
 
 
 class Load9GagDesktopStory(_LoadingStory):
@@ -341,6 +407,18 @@ class LoadImgurStory(_LoadingStory):
   NAME = 'load:media:imgur'
   URL = 'http://imgur.com/gallery/5UlBN'
   TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
+
+
+class LoadImgurStory2018(_LoadingStory):
+  NAME = 'load:media:imgur:2018'
+  URL = 'http://imgur.com/gallery/5UlBN'
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2018]
+
+
+class LoadFlickrStory2018(_LoadingStory):
+  NAME = 'load:media:flickr:2018'
+  URL = 'https://www.flickr.com/photos/tags/noiretblanc'
+  TAGS = [story_tags.YEAR_2018]
 
 
 class LoadFacebookPhotosMobileStory(_LoadingStory):
@@ -361,6 +439,15 @@ class LoadFacebookPhotosDesktopStory(_LoadingStory):
   # Recording currently does not work. The page gets stuck in the
   # theater viewer.
   SUPPORTED_PLATFORMS = platforms.NO_PLATFORMS
+
+
+class LoadFacebookPhotosDesktopStory2018(_LoadingStory):
+  """Load a page of rihanna's facebook with a photo."""
+  NAME = 'load:media:facebook_photos:2018'
+  URL = (
+    'https://www.facebook.com/rihanna/photos/pb.10092511675.-2207520000.1541795576./10155941787036676/?type=3&theater')
+  TAGS = [story_tags.YEAR_2018]
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
 
 ################################################################################
@@ -425,6 +512,13 @@ class LoadStackOverflowStory(_LoadingStory):
       'https://stackoverflow.com/questions/36827659/compiling-an-application-for-use-in-highly-radioactive-environments')
   TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
 
+class LoadStackOverflowStory2018(_LoadingStory):
+  """Load a typical question & answer page of stackoverflow.com"""
+  NAME = 'load:tools:stackoverflow:2018'
+  URL = (
+      'https://stackoverflow.com/questions/36827659/compiling-an-application-for-use-in-highly-radioactive-environments')
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2018]
+
 
 class LoadDropboxStory(_LoadingStory):
   NAME = 'load:tools:dropbox'
@@ -488,6 +582,19 @@ class LoadSpyChaseStory(_LoadingStory):
         'document.querySelector("#game canvas").style.background !== ""')
 
 
+class LoadSpyChaseStory2018(_LoadingStory):
+  NAME = 'load:games:spychase:2018'
+  # Using "https://" shows "Your connection is not private".
+  URL = 'http://playstar.mobi/games/spychase/index.php'
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2018]
+
+  def _DidLoadDocument(self, action_runner):
+    # The background of the game canvas is set when the "Tap screen to play"
+    # caption is displayed.
+    action_runner.WaitForJavaScriptCondition(
+        'document.querySelector("#game canvas").style.background !== ""')
+
+
 class LoadMiniclipStory(_LoadingStory):
   NAME = 'load:games:miniclip'
   # Using "https://" causes "404 Not Found" during WPR recording.
@@ -496,8 +603,23 @@ class LoadMiniclipStory(_LoadingStory):
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY  # Requires Flash.
 
 
+class LoadMiniclipStory2018(_LoadingStory):
+  NAME = 'load:games:miniclip:2018'
+  # Using "https://" causes "404 Not Found" during WPR recording.
+  URL = 'http://www.miniclip.com/games/en/'
+  TAGS = [story_tags.YEAR_2018]
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY  # Requires Flash.
+
+
 class LoadAlphabettyStory(_LoadingStory):
   NAME = 'load:games:alphabetty'
+  URL = 'https://king.com/play/alphabetty'
+  TAGS = [story_tags.YEAR_2016]
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY  # Requires Flash.
+
+
+class LoadAlphabettyStory2018(_LoadingStory):
+  NAME = 'load:games:alphabetty:2018'
   URL = 'https://king.com/play/alphabetty'
   TAGS = [story_tags.YEAR_2016]
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY  # Requires Flash.

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/scoped_set_running_on_chromeos_for_testing.h"
 
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 
 namespace chromeos {
 

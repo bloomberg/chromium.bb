@@ -40,11 +40,11 @@
 namespace blink {
 
 InputType* ResetInputType::Create(HTMLInputElement& element) {
-  return new ResetInputType(element);
+  return MakeGarbageCollected<ResetInputType>(element);
 }
 
 const AtomicString& ResetInputType::FormControlType() const {
-  return InputTypeNames::reset;
+  return input_type_names::kReset;
 }
 
 bool ResetInputType::SupportsValidation() const {

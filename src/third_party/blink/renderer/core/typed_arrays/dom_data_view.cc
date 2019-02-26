@@ -48,7 +48,7 @@ DOMDataView* DOMDataView::Create(DOMArrayBufferBase* buffer,
                                  unsigned byte_length) {
   scoped_refptr<DataView> data_view =
       DataView::Create(buffer->Buffer(), byte_offset, byte_length);
-  return new DOMDataView(data_view, buffer);
+  return MakeGarbageCollected<DOMDataView>(data_view, buffer);
 }
 
 v8::Local<v8::Object> DOMDataView::Wrap(

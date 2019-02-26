@@ -28,6 +28,8 @@ class CORE_EXPORT CSSPerspective final : public CSSTransformComponent {
   // Blink-internal ways of creating CSSPerspectives.
   static CSSPerspective* FromCSSValue(const CSSFunctionValue&);
 
+  CSSPerspective(CSSNumericValue* length);
+
   // Getters and setters for attributes defined in the IDL.
   CSSNumericValue* length() { return length_.Get(); }
   void setLength(CSSNumericValue*, ExceptionState&);
@@ -49,8 +51,6 @@ class CORE_EXPORT CSSPerspective final : public CSSTransformComponent {
   }
 
  private:
-  CSSPerspective(CSSNumericValue* length);
-
   Member<CSSNumericValue> length_;
   DISALLOW_COPY_AND_ASSIGN(CSSPerspective);
 };

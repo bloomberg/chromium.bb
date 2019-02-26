@@ -14,11 +14,13 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_user_settings.h"
 
 namespace {
 
 bool IsAutofillSyncEnabled(const syncer::SyncService* sync_service) {
-  return sync_service && sync_service->IsFirstSetupComplete() &&
+  return sync_service &&
+         sync_service->GetUserSettings()->IsFirstSetupComplete() &&
          sync_service->IsSyncFeatureActive() &&
          sync_service->GetActiveDataTypes().Has(syncer::AUTOFILL);
 }

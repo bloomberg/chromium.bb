@@ -3,7 +3,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-
 import json
 
 from writers import template_writer
@@ -80,13 +79,11 @@ class RegWriter(template_writer.TemplateWriter):
 
   def WritePolicy(self, policy):
     if self.CanBeMandatory(policy):
-      self._WritePolicy(policy,
-                        self._winconfig['reg_mandatory_key_name'],
+      self._WritePolicy(policy, self._winconfig['reg_mandatory_key_name'],
                         self._mandatory)
 
   def WriteRecommendedPolicy(self, policy):
-    self._WritePolicy(policy,
-                      self._winconfig['reg_recommended_key_name'],
+    self._WritePolicy(policy, self._winconfig['reg_recommended_key_name'],
                       self._recommended)
 
   def BeginTemplate(self):

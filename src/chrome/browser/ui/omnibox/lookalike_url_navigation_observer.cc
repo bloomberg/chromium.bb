@@ -24,9 +24,6 @@
 
 namespace {
 
-const base::FeatureParam<std::string> kMetricsOnly{
-    &features::kLookalikeUrlNavigationSuggestions, "metrics_only", ""};
-
 void RecordEvent(
     LookalikeUrlNavigationObserver::NavigationSuggestionEvent event) {
   UMA_HISTOGRAM_ENUMERATION(LookalikeUrlNavigationObserver::kHistogramName,
@@ -76,7 +73,7 @@ void LookalikeUrlNavigationObserver::DidFinishNavigation(
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   SiteEngagementService* service = SiteEngagementService::Get(profile);
-  if (service->IsEngagementAtLeast(url, blink::mojom::EngagementLevel::LOW))
+  if (service->IsEngagementAtLeast(url, blink::mojom::EngagementLevel::MEDIUM))
     return;
 
   const base::StringPiece host = url.host_piece();
@@ -113,7 +110,8 @@ void LookalikeUrlNavigationObserver::DidFinishNavigation(
       .SetMatchType(static_cast<int>(match_type))
       .Record(ukm_recorder);
 
-  if (kMetricsOnly.Get().empty()) {
+  if (base::FeatureList::IsEnabled(
+          features::kLookalikeUrlNavigationSuggestionsUI)) {
     RecordEvent(NavigationSuggestionEvent::kInfobarShown);
     AlternateNavInfoBarDelegate::CreateForLookalikeUrlNavigation(
         web_contents(), base::UTF8ToUTF16(matched_domain), suggested_url, url,
@@ -156,7 +154,7 @@ std::string LookalikeUrlNavigationObserver::GetMatchingSiteEngagementDomain(
   for (const auto& detail : engagement_details) {
     // Ignore sites with an engagement score lower than LOW.
     if (!service->IsEngagementAtLeast(detail.origin,
-                                      blink::mojom::EngagementLevel::LOW))
+                                      blink::mojom::EngagementLevel::MEDIUM))
       continue;
 
     // If the user has engaged with eTLD+1 of this site, don't show any

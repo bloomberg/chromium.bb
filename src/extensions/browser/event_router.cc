@@ -722,6 +722,12 @@ void EventRouter::DoDispatchEventToSenderBookkeepingOnUI(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserContext* browser_context =
       reinterpret_cast<BrowserContext*>(browser_context_id);
+  // TODO(https://crbug.com/870838): Remove after investigating the bug.
+  if (!ExtensionsBrowserClient::Get()) {
+    LOG(ERROR) << "ExtensionsBrowserClient does not exist.";
+    NOTREACHED();
+    return;
+  }
   if (!ExtensionsBrowserClient::Get()->IsValidContext(browser_context))
     return;
   const Extension* extension =

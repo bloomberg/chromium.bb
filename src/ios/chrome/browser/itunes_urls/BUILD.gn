@@ -16,6 +16,10 @@ source_set("itunes_urls") {
     "//ios/web",
     "//url",
   ]
+  libs = [
+    "Foundation.framework",
+    "StoreKit.framework",
+  ]
 }
 
 source_set("unit_tests") {

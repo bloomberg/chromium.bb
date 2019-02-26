@@ -70,8 +70,6 @@ net::URLRequestContextGetter* ShellBrowserContext::CreateRequestContext(
           {content::BrowserThread::IO}),
       protocol_handlers, std::move(request_interceptors), nullptr /* net_log */,
       extension_info_map));
-  resource_context_->set_url_request_context_getter(
-      url_request_context_getter());
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::IO},
       base::Bind(&ShellBrowserContext::InitURLRequestContextOnIOThread,

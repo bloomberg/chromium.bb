@@ -84,6 +84,10 @@ class MockNetworkContext : public network::TestNetworkContext {
     EXPECT_TRUE(
         proxy_lookup_clients_.emplace(url, std::move(proxy_lookup_client))
             .second);
+    if (!enabled_proxy_testing_) {
+      // We don't want to test proxy, return that the proxy is disabled.
+      CompleteProxyLookup(url, base::nullopt);
+    }
   }
 
   void CompleteHostLookup(const std::string& host, int result) {
@@ -111,6 +115,8 @@ class MockNetworkContext : public network::TestNetworkContext {
     base::RunLoop().RunUntilIdle();
   }
 
+  void EnableProxyTesting() { enabled_proxy_testing_ = true; }
+
   MOCK_METHOD1(ResolveHostProxy, void(const std::string& host));
   MOCK_METHOD4(PreconnectSockets,
                void(uint32_t num_streams,
@@ -122,6 +128,7 @@ class MockNetworkContext : public network::TestNetworkContext {
   std::map<std::string, network::mojom::ResolveHostClientPtr>
       resolve_host_clients_;
   std::map<GURL, network::mojom::ProxyLookupClientPtr> proxy_lookup_clients_;
+  bool enabled_proxy_testing_ = false;
 };
 
 class PreconnectManagerTest : public testing::Test {
@@ -364,36 +371,12 @@ TEST_F(PreconnectManagerTest, TestDetachedRequestHasHigherPriority) {
 }
 
 TEST_F(PreconnectManagerTest, TestSuccessfulProxyLookup) {
+  mock_network_context_->EnableProxyTesting();
   GURL main_frame_url("http://google.com");
   GURL url_to_preconnect("http://cdn.google.com");
 
-  EXPECT_CALL(*mock_network_context_,
-              ResolveHostProxy(url_to_preconnect.host()));
   preconnect_manager_->Start(main_frame_url,
                              {PreconnectRequest(url_to_preconnect, 1)});
-
-  EXPECT_CALL(*mock_network_context_,
-              PreconnectSockets(1, url_to_preconnect, kNormalLoadFlags, false));
-  EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url));
-  mock_network_context_->CompleteProxyLookup(url_to_preconnect,
-                                             GetIndirectProxyInfo());
-  // We should preconnect socket before the host lookup is complete.
-  Mock::VerifyAndClearExpectations(mock_network_context_.get());
-
-  mock_network_context_->CompleteHostLookup(url_to_preconnect.host(), net::OK);
-}
-
-TEST_F(PreconnectManagerTest, TestSuccessfulProxyLookupAfterPreresolveFailure) {
-  GURL main_frame_url("http://google.com");
-  GURL url_to_preconnect("http://cdn.google.com");
-
-  EXPECT_CALL(*mock_network_context_,
-              ResolveHostProxy(url_to_preconnect.host()));
-  preconnect_manager_->Start(main_frame_url,
-                             {PreconnectRequest(url_to_preconnect, 1)});
-  mock_network_context_->CompleteHostLookup(url_to_preconnect.host(),
-                                            net::ERR_FAILED);
-  Mock::VerifyAndClearExpectations(mock_network_context_.get());
 
   EXPECT_CALL(*mock_network_context_,
               PreconnectSockets(1, url_to_preconnect, kNormalLoadFlags, false));
@@ -403,17 +386,18 @@ TEST_F(PreconnectManagerTest, TestSuccessfulProxyLookupAfterPreresolveFailure) {
 }
 
 TEST_F(PreconnectManagerTest, TestSuccessfulHostLookupAfterProxyLookupFailure) {
+  mock_network_context_->EnableProxyTesting();
   GURL main_frame_url("http://google.com");
   GURL url_to_preconnect("http://cdn.google.com");
   GURL url_to_preconnect2("http://ads.google.com");
 
+  preconnect_manager_->Start(main_frame_url,
+                             {PreconnectRequest(url_to_preconnect, 1),
+                              PreconnectRequest(url_to_preconnect2, 1)});
   EXPECT_CALL(*mock_network_context_,
               ResolveHostProxy(url_to_preconnect.host()));
   EXPECT_CALL(*mock_network_context_,
               ResolveHostProxy(url_to_preconnect2.host()));
-  preconnect_manager_->Start(main_frame_url,
-                             {PreconnectRequest(url_to_preconnect, 1),
-                              PreconnectRequest(url_to_preconnect2, 1)});
   // First URL uses direct connection.
   mock_network_context_->CompleteProxyLookup(url_to_preconnect,
                                              GetDirectProxyInfo());
@@ -432,29 +416,21 @@ TEST_F(PreconnectManagerTest, TestSuccessfulHostLookupAfterProxyLookupFailure) {
 }
 
 TEST_F(PreconnectManagerTest, TestBothProxyAndHostLookupFailed) {
+  mock_network_context_->EnableProxyTesting();
   GURL main_frame_url("http://google.com");
   GURL url_to_preconnect("http://cdn.google.com");
-  GURL url_to_preconnect2("http://ads.google.com");
+
+  preconnect_manager_->Start(main_frame_url,
+                             {PreconnectRequest(url_to_preconnect, 1)});
 
   EXPECT_CALL(*mock_network_context_,
               ResolveHostProxy(url_to_preconnect.host()));
-  EXPECT_CALL(*mock_network_context_,
-              ResolveHostProxy(url_to_preconnect2.host()));
-  preconnect_manager_->Start(main_frame_url,
-                             {PreconnectRequest(url_to_preconnect, 1),
-                              PreconnectRequest(url_to_preconnect2, 1)});
-  // Test two failures in different order:
-  // proxy -> host for |url_to_preconnect|
-  // host -> proxy for |url_to_preconnect2|
   mock_network_context_->CompleteProxyLookup(url_to_preconnect, base::nullopt);
-  mock_network_context_->CompleteHostLookup(url_to_preconnect2.host(),
-                                            net::ERR_FAILED);
   Mock::VerifyAndClearExpectations(mock_network_context_.get());
 
   EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url));
   mock_network_context_->CompleteHostLookup(url_to_preconnect.host(),
                                             net::ERR_FAILED);
-  mock_network_context_->CompleteProxyLookup(url_to_preconnect2, base::nullopt);
 }
 
 }  // namespace predictors

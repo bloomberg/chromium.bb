@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "services/service_manager/embedder/embedded_service_info.h"
+#include "services/service_manager/public/cpp/embedded_service_info.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/service_manager/public/mojom/service_factory.mojom.h"
 
@@ -29,7 +29,10 @@ class ServiceFactory : public service_manager::mojom::ServiceFactory {
   ServiceFactory();
   ~ServiceFactory() override;
 
-  virtual void RegisterServices(ServiceMap* services) = 0;
+  virtual void RegisterServices(ServiceMap* services);
+  virtual bool HandleServiceRequest(
+      const std::string& name,
+      service_manager::mojom::ServiceRequest request);
   virtual void OnServiceQuit() {}
 
   // service_manager::mojom::ServiceFactory:

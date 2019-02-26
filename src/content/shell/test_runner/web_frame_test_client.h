@@ -32,6 +32,7 @@ class WebFrameTestClient : public blink::WebLocalFrameClient {
                      WebFrameTestProxyBase* web_frame_test_proxy_base);
 
   ~WebFrameTestClient() override;
+  bool ShouldContinueNavigation(const blink::WebNavigationInfo& info);
 
   static void PrintFrameDescription(WebTestDelegate* delegate,
                                     blink::WebLocalFrame* frame);
@@ -70,20 +71,14 @@ class WebFrameTestClient : public blink::WebLocalFrameClient {
   void DidDispatchPingLoader(const blink::WebURL& url) override;
   void WillSendRequest(blink::WebURLRequest& request) override;
   void DidReceiveResponse(const blink::WebURLResponse& response) override;
-  blink::WebNavigationPolicy DecidePolicyForNavigation(
-      const blink::WebLocalFrameClient::NavigationPolicyInfo& info) override;
   void CheckIfAudioSinkExistsAndIsAuthorized(
       const blink::WebString& sink_id,
-      blink::WebSetSinkIdCallbacks* web_callbacks) override;
+      std::unique_ptr<blink::WebSetSinkIdCallbacks> web_callbacks) override;
   void DidClearWindowObject() override;
-  bool RunFileChooser(const blink::WebFileChooserParams& params,
-                      blink::WebFileChooserCompletion* completion) override;
   blink::WebEffectiveConnectionType GetEffectiveConnectionType() override;
 
  private:
   TestRunner* test_runner();
-  void ChooseFiles(blink::WebFileChooserCompletion* completion,
-                   std::vector<std::string> paths);
   void HandleWebAccessibilityEvent(const blink::WebAXObject& obj,
                                    const char* event_name);
 
@@ -91,8 +86,6 @@ class WebFrameTestClient : public blink::WebLocalFrameClient {
   WebTestDelegate* delegate_;
   WebViewTestProxyBase* web_view_test_proxy_base_;
   WebFrameTestProxyBase* web_frame_test_proxy_base_;
-
-  base::WeakPtrFactory<WebFrameTestClient> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebFrameTestClient);
 };

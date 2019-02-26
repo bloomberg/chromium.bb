@@ -76,6 +76,7 @@ public class Snackbar {
     public static final int UMA_FEED_NTP_STREAM = 26;
     public static final int UMA_WEBAPK_PRIVACY_DISCLOSURE = 27;
     public static final int UMA_TWA_PRIVACY_DISCLOSURE = 28;
+    public static final int UMA_AUTOFILL_ASSISTANT_STOP_UNDO = 29;
 
     private SnackbarController mController;
     private CharSequence mText;

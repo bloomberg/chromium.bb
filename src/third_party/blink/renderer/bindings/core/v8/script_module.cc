@@ -35,14 +35,12 @@ ScriptModule ScriptModule::Compile(v8::Isolate* isolate,
                                    const KURL& source_url,
                                    const KURL& base_url,
                                    const ScriptFetchOptions& options,
-                                   AccessControlStatus access_control_status,
                                    const TextPosition& text_position,
                                    ExceptionState& exception_state) {
   v8::TryCatch try_catch(isolate);
   v8::Local<v8::Module> module;
 
-  if (!V8ScriptRunner::CompileModule(isolate, source, source_url,
-                                     access_control_status, text_position,
+  if (!V8ScriptRunner::CompileModule(isolate, source, source_url, text_position,
                                      ReferrerScriptInfo(base_url, options))
            .ToLocal(&module)) {
     DCHECK(try_catch.HasCaught());

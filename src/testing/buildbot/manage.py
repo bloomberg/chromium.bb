@@ -96,7 +96,6 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
   'ios_chrome_bookmarks_egtests',
   'ios_chrome_integration_egtests',
   'ios_chrome_manual_fill_egtests',
-  'ios_chrome_payments_egtests',
   'ios_chrome_reading_list_egtests',
   'ios_chrome_settings_egtests',
   'ios_chrome_smoke_egtests',
@@ -118,7 +117,6 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
   'chrome_junit_tests',
   'components_background_task_scheduler_junit_tests',
   'components_gcm_driver_junit_tests',
-  'components_instance_id_junit_tests',
   'components_invalidation_impl_junit_tests',
   'components_policy_junit_tests',
   'components_variations_junit_tests',
@@ -133,12 +131,14 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
   'net_junit_tests',
   'net_junit_tests',
   'service_junit_tests',
+  'shipped_binaries',
   'system_webview_apk',
   'ui_junit_tests',
-  'vrcore_fps_test',
   'vr_common_perftests',
   'vr_perf_tests',
+  'vrcore_fps_test',
   'webapk_client_junit_tests',
+  'webapk_shell_apk_h2o_junit_tests',
   'webapk_shell_apk_junit_tests',
 
   # These tests are only run on WebRTC CI.
@@ -175,6 +175,9 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
 
   # These are only for developer convenience and not on any bots.
   'telemetry_gpu_integration_test_scripts_only',
+
+  # These are defined by an android internal gn_isolate_map.pyl file.
+  'chrome_apk',
 }
 
 

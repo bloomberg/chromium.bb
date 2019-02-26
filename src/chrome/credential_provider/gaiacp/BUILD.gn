@@ -10,22 +10,26 @@ import("//build/config/dcheck_always_on.gni")
 import("//build/nocompile.gni")
 import("//build/toolchain/win/midl.gni")
 import("//chrome/process_version_rc_template.gni")
-import("//tools/grit/grit_rule.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
+import("//tools/grit/grit_rule.gni")
 
 # This static library is shared with the setup program.
-
 source_set("common") {
   sources = [
-    "gcp_strings.cc",
-    "gcp_strings.h",
+    "gcp_crash_reporter_client.cc",
+    "gcp_crash_reporter_client.h",
+    "gcp_crash_reporting_utils.cc",
+    "gcp_crash_reporting_utils.h",
     "gcp_utils.cc",
     "gcp_utils.h",
     "logging.cc",
     "logging.h",
   ]
   public_configs = [ ":common_config" ]
+  public_deps = [
+    "//chrome/credential_provider/common:common_constants",
+  ]
   deps = [
     "//base:base",
     "//components/version_info",
@@ -40,6 +44,7 @@ config("common_config") {
   ]
   libs = [
     "secur32.lib",  # For LsaXXX functions
+    "wbemuuid.lib",  # For CLSID_WbemLocator
   ]
 }
 
@@ -55,6 +60,8 @@ source_set("gaiacp_lib") {
     "gaia_credential_provider.h",
     "gaia_credential_provider_module.cc",
     "gaia_credential_provider_module.h",
+    "gcp_crash_reporting.cc",
+    "gcp_crash_reporting.h",
     "initguid.cc",
     "os_process_manager.cc",
     "os_process_manager.h",
@@ -74,12 +81,24 @@ source_set("gaiacp_lib") {
     "win_http_url_fetcher.h",
   ]
   public_configs = [ ":gaiacp_config" ]
-  public_deps = [ ":common" ]
+  public_deps = [
+    ":common",
+  ]
   deps = [
     ":gaia_credential_provider_idl",
     ":resources",
     "//chrome/common:version_header",
+    "//chrome/installer/launcher_support",
+    "//components/crash/content/app:app",
+    "//components/crash/content/app:crash_export_thunks",
+    "//components/crash/content/app:run_as_crashpad_handler",
+    "//components/crash/core/common",
   ]
+  if (is_component_build) {
+    deps += [ "//content/public/common" ]
+  } else {
+    deps += [ "//content/public/common:static_switches" ]
+  }
 }
 
 config("gaiacp_config") {
@@ -115,11 +134,37 @@ process_version_rc_template("version") {
   output = "$root_out_dir/gaia_credential_provider.rc"
 }
 
+if (is_chrome_branded) {
+  gaia_credential_provider_clsid = "0b5bfdf0-4594-47ac-940a-cfc69abc561c"
+} else {
+  gaia_credential_provider_clsid = "89adae71-aee5-4ee2-bffb-e8424e06f519"
+}
+
+action("generate_credential_provider_idl_file") {
+  script = "//build/util/version.py"
+
+  inputs = [
+    "gaia_credential_provider_idl.templ",
+  ]
+  outputs = [
+    "$target_gen_dir/gaia_credential_provider.idl",
+  ]
+
+  args = [
+    "-e",
+    "GAIA_CREDENTIAL_PROVIDER_CLSID='$gaia_credential_provider_clsid'",
+    rebase_path(inputs[0], root_build_dir),
+    rebase_path(outputs[0], root_build_dir),
+  ]
+}
+
 midl("gaia_credential_provider_idl") {
-  sources = [
-    "gaia_credential_provider.idl",
+  dynamic_guid = gaia_credential_provider_clsid
+  deps = [
+    ":generate_credential_provider_idl_file",
   ]
   header_file = "gaia_credential_provider_i.h"
+  sources = get_target_outputs(":generate_credential_provider_idl_file")
 }
 
 grit("resources") {
@@ -129,6 +174,60 @@ grit("resources") {
     "google_logo_small.bmp",
   ]
   outputs = [
+    "gaia_resources_am.pak",
+    "gaia_resources_ar.pak",
+    "gaia_resources_bg.pak",
+    "gaia_resources_bn.pak",
+    "gaia_resources_ca.pak",
+    "gaia_resources_cs.pak",
+    "gaia_resources_da.pak",
+    "gaia_resources_de.pak",
+    "gaia_resources_el.pak",
+    "gaia_resources_en-GB.pak",
+    "gaia_resources_en-US.pak",
+    "gaia_resources_es-419.pak",
+    "gaia_resources_es.pak",
+    "gaia_resources_et.pak",
+    "gaia_resources_fa.pak",
+    "gaia_resources_fake-bidi.pak",
+    "gaia_resources_fi.pak",
+    "gaia_resources_fil.pak",
+    "gaia_resources_fr.pak",
+    "gaia_resources_gu.pak",
+    "gaia_resources_he.pak",
+    "gaia_resources_hi.pak",
+    "gaia_resources_hr.pak",
+    "gaia_resources_hu.pak",
+    "gaia_resources_id.pak",
+    "gaia_resources_it.pak",
+    "gaia_resources_ja.pak",
+    "gaia_resources_kn.pak",
+    "gaia_resources_ko.pak",
+    "gaia_resources_lt.pak",
+    "gaia_resources_lv.pak",
+    "gaia_resources_ml.pak",
+    "gaia_resources_mr.pak",
+    "gaia_resources_ms.pak",
+    "gaia_resources_nb.pak",
+    "gaia_resources_nl.pak",
+    "gaia_resources_pl.pak",
+    "gaia_resources_pt-BR.pak",
+    "gaia_resources_pt-PT.pak",
+    "gaia_resources_ro.pak",
+    "gaia_resources_ru.pak",
+    "gaia_resources_sk.pak",
+    "gaia_resources_sl.pak",
+    "gaia_resources_sr.pak",
+    "gaia_resources_sv.pak",
+    "gaia_resources_sw.pak",
+    "gaia_resources_ta.pak",
+    "gaia_resources_te.pak",
+    "gaia_resources_th.pak",
+    "gaia_resources_tr.pak",
+    "gaia_resources_uk.pak",
+    "gaia_resources_vi.pak",
+    "gaia_resources_zh-CN.pak",
+    "gaia_resources_zh-TW.pak",
     "grit/gaia_resources.h",
     "grit/gaia_resources.rc",
   ]
@@ -155,7 +254,5 @@ shared_library("gaia1_0") {
     ":version",
     "//chrome/common:version_header",
   ]
-  configs += [
-    "//build/config/win:windowed",
-  ]
+  configs += [ "//build/config/win:windowed" ]
 }

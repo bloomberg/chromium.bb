@@ -1412,7 +1412,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderPostRequest) {
   KURL test_url(kTestURL);
   ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
   ResourceRequest resource_request(test_url);
-  resource_request.SetHTTPMethod(HTTPNames::POST);
+  resource_request.SetHTTPMethod(http_names::kPOST);
   FetchParameters params(resource_request);
   params.SetAllowImagePlaceholder();
   ImageResource* image_resource = ImageResource::Fetch(params, CreateFetcher());
@@ -1769,7 +1769,7 @@ TEST(ImageResourceTest,
   const struct {
     int status_code;
     AtomicString content_range;
-    size_t data_size;
+    uint32_t data_size;
   } tests[] = {
       {200, g_null_atom, sizeof(kBadImageData)},
       {206, BuildContentRange(sizeof(kBadImageData), sizeof(kBadImageData)),
@@ -1851,7 +1851,7 @@ TEST(ImageResourceTest, PeriodicFlushTest) {
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
       platform;
 
-  EmptyChromeClient* chrome_client = new EmptyChromeClient();
+  EmptyChromeClient* chrome_client = MakeGarbageCollected<EmptyChromeClient>();
   Page::PageClients clients;
   FillWithEmptyClients(clients);
   clients.chrome_client = chrome_client;
@@ -1963,7 +1963,7 @@ TEST(ImageResourceTest, DeferredInvalidation) {
 
   // Image animated.
   static_cast<ImageObserver*>(image_resource->GetContent())
-      ->AnimationAdvanced(image_resource->GetContent()->GetImage());
+      ->Changed(image_resource->GetContent()->GetImage());
   EXPECT_EQ(obs->ImageChangedCount(), 3);
   EXPECT_EQ(obs->Defer(), ImageResourceObserver::CanDeferInvalidation::kYes);
 }
@@ -1993,7 +1993,7 @@ class ImageResourceCounterTest : public testing::Test {
     // Mark it as coming from a UA stylesheet (if needed).
     if (ua_resource) {
       fetch_params.MutableOptions().initiator_info.name =
-          FetchInitiatorTypeNames::uacss;
+          fetch_initiator_type_names::kUacss;
     }
 
     // Fetch the ImageResource.

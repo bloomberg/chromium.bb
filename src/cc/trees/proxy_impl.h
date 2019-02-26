@@ -20,6 +20,8 @@ class LayerTreeHost;
 class ProxyMain;
 class RenderFrameMetadataObserver;
 
+class ScopedCompletionEvent;
+
 // This class aggregates all the interactions that the main side of the
 // compositor needs to have with the impl side.
 // The class is created and lives on the impl thread.
@@ -39,7 +41,7 @@ class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
       base::WeakPtr<ProxyMain> proxy_main_frame_sink_bound_weak_ptr);
   void InitializeMutatorOnImpl(std::unique_ptr<LayerTreeMutator> mutator);
   void SetInputThrottledUntilCommitOnImpl(bool is_throttled);
-  void SetDeferCommitsOnImpl(bool defer_commits) const;
+  void SetDeferMainFrameUpdateOnImpl(bool defer_main_frame_update) const;
   void SetNeedsRedrawOnImpl(const gfx::Rect& damage_rect);
   void SetNeedsCommitOnImpl();
   void BeginMainFrameAbortedOnImpl(
@@ -109,6 +111,7 @@ class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
   bool WillBeginImplFrame(const viz::BeginFrameArgs& args) override;
   void DidFinishImplFrame() override;
   void DidNotProduceFrame(const viz::BeginFrameAck& ack) override;
+  void WillNotReceiveBeginFrame() override;
   void ScheduledActionSendBeginMainFrame(
       const viz::BeginFrameArgs& args) override;
   DrawResult ScheduledActionDrawIfPossible() override;
@@ -122,6 +125,7 @@ class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
   void SendBeginMainFrameNotExpectedSoon() override;
   void ScheduledActionBeginMainFrameNotExpectedUntil(
       base::TimeTicks time) override;
+  void FrameIntervalUpdated(base::TimeDelta interval) override {}
   size_t CompositedAnimationsCount() const override;
   size_t MainThreadAnimationsCount() const override;
   bool CurrentFrameHadRAF() const override;
@@ -141,10 +145,10 @@ class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
   bool commit_completion_waits_for_activation_;
 
   // Set when the main thread is waiting on a commit to complete.
-  CompletionEvent* commit_completion_event_;
+  std::unique_ptr<ScopedCompletionEvent> commit_completion_event_;
 
   // Set when the main thread is waiting for activation to complete.
-  CompletionEvent* activation_completion_event_;
+  std::unique_ptr<ScopedCompletionEvent> activation_completion_event_;
 
   // Set when the next draw should post DidCommitAndDrawFrame to the main
   // thread.

@@ -164,8 +164,11 @@ WebContents* LoginHandler::GetWebContentsForLogin() const {
 }
 
 password_manager::PasswordManager* LoginHandler::GetPasswordManagerForLogin() {
+  WebContents* contents = GetWebContentsForLogin();
+  if (!contents)
+    return nullptr;
   password_manager::PasswordManagerClient* client =
-      ChromePasswordManagerClient::FromWebContents(GetWebContentsForLogin());
+      ChromePasswordManagerClient::FromWebContents(contents);
   return client ? client->GetPasswordManager() : nullptr;
 }
 
@@ -626,7 +629,8 @@ void LoginHandler::LoginDialogCallback(
   auto continuation = base::BindOnce(&LoginHandler::MaybeSetUpLoginPrompt,
                                      request_url, base::RetainedRef(auth_info),
                                      base::RetainedRef(handler), is_main_frame);
-  if (api->MaybeProxyAuthRequest(auth_info, std::move(response_headers),
+  if (api->MaybeProxyAuthRequest(parent_contents->GetBrowserContext(),
+                                 auth_info, std::move(response_headers),
                                  request_id, is_main_frame,
                                  std::move(continuation))) {
     return;
@@ -648,7 +652,8 @@ void LoginHandler::MaybeSetUpLoginPrompt(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   WebContents* parent_contents = handler->GetWebContentsForLogin();
-  if (!parent_contents || handler->WasAuthHandled()) {
+  if (!parent_contents || !parent_contents->GetDelegate() ||
+      handler->WasAuthHandled()) {
     // The request may have been canceled, or it may be for a renderer not
     // hosted by a tab (e.g. an extension). Cancel just in case (canceling twice
     // is a no-op).

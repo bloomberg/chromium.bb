@@ -29,6 +29,7 @@
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/common/content_switches_internal.h"
 #include "ui/base/layout.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
@@ -102,8 +103,23 @@ MouseWheelPhaseHandler* RenderWidgetHostViewBase::GetMouseWheelPhaseHandler() {
   return nullptr;
 }
 
-bool RenderWidgetHostViewBase::OnMessageReceived(const IPC::Message& msg){
-  return false;
+void RenderWidgetHostViewBase::StopFlingingIfNecessary(
+    const blink::WebGestureEvent& event,
+    InputEventAckState ack_result) {
+  // Reset view_stopped_flinging_for_test_ at the beginning of the scroll
+  // sequence.
+  if (event.GetType() == blink::WebInputEvent::kGestureScrollBegin)
+    view_stopped_flinging_for_test_ = false;
+
+  bool processed = INPUT_EVENT_ACK_STATE_CONSUMED == ack_result;
+  if (!processed &&
+      event.GetType() == blink::WebInputEvent::kGestureScrollUpdate &&
+      event.data.scroll_update.inertial_phase ==
+          blink::WebGestureEvent::kMomentumPhase &&
+      event.SourceDevice() != blink::kWebGestureDeviceSyntheticAutoscroll) {
+    StopFling();
+    view_stopped_flinging_for_test_ = true;
+  }
 }
 
 void RenderWidgetHostViewBase::OnRenderFrameMetadataChangedBeforeActivation(
@@ -119,6 +135,9 @@ void RenderWidgetHostViewBase::OnRenderFrameSubmission() {}
 
 void RenderWidgetHostViewBase::OnLocalSurfaceIdChanged(
     const cc::RenderFrameMetadata& metadata) {}
+
+void RenderWidgetHostViewBase::UpdateIntrinsicSizingInfo(
+    const blink::WebIntrinsicSizingInfo& sizing_info) {}
 
 gfx::Size RenderWidgetHostViewBase::GetCompositorViewportPixelSize() const {
   return gfx::ScaleToCeiledSize(GetRequestedRendererSize(),
@@ -299,24 +318,6 @@ base::string16 RenderWidgetHostViewBase::GetSelectedText() {
   return GetTextInputManager()->GetTextSelection(this)->selected_text();
 }
 
-base::string16 RenderWidgetHostViewBase::GetSurroundingText() {
-  if (!GetTextInputManager())
-    return base::string16();
-  return GetTextInputManager()->GetTextSelection(this)->text();
-}
-
-gfx::Range RenderWidgetHostViewBase::GetSelectedRange() {
-  if (!GetTextInputManager())
-    return gfx::Range();
-  return GetTextInputManager()->GetTextSelection(this)->range();
-}
-
-size_t RenderWidgetHostViewBase::GetOffsetForSurroundingText() {
-  if (!GetTextInputManager())
-    return 0;
-  return GetTextInputManager()->GetTextSelection(this)->offset();
-}
-
 void RenderWidgetHostViewBase::SetBackgroundColor(SkColor color) {
   DCHECK(SkColorGetA(color) == SK_AlphaOPAQUE ||
          SkColorGetA(color) == SK_AlphaTRANSPARENT);
@@ -384,13 +385,10 @@ void RenderWidgetHostViewBase::GestureEventAck(
     InputEventAckState ack_result) {
 }
 
-void RenderWidgetHostViewBase::ForwardTouchpadPinchIfNecessary(
+void RenderWidgetHostViewBase::ForwardTouchpadZoomEventIfNecessary(
     const blink::WebGestureEvent& event,
     InputEventAckState ack_result) {
-  if (!blink::WebInputEvent::IsPinchGestureEventType(event.GetType()))
-    return;
-  if (event.SourceDevice() !=
-      blink::WebGestureDevice::kWebGestureDeviceTouchpad)
+  if (!event.IsTouchpadZoomEvent())
     return;
   if (!event.NeedsWheelEvent())
     return;
@@ -425,6 +423,18 @@ void RenderWidgetHostViewBase::ForwardTouchpadPinchIfNecessary(
         host()->ForwardGestureEvent(pinch_end_event);
       }
       break;
+    case blink::WebInputEvent::kGestureDoubleTap:
+      if (ack_result != INPUT_EVENT_ACK_STATE_CONSUMED) {
+        blink::WebGestureEvent double_tap(event);
+        double_tap.SetNeedsWheelEvent(false);
+        // TODO(mcnee): Support double-tap zoom gesture for OOPIFs. For now,
+        // we naively send this to the main frame. If this is over an OOPIF,
+        // then the iframe element will incorrectly be used for the scale
+        // calculation rather than the element in the OOPIF.
+        // https://crbug.com/758348
+        host()->ForwardGestureEvent(double_tap);
+      }
+      break;
     default:
       NOTREACHED();
   }
@@ -453,11 +463,6 @@ RenderWidgetHostViewBase::CreateBrowserAccessibilityManager(
 void RenderWidgetHostViewBase::AccessibilityShowMenu(const gfx::Point& point) {
   if (host())
     host()->ShowContextMenuAtPoint(point, ui::MENU_SOURCE_NONE);
-}
-
-gfx::Point RenderWidgetHostViewBase::AccessibilityOriginInScreen(
-    const gfx::Rect& bounds) {
-  return bounds.origin();
 }
 
 gfx::AcceleratedWidget
@@ -544,10 +549,6 @@ RenderWidgetHostViewBase::DidUpdateVisualProperties(
       base::BindOnce(&RenderWidgetHostViewBase::SynchronizeVisualProperties,
                      weak_factory_.GetWeakPtr());
   return viz::ScopedSurfaceIdAllocator(std::move(allocation_task));
-}
-
-bool RenderWidgetHostViewBase::IsLocalSurfaceIdAllocationSuppressed() const {
-  return false;
 }
 
 base::WeakPtr<RenderWidgetHostViewBase> RenderWidgetHostViewBase::GetWeakPtr() {
@@ -789,6 +790,19 @@ TextInputManager* RenderWidgetHostViewBase::GetTextInputManager() {
   return text_input_manager_;
 }
 
+void RenderWidgetHostViewBase::StopFling() {
+  if (!host())
+    return;
+
+  host()->StopFling();
+
+  // In case of scroll bubbling tells the child's fling controller which is in
+  // charge of generating GSUs to stop flinging.
+  if (host()->delegate() && host()->delegate()->GetInputEventRouter()) {
+    host()->delegate()->GetInputEventRouter()->StopFling();
+  }
+}
+
 void RenderWidgetHostViewBase::AddObserver(
     RenderWidgetHostViewBaseObserver* observer) {
   observers_.AddObserver(observer);
@@ -906,20 +920,30 @@ bool RenderWidgetHostViewBase::TransformPointToTargetCoordSpace(
 
   std::vector<viz::FrameSinkId> target_ancestors;
   target_ancestors.push_back(target_view->GetFrameSinkId());
-  RenderWidgetHostViewBase* cur_view = target_view;
-  while (cur_view->IsRenderWidgetHostViewChildFrame()) {
-    if (cur_view->IsRenderWidgetHostViewGuest()) {
-      cur_view = static_cast<RenderWidgetHostViewGuest*>(cur_view)
-                     ->GetOwnerRenderWidgetHostView();
-    } else {
-      cur_view = static_cast<RenderWidgetHostViewChildFrame*>(cur_view)
-                     ->GetParentView();
+
+  // Optimization using |target_ancestors| does not work with Window Service
+  // because the top-level window's ClientRoot registers a frame sink id that
+  // could not be derived here. HisTestQuery::TransformLocationForTarget fails
+  // because of the missed chain in |target_ancestors|. Passing only the target
+  // if Window Service used and TransformLocationForTarget would fallback to
+  // use GetTransformToTarget.
+  // TODO(crbug.com/895029): Bring back |target_ancestors| optimization for WS.
+  if (!features::IsUsingWindowService()) {
+    RenderWidgetHostViewBase* cur_view = target_view;
+    while (cur_view->IsRenderWidgetHostViewChildFrame()) {
+      if (cur_view->IsRenderWidgetHostViewGuest()) {
+        cur_view = static_cast<RenderWidgetHostViewGuest*>(cur_view)
+                       ->GetOwnerRenderWidgetHostView();
+      } else {
+        cur_view = static_cast<RenderWidgetHostViewChildFrame*>(cur_view)
+                       ->GetParentView();
+      }
+      if (!cur_view)
+        return false;
+      target_ancestors.push_back(cur_view->GetFrameSinkId());
     }
-    if (!cur_view)
-      return false;
-    target_ancestors.push_back(cur_view->GetFrameSinkId());
+    target_ancestors.push_back(root_frame_sink_id);
   }
-  target_ancestors.push_back(root_frame_sink_id);
 
   float device_scale_factor = original_view->GetDeviceScaleFactor();
   DCHECK_GT(device_scale_factor, 0.0f);

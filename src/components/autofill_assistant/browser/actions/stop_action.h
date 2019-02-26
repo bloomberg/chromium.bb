@@ -17,11 +17,11 @@ class StopAction : public Action {
   explicit StopAction(const ActionProto& proto);
   ~StopAction() override;
 
-  // Overrides Action:
-  void ProcessAction(ActionDelegate* delegate,
-                     ProcessActionCallback callback) override;
-
  private:
+  // Overrides Action:
+  void InternalProcessAction(ActionDelegate* delegate,
+                             ProcessActionCallback callback) override;
+
   DISALLOW_COPY_AND_ASSIGN(StopAction);
 };
 

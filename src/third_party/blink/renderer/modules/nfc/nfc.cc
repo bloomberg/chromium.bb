@@ -95,9 +95,9 @@ NFCWatchMode toNFCWatchMode(const String& watchMode) {
 // String or Number => 'text' record
 // ArrayBuffer => 'opaque' record
 // JSON serializable Object => 'json' record
-NFCRecordType deduceRecordTypeFromDataType(const blink::NFCRecord& record) {
-  if (record.hasData()) {
-    v8::Local<v8::Value> value = record.data().V8Value();
+NFCRecordType deduceRecordTypeFromDataType(const blink::NFCRecord* record) {
+  if (record->hasData()) {
+    v8::Local<v8::Value> value = record->data().V8Value();
 
     if (value->IsString() ||
         (value->IsNumber() && !std::isnan(value.As<v8::Number>()->Value()))) {
@@ -220,12 +220,12 @@ struct TypeConverter<base::Optional<Vector<uint8_t>>, blink::ScriptValue> {
 };
 
 template <>
-struct TypeConverter<NFCRecordPtr, blink::NFCRecord> {
-  static NFCRecordPtr Convert(const blink::NFCRecord& record) {
+struct TypeConverter<NFCRecordPtr, blink::NFCRecord*> {
+  static NFCRecordPtr Convert(const blink::NFCRecord* record) {
     NFCRecordPtr recordPtr = NFCRecord::New();
 
-    if (record.hasRecordType())
-      recordPtr->record_type = toNFCRecordType(record.recordType());
+    if (record->hasRecordType())
+      recordPtr->record_type = toNFCRecordType(record->recordType());
     else
       recordPtr->record_type = deduceRecordTypeFromDataType(record);
 
@@ -237,14 +237,14 @@ struct TypeConverter<NFCRecordPtr, blink::NFCRecord> {
     switch (recordPtr->record_type) {
       case NFCRecordType::TEXT:
       case NFCRecordType::URL:
-        setMediaType(recordPtr, record.mediaType(), kPlainTextMimeType);
+        setMediaType(recordPtr, record->mediaType(), kPlainTextMimeType);
         recordPtr->media_type.append(kCharSetUTF8);
         break;
       case NFCRecordType::JSON:
-        setMediaType(recordPtr, record.mediaType(), kJsonMimeType);
+        setMediaType(recordPtr, record->mediaType(), kJsonMimeType);
         break;
       case NFCRecordType::OPAQUE_RECORD:
-        setMediaType(recordPtr, record.mediaType(), kOpaqueMimeType);
+        setMediaType(recordPtr, record->mediaType(), kOpaqueMimeType);
         break;
       default:
         NOTREACHED();
@@ -252,7 +252,7 @@ struct TypeConverter<NFCRecordPtr, blink::NFCRecord> {
     }
 
     auto recordData =
-        mojo::ConvertTo<base::Optional<Vector<uint8_t>>>(record.data());
+        mojo::ConvertTo<base::Optional<Vector<uint8_t>>>(record->data());
     // If JS object cannot be converted to uint8_t array, return null,
     // interrupt NFCMessage conversion algorithm and reject promise with
     // SyntaxError exception.
@@ -265,13 +265,13 @@ struct TypeConverter<NFCRecordPtr, blink::NFCRecord> {
 };
 
 template <>
-struct TypeConverter<NFCMessagePtr, blink::NFCMessage> {
-  static NFCMessagePtr Convert(const blink::NFCMessage& message) {
+struct TypeConverter<NFCMessagePtr, blink::NFCMessage*> {
+  static NFCMessagePtr Convert(const blink::NFCMessage* message) {
     NFCMessagePtr messagePtr = NFCMessage::New();
-    messagePtr->url = message.url();
-    messagePtr->data.resize(message.records().size());
-    for (wtf_size_t i = 0; i < message.records().size(); ++i) {
-      NFCRecordPtr record = NFCRecord::From(message.records()[i]);
+    messagePtr->url = message->url();
+    messagePtr->data.resize(message->records().size());
+    for (wtf_size_t i = 0; i < message->records().size(); ++i) {
+      NFCRecordPtr record = NFCRecord::From(message->records()[i].Get());
       if (record.is_null())
         return nullptr;
 
@@ -308,25 +308,25 @@ struct TypeConverter<NFCMessagePtr, blink::NFCPushMessage> {
 };
 
 template <>
-struct TypeConverter<NFCPushOptionsPtr, blink::NFCPushOptions> {
-  static NFCPushOptionsPtr Convert(const blink::NFCPushOptions& pushOptions) {
+struct TypeConverter<NFCPushOptionsPtr, const blink::NFCPushOptions*> {
+  static NFCPushOptionsPtr Convert(const blink::NFCPushOptions* pushOptions) {
     // https://w3c.github.io/web-nfc/#the-nfcpushoptions-dictionary
     // Default values for NFCPushOptions dictionary are:
     // target = 'any', timeout = Infinity, ignoreRead = true
     NFCPushOptionsPtr pushOptionsPtr = NFCPushOptions::New();
 
-    if (pushOptions.hasTarget())
-      pushOptionsPtr->target = toNFCPushTarget(pushOptions.target());
+    if (pushOptions->hasTarget())
+      pushOptionsPtr->target = toNFCPushTarget(pushOptions->target());
     else
       pushOptionsPtr->target = NFCPushTarget::ANY;
 
-    if (pushOptions.hasTimeout())
-      pushOptionsPtr->timeout = pushOptions.timeout();
+    if (pushOptions->hasTimeout())
+      pushOptionsPtr->timeout = pushOptions->timeout();
     else
       pushOptionsPtr->timeout = std::numeric_limits<double>::infinity();
 
-    if (pushOptions.hasIgnoreRead())
-      pushOptionsPtr->ignore_read = pushOptions.ignoreRead();
+    if (pushOptions->hasIgnoreRead())
+      pushOptionsPtr->ignore_read = pushOptions->ignoreRead();
     else
       pushOptionsPtr->ignore_read = true;
 
@@ -335,25 +335,25 @@ struct TypeConverter<NFCPushOptionsPtr, blink::NFCPushOptions> {
 };
 
 template <>
-struct TypeConverter<NFCWatchOptionsPtr, blink::NFCWatchOptions> {
+struct TypeConverter<NFCWatchOptionsPtr, const blink::NFCWatchOptions*> {
   static NFCWatchOptionsPtr Convert(
-      const blink::NFCWatchOptions& watchOptions) {
+      const blink::NFCWatchOptions* watchOptions) {
     // https://w3c.github.io/web-nfc/#the-nfcwatchoptions-dictionary
     // Default values for NFCWatchOptions dictionary are:
     // url = "", recordType = null, mediaType = "", mode = "web-nfc-only"
     NFCWatchOptionsPtr watchOptionsPtr = NFCWatchOptions::New();
-    watchOptionsPtr->url = watchOptions.url();
-    watchOptionsPtr->media_type = watchOptions.mediaType();
+    watchOptionsPtr->url = watchOptions->url();
+    watchOptionsPtr->media_type = watchOptions->mediaType();
 
-    if (watchOptions.hasMode())
-      watchOptionsPtr->mode = toNFCWatchMode(watchOptions.mode());
+    if (watchOptions->hasMode())
+      watchOptionsPtr->mode = toNFCWatchMode(watchOptions->mode());
     else
       watchOptionsPtr->mode = NFCWatchMode::WEBNFC_ONLY;
 
-    if (watchOptions.hasRecordType()) {
+    if (watchOptions->hasRecordType()) {
       watchOptionsPtr->record_filter = NFCRecordTypeFilter::New();
       watchOptionsPtr->record_filter->record_type =
-          toNFCRecordType(watchOptions.recordType());
+          toNFCRecordType(watchOptions->recordType());
     }
 
     return watchOptionsPtr;
@@ -380,8 +380,8 @@ ScriptPromise RejectWithDOMException(ScriptState* script_state,
 }
 
 ScriptPromise RejectIfInvalidTextRecord(ScriptState* script_state,
-                                        const NFCRecord& record) {
-  v8::Local<v8::Value> value = record.data().V8Value();
+                                        const NFCRecord* record) {
+  v8::Local<v8::Value> value = record->data().V8Value();
   if (!value->IsString() &&
       !(value->IsNumber() && !std::isnan(value.As<v8::Number>()->Value()))) {
     return RejectWithTypeError(script_state,
@@ -389,8 +389,8 @@ ScriptPromise RejectIfInvalidTextRecord(ScriptState* script_state,
                                "String or UnrestrctedDouble type.");
   }
 
-  if (record.hasMediaType() &&
-      !record.mediaType().StartsWithIgnoringASCIICase(kPlainTextMimePrefix)) {
+  if (record->hasMediaType() &&
+      !record->mediaType().StartsWithIgnoringASCIICase(kPlainTextMimePrefix)) {
     return RejectWithDOMException(script_state, DOMExceptionCode::kSyntaxError,
                                   "Invalid media type for 'text' record.");
   }
@@ -399,13 +399,13 @@ ScriptPromise RejectIfInvalidTextRecord(ScriptState* script_state,
 }
 
 ScriptPromise RejectIfInvalidURLRecord(ScriptState* script_state,
-                                       const NFCRecord& record) {
-  if (!record.data().V8Value()->IsString()) {
+                                       const NFCRecord* record) {
+  if (!record->data().V8Value()->IsString()) {
     return RejectWithTypeError(
         script_state, "The data for 'url' NFCRecord must be of String type.");
   }
 
-  blink::V8StringResource<> string_resource = record.data().V8Value();
+  blink::V8StringResource<> string_resource = record->data().V8Value();
   if (!string_resource.Prepare() ||
       !KURL(NullURL(), string_resource).IsValid()) {
     return RejectWithDOMException(script_state, DOMExceptionCode::kSyntaxError,
@@ -416,8 +416,8 @@ ScriptPromise RejectIfInvalidURLRecord(ScriptState* script_state,
 }
 
 ScriptPromise RejectIfInvalidJSONRecord(ScriptState* script_state,
-                                        const NFCRecord& record) {
-  v8::Local<v8::Value> value = record.data().V8Value();
+                                        const NFCRecord* record) {
+  v8::Local<v8::Value> value = record->data().V8Value();
   if (!value->IsObject() || value->IsArrayBuffer()) {
     return RejectWithTypeError(
         script_state, "The data for 'json' NFCRecord must be of Object type.");
@@ -425,10 +425,10 @@ ScriptPromise RejectIfInvalidJSONRecord(ScriptState* script_state,
 
   // If JSON record has media type, it must be equal to "application/json" or
   // start with "application/" and end with "+json".
-  if (record.hasMediaType() &&
-      (record.mediaType() != kJsonMimeType &&
-       !(record.mediaType().StartsWithIgnoringASCIICase(kJsonMimePrefix) &&
-         record.mediaType().EndsWithIgnoringASCIICase(kJsonMimePostfix)))) {
+  if (record->hasMediaType() &&
+      (record->mediaType() != kJsonMimeType &&
+       !(record->mediaType().StartsWithIgnoringASCIICase(kJsonMimePrefix) &&
+         record->mediaType().EndsWithIgnoringASCIICase(kJsonMimePostfix)))) {
     return RejectWithDOMException(script_state, DOMExceptionCode::kSyntaxError,
                                   "Invalid media type for 'json' record.");
   }
@@ -437,8 +437,8 @@ ScriptPromise RejectIfInvalidJSONRecord(ScriptState* script_state,
 }
 
 ScriptPromise RejectIfInvalidOpaqueRecord(ScriptState* script_state,
-                                          const NFCRecord& record) {
-  if (!record.data().V8Value()->IsArrayBuffer()) {
+                                          const NFCRecord* record) {
+  if (!record->data().V8Value()->IsArrayBuffer()) {
     return RejectWithTypeError(
         script_state,
         "The data for 'opaque' NFCRecord must be of ArrayBuffer type.");
@@ -448,10 +448,10 @@ ScriptPromise RejectIfInvalidOpaqueRecord(ScriptState* script_state,
 }
 
 ScriptPromise RejectIfInvalidNFCRecord(ScriptState* script_state,
-                                       const NFCRecord& record) {
+                                       const NFCRecord* record) {
   device::mojom::blink::NFCRecordType type;
-  if (record.hasRecordType()) {
-    type = mojo::toNFCRecordType(record.recordType());
+  if (record->hasRecordType()) {
+    type = mojo::toNFCRecordType(record->recordType());
   } else {
     type = mojo::deduceRecordTypeFromDataType(record);
 
@@ -463,7 +463,7 @@ ScriptPromise RejectIfInvalidNFCRecord(ScriptState* script_state,
   }
 
   // Non-empty records must have data.
-  if (!record.hasData() &&
+  if (!record->hasData() &&
       (type != device::mojom::blink::NFCRecordType::EMPTY)) {
     return RejectWithTypeError(script_state,
                                "Nonempty NFCRecord must have data.");
@@ -489,7 +489,7 @@ ScriptPromise RejectIfInvalidNFCRecord(ScriptState* script_state,
 
 ScriptPromise RejectIfInvalidNFCRecordArray(
     ScriptState* script_state,
-    const HeapVector<NFCRecord>& records) {
+    const HeapVector<Member<NFCRecord>>& records) {
   for (const auto& record : records) {
     ScriptPromise isValidRecord =
         RejectIfInvalidNFCRecord(script_state, record);
@@ -513,13 +513,13 @@ ScriptPromise RejectIfInvalidNFCPushMessage(
   if (push_message.IsNFCMessage()) {
     // https://w3c.github.io/web-nfc/#the-push-method
     // If NFCMessage.records is empty, reject promise with TypeError
-    const NFCMessage& message = push_message.GetAsNFCMessage();
-    if (!message.hasRecords() || message.records().IsEmpty()) {
+    const NFCMessage* message = push_message.GetAsNFCMessage();
+    if (!message->hasRecords() || message->records().IsEmpty()) {
       return RejectWithTypeError(script_state,
                                  "Empty NFCMessage was provided.");
     }
 
-    return RejectIfInvalidNFCRecordArray(script_state, message.records());
+    return RejectIfInvalidNFCRecordArray(script_state, message->records());
   }
 
   return ScriptPromise();
@@ -605,23 +605,23 @@ v8::Local<v8::Value> ToV8(ScriptState* script_state,
   return v8::Local<v8::Value>();
 }
 
-NFCRecord ToNFCRecord(ScriptState* script_state,
-                      const device::mojom::blink::NFCRecordPtr& record) {
-  NFCRecord nfc_record;
-  nfc_record.setMediaType(record->media_type);
-  nfc_record.setRecordType(ToNFCRecordType(record->record_type));
-  nfc_record.setData(ScriptValue(script_state, ToV8(script_state, record)));
+NFCRecord* ToNFCRecord(ScriptState* script_state,
+                       const device::mojom::blink::NFCRecordPtr& record) {
+  NFCRecord* nfc_record = NFCRecord::Create();
+  nfc_record->setMediaType(record->media_type);
+  nfc_record->setRecordType(ToNFCRecordType(record->record_type));
+  nfc_record->setData(ScriptValue(script_state, ToV8(script_state, record)));
   return nfc_record;
 }
 
-NFCMessage ToNFCMessage(ScriptState* script_state,
-                        const device::mojom::blink::NFCMessagePtr& message) {
-  NFCMessage nfc_message;
-  nfc_message.setURL(message->url);
-  blink::HeapVector<NFCRecord> records;
+NFCMessage* ToNFCMessage(ScriptState* script_state,
+                         const device::mojom::blink::NFCMessagePtr& message) {
+  NFCMessage* nfc_message = NFCMessage::Create();
+  nfc_message->setURL(message->url);
+  blink::HeapVector<Member<NFCRecord>> records;
   for (wtf_size_t i = 0; i < message->data.size(); ++i)
     records.push_back(ToNFCRecord(script_state, message->data[i]));
-  nfc_message.setRecords(records);
+  nfc_message->setRecords(records);
   return nfc_message;
 }
 
@@ -655,7 +655,7 @@ NFC::NFC(LocalFrame* frame)
 }
 
 NFC* NFC::Create(LocalFrame* frame) {
-  NFC* nfc = new NFC(frame);
+  NFC* nfc = MakeGarbageCollected<NFC>(frame);
   return nfc;
 }
 
@@ -679,7 +679,7 @@ void NFC::ContextDestroyed(ExecutionContext*) {
 // https://w3c.github.io/web-nfc/#dom-nfc-push
 ScriptPromise NFC::push(ScriptState* script_state,
                         const NFCPushMessage& push_message,
-                        const NFCPushOptions& options) {
+                        const NFCPushOptions* options) {
   ScriptPromise promise = RejectIfNotSupported(script_state);
   if (!promise.IsEmpty())
     return promise;
@@ -692,8 +692,8 @@ ScriptPromise NFC::push(ScriptState* script_state,
   // https://w3c.github.io/web-nfc/#dom-nfc-push
   // 9. If timeout value is NaN or negative, reject promise with "TypeError"
   // and abort these steps.
-  if (options.hasTimeout() &&
-      (std::isnan(options.timeout()) || options.timeout() < 0)) {
+  if (options->hasTimeout() &&
+      (std::isnan(options->timeout()) || options->timeout() < 0)) {
     return RejectWithTypeError(
         script_state, "Invalid NFCPushOptions.timeout value was provided.");
   }
@@ -748,14 +748,14 @@ ScriptPromise NFC::cancelPush(ScriptState* script_state, const String& target) {
 // https://w3c.github.io/web-nfc/#dom-nfc-watch
 ScriptPromise NFC::watch(ScriptState* script_state,
                          V8MessageCallback* callback,
-                         const NFCWatchOptions& options) {
+                         const NFCWatchOptions* options) {
   ScriptPromise promise = RejectIfNotSupported(script_state);
   if (!promise.IsEmpty())
     return promise;
 
   // https://w3c.github.io/web-nfc/#dom-nfc-watch (Step 9)
-  if (options.hasURL() && !options.url().IsEmpty()) {
-    KURL pattern_url(options.url());
+  if (options->hasURL() && !options->url().IsEmpty()) {
+    KURL pattern_url(options->url());
     if (!pattern_url.IsValid() || pattern_url.Protocol() != kProtocolHttps) {
       return RejectWithDOMException(script_state,
                                     DOMExceptionCode::kSyntaxError,
@@ -862,7 +862,7 @@ void NFC::OnWatch(const Vector<uint32_t>& ids,
       ScriptState* script_state = callback->CallbackRelevantScriptState();
       DCHECK(script_state);
       ScriptState::Scope scope(script_state);
-      NFCMessage nfc_message = ToNFCMessage(script_state, message);
+      const NFCMessage* nfc_message = ToNFCMessage(script_state, message);
       callback->InvokeAndReportException(nullptr, nfc_message);
     }
   }

@@ -82,11 +82,6 @@ struct TestDidChangeVisibleSecurityStateInfo {
   WebState* web_state = nullptr;
 };
 
-// Arguments passed to |DidSuppressDialog|.
-struct TestDidSuppressDialogInfo {
-  WebState* web_state = nullptr;
-};
-
 // Arguments passed to |FaviconUrlUpdated|.
 struct TestUpdateFaviconUrlCandidatesInfo {
   TestUpdateFaviconUrlCandidatesInfo();

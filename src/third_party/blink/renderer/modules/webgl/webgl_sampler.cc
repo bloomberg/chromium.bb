@@ -10,7 +10,7 @@
 namespace blink {
 
 WebGLSampler* WebGLSampler::Create(WebGL2RenderingContextBase* ctx) {
-  return new WebGLSampler(ctx);
+  return MakeGarbageCollected<WebGLSampler>(ctx);
 }
 
 WebGLSampler::WebGLSampler(WebGL2RenderingContextBase* ctx)

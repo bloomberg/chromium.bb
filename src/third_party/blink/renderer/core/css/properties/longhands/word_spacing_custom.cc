@@ -8,13 +8,13 @@
 #include "third_party/blink/renderer/core/css/zoom_adjusted_pixel_value.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* WordSpacing::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ParseSpacing(range, context);
+  return css_parsing_utils::ParseSpacing(range, context);
 }
 
 const CSSValue* WordSpacing::CSSValueFromComputedStyleInternal(
@@ -26,5 +26,5 @@ const CSSValue* WordSpacing::CSSValueFromComputedStyleInternal(
   return ZoomAdjustedPixelValue(style.WordSpacing(), style);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

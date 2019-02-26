@@ -57,8 +57,9 @@ FEConvolveMatrix* FEConvolveMatrix::Create(Filter* filter,
                                            EdgeModeType edge_mode,
                                            bool preserve_alpha,
                                            const Vector<float>& kernel_matrix) {
-  return new FEConvolveMatrix(filter, kernel_size, divisor, bias, target_offset,
-                              edge_mode, preserve_alpha, kernel_matrix);
+  return MakeGarbageCollected<FEConvolveMatrix>(filter, kernel_size, divisor,
+                                                bias, target_offset, edge_mode,
+                                                preserve_alpha, kernel_matrix);
 }
 
 FloatRect FEConvolveMatrix::MapEffect(const FloatRect& rect) const {
@@ -140,8 +141,8 @@ sk_sp<PaintFilter> FEConvolveMatrix::CreateImageFilter() {
   if (!ParametersValid())
     return CreateTransparentBlack();
 
-  sk_sp<PaintFilter> input(
-      PaintFilterBuilder::Build(InputEffect(0), OperatingInterpolationSpace()));
+  sk_sp<PaintFilter> input(paint_filter_builder::Build(
+      InputEffect(0), OperatingInterpolationSpace()));
   SkISize kernel_size(
       SkISize::Make(kernel_size_.Width(), kernel_size_.Height()));
   // parametersValid() above checks that the kernel area fits in int.

@@ -90,19 +90,19 @@ cr.define('print_preview', function() {
       assert(this.cloudPrintInterface_ == null);
       this.cloudPrintInterface_ = cloudPrintInterface;
       this.tracker_.add(
-          this.cloudPrintInterface_,
+          this.cloudPrintInterface_.getEventTarget(),
           cloudprint.CloudPrintInterfaceEventType.INVITES_DONE,
           this.onCloudPrintInvitesDone_.bind(this));
       this.tracker_.add(
-          this.cloudPrintInterface_,
+          this.cloudPrintInterface_.getEventTarget(),
           cloudprint.CloudPrintInterfaceEventType.INVITES_FAILED,
           this.onCloudPrintInvitesDone_.bind(this));
       this.tracker_.add(
-          this.cloudPrintInterface_,
+          this.cloudPrintInterface_.getEventTarget(),
           cloudprint.CloudPrintInterfaceEventType.PROCESS_INVITE_DONE,
           this.onCloudPrintProcessInviteDone_.bind(this));
       this.tracker_.add(
-          this.cloudPrintInterface_,
+          this.cloudPrintInterface_.getEventTarget(),
           cloudprint.CloudPrintInterfaceEventType.PROCESS_INVITE_FAILED,
           this.onCloudPrintProcessInviteFailed_.bind(this));
     }
@@ -157,7 +157,8 @@ cr.define('print_preview', function() {
 
     /**
      * Called when printer sharing invitations are fetched.
-     * @param {Event} event Contains the list of invitations.
+     * @param {!cloudprint.CloudPrintInterfaceInvitesDoneEvent} event Contains
+     *     the list of invitations.
      * @private
      */
     onCloudPrintInvitesDone_(event) {
@@ -171,7 +172,7 @@ cr.define('print_preview', function() {
 
     /**
      * Called when printer sharing invitations fetch has failed.
-     * @param {Event} event Contains the reason of failure.
+     * @param {!cloudprint.CloudPrintInterfaceInvitesFailedEvent} event
      * @private
      */
     onCloudPrintInvitesFailed_(event) {
@@ -181,8 +182,9 @@ cr.define('print_preview', function() {
 
     /**
      * Called when printer sharing invitation was processed successfully.
-     * @param {Event} event Contains detailed information about the invite and
-     *     newly accepted destination.
+     * @param {!cloudprint.CloudPrintInterfaceProcessInviteEvent} event
+     *     Contains detailed information about the invite and newly accepted
+     *     destination.
      * @private
      */
     onCloudPrintProcessInviteDone_(event) {
@@ -194,8 +196,8 @@ cr.define('print_preview', function() {
     /**
      * Called when /printer call completes. Updates the specified destination's
      * print capabilities.
-     * @param {Event} event Contains detailed information about the
-     *     destination.
+     * @param {!cloudprint.CloudPrintInterfaceProcessInviteEvent} event
+     *     Contains detailed information about the invite and destination.
      * @private
      */
     onCloudPrintProcessInviteFailed_(event) {

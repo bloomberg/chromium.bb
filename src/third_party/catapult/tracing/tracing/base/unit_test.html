@@ -181,6 +181,92 @@ tr.b.unittest.testSuite(function() {
     });
   });
 
+  test('bytesPerSecond', function() {
+    const SOURCE_VALUES = [0, 1, 1536, 424.5 * 1024 * 1024,
+      1025 * 1024 * 1024 * 1024 * 1024, -2.5 * 1024 * 1024];
+    const EXPECTED_REGULAR_FORMATTED_VALUES = ['0.0 B/s', '1.0 B/s',
+      '1.5 KiB/s', '424.5 MiB/s', '1,025.0 TiB/s', '-2.5 MiB/s'];
+    const EXPECTED_DELTA_FORMATTED_VALUES = [
+      '\u00B10.0 B/s', '+1.0 B/s', '+1.5 KiB/s',
+      '+424.5 MiB/s', '+1,025.0 TiB/s', '-2.5 MiB/s',
+    ];
+
+    function checkSizeUnit(unit, expectation) {
+      assert.strictEqual(unit.unitName, expectation.unitName);
+      assert.strictEqual(unit.asJSON(), expectation.asJSON);
+      assert.strictEqual(unit.isDelta, expectation.isDelta);
+      assert.strictEqual(unit.baseUnit, expectation.baseUnit);
+      assert.strictEqual(unit.correspondingDeltaUnit,
+          expectation.correspondingDeltaUnit);
+      assert.strictEqual(unit.improvementDirection,
+          expectation.improvementDirection);
+      assert.deepEqual(SOURCE_VALUES.map(v => unit.format(v)),
+          expectation.formattedValues);
+    }
+
+    // Regular (non-delta).
+    checkSizeUnit(Unit.byName.bandwidthInBytesPerSecond, {
+      unitName: 'bandwidthInBytesPerSecond',
+      asJSON: 'bytesPerSecond',
+      isDelta: false,
+      baseUnit: Unit.byName.bandwidthInBytesPerSecond,
+      correspondingDeltaUnit: Unit.byName.bandwidthInBytesPerSecondDelta,
+      improvementDirection: ImprovementDirection.DONT_CARE,
+      formattedValues: EXPECTED_REGULAR_FORMATTED_VALUES
+    });
+    checkSizeUnit(Unit.byName.bandwidthInBytesPerSecond_smallerIsBetter, {
+      unitName: 'bandwidthInBytesPerSecond_smallerIsBetter',
+      asJSON: 'bytesPerSecond_smallerIsBetter',
+      isDelta: false,
+      baseUnit: Unit.byName.bandwidthInBytesPerSecond,
+      correspondingDeltaUnit:
+          Unit.byName.bandwidthInBytesPerSecondDelta_smallerIsBetter,
+      improvementDirection: ImprovementDirection.SMALLER_IS_BETTER,
+      formattedValues: EXPECTED_REGULAR_FORMATTED_VALUES
+    });
+    checkSizeUnit(Unit.byName.bandwidthInBytesPerSecond_biggerIsBetter, {
+      unitName: 'bandwidthInBytesPerSecond_biggerIsBetter',
+      asJSON: 'bytesPerSecond_biggerIsBetter',
+      isDelta: false,
+      baseUnit: Unit.byName.bandwidthInBytesPerSecond,
+      correspondingDeltaUnit:
+          Unit.byName.bandwidthInBytesPerSecondDelta_biggerIsBetter,
+      improvementDirection: ImprovementDirection.BIGGER_IS_BETTER,
+      formattedValues: EXPECTED_REGULAR_FORMATTED_VALUES
+    });
+
+    // Delta.
+    checkSizeUnit(Unit.byName.bandwidthInBytesPerSecondDelta, {
+      unitName: 'bandwidthInBytesPerSecondDelta',
+      asJSON: 'bytesPerSecondDelta',
+      isDelta: true,
+      baseUnit: Unit.byName.bandwidthInBytesPerSecond,
+      correspondingDeltaUnit: Unit.byName.bandwidthInBytesPerSecondDelta,
+      improvementDirection: ImprovementDirection.DONT_CARE,
+      formattedValues: EXPECTED_DELTA_FORMATTED_VALUES
+    });
+    checkSizeUnit(Unit.byName.bandwidthInBytesPerSecondDelta_smallerIsBetter, {
+      unitName: 'bandwidthInBytesPerSecondDelta_smallerIsBetter',
+      asJSON: 'bytesPerSecondDelta_smallerIsBetter',
+      isDelta: true,
+      baseUnit: Unit.byName.bandwidthInBytesPerSecond,
+      correspondingDeltaUnit:
+          Unit.byName.bandwidthInBytesPerSecondDelta_smallerIsBetter,
+      improvementDirection: ImprovementDirection.SMALLER_IS_BETTER,
+      formattedValues: EXPECTED_DELTA_FORMATTED_VALUES
+    });
+    checkSizeUnit(Unit.byName.bandwidthInBytesPerSecondDelta_biggerIsBetter, {
+      unitName: 'bandwidthInBytesPerSecondDelta_biggerIsBetter',
+      asJSON: 'bytesPerSecondDelta_biggerIsBetter',
+      isDelta: true,
+      baseUnit: Unit.byName.bandwidthInBytesPerSecond,
+      correspondingDeltaUnit:
+          Unit.byName.bandwidthInBytesPerSecondDelta_biggerIsBetter,
+      improvementDirection: ImprovementDirection.BIGGER_IS_BETTER,
+      formattedValues: EXPECTED_DELTA_FORMATTED_VALUES
+    });
+  });
+
   test('context', function() {
     assert.strictEqual(Unit.byName.timeStampInMs.format(0, {}), '0.000 ms');
     assert.strictEqual(Unit.byName.normalizedPercentageDelta.format(1.23456,
@@ -196,11 +282,11 @@ tr.b.unittest.testSuite(function() {
     assert.strictEqual(
         Unit.byName.energyInJoules.format(0.4444,
             { minimumFractionDigits: 2, maximumFractionDigits: 3 }),
-        '0.444 J');
+        '444.40 mJ');
     assert.strictEqual(
         Unit.byName.energyInJoules.format(0.6,
             { minimumFractionDigits: 2, maximumFractionDigits: 3 }),
-        '0.60 J');
+        '600.00 mJ');
     assert.strictEqual(
         Unit.byName.sizeInBytesDelta_smallerIsBetter.format(0,
             { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
@@ -214,25 +300,81 @@ tr.b.unittest.testSuite(function() {
             { unitPrefix: UnitPrefixScale.BINARY.MEBI,
               minimumFractionDigits: 2 }),
         '0.01 MiB');
+    assert.strictEqual(
+        Unit.byName.bandwidthInBytesPerSecondDelta_smallerIsBetter.format(0,
+            { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
+        '\u00B10.0 B/s');
+    assert.strictEqual(
+        Unit.byName.bandwidthInBytesPerSecond.format(25600000000,
+            { unitPrefix: UnitPrefixScale.DATA_SIZE.KIBI_BYTE }),
+        '25,000,000.0 KiB/s');
+    assert.strictEqual(
+        Unit.byName.bandwidthInBytesPerSecond.format(5243,
+            { unitPrefix: UnitPrefixScale.DATA_SIZE.MEBI_BYTE,
+              minimumFractionDigits: 2 }),
+        '0.01 MiB/s');
   });
 
   test('energyInJoules', function() {
-    assert.strictEqual(Unit.byName.energyInJoules.format(1000), '1,000.000 J');
+    assert.strictEqual(Unit.byName.energyInJoules.format(1000), '1.000 kJ');
     assert.strictEqual(Unit.byName.energyInJoules.format(1), '1.000 J');
-    assert.strictEqual(Unit.byName.energyInJoules.format(.005), '0.005 J');
-    assert.strictEqual(Unit.byName.energyInJoules.format(.0005), '0.001 J');
-    assert.strictEqual(Unit.byName.energyInJoules.format(.0004), '0.000 J');
+    assert.strictEqual(Unit.byName.energyInJoules.format(0), '0.000 J');
+    assert.strictEqual(Unit.byName.energyInJoules.format(.005), '5.000 mJ');
+    assert.strictEqual(
+        Unit.byName.energyInJoules.format(.0005),
+        '500.000 ' + tr.b.GREEK_SMALL_LETTER_MU + 'J');
+    assert.strictEqual(
+        Unit.byName.energyInJoules.format(.0004),
+        '400.000 ' + tr.b.GREEK_SMALL_LETTER_MU + 'J');
   });
 
   test('powerInWatts', function() {
-    assert.strictEqual(Unit.byName.powerInWatts.format(1000), '1,000.000 W');
+    assert.strictEqual(Unit.byName.powerInWatts.format(1000), '1.000 kW');
     assert.strictEqual(Unit.byName.powerInWatts.format(1), '1.000 W');
-    assert.strictEqual(Unit.byName.powerInWatts.format(.001), '0.001 W');
-    assert.strictEqual(Unit.byName.powerInWatts.format(.001005), '0.001 W');
+    assert.strictEqual(Unit.byName.powerInWatts.format(0), '0.000 W');
+    assert.strictEqual(Unit.byName.powerInWatts.format(.001), '1.000 mW');
+    assert.strictEqual(Unit.byName.powerInWatts.format(.001005), '1.005 mW');
+  });
+
+  test('electricCurrentInAmperes', function() {
+    assert.strictEqual(
+        Unit.byName.electricCurrentInAmperes.format(1000), '1.000 kA');
+    assert.strictEqual(
+        Unit.byName.electricCurrentInAmperes.format(1), '1.000 A');
+    assert.strictEqual(
+        Unit.byName.electricCurrentInAmperes.format(0), '0.000 A');
+    assert.strictEqual(
+        Unit.byName.electricCurrentInAmperes.format(.001), '1.000 mA');
+    assert.strictEqual(
+        Unit.byName.electricCurrentInAmperes.format(.001005), '1.005 mA');
+  });
+
+  test('electricPotentialInVolts', function() {
+    assert.strictEqual(
+        Unit.byName.electricPotentialInVolts.format(1000), '1.000 kV');
+    assert.strictEqual(
+        Unit.byName.electricPotentialInVolts.format(1), '1.000 V');
+    assert.strictEqual(
+        Unit.byName.electricPotentialInVolts.format(0), '0.000 V');
+    assert.strictEqual(
+        Unit.byName.electricPotentialInVolts.format(.001), '1.000 mV');
+    assert.strictEqual(
+        Unit.byName.electricPotentialInVolts.format(.001005), '1.005 mV');
+  });
+
+  test('frequencyInHertz', function() {
+    assert.strictEqual(
+        Unit.byName.frequencyInHertz.format(1000), '1.000 kHz');
+    assert.strictEqual(Unit.byName.frequencyInHertz.format(1), '1.000 Hz');
+    assert.strictEqual(Unit.byName.frequencyInHertz.format(0), '0.000 Hz');
+    assert.strictEqual(Unit.byName.frequencyInHertz.format(.001), '1.000 mHz');
+    assert.strictEqual(
+        Unit.byName.frequencyInHertz.format(.001005), '1.005 mHz');
   });
 
   test('unitlessNumber', function() {
     assert.strictEqual(Unit.byName.unitlessNumber.format(1), '1.000');
+    assert.strictEqual(Unit.byName.unitlessNumber.format(0), '0.000');
     assert.strictEqual(Unit.byName.unitlessNumber.format(1.23), '1.230');
     assert.strictEqual(Unit.byName.unitlessNumber.format(-1.23), '-1.230');
     assert.strictEqual(Unit.byName.unitlessNumber.format(0), '0.000');

@@ -31,11 +31,6 @@ class LoFiDecider {
   virtual void RemoveAcceptTransformHeader(
       net::HttpRequestHeaders* headers) const = 0;
 
-  // Returns true if the Lo-Fi specific UMA should be recorded. It is set to
-  // true if Lo-Fi is enabled for |request|, Chrome session is in Lo-Fi
-  // Enabled or Control field trial, and the network quality was slow.
-  virtual bool ShouldRecordLoFiUMA(const net::URLRequest& request) const = 0;
-
   // Returns whether the request was a client-side Lo-Fi image request.
   virtual bool IsClientLoFiImageRequest(
       const net::URLRequest& request) const = 0;

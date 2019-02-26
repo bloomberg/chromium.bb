@@ -39,6 +39,8 @@ class SchedulerStub : public Scheduler {
     return &trigger_conditions_;
   }
 
+  int64_t schedule_delay() const { return schedule_delay_; }
+
  private:
   bool schedule_called_;
   bool backup_schedule_called_;

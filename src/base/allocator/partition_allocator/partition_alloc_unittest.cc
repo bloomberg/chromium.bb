@@ -13,9 +13,10 @@
 
 #include "base/allocator/partition_allocator/address_space_randomization.h"
 #include "base/allocator/partition_allocator/partition_alloc.h"
+#include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -1184,10 +1185,10 @@ TEST_F(PartitionAllocTest, MappingCollision) {
   map2 = AllocPages(page_base + kSuperPageSize, kPageAllocationGranularity,
                     kPageAllocationGranularity, PageReadWrite);
   EXPECT_TRUE(map2);
-  EXPECT_TRUE(
-      SetSystemPagesAccess(map1, kPageAllocationGranularity, PageInaccessible));
-  EXPECT_TRUE(
-      SetSystemPagesAccess(map2, kPageAllocationGranularity, PageInaccessible));
+  EXPECT_TRUE(TrySetSystemPagesAccess(map1, kPageAllocationGranularity,
+                                      PageInaccessible));
+  EXPECT_TRUE(TrySetSystemPagesAccess(map2, kPageAllocationGranularity,
+                                      PageInaccessible));
 
   PartitionPage* page_in_third_super_page = GetFullPage(kTestAllocSize);
   FreePages(map1, kPageAllocationGranularity);
@@ -2208,6 +2209,24 @@ TEST_F(PartitionAllocTest, ZeroFill) {
     SCOPED_TRACE(i);
     AllocateRandomly(generic_allocator.root(), 1000, PartitionAllocZeroFill);
   }
+}
+
+TEST_F(PartitionAllocTest, Bug_897585) {
+  // Need sizes big enough to be direct mapped and a delta small enough to
+  // allow re-use of the page when cookied. These numbers fall out of the
+  // test case in the indicated bug.
+  size_t kInitialSize = 983040;
+  size_t kDesiredSize = 983100;
+  void* ptr = PartitionAllocGenericFlags(generic_allocator.root(),
+                                         PartitionAllocReturnNull, kInitialSize,
+                                         nullptr);
+  ASSERT_NE(nullptr, ptr);
+  ptr = PartitionReallocGenericFlags(generic_allocator.root(),
+                                     PartitionAllocReturnNull, ptr,
+                                     kDesiredSize, nullptr);
+  ASSERT_NE(nullptr, ptr);
+  memset(ptr, 0xbd, kDesiredSize);
+  PartitionFree(ptr);
 }
 
 }  // namespace internal

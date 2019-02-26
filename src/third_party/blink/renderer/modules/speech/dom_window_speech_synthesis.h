@@ -47,11 +47,11 @@ class MODULES_EXPORT DOMWindowSpeechSynthesis final
   static SpeechSynthesis* speechSynthesis(ScriptState*, LocalDOMWindow&);
   static DOMWindowSpeechSynthesis& From(LocalDOMWindow&);
 
+  explicit DOMWindowSpeechSynthesis(LocalDOMWindow&);
+
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit DOMWindowSpeechSynthesis(LocalDOMWindow&);
-
   SpeechSynthesis* speechSynthesis(ScriptState*);
 
   Member<SpeechSynthesis> speech_synthesis_;

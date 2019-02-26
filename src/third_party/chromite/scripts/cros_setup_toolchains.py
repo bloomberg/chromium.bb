@@ -113,6 +113,7 @@ LLVM_PKGS_TABLE = {
 # Overrides for {gcc,binutils}-config, pick a package with particular suffix.
 CONFIG_TARGET_SUFFIXES = {
     'binutils' : {
+        'aarch64-cros-linux-gnu' : '-gold',
         'armv6j-cros-linux-gnueabi': '-gold',
         'armv7a-cros-linux-gnueabi': '-gold',
         'armv7a-cros-linux-gnueabihf': '-gold',

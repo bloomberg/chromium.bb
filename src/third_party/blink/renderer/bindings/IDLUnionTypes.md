@@ -21,49 +21,42 @@ core/modules.
 
 The file name for a generated class is basically the same as its class
 name, but we use some aliases to avoid too-long file names
-(See http://crbug.com/611437 why we need to avoid long file names).
-Currently we use following alias(es).
-
-```
-CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrWebGL2ComputeRenderingContextOrImageBitmapRenderingContextOrXRPresentationContext -> RenderingContext
-```
+(See https://crbug.com/611437 why we need to avoid long file names).
 
 The paths for generated classes depend on the places union types are
-used. If a union type is used only by IDL files under modules/, the
-include path is `bindings/modules/v8/FooOrBar.h`. Otherwise, the
-include path is `bindings/core/v8/FooOrBar.h`. For example, given
+used. If a union type is used only in IDL files under modules/, the
+include path is `bindings/modules/v8/foo_or_bar.h`. Otherwise, the
+include path is `bindings/core/v8/foo_or_bar.h`. For example, given
 following definitions:
 
 ```webidl
-// core/fileapi/FileReader.idl
+// core/fileapi/file_reader.idl
 readonly attribute (DOMString or ArrayBuffer)? result;
 
-// dom/CommonDefinitions.idl
+// dom/common_definitions.idl
 typedef (ArrayBuffer or ArrayBufferView) BufferSource;
 
-// modules/encoding/TextDecoder.idl
+// modules/encoding/text_decoder.idl
 DOMString decode(optional BufferSource input, optional TextDecodeOptions options);
 
-// modules/fetch/Request.idl
+// modules/fetch/request.idl
 typedef (Request or USVString) RequestInfo;
 ```
 
 The include paths will be:
-- bindings/core/v8/StringOrArrayBuffer.h
-- bindings/core/v8/ArrayBufferOrArrayBufferView.h
-- bindings/modules/v8/RequestOrUSVString.h
+- bindings/core/v8/string_or_array_buffer.h
+- bindings/core/v8/array_buffer_or_array_buffer_view.h
+- bindings/modules/v8/request_or_usv_string.h
 
-Note that `ArrayBufferOrArrayBufferView` is located under core/ even
-it is used by `Request.idl` which is located under modules/.
+Note that `array_buffer_or_array_buffer_view.h` is located under core/ even
+it is used by `request.idl` which is located under modules/.
 
 **Special NOTE**: If you are going to use a union type under core/ and
 the union type is currently used only under modules/, you will need
 to update the include path for the union type under modules/.
 
-## Updating GN/GYP files
-TODO(bashi): Mitigate the pain of updating GN/GYP files.
-
-Due to the requirements of GN/GYP, we need to put generated file names
-in gni/gypi files. Please update
-`bindings/core/v8/generated.{gni,gypi}` and/or
-`bindings/modules/v8/generated.{gni,gypi}` accordingly.
+## Updating GN files
+Due to the requirements of GN, we need to put generated file names
+in GN files. Please update
+`bindings/core/v8/generated.gni` and/or
+`bindings/modules/v8/generated.gni` accordingly.

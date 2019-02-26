@@ -18,9 +18,22 @@
 # exists.
 #
 # TODO: Potentially switch structure. It's possible we want swarming dimensions
-# to live in their own 'swarming' top level key. This could make things more
-# clear for users, but would require moving mixins into sections. Re-evaluate
-# if there are more uses of this potential feature.
+# to live in their own 'swarming' top level key in this file. The file would
+# then look something like:
+#
+# {
+#   'swarming': {
+#     'x86-64': {
+#       'cpu': 'x86-64',
+#     },
+#   },
+#   'coverage_data': {
+#     'isolate_coverage_data': True,
+#   },
+# }
+#
+# This could make things more clear for users, but would require moving mixins
+# into sections. Re-evaluate if there are more uses of this potential feature.
 #
 # Examples:
 #
@@ -120,6 +133,15 @@
       },
     },
   },
+  'angler': {
+    # Nexus 6P
+    'swarming': {
+      'dimensions': {
+        'device_type': 'angler',
+        'os': 'Android',
+      },
+    },
+  },
   'arm_tester': {
     'swarming': {
       'dimensions': {
@@ -135,6 +157,27 @@
       },
     },
   },
+  'code-coverage': {
+    'isolate_coverage_data': True,
+  },
+  'flounder': {
+    # Nexus 9
+    'swarming': {
+      'dimensions': {
+        'device_type': 'flounder',
+        'os': 'Android',
+      },
+    },
+  },
+  'foster': {
+    # NVIDIA SHIELD TV
+    'swarming': {
+      'dimensions': {
+        'device_type': 'foster',
+        'os': 'Android',
+      },
+    },
+  },
   'gpu_pool': {
     'swarming': {
       'dimensions': {
@@ -143,6 +186,7 @@
     },
   },
   'hammerhead': {
+    # Nexus 5
     'swarming': {
       'dimensions': {
         'device_type': 'hammerhead',
@@ -181,6 +225,49 @@
     'swarming': {
       'dimensions': {
         'os': 'Ubuntu-14.04',
+      },
+    },
+  },
+  'linux_amd_r7_240': {
+    'swarming': {
+      'dimensions': {
+        'gpu': '1002:6613',
+        'os': 'Ubuntu',
+        'pool': 'Chrome-GPU',
+      },
+    },
+  },
+  'linux_intel_hd_530': {
+    'swarming': {
+      'dimensions': {
+        'gpu': '8086:1912',
+        'os': 'Ubuntu',
+        'pool': 'Chrome-GPU',
+      }
+    }
+  },
+  'linux_intel_hd_630': {
+    'swarming': {
+      'dimensions': {
+        'gpu': '8086:5912',
+        'os': 'Ubuntu',
+        'pool': 'Chrome-GPU',
+      }
+    }
+  },
+  'linux_nvidia_quadro_p400': {
+    'swarming': {
+      'dimensions': {
+        'gpu': '10de:1cb3-384.90',
+        'os': 'Ubuntu',
+        'pool': 'Chrome-GPU',
+      }
+    }
+  },
+  'lollipop': {
+    'swarming': {
+      'dimensions': {
+        'device_os': 'L',
       },
     },
   },
@@ -225,10 +312,94 @@
       },
     },
   },
+  'mac_mini_intel_gpu': {
+    'swarming': {
+      'dimensions': {
+        'gpu': '8086:0a2e',
+        'os': 'Mac-10.12.6',
+      },
+    },
+  },
+  'mac_mini_intel_gpu_experimental': {
+    'swarming': {
+      'dimensions': {
+        'gpu': '8086:0a2e',
+        'os': 'Mac-10.13.6',
+        'pool': 'Chrome-GPU',
+      },
+    },
+  },
+  'mac_pro_amd_gpu': {
+    'swarming': {
+      'dimensions': {
+        'gpu': '1002:679e',
+        'os': 'Mac-10.12',
+        'pool': 'Chrome-GPU',
+      },
+    },
+  },
+  'mac_retina_amd_gpu': {
+    'swarming': {
+      'dimensions': {
+        'gpu': '1002:6821',
+        'hidpi': '1',
+        'os': 'Mac-10.13.6',
+        'pool': 'Chrome-GPU',
+      },
+    },
+  },
+  'mac_retina_amd_gpu_experimental': {
+    # Currently same configuration as stable version above.
+    'swarming': {
+      'dimensions': {
+        'gpu': '1002:6821',
+        'hidpi': '1',
+        'os': 'Mac-10.13.6',
+        'pool': 'Chrome-GPU',
+      },
+    },
+  },
+  'mac_retina_nvidia_gpu': {
+    'swarming': {
+      'dimensions': {
+        'gpu': '10de:0fe9',
+        'hidpi': '1',
+        'os': 'Mac-10.13.6',
+        'pool': 'Chrome-GPU',
+      },
+    },
+  },
+  'mac_retina_nvidia_gpu_experimental': {
+    # Currently the same as the stable version.
+    'swarming': {
+      'dimensions': {
+        'gpu': '10de:0fe9',
+        'hidpi': '1',
+        'os': 'Mac-10.13.6',
+        'pool': 'Chrome-GPU',
+      },
+    },
+  },
+  'marlin': {
+    # Pixel XL
+    'swarming': {
+      'dimensions': {
+        'device_type': 'marlin',
+        'os': 'Android',
+      },
+    },
+  },
   'marshmallow': {
     'swarming': {
       'dimensions': {
         'device_os': 'MMB29Q',
+      },
+    },
+  },
+  'marshmallow_generic': {
+    'swarming': {
+      'dimensions': {
+        'device_os': 'M',
       },
     },
   },
@@ -239,10 +410,49 @@
       },
     },
   },
+  'nougat': {
+    'swarming': {
+      'dimensions': {
+        'device_os': 'N',
+      },
+    },
+  },
   'nvidia_750m_mac_edition': {
     'swarming': {
       'dimensions': {
         'gpu': '10de:0fe9',
+      },
+    },
+  },
+  'oreo': {
+    'swarming': {
+      'dimensions': {
+        'device_os': 'O',
+      },
+    },
+  },
+  'pie': {
+    'swarming': {
+      'dimensions': {
+        'device_os': 'P',
+      },
+    },
+  },
+  'shamu': {
+    # Nexus 6
+    'swarming': {
+      'dimensions': {
+        'device_type': 'shamu',
+        'os': 'Android',
+      },
+    },
+  },
+  'walleye': {
+    # Pixel 2
+    'swarming': {
+      'dimensions': {
+        'device_type': 'walleye',
+        'os': 'Android',
       },
     },
   },
@@ -253,10 +463,65 @@
       },
     },
   },
+  'win10_intel_hd_630_experimental': {
+    # Currently same as stable version.
+    'swarming': {
+      'dimensions': {
+        'gpu': '8086:5912-24.20.100.6286',
+        'os': 'Windows-10',
+        'pool': 'Chrome-GPU',
+      },
+    },
+  },
+  'win10_intel_hd_630_stable': {
+    'swarming': {
+      'dimensions': {
+        'gpu': '8086:5912-24.20.100.6286',
+        'os': 'Windows-10',
+        'pool': 'Chrome-GPU',
+      },
+    },
+  },
+  'win10_nvidia_quadro_p400_experimental': {
+    'swarming': {
+      'dimensions': {
+        'gpu': '10de:1cb3-24.21.14.1195',
+        'os': 'Windows-10',
+        'pool': 'Chrome-GPU',
+      },
+    },
+  },
+  'win10_nvidia_quadro_p400_stable': {
+    'swarming': {
+      'dimensions': {
+        'gpu': '10de:1cb3-23.21.13.8816',
+        'os': 'Windows-10',
+        'pool': 'Chrome-GPU',
+      },
+    },
+  },
   'win7': {
     'swarming': {
       'dimensions': {
         'os': 'Windows-7-SP1',
+      },
+    },
+  },
+  'win7_amd_r7_240': {
+    'swarming': {
+      'dimensions': {
+        'gpu': '1002:6613',
+        'os': 'Windows-2008ServerR2-SP1',
+        'pool': 'Chrome-GPU',
+      },
+    },
+  },
+  'win7_nvidia_quadro_p400': {
+    'swarming': {
+      'dimensions': {
+        'gpu': '10de:1cb3-23.21.13.8792',
+        'os': 'Windows-2008ServerR2-SP1',
+        'pool': 'Chrome-GPU',
       },
     },
   },

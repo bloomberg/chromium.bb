@@ -75,9 +75,8 @@ class SafeBrowsingUIManager : public BaseUIManager {
   // Report hits to unsafe contents (malware, phishing, unsafe download URL)
   // to the server. Can only be called on UI thread.  The hit report will
   // only be sent if the user has enabled SBER and is not in incognito mode.
-  void MaybeReportSafeBrowsingHit(
-      const safe_browsing::HitReport& hit_report,
-      const content::WebContents* web_contents) override;
+  void MaybeReportSafeBrowsingHit(const safe_browsing::HitReport& hit_report,
+                                  content::WebContents* web_contents) override;
 
   // Creates the whitelist URL set for tests that create a blocking page
   // themselves and then simulate OnBlockingPageDone(). OnBlockingPageDone()
@@ -108,7 +107,7 @@ class SafeBrowsingUIManager : public BaseUIManager {
   // Helper method to ensure hit reports are only sent when the user has
   // opted in to extended reporting and is not currently in incognito mode.
   static bool ShouldSendHitReport(const HitReport& hit_report,
-                                  const content::WebContents* web_contents);
+                                  content::WebContents* web_contents);
 
  private:
   friend class SafeBrowsingUIManagerTest;

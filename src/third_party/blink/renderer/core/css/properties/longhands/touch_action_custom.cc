@@ -19,13 +19,13 @@ static bool ConsumePan(CSSParserTokenRange& range,
   CSSValueID id = range.Peek().Id();
   if ((id == CSSValuePanX || id == CSSValuePanRight || id == CSSValuePanLeft) &&
       !pan_x) {
-    pan_x = CSSPropertyParserHelpers::ConsumeIdent(range);
+    pan_x = css_property_parser_helpers::ConsumeIdent(range);
   } else if ((id == CSSValuePanY || id == CSSValuePanDown ||
               id == CSSValuePanUp) &&
              !pan_y) {
-    pan_y = CSSPropertyParserHelpers::ConsumeIdent(range);
+    pan_y = css_property_parser_helpers::ConsumeIdent(range);
   } else if (id == CSSValuePinchZoom && !pinch_zoom) {
-    pinch_zoom = CSSPropertyParserHelpers::ConsumeIdent(range);
+    pinch_zoom = css_property_parser_helpers::ConsumeIdent(range);
   } else {
     return false;
   }
@@ -33,7 +33,7 @@ static bool ConsumePan(CSSParserTokenRange& range,
 }
 
 }  // namespace
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* TouchAction::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -42,7 +42,7 @@ const CSSValue* TouchAction::ParseSingleValue(
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   CSSValueID id = range.Peek().Id();
   if (id == CSSValueAuto || id == CSSValueNone || id == CSSValueManipulation) {
-    list->Append(*CSSPropertyParserHelpers::ConsumeIdent(range));
+    list->Append(*css_property_parser_helpers::ConsumeIdent(range));
     return list;
   }
 
@@ -74,5 +74,5 @@ const CSSValue* TouchAction::CSSValueFromComputedStyleInternal(
   return ComputedStyleUtils::TouchActionFlagsToCSSValue(style.GetTouchAction());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

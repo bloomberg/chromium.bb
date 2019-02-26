@@ -85,6 +85,10 @@ class TestImporter(object):
             # Print out the full output when executive.run_command fails.
             self.host.executive.error_output_limit = None
 
+        if options.auto_update and options.auto_upload:
+            _log.error('--auto-upload and --auto-update cannot be used together.')
+            return 1
+
         if not self.checkout_is_okay():
             return 1
 
@@ -146,10 +150,6 @@ class TestImporter(object):
         # TODO(crbug.com/800570 robertma): Re-enable it once we fix the bug.
         # self._delete_orphaned_baselines()
 
-        # TODO(qyearsley): Consider running the imported tests with
-        # `run_web_tests.py --reset-results external/wpt` to get some baselines
-        # before the try jobs are started.
-
         _log.info('Updating TestExpectations for any removed or renamed tests.')
         self.update_all_test_expectations_files(self._list_deleted_tests(), self._list_renamed_tests())
 
@@ -164,7 +164,7 @@ class TestImporter(object):
         self._commit_changes(commit_message)
         _log.info('Changes imported and committed.')
 
-        if not options.auto_update:
+        if not options.auto_upload and not options.auto_update:
             return 0
 
         self._upload_cl()
@@ -172,6 +172,9 @@ class TestImporter(object):
 
         if not self.update_expectations_for_cl():
             return 1
+
+        if not options.auto_update:
+            return 0
 
         if not self.run_commit_queue_for_cl():
             return 1
@@ -277,6 +280,9 @@ class TestImporter(object):
             help='do not check for exportable commits that would be clobbered')
         parser.add_argument('-r', '--revision', help='target wpt revision')
         parser.add_argument(
+            '--auto-upload', action='store_true',
+            help='upload a CL, update expectations, but do NOT trigger CQ')
+        parser.add_argument(
             '--auto-update', action='store_true',
             help='upload a CL, update expectations, and trigger CQ')
         parser.add_argument(
@@ -329,9 +335,8 @@ class TestImporter(object):
             _log.info('Applying exportable commit locally:')
             _log.info(commit.url())
             _log.info('Subject: %s', commit.subject().strip())
-            # TODO(qyearsley): We probably don't need to know about
-            # corresponding PRs at all anymore, although this information
-            # could still be useful for reference.
+            # Log a note about the corresponding PR.
+            # This might not be necessary, and could potentially be removed.
             pull_request = self.wpt_github.pr_for_chromium_commit(commit)
             if pull_request:
                 _log.info('PR: %spull/%d', WPT_GH_URL, pull_request.number)
@@ -414,9 +419,10 @@ class TestImporter(object):
 
         baselines = self.fs.files_under(self.dest_path, file_filter=is_baseline_filter)
 
-        # TODO(qyearsley): Factor out the manifest path to a common location.
-        # TODO(qyearsley): Factor out the manifest reading from here and Port
-        # to WPTManifest.
+        # Note about possible refactoring:
+        #  - the manifest path could be factored out to a common location, and
+        #  - the logic for reading the manifest could be factored out from here
+        # and the Port class.
         manifest_path = self.finder.path_from_layout_tests('external', 'wpt', 'MANIFEST.json')
         manifest = WPTManifest(self.fs.read_text_file(manifest_path))
         wpt_urls = manifest.all_urls()

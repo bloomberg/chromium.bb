@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REMOTE_FRAME_OWNER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REMOTE_FRAME_OWNER_H_
 
+#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/web/web_frame_owner_properties.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/frame_owner.h"
@@ -26,10 +27,17 @@ class CORE_EXPORT RemoteFrameOwner final
   static RemoteFrameOwner* Create(
       SandboxFlags flags,
       const ParsedFeaturePolicy& container_policy,
-      const WebFrameOwnerProperties& frame_owner_properties) {
-    return new RemoteFrameOwner(flags, container_policy,
-                                frame_owner_properties);
+      const WebFrameOwnerProperties& frame_owner_properties,
+      FrameOwnerElementType frame_owner_element_type) {
+    return MakeGarbageCollected<RemoteFrameOwner>(flags, container_policy,
+                                                  frame_owner_properties,
+                                                  frame_owner_element_type);
   }
+
+  RemoteFrameOwner(SandboxFlags,
+                   const ParsedFeaturePolicy&,
+                   const WebFrameOwnerProperties&,
+                   FrameOwnerElementType frame_owner_element_type);
 
   // FrameOwner overrides:
   Frame* ContentFrame() const override { return frame_.Get(); }
@@ -39,9 +47,10 @@ class CORE_EXPORT RemoteFrameOwner final
   void SetSandboxFlags(SandboxFlags flags) { sandbox_flags_ = flags; }
   void AddResourceTiming(const ResourceTimingInfo&) override;
   void DispatchLoad() override;
-  // TODO(dcheng): Implement.
-  bool CanRenderFallbackContent() const override { return false; }
-  void RenderFallbackContent() override {}
+  bool CanRenderFallbackContent() const override {
+    return frame_owner_element_type_ == FrameOwnerElementType::kObject;
+  }
+  void RenderFallbackContent(Frame*) override;
   void IntrinsicSizingInfoChanged() override;
 
   AtomicString BrowsingContextContainerName() const override {
@@ -84,10 +93,6 @@ class CORE_EXPORT RemoteFrameOwner final
   void Trace(blink::Visitor*) override;
 
  private:
-  RemoteFrameOwner(SandboxFlags,
-                   const ParsedFeaturePolicy&,
-                   const WebFrameOwnerProperties&);
-
   // Intentionally private to prevent redundant checks when the type is
   // already HTMLFrameOwnerElement.
   bool IsLocal() const override { return false; }
@@ -104,6 +109,7 @@ class CORE_EXPORT RemoteFrameOwner final
   bool is_display_none_;
   WebString required_csp_;
   ParsedFeaturePolicy container_policy_;
+  const FrameOwnerElementType frame_owner_element_type_;
 };
 
 DEFINE_TYPE_CASTS(RemoteFrameOwner,

@@ -89,6 +89,9 @@ public abstract class ChildProcessService extends Service {
 
     private final Semaphore mActivitySemaphore = new Semaphore(1);
 
+    // Interface to send notifications to the parent process.
+    private IParentProcess mParentProcess;
+
     // These values are persisted to logs. Entries should not be renumbered and numeric values
     // should never be reused.
     @IntDef({SplitApkWorkaroundResult.NOT_RUN, SplitApkWorkaroundResult.NO_ENTRIES,
@@ -137,18 +140,19 @@ public abstract class ChildProcessService extends Service {
         }
 
         @Override
-        public void setupConnection(Bundle args, ICallbackInt pidCallback, List<IBinder> callbacks)
-                throws RemoteException {
+        public void setupConnection(Bundle args, IParentProcess parentProcess,
+                List<IBinder> callbacks) throws RemoteException {
             assert mServiceBound;
             synchronized (mBinderLock) {
                 if (mBindToCallerCheck && mBoundCallingPid == 0) {
                     Log.e(TAG, "Service has not been bound with bindToCaller()");
-                    pidCallback.call(-1);
+                    parentProcess.sendPid(-1);
                     return;
                 }
             }
 
-            pidCallback.call(Process.myPid());
+            parentProcess.sendPid(Process.myPid());
+            mParentProcess = parentProcess;
             processConnectionBundle(args, callbacks);
         }
 
@@ -272,6 +276,11 @@ public abstract class ChildProcessService extends Service {
                     }
                     if (mActivitySemaphore.tryAcquire()) {
                         mDelegate.runMain();
+                        try {
+                            mParentProcess.reportCleanExit();
+                        } catch (RemoteException e) {
+                            Log.e(TAG, "Failed to call clean exit callback.", e);
+                        }
                         nativeExitChildProcess();
                     }
                 } catch (InterruptedException e) {

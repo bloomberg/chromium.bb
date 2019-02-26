@@ -6,6 +6,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/quirks/quirks_manager.h"
 #include "content/public/test/test_utils.h"
@@ -111,10 +112,13 @@ IN_PROC_BROWSER_TEST_F(QuirksBrowserTest, DownloadIccFile) {
   base::FilePath path = GetPathForIccFile(0x0000aaaa);
   EXPECT_EQ(icc_path_, path);
   EXPECT_EQ(file_existed_, false);
-  EXPECT_TRUE(base::PathExists(path));
-  char data[32];
-  ReadFile(path, data, sizeof(data));
-  EXPECT_EQ(0, memcmp(data, kFakeIccData, sizeof(kFakeIccData)));
+  {
+    base::ScopedAllowBlockingForTesting allow_io;
+    EXPECT_TRUE(base::PathExists(path));
+    char data[32];
+    ReadFile(path, data, sizeof(data));
+    EXPECT_EQ(0, memcmp(data, kFakeIccData, sizeof(kFakeIccData)));
+  }
 
   // Retest same file, this time expect it to already exist.
   TestQuirksClient(0x0000aaaa, true);
@@ -125,7 +129,10 @@ IN_PROC_BROWSER_TEST_F(QuirksBrowserTest, DownloadIccFile) {
   TestQuirksClient(0x1111bbbb, false);
   EXPECT_EQ(icc_path_, base::FilePath());
   EXPECT_EQ(file_existed_, false);
-  EXPECT_FALSE(base::PathExists(GetPathForIccFile(0x1111bbbb)));
+  {
+    base::ScopedAllowBlockingForTesting allow_io;
+    EXPECT_FALSE(base::PathExists(GetPathForIccFile(0x1111bbbb)));
+  }
 }
 
 }  // namespace quirks

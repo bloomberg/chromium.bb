@@ -22,7 +22,7 @@ class EmptyWebMediaPlayer : public WebMediaPlayer {
  public:
   ~EmptyWebMediaPlayer() override = default;
 
-  LoadTiming Load(LoadType, const WebMediaPlayerSource&, CORSMode) override;
+  LoadTiming Load(LoadType, const WebMediaPlayerSource&, CorsMode) override;
   void Play() override {}
   void Pause() override {}
   void Seek(double seconds) override {}
@@ -40,7 +40,7 @@ class EmptyWebMediaPlayer : public WebMediaPlayer {
   WebTimeRanges Buffered() const override;
   WebTimeRanges Seekable() const override;
   void SetSinkId(const WebString& sink_id,
-                 WebSetSinkIdCallbacks*) override {}
+                 std::unique_ptr<WebSetSinkIdCallbacks>) override {}
   bool HasVideo() const override { return false; }
   bool HasAudio() const override { return false; }
   WebSize NaturalSize() const override;

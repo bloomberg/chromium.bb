@@ -10,7 +10,7 @@ namespace blink {
 
 AbsoluteOrientationSensor* AbsoluteOrientationSensor::Create(
     ExecutionContext* execution_context,
-    const SpatialSensorOptions& options,
+    const SpatialSensorOptions* options,
     ExceptionState& exception_state) {
   return new AbsoluteOrientationSensor(execution_context, options,
                                        exception_state);
@@ -20,12 +20,13 @@ AbsoluteOrientationSensor* AbsoluteOrientationSensor::Create(
 AbsoluteOrientationSensor* AbsoluteOrientationSensor::Create(
     ExecutionContext* execution_context,
     ExceptionState& exception_state) {
-  return Create(execution_context, SpatialSensorOptions(), exception_state);
+  return Create(execution_context, SpatialSensorOptions::Create(),
+                exception_state);
 }
 
 AbsoluteOrientationSensor::AbsoluteOrientationSensor(
     ExecutionContext* execution_context,
-    const SpatialSensorOptions& options,
+    const SpatialSensorOptions* options,
     ExceptionState& exception_state)
     : OrientationSensor(execution_context,
                         options,

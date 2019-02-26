@@ -9,8 +9,8 @@ import org.chromium.mojo.bindings.Interface;
 import org.chromium.mojo.bindings.InterfaceRequest;
 import org.chromium.mojo.system.MessagePipeHandle;
 import org.chromium.mojo.system.MojoException;
-import org.chromium.service_manager.mojom.ConstantsConstants;
 import org.chromium.service_manager.mojom.Identity;
+import org.chromium.service_manager.mojom.ServiceFilter;
 
 /**
  * This class exposes the ability to bind interfaces from other services in the system.
@@ -21,7 +21,7 @@ public class Connector implements ConnectionErrorHandler {
     private static class ConnectorBindInterfaceResponseImpl
             implements org.chromium.service_manager.mojom.Connector.BindInterfaceResponse {
         @Override
-        public void call(Integer result, Identity userId) {}
+        public void call(Integer result, Identity identity) {}
     }
 
     public Connector(MessagePipeHandle handle) {
@@ -38,14 +38,12 @@ public class Connector implements ConnectionErrorHandler {
      */
     public <I extends Interface, P extends Interface.Proxy> void bindInterface(
             String serviceName, String interfaceName, InterfaceRequest<I> request) {
-        Identity target = new Identity();
-        target.name = serviceName;
-        target.userId = ConstantsConstants.INHERIT_USER_ID;
-        target.instance = "";
+        ServiceFilter filter = new ServiceFilter();
+        filter.serviceName = serviceName;
 
         org.chromium.service_manager.mojom.Connector.BindInterfaceResponse callback =
                 new ConnectorBindInterfaceResponseImpl();
-        mConnector.bindInterface(target, interfaceName, request.passHandle(), callback);
+        mConnector.bindInterface(filter, interfaceName, request.passHandle(), callback);
     }
 
     @Override

@@ -14,6 +14,9 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_live_tab_context.h"
+#include "chrome/browser/ui/in_product_help/reopen_tab_in_product_help.h"
+#include "chrome/browser/ui/in_product_help/reopen_tab_in_product_help_factory.h"
+#include "components/feature_engagement/buildflags.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/sessions/core/tab_restore_service_observer.h"
 
@@ -100,6 +103,12 @@ void BrowserTabRestorer::OnBrowserRemoved(Browser* browser) {
 
 void RestoreTab(Browser* browser) {
   base::RecordAction(base::UserMetricsAction("RestoreTab"));
+#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+  auto* reopen_tab_iph =
+      ReopenTabInProductHelpFactory::GetForProfile(browser->profile());
+  reopen_tab_iph->TabReopened();
+#endif
+
   sessions::TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(browser->profile());
   if (!service)

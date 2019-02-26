@@ -28,9 +28,9 @@ DOMMatrix* To2DMatrix(DOMMatrixReadOnly* matrix) {
 
 CSSMatrixComponent* CSSMatrixComponent::Create(
     DOMMatrixReadOnly* matrix,
-    const CSSMatrixComponentOptions& options) {
-  return new CSSMatrixComponent(
-      matrix, options.hasIs2D() ? options.is2D() : matrix->is2D());
+    const CSSMatrixComponentOptions* options) {
+  return MakeGarbageCollected<CSSMatrixComponent>(
+      matrix, options->hasIs2D() ? options->is2D() : matrix->is2D());
 }
 
 DOMMatrix* CSSMatrixComponent::toMatrix(ExceptionState&) const {
@@ -47,7 +47,7 @@ CSSMatrixComponent* CSSMatrixComponent::FromCSSValue(
 
   return CSSMatrixComponent::Create(
       DOMMatrixReadOnly::CreateForSerialization(entries.data(), entries.size()),
-      CSSMatrixComponentOptions());
+      CSSMatrixComponentOptions::Create());
 }
 
 const CSSFunctionValue* CSSMatrixComponent::ToCSSValue() const {

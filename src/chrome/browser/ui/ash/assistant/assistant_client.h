@@ -12,12 +12,8 @@
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
-
+class Profile;
 class AssistantImageDownloader;
-class WebContentsManager;
 class AssistantSetup;
 
 // Class to handle all assistant in-browser-process functionalities.
@@ -28,7 +24,7 @@ class AssistantClient : chromeos::assistant::mojom::Client {
   AssistantClient();
   ~AssistantClient() override;
 
-  void MaybeInit(service_manager::Connector* connector);
+  void MaybeInit(Profile* profile);
 
   // assistant::mojom::Client overrides:
   void OnAssistantStatusChanged(bool running) override;
@@ -45,8 +41,6 @@ class AssistantClient : chromeos::assistant::mojom::Client {
 
   std::unique_ptr<AssistantImageDownloader> assistant_image_downloader_;
   std::unique_ptr<AssistantSetup> assistant_setup_;
-
-  std::unique_ptr<WebContentsManager> web_contents_manager_;
 
   bool initialized_ = false;
 

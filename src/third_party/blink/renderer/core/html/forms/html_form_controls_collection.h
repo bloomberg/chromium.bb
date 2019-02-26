@@ -44,6 +44,7 @@ class HTMLFormControlsCollection final : public HTMLCollection {
  public:
   static HTMLFormControlsCollection* Create(ContainerNode&, CollectionType);
 
+  explicit HTMLFormControlsCollection(ContainerNode&);
   ~HTMLFormControlsCollection() override;
 
   HTMLElement* item(unsigned offset) const {
@@ -56,8 +57,6 @@ class HTMLFormControlsCollection final : public HTMLCollection {
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit HTMLFormControlsCollection(ContainerNode&);
-
   void UpdateIdNameCache() const override;
   void SupportedPropertyNames(Vector<String>& names) override;
 

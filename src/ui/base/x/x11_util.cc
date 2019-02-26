@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -55,6 +56,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/gfx/switches.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_error_tracker.h"
@@ -78,6 +80,10 @@ namespace {
 // Constants that are part of EWMH.
 constexpr int kNetWMStateAdd = 1;
 constexpr int kNetWMStateRemove = 0;
+
+// Length in 32-bit multiples of the data to be retrieved for
+// XGetWindowProperty.
+constexpr int kLongLength = 0x1FFFFFFF; /* MAXINT32 / 4 */
 
 int DefaultX11ErrorHandler(XDisplay* d, XErrorEvent* e) {
   // This callback can be invoked by drivers very late in thread destruction,
@@ -680,10 +686,9 @@ bool GetRawBytesOfProperty(XID window,
   XAtom prop_type = x11::None;
   int prop_format = 0;
   unsigned char* property_data = NULL;
-  if (XGetWindowProperty(gfx::GetXDisplay(), window, property, 0,
-                         0x1FFFFFFF /* MAXINT32 / 4 */, x11::False,
-                         AnyPropertyType, &prop_type, &prop_format, &nitems,
-                         &nbytes, &property_data) != x11::Success) {
+  if (XGetWindowProperty(gfx::GetXDisplay(), window, property, 0, kLongLength,
+                         x11::False, AnyPropertyType, &prop_type, &prop_format,
+                         &nitems, &nbytes, &property_data) != x11::Success) {
     return false;
   }
   gfx::XScopedPtr<unsigned char> scoped_property(property_data);
@@ -1267,6 +1272,35 @@ bool WmSupportsHint(XAtom atom) {
   }
 
   return base::ContainsValue(supported_atoms, atom);
+}
+
+gfx::ICCProfile GetICCProfileForMonitor(int monitor) {
+  gfx::ICCProfile icc_profile;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kHeadless))
+    return icc_profile;
+  std::string atom_name;
+  if (monitor == 0) {
+    atom_name = "_ICC_PROFILE";
+  } else {
+    atom_name = base::StringPrintf("_ICC_PROFILE_%d", monitor);
+  }
+  Atom property = gfx::GetAtom(atom_name.c_str());
+  if (property != x11::None) {
+    Atom prop_type = x11::None;
+    int prop_format = 0;
+    unsigned long nitems = 0;
+    unsigned long nbytes = 0;
+    char* property_data = nullptr;
+    int result = XGetWindowProperty(
+        gfx::GetXDisplay(), DefaultRootWindow(gfx::GetXDisplay()), property, 0,
+        kLongLength, x11::False, AnyPropertyType, &prop_type, &prop_format,
+        &nitems, &nbytes, reinterpret_cast<unsigned char**>(&property_data));
+    if (result == x11::Success) {
+      icc_profile = gfx::ICCProfile::FromData(property_data, nitems);
+      XFree(property_data);
+    }
+  }
+  return icc_profile;
 }
 
 XRefcountedMemory::XRefcountedMemory(unsigned char* x11_data, size_t length)

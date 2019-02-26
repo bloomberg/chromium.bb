@@ -53,7 +53,7 @@ inline ProcessingInstruction::ProcessingInstruction(Document& document,
 ProcessingInstruction* ProcessingInstruction::Create(Document& document,
                                                      const String& target,
                                                      const String& data) {
-  return new ProcessingInstruction(document, target, data);
+  return MakeGarbageCollected<ProcessingInstruction>(document, target, data);
 }
 
 ProcessingInstruction::~ProcessingInstruction() = default;
@@ -87,8 +87,11 @@ Node* ProcessingInstruction::Clone(Document& factory, CloneChildrenFlag) const {
 }
 
 void ProcessingInstruction::DidAttributeChanged() {
-  if (sheet_)
+  if (sheet_) {
+    if (sheet_->IsLoading())
+      RemovePendingSheet();
     ClearSheet();
+  }
 
   String href;
   String charset;
@@ -151,7 +154,8 @@ void ProcessingInstruction::Process(const String& href, const String& charset) {
     return;
 
   ResourceLoaderOptions options;
-  options.initiator_info.name = FetchInitiatorTypeNames::processinginstruction;
+  options.initiator_info.name =
+      fetch_initiator_type_names::kProcessinginstruction;
   FetchParameters params(ResourceRequest(GetDocument().CompleteURL(href)),
                          options);
   loading_ = true;
@@ -179,8 +183,7 @@ bool ProcessingInstruction::IsLoading() const {
 bool ProcessingInstruction::SheetLoaded() {
   if (!IsLoading()) {
     if (!DocumentXSLT::SheetLoaded(GetDocument(), this))
-      GetDocument().GetStyleEngine().RemovePendingSheet(*this,
-                                                        style_engine_context_);
+      RemovePendingSheet();
     return true;
   }
   return false;
@@ -264,6 +267,9 @@ void ProcessingInstruction::RemovedFrom(ContainerNode& insertion_point) {
         *this, insertion_point);
   }
 
+  if (IsLoading())
+    RemovePendingSheet();
+
   if (sheet_) {
     DCHECK_EQ(sheet_->ownerNode(), this);
     ClearSheet();
@@ -275,10 +281,12 @@ void ProcessingInstruction::RemovedFrom(ContainerNode& insertion_point) {
 
 void ProcessingInstruction::ClearSheet() {
   DCHECK(sheet_);
-  if (sheet_->IsLoading())
-    GetDocument().GetStyleEngine().RemovePendingSheet(*this,
-                                                      style_engine_context_);
   sheet_.Release()->ClearOwnerNode();
+}
+
+void ProcessingInstruction::RemovePendingSheet() {
+  GetDocument().GetStyleEngine().RemovePendingSheet(*this,
+                                                    style_engine_context_);
 }
 
 void ProcessingInstruction::Trace(blink::Visitor* visitor) {

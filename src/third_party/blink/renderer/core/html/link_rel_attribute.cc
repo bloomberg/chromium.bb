@@ -94,8 +94,7 @@ LinkRelAttribute::LinkRelAttribute(const String& rel) : LinkRelAttribute() {
     } else if (DeprecatedEqualIgnoringCase(link_type, "manifest")) {
       is_manifest_ = true;
     } else if (DeprecatedEqualIgnoringCase(link_type, "modulepreload")) {
-      if (RuntimeEnabledFeatures::ModulePreloadEnabled())
-        is_module_preload_ = true;
+      is_module_preload_ = true;
     } else if (DeprecatedEqualIgnoringCase(link_type, "serviceworker")) {
       is_service_worker_ = true;
     } else if (DeprecatedEqualIgnoringCase(link_type, "canonical")) {

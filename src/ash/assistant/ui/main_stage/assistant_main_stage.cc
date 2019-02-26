@@ -5,6 +5,7 @@
 #include "ash/assistant/ui/main_stage/assistant_main_stage.h"
 
 #include <algorithm>
+#include <map>
 
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_interaction_controller.h"
@@ -292,7 +293,8 @@ void AssistantMainStage::InitContentLayoutContainer() {
   ui_element_container_->AddObserver(this);
   content_layout_container_->AddChildView(ui_element_container_);
 
-  layout_manager->SetFlexForView(ui_element_container_, 1);
+  layout_manager->SetFlexForView(ui_element_container_, 1,
+                                 /*use_min_size=*/true);
 
   // Footer.
   // Note that the |footer_| is placed within its own view container so that as
@@ -581,7 +583,8 @@ void AssistantMainStage::OnResponseChanged(
 void AssistantMainStage::OnUiVisibilityChanged(
     AssistantVisibility new_visibility,
     AssistantVisibility old_visibility,
-    AssistantSource source) {
+    base::Optional<AssistantEntryPoint> entry_point,
+    base::Optional<AssistantExitPoint> exit_point) {
   if (assistant::util::IsStartingSession(new_visibility, old_visibility)) {
     // When Assistant is starting a new session, we animate in the appearance of
     // the greeting label and footer.

@@ -6,7 +6,6 @@
  */
 
 #include "DMSrcSink.h"
-#include "../src/jumper/SkJumper.h"
 #include "DDLPromiseImageHelper.h"
 #include "DDLTileHelper.h"
 #include "GrBackendSurface.h"
@@ -45,7 +44,6 @@
 #include "SkPictureCommon.h"
 #include "SkPictureData.h"
 #include "SkPictureRecorder.h"
-#include "SkPipe.h"
 #include "SkPDFDocument.h"
 #include "SkRandom.h"
 #include "SkRecordDraw.h"
@@ -66,6 +64,7 @@
 
 #if defined(SK_ENABLE_SKOTTIE)
     #include "Skottie.h"
+    #include "SkottieUtils.h"
 #endif
 
 #if defined(SK_XML)
@@ -974,7 +973,7 @@ void clamp_if_necessary(const SkBitmap& bitmap, SkColorType dstCT) {
         return;
     }
 
-    SkJumper_MemoryCtx ptr = { bitmap.getAddr(0,0), bitmap.rowBytesAsPixels() };
+    SkRasterPipeline_MemoryCtx ptr = { bitmap.getAddr(0,0), bitmap.rowBytesAsPixels() };
 
     SkRasterPipeline_<256> p;
     p.append(SkRasterPipeline::load_f16, &ptr);
@@ -1195,7 +1194,10 @@ Error BisectSrc::draw(SkCanvas* canvas) const {
 SkottieSrc::SkottieSrc(Path path) : fPath(std::move(path)) {}
 
 Error SkottieSrc::draw(SkCanvas* canvas) const {
-    auto animation = skottie::Animation::MakeFromFile(fPath.c_str());
+    auto animation = skottie::Animation::Builder()
+        .setResourceProvider(
+                skottie_utils::FileResourceProvider::Make(SkOSPath::Dirname(fPath.c_str())))
+        .makeFromFile(fPath.c_str());
     if (!animation) {
         return SkStringPrintf("Unable to parse file: %s", fPath.c_str());
     }
@@ -1680,14 +1682,6 @@ Error XPSSink::draw(const Src& src, SkBitmap*, SkWStream* dst, SkString*) const 
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-PipeSink::PipeSink() {}
-
-Error PipeSink::draw(const Src& src, SkBitmap*, SkWStream* dst, SkString*) const {
-    return src.draw(SkPipeSerializer().beginWrite(SkRect::Make(src.size()), dst));
-}
-
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-
 SKPSink::SKPSink() {}
 
 Error SKPSink::draw(const Src& src, SkBitmap*, SkWStream* dst, SkString*) const {
@@ -2020,27 +2014,6 @@ Error ViaPicture::draw(const Src& src, SkBitmap* bitmap, SkWStream* stream, SkSt
         }
         pic = recorder.finishRecordingAsPicture();
         canvas->drawPicture(pic);
-        return err;
-    });
-    if (!err.isEmpty()) {
-        return err;
-    }
-
-    return check_against_reference(bitmap, src, fSink.get());
-}
-
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-
-Error ViaPipe::draw(const Src& src, SkBitmap* bitmap, SkWStream* stream, SkString* log) const {
-    auto size = src.size();
-    Error err = draw_to_canvas(fSink.get(), bitmap, stream, log, size, [&](SkCanvas* canvas) {
-        SkDynamicMemoryWStream tmpStream;
-        Error err = src.draw(SkPipeSerializer().beginWrite(SkRect::Make(size), &tmpStream));
-        if (!err.isEmpty()) {
-            return err;
-        }
-        sk_sp<SkData> data = tmpStream.detachAsData();
-        SkPipeDeserializer().playback(data->data(), data->size(), canvas);
         return err;
     });
     if (!err.isEmpty()) {

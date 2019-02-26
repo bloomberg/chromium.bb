@@ -35,7 +35,19 @@ class TypeConversions final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static TypeConversions* Create() { return new TypeConversions(); }
+  static TypeConversions* Create() {
+    return MakeGarbageCollected<TypeConversions>();
+  }
+
+  TypeConversions()
+      : long_(0),
+        unsigned_long_(0),
+        long_long_(0),
+        unsigned_long_long_(0),
+        byte_(0),
+        octet_(0),
+        short_(0),
+        unsigned_short_(0) {}
 
   int32_t testLong() { return long_; }
   void setTestLong(int32_t value) { long_ = value; }
@@ -69,16 +81,6 @@ class TypeConversions final : public ScriptWrappable {
   }
 
  private:
-  TypeConversions()
-      : long_(0),
-        unsigned_long_(0),
-        long_long_(0),
-        unsigned_long_long_(0),
-        byte_(0),
-        octet_(0),
-        short_(0),
-        unsigned_short_(0) {}
-
   int32_t long_;
   uint32_t unsigned_long_;
   int64_t long_long_;

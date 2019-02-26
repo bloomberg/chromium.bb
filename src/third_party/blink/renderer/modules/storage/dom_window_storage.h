@@ -25,6 +25,8 @@ class DOMWindowStorage final : public GarbageCollected<DOMWindowStorage>,
   static StorageArea* sessionStorage(LocalDOMWindow&, ExceptionState&);
   static StorageArea* localStorage(LocalDOMWindow&, ExceptionState&);
 
+  explicit DOMWindowStorage(LocalDOMWindow&);
+
   StorageArea* sessionStorage(ExceptionState&) const;
   StorageArea* localStorage(ExceptionState&) const;
   StorageArea* OptionalSessionStorage() const { return session_storage_.Get(); }
@@ -33,8 +35,6 @@ class DOMWindowStorage final : public GarbageCollected<DOMWindowStorage>,
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit DOMWindowStorage(LocalDOMWindow&);
-
   mutable Member<StorageArea> session_storage_;
   mutable Member<StorageArea> local_storage_;
 };

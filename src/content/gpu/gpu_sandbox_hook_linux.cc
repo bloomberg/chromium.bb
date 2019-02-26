@@ -122,6 +122,10 @@ void AddV4L2GpuWhitelist(
   // Device node for V4L2 JPEG decode accelerator drivers.
   static const char kDevJpegDecPath[] = "/dev/jpeg-dec";
   permissions->push_back(BrokerFilePermission::ReadWrite(kDevJpegDecPath));
+
+  // Device node for V4L2 JPEG encode accelerator drivers.
+  static const char kDevJpegEncPath[] = "/dev/jpeg-enc";
+  permissions->push_back(BrokerFilePermission::ReadWrite(kDevJpegEncPath));
 }
 
 void AddArmMaliGpuWhitelist(std::vector<BrokerFilePermission>* permissions) {
@@ -133,6 +137,13 @@ void AddArmMaliGpuWhitelist(std::vector<BrokerFilePermission>* permissions) {
 
   permissions->push_back(BrokerFilePermission::ReadWrite(kMali0Path));
   permissions->push_back(BrokerFilePermission::ReadWrite(kDevImageProc0Path));
+}
+
+void AddImgPvrGpuWhitelist(std::vector<BrokerFilePermission>* permissions) {
+  // Device node needed by the IMG GPU userspace.
+  static const char kPvrSyncPath[] = "/dev/pvr_sync";
+
+  permissions->push_back(BrokerFilePermission::ReadWrite(kPvrSyncPath));
 }
 
 void AddAmdGpuWhitelist(std::vector<BrokerFilePermission>* permissions) {
@@ -243,6 +254,7 @@ std::vector<BrokerFilePermission> FilePermissionsForGpu(
     if (UseV4L2Codec())
       AddV4L2GpuWhitelist(&permissions, options);
     if (IsArchitectureArm()) {
+      AddImgPvrGpuWhitelist(&permissions);
       AddArmGpuWhitelist(&permissions);
       return permissions;
     }

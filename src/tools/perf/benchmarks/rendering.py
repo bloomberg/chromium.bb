@@ -4,17 +4,16 @@
 from core import perf_benchmark
 
 import page_sets
-from measurements import rendering
 from telemetry import benchmark
 from telemetry import story as story_module
-
+from telemetry.timeline import chrome_trace_category_filter
+from telemetry.web_perf import timeline_based_measurement
 
 @benchmark.Info(emails=['sadrul@chromium.org', 'vmiura@chromium.org'],
                 documentation_url='https://bit.ly/rendering-benchmarks',
                 component='Internals>GPU>Metrics')
 class RenderingDesktop(perf_benchmark.PerfBenchmark):
 
-  test = rendering.Rendering
   SUPPORTED_PLATFORMS = [story_module.expectations.ALL_DESKTOP]
 
   @classmethod
@@ -31,13 +30,22 @@ class RenderingDesktop(perf_benchmark.PerfBenchmark):
   def CreateStorySet(self, options):
     return page_sets.RenderingStorySet(platform='desktop')
 
+  def SetExtraBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs('--enable-gpu-benchmarking')
+    options.AppendExtraBrowserArgs('--touch-events=enabled')
+
+  def CreateCoreTimelineBasedMeasurementOptions(self):
+    category_filter = chrome_trace_category_filter.CreateLowOverheadFilter()
+    options = timeline_based_measurement.Options(category_filter)
+    options.SetTimelineBasedMetrics(['renderingMetric'])
+    return options
+
 
 @benchmark.Info(emails=['sadrul@chromium.org', 'vmiura@chromium.org'],
                 documentation_url='https://bit.ly/rendering-benchmarks',
                 component='Internals>GPU>Metrics')
 class RenderingMobile(perf_benchmark.PerfBenchmark):
 
-  test = rendering.Rendering
   SUPPORTED_PLATFORMS = [story_module.expectations.ALL_MOBILE]
 
   @classmethod
@@ -53,3 +61,14 @@ class RenderingMobile(perf_benchmark.PerfBenchmark):
 
   def CreateStorySet(self, options):
     return page_sets.RenderingStorySet(platform='mobile')
+
+  def SetExtraBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs('--enable-gpu-benchmarking')
+    options.AppendExtraBrowserArgs('--touch-events=enabled')
+
+  def CreateCoreTimelineBasedMeasurementOptions(self):
+    category_filter = chrome_trace_category_filter.CreateLowOverheadFilter()
+    options = timeline_based_measurement.Options(category_filter)
+    options.config.enable_platform_display_trace = True
+    options.SetTimelineBasedMetrics(['renderingMetric'])
+    return options

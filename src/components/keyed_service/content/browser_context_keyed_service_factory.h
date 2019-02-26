@@ -39,28 +39,6 @@ class KEYED_SERVICE_EXPORT BrowserContextKeyedServiceFactory
   void RegisterUserPrefsOnBrowserContextForTest(
       content::BrowserContext* context);
 
-  // A function that supplies the instance of a KeyedService for a given
-  // BrowserContext. This is used primarily for testing, where we want to feed
-  // a specific mock into the BCKSF system.
-  // DEPRECATED: use TestingFactory instead, see http://crbug.com/809610
-  using TestingFactoryFunction =
-      std::unique_ptr<KeyedService> (*)(content::BrowserContext* context);
-
-  // Associates |factory| with |context| so that |factory| is used to create
-  // the KeyedService when requested.  |factory| can be NULL to signal that
-  // KeyedService should be NULL. Multiple calls to SetTestingFactory() are
-  // allowed; previous services will be shut down.
-  // DEPRECATED: use TestingFactory version instead, see http://crbug.com/809610
-  void SetTestingFactory(content::BrowserContext* context,
-                         TestingFactoryFunction factory);
-
-  // Associates |factory| with |context| and immediately returns the created
-  // KeyedService. Since the factory will be used immediately, it may not be
-  // NULL.
-  // DEPRECATED: use TestingFactory version instead, see http://crbug.com/809610
-  KeyedService* SetTestingFactoryAndUse(content::BrowserContext* context,
-                                        TestingFactoryFunction factory);
-
   // A callback that supplies the instance of a KeyedService for a given
   // BrowserContext. This is used primarily for testing, where we want to feed
   // a specific test double into the BCKSF system.

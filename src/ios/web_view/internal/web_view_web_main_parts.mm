@@ -5,8 +5,13 @@
 #import "ios/web_view/internal/web_view_web_main_parts.h"
 
 #include "base/base_paths.h"
+#include "base/feature_list.h"
+#include "base/logging.h"
 #include "base/path_service.h"
+#include "base/strings/string_util.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "ios/web_view/cwv_web_view_features.h"
 #include "ios/web_view/internal/app/application_context.h"
 #import "ios/web_view/internal/cwv_web_view_configuration_internal.h"
@@ -38,6 +43,29 @@ void WebViewWebMainParts::PreCreateThreads() {
   DCHECK(local_state);
 
   ApplicationContext::GetInstance()->PreCreateThreads();
+
+#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  std::string enable_features = base::JoinString(
+      {autofill::features::kAutofillEnableAccountWalletStorage.name,
+       switches::kSyncStandaloneTransport.name,
+       switches::kSyncSupportSecondaryAccount.name,
+       switches::kSyncUSSAutofillWalletData.name},
+      ",");
+  std::string disabled_features = base::JoinString(
+      {// TODO(crbug.com/873790): Remove after supporting user consents.
+       switches::kSyncUserConsentEvents.name,
+       // Allows form_structure.cc to run heuristics on single field forms.
+       // This is needed to find autofillable password forms with less than 3
+       // fields in CWVAutofillControllerDelegate's
+       // |autofillController:didScanForAutofillableForms:| method.
+       autofill::features::kAutofillEnforceMinRequiredFieldsForHeuristics.name},
+      ",");
+  feature_list->InitializeFromCommandLine(
+      /*enable_features=*/enable_features,
+      /*disable_features=*/disabled_features);
+  base::FeatureList::SetInstance(std::move(feature_list));
+#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
 }
 
 void WebViewWebMainParts::PreMainMessageLoopRun() {

@@ -5,12 +5,12 @@
 #include "content/renderer/dom_storage/local_storage_cached_areas.h"
 
 #include "base/metrics/histogram_macros.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "content/common/dom_storage/dom_storage_types.h"
-#include "content/public/common/content_features.h"
 #include "content/renderer/dom_storage/local_storage_cached_area.h"
 #include "content/renderer/render_thread_impl.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/dom_storage/storage_partition_service.mojom.h"
 
 namespace content {
@@ -56,7 +56,7 @@ LocalStorageCachedAreas::GetSessionStorageArea(const std::string& namespace_id,
 void LocalStorageCachedAreas::CloneNamespace(
     const std::string& source_namespace,
     const std::string& destination_namespace) {
-  DCHECK(base::FeatureList::IsEnabled(features::kMojoSessionStorage));
+  DCHECK(base::FeatureList::IsEnabled(blink::features::kOnionSoupDOMStorage));
   DCHECK_EQ(blink::kSessionStorageNamespaceIdLength, source_namespace.size());
   DCHECK_EQ(blink::kSessionStorageNamespaceIdLength,
             destination_namespace.size());
@@ -134,7 +134,6 @@ scoped_refptr<LocalStorageCachedArea> LocalStorageCachedAreas::GetCachedArea(
     LOCAL_HISTOGRAM_ENUMERATION("SessionStorage.RendererAreaCacheHit", metric);
 
   if (!result) {
-    ClearAreasIfNeeded();
     if (!dom_namespace) {
       dom_namespace = &cached_namespaces_[namespace_id];
     }
@@ -143,7 +142,8 @@ scoped_refptr<LocalStorageCachedArea> LocalStorageCachedAreas::GetCachedArea(
       result = base::MakeRefCounted<LocalStorageCachedArea>(
           origin, storage_partition_service_, this, scheduler);
     } else {
-      DCHECK(base::FeatureList::IsEnabled(features::kMojoSessionStorage));
+      DCHECK(
+          base::FeatureList::IsEnabled(blink::features::kOnionSoupDOMStorage));
       if (!dom_namespace->session_storage_namespace) {
         storage_partition_service_->OpenSessionStorage(
             namespace_id,
@@ -154,6 +154,7 @@ scoped_refptr<LocalStorageCachedArea> LocalStorageCachedAreas::GetCachedArea(
           this, scheduler);
     }
     dom_namespace->cached_areas.emplace(origin, result);
+    ClearAreasIfNeeded();
   }
   return result;
 }

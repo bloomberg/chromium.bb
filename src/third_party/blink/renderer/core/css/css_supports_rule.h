@@ -41,16 +41,15 @@ class CSSSupportsRule final : public CSSConditionRule {
  public:
   static CSSSupportsRule* Create(StyleRuleSupports* rule,
                                  CSSStyleSheet* sheet) {
-    return new CSSSupportsRule(rule, sheet);
+    return MakeGarbageCollected<CSSSupportsRule>(rule, sheet);
   }
 
+  CSSSupportsRule(StyleRuleSupports*, CSSStyleSheet*);
   ~CSSSupportsRule() override = default;
 
   String cssText() const override;
 
  private:
-  CSSSupportsRule(StyleRuleSupports*, CSSStyleSheet*);
-
   CSSRule::Type type() const override { return kSupportsRule; }
 };
 

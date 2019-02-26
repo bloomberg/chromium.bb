@@ -12,7 +12,6 @@
 #include "base/values.h"
 #include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/mojom/constants.mojom.h"
 
 namespace data_decoder {
 
@@ -21,16 +20,16 @@ SafeJsonParserImpl::SafeJsonParserImpl(
     const std::string& unsafe_json,
     const SuccessCallback& success_callback,
     const ErrorCallback& error_callback,
-    const base::Optional<std::string>& batch_id)
+    const base::Optional<base::Token>& batch_id)
     : unsafe_json_(unsafe_json),
       success_callback_(success_callback),
       error_callback_(error_callback) {
   // If no batch ID has been provided, use a random instance ID to guarantee the
   // connection is to a new service running in its own process.
-  service_manager::Identity identity(
-      mojom::kServiceName, service_manager::mojom::kInheritUserID,
-      batch_id.value_or(base::UnguessableToken::Create().ToString()));
-  connector->BindInterface(identity, &json_parser_ptr_);
+  connector->BindInterface(
+      service_manager::ServiceFilter::ByNameWithId(
+          mojom::kServiceName, batch_id.value_or(base::Token::CreateRandom())),
+      &json_parser_ptr_);
 }
 
 SafeJsonParserImpl::~SafeJsonParserImpl() = default;

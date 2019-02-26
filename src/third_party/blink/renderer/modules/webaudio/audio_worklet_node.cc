@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 
 namespace blink {
 
@@ -30,32 +31,30 @@ AudioWorkletHandler::AudioWorkletHandler(
     float sample_rate,
     String name,
     HashMap<String, scoped_refptr<AudioParamHandler>> param_handler_map,
-    const AudioWorkletNodeOptions& options)
+    const AudioWorkletNodeOptions* options)
     : AudioHandler(kNodeTypeAudioWorklet, node, sample_rate),
       name_(name),
       param_handler_map_(param_handler_map) {
   DCHECK(IsMainThread());
 
   for (const auto& param_name : param_handler_map_.Keys()) {
-    param_value_map_.Set(
-        param_name,
-        std::make_unique<AudioFloatArray>(
-            AudioUtilities::kRenderQuantumFrames));
+    param_value_map_.Set(param_name,
+                         std::make_unique<AudioFloatArray>(
+                             audio_utilities::kRenderQuantumFrames));
   }
 
-  for (unsigned i = 0; i < options.numberOfInputs(); ++i) {
+  for (unsigned i = 0; i < options->numberOfInputs(); ++i) {
     AddInput();
   }
 
-  if (options.hasOutputChannelCount()) {
+  if (options->hasOutputChannelCount()) {
     is_output_channel_count_given_ = true;
   }
 
-  for (unsigned i = 0; i < options.numberOfOutputs(); ++i) {
-    // If |options.outputChannelCount| unspecified, all outputs are mono.
-    AddOutput(is_output_channel_count_given_
-        ? options.outputChannelCount()[i]
-        : 1);
+  for (unsigned i = 0; i < options->numberOfOutputs(); ++i) {
+    // If |options->outputChannelCount| unspecified, all outputs are mono.
+    AddOutput(is_output_channel_count_given_ ? options->outputChannelCount()[i]
+                                             : 1);
   }
 
   if (Context()->GetExecutionContext()) {
@@ -78,12 +77,12 @@ scoped_refptr<AudioWorkletHandler> AudioWorkletHandler::Create(
     float sample_rate,
     String name,
     HashMap<String, scoped_refptr<AudioParamHandler>> param_handler_map,
-    const AudioWorkletNodeOptions& options) {
+    const AudioWorkletNodeOptions* options) {
   return base::AdoptRef(new AudioWorkletHandler(node, sample_rate, name,
                                                 param_handler_map, options));
 }
 
-void AudioWorkletHandler::Process(size_t frames_to_process) {
+void AudioWorkletHandler::Process(uint32_t frames_to_process) {
   DCHECK(Context()->IsAudioThread());
 
   // Render and update the node state when the processor is ready with no error.
@@ -106,7 +105,7 @@ void AudioWorkletHandler::Process(size_t frames_to_process) {
       AudioFloatArray* param_values = param_value_map_.at(param_name);
       if (param_handler->HasSampleAccurateValues()) {
         param_handler->CalculateSampleAccurateValues(
-            param_values->Data(), frames_to_process);
+            param_values->Data(), static_cast<uint32_t>(frames_to_process));
       } else {
         std::fill(param_values->Data(),
                   param_values->Data() + frames_to_process,
@@ -218,11 +217,10 @@ void AudioWorkletHandler::NotifyProcessorError(
 AudioWorkletNode::AudioWorkletNode(
     BaseAudioContext& context,
     const String& name,
-    const AudioWorkletNodeOptions& options,
+    const AudioWorkletNodeOptions* options,
     const Vector<CrossThreadAudioParamInfo> param_info_list,
     MessagePort* node_port)
-    : AudioNode(context),
-      node_port_(node_port) {
+    : AudioNode(context), node_port_(node_port) {
   HeapHashMap<String, Member<AudioParam>> audio_param_map;
   HashMap<String, scoped_refptr<AudioParamHandler>> param_handler_map;
   for (const auto& param_info : param_info_list) {
@@ -237,8 +235,8 @@ AudioWorkletNode::AudioWorkletNode(
     audio_param_map.Set(param_name, audio_param);
     param_handler_map.Set(param_name, WrapRefCounted(&audio_param->Handler()));
 
-    if (options.hasParameterData()) {
-      for (const auto& key_value_pair : options.parameterData()) {
+    if (options->hasParameterData()) {
+      for (const auto& key_value_pair : options->parameterData()) {
         if (key_value_pair.first == param_name)
           audio_param->setValue(key_value_pair.second);
       }
@@ -257,7 +255,7 @@ AudioWorkletNode* AudioWorkletNode::Create(
     ScriptState* script_state,
     BaseAudioContext* context,
     const String& name,
-    const AudioWorkletNodeOptions& options,
+    const AudioWorkletNodeOptions* options,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
@@ -266,7 +264,7 @@ AudioWorkletNode* AudioWorkletNode::Create(
     return nullptr;
   }
 
-  if (options.numberOfInputs() == 0 && options.numberOfOutputs() == 0) {
+  if (options->numberOfInputs() == 0 && options->numberOfOutputs() == 0) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
         "AudioWorkletNode cannot be created: Number of inputs and number of "
@@ -274,19 +272,19 @@ AudioWorkletNode* AudioWorkletNode::Create(
     return nullptr;
   }
 
-  if (options.hasOutputChannelCount()) {
-    if (options.numberOfOutputs() != options.outputChannelCount().size()) {
+  if (options->hasOutputChannelCount()) {
+    if (options->numberOfOutputs() != options->outputChannelCount().size()) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kIndexSizeError,
           "AudioWorkletNode cannot be created: Length of specified "
           "'outputChannelCount' (" +
-              String::Number(options.outputChannelCount().size()) +
+              String::Number(options->outputChannelCount().size()) +
               ") does not match the given number of outputs (" +
-              String::Number(options.numberOfOutputs()) + ").");
+              String::Number(options->numberOfOutputs()) + ").");
       return nullptr;
     }
 
-    for (const auto& channel_count : options.outputChannelCount()) {
+    for (const auto& channel_count : options->outputChannelCount()) {
       if (channel_count < 1 ||
           channel_count > BaseAudioContext::MaxNumberOfChannels()) {
         exception_state.ThrowDOMException(
@@ -384,7 +382,7 @@ MessagePort* AudioWorkletNode::port() const {
 }
 
 void AudioWorkletNode::FireProcessorError() {
-  DispatchEvent(*Event::Create(EventTypeNames::processorerror));
+  DispatchEvent(*Event::Create(event_type_names::kProcessorerror));
 }
 
 scoped_refptr<AudioWorkletHandler> AudioWorkletNode::GetWorkletHandler() const {

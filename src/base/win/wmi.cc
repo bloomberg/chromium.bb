@@ -28,9 +28,9 @@ bool CreateLocalWmiConnection(bool set_blanket,
     return false;
 
   ComPtr<IWbemServices> wmi_services_r;
-  hr = wmi_locator->ConnectServer(ScopedBstr(L"ROOT\\CIMV2"), nullptr, nullptr,
-                                  nullptr, 0, nullptr, nullptr,
-                                  wmi_services_r.GetAddressOf());
+  hr =
+      wmi_locator->ConnectServer(ScopedBstr(L"ROOT\\CIMV2"), nullptr, nullptr,
+                                 nullptr, 0, nullptr, nullptr, &wmi_services_r);
   if (FAILED(hr))
     return false;
 
@@ -56,14 +56,13 @@ bool CreateWmiClassMethodObject(IWbemServices* wmi_services,
   ScopedBstr b_method_name(method_name);
   ComPtr<IWbemClassObject> class_object;
   HRESULT hr;
-  hr = wmi_services->GetObject(b_class_name, 0, nullptr,
-                               class_object.GetAddressOf(), nullptr);
+  hr =
+      wmi_services->GetObject(b_class_name, 0, nullptr, &class_object, nullptr);
   if (FAILED(hr))
     return false;
 
   ComPtr<IWbemClassObject> params_def;
-  hr = class_object->GetMethod(b_method_name, 0, params_def.GetAddressOf(),
-                               nullptr);
+  hr = class_object->GetMethod(b_method_name, 0, &params_def, nullptr);
   if (FAILED(hr))
     return false;
 
@@ -113,7 +112,7 @@ bool WmiLaunchProcess(const string16& command_line, int* process_id) {
   ComPtr<IWbemClassObject> out_params;
   HRESULT hr = wmi_local->ExecMethod(
       ScopedBstr(class_name), ScopedBstr(method_name), 0, nullptr,
-      process_create.Get(), out_params.GetAddressOf(), nullptr);
+      process_create.Get(), &out_params, nullptr);
   if (FAILED(hr))
     return false;
 
@@ -135,41 +134,77 @@ bool WmiLaunchProcess(const string16& command_line, int* process_id) {
   return true;
 }
 
+// static
 WmiComputerSystemInfo WmiComputerSystemInfo::Get() {
   ComPtr<IWbemServices> services;
-  if (!CreateLocalWmiConnection(true, &services))
-    return WmiComputerSystemInfo();
+  WmiComputerSystemInfo info;
 
-  ScopedBstr query_language(L"WQL");
-  ScopedBstr query(L"SELECT * FROM Win32_ComputerSystem");
-  ComPtr<IEnumWbemClassObject> enumerator;
+  if (!CreateLocalWmiConnection(true, &services))
+    return info;
+
+  info.PopulateModelAndManufacturer(services);
+  info.PopulateSerialNumber(services);
+
+  return info;
+}
+
+void WmiComputerSystemInfo::PopulateModelAndManufacturer(
+    const ComPtr<IWbemServices>& services) {
+  static constexpr base::StringPiece16 query_computer_system(
+      L"SELECT Manufacturer,Model FROM Win32_ComputerSystem");
+
+  ComPtr<IEnumWbemClassObject> enumerator_computer_system;
   HRESULT hr =
-      services->ExecQuery(query_language, query,
+      services->ExecQuery(ScopedBstr(L"WQL"), ScopedBstr(query_computer_system),
                           WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY,
-                          nullptr, enumerator.GetAddressOf());
-  if (FAILED(hr) || !enumerator.Get())
-    return WmiComputerSystemInfo();
+                          nullptr, &enumerator_computer_system);
+  if (FAILED(hr) || !enumerator_computer_system.Get())
+    return;
 
   ComPtr<IWbemClassObject> class_object;
   ULONG items_returned = 0;
-  hr = enumerator->Next(WBEM_INFINITE, 1, class_object.GetAddressOf(),
-                        &items_returned);
-  if (!items_returned)
-    return WmiComputerSystemInfo();
+  hr = enumerator_computer_system->Next(WBEM_INFINITE, 1, &class_object,
+                                        &items_returned);
+  if (FAILED(hr) || !items_returned)
+    return;
 
   ScopedVariant manufacturer;
-  class_object->Get(L"Manufacturer", 0, manufacturer.Receive(), 0, 0);
+  hr = class_object->Get(L"Manufacturer", 0, manufacturer.Receive(), 0, 0);
+  if (SUCCEEDED(hr) && manufacturer.type() == VT_BSTR) {
+    manufacturer_.assign(V_BSTR(manufacturer.ptr()),
+                         ::SysStringLen(V_BSTR(manufacturer.ptr())));
+  }
   ScopedVariant model;
-  class_object->Get(L"Model", 0, model.Receive(), 0, 0);
+  hr = class_object->Get(L"Model", 0, model.Receive(), 0, 0);
+  if (SUCCEEDED(hr) && model.type() == VT_BSTR)
+    model_.assign(V_BSTR(model.ptr()), ::SysStringLen(V_BSTR(model.ptr())));
+}
 
-  WmiComputerSystemInfo info;
-  if (manufacturer.type() == VT_BSTR)
-    info.manufacturer_ = V_BSTR(manufacturer.ptr());
+void WmiComputerSystemInfo::PopulateSerialNumber(
+    const ComPtr<IWbemServices>& services) {
+  static constexpr base::StringPiece16 query_bios(
+      L"SELECT SerialNumber FROM Win32_Bios");
 
-  if (model.type() == VT_BSTR)
-    info.model_ = V_BSTR(model.ptr());
+  ComPtr<IEnumWbemClassObject> enumerator_bios;
+  HRESULT hr =
+      services->ExecQuery(ScopedBstr(L"WQL"), ScopedBstr(query_bios),
+                          WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY,
+                          nullptr, &enumerator_bios);
+  if (FAILED(hr) || !enumerator_bios.Get())
+    return;
 
-  return info;
+  ComPtr<IWbemClassObject> class_obj;
+  ULONG items_returned = 0;
+  hr = enumerator_bios->Next(WBEM_INFINITE, 1, &class_obj, &items_returned);
+  if (FAILED(hr) || !items_returned)
+    return;
+
+  ScopedVariant serial_number;
+  hr = class_obj->Get(L"SerialNumber", 0, serial_number.Receive(), 0, 0);
+  if (SUCCEEDED(hr) && serial_number.type() == VT_BSTR) {
+    serial_number_.assign(V_BSTR(serial_number.ptr()),
+                          ::SysStringLen(V_BSTR(serial_number.ptr())));
+  }
 }
 
 }  // namespace win

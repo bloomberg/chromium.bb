@@ -71,7 +71,7 @@ BrowserAccessibilityStateImpl::BrowserAccessibilityStateImpl()
   // Let each platform do its own initialization.
   PlatformInitialize();
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_ANDROID)
   // The delay is necessary because assistive technology sometimes isn't
   // detected until after the user interacts in some way, so a reasonable delay
   // gives us better numbers.
@@ -80,8 +80,8 @@ BrowserAccessibilityStateImpl::BrowserAccessibilityStateImpl()
       base::Bind(&BrowserAccessibilityStateImpl::UpdateHistograms, this),
       base::TimeDelta::FromSeconds(ACCESSIBILITY_HISTOGRAM_DELAY_SECS));
 #else
-  // On all other platforms, UpdateHistograms should be called on the UI
-  // thread because it needs to be able to access PrefService.
+  // On MacOS, UpdateHistograms should be called on the UI thread because it
+  // needs to be able to access PrefService.
   base::PostDelayedTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&BrowserAccessibilityStateImpl::UpdateHistograms, this),
@@ -170,7 +170,7 @@ ui::AXMode BrowserAccessibilityStateImpl::GetAccessibilityMode() const {
   return accessibility_mode_;
 }
 
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
+#if !defined(OS_ANDROID) && !defined(OS_WIN) && !defined(OS_MACOSX)
 void BrowserAccessibilityStateImpl::PlatformInitialize() {}
 
 void BrowserAccessibilityStateImpl::UpdatePlatformSpecificHistograms() {

@@ -121,11 +121,9 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
   void UpdateSpecifiedTiming(const Timing&);
   EventDelegate* GetEventDelegate() { return event_delegate_; }
 
-  void getTiming(EffectTiming&) const;
-  EffectTiming getTiming() const;
-  void getComputedTiming(ComputedEffectTiming&) const;
-  ComputedEffectTiming getComputedTiming() const;
-  void updateTiming(OptionalEffectTiming&,
+  EffectTiming* getTiming() const;
+  ComputedEffectTiming* getComputedTiming() const;
+  void updateTiming(OptionalEffectTiming*,
                     ExceptionState& = ASSERT_NO_EXCEPTION);
 
   // Attach/Detach the AnimationEffect from its owning animation.

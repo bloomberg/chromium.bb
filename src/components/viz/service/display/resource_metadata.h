@@ -27,8 +27,11 @@ struct VIZ_SERVICE_EXPORT ResourceMetadata {
   gpu::Mailbox mailbox;
 
   // The backend format for the resource texture. It includes sized texture
-  // format and texture target.
+  // format and texture target. Sometimes backend_format differs from
+  // driver_backend_format when we emulate support (e.g. BGRA8 actually
+  // implemented as RGBA8).
   GrBackendFormat backend_format;
+  GrBackendFormat driver_backend_format;
 
   // The resource size.
   gfx::Size size;

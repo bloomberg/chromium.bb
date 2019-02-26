@@ -26,9 +26,9 @@
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_test_utils.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_coordinator.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
-#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
-#include "ios/chrome/browser/ui/ui_util.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/history_test_util.h"
@@ -118,11 +118,11 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       chrome_test_util::GetOriginalBrowserState();
   ReadingListModelFactory::GetForBrowserState(browserState)->DeleteAllEntries();
 
-  // Resets the Service associated with this browserState to a service with
-  // default providers. The previous service is deleted.
+  // Resets the Service associated with this browserState to a new service with
+  // no providers. The previous service is deleted.
   IOSChromeContentSuggestionsServiceFactory::GetInstance()->SetTestingFactory(
       browserState,
-      base::BindRepeating(&CreateChromeContentSuggestionsServiceWithProviders));
+      base::BindRepeating(&CreateChromeContentSuggestionsService));
   [super tearDown];
 }
 
@@ -173,7 +173,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
     EARL_GREY_TEST_DISABLED(@"Disabled for iPad due to device rotation bug.");
   }
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-  UIEdgeInsets safeArea = SafeAreaInsetsForView(CollectionView());
+  UIEdgeInsets safeArea = CollectionView().safeAreaInsets;
   CGFloat collectionWidth =
       CGRectGetWidth(UIEdgeInsetsInsetRect(CollectionView().bounds, safeArea));
   GREYAssertTrue(collectionWidth > 0, @"The collection width is nil.");
@@ -187,7 +187,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
                            errorOrNil:nil];
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
-  safeArea = SafeAreaInsetsForView(CollectionView());
+  safeArea = CollectionView().safeAreaInsets;
   CGFloat collectionWidthAfterRotation =
       CGRectGetWidth(UIEdgeInsetsInsetRect(CollectionView().bounds, safeArea));
   GREYAssertNotEqual(collectionWidth, collectionWidthAfterRotation,
@@ -208,7 +208,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
     EARL_GREY_TEST_DISABLED(@"Disabled for iPad due to device rotation bug.");
   }
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-  UIEdgeInsets safeArea = SafeAreaInsetsForView(CollectionView());
+  UIEdgeInsets safeArea = CollectionView().safeAreaInsets;
   CGFloat collectionWidth =
       CGRectGetWidth(UIEdgeInsetsInsetRect(CollectionView().bounds, safeArea));
   GREYAssertTrue(collectionWidth > 0, @"The collection width is nil.");
@@ -227,7 +227,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsDoneButton()]
       performAction:grey_tap()];
 
-  safeArea = SafeAreaInsetsForView(CollectionView());
+  safeArea = CollectionView().safeAreaInsets;
   CGFloat collectionWidthAfterRotation =
       CGRectGetWidth(UIEdgeInsetsInsetRect(CollectionView().bounds, safeArea));
   GREYAssertNotEqual(collectionWidth, collectionWidthAfterRotation,
@@ -279,7 +279,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 - (void)testPromoTap {
   // Setup the promo.
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-  [defaults setInteger:experimental_flags::WHATS_NEW_APP_RATING
+  [defaults setInteger:experimental_flags::WHATS_NEW_MOVE_TO_DOCK_TIP
                 forKey:@"WhatsNewPromoStatus"];
   PrefService* local_state = GetApplicationContext()->GetLocalState();
   ios::NotificationPromo::MigrateUserPrefs(local_state);
@@ -361,11 +361,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   CGPoint previousPosition = omnibox.bounds.origin;
 
   // Tap the omnibox to focus it.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          FakeOmniboxAccessibilityID())]
-      performAction:grey_tap()];
-  [ChromeEarlGrey
-      waitForElementWithMatcherSufficientlyVisible:chrome_test_util::Omnibox()];
+  [self focusFakebox];
 
   // Navigate and come back.
   [[EarlGrey selectElementWithMatcher:
@@ -383,10 +379,10 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
 // Tests that tapping the fake omnibox focuses the real omnibox.
 - (void)testTapFakeOmnibox {
-  // TODO(crbug.com/753098): Re-enable this test on iOS 11 iPad once
-  // grey_typeText works on iOS 11.
-  if (IsRegularXRegularSizeClass() && base::ios::IsRunningOnIOS11OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 11.");
+  // TODO(crbug.com/753098): Re-enable this test on iPad once grey_typeText
+  // works.
+  if (IsRegularXRegularSizeClass()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
   }
   // Setup the server.
   self.testServer->RegisterRequestHandler(base::Bind(&StandardResponse));
@@ -396,11 +392,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   NSString* URL = base::SysUTF8ToNSString(pageURL.spec());
   // Tap the fake omnibox, type the URL in the real omnibox and navigate to the
   // page.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          FakeOmniboxAccessibilityID())]
-      performAction:grey_tap()];
-  [ChromeEarlGrey
-      waitForElementWithMatcherSufficientlyVisible:chrome_test_util::Omnibox()];
+  [self focusFakebox];
+
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_typeText([URL stringByAppendingString:@"\n"])];
 
@@ -458,11 +451,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   CGPoint origin = collectionView.contentOffset;
 
   // Tap the omnibox to focus it.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          FakeOmniboxAccessibilityID())]
-      performAction:grey_tap()];
-  [ChromeEarlGrey
-      waitForElementWithMatcherSufficientlyVisible:chrome_test_util::Omnibox()];
+  [self focusFakebox];
 
   // Offset after the fake omnibox has been tapped.
   CGPoint offsetAfterTap = collectionView.contentOffset;
@@ -471,16 +460,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           FakeOmniboxAccessibilityID())]
       assertWithMatcher:grey_not(grey_sufficientlyVisible())];
-  // TODO(crbug.com/826369) This should use collectionView.safeAreaInsets.top
-  // instead of -StatusBarHeight once iOS10 is dropped and the NTP is out of
-  // native content.
-  CGFloat top = 0;
-  if (@available(iOS 11, *)) {
-    top = ntp_home::CollectionView().safeAreaInsets.top;
-  } else {
-    top = StatusBarHeight();
-  }
 
+  CGFloat top = ntp_home::CollectionView().safeAreaInsets.top;
   GREYAssertTrue(offsetAfterTap.y >= origin.y + headerHeight - (60 + top),
                  @"The collection has not moved.");
 
@@ -517,11 +498,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   CGPoint origin = collectionView.contentOffset;
 
   // Tap the omnibox to focus it.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          FakeOmniboxAccessibilityID())]
-      performAction:grey_tap()];
-  [ChromeEarlGrey
-      waitForElementWithMatcherSufficientlyVisible:chrome_test_util::Omnibox()];
+  [self focusFakebox];
 
   // Unfocus the omnibox.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::
@@ -577,7 +554,16 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   // with the icon present.
   [ChromeEarlGrey goBack];
   [[self class] closeAllTabs];
-  chrome_test_util::OpenNewTab();
+  [ChromeEarlGrey openNewTab];
+}
+
+// Taps the fake omnibox and waits for the real omnibox to be visible.
+- (void)focusFakebox {
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          FakeOmniboxAccessibilityID())]
+      performAction:grey_tap()];
+  [ChromeEarlGrey
+      waitForElementWithMatcherSufficientlyVisible:chrome_test_util::Omnibox()];
 }
 
 @end

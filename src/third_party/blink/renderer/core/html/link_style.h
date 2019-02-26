@@ -75,11 +75,11 @@ class LinkStyle final : public LinkResource, ResourceClient {
   void RemovePendingSheet();
 
   void SetCrossOriginStylesheetStatus(CSSStyleSheet*);
-  void SetFetchFollowingCORS() {
+  void SetFetchFollowingCors() {
     DCHECK(!fetch_following_cors_);
     fetch_following_cors_ = true;
   }
-  void ClearFetchFollowingCORS() { fetch_following_cors_ = false; }
+  void ClearFetchFollowingCors() { fetch_following_cors_ = false; }
 
   Member<CSSStyleSheet> sheet_;
   DisabledState disabled_state_;

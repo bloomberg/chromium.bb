@@ -1,7 +1,7 @@
 {
   "name": "CryptoTokenExtension",
   "description": "CryptoToken Component Extension",
-  "version": "0.9.73",
+  "version": "0.9.74",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAq7zRobvA+AVlvNqkHSSVhh1sEWsHSqz4oR/XptkDe/Cz3+gW9ZGumZ20NCHjaac8j1iiesdigp8B1LJsd/2WWv2Dbnto4f8GrQ5MVphKyQ9WJHwejEHN2K4vzrTcwaXqv5BSTXwxlxS/mXCmXskTfryKTLuYrcHEWK8fCHb+0gvr8b/kvsi75A1aMmb6nUnFJvETmCkOCPNX5CHTdy634Ts/x0fLhRuPlahk63rdf7agxQv5viVjQFk+tbgv6aa9kdSd11Js/RZ9yZjrFgHOBWgP4jTBqud4+HUglrzu8qynFipyNRLCZsaxhm+NItTyNgesxLdxZcwOz56KD1Q4IQIDAQAB",
   "manifest_version": 2,
   "permissions": [
@@ -36,6 +36,7 @@
     "scripts": [
       "util.js",
       "b64.js",
+      "cbor.js",
       "sha256.js",
       "timer.js",
       "countdown.js",
@@ -48,7 +49,7 @@
       "factoryregistry.js",
       "closeable.js",
       "requesthelper.js",
-	  "asn1.js",
+      "asn1.js",
       "enroller.js",
       "requestqueue.js",
       "signer.js",

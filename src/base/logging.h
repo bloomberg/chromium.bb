@@ -559,29 +559,6 @@ class CheckOpResult {
 #define TRAP_SEQUENCE() __builtin_trap()
 #endif  // ARCH_CPU_*
 
-// CHECK() and the trap sequence can be invoked from a constexpr function.
-// This could make compilation fail on GCC, as it forbids directly using inline
-// asm inside a constexpr function. However, it allows calling a lambda
-// expression including the same asm.
-// The side effect is that the top of the stacktrace will not point to the
-// calling function, but to this anonymous lambda. This is still useful as the
-// full name of the lambda will typically include the name of the function that
-// calls CHECK() and the debugger will still break at the right line of code.
-#if !defined(__clang__)
-#define WRAPPED_TRAP_SEQUENCE() \
-  do {                          \
-    [] { TRAP_SEQUENCE(); }();  \
-  } while (false)
-#else
-#define WRAPPED_TRAP_SEQUENCE() TRAP_SEQUENCE()
-#endif
-
-#define IMMEDIATE_CRASH()    \
-  ({                         \
-    WRAPPED_TRAP_SEQUENCE(); \
-    __builtin_unreachable(); \
-  })
-
 #elif defined(COMPILER_MSVC)
 
 // Clang is cleverer about coalescing int3s, so we need to add a unique-ish
@@ -596,19 +573,41 @@ class CheckOpResult {
 // __COUNTER__, so eventually it will emit the dword form of push.
 // TODO(scottmg): Reinvestigate a short sequence that will work on both
 // compilers once clang supports more intrinsics. See https://crbug.com/693713.
-#if defined(__clang__)
-#define IMMEDIATE_CRASH()                           \
-  ({                                                \
-    {__asm int 3 __asm ud2 __asm push __COUNTER__}; \
-    __builtin_unreachable();                        \
-  })
+#if !defined(__clang__)
+#define TRAP_SEQUENCE() __debugbreak()
+#elif defined(ARCH_CPU_ARM64)
+#define TRAP_SEQUENCE() \
+  __asm volatile("brk #0\n hlt %0\n" ::"i"(__COUNTER__ % 65536));
 #else
-#define IMMEDIATE_CRASH() __debugbreak()
+#define TRAP_SEQUENCE() ({ {__asm int 3 __asm ud2 __asm push __COUNTER__}; })
 #endif  // __clang__
 
 #else
 #error Port
+#endif  // COMPILER_GCC
+
+// CHECK() and the trap sequence can be invoked from a constexpr function.
+// This could make compilation fail on GCC, as it forbids directly using inline
+// asm inside a constexpr function. However, it allows calling a lambda
+// expression including the same asm.
+// The side effect is that the top of the stacktrace will not point to the
+// calling function, but to this anonymous lambda. This is still useful as the
+// full name of the lambda will typically include the name of the function that
+// calls CHECK() and the debugger will still break at the right line of code.
+#if !defined(COMPILER_GCC)
+#define WRAPPED_TRAP_SEQUENCE() TRAP_SEQUENCE()
+#else
+#define WRAPPED_TRAP_SEQUENCE() \
+  do {                          \
+    [] { TRAP_SEQUENCE(); }();  \
+  } while (false)
 #endif
+
+#define IMMEDIATE_CRASH()    \
+  ({                         \
+    WRAPPED_TRAP_SEQUENCE(); \
+    __builtin_unreachable(); \
+  })
 
 // CHECK dies with a fatal error if condition is not true.  It is *not*
 // controlled by NDEBUG, so the check will be executed regardless of
@@ -843,11 +842,11 @@ DEFINE_CHECK_OP_IMPL(GT, > )
 
 #if DCHECK_IS_ON()
 
-#if DCHECK_IS_CONFIGURABLE
+#if defined(DCHECK_IS_CONFIGURABLE)
 BASE_EXPORT extern LogSeverity LOG_DCHECK;
 #else
 const LogSeverity LOG_DCHECK = LOG_FATAL;
-#endif
+#endif  // defined(DCHECK_IS_CONFIGURABLE)
 
 #else  // DCHECK_IS_ON()
 

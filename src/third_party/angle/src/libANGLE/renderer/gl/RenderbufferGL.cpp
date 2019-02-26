@@ -10,8 +10,10 @@
 
 #include "common/debug.h"
 #include "libANGLE/Caps.h"
+#include "libANGLE/Context.h"
 #include "libANGLE/angletypes.h"
 #include "libANGLE/renderer/gl/BlitGL.h"
+#include "libANGLE/renderer/gl/ContextGL.h"
 #include "libANGLE/renderer/gl/FunctionsGL.h"
 #include "libANGLE/renderer/gl/ImageGL.h"
 #include "libANGLE/renderer/gl/StateManagerGL.h"
@@ -44,10 +46,10 @@ RenderbufferGL::~RenderbufferGL()
     mRenderbufferID = 0;
 }
 
-gl::Error RenderbufferGL::setStorage(const gl::Context *context,
-                                     GLenum internalformat,
-                                     size_t width,
-                                     size_t height)
+angle::Result RenderbufferGL::setStorage(const gl::Context *context,
+                                         GLenum internalformat,
+                                         size_t width,
+                                         size_t height)
 {
     mStateManager->bindRenderbuffer(GL_RENDERBUFFER, mRenderbufferID);
 
@@ -58,14 +60,14 @@ gl::Error RenderbufferGL::setStorage(const gl::Context *context,
 
     mNativeInternalFormat = renderbufferFormat.internalFormat;
 
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
-gl::Error RenderbufferGL::setStorageMultisample(const gl::Context *context,
-                                                size_t samples,
-                                                GLenum internalformat,
-                                                size_t width,
-                                                size_t height)
+angle::Result RenderbufferGL::setStorageMultisample(const gl::Context *context,
+                                                    size_t samples,
+                                                    GLenum internalformat,
+                                                    size_t width,
+                                                    size_t height)
 {
     mStateManager->bindRenderbuffer(GL_RENDERBUFFER, mRenderbufferID);
 
@@ -78,27 +80,25 @@ gl::Error RenderbufferGL::setStorageMultisample(const gl::Context *context,
     const gl::TextureCaps &formatCaps = mTextureCaps.get(internalformat);
     if (samples > formatCaps.getMaxSamples())
     {
-        // Before version 4.2, it is unknown if the specific internal format can support the requested number
-        // of samples.  It is expected that GL_OUT_OF_MEMORY is returned if the renderbuffer cannot be created.
+        // Before version 4.2, it is unknown if the specific internal format can support the
+        // requested number of samples.  It is expected that GL_OUT_OF_MEMORY is returned if the
+        // renderbuffer cannot be created.
         GLenum error = GL_NO_ERROR;
         do
         {
             error = mFunctions->getError();
-            if (error == GL_OUT_OF_MEMORY)
-            {
-                return gl::OutOfMemory();
-            }
-
+            ANGLE_CHECK_GL_ALLOC(GetImplAs<ContextGL>(context), error != GL_OUT_OF_MEMORY);
             ASSERT(error == GL_NO_ERROR);
         } while (error != GL_NO_ERROR);
     }
 
     mNativeInternalFormat = renderbufferFormat.internalFormat;
 
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
-gl::Error RenderbufferGL::setStorageEGLImageTarget(const gl::Context *context, egl::Image *image)
+angle::Result RenderbufferGL::setStorageEGLImageTarget(const gl::Context *context,
+                                                       egl::Image *image)
 {
     ImageGL *imageGL = GetImplAs<ImageGL>(image);
     return imageGL->setRenderbufferStorage(context, this, &mNativeInternalFormat);

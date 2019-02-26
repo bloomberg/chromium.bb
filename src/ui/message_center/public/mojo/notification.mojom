@@ -89,4 +89,5 @@ struct Notification {
   // |shown_as_popup_| intentionally omitted.
   // |is_read_| intentionally omitted.
   // |delegate_| intentionally omitted.
+  // |custom_view_type_| intentionally omitted.
 };

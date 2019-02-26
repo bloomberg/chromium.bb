@@ -18,7 +18,7 @@ ExecutionContext* Serial::GetExecutionContext() const {
 }
 
 const AtomicString& Serial::InterfaceName() const {
-  return EventTargetNames::Serial;
+  return event_target_names::kSerial;
 }
 
 ScriptPromise Serial::getPorts(ScriptState* script_state) {
@@ -27,7 +27,7 @@ ScriptPromise Serial::getPorts(ScriptState* script_state) {
 }
 
 ScriptPromise Serial::requestPort(ScriptState* script_state,
-                                  const SerialPortRequestOptions& options) {
+                                  const SerialPortRequestOptions* options) {
   return ScriptPromise::RejectWithDOMException(
       script_state, DOMException::Create(DOMExceptionCode::kNotSupportedError));
 }

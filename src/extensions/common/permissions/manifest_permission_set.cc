@@ -48,7 +48,7 @@ bool CreateManifestPermission(
     LOG(WARNING) << "Parse permission failed.";
     return true;
   } else {
-    manifest_permissions->insert(permission.release());
+    manifest_permissions->insert(std::move(permission));
     return true;
   }
 }

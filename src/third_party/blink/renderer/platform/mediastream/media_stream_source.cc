@@ -41,8 +41,8 @@ MediaStreamSource* MediaStreamSource::Create(const String& id,
                                              bool remote,
                                              ReadyState ready_state,
                                              bool requires_consumer) {
-  return new MediaStreamSource(id, type, name, remote, ready_state,
-                               requires_consumer);
+  return MakeGarbageCollected<MediaStreamSource>(
+      id, type, name, remote, ready_state, requires_consumer);
 }
 
 MediaStreamSource::MediaStreamSource(const String& id,
@@ -87,7 +87,7 @@ void MediaStreamSource::SetReadyState(ReadyState ready_state) {
     //
     // TODO(sof): consider adding run-time checks that disallows this kind
     // of dead object revivification by default.
-    for (size_t i = 0; i < observers.size(); ++i)
+    for (wtf_size_t i = 0; i < observers.size(); ++i)
       observers[i] = nullptr;
   }
 }

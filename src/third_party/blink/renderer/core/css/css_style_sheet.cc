@@ -47,13 +47,15 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 class StyleSheetCSSRuleList final : public CSSRuleList {
  public:
   static StyleSheetCSSRuleList* Create(CSSStyleSheet* sheet) {
-    return new StyleSheetCSSRuleList(sheet);
+    return MakeGarbageCollected<StyleSheetCSSRuleList>(sheet);
   }
+
+  StyleSheetCSSRuleList(CSSStyleSheet* sheet) : style_sheet_(sheet) {}
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(style_sheet_);
@@ -61,8 +63,6 @@ class StyleSheetCSSRuleList final : public CSSRuleList {
   }
 
  private:
-  StyleSheetCSSRuleList(CSSStyleSheet* sheet) : style_sheet_(sheet) {}
-
   unsigned length() const override { return style_sheet_->length(); }
   CSSRule* item(unsigned index) const override {
     return style_sheet_->item(index);
@@ -93,7 +93,7 @@ const Document* CSSStyleSheet::SingleOwnerDocument(
 }
 
 CSSStyleSheet* CSSStyleSheet::Create(Document& document,
-                                     const CSSStyleSheetInit& options,
+                                     const CSSStyleSheetInit* options,
                                      ExceptionState& exception_state) {
   if (!RuntimeEnabledFeatures::ConstructableStylesheetsEnabled()) {
     exception_state.ThrowTypeError("Illegal constructor");
@@ -103,41 +103,42 @@ CSSStyleSheet* CSSStyleSheet::Create(Document& document,
   // https://wicg.github.io/construct-stylesheets/#dom-cssstylesheet-cssstylesheet
   CSSParserContext* parser_context = CSSParserContext::Create(document);
   StyleSheetContents* contents = StyleSheetContents::Create(parser_context);
-  CSSStyleSheet* sheet = new CSSStyleSheet(contents, nullptr);
-  sheet->SetTitle(options.title());
+  CSSStyleSheet* sheet = MakeGarbageCollected<CSSStyleSheet>(contents, nullptr);
+  sheet->SetTitle(options->title());
   sheet->ClearOwnerNode();
   sheet->ClearOwnerRule();
   scoped_refptr<MediaQuerySet> media_query_set;
-  if (options.media().IsString())
-    media_query_set = MediaQuerySet::Create(options.media().GetAsString());
+  if (options->media().IsString())
+    media_query_set = MediaQuerySet::Create(options->media().GetAsString());
   else
-    media_query_set = options.media().GetAsMediaList()->Queries()->Copy();
+    media_query_set = options->media().GetAsMediaList()->Queries()->Copy();
   MediaList* media_list =
       MediaList::Create(media_query_set, const_cast<CSSStyleSheet*>(sheet));
   sheet->SetMedia(media_list);
-  if (options.alternate())
+  if (options->alternate())
     sheet->SetAlternateFromConstructor(true);
-  if (options.disabled())
+  if (options->disabled())
     sheet->setDisabled(true);
   return sheet;
 }
 
 CSSStyleSheet* CSSStyleSheet::Create(StyleSheetContents* sheet,
                                      CSSImportRule* owner_rule) {
-  return new CSSStyleSheet(sheet, owner_rule);
+  return MakeGarbageCollected<CSSStyleSheet>(sheet, owner_rule);
 }
 
 CSSStyleSheet* CSSStyleSheet::Create(StyleSheetContents* sheet,
                                      Node& owner_node) {
-  return new CSSStyleSheet(sheet, owner_node, false,
-                           TextPosition::MinimumPosition());
+  return MakeGarbageCollected<CSSStyleSheet>(sheet, owner_node, false,
+                                             TextPosition::MinimumPosition());
 }
 
 CSSStyleSheet* CSSStyleSheet::CreateInline(StyleSheetContents* sheet,
                                            Node& owner_node,
                                            const TextPosition& start_position) {
   DCHECK(sheet);
-  return new CSSStyleSheet(sheet, owner_node, true, start_position);
+  return MakeGarbageCollected<CSSStyleSheet>(sheet, owner_node, true,
+                                             start_position);
 }
 
 CSSStyleSheet* CSSStyleSheet::CreateInline(Node& owner_node,
@@ -150,7 +151,8 @@ CSSStyleSheet* CSSStyleSheet::CreateInline(Node& owner_node,
       owner_node.GetDocument().GetReferrerPolicy(), encoding);
   StyleSheetContents* sheet =
       StyleSheetContents::Create(base_url.GetString(), parser_context);
-  return new CSSStyleSheet(sheet, owner_node, true, start_position);
+  return MakeGarbageCollected<CSSStyleSheet>(sheet, owner_node, true,
+                                             start_position);
 }
 
 CSSStyleSheet::CSSStyleSheet(StyleSheetContents* contents,
@@ -551,7 +553,7 @@ void CSSStyleSheet::SetAlternateFromConstructor(
 bool CSSStyleSheet::IsAlternate() const {
   if (owner_node_) {
     return owner_node_->IsElementNode() &&
-           ToElement(owner_node_)->getAttribute(relAttr).Contains("alternate");
+           ToElement(owner_node_)->getAttribute(kRelAttr).Contains("alternate");
   }
   return alternate_from_constructor_;
 }

@@ -13,6 +13,7 @@
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/cable/fido_cable_discovery.h"
 #include "device/fido/fido_authenticator.h"
+#include "device/fido/fido_discovery_factory.h"
 #include "device/fido/get_assertion_task.h"
 
 namespace device {
@@ -70,17 +71,19 @@ bool CheckResponseCredentialIdMatchesRequestAllowList(
   const auto& allow_list = request.allow_list();
   if (!allow_list || allow_list->empty()) {
     // Allow list can't be empty for authenticators w/o resident key support.
-    return authenticator.Options().supports_resident_key();
+    return !authenticator.Options() ||
+           authenticator.Options()->supports_resident_key();
   }
   // Credential ID may be omitted if allow list has size 1. Otherwise, it needs
   // to match.
-  const auto transport_used = authenticator.AuthenticatorTransport();
+  const auto opt_transport_used = authenticator.AuthenticatorTransport();
   return (allow_list->size() == 1 && !response.credential()) ||
          std::any_of(allow_list->cbegin(), allow_list->cend(),
-                     [&response, transport_used](const auto& credential) {
+                     [&response, opt_transport_used](const auto& credential) {
                        return credential.id() == response.raw_credential_id() &&
-                              base::ContainsKey(credential.transports(),
-                                                transport_used);
+                              (!opt_transport_used ||
+                               base::ContainsKey(credential.transports(),
+                                                 *opt_transport_used));
                      });
 }
 
@@ -97,36 +100,22 @@ void SetCredentialIdForResponseWithEmptyCredential(
 }
 
 // Checks UserVerificationRequirement enum passed from the relying party is
-// compatible with the authenticator, and updates the request to the
-// "effective" user verification requirement.
-// https://w3c.github.io/webauthn/#effective-user-verification-requirement-for-assertion
+// compatible with the authenticator.
 bool CheckUserVerificationCompatible(FidoAuthenticator* authenticator,
-                                     CtapGetAssertionRequest* request) {
-  const auto uv_availability =
-      authenticator->Options().user_verification_availability();
-
-  switch (request->user_verification()) {
-    case UserVerificationRequirement::kRequired:
-      return uv_availability ==
-             AuthenticatorSupportedOptions::UserVerificationAvailability::
-                 kSupportedAndConfigured;
-
-    case UserVerificationRequirement::kDiscouraged:
-      return true;
-
-    case UserVerificationRequirement::kPreferred:
-      if (uv_availability ==
-          AuthenticatorSupportedOptions::UserVerificationAvailability::
-              kSupportedAndConfigured) {
-        request->SetUserVerification(UserVerificationRequirement::kRequired);
-      } else {
-        request->SetUserVerification(UserVerificationRequirement::kDiscouraged);
-      }
-      return true;
+                                     const CtapGetAssertionRequest& request) {
+  const auto& opt_options = authenticator->Options();
+  if (!opt_options) {
+    // This authenticator doesn't know its capabilities yet, so we need
+    // to assume it can handle the request. This is the case for Windows,
+    // where we proxy the request to the native API.
+    return true;
   }
 
-  NOTREACHED();
-  return false;
+  return request.user_verification() !=
+             UserVerificationRequirement::kRequired ||
+         opt_options->user_verification_availability() ==
+             AuthenticatorSupportedOptions::UserVerificationAvailability::
+                 kSupportedAndConfigured;
 }
 
 base::flat_set<FidoTransportProtocol> GetTransportsAllowedByRP(
@@ -170,7 +159,7 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
     service_manager::Connector* connector,
     const base::flat_set<FidoTransportProtocol>& supported_transports,
     CtapGetAssertionRequest request,
-    SignResponseCallback completion_callback)
+    CompletionCallback completion_callback)
     : FidoRequestHandler(
           connector,
           base::STLSetIntersection<base::flat_set<FidoTransportProtocol>>(
@@ -188,7 +177,7 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
           FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy)) {
     DCHECK(request_.cable_extension());
     auto discovery =
-        FidoDeviceDiscovery::CreateCable(*request_.cable_extension());
+        FidoDiscoveryFactory::CreateCable(*request_.cable_extension());
     discovery->set_observer(this);
     discoveries().push_back(std::move(discovery));
   }
@@ -200,17 +189,12 @@ GetAssertionRequestHandler::~GetAssertionRequestHandler() = default;
 
 void GetAssertionRequestHandler::DispatchRequest(
     FidoAuthenticator* authenticator) {
-  // The user verification field of the request may be adjusted to the
-  // authenticator, so we need to make a copy.
-  CtapGetAssertionRequest request_copy = request_;
-  if (!CheckUserVerificationCompatible(authenticator, &request_copy)) {
+  if (!CheckUserVerificationCompatible(authenticator, request_))
     return;
-  }
 
   authenticator->GetAssertion(
-      std::move(request_copy),
-      base::BindOnce(&GetAssertionRequestHandler::HandleResponse,
-                     weak_factory_.GetWeakPtr(), authenticator));
+      request_, base::BindOnce(&GetAssertionRequestHandler::HandleResponse,
+                               weak_factory_.GetWeakPtr(), authenticator));
 }
 
 void GetAssertionRequestHandler::HandleResponse(

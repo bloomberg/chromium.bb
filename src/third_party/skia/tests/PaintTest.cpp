@@ -7,6 +7,7 @@
 
 #include "SkAutoMalloc.h"
 #include "SkBlurMask.h"
+#include "SkFont.h"
 #include "SkLayerDrawLooper.h"
 #include "SkMaskFilter.h"
 #include "SkPaintPriv.h"
@@ -144,7 +145,6 @@ DEF_TEST(Paint_copy, reporter) {
     SkPaint paint;
     // set a few member variables
     paint.setStyle(SkPaint::kStrokeAndFill_Style);
-    paint.setTextAlign(SkPaint::kLeft_Align);
     paint.setStrokeWidth(SkIntToScalar(2));
     // set a few pointers
     SkLayerDrawLooper::Builder looperBuilder;
@@ -209,16 +209,11 @@ DEF_TEST(Paint_flattening, reporter) {
         kMedium_SkFilterQuality,
         kHigh_SkFilterQuality,
     };
-    const SkPaint::Hinting hinting[] = {
-        SkPaint::kNo_Hinting,
-        SkPaint::kSlight_Hinting,
-        SkPaint::kNormal_Hinting,
-        SkPaint::kFull_Hinting,
-    };
-    const SkPaint::Align align[] = {
-        SkPaint::kLeft_Align,
-        SkPaint::kCenter_Align,
-        SkPaint::kRight_Align
+    const SkFontHinting hinting[] = {
+        kNo_SkFontHinting,
+        kSlight_SkFontHinting,
+        kNormal_SkFontHinting,
+        kFull_SkFontHinting,
     };
     const SkPaint::Cap caps[] = {
         SkPaint::kButt_Cap,
@@ -251,7 +246,6 @@ DEF_TEST(Paint_flattening, reporter) {
 
     FOR_SETUP(i, levels, setFilterQuality)
     FOR_SETUP(j, hinting, setHinting)
-    FOR_SETUP(k, align, setTextAlign)
     FOR_SETUP(l, caps, setStrokeCap)
     FOR_SETUP(m, joins, setStrokeJoin)
     FOR_SETUP(n, encodings, setTextEncoding)
@@ -268,7 +262,7 @@ DEF_TEST(Paint_flattening, reporter) {
     SkPaintPriv::Unflatten(&paint2, reader);
     REPORTER_ASSERT(reporter, paint2 == paint);
 
-    }}}}}}}
+    }}}}}}
 #undef FOR_SETUP
 
 }
@@ -336,9 +330,9 @@ DEF_TEST(Paint_getHash, r) {
     REPORTER_ASSERT(r, paint.getHash() == defaultHash);
 
     // This is part of fBitfields, the last field we hash.
-    paint.setHinting(SkPaint::kSlight_Hinting);
+    paint.setHinting(kSlight_SkFontHinting);
     REPORTER_ASSERT(r, paint.getHash() != defaultHash);
-    paint.setHinting(SkPaint::kNormal_Hinting);
+    paint.setHinting(kNormal_SkFontHinting);
     REPORTER_ASSERT(r, paint.getHash() == defaultHash);
 }
 
@@ -366,4 +360,82 @@ DEF_TEST(Paint_nothingToDraw, r) {
     cm.postTranslate(0, 0, 0, 1);    // wacks alpha
     paint.setColorFilter(SkColorFilter::MakeMatrixFilterRowMajor255(cm.fMat));
     REPORTER_ASSERT(r, !paint.nothingToDraw());
+}
+
+DEF_TEST(Paint_getwidths, r) {
+    SkPaint paint;
+    const char text[] = "Hamburgefons!@#!#23425,./;'[]";
+    int count = paint.countText(text, strlen(text));
+    SkAutoTArray<uint16_t> glyphStorage(count * 2);
+    uint16_t* glyphs = glyphStorage.get();
+
+    (void)paint.textToGlyphs(text, strlen(text), glyphs);
+    paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
+
+    SkAutoTArray<SkScalar> widthStorage(count * 2);
+    SkScalar* widths = widthStorage.get();
+    SkAutoTArray<SkRect> rectStorage(count * 2);
+    SkRect* bounds = rectStorage.get();
+
+    for (bool subpix : { false, true }) {
+        paint.setSubpixelText(subpix);
+        for (auto hint : { kNo_SkFontHinting, kSlight_SkFontHinting, kNormal_SkFontHinting, kFull_SkFontHinting}) {
+            paint.setHinting(hint);
+            for (auto size : { 1.0f, 12.0f, 100.0f }) {
+                paint.setTextSize(size);
+                paint.getTextWidths(glyphs, count * 2, widths, bounds);
+
+                SkFont font = SkFont::LEGACY_ExtractFromPaint(paint);
+                font.getWidths(glyphs, count, widths + count, bounds + count);
+
+                for (int i = 0; i < count; ++i) {
+                    REPORTER_ASSERT(r, widths[i] == widths[i + count]);
+                    REPORTER_ASSERT(r, bounds[i] == bounds[i + count]);
+                }
+            }
+        }
+    }
+}
+
+DEF_TEST(Font_getpos, r) {
+    SkFont font;
+    const char text[] = "Hamburgefons!@#!#23425,./;'[]";
+    int count = font.countText(text, strlen(text), kUTF8_SkTextEncoding);
+    SkAutoTArray<uint16_t> glyphStorage(count);
+    uint16_t* glyphs = glyphStorage.get();
+    (void)font.textToGlyphs(text, strlen(text), kUTF8_SkTextEncoding, glyphs, count);
+
+    SkAutoTArray<SkScalar> widthStorage(count);
+    SkAutoTArray<SkScalar> xposStorage(count);
+    SkAutoTArray<SkPoint> posStorage(count);
+
+    SkScalar* widths = widthStorage.get();
+    SkScalar* xpos = xposStorage.get();
+    SkPoint* pos = posStorage.get();
+
+    for (bool subpix : { false, true }) {
+        font.setSubpixel(subpix);
+        for (auto hint : { kNo_SkFontHinting, kSlight_SkFontHinting, kNormal_SkFontHinting, kFull_SkFontHinting}) {
+            font.setHinting(hint);
+            for (auto size : { 1.0f, 12.0f, 100.0f }) {
+                font.setSize(size);
+
+                font.getWidths(glyphs, count, widths);
+                font.getXPos(glyphs, count, xpos, 10);
+                font.getPos(glyphs, count, pos, {10, 20});
+
+                auto nearly_eq = [](SkScalar a, SkScalar b) {
+                    return SkScalarAbs(a - b) < 0.000001f;
+                };
+
+                SkScalar x = 10;
+                for (int i = 0; i < count; ++i) {
+                    REPORTER_ASSERT(r, nearly_eq(x,  xpos[i]));
+                    REPORTER_ASSERT(r, nearly_eq(x,   pos[i].fX));
+                    REPORTER_ASSERT(r, nearly_eq(20,  pos[i].fY));
+                    x += widths[i];
+                }
+            }
+        }
+    }
 }

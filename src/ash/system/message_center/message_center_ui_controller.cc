@@ -37,15 +37,12 @@ bool MessageCenterUiController::ShowMessageCenterBubble(bool show_by_click) {
   if (message_center_visible_)
     return true;
 
-  // Do not show animation, since the message center shows immediately after
-  // this.
-  HidePopupBubbleInternal(false /* animate */);
+  HidePopupBubbleInternal();
 
+  message_center_->SetVisibility(message_center::VISIBILITY_MESSAGE_CENTER);
   message_center_visible_ = delegate_->ShowMessageCenter(show_by_click);
-  if (message_center_visible_) {
-    message_center_->SetVisibility(message_center::VISIBILITY_MESSAGE_CENTER);
+  if (message_center_visible_)
     NotifyUiControllerChanged();
-  }
   return message_center_visible_;
 }
 
@@ -95,17 +92,17 @@ void MessageCenterUiController::ShowPopupBubble() {
 bool MessageCenterUiController::HidePopupBubble() {
   if (!popups_visible_)
     return false;
-  HidePopupBubbleInternal(true /* animate */);
+  HidePopupBubbleInternal();
   NotifyUiControllerChanged();
 
   return true;
 }
 
-void MessageCenterUiController::HidePopupBubbleInternal(bool animate) {
+void MessageCenterUiController::HidePopupBubbleInternal() {
   if (!popups_visible_)
     return;
 
-  delegate_->HidePopups(animate);
+  delegate_->HidePopups();
   popups_visible_ = false;
 }
 
@@ -156,7 +153,7 @@ void MessageCenterUiController::OnMessageCenterChanged() {
   }
 
   if (popups_visible_ && !message_center_->HasPopupNotifications())
-    HidePopupBubbleInternal(true);
+    HidePopupBubbleInternal();
   else if (!popups_visible_ && message_center_->HasPopupNotifications())
     ShowPopupBubble();
 

@@ -10,15 +10,16 @@
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* MarginBlockStart::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ConsumeMarginOrOffset(
-      range, context.Mode(), CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
+  return css_parsing_utils::ConsumeMarginOrOffset(
+      range, context.Mode(),
+      css_property_parser_helpers::UnitlessQuirk::kForbid);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

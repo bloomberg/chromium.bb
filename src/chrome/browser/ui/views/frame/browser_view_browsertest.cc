@@ -133,14 +133,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, CloseWithTabsStartWithActive) {
 
 // Verifies that page and devtools WebViews are being correctly layed out
 // when DevTools is opened/closed/updated/undocked.
-
-// Flaky on Chrome OS.  http://crbug.com/693000
-#if defined(OS_CHROMEOS)
-#define MAYBE_DevToolsUpdatesBrowserWindow DISABLED_DevToolsUpdatesBrowserWindow
-#else
-#define MAYBE_DevToolsUpdatesBrowserWindow DevToolsUpdatesBrowserWindow
-#endif
-IN_PROC_BROWSER_TEST_F(BrowserViewTest, MAYBE_DevToolsUpdatesBrowserWindow) {
+IN_PROC_BROWSER_TEST_F(BrowserViewTest, DevToolsUpdatesBrowserWindow) {
   gfx::Rect full_bounds =
       browser_view()->GetContentsContainerForTest()->GetLocalBounds();
   gfx::Rect small_bounds(10, 20, 30, 40);
@@ -209,51 +202,14 @@ class BookmarkBarViewObserverImpl : public BookmarkBarViewObserver {
   int change_count() const { return change_count_; }
   void clear_change_count() { change_count_ = 0; }
 
-  int end_count() const { return end_count_; }
-  void clear_end_count() { end_count_ = 0; }
-
   // BookmarkBarViewObserver:
   void OnBookmarkBarVisibilityChanged() override { change_count_++; }
-  void OnBookmarkBarAnimationEnded() override { end_count_++; }
 
  private:
   int change_count_ = 0;
-  int end_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkBarViewObserverImpl);
 };
-
-// Verifies we notify the BookmarkBarViewObserver when an animation ends.
-IN_PROC_BROWSER_TEST_F(BrowserViewTest, VerifyAnimationEndObserved) {
-  BookmarkBarView::DisableAnimationsForTesting(true);
-  // No bookmark bar.
-  browser()->profile()->GetPrefs()->SetBoolean(
-      bookmarks::prefs::kShowBookmarkBar, false);
-
-  // Add observer and confirm bookmark bar not visible.
-  ASSERT_TRUE(browser_view()->bookmark_bar());
-  BookmarkBarViewObserverImpl observer;
-  BookmarkBarView* bookmark_bar = browser_view()->bookmark_bar();
-  bookmark_bar->AddObserver(&observer);
-  EXPECT_FALSE(bookmark_bar->visible());
-  EXPECT_EQ(0, observer.end_count());
-
-  // Show the bookmark bar.
-  browser()->profile()->GetPrefs()->SetBoolean(
-      bookmarks::prefs::kShowBookmarkBar, true);
-
-  EXPECT_TRUE(bookmark_bar->visible());
-  EXPECT_EQ(1, observer.end_count());
-  observer.clear_end_count();
-
-  // Hide the bookmark bar.
-  browser()->profile()->GetPrefs()->SetBoolean(
-      bookmarks::prefs::kShowBookmarkBar, false);
-
-  EXPECT_FALSE(bookmark_bar->visible());
-  EXPECT_EQ(1, observer.end_count());
-  BookmarkBarView::DisableAnimationsForTesting(false);
-}
 
 // Verifies we don't unnecessarily change the visibility of the BookmarkBarView.
 IN_PROC_BROWSER_TEST_F(BrowserViewTest, AvoidUnnecessaryVisibilityChanges) {
@@ -276,14 +232,12 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, AvoidUnnecessaryVisibilityChanges) {
   EXPECT_FALSE(bookmark_bar->visible());
   EXPECT_EQ(1, observer.change_count());
   observer.clear_change_count();
-  EXPECT_EQ(0, observer.end_count());
 
   // Go to ntp tab. Bookmark bar should show.
   browser()->tab_strip_model()->ActivateTabAt(1, true);
   EXPECT_TRUE(bookmark_bar->visible());
   EXPECT_EQ(1, observer.change_count());
   observer.clear_change_count();
-  EXPECT_EQ(0, observer.end_count());
 
   // Repeat with the bookmark bar always visible.
   browser()->profile()->GetPrefs()->SetBoolean(
@@ -291,19 +245,16 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, AvoidUnnecessaryVisibilityChanges) {
   browser()->tab_strip_model()->ActivateTabAt(1, true);
   EXPECT_TRUE(bookmark_bar->visible());
   observer.clear_change_count();
-  EXPECT_EQ(0, observer.end_count());
 
   browser()->tab_strip_model()->ActivateTabAt(0, true);
   EXPECT_TRUE(bookmark_bar->visible());
   EXPECT_EQ(0, observer.change_count());
   observer.clear_change_count();
-  EXPECT_EQ(0, observer.end_count());
 
   browser()->tab_strip_model()->ActivateTabAt(1, true);
   EXPECT_TRUE(bookmark_bar->visible());
   EXPECT_EQ(0, observer.change_count());
   observer.clear_change_count();
-  EXPECT_EQ(0, observer.end_count());
 
   browser_view()->bookmark_bar()->RemoveObserver(&observer);
 }
@@ -319,14 +270,12 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, TitleAndLoadState) {
       contents, 1, content::MessageLoopRunner::QuitMode::DEFERRED);
 
   TabStrip* tab_strip = browser_view()->tabstrip();
-
   // Navigate without blocking.
-  ui_test_utils::NavigateToURLWithDispositionBlockUntilNavigationsComplete(
-      browser(),
-      ui_test_utils::GetTestUrl(
-          base::FilePath(base::FilePath::kCurrentDirectory),
-          base::FilePath(FILE_PATH_LITERAL("title2.html"))),
-      0, WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
+  const GURL test_url = ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(FILE_PATH_LITERAL("title2.html")));
+  contents->GetController().LoadURL(test_url, content::Referrer(),
+                                    ui::PAGE_TRANSITION_LINK, std::string());
   EXPECT_TRUE(browser()->tab_strip_model()->TabsAreLoading());
   EXPECT_EQ(TabNetworkState::kWaiting,
             tab_strip->tab_at(0)->data().network_state);

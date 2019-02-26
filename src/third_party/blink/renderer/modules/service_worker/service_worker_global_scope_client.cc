@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/modules/service_worker/service_worker_window_client.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -111,7 +112,7 @@ void ServiceWorkerGlobalScopeClient::SetCachedMetadata(const KURL& url,
                                                        const char* data,
                                                        size_t size) {
   Vector<uint8_t> meta_data;
-  meta_data.Append(data, size);
+  meta_data.Append(data, SafeCast<wtf_size_t>(size));
   service_worker_host_->SetCachedMetadata(url, meta_data);
 }
 
@@ -148,56 +149,44 @@ void ServiceWorkerGlobalScopeClient::Navigate(const String& client_uuid,
 
 void ServiceWorkerGlobalScopeClient::DidHandleActivateEvent(
     int event_id,
-    mojom::ServiceWorkerEventStatus status,
-    base::TimeTicks event_dispatch_time) {
-  client_.DidHandleActivateEvent(event_id, status, event_dispatch_time);
+    mojom::ServiceWorkerEventStatus status) {
+  client_.DidHandleActivateEvent(event_id, status);
 }
 
 void ServiceWorkerGlobalScopeClient::DidHandleBackgroundFetchAbortEvent(
     int event_id,
-    mojom::ServiceWorkerEventStatus status,
-    base::TimeTicks event_dispatch_time) {
-  client_.DidHandleBackgroundFetchAbortEvent(event_id, status,
-                                             event_dispatch_time);
+    mojom::ServiceWorkerEventStatus status) {
+  client_.DidHandleBackgroundFetchAbortEvent(event_id, status);
 }
 
 void ServiceWorkerGlobalScopeClient::DidHandleBackgroundFetchClickEvent(
     int event_id,
-    mojom::ServiceWorkerEventStatus status,
-    base::TimeTicks event_dispatch_time) {
-  client_.DidHandleBackgroundFetchClickEvent(event_id, status,
-                                             event_dispatch_time);
+    mojom::ServiceWorkerEventStatus status) {
+  client_.DidHandleBackgroundFetchClickEvent(event_id, status);
 }
 
 void ServiceWorkerGlobalScopeClient::DidHandleBackgroundFetchFailEvent(
     int event_id,
-    mojom::ServiceWorkerEventStatus status,
-    base::TimeTicks event_dispatch_time) {
-  client_.DidHandleBackgroundFetchFailEvent(event_id, status,
-                                            event_dispatch_time);
+    mojom::ServiceWorkerEventStatus status) {
+  client_.DidHandleBackgroundFetchFailEvent(event_id, status);
 }
 
 void ServiceWorkerGlobalScopeClient::DidHandleBackgroundFetchSuccessEvent(
     int event_id,
-    mojom::ServiceWorkerEventStatus status,
-    base::TimeTicks event_dispatch_time) {
-  client_.DidHandleBackgroundFetchSuccessEvent(event_id, status,
-                                               event_dispatch_time);
+    mojom::ServiceWorkerEventStatus status) {
+  client_.DidHandleBackgroundFetchSuccessEvent(event_id, status);
 }
 
 void ServiceWorkerGlobalScopeClient::DidHandleCookieChangeEvent(
     int event_id,
-    mojom::ServiceWorkerEventStatus status,
-    base::TimeTicks event_dispatch_time) {
-  client_.DidHandleCookieChangeEvent(event_id, status, event_dispatch_time);
+    mojom::ServiceWorkerEventStatus status) {
+  client_.DidHandleCookieChangeEvent(event_id, status);
 }
 
 void ServiceWorkerGlobalScopeClient::DidHandleExtendableMessageEvent(
     int event_id,
-    mojom::ServiceWorkerEventStatus status,
-    base::TimeTicks event_dispatch_time) {
-  client_.DidHandleExtendableMessageEvent(event_id, status,
-                                          event_dispatch_time);
+    mojom::ServiceWorkerEventStatus status) {
+  client_.DidHandleExtendableMessageEvent(event_id, status);
 }
 
 void ServiceWorkerGlobalScopeClient::RespondToFetchEventWithNoResponse(
@@ -230,92 +219,74 @@ void ServiceWorkerGlobalScopeClient::RespondToFetchEventWithResponseStream(
 
 void ServiceWorkerGlobalScopeClient::RespondToAbortPaymentEvent(
     int event_id,
-    bool abort_payment,
-    base::TimeTicks event_dispatch_time) {
-  client_.RespondToAbortPaymentEvent(event_id, abort_payment,
-                                     event_dispatch_time);
+    bool abort_payment) {
+  client_.RespondToAbortPaymentEvent(event_id, abort_payment);
 }
 
 void ServiceWorkerGlobalScopeClient::RespondToCanMakePaymentEvent(
     int event_id,
-    bool response,
-    base::TimeTicks event_dispatch_time) {
-  client_.RespondToCanMakePaymentEvent(event_id, response, event_dispatch_time);
+    bool response) {
+  client_.RespondToCanMakePaymentEvent(event_id, response);
 }
 
 void ServiceWorkerGlobalScopeClient::RespondToPaymentRequestEvent(
     int event_id,
-    const WebPaymentHandlerResponse& response,
-    base::TimeTicks event_dispatch_time) {
-  client_.RespondToPaymentRequestEvent(event_id, response, event_dispatch_time);
+    const WebPaymentHandlerResponse& response) {
+  client_.RespondToPaymentRequestEvent(event_id, response);
 }
 
 void ServiceWorkerGlobalScopeClient::DidHandleFetchEvent(
     int fetch_event_id,
-    mojom::ServiceWorkerEventStatus status,
-    base::TimeTicks event_dispatch_time) {
-  client_.DidHandleFetchEvent(fetch_event_id, status, event_dispatch_time);
+    mojom::ServiceWorkerEventStatus status) {
+  client_.DidHandleFetchEvent(fetch_event_id, status);
 }
 
 void ServiceWorkerGlobalScopeClient::DidHandleInstallEvent(
     int install_event_id,
-    mojom::ServiceWorkerEventStatus status,
-    base::TimeTicks event_dispatch_time) {
-  client_.DidHandleInstallEvent(install_event_id, status, event_dispatch_time);
+    mojom::ServiceWorkerEventStatus status) {
+  client_.DidHandleInstallEvent(install_event_id, status);
 }
 
 void ServiceWorkerGlobalScopeClient::DidHandleNotificationClickEvent(
     int event_id,
-    mojom::ServiceWorkerEventStatus status,
-    base::TimeTicks event_dispatch_time) {
-  client_.DidHandleNotificationClickEvent(event_id, status,
-                                          event_dispatch_time);
+    mojom::ServiceWorkerEventStatus status) {
+  client_.DidHandleNotificationClickEvent(event_id, status);
 }
 
 void ServiceWorkerGlobalScopeClient::DidHandleNotificationCloseEvent(
     int event_id,
-    mojom::ServiceWorkerEventStatus status,
-    base::TimeTicks event_dispatch_time) {
-  client_.DidHandleNotificationCloseEvent(event_id, status,
-                                          event_dispatch_time);
+    mojom::ServiceWorkerEventStatus status) {
+  client_.DidHandleNotificationCloseEvent(event_id, status);
 }
 
 void ServiceWorkerGlobalScopeClient::DidHandlePushEvent(
     int push_event_id,
-    mojom::ServiceWorkerEventStatus status,
-    base::TimeTicks event_dispatch_time) {
-  client_.DidHandlePushEvent(push_event_id, status, event_dispatch_time);
+    mojom::ServiceWorkerEventStatus status) {
+  client_.DidHandlePushEvent(push_event_id, status);
 }
 
 void ServiceWorkerGlobalScopeClient::DidHandleSyncEvent(
     int sync_event_id,
-    mojom::ServiceWorkerEventStatus status,
-    base::TimeTicks event_dispatch_time) {
-  client_.DidHandleSyncEvent(sync_event_id, status, event_dispatch_time);
+    mojom::ServiceWorkerEventStatus status) {
+  client_.DidHandleSyncEvent(sync_event_id, status);
 }
 
 void ServiceWorkerGlobalScopeClient::DidHandleAbortPaymentEvent(
     int abort_payment_event_id,
-    mojom::ServiceWorkerEventStatus status,
-    base::TimeTicks event_dispatch_time) {
-  client_.DidHandleAbortPaymentEvent(abort_payment_event_id, status,
-                                     event_dispatch_time);
+    mojom::ServiceWorkerEventStatus status) {
+  client_.DidHandleAbortPaymentEvent(abort_payment_event_id, status);
 }
 
 void ServiceWorkerGlobalScopeClient::DidHandleCanMakePaymentEvent(
     int payment_request_event_id,
-    mojom::ServiceWorkerEventStatus status,
-    base::TimeTicks event_dispatch_time) {
-  client_.DidHandleCanMakePaymentEvent(payment_request_event_id, status,
-                                       event_dispatch_time);
+    mojom::ServiceWorkerEventStatus status) {
+  client_.DidHandleCanMakePaymentEvent(payment_request_event_id, status);
 }
 
 void ServiceWorkerGlobalScopeClient::DidHandlePaymentRequestEvent(
     int payment_request_event_id,
-    mojom::ServiceWorkerEventStatus status,
-    base::TimeTicks event_dispatch_time) {
-  client_.DidHandlePaymentRequestEvent(payment_request_event_id, status,
-                                       event_dispatch_time);
+    mojom::ServiceWorkerEventStatus status) {
+  client_.DidHandlePaymentRequestEvent(payment_request_event_id, status);
 }
 
 void ServiceWorkerGlobalScopeClient::BindServiceWorkerHost(
@@ -336,7 +307,7 @@ ServiceWorkerGlobalScopeClient* ServiceWorkerGlobalScopeClient::From(
     ExecutionContext* context) {
   // TODO(horo): Replace CHECK() to DCHECK() when crbug.com/749930 is fixed.
   CHECK(context);
-  WorkerClients* worker_clients = ToWorkerGlobalScope(context)->Clients();
+  WorkerClients* worker_clients = To<WorkerGlobalScope>(context)->Clients();
   CHECK(worker_clients);
   ServiceWorkerGlobalScopeClient* client =
       Supplement<WorkerClients>::From<ServiceWorkerGlobalScopeClient>(

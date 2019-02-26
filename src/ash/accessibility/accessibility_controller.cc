@@ -16,6 +16,7 @@
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/policy/policy_recommendation_restorer.h"
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
@@ -87,6 +88,7 @@ constexpr const char* const kCopiedOnSigninAccessibilityPrefs[]{
     prefs::kScreenMagnifierAcceleratorDialogHasBeenAccepted,
     prefs::kDockedMagnifierAcceleratorDialogHasBeenAccepted,
     prefs::kDictationAcceleratorDialogHasBeenAccepted,
+    prefs::kDisplayRotationAcceleratorDialogHasBeenAccepted,
 };
 
 // Returns true if |pref_service| is the one used for the signin screen.
@@ -209,11 +211,11 @@ void ShowAccessibilityNotification(A11yNotificationType type) {
   message_center::RichNotificationData options;
   options.should_make_spoken_feedback_for_popup_updates = false;
   std::unique_ptr<message_center::Notification> notification =
-      message_center::Notification::CreateSystemNotification(
+      ash::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId, title,
           text, base::string16(), GURL(),
           message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT,
+              message_center::NotifierType::SYSTEM_COMPONENT,
               kNotifierAccessibility),
           options, nullptr, GetNotificationIcon(type),
           message_center::SystemNotificationWarningLevel::NORMAL);
@@ -257,6 +259,13 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
         prefs::kAccessibilityAutoclickDelayMs,
         static_cast<int>(
             AutoclickController::GetDefaultAutoclickDelay().InMilliseconds()));
+    registry->RegisterIntegerPref(prefs::kAccessibilityAutoclickEventType,
+                                  static_cast<int>(kDefaultAutoclickEventType));
+    registry->RegisterBooleanPref(
+        prefs::kAccessibilityAutoclickRevertToLeftClick, true);
+    registry->RegisterIntegerPref(
+        prefs::kAccessibilityAutoclickMovementThreshold,
+        kDefaultAutoclickMovementThreshold);
     registry->RegisterBooleanPref(prefs::kAccessibilityCaretHighlightEnabled,
                                   false);
     registry->RegisterBooleanPref(prefs::kAccessibilityCursorHighlightEnabled,
@@ -291,6 +300,8 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
         prefs::kDockedMagnifierAcceleratorDialogHasBeenAccepted, false);
     registry->RegisterBooleanPref(
         prefs::kDictationAcceleratorDialogHasBeenAccepted, false);
+    registry->RegisterBooleanPref(
+        prefs::kDisplayRotationAcceleratorDialogHasBeenAccepted, false);
     return;
   }
 
@@ -298,6 +309,11 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
   // TODO(jamescook): Move ownership to ash.
   registry->RegisterForeignPref(prefs::kAccessibilityAutoclickEnabled);
   registry->RegisterForeignPref(prefs::kAccessibilityAutoclickDelayMs);
+  registry->RegisterForeignPref(prefs::kAccessibilityAutoclickEventType);
+  registry->RegisterForeignPref(
+      prefs::kAccessibilityAutoclickRevertToLeftClick);
+  registry->RegisterForeignPref(
+      prefs::kAccessibilityAutoclickMovementThreshold);
   registry->RegisterForeignPref(prefs::kAccessibilityCaretHighlightEnabled);
   registry->RegisterForeignPref(prefs::kAccessibilityCursorHighlightEnabled);
   registry->RegisterForeignPref(prefs::kAccessibilityDictationEnabled);
@@ -320,6 +336,8 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
       prefs::kDockedMagnifierAcceleratorDialogHasBeenAccepted);
   registry->RegisterForeignPref(
       prefs::kDictationAcceleratorDialogHasBeenAccepted);
+  registry->RegisterForeignPref(
+      prefs::kDisplayRotationAcceleratorDialogHasBeenAccepted);
 }
 
 void AccessibilityController::SetHighContrastAcceleratorDialogAccepted() {
@@ -357,6 +375,22 @@ void AccessibilityController::SetDockedMagnifierAcceleratorDialogAccepted() {
     return;
   active_user_prefs_->SetBoolean(
       prefs::kDockedMagnifierAcceleratorDialogHasBeenAccepted, true);
+  active_user_prefs_->CommitPendingWrite();
+}
+
+bool AccessibilityController::HasDisplayRotationAcceleratorDialogBeenAccepted()
+    const {
+  return active_user_prefs_ &&
+         active_user_prefs_->GetBoolean(
+             prefs::kDisplayRotationAcceleratorDialogHasBeenAccepted);
+}
+
+void AccessibilityController::
+    SetDisplayRotationAcceleratorDialogBeenAccepted() {
+  if (!active_user_prefs_)
+    return;
+  active_user_prefs_->SetBoolean(
+      prefs::kDisplayRotationAcceleratorDialogHasBeenAccepted, true);
   active_user_prefs_->CommitPendingWrite();
 }
 
@@ -799,6 +833,21 @@ void AccessibilityController::ObservePrefs(PrefService* prefs) {
           &AccessibilityController::UpdateAutoclickDelayFromPref,
           base::Unretained(this)));
   pref_change_registrar_->Add(
+      prefs::kAccessibilityAutoclickEventType,
+      base::BindRepeating(
+          &AccessibilityController::UpdateAutoclickEventTypeFromPref,
+          base::Unretained(this)));
+  pref_change_registrar_->Add(
+      prefs::kAccessibilityAutoclickRevertToLeftClick,
+      base::BindRepeating(
+          &AccessibilityController::UpdateAutoclickRevertToLeftClickFromPref,
+          base::Unretained(this)));
+  pref_change_registrar_->Add(
+      prefs::kAccessibilityAutoclickMovementThreshold,
+      base::BindRepeating(
+          &AccessibilityController::UpdateAutoclickMovementThresholdFromPref,
+          base::Unretained(this)));
+  pref_change_registrar_->Add(
       prefs::kAccessibilityCaretHighlightEnabled,
       base::BindRepeating(
           &AccessibilityController::UpdateCaretHighlightFromPref,
@@ -855,6 +904,9 @@ void AccessibilityController::ObservePrefs(PrefService* prefs) {
   // Load current state.
   UpdateAutoclickFromPref();
   UpdateAutoclickDelayFromPref();
+  UpdateAutoclickEventTypeFromPref();
+  UpdateAutoclickRevertToLeftClickFromPref();
+  UpdateAutoclickMovementThresholdFromPref();
   UpdateCaretHighlightFromPref();
   UpdateCursorHighlightFromPref();
   UpdateDictationFromPref();
@@ -893,6 +945,41 @@ void AccessibilityController::UpdateAutoclickDelayFromPref() {
   autoclick_delay_ = autoclick_delay;
 
   Shell::Get()->autoclick_controller()->SetAutoclickDelay(autoclick_delay_);
+}
+
+void AccessibilityController::UpdateAutoclickEventTypeFromPref() {
+  DCHECK(active_user_prefs_);
+  mojom::AutoclickEventType event_type = static_cast<mojom::AutoclickEventType>(
+      active_user_prefs_->GetInteger(prefs::kAccessibilityAutoclickEventType));
+
+  Shell::Get()->autoclick_controller()->SetAutoclickEventType(event_type);
+}
+
+void AccessibilityController::SetAutoclickEventType(
+    mojom::AutoclickEventType event_type) {
+  if (!active_user_prefs_)
+    return;
+  active_user_prefs_->SetInteger(prefs::kAccessibilityAutoclickEventType,
+                                 static_cast<int>(event_type));
+  active_user_prefs_->CommitPendingWrite();
+}
+
+void AccessibilityController::UpdateAutoclickRevertToLeftClickFromPref() {
+  DCHECK(active_user_prefs_);
+  bool revert_to_left_click = active_user_prefs_->GetBoolean(
+      prefs::kAccessibilityAutoclickRevertToLeftClick);
+
+  Shell::Get()->autoclick_controller()->set_revert_to_left_click(
+      revert_to_left_click);
+}
+
+void AccessibilityController::UpdateAutoclickMovementThresholdFromPref() {
+  DCHECK(active_user_prefs_);
+  int movement_threshold = active_user_prefs_->GetInteger(
+      prefs::kAccessibilityAutoclickMovementThreshold);
+
+  Shell::Get()->autoclick_controller()->set_movement_threshold(
+      movement_threshold);
 }
 
 void AccessibilityController::UpdateCaretHighlightFromPref() {

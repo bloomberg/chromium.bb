@@ -9,10 +9,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/core/fetch/bytes_consumer_test_util.h"
-#include "third_party/blink/renderer/core/streams/readable_stream_operations.h"
-#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/core/streams/readable_stream.h"
+#include "third_party/blink/renderer/core/streams/test_underlying_source.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding_macros.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -38,81 +38,48 @@ class MockClient : public GarbageCollectedFinalized<MockClient>,
   MOCK_METHOD0(OnStateChange, void());
   String DebugName() const override { return "MockClient"; }
 
-  void Trace(blink::Visitor* visitor) override {}
-
- protected:
   MockClient() = default;
+
+  void Trace(blink::Visitor* visitor) override {}
 };
 
-class ReadableStreamBytesConsumerTest : public testing::Test {
- public:
-  ReadableStreamBytesConsumerTest() : page_(DummyPageHolder::Create()) {}
+TEST(ReadableStreamBytesConsumerTest, Create) {
+  V8TestingScope scope;
+  ScriptState* script_state = scope.GetScriptState();
+  ExceptionState& exception_state = scope.GetExceptionState();
 
-  ScriptState* GetScriptState() {
-    return ToScriptStateForMainWorld(page_->GetDocument().GetFrame());
-  }
-  v8::Isolate* GetIsolate() { return GetScriptState()->GetIsolate(); }
+  auto* stream = ReadableStream::Create(script_state, exception_state);
+  ASSERT_TRUE(stream);
+  ASSERT_FALSE(exception_state.HadException());
 
-  v8::MaybeLocal<v8::Value> Eval(const char* s) {
-    v8::Local<v8::String> source;
-    v8::Local<v8::Script> script;
-    v8::MicrotasksScope microtasks(GetIsolate(),
-                                   v8::MicrotasksScope::kDoNotRunMicrotasks);
-    if (!v8::String::NewFromUtf8(GetIsolate(), s, v8::NewStringType::kNormal)
-             .ToLocal(&source)) {
-      ADD_FAILURE();
-      return v8::MaybeLocal<v8::Value>();
-    }
-    if (!v8::Script::Compile(GetScriptState()->GetContext(), source)
-             .ToLocal(&script)) {
-      ADD_FAILURE() << "Compilation fails";
-      return v8::MaybeLocal<v8::Value>();
-    }
-    return script->Run(GetScriptState()->GetContext());
-  }
-  v8::MaybeLocal<v8::Value> EvalWithPrintingError(const char* s) {
-    v8::TryCatch block(GetIsolate());
-    v8::MaybeLocal<v8::Value> r = Eval(s);
-    if (block.HasCaught()) {
-      ADD_FAILURE() << ToCoreString(block.Exception()->ToString(GetIsolate()))
-                           .Utf8()
-                           .data();
-      block.ReThrow();
-    }
-    return r;
-  }
+  ScriptValue reader = stream->getReader(script_state, exception_state);
+  ASSERT_FALSE(reader.IsEmpty());
+  ASSERT_FALSE(exception_state.HadException());
 
-  ReadableStreamBytesConsumer* CreateConsumer(ScriptValue stream) {
-    ScriptValue reader = ReadableStreamOperations::GetReader(
-        GetScriptState(), stream, ASSERT_NO_EXCEPTION);
-    DCHECK(!reader.IsEmpty());
-    DCHECK(reader.V8Value()->IsObject());
-    return new ReadableStreamBytesConsumer(GetScriptState(), reader);
-  }
-
-  void Gc() { V8GCController::CollectAllGarbageForTesting(GetIsolate()); }
-
- private:
-  std::unique_ptr<DummyPageHolder> page_;
-};
-
-TEST_F(ReadableStreamBytesConsumerTest, Create) {
-  ScriptState::Scope scope(GetScriptState());
-  ScriptValue stream(GetScriptState(),
-                     EvalWithPrintingError("new ReadableStream"));
-  ASSERT_FALSE(stream.IsEmpty());
-  Persistent<BytesConsumer> consumer = CreateConsumer(stream);
+  Persistent<BytesConsumer> consumer =
+      MakeGarbageCollected<ReadableStreamBytesConsumer>(script_state, reader);
 
   EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
 }
 
-TEST_F(ReadableStreamBytesConsumerTest, EmptyStream) {
-  ScriptState::Scope scope(GetScriptState());
-  ScriptValue stream(
-      GetScriptState(),
-      EvalWithPrintingError("new ReadableStream({start: c => c.close()})"));
-  ASSERT_FALSE(stream.IsEmpty());
-  Persistent<BytesConsumer> consumer = CreateConsumer(stream);
+TEST(ReadableStreamBytesConsumerTest, EmptyStream) {
+  V8TestingScope scope;
+  ScriptState* script_state = scope.GetScriptState();
+  ExceptionState& exception_state = scope.GetExceptionState();
+
+  auto* underlying_source =
+      MakeGarbageCollected<TestUnderlyingSource>(script_state);
+  auto* stream = ReadableStream::CreateWithCountQueueingStrategy(
+      script_state, underlying_source, 0);
+  underlying_source->Close();
+
+  ScriptValue reader = stream->getReader(script_state, exception_state);
+  ASSERT_FALSE(reader.IsEmpty());
+  ASSERT_FALSE(exception_state.HadException());
+
+  Persistent<BytesConsumer> consumer =
+      MakeGarbageCollected<ReadableStreamBytesConsumer>(script_state, reader);
+
   Persistent<MockClient> client = MockClient::Create();
   consumer->SetClient(client);
 
@@ -138,13 +105,24 @@ TEST_F(ReadableStreamBytesConsumerTest, EmptyStream) {
   EXPECT_EQ(Result::kDone, consumer->BeginRead(&buffer, &available));
 }
 
-TEST_F(ReadableStreamBytesConsumerTest, ErroredStream) {
-  ScriptState::Scope scope(GetScriptState());
-  ScriptValue stream(
-      GetScriptState(),
-      EvalWithPrintingError("new ReadableStream({start: c => c.error()})"));
-  ASSERT_FALSE(stream.IsEmpty());
-  Persistent<BytesConsumer> consumer = CreateConsumer(stream);
+TEST(ReadableStreamBytesConsumerTest, ErroredStream) {
+  V8TestingScope scope;
+  ScriptState* script_state = scope.GetScriptState();
+  ExceptionState& exception_state = scope.GetExceptionState();
+
+  auto* underlying_source =
+      MakeGarbageCollected<TestUnderlyingSource>(script_state);
+  auto* stream = ReadableStream::CreateWithCountQueueingStrategy(
+      script_state, underlying_source, 0);
+  underlying_source->SetError(
+      ScriptValue(script_state, v8::Undefined(script_state->GetIsolate())));
+
+  ScriptValue reader = stream->getReader(script_state, exception_state);
+  ASSERT_FALSE(reader.IsEmpty());
+  ASSERT_FALSE(exception_state.HadException());
+
+  Persistent<BytesConsumer> consumer =
+      MakeGarbageCollected<ReadableStreamBytesConsumer>(script_state, reader);
   Persistent<MockClient> client = MockClient::Create();
   consumer->SetClient(client);
   Checkpoint checkpoint;
@@ -170,20 +148,41 @@ TEST_F(ReadableStreamBytesConsumerTest, ErroredStream) {
   EXPECT_EQ(Result::kError, consumer->BeginRead(&buffer, &available));
 }
 
-TEST_F(ReadableStreamBytesConsumerTest, TwoPhaseRead) {
-  ScriptState::Scope scope(GetScriptState());
-  ScriptValue stream(
-      GetScriptState(),
-      EvalWithPrintingError(
-          "var controller;"
-          "var stream = new ReadableStream({start: c => controller = c});"
-          "controller.enqueue(new Uint8Array());"
-          "controller.enqueue(new Uint8Array([0x43, 0x44, 0x45, 0x46]));"
-          "controller.enqueue(new Uint8Array([0x47, 0x48, 0x49, 0x4a]));"
-          "controller.close();"
-          "stream"));
-  ASSERT_FALSE(stream.IsEmpty());
-  Persistent<BytesConsumer> consumer = CreateConsumer(stream);
+TEST(ReadableStreamBytesConsumerTest, TwoPhaseRead) {
+  V8TestingScope scope;
+  ScriptState* script_state = scope.GetScriptState();
+  ExceptionState& exception_state = scope.GetExceptionState();
+
+  auto* underlying_source =
+      MakeGarbageCollected<TestUnderlyingSource>(script_state);
+  auto* stream = ReadableStream::CreateWithCountQueueingStrategy(
+      script_state, underlying_source, 0);
+  {
+    auto* chunk1 = DOMUint8Array::Create(0);
+    auto* chunk2 = DOMUint8Array::Create(4);
+    chunk2->Data()[0] = 0x43;
+    chunk2->Data()[1] = 0x44;
+    chunk2->Data()[2] = 0x45;
+    chunk2->Data()[3] = 0x46;
+    auto* chunk3 = DOMUint8Array::Create(4);
+    chunk3->Data()[0] = 0x47;
+    chunk3->Data()[1] = 0x48;
+    chunk3->Data()[2] = 0x49;
+    chunk3->Data()[3] = 0x4a;
+    underlying_source->Enqueue(
+        ScriptValue(script_state, ToV8(chunk1, script_state)));
+    underlying_source->Enqueue(
+        ScriptValue(script_state, ToV8(chunk2, script_state)));
+    underlying_source->Enqueue(
+        ScriptValue(script_state, ToV8(chunk3, script_state)));
+    underlying_source->Close();
+  }
+
+  ScriptValue reader = stream->getReader(script_state, exception_state);
+  ASSERT_FALSE(reader.IsEmpty());
+  ASSERT_FALSE(exception_state.HadException());
+  Persistent<BytesConsumer> consumer =
+      MakeGarbageCollected<ReadableStreamBytesConsumer>(script_state, reader);
   Persistent<MockClient> client = MockClient::Create();
   consumer->SetClient(client);
   Checkpoint checkpoint;
@@ -261,18 +260,24 @@ TEST_F(ReadableStreamBytesConsumerTest, TwoPhaseRead) {
   EXPECT_EQ(Result::kDone, consumer->BeginRead(&buffer, &available));
 }
 
-TEST_F(ReadableStreamBytesConsumerTest, EnqueueUndefined) {
-  ScriptState::Scope scope(GetScriptState());
-  ScriptValue stream(
-      GetScriptState(),
-      EvalWithPrintingError(
-          "var controller;"
-          "var stream = new ReadableStream({start: c => controller = c});"
-          "controller.enqueue(undefined);"
-          "controller.close();"
-          "stream"));
-  ASSERT_FALSE(stream.IsEmpty());
-  Persistent<BytesConsumer> consumer = CreateConsumer(stream);
+TEST(ReadableStreamBytesConsumerTest, EnqueueUndefined) {
+  V8TestingScope scope;
+  ScriptState* script_state = scope.GetScriptState();
+  ExceptionState& exception_state = scope.GetExceptionState();
+
+  auto* underlying_source =
+      MakeGarbageCollected<TestUnderlyingSource>(script_state);
+  auto* stream = ReadableStream::CreateWithCountQueueingStrategy(
+      script_state, underlying_source, 0);
+  underlying_source->Enqueue(
+      ScriptValue(script_state, v8::Undefined(script_state->GetIsolate())));
+  underlying_source->Close();
+
+  ScriptValue reader = stream->getReader(script_state, exception_state);
+  ASSERT_FALSE(reader.IsEmpty());
+  ASSERT_FALSE(exception_state.HadException());
+  Persistent<BytesConsumer> consumer =
+      MakeGarbageCollected<ReadableStreamBytesConsumer>(script_state, reader);
   Persistent<MockClient> client = MockClient::Create();
   consumer->SetClient(client);
   Checkpoint checkpoint;
@@ -298,19 +303,24 @@ TEST_F(ReadableStreamBytesConsumerTest, EnqueueUndefined) {
   EXPECT_EQ(Result::kError, consumer->BeginRead(&buffer, &available));
 }
 
-TEST_F(ReadableStreamBytesConsumerTest, EnqueueNull) {
-  ScriptState::Scope scope(GetScriptState());
-  ScriptValue stream(
-      GetScriptState(),
-      EvalWithPrintingError(
-          "var controller;"
-          "var stream = new ReadableStream({start: c => controller = c});"
-          "controller.enqueue(null);"
-          "controller.close();"
-          "stream"));
+TEST(ReadableStreamBytesConsumerTest, EnqueueNull) {
+  V8TestingScope scope;
+  ScriptState* script_state = scope.GetScriptState();
+  ExceptionState& exception_state = scope.GetExceptionState();
 
-  ASSERT_FALSE(stream.IsEmpty());
-  Persistent<BytesConsumer> consumer = CreateConsumer(stream);
+  auto* underlying_source =
+      MakeGarbageCollected<TestUnderlyingSource>(script_state);
+  auto* stream = ReadableStream::CreateWithCountQueueingStrategy(
+      script_state, underlying_source, 0);
+  underlying_source->Enqueue(
+      ScriptValue(script_state, v8::Null(script_state->GetIsolate())));
+  underlying_source->Close();
+
+  ScriptValue reader = stream->getReader(script_state, exception_state);
+  ASSERT_FALSE(reader.IsEmpty());
+  ASSERT_FALSE(exception_state.HadException());
+  Persistent<BytesConsumer> consumer =
+      MakeGarbageCollected<ReadableStreamBytesConsumer>(script_state, reader);
   Persistent<MockClient> client = MockClient::Create();
   consumer->SetClient(client);
   Checkpoint checkpoint;
@@ -336,18 +346,24 @@ TEST_F(ReadableStreamBytesConsumerTest, EnqueueNull) {
   EXPECT_EQ(Result::kError, consumer->BeginRead(&buffer, &available));
 }
 
-TEST_F(ReadableStreamBytesConsumerTest, EnqueueString) {
-  ScriptState::Scope scope(GetScriptState());
-  ScriptValue stream(
-      GetScriptState(),
-      EvalWithPrintingError(
-          "var controller;"
-          "var stream = new ReadableStream({start: c => controller = c});"
-          "controller.enqueue('hello');"
-          "controller.close();"
-          "stream"));
-  ASSERT_FALSE(stream.IsEmpty());
-  Persistent<BytesConsumer> consumer = CreateConsumer(stream);
+TEST(ReadableStreamBytesConsumerTest, EnqueueString) {
+  V8TestingScope scope;
+  ScriptState* script_state = scope.GetScriptState();
+  ExceptionState& exception_state = scope.GetExceptionState();
+
+  auto* underlying_source =
+      MakeGarbageCollected<TestUnderlyingSource>(script_state);
+  auto* stream = ReadableStream::CreateWithCountQueueingStrategy(
+      script_state, underlying_source, 0);
+  underlying_source->Enqueue(
+      ScriptValue(script_state, V8String(script_state->GetIsolate(), "hello")));
+  underlying_source->Close();
+
+  ScriptValue reader = stream->getReader(script_state, exception_state);
+  ASSERT_FALSE(reader.IsEmpty());
+  ASSERT_FALSE(exception_state.HadException());
+  Persistent<BytesConsumer> consumer =
+      MakeGarbageCollected<ReadableStreamBytesConsumer>(script_state, reader);
   Persistent<MockClient> client = MockClient::Create();
   consumer->SetClient(client);
   Checkpoint checkpoint;

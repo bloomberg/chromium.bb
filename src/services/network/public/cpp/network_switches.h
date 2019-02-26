@@ -16,6 +16,7 @@ COMPONENT_EXPORT(NETWORK_CPP)
 extern const char kHostResolverRules[];
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const char kIgnoreCertificateErrorsSPKIList[];
+COMPONENT_EXPORT(NETWORK_CPP) extern const char kIgnoreUrlFetcherCertRequests[];
 COMPONENT_EXPORT(NETWORK_CPP) extern const char kLogNetLog[];
 COMPONENT_EXPORT(NETWORK_CPP) extern const char kSSLKeyLogFile[];
 COMPONENT_EXPORT(NETWORK_CPP) extern const char kNoReferrers[];

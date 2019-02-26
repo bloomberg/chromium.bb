@@ -16,7 +16,7 @@
 #include "base/process/launch.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "cc/base/switches.h"
@@ -145,7 +145,7 @@ void DeriveCommandLine(const GURL& start_url,
     ::switches::kTouchCalibration,
     ::switches::kTouchDevices,
     ::switches::kTouchEventFeatureDetection,
-    ::switches::kTopChromeMD,
+    ::switches::kTopChromeTouchUi,
     ::switches::kTraceToConsole,
     ::switches::kUIDisablePartialSwap,
 #if defined(USE_CRAS)
@@ -185,7 +185,6 @@ void DeriveCommandLine(const GURL& start_url,
     cc::switches::kDisableMainFrameBeforeActivation,
     cc::switches::kDisableThreadedAnimation,
     cc::switches::kEnableGpuBenchmarking,
-    cc::switches::kEnableLayerLists,
     cc::switches::kEnableMainFrameBeforeActivation,
     cc::switches::kShowCompositedLayerBorders,
     cc::switches::kShowFPSCounter,

@@ -16,15 +16,16 @@ from test_utils import (ProfileFile,
                         TestProfileManager)
 
 class ProcessProfilesTestCase(unittest.TestCase):
+  START_SYMBOL = 'linker_script_start_of_text'
 
   def setUp(self):
-    self.symbol_0 = SimpleTestSymbol('0', 0, 0)
-    self.symbol_1 = SimpleTestSymbol('1', 8, 16)
+    self.symbol_0 = SimpleTestSymbol(self.START_SYMBOL, 0, 0)
+    self.symbol_1 = SimpleTestSymbol('1', 6, 16)
     self.symbol_2 = SimpleTestSymbol('2', 32, 8)
     self.symbol_3 = SimpleTestSymbol('3', 40, 12)
     self.offset_to_symbol_info = (
-        [None, None] + [self.symbol_1] * 4 + [None] * 2 + [self.symbol_2] * 2
-        + [self.symbol_3] * 3)
+        [None] * 3 + [self.symbol_1] * 8 + [None] * 5 + [self.symbol_2] * 4 +
+        [self.symbol_3] * 6)
     self.symbol_infos = [self.symbol_0, self.symbol_1,
                          self.symbol_2, self.symbol_3]
     self._file_counter = 0
@@ -36,8 +37,22 @@ class ProcessProfilesTestCase(unittest.TestCase):
 
   def testGetOffsetToSymbolInfo(self):
     processor = TestSymbolOffsetProcessor(self.symbol_infos)
-    offset_to_symbol_info = processor._GetDumpOffsetToSymbolInfo()
-    self.assertListEqual(self.offset_to_symbol_info, offset_to_symbol_info)
+    self.assertListEqual(self.offset_to_symbol_info,
+                         processor._GetDumpOffsetToSymbolInfo())
+
+  def testOverlappingSymbols(self):
+    symbol_1 = SimpleTestSymbol(self.START_SYMBOL, 6, 8)
+    symbol_2 = SimpleTestSymbol('2', 10, 10)
+    processor = TestSymbolOffsetProcessor([symbol_1, symbol_2])
+    self.assertListEqual([symbol_1] * 4 + [symbol_2] * 3,
+                         processor._GetDumpOffsetToSymbolInfo())
+
+  def testSymbolsBeforeStart(self):
+    self.symbol_infos = [SimpleTestSymbol(s.name, s.offset + 8, s.size)
+                         for s in self.symbol_infos]
+    self.symbol_infos.append(SimpleTestSymbol('early', 0, 4))
+    processor = TestSymbolOffsetProcessor(self.symbol_infos)
+    self.assertRaises(AssertionError, processor._GetDumpOffsetToSymbolInfo)
 
   def testGetReachedOffsetsFromDump(self):
     processor = TestSymbolOffsetProcessor(self.symbol_infos)
@@ -60,8 +75,8 @@ class ProcessProfilesTestCase(unittest.TestCase):
 
   def testGetOrderedSymbols(self):
     processor = TestSymbolOffsetProcessor(self.symbol_infos)
-    self.assertListEqual(['1', '3', '0'],
-                         processor.GetOrderedSymbols([8, 41, 6, 0]))
+    self.assertListEqual(['1', '3', self.START_SYMBOL],
+                         processor.GetOrderedSymbols([7, 41, 5, 0]))
 
   def testOffsetToSymbolsMap(self):
     symbol_infos = [SimpleTestSymbol('1', 8, 16),
@@ -92,13 +107,13 @@ class ProcessProfilesTestCase(unittest.TestCase):
     self.assertListEqual(symbols[1:3],
                          processor.MatchSymbolNames(['Y', 'X']))
 
-  def testOffsetsPrimarySize(self):
+  def testSymbolsSize(self):
     symbols = [SimpleTestSymbol('W', 10, 1),
                SimpleTestSymbol('X', 20, 2),
                SimpleTestSymbol('Y', 30, 4),
                SimpleTestSymbol('Z', 40, 8)]
     processor = TestSymbolOffsetProcessor(symbols)
-    self.assertEqual(13, processor.OffsetsPrimarySize([10, 30, 40]))
+    self.assertEqual(13, processor.SymbolsSize(['W', 'Y', 'Z']))
 
   def testMedian(self):
     self.assertEquals(None, process_profiles._Median([]))

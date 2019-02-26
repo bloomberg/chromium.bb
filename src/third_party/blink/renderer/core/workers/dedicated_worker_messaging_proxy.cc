@@ -7,6 +7,7 @@
 #include <memory>
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/events/error_event.h"
@@ -18,10 +19,9 @@
 #include "third_party/blink/renderer/core/workers/dedicated_worker.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker_object_proxy.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker_thread.h"
-#include "third_party/blink/renderer/core/workers/worker_inspector_proxy.h"
 #include "third_party/blink/renderer/core/workers/worker_options.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
-#include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 
 namespace blink {
@@ -39,7 +39,7 @@ DedicatedWorkerMessagingProxy::~DedicatedWorkerMessagingProxy() = default;
 
 void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
-    const WorkerOptions& options,
+    const WorkerOptions* options,
     const KURL& script_url,
     FetchClientSettingsObjectSnapshot* outside_settings_object,
     const v8_inspector::V8StackTraceId& stack_id,
@@ -55,15 +55,26 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
       std::move(creation_params),
       CreateBackingThreadStartupData(ToIsolate(GetExecutionContext())));
 
-  if (options.type() == "classic") {
-    // Dedicated worker is origin-bound, so use kSharableCrossOrigin.
-    GetWorkerThread()->EvaluateClassicScript(
-        script_url, kSharableCrossOrigin, source_code,
-        nullptr /* cached_meta_data */, stack_id);
-  } else if (options.type() == "module") {
+  // Step 13: "Obtain script by switching on the value of options's type
+  // member:"
+  if (options->type() == "classic") {
+    // "classic: Fetch a classic worker script given url, outside settings,
+    // destination, and inside settings."
+    if (RuntimeEnabledFeatures::OffMainThreadWorkerScriptFetchEnabled()) {
+      GetWorkerThread()->ImportClassicScript(script_url,
+                                             outside_settings_object, stack_id);
+    } else {
+      // Legacy code path (to be deprecated, see https://crbug.com/835717):
+      GetWorkerThread()->EvaluateClassicScript(
+          script_url, source_code, nullptr /* cached_meta_data */, stack_id);
+    }
+  } else if (options->type() == "module") {
+    // "module: Fetch a module worker script graph given url, outside settings,
+    // destination, the value of the credentials member of options, and inside
+    // settings."
     network::mojom::FetchCredentialsMode credentials_mode;
-    bool result =
-        Request::ParseCredentialsMode(options.credentials(), &credentials_mode);
+    bool result = Request::ParseCredentialsMode(options->credentials(),
+                                                &credentials_mode);
     DCHECK(result);
     GetWorkerThread()->ImportModuleScript(script_url, outside_settings_object,
                                           credentials_mode);
@@ -174,6 +185,10 @@ void DedicatedWorkerMessagingProxy::DispatchErrorEvent(
       CrossThreadBind(&DedicatedWorkerObjectProxy::ProcessUnhandledException,
                       CrossThreadUnretained(worker_object_proxy_.get()),
                       exception_id, CrossThreadUnretained(GetWorkerThread())));
+
+  // Propagate an unhandled error to the parent context.
+  const auto mute_script_errors = SanitizeScriptErrors::kDoNotSanitize;
+  GetExecutionContext()->DispatchErrorEvent(event, mute_script_errors);
 }
 
 void DedicatedWorkerMessagingProxy::Trace(blink::Visitor* visitor) {

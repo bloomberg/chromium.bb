@@ -9,11 +9,11 @@ gn_args=var1=true var2="foo"
 linker_name=gold
 map_file_name=../../../test.map
 tool_prefix=tools/binary_size/libsupersize/testdata/mock_toolchain/
-Section .text: has 100.0% of 35900712 bytes accounted for from 19 symbols. 0 bytes are unaccounted for.
-* 15 have source paths assigned (78.9%)
+Section .text: has 100.0% of 35900712 bytes accounted for from 22 symbols. 0 bytes are unaccounted for.
+* 16 have source paths assigned (72.7%)
 * Padding accounts for 48 bytes (0.0%)
-* 3 placeholders (symbols that start with **) account for 35830760 bytes (99.8%)
-* Contains 6 aliases, mapped to 2 unique addresses (52 bytes saved)
+* 5 placeholders (symbols that start with **) account for 35830760 bytes (99.8%)
+* Contains 8 aliases, mapped to 3 unique addresses (100 bytes saved)
 * 0 symbols have shared ownership
 Section .rodata: has 100.0% of 5927652 bytes accounted for from 12 symbols. 0 bytes are unaccounted for.
 * 8 have source paths assigned (66.7%)
@@ -303,7 +303,10 @@ Section .other: has 100.0% of 39228839 bytes accounted for from 5 symbols. 0 byt
 .text@2a0020(size_without_padding=24,padding=4,full_name=blink::ContiguousContainerBase::ContiguousContainerBase(blink::ContiguousContainerBase&&),object_path=third_party/sub/ContiguousContainer.o,source_path=third_party/container/container.c,flags={},num_aliases=1,component=UI>Browser)
 .text@2a1000(size_without_padding=0,padding=4040,full_name=** symbol gap 1,object_path=,source_path=,flags={},num_aliases=1,component=)
 .text@2a1000(size_without_padding=94,padding=0,full_name=blink::PaintChunker::releasePaintChunks(),object_path=third_party/sub/ContiguousContainer.o,source_path=third_party/container/container.c,flags={anon,clone},num_aliases=1,component=UI>Browser)
-.text@24ca628(size_without_padding=0,padding=35821002,full_name=** symbol gap 2 (end of section),object_path=,source_path=,flags={},num_aliases=1,component=)
+.text@2a2000(size_without_padding=32,padding=4002,full_name=** outlined function,object_path=third_party/sub/ContiguousContainer.o,source_path=third_party/container/container.c,flags={},num_aliases=1,component=UI>Browser)
+.text@2a2020(size_without_padding=48,padding=0,full_name=** outlined function * 2,object_path=,source_path=,flags={},num_aliases=2,component=)
+.text@2a2020(size_without_padding=48,padding=0,full_name=aliasedWithOutlinedFunction(),object_path=,source_path=,flags={},num_aliases=2,component=)
+.text@24ca628(size_without_padding=0,padding=35816920,full_name=** symbol gap 2 (end of section),object_path=,source_path=,flags={},num_aliases=1,component=)
 .bss@0(size_without_padding=262144,padding=0,full_name=ff_cos_131072,object_path=third_party/ffmpeg/libffmpeg_internal.a/fft_float.o,source_path=third_party/fft_float.cc,flags={},num_aliases=1,component=Internal>Android)
 .bss@0(size_without_padding=131072,padding=0,full_name=ff_cos_131072_fixed,object_path=third_party/ffmpeg/libffmpeg_internal.a/fft_fixed.o,source_path=third_party/fft_fixed.cc,flags={},num_aliases=1,component=Internal>Android)
 .bss@0(size_without_padding=131072,padding=0,full_name=ff_cos_65536,object_path=third_party/ffmpeg/libffmpeg_internal.a/fft_float.o,source_path=third_party/fft_float.cc,flags={},num_aliases=1,component=Internal>Android)

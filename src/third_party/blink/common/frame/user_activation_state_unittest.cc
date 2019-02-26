@@ -65,12 +65,12 @@ TEST_F(UserActivationStateTest, ExpirationTest) {
   user_activation_state.Activate();
 
   // Right before activation expiry, both bits remain set.
-  AdvanceClock(base::TimeDelta::FromSeconds(29));
+  AdvanceClock(base::TimeDelta::FromMilliseconds(999));
   EXPECT_TRUE(user_activation_state.HasBeenActive());
   EXPECT_TRUE(user_activation_state.IsActive());
 
   // Right after activation expiry, only the transient bit gets reset.
-  AdvanceClock(base::TimeDelta::FromSeconds(1));
+  AdvanceClock(base::TimeDelta::FromMilliseconds(1));
   EXPECT_TRUE(user_activation_state.HasBeenActive());
   EXPECT_FALSE(user_activation_state.IsActive());
 }
@@ -94,17 +94,17 @@ TEST_F(UserActivationStateTest, ConsumptionPlusExpirationTest) {
 
   // An activation is consumable before expiry.
   user_activation_state.Activate();
-  AdvanceClock(base::TimeDelta::FromSeconds(5));
+  AdvanceClock(base::TimeDelta::FromMilliseconds(900));
   EXPECT_TRUE(user_activation_state.ConsumeIfActive());
 
   // An activation is not consumable after expiry.
   user_activation_state.Activate();
-  AdvanceClock(base::TimeDelta::FromSeconds(30));
+  AdvanceClock(base::TimeDelta::FromSeconds(1));
   EXPECT_FALSE(user_activation_state.ConsumeIfActive());
 
   // Consecutive activations within expiry is consumable only once.
   user_activation_state.Activate();
-  AdvanceClock(base::TimeDelta::FromSeconds(5));
+  AdvanceClock(base::TimeDelta::FromMilliseconds(900));
   user_activation_state.Activate();
   EXPECT_TRUE(user_activation_state.ConsumeIfActive());
   EXPECT_FALSE(user_activation_state.ConsumeIfActive());
@@ -112,7 +112,7 @@ TEST_F(UserActivationStateTest, ConsumptionPlusExpirationTest) {
   // Non-consecutive activations within expiry is consumable separately.
   user_activation_state.Activate();
   EXPECT_TRUE(user_activation_state.ConsumeIfActive());
-  AdvanceClock(base::TimeDelta::FromSeconds(5));
+  AdvanceClock(base::TimeDelta::FromSeconds(900));
   user_activation_state.Activate();
   EXPECT_TRUE(user_activation_state.ConsumeIfActive());
 }

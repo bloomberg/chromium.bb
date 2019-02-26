@@ -8,36 +8,47 @@ import("//third_party/closure_compiler/js_unit_tests.gni")
 # TODO(tapted): This entire folder should move to //ui/file_manager/base.
 visibility = [ "//ui/file_manager/*" ]
 
+group("closure_compile") {
+  testonly = true
+  deps = [
+    ":closure_compile_module",
+    ":test_support_type_check",
+    ":unit_tests_type_check",
+  ]
+}
+
 js_type_check("closure_compile_module") {
   deps = [
     ":async_util",
-    ":error_util",
     ":file_type",
     ":files_app_entry_types",
     ":importer_common",
     ":lru_cache",
     ":metrics",
     ":metrics_base",
-    ":metrics_events",
     ":mock_entry",
     ":progress_center_common",
-    ":unittest_util",
     ":util",
-    ":volume_manager_common",
+    "//ui/file_manager/base/js:volume_manager_types",
+  ]
+}
+
+js_type_check("test_support_type_check") {
+  testonly = true
+  deps = [
+    ":test_importer_common",
+    ":unittest_util",
   ]
 }
 
 js_library("async_util") {
 }
 
-js_library("async_util_unittest") {
+js_unittest("async_util_unittest") {
   deps = [
     ":async_util",
-    ":unittest_util",
+    "//ui/file_manager/base/js:test_error_reporting",
   ]
-}
-
-js_library("error_util") {
 }
 
 js_library("files_app_entry_types") {
@@ -47,18 +58,20 @@ js_library("files_app_entry_types") {
   externs_list = [ "../../../externs/volume_info.js" ]
 }
 
-js_library("files_app_entry_types_unittest") {
+js_unittest("files_app_entry_types_unittest") {
   deps = [
     ":files_app_entry_types",
-    ":unittest_util",
-    ":volume_manager_common",
+    ":mock_entry",
+    ":util",
+    "//ui/file_manager/base/js:test_error_reporting",
+    "//ui/file_manager/base/js:volume_manager_types",
   ]
 }
 
 js_library("file_type") {
   deps = [
     ":files_app_entry_types",
-    ":volume_manager_common",
+    "//ui/file_manager/base/js:volume_manager_types",
   ]
 }
 
@@ -70,31 +83,32 @@ js_library("importer_common") {
   visibility = [ "//ui/file_manager/file_manager/*" ]
   deps = [
     ":file_type",
-    ":volume_manager_common",
     "../../../externs:volume_manager",
+    "//ui/file_manager/base/js:volume_manager_types",
   ]
   externs_list = [
-    "//third_party/analytics/externs.js",
-    "../../../externs/volume_info_list.js",
     "../../../externs/background_window.js",
     "../../../externs/background/file_browser_background.js",
   ]
 }
 
 js_library("test_importer_common") {
+  testonly = true
   deps = [
     ":importer_common",
     ":unittest_util",
+    "//ui/file_manager/base/js:test_error_reporting",
   ]
   visibility = []
   visibility = [ "//ui/file_manager/file_manager/*" ]
 }
 
-js_library("importer_common_unittest") {
+js_unittest("importer_common_unittest") {
   deps = [
     ":mock_entry",
     ":test_importer_common",
     ":util",
+    "//ui/file_manager/base/js:mock_chrome",
     "//ui/file_manager/file_manager/background/js:mock_volume_manager",
   ]
 }
@@ -102,7 +116,7 @@ js_library("importer_common_unittest") {
 js_library("lru_cache") {
 }
 
-js_library("lru_cache_unittest") {
+js_unittest("lru_cache_unittest") {
   deps = [
     ":lru_cache",
     "//ui/webui/resources/js:webui_resource_test",
@@ -110,24 +124,17 @@ js_library("lru_cache_unittest") {
 }
 
 js_library("metrics") {
+  visibility = []
+  visibility = [ "//ui/file_manager/file_manager/*" ]
   deps = [
     ":metrics_base",
     "../../../externs:file_manager_private",
     "//ui/webui/resources/js:assert",
   ]
-  externs_list = [
-    "$externs_path/metrics_private.js",
-    "//third_party/analytics/externs.js",
-  ]
 }
 
 js_library("metrics_base") {
-}
-
-js_library("metrics_events") {
-  deps = [
-    ":metrics_base",
-  ]
+  externs_list = [ "$externs_path/metrics_private.js" ]
 }
 
 js_library("mock_entry") {
@@ -141,6 +148,11 @@ js_library("progress_center_common") {
 }
 
 js_library("unittest_util") {
+  testonly = true
+
+  # Only files app tests use this util file.
+  visibility = []
+  visibility = [ "//ui/file_manager/file_manager/*" ]
   deps = [
     "//ui/webui/resources/js:webui_resource_test",
   ]
@@ -150,8 +162,8 @@ js_library("unittest_util") {
 js_library("util") {
   deps = [
     ":files_app_entry_types",
-    ":volume_manager_common",
     "../../../externs:file_manager_private",
+    "//ui/file_manager/base/js:volume_manager_types",
     "//ui/webui/resources/js:load_time_data",
     "//ui/webui/resources/js:util",
     "//ui/webui/resources/js/cr:event_target",
@@ -165,17 +177,13 @@ js_library("util") {
   ]
 }
 
-js_library("util_unittest") {
+js_unittest("util_unittest") {
   deps = [
+    ":files_app_entry_types",
     ":mock_entry",
     ":unittest_util",
     ":util",
-  ]
-}
-
-js_library("volume_manager_common") {
-  deps = [
-    "//ui/webui/resources/js:assert",
+    "//ui/file_manager/file_manager/background/js:mock_volume_manager",
   ]
 }
 
@@ -186,19 +194,5 @@ js_unit_tests("unit_tests") {
     ":importer_common_unittest",
     ":lru_cache_unittest",
     ":util_unittest",
-  ]
-}
-
-js_type_check("test_support_type_check") {
-  deps = [
-    ":test_importer_common",
-  ]
-}
-
-group("closure_compile") {
-  deps = [
-    ":closure_compile_module",
-    ":test_support_type_check",
-    ":unit_tests_type_check",
   ]
 }

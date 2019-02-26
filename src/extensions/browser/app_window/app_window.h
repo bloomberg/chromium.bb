@@ -433,7 +433,7 @@ class AppWindow : public content::WebContentsDelegate,
   content::KeyboardEventProcessingResult PreHandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) override;
-  void HandleKeyboardEvent(
+  bool HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) override;
   void RequestToLockMouse(content::WebContents* web_contents,

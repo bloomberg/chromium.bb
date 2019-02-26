@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/heap/visitor.h"
 
 namespace blink {
 
@@ -15,7 +16,7 @@ PaymentMethodChangeEvent::~PaymentMethodChangeEvent() = default;
 PaymentMethodChangeEvent* PaymentMethodChangeEvent::Create(
     ScriptState* script_state,
     const AtomicString& type,
-    const PaymentMethodChangeEventInit& init) {
+    const PaymentMethodChangeEventInit* init) {
   return new PaymentMethodChangeEvent(script_state, type, init);
 }
 
@@ -25,19 +26,28 @@ const String& PaymentMethodChangeEvent::methodName() const {
 
 const ScriptValue PaymentMethodChangeEvent::methodDetails(
     ScriptState* script_state) const {
-  return ScriptValue(script_state, method_details_.V8ValueFor(script_state));
+  if (method_details_.IsEmpty())
+    return ScriptValue::CreateNull(script_state);
+  return ScriptValue::ToWorldSafeScriptValue(script_state, method_details_);
+}
+
+void PaymentMethodChangeEvent::Trace(Visitor* visitor) {
+  visitor->Trace(method_details_);
+  PaymentRequestUpdateEvent::Trace(visitor);
 }
 
 PaymentMethodChangeEvent::PaymentMethodChangeEvent(
     ScriptState* script_state,
     const AtomicString& type,
-    const PaymentMethodChangeEventInit& init)
+    const PaymentMethodChangeEventInit* init)
     : PaymentRequestUpdateEvent(ExecutionContext::From(script_state),
                                 type,
                                 init),
-      method_name_(init.methodName()),
-      method_details_(init.hasMethodDetails()
-                          ? init.methodDetails()
-                          : ScriptValue::CreateNull(script_state)) {}
+      method_name_(init->methodName()) {
+  if (init->hasMethodDetails()) {
+    method_details_.Set(init->methodDetails().GetIsolate(),
+                        init->methodDetails().V8Value());
+  }
+}
 
 }  // namespace blink

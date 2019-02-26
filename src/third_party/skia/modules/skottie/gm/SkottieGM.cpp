@@ -13,6 +13,7 @@
 #include "SkMakeUnique.h"
 #include "Skottie.h"
 #include "SkottieProperty.h"
+#include "SkottieUtils.h"
 
 #include <cmath>
 #include <vector>
@@ -89,6 +90,8 @@ private:
 
 DEF_GM(return new SkottieWebFontGM;)
 
+using namespace skottie_utils;
+
 class SkottieColorizeGM : public skiagm::GM {
 protected:
     SkString onShortName() override {
@@ -101,10 +104,12 @@ protected:
 
     void onOnceBeforeDraw() override {
         if (auto stream = GetResourceAsStream("skottie/skottie_sample_search.json")) {
-            fColorizer = sk_make_sp<Colorizer>();
-            fAnimation = Animation::Builder()
-                            .setPropertyObserver(fColorizer)
-                            .make(stream.get());
+            auto propBuilder = sk_make_sp<CustomPropertyManagerBuilder>();
+            fAnimation   = Animation::Builder()
+                              .setPropertyObserver(propBuilder)
+                              .make(stream.get());
+            fPropManager = propBuilder->build();
+            fColors      = fPropManager->getColorProps();
         }
     }
 
@@ -138,7 +143,9 @@ protected:
 
         if (uni == 'c') {
             fColorIndex = (fColorIndex + 1) % SK_ARRAY_COUNT(kColors);
-            fColorizer->colorize(kColors[fColorIndex]);
+            for (const auto& prop : fColors) {
+                fPropManager->setColor(prop, kColors[fColorIndex]);
+            }
             return true;
         }
 
@@ -146,28 +153,12 @@ protected:
     }
 
 private:
-    class Colorizer final : public PropertyObserver {
-    public:
-        void onColorProperty(const char node_name[],
-                             const PropertyObserver::LazyHandle<ColorPropertyHandle>& lh) override {
-            fColorHandles.push_back(lh());
-        }
-
-        void colorize(SkColor c) {
-            for (const auto& handle : fColorHandles) {
-                handle->setColor(c);
-            }
-        }
-
-    private:
-        std::vector<std::unique_ptr<skottie::ColorPropertyHandle>> fColorHandles;
-    };
-
     static constexpr SkScalar kSize = 800;
 
-    sk_sp<Animation> fAnimation;
-    sk_sp<Colorizer> fColorizer;
-    size_t           fColorIndex = 0;
+    sk_sp<Animation>                            fAnimation;
+    std::unique_ptr<CustomPropertyManager>      fPropManager;
+    std::vector<CustomPropertyManager::PropKey> fColors;
+    size_t                                      fColorIndex = 0;
 
     using INHERITED = skiagm::GM;
 };
@@ -213,33 +204,11 @@ protected:
     }
 
 private:
-    class MultiFrameImageAsset final : public skottie::ImageAsset {
-    public:
-        MultiFrameImageAsset() {
-            if (auto codec = SkCodec::MakeFromData(GetResourceAsData("images/flightAnim.gif"))) {
-                fPlayer = skstd::make_unique<SkAnimCodecPlayer>(std::move(codec));
-            }
-        }
-
-        bool isMultiFrame() override { return fPlayer ? fPlayer->duration() > 0 : false; }
-
-        sk_sp<SkImage> getFrame(float t) override {
-            if (!fPlayer) {
-                return nullptr;
-            }
-
-            fPlayer->seek(static_cast<uint32_t>(t * 1000));
-            return fPlayer->getFrame();
-        }
-
-    private:
-        std::unique_ptr<SkAnimCodecPlayer> fPlayer;
-    };
-
     class MultiFrameResourceProvider final : public skottie::ResourceProvider {
     public:
         sk_sp<ImageAsset> loadImageAsset(const char[], const char[]) const override {
-            return sk_make_sp<MultiFrameImageAsset>();
+            return skottie_utils::MultiFrameImageAsset::Make(
+                        GetResourceAsData("images/flightAnim.gif"));
         }
     };
 

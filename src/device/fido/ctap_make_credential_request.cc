@@ -9,48 +9,20 @@
 #include <utility>
 
 #include "base/numerics/safe_conversions.h"
-#include "components/cbor/cbor_reader.h"
-#include "components/cbor/cbor_writer.h"
+#include "components/cbor/writer.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
 
 namespace device {
 
-namespace {
-
-bool AreMakeCredentialRequestMapKeysCorrect(
-    const cbor::CBORValue::MapValue& request_map) {
-  return std::all_of(request_map.begin(), request_map.end(),
-                     [](const auto& param) {
-                       if (!param.first.is_integer())
-                         return false;
-
-                       const auto& key = param.first.GetInteger();
-                       return (key <= 9u && key >= 1u);
-                     });
-}
-
-bool IsMakeCredentialOptionMapFormatCorrect(
-    const cbor::CBORValue::MapValue& option_map) {
-  return std::all_of(
-      option_map.begin(), option_map.end(), [](const auto& param) {
-        if (!param.first.is_string())
-          return false;
-
-        const auto& key = param.first.GetString();
-        return ((key == kResidentKeyMapKey || key == kUserVerificationMapKey) &&
-                param.second.is_bool());
-      });
-}
-
-}  // namespace
-
 CtapMakeCredentialRequest::CtapMakeCredentialRequest(
-    base::span<const uint8_t, kClientDataHashLength> client_data_hash,
+    std::string client_data_json,
     PublicKeyCredentialRpEntity rp,
     PublicKeyCredentialUserEntity user,
     PublicKeyCredentialParams public_key_credential_params)
-    : client_data_hash_(fido_parsing_utils::Materialize(client_data_hash)),
+    : client_data_json_(std::move(client_data_json)),
+      client_data_hash_(
+          fido_parsing_utils::CreateSHA256Hash(client_data_json_)),
       rp_(std::move(rp)),
       user_(std::move(user)),
       public_key_credential_params_(std::move(public_key_credential_params)) {}
@@ -70,47 +42,51 @@ CtapMakeCredentialRequest& CtapMakeCredentialRequest::operator=(
 CtapMakeCredentialRequest::~CtapMakeCredentialRequest() = default;
 
 std::vector<uint8_t> CtapMakeCredentialRequest::EncodeAsCBOR() const {
-  cbor::CBORValue::MapValue cbor_map;
-  cbor_map[cbor::CBORValue(1)] = cbor::CBORValue(client_data_hash_);
-  cbor_map[cbor::CBORValue(2)] = rp_.ConvertToCBOR();
-  cbor_map[cbor::CBORValue(3)] = user_.ConvertToCBOR();
-  cbor_map[cbor::CBORValue(4)] = public_key_credential_params_.ConvertToCBOR();
+  cbor::Value::MapValue cbor_map;
+  cbor_map[cbor::Value(1)] = cbor::Value(client_data_hash_);
+  cbor_map[cbor::Value(2)] = rp_.ConvertToCBOR();
+  cbor_map[cbor::Value(3)] = user_.ConvertToCBOR();
+  cbor_map[cbor::Value(4)] = public_key_credential_params_.ConvertToCBOR();
   if (exclude_list_) {
-    cbor::CBORValue::ArrayValue exclude_list_array;
+    cbor::Value::ArrayValue exclude_list_array;
     for (const auto& descriptor : *exclude_list_) {
       exclude_list_array.push_back(descriptor.ConvertToCBOR());
     }
-    cbor_map[cbor::CBORValue(5)] =
-        cbor::CBORValue(std::move(exclude_list_array));
+    cbor_map[cbor::Value(5)] = cbor::Value(std::move(exclude_list_array));
   }
+
+  if (hmac_secret_) {
+    cbor::Value::MapValue extensions;
+    extensions[cbor::Value(kExtensionHmacSecret)] = cbor::Value(true);
+    cbor_map[cbor::Value(6)] = cbor::Value(std::move(extensions));
+  }
+
   if (pin_auth_) {
-    cbor_map[cbor::CBORValue(8)] = cbor::CBORValue(*pin_auth_);
+    cbor_map[cbor::Value(8)] = cbor::Value(*pin_auth_);
   }
 
   if (pin_protocol_) {
-    cbor_map[cbor::CBORValue(9)] = cbor::CBORValue(*pin_protocol_);
+    cbor_map[cbor::Value(9)] = cbor::Value(*pin_protocol_);
   }
 
-  cbor::CBORValue::MapValue option_map;
+  cbor::Value::MapValue option_map;
 
-  // Resident keys are not supported by default.
-  if (resident_key_supported_) {
-    option_map[cbor::CBORValue(kResidentKeyMapKey)] =
-        cbor::CBORValue(resident_key_supported_);
+  // Resident keys are not required by default.
+  if (resident_key_required_) {
+    option_map[cbor::Value(kResidentKeyMapKey)] =
+        cbor::Value(resident_key_required_);
   }
 
   // User verification is not required by default.
-  if (user_verification_required_) {
-    option_map[cbor::CBORValue(kUserVerificationMapKey)] =
-        cbor::CBORValue(user_verification_required_);
+  if (user_verification_ == UserVerificationRequirement::kRequired) {
+    option_map[cbor::Value(kUserVerificationMapKey)] = cbor::Value(true);
   }
 
   if (!option_map.empty()) {
-    cbor_map[cbor::CBORValue(7)] = cbor::CBORValue(std::move(option_map));
+    cbor_map[cbor::Value(7)] = cbor::Value(std::move(option_map));
   }
 
-  auto serialized_param =
-      cbor::CBORWriter::Write(cbor::CBORValue(std::move(cbor_map)));
+  auto serialized_param = cbor::Writer::Write(cbor::Value(std::move(cbor_map)));
   DCHECK(serialized_param);
 
   std::vector<uint8_t> cbor_request({base::strict_cast<uint8_t>(
@@ -121,15 +97,21 @@ std::vector<uint8_t> CtapMakeCredentialRequest::EncodeAsCBOR() const {
 }
 
 CtapMakeCredentialRequest&
-CtapMakeCredentialRequest::SetUserVerificationRequired(
-    bool user_verification_required) {
-  user_verification_required_ = user_verification_required;
+CtapMakeCredentialRequest::SetAuthenticatorAttachment(
+    AuthenticatorAttachment authenticator_attachment) {
+  authenticator_attachment_ = authenticator_attachment;
   return *this;
 }
 
-CtapMakeCredentialRequest& CtapMakeCredentialRequest::SetResidentKeySupported(
-    bool resident_key_supported) {
-  resident_key_supported_ = resident_key_supported;
+CtapMakeCredentialRequest& CtapMakeCredentialRequest::SetUserVerification(
+    UserVerificationRequirement user_verification) {
+  user_verification_ = user_verification;
+  return *this;
+}
+
+CtapMakeCredentialRequest& CtapMakeCredentialRequest::SetResidentKeyRequired(
+    bool resident_key_required) {
+  resident_key_required_ = resident_key_required;
   return *this;
 }
 
@@ -158,112 +140,10 @@ CtapMakeCredentialRequest::SetIsIndividualAttestation(
   return *this;
 }
 
-base::Optional<CtapMakeCredentialRequest> ParseCtapMakeCredentialRequest(
-    base::span<const uint8_t> request_bytes) {
-  const auto& cbor_request = cbor::CBORReader::Read(request_bytes);
-  if (!cbor_request || !cbor_request->is_map())
-    return base::nullopt;
-
-  const auto& request_map = cbor_request->GetMap();
-  if (!AreMakeCredentialRequestMapKeysCorrect(request_map))
-    return base::nullopt;
-
-  const auto client_data_hash_it = request_map.find(cbor::CBORValue(1));
-  if (client_data_hash_it == request_map.end() ||
-      !client_data_hash_it->second.is_bytestring())
-    return base::nullopt;
-
-  const auto client_data_hash =
-      base::make_span(client_data_hash_it->second.GetBytestring())
-          .subspan<0, kClientDataHashLength>();
-
-  const auto rp_entity_it = request_map.find(cbor::CBORValue(2));
-  if (rp_entity_it == request_map.end() || !rp_entity_it->second.is_map())
-    return base::nullopt;
-
-  auto rp_entity =
-      PublicKeyCredentialRpEntity::CreateFromCBORValue(rp_entity_it->second);
-  if (!rp_entity)
-    return base::nullopt;
-
-  const auto user_entity_it = request_map.find(cbor::CBORValue(3));
-  if (user_entity_it == request_map.end() || !user_entity_it->second.is_map())
-    return base::nullopt;
-
-  auto user_entity = PublicKeyCredentialUserEntity::CreateFromCBORValue(
-      user_entity_it->second);
-  if (!user_entity)
-    return base::nullopt;
-
-  const auto credential_params_it = request_map.find(cbor::CBORValue(4));
-  if (credential_params_it == request_map.end())
-    return base::nullopt;
-
-  auto credential_params = PublicKeyCredentialParams::CreateFromCBORValue(
-      credential_params_it->second);
-  if (!credential_params)
-    return base::nullopt;
-
-  CtapMakeCredentialRequest request(client_data_hash, std::move(*rp_entity),
-                                    std::move(*user_entity),
-                                    std::move(*credential_params));
-
-  const auto exclude_list_it = request_map.find(cbor::CBORValue(5));
-  if (exclude_list_it != request_map.end()) {
-    if (!exclude_list_it->second.is_array())
-      return base::nullopt;
-
-    const auto& credential_descriptors = exclude_list_it->second.GetArray();
-    std::vector<PublicKeyCredentialDescriptor> exclude_list;
-    for (const auto& credential_descriptor : credential_descriptors) {
-      auto excluded_credential =
-          PublicKeyCredentialDescriptor::CreateFromCBORValue(
-              credential_descriptor);
-      if (!excluded_credential)
-        return base::nullopt;
-
-      exclude_list.push_back(std::move(*excluded_credential));
-    }
-    request.SetExcludeList(std::move(exclude_list));
-  }
-
-  const auto option_it = request_map.find(cbor::CBORValue(7));
-  if (option_it != request_map.end()) {
-    if (!option_it->second.is_map())
-      return base::nullopt;
-
-    const auto& option_map = option_it->second.GetMap();
-    if (!IsMakeCredentialOptionMapFormatCorrect(option_map))
-      return base::nullopt;
-
-    const auto resident_key_option =
-        option_map.find(cbor::CBORValue(kResidentKeyMapKey));
-    if (resident_key_option != option_map.end())
-      request.SetResidentKeySupported(resident_key_option->second.GetBool());
-
-    const auto uv_option =
-        option_map.find(cbor::CBORValue(kUserVerificationMapKey));
-    if (uv_option != option_map.end())
-      request.SetUserVerificationRequired(uv_option->second.GetBool());
-  }
-
-  const auto pin_auth_it = request_map.find(cbor::CBORValue(8));
-  if (pin_auth_it != request_map.end()) {
-    if (!pin_auth_it->second.is_bytestring())
-      return base::nullopt;
-    request.SetPinAuth(pin_auth_it->second.GetBytestring());
-  }
-
-  const auto pin_protocol_it = request_map.find(cbor::CBORValue(9));
-  if (pin_protocol_it != request_map.end()) {
-    if (!pin_protocol_it->second.is_unsigned() ||
-        pin_protocol_it->second.GetUnsigned() >
-            std::numeric_limits<uint8_t>::max())
-      return base::nullopt;
-    request.SetPinProtocol(pin_auth_it->second.GetUnsigned());
-  }
-
-  return request;
+CtapMakeCredentialRequest& CtapMakeCredentialRequest::SetHmacSecret(
+    bool hmac_secret) {
+  hmac_secret_ = hmac_secret;
+  return *this;
 }
 
 }  // namespace device

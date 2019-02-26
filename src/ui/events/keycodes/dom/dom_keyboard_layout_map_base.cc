@@ -56,6 +56,9 @@ void DomKeyboardLayoutMapBase::PopulateLayout(uint32_t keyboard_layout_index,
       unicode_value = dom_key.ToCharacter();
     else if (dom_key.IsDeadKey())
       unicode_value = dom_key.ToDeadKeyCombiningCharacter();
+    else if (dom_key == ui::DomKey::ZENKAKU_HANKAKU)
+      // Placeholder for hankaku/zenkaku string.
+      unicode_value = kHankakuZenkakuPlaceholder;
 
     if (unicode_value != 0)
       layout->AddKeyMapping(dom_code, unicode_value);

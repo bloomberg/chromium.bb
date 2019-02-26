@@ -29,8 +29,7 @@ namespace ash {
 MessageCenterScrollBar::MessageCenterScrollBar(
     MessageCenterScrollBar::Observer* observer)
     : views::OverlayScrollBar(false), observer_(observer) {
-  GetThumb()->layer()->SetVisible(!features::IsSystemTrayUnifiedEnabled() ||
-                                  features::IsNotificationScrollBarEnabled());
+  GetThumb()->layer()->SetVisible(features::IsNotificationScrollBarEnabled());
 }
 
 bool MessageCenterScrollBar::OnKeyPressed(const ui::KeyEvent& event) {

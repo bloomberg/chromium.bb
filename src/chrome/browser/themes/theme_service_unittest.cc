@@ -282,6 +282,32 @@ TEST_F(ThemeServiceTest, IncognitoTest) {
 #endif
 }
 
+TEST_F(ThemeServiceTest, GetDefaultThemeProviderForProfile) {
+  ThemeService* theme_service =
+      ThemeServiceFactory::GetForProfile(profile_.get());
+  theme_service->UseDefaultTheme();
+  // Let the ThemeService uninstall unused themes.
+  base::RunLoop().RunUntilIdle();
+
+  SkColor default_toolbar_color =
+      ThemeService::GetThemeProviderForProfile(profile_.get())
+          .GetColor(ThemeProperties::COLOR_TOOLBAR);
+
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  LoadUnpackedThemeAt(temp_dir.GetPath());
+
+  // Should get a new color after installing a theme.
+  EXPECT_NE(ThemeService::GetThemeProviderForProfile(profile_.get())
+                .GetColor(ThemeProperties::COLOR_TOOLBAR),
+            default_toolbar_color);
+
+  // Should get the same color when requesting a default color.
+  EXPECT_EQ(ThemeService::GetDefaultThemeProviderForProfile(profile_.get())
+                .GetColor(ThemeProperties::COLOR_TOOLBAR),
+            default_toolbar_color);
+}
+
 namespace {
 
 // NotificationObserver which emulates an infobar getting destroyed when the

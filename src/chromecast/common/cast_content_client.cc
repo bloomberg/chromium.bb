@@ -7,7 +7,7 @@
 #include <stdint.h>
 
 #include "base/strings/stringprintf.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "build/build_config.h"
 #include "chromecast/base/cast_constants.h"
 #include "chromecast/base/version.h"
@@ -86,10 +86,19 @@ std::string GetUserAgent() {
 CastContentClient::~CastContentClient() {
 }
 
+void CastContentClient::SetActiveURL(const GURL& url, std::string top_origin) {
+  LOG(INFO) << "Active URL: " << url.possibly_invalid_spec() << " for origin '"
+            << top_origin << "'";
+}
+
 void CastContentClient::AddAdditionalSchemes(Schemes* schemes) {
   schemes->standard_schemes.push_back(kChromeResourceScheme);
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
   schemes->standard_schemes.push_back(extensions::kExtensionScheme);
+  // Treat as secure because we only load extension code written by us.
+  schemes->secure_schemes.push_back(extensions::kExtensionScheme);
+  schemes->service_worker_schemes.push_back(extensions::kExtensionScheme);
+  schemes->csp_bypassing_schemes.push_back(extensions::kExtensionScheme);
 #endif
 }
 

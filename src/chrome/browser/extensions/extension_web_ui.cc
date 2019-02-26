@@ -179,7 +179,8 @@ void UnregisterAndReplaceOverrideForWebContents(const std::string& page,
   web_contents->GetController().LoadURL(
       url,
       content::Referrer::SanitizeForRequest(
-          url, content::Referrer(url, blink::kWebReferrerPolicyDefault)),
+          url,
+          content::Referrer(url, network::mojom::ReferrerPolicy::kDefault)),
       ui::PAGE_TRANSITION_RELOAD, std::string());
 }
 
@@ -565,6 +566,7 @@ void ExtensionWebUI::GetFaviconForURL(
     // LoadImagesAsync actually can run callback synchronously. We want to force
     // async.
     extensions::ImageLoader::Get(profile)->LoadImagesAsync(
-        extension, info_list, base::Bind(&RunFaviconCallbackAsync, callback));
+        extension, info_list,
+        base::BindOnce(&RunFaviconCallbackAsync, callback));
   }
 }

@@ -8,15 +8,16 @@
 
 namespace message_center {
 
-NotifierId::NotifierId() : type(SYSTEM_COMPONENT) {}
+NotifierId::NotifierId() : type(NotifierType::SYSTEM_COMPONENT) {}
 
 NotifierId::NotifierId(NotifierType type, const std::string& id)
     : type(type), id(id) {
-  DCHECK(type != WEB_PAGE);
+  DCHECK(type != NotifierType::WEB_PAGE);
   DCHECK(!id.empty());
 }
 
-NotifierId::NotifierId(const GURL& url) : type(WEB_PAGE), url(url) {}
+NotifierId::NotifierId(const GURL& url)
+    : type(NotifierType::WEB_PAGE), url(url) {}
 
 NotifierId::NotifierId(const NotifierId& other) = default;
 
@@ -27,7 +28,7 @@ bool NotifierId::operator==(const NotifierId& other) const {
   if (profile_id != other.profile_id)
     return false;
 
-  if (type == WEB_PAGE)
+  if (type == NotifierType::WEB_PAGE)
     return url == other.url;
 
   return id == other.id;
@@ -40,7 +41,7 @@ bool NotifierId::operator<(const NotifierId& other) const {
   if (profile_id != other.profile_id)
     return profile_id < other.profile_id;
 
-  if (type == WEB_PAGE)
+  if (type == NotifierType::WEB_PAGE)
     return url < other.url;
 
   return id < other.id;

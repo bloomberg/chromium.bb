@@ -20,6 +20,9 @@
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
+#include "ui/events/event_constants.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/focus/focus_manager.h"
@@ -75,8 +78,8 @@ TEST_F(LockScreenSanityTest, PasswordIsInitiallyFocused) {
   // Build lock screen.
   auto* contents = new LockContentsView(
       mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
-      data_dispatcher(),
-      std::make_unique<FakeLoginDetachableBaseModel>(data_dispatcher()));
+      DataDispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
 
   // The lock screen requires at least one user.
   SetUserCount(1);
@@ -94,8 +97,8 @@ TEST_F(LockScreenSanityTest, PasswordSubmitCallsLoginScreenClient) {
   // Build lock screen.
   auto* contents = new LockContentsView(
       mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
-      data_dispatcher(),
-      std::make_unique<FakeLoginDetachableBaseModel>(data_dispatcher()));
+      DataDispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
 
   // The lock screen requires at least one user.
   SetUserCount(1);
@@ -122,8 +125,8 @@ TEST_F(LockScreenSanityTest,
 
   auto* contents = new LockContentsView(
       mojom::TrayActionState::kAvailable, LockScreen::ScreenType::kLock,
-      data_dispatcher(),
-      std::make_unique<FakeLoginDetachableBaseModel>(data_dispatcher()));
+      DataDispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
   SetUserCount(1);
   std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
   LoginPasswordView::TestApi password_test_api =
@@ -179,8 +182,8 @@ TEST_F(LockScreenSanityTest, TabGoesFromLockToShelfAndBackToLock) {
   // Create lock screen.
   auto* lock = new LockContentsView(
       mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
-      data_dispatcher(),
-      std::make_unique<FakeLoginDetachableBaseModel>(data_dispatcher()));
+      DataDispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
   SetUserCount(1);
   std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(lock);
   views::View* shelf = Shelf::ForWindow(lock->GetWidget()->GetNativeWindow())
@@ -212,8 +215,8 @@ TEST_F(LockScreenSanityTest, ShiftTabGoesFromLockToStatusAreaAndBackToLock) {
 
   auto* lock = new LockContentsView(
       mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
-      data_dispatcher(),
-      std::make_unique<FakeLoginDetachableBaseModel>(data_dispatcher()));
+      DataDispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
   SetUserCount(1);
   std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(lock);
   views::View* status_area =
@@ -243,8 +246,8 @@ TEST_F(LockScreenSanityTest, TabWithLockScreenAppActive) {
 
   auto* lock = new LockContentsView(
       mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
-      data_dispatcher(),
-      std::make_unique<FakeLoginDetachableBaseModel>(data_dispatcher()));
+      DataDispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
   SetUserCount(1);
   std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(lock);
 
@@ -260,7 +263,7 @@ TEST_F(LockScreenSanityTest, TabWithLockScreenAppActive) {
   LoginScreenController* controller = Shell::Get()->login_screen_controller();
 
   // Initialize lock screen action state.
-  data_dispatcher()->SetLockScreenNoteState(mojom::TrayActionState::kActive);
+  DataDispatcher()->SetLockScreenNoteState(mojom::TrayActionState::kActive);
 
   // Create and focus a lock screen app window.
   auto* lock_screen_app = new views::View();
@@ -315,8 +318,8 @@ TEST_F(LockScreenSanityTest, FocusLockScreenWhenLockScreenAppExit) {
       session_manager::SessionState::LOCKED);
   auto* lock = new LockContentsView(
       mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
-      data_dispatcher(),
-      std::make_unique<FakeLoginDetachableBaseModel>(data_dispatcher()));
+      DataDispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
   SetUserCount(1);
   std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(lock);
 
@@ -325,7 +328,7 @@ TEST_F(LockScreenSanityTest, FocusLockScreenWhenLockScreenAppExit) {
                            ->GetContentsView();
 
   // Setup and focus a lock screen app.
-  data_dispatcher()->SetLockScreenNoteState(mojom::TrayActionState::kActive);
+  DataDispatcher()->SetLockScreenNoteState(mojom::TrayActionState::kActive);
   auto* lock_screen_app = new views::View();
   lock_screen_app->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   std::unique_ptr<views::Widget> app_widget =
@@ -340,7 +343,7 @@ TEST_F(LockScreenSanityTest, FocusLockScreenWhenLockScreenAppExit) {
 
   // Move the lock screen note taking to available state (which happens when the
   // app session ends) - this should focus the lock screen.
-  data_dispatcher()->SetLockScreenNoteState(mojom::TrayActionState::kAvailable);
+  DataDispatcher()->SetLockScreenNoteState(mojom::TrayActionState::kAvailable);
   EXPECT_TRUE(VerifyFocused(lock));
 
   // Tab through the lock screen - the focus should eventually get to the shelf.
@@ -355,14 +358,14 @@ TEST_F(LockScreenSanityTest, RemoveUser) {
 
   auto* contents = new LockContentsView(
       mojom::TrayActionState::kAvailable, LockScreen::ScreenType::kLock,
-      data_dispatcher(),
-      std::make_unique<FakeLoginDetachableBaseModel>(data_dispatcher()));
+      DataDispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
 
   // Add two users, the first of which can be removed.
   users().push_back(CreateUser("test1@test"));
   users()[0]->can_remove = true;
   users().push_back(CreateUser("test2@test"));
-  data_dispatcher()->NotifyUsers(users());
+  DataDispatcher()->NotifyUsers(users());
 
   std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
 
@@ -415,6 +418,30 @@ TEST_F(LockScreenSanityTest, RemoveUser) {
                   ->GetCurrentUser()
                   ->basic_user_info->account_id ==
               users()[1]->basic_user_info->account_id);
+}
+
+TEST_F(LockScreenSanityTest, LockScreenKillsPreventsClipboardPaste) {
+  {
+    ui::ScopedClipboardWriter writer(ui::CLIPBOARD_TYPE_COPY_PASTE);
+    writer.WriteText(base::UTF8ToUTF16("password"));
+  }
+
+  ShowLockScreen();
+
+  auto* text_input = new views::Textfield;
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(text_input);
+
+  text_input->RequestFocus();
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->PressKey(ui::KeyboardCode::VKEY_V, ui::EF_CONTROL_DOWN);
+
+  EXPECT_TRUE(text_input->text().empty());
+
+  LockScreen::Get()->Destroy();
+  text_input->RequestFocus();
+  generator->PressKey(ui::KeyboardCode::VKEY_V, ui::EF_CONTROL_DOWN);
+
+  EXPECT_EQ(base::UTF8ToUTF16("password"), text_input->text());
 }
 
 }  // namespace ash

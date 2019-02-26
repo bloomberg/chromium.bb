@@ -90,6 +90,11 @@ class NativeViewHostWrapper {
   // in the native view.
   virtual gfx::NativeCursor GetCursor(int x, int y) = 0;
 
+  // Sets the visibility of the gfx::NativeView. This differs from
+  // {Show,Hide}Widget because it doesn't affect the placement, size,
+  // or clipping of the view.
+  virtual void SetVisible(bool visible) = 0;
+
   // Creates a platform-specific instance of an object implementing this
   // interface.
   static NativeViewHostWrapper* CreateWrapper(NativeViewHost* host);

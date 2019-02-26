@@ -33,11 +33,27 @@ class RejectedPromises::Message final {
       v8::Local<v8::Value> exception,
       const String& error_message,
       std::unique_ptr<SourceLocation> location,
-      AccessControlStatus cors_status) {
+      SanitizeScriptErrors sanitize_script_errors) {
     return base::WrapUnique(new Message(script_state, promise, exception,
                                         error_message, std::move(location),
-                                        cors_status));
+                                        sanitize_script_errors));
   }
+
+  Message(ScriptState* script_state,
+          v8::Local<v8::Promise> promise,
+          v8::Local<v8::Value> exception,
+          const String& error_message,
+          std::unique_ptr<SourceLocation> location,
+          SanitizeScriptErrors sanitize_script_errors)
+      : script_state_(script_state),
+        promise_(script_state->GetIsolate(), promise),
+        exception_(script_state->GetIsolate(), exception),
+        error_message_(error_message),
+        location_(std::move(location)),
+        promise_rejection_id_(0),
+        collected_(false),
+        should_log_to_console_(true),
+        sanitize_script_errors_(sanitize_script_errors) {}
 
   bool IsCollected() { return collected_ || !script_state_->ContextIsValid(); }
 
@@ -66,14 +82,14 @@ class RejectedPromises::Message final {
     DCHECK(!HasHandler());
 
     EventTarget* target = execution_context->ErrorEventTarget();
-    if (target && !execution_context->ShouldSanitizeScriptError(resource_name_,
-                                                                cors_status_)) {
-      PromiseRejectionEventInit init;
-      init.setPromise(ScriptPromise(script_state_, value));
-      init.setReason(ScriptValue(script_state_, reason));
-      init.setCancelable(true);
+    if (target &&
+        sanitize_script_errors_ == SanitizeScriptErrors::kDoNotSanitize) {
+      PromiseRejectionEventInit* init = PromiseRejectionEventInit::Create();
+      init->setPromise(ScriptPromise(script_state_, value));
+      init->setReason(ScriptValue(script_state_, reason));
+      init->setCancelable(true);
       PromiseRejectionEvent* event = PromiseRejectionEvent::Create(
-          script_state_, EventTypeNames::unhandledrejection, init);
+          script_state_, event_type_names::kUnhandledrejection, init);
       // Log to console if event was not canceled.
       should_log_to_console_ =
           target->DispatchEvent(*event) == DispatchEventResult::kNotCanceled;
@@ -106,13 +122,13 @@ class RejectedPromises::Message final {
       return;
 
     EventTarget* target = execution_context->ErrorEventTarget();
-    if (target && !execution_context->ShouldSanitizeScriptError(resource_name_,
-                                                                cors_status_)) {
-      PromiseRejectionEventInit init;
-      init.setPromise(ScriptPromise(script_state_, value));
-      init.setReason(ScriptValue(script_state_, reason));
+    if (target &&
+        sanitize_script_errors_ == SanitizeScriptErrors::kDoNotSanitize) {
+      PromiseRejectionEventInit* init = PromiseRejectionEventInit::Create();
+      init->setPromise(ScriptPromise(script_state_, value));
+      init->setReason(ScriptValue(script_state_, reason));
       PromiseRejectionEvent* event = PromiseRejectionEvent::Create(
-          script_state_, EventTypeNames::rejectionhandled, init);
+          script_state_, event_type_names::kRejectionhandled, init);
       target->DispatchEvent(*event);
     }
 
@@ -152,23 +168,6 @@ class RejectedPromises::Message final {
   }
 
  private:
-  Message(ScriptState* script_state,
-          v8::Local<v8::Promise> promise,
-          v8::Local<v8::Value> exception,
-          const String& error_message,
-          std::unique_ptr<SourceLocation> location,
-          AccessControlStatus cors_status)
-      : script_state_(script_state),
-        promise_(script_state->GetIsolate(), promise),
-        exception_(script_state->GetIsolate(), exception),
-        error_message_(error_message),
-        resource_name_(location->Url()),
-        location_(std::move(location)),
-        promise_rejection_id_(0),
-        collected_(false),
-        should_log_to_console_(true),
-        cors_status_(cors_status) {}
-
   static void DidCollectPromise(const v8::WeakCallbackInfo<Message>& data) {
     data.GetParameter()->collected_ = true;
     data.GetParameter()->promise_.Clear();
@@ -182,12 +181,11 @@ class RejectedPromises::Message final {
   ScopedPersistent<v8::Promise> promise_;
   ScopedPersistent<v8::Value> exception_;
   String error_message_;
-  String resource_name_;
   std::unique_ptr<SourceLocation> location_;
   unsigned promise_rejection_id_;
   bool collected_;
   bool should_log_to_console_;
-  AccessControlStatus cors_status_;
+  SanitizeScriptErrors sanitize_script_errors_;
 };
 
 RejectedPromises::RejectedPromises() = default;
@@ -199,10 +197,10 @@ void RejectedPromises::RejectedWithNoHandler(
     v8::PromiseRejectMessage data,
     const String& error_message,
     std::unique_ptr<SourceLocation> location,
-    AccessControlStatus cors_status) {
-  queue_.push_back(Message::Create(script_state, data.GetPromise(),
-                                   data.GetValue(), error_message,
-                                   std::move(location), cors_status));
+    SanitizeScriptErrors sanitize_script_errors) {
+  queue_.push_back(Message::Create(
+      script_state, data.GetPromise(), data.GetValue(), error_message,
+      std::move(location), sanitize_script_errors));
 }
 
 void RejectedPromises::HandlerAdded(v8::PromiseRejectMessage data) {

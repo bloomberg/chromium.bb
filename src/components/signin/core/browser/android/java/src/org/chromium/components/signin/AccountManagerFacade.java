@@ -26,7 +26,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.task.AsyncTask;
@@ -34,6 +33,8 @@ import org.chromium.components.signin.util.PatternMatcher;
 import org.chromium.net.NetworkChangeNotifier;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
@@ -84,9 +85,9 @@ public class AccountManagerFacade {
 
     // These two variables should be accessed from either UI thread or during initialization phase.
     private PatternMatcher[] mAccountRestrictionPatterns;
-    private AccountManagerResult<Account[]> mAllAccounts;
+    private AccountManagerResult<List<Account>> mAllAccounts;
 
-    private final AtomicReference<AccountManagerResult<Account[]>> mFilteredAccounts =
+    private final AtomicReference<AccountManagerResult<List<Account>>> mFilteredAccounts =
             new AtomicReference<>();
     private final CountDownLatch mPopulateAccountCacheLatch = new CountDownLatch(1);
     private final CachedMetrics.TimesHistogramSample mPopulateAccountCacheWaitingTimeHistogram =
@@ -142,15 +143,13 @@ public class AccountManagerFacade {
      */
     @MainThread
     public static void initializeAccountManagerFacade(AccountManagerDelegate delegate) {
-        try (TraceEvent e = TraceEvent.scoped("initializeAccountManagerFacade()")) {
-            ThreadUtils.assertOnUiThread();
-            if (sInstance != null) {
-                throw new IllegalStateException("AccountManagerFacade is already initialized!");
-            }
-            sInstance = new AccountManagerFacade(delegate);
-            if (sTestingInstance != null) return;
-            sAtomicInstance.set(sInstance);
+        ThreadUtils.assertOnUiThread();
+        if (sInstance != null) {
+            throw new IllegalStateException("AccountManagerFacade is already initialized!");
         }
+        sInstance = new AccountManagerFacade(delegate);
+        if (sTestingInstance != null) return;
+        sAtomicInstance.set(sInstance);
     }
 
     /**
@@ -232,7 +231,6 @@ public class AccountManagerFacade {
      * @param runnable The callback to call after cache is populated. Invoked on the main thread.
      */
     @MainThread
-    @VisibleForTesting
     public void runAfterCacheIsPopulated(Runnable runnable) {
         ThreadUtils.assertOnUiThread();
         if (isCachePopulated()) {
@@ -274,7 +272,9 @@ public class AccountManagerFacade {
     @AnyThread
     public List<String> tryGetGoogleAccountNames() {
         List<String> accountNames = new ArrayList<>();
-        for (Account account : tryGetGoogleAccounts()) {
+        List<Account> tryGetGoogleAccounts = tryGetGoogleAccounts();
+        for (int i = 0; i < tryGetGoogleAccounts.size(); i++) {
+            Account account = tryGetGoogleAccounts.get(i);
             accountNames.add(account.name);
         }
         return accountNames;
@@ -295,10 +295,10 @@ public class AccountManagerFacade {
     public void getGoogleAccountNames(
             final Callback<AccountManagerResult<List<String>>> callback) {
         runAfterCacheIsPopulated(() -> {
-            final AccountManagerResult<Account[]> accounts = mFilteredAccounts.get();
+            final AccountManagerResult<List<Account>> accounts = mFilteredAccounts.get();
             final AccountManagerResult<List<String>> result;
             if (accounts.hasValue()) {
-                List<String> accountNames = new ArrayList<>(accounts.getValue().length);
+                List<String> accountNames = new ArrayList<>(accounts.getValue().size());
                 for (Account account : accounts.getValue()) {
                     accountNames.add(account.name);
                 }
@@ -317,8 +317,8 @@ public class AccountManagerFacade {
      *         Chrome lacks necessary permissions, etc.
      */
     @AnyThread
-    public Account[] getGoogleAccounts() throws AccountManagerDelegateException {
-        AccountManagerResult<Account[]> maybeAccounts = mFilteredAccounts.get();
+    public List<Account> getGoogleAccounts() throws AccountManagerDelegateException {
+        AccountManagerResult<List<Account>> maybeAccounts = mFilteredAccounts.get();
         if (maybeAccounts == null) {
             try {
                 // First call to update hasn't finished executing yet, should wait for it
@@ -340,7 +340,7 @@ public class AccountManagerFacade {
      * Asynchronous version of {@link #getGoogleAccounts()}.
      */
     @MainThread
-    public void getGoogleAccounts(final Callback<AccountManagerResult<Account[]>> callback) {
+    public void getGoogleAccounts(Callback<AccountManagerResult<List<Account>>> callback) {
         runAfterCacheIsPopulated(() -> callback.onResult(mFilteredAccounts.get()));
     }
 
@@ -349,11 +349,11 @@ public class AccountManagerFacade {
      * Returns an empty array if an error occurs while getting account list.
      */
     @AnyThread
-    public Account[] tryGetGoogleAccounts() {
+    public List<Account> tryGetGoogleAccounts() {
         try {
             return getGoogleAccounts();
         } catch (AccountManagerDelegateException e) {
-            return new Account[0];
+            return Collections.emptyList();
         }
     }
 
@@ -361,7 +361,7 @@ public class AccountManagerFacade {
      * Asynchronous version of {@link #tryGetGoogleAccounts()}.
      */
     @MainThread
-    public void tryGetGoogleAccounts(final Callback<Account[]> callback) {
+    public void tryGetGoogleAccounts(final Callback<List<Account>> callback) {
         runAfterCacheIsPopulated(() -> callback.onResult(tryGetGoogleAccounts()));
     }
 
@@ -371,7 +371,7 @@ public class AccountManagerFacade {
      */
     @AnyThread
     public boolean hasGoogleAccounts() {
-        return tryGetGoogleAccounts().length > 0;
+        return !tryGetGoogleAccounts().isEmpty();
     }
 
     /**
@@ -402,7 +402,7 @@ public class AccountManagerFacade {
     @AnyThread
     public Account getAccountFromName(String accountName) {
         String canonicalName = canonicalizeName(accountName);
-        Account[] accounts = tryGetGoogleAccounts();
+        List<Account> accounts = tryGetGoogleAccounts();
         for (Account account : accounts) {
             if (canonicalizeName(account.name).equals(canonicalName)) {
                 return account;
@@ -619,15 +619,16 @@ public class AccountManagerFacade {
         ContextUtils.getApplicationContext().registerReceiver(receiver, filter);
     }
 
-    private AccountManagerResult<Account[]> getAllAccounts() {
+    private AccountManagerResult<List<Account>> getAllAccounts() {
         try {
-            return new AccountManagerResult<>(mDelegate.getAccountsSync());
+            List<Account> accounts = Arrays.asList(mDelegate.getAccountsSync());
+            return new AccountManagerResult<>(Collections.unmodifiableList(accounts));
         } catch (AccountManagerDelegateException ex) {
             return new AccountManagerResult<>(ex);
         }
     }
 
-    private AccountManagerResult<Account[]> getFilteredAccounts() {
+    private AccountManagerResult<List<Account>> getFilteredAccounts() {
         if (mAllAccounts.hasException() || mAccountRestrictionPatterns == null) return mAllAccounts;
         ArrayList<Account> filteredAccounts = new ArrayList<>();
         for (Account account : mAllAccounts.getValue()) {
@@ -638,7 +639,7 @@ public class AccountManagerFacade {
                 }
             }
         }
-        return new AccountManagerResult<>(filteredAccounts.toArray(new Account[0]));
+        return new AccountManagerResult<>(Collections.unmodifiableList(filteredAccounts));
     }
 
     private static PatternMatcher[] getAccountRestrictionPatterns() {
@@ -677,7 +678,7 @@ public class AccountManagerFacade {
         fireOnAccountsChangedNotification();
     }
 
-    private void setAllAccounts(AccountManagerResult<Account[]> allAccounts) {
+    private void setAllAccounts(AccountManagerResult<List<Account>> allAccounts) {
         mAllAccounts = allAccounts;
         mFilteredAccounts.set(getFilteredAccounts());
         fireOnAccountsChangedNotification();
@@ -745,19 +746,19 @@ public class AccountManagerFacade {
         }
     }
 
-    private class UpdateAccountsTask extends AsyncTask<AccountManagerResult<Account[]>> {
+    private class UpdateAccountsTask extends AsyncTask<AccountManagerResult<List<Account>>> {
         @Override
         protected void onPreExecute() {
             ++mUpdateTasksCounter;
         }
 
         @Override
-        protected AccountManagerResult<Account[]> doInBackground() {
+        protected AccountManagerResult<List<Account>> doInBackground() {
             return getAllAccounts();
         }
 
         @Override
-        protected void onPostExecute(AccountManagerResult<Account[]> allAccounts) {
+        protected void onPostExecute(AccountManagerResult<List<Account>> allAccounts) {
             setAllAccounts(allAccounts);
             decrementUpdateCounter();
         }

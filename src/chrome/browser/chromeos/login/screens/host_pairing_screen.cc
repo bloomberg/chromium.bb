@@ -235,6 +235,10 @@ void HostPairingScreen::OnDeviceAttributeUploadCompleted(bool success) {}
 
 void HostPairingScreen::OnDeviceAttributeUpdatePermission(bool granted) {}
 
+void HostPairingScreen::OnRestoreAfterRollbackCompleted() {
+  NOTREACHED();
+}
+
 void HostPairingScreen::OnAuthCleared() {
   enrollment_helper_.reset();
 }

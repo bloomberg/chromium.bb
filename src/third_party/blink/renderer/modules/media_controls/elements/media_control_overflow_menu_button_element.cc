@@ -16,7 +16,7 @@ namespace blink {
 MediaControlOverflowMenuButtonElement::MediaControlOverflowMenuButtonElement(
     MediaControlsImpl& media_controls)
     : MediaControlInputElement(media_controls, kMediaOverflowButton) {
-  setType(InputTypeNames::button);
+  setType(input_type_names::kButton);
   SetShadowPseudoId(AtomicString("-internal-media-controls-overflow-button"));
   SetIsWanted(false);
 }
@@ -43,8 +43,8 @@ void MediaControlOverflowMenuButtonElement::UpdateShownState() {
 
 void MediaControlOverflowMenuButtonElement::DefaultEventHandler(Event& event) {
   // Only respond to a click event if we are not disabled.
-  if (!hasAttribute(HTMLNames::disabledAttr) &&
-      event.type() == EventTypeNames::click) {
+  if (!hasAttribute(html_names::kDisabledAttr) &&
+      event.type() == event_type_names::kClick) {
     if (GetMediaControls().OverflowMenuVisible()) {
       Platform::Current()->RecordAction(
           UserMetricsAction("Media.Controls.OverflowClose"));

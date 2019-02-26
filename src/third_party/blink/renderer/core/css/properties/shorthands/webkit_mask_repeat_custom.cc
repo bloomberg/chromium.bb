@@ -13,7 +13,7 @@
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 
 namespace blink {
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool WebkitMaskRepeat::ParseShorthand(
     bool important,
@@ -24,22 +24,22 @@ bool WebkitMaskRepeat::ParseShorthand(
   CSSValue* result_x = nullptr;
   CSSValue* result_y = nullptr;
   bool implicit = false;
-  if (!CSSParsingUtils::ConsumeRepeatStyle(range, result_x, result_y,
-                                           implicit) ||
+  if (!css_parsing_utils::ConsumeRepeatStyle(range, result_x, result_y,
+                                             implicit) ||
       !range.AtEnd())
     return false;
 
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyWebkitMaskRepeatX, CSSPropertyWebkitMaskRepeat, *result_x,
       important,
-      implicit ? CSSPropertyParserHelpers::IsImplicitProperty::kImplicit
-               : CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      implicit ? css_property_parser_helpers::IsImplicitProperty::kImplicit
+               : css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyWebkitMaskRepeatY, CSSPropertyWebkitMaskRepeat, *result_y,
       important,
-      implicit ? CSSPropertyParserHelpers::IsImplicitProperty::kImplicit
-               : CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      implicit ? css_property_parser_helpers::IsImplicitProperty::kImplicit
+               : css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
 
   return true;
@@ -55,5 +55,5 @@ const CSSValue* WebkitMaskRepeat::CSSValueFromComputedStyleInternal(
       &style.MaskLayers());
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink

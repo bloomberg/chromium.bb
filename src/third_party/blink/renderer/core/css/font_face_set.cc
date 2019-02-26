@@ -39,7 +39,7 @@ void FontFaceSet::FireLoadingEvent() {
   if (should_fire_loading_event_) {
     should_fire_loading_event_ = false;
     DispatchEvent(
-        *FontFaceSetLoadEvent::CreateForFontFaces(EventTypeNames::loading));
+        *FontFaceSetLoadEvent::CreateForFontFaces(event_type_names::kLoading));
   }
 }
 
@@ -236,11 +236,11 @@ void FontFaceSet::FireDoneEvent() {
     FontFaceSetLoadEvent* done_event = nullptr;
     FontFaceSetLoadEvent* error_event = nullptr;
     done_event = FontFaceSetLoadEvent::CreateForFontFaces(
-        EventTypeNames::loadingdone, loaded_fonts_);
+        event_type_names::kLoadingdone, loaded_fonts_);
     loaded_fonts_.clear();
     if (!failed_fonts_.IsEmpty()) {
       error_event = FontFaceSetLoadEvent::CreateForFontFaces(
-          EventTypeNames::loadingerror, failed_fonts_);
+          event_type_names::kLoadingerror, failed_fonts_);
       failed_fonts_.clear();
     }
     is_loading_ = false;
@@ -308,7 +308,7 @@ FontFaceSetIterable::IterationSource* FontFaceSet::StartIteration(
     for (const auto& font_face : non_css_connected_faces_)
       font_faces.push_back(font_face);
   }
-  return new IterationSource(font_faces);
+  return MakeGarbageCollected<IterationSource>(font_faces);
 }
 
 }  // namespace blink

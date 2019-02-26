@@ -40,6 +40,7 @@
 <translation id="1259100630977430756">Seiten, die Sie in privaten Tabs öffnen, werden nicht in Ihrem Browserverlauf, Cookiespeicher oder Suchverlauf gespeichert, nachdem Sie alle privaten Tabs geschlossen haben. Alle heruntergeladenen Dateien und gespeicherten Lesezeichen bleiben aber erhalten.
 
 Sie sind aber dennoch nicht unsichtbar. Durch den privaten Modus wird die Tatsache, dass Sie im Web surfen, nicht vor Ihrem Arbeitgeber, Internetanbieter oder den besuchten Websites verborgen.</translation>
+<translation id="1260236875608242557">Suchen und entdecken</translation>
 <translation id="1264974993859112054">Sport</translation>
 <translation id="127138278192656016">Synchronisierung und alle Dienste nutzen</translation>
 <translation id="1272079795634619415">Stopp</translation>
@@ -72,7 +73,6 @@ Sie sind aber dennoch nicht unsichtbar. Durch den privaten Modus wird die Tatsac
 <translation id="1445680696957526815">Die Chrome-Komponenten sind nicht miteinander kompatibel. Möglicherweise wird Chrome gerade aktualisiert. Bitte versuchen Sie es in einigen Minuten erneut. Sollte das Problem weiterhin bestehen, versuchen Sie, Chrome zu deinstallieren und erneut zu installieren.</translation>
 <translation id="1446450296470737166">Volle Kontr. über MIDI-Ger. erl.</translation>
 <translation id="145097072038377568">In den Android-Einstellungen deaktiviert</translation>
-<translation id="1469898724493126466">Das Beste aus dem Web finden.</translation>
 <translation id="1477626028522505441"><ph name="FILE_NAME" /> konnte aufgrund von Serverproblemen nicht heruntergeladen werden.</translation>
 <translation id="1501480321619201731">Gruppe löschen</translation>
 <translation id="1506061864768559482">Suchmaschine</translation>
@@ -87,7 +87,6 @@ Sie sind aber dennoch nicht unsichtbar. Durch den privaten Modus wird die Tatsac
 <translation id="1571304935088121812">Nutzernamen kopieren</translation>
 <translation id="1576370611341449972">Download nur über WLAN</translation>
 <translation id="1612196535745283361">Chrome benötigt Zugriff auf den Standort, um nach Geräten suchen zu können. Der Standortzugriff ist <ph name="BEGIN_LINK" />für dieses Gerät deaktiviert<ph name="END_LINK" />.</translation>
-<translation id="162035744160882748">Synchronisierung, Personalisierung und andere Google-Dienste aktivieren</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Keine weiteren Dialogfelder auf dieser Seite zulassen</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{1 ausgewähltes Element entfernen}other{# ausgewählte Elemente entfernen}}</translation>
@@ -107,7 +106,6 @@ Sie sind aber dennoch nicht unsichtbar. Durch den privaten Modus wird die Tatsac
 <translation id="1743802530341753419">Nachfragen, bevor Websites eine Verbindung zu einem Gerät herstellen (empfohlen)</translation>
 <translation id="1749561566933687563">Lesezeichen synchronisieren</translation>
 <translation id="17513872634828108">Geöffnete Tabs</translation>
-<translation id="1756600373018374892">Tippen Sie auf diese Schaltfläche, um schnell auf Ihre Tabs zuzugreifen.</translation>
 <translation id="1779089405699405702">Bild-Decodierer</translation>
 <translation id="1782483593938241562">Enddatum: <ph name="DATE" /></translation>
 <translation id="1792959175193046959">Sie können den Standard-Downloadpfad jederzeit ändern</translation>
@@ -115,10 +113,9 @@ Sie sind aber dennoch nicht unsichtbar. Durch den privaten Modus wird die Tatsac
 <translation id="1807246157184219062">Hell</translation>
 <translation id="1821253160463689938">Zum Speichern Ihrer Einstellungen werden Cookies verwendet, auch wenn Sie diese Seiten nicht besuchen</translation>
 <translation id="1829244130665387512">Auf Seite suchen</translation>
-<translation id="1832521218263067499">Sicherheitsrelevante Zwischenfälle</translation>
 <translation id="1853692000353488670">Neuer Inkognito-Tab</translation>
 <translation id="1868024384445905608">In Chrome sind Downloads jetzt noch schneller</translation>
-<translation id="1878302395768190018">Diese Option lässt sich jederzeit in den Chrome-Einstellungen anpassen</translation>
+<translation id="187628348035757895">Entwickleroptionen</translation>
 <translation id="1880072593381090678">Beliebte Seiten aus Chrome</translation>
 <translation id="1883903952484604915">Meine Dateien</translation>
 <translation id="1887786770086287077">Der Standortzugriff ist für dieses Gerät deaktiviert. Sie können ihn in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" /> aktivieren.</translation>
@@ -170,6 +167,7 @@ Sie sind aber dennoch nicht unsichtbar. Durch den privaten Modus wird die Tatsac
 <translation id="2154484045852737596">Karte bearbeiten</translation>
 <translation id="2154710561487035718">URL kopieren</translation>
 <translation id="2156074688469523661">Restliche Websites (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="2173302385160625112">Bitte überprüfen Sie Ihre Internetverbindung</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, Web-App. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Als <ph name="USER_FULL_NAME" /> fortfahren</translation>
 <translation id="2232379019872353004">Einige Systeminformationen und Seiteninhalte werden an Google gesendet</translation>
@@ -186,7 +184,6 @@ Sie sind aber dennoch nicht unsichtbar. Durch den privaten Modus wird die Tatsac
 <translation id="2325181368089033281">Die <ph name="BEGIN_LINK1" />Einstellungen<ph name="END_LINK1" /> können von dir oder deinen Eltern jederzeit angepasst werden. Google kann die Inhalte der von dir besuchten Websites, Browserinteraktionen und Browseraktivitäten nutzen, um Chrome und andere Google-Dienste wie Google Übersetzer, die Google-Suche und Werbung zu personalisieren.</translation>
 <translation id="2328985652426384049">Anmeldung nicht möglich</translation>
 <translation id="2342981853652716282">Melden Sie sich in Chrome an, um Daten wie Lesezeichen und Passwörter auf allen Ihren Geräten zu nutzen.</translation>
-<translation id="2343328333327081434">Wird installiert…</translation>
 <translation id="2349710944427398404">Gesamtdaten, die von Chrome verwendet werden, wie Konten, Lesezeichen und gespeicherte Einstellungen</translation>
 <translation id="2351097562818989364">Übersetzungseinstellungen zurückgesetzt</translation>
 <translation id="2359808026110333948">Weiter</translation>
@@ -205,6 +202,7 @@ Sie sind aber dennoch nicht unsichtbar. Durch den privaten Modus wird die Tatsac
 <translation id="2450083983707403292">Möchten Sie den Download von <ph name="FILE_NAME" /> noch einmal starten?</translation>
 <translation id="2476578072172137802">Website-Einstellungen</translation>
 <translation id="2482878487686419369">Benachrichtigungen</translation>
+<translation id="2494974097748878569">Google Assistant für Chrome</translation>
 <translation id="2496180316473517155">Browserverlauf</translation>
 <translation id="2498359688066513246">Hilfe &amp; Feedback</translation>
 <translation id="2501278716633472235">Zurück</translation>
@@ -221,6 +219,7 @@ Sie sind aber dennoch nicht unsichtbar. Durch den privaten Modus wird die Tatsac
 <translation id="2586657967955657006">Zwischenablage</translation>
 <translation id="2587052924345400782">Neuere Version verfügbar</translation>
 <translation id="2593272815202181319">Monospace</translation>
+<translation id="2610239185026711824">Passwort vorschlagen</translation>
 <translation id="2612676031748830579">Kartennummer</translation>
 <translation id="2621115761605608342">JavaScript für eine bestimmte Website zulassen.</translation>
 <translation id="2625189173221582860">Passwort kopiert</translation>
@@ -237,6 +236,7 @@ Sie sind aber dennoch nicht unsichtbar. Durch den privaten Modus wird die Tatsac
 <translation id="271033894570825754">Neu</translation>
 <translation id="2728754400939377704">Nach Website sortieren</translation>
 <translation id="2744248271121720757">Tippen Sie auf ein Wort, um eine Sofortsuche zu starten oder weitere Aktionen anzuzeigen</translation>
+<translation id="2760323196215778921">Außerdem müssen Sie diese Berechtigung für Chrome aktivieren. Weitere Informationen finden Sie in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" />.</translation>
 <translation id="2762000892062317888">gerade eben</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> Sekunden übrig</translation>
 <translation id="2779651927720337254">fehlgeschlagen</translation>
@@ -277,6 +277,7 @@ Sie sind aber dennoch nicht unsichtbar. Durch den privaten Modus wird die Tatsac
 <translation id="3089395242580810162">In Inkognito-Tab öffnen</translation>
 <translation id="311456632243022227">Mehrere Links in Chrome geöffnet</translation>
 <translation id="3115898365077584848">Informationen anzeigen</translation>
+<translation id="3123473560110926937">Auf einigen Websites blockiert</translation>
 <translation id="3137521801621304719">Inkognitomodus deaktivieren</translation>
 <translation id="3148434565183091099">Melden Sie sich in Chrome an, um Ihre Lesezeichen auf allen Ihren Geräten zu haben.</translation>
 <translation id="3157842584138209013">Über die Schaltfläche "Weitere Optionen" können Sie sich ansehen, wie viel Datenvolumen Sie einsparen</translation>
@@ -332,18 +333,19 @@ Sie sind aber dennoch nicht unsichtbar. Durch den privaten Modus wird die Tatsac
 <translation id="3599863153486145794">Löscht den Verlauf bei allen angemeldeten Geräten. Möglicherweise verfügt Ihr Google-Konto unter <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> über andere Browserverläufe.</translation>
 <translation id="3600792891314830896">Websites stummschalten, die Ton wiedergeben</translation>
 <translation id="360207483134687714">Unterstütze uns dabei, VR in Chrome zu verbessern</translation>
+<translation id="3604604794717279723">Ich stimme zu</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3620176948598597475">Durch das Zurücksetzen wird der Verlauf des Datensparmodus gelöscht, dazu gehört auch die Liste der besuchten Websites.</translation>
 <translation id="3630011985153972676">Sie können in den Einstellungen festlegen, dass Chrome Artikel für Sie herunterlädt, wenn eine WLAN-Verbindung besteht.</translation>
 <translation id="3632295766818638029">Passwort anzeigen</translation>
 <translation id="363596933471559332">Sie werden mit gespeicherten Anmeldedaten automatisch auf Websites angemeldet. Wenn das Kästchen nicht angeklickt ist, werden Sie jedes Mal aufgefordert, sich manuell auf einer Website anzumelden.</translation>
-<translation id="3661699943263275414">Websites Dritter können Cookiedaten speichern und lesen.</translation>
 <translation id="3662546969139119822">Kein Verlauf vorhanden</translation>
 <translation id="3672452749423051839">Vorschläge bei Navigationsfehlern</translation>
 <translation id="3692944402865947621">Download von <ph name="FILE_NAME" /> fehlgeschlagen, weil der Speicherort nicht erreichbar ist.</translation>
 <translation id="3712575778697986964">Datensparmodus zurücksetzen?</translation>
 <translation id="3714981814255182093">Suchleiste öffnen</translation>
 <translation id="3716182511346448902">Diese Seite benötigt zu viel Arbeitsspeicher und wurde daher von Chrome angehalten.</translation>
+<translation id="3724958268700778519">Mit Google Assistant sparen Sie Zeit, da Sie auf der Website den Bezahlvorgang schneller abschließen.</translation>
 <translation id="3739899004075612870">Als Lesezeichen in <ph name="PRODUCT_NAME" /> gespeichert</translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB sonstiger Apps</translation>
 <translation id="3744111561329211289">Hintergrundsync</translation>
@@ -354,14 +356,15 @@ Sie sind aber dennoch nicht unsichtbar. Durch den privaten Modus wird die Tatsac
 <translation id="3789841737615482174">Installieren</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Verwalten</translation>
+<translation id="3814315701645566481">Möchten Sie die Daten für <ph name="URL" /> löschen?</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> Downloads gelöscht</translation>
 <translation id="3819562311292413223">Artikel für Sie herunterladen</translation>
 <translation id="3822502789641063741">Websitespeicher löschen?</translation>
-<translation id="385051799172605136">Zurück</translation>
 <translation id="3859306556332390985">Nach vorne navigieren</translation>
 <translation id="3868004864571585162">Cookies, Medienlizenzen und Websitedaten</translation>
 <translation id="3894427358181296146">Ordner hinzufügen</translation>
 <translation id="3895926599014793903">Zoom zwingend aktivieren</translation>
+<translation id="3912508018559818924">Das Beste aus dem Web wird gesucht…</translation>
 <translation id="3927692899758076493">Serifenlose Schrift</translation>
 <translation id="3928666092801078803">Daten zusammenführen</translation>
 <translation id="393697183122708255">Keine aktivierte Sprachsuche verfügbar</translation>
@@ -379,6 +382,7 @@ Sie sind aber dennoch nicht unsichtbar. Durch den privaten Modus wird die Tatsac
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> von ?</translation>
 <translation id="3997476611815694295">Speicher für unwichtige Websites</translation>
 <translation id="4002066346123236978">Titel</translation>
+<translation id="4008040567710660924">Cookies für eine bestimmte Website werden zugelassen.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# h}other{# h}}</translation>
 <translation id="4042870126885713738">Vorschläge einblenden, wenn eine Webadresse nicht gefunden oder keine Verbindung hergestellt werden kann</translation>
 <translation id="4046123991198612571">Nächster Titel</translation>
@@ -403,7 +407,6 @@ Wenn Sie den Suchbegriff anpassen möchten, halten Sie den entsprechenden Begrif
 <translation id="4170011742729630528">Der Dienst ist momentan nicht verfügbar. Bitte versuchen Sie es später erneut.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> verwendet</translation>
 <translation id="4181841719683918333">Sprachen</translation>
-<translation id="4192273449750167573">Einstellungen auf dem nächsten Bildschirm überprüfen</translation>
 <translation id="4195643157523330669">In neuem Tab öffnen</translation>
 <translation id="4198423547019359126">Keine verfügbaren Speicherorte für Downloads</translation>
 <translation id="4209895695669353772">Aktivieren Sie die Synchronisierung, um personalisierte, von Google vorgeschlagene Inhalte zu erhalten</translation>
@@ -427,8 +430,6 @@ Wenn Sie den Suchbegriff anpassen möchten, halten Sie den entsprechenden Begrif
 <translation id="4398088515904522762">Wenn Sie diese Funktion verwenden möchten, aktivieren Sie <ph name="BEGIN_LINK" />Aktivitäten und Interaktionen<ph name="END_LINK" />.</translation>
 <translation id="4404568932422911380">Keine Lesezeichen</translation>
 <translation id="4409723563706114196">Vervollständigungen für Seiten verwenden</translation>
-<translation id="4412992751769744546">Cookies Dritter zulassen</translation>
-<translation id="4419556793104466535">Synchronisierung, Personalisierung und mehr steuern</translation>
 <translation id="4432792777822557199">Seiten auf <ph name="SOURCE_LANGUAGE" /> werden ab jetzt auf <ph name="TARGET_LANGUAGE" /> übersetzt</translation>
 <translation id="4433925000917964731">Lite-Modus-Seite von Google bereitgestellt</translation>
 <translation id="4434045419905280838">Pop-ups und Weiterleitungen</translation>
@@ -507,8 +508,8 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="4913169188695071480">Aktualisierung anhalten</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Hilfe aufrufen<ph name="END_LINK" />, während nach Geräten gesucht wird…</translation>
 <translation id="4943872375798546930">Keine Ergebnisse</translation>
-<translation id="4956867391417827202">Werbung auf Websites blockieren, die aufdringliche oder irreführende Werbung anzeigen</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> hat Ihren Bildschirm freigegeben</translation>
+<translation id="4961107849584082341">Lassen Sie sich diese Seite in eine beliebige Sprache übersetzen</translation>
 <translation id="4961334780091921942">Ihre Passwörter, Ihr Verlauf und mehr auf allen Geräten</translation>
 <translation id="4961700429721424617">Sie melden sich von einem Konto ab, das von <ph name="MANAGED_DOMAIN" /> verwaltet wird. Dadurch werden Ihre Chrome-Daten von diesem Gerät gelöscht, bleiben jedoch in Ihrem Google-Konto erhalten.</translation>
 <translation id="497421865427891073">Weiter</translation>
@@ -543,12 +544,11 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5222676887888702881">Abmelden</translation>
 <translation id="5224771365102442243">Mit Video</translation>
 <translation id="5233638681132016545">Neuer Tab</translation>
-<translation id="5240817131241497236">Die Einstellungen für die Synchronisierung, Personalisierung und andere Google-Dienste in Chrome wurden geändert. Dadurch könnten sich auch Ihre aktuellen Einstellungen geändert haben.</translation>
 <translation id="5264003212305142034">Die <ph name="BEGIN_LINK1" />Einstellungen<ph name="END_LINK1" /> können jederzeit angepasst werden. Google kann die Inhalte der von Ihnen besuchten Websites sowie Ihre Browserinteraktionen und Browseraktivitäten nutzen, um Chrome und andere Google-Dienste wie Übersetzer, die Google-Suche und Werbung zu personalisieren.</translation>
+<translation id="526421993248218238">Fehler beim Laden der Seite</translation>
 <translation id="5271967389191913893">Das Gerät kann den Inhalt, der heruntergeladen werden soll, nicht öffnen.</translation>
 <translation id="528192093759286357">Ziehen Sie zum Beenden des Vollbildmodus von oben und tippen Sie auf die Zurück-Taste.</translation>
 <translation id="5284584623296338184">Änderungen an Ihren Lesezeichen, Ihrem Verlauf, Ihren Passwörtern und anderen Einstellungen werden nicht mehr mit Ihrem Google-Konto synchronisiert. Ihre vorhandenen Daten bleiben aber in Ihrem Google-Konto gespeichert.</translation>
-<translation id="5300589172476337783">Anzeigen</translation>
 <translation id="5301954838959518834">OK</translation>
 <translation id="5304593522240415983">Dieses Feld darf nicht leer sein.</translation>
 <translation id="5308380583665731573">Verbinden</translation>
@@ -577,12 +577,12 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5466407412363861127">Für diese Funktion wird die <ph name="BEGIN_LINK" />Synchronisierung<ph name="END_LINK" /> genutzt.</translation>
 <translation id="548278423535722844">In einer Karten-App öffnen</translation>
 <translation id="5487521232677179737">Daten löschen</translation>
+<translation id="5494752089476963479">Werbung auf Websites blockieren, auf denen aufdringliche oder irreführende Werbung angezeigt wird</translation>
 <translation id="5494920125229734069">Alle auswählen</translation>
 <translation id="550684401320795253">Chrome wird aktualisiert...</translation>
 <translation id="5512137114520586844">Dieses Konto wird von <ph name="PARENT_NAME" /> verwaltet.</translation>
 <translation id="5514904542973294328">Vom Administrator dieses Geräts deaktiviert</translation>
 <translation id="5515439363601853141">Entsperren, um Ihr Passwort zu sehen</translation>
-<translation id="5515716148775388141">Ihre Symbole befinden sich jetzt am unteren Bildschirmrand</translation>
 <translation id="5517095782334947753">Sie haben Lesezeichen, den Verlauf, Passwörter und andere Einstellungen von <ph name="FROM_ACCOUNT" /> übernommen.</translation>
 <translation id="5524843473235508879">Weiterleitung blockiert.</translation>
 <translation id="5527082711130173040">Chrome benötigt Zugriff auf den Standort, um nach Geräten suchen zu können. <ph name="BEGIN_LINK1" />Berechtigungen aktualisieren.<ph name="END_LINK1" /> Außerdem ist der Standortzugriff <ph name="BEGIN_LINK2" />für dieses Gerät deaktiviert<ph name="END_LINK2" />.</translation>
@@ -612,12 +612,12 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5684874026226664614">Hoppla! Diese Seite konnte nicht übersetzt werden.</translation>
 <translation id="5686790454216892815">Dateiname zu lang</translation>
 <translation id="5689516760719285838">Ort</translation>
+<translation id="569536719314091526">Über die Schaltfläche "Weitere Optionen" können Sie sich diese Seite in eine beliebige Sprache übersetzen lassen</translation>
 <translation id="5719837394786370183">Seiten, die Sie sich auf Inkognito-Tabs ansehen, werden nach dem Schließen aller Inkognito-Tabs nicht in Ihrem Browserverlauf, Cookie-Speicher oder Suchverlauf gespeichert. Ihre Lesezeichen und Ihre heruntergeladenen Dateien bleiben erhalten.
 
 Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Informationen zu Ihren Webaktivitäten von Ihrem Arbeitgeber oder Ihrem Internetanbieter erfasst werden. Zudem verzeichnen auch die Websites, die Sie im Inkognitomodus aufrufen, weiterhin Ihren Besuch.</translation>
 <translation id="572328651809341494">Zuletzt geöffnete Tabs</translation>
 <translation id="5726692708398506830">Gesamten Seiteninhalt vergrößern</translation>
-<translation id="5738816946784116349">Chrome-Downloads</translation>
 <translation id="5748802427693696783">Zu Standard-Tabs gewechselt</translation>
 <translation id="5749068826913805084">Chrome benötigt Speicherzugriff, um Dateien herunterladen zu können.</translation>
 <translation id="5763382633136178763">Inkognito-Tabs</translation>
@@ -669,15 +669,18 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 <translation id="6112702117600201073">Aktualisierung der Seite</translation>
 <translation id="6127379762771434464">Eintrag entfernt</translation>
 <translation id="6140912465461743537">Land/Region</translation>
+<translation id="614940544461990577">Versuchen Sie Folgendes:</translation>
 <translation id="6154478581116148741">Aktivieren Sie die Displaysperre unter "Einstellungen", um Ihre Passwörter aus dem Gerät zu exportieren</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> Einsparungen bei der Datennutzung</translation>
 <translation id="6165508094623778733">Weitere Informationen</translation>
+<translation id="6171019622954353983">Wenn Sie fortfahren, erklären Sie sich damit einverstanden, dass Chrome Daten von AutoFill sowie die URL und die Inhalte der Website an Google sendet, um diesen Dienst anbieten zu können.\n\nIn den Chrome-Einstellungen können Sie Google Assistant für Chrome und AutoFill deaktivieren.  <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
 <translation id="6177111841848151710">Für die aktuelle Suchmaschine blockiert</translation>
 <translation id="6177390657002841081">Datensparmodus aktivieren</translation>
 <translation id="6181444274883918285">Ausnahme für Website hinzufügen</translation>
 <translation id="618993374665929060">"Weitere ähnliche" ganz geöffnet</translation>
 <translation id="6192333916571137726">Download-Datei</translation>
 <translation id="6192792657125177640">Ausnahmen</translation>
+<translation id="6196640612572343990">Drittanbieter-Cookies blockieren</translation>
 <translation id="6206551242102657620">Die Verbindung ist sicher. Websiteinformationen</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> ist nicht Ihre E-Mail-Adresse?</translation>
 <translation id="6216432067784365534">Optionen für <ph name="NAME_OF_LIST_ITEM" /></translation>
@@ -689,6 +692,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6277522088822131679">Beim Drucken der Seite ist ein Problem aufgetreten. Bitte versuchen Sie es erneut.</translation>
 <translation id="6295158916970320988">Alle Websites</translation>
 <translation id="629730747756840877">Konto</translation>
+<translation id="6302269476990306341">Google Assistant für Chrome wird beendet</translation>
 <translation id="6303969859164067831">Abmelden und die Synchronisierung ausschalten</translation>
 <translation id="6316139424528454185">Android-Version nicht unterstützt</translation>
 <translation id="6320088164292336938">Vibrieren</translation>
@@ -700,9 +704,11 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6343192674172527289">Keine Downloads gefunden</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 und <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> weitere}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 und <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> weitere}}</translation>
 <translation id="6364438453358674297">Vorschlag aus Verlauf entfernen?</translation>
+<translation id="6369229450655021117">Von hier aus können Sie im Web suchen, Inhalte mit Freunden teilen und sich geöffnete Seiten ansehen.</translation>
 <translation id="6378173571450987352">Details: Nach der Menge der verwendeten Daten sortiert</translation>
 <translation id="6383961787135158834">Websitespeicher löschen...</translation>
 <translation id="6388207532828177975">Löschen &amp; zurücksetzen</translation>
+<translation id="6393156038355142111">Starkes Passwort vorschlagen</translation>
 <translation id="6393863479814692971">Chrome benötigt für diese Website die Berechtigung, auf Ihre Kamera und Ihr Mikrofon zuzugreifen.</translation>
 <translation id="6395288395575013217">LINK</translation>
 <translation id="6404511346730675251">Lesezeichen bearbeiten</translation>
@@ -710,6 +716,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="641643625718530986">Drucken...</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB heruntergeladen</translation>
 <translation id="6433501201775827830">Suchmaschine auswählen</translation>
+<translation id="6436016483175965362">Vorschau</translation>
 <translation id="6437478888915024427">Seiteninfo</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6448273550210938826">Such- und URL-Vorschläge</translation>
@@ -727,7 +734,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6567212464587185774">Bis zu 60 % weniger Datenverbrauch und schnelleres Internet.</translation>
 <translation id="6573096386450695060">Immer zulassen</translation>
 <translation id="6573431926118603307">Hier werden Tabs angezeigt, die Sie auf Ihren anderen Geräten in Chrome geöffnet haben.</translation>
-<translation id="6575643671698722332">Fehler beim Zurücksetzen, da das Gerät nicht online ist. Versuchen Sie es erneut.</translation>
 <translation id="6583199322650523874">Aktuelle Seite als Lesezeichen speichern</translation>
 <translation id="6584721918629302382">AR</translation>
 <translation id="6593061639179217415">Desktopwebsite</translation>
@@ -756,7 +762,9 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6746124502594467657">Nach unten</translation>
 <translation id="6766622839693428701">Zum Schließen nach unten wischen.</translation>
 <translation id="6766758767654711248">Tippen, um zur Website zu wechseln</translation>
+<translation id="6768277682697012280">AR-Modul wird installiert…</translation>
 <translation id="6776813977906306442">Mit der Download-Schaltfläche Videos herunterladen, um sie später anzusehen</translation>
+<translation id="6782111308708962316">Websites von Drittanbietern am Speichern und Lesen von Cookiedaten hindern</translation>
 <translation id="6790428901817661496">Wiedergabe</translation>
 <translation id="679325081238418596">Rufen Sie Ihre Lesezeichen, Ihren Verlauf, Ihre Passwörter und andere Einstellungen auf allen Ihren Geräten ab</translation>
 <translation id="6818926723028410516">Einträge auswählen</translation>
@@ -764,7 +772,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Übersetzen</translation>
 <translation id="6846298663435243399">Wird geladen…</translation>
-<translation id="685040365210406336">Keine Änderungen vornehmen</translation>
 <translation id="6850409657436465440">Download noch in Bearbeitung</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> Tabs geschlossen</translation>
 <translation id="6864459304226931083">Bild herunterladen</translation>
@@ -772,7 +779,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6868088497967843822">Melden Sie sich an, um Ihre Lesezeichen, Ihren Verlauf, Ihre Passwörter und andere Einstellungen auf allen Ihren Geräten aufzurufen.</translation>
 <translation id="688738109438487280">Vorhandene Daten werden zu <ph name="TO_ACCOUNT" /> hinzugefügt.</translation>
 <translation id="6891726759199484455">Entsperren, um Ihr Passwort zu kopieren</translation>
-<translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d geöffneter Tab}other{%1$d geöffnete Tabs}}</translation>
 <translation id="6896758677409633944">Kopieren</translation>
 <translation id="6910211073230771657">Gelöscht</translation>
 <translation id="6912998170423641340">Websites dürfen keine Texte oder Bilder aus der Zwischenablage abrufen</translation>
@@ -783,12 +789,12 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6963642900430330478">Diese Seite ist gefährlich. Websiteinformationen</translation>
 <translation id="6963766334940102469">Lesezeichen löschen</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="6968317970155454671">AR-Modul konnte nicht installiert werden</translation>
 <translation id="6978479750597523876">Übersetzungseinstellungen zurücksetzen</translation>
 <translation id="6979737339423435258">Gesamte Zeit</translation>
 <translation id="6981982820502123353">Bedienungshilfen</translation>
 <translation id="6985347914332179298">Keine Downloads vorhanden</translation>
 <translation id="6990079615885386641">App aus dem Play Store abrufen: <ph name="APP_ACTION" /></translation>
-<translation id="699220179437400583">Details zu möglichen sicherheitsrelevanten Zwischenfällen automatisch an Google senden</translation>
 <translation id="6992289844737586249">Nachfragen, bevor Websites auf Ihr Mikrofon zugreifen dürfen (empfohlen)</translation>
 <translation id="7016516562562142042">Für die aktuelle Suchmaschine zugelassen</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> heruntergeladen</translation>
@@ -805,7 +811,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 ausgewählt}other{# ausgewählt}}</translation>
 <translation id="7077143737582773186">SD-Karte</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> ausgewählt. Optionen sind oben auf dem Bildschirm verfügbar</translation>
-<translation id="7108338896283013870">Ausblenden</translation>
 <translation id="7121362699166175603">Löscht den Verlauf und Autovervollständigungen in der Adressleiste. Möglicherweise verfügt Ihr Google-Konto unter <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> über andere Browserverläufe.</translation>
 <translation id="7128222689758636196">Für die aktuelle Suchmaschine zulassen</translation>
 <translation id="7138678301420049075">Sonstiges</translation>
@@ -819,12 +824,13 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7189372733857464326">Warten auf Abschluss der Google Play-Dienste-Aktualisierung</translation>
 <translation id="7189598951263744875">Teilen...</translation>
 <translation id="7191430249889272776">Tab im Hintergrund geöffnet</translation>
+<translation id="7221869452894271364">Diese Seite neu laden</translation>
 <translation id="723171743924126238">Bilder auswählen</translation>
 <translation id="7243308994586599757">Optionen unten auf dem Bildschirm verfügbar</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> ausgewählt</translation>
-<translation id="7251326866581677552">Auf einigen Websites blockiert</translation>
 <translation id="7253272406652746122">Fügen Sie ein Google-Konto über die Seite "Konten" der App "Einstellungen" Ihres Geräts hinzu.</translation>
 <translation id="7274013316676448362">Blockierte Website</translation>
+<translation id="7291387454912369099">Assistant für AutoFill</translation>
 <translation id="729975465115245577">Auf Ihrem Gerät befindet sich keine App zum Speichern der Passwortdatei.</translation>
 <translation id="7302081693174882195">Details: Nach der Menge der gespeicherten Daten sortiert</translation>
 <translation id="7333031090786104871">Vorherige Website wird noch hinzugefügt</translation>
@@ -850,7 +856,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7473891865547856676">Nein danke</translation>
 <translation id="7475192538862203634">Sollten Sie diese Meldung häufiger erhalten, sehen Sie sich unsere <ph name="BEGIN_LINK" />Empfehlungen<ph name="END_LINK" /> an.</translation>
 <translation id="7475688122056506577">SD-Karte nicht gefunden. Einige Ihrer Dateien fehlen möglicherweise.</translation>
-<translation id="748127970106343339">Löschen der Anmeldedaten des Geräts bestätigen</translation>
 <translation id="7481312909269577407">Vorwärts</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (aktualisiert <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">Passwörter anzeigen</translation>
@@ -877,6 +882,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7649070708921625228">Hilfe</translation>
 <translation id="7658239707568436148">Abbrechen</translation>
 <translation id="7665369617277396874">Konto hinzufügen</translation>
+<translation id="7670842975141217779">Google Assistant\nfür Chrome</translation>
 <translation id="7682724950699840886">Probieren Sie folgende Tipps aus: Sorgen Sie dafür, dass auf Ihrem Gerät ausreichend Speicherplatz vorhanden ist, und wiederholen Sie den Export.</translation>
 <translation id="7698359219371678927">E-Mail in <ph name="APP_NAME" /> erstellen</translation>
 <translation id="7704317875155739195">Suchanfragen und URLs automatisch vervollständigen</translation>
@@ -894,7 +900,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="780301667611848630">Kein Interesse</translation>
 <translation id="7810647596859435254">Öffnen mit…</translation>
 <translation id="7821588508402923572">Ihre Einsparungen bei der Datennutzung werden hier angezeigt</translation>
-<translation id="7832327313660264358">Die mit Google synchronisierten Daten und die verwendeten Funktionen werden nicht geändert</translation>
 <translation id="7837721118676387834">Automatische Wiedergabe stummgeschalteter Videos für eine bestimmte Website zulassen.</translation>
 <translation id="7846076177841592234">Auswahl aufheben</translation>
 <translation id="784934925303690534">Zeitraum</translation>
@@ -913,7 +918,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="79859296434321399">ARCore installieren, um Augmented-Reality-Inhalte zu sehen</translation>
 <translation id="7986741934819883144">Kontakt auswählen</translation>
 <translation id="7987073022710626672">Chrome-Nutzungsbedingungen</translation>
-<translation id="7987764905897278458">Google clever nutzen</translation>
 <translation id="7998918019931843664">Geschlossenen Tab wieder öffnen</translation>
 <translation id="7999064672810608036">Möchten Sie wirklich alle lokalen Daten einschließlich Cookies löschen und alle Berechtigungen für diese Website zurücksetzen?</translation>
 <translation id="8004582292198964060">Browser</translation>
@@ -927,6 +931,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="8037750541064988519"><ph name="DAYS" /> Tage übrig</translation>
 <translation id="804335162455518893">SD-Karte nicht gefunden</translation>
 <translation id="805047784848435650">Basierend auf Ihrem Browserverlauf</translation>
+<translation id="8051303708327298699">Außerdem müssen Sie diese Berechtigungen für Chrome aktivieren. Weitere Informationen finden Sie in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" />.</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB verfügbar</translation>
 <translation id="8058746566562539958">In neuem Chrome-Tab öffnen</translation>
 <translation id="8063895661287329888">Fehler beim Hinzufügen des Lesezeichens.</translation>
@@ -978,6 +983,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="8487700953926739672">Offline verfügbar</translation>
 <translation id="8489271220582375723">Verlaufsseite öffnen</translation>
 <translation id="8493948351860045254">Speicherplatz freigeben</translation>
+<translation id="8496140788721644230">AR-Modul wurde installiert</translation>
 <translation id="8497726226069778601">Noch keine Seiten</translation>
 <translation id="8503559462189395349">Chrome-Passwörter</translation>
 <translation id="8503813439785031346">Nutzername</translation>
@@ -988,7 +994,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="851751545965956758">Verhindern, dass Websites eine Verbindung zu Geräten herstellen</translation>
 <translation id="8523928698583292556">Gespeichertes Passwort löschen</translation>
 <translation id="854522910157234410">Diese Seite öffnen</translation>
-<translation id="8555322348396635979">Hoppla! Ein Problem ist aufgetreten. Bitte überprüfen Sie Ihre Verbindung.</translation>
 <translation id="8558485628462305855">ARCore aktualisieren, um Augmented-Reality-Inhalte zu sehen</translation>
 <translation id="8559990750235505898">Übersetzung für Seiten in andere Sprachen anbieten</translation>
 <translation id="8562452229998620586">Gespeicherte Passwörter erscheinen hier.</translation>
@@ -997,12 +1002,10 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="857509777403223202">Weitere Artikel werden in Kürze erscheinen. Schönen Abend!</translation>
 <translation id="857943718398505171">Zugelassen (empfohlen)</translation>
 <translation id="8583805026567836021">Kontodaten werden gelöscht</translation>
+<translation id="860043288473659153">Name des Karteninhabers</translation>
 <translation id="8609465669617005112">Nach oben</translation>
 <translation id="8616006591992756292">Möglicherweise verfügt Ihr Google-Konto unter <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> über andere Browserverläufe.</translation>
 <translation id="8617240290563765734">Soll die im heruntergeladenen Inhalt angegebene URL geöffnet werden?</translation>
-<translation id="862875433388403934">In anderen Anwendungen heruntergeladene Inhalte wie Filme und Musik können möglicherweise erst wieder abgespielt werden, nachdem Lizenzen basierend auf neuen Anmeldedaten für die betreffenden Anwendungen erworben wurden.
-
-Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spielen Sie die heruntergeladenen Inhalte ab.</translation>
 <translation id="8636825310635137004">Aktivieren Sie die Synchronisierung, um Tabs von Ihren anderen Geräten abzurufen.</translation>
 <translation id="8641930654639604085">Versuchen, nicht jugendfreie Websites zu blockieren</translation>
 <translation id="8662811608048051533">Sie werden von den meisten Websites abgemeldet.</translation>
@@ -1018,10 +1021,10 @@ Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spiele
 <translation id="8748850008226585750">Inhalte ausgeblendet</translation>
 <translation id="8751914237388039244">Bild auswählen</translation>
 <translation id="8788968922598763114">Zuletzt geschlossenen Tab öffnen</translation>
+<translation id="8801436777607969138">Hier können Sie Websites angeben, für die JavaScript blockiert werden soll.</translation>
 <translation id="8812260976093120287">Auf manchen Websites können Sie über Ihr Gerät mit den obigen unterstützten Zahlungs-Apps bezahlen.</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> wird in Chrome geöffnet. Wenn Sie fortfahren, stimmen Sie den <ph name="BEGIN_LINK1" />Nutzungsbedingungen<ph name="END_LINK1" /> und <ph name="BEGIN_LINK2" />Datenschutzhinweisen<ph name="END_LINK2" /> von Chrome sowie den <ph name="BEGIN_LINK3" />Datenschutzhinweisen für mit Family Link verwaltete Google-Konten<ph name="END_LINK3" /> zu.</translation>
 <translation id="8820817407110198400">Lesezeichen</translation>
-<translation id="8823704566850948458">Passwort vorschlagen…</translation>
 <translation id="8833831881926404480">Eine Website teilt Ihren Bildschirm</translation>
 <translation id="883806473910249246">Beim Herunterladen des Inhalts ist ein Fehler aufgetreten.</translation>
 <translation id="8840953339110955557">Diese Seite unterscheidet sich gegebenenfalls von der Onlineversion.</translation>
@@ -1029,6 +1032,7 @@ Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spiele
 <translation id="8853345339104747198"><ph name="TAB_TITLE" /></translation>
 <translation id="885701979325669005">Speicher</translation>
 <translation id="8901170036886848654">Keine Lesezeichen gefunden</translation>
+<translation id="8903053969062019677">{OPEN_TABS,plural, =1{%1$d geöffneter Tab, tippen Sie, um zwischen Tabs zu wechseln}other{%1$d geöffnete Tabs, tippen Sie, um zwischen Tabs zu wechseln}}</translation>
 <translation id="8905378131945614900">Fehler beim Installieren des VR-Moduls</translation>
 <translation id="8909135823018751308">Teilen...</translation>
 <translation id="8912362522468806198">Google-Konto</translation>
@@ -1037,6 +1041,7 @@ Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spiele
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">In anderem Fenster öffnen</translation>
 <translation id="8951232171465285730">Dank Chrome haben Sie <ph name="MEGABYTES" /> MB eingespart</translation>
+<translation id="8958424370300090006">Cookies für eine bestimmte Website werden blockiert.</translation>
 <translation id="8959122750345127698">Navigation nicht möglich: <ph name="URL" /> ist nicht erreichbar.</translation>
 <translation id="8965591936373831584">ausstehend</translation>
 <translation id="8972098258593396643">In Standardordner herunterladen?</translation>
@@ -1060,7 +1065,6 @@ Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spiele
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> KB heruntergeladen</translation>
 <translation id="9100505651305367705">Anbieten, Artikel in vereinfachter Ansicht anzuzeigen, falls unterstützt</translation>
 <translation id="9100610230175265781">Passphrase erforderlich</translation>
-<translation id="9133515669113036225">Anmeldedaten des Geräts zurücksetzen</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Original anzeigen</translation>
 <translation id="9139068048179869749">Nachfragen, bevor Websites Benachrichtigungen senden dürfen (empfohlen)</translation>
@@ -1069,7 +1073,6 @@ Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spiele
 <translation id="9188680907066685419">Von verwaltetem Konto abmelden</translation>
 <translation id="9204836675896933765">Noch 1 Datei</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9218033835049520260">Starkes Passwort vorschlagen…</translation>
 <translation id="9219103736887031265">Bilder</translation>
 <translation id="932327136139879170">Privat</translation>
 <translation id="932599481871055447">Geringerer Datenverbrauch und schnelleres Surfen</translation>

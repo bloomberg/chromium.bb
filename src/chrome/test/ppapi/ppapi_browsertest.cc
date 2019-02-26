@@ -2142,7 +2142,8 @@ TEST_PPAPI_OUT_OF_PROCESS(FlashFile)
 // mac: http://crbug.com/96767
 // aura: http://crbug.com/104384
 // cros: http://crbug.com/396502
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+// windows: http://crbug.com/899893
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS) || defined(OS_WIN)
 #define MAYBE_FlashFullscreen DISABLED_FlashFullscreen
 #else
 #define MAYBE_FlashFullscreen FlashFullscreen

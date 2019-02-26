@@ -40,10 +40,6 @@ class Windows10CaptionButton : public views::Button {
   // Paints the minimize/maximize/restore/close icon for the button.
   void PaintSymbol(gfx::Canvas* canvas);
 
-  // Returns the appropriate ThemeProvider to use for the frame if any, may
-  // return nullptr.
-  const ui::ThemeProvider* GetFrameThemeProvider() const;
-
   GlassBrowserFrameView* frame_view_;
   ViewID button_type_;
 

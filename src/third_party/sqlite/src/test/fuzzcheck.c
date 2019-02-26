@@ -405,7 +405,10 @@ static void blobListFree(Blob *p){
 static sqlite3_int64 timeOfDay(void){
   static sqlite3_vfs *clockVfs = 0;
   sqlite3_int64 t;
-  if( clockVfs==0 ) clockVfs = sqlite3_vfs_find(0);
+  if( clockVfs==0 ){
+    clockVfs = sqlite3_vfs_find(0);
+    if( clockVfs==0 ) return 0;
+  }
   if( clockVfs->iVersion>=1 && clockVfs->xCurrentTimeInt64!=0 ){
     clockVfs->xCurrentTimeInt64(clockVfs, &t);
   }else{
@@ -444,7 +447,7 @@ static int inmemRead(
   if( iOfst+iAmt>pVFile->sz ){
     memset(pData, 0, iAmt);
     iAmt = (int)(pVFile->sz - iOfst);
-    memcpy(pData, pVFile->a, iAmt);
+    memcpy(pData, pVFile->a + iOfst, iAmt);
     return SQLITE_IOERR_SHORT_READ;
   }
   memcpy(pData, pVFile->a + iOfst, iAmt);
@@ -866,6 +869,7 @@ int main(int argc, char **argv){
   sqlite3_vfs *pDfltVfs;       /* The default VFS */
   int openFlags4Data;          /* Flags for sqlite3_open_v2() */
 
+  sqlite3_initialize();
   iBegin = timeOfDay();
 #ifdef __unix__
   signal(SIGALRM, timeoutHandler);

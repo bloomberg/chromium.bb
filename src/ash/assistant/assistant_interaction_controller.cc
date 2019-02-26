@@ -47,7 +47,6 @@ AssistantInteractionController::AssistantInteractionController(
     AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller),
       assistant_interaction_subscriber_binding_(this),
-      assistant_response_processor_(assistant_controller),
       weak_factory_(this) {
   AddModelObserver(this);
   assistant_controller_->AddObserver(this);
@@ -95,6 +94,10 @@ void AssistantInteractionController::OnDeepLinkReceived(
   using assistant::util::DeepLinkType;
 
   if (type == DeepLinkType::kWhatsOnMyScreen) {
+    // Explicitly call ShowUi() to set the correct Assistant entry point.
+    // ShowUi() will no-op if UI is already shown.
+    assistant_controller_->ui_controller()->ShowUi(
+        AssistantEntryPoint::kDeepLink);
     StartScreenContextInteraction();
     return;
   }
@@ -116,7 +119,9 @@ void AssistantInteractionController::OnDeepLinkReceived(
     return;
   }
 
-  StartTextInteraction(query.value());
+  assistant_controller_->ui_controller()->ShowUi(
+      AssistantEntryPoint::kDeepLink);
+  StartTextInteraction(query.value(), /*allow_tts=*/false);
 }
 
 void AssistantInteractionController::OnUiModeChanged(AssistantUiMode ui_mode) {
@@ -150,7 +155,8 @@ void AssistantInteractionController::OnUiModeChanged(AssistantUiMode ui_mode) {
 void AssistantInteractionController::OnUiVisibilityChanged(
     AssistantVisibility new_visibility,
     AssistantVisibility old_visibility,
-    AssistantSource source) {
+    base::Optional<AssistantEntryPoint> entry_point,
+    base::Optional<AssistantExitPoint> exit_point) {
   switch (new_visibility) {
     case AssistantVisibility::kClosed:
       // When the UI is closed we need to stop any active interaction. We also
@@ -169,7 +175,7 @@ void AssistantInteractionController::OnUiVisibilityChanged(
       model_.SetInputModality(InputModality::kKeyboard);
       break;
     case AssistantVisibility::kVisible:
-      OnUiVisible(source);
+      OnUiVisible(entry_point.value());
       break;
   }
 }
@@ -233,29 +239,29 @@ void AssistantInteractionController::OnMicStateChanged(MicState mic_state) {
     Shell::Get()->accessibility_controller()->SilenceSpokenFeedback();
 }
 
-void AssistantInteractionController::OnResponseChanged(
-    const std::shared_ptr<AssistantResponse>& response) {
+void AssistantInteractionController::OnCommittedQueryChanged(
+    const AssistantQuery& assistant_query) {
+  std::string query;
+  switch (assistant_query.type()) {
+    case AssistantQueryType::kText: {
+      const auto* assistant_text_query =
+          static_cast<const AssistantTextQuery*>(&assistant_query);
+      query = assistant_text_query->text();
+      break;
+    }
+    case AssistantQueryType::kVoice: {
+      const auto* assistant_voice_query =
+          static_cast<const AssistantVoiceQuery*>(&assistant_query);
+      query = assistant_voice_query->high_confidence_speech();
+      break;
+    }
+    case AssistantQueryType::kNull:
+      break;
+  }
+  model_.query_history().Add(query);
+
   assistant::util::IncrementAssistantQueryCountForEntryPoint(
       assistant_controller_->ui_controller()->model()->entry_point());
-}
-
-void AssistantInteractionController::OnResponseDestroying(
-    AssistantResponse& response) {
-  response.RemoveObserver(this);
-
-  // We need to explicitly clean up resources owned by WebContentsManager for
-  // any card elements belonging to the response being destroyed.
-  std::vector<base::UnguessableToken> id_tokens;
-  for (const auto& ui_element : response.GetUiElements()) {
-    if (ui_element->GetType() == AssistantUiElementType::kCard) {
-      id_tokens.push_back(
-          static_cast<const AssistantCardElement*>(ui_element.get())
-              ->id_token());
-    }
-  }
-
-  if (!id_tokens.empty())
-    assistant_controller_->ReleaseWebContents(id_tokens);
 }
 
 void AssistantInteractionController::OnInteractionStarted(
@@ -264,7 +270,8 @@ void AssistantInteractionController::OnInteractionStarted(
     // If the Assistant UI is not visible yet, and |is_voice_interaction| is
     // true, then it will be sure that Assistant is fired via OKG. ShowUi will
     // not update the Assistant entry point if the UI is already visible.
-    assistant_controller_->ui_controller()->ShowUi(AssistantSource::kHotword);
+    assistant_controller_->ui_controller()->ShowUi(
+        AssistantEntryPoint::kHotword);
   }
 
   model_.SetInteractionState(InteractionState::kActive);
@@ -295,10 +302,8 @@ void AssistantInteractionController::OnInteractionStarted(
     model_.SetMicState(MicState::kClosed);
   }
 
-  // Start caching a new Assistant response for the interaction. We observe the
-  // response so that we can receive notification of lifecycle change events.
+  // Start caching a new Assistant response for the interaction.
   model_.SetPendingResponse(std::make_unique<AssistantResponse>());
-  model_.pending_response()->AddObserver(this);
 }
 
 void AssistantInteractionController::OnInteractionFinished(
@@ -386,7 +391,13 @@ void AssistantInteractionController::OnSuggestionChipPressed(
   }
 
   // Otherwise, we will submit a simple text query using the suggestion text.
-  StartTextInteraction(suggestion->text);
+  // Note that a text query originating from a suggestion chip will carry
+  // forward the allowance/forbiddance of TTS from the previous response. This
+  // is because suggestion chips pressed after a voice query should continue to
+  // return TTS, as really the text interaction is just a continuation of the
+  // user's preceding voice interaction.
+  StartTextInteraction(suggestion->text, /*allow_tts=*/model_.response() &&
+                                             model_.response()->has_tts());
 }
 
 void AssistantInteractionController::OnSuggestionsResponse(
@@ -514,7 +525,7 @@ void AssistantInteractionController::OnDialogPlateButtonPressed(
 void AssistantInteractionController::OnDialogPlateContentsCommitted(
     const std::string& text) {
   DCHECK(!text.empty());
-  StartTextInteraction(text);
+  StartTextInteraction(text, /*allow_tts=*/false);
 }
 
 bool AssistantInteractionController::HasUnprocessedPendingResponse() {
@@ -532,9 +543,15 @@ void AssistantInteractionController::OnProcessPendingResponse() {
     return;
   }
 
+  // Bind an interface to a navigable contents factory that is needed for
+  // processing card elements.
+  content::mojom::NavigableContentsFactoryPtr contents_factory;
+  assistant_controller_->GetNavigableContentsFactory(
+      mojo::MakeRequest(&contents_factory));
+
   // Start processing.
-  assistant_response_processor_.Process(
-      *model_.pending_response(),
+  model_.pending_response()->Process(
+      std::move(contents_factory),
       base::BindOnce(
           &AssistantInteractionController::OnPendingResponseProcessed,
           weak_factory_.GetWeakPtr()));
@@ -549,14 +566,15 @@ void AssistantInteractionController::OnPendingResponseProcessed(bool success) {
   model_.FinalizePendingResponse();
 }
 
-void AssistantInteractionController::OnUiVisible(AssistantSource source) {
+void AssistantInteractionController::OnUiVisible(
+    AssistantEntryPoint entry_point) {
   DCHECK_EQ(AssistantVisibility::kVisible,
             assistant_controller_->ui_controller()->model()->visibility());
 
-  switch (source) {
-    case AssistantSource::kHotkey:
-    case AssistantSource::kLauncherSearchBox:
-    case AssistantSource::kLongPressLauncher: {
+  switch (entry_point) {
+    case AssistantEntryPoint::kHotkey:
+    case AssistantEntryPoint::kLauncherSearchBox:
+    case AssistantEntryPoint::kLongPressLauncher: {
       // When the user prefers it or when we are in tablet mode, launching
       // Assistant UI will immediately start a voice interaction.
       const bool launch_with_mic_open =
@@ -565,13 +583,13 @@ void AssistantInteractionController::OnUiVisible(AssistantSource source) {
         StartVoiceInteraction();
       break;
     }
-    case AssistantSource::kStylus:
+    case AssistantEntryPoint::kStylus:
       model_.SetInputModality(InputModality::kStylus);
       break;
-    case AssistantSource::kUnspecified:
-    case AssistantSource::kDeepLink:
-    case AssistantSource::kHotword:
-    case AssistantSource::kSetup:
+    case AssistantEntryPoint::kUnspecified:
+    case AssistantEntryPoint::kDeepLink:
+    case AssistantEntryPoint::kHotword:
+    case AssistantEntryPoint::kSetup:
       // No action necessary.
       break;
   }
@@ -598,12 +616,13 @@ void AssistantInteractionController::StartScreenContextInteraction() {
 }
 
 void AssistantInteractionController::StartTextInteraction(
-    const std::string text) {
+    const std::string text,
+    bool allow_tts) {
   StopActiveInteraction(false);
 
   model_.SetPendingQuery(std::make_unique<AssistantTextQuery>(text));
 
-  assistant_->SendTextQuery(text);
+  assistant_->StartTextInteraction(text, allow_tts);
 }
 
 void AssistantInteractionController::StartVoiceInteraction() {

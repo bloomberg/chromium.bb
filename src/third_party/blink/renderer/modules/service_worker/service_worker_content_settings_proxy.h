@@ -28,7 +28,7 @@ class ServiceWorkerContentSettingsProxy final
   // Asks the browser process about the settings.
   // Blocks until the response arrives.
   bool RequestFileSystemAccessSync() override;
-  bool AllowIndexedDB(const WebString& name, const WebSecurityOrigin&) override;
+  bool AllowIndexedDB(const WebSecurityOrigin&) override;
 
  private:
   // To ensure the returned pointer is destructed on the same thread

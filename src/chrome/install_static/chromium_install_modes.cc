@@ -4,6 +4,8 @@
 
 // Brand-specific constants and install modes for Chromium.
 
+#include "chrome/install_static/chromium_install_modes.h"
+
 #include <stdlib.h>
 
 #include "chrome/app/chrome_dll_resource.h"
@@ -49,7 +51,14 @@ const InstallConstants kInstallModes[] = {
          0x6DB4,
          0x4D6B,
          {0x8B, 0xFE, 0x83, 0xBF, 0x8C, 0xA1, 0xB1, 0xB0}},  // Elevator CLSID.
-        L"",  // Empty default channel name since no update integration.
+
+        {0xb88c45b9,
+         0x8825,
+         0x4629,
+         {0xb8, 0x3e, 0x77, 0xcc, 0x67, 0xd9, 0xce,
+          0xed}},  // IElevator IID and TypeLib
+                   // {B88C45B9-8825-4629-B83E-77CC67D9CEED}.
+        L"",       // Empty default channel name since no update integration.
         ChannelStrategy::UNSUPPORTED,
         true,   // Supports system-level installs.
         true,   // Supports in-product set as default browser UX.

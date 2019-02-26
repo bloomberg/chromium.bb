@@ -46,7 +46,7 @@ TEST_F(ApplyBlockElementCommandTest, selectionCrossingOverBody) {
       SetSelectionOptions());
 
   FormatBlockCommand* command =
-      FormatBlockCommand::Create(GetDocument(), HTMLNames::footerTag);
+      FormatBlockCommand::Create(GetDocument(), html_names::kFooterTag);
   command->Apply();
 
   EXPECT_EQ(
@@ -63,7 +63,7 @@ TEST_F(ApplyBlockElementCommandTest, visibilityChangeDuringCommand) {
   SetBodyContent("<ul style='visibility:hidden'><li>xyz</li></ul>");
   GetDocument().setDesignMode("on");
 
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   Selection().SetSelection(
       SelectionInDOMTree::Builder()
           .Collapse(Position(GetDocument().QuerySelector("li"), 0))
@@ -121,7 +121,7 @@ TEST_F(ApplyBlockElementCommandTest, InsertPlaceHolderAtDisconnectedPosition) {
           "^<input><input class=\"input\" style=\"position:absolute\">|"),
       SetSelectionOptions());
   FormatBlockCommand* command =
-      FormatBlockCommand::Create(GetDocument(), HTMLNames::preTag);
+      FormatBlockCommand::Create(GetDocument(), html_names::kPreTag);
   // Crash happens here.
   EXPECT_FALSE(command->Apply());
   EXPECT_EQ(
@@ -137,7 +137,7 @@ TEST_F(ApplyBlockElementCommandTest, FormatBlockCrossingUserModifyBoundary) {
           "^<b style=\"-webkit-user-modify:read-only\"><button></button></b>|"),
       SetSelectionOptions());
   FormatBlockCommand* command =
-      FormatBlockCommand::Create(GetDocument(), HTMLNames::preTag);
+      FormatBlockCommand::Create(GetDocument(), html_names::kPreTag);
   // Shouldn't crash here.
   EXPECT_FALSE(command->Apply());
   EXPECT_EQ(
@@ -156,7 +156,7 @@ TEST_F(ApplyBlockElementCommandTest,
                              "/button></kbd>|"),
       SetSelectionOptions());
   FormatBlockCommand* command =
-      FormatBlockCommand::Create(GetDocument(), HTMLNames::preTag);
+      FormatBlockCommand::Create(GetDocument(), html_names::kPreTag);
   // Shouldn't crash here.
   EXPECT_FALSE(command->Apply());
   EXPECT_EQ(

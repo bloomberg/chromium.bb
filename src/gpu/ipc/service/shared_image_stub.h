@@ -9,9 +9,8 @@
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
+#include "gpu/ipc/common/gpu_messages.h"
 #include "ipc/ipc_listener.h"
-
-struct GpuChannelMsg_CreateSharedImage_Params;
 
 namespace gpu {
 struct Mailbox;
@@ -23,7 +22,7 @@ struct RasterDecoderContextState;
 }
 
 class SharedImageStub : public IPC::Listener,
-                        public gles2::MemoryTracker,
+                        public MemoryTracker,
                         public base::trace_event::MemoryDumpProvider {
  public:
   SharedImageStub(GpuChannel* channel, int32_t route_id);
@@ -32,7 +31,7 @@ class SharedImageStub : public IPC::Listener,
   // IPC::Listener implementation:
   bool OnMessageReceived(const IPC::Message& msg) override;
 
-  // gles2::MemoryTracker implementation:
+  // MemoryTracker implementation:
   void TrackMemoryAllocatedChange(uint64_t delta) override;
   uint64_t GetSize() const override;
   uint64_t ClientTracingId() const override;
@@ -48,6 +47,8 @@ class SharedImageStub : public IPC::Listener,
  private:
   void OnCreateSharedImage(
       const GpuChannelMsg_CreateSharedImage_Params& params);
+  void OnCreateGMBSharedImage(GpuChannelMsg_CreateGMBSharedImage_Params params);
+  void OnUpdateSharedImage(const Mailbox& mailbox, uint32_t release_id);
   void OnDestroySharedImage(const Mailbox& mailbox);
   bool MakeContextCurrent();
   bool MakeContextCurrentAndCreateFactory();

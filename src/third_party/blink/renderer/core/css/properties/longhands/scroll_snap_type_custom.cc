@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* ScrollSnapType::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -21,14 +21,14 @@ const CSSValue* ScrollSnapType::ParseSingleValue(
       axis_id != CSSValueBlock && axis_id != CSSValueInline &&
       axis_id != CSSValueBoth)
     return nullptr;
-  CSSValue* axis_value = CSSPropertyParserHelpers::ConsumeIdent(range);
+  CSSValue* axis_value = css_property_parser_helpers::ConsumeIdent(range);
   if (range.AtEnd() || axis_id == CSSValueNone)
     return axis_value;
 
   CSSValueID strictness_id = range.Peek().Id();
   if (strictness_id != CSSValueProximity && strictness_id != CSSValueMandatory)
     return axis_value;
-  CSSValue* strictness_value = CSSPropertyParserHelpers::ConsumeIdent(range);
+  CSSValue* strictness_value = css_property_parser_helpers::ConsumeIdent(range);
   CSSValuePair* pair = CSSValuePair::Create(axis_value, strictness_value,
                                             CSSValuePair::kDropIdenticalValues);
   return pair;
@@ -44,5 +44,5 @@ const CSSValue* ScrollSnapType::CSSValueFromComputedStyleInternal(
                                                     style);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

@@ -178,8 +178,7 @@ def main():
     if options.generate_impl or options.read_idl_list_from_file:
         # |input_filename| should be a file which contains a list of IDL
         # dictionary paths.
-        input_filenames = read_idl_files_list_from_file(input_filename,
-                                                        is_gyp_format=True)
+        input_filenames = read_idl_files_list_from_file(input_filename)
     else:
         input_filenames = [input_filename]
 

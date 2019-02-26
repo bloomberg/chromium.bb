@@ -15,7 +15,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/install_static/install_util.h"
-#include "chrome/installer/util/google_update_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -79,7 +78,6 @@ class UserDataDowngradeBrowserCopyAndCleanTest
     UserDataDowngradeBrowserTestBase::SetUpInProcessBrowserTestFixture();
     key_.WriteValue(L"DowngradeVersion",
                     base::ASCIIToUTF16(GetNextChromeVersion()).c_str());
-    key_.WriteValue(google_update::kRegMSIField, 1);
   }
 
   // InProcessBrowserTest:
@@ -96,21 +94,6 @@ class UserDataDowngradeBrowserCopyAndCleanTest
 
 class UserDataDowngradeBrowserNoResetTest
     : public UserDataDowngradeBrowserTestBase {
- protected:
-  // content::BrowserTestBase:
-  void SetUpInProcessBrowserTestFixture() override {
-    UserDataDowngradeBrowserTestBase::SetUpInProcessBrowserTestFixture();
-    key_.WriteValue(google_update::kRegMSIField, 1);
-  }
-};
-
-class UserDataDowngradeBrowserNoMSITest
-    : public UserDataDowngradeBrowserTestBase {
- protected:
-  // InProcessBrowserTest:
-  bool SetUpUserDataDirectory() override {
-    return CreateTemporaryFileInDir(user_data_dir_, &other_file_);
-  }
 };
 
 // Verify the user data directory has been renamed and created again after
@@ -126,13 +109,6 @@ IN_PROC_BROWSER_TEST_F(UserDataDowngradeBrowserCopyAndCleanTest, Test) {
 IN_PROC_BROWSER_TEST_F(UserDataDowngradeBrowserNoResetTest, Test) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   EXPECT_EQ(chrome::kChromeVersion, GetLastVersion(user_data_dir_).GetString());
-  ASSERT_TRUE(base::PathExists(other_file_));
-}
-
-// Verify the "Last Version" file won't be created for non-msi install.
-IN_PROC_BROWSER_TEST_F(UserDataDowngradeBrowserNoMSITest, Test) {
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  ASSERT_FALSE(base::PathExists(last_version_file_path_));
   ASSERT_TRUE(base::PathExists(other_file_));
 }
 

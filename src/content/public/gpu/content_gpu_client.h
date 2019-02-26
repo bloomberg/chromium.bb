@@ -14,6 +14,10 @@
 #include "media/media_buildflags.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
+namespace base {
+class Token;
+}
+
 namespace gpu {
 struct GpuPreferences;
 class SyncPointManager;
@@ -56,7 +60,7 @@ class CONTENT_EXPORT ContentGpuClient {
   // Creates a media::CdmProxy for the type of Content Decryption Module (CDM)
   // identified by |cdm_guid|.
   virtual std::unique_ptr<media::CdmProxy> CreateCdmProxy(
-      const std::string& cdm_guid);
+      const base::Token& cdm_guid);
 #endif
 };
 

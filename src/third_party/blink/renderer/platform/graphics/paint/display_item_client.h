@@ -36,7 +36,7 @@ class PLATFORM_EXPORT DisplayItemClient {
   // Tests if this DisplayItemClient object has been created and has not been
   // deleted yet.
   bool IsAlive() const;
-  static String SafeDebugName(const DisplayItemClient&, bool known_to_be_safe);
+  String SafeDebugName(bool known_to_be_safe = false) const;
 #endif
 
   virtual String DebugName() const = 0;
@@ -114,6 +114,8 @@ class PLATFORM_EXPORT DisplayItemClient {
     return paint_invalidation_reason_ == PaintInvalidationReason::kNone;
   }
 
+  String ToString() const;
+
  private:
   friend class FakeDisplayItemClient;
   friend class PaintController;
@@ -140,6 +142,11 @@ inline bool operator!=(const DisplayItemClient& client1,
                        const DisplayItemClient& client2) {
   return &client1 != &client2;
 }
+
+PLATFORM_EXPORT std::ostream& operator<<(std::ostream&,
+                                         const DisplayItemClient*);
+PLATFORM_EXPORT std::ostream& operator<<(std::ostream&,
+                                         const DisplayItemClient&);
 
 }  // namespace blink
 

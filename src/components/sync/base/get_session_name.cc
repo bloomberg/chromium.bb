@@ -9,7 +9,7 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/strings/string_util.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/threading/scoped_blocking_call.h"

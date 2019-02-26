@@ -27,6 +27,10 @@ namespace content {
 class BrowserContext;
 }  // namespace content
 
+namespace gfx {
+class Rect;
+}  // namespace gfx
+
 namespace arc {
 
 class AXTreeSourceArc;
@@ -113,6 +117,9 @@ class ArcAccessibilityHelperBridge
                          aura::Window* lost_active) override;
 
   void OnActionResult(const ui::AXActionData& data, bool result) const;
+  void OnGetTextLocationDataResult(
+      const ui::AXActionData& data,
+      const base::Optional<gfx::Rect>& result_rect) const;
 
   void OnAccessibilityStatusChanged(
       const chromeos::AccessibilityStatusEventDetails& event_details);

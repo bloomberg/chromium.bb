@@ -24,6 +24,7 @@
 
 #if defined(OS_MACOSX)
 #include <Carbon/Carbon.h>
+#include "base/mac/mac_util.h"
 #endif
 
 namespace extensions {
@@ -141,6 +142,11 @@ IN_PROC_BROWSER_TEST_F(GlobalCommandsApiTest, MAYBE_GlobalCommand) {
   host->AddObserver(&observer);
 
 #elif defined(OS_MACOSX)
+  // ui_test_utils::SendGlobalKeyEventsAndWait() hangs the test on macOS 10.14 -
+  // https://crbug.com/904403
+  if (base::mac::IsAtLeastOS10_14())
+    return;
+
   // Create an incognito browser to capture the focus.
   Browser* incognito_browser = CreateIncognitoBrowser();
   // Activate Chrome.app so that events are seen on [NSApplication sendEvent:].

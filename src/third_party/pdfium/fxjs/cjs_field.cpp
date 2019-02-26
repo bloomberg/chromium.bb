@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "core/fpdfapi/font/cpdf_font.h"
+#include "core/fpdfdoc/cpdf_formcontrol.h"
 #include "core/fpdfdoc/cpdf_formfield.h"
 #include "core/fpdfdoc/cpdf_interactiveform.h"
 #include "fpdfsdk/cpdfsdk_interactiveform.h"
@@ -511,6 +512,7 @@ const JSPropertySpec CJS_Field::PropertySpecs[] = {
     {"richText", get_rich_text_static, set_rich_text_static},
     {"richValue", get_rich_value_static, set_rich_value_static},
     {"rotation", get_rotation_static, set_rotation_static},
+    {"source", get_source_static, set_source_static},
     {"strokeColor", get_stroke_color_static, set_stroke_color_static},
     {"style", get_style_static, set_style_static},
     {"submitName", get_submit_name_static, set_submit_name_static},
@@ -520,8 +522,7 @@ const JSPropertySpec CJS_Field::PropertySpecs[] = {
     {"type", get_type_static, set_type_static},
     {"userName", get_user_name_static, set_user_name_static},
     {"value", get_value_static, set_value_static},
-    {"valueAsString", get_value_as_string_static, set_value_as_string_static},
-    {"source", get_source_static, set_source_static}};
+    {"valueAsString", get_value_as_string_static, set_value_as_string_static}};
 
 const JSMethodSpec CJS_Field::MethodSpecs[] = {
     {"browseForFileToSubmit", browseForFileToSubmit_static},
@@ -639,16 +640,6 @@ CPDF_FormField* CJS_Field::GetFirstFormField() const {
   return fields.empty() ? nullptr : fields[0];
 }
 
-bool CJS_Field::ValueIsOccur(CPDF_FormField* pFormField,
-                             WideString csOptLabel) const {
-  for (int i = 0, sz = pFormField->CountOptions(); i < sz; i++) {
-    if (csOptLabel.Compare(pFormField->GetOptionLabel(i)) == 0)
-      return true;
-  }
-
-  return false;
-}
-
 CPDF_FormControl* CJS_Field::GetSmartFieldControl(CPDF_FormField* pFormField) {
   if (!pFormField->CountControls() ||
       m_nFormControlIndex >= pFormField->CountControls())
@@ -674,13 +665,13 @@ CJS_Result CJS_Field::get_alignment(CJS_Runtime* pRuntime) {
 
   switch (pFormControl->GetControlAlignment()) {
     case 0:
-      return CJS_Result::Success(pRuntime->NewString(L"left"));
+      return CJS_Result::Success(pRuntime->NewString("left"));
     case 1:
-      return CJS_Result::Success(pRuntime->NewString(L"center"));
+      return CJS_Result::Success(pRuntime->NewString("center"));
     case 2:
-      return CJS_Result::Success(pRuntime->NewString(L"right"));
+      return CJS_Result::Success(pRuntime->NewString("right"));
   }
-  return CJS_Result::Success(pRuntime->NewString(L""));
+  return CJS_Result::Success(pRuntime->NewString(""));
 }
 
 CJS_Result CJS_Field::set_alignment(CJS_Runtime* pRuntime,
@@ -706,17 +697,17 @@ CJS_Result CJS_Field::get_border_style(CJS_Runtime* pRuntime) {
 
   switch (pWidget->GetBorderStyle()) {
     case BorderStyle::SOLID:
-      return CJS_Result::Success(pRuntime->NewString(L"solid"));
+      return CJS_Result::Success(pRuntime->NewString("solid"));
     case BorderStyle::DASH:
-      return CJS_Result::Success(pRuntime->NewString(L"dashed"));
+      return CJS_Result::Success(pRuntime->NewString("dashed"));
     case BorderStyle::BEVELED:
-      return CJS_Result::Success(pRuntime->NewString(L"beveled"));
+      return CJS_Result::Success(pRuntime->NewString("beveled"));
     case BorderStyle::INSET:
-      return CJS_Result::Success(pRuntime->NewString(L"inset"));
+      return CJS_Result::Success(pRuntime->NewString("inset"));
     case BorderStyle::UNDERLINE:
-      return CJS_Result::Success(pRuntime->NewString(L"underline"));
+      return CJS_Result::Success(pRuntime->NewString("underline"));
   }
-  return CJS_Result::Success(pRuntime->NewString(L""));
+  return CJS_Result::Success(pRuntime->NewString(""));
 }
 
 CJS_Result CJS_Field::set_border_style(CJS_Runtime* pRuntime,
@@ -1383,15 +1374,15 @@ CJS_Result CJS_Field::get_highlight(CJS_Runtime* pRuntime) {
   int eHM = pFormControl->GetHighlightingMode();
   switch (eHM) {
     case CPDF_FormControl::None:
-      return CJS_Result::Success(pRuntime->NewString(L"none"));
+      return CJS_Result::Success(pRuntime->NewString("none"));
     case CPDF_FormControl::Push:
-      return CJS_Result::Success(pRuntime->NewString(L"push"));
+      return CJS_Result::Success(pRuntime->NewString("push"));
     case CPDF_FormControl::Invert:
-      return CJS_Result::Success(pRuntime->NewString(L"invert"));
+      return CJS_Result::Success(pRuntime->NewString("invert"));
     case CPDF_FormControl::Outline:
-      return CJS_Result::Success(pRuntime->NewString(L"outline"));
+      return CJS_Result::Success(pRuntime->NewString("outline"));
     case CPDF_FormControl::Toggle:
-      return CJS_Result::Success(pRuntime->NewString(L"toggle"));
+      return CJS_Result::Success(pRuntime->NewString("toggle"));
   }
   return CJS_Result::Success();
 }
@@ -1806,6 +1797,15 @@ CJS_Result CJS_Field::set_rotation(CJS_Runtime* pRuntime,
   return CJS_Result::Success();
 }
 
+CJS_Result CJS_Field::get_source(CJS_Runtime* pRuntime) {
+  return CJS_Result::Success();
+}
+
+CJS_Result CJS_Field::set_source(CJS_Runtime* pRuntime,
+                                 v8::Local<v8::Value> vp) {
+  return CJS_Result::Success();
+}
+
 CJS_Result CJS_Field::get_stroke_color(CJS_Runtime* pRuntime) {
   CPDF_FormField* pFormField = GetFirstFormField();
   if (!pFormField)
@@ -1868,9 +1868,10 @@ CJS_Result CJS_Field::get_style(CJS_Runtime* pRuntime) {
     return CJS_Result::Failure(JSMessage::kBadObjectError);
 
   WideString csWCaption = pFormControl->GetNormalCaption();
-  ByteString csBCaption;
+  wchar_t selector = !csWCaption.IsEmpty() ? csWCaption[0] : L'4';
 
-  switch (csWCaption[0]) {
+  ByteString csBCaption;
+  switch (selector) {
     case L'l':
       csBCaption = "circle";
       break;
@@ -1891,7 +1892,7 @@ CJS_Result CJS_Field::get_style(CJS_Runtime* pRuntime) {
       break;
   }
   return CJS_Result::Success(pRuntime->NewString(
-      WideString::FromLocal(csBCaption.AsStringView()).AsStringView()));
+      WideString::FromDefANSI(csBCaption.AsStringView()).AsStringView()));
 }
 
 CJS_Result CJS_Field::set_style(CJS_Runtime* pRuntime,
@@ -1977,7 +1978,7 @@ CJS_Result CJS_Field::get_text_font(CJS_Runtime* pRuntime) {
     return CJS_Result::Failure(JSMessage::kBadObjectError);
 
   return CJS_Result::Success(pRuntime->NewString(
-      WideString::FromLocal(pFont->GetBaseFont().AsStringView())
+      WideString::FromDefANSI(pFont->GetBaseFont().AsStringView())
           .AsStringView()));
 }
 
@@ -2024,23 +2025,23 @@ CJS_Result CJS_Field::get_type(CJS_Runtime* pRuntime) {
 
   switch (pFormField->GetFieldType()) {
     case FormFieldType::kUnknown:
-      return CJS_Result::Success(pRuntime->NewString(L"unknown"));
+      return CJS_Result::Success(pRuntime->NewString("unknown"));
     case FormFieldType::kPushButton:
-      return CJS_Result::Success(pRuntime->NewString(L"button"));
+      return CJS_Result::Success(pRuntime->NewString("button"));
     case FormFieldType::kCheckBox:
-      return CJS_Result::Success(pRuntime->NewString(L"checkbox"));
+      return CJS_Result::Success(pRuntime->NewString("checkbox"));
     case FormFieldType::kRadioButton:
-      return CJS_Result::Success(pRuntime->NewString(L"radiobutton"));
+      return CJS_Result::Success(pRuntime->NewString("radiobutton"));
     case FormFieldType::kComboBox:
-      return CJS_Result::Success(pRuntime->NewString(L"combobox"));
+      return CJS_Result::Success(pRuntime->NewString("combobox"));
     case FormFieldType::kListBox:
-      return CJS_Result::Success(pRuntime->NewString(L"listbox"));
+      return CJS_Result::Success(pRuntime->NewString("listbox"));
     case FormFieldType::kTextField:
-      return CJS_Result::Success(pRuntime->NewString(L"text"));
+      return CJS_Result::Success(pRuntime->NewString("text"));
     case FormFieldType::kSignature:
-      return CJS_Result::Success(pRuntime->NewString(L"signature"));
+      return CJS_Result::Success(pRuntime->NewString("signature"));
     default:
-      return CJS_Result::Success(pRuntime->NewString(L"unknown"));
+      return CJS_Result::Success(pRuntime->NewString("unknown"));
   }
 }
 
@@ -2113,7 +2114,7 @@ CJS_Result CJS_Field::get_value(CJS_Runtime* pRuntime) {
         }
       }
       if (!bFind)
-        ret = pRuntime->NewString(L"Off");
+        ret = pRuntime->NewString("Off");
 
       break;
     }
@@ -2171,12 +2172,12 @@ CJS_Result CJS_Field::get_value_as_string(CJS_Runtime* pRuntime) {
             pFormField->GetControl(i)->GetExportValue().AsStringView()));
       }
     }
-    return CJS_Result::Success(pRuntime->NewString(L"Off"));
+    return CJS_Result::Success(pRuntime->NewString("Off"));
   }
 
   if (pFormField->GetFieldType() == FormFieldType::kListBox &&
       (pFormField->CountSelectedItems() > 1)) {
-    return CJS_Result::Success(pRuntime->NewString(L""));
+    return CJS_Result::Success(pRuntime->NewString(""));
   }
   return CJS_Result::Success(
       pRuntime->NewString(pFormField->GetValue().AsStringView()));
@@ -2564,15 +2565,6 @@ CJS_Result CJS_Field::signatureValidate(
     CJS_Runtime* pRuntime,
     const std::vector<v8::Local<v8::Value>>& params) {
   return CJS_Result::Failure(JSMessage::kNotSupportedError);
-}
-
-CJS_Result CJS_Field::get_source(CJS_Runtime* pRuntime) {
-  return CJS_Result::Success();
-}
-
-CJS_Result CJS_Field::set_source(CJS_Runtime* pRuntime,
-                                 v8::Local<v8::Value> vp) {
-  return CJS_Result::Success();
 }
 
 void CJS_Field::AddDelay_Int(FIELD_PROP prop, int32_t n) {

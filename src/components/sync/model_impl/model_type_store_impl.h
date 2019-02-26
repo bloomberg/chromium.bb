@@ -37,6 +37,9 @@ class ModelTypeStoreImpl : public ModelTypeStore {
   void ReadData(const IdList& id_list, ReadDataCallback callback) override;
   void ReadAllData(ReadAllDataCallback callback) override;
   void ReadAllMetadata(ReadMetadataCallback callback) override;
+  void ReadAllDataAndPreprocess(
+      PreprocessCallback preprocess_on_backend_sequence_callback,
+      CallbackWithResult completion_on_frontend_sequence_callback) override;
   std::unique_ptr<WriteBatch> CreateWriteBatch() override;
   void CommitWriteBatch(std::unique_ptr<WriteBatch> write_batch,
                         CallbackWithResult callback) override;
@@ -54,6 +57,8 @@ class ModelTypeStoreImpl : public ModelTypeStore {
   void ReadAllMetadataDone(ReadMetadataCallback callback,
                            std::unique_ptr<MetadataBatch> metadata_batch,
                            const base::Optional<ModelError>& error);
+  void ReadAllDataAndPreprocessDone(CallbackWithResult callback,
+                                    const base::Optional<ModelError>& error);
   void WriteModificationsDone(CallbackWithResult callback,
                               const base::Optional<ModelError>& error);
 

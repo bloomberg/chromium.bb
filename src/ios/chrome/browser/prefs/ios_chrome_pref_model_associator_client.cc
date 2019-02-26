@@ -33,3 +33,11 @@ bool IOSChromePrefModelAssociatorClient::IsMergeableDictionaryPreference(
   }
   return false;
 }
+
+std::unique_ptr<base::Value>
+IOSChromePrefModelAssociatorClient::MaybeMergePreferenceValues(
+    const std::string& pref_name,
+    const base::Value& local_value,
+    const base::Value& server_value) const {
+  return nullptr;
+}

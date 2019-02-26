@@ -9,6 +9,7 @@ text aom_codec_iface_name
 text aom_codec_version
 text aom_codec_version_extra_str
 text aom_codec_version_str
+text aom_free
 text aom_img_alloc
 text aom_img_alloc_with_border
 text aom_img_flip

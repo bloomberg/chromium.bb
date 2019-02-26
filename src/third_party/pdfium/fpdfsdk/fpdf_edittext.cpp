@@ -452,11 +452,7 @@ FPDFPageObj_NewTextObj(FPDF_DOCUMENT document,
 
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
 FPDFText_SetText(FPDF_PAGEOBJECT text_object, FPDF_WIDESTRING text) {
-  if (!text_object)
-    return false;
-
-  CPDF_TextObject* pTextObj =
-      CPDFPageObjectFromFPDFPageObject(text_object)->AsText();
+  CPDF_TextObject* pTextObj = CPDFTextObjectFromFPDFPageObject(text_object);
   if (!pTextObj)
     return false;
 
@@ -528,14 +524,7 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFText_GetMatrix(FPDF_PAGEOBJECT text,
   if (!pTextObj)
     return false;
 
-  CFX_Matrix text_matrix = pTextObj->GetTextMatrix();
-  *a = text_matrix.a;
-  *b = text_matrix.b;
-  *c = text_matrix.c;
-  *d = text_matrix.d;
-  *e = text_matrix.e;
-  *f = text_matrix.f;
-
+  std::tie(*a, *b, *c, *d, *e, *f) = pTextObj->GetTextMatrix().AsTuple();
   return true;
 }
 
@@ -614,9 +603,6 @@ FPDFPageObj_CreateTextObj(FPDF_DOCUMENT document,
 }
 
 FPDF_EXPORT int FPDF_CALLCONV FPDFText_GetTextRenderMode(FPDF_PAGEOBJECT text) {
-  if (!text)
-    return -1;
-
   CPDF_TextObject* pTextObj = CPDFTextObjectFromFPDFPageObject(text);
   if (!pTextObj)
     return -1;

@@ -13,13 +13,16 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/indexed_db_info.h"
+
+class GURL;
 
 namespace base {
 class SequencedTaskRunner;
 }
 
 namespace content {
+
+struct StorageUsageInfo;
 
 // Represents the per-BrowserContext IndexedDB data.
 // Call these methods only via the exposed TaskRunner.
@@ -29,7 +32,7 @@ class IndexedDBContext : public base::RefCountedThreadSafe<IndexedDBContext> {
   virtual base::SequencedTaskRunner* TaskRunner() const = 0;
 
   // Methods used in response to QuotaManager requests.
-  virtual std::vector<IndexedDBInfo> GetAllOriginsInfo() = 0;
+  virtual std::vector<StorageUsageInfo> GetAllOriginsInfo() = 0;
 
   // Deletes all indexed db files for the given origin.
   virtual void DeleteForOrigin(const GURL& origin_url) = 0;

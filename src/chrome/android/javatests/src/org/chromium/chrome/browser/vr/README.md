@@ -1,5 +1,15 @@
 # XR Instrumentation Tests
 
+## TL;DR For Most Local Repros
+
+1. Get a rooted Pixel device of some sort.
+2. Make sure "VR Services" is up to date in the Playstore.
+3. Run `ninja -C out/Debug chrome_public_test_vr_apk
+        && out/Debug/bin/run_chrome_public_test_vr_apk
+        --num-retries=0
+        --shared-prefs-file=//chrome/android/shared_preference_files/test/vr_ddview_skipdon_setupcomplete.json
+        --test-filter=<failing test case>`
+
 ## Introduction
 
 This directory contains all the Java-side infrastructure for running

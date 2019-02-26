@@ -93,7 +93,6 @@ class ASH_EXPORT NotifierSettingsView
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  views::ImageButton* title_arrow_;
   views::ImageView* quiet_mode_icon_;
   views::ToggleButton* quiet_mode_toggle_;
   views::View* header_view_;

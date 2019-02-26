@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/extensions/extension_installed_notification.h"
 
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -41,14 +42,14 @@ ExtensionInstalledNotification::ExtensionInstalledNotification(
     const extensions::Extension* extension, Profile* profile)
     : extension_id_(extension->id()), profile_(profile) {
   std::unique_ptr<message_center::Notification> notification =
-      message_center::Notification::CreateSystemNotification(
+      ash::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, extension_id_,
           base::UTF8ToUTF16(extension->name()),
           l10n_util::GetStringUTF16(IDS_EXTENSION_NOTIFICATION_INSTALLED),
           l10n_util::GetStringUTF16(IDS_EXTENSION_NOTIFICATION_DISPLAY_SOURCE),
           GURL(extension_urls::kChromeWebstoreBaseURL) /* origin_url */,
           message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT, kNotifierId),
+              message_center::NotifierType::SYSTEM_COMPONENT, kNotifierId),
           {}, this, ash::kNotificationInstalledIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
 

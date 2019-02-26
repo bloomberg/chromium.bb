@@ -25,18 +25,18 @@ namespace notifier {
 
 Login::Delegate::~Delegate() {}
 
-Login::Login(
-    Delegate* delegate,
-    const buzz::XmppClientSettings& user_settings,
-    const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
-    const ServerList& servers,
-    bool try_ssltcp_first,
-    const std::string& auth_mechanism,
-    const net::NetworkTrafficAnnotationTag& traffic_annotation,
-    network::NetworkConnectionTracker* network_connection_tracker)
+Login::Login(Delegate* delegate,
+             const buzz::XmppClientSettings& user_settings,
+             jingle_glue::GetProxyResolvingSocketFactoryCallback
+                 get_socket_factory_callback,
+             const ServerList& servers,
+             bool try_ssltcp_first,
+             const std::string& auth_mechanism,
+             const net::NetworkTrafficAnnotationTag& traffic_annotation,
+             network::NetworkConnectionTracker* network_connection_tracker)
     : delegate_(delegate),
       login_settings_(user_settings,
-                      request_context_getter,
+                      get_socket_factory_callback,
                       servers,
                       try_ssltcp_first,
                       auth_mechanism,

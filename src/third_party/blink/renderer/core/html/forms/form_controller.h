@@ -92,7 +92,11 @@ class DocumentState final : public GarbageCollected<DocumentState> {
 
 class FormController final : public GarbageCollectedFinalized<FormController> {
  public:
-  static FormController* Create() { return new FormController; }
+  static FormController* Create() {
+    return MakeGarbageCollected<FormController>();
+  }
+
+  FormController();
   ~FormController();
   void Trace(blink::Visitor*);
 
@@ -113,7 +117,6 @@ class FormController final : public GarbageCollectedFinalized<FormController> {
       const Vector<String>& state_vector);
 
  private:
-  FormController();
   FormControlState TakeStateForFormElement(
       const HTMLFormControlElementWithState&);
   static void FormStatesFromStateVector(const Vector<String>&,

@@ -76,12 +76,14 @@ const char kQuicUserAgentId[] = "user_agent_id";
 const char kQuicMigrateSessionsEarlyV2[] = "migrate_sessions_early_v2";
 const char kQuicRetryOnAlternateNetworkBeforeHandshake[] =
     "retry_on_alternate_network_before_handshake";
+const char kQuicRaceStaleDNSOnConnection[] = "race_stale_dns_on_connection";
 const char kQuicDisableBidirectionalStreams[] =
     "quic_disable_bidirectional_streams";
 const char kQuicRaceCertVerification[] = "race_cert_verification";
 const char kQuicHostWhitelist[] = "host_whitelist";
 const char kQuicEnableSocketRecvOptimization[] =
     "enable_socket_recv_optimization";
+const char kQuicVersion[] = "quic_version";
 
 // AsyncDNS experiment dictionary name.
 const char kAsyncDnsFieldTrialName[] = "AsyncDNS";
@@ -195,6 +197,29 @@ ParseNetworkErrorLoggingHeaders(
   return result;
 }
 
+quic::QuicTransportVersionVector ParseQuicVersions(
+    const std::string& quic_versions) {
+  quic::QuicTransportVersionVector supported_versions;
+  quic::QuicTransportVersionVector all_supported_versions =
+      quic::AllSupportedTransportVersions();
+
+  for (const base::StringPiece& version : base::SplitStringPiece(
+           quic_versions, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+    auto it = all_supported_versions.begin();
+    while (it != all_supported_versions.end()) {
+      if (quic::QuicVersionToString(*it) == version) {
+        supported_versions.push_back(*it);
+        // Remove the supported version to deduplicate versions extracted from
+        // |quic_versions|.
+        all_supported_versions.erase(it);
+        break;
+      }
+      ++it;
+    }
+  }
+  return supported_versions;
+}
+
 }  // namespace
 
 URLRequestContextConfig::QuicHint::QuicHint(const std::string& host,
@@ -302,6 +327,15 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
         effective_experimental_options->Remove(it.key(), nullptr);
         continue;
       }
+
+      std::string quic_version_string;
+      if (quic_args->GetString(kQuicVersion, &quic_version_string)) {
+        quic::QuicTransportVersionVector supported_versions =
+            ParseQuicVersions(quic_version_string);
+        if (!supported_versions.empty())
+          session_params->quic_supported_versions = supported_versions;
+      }
+
       std::string quic_connection_options;
       if (quic_args->GetString(kQuicConnectionOptions,
                                &quic_connection_options)) {
@@ -441,6 +475,13 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
               &quic_retry_on_alternate_network_before_handshake)) {
         session_params->quic_retry_on_alternate_network_before_handshake =
             quic_retry_on_alternate_network_before_handshake;
+      }
+
+      bool quic_race_stale_dns_on_connection = false;
+      if (quic_args->GetBoolean(kQuicRaceStaleDNSOnConnection,
+                                &quic_race_stale_dns_on_connection)) {
+        session_params->quic_race_stale_dns_on_connection =
+            quic_race_stale_dns_on_connection;
       }
 
       bool quic_disable_bidirectional_streams = false;

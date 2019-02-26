@@ -100,12 +100,13 @@ ash::mojom::UserSessionPtr UserToUserSession(const User& user) {
   session->user_info->display_email = user.display_email();
   session->user_info->is_ephemeral =
       UserManager::Get()->IsUserNonCryptohomeDataEphemeral(user.GetAccountId());
+  session->user_info->has_gaia_account = user.has_gaia_account();
   const AccountId& owner_id = UserManager::Get()->GetOwnerAccountId();
   session->user_info->is_device_owner =
       owner_id.is_valid() && owner_id == user.GetAccountId();
   if (profile) {
-    session->user_info->service_user_id =
-        content::BrowserContext::GetServiceUserIdFor(profile);
+    session->user_info->service_instance_group =
+        content::BrowserContext::GetServiceInstanceGroupFor(profile);
     session->user_info->is_new_profile = profile->IsNewProfile();
   }
 
@@ -473,8 +474,7 @@ void SessionControllerClient::OnSessionStateChanged() {
     // Assistant is initialized only once when primary user logs in.
     if (chromeos::switches::IsAssistantEnabled()) {
       AssistantClient::Get()->MaybeInit(
-          content::BrowserContext::GetConnectorFor(
-              ProfileManager::GetPrimaryUserProfile()));
+          ProfileManager::GetPrimaryUserProfile());
     }
 #endif
   }

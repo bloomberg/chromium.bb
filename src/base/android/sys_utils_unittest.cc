@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <unistd.h>
 
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {

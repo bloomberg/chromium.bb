@@ -14,7 +14,7 @@ namespace ash {
 // A notification counter view in UnifiedSystemTray button.
 class NotificationCounterView : public TrayItemView, public SessionObserver {
  public:
-  NotificationCounterView();
+  explicit NotificationCounterView(Shelf* shelf);
   ~NotificationCounterView() override;
 
   void Update();
@@ -35,7 +35,7 @@ class NotificationCounterView : public TrayItemView, public SessionObserver {
 // A do-not-distrub icon view in UnifiedSystemTray button.
 class QuietModeView : public TrayItemView, public SessionObserver {
  public:
-  QuietModeView();
+  explicit QuietModeView(Shelf* shelf);
   ~QuietModeView() override;
 
   void Update();

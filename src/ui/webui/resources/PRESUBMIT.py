@@ -61,8 +61,7 @@ def _CommonChecks(input_api, output_api):
     cwd = input_api.PresubmitLocalPath()
     sys.path += [input_api.os_path.join(cwd, '..', '..', '..', 'tools')]
     from web_dev_style import presubmit_support
-    BLACKLIST = ['ui/webui/resources/js/analytics.js',
-                 'ui/webui/resources/js/jstemplate_compiled.js']
+    BLACKLIST = ['ui/webui/resources/js/jstemplate_compiled.js']
     file_filter = lambda f: f.LocalPath() not in BLACKLIST
     results += presubmit_support.CheckStyle(input_api, output_api, file_filter)
   finally:

@@ -90,7 +90,8 @@ class SpdyProxyClientSocketTest : public PlatformTest,
                   base::span<const MockWrite> writes);
   void PopulateConnectRequestIR(spdy::SpdyHeaderBlock* syn_ir);
   void PopulateConnectReplyIR(spdy::SpdyHeaderBlock* block, const char* status);
-  spdy::SpdySerializedFrame ConstructConnectRequestFrame();
+  spdy::SpdySerializedFrame ConstructConnectRequestFrame(
+      RequestPriority priority);
   spdy::SpdySerializedFrame ConstructConnectAuthRequestFrame();
   spdy::SpdySerializedFrame ConstructConnectReplyFrame();
   spdy::SpdySerializedFrame ConstructConnectAuthReplyFrame();
@@ -353,10 +354,11 @@ void SpdyProxyClientSocketTest::PopulateConnectReplyIR(
 
 // Constructs a standard SPDY HEADERS frame for a CONNECT request.
 spdy::SpdySerializedFrame
-SpdyProxyClientSocketTest::ConstructConnectRequestFrame() {
+SpdyProxyClientSocketTest::ConstructConnectRequestFrame(
+    RequestPriority priority = LOWEST) {
   spdy::SpdyHeaderBlock block;
   PopulateConnectRequestIR(&block);
-  return spdy_util_.ConstructSpdyHeaders(kStreamId, std::move(block), LOWEST,
+  return spdy_util_.ConstructSpdyHeaders(kStreamId, std::move(block), priority,
                                          false);
 }
 
@@ -531,6 +533,25 @@ TEST_P(SpdyProxyClientSocketTest, ConnectFails) {
   AssertConnectFails(ERR_CONNECTION_CLOSED);
 
   ASSERT_FALSE(sock_->IsConnected());
+}
+
+TEST_P(SpdyProxyClientSocketTest, SetStreamPriority) {
+  spdy::SpdySerializedFrame conn(ConstructConnectRequestFrame(HIGHEST));
+  MockWrite writes[] = {
+      CreateMockWrite(conn, 0, SYNCHRONOUS),
+  };
+
+  spdy::SpdySerializedFrame resp(ConstructConnectReplyFrame());
+  MockRead reads[] = {
+      CreateMockRead(resp, 1, ASYNC),
+      MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2),
+  };
+
+  Initialize(reads, writes);
+
+  sock_->SetStreamPriority(HIGHEST);
+
+  AssertConnectSucceeds();
 }
 
 // ----------- WasEverUsed

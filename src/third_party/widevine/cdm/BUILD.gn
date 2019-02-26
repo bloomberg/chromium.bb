@@ -83,6 +83,7 @@ source_set("headers") {
 
   public_deps = [
     ":version_h",  # Forward permission to use version header.
+    "//base",
     "//media:media_buildflags",
   ]
 }

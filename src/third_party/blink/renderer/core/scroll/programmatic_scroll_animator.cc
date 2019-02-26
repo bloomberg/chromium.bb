@@ -134,7 +134,8 @@ void ProgrammaticScrollAnimator::UpdateCompositorAnimations() {
         !is_sequenced_scroll_) {
       std::unique_ptr<CompositorKeyframeModel> animation =
           CompositorKeyframeModel::Create(
-              *animation_curve_, CompositorTargetProperty::SCROLL_OFFSET, 0, 0);
+              *animation_curve_, compositor_target_property::SCROLL_OFFSET, 0,
+              0);
 
       int animation_id = animation->Id();
       int animation_group_id = animation->Group();

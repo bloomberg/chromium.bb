@@ -69,7 +69,7 @@ void XMLHttpRequestProgressEventThrottle::DeferredEvent::Clear() {
 Event* XMLHttpRequestProgressEventThrottle::DeferredEvent::Take() {
   DCHECK(is_set_);
 
-  Event* event = ProgressEvent::Create(EventTypeNames::progress,
+  Event* event = ProgressEvent::Create(event_type_names::kProgress,
                                        length_computable_, loaded_, total_);
   Clear();
   return event;
@@ -94,7 +94,7 @@ void XMLHttpRequestProgressEventThrottle::DispatchProgressEvent(
     unsigned long long total) {
   // Given that ResourceDispatcher doesn't deliver an event when suspended,
   // we don't have to worry about event dispatching while suspended.
-  if (type != EventTypeNames::progress) {
+  if (type != event_type_names::kProgress) {
     target_->DispatchEvent(
         *ProgressEvent::Create(type, length_computable, loaded, total));
     return;
@@ -104,7 +104,7 @@ void XMLHttpRequestProgressEventThrottle::DispatchProgressEvent(
     deferred_.Set(length_computable, loaded, total);
   } else {
     DispatchProgressProgressEvent(ProgressEvent::Create(
-        EventTypeNames::progress, length_computable, loaded, total));
+        event_type_names::kProgress, length_computable, loaded, total));
     StartOneShot(kMinimumProgressEventDispatchingInterval, FROM_HERE);
   }
 }
@@ -143,11 +143,11 @@ void XMLHttpRequestProgressEventThrottle::DispatchProgressProgressEvent(
   if (target_->readyState() == XMLHttpRequest::kLoading &&
       has_dispatched_progress_progress_event_) {
     TRACE_EVENT1("devtools.timeline", "XHRReadyStateChange", "data",
-                 InspectorXhrReadyStateChangeEvent::Data(
+                 inspector_xhr_ready_state_change_event::Data(
                      target_->GetExecutionContext(), target_));
     probe::AsyncTask async_task(target_->GetExecutionContext(), target_,
                                 "progress", target_->IsAsync());
-    target_->DispatchEvent(*Event::Create(EventTypeNames::readystatechange));
+    target_->DispatchEvent(*Event::Create(event_type_names::kReadystatechange));
   }
 
   if (target_->readyState() != state)

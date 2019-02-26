@@ -6,7 +6,7 @@
 
 #include <stdint.h>
 
-#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/traced_value.h"
 #include "cc/debug/debug_colors.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -49,8 +49,7 @@ void SurfaceLayerImpl::SetRange(const viz::SurfaceRange& surface_range,
         TRACE_ID_GLOBAL(
             surface_range.end().local_surface_id().embed_trace_id()),
         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
-        "ImplSetPrimarySurfaceId", "surface_id",
-        surface_range.end().ToString());
+        "ImplSetSurfaceId", "surface_id", surface_range.end().ToString());
   }
 
   if (surface_range.start() &&
@@ -61,7 +60,7 @@ void SurfaceLayerImpl::SetRange(const viz::SurfaceRange& surface_range,
         TRACE_ID_GLOBAL(
             surface_range.start()->local_surface_id().submission_trace_id()),
         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
-        "ImplSetFallbackSurfaceId", "surface_id",
+        "ImplSetOldestAcceptableFallback", "surface_id",
         surface_range.start()->ToString());
   }
 
@@ -180,7 +179,8 @@ viz::SurfaceDrawQuad* SurfaceLayerImpl::CreateSurfaceDrawQuad(
       render_pass->CreateAndAppendDrawQuad<viz::SurfaceDrawQuad>();
   surface_draw_quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect,
                             surface_range, background_color(),
-                            stretch_content_to_fill_bounds_);
+                            stretch_content_to_fill_bounds_,
+                            has_pointer_events_none_);
 
   return surface_draw_quad;
 }

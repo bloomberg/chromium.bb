@@ -44,7 +44,6 @@
 <translation id="1915828456209461693">Update baru untuk Chrome telah tersedia dan akan diterapkan segera setelah diluncurkan ulang.</translation>
 <translation id="1919130412786645364">Izinkan login Chrome</translation>
 <translation id="2063848847527508675">Chrome OS harus dimulai ulang untuk menerapkan pembaruan.</translation>
-<translation id="2084710999043359739">Tambahkan ke Chrome</translation>
 <translation id="2094919256425865063">Tetap tutup Chrome?</translation>
 <translation id="2120620239521071941">Tindakan ini akan menghapus <ph name="ITEMS_COUNT" /> item dari perangkat ini. Untuk mengambil data nanti, login ke Chrome sebagai <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Bantu Chrome jadi lebih baik dengan melaporkan <ph name="BEGIN_LINK" />setelan saat ini<ph name="END_LINK" /></translation>
@@ -61,9 +60,7 @@
 
 Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, histori, dan setelan lain ke <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2348335408836342058">Chrome memerlukan izin akses ke kamera dan mikrofon untuk situs ini</translation>
-<translation id="2397416548179033562">Tampilkan Menu Chrome</translation>
 <translation id="2429317896000329049">Google Chrome tidak dapat menyinkronkan data Anda karena Sinkronisasi tidak tersedia untuk domain Anda.</translation>
-<translation id="2436117022029368436">Berkomunikasi dengan Google untuk menyempurnakan browsing internet dan Chrome</translation>
 <translation id="2467438592969358367">Google Chrome ingin mengekspor sandi. Ketik sandi Windows Anda untuk mengizinkannya.</translation>
 <translation id="2485422356828889247">Uninstal</translation>
 <translation id="2534507159460261402">Google Pay (disalin ke Chrome)</translation>
@@ -140,14 +137,12 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="4600710005438004015">Chrome tidak dapat diupdate ke versi terbaru, sehingga Anda tidak mendapatkan perbaikan keamanan dan fitur baru.</translation>
 <translation id="4631713731678262610">Sembunyikan di menu Chrome</translation>
 <translation id="4633000520311261472">Agar Chrome lebih aman, kami menonaktifkan beberapa ekstensi yang tidak tercantum pada <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> dan mungkin telah ditambahkan tanpa sepengetahuan Anda.</translation>
-<translation id="4664415150087723341">Pembaruan keamanan khusus untuk Google Chrome baru saja diterapkan; mulai ulang Google Chrome sekarang agar pembaruan diterapkan (nanti kami akan memulihkan tab yang Anda buka).</translation>
 <translation id="4700157086864140907">Google Chrome dapat memberikan periksa-ejaan yang lebih pintar dengan mengirimkan apa yang Anda ketik di browser ke server Google sehingga memungkinkan Anda menggunakan teknologi periksa-ejaan yang sama seperti yang digunakan oleh Google penelusuran.</translation>
 <translation id="4728575227883772061">Penginstalan gagal karena kesalahan yang tidak diketahui. Jika Google Chrome sedang berjalan; tutup, lalu ulang kembali.</translation>
 <translation id="4750550185319565338">Muat ulang Chrome untuk mengaktifkan <ph name="PLUGIN_NAME" /></translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">File ini mungkin berbahaya, jadi Chrome telah memblokirnya.</translation>
 <translation id="4794050651896644714">Simpan detail di Chrome</translation>
-<translation id="4804732725083176494">Login ke Chrome dinonaktifkan oleh administrator perangkat ini.</translation>
 <translation id="4891791193823137474">Jalankan Google Chrome di latar belakang</translation>
 <translation id="4895437082222824641">Buka link di &amp;tab Chrome baru</translation>
 <translation id="4921569541910214635">Membagikan komputer? Kini Anda dapat menyiapkan Chrome seperti yang Anda inginkan.</translation>
@@ -217,7 +212,6 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="7242029209006116544">Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol atas profil Google Chrome Anda. Data Chrome Anda, seperti aplikasi, bookmark, histori, sandi, dan setelan lain selamanya akan dikaitkan ke <ph name="USER_NAME" />. Anda dapat menghapus data ini melalui Dasbor Akun Google, namun Anda tidak akan dapat mengaitkan data ini dengan akun yang lain. Anda dapat membuat profil baru secara opsional untuk menjaga agar data Chrome Anda tetap terpisah. <ph name="LEARN_MORE" /></translation>
 <translation id="7296210096911315575">Penggunaan penting dan informasi keamanan</translation>
 <translation id="7308322188646931570">Chrome memerlukan akses penyimpanan untuk mendownload file</translation>
-<translation id="7330164299247909639">Gagal mengautentikasi sertifikat. Harap login kembali ke Google Chrome sebagai <ph name="USER_NAME" /> atau hubungi administrator untuk informasi lebih lanjut. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">Jendela baru</translation>
 <translation id="7398801000654795464">Anda telah masuk ke Chrome sebagai <ph name="USER_EMAIL_ADDRESS" />. Gunakan akun yang sama untuk masuk kembali.</translation>
 <translation id="7408085963519505752">Persyaratan Chrome OS</translation>
@@ -262,8 +256,10 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="8380166467911888159">Untuk memperbaiki kesalahan ejaan, Chrome mengirimkan teks yang Anda ketik di kolom teks ke Google</translation>
 <translation id="840084489713044809">Google Chrome ingin mengekspor sandi.</translation>
 <translation id="8406086379114794905">Bantu kami membuat Chrome jadi lebih baik</translation>
+<translation id="8432724323949790809">Mulai ulang Google Chrome sekarang</translation>
 <translation id="8455999171311319804">Opsional: Bantu Chrome OS menjadi lebih baik dengan mengirimkan data diagnostik dan penggunaan secara otomatis ke Google.</translation>
 <translation id="8478823064122749032">Instal Chrome di ponsel. Kami akan mengirimkan SMS ke nomor telepon pemulihan akun Anda: <ph name="PHONE_NUMBER" /></translation>
+<translation id="8498858610309223613">Update keamanan khusus untuk Google Chrome baru saja diterapkan. Mulai ulang Google Chrome sekarang dan kami akan memulihkan tab Anda.</translation>
 <translation id="8521348052903287641">Inbound rule untuk Google Chrome Dev guna mengizinkan traffic mDNS.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8547799825197623713">Peluncur Aplikasi Chrome Canary</translation>
@@ -278,14 +274,12 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="873133009373065397">Google Chrome tidak dapat menentukan atau menyetel browser default</translation>
 <translation id="8736674169840206667">Administrator mengharuskan Anda meluncurkan ulang Chrome untuk menerapkan update</translation>
 <translation id="8791470158600044404">{0,plural, =1{Chrome OS akan dimulai ulang dalam 1 menit}other{Chrome OS akan dimulai ulang dalam # menit}}</translation>
-<translation id="8796108026289707191">Mulai ulang Google Chrome sekarang.</translation>
 <translation id="8823341990149967727">Chrome Terlalu Lawas</translation>
 <translation id="884296878221830158">Juga mengontrol halaman apa yang ditampilkan saat Anda memulai Chrome atau mengeklik tombol Beranda.</translation>
 <translation id="8862326446509486874">Anda tidak memiliki hak yang diperlukan untuk pemasangan tingkat sistem. Coba jalankan lagi pemasang saat masuk sebagai Administrator.</translation>
 <translation id="8914504000324227558">Luncurkan Ulang Chrome</translation>
 <translation id="9026991721384951619">Chrome OS tidak dapat menyinkronkan data karena detail ID masuk akun Anda belum diperbarui.</translation>
 <translation id="9067395829937117663">Google Chrome memerlukan Windows 7 atau lebih tinggi.</translation>
-<translation id="9084668267983921457">Gagal mengautentikasi sertifikat. Harap login kembali ke Google Chrome atau hubungi administrator untuk informasi lebih lanjut. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="909149346112452267">{0,plural, =1{Chrome OS akan dimulai ulang dalam 1 jam}other{Chrome OS akan dimulai ulang dalam # jam}}</translation>
 <translation id="911206726377975832">Hapus juga data browsing Anda?</translation>
 <translation id="9138603949443464873">Untuk menerapkan perubahan, luncurkan ulang Chrome</translation>

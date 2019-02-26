@@ -57,6 +57,7 @@ class MODULES_EXPORT NavigatorVibration final
 
   using VibrationPattern = Vector<unsigned>;
 
+  explicit NavigatorVibration(Navigator&);
   virtual ~NavigatorVibration();
 
   static NavigatorVibration& From(Navigator&);
@@ -69,8 +70,6 @@ class MODULES_EXPORT NavigatorVibration final
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit NavigatorVibration(Navigator&);
-
   // Inherited from ContextLifecycleObserver.
   void ContextDestroyed(ExecutionContext*) override;
 

@@ -5,8 +5,8 @@
 #include "third_party/blink/renderer/core/loader/base_fetch_context.h"
 
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
+#include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/core/frame/content_settings_client.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -41,7 +41,7 @@ const char* GetDestinationFromContext(mojom::RequestContextType context) {
     case mojom::RequestContextType::XML_HTTP_REQUEST:
     case mojom::RequestContextType::SUBRESOURCE:
     case mojom::RequestContextType::PREFETCH:
-      return "\"\"";
+      return "";
     case mojom::RequestContextType::CSP_REPORT:
       return "report";
     case mojom::RequestContextType::AUDIO:
@@ -118,12 +118,13 @@ void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
     // no matter what now.
     if (!request.DidSetHTTPReferrer()) {
       String referrer_to_use = request.ReferrerString();
-      ReferrerPolicy referrer_policy_to_use = request.GetReferrerPolicy();
+      network::mojom::ReferrerPolicy referrer_policy_to_use =
+          request.GetReferrerPolicy();
 
       if (referrer_to_use == Referrer::ClientReferrerString())
         referrer_to_use = GetFetchClientSettingsObject()->GetOutgoingReferrer();
 
-      if (referrer_policy_to_use == kReferrerPolicyDefault) {
+      if (referrer_policy_to_use == network::mojom::ReferrerPolicy::kDefault) {
         referrer_policy_to_use =
             GetFetchClientSettingsObject()->GetReferrerPolicy();
       }
@@ -150,6 +151,12 @@ void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
   if (blink::RuntimeEnabledFeatures::SecMetadataEnabled()) {
     const char* destination_value =
         GetDestinationFromContext(request.GetRequestContext());
+
+    // If the request's destination is the empty string (e.g. `fetch()`), then
+    // we'll use the identifier "empty" instead.
+    if (strlen(destination_value) == 0)
+      destination_value = "empty";
+
     // We'll handle adding the header to navigations outside of Blink.
     if (strncmp(destination_value, "document", 8) != 0 &&
         request.GetRequestContext() != mojom::RequestContextType::INTERNAL) {
@@ -160,7 +167,8 @@ void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
       } else {
         OriginAccessEntry access_entry(
             request.Url().Protocol(), request.Url().Host(),
-            network::cors::OriginAccessEntry::kAllowRegisterableDomains);
+            network::mojom::CorsOriginAccessMatchMode::
+                kAllowRegisterableDomains);
         if (access_entry.MatchesOrigin(*GetSecurityOrigin()) ==
             network::cors::OriginAccessEntry::kMatchesOrigin) {
           site_value = "same-site";
@@ -318,14 +326,14 @@ BaseFetchContext::CanRequestInternal(
   }
 
   if (request_mode == network::mojom::FetchRequestMode::kSameOrigin &&
-      CORS::CalculateCORSFlag(url, origin.get(), request_mode)) {
+      cors::CalculateCorsFlag(url, origin.get(), request_mode)) {
     PrintAccessDeniedMessage(url);
     return ResourceRequestBlockedReason::kOrigin;
   }
 
   // User Agent CSS stylesheets should only support loading images and should be
   // restricted to data urls.
-  if (options.initiator_info.name == FetchInitiatorTypeNames::uacss) {
+  if (options.initiator_info.name == fetch_initiator_type_names::kUacss) {
     if (type == ResourceType::kImage && url.ProtocolIsData()) {
       return base::nullopt;
     }

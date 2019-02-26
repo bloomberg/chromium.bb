@@ -38,6 +38,7 @@
 #include "chrome/browser/page_load_metrics/observers/security_state_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/service_worker_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/signed_exchange_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/stale_while_revalidate_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/tab_restore_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/ukm_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/use_counter_page_load_metrics_observer.h"
@@ -157,6 +158,8 @@ void PageLoadMetricsEmbedder::RegisterObservers(
 #endif
     tracker->AddObserver(
         std::make_unique<LocalNetworkRequestsPageLoadMetricsObserver>());
+    tracker->AddObserver(
+        std::make_unique<StaleWhileRevalidatePageLoadMetricsObserver>());
   } else {
     std::unique_ptr<page_load_metrics::PageLoadMetricsObserver>
         prerender_observer =

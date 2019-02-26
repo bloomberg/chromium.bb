@@ -47,16 +47,15 @@ class SVGAnimatedPath final : public GarbageCollectedFinalized<SVGAnimatedPath>,
       SVGElement* context_element,
       const QualifiedName& attribute_name,
       CSSPropertyID css_property_id = CSSPropertyInvalid) {
-    return new SVGAnimatedPath(context_element, attribute_name,
-                               css_property_id);
+    return MakeGarbageCollected<SVGAnimatedPath>(
+        context_element, attribute_name, css_property_id);
   }
 
-  const CSSValue& CssValue() const;
-
- protected:
   SVGAnimatedPath(SVGElement*,
                   const QualifiedName&,
                   CSSPropertyID = CSSPropertyInvalid);
+
+  const CSSValue& CssValue() const;
 };
 
 }  // namespace blink

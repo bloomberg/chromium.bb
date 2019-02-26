@@ -113,6 +113,8 @@ blink_core_sources("svg") {
     "svg_ellipse_element.h",
     "svg_enumeration.cc",
     "svg_enumeration.h",
+    "svg_enumeration_map.cc",
+    "svg_enumeration_map.h",
     "svg_fe_blend_element.cc",
     "svg_fe_blend_element.h",
     "svg_fe_color_matrix_element.cc",

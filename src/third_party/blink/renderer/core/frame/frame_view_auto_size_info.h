@@ -19,8 +19,10 @@ class FrameViewAutoSizeInfo final
     : public GarbageCollected<FrameViewAutoSizeInfo> {
  public:
   static FrameViewAutoSizeInfo* Create(LocalFrameView* frame_view) {
-    return new FrameViewAutoSizeInfo(frame_view);
+    return MakeGarbageCollected<FrameViewAutoSizeInfo>(frame_view);
   }
+
+  explicit FrameViewAutoSizeInfo(LocalFrameView*);
 
   void ConfigureAutoSizeMode(const IntSize& min_size, const IntSize& max_size);
   void AutoSizeIfNeeded();
@@ -28,8 +30,6 @@ class FrameViewAutoSizeInfo final
   void Trace(blink::Visitor*);
 
  private:
-  explicit FrameViewAutoSizeInfo(LocalFrameView*);
-
   Member<LocalFrameView> frame_view_;
 
   // The lower bound on the size when autosizing.

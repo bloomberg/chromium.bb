@@ -17,9 +17,8 @@ TellAction::TellAction(const ActionProto& proto) : Action(proto) {
 
 TellAction::~TellAction() {}
 
-void TellAction::ProcessAction(ActionDelegate* delegate,
-                               ProcessActionCallback callback) {
-  processed_action_proto_ = std::make_unique<ProcessedActionProto>();
+void TellAction::InternalProcessAction(ActionDelegate* delegate,
+                                       ProcessActionCallback callback) {
   // tell.message in the proto is localized.
   delegate->ShowStatusMessage(proto_.tell().message());
   UpdateProcessedAction(ACTION_APPLIED);

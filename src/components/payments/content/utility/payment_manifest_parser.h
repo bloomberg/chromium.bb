@@ -21,6 +21,8 @@
 
 namespace payments {
 
+class ErrorLogger;
+
 // Parser for payment method manifests and web app manifests.
 //
 // Example 1 of valid payment method manifest structure:
@@ -98,7 +100,7 @@ class PaymentManifestParser {
       base::OnceCallback<void(std::unique_ptr<WebAppInstallationInfo>,
                               std::unique_ptr<std::vector<WebAppIcon>>)>;
 
-  PaymentManifestParser();
+  explicit PaymentManifestParser(std::unique_ptr<ErrorLogger> log);
   ~PaymentManifestParser();
 
   void ParsePaymentMethodManifest(const std::string& content,
@@ -115,25 +117,37 @@ class PaymentManifestParser {
   // Visible for tests.
   static void ParsePaymentMethodManifestIntoVectors(
       std::unique_ptr<base::Value> value,
+      const ErrorLogger& log,
       std::vector<GURL>* web_app_manifest_urls,
       std::vector<url::Origin>* supported_origins,
       bool* all_origins_supported);
 
   static bool ParseWebAppManifestIntoVector(
       std::unique_ptr<base::Value> value,
+      const ErrorLogger& log,
       std::vector<WebAppManifestSection>* output);
+
+  static bool ParseWebAppInstallationInfoIntoStructs(
+      std::unique_ptr<base::Value> value,
+      const ErrorLogger& log,
+      WebAppInstallationInfo* installation_info,
+      std::vector<WebAppIcon>* icons);
 
  private:
   void OnPaymentMethodParse(PaymentMethodCallback callback,
-                            std::unique_ptr<base::Value> value);
+                            std::unique_ptr<base::Value> value,
+                            const std::string& json_parser_error);
   void OnWebAppParse(WebAppCallback callback,
-                     std::unique_ptr<base::Value> value);
+                     std::unique_ptr<base::Value> value,
+                     const std::string& json_parser_error);
   void OnWebAppParseInstallationInfo(WebAppInstallationInfoCallback callback,
-                                     std::unique_ptr<base::Value> value);
+                                     std::unique_ptr<base::Value> value,
+                                     const std::string& json_parser_error);
 
   int64_t parse_payment_callback_counter_ = 0;
   int64_t parse_webapp_callback_counter_ = 0;
 
+  std::unique_ptr<ErrorLogger> log_;
   base::WeakPtrFactory<PaymentManifestParser> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentManifestParser);

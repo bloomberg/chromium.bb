@@ -578,7 +578,7 @@ public class ImeTest {
     @SmallTest
     @Feature({"TextInput"})
     public void testKeyboardNotDismissedAfterCopySelection() throws Exception {
-        mRule.commitText("Sample Text", 1);
+        mRule.commitText("Sample_Text", 1);
         mRule.waitAndVerifyUpdateSelection(0, 11, 11, -1, -1);
 
         // Select 'text' part.
@@ -588,7 +588,7 @@ public class ImeTest {
 
         mRule.selectAll();
         mRule.copy();
-        mRule.assertClipboardContents(mRule.getActivity(), "Sample Text");
+        mRule.assertClipboardContents(mRule.getActivity(), "Sample_Text");
         Assert.assertEquals(11, mRule.getInputMethodManagerWrapper().getSelection().end());
         mRule.assertWaitForKeyboardStatus(true);
     }
@@ -597,7 +597,7 @@ public class ImeTest {
     @SmallTest
     @Feature({"TextInput"})
     public void testImeNotDismissedAfterCutSelection() throws Exception {
-        mRule.commitText("Sample Text", 1);
+        mRule.commitText("Sample_Text", 1);
         mRule.waitAndVerifyUpdateSelection(0, 11, 11, -1, -1);
         DOMUtils.longPressNode(mRule.getWebContents(), "input_text");
         mRule.assertWaitForSelectActionBarStatus(true);
@@ -614,7 +614,7 @@ public class ImeTest {
         DOMUtils.focusNode(mRule.getWebContents(), "input_radio");
         DOMUtils.longPressNode(mRule.getWebContents(), "input_text");
         mRule.assertWaitForKeyboardStatus(false);
-        mRule.commitText("Sample Text", 1);
+        mRule.commitText("Sample_Text", 1);
         DOMUtils.longPressNode(mRule.getWebContents(), "input_text");
         mRule.assertWaitForKeyboardStatus(true);
     }
@@ -625,7 +625,7 @@ public class ImeTest {
     public void testSelectActionBarShownOnLongPressingInput() throws Exception {
         DOMUtils.longPressNode(mRule.getWebContents(), "input_text");
         mRule.assertWaitForSelectActionBarStatus(false);
-        mRule.commitText("Sample Text", 1);
+        mRule.commitText("Sample_Text", 1);
         DOMUtils.longPressNode(mRule.getWebContents(), "input_text");
         mRule.assertWaitForSelectActionBarStatus(true);
     }
@@ -635,21 +635,21 @@ public class ImeTest {
     @Feature({"TextInput"})
     public void testLongPressInputWhileComposingText() throws Exception {
         mRule.assertWaitForSelectActionBarStatus(false);
-        mRule.setComposingText("Sample Text", 1);
-        mRule.waitAndVerifyUpdateSelection(0, 11, 11, 0, 11);
+        mRule.setComposingText("SampleTextThatIsVeryLong Test", 1);
+        mRule.waitAndVerifyUpdateSelection(0, 29, 29, 0, 29);
         DOMUtils.longPressNode(mRule.getWebContents(), "input_text");
 
         mRule.assertWaitForSelectActionBarStatus(true);
 
         // Long press will first change selection region, and then trigger IME app to show up.
         // See RenderFrameImpl::didChangeSelection() and RenderWidget::didHandleGestureEvent().
-        mRule.waitAndVerifyUpdateSelection(1, 7, 11, 0, 11);
+        mRule.waitAndVerifyUpdateSelection(1, 0, 24, 0, 29);
 
         // Now IME app wants to finish composing text because an external selection
         // change has been detected. At least Google Latin IME and Samsung IME
         // behave this way.
         mRule.finishComposingText();
-        mRule.waitAndVerifyUpdateSelection(2, 7, 11, -1, -1);
+        mRule.waitAndVerifyUpdateSelection(2, 0, 24, -1, -1);
     }
 
     @Test
@@ -657,7 +657,7 @@ public class ImeTest {
     @Feature({"TextInput"})
     public void testImeShownWhenLongPressOnAlreadySelectedText() throws Exception {
         mRule.assertWaitForSelectActionBarStatus(false);
-        mRule.commitText("Sample Text", 1);
+        mRule.commitText("Sample_Text", 1);
 
         int showCount = mRule.getInputMethodManagerWrapper().getShowSoftInputCounter();
         DOMUtils.longPressNode(mRule.getWebContents(), "input_text");
@@ -722,7 +722,7 @@ public class ImeTest {
     @SmallTest
     @Feature({"TextInput"})
     public void testSelectActionBarClearedOnTappingInput() throws Exception {
-        mRule.commitText("Sample Text", 1);
+        mRule.commitText("Sample_Text", 1);
         DOMUtils.longPressNode(mRule.getWebContents(), "input_text");
         mRule.assertWaitForKeyboardStatus(true);
         mRule.assertWaitForSelectActionBarStatus(true);
@@ -734,7 +734,7 @@ public class ImeTest {
     @SmallTest
     @Feature({"TextInput"})
     public void testSelectActionBarClearedOnTappingOutsideInput() throws Exception {
-        mRule.commitText("Sample Text", 1);
+        mRule.commitText("Sample_Text", 1);
         DOMUtils.longPressNode(mRule.getWebContents(), "input_text");
         mRule.assertWaitForKeyboardStatus(true);
         mRule.assertWaitForSelectActionBarStatus(true);
@@ -768,14 +768,14 @@ public class ImeTest {
         DOMUtils.focusNode(mRule.getWebContents(), "input_text");
         mRule.assertWaitForKeyboardStatus(true);
 
-        mRule.commitText("Sample Text", 1);
+        mRule.commitText("Sample_Text", 1);
         // We should wait to avoid race condition.
         mRule.waitAndVerifyUpdateSelection(0, 11, 11, -1, -1);
 
         DOMUtils.focusNode(mRule.getWebContents(), "textarea");
         mRule.waitAndVerifyUpdateSelection(1, 0, 0, -1, -1);
 
-        mRule.commitText("Sample Text", 1);
+        mRule.commitText("Sample_Text", 1);
         mRule.waitAndVerifyUpdateSelection(2, 11, 11, -1, -1);
 
         DOMUtils.longPressNode(mRule.getWebContents(), "input_text");
@@ -1321,7 +1321,7 @@ public class ImeTest {
     @SmallTest
     @Feature({"TextInput"})
     public void testSelectionClearedOnKeyEvent() throws Throwable {
-        mRule.commitText("Sample Text", 1);
+        mRule.commitText("Sample_Text", 1);
         mRule.waitAndVerifyUpdateSelection(0, 11, 11, -1, -1);
 
         DOMUtils.longPressNode(mRule.getWebContents(), "input_text");

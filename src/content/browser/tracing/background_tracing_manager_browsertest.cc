@@ -394,8 +394,10 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     wait_for_tracing.Run();
   }
 
-  TRACE_EVENT1("benchmark", "whitelisted", "find_this", 1);
-  TRACE_EVENT1("benchmark", "not_whitelisted", "this_not_found", 1);
+  {
+    TRACE_EVENT1("benchmark", "whitelisted", "find_this", 1);
+    TRACE_EVENT1("benchmark", "not_whitelisted", "this_not_found", 1);
+  }
 
   BackgroundTracingManager::GetInstance()->WhenIdle(
       base::Bind(&DisableScenarioWhenIdle));

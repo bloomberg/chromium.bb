@@ -31,15 +31,15 @@ namespace blink {
 
 SpeechRecognitionEvent* SpeechRecognitionEvent::Create(
     const AtomicString& event_name,
-    const SpeechRecognitionEventInit& initializer) {
-  return new SpeechRecognitionEvent(event_name, initializer);
+    const SpeechRecognitionEventInit* initializer) {
+  return MakeGarbageCollected<SpeechRecognitionEvent>(event_name, initializer);
 }
 
 SpeechRecognitionEvent* SpeechRecognitionEvent::CreateResult(
     uint32_t result_index,
     const HeapVector<Member<SpeechRecognitionResult>>& results) {
-  return new SpeechRecognitionEvent(
-      EventTypeNames::result, result_index,
+  return MakeGarbageCollected<SpeechRecognitionEvent>(
+      event_type_names::kResult, result_index,
       SpeechRecognitionResultList::Create(results));
 }
 
@@ -48,26 +48,27 @@ SpeechRecognitionEvent* SpeechRecognitionEvent::CreateNoMatch(
   if (result) {
     HeapVector<Member<SpeechRecognitionResult>> results;
     results.push_back(result);
-    return new SpeechRecognitionEvent(
-        EventTypeNames::nomatch, 0,
+    return MakeGarbageCollected<SpeechRecognitionEvent>(
+        event_type_names::kNomatch, 0,
         SpeechRecognitionResultList::Create(results));
   }
 
-  return new SpeechRecognitionEvent(EventTypeNames::nomatch, 0, nullptr);
+  return MakeGarbageCollected<SpeechRecognitionEvent>(
+      event_type_names::kNomatch, 0, nullptr);
 }
 
 const AtomicString& SpeechRecognitionEvent::InterfaceName() const {
-  return EventNames::SpeechRecognitionEvent;
+  return event_interface_names::kSpeechRecognitionEvent;
 }
 
 SpeechRecognitionEvent::SpeechRecognitionEvent(
     const AtomicString& event_name,
-    const SpeechRecognitionEventInit& initializer)
+    const SpeechRecognitionEventInit* initializer)
     : Event(event_name, initializer), result_index_(0) {
-  if (initializer.hasResultIndex())
-    result_index_ = initializer.resultIndex();
-  if (initializer.hasResults())
-    results_ = initializer.results();
+  if (initializer->hasResultIndex())
+    result_index_ = initializer->resultIndex();
+  if (initializer->hasResults())
+    results_ = initializer->results();
 }
 
 SpeechRecognitionEvent::SpeechRecognitionEvent(

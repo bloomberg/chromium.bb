@@ -73,6 +73,31 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
 
     return bucket
 
+  def _FindMostRecentBotId(self, build_config, branch):
+    buildbucket_client = self.GetBuildbucketClient()
+    if not buildbucket_client:
+      logging.info('No buildbucket_client, no bot found.')
+      return None
+
+    previous_builds = buildbucket_client.SearchAllBuilds(
+        self._run.options.debug,
+        buckets=constants.ACTIVE_BUCKETS,
+        limit=1,
+        tags=['cbb_config:%s' % build_config,
+              'cbb_branch:%s' % branch],
+        status=constants.BUILDBUCKET_BUILDER_STATUS_COMPLETED)
+
+    if not previous_builds:
+      logging.info('No previous build found, no bot found.')
+      return None
+
+    bot_id = buildbucket_lib.GetBotId(previous_builds[0])
+    if not bot_id:
+      logging.info('Previous build has no bot.')
+      return None
+
+    return bot_id
+
   def PostSlaveBuildToBuildbucket(self, build_name, build_config,
                                   master_build_id, master_buildbucket_id,
                                   dryrun=False):
@@ -94,12 +119,21 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
     bucket = self._GetBuildbucketBucket(build_name, build_config)
 
     luci_builder = None
-    if bucket != constants.INTERNAL_SWARMING_BUILDBUCKET_BUCKET:
+    requested_bot = None
+    if bucket == constants.INTERNAL_SWARMING_BUILDBUCKET_BUCKET:
+      if build_config.build_affinity:
+        requested_bot = self._FindMostRecentBotId(build_config.name,
+                                                  self._run.manifest_branch)
+    else:
       # If it's not a swarming build, we must explicitly set this to the
       # waterfall column name.
       current_buildername = os.environ.get('BUILDBOT_BUILDERNAME', None)
       luci_builder = BuilderName(
           build_name, build_config.active_waterfall, current_buildername)
+
+    if requested_bot:
+      logging.info('Requesting build affinity for %s against %s',
+                   build_config.name, requested_bot)
 
     request = request_build.RequestBuild(
         build_config=build_name,
@@ -109,7 +143,9 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
         master_cidb_id=master_build_id,
         master_buildbucket_id=master_buildbucket_id,
         bucket=bucket,
-        extra_args=['--buildbot'])  # TODO: This shouldn't be hard coded here.
+        extra_args=['--buildbot'],
+        requested_bot=requested_bot,
+    )
     result = request.Submit(dryrun=dryrun)
 
     logging.info('Build_name %s buildbucket_id %s created_timestamp %s',

@@ -50,7 +50,7 @@ DOMWindowSpeechSynthesis& DOMWindowSpeechSynthesis::From(
   DOMWindowSpeechSynthesis* supplement =
       Supplement<LocalDOMWindow>::From<DOMWindowSpeechSynthesis>(window);
   if (!supplement) {
-    supplement = new DOMWindowSpeechSynthesis(window);
+    supplement = MakeGarbageCollected<DOMWindowSpeechSynthesis>(window);
     ProvideTo(window, supplement);
   }
   return *supplement;

@@ -8,8 +8,8 @@
 // DO NOT MODIFY!
 
 // clang-format off
-#ifndef TestPermissiveDictionary_h
-#define TestPermissiveDictionary_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_TEST_PERMISSIVE_DICTIONARY_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_TEST_PERMISSIVE_DICTIONARY_H_
 
 #include "third_party/blink/renderer/bindings/core/v8/idl_dictionary_base.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -18,12 +18,11 @@
 namespace blink {
 
 class CORE_EXPORT TestPermissiveDictionary : public IDLDictionaryBase {
-  DISALLOW_NEW();
  public:
+  static TestPermissiveDictionary* Create() { return MakeGarbageCollected<TestPermissiveDictionary>(); }
+
   TestPermissiveDictionary();
   virtual ~TestPermissiveDictionary();
-  TestPermissiveDictionary(const TestPermissiveDictionary&);
-  TestPermissiveDictionary& operator=(const TestPermissiveDictionary&);
 
   bool hasBooleanMember() const { return has_boolean_member_; }
   bool booleanMember() const {
@@ -50,4 +49,4 @@ void TestPermissiveDictionary::setBooleanMember(bool value) {
 
 }  // namespace blink
 
-#endif  // TestPermissiveDictionary_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_TEST_PERMISSIVE_DICTIONARY_H_

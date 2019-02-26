@@ -324,6 +324,11 @@ class BluetoothTestBase : public testing::Test {
   // SimulateGattDisconnection(device).
   virtual void SimulateDeviceBreaksConnection(BluetoothDevice* device);
 
+  // Simulates a device changing its name property while a GATT connection is
+  // open.
+  virtual void SimulateGattNameChange(BluetoothDevice* device,
+                                      const std::string& new_name) {}
+
   // Simulates success of discovering services. |uuids| is used to create a
   // service for each UUID string. Multiple UUIDs with the same value produce
   // multiple service instances.

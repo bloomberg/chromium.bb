@@ -2,7 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * @type {Element}
+ */
 var spinner;
+
+/**
+ * @type {SpinnerController}
+ */
 var controller;
 
 function waitForMutation(target) {
@@ -16,8 +23,11 @@ function waitForMutation(target) {
 }
 
 function setUp() {
-  spinner = document.querySelector('#spinner');
-  controller = new SpinnerController(spinner);
+  spinner = document.createElement('div');
+  spinner.id = 'spinner';
+  spinner.textContent = 'LOADING...';
+  spinner.hidden = true;
+  controller = new SpinnerController(assert(spinner));
   // Set the duration to 100ms, which is short enough, but also long enough
   // to happen later than 0ms timers used in test cases.
   controller.setBlinkDurationForTesting(100);

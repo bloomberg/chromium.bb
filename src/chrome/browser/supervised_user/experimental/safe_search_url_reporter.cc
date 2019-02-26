@@ -9,13 +9,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
-#include "components/signin/core/browser/signin_manager_base.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -23,6 +19,9 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/identity/public/cpp/access_token_fetcher.h"
+#include "services/identity/public/cpp/access_token_info.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -41,7 +40,8 @@ struct SafeSearchURLReporter::Report {
 
   GURL url;
   SuccessCallback callback;
-  std::unique_ptr<OAuth2TokenService::Request> access_token_request;
+  std::unique_ptr<identity::AccessTokenFetcher> access_token_fetcher;
+
   std::string access_token;
   bool access_token_expired;
   std::unique_ptr<network::SimpleURLLoader> simple_url_loader;
@@ -53,11 +53,10 @@ SafeSearchURLReporter::Report::Report(const GURL& url, SuccessCallback callback)
 SafeSearchURLReporter::Report::~Report() {}
 
 SafeSearchURLReporter::SafeSearchURLReporter(
-    OAuth2TokenService* oauth2_token_service,
+    identity::IdentityManager* identity_manager,
     const std::string& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-    : OAuth2TokenService::Consumer("safe_search_url_reporter"),
-      oauth2_token_service_(oauth2_token_service),
+    : identity_manager_(identity_manager),
       account_id_(account_id),
       url_loader_factory_(std::move(url_loader_factory)) {}
 
@@ -66,11 +65,9 @@ SafeSearchURLReporter::~SafeSearchURLReporter() {}
 // static
 std::unique_ptr<SafeSearchURLReporter> SafeSearchURLReporter::CreateWithProfile(
     Profile* profile) {
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-  SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile);
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
   return base::WrapUnique(new SafeSearchURLReporter(
-      token_service, signin->GetAuthenticatedAccountId(),
+      identity_manager, identity_manager->GetPrimaryAccountId(),
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetURLLoaderFactoryForBrowserProcess()));
 }
@@ -82,24 +79,40 @@ void SafeSearchURLReporter::ReportUrl(const GURL& url,
 }
 
 void SafeSearchURLReporter::StartFetching(Report* report) {
-  OAuth2TokenService::ScopeSet scopes;
+  identity::ScopeSet scopes;
   scopes.insert(kSafeSearchReportApiScope);
-  report->access_token_request =
-      oauth2_token_service_->StartRequest(account_id_, scopes, this);
+  // It is safe to use Unretained(this) here given that the callback
+  // will not be invoke if this object is deleted. Likewise, |report|
+  // only comes from |reports_|, which are owned by this object too.
+  report->access_token_fetcher =
+      identity_manager_->CreateAccessTokenFetcherForAccount(
+          account_id_, "safe_search_url_reporter", scopes,
+          base::BindOnce(&SafeSearchURLReporter::OnAccessTokenFetchComplete,
+                         base::Unretained(this), report),
+          identity::AccessTokenFetcher::Mode::kImmediate);
 }
 
-void SafeSearchURLReporter::OnGetTokenSuccess(
-    const OAuth2TokenService::Request* request,
-    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
+void SafeSearchURLReporter::OnAccessTokenFetchComplete(
+    Report* report,
+    GoogleServiceAuthError error,
+    identity::AccessTokenInfo token_info) {
   auto it = reports_.begin();
   while (it != reports_.end()) {
-    if (request == (*it)->access_token_request.get())
+    if (report->access_token_fetcher.get() ==
+        (*it)->access_token_fetcher.get()) {
       break;
+    }
     it++;
   }
   DCHECK(it != reports_.end());
 
-  (*it)->access_token = token_response.access_token;
+  if (error.state() != GoogleServiceAuthError::NONE) {
+    LOG(WARNING) << "Token error: " << error.ToString();
+    DispatchResult(it, false);
+    return;
+  }
+
+  (*it)->access_token = token_info.token;
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("safe_search_url_reporter", R"(
@@ -134,7 +147,7 @@ void SafeSearchURLReporter::OnGetTokenSuccess(
   resource_request->headers.SetHeader(
       net::HttpRequestHeaders::kAuthorization,
       base::StringPrintf(supervised_users::kAuthorizationHeaderFormat,
-                         token_response.access_token.c_str()));
+                         token_info.token.c_str()));
   (*it)->simple_url_loader = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
 
@@ -155,20 +168,6 @@ void SafeSearchURLReporter::OnGetTokenSuccess(
                      base::Unretained(this), std::move(it)));
 }
 
-void SafeSearchURLReporter::OnGetTokenFailure(
-    const OAuth2TokenService::Request* request,
-    const GoogleServiceAuthError& error) {
-  auto it = reports_.begin();
-  while (it != reports_.end()) {
-    if (request == (*it)->access_token_request.get())
-      break;
-    it++;
-  }
-  DCHECK(it != reports_.end());
-  LOG(WARNING) << "Token error: " << error.ToString();
-  DispatchResult(it, false);
-}
-
 void SafeSearchURLReporter::OnSimpleLoaderComplete(
     ReportList::iterator it,
     std::unique_ptr<std::string> response_body) {
@@ -183,10 +182,10 @@ void SafeSearchURLReporter::OnSimpleLoaderComplete(
   if (response_code == net::HTTP_UNAUTHORIZED &&
       !report->access_token_expired) {
     (*it)->access_token_expired = true;
-    OAuth2TokenService::ScopeSet scopes;
+    identity::ScopeSet scopes;
     scopes.insert(kSafeSearchReportApiScope);
-    oauth2_token_service_->InvalidateAccessToken(account_id_, scopes,
-                                                 report->access_token);
+    identity_manager_->RemoveAccessTokenFromCache(account_id_, scopes,
+                                                  report->access_token);
     StartFetching(report);
     return;
   }

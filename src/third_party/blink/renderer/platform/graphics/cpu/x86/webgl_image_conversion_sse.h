@@ -12,7 +12,7 @@
 
 namespace blink {
 
-namespace SIMD {
+namespace simd {
 
 ALWAYS_INLINE void UnpackOneRowOfRGBA4444LittleToRGBA8(
     const uint16_t*& source,
@@ -192,7 +192,7 @@ ALWAYS_INLINE void PackOneRowOfRGBA8LittleToRGBA8(const uint8_t* source,
   }
 }
 
-}  // namespace SIMD
+}  // namespace simd
 }  // namespace blink
 
 #endif  // ARCH_CPU_X86_FAMILY

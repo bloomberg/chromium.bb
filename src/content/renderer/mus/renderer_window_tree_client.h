@@ -110,6 +110,7 @@ class RendererWindowTreeClient : public ws::mojom::WindowTreeClient,
   // these will remain unimplemented in the long-term. Some of the
   // implementations would require some amount of refactoring out of
   // RenderWidget and related classes (e.g. resize, input, ime etc.).
+  void OnClientId(uint32_t client_id) override;
   void OnEmbed(
       ws::mojom::WindowDataPtr root,
       ws::mojom::WindowTreePtr tree,
@@ -169,10 +170,8 @@ class RendererWindowTreeClient : public ws::mojom::WindowTreeClient,
                           ws::Id window_id,
                           int64_t display_id,
                           std::unique_ptr<ui::Event> event,
-                          bool matches_pointer_watcher) override;
-  void OnPointerEventObserved(std::unique_ptr<ui::Event> event,
-                              ws::Id window_id,
-                              int64_t display_id) override;
+                          bool matches_event_observer) override;
+  void OnObservedInputEvent(std::unique_ptr<ui::Event> event) override;
   void OnWindowFocused(ws::Id focused_window_id) override;
   void OnWindowCursorChanged(ws::Id window_id, ui::CursorData cursor) override;
   void OnDragDropStart(const base::flat_map<std::string, std::vector<uint8_t>>&
@@ -202,6 +201,9 @@ class RendererWindowTreeClient : public ws::mojom::WindowTreeClient,
   void RequestClose(ws::Id window_id) override;
   void GetScreenProviderObserver(
       ws::mojom::ScreenProviderObserverAssociatedRequest observer) override;
+  void OnOcclusionStateChanged(
+      ws::Id window_id,
+      ws::mojom::OcclusionState occlusion_state) override;
 
   const int routing_id_;
   ws::Id root_window_id_ = 0u;

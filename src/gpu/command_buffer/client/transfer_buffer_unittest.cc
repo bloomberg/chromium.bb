@@ -141,7 +141,8 @@ TEST_F(TransferBufferTest, Free) {
   EXPECT_EQ(base::UnguessableToken(), transfer_buffer_->shared_memory_guid());
 
   // See that it gets reallocated.
-  EXPECT_TRUE(transfer_buffer_->GetResultBuffer() != nullptr);
+  EXPECT_TRUE(transfer_buffer_->AcquireResultBuffer() != nullptr);
+  transfer_buffer_->ReleaseResultBuffer();
   EXPECT_TRUE(transfer_buffer_->HaveBuffer());
   EXPECT_NE(base::UnguessableToken(), transfer_buffer_->shared_memory_guid());
 
@@ -180,7 +181,7 @@ TEST_F(TransferBufferTest, Free) {
   EXPECT_LT(command_buffer_->GetState().get_offset, put_offset);
 
   // See that it gets reallocated.
-  transfer_buffer_->GetResultOffset();
+  transfer_buffer_->GetShmId();
   EXPECT_TRUE(transfer_buffer_->HaveBuffer());
   EXPECT_NE(base::UnguessableToken(), transfer_buffer_->shared_memory_guid());
 
@@ -383,6 +384,44 @@ TEST_F(TransferBufferExpandContractTest, ExpandWithSmallAllocations) {
   EXPECT_EQ(1u, size_allocated);
   transfer_buffer_->FreePendingToken(ptr, token);
   EXPECT_EQ(kMaxTransferBufferSize - kStartingOffset,
+            transfer_buffer_->GetCurrentMaxAllocationWithoutRealloc());
+}
+
+// Verify that expansion does not happen when there are blocks in use.
+TEST_F(TransferBufferExpandContractTest, NoExpandWithInUseAllocation) {
+  EXPECT_CALL(*command_buffer(), Flush(_)).Times(1).RetiresOnSaturation();
+
+  int32_t token = helper_->InsertToken();
+  EXPECT_FALSE(helper_->HasTokenPassed(token));
+
+  // Check it starts at starting size.
+  EXPECT_EQ(kStartTransferBufferSize - kStartingOffset,
+            transfer_buffer_->GetCurrentMaxAllocationWithoutRealloc());
+
+  // Fill the free space in two blocks.
+  unsigned int block_size_1 = transfer_buffer_->GetFreeSize() / 2;
+  unsigned int block_size_2 = transfer_buffer_->GetFreeSize() - block_size_1;
+  unsigned int size_allocated = 0;
+  void* block1 = transfer_buffer_->AllocUpTo(block_size_1, &size_allocated);
+  EXPECT_EQ(block_size_1, size_allocated);
+  void* block2 = transfer_buffer_->AllocUpTo(block_size_2, &size_allocated);
+  EXPECT_EQ(block_size_2, size_allocated);
+  transfer_buffer_->FreePendingToken(block1, token);
+
+  // Expansion tries to happens when GetFreeSize() is not enough for the
+  // allocation.
+  EXPECT_EQ(0u, transfer_buffer_->GetFreeSize());
+
+  // Allocate one more byte to try to force expansion, however there are
+  // blocks in use, so this should not expand.
+  void* block3 = transfer_buffer_->AllocUpTo(1, &size_allocated);
+  ASSERT_TRUE(block3 != nullptr);
+  EXPECT_EQ(1u, size_allocated);
+  transfer_buffer_->FreePendingToken(block3, token);
+  transfer_buffer_->FreePendingToken(block2, token);
+
+  // No reallocs should have occurred.
+  EXPECT_EQ(kStartTransferBufferSize - kStartingOffset,
             transfer_buffer_->GetCurrentMaxAllocationWithoutRealloc());
 }
 
@@ -627,5 +666,117 @@ TEST_F(TransferBufferExpandContractTest, Shrink) {
 
   transfer_buffer_->FreePendingToken(ptr, 1);
 }
+
+TEST_F(TransferBufferTest, MultipleAllocsAndFrees) {
+  // An arbitrary size, but is aligned so no padding needed.
+  constexpr size_t kArbitrarySize = 16;
+
+  Initialize();
+  size_t original_free_size = transfer_buffer_->GetFreeSize();
+  EXPECT_EQ(transfer_buffer_->GetSize(), original_free_size);
+  EXPECT_EQ(transfer_buffer_->GetFragmentedFreeSize(), original_free_size);
+
+  void* ptr1 = transfer_buffer_->Alloc(kArbitrarySize);
+  EXPECT_NE(ptr1, nullptr);
+  EXPECT_EQ(transfer_buffer_->GetSize(), original_free_size);
+  EXPECT_EQ(transfer_buffer_->GetFreeSize(),
+            original_free_size - kArbitrarySize);
+  EXPECT_EQ(transfer_buffer_->GetFragmentedFreeSize(),
+            original_free_size - kArbitrarySize);
+
+  void* ptr2 = transfer_buffer_->Alloc(kArbitrarySize);
+  EXPECT_NE(ptr2, nullptr);
+  EXPECT_EQ(transfer_buffer_->GetSize(), original_free_size);
+  EXPECT_EQ(transfer_buffer_->GetFreeSize(),
+            original_free_size - kArbitrarySize * 2);
+  EXPECT_EQ(transfer_buffer_->GetFragmentedFreeSize(),
+            original_free_size - kArbitrarySize * 2);
+
+  void* ptr3 = transfer_buffer_->Alloc(kArbitrarySize);
+  EXPECT_NE(ptr3, nullptr);
+  EXPECT_EQ(transfer_buffer_->GetSize(), original_free_size);
+  EXPECT_EQ(transfer_buffer_->GetFreeSize(),
+            original_free_size - kArbitrarySize * 3);
+  EXPECT_EQ(transfer_buffer_->GetFragmentedFreeSize(),
+            original_free_size - kArbitrarySize * 3);
+
+  // Generate tokens in order, but submit out of order.
+  auto token1 = helper_->InsertToken();
+  auto token2 = helper_->InsertToken();
+  auto token3 = helper_->InsertToken();
+  auto token4 = helper_->InsertToken();
+
+  // Freeing the final block here, is not perceivable because it's a hole.
+  transfer_buffer_->FreePendingToken(ptr3, token3);
+  EXPECT_EQ(transfer_buffer_->GetSize(), original_free_size);
+  EXPECT_EQ(transfer_buffer_->GetFreeSize(),
+            original_free_size - kArbitrarySize * 3);
+  EXPECT_EQ(transfer_buffer_->GetFragmentedFreeSize(),
+            original_free_size - kArbitrarySize * 3);
+
+  // Freeing the first block here leaves the second plus a hole after, so
+  // perceived two blocks not free yet.  The free size (no waiting) has not
+  // changed because the free_offset_ has not moved, but the fragmented free
+  // size gets bigger because in_use_offset_ has moved past the first block.
+  transfer_buffer_->FreePendingToken(ptr1, token1);
+  EXPECT_EQ(transfer_buffer_->GetSize(), original_free_size);
+  EXPECT_EQ(transfer_buffer_->GetFreeSize(),
+            original_free_size - kArbitrarySize * 3);
+  EXPECT_EQ(transfer_buffer_->GetFragmentedFreeSize(),
+            original_free_size - kArbitrarySize * 2);
+
+  // Allocate a 4th block.  This leaves the state as: Freed Used Freed Used
+  void* ptr4 = transfer_buffer_->Alloc(kArbitrarySize);
+  EXPECT_EQ(transfer_buffer_->GetSize(), original_free_size);
+  EXPECT_EQ(transfer_buffer_->GetFreeSize(),
+            original_free_size - kArbitrarySize * 4);
+  EXPECT_EQ(transfer_buffer_->GetFragmentedFreeSize(),
+            original_free_size - kArbitrarySize * 3);
+
+  // Freeing the second and fourth block makes everything free, so back to
+  // original size.
+  transfer_buffer_->FreePendingToken(ptr4, token4);
+  transfer_buffer_->FreePendingToken(ptr2, token2);
+  EXPECT_EQ(transfer_buffer_->GetSize(), original_free_size);
+  EXPECT_EQ(transfer_buffer_->GetFreeSize(), original_free_size);
+  EXPECT_EQ(transfer_buffer_->GetFragmentedFreeSize(), original_free_size);
+}
+
+#if defined(GTEST_HAS_DEATH_TEST)
+
+TEST_F(TransferBufferTest, ResizeDuringScopedResultPtr) {
+  Initialize();
+  ScopedResultPtr<int> ptr(transfer_buffer_.get());
+  // If an attempt is made to resize the transfer buffer while a result
+  // pointer exists, we should hit a CHECK. Allocate just enough to force a
+  // resize.
+  unsigned int size_allocated;
+  ASSERT_DEATH(transfer_buffer_->AllocUpTo(transfer_buffer_->GetFreeSize() + 1,
+                                           &size_allocated),
+               "outstanding_result_pointer_");
+}
+
+#if DCHECK_IS_ON()
+TEST_F(TransferBufferTest, AllocDuringScopedResultPtr) {
+  Initialize();
+  ScopedResultPtr<int> ptr(transfer_buffer_.get());
+  // If an attempt is made to allocate any amount in the transfer buffer while a
+  // result pointer exists, we should hit a DCHECK.
+  unsigned int size_allocated;
+  ASSERT_DEATH(transfer_buffer_->AllocUpTo(transfer_buffer_->GetFreeSize() + 1,
+                                           &size_allocated),
+               "outstanding_result_pointer_");
+}
+
+TEST_F(TransferBufferTest, TwoScopedResultPtrs) {
+  Initialize();
+  // Attempting to create two ScopedResultPtrs at the same time should DCHECK.
+  ScopedResultPtr<int> ptr(transfer_buffer_.get());
+  ASSERT_DEATH(ScopedResultPtr<int>(transfer_buffer_.get()),
+               "outstanding_result_pointer_");
+}
+
+#endif  // DCHECK_IS_ON()
+#endif  // defined(GTEST_HAS_DEATH_TEST)
 
 }  // namespace gpu

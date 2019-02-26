@@ -19,14 +19,12 @@ scoped_refptr<gl::GLImage> TestImageFactory::CreateImageForGpuMemoryBuffer(
     gfx::GpuMemoryBufferHandle handle,
     const gfx::Size& size,
     gfx::BufferFormat format,
-    unsigned internalformat,
     int client_id,
     gpu::SurfaceHandle surface_handle) {
   DCHECK_EQ(handle.type, gfx::SHARED_MEMORY_BUFFER);
 
-  scoped_refptr<gl::GLImageSharedMemory> image(
-      new gl::GLImageSharedMemory(size, internalformat));
-  if (!image->Initialize(handle.handle, handle.id, format, handle.offset,
+  auto image = base::MakeRefCounted<gl::GLImageSharedMemory>(size);
+  if (!image->Initialize(handle.region, handle.id, format, handle.offset,
                          base::checked_cast<size_t>(handle.stride)))
     return nullptr;
 

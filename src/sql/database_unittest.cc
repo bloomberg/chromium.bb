@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/gtest_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -280,6 +281,11 @@ TEST_F(SQLDatabaseTest, CachedStatement) {
     ASSERT_TRUE(from_id2.Step()) << "cached statement was not reset";
     EXPECT_EQ(13, from_id2.ColumnInt(0));
   }
+
+  EXPECT_DCHECK_DEATH(db().GetCachedStatement(id1, kId2Sql))
+      << "Using a different SQL with the same statement ID should DCHECK";
+  EXPECT_DCHECK_DEATH(db().GetCachedStatement(id2, kId1Sql))
+      << "Using a different SQL with the same statement ID should DCHECK";
 }
 
 TEST_F(SQLDatabaseTest, IsSQLValidTest) {

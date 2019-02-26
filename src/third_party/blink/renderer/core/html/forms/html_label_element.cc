@@ -41,17 +41,17 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 inline HTMLLabelElement::HTMLLabelElement(Document& document)
-    : HTMLElement(labelTag, document), processing_click_(false) {}
+    : HTMLElement(kLabelTag, document), processing_click_(false) {}
 
 HTMLLabelElement* HTMLLabelElement::Create(Document& document) {
-  return new HTMLLabelElement(document);
+  return MakeGarbageCollected<HTMLLabelElement>(document);
 }
 
 LabelableElement* HTMLLabelElement::control() const {
-  const AtomicString& control_id = getAttribute(forAttr);
+  const AtomicString& control_id = getAttribute(kForAttr);
   if (control_id.IsNull()) {
     // Search the children and descendants of the label element for a form
     // element.
@@ -138,7 +138,7 @@ bool HTMLLabelElement::IsInInteractiveContent(Node* node) const {
 }
 
 void HTMLLabelElement::DefaultEventHandler(Event& evt) {
-  if (evt.type() == EventTypeNames::click && !processing_click_) {
+  if (evt.type() == event_type_names::kClick && !processing_click_) {
     HTMLElement* element = control();
 
     // If we can't find a control or if the control received the click

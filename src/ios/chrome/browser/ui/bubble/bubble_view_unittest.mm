@@ -6,7 +6,7 @@
 
 #include "base/ios/ios_util.h"
 #include "base/logging.h"
-#include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -60,11 +60,7 @@ TEST_F(BubbleViewTest, BubbleSizeMultipleLineText) {
   CGSize bubbleSize = [bubble sizeThatFits:maxSize_];
 
   // The bubble should fit the label, which contains two lines of text.
-  if (base::ios::IsRunningOnIOS11OrLater()) {
-    EXPECT_NEAR(329.0f, bubbleSize.width, 1.0f);
-  } else {
-    EXPECT_NEAR(402.0f, bubbleSize.width, 1.0f);
-  }
+  EXPECT_NEAR(329.0f, bubbleSize.width, 1.0f);
 
   EXPECT_NEAR(83.0f, bubbleSize.height, 2.0f);
 }

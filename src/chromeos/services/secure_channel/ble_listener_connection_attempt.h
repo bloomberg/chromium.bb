@@ -43,6 +43,7 @@ class BleListenerConnectionAttempt
       ConnectionAttemptDelegate* delegate,
       const ConnectionAttemptDetails& connection_attempt_details);
 
+  // ConnectionAttemptBase<BleListenerFailureType>:
   std::unique_ptr<ConnectToDeviceOperation<BleListenerFailureType>>
   CreateConnectToDeviceOperation(
       const DeviceIdPair& device_id_pair,
@@ -51,6 +52,10 @@ class BleListenerConnectionAttempt
           BleListenerFailureType>::ConnectionSuccessCallback success_callback,
       const ConnectToDeviceOperation<BleListenerFailureType>::
           ConnectionFailedCallback& failure_callback) override;
+
+  // ConnectionAttempt<BleListenerFailureType>:
+  void ProcessSuccessfulConnectionDuration(
+      const base::TimeDelta& duration) override;
 
   BleConnectionManager* ble_connection_manager_;
 

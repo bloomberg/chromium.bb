@@ -556,11 +556,29 @@ void av1_highbd_inv_txfm_add_16x16_c(const tran_low_t* dqcoeff,
                                      const TxfmParam* txfm_param);
 #define av1_highbd_inv_txfm_add_16x16 av1_highbd_inv_txfm_add_16x16_c
 
+void av1_highbd_inv_txfm_add_16x32_c(const tran_low_t* dqcoeff,
+                                     uint8_t* dst,
+                                     int stride,
+                                     const TxfmParam* txfm_param);
+#define av1_highbd_inv_txfm_add_16x32 av1_highbd_inv_txfm_add_16x32_c
+
+void av1_highbd_inv_txfm_add_16x4_c(const tran_low_t* dqcoeff,
+                                    uint8_t* dst,
+                                    int stride,
+                                    const TxfmParam* txfm_param);
+#define av1_highbd_inv_txfm_add_16x4 av1_highbd_inv_txfm_add_16x4_c
+
 void av1_highbd_inv_txfm_add_16x8_c(const tran_low_t* dqcoeff,
                                     uint8_t* dst,
                                     int stride,
                                     const TxfmParam* txfm_param);
 #define av1_highbd_inv_txfm_add_16x8 av1_highbd_inv_txfm_add_16x8_c
+
+void av1_highbd_inv_txfm_add_32x16_c(const tran_low_t* dqcoeff,
+                                     uint8_t* dst,
+                                     int stride,
+                                     const TxfmParam* txfm_param);
+#define av1_highbd_inv_txfm_add_32x16 av1_highbd_inv_txfm_add_32x16_c
 
 void av1_highbd_inv_txfm_add_32x32_c(const tran_low_t* dqcoeff,
                                      uint8_t* dst,
@@ -568,17 +586,47 @@ void av1_highbd_inv_txfm_add_32x32_c(const tran_low_t* dqcoeff,
                                      const TxfmParam* txfm_param);
 #define av1_highbd_inv_txfm_add_32x32 av1_highbd_inv_txfm_add_32x32_c
 
+void av1_highbd_inv_txfm_add_32x8_c(const tran_low_t* dqcoeff,
+                                    uint8_t* dst,
+                                    int stride,
+                                    const TxfmParam* txfm_param);
+#define av1_highbd_inv_txfm_add_32x8 av1_highbd_inv_txfm_add_32x8_c
+
+void av1_highbd_inv_txfm_add_4x16_c(const tran_low_t* dqcoeff,
+                                    uint8_t* dst,
+                                    int stride,
+                                    const TxfmParam* txfm_param);
+#define av1_highbd_inv_txfm_add_4x16 av1_highbd_inv_txfm_add_4x16_c
+
 void av1_highbd_inv_txfm_add_4x4_c(const tran_low_t* dqcoeff,
                                    uint8_t* dst,
                                    int stride,
                                    const TxfmParam* txfm_param);
 #define av1_highbd_inv_txfm_add_4x4 av1_highbd_inv_txfm_add_4x4_c
 
+void av1_highbd_inv_txfm_add_4x8_c(const tran_low_t* dqcoeff,
+                                   uint8_t* dst,
+                                   int stride,
+                                   const TxfmParam* txfm_param);
+#define av1_highbd_inv_txfm_add_4x8 av1_highbd_inv_txfm_add_4x8_c
+
 void av1_highbd_inv_txfm_add_8x16_c(const tran_low_t* dqcoeff,
                                     uint8_t* dst,
                                     int stride,
                                     const TxfmParam* txfm_param);
 #define av1_highbd_inv_txfm_add_8x16 av1_highbd_inv_txfm_add_8x16_c
+
+void av1_highbd_inv_txfm_add_8x32_c(const tran_low_t* dqcoeff,
+                                    uint8_t* dst,
+                                    int stride,
+                                    const TxfmParam* txfm_param);
+#define av1_highbd_inv_txfm_add_8x32 av1_highbd_inv_txfm_add_8x32_c
+
+void av1_highbd_inv_txfm_add_8x4_c(const tran_low_t* dqcoeff,
+                                   uint8_t* dst,
+                                   int stride,
+                                   const TxfmParam* txfm_param);
+#define av1_highbd_inv_txfm_add_8x4 av1_highbd_inv_txfm_add_8x4_c
 
 void av1_highbd_inv_txfm_add_8x8_c(const tran_low_t* dqcoeff,
                                    uint8_t* dst,
@@ -1113,7 +1161,6 @@ void cdef_filter_block_c(uint8_t* dst8,
                          int pri_damping,
                          int sec_damping,
                          int bsize,
-                         int max,
                          int coeff_shift);
 void cdef_filter_block_neon(uint8_t* dst8,
                             uint16_t* dst16,
@@ -1125,7 +1172,6 @@ void cdef_filter_block_neon(uint8_t* dst8,
                             int pri_damping,
                             int sec_damping,
                             int bsize,
-                            int max,
                             int coeff_shift);
 RTCD_EXTERN void (*cdef_filter_block)(uint8_t* dst8,
                                       uint16_t* dst16,
@@ -1137,7 +1183,6 @@ RTCD_EXTERN void (*cdef_filter_block)(uint8_t* dst8,
                                       int pri_damping,
                                       int sec_damping,
                                       int bsize,
-                                      int max,
                                       int coeff_shift);
 
 int cdef_find_dir_c(const uint16_t* img,

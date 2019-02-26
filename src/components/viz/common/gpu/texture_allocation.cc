@@ -87,24 +87,6 @@ void TextureAllocation::AllocateStorage(gpu::gles2::GLES2Interface* gl,
   }
 }
 
-// static
-void TextureAllocation::AllocateStorage(gpu::raster::RasterInterface* ri,
-                                        const gpu::Capabilities& caps,
-                                        ResourceFormat format,
-                                        const gfx::Size& size,
-                                        const TextureAllocation& alloc,
-                                        const gfx::ColorSpace& color_space) {
-  // ETC1 resources cannot be preallocated.
-  if (format == ETC1)
-    return;
-  ri->TexStorage2D(alloc.texture_id, size.width(), size.height());
-  if (alloc.overlay_candidate && color_space.IsValid()) {
-    ri->SetColorSpaceMetadata(alloc.texture_id,
-                              reinterpret_cast<GLColorSpace>(
-                                  const_cast<gfx::ColorSpace*>(&color_space)));
-  }
-}
-
 void TextureAllocation::UploadStorage(gpu::gles2::GLES2Interface* gl,
                                       const gpu::Capabilities& caps,
                                       ResourceFormat format,

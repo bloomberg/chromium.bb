@@ -6,7 +6,6 @@
 
 #include <gtk/gtk.h>
 
-#include "chrome/browser/ui/libgtkui/chrome_gtk_menu_subclasses.h"
 #include "chrome/browser/ui/libgtkui/gtk_util.h"
 #include "chrome/browser/ui/libgtkui/skia_utils_gtk.h"
 #include "ui/gfx/color_palette.h"
@@ -133,6 +132,12 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
     case ui::NativeTheme::kColorId_TouchableMenuItemLabelColor:
     case ui::NativeTheme::kColorId_ActionableSubmenuVerticalSeparatorColor:
       return gfx::kPlaceholderColor;
+    // Fallback to the same colors as Aura.
+    case ui::NativeTheme::kColorId_HighlightedMenuItemBackgroundColor:
+    case ui::NativeTheme::kColorId_HighlightedMenuItemForegroundColor:
+    case ui::NativeTheme::kColorId_FocusedHighlightedMenuItemBackgroundColor:
+      return ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
+          color_id);
 
     // Label
     case ui::NativeTheme::kColorId_LabelEnabledColor:
@@ -189,25 +194,6 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
     case ui::NativeTheme::kColorId_ButtonHoverColor:
       return GetFgColor("GtkButton#button.text-button:hover GtkLabel");
     case ui::NativeTheme::kColorId_ButtonPressedShade:
-      return SK_ColorTRANSPARENT;
-
-    // BlueButton
-    case ui::NativeTheme::kColorId_BlueButtonEnabledColor:
-      return GetFgColor(
-          "GtkButton#button.text-button.default.suggested-action GtkLabel");
-    case ui::NativeTheme::kColorId_BlueButtonDisabledColor:
-      return GetFgColor(
-          "GtkButton#button.text-button.default.suggested-action:disabled "
-          "GtkLabel");
-    case ui::NativeTheme::kColorId_BlueButtonHoverColor:
-      return GetFgColor(
-          "GtkButton#button.text-button.default.suggested-action:hover "
-          "GtkLabel");
-    case ui::NativeTheme::kColorId_BlueButtonPressedColor:
-      return GetFgColor(
-          "GtkButton#button.text-button.default.suggested-action:hover:active "
-          "GtkLabel");
-    case ui::NativeTheme::kColorId_BlueButtonShadowColor:
       return SK_ColorTRANSPARENT;
 
     // ProminentButton

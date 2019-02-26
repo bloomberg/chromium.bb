@@ -289,6 +289,7 @@ backwards_compatible_list="\
   libgl1-mesa-dev
   libgl1-mesa-glx:i386
   libgles2-mesa-dev
+  libgtk-3-0:i386
   libgtk2.0-0
   libgtk2.0-0:i386
   libgtk2.0-dev
@@ -388,7 +389,6 @@ nacl_list="\
   libfontconfig1:i386
   libglib2.0-0:i386
   libgpm2:i386
-  libgtk-3-0:i386
   libncurses5:i386
   lib32ncurses5-dev
   libnss3:i386

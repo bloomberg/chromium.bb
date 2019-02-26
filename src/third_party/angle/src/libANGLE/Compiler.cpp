@@ -85,6 +85,9 @@ Compiler::Compiler(rx::GLImplFactory *implFactory, const ContextState &state)
     mResources.ARB_texture_rectangle           = extensions.textureRectangle;
     mResources.OES_texture_storage_multisample_2d_array =
         extensions.textureStorageMultisample2DArray;
+    mResources.ANGLE_texture_multisample = extensions.textureMultisample;
+    mResources.ANGLE_multi_draw          = extensions.multiDraw;
+
     // TODO: use shader precision caps to determine if high precision is supported?
     mResources.FragmentPrecisionHigh = 1;
     mResources.EXT_frag_depth        = extensions.fragDepth;
@@ -127,10 +130,10 @@ Compiler::Compiler(rx::GLImplFactory *implFactory, const ContextState &state)
     mResources.MaxComputeAtomicCounterBuffers =
         caps.maxShaderAtomicCounterBuffers[ShaderType::Compute];
 
-    mResources.MaxVertexAtomicCounters         = caps.maxShaderAtomicCounters[ShaderType::Vertex];
-    mResources.MaxFragmentAtomicCounters       = caps.maxShaderAtomicCounters[ShaderType::Fragment];
-    mResources.MaxCombinedAtomicCounters       = caps.maxCombinedAtomicCounters;
-    mResources.MaxAtomicCounterBindings        = caps.maxAtomicCounterBufferBindings;
+    mResources.MaxVertexAtomicCounters   = caps.maxShaderAtomicCounters[ShaderType::Vertex];
+    mResources.MaxFragmentAtomicCounters = caps.maxShaderAtomicCounters[ShaderType::Fragment];
+    mResources.MaxCombinedAtomicCounters = caps.maxCombinedAtomicCounters;
+    mResources.MaxAtomicCounterBindings  = caps.maxAtomicCounterBufferBindings;
     mResources.MaxVertexAtomicCounterBuffers =
         caps.maxShaderAtomicCounterBuffers[ShaderType::Vertex];
     mResources.MaxFragmentAtomicCounterBuffers =
@@ -150,12 +153,12 @@ Compiler::Compiler(rx::GLImplFactory *implFactory, const ContextState &state)
     }
 
     // Geometry Shader constants
-    mResources.EXT_geometry_shader              = extensions.geometryShader;
+    mResources.EXT_geometry_shader          = extensions.geometryShader;
     mResources.MaxGeometryUniformComponents = caps.maxShaderUniformComponents[ShaderType::Geometry];
-    mResources.MaxGeometryUniformBlocks         = caps.maxShaderUniformBlocks[ShaderType::Geometry];
-    mResources.MaxGeometryInputComponents       = caps.maxGeometryInputComponents;
-    mResources.MaxGeometryOutputComponents      = caps.maxGeometryOutputComponents;
-    mResources.MaxGeometryOutputVertices        = caps.maxGeometryOutputVertices;
+    mResources.MaxGeometryUniformBlocks     = caps.maxShaderUniformBlocks[ShaderType::Geometry];
+    mResources.MaxGeometryInputComponents   = caps.maxGeometryInputComponents;
+    mResources.MaxGeometryOutputComponents  = caps.maxGeometryOutputComponents;
+    mResources.MaxGeometryOutputVertices    = caps.maxGeometryOutputVertices;
     mResources.MaxGeometryTotalOutputComponents = caps.maxGeometryTotalOutputComponents;
     mResources.MaxGeometryTextureImageUnits = caps.maxShaderTextureImageUnits[ShaderType::Geometry];
 
@@ -181,7 +184,6 @@ Compiler::~Compiler()
     {
         sh::Finalize();
     }
-    ANGLE_SWALLOW_ERR(mImplementation->release());
 }
 
 ShCompilerInstance Compiler::getInstance(ShaderType type)
@@ -216,16 +218,13 @@ void Compiler::putInstance(ShCompilerInstance &&instance)
     }
 }
 
-ShCompilerInstance::ShCompilerInstance() : mHandle(nullptr)
-{
-}
+ShCompilerInstance::ShCompilerInstance() : mHandle(nullptr) {}
 
 ShCompilerInstance::ShCompilerInstance(ShHandle handle,
                                        ShShaderOutput outputType,
                                        ShaderType shaderType)
     : mHandle(handle), mOutputType(outputType), mShaderType(shaderType)
-{
-}
+{}
 
 ShCompilerInstance::~ShCompilerInstance()
 {

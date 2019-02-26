@@ -585,26 +585,12 @@ void CreditCardEditorViewController::FillContentView(
 bool CreditCardEditorViewController::IsValidCreditCardNumber(
     const base::string16& card_number,
     base::string16* error_message) {
-  if (!autofill::IsValidCreditCardNumberForBasicCardNetworks(
-          card_number, supported_card_networks_, error_message)) {
-    return false;
-  }
-  // Now check if another credit card has already been created with this number.
-  // TODO(crbug.com/725604): the UI should offer to load / update the existing
-  // credit card info.
-  autofill::CreditCard* existing_card =
-      state()->GetPersonalDataManager()->GetCreditCardByNumber(
-          base::UTF16ToASCII(card_number));
-  // If a card exists, it could be the one currently edited.
-  if (!existing_card || (credit_card_to_edit_ && credit_card_to_edit_->guid() ==
-                                                     existing_card->guid())) {
-    return true;
-  }
-  if (error_message) {
-    *error_message = l10n_util::GetStringUTF16(
-        IDS_PAYMENTS_VALIDATION_ALREADY_USED_CREDIT_CARD_NUMBER);
-  }
-  return false;
+  return autofill::IsValidCreditCardNumberForBasicCardNetworks(
+      card_number, supported_card_networks_, error_message);
+  // TODO(crbug.com/725604): The UI should offer to load / update the existing
+  // credit card info if another local credit card has already been created with
+  // this number. (Does not apply to server cards, which can be accessed only in
+  // tokenized form through Google Pay.)
 }
 
 base::string16 CreditCardEditorViewController::GetSheetTitle() {

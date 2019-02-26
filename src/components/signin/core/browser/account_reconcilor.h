@@ -18,6 +18,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -25,13 +26,16 @@
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_header_helper.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
 // Enables usage of Gaia Auth Multilogin endpoint for identity consistency.
 extern const base::Feature kUseMultiloginEndpoint;
+
+namespace identity {
+class IdentityManager;
+}
 
 namespace signin {
 class AccountReconcilorDelegate;
@@ -96,7 +100,7 @@ class AccountReconcilor : public KeyedService,
 
   AccountReconcilor(
       ProfileOAuth2TokenService* token_service,
-      SigninManagerBase* signin_manager,
+      identity::IdentityManager* identity_manager,
       SigninClient* client,
       GaiaCookieManagerService* cookie_manager_service,
       std::unique_ptr<signin::AccountReconcilorDelegate> delegate);
@@ -105,6 +109,11 @@ class AccountReconcilor : public KeyedService,
   // Initializes the account reconcilor. Should be called once after
   // construction.
   void Initialize(bool start_reconcile_if_tokens_available);
+
+#if defined(OS_IOS)
+  // Sets the WKHTTPSystemCookieStore flag value.
+  void SetIsWKHTTPSystemCookieStoreEnabled(bool is_enabled);
+#endif  // defined(OS_IOS)
 
   // Enables and disables the reconciliation.
   void EnableReconcile();
@@ -140,25 +149,36 @@ class AccountReconcilor : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
                            ProfileAlreadyConnected);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTestTable, TableRowTest);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTestDiceMultilogin, TableRowTest);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTestMirrorMultilogin, TableRowTest);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DiceTokenServiceRegistration);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DiceReconcileWhithoutSignin);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DiceReconcileNoop);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DiceLastKnownFirstAccount);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, UnverifiedAccountNoop);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, UnverifiedAccountMerge);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, HandleSigninDuringReconcile);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DiceMigrationAfterNoop);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorDiceEndpointParamTest,
+                           DiceTokenServiceRegistration);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorDiceEndpointParamTest,
+                           DiceReconcileWithoutSignin);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorDiceEndpointParamTest,
+                           DiceReconcileNoop);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorDiceEndpointParamTest,
+                           DiceLastKnownFirstAccount);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorDiceEndpointParamTest,
+                           UnverifiedAccountNoop);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorDiceEndpointParamTest,
+                           UnverifiedAccountMerge);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorDiceEndpointParamTest,
+                           HandleSigninDuringReconcile);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorDiceEndpointParamTest,
+                           DiceMigrationAfterNoop);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorDiceEndpointParamTest,
                            DiceNoMigrationWhenTokensNotReady);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorDiceEndpointParamTest,
                            DiceNoMigrationAfterReconcile);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorDiceEndpointParamTest,
                            DiceReconcileReuseGaiaFirstAccount);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorDiceEndpointParamTest,
                            MigrationClearSecondaryTokens);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, MigrationClearAllTokens);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DiceDeleteCookie);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorDiceEndpointParamTest,
+                           MigrationClearAllTokens);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
                            TokensNotLoaded);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
@@ -218,8 +238,6 @@ class AccountReconcilor : public KeyedService,
   }
 
   // Register and unregister with dependent services.
-  void RegisterWithSigninManager();
-  void UnregisterWithSigninManager();
   void RegisterWithTokenService();
   void UnregisterWithTokenService();
   void RegisterWithCookieManagerService();
@@ -232,7 +250,7 @@ class AccountReconcilor : public KeyedService,
   virtual void PerformMergeAction(const std::string& account_id);
   virtual void PerformLogoutAllAccountsAction();
   virtual void PerformSetCookiesAction(
-      const std::vector<std::string>& account_ids);
+      const signin::MultiloginParameters& parameters);
 
   // Used during periodic reconciliation.
   void StartReconcile();
@@ -291,13 +309,16 @@ class AccountReconcilor : public KeyedService,
 
   void HandleReconcileTimeout();
 
+  // Returns true is multilogin endpoint can be enabled.
+  bool IsMultiloginEndpointEnabled() const;
+
   std::unique_ptr<signin::AccountReconcilorDelegate> delegate_;
 
   // The ProfileOAuth2TokenService associated with this reconcilor.
   ProfileOAuth2TokenService* token_service_;
 
-  // The SigninManager associated with this reconcilor.
-  SigninManagerBase* signin_manager_;
+  // The IdentityManager associated with this reconcilor.
+  identity::IdentityManager* identity_manager_;
 
   // The SigninClient associated with this reconcilor.
   SigninClient* client_;
@@ -358,6 +379,11 @@ class AccountReconcilor : public KeyedService,
   // Greater than 0 when synced data is being deleted, and it is important to
   // not invalidate the primary token while this is happening.
   int synced_data_deletion_in_progress_count_ = 0;
+
+#if defined(OS_IOS)
+  // Stores the WKHTTPSystemCookieStore flag value.
+  bool is_wkhttp_system_cookie_store_enabled_ = false;
+#endif  // defined(OS_IOS)
 
   base::WeakPtrFactory<AccountReconcilor> weak_factory_;
 

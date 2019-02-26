@@ -5,8 +5,7 @@
 // https://wicg.github.io/reporting/#intervention-report
 
 [
-    NoInterfaceObject,
-    RuntimeEnabled=InterventionReporting
+    NoInterfaceObject
 ] interface InterventionReportBody : ReportBody {
   readonly attribute DOMString id;
   readonly attribute DOMString message;

@@ -33,12 +33,12 @@ class PlatformApiImpl : public assistant_client::PlatformApi {
   PlatformApiImpl(
       service_manager::Connector* connector,
       device::mojom::BatteryMonitorPtr battery_monitor,
-      bool enable_hotword,
-      scoped_refptr<base::SingleThreadTaskRunner> background_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> background_task_runner,
+      network::NetworkConnectionTracker* network_connection_tracker);
   ~PlatformApiImpl() override;
 
   // assistant_client::PlatformApi overrides
-  assistant_client::AudioInputProvider& GetAudioInputProvider() override;
+  AudioInputProviderImpl& GetAudioInputProvider() override;
   assistant_client::AudioOutputProvider& GetAudioOutputProvider() override;
   assistant_client::AuthProvider& GetAuthProvider() override;
   assistant_client::FileProvider& GetFileProvider() override;

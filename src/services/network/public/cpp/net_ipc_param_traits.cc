@@ -324,8 +324,8 @@ void ParamTraits<net::SSLInfo>::Write(base::Pickle* m, const param_type& p) {
   WriteParam(m, p.cert);
   WriteParam(m, p.unverified_cert);
   WriteParam(m, p.cert_status);
-  WriteParam(m, p.security_bits);
   WriteParam(m, p.key_exchange_group);
+  WriteParam(m, p.peer_signature_algorithm);
   WriteParam(m, p.connection_status);
   WriteParam(m, p.is_issued_by_known_root);
   WriteParam(m, p.pkp_bypassed);
@@ -351,8 +351,8 @@ bool ParamTraits<net::SSLInfo>::Read(const base::Pickle* m,
   return ReadParam(m, iter, &r->cert) &&
          ReadParam(m, iter, &r->unverified_cert) &&
          ReadParam(m, iter, &r->cert_status) &&
-         ReadParam(m, iter, &r->security_bits) &&
          ReadParam(m, iter, &r->key_exchange_group) &&
+         ReadParam(m, iter, &r->peer_signature_algorithm) &&
          ReadParam(m, iter, &r->connection_status) &&
          ReadParam(m, iter, &r->is_issued_by_known_root) &&
          ReadParam(m, iter, &r->pkp_bypassed) &&
@@ -564,11 +564,6 @@ void ParamTraits<url::Origin>::Log(const url::Origin& p, std::string* l) {
 // Generate constructors.
 #undef SERVICES_NETWORK_PUBLIC_CPP_NET_IPC_PARAM_TRAITS_H_
 #include "ipc/struct_constructor_macros.h"
-#include "net_ipc_param_traits.h"
-
-// Generate destructors.
-#undef SERVICES_NETWORK_PUBLIC_CPP_NET_IPC_PARAM_TRAITS_H_
-#include "ipc/struct_destructor_macros.h"
 #include "net_ipc_param_traits.h"
 
 // Generate param traits write methods.

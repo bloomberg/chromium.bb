@@ -47,20 +47,20 @@ void OnWebUsageSet(web::mojom::WebUsageControllerPtr web_usage_controller,
   *web_usage_controller_callback_called_flag = true;
 }
 
-// Callback passed to user_id::mojom::UserId::GetUserId(). Verifies that the
-// passed-back user ID has the expected value and sets
-// |user_id_callback_called_flag| to true to indicate that the callback was
-// invoked. |user_id| is passed simply to ensure that our connection to the
+// Callback passed to user_id::mojom::UserId::GetInstanceGroup(). Verifies that
+// the passed-back user ID has the expected value and sets
+// |*instance_group_callback_called_flag| to true to indicate that the callback
+// was invoked. |user_id| is passed simply to ensure that our connection to the
 // UserId implementation remains alive long enough for the callback to reach
 // us.
-void OnGotUserId(user_id::mojom::UserIdPtr user_id,
-                 bool* user_id_callback_called_flag,
-                 const std::string& expected_user_id,
-                 const std::string& received_user_id) {
-  GREYAssert(expected_user_id == received_user_id,
-             @"Unexpected User ID passed to user_id callback: %s",
-             received_user_id.c_str());
-  *user_id_callback_called_flag = true;
+void OnGotInstanceGroup(user_id::mojom::UserIdPtr user_id,
+                        bool* instance_group_callback_called_flag,
+                        const base::Token& expected_instance_group,
+                        const base::Token& received_instance_group) {
+  GREYAssert(expected_instance_group == received_instance_group,
+             @"Unexpected instance group passed to user_id callback: %s",
+             received_instance_group.ToString().c_str());
+  *instance_group_callback_called_flag = true;
 }
 
 // Waits until a given callback is invoked (as signalled by that callback
@@ -114,15 +114,16 @@ void WaitForCallback(const std::string& callback_name,
   web::BrowserState::GetConnectorFor(webState->GetBrowserState())
       ->BindInterface("user_id", mojo::MakeRequest(&userID));
 
-  // Call GetUserId(), making sure to keep our end of the connection alive
-  // until the callback is received.
+  // Call GetInstanceGroup(), making sure to keep our end of the connection
+  // alive until the callback is received.
   user_id::mojom::UserId* rawUserID = userID.get();
-  bool userIDCallbackCalled = false;
-  rawUserID->GetUserId(base::BindOnce(
-      &OnGotUserId, base::Passed(&userID), &userIDCallbackCalled,
-      web::BrowserState::GetServiceUserIdFor(webState->GetBrowserState())));
+  bool instanceGroupCallbackCalled = false;
+  rawUserID->GetInstanceGroup(base::BindOnce(
+      &OnGotInstanceGroup, base::Passed(&userID), &instanceGroupCallbackCalled,
+      web::BrowserState::GetServiceInstanceGroupFor(
+          webState->GetBrowserState())));
 
-  WaitForCallback("GetUserId", &userIDCallbackCalled);
+  WaitForCallback("GetInstanceGroup", &instanceGroupCallbackCalled);
 }
 
 // Tests that it is possible to connect to a per-WebState interface that is

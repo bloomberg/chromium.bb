@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
+#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
@@ -35,6 +36,11 @@ class GPU_GLES2_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
   struct FeatureFlags {
     FeatureFlags();
 
+    GpuMemoryBufferFormatSet gpu_memory_buffer_formats = {
+        gfx::BufferFormat::BGR_565,   gfx::BufferFormat::RGBA_4444,
+        gfx::BufferFormat::RGBA_8888, gfx::BufferFormat::RGBX_8888,
+        gfx::BufferFormat::YVU_420,
+    };
     // Use glBlitFramebuffer() and glRenderbufferStorageMultisample() with
     // GL_EXT_framebuffer_multisample-style semantics (as opposed to
     // GL_EXT_multisampled_render_to_texture semantics).
@@ -133,6 +139,7 @@ class GPU_GLES2_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool angle_multiview = false;
     bool khr_parallel_shader_compile = false;
     bool android_surface_control = false;
+    bool khr_robust_buffer_access_behavior = false;
   };
 
   FeatureInfo();

@@ -5,6 +5,8 @@
 #ifndef MEDIA_AUDIO_TEST_AUDIO_THREAD_H_
 #define MEDIA_AUDIO_TEST_AUDIO_THREAD_H_
 
+#include <memory>
+
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
@@ -12,16 +14,17 @@
 
 namespace media {
 
-class TestAudioThread : public AudioThread {
+class TestAudioThread final : public AudioThread {
  public:
   TestAudioThread();
   explicit TestAudioThread(bool use_real_thread);
-  ~TestAudioThread() override;
+  ~TestAudioThread() final;
 
   // AudioThread implementation.
-  void Stop() override;
-  base::SingleThreadTaskRunner* GetTaskRunner() override;
-  base::SingleThreadTaskRunner* GetWorkerTaskRunner() override;
+  void Stop() final;
+  bool IsHung() const final;
+  base::SingleThreadTaskRunner* GetTaskRunner() final;
+  base::SingleThreadTaskRunner* GetWorkerTaskRunner() final;
 
  private:
   std::unique_ptr<base::Thread> thread_;

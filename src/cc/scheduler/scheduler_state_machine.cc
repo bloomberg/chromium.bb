@@ -7,7 +7,7 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
-#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/traced_value.h"
 #include "base/values.h"
 
 namespace cc {
@@ -223,7 +223,7 @@ void SchedulerStateMachine::AsValueInto(
   state->SetBoolean("skip_next_begin_main_frame_to_reduce_latency",
                     skip_next_begin_main_frame_to_reduce_latency_);
   state->SetBoolean("video_needs_begin_frames", video_needs_begin_frames_);
-  state->SetBoolean("defer_commits", defer_commits_);
+  state->SetBoolean("defer_main_frame_update", defer_main_frame_update_);
   state->SetBoolean("last_commit_had_no_updates", last_commit_had_no_updates_);
   state->SetBoolean("did_draw_in_last_frame", did_draw_in_last_frame_);
   state->SetBoolean("did_submit_in_last_frame", did_submit_in_last_frame_);
@@ -431,7 +431,7 @@ bool SchedulerStateMachine::CouldSendBeginMainFrame() const {
     return false;
 
   // Do not make a new commits when it is deferred.
-  if (defer_commits_)
+  if (defer_main_frame_update_)
     return false;
 
   return true;
@@ -714,8 +714,12 @@ bool SchedulerStateMachine::CouldCreatePendingTree() const {
   if (begin_frame_source_paused_)
     return false;
 
-  // Don't create a pending tree till a frame sink is initialized.
-  if (!HasInitializedLayerTreeFrameSink())
+  // Don't create a pending tree till a frame sink is fully initialized.  Check
+  // for the ACTIVE state explicitly instead of calling
+  // HasInitializedLayerTreeFrameSink() because that only checks if frame sink
+  // has been recreated, but doesn't check if we're waiting for first commit or
+  // activation.
+  if (layer_tree_frame_sink_state_ != LayerTreeFrameSinkState::ACTIVE)
     return false;
 
   return true;
@@ -959,8 +963,9 @@ void SchedulerStateMachine::SetVideoNeedsBeginFrames(
   video_needs_begin_frames_ = video_needs_begin_frames;
 }
 
-void SchedulerStateMachine::SetDeferCommits(bool defer_commits) {
-  defer_commits_ = defer_commits;
+void SchedulerStateMachine::SetDeferMainFrameUpdate(
+    bool defer_main_frame_update) {
+  defer_main_frame_update_ = defer_main_frame_update;
 }
 
 // These are the cases where we require a BeginFrame message to make progress
@@ -972,7 +977,7 @@ bool SchedulerStateMachine::BeginFrameRequiredForAction() const {
     return true;
 
   return needs_redraw_ || needs_one_begin_impl_frame_ ||
-         (needs_begin_main_frame_ && !defer_commits_) ||
+         (needs_begin_main_frame_ && !defer_main_frame_update_) ||
          needs_impl_side_invalidation_;
 }
 
@@ -992,7 +997,8 @@ bool SchedulerStateMachine::ProactiveBeginFrameWanted() const {
   // request frames when commits are disabled, because the frame requests will
   // not provide the needed commit (and will wake up the process when it could
   // stay idle).
-  if ((begin_main_frame_state_ != BeginMainFrameState::IDLE) && !defer_commits_)
+  if ((begin_main_frame_state_ != BeginMainFrameState::IDLE) &&
+      !defer_main_frame_update_)
     return true;
 
   // If the pending tree activates quickly, we'll want a BeginImplFrame soon
@@ -1155,9 +1161,10 @@ bool SchedulerStateMachine::ShouldBlockDeadlineIndefinitely() const {
 
   // Wait for main frame to be ready for commits if in full-pipe mode, so that
   // we ensure we block during renderer initialization. In commit_to_active_tree
-  // mode, we cannot block for defer_commits_, as this may negatively affect
-  // animation smoothness during resize or orientation changes.
-  if (defer_commits_ && settings_.wait_for_all_pipeline_stages_before_draw)
+  // mode, we cannot block for defer_main_frame_update_, as this may negatively
+  // affect animation smoothness during resize or orientation changes.
+  if (defer_main_frame_update_ &&
+      settings_.wait_for_all_pipeline_stages_before_draw)
     return true;
 
   // Wait for main frame if one is in progress or about to be started.

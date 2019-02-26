@@ -54,8 +54,9 @@ ReferrerScriptInfo ReferrerScriptInfo::FromV8HostDefinedOptions(
 
   v8::Local<v8::Primitive> referrer_policy_value =
       host_defined_options->Get(isolate, kReferrerPolicy);
-  ReferrerPolicy referrer_policy = static_cast<ReferrerPolicy>(
-      referrer_policy_value->IntegerValue(context).ToChecked());
+  network::mojom::ReferrerPolicy referrer_policy =
+      static_cast<network::mojom::ReferrerPolicy>(
+          referrer_policy_value->IntegerValue(context).ToChecked());
 
   return ReferrerScriptInfo(base_url, credentials_mode, nonce, parser_state,
                             referrer_policy);

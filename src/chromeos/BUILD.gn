@@ -10,15 +10,26 @@ import("//third_party/protobuf/proto_library.gni")
 
 assert(is_chromeos, "Non-Chrome-OS builds must not depend on //chromeos")
 
+# Used by targets that compile into the implementation.
+config("chromeos_implementation") {
+  defines = [ "CHROMEOS_IMPLEMENTATION" ]
+}
+
 component("chromeos") {
-  configs += [ "//build/config/linux/nss:system_nss_no_ssl_config" ]
+  configs += [
+    ":chromeos_implementation",
+    "//build/config/linux/nss:system_nss_no_ssl_config",
+  ]
   public_deps = [
     ":chromeos_constants",
     ":chromeos_export",
     ":login_event_recorder",
+    ":policy_certificate_provider",
+    ":tools",
     "//chromeos/cryptohome",
     "//chromeos/dbus",
     "//chromeos/login",
+    "//chromeos/network",
     "//chromeos/settings",
     "//dbus",
   ]
@@ -43,19 +54,15 @@ component("chromeos") {
     "//base/third_party/dynamic_annotations",
     "//components/account_id",
     "//components/device_event_log",
-    "//components/onc",
     "//components/policy:cloud_policy_proto_generated_compile",
     "//components/policy/proto",
     "//components/pref_registry",
     "//components/prefs",
-    "//components/proxy_config",
-    "//components/url_formatter",
     "//components/user_manager",
     "//crypto:platform",
     "//google_apis",
     "//media/base:video_facing",
     "//services/network/public/cpp:cpp",
-    "//skia",
     "//third_party/protobuf:protobuf_lite",
     "//ui/gfx/geometry",  # For accelerometer.
   ]
@@ -99,142 +106,12 @@ component("chromeos") {
     "geolocation/simple_geolocation_request_test_monitor.h",
     "hugepage_text/hugepage_text.cc",
     "hugepage_text/hugepage_text.h",
-    "network/auto_connect_handler.cc",
-    "network/auto_connect_handler.h",
-    "network/certificate_helper.cc",
-    "network/certificate_helper.h",
-    "network/certificate_pattern.cc",
-    "network/certificate_pattern.h",
-    "network/client_cert_resolver.cc",
-    "network/client_cert_resolver.h",
-    "network/client_cert_util.cc",
-    "network/client_cert_util.h",
-    "network/device_state.cc",
-    "network/device_state.h",
-    "network/dhcp_pac_file_fetcher_chromeos.cc",
-    "network/dhcp_pac_file_fetcher_chromeos.h",
-    "network/dhcp_pac_file_fetcher_factory_chromeos.cc",
-    "network/dhcp_pac_file_fetcher_factory_chromeos.h",
-    "network/firewall_hole.cc",
-    "network/firewall_hole.h",
-    "network/geolocation_handler.cc",
-    "network/geolocation_handler.h",
-    "network/host_resolver_impl_chromeos.cc",
-    "network/host_resolver_impl_chromeos.h",
-    "network/managed_network_configuration_handler.cc",
-    "network/managed_network_configuration_handler.h",
-    "network/managed_network_configuration_handler_impl.cc",
-    "network/managed_network_configuration_handler_impl.h",
-    "network/managed_state.cc",
-    "network/managed_state.h",
-    "network/network_activation_handler.cc",
-    "network/network_activation_handler.h",
-    "network/network_cert_loader.cc",
-    "network/network_cert_loader.h",
-    "network/network_cert_migrator.cc",
-    "network/network_cert_migrator.h",
-    "network/network_certificate_handler.cc",
-    "network/network_certificate_handler.h",
-    "network/network_change_notifier_chromeos.cc",
-    "network/network_change_notifier_chromeos.h",
-    "network/network_change_notifier_factory_chromeos.cc",
-    "network/network_change_notifier_factory_chromeos.h",
-    "network/network_configuration_handler.cc",
-    "network/network_configuration_handler.h",
-    "network/network_configuration_observer.h",
-    "network/network_connect.cc",
-    "network/network_connect.h",
-    "network/network_connection_handler.cc",
-    "network/network_connection_handler.h",
-    "network/network_connection_handler_impl.cc",
-    "network/network_connection_handler_impl.h",
-    "network/network_connection_observer.cc",
-    "network/network_connection_observer.h",
-    "network/network_device_handler.cc",
-    "network/network_device_handler.h",
-    "network/network_device_handler_impl.cc",
-    "network/network_device_handler_impl.h",
-    "network/network_event_log.h",
-    "network/network_handler.cc",
-    "network/network_handler.h",
-    "network/network_handler_callbacks.cc",
-    "network/network_handler_callbacks.h",
-    "network/network_ip_config.cc",
-    "network/network_ip_config.h",
-    "network/network_profile.cc",
-    "network/network_profile.h",
-    "network/network_profile_handler.cc",
-    "network/network_profile_handler.h",
-    "network/network_profile_observer.h",
-    "network/network_sms_handler.cc",
-    "network/network_sms_handler.h",
-    "network/network_state.cc",
-    "network/network_state.h",
-    "network/network_state_handler.cc",
-    "network/network_state_handler.h",
-    "network/network_state_handler_observer.cc",
-    "network/network_state_handler_observer.h",
-    "network/network_type_pattern.cc",
-    "network/network_type_pattern.h",
-    "network/network_ui_data.cc",
-    "network/network_ui_data.h",
-    "network/network_util.cc",
-    "network/network_util.h",
-    "network/onc/onc_certificate_importer.h",
-    "network/onc/onc_certificate_importer_impl.cc",
-    "network/onc/onc_certificate_importer_impl.h",
-    "network/onc/onc_mapper.cc",
-    "network/onc/onc_mapper.h",
-    "network/onc/onc_merger.cc",
-    "network/onc/onc_merger.h",
-    "network/onc/onc_normalizer.cc",
-    "network/onc/onc_normalizer.h",
-    "network/onc/onc_parsed_certificates.cc",
-    "network/onc/onc_parsed_certificates.h",
-    "network/onc/onc_signature.cc",
-    "network/onc/onc_signature.h",
-    "network/onc/onc_translation_tables.cc",
-    "network/onc/onc_translation_tables.h",
-    "network/onc/onc_translator.h",
-    "network/onc/onc_translator_onc_to_shill.cc",
-    "network/onc/onc_translator_shill_to_onc.cc",
-    "network/onc/onc_utils.cc",
-    "network/onc/onc_utils.h",
-    "network/onc/onc_validator.cc",
-    "network/onc/onc_validator.h",
-    "network/policy_applicator.cc",
-    "network/policy_applicator.h",
-    "network/policy_util.cc",
-    "network/policy_util.h",
-    "network/portal_detector/network_portal_detector.cc",
-    "network/portal_detector/network_portal_detector.h",
-    "network/portal_detector/network_portal_detector_strategy.cc",
-    "network/portal_detector/network_portal_detector_strategy.h",
-    "network/portal_detector/network_portal_detector_stub.cc",
-    "network/portal_detector/network_portal_detector_stub.h",
-    "network/prohibited_technologies_handler.cc",
-    "network/prohibited_technologies_handler.h",
-    "network/proxy/proxy_config_handler.cc",
-    "network/proxy/proxy_config_handler.h",
-    "network/proxy/proxy_config_service_impl.cc",
-    "network/proxy/proxy_config_service_impl.h",
-    "network/proxy/ui_proxy_config.cc",
-    "network/proxy/ui_proxy_config.h",
-    "network/proxy/ui_proxy_config_service.cc",
-    "network/proxy/ui_proxy_config_service.h",
-    "network/shill_property_handler.cc",
-    "network/shill_property_handler.h",
-    "network/shill_property_util.cc",
-    "network/shill_property_util.h",
-    "network/tether_constants.cc",
-    "network/tether_constants.h",
     "policy/weekly_time/time_utils.cc",
     "policy/weekly_time/time_utils.h",
     "policy/weekly_time/weekly_time.cc",
     "policy/weekly_time/weekly_time.h",
     "policy/weekly_time/weekly_time_interval.cc",
     "policy/weekly_time/weekly_time_interval.h",
-    "policy_certificate_provider.h",
     "printing/ppd_cache.cc",
     "printing/ppd_cache.h",
     "printing/ppd_line_reader.cc",
@@ -275,8 +152,6 @@ component("chromeos") {
     "timezone/timezone_request.h",
     "timezone/timezone_resolver.cc",
     "timezone/timezone_resolver.h",
-    "tools/variable_expander.cc",
-    "tools/variable_expander.h",
     "tpm/tpm_password_fetcher.cc",
     "tpm/tpm_password_fetcher.h",
     "tpm/tpm_token_info_getter.cc",
@@ -284,9 +159,8 @@ component("chromeos") {
     "tpm/tpm_token_loader.cc",
     "tpm/tpm_token_loader.h",
   ]
-  defines = [ "CHROMEOS_IMPLEMENTATION" ]
   if (current_cpu == "arm" || current_cpu == "x86") {
-    defines += [ "BINDER_IPC_32BIT" ]
+    defines = [ "BINDER_IPC_32BIT" ]
   }
 }
 
@@ -300,6 +174,7 @@ source_set("chromeos_export") {
 }
 
 source_set("chromeos_constants") {
+  configs += [ ":chromeos_implementation" ]
   deps = [
     ":chromeos_export",
     "//base",
@@ -319,10 +194,10 @@ source_set("chromeos_constants") {
     "chromeos_switches.cc",
     "chromeos_switches.h",
   ]
-  defines = [ "CHROMEOS_IMPLEMENTATION" ]
 }
 
 source_set("login_event_recorder") {
+  configs += [ ":chromeos_implementation" ]
   deps = [
     ":chromeos_export",
     "//base",
@@ -331,7 +206,29 @@ source_set("login_event_recorder") {
     "login_event_recorder.cc",
     "login_event_recorder.h",
   ]
-  defines = [ "CHROMEOS_IMPLEMENTATION" ]
+}
+
+source_set("policy_certificate_provider") {
+  configs += [ ":chromeos_implementation" ]
+  deps = [
+    ":chromeos_export",
+    "//base",
+  ]
+  sources = [
+    "policy_certificate_provider.h",
+  ]
+}
+
+source_set("tools") {
+  configs += [ ":chromeos_implementation" ]
+  deps = [
+    ":chromeos_export",
+    "//base",
+  ]
+  sources = [
+    "tools/variable_expander.cc",
+    "tools/variable_expander.h",
+  ]
 }
 
 # This must be a static library instead of a source set because some of the
@@ -427,6 +324,7 @@ test("chromeos_unittests") {
     "//chromeos/cryptohome:unit_tests",
     "//chromeos/dbus:unit_tests",
     "//chromeos/login:unit_tests",
+    "//chromeos/network:unit_tests",
     "//chromeos/services:unit_tests",
     "//chromeos/settings:unit_tests",
     "//components/account_id",
@@ -460,36 +358,6 @@ test("chromeos_unittests") {
     "disks/disk_unittest.cc",
     "disks/suspend_unmount_manager_unittest.cc",
     "geolocation/simple_geolocation_unittest.cc",
-    "network/auto_connect_handler_unittest.cc",
-    "network/certificate_helper_unittest.cc",
-    "network/client_cert_resolver_unittest.cc",
-    "network/firewall_hole_unittest.cc",
-    "network/geolocation_handler_unittest.cc",
-    "network/host_resolver_impl_chromeos_unittest.cc",
-    "network/managed_network_configuration_handler_unittest.cc",
-    "network/network_cert_loader_unittest.cc",
-    "network/network_cert_migrator_unittest.cc",
-    "network/network_change_notifier_chromeos_unittest.cc",
-    "network/network_configuration_handler_unittest.cc",
-    "network/network_connect_unittest.cc",
-    "network/network_connection_handler_impl_unittest.cc",
-    "network/network_device_handler_unittest.cc",
-    "network/network_sms_handler_unittest.cc",
-    "network/network_state_handler_unittest.cc",
-    "network/network_state_unittest.cc",
-    "network/network_type_pattern_unittest.cc",
-    "network/network_ui_data_unittest.cc",
-    "network/network_util_unittest.cc",
-    "network/onc/onc_certificate_importer_impl_unittest.cc",
-    "network/onc/onc_merger_unittest.cc",
-    "network/onc/onc_normalizer_unittest.cc",
-    "network/onc/onc_parsed_certificates_unittest.cc",
-    "network/onc/onc_translator_unittest.cc",
-    "network/onc/onc_utils_unittest.cc",
-    "network/onc/onc_validator_unittest.cc",
-    "network/prohibited_technologies_handler_unittest.cc",
-    "network/proxy/proxy_config_service_impl_unittest.cc",
-    "network/shill_property_handler_unittest.cc",
     "policy/weekly_time/time_utils_unittest.cc",
     "policy/weekly_time/weekly_time_interval_unittest.cc",
     "policy/weekly_time/weekly_time_unittest.cc",
@@ -550,8 +418,13 @@ if (is_chromeos_chrome) {
     ]
   }
 
+  # Tast test sources live in the Chromium OS repository.
+  # To diagnose tast failures or disable tests, see go/tast-failures
   tast_test("chrome_all_tast_tests") {
-    tast_conditional = "(!informational && !disabled && (\"dep:chrome\" || \"dep:chrome_login\"))"
+    tast_conditional = "(!disabled && !\"group:*\" && !informational" +
+                       " && (\"dep:chrome\" || \"dep:chrome_login\")" +
+                       # Disabled due to flake. https://crbug.com/909736
+                       " && !\"name:ui.MashLogin\")"
   }
 
   group("cros_chrome_deploy") {

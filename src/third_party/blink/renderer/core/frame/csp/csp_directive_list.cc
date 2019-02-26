@@ -709,8 +709,9 @@ bool CSPDirectiveList::AllowEval(
         "Policy directive: ",
         script_state, exception_status, content);
   }
-  return CheckEval(
-      OperativeDirective(ContentSecurityPolicy::DirectiveType::kScriptSrc));
+  return IsReportOnly() ||
+         CheckEval(OperativeDirective(
+             ContentSecurityPolicy::DirectiveType::kScriptSrc));
 }
 
 bool CSPDirectiveList::AllowWasmEval(
@@ -726,8 +727,9 @@ bool CSPDirectiveList::AllowWasmEval(
         "Content Security Policy directive: ",
         script_state, exception_status, content);
   }
-  return CheckWasmEval(
-      OperativeDirective(ContentSecurityPolicy::DirectiveType::kScriptSrc));
+  return IsReportOnly() ||
+         CheckWasmEval(OperativeDirective(
+             ContentSecurityPolicy::DirectiveType::kScriptSrc));
 }
 
 bool CSPDirectiveList::AllowPluginType(
@@ -1118,6 +1120,9 @@ bool CSPDirectiveList::ParseDirective(const UChar* begin,
 
   // The directive-name must be non-empty.
   if (name_begin == position) {
+    // Malformed CSP: directive starts with invalid characters
+    UseCounter::Count(policy_->GetDocument(), WebFeature::kMalformedCSP);
+
     SkipWhile<UChar, IsNotASCIISpace>(position, end);
     policy_->ReportUnsupportedDirective(
         String(name_begin, static_cast<wtf_size_t>(position - name_begin)));
@@ -1131,6 +1136,9 @@ bool CSPDirectiveList::ParseDirective(const UChar* begin,
     return true;
 
   if (!SkipExactly<UChar, IsASCIISpace>(position, end)) {
+    // Malformed CSP: after the directive name we don't have a space
+    UseCounter::Count(policy_->GetDocument(), WebFeature::kMalformedCSP);
+
     SkipWhile<UChar, IsNotASCIISpace>(position, end);
     policy_->ReportUnsupportedDirective(
         String(name_begin, static_cast<wtf_size_t>(position - name_begin)));
@@ -1143,6 +1151,9 @@ bool CSPDirectiveList::ParseDirective(const UChar* begin,
   SkipWhile<UChar, IsCSPDirectiveValueCharacter>(position, end);
 
   if (position != end) {
+    // Malformed CSP: directive value has invalid characters
+    UseCounter::Count(policy_->GetDocument(), WebFeature::kMalformedCSP);
+
     policy_->ReportInvalidDirectiveValueCharacter(
         *name, String(value_begin, static_cast<wtf_size_t>(end - value_begin)));
     return false;

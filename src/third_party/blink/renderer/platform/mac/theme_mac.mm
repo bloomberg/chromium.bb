@@ -395,7 +395,7 @@ FontDescription ThemeMac::ControlFont(ControlPart part,
       NSFont* ns_font = [NSFont
           systemFontOfSize:[NSFont systemFontSizeForControlSize:
                                        ControlSizeForFont(font_description)]];
-      result.FirstFamily().SetFamily(FontFamilyNames::system_ui);
+      result.FirstFamily().SetFamily(font_family_names::kSystemUi);
       result.SetComputedSize([ns_font pointSize] * zoom_factor);
       result.SetSpecifiedSize([ns_font pointSize] * zoom_factor);
       return result;

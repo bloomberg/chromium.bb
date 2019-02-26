@@ -45,7 +45,7 @@ class AudioOutputStreamFuchsia : public AudioOutputStream {
   void OnMinLeadTimeChanged(int64_t min_lead_time);
 
   // Error handler for |audio_out_|.
-  void OnRendererError();
+  void OnRendererError(zx_status_t status);
 
   // Resets internal state and reports an error to |callback_|.
   void ReportError();

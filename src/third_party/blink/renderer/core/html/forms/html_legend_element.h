@@ -28,8 +28,6 @@
 
 namespace blink {
 
-class HTMLFormControlElement;
-
 class HTMLLegendElement final : public HTMLElement {
   DEFINE_WRAPPERTYPEINFO();
 
@@ -40,12 +38,6 @@ class HTMLLegendElement final : public HTMLElement {
 
  private:
   explicit HTMLLegendElement(Document&);
-
-  // Control in the legend's fieldset that gets focus and access key.
-  HTMLFormControlElement* AssociatedControl();
-
-  void AccessKeyAction(bool send_mouse_events) override;
-  void focus(const FocusParams&) override;
 };
 
 }  // namespace blink

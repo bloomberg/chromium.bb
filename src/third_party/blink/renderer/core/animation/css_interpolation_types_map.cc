@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/css/css_syntax_descriptor.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css/property_registry.h"
+#include "third_party/blink/renderer/core/feature_policy/layout_animations_policy.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 
 namespace blink {
@@ -55,7 +56,7 @@ CSSInterpolationTypesMap::CSSInterpolationTypesMap(
     const Document& document)
     : registry_(registry) {
   allow_all_animations_ = document.IsFeatureEnabled(
-      blink::mojom::FeaturePolicyFeature::kAnimations);
+      blink::mojom::FeaturePolicyFeature::kLayoutAnimations);
 }
 
 static const PropertyRegistration* GetRegistration(
@@ -112,14 +113,9 @@ const InterpolationTypes& CSSInterpolationTypesMap::Get(
       property.IsCSSProperty() ? property : PropertyHandle(css_property);
   // TODO(crbug.com/838263): Support site-defined list of acceptable properties
   // through feature policy declarations.
-  bool is_compositor_animatable_property =
-      (css_property.IDEquals(CSSPropertyFilter) ||
-       css_property.IDEquals(CSSPropertyOpacity) ||
-       css_property.IDEquals(CSSPropertyRotate) ||
-       css_property.IDEquals(CSSPropertyScale) ||
-       css_property.IDEquals(CSSPropertyTransform) ||
-       css_property.IDEquals(CSSPropertyTranslate));
-  if (allow_all_animations_ || is_compositor_animatable_property) {
+  bool property_maybe_blocked_by_feature_policy =
+      LayoutAnimationsPolicy::AffectedCSSProperties().Contains(&css_property);
+  if (allow_all_animations_ || !property_maybe_blocked_by_feature_policy) {
     switch (css_property.PropertyID()) {
       case CSSPropertyBaselineShift:
       case CSSPropertyBorderBottomWidth:
@@ -436,7 +432,7 @@ CSSInterpolationTypesMap::CreateInterpolationTypesForCSSSyntax(
 
   for (const CSSSyntaxComponent& component : descriptor.Components()) {
     std::unique_ptr<CSSInterpolationType> interpolation_type =
-        CreateInterpolationTypeForCSSSyntax(component.type_, property,
+        CreateInterpolationTypeForCSSSyntax(component.GetType(), property,
                                             registration);
 
     if (!interpolation_type)
@@ -445,7 +441,7 @@ CSSInterpolationTypesMap::CreateInterpolationTypesForCSSSyntax(
     if (component.IsRepeatable()) {
       interpolation_type = std::make_unique<CSSCustomListInterpolationType>(
           property, &registration, std::move(interpolation_type),
-          component.repeat_);
+          component.GetRepeat());
     }
 
     result.push_back(std::move(interpolation_type));

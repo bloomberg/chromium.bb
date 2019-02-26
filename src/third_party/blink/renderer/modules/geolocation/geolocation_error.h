@@ -35,17 +35,18 @@ class GeolocationError : public GarbageCollectedFinalized<GeolocationError> {
   enum ErrorCode { kPermissionDenied, kPositionUnavailable };
 
   static GeolocationError* Create(ErrorCode code, const String& message) {
-    return new GeolocationError(code, message);
+    return MakeGarbageCollected<GeolocationError>(code, message);
   }
+
+  GeolocationError(ErrorCode code, const String& message)
+      : code_(code), message_(message) {}
+
   void Trace(blink::Visitor* visitor) {}
 
   ErrorCode Code() const { return code_; }
   const String& Message() const { return message_; }
 
  private:
-  GeolocationError(ErrorCode code, const String& message)
-      : code_(code), message_(message) {}
-
   ErrorCode code_;
   String message_;
 };

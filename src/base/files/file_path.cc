@@ -94,9 +94,8 @@ bool IsPathAbsolute(StringPieceType path) {
 }
 
 bool AreAllSeparators(const StringType& input) {
-  for (StringType::const_iterator it = input.begin();
-      it != input.end(); ++it) {
-    if (!FilePath::IsSeparator(*it))
+  for (auto it : input) {
+    if (!FilePath::IsSeparator(it))
       return false;
   }
 
@@ -137,15 +136,15 @@ StringType::size_type ExtensionSeparatorPosition(const StringType& path) {
     return last_dot;
   }
 
-  for (size_t i = 0; i < arraysize(kCommonDoubleExtensions); ++i) {
+  for (auto* i : kCommonDoubleExtensions) {
     StringType extension(path, penultimate_dot + 1);
-    if (LowerCaseEqualsASCII(extension, kCommonDoubleExtensions[i]))
+    if (LowerCaseEqualsASCII(extension, i))
       return penultimate_dot;
   }
 
   StringType extension(path, last_dot + 1);
-  for (size_t i = 0; i < arraysize(kCommonDoubleExtensionSuffixes); ++i) {
-    if (LowerCaseEqualsASCII(extension, kCommonDoubleExtensionSuffixes[i])) {
+  for (auto* i : kCommonDoubleExtensionSuffixes) {
+    if (LowerCaseEqualsASCII(extension, i)) {
       if ((last_dot - penultimate_dot) <= 5U &&
           (last_dot - penultimate_dot) > 1U) {
         return penultimate_dot;
@@ -444,6 +443,15 @@ FilePath FilePath::AddExtension(StringPieceType extension) const {
   }
   extension.AppendToString(&str);
   return FilePath(str);
+}
+
+FilePath FilePath::AddExtensionASCII(StringPiece extension) const {
+  DCHECK(IsStringASCII(extension));
+#if defined(OS_WIN)
+  return AddExtension(ASCIIToUTF16(extension));
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+  return AddExtension(extension);
+#endif
 }
 
 FilePath FilePath::ReplaceExtension(StringPieceType extension) const {

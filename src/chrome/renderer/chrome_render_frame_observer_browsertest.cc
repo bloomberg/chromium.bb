@@ -17,6 +17,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/web/web_view.h"
+#include "third_party/blink/public/web/web_widget.h"
 
 namespace {
 
@@ -76,7 +77,8 @@ TEST_F(ChromeRenderFrameObserverTest, SkipCapturingSubFrames) {
       "This is a main document"
       "<iframe srcdoc=\"This a document in an iframe.\">"
       "</body>");
-  view_->GetWebView()->UpdateAllLifecyclePhases();
+  view_->GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
+      blink::WebWidget::LifecycleUpdateReason::kTest);
 
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(fake_translate_driver_.called_new_page_);

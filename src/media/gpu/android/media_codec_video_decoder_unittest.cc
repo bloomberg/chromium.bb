@@ -63,14 +63,13 @@ class MockVideoFrameFactory : public VideoFrameFactory {
                     bool use_texture_owner_as_overlay,
                     InitCb init_cb));
   MOCK_METHOD1(MockSetSurfaceBundle, void(scoped_refptr<AVDASurfaceBundle>));
-  MOCK_METHOD6(
+  MOCK_METHOD5(
       MockCreateVideoFrame,
       void(CodecOutputBuffer* raw_output_buffer,
            scoped_refptr<TextureOwner> texture_owner,
            base::TimeDelta timestamp,
            gfx::Size natural_size,
-           PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
-           VideoDecoder::OutputCB output_cb));
+           PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb));
   MOCK_METHOD1(MockRunAfterPendingVideoFrames,
                void(base::OnceClosure* closure));
   MOCK_METHOD0(CancelPendingCallbacks, void());
@@ -91,11 +90,11 @@ class MockVideoFrameFactory : public VideoFrameFactory {
       base::TimeDelta timestamp,
       gfx::Size natural_size,
       PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
-      VideoDecoder::OutputCB output_cb) override {
+      VideoFrameFactory::OnceOutputCb output_cb) override {
     MockCreateVideoFrame(output_buffer.get(), texture_owner_, timestamp,
-                         natural_size, promotion_hint_cb, output_cb);
+                         natural_size, promotion_hint_cb);
     last_output_buffer_ = std::move(output_buffer);
-    output_cb.Run(VideoFrame::CreateBlackFrame(gfx::Size(10, 10)));
+    std::move(output_cb).Run(VideoFrame::CreateBlackFrame(gfx::Size(10, 10)));
   }
 
   void RunAfterPendingVideoFrames(base::OnceClosure closure) override {
@@ -924,7 +923,7 @@ TEST_P(MediaCodecVideoDecoderTest, VideoFramesArePowerEfficient) {
   // Produce one output.
   codec->AcceptOneInput();
   codec->ProduceOneOutput();
-  EXPECT_CALL(*video_frame_factory_, MockCreateVideoFrame(_, _, _, _, _, _));
+  EXPECT_CALL(*video_frame_factory_, MockCreateVideoFrame(_, _, _, _, _));
   PumpCodec();
   base::RunLoop().RunUntilIdle();
 
@@ -964,16 +963,15 @@ TEST_P(MediaCodecVideoDecoderH264Test, CsdIsIncludedInCodecConfig) {
 }
 
 TEST_P(MediaCodecVideoDecoderVp9Test, ColorSpaceIsIncludedInCodecConfig) {
-  VideoDecoderConfig config = TestVideoConfig::Normal(kCodecVP9);
-  VideoColorSpace color_space_info(VideoColorSpace::PrimaryID::BT2020,
-                                   VideoColorSpace::TransferID::SMPTEST2084,
-                                   VideoColorSpace::MatrixID::BT2020_CL,
-                                   gfx::ColorSpace::RangeID::LIMITED);
-
-  config.set_color_space_info(color_space_info);
+  VideoColorSpace color_space(VideoColorSpace::PrimaryID::BT2020,
+                              VideoColorSpace::TransferID::SMPTEST2084,
+                              VideoColorSpace::MatrixID::BT2020_CL,
+                              gfx::ColorSpace::RangeID::LIMITED);
+  VideoDecoderConfig config =
+      TestVideoConfig::NormalWithColorSpace(kCodecVP9, color_space);
   EXPECT_TRUE(InitializeFully_OneDecodePending(config));
 
-  EXPECT_EQ(color_space_info,
+  EXPECT_EQ(color_space,
             codec_allocator_->most_recent_config->container_color_space);
 }
 

@@ -26,7 +26,7 @@ class WebServiceWorkerRequestPrivate
   scoped_refptr<BlobDataHandle> blob_data_handle;
   Referrer referrer_;
   network::mojom::FetchRequestMode mode_ =
-      network::mojom::FetchRequestMode::kNoCORS;
+      network::mojom::FetchRequestMode::kNoCors;
   bool is_main_resource_load_ = false;
   network::mojom::FetchCredentialsMode credentials_mode_ =
       network::mojom::FetchCredentialsMode::kOmit;
@@ -147,23 +147,24 @@ scoped_refptr<BlobDataHandle> WebServiceWorkerRequest::GetBlobDataHandle()
   return private_->blob_data_handle;
 }
 
-void WebServiceWorkerRequest::SetReferrer(const WebString& web_referrer,
-                                          WebReferrerPolicy referrer_policy) {
+void WebServiceWorkerRequest::SetReferrer(
+    const WebString& web_referrer,
+    network::mojom::ReferrerPolicy referrer_policy) {
   // WebString doesn't have the distinction between empty and null. We use
   // the null WTFString for referrer.
   DCHECK_EQ(Referrer::NoReferrer(), String());
   String referrer =
       web_referrer.IsEmpty() ? Referrer::NoReferrer() : String(web_referrer);
-  private_->referrer_ =
-      Referrer(referrer, static_cast<ReferrerPolicy>(referrer_policy));
+  private_->referrer_ = Referrer(referrer, referrer_policy);
 }
 
 WebURL WebServiceWorkerRequest::ReferrerUrl() const {
   return KURL(private_->referrer_.referrer);
 }
 
-WebReferrerPolicy WebServiceWorkerRequest::GetReferrerPolicy() const {
-  return static_cast<WebReferrerPolicy>(private_->referrer_.referrer_policy);
+network::mojom::ReferrerPolicy WebServiceWorkerRequest::GetReferrerPolicy()
+    const {
+  return private_->referrer_.referrer_policy;
 }
 
 const Referrer& WebServiceWorkerRequest::GetReferrer() const {

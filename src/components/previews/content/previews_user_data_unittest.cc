@@ -6,51 +6,21 @@
 
 #include <stdint.h>
 
-#include <memory>
-
-#include "base/message_loop/message_loop.h"
-#include "base/supports_user_data.h"
-#include "net/base/request_priority.h"
-#include "net/nqe/effective_connection_type.h"
+#include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "url/gurl.h"
 
 namespace previews {
 
-namespace {
-
-struct TestSupportsUserData : public base::SupportsUserData {};
-
-class PreviewsUserDataTest : public testing::Test {
- public:
-  PreviewsUserDataTest() {}
-  ~PreviewsUserDataTest() override {}
-
- private:
-  base::MessageLoopForIO message_loop_;
-};
-
-TEST_F(PreviewsUserDataTest, TestConstructor) {
+TEST(PreviewsUserDataTest, TestConstructor) {
   uint64_t id = 5u;
   std::unique_ptr<PreviewsUserData> data(new PreviewsUserData(5u));
   EXPECT_EQ(id, data->page_id());
 }
 
-TEST_F(PreviewsUserDataTest, AddToSupportsUserData) {
-  TestSupportsUserData owner;
-  PreviewsUserData* data = PreviewsUserData::GetData(owner);
-  EXPECT_FALSE(data);
-
-  data = PreviewsUserData::Create(&owner, 1u);
-  EXPECT_TRUE(data);
-  EXPECT_EQ(data, PreviewsUserData::GetData(owner));
-
-  EXPECT_EQ(data, PreviewsUserData::Create(&owner, 1u));
-}
-
-TEST_F(PreviewsUserDataTest, DeepCopy) {
-  uint64_t id = 5u;
-  std::unique_ptr<PreviewsUserData> data(new PreviewsUserData(5u));
+TEST(PreviewsUserDataTest, DeepCopy) {
+  uint64_t id = 4u;
+  std::unique_ptr<PreviewsUserData> data =
+      std::make_unique<PreviewsUserData>(id);
   EXPECT_EQ(id, data->page_id());
 
   EXPECT_EQ(0, data->data_savings_inflation_percent());
@@ -58,23 +28,29 @@ TEST_F(PreviewsUserDataTest, DeepCopy) {
   EXPECT_EQ(previews::PreviewsType::NONE, data->committed_previews_type());
   EXPECT_FALSE(data->black_listed_for_lite_page());
   EXPECT_FALSE(data->offline_preview_used());
+  EXPECT_EQ(data->server_lite_page_info(), nullptr);
 
-  data->SetDataSavingsInflationPercent(123);
-  data->SetCacheControlNoTransformDirective();
+  base::TimeTicks now = base::TimeTicks::Now();
+
+  data->set_data_savings_inflation_percent(123);
+  data->set_cache_control_no_transform_directive();
   data->SetCommittedPreviewsType(previews::PreviewsType::NOSCRIPT);
   data->set_offline_preview_used(true);
   data->set_black_listed_for_lite_page(true);
+  data->set_server_lite_page_info(
+      std::make_unique<PreviewsUserData::ServerLitePageInfo>());
+  data->server_lite_page_info()->original_navigation_start = now;
 
-  std::unique_ptr<PreviewsUserData> deep_copy = data->DeepCopy();
-  EXPECT_EQ(id, deep_copy->page_id());
-  EXPECT_EQ(123, deep_copy->data_savings_inflation_percent());
-  EXPECT_TRUE(deep_copy->cache_control_no_transform_directive());
+  PreviewsUserData data_copy(*data);
+  EXPECT_EQ(id, data_copy.page_id());
+  EXPECT_EQ(123, data_copy.data_savings_inflation_percent());
+  EXPECT_TRUE(data_copy.cache_control_no_transform_directive());
   EXPECT_EQ(previews::PreviewsType::NOSCRIPT,
-            deep_copy->committed_previews_type());
-  EXPECT_TRUE(data->black_listed_for_lite_page());
-  EXPECT_TRUE(data->offline_preview_used());
+            data_copy.committed_previews_type());
+  EXPECT_TRUE(data_copy.black_listed_for_lite_page());
+  EXPECT_TRUE(data_copy.offline_preview_used());
+  EXPECT_NE(data->server_lite_page_info(), nullptr);
+  EXPECT_EQ(data->server_lite_page_info()->original_navigation_start, now);
 }
-
-}  // namespace
 
 }  // namespace previews

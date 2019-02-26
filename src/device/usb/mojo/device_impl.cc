@@ -109,6 +109,11 @@ DeviceImpl::DeviceImpl(scoped_refptr<device::UsbDevice> device,
       weak_factory_(this) {
   DCHECK(device_);
   observer_.Add(device_.get());
+
+  if (client_) {
+    client_.set_connection_error_handler(base::BindOnce(
+        &DeviceImpl::OnClientConnectionError, weak_factory_.GetWeakPtr()));
+  }
 }
 
 void DeviceImpl::CloseHandle() {
@@ -389,6 +394,12 @@ void DeviceImpl::IsochronousTransferOut(
 
 void DeviceImpl::OnDeviceRemoved(scoped_refptr<device::UsbDevice> device) {
   DCHECK_EQ(device_, device);
+  binding_->Close();
+}
+
+void DeviceImpl::OnClientConnectionError() {
+  // Close the connection with Blink when WebUsbServiceImpl notifies the
+  // permission revocation from settings UI.
   binding_->Close();
 }
 

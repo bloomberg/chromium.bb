@@ -10,20 +10,20 @@ SyncEvent::SyncEvent(const AtomicString& type,
                      const String& tag,
                      bool last_chance,
                      WaitUntilObserver* observer)
-    : ExtendableEvent(type, ExtendableEventInit(), observer),
+    : ExtendableEvent(type, ExtendableEventInit::Create(), observer),
       tag_(tag),
       last_chance_(last_chance) {}
 
-SyncEvent::SyncEvent(const AtomicString& type, const SyncEventInit& init)
+SyncEvent::SyncEvent(const AtomicString& type, const SyncEventInit* init)
     : ExtendableEvent(type, init) {
-  tag_ = init.tag();
-  last_chance_ = init.lastChance();
+  tag_ = init->tag();
+  last_chance_ = init->lastChance();
 }
 
 SyncEvent::~SyncEvent() = default;
 
 const AtomicString& SyncEvent::InterfaceName() const {
-  return EventNames::SyncEvent;
+  return event_interface_names::kSyncEvent;
 }
 
 String SyncEvent::tag() {

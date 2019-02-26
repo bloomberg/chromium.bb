@@ -89,7 +89,7 @@ import testserver_base
 import device_management_backend_pb2 as dm
 import cloud_policy_pb2 as cp
 
-# Policy for extensions is not supported on Android nor iOS.
+# Policy for extensions is not supported on Android.
 try:
   import chrome_extension_policy_pb2 as ep
 except ImportError:
@@ -375,7 +375,9 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       settings.download_url = urlparse.urljoin(
           self.server.GetBaseURL(), 'externalpolicydata?key=%s' % policy_key)
       settings.secure_hash = hashlib.sha256(data).digest()
-    return settings.SerializeToString()
+      return settings.SerializeToString()
+    else:
+      return None
 
   def CheckGoogleLogin(self):
     """Extracts the auth token from the request and returns it. The token may
@@ -466,7 +468,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     # TODO(drcrash): Check the certificate itself.
     if req.certificate_type != dm.CertificateBasedDeviceRegistrationData.\
         ENTERPRISE_ENROLLMENT_CERTIFICATE:
-      return(403, 'Invalid registration certificate type')
+      return(403, 'Invalid certificate type for registration')
 
     return self.RegisterDeviceAndSendResponse(req.device_register_request, None)
 
@@ -592,8 +594,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
               'google/chromeos/device',
               'google/chromeos/publicaccount',
               'google/chromeos/user',
-              'google/chrome/user',
-              'google/ios/user')):
+              'google/chrome/user')):
         fetch_response = response.policy_response.response.add()
         self.ProcessCloudPolicy(request, token_info, fetch_response, username)
       elif (request.policy_type in
@@ -856,14 +857,17 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     if field.type == field.TYPE_BOOL:
       assert type(field_value) == bool
     elif field.type == field.TYPE_STRING:
-      assert type(field_value) == str or type(field_value) == unicode
+      assert type(field_value) in [str, unicode]
+    elif field.type == field.TYPE_BYTES:
+      assert type(field_value) in [str, unicode]
+      field_value = field_value.decode('hex')
     elif (field.type == field.TYPE_INT64 or
           field.type == field.TYPE_INT32 or
           field.type == field.TYPE_ENUM):
       assert type(field_value) == int
     else:
       return False
-    group_message.__setattr__(field.name, field_value)
+    setattr(group_message, field.name, field_value)
     return True
 
   def SetProtobufMessageField(self, group_message, field, field_value):
@@ -881,6 +885,25 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       self.SetProtoMessageField(group_message, field, field_value)
     elif not self.SetProtoField(group_message, field, field_value):
       raise Exception('Unknown field type %s' % field.type)
+
+  def GatherExtensionPolicySettings(self, settings, policies):
+    """Copies all the policies from a dictionary into a protobuf of type
+    ExternalPolicyData.
+
+    Args:
+      settings: The destination: a ExternalPolicyData protobuf.
+      policies: The source: a dictionary containing the extension policies.
+    """
+    for field in settings.DESCRIPTOR.fields:
+      # |field| is the entry for a specific policy in the top-level
+      # ExternalPolicyData proto.
+      field_value = policies.get(field.name)
+      if field_value is None:
+        continue
+
+      field_descriptor = settings.DESCRIPTOR.fields_by_name[field.name]
+      self.SetProtobufMessageField(settings, field_descriptor,
+                                   field_value)
 
   def GatherDevicePolicySettings(self, settings, policies):
     """Copies all the policies from a dictionary into a protobuf of type
@@ -954,6 +977,12 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     # Send one PolicyFetchResponse for each extension that has
     # configuration data at the server.
     ids = self.server.ListMatchingComponents(request.policy_type)
+    if not ids:
+      # Fetch the ids from the policy JSON, if none in the config directory.
+      policy = self.server.GetPolicies()
+      ext_policies = policy.get(request.policy_type, {})
+      ids = ext_policies.keys()
+
     for settings_entity_id in ids:
       # Reuse the extension policy request, to trigger the same signature
       # type in the response.
@@ -992,8 +1021,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       if msg.policy_type in ('google/android/user',
                              'google/chromeos/publicaccount',
                              'google/chromeos/user',
-                             'google/chrome/user',
-                             'google/ios/user'):
+                             'google/chrome/user'):
         settings = cp.CloudPolicySettings()
         payload = self.server.ReadPolicyFromDataDir(policy_key, settings)
         if payload is None:
@@ -1011,6 +1039,11 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         payload = self.server.ReadPolicyFromDataDir(policy_key, settings)
         if payload is None:
           payload = self.CreatePolicyForExternalPolicyData(policy_key)
+        if payload is None:
+          ext_policies = policy.get(msg.policy_type, {})
+          policies = ext_policies.get(msg.settings_entity_id, {})
+          self.GatherExtensionPolicySettings(settings, policies)
+          payload = settings.SerializeToString()
       else:
         response.error_code = 400
         response.error_message = 'Invalid policy type'

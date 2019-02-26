@@ -34,7 +34,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 HTMLMetaCharsetParser::HTMLMetaCharsetParser()
     : tokenizer_(HTMLTokenizer::Create(HTMLParserOptions(nullptr))),
@@ -94,22 +94,22 @@ bool HTMLMetaCharsetParser::CheckForMetaCharset(const char* data,
           AttemptStaticStringCreation(token_.GetName(), kLikely8Bit);
       if (!end) {
         tokenizer_->UpdateStateFor(tag_name);
-        if (ThreadSafeMatch(tag_name, metaTag) && ProcessMeta()) {
+        if (ThreadSafeMatch(tag_name, kMetaTag) && ProcessMeta()) {
           done_checking_ = true;
           return true;
         }
       }
 
-      if (!ThreadSafeMatch(tag_name, scriptTag) &&
-          !ThreadSafeMatch(tag_name, noscriptTag) &&
-          !ThreadSafeMatch(tag_name, styleTag) &&
-          !ThreadSafeMatch(tag_name, linkTag) &&
-          !ThreadSafeMatch(tag_name, metaTag) &&
-          !ThreadSafeMatch(tag_name, objectTag) &&
-          !ThreadSafeMatch(tag_name, titleTag) &&
-          !ThreadSafeMatch(tag_name, baseTag) &&
-          (end || !ThreadSafeMatch(tag_name, htmlTag)) &&
-          (end || !ThreadSafeMatch(tag_name, headTag))) {
+      if (!ThreadSafeMatch(tag_name, kScriptTag) &&
+          !ThreadSafeMatch(tag_name, kNoscriptTag) &&
+          !ThreadSafeMatch(tag_name, kStyleTag) &&
+          !ThreadSafeMatch(tag_name, kLinkTag) &&
+          !ThreadSafeMatch(tag_name, kMetaTag) &&
+          !ThreadSafeMatch(tag_name, kObjectTag) &&
+          !ThreadSafeMatch(tag_name, kTitleTag) &&
+          !ThreadSafeMatch(tag_name, kBaseTag) &&
+          (end || !ThreadSafeMatch(tag_name, kHTMLTag)) &&
+          (end || !ThreadSafeMatch(tag_name, kHeadTag))) {
         in_head_section_ = false;
       }
     }

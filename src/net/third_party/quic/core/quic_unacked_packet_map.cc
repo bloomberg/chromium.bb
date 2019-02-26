@@ -464,7 +464,7 @@ void QuicUnackedPacketMap::MaybeAggregateAckedStreamFrame(
 
 void QuicUnackedPacketMap::NotifyAggregatedStreamFrameAcked(
     QuicTime::Delta ack_delay) {
-  if (aggregated_stream_frame_.stream_id == kInvalidStreamId ||
+  if (aggregated_stream_frame_.stream_id == static_cast<QuicStreamId>(-1) ||
       session_notifier_ == nullptr) {
     // Aggregated stream frame is empty.
     return;
@@ -472,7 +472,7 @@ void QuicUnackedPacketMap::NotifyAggregatedStreamFrameAcked(
   session_notifier_->OnFrameAcked(QuicFrame(aggregated_stream_frame_),
                                   ack_delay);
   // Clear aggregated stream frame.
-  aggregated_stream_frame_.stream_id = kInvalidStreamId;
+  aggregated_stream_frame_.stream_id = -1;
 }
 
 void QuicUnackedPacketMap::SetSessionDecideWhatToWrite(

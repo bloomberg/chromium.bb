@@ -41,7 +41,7 @@ interface XRRuntimeEventListener {
 
 struct XRRuntimeSessionOptions {
   bool immersive;
-  bool provide_passthrough_camera;
+  bool environment_integration;
 
   // The following options are used for permission requests.
   // TODO(crbug.com/854655): remove these fields, and do permission checks in
@@ -81,6 +81,8 @@ interface XRRuntime {
   EnsureInitialized() => ();
 
   SetListeningForActivate(bool listen_for_activation);
+
+  SetInlinePosesEnabled(bool enable);
 };
 
 // Represents the state of a single button or trigger.

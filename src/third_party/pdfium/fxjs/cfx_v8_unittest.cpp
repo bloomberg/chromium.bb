@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "fxjs/cfx_v8.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/test_support.h"
 #include "third_party/base/ptr_util.h"
@@ -37,6 +38,7 @@ TEST_F(FXV8UnitTest, EmptyLocal) {
   EXPECT_FALSE(cfx_v8()->ToBoolean(empty));
   EXPECT_EQ(0, cfx_v8()->ToInt32(empty));
   EXPECT_EQ(0.0, cfx_v8()->ToDouble(empty));
+  EXPECT_EQ("", cfx_v8()->ToByteString(empty));
   EXPECT_EQ(L"", cfx_v8()->ToWideString(empty));
   EXPECT_TRUE(cfx_v8()->ToObject(empty).IsEmpty());
   EXPECT_TRUE(cfx_v8()->ToArray(empty).IsEmpty());
@@ -51,6 +53,7 @@ TEST_F(FXV8UnitTest, NewNull) {
   EXPECT_FALSE(cfx_v8()->ToBoolean(nullz));
   EXPECT_EQ(0, cfx_v8()->ToInt32(nullz));
   EXPECT_EQ(0.0, cfx_v8()->ToDouble(nullz));
+  EXPECT_EQ("null", cfx_v8()->ToByteString(nullz));
   EXPECT_EQ(L"null", cfx_v8()->ToWideString(nullz));
   EXPECT_TRUE(cfx_v8()->ToObject(nullz).IsEmpty());
   EXPECT_TRUE(cfx_v8()->ToArray(nullz).IsEmpty());
@@ -65,6 +68,7 @@ TEST_F(FXV8UnitTest, NewUndefined) {
   EXPECT_FALSE(cfx_v8()->ToBoolean(undef));
   EXPECT_EQ(0, cfx_v8()->ToInt32(undef));
   EXPECT_TRUE(std::isnan(cfx_v8()->ToDouble(undef)));
+  EXPECT_EQ("undefined", cfx_v8()->ToByteString(undef));
   EXPECT_EQ(L"undefined", cfx_v8()->ToWideString(undef));
   EXPECT_TRUE(cfx_v8()->ToObject(undef).IsEmpty());
   EXPECT_TRUE(cfx_v8()->ToArray(undef).IsEmpty());
@@ -79,6 +83,7 @@ TEST_F(FXV8UnitTest, NewBoolean) {
   EXPECT_TRUE(cfx_v8()->ToBoolean(boolz));
   EXPECT_EQ(1, cfx_v8()->ToInt32(boolz));
   EXPECT_EQ(1.0, cfx_v8()->ToDouble(boolz));
+  EXPECT_EQ("true", cfx_v8()->ToByteString(boolz));
   EXPECT_EQ(L"true", cfx_v8()->ToWideString(boolz));
   EXPECT_TRUE(cfx_v8()->ToObject(boolz).IsEmpty());
   EXPECT_TRUE(cfx_v8()->ToArray(boolz).IsEmpty());
@@ -87,6 +92,7 @@ TEST_F(FXV8UnitTest, NewBoolean) {
   EXPECT_FALSE(cfx_v8()->ToBoolean(boolz));
   EXPECT_EQ(0, cfx_v8()->ToInt32(boolz));
   EXPECT_EQ(0.0, cfx_v8()->ToDouble(boolz));
+  EXPECT_EQ("false", cfx_v8()->ToByteString(boolz));
   EXPECT_EQ(L"false", cfx_v8()->ToWideString(boolz));
   EXPECT_TRUE(cfx_v8()->ToObject(boolz).IsEmpty());
   EXPECT_TRUE(cfx_v8()->ToArray(boolz).IsEmpty());
@@ -101,6 +107,7 @@ TEST_F(FXV8UnitTest, NewNumber) {
   EXPECT_TRUE(cfx_v8()->ToBoolean(num));
   EXPECT_EQ(42, cfx_v8()->ToInt32(num));
   EXPECT_EQ(42.1, cfx_v8()->ToDouble(num));
+  EXPECT_EQ("42.1", cfx_v8()->ToByteString(num));
   EXPECT_EQ(L"42.1", cfx_v8()->ToWideString(num));
   EXPECT_TRUE(cfx_v8()->ToObject(num).IsEmpty());
   EXPECT_TRUE(cfx_v8()->ToArray(num).IsEmpty());
@@ -111,13 +118,23 @@ TEST_F(FXV8UnitTest, NewString) {
   v8::HandleScope handle_scope(isolate());
   v8::Context::Scope context_scope(v8::Context::New(isolate()));
 
-  auto str = cfx_v8()->NewString(L"123");
+  auto str = cfx_v8()->NewString("123");
   EXPECT_TRUE(cfx_v8()->ToBoolean(str));
   EXPECT_EQ(123, cfx_v8()->ToInt32(str));
   EXPECT_EQ(123, cfx_v8()->ToDouble(str));
+  EXPECT_EQ("123", cfx_v8()->ToByteString(str));
   EXPECT_EQ(L"123", cfx_v8()->ToWideString(str));
   EXPECT_TRUE(cfx_v8()->ToObject(str).IsEmpty());
   EXPECT_TRUE(cfx_v8()->ToArray(str).IsEmpty());
+
+  auto str2 = cfx_v8()->NewString(L"123");
+  EXPECT_TRUE(cfx_v8()->ToBoolean(str2));
+  EXPECT_EQ(123, cfx_v8()->ToInt32(str2));
+  EXPECT_EQ(123, cfx_v8()->ToDouble(str2));
+  EXPECT_EQ("123", cfx_v8()->ToByteString(str2));
+  EXPECT_EQ(L"123", cfx_v8()->ToWideString(str2));
+  EXPECT_TRUE(cfx_v8()->ToObject(str2).IsEmpty());
+  EXPECT_TRUE(cfx_v8()->ToArray(str2).IsEmpty());
 }
 
 TEST_F(FXV8UnitTest, NewDate) {
@@ -129,6 +146,7 @@ TEST_F(FXV8UnitTest, NewDate) {
   EXPECT_TRUE(cfx_v8()->ToBoolean(date));
   EXPECT_EQ(1111111111, cfx_v8()->ToInt32(date));
   EXPECT_EQ(1111111111.0, cfx_v8()->ToDouble(date));
+  EXPECT_NE("", cfx_v8()->ToByteString(date));   // exact format varies.
   EXPECT_NE(L"", cfx_v8()->ToWideString(date));  // exact format varies.
   EXPECT_TRUE(cfx_v8()->ToObject(date)->IsObject());
   EXPECT_TRUE(cfx_v8()->ToArray(date).IsEmpty());

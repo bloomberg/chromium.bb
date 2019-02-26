@@ -179,6 +179,11 @@ struct FeatureEntry {
   // FEATURE_WITH_VARIATIONS_VALUE.
   const char* feature_trial_name;
 
+  // Check whether internal |name| matches this FeatureEntry. Depending on the
+  // type of entry, this compared it to either |internal_name| or the values
+  // produced by NameForOption().
+  bool InternalNameMatches(const std::string& name) const;
+
   // Returns the name used in prefs for the option at the specified |index|.
   // Only used for types that use |num_options|.
   std::string NameForOption(int index) const;

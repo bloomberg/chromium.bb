@@ -100,7 +100,7 @@ V8PerIsolateData::V8PerIsolateData(
 // the main thread.
 V8PerIsolateData::V8PerIsolateData()
     : v8_context_snapshot_mode_(V8ContextSnapshotMode::kTakeSnapshot),
-      isolate_holder_(Platform::Current()->MainThread()->GetTaskRunner(),
+      isolate_holder_(Thread::Current()->GetTaskRunner(),
                       gin::IsolateHolder::kSingleThread,
                       gin::IsolateHolder::kAllowAtomicsWait,
                       gin::IsolateHolder::IsolateType::kBlinkMainThread,
@@ -171,7 +171,7 @@ void V8PerIsolateData::WillBeDestroyed(v8::Isolate* isolate) {
   }
   isolate->SetEmbedderHeapTracer(nullptr);
   if (data->script_wrappable_visitor_->WrapperTracingInProgress())
-    data->script_wrappable_visitor_->AbortTracing();
+    data->script_wrappable_visitor_->AbortTracingForTermination();
   data->script_wrappable_visitor_.reset();
 }
 
@@ -379,8 +379,10 @@ V8PerIsolateData::Data* V8PerIsolateData::ThreadDebugger() {
 
 void V8PerIsolateData::AddActiveScriptWrappable(
     ActiveScriptWrappableBase* wrappable) {
-  if (!active_script_wrappables_)
-    active_script_wrappables_ = new ActiveScriptWrappableSet();
+  if (!active_script_wrappables_) {
+    active_script_wrappables_ =
+        MakeGarbageCollected<ActiveScriptWrappableSet>();
+  }
 
   active_script_wrappables_->insert(wrappable);
 }

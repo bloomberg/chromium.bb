@@ -144,7 +144,7 @@ class NoOverrideSitePerProcessPolicyBrowserTest
  protected:
   NoOverrideSitePerProcessPolicyBrowserTest() {}
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kDisableSiteIsolationTrials);
+    command_line->AppendSwitch(switches::kDisableSiteIsolation);
   }
 
  private:
@@ -209,7 +209,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessPolicyBrowserTestFieldTrialTest, Simple) {
   if (content::AreAllSitesIsolatedForTesting())
     return;
   ASSERT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableSiteIsolationTrials));
+      switches::kDisableSiteIsolation));
   Expectations expectations[] = {
       {"https://foo.com/noodles.html", false},
       {"http://example.org/pumpkins.html", false},
@@ -217,15 +217,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessPolicyBrowserTestFieldTrialTest, Simple) {
   CheckExpectations(expectations, arraysize(expectations));
 }
 
-// https://crbug.com/833423: The test is incompatible with the
-// not_site_per_process_browser_tests step on the trybots.
-#if defined(OS_LINUX)
-#define MAYBE_NoPolicyNoTrialsFlags DISABLED_NoPolicyNoTrialsFlags
-#else
-#define MAYBE_NoPolicyNoTrialsFlags NoPolicyNoTrialsFlags
-#endif
-IN_PROC_BROWSER_TEST_F(SiteIsolationPolicyBrowserTest,
-                       MAYBE_NoPolicyNoTrialsFlags) {
+IN_PROC_BROWSER_TEST_F(SiteIsolationPolicyBrowserTest, NoPolicyNoTrialsFlags) {
+  // The switch to disable Site Isolation should be missing by default (i.e.
+  // without an explicit enterprise policy).
   ASSERT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableSiteIsolationTrials));
+      switches::kDisableSiteIsolation));
 }

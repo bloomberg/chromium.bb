@@ -5,6 +5,7 @@
 #include "chromecast/graphics/cast_window_manager_aura.h"
 
 #include "base/memory/ptr_util.h"
+#include "build/build_config.h"
 #include "chromecast/graphics/cast_focus_client_aura.h"
 #include "chromecast/graphics/cast_touch_activity_observer.h"
 #include "chromecast/graphics/cast_touch_event_gate.h"
@@ -22,8 +23,13 @@
 #include "ui/base/ime/input_method_factory.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/ozone/public/ozone_platform.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 #include "ui/wm/core/default_screen_position_client.h"
+
+#if defined(OS_FUCHSIA)
+#include "ui/platform_window/fuchsia/initialize_presenter_api_view.h"
+#endif
 
 namespace chromecast {
 namespace {
@@ -76,9 +82,10 @@ gfx::Rect GetPrimaryDisplayHostBounds() {
 
 }  // namespace
 
-CastWindowTreeHost::CastWindowTreeHost(bool enable_input,
-                                       const gfx::Rect& bounds)
-    : WindowTreeHostPlatform(ui::PlatformWindowInitProperties{bounds}),
+CastWindowTreeHost::CastWindowTreeHost(
+    bool enable_input,
+    ui::PlatformWindowInitProperties properties)
+    : WindowTreeHostPlatform(std::move(properties)),
       enable_input_(enable_input) {
   if (!enable_input)
     window()->SetEventTargeter(std::make_unique<aura::NullWindowTargeter>());
@@ -195,11 +202,22 @@ void CastWindowManagerAura::Setup() {
   ui::InitializeInputMethodForTesting();
 
   gfx::Rect host_bounds = GetPrimaryDisplayHostBounds();
+  ui::PlatformWindowInitProperties properties(host_bounds);
+
+#if defined(OS_FUCHSIA)
+  // When using Scenic Ozone platform we need to supply a view_token to the
+  // window. This is not necessary when using the headless ozone platform.
+  if (ui::OzonePlatform::GetInstance()
+          ->GetPlatformProperties()
+          .needs_view_token) {
+    ui::fuchsia::InitializeViewTokenAndPresentView(&properties);
+  }
+#endif
 
   LOG(INFO) << "Starting window manager, bounds: " << host_bounds.ToString();
   CHECK(aura::Env::GetInstance());
-  window_tree_host_ =
-      std::make_unique<CastWindowTreeHost>(enable_input_, host_bounds);
+  window_tree_host_ = std::make_unique<CastWindowTreeHost>(
+      enable_input_, std::move(properties));
   window_tree_host_->InitHost();
   window_tree_host_->window()->SetLayoutManager(new CastLayoutManager());
   window_tree_host_->SetRootTransform(GetPrimaryDisplayRotationTransform());

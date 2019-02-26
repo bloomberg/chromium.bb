@@ -21,6 +21,7 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/url_constants.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/features.h"
 #include "net/base/io_buffer.h"
@@ -36,24 +37,59 @@ namespace {
 void NoOpCacheStorageErrorCallback(CacheStorageCacheHandle cache_handle,
                                    CacheStorageError error) {}
 
-base::Optional<url::Origin> GetRendererOrigin(const GURL& url,
-                                              int render_process_id) {
-  GURL requesting_url =
+// Code caches use two keys: the URL of requested resource |resource_url|
+// as the primary key and the origin lock of the renderer that requested this
+// resource as secondary key. This function returns the origin lock of the
+// renderer that will be used as the secondary key for the code cache.
+// The secondary key is:
+// Case 1. an empty GURL if the render process is not locked to an origin. In
+// this case, code cache uses |resource_url| as the key.
+// Case 2. a base::nullopt, if the origin lock is opaque (for ex: browser
+// initiated navigation to a data: URL). In these cases, the code should not be
+// cached since the serialized value of opaque origins should not be used as a
+// key.
+// Case 3: origin_lock if the scheme of origin_lock is Http/Https/chrome.
+// Case 4. base::nullopt otherwise.
+base::Optional<GURL> GetSecondaryKeyForCodeCache(const GURL& resource_url,
+                                                 int render_process_id) {
+  if (!resource_url.is_valid() || !resource_url.SchemeIsHTTPOrHTTPS())
+    return base::nullopt;
+
+  GURL origin_lock =
       ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
           render_process_id);
 
-  if (!requesting_url.is_valid() || !url.is_valid())
+  // Case 1: If origin lock is empty, it means the render process is not locked
+  // to any origin. It is safe to just use the |resource_url| of the requested
+  // resource as the key. Return an empty GURL as the second key.
+  if (origin_lock.is_empty())
+    return GURL::EmptyGURL();
+
+  // Case 2: Don't use invalid origin_lock as a key.
+  if (!origin_lock.is_valid())
     return base::nullopt;
 
-  url::Origin origin = url::Origin::Create(requesting_url);
-
-  // Don't cache the code corresponding to unique origins. The same-origin
-  // checks should always fail for unique origins but the serialized value of
-  // unique origins does not ensure this.
-  if (origin.opaque())
+  // Case 2: Don't cache the code corresponding to opaque origins. The same
+  // origin checks should always fail for opaque origins but the serialized
+  // value of opaque origins does not ensure this.
+  if (url::Origin::Create(origin_lock).opaque())
     return base::nullopt;
 
-  return origin;
+  // Case 3: origin_lock is used to enfore site-isolation in code caches.
+  // Http/https/chrome schemes are safe to be used as a secondary key. Other
+  // schemes could be enabled if they are known to be safe and if it is
+  // required to cache code from those origins.
+  //
+  // file:// URLs will have a "file:" origin lock and would thus share a
+  // cache across all file:// URLs. That would likely be ok for security, but
+  // since this case is not performance sensitive we will keep things simple and
+  // limit the cache to http/https/chrome processes.
+  if (origin_lock.SchemeIsHTTPOrHTTPS() ||
+      origin_lock.SchemeIs(content::kChromeUIScheme)) {
+    return origin_lock;
+  }
+
+  return base::nullopt;
 }
 
 }  // namespace
@@ -114,13 +150,12 @@ void CodeCacheHostImpl::DidGenerateCacheableMetadata(
     if (!code_cache)
       return;
 
-    base::Optional<url::Origin> requesting_origin =
-        GetRendererOrigin(url, render_process_id_);
-    if (!requesting_origin)
+    base::Optional<GURL> origin_lock =
+        GetSecondaryKeyForCodeCache(url, render_process_id_);
+    if (!origin_lock)
       return;
 
-    code_cache->WriteData(url, *requesting_origin, expected_response_time,
-                          data);
+    code_cache->WriteData(url, *origin_lock, expected_response_time, data);
   }
 }
 
@@ -133,9 +168,9 @@ void CodeCacheHostImpl::FetchCachedCode(blink::mojom::CodeCacheType cache_type,
     return;
   }
 
-  base::Optional<url::Origin> requesting_origin =
-      GetRendererOrigin(url, render_process_id_);
-  if (!requesting_origin) {
+  base::Optional<GURL> origin_lock =
+      GetSecondaryKeyForCodeCache(url, render_process_id_);
+  if (!origin_lock) {
     std::move(callback).Run(base::Time(), std::vector<uint8_t>());
     return;
   }
@@ -143,7 +178,7 @@ void CodeCacheHostImpl::FetchCachedCode(blink::mojom::CodeCacheType cache_type,
   auto read_callback = base::BindRepeating(
       &CodeCacheHostImpl::OnReceiveCachedCode, weak_ptr_factory_.GetWeakPtr(),
       base::Passed(&callback));
-  code_cache->FetchEntry(url, *requesting_origin, read_callback);
+  code_cache->FetchEntry(url, *origin_lock, read_callback);
 }
 
 void CodeCacheHostImpl::ClearCodeCacheEntry(
@@ -153,12 +188,12 @@ void CodeCacheHostImpl::ClearCodeCacheEntry(
   if (!code_cache)
     return;
 
-  base::Optional<url::Origin> requesting_origin =
-      GetRendererOrigin(url, render_process_id_);
-  if (!requesting_origin)
+  base::Optional<GURL> origin_lock =
+      GetSecondaryKeyForCodeCache(url, render_process_id_);
+  if (!origin_lock)
     return;
 
-  code_cache->DeleteEntry(url, *requesting_origin);
+  code_cache->DeleteEntry(url, *origin_lock);
 }
 
 void CodeCacheHostImpl::DidGenerateCacheableMetadataInCacheStorage(
@@ -167,6 +202,9 @@ void CodeCacheHostImpl::DidGenerateCacheableMetadataInCacheStorage(
     const std::vector<uint8_t>& data,
     const url::Origin& cache_storage_origin,
     const std::string& cache_storage_cache_name) {
+  if (!cache_storage_context_->cache_manager())
+    return;
+
   scoped_refptr<net::IOBuffer> buf =
       base::MakeRefCounted<net::IOBuffer>(data.size());
   if (!data.empty())

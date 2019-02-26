@@ -79,6 +79,41 @@ struct CONTENT_EXPORT InitiatorCSPInfo {
   base::Optional<CSPSource> initiator_self_source;
 };
 
+// This enum controls how navigations behave when they turn into downloads.
+// Disallow options are enumerated to make metrics logging possible at
+// download-discovery time.
+//
+// This enum backs a histogram. Please keep enums.xml up to date with any
+// changes, and new entries should be appended at the end. Never re-arrange /
+// re-use values.
+enum class NavigationDownloadPolicy {
+  kAllow = 0,
+  kDisallowViewSource = 1,
+  kDisallowInterstitial = 2,
+
+  // TODO(csharrison): Temporary to collect metrics. Some opener navigations
+  // should be disallowed from creating downloads. See http://crbug.com/632514.
+  // All of these policies are mutually exclusive, and more specific policies
+  // will be set if their conditions match.
+  //
+  // The navigation was initiated on an opener.
+  kAllowOpener = 3,
+  // Opener navigation without a user gesture.
+  kAllowOpenerNoGesture = 4,
+  // Opener navigation initiated by a site that is cross origin from the target.
+  kAllowOpenerCrossOrigin = 5,
+  // Opener navigation initiated by a site that is cross origin from the target,
+  // and without a user gesture.
+  kAllowOpenerCrossOriginNoGesture = 6,
+
+  kMaxValue = kAllowOpenerCrossOriginNoGesture
+};
+
+// Returns whether the given |policy| should allow for a download. This function
+// should be removed when http://crbug.com/632514 is resolved, when callers will
+// just compare with kAllow.
+bool IsNavigationDownloadAllowed(NavigationDownloadPolicy policy);
+
 // Used by all navigation IPCs.
 struct CONTENT_EXPORT CommonNavigationParams {
   CommonNavigationParams();
@@ -87,7 +122,7 @@ struct CONTENT_EXPORT CommonNavigationParams {
       const Referrer& referrer,
       ui::PageTransition transition,
       FrameMsg_Navigate_Type::Value navigation_type,
-      bool allow_download,
+      NavigationDownloadPolicy download_policy,
       bool should_replace_current_entry,
       const GURL& base_url_for_data_url,
       const GURL& history_url_for_data_url,
@@ -99,6 +134,7 @@ struct CONTENT_EXPORT CommonNavigationParams {
       bool started_from_context_menu,
       bool has_user_gesture,
       const InitiatorCSPInfo& initiator_csp_info,
+      const std::string& href_translate,
       base::TimeTicks input_start = base::TimeTicks());
   CommonNavigationParams(const CommonNavigationParams& other);
   ~CommonNavigationParams();
@@ -118,9 +154,10 @@ struct CONTENT_EXPORT CommonNavigationParams {
   FrameMsg_Navigate_Type::Value navigation_type =
       FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
 
-  // Allows the URL to be downloaded (true by default).
-  // Avoid downloading when in view-source mode.
-  bool allow_download = true;
+  // Enum which governs how downloads are handled by this navigation. By
+  // default, the navigation is allowed to become a download. Multiple values
+  // for disallowed downloads helps with metrics.
+  NavigationDownloadPolicy download_policy = NavigationDownloadPolicy::kAllow;
 
   // Informs the RenderView the pending navigation should replace the current
   // history entry when it commits. This is used for cross-process redirects so
@@ -173,6 +210,10 @@ struct CONTENT_EXPORT CommonNavigationParams {
   // The current origin policy for this request's origin.
   // (Empty if none applies.)
   std::string origin_policy;
+
+  // The value of the hrefTranslate attribute if this navigation was initiated
+  // from a link that had that attribute set.
+  std::string href_translate;
 
   // The time the input event leading to the navigation occurred. This will
   // not always be set; it depends on the creator of the CommonNavigationParams

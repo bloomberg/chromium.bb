@@ -194,7 +194,6 @@ NavigationPolicy NavigationPolicyForCreateWindow(
   return user_policy;
 }
 
-STATIC_ASSERT_ENUM(kWebNavigationPolicyIgnore, kNavigationPolicyIgnore);
 STATIC_ASSERT_ENUM(kWebNavigationPolicyDownload, kNavigationPolicyDownload);
 STATIC_ASSERT_ENUM(kWebNavigationPolicyCurrentTab, kNavigationPolicyCurrentTab);
 STATIC_ASSERT_ENUM(kWebNavigationPolicyNewBackgroundTab,
@@ -203,7 +202,5 @@ STATIC_ASSERT_ENUM(kWebNavigationPolicyNewForegroundTab,
                    kNavigationPolicyNewForegroundTab);
 STATIC_ASSERT_ENUM(kWebNavigationPolicyNewWindow, kNavigationPolicyNewWindow);
 STATIC_ASSERT_ENUM(kWebNavigationPolicyNewPopup, kNavigationPolicyNewPopup);
-STATIC_ASSERT_ENUM(kWebNavigationPolicyHandledByClient,
-                   kNavigationPolicyHandledByClient);
 
 }  // namespace blink

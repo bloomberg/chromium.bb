@@ -205,7 +205,6 @@ interface TestObject {
     [SetterCallWith=(CurrentWindow,EnteredWindow)] attribute DOMString setterCallWithCurrentWindowAndEnteredWindowStringAttribute;
     [SetterCallWith=ExecutionContext] attribute DOMString setterCallWithExecutionContextStringAttribute;
     attribute [TreatNullAs=EmptyString] DOMString treatNullAsEmptyStringStringAttribute;
-    attribute [TreatNullAs=NullString] DOMString treatNullAsNullStringStringAttribute;
     [LegacyInterfaceTypeChecking] attribute float legacyInterfaceTypeCheckingFloatAttribute; // nop for non-interface types
     [LegacyInterfaceTypeChecking] attribute TestInterface legacyInterfaceTypeCheckingTestInterfaceAttribute;
     [LegacyInterfaceTypeChecking] attribute TestInterface? legacyInterfaceTypeCheckingTestInterfaceOrNullAttribute;
@@ -290,8 +289,8 @@ interface TestObject {
     void voidMethodArrayBufferArg(ArrayBuffer arrayBufferArg);
     void voidMethodArrayBufferOrNullArg(ArrayBuffer? arrayBufferArg);
     void voidMethodArrayBufferViewArg(ArrayBufferView arrayBufferViewArg);
-    void voidMethodFlexibleArrayBufferViewArg([FlexibleArrayBufferView] ArrayBufferView arrayBufferViewArg);
-    void voidMethodFlexibleArrayBufferViewTypedArg([FlexibleArrayBufferView] Float32Array typedArrayBufferViewArg);
+    void voidMethodFlexibleArrayBufferViewArg([FlexibleArrayBufferView, AllowShared] ArrayBufferView arrayBufferViewArg);
+    void voidMethodFlexibleArrayBufferViewTypedArg([FlexibleArrayBufferView, AllowShared] Float32Array typedArrayBufferViewArg);
     void voidMethodFloat32ArrayArg(Float32Array float32ArrayArg);
     void voidMethodInt32ArrayArg(Int32Array int32ArrayArg);
     void voidMethodUint8ArrayArg(Uint8Array uint8ArrayArg);
@@ -456,7 +455,6 @@ interface TestObject {
     void voidMethodEnforceRangeLongArg([EnforceRange] long enforceRangeLongArg);
     // [TreatNullAs]
     void voidMethodTreatNullAsEmptyStringStringArg([TreatNullAs=EmptyString] DOMString treatNullAsEmptyStringStringArg);
-    void voidMethodTreatNullAsNullStringStringArg([TreatNullAs=NullString] DOMString treatNullAsNullStringStringArg);
 
     // Extended attributes for methods
     [LogActivity, LogAllWorlds] void activityLoggingAccessForAllWorldsMethod();

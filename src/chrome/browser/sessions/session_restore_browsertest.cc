@@ -608,7 +608,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
 
   // Make sure that the restored tab was restored with the correct
   // timestamp and status code.
-  const content::WebContents* contents =
+  content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
   const content::NavigationEntry* entry =

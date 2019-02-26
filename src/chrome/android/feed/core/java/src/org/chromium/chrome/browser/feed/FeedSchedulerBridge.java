@@ -62,7 +62,7 @@ public class FeedSchedulerBridge implements FeedScheduler {
 
     @Override
     public int shouldSessionRequestData(SessionManagerState sessionManagerState) {
-        assert mNativeBridge != 0;
+        if (mNativeBridge == 0) return SchedulerApi.RequestBehavior.UNKNOWN;
 
         @NativeRequestBehavior
         int nativeBehavior = nativeShouldSessionRequestData(mNativeBridge,
@@ -93,14 +93,16 @@ public class FeedSchedulerBridge implements FeedScheduler {
 
     @Override
     public void onReceiveNewContent(long contentCreationDateTimeMs) {
-        assert mNativeBridge != 0;
-        nativeOnReceiveNewContent(mNativeBridge, contentCreationDateTimeMs);
+        if (mNativeBridge != 0) {
+            nativeOnReceiveNewContent(mNativeBridge, contentCreationDateTimeMs);
+        }
     }
 
     @Override
     public void onRequestError(int networkResponseCode) {
-        assert mNativeBridge != 0;
-        nativeOnRequestError(mNativeBridge, networkResponseCode);
+        if (mNativeBridge != 0) {
+            nativeOnRequestError(mNativeBridge, networkResponseCode);
+        }
     }
 
     @Override
@@ -122,6 +124,12 @@ public class FeedSchedulerBridge implements FeedScheduler {
         nativeOnSuggestionConsumed(mNativeBridge);
     }
 
+    @Override
+    public void onArticlesCleared(boolean suppressRefreshes) {
+        assert mNativeBridge != 0;
+        nativeOnArticlesCleared(mNativeBridge, suppressRefreshes);
+    }
+
     @CalledByNative
     private boolean triggerRefresh() {
         if (mRequestManager != null && mSessionManager != null) {
@@ -141,6 +149,7 @@ public class FeedSchedulerBridge implements FeedScheduler {
     private void cancelWakeUp() {
         FeedRefreshTask.cancelWakeUp();
     }
+
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeFeedSchedulerBridge);
     private native int nativeShouldSessionRequestData(long nativeFeedSchedulerBridge,
@@ -153,4 +162,6 @@ public class FeedSchedulerBridge implements FeedScheduler {
     private native void nativeOnFixedTimer(
             long nativeFeedSchedulerBridge, Callback<Void> onCompletion);
     private native void nativeOnSuggestionConsumed(long nativeFeedSchedulerBridge);
+    private native void nativeOnArticlesCleared(
+            long nativeFeedSchedulerBridge, boolean suppressRefreshes);
 }

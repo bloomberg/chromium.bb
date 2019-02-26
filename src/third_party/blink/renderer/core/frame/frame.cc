@@ -56,8 +56,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 Frame::~Frame() {
   InstanceCounters::DecrementCounter(InstanceCounters::kFrameCounter);
   DCHECK(!owner_);
@@ -71,6 +69,7 @@ void Frame::Trace(blink::Visitor* visitor) {
   visitor->Trace(window_proxy_manager_);
   visitor->Trace(dom_window_);
   visitor->Trace(client_);
+  visitor->Trace(navigation_rate_limiter_);
 }
 
 void Frame::Detach(FrameDetachType type) {
@@ -80,6 +79,10 @@ void Frame::Detach(FrameDetachType type) {
   lifecycle_.AdvanceTo(FrameLifecycle::kDetaching);
 
   DetachImpl(type);
+
+  if (GetPage())
+    GetPage()->GetFocusController().FrameDetached(this);
+
   // Due to re-entrancy, |this| could have completed detaching already.
   // TODO(dcheng): This DCHECK is not always true. See https://crbug.com/838348.
   DCHECK(IsDetached() == !client_);
@@ -185,6 +188,22 @@ void Frame::DidChangeVisibilityState() {
 void Frame::NotifyUserActivationInLocalTree() {
   for (Frame* node = this; node; node = node->Tree().Parent())
     node->user_activation_state_.Activate();
+
+  // See FrameTreeNode::NotifyUserActivation() for details about this block.
+  if (IsLocalFrame() && RuntimeEnabledFeatures::UserActivationV2Enabled() &&
+      RuntimeEnabledFeatures::UserActivationSameOriginVisibilityEnabled()) {
+    const SecurityOrigin* security_origin =
+        ToLocalFrame(this)->GetSecurityContext()->GetSecurityOrigin();
+
+    Frame& root = Tree().Top();
+    for (Frame* node = &root; node; node = node->Tree().TraverseNext(&root)) {
+      if (node->IsLocalFrame() &&
+          security_origin->CanAccess(
+              ToLocalFrame(node)->GetSecurityContext()->GetSecurityOrigin())) {
+        node->user_activation_state_.Activate();
+      }
+    }
+  }
 }
 
 bool Frame::ConsumeTransientUserActivationInLocalTree() {
@@ -200,15 +219,9 @@ bool Frame::ConsumeTransientUserActivationInLocalTree() {
   return was_active;
 }
 
-bool Frame::DeprecatedIsFeatureEnabled(
-    mojom::FeaturePolicyFeature feature) const {
-  return GetSecurityContext()->IsFeatureEnabled(feature,
-                                                ReportOptions::kDoNotReport);
-}
-
-bool Frame::DeprecatedIsFeatureEnabled(mojom::FeaturePolicyFeature feature,
-                                       ReportOptions report_on_failure) const {
-  return GetSecurityContext()->IsFeatureEnabled(feature, report_on_failure);
+void Frame::ClearUserActivationInLocalTree() {
+  for (Frame* node = this; node; node = node->Tree().TraverseNext(this))
+    node->user_activation_state_.Clear();
 }
 
 void Frame::SetOwner(FrameOwner* owner) {
@@ -251,6 +264,7 @@ Frame::Frame(FrameClient* client,
       owner_(owner),
       client_(client),
       window_proxy_manager_(window_proxy_manager),
+      navigation_rate_limiter_(*this),
       is_loading_(false),
       devtools_frame_token_(client->GetDevToolsFrameToken()),
       create_stack_(base::debug::StackTrace()) {

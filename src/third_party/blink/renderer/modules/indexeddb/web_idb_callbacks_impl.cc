@@ -31,10 +31,9 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_cursor.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_error.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_key.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_name_and_version.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_value.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -42,6 +41,8 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_metadata.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_request.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_value.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_cursor.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_database.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
@@ -51,6 +52,7 @@ using blink::WebIDBDatabaseError;
 using blink::WebIDBKey;
 using blink::WebIDBKeyPath;
 using blink::WebIDBMetadata;
+using blink::WebIDBNameAndVersion;
 using blink::WebIDBValue;
 using blink::WebVector;
 
@@ -65,7 +67,7 @@ std::unique_ptr<WebIDBCallbacksImpl> WebIDBCallbacksImpl::Create(
 WebIDBCallbacksImpl::WebIDBCallbacksImpl(IDBRequest* request)
     : request_(request) {
   probe::AsyncTaskScheduled(request_->GetExecutionContext(),
-                            IndexedDBNames::IndexedDB, this);
+                            indexed_db_names::kIndexedDB, this);
 }
 
 WebIDBCallbacksImpl::~WebIDBCallbacksImpl() {
@@ -85,6 +87,12 @@ void WebIDBCallbacksImpl::OnError(const WebIDBDatabaseError& error) {
   probe::AsyncTask async_task(request_->GetExecutionContext(), this, "error");
   request_->HandleResponse(DOMException::Create(
       static_cast<DOMExceptionCode>(error.Code()), error.Message()));
+}
+
+void WebIDBCallbacksImpl::OnSuccess(
+    const WebVector<WebIDBNameAndVersion>& web_name_and_version_list) {
+  // Only implemented in idb_factory.cc for the promise-based databases() call.
+  NOTREACHED();
 }
 
 void WebIDBCallbacksImpl::OnSuccess(
@@ -207,7 +215,7 @@ void WebIDBCallbacksImpl::OnBlocked(long long old_version) {
 void WebIDBCallbacksImpl::OnUpgradeNeeded(long long old_version,
                                           WebIDBDatabase* database,
                                           const WebIDBMetadata& metadata,
-                                          unsigned short data_loss,
+                                          mojom::IDBDataLoss data_loss,
                                           WebString data_loss_message) {
   std::unique_ptr<WebIDBDatabase> db = base::WrapUnique(database);
   if (request_) {
@@ -216,9 +224,9 @@ void WebIDBCallbacksImpl::OnUpgradeNeeded(long long old_version,
 #if DCHECK_IS_ON()
     DCHECK(!request_->TransactionHasQueuedResults());
 #endif  // DCHECK_IS_ON()
-    request_->EnqueueUpgradeNeeded(
-        old_version, std::move(db), IDBDatabaseMetadata(metadata),
-        static_cast<WebIDBDataLoss>(data_loss), data_loss_message);
+    request_->EnqueueUpgradeNeeded(old_version, std::move(db),
+                                   IDBDatabaseMetadata(metadata), data_loss,
+                                   data_loss_message);
   } else {
     db->Close();
   }

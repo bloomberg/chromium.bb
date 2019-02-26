@@ -17,7 +17,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -38,19 +37,18 @@ namespace base {
 class SequencedTaskRunner;
 class SingleThreadTaskRunner;
 class TaskRunner;
-}
+}  // namespace base
 
 namespace quota_internals {
 class QuotaInternalsProxy;
-}
+}  // namespace quota_internals
 
 namespace content {
 class MockQuotaManager;
 class MockStorageClient;
 class QuotaManagerTest;
 class StorageMonitorTest;
-
-}
+}  // namespace content
 
 namespace storage {
 
@@ -112,11 +110,12 @@ class STORAGE_EXPORT QuotaManager
  public:
   using UsageAndQuotaCallback = base::OnceCallback<
       void(blink::mojom::QuotaStatusCode, int64_t usage, int64_t quota)>;
-  using UsageAndQuotaWithBreakdownCallback = base::OnceCallback<void(
-      blink::mojom::QuotaStatusCode,
-      int64_t usage,
-      int64_t quota,
-      base::flat_map<QuotaClient::ID, int64_t> usage_breakdown)>;
+
+  using UsageAndQuotaWithBreakdownCallback =
+      base::OnceCallback<void(blink::mojom::QuotaStatusCode,
+                              int64_t usage,
+                              int64_t quota,
+                              blink::mojom::UsageBreakdownPtr usage_breakdown)>;
 
   static const int64_t kNoLimit;
 
@@ -140,7 +139,6 @@ class STORAGE_EXPORT QuotaManager
   virtual void GetUsageAndQuotaForWebApps(const url::Origin& origin,
                                           blink::mojom::StorageType type,
                                           UsageAndQuotaCallback callback);
-
   // Called by DevTools.
   // This method is declared as virtual to allow test code to override it.
   virtual void GetUsageAndQuotaWithBreakdown(

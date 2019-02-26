@@ -27,8 +27,8 @@
 
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
-#include "third_party/blink/renderer/core/css_property_names.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node_list.h"
@@ -60,7 +60,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 static bool HasNoAttributeOrOnlyStyleAttribute(
     const HTMLElement* element,
@@ -70,7 +70,7 @@ static bool HasNoAttributeOrOnlyStyleAttribute(
     return true;
 
   unsigned matched_attributes = 0;
-  if (element->hasAttribute(styleAttr) &&
+  if (element->hasAttribute(kStyleAttr) &&
       (should_style_attribute_be_empty == kAllowNonEmptyStyleAttribute ||
        !element->InlineStyle() || element->InlineStyle()->IsEmpty()))
     matched_attributes++;
@@ -512,11 +512,11 @@ void ApplyStyleCommand::ApplyRelativeFontStyleChange(
           *CSSPrimitiveValue::Create(desired_font_size,
                                      CSSPrimitiveValue::UnitType::kPixels),
           false);
-      SetNodeAttribute(element, styleAttr,
+      SetNodeAttribute(element, kStyleAttr,
                        AtomicString(inline_style->AsText()));
     }
     if (inline_style->IsEmpty()) {
-      RemoveElementAttribute(element, styleAttr);
+      RemoveElementAttribute(element, kStyleAttr);
       if (IsSpanWithoutAttributesOrUnstyledStyleSpan(element))
         unstyled_spans.push_back(element);
     }
@@ -646,16 +646,16 @@ void ApplyStyleCommand::RemoveEmbeddingUpToEnclosingBlock(
     // it assumes that if the 'dir' attribute is present, then removing it will
     // suffice, and otherwise it sets the property in the inline style
     // declaration.
-    if (element->hasAttribute(dirAttr)) {
+    if (element->hasAttribute(kDirAttr)) {
       // FIXME: If this is a BDO element, we should probably just remove it if
       // it has no other attributes, like we (should) do with B and I elements.
-      RemoveElementAttribute(element, dirAttr);
+      RemoveElementAttribute(element, kDirAttr);
     } else {
       MutableCSSPropertyValueSet* inline_style =
           CopyStyleOrCreateEmpty(element->InlineStyle());
       inline_style->SetProperty(CSSPropertyUnicodeBidi, CSSValueNormal);
       inline_style->RemoveProperty(CSSPropertyDirection);
-      SetNodeAttribute(element, styleAttr,
+      SetNodeAttribute(element, kStyleAttr,
                        AtomicString(inline_style->AsText()));
       if (IsSpanWithoutAttributesOrUnstyledStyleSpan(element)) {
         RemoveNodePreservingChildren(element, editing_state);
@@ -998,7 +998,7 @@ void ApplyStyleCommand::ApplyInlineStyleToNodeRange(
       MutableCSSPropertyValueSet* inline_style =
           CopyStyleOrCreateEmpty(element->InlineStyle());
       inline_style->MergeAndOverrideOnConflict(style->Style());
-      SetNodeAttribute(element, styleAttr,
+      SetNodeAttribute(element, kStyleAttr,
                        AtomicString(inline_style->AsText()));
       continue;
     }
@@ -1327,7 +1327,7 @@ void ApplyStyleCommand::ApplyInlineStyleToPushDown(
   // FIXME: applyInlineStyleToRange should be used here instead.
   if ((node->GetLayoutObject()->IsLayoutBlockFlow() || node->hasChildren()) &&
       node->IsHTMLElement()) {
-    SetNodeAttribute(ToHTMLElement(node), styleAttr,
+    SetNodeAttribute(ToHTMLElement(node), kStyleAttr,
                      AtomicString(new_inline_style->Style()->AsText()));
     return;
   }
@@ -1389,12 +1389,12 @@ void ApplyStyleCommand::PushDownInlineStyleAroundNode(
       if (!child->contains(target_node) && elements_to_push_down.size()) {
         for (const auto& element : elements_to_push_down) {
           Element* wrapper = element->CloneWithoutChildren();
-          wrapper->removeAttribute(styleAttr);
+          wrapper->removeAttribute(kStyleAttr);
           // Delete id attribute from the second element because the same id
           // cannot be used for more than one element
-          element->removeAttribute(HTMLNames::idAttr);
+          element->removeAttribute(html_names::kIdAttr);
           if (IsHTMLAnchorElement(element))
-            element->removeAttribute(HTMLNames::nameAttr);
+            element->removeAttribute(html_names::kNameAttr);
           SurroundNodeRangeWithElement(child, child, wrapper, editing_state);
           if (editing_state->IsAborted())
             return;
@@ -1826,7 +1826,7 @@ void ApplyStyleCommand::AddBlockStyle(const StyleChange& style_change,
       css_text.Append(' ');
     css_text.Append(decl->AsText());
   }
-  SetNodeAttribute(block, styleAttr, css_text.ToAtomicString());
+  SetNodeAttribute(block, kStyleAttr, css_text.ToAtomicString());
 }
 
 void ApplyStyleCommand::AddInlineStyleIfNeeded(EditingStyle* style,
@@ -1910,24 +1910,24 @@ void ApplyStyleCommand::ApplyInlineStyleChange(
       style_change.ApplyFontSize()) {
     if (font_container) {
       if (style_change.ApplyFontColor())
-        SetNodeAttribute(font_container, colorAttr,
+        SetNodeAttribute(font_container, kColorAttr,
                          AtomicString(style_change.FontColor()));
       if (style_change.ApplyFontFace())
-        SetNodeAttribute(font_container, faceAttr,
+        SetNodeAttribute(font_container, kFaceAttr,
                          AtomicString(style_change.FontFace()));
       if (style_change.ApplyFontSize())
-        SetNodeAttribute(font_container, sizeAttr,
+        SetNodeAttribute(font_container, kSizeAttr,
                          AtomicString(style_change.FontSize()));
     } else {
       HTMLFontElement* font_element = HTMLFontElement::Create(GetDocument());
       if (style_change.ApplyFontColor())
-        font_element->setAttribute(colorAttr,
+        font_element->setAttribute(kColorAttr,
                                    AtomicString(style_change.FontColor()));
       if (style_change.ApplyFontFace())
-        font_element->setAttribute(faceAttr,
+        font_element->setAttribute(kFaceAttr,
                                    AtomicString(style_change.FontFace()));
       if (style_change.ApplyFontSize())
-        font_element->setAttribute(sizeAttr,
+        font_element->setAttribute(kSizeAttr,
                                    AtomicString(style_change.FontSize()));
       SurroundNodeRangeWithElement(start_node, end_node, font_element,
                                    editing_state);
@@ -1946,14 +1946,15 @@ void ApplyStyleCommand::ApplyInlineStyleChange(
         if (!existing_text.IsEmpty())
           css_text.Append(' ');
         css_text.Append(style_change.CssStyle());
-        SetNodeAttribute(style_container, styleAttr, css_text.ToAtomicString());
+        SetNodeAttribute(style_container, kStyleAttr,
+                         css_text.ToAtomicString());
       } else {
-        SetNodeAttribute(style_container, styleAttr,
+        SetNodeAttribute(style_container, kStyleAttr,
                          AtomicString(style_change.CssStyle()));
       }
     } else {
       HTMLSpanElement* style_element = HTMLSpanElement::Create(GetDocument());
-      style_element->setAttribute(styleAttr,
+      style_element->setAttribute(kStyleAttr,
                                   AtomicString(style_change.CssStyle()));
       SurroundNodeRangeWithElement(start_node, end_node, style_element,
                                    editing_state);
@@ -1964,7 +1965,7 @@ void ApplyStyleCommand::ApplyInlineStyleChange(
 
   if (style_change.ApplyBold()) {
     SurroundNodeRangeWithElement(start_node, end_node,
-                                 HTMLElement::Create(bTag, GetDocument()),
+                                 HTMLElement::Create(kBTag, GetDocument()),
                                  editing_state);
     if (editing_state->IsAborted())
       return;
@@ -1972,7 +1973,7 @@ void ApplyStyleCommand::ApplyInlineStyleChange(
 
   if (style_change.ApplyItalic()) {
     SurroundNodeRangeWithElement(start_node, end_node,
-                                 HTMLElement::Create(iTag, GetDocument()),
+                                 HTMLElement::Create(kITag, GetDocument()),
                                  editing_state);
     if (editing_state->IsAborted())
       return;
@@ -1980,7 +1981,7 @@ void ApplyStyleCommand::ApplyInlineStyleChange(
 
   if (style_change.ApplyUnderline()) {
     SurroundNodeRangeWithElement(start_node, end_node,
-                                 HTMLElement::Create(uTag, GetDocument()),
+                                 HTMLElement::Create(kUTag, GetDocument()),
                                  editing_state);
     if (editing_state->IsAborted())
       return;
@@ -1988,7 +1989,7 @@ void ApplyStyleCommand::ApplyInlineStyleChange(
 
   if (style_change.ApplyLineThrough()) {
     SurroundNodeRangeWithElement(start_node, end_node,
-                                 HTMLElement::Create(strikeTag, GetDocument()),
+                                 HTMLElement::Create(kStrikeTag, GetDocument()),
                                  editing_state);
     if (editing_state->IsAborted())
       return;
@@ -1996,13 +1997,13 @@ void ApplyStyleCommand::ApplyInlineStyleChange(
 
   if (style_change.ApplySubscript()) {
     SurroundNodeRangeWithElement(start_node, end_node,
-                                 HTMLElement::Create(subTag, GetDocument()),
+                                 HTMLElement::Create(kSubTag, GetDocument()),
                                  editing_state);
     if (editing_state->IsAborted())
       return;
   } else if (style_change.ApplySuperscript()) {
     SurroundNodeRangeWithElement(start_node, end_node,
-                                 HTMLElement::Create(supTag, GetDocument()),
+                                 HTMLElement::Create(kSupTag, GetDocument()),
                                  editing_state);
     if (editing_state->IsAborted())
       return;

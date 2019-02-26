@@ -77,8 +77,6 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   BubbleBorder::Arrow arrow() const { return arrow_; }
   void SetArrow(BubbleBorder::Arrow arrow);
 
-  void set_mirror_arrow_in_rtl(bool mirror) { mirror_arrow_in_rtl_ = mirror; }
-
   BubbleBorder::Shadow GetShadow() const;
   void set_shadow(BubbleBorder::Shadow shadow) { shadow_ = shadow; }
 
@@ -120,11 +118,6 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   // bubble. The bubble is automatically repositioned when the anchor view
   // bounds change as a result of the widget's bounds changing.
   void OnAnchorBoundsChanged();
-
-  // If this is called, enables focus to traverse from the anchor view
-  // to inside this dialog and back out. This may become the default in
-  // the future.
-  void EnableFocusTraversalFromAnchorView();
 
  protected:
   BubbleDialogDelegateView();
@@ -209,9 +202,6 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
 
   // The arrow's location on the bubble.
   BubbleBorder::Arrow arrow_;
-
-  // Automatically mirror the arrow in RTL layout.
-  bool mirror_arrow_in_rtl_;
 
   // Bubble border shadow to use.
   BubbleBorder::Shadow shadow_;

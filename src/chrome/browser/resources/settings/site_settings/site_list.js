@@ -27,6 +27,8 @@ Polymer({
       value: false,
     },
 
+    categoryHeader: String,
+
     /**
      * The site serving as the model for the currently open action menu.
      * @private {?SiteException}
@@ -102,6 +104,9 @@ Polymer({
 
     /** @private */
     lastFocused_: Object,
+
+    /** @private */
+    listBlurred_: Boolean,
 
     /** @private */
     tooltipText_: String,
@@ -240,8 +245,15 @@ Polymer({
     // potential targets. Since paper-tooltip does not expose a public property
     // or method to update the target, the private property |_target| is
     // updated directly.
-    this.$.tooltip._target = target;
-    /** @type {{updatePosition: Function}} */ (this.$.tooltip).updatePosition();
+    const tooltip = this.$.tooltip;
+    /** @type {{updatePosition: Function}} */ (tooltip).updatePosition();
+    tooltip._target = target;
+    const parentRect = tooltip.offsetParent.getBoundingClientRect();
+    const rect = tooltip.getBoundingClientRect();
+    if (parentRect.left + parentRect.width < rect.left + rect.width) {
+      tooltip.style.right = '0';
+      tooltip.style.left = 'auto';
+    }
     const hide = () => {
       this.$.tooltip.hide();
       target.removeEventListener('mouseleave', hide);
@@ -268,6 +280,8 @@ Polymer({
     if (this.category === settings.ContentSettingsTypes.NOTIFICATIONS &&
         loadTimeData.valueExists('enableMultideviceSettings') &&
         loadTimeData.getBoolean('enableMultideviceSettings') &&
+        loadTimeData.valueExists('multideviceAllowedByPolicy') &&
+        loadTimeData.getBoolean('multideviceAllowedByPolicy') &&
         !this.androidSmsInfo_) {
       const multideviceSetupProxy =
           settings.MultiDeviceBrowserProxyImpl.getInstance();

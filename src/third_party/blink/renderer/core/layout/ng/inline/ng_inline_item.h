@@ -91,8 +91,8 @@ class CORE_EXPORT NGInlineItem {
 
   // If this item should create a box fragment. Box fragments can be omitted for
   // optimization if this is false.
-  bool ShouldCreateBoxFragment() const { return should_create_box_fragment_; }
-  void SetShouldCreateBoxFragment() { should_create_box_fragment_ = true; }
+  bool ShouldCreateBoxFragment() const;
+  void SetShouldCreateBoxFragment();
 
   unsigned StartOffset() const { return start_offset_; }
   unsigned EndOffset() const { return end_offset_; }
@@ -196,7 +196,6 @@ class CORE_EXPORT NGInlineItem {
   unsigned bidi_level_ : 8;              // UBiDiLevel is defined as uint8_t.
   unsigned shape_options_ : 2;
   unsigned is_empty_item_ : 1;
-  unsigned should_create_box_fragment_ : 1;
   unsigned style_variant_ : 2;
   unsigned end_collapse_type_ : 2;  // NGCollapseType
   unsigned is_end_collapsible_newline_ : 1;

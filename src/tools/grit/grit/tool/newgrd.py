@@ -1,10 +1,12 @@
-#!/usr/bin/env python
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 '''Tool to create a new, empty .grd file with all the basic sections.
 '''
+
+import getopt
+import sys
 
 from grit.tool import interface
 from grit import constants
@@ -60,8 +62,18 @@ where in the file.'''
   def ShortDescription(self):
     return 'Create a new empty .grd file.'
 
-  def Run(self, global_options, my_arguments):
-    if not len(my_arguments) == 1:
+  def ParseOptions(self, args):
+    """Set this objects and return all non-option arguments."""
+    own_opts, args = getopt.getopt(args, '', ('help',))
+    for key, val in own_opts:
+      if key == '--help':
+        self.ShowUsage()
+        sys.exit(0)
+    return args
+
+  def Run(self, opts, args):
+    args = self.ParseOptions(args)
+    if len(args) != 1:
       print 'This tool requires exactly one argument, the name of the output file.'
       return 2
     filename = my_arguments[0]

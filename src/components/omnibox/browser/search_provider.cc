@@ -19,6 +19,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/rand_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -155,14 +156,14 @@ void SearchProvider::RegisterDisplayedAnswers(
   // only be in the second slot if AutocompleteController ranked a local search
   // history or a verbatim item higher than the answer.
   auto match = result.begin();
-  if (match->answer_contents.empty() && result.size() > 1)
+  if (!match->answer && result.size() > 1)
     ++match;
-  if (match->answer_contents.empty() || match->answer_type.empty() ||
-      match->fill_into_edit.empty())
+  if (!match->answer || match->fill_into_edit.empty())
     return;
 
   // Valid answer encountered, cache it for further queries.
-  answers_cache_.UpdateRecentAnswers(match->fill_into_edit, match->answer_type);
+  answers_cache_.UpdateRecentAnswers(match->fill_into_edit,
+                                     match->answer->type());
 }
 
 // static
@@ -209,10 +210,8 @@ void SearchProvider::UpdateOldResults(
         ++sug_it;
       }
     }
-    for (auto nav_it = results->navigation_results.begin();
-         nav_it != results->navigation_results.end(); ++nav_it) {
-      nav_it->set_received_after_last_keystroke(false);
-    }
+    for (auto& navigation_result : results->navigation_results)
+      navigation_result.set_received_after_last_keystroke(false);
   }
 }
 
@@ -462,14 +461,10 @@ void SearchProvider::ClearAllResults() {
 void SearchProvider::UpdateMatchContentsClass(
     const base::string16& input_text,
     SearchSuggestionParser::Results* results) {
-  for (auto sug_it = results->suggest_results.begin();
-       sug_it != results->suggest_results.end(); ++sug_it) {
-    sug_it->ClassifyMatchContents(false, input_text);
-  }
-  for (auto nav_it = results->navigation_results.begin();
-       nav_it != results->navigation_results.end(); ++nav_it) {
-    nav_it->CalculateAndClassifyMatchContents(false, input_text);
-  }
+  for (auto& suggest_result : results->suggest_results)
+    suggest_result.ClassifyMatchContents(false, input_text);
+  for (auto& navigation_result : results->navigation_results)
+    navigation_result.CalculateAndClassifyMatchContents(false, input_text);
 }
 
 void SearchProvider::SortResults(bool is_keyword,
@@ -594,16 +589,15 @@ void SearchProvider::EnforceConstraints() {
 }
 
 void SearchProvider::RecordTopSuggestion() {
-  top_query_suggestion_match_contents_ = base::string16();
+  top_query_suggestion_fill_into_edit_ = base::string16();
   top_navigation_suggestion_ = GURL();
   auto first_match = AutocompleteResult::FindTopMatch(matches_);
-  if ((first_match != matches_.end()) &&
-      !first_match->inline_autocompletion.empty()) {
+  if (first_match != matches_.end()) {
     // Identify if this match came from a query suggestion or a navsuggestion.
     // In either case, extracts the identifying feature of the suggestion
     // (query string or navigation url).
     if (AutocompleteMatch::IsSearchType(first_match->type))
-      top_query_suggestion_match_contents_ = first_match->contents;
+      top_query_suggestion_fill_into_edit_ = first_match->fill_into_edit;
     else
       top_navigation_suggestion_ = first_match->destination_url;
   }
@@ -827,18 +821,18 @@ void SearchProvider::PersistTopSuggestions(
   // clobbering top results, which may be used for inline autocompletion.
   // Other results don't need similar changes, because they shouldn't be
   // displayed asynchronously anyway.
-  if (!top_query_suggestion_match_contents_.empty()) {
-    for (auto sug_it = results->suggest_results.begin();
-         sug_it != results->suggest_results.end(); ++sug_it) {
-      if (sug_it->match_contents() == top_query_suggestion_match_contents_)
-        sug_it->set_received_after_last_keystroke(false);
+  if (!top_query_suggestion_fill_into_edit_.empty()) {
+    for (auto& suggest_result : results->suggest_results) {
+      if (GetFillIntoEdit(suggest_result, providers_.GetKeywordProviderURL()) ==
+          top_query_suggestion_fill_into_edit_) {
+        suggest_result.set_received_after_last_keystroke(false);
+      }
     }
   }
   if (top_navigation_suggestion_.is_valid()) {
-    for (auto nav_it = results->navigation_results.begin();
-         nav_it != results->navigation_results.end(); ++nav_it) {
-      if (nav_it->url() == top_navigation_suggestion_)
-        nav_it->set_received_after_last_keystroke(false);
+    for (auto& navigation_result : results->navigation_results) {
+      if (navigation_result.url() == top_navigation_suggestion_)
+        navigation_result.set_received_after_last_keystroke(false);
     }
   }
 }
@@ -882,7 +876,7 @@ std::unique_ptr<network::SimpleURLLoader> SearchProvider::CreateSuggestLoader(
     search_term_args.prefetch_query =
         base::UTF16ToUTF8(prefetch_data_.full_query_text);
     search_term_args.prefetch_query_type =
-        base::UTF16ToUTF8(prefetch_data_.query_type);
+        base::NumberToString(prefetch_data_.query_type);
   }
 
   // Append a specific suggest client if it is in ChromeOS app_list launcher
@@ -993,8 +987,6 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
     // Verbatim results don't get suggestions and hence, answers.
     // Scan previous matches if the last answer-bearing suggestion matches
     // verbatim, and if so, copy over answer contents.
-    base::string16 answer_contents;
-    base::string16 answer_type;
     SuggestionAnswer answer;
     bool has_answer = false;
     base::string16 trimmed_verbatim_lower =
@@ -1002,8 +994,6 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
     for (auto it = matches_.begin(); it != matches_.end(); ++it) {
       if (it->answer &&
           base::i18n::ToLower(it->fill_into_edit) == trimmed_verbatim_lower) {
-        answer_contents = it->answer_contents;
-        answer_type = it->answer_type;
         answer = *it->answer;
         has_answer = true;
         break;
@@ -1017,7 +1007,7 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
         verbatim_relevance, relevance_from_server,
         /*input_text=*/trimmed_verbatim);
     if (has_answer)
-      verbatim.SetAnswer(answer_contents, answer_type, answer);
+      verbatim.SetAnswer(answer);
     AddMatchToMap(verbatim, std::string(), did_not_accept_default_suggestion,
                   false, keyword_url != nullptr, &map);
   }
@@ -1123,8 +1113,6 @@ void SearchProvider::RemoveExtraAnswers(ACMatches* matches) {
       if (!answer_seen) {
         answer_seen = true;
       } else {
-        it->answer_contents.clear();
-        it->answer_type.clear();
         it->answer.reset();
       }
     }

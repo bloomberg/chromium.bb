@@ -50,6 +50,8 @@ class TreeOrderedMap : public GarbageCollected<TreeOrderedMap> {
  public:
   static TreeOrderedMap* Create();
 
+  TreeOrderedMap();
+
   void Add(const AtomicString&, Element&);
   void Remove(const AtomicString&, Element&);
 
@@ -91,8 +93,6 @@ class TreeOrderedMap : public GarbageCollected<TreeOrderedMap> {
 #endif
 
  private:
-  TreeOrderedMap();
-
   template <bool keyMatches(const AtomicString&, const Element&)>
   Element* Get(const AtomicString&, const TreeScope&) const;
 

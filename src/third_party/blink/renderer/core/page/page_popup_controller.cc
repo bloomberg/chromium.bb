@@ -45,7 +45,7 @@ PagePopupController::PagePopupController(PagePopup& popup,
 
 PagePopupController* PagePopupController::Create(PagePopup& popup,
                                                  PagePopupClient* client) {
-  return new PagePopupController(popup, client);
+  return MakeGarbageCollected<PagePopupController>(popup, client);
 }
 
 void PagePopupController::setValueAndClosePopup(int num_value,

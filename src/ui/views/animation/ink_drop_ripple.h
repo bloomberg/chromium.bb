@@ -54,15 +54,14 @@ class VIEWS_EXPORT InkDropRipple {
   // AnimationStarted(s2).
   void set_observer(InkDropRippleObserver* observer) { observer_ = observer; }
 
-  // Called by ink drop whenever its host's size is changed in order to give the
-  // ripple an opportunity to handle dynamic host resizes.
-  virtual void HostSizeChanged(const gfx::Size& new_size);
-
   // Animates from the current InkDropState to the new |ink_drop_state|.
   //
   // NOTE: GetTargetInkDropState() should return the new |ink_drop_state| value
   // to any observers being notified as a result of the call.
   void AnimateToState(InkDropState ink_drop_state);
+
+  // Snaps from the current InkDropState to the new |ink_drop_state|.
+  void SnapToState(InkDropState ink_drop_state);
 
   InkDropState target_ink_drop_state() const { return target_ink_drop_state_; }
 

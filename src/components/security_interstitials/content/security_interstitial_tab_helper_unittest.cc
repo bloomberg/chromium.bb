@@ -15,7 +15,6 @@
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/test/test_renderer_host.h"
 #include "net/base/net_errors.h"
 #include "net/test/cert_test_util.h"

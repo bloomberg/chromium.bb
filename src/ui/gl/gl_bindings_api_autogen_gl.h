@@ -871,6 +871,26 @@ void glMaxShaderCompilerThreadsKHRFn(GLuint count) override;
 void glMemoryBarrierByRegionFn(GLbitfield barriers) override;
 void glMemoryBarrierEXTFn(GLbitfield barriers) override;
 void glMinSampleShadingFn(GLfloat value) override;
+void glMultiDrawArraysANGLEFn(GLenum mode,
+                              const GLint* firsts,
+                              const GLsizei* counts,
+                              GLsizei drawcount) override;
+void glMultiDrawArraysInstancedANGLEFn(GLenum mode,
+                                       const GLint* firsts,
+                                       const GLsizei* counts,
+                                       const GLsizei* instanceCounts,
+                                       GLsizei drawcount) override;
+void glMultiDrawElementsANGLEFn(GLenum mode,
+                                const GLsizei* counts,
+                                GLenum type,
+                                const GLvoid* const* indices,
+                                GLsizei drawcount) override;
+void glMultiDrawElementsInstancedANGLEFn(GLenum mode,
+                                         const GLsizei* counts,
+                                         GLenum type,
+                                         const GLvoid* const* indices,
+                                         const GLsizei* instanceCounts,
+                                         GLsizei drawcount) override;
 void glObjectLabelFn(GLenum identifier,
                      GLuint name,
                      GLsizei length,

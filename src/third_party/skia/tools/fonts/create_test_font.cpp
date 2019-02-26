@@ -198,7 +198,6 @@ static void output_font(sk_sp<SkTypeface> face, const char* identifier, FILE* ou
     int emSize = face->getUnitsPerEm() * 2;
     SkPaint paint;
     paint.setAntiAlias(true);
-    paint.setTextAlign(SkPaint::kLeft_Align);
     paint.setTextEncoding(SkPaint::kUTF16_TextEncoding);
     paint.setTextSize(emSize);
     paint.setTypeface(std::move(face));
@@ -263,9 +262,9 @@ static void output_font(sk_sp<SkTypeface> face, const char* identifier, FILE* ou
     fprintf(out, "const size_t %sCharCodesCount = SK_ARRAY_COUNT(%sCharCodes);\n\n",
             identifier, identifier);
 
-    SkPaint::FontMetrics metrics;
+    SkFontMetrics metrics;
     paint.getFontMetrics(&metrics);
-    fprintf(out, "const SkPaint::FontMetrics %sMetrics = {\n", identifier);
+    fprintf(out, "const SkFontMetrics %sMetrics = {\n", identifier);
     SkString metricsStr;
     metricsStr.printf("0x%08x, ", metrics.fFlags);
     output_scalar(metrics.fTop, emSize, &metricsStr);

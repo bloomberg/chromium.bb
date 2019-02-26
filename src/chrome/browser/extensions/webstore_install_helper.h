@@ -48,11 +48,11 @@ class WebstoreInstallHelper : public base::RefCounted<WebstoreInstallHelper>,
     };
 
     // Called when we've successfully parsed the manifest and decoded the icon
-    // in the utility process. Ownership of parsed_manifest is transferred.
+    // in the utility process.
     virtual void OnWebstoreParseSuccess(
         const std::string& id,
         const SkBitmap& icon,
-        base::DictionaryValue* parsed_manifest) = 0;
+        std::unique_ptr<base::DictionaryValue> parsed_manifest) = 0;
 
     // Called to indicate a parse failure. The |result_code| parameter should
     // indicate whether the problem was with the manifest or icon.

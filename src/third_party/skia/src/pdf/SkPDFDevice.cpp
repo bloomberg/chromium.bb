@@ -36,7 +36,6 @@
 #include "SkPath.h"
 #include "SkPathEffect.h"
 #include "SkPathOps.h"
-#include "SkPixelRef.h"
 #include "SkRRect.h"
 #include "SkRasterClip.h"
 #include "SkScopeExit.h"
@@ -501,7 +500,7 @@ void SkPDFDevice::reset() {
     fGraphicStateResources = std::vector<sk_sp<SkPDFObject>>();
     fXObjectResources = std::vector<sk_sp<SkPDFObject>>();
     fShaderResources = std::vector<sk_sp<SkPDFObject>>();
-    fFontResources = std::vector<sk_sp<SkPDFFont>>();
+    fFontResources.reset();
     fContent.reset();
     fActiveStackState = GraphicStackState();
 }
@@ -1035,30 +1034,26 @@ static bool contains(const SkRect& r, SkPoint p) {
 void SkPDFDevice::drawGlyphRunAsPath(const SkGlyphRun& glyphRun, SkPoint offset) {
     SkPaint paint{glyphRun.paint()};
     paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
-    paint.setTextAlign(SkPaint::kLeft_Align);
     SkPath path;
     SkASSERT(paint.getTextEncoding() == SkPaint::kGlyphID_TextEncoding);
 
-    paint.getPosTextPath(glyphRun.shuntGlyphsIDs().data(),
-                         glyphRun.shuntGlyphsIDs().size() * sizeof(SkGlyphID),
+    paint.getPosTextPath(glyphRun.glyphsIDs().data(),
+                         glyphRun.glyphsIDs().size() * sizeof(SkGlyphID),
                          glyphRun.positions().data(),
                          &path);
     path.offset(offset.x(), offset.y());
     this->drawPath(path, paint, true);
 
-    SkGlyphRun tmp(glyphRun);
-    {
-        SkPaint transparent;
-        transparent.setTypeface(paint.getTypeface() ? paint.refTypeface()
-                                                    : SkTypeface::MakeDefault());
-        transparent.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
-        transparent.setColor(SK_ColorTRANSPARENT);
-        transparent.setTextSize(paint.getTextSize());
-        transparent.setTextAlign(paint.getTextAlign());
-        transparent.setTextScaleX(paint.getTextScaleX());
-        transparent.setTextSkewX(paint.getTextSkewX());
-        *tmp.mutablePaint() = std::move(transparent);
-    }
+    SkPaint transparent;
+    transparent.setTypeface(paint.getTypeface() ? paint.refTypeface()
+                                                : SkTypeface::MakeDefault());
+    transparent.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
+    transparent.setColor(SK_ColorTRANSPARENT);
+    transparent.setTextSize(paint.getTextSize());
+    transparent.setTextScaleX(paint.getTextScaleX());
+    transparent.setTextSkewX(paint.getTextSkewX());
+    SkGlyphRun tmp(glyphRun, transparent);
+
     if (this->ctm().hasPerspective()) {
         SkMatrix prevCTM = this->ctm();
         this->setCTM(SkMatrix::I());
@@ -1069,20 +1064,36 @@ void SkPDFDevice::drawGlyphRunAsPath(const SkGlyphRun& glyphRun, SkPoint offset)
     }
 }
 
+static bool needs_new_font(SkPDFFont* font, SkGlyphID gid, SkGlyphCache* cache,
+                           SkAdvancedTypefaceMetrics::FontType fontType) {
+    if (!font || !font->hasGlyph(gid)) {
+        return true;
+    }
+    if (fontType == SkAdvancedTypefaceMetrics::kOther_Font) {
+        return false;
+    }
+    const SkGlyph& glyph = cache->getGlyphIDMetrics(gid);
+    if (glyph.isEmpty()) {
+        return false;
+    }
+
+    bool bitmapOnly = nullptr == cache->findPath(glyph);
+    bool convertedToType3 = (font->getType() == SkAdvancedTypefaceMetrics::kOther_Font);
+    return convertedToType3 != bitmapOnly;
+}
+
 void SkPDFDevice::internalDrawGlyphRun(const SkGlyphRun& glyphRun, SkPoint offset) {
 
-    const SkGlyphID* glyphs = glyphRun.shuntGlyphsIDs().data();
-    uint32_t glyphCount = SkToU32(glyphRun.shuntGlyphsIDs().size());
+    const SkGlyphID* glyphs = glyphRun.glyphsIDs().data();
+    uint32_t glyphCount = SkToU32(glyphRun.glyphsIDs().size());
     SkPaint srcPaint{glyphRun.paint()};
     srcPaint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
-    srcPaint.setTextAlign(SkPaint::kLeft_Align);
 
     if (!glyphCount || !glyphs || srcPaint.getTextSize() <= 0 || this->hasEmptyClip()) {
         return;
     }
     if (srcPaint.getPathEffect()
         || srcPaint.getMaskFilter()
-        || srcPaint.isVerticalText()
         || srcPaint.isFakeBoldText()
         || this->ctm().hasPerspective()
         || SkPaint::kFill_Style != srcPaint.getStyle()) {
@@ -1092,7 +1103,7 @@ void SkPDFDevice::internalDrawGlyphRun(const SkGlyphRun& glyphRun, SkPoint offse
     SkPaint paint(srcPaint);
     remove_color_filter(&paint);
     replace_srcmode_on_opaque_paint(&paint);
-    paint.setHinting(SkPaint::kNo_Hinting);
+    paint.setHinting(kNo_SkFontHinting);
     if (!paint.getTypeface()) {
         paint.setTypeface(SkTypeface::MakeDefault());
     }
@@ -1105,6 +1116,8 @@ void SkPDFDevice::internalDrawGlyphRun(const SkGlyphRun& glyphRun, SkPoint offse
     if (!metrics) {
         return;
     }
+    SkAdvancedTypefaceMetrics::FontType fontType = SkPDFFont::FontType(*metrics);
+
     const std::vector<SkUnichar>& glyphToUnicode = SkPDFFont::GetUnicodeMap(
         typeface, fDocument->canon());
 
@@ -1120,7 +1133,6 @@ void SkPDFDevice::internalDrawGlyphRun(const SkGlyphRun& glyphRun, SkPoint offse
     SkScalar textScaleY = textSize / emSize;
     SkScalar textScaleX = advanceScale + paint.getTextSkewX() * textScaleY;
 
-    SkASSERT(paint.getTextAlign() == SkPaint::kLeft_Align);
     SkRect clipStackBounds = this->cs().bounds(this->bounds());
     {
         ScopedContentEntry content(this, paint, true);
@@ -1197,27 +1209,6 @@ void SkPDFDevice::internalDrawGlyphRun(const SkGlyphRun& glyphRun, SkPoint offse
                 if (gid > maxGlyphID) {
                     continue;
                 }
-                if (!font || !font->hasGlyph(gid)) {
-                    // Not yet specified font or need to switch font.
-                    sk_sp<SkPDFFont> newFont =
-                            SkPDFFont::GetFontResource(
-                                    fDocument->canon(), glyphCache.get(), typeface, gid);
-                    SkASSERT(newFont);  // All preconditions for SkPDFFont::GetFontResource are met.
-                    if (!newFont) {
-                        return;
-                    }
-                    font = newFont.get();
-                    fDocument->registerFont(font);
-                    int fontIndex = find_or_add(&fFontResources, std::move(newFont));
-
-                    glyphPositioner.flush();
-                    glyphPositioner.setWideChars(font->multiByteGlyphs());
-                    SkPDFWriteResourceName(out, SkPDFResourceType::kFont, fontIndex);
-                    out->writeText(" ");
-                    SkPDFUtils::AppendScalar(textSize, out);
-                    out->writeText(" Tf\n");
-
-                }
                 SkPoint xy = glyphRun.positions()[index];
                 // Do a glyph-by-glyph bounds-reject if positions are absolute.
                 SkRect glyphBounds = get_glyph_bounds_device_space(
@@ -1232,8 +1223,22 @@ void SkPDFDevice::internalDrawGlyphRun(const SkGlyphRun& glyphRun, SkPoint offse
                         continue;  // reject glyphs as out of bounds
                     }
                 }
-                font->noteGlyphUsage(gid);
+                if (needs_new_font(font, gid, glyphCache.get(), fontType)) {
+                    // Not yet specified font or need to switch font.
+                    font = SkPDFFont::GetFontResource(fDocument, glyphCache.get(), typeface, gid);
+                    SkASSERT(font);  // All preconditions for SkPDFFont::GetFontResource are met.
+                    SkPDFIndirectReference ref = font->indirectReference();
+                    fFontResources.add(ref);
 
+                    glyphPositioner.flush();
+                    glyphPositioner.setWideChars(font->multiByteGlyphs());
+                    SkPDFWriteResourceName(out, SkPDFResourceType::kFont, ref.fValue);
+                    out->writeText(" ");
+                    SkPDFUtils::AppendScalar(textSize, out);
+                    out->writeText(" Tf\n");
+
+                }
+                font->noteGlyphUsage(gid);
                 SkGlyphID encodedGlyph = font->multiByteGlyphs()
                                        ? gid : font->glyphToPDFFontEncoding(gid);
                 SkScalar advance = advanceScale * glyphCache->getGlyphIDAdvance(gid).fAdvanceX;
@@ -1319,10 +1324,16 @@ sk_sp<SkSurface> SkPDFDevice::makeSurface(const SkImageInfo& info, const SkSurfa
 
 
 sk_sp<SkPDFDict> SkPDFDevice::makeResourceDict() {
+    std::vector<SkPDFIndirectReference> fonts;
+    fonts.reserve(fFontResources.count());
+    fFontResources.foreach([&fonts](SkPDFIndirectReference ref) { fonts.push_back(ref); } );
+    fFontResources.reset();
+    std::sort(fonts.begin(), fonts.end(),
+            [](SkPDFIndirectReference a, SkPDFIndirectReference b) { return a.fValue < b.fValue; });
     return SkPDFMakeResourceDict(std::move(fGraphicStateResources),
-                                   std::move(fShaderResources),
-                                   std::move(fXObjectResources),
-                                   std::move(fFontResources));
+                                 std::move(fShaderResources),
+                                 std::move(fXObjectResources),
+                                 std::move(fonts));
 }
 
 std::unique_ptr<SkStreamAsset> SkPDFDevice::content() {
@@ -1790,6 +1801,15 @@ static bool is_integral(const SkRect& r) {
            is_integer(r.bottom());
 }
 
+namespace {
+// This struct will go away when fIndirectReference goes away.
+struct PDFObj final : public SkPDFObject {
+    PDFObj(SkPDFIndirectReference ref) { fIndirectReference = ref; }
+    // emitObject() is never called since the Object already has a indirect ref.
+    void emitObject(SkWStream*) const override { SK_ABORT("DO NOT REACH HERE"); }
+};
+} // namespace
+
 void SkPDFDevice::internalDrawImageRect(SkKeyedImage imageSubset,
                                         const SkRect* src,
                                         const SkRect& dst,
@@ -2017,12 +2037,10 @@ void SkPDFDevice::internalDrawImageRect(SkKeyedImage imageSubset,
     sk_sp<SkPDFObject> pdfimage = pdfimagePtr ? *pdfimagePtr : nullptr;
     if (!pdfimage) {
         SkASSERT(imageSubset);
-        pdfimage = SkPDFCreateBitmapObject(imageSubset.release(),
-                                           fDocument->metadata().fEncodingQuality);
-        if (!pdfimage) {
-            return;
-        }
-        fDocument->serialize(pdfimage);  // serialize images early.
+        auto ref = SkPDFSerializeImage(imageSubset.image().get(), fDocument,
+                                       fDocument->metadata().fEncodingQuality);
+        SkASSERT(ref.fValue > 0);
+        pdfimage = sk_make_sp<PDFObj>(ref);
         SkASSERT((key != SkBitmapKey{{0, 0, 0, 0}, 0}));
         fDocument->canon()->fPDFBitmapMap.set(key, pdfimage);
     }
@@ -2078,12 +2096,7 @@ sk_sp<SkSpecialImage> SkPDFDevice::makeSpecial(const SkBitmap& bitmap) {
 }
 
 sk_sp<SkSpecialImage> SkPDFDevice::makeSpecial(const SkImage* image) {
-    // TODO: See comment above in drawSpecial. The color mode we use for decode should be driven
-    // by the destination where we're going to draw thing thing (ie this device). But we don't have
-    // a color space, so we always decode in legacy mode for now.
-    SkColorSpace* legacyColorSpace = nullptr;
-    return SkSpecialImage::MakeFromImage(image->bounds(),
-                                         image->makeNonTextureImage(), legacyColorSpace);
+    return SkSpecialImage::MakeFromImage(image->bounds(), image->makeNonTextureImage());
 }
 
 sk_sp<SkSpecialImage> SkPDFDevice::snapSpecial() {

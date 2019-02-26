@@ -4,13 +4,41 @@
 
 #include "components/sync/driver/test_sync_service.h"
 
+#include <vector>
+
 #include "base/time/time.h"
 #include "base/values.h"
+#include "components/sync/base/progress_marker_map.h"
 #include "components/sync/driver/sync_token_status.h"
+#include "components/sync/engine/cycle/model_neutral_state.h"
 
 namespace syncer {
 
-TestSyncService::TestSyncService() = default;
+namespace {
+
+SyncCycleSnapshot MakeDefaultCycleSnapshot() {
+  return SyncCycleSnapshot(
+      ModelNeutralState(), ProgressMarkerMap(), /*is_silenced-*/ false,
+      /*num_encryption_conflicts=*/5, /*num_hierarchy_conflicts=*/2,
+      /*num_server_conflicts=*/7, /*notifications_enabled=*/false,
+      /*num_entries=*/0, /*sync_start_time=*/base::Time::Now(),
+      /*poll_finish_time=*/base::Time::Now(),
+      /*num_entries_by_type=*/std::vector<int>(MODEL_TYPE_COUNT, 0),
+      /*num_to_delete_entries_by_type=*/
+      std::vector<int>(MODEL_TYPE_COUNT, 0),
+      /*get_updates_origin=*/sync_pb::SyncEnums::UNKNOWN_ORIGIN,
+      /*short_poll_interval=*/base::TimeDelta::FromMinutes(30),
+      /*long_poll_interval=*/base::TimeDelta::FromMinutes(180),
+      /*has_remaining_local_changes=*/false);
+}
+
+}  // namespace
+
+TestSyncService::TestSyncService()
+    : user_settings_(this),
+      preferred_data_types_(ModelTypeSet::All()),
+      active_data_types_(ModelTypeSet::All()),
+      last_cycle_snapshot_(MakeDefaultCycleSnapshot()) {}
 
 TestSyncService::~TestSyncService() = default;
 
@@ -26,8 +54,21 @@ void TestSyncService::SetLocalSyncEnabled(bool local_sync_enabled) {
   local_sync_enabled_ = local_sync_enabled;
 }
 
+void TestSyncService::SetAuthenticatedAccountInfo(
+    const AccountInfo& account_info) {
+  account_info_ = account_info;
+}
+
+void TestSyncService::SetIsAuthenticatedAccountPrimary(bool is_primary) {
+  account_is_primary_ = is_primary;
+}
+
 void TestSyncService::SetAuthError(const GoogleServiceAuthError& auth_error) {
   auth_error_ = auth_error;
+}
+
+void TestSyncService::SetFirstSetupComplete(bool first_setup_complete) {
+  user_settings_.SetFirstSetupComplete(first_setup_complete);
 }
 
 void TestSyncService::SetPreferredDataTypes(const ModelTypeSet& types) {
@@ -38,19 +79,35 @@ void TestSyncService::SetActiveDataTypes(const ModelTypeSet& types) {
   active_data_types_ = types;
 }
 
-void TestSyncService::SetCustomPassphraseEnabled(bool enabled) {
-  custom_passphrase_enabled_ = enabled;
+void TestSyncService::SetIsUsingSecondaryPassphrase(bool enabled) {
+  using_secondary_passphrase_ = enabled;
 }
 
 void TestSyncService::SetLastCycleSnapshot(const SyncCycleSnapshot& snapshot) {
   last_cycle_snapshot_ = snapshot;
 }
 
+void TestSyncService::SetEmptyLastCycleSnapshot() {
+  SetLastCycleSnapshot(SyncCycleSnapshot());
+}
+
+void TestSyncService::SetNonEmptyLastCycleSnapshot() {
+  SetLastCycleSnapshot(MakeDefaultCycleSnapshot());
+}
+
+SyncUserSettings* TestSyncService::GetUserSettings() {
+  return &user_settings_;
+}
+
+const SyncUserSettings* TestSyncService::GetUserSettings() const {
+  return &user_settings_;
+}
+
 int TestSyncService::GetDisableReasons() const {
   return disable_reasons_;
 }
 
-syncer::SyncService::TransportState TestSyncService::GetTransportState() const {
+SyncService::TransportState TestSyncService::GetTransportState() const {
   return transport_state_;
 }
 
@@ -63,18 +120,12 @@ AccountInfo TestSyncService::GetAuthenticatedAccountInfo() const {
 }
 
 bool TestSyncService::IsAuthenticatedAccountPrimary() const {
-  return true;
+  return account_is_primary_;
 }
 
 const GoogleServiceAuthError& TestSyncService::GetAuthError() const {
   return auth_error_;
 }
-
-bool TestSyncService::IsFirstSetupComplete() const {
-  return true;
-}
-
-void TestSyncService::SetFirstSetupComplete() {}
 
 std::unique_ptr<SyncSetupInProgressHandle>
 TestSyncService::GetSetupInProgressHandle() {
@@ -93,14 +144,9 @@ ModelTypeSet TestSyncService::GetActiveDataTypes() const {
   return active_data_types_;
 }
 
-void TestSyncService::RequestStart() {}
-
 void TestSyncService::RequestStop(SyncService::SyncStopDataFate data_fate) {}
 
 void TestSyncService::OnDataTypeRequestsSyncStartup(ModelType type) {}
-
-void TestSyncService::OnUserChoseDatatypes(bool sync_everything,
-                                           ModelTypeSet chosen_types) {}
 
 void TestSyncService::TriggerRefresh(const ModelTypeSet& types) {}
 
@@ -125,7 +171,7 @@ base::Time TestSyncService::GetExplicitPassphraseTime() const {
 }
 
 bool TestSyncService::IsUsingSecondaryPassphrase() const {
-  return custom_passphrase_enabled_;
+  return using_secondary_passphrase_;
 }
 
 void TestSyncService::EnableEncryptEverything() {}
@@ -134,31 +180,26 @@ bool TestSyncService::IsEncryptEverythingEnabled() const {
   return false;
 }
 
-void TestSyncService::SetEncryptionPassphrase(const std::string& passphrase,
-                                              PassphraseType type) {}
+void TestSyncService::SetEncryptionPassphrase(const std::string& passphrase) {}
 
 bool TestSyncService::SetDecryptionPassphrase(const std::string& passphrase) {
   return false;
-}
-
-bool TestSyncService::IsCryptographerReady(const BaseTransaction* trans) const {
-  return false;
-}
-
-SyncClient* TestSyncService::GetSyncClient() const {
-  return nullptr;
-}
-
-sync_sessions::OpenTabsUIDelegate* TestSyncService::GetOpenTabsUIDelegate() {
-  return nullptr;
 }
 
 UserShare* TestSyncService::GetUserShare() const {
   return nullptr;
 }
 
-syncer::SyncTokenStatus TestSyncService::GetSyncTokenStatus() const {
-  return syncer::SyncTokenStatus();
+SyncTokenStatus TestSyncService::GetSyncTokenStatus() const {
+  SyncTokenStatus token;
+
+  if (GetAuthError().state() != GoogleServiceAuthError::NONE) {
+    token.connection_status = ConnectionStatus::CONNECTION_AUTH_ERROR;
+    token.last_get_token_error =
+        GoogleServiceAuthError::FromServiceError("error");
+  }
+
+  return token;
 }
 
 bool TestSyncService::QueryDetailedSyncStatus(SyncStatus* result) const {
@@ -208,19 +249,20 @@ base::WeakPtr<JsController> TestSyncService::GetJsController() {
 void TestSyncService::GetAllNodes(
     const base::Callback<void(std::unique_ptr<base::ListValue>)>& callback) {}
 
+void TestSyncService::SetInvalidationsForSessionsEnabled(bool enabled) {}
+
 bool TestSyncService::IsPassphraseRequired() const {
   return false;
 }
 
 ModelTypeSet TestSyncService::GetEncryptedDataTypes() const {
-  if (!custom_passphrase_enabled_) {
+  if (!using_secondary_passphrase_) {
     // PASSWORDS are always encrypted.
-    return ModelTypeSet(syncer::PASSWORDS);
+    return ModelTypeSet(PASSWORDS);
   }
   // Some types can never be encrypted, e.g. DEVICE_INFO and
   // AUTOFILL_WALLET_DATA, so make sure we don't report them as encrypted.
-  return syncer::Intersection(GetPreferredDataTypes(),
-                              syncer::EncryptableUserTypes());
+  return Intersection(GetPreferredDataTypes(), EncryptableUserTypes());
 }
 
 void TestSyncService::Shutdown() {}

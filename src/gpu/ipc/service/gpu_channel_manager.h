@@ -23,6 +23,7 @@
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/service/gr_cache_controller.h"
 #include "gpu/command_buffer/service/gr_shader_cache.h"
+#include "gpu/command_buffer/service/passthrough_discardable_manager.h"
 #include "gpu/command_buffer/service/raster_decoder_context_state.h"
 #include "gpu/command_buffer/service/service_discardable_manager.h"
 #include "gpu/command_buffer/service/shader_translator_cache.h"
@@ -65,17 +66,19 @@ class ProgramCache;
 class GPU_IPC_SERVICE_EXPORT GpuChannelManager
     : public raster::GrShaderCache::Client {
  public:
-  GpuChannelManager(const GpuPreferences& gpu_preferences,
-                    GpuChannelManagerDelegate* delegate,
-                    GpuWatchdogThread* watchdog,
-                    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-                    Scheduler* scheduler,
-                    SyncPointManager* sync_point_manager,
-                    GpuMemoryBufferFactory* gpu_memory_buffer_factory,
-                    const GpuFeatureInfo& gpu_feature_info,
-                    GpuProcessActivityFlags activity_flags,
-                    scoped_refptr<gl::GLSurface> default_offscreen_surface);
+  GpuChannelManager(
+      const GpuPreferences& gpu_preferences,
+      GpuChannelManagerDelegate* delegate,
+      GpuWatchdogThread* watchdog,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+      Scheduler* scheduler,
+      SyncPointManager* sync_point_manager,
+      GpuMemoryBufferFactory* gpu_memory_buffer_factory,
+      const GpuFeatureInfo& gpu_feature_info,
+      GpuProcessActivityFlags activity_flags,
+      scoped_refptr<gl::GLSurface> default_offscreen_surface,
+      viz::VulkanContextProvider* vulkan_context_provider = nullptr);
   ~GpuChannelManager() override;
 
   GpuChannelManagerDelegate* delegate() const { return delegate_; }
@@ -110,6 +113,9 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
   const GpuFeatureInfo& gpu_feature_info() const { return gpu_feature_info_; }
   ServiceDiscardableManager* discardable_manager() {
     return &discardable_manager_;
+  }
+  PassthroughDiscardableManager* passthrough_discardable_manager() {
+    return &passthrough_discardable_manager_;
   }
   gles2::Outputter* outputter();
   gles2::ProgramCache* program_cache();
@@ -201,6 +207,7 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
   GpuMemoryBufferFactory* const gpu_memory_buffer_factory_;
   GpuFeatureInfo gpu_feature_info_;
   ServiceDiscardableManager discardable_manager_;
+  PassthroughDiscardableManager passthrough_discardable_manager_;
   SharedImageManager shared_image_manager_;
 #if defined(OS_ANDROID)
   // Last time we know the GPU was powered on. Global for tracking across all
@@ -232,6 +239,10 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
   base::Optional<raster::GrCacheController> gr_cache_controller_;
   scoped_refptr<raster::RasterDecoderContextState>
       raster_decoder_context_state_;
+
+  // With --enable-vulkan, the vulkan_context_provider_ will be set from
+  // viz::GpuServiceImpl. The raster decoders will use it for rasterization.
+  viz::VulkanContextProvider* vulkan_context_provider_ = nullptr;
 
   // Member variables should appear before the WeakPtrFactory, to ensure
   // that any WeakPtrs to Controller are invalidated before its members

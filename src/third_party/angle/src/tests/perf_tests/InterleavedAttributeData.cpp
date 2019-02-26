@@ -21,6 +21,8 @@ struct InterleavedAttributeDataParams final : public RenderTestParams
 {
     InterleavedAttributeDataParams()
     {
+        iterationsPerStep = 1;
+
         // Common default values
         majorVersion = 2;
         minorVersion = 0;
@@ -69,8 +71,7 @@ class InterleavedAttributeDataBenchmark
 
 InterleavedAttributeDataBenchmark::InterleavedAttributeDataBenchmark()
     : ANGLERenderTest("InterleavedAttributeData", GetParam()), mPointSpriteProgram(0)
-{
-}
+{}
 
 void InterleavedAttributeDataBenchmark::initializeBenchmark()
 {
@@ -109,10 +110,12 @@ void InterleavedAttributeDataBenchmark::initializeBenchmark()
         {
             float pointSpriteX =
                 (static_cast<float>(rand() % getWindow()->getWidth()) / getWindow()->getWidth()) *
-                    2.0f - 1.0f;
+                    2.0f -
+                1.0f;
             float pointSpriteY =
                 (static_cast<float>(rand() % getWindow()->getHeight()) / getWindow()->getHeight()) *
-                    2.0f - 1.0f;
+                    2.0f -
+                1.0f;
             GLubyte pointSpriteRed   = static_cast<GLubyte>(rand() % 255);
             GLubyte pointSpriteGreen = static_cast<GLubyte>(rand() % 255);
             GLubyte pointSpriteBlue  = static_cast<GLubyte>(rand() % 255);

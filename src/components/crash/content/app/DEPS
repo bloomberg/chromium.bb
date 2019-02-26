@@ -2,6 +2,7 @@ include_rules = [
   "+sandbox",
 
   "+components/browser_watcher/stability_report_user_stream_data_source.h",
+  "+components/gwp_asan/crash_handler/crash_handler.h",
   "+content/public/common/content_descriptors.h",
   "+content/public/common/result_codes.h",
   "+third_party/crashpad",

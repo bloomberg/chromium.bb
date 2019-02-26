@@ -21,7 +21,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
-#include "third_party/blink/renderer/platform/scheduler/util/thread_cpu_throttler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread_cpu_throttler.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
@@ -129,6 +129,10 @@ void InspectorEmulationAgent::Restore() {
 Response InspectorEmulationAgent::disable() {
   if (enabled_)
     instrumenting_agents_->removeInspectorEmulationAgent(this);
+  setUserAgentOverride(String(), protocol::Maybe<String>(),
+                       protocol::Maybe<String>());
+  if (!web_local_frame_)
+    return Response::OK();
   setScriptExecutionDisabled(false);
   setScrollbarsHidden(false);
   setDocumentCookieDisabled(false);
@@ -142,8 +146,6 @@ Response InspectorEmulationAgent::disable() {
     web_local_frame_->View()->Scheduler()->RemoveVirtualTimeObserver(this);
     virtual_time_setup_ = false;
   }
-  setUserAgentOverride(String(), protocol::Maybe<String>(),
-                       protocol::Maybe<String>());
   return Response::OK();
 }
 
@@ -369,7 +371,7 @@ void InspectorEmulationAgent::WillSendRequest(
       request.HttpHeaderField("Accept-Language").IsEmpty()) {
     request.SetHTTPHeaderField(
         "Accept-Language",
-        AtomicString(NetworkUtils::GenerateAcceptLanguageHeader(
+        AtomicString(network_utils::GenerateAcceptLanguageHeader(
             accept_language_override_.Get())));
   }
 }

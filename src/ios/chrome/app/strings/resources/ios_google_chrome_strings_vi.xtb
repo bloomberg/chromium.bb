@@ -6,7 +6,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">T.báo b.mật của Google Chrome</translation>
 <translation id="1863312987075920112">Bằng việc sử dụng ứng dụng này, bạn đồng ý với <ph name="BEGIN_LINK_TOS" />Điều khoản dịch vụ<ph name="END_LINK_TOS" /> và <ph name="BEGIN_LINK_PRIVACY" />Thông báo bảo mật<ph name="END_LINK_PRIVACY" /> của Chrome.</translation>
-<translation id="1878302395768190018">Bạn có thể tùy chỉnh tùy chọn này bất cứ lúc nào trong mục Cài đặt Chrome</translation>
 <translation id="2147651015520127414">Chrome xác minh <ph name="ISSUER" /> đã cấp chứng chỉ của trang web này.</translation>
 <translation id="2334084861041072223">Bản quyền <ph name="YEAR" /> Google Inc. Mọi quyền được bảo lưu.</translation>
 <translation id="2342981853652716282">Đăng nhập vào Chrome để nhận dấu trang, mật khẩu và nhiều nội dung khác trên tất cả các thiết bị của bạn.</translation>
@@ -16,6 +15,7 @@
 <translation id="2576431527583832481">Chrome được cải tiến hơn! Đã có phiên bản mới.</translation>
 <translation id="257708665678654955">Bạn có muốn Google Chrome đề xuất dịch các trang <ph name="LANGUAGE_NAME" /> của trang web này vào lần tiếp theo không?</translation>
 <translation id="2943166482989655199">Cải thiện Chrome và tăng cường bảo mật bằng cách gửi dữ liệu sử dụng và dữ liệu về hệ thống cho Google</translation>
+<translation id="3030414234702425231">Vì bạn đăng xuất khỏi tài khoản do <ph name="SIGNOUT_MANAGED_DOMAIN" /> quản lý, nên dữ liệu Chrome của bạn sẽ bị xóa khỏi thiết bị này. Dữ liệu của bạn sẽ vẫn còn trong Tài khoản Google của bạn.</translation>
 <translation id="3148434565183091099">Để nhận dấu trang trên tất cả các thiết bị của bạn, hãy đăng nhập vào Chrome.</translation>
 <translation id="3148688391461398285">Có được trải nghiệm tốt hơn trong Chrome dựa trên vị trí của bạn.</translation>
 <translation id="3167189358072330585">Tài khoản của bạn không hoạt động trên Google Chrome. Vui lòng liên hệ với quản trị viên miền của bạn hoặc sử dụng Tài khoản Google thông thường để đăng nhập.</translation>
@@ -32,18 +32,17 @@
 <translation id="447252321002412580">Giúp cải thiện hiệu suất cũng như các tính năng của Chrome</translation>
 <translation id="4523886039239821078">Một số tiện ích bổ sung khiến Chrome trục trặc. Hãy gỡ cài đặt:</translation>
 <translation id="4615174829807303908">Bạn đang đăng xuất khỏi tài khoản do <ph name="SIGNOUT_MANAGED_DOMAIN" /> quản lý. Thao tác này sẽ xóa dữ liệu Chrome khỏi thiết bị này nhưng dữ liệu đó sẽ vẫn còn trong tài khoản Google của bạn.</translation>
-<translation id="5240817131241497236">Các tùy chọn cài đặt kiểm soát tính năng đồng bộ hóa, cá nhân hóa và các dịch vụ khác của Google trong Chrome đã thay đổi. Điều này có thể ảnh hưởng đến các tùy chọn cài đặt hiện tại của bạn.</translation>
 <translation id="5389212809648216794">Google Chrome không thể sử dụng máy ảnh của bạn do một ứng dụng khác đang dùng máy ảnh</translation>
 <translation id="5489543008378040943">Bạn có thể tùy chỉnh mục <ph name="BEGIN_LINK" />Cài đặt<ph name="END_LINK" /> bất cứ lúc nào. Google có thể sử dụng nội dung trên các trang web bạn truy cập, hoạt động và các tương tác trên trình duyệt để cá nhân hóa Chrome và các dịch vụ của Google, chẳng hạn như Dịch, Tìm kiếm và quảng cáo.</translation>
 <translation id="5639704535586432836">Mở Cài đặt &gt; Bảo mật &gt; Máy ảnh &gt; Google Chrome và bật máy ảnh.</translation>
 <translation id="5642200033778930880">Google Chrome không thể sử dụng máy ảnh của bạn ở Chế độ xem phân tách</translation>
-<translation id="5703130498371792817">Bạn thích Chrome? <ph name="BEGIN_LINK" />Xếp hạng ứng dụng này<ph name="END_LINK" /></translation>
 <translation id="5854621639439811139">Mẹo dành cho Chrome. Một số nút hiện nằm ở cuối màn hình, chẳng hạn như Quay lại, Tiến lên và Tìm kiếm.</translation>
 <translation id="6036420186814142909">Google Chrome có tính năng giúp bạn quản lý dữ liệu Internet của mình và tốc độ mà bạn có thể tải trang web.
 <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="6573431926118603307">Các tab bạn đã mở trong Chrome trên thiết bị khác sẽ xuất hiện tại đây.</translation>
 <translation id="6600954340915313787">Đã sao chép vào Chrome</translation>
 <translation id="6648150602980899529">Bạn đang đăng nhập bằng tài khoản do <ph name="DOMAIN" /> quản lý và cấp cho quản trị viên quyền kiểm soát dữ liệu Chrome của bạn. Dữ liệu của bạn sẽ được liên kết vĩnh viễn với tài khoản này. Việc đăng xuất khỏi Chrome sẽ xóa dữ liệu của bạn khỏi thiết bị này nhưng dữ liệu đó sẽ vẫn được lưu trữ trong Tài khoản Google.</translation>
+<translation id="6676840375528380067">Xóa dữ liệu Chrome của bạn khỏi thiết bị này?</translation>
 <translation id="690638524486313356">Ðiều khoản dịch vụ của Google Chrome</translation>
 <translation id="7165736900384873061">Bắt đầu dùng trình quét QR của Chrome</translation>
 <translation id="7172660552945675509">Mẹo: <ph name="BEGIN_LINK" />Di chuyển Chrome sang thanh dock<ph name="END_LINK" /></translation>

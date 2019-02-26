@@ -205,26 +205,11 @@ void SHA1HashBytes(const unsigned char* data, size_t len, unsigned char* hash) {
 //------------------------------------------------------------------------------
 // Public functions
 //------------------------------------------------------------------------------
-
-int CompareHashes(const uint8_t* first, const uint8_t* second) {
-  // Compare bytes, high-order to low-order.
-  for (size_t i = 0; i < kSHA1Length; ++i) {
-    if (first[i] < second[i])
-      return -1;
-    if (first[i] > second[i])
-      return 1;
-    // else they are equal, continue;
-  }
-
-  return 0;
-}
-
-std::string SHA1HashString(const std::string& str) {
-  char hash[kSHA1Length] = {};
+Digest SHA1HashString(const std::string& str) {
+  Digest digest;
   SHA1HashBytes(reinterpret_cast<const unsigned char*>(str.c_str()),
-                str.length(), reinterpret_cast<unsigned char*>(hash));
-
-  return std::string(hash, kSHA1Length);
+                str.length(), reinterpret_cast<unsigned char*>(&digest[0]));
+  return digest;
 }
 
 }  // namespace elf_sha1

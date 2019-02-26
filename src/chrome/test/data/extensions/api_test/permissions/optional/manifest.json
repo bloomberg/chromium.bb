@@ -7,16 +7,19 @@
    "background": {
      "scripts": ["background.js"]
    },
-   "permissions": [ 
+   "content_scripts": [{
+     "matches": ["http://contentscript.com/*"],
+     "js": ["content_script.js"]
+   }],
+   "permissions": [
      "management",
      "http://a.com/*"
    ],
    "optional_permissions": [
      "bookmarks",
      "cookies",
-     "management",
      "background",
-     "http://a.com/*",
+     "fontSettings",
      "http://*.c.com/*"
    ]
 }

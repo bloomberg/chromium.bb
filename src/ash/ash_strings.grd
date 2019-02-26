@@ -157,10 +157,6 @@ This file contains the strings for ash.
         Shelf
       </message>
 
-      <message name="IDS_ASH_KEYBOARD_OVERLAY_TITLE" desc="The title of the keyboard overlay.">
-        Keyboard overlay
-      </message>
-
       <message name="IDS_ASH_LEARN_MORE" desc="Text of Learn more links.">
         Learn more
       </message>
@@ -546,6 +542,15 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NOTIFICATIONS_DO_NOT_DISTURB_SUBLABEL" desc="The sub label text shown under do not disturb button when all notifications are disabled.">
         Do not disturb
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_LOCALE" desc="The label used for locale button in system tray bubble.">
+        Language
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_LOCALE_TITLE" desc="The title shown in the locale detailed view.">
+        Languages
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_LOCALE_TOOLTIP" desc="The tooltip text in the tray to show the locale menu.">
+        Show language settings
       </message>
 
       <!-- Status tray supervised users. -->
@@ -1287,19 +1292,25 @@ This file contains the strings for ash.
         High contrast
       </message>
       <message name="IDS_ASH_HIGH_CONTRAST_BODY" desc="The text for the high contrast confirmation dialog.">
-        You pressed the shortcut for high contrast. Do you want to turn it on?
+        You pressed the keyboard shortcut for high contrast. Do you want to turn it on?
       </message>
       <message name="IDS_ASH_DOCKED_MAGNIFIER_TITLE" desc="Dialog title when docked magnifier is enabled.">
         Docked magnifier
       </message>
       <message name="IDS_ASH_DOCKED_MAGNIFIER_BODY" desc="The text for the docked magnifier dialog.">
-       You pressed the shortcut for the docked magnifier. Do you want to turn it on?
+        You pressed the keyboard shortcut for the docked magnifier. Do you want to turn it on?
       </message>
       <message name="IDS_ASH_SCREEN_MAGNIFIER_TITLE" desc="Dialog title when screen magnifier is enabled.">
         Full-screen magnifier
       </message>
       <message name="IDS_ASH_SCREEN_MAGNIFIER_BODY" desc="The text for the screen magnifier dialog.">
-       You pressed the shortcut for the full-screen magnifier. Do you want to turn it on?
+        You pressed the keyboard shortcut for the full-screen magnifier. Do you want to turn it on?
+      </message>
+      <message name="IDS_ASH_ROTATE_SCREEN_TITLE" desc="Dialog title for when the screen has been rotated.">
+        Rotate Screen
+      </message>
+      <message name="IDS_ASH_ROTATE_SCREEN_BODY" desc="The text for the screen rotation dialog.">
+        You pressed the keyboard shortcut for screen rotation. Do you want to rotate the screen?
       </message>
       <message name="IDS_ASH_CONTINUE_BUTTON" desc="The text for continue button on accessibility confirmation dialogs.">
         Continue
@@ -1427,7 +1438,7 @@ This file contains the strings for ash.
         Hit <ph name="KEYBOARD_SHORTCUT">$1<ex>Control-Shift-Space</ex></ph> to switch keyboard layout.
       </message>
       <message name="IDS_ASH_LOGIN_ERROR_DETACHABLE_BASE_CHANGED" desc="Text for the error dialog shown on the lock screen when a detachable base different from the base last used by the currently active user is attached.">
-        A different keyboard has been connected since you last entered your password. It may be attempting to steal your keystrokes.
+        Another keyboard has connected to this device since you last signed in. Make sure you trust this keyboard before you use it.
       </message>
       <message name="IDS_ASH_LOGIN_POD_PASSWORD_FIELD_ACCESSIBLE_NAME" desc="Text to be spoken when the focus is set to the password field of a user pod on the sign-in screen.">
         Password for <ph name="USER_EMAIL_ADDRESS">$1<ex>john.doe@example.com</ex></ph>
@@ -1447,6 +1458,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_LOGIN_POD_MENU_REMOVE_ITEM_ACCESSIBLE_NAME" desc="Text to be spoken when 'Remove user' item is selected on the pod menu.">
         Remove this user
       </message>
+      <message name="IDS_ASH_LOGIN_POD_LEGACY_SUPERVISED_EXPIRATION_WARNING" desc="Text shown as a warning that supervised users will be deprecated.">
+        Your supervised user account is expiring soon.
+      </message>
       <message name="IDS_ASH_LOGIN_POD_LEGACY_SUPERVISED_USER_REMOVE_WARNING" desc="Text shown as a warning when attempting to remove legacy supervised user.">
         All files and local data associated with the supervised user will be permanently deleted once this supervised user is removed. Visited websites and settings for this supervised user may still be visible by the manager at <ph name="MANAGEMENT_URL">$1<ex>www.example.com</ex></ph>.
       </message>
@@ -1462,6 +1476,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_LOGIN_PUBLIC_ACCOUNT_MONITORING_WARNING" desc="Template for text shown in the public account user pod, informing the user that this is a public, managed account.">
         The device admin may monitor your browsing activity.
       </message>
+      <message name="IDS_ASH_LOGIN_MANAGED_SESSION_MONITORING_WARNING" desc="Text shown in the public account user pod, informing the user that this session is managed and admin can monitor all activity.">
+        The administrator of this device has access to all activity, including passwords and communications.
+      </message>
       <message name="IDS_ASH_LOGIN_PUBLIC_ACCOUNT_SIGNOUT_REMINDER" desc="Text shown in the public account user pod, reminding the user to log out.">
         Your internet session will be cleared when you sign out. <ph name="LEARN_MORE">$1<ex>Learn more</ex></ph>
       </message>
@@ -1474,20 +1491,29 @@ This file contains the strings for ash.
       <message name="IDS_ASH_LOGIN_KEYBOARD_SELECTION_SELECT" desc="Label for keyboard selection dropdown">
         Set your keyboard
       </message>
-      <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_MESSAGE" desc="Text shown in the user pod to remind user that fingerprint unlock is supported">
+      <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_AVAILABLE" desc="Text shown in the user pod to remind user that fingerprint unlock is supported">
         Unlock with fingerprint
       </message>
-      <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_AGE_AUTH_SUCCESS" desc="Text shown in the user pod that fingerprint unlock succeeded">
+      <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_AUTH_SUCCESS" desc="Text shown in the user pod that fingerprint unlock succeeded">
         Signing in
       </message>
-      <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_DISABLED_FROM_TIMEOUT_MESSAGE" desc="Text shown when fingerprint has been disabled because it has been too long since the user last used the device">
-        To sign back in, enter your password
-      </message>
-      <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_FAILED_MESSAGE" desc="Text shown in the user pod to tell user that couldn't unlock because finger is not recognized">
+      <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_AUTH_FAILED" desc="Text shown in the user pod to tell user that couldn't unlock because finger is not recognized">
         Not recognized
       </message>
-      <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_DISABLED_MESSAGE" desc="Text shown in the user pod to tell user that fingerprint unlock has reached maximum attempt">
+      <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_DISABLED_FROM_TIMEOUT" desc="Text shown when fingerprint has been disabled because it has been too long since the user last used the device">
+        To unlock, enter your password
+      </message>
+      <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_DISABLED_FROM_ATTEMPTS" desc="Text shown in the user pod to tell user that fingerprint unlock has reached maximum attempt">
         Too many attempts
+      </message>
+      <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_ACCESSIBLE_AUTH_SUCCESS" desc="Accessibility text read by chromevox when the user successfully authenticated with fingerprint on the lock screen">
+        Unlocking with fingerprint
+      </message>
+      <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_ACCESSIBLE_AUTH_FAILED" desc="Accessibility text read by chromevox that the user's fingerprint authentication attempt was not successful">
+        Fingerprint not recognized
+      </message>
+      <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_ACCESSIBLE_AUTH_DISABLED_FROM_ATTEMPTS" desc="Accessibility text read by chromevox when the user has made too many unsuccessful fingerprint unlock attempts; fingerprint is now disabled until the user unlocks with a different authentication method">
+        Too many fingerprint attempts
       </message>
       <message name="IDS_ASH_LOGIN_TAKE_BREAK_MESSAGE" desc="Message shown to user when unlocking the device is not allowed because their parent locked it for the day.">
         Take a break!
@@ -1523,13 +1549,13 @@ This file contains the strings for ash.
         The admin of this device has the ability to:
       </message>
       <message name="IDS_ASH_LOGIN_PUBLIC_ACCOUNT_MONITORING_INFO_ITEM_1" desc="Text shown in the warning dialog after user clicks on the learn more link, notifying the user of potential security and privacy implications of using the device">
-        Access your browsing activity
+        Access all your activity in this session
       </message>
       <message name="IDS_ASH_LOGIN_PUBLIC_ACCOUNT_MONITORING_INFO_ITEM_2" desc="Text shown in the warning dialog after user clicks on the learn more link, notifying the user of potential security and privacy implications of using the device">
-        Choose whether websites can use location services or the device’s microphone, camera, or other features
+        Grant websites, apps, and extensions permission to use location services, the device’s microphone, camera, or other features
       </message>
       <message name="IDS_ASH_LOGIN_PUBLIC_ACCOUNT_MONITORING_INFO_ITEM_3" desc="Text shown in the warning dialog after user clicks on the learn more link, notifying the user of potential security and privacy implications of using the device">
-        Manage apps, extensions, and themes
+        Install apps, extensions, and themes
       </message>
       <message name="IDS_ASH_LOGIN_PUBLIC_ACCOUNT_MONITORING_INFO_ITEM_4" desc="Text shown in the warning dialog after user clicks on the learn more link, notifying the user of potential security and privacy implications of using the device">
         Adjust privacy settings

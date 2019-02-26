@@ -100,7 +100,7 @@
             </LinearLayout>
         </LinearLayout>
 
-        <android.support.v7.widget.AppCompatImageView
+        <org.chromium.ui.widget.ChromeImageView
             android:id="@+id/article_thumbnail"
             android:layout_width="@dimen/snippets_thumbnail_size"
             android:layout_height="@dimen/snippets_thumbnail_size"

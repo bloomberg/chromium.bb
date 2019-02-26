@@ -97,9 +97,9 @@ TEST_F(FrameSelectionTest, FirstEphemeralRangeOf) {
                                    Position(text, 3), Position(text, 6)))
                                .Build(),
                            SetSelectionOptions());
-  sample->setAttribute(HTMLNames::styleAttr, "display:none");
+  sample->setAttribute(html_names::kStyleAttr, "display:none");
   // Move |VisibleSelection| before "abc".
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   const EphemeralRange& range =
       FirstEphemeralRangeOf(Selection().ComputeVisibleSelectionInDOMTree());
   EXPECT_EQ(Position(sample->nextSibling(), 0), range.StartPosition())
@@ -109,7 +109,7 @@ TEST_F(FrameSelectionTest, FirstEphemeralRangeOf) {
 
 TEST_F(FrameSelectionTest, SetValidSelection) {
   Text* text = AppendTextNode("Hello, World!");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(Position(text, 0), Position(text, 5))
@@ -119,7 +119,7 @@ TEST_F(FrameSelectionTest, SetValidSelection) {
 
 TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout) {
   Text* text = AppendTextNode("Hello, World!");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   GetDocument().body()->setContentEditable("true", ASSERT_NO_EXCEPTION);
   GetDocument().body()->focus();
@@ -128,7 +128,7 @@ TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout) {
   Selection().SetCaretVisible(true);
   Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder().Collapse(Position(text, 0)).Build());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_TRUE(Selection().ComputeVisibleSelectionInDOMTree().IsCaret());
   EXPECT_TRUE(ToLayoutBlock(GetDocument().body()->GetLayoutObject())
                   ->ShouldPaintCursorCaret());
@@ -159,7 +159,7 @@ TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout) {
 TEST_F(FrameSelectionTest, SelectWordAroundCaret) {
   // "Foo Bar  Baz,"
   Text* text = AppendTextNode("Foo Bar&nbsp;&nbsp;Baz,");
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // "Fo|o Bar  Baz,"
   EXPECT_TRUE(SelectWordAroundPosition(Position(text, 2)));
@@ -234,7 +234,7 @@ TEST_F(FrameSelectionTest, ModifyWithUserTriggered) {
 TEST_F(FrameSelectionTest, MoveRangeSelectionTest) {
   // "Foo Bar Baz,"
   Text* text = AppendTextNode("Foo Bar Baz,");
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Itinitializes with "Foo B|a>r Baz," (| means start and > means end).
   Selection().SetSelectionAndEndTyping(
@@ -304,7 +304,7 @@ TEST_F(FrameSelectionTest, SelectAllWithInputElement) {
 }
 
 TEST_F(FrameSelectionTest, SelectAllWithUnselectableRoot) {
-  Element* select = GetDocument().CreateRawElement(HTMLNames::selectTag);
+  Element* select = GetDocument().CreateRawElement(html_names::kSelectTag);
   GetDocument().ReplaceChild(select, GetDocument().documentElement());
   GetDocument().UpdateStyleAndLayout();
   Selection().SelectAll();
@@ -374,7 +374,7 @@ TEST_F(FrameSelectionTest, BoldCommandPreservesHandle) {
 
 TEST_F(FrameSelectionTest, SelectionOnRangeHidesHandles) {
   Text* text = AppendTextNode("Hello, World!");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(Position(text, 0), Position(text, 5))
@@ -1073,6 +1073,32 @@ TEST_F(FrameSelectionTest, SelectionBounds) {
   GetPage().SetPageScaleFactor(page_scale_factor);
   EXPECT_EQ(LayoutRect(0, node_margin_top, node_width, node_height),
             frame_view->FrameToDocument(Selection().AbsoluteUnclippedBounds()));
+}
+
+TEST_F(FrameSelectionTest, SelectionContainsBidiBoundary) {
+  InsertStyleElement("div{font:10px/10px Ahem}");
+  // Rendered as abcFED
+  Selection().SetSelection(
+      SetSelectionTextToBody("<div dir=ltr>^abc<bdo dir=trl>DEF|</bdo></div>"),
+      SetSelectionOptions());
+
+  // Check the right half of 'c'
+  const LayoutPoint c_right(35, 13);
+  EXPECT_TRUE(Selection().Contains(c_right));
+
+  // Check the left half of "F"
+  const LayoutPoint f_left(45, 13);
+  EXPECT_TRUE(Selection().Contains(f_left));
+}
+
+// This is a regression test for https://crbug.com/927394 where 'copy' operation
+// stopped copying content from inside text controls.
+// Note that this is a non-standard behavior.
+TEST_F(FrameSelectionTest, SelectedTextForClipboardEntersTextControls) {
+  Selection().SetSelection(
+      SetSelectionTextToBody("^foo<input value=\"bar\">baz|"),
+      SetSelectionOptions());
+  EXPECT_EQ("foo\nbar\nbaz", Selection().SelectedTextForClipboard());
 }
 
 }  // namespace blink

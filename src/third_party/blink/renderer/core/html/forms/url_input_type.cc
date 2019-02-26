@@ -39,7 +39,7 @@
 namespace blink {
 
 InputType* URLInputType::Create(HTMLInputElement& element) {
-  return new URLInputType(element);
+  return MakeGarbageCollected<URLInputType>(element);
 }
 
 void URLInputType::CountUsage() {
@@ -47,7 +47,7 @@ void URLInputType::CountUsage() {
 }
 
 const AtomicString& URLInputType::FormControlType() const {
-  return InputTypeNames::url;
+  return input_type_names::kUrl;
 }
 
 bool URLInputType::TypeMismatchFor(const String& value) const {

@@ -11,6 +11,8 @@
 
 namespace blink {
 
+class CanMakePaymentEventInit;
+class PaymentRequestEventInit;
 class ScriptState;
 struct WebCanMakePaymentEventData;
 struct WebPaymentRequestEventData;
@@ -19,10 +21,10 @@ class MODULES_EXPORT PaymentEventDataConversion {
   STATIC_ONLY(PaymentEventDataConversion);
 
  public:
-  static CanMakePaymentEventInit ToCanMakePaymentEventInit(
+  static CanMakePaymentEventInit* ToCanMakePaymentEventInit(
       ScriptState*,
       const WebCanMakePaymentEventData&);
-  static PaymentRequestEventInit ToPaymentRequestEventInit(
+  static PaymentRequestEventInit* ToPaymentRequestEventInit(
       ScriptState*,
       const WebPaymentRequestEventData&);
 };

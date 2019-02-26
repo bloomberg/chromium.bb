@@ -281,13 +281,13 @@ bool GeometryMapper::SlowLocalToAncestorVisualRectWithEffects(
 
   PropertyTreeState final_transform_and_clip_state(
       ancestor_state.Transform(), ancestor_state.Clip(), nullptr);
-  LocalToAncestorVisualRectInternal(
+  bool intersects = LocalToAncestorVisualRectInternal(
       last_transform_and_clip_state, final_transform_and_clip_state,
       mapping_rect, clip_behavior, inclusive_behavior, success);
 
   // Many effects (e.g. filters, clip-paths) can make a clip rect not tight.
   mapping_rect.ClearIsTight();
-  return true;
+  return intersects;
 }
 
 FloatClipRect GeometryMapper::LocalToAncestorClipRect(

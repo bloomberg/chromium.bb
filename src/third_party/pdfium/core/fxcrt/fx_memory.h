@@ -30,9 +30,9 @@ void FXMEM_DefaultFree(void* pointer);
 #include "core/fxcrt/fx_safe_types.h"
 #include "third_party/base/allocator/partition_allocator/partition_alloc.h"
 
-extern pdfium::base::PartitionAllocatorGeneric gArrayBufferPartitionAllocator;
-extern pdfium::base::PartitionAllocatorGeneric gGeneralPartitionAllocator;
-extern pdfium::base::PartitionAllocatorGeneric gStringPartitionAllocator;
+pdfium::base::PartitionAllocatorGeneric& GetArrayBufferPartitionAllocator();
+pdfium::base::PartitionAllocatorGeneric& GetGeneralPartitionAllocator();
+pdfium::base::PartitionAllocatorGeneric& GetStringPartitionAllocator();
 
 void FXMEM_InitializePartitionAlloc();
 NEVER_INLINE void FX_OutOfMemoryTerminate();
@@ -43,12 +43,11 @@ inline void* FX_SafeAlloc(size_t num_members, size_t member_size) {
   if (!total.IsValid())
     return nullptr;
 
-  void* result = pdfium::base::PartitionAllocGenericFlags(
-      gGeneralPartitionAllocator.root(), pdfium::base::PartitionAllocReturnNull,
-      total.ValueOrDie(), "GeneralPartition");
-  if (result)
-    memset(result, 0, total.ValueOrDie());
-  return result;
+  constexpr int kFlags = pdfium::base::PartitionAllocReturnNull |
+                         pdfium::base::PartitionAllocZeroFill;
+  return pdfium::base::PartitionAllocGenericFlags(
+      GetGeneralPartitionAllocator().root(), kFlags, total.ValueOrDie(),
+      "GeneralPartition");
 }
 
 inline void* FX_SafeRealloc(void* ptr, size_t num_members, size_t member_size) {
@@ -58,8 +57,9 @@ inline void* FX_SafeRealloc(void* ptr, size_t num_members, size_t member_size) {
     return nullptr;
 
   return pdfium::base::PartitionReallocGenericFlags(
-      gGeneralPartitionAllocator.root(), pdfium::base::PartitionAllocReturnNull,
-      ptr, size.ValueOrDie(), "GeneralPartition");
+      GetGeneralPartitionAllocator().root(),
+      pdfium::base::PartitionAllocReturnNull, ptr, size.ValueOrDie(),
+      "GeneralPartition");
 }
 
 inline void* FX_AllocOrDie(size_t num_members, size_t member_size) {
@@ -134,7 +134,7 @@ char (&ArraySizeHelper(T (&array)[N]))[N];
 template <int N, typename T>
 inline T FxAlignToBoundary(T size) {
   static_assert(N > 0 && (N & (N - 1)) == 0, "Not non-zero power of two");
-  return (size + N - 1) & ~(N - 1);
+  return (size + (N - 1)) & ~(N - 1);
 }
 
 // Used with std::unique_ptr to FX_Free raw memory.

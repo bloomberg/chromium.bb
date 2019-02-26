@@ -10,8 +10,11 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_cell.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
-#include "ios/chrome/browser/ui/ui_util.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
+#include "ios/chrome/browser/ui/util/dynamic_type_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/features.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -32,18 +35,18 @@ const CGFloat kSearchFieldLarge = 432;
 const CGFloat kSearchFieldSmall = 343;
 const CGFloat kSearchFieldMinMargin = 8;
 
-// Veritcla margin of search hint text.
-const CGFloat kSearchHintMargin = 3;
-
 // Top margin for the doodle.
 const CGFloat kDoodleTopMarginRegularXRegular = 162;
-const CGFloat kDoodleTopMarginOther = 58;
+const CGFloat kDoodleTopMarginOther = 48;
+// Size of the doodle top margin which is multiplied by the scaled font factor,
+// and added to |kDoodleTopMarginOther| on non Regular x Regular form factors.
+const CGFloat kDoodleScaledTopMarginOther = 10;
 
 // Top margin for the search field
 const CGFloat kSearchFieldTopMargin = 32;
 
 // Bottom margin for the search field.
-const CGFloat kNTPSearchFieldBottomPadding = 16;
+const CGFloat kNTPSearchFieldBottomPadding = 18;
 
 // Alpha for search hint text.
 const CGFloat kHintAlpha = 0.3;
@@ -66,7 +69,6 @@ const CGFloat kNonGoogleSearchHeaderHeightIPad = 10;
 
 namespace content_suggestions {
 
-const CGFloat kSearchFieldHeight = 50;
 const int kSearchFieldBackgroundColor = 0xF1F3F4;
 const CGFloat kHintTextScale = 0.15;
 
@@ -114,10 +116,13 @@ CGFloat doodleTopMargin(BOOL toolbarPresent, CGFloat topInset) {
     return kDoodleTopMarginRegularXRegular;
   if (base::FeatureList::IsEnabled(
           web::features::kBrowserContainerFullscreen) &&
-      base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen)) {
+      base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen) &&
+      !base::FeatureList::IsEnabled(kBrowserContainerContainsNTP)) {
     topInset = StatusBarHeight();
   }
-  return topInset + kDoodleTopMarginOther;
+  return topInset + kDoodleTopMarginOther +
+         AlignValueToPixel(kDoodleScaledTopMarginOther *
+                           SystemSuggestedFontSizeMultiplier());
 }
 
 CGFloat searchFieldTopMargin() {
@@ -136,9 +141,12 @@ CGFloat heightForLogoHeader(BOOL logoIsShowing,
                             BOOL promoCanShow,
                             BOOL toolbarPresent,
                             CGFloat topInset) {
-  CGFloat headerHeight = doodleTopMargin(toolbarPresent, topInset) +
-                         doodleHeight(logoIsShowing) + searchFieldTopMargin() +
-                         kSearchFieldHeight + kNTPSearchFieldBottomPadding;
+  CGFloat headerHeight =
+      doodleTopMargin(toolbarPresent, topInset) + doodleHeight(logoIsShowing) +
+      searchFieldTopMargin() +
+      ToolbarExpandedHeight(
+          [UIApplication sharedApplication].preferredContentSizeCategory) +
+      kNTPSearchFieldBottomPadding;
   if (!IsRegularXRegularSizeClass()) {
     return headerHeight;
   }
@@ -153,16 +161,9 @@ CGFloat heightForLogoHeader(BOOL logoIsShowing,
 }
 
 void configureSearchHintLabel(UILabel* searchHintLabel,
-                              UIButton* searchTapTarget) {
+                              UIView* searchTapTarget) {
   [searchHintLabel setTranslatesAutoresizingMaskIntoConstraints:NO];
   [searchTapTarget addSubview:searchHintLabel];
-
-  [NSLayoutConstraint activateConstraints:@[
-    [searchHintLabel.centerYAnchor
-        constraintEqualToAnchor:searchTapTarget.centerYAnchor],
-    [searchHintLabel.heightAnchor
-        constraintEqualToConstant:kSearchFieldHeight - 2 * kSearchHintMargin],
-  ]];
 
   [searchHintLabel.centerXAnchor
       constraintEqualToAnchor:searchTapTarget.centerXAnchor]
@@ -173,18 +174,17 @@ void configureSearchHintLabel(UILabel* searchHintLabel,
     [searchHintLabel setTextAlignment:NSTextAlignmentRight];
   }
   [searchHintLabel setTextColor:[UIColor colorWithWhite:0 alpha:kHintAlpha]];
-  searchHintLabel.font = [UIFont systemFontOfSize:17];
+  searchHintLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+  searchHintLabel.adjustsFontForContentSizeCategory = YES;
   searchHintLabel.textAlignment = NSTextAlignmentCenter;
 }
 
 void configureVoiceSearchButton(UIButton* voiceSearchButton,
-                                UIButton* searchTapTarget) {
+                                UIView* searchTapTarget) {
   [voiceSearchButton setTranslatesAutoresizingMaskIntoConstraints:NO];
   [searchTapTarget addSubview:voiceSearchButton];
 
   [NSLayoutConstraint activateConstraints:@[
-    [voiceSearchButton.centerYAnchor
-        constraintEqualToAnchor:searchTapTarget.centerYAnchor],
     [voiceSearchButton.widthAnchor
         constraintEqualToConstant:kVoiceSearchButtonWidth],
     [voiceSearchButton.heightAnchor

@@ -33,15 +33,6 @@
 
 namespace blink {
 
-// Used for exposing text attributes.
-enum WebAXTextStyle {
-  kWebAXTextStyleNone = 0,
-  kWebAXTextStyleBold = 1 << 0,
-  kWebAXTextStyleItalic = 1 << 1,
-  kWebAXTextStyleUnderline = 1 << 2,
-  kWebAXTextStyleLineThrough = 1 << 3
-};
-
 // Expanded State.
 // These values must match blink::AccessibilityExpanded values.
 // Enforced in AssertMatchingEnums.cpp.

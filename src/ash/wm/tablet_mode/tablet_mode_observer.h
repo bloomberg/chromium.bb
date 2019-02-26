@@ -29,8 +29,12 @@ class ASH_EXPORT TabletModeObserver {
   // connected.
   virtual void OnTabletModeEventsBlockingChanged() {}
 
+  // Called when the tablet mode controller is destroyed, to help manage issues
+  // with observers being destroyed after controllers.
+  virtual void OnTabletControllerDestroyed() {}
+
  protected:
-  virtual ~TabletModeObserver() {}
+  virtual ~TabletModeObserver() = default;
 };
 
 }  // namespace ash

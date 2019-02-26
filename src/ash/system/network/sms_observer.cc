@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/system/tray/tray_constants.h"
 #include "base/strings/string_util.h"
@@ -38,14 +39,14 @@ void ShowNotification(const base::DictionaryValue* message,
   std::unique_ptr<message_center::Notification> notification;
 
   // TODO(estade): should SMS notifications really be shown to all users?
-  notification = message_center::Notification::CreateSystemNotification(
+  notification = ash::CreateSystemNotification(
       message_center::NOTIFICATION_TYPE_SIMPLE,
       kNotificationId + std::to_string(message_id),
       base::ASCIIToUTF16(message_number),
       base::CollapseWhitespace(base::UTF8ToUTF16(message_text),
                                false /* trim_sequences_with_line_breaks */),
       base::string16(), GURL(),
-      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
+      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
                                  kNotifierSms),
       message_center::RichNotificationData(), nullptr, kNotificationSmsSyncIcon,
       message_center::SystemNotificationWarningLevel::NORMAL);

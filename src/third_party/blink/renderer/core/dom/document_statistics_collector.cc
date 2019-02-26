@@ -21,7 +21,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 namespace {
 
@@ -124,19 +124,19 @@ void CollectFeatures(Element& root,
 
     features.element_count++;
     Element& element = ToElement(node);
-    if (element.HasTagName(aTag)) {
+    if (element.HasTagName(kATag)) {
       features.anchor_count++;
-    } else if (element.HasTagName(formTag)) {
+    } else if (element.HasTagName(kFormTag)) {
       features.form_count++;
-    } else if (element.HasTagName(inputTag)) {
+    } else if (element.HasTagName(kInputTag)) {
       const HTMLInputElement& input = ToHTMLInputElement(element);
-      if (input.type() == InputTypeNames::text) {
+      if (input.type() == input_type_names::kText) {
         features.text_input_count++;
-      } else if (input.type() == InputTypeNames::password) {
+      } else if (input.type() == input_type_names::kPassword) {
         features.password_input_count++;
       }
-    } else if (element.HasTagName(pTag) || element.HasTagName(preTag)) {
-      if (element.HasTagName(pTag)) {
+    } else if (element.HasTagName(kPTag) || element.HasTagName(kPreTag)) {
+      if (element.HasTagName(kPTag)) {
         features.p_count++;
       } else {
         features.pre_count++;
@@ -156,7 +156,7 @@ void CollectFeatures(Element& root,
         features.moz_score_all_linear = std::min(features.moz_score_all_linear,
                                                  kMozScoreAllLinearSaturation);
       }
-    } else if (element.HasTagName(liTag)) {
+    } else if (element.HasTagName(kLiTag)) {
       is_list_item = true;
     }
     CollectFeatures(element, features, under_list_item || is_list_item);

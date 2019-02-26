@@ -13,8 +13,7 @@ The Service Manager performs the following functions:
 * Brokers interface requests between service instances, enforcing static
   capability policies declared by the services involved.
 * Launches and manages the lifecycle of services and processes.
-* Isolates service instances and interface requests among them according to
-  user identity.
+* Isolates service instances and interface requests among them.
 * Tracks running service instances and exposes privileged APIs for querying
   system state.
 

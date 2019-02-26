@@ -64,6 +64,8 @@ class MockWebAudioDeviceForAutoplayTest : public WebAudioDevice {
 
   void Start() override {}
   void Stop() override {}
+  void Pause() override {}
+  void Resume() override {}
   double SampleRate() override { return sample_rate_; }
   int FramesPerBuffer() override { return frames_per_buffer_; }
 
@@ -157,7 +159,7 @@ class AudioContextAutoplayTest
 // Creates an AudioContext without a gesture inside a x-origin child frame.
 TEST_P(AudioContextAutoplayTest, AutoplayMetrics_CreateNoGesture_Child) {
   AudioContext* audio_context = AudioContext::Create(
-      ChildDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
+      ChildDocument(), AudioContextOptions::Create(), ASSERT_NO_EXCEPTION);
   RecordAutoplayStatus(audio_context);
 
   switch (GetParam()) {
@@ -181,7 +183,7 @@ TEST_P(AudioContextAutoplayTest, AutoplayMetrics_CreateNoGesture_Child) {
 // Creates an AudioContext without a gesture inside a main frame.
 TEST_P(AudioContextAutoplayTest, AutoplayMetrics_CreateNoGesture_Main) {
   AudioContext* audio_context = AudioContext::Create(
-      GetDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
+      GetDocument(), AudioContextOptions::Create(), ASSERT_NO_EXCEPTION);
   RecordAutoplayStatus(audio_context);
 
   switch (GetParam()) {
@@ -207,7 +209,7 @@ TEST_P(AudioContextAutoplayTest,
   ScriptState::Scope scope(GetScriptStateFrom(ChildDocument()));
 
   AudioContext* audio_context = AudioContext::Create(
-      ChildDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
+      ChildDocument(), AudioContextOptions::Create(), ASSERT_NO_EXCEPTION);
   audio_context->resumeContext(GetScriptStateFrom(ChildDocument()));
   RejectPendingResolvers(audio_context);
   RecordAutoplayStatus(audio_context);
@@ -235,7 +237,7 @@ TEST_P(AudioContextAutoplayTest, AutoplayMetrics_CallResumeNoGesture_Main) {
   ScriptState::Scope scope(GetScriptStateFrom(GetDocument()));
 
   AudioContext* audio_context = AudioContext::Create(
-      GetDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
+      GetDocument(), AudioContextOptions::Create(), ASSERT_NO_EXCEPTION);
   audio_context->resumeContext(GetScriptStateFrom(ChildDocument()));
   RejectPendingResolvers(audio_context);
   RecordAutoplayStatus(audio_context);
@@ -263,7 +265,7 @@ TEST_P(AudioContextAutoplayTest, AutoplayMetrics_CreateGesture_Child) {
                                        UserGestureToken::kNewGesture);
 
   AudioContext* audio_context = AudioContext::Create(
-      ChildDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
+      ChildDocument(), AudioContextOptions::Create(), ASSERT_NO_EXCEPTION);
   RecordAutoplayStatus(audio_context);
 
   switch (GetParam()) {
@@ -292,7 +294,7 @@ TEST_P(AudioContextAutoplayTest, AutoplayMetrics_CreateGesture_Main) {
                                        UserGestureToken::kNewGesture);
 
   AudioContext* audio_context = AudioContext::Create(
-      GetDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
+      GetDocument(), AudioContextOptions::Create(), ASSERT_NO_EXCEPTION);
   RecordAutoplayStatus(audio_context);
 
   switch (GetParam()) {
@@ -317,7 +319,7 @@ TEST_P(AudioContextAutoplayTest, AutoplayMetrics_CallResumeGesture_Child) {
   ScriptState::Scope scope(GetScriptStateFrom(ChildDocument()));
 
   AudioContext* audio_context = AudioContext::Create(
-      ChildDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
+      ChildDocument(), AudioContextOptions::Create(), ASSERT_NO_EXCEPTION);
 
   std::unique_ptr<UserGestureIndicator> user_gesture_scope =
       LocalFrame::NotifyUserActivation(ChildDocument().GetFrame(),
@@ -352,7 +354,7 @@ TEST_P(AudioContextAutoplayTest, AutoplayMetrics_CallResumeGesture_Main) {
   ScriptState::Scope scope(GetScriptStateFrom(GetDocument()));
 
   AudioContext* audio_context = AudioContext::Create(
-      GetDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
+      GetDocument(), AudioContextOptions::Create(), ASSERT_NO_EXCEPTION);
 
   std::unique_ptr<UserGestureIndicator> user_gesture_scope =
       LocalFrame::NotifyUserActivation(GetDocument().GetFrame(),
@@ -382,7 +384,7 @@ TEST_P(AudioContextAutoplayTest, AutoplayMetrics_CallResumeGesture_Main) {
 // x-origin child frame.
 TEST_P(AudioContextAutoplayTest, AutoplayMetrics_NodeStartNoGesture_Child) {
   AudioContext* audio_context = AudioContext::Create(
-      ChildDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
+      ChildDocument(), AudioContextOptions::Create(), ASSERT_NO_EXCEPTION);
   audio_context->NotifySourceNodeStart();
   RecordAutoplayStatus(audio_context);
 
@@ -408,7 +410,7 @@ TEST_P(AudioContextAutoplayTest, AutoplayMetrics_NodeStartNoGesture_Child) {
 // main frame.
 TEST_P(AudioContextAutoplayTest, AutoplayMetrics_NodeStartNoGesture_Main) {
   AudioContext* audio_context = AudioContext::Create(
-      GetDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
+      GetDocument(), AudioContextOptions::Create(), ASSERT_NO_EXCEPTION);
   audio_context->NotifySourceNodeStart();
   RecordAutoplayStatus(audio_context);
 
@@ -432,7 +434,7 @@ TEST_P(AudioContextAutoplayTest, AutoplayMetrics_NodeStartNoGesture_Main) {
 // x-origin child frame.
 TEST_P(AudioContextAutoplayTest, AutoplayMetrics_NodeStartGesture_Child) {
   AudioContext* audio_context = AudioContext::Create(
-      ChildDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
+      ChildDocument(), AudioContextOptions::Create(), ASSERT_NO_EXCEPTION);
 
   std::unique_ptr<UserGestureIndicator> user_gesture_scope =
       LocalFrame::NotifyUserActivation(ChildDocument().GetFrame(),
@@ -463,7 +465,7 @@ TEST_P(AudioContextAutoplayTest, AutoplayMetrics_NodeStartGesture_Child) {
 // main frame.
 TEST_P(AudioContextAutoplayTest, AutoplayMetrics_NodeStartGesture_Main) {
   AudioContext* audio_context = AudioContext::Create(
-      GetDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
+      GetDocument(), AudioContextOptions::Create(), ASSERT_NO_EXCEPTION);
 
   std::unique_ptr<UserGestureIndicator> user_gesture_scope =
       LocalFrame::NotifyUserActivation(GetDocument().GetFrame(),
@@ -494,7 +496,7 @@ TEST_P(AudioContextAutoplayTest,
   ScriptState::Scope scope(GetScriptStateFrom(ChildDocument()));
 
   AudioContext* audio_context = AudioContext::Create(
-      ChildDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
+      ChildDocument(), AudioContextOptions::Create(), ASSERT_NO_EXCEPTION);
   audio_context->NotifySourceNodeStart();
 
   std::unique_ptr<UserGestureIndicator> user_gesture_scope =
@@ -530,7 +532,7 @@ TEST_P(AudioContextAutoplayTest,
   ScriptState::Scope scope(GetScriptStateFrom(GetDocument()));
 
   AudioContext* audio_context = AudioContext::Create(
-      GetDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
+      GetDocument(), AudioContextOptions::Create(), ASSERT_NO_EXCEPTION);
   audio_context->NotifySourceNodeStart();
 
   std::unique_ptr<UserGestureIndicator> user_gesture_scope =
@@ -563,7 +565,7 @@ TEST_P(AudioContextAutoplayTest,
   ScriptState::Scope scope(GetScriptStateFrom(ChildDocument()));
 
   AudioContext* audio_context = AudioContext::Create(
-      ChildDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
+      ChildDocument(), AudioContextOptions::Create(), ASSERT_NO_EXCEPTION);
 
   std::unique_ptr<UserGestureIndicator> user_gesture_scope =
       LocalFrame::NotifyUserActivation(ChildDocument().GetFrame(),
@@ -599,7 +601,7 @@ TEST_P(AudioContextAutoplayTest,
   ScriptState::Scope scope(GetScriptStateFrom(GetDocument()));
 
   AudioContext* audio_context = AudioContext::Create(
-      GetDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
+      GetDocument(), AudioContextOptions::Create(), ASSERT_NO_EXCEPTION);
 
   std::unique_ptr<UserGestureIndicator> user_gesture_scope =
       LocalFrame::NotifyUserActivation(GetDocument().GetFrame(),
@@ -633,7 +635,7 @@ TEST_P(AudioContextAutoplayTest,
                                    UserGestureToken::kNewGesture);
 
   AudioContext* audio_context = AudioContext::Create(
-      ChildDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
+      ChildDocument(), AudioContextOptions::Create(), ASSERT_NO_EXCEPTION);
   RecordAutoplayStatus(audio_context);
 
   switch (GetParam()) {
@@ -670,7 +672,7 @@ TEST_P(AudioContextAutoplayTest,
                                    UserGestureToken::kNewGesture);
 
   AudioContext* audio_context = AudioContext::Create(
-      GetDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
+      GetDocument(), AudioContextOptions::Create(), ASSERT_NO_EXCEPTION);
   RecordAutoplayStatus(audio_context);
 
   switch (GetParam()) {
@@ -697,7 +699,7 @@ TEST_P(AudioContextAutoplayTest,
       true);
 
   AudioContext* audio_context = AudioContext::Create(
-      GetDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
+      GetDocument(), AudioContextOptions::Create(), ASSERT_NO_EXCEPTION);
   RecordAutoplayStatus(audio_context);
 
   switch (GetParam()) {

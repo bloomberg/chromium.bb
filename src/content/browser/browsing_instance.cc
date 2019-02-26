@@ -18,6 +18,7 @@ namespace content {
 BrowsingInstance::BrowsingInstance(BrowserContext* browser_context)
     : browser_context_(browser_context),
       active_contents_count_(0u) {
+  DCHECK(browser_context);
 }
 
 bool BrowsingInstance::HasSiteInstance(const GURL& url) {

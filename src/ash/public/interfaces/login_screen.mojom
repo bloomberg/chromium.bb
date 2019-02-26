@@ -19,31 +19,36 @@ import "mojo/public/mojom/base/time.mojom";
 enum OobeDialogState {
   // Showing other screen, which does not impact the visibility of login shelf
   // buttons.
-  NONE,
+  NONE = 0,
 
   // Showing gaia signin screen.
-  GAIA_SIGNIN,
+  GAIA_SIGNIN = 1,
+
+  // AccountPicker = 2, not currently used
 
   // Showing wrong hardware identification screen.
-  WRONG_HWID_WARNING,
+  WRONG_HWID_WARNING = 3,
 
   // Showing supervised user creation screen.
-  SUPERVISED_USER_CREATION_FLOW,
+  SUPERVISED_USER_CREATION_FLOW = 4,
 
   // Showing SAML password confirmation screen.
-  SAML_PASSWORD_CONFIRM,
+  SAML_PASSWORD_CONFIRM = 5,
 
   // Showing password changed screen.
-  PASSWORD_CHANGED,
+  PASSWORD_CHANGED = 6,
 
   // Showing device enrollment screen.
-  ENROLLMENT,
+  ENROLLMENT = 7,
 
   // Showing error screen.
-  ERROR,
+  ERROR = 8,
+
+  // Showing sync consent screen.
+  SYNC_CONSENT = 9,
 
   // Oobe UI dialog is currently hidden.
-  HIDDEN,
+  HIDDEN = 10,
 };
 
 // Allows clients (e.g. the browser process) to send messages to the ash
@@ -114,6 +119,17 @@ interface LoginScreen {
   // |is_enabled|:   True if pin unlock is enabled.
   SetPinEnabledForUser(signin.mojom.AccountId account_id, bool is_enabled);
 
+  // Update the status of fingerprint for |account_id|.
+  SetFingerprintState(signin.mojom.AccountId account_id,
+                      FingerprintState state);
+
+  // Called after a fingerprint authentication attempt has been made. If
+  // |successful| is true, then the fingerprint authentication attempt was
+  // successful and the device should be unlocked. If false, an error message
+  // should be shown to the user.
+  NotifyFingerprintAuthResult(signin.mojom.AccountId account_id,
+                              bool successful);
+
   // Change the user's avatar. Some avatars may take a long time to load and the
   // login screen may already be visible.
   SetAvatarForUser(signin.mojom.AccountId account_id, UserAvatar avatar);
@@ -173,9 +189,10 @@ interface LoginScreen {
                                   string locale,
                                   array<InputMethodItem> keyboard_layouts);
 
-  // Set the fingerprint unlock state for user with |account_id|.
-  SetFingerprintUnlockState(signin.mojom.AccountId account_id,
-                            FingerprintUnlockState state);
+  // Sets whether full management disclosure is needed for the public/managed
+  // session login screen.
+  SetPublicSessionShowFullManagementDisclosure(
+      bool show_full_management_disclosure);
 
   // Update the kiosk app data for the login screen.
   SetKioskApps(array<KioskAppInfo> kiosk_apps);
@@ -229,6 +246,9 @@ interface LoginScreenClient {
   AuthenticateUserWithExternalBinary(signin.mojom.AccountId account_id)
       => (bool auth_success);
 
+  // Attempt to enroll a user in the external binary authentication system.
+  EnrollUserWithExternalBinary() => (bool enrollment_success);
+
   // Try to authenticate |account_id| using easy unlock. This can be used on the
   // login or lock screen.
   // |account_id|: The account id of the user we are authenticating.
@@ -240,10 +260,6 @@ interface LoginScreenClient {
   // Request to hard lock the user pod.
   // |account_id|:    The account id of the user in the user pod.
   HardlockPod(signin.mojom.AccountId account_id);
-
-  // Record clicks on the lock icon in the user pod.
-  // |account_id|:    The account id of the user in the user pod.
-  RecordClickOnLockIcon(signin.mojom.AccountId account_id);
 
   // Focus user pod of user with |account_id|.
   OnFocusPod(signin.mojom.AccountId account_id);

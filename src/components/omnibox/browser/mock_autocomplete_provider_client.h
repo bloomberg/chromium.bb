@@ -86,7 +86,6 @@ class MockAutocompleteProviderClient
   MOCK_CONST_METHOD0(SearchSuggestEnabled, bool());
   MOCK_CONST_METHOD0(IsPersonalizedUrlDataCollectionActive, bool());
   MOCK_CONST_METHOD0(IsAuthenticated, bool());
-  MOCK_CONST_METHOD0(IsUnifiedConsentGiven, bool());
   MOCK_CONST_METHOD0(IsSyncActive, bool());
 
   MOCK_METHOD6(
@@ -114,6 +113,14 @@ class MockAutocompleteProviderClient
     return &test_url_loader_factory_;
   }
 
+  bool IsBrowserUpdateAvailable() const override {
+    return browser_update_available_;
+  }
+
+  void set_browser_update_available(bool browser_update_available) {
+    browser_update_available_ = browser_update_available;
+  }
+
  private:
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
@@ -122,6 +129,7 @@ class MockAutocompleteProviderClient
   std::unique_ptr<DocumentSuggestionsService> document_suggestions_service_;
   std::unique_ptr<OmniboxPedalProvider> pedal_provider_;
   std::unique_ptr<TemplateURLService> template_url_service_;
+  bool browser_update_available_;
 
   DISALLOW_COPY_AND_ASSIGN(MockAutocompleteProviderClient);
 };

@@ -11,13 +11,13 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* ColumnRuleColor::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSPropertyParserHelpers::ConsumeColor(range, context.Mode());
+  return css_property_parser_helpers::ConsumeColor(range, context.Mode());
 }
 
 const blink::Color ColumnRuleColor::ColorIncludingFallback(
@@ -42,5 +42,5 @@ const CSSValue* ColumnRuleColor::CSSValueFromComputedStyleInternal(
                                    style, style.ColumnRuleColor());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

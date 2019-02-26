@@ -12,51 +12,61 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_fragment_traversal.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_outline_utils.h"
 
 namespace blink {
 
-NGPhysicalBoxFragment::NGPhysicalBoxFragment(
-    LayoutObject* layout_object,
-    const ComputedStyle& style,
-    NGStyleVariant style_variant,
-    NGPhysicalSize size,
-    Vector<NGLink>& children,
-    const NGPhysicalBoxStrut& borders,
-    const NGPhysicalBoxStrut& padding,
-    Vector<NGBaseline>& baselines,
-    NGBoxType box_type,
-    bool is_fieldset_container,
-    bool is_rendered_legend,
-    bool is_old_layout_root,
-    unsigned border_edges,  // NGBorderEdges::Physical
-    scoped_refptr<NGBreakToken> break_token)
-    : NGPhysicalContainerFragment(
-          layout_object,
-          style,
-          style_variant,
-          size,
-          is_rendered_legend ? kFragmentRenderedLegend : kFragmentBox,
-          box_type,
-          children,
-          std::move(break_token)),
-      baselines_(std::move(baselines)),
-      borders_(borders),
-      padding_(padding) {
-  DCHECK(baselines.IsEmpty());  // Ensure move semantics is used.
-  is_fieldset_container_ = is_fieldset_container;
-  is_old_layout_root_ = is_old_layout_root;
-  border_edge_ = border_edges;
-  children_inline_ = layout_object && layout_object->ChildrenInline();
+namespace {
+
+struct SameSizeAsNGPhysicalBoxFragment : NGPhysicalContainerFragment {
+  NGBaselineList baselines;
+  NGPhysicalBoxStrut box_struts[2];
+};
+
+static_assert(sizeof(NGPhysicalBoxFragment) ==
+                  sizeof(SameSizeAsNGPhysicalBoxFragment),
+              "NGPhysicalBoxFragment should stay small");
+
+}  // namespace
+
+scoped_refptr<const NGPhysicalBoxFragment> NGPhysicalBoxFragment::Create(
+    NGBoxFragmentBuilder* builder,
+    WritingMode block_or_line_writing_mode) {
+  // We store the children list inline in the fragment as a flexible
+  // array. Therefore, we need to make sure to allocate enough space for
+  // that array here, which requires a manual allocation + placement new.
+  // The initialization of the array is done by NGPhysicalContainerFragment;
+  // we pass the buffer as a constructor argument.
+  void* data = ::WTF::Partitions::FastMalloc(
+      sizeof(NGPhysicalBoxFragment) +
+          builder->children_.size() * sizeof(NGLinkStorage),
+      ::WTF::GetStringWithTypeName<NGPhysicalBoxFragment>());
+  new (data) NGPhysicalBoxFragment(builder, block_or_line_writing_mode);
+  return base::AdoptRef(static_cast<NGPhysicalBoxFragment*>(data));
 }
 
-const NGBaseline* NGPhysicalBoxFragment::Baseline(
-    const NGBaselineRequest& request) const {
-  for (const auto& baseline : baselines_) {
-    if (baseline.request == request)
-      return &baseline;
-  }
-  return nullptr;
+NGPhysicalBoxFragment::NGPhysicalBoxFragment(
+    NGBoxFragmentBuilder* builder,
+    WritingMode block_or_line_writing_mode)
+    : NGPhysicalContainerFragment(
+          builder,
+          block_or_line_writing_mode,
+          children_,
+          (builder->node_ && builder->node_.IsRenderedLegend())
+              ? kFragmentRenderedLegend
+              : kFragmentBox,
+          builder->BoxType()),
+      baselines_(builder->baselines_),
+      borders_(builder->borders_.ConvertToPhysical(builder->GetWritingMode(),
+                                                   builder->Direction())),
+      padding_(builder->padding_.ConvertToPhysical(builder->GetWritingMode(),
+                                                   builder->Direction())) {
+  is_fieldset_container_ = builder->is_fieldset_container_;
+  is_old_layout_root_ = builder->is_old_layout_root_;
+  border_edge_ = builder->border_edges_.ToPhysical(builder->GetWritingMode());
+  children_inline_ =
+      builder->layout_object_ && builder->layout_object_->ChildrenInline();
 }
 
 bool NGPhysicalBoxFragment::HasSelfPaintingLayer() const {
@@ -150,7 +160,6 @@ NGPhysicalOffsetRect NGPhysicalBoxFragment::SelfInkOverflow() const {
       ink_overflow.Unite(rect);
     }
   }
-  ink_overflow.Unite(descendant_outlines_.ToLayoutRect());
   return NGPhysicalOffsetRect(ink_overflow);
 }
 
@@ -182,6 +191,10 @@ void NGPhysicalBoxFragment::AddSelfOutlineRects(
       }
       LayoutSize corrected_offset = additional_offset - first_fragment_offset;
       for (auto& outline : blockflow_outline_rects) {
+        // Skip if both width and height are zero. Contaning blocks in empty
+        // linebox is one such case.
+        if (outline.Size().IsZero())
+          continue;
         if (UNLIKELY(block_for_flipping))
           block_for_flipping->FlipForWritingMode(outline);
         outline.Move(corrected_offset);

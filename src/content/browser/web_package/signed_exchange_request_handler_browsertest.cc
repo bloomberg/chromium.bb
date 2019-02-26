@@ -14,8 +14,10 @@
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/web_package/signed_exchange_handler.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/download_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -31,6 +33,7 @@
 #include "content/public/test/test_navigation_throttle.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
+#include "content/shell/browser/shell_download_manager_delegate.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
@@ -267,6 +270,17 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, Simple) {
   histogram_tester_.ExpectTotalCount(
       "SignedExchange.Time.CertificateFetch.Success",
       PrefetchIsEnabled() ? 2 : 1);
+  if (PrefetchIsEnabled()) {
+    histogram_tester_.ExpectUniqueSample("SignedExchange.Prefetch.LoadResult",
+                                         SignedExchangeLoadResult::kSuccess, 1);
+    histogram_tester_.ExpectUniqueSample(
+        "SignedExchange.Prefetch.Recall.30Seconds", true, 1);
+    histogram_tester_.ExpectUniqueSample(
+        "SignedExchange.Prefetch.Precision.30Seconds", true, 1);
+  } else {
+    histogram_tester_.ExpectUniqueSample(
+        "SignedExchange.Prefetch.Recall.30Seconds", false, 1);
+  }
 }
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
@@ -395,6 +409,81 @@ INSTANTIATE_TEST_CASE_P(
         SignedExchangeRequestHandlerBrowserTestPrefetchParam::kPrefetchDisabled,
         SignedExchangeRequestHandlerBrowserTestPrefetchParam::
             kPrefetchEnabled));
+
+class SignedExchangeRequestHandlerDownloadBrowserTest
+    : public SignedExchangeRequestHandlerBrowserTestBase {
+ public:
+  SignedExchangeRequestHandlerDownloadBrowserTest() = default;
+  ~SignedExchangeRequestHandlerDownloadBrowserTest() override = default;
+
+ protected:
+  class DownloadObserver : public DownloadManager::Observer {
+   public:
+    DownloadObserver(DownloadManager* manager) : manager_(manager) {
+      manager_->AddObserver(this);
+    }
+    ~DownloadObserver() override { manager_->RemoveObserver(this); }
+
+    void WaitUntilDownloadCreated() { run_loop_.Run(); }
+
+    const GURL& observed_url() const { return url_; }
+    const std::string& observed_content_disposition() const {
+      return content_disposition_;
+    }
+
+    // content::DownloadManager::Observer implementation.
+    void OnDownloadCreated(content::DownloadManager* manager,
+                           download::DownloadItem* item) override {
+      url_ = item->GetURL();
+      content_disposition_ = item->GetContentDisposition();
+      run_loop_.Quit();
+    }
+
+   private:
+    DownloadManager* manager_;
+    base::RunLoop run_loop_;
+    GURL url_;
+    std::string content_disposition_;
+  };
+
+  void SetUpOnMainThread() override {
+    SignedExchangeRequestHandlerBrowserTestBase::SetUpOnMainThread();
+    ASSERT_TRUE(downloads_directory_.CreateUniqueTempDir());
+    ShellDownloadManagerDelegate* delegate =
+        static_cast<ShellDownloadManagerDelegate*>(
+            shell()
+                ->web_contents()
+                ->GetBrowserContext()
+                ->GetDownloadManagerDelegate());
+    delegate->SetDownloadBehaviorForTesting(downloads_directory_.GetPath());
+  }
+
+ private:
+  base::ScopedTempDir downloads_directory_;
+};
+
+IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerDownloadBrowserTest,
+                       Download) {
+  std::unique_ptr<DownloadObserver> observer =
+      std::make_unique<DownloadObserver>(BrowserContext::GetDownloadManager(
+          shell()->web_contents()->GetBrowserContext()));
+
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  NavigateToURL(shell(), embedded_test_server()->GetURL("/empty.html"));
+
+  const std::string load_sxg =
+      "const iframe = document.createElement('iframe');"
+      "iframe.src = './sxg/test.example.org_test_download.sxg';"
+      "document.body.appendChild(iframe);";
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), load_sxg));
+  observer->WaitUntilDownloadCreated();
+  EXPECT_EQ(
+      embedded_test_server()->GetURL("/sxg/test.example.org_test_download.sxg"),
+      observer->observed_url());
+  EXPECT_EQ("attachment; filename=test.sxg",
+            observer->observed_content_disposition());
+}
 
 class SignedExchangeRequestHandlerRealCertVerifierBrowserTest
     : public SignedExchangeRequestHandlerBrowserTestBase {

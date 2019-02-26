@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.download;
 
+import android.os.Build;
 import android.support.test.filters.LargeTest;
 
 import org.junit.Assert;
@@ -15,6 +16,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -94,6 +96,7 @@ public class DownloadMediaParserTest {
     @Test
     @LargeTest
     @Feature({"Download"})
+    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     /**
      * Verify metadata and thumbnail can be retrieved correctly from h264 video file.
      * @throws InterruptedException

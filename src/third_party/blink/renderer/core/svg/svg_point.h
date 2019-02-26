@@ -44,11 +44,14 @@ class SVGPoint final : public SVGPropertyHelper<SVGPoint> {
  public:
   typedef SVGPointTearOff TearOffType;
 
-  static SVGPoint* Create() { return new SVGPoint(); }
+  static SVGPoint* Create() { return MakeGarbageCollected<SVGPoint>(); }
 
   static SVGPoint* Create(const FloatPoint& point) {
-    return new SVGPoint(point);
+    return MakeGarbageCollected<SVGPoint>(point);
   }
+
+  SVGPoint();
+  explicit SVGPoint(const FloatPoint&);
 
   SVGPoint* Clone() const;
 
@@ -79,9 +82,6 @@ class SVGPoint final : public SVGPropertyHelper<SVGPoint> {
   static AnimatedPropertyType ClassType() { return kAnimatedPoint; }
 
  private:
-  SVGPoint();
-  explicit SVGPoint(const FloatPoint&);
-
   template <typename CharType>
   SVGParsingError Parse(const CharType*& ptr, const CharType* end);
 

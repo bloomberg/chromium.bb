@@ -36,7 +36,7 @@ class CORE_EXPORT SVGPathStringSource {
   explicit SVGPathStringSource(const String&);
 
   bool HasMoreData() const {
-    if (is8_bit_source_)
+    if (is_8bit_source_)
       return current_.character8_ < end_.character8_;
     return current_.character16_ < end_.character16_;
   }
@@ -50,7 +50,7 @@ class CORE_EXPORT SVGPathStringSource {
   bool ParseArcFlagWithError();
   void SetErrorMark(SVGParseStatus);
 
-  bool is8_bit_source_;
+  bool is_8bit_source_;
 
   union {
     const LChar* character8_;

@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "ui/aura/aura_export.h"
@@ -79,6 +80,7 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
 
   void AddObserver(WindowTreeHostObserver* observer);
   void RemoveObserver(WindowTreeHostObserver* observer);
+  bool HasObserver(const WindowTreeHostObserver* observer) const;
 
   Window* window() { return window_; }
   const Window* window() const { return window_; }
@@ -200,7 +202,8 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // when the size change takes effect.
   virtual void SetBoundsInPixels(
       const gfx::Rect& bounds_in_pixels,
-      const viz::LocalSurfaceId& local_surface_id = viz::LocalSurfaceId()) = 0;
+      const viz::LocalSurfaceIdAllocation& local_surface_id_allocation =
+          viz::LocalSurfaceIdAllocation()) = 0;
   virtual gfx::Rect GetBoundsInPixels() const = 0;
 
   // Sets the OS capture to the root window.
@@ -223,6 +226,22 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // Returns a map of KeyboardEvent code to KeyboardEvent key values.
   virtual base::flat_map<std::string, std::string> GetKeyboardLayoutMap() = 0;
 
+  // Returns true if KeyEvents should be send to IME. This is called from
+  // WindowEventDispatcher during event dispatch.
+  virtual bool ShouldSendKeyEventToIme();
+
+  // Enables native window occlusion tracking for the native window this host
+  // represents.
+  virtual void EnableNativeWindowOcclusionTracking();
+
+  // Disables native window occlusion tracking for the native window this host
+  // represents.
+  virtual void DisableNativeWindowOcclusionTracking();
+
+  // Remembers the current occlusion state, and if it has changed, notifies
+  // observers of the change.
+  virtual void SetNativeWindowOcclusionState(Window::OcclusionState state);
+
  protected:
   friend class ScopedKeyboardHook;
   friend class TestScreen;  // TODO(beng): see if we can remove/consolidate.
@@ -239,12 +258,13 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // If frame_sink_id is not passed in, one will be grabbed from
   // ContextFactoryPrivate. |are_events_in_pixels| indicates if events are
   // received in pixels. If |are_events_in_pixels| is false, events are
-  // received in DIPs.
+  // received in DIPs. See Compositor() for details on |trace_environment_name|.
   void CreateCompositor(
       const viz::FrameSinkId& frame_sink_id = viz::FrameSinkId(),
       bool force_software_compositor = false,
       bool external_begin_frames_enabled = false,
-      bool are_events_in_pixels = true);
+      bool are_events_in_pixels = true,
+      const char* trace_environment_name = nullptr);
 
   void InitCompositor();
   void OnAcceleratedWidgetAvailable();
@@ -255,11 +275,11 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   void OnHostMovedInPixels(const gfx::Point& new_location_in_pixels);
   void OnHostResizedInPixels(
       const gfx::Size& new_size_in_pixels,
-      const viz::LocalSurfaceId& local_surface_id = viz::LocalSurfaceId());
+      const viz::LocalSurfaceIdAllocation& local_surface_id_allocation =
+          viz::LocalSurfaceIdAllocation());
   void OnHostWorkspaceChanged();
   void OnHostDisplayChanged();
   void OnHostCloseRequested();
-  void OnHostActivated();
   void OnHostLostWindowCapture();
 
   // Sets the currently displayed cursor.
@@ -325,6 +345,10 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // the end of the dtor).
   Window* window_;  // Owning.
 
+  // Keeps track of the occlusion state of the host, and used to send
+  // notifications to observers when it changes.
+  Window::OcclusionState occlusion_state_;
+
   base::ObserverList<WindowTreeHostObserver>::Unchecked observers_;
 
   std::unique_ptr<WindowEventDispatcher> dispatcher_;
@@ -332,6 +356,11 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   std::unique_ptr<ui::Compositor> compositor_;
 
   // The device scale factor is snapshotted in OnHostResizedInPixels.
+  // NOTE: this value is cached rather than looked up from the Display as it is
+  // entirely possible for the Display to be updated *after* |this|. For
+  // example, display changes on Windows first result in the HWND bounds
+  // changing and are then followed by changes to the set of displays
+  //
   // TODO(ccameron): The size and location from OnHostResizedInPixels and
   // OnHostMovedInPixels should be snapshotted here as well.
   float device_scale_factor_ = 1.f;

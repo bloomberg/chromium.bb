@@ -17,15 +17,8 @@
 using content::BrowserThread;
 
 void ServiceProcessControl::Launcher::DoRun() {
-  base::ScopedCFTypeRef<CFDictionaryRef> launchd_plist(
-      CreateServiceProcessLaunchdPlist(cmd_line_.get(), false));
-  CFErrorRef error = NULL;
-  if (!GTMSMJobSubmit(launchd_plist, &error)) {
-    LOG(ERROR) << error;
-    CFRelease(error);
-  } else {
-    launched_ = true;
-  }
+  launched_ = mac::services::SubmitJob(
+      GetServiceProcessJobOptions(cmd_line_.get(), false));
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
                            base::Bind(&Launcher::Notify, this));
 }

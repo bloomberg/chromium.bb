@@ -41,6 +41,7 @@ class FakeOwnerSettingsService : public OwnerSettingsServiceChromeOS {
   }
 
   // OwnerSettingsServiceChromeOS:
+  bool IsOwner() override;
   bool Set(const std::string& setting, const base::Value& value) override;
 
   // NotificationObserver:

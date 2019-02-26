@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "content/public/browser/render_frame_host.h"
 #include "ui/aura/screen_ozone.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "webrunner/browser/context_impl.h"
@@ -50,11 +51,16 @@ void WebRunnerBrowserMainParts::PreMainMessageLoopRun() {
                                   std::move(context_channel_)));
 
   // Quit the browser main loop when the Context connection is dropped.
-  context_binding_->set_error_handler([this]() {
+  context_binding_->set_error_handler([this](zx_status_t status) {
     DLOG(WARNING) << "Client connection to Context service dropped.";
     context_service_.reset();
     std::move(quit_closure_).Run();
   });
+
+  // Disable RenderFrameHost's Javascript injection restrictions so that the
+  // Context and Frames can implement their own JS injection policy at a higher
+  // level.
+  content::RenderFrameHost::AllowInjectingJavaScript();
 }
 
 void WebRunnerBrowserMainParts::PreDefaultMainMessageLoopRun(

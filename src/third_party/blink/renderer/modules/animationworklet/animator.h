@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_ANIMATOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_ANIMATOR_H_
 
-#include "third_party/blink/renderer/modules/animationworklet/effect_proxy.h"
+#include "third_party/blink/renderer/modules/animationworklet/worklet_group_effect_proxy.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
@@ -25,7 +25,10 @@ class ScriptState;
 class Animator final : public GarbageCollectedFinalized<Animator>,
                        public NameClient {
  public:
-  Animator(v8::Isolate*, AnimatorDefinition*, v8::Local<v8::Value> instance);
+  Animator(v8::Isolate*,
+           AnimatorDefinition*,
+           v8::Local<v8::Value> instance,
+           int num_effects);
   ~Animator();
   void Trace(blink::Visitor*);
   const char* NameInHeapSnapshot() const override { return "Animator"; }
@@ -36,9 +39,7 @@ class Animator final : public GarbageCollectedFinalized<Animator>,
   bool Animate(ScriptState*,
                double current_time,
                AnimationWorkletDispatcherOutput::AnimationState*);
-  base::Optional<TimeDelta> GetLastLocalTime() const {
-    return effect_->local_time();
-  }
+  std::vector<base::Optional<TimeDelta>> GetLocalTimes() const;
 
  private:
   // This object keeps the definition object, and animator instance alive.
@@ -46,7 +47,7 @@ class Animator final : public GarbageCollectedFinalized<Animator>,
   TraceWrapperMember<AnimatorDefinition> definition_;
   TraceWrapperV8Reference<v8::Value> instance_;
 
-  Member<EffectProxy> effect_;
+  Member<WorkletGroupEffectProxy> group_effect_;
 };
 
 }  // namespace blink

@@ -28,7 +28,6 @@
 #include "chrome/browser/ui/login/login_handler.h"
 #include "chrome/browser/ui/login/login_handler_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/views_mode_controller.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -428,15 +427,18 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
   ASSERT_EQ(1, GetBlockedContentsCount());
 }
 
-IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, PopupsLaunchWhenTabIsClosed) {
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, NoPopupsLaunchWhenTabIsClosed) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
   GURL url(
       embedded_test_server()->GetURL("/popup_blocker/popup-on-unload.html"));
   ui_test_utils::NavigateToURL(browser(), url);
 
-  NavigateAndCheckPopupShown(embedded_test_server()->GetURL("/popup_blocker/"),
-                             kExpectPopup);
+  GURL url2(embedded_test_server()->GetURL("/popup_blocker/"));
+  ui_test_utils::NavigateToURL(browser(), url2);
+
+  // Expect no popup.
+  ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
 }
 
 // Verify that when you unblock popup, the popup shows in history and omnibox.
@@ -570,7 +572,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, WebUI) {
                    kDontCheckTitle);
 
   // Check that the new popup displays about:blank.
-  EXPECT_EQ(GURL(url::kAboutBlankURL), popup->GetURL());
+  EXPECT_EQ(GURL(content::kBlockedURL), popup->GetURL());
 }
 
 // Verify that the renderer can't DOS the browser by creating arbitrarily many

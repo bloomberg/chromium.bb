@@ -42,7 +42,7 @@ class Resource;
 class PLATFORM_EXPORT ResourceClient : public GarbageCollectedMixin {
   USING_PRE_FINALIZER(ResourceClient, ClearResource);
  public:
-
+  ResourceClient() = default;
   virtual ~ResourceClient() = default;
 
   // DataReceived() is called each time a chunk of data is received.
@@ -70,8 +70,6 @@ class PLATFORM_EXPORT ResourceClient : public GarbageCollectedMixin {
   void Trace(Visitor* visitor) override;
 
  protected:
-  ResourceClient() = default;
-
   void ClearResource() { SetResource(nullptr, nullptr); }
 
  private:

@@ -12,11 +12,10 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
-#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
-#include "ios/chrome/browser/ui/rtl_geometry.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/ui/util/label_link_controller.h"
+#include "ios/chrome/browser/ui/util/rtl_geometry.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ios/web/public/browser_state.h"
@@ -57,28 +56,27 @@ NSString* const kMessageTextViewBulletSuffix = @"\n";
 NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
 }  // namespace
 
-@interface SadTabView ()
+@interface SadTabView () {
+  UITextView* _messageTextView;
+  MDCFlatButton* _actionButton;
+}
 
+// YES if the SadTab UI is displayed in Off The Record browsing mode.
+@property(nonatomic, readonly, getter=isOffTheRecord) BOOL offTheRecord;
 // Container view that displays all other subviews.
 @property(nonatomic, readonly, strong) UIView* containerView;
 // Displays the Sad Tab face.
 @property(nonatomic, readonly, strong) UIImageView* imageView;
 // Displays the Sad Tab title.
 @property(nonatomic, readonly, strong) UILabel* titleLabel;
-// Displays the Sad Tab message.
-@property(nonatomic, readonly, strong) UITextView* messageTextView;
 // Displays the Sad Tab footer message (including a link to more help).
 @property(nonatomic, readonly, strong) UILabel* footerLabel;
 // Provides Link functionality to the footerLabel.
 @property(nonatomic, readonly, strong)
     LabelLinkController* footerLabelLinkController;
-// Triggers a reload or feedback action.
-@property(nonatomic, readonly, strong) MDCFlatButton* actionButton;
 // The bounds of |containerView|, with a height updated to CGFLOAT_MAX to allow
 // text to be laid out using as many lines as necessary.
 @property(nonatomic, readonly) CGRect containerBounds;
-// Allows this view to perform navigation actions such as reloading.
-@property(nonatomic, readonly) web::NavigationManager* navigationManager;
 
 // Subview layout methods.  Must be called in the following order, as subsequent
 // layouts reference the values set in previous functions.
@@ -115,7 +113,7 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
                         forLinkText:(nonnull NSString*)linkText;
 
 // The action selector for |_actionButton|.
-- (void)handleActionButtonTapped:(id)sender;
+- (void)handleActionButtonTapped;
 
 // Returns the desired background color.
 + (UIColor*)sadTabBackgroundColor;
@@ -126,24 +124,21 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
 
 @implementation SadTabView
 
+@synthesize offTheRecord = _offTheRecord;
 @synthesize imageView = _imageView;
 @synthesize containerView = _containerView;
 @synthesize titleLabel = _titleLabel;
-@synthesize messageTextView = _messageTextView;
 @synthesize footerLabel = _footerLabel;
 @synthesize footerLabelLinkController = _footerLabelLinkController;
-@synthesize actionButton = _actionButton;
 @synthesize mode = _mode;
-@synthesize navigationManager = _navigationManager;
-@synthesize dispatcher = _dispatcher;
-@synthesize actionDelegate = _actionDelegate;
+@synthesize delegate = _delegate;
 
 - (instancetype)initWithMode:(SadTabViewMode)mode
-           navigationManager:(web::NavigationManager*)navigationManager {
+                offTheRecord:(BOOL)offTheRecord {
   self = [super initWithFrame:CGRectZero];
   if (self) {
     _mode = mode;
-    _navigationManager = navigationManager;
+    _offTheRecord = offTheRecord;
     self.backgroundColor = [[self class] sadTabBackgroundColor];
   }
   return self;
@@ -228,17 +223,13 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
           [[NSMutableAttributedString alloc]
               initWithString:feedbackIntroductionString];
 
-      BOOL isAlreadyInIncognitoMode =
-          _navigationManager
-              ? _navigationManager->GetBrowserState()->IsOffTheRecord()
-              : NO;
       NSMutableArray* stringsArray = [NSMutableArray
           arrayWithObjects:l10n_util::GetNSString(
                                IDS_SAD_TAB_RELOAD_RESTART_BROWSER),
                            l10n_util::GetNSString(
                                IDS_SAD_TAB_RELOAD_RESTART_DEVICE),
                            nil];
-      if (!isAlreadyInIncognitoMode) {
+      if (!self.offTheRecord) {
         NSString* incognitoSuggestionString =
             l10n_util::GetNSString(IDS_SAD_TAB_RELOAD_INCOGNITO);
         [stringsArray insertObject:incognitoSuggestionString atIndex:0];
@@ -308,9 +299,8 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
   _footerLabelLinkController = [[LabelLinkController alloc]
       initWithLabel:label
              action:^(const GURL& URL) {
-               OpenNewTabCommand* command =
-                   [OpenNewTabCommand commandWithURLFromChrome:URL];
-               [weakSelf.dispatcher openURLInNewTab:command];
+               [weakSelf.delegate sadTabView:weakSelf
+                   showSuggestionsPageWithURL:URL];
              }];
 
   _footerLabelLinkController.linkFont =
@@ -358,22 +348,6 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
   return _titleLabel;
 }
 
-- (UITextView*)messageTextView {
-  if (!_messageTextView) {
-    _messageTextView = [[UITextView alloc] initWithFrame:CGRectZero];
-    [_messageTextView setBackgroundColor:self.backgroundColor];
-    [_messageTextView setAttributedText:[self messageTextViewAttributedText]];
-    _messageTextView.textContainer.lineFragmentPadding = 0.0f;
-    [_messageTextView
-        setTextColor:[UIColor colorWithWhite:kGeneralTextColorBrightness
-                                       alpha:1.0]];
-    [_messageTextView setFont:[[MDCTypography fontLoader]
-                                  regularFontOfSize:kMessageTextViewFontSize]];
-    [_messageTextView setUserInteractionEnabled:NO];
-  }
-  return _messageTextView;
-}
-
 - (UILabel*)footerLabel {
   if (!_footerLabel) {
     _footerLabel = [[UILabel alloc] initWithFrame:CGRectZero];
@@ -390,28 +364,6 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
                           forLinkText:[self footerLinkText]];
   }
   return _footerLabel;
-}
-
-- (UIButton*)actionButton {
-  if (!_actionButton) {
-    _actionButton = [[MDCFlatButton alloc] init];
-    [_actionButton setBackgroundColor:[[MDCPalette cr_bluePalette] tint500]
-                             forState:UIControlStateNormal];
-    [_actionButton setBackgroundColor:[[MDCPalette greyPalette] tint500]
-                             forState:UIControlStateDisabled];
-    [_actionButton setTitleColor:[UIColor whiteColor]
-                        forState:UIControlStateNormal];
-    [_actionButton setUnderlyingColorHint:[UIColor blackColor]];
-    [_actionButton setInkColor:[UIColor colorWithWhite:1 alpha:0.2f]];
-
-    [_actionButton setTitle:[self buttonText] forState:UIControlStateNormal];
-    [_actionButton setTitleColor:[UIColor whiteColor]
-                        forState:UIControlStateNormal];
-    [_actionButton addTarget:self
-                      action:@selector(handleActionButtonTapped:)
-            forControlEvents:UIControlEventTouchUpInside];
-  }
-  return _actionButton;
 }
 
 - (CGRect)containerBounds {
@@ -556,20 +508,19 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
 
 #pragma mark Util
 
-- (void)handleActionButtonTapped:(id)sender {
+- (void)handleActionButtonTapped {
   switch (self.mode) {
     case SadTabViewMode::RELOAD:
       UMA_HISTOGRAM_ENUMERATION(ui_metrics::kSadTabReloadHistogramKey,
                                 ui_metrics::SadTabEvent::BUTTON_CLICKED,
                                 ui_metrics::SadTabEvent::MAX_SAD_TAB_EVENT);
-      self.navigationManager->Reload(web::ReloadType::NORMAL, true);
+      [self.delegate sadTabViewReload:self];
       break;
     case SadTabViewMode::FEEDBACK: {
-      DCHECK(self.actionDelegate);
       UMA_HISTOGRAM_ENUMERATION(ui_metrics::kSadTabFeedbackHistogramKey,
                                 ui_metrics::SadTabEvent::BUTTON_CLICKED,
                                 ui_metrics::SadTabEvent::MAX_SAD_TAB_EVENT);
-      [self.actionDelegate showReportAnIssue];
+      [self.delegate sadTabViewShowReportAnIssue:self];
       break;
     }
   };
@@ -577,6 +528,50 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
 
 + (UIColor*)sadTabBackgroundColor {
   return [UIColor colorWithWhite:kBackgroundColorBrightness alpha:1.0];
+}
+
+@end
+
+#pragma mark -
+
+@implementation SadTabView (UIElements)
+
+- (UITextView*)messageTextView {
+  if (!_messageTextView) {
+    _messageTextView = [[UITextView alloc] initWithFrame:CGRectZero];
+    [_messageTextView setBackgroundColor:self.backgroundColor];
+    [_messageTextView setAttributedText:[self messageTextViewAttributedText]];
+    _messageTextView.textContainer.lineFragmentPadding = 0.0f;
+    [_messageTextView
+        setTextColor:[UIColor colorWithWhite:kGeneralTextColorBrightness
+                                       alpha:1.0]];
+    [_messageTextView setFont:[[MDCTypography fontLoader]
+                                  regularFontOfSize:kMessageTextViewFontSize]];
+    [_messageTextView setUserInteractionEnabled:NO];
+  }
+  return _messageTextView;
+}
+
+- (UIButton*)actionButton {
+  if (!_actionButton) {
+    _actionButton = [[MDCFlatButton alloc] init];
+    [_actionButton setBackgroundColor:[[MDCPalette cr_bluePalette] tint500]
+                             forState:UIControlStateNormal];
+    [_actionButton setBackgroundColor:[[MDCPalette greyPalette] tint500]
+                             forState:UIControlStateDisabled];
+    [_actionButton setTitleColor:[UIColor whiteColor]
+                        forState:UIControlStateNormal];
+    [_actionButton setUnderlyingColorHint:[UIColor blackColor]];
+    [_actionButton setInkColor:[UIColor colorWithWhite:1 alpha:0.2f]];
+
+    [_actionButton setTitle:[self buttonText] forState:UIControlStateNormal];
+    [_actionButton setTitleColor:[UIColor whiteColor]
+                        forState:UIControlStateNormal];
+    [_actionButton addTarget:self
+                      action:@selector(handleActionButtonTapped)
+            forControlEvents:UIControlEventTouchUpInside];
+  }
+  return _actionButton;
 }
 
 @end

@@ -19,7 +19,9 @@ class SequenceTest final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SequenceTest* create() { return new SequenceTest; }
+  static SequenceTest* create() { return MakeGarbageCollected<SequenceTest>(); }
+
+  SequenceTest();
   ~SequenceTest() override;
 
   Vector<Vector<String>> identityByteStringSequenceSequence(
@@ -38,8 +40,6 @@ class SequenceTest final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  SequenceTest();
-
   HeapVector<Member<Element>> element_sequence_;
 };
 

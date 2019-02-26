@@ -290,6 +290,14 @@ TopicSet PerUserTopicRegistrationManager::GetRegisteredIds() const {
   return topics;
 }
 
+void PerUserTopicRegistrationManager::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void PerUserTopicRegistrationManager::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 void PerUserTopicRegistrationManager::RequestAccessToken() {
   // TODO(melandory): Implement traffic optimisation.
   // * Before sending request to server ask for access token from identity
@@ -328,12 +336,14 @@ void PerUserTopicRegistrationManager::OnAccessTokenRequestSucceeded(
   // Reset backoff time after successful response.
   request_access_token_backoff_.Reset();
   access_token_ = access_token;
+  NotifySubscriptionChannelStateChange(INVALIDATIONS_ENABLED);
   DoRegistrationUpdate();
 }
 
 void PerUserTopicRegistrationManager::OnAccessTokenRequestFailed(
     GoogleServiceAuthError error) {
   DCHECK_NE(error.state(), GoogleServiceAuthError::NONE);
+  NotifySubscriptionChannelStateChange(INVALIDATION_CREDENTIALS_REJECTED);
   request_access_token_backoff_.InformOfRequest(false);
   request_access_token_retry_timer_.Start(
       FROM_HERE, request_access_token_backoff_.GetTimeUntilRelease(),
@@ -359,6 +369,12 @@ void PerUserTopicRegistrationManager::DropAllSavedRegistrationsOnTokenChange(
   topic_to_private_topic_.clear();
   // TODO(melandory): Figure out if the unsubscribe request should be
   // sent with the old token.
+}
+
+void PerUserTopicRegistrationManager::NotifySubscriptionChannelStateChange(
+    InvalidatorState invalidator_state) {
+  for (auto& observer : observers_)
+    observer.OnSubscriptionChannelStateChanged(invalidator_state);
 }
 
 }  // namespace syncer

@@ -23,9 +23,6 @@ class NinePieceImageGridTest : public RenderingTest {
             nullptr, nullptr, nullptr, nullptr, nullptr, cssvalue::kRepeating);
     return StyleGeneratedImage::Create(*gradient);
   }
-
- private:
-  void SetUp() override { RenderingTest::SetUp(); }
 };
 
 TEST_F(NinePieceImageGridTest, NinePieceImagePainting_NoDrawables) {

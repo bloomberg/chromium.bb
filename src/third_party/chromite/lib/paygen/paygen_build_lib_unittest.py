@@ -19,7 +19,6 @@ from chromite.lib import parallel
 
 from chromite.lib.paygen import gslock
 from chromite.lib.paygen import gspaths
-from chromite.lib.paygen import urilib
 from chromite.lib.paygen import paygen_build_lib
 from chromite.lib.paygen import paygen_payload_lib
 
@@ -41,7 +40,7 @@ class BasePaygenBuildLibTest(cros_test_lib.MockTestCase):
         side_effect=lambda _: self.getParseTestPaygenJson())
 
     # Mock a few more to ensure there is no accidental GS interaction.
-    self.mockUriList = self.PatchObject(urilib, 'ListFiles')
+    self.mockUriList = self.PatchObject(gs.GSContext, 'LS')
 
   def getParseTestPaygenJson(self):
     """Fetch raw parsed json from our test copy of paygen.json."""
@@ -57,13 +56,13 @@ class PaygenJsonTests(BasePaygenBuildLibTest):
 
   def testGetPaygenJsonCaching(self):
     result = paygen_build_lib.PaygenBuild.GetPaygenJson()
-    self.assertEqual(len(result), 1359)
+    self.assertEqual(len(result), 1358)
     self.mockGetJson.assert_called_once()
 
     # Validate caching, by proving we don't refetch.
     self.mockGetJson.reset_mock()
     result = paygen_build_lib.PaygenBuild.GetPaygenJson()
-    self.assertEqual(len(result), 1359)
+    self.assertEqual(len(result), 1358)
     self.mockGetJson.assert_not_called()
 
   def testGetPaygenJsonBoard(self):

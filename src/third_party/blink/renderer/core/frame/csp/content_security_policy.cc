@@ -32,7 +32,9 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/renderer/bindings/core/v8/isolated_world_csp.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_string_list.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -56,6 +58,7 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/loader/fetch/integrity_metadata.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
@@ -73,6 +76,7 @@
 #include "third_party/blink/renderer/platform/wtf/text/parsing_utilities.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
+#include "v8/include/v8.h"
 
 namespace blink {
 
@@ -312,7 +316,7 @@ bool ContentSecurityPolicy::ShouldEnforceEmbeddersPolicy(
   if (parent_origin->CanAccess(SecurityOrigin::Create(response.Url()).get()))
     return true;
 
-  String header = response.HttpHeaderField(HTTPNames::Allow_CSP_From);
+  String header = response.HttpHeaderField(http_names::kAllowCSPFrom);
   header = header.StripWhiteSpace();
   if (header == "*")
     return true;
@@ -1301,7 +1305,8 @@ void ContentSecurityPolicy::ReportViolation(
   DCHECK((execution_context_ && !context_frame) ||
          ((effective_type == DirectiveType::kFrameAncestors) && context_frame));
 
-  SecurityPolicyViolationEventInit violation_data;
+  SecurityPolicyViolationEventInit* violation_data =
+      SecurityPolicyViolationEventInit::Create();
 
   // If we're processing 'frame-ancestors', use |contextFrame|'s execution
   // context to gather data. Otherwise, use the policy's execution context.
@@ -1309,7 +1314,7 @@ void ContentSecurityPolicy::ReportViolation(
       context_frame ? context_frame->GetDocument() : execution_context_;
   DCHECK(relevant_context);
   GatherSecurityPolicyViolationEventData(
-      &violation_data, relevant_context, directive_text, effective_type,
+      violation_data, relevant_context, directive_text, effective_type,
       blocked_url, header, redirect_status, header_type, violation_type,
       std::move(source_location), source);
 
@@ -1317,8 +1322,8 @@ void ContentSecurityPolicy::ReportViolation(
   // resources should be allowed regardless. We apparently do, however, so
   // we should at least stop spamming reporting endpoints. See
   // https://crbug.com/524356 for detail.
-  if (!violation_data.sourceFile().IsEmpty() &&
-      ShouldBypassContentSecurityPolicy(KURL(violation_data.sourceFile()),
+  if (!violation_data->sourceFile().IsEmpty() &&
+      ShouldBypassContentSecurityPolicy(KURL(violation_data->sourceFile()),
                                         execution_context_)) {
     return;
   }
@@ -1330,15 +1335,16 @@ void ContentSecurityPolicy::ReportViolation(
   // we're not processing 'frame-ancestors').
   if (execution_context_) {
     execution_context_->GetTaskRunner(TaskType::kNetworking)
-        ->PostTask(FROM_HERE,
-                   WTF::Bind(&ContentSecurityPolicy::DispatchViolationEvents,
-                             WrapPersistent(this), violation_data,
-                             WrapPersistent(element)));
+        ->PostTask(
+            FROM_HERE,
+            WTF::Bind(&ContentSecurityPolicy::DispatchViolationEvents,
+                      WrapPersistent(this), WrapPersistent(violation_data),
+                      WrapPersistent(element)));
   }
 }
 
 void ContentSecurityPolicy::PostViolationReport(
-    const SecurityPolicyViolationEventInit& violation_data,
+    const SecurityPolicyViolationEventInit* violation_data,
     LocalFrame* context_frame,
     const Vector<String>& report_endpoints,
     bool use_reporting_api) {
@@ -1356,24 +1362,24 @@ void ContentSecurityPolicy::PostViolationReport(
   // let's kill them. https://crbug.com/695363
 
   std::unique_ptr<JSONObject> csp_report = JSONObject::Create();
-  csp_report->SetString("document-uri", violation_data.documentURI());
-  csp_report->SetString("referrer", violation_data.referrer());
+  csp_report->SetString("document-uri", violation_data->documentURI());
+  csp_report->SetString("referrer", violation_data->referrer());
   csp_report->SetString("violated-directive",
-                        violation_data.violatedDirective());
+                        violation_data->violatedDirective());
   csp_report->SetString("effective-directive",
-                        violation_data.effectiveDirective());
-  csp_report->SetString("original-policy", violation_data.originalPolicy());
-  csp_report->SetString("disposition", violation_data.disposition());
-  csp_report->SetString("blocked-uri", violation_data.blockedURI());
-  if (violation_data.lineNumber())
-    csp_report->SetInteger("line-number", violation_data.lineNumber());
-  if (violation_data.columnNumber())
-    csp_report->SetInteger("column-number", violation_data.columnNumber());
-  if (!violation_data.sourceFile().IsEmpty())
-    csp_report->SetString("source-file", violation_data.sourceFile());
-  csp_report->SetInteger("status-code", violation_data.statusCode());
+                        violation_data->effectiveDirective());
+  csp_report->SetString("original-policy", violation_data->originalPolicy());
+  csp_report->SetString("disposition", violation_data->disposition());
+  csp_report->SetString("blocked-uri", violation_data->blockedURI());
+  if (violation_data->lineNumber())
+    csp_report->SetInteger("line-number", violation_data->lineNumber());
+  if (violation_data->columnNumber())
+    csp_report->SetInteger("column-number", violation_data->columnNumber());
+  if (!violation_data->sourceFile().IsEmpty())
+    csp_report->SetString("source-file", violation_data->sourceFile());
+  csp_report->SetInteger("status-code", violation_data->statusCode());
 
-  csp_report->SetString("script-sample", violation_data.sample());
+  csp_report->SetString("script-sample", violation_data->sample());
 
   std::unique_ptr<JSONObject> report_object = JSONObject::Create();
   report_object->SetObject("csp-report", std::move(csp_report));
@@ -1413,12 +1419,12 @@ void ContentSecurityPolicy::PostViolationReport(
         // document's URL.
         DCHECK(!context_frame || !execution_context_);
         DCHECK(!context_frame ||
-               GetDirectiveType(violation_data.effectiveDirective()) ==
+               GetDirectiveType(violation_data->effectiveDirective()) ==
                    DirectiveType::kFrameAncestors);
         KURL url =
             context_frame
                 ? frame->GetDocument()->CompleteURLWithOverride(
-                      report_endpoint, KURL(violation_data.blockedURI()))
+                      report_endpoint, KURL(violation_data->blockedURI()))
                 // We use the FallbackBaseURL to ensure that we don't
                 // respect base elements when determining the report
                 // endpoint URL.
@@ -1433,24 +1439,23 @@ void ContentSecurityPolicy::PostViolationReport(
 }
 
 void ContentSecurityPolicy::DispatchViolationEvents(
-    const SecurityPolicyViolationEventInit& violation_data,
+    const SecurityPolicyViolationEventInit* violation_data,
     Element* element) {
   // Worklets don't support Events in general.
   if (execution_context_->IsWorkletGlobalScope())
     return;
 
   SecurityPolicyViolationEvent& event = *SecurityPolicyViolationEvent::Create(
-      EventTypeNames::securitypolicyviolation, violation_data);
+      event_type_names::kSecuritypolicyviolation, violation_data);
   DCHECK(event.bubbles());
 
-  if (auto* document = DynamicTo<Document>(execution_context_.Get())) {
+  if (auto* document = DynamicTo<Document>(*execution_context_)) {
     if (element && element->isConnected() && element->GetDocument() == document)
       element->EnqueueEvent(event, TaskType::kInternalDefault);
     else
       document->EnqueueEvent(event, TaskType::kInternalDefault);
-  } else if (execution_context_->IsWorkerGlobalScope()) {
-    ToWorkerGlobalScope(execution_context_)
-        ->EnqueueEvent(event, TaskType::kInternalDefault);
+  } else if (auto* scope = DynamicTo<WorkerGlobalScope>(*execution_context_)) {
+    scope->EnqueueEvent(event, TaskType::kInternalDefault);
   }
 }
 
@@ -1676,16 +1681,23 @@ const String& ContentSecurityPolicy::GetSelfProtocol() const {
   return self_protocol_;
 }
 
+// static
 bool ContentSecurityPolicy::ShouldBypassMainWorld(
     const ExecutionContext* context) {
-  if (const auto* document = DynamicTo<Document>(context)) {
-    if (document->GetFrame()) {
-      return document->GetFrame()
-          ->GetScriptController()
-          .ShouldBypassMainWorldCSP();
-    }
-  }
-  return false;
+  if (!context)
+    return false;
+
+  v8::Isolate* isolate = ToIsolate(context);
+  v8::HandleScope handle_scope(isolate);
+  v8::Local<v8::Context> v8_context = isolate->GetCurrentContext();
+  if (v8_context.IsEmpty())
+    return false;
+
+  DOMWrapperWorld& world = DOMWrapperWorld::Current(isolate);
+  if (!world.IsIsolatedWorld())
+    return false;
+
+  return IsolatedWorldCSP::Get().HasContentSecurityPolicy(world.GetWorldId());
 }
 
 bool ContentSecurityPolicy::ShouldSendViolationReport(

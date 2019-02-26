@@ -36,9 +36,7 @@ class BASE_EXPORT CFIBacktraceAndroid {
   static CFIBacktraceAndroid* GetInitializedInstance();
 
   // Returns true if the given program counter |pc| is mapped in chrome library.
-  static bool is_chrome_address(uintptr_t pc) {
-    return pc >= executable_start_addr() && pc < executable_end_addr();
-  }
+  static bool is_chrome_address(uintptr_t pc);
 
   // Returns the start and end address of the current library.
   static uintptr_t executable_start_addr();
@@ -62,12 +60,13 @@ class BASE_EXPORT CFIBacktraceAndroid {
   // Initialize() returns success.
   size_t Unwind(const void** out_trace, size_t max_depth);
 
-  // Same as above function, but starts from a given program counter |pc| and
-  // stack pointer |sp|. This can be from current thread or any other thread.
-  // But the caller must make sure that the thread's stack segment is not racy
-  // to read.
+  // Same as above function, but starts from a given program counter |pc|,
+  // stack pointer |sp| and link register |lr|. This can be from current thread
+  // or any other thread. But the caller must make sure that the thread's stack
+  // segment is not racy to read.
   size_t Unwind(uintptr_t pc,
                 uintptr_t sp,
+                uintptr_t lr,
                 const void** out_trace,
                 size_t max_depth);
 

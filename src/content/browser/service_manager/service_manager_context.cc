@@ -43,6 +43,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "media/audio/audio_manager.h"
@@ -65,6 +66,7 @@
 #include "services/metrics/metrics_mojo_service.h"
 #include "services/metrics/public/mojom/constants.mojom.h"
 #include "services/network/network_service.h"
+#include "services/network/public/cpp/cross_thread_shared_url_loader_factory_info.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
 #include "services/resource_coordinator/public/mojom/service_constants.mojom.h"
@@ -72,6 +74,7 @@
 #include "services/service_manager/connect_params.h"
 #include "services/service_manager/embedder/manifest_utils.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/service_manager/runner/common/client_util.h"
@@ -119,6 +122,11 @@ base::LazyInstance<std::unique_ptr<service_manager::Connector>>::Leaky
 base::LazyInstance<std::map<std::string, base::WeakPtr<UtilityProcessHost>>>::
     Leaky g_active_process_groups;
 
+// If enabled, network service will run in it's own thread when running
+// in-process, otherwise it is run on the IO thread.
+const base::Feature kNetworkServiceDedicatedThread{
+    "NetworkServiceDedicatedThread", base::FEATURE_ENABLED_BY_DEFAULT};
+
 void DestroyConnectorOnIOThread() { g_io_thread_connector.Get().reset(); }
 
 // Launch a process for a service once its sandbox type is known.
@@ -128,10 +136,10 @@ void StartServiceInUtilityProcess(
     base::Optional<std::string> process_group,
     service_manager::mojom::ServiceRequest request,
     service_manager::mojom::PIDReceiverPtr pid_receiver,
-    service_manager::mojom::ConnectResult query_result,
-    const std::string& sandbox_string) {
+    service_manager::mojom::ServiceInfoPtr service_info) {
+  DCHECK(service_info);
   service_manager::SandboxType sandbox_type =
-      service_manager::UtilitySandboxTypeFromString(sandbox_string);
+      service_manager::UtilitySandboxTypeFromString(service_info->sandbox_type);
 
   // Look for an existing process group.
   base::WeakPtr<UtilityProcessHost>* weak_host = nullptr;
@@ -149,7 +157,11 @@ void StartServiceInUtilityProcess(
     DCHECK(!process_name.empty());
     impl->SetName(process_name);
     impl->SetMetricsName(service_name);
-    impl->SetServiceIdentity(service_manager::Identity(service_name));
+    // NOTE: This is not the service instance's real Identity. For all current
+    // practical purposes however, only the name is relevant.
+    impl->SetServiceIdentity(service_manager::Identity(
+        service_name, service_manager::kSystemInstanceGroup, base::Token{},
+        base::Token{1, 1}));
     impl->SetSandboxType(sandbox_type);
     impl->Start();
     impl->SetLaunchCallback(
@@ -180,7 +192,7 @@ void QueryAndStartServiceInUtilityProcess(
     service_manager::mojom::ServiceRequest request,
     service_manager::mojom::PIDReceiverPtr pid_receiver) {
   ServiceManagerContext::GetConnectorForIOThread()->QueryService(
-      service_manager::Identity(service_name),
+      service_name,
       base::BindOnce(&StartServiceInUtilityProcess, service_name,
                      process_name_callback, std::move(process_group),
                      std::move(request), std::move(pid_receiver)));
@@ -304,6 +316,47 @@ class ServiceBinaryLauncherFactory
   DISALLOW_COPY_AND_ASSIGN(ServiceBinaryLauncherFactory);
 };
 
+// SharedURLLoaderFactory for device service, backed by
+// GetContentClient()->browser()->GetSystemSharedURLLoaderFactory().
+class DeviceServiceURLLoaderFactory : public network::SharedURLLoaderFactory {
+ public:
+  DeviceServiceURLLoaderFactory() = default;
+
+  // mojom::URLLoaderFactory implementation:
+  void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
+                            int32_t routing_id,
+                            int32_t request_id,
+                            uint32_t options,
+                            const network::ResourceRequest& url_request,
+                            network::mojom::URLLoaderClientPtr client,
+                            const net::MutableNetworkTrafficAnnotationTag&
+                                traffic_annotation) override {
+    GetContentClient()
+        ->browser()
+        ->GetSystemSharedURLLoaderFactory()
+        ->CreateLoaderAndStart(std::move(request), routing_id, request_id,
+                               options, url_request, std::move(client),
+                               traffic_annotation);
+  }
+
+  // SharedURLLoaderFactory implementation:
+  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
+    GetContentClient()->browser()->GetSystemSharedURLLoaderFactory()->Clone(
+        std::move(request));
+  }
+
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override {
+    return std::make_unique<network::CrossThreadSharedURLLoaderFactoryInfo>(
+        this);
+  }
+
+ private:
+  friend class base::RefCounted<DeviceServiceURLLoaderFactory>;
+  ~DeviceServiceURLLoaderFactory() override = default;
+
+  DISALLOW_COPY_AND_ASSIGN(DeviceServiceURLLoaderFactory);
+};
+
 bool ShouldEnableVizService() {
 #if defined(USE_AURA)
   // aura::Env can be null in tests.
@@ -314,12 +367,15 @@ bool ShouldEnableVizService() {
 #endif
 }
 
-std::unique_ptr<service_manager::Service> CreateNetworkService() {
+std::unique_ptr<service_manager::Service> CreateNetworkService(
+    service_manager::mojom::ServiceRequest service_request) {
   // The test interface doesn't need to be implemented in the in-process case.
   auto registry = std::make_unique<service_manager::BinderRegistry>();
   registry->AddInterface(base::BindRepeating(
       [](network::mojom::NetworkServiceTestRequest request) {}));
-  return std::make_unique<network::NetworkService>(std::move(registry));
+  return std::make_unique<network::NetworkService>(
+      std::move(registry), nullptr /* request */, nullptr /* net_log */,
+      std::move(service_request));
 }
 
 bool AudioServiceOutOfProcess() {
@@ -328,6 +384,71 @@ bool AudioServiceOutOfProcess() {
   return base::FeatureList::IsEnabled(features::kAudioServiceOutOfProcess) &&
          !GetContentClient()->browser()->OverridesAudioManager();
 }
+
+using InProcessServiceFactory =
+    base::RepeatingCallback<std::unique_ptr<service_manager::Service>(
+        service_manager::mojom::ServiceRequest request)>;
+
+void LaunchInProcessServiceOnSequence(
+    const InProcessServiceFactory& factory,
+    service_manager::mojom::ServiceRequest request) {
+  auto* raw_service_impl = factory.Run(std::move(request)).release();
+  raw_service_impl->set_termination_closure(base::BindOnce(
+      [](service_manager::Service* impl) { delete impl; }, raw_service_impl));
+}
+
+void LaunchInProcessService(
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    const InProcessServiceFactory& factory,
+    service_manager::mojom::ServiceRequest request) {
+  task_runner->PostTask(
+      FROM_HERE, base::BindOnce(&LaunchInProcessServiceOnSequence, factory,
+                                std::move(request)));
+}
+
+void RegisterInProcessService(
+    ServiceManagerConnection* connection,
+    const std::string& service_name,
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    const InProcessServiceFactory& factory) {
+  connection->AddServiceRequestHandler(
+      service_name,
+      base::BindRepeating(&LaunchInProcessService, task_runner, factory));
+}
+
+std::unique_ptr<service_manager::Service> CreateVideoCaptureService(
+    service_manager::mojom::ServiceRequest request) {
+  return std::make_unique<video_capture::ServiceImpl>(std::move(request));
+}
+
+void CreateInProcessAudioService(
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    service_manager::mojom::ServiceRequest request) {
+  // TODO(https://crbug.com/853254): Remove BrowserMainLoop::GetAudioManager().
+  task_runner->PostTask(
+      FROM_HERE, base::BindOnce(
+                     [](media::AudioManager* audio_manager,
+                        service_manager::mojom::ServiceRequest request) {
+                       service_manager::Service::RunAsyncUntilTermination(
+                           audio::CreateEmbeddedService(audio_manager,
+                                                        std::move(request)));
+                     },
+                     BrowserMainLoop::GetAudioManager(), std::move(request)));
+}
+
+#if defined(OS_LINUX)
+void CreateFontService(service_manager::mojom::ServiceRequest request) {
+  // The font service owns itself here, deleting on self-termination.
+  auto service =
+      std::make_unique<font_service::FontServiceApp>(std::move(request));
+  auto* raw_service = service.get();
+  raw_service->set_termination_closure(base::BindOnce(
+      [](std::unique_ptr<font_service::FontServiceApp> service) {
+        // Nothing to do but let |service| go out of scope.
+      },
+      std::move(service)));
+}
+#endif  // defined(OS_LINUX)
 
 }  // namespace
 
@@ -360,11 +481,11 @@ class ServiceManagerContext::InProcessServiceManagerContext
             this));
   }
 
-  void StartServices(std::vector<service_manager::Identity> identities) {
+  void StartServices(std::vector<std::string> service_names) {
     service_manager_thread_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&InProcessServiceManagerContext ::
                                       StartServicesOnServiceManagerThread,
-                                  this, std::move(identities)));
+                                  this, std::move(service_names)));
   }
 
  private:
@@ -395,7 +516,8 @@ class ServiceManagerContext::InProcessServiceManagerContext
     packaged_services_service.Bind(std::move(packaged_services_service_info));
     service_manager_->RegisterService(
         service_manager::Identity(mojom::kPackagedServicesServiceName,
-                                  service_manager::mojom::kRootUserID),
+                                  service_manager::kSystemInstanceGroup,
+                                  base::Token{}, base::Token::CreateRandom()),
         std::move(packaged_services_service), nullptr);
     service_manager_->SetInstanceQuitCallback(
         base::Bind(&OnInstanceQuitOnServiceManagerThread,
@@ -426,12 +548,12 @@ class ServiceManagerContext::InProcessServiceManagerContext
   }
 
   void StartServicesOnServiceManagerThread(
-      std::vector<service_manager::Identity> identities) {
+      std::vector<std::string> service_names) {
     if (!service_manager_)
       return;
 
-    for (const auto& identity : identities)
-      service_manager_->StartService(identity);
+    for (const auto& service_name : service_names)
+      service_manager_->StartService(service_name);
   }
 
   scoped_refptr<base::SingleThreadTaskRunner>
@@ -496,6 +618,9 @@ ServiceManagerContext::ServiceManagerContext(
   packaged_services_connection_ =
       ServiceManagerConnection::Create(std::move(packaged_services_request),
                                        service_manager_thread_task_runner_);
+  packaged_services_connection_->SetDefaultServiceRequestHandler(
+      base::BindRepeating(&ServiceManagerContext::OnUnhandledServiceRequest,
+                          weak_ptr_factory_.GetWeakPtr()));
 
   service_manager::mojom::ServicePtr root_browser_service;
   ServiceManagerConnection::SetForProcess(
@@ -504,57 +629,20 @@ ServiceManagerContext::ServiceManagerContext(
   auto* browser_connection = ServiceManagerConnection::GetForProcess();
 
   service_manager::mojom::PIDReceiverPtr pid_receiver;
-  packaged_services_connection_->GetConnector()->StartService(
+  packaged_services_connection_->GetConnector()->RegisterServiceInstance(
       service_manager::Identity(mojom::kBrowserServiceName,
-                                service_manager::mojom::kRootUserID),
+                                service_manager::kSystemInstanceGroup,
+                                base::Token{}, base::Token::CreateRandom()),
       std::move(root_browser_service), mojo::MakeRequest(&pid_receiver));
   pid_receiver->SetPID(base::GetCurrentProcId());
 
-  service_manager::EmbeddedServiceInfo device_info;
-
-  // This task runner may be used by some device service implementation bits to
-  // interface with dbus client code, which in turn imposes some subtle thread
-  // affinity on the clients. We therefore require a single-thread runner.
-  scoped_refptr<base::SingleThreadTaskRunner> device_blocking_task_runner =
-      base::CreateSingleThreadTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
-
-#if defined(OS_ANDROID)
-  JNIEnv* env = base::android::AttachCurrentThread();
-  base::android::ScopedJavaGlobalRef<jobject> java_nfc_delegate;
-  java_nfc_delegate.Reset(Java_ContentNfcDelegate_create(env));
-  DCHECK(!java_nfc_delegate.is_null());
-
-  // See the comments on wake_lock_context_host.h, content_browser_client.h and
-  // ContentNfcDelegate.java respectively for comments on those parameters.
-  device_info.factory = base::Bind(
-      &device::CreateDeviceService, device_blocking_task_runner,
-      service_manager_thread_task_runner_,
-      GetContentClient()->browser()->GetSystemSharedURLLoaderFactory(),
-      GetContentClient()->browser()->GetGeolocationApiKey(),
-      GetContentClient()->browser()->ShouldUseGmsCoreGeolocationProvider(),
-      base::Bind(&WakeLockContextHost::GetNativeViewForContext),
-      base::Bind(&ContentBrowserClient::OverrideSystemLocationProvider,
-                 base::Unretained(GetContentClient()->browser())),
-      std::move(java_nfc_delegate));
-#else
-  device_info.factory = base::Bind(
-      &device::CreateDeviceService, device_blocking_task_runner,
-      service_manager_thread_task_runner_,
-      GetContentClient()->browser()->GetSystemSharedURLLoaderFactory(),
-      GetContentClient()->browser()->GetGeolocationApiKey(),
-      base::Bind(&ContentBrowserClient::OverrideSystemLocationProvider,
-                 base::Unretained(GetContentClient()->browser())));
-#endif
-  device_info.task_runner = base::ThreadTaskRunnerHandle::Get();
-  packaged_services_connection_->AddEmbeddedService(device::mojom::kServiceName,
-                                                    device_info);
-
-  service_manager::EmbeddedServiceInfo resource_coordinator_info;
-  resource_coordinator_info.factory =
-      base::Bind(&resource_coordinator::ResourceCoordinatorService::Create);
-  packaged_services_connection_->AddEmbeddedService(
-      resource_coordinator::mojom::kServiceName, resource_coordinator_info);
+  packaged_services_connection_->AddServiceRequestHandler(
+      resource_coordinator::mojom::kServiceName,
+      base::BindRepeating([](service_manager::mojom::ServiceRequest request) {
+        service_manager::Service::RunAsyncUntilTermination(
+            std::make_unique<resource_coordinator::ResourceCoordinatorService>(
+                std::move(request)));
+      }));
 
   if (media_session::IsMediaSessionEnabled()) {
     service_manager::EmbeddedServiceInfo media_session_info;
@@ -564,18 +652,16 @@ ServiceManagerContext::ServiceManagerContext(
         media_session::mojom::kServiceName, media_session_info);
   }
 
-  {
-    service_manager::EmbeddedServiceInfo info;
-    info.factory = base::Bind(&tracing::TracingService::Create);
-    packaged_services_connection_->AddEmbeddedService(
-        tracing::mojom::kServiceName, info);
-  }
+  packaged_services_connection_->AddServiceRequestHandler(
+      tracing::mojom::kServiceName,
+      base::BindRepeating([](service_manager::mojom::ServiceRequest request) {
+        service_manager::Service::RunAsyncUntilTermination(
+            std::make_unique<tracing::TracingService>(std::move(request)));
+      }));
 
   if (features::IsVideoCaptureServiceEnabledForBrowserProcess()) {
-    service_manager::EmbeddedServiceInfo video_capture_info;
-    video_capture_info.factory =
-        base::BindRepeating(&video_capture::ServiceImpl::Create);
-    video_capture_info.task_runner =
+    RegisterInProcessService(
+        packaged_services_connection_.get(), video_capture::mojom::kServiceName,
 #if defined(OS_WIN)
         base::CreateCOMSTATaskRunnerWithTraits(
 #else
@@ -583,9 +669,8 @@ ServiceManagerContext::ServiceManagerContext(
 #endif
             base::TaskTraits({base::MayBlock(), base::WithBaseSyncPrimitives(),
                               base::TaskPriority::BEST_EFFORT}),
-            base::SingleThreadTaskRunnerThreadMode::DEDICATED);
-    packaged_services_connection_->AddEmbeddedService(
-        video_capture::mojom::kServiceName, video_capture_info);
+            base::SingleThreadTaskRunnerThreadMode::DEDICATED),
+        base::BindRepeating(&CreateVideoCaptureService));
   }
 
   {
@@ -616,31 +701,34 @@ ServiceManagerContext::ServiceManagerContext(
       base::BindRepeating(&base::ASCIIToUTF16, "Data Decoder Service");
 
 #if defined(OS_LINUX)
-  {
-    service_manager::EmbeddedServiceInfo font_service_info;
-    font_service_info.factory =
-        base::BindRepeating(font_service::FontServiceApp::CreateService);
-    font_service_info.task_runner = base::CreateSequencedTaskRunnerWithTraits(
-        base::TaskTraits({base::MayBlock(), base::WithBaseSyncPrimitives(),
-                          base::TaskPriority::USER_BLOCKING}));
-    packaged_services_connection_->AddEmbeddedService(
-        font_service::mojom::kServiceName, font_service_info);
-  }
+  packaged_services_connection_->AddServiceRequestHandler(
+      font_service::mojom::kServiceName,
+      base::BindRepeating([](service_manager::mojom::ServiceRequest request) {
+        auto task_runner =
+            base::CreateSequencedTaskRunnerWithTraits(base::TaskTraits(
+                {base::MayBlock(), base::WithBaseSyncPrimitives(),
+                 base::TaskPriority::USER_BLOCKING}));
+        task_runner->PostTask(FROM_HERE, base::BindOnce(&CreateFontService,
+                                                        std::move(request)));
+      }));
 #endif
 
   bool network_service_enabled =
       base::FeatureList::IsEnabled(network::features::kNetworkService);
-  bool network_service_in_process =
-      base::FeatureList::IsEnabled(features::kNetworkServiceInProcess) ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSingleProcess);
   if (network_service_enabled) {
-    if (network_service_in_process) {
-      service_manager::EmbeddedServiceInfo network_service_info;
-      network_service_info.factory = base::BindRepeating(CreateNetworkService);
-      network_service_info.task_runner = service_manager_thread_task_runner_;
-      packaged_services_connection_->AddEmbeddedService(
-          mojom::kNetworkServiceName, network_service_info);
+    if (IsInProcessNetworkService()) {
+      scoped_refptr<base::SequencedTaskRunner> task_runner =
+          service_manager_thread_task_runner_;
+      if (base::FeatureList::IsEnabled(kNetworkServiceDedicatedThread)) {
+        base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
+        network_service_thread_.StartWithOptions(options);
+        task_runner = network_service_thread_.task_runner();
+      }
+
+      GetNetworkTaskRunner()->StartWithTaskRunner(task_runner);
+      RegisterInProcessService(packaged_services_connection_.get(),
+                               mojom::kNetworkServiceName, task_runner,
+                               base::BindRepeating(&CreateNetworkService));
     } else {
       out_of_process_services[mojom::kNetworkServiceName] =
           base::BindRepeating(&base::ASCIIToUTF16, "Network Service");
@@ -652,18 +740,10 @@ ServiceManagerContext::ServiceManagerContext(
     out_of_process_services[audio::mojom::kServiceName] =
         base::BindRepeating(&base::ASCIIToUTF16, "Audio Service");
   } else {
-    service_manager::EmbeddedServiceInfo info;
-    // TODO(hanxi): Removes BrowserMainLoop::GetAudioManager().
-    // https://crbug.com/853254.
-    info.factory =
-        base::BindRepeating([]() -> std::unique_ptr<service_manager::Service> {
-          return audio::CreateEmbeddedService(
-              BrowserMainLoop::GetAudioManager());
-        });
-    info.task_runner = GetAudioServiceRunner();
-    DCHECK(info.task_runner);
-    packaged_services_connection_->AddEmbeddedService(
-        audio::mojom::kServiceName, info);
+    packaged_services_connection_->AddServiceRequestHandler(
+        audio::mojom::kServiceName,
+        base::BindRepeating(&CreateInProcessAudioService,
+                            base::WrapRefCounted(GetAudioServiceRunner())));
   }
 
   if (features::IsVideoCaptureServiceEnabledForOutOfProcess()) {
@@ -721,6 +801,10 @@ ServiceManagerContext::ServiceManagerContext(
 }
 
 ServiceManagerContext::~ServiceManagerContext() {
+  ShutDown();
+}
+
+void ServiceManagerContext::ShutDown() {
   // NOTE: The in-process ServiceManager MUST be destroyed before the browser
   // process-wide ServiceManagerConnection. Otherwise it's possible for the
   // ServiceManager to receive connection requests for service:content_browser
@@ -731,6 +815,7 @@ ServiceManagerContext::~ServiceManagerContext() {
     ServiceManagerConnection::DestroyForProcess();
   service_manager_thread_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&DestroyConnectorOnIOThread));
+  packaged_services_connection_.reset();
 }
 
 // static
@@ -745,7 +830,7 @@ bool ServiceManagerContext::HasValidProcessForProcessGroup(
   auto iter = g_active_process_groups.Get().find(process_group_name);
   if (iter == g_active_process_groups.Get().end() || !iter->second)
     return false;
-  return iter->second->GetData().IsHandleValid();
+  return iter->second->GetData().GetProcess().IsValid();
 }
 
 // static
@@ -754,22 +839,12 @@ void ServiceManagerContext::StartBrowserConnection() {
   RegisterCommonBrowserInterfaces(browser_connection);
   browser_connection->Start();
 
-  bool network_service_enabled =
-      base::FeatureList::IsEnabled(network::features::kNetworkService);
-  bool network_service_in_process =
-      base::FeatureList::IsEnabled(features::kNetworkServiceInProcess) ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSingleProcess);
-  if (!network_service_enabled) {
-    // Create the in-process NetworkService object so that its getter is
-    // available on the IO thread.
-    GetNetworkService();
-  } else if (!network_service_in_process) {
-    // Start the network service process as soon as possible, since it is
-    // critical to start up performance.
-    browser_connection->GetConnector()->StartService(
-        mojom::kNetworkServiceName);
-  }
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
+  // Create the in-process NetworkService object so that its getter is
+  // available on the IO thread.
+  GetNetworkService();
 }
 
 // static
@@ -778,6 +853,54 @@ ServiceManagerContext::GetAudioServiceRunner() {
   static base::NoDestructor<scoped_refptr<base::DeferredSequencedTaskRunner>>
       instance(new base::DeferredSequencedTaskRunner);
   return (*instance).get();
+}
+
+void ServiceManagerContext::OnUnhandledServiceRequest(
+    const std::string& service_name,
+    service_manager::mojom::ServiceRequest request) {
+  if (service_name == device::mojom::kServiceName) {
+    // This task runner may be used by some device service implementation bits
+    // to interface with dbus client code, which in turn imposes some subtle
+    // thread affinity on the clients. We therefore require a single-thread
+    // runner.
+    scoped_refptr<base::SingleThreadTaskRunner> device_blocking_task_runner =
+        base::CreateSingleThreadTaskRunnerWithTraits(
+            {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+#if defined(OS_ANDROID)
+    JNIEnv* env = base::android::AttachCurrentThread();
+    base::android::ScopedJavaGlobalRef<jobject> java_nfc_delegate;
+    java_nfc_delegate.Reset(Java_ContentNfcDelegate_create(env));
+    DCHECK(!java_nfc_delegate.is_null());
+
+    // See the comments on wake_lock_context_host.h, content_browser_client.h
+    // and ContentNfcDelegate.java respectively for comments on those
+    // parameters.
+    auto service = device::CreateDeviceService(
+        device_blocking_task_runner, service_manager_thread_task_runner_,
+        base::MakeRefCounted<DeviceServiceURLLoaderFactory>(),
+        GetContentClient()->browser()->GetGeolocationApiKey(),
+        GetContentClient()->browser()->ShouldUseGmsCoreGeolocationProvider(),
+        base::BindRepeating(&WakeLockContextHost::GetNativeViewForContext),
+        base::BindRepeating(
+            &ContentBrowserClient::OverrideSystemLocationProvider,
+            base::Unretained(GetContentClient()->browser())),
+        std::move(java_nfc_delegate), std::move(request));
+#else
+    auto service = device::CreateDeviceService(
+        device_blocking_task_runner, service_manager_thread_task_runner_,
+        base::MakeRefCounted<DeviceServiceURLLoaderFactory>(),
+        GetContentClient()->browser()->GetGeolocationApiKey(),
+        base::BindRepeating(
+            &ContentBrowserClient::OverrideSystemLocationProvider,
+            base::Unretained(GetContentClient()->browser())),
+        std::move(request));
+#endif
+    service_manager::Service::RunAsyncUntilTermination(std::move(service));
+    return;
+  }
+
+  GetContentClient()->browser()->HandleServiceRequest(service_name,
+                                                      std::move(request));
 }
 
 }  // namespace content

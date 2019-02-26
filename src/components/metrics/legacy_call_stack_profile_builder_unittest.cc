@@ -218,6 +218,7 @@ TEST(LegacyCallStackProfileBuilderTest, SamplesDeduped) {
   ASSERT_TRUE(proto.has_call_stack_profile());
   ASSERT_EQ(1, proto.call_stack_profile().deprecated_sample_size());
   ASSERT_EQ(43, proto.call_stack_profile().deprecated_sample(0).count());
+  EXPECT_EQ(2, proto.call_stack_profile().deprecated_sample(0).frame_size());
 }
 
 TEST(LegacyCallStackProfileBuilderTest, SamplesNotDeduped) {
@@ -263,6 +264,65 @@ TEST(LegacyCallStackProfileBuilderTest, SamplesNotDeduped) {
 
   ASSERT_TRUE(proto.has_call_stack_profile());
   ASSERT_EQ(2, proto.call_stack_profile().deprecated_sample_size());
+  EXPECT_EQ(2, proto.call_stack_profile().deprecated_sample(0).frame_size());
+  EXPECT_EQ(2, proto.call_stack_profile().deprecated_sample(1).frame_size());
+}
+
+TEST(LegacyCallStackProfileBuilderTest, SamplesDedupedAndNotDeduped) {
+  auto profile_builder =
+      std::make_unique<TestingLegacyCallStackProfileBuilder>(kProfileParams);
+
+#if defined(OS_WIN)
+  base::FilePath module_path(L"c:\\some\\path\\to\\chrome.exe");
+#else
+  base::FilePath module_path("/some/path/to/chrome");
+#endif
+
+  const uintptr_t module_base_address1 = 0x1000;
+  Module module1 = {module_base_address1, "1", module_path};
+  Frame frame1 = {module_base_address1 + 0x10, module1};
+
+  const uintptr_t module_base_address2 = 0x1100;
+  Module module2 = {module_base_address2, "2", module_path};
+  Frame frame2 = {module_base_address2 + 0x20, module2};
+
+  std::vector<Frame> frames1 = {frame1, frame2};
+  std::vector<Frame> frames2 = {frame2, frame1};
+
+  profile_builder->RecordAnnotations();
+  profile_builder->OnSampleCompleted(frames1, 42);
+
+  profile_builder->RecordAnnotations();
+  profile_builder->OnSampleCompleted(frames1);
+
+  profile_builder->RecordAnnotations();
+  profile_builder->OnSampleCompleted(frames2);
+
+  profile_builder->OnProfileCompleted(base::TimeDelta(), base::TimeDelta());
+
+  const SampledProfile& proto = profile_builder->sampled_profile();
+
+  EXPECT_TRUE(proto.has_process());
+  EXPECT_EQ(BROWSER_PROCESS, proto.process());
+  EXPECT_TRUE(proto.has_thread());
+  EXPECT_EQ(MAIN_THREAD, proto.thread());
+  EXPECT_TRUE(proto.has_trigger_event());
+  EXPECT_EQ(SampledProfile::PROCESS_STARTUP, proto.trigger_event());
+
+  EXPECT_TRUE(proto.has_call_stack_profile());
+  ASSERT_EQ(2, proto.call_stack_profile().deprecated_sample_size());
+  EXPECT_EQ(43, proto.call_stack_profile().deprecated_sample(0).count());
+  ASSERT_EQ(2, proto.call_stack_profile().deprecated_sample(0).frame_size());
+  EXPECT_EQ(0x10u,
+            proto.call_stack_profile().deprecated_sample(0).frame(0).address());
+  EXPECT_EQ(0x20u,
+            proto.call_stack_profile().deprecated_sample(0).frame(1).address());
+  ASSERT_EQ(2, proto.call_stack_profile().deprecated_sample(1).frame_size());
+  EXPECT_EQ(1, proto.call_stack_profile().deprecated_sample(1).count());
+  EXPECT_EQ(0x20u,
+            proto.call_stack_profile().deprecated_sample(1).frame(0).address());
+  EXPECT_EQ(0x10u,
+            proto.call_stack_profile().deprecated_sample(1).frame(1).address());
 }
 
 TEST(LegacyCallStackProfileBuilderTest, Modules) {

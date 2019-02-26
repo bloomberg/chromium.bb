@@ -104,21 +104,21 @@ DelayNode* DelayNode::Create(BaseAudioContext& context,
     return nullptr;
   }
 
-  return new DelayNode(context, max_delay_time);
+  return MakeGarbageCollected<DelayNode>(context, max_delay_time);
 }
 
 DelayNode* DelayNode::Create(BaseAudioContext* context,
-                             const DelayOptions& options,
+                             const DelayOptions* options,
                              ExceptionState& exception_state) {
   // maxDelayTime has a default value specified.
-  DelayNode* node = Create(*context, options.maxDelayTime(), exception_state);
+  DelayNode* node = Create(*context, options->maxDelayTime(), exception_state);
 
   if (!node)
     return nullptr;
 
   node->HandleChannelOptions(options, exception_state);
 
-  node->delayTime()->setValue(options.delayTime());
+  node->delayTime()->setValue(options->delayTime());
 
   return node;
 }

@@ -52,11 +52,7 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "net/base/load_flags.h"
-#include "net/http/http_request_headers.h"
-#include "net/ssl/ssl_info.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/web/devtools_agent.mojom.h"
@@ -99,27 +95,6 @@ FrameTreeNode* GetFrameTreeNodeAncestor(FrameTreeNode* frame_tree_node) {
 
 }  // namespace
 
-template <typename Handler, typename... MethodArgs, typename... Args>
-void DispatchToAgents(FrameTreeNode* frame_tree_node,
-                      void (Handler::*method)(MethodArgs...),
-                      Args&&... args) {
-  RenderFrameDevToolsAgentHost* agent_host =
-      FindAgentHost(GetFrameTreeNodeAncestor(frame_tree_node));
-  if (!agent_host)
-    return;
-  for (auto* h : Handler::ForAgentHost(agent_host))
-    (h->*method)(std::forward<Args>(args)...);
-}
-
-template <typename Handler, typename... MethodArgs, typename... Args>
-void DispatchToAgents(int frame_tree_node_id,
-                      void (Handler::*method)(MethodArgs...),
-                      Args&&... args) {
-  FrameTreeNode* ftn = FrameTreeNode::GloballyFindByID(frame_tree_node_id);
-  if (ftn)
-    DispatchToAgents(ftn, method, std::forward<Args>(args)...);
-}
-
 // static
 scoped_refptr<DevToolsAgentHost>
 DevToolsAgentHost::GetOrCreateFor(WebContents* web_contents) {
@@ -133,6 +108,12 @@ DevToolsAgentHost::GetOrCreateFor(WebContents* web_contents) {
 }
 
 // static
+DevToolsAgentHostImpl* RenderFrameDevToolsAgentHost::GetFor(
+    FrameTreeNode* frame_tree_node) {
+  frame_tree_node = GetFrameTreeNodeAncestor(frame_tree_node);
+  return FindAgentHost(frame_tree_node);
+}
+
 scoped_refptr<DevToolsAgentHost> RenderFrameDevToolsAgentHost::GetOrCreateFor(
     FrameTreeNode* frame_tree_node) {
   frame_tree_node = GetFrameTreeNodeAncestor(frame_tree_node);
@@ -193,202 +174,60 @@ void RenderFrameDevToolsAgentHost::AddAllAgentHosts(
 }
 
 // static
-void RenderFrameDevToolsAgentHost::OnResetNavigationRequest(
-    NavigationRequest* navigation_request) {
-  // Traverse frame chain all the way to the top and report to all
-  // page handlers that the navigation completed.
-  for (FrameTreeNode* node = navigation_request->frame_tree_node(); node;
-       node = node->parent()) {
-    DispatchToAgents(node, &protocol::PageHandler::NavigationReset,
-                     navigation_request);
-  }
-}
-
-// static
-void RenderFrameDevToolsAgentHost::OnNavigationResponseReceived(
-    const NavigationRequest& nav_request,
-    const network::ResourceResponse& response) {
-  FrameTreeNode* ftn = nav_request.frame_tree_node();
-  std::string id = nav_request.devtools_navigation_token().ToString();
-  std::string frame_id = ftn->devtools_frame_token().ToString();
-  GURL url = nav_request.common_params().url;
-  DispatchToAgents(ftn, &protocol::NetworkHandler::ResponseReceived, id, id,
-                   url, protocol::Network::ResourceTypeEnum::Document,
-                   response.head, frame_id);
-}
-
-// static
-void RenderFrameDevToolsAgentHost::OnNavigationRequestFailed(
-    const NavigationRequest& nav_request,
-    const network::URLLoaderCompletionStatus& status) {
-  FrameTreeNode* ftn = nav_request.frame_tree_node();
-  std::string id = nav_request.devtools_navigation_token().ToString();
-  DispatchToAgents(ftn, &protocol::NetworkHandler::LoadingComplete, id,
-                   protocol::Network::ResourceTypeEnum::Document, status);
-}
-
-// static
-void RenderFrameDevToolsAgentHost::OnSignedExchangeReceived(
-    FrameTreeNode* frame_tree_node,
-    base::Optional<const base::UnguessableToken> devtools_navigation_token,
-    const GURL& outer_request_url,
-    const network::ResourceResponseHead& outer_response,
-    const base::Optional<SignedExchangeEnvelope>& envelope,
-    const scoped_refptr<net::X509Certificate>& certificate,
-    const base::Optional<net::SSLInfo>& ssl_info,
-    const std::vector<SignedExchangeError>& errors) {
-  DispatchToAgents(frame_tree_node,
-                   &protocol::NetworkHandler::OnSignedExchangeReceived,
-                   devtools_navigation_token, outer_request_url, outer_response,
-                   envelope, certificate, ssl_info, errors);
-}
-
-// static
-void RenderFrameDevToolsAgentHost::OnSignedExchangeCertificateRequestSent(
-    FrameTreeNode* frame_tree_node,
-    const base::UnguessableToken& request_id,
-    const base::UnguessableToken& loader_id,
-    const network::ResourceRequest& request,
-    const GURL& signed_exchange_url) {
-  DispatchToAgents(frame_tree_node, &protocol::NetworkHandler::RequestSent,
-                   request_id.ToString(), loader_id.ToString(), request,
-                   protocol::Network::Initiator::TypeEnum::SignedExchange,
-                   signed_exchange_url);
-}
-
-// static
-void RenderFrameDevToolsAgentHost::OnSignedExchangeCertificateResponseReceived(
-    FrameTreeNode* frame_tree_node,
-    const base::UnguessableToken& request_id,
-    const base::UnguessableToken& loader_id,
-    const GURL& url,
-    const network::ResourceResponseHead& head) {
-  DispatchToAgents(frame_tree_node, &protocol::NetworkHandler::ResponseReceived,
-                   request_id.ToString(), loader_id.ToString(), url,
-                   protocol::Network::ResourceTypeEnum::Other, head,
-                   protocol::Maybe<std::string>());
-}
-
-// static
-void RenderFrameDevToolsAgentHost::OnSignedExchangeCertificateRequestCompleted(
-    FrameTreeNode* frame_tree_node,
-    const base::UnguessableToken& request_id,
-    const network::URLLoaderCompletionStatus& status) {
-  DispatchToAgents(frame_tree_node, &protocol::NetworkHandler::LoadingComplete,
-                   request_id.ToString(),
-                   protocol::Network::ResourceTypeEnum::Other, status);
-}
-
-// static
-std::vector<std::unique_ptr<NavigationThrottle>>
-RenderFrameDevToolsAgentHost::CreateNavigationThrottles(
-    NavigationHandleImpl* navigation_handle) {
-  std::vector<std::unique_ptr<NavigationThrottle>> result;
-  FrameTreeNode* frame_tree_node = navigation_handle->frame_tree_node();
-
-  // Interception might throttle navigations in inspected frames.
-  RenderFrameDevToolsAgentHost* agent_host = FindAgentHost(frame_tree_node);
-  if (agent_host) {
-    for (auto* network_handler :
-         protocol::NetworkHandler::ForAgentHost(agent_host)) {
-      std::unique_ptr<NavigationThrottle> throttle =
-          network_handler->CreateThrottleForNavigation(navigation_handle);
-      if (throttle)
-        result.push_back(std::move(throttle));
-    }
-  }
-
-  agent_host = nullptr;
-  if (frame_tree_node->parent()) {
-    // Target domain of the parent frame's DevTools may want to pause
-    // this frame to do some setup.
-    agent_host =
-        FindAgentHost(GetFrameTreeNodeAncestor(frame_tree_node->parent()));
-  }
-  if (agent_host) {
-    for (auto* target_handler :
-         protocol::TargetHandler::ForAgentHost(agent_host)) {
-      std::unique_ptr<NavigationThrottle> throttle =
-          target_handler->CreateThrottleForNavigation(navigation_handle);
-      if (throttle)
-        result.push_back(std::move(throttle));
-    }
-  }
-
-  return result;
-}
-
-// static
-void RenderFrameDevToolsAgentHost::ApplyOverrides(
-    FrameTreeNode* frame_tree_node,
-    mojom::BeginNavigationParams* begin_params,
-    bool* report_raw_headers) {
-  bool disable_cache = false;
-  frame_tree_node = GetFrameTreeNodeAncestor(frame_tree_node);
-  RenderFrameDevToolsAgentHost* agent_host = FindAgentHost(frame_tree_node);
-  if (!agent_host)
-    return;
-  net::HttpRequestHeaders headers;
-  headers.AddHeadersFromString(begin_params->headers);
-  for (auto* network : protocol::NetworkHandler::ForAgentHost(agent_host)) {
-    // TODO(caseq): consider chaining intercepting proxies from multiple agents.
-    if (!network->enabled())
-      continue;
-    *report_raw_headers = true;
-    network->ApplyOverrides(&headers, &begin_params->skip_service_worker,
-                            &disable_cache);
-  }
-
-  for (auto* emulation : protocol::EmulationHandler::ForAgentHost(agent_host))
-    emulation->ApplyOverrides(&headers);
-
-  if (disable_cache) {
-    begin_params->load_flags &=
-        ~(net::LOAD_VALIDATE_CACHE | net::LOAD_SKIP_CACHE_VALIDATION |
-          net::LOAD_ONLY_FROM_CACHE | net::LOAD_DISABLE_CACHE);
-    begin_params->load_flags |= net::LOAD_BYPASS_CACHE;
-  }
-
-  begin_params->headers = headers.ToString();
-}
-
-// static
-bool RenderFrameDevToolsAgentHost::WillCreateURLLoaderFactory(
-    RenderFrameHostImpl* rfh,
-    bool is_navigation,
-    bool is_download,
-    network::mojom::URLLoaderFactoryRequest* target_factory_request) {
-  FrameTreeNode* frame_tree_node = rfh->frame_tree_node();
-  base::UnguessableToken frame_token = frame_tree_node->devtools_frame_token();
-  frame_tree_node = GetFrameTreeNodeAncestor(frame_tree_node);
-  RenderFrameDevToolsAgentHost* agent_host = FindAgentHost(frame_tree_node);
-  if (!agent_host)
-    return false;
-  int process_id = is_navigation ? 0 : rfh->GetProcess()->GetID();
-  DCHECK(!is_download || is_navigation);
-  for (auto* network : protocol::NetworkHandler::ForAgentHost(agent_host)) {
-    if (network->MaybeCreateProxyForInterception(
-            frame_token, process_id, is_download, target_factory_request)) {
-      return true;
-    }
-  }
-  return false;
-}
-
-// static
-void RenderFrameDevToolsAgentHost::OnNavigationRequestWillBeSent(
-    const NavigationRequest& navigation_request) {
-  DispatchToAgents(navigation_request.frame_tree_node(),
-                   &protocol::NetworkHandler::NavigationRequestWillBeSent,
-                   navigation_request);
-}
-
-// static
 void RenderFrameDevToolsAgentHost::WebContentsCreated(
     WebContents* web_contents) {
   if (ShouldForceCreation()) {
     // Force agent host.
     DevToolsAgentHost::GetOrCreateFor(web_contents);
+  }
+}
+
+// static
+void RenderFrameDevToolsAgentHost::UpdateRawHeadersAccess(
+    RenderFrameHostImpl* old_rfh,
+    RenderFrameHostImpl* new_rfh) {
+  DCHECK_NE(old_rfh, new_rfh);
+  RenderProcessHost* old_rph = old_rfh ? old_rfh->GetProcess() : nullptr;
+  RenderProcessHost* new_rph = new_rfh ? new_rfh->GetProcess() : nullptr;
+  if (old_rph == new_rph)
+    return;
+  std::set<url::Origin> old_process_origins;
+  std::set<url::Origin> new_process_origins;
+  for (const auto& entry : g_agent_host_instances.Get()) {
+    RenderFrameHostImpl* frame_host = entry.second->frame_host_;
+    if (!frame_host)
+      continue;
+    // Do not skip the nodes if they're about to get attached.
+    if (!entry.second->IsAttached() &&
+        (!new_rfh || entry.first != new_rfh->frame_tree_node())) {
+      continue;
+    }
+    RenderProcessHost* process_host = frame_host->GetProcess();
+    if (process_host == old_rph)
+      old_process_origins.insert(frame_host->GetLastCommittedOrigin());
+    else if (process_host == new_rph)
+      new_process_origins.insert(frame_host->GetLastCommittedOrigin());
+  }
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    if (old_rph && old_process_origins.empty()) {
+      ChildProcessSecurityPolicyImpl::GetInstance()->RevokeReadRawCookies(
+          old_rph->GetID());
+    }
+    if (new_rph && !new_process_origins.empty()) {
+      ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadRawCookies(
+          new_rph->GetID());
+    }
+    return;
+  }
+  if (old_rph) {
+    GetNetworkService()->SetRawHeadersAccess(
+        old_rph->GetID(), std::vector<url::Origin>(old_process_origins.begin(),
+                                                   old_process_origins.end()));
+  }
+  if (new_rph) {
+    GetNetworkService()->SetRawHeadersAccess(
+        new_rph->GetID(), std::vector<url::Origin>(new_process_origins.begin(),
+                                                   new_process_origins.end()));
   }
 }
 
@@ -429,15 +268,15 @@ WebContents* RenderFrameDevToolsAgentHost::GetWebContents() {
   return web_contents();
 }
 
-bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session,
-                                                 TargetRegistry* registry) {
+bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
   if (!ShouldAllowSession(session))
     return false;
 
   protocol::EmulationHandler* emulation_handler =
       new protocol::EmulationHandler();
   session->AddHandler(base::WrapUnique(new protocol::BrowserHandler()));
-  session->AddHandler(base::WrapUnique(new protocol::DOMHandler()));
+  session->AddHandler(base::WrapUnique(
+      new protocol::DOMHandler(session->client()->MayAffectLocalFiles())));
   session->AddHandler(base::WrapUnique(emulation_handler));
   session->AddHandler(base::WrapUnique(new protocol::InputHandler()));
   session->AddHandler(base::WrapUnique(new protocol::InspectorHandler()));
@@ -453,10 +292,10 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session,
   session->AddHandler(base::WrapUnique(new protocol::ServiceWorkerHandler()));
   session->AddHandler(base::WrapUnique(new protocol::StorageHandler()));
   session->AddHandler(base::WrapUnique(new protocol::TargetHandler(
-      session->client()->MayDiscoverTargets()
+      session->client()->MayAttachToBrowser()
           ? protocol::TargetHandler::AccessMode::kRegular
           : protocol::TargetHandler::AccessMode::kAutoAttachOnly,
-      GetId(), registry)));
+      GetId(), GetRendererChannel(), session->GetRootSession())));
   session->AddHandler(base::WrapUnique(new protocol::PageHandler(
       emulation_handler, session->client()->MayAffectLocalFiles())));
   session->AddHandler(base::WrapUnique(new protocol::SecurityHandler()));
@@ -476,7 +315,7 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session,
     // DevToolsFrameTraceRecorder. Taking snapshots happens in TracingHandler.
     if (!use_video_capture_api)
       frame_trace_recorder_.reset(new DevToolsFrameTraceRecorder());
-    GrantPolicy();
+    UpdateRawHeadersAccess(nullptr, frame_host_);
 #if defined(OS_ANDROID)
     GetWakeLock()->RequestWakeLock();
 #endif
@@ -488,7 +327,7 @@ void RenderFrameDevToolsAgentHost::DetachSession(DevToolsSession* session) {
   // Destroying session automatically detaches in renderer.
   if (sessions().empty()) {
     frame_trace_recorder_.reset();
-    RevokePolicy();
+    UpdateRawHeadersAccess(frame_host_, nullptr);
 #if defined(OS_ANDROID)
     GetWakeLock()->CancelWakeLock();
 #endif
@@ -581,10 +420,10 @@ void RenderFrameDevToolsAgentHost::UpdateFrameHost(
     return;
   }
 
-  if (IsAttached())
-    RevokePolicy();
-
+  RenderFrameHostImpl* old_host = frame_host_;
   frame_host_ = frame_host;
+  if (IsAttached())
+    UpdateRawHeadersAccess(old_host, frame_host);
 
   std::vector<DevToolsSession*> restricted_sessions;
   for (DevToolsSession* session : sessions()) {
@@ -600,44 +439,7 @@ void RenderFrameDevToolsAgentHost::UpdateFrameHost(
       inspector->TargetReloadedAfterCrash();
   }
 
-  if (IsAttached())
-    GrantPolicy();
   UpdateRendererChannel(IsAttached());
-}
-
-void RenderFrameDevToolsAgentHost::GrantPolicy() {
-  if (!frame_host_)
-    return;
-  uint32_t process_id = frame_host_->GetProcess()->GetID();
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-    GetNetworkService()->SetRawHeadersAccess(process_id, true);
-  ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadRawCookies(
-      process_id);
-}
-
-void RenderFrameDevToolsAgentHost::RevokePolicy() {
-  if (!frame_host_)
-    return;
-
-  bool process_has_agents = false;
-  RenderProcessHost* process_host = frame_host_->GetProcess();
-  for (const auto& ftn_agent : g_agent_host_instances.Get()) {
-    RenderFrameDevToolsAgentHost* agent = ftn_agent.second;
-    if (!agent->IsAttached())
-      continue;
-    if (agent->frame_host_ && agent->frame_host_ != frame_host_ &&
-        agent->frame_host_->GetProcess() == process_host) {
-      process_has_agents = true;
-    }
-  }
-
-  // We are the last to disconnect from the renderer -> revoke permissions.
-  if (!process_has_agents) {
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-      GetNetworkService()->SetRawHeadersAccess(process_host->GetID(), false);
-    ChildProcessSecurityPolicyImpl::GetInstance()->RevokeReadRawCookies(
-        process_host->GetID());
-  }
 }
 
 void RenderFrameDevToolsAgentHost::DidStartNavigation(
@@ -682,9 +484,10 @@ void RenderFrameDevToolsAgentHost::RenderFrameDeleted(RenderFrameHost* rfh) {
 
 void RenderFrameDevToolsAgentHost::DestroyOnRenderFrameGone() {
   scoped_refptr<RenderFrameDevToolsAgentHost> protect(this);
-  if (IsAttached())
-    RevokePolicy();
-  ForceDetachAllSessions();
+  if (IsAttached()) {
+    ForceDetachAllSessions();
+    UpdateRawHeadersAccess(frame_host_, nullptr);
+  }
   frame_host_ = nullptr;
   UpdateRendererChannel(IsAttached());
   SetFrameTreeNode(nullptr);
@@ -930,7 +733,7 @@ void RenderFrameDevToolsAgentHost::UpdateRendererChannel(bool force) {
   }
   int process_id = frame_host_ ? frame_host_->GetProcess()->GetID()
                                : ChildProcessHost::kInvalidUniqueID;
-  GetRendererChannel()->SetRenderer(
+  GetRendererChannel()->SetRendererAssociated(
       std::move(agent_ptr), std::move(host_request), process_id, frame_host_);
 }
 

@@ -12,7 +12,7 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.blink.mojom.MediaSessionAction;
+import org.chromium.media_session.mojom.MediaSessionAction;
 
 import java.util.ArrayList;
 

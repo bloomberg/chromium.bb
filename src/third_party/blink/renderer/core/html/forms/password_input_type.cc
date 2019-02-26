@@ -45,17 +45,17 @@
 namespace blink {
 
 InputType* PasswordInputType::Create(HTMLInputElement& element) {
-  return new PasswordInputType(element);
+  return MakeGarbageCollected<PasswordInputType>(element);
 }
 
 void PasswordInputType::CountUsage() {
   CountUsageIfVisible(WebFeature::kInputTypePassword);
-  if (GetElement().FastHasAttribute(HTMLNames::maxlengthAttr))
+  if (GetElement().FastHasAttribute(html_names::kMaxlengthAttr))
     CountUsageIfVisible(WebFeature::kInputTypePasswordMaxLength);
 }
 
 const AtomicString& PasswordInputType::FormControlType() const {
-  return InputTypeNames::password;
+  return input_type_names::kPassword;
 }
 
 bool PasswordInputType::ShouldSaveAndRestoreFormControlState() const {

@@ -533,6 +533,9 @@ std::string GetDocumentMetadata(FPDF_DOCUMENT doc, const std::string& key) {
 gin::IsolateHolder* g_isolate_holder = nullptr;
 
 void SetUpV8() {
+  static const char kNoExposeWasm[] = "--no-expose-wasm";
+  v8::V8::SetFlagsFromString(kNoExposeWasm, strlen(kNoExposeWasm));
+
   gin::IsolateHolder::Initialize(gin::IsolateHolder::kNonStrictMode,
                                  gin::IsolateHolder::kStableV8Extras,
                                  gin::ArrayBufferAllocator::SharedInstance());
@@ -622,6 +625,31 @@ std::string ConvertViewIntToViewString(unsigned long view_int) {
     default:
       NOTREACHED();
       return "";
+  }
+}
+
+// Simplify to \" for searching
+constexpr wchar_t kHebrewPunctuationGershayimCharacter = 0x05F4;
+constexpr wchar_t kLeftDoubleQuotationMarkCharacter = 0x201C;
+constexpr wchar_t kRightDoubleQuotationMarkCharacter = 0x201D;
+
+// Simplify \' for searching
+constexpr wchar_t kHebrewPunctuationGereshCharacter = 0x05F3;
+constexpr wchar_t kLeftSingleQuotationMarkCharacter = 0x2018;
+constexpr wchar_t kRightSingleQuotationMarkCharacter = 0x2019;
+
+wchar_t SimplifyForSearch(wchar_t c) {
+  switch (c) {
+    case kHebrewPunctuationGershayimCharacter:
+    case kLeftDoubleQuotationMarkCharacter:
+    case kRightDoubleQuotationMarkCharacter:
+      return L'\"';
+    case kHebrewPunctuationGereshCharacter:
+    case kLeftSingleQuotationMarkCharacter:
+    case kRightSingleQuotationMarkCharacter:;
+      return L'\'';
+    default:
+      return c;
   }
 }
 
@@ -1343,7 +1371,12 @@ bool PDFiumEngine::OnLeftMouseDown(const pp::MouseInputEvent& event) {
         is_form_text_area &&
         IsPointInEditableFormTextArea(page, page_x, page_y, form_type);
 
-    FORM_OnLButtonDown(form(), page, event.GetModifiers(), page_x, page_y);
+    if (event.GetClickCount() == 1) {
+      FORM_OnLButtonDown(form(), page, event.GetModifiers(), page_x, page_y);
+    } else if (event.GetClickCount() == 2) {
+      FORM_OnLButtonDoubleClick(form(), page, event.GetModifiers(), page_x,
+                                page_y);
+    }
     if (form_type != FPDF_FORMFIELD_UNKNOWN) {
       // Destroy SelectionChangeInvalidator object before SetInFormTextArea()
       // changes plugin's focus to be in form text area. This way, regular text
@@ -1913,6 +1946,12 @@ void PDFiumEngine::SearchUsingICU(const base::string16& term,
                                   int current_page) {
   DCHECK(!term.empty());
 
+  // Various types of quotions marks need to be converted to the simple ASCII
+  // version for searching to get better matching.
+  base::string16 adjusted_term = term;
+  for (base::char16& c : adjusted_term)
+    c = SimplifyForSearch(c);
+
   const int original_text_length = pages_[current_page]->GetCharCount();
   int text_length = original_text_length;
   if (character_to_start_searching_from) {
@@ -1969,11 +2008,11 @@ void PDFiumEngine::SearchUsingICU(const base::string16& term,
     if (IsIgnorableCharacter(c))
       removed_indices.push_back(adjusted_page_text.size());
     else
-      adjusted_page_text.push_back(c);
+      adjusted_page_text.push_back(SimplifyForSearch(c));
   }
 
   std::vector<PDFEngine::Client::SearchStringResult> results =
-      client_->SearchString(adjusted_page_text.c_str(), term.c_str(),
+      client_->SearchString(adjusted_page_text.c_str(), adjusted_term.c_str(),
                             case_sensitive);
   for (const auto& result : results) {
     // Need to convert from adjusted page text start to page text start, by
@@ -2397,12 +2436,6 @@ base::Optional<PDFEngine::NamedDestination> PDFiumEngine::GetNamedDestination(
       FPDFDest_GetView(dest, &result.num_params, result.params);
   result.view = ConvertViewIntToViewString(view_int);
   return result;
-}
-
-gfx::PointF PDFiumEngine::TransformPagePoint(int page_index,
-                                             const gfx::PointF& page_xy) {
-  DCHECK(PageIndexInBounds(page_index));
-  return pages_[page_index]->TransformPageToScreenXY(page_xy);
 }
 
 int PDFiumEngine::GetMostVisiblePage() {
@@ -3185,7 +3218,7 @@ void PDFiumEngine::GetPDFiumRect(int page_index,
 }
 
 int PDFiumEngine::GetRenderingFlags() const {
-  int flags = FPDF_LCD_TEXT | FPDF_NO_CATCH;
+  int flags = FPDF_LCD_TEXT;
   if (render_grayscale_)
     flags |= FPDF_GRAYSCALE;
   if (client_->IsPrintPreview())

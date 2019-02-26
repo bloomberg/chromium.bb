@@ -7,7 +7,7 @@
 #include "base/trace_event/trace_event.h"
 
 namespace blink {
-namespace TraceEvent {
+namespace trace_event {
 
 void EnableTracing(const String& category_filter) {
   base::trace_event::TraceLog::GetInstance()->SetEnabled(
@@ -39,5 +39,5 @@ void RemoveEnabledStateObserver(EnabledStateObserver* observer) {
       observer);
 }
 
-}  // namespace TraceEvent
+}  // namespace trace_event
 }  // namespace blink

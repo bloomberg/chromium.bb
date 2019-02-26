@@ -12,14 +12,12 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "components/payments/content/utility/payment_manifest_parser.h"
+#include "components/payments/core/error_logger.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
 struct IcuEnvironment {
-  IcuEnvironment() {
-    logging::SetMinLogLevel(logging::LOG_FATAL);
-    CHECK(base::i18n::InitializeICU());
-  }
+  IcuEnvironment() { CHECK(base::i18n::InitializeICU()); }
   // used by ICU integration.
   base::AtExitManager at_exit_manager;
 };
@@ -34,8 +32,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   base::StringPiece json_data(reinterpret_cast<const char*>(data), size);
   std::unique_ptr<base::Value> value = base::JSONReader::Read(json_data);
 
+  payments::ErrorLogger log;
+  log.DisableInTest();
   payments::PaymentManifestParser::ParsePaymentMethodManifestIntoVectors(
-      std::move(value), &web_app_manifest_urls, &supported_origins,
+      std::move(value), log, &web_app_manifest_urls, &supported_origins,
       &all_origins_supported);
   return 0;
 }

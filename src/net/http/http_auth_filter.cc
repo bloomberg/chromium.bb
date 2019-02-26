@@ -35,10 +35,6 @@ bool HttpAuthFilterWhitelist::AddFilter(const std::string& filter,
   return true;
 }
 
-void HttpAuthFilterWhitelist::AddRuleToBypassLocal() {
-  rules_.AddRuleToBypassLocal();
-}
-
 bool HttpAuthFilterWhitelist::IsValid(const GURL& url,
                                       HttpAuth::Target target) const {
   if ((target != HttpAuth::AUTH_SERVER) && (target != HttpAuth::AUTH_PROXY))
@@ -51,7 +47,12 @@ bool HttpAuthFilterWhitelist::IsValid(const GURL& url,
 
 void HttpAuthFilterWhitelist::SetWhitelist(
     const std::string& server_whitelist) {
-  rules_.ParseFromString(server_whitelist);
+  // TODO(eroman): Is this necessary? The issue is that
+  // HttpAuthFilterWhitelist is trying to use ProxyBypassRules as a generic
+  // URL filter. However internally it has some implicit rules for localhost
+  // and linklocal addresses.
+  rules_.ParseFromString(ProxyBypassRules::GetRulesToSubtractImplicit() + ";" +
+                         server_whitelist);
 }
 
 }  // namespace net

@@ -22,7 +22,7 @@
  * by
  * ../../tools/proto_to_cpp/proto_to_cpp.cc.
  * If you need to make changes here, change the .proto file and then run
- * ./tools/gen_tracing_cpp_headers_from_protos.py
+ * ./tools/gen_tracing_cpp_headers_from_protos
  */
 
 #ifndef INCLUDE_PERFETTO_TRACING_CORE_TRACE_CONFIG_H_
@@ -50,7 +50,10 @@ class InodeFileConfig;
 class InodeFileConfig_MountPointMappingEntry;
 class ProcessStatsConfig;
 class SysStatsConfig;
+class HeapprofdConfig;
+class HeapprofdConfig_ContinousDumpConfig;
 class TestConfig;
+class TestConfig_DummyFields;
 class TraceConfig_ProducerConfig;
 class TraceConfig_StatsdMetadata;
 class TraceConfig_GuardrailOverrides;
@@ -304,6 +307,9 @@ class PERFETTO_EXPORT TraceConfig {
   bool deferred_start() const { return deferred_start_; }
   void set_deferred_start(bool value) { deferred_start_ = value; }
 
+  uint32_t flush_period_ms() const { return flush_period_ms_; }
+  void set_flush_period_ms(uint32_t value) { flush_period_ms_ = value; }
+
  private:
   std::vector<BufferConfig> buffers_;
   std::vector<DataSource> data_sources_;
@@ -317,6 +323,7 @@ class PERFETTO_EXPORT TraceConfig {
   uint64_t max_file_size_bytes_ = {};
   GuardrailOverrides guardrail_overrides_ = {};
   bool deferred_start_ = {};
+  uint32_t flush_period_ms_ = {};
 
   // Allows to preserve unknown protobuf fields for compatibility
   // with future versions of .proto files.

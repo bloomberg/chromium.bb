@@ -30,7 +30,7 @@
 namespace blink {
 
 AudioDestinationHandler::AudioDestinationHandler(AudioNode& node)
-    : AudioHandler(kNodeTypeDestination, node, 0), current_sample_frame_(0) {
+    : AudioHandler(kNodeTypeDestination, node, 0) {
   AddInput();
 }
 
@@ -48,7 +48,7 @@ AudioDestinationHandler& AudioDestinationNode::GetAudioDestinationHandler()
   return static_cast<AudioDestinationHandler&>(Handler());
 }
 
-unsigned long AudioDestinationNode::maxChannelCount() const {
+uint32_t AudioDestinationNode::maxChannelCount() const {
   return GetAudioDestinationHandler().MaxChannelCount();
 }
 

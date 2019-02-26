@@ -297,9 +297,6 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   bool GetHtmlAttribute(const char* attr, std::string* value) const;
   bool GetHtmlAttribute(const char* attr, base::string16* value) const;
 
-  base::string16 GetFontFamily() const;
-  base::string16 GetLanguage() const;
-
   virtual base::string16 GetText() const;
 
   // Returns true if the bit corresponding to the given enum is 1.
@@ -340,7 +337,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // AXPlatformNodeDelegate.
   const ui::AXNodeData& GetData() const override;
   const ui::AXTreeData& GetTreeData() const override;
-  gfx::NativeWindow GetTopLevelWidget() override;
+  gfx::NativeViewAccessible GetNSWindow() override;
   gfx::NativeViewAccessible GetParent() override;
   int GetChildCount() override;
   gfx::NativeViewAccessible ChildAtIndex(int index) override;
@@ -353,12 +350,14 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   gfx::AcceleratedWidget GetTargetForNativeAccessibilityEvent() override;
   int GetTableRowCount() const override;
   int GetTableColCount() const override;
-  std::vector<int32_t> GetColHeaderNodeIds() const override;
-  std::vector<int32_t> GetColHeaderNodeIds(int32_t col_index) const override;
-  std::vector<int32_t> GetRowHeaderNodeIds() const override;
-  std::vector<int32_t> GetRowHeaderNodeIds(int32_t row_index) const override;
+  const std::vector<int32_t> GetColHeaderNodeIds() const override;
+  const std::vector<int32_t> GetColHeaderNodeIds(
+      int32_t col_index) const override;
+  const std::vector<int32_t> GetRowHeaderNodeIds() const override;
+  const std::vector<int32_t> GetRowHeaderNodeIds(
+      int32_t row_index) const override;
   int32_t GetCellId(int32_t row_index, int32_t col_index) const override;
-  int32_t CellIdToIndex(int32_t cell_id) const override;
+  int32_t GetTableCellIndex() const override;
   int32_t CellIndexToId(int32_t cell_index) const override;
   bool AccessibilityPerformAction(const ui::AXActionData& data) override;
   bool ShouldIgnoreHoveredStateForTesting() override;

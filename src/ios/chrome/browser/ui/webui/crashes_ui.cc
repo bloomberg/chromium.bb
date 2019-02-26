@@ -12,7 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/values.h"
 #include "components/crash/core/browser/crashes_ui_util.h"
 #include "components/grit/components_resources.h"

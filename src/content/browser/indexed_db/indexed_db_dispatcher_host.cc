@@ -94,6 +94,9 @@ class IndexedDBDispatcherHost::IDBSequenceHelper {
         indexed_db_context_(std::move(indexed_db_context)) {}
   ~IDBSequenceHelper() {}
 
+  void GetDatabaseInfoOnIDBThread(scoped_refptr<IndexedDBCallbacks> callbacks,
+                                  const url::Origin& origin);
+
   void GetDatabaseNamesOnIDBThread(scoped_refptr<IndexedDBCallbacks> callbacks,
                                    const url::Origin& origin);
   void OpenOnIDBThread(
@@ -163,6 +166,24 @@ void IndexedDBDispatcherHost::RenderProcessExited(
       base::BindOnce(
           &IndexedDBDispatcherHost::InvalidateWeakPtrsAndClearBindings,
           base::Unretained(this)));
+}
+
+void IndexedDBDispatcherHost::GetDatabaseInfo(
+    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info,
+    const url::Origin& origin) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (!IsValidOrigin(origin)) {
+    mojo::ReportBadMessage(kInvalidOrigin);
+    return;
+  }
+
+  scoped_refptr<IndexedDBCallbacks> callbacks(new IndexedDBCallbacks(
+      this->AsWeakPtr(), origin, std::move(callbacks_info), IDBTaskRunner()));
+  IDBTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&IDBSequenceHelper::GetDatabaseInfoOnIDBThread,
+                                base::Unretained(idb_helper_),
+                                std::move(callbacks), origin));
 }
 
 void IndexedDBDispatcherHost::GetDatabaseNames(
@@ -281,6 +302,16 @@ base::SequencedTaskRunner* IndexedDBDispatcherHost::IDBTaskRunner() const {
   return indexed_db_context_->TaskRunner();
 }
 
+void IndexedDBDispatcherHost::IDBSequenceHelper::GetDatabaseInfoOnIDBThread(
+    scoped_refptr<IndexedDBCallbacks> callbacks,
+    const url::Origin& origin) {
+  DCHECK(indexed_db_context_->TaskRunner()->RunsTasksInCurrentSequence());
+
+  base::FilePath indexed_db_path = indexed_db_context_->data_path();
+  indexed_db_context_->GetIDBFactory()->GetDatabaseInfo(callbacks, origin,
+                                                        indexed_db_path);
+}
+
 void IndexedDBDispatcherHost::IDBSequenceHelper::GetDatabaseNamesOnIDBThread(
     scoped_refptr<IndexedDBCallbacks> callbacks,
     const url::Origin& origin) {
@@ -300,12 +331,10 @@ void IndexedDBDispatcherHost::IDBSequenceHelper::OpenOnIDBThread(
     int64_t transaction_id) {
   DCHECK(indexed_db_context_->TaskRunner()->RunsTasksInCurrentSequence());
 
-  base::TimeTicks begin_time = base::TimeTicks::Now();
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
 
   // TODO(dgrogan): Don't let a non-existing database be opened (and therefore
   // created) if this origin is already over quota.
-  callbacks->SetConnectionOpenStartTime(begin_time);
   std::unique_ptr<IndexedDBPendingConnection> connection =
       std::make_unique<IndexedDBPendingConnection>(
           callbacks, database_callbacks, ipc_process_id_, transaction_id,

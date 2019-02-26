@@ -11,7 +11,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 using namespace protocol::Accessibility;
 
 std::unique_ptr<AXProperty> CreateProperty(const String& name,
@@ -214,8 +214,8 @@ std::unique_ptr<AXValueSource> CreateValueSource(NameSource& name_source) {
   std::unique_ptr<AXValueSource> value_source =
       AXValueSource::create().setType(type).build();
   if (!name_source.related_objects.IsEmpty()) {
-    if (name_source.attribute == aria_labelledbyAttr ||
-        name_source.attribute == aria_labeledbyAttr) {
+    if (name_source.attribute == kAriaLabelledbyAttr ||
+        name_source.attribute == kAriaLabeledbyAttr) {
       std::unique_ptr<AXValue> attribute_value = CreateRelatedNodeListValue(
           name_source.related_objects, AXValueTypeEnum::IdrefList);
       if (!name_source.attribute_value.IsNull())

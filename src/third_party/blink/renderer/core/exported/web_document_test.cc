@@ -11,8 +11,8 @@
 #include "third_party/blink/public/common/origin_trials/origin_trial_policy.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/public/web/web_origin_trials.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
-#include "third_party/blink/renderer/core/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -31,8 +31,8 @@
 
 namespace blink {
 
-using blink::FrameTestHelpers::WebViewHelper;
-using blink::URLTestHelpers::ToKURL;
+using blink::frame_test_helpers::WebViewHelper;
+using blink::url_test_helpers::ToKURL;
 
 const char kDefaultOrigin[] = "https://example.test/";
 const char kManifestDummyFilePath[] = "manifest-dummy.html";
@@ -51,13 +51,13 @@ class WebDocumentTest : public testing::Test {
 };
 
 void WebDocumentTest::SetUpTestCase() {
-  URLTestHelpers::RegisterMockedURLLoad(
+  url_test_helpers::RegisterMockedURLLoad(
       ToKURL(std::string(kDefaultOrigin) + kManifestDummyFilePath),
       test::CoreTestDataPath(kManifestDummyFilePath));
-  URLTestHelpers::RegisterMockedURLLoad(
+  url_test_helpers::RegisterMockedURLLoad(
       ToKURL(std::string(kDefaultOrigin) + kNoOriginTrialDummyFilePath),
       test::CoreTestDataPath(kNoOriginTrialDummyFilePath));
-  URLTestHelpers::RegisterMockedURLLoad(
+  url_test_helpers::RegisterMockedURLLoad(
       ToKURL(std::string(kDefaultOrigin) + kOriginTrialDummyFilePath),
       test::CoreTestDataPath(kOriginTrialDummyFilePath));
 }
@@ -143,12 +143,12 @@ TEST_F(WebDocumentTest, ManifestURL) {
   ASSERT_EQ(link_manifest->Href(), static_cast<KURL>(web_doc.ManifestURL()));
 
   // Set to some absolute url.
-  link_manifest->setAttribute(HTMLNames::hrefAttr,
+  link_manifest->setAttribute(html_names::kHrefAttr,
                               "http://example.com/manifest.json");
   ASSERT_EQ(link_manifest->Href(), static_cast<KURL>(web_doc.ManifestURL()));
 
   // Set to some relative url.
-  link_manifest->setAttribute(HTMLNames::hrefAttr, "static/manifest.json");
+  link_manifest->setAttribute(html_names::kHrefAttr, "static/manifest.json");
   ASSERT_EQ(link_manifest->Href(), static_cast<KURL>(web_doc.ManifestURL()));
 }
 
@@ -160,19 +160,19 @@ TEST_F(WebDocumentTest, ManifestUseCredentials) {
   HTMLLinkElement* link_manifest = document->LinkManifest();
 
   // No crossorigin attribute was set so credentials shouldn't be used.
-  ASSERT_FALSE(link_manifest->FastHasAttribute(HTMLNames::crossoriginAttr));
+  ASSERT_FALSE(link_manifest->FastHasAttribute(html_names::kCrossoriginAttr));
   ASSERT_FALSE(web_doc.ManifestUseCredentials());
 
   // Crossorigin set to a random string shouldn't trigger using credentials.
-  link_manifest->setAttribute(HTMLNames::crossoriginAttr, "foobar");
+  link_manifest->setAttribute(html_names::kCrossoriginAttr, "foobar");
   ASSERT_FALSE(web_doc.ManifestUseCredentials());
 
   // Crossorigin set to 'anonymous' shouldn't trigger using credentials.
-  link_manifest->setAttribute(HTMLNames::crossoriginAttr, "anonymous");
+  link_manifest->setAttribute(html_names::kCrossoriginAttr, "anonymous");
   ASSERT_FALSE(web_doc.ManifestUseCredentials());
 
   // Crossorigin set to 'use-credentials' should trigger using credentials.
-  link_manifest->setAttribute(HTMLNames::crossoriginAttr, "use-credentials");
+  link_manifest->setAttribute(html_names::kCrossoriginAttr, "use-credentials");
   ASSERT_TRUE(web_doc.ManifestUseCredentials());
 }
 
@@ -272,7 +272,7 @@ KURL ToOriginB(const char* file) {
 }
 
 void RegisterMockedURLLoad(const KURL& url, const char* path) {
-  URLTestHelpers::RegisterMockedURLLoad(url, test::CoreTestDataPath(path));
+  url_test_helpers::RegisterMockedURLLoad(url, test::CoreTestDataPath(path));
 }
 
 }  // anonymous namespace

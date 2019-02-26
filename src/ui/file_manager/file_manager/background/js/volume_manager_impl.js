@@ -352,7 +352,7 @@ VolumeManagerImpl.prototype.getLocationInfo = function(entry) {
       } else {
         rootType = VolumeManagerCommon.RootType.COMPUTER;
         if (util.isComputersRoot(entry)) {
-          isReadOnly = false;
+          isReadOnly = true;
           isRootEntry = true;
         } else {
           // Regular files/directories under a Computer entry.
@@ -421,6 +421,12 @@ VolumeManagerImpl.prototype.whenVolumeInfoReady = function(volumeId) {
     this.volumeInfoList.addEventListener('splice', handler);
     handler();
   });
+};
+
+/** @override */
+VolumeManagerImpl.prototype.getDefaultDisplayRoot = function(callback) {
+  console.error('Unexpectedly called VolumeManagerImpl.getDefaultDisplayRoot.');
+  callback(null);
 };
 
 /**

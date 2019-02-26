@@ -44,11 +44,12 @@ CPWL_Wnd::CreateParams CFFL_ComboBox::GetCreateParam() {
   return cp;
 }
 
-std::unique_ptr<CPWL_Wnd> CFFL_ComboBox::NewPDFWindow(
-    const CPWL_Wnd::CreateParams& cp) {
-  auto pWnd = pdfium::MakeUnique<CPWL_ComboBox>();
+std::unique_ptr<CPWL_Wnd> CFFL_ComboBox::NewPWLWindow(
+    const CPWL_Wnd::CreateParams& cp,
+    std::unique_ptr<CPWL_Wnd::PrivateData> pAttachedData) {
+  auto pWnd = pdfium::MakeUnique<CPWL_ComboBox>(cp, std::move(pAttachedData));
   pWnd->AttachFFLData(this);
-  pWnd->Create(cp);
+  pWnd->Realize();
 
   CFFL_InteractiveFormFiller* pFormFiller =
       m_pFormFillEnv->GetInteractiveFormFiller();
@@ -127,7 +128,7 @@ void CFFL_ComboBox::GetActionData(CPDFSDK_PageView* pPageView,
                                   CPDF_AAction::AActionType type,
                                   CPDFSDK_FieldAction& fa) {
   switch (type) {
-    case CPDF_AAction::KeyStroke:
+    case CPDF_AAction::kKeyStroke:
       if (CPWL_ComboBox* pComboBox =
               static_cast<CPWL_ComboBox*>(GetPDFWindow(pPageView, false))) {
         if (CPWL_Edit* pEdit = pComboBox->GetEdit()) {
@@ -147,7 +148,7 @@ void CFFL_ComboBox::GetActionData(CPDFSDK_PageView* pPageView,
         }
       }
       break;
-    case CPDF_AAction::Validate:
+    case CPDF_AAction::kValidate:
       if (CPWL_ComboBox* pComboBox =
               static_cast<CPWL_ComboBox*>(GetPDFWindow(pPageView, false))) {
         if (CPWL_Edit* pEdit = pComboBox->GetEdit()) {
@@ -155,8 +156,8 @@ void CFFL_ComboBox::GetActionData(CPDFSDK_PageView* pPageView,
         }
       }
       break;
-    case CPDF_AAction::LoseFocus:
-    case CPDF_AAction::GetFocus:
+    case CPDF_AAction::kLoseFocus:
+    case CPDF_AAction::kGetFocus:
       fa.sValue = m_pWidget->GetValue();
       break;
     default:
@@ -168,7 +169,7 @@ void CFFL_ComboBox::SetActionData(CPDFSDK_PageView* pPageView,
                                   CPDF_AAction::AActionType type,
                                   const CPDFSDK_FieldAction& fa) {
   switch (type) {
-    case CPDF_AAction::KeyStroke:
+    case CPDF_AAction::kKeyStroke:
       if (CPWL_ComboBox* pComboBox =
               static_cast<CPWL_ComboBox*>(GetPDFWindow(pPageView, false))) {
         if (CPWL_Edit* pEdit = pComboBox->GetEdit()) {
@@ -186,7 +187,7 @@ bool CFFL_ComboBox::IsActionDataChanged(CPDF_AAction::AActionType type,
                                         const CPDFSDK_FieldAction& faOld,
                                         const CPDFSDK_FieldAction& faNew) {
   switch (type) {
-    case CPDF_AAction::KeyStroke:
+    case CPDF_AAction::kKeyStroke:
       return (!faOld.bFieldFull && faOld.nSelEnd != faNew.nSelEnd) ||
              faOld.nSelStart != faNew.nSelStart ||
              faOld.sChange != faNew.sChange;
@@ -244,7 +245,7 @@ void CFFL_ComboBox::OnSetFocus(CPWL_Edit* pEdit) {
 
   WideString wsText = pEdit->GetText();
   int nCharacters = wsText.GetLength();
-  ByteString bsUTFText = wsText.UTF16LE_Encode();
+  ByteString bsUTFText = wsText.ToUTF16LE();
   auto* pBuffer = reinterpret_cast<const unsigned short*>(bsUTFText.c_str());
   m_pFormFillEnv->OnSetFieldInputFocus(pBuffer, nCharacters, true);
 }

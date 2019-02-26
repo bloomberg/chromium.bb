@@ -9,13 +9,13 @@
 #include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* WebkitTapHighlightColor::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSPropertyParserHelpers::ConsumeColor(range, context.Mode());
+  return css_property_parser_helpers::ConsumeColor(range, context.Mode());
 }
 
 const blink::Color WebkitTapHighlightColor::ColorIncludingFallback(
@@ -37,5 +37,5 @@ const CSSValue* WebkitTapHighlightColor::CSSValueFromComputedStyleInternal(
       style, style.TapHighlightColor());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

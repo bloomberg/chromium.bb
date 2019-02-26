@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "remoting/host/client_session_control.h"
+#include "remoting/proto/control.pb.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 namespace remoting {
@@ -44,6 +45,8 @@ class HostWindowProxy::Core
   void DisconnectSession(protocol::ErrorCode error) override;
   void OnLocalMouseMoved(const webrtc::DesktopVector& position) override;
   void SetDisableInputs(bool disable_inputs) override;
+  void OnDesktopDisplayChanged(
+      std::unique_ptr<protocol::VideoLayout> layout) override;
 
   // Task runner on which public methods of this class must be called.
   scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
@@ -177,6 +180,11 @@ void HostWindowProxy::Core::SetDisableInputs(bool disable_inputs) {
 
   if (client_session_control_.get())
     client_session_control_->SetDisableInputs(disable_inputs);
+}
+
+void HostWindowProxy::Core::OnDesktopDisplayChanged(
+    std::unique_ptr<protocol::VideoLayout> layout) {
+  NOTREACHED();
 }
 
 }  // namespace remoting

@@ -9,6 +9,8 @@
 #include "ash/multi_profile_uma.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/system/accessibility/accessibility_feature_pod_controller.h"
+#include "ash/system/accessibility/unified_accessibility_detailed_view_controller.h"
 #include "ash/system/audio/unified_audio_detailed_view_controller.h"
 #include "ash/system/audio/unified_volume_slider_controller.h"
 #include "ash/system/bluetooth/bluetooth_feature_pod_controller.h"
@@ -18,6 +20,8 @@
 #include "ash/system/cast/unified_cast_detailed_view_controller.h"
 #include "ash/system/ime/ime_feature_pod_controller.h"
 #include "ash/system/ime/unified_ime_detailed_view_controller.h"
+#include "ash/system/locale/locale_feature_pod_controller.h"
+#include "ash/system/locale/unified_locale_detailed_view_controller.h"
 #include "ash/system/model/clock_model.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/network/network_feature_pod_controller.h"
@@ -27,7 +31,6 @@
 #include "ash/system/night_light/night_light_feature_pod_controller.h"
 #include "ash/system/rotation/rotation_lock_feature_pod_controller.h"
 #include "ash/system/tray/system_tray_item_uma_type.h"
-#include "ash/system/unified/accessibility_feature_pod_controller.h"
 #include "ash/system/unified/detailed_view_controller.h"
 #include "ash/system/unified/feature_pod_button.h"
 #include "ash/system/unified/feature_pod_controller_base.h"
@@ -37,7 +40,6 @@
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "ash/system/unified/unified_system_tray_view.h"
 #include "ash/system/unified/user_chooser_view.h"
-#include "ash/system/unified_accessibility_detailed_view_controller.h"
 #include "ash/wm/lock_state_controller.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -117,6 +119,8 @@ void UnifiedSystemTrayController::HandleAddUserAction() {
 
 void UnifiedSystemTrayController::HandleSignOutAction() {
   Shell::Get()->metrics()->RecordUserMetricsAction(UMA_STATUS_AREA_SIGN_OUT);
+  if (Shell::Get()->session_controller()->IsDemoSession())
+    base::RecordAction(base::UserMetricsAction("DemoMode.ExitFromSystemTray"));
   Shell::Get()->session_controller()->RequestSignOut();
 }
 
@@ -149,6 +153,8 @@ void UnifiedSystemTrayController::HandleOpenDateTimeSettingsAction() {
 }
 
 void UnifiedSystemTrayController::HandleEnterpriseInfoAction() {
+  UMA_HISTOGRAM_ENUMERATION("ChromeOS.SystemTray.OpenHelpPageForManaged",
+                            MANAGED_TYPE_ENTERPRISE, MANAGED_TYPE_COUNT);
   Shell::Get()->system_tray_model()->client_ptr()->ShowEnterpriseInfo();
 }
 
@@ -165,31 +171,23 @@ void UnifiedSystemTrayController::ToggleExpanded() {
     animation_->Show();
 }
 
-void UnifiedSystemTrayController::HandleClearAllAction() {
-  base::RecordAction(
-      base::UserMetricsAction("StatusArea_Notifications_ClearAll"));
-
-  // When the animation is finished, OnClearAllAnimationEnded() is called.
-  unified_view_->ShowClearAllAnimation();
-}
-
-void UnifiedSystemTrayController::OnClearAllAnimationEnded() {
-  message_center::MessageCenter::Get()->RemoveAllNotifications(
-      true /* by_user */,
-      message_center::MessageCenter::RemoveType::NON_PINNED);
-}
-
 void UnifiedSystemTrayController::OnMessageCenterVisibilityUpdated() {
   if (bubble_)
     bubble_->UpdateTransform();
 }
 
 void UnifiedSystemTrayController::BeginDrag(const gfx::Point& location) {
+  // Ignore swipe collapsing when a detailed view is shown as it's confusing.
+  if (detailed_view_controller_)
+    return;
   drag_init_point_ = location;
   was_expanded_ = IsExpanded();
 }
 
 void UnifiedSystemTrayController::UpdateDrag(const gfx::Point& location) {
+  // Ignore swipe collapsing when a detailed view is shown as it's confusing.
+  if (detailed_view_controller_)
+    return;
   animation_->Reset(GetDragExpandedAmount(location));
   UpdateExpandedAmount();
 }
@@ -206,6 +204,9 @@ void UnifiedSystemTrayController::StartAnimation(bool expand) {
 }
 
 void UnifiedSystemTrayController::EndDrag(const gfx::Point& location) {
+  // Ignore swipe collapsing when a detailed view is shown as it's confusing.
+  if (detailed_view_controller_)
+    return;
   if (animation_->is_animating()) {
     // Prevent overwriting the state right after fling event
     return;
@@ -222,6 +223,9 @@ void UnifiedSystemTrayController::EndDrag(const gfx::Point& location) {
 }
 
 void UnifiedSystemTrayController::Fling(int velocity) {
+  // Ignore swipe collapsing when a detailed view is shown as it's confusing.
+  if (detailed_view_controller_)
+    return;
   // Expand when flinging up. Collapse otherwise.
   StartAnimation(velocity < 0);
 }
@@ -277,6 +281,10 @@ void UnifiedSystemTrayController::ShowIMEDetailedView() {
   ShowDetailedView(std::make_unique<UnifiedIMEDetailedViewController>(this));
 }
 
+void UnifiedSystemTrayController::ShowLocaleDetailedView() {
+  ShowDetailedView(std::make_unique<UnifiedLocaleDetailedViewController>(this));
+}
+
 void UnifiedSystemTrayController::ShowAudioDetailedView() {
   ShowDetailedView(std::make_unique<UnifiedAudioDetailedViewController>(this));
 }
@@ -296,7 +304,7 @@ void UnifiedSystemTrayController::TransitionToMainView(bool restore_focus) {
 
 void UnifiedSystemTrayController::CloseBubble() {
   if (unified_view_->GetWidget())
-    unified_view_->GetWidget()->Close();
+    unified_view_->GetWidget()->CloseNow();
 }
 
 void UnifiedSystemTrayController::EnsureExpanded() {
@@ -355,6 +363,7 @@ void UnifiedSystemTrayController::InitFeaturePods() {
   AddFeaturePodItem(std::make_unique<AccessibilityFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<VPNFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<IMEFeaturePodController>(this));
+  AddFeaturePodItem(std::make_unique<LocaleFeaturePodController>(this));
 
   // If you want to add a new feature pod item, add here.
 }

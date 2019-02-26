@@ -1,3 +1,104 @@
+2018-11-27  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* builds/windows/vc2010/freetype.vcxproj: Simplify.
+
+2018-11-27  Chris Liddell  <chris.liddell@artifex.com>
+
+	[type1,cff] Add FT_{Set,Get}_MM_WeightVector API calls.
+
+	For multiple master fonts, common usage (in Postscript) is to modify
+	the WeightVector of an existing font instance, this addition
+	supports that use.
+
+	* include/freetype/ftmm.h, src/base/ftmm.c (FT_Set_MM_WeightVector,
+	FT_Get_MM_WeightVector): New API functions.
+
+	* include/freetype/internalservices/svmm.h
+	(FT_Set_MM_WeightVector_Func, FT_Get_MM_WeightVector_Func): New
+	function types.
+	(MultiMasters): Add `set_mm_weightvector' and `get_mm_weightvector'
+	members.
+	(FT_DEFINE_SERVICE_MULTIMASTERSREC): Updated.
+
+	* src/cffcffdrivr.c (cff_set_mm_weightvector,
+	cff_get_mm_weightvector): New functions.
+	(cff_service_multi_masters): Register them.
+
+	* src/truetype/ttdriver.c (tt_service_gx_multi_masters): Updated.
+	This driver doesn't use the new interface.
+
+	* src/type1/t1load.c (T1_Set_MM_WeightVector,
+	T1_Get_MM_WeightVector): New functions.
+	* src/type1/t1driver.c (t1_service_multi_masters): Register them.
+	* src/type1/t1load.h: Updated.
+
+2018-11-27  Ben Wagner  <bungeman@google.com>
+
+	[cff] Fix compiler warning (#55105).
+
+	* src/cff/cffparse.c (cff_parser_run): Guard label only used if
+	CFF_CONFIG_OPTION_OLD_ENGINE is active.
+
+2018-11-27  Ben Wagner  <bungeman@google.com>
+
+	[truetype] Fix numeric overflow (#55103).
+
+	* src/truetype/ttgload.c (compute_glyph_metrics): Use `SUB_LONG'.
+
+2018-11-25  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	[builds] Belated DLL support with vc2002-vc2008.
+
+	The solution and project files should be automatically upgraded for
+	the approriate Visual C++ version.
+
+	* builds/windows/visualc/freetype.{sln,vcproj}: Major upgrades.
+	* builds/windows/visualc/index.html: Document the change.
+	* builds/windows/vc2005, builds/windows/vc2008: Removed as redundant.
+
+2018-11-22  Armin Hasitzka  <prince.cherusker@gmail.com>
+
+	* src/cff/cffparse.c: Please the compiler.
+
+2018-11-22  Armin Hasitzka  <prince.cherusker@gmail.com>
+
+	[cff] Fix memory overflow.
+
+	Reported as
+
+	  https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=9869
+	  https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=10869
+
+	* src/cff/cffparse.c (destruct_t2s_item, cff_parser_run): Store
+	evaluated T2 charstrings in separately allocated memory.
+
+2018-11-18  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* builds/windows/{visualc,vc2005,vc2008}/freetype.vcproj: Fix it.
+
+2018-11-10  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	[smooth] Placeholder only for library-enabled LCD filtering.
+
+	* src/smooth/ftsmooth.c (ft_smooth_init): Add disabled
+	`FT_Library_SetLcdFilter' call.
+
+2018-11-09  Young Xiao  <yangx92@hotmail.com>
+
+	[psaux] Add safety guard (#54985).
+
+	* src/psaux/psobjs.c (cff_builder_close_contour): Do it.
+
+2018-11-08  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* builds/unix/configure.raw: Require `windows.h' for windres.
+
+2018-11-08  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	[ftstroke] Fix unpredictable failures (#54986).
+
+	* src/base/ftstroke.c (ft_sroke_border_lineto): Fix lineto check.
+
 2018-11-08  Alexei Podtelezhnikov  <apodtele@gmail.com>
 
 	[ftstroke] Fix unpredictable failures (#54976).
@@ -33,6 +134,56 @@
 	<cff_op_sqrt> [CFF_CONFIG_OPTION_OLD_ENGINE]: Fix potential endless
 	loop.
 
+2018-11-04  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* src/truetype/ttgxvar.c: Use enum definitions.
+
+2018-11-03  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* src/truetype/ttgxvar.c (ft_var_apply_tuple): Adjust condition.
+
+2018-11-03  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* src/truetype/ttgxvar.c (ft_var_apply_tuple): Tracing tweaks.
+
+2018-11-03  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	Revert due to specs: [truetype] Speed up variation IUP.
+
+2018-11-02  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* src/truetype/ttgxvar.c (ft_var_get_item_delta): Fixed logic.
+
+	Reported and tested by Behdad.
+
+2018-11-02  Shailesh Mistry  <shailesh.mistry@hotmail.co.uk>
+
+	[autofit] Prevent SEGV.
+
+	See
+
+	  https://bugs.ghostscript.com/show_bug.cgi?id=697545
+
+	for more details on how the bug was found.
+
+	* src/autofit/afloader.c (af_loader_load_glyph): Propagate error
+	code.
+
+2018-10-31  Alexei Podtelezhnikov <apodtele@gmail.com>
+
+	[truetype] Speed up variation IUP.
+
+	* src/truetype/ttgxvar.c (tt_delta_interpolate): Separate trivial
+	snapping to the same position from true interpolation.
+
+2018-10-31  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* src/type1/t1load.c (t1_set_mm_blend): Optimized.
+
+2018-10-31  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* src/truetype/ttgxvar.c (ft_var_get_item_delta): Optimized.
+
 2018-10-29  Werner Lemberg  <wl@gnu.org>
 
 	[base] Fix numeric overflow.
@@ -54,6 +205,19 @@
 	* src/cff/cffparse.c (cff_parser_run)
 	[CFF_CONFIG_OPTION_OLD_ENGINE]: Use `NEG_LONG'.
 
+2018-10-27  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	[sfnt] Make `head' timestamps unsigned.
+
+	It's been more than 2^31 seconds since 1904.
+
+	* include/freetype/tttables.h (TT_Header): Change field types.
+	* src/sfnt/ttload.c (tt_face_load_generic_header): Updated.
+
+2018-10-27  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	Revert: Align FreeType with standard C memory management.
+
 2018-10-27  Werner Lemberg  <wl@gnu.org>
 
 	[psaux] Fix numeric overflow.
@@ -64,6 +228,19 @@
 
 	* src/psaux/cffdecode.c (cff_decoder_parse_charstrings) <cff_op_blend>
 	[CFF_CONFIG_OPTION_OLD_ENGINE]: Fix integer overflow.
+
+2018-10-20  Werner Lemberg  <wl@gnu.org>
+
+	Avoid endless loop while tracing (#54858).
+
+	* src/type1/t1load.c (parse_buildchar): Guard tracing stuff with
+	FT_DEBUG_LEVEL_TRACE.
+
+2018-10-17  David Demelier  <markand@malikania.fr>
+
+	* CMakeLists.txt: Specify `RUNTIME DESTINATION'.
+
+	This is needed for DLL builds.
 
 2018-10-07  Werner Lemberg  <wl@gnu.org>
 
@@ -82,6 +259,13 @@
 	* src/cff/cffcmap.c (cff_cmap_unicode_init), src/psaux/t1cmap.c
 	(t1_cmap_unicode_init), src/sfnt/ttcmap.c (tt_cmap_unicode_init):
 	Check `unicodes_init' field.
+
+2018-10-03  Werner Lemberg  <wl@gnu.org>
+
+	[ftgrays] Fix typo in stand-alone mode (#54771).
+
+	* src/smooth/ftgrays.c (FT_THROW) [STANDALONE_ &&
+	FT_DEBUG_LEVEL_TRACE]: Fix call to `FT_ERR_CAT'.
 
 2018-10-02  Werner Lemberg  <wl@gnu.org>
 
@@ -117,9 +301,24 @@
 	* src/pshinter/pshglob.c (psh_blues_snap_stem): Mask numeric
 	overflow.
 
+2018-09-27  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	Align FreeType with standard C memory management.
+
+	* include/freetype/ftsystem.h: Include FT_TYPES_H.
+	(*FT_Alloc_Func, *FT_Realloc_Func): Use size_t for the size arguments.
+	* src/raster/ftmisc.h: Ditto.
+
+	* builds/amiga/src/base/ftsystem.c, builds/unix/ftsystem.c,
+	* builds/vms/ftsystem.c, src/base/ftsystem.c (ft_alloc, ft_realloc):
+	Use size_t for the size arguments.
+
+	* src/base/ftdbgmem.c (ft_mem_debug_alloc, ft_mem_debug_realloc): Use
+	FT_Offset, aka size_t, for the size arguments.
+
 2018-09-25  Werner Lemberg  <wl@gnu.org>
 
-	Fix handing of `FT_Bool'.
+	Fix handling of `FT_Bool'.
 
 	Before this commit we had code like
 
@@ -143,6 +342,26 @@
 
 	*/*: Replace castings to `FT_Bool' with calls to `FT_BOOL' where
 	possible.
+
+2018-09-23  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	[bdf] Speed up charmap access.
+
+	This makes FT_Get_Char_Index and FT_Get_Next_Char 4-5 times faster.
+
+	* src/bdf/bdfdrivr.c (bdf_cmap_char_{index,next}): Help binary search
+	with continuous prediction.
+
+2018-09-22  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* src/base/ftobjs.c (ft_glyphslot_preset_bimap): Another tweak.
+
+	This one should be clearer. When the rounded monochrome bbox collapses
+	we add a pixel that covers most if not all original cbox. 
+
+2018-09-21  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* src/base/ftobjs.c (ft_glyphslot_preset_bimap): Further tweak.
 
 2018-09-21  Ben Wagner  <bungeman@google.com>
 
@@ -171,7 +390,7 @@
 
 2018-09-20  Alexei Podtelezhnikov  <apodtele@gmail.com>
 
-	* src/base/ftobjs.c (ft_glyphslot_reset_bimap): Tiny rounding tweak.
+	* src/base/ftobjs.c (ft_glyphslot_preset_bimap): Tiny rounding tweak.
 
 	This adds pixels in case a contour goes through the center
 	and they need to be turned on in the b/w rasterizer.

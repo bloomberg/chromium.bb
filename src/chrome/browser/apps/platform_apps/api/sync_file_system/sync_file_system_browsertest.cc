@@ -12,20 +12,25 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine.h"
 #include "chrome/browser/sync_file_system/local/local_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service_factory.h"
 #include "components/drive/service/fake_drive_service.h"
+#include "components/signin/core/browser/account_info.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
+#include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/identity_test_environment.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
 
 namespace sync_file_system {
 
 namespace {
+
+const char kGaiaId[] = "gaia_id";
+const char kEmail[] = "email@example.com";
 
 class FakeDriveServiceFactory
     : public drive_backend::SyncEngine::DriveServiceFactory {
@@ -36,7 +41,7 @@ class FakeDriveServiceFactory
   ~FakeDriveServiceFactory() override {}
 
   std::unique_ptr<drive::DriveServiceInterface> CreateDriveService(
-      OAuth2TokenService* oauth2_token_service,
+      identity::IdentityManager* identity_manager,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       base::SequencedTaskRunner* blocking_task_runner) override {
     std::unique_ptr<drive::FakeDriveService> drive_service(
@@ -78,8 +83,7 @@ class SyncFileSystemTest : public extensions::PlatformAppBrowserTest,
     std::unique_ptr<drive_backend::SyncEngine::DriveServiceFactory>
         drive_service_factory(new FakeDriveServiceFactory(this));
 
-    fake_signin_manager_.reset(
-        new FakeSigninManagerForTesting(browser()->profile()));
+    identity_test_env_.reset(new identity::IdentityTestEnvironment);
 
     remote_service_ = new drive_backend::SyncEngine(
         base::ThreadTaskRunnerHandle::Get(),  // ui_task_runner
@@ -88,9 +92,8 @@ class SyncFileSystemTest : public extensions::PlatformAppBrowserTest,
         nullptr,  // task_logger
         nullptr,  // notification_manager
         extension_service,
-        fake_signin_manager_.get(),  // signin_manager
-        nullptr,                     // token_service
-        nullptr,                     // url_loader_factory
+        identity_test_env_->identity_manager(),  // identity_manager
+        nullptr,                                 // url_loader_factory
         std::move(drive_service_factory), in_memory_env_.get());
     remote_service_->SetSyncEnabled(true);
     factory->set_mock_remote_file_service(
@@ -116,8 +119,12 @@ class SyncFileSystemTest : public extensions::PlatformAppBrowserTest,
   }
 
   void SignIn() {
-    fake_signin_manager_->SetAuthenticatedAccountInfo("12345", "tester");
-    sync_engine()->GoogleSigninSucceeded("12345", "tester");
+    identity_test_env_->SetPrimaryAccount(kEmail);
+
+    // It's necessary to invoke this method manually as the observer callback is
+    // not triggered on ChromeOS.
+    sync_engine()->OnPrimaryAccountSet(
+        identity_test_env_->identity_manager()->GetPrimaryAccountInfo());
   }
 
   void SetSyncEnabled(bool enabled) {
@@ -134,7 +141,7 @@ class SyncFileSystemTest : public extensions::PlatformAppBrowserTest,
   base::ScopedTempDir base_dir_;
   std::unique_ptr<leveldb::Env> in_memory_env_;
 
-  std::unique_ptr<FakeSigninManagerForTesting> fake_signin_manager_;
+  std::unique_ptr<identity::IdentityTestEnvironment> identity_test_env_;
 
   drive_backend::SyncEngine* remote_service_;
 
@@ -168,7 +175,10 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemTest, AuthorizationTest) {
   // service.  Wait for the completion and resume the app.
   WaitUntilIdle();
 
-  sync_engine()->GoogleSignedOut("test_account", std::string());
+  AccountInfo info;
+  info.account_id = kGaiaId;
+  info.account_id = kEmail;
+  sync_engine()->OnPrimaryAccountCleared(info);
   foo_created.Reply("resume");
 
   ASSERT_TRUE(bar_created.WaitUntilSatisfied());
@@ -181,7 +191,7 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemTest, AuthorizationTest) {
   EXPECT_EQ(REMOTE_SERVICE_AUTHENTICATION_REQUIRED,
             sync_engine()->GetCurrentState());
 
-  sync_engine()->GoogleSigninSucceeded("test_account", "tester");
+  sync_engine()->OnPrimaryAccountSet(info);
   WaitUntilIdle();
 
   bar_created.Reply("resume");

@@ -21,7 +21,7 @@ namespace blink {
 
 TrustedTypePolicy* TrustedTypePolicyFactory::createPolicy(
     const String& policy_name,
-    const TrustedTypePolicyOptions& policy_options,
+    const TrustedTypePolicyOptions* policy_options,
     bool exposed,
     ExceptionState& exception_state) {
   if (!GetFrame()
@@ -34,12 +34,18 @@ TrustedTypePolicy* TrustedTypePolicyFactory::createPolicy(
   // TODO(orsibatiz): After policy naming rules are estabilished, check for the
   // policy_name to be according to them.
   if (policy_map_.Contains(policy_name)) {
-    exception_state.ThrowTypeError("Policy with name" + policy_name +
+    exception_state.ThrowTypeError("Policy with name " + policy_name +
                                    " already exists.");
     return nullptr;
   }
-  TrustedTypePolicy* policy =
-      TrustedTypePolicy::Create(policy_name, policy_options, exposed);
+  if (policy_name == "default" && !exposed) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "The default policy must be exposed.");
+    return nullptr;
+  }
+  TrustedTypePolicy* policy = TrustedTypePolicy::Create(
+      policy_name, const_cast<TrustedTypePolicyOptions*>(policy_options),
+      exposed);
   policy_map_.insert(policy_name, policy);
   return policy;
 }
@@ -82,7 +88,7 @@ bool TrustedTypePolicyFactory::isHTML(ScriptState* script_state,
   const WrapperTypeInfo* wrapper_type_info =
       GetWrapperTypeInfoFromScriptValue(script_state, script_value);
   return wrapper_type_info &&
-         wrapper_type_info->Equals(&V8TrustedHTML::wrapperTypeInfo);
+         wrapper_type_info->Equals(&V8TrustedHTML::wrapper_type_info);
 }
 
 bool TrustedTypePolicyFactory::isScript(ScriptState* script_state,
@@ -90,7 +96,7 @@ bool TrustedTypePolicyFactory::isScript(ScriptState* script_state,
   const WrapperTypeInfo* wrapper_type_info =
       GetWrapperTypeInfoFromScriptValue(script_state, script_value);
   return wrapper_type_info &&
-         wrapper_type_info->Equals(&V8TrustedScript::wrapperTypeInfo);
+         wrapper_type_info->Equals(&V8TrustedScript::wrapper_type_info);
 }
 
 bool TrustedTypePolicyFactory::isScriptURL(ScriptState* script_state,
@@ -98,7 +104,7 @@ bool TrustedTypePolicyFactory::isScriptURL(ScriptState* script_state,
   const WrapperTypeInfo* wrapper_type_info =
       GetWrapperTypeInfoFromScriptValue(script_state, script_value);
   return wrapper_type_info &&
-         wrapper_type_info->Equals(&V8TrustedScriptURL::wrapperTypeInfo);
+         wrapper_type_info->Equals(&V8TrustedScriptURL::wrapper_type_info);
 }
 
 bool TrustedTypePolicyFactory::isURL(ScriptState* script_state,
@@ -106,7 +112,7 @@ bool TrustedTypePolicyFactory::isURL(ScriptState* script_state,
   const WrapperTypeInfo* wrapper_type_info =
       GetWrapperTypeInfoFromScriptValue(script_state, script_value);
   return wrapper_type_info &&
-         wrapper_type_info->Equals(&V8TrustedURL::wrapperTypeInfo);
+         wrapper_type_info->Equals(&V8TrustedURL::wrapper_type_info);
 }
 
 void TrustedTypePolicyFactory::Trace(blink::Visitor* visitor) {

@@ -18,7 +18,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_export.h"
-#include "net/dns/dns_protocol.h"
+#include "net/dns/public/dns_protocol.h"
 
 namespace net {
 
@@ -26,7 +26,7 @@ class DnsRecordParser;
 
 // Parsed represenation of the extra data in a record. Does not include standard
 // DNS record data such as TTL, Name, Type and Class.
-class NET_EXPORT_PRIVATE RecordRdata {
+class NET_EXPORT RecordRdata {
  public:
   virtual ~RecordRdata() {}
 
@@ -79,7 +79,7 @@ class NET_EXPORT_PRIVATE SrvRecordRdata : public RecordRdata {
 
 // A Record format (http://www.ietf.org/rfc/rfc1035.txt):
 // 4 bytes for IP address.
-class NET_EXPORT_PRIVATE ARecordRdata : public RecordRdata {
+class NET_EXPORT ARecordRdata : public RecordRdata {
  public:
   static const uint16_t kType = dns_protocol::kTypeA;
 
@@ -101,7 +101,7 @@ class NET_EXPORT_PRIVATE ARecordRdata : public RecordRdata {
 
 // AAAA Record format (http://www.ietf.org/rfc/rfc1035.txt):
 // 16 bytes for IP address.
-class NET_EXPORT_PRIVATE AAAARecordRdata : public RecordRdata {
+class NET_EXPORT AAAARecordRdata : public RecordRdata {
  public:
   static const uint16_t kType = dns_protocol::kTypeAAAA;
 

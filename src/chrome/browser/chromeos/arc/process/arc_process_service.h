@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_ARC_PROCESS_ARC_PROCESS_SERVICE_H_
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
@@ -18,6 +19,8 @@
 #include "components/arc/common/process.mojom.h"
 #include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "services/resource_coordinator/public/cpp/memory_instrumentation/global_memory_dump.h"
+#include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 
 namespace content {
 class BrowserContext;
@@ -59,6 +62,8 @@ class ArcProcessService : public KeyedService,
 
   using RequestProcessListCallback =
       base::Callback<void(std::vector<ArcProcess>)>;
+  using RequestMemoryInfoCallback = base::OnceCallback<void(
+      std::unique_ptr<memory_instrumentation::GlobalMemoryDump>)>;
 
   ArcProcessService(content::BrowserContext* context,
                     ArcBridgeService* bridge_service);
@@ -71,6 +76,9 @@ class ArcProcessService : public KeyedService,
   // otherwise false.
   bool RequestAppProcessList(RequestProcessListCallback callback);
   void RequestSystemProcessList(RequestProcessListCallback callback);
+
+  bool RequestAppMemoryInfo(RequestMemoryInfoCallback callback);
+  bool RequestSystemMemoryInfo(RequestMemoryInfoCallback callback);
 
   using PidMap = std::map<base::ProcessId, base::ProcessId>;
 
@@ -105,7 +113,11 @@ class ArcProcessService : public KeyedService,
   void OnReceiveProcessList(
       const RequestProcessListCallback& callback,
       std::vector<mojom::RunningAppProcessInfoPtr> processes);
-
+  void OnReceiveMemoryInfo(
+      RequestMemoryInfoCallback callback,
+      memory_instrumentation::mojom::GlobalMemoryDumpPtr dump);
+  void OnGetSystemProcessList(RequestMemoryInfoCallback callback,
+                              std::vector<ArcProcess> processes);
   // ConnectionObserver<mojom::ProcessInstance> overrides.
   void OnConnectionReady() override;
   void OnConnectionClosed() override;

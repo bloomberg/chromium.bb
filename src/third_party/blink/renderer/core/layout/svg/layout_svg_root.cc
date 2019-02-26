@@ -30,18 +30,18 @@
 #include "third_party/blink/renderer/core/layout/layout_analyzer.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/layout/svg/layout_svg_foreign_object.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_masker.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_text.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
+#include "third_party/blink/renderer/core/layout/svg/transformed_hit_test_location.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/svg_root_painter.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
-#include "third_party/blink/renderer/platform/length_functions.h"
+#include "third_party/blink/renderer/platform/geometry/length_functions.h"
 
 namespace blink {
 
@@ -469,19 +469,6 @@ LayoutRect LayoutSVGRoot::LocalVisualRectIgnoringVisibility() const {
   return LayoutRect(EnclosingIntRect(visual_rect));
 }
 
-bool LayoutSVGRoot::PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
-  // The rule extends LayoutBox's instead of LayoutReplaced's.
-  if (!LayoutBox::PaintedOutputOfObjectHasNoEffectRegardlessOfSize())
-    return false;
-
-  if (SVGResources* resources =
-          SVGResourcesCache::CachedResourcesForLayoutObject(*this)) {
-    if (resources->Masker())
-      return false;
-  }
-  return true;
-}
-
 // This method expects local CSS box coordinates.
 // Callers with local SVG viewport coordinates should first apply the
 // localToBorderBoxTransform to convert from SVG viewport coordinates to local
@@ -524,42 +511,14 @@ bool LayoutSVGRoot::NodeAtPoint(HitTestResult& result,
       (local_border_box_location.Intersects(PhysicalContentBoxRect()) ||
        (!ShouldApplyViewportClip() &&
         local_border_box_location.Intersects(VisualOverflowRect())))) {
-    const AffineTransform& local_to_border_box_transform =
-        LocalToBorderBoxTransform();
-    if (local_to_border_box_transform.IsInvertible()) {
-      AffineTransform inverse = local_to_border_box_transform.Inverse();
-      FloatPoint local_point =
-          inverse.MapPoint(local_border_box_location.TransformedPoint());
-
-      base::Optional<HitTestLocation> local_location;
-      if (location_in_container.IsRectBasedTest()) {
-        FloatQuad quad_in_container =
-            local_border_box_location.TransformedRect();
-
-        local_location.emplace(local_point, inverse.MapQuad(quad_in_container));
-      } else {
-        local_location.emplace(local_point);
-      }
-
-      for (LayoutObject* child = LastChild(); child;
-           child = child->PreviousSibling()) {
-        bool found = false;
-        if (child->IsSVGForeignObject()) {
-          found = ToLayoutSVGForeignObject(child)->NodeAtPointFromSVG(
-              result, *local_location, LayoutPoint(), hit_test_action);
-        } else {
-          found = child->NodeAtPoint(result, *local_location, LayoutPoint(),
-                                     hit_test_action);
-        }
-
-        if (found) {
-          UpdateHitTestResult(result, local_border_box_location.Point());
-          if (result.AddNodeToListBasedTestResult(
-                  child->GetNode(), location_in_container) == kStopHitTesting) {
-            return true;
-          }
-        }
-      }
+    TransformedHitTestLocation local_location(local_border_box_location,
+                                              LocalToBorderBoxTransform());
+    if (local_location) {
+      LayoutPoint accumulated_offset_for_children;
+      if (SVGLayoutSupport::HitTestChildren(
+              LastChild(), result, *local_location,
+              accumulated_offset_for_children, hit_test_action))
+        return true;
     }
   }
 

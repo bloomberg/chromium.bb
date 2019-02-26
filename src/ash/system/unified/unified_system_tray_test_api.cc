@@ -12,11 +12,14 @@
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/system/unified/unified_system_tray_bubble.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
+#include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/widget_utils.h"
 
 namespace ash {
 
@@ -63,15 +66,12 @@ void UnifiedSystemTrayTestApi::CloseBubble(CloseBubbleCallback cb) {
 
 void UnifiedSystemTrayTestApi::ShowDetailedView(mojom::TrayItem item,
                                                 ShowDetailedViewCallback cb) {
+  tray_->ShowBubble(false /* show_by_click */);
   switch (item) {
-    case mojom::TrayItem::kEnterprise:
-      // TODO(tetsui): Remove this from .mojom, because both SystemTray and
-      // UnifiedSystemTray do not have enterprise detailed view, and this is not
-      // used from anywhere.
-      NOTREACHED();
+    case mojom::TrayItem::kAccessibility:
+      tray_->bubble_->controller_->ShowAccessibilityDetailedView();
       break;
     case mojom::TrayItem::kNetwork:
-      tray_->ShowBubble(false /* show_by_click */);
       tray_->bubble_->controller_->ShowNetworkDetailedView(true /* force */);
       break;
   }
@@ -80,9 +80,26 @@ void UnifiedSystemTrayTestApi::ShowDetailedView(mojom::TrayItem item,
 
 void UnifiedSystemTrayTestApi::IsBubbleViewVisible(
     int view_id,
+    bool open_tray,
     IsBubbleViewVisibleCallback cb) {
+  if (open_tray)
+    tray_->ShowBubble(false /* show_by_click */);
   views::View* view = GetBubbleView(view_id);
   std::move(cb).Run(view && view->visible());
+}
+
+void UnifiedSystemTrayTestApi::ClickBubbleView(int32_t view_id,
+                                               ClickBubbleViewCallback cb) {
+  views::View* view = GetBubbleView(view_id);
+  if (view && view->visible()) {
+    gfx::Point cursor_location(1, 1);
+    views::View::ConvertPointToScreen(view, &cursor_location);
+
+    ui::test::EventGenerator generator(GetRootWindow(view->GetWidget()));
+    generator.MoveMouseTo(cursor_location);
+    generator.ClickLeftButton();
+  }
+  std::move(cb).Run();
 }
 
 void UnifiedSystemTrayTestApi::GetBubbleViewTooltip(

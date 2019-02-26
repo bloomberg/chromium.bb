@@ -91,6 +91,7 @@ def measure_name(name):
 class EventFactoryWriter(json5_generator.Writer):
     default_parameters = {
         'ImplementedAs': {},
+        'interfaceHeaderDir': {},
         'RuntimeEnabled': {},
     }
     default_metadata = {
@@ -100,7 +101,7 @@ class EventFactoryWriter(json5_generator.Writer):
     }
     filters = {
         'cpp_name': name_utilities.cpp_name,
-        'script_name': name_utilities.script_name,
+        'name': lambda entry: entry['name'].original,
         'create_event_whitelist': create_event_whitelist,
         'create_event_measure_whitelist': create_event_measure_whitelist,
         'measure_name': measure_name,
@@ -109,7 +110,7 @@ class EventFactoryWriter(json5_generator.Writer):
     def __init__(self, json5_file_path, output_dir):
         super(EventFactoryWriter, self).__init__(json5_file_path, output_dir)
         self.namespace = self.json5_file.metadata['namespace'].strip('"')
-        assert self.namespace == 'Event', 'namespace field should be "Event".'
+        assert self.namespace == 'event_interface_names', 'namespace field should be "event_interface_names".'
         self.suffix = self.json5_file.metadata['suffix'].strip('"')
         snake_suffix = (self.suffix.lower() + '_') if self.suffix else ''
         self._outputs = {
@@ -121,14 +122,10 @@ class EventFactoryWriter(json5_generator.Writer):
         exit(1)
 
     def _headers_header_include_path(self, entry):
-        path = os.path.dirname(entry['name'].original)
+        path = entry['interfaceHeaderDir']
         if len(path):
             path += '/'
-        if entry['ImplementedAs']:
-            path += self.get_file_basename(entry['ImplementedAs'])
-        else:
-            path += self.get_file_basename(os.path.basename(entry['name'].original))
-        return path + '.h'
+        return path + self.get_file_basename(name_utilities.cpp_name(entry)) + '.h'
 
     def _headers_header_includes(self, entries):
         includes = dict()

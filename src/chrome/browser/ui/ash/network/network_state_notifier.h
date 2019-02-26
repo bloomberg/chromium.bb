@@ -95,6 +95,9 @@ class NetworkStateNotifier : public NetworkConnectionObserver,
   // Shows the network settings for |network_id|.
   void ShowNetworkSettings(const std::string& network_id);
 
+  // Shows the mobile setup dialog for |network_id|.
+  void ShowMobileSetup(const std::string& network_id);
+
   std::string last_default_network_;
   bool did_show_out_of_credits_;
   base::Time out_of_credits_notify_time_;

@@ -12,7 +12,7 @@
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
-class ToolbarModel;
+class LocationBarModel;
 
 class OmniboxEditController {
  public:
@@ -32,8 +32,8 @@ class OmniboxEditController {
   // Called when the omnibox popup is shown or hidden.
   virtual void OnPopupVisibilityChanged();
 
-  virtual ToolbarModel* GetToolbarModel() = 0;
-  virtual const ToolbarModel* GetToolbarModel() const = 0;
+  virtual LocationBarModel* GetLocationBarModel() = 0;
+  virtual const LocationBarModel* GetLocationBarModel() const = 0;
 
  protected:
   OmniboxEditController();

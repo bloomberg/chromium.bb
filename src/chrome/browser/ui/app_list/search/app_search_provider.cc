@@ -18,6 +18,7 @@
 #include "ash/public/cpp/app_list/tokenized_string.h"
 #include "ash/public/cpp/app_list/tokenized_string_match.h"
 #include "base/bind.h"
+#include "base/callback_list.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/optional.h"
@@ -36,7 +37,7 @@
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/session_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
@@ -49,10 +50,9 @@
 #include "chrome/browser/ui/app_list/search/internal_app_result.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_search_result_ranker.h"
 #include "chrome/common/pref_names.h"
-#include "components/browser_sync/profile_sync_service.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/driver/sync_service.h"
-#include "components/sync/driver/sync_service_observer.h"
+#include "components/sync_sessions/session_sync_service.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -67,6 +67,13 @@ namespace {
 // The minimum capacity we reserve in the Apps container which will be filled
 // with extensions and ARC apps, to avoid successive reallocation.
 constexpr size_t kMinimumReservedAppsContainerCapacity = 60U;
+
+// Relevance threshold to use when Crostini has not yet been enabled. This value
+// is somewhat arbitrary, but is roughly equivalent to the 'ter' in 'terminal'.
+constexpr double kCrostiniTerminalRelevanceThreshold = 0.8;
+// These are added to the localized values for convenience. The leading space
+// is as we just append this to the localized version of 'Linux'.
+constexpr char kExtraCrostiniTerminalKeywords[] = " linux terminal crostini";
 
 // Adds |app_result| to |results| only in case no duplicate apps were already
 // added. Duplicate means the same app but for different domain, Chrome and
@@ -162,8 +169,9 @@ class AppSearchProvider::App {
       tokenized_indexed_searchable_text_ =
           std::make_unique<TokenizedString>(searchable_text_);
     }
-    return TokenizedStringMatch().Calculate(
-        query, *tokenized_indexed_searchable_text_);
+    TokenizedStringMatch match;
+    match.Calculate(query, *tokenized_indexed_searchable_text_);
+    return match.relevance() > relevance_threshold();
   }
 
   AppSearchProvider::DataSource* data_source() { return data_source_; }
@@ -183,9 +191,11 @@ class AppSearchProvider::App {
     searchable_text_ = searchable_text;
   }
 
-  bool require_exact_match() const { return require_exact_match_; }
-  void set_require_exact_match(bool require_exact_match) {
-    require_exact_match_ = require_exact_match;
+  // Relevance must exceed the threshold to appear as a search result. Exact
+  // matches are always surfaced.
+  float relevance_threshold() const { return relevance_threshold_; }
+  void set_relevance_threshold(float threshold) {
+    relevance_threshold_ = threshold;
   }
 
   bool installed_internally() const { return installed_internally_; }
@@ -201,7 +211,7 @@ class AppSearchProvider::App {
   bool recommendable_ = true;
   bool searchable_ = true;
   base::string16 searchable_text_;
-  bool require_exact_match_ = false;
+  float relevance_threshold_ = 0.f;
   // Set to true in case app was installed internally, by sync, policy or as a
   // default app.
   const bool installed_internally_;
@@ -380,23 +390,24 @@ class ArcDataSource : public AppSearchProvider::DataSource,
   DISALLOW_COPY_AND_ASSIGN(ArcDataSource);
 };
 
-class InternalDataSource : public AppSearchProvider::DataSource,
-                           syncer::SyncServiceObserver {
+class InternalDataSource : public AppSearchProvider::DataSource {
  public:
   InternalDataSource(Profile* profile, AppSearchProvider* owner)
       : AppSearchProvider::DataSource(profile, owner) {
-    browser_sync::ProfileSyncService* service =
-        ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
-    if (service)
-      service->AddObserver(this);
+    sync_sessions::SessionSyncService* service =
+        SessionSyncServiceFactory::GetInstance()->GetForProfile(profile);
+    if (service) {
+      // base::Unretained() is safe below because the subscription itself is a
+      // class member field and handles destruction well.
+      foreign_session_updated_subscription_ =
+          service->SubscribeToForeignSessionsChanged(base::BindRepeating(
+              &AppSearchProvider::RefreshAppsAndUpdateResults,
+              base::Unretained(owner),
+              /*force_inline=*/false));
+    }
   }
 
-  ~InternalDataSource() override {
-    browser_sync::ProfileSyncService* service =
-        ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile());
-    if (service)
-      service->RemoveObserver(this);
-  }
+  ~InternalDataSource() override {}
 
   // AppSearchProvider::DataSource overrides:
   void AddApps(AppSearchProvider::Apps* apps) override {
@@ -405,10 +416,9 @@ class InternalDataSource : public AppSearchProvider::DataSource,
         if (!app_list_features::IsContinueReadingEnabled())
           continue;
 
-        auto* service =
-            ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile());
-        if (!service ||
-            !service->GetActiveDataTypes().Has(syncer::PROXY_TABS)) {
+        sync_sessions::SessionSyncService* service =
+            SessionSyncServiceFactory::GetInstance()->GetForProfile(profile());
+        if (!service || !service->GetOpenTabsUIDelegate()) {
           continue;
         }
       }
@@ -435,12 +445,10 @@ class InternalDataSource : public AppSearchProvider::DataSource,
                                                list_controller, is_recommended);
   }
 
-  // syncer::SyncServiceObserver overrides:
-  void OnForeignSessionUpdated(syncer::SyncService* sync) override {
-    owner()->RefreshAppsAndUpdateResults(/*force_inline=*/false);
-  }
-
  private:
+  std::unique_ptr<base::CallbackList<void()>::Subscription>
+      foreign_session_updated_subscription_;
+
   DISALLOW_COPY_AND_ASSIGN(InternalDataSource);
 };
 
@@ -473,12 +481,18 @@ class CrostiniDataSource : public AppSearchProvider::DataSource,
           this, app_id, registration.Name(), registration.LastLaunchTime(),
           registration.InstallTime(), false /* installed_internally */));
 
-      // Until it's been installed, the Terminal is hidden unless you search
-      // for 'Terminal' exactly (case insensitive).
-      if (app_id == crostini::kCrostiniTerminalId &&
-          !crostini::IsCrostiniEnabled(profile())) {
-        apps->back()->set_recommendable(false);
-        apps->back()->set_require_exact_match(true);
+      if (app_id == crostini::kCrostiniTerminalId) {
+        base::string16 searchable_text =
+            l10n_util::GetStringUTF16(IDS_CROSTINI_TERMINAL_APP_SEARCH_TERMS);
+        searchable_text += base::UTF8ToUTF16(kExtraCrostiniTerminalKeywords);
+        apps->back()->set_searchable_text(searchable_text);
+        // Until it's been installed, the Terminal is hidden and requires
+        // a few characters before being shown in search results.
+        if (!crostini::IsCrostiniEnabled(profile())) {
+          apps->back()->set_recommendable(false);
+          apps->back()->set_relevance_threshold(
+              kCrostiniTerminalRelevanceThreshold);
+        }
       }
     }
   }
@@ -621,16 +635,21 @@ void AppSearchProvider::UpdateQueriedResults() {
 
   const TokenizedString query_terms(query_);
   for (auto& app : apps_) {
-    if (!app->searchable() ||
-        (app->require_exact_match() &&
-         !base::EqualsCaseInsensitiveASCII(query_, app->name()))) {
+    if (!app->searchable())
       continue;
-    }
 
     TokenizedStringMatch match;
     TokenizedString* indexed_name = app->GetTokenizedIndexedName();
-    if (!match.Calculate(query_terms, *indexed_name) &&
-        !app->MatchSearchableText(query_terms)) {
+
+    if (match.Calculate(query_terms, *indexed_name)) {
+      // Exact matches should be shown even if the threshold isn't reached, e.g.
+      // due to a localized name being particularly short.
+      if (match.relevance() <= app->relevance_threshold() &&
+          !base::EqualsCaseInsensitiveASCII(query_, app->name()) &&
+          !app->MatchSearchableText(query_terms)) {
+        continue;
+      }
+    } else if (!app->MatchSearchableText(query_terms)) {
       continue;
     }
 

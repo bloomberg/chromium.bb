@@ -27,6 +27,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
@@ -43,6 +44,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 import org.chromium.chrome.test.util.browser.suggestions.FakeMostVisitedSites;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
@@ -61,10 +63,15 @@ import java.util.concurrent.TimeoutException;
 /**
  * Instrumentation tests for {@link NewTabPageRecyclerView}.
  */
+// TODO(https://crbug.com/894334): Remove format suppression once formatting bug is fixed.
+// clang-format off
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
+@Features.DisableFeatures(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)
 @RetryOnFailure
 public class NewTabPageRecyclerViewTest {
+    // clang-format on
+
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
@@ -145,7 +152,7 @@ public class NewTabPageRecyclerViewTest {
         SnippetArticle suggestion = suggestions.get(suggestions.size() - 1);
         int suggestionPosition = getLastCardPosition();
         final View suggestionView = getViewHolderAtPosition(suggestionPosition).itemView;
-        ChromeTabUtils.waitForTabPageLoaded(mTab, () -> {
+        ChromeTabUtils.waitForTabPageLoaded(mTab, suggestion.mUrl, () -> {
             TestTouchUtils.performClickOnMainSync(
                     InstrumentationRegistry.getInstrumentation(), suggestionView);
         });

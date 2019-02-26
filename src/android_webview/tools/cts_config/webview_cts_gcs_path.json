@@ -1,40 +1,185 @@
 {
+  "_usage":
+  {
+    " The format of this file is as follows.  The excludes and includes lists under test_runs are mutually exclusive, if not specified, all tests in apk will run.":
+    {
+      "<arch>": {
+        "<android SDK Code, such as L, M, N, ...>": {
+          "filename": "<relative path to cts_archive_dir of cts zip>",
+          "_origin":  "<branch@buildid>",
+          "unzip_dir":   "<relative path to work directory where cts should be unzipped to>",
+          "test_runs": [
+          {
+            "apk": "location of the test apk in the cts zip file",
+            "excludes": [
+            {
+              "match": "<class#testcase (wildcard supported) expression of test to skip>",
+              "_bug_id": "<bug reference comment, optional>"
+            }]
+          },
+          {
+            "apk": "location of the test apk in the cts zip file",
+            "includes": [
+            {
+              "match": "<class#testcase (wildcard supported) expression of test to run>"
+            }]
+          }]
+        }
+      }
+    }
+  },
   "arm64": {
     "L": {
-        "filename": "arm64/L/android-cts-arm_64-4607260.zip",
-        "apkdir": "arm64/L/4607260/",
-        "tests": [
-                {"android-cts/repository/testcases/CtsWebkitTestCases.apk": ""},
-                {"android-cts/repository/testcases/CtsWidgetTestCases.apk": "android.widget.cts.RemoteViewsActivityTest#testWebView"}
-        ],
-        "_origin": "aosp-lollipop-mr1-cts-dev@4607260"
+      "filename": "arm64/L/android-cts-arm_64-4607260.zip",
+      "_origin": "aosp-lollipop-mr1-cts-dev@4607260",
+      "unzip_dir": "arm64/L/4607260/",
+      "test_runs": [
+      {
+        "apk": "android-cts/repository/testcases/CtsWebkitTestCases.apk",
+        "excludes": [
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testDoUpdateVisitedHistory",
+            "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testLoadPage",
+            "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testOnFormResubmission",
+            "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testOnReceivedError",
+            "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testOnReceivedErrorForSubresource",
+            "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testOnReceivedHttpAuthRequest",
+            "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testOnReceivedHttpError",
+            "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testOnReceivedLoginRequest",
+            "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testOnScaleChanged",
+            "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testShouldOverrideUrlLoading",
+            "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testShouldOverrideUrlLoadingOnCreateWindow",
+            "_bug_id": "crbug.com/896022"
+          }
+        ]
+      },
+      {
+        "apk": "android-cts/repository/testcases/CtsWidgetTestCases.apk",
+        "includes": [
+        {
+          "match": "android.widget.cts.RemoteViewsActivityTest#testWebView"
+        }]
+      }]
     },
     "M": {
-        "filename": "arm64/M/android-cts-arm_64-4607285.zip",
-        "apkdir": "arm64/M/4607285/",
-        "tests": [
-                {"android-cts/repository/testcases/CtsWebkitTestCases.apk": ""},
-                {"android-cts/repository/testcases/CtsWidgetTestCases.apk": "android.widget.cts.RemoteViewsActivityTest#testWebView"}
-        ],
-        "_origin": "aosp-marshmallow-cts-dev@4607285"
+      "filename": "arm64/M/android-cts-arm_64-4607285.zip",
+      "_origin": "aosp-marshmallow-cts-dev@4607285",
+      "unzip_dir": "arm64/M/4607285/",
+      "test_runs": [
+      {
+        "apk": "android-cts/repository/testcases/CtsWebkitTestCases.apk",
+        "excludes": [
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testDoUpdateVisitedHistory",
+            "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testLoadPage",
+            "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testOnFormResubmission",
+            "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testOnReceivedError",
+            "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testOnReceivedErrorForSubresource",
+            "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testOnReceivedHttpAuthRequest",
+            "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testOnReceivedHttpError",
+            "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testOnReceivedLoginRequest",
+            "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testOnScaleChanged",
+            "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testShouldOverrideUrlLoading",
+            "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewClientTest#testShouldOverrideUrlLoadingOnCreateWindow",
+            "_bug_id": "crbug.com/896022"
+          }
+        ]
+      },
+      {
+        "apk": "android-cts/repository/testcases/CtsWidgetTestCases.apk",
+        "includes": [
+        {
+          "match": "android.widget.cts.RemoteViewsActivityTest#testWebView"
+        }]
+      }]
     },
     "N": {
-        "filename": "arm64/N/android-cts-arm_64-4606956.zip",
-        "apkdir": "arm64/N/4606956/",
-        "tests": [
-                {"android-cts/testcases/CtsWebkitTestCases.apk": ""},
-                {"android-cts/testcases/CtsWidgetTestCases.apk": "android.widget.cts.RemoteViewsActivityTest#testWebView"}
-        ],
-        "_origin": "aosp-nougat-cts-release@4606956"
+      "filename": "arm64/N/android-cts-arm_64-5075646.zip",
+      "_origin": "aosp-nougat-cts-dev@5075646",
+      "unzip_dir": "arm64/N/5075646/",
+      "test_runs": [
+      {
+        "apk": "android-cts/testcases/CtsWebkitTestCases.apk"
+      },
+      {
+        "apk": "android-cts/testcases/CtsWidgetTestCases.apk",
+        "includes": [
+        {
+          "match": "android.widget.cts.RemoteViewsActivityTest#testWebView"
+        }]
+      }]
     },
     "O": {
-        "filename": "arm64/O/android-cts-arm_64-4666824.zip",
-        "apkdir": "arm64/O/4666824/",
-        "tests": [
-                {"android-cts/testcases/CtsWebkitTestCases.apk": ""},
-                {"android-cts/testcases/CtsWebViewStartupApp.apk": ""}
-        ],
-        "_origin": "aosp-oreo-cts-release@4666824"
+      "filename": "arm64/O/android-cts-arm_64-5075719.zip",
+      "_origin": "aosp-oreo-cts-dev@5075719",
+      "unzip_dir": "arm64/O/5075719/",
+      "test_runs": [
+      {
+        "apk": "android-cts/testcases/CtsWebkitTestCases.apk"
+      },
+      {
+        "apk": "android-cts/testcases/CtsWebViewStartupApp.apk"
+      }]
     }
   }
 }

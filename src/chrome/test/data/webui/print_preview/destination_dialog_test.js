@@ -7,6 +7,7 @@ cr.define('destination_dialog_test', function() {
   const TestNames = {
     PrinterList: 'PrinterList',
     ShowProvisionalDialog: 'ShowProvisionalDialog',
+    ReloadPrinterList: 'ReloadPrinterList',
   };
 
   const suiteName = 'DestinationDialogTest';
@@ -167,6 +168,41 @@ cr.define('destination_dialog_test', function() {
             assertFalse(provisionalDialog.$.dialog.open);
             assertTrue(dialog.$.dialog.open);
           });
+    });
+
+    // Test that destinations are correctly cleared when the destination store
+    // reloads the printer list.
+    test(assert(TestNames.ReloadPrinterList), function() {
+      const lists =
+          dialog.shadowRoot.querySelectorAll('print-preview-destination-list');
+      assertEquals(2, lists.length);
+
+      const recentItems = lists[0].shadowRoot.querySelectorAll(
+          'print-preview-destination-list-item');
+      const printerItems = lists[1].shadowRoot.querySelectorAll(
+          'print-preview-destination-list-item');
+
+      assertEquals(1, recentItems.length);
+      assertEquals(6, printerItems.length);
+      const oldPdfDestination = printerItems[0].destination;
+      assertEquals(
+          print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
+          oldPdfDestination.id);
+      const whenReset = test_util.eventToPromise(
+          print_preview.DestinationStore.EventType.DESTINATIONS_RESET,
+          destinationStore);
+      cr.webUIListenerCallback('reload-printer-list');
+      return whenReset.then(() => {
+        Polymer.dom.flush();
+        const printerItems = dialog.$.printList.shadowRoot.querySelectorAll(
+            'print-preview-destination-list-item');
+        assertEquals(6, printerItems.length);
+        const newPdfDestination = printerItems[0].destination;
+        assertEquals(
+            print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
+            newPdfDestination.id);
+        assertNotEquals(oldPdfDestination, newPdfDestination);
+      });
     });
   });
 

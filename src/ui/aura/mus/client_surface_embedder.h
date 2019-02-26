@@ -35,7 +35,7 @@ class AURA_EXPORT ClientSurfaceEmbedder {
 
   // Updates the clip layer and primary SurfaceId of the surface layer based
   // on the provided |surface_id|.
-  void SetPrimarySurfaceId(const viz::SurfaceId& surface_id);
+  void SetSurfaceId(const viz::SurfaceId& surface_id);
 
   bool HasPrimarySurfaceId() const;
 
@@ -54,7 +54,7 @@ class AURA_EXPORT ClientSurfaceEmbedder {
 
   ui::Layer* BottomGutterForTesting();
 
-  const viz::SurfaceId& GetPrimarySurfaceIdForTesting() const;
+  const viz::SurfaceId& GetSurfaceIdForTesting() const;
 
  private:
   // The window which embeds the client.

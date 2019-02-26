@@ -25,7 +25,6 @@
 #include "fpdfsdk/cpdfsdk_pageview.h"
 #include "public/fpdfview.h"
 #include "third_party/base/ptr_util.h"
-#include "third_party/base/stl_util.h"
 
 #ifdef PDF_ENABLE_XFA
 #include "fpdfsdk/fpdfxfa/cpdfxfa_context.h"
@@ -142,6 +141,22 @@ static_assert(static_cast<int>(FormFieldType::kXFA_TextField) ==
 static_assert(kFormFieldTypeCount == FPDF_FORMFIELD_COUNT,
               "Number of form field types must match");
 
+static_assert(static_cast<int>(CPDF_AAction::kCloseDocument) ==
+                  FPDFDOC_AACTION_WC,
+              "CloseDocument action must match");
+static_assert(static_cast<int>(CPDF_AAction::kSaveDocument) ==
+                  FPDFDOC_AACTION_WS,
+              "SaveDocument action must match");
+static_assert(static_cast<int>(CPDF_AAction::kDocumentSaved) ==
+                  FPDFDOC_AACTION_DS,
+              "DocumentSaved action must match");
+static_assert(static_cast<int>(CPDF_AAction::kPrintDocument) ==
+                  FPDFDOC_AACTION_WP,
+              "PrintDocument action must match");
+static_assert(static_cast<int>(CPDF_AAction::kDocumentPrinted) ==
+                  FPDFDOC_AACTION_DP,
+              "DocumentPrinted action must match");
+
 namespace {
 
 CPDFSDK_InteractiveForm* FormHandleToInteractiveForm(FPDF_FORMHANDLE hHandle) {
@@ -196,12 +211,7 @@ void FFLCommon(FPDF_FORMHANDLE hHandle,
     pDevice->SetClip_Rect(rect);
 
     CPDF_RenderOptions options;
-    uint32_t option_flags = options.GetFlags();
-    if (flags & FPDF_LCD_TEXT)
-      option_flags |= RENDER_CLEARTYPE;
-    else
-      option_flags &= ~RENDER_CLEARTYPE;
-    options.SetFlags(option_flags);
+    options.GetOptions().bClearType = !!(flags & FPDF_LCD_TEXT);
 
     // Grayscale output
     if (flags & FPDF_GRAYSCALE)
@@ -409,6 +419,22 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FORM_OnLButtonUp(FPDF_FORMHANDLE hHandle,
           static_cast<int>(round(page_y)));
 #endif  // PDF_ENABLE_CLICK_LOGGING
   return pPageView->OnLButtonUp(CFX_PointF(page_x, page_y), modifier);
+}
+
+FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
+FORM_OnLButtonDoubleClick(FPDF_FORMHANDLE hHandle,
+                          FPDF_PAGE page,
+                          int modifier,
+                          double page_x,
+                          double page_y) {
+  CPDFSDK_PageView* pPageView = FormHandleToPageView(hHandle, page);
+  if (!pPageView)
+    return false;
+#ifdef PDF_ENABLE_CLICK_LOGGING
+  fprintf(stderr, "mousedown,doubleleft,%d,%d\n",
+          static_cast<int>(round(page_x)), static_cast<int>(round(page_y)));
+#endif  // PDF_ENABLE_CLICK_LOGGING
+  return pPageView->OnLButtonDblClk(CFX_PointF(page_x, page_y), modifier);
 }
 
 #ifdef PDF_ENABLE_XFA
@@ -693,8 +719,8 @@ FPDF_EXPORT void FPDF_CALLCONV FORM_DoPageAAction(FPDF_PAGE page,
   CPDF_Dictionary* pPageDict = pPDFPage->GetDict();
   CPDF_AAction aa(pPageDict->GetDictFor("AA"));
   CPDF_AAction::AActionType type = aaType == FPDFPAGE_AACTION_OPEN
-                                       ? CPDF_AAction::OpenPage
-                                       : CPDF_AAction::ClosePage;
+                                       ? CPDF_AAction::kOpenPage
+                                       : CPDF_AAction::kClosePage;
   if (aa.ActionExist(type)) {
     CPDF_Action action = aa.GetAction(type);
     pActionHandler->DoAction_Page(action, type, pFormFillEnv);

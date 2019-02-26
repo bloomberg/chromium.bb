@@ -23,7 +23,6 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/material_design/material_design_controller.h"
 #import "ui/base/test/cocoa_helper.h"
-#include "ui/base/test/material_design_controller_test_api.h"
 #include "ui/events/test/cocoa_test_event_utils.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 #import "ui/views/cocoa/bridged_native_widget_host_impl.h"
@@ -313,9 +312,8 @@ class MockNativeWidgetMac : public NativeWidgetMac {
                         backing:NSBackingStoreBuffered
                           defer:NO]);
     bridge_host_for_testing()->CreateLocalBridge(window);
-    if (BridgedNativeWidgetHostImpl* parent =
-            BridgedNativeWidgetHostImpl::GetFromNativeWindow(
-                [params.parent window])) {
+    if (auto* parent =
+            BridgedNativeWidgetHostImpl::GetFromNativeView(params.parent)) {
       bridge_host_for_testing()->SetParent(parent);
     }
     bridge_host_for_testing()->InitWindow(params);
@@ -359,7 +357,8 @@ class BridgedNativeWidgetTestBase : public ui::CocoaTest {
   // corresponding |key_code|.
   NSEvent* VkeyKeyDown(ui::KeyboardCode key_code) {
     return cocoa_test_event_utils::SynthesizeKeyEvent(
-        widget_->GetNativeWindow(), true /* keyDown */, key_code, 0);
+        widget_->GetNativeWindow().GetNativeNSWindow(), true /* keyDown */,
+        key_code, 0);
   }
 
   // Generate an autoreleased KeyDown NSEvent* using the given keycode, and
@@ -373,9 +372,6 @@ class BridgedNativeWidgetTestBase : public ui::CocoaTest {
   void SetUp() override {
     ui::CocoaTest::SetUp();
 
-    // MaterialDesignController leaks state across tests. See
-    // http://crbug.com/656871.
-    ui::test::MaterialDesignControllerTestAPI::Uninitialize();
     ui::MaterialDesignController::Initialize();
 
     init_params_.native_widget = native_widget_mac_;
@@ -402,7 +398,6 @@ class BridgedNativeWidgetTestBase : public ui::CocoaTest {
     // be sure to destroy the widget (which will destroy its NSWindow)
     // beforehand.
     widget_.reset();
-    ui::test::MaterialDesignControllerTestAPI::Uninitialize();
     ui::CocoaTest::TearDown();
   }
 
@@ -1124,7 +1119,7 @@ TEST_F(BridgedNativeWidgetTest, TextInput_AccentedCharacter) {
 
   // First an insertText: message with key 'a' is generated.
   SetKeyDownEvent(cocoa_test_event_utils::SynthesizeKeyEvent(
-      widget_->GetNativeWindow(), true, ui::VKEY_A, 0));
+      widget_->GetNativeWindow().GetNativeNSWindow(), true, ui::VKEY_A, 0));
   [ns_view_ insertText:@"a" replacementRange:EmptyRange()];
   [dummy_text_view_ insertText:@"a" replacementRange:EmptyRange()];
   SetKeyDownEvent(nil);
@@ -1135,7 +1130,7 @@ TEST_F(BridgedNativeWidgetTest, TextInput_AccentedCharacter) {
   // keys, setMarkedText action message is generated which replaces the earlier
   // inserted 'a'.
   SetKeyDownEvent(cocoa_test_event_utils::SynthesizeKeyEvent(
-      widget_->GetNativeWindow(), true, ui::VKEY_RIGHT, 0));
+      widget_->GetNativeWindow().GetNativeNSWindow(), true, ui::VKEY_RIGHT, 0));
   [ns_view_ setMarkedText:@"à"
             selectedRange:NSMakeRange(0, 1)
          replacementRange:NSMakeRange(3, 1)];
@@ -1152,7 +1147,8 @@ TEST_F(BridgedNativeWidgetTest, TextInput_AccentedCharacter) {
 
   // On pressing enter, the marked text is confirmed.
   SetKeyDownEvent(cocoa_test_event_utils::SynthesizeKeyEvent(
-      widget_->GetNativeWindow(), true, ui::VKEY_RETURN, 0));
+      widget_->GetNativeWindow().GetNativeNSWindow(), true, ui::VKEY_RETURN,
+      0));
   [ns_view_ insertText:@"à" replacementRange:EmptyRange()];
   [dummy_text_view_ insertText:@"à" replacementRange:EmptyRange()];
   SetKeyDownEvent(nil);
@@ -1740,7 +1736,7 @@ TEST_F(BridgedNativeWidgetTest, TextInput_RecursiveUpdateWindows) {
 
   // Everything happens with this one event.
   NSEvent* return_with_fake_ime = cocoa_test_event_utils::SynthesizeKeyEvent(
-      widget_->GetNativeWindow(), true, ui::VKEY_RETURN, 0);
+      widget_->GetNativeWindow().GetNativeNSWindow(), true, ui::VKEY_RETURN, 0);
 
   InterpretKeyEventsCallback generate_return_and_fake_ime = base::BindRepeating(
       [](int* saw_return_count, id view) {
@@ -1835,7 +1831,7 @@ typedef BridgedNativeWidgetTestBase BridgedNativeWidgetSimulateFullscreenTest;
 TEST_F(BridgedNativeWidgetSimulateFullscreenTest, FailToEnterAndExit) {
   BridgedNativeWidgetTestWindow* window =
       base::mac::ObjCCastStrict<BridgedNativeWidgetTestWindow>(
-          widget_->GetNativeWindow());
+          widget_->GetNativeWindow().GetNativeNSWindow());
   [window setIgnoreToggleFullScreen:YES];
   widget_->Show();
 

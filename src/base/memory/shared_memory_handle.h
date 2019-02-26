@@ -16,7 +16,6 @@
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
 #include <mach/mach.h>
 #include "base/base_export.h"
-#include "base/file_descriptor_posix.h"
 #include "base/macros.h"
 #include "base/process/process_handle.h"
 #elif defined(OS_POSIX)
@@ -101,13 +100,6 @@ class BASE_EXPORT SharedMemoryHandle {
                      const base::UnguessableToken& guid);
   zx_handle_t GetHandle() const;
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
-  enum Type {
-    // The SharedMemoryHandle is backed by a POSIX fd.
-    POSIX,
-    // The SharedMemoryHandle is backed by the Mach primitive "memory object".
-    MACH,
-  };
-
   // Makes a Mach-based SharedMemoryHandle of the given size. On error,
   // subsequent calls to IsValid() return false.
   // Passing the wrong |size| has no immediate consequence, but may cause errors
@@ -121,8 +113,6 @@ class BASE_EXPORT SharedMemoryHandle {
   SharedMemoryHandle(mach_port_t memory_object,
                      mach_vm_size_t size,
                      const base::UnguessableToken& guid);
-
-  Type GetType() const { return type_; }
 
   // Exposed so that the SharedMemoryHandle can be transported between
   // processes.
@@ -165,7 +155,7 @@ class BASE_EXPORT SharedMemoryHandle {
   bool SetRegionReadOnly() const;
 #endif
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) && !(defined(OS_MACOSX) && !defined(OS_IOS))
   // Constructs a SharedMemoryHandle backed by a FileDescriptor. The newly
   // created instance has the same ownership semantics as base::FileDescriptor.
   // This typically means that the SharedMemoryHandle takes ownership of the
@@ -203,23 +193,13 @@ class BASE_EXPORT SharedMemoryHandle {
   friend bool CheckReadOnlySharedMemoryHandleForTesting(
       SharedMemoryHandle handle);
 
-  Type type_ = MACH;
+  mach_port_t memory_object_ = MACH_PORT_NULL;
 
-  // Each instance of a SharedMemoryHandle is backed either by a POSIX fd or a
-  // mach port. |type_| determines the backing member.
-  union {
-    FileDescriptor file_descriptor_;
-
-    struct {
-      mach_port_t memory_object_ = MACH_PORT_NULL;
-
-      // Whether passing this object as a parameter to an IPC message passes
-      // ownership of |memory_object_| to the IPC stack. This is meant to mimic
-      // the behavior of the |auto_close| parameter of FileDescriptor.
-      // Defaults to |false|.
-      bool ownership_passes_to_ipc_ = false;
-    };
-  };
+  // Whether passing this object as a parameter to an IPC message passes
+  // ownership of |memory_object_| to the IPC stack. This is meant to mimic
+  // the behavior of the |auto_close| parameter of FileDescriptor.
+  // Defaults to |false|.
+  bool ownership_passes_to_ipc_ = false;
 #elif defined(OS_ANDROID)
   friend class SharedMemory;
 

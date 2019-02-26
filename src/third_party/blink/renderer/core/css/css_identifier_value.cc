@@ -6,7 +6,7 @@
 
 #include "third_party/blink/renderer/core/css/css_markup.h"
 #include "third_party/blink/renderer/core/css/css_value_pool.h"
-#include "third_party/blink/renderer/platform/length.h"
+#include "third_party/blink/renderer/platform/geometry/length.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -16,7 +16,7 @@ CSSIdentifierValue* CSSIdentifierValue::Create(CSSValueID value_id) {
   CSSIdentifierValue* css_value = CssValuePool().IdentifierCacheValue(value_id);
   if (!css_value) {
     css_value = CssValuePool().SetIdentifierCacheValue(
-        value_id, new CSSIdentifierValue(value_id));
+        value_id, MakeGarbageCollected<CSSIdentifierValue>(value_id));
   }
   return css_value;
 }

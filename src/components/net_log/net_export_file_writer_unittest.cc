@@ -20,6 +20,8 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "net/base/network_change_notifier.h"
 #include "net/base/test_completion_callback.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_event_type.h"
@@ -32,6 +34,7 @@
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/test/test_network_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -56,6 +59,38 @@ const char kStateStoppingLogString[] = "STOPPING_LOG";
 }  // namespace
 
 namespace net_log {
+
+class FakeNetLogExporter : public network::mojom::NetLogExporter {
+ public:
+  FakeNetLogExporter() {}
+  ~FakeNetLogExporter() override {}
+
+  void Start(base::File destination,
+             base::Value extra_constants,
+             network::mojom::NetLogCaptureMode capture_mode,
+             uint64_t max_file_size,
+             StartCallback callback) override {
+    std::move(callback).Run(net::OK);
+  }
+
+  void Stop(base::Value polled_values, StopCallback callback) override {
+    std::move(callback).Run(net::OK);
+  }
+};
+
+class FakeNetworkContext : public network::TestNetworkContext {
+ public:
+  void CreateNetLogExporter(
+      network::mojom::NetLogExporterRequest request) override {
+    binding_ = mojo::StrongBinding<network::mojom::NetLogExporter>::Create(
+        std::make_unique<FakeNetLogExporter>(), std::move(request));
+  }
+
+  void Disconnect() { binding_->Close(); }
+
+ private:
+  mojo::StrongBindingPtr<network::mojom::NetLogExporter> binding_;
+};
 
 // Sets |path| to |path_to_return| and always returns true. This function is
 // used to override NetExportFileWriter's usual getter for the default log base
@@ -219,6 +254,7 @@ class NetExportFileWriterTest : public ::testing::Test {
   NetExportFileWriterTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::IO),
+        network_change_notifier_(net::NetworkChangeNotifier::CreateMock()),
         network_service_(network::NetworkService::CreateForTesting()) {}
 
   // ::testing::Test implementation
@@ -403,6 +439,8 @@ class NetExportFileWriterTest : public ::testing::Test {
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  // Use a mock NetworkChangeNotifier so the real one can't add any logging.
+  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   std::unique_ptr<network::NetworkService> network_service_;
 
   network::mojom::NetworkContextPtr network_context_ptr_;
@@ -794,6 +832,22 @@ TEST_F(NetExportFileWriterTest, ReceiveStartWhileStoppingLog) {
   state = test_state_observer()->WaitForNewState();
   ASSERT_TRUE(VerifyState(std::move(state), kStateNotLoggingString, true, true,
                           kCaptureModeIncludeSocketBytesString));
+}
+
+TEST_F(NetExportFileWriterTest, HandleCrash) {
+  FakeNetworkContext fake_network_context;
+
+  ASSERT_TRUE(InitializeThenVerifyNewState(true, false));
+  ASSERT_TRUE(StartThenVerifyNewState(
+      base::FilePath(), net::NetLogCaptureMode::IncludeSocketBytes(),
+      kCaptureModeIncludeSocketBytesString, &fake_network_context));
+
+  // Break the pipe, as if network service crashed.
+  fake_network_context.Disconnect();
+
+  std::unique_ptr<base::DictionaryValue> state =
+      test_state_observer()->WaitForNewState();
+  ASSERT_TRUE(VerifyState(std::move(state), kStateNotLoggingString));
 }
 
 }  // namespace net_log

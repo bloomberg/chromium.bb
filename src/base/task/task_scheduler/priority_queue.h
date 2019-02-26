@@ -6,12 +6,11 @@
 #define BASE_TASK_TASK_SCHEDULER_PRIORITY_QUEUE_H_
 
 #include <memory>
-#include <queue>
-#include <vector>
 
 #include "base/base_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/task/common/intrusive_heap.h"
 #include "base/task/task_scheduler/scheduler_lock.h"
 #include "base/task/task_scheduler/sequence.h"
 #include "base/task/task_scheduler/sequence_sort_key.h"
@@ -52,6 +51,16 @@ class BASE_EXPORT PriorityQueue {
     // Cannot be called on an empty PriorityQueue.
     scoped_refptr<Sequence> PopSequence();
 
+    // Removes |sequence| from the PriorityQueue. Returns true if successful,
+    // or false if |sequence| is not currently in the PriorityQueue or the
+    // PriorityQueue is empty.
+    bool RemoveSequence(scoped_refptr<Sequence> sequence);
+
+    // Updates the sort key of the Sequence in |sequence_and_transaction| to
+    // match its current traits. No-ops if the Sequence is not in the
+    // PriorityQueue or the PriorityQueue is empty.
+    void UpdateSortKey(SequenceAndTransaction sequence_and_transaction);
+
     // Returns true if the PriorityQueue is empty.
     bool IsEmpty() const;
 
@@ -81,6 +90,11 @@ class BASE_EXPORT PriorityQueue {
   // PriorityQueue.
   std::unique_ptr<Transaction> BeginTransaction();
 
+  // Set the PriorityQueue to empty all its Sequences of Tasks when it is
+  // destroyed; needed to prevent memory leaks caused by a reference cycle
+  // (Sequence -> Task -> TaskRunner -> Sequence...) during test teardown.
+  void EnableFlushSequencesOnDestroyForTesting();
+
   const SchedulerLock* container_lock() const { return &container_lock_; }
 
  private:
@@ -88,12 +102,15 @@ class BASE_EXPORT PriorityQueue {
   // position in a PriorityQueue.
   class SequenceAndSortKey;
 
-  using ContainerType = std::priority_queue<SequenceAndSortKey>;
+  using ContainerType = IntrusiveHeap<SequenceAndSortKey>;
 
   // Synchronizes access to |container_|.
   SchedulerLock container_lock_;
 
   ContainerType container_;
+
+  // Should only be enabled by EnableFlushSequencesOnDestroyForTesting().
+  bool is_flush_sequences_on_destroy_enabled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PriorityQueue);
 };

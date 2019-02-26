@@ -12,14 +12,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/policy/android_management_client.h"
-#include "google_apis/gaia/oauth2_token_service.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 class Profile;
-class ProfileOAuth2TokenService;
 
 namespace arc {
 
-class ArcAndroidManagementChecker : public OAuth2TokenService::Observer {
+class ArcAndroidManagementChecker : public identity::IdentityManager::Observer {
  public:
   ArcAndroidManagementChecker(Profile* profile, bool retry_on_error);
   ~ArcAndroidManagementChecker() override;
@@ -40,16 +39,17 @@ class ArcAndroidManagementChecker : public OAuth2TokenService::Observer {
       policy::AndroidManagementClient::Result result);
   void ScheduleRetry();
 
-  // Ensures the refresh token is loaded in the |token_service|.
+  // Ensures the refresh token is loaded in the |identity_manager|.
   void EnsureRefreshTokenLoaded();
 
-  // OAuth2TokenService::Observer:
-  void OnRefreshTokenAvailable(const std::string& account_id) override;
+  // identity::IdentityManager::Observer:
+  void OnRefreshTokenUpdatedForAccount(const AccountInfo& account_info,
+                                       bool is_valid) override;
   void OnRefreshTokensLoaded() override;
 
   // Unowned pointers.
   Profile* profile_;
-  ProfileOAuth2TokenService* const token_service_;
+  identity::IdentityManager* const identity_manager_;
 
   const std::string device_account_id_;
 

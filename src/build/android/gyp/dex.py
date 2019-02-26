@@ -171,40 +171,6 @@ def _EnvWithArtLibPath(binary_path):
   return env
 
 
-def _FilterOutput(output, filter_strings):
-  """Output filter from build_utils.CheckOutput.
-
-  Args:
-    output: Executable output as from build_utils.CheckOutput.
-    filter_strings: List of RE strings that will filter (remove) matching
-        lines from |output|.
-
-  Returns:
-    The filtered output, as a single string.
-  """
-  filters = [re.compile(f) for f in filter_strings]
-  filtered_output = []
-  for line in output.splitlines():
-    if any(filter.search(line) for filter in filters):
-      continue
-    else:
-      filtered_output.append(line)
-  return '\n'.join(filtered_output)
-
-
-def _FilterProfmanStderr(output):
-  return _FilterOutput(output, [
-      r'Could not find (method_id|proto_id|name):',
-      r'Could not create type list',
-  ])
-
-
-def _FilterDexlayoutStderr(output):
-  return _FilterOutput(output, [
-      r'Can.t mmap dex file.*please zipalign',
-  ])
-
-
 def _CreateBinaryProfile(text_profile, input_dex, profman_path, temp_dir):
   """Create a binary profile for dexlayout.
 
@@ -226,8 +192,13 @@ def _CreateBinaryProfile(text_profile, input_dex, profman_path, temp_dir):
                  '--dex-location=' + input_dex,
                  '--create-profile-from=' + text_profile,
                  '--reference-profile-file=' + binary_profile]
-  build_utils.CheckOutput(profman_cmd, env=_EnvWithArtLibPath(profman_path),
-                          stderr_filter=_FilterProfmanStderr)
+  build_utils.CheckOutput(
+    profman_cmd,
+    env=_EnvWithArtLibPath(profman_path),
+    stderr_filter=lambda output:
+        build_utils.FilterLines(output, '|'.join(
+            [r'Could not find (method_id|proto_id|name):',
+             r'Could not create type list'])))
   return binary_profile
 
 
@@ -252,8 +223,12 @@ def _LayoutDex(binary_profile, input_dex, dexlayout_path, temp_dir):
                     '-p', binary_profile,
                     '-w', dexlayout_output_dir,
                     input_dex ]
-  build_utils.CheckOutput(dexlayout_cmd, env=_EnvWithArtLibPath(dexlayout_path),
-                          stderr_filter=_FilterDexlayoutStderr)
+  build_utils.CheckOutput(
+      dexlayout_cmd,
+      env=_EnvWithArtLibPath(dexlayout_path),
+      stderr_filter=lambda output:
+          build_utils.FilterLines(output,
+                                  r'Can.t mmap dex file.*please zipalign'))
   output_files = os.listdir(dexlayout_output_dir)
   if not output_files:
     raise Exception('dexlayout unexpectedly produced no output')
@@ -339,15 +314,18 @@ def main(args):
     # by creating an empty JAR
     with zipfile.ZipFile(options.dex_path, 'w') as outfile:
       outfile.comment = 'empty'
-  elif is_dex:
+  else:
     # .dex files can't specify a name for D8. Instead, we output them to a
     # temp directory then move them after the command has finished running
     # (see _MoveTempDexFile). For other files, tmp_dex_dir is None.
     with build_utils.TempDir() as tmp_dex_dir:
       _RunD8(dex_cmd, paths, tmp_dex_dir)
-      _MoveTempDexFile(tmp_dex_dir, options.dex_path)
-  else:
-    _RunD8(dex_cmd, paths, options.dex_path)
+      if is_dex:
+        _MoveTempDexFile(tmp_dex_dir, options.dex_path)
+      else:
+        # d8 supports outputting to a .zip, but does not have deterministic file
+        # ordering: https://issuetracker.google.com/issues/119945929
+        build_utils.ZipDir(options.dex_path, tmp_dex_dir)
 
   if options.dexlayout_profile:
     with build_utils.TempDir() as temp_dir:

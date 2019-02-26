@@ -79,7 +79,7 @@ ArcProvisionNotificationService::~ArcProvisionNotificationService() {
 void ArcProvisionNotificationService::ShowNotification() {
   Profile* profile = Profile::FromBrowserContext(context_);
   message_center::NotifierId notifier_id(
-      message_center::NotifierId::SYSTEM_COMPONENT,
+      message_center::NotifierType::SYSTEM_COMPONENT,
       kManagedProvisionNotifierId);
   notifier_id.profile_id =
       multi_user_util::GetAccountIdFromProfile(profile).GetUserEmail();

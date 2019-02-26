@@ -13,7 +13,6 @@
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/grit/renderer_resources.h"
 #include "chrome/renderer/extensions/app_bindings.h"
 #include "chrome/renderer/extensions/app_hooks_delegate.h"
@@ -35,7 +34,6 @@
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/common/permissions/manifest_permission_set.h"
 #include "extensions/common/permissions/permission_set.h"
-#include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/switches.h"
 #include "extensions/renderer/bindings/api_bindings_system.h"
 #include "extensions/renderer/css_native_handler.h"
@@ -63,40 +61,6 @@ ChromeExtensionsDispatcherDelegate::ChromeExtensionsDispatcherDelegate() {
 }
 
 ChromeExtensionsDispatcherDelegate::~ChromeExtensionsDispatcherDelegate() {
-}
-
-void ChromeExtensionsDispatcherDelegate::AddOriginAccessPermissions(
-    const extensions::Extension& extension,
-    bool is_extension_active) {
-  // Allow component extensions to access chrome://theme/.
-  //
-  // We don't want to grant these permissions to inactive component extensions,
-  // to avoid granting them in "unblessed" (non-extension) processes.  If a
-  // component extension somehow starts as inactive and becomes active later,
-  // we'll re-init the origin permissions, so there's no danger in being
-  // conservative. Components shouldn't be subject to enterprise policy controls
-  // or blocking access to the webstore so they get the highest priority
-  // allowlist entry.
-  if (extensions::Manifest::IsComponentLocation(extension.location()) &&
-      is_extension_active) {
-    blink::WebSecurityPolicy::AddOriginAccessAllowListEntry(
-        extension.url(), blink::WebString::FromUTF8(content::kChromeUIScheme),
-        blink::WebString::FromUTF8(chrome::kChromeUIThemeHost),
-        false /*allow_destination_subdomains*/,
-        network::mojom::CORSOriginAccessMatchPriority::kMaxPriority);
-  }
-
-  // TODO(jstritar): We should try to remove this special case. Also, these
-  // whitelist entries need to be updated when the kManagement permission
-  // changes.
-  if (is_extension_active && extension.permissions_data()->HasAPIPermission(
-                                 extensions::APIPermission::kManagement)) {
-    blink::WebSecurityPolicy::AddOriginAccessAllowListEntry(
-        extension.url(), blink::WebString::FromUTF8(content::kChromeUIScheme),
-        blink::WebString::FromUTF8(chrome::kChromeUIExtensionIconHost),
-        false /*allow_destination_subdomains*/,
-        network::mojom::CORSOriginAccessMatchPriority::kDefaultPriority);
-  }
 }
 
 void ChromeExtensionsDispatcherDelegate::RegisterNativeHandlers(
@@ -252,8 +216,6 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
       IDR_WEBRTC_DESKTOP_CAPTURE_PRIVATE_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("webrtcLoggingPrivate",
                              IDR_WEBRTC_LOGGING_PRIVATE_CUSTOM_BINDINGS_JS);
-  source_map->RegisterSource("webstore", IDR_WEBSTORE_CUSTOM_BINDINGS_JS);
-
 
   // Platform app sources that are not API-specific..
   source_map->RegisterSource("chromeWebViewInternal",

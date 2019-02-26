@@ -74,18 +74,18 @@ class XRSession final : public EventTargetWithInlineData,
   XRLayer* baseLayer() const { return base_layer_; }
   void setBaseLayer(XRLayer* value);
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(blur);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(focus);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(resetpose);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(end);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(blur, kBlur);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(focus, kFocus);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(resetpose, kResetpose);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(end, kEnd);
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(selectstart);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(selectend);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(select);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(selectstart, kSelectstart);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(selectend, kSelectend);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(select, kSelect);
 
   ScriptPromise requestFrameOfReference(ScriptState*,
                                         const String& type,
-                                        const XRFrameOfReferenceOptions&);
+                                        const XRFrameOfReferenceOptions*);
 
   int requestAnimationFrame(V8XRFrameRequestCallback*);
   void cancelAnimationFrame(int id);

@@ -45,26 +45,30 @@ Where:
 <dom-module id="setup-pin-keyboard">
   <template>
     <style include="settings-shared">
+      #errorIcon {
+        --iron-icon-height: 20px;
+        --iron-icon-width: 20px;
+        display: none;
+      }
+
       .error {
         color: var(--google-red-600);
       }
 
-      .error > iron-icon {
+      .error #errorIcon {
         --iron-icon-fill-color: var(--google-red-600);
+        display: inline-block;
       }
 
       .warning {
         color: var(--cr-secondary-text-color);
       }
 
-      .warning > iron-icon {
-        --iron-icon-fill-color: var(--google-grey-refresh-700);
-      }
-
       #problemDiv {
         align-items: center;
         display: flex;
         flex-direction: row;
+        font-size: 10px;
         height: 32px;
         min-height: 0;
       }
@@ -73,10 +77,6 @@ Where:
          dialog does not resize when there are no problems to display. */
       #problemDiv[invisible] {
         visibility: hidden;
-      }
-
-      #problemMessage {
-        font-size: 10px;
       }
     </style>
     <pin-keyboard id="pinKeyboard" on-pin-change="onPinChange_"
@@ -87,13 +87,11 @@ Where:
       <!-- Warning/error; only shown if title is hidden. -->
       <div id="problemDiv" class$="[[problemClass_]]"
           invisible$="[[!problemMessageId_]]" problem>
-        <div>
-          <iron-icon icon="cr:error-outline"></iron-icon>
-          <span id="problemMessage">
-            [[formatProblemMessage_(locale, problemMessageId_,
-                  problemMessageParameters_)]]
-          </span>
-        </div>
+        <iron-icon id="errorIcon" icon="cr:error-outline"></iron-icon>
+        <span>
+          [[formatProblemMessage_(locale, problemMessageId_,
+                problemMessageParameters_)]]
+        </span>
       </div>
     </pin-keyboard>
   </template>

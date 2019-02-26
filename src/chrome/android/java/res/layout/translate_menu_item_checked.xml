@@ -26,7 +26,7 @@
             android:paddingTop="13dp"
             android:paddingBottom="13dp"
             android:paddingEnd="16dp" />
-        <android.support.v7.widget.AppCompatImageView
+        <org.chromium.ui.widget.ChromeImageView
             android:id="@+id/menu_item_icon"
             android:src="@drawable/ic_check_googblue_24dp"
             android:layout_width="24dp"

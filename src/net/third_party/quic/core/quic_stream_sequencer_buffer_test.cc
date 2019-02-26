@@ -9,8 +9,6 @@
 #include <map>
 #include <utility>
 
-#include "base/macros.h"
-#include "net/test/gtest_util.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quic/platform/api/quic_str_cat.h"
@@ -18,7 +16,6 @@
 #include "net/third_party/quic/platform/api/quic_test.h"
 #include "net/third_party/quic/test_tools/quic_stream_sequencer_buffer_peer.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
-#include "testing/gmock_mutant.h"
 
 namespace quic {
 
@@ -128,6 +125,31 @@ TEST_F(QuicStreamSequencerBufferTest, OnStreamDataWithinBlock) {
   EXPECT_EQ(1824u, helper_->bytes_received().begin()->max());
   EXPECT_TRUE(helper_->CheckBufferInvariants());
   EXPECT_TRUE(helper_->IsBufferAllocated());
+}
+
+TEST_F(QuicStreamSequencerBufferTest, Move) {
+  EXPECT_FALSE(helper_->IsBufferAllocated());
+  QuicString source(1024, 'a');
+  size_t written;
+  EXPECT_EQ(QUIC_NO_ERROR,
+            buffer_->OnStreamData(800, source, &written, &error_details_));
+  BufferBlock* block_ptr = helper_->GetBlock(0);
+  for (size_t i = 0; i < source.size(); ++i) {
+    ASSERT_EQ('a', block_ptr->buffer[helper_->GetInBlockOffset(800) + i]);
+  }
+
+  QuicStreamSequencerBuffer buffer2(std::move(*buffer_));
+  QuicStreamSequencerBufferPeer helper2(&buffer2);
+
+  EXPECT_FALSE(helper_->IsBufferAllocated());
+
+  EXPECT_EQ(2, helper2.IntervalSize());
+  EXPECT_EQ(0u, helper2.ReadableBytes());
+  EXPECT_EQ(1u, helper2.bytes_received().Size());
+  EXPECT_EQ(800u, helper2.bytes_received().begin()->min());
+  EXPECT_EQ(1824u, helper2.bytes_received().begin()->max());
+  EXPECT_TRUE(helper2.CheckBufferInvariants());
+  EXPECT_TRUE(helper2.IsBufferAllocated());
 }
 
 TEST_F(QuicStreamSequencerBufferTest, OnStreamDataInvalidSource) {

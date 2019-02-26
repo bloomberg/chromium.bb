@@ -30,16 +30,19 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Marker &amp;alt</translation>
+<translation id="1938451708255335766">For å justere visningstettheten for vinduer, start appen på nytt.</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 d}other{# d}}</translation>
 <translation id="2148716181193084225">I dag</translation>
 <translation id="2168039046890040389">Opp 1 s.</translation>
 <translation id="2190355936436201913">(tom)</translation>
+<translation id="2192232475740621500">Bruk lav tetthet</translation>
 <translation id="219905428774326614">Appoversikt, alle apper</translation>
 <translation id="2267918077332197517">Blokkér alle varsler fra dette nettstedet</translation>
 <translation id="2289052229480071835">Trykk på berøringsmålene på skjermen.</translation>
 <translation id="2295140143284145483">Undersøkelse</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB per sek</translation>
 <translation id="24452542372838207">Vis varselet</translation>
+<translation id="2445449901874883781">Bruk høy tetthet</translation>
 <translation id="2482878487686419369">Varsler</translation>
 <translation id="2497284189126895209">Alle filer</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -60,6 +63,7 @@
 <translation id="3234408098842461169">Pil ned</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 dag}other{# dager}}</translation>
 <translation id="335581015389089642">Tale</translation>
+<translation id="3479552764303398839">Ikke nå</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 dag igjen}other{# dager igjen}}</translation>
 <translation id="3618849550573277856">Slå opp «<ph name="LOOKUP_STRING" />»</translation>
 <translation id="364720409959344976">Velg mappen du vil laste opp</translation>
@@ -99,6 +103,7 @@
 <translation id="5613020302032141669">Pil venstre</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}other{# min}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 dag og }other{# dager og }}</translation>
+<translation id="5895138241574237353">Start på nytt</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 sekund igjen}other{# sekunder igjen}}</translation>
 <translation id="5941711191222866238">Minimer</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 time}other{# timer}}</translation>
@@ -134,7 +139,7 @@
 <translation id="6917971086528278418">{YEARS,plural, =1{1 år igjen}other{# år igjen}}</translation>
 <translation id="6945221475159498467">Velg</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="6974053822202609517">Høyre til venstre</translation>
+<translation id="6974053822202609517">Høyre mot venstre</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">MEST SANNSYNLIG</translation>
 <translation id="7222373446505536781">F11</translation>

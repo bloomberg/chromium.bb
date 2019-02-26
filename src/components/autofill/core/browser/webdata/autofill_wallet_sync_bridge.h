@@ -40,7 +40,6 @@ class AutofillWalletSyncBridge : public base::SupportsUserData::Data,
   static void CreateForWebDataServiceAndBackend(
       const std::string& app_locale,
       const base::RepeatingCallback<void(bool)>& active_callback,
-      bool has_persistent_storage_,
       AutofillWebDataBackend* webdata_backend,
       AutofillWebDataService* web_data_service);
 
@@ -50,7 +49,6 @@ class AutofillWalletSyncBridge : public base::SupportsUserData::Data,
   explicit AutofillWalletSyncBridge(
       const base::RepeatingCallback<void(bool)>& active_callback,
       std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor,
-      bool has_persistent_storage_,
       AutofillWebDataBackend* web_data_backend);
   ~AutofillWalletSyncBridge() override;
 
@@ -90,19 +88,23 @@ class AutofillWalletSyncBridge : public base::SupportsUserData::Data,
   // about added/deleted data.
   void SetSyncData(const syncer::EntityChangeList& entity_data);
 
+  // Sets |customer_data| to this client and returns whether any change has been
+  // applied (i.e., whether |customer_data| was different from local data) and
+  // whether we |should_log_diff|, i.e. metrics for diffs in counts of addresses
+  // and cards.
+  bool SetPaymentsCustomerData(std::vector<PaymentsCustomerData> customer_data,
+                               bool* should_log_diff);
+
   // Sets |wallet_cards| to this client, records metrics about added/deleted
-  // data and returns whether any change has been applied (i.e., whether
-  // |wallet_cards| was different from local data).
-  bool SetWalletCards(std::vector<CreditCard> wallet_cards);
+  // data (if |log_diff| is true) and returns whether any change has been
+  // applied (i.e., whether |wallet_cards| was different from local data).
+  bool SetWalletCards(std::vector<CreditCard> wallet_cards, bool log_diff);
 
   // Sets |wallet_addresses| to this client, records metrics about added/deleted
-  // data and returns whether any change has been applied (i.e., whether
-  // |wallet_addresses| was different from local data).
-  bool SetWalletAddresses(std::vector<AutofillProfile> wallet_addresses);
-
-  // Sets |customer_data| to this client and returns whether any change has been
-  // applied (i.e., whether |customer_data| was different from local data).
-  bool SetPaymentsCustomerData(std::vector<PaymentsCustomerData> customer_data);
+  // data (if |log_diff| is true) and returns whether any change has been
+  // applied (i.e., whether |wallet_addresses| was different from local data).
+  bool SetWalletAddresses(std::vector<AutofillProfile> wallet_addresses,
+                          bool log_diff);
 
   // Computes a "diff" (items added, items removed) of two vectors of items,
   // which should be either CreditCard or AutofillProfile. This is used for
@@ -122,11 +124,6 @@ class AutofillWalletSyncBridge : public base::SupportsUserData::Data,
   // Synchronously load sync metadata from the autofill table and pass it to the
   // processor so that it can start tracking changes.
   void LoadMetadata();
-
-  // Stores whether this bridge is connected to the persistent storage (as part
-  // of the complete sync feature) or to an ephemeral storage (as part of the
-  // content-area-account-based lightweight sync).
-  const bool has_persistent_storage_;
 
   // Callback to let the metadata bridge know that whether the card data
   // is actively syncing.

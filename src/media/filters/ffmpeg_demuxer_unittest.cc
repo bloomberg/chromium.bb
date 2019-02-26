@@ -748,7 +748,7 @@ TEST_F(FFmpegDemuxerTest, Read_AudioNegativeStartTimeAndOggDiscard_Sync) {
     event.RunAndWaitForStatus(PIPELINE_OK);
   }
 }
-#endif
+#endif  // !defined(OS_ANDROID)
 
 // Similar to the test above, but using an opus clip with a large amount of
 // pre-skip, which ffmpeg encodes as negative timestamps.
@@ -797,6 +797,30 @@ TEST_F(FFmpegDemuxerTest, Read_AudioNegativeStartTimeAndOpusDiscard_Sync) {
 }
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
+
+#if defined(OS_CHROMEOS)
+TEST_F(FFmpegDemuxerTest, TestAudioNegativeTimestamps) {
+  // Note: This test will _crash_ the browser if negative timestamp
+  // values are skipped, since this file is heavily truncated to avoid
+  // copyright issue. If the negative timestamp packets are dropped, the
+  // demuxer will continue to read off the end of the stream.
+  CreateDemuxer("negative-audio-timestamps.avi");
+  InitializeDemuxer();
+
+  DemuxerStream* audio = GetStream(DemuxerStream::AUDIO);
+  audio->Read(NewReadCB(FROM_HERE, 104, 0, true));
+  base::RunLoop().Run();
+  audio->Read(NewReadCB(FROM_HERE, 104, 25873, true));
+  base::RunLoop().Run();
+  audio->Read(NewReadCB(FROM_HERE, 104, 51746, true));
+  base::RunLoop().Run();
+  audio->Read(NewReadCB(FROM_HERE, 104, 77619, true));
+  base::RunLoop().Run();
+  audio->Read(NewReadCB(FROM_HERE, 104, 103492, true));
+  base::RunLoop().Run();
+}
+#endif  // defined(OS_CHROMEOS)
+
 // Similar to the test above, but using an opus clip plus h264 b-frames to
 // ensure we don't apply chained ogg workarounds to other content.
 TEST_F(FFmpegDemuxerTest,
@@ -847,7 +871,7 @@ TEST_F(FFmpegDemuxerTest,
     event.RunAndWaitForStatus(PIPELINE_OK);
   }
 }
-#endif
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
 // Similar to the test above, but using sfx-opus.ogg, which has a much smaller
 // amount of discard padding and no |start_time| set on the AVStream.

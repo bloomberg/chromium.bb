@@ -84,11 +84,14 @@ class CORE_EXPORT TimeRanges final : public ScriptWrappable {
     }
   };
 
-  static TimeRanges* Create() { return new TimeRanges; }
+  static TimeRanges* Create() { return MakeGarbageCollected<TimeRanges>(); }
   static TimeRanges* Create(double start, double end) {
-    return new TimeRanges(start, end);
+    return MakeGarbageCollected<TimeRanges>(start, end);
   }
   static TimeRanges* Create(const WebTimeRanges&);
+
+  TimeRanges() = default;
+  TimeRanges(double start, double end);
 
   TimeRanges* Copy() const;
   void IntersectWith(const TimeRanges*);
@@ -106,10 +109,6 @@ class CORE_EXPORT TimeRanges final : public ScriptWrappable {
                  double current_playback_position) const;
 
  private:
-  TimeRanges() = default;
-
-  TimeRanges(double start, double end);
-
   void Invert();
 
   Vector<Range> ranges_;

@@ -2,40 +2,57 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// HpackVarintDecoder decodes HPACK variable length unsigned integers. These
-// integers are used to identify static or dynamic table index entries, to
+// HpackVarintDecoder decodes HPACK variable length unsigned integers. In HPACK,
+// these integers are used to identify static or dynamic table index entries, to
 // specify string lengths, and to update the size limit of the dynamic table.
+// In QPACK, in addition to these uses, these integers also identify streams.
 //
 // The caller will need to validate that the decoded value is in an acceptable
 // range.
 //
-// In order to support naive encoders (i.e. which always output 5 extension
-// bytes for a uint32 that is >= prefix_mask), the decoder supports an an
-// encoding with up to 5 extension bytes, and a maximum value of 268,435,582
-// (4 "full" extension bytes plus the maximum for a prefix, 127). It could be
-// modified to support a lower maximum value (by requiring that extensions bytes
-// be "empty"), or a larger value if valuable for some reason I can't see.
-//
 // For details of the encoding, see:
 //        http://httpwg.org/specs/rfc7541.html#integer.representation
 //
-// TODO(jamessynge): Consider dropping support for encodings of more than 4
-// bytes, including the prefix byte, as in practice we only see at most 3 bytes,
-// and 4 bytes would cover any desire to support large (but not ridiculously
-// large) header values.
+// If GetHttp2ReloadableFlag(http2_varint_decode_64_bits) is true, then this
+// decoder supports decoding any integer that can be represented on uint64_t,
+// thereby exceeding the requirements for QPACK: "QPACK implementations MUST be
+// able to decode integers up to 62 bits long."  See
+// https://quicwg.org/base-drafts/draft-ietf-quic-qpack.html#rfc.section.5.1.1
+//
+// If GetHttp2ReloadableFlag(http2_varint_decode_64_bits) is false, then this
+// decoder supports decoding integers up to 2^28 + 2^prefix_length - 2.
+//
+// This decoder supports at most 10 extension bytes (bytes following the prefix,
+// also called continuation bytes) if
+// GetHttp2ReloadableFlag(http2_varint_decode_64_bits) is true, and at most 5
+// extension bytes if GetHttp2ReloadableFlag(http2_varint_decode_64_bits) is
+// false.  An encoder is allowed to zero pad the encoded integer on the left,
+// thereby increasing the number of extension bytes.  If an encoder uses so much
+// padding that the number of extension bytes exceeds the limit, then this
+// decoder signals an error.
 
 #ifndef NET_THIRD_PARTY_HTTP2_HPACK_VARINT_HPACK_VARINT_DECODER_H_
 #define NET_THIRD_PARTY_HTTP2_HPACK_VARINT_HPACK_VARINT_DECODER_H_
 
 #include <cstdint>
+#include <limits>
 
 #include "base/logging.h"
 #include "net/third_party/http2/decoder/decode_buffer.h"
 #include "net/third_party/http2/decoder/decode_status.h"
 #include "net/third_party/http2/platform/api/http2_export.h"
+#include "net/third_party/http2/platform/api/http2_flags.h"
 #include "net/third_party/http2/platform/api/http2_string.h"
 
 namespace http2 {
+
+// Sentinel value for |HpackVarintDecoder::offset_| to signify that decoding is
+// completed.  Only used in debug builds.
+#ifndef NDEBUG
+const uint8_t kHpackVarintDecoderOffsetDone =
+    std::numeric_limits<uint8_t>::max();
+#endif
+
 // Decodes an HPACK variable length unsigned integer, in a resumable fashion
 // so it can handle running out of input in the DecodeBuffer. Call Start or
 // StartExtended the first time (when decoding the byte that contains the
@@ -66,11 +83,11 @@ class HTTP2_EXPORT_PRIVATE HpackVarintDecoder {
   // call to Start or StartExtended returned kDecodeInProgress.
   DecodeStatus Resume(DecodeBuffer* db);
 
-  uint32_t value() const;
+  uint64_t value() const;
 
   // This supports optimizations for the case of a varint with zero extension
   // bytes, where the handling of the prefix is done by the caller.
-  void set_value(uint32_t v);
+  void set_value(uint64_t v);
 
   // All the public methods below are for supporting assertions and tests.
 
@@ -84,35 +101,42 @@ class HTTP2_EXPORT_PRIVATE HpackVarintDecoder {
   DecodeStatus StartExtendedForTest(uint8_t prefix_length, DecodeBuffer* db);
   DecodeStatus ResumeForTest(DecodeBuffer* db);
 
-  static constexpr uint32_t MaxExtensionBytes() { return 5; }
-
  private:
   // Protection in case Resume is called when it shouldn't be.
   void MarkDone() {
 #ifndef NDEBUG
-    // We support up to 5 extension bytes, so offset_ should never be > 28 when
-    // it makes sense to call Resume().
-    offset_ = MaxOffset() + 7;
+    offset_ = kHpackVarintDecoderOffsetDone;
 #endif
   }
   void CheckNotDone() const {
 #ifndef NDEBUG
-    DCHECK_LE(offset_, MaxOffset());
+    DCHECK_NE(kHpackVarintDecoderOffsetDone, offset_);
 #endif
   }
   void CheckDone() const {
 #ifndef NDEBUG
-    DCHECK_GT(offset_, MaxOffset());
+    DCHECK_EQ(kHpackVarintDecoderOffsetDone, offset_);
 #endif
   }
-  static constexpr uint32_t MaxOffset() {
-    return 7 * (MaxExtensionBytes() - 1);
-  }
+
+  // If true, decode integers up to 2^64 - 1, and accept at most 10 extension
+  // bytes (some of which might be padding).
+  // If false, decode integers up to 2^28 + 2^prefix_length - 2, and accept at
+  // most 5 extension bytes (some of which might be padding).
+  bool decode_64_bits_ = GetHttp2ReloadableFlag(http2_varint_decode_64_bits);
 
   // These fields are initialized just to keep ASAN happy about reading
   // them from DebugString().
-  uint32_t value_ = 0;
-  uint32_t offset_ = 0;
+
+  // The encoded integer is being accumulated in |value_|.  When decoding is
+  // complete, |value_| holds the result.
+  uint64_t value_ = 0;
+
+  // Each extension byte encodes in its lowest 7 bits a segment of the integer.
+  // |offset_| is the number of places this segment has to be shifted to the
+  // left for decoding.  It is zero for the first extension byte, and increases
+  // by 7 for each subsequent extension byte.
+  uint8_t offset_ = 0;
 };
 
 }  // namespace http2

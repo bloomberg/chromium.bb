@@ -54,7 +54,7 @@ class SelectionPopupController : public RenderWidgetHostConnector {
                                 const gfx::PointF& extent);
 
  private:
-  ~SelectionPopupController() override {}
+  ~SelectionPopupController() override;
   base::android::ScopedJavaLocalRef<jobject> GetContext() const;
   RenderWidgetHostViewAndroid* rwhva_ = nullptr;
 

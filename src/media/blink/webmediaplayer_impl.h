@@ -126,7 +126,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   WebMediaPlayer::LoadTiming Load(LoadType load_type,
                                   const blink::WebMediaPlayerSource& source,
-                                  CORSMode cors_mode) override;
+                                  CorsMode cors_mode) override;
 
   // Playback controls.
   void Play() override;
@@ -142,8 +142,9 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
       const std::vector<blink::PictureInPictureControlInfo>&) override;
   void RegisterPictureInPictureWindowResizeCallback(
       blink::WebMediaPlayer::PipWindowResizedCallback callback) override;
-  void SetSinkId(const blink::WebString& sink_id,
-                 blink::WebSetSinkIdCallbacks* web_callback) override;
+  void SetSinkId(
+      const blink::WebString& sink_id,
+      std::unique_ptr<blink::WebSetSinkIdCallbacks> web_callback) override;
   void SetPoster(const blink::WebURL& poster) override;
   void SetPreload(blink::WebMediaPlayer::Preload preload) override;
   blink::WebTimeRanges Buffered() const override;
@@ -246,6 +247,10 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void OnBecamePersistentVideo(bool value) override;
   void OnPictureInPictureModeEnded() override;
   void OnPictureInPictureControlClicked(const std::string& control_id) override;
+
+  // Callback for when bytes are received by |chunk_demuxer_| or the UrlData
+  // being loaded.
+  void OnBytesReceived(uint64_t data_length);
 
   void RequestRemotePlaybackDisabled(bool disabled) override;
 #if defined(OS_ANDROID)  // WMPI_CAST
@@ -364,9 +369,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // Called after |defer_load_cb_| has decided to allow the load. If
   // |defer_load_cb_| is null this is called immediately.
-  void DoLoad(LoadType load_type,
-              const blink::WebURL& url,
-              CORSMode cors_mode);
+  void DoLoad(LoadType load_type, const blink::WebURL& url, CorsMode cors_mode);
 
   // Called after asynchronous initialization of a data source completed.
   void DataSourceInitialized(bool success);
@@ -427,7 +430,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   //
   // This method should be called any time its dependent values change. These
   // are:
-  //   - isRemote(),
+  //   - isRemote(), is_flinging_,
   //   - hasVideo(),
   //   - delegate_->IsHidden(),
   //   - network_state_, ready_state_,
@@ -439,6 +442,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // Methods internal to UpdatePlayState().
   PlayState UpdatePlayState_ComputePlayState(bool is_remote,
+                                             bool is_flinging,
                                              bool can_auto_suspend,
                                              bool is_suspended,
                                              bool is_backgrounded);
@@ -600,6 +604,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // Switch to SurfaceLayer, either initially or from VideoLayer.
   void ActivateSurfaceLayerForVideo();
+
+  void SendBytesReceivedUpdate();
 
   // Returns whether the Picture-in-Picture window should contain a play/pause
   // button. It will return false if video is "live", in other words if duration
@@ -764,6 +770,12 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // the pipeline.
   std::unique_ptr<CdmContextRef> pending_cdm_context_ref_;
 
+  // Tracks if we are currently flinging a video (e.g. in a RemotePlayback
+  // session). Used to prevent videos from being paused when hidden.
+  // TODO(https://crbug.com/839651): remove or rename this flag, when removing
+  // IsRemote().
+  bool is_flinging_ = false;
+
 #if defined(OS_ANDROID)  // WMPI_CAST
   WebMediaPlayerCast cast_impl_;
 #endif
@@ -817,6 +829,16 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // This flag is distinct from |using_media_player_renderer_|, because on older
   // devices we might use MediaPlayerRenderer for non HLS playback.
   bool demuxer_found_hls_ = false;
+
+  // Bytes received since the last update was sent to |media_metrics_provider_|.
+  uint64_t bytes_received_since_last_update_ = 0;
+
+  // The time that a bytes received update should be sent.
+  base::TimeTicks earliest_time_next_bytes_received_update_;
+
+  // Ensures that all bytes received will eventually be reported, even if
+  // updates stop being received.
+  base::OneShotTimer report_bytes_received_timer_;
 
   // Called sometime after the media is suspended in a playing state in
   // OnFrameHidden(), causing the state to change to paused.

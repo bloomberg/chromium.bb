@@ -22,6 +22,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search/suggestions/suggestions_ui.h"
 #include "chrome/browser/ui/webui/about_ui.h"
+#include "chrome/browser/ui/webui/app_management/app_management_ui.h"
 #include "chrome/browser/ui/webui/bluetooth_internals/bluetooth_internals_ui.h"
 #include "chrome/browser/ui/webui/components_ui.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
@@ -82,7 +83,7 @@
 #include "components/safe_browsing/web_ui/safe_browsing_ui.h"
 #include "components/security_interstitials/content/connection_help_ui.h"
 #include "components/security_interstitials/content/urls.h"
-#include "components/signin/core/browser/profile_management_switches.h"
+#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/signin_buildflags.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -134,7 +135,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/device_sync/device_sync_client_factory.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_factory.h"
@@ -147,7 +148,6 @@
 #include "chrome/browser/ui/webui/chromeos/first_run/first_run_ui.h"
 #include "chrome/browser/ui/webui/chromeos/internet_config_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
-#include "chrome/browser/ui/webui/chromeos/keyboard_overlay_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/mobile_setup_ui.h"
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_dialog.h"
@@ -156,6 +156,7 @@
 #include "chrome/browser/ui/webui/chromeos/set_time_ui.h"
 #include "chrome/browser/ui/webui/chromeos/slow_trace_ui.h"
 #include "chrome/browser/ui/webui/chromeos/slow_ui.h"
+#include "chrome/browser/ui/webui/chromeos/smb_shares/smb_share_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/sys_internals/sys_internals_ui.h"
 #include "chrome/browser/ui/webui/signin/inline_login_ui.h"
 #include "chromeos/chromeos_features.h"
@@ -264,23 +265,12 @@ WebUIController* NewWebUI<proximity_auth::ProximityAuthUI>(WebUI* web_ui,
                                                            const GURL& url) {
   content::BrowserContext* browser_context =
       web_ui->GetWebContents()->GetBrowserContext();
-  // TODO(crbug.com/848956): Only pass DeviceSyncClient once Smart Lock has
-  // fully migrated to the DeviceSync API.
   return new proximity_auth::ProximityAuthUI(
       web_ui,
-      base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)
-          ? nullptr
-          : chromeos::EasyUnlockServiceFactory::GetForBrowserContext(
-                browser_context)
-                ->proximity_auth_client(),
-      base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)
-          ? chromeos::device_sync::DeviceSyncClientFactory::GetForProfile(
-                Profile::FromBrowserContext(browser_context))
-          : nullptr,
-      base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)
-          ? chromeos::secure_channel::SecureChannelClientProvider::GetInstance()
-                ->GetClient()
-          : nullptr);
+      chromeos::device_sync::DeviceSyncClientFactory::GetForProfile(
+          Profile::FromBrowserContext(browser_context)),
+      chromeos::secure_channel::SecureChannelClientProvider::GetInstance()
+          ->GetClient());
 }
 #endif
 
@@ -426,6 +416,12 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
    * OS Specific #defines
    ***************************************************************************/
 #if !defined(OS_ANDROID)
+  if (AppManagementUI::IsEnabled() &&
+      url.host_piece() == chrome::kChromeUIAppLauncherPageHost && profile &&
+      !profile->IsGuestSession()) {
+    return &NewWebUI<AppManagementUI>;
+  }
+
 #if !defined(OS_CHROMEOS)
   // AppLauncherPage is not needed on Android or ChromeOS.
   if (url.host_piece() == chrome::kChromeUIAppLauncherPageHost && profile &&
@@ -433,7 +429,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       !profile->IsGuestSession()) {
     return &NewWebUI<AppLauncherPageUI>;
   }
-#endif  // defined(OS_CHROMEOS)
+#endif  // !defined(OS_CHROMEOS)
 
   if (profile->IsGuestSession() &&
       (url.host_piece() == chrome::kChromeUIAppLauncherPageHost ||
@@ -485,8 +481,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<chromeos::DriveInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIFirstRunHost)
     return &NewWebUI<chromeos::FirstRunUI>;
-  if (url.host_piece() == chrome::kChromeUIKeyboardOverlayHost)
-    return &NewWebUI<KeyboardOverlayUI>;
   if (url.host_piece() == chrome::kChromeUIMobileSetupHost)
     return &NewWebUI<chromeos::MobileSetupUI>;
   if (url.host_piece() == chrome::kChromeUIMultiDeviceSetupHost)
@@ -509,6 +503,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<chromeos::SlowUI>;
   if (url.host_piece() == chrome::kChromeUISlowTraceHost)
     return &NewWebUI<chromeos::SlowTraceController>;
+  if (url.host_piece() == chrome::kChromeUISmbShareHost)
+    return &NewWebUI<chromeos::smb_dialog::SmbShareDialogUI>;
   if (url.host_piece() == chrome::kChromeUISysInternalsHost &&
       SysInternalsUI::IsEnabled())
     return &NewWebUI<SysInternalsUI>;

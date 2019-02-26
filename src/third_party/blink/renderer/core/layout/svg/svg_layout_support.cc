@@ -26,6 +26,8 @@
 
 #include "third_party/blink/renderer/core/layout/layout_geometry_map.h"
 #include "third_party/blink/renderer/core/layout/subtree_layout_scope.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_foreign_object.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_image.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_inline_text.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_clipper.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_filter.h"
@@ -224,6 +226,27 @@ inline void SVGLayoutSupport::UpdateObjectBoundingBox(
   object_bounding_box.UniteEvenIfEmpty(other_bounding_box);
 }
 
+static bool HasValidBoundingBoxForContainer(const LayoutObject* object) {
+  if (object->IsSVGShape())
+    return !ToLayoutSVGShape(object)->IsShapeEmpty();
+
+  if (object->IsSVGText())
+    return ToLayoutSVGText(object)->IsObjectBoundingBoxValid();
+
+  if (object->IsSVGHiddenContainer())
+    return false;
+
+  if (object->IsSVGForeignObject())
+    return ToLayoutSVGForeignObject(object)->IsObjectBoundingBoxValid();
+
+  if (object->IsSVGImage())
+    return ToLayoutSVGImage(object)->IsObjectBoundingBoxValid();
+
+  // TODO(fs): Can we refactor this code to include the container case
+  // in a more natural way?
+  return true;
+}
+
 void SVGLayoutSupport::ComputeContainerBoundingBoxes(
     const LayoutObject* container,
     FloatRect& object_bounding_box,
@@ -242,15 +265,8 @@ void SVGLayoutSupport::ComputeContainerBoundingBoxes(
   // situation also.
   for (LayoutObject* current = container->SlowFirstChild(); current;
        current = current->NextSibling()) {
-    if (current->IsSVGHiddenContainer())
-      continue;
-
-    // Don't include elements in the union that do not layout.
-    if (current->IsSVGShape() && ToLayoutSVGShape(current)->IsShapeEmpty())
-      continue;
-
-    if (current->IsSVGText() &&
-        !ToLayoutSVGText(current)->IsObjectBoundingBoxValid())
+    // Don't include elements that are not rendered in the union.
+    if (!HasValidBoundingBoxForContainer(current))
       continue;
 
     const AffineTransform& transform = current->LocalToSVGParentTransform();
@@ -355,9 +371,10 @@ void SVGLayoutSupport::LayoutChildren(LayoutObject* first_child,
       child->LayoutIfNeeded();
     } else {
       SubtreeLayoutScope layout_scope(*child);
-      if (force_child_layout)
+      if (force_child_layout) {
         layout_scope.SetNeedsLayout(child,
-                                    LayoutInvalidationReason::kSvgChanged);
+                                    layout_invalidation_reason::kSvgChanged);
+      }
 
       // Lay out any referenced resources before the child.
       LayoutResourcesIfNeeded(*child);
@@ -410,53 +427,44 @@ bool SVGLayoutSupport::HasFilterResource(const LayoutObject& object) {
   return resources && resources->Filter();
 }
 
-bool SVGLayoutSupport::PointInClippingArea(const LayoutObject& object,
-                                           const FloatPoint& point) {
+bool SVGLayoutSupport::IntersectsClipPath(const LayoutObject& object,
+                                          const HitTestLocation& location) {
   ClipPathOperation* clip_path_operation = object.StyleRef().ClipPath();
   if (!clip_path_operation)
     return true;
+  const FloatRect& reference_box = object.ObjectBoundingBox();
   if (clip_path_operation->GetType() == ClipPathOperation::SHAPE) {
     ShapeClipPathOperation& clip_path =
         ToShapeClipPathOperation(*clip_path_operation);
-    return clip_path.GetPath(object.ObjectBoundingBox()).Contains(point);
+    return clip_path.GetPath(reference_box)
+        .Contains(location.TransformedPoint());
   }
   DCHECK_EQ(clip_path_operation->GetType(), ClipPathOperation::REFERENCE);
   SVGResources* resources =
       SVGResourcesCache::CachedResourcesForLayoutObject(object);
   if (!resources || !resources->Clipper())
     return true;
-  return resources->Clipper()->HitTestClipContent(object.ObjectBoundingBox(),
-                                                  point);
+  return resources->Clipper()->HitTestClipContent(reference_box, location);
 }
 
-const HitTestLocation* SVGLayoutSupport::TransformToUserSpaceAndCheckClipping(
-    const LayoutObject& object,
-    const AffineTransform& local_transform,
-    const HitTestLocation& location_in_parent,
-    base::Optional<HitTestLocation>& local_storage) {
-  // Use a fast path for an identity transform which creates no new
-  // HitTestLocation objects or inverse AffineTransforms, and performs no
-  // matrix multiplies.
-  if (local_transform.IsIdentity()) {
-    if (PointInClippingArea(object, location_in_parent.TransformedPoint()))
-      return &location_in_parent;
-    return nullptr;
+bool SVGLayoutSupport::HitTestChildren(LayoutObject* last_child,
+                                       HitTestResult& result,
+                                       const HitTestLocation& location,
+                                       const LayoutPoint& accumulated_offset,
+                                       HitTestAction hit_test_action) {
+  for (LayoutObject* child = last_child; child;
+       child = child->PreviousSibling()) {
+    if (child->IsSVGForeignObject()) {
+      if (ToLayoutSVGForeignObject(child)->NodeAtPointFromSVG(
+              result, location, accumulated_offset, hit_test_action))
+        return true;
+    } else {
+      if (child->NodeAtPoint(result, location, accumulated_offset,
+                             hit_test_action))
+        return true;
+    }
   }
-  if (!local_transform.IsInvertible())
-    return nullptr;
-  const AffineTransform inverse = local_transform.Inverse();
-  if (location_in_parent.IsRectBasedTest()) {
-    local_storage.emplace(
-        HitTestLocation(inverse.MapPoint(location_in_parent.TransformedPoint()),
-                        inverse.MapQuad(location_in_parent.TransformedRect())));
-  } else {
-    local_storage.emplace(HitTestLocation(
-        inverse.MapPoint(location_in_parent.TransformedPoint())));
-  }
-
-  if (PointInClippingArea(object, local_storage->TransformedPoint()))
-    return &*local_storage;
-  return nullptr;
+  return false;
 }
 
 DashArray SVGLayoutSupport::ResolveSVGDashArray(

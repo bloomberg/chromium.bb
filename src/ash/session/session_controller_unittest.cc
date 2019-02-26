@@ -11,12 +11,9 @@
 
 #include "ash/login_status.h"
 #include "ash/public/interfaces/session_controller.mojom.h"
-#include "ash/session/session_controller.h"
 #include "ash/session/session_observer.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
-#include "ash/system/message_center/notification_tray.h"
-#include "ash/system/screen_security/screen_tray_item.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/overview/window_selector_controller.h"
@@ -593,14 +590,8 @@ class CanSwitchUserTest : public AshTestBase {
   CanSwitchUserTest() = default;
   ~CanSwitchUserTest() override = default;
 
-  void SetUp() override {
-    AshTestBase::SetUp();
-    NotificationTray::DisableAnimationsForTest(true);
-  }
-
   void TearDown() override {
     RunAllPendingInMessageLoop();
-    NotificationTray::DisableAnimationsForTest(false);
     AshTestBase::TearDown();
   }
 
@@ -610,7 +601,7 @@ class CanSwitchUserTest : public AshTestBase {
     Shell::Get()->system_tray_notifier()->NotifyScreenCaptureStart(
         base::BindRepeating(&CanSwitchUserTest::StopCaptureCallback,
                             base::Unretained(this)),
-        base::EmptyString16());
+        base::string16());
   }
 
   // The callback which gets called when the screen capture gets stopped.
@@ -627,7 +618,7 @@ class CanSwitchUserTest : public AshTestBase {
     Shell::Get()->system_tray_notifier()->NotifyScreenShareStart(
         base::BindRepeating(&CanSwitchUserTest::StopShareCallback,
                             base::Unretained(this)),
-        base::EmptyString16());
+        base::string16());
   }
 
   // Simulates a screen share session stop.

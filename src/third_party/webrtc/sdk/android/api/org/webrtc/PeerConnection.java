@@ -14,6 +14,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
+import org.webrtc.DataChannel;
+import org.webrtc.MediaStreamTrack;
+import org.webrtc.RtpTransceiver;
 
 /**
  * Java-land version of the PeerConnection APIs; wraps the C++ API
@@ -50,6 +53,21 @@ public class PeerConnection {
     }
   }
 
+  /** Tracks PeerConnectionInterface::PeerConnectionState */
+  public enum PeerConnectionState {
+    NEW,
+    CONNECTING,
+    CONNECTED,
+    DISCONNECTED,
+    FAILED,
+    CLOSED;
+
+    @CalledByNative("PeerConnectionState")
+    static PeerConnectionState fromNativeIndex(int nativeIndex) {
+      return values()[nativeIndex];
+    }
+  }
+
   /** Tracks PeerConnectionInterface::TlsCertPolicy */
   public enum TlsCertPolicy {
     TLS_CERT_POLICY_SECURE,
@@ -78,6 +96,10 @@ public class PeerConnection {
 
     /** Triggered when the IceConnectionState changes. */
     @CalledByNative("Observer") void onIceConnectionChange(IceConnectionState newState);
+
+    /** Triggered when the PeerConnectionState changes. */
+    @CalledByNative("Observer")
+    default void onConnectionChange(PeerConnectionState newState) {}
 
     /** Triggered when the ICE connection receiving status changes. */
     @CalledByNative("Observer") void onIceConnectionReceivingChange(boolean receiving);
@@ -462,6 +484,25 @@ public class PeerConnection {
     // every offer/answer negotiation.This is only intended to be a workaround for crbug.com/835958
     public boolean activeResetSrtpParams;
 
+    /*
+     * Experimental flag that enables a use of media transport. If this is true, the media transport
+     * factory MUST be provided to the PeerConnectionFactory.
+     */
+    public boolean useMediaTransport;
+
+    /*
+     * Experimental flag that enables a use of media transport for data channels. If this is true,
+     * the media transport factory MUST be provided to the PeerConnectionFactory.
+     */
+    public boolean useMediaTransportForDataChannels;
+
+    /**
+     * Defines advanced optional cryptographic settings related to SRTP and
+     * frame encryption for native WebRTC. Setting this will overwrite any
+     * options set through the PeerConnectionFactory (which is deprecated).
+     */
+    @Nullable public CryptoOptions cryptoOptions;
+
     // TODO(deadbeef): Instead of duplicating the defaults here, we should do
     // something to pick up the defaults from C++. The Objective-C equivalent
     // of RTCConfiguration does that.
@@ -501,6 +542,9 @@ public class PeerConnection {
       networkPreference = AdapterType.UNKNOWN;
       sdpSemantics = SdpSemantics.PLAN_B;
       activeResetSrtpParams = false;
+      useMediaTransport = false;
+      useMediaTransportForDataChannels = false;
+      cryptoOptions = null;
     }
 
     @CalledByNative("RTCConfiguration")
@@ -698,6 +742,22 @@ public class PeerConnection {
     @CalledByNative("RTCConfiguration")
     boolean getActiveResetSrtpParams() {
       return activeResetSrtpParams;
+    }
+
+    @CalledByNative("RTCConfiguration")
+    boolean getUseMediaTransport() {
+      return useMediaTransport;
+    }
+
+    @CalledByNative("RTCConfiguration")
+    boolean getUseMediaTransportForDataChannels() {
+      return useMediaTransportForDataChannels;
+    }
+
+    @Nullable
+    @CalledByNative("RTCConfiguration")
+    CryptoOptions getCryptoOptions() {
+      return cryptoOptions;
     }
   };
 
@@ -1055,6 +1115,10 @@ public class PeerConnection {
     return nativeIceConnectionState();
   }
 
+  public PeerConnectionState connectionState() {
+    return nativeConnectionState();
+  }
+
   public IceGatheringState iceGatheringState() {
     return nativeIceGatheringState();
   }
@@ -1129,6 +1193,7 @@ public class PeerConnection {
   private native boolean nativeSetBitrate(Integer min, Integer current, Integer max);
   private native SignalingState nativeSignalingState();
   private native IceConnectionState nativeIceConnectionState();
+  private native PeerConnectionState nativeConnectionState();
   private native IceGatheringState nativeIceGatheringState();
   private native void nativeClose();
   private static native long nativeCreatePeerConnectionObserver(Observer observer);

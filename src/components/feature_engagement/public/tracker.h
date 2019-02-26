@@ -22,6 +22,10 @@
 #include "base/android/jni_android.h"
 #endif  // defined(OS_ANDROID)
 
+namespace leveldb_proto {
+class ProtoDatabaseProvider;
+}
+
 namespace feature_engagement {
 
 // A handle for the display lock. While this is unreleased, no in-product help
@@ -71,7 +75,8 @@ class Tracker : public KeyedService {
   // The |bakground_task_runner| will be used for all disk reads and writes.
   static Tracker* Create(
       const base::FilePath& storage_dir,
-      const scoped_refptr<base::SequencedTaskRunner>& background_task_runner);
+      const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
+      leveldb_proto::ProtoDatabaseProvider* db_provider);
 
   // Must be called whenever an event happens.
   virtual void NotifyEvent(const std::string& event) = 0;

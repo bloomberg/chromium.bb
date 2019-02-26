@@ -5,8 +5,10 @@
  * found in the LICENSE file.
  */
 
-#include "bookmaker.h"
 #include "SkOSPath.h"
+
+#include "definition.h"
+#include "textParser.h"
 
 #ifdef CONST
 #undef CONST
@@ -183,11 +185,8 @@ bool Definition::parseOperator(size_t doubleColons, string& result) {
     string className(fName, 0, doubleColons - 2);
     TextParser iParser(fFileName, fStart, fContentStart, fLineCount);
     SkAssertResult(iParser.skipWord("#Method"));
-    iParser.skipExact("SK_API");
     iParser.skipWhiteSpace();
     bool isStatic = iParser.skipExact("static");
-    iParser.skipWhiteSpace();
-    iParser.skipExact("SK_API");
     iParser.skipWhiteSpace();
     bool returnsConst = iParser.skipExact("const");
     if (returnsConst) {
@@ -466,10 +465,9 @@ bool Definition::checkMethod() const {
     }
     bool expectReturn = this->methodHasReturn(name, &methodParser);
     bool foundReturn = false;
-    bool foundException = false;
+    bool foundPopulate = false;
     for (auto& child : fChildren) {
-        foundException |= MarkType::kDeprecated == child->fMarkType
-                || MarkType::kExperimental == child->fMarkType;
+        foundPopulate |= MarkType::kPopulate == child->fMarkType;
         if (MarkType::kReturn != child->fMarkType) {
             if (MarkType::kParam == child->fMarkType) {
                 child->fVisited = false;
@@ -484,7 +482,7 @@ bool Definition::checkMethod() const {
         }
         foundReturn = true;
     }
-    if (expectReturn && !foundReturn && !foundException) {
+    if (expectReturn && !foundReturn && !foundPopulate) {
         return methodParser.reportError<bool>("missing #Return marker");
     }
     const char* paren = methodParser.strnchr('(', methodParser.fEnd);
@@ -518,7 +516,7 @@ bool Definition::checkMethod() const {
             foundParam = true;
 
         }
-        if (!foundParam && !foundException) {
+        if (!foundParam && !foundPopulate) {
             return methodParser.reportError<bool>("no #Param found");
         }
         if (')' == nextEnd[0]) {
@@ -548,12 +546,6 @@ bool Definition::checkMethod() const {
             priorDef = child;
             continue;
         }
-        if (MarkType::kDeprecated == child->fMarkType) {
-            return true;
-        }
-        if (MarkType::kExperimental == child->fMarkType) {
-            return true;
-        }
         if (MarkType::kFormula == child->fMarkType) {
             continue;
         }
@@ -572,9 +564,6 @@ bool Definition::checkMethod() const {
         if (MarkType::kPhraseRef == child->fMarkType) {
             continue;
         }
-        if (MarkType::kPrivate == child->fMarkType) {
-            return true;
-        }
         TextParser emptyCheck(fFileName, descStart, child->fStart, child->fLineCount);
         if (!emptyCheck.eof() && emptyCheck.skipWhiteSpace()) {
             descStart = emptyCheck.fChar;
@@ -587,7 +576,8 @@ bool Definition::checkMethod() const {
         priorDef = nullptr;
     }
     if (!descEnd) {
-        return incomplete ? true : methodParser.reportError<bool>("missing description");
+        return incomplete || foundPopulate ? true :
+                methodParser.reportError<bool>("missing description");
     }
     TextParser description(fFileName, descStart, descEnd, fLineCount);
     // expect first word capitalized and pluralized. expect a trailing period
@@ -651,11 +641,7 @@ const char* Definition::methodEnd() const {
     return tokenEnd;
 }
 
-bool Definition::crossCheckInside(const char* start, const char* end,
-        const Definition& includeToken) const {
-    TextParser def(fFileName, start, end, fLineCount);
-    const char* tokenEnd = includeToken.methodEnd();
-    TextParser inc("", includeToken.fContentStart, tokenEnd, 0);
+bool Definition::SkipImplementationWords(TextParser& inc) {
     if (inc.startsWith("SK_API")) {
         inc.skipWord("SK_API");
     }
@@ -668,7 +654,23 @@ bool Definition::crossCheckInside(const char* start, const char* end,
     if (inc.startsWith("SK_API")) {
         inc.skipWord("SK_API");
     }
-    inc.skipExact("SkDEBUGCODE(");
+    return inc.skipExact("SkDEBUGCODE(");
+}
+
+bool Definition::crossCheckInside(const char* start, const char* end,
+        const Definition& includeToken) const {
+    TextParser def(fFileName, start, end, fLineCount);
+    const char* tokenEnd = includeToken.methodEnd();
+    TextParser inc("", includeToken.fContentStart, tokenEnd, 0);
+    if (inc.startsWith("static")) {
+        def.skipWhiteSpace();
+        if (!def.startsWith("static")) {
+            return false;
+        }
+        inc.skipWord("static");
+        def.skipWord("static");
+    }
+    (void) Definition::SkipImplementationWords(inc);
     do {
         bool defEof;
         bool incEof;
@@ -891,7 +893,7 @@ const Definition* Definition::hasChild(MarkType markType) const {
     return nullptr;
 }
 
-const Definition* Definition::hasParam(string ref) const {
+Definition* Definition::hasParam(string ref) {
     SkASSERT(MarkType::kMethod == fMarkType);
     for (auto iter : fChildren) {
         if (MarkType::kParam != iter->fMarkType) {
@@ -900,7 +902,18 @@ const Definition* Definition::hasParam(string ref) const {
         if (iter->fName == ref) {
             return &*iter;
         }
-
+    }
+    for (auto& iter : fTokens) {
+        if (MarkType::kComment != iter.fMarkType) {
+            continue;
+        }
+        TextParser parser(&iter);
+        if (!parser.skipExact("@param ")) {
+            continue;
+        }
+        if (parser.skipExact(ref.c_str()) && ' ' == parser.peek()) {
+            return &iter;
+        }
     }
     return nullptr;
 }
@@ -915,31 +928,6 @@ bool Definition::hasMatch(string name) const {
         }
     }
     return false;
-}
-
-string Definition::incompleteMessage(DetailsType detailsType) const {
-    SkASSERT(!IncompleteAllowed(fMarkType));
-    auto iter = std::find_if(fChildren.begin(), fChildren.end(),
-            [](const Definition* test) { return IncompleteAllowed(test->fMarkType); });
-    SkASSERT(fChildren.end() != iter);
-    SkASSERT(Details::kNone == (*iter)->fDetails);
-    string message = MarkType::kExperimental == (*iter)->fMarkType ?
-            "Experimental." : "Deprecated.";
-    if (Details::kDoNotUse_Experiment == fDetails) {
-        message += " Do not use.";
-    } else if (Details::kNotReady_Experiment == fDetails) {
-        message += " Not ready for general use.";
-    } else if (Details::kSoonToBe_Deprecated == fDetails) {
-        message = "To be deprecated soon.";
-    } else if (Details::kTestingOnly_Experiment == fDetails) {
-        message += " For testing only.";
-    }
-    if (DetailsType::kPhrase == detailsType) {
-        message = message.substr(0, message.length() - 1);  // remove trailing period
-        std::replace(message.begin(), message.end(), '.', ':');
-        std::transform(message.begin(), message.end(), message.begin(), ::tolower);
-    }
-    return message;
 }
 
 bool Definition::isStructOrClass() const {
@@ -1215,10 +1203,6 @@ bool RootDefinition::dumpUnVisited() {
             // FIXME: bugs requiring long tail fixes, suppressed here:
             // SkBitmap::validate() is wrapped in SkDEBUGCODE in .h and not parsed
             if ("SkBitmap::validate()" == leaf.first) {
-                continue;
-            }
-            // SkPath::pathRefIsValid in #ifdef ; prefer to remove chrome dependency to fix
-            if ("SkPath::pathRefIsValid" == leaf.first) {
                 continue;
             }
             // FIXME: end of long tail bugs

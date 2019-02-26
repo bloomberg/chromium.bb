@@ -99,13 +99,13 @@ HRESULT NotificationActivator::Activate(
       static_cast<int>(NotificationActivatorSecondaryStatus::kSuccess);
 
   // |invoked_args| contains the launch ID string encoded by Chrome. Chrome adds
-  // it to the launch argument of the toast and gets it back via |invoked_args|
-  // here. Chrome needs the data to be able to look up the notification on its
-  // end.
+  // it to the launch argument of the toast and gets it back via |invoked_args|.
+  // Chrome needs the data to be able to look up the notification on its end.
   //
-  // TODO(chengx): When |invoked_args| is null or empty, there is no need to
-  // launch chrome. However, we still launch chrome for now to help investigate
-  // issue 839942.
+  // When the user clicks the Chrome app title rather than the notifications in
+  // the Action Center, an empty launch id string is generated. It is preferable
+  // to launch Chrome with this empty launch id in this scenario, which results
+  // in displaying a NTP.
   if (invoked_args == nullptr || invoked_args[0] == 0) {
     secondary_status |=
         static_cast<int>(NotificationActivatorSecondaryStatus::kLaunchIdEmpty);

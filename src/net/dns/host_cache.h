@@ -12,17 +12,26 @@
 #include <memory>
 #include <string>
 #include <tuple>
+#include <utility>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/logging.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "net/base/address_family.h"
 #include "net/base/address_list.h"
 #include "net/base/expiring_cache.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/net_export.h"
 #include "net/dns/dns_util.h"
 #include "net/dns/host_resolver_source.h"
+#include "net/dns/public/dns_query_type.h"
+#include "net/log/net_log_capture_mode.h"
+#include "net/log/net_log_parameters_callback.h"
 
 namespace base {
 class ListValue;
@@ -34,34 +43,29 @@ namespace net {
 // Cache used by HostResolver to map hostnames to their resolved result.
 class NET_EXPORT HostCache {
  public:
-  struct Key {
+  struct NET_EXPORT Key {
+    Key(const std::string& hostname,
+        DnsQueryType dns_query_type,
+        HostResolverFlags host_resolver_flags,
+        HostResolverSource host_resolver_source);
     Key(const std::string& hostname,
         AddressFamily address_family,
-        HostResolverFlags host_resolver_flags,
-        HostResolverSource host_resolver_source = HostResolverSource::ANY)
-        : hostname(hostname),
-          address_family(address_family),
-          host_resolver_flags(host_resolver_flags),
-          host_resolver_source(host_resolver_source) {}
-
-    Key()
-        : address_family(ADDRESS_FAMILY_UNSPECIFIED),
-          host_resolver_flags(0),
-          host_resolver_source(HostResolverSource::ANY) {}
+        HostResolverFlags host_resolver_flags);
+    Key();
 
     bool operator<(const Key& other) const {
       // The order of comparisons of |Key| fields is arbitrary, thus
-      // |address_family| and |host_resolver_flags| are compared before
+      // |dns_query_type| and |host_resolver_flags| are compared before
       // |hostname| under assumption that integer comparisons are faster than
       // string comparisons.
-      return std::tie(address_family, host_resolver_flags, hostname,
+      return std::tie(dns_query_type, host_resolver_flags, hostname,
                       host_resolver_source) <
-             std::tie(other.address_family, other.host_resolver_flags,
+             std::tie(other.dns_query_type, other.host_resolver_flags,
                       other.hostname, other.host_resolver_source);
     }
 
     std::string hostname;
-    AddressFamily address_family;
+    DnsQueryType dns_query_type;
     HostResolverFlags host_resolver_flags;
     HostResolverSource host_resolver_source;
   };
@@ -93,25 +97,73 @@ class NET_EXPORT HostCache {
       SOURCE_HOSTS,
     };
 
-    Entry(int error,
-          const AddressList& addresses,
-          Source source,
-          base::TimeDelta ttl);
+    template <typename T>
+    Entry(int error, T&& results, Source source, base::TimeDelta ttl)
+        : error_(error), source_(source), ttl_(ttl) {
+      DCHECK(ttl >= base::TimeDelta());
+      SetResult(std::forward<T>(results));
+    }
+
     // Use when |ttl| is unknown.
-    Entry(int error, const AddressList& addresses, Source source);
+    template <typename T>
+    Entry(int error, T&& results, Source source)
+        : error_(error),
+          source_(source),
+          ttl_(base::TimeDelta::FromSeconds(-1)) {
+      SetResult(std::forward<T>(results));
+    }
+
+    // For errors with no |results|.
+    Entry(int error, Source source, base::TimeDelta ttl);
+    Entry(int error, Source source);
+
+    Entry(const Entry& entry);
     Entry(Entry&& entry);
     ~Entry();
 
+    Entry& operator=(const Entry& entry);
+    Entry& operator=(Entry&& entry);
+
     int error() const { return error_; }
-    const AddressList& addresses() const { return addresses_; }
+    void set_error(int error) { error_ = error; }
+    const base::Optional<AddressList>& addresses() const { return addresses_; }
+    void set_addresses(const base::Optional<AddressList>& addresses) {
+      addresses_ = addresses;
+    }
+    const base::Optional<std::vector<std::string>>& text_records() const {
+      return text_records_;
+    }
+    void set_text_records(
+        base::Optional<std::vector<std::string>> text_records) {
+      text_records_ = std::move(text_records);
+    }
+    const base::Optional<std::vector<HostPortPair>>& hostnames() const {
+      return hostnames_;
+    }
+    void set_hostnames(base::Optional<std::vector<HostPortPair>> hostnames) {
+      hostnames_ = std::move(hostnames);
+    }
     Source source() const { return source_; }
     bool has_ttl() const { return ttl_ >= base::TimeDelta(); }
     base::TimeDelta ttl() const { return ttl_; }
+    base::Optional<base::TimeDelta> GetOptionalTtl() const;
+    void set_ttl(base::TimeDelta ttl) { ttl_ = ttl; }
 
     base::TimeTicks expires() const { return expires_; }
 
     // Public for the net-internals UI.
     int network_changes() const { return network_changes_; }
+
+    // Merge |front| and |back|, representing results from multiple
+    // transactions for the same overal host resolution query. On merging result
+    // lists, result elements from |front| will be merged in front of elements
+    // from |back|. Fields that cannot be merged take precedence from |front|.
+    static Entry MergeEntries(Entry front, Entry back);
+
+    // Creates a callback for use with the NetLog that returns a Value
+    // representation of the entry.  The callback must be destroyed before
+    // |this| is.
+    NetLogParametersCallback CreateNetLogCallback() const;
 
    private:
     friend class HostCache;
@@ -122,10 +174,20 @@ class NET_EXPORT HostCache {
           int network_changes);
 
     Entry(int error,
-          const AddressList& addresses,
+          const base::Optional<AddressList>& addresses,
+          base::Optional<std::vector<std::string>>&& text_results,
+          base::Optional<std::vector<HostPortPair>>&& hostnames,
           Source source,
           base::TimeTicks expires,
           int network_changes);
+
+    void SetResult(AddressList addresses) { addresses_ = std::move(addresses); }
+    void SetResult(std::vector<std::string> text_records) {
+      text_records_ = std::move(text_records);
+    }
+    void SetResult(std::vector<HostPortPair> hostnames) {
+      hostnames_ = std::move(hostnames);
+    }
 
     int total_hits() const { return total_hits_; }
     int stale_hits() const { return stale_hits_; }
@@ -136,10 +198,16 @@ class NET_EXPORT HostCache {
                       int network_changes,
                       EntryStaleness* out) const;
 
+    std::unique_ptr<base::Value> NetLogCallback(
+        NetLogCaptureMode capture_mode) const;
+    base::DictionaryValue GetAsValue(bool include_staleness) const;
+
     // The resolve results for this entry.
     int error_;
-    AddressList addresses_;
-    // Where addresses_ were obtained (e.g. DNS lookup, hosts file, etc).
+    base::Optional<AddressList> addresses_;
+    base::Optional<std::vector<std::string>> text_records_;
+    base::Optional<std::vector<HostPortPair>> hostnames_;
+    // Where results were obtained (e.g. DNS lookup, hosts file, etc).
     Source source_;
     // TTL obtained from the nameserver. Negative if unknown.
     base::TimeDelta ttl_;
@@ -246,19 +314,6 @@ class NET_EXPORT HostCache {
   enum EraseReason : int;
 
   Entry* LookupInternal(const Key& key);
-
-  void RecordSet(SetOutcome outcome,
-                 base::TimeTicks now,
-                 const Entry* old_entry,
-                 const Entry& new_entry,
-                 AddressListDeltaType delta);
-  void RecordUpdateStale(AddressListDeltaType delta,
-                         const EntryStaleness& stale);
-  void RecordLookup(LookupOutcome outcome,
-                    base::TimeTicks now,
-                    const Entry* entry);
-  void RecordErase(EraseReason reason, base::TimeTicks now, const Entry& entry);
-  void RecordEraseAll(EraseReason reason, base::TimeTicks now);
 
   // Returns true if this HostCache can contain no entries.
   bool caching_is_disabled() const { return max_entries_ == 0; }

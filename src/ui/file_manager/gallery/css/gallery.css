@@ -531,8 +531,8 @@ html[dir='rtl'] .gallery .toolbar .bubble {
   width: 100%;
 }
 
-.gallery .edit-mode-toolbar .options > *,
-.gallery .edit-mode-toolbar .exit-button-spacer > * {
+.gallery .edit-mode-toolbar .options > :not([disabled]),
+.gallery .edit-mode-toolbar .exit-button-spacer > :not([disabled]) {
   pointer-events: auto;
 }
 

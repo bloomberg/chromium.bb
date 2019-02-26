@@ -17,6 +17,16 @@ namespace {
 
 class NGAbsoluteUtilsTest : public testing::Test {
  protected:
+  NGConstraintSpace CreateConstraintSpace(TextDirection direction,
+                                          WritingMode out_writing_mode) {
+    NGConstraintSpaceBuilder builder(
+        WritingMode::kHorizontalTb, out_writing_mode,
+        /* is_new_fc */ true);
+    builder.SetAvailableSize(container_size_);
+    builder.SetTextDirection(direction);
+    return builder.ToConstraintSpace();
+  }
+
   void SetUp() override {
     style_ = ComputedStyle::Create();
     // If not set, border widths will always be 0.
@@ -26,19 +36,15 @@ class NGAbsoluteUtilsTest : public testing::Test {
     style_->SetBorderBottomStyle(EBorderStyle::kSolid);
     style_->SetBoxSizing(EBoxSizing::kBorderBox);
     container_size_ = NGLogicalSize(LayoutUnit(200), LayoutUnit(300));
-    NGConstraintSpaceBuilder builder(
-        WritingMode::kHorizontalTb,
-        /* icb_size */ container_size_.ConvertToPhysical(
-            WritingMode::kHorizontalTb));
-    builder.SetAvailableSize(container_size_);
-    ltr_space_ = builder.SetTextDirection(TextDirection::kLtr)
-                     .ToConstraintSpace(WritingMode::kHorizontalTb);
-    rtl_space_ = builder.SetTextDirection(TextDirection::kRtl)
-                     .ToConstraintSpace(WritingMode::kHorizontalTb);
-    vertical_lr_space_ = builder.SetTextDirection(TextDirection::kLtr)
-                             .ToConstraintSpace(WritingMode::kVerticalLr);
-    vertical_rl_space_ = builder.SetTextDirection(TextDirection::kLtr)
-                             .ToConstraintSpace(WritingMode::kVerticalRl);
+
+    ltr_space_ =
+        CreateConstraintSpace(TextDirection::kLtr, WritingMode::kHorizontalTb);
+    rtl_space_ =
+        CreateConstraintSpace(TextDirection::kRtl, WritingMode::kHorizontalTb);
+    vertical_lr_space_ =
+        CreateConstraintSpace(TextDirection::kLtr, WritingMode::kVerticalLr);
+    vertical_rl_space_ =
+        CreateConstraintSpace(TextDirection::kLtr, WritingMode::kVerticalRl);
   }
 
   void SetHorizontalStyle(

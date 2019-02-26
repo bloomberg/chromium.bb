@@ -499,6 +499,30 @@ Optimizer::PassToken CreateCommonUniformElimPass();
 // eliminated with standard dead code elimination.
 Optimizer::PassToken CreateAggressiveDCEPass();
 
+// Create line propagation pass
+// This pass propagates line information based on the rules for OpLine and
+// OpNoline and clones an appropriate line instruction into every instruction
+// which does not already have debug line instructions.
+//
+// This pass is intended to maximize preservation of source line information
+// through passes which delete, move and clone instructions. Ideally it should
+// be run before any such pass. It is a bookend pass with EliminateDeadLines
+// which can be used to remove redundant line instructions at the end of a
+// run of such passes and reduce final output file size.
+Optimizer::PassToken CreatePropagateLineInfoPass();
+
+// Create dead line elimination pass
+// This pass eliminates redundant line instructions based on the rules for
+// OpLine and OpNoline. Its main purpose is to reduce the size of the file
+// need to store the SPIR-V without losing line information.
+//
+// This is a bookend pass with PropagateLines which attaches line instructions
+// to every instruction to preserve line information during passes which
+// delete, move and clone instructions. DeadLineElim should be run after
+// PropagateLines and all such subsequent passes. Normally it would be one
+// of the last passes to be run.
+Optimizer::PassToken CreateRedundantLineInfoElimPass();
+
 // Creates a compact ids pass.
 // The pass remaps result ids to a compact and gapless range starting from %1.
 Optimizer::PassToken CreateCompactIdsPass();
@@ -656,6 +680,32 @@ Optimizer::PassToken CreateReduceLoadSizePass();
 // This pass looks for access chains fed by other access chains and combines
 // them into a single instruction where possible.
 Optimizer::PassToken CreateCombineAccessChainsPass();
+
+// Create a pass to instrument bindless descriptor checking
+// This pass instruments all bindless references to check that descriptor
+// array indices are inbounds. If the reference is invalid, a record is
+// written to the debug output buffer (if space allows) and a null value is
+// returned. This pass is designed to support bindless validation in the Vulkan
+// validation layers.
+//
+// Dead code elimination should be run after this pass as the original,
+// potentially invalid code is not removed and could cause undefined behavior,
+// including crashes. It may also be beneficial to run Simplification
+// (ie Constant Propagation), DeadBranchElim and BlockMerge after this pass to
+// optimize instrument code involving the testing of compile-time constants.
+// It is also generally recommended that this pass (and all
+// instrumentation passes) be run after any legalization and optimization
+// passes. This will give better analysis for the instrumentation and avoid
+// potentially de-optimizing the instrument code, for example, inlining
+// the debug record output function throughout the module.
+//
+// The instrumentation will read and write buffers in debug
+// descriptor set |desc_set|. It will write |shader_id| in each output record
+// to identify the shader module which generated the record.
+//
+// TODO(greg-lunarg): Add support for vk_ext_descriptor_indexing.
+Optimizer::PassToken CreateInstBindlessCheckPass(uint32_t desc_set,
+                                                 uint32_t shader_id);
 
 }  // namespace spvtools
 

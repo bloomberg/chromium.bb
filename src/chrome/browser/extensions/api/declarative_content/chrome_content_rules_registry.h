@@ -159,8 +159,8 @@ class ChromeContentRulesRegistry
       const Extension* extension) const;
 
   using ExtensionIdRuleIdPair = std::pair<extensions::ExtensionId, std::string>;
-  using RulesMap = std::map<ExtensionIdRuleIdPair,
-                            linked_ptr<const ContentRule>>;
+  using RulesMap =
+      std::map<ExtensionIdRuleIdPair, std::unique_ptr<const ContentRule>>;
 
   RulesMap content_rules_;
 

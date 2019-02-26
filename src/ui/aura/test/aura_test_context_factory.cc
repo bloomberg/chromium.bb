@@ -29,9 +29,8 @@ class FrameSinkClient : public viz::TestLayerTreeFrameSinkClient {
       const viz::LocalSurfaceId& local_surface_id) override {}
   void DisplayReceivedCompositorFrame(
       const viz::CompositorFrame& frame) override {}
-  void DisplayWillDrawAndSwap(
-      bool will_draw_and_swap,
-      const viz::RenderPassList& render_passes) override {}
+  void DisplayWillDrawAndSwap(bool will_draw_and_swap,
+                              viz::RenderPassList* render_passes) override {}
   void DisplayDidDrawAndSwap() override {}
 
  private:
@@ -54,7 +53,7 @@ void AuraTestContextFactory::CreateLayerTreeFrameSink(
       std::make_unique<FrameSinkClient>(context_provider);
   constexpr bool synchronous_composite = false;
   constexpr bool disable_display_vsync = false;
-  const double refresh_rate = GetRefreshRate();
+  const double refresh_rate = 200.0;
   auto frame_sink = std::make_unique<viz::TestLayerTreeFrameSink>(
       context_provider, viz::TestContextProvider::CreateWorker(),
       GetGpuMemoryBufferManager(), renderer_settings(),

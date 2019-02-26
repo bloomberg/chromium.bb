@@ -65,7 +65,7 @@ class CORE_EXPORT SpaceSplitString {
   const AtomicString& operator[](wtf_size_t i) const { return (*data_)[i]; }
 
  private:
-  class Data : public RefCounted<Data> {
+  class CORE_EXPORT Data : public RefCounted<Data> {
    public:
     static scoped_refptr<Data> Create(const AtomicString&);
     static scoped_refptr<Data> CreateUnique(const Data&);

@@ -212,6 +212,12 @@ void SimulateMouseWheelCtrlZoomEvent(WebContents* web_contents,
                                      const gfx::Point& point,
                                      bool zoom_in,
                                      blink::WebMouseWheelEvent::Phase phase);
+
+void SimulateTouchscreenPinch(WebContents* web_contents,
+                              const gfx::PointF& anchor,
+                              float scale_change,
+                              base::OnceClosure on_complete);
+
 #endif  // !defined(OS_MACOSX)
 
 // Sends a GesturePinch Begin/Update/End sequence.
@@ -879,6 +885,10 @@ void CancelKeyboardLock(WebContents* web_contents);
 // WebContents.
 bool IsInnerInterstitialPageConnected(InterstitialPage* interstitial_page);
 
+// Returns the screen orientation provider that's been set via
+// WebContents::SetScreenOrientationDelegate(). May return null.
+ScreenOrientationDelegate* GetScreenOrientationDelegate();
+
 // Returns all the RenderWidgetHostViews inside the |web_contents| that are
 // registered in the RenderWidgetHostInputEventRouter.
 std::vector<RenderWidgetHostView*> GetInputEventRouterRenderWidgetHostViews(
@@ -1106,6 +1116,16 @@ class RenderFrameSubmissionObserver
   // Blocks the browser ui thread until the next
   // OnRenderFrameMetadataChangedAfterActivation.
   void WaitForMetadataChange();
+
+  // Blocks the browser ui thread until RenderFrameMetadata arrives with
+  // page scale factor matching |expected_page_scale_factor|.
+  void WaitForPageScaleFactor(float expected_page_scale_factor,
+                              const float tolerance);
+
+  // Blocks the browser ui thread until RenderFrameMetadata arrives with
+  // external page scale factor matching |expected_external_page_scale_factor|.
+  void WaitForExternalPageScaleFactor(float expected_external_page_scale_factor,
+                                      const float tolerance);
 
   // Blocks the browser ui thread until RenderFrameMetadata arrives where its
   // scroll offset matches |expected_offset|.
@@ -1575,14 +1595,12 @@ class SynchronizeVisualPropertiesMessageFilter
 
  private:
   void OnSynchronizeFrameHostVisualProperties(
-      const viz::SurfaceId& surface_id,
+      const viz::FrameSinkId& frame_sink_id,
       const FrameVisualProperties& visual_properties);
   void OnSynchronizeBrowserPluginVisualProperties(
       int browser_plugin_guest_instance_id,
-      viz::LocalSurfaceId surface_id,
       FrameVisualProperties visual_properties);
   void OnSynchronizeVisualProperties(
-      const viz::LocalSurfaceId& surface_id,
       const viz::FrameSinkId& frame_sink_id,
       const FrameVisualProperties& visual_properties);
   // |rect| is in DIPs.

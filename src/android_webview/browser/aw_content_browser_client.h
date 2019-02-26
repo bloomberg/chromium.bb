@@ -17,18 +17,12 @@
 #include "content/public/browser/content_browser_client.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
-class PrefService;
-
 namespace content {
 class RenderFrameHost;
 }
 
 namespace net {
 class NetLog;
-}
-
-namespace policy {
-class BrowserPolicyConnectorBase;
 }
 
 namespace safe_browsing {
@@ -38,6 +32,7 @@ class UrlCheckerDelegate;
 namespace android_webview {
 
 class AwBrowserContext;
+class AwFeatureListCreator;
 
 class AwContentBrowserClient : public content::ContentBrowserClient {
  public:
@@ -47,14 +42,19 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   // Deprecated: use AwBrowserContext::GetDefault() instead.
   static AwBrowserContext* GetAwBrowserContext();
 
-  AwContentBrowserClient();
+  // |aw_feature_list_creator| should not be null.
+  explicit AwContentBrowserClient(
+      AwFeatureListCreator* aw_feature_list_creator);
   ~AwContentBrowserClient() override;
 
   // Allows AwBrowserMainParts to initialize a BrowserContext at the right
   // moment during startup. AwContentBrowserClient owns the result.
-  AwBrowserContext* InitBrowserContext(
-      std::unique_ptr<PrefService> pref_service,
-      std::unique_ptr<policy::BrowserPolicyConnectorBase> policy_connector);
+  AwBrowserContext* InitBrowserContext();
+
+  network::mojom::NetworkContextPtr CreateNetworkContext(
+      content::BrowserContext* context,
+      bool in_memory,
+      const base::FilePath& relative_partition_path) override;
 
   content::BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) override;
@@ -93,7 +93,6 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       base::Callback<void(bool)> callback) override;
   bool AllowWorkerIndexedDB(
       const GURL& url,
-      const base::string16& name,
       content::ResourceContext* context,
       const std::vector<content::GlobalFrameRoutingId>& render_frames) override;
   content::QuotaPermissionContext* CreateQuotaPermissionContext() override;
@@ -101,6 +100,8 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       content::BrowserContext* context,
       content::StoragePartition* partition,
       storage::OptionalQuotaSettingsCallback callback) override;
+  content::GeneratedCodeCacheSettings GetGeneratedCodeCacheSettings(
+      content::BrowserContext* context) override;
   void AllowCertificateError(
       content::WebContents* web_contents,
       int cert_error,
@@ -199,17 +200,28 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       content::NavigationUIData* navigation_data,
       bool is_main_frame,
       ui::PageTransition page_transition,
-      bool has_user_gesture) override;
+      bool has_user_gesture,
+      const std::string& method,
+      const net::HttpRequestHeaders& headers) override;
   void RegisterOutOfProcessServices(OutOfProcessServiceMap* services) override;
   bool ShouldIsolateErrorPage(bool in_main_frame) override;
   bool ShouldEnableStrictSiteIsolation() override;
   bool WillCreateURLLoaderFactory(
       content::BrowserContext* browser_context,
       content::RenderFrameHost* frame,
+      int render_process_id,
       bool is_navigation,
       const url::Origin& request_initiator,
       network::mojom::URLLoaderFactoryRequest* factory_request,
+      network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
       bool* bypass_redirect_checks) override;
+
+  AwFeatureListCreator* aw_feature_list_creator() {
+    return aw_feature_list_creator_;
+  }
+
+  content::SpeechRecognitionManagerDelegate*
+  CreateSpeechRecognitionManagerDelegate() override;
 
   static void DisableCreatingTaskScheduler();
 
@@ -229,6 +241,9 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       safe_browsing_url_checker_delegate_;
 
   bool sniff_file_urls_;
+
+  // The AwFeatureListCreator is owned by AwMainDelegate.
+  AwFeatureListCreator* const aw_feature_list_creator_;
 
   DISALLOW_COPY_AND_ASSIGN(AwContentBrowserClient);
 };

@@ -9,7 +9,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.chromium.content_shell_apk">
 
-    <uses-sdk android:minSdkVersion="16" android:targetSdkVersion="23" />
+    <uses-sdk android:minSdkVersion="19" android:targetSdkVersion="23" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.CAMERA"/>
@@ -56,7 +56,7 @@
                  android:exported="false" />
         {% endfor %}
 
-        {% set num_privileged_services = 3 %}
+        {% set num_privileged_services = 5 %}
         <meta-data android:name="org.chromium.content.browser.NUM_PRIVILEGED_SERVICES"
                    android:value="{{ num_privileged_services }}"/>
         {% for i in range(num_privileged_services) %}

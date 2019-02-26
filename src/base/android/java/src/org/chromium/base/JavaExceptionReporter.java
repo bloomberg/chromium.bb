@@ -51,7 +51,7 @@ public class JavaExceptionReporter implements Thread.UncaughtExceptionHandler {
     @UiThread
     public static void reportStackTrace(String stackTrace) {
         assert ThreadUtils.runningOnUiThread();
-        nativeReportJavaStackTrace(stackTrace);
+        nativeReportJavaStackTrace(PiiElider.sanitizeStacktrace(stackTrace));
     }
 
     @CalledByNative

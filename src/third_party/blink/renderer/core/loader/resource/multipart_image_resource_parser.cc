@@ -23,7 +23,8 @@ MultipartImageResourceParser::MultipartImageResourceParser(
     boundary_.push_front("--", 2);
 }
 
-void MultipartImageResourceParser::AppendData(const char* bytes, size_t size) {
+void MultipartImageResourceParser::AppendData(const char* bytes,
+                                              wtf_size_t size) {
   DCHECK(!IsCancelled());
   // m_sawLastBoundary means that we've already received the final boundary
   // token. The server should stop sending us data at this point, but if it
@@ -34,7 +35,7 @@ void MultipartImageResourceParser::AppendData(const char* bytes, size_t size) {
 
   if (is_parsing_top_) {
     // Eat leading \r\n
-    size_t pos = SkippableLength(data_, 0);
+    wtf_size_t pos = SkippableLength(data_, 0);
     // +2 for "--"
     if (data_.size() < boundary_.size() + 2 + pos) {
       // We don't have enough data yet to make a boundary token.  Just wait
@@ -65,11 +66,11 @@ void MultipartImageResourceParser::AppendData(const char* bytes, size_t size) {
       return;
   }
 
-  size_t boundary_position;
+  wtf_size_t boundary_position;
   while ((boundary_position = FindBoundary(data_, &boundary_)) != kNotFound) {
     // Strip out trailing \r\n characters in the buffer preceding the boundary
     // on the same lines as does Firefox.
-    size_t data_size = boundary_position;
+    wtf_size_t data_size = boundary_position;
     if (boundary_position > 0 && data_[boundary_position - 1] == '\n') {
       data_size--;
       if (boundary_position > 1 && data_[boundary_position - 2] == '\r') {
@@ -81,7 +82,7 @@ void MultipartImageResourceParser::AppendData(const char* bytes, size_t size) {
       if (IsCancelled())
         return;
     }
-    size_t boundary_end_position = boundary_position + boundary_.size();
+    wtf_size_t boundary_end_position = boundary_position + boundary_.size();
     if (boundary_end_position < data_.size() &&
         '-' == data_[boundary_end_position]) {
       // This was the last boundary so we can stop processing.
@@ -106,7 +107,7 @@ void MultipartImageResourceParser::AppendData(const char* bytes, size_t size) {
   // buffered to handle a boundary that may have been truncated. "+2" for CRLF,
   // as we may ignore the last CRLF.
   if (!is_parsing_headers_ && data_.size() > boundary_.size() + 2) {
-    size_t send_length = data_.size() - boundary_.size() - 2;
+    wtf_size_t send_length = data_.size() - boundary_.size() - 2;
     client_->MultipartDataReceived(data_.data(), send_length);
     data_.EraseAt(0, send_length);
   }
@@ -124,8 +125,9 @@ void MultipartImageResourceParser::Finish() {
   saw_last_boundary_ = true;
 }
 
-size_t MultipartImageResourceParser::SkippableLength(const Vector<char>& data,
-                                                     size_t pos) {
+wtf_size_t MultipartImageResourceParser::SkippableLength(
+    const Vector<char>& data,
+    wtf_size_t pos) {
   if (data.size() >= pos + 2 && data[pos] == '\r' && data[pos + 1] == '\n')
     return 2;
   if (data.size() >= pos + 1 && data[pos] == '\n')
@@ -135,7 +137,7 @@ size_t MultipartImageResourceParser::SkippableLength(const Vector<char>& data,
 
 bool MultipartImageResourceParser::ParseHeaders() {
   // Eat leading \r\n
-  size_t pos = SkippableLength(data_, 0);
+  wtf_size_t pos = SkippableLength(data_, 0);
 
   // Create a ResourceResponse based on the original set of headers + the
   // replacement headers. We only replace the same few headers that gecko does.
@@ -147,7 +149,7 @@ bool MultipartImageResourceParser::ParseHeaders() {
   for (const auto& header : original_response_.HttpHeaderFields())
     response.AddHTTPHeaderField(header.key, header.value);
 
-  size_t end = 0;
+  wtf_size_t end = 0;
   if (!ParseMultipartHeadersFromBody(data_.data() + pos, data_.size() - pos,
                                      &response, &end))
     return false;
@@ -159,14 +161,14 @@ bool MultipartImageResourceParser::ParseHeaders() {
 
 // Boundaries are supposed to be preceeded with --, but it looks like gecko
 // doesn't require the dashes to exist.  See nsMultiMixedConv::FindToken.
-size_t MultipartImageResourceParser::FindBoundary(const Vector<char>& data,
-                                                  Vector<char>* boundary) {
+wtf_size_t MultipartImageResourceParser::FindBoundary(const Vector<char>& data,
+                                                      Vector<char>* boundary) {
   auto* it = std::search(data.data(), data.data() + data.size(),
                          boundary->data(), boundary->data() + boundary->size());
   if (it == data.data() + data.size())
     return kNotFound;
 
-  size_t boundary_position = it - data.data();
+  wtf_size_t boundary_position = static_cast<wtf_size_t>(it - data.data());
   // Back up over -- for backwards compat
   // TODO(tc): Don't we only want to do this once?  Gecko code doesn't seem to
   // care.

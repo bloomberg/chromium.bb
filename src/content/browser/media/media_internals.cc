@@ -38,8 +38,6 @@
 #include "media/filters/gpu_video_decoder.h"
 #include "media/webrtc/webrtc_switches.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/media_session/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/sandbox/features.h"
 
 #if !defined(OS_ANDROID)
@@ -124,10 +122,6 @@ bool IsIncognito(int render_process_id) {
 
 const char kAudioLogStatusKey[] = "status";
 const char kAudioLogUpdateFunction[] = "media.updateAudioComponent";
-
-const char kAudioFocusFunction[] = "media.onReceiveAudioFocusState";
-const char kAudioFocusIdKey[] = "id";
-const char kAudioFocusSessionsKey[] = "sessions";
 
 }  // namespace
 
@@ -290,7 +284,7 @@ void MediaInternals::AudioLogImpl::SendWebContentsTitleHelper(
     return;
   }
 
-  const WebContents* web_contents = WebContents::FromRenderFrameHost(
+  WebContents* web_contents = WebContents::FromRenderFrameHost(
       RenderFrameHost::FromID(render_process_id, render_frame_id));
   if (!web_contents)
     return;
@@ -667,8 +661,7 @@ void MediaInternals::AddUpdateCallback(const UpdateCallback& callback) {
 
   base::AutoLock auto_lock(lock_);
   can_update_ = true;
-
-  RegisterAudioFocusObserver();
+  audio_focus_helper_.SetEnabled(true);
 }
 
 void MediaInternals::RemoveUpdateCallback(const UpdateCallback& callback) {
@@ -682,9 +675,7 @@ void MediaInternals::RemoveUpdateCallback(const UpdateCallback& callback) {
 
   base::AutoLock auto_lock(lock_);
   can_update_ = !update_callbacks_.empty();
-
-  if (!can_update_)
-    UnregisterAudioFocusObserver();
+  audio_focus_helper_.SetEnabled(can_update_);
 }
 
 bool MediaInternals::CanUpdate() {
@@ -747,20 +738,7 @@ void MediaInternals::SendVideoCaptureDeviceCapabilities() {
 }
 
 void MediaInternals::SendAudioFocusState() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!CanUpdate())
-    return;
-
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(media_session::mojom::kServiceName, &audio_focus_ptr_);
-
-  if (!audio_focus_ptr_.is_bound())
-    return;
-
-  // Get the audio focus state from the media session service.
-  audio_focus_ptr_->GetFocusRequests(base::BindOnce(
-      &MediaInternals::DidGetAudioFocusRequestList, base::Unretained(this)));
+  audio_focus_helper_.SendAudioFocusState();
 }
 
 void MediaInternals::UpdateVideoCaptureDeviceCapabilities(
@@ -841,95 +819,6 @@ MediaInternals::CreateAudioLogImpl(
 
 void MediaInternals::OnProcessTerminatedForTesting(int process_id) {
   uma_handler_->OnProcessTerminated(process_id);
-}
-
-void MediaInternals::OnFocusGained(
-    media_session::mojom::MediaSessionInfoPtr media_session,
-    media_session::mojom::AudioFocusType type) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(&MediaInternals::SendAudioFocusState,
-                                          base::Unretained(this)));
-}
-
-void MediaInternals::OnFocusLost(
-    media_session::mojom::MediaSessionInfoPtr media_session) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(&MediaInternals::SendAudioFocusState,
-                                          base::Unretained(this)));
-}
-
-void MediaInternals::DidGetAudioFocusRequestList(
-    std::vector<media_session::mojom::AudioFocusRequestStatePtr> stack) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  if (!CanUpdate())
-    return;
-
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(media_session::mojom::kServiceName,
-                      &audio_focus_debug_ptr_);
-
-  if (!audio_focus_debug_ptr_.is_bound())
-    return;
-
-  audio_focus_data_.Clear();
-
-  // We should go backwards through the stack so the top of the stack is
-  // always shown first in the list.
-  base::ListValue stack_data;
-  for (const auto& session : base::Reversed(stack)) {
-    if (!session->request_id.has_value())
-      continue;
-
-    std::string id_string = session->request_id.value().ToString();
-    base::DictionaryValue media_session_data;
-    media_session_data.SetKey(kAudioFocusIdKey, base::Value(id_string));
-    stack_data.GetList().push_back(std::move(media_session_data));
-
-    audio_focus_debug_ptr_->GetDebugInfoForRequest(
-        session->request_id.value(),
-        base::BindOnce(&MediaInternals::DidGetAudioFocusDebugInfo,
-                       base::Unretained(this), id_string));
-  }
-
-  audio_focus_data_.SetKey(kAudioFocusSessionsKey, std::move(stack_data));
-
-  if (stack.empty())
-    SendUpdate(SerializeUpdate(kAudioFocusFunction, &audio_focus_data_));
-}
-
-void MediaInternals::DidGetAudioFocusDebugInfo(
-    const std::string& id,
-    media_session::mojom::MediaSessionDebugInfoPtr info) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  if (!CanUpdate())
-    return;
-
-  base::Value* sessions_list =
-      audio_focus_data_.FindKey(kAudioFocusSessionsKey);
-  DCHECK(sessions_list);
-
-  bool updated = false;
-  for (auto& session : sessions_list->GetList()) {
-    if (session.FindKey(kAudioFocusIdKey)->GetString() != id)
-      continue;
-
-    session.SetKey("name", base::Value(info->name));
-    session.SetKey("owner", base::Value(info->owner));
-    session.SetKey("state", base::Value(info->state));
-    updated = true;
-  }
-
-  if (!updated)
-    return;
-
-  SendUpdate(SerializeUpdate(kAudioFocusFunction, &audio_focus_data_));
 }
 
 void MediaInternals::SendUpdate(const base::string16& update) {

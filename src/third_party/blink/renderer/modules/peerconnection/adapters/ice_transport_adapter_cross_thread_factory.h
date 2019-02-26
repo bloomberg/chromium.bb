@@ -9,6 +9,8 @@
 
 namespace blink {
 
+class LocalFrame;
+
 // This class creates a single concrete instance of an IceTransportAdapter with
 // a hook to allow creating dependencies on the main thread (the
 // IceTransportAdapter is created on the worker thread).
@@ -19,7 +21,7 @@ class IceTransportAdapterCrossThreadFactory {
   virtual ~IceTransportAdapterCrossThreadFactory() = default;
 
   // Construct any dependencies on the main thread. Can only be called once.
-  virtual void InitializeOnMainThread() = 0;
+  virtual void InitializeOnMainThread(LocalFrame&) = 0;
 
   // Construct the IceTransportAdapter instance with the given delegate. Can
   // only be called once.

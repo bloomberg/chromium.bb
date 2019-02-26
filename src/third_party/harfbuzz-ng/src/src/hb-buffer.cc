@@ -33,13 +33,14 @@
 
 /**
  * SECTION: hb-buffer
- * @title: Buffers
+ * @title: hb-buffer
  * @short_description: Input and output buffers
  * @include: hb.h
  *
  * Buffers serve dual role in HarfBuzz; they hold the input characters that are
- * passed hb_shape(), and after shaping they hold the output glyphs.
+ * passed to hb_shape(), and after shaping they hold the output glyphs.
  **/
+
 
 /**
  * hb_segment_properties_equal:
@@ -182,7 +183,11 @@ hb_buffer_t::shift_forward (unsigned int count)
   if (idx + count > len)
   {
     /* Under memory failure we might expose this area.  At least
-     * clean it up.  Oh well... */
+     * clean it up.  Oh well...
+     *
+     * Ideally, we should at least set Default_Ignorable bits on
+     * these, as well as consistent cluster values.  But the former
+     * is layering violation... */
     memset (info + len, 0, (idx + count - len) * sizeof (info[0]));
   }
   len += count;
@@ -212,13 +217,14 @@ hb_buffer_t::get_scratch_buffer (unsigned int *size)
 void
 hb_buffer_t::reset (void)
 {
-  if (unlikely (hb_object_is_inert (this)))
+  if (unlikely (hb_object_is_immutable (this)))
     return;
 
   hb_unicode_funcs_destroy (unicode);
   unicode = hb_unicode_funcs_reference (hb_unicode_funcs_get_default ());
   flags = HB_BUFFER_FLAG_DEFAULT;
   replacement = HB_BUFFER_REPLACEMENT_CODEPOINT_DEFAULT;
+  invisible = 0;
 
   clear ();
 }
@@ -226,7 +232,7 @@ hb_buffer_t::reset (void)
 void
 hb_buffer_t::clear (void)
 {
-  if (unlikely (hb_object_is_inert (this)))
+  if (unlikely (hb_object_is_immutable (this)))
     return;
 
   hb_segment_properties_t default_props = HB_SEGMENT_PROPERTIES_DEFAULT;
@@ -283,7 +289,7 @@ hb_buffer_t::add_info (const hb_glyph_info_t &glyph_info)
 void
 hb_buffer_t::remove_output (void)
 {
-  if (unlikely (hb_object_is_inert (this)))
+  if (unlikely (hb_object_is_immutable (this)))
     return;
 
   have_output = false;
@@ -296,7 +302,7 @@ hb_buffer_t::remove_output (void)
 void
 hb_buffer_t::clear_output (void)
 {
-  if (unlikely (hb_object_is_inert (this)))
+  if (unlikely (hb_object_is_immutable (this)))
     return;
 
   have_output = true;
@@ -309,7 +315,7 @@ hb_buffer_t::clear_output (void)
 void
 hb_buffer_t::clear_positions (void)
 {
-  if (unlikely (hb_object_is_inert (this)))
+  if (unlikely (hb_object_is_immutable (this)))
     return;
 
   have_output = false;
@@ -353,6 +359,8 @@ hb_buffer_t::replace_glyphs (unsigned int num_in,
 			     const uint32_t *glyph_data)
 {
   if (unlikely (!make_room_for (num_in, num_out))) return;
+
+  assert (idx + num_in <= len);
 
   merge_clusters (idx, idx + num_in);
 
@@ -398,8 +406,14 @@ hb_buffer_t::move_to (unsigned int i)
     unsigned int count = out_len - i;
 
     /* This will blow in our face if memory allocation fails later
-     * in this same lookup... */
-    if (unlikely (idx < count && !shift_forward (count + 32))) return false;
+     * in this same lookup...
+     *
+     * We used to shift with extra 32 items, instead of the 0 below.
+     * But that would leave empty slots in the buffer in case of allocation
+     * failures.  Setting to zero for now to avoid other problems (see
+     * comments in shift_forward().  This can cause O(N^2) behavior more
+     * severely than adding 32 empty slots can... */
+    if (unlikely (idx < count && !shift_forward (count + 0))) return false;
 
     assert (idx >= count);
 
@@ -665,6 +679,7 @@ DEFINE_NULL_INSTANCE (hb_buffer_t) =
   HB_BUFFER_FLAG_DEFAULT,
   HB_BUFFER_CLUSTER_LEVEL_DEFAULT,
   HB_BUFFER_REPLACEMENT_CODEPOINT_DEFAULT,
+  0, /* invisible */
   HB_BUFFER_SCRATCH_FLAG_DEFAULT,
   HB_BUFFER_MAX_LEN_DEFAULT,
   HB_BUFFER_MAX_OPS_DEFAULT,
@@ -858,7 +873,7 @@ void
 hb_buffer_set_unicode_funcs (hb_buffer_t        *buffer,
 			     hb_unicode_funcs_t *unicode_funcs)
 {
-  if (unlikely (hb_object_is_inert (buffer)))
+  if (unlikely (hb_object_is_immutable (buffer)))
     return;
 
   if (!unicode_funcs)
@@ -905,7 +920,7 @@ hb_buffer_set_direction (hb_buffer_t    *buffer,
 			 hb_direction_t  direction)
 
 {
-  if (unlikely (hb_object_is_inert (buffer)))
+  if (unlikely (hb_object_is_immutable (buffer)))
     return;
 
   buffer->props.direction = direction;
@@ -949,7 +964,7 @@ void
 hb_buffer_set_script (hb_buffer_t *buffer,
 		      hb_script_t  script)
 {
-  if (unlikely (hb_object_is_inert (buffer)))
+  if (unlikely (hb_object_is_immutable (buffer)))
     return;
 
   buffer->props.script = script;
@@ -984,7 +999,7 @@ hb_buffer_get_script (hb_buffer_t *buffer)
  * are orthogonal to the scripts, and though they are related, they are
  * different concepts and should not be confused with each other.
  *
- * Use hb_language_from_string() to convert from ISO 639 language codes to
+ * Use hb_language_from_string() to convert from BCP 47 language tags to
  * #hb_language_t.
  *
  * Since: 0.9.2
@@ -993,7 +1008,7 @@ void
 hb_buffer_set_language (hb_buffer_t   *buffer,
 			hb_language_t  language)
 {
-  if (unlikely (hb_object_is_inert (buffer)))
+  if (unlikely (hb_object_is_immutable (buffer)))
     return;
 
   buffer->props.language = language;
@@ -1031,7 +1046,7 @@ void
 hb_buffer_set_segment_properties (hb_buffer_t *buffer,
 				  const hb_segment_properties_t *props)
 {
-  if (unlikely (hb_object_is_inert (buffer)))
+  if (unlikely (hb_object_is_immutable (buffer)))
     return;
 
   buffer->props = *props;
@@ -1067,7 +1082,7 @@ void
 hb_buffer_set_flags (hb_buffer_t       *buffer,
 		     hb_buffer_flags_t  flags)
 {
-  if (unlikely (hb_object_is_inert (buffer)))
+  if (unlikely (hb_object_is_immutable (buffer)))
     return;
 
   buffer->flags = flags;
@@ -1103,7 +1118,7 @@ void
 hb_buffer_set_cluster_level (hb_buffer_t       *buffer,
 		     hb_buffer_cluster_level_t  cluster_level)
 {
-  if (unlikely (hb_object_is_inert (buffer)))
+  if (unlikely (hb_object_is_immutable (buffer)))
     return;
 
   buffer->cluster_level = cluster_level;
@@ -1142,7 +1157,7 @@ void
 hb_buffer_set_replacement_codepoint (hb_buffer_t    *buffer,
 				     hb_codepoint_t  replacement)
 {
-  if (unlikely (hb_object_is_inert (buffer)))
+  if (unlikely (hb_object_is_immutable (buffer)))
     return;
 
   buffer->replacement = replacement;
@@ -1163,6 +1178,46 @@ hb_codepoint_t
 hb_buffer_get_replacement_codepoint (hb_buffer_t    *buffer)
 {
   return buffer->replacement;
+}
+
+
+/**
+ * hb_buffer_set_invisible_glyph:
+ * @buffer: an #hb_buffer_t.
+ * @invisible: the invisible #hb_codepoint_t
+ *
+ * Sets the #hb_codepoint_t that replaces invisible characters in
+ * the shaping result.  If set to zero (default), the glyph for the
+ * U+0020 SPACE character is used.  Otherwise, this value is used
+ * verbatim.
+ *
+ * Since: 2.0.0
+ **/
+void
+hb_buffer_set_invisible_glyph (hb_buffer_t    *buffer,
+			       hb_codepoint_t  invisible)
+{
+  if (unlikely (hb_object_is_immutable (buffer)))
+    return;
+
+  buffer->invisible = invisible;
+}
+
+/**
+ * hb_buffer_get_invisible_glyph:
+ * @buffer: an #hb_buffer_t.
+ *
+ * See hb_buffer_set_invisible_glyph().
+ *
+ * Return value: 
+ * The @buffer invisible #hb_codepoint_t.
+ *
+ * Since: 2.0.0
+ **/
+hb_codepoint_t
+hb_buffer_get_invisible_glyph (hb_buffer_t    *buffer)
+{
+  return buffer->invisible;
 }
 
 
@@ -1274,7 +1329,7 @@ hb_bool_t
 hb_buffer_set_length (hb_buffer_t  *buffer,
 		      unsigned int  length)
 {
-  if (unlikely (hb_object_is_inert (buffer)))
+  if (unlikely (hb_object_is_immutable (buffer)))
     return length == 0;
 
   if (!buffer->ensure (length))
@@ -1480,7 +1535,7 @@ hb_buffer_add_utf (hb_buffer_t  *buffer,
   assert (buffer->content_type == HB_BUFFER_CONTENT_TYPE_UNICODE ||
 	  (!buffer->len && buffer->content_type == HB_BUFFER_CONTENT_TYPE_INVALID));
 
-  if (unlikely (hb_object_is_inert (buffer)))
+  if (unlikely (hb_object_is_immutable (buffer)))
     return;
 
   if (text_length == -1)
@@ -1611,7 +1666,7 @@ hb_buffer_add_utf32 (hb_buffer_t    *buffer,
 		     unsigned int    item_offset,
 		     int             item_length)
 {
-  hb_buffer_add_utf<hb_utf32_t<> > (buffer, text, text_length, item_offset, item_length);
+  hb_buffer_add_utf<hb_utf32_t> (buffer, text, text_length, item_offset, item_length);
 }
 
 /**
@@ -1672,7 +1727,7 @@ hb_buffer_add_codepoints (hb_buffer_t          *buffer,
 			  unsigned int          item_offset,
 			  int                   item_length)
 {
-  hb_buffer_add_utf<hb_utf32_t<false> > (buffer, text, text_length, item_offset, item_length);
+  hb_buffer_add_utf<hb_utf32_novalidate_t> (buffer, text, text_length, item_offset, item_length);
 }
 
 

@@ -18,6 +18,10 @@ LocalCardMigrationDialog* CreateLocalCardMigrationDialogView(
     LocalCardMigrationDialogController* controller,
     content::WebContents* web_contents);
 
+LocalCardMigrationDialog* CreateLocalCardMigrationErrorDialogView(
+    LocalCardMigrationDialogController* controller,
+    content::WebContents* web_contents);
+
 }  // namespace autofill
 
 #endif  // CHROME_BROWSER_UI_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_FACTORY_H_

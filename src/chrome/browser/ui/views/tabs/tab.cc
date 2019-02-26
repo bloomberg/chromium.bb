@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -67,6 +68,7 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/rect_based_targeting_utils.h"
+#include "ui/views/view_properties.h"
 #include "ui/views/view_targeter.h"
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
@@ -168,6 +170,10 @@ Tab::Tab(TabController* controller, gfx::AnimationContainer* container)
   title_animation_.SetContainer(animation_container_.get());
 
   hover_controller_.SetAnimationContainer(animation_container_.get());
+
+  // Enable keyboard focus.
+  SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
+  focus_ring_ = views::FocusRing::Install(this);
 }
 
 Tab::~Tab() {
@@ -315,13 +321,8 @@ void Tab::Layout() {
     int right = contents_rect.right();
     if (showing_close_button_) {
       right = close_x;
-      if (extra_alert_indicator_padding_) {
-        constexpr int kTouchableAlertIndicatorCloseButtonPadding = 8;
-        constexpr int kAlertIndicatorCloseButtonPadding = 6;
-        right -= MD::IsTouchOptimizedUiEnabled()
-                     ? kTouchableAlertIndicatorCloseButtonPadding
-                     : kAlertIndicatorCloseButtonPadding;
-      }
+      if (extra_alert_indicator_padding_)
+        right -= MD::touch_ui() ? 8 : 6;
     }
     const gfx::Size image_size = alert_indicator_->GetPreferredSize();
     gfx::Rect bounds(
@@ -379,10 +380,28 @@ void Tab::Layout() {
     }
   }
   title_->SetVisible(show_title);
+
+  if (focus_ring_)
+    focus_ring_->Layout();
 }
 
 const char* Tab::GetClassName() const {
   return kViewClassName;
+}
+
+void Tab::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  // Update focus ring path.
+  const SkPath path = tab_style_->GetPath(TabStyle::PathType::kHighlight, 1.0);
+  SetProperty(views::kHighlightPathKey, new SkPath(path));
+}
+
+bool Tab::OnKeyPressed(const ui::KeyEvent& event) {
+  if (event.key_code() == ui::VKEY_SPACE && !IsSelected()) {
+    controller_->SelectTab(this);
+    return true;
+  }
+
+  return false;
 }
 
 namespace {
@@ -552,10 +571,17 @@ bool Tab::GetTooltipTextOrigin(const gfx::Point& p, gfx::Point* origin) const {
 
 void Tab::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kTab;
-  node_data->SetName(controller_->GetAccessibleTabName(this));
   node_data->AddState(ax::mojom::State::kMultiselectable);
   node_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected,
                               IsSelected());
+
+  base::string16 name = controller_->GetAccessibleTabName(this);
+  if (!name.empty()) {
+    node_data->SetName(name);
+  } else {
+    // Under some conditions, |GetAccessibleTabName| returns an empty string.
+    node_data->SetNameExplicitlyEmpty();
+  }
 }
 
 gfx::Size Tab::CalculatePreferredSize() const {
@@ -596,10 +622,18 @@ void Tab::OnThemeChanged() {
 void Tab::SetClosing(bool closing) {
   closing_ = closing;
   ActiveStateChanged();
+
+  if (closing) {
+    // When closing, sometimes DCHECK fails because
+    // cc::Layer::IsPropertyChangeAllowed() returns false. Deleting
+    // the focus ring fixes this. TODO(collinbaker): investigate why
+    // this happens.
+    focus_ring_.reset();
+  }
 }
 
 SkColor Tab::GetAlertIndicatorColor(TabAlertState state) const {
-  const bool is_touch_optimized = MD::IsTouchOptimizedUiEnabled();
+  const bool touch_ui = MD::touch_ui();
   // If theme provider is not yet available, return the default button
   // color.
   const ui::ThemeProvider* theme_provider = GetThemeProvider();
@@ -609,18 +643,17 @@ SkColor Tab::GetAlertIndicatorColor(TabAlertState state) const {
   switch (state) {
     case TabAlertState::AUDIO_PLAYING:
     case TabAlertState::AUDIO_MUTING:
-      return is_touch_optimized ? theme_provider->GetColor(
-                                      ThemeProperties::COLOR_TAB_ALERT_AUDIO)
-                                : button_color_;
+      return touch_ui ? theme_provider->GetColor(
+                            ThemeProperties::COLOR_TAB_ALERT_AUDIO)
+                      : button_color_;
     case TabAlertState::MEDIA_RECORDING:
     case TabAlertState::DESKTOP_CAPTURING:
       return theme_provider->GetColor(
           ThemeProperties::COLOR_TAB_ALERT_RECORDING);
     case TabAlertState::TAB_CAPTURING:
-      return is_touch_optimized
-                 ? theme_provider->GetColor(
-                       ThemeProperties::COLOR_TAB_ALERT_CAPTURING)
-                 : button_color_;
+      return touch_ui ? theme_provider->GetColor(
+                            ThemeProperties::COLOR_TAB_ALERT_CAPTURING)
+                      : button_color_;
     case TabAlertState::PIP_PLAYING:
       return theme_provider->GetColor(ThemeProperties::COLOR_TAB_PIP_PLAYING);
     case TabAlertState::BLUETOOTH_CONNECTED:
@@ -669,12 +702,8 @@ void Tab::SetData(TabRendererData data) {
   TabRendererData old(std::move(data_));
   data_ = std::move(data);
 
-  // Icon updating must be done first because the title depends on whether the
-  // loading animation is showing.
-  icon_->SetIcon(data_.url, data_.favicon);
-  icon_->SetNetworkState(data_.network_state, data_.should_hide_throbber);
+  icon_->SetData(data_);
   icon_->SetCanPaintToLayer(controller_->CanPaintThrobberToLayer());
-  icon_->SetIsCrashed(data_.IsCrashed());
   UpdateTabIconNeedsAttentionBlocked();
 
   base::string16 title = data_.title;
@@ -699,8 +728,8 @@ void Tab::SetData(TabRendererData data) {
   SchedulePaint();
 }
 
-void Tab::StepLoadingAnimation() {
-  icon_->StepLoadingAnimation();
+void Tab::StepLoadingAnimation(const base::TimeDelta& elapsed_time) {
+  icon_->StepLoadingAnimation(elapsed_time);
 
   // Update the layering if necessary.
   //
@@ -711,6 +740,10 @@ void Tab::StepLoadingAnimation() {
   // frequent enough in other cases since the state can be updated and the tab
   // painted before the animation is stepped.
   icon_->SetCanPaintToLayer(controller_->CanPaintThrobberToLayer());
+}
+
+bool Tab::ShowingLoadingAnimation() const {
+  return icon_->ShowingLoadingAnimation();
 }
 
 void Tab::StartPulse() {
@@ -847,19 +880,18 @@ void Tab::UpdateIconVisibility() {
 
   int available_width = GetContentsBounds().width();
 
-  const bool is_touch_optimized = MD::IsTouchOptimizedUiEnabled();
+  const bool touch_ui = MD::touch_ui();
   const int favicon_width = gfx::kFaviconSize;
   const int alert_icon_width = alert_indicator_->GetPreferredSize().width();
   // In case of touch optimized UI, the close button has an extra padding on the
   // left that needs to be considered.
   const int close_button_width =
       close_button_->GetPreferredSize().width() -
-      (is_touch_optimized ? close_button_->GetInsets().right()
-                          : close_button_->GetInsets().width());
+      (touch_ui ? close_button_->GetInsets().right()
+                : close_button_->GetInsets().width());
   const bool large_enough_for_close_button =
-      available_width >= (is_touch_optimized
-                              ? kTouchableMinimumContentsWidthForCloseButtons
-                              : kMinimumContentsWidthForCloseButtons);
+      available_width >= (touch_ui ? kTouchMinimumContentsWidthForCloseButtons
+                                   : kMinimumContentsWidthForCloseButtons);
 
   showing_close_button_ = !controller_->ShouldHideCloseButtonForTab(this);
   if (IsActive()) {
@@ -978,7 +1010,7 @@ void Tab::UpdateForegroundColors() {
   } else if (mouse_hovered_) {
     expected_opacity = GetHoverOpacity();
   }
-  SkColor tab_bg_color = color_utils::AlphaBlend(
+  const SkColor tab_bg_color = color_utils::AlphaBlend(
       controller_->GetTabBackgroundColor(TAB_ACTIVE),
       controller_->GetTabBackgroundColor(TAB_INACTIVE),
       gfx::ToRoundedInt(expected_opacity * SK_AlphaOPAQUE));
@@ -986,6 +1018,8 @@ void Tab::UpdateForegroundColors() {
       expected_opacity > 0.5f ? TAB_ACTIVE : TAB_INACTIVE);
   tab_title_color =
       color_utils::GetColorWithMinimumContrast(tab_title_color, tab_bg_color);
+
+  icon_->SetBackgroundColor(tab_bg_color);
 
   title_->SetEnabledColor(tab_title_color);
 

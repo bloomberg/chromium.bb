@@ -22,6 +22,10 @@ void URLLoaderThrottle::Delegate::InterceptResponse(
   NOTIMPLEMENTED();
 }
 
+void URLLoaderThrottle::Delegate::RestartWithFlags(int additional_load_flags) {
+  NOTIMPLEMENTED();
+}
+
 URLLoaderThrottle::Delegate::~Delegate() {}
 
 URLLoaderThrottle::~URLLoaderThrottle() {}
@@ -34,7 +38,7 @@ void URLLoaderThrottle::WillStartRequest(network::ResourceRequest* request,
                                          bool* defer) {}
 
 void URLLoaderThrottle::WillRedirectRequest(
-    const net::RedirectInfo& redirect_info,
+    net::RedirectInfo* redirect_info,
     const network::ResourceResponseHead& response_head,
     bool* defer,
     std::vector<std::string>* to_be_removed_request_headers,
@@ -43,6 +47,11 @@ void URLLoaderThrottle::WillRedirectRequest(
 void URLLoaderThrottle::WillProcessResponse(
     const GURL& response_url,
     network::ResourceResponseHead* response_head,
+    bool* defer) {}
+
+void URLLoaderThrottle::BeforeWillProcessResponse(
+    const GURL& response_url,
+    const network::ResourceResponseHead& response_head,
     bool* defer) {}
 
 URLLoaderThrottle::URLLoaderThrottle() {}

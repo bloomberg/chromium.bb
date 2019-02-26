@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/modules/payments/payment_method_change_event_init.h"
 #include "third_party/blink/renderer/modules/payments/payment_request_update_event.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -28,18 +29,21 @@ class MODULES_EXPORT PaymentMethodChangeEvent final
   static PaymentMethodChangeEvent* Create(
       ScriptState*,
       const AtomicString& type,
-      const PaymentMethodChangeEventInit& = PaymentMethodChangeEventInit());
+      const PaymentMethodChangeEventInit* =
+          PaymentMethodChangeEventInit::Create());
 
   const String& methodName() const;
   const ScriptValue methodDetails(ScriptState*) const;
 
+  void Trace(Visitor* visitor) override;
+
  private:
   PaymentMethodChangeEvent(ScriptState*,
                            const AtomicString& type,
-                           const PaymentMethodChangeEventInit&);
+                           const PaymentMethodChangeEventInit*);
 
   String method_name_;
-  ScriptValue method_details_;
+  TraceWrapperV8Reference<v8::Value> method_details_;
 };
 
 }  // namespace blink

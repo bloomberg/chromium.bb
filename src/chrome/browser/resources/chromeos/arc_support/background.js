@@ -220,7 +220,10 @@ class MetricsPreferenceCheckbox extends PreferenceCheckbox {
     super.onPreferenceChanged(isEnabled, isManaged);
 
     // Hide the checkbox if it is not allowed to (re-)enable.
-    var canEnable = !isEnabled && !isManaged;
+    // TODO(jhorwich) Remove checkbox functionality from the metrics notice as
+    // we've removed the ability for a device owner to enable it during ARC
+    // setup.
+    var canEnable = false;
     this.checkbox_.hidden = !canEnable;
     this.textLabel_.hidden = canEnable;
     var label = canEnable ? this.label_ : this.textLabel_;
@@ -235,16 +238,20 @@ class MetricsPreferenceCheckbox extends PreferenceCheckbox {
     // So, meanwhile, we set the link everytime we update the text.
     // TODO: fix the translation text, and main html.
     var learnMoreLink = label.querySelector(this.learnMoreLinkId_);
-    learnMoreLink.addEventListener(
-        'click', (event) => this.onLearnMoreLinkClicked(event));
-    learnMoreLink.addEventListener(
-        'keydown', (event) => this.suppressKeyDown(event));
+    if (learnMoreLink) {
+      learnMoreLink.addEventListener(
+          'click', (event) => this.onLearnMoreLinkClicked(event));
+      learnMoreLink.addEventListener(
+          'keydown', (event) => this.suppressKeyDown(event));
+    }
     // settings-link is used only in privacy section.
     var settingsLink = label.querySelector('#settings-link');
-    settingsLink.addEventListener(
-        'click', (event) => this.onPrivacySettingsLinkClicked(event));
-    settingsLink.addEventListener(
-        'keydown', (event) => this.suppressKeyDown(event));
+    if (settingsLink) {
+      settingsLink.addEventListener(
+          'click', (event) => this.onPrivacySettingsLinkClicked(event));
+      settingsLink.addEventListener(
+          'keydown', (event) => this.suppressKeyDown(event));
+    }
   }
 
   /** Called when "privacy settings" link is clicked. */

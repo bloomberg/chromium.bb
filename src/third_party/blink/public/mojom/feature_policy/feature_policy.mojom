@@ -83,11 +83,10 @@ enum FeaturePolicyFeature {
   // Controls which image formats are allowed to be used in the document.
   kLegacyImageFormats = 22,
   // When disallowed, requires images to have a reasonable byte-to-pixel ratio.
-  kImageCompression = 23,
-  kAnimations = 24,
+  kUnoptimizedImages = 23,
   // When disallowed, restricts source image size to be no more 2x larger than
   // the image's containing block.
-  kMaxDownscalingImage = 25,
+  kOversizedImages = 25,
   // Controls access to Picture-in-Picture.
   kPictureInPicture = 26,
   // Controls the ability to block and interfere with vertical scrolling.
@@ -98,10 +97,19 @@ enum FeaturePolicyFeature {
   kDocumentWrite = 28,
   // Used to enforce lazyloading for a frame and any nested <iframe> or image.
   kLazyLoad = 29,
+  // Restricts the usage of layout-causing animations in a document.
+  kLayoutAnimations = 30,
 
   // Don't change assigned numbers of any item, and don't reuse removed slots.
   // Also, run update_feature_policy_enum.py in
   // chromium/src/tools/metrics/histograms/ to update the UMA mapping.
+};
+
+// This enum is used to distinguish between report-only directives and enforcing
+// directives.
+enum FeaturePolicyDisposition {
+  kEnforce,
+  kReport,
 };
 
 // This struct holds feature policy allowlist data that needs to be replicated
@@ -111,5 +119,6 @@ enum FeaturePolicyFeature {
 struct ParsedFeaturePolicyDeclaration {
   FeaturePolicyFeature feature;
   bool matches_all_origins;
+  FeaturePolicyDisposition disposition;
   array<url.mojom.Origin> origins;
 };

@@ -49,7 +49,7 @@ class LinkSelectionTestBase : public testing::Test {
 
   String GetSelectionText();
 
-  FrameTestHelpers::WebViewHelper helper_;
+  frame_test_helpers::WebViewHelper helper_;
   WebViewImpl* web_view_ = nullptr;
   Persistent<WebLocalFrameImpl> main_frame_ = nullptr;
 };
@@ -59,7 +59,7 @@ void LinkSelectionTestBase::EmulateMouseDrag(const IntPoint& down_point,
                                              int modifiers,
                                              DragFlags drag_flags) {
   if (drag_flags & kSendDownEvent) {
-    const auto& down_event = FrameTestHelpers::CreateMouseEvent(
+    const auto& down_event = frame_test_helpers::CreateMouseEvent(
         WebMouseEvent::kMouseDown, WebMouseEvent::Button::kLeft, down_point,
         modifiers);
     web_view_->HandleInputEvent(WebCoalescedInputEvent(down_event));
@@ -71,14 +71,14 @@ void LinkSelectionTestBase::EmulateMouseDrag(const IntPoint& down_point,
   for (int i = 0; i < kMoveEventsNumber; ++i) {
     const auto& move_point =
         down_point + Scaled(up_down_vector, i * kMoveIncrementFraction);
-    const auto& move_event = FrameTestHelpers::CreateMouseEvent(
+    const auto& move_event = frame_test_helpers::CreateMouseEvent(
         WebMouseEvent::kMouseMove, WebMouseEvent::Button::kLeft, move_point,
         modifiers);
     web_view_->HandleInputEvent(WebCoalescedInputEvent(move_event));
   }
 
   if (drag_flags & kSendUpEvent) {
-    const auto& up_event = FrameTestHelpers::CreateMouseEvent(
+    const auto& up_event = frame_test_helpers::CreateMouseEvent(
         WebMouseEvent::kMouseUp, WebMouseEvent::Button::kLeft, up_point,
         modifiers);
     web_view_->HandleInputEvent(WebCoalescedInputEvent(up_event));
@@ -89,7 +89,7 @@ void LinkSelectionTestBase::EmulateMouseClick(const IntPoint& click_point,
                                               WebMouseEvent::Button button,
                                               int modifiers,
                                               int count) {
-  auto event = FrameTestHelpers::CreateMouseEvent(
+  auto event = frame_test_helpers::CreateMouseEvent(
       WebMouseEvent::kMouseDown, button, click_point, modifiers);
   event.click_count = count;
   web_view_->HandleInputEvent(WebCoalescedInputEvent(event));
@@ -101,7 +101,7 @@ void LinkSelectionTestBase::EmulateMouseDown(const IntPoint& click_point,
                                              WebMouseEvent::Button button,
                                              int modifiers,
                                              int count) {
-  auto event = FrameTestHelpers::CreateMouseEvent(
+  auto event = frame_test_helpers::CreateMouseEvent(
       WebMouseEvent::kMouseDown, button, click_point, modifiers);
   event.click_count = count;
   web_view_->HandleInputEvent(WebCoalescedInputEvent(event));
@@ -111,12 +111,11 @@ String LinkSelectionTestBase::GetSelectionText() {
   return main_frame_->SelectionAsText();
 }
 
-class TestFrameClient : public FrameTestHelpers::TestWebFrameClient {
+class TestFrameClient : public frame_test_helpers::TestWebFrameClient {
  public:
-  WebNavigationPolicy DecidePolicyForNavigation(
-      const NavigationPolicyInfo& info) override {
-    last_policy_ = info.default_policy;
-    return kWebNavigationPolicyIgnore;
+  void BeginNavigation(
+      std::unique_ptr<blink::WebNavigationInfo> info) override {
+    last_policy_ = info->navigation_policy;
   }
 
   WebNavigationPolicy GetLastNavigationPolicy() const { return last_policy_; }
@@ -135,8 +134,9 @@ class LinkSelectionTest : public LinkSelectionTestBase {
 
     web_view_ = helper_.Initialize(&test_frame_client_);
     main_frame_ = web_view_->MainFrameImpl();
-    FrameTestHelpers::LoadHTMLString(
-        main_frame_, kHTMLString, URLTestHelpers::ToKURL("http://foobar.com"));
+    frame_test_helpers::LoadHTMLString(
+        main_frame_, kHTMLString,
+        url_test_helpers::ToKURL("http://foobar.com"));
     web_view_->Resize(WebSize(800, 600));
     web_view_->GetPage()->GetFocusController().SetActive(true);
 
@@ -267,16 +267,17 @@ class LinkSelectionClickEventsTest : public LinkSelectionTestBase {
  protected:
   class MockEventListener final : public EventListener {
    public:
-    static MockEventListener* Create() { return new MockEventListener(); }
+    static MockEventListener* Create() {
+      return MakeGarbageCollected<MockEventListener>();
+    }
+
+    MockEventListener() : EventListener(kCPPEventListenerType) {}
 
     bool operator==(const EventListener& other) const final {
       return this == &other;
     }
 
-    MOCK_METHOD2(handleEvent, void(ExecutionContext* executionContext, Event*));
-
-   private:
-    MockEventListener() : EventListener(kCPPEventListenerType) {}
+    MOCK_METHOD2(Invoke, void(ExecutionContext* executionContext, Event*));
   };
 
   void SetUp() override {
@@ -286,8 +287,9 @@ class LinkSelectionClickEventsTest : public LinkSelectionTestBase {
 
     web_view_ = helper_.Initialize();
     main_frame_ = web_view_->MainFrameImpl();
-    FrameTestHelpers::LoadHTMLString(
-        main_frame_, kHTMLString, URLTestHelpers::ToKURL("http://foobar.com"));
+    frame_test_helpers::LoadHTMLString(
+        main_frame_, kHTMLString,
+        url_test_helpers::ToKURL("http://foobar.com"));
     web_view_->Resize(WebSize(800, 600));
     web_view_->GetPage()->GetFocusController().SetActive(true);
 
@@ -310,12 +312,12 @@ class LinkSelectionClickEventsTest : public LinkSelectionTestBase {
     } const listeners_cleaner(&element);
 
     MockEventListener* event_handler = MockEventListener::Create();
-    element.addEventListener(
-        double_click_event ? EventTypeNames::dblclick : EventTypeNames::click,
-        event_handler);
+    element.addEventListener(double_click_event ? event_type_names::kDblclick
+                                                : event_type_names::kClick,
+                             event_handler);
 
     testing::InSequence s;
-    EXPECT_CALL(*event_handler, handleEvent(_, _)).Times(1);
+    EXPECT_CALL(*event_handler, Invoke(_, _)).Times(1);
 
     const auto& elem_bounds = element.BoundsInViewport();
     const int click_count = double_click_event ? 2 : 1;

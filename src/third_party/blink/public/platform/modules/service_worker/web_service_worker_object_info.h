@@ -18,7 +18,6 @@ namespace blink {
 // interfaces receive blink.mojom.ServiceWorkerObjectInfo directly inside Blink.
 //  - content.mojom.ServiceWorker
 //  - content.mojom.ServiceWorkerContainer
-//  - blink.mojom.ServiceWorkerRegistrationObject
 //
 // As we're on the border line between non-Blink and Blink variants, we need
 // to use mojo::ScopedInterfaceEndpointHandle to pass Mojo types.

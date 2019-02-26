@@ -236,11 +236,9 @@ testing::AssertionResult ToolbarActionsBarUnitTest::VerifyToolbarOrder(
 
 // Note: First argument is optional and intentionally left blank.
 // (it's a prefix for the generated test cases)
-INSTANTIATE_TEST_CASE_P(
-    ,
-    ToolbarActionsBarUnitTest,
-    testing::Values(ui::MaterialDesignController::MATERIAL_REFRESH,
-                    ui::MaterialDesignController::MATERIAL_TOUCH_REFRESH));
+INSTANTIATE_TEST_CASE_P(,
+                        ToolbarActionsBarUnitTest,
+                        testing::Values(false, true));
 
 TEST_P(ToolbarActionsBarUnitTest, BasicToolbarActionsBarTest) {
   // Add three extensions to the profile; this is the easiest way to have

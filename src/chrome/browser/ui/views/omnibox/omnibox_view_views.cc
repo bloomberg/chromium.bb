@@ -21,12 +21,14 @@
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/feature_engagement/buildflags.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
+#include "components/omnibox/browser/location_bar_model.h"
 #include "components/omnibox/browser/omnibox_client.h"
 #include "components/omnibox/browser/omnibox_edit_controller.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
@@ -34,10 +36,9 @@
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/toolbar/toolbar_field_trial.h"
-#include "components/toolbar/toolbar_model.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/escape.h"
+#include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -73,6 +74,8 @@
 #include "chrome/browser/feature_engagement/new_tab/new_tab_tracker.h"
 #include "chrome/browser/feature_engagement/new_tab/new_tab_tracker_factory.h"
 #endif
+
+using metrics::OmniboxEventProto;
 
 namespace {
 
@@ -238,9 +241,14 @@ void OmniboxViewViews::InstallPlaceholderText() {
   }
 }
 
-bool OmniboxViewViews::SelectionAtEnd() {
+bool OmniboxViewViews::SelectionAtBeginning() const {
   const gfx::Range sel = GetSelectedRange();
-  return sel.GetMax() == text().size();
+  return sel.GetMax() == 0;
+}
+
+bool OmniboxViewViews::SelectionAtEnd() const {
+  const gfx::Range sel = GetSelectedRange();
+  return sel.GetMin() == text().size();
 }
 
 void OmniboxViewViews::EmphasizeURLComponents() {
@@ -265,15 +273,12 @@ void OmniboxViewViews::Update() {
     RevertAll();
 
     // Only select all when we have focus.  If we don't have focus, selecting
-    // all is unnecessary since the selection will change on regaining focus,
-    // and can in fact cause artifacts, e.g. if the user is on the NTP and
-    // clicks a link to navigate, causing |was_select_all| to be vacuously true
-    // for the empty omnibox, and we then select all here, leading to the
-    // trailing portion of a long URL being scrolled into view.  We could try
-    // and address cases like this, but it seems better to just not muck with
-    // things when the omnibox isn't focused to begin with.
-    if (model()->has_focus())
-      SelectAll(true);
+    // all is unnecessary since the selection will change on regaining focus.
+    if (model()->has_focus()) {
+      // Treat this select-all as resulting from a user gesture, since most
+      // URL updates result from a user gesture or navigation.
+      SelectAllForUserGesture();
+    }
   } else if (old_security_level != security_level_) {
     EmphasizeURLComponents();
   }
@@ -293,7 +298,7 @@ void OmniboxViewViews::SetUserText(const base::string16& text,
 void OmniboxViewViews::EnterKeywordModeForDefaultSearchProvider() {
   // Transition the user into keyword mode using their default search provider.
   model()->EnterKeywordModeForDefaultSearchProvider(
-      KeywordModeEntryMethod::KEYBOARD_SHORTCUT);
+      OmniboxEventProto::KEYBOARD_SHORTCUT);
 }
 
 void OmniboxViewViews::GetSelectionBounds(
@@ -314,6 +319,18 @@ void OmniboxViewViews::RevertAll() {
 }
 
 void OmniboxViewViews::SetFocus() {
+  // Temporarily reveal the top-of-window views (if not already revealed) so
+  // that the location bar view is visible and is considered focusable. When it
+  // actually receives focus, ImmersiveFocusWatcher will add another lock to
+  // keep it revealed. |location_bar_view_| can be nullptr in unit tests.
+  std::unique_ptr<ImmersiveRevealedLock> focus_reveal_lock;
+  if (location_bar_view_) {
+    focus_reveal_lock.reset(
+        BrowserView::GetBrowserViewForBrowser(location_bar_view_->browser())
+            ->immersive_mode_controller()
+            ->GetRevealedLock(ImmersiveModeController::ANIMATE_REVEAL_YES));
+  }
+
   RequestFocus();
   // Restore caret visibility if focus is explicitly requested. This is
   // necessary because if we already have invisible focus, the RequestFocus()
@@ -473,7 +490,7 @@ bool OmniboxViewViews::HandleEarlyTabActions(const ui::KeyEvent& event) {
     return false;
 
   if (model()->is_keyword_hint() && !event.IsShiftDown())
-    return model()->AcceptKeyword(KeywordModeEntryMethod::TAB);
+    return model()->AcceptKeyword(OmniboxEventProto::TAB);
 
   if (!model()->popup_model()->IsOpen())
     return false;
@@ -525,7 +542,64 @@ bool OmniboxViewViews::HandleEarlyTabActions(const ui::KeyEvent& event) {
 }
 
 void OmniboxViewViews::UpdateSecurityLevel() {
-  security_level_ = controller()->GetToolbarModel()->GetSecurityLevel(false);
+  security_level_ =
+      controller()->GetLocationBarModel()->GetSecurityLevel(false);
+}
+
+// The following 2 methods implement the following table, which attempts to
+// handle left and right arrow keys versus LTR/RTL text and UI (which can be
+// different) as expected.
+//
+// LTR UI, LTR text, right arrow, at end (rightmost) - focuses
+// LTR UI, LTR text, left arrow, (regardless) - unfocuses
+// LTR UI, RTL text, right arrow, at beginning (rightmost) - focuses
+// LTR UI, RTL text, left arrow, (regardless) - unfocuses
+//
+// RTL UI, RTL text, left arrow, at end (leftmost) - focuses
+// RTL UI, RTL text, right arrow, (regardless) - unfocuses
+// RTL UI, LTR text, left arrow, at beginning (leftmost) - focuses
+// RTL UI, LTR text, right arrow, (regardless) - unfocuses
+
+bool OmniboxViewViews::TextAndUIDirectionMatch() const {
+  // If text and UI direction are RTL, or both aren't.
+  return (GetRenderText()->GetDisplayTextDirection() ==
+          base::i18n::RIGHT_TO_LEFT) == base::i18n::IsRTL();
+}
+
+bool OmniboxViewViews::AtEndWithTabMatch() const {
+  if (model()->popup_model() &&  // Can be null in tests.
+      model()->popup_model()->SelectedLineHasTabMatch()) {
+    // When text and UI direction match, 'end' is as expected,
+    // otherwise we use beginning.
+    return TextAndUIDirectionMatch() ? SelectionAtEnd()
+                                     : SelectionAtBeginning();
+  }
+  return false;
+}
+
+bool OmniboxViewViews::MaybeFocusTabButton() {
+  if (AtEndWithTabMatch()) {
+    if (model()->popup_model()->selected_line_state() ==
+        OmniboxPopupModel::NORMAL) {
+      model()->popup_model()->SetSelectedLineState(
+          OmniboxPopupModel::TAB_SWITCH);
+      popup_view_->ProvideButtonFocusHint(
+          model()->popup_model()->selected_line());
+    }
+    return true;
+  }
+  return false;
+}
+
+bool OmniboxViewViews::MaybeUnfocusTabButton() {
+  // 'at end' isn't strictly necessary for unfocusing, because unfocusing
+  // on other events e.g. mouse clicks, takes care of it.
+  if (AtEndWithTabMatch() && model()->popup_model()->selected_line_state() ==
+                                 OmniboxPopupModel::TAB_SWITCH) {
+    model()->popup_model()->SetSelectedLineState(OmniboxPopupModel::NORMAL);
+    return true;
+  }
+  return false;
 }
 
 void OmniboxViewViews::SetWindowTextAndCaretPos(const base::string16& text,
@@ -584,8 +658,8 @@ void OmniboxViewViews::OnTemporaryTextMaybeChanged(
       match, display_text, model()->popup_model()->selected_line(),
       model()->result().size(), is_tab_switch_button_focused,
       &friendly_suggestion_text_prefix_length_);
-  SetWindowTextAndCaretPos(display_text, display_text.length(), false,
-                           notify_text_changed);
+  int caret_pos = TextAndUIDirectionMatch() ? display_text.length() : 0;
+  SetWindowTextAndCaretPos(display_text, caret_pos, false, notify_text_changed);
 #if defined(OS_MACOSX)
   // On macOS, the text field value changed notification is not
   // announced, so we need to explicitly announce the suggestion text.
@@ -629,10 +703,21 @@ void OmniboxViewViews::ClearAccessibilityLabel() {
   friendly_suggestion_text_prefix_length_ = 0;
 }
 
+void OmniboxViewViews::SelectAllForUserGesture() {
+  if (base::FeatureList::IsEnabled(omnibox::kOneClickUnelide) &&
+      UnapplySteadyStateElisions(UnelisionGesture::OTHER)) {
+    TextChanged();
+  }
+
+  // Select all in the reverse direction so as not to scroll the caret
+  // into view and shift the contents jarringly.
+  SelectAll(true);
+}
+
 bool OmniboxViewViews::UnapplySteadyStateElisions(UnelisionGesture gesture) {
   // Early exit if no steady state elision features are enabled.
-  if (!toolbar::features::IsHideSteadyStateUrlSchemeEnabled() &&
-      !toolbar::features::IsHideSteadyStateUrlTrivialSubdomainsEnabled()) {
+  if (!OmniboxFieldTrial::IsHideSteadyStateUrlSchemeEnabled() &&
+      !OmniboxFieldTrial::IsHideSteadyStateUrlTrivialSubdomainsEnabled()) {
     return false;
   }
 
@@ -640,7 +725,8 @@ bool OmniboxViewViews::UnapplySteadyStateElisions(UnelisionGesture gesture) {
   if (model()->user_input_in_progress())
     return false;
 
-  // Don't unelide if we are currently displaying Query in Omnibox search terms.
+  // Don't unelide if we are currently displaying Query in Omnibox search terms,
+  // as otherwise, it would be impossible to refine query terms.
   if (model()->GetQueryInOmniboxSearchTerms(nullptr /* search_terms */))
     return false;
 
@@ -651,7 +737,7 @@ bool OmniboxViewViews::UnapplySteadyStateElisions(UnelisionGesture gesture) {
     return false;
 
   base::string16 full_url =
-      controller()->GetToolbarModel()->GetFormattedFullURL();
+      controller()->GetLocationBarModel()->GetFormattedFullURL();
   size_t start, end;
   GetSelectionBounds(&start, &end);
 
@@ -682,7 +768,8 @@ bool OmniboxViewViews::UnapplySteadyStateElisions(UnelisionGesture gesture) {
     OffsetDoubleClickWord(offset);
   }
 
-  model()->SetUserTextToURLForEditing();
+  // We have already early-exited if Query in Omnibox is active.
+  model()->Unelide(false /* exit_query_in_omnibox */);
   SelectRange(gfx::Range(start, end));
   return true;
 }
@@ -821,6 +908,11 @@ const char* OmniboxViewViews::GetClassName() const {
 }
 
 bool OmniboxViewViews::OnMousePressed(const ui::MouseEvent& event) {
+  if (model()->popup_model() &&  // Can be null in tests.
+      model()->popup_model()->selected_line_state() ==
+          OmniboxPopupModel::TAB_SWITCH) {
+    model()->popup_model()->SetSelectedLineState(OmniboxPopupModel::NORMAL);
+  }
   is_mouse_pressed_ = true;
 
   select_all_on_mouse_release_ =
@@ -872,9 +964,7 @@ void OmniboxViewViews::OnMouseReleased(const ui::MouseEvent& event) {
   // When the user has clicked and released to give us focus, select all.
   if ((event.IsOnlyLeftMouseButton() || event.IsOnlyRightMouseButton()) &&
       select_all_on_mouse_release_) {
-    // Select all in the reverse direction so as not to scroll the caret
-    // into view and shift the contents jarringly.
-    SelectAll(true);
+    SelectAllForUserGesture();
   }
   select_all_on_mouse_release_ = false;
 
@@ -897,7 +987,7 @@ void OmniboxViewViews::OnGestureEvent(ui::GestureEvent* event) {
   views::Textfield::OnGestureEvent(event);
 
   if (select_all_on_gesture_tap_ && event->type() == ui::ET_GESTURE_TAP)
-    SelectAll(true);
+    SelectAllForUserGesture();
 
   if (event->type() == ui::ET_GESTURE_TAP ||
       event->type() == ui::ET_GESTURE_TAP_CANCEL ||
@@ -1042,15 +1132,15 @@ void OmniboxViewViews::OnFocus() {
   if (location_bar_view_ && model()->is_keyword_hint())
     location_bar_view_->Layout();
 
-// The user must be starting a session in the same tab as a previous one
-// in order to display the new tab in-product help promo.
-// While focusing the omnibox is not always a precursor to starting a new
-// session, we don't want to wait until the user is in the middle of editing
-// or navigating, because we'd like to show them the promo at the time when
-// it would be immediately useful.
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+  // The user must be starting a session in the same tab as a previous one in
+  // order to display the new tab in-product help promo.  While focusing the
+  // omnibox is not always a precursor to starting a new session, we don't
+  // want to wait until the user is in the middle of editing or navigating,
+  // because we'd like to show them the promo at the time when it would be
+  // immediately useful.
   if (location_bar_view_ &&
-      controller()->GetToolbarModel()->ShouldDisplayURL()) {
+      controller()->GetLocationBarModel()->ShouldDisplayURL()) {
     feature_engagement::NewTabTrackerFactory::GetInstance()
         ->GetForProfile(location_bar_view_->profile())
         ->OnOmniboxFocused();
@@ -1242,9 +1332,8 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
   const bool command = event.IsCommandDown();
   switch (event.key_code()) {
     case ui::VKEY_RETURN:
-      if (model()->popup_model()->SelectedLineHasTabMatch() &&
-          model()->popup_model()->selected_line_state() ==
-              OmniboxPopupModel::TAB_SWITCH) {
+      if (model()->popup_model()->selected_line_state() ==
+          OmniboxPopupModel::TAB_SWITCH) {
         popup_view_->OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB,
                                event.time_stamp());
       } else {
@@ -1277,10 +1366,10 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
       break;
 
     case ui::VKEY_UP:
-#if defined(OS_MACOSX)
+      // Shift-up is handled by the text field class to enable text selection.
       if (shift)
         return false;
-#endif
+
       if (IsTextEditCommandEnabled(ui::TextEditCommand::MOVE_UP)) {
         ExecuteTextEditCommand(ui::TextEditCommand::MOVE_UP);
         return true;
@@ -1288,10 +1377,10 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
       break;
 
     case ui::VKEY_DOWN:
-#if defined(OS_MACOSX)
+      // Shift-down is handled by the text field class to enable text selection.
       if (shift)
         return false;
-#endif
+
       if (IsTextEditCommandEnabled(ui::TextEditCommand::MOVE_DOWN)) {
         ExecuteTextEditCommand(ui::TextEditCommand::MOVE_DOWN);
         return true;
@@ -1312,33 +1401,24 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
 
     case ui::VKEY_RIGHT:
       if (!(control || alt || shift)) {
-        if (SelectionAtEnd() &&
-            // Can be null in tests.
-            model()->popup_model() &&
-            model()->popup_model()->SelectedLineHasTabMatch()) {
-          if (model()->popup_model()->selected_line_state() ==
-              OmniboxPopupModel::NORMAL) {
-            model()->popup_model()->SetSelectedLineState(
-                OmniboxPopupModel::TAB_SWITCH);
-            popup_view_->ProvideButtonFocusHint(
-                model()->popup_model()->selected_line());
-          }
-          return true;
+        if (!base::i18n::IsRTL()) {
+          if (MaybeFocusTabButton())
+            return true;
+        } else {
+          if (MaybeUnfocusTabButton())
+            return true;
         }
       }
       break;
 
     case ui::VKEY_LEFT:
       if (!(control || alt || shift)) {
-        if (SelectionAtEnd() &&
-            // Can be null in tests.
-            model()->popup_model() &&
-            model()->popup_model()->SelectedLineHasTabMatch() &&
-            model()->popup_model()->selected_line_state() ==
-                OmniboxPopupModel::TAB_SWITCH) {
-          model()->popup_model()->SetSelectedLineState(
-              OmniboxPopupModel::NORMAL);
-          return true;
+        if (!base::i18n::IsRTL()) {
+          if (MaybeUnfocusTabButton())
+            return true;
+        } else {
+          if (MaybeFocusTabButton())
+            return true;
         }
       }
       break;
@@ -1392,7 +1472,6 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
     case ui::VKEY_SPACE:
       if (!(control || alt || shift)) {
         if (SelectionAtEnd() &&
-            model()->popup_model()->SelectedLineHasTabMatch() &&
             model()->popup_model()->selected_line_state() ==
                 OmniboxPopupModel::TAB_SWITCH) {
           popup_view_->OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB,
@@ -1480,10 +1559,9 @@ int OmniboxViewViews::OnDrop(const ui::OSExchangeData& data) {
     }
   } else if (data.HasString() && data.GetString(&text)) {
     text = StripJavascriptSchemas(base::CollapseWhitespace(text, true));
-  }
-
-  if (text.empty())
+  } else {
     return ui::DragDropTypes::DRAG_NONE;
+  }
 
   SetUserText(text);
   if (!HasFocus())

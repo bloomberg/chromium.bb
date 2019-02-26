@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_DECIDER_H_
 
 #include <memory>
+#include <string>
 #include <unordered_map>
 
 #include "base/gtest_prod_util.h"
@@ -14,6 +15,7 @@
 #include "base/sequence_checker.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "chrome/browser/previews/previews_lite_page_navigation_throttle_manager.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "net/http/http_request_headers.h"
@@ -59,8 +61,11 @@ class PreviewsLitePageDecider
   void SetDRPSettingsForTesting(
       data_reduction_proxy::DataReductionProxySettings* drp_settings);
 
-  // Clears all single bypasses for testing.
-  void ClearSingleBypassForTesting();
+  // Clears the host blacklist. Used when user deletes their browsing history.
+  void ClearBlacklist();
+
+  // Clears all single bypasses and the host blacklist for testing.
+  void ClearStateForTesting();
 
   // Sets that the user has seen the UI notification.
   void SetUserHasSeenUINotification();
@@ -80,6 +85,9 @@ class PreviewsLitePageDecider
                          const std::string& host) override;
   bool NeedsToNotifyUser() override;
   void NotifyUser(content::WebContents* web_contents) override;
+  void BlacklistHost(const std::string& host,
+                     base::TimeDelta duration) override;
+  bool HostBlacklisted(const std::string& host) override;
 
   // data_reduction_proxy::DataReductionProxySettingsObserver:
   void OnProxyRequestHeadersChanged(
@@ -110,6 +118,11 @@ class PreviewsLitePageDecider
   // Whether the notification infobar needs to be shown to the user in order to
   // use this preview.
   bool need_to_show_notification_;
+
+  // A dictionary of host string to base::Time. If a hostname is a member of
+  // this dictionary, that host should be blacklisted from this preview until
+  // after the time value. This is stored persistently in prefs.
+  std::unique_ptr<base::DictionaryValue> host_blacklist_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

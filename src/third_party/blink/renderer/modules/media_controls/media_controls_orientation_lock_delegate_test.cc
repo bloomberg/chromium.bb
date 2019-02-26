@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/frame/frame_view.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/screen_orientation_controller.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/media/html_audio_element.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
@@ -29,10 +30,10 @@
 #include "third_party/blink/renderer/modules/screen_orientation/screen_orientation_controller_impl.h"
 #include "third_party/blink/renderer/modules/screen_orientation/web_lock_orientation_callback.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
 #include "third_party/blink/renderer/platform/testing/empty_web_media_player.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 
 using testing::_;
 using testing::AtLeast;
@@ -114,13 +115,13 @@ class MockChromeClientForOrientationLockDelegate final
   }
   // The real ChromeClient::EnterFullscreen/ExitFullscreen implementation is
   // async due to IPC, emulate that by posting tasks:
-  void EnterFullscreen(LocalFrame& frame, const FullscreenOptions&) override {
-    Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
+  void EnterFullscreen(LocalFrame& frame, const FullscreenOptions*) override {
+    Thread::Current()->GetTaskRunner()->PostTask(
         FROM_HERE,
         WTF::Bind(DidEnterFullscreen, WrapPersistent(frame.GetDocument())));
   }
   void ExitFullscreen(LocalFrame& frame) override {
-    Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
+    Thread::Current()->GetTaskRunner()->PostTask(
         FROM_HERE,
         WTF::Bind(DidExitFullscreen, WrapPersistent(frame.GetDocument())));
   }
@@ -297,15 +298,15 @@ class MediaControlsOrientationLockAndRotateToFullscreenDelegateTest
   void SetUp() override {
     // Unset this to fix ScreenOrientationControllerImpl::ComputeOrientation.
     // TODO(mlamouri): Refactor to avoid this (crbug.com/726817).
-    was_running_layout_test_ = LayoutTestSupport::IsRunningLayoutTest();
-    LayoutTestSupport::SetIsRunningLayoutTest(false);
+    was_running_layout_test_ = WebTestSupport::IsRunningWebTest();
+    WebTestSupport::SetIsRunningWebTest(false);
 
     MediaControlsOrientationLockDelegateTest::SetUp();
 
     // Reset the <video> element now we've enabled the runtime feature.
     video_->parentElement()->RemoveChild(video_);
     video_ = HTMLVideoElement::Create(GetDocument());
-    video_->setAttribute(HTMLNames::controlsAttr, g_empty_atom);
+    video_->setAttribute(html_names::kControlsAttr, g_empty_atom);
     // Most tests should call GetDocument().body()->AppendChild(&Video());
     // This is not done automatically, so that tests control timing of `Attach`,
     // which is important for MediaControlsRotateToFullscreenDelegate since
@@ -314,7 +315,7 @@ class MediaControlsOrientationLockAndRotateToFullscreenDelegateTest
 
   void TearDown() override {
     MediaControlsOrientationLockDelegateTest::TearDown();
-    LayoutTestSupport::SetIsRunningLayoutTest(was_running_layout_test_);
+    WebTestSupport::SetIsRunningWebTest(was_running_layout_test_);
   }
 
   void SetIsAutoRotateEnabledByUser(bool enabled) {
@@ -413,7 +414,7 @@ class MediaControlsOrientationLockAndRotateToFullscreenDelegateTest
 
   void UpdateVisibilityObserver() {
     // Let IntersectionObserver update.
-    GetDocument().View()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhasesForTest();
     test::RunPendingTasks();
   }
 
@@ -1441,6 +1442,47 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
   CheckStateMaybeLockedFullscreen();
   EXPECT_EQ(kWebScreenOrientationLockAny, DelegateOrientationLock());
   EXPECT_TRUE(DelegateWillUnlockFullscreen());
+}
+
+TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
+       DetachBeforeChangeLockToAnyOrientation) {
+  // Naturally portrait device, initially portrait, with landscape video.
+  natural_orientation_is_portrait_ = true;
+  ASSERT_NO_FATAL_FAILURE(
+      RotateScreenTo(kWebScreenOrientationPortraitPrimary, 0));
+  InitVideo(640, 480);
+  SetIsAutoRotateEnabledByUser(true);
+
+  // Initially inline, unlocked orientation.
+  ASSERT_FALSE(Video().IsFullscreen());
+  CheckStatePendingFullscreen();
+  ASSERT_FALSE(DelegateWillUnlockFullscreen());
+
+  // Simulate user clicking on media controls fullscreen button.
+  SimulateEnterFullscreen();
+  EXPECT_TRUE(Video().IsFullscreen());
+
+  // MediaControlsOrientationLockDelegate should lock to landscape.
+  CheckStateMaybeLockedFullscreen();
+  EXPECT_EQ(kWebScreenOrientationLockLandscape, DelegateOrientationLock());
+
+  // This will trigger a screen orientation change to landscape.
+  ASSERT_NO_FATAL_FAILURE(
+      RotateScreenTo(kWebScreenOrientationLandscapePrimary, 90));
+
+  // Rotate the device to match.
+  RotateDeviceTo(90 /* landscape primary */);
+
+  // And immediately detach the document by synchronously navigating.
+  // One easy way to do this is to replace the document with a JavaScript URL.
+  GetFrame().GetSettings()->SetScriptEnabled(true);
+  GetFrame().Navigate(
+      FrameLoadRequest(&GetDocument(),
+                       ResourceRequest("javascript:'Hello, world!'")),
+      WebFrameLoadType::kStandard);
+
+  // We should not crash after the unlock delay.
+  test::RunDelayedTasks(GetUnlockDelay());
 }
 
 }  // namespace blink

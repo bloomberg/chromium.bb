@@ -57,7 +57,7 @@ std::unique_ptr<CdmFactory> MojoMediaClient::CreateCdmFactory(
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 std::unique_ptr<CdmProxy> MojoMediaClient::CreateCdmProxy(
-    const std::string& cdm_guid) {
+    const base::Token& cdm_guid) {
   return nullptr;
 }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)

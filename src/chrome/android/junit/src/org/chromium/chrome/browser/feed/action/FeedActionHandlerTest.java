@@ -87,7 +87,7 @@ public class FeedActionHandlerTest {
     @Captor
     ArgumentCaptor<WebContentsObserver> mWebContentsObserverCaptor;
 
-    int mLastCommittedEntryIndex = 0;
+    int mLastCommittedEntryIndex;
     private FeedActionHandler mActionHandler;
 
     private void verifyOpenedOffline(int expectedDisposition) {
@@ -163,7 +163,8 @@ public class FeedActionHandlerTest {
         answerWithGoodParams();
         mActionHandler.openUrl(TEST_URL);
         verifyOpenedOffline(WindowOpenDisposition.CURRENT_TAB);
-        verify(mLoggingBridge, times(1)).onContentTargetVisited(anyLong(), /*isOffline*/ eq(true));
+        verify(mLoggingBridge, times(1))
+                .onContentTargetVisited(anyLong(), /*isOffline*/ eq(true), anyBoolean());
     }
 
     @Test
@@ -172,7 +173,8 @@ public class FeedActionHandlerTest {
         when(mOfflineIndicator.getOfflineIdIfPageIsOfflined(TEST_URL)).thenReturn(null);
         mActionHandler.openUrl(TEST_URL);
         verifyOpenedOnline(WindowOpenDisposition.CURRENT_TAB);
-        verify(mLoggingBridge, times(1)).onContentTargetVisited(anyLong(), /*isOffline*/ eq(false));
+        verify(mLoggingBridge, times(1))
+                .onContentTargetVisited(anyLong(), /*isOffline*/ eq(false), anyBoolean());
     }
 
     @Test
@@ -183,7 +185,8 @@ public class FeedActionHandlerTest {
         answerWithGivenParams(null);
         mActionHandler.openUrl(TEST_URL);
         verifyOpenedOnline(WindowOpenDisposition.CURRENT_TAB);
-        verify(mLoggingBridge, times(1)).onContentTargetVisited(anyLong(), /*isOffline*/ eq(false));
+        verify(mLoggingBridge, times(1))
+                .onContentTargetVisited(anyLong(), /*isOffline*/ eq(false), anyBoolean());
     }
 
     @Test
@@ -204,7 +207,8 @@ public class FeedActionHandlerTest {
         answerWithGoodParams();
         mActionHandler.openUrlInNewTab(TEST_URL);
         verifyOpenedOffline(WindowOpenDisposition.NEW_BACKGROUND_TAB);
-        verify(mLoggingBridge, times(1)).onContentTargetVisited(anyLong(), /*isOffline*/ eq(true));
+        verify(mLoggingBridge, times(1))
+                .onContentTargetVisited(anyLong(), /*isOffline*/ eq(true), anyBoolean());
     }
 
     @Test
@@ -213,7 +217,8 @@ public class FeedActionHandlerTest {
         when(mOfflineIndicator.getOfflineIdIfPageIsOfflined(TEST_URL)).thenReturn(null);
         mActionHandler.openUrlInNewTab(TEST_URL);
         verifyOpenedOnline(WindowOpenDisposition.NEW_BACKGROUND_TAB);
-        verify(mLoggingBridge, times(1)).onContentTargetVisited(anyLong(), /*isOffline*/ eq(false));
+        verify(mLoggingBridge, times(1))
+                .onContentTargetVisited(anyLong(), /*isOffline*/ eq(false), anyBoolean());
     }
 
     @Test
@@ -223,7 +228,8 @@ public class FeedActionHandlerTest {
         answerWithGoodParams();
         mActionHandler.openUrlInNewWindow(TEST_URL);
         verifyOpenedOffline(WindowOpenDisposition.NEW_WINDOW);
-        verify(mLoggingBridge, times(1)).onContentTargetVisited(anyLong(), /*isOffline*/ eq(true));
+        verify(mLoggingBridge, times(1))
+                .onContentTargetVisited(anyLong(), /*isOffline*/ eq(true), anyBoolean());
     }
 
     @Test
@@ -232,7 +238,8 @@ public class FeedActionHandlerTest {
         when(mOfflineIndicator.getOfflineIdIfPageIsOfflined(TEST_URL)).thenReturn(null);
         mActionHandler.openUrlInNewWindow(TEST_URL);
         verifyOpenedOnline(WindowOpenDisposition.NEW_WINDOW);
-        verify(mLoggingBridge, times(1)).onContentTargetVisited(anyLong(), /*isOffline*/ eq(false));
+        verify(mLoggingBridge, times(1))
+                .onContentTargetVisited(anyLong(), /*isOffline*/ eq(false), anyBoolean());
     }
 
     @Test
@@ -257,6 +264,7 @@ public class FeedActionHandlerTest {
         when(mOfflineIndicator.getOfflineIdIfPageIsOfflined(TEST_URL)).thenReturn(null);
         mActionHandler.openUrl(TEST_URL);
         verifyOpenedOnline(WindowOpenDisposition.CURRENT_TAB);
-        verify(mLoggingBridge, times(0)).onContentTargetVisited(anyLong(), anyBoolean());
+        verify(mLoggingBridge, times(0))
+                .onContentTargetVisited(anyLong(), anyBoolean(), anyBoolean());
     }
 }

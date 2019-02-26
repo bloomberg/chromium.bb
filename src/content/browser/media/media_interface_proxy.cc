@@ -31,7 +31,6 @@
 #endif
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-#include "base/guid.h"
 #include "content/browser/media/cdm_storage_impl.h"
 #include "content/browser/media/key_system_support_impl.h"
 #include "content/public/common/cdm_info.h"
@@ -204,13 +203,13 @@ void MediaInterfaceProxy::CreateDecryptor(
 }
 
 void MediaInterfaceProxy::CreateCdmProxy(
-    const std::string& cdm_guid,
+    const base::Token& cdm_guid,
     media::mojom::CdmProxyRequest request) {
   NOTREACHED() << "The CdmProxy should only be created by a CDM.";
 }
 
 service_manager::mojom::InterfaceProviderPtr
-MediaInterfaceProxy::GetFrameServices(const std::string& cdm_guid,
+MediaInterfaceProxy::GetFrameServices(const base::Token& cdm_guid,
                                       const std::string& cdm_file_system_id) {
   // Register frame services.
   service_manager::mojom::InterfaceProviderPtr interfaces;
@@ -274,7 +273,7 @@ void MediaInterfaceProxy::ConnectToMediaService() {
 
   media_service->CreateInterfaceFactory(
       MakeRequest(&interface_factory_ptr_),
-      GetFrameServices(std::string(), std::string()));
+      GetFrameServices(base::Token{}, std::string()));
 
   interface_factory_ptr_.set_connection_error_handler(
       base::BindOnce(&MediaInterfaceProxy::OnMediaServiceConnectionError,
@@ -294,7 +293,7 @@ media::mojom::CdmFactory* MediaInterfaceProxy::GetCdmFactory(
     const std::string& key_system) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  std::string cdm_guid;
+  base::Token cdm_guid;
   base::FilePath cdm_path;
   std::string cdm_file_system_id;
 
@@ -306,10 +305,6 @@ media::mojom::CdmFactory* MediaInterfaceProxy::GetCdmFactory(
   }
   if (cdm_info->path.empty()) {
     NOTREACHED() << "CDM path for " << key_system << " is empty.";
-    return nullptr;
-  }
-  if (!base::IsValidGUID(cdm_info->guid)) {
-    NOTREACHED() << "Invalid CDM GUID " << cdm_info->guid;
     return nullptr;
   }
   if (!CdmStorageImpl::IsValidCdmFileSystemId(cdm_info->file_system_id)) {
@@ -328,22 +323,21 @@ media::mojom::CdmFactory* MediaInterfaceProxy::GetCdmFactory(
 }
 
 media::mojom::CdmFactory* MediaInterfaceProxy::ConnectToCdmService(
-    const std::string& cdm_guid,
+    const base::Token& cdm_guid,
     const base::FilePath& cdm_path,
     const std::string& cdm_file_system_id) {
-  DVLOG(1) << __func__ << ": cdm_guid = " << cdm_guid;
+  DVLOG(1) << __func__ << ": cdm_guid = " << cdm_guid.ToString();
 
   DCHECK(!cdm_factory_map_.count(cdm_guid));
-  service_manager::Identity identity(media::mojom::kCdmServiceName,
-                                     service_manager::mojom::kInheritUserID,
-                                     cdm_guid);
 
   // TODO(slan): Use the BrowserContext Connector instead. See crbug.com/638950.
   service_manager::Connector* connector =
       ServiceManagerConnection::GetForProcess()->GetConnector();
 
   media::mojom::CdmServicePtr cdm_service;
-  connector->BindInterface(identity, &cdm_service);
+  connector->BindInterface(service_manager::ServiceFilter::ByNameWithId(
+                               media::mojom::kCdmServiceName, cdm_guid),
+                           &cdm_service);
 
 #if defined(OS_MACOSX)
   // LoadCdm() should always be called before CreateInterfaceFactory().
@@ -370,7 +364,7 @@ media::mojom::CdmFactory* MediaInterfaceProxy::ConnectToCdmService(
 }
 
 void MediaInterfaceProxy::OnCdmServiceConnectionError(
-    const std::string& cdm_guid) {
+    const base::Token& cdm_guid) {
   DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -379,7 +373,7 @@ void MediaInterfaceProxy::OnCdmServiceConnectionError(
 }
 
 void MediaInterfaceProxy::CreateCdmProxyInternal(
-    const std::string& cdm_guid,
+    const base::Token& cdm_guid,
     media::mojom::CdmProxyRequest request) {
   DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());

@@ -13,13 +13,12 @@
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
 #include "core/fxge/dib/cfx_bitmapcomposer.h"
-#include "core/fxge/dib/cfx_dibbase.h"
-#include "core/fxge/dib/cfx_dibitmap.h"
-#include "core/fxge/fx_dib.h"
-#include "third_party/base/stl_util.h"
 
+class CFX_DIBBase;
+class CFX_DIBitmap;
 class CFX_ImageTransformer;
 class CFX_ImageStretcher;
+class PauseIndicatorIface;
 
 class CFX_ImageRenderer {
  public:
@@ -28,8 +27,8 @@ class CFX_ImageRenderer {
                     const RetainPtr<CFX_DIBBase>& pSource,
                     int bitmap_alpha,
                     uint32_t mask_color,
-                    const CFX_Matrix* pMatrix,
-                    uint32_t dib_flags,
+                    const CFX_Matrix& matrix,
+                    const FXDIB_ResampleOptions& options,
                     bool bRgbByteOrder);
   ~CFX_ImageRenderer();
 
@@ -39,16 +38,15 @@ class CFX_ImageRenderer {
   RetainPtr<CFX_DIBitmap> const m_pDevice;
   UnownedPtr<const CFX_ClipRgn> const m_pClipRgn;
   const CFX_Matrix m_Matrix;
-  const int m_BitmapAlpha;
-  const int m_BlendType;
-  const bool m_bRgbByteOrder;
-  uint32_t m_MaskColor;
   std::unique_ptr<CFX_ImageTransformer> m_pTransformer;
   std::unique_ptr<CFX_ImageStretcher> m_Stretcher;
   CFX_BitmapComposer m_Composer;
-  int m_Status;
   FX_RECT m_ClipBox;
-  int m_AlphaFlag;
+  const int m_BitmapAlpha;
+  int m_Status = 0;
+  int m_AlphaFlag = 0;
+  uint32_t m_MaskColor;
+  const bool m_bRgbByteOrder;
 };
 
 #endif  // CORE_FXGE_DIB_CFX_IMAGERENDERER_H_

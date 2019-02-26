@@ -19,8 +19,8 @@ namespace resource_coordinator {
 SystemCoordinationUnitImpl::SystemCoordinationUnitImpl(
     const CoordinationUnitID& id,
     CoordinationUnitGraph* graph,
-    std::unique_ptr<service_manager::ServiceContextRef> service_ref)
-    : CoordinationUnitInterface(id, graph, std::move(service_ref)) {}
+    std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref)
+    : CoordinationUnitInterface(id, graph, std::move(keepalive_ref)) {}
 
 SystemCoordinationUnitImpl::~SystemCoordinationUnitImpl() = default;
 

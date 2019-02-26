@@ -138,7 +138,7 @@ class TestBiosSigner(cros_test_lib.RunCommandTempDirTestCase):
                           '--signprivate', fw_key.private,
                           '--keyblock', fw_key.keyblock,
                           '--kernelkey', kernel_key.public,
-                          '--version', fw_key.version,
+                          '--version', str(fw_key.version),
                           '--devsign', fw_key.private,
                           '--devkeyblock', fw_key.keyblock,
                           bios_bin, bios_out])
@@ -165,7 +165,7 @@ class TestBiosSigner(cros_test_lib.RunCommandTempDirTestCase):
                           '--signprivate', fw_key.private,
                           '--keyblock', fw_key.keyblock,
                           '--kernelkey', kernel_key.public,
-                          '--version', fw_key.version,
+                          '--version', str(fw_key.version),
                           '--devsign', dev_fw_key.private,
                           '--devkeyblock', dev_fw_key.keyblock,
                           bios_bin, bios_out])
@@ -206,7 +206,7 @@ class TestBiosSigner(cros_test_lib.RunCommandTempDirTestCase):
                           '--signprivate', fw_key.private,
                           '--keyblock', fw_key.keyblock,
                           '--kernelkey', kernel_key.public,
-                          '--version', fw_key.version,
+                          '--version', str(fw_key.version),
                           '--devsign', fw_key.private,
                           '--devkeyblock', fw_key.keyblock,
                           '--loemdir', loem_dir,
@@ -270,7 +270,8 @@ class TestFirmwareSigner(cros_test_lib.RunCommandTempDirTestCase):
 
   def testSignOneWithEC(self):
     fs = firmware.FirmwareSigner()
-    ks = keys_unittest.KeysetMock(os.path.join(self.tempdir, 'keyset'))
+    keyset_dir = os.path.join(self.tempdir, 'keyset')
+    ks = keys_unittest.KeysetMock(keyset_dir)
     ks.CreateDummyKeys()
 
     shellball_dir = os.path.join(self.tempdir, 'shellball')
@@ -283,9 +284,10 @@ class TestFirmwareSigner(cros_test_lib.RunCommandTempDirTestCase):
 
   def testSignOneWithLoem(self):
     fs = firmware.FirmwareSigner()
-    ks = keys_unittest.KeysetMock(os.path.join(self.tempdir, 'keyset'))
+    keyset_dir = os.path.join(self.tempdir, 'keyset')
+    ks = keys_unittest.KeysetMock(keyset_dir)
     ks.CreateDummyKeys()
-    ks_subset = ks.GetSubKeyset('ACME')
+    ks_subset = ks.GetBuildKeyset('ACME')
 
     shellball_dir = os.path.join(self.tempdir, 'shellball')
     bios_path = os.path.join(shellball_dir, 'bios.bin')
@@ -301,7 +303,8 @@ class TestFirmwareSigner(cros_test_lib.RunCommandTempDirTestCase):
 
   def testSignWithSignerConfig(self):
     fs = firmware.FirmwareSigner()
-    ks = keys_unittest.KeysetMock(os.path.join(self.tempdir, 'keyset'))
+    keyset_dir = os.path.join(self.tempdir, 'keyset')
+    ks = keys_unittest.KeysetMock(keyset_dir)
     ks.CreateDummyKeys()
 
     shellball_dir = os.path.join(self.tempdir, 'shellball')
@@ -318,15 +321,17 @@ class TestFirmwareSigner(cros_test_lib.RunCommandTempDirTestCase):
       bios_path = os.path.join(shellball_dir, board_config['firmware_image'])
       self.assertCommandContains(['futility', 'sign', bios_path])
 
-  def testSignWithNoSignerConfig(self):
+  def testSignWithNoSignerConfigUnified(self):
+    """Test signing unified builds with no signer_config.csv provided."""
     fs = firmware.FirmwareSigner()
-    ks = keys_unittest.KeysetMock(os.path.join(self.tempdir, 'keyset'))
+    keyset_dir = os.path.join(self.tempdir, 'keyset')
+    ks = keys_unittest.KeysetMock(keyset_dir)
     ks.CreateDummyKeys()
 
     shellball_dir = os.path.join(self.tempdir, 'shellball')
 
-    test_bios = ('bios.bin',
-                 'bios.loem1.bin')
+    test_bios = ('bios.loem1.bin',
+                 'bios.loem2.bin')
 
     for bios in test_bios:
       osutils.Touch(os.path.join(shellball_dir, bios), makedirs=True)
@@ -338,6 +343,29 @@ class TestFirmwareSigner(cros_test_lib.RunCommandTempDirTestCase):
       self.assertCommandContains(['futility', 'sign', bios_path])
 
     self.assertExists(os.path.join(shellball_dir, 'keyset.loem1'))
+    self.assertExists(os.path.join(shellball_dir, 'keyset.loem2'))
+
+  def testSignWithNoSignerConfigNonUnified(self):
+    """Test signing non-unified build with no signer_config.csv provided."""
+    fs = firmware.FirmwareSigner()
+    keyset_dir = os.path.join(self.tempdir, 'keyset')
+    ks = keys_unittest.KeysetMock(keyset_dir, has_loem_ini=False)
+    ks.CreateDummyKeys()
+
+    shellball_dir = os.path.join(self.tempdir, 'shellball')
+
+    test_bios = ('bios.bin',)
+
+    for bios in test_bios:
+      osutils.Touch(os.path.join(shellball_dir, bios), makedirs=True)
+
+    fs.Sign(ks, shellball_dir, None)
+
+    for bios in test_bios:
+      bios_path = os.path.join(shellball_dir, bios)
+      self.assertCommandContains(['futility', 'sign', bios_path])
+
+    self.assertExists(os.path.join(shellball_dir, 'keyset'))
 
 
 class TestGBBSigner(cros_test_lib.RunCommandTempDirTestCase):
@@ -487,14 +515,18 @@ class TestWriteSignerNotes(cros_test_lib.RunCommandTempDirTestCase):
   def testLoemKeys(self):
     """Test function's output with multiple loem keys."""
     recovery_key = keys.KeyPair('recovery_key', self.tempdir)
-    root_key = keys.KeyPair('root_key', self.tempdir)
-    root_key.AddSubkey('loem1')
-    root_key.AddSubkey('loem2')
-    root_key.AddSubkey('loem3')
+    root_keys = {
+        'loem%d' % idx: keys.KeyPair('root_key.loem%d' % idx, self.tempdir)
+        for idx in xrange(1, 4)}
 
-    keyset = keys.Keyset()
+    lines = ['[loem]'] + ['%d = loem%d' % (int(loem[4:]), int(loem[4:]))
+                          for loem in sorted(root_keys.keys())]
+    contents = '\n'.join(lines) + '\n'
+    osutils.WriteFile(os.path.join(self.tempdir, 'loem.ini'), contents)
+    keyset = keys.Keyset(self.tempdir)
     keyset.AddKey(recovery_key)
-    keyset.AddKey(root_key)
+    for k in root_keys.values():
+      keyset.AddKey(k)
 
     sha1sum = keys_unittest.MOCK_SHA1SUM
     expected_header = ['Signed with keyset in ' + self.tempdir,

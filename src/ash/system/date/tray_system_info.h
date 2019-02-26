@@ -12,13 +12,11 @@
 #include "ash/session/session_controller.h"
 #include "ash/session/session_observer.h"
 #include "ash/system/date/clock_observer.h"
-#include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/tray_item_view.h"
 #include "base/macros.h"
 
 namespace ash {
 class Shelf;
-class SystemInfoDefaultView;
 
 namespace tray {
 
@@ -26,7 +24,7 @@ class TimeView;
 
 class TimeTrayItemView : public TrayItemView, public SessionObserver {
  public:
-  TimeTrayItemView(SystemTrayItem* owner, Shelf* shelf);
+  explicit TimeTrayItemView(Shelf* shelf);
   ~TimeTrayItemView() override;
 
   void UpdateAlignmentForShelf(Shelf* shelf);
@@ -42,30 +40,6 @@ class TimeTrayItemView : public TrayItemView, public SessionObserver {
 };
 
 }  // namespace tray
-
-// The bottom row of the system menu. The default view shows the current date
-// and power status. The tray view shows the current time.
-class ASH_EXPORT TraySystemInfo : public SystemTrayItem {
- public:
-  explicit TraySystemInfo(SystemTray* system_tray);
-  ~TraySystemInfo() override;
-
-  const tray::TimeView* GetTimeTrayForTesting() const;
-
- private:
-  // SystemTrayItem:
-  views::View* CreateTrayView(LoginStatus status) override;
-  views::View* CreateDefaultView(LoginStatus status) override;
-  void OnTrayViewDestroyed() override;
-  void OnDefaultViewDestroyed() override;
-  void UpdateAfterShelfAlignmentChange() override;
-
-  tray::TimeTrayItemView* tray_view_ = nullptr;
-  SystemInfoDefaultView* default_view_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(TraySystemInfo);
-};
-
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_DATE_TRAY_SYSTEM_INFO_H_

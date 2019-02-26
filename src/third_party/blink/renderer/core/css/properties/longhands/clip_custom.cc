@@ -16,40 +16,41 @@ namespace {
 CSSValue* ConsumeClipComponent(CSSParserTokenRange& range,
                                CSSParserMode css_parser_mode) {
   if (range.Peek().Id() == CSSValueAuto)
-    return CSSPropertyParserHelpers::ConsumeIdent(range);
-  return CSSPropertyParserHelpers::ConsumeLength(
+    return css_property_parser_helpers::ConsumeIdent(range);
+  return css_property_parser_helpers::ConsumeLength(
       range, css_parser_mode, kValueRangeAll,
-      CSSPropertyParserHelpers::UnitlessQuirk::kAllow);
+      css_property_parser_helpers::UnitlessQuirk::kAllow);
 }
 
 }  // namespace
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* Clip::ParseSingleValue(CSSParserTokenRange& range,
                                        const CSSParserContext& context,
                                        const CSSParserLocalContext&) const {
   if (range.Peek().Id() == CSSValueAuto)
-    return CSSPropertyParserHelpers::ConsumeIdent(range);
+    return css_property_parser_helpers::ConsumeIdent(range);
 
   if (range.Peek().FunctionId() != CSSValueRect)
     return nullptr;
 
-  CSSParserTokenRange args = CSSPropertyParserHelpers::ConsumeFunction(range);
+  CSSParserTokenRange args =
+      css_property_parser_helpers::ConsumeFunction(range);
   // rect(t, r, b, l) || rect(t r b l)
   CSSValue* top = ConsumeClipComponent(args, context.Mode());
   if (!top)
     return nullptr;
   bool needs_comma =
-      CSSPropertyParserHelpers::ConsumeCommaIncludingWhitespace(args);
+      css_property_parser_helpers::ConsumeCommaIncludingWhitespace(args);
   CSSValue* right = ConsumeClipComponent(args, context.Mode());
   if (!right ||
       (needs_comma &&
-       !CSSPropertyParserHelpers::ConsumeCommaIncludingWhitespace(args)))
+       !css_property_parser_helpers::ConsumeCommaIncludingWhitespace(args)))
     return nullptr;
   CSSValue* bottom = ConsumeClipComponent(args, context.Mode());
   if (!bottom ||
       (needs_comma &&
-       !CSSPropertyParserHelpers::ConsumeCommaIncludingWhitespace(args)))
+       !css_property_parser_helpers::ConsumeCommaIncludingWhitespace(args)))
     return nullptr;
   CSSValue* left = ConsumeClipComponent(args, context.Mode());
   if (!left || !args.AtEnd())
@@ -78,5 +79,5 @@ const CSSValue* Clip::CSSValueFromComputedStyleInternal(
                               CSSQuadValue::kSerializeAsRect);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

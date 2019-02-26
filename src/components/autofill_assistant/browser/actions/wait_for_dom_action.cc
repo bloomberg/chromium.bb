@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/time/time.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
@@ -21,46 +20,34 @@ static constexpr base::TimeDelta kDefaultCheckDuration =
 
 namespace autofill_assistant {
 
-WaitForDomAction::WaitForDomAction(const ActionProto& proto) : Action(proto) {}
+WaitForDomAction::WaitForDomAction(const ActionProto& proto)
+    : Action(proto), weak_ptr_factory_(this) {}
 
 WaitForDomAction::~WaitForDomAction() {}
 
-void WaitForDomAction::ProcessAction(ActionDelegate* delegate,
-                                     ProcessActionCallback callback) {
-  std::vector<std::string> selectors;
+void WaitForDomAction::InternalProcessAction(ActionDelegate* delegate,
+                                             ProcessActionCallback callback) {
+  DCHECK_GT(proto_.wait_for_dom().selectors_size(), 0);
+  Selector a_selector;
   for (const auto& selector : proto_.wait_for_dom().selectors()) {
-    selectors.emplace_back(selector);
-  }
-  if (selectors.empty()) {
-    UpdateProcessedAction(OTHER_ACTION_STATUS);
-    DLOG(ERROR) << "Empty selector, failing action.";
-    std::move(callback).Run(std::move(processed_action_proto_));
-    return;
+    a_selector.selectors.emplace_back(selector);
   }
 
-  batch_element_checker_ = delegate->CreateBatchElementChecker();
-  batch_element_checker_->AddElementExistenceCheck(selectors,
-                                                   base::DoNothing());
-
-  base::TimeDelta duration = kDefaultCheckDuration;
+  base::TimeDelta max_wait_time = kDefaultCheckDuration;
   int timeout_ms = proto_.wait_for_dom().timeout_ms();
   if (timeout_ms > 0)
-    duration = base::TimeDelta::FromMilliseconds(timeout_ms);
+    max_wait_time = base::TimeDelta::FromMilliseconds(timeout_ms);
 
-  batch_element_checker_->Run(
-      duration,
-      /* try_done= */ base::DoNothing(),
-      /* all_done= */
+  delegate->WaitForElementVisible(
+      max_wait_time, proto_.wait_for_dom().allow_interrupt(), a_selector,
       base::BindOnce(&WaitForDomAction::OnCheckDone,
-                     // batch_element_checker_ is owned by this
-                     base::Unretained(this), std::move(callback)));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void WaitForDomAction::OnCheckDone(ProcessActionCallback callback) {
-  processed_action_proto_ = std::make_unique<ProcessedActionProto>();
-  UpdateProcessedAction(batch_element_checker_->all_found()
-                            ? ACTION_APPLIED
-                            : ELEMENT_RESOLUTION_FAILED);
+void WaitForDomAction::OnCheckDone(ProcessActionCallback callback,
+                                   bool element_found) {
+  UpdateProcessedAction(element_found ? ACTION_APPLIED
+                                      : ELEMENT_RESOLUTION_FAILED);
   std::move(callback).Run(std::move(processed_action_proto_));
 }
 }  // namespace autofill_assistant

@@ -82,12 +82,6 @@ using protos::MmCompactionMigratepagesFtraceEvent;
 using protos::MmCompactionSuitableFtraceEvent;
 using protos::MmCompactionTryToCompactPagesFtraceEvent;
 using protos::MmCompactionWakeupKcompactdFtraceEvent;
-using protos::CpufreqInteractiveAlreadyFtraceEvent;
-using protos::CpufreqInteractiveBoostFtraceEvent;
-using protos::CpufreqInteractiveNotyetFtraceEvent;
-using protos::CpufreqInteractiveSetspeedFtraceEvent;
-using protos::CpufreqInteractiveTargetFtraceEvent;
-using protos::CpufreqInteractiveUnboostFtraceEvent;
 using protos::Ext4AllocDaBlocksFtraceEvent;
 using protos::Ext4AllocateBlocksFtraceEvent;
 using protos::Ext4AllocateInodeFtraceEvent;
@@ -294,6 +288,60 @@ using protos::F2fsVmPageMkwriteFtraceEvent;
 using protos::F2fsWriteBeginFtraceEvent;
 using protos::F2fsWriteCheckpointFtraceEvent;
 using protos::F2fsWriteEndFtraceEvent;
+using protos::AllocPagesIommuEndFtraceEvent;
+using protos::AllocPagesIommuFailFtraceEvent;
+using protos::AllocPagesIommuStartFtraceEvent;
+using protos::AllocPagesSysEndFtraceEvent;
+using protos::AllocPagesSysFailFtraceEvent;
+using protos::AllocPagesSysStartFtraceEvent;
+using protos::DmaAllocContiguousRetryFtraceEvent;
+using protos::IommuMapRangeFtraceEvent;
+using protos::IommuSecPtblMapRangeEndFtraceEvent;
+using protos::IommuSecPtblMapRangeStartFtraceEvent;
+using protos::IonAllocBufferEndFtraceEvent;
+using protos::IonAllocBufferFailFtraceEvent;
+using protos::IonAllocBufferFallbackFtraceEvent;
+using protos::IonAllocBufferStartFtraceEvent;
+using protos::IonCpAllocRetryFtraceEvent;
+using protos::IonCpSecureBufferEndFtraceEvent;
+using protos::IonCpSecureBufferStartFtraceEvent;
+using protos::IonHeapGrowFtraceEvent;
+using protos::IonHeapShrinkFtraceEvent;
+using protos::IonPrefetchingFtraceEvent;
+using protos::IonSecureCmaAddToPoolEndFtraceEvent;
+using protos::IonSecureCmaAddToPoolStartFtraceEvent;
+using protos::IonSecureCmaAllocateEndFtraceEvent;
+using protos::IonSecureCmaAllocateStartFtraceEvent;
+using protos::IonSecureCmaShrinkPoolEndFtraceEvent;
+using protos::IonSecureCmaShrinkPoolStartFtraceEvent;
+using protos::KfreeFtraceEvent;
+using protos::KmallocFtraceEvent;
+using protos::KmallocNodeFtraceEvent;
+using protos::KmemCacheAllocFtraceEvent;
+using protos::KmemCacheAllocNodeFtraceEvent;
+using protos::KmemCacheFreeFtraceEvent;
+using protos::MigratePagesEndFtraceEvent;
+using protos::MigratePagesStartFtraceEvent;
+using protos::MigrateRetryFtraceEvent;
+using protos::MmPageAllocFtraceEvent;
+using protos::MmPageAllocExtfragFtraceEvent;
+using protos::MmPageAllocZoneLockedFtraceEvent;
+using protos::MmPageFreeFtraceEvent;
+using protos::MmPageFreeBatchedFtraceEvent;
+using protos::MmPagePcpuDrainFtraceEvent;
+using protos::RssStatFtraceEvent;
+using protos::BinderTransactionAllocBufFtraceEvent;
+using protos::FenceDestroyFtraceEvent;
+using protos::FenceEnableSignalFtraceEvent;
+using protos::FenceInitFtraceEvent;
+using protos::FenceSignaledFtraceEvent;
+using protos::ClkDisableFtraceEvent;
+using protos::ClkEnableFtraceEvent;
+using protos::ClkSetRateFtraceEvent;
+using protos::SignalDeliverFtraceEvent;
+using protos::SignalGenerateFtraceEvent;
+using protos::OomScoreAdjUpdateFtraceEvent;
+using protos::GenericFtraceEvent;
 
 const char* GetSchedSwitchFlag(int64_t state) {
   state &= 511;
@@ -557,6 +605,16 @@ std::string FormatBinderTransactionReceived(
   return std::string(line);
 }
 
+std::string FormatBinderTransactionAllocBuf(
+    const BinderTransactionAllocBufFtraceEvent& event) {
+  char line[2048];
+  sprintf(line,
+          "binder_transaction_alloc_buf: transaction=%d data_size=%zd "
+          "offsets_size=%zd",
+          event.debug_id(), event.data_size(), event.offsets_size());
+  return std::string(line);
+}
+
 std::string FormatExt4SyncFileEnter(const Ext4SyncFileEnterFtraceEvent& event) {
   char line[2048];
   sprintf(line,
@@ -759,12 +817,14 @@ std::string FormatI2cReply(const I2cReplyFtraceEvent& event) {
   return std::string(line);
 }
 
-// TODO(hjd): Check gfp_flags
 std::string FormatMmVmscanDirectReclaimBegin(
     const MmVmscanDirectReclaimBeginFtraceEvent& event) {
   char line[2048];
-  sprintf(line, "mm_vmscan_direct_reclaim_begin: order=%d may_writepage=%d",
-          event.order(), event.may_writepage());
+  // TODO(b/117966147): Translate binary to gfp_flag
+  sprintf(
+      line,
+      "mm_vmscan_direct_reclaim_begin: order=%d may_writepage=%d gfp_flags=%d",
+      event.order(), event.may_writepage(), event.gfp_flags());
   return std::string(line);
 }
 
@@ -2107,12 +2167,25 @@ std::string FormatF2fsSubmitWritePage(
 }
 std::string FormatF2fsSyncFileEnter(const F2fsSyncFileEnterFtraceEvent& event) {
   char line[2048];
-  sprintf(line, "f2fs_sync_file_enter: TODO(fmayer): add format");
+  sprintf(line,
+          "f2fs_sync_file_enter: dev = (%d,%d), ino = %lu, pino = %lu, i_mode "
+          "= 0x%hx, i_size = %lld, i_nlink = %u, i_blocks = %llu, i_advise = "
+          "0x%x",
+          static_cast<int>(event.dev() >> 20),
+          static_cast<int>(event.dev() & ((1U << 20) - 1)), event.ino(),
+          event.pino(), event.mode(), event.size(), event.nlink(),
+          event.blocks(), static_cast<unsigned char>(event.advise()));
   return std::string(line);
 }
 std::string FormatF2fsSyncFileExit(const F2fsSyncFileExitFtraceEvent& event) {
   char line[2048];
-  sprintf(line, "f2fs_sync_file_exit: TODO(fmayer): add format");
+  std::string cp = event.need_cp() ? "needed" : "not needed";
+  sprintf(line,
+          "f2fs_sync_file_exit: dev = (%d,%d), ino = %lu, checkpoint is %s, "
+          "datasync = %d, ret = %d",
+          static_cast<int>(event.dev() >> 20),
+          static_cast<int>(event.dev() & ((1U << 20) - 1)), event.ino(),
+          cp.c_str(), event.datasync(), event.ret());
   return std::string(line);
 }
 std::string FormatF2fsSyncFs(const F2fsSyncFsFtraceEvent& event) {
@@ -2195,7 +2268,12 @@ std::string FormatF2fsVmPageMkwrite(const F2fsVmPageMkwriteFtraceEvent& event) {
 }
 std::string FormatF2fsWriteBegin(const F2fsWriteBeginFtraceEvent& event) {
   char line[2048];
-  sprintf(line, "f2fs_write_begin: TODO(fmayer): add format");
+  sprintf(
+      line,
+      "f2fs_write_begin: dev = (%d,%d), ino %lu, pos %lld, len %u, flags %u",
+      static_cast<int>(event.dev() >> 20),
+      static_cast<int>(event.dev() & ((1U << 20) - 1)), event.ino(),
+      event.pos(), event.len(), event.flags());
   return std::string(line);
 }
 std::string FormatF2fsWriteCheckpoint(
@@ -2206,7 +2284,436 @@ std::string FormatF2fsWriteCheckpoint(
 }
 std::string FormatF2fsWriteEnd(const F2fsWriteEndFtraceEvent& event) {
   char line[2048];
-  sprintf(line, "f2fs_write_end: TODO(fmayer): add format");
+  sprintf(line,
+          "f2fs_write_end: dev = (%d,%d), ino %lu, pos %lld, len %u, copied %u",
+          static_cast<int>(event.dev() >> 20),
+          static_cast<int>(event.dev() & ((1U << 20) - 1)), event.ino(),
+          event.pos(), event.len(), event.copied());
+  return std::string(line);
+}
+std::string FormatFenceDestroy(const FenceDestroyFtraceEvent& event) {
+  char line[2048];
+  sprintf(line, "fence_destroy: driver=%s timeline=%s context=%u seqno=%u",
+          event.driver().c_str(), event.timeline().c_str(), event.context(),
+          event.seqno());
+  return std::string(line);
+}
+std::string FormatFenceEnableSignal(const FenceEnableSignalFtraceEvent& event) {
+  char line[2048];
+  sprintf(line,
+          "fence_enable_signal: driver=%s timeline=%s context=%u seqno=%u",
+          event.driver().c_str(), event.timeline().c_str(), event.context(),
+          event.seqno());
+  return std::string(line);
+}
+std::string FormatFenceInit(const FenceInitFtraceEvent& event) {
+  char line[2048];
+  sprintf(line, "fence_init: driver=%s timeline=%s context=%u seqno=%u",
+          event.driver().c_str(), event.timeline().c_str(), event.context(),
+          event.seqno());
+  return std::string(line);
+}
+std::string FormatFenceSignaled(const FenceSignaledFtraceEvent& event) {
+  char line[2048];
+  sprintf(line, "fence_signaled: driver=%s timeline=%s context=%u seqno=%u",
+          event.driver().c_str(), event.timeline().c_str(), event.context(),
+          event.seqno());
+  return std::string(line);
+}
+std::string FormatClkDisable(const ClkDisableFtraceEvent& event) {
+  char line[2048];
+  sprintf(line, "clk_disable: %s", event.name().c_str());
+  return std::string(line);
+}
+std::string FormatClkEnable(const ClkEnableFtraceEvent& event) {
+  char line[2048];
+  sprintf(line, "clk_enable: %s", event.name().c_str());
+  return std::string(line);
+}
+std::string FormatClkSetRate(const ClkSetRateFtraceEvent& event) {
+  char line[2048];
+  sprintf(line, "clk_set_rate: %s %lu", event.name().c_str(), event.rate());
+  return std::string(line);
+}
+std::string FormatIpiEntry(const IpiEntryFtraceEvent& event) {
+  char line[2048];
+  sprintf(line, "ipi_entry: (%s)", event.reason().c_str());
+  return std::string(line);
+}
+std::string FormatIpiExit(const IpiExitFtraceEvent& event) {
+  char line[2048];
+  sprintf(line, "ipi_exit: (%s)", event.reason().c_str());
+  return std::string(line);
+}
+std::string FormatAllocPagesIommuEnd(
+    const AllocPagesIommuEndFtraceEvent& event) {
+  char line[2048];
+  // TODO(b/117966147): Translate binary to gfp_flag
+  sprintf(line, "alloc_pages_iommu_end: gfp_flags=%d order=%d",
+          event.gfp_flags(), event.order());
+  return std::string(line);
+}
+std::string FormatAllocPagesIommuFail(
+    const AllocPagesIommuFailFtraceEvent& event) {
+  char line[2048];
+  // TODO(b/117966147): Translate binary to gfp_flag
+  sprintf(line, "alloc_pages_iommu_fail: gfp_flags=%d order=%d",
+          event.gfp_flags(), event.order());
+  return std::string(line);
+}
+std::string FormatAllocPagesIommuStart(
+    const AllocPagesIommuStartFtraceEvent& event) {
+  char line[2048];
+  // TODO(b/117966147): Translate binary to gfp_flag
+  sprintf(line, "alloc_pages_iommu_start: gfp_flags=%d order=%d",
+          event.gfp_flags(), event.order());
+  return std::string(line);
+}
+std::string FormatAllocPagesSysEnd(const AllocPagesSysEndFtraceEvent& event) {
+  char line[2048];
+  // TODO(b/117966147): Translate binary to gfp_flag
+  sprintf(line, "alloc_pages_sys_end: gfp_flags=%d order=%d", event.gfp_flags(),
+          event.order());
+  return std::string(line);
+}
+std::string FormatAllocPagesSysFail(const AllocPagesSysFailFtraceEvent& event) {
+  char line[2048];
+  // TODO(b/117966147): Translate binary to gfp_flag
+  sprintf(line, "alloc_pages_sys_fail: gfp_flags=%d order=%d",
+          event.gfp_flags(), event.order());
+  return std::string(line);
+}
+std::string FormatAllocPagesSysStart(
+    const AllocPagesSysStartFtraceEvent& event) {
+  char line[2048];
+  // TODO(b/117966147): Translate binary to gfp_flag
+  sprintf(line, "alloc_pages_sys_start: gfp_flags=%d order=%d",
+          event.gfp_flags(), event.order());
+  return std::string(line);
+}
+std::string FormatDmaAllocContiguousRetry(
+    const DmaAllocContiguousRetryFtraceEvent& event) {
+  char line[2048];
+  sprintf(line, "dma_alloc_contiguous_retry: tries=%d", event.tries());
+  return std::string(line);
+}
+std::string FormatIommuMapRange(const IommuMapRangeFtraceEvent& event) {
+  char line[2048];
+  sprintf(line,
+          "iommu_map_range: v_addr=%p p_addr=%pa chunk_size=0x%lu len=%zu",
+          event.va(), event.pa(), event.chunk_size(), event.len());
+  return std::string(line);
+}
+std::string FormatIommuSecPtblMapRangeEnd(
+    const IommuSecPtblMapRangeEndFtraceEvent& event) {
+  char line[2048];
+  sprintf(line,
+          "iommu_sec_ptbl_map_range_end: sec_id=%d num=%d va=%lx pa=%u len=%zu",
+          event.sec_id(), event.num(), event.va(), event.pa(), event.len());
+  return std::string(line);
+}
+std::string FormatIommuSecPtblMapRangeStart(
+    const IommuSecPtblMapRangeStartFtraceEvent& event) {
+  char line[2048];
+  sprintf(
+      line,
+      "iommu_sec_ptbl_map_range_start: sec_id=%d num=%d va=%lx pa=%u len=%zu",
+      event.sec_id(), event.num(), event.va(), event.pa(), event.len());
+  return std::string(line);
+}
+std::string FormatIonAllocBufferEnd(const IonAllocBufferEndFtraceEvent& event) {
+  char line[2048];
+  sprintf(line,
+          "ion_alloc_buffer_end: client_name=%s heap_name=%s len=%zu mask=0x%x "
+          "flags=0x%x",
+          event.client_name().c_str(), event.heap_name().c_str(), event.len(),
+          event.mask(), event.flags());
+  return std::string(line);
+}
+std::string FormatIonAllocBufferFail(
+    const IonAllocBufferFailFtraceEvent& event) {
+  char line[2048];
+  sprintf(line,
+          "ion_alloc_buffer_fail: client_name=%s heap_name=%s len=%zu "
+          "mask=0x%x flags=0x%x error=%ld",
+          event.client_name().c_str(), event.heap_name().c_str(), event.len(),
+          event.mask(), event.flags(), event.error());
+  return std::string(line);
+}
+std::string FormatIonAllocBufferFallback(
+    const IonAllocBufferFallbackFtraceEvent& event) {
+  char line[2048];
+  sprintf(line,
+          "ion_alloc_buffer_fallback: client_name=%s heap_name=%s len=%zu "
+          "mask=0x%x flags=0x%x error=%ld",
+          event.client_name().c_str(), event.heap_name().c_str(), event.len(),
+          event.mask(), event.flags(), event.error());
+  return std::string(line);
+}
+std::string FormatIonAllocBufferStart(
+    const IonAllocBufferStartFtraceEvent& event) {
+  char line[2048];
+  sprintf(line,
+          "ion_alloc_buffer_start: client_name=%s heap_name=%s len=%zu "
+          "mask=0x%x flags=0x%x",
+          event.client_name().c_str(), event.heap_name().c_str(), event.len(),
+          event.mask(), event.flags());
+  return std::string(line);
+}
+std::string FormatIonCpAllocRetry(const IonCpAllocRetryFtraceEvent& event) {
+  char line[2048];
+  sprintf(line, "ion_cp_alloc_retry: tries=%d", event.tries());
+  return std::string(line);
+}
+std::string FormatIonCpSecureBufferEnd(
+    const IonCpSecureBufferEndFtraceEvent& event) {
+  char line[2048];
+  sprintf(line,
+          "ion_cp_secure_buffer_end: heap_name=%s len=%lx align=%lx flags=%lx",
+          event.heap_name().c_str(), event.len(), event.align(), event.flags());
+  return std::string(line);
+}
+std::string FormatIonCpSecureBufferStart(
+    const IonCpSecureBufferStartFtraceEvent& event) {
+  char line[2048];
+  sprintf(
+      line,
+      "ion_cp_secure_buffer_start: heap_name=%s len=%lx align=%lx flags=%lx",
+      event.heap_name().c_str(), event.len(), event.align(), event.flags());
+  return std::string(line);
+}
+std::string FormatIonHeapGrow(const IonHeapGrowFtraceEvent& event) {
+  char line[2048];
+  sprintf(line, "ion_heap_grow: heap_name=%s, len=%zu, total_allocated=%ld",
+          event.heap_name().c_str(), event.len(), event.total_allocated());
+  return std::string(line);
+}
+std::string FormatIonHeapShrink(const IonHeapShrinkFtraceEvent& event) {
+  char line[2048];
+  sprintf(line, "ion_heap_shrink: heap_name=%s, len=%zu, total_allocated=%ld",
+          event.heap_name().c_str(), event.len(), event.total_allocated());
+  return std::string(line);
+}
+std::string FormatIonPrefetching(const IonPrefetchingFtraceEvent& event) {
+  char line[2048];
+  sprintf(line, "ion_prefetching: prefetch size %lx", event.len());
+  return std::string(line);
+}
+std::string FormatIonSecureCmaAddToPoolEnd(
+    const IonSecureCmaAddToPoolEndFtraceEvent& event) {
+  char line[2048];
+  sprintf(
+      line,
+      "ion_secure_cma_add_to_pool_end: len %lx, pool total %x is_prefetch %d",
+      event.len(), event.pool_total(), event.is_prefetch());
+  return std::string(line);
+}
+std::string FormatIonSecureCmaAddToPoolStart(
+    const IonSecureCmaAddToPoolStartFtraceEvent& event) {
+  char line[2048];
+  sprintf(
+      line,
+      "ion_secure_cma_add_to_pool_start: len %lx, pool total %x is_prefetch %d",
+      event.len(), event.pool_total(), event.is_prefetch());
+  return std::string(line);
+}
+std::string FormatIonSecureCmaAllocateEnd(
+    const IonSecureCmaAllocateEndFtraceEvent& event) {
+  char line[2048];
+  sprintf(
+      line,
+      "ion_secure_cma_allocate_end: heap_name=%s len=%lx align=%lx flags=%lx",
+      event.heap_name().c_str(), event.len(), event.align(), event.flags());
+  return std::string(line);
+}
+std::string FormatIonSecureCmaAllocateStart(
+    const IonSecureCmaAllocateStartFtraceEvent& event) {
+  char line[2048];
+  sprintf(
+      line,
+      "ion_secure_cma_allocate_start: heap_name=%s len=%lx align=%lx flags=%lx",
+      event.heap_name().c_str(), event.len(), event.align(), event.flags());
+  return std::string(line);
+}
+std::string FormatIonSecureCmaShrinkPoolEnd(
+    const IonSecureCmaShrinkPoolEndFtraceEvent& event) {
+  char line[2048];
+  sprintf(line,
+          "ion_secure_cma_shrink_pool_end: drained size %lx, skipped size %lx",
+          event.drained_size(), event.skipped_size());
+  return std::string(line);
+}
+std::string FormatIonSecureCmaShrinkPoolStart(
+    const IonSecureCmaShrinkPoolStartFtraceEvent& event) {
+  char line[2048];
+  sprintf(
+      line,
+      "ion_secure_cma_shrink_pool_start: drained size %lx, skipped size %lx",
+      event.drained_size(), event.skipped_size());
+  return std::string(line);
+}
+std::string FormatKfree(const KfreeFtraceEvent& event) {
+  char line[2048];
+  sprintf(line, "kfree: call_site=%lx ptr=%p", event.call_site(), event.ptr());
+  return std::string(line);
+}
+std::string FormatKmalloc(const KmallocFtraceEvent& event) {
+  char line[2048];
+  // TODO(b/117966147): Translate binary to gfp_flag
+  sprintf(line,
+          "kmalloc: call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu "
+          "gfp_flags=%d",
+          event.call_site(), event.ptr(), event.bytes_req(),
+          event.bytes_alloc(), event.gfp_flags());
+  return std::string(line);
+}
+std::string FormatKmallocNode(const KmallocNodeFtraceEvent& event) {
+  char line[2048];
+  // TODO(b/117966147): Translate binary to gfp_flag
+  sprintf(line,
+          "kmalloc_node: call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu "
+          "gfp_flags=%d node=%d",
+          event.call_site(), event.ptr(), event.bytes_req(),
+          event.bytes_alloc(), event.gfp_flags(), event.node());
+  return std::string(line);
+}
+std::string FormatKmemCacheAlloc(const KmemCacheAllocFtraceEvent& event) {
+  char line[2048];
+  // TODO(b/117966147): Translate binary to gfp_flag
+  sprintf(line,
+          "kmem_cache_alloc: call_site=%lx ptr=%p bytes_req=%zu "
+          "bytes_alloc=%zu gfp_flags=%d",
+          event.call_site(), event.ptr(), event.bytes_req(),
+          event.bytes_alloc(), event.gfp_flags());
+  return std::string(line);
+}
+std::string FormatKmemCacheAllocNode(
+    const KmemCacheAllocNodeFtraceEvent& event) {
+  char line[2048];
+  // TODO(b/117966147): Translate binary to gfp_flag
+  sprintf(line,
+          "kmem_cache_alloc_node: call_site=%lx ptr=%p bytes_req=%zu "
+          "bytes_alloc=%zu gfp_flags=%d node=%d",
+          event.call_site(), event.ptr(), event.bytes_req(),
+          event.bytes_alloc(), event.gfp_flags(), event.node());
+  return std::string(line);
+}
+std::string FormatKmemCacheFree(const KmemCacheFreeFtraceEvent& event) {
+  char line[2048];
+  sprintf(line, "kmem_cache_free: call_site=%lx ptr=%p", event.call_site(),
+          event.ptr());
+  return std::string(line);
+}
+std::string FormatMigratePagesEnd(const MigratePagesEndFtraceEvent& event) {
+  char line[2048];
+  sprintf(line, "migrate_pages_end: mode=%d", event.mode());
+  return std::string(line);
+}
+std::string FormatMigratePagesStart(const MigratePagesStartFtraceEvent& event) {
+  char line[2048];
+  sprintf(line, "migrate_pages_start: mode=%d", event.mode());
+  return std::string(line);
+}
+std::string FormatMigrateRetry(const MigrateRetryFtraceEvent& event) {
+  char line[2048];
+  sprintf(line, "migrate_retry: tries=%d", event.tries());
+  return std::string(line);
+}
+std::string FormatMmPageAlloc(const MmPageAllocFtraceEvent& event) {
+  char line[2048];
+  // TODO(b/117966147): Translate binary to gfp_flag
+  // TODO(taylori): Figure out pfn correctly
+  sprintf(line,
+          "mm_page_alloc: page=%p pfn=%lu order=%d migratetype=%d gfp_flags=%d",
+          event.page(), 0, event.order(), event.migratetype(),
+          event.gfp_flags());
+  return std::string(line);
+}
+std::string FormatMmPageAllocExtfrag(
+    const MmPageAllocExtfragFtraceEvent& event) {
+  char line[2048];
+  // TODO(taylori): Figure out pfn correctly
+  sprintf(line,
+          "mm_page_alloc_extfrag: page=%p pfn=%lu alloc_order=%d "
+          "fallback_order=%d pageblock_order=%d alloc_migratetype=%d "
+          "fallback_migratetype=%d fragmenting=%d change_ownership=%d",
+          event.page(), 0, event.alloc_order(), event.fallback_order(), 11 - 1,
+          event.alloc_migratetype(), event.fallback_migratetype(),
+          event.fallback_order() < (11 - 1), event.change_ownership());
+  return std::string(line);
+}
+std::string FormatMmPageAllocZoneLocked(
+    const MmPageAllocZoneLockedFtraceEvent& event) {
+  char line[2048];
+  // TODO(taylori): Figure out pfn correctly
+  sprintf(line,
+          "mm_page_alloc_zone_locked: page=%p pfn=%lu order=%u migratetype=%d "
+          "percpu_refill=%d",
+          event.page(), 0, event.order(), event.migratetype(),
+          event.order() == 0);
+  return std::string(line);
+}
+std::string FormatMmPageFree(const MmPageFreeFtraceEvent& event) {
+  char line[2048];
+  // TODO(taylori): Figure out pfn correctly
+  sprintf(line, "mm_page_free: page=%p pfn=%lu order=%d", event.page(), 0,
+          event.order());
+  return std::string(line);
+}
+std::string FormatMmPageFreeBatched(const MmPageFreeBatchedFtraceEvent& event) {
+  char line[2048];
+  // TODO(taylori): Figure out pfn correctly
+  sprintf(line, "mm_page_free_batched: page=%p pfn=%lu order=0 cold=%d",
+          event.page(), 0, event.cold());
+  return std::string(line);
+}
+std::string FormatMmPagePcpuDrain(const MmPagePcpuDrainFtraceEvent& event) {
+  char line[2048];
+  // TODO(taylori): Figure out pfn correctly
+  sprintf(line, "mm_page_pcpu_drain: page=%p pfn=%lu order=%d migratetype=%d",
+          event.page(), 0, event.order(), event.migratetype());
+  return std::string(line);
+}
+std::string FormatRssStat(const RssStatFtraceEvent& event) {
+  char line[2048];
+  sprintf(line, "rss_stat: member=%d size=%ldKB", event.member(), event.size());
+  return std::string(line);
+}
+std::string FormatSignalDeliver(const SignalDeliverFtraceEvent& event) {
+  char line[2048];
+  sprintf(line, "signal_deliver: sig=%d code=%d sa_flags=%lx", event.sig(),
+          event.code(), event.sa_flags());
+  return std::string(line);
+}
+std::string FormatSignalGenerate(const SignalGenerateFtraceEvent& event) {
+  char line[2048];
+  sprintf(line, "signal_generate: sig=%d code=%d comm=%s pid=%d grp=%d res=%d",
+          event.sig(), event.code(), event.comm().c_str(), event.pid(),
+          event.group(), event.result());
+  return std::string(line);
+}
+std::string FormatGeneric(const GenericFtraceEvent& event) {
+  std::string result = "generic (" + event.event_name() + "): ";
+  for (const auto& field : event.field()) {
+    char line[2048];
+    sprintf(line, "name=%s ", field.name().c_str());
+    result.append(line);
+    char value[2048];
+    if (field.has_str_value())
+      sprintf(value, "value=%s ", field.str_value().c_str());
+    else if (field.has_int_value())
+      sprintf(value, "value=%ld ", field.int_value());
+    else if (field.has_uint_value())
+      sprintf(value, "value=%lu ", field.uint_value());
+    result.append(value);
+  }
+  return result;
+}
+
+std::string FormatOomScoreAdjUpdate(const OomScoreAdjUpdateFtraceEvent& event) {
+  char line[2048];
+  sprintf(line, "oom_score_adj_update: pid=%d comm=%s oom_score_adj=%hd",
+          event.pid(), event.comm().c_str(), event.oom_score_adj());
   return std::string(line);
 }
 
@@ -2847,7 +3354,176 @@ std::string FormatEventText(const protos::FtraceEvent& event) {
   } else if (event.has_f2fs_write_end()) {
     const auto& inner = event.f2fs_write_end();
     return FormatF2fsWriteEnd(inner);
+  } else if (event.has_alloc_pages_iommu_end()) {
+    const auto& inner = event.alloc_pages_iommu_end();
+    return FormatAllocPagesIommuEnd(inner);
+  } else if (event.has_alloc_pages_iommu_fail()) {
+    const auto& inner = event.alloc_pages_iommu_fail();
+    return FormatAllocPagesIommuFail(inner);
+  } else if (event.has_alloc_pages_iommu_start()) {
+    const auto& inner = event.alloc_pages_iommu_start();
+    return FormatAllocPagesIommuStart(inner);
+  } else if (event.has_alloc_pages_sys_end()) {
+    const auto& inner = event.alloc_pages_sys_end();
+    return FormatAllocPagesSysEnd(inner);
+  } else if (event.has_alloc_pages_sys_fail()) {
+    const auto& inner = event.alloc_pages_sys_fail();
+    return FormatAllocPagesSysFail(inner);
+  } else if (event.has_alloc_pages_sys_start()) {
+    const auto& inner = event.alloc_pages_sys_start();
+    return FormatAllocPagesSysStart(inner);
+  } else if (event.has_dma_alloc_contiguous_retry()) {
+    const auto& inner = event.dma_alloc_contiguous_retry();
+    return FormatDmaAllocContiguousRetry(inner);
+  } else if (event.has_iommu_map_range()) {
+    const auto& inner = event.iommu_map_range();
+    return FormatIommuMapRange(inner);
+  } else if (event.has_iommu_sec_ptbl_map_range_end()) {
+    const auto& inner = event.iommu_sec_ptbl_map_range_end();
+    return FormatIommuSecPtblMapRangeEnd(inner);
+  } else if (event.has_iommu_sec_ptbl_map_range_start()) {
+    const auto& inner = event.iommu_sec_ptbl_map_range_start();
+    return FormatIommuSecPtblMapRangeStart(inner);
+  } else if (event.has_ion_alloc_buffer_end()) {
+    const auto& inner = event.ion_alloc_buffer_end();
+    return FormatIonAllocBufferEnd(inner);
+  } else if (event.has_ion_alloc_buffer_fail()) {
+    const auto& inner = event.ion_alloc_buffer_fail();
+    return FormatIonAllocBufferFail(inner);
+  } else if (event.has_ion_alloc_buffer_fallback()) {
+    const auto& inner = event.ion_alloc_buffer_fallback();
+    return FormatIonAllocBufferFallback(inner);
+  } else if (event.has_ion_alloc_buffer_start()) {
+    const auto& inner = event.ion_alloc_buffer_start();
+    return FormatIonAllocBufferStart(inner);
+  } else if (event.has_ion_cp_alloc_retry()) {
+    const auto& inner = event.ion_cp_alloc_retry();
+    return FormatIonCpAllocRetry(inner);
+  } else if (event.has_ion_cp_secure_buffer_end()) {
+    const auto& inner = event.ion_cp_secure_buffer_end();
+    return FormatIonCpSecureBufferEnd(inner);
+  } else if (event.has_ion_cp_secure_buffer_start()) {
+    const auto& inner = event.ion_cp_secure_buffer_start();
+    return FormatIonCpSecureBufferStart(inner);
+  } else if (event.has_ion_heap_grow()) {
+    const auto& inner = event.ion_heap_grow();
+    return FormatIonHeapGrow(inner);
+  } else if (event.has_ion_heap_shrink()) {
+    const auto& inner = event.ion_heap_shrink();
+    return FormatIonHeapShrink(inner);
+  } else if (event.has_ion_prefetching()) {
+    const auto& inner = event.ion_prefetching();
+    return FormatIonPrefetching(inner);
+  } else if (event.has_ion_secure_cma_add_to_pool_end()) {
+    const auto& inner = event.ion_secure_cma_add_to_pool_end();
+    return FormatIonSecureCmaAddToPoolEnd(inner);
+  } else if (event.has_ion_secure_cma_add_to_pool_start()) {
+    const auto& inner = event.ion_secure_cma_add_to_pool_start();
+    return FormatIonSecureCmaAddToPoolStart(inner);
+  } else if (event.has_ion_secure_cma_allocate_end()) {
+    const auto& inner = event.ion_secure_cma_allocate_end();
+    return FormatIonSecureCmaAllocateEnd(inner);
+  } else if (event.has_ion_secure_cma_allocate_start()) {
+    const auto& inner = event.ion_secure_cma_allocate_start();
+    return FormatIonSecureCmaAllocateStart(inner);
+  } else if (event.has_ion_secure_cma_shrink_pool_end()) {
+    const auto& inner = event.ion_secure_cma_shrink_pool_end();
+    return FormatIonSecureCmaShrinkPoolEnd(inner);
+  } else if (event.has_ion_secure_cma_shrink_pool_start()) {
+    const auto& inner = event.ion_secure_cma_shrink_pool_start();
+    return FormatIonSecureCmaShrinkPoolStart(inner);
+  } else if (event.has_kfree()) {
+    const auto& inner = event.kfree();
+    return FormatKfree(inner);
+  } else if (event.has_kmalloc()) {
+    const auto& inner = event.kmalloc();
+    return FormatKmalloc(inner);
+  } else if (event.has_kmalloc_node()) {
+    const auto& inner = event.kmalloc_node();
+    return FormatKmallocNode(inner);
+  } else if (event.has_kmem_cache_alloc()) {
+    const auto& inner = event.kmem_cache_alloc();
+    return FormatKmemCacheAlloc(inner);
+  } else if (event.has_kmem_cache_alloc_node()) {
+    const auto& inner = event.kmem_cache_alloc_node();
+    return FormatKmemCacheAllocNode(inner);
+  } else if (event.has_kmem_cache_free()) {
+    const auto& inner = event.kmem_cache_free();
+    return FormatKmemCacheFree(inner);
+  } else if (event.has_migrate_pages_end()) {
+    const auto& inner = event.migrate_pages_end();
+    return FormatMigratePagesEnd(inner);
+  } else if (event.has_migrate_pages_start()) {
+    const auto& inner = event.migrate_pages_start();
+    return FormatMigratePagesStart(inner);
+  } else if (event.has_migrate_retry()) {
+    const auto& inner = event.migrate_retry();
+    return FormatMigrateRetry(inner);
+  } else if (event.has_mm_page_alloc()) {
+    const auto& inner = event.mm_page_alloc();
+    return FormatMmPageAlloc(inner);
+  } else if (event.has_mm_page_alloc_extfrag()) {
+    const auto& inner = event.mm_page_alloc_extfrag();
+    return FormatMmPageAllocExtfrag(inner);
+  } else if (event.has_mm_page_alloc_zone_locked()) {
+    const auto& inner = event.mm_page_alloc_zone_locked();
+    return FormatMmPageAllocZoneLocked(inner);
+  } else if (event.has_mm_page_free()) {
+    const auto& inner = event.mm_page_free();
+    return FormatMmPageFree(inner);
+  } else if (event.has_mm_page_free_batched()) {
+    const auto& inner = event.mm_page_free_batched();
+    return FormatMmPageFreeBatched(inner);
+  } else if (event.has_mm_page_pcpu_drain()) {
+    const auto& inner = event.mm_page_pcpu_drain();
+    return FormatMmPagePcpuDrain(inner);
+  } else if (event.has_rss_stat()) {
+    const auto& inner = event.rss_stat();
+    return FormatRssStat(inner);
+  } else if (event.has_binder_transaction_alloc_buf()) {
+    const auto& inner = event.binder_transaction_alloc_buf();
+    return FormatBinderTransactionAllocBuf(inner);
+  } else if (event.has_fence_destroy()) {
+    const auto& inner = event.fence_destroy();
+    return FormatFenceDestroy(inner);
+  } else if (event.has_fence_enable_signal()) {
+    const auto& inner = event.fence_enable_signal();
+    return FormatFenceEnableSignal(inner);
+  } else if (event.has_fence_init()) {
+    const auto& inner = event.fence_init();
+    return FormatFenceInit(inner);
+  } else if (event.has_fence_signaled()) {
+    const auto& inner = event.fence_signaled();
+    return FormatFenceSignaled(inner);
+  } else if (event.has_clk_disable()) {
+    const auto& inner = event.clk_disable();
+    return FormatClkDisable(inner);
+  } else if (event.has_clk_enable()) {
+    const auto& inner = event.clk_enable();
+    return FormatClkEnable(inner);
+  } else if (event.has_clk_set_rate()) {
+    const auto& inner = event.clk_set_rate();
+    return FormatClkSetRate(inner);
+  } else if (event.has_ipi_entry()) {
+    const auto& inner = event.ipi_entry();
+    return FormatIpiEntry(inner);
+  } else if (event.has_ipi_exit()) {
+    const auto& inner = event.ipi_exit();
+    return FormatIpiExit(inner);
+  } else if (event.has_signal_deliver()) {
+    const auto& inner = event.signal_deliver();
+    return FormatSignalDeliver(inner);
+  } else if (event.has_signal_generate()) {
+    const auto& inner = event.signal_generate();
+    return FormatSignalGenerate(inner);
+  } else if (event.has_oom_score_adj_update()) {
+    const auto& inner = event.oom_score_adj_update();
+    return FormatOomScoreAdjUpdate(inner);
+  } else if (event.has_generic()) {
+    const auto& inner = event.generic();
+    return FormatGeneric(inner);
   }
+
   return "";
 }
 
@@ -2859,26 +3535,66 @@ uint64_t TimestampToMicroseconds(uint64_t timestamp) {
   return (timestamp / 1000) % 1000000ul;
 }
 
-std::string FormatPrefix(uint64_t timestamp, uint64_t cpu) {
+std::string FormatPrefix(uint64_t timestamp,
+                         uint32_t cpu,
+                         uint32_t pid,
+                         uint32_t tgid,
+                         std::string name) {
   char line[2048];
   uint64_t seconds = TimestampToSeconds(timestamp);
   uint64_t useconds = TimestampToMicroseconds(timestamp);
-  sprintf(line,
-          "<idle>-0     (-----) [%03" PRIu64 "] d..3 %" PRIu64 ".%.6" PRIu64
-          ": ",
-          cpu, seconds, useconds);
+  if (pid == 0) {
+    name = "<idle>";
+  }
+  if (tgid == 0) {
+    sprintf(line,
+            "%s-%" PRIu32 "     (-----) [%03" PRIu32 "] d..3 %" PRIu64
+            ".%.6" PRIu64 ": ",
+            name.c_str(), pid, cpu, seconds, useconds);
+  } else {
+    sprintf(line,
+            "%s-%" PRIu32 "     (%5" PRIu32 ") [%03" PRIu32 "] d..3 %" PRIu64
+            ".%.6" PRIu64 ": ",
+            name.c_str(), pid, tgid, cpu, seconds, useconds);
+  }
   return std::string(line);
 }
 
 }  // namespace
 
-std::string FormatFtraceEvent(uint64_t timestamp,
-                              size_t cpu,
-                              const protos::FtraceEvent& event) {
+std::string FormatFtraceEvent(
+    uint64_t timestamp,
+    uint32_t cpu,
+    const protos::FtraceEvent& event,
+    const std::unordered_map<uint32_t /*tid*/, uint32_t /*tgid*/>& thread_map,
+    std::unordered_map<uint32_t /*tid*/, std::string>& thread_names) {
+  // Sched_switch events contain the thread name so use that in the prefix.
+  std::string name;
+  if (event.has_sched_switch()) {
+    name = event.sched_switch().prev_comm();
+    thread_names[event.pid()] = event.sched_switch().prev_comm();
+  } else {
+    // For non sched switch events use name stored from a sched switch event.
+    auto it = thread_names.find(event.pid());
+    if (it != thread_names.end()) {
+      name = it->second;
+    } else {
+      name = "<...>";
+    }
+  }
+
   std::string line = FormatEventText(event);
   if (line == "")
     return "";
-  return FormatPrefix(timestamp, cpu) + line;
+
+  // Retrieve the tgid if it exists for the current event pid.
+  uint32_t pid = event.pid();
+  uint32_t tgid = 0;
+  auto it = thread_map.find(pid);
+  if (it != thread_map.end()) {
+    tgid = it->second;
+  }
+  return FormatPrefix(timestamp, cpu, pid, tgid, name) + line;
 }
 
 }  // namespace perfetto

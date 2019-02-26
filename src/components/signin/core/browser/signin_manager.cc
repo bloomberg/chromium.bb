@@ -15,6 +15,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
+#include "components/signin/core/browser/identity_utils.h"
 #include "components/signin/core/browser/signin_internals_util.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/signin_pref_names.h"
@@ -23,8 +24,6 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "third_party/icu/source/i18n/unicode/regex.h"
-
-using namespace signin_internals_util;
 
 SigninManager::SigninManager(
     SigninClient* client,
@@ -91,7 +90,8 @@ bool SigninManager::PrepareForSignin(SigninType type,
   password_.assign(password);
   signin_manager_signed_in_ = false;
   user_info_fetched_by_account_tracker_ = false;
-  NotifyDiagnosticsObservers(SIGNIN_STARTED, SigninTypeToString(type));
+  NotifyDiagnosticsObservers(signin_internals_util::SIGNIN_STARTED,
+                             SigninTypeToString(type));
   return true;
 }
 
@@ -100,7 +100,7 @@ void SigninManager::StartSignInWithRefreshToken(
     const std::string& gaia_id,
     const std::string& username,
     const std::string& password,
-    const OAuthTokenFetchedCallback& callback) {
+    OAuthTokenFetchedCallback callback) {
   DCHECK(!IsAuthenticated());
   SigninType signin_type = refresh_token.empty()
                                ? SIGNIN_TYPE_WITHOUT_REFRESH_TOKEN
@@ -114,7 +114,7 @@ void SigninManager::StartSignInWithRefreshToken(
 
   if (!callback.is_null()) {
     // Callback present, let the caller complete the pending sign-in.
-    callback.Run(temp_refresh_token_);
+    std::move(callback).Run(temp_refresh_token_);
   } else {
     // No callback, so just complete the pending signin.
     CompletePendingSignin();
@@ -228,7 +228,6 @@ void SigninManager::OnSignoutDecisionReached(
   client_->GetPrefs()->ClearPref(prefs::kGoogleServicesAccountId);
   client_->GetPrefs()->ClearPref(prefs::kGoogleServicesUserAccountId);
   client_->GetPrefs()->ClearPref(prefs::kSignedInTime);
-  client_->OnSignedOut();
 
   // Determine the duration the user was logged in and log that to UMA.
   if (!signin_time.is_null()) {
@@ -244,18 +243,22 @@ void SigninManager::OnSignoutDecisionReached(
     case RemoveAccountsOption::kRemoveAllAccounts:
       VLOG(0) << "Revoking all refresh tokens on server. Reason: sign out, "
               << "IsSigninAllowed: " << IsSigninAllowed();
-      token_service_->RevokeAllCredentials();
+      token_service_->RevokeAllCredentials(
+          signin_metrics::SourceForRefreshTokenOperation::
+              kSigninManager_ClearPrimaryAccount);
       break;
     case RemoveAccountsOption::kRemoveAuthenticatedAccountIfInError:
       if (token_service_->RefreshTokenHasError(account_id))
-        token_service_->RevokeCredentials(account_id);
+        token_service_->RevokeCredentials(
+            account_id, signin_metrics::SourceForRefreshTokenOperation::
+                            kSigninManager_ClearPrimaryAccount);
       break;
     case RemoveAccountsOption::kKeepAllAccounts:
       // Do nothing.
       break;
   }
 
-  FireGoogleSignedOut(account_id, account_info);
+  FireGoogleSignedOut(account_info);
 }
 
 void SigninManager::Initialize(PrefService* local_state) {
@@ -278,7 +281,7 @@ void SigninManager::Initialize(PrefService* local_state) {
       client_->GetPrefs()->GetString(prefs::kGoogleServicesAccountId);
   std::string user = account_id.empty() ? std::string() :
       account_tracker_service()->GetAccountInfo(account_id).email;
-  if ((!account_id.empty() && !IsAllowedUsername(user)) || !IsSigninAllowed()) {
+  if (!account_id.empty() && (!IsAllowedUsername(user) || !IsSigninAllowed())) {
     // User is signed in, but the username is invalid or signin is no longer
     // allowed, so the user must be sign out.
     //
@@ -288,6 +291,14 @@ void SigninManager::Initialize(PrefService* local_state) {
     //
     // Note: The token service has not yet loaded its credentials, so accounts
     // cannot be revoked here.
+    //
+    // On desktop, when SigninManager is initializing, the profile was not yet
+    // marked with sign out allowed. Therefore sign out is not allowed and all
+    // calls to SignOut methods are no-op.
+    //
+    // TODO(msarda): SignOut methods do not gurantee that sign out can actually
+    // be done (this depends on whether sign out is allowed). Add a check here
+    // on desktop to make it clear that SignOut does not do anything.
     SignOutAndKeepAllAccounts(signin_metrics::SIGNIN_PREF_CHANGED_DURING_SIGNIN,
                               signin_metrics::SignoutDelete::IGNORE_METRIC);
   }
@@ -321,43 +332,14 @@ bool SigninManager::IsSigninAllowed() const {
   return signin_allowed_.GetValue();
 }
 
+void SigninManager::SetSigninAllowed(bool allowed) {
+  signin_allowed_.SetValue(allowed);
+}
+
 void SigninManager::OnSigninAllowedPrefChanged() {
   if (!IsSigninAllowed() && (IsAuthenticated() || AuthInProgress()))
     SignOut(signin_metrics::SIGNOUT_PREF_CHANGED,
             signin_metrics::SignoutDelete::IGNORE_METRIC);
-}
-
-// static
-bool SigninManager::IsUsernameAllowedByPolicy(const std::string& username,
-                                              const std::string& policy) {
-  if (policy.empty())
-    return true;
-
-  // Patterns like "*@foo.com" are not accepted by our regex engine (since they
-  // are not valid regular expressions - they should instead be ".*@foo.com").
-  // For convenience, detect these patterns and insert a "." character at the
-  // front.
-  base::string16 pattern = base::UTF8ToUTF16(policy);
-  if (pattern[0] == L'*')
-    pattern.insert(pattern.begin(), L'.');
-
-  // See if the username matches the policy-provided pattern.
-  UErrorCode status = U_ZERO_ERROR;
-  const icu::UnicodeString icu_pattern(FALSE, pattern.data(), pattern.length());
-  icu::RegexMatcher matcher(icu_pattern, UREGEX_CASE_INSENSITIVE, status);
-  if (!U_SUCCESS(status)) {
-    LOG(ERROR) << "Invalid login regex: " << pattern << ", status: " << status;
-    // If an invalid pattern is provided, then prohibit *all* logins (better to
-    // break signin than to quietly allow users to sign in).
-    return false;
-  }
-  // The default encoding is UTF-8 in Chromium's ICU.
-  icu::UnicodeString icu_input(username.data());
-  matcher.reset(icu_input);
-  status = U_ZERO_ERROR;
-  UBool match = matcher.matches(status);
-  DCHECK(U_SUCCESS(status));
-  return !!match;  // !! == convert from UBool to bool.
 }
 
 // static
@@ -373,7 +355,7 @@ bool SigninManager::IsAllowedUsername(const std::string& username) const {
 
   std::string pattern =
       local_state->GetString(prefs::kGoogleServicesUsernamePattern);
-  return IsUsernameAllowedByPolicy(username, pattern);
+  return identity::IsUsernameAllowedByPattern(username, pattern);
 }
 
 bool SigninManager::AuthInProgress() const {
@@ -392,10 +374,6 @@ const std::string& SigninManager::GetUsernameForAuthInProgress() const {
   return possibly_invalid_email_;
 }
 
-void SigninManager::DisableOneClickSignIn(PrefService* prefs) {
-  prefs->SetBoolean(prefs::kReverseAutologinEnabled, false);
-}
-
 void SigninManager::MergeSigninCredentialIntoCookieJar() {
   if (account_consistency_ == signin::AccountConsistencyMethod::kMirror)
     return;
@@ -404,11 +382,12 @@ void SigninManager::MergeSigninCredentialIntoCookieJar() {
     return;
 
   cookie_manager_service_->AddAccountToCookie(GetAuthenticatedAccountId(),
-                                              "ChromiumSigninManager");
+                                              gaia::GaiaSource::kSigninManager);
 }
 
 void SigninManager::CompletePendingSignin() {
-  NotifyDiagnosticsObservers(SIGNIN_COMPLETED, "Successful");
+  NotifyDiagnosticsObservers(signin_internals_util::SIGNIN_COMPLETED,
+                             "Successful");
   DCHECK(!possibly_invalid_account_id_.empty());
   OnSignedIn();
 
@@ -416,7 +395,10 @@ void SigninManager::CompletePendingSignin() {
 
   if (!temp_refresh_token_.empty()) {
     std::string account_id = GetAuthenticatedAccountId();
-    token_service_->UpdateCredentials(account_id, temp_refresh_token_);
+    token_service_->UpdateCredentials(
+        account_id, temp_refresh_token_,
+        signin_metrics::SourceForRefreshTokenOperation::
+            kSigninManager_LegacyPreDiceSigninFlow);
     temp_refresh_token_.clear();
   }
   MergeSigninCredentialIntoCookieJar();
@@ -451,31 +433,22 @@ void SigninManager::OnSignedIn() {
   if (!reauth_in_progress)
     FireGoogleSigninSucceeded();
 
-  client_->OnSignedIn(GetAuthenticatedAccountId(), gaia_id,
-                      GetAuthenticatedAccountInfo().email, password_);
-
   signin_metrics::LogSigninProfile(client_->IsFirstRun(),
                                    client_->GetInstallDate());
-
-  DisableOneClickSignIn(client_->GetPrefs());  // Don't ever offer again.
 
   PostSignedIn();
 }
 
 void SigninManager::FireGoogleSigninSucceeded() {
-  std::string account_id = GetAuthenticatedAccountId();
-  std::string email = GetAuthenticatedAccountInfo().email;
+  const AccountInfo account_info = GetAuthenticatedAccountInfo();
   for (auto& observer : observer_list_) {
-    observer.GoogleSigninSucceeded(account_id, email);
-    observer.GoogleSigninSucceeded(GetAuthenticatedAccountInfo());
-    observer.GoogleSigninSucceededWithPassword(account_id, email, password_);
+    observer.GoogleSigninSucceeded(account_info);
+    observer.GoogleSigninSucceededWithPassword(account_info, password_);
   }
 }
 
-void SigninManager::FireGoogleSignedOut(const std::string& account_id,
-                                        const AccountInfo& account_info) {
+void SigninManager::FireGoogleSignedOut(const AccountInfo& account_info) {
   for (auto& observer : observer_list_) {
-    observer.GoogleSignedOut(account_id, account_info.email);
     observer.GoogleSignedOut(account_info);
   }
 }

@@ -89,6 +89,8 @@ used when committed.
     to perform refactorings that are AST-aware
 *   [The Clang Static Analyzer](clang_static_analyzer.md) - How to enable static
     analysis at build time
+*   [Clang Code Coverage Wrapper](clang_code_coverage_wrapper.md) - Enable Clang
+    code coverage instrumentation for a subset of source files.
 *   [Writing Clang Plugins](writing_clang_plugins.md) - Don't write a clang
     plugin, but if you do, read this
 *   [Updating Clang](updating_clang.md) - Updating the version of Clang used to
@@ -141,22 +143,24 @@ used when committed.
 *   [Guidelines for considering branch dates in project planning](release_branch_guidance.md) -
     What to do (and not to do) around branch dates when scheduling your project
     work.
+*   [WebUI Explainer](webui_explainer.md) - An explanation of C++ and JavaScript
+    infrastructural code for Chrome UIs implemented with web technologies (i.e.
+    chrome:// URLs).
 
 ### Testing
-*   [Running and Debugging Layout Tests](testing/layout_tests.md)
-*   [Writing Layout Tests](testing/writing_layout_tests.md) - Layout Tests using
+*   [Running and Debugging Web Tests](testing/web_tests.md)
+*   [Writing Web Tests](testing/writing_web_tests.md) - Web Tests using
     `content_shell`
-*   [Layout Test Expectations and Baselines](testing/layout_test_expectations.md) -
-    Setting expected results of layout tests.
-*   [Layout Tests Tips](testing/layout_tests_tips.md) - Best practices for Layout
-    Tests
-*   [Layout Tests with Manual Fallback](testing/layout_tests_with_manual_fallback.md) -
+*   [Web Test Expectations and Baselines](testing/web_test_expectations.md) -
+    Setting expected results of web tests.
+*   [Web Tests Tips](testing/web_tests_tips.md) - Best practices for web tests
+*   [Web Tests with Manual Fallback](testing/webt_tests_with_manual_fallback.md) -
     Writing tests that simulate manual interventions
-*   [Extending the Layout Test Framework](how_to_extend_layout_test_framework.md)
-*   [Fixing Layout Test Flakiness](testing/identifying_tests_that_depend_on_order.md) -
-    Diagnosing and fixing layout test flakiness due to ordering dependencies.
-*   [Running Layout Tests using `content_shell`](testing/layout_tests_in_content_shell.md) -
-    Running layout tests by hand.
+*   [Extending the Web Test Framework](how_to_extend_web_test_framework.md)
+*   [Fixing Web Test Flakiness](testing/identifying_tests_that_depend_on_order.md) -
+    Diagnosing and fixing web test flakiness due to ordering dependencies.
+*   [Running Web Tests using `content_shell`](testing/web_tests_in_content_shell.md) -
+    Running web tests by hand.
 *   [Web Platform Tests](testing/web_platform_tests.md) - Shared tests across
     browser vendors
 *   [Using Breakpad with `content_shell`](testing/using_breakpad_with_content_shell.md) -
@@ -215,8 +219,8 @@ used when committed.
     isolate browser components with different privileges.
 *   [Zygote Process](linux_zygote.md) - How the Linux Zygote process, used to
     spawn new processes, works.
-*   [Running Layout Tests on Linux](layout_tests_linux.md) - Linux-specific
-    instructions for running layout tests.
+*   [Running Web Tests on Linux](web_tests_linux.md) - Linux-specific
+    instructions for running web tests.
 *   [Linux Sysroot Images](linux_sysroot.md) - How builds use libraries on Linux
 *   [Linux Hardware Video Decoding](linux_hw_video_decode.md) - Enabling
     hardware video decode codepaths on Linux
@@ -274,12 +278,18 @@ used when committed.
 ### Misc Chrome-OS-Specific Docs
 *   [Chrome Logging on Chrome OS](chrome_os_logging.md)
 
+### Misc WebUI-Specific Docs
+*   [Creating WebUI Interfaces in components/](webui_in_components.md) How to
+    create a new WebUI component in the `components/` directory.
+
 ### Media
 *   [Audio Focus Handling](media/audio_focus.md) - How multiple MediaSession
     audio streams interact
 *   [Autoplay of HTMLMediaElements](media/autoplay.md) - How HTMLMediaElements
     are autoplayed.
 *   [Piranha Plant](piranha_plant.md) - Future architecture of MediaStreams
+*   [Video Decode/Encode Accelerator Tests](media/gpu/vdatest_usage.md) - How to
+    use the accelerated video decoder/encoder test programs.
 
 ### Accessibility
 *   [Accessibility Overview](accessibility/overview.md) - Overview of
@@ -330,6 +340,7 @@ used when committed.
     install Chromium OS on VMWare.
 *   [User Data Directory](user_data_dir.md) - How the user data and cache
     directories are determined on all platforms.
+*   [Mojo](../mojo/README.md) - IPC mechanism used by services.
 
 ### Probably Obsolete
 *   [TPM Quick Reference](tpm_quick_ref.md) - Trusted Platform Module notes.

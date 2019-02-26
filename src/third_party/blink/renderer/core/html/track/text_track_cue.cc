@@ -129,7 +129,7 @@ DispatchEventResult TextTrackCue::DispatchEventInternal(Event& event) {
 }
 
 const AtomicString& TextTrackCue::InterfaceName() const {
-  return EventTargetNames::TextTrackCue;
+  return event_target_names::kTextTrackCue;
 }
 
 void TextTrackCue::Trace(blink::Visitor* visitor) {

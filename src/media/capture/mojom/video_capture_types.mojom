@@ -37,7 +37,9 @@ enum VideoCapturePixelFormat {
   YUV420P12,
   YUV422P12,
   YUV444P12,
-  Y16
+  Y16,
+  ABGR,
+  XBGR,
 };
 
 enum ResolutionChangePolicy {
@@ -239,6 +241,7 @@ struct VideoCaptureParams {
   VideoCaptureBufferType buffer_type;
   ResolutionChangePolicy resolution_change_policy;
   PowerLineFrequency power_line_frequency;
+  bool enable_face_detection;
 };
 
 // Contains one stride value per image plane. Stride means the number of bytes
@@ -305,4 +308,3 @@ union VideoBufferHandle {
   SharedMemoryViaRawFileDescriptor shared_memory_via_raw_file_descriptor;
   MailboxBufferHandleSet mailbox_handles;
 };
-

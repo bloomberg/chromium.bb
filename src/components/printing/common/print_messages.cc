@@ -28,15 +28,6 @@
 #error "Failed to include header components/printing/common/print_messages.h"
 #endif
 
-// Generate destructors.
-#include "ipc/struct_destructor_macros.h"
-#undef COMPONENTS_PRINTING_COMMON_PRINT_MESSAGES_H_
-#undef COMPONENTS_PRINTING_COMMON_PRINTING_PARAM_TRAITS_MACROS_H_
-#include "components/printing/common/print_messages.h"
-#ifndef COMPONENTS_PRINTING_COMMON_PRINT_MESSAGES_H_
-#error "Failed to include header components/printing/common/print_messages.h"
-#endif
-
 // Generate param traits write methods.
 #include "ipc/param_traits_write_macros.h"
 namespace IPC {

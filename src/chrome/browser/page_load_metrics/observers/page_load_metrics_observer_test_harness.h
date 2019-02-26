@@ -79,12 +79,9 @@ class PageLoadMetricsObserverTestHarness
   void SimulateTimingAndMetadataUpdate(const mojom::PageLoadTiming& timing,
                                        const mojom::PageLoadMetadata& metadata);
   void SimulateFeaturesUpdate(const mojom::PageLoadFeatures& new_features);
-  void SimulatePageLoadTimingUpdate(
-      const mojom::PageLoadTiming& timing,
-      const mojom::PageLoadMetadata& metadata,
-      const mojom::PageLoadFeatures& new_features);
   void SimulateResourceDataUseUpdate(
       const std::vector<mojom::ResourceDataUpdatePtr>& resources);
+  void SimulateRenderDataUpdate(const mojom::PageRenderData& render_data);
 
   // Simulates a loaded resource. Main frame resources must specify a
   // GlobalRequestID, using the SimulateLoadedResource() method that takes a

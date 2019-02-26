@@ -3,7 +3,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-
 from writers import plist_helper
 from writers import template_writer
 
@@ -23,7 +22,7 @@ class PListStringsWriter(template_writer.TemplateWriter):
   '''
 
   def WriteComment(self, comment):
-    self._out.append('/* ' + comment + ' */' )
+    self._out.append('/* ' + comment + ' */')
 
   def _AddToStringTable(self, item_name, caption, desc):
     '''Add a title and a description of an item to the string table.
@@ -52,7 +51,7 @@ class PListStringsWriter(template_writer.TemplateWriter):
         string table.
     '''
     desc = policy['desc']
-    if policy['type'] in ('int-enum','string-enum', 'string-enum-list'):
+    if policy['type'] in ('int-enum', 'string-enum', 'string-enum-list'):
       # Append the captions of enum items to the description string.
       item_descs = []
       for item in policy['items']:
@@ -66,10 +65,8 @@ class PListStringsWriter(template_writer.TemplateWriter):
     if self._GetChromiumVersionString() is not None:
       self.WriteComment(self.config['build'] + ''' version: ''' + \
           self._GetChromiumVersionString())
-    self._AddToStringTable(
-        app_name,
-        self.config['app_name'],
-        self.messages['mac_chrome_preferences']['text'])
+    self._AddToStringTable(app_name, self.config['app_name'],
+                           self.messages['mac_chrome_preferences']['text'])
 
   def Init(self):
     # A buffer for the lines of the string table being generated.

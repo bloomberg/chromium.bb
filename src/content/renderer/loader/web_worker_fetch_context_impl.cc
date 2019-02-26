@@ -186,7 +186,7 @@ void WebWorkerFetchContextImpl::SetTerminateSyncLoadEvent(
   terminate_sync_load_event_ = terminate_sync_load_event;
 }
 
-std::unique_ptr<blink::WebWorkerFetchContext>
+scoped_refptr<blink::WebWorkerFetchContext>
 WebWorkerFetchContextImpl::CloneForNestedWorker() {
   mojom::ServiceWorkerWorkerClientRequest service_worker_client_request;
   mojom::ServiceWorkerWorkerClientPtr service_worker_client_ptr;
@@ -206,7 +206,7 @@ WebWorkerFetchContextImpl::CloneForNestedWorker() {
   }
 
   mojom::RendererPreferenceWatcherPtr preference_watcher;
-  auto new_context = std::make_unique<WebWorkerFetchContextImpl>(
+  auto new_context = base::MakeRefCounted<WebWorkerFetchContextImpl>(
       renderer_preferences_, mojo::MakeRequest(&preference_watcher),
       std::move(service_worker_client_request),
       std::move(service_worker_worker_client_registry_ptr_info),
@@ -262,20 +262,18 @@ void WebWorkerFetchContextImpl::InitializeOnWorkerThread() {
         base::RefCountedData<blink::mojom::BlobRegistryPtr>>(
         std::move(blob_registry_ptr));
   }
-}
 
-std::unique_ptr<blink::WebURLLoaderFactory>
-WebWorkerFetchContextImpl::CreateURLLoaderFactory() {
   DCHECK(loader_factory_);
   DCHECK(!web_loader_factory_);
-  auto factory = std::make_unique<Factory>(resource_dispatcher_->GetWeakPtr(),
-                                           loader_factory_);
-  web_loader_factory_ = factory->GetWeakPtr();
+  web_loader_factory_ = std::make_unique<Factory>(
+      resource_dispatcher_->GetWeakPtr(), loader_factory_);
 
   if (blink::ServiceWorkerUtils::IsServicificationEnabled())
     ResetServiceWorkerURLLoaderFactory();
+}
 
-  return factory;
+blink::WebURLLoaderFactory* WebWorkerFetchContextImpl::GetURLLoaderFactory() {
+  return web_loader_factory_.get();
 }
 
 std::unique_ptr<blink::WebURLLoaderFactory>
@@ -324,7 +322,7 @@ void WebWorkerFetchContextImpl::WillSendRequest(blink::WebURLRequest& request) {
 
   if (!renderer_preferences_.enable_referrers) {
     request.SetHTTPReferrer(blink::WebString(),
-                            blink::kWebReferrerPolicyDefault);
+                            network::mojom::ReferrerPolicy::kDefault);
   }
 }
 

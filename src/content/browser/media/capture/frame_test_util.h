@@ -49,11 +49,11 @@ class FrameTestUtil {
   // transforms.
   static constexpr int kMaxColorDifference = 16;
 
-  // A much more-relaxed maximum color value difference, assuming errors caused
-  // by indifference towards color space concerns (and also "studio" versus
-  // "jpeg" YUV ranges).
+  // A very relaxed maximum color value difference, assuming errors caused by
+  // indifference towards color space concerns (and also "studio" versus "jpeg"
+  // YUV ranges).
   // TODO(crbug/810131): Once color space issues are fixed, remove this.
-  static constexpr int kMaxInaccurateColorDifference = 48;
+  static constexpr int kMaxInaccurateColorDifference = 64;
 };
 
 // A convenience for logging and gtest expectations output.

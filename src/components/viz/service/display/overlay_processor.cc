@@ -50,7 +50,7 @@ OverlayProcessor::StrategyType OverlayProcessor::Strategy::GetUMAEnum() const {
 }
 
 OverlayProcessor::OverlayProcessor(OutputSurface* surface)
-    : surface_(surface) {}
+    : surface_(surface), dc_processor_(surface) {}
 
 void OverlayProcessor::Initialize() {
   DCHECK(surface_);
@@ -72,7 +72,7 @@ bool OverlayProcessor::ProcessForCALayers(
     DisplayResourceProvider* resource_provider,
     RenderPass* render_pass,
     const OverlayProcessor::FilterOperationsMap& render_pass_filters,
-    const OverlayProcessor::FilterOperationsMap& render_pass_background_filters,
+    const OverlayProcessor::FilterOperationsMap& render_pass_backdrop_filters,
     OverlayCandidateList* overlay_candidates,
     CALayerOverlayList* ca_layer_overlays,
     gfx::Rect* damage_rect) {
@@ -84,7 +84,7 @@ bool OverlayProcessor::ProcessForCALayers(
   if (!ProcessForCALayerOverlays(
           resource_provider, gfx::RectF(render_pass->output_rect),
           render_pass->quad_list, render_pass_filters,
-          render_pass_background_filters, ca_layer_overlays))
+          render_pass_backdrop_filters, ca_layer_overlays))
     return false;
 
   // CALayer overlays are all-or-nothing. If all quads were replaced with
@@ -100,7 +100,7 @@ bool OverlayProcessor::ProcessForDCLayers(
     DisplayResourceProvider* resource_provider,
     RenderPassList* render_passes,
     const OverlayProcessor::FilterOperationsMap& render_pass_filters,
-    const OverlayProcessor::FilterOperationsMap& render_pass_background_filters,
+    const OverlayProcessor::FilterOperationsMap& render_pass_backdrop_filters,
     OverlayCandidateList* overlay_candidates,
     DCLayerOverlayList* dc_layer_overlays,
     gfx::Rect* damage_rect) {
@@ -122,7 +122,7 @@ void OverlayProcessor::ProcessForOverlays(
     RenderPassList* render_passes,
     const SkMatrix44& output_color_matrix,
     const OverlayProcessor::FilterOperationsMap& render_pass_filters,
-    const OverlayProcessor::FilterOperationsMap& render_pass_background_filters,
+    const OverlayProcessor::FilterOperationsMap& render_pass_backdrop_filters,
     OverlayCandidateList* candidates,
     CALayerOverlayList* ca_layer_overlays,
     DCLayerOverlayList* dc_layer_overlays,
@@ -156,13 +156,13 @@ void OverlayProcessor::ProcessForOverlays(
 
   // First attempt to process for CALayers.
   if (ProcessForCALayers(resource_provider, render_passes->back().get(),
-                         render_pass_filters, render_pass_background_filters,
+                         render_pass_filters, render_pass_backdrop_filters,
                          candidates, ca_layer_overlays, damage_rect)) {
     return;
   }
 
   if (ProcessForDCLayers(resource_provider, render_passes, render_pass_filters,
-                         render_pass_background_filters, candidates,
+                         render_pass_backdrop_filters, candidates,
                          dc_layer_overlays, damage_rect)) {
     return;
   }
@@ -170,7 +170,7 @@ void OverlayProcessor::ProcessForOverlays(
   // Only if that fails, attempt hardware overlay strategies.
   Strategy* successful_strategy = nullptr;
   for (const auto& strategy : strategies_) {
-    if (!strategy->Attempt(output_color_matrix, render_pass_background_filters,
+    if (!strategy->Attempt(output_color_matrix, render_pass_backdrop_filters,
                            resource_provider, render_passes->back().get(),
                            candidates, content_bounds)) {
       continue;

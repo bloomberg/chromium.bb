@@ -34,9 +34,9 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/simple_thread.h"
-#include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -134,10 +134,10 @@ class ThreadPostingAndRunningTask : public SimpleThread {
 
       testing::StrictMock<MockCanScheduleSequenceObserver>
           never_notified_observer;
-      auto sequence = tracker_->WillScheduleSequence(
-          test::CreateSequenceWithTask(std::move(owned_task_), traits_),
-          &never_notified_observer);
-      ASSERT_TRUE(sequence);
+      auto sequence =
+          test::CreateSequenceWithTask(std::move(owned_task_), traits_);
+      ASSERT_TRUE(tracker_->WillScheduleSequence(sequence->BeginTransaction(),
+                                                 &never_notified_observer));
       // Expect RunAndPopNextTask to return nullptr since |sequence| is empty
       // after popping a task from it.
       EXPECT_FALSE(tracker_->RunAndPopNextTask(std::move(sequence),
@@ -182,10 +182,9 @@ class TaskSchedulerTaskTrackerTest
   }
 
   void DispatchAndRunTaskWithTracker(Task task, const TaskTraits& traits) {
-    auto sequence = tracker_.WillScheduleSequence(
-        test::CreateSequenceWithTask(std::move(task), traits),
-        &never_notified_observer_);
-    ASSERT_TRUE(sequence);
+    auto sequence = test::CreateSequenceWithTask(std::move(task), traits);
+    ASSERT_TRUE(tracker_.WillScheduleSequence(sequence->BeginTransaction(),
+                                              &never_notified_observer_));
     tracker_.RunAndPopNextTask(std::move(sequence), &never_notified_observer_);
   }
 
@@ -486,7 +485,8 @@ TEST_P(TaskSchedulerTaskTrackerTest, IOAllowed) {
   ThreadRestrictions::SetIOAllowed(false);
   Task task_with_may_block(FROM_HERE, Bind([]() {
                              // Shouldn't fail.
-                             AssertBlockingAllowed();
+                             ScopedBlockingCall scope_blocking_call(
+                                 BlockingType::WILL_BLOCK);
                            }),
                            TimeDelta());
   TaskTraits traits_with_may_block = TaskTraits(MayBlock(), GetParam());
@@ -499,8 +499,11 @@ TEST_P(TaskSchedulerTaskTrackerTest, IOAllowed) {
   // task without the MayBlock() trait.
   ThreadRestrictions::SetIOAllowed(true);
   Task task_without_may_block(
-      FROM_HERE,
-      Bind([]() { EXPECT_DCHECK_DEATH({ AssertBlockingAllowed(); }); }),
+      FROM_HERE, Bind([]() {
+        EXPECT_DCHECK_DEATH({
+          ScopedBlockingCall scope_blocking_call(BlockingType::WILL_BLOCK);
+        });
+      }),
       TimeDelta());
   TaskTraits traits_without_may_block = TaskTraits(GetParam());
   EXPECT_TRUE(tracker_.WillPostTask(
@@ -521,10 +524,9 @@ static void RunTaskRunnerHandleVerificationTask(TaskTracker* tracker,
   EXPECT_FALSE(SequencedTaskRunnerHandle::IsSet());
 
   testing::StrictMock<MockCanScheduleSequenceObserver> never_notified_observer;
-  auto sequence = tracker->WillScheduleSequence(
-      test::CreateSequenceWithTask(std::move(verify_task), traits),
-      &never_notified_observer);
-  ASSERT_TRUE(sequence);
+  auto sequence = test::CreateSequenceWithTask(std::move(verify_task), traits);
+  ASSERT_TRUE(tracker->WillScheduleSequence(sequence->BeginTransaction(),
+                                            &never_notified_observer));
   tracker->RunAndPopNextTask(std::move(sequence), &never_notified_observer);
 
   // TaskRunnerHandle state is reset outside of task's scope.
@@ -892,14 +894,17 @@ TEST_F(TaskSchedulerTaskTrackerTest, CurrentSequenceToken) {
 
   const SequenceToken sequence_token = sequence->token();
   Task task(FROM_HERE, Bind(&ExpectSequenceToken, sequence_token), TimeDelta());
-  tracker_.WillPostTask(&task, sequence->traits().shutdown_behavior());
+  tracker_.WillPostTask(&task, sequence->shutdown_behavior());
 
-  sequence->PushTask(std::move(task));
+  {
+    Sequence::Transaction sequence_transaction(sequence->BeginTransaction());
+    sequence_transaction.PushTask(std::move(task));
 
-  EXPECT_FALSE(SequenceToken::GetForCurrentThread().IsValid());
-  sequence = tracker_.WillScheduleSequence(std::move(sequence),
-                                           &never_notified_observer_);
-  ASSERT_TRUE(sequence);
+    EXPECT_FALSE(SequenceToken::GetForCurrentThread().IsValid());
+    ASSERT_TRUE(tracker_.WillScheduleSequence(sequence_transaction,
+                                              &never_notified_observer_));
+  }
+
   tracker_.RunAndPopNextTask(std::move(sequence), &never_notified_observer_);
   EXPECT_FALSE(SequenceToken::GetForCurrentThread().IsValid());
 }
@@ -1075,8 +1080,11 @@ TEST_F(TaskSchedulerTaskTrackerTest,
 
   scoped_refptr<Sequence> sequence =
       test::CreateSequenceWithTask(std::move(task_1), default_traits);
-  sequence->PushTask(std::move(task_2));
-  EXPECT_EQ(sequence, tracker_.WillScheduleSequence(sequence, nullptr));
+  {
+    Sequence::Transaction sequence_transaction(sequence->BeginTransaction());
+    sequence_transaction.PushTask(std::move(task_2));
+    EXPECT_TRUE(tracker_.WillScheduleSequence(sequence_transaction, nullptr));
+  }
 
   EXPECT_EQ(sequence, tracker_.RunAndPopNextTask(sequence, nullptr));
 }
@@ -1097,8 +1105,8 @@ void TestWillScheduleBestEffortSequenceWithMaxBestEffortSequences(
         tracker.WillPostTask(&task, best_effort_traits.shutdown_behavior()));
     scoped_refptr<Sequence> sequence =
         test::CreateSequenceWithTask(std::move(task), best_effort_traits);
-    EXPECT_EQ(sequence,
-              tracker.WillScheduleSequence(sequence, &never_notified_observer));
+    ASSERT_TRUE(tracker.WillScheduleSequence(sequence->BeginTransaction(),
+                                             &never_notified_observer));
     scheduled_sequences.push_back(std::move(sequence));
   }
 
@@ -1124,9 +1132,9 @@ void TestWillScheduleBestEffortSequenceWithMaxBestEffortSequences(
     extra_observers.push_back(
         std::make_unique<
             testing::StrictMock<MockCanScheduleSequenceObserver>>());
-    EXPECT_EQ(nullptr,
-              tracker.WillScheduleSequence(extra_sequences.back(),
-                                           extra_observers.back().get()));
+    EXPECT_FALSE(
+        tracker.WillScheduleSequence(extra_sequences.back()->BeginTransaction(),
+                                     extra_observers.back().get()));
   }
 
   // Run the sequences scheduled at the beginning of the test. Expect an
@@ -1197,8 +1205,8 @@ TEST_F(TaskSchedulerTaskTrackerTest,
   scoped_refptr<Sequence> sequence_a =
       test::CreateSequenceWithTask(std::move(task_a), default_traits);
   testing::StrictMock<MockCanScheduleSequenceObserver> never_notified_observer;
-  EXPECT_EQ(sequence_a, tracker_.WillScheduleSequence(
-                            sequence_a, &never_notified_observer));
+  EXPECT_TRUE(tracker_.WillScheduleSequence(sequence_a->BeginTransaction(),
+                                            &never_notified_observer));
 
   // Verify that WillScheduleSequence() returns nullptr for foreground sequence
   // when the ScopedExecutionFence is enabled.
@@ -1213,7 +1221,8 @@ TEST_F(TaskSchedulerTaskTrackerTest,
   testing::StrictMock<MockCanScheduleSequenceObserver> observer_b_1;
   EXPECT_EQ(0, tracker_.GetPreemptedSequenceCountForTesting(
                    TaskPriority::BEST_EFFORT));
-  EXPECT_FALSE(tracker_.WillScheduleSequence(sequence_b, &observer_b_1));
+  EXPECT_FALSE(tracker_.WillScheduleSequence(sequence_b->BeginTransaction(),
+                                             &observer_b_1));
   EXPECT_EQ(1, tracker_.GetPreemptedSequenceCountForTesting(
                    TaskPriority::USER_VISIBLE));
 
@@ -1223,9 +1232,10 @@ TEST_F(TaskSchedulerTaskTrackerTest,
   TaskTraits best_effort_traits = TaskTraits(TaskPriority::BEST_EFFORT);
   EXPECT_TRUE(
       tracker_.WillPostTask(&task_b_2, best_effort_traits.shutdown_behavior()));
-  sequence_b->PushTask(std::move(task_b_2));
+  sequence_b->BeginTransaction().PushTask(std::move(task_b_2));
   testing::StrictMock<MockCanScheduleSequenceObserver> observer_b_2;
-  EXPECT_EQ(nullptr, tracker_.WillScheduleSequence(sequence_b, &observer_b_2));
+  EXPECT_FALSE(tracker_.WillScheduleSequence(sequence_b->BeginTransaction(),
+                                             &observer_b_2));
   // The TaskPriority of the Sequence is unchanged by posting new tasks to it.
   EXPECT_EQ(2, tracker_.GetPreemptedSequenceCountForTesting(
                    TaskPriority::USER_VISIBLE));
@@ -1240,7 +1250,8 @@ TEST_F(TaskSchedulerTaskTrackerTest,
   scoped_refptr<Sequence> sequence_c =
       test::CreateSequenceWithTask(std::move(task_c), best_effort_traits);
   testing::StrictMock<MockCanScheduleSequenceObserver> observer_c;
-  EXPECT_EQ(nullptr, tracker_.WillScheduleSequence(sequence_c, &observer_c));
+  EXPECT_FALSE(tracker_.WillScheduleSequence(sequence_c->BeginTransaction(),
+                                             &observer_c));
   EXPECT_EQ(1, tracker_.GetPreemptedSequenceCountForTesting(
                    TaskPriority::BEST_EFFORT));
 
@@ -1281,8 +1292,8 @@ TEST_F(TaskSchedulerTaskTrackerTest,
       tracker_.WillPostTask(&task_d, default_traits.shutdown_behavior()));
   scoped_refptr<Sequence> sequence_d =
       test::CreateSequenceWithTask(std::move(task_d), default_traits);
-  EXPECT_EQ(sequence_d, tracker_.WillScheduleSequence(
-                            sequence_d, &never_notified_observer));
+  EXPECT_TRUE(tracker_.WillScheduleSequence(sequence_d->BeginTransaction(),
+                                            &never_notified_observer));
 }
 
 // Verify that RunAndPopNextTask() doesn't reschedule the best-effort sequence
@@ -1305,8 +1316,8 @@ TEST_F(TaskSchedulerTaskTrackerTest,
       tracker.WillPostTask(&task_a_1, best_effort_traits.shutdown_behavior()));
   scoped_refptr<Sequence> sequence_a =
       test::CreateSequenceWithTask(std::move(task_a_1), best_effort_traits);
-  EXPECT_EQ(sequence_a,
-            tracker.WillScheduleSequence(sequence_a, &never_notified_observer));
+  EXPECT_TRUE(tracker.WillScheduleSequence(sequence_a->BeginTransaction(),
+                                           &never_notified_observer));
 
   // Simulate posting an extra best-effort task and scheduling the associated
   // sequence. This should fail because the maximum number of best-effort
@@ -1319,7 +1330,8 @@ TEST_F(TaskSchedulerTaskTrackerTest,
   scoped_refptr<Sequence> sequence_b =
       test::CreateSequenceWithTask(std::move(task_b_1), best_effort_traits);
   testing::StrictMock<MockCanScheduleSequenceObserver> task_b_1_observer;
-  EXPECT_FALSE(tracker.WillScheduleSequence(sequence_b, &task_b_1_observer));
+  EXPECT_FALSE(tracker.WillScheduleSequence(sequence_b->BeginTransaction(),
+                                            &task_b_1_observer));
 
   // Wait to be sure that the sequence time of |task_a_2| is after the sequenced
   // time of |task_b_1|.
@@ -1331,7 +1343,7 @@ TEST_F(TaskSchedulerTaskTrackerTest,
                 TimeDelta());
   EXPECT_TRUE(
       tracker.WillPostTask(&task_a_2, best_effort_traits.shutdown_behavior()));
-  sequence_a->PushTask(std::move(task_a_2));
+  sequence_a->BeginTransaction().PushTask(std::move(task_a_2));
 
   // Run the first task in |sequence_a|. RunAndPopNextTask() should return
   // nullptr since |sequence_a| can't be rescheduled immediately.
@@ -1376,7 +1388,8 @@ TEST_F(TaskSchedulerTaskTrackerTest,
     scoped_refptr<Sequence> sequence = test::CreateSequenceWithTask(
         std::move(task), TaskTraits(TaskPriority::BEST_EFFORT,
                                     TaskShutdownBehavior::BLOCK_SHUTDOWN));
-    EXPECT_FALSE(tracker.WillScheduleSequence(sequence, &observer));
+    EXPECT_FALSE(
+        tracker.WillScheduleSequence(sequence->BeginTransaction(), &observer));
     preempted_sequences.push_back(std::move(sequence));
 
     // Wait to be sure that tasks have different |sequenced_time|.
@@ -1421,11 +1434,11 @@ class WaitAllowedTestThread : public SimpleThread {
                                            default_traits.shutdown_behavior()));
     testing::StrictMock<MockCanScheduleSequenceObserver>
         never_notified_observer;
-    auto sequence_without_sync_primitives = task_tracker->WillScheduleSequence(
-        test::CreateSequenceWithTask(std::move(task_without_sync_primitives),
-                                     default_traits),
-        &never_notified_observer);
-    ASSERT_TRUE(sequence_without_sync_primitives);
+    auto sequence_without_sync_primitives = test::CreateSequenceWithTask(
+        std::move(task_without_sync_primitives), default_traits);
+    ASSERT_TRUE(task_tracker->WillScheduleSequence(
+        sequence_without_sync_primitives->BeginTransaction(),
+        &never_notified_observer));
     task_tracker->RunAndPopNextTask(std::move(sequence_without_sync_primitives),
                                     &never_notified_observer);
 
@@ -1443,11 +1456,11 @@ class WaitAllowedTestThread : public SimpleThread {
     EXPECT_TRUE(task_tracker->WillPostTask(
         &task_with_sync_primitives,
         traits_with_sync_primitives.shutdown_behavior()));
-    auto sequence_with_sync_primitives = task_tracker->WillScheduleSequence(
-        test::CreateSequenceWithTask(std::move(task_with_sync_primitives),
-                                     traits_with_sync_primitives),
-        &never_notified_observer);
-    ASSERT_TRUE(sequence_with_sync_primitives);
+    auto sequence_with_sync_primitives = test::CreateSequenceWithTask(
+        std::move(task_with_sync_primitives), traits_with_sync_primitives);
+    ASSERT_TRUE(task_tracker->WillScheduleSequence(
+        sequence_with_sync_primitives->BeginTransaction(),
+        &never_notified_observer));
     task_tracker->RunAndPopNextTask(std::move(sequence_with_sync_primitives),
                                     &never_notified_observer);
 
@@ -1519,10 +1532,9 @@ TEST(TaskSchedulerTaskTrackerHistogramTest, TaskLatency) {
 
     HistogramTester tester;
 
-    auto sequence = tracker.WillScheduleSequence(
-        test::CreateSequenceWithTask(std::move(task), test.traits),
-        &never_notified_observer);
-    ASSERT_TRUE(sequence);
+    auto sequence = test::CreateSequenceWithTask(std::move(task), test.traits);
+    ASSERT_TRUE(tracker.WillScheduleSequence(sequence->BeginTransaction(),
+                                             &never_notified_observer));
     tracker.RunAndPopNextTask(std::move(sequence), &never_notified_observer);
     tester.ExpectTotalCount(test.expected_histogram, 1);
   }

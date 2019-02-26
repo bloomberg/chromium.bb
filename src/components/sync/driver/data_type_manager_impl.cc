@@ -123,8 +123,10 @@ void DataTypeManagerImpl::ReadyForStartChanged(ModelType type) {
   if (dtc_iter->second->ReadyForStart()) {
     ForceReconfiguration();
   } else {
-    // Stop the datatype
-    model_association_manager_.StopDatatype(type, DISABLE_SYNC, SyncError());
+    model_association_manager_.StopDatatype(
+        type, DISABLE_SYNC,
+        SyncError(FROM_HERE, syncer::SyncError::UNREADY_ERROR,
+                  "Data type is unready.", type));
   }
 }
 
@@ -426,10 +428,6 @@ void DataTypeManagerImpl::ProcessReconfigure() {
   ConfigureImpl(last_requested_types_, last_requested_context_);
 }
 
-void DataTypeManagerImpl::OnDownloadRetry() {
-  DCHECK_EQ(CONFIGURING, state_);
-}
-
 void DataTypeManagerImpl::DownloadReady(
     ModelTypeSet types_to_download,
     ModelTypeSet first_sync_types,
@@ -593,8 +591,7 @@ ModelTypeSet DataTypeManagerImpl::PrepareConfigureParams(
   // that if a user temporarily disables Sync, we don't want to wipe (and later
   // redownload) all their data, just because Sync restarted in transport-only
   // mode.
-  if (last_requested_context_.storage_option ==
-      ConfigureContext::STORAGE_ON_DISK) {
+  if (last_requested_context_.storage_option == STORAGE_ON_DISK) {
     types_to_purge = Difference(ModelTypeSet::All(), downloaded_types_);
     // Include clean_types in types_to_purge, they are part of
     // |downloaded_types_|, but still need to be cleared.
@@ -629,10 +626,8 @@ ModelTypeSet DataTypeManagerImpl::PrepareConfigureParams(
   params->ready_task =
       base::Bind(&DataTypeManagerImpl::DownloadReady,
                  weak_ptr_factory_.GetWeakPtr(), download_types_queue_.front());
-  params->retry_callback = base::Bind(&DataTypeManagerImpl::OnDownloadRetry,
-                                      weak_ptr_factory_.GetWeakPtr());
-  params->is_sync_feature_enabled = last_requested_context_.storage_option ==
-                                    ConfigureContext::STORAGE_ON_DISK;
+  params->is_sync_feature_enabled =
+      last_requested_context_.storage_option == STORAGE_ON_DISK;
 
   DCHECK(Intersection(active_types, types_to_purge).Empty());
   DCHECK(Intersection(active_types, fatal_types).Empty());

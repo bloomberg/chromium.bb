@@ -8,7 +8,7 @@ namespace blink {
 
 OverconstrainedError* OverconstrainedError::Create(const String& constraint,
                                                    const String& message) {
-  return new OverconstrainedError(constraint, message);
+  return MakeGarbageCollected<OverconstrainedError>(constraint, message);
 }
 
 OverconstrainedError::OverconstrainedError(const String& constraint,

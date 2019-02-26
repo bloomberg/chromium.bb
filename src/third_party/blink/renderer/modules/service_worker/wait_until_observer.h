@@ -47,6 +47,8 @@ class MODULES_EXPORT WaitUntilObserver final
 
   static WaitUntilObserver* Create(ExecutionContext*, EventType, int event_id);
 
+  WaitUntilObserver(ExecutionContext*, EventType, int event_id);
+
   // Must be called before dispatching the event.
   void WillDispatchEvent();
   // Must be called after dispatching the event. If |event_dispatch_failed| is
@@ -69,6 +71,10 @@ class MODULES_EXPORT WaitUntilObserver final
       PromiseSettledCallback on_promise_fulfilled = PromiseSettledCallback(),
       PromiseSettledCallback on_promise_rejected = PromiseSettledCallback());
 
+  // Whether the associated event is active.
+  // https://w3c.github.io/ServiceWorker/#extendableevent-active.
+  bool IsEventActive(ScriptState* script_state) const;
+
   virtual void Trace(blink::Visitor*);
 
  private:
@@ -87,8 +93,6 @@ class MODULES_EXPORT WaitUntilObserver final
     // Event dispatch failed. Any outstanding waitUntil promises are ignored.
     kFailed
   };
-
-  WaitUntilObserver(ExecutionContext*, EventType, int event_id);
 
   void IncrementPendingPromiseCount();
   void DecrementPendingPromiseCount();
@@ -110,7 +114,6 @@ class MODULES_EXPORT WaitUntilObserver final
   int pending_promises_ = 0;
   EventDispatchState event_dispatch_state_ = EventDispatchState::kInitial;
   bool has_rejected_promise_ = false;
-  TimeTicks event_dispatch_time_;
   TaskRunnerTimer<WaitUntilObserver> consume_window_interaction_timer_;
 };
 

@@ -44,7 +44,6 @@
 <translation id="1915828456209461693">Для Chrome доступно обновление. Оно будет установлено при перезапуске браузера.</translation>
 <translation id="1919130412786645364">Разрешить вход в Chrome</translation>
 <translation id="2063848847527508675">Перезагрузите Chrome OS, чтобы установить обновление.</translation>
-<translation id="2084710999043359739">Установить</translation>
 <translation id="2094919256425865063">Завершить работу Chrome?</translation>
 <translation id="2120620239521071941">С устройства будут удалены объекты (<ph name="ITEMS_COUNT" />). Чтобы восстановить данные позже, войдите в Chrome как <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Отправьте отчет о <ph name="BEGIN_LINK" />текущих настройках Chrome<ph name="END_LINK" />, чтобы помочь нам улучшить браузер</translation>
@@ -61,9 +60,7 @@
 
 Если войти в систему сейчас, закладки, история и прочие данные Chrome будут синхронизированы с аккаунтом <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2348335408836342058">Для этого сайта Chrome запрашивает доступ к камере и микрофону.</translation>
-<translation id="2397416548179033562">Отображение меню Chrome</translation>
 <translation id="2429317896000329049">Google Chrome не удалось синхронизировать данные, поскольку служба Sync недоступна для вашего домена.</translation>
-<translation id="2436117022029368436">Отправка данных в Google для улучшения работы Chrome</translation>
 <translation id="2467438592969358367">Чтобы экспортировать пароли из Google Chrome, введите пароль своего аккаунта Windows.</translation>
 <translation id="2485422356828889247">Удалить</translation>
 <translation id="2534507159460261402">Google Pay (скопирована в Chrome)</translation>
@@ -140,14 +137,12 @@
 <translation id="4600710005438004015">Не удалось установить последнюю версию Chrome, в которой добавлены новые функции и обновления системы безопасности.</translation>
 <translation id="4631713731678262610">Не показывать в меню Google Chrome</translation>
 <translation id="4633000520311261472">Чтобы обеспечить безопасность ваших данных, некоторые расширения Chrome были отключены, так как <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> не содержит сведений о них, то есть эти компоненты могли быть установлены без вашего ведома.</translation>
-<translation id="4664415150087723341">Установлено специальное обновление системы безопасности. Перезапустите Google Chrome (все вкладки будут восстановлены).</translation>
 <translation id="4700157086864140907">В браузере Chrome для проверки правописания вводимый вами текст передается на серверы Google. Та же технология используется в Google Поиске.</translation>
 <translation id="4728575227883772061">Установка не удалась из-за неизвестной ошибки. Закройте все окна Google Chrome и повторите попытку снова.</translation>
 <translation id="4750550185319565338">Перезапустите Chrome, чтобы включить плагин "<ph name="PLUGIN_NAME" />"</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Chrome заблокировал этот файл как потенциально опасный.</translation>
 <translation id="4794050651896644714">Сохранять данные в Chrome</translation>
-<translation id="4804732725083176494">Вход в Chrome отключен администратором устройства.</translation>
 <translation id="4891791193823137474">Разрешить работу Google Chrome в фоновом режиме</translation>
 <translation id="4895437082222824641">Открыть ссылку в новой вкладке браузера Chrome</translation>
 <translation id="4921569541910214635">Пользуетесь компьютером вместе с коллегой или другом? Теперь каждый из вас сможет настроить Chrome по своему вкусу.</translation>
@@ -217,7 +212,6 @@
 <translation id="7242029209006116544">Выполнив вход в управляемый аккаунт, вы предоставляете администратору право контролировать настройки вашего профиля Google Chrome. Ваши данные Chrome (приложения, закладки, история, пароли и другие настройки) будут временно связаны с аккаунтом <ph name="USER_NAME" />. Эти данные можно удалить в Личном кабинете Google, но их нельзя связать с другим аккаунтом. Чтобы сохранить данные Chrome отдельно, создайте новый профиль. <ph name="LEARN_MORE" /></translation>
 <translation id="7296210096911315575">Использование и безопасность</translation>
 <translation id="7308322188646931570">Для скачивания файлов браузеру Chrome требуется доступ к хранилищу.</translation>
-<translation id="7330164299247909639">Ошибка сертификата аутентификации. Войдите в Google Chrome как <ph name="USER_NAME" /> ещё раз или обратитесь за информацией к администратору. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">Новое окно</translation>
 <translation id="7398801000654795464">Ранее вы входили в Chrome как <ph name="USER_EMAIL_ADDRESS" />. Войдите снова, используя тот же аккаунт.</translation>
 <translation id="7408085963519505752">Условия использования Chrome OS</translation>
@@ -262,8 +256,10 @@
 <translation id="8380166467911888159">Отправлять введенный вами текст в Google для проверки правописания</translation>
 <translation id="840084489713044809">Вы собираетесь экспортировать пароли из Google Chrome.</translation>
 <translation id="8406086379114794905">Помогите сделать Chrome безопаснее</translation>
+<translation id="8432724323949790809">Перезапустите Google Chrome</translation>
 <translation id="8455999171311319804">Автоматически отправлять статистику использования и данные диагностики в Google, чтобы помочь улучшить Chrome OS (необязательно)</translation>
 <translation id="8478823064122749032">Установите Chrome на телефон. Мы отправим SMS на номер, указанный в вашем аккаунте: <ph name="PHONE_NUMBER" />.</translation>
+<translation id="8498858610309223613">Установлено специальное обновление системы безопасности. Перезапустите Google Chrome (все вкладки будут восстановлены).</translation>
 <translation id="8521348052903287641">Разрешить в Google Chrome для разработчиков передачу входящего трафика по протоколу mDNS</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8547799825197623713">Панель запуска Chrome Canary</translation>
@@ -278,14 +274,12 @@
 <translation id="873133009373065397">Google Chrome не удалось определить или задать браузер по умолчанию</translation>
 <translation id="8736674169840206667">Администратор требует перезапустить Chrome для установки обновления</translation>
 <translation id="8791470158600044404">{0,plural, =1{Chrome OS перезапустится через 1 минуту}one{Chrome OS перезапустится через # минуту}few{Chrome OS перезапустится через # минуты}many{Chrome OS перезапустится через # минут}other{Chrome OS перезапустится через # минуты}}</translation>
-<translation id="8796108026289707191">Перезапустите Google Chrome</translation>
 <translation id="8823341990149967727">Версия Chrome устарела</translation>
 <translation id="884296878221830158">Кроме того, расширение изменило стартовую страницу Chrome и страницу, отображаемую при нажатии кнопки "Главная страница".</translation>
 <translation id="8862326446509486874">У вас нет прав, необходимых для установки на системном уровне. Запустите программу установки еще раз в качестве администратора.</translation>
 <translation id="8914504000324227558">Перезапустить Chrome</translation>
 <translation id="9026991721384951619">Не удалось выполнить синхронизацию, так как учетные данные устарели.</translation>
 <translation id="9067395829937117663">Для работы Google Chrome необходима ОС Windows 7 или более поздней версии.</translation>
-<translation id="9084668267983921457">Ошибка сертификата аутентификации. Войдите в Google Chrome ещё раз или обратитесь за информацией к администратору. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="909149346112452267">{0,plural, =1{Chrome OS перезапустится через 1 час}one{Chrome OS перезапустится через # час}few{Chrome OS перезапустится через # часа}many{Chrome OS перезапустится через # часов}other{Chrome OS перезапустится через # часа}}</translation>
 <translation id="911206726377975832">Также удалить данные о работе в браузере?</translation>
 <translation id="9138603949443464873">Чтобы изменения вступили в силу, перезапустите Chrome.</translation>

@@ -20,6 +20,7 @@
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
@@ -54,6 +55,7 @@
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/skia_common.h"
 #include "cc/test/test_task_graph_runner.h"
+#include "cc/trees/clip_node.h"
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/latency_info_swap_promise.h"
@@ -192,8 +194,10 @@ class LayerTreeHostImplTest : public testing::Test,
   }
   void DidActivateSyncTree() override {
     // Make sure the active tree always has a valid LocalSurfaceId.
-    host_impl_->active_tree()->SetLocalSurfaceIdFromParent(
-        viz::LocalSurfaceId(1, base::UnguessableToken::Deserialize(2u, 3u)));
+    host_impl_->active_tree()->SetLocalSurfaceIdAllocationFromParent(
+        viz::LocalSurfaceIdAllocation(
+            viz::LocalSurfaceId(1, base::UnguessableToken::Deserialize(2u, 3u)),
+            base::TimeTicks::Now()));
   }
   void WillPrepareTiles() override {}
   void DidPrepareTiles() override {}
@@ -254,8 +258,10 @@ class LayerTreeHostImplTest : public testing::Test,
     bool init = host_impl_->InitializeFrameSink(layer_tree_frame_sink_.get());
     host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(10, 10));
     host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
-    host_impl_->active_tree()->SetLocalSurfaceIdFromParent(
-        viz::LocalSurfaceId(1, base::UnguessableToken::Deserialize(2u, 3u)));
+    host_impl_->active_tree()->SetLocalSurfaceIdAllocationFromParent(
+        viz::LocalSurfaceIdAllocation(
+            viz::LocalSurfaceId(1, base::UnguessableToken::Deserialize(2u, 3u)),
+            base::TimeTicks::Now()));
     // Set the viz::BeginFrameArgs so that methods which use it are able to.
     host_impl_->WillBeginImplFrame(viz::CreateBeginFrameArgsForTesting(
         BEGINFRAME_FROM_HERE, 0, 1,
@@ -294,7 +300,7 @@ class LayerTreeHostImplTest : public testing::Test,
   static ::testing::AssertionResult ScrollInfoContains(
       const ScrollAndScaleSet& scroll_info,
       ElementId id,
-      const gfx::Vector2d& scroll_delta) {
+      const gfx::ScrollOffset& scroll_delta) {
     int times_encountered = 0;
 
     for (size_t i = 0; i < scroll_info.scrolls.size(); ++i) {
@@ -960,7 +966,7 @@ TEST_F(LayerTreeHostImplTest, ScrollDeltaTreeButNoChanges) {
 
 TEST_F(LayerTreeHostImplTest, ScrollDeltaRepeatedScrolls) {
   gfx::ScrollOffset scroll_offset(20, 30);
-  gfx::Vector2d scroll_delta(11, -15);
+  gfx::ScrollOffset scroll_delta(11, -15);
 
   auto root_owned = LayerImpl::Create(host_impl_->active_tree(), 1);
   auto* root = root_owned.get();
@@ -977,14 +983,14 @@ TEST_F(LayerTreeHostImplTest, ScrollDeltaRepeatedScrolls) {
 
   std::unique_ptr<ScrollAndScaleSet> scroll_info;
 
-  root->ScrollBy(scroll_delta);
+  root->ScrollBy(gfx::ScrollOffsetToVector2dF(scroll_delta));
   scroll_info = host_impl_->ProcessScrollDeltas();
   ASSERT_EQ(scroll_info->scrolls.size(), 1u);
   EXPECT_TRUE(
       ScrollInfoContains(*scroll_info, root->element_id(), scroll_delta));
 
-  gfx::Vector2d scroll_delta2(-5, 27);
-  root->ScrollBy(scroll_delta2);
+  gfx::ScrollOffset scroll_delta2(-5, 27);
+  root->ScrollBy(gfx::ScrollOffsetToVector2dF(scroll_delta2));
   scroll_info = host_impl_->ProcessScrollDeltas();
   ASSERT_EQ(scroll_info->scrolls.size(), 1u);
   EXPECT_TRUE(ScrollInfoContains(*scroll_info, root->element_id(),
@@ -1128,8 +1134,10 @@ TEST_F(LayerTreeHostImplTest, ReplaceTreeWhileScrolling) {
 
   // We should still be scrolling, because the scrolled layer also exists in the
   // new tree.
-  gfx::Vector2d scroll_delta(0, 10);
-  host_impl_->ScrollBy(UpdateState(gfx::Point(), scroll_delta).get());
+  gfx::ScrollOffset scroll_delta(0, 10);
+  host_impl_->ScrollBy(
+      UpdateState(gfx::Point(), gfx::ScrollOffsetToVector2dF(scroll_delta))
+          .get());
   host_impl_->ScrollEnd(EndState().get());
   std::unique_ptr<ScrollAndScaleSet> scroll_info =
       host_impl_->ProcessScrollDeltas();
@@ -1664,7 +1672,7 @@ TEST_F(LayerTreeHostImplTest, SnapAnimationCancelledByScroll) {
   EXPECT_FALSE(host_impl_->is_animating_for_snap_for_testing());
   BeginImplFrameAndAnimate(begin_frame_args,
                            start_time + base::TimeDelta::FromMilliseconds(150));
-  EXPECT_VECTOR_EQ(ScrollOffsetToVector2dF(current_offset),
+  EXPECT_VECTOR_EQ(gfx::ScrollOffsetToVector2dF(current_offset),
                    overflow->CurrentScrollOffset());
 }
 
@@ -2256,7 +2264,7 @@ TEST_F(LayerTreeHostImplTest, ImplPinchZoom) {
         host_impl_->ProcessScrollDeltas();
     EXPECT_TRUE(ScrollInfoContains(
         *scroll_info.get(), scroll_layer->element_id(),
-        gfx::Vector2d(0, scroll_delta.y() / page_scale_delta)));
+        gfx::ScrollOffset(0, scroll_delta.y() / page_scale_delta)));
   }
 }
 
@@ -2876,7 +2884,7 @@ TEST_F(LayerTreeHostImplTest, PinchGesture) {
         host_impl_->ProcessScrollDeltas();
     EXPECT_EQ(scroll_info->page_scale_delta, page_scale_delta);
     EXPECT_TRUE(ScrollInfoContains(*scroll_info, scroll_layer->element_id(),
-                                   gfx::Vector2d(-10, -10)));
+                                   gfx::ScrollOffset(-10, -10)));
   }
 
   // Two-finger panning should work when starting fully zoomed out.
@@ -2910,7 +2918,7 @@ TEST_F(LayerTreeHostImplTest, PinchGesture) {
         host_impl_->ProcessScrollDeltas();
     EXPECT_EQ(scroll_info->page_scale_delta, 2.f);
     EXPECT_TRUE(ScrollInfoContains(*scroll_info, scroll_layer->element_id(),
-                                   gfx::Vector2d(10, 10)));
+                                   gfx::ScrollOffset(10, 10)));
   }
 }
 
@@ -2951,7 +2959,7 @@ TEST_F(LayerTreeHostImplTest, SyncSubpixelScrollDelta) {
       host_impl_->ProcessScrollDeltas();
   EXPECT_EQ(scroll_info->page_scale_delta, page_scale_delta);
   EXPECT_TRUE(ScrollInfoContains(*scroll_info, scroll_layer->element_id(),
-                                 gfx::Vector2d(0, -1)));
+                                 gfx::ScrollOffset(0, -1)));
 
   // Verify this scroll delta is consistent with the snapped position of the
   // scroll layer.
@@ -3193,7 +3201,7 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimation) {
         host_impl_->ProcessScrollDeltas();
     EXPECT_EQ(scroll_info->page_scale_delta, 2);
     EXPECT_TRUE(ScrollInfoContains(*scroll_info, scroll_layer->element_id(),
-                                   gfx::Vector2d(-50, -50)));
+                                   gfx::ScrollOffset(-50, -50)));
   }
 
   start_time += base::TimeDelta::FromSeconds(10);
@@ -3246,7 +3254,7 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimation) {
     EXPECT_EQ(scroll_info->page_scale_delta, min_page_scale);
     // Pushed to (0,0) via clamping against contents layer size.
     EXPECT_TRUE(ScrollInfoContains(*scroll_info, scroll_layer->element_id(),
-                                   gfx::Vector2d(-50, -50)));
+                                   gfx::ScrollOffset(-50, -50)));
   }
 }
 
@@ -3432,7 +3440,7 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimationTransferedOnSyncTreeActivate) {
       host_impl_->ProcessScrollDeltas();
   EXPECT_EQ(scroll_info->page_scale_delta, target_scale);
   EXPECT_TRUE(ScrollInfoContains(*scroll_info, scroll_layer->element_id(),
-                                 gfx::Vector2d(-50, -50)));
+                                 gfx::ScrollOffset(-50, -50)));
 }
 
 TEST_F(LayerTreeHostImplTest, PageScaleAnimationCompletedNotification) {
@@ -3577,8 +3585,10 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
     host_impl_->active_tree()->BuildPropertyTreesForTesting();
     host_impl_->active_tree()->DidBecomeActive();
     host_impl_->active_tree()->HandleScrollbarShowRequestsFromMain();
-    host_impl_->active_tree()->SetLocalSurfaceIdFromParent(
-        viz::LocalSurfaceId(1, base::UnguessableToken::Deserialize(2u, 3u)));
+    host_impl_->active_tree()->SetLocalSurfaceIdAllocationFromParent(
+        viz::LocalSurfaceIdAllocation(
+            viz::LocalSurfaceId(1, base::UnguessableToken::Deserialize(2u, 3u)),
+            base::TimeTicks::Now()));
     DrawFrame();
 
     // SetScrollElementId will initialize the scrollbar which will cause it to
@@ -5369,61 +5379,9 @@ class LayerTreeHostImplBrowserControlsTest : public LayerTreeHostImplTest {
       const gfx::Size& inner_viewport_size,
       const gfx::Size& outer_viewport_size,
       const gfx::Size& scroll_layer_size) {
-    tree_impl->set_browser_controls_shrink_blink_size(true);
-    tree_impl->SetTopControlsHeight(top_controls_height_);
-    tree_impl->SetCurrentBrowserControlsShownRatio(1.f);
-    tree_impl->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
-    host_impl_->DidChangeBrowserControlsPosition();
-
-    std::unique_ptr<LayerImpl> root = LayerImpl::Create(tree_impl, 1);
-    std::unique_ptr<LayerImpl> root_clip = LayerImpl::Create(tree_impl, 2);
-    std::unique_ptr<LayerImpl> page_scale = LayerImpl::Create(tree_impl, 3);
-
-    std::unique_ptr<LayerImpl> outer_scroll = LayerImpl::Create(tree_impl, 4);
-    std::unique_ptr<LayerImpl> outer_clip = LayerImpl::Create(tree_impl, 5);
-
-    root_clip->SetBounds(inner_viewport_size);
-    root->SetScrollable(inner_viewport_size);
-    root->SetElementId(LayerIdToElementIdForTesting(root->id()));
-    root->SetBounds(outer_viewport_size);
-    root->SetPosition(gfx::PointF());
-    root->SetDrawsContent(false);
-    root_clip->test_properties()->force_render_surface = true;
-    root->test_properties()->is_container_for_fixed_position_layers = true;
-    outer_clip->SetBounds(outer_viewport_size);
-    outer_scroll->SetScrollable(outer_viewport_size);
-    outer_scroll->SetElementId(
-        LayerIdToElementIdForTesting(outer_scroll->id()));
-    outer_scroll->SetBounds(scroll_layer_size);
-    outer_scroll->SetPosition(gfx::PointF());
-    outer_scroll->SetDrawsContent(false);
-    outer_scroll->test_properties()->is_container_for_fixed_position_layers =
-        true;
-
-    int inner_viewport_container_layer_id = root_clip->id();
-    int outer_viewport_container_layer_id = outer_clip->id();
-    int inner_viewport_scroll_layer_id = root->id();
-    int outer_viewport_scroll_layer_id = outer_scroll->id();
-    int page_scale_layer_id = page_scale->id();
-
-    outer_clip->test_properties()->AddChild(std::move(outer_scroll));
-    root->test_properties()->AddChild(std::move(outer_clip));
-    page_scale->test_properties()->AddChild(std::move(root));
-    root_clip->test_properties()->AddChild(std::move(page_scale));
-
-    tree_impl->SetRootLayerForTesting(std::move(root_clip));
-    LayerTreeImpl::ViewportLayerIds viewport_ids;
-    viewport_ids.page_scale = page_scale_layer_id;
-    viewport_ids.inner_viewport_container = inner_viewport_container_layer_id;
-    viewport_ids.outer_viewport_container = outer_viewport_container_layer_id;
-    viewport_ids.inner_viewport_scroll = inner_viewport_scroll_layer_id;
-    viewport_ids.outer_viewport_scroll = outer_viewport_scroll_layer_id;
-    tree_impl->SetViewportLayersFromIds(viewport_ids);
-    tree_impl->BuildPropertyTreesForTesting();
-
-    host_impl_->active_tree()->SetDeviceViewportSize(inner_viewport_size);
-    LayerImpl* root_clip_ptr = tree_impl->root_layer_for_testing();
-    EXPECT_EQ(inner_viewport_size, root_clip_ptr->bounds());
+    LayerTestCommon::SetupBrowserControlsAndScrollLayerWithVirtualViewport(
+        host_impl_.get(), tree_impl, top_controls_height_, inner_viewport_size,
+        outer_viewport_size, scroll_layer_size);
   }
 
  protected:
@@ -5505,6 +5463,65 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
   }
 
   host_impl_->browser_controls_manager()->ScrollEnd();
+  host_impl_->ScrollEnd(EndState().get());
+}
+
+TEST_F(LayerTreeHostImplBrowserControlsTest,
+       MovingBrowserControlsChangesViewportClip) {
+  // TODO(bokan): This test is checking pre-blink-gen-property-tree behavior
+  // and can be removed once that flag ships. See crbug.com/901083.
+  if (DefaultSettings().use_layer_lists)
+    return;
+
+  SetupBrowserControlsAndScrollLayerWithVirtualViewport(
+      gfx::Size(50, 50), gfx::Size(25, 25), gfx::Size(100, 100));
+
+  LayerTreeImpl* active_tree = host_impl_->active_tree();
+
+  // Create a content layer beneath the outer viewport scroll layer.
+  int id = host_impl_->OuterViewportScrollLayer()->id();
+  host_impl_->OuterViewportScrollLayer()->test_properties()->AddChild(
+      LayerImpl::Create(host_impl_->active_tree(), id + 2));
+  LayerImpl* content =
+      active_tree->OuterViewportScrollLayer()->test_properties()->children[0];
+  content->SetBounds(gfx::Size(100, 100));
+  host_impl_->active_tree()->PushPageScaleFromMainThread(2.f, 2.f, 4.f);
+  host_impl_->active_tree()->BuildPropertyTreesForTesting();
+
+  DrawFrame();
+
+  LayerImpl* inner_container = active_tree->InnerViewportContainerLayer();
+  LayerImpl* outer_container = active_tree->OuterViewportContainerLayer();
+  LayerImpl* outer_scroll = active_tree->OuterViewportScrollLayer();
+  auto* property_trees = host_impl_->active_tree()->property_trees();
+  ClipNode* outer_clip_node =
+      property_trees->clip_tree.Node(outer_scroll->clip_tree_index());
+
+  // The browser controls should start off showing so the viewport should be
+  // shrunk.
+  EXPECT_EQ(50, host_impl_->browser_controls_manager()->ContentTopOffset());
+  ASSERT_EQ(gfx::Size(50, 50), inner_container->bounds());
+  ASSERT_EQ(gfx::Size(25, 25), outer_container->bounds());
+  EXPECT_EQ(gfx::SizeF(100, 100), active_tree->ScrollableSize());
+  EXPECT_EQ(gfx::SizeF(50, 50), outer_clip_node->clip.size());
+
+  EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
+            host_impl_
+                ->ScrollBegin(BeginState(gfx::Point()).get(),
+                              InputHandler::TOUCHSCREEN)
+                .thread);
+
+  // Hide the browser controls by 10px. The outer clip should expand by 10px as
+  // well because the clip node doesn't account for the "resize to
+  // minimum-scale" that occurs for the outer viewport layer (hence, why the
+  // outer viewport layer is half the size of the inner in this test).
+  {
+    host_impl_->ScrollBy(
+        UpdateState(gfx::Point(0, 0), gfx::Vector2dF(0.f, 10.f)).get());
+    ASSERT_EQ(40, host_impl_->browser_controls_manager()->ContentTopOffset());
+    EXPECT_EQ(gfx::SizeF(50, 60), outer_clip_node->clip.size());
+  }
+
   host_impl_->ScrollEnd(EndState().get());
 }
 
@@ -5874,8 +5891,6 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
 // bounds.
 TEST_F(LayerTreeHostImplBrowserControlsTest,
        PositionBrowserControlsExplicitly) {
-  settings_ = DefaultSettings();
-  CreateHostImpl(settings_, CreateLayerTreeFrameSink());
   SetupBrowserControlsAndScrollLayerWithVirtualViewport(
       layer_size_, layer_size_, layer_size_);
   DrawFrame();
@@ -5909,8 +5924,6 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
 // applied on sync tree activation. The total browser controls offset shouldn't
 // change after the activation.
 TEST_F(LayerTreeHostImplBrowserControlsTest, ApplyDeltaOnTreeActivation) {
-  settings_ = DefaultSettings();
-  CreateHostImpl(settings_, CreateLayerTreeFrameSink());
   SetupBrowserControlsAndScrollLayerWithVirtualViewport(
       layer_size_, layer_size_, layer_size_);
   DrawFrame();
@@ -5959,8 +5972,6 @@ TEST_F(LayerTreeHostImplBrowserControlsTest, ApplyDeltaOnTreeActivation) {
 // the compositor to accommodate the browser controls.
 TEST_F(LayerTreeHostImplBrowserControlsTest,
        BrowserControlsLayoutHeightChanged) {
-  settings_ = DefaultSettings();
-  CreateHostImpl(settings_, CreateLayerTreeFrameSink());
   SetupBrowserControlsAndScrollLayerWithVirtualViewport(
       layer_size_, layer_size_, layer_size_);
   DrawFrame();
@@ -6197,8 +6208,6 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
 
 TEST_F(LayerTreeHostImplBrowserControlsTest,
        ScrollNonScrollableRootWithBrowserControls) {
-  settings_ = DefaultSettings();
-  CreateHostImpl(settings_, CreateLayerTreeFrameSink());
   SetupBrowserControlsAndScrollLayerWithVirtualViewport(
       layer_size_, layer_size_, layer_size_);
   DrawFrame();
@@ -6310,6 +6319,20 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
   base::TimeTicks start_time = base::TimeTicks::Now();
   viz::BeginFrameArgs begin_frame_args =
       viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
+
+  // The first animation frame will not produce any delta, it will establish
+  // the animation.
+  {
+    begin_frame_args.frame_time = start_time;
+    begin_frame_args.sequence_number++;
+    host_impl_->WillBeginImplFrame(begin_frame_args);
+    host_impl_->Animate();
+    host_impl_->UpdateAnimationState(true);
+    host_impl_->DidFinishImplFrame();
+    float delta =
+        host_impl_->active_tree()->top_controls_shown_ratio()->Delta();
+    ASSERT_EQ(delta, 0);
+  }
 
   // Pump an animation frame to put some delta in the browser controls.
   {
@@ -6535,7 +6558,7 @@ TEST_F(LayerTreeHostImplTest, ScrollRootAndChangePageScaleOnMainThread) {
   EXPECT_EQ(viewport_size, root_container->bounds());
 
   gfx::Vector2d scroll_delta(0, 10);
-  gfx::Vector2d expected_scroll_delta = scroll_delta;
+  gfx::ScrollOffset expected_scroll_delta(scroll_delta);
   LayerImpl* root_scroll = host_impl_->OuterViewportScrollLayer();
   gfx::ScrollOffset expected_max_scroll = root_scroll->MaxScrollOffset();
   EXPECT_EQ(
@@ -6582,7 +6605,7 @@ TEST_F(LayerTreeHostImplTest, ScrollRootAndChangePageScaleOnImplThread) {
   EXPECT_EQ(viewport_size, root_container->bounds());
 
   gfx::Vector2d scroll_delta(0, 10);
-  gfx::Vector2d expected_scroll_delta = scroll_delta;
+  gfx::ScrollOffset expected_scroll_delta(scroll_delta);
   LayerImpl* root_scroll = host_impl_->OuterViewportScrollLayer();
   gfx::ScrollOffset expected_max_scroll = root_scroll->MaxScrollOffset();
   EXPECT_EQ(
@@ -6687,7 +6710,7 @@ TEST_F(LayerTreeHostImplTest, ScrollChildAndChangePageScaleOnMainThread) {
   DrawFrame();
 
   gfx::Vector2d scroll_delta(0, 10);
-  gfx::Vector2d expected_scroll_delta(scroll_delta);
+  gfx::ScrollOffset expected_scroll_delta(scroll_delta);
   gfx::ScrollOffset expected_max_scroll(outer_scroll->MaxScrollOffset());
   EXPECT_EQ(
       InputHandler::SCROLL_ON_IMPL_THREAD,
@@ -6770,7 +6793,7 @@ TEST_F(LayerTreeHostImplTest, ScrollChildBeyondLimit) {
                            ->children[0];
     EXPECT_TRUE(ScrollInfoContains(*scroll_info.get(),
                                    grand_child_layer->element_id(),
-                                   gfx::Vector2d(0, -5)));
+                                   gfx::ScrollOffset(0, -5)));
 
     // The child should not have scrolled.
     ExpectNone(*scroll_info.get(), child->element_id());
@@ -6947,8 +6970,9 @@ TEST_F(LayerTreeHostImplTest, ScrollWithoutBubbling) {
                            ->test_properties()
                            ->children[0];
     LayerImpl* grand_child = child->test_properties()->children[0];
-    EXPECT_TRUE(ScrollInfoContains(
-        *scroll_info.get(), grand_child->element_id(), gfx::Vector2d(0, -2)));
+    EXPECT_TRUE(ScrollInfoContains(*scroll_info.get(),
+                                   grand_child->element_id(),
+                                   gfx::ScrollOffset(0, -2)));
 
     // The child should not have scrolled.
     ExpectNone(*scroll_info.get(), child->element_id());
@@ -6971,11 +6995,12 @@ TEST_F(LayerTreeHostImplTest, ScrollWithoutBubbling) {
 
     // The child should have scrolled up to its limit.
     EXPECT_TRUE(ScrollInfoContains(*scroll_info.get(), child->element_id(),
-                                   gfx::Vector2d(0, -3)));
+                                   gfx::ScrollOffset(0, -3)));
 
     // The grand child should not have scrolled.
-    EXPECT_TRUE(ScrollInfoContains(
-        *scroll_info.get(), grand_child->element_id(), gfx::Vector2d(0, -2)));
+    EXPECT_TRUE(ScrollInfoContains(*scroll_info.get(),
+                                   grand_child->element_id(),
+                                   gfx::ScrollOffset(0, -2)));
 
     // After scrolling the parent, another scroll on the opposite direction
     // should still scroll the child.
@@ -6995,12 +7020,13 @@ TEST_F(LayerTreeHostImplTest, ScrollWithoutBubbling) {
     scroll_info = host_impl_->ProcessScrollDeltas();
 
     // The grand child should have scrolled.
-    EXPECT_TRUE(ScrollInfoContains(
-        *scroll_info.get(), grand_child->element_id(), gfx::Vector2d(0, 5)));
+    EXPECT_TRUE(ScrollInfoContains(*scroll_info.get(),
+                                   grand_child->element_id(),
+                                   gfx::ScrollOffset(0, 5)));
 
     // The child should not have scrolled.
     EXPECT_TRUE(ScrollInfoContains(*scroll_info.get(), child->element_id(),
-                                   gfx::Vector2d(0, -3)));
+                                   gfx::ScrollOffset(0, -3)));
 
     // Scrolling should be adjusted from viewport space.
     host_impl_->active_tree()->PushPageScaleFromMainThread(2.f, 2.f, 2.f);
@@ -7020,8 +7046,9 @@ TEST_F(LayerTreeHostImplTest, ScrollWithoutBubbling) {
     scroll_info = host_impl_->ProcessScrollDeltas();
 
     // Should have scrolled by half the amount in layer space (5 - 2/2)
-    EXPECT_TRUE(ScrollInfoContains(
-        *scroll_info.get(), grand_child->element_id(), gfx::Vector2d(0, 4)));
+    EXPECT_TRUE(ScrollInfoContains(*scroll_info.get(),
+                                   grand_child->element_id(),
+                                   gfx::ScrollOffset(0, 4)));
   }
 }
 TEST_F(LayerTreeHostImplTest, ScrollEventBubbling) {
@@ -7064,13 +7091,15 @@ TEST_F(LayerTreeHostImplTest, ScrollEventBubbling) {
   host_impl_->active_tree()->SetDeviceViewportSize(surface_size);
   DrawFrame();
   {
-    gfx::Vector2d scroll_delta(0, 4);
+    gfx::ScrollOffset scroll_delta(0, 4);
     EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
               host_impl_
                   ->ScrollBegin(BeginState(gfx::Point(5, 5)).get(),
                                 InputHandler::WHEEL)
                   .thread);
-    host_impl_->ScrollBy(UpdateState(gfx::Point(), scroll_delta).get());
+    host_impl_->ScrollBy(
+        UpdateState(gfx::Point(), gfx::ScrollOffsetToVector2dF(scroll_delta))
+            .get());
     host_impl_->ScrollEnd(EndState().get());
 
     std::unique_ptr<ScrollAndScaleSet> scroll_info =
@@ -7200,18 +7229,21 @@ TEST_F(LayerTreeHostImplTest, ScrollAxisAlignedRotatedLayer) {
   // The layer should have scrolled down in its local coordinates.
   std::unique_ptr<ScrollAndScaleSet> scroll_info =
       host_impl_->ProcessScrollDeltas();
-  EXPECT_TRUE(ScrollInfoContains(*scroll_info.get(), scroll_layer->element_id(),
-                                 gfx::Vector2d(0, gesture_scroll_delta.x())));
+  EXPECT_TRUE(
+      ScrollInfoContains(*scroll_info.get(), scroll_layer->element_id(),
+                         gfx::ScrollOffset(0, gesture_scroll_delta.x())));
 
   // Reset and scroll down with the wheel.
   SetScrollOffsetDelta(scroll_layer, gfx::Vector2dF());
-  gfx::Vector2d wheel_scroll_delta(0, 10);
+  gfx::ScrollOffset wheel_scroll_delta(0, 10);
   EXPECT_EQ(
       InputHandler::SCROLL_ON_IMPL_THREAD,
       host_impl_
           ->ScrollBegin(BeginState(gfx::Point()).get(), InputHandler::WHEEL)
           .thread);
-  host_impl_->ScrollBy(UpdateState(gfx::Point(), wheel_scroll_delta).get());
+  host_impl_->ScrollBy(UpdateState(gfx::Point(), gfx::ScrollOffsetToVector2dF(
+                                                     wheel_scroll_delta))
+                           .get());
   host_impl_->ScrollEnd(EndState().get());
 
   // The layer should have scrolled down in its local coordinates.
@@ -7271,9 +7303,9 @@ TEST_F(LayerTreeHostImplTest, ScrollNonAxisAlignedRotatedLayer) {
 
     // The child layer should have scrolled down in its local coordinates an
     // amount proportional to the angle between it and the input scroll delta.
-    gfx::Vector2d expected_scroll_delta(
-        0,
-        gesture_scroll_delta.y() * std::cos(gfx::DegToRad(child_layer_angle)));
+    gfx::ScrollOffset expected_scroll_delta(
+        0, std::floor(gesture_scroll_delta.y() *
+                      std::cos(gfx::DegToRad(child_layer_angle))));
     std::unique_ptr<ScrollAndScaleSet> scroll_info =
         host_impl_->ProcessScrollDeltas();
     EXPECT_TRUE(ScrollInfoContains(*scroll_info.get(), child_scroll_id,
@@ -7297,9 +7329,9 @@ TEST_F(LayerTreeHostImplTest, ScrollNonAxisAlignedRotatedLayer) {
 
     // The child layer should have scrolled down in its local coordinates an
     // amount proportional to the angle between it and the input scroll delta.
-    gfx::Vector2d expected_scroll_delta(
-        0,
-        -gesture_scroll_delta.x() * std::sin(gfx::DegToRad(child_layer_angle)));
+    gfx::ScrollOffset expected_scroll_delta(
+        0, std::floor(-gesture_scroll_delta.x() *
+                      std::sin(gfx::DegToRad(child_layer_angle))));
     std::unique_ptr<ScrollAndScaleSet> scroll_info =
         host_impl_->ProcessScrollDeltas();
     EXPECT_TRUE(ScrollInfoContains(*scroll_info.get(), child_scroll_id,
@@ -7346,21 +7378,21 @@ TEST_F(LayerTreeHostImplTest, ScrollPerspectiveTransformedLayer) {
 
   std::unique_ptr<ScrollAndScaleSet> scroll_info;
 
-  gfx::Vector2d gesture_scroll_deltas[4];
-  gesture_scroll_deltas[0] = gfx::Vector2d(4, 10);
-  gesture_scroll_deltas[1] = gfx::Vector2d(4, 10);
-  gesture_scroll_deltas[2] = gfx::Vector2d(10, 0);
-  gesture_scroll_deltas[3] = gfx::Vector2d(10, 0);
+  gfx::ScrollOffset gesture_scroll_deltas[4];
+  gesture_scroll_deltas[0] = gfx::ScrollOffset(4, 10);
+  gesture_scroll_deltas[1] = gfx::ScrollOffset(4, 10);
+  gesture_scroll_deltas[2] = gfx::ScrollOffset(10, 0);
+  gesture_scroll_deltas[3] = gfx::ScrollOffset(10, 0);
 
-  gfx::Vector2d expected_scroll_deltas[4];
+  gfx::ScrollOffset expected_scroll_deltas[4];
   // Perspective affects the vertical delta by a different
   // amount depending on the vertical position of the |viewport_point|.
-  expected_scroll_deltas[0] = gfx::Vector2d(2, 9);
-  expected_scroll_deltas[1] = gfx::Vector2d(1, 4);
+  expected_scroll_deltas[0] = gfx::ScrollOffset(2, 9);
+  expected_scroll_deltas[1] = gfx::ScrollOffset(1, 4);
   // Deltas which start with the same vertical position of the
   // |viewport_point| are subject to identical perspective effects.
-  expected_scroll_deltas[2] = gfx::Vector2d(5, 0);
-  expected_scroll_deltas[3] = gfx::Vector2d(5, 0);
+  expected_scroll_deltas[2] = gfx::ScrollOffset(5, 0);
+  expected_scroll_deltas[3] = gfx::ScrollOffset(5, 0);
 
   gfx::Point viewport_point(1, 1);
 
@@ -7376,8 +7408,11 @@ TEST_F(LayerTreeHostImplTest, ScrollPerspectiveTransformedLayer) {
                                 InputHandler::TOUCHSCREEN)
                   .thread);
     host_impl_->ScrollBy(
-        UpdateState(viewport_point, gesture_scroll_deltas[i]).get());
-    viewport_point += gesture_scroll_deltas[i];
+        UpdateState(viewport_point,
+                    gfx::ScrollOffsetToVector2dF(gesture_scroll_deltas[i]))
+            .get());
+    viewport_point +=
+        gfx::ScrollOffsetToFlooredVector2d(gesture_scroll_deltas[i]);
     host_impl_->ScrollEnd(EndState().get());
 
     scroll_info = host_impl_->ProcessScrollDeltas();
@@ -7420,18 +7455,21 @@ TEST_F(LayerTreeHostImplTest, ScrollScaledLayer) {
   // amount.
   std::unique_ptr<ScrollAndScaleSet> scroll_info =
       host_impl_->ProcessScrollDeltas();
-  EXPECT_TRUE(ScrollInfoContains(*scroll_info.get(), scroll_layer->element_id(),
-                                 gfx::Vector2d(0, scroll_delta.y() / scale)));
+  EXPECT_TRUE(
+      ScrollInfoContains(*scroll_info.get(), scroll_layer->element_id(),
+                         gfx::ScrollOffset(0, scroll_delta.y() / scale)));
 
   // Reset and scroll down with the wheel.
   SetScrollOffsetDelta(scroll_layer, gfx::Vector2dF());
-  gfx::Vector2d wheel_scroll_delta(0, 10);
+  gfx::ScrollOffset wheel_scroll_delta(0, 10);
   EXPECT_EQ(
       InputHandler::SCROLL_ON_IMPL_THREAD,
       host_impl_
           ->ScrollBegin(BeginState(gfx::Point()).get(), InputHandler::WHEEL)
           .thread);
-  host_impl_->ScrollBy(UpdateState(gfx::Point(), wheel_scroll_delta).get());
+  host_impl_->ScrollBy(UpdateState(gfx::Point(), gfx::ScrollOffsetToVector2dF(
+                                                     wheel_scroll_delta))
+                           .get());
   host_impl_->ScrollEnd(EndState().get());
 
   // It should apply the scale factor to the scroll delta for the wheel event.
@@ -7600,7 +7638,8 @@ TEST_F(LayerTreeHostImplTest,
   host_impl_->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
   EXPECT_FALSE(frame.has_no_damage);
-  CheckLayerScrollDelta(scroll_layer, ScrollOffsetToVector2dF(scroll_offset));
+  CheckLayerScrollDelta(scroll_layer,
+                        gfx::ScrollOffsetToVector2dF(scroll_offset));
 }
 
 TEST_F(LayerTreeHostImplTest,
@@ -7638,7 +7677,7 @@ TEST_F(LayerTreeHostImplTest,
   host_impl_->DidDrawAllLayers(frame);
   EXPECT_TRUE(frame.has_no_damage);
   CheckLayerScrollDelta(scroll_layer,
-                        ScrollOffsetToVector2dF(gfx::ScrollOffset()));
+                        gfx::ScrollOffsetToVector2dF(gfx::ScrollOffset()));
 }
 
 TEST_F(LayerTreeHostImplTest, OverscrollRoot) {
@@ -9284,8 +9323,10 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   root->test_properties()->AddChild(std::move(child));
   layer_tree_host_impl->active_tree()->SetRootLayerForTesting(std::move(root));
   layer_tree_host_impl->active_tree()->BuildPropertyTreesForTesting();
-  layer_tree_host_impl->active_tree()->SetLocalSurfaceIdFromParent(
-      viz::LocalSurfaceId(1, base::UnguessableToken::Deserialize(2u, 3u)));
+  layer_tree_host_impl->active_tree()->SetLocalSurfaceIdAllocationFromParent(
+      viz::LocalSurfaceIdAllocation(
+          viz::LocalSurfaceId(1, base::UnguessableToken::Deserialize(2u, 3u)),
+          base::TimeTicks::Now()));
 
   TestFrameData frame;
 
@@ -9854,6 +9895,11 @@ TEST_F(LayerTreeHostImplTest, RequireHighResAfterGpuRasterizationToggles) {
   // RequiresHighResToDraw is set when new output surface is used.
   EXPECT_TRUE(host_impl_->RequiresHighResToDraw());
 
+  // The first commit will also set RequiresHighResToDraw due to the
+  // raster color space changing.
+  host_impl_->ResetRequiresHighResToDraw();
+  host_impl_->CommitComplete();
+  EXPECT_TRUE(host_impl_->RequiresHighResToDraw());
   host_impl_->ResetRequiresHighResToDraw();
 
   host_impl_->SetContentHasSlowPaths(false);
@@ -10026,9 +10072,8 @@ class FrameSinkClient : public viz::TestLayerTreeFrameSinkClient {
       const viz::LocalSurfaceId& local_surface_id) override {}
   void DisplayReceivedCompositorFrame(
       const viz::CompositorFrame& frame) override {}
-  void DisplayWillDrawAndSwap(
-      bool will_draw_and_swap,
-      const viz::RenderPassList& render_passes) override {}
+  void DisplayWillDrawAndSwap(bool will_draw_and_swap,
+                              viz::RenderPassList* render_passes) override {}
   void DisplayDidDrawAndSwap() override {}
 
  private:
@@ -13737,7 +13782,8 @@ class TestRenderFrameMetadataObserver : public RenderFrameMetadataObserver {
   void BindToCurrentThread() override {}
   void OnRenderFrameSubmission(
       const RenderFrameMetadata& render_frame_metadata,
-      viz::CompositorFrameMetadata* compositor_frame_metadata) override {
+      viz::CompositorFrameMetadata* compositor_frame_metadata,
+      bool force_send) override {
     if (increment_counter_)
       compositor_frame_metadata->send_frame_token_to_embedder = true;
     last_metadata_ = render_frame_metadata;

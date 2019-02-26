@@ -39,6 +39,10 @@
 
 #include <stdlib.h>
 
+#if _MSC_VER
+GTEST_DISABLE_MSC_WARNINGS_PUSH_(4127 /* conditional expression is constant */)
+#endif  //  _MSC_VER
+
 #if GTEST_IS_THREADSAFE
 using testing::ScopedFakeTestPartResultReporter;
 using testing::TestPartResultArray;
@@ -170,7 +174,7 @@ TEST(SCOPED_TRACETest, AcceptedValues) {
   SCOPED_TRACE("literal string");
   SCOPED_TRACE(std::string("std::string"));
   SCOPED_TRACE(1337);  // streamable type
-  const char* null_value = NULL;
+  const char* null_value = nullptr;
   SCOPED_TRACE(null_value);
 
   ADD_FAILURE() << "Just checking that all these values work fine.";
@@ -302,9 +306,8 @@ TEST(SCOPED_TRACETest, WorksConcurrently) {
   printf("(expecting 6 failures)\n");
 
   CheckPoints check_points;
-  ThreadWithParam<CheckPoints*> thread(&ThreadWithScopedTrace,
-                                       &check_points,
-                                       NULL);
+  ThreadWithParam<CheckPoints*> thread(&ThreadWithScopedTrace, &check_points,
+                                       nullptr);
   check_points.n1.WaitForNotification();
 
   {
@@ -507,7 +510,7 @@ class DeathTestAndMultiThreadsTest : public testing::Test {
   // Starts a thread and waits for it to begin.
   virtual void SetUp() {
     thread_.reset(new ThreadWithParam<SpawnThreadNotifications*>(
-        &ThreadRoutine, &notifications_, NULL));
+        &ThreadRoutine, &notifications_, nullptr));
     notifications_.spawn_thread_started.WaitForNotification();
   }
   // Tells the thread to finish, and reaps it.
@@ -521,8 +524,7 @@ class DeathTestAndMultiThreadsTest : public testing::Test {
 
  private:
   SpawnThreadNotifications notifications_;
-  testing::internal::scoped_ptr<ThreadWithParam<SpawnThreadNotifications*> >
-      thread_;
+  std::unique_ptr<ThreadWithParam<SpawnThreadNotifications*> > thread_;
 };
 
 #endif  // GTEST_IS_THREADSAFE
@@ -801,6 +803,28 @@ TYPED_TEST(TypedTest, Failure) {
   EXPECT_EQ(1, TypeParam()) << "Expected failure";
 }
 
+typedef testing::Types<char, int> TypesForTestWithNames;
+
+template <typename T>
+class TypedTestWithNames : public testing::Test {};
+
+class TypedTestNames {
+ public:
+  template <typename T>
+  static std::string GetName(int i) {
+    if (testing::internal::IsSame<T, char>::value)
+      return std::string("char") + ::testing::PrintToString(i);
+    if (testing::internal::IsSame<T, int>::value)
+      return std::string("int") + ::testing::PrintToString(i);
+  }
+};
+
+TYPED_TEST_CASE(TypedTestWithNames, TypesForTestWithNames, TypedTestNames);
+
+TYPED_TEST(TypedTestWithNames, Success) {}
+
+TYPED_TEST(TypedTestWithNames, Failure) { FAIL(); }
+
 #endif  // GTEST_HAS_TYPED_TEST
 
 // This #ifdef block tests the output of type-parameterized tests.
@@ -824,6 +848,22 @@ REGISTER_TYPED_TEST_CASE_P(TypedTestP, Success, Failure);
 
 typedef testing::Types<unsigned char, unsigned int> UnsignedTypes;
 INSTANTIATE_TYPED_TEST_CASE_P(Unsigned, TypedTestP, UnsignedTypes);
+
+class TypedTestPNames {
+ public:
+  template <typename T>
+  static std::string GetName(int i) {
+    if (testing::internal::IsSame<T, unsigned char>::value) {
+      return std::string("unsignedChar") + ::testing::PrintToString(i);
+    }
+    if (testing::internal::IsSame<T, unsigned int>::value) {
+      return std::string("unsignedInt") + ::testing::PrintToString(i);
+    }
+  }
+};
+
+INSTANTIATE_TYPED_TEST_CASE_P(UnsignedCustomName, TypedTestP, UnsignedTypes,
+                              TypedTestPNames);
 
 #endif  // GTEST_HAS_TYPED_TEST_P
 
@@ -924,7 +964,7 @@ TEST_F(ExpectFailureTest, ExpectNonFatalFailure) {
 class ExpectFailureWithThreadsTest : public ExpectFailureTest {
  protected:
   static void AddFailureInOtherThread(FailureMode failure) {
-    ThreadWithParam<FailureMode> thread(&AddFailure, failure, NULL);
+    ThreadWithParam<FailureMode> thread(&AddFailure, failure, nullptr);
     thread.Join();
   }
 };
@@ -1060,6 +1100,8 @@ int main(int argc, char **argv) {
   // are registered, and torn down in the reverse order.
   testing::AddGlobalTestEnvironment(new FooEnvironment);
   testing::AddGlobalTestEnvironment(new BarEnvironment);
-
+#if _MSC_VER
+GTEST_DISABLE_MSC_WARNINGS_POP_()  //  4127
+#endif  //  _MSC_VER
   return RunAllTests();
 }

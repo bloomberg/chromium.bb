@@ -33,9 +33,6 @@ class AdvancedProtectionStatusManager
   explicit AdvancedProtectionStatusManager(Profile* profile);
   ~AdvancedProtectionStatusManager() override;
 
-  // If |kAdvancedProtectionStatusFeature| is enabled.
-  static bool IsEnabled();
-
   // If the primary account of |profile| is under advanced protection.
   static bool IsUnderAdvancedProtection(Profile* profile);
 
@@ -68,6 +65,10 @@ class AdvancedProtectionStatusManager
   FRIEND_TEST_ALL_PREFIXES(AdvancedProtectionStatusManagerTest, AccountRemoval);
   FRIEND_TEST_ALL_PREFIXES(AdvancedProtectionStatusManagerTest,
                            StayInAdvancedProtection);
+  FRIEND_TEST_ALL_PREFIXES(AdvancedProtectionStatusManagerTest,
+                           AlreadySignedInAndUnderAPIncognito);
+  FRIEND_TEST_ALL_PREFIXES(AdvancedProtectionStatusManagerTest,
+                           AlreadySignedInAndNotUnderAPIncognito);
 
   void Initialize();
 

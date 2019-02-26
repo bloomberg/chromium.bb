@@ -1371,10 +1371,16 @@ TEST_P(GLSLTest, MixedShaderLengths)
     GLuint shader = glCreateShader(GL_FRAGMENT_SHADER);
 
     const char *sourceArray[] = {
-        "void main()", "{", "    gl_FragColor = vec4(0, 0, 0, 0);", "}",
+        "void main()",
+        "{",
+        "    gl_FragColor = vec4(0, 0, 0, 0);",
+        "}",
     };
     GLint lengths[] = {
-        -10, 1, static_cast<GLint>(strlen(sourceArray[2])), -1,
+        -10,
+        1,
+        static_cast<GLint>(strlen(sourceArray[2])),
+        -1,
     };
     ASSERT_EQ(ArraySize(sourceArray), ArraySize(lengths));
 
@@ -3624,7 +3630,7 @@ void main()
     GLTexture tex;
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, tex);
-    GLubyte texData[] = { 0u, 255u, 0u, 255u };
+    GLubyte texData[] = {0u, 255u, 0u, 255u};
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, texData);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -5152,6 +5158,36 @@ foo
     ANGLE_GL_PROGRAM(program, kVS, kFS);
 }
 
+// Tests constant folding of non-square 'matrixCompMult'.
+TEST_P(GLSLTest_ES3, NonSquareMatrixCompMult)
+{
+    constexpr char kFS[] = R"(#version 300 es
+precision mediump float;
+
+const mat4x2 matA = mat4x2(2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0, 256.0);
+const mat4x2 matB = mat4x2(1.0/2.0, 1.0/4.0, 1.0/8.0, 1.0/16.0, 1.0/32.0, 1.0/64.0, 1.0/128.0, 1.0/256.0);
+
+out vec4 color;
+
+void main()
+{
+    mat4x2 result = matrixCompMult(matA, matB);
+    vec2 vresult = result * vec4(1.0, 1.0, 1.0, 1.0);
+    if (vresult == vec2(4.0, 4.0))
+    {
+        color = vec4(0.0, 1.0, 0.0, 1.0);
+    }
+    else
+    {
+        color = vec4(1.0, 0.0, 0.0, 1.0);
+    }
+})";
+
+    ANGLE_GL_PROGRAM(program, essl3_shaders::vs::Simple(), kFS);
+    drawQuad(program, essl3_shaders::PositionAttrib(), 0.5f, 1.0f, true);
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+}
+
 // Use this to select which configurations (e.g. which renderer, which GLES major version) these
 // tests should be run against.
 ANGLE_INSTANTIATE_TEST(GLSLTest,
@@ -5159,25 +5195,25 @@ ANGLE_INSTANTIATE_TEST(GLSLTest,
                        ES2_D3D11(),
                        ES2_D3D11_FL9_3(),
                        ES2_OPENGL(),
-                       ES2_VULKAN(),
                        ES3_OPENGL(),
                        ES2_OPENGLES(),
-                       ES3_OPENGLES());
+                       ES3_OPENGLES(),
+                       ES2_VULKAN());
 
 ANGLE_INSTANTIATE_TEST(GLSLTestNoValidation,
                        ES2_D3D9(),
                        ES2_D3D11(),
                        ES2_D3D11_FL9_3(),
                        ES2_OPENGL(),
-                       ES2_VULKAN(),
                        ES3_OPENGL(),
                        ES2_OPENGLES(),
-                       ES3_OPENGLES());
+                       ES3_OPENGLES(),
+                       ES2_VULKAN());
 
 // Use this to select which configurations (e.g. which renderer, which GLES major version) these
 // tests should be run against.
 ANGLE_INSTANTIATE_TEST(GLSLTest_ES3, ES3_D3D11(), ES3_OPENGL(), ES3_OPENGLES());
 
-ANGLE_INSTANTIATE_TEST(WebGLGLSLTest, ES2_D3D11(), ES2_OPENGL(), ES2_OPENGLES());
+ANGLE_INSTANTIATE_TEST(WebGLGLSLTest, ES2_D3D11(), ES2_OPENGL(), ES2_OPENGLES(), ES2_VULKAN());
 
 ANGLE_INSTANTIATE_TEST(GLSLTest_ES31, ES31_D3D11(), ES31_OPENGL(), ES31_OPENGLES());

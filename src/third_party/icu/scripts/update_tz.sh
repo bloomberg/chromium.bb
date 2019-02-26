@@ -10,7 +10,6 @@
 #
 # For IANA Time zone database, see https://www.iana.org/time-zones
 
-version=$1
 datapath="source/data/misc"
 sourcedirurl="https://github.com/unicode-org/icu/trunk/icu4c/${datapath}"
 cd "$(dirname "$0")/../${datapath}"

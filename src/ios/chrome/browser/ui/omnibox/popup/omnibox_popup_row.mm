@@ -4,11 +4,14 @@
 
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_row.h"
 
+#include "base/feature_list.h"
 #include "base/logging.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #import "ios/chrome/browser/ui/omnibox/truncating_attributed_label.h"
-#include "ios/chrome/browser/ui/rtl_geometry.h"
-#include "ios/chrome/browser/ui/ui_util.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
+#include "ios/chrome/browser/ui/util/rtl_geometry.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -20,16 +23,19 @@ const CGFloat kImageDimensionLength = 19.0;
 // Side (w or h) length for the leading image view.
 const CGFloat kImageViewSizeUIRefresh = 28.0;
 const CGFloat kImageViewCornerRadiusUIRefresh = 7.0;
-const CGFloat kAppendButtonTrailingMargin = 4;
-const CGFloat kAppendButtonSize = 48.0;
+const CGFloat kTrailingButtonTrailingMargin = 4;
+const CGFloat kTrailingButtonSize = 48.0;
 }
+
+NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
+    @"OmniboxPopupRowSwitchTabAccessibilityIdentifier";
 
 @interface OmniboxPopupRow () {
   BOOL _incognito;
 }
 
 // Set the append button normal and highlighted images.
-- (void)updateAppendButtonImages;
+- (void)updateTrailingButtonImages;
 
 @end
 
@@ -38,7 +44,7 @@ const CGFloat kAppendButtonSize = 48.0;
 @synthesize textTruncatingLabel = _textTruncatingLabel;
 @synthesize detailTruncatingLabel = _detailTruncatingLabel;
 @synthesize detailAnswerLabel = _detailAnswerLabel;
-@synthesize appendButton = _appendButton;
+@synthesize trailingButton = _trailingButton;
 @synthesize answerImageView = _answerImageView;
 @synthesize imageView = _imageView;
 @synthesize rowHeight = _rowHeight;
@@ -73,12 +79,16 @@ const CGFloat kAppendButtonSize = 48.0;
     _detailAnswerLabel.lineBreakMode = NSLineBreakByTruncatingTail;
     [self.contentView addSubview:_detailAnswerLabel];
 
-    _appendButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [_appendButton setContentMode:UIViewContentModeRight];
-    [self updateAppendButtonImages];
+    if (base::FeatureList::IsEnabled(omnibox::kOmniboxTabSwitchSuggestions)) {
+      _trailingButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    } else {
+      _trailingButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    }
+    [_trailingButton setContentMode:UIViewContentModeRight];
+    [self updateTrailingButtonImages];
     // TODO(justincohen): Consider using the UITableViewCell's accessory view.
     // The current implementation is from before using a UITableViewCell.
-    [self.contentView addSubview:_appendButton];
+    [self.contentView addSubview:_trailingButton];
 
     // Before UI Refresh, the leading icon is only displayed on iPad. In UI
     // Refresh, it's only in Regular x Regular size class.
@@ -134,11 +144,11 @@ const CGFloat kAppendButtonSize = 48.0;
 
   LayoutRect trailingAccessoryLayout =
       LayoutRectMake(CGRectGetWidth(self.contentView.bounds) -
-                         kAppendButtonSize - kAppendButtonTrailingMargin,
+                         kTrailingButtonSize - kTrailingButtonTrailingMargin,
                      CGRectGetWidth(self.contentView.bounds),
-                     floor((_rowHeight - kAppendButtonSize) / 2),
-                     kAppendButtonSize, kAppendButtonSize);
-  _appendButton.frame = LayoutRectGetRect(trailingAccessoryLayout);
+                     floor((_rowHeight - kTrailingButtonSize) / 2),
+                     kTrailingButtonSize, kTrailingButtonSize);
+  _trailingButton.frame = LayoutRectGetRect(trailingAccessoryLayout);
 }
 
 - (void)updateLeadingImage:(UIImage*)image {
@@ -173,27 +183,43 @@ const CGFloat kAppendButtonSize = 48.0;
   [self updateHighlightBackground:highlighted];
 }
 
-- (void)updateAppendButtonImages {
-  int appendResourceID = _incognito
+- (void)setTabMatch:(BOOL)tabMatch {
+  _tabMatch = tabMatch;
+  [self updateTrailingButtonImages];
+}
+
+- (void)updateTrailingButtonImages {
+  UIImage* appendImage = nil;
+  _trailingButton.accessibilityIdentifier = nil;
+  if (self.tabMatch) {
+    appendImage = [UIImage imageNamed:@"omnibox_popup_tab_match"];
+    appendImage = appendImage.imageFlippedForRightToLeftLayoutDirection;
+    _trailingButton.accessibilityIdentifier =
+        kOmniboxPopupRowSwitchTabAccessibilityIdentifier;
+  } else {
+    int appendResourceID = 0;
+    if (base::FeatureList::IsEnabled(omnibox::kOmniboxTabSwitchSuggestions)) {
+      appendResourceID = IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND;
+    } else {
+      appendResourceID = _incognito
                              ? IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND_INCOGNITO
                              : IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND;
-  UIImage* appendImage = NativeReversableImage(appendResourceID, YES);
-  if (IsUIRefreshPhase1Enabled()) {
-    appendImage =
-        [appendImage imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    _appendButton.tintColor = _incognito ? [UIColor colorWithWhite:1 alpha:0.5]
-                                         : [UIColor colorWithWhite:0 alpha:0.3];
+    }
+    appendImage = NativeReversableImage(appendResourceID, YES);
+  }
+  appendImage =
+      [appendImage imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  if (base::FeatureList::IsEnabled(omnibox::kOmniboxTabSwitchSuggestions)) {
+    _trailingButton.tintColor = _incognito
+                                    ? [UIColor whiteColor]
+                                    : UIColorFromRGB(kLocationBarTintBlue);
   } else {
-    int appendSelectedResourceID =
-        _incognito ? IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND_INCOGNITO_HIGHLIGHTED
-                   : IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND_HIGHLIGHTED;
-    UIImage* appendImageSelected =
-        NativeReversableImage(appendSelectedResourceID, YES);
-    [_appendButton setImage:appendImageSelected
-                   forState:UIControlStateHighlighted];
+    _trailingButton.tintColor = _incognito
+                                    ? [UIColor colorWithWhite:1 alpha:0.5]
+                                    : [UIColor colorWithWhite:0 alpha:0.3];
   }
 
-  [_appendButton setImage:appendImage forState:UIControlStateNormal];
+  [_trailingButton setImage:appendImage forState:UIControlStateNormal];
 }
 
 - (NSString*)accessibilityLabel {
@@ -212,6 +238,10 @@ const CGFloat kAppendButtonSize = 48.0;
   } else {
     return IsIPadIdiom();
   }
+}
+
+- (void)accessibilityTrailingButtonTapped {
+  [self.delegate accessibilityTrailingButtonTappedOmniboxPopupRow:self];
 }
 
 @end

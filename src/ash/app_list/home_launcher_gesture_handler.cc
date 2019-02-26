@@ -52,6 +52,12 @@ constexpr int kScrollVelocityThreshold = 6;
 // this ratio.
 constexpr float kWidthRatio = 0.8f;
 
+bool IsTabletMode() {
+  return Shell::Get()
+      ->tablet_mode_controller()
+      ->IsTabletModeWindowManagerEnabled();
+}
+
 // Checks if |window| can be hidden or shown with a gesture.
 bool CanProcessWindow(aura::Window* window,
                       HomeLauncherGestureHandler::Mode mode) {
@@ -68,12 +74,13 @@ bool CanProcessWindow(aura::Window* window,
     return false;
   }
 
-  if (!Shell::Get()->app_list_controller()->IsHomeLauncherEnabledInTabletMode())
+  if (!IsTabletMode())
     return false;
 
   if (window->type() == aura::client::WINDOW_TYPE_POPUP)
     return false;
 
+  // Do not process if |window| is not the root of a transient tree.
   if (::wm::GetTransientParent(window))
     return false;
 
@@ -181,7 +188,6 @@ bool HomeLauncherGestureHandler::OnPressEvent(Mode mode,
     return false;
 
   mode_ = mode;
-  initial_event_location_ = location;
   last_event_location_ = base::make_optional(location);
 
   UpdateWindows(0.0, /*animate=*/false);
@@ -198,11 +204,6 @@ bool HomeLauncherGestureHandler::OnScrollEvent(const gfx::Point& location,
 
   last_event_location_ = base::make_optional(location);
   last_scroll_y_ = scroll_y;
-  if (mode_ == Mode::kSlideUpToShow &&
-      (*last_event_location_ - initial_event_location_).y() > 0) {
-    UpdateWindows(0.0, /*animate=*/false);
-    return true;
-  }
 
   DCHECK(display_.is_valid());
   UpdateWindows(GetHeightInWorkAreaAsRatio(location, display_.work_area()),
@@ -210,8 +211,7 @@ bool HomeLauncherGestureHandler::OnScrollEvent(const gfx::Point& location,
   return true;
 }
 
-bool HomeLauncherGestureHandler::OnReleaseEvent(const gfx::Point& location,
-                                                bool* out_dragged_down) {
+bool HomeLauncherGestureHandler::OnReleaseEvent(const gfx::Point& location) {
   if (IsAnimating())
     return false;
 
@@ -228,11 +228,6 @@ bool HomeLauncherGestureHandler::OnReleaseEvent(const gfx::Point& location,
   }
 
   last_event_location_ = base::make_optional(location);
-  if (out_dragged_down) {
-    DCHECK_EQ(mode_, Mode::kSlideUpToShow);
-    *out_dragged_down =
-        (*last_event_location_ - initial_event_location_).y() > 0;
-  }
   AnimateToFinalState();
   return true;
 }
@@ -578,6 +573,14 @@ bool HomeLauncherGestureHandler::IsAnimating() {
       return true;
   }
 
+  if (Shell::Get()->window_selector_controller()->IsSelecting() &&
+      Shell::Get()
+          ->window_selector_controller()
+          ->window_selector()
+          ->IsWindowGridAnimating()) {
+    return true;
+  }
+
   return false;
 }
 
@@ -618,16 +621,16 @@ bool HomeLauncherGestureHandler::SetUpWindows(Mode mode, aura::Window* window) {
 
   if (window && !windows.empty() && windows[0] != window &&
       windows[0]->IsVisible()) {
-    // Do not run slide down animation for the |window| if another active window
-    // in mru list exists.
+    // Do not run slide down animation for the |window| if another active
+    // window in mru list exists. Windows minimized in clamshell mode may
+    // have opacity of 0, so set them to 1 to ensure visibility.
+    if (wm::GetWindowState(window)->IsMinimized())
+      window->layer()->SetOpacity(1.f);
     window_ = nullptr;
     return false;
   }
 
-  if (Shell::Get()
-          ->app_list_controller()
-          ->IsHomeLauncherEnabledInTabletMode() &&
-      overview_active && !split_view_active) {
+  if (IsTabletMode() && overview_active && !split_view_active) {
     DCHECK_EQ(Mode::kSlideUpToShow, mode);
     window_ = nullptr;
     return true;

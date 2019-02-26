@@ -37,8 +37,8 @@ class ResourceLoadingHintsWebContentsObserver
       content::NavigationHandle* navigation_handle) override;
 
   // Sends resource loading hints to the renderer.
-  void SendResourceLoadingHints(
-      content::NavigationHandle* navigation_handle) const;
+  void SendResourceLoadingHints(content::NavigationHandle* navigation_handle,
+                                bool is_reload) const;
 
   // Returns the pattern of resources that should be blocked when loading
   // |document_gurl|. The pattern may be a single substring to match against the

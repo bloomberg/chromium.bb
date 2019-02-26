@@ -14,7 +14,7 @@ function firstCheck(spatialNavigationEnabled) {
 function secondCheck(e) {
   chrome.test.log('After RIGHT key is pressed once');
   if (e.message == 'focused:1') {
-    // setup next tests
+    // setup next test
     var webview = document.querySelector('webview');
     webview.removeEventListener('consolemessage', secondCheck);
     webview.addEventListener('consolemessage', thirdCheck);
@@ -28,24 +28,39 @@ function secondCheck(e) {
 function thirdCheck(e) {
   chrome.test.log('After RIGHT key is pressed once more');
   if (e.message == 'focused:2') {
-    // setup next tests
+    chrome.test.sendMessage('TEST_STEP_PASSED');
+
+    // setup next test
     var webview = document.querySelector('webview');
     webview.removeEventListener('consolemessage', thirdCheck);
     webview.setSpatialNavigationEnabled(false);
-    webview.isSpatialNavigationEnabled(fourthCheck);
-    webview.addEventListener('consolemessage', fifthCheck);
 
-    chrome.test.sendMessage('TEST_STEP_PASSED');
+    // send message via the same IPC channel as setSpatialNavigationEnabled and
+    // wait for reply before checking the state with
+    // getSpatialNavigationEnabled. Required to make sure that the
+    // setSpatialNavigationEnabled call has reached the renderer process.
+    window.onmessage = onMessage;
+    webview.contentWindow.postMessage('{}', '*');
   } else {
     chrome.test.sendMessage('TEST_STEP_FAILED');
   }
 }
+
+var onMessage = function(e) {
+  chrome.test.log('Received message back from renderer');
+  var webview = document.querySelector('webview');
+  webview.isSpatialNavigationEnabled(fourthCheck);
+};
 
 function fourthCheck(spatialNavigationEnabled) {
   chrome.test.log('Spatial navigation disabled');
   if (spatialNavigationEnabled) {
     chrome.test.sendMessage('TEST_STEP_FAILED');
   } else {
+    // setup next test
+    var webview = document.querySelector('webview');
+    webview.addEventListener('consolemessage', fifthCheck);
+
     chrome.test.sendMessage('TEST_STEP_PASSED');
   }
 }
@@ -67,8 +82,8 @@ function startTest() {
     webview.removeEventListener('loadstop', onLoadStop);
     chrome.test.sendMessage('WebViewTest.LAUNCHED');
 
-    webview.isSpatialNavigationEnabled(firstCheck);
     webview.focus();
+    webview.isSpatialNavigationEnabled(firstCheck);
   };
 
   webview.addEventListener('loadstop', onLoadStop);
@@ -90,6 +105,9 @@ function startTest() {
             console.log('focused:'+ev.target.id);
           };
         });
+        window.onmessage = function(e) {
+          e.source.postMessage('{}', '*');
+        };
         </script>
     </body>
   `;

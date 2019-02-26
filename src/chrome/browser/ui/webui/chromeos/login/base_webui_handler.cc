@@ -60,12 +60,12 @@ void BaseWebUIHandler::CommitContextChanges(const base::DictionaryValue& diff) {
   if (!page_is_ready())
     pending_context_changes_.MergeDictionary(&diff);
   else
-    CallJS(kMethodContextChanged, diff);
+    CallJSWithPrefix(kMethodContextChanged, diff);
 }
 
 void BaseWebUIHandler::GetAdditionalParameters(base::DictionaryValue* dict) {}
 
-void BaseWebUIHandler::CallJS(const std::string& method) {
+void BaseWebUIHandler::CallJSWithPrefix(const std::string& method) {
   web_ui()->CallJavascriptFunctionUnsafe(FullMethodPath(method));
 }
 

@@ -105,8 +105,8 @@ public class PartnerHomepageIntegrationTest {
                     Uri.parse(mActivityTestRule.getActivity().getActivityTab().getUrl()));
 
             // Click homepage button.
-            ChromeTabUtils.waitForTabPageLoaded(
-                    mActivityTestRule.getActivity().getActivityTab(), new Runnable() {
+            ChromeTabUtils.waitForTabPageLoaded(mActivityTestRule.getActivity().getActivityTab(),
+                    TestPartnerBrowserCustomizationsProvider.HOMEPAGE_URI, new Runnable() {
                         @Override
                         public void run() {
                             View homeButton =

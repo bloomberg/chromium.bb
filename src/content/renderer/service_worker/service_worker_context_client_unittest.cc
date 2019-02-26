@@ -34,6 +34,7 @@
 #include "third_party/blink/public/platform/modules/payments/web_payment_request_event_data.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_clients_info.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_error.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_registration_object_info.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_request.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_data_consumer_handle.h"
@@ -68,9 +69,11 @@ class MockWebServiceWorkerContextProxy
   void BindServiceWorkerHost(
       mojo::ScopedInterfaceEndpointHandle service_worker_host) override {}
   void SetRegistration(
-      std::unique_ptr<blink::WebServiceWorkerRegistration::Handle> handle)
-      override {
-    registration_handle_ = std::move(handle);
+      blink::WebServiceWorkerRegistrationObjectInfo info) override {
+    DCHECK(!registration_object_info_);
+    registration_object_info_ =
+        std::make_unique<blink::WebServiceWorkerRegistrationObjectInfo>(
+            std::move(info));
   }
   void ReadyToEvaluateScript() override {}
   bool HasFetchEventHandler() override { return false; }
@@ -180,8 +183,8 @@ class MockWebServiceWorkerContextProxy
   }
 
  private:
-  std::unique_ptr<blink::WebServiceWorkerRegistration::Handle>
-      registration_handle_;
+  std::unique_ptr<blink::WebServiceWorkerRegistrationObjectInfo>
+      registration_object_info_;
   std::vector<std::pair<int /* event_id */, blink::WebServiceWorkerRequest>>
       fetch_events_;
 };
@@ -343,8 +346,7 @@ TEST_F(ServiceWorkerContextClientTest, DispatchFetchEvent) {
   params->request = *request;
   pipes.service_worker->DispatchFetchEvent(
       std::move(params), std::move(fetch_callback_ptr),
-      base::BindOnce(
-          [](blink::mojom::ServiceWorkerEventStatus, base::TimeTicks) {}));
+      base::BindOnce([](blink::mojom::ServiceWorkerEventStatus) {}));
   task_runner()->RunUntilIdle();
 
   ASSERT_EQ(1u, mock_proxy.fetch_events().size());
@@ -383,8 +385,7 @@ TEST_F(ServiceWorkerContextClientTest, DispatchFetchEvent_Headers) {
   params->request = *request;
   pipes.service_worker->DispatchFetchEvent(
       std::move(params), std::move(fetch_callback_ptr),
-      base::BindOnce(
-          [](blink::mojom::ServiceWorkerEventStatus, base::TimeTicks) {}));
+      base::BindOnce([](blink::mojom::ServiceWorkerEventStatus) {}));
   task_runner()->RunUntilIdle();
 
   ASSERT_EQ(1u, mock_proxy.fetch_events().size());
@@ -430,8 +431,7 @@ TEST_F(ServiceWorkerContextClientTest,
   params->request = *request;
   context_client->DispatchOrQueueFetchEvent(
       std::move(params), std::move(fetch_callback_ptr),
-      base::BindOnce(
-          [](blink::mojom::ServiceWorkerEventStatus, base::TimeTicks) {}));
+      base::BindOnce([](blink::mojom::ServiceWorkerEventStatus) {}));
   task_runner()->RunUntilIdle();
 
   EXPECT_FALSE(context_client->RequestedTermination());
@@ -478,8 +478,7 @@ TEST_F(ServiceWorkerContextClientTest,
     params->request = *request;
     pipes.controller->DispatchFetchEvent(
         std::move(params), std::move(fetch_callback_ptr),
-        base::BindOnce(
-            [](blink::mojom::ServiceWorkerEventStatus, base::TimeTicks) {}));
+        base::BindOnce([](blink::mojom::ServiceWorkerEventStatus) {}));
     task_runner()->RunUntilIdle();
   }
   EXPECT_TRUE(mock_proxy.fetch_events().empty());
@@ -529,8 +528,7 @@ TEST_F(ServiceWorkerContextClientTest,
     params->request = *request;
     pipes.controller->DispatchFetchEvent(
         std::move(params), std::move(fetch_callback_ptr),
-        base::BindOnce(
-            [](blink::mojom::ServiceWorkerEventStatus, base::TimeTicks) {}));
+        base::BindOnce([](blink::mojom::ServiceWorkerEventStatus) {}));
     task_runner()->RunUntilIdle();
   }
   EXPECT_TRUE(mock_proxy.fetch_events().empty());
@@ -546,8 +544,7 @@ TEST_F(ServiceWorkerContextClientTest,
     params->request = *request;
     pipes.service_worker->DispatchFetchEvent(
         std::move(params), std::move(fetch_callback_ptr),
-        base::BindOnce(
-            [](blink::mojom::ServiceWorkerEventStatus, base::TimeTicks) {}));
+        base::BindOnce([](blink::mojom::ServiceWorkerEventStatus) {}));
     task_runner()->RunUntilIdle();
   }
   EXPECT_FALSE(context_client->RequestedTermination());

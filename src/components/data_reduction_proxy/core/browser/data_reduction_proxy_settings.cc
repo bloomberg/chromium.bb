@@ -298,6 +298,24 @@ void DataReductionProxySettings::SetProxyRequestHeaders(
     observer.OnProxyRequestHeadersChanged(headers);
 }
 
+void DataReductionProxySettings::SetConfiguredProxies(
+    const net::ProxyList& proxies) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  configured_proxies_ = proxies;
+}
+
+bool DataReductionProxySettings::IsConfiguredDataReductionProxy(
+    const net::ProxyServer& proxy_server) const {
+  if (proxy_server.is_direct() || !proxy_server.is_valid())
+    return false;
+
+  for (const auto& drp_proxy : configured_proxies_.GetAll()) {
+    if (drp_proxy.host_port_pair().Equals(proxy_server.host_port_pair()))
+      return true;
+  }
+  return false;
+}
+
 void DataReductionProxySettings::AddDataReductionProxySettingsObserver(
     DataReductionProxySettingsObserver* observer) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -308,14 +326,6 @@ void DataReductionProxySettings::RemoveDataReductionProxySettingsObserver(
     DataReductionProxySettingsObserver* observer) {
   DCHECK(thread_checker_.CalledOnValidThread());
   observers_.RemoveObserver(observer);
-}
-
-DataReductionProxyEventStore* DataReductionProxySettings::GetEventStore()
-    const {
-  if (data_reduction_proxy_service_)
-    return data_reduction_proxy_service_->event_store();
-
-  return nullptr;
 }
 
 void DataReductionProxySettings::SetCustomProxyConfigClient(

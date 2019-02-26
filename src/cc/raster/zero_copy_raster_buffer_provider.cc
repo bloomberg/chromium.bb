@@ -9,16 +9,19 @@
 #include <algorithm>
 
 #include "base/macros.h"
+#include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
-#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/traced_value.h"
 #include "cc/resources/resource_pool.h"
 #include "components/viz/client/client_resource_provider.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/resources/platform_color.h"
 #include "components/viz/common/resources/resource_format_utils.h"
-#include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
+#include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
+#include "gpu/command_buffer/common/shared_image_trace_utils.h"
+#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
@@ -32,13 +35,12 @@ constexpr static auto kBufferUsage = gfx::BufferUsage::GPU_READ_CPU_READ_WRITE;
 class ZeroCopyGpuBacking : public ResourcePool::GpuBacking {
  public:
   ~ZeroCopyGpuBacking() override {
-    gpu::gles2::GLES2Interface* gl = compositor_context_provider->ContextGL();
+    if (mailbox.IsZero())
+      return;
     if (returned_sync_token.HasData())
-      gl->WaitSyncTokenCHROMIUM(returned_sync_token.GetConstData());
-    if (texture_id)
-      gl->DeleteTextures(1, &texture_id);
-    if (image_id)
-      gl->DestroyImageCHROMIUM(image_id);
+      shared_image_interface->DestroySharedImage(returned_sync_token, mailbox);
+    else if (mailbox_sync_token.HasData())
+      shared_image_interface->DestroySharedImage(mailbox_sync_token, mailbox);
   }
 
   void OnMemoryDump(
@@ -52,16 +54,11 @@ class ZeroCopyGpuBacking : public ResourcePool::GpuBacking {
                                     importance);
   }
 
-  // The ContextProvider used to clean up the texture and image ids.
-  viz::ContextProvider* compositor_context_provider = nullptr;
+  // The SharedImageInterface used to clean up the shared image.
+  gpu::SharedImageInterface* shared_image_interface = nullptr;
   // The backing for zero-copy gpu resources. The |texture_id| is bound to
   // this.
   std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer;
-  // The texture id bound to the GpuMemoryBuffer.
-  uint32_t texture_id = 0;
-  // The image id that associates the |gpu_memory_buffer| and the
-  // |texture_id|.
-  uint32_t image_id = 0;
 };
 
 // RasterBuffer for the zero copy upload, which is given to the raster worker
@@ -69,7 +66,6 @@ class ZeroCopyGpuBacking : public ResourcePool::GpuBacking {
 class ZeroCopyRasterBufferImpl : public RasterBuffer {
  public:
   ZeroCopyRasterBufferImpl(
-      viz::ContextProvider* context_provider,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       const ResourcePool::InUsePoolResource& in_use_resource,
       ZeroCopyGpuBacking* backing)
@@ -81,77 +77,33 @@ class ZeroCopyRasterBufferImpl : public RasterBuffer {
         gpu_memory_buffer_(std::move(backing_->gpu_memory_buffer)) {}
 
   ~ZeroCopyRasterBufferImpl() override {
+    // If GpuMemoryBuffer allocation failed (https://crbug.com/554541), then
+    // we don't have anything to give to the display compositor, so we report a
+    // zero mailbox that will result in checkerboarding.
+    if (!gpu_memory_buffer_) {
+      DCHECK(backing_->mailbox.IsZero());
+      return;
+    }
+
     // This is destroyed on the compositor thread when raster is complete, but
     // before the backing is prepared for export to the display compositor. So
     // we can set up the texture and SyncToken here.
     // TODO(danakj): This could be done with the worker context in Playback. Do
     // we need to do things in IsResourceReadyToDraw() and OrderingBarrier then?
-    gpu::gles2::GLES2Interface* gl =
-        backing_->compositor_context_provider->ContextGL();
-    const gpu::Capabilities& caps =
-        backing_->compositor_context_provider->ContextCapabilities();
-
-    if (backing_->returned_sync_token.HasData()) {
-      gl->WaitSyncTokenCHROMIUM(backing_->returned_sync_token.GetConstData());
-      backing_->returned_sync_token = gpu::SyncToken();
-    }
-
-    if (!backing_->texture_id) {
-      // Make a texture and a mailbox for export of the GpuMemoryBuffer to the
-      // display compositor.
-      gl->GenTextures(1, &backing_->texture_id);
-      backing_->texture_target = gpu::GetBufferTextureTarget(
-          kBufferUsage, viz::BufferFormat(resource_format_), caps);
-      gl->ProduceTextureDirectCHROMIUM(backing_->texture_id,
-                                       backing_->mailbox.name);
-      backing_->overlay_candidate = true;
-      // This RasterBufferProvider will modify the resource outside of the
-      // GL command stream. So resources should not become available for reuse
-      // until they are not in use by the gpu anymore, which a fence is used to
-      // determine.
-      backing_->wait_on_fence_required = true;
-
-      gl->BindTexture(backing_->texture_target, backing_->texture_id);
-      gl->TexParameteri(backing_->texture_target, GL_TEXTURE_MIN_FILTER,
-                        GL_LINEAR);
-      gl->TexParameteri(backing_->texture_target, GL_TEXTURE_MAG_FILTER,
-                        GL_LINEAR);
-      gl->TexParameteri(backing_->texture_target, GL_TEXTURE_WRAP_S,
-                        GL_CLAMP_TO_EDGE);
-      gl->TexParameteri(backing_->texture_target, GL_TEXTURE_WRAP_T,
-                        GL_CLAMP_TO_EDGE);
+    gpu::SharedImageInterface* sii = backing_->shared_image_interface;
+    if (backing_->mailbox.IsZero()) {
+      uint32_t usage =
+          gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_SCANOUT;
+      // Make a mailbox for export of the GpuMemoryBuffer to the display
+      // compositor.
+      backing_->mailbox = sii->CreateSharedImage(gpu_memory_buffer_.get(),
+                                                 gpu_memory_buffer_manager_,
+                                                 resource_color_space_, usage);
     } else {
-      gl->BindTexture(backing_->texture_target, backing_->texture_id);
+      sii->UpdateSharedImage(backing_->returned_sync_token, backing_->mailbox);
     }
 
-    if (!backing_->image_id) {
-      // If GpuMemoryBuffer allocation failed (https://crbug.com/554541), then
-      // we don't have anything to give to the display compositor, but also no
-      // way to report an error, so we just make a texture but don't bind
-      // anything to it. Many blink layout tests on macOS fail to have no
-      // |gpu_memory_buffer_| here, so any error reporting will spam console
-      // logs (https://crbug.com/871031).
-      if (gpu_memory_buffer_) {
-        backing_->image_id = gl->CreateImageCHROMIUM(
-            gpu_memory_buffer_->AsClientBuffer(), resource_size_.width(),
-            resource_size_.height(), viz::GLInternalFormat(resource_format_));
-        gl->BindTexImage2DCHROMIUM(backing_->texture_target,
-                                   backing_->image_id);
-      }
-    } else {
-      gl->ReleaseTexImage2DCHROMIUM(backing_->texture_target,
-                                    backing_->image_id);
-      gl->BindTexImage2DCHROMIUM(backing_->texture_target, backing_->image_id);
-    }
-    if (backing_->image_id && resource_color_space_.IsValid()) {
-      gl->SetColorSpaceMetadataCHROMIUM(
-          backing_->texture_id,
-          reinterpret_cast<GLColorSpace>(&resource_color_space_));
-    }
-    gl->BindTexture(backing_->texture_target, 0);
-
-    backing_->mailbox_sync_token =
-        viz::ClientResourceProvider::GenerateSyncTokenHelper(gl);
+    backing_->mailbox_sync_token = sii->GenUnverifiedSyncToken();
     backing_->gpu_memory_buffer = std::move(gpu_memory_buffer_);
   }
 
@@ -225,15 +177,25 @@ ZeroCopyRasterBufferProvider::AcquireBufferForRaster(
     uint64_t previous_content_id) {
   if (!resource.gpu_backing()) {
     auto backing = std::make_unique<ZeroCopyGpuBacking>();
-    backing->compositor_context_provider = compositor_context_provider_;
+    const gpu::Capabilities& caps =
+        compositor_context_provider_->ContextCapabilities();
+    backing->texture_target = gpu::GetBufferTextureTarget(
+        kBufferUsage, BufferFormat(resource.format()), caps);
+    backing->overlay_candidate = true;
+    // This RasterBufferProvider will modify the resource outside of the
+    // GL command stream. So resources should not become available for reuse
+    // until they are not in use by the gpu anymore, which a fence is used
+    // to determine.
+    backing->wait_on_fence_required = true;
+    backing->shared_image_interface =
+        compositor_context_provider_->SharedImageInterface();
     resource.set_gpu_backing(std::move(backing));
   }
   ZeroCopyGpuBacking* backing =
       static_cast<ZeroCopyGpuBacking*>(resource.gpu_backing());
 
-  return std::make_unique<ZeroCopyRasterBufferImpl>(
-      compositor_context_provider_, gpu_memory_buffer_manager_, resource,
-      backing);
+  return std::make_unique<ZeroCopyRasterBufferImpl>(gpu_memory_buffer_manager_,
+                                                    resource, backing);
 }
 
 void ZeroCopyRasterBufferProvider::Flush() {}

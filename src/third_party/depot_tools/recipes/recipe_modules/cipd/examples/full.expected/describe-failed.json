@@ -74,9 +74,12 @@
     ]
   },
   {
-    "name": "$result",
-    "reason": "Step('cipd describe public/package/linux-amd64') failed with return_code 1",
-    "recipe_result": null,
-    "status_code": 1
+    "failure": {
+      "failure": {
+        "step": "cipd describe public/package/linux-amd64"
+      },
+      "humanReason": "Step('cipd describe public/package/linux-amd64') failed with return_code 1"
+    },
+    "name": "$result"
   }
 ]

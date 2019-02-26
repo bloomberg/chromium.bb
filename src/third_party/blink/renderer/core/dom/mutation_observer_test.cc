@@ -35,15 +35,15 @@ class EmptyMutationCallback : public MutationObserver::Delegate {
 
 TEST(MutationObserverTest, DisconnectCrash) {
   Persistent<Document> document = HTMLDocument::CreateForTest();
-  auto* root = ToHTMLElement(document->CreateRawElement(HTMLNames::htmlTag));
+  auto* root = ToHTMLElement(document->CreateRawElement(html_names::kHTMLTag));
   document->AppendChild(root);
   root->SetInnerHTMLFromString("<head><title>\n</title></head><body></body>");
   Node* head = root->firstChild()->firstChild();
   DCHECK(head);
   Persistent<MutationObserver> observer =
       MutationObserver::Create(new EmptyMutationCallback(*document));
-  MutationObserverInit init;
-  init.setCharacterDataOldValue(false);
+  MutationObserverInit* init = MutationObserverInit::Create();
+  init->setCharacterDataOldValue(false);
   observer->observe(head, init, ASSERT_NO_EXCEPTION);
 
   head->remove();

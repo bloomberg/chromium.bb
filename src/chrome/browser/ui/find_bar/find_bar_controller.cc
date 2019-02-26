@@ -8,12 +8,15 @@
 
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
@@ -31,13 +34,71 @@
 using content::NavigationController;
 using content::WebContents;
 
+namespace {
+
 // The minimum space between the FindInPage window and the search result.
-static const int kMinFindWndDistanceFromSelection = 5;
+constexpr int kMinFindWndDistanceFromSelection = 5;
+
+// Tracks windows and makes sure that closing the last Guest browser window
+// clears the find pre-populate text.
+class FindBrowserListObserver : public BrowserListObserver {
+ public:
+  FindBrowserListObserver() {
+    // Can't use base::ScopedObserver because BrowserListObserver isn't derived
+    // from Observer. Not that this object will ever be destructed anyway.
+    BrowserList::AddObserver(this);
+  }
+
+  static void EnsureInstance() {
+    static base::NoDestructor<FindBrowserListObserver> the_instance;
+    the_instance.get();
+  }
+
+ protected:
+  // BrowserListObserver:
+  void OnBrowserRemoved(Browser* browser) override {
+    Profile* const guest_profile = GetGuestProfile(browser);
+    if (!guest_profile)
+      return;
+
+    if (IsGuestWindowOpen())
+      return;
+
+    // Remove persistent find text across guest sessions. If we don't do this, a
+    // future guest session in this browser process might get its find text
+    // prepopulated with something that was searched in this session, which is a
+    // violation of privacy expectations.
+    FindBarState* const find_bar_state =
+        FindBarStateFactory::GetForProfile(guest_profile);
+    find_bar_state->set_last_prepopulate_text(base::string16());
+  }
+
+ private:
+  // Returns a guest profile if the current browser has one, or nullptr
+  // otherwise.
+  static Profile* GetGuestProfile(Browser* browser) {
+    Profile* profile = browser->profile();
+    DCHECK(profile);
+    return profile->IsGuestSession() ? profile : nullptr;
+  }
+
+  static bool IsGuestWindowOpen() {
+    for (Browser* other : *BrowserList::GetInstance()) {
+      if (GetGuestProfile(other))
+        return true;
+    }
+    return false;
+  }
+};
+
+}  // namespace
 
 FindBarController::FindBarController(FindBar* find_bar, Browser* browser)
     : find_bar_(find_bar),
       browser_(browser),
-      find_bar_platform_helper_(FindBarPlatformHelper::Create(this)) {}
+      find_bar_platform_helper_(FindBarPlatformHelper::Create(this)) {
+  FindBrowserListObserver::EnsureInstance();
+}
 
 FindBarController::~FindBarController() {
   DCHECK(!web_contents_);

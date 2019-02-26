@@ -79,6 +79,10 @@ std::string GetReasonDescription(PreviewsEligibilityReason reason,
                  : "Cache-control no-transform received";
     case PreviewsEligibilityReason::LAST:
       break;
+    case PreviewsEligibilityReason::NETWORK_NOT_SLOW_FOR_SESSION:
+      return want_inverse_description
+                 ? "Network is slow enough for the session"
+                 : "Network not slow enough for the session";
   }
   NOTREACHED();
   return "";

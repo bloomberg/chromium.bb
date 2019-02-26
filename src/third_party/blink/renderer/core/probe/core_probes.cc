@@ -79,7 +79,7 @@ void AsyncTaskScheduled(ExecutionContext* context,
                         void* task) {
   TRACE_EVENT_FLOW_BEGIN1("devtools.timeline.async", "AsyncTask",
                           TRACE_ID_LOCAL(reinterpret_cast<uintptr_t>(task)),
-                          "data", InspectorAsyncTask::Data(name));
+                          "data", inspector_async_task::Data(name));
   if (ThreadDebugger* debugger = ThreadDebugger::From(ToIsolate(context)))
     debugger->AsyncTaskScheduled(name, AsyncId(task), true);
 }

@@ -14,10 +14,7 @@
 #include "core/fxcrt/unowned_ptr.h"
 #include "third_party/base/optional.h"
 
-#ifdef PDF_ENABLE_XFA
-#include "fxjs/fxjse.h"
-#endif  // PDF_ENABLE_XFA
-
+class CFXJSE_Value;
 class CJS_Runtime;
 class CPDFSDK_FormFillEnvironment;
 class IJS_EventContext;
@@ -55,13 +52,13 @@ class IJS_Runtime {
 
   virtual ~IJS_Runtime();
 
-  virtual CJS_Runtime* AsCJSRuntime() = 0;
   virtual IJS_EventContext* NewEventContext() = 0;
   virtual void ReleaseEventContext(IJS_EventContext* pContext) = 0;
   virtual CPDFSDK_FormFillEnvironment* GetFormFillEnv() const = 0;
   virtual Optional<JS_Error> ExecuteScript(const WideString& script) = 0;
 
 #ifdef PDF_ENABLE_XFA
+  virtual CJS_Runtime* AsCJSRuntime() = 0;
   virtual bool GetValueByNameFromGlobalObject(const ByteStringView& utf8Name,
                                               CFXJSE_Value* pValue) = 0;
   virtual bool SetValueByNameInGlobalObject(const ByteStringView& utf8Name,

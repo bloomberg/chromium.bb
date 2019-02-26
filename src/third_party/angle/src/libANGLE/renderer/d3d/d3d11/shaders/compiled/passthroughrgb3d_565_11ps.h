@@ -20,9 +20,9 @@
 //
 // Name                 Index   Mask Register SysValue Format   Used
 // -------------------- ----- ------ -------- -------- ------ ------
-// SV_POSITION              0   xyzw        0      POS  float
-// SV_RENDERTARGETARRAYINDEX     0   x           1  RTINDEX   uint
-// TEXCOORD                 0   xyz         2     NONE  float   xyz
+// SV_POSITION              0   xyzw        0      POS  float       
+// SV_RENDERTARGETARRAYINDEX     0   x           1  RTINDEX   uint       
+// TEXCOORD                 0   xyz         2     NONE  float   xyz 
 //
 //
 // Output signature:
@@ -42,7 +42,7 @@ mul r0.xyz, r0.xyzx, l(31.000000, 63.000000, 31.000000, 0.000000)
 round_ne r0.xyz, r0.xyzx
 mul o0.xyz, r0.xyzx, l(0.032258, 0.015873, 0.032258, 0.000000)
 mov o0.w, l(1.000000)
-ret
+ret 
 // Approximately 6 instruction slots used
 #endif
 

@@ -57,4 +57,19 @@ const CSSValue* PropertyRegistry::ParseIfRegistered(
   return parsed_value ? parsed_value : value;
 }
 
+void PropertyRegistry::MarkReferenced(const AtomicString& property_name) const {
+  const PropertyRegistration* registration = Registration(property_name);
+  if (registration) {
+    registration->referenced_ = true;
+  }
+}
+
+bool PropertyRegistry::WasReferenced(const AtomicString& property_name) const {
+  const PropertyRegistration* registration = Registration(property_name);
+  if (!registration) {
+    return false;
+  }
+  return registration->referenced_;
+}
+
 }  // namespace blink

@@ -10,12 +10,12 @@ from __future__ import print_function
 import ConfigParser
 import mock
 import os
-import osutils
 
 from chromite.lib import constants
 from chromite.lib import cq_config
 from chromite.lib import cros_test_lib
 from chromite.lib import git
+from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
 from chromite.lib import patch_unittest
 

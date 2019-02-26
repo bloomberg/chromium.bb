@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/platform/wtf/time.h"
 #include "third_party/skia/include/core/SkImage.h"
 
-// /LayoutTests/images/resources/png-animated-idat-part-of-animation.png
+// web_tests/images/resources/png-animated-idat-part-of-animation.png
 // is modified in multiple tests to simulate erroneous PNGs. As a reference,
 // the table below shows how the file is structured.
 //
@@ -117,7 +117,7 @@ struct PublicFrameInfo {
 };
 
 // This is the frame data for the following PNG image:
-// /LayoutTests/images/resources/png-animated-idat-part-of-animation.png
+// web_tests/images/resources/png-animated-idat-part-of-animation.png
 static PublicFrameInfo g_png_animated_frame_info[] = {
     {TimeDelta::FromMilliseconds(500),
      {IntPoint(0, 0), IntSize(5, 5)},

@@ -33,12 +33,12 @@ namespace blink {
 class InsertLineBreakCommand final : public CompositeEditCommand {
  public:
   static InsertLineBreakCommand* Create(Document& document) {
-    return new InsertLineBreakCommand(document);
+    return MakeGarbageCollected<InsertLineBreakCommand>(document);
   }
 
- private:
   explicit InsertLineBreakCommand(Document&);
 
+ private:
   void DoApply(EditingState*) override;
 
   bool PreservesTypingStyle() const override;

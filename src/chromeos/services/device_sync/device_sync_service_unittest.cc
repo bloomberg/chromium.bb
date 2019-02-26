@@ -9,6 +9,7 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/null_task_runner.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
@@ -845,6 +846,10 @@ class DeviceSyncServiceTest : public testing::Test {
     return last_debug_info_result_;
   }
 
+  const base::HistogramTester& histogram_tester() const {
+    return histogram_tester_;
+  }
+
  private:
   void OnAddObserverCompleted(base::OnceClosure quit_closure) {
     std::move(quit_closure).Run();
@@ -960,6 +965,8 @@ class DeviceSyncServiceTest : public testing::Test {
 
   std::unique_ptr<FakeDeviceSyncObserver> fake_device_sync_observer_;
   mojom::DeviceSyncPtr device_sync_;
+
+  base::HistogramTester histogram_tester_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceSyncServiceTest);
 };
@@ -1159,6 +1166,15 @@ TEST_F(DeviceSyncServiceTest, SetSoftwareFeatureState_Success) {
   auto last_response = GetLastSetSoftwareFeatureStateResponseAndReset();
   EXPECT_TRUE(last_response);
   EXPECT_EQ(device_sync::mojom::NetworkRequestResult::kSuccess, *last_response);
+
+  histogram_tester().ExpectBucketCount<bool>(
+      "MultiDevice.DeviceSyncService.SetSoftwareFeatureState.Result", false, 0);
+  histogram_tester().ExpectBucketCount<bool>(
+      "MultiDevice.DeviceSyncService.SetSoftwareFeatureState.Result", true, 1);
+  histogram_tester().ExpectTotalCount(
+      "MultiDevice.DeviceSyncService.SetSoftwareFeatureState.Result."
+      "FailureReason",
+      0);
 }
 
 TEST_F(DeviceSyncServiceTest,
@@ -1200,6 +1216,15 @@ TEST_F(DeviceSyncServiceTest,
   EXPECT_EQ(device_sync::mojom::NetworkRequestResult::
                 kRequestSucceededButUnexpectedResult,
             *last_response);
+
+  histogram_tester().ExpectBucketCount<bool>(
+      "MultiDevice.DeviceSyncService.SetSoftwareFeatureState.Result", false, 1);
+  histogram_tester().ExpectTotalCount(
+      "MultiDevice.DeviceSyncService.SetSoftwareFeatureState.Result."
+      "FailureReason",
+      1);
+  histogram_tester().ExpectBucketCount<bool>(
+      "MultiDevice.DeviceSyncService.SetSoftwareFeatureState.Result", true, 0);
 }
 
 TEST_F(DeviceSyncServiceTest, SetSoftwareFeatureState_Error) {
@@ -1237,6 +1262,15 @@ TEST_F(DeviceSyncServiceTest, SetSoftwareFeatureState_Error) {
   auto last_response = GetLastSetSoftwareFeatureStateResponseAndReset();
   EXPECT_TRUE(last_response);
   EXPECT_EQ(mojom::NetworkRequestResult::kOffline, *last_response);
+
+  histogram_tester().ExpectBucketCount<bool>(
+      "MultiDevice.DeviceSyncService.SetSoftwareFeatureState.Result", false, 1);
+  histogram_tester().ExpectTotalCount(
+      "MultiDevice.DeviceSyncService.SetSoftwareFeatureState.Result."
+      "FailureReason",
+      1);
+  histogram_tester().ExpectBucketCount<bool>(
+      "MultiDevice.DeviceSyncService.SetSoftwareFeatureState.Result", true, 0);
 }
 
 TEST_F(DeviceSyncServiceTest, FindEligibleDevices) {
@@ -1275,6 +1309,11 @@ TEST_F(DeviceSyncServiceTest, FindEligibleDevices) {
             cryptauth::RemoteDeviceList(test_devices().begin() + 1,
                                         test_devices().end()));
 
+  histogram_tester().ExpectBucketCount<bool>(
+      "MultiDevice.DeviceSyncService.FindEligibleDevices.Result", false, 0);
+  histogram_tester().ExpectBucketCount<bool>(
+      "MultiDevice.DeviceSyncService.FindEligibleDevices.Result", true, 1);
+
   // Find devices which are BETTER_TOGETHER_HOSTs again.
   CallFindEligibleDevices(cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST);
   EXPECT_EQ(2u, find_eligible_calls.size());
@@ -1292,6 +1331,15 @@ TEST_F(DeviceSyncServiceTest, FindEligibleDevices) {
   EXPECT_TRUE(last_response);
   EXPECT_EQ(mojom::NetworkRequestResult::kOffline, last_response->first);
   EXPECT_FALSE(last_response->second /* response */);
+
+  histogram_tester().ExpectBucketCount<bool>(
+      "MultiDevice.DeviceSyncService.FindEligibleDevices.Result", false, 1);
+  histogram_tester().ExpectTotalCount(
+      "MultiDevice.DeviceSyncService.FindEligibleDevices.Result."
+      "FailureReason",
+      1);
+  histogram_tester().ExpectBucketCount<bool>(
+      "MultiDevice.DeviceSyncService.FindEligibleDevices.Result", true, 1);
 }
 
 TEST_F(DeviceSyncServiceTest, GetDebugInfo) {

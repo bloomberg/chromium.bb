@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/storage/cached_storage_area.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
@@ -229,7 +230,7 @@ CachedStorageArea::CachedStorageArea(
       mojo_area_(area.get()),
       mojo_area_ptr_(std::move(area)),
       binding_(this),
-      areas_(new HeapHashMap<WeakMember<Source>, String>),
+      areas_(MakeGarbageCollected<HeapHashMap<WeakMember<Source>, String>>()),
       weak_factory_(this) {
   mojom::blink::StorageAreaObserverAssociatedPtrInfo ptr_info;
   binding_.Bind(mojo::MakeRequest(&ptr_info), std::move(ipc_runner));
@@ -247,7 +248,7 @@ CachedStorageArea::CachedStorageArea(
       mojo_area_(area.get()),
       mojo_area_associated_ptr_(std::move(area)),
       binding_(this),
-      areas_(new HeapHashMap<WeakMember<Source>, String>),
+      areas_(MakeGarbageCollected<HeapHashMap<WeakMember<Source>, String>>()),
       weak_factory_(this) {
   mojom::blink::StorageAreaObserverAssociatedPtrInfo ptr_info;
   binding_.Bind(mojo::MakeRequest(&ptr_info), std::move(ipc_runner));
@@ -423,8 +424,11 @@ void CachedStorageArea::EnsureLoaded() {
   if (map_)
     return;
 
+  // There might be something weird happening during the sync call that destroys
+  // this object. Keep a reference to either fix or rule out that this is the
+  // problem. See https://crbug.com/915577.
+  scoped_refptr<CachedStorageArea> keep_alive(this);
   base::TimeTicks before = base::TimeTicks::Now();
-
   ignore_all_mutations_ = true;
   bool success = false;
   Vector<mojom::blink::KeyValuePtr> data;
@@ -451,8 +455,10 @@ void CachedStorageArea::EnsureLoaded() {
   // Track localStorage size, from 0-6MB. Note that the maximum size should be
   // 10MB, but we add some slop since we want to make sure the max size is
   // always above what we see in practice, since histograms can't change.
-  UMA_HISTOGRAM_CUSTOM_COUNTS("LocalStorage.MojoSizeInKB",
-                              local_storage_size_kb, 1, 6 * 1024, 50);
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "LocalStorage.MojoSizeInKB",
+      base::saturated_cast<base::Histogram::Sample>(local_storage_size_kb), 1,
+      6 * 1024, 50);
   if (local_storage_size_kb < 100) {
     UMA_HISTOGRAM_TIMES("LocalStorage.MojoTimeToPrimeForUnder100KB",
                         time_to_prime);
@@ -509,7 +515,7 @@ String CachedStorageArea::Uint8VectorToString(const Vector<uint8_t>& input,
                                               FormatOption format_option) {
   if (input.IsEmpty())
     return g_empty_string;
-  const size_t input_size = input.size();
+  const wtf_size_t input_size = input.size();
   String result;
   bool corrupt = false;
   switch (format_option) {
@@ -536,7 +542,7 @@ String CachedStorageArea::Uint8VectorToString(const Vector<uint8_t>& input,
     }
     case FormatOption::kLocalStorageDetectFormat: {
       StorageFormat format = static_cast<StorageFormat>(input[0]);
-      const size_t payload_size = input_size - 1;
+      const wtf_size_t payload_size = input_size - 1;
       switch (format) {
         case StorageFormat::UTF16: {
           if (payload_size % sizeof(UChar) != 0) {
@@ -580,7 +586,7 @@ Vector<uint8_t> CachedStorageArea::StringToUint8Vector(
     }
     case FormatOption::kSessionStorageForceUTF8: {
       unsigned length = input.length();
-      if (input.Is8Bit() && input.ContainsOnlyASCII()) {
+      if (input.Is8Bit() && input.ContainsOnlyASCIIOrEmpty()) {
         Vector<uint8_t> result(length);
         std::memcpy(result.data(), input.Characters8(), length);
         return result;
@@ -597,14 +603,15 @@ Vector<uint8_t> CachedStorageArea::StringToUint8Vector(
         uint8_t* buffer = buffer_vector.data();
         const LChar* characters = input.Characters8();
 
-        WTF::Unicode::ConversionResult result =
-            WTF::Unicode::ConvertLatin1ToUTF8(
+        WTF::unicode::ConversionResult result =
+            WTF::unicode::ConvertLatin1ToUTF8(
                 &characters, characters + length,
                 reinterpret_cast<char**>(&buffer),
                 reinterpret_cast<char*>(buffer + buffer_vector.size()));
         // (length * 3) should be sufficient for any conversion
-        DCHECK_NE(result, WTF::Unicode::kTargetExhausted);
-        buffer_vector.Shrink(buffer - buffer_vector.data());
+        DCHECK_NE(result, WTF::unicode::kTargetExhausted);
+        buffer_vector.Shrink(
+            static_cast<wtf_size_t>(buffer - buffer_vector.data()));
         return buffer_vector;
       }
 
@@ -617,7 +624,7 @@ Vector<uint8_t> CachedStorageArea::StringToUint8Vector(
       return result;
     }
     case FormatOption::kLocalStorageDetectFormat: {
-      if (input.ContainsOnlyLatin1()) {
+      if (input.ContainsOnlyLatin1OrEmpty()) {
         Vector<uint8_t> result(input.length() + 1);
         result[0] = static_cast<uint8_t>(StorageFormat::Latin1);
         if (input.Is8Bit()) {

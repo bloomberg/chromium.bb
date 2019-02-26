@@ -24,7 +24,7 @@
 class GURL;
 
 namespace optimization_guide {
-struct ComponentInfo;
+struct HintsComponentInfo;
 }
 
 namespace previews {
@@ -34,10 +34,11 @@ class PreviewsHints {
  public:
   ~PreviewsHints();
 
-  // Creates a Hints instance from the provided configuration.
-  static std::unique_ptr<PreviewsHints> CreateFromConfig(
-      const optimization_guide::proto::Configuration& config,
-      const optimization_guide::ComponentInfo& info);
+  // Creates a Hints instance from the provided hints component. This must be
+  // called using a background task runner as it requires a significant amount
+  // of processing.
+  static std::unique_ptr<PreviewsHints> CreateFromHintsComponent(
+      const optimization_guide::HintsComponentInfo& info);
 
   static std::unique_ptr<PreviewsHints> CreateForTesting(
       std::unique_ptr<HostFilter> lite_page_redirect_blacklist);
@@ -48,16 +49,15 @@ class PreviewsHints {
       const GURL& document_url,
       const optimization_guide::proto::Hint& hint);
 
-  void Initialize();
-
   // Whether the URL is whitelisted for the given previews type. If so,
-  // |out_inflation_percent| will be populated if metadata is available for it.
-  // This first checks the top-level whitelist and, if not whitelisted there,
-  // it will check the HintCache for having a loaded, matching PageHint that
-  // whitelists it.
+  // |out_inflation_percent| and |out_ect_threshold| will be populated if
+  // metadata is available for them. This first checks the top-level whitelist
+  // and, if not whitelisted there, it will check the HintCache for having a
+  // loaded, matching PageHint that whitelists it.
   bool IsWhitelisted(const GURL& url,
                      PreviewsType type,
-                     int* out_inflation_percent) const;
+                     int* out_inflation_percent,
+                     net::EffectiveConnectionType* out_ect_threshold) const;
 
   // Whether the URL is blacklisted for the given previews type.
   bool IsBlacklisted(const GURL& url, PreviewsType type) const;
@@ -88,11 +88,13 @@ class PreviewsHints {
                                PreviewsType type,
                                int* out_inflation_percent) const;
   // Returns whether |url| is whitelisted in the page hints contained within
-  // |hint_cache_|. If it is, then |out_inflation_percent| will be populated if
-  // metadata is available for it.
-  bool IsWhitelistedInPageHints(const GURL& url,
-                                PreviewsType type,
-                                int* out_inflation_percent) const;
+  // |hint_cache_|. If it is, then |out_inflation_percent| and
+  // |out_ect_threshold| will be populated if metadata is available for them.
+  bool IsWhitelistedInPageHints(
+      const GURL& url,
+      PreviewsType type,
+      int* out_inflation_percent,
+      net::EffectiveConnectionType* out_ect_threshold) const;
 
   // Parses optimization filters from |config| and populates corresponding
   // supported blacklists in this object.
@@ -111,8 +113,6 @@ class PreviewsHints {
   std::map<url_matcher::URLMatcherConditionSet::ID,
            std::set<std::pair<PreviewsType, int>>>
       whitelist_;
-
-  std::vector<optimization_guide::proto::Hint> initial_hints_;
 
   // Blacklist of host suffixes for LITE_PAGE_REDIRECT Previews.
   std::unique_ptr<HostFilter> lite_page_redirect_blacklist_;

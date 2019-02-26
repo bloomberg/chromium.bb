@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_CONTROLLER_H_
 #define IOS_CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_CONTROLLER_H_
 
-#import <CoreGraphics/CoreGraphics.h>
+#import <UIKit/UIKit.h>
 
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -55,6 +55,15 @@ class FullscreenController : public KeyedService {
   // and 1.0, where 0.0 denotes that the toolbar should be completely hidden and
   // 1.0 denotes that the toolbar should be completely visible.
   virtual CGFloat GetProgress() const = 0;
+
+  // Returns the max and min insets for the visible content area's viewport.
+  // The max insets correspond to a progress of 1.0, and the min insets are for
+  // progress 0.0.
+  virtual UIEdgeInsets GetMinViewportInsets() const = 0;
+  virtual UIEdgeInsets GetMaxViewportInsets() const = 0;
+
+  // Returns the current insets for the visible content area's viewport.
+  virtual UIEdgeInsets GetCurrentViewportInsets() const = 0;
 
   // Enters fullscreen mode, animating away toolbars and resetting the progress
   // to 0.0.  Calling this function while fullscreen is disabled has no effect.

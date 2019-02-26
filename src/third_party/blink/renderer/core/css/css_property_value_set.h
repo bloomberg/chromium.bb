@@ -24,10 +24,11 @@
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/css_property_name.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_property_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_mode.h"
 #include "third_party/blink/renderer/core/css/property_set_css_style_declaration.h"
-#include "third_party/blink/renderer/core/css_property_names.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -66,6 +67,8 @@ class CORE_EXPORT CSSPropertyValueSet
     CSSPropertyID ShorthandID() const {
       return PropertyMetadata().ShorthandID();
     }
+
+    CSSPropertyName Name() const;
 
     bool IsImportant() const { return PropertyMetadata().important_; }
     bool IsInherited() const { return PropertyMetadata().inherited_; }
@@ -175,7 +178,11 @@ class CSSLazyPropertyParser
 
 class CORE_EXPORT ImmutableCSSPropertyValueSet : public CSSPropertyValueSet {
  public:
+  ImmutableCSSPropertyValueSet(const CSSPropertyValue*,
+                               unsigned count,
+                               CSSParserMode);
   ~ImmutableCSSPropertyValueSet();
+
   static ImmutableCSSPropertyValueSet*
   Create(const CSSPropertyValue* properties, unsigned count, CSSParserMode);
 
@@ -192,11 +199,6 @@ class CORE_EXPORT ImmutableCSSPropertyValueSet : public CSSPropertyValueSet {
   void* operator new(std::size_t, void* location) { return location; }
 
   void* storage_;
-
- private:
-  ImmutableCSSPropertyValueSet(const CSSPropertyValue*,
-                               unsigned count,
-                               CSSParserMode);
 };
 
 inline const Member<const CSSValue>* ImmutableCSSPropertyValueSet::ValueArray()
@@ -220,7 +222,12 @@ DEFINE_TYPE_CASTS(ImmutableCSSPropertyValueSet,
 
 class CORE_EXPORT MutableCSSPropertyValueSet : public CSSPropertyValueSet {
  public:
+  explicit MutableCSSPropertyValueSet(CSSParserMode);
+  explicit MutableCSSPropertyValueSet(const CSSPropertyValueSet&);
+  MutableCSSPropertyValueSet(const CSSPropertyValue* properties,
+                             unsigned count);
   ~MutableCSSPropertyValueSet() = default;
+
   static MutableCSSPropertyValueSet* Create(CSSParserMode);
   static MutableCSSPropertyValueSet* Create(const CSSPropertyValue* properties,
                                             unsigned count);
@@ -277,20 +284,13 @@ class CORE_EXPORT MutableCSSPropertyValueSet : public CSSPropertyValueSet {
   void TraceAfterDispatch(blink::Visitor*);
 
  private:
-  explicit MutableCSSPropertyValueSet(CSSParserMode);
-  explicit MutableCSSPropertyValueSet(const CSSPropertyValueSet&);
-  MutableCSSPropertyValueSet(const CSSPropertyValue* properties,
-                             unsigned count);
-
   bool RemovePropertyAtIndex(int, String* return_text);
 
   bool RemoveShorthandProperty(CSSPropertyID);
   bool RemoveShorthandProperty(const AtomicString& custom_property_name) {
     return false;
   }
-  CSSPropertyValue* FindCSSPropertyWithID(
-      CSSPropertyID,
-      const AtomicString& custom_property_name = g_null_atom);
+  CSSPropertyValue* FindCSSPropertyWithName(const CSSPropertyName&);
   Member<PropertySetCSSStyleDeclaration> cssom_wrapper_;
 
   friend class CSSPropertyValueSet;

@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/html/custom/custom_element_reaction.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_reaction_stack.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_upgrade_reaction.h"
+#include "third_party/blink/renderer/core/html/custom/element_internals.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html_element_factory.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -29,11 +30,16 @@ CustomElementDefinition::CustomElementDefinition(
 
 CustomElementDefinition::CustomElementDefinition(
     const CustomElementDescriptor& descriptor,
-    const HashSet<AtomicString>& observed_attributes)
+    const HashSet<AtomicString>& observed_attributes,
+    const Vector<String>& disabled_features,
+    FormAssociationFlag form_association_flag)
     : descriptor_(descriptor),
       observed_attributes_(observed_attributes),
       has_style_attribute_changed_callback_(
-          observed_attributes.Contains(HTMLNames::styleAttr.LocalName())) {}
+          observed_attributes.Contains(html_names::kStyleAttr.LocalName())),
+      disable_internals_(disabled_features.Contains(String("internals"))),
+      is_form_associated_(form_association_flag == FormAssociationFlag::kYes) {}
+
 CustomElementDefinition::~CustomElementDefinition() = default;
 
 void CustomElementDefinition::Trace(blink::Visitor* visitor) {
@@ -61,7 +67,7 @@ static String ErrorMessageForConstructorResult(Element* element,
     return "The result must be in the same document";
   // 6.1.8. If result's namespace is not the HTML namespace, then throw a
   // NotSupportedError.
-  if (element->namespaceURI() != HTMLNames::xhtmlNamespaceURI)
+  if (element->namespaceURI() != html_names::xhtmlNamespaceURI)
     return "The result must have HTML namespace";
   // 6.1.9. If result's local name is not equal to localName, then throw a
   // NotSupportedError.
@@ -104,7 +110,7 @@ HTMLElement* CustomElementDefinition::CreateElementForConstructor(
   } else {
     element =
         HTMLElement::Create(QualifiedName(g_null_atom, Descriptor().LocalName(),
-                                          HTMLNames::xhtmlNamespaceURI),
+                                          html_names::xhtmlNamespaceURI),
                             document);
   }
   // TODO(davaajav): write this as one call to setCustomElementState instead of
@@ -206,6 +212,9 @@ void CustomElementDefinition::Upgrade(Element* element) {
   }
 
   element->SetCustomElementDefinition(this);
+
+  if (IsFormAssociated())
+    ToHTMLElement(element)->EnsureElementInternals().DidUpgrade();
   AddDefaultStylesTo(*element);
 }
 
@@ -230,9 +239,9 @@ void CustomElementDefinition::AddDefaultStylesTo(Element& element) {
     for (CSSStyleSheet* sheet : default_styles)
       sheet->AddToCustomElementTagNames(local_tag_name);
   }
-  element.SetNeedsStyleRecalc(kLocalStyleChange,
-                              StyleChangeReasonForTracing::Create(
-                                  StyleChangeReason::kActiveStylesheetsUpdate));
+  element.SetNeedsStyleRecalc(
+      kLocalStyleChange, StyleChangeReasonForTracing::Create(
+                             style_change_reason::kActiveStylesheetsUpdate));
 }
 
 bool CustomElementDefinition::HasAttributeChangedCallback(

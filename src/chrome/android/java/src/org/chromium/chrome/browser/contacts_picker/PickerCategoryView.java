@@ -46,7 +46,7 @@ public class PickerCategoryView
                                           SelectionDelegate.SelectionObserver<ContactDetails>,
                                           SelectableListToolbar.SearchDelegate {
     // Constants for the RoundedIconGenerator.
-    private static final int ICON_SIZE_DP = 32;
+    private static final int ICON_SIZE_DP = 28;
     private static final int ICON_CORNER_RADIUS_DP = 20;
     private static final int ICON_TEXT_SIZE_DP = 12;
 

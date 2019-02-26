@@ -420,6 +420,9 @@ static const arg_def_t tile_cols =
     ARG_DEF(NULL, "tile-columns", 1, "Number of tile columns to use, log2");
 static const arg_def_t tile_rows =
     ARG_DEF(NULL, "tile-rows", 1, "Number of tile rows to use, log2");
+static const arg_def_t enable_tpl_model =
+    ARG_DEF(NULL, "enable-tpl-model", 1,
+            "RDO modulation based on frame temporal dependency");
 static const arg_def_t tile_width =
     ARG_DEF(NULL, "tile-width", 1, "Tile widths (comma separated)");
 static const arg_def_t tile_height =
@@ -624,6 +627,7 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &rowmtarg,
                                        &tile_cols,
                                        &tile_rows,
+                                       &enable_tpl_model,
                                        &arnr_maxframes,
                                        &arnr_strength,
                                        &tune_metric,
@@ -681,6 +685,7 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_ROW_MT,
                                         AV1E_SET_TILE_COLUMNS,
                                         AV1E_SET_TILE_ROWS,
+                                        AV1E_SET_ENABLE_TPL_MODEL,
                                         AOME_SET_ARNR_MAXFRAMES,
                                         AOME_SET_ARNR_STRENGTH,
                                         AOME_SET_TUNING,
@@ -732,7 +737,7 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
 
 static const arg_def_t *no_args[] = { NULL };
 
-void show_help(FILE *fout, int shorthelp) {
+static void show_help(FILE *fout, int shorthelp) {
   fprintf(fout, "Usage: %s <options> -o dst_filename src_filename \n",
           exec_name);
 
@@ -845,14 +850,17 @@ static void validate_positive_rational(const char *msg,
   if (!rat->den) die("Error: %s has zero denominator\n", msg);
 }
 
-static void parse_global_config(struct AvxEncoderConfig *global, int *argc,
+/* Parses global config arguments into the AvxEncoderConfig. Note that
+ * argv is modified and overwrites all parsed arguments.
+ */
+static void parse_global_config(struct AvxEncoderConfig *global, int argc,
                                 char ***argv) {
   char **argi, **argj;
   struct arg arg;
   const int num_encoder = get_aom_encoder_count();
   char **argv_local = (char **)*argv;
 #if CONFIG_FILEOPTIONS
-  int argc_local = *argc;
+  int argc_local = argc;
 #endif
   if (num_encoder < 1) die("Error: no valid encoder available\n");
 
@@ -861,6 +869,7 @@ static void parse_global_config(struct AvxEncoderConfig *global, int *argc,
   global->codec = get_aom_encoder_by_index(num_encoder - 1);
   global->passes = 0;
   global->color_type = I420;
+  global->csp = AOM_CSP_UNKNOWN;
 
 #if CONFIG_FILEOPTIONS
   const char *cfg = NULL;
@@ -900,6 +909,10 @@ static void parse_global_config(struct AvxEncoderConfig *global, int *argc,
 
       if (global->pass < 1 || global->pass > 2)
         die("Error: Invalid pass selected (%d)\n", global->pass);
+    } else if (arg_match(&arg, &input_chroma_sample_position, argi)) {
+      global->csp = arg_parse_enum(&arg);
+      /* Flag is used by later code as well, preserve it. */
+      argj++;
     } else if (arg_match(&arg, &usage, argi))
       global->usage = arg_parse_uint(&arg);
     else if (arg_match(&arg, &good_dl, argi))
@@ -963,7 +976,8 @@ static void parse_global_config(struct AvxEncoderConfig *global, int *argc,
   }
 }
 
-static void open_input_file(struct AvxInputContext *input) {
+static void open_input_file(struct AvxInputContext *input,
+                            aom_chroma_sample_position_t csp) {
   /* Parse certain options from the input file, if possible */
   input->file = strcmp(input->filename, "-") ? fopen(input->filename, "rb")
                                              : set_binary_mode(stdin);
@@ -989,7 +1003,7 @@ static void open_input_file(struct AvxInputContext *input) {
   input->detect.position = 0;
 
   if (input->detect.buf_read == 4 && file_is_y4m(input->detect.buf)) {
-    if (y4m_input_open(&input->y4m, input->file, input->detect.buf, 4,
+    if (y4m_input_open(&input->y4m, input->file, input->detect.buf, 4, csp,
                        input->only_i420) >= 0) {
       input->file_type = FILE_TYPE_Y4M;
       input->width = input->y4m.pic_w;
@@ -1306,13 +1320,11 @@ static void validate_stream_config(const struct stream_state *stream,
         " and --height (-h)",
         stream->index);
 
-  // Check that the codec bit depth is greater than the input bit depth.
-  if (stream->config.cfg.g_input_bit_depth >
-      (unsigned int)stream->config.cfg.g_bit_depth) {
-    fatal("Stream %d: codec bit depth (%d) less than input bit depth (%d)",
-          stream->index, (int)stream->config.cfg.g_bit_depth,
-          stream->config.cfg.g_input_bit_depth);
-  }
+  /* Even if bit depth is set on the command line flag to be lower,
+   * it is upgraded to at least match the input bit depth.
+   */
+  assert(stream->config.cfg.g_input_bit_depth <=
+         (unsigned int)stream->config.cfg.g_bit_depth);
 
   for (streami = stream; streami; streami = streami->next) {
     /* All streams require output files */
@@ -1378,6 +1390,7 @@ static const char *image_format_to_string(aom_img_fmt_t f) {
     case AOM_IMG_FMT_I422: return "I422";
     case AOM_IMG_FMT_I444: return "I444";
     case AOM_IMG_FMT_YV12: return "YV12";
+    case AOM_IMG_FMT_YV1216: return "YV1216";
     case AOM_IMG_FMT_I42016: return "I42016";
     case AOM_IMG_FMT_I42216: return "I42216";
     case AOM_IMG_FMT_I44416: return "I44416";
@@ -1463,8 +1476,11 @@ static void open_output_file(struct stream_state *stream,
 #if CONFIG_WEBM_IO
   if (stream->config.write_webm) {
     stream->webm_ctx.stream = stream->file;
-    write_webm_file_header(&stream->webm_ctx, cfg, stream->config.stereo_fmt,
-                           global->codec->fourcc, pixel_aspect_ratio);
+    if (write_webm_file_header(&stream->webm_ctx, &stream->encoder, cfg,
+                               stream->config.stereo_fmt, global->codec->fourcc,
+                               pixel_aspect_ratio) != 0) {
+      fatal("WebM writer initialization failed.");
+    }
   }
 #else
   (void)pixel_aspect_ratio;
@@ -1483,7 +1499,9 @@ static void close_output_file(struct stream_state *stream,
 
 #if CONFIG_WEBM_IO
   if (stream->config.write_webm) {
-    write_webm_file_footer(&stream->webm_ctx);
+    if (write_webm_file_footer(&stream->webm_ctx) != 0) {
+      fatal("WebM writer finalization failed.");
+    }
   }
 #endif
 
@@ -1699,16 +1717,16 @@ static void get_cx_data(struct stream_state *stream,
 
     switch (pkt->kind) {
       case AOM_CODEC_CX_FRAME_PKT:
-        if (!(pkt->data.frame.flags & AOM_FRAME_IS_FRAGMENT)) {
-          stream->frames_out++;
-        }
+        ++stream->frames_out;
         if (!global->quiet)
           fprintf(stderr, " %6luF", (unsigned long)pkt->data.frame.sz);
 
         update_rate_histogram(stream->rate_hist, cfg, pkt);
 #if CONFIG_WEBM_IO
         if (stream->config.write_webm) {
-          write_webm_block(&stream->webm_ctx, cfg, pkt);
+          if (write_webm_block(&stream->webm_ctx, cfg, pkt) != 0) {
+            fatal("WebM writer failed.");
+          }
         }
 #endif
         if (!stream->config.write_webm) {
@@ -1721,12 +1739,10 @@ static void get_cx_data(struct stream_state *stream,
             } else {
               fsize += pkt->data.frame.sz;
 
-              if (!(pkt->data.frame.flags & AOM_FRAME_IS_FRAGMENT)) {
-                const FileOffset currpos = ftello(stream->file);
-                fseeko(stream->file, ivf_header_pos, SEEK_SET);
-                ivf_write_frame_size(stream->file, fsize);
-                fseeko(stream->file, currpos, SEEK_SET);
-              }
+              const FileOffset currpos = ftello(stream->file);
+              fseeko(stream->file, ivf_header_pos, SEEK_SET);
+              ivf_write_frame_size(stream->file, fsize);
+              fseeko(stream->file, currpos, SEEK_SET);
             }
           }
 
@@ -1913,7 +1929,7 @@ int main(int argc, const char **argv_) {
    * codec.
    */
   argv = argv_dup(argc - 1, argv_ + 1);
-  parse_global_config(&global, &argc, &argv);
+  parse_global_config(&global, argc, &argv);
 
 #if CONFIG_FILEOPTIONS
   if (argc < 2) usage_exit();
@@ -1969,7 +1985,7 @@ int main(int argc, const char **argv_) {
     int64_t average_rate = -1;
     int64_t lagged_count = 0;
 
-    open_input_file(&input);
+    open_input_file(&input, global.csp);
 
     /* If the input file doesn't specify its w/h (raw files), try to get
      * the data from the first stream's configuration.
@@ -2069,6 +2085,18 @@ int main(int argc, const char **argv_) {
           default: break;
         }
       }
+      /* Automatically set the codec bit depth to match the input bit depth.
+       * Upgrade the profile if required. */
+      if (stream->config.cfg.g_input_bit_depth >
+          (unsigned int)stream->config.cfg.g_bit_depth) {
+        stream->config.cfg.g_bit_depth = stream->config.cfg.g_input_bit_depth;
+        if (!global.quiet) {
+          fprintf(stderr,
+                  "Warning: automatically updating bit depth to %d to "
+                  "match input format.\n",
+                  stream->config.cfg.g_input_bit_depth);
+        }
+      }
       if (stream->config.cfg.g_bit_depth > 10) {
         switch (stream->config.cfg.g_profile) {
           case 0:
@@ -2153,10 +2181,11 @@ int main(int argc, const char **argv_) {
     }
 
     FOREACH_STREAM(stream, streams) { setup_pass(stream, &global, pass); }
+    FOREACH_STREAM(stream, streams) { initialize_encoder(stream, &global); }
     FOREACH_STREAM(stream, streams) {
       open_output_file(stream, &global, &input.pixel_aspect_ratio);
     }
-    FOREACH_STREAM(stream, streams) { initialize_encoder(stream, &global); }
+
     if (strcmp(global.codec->name, "av1") == 0 ||
         strcmp(global.codec->name, "av1") == 0) {
       // Check to see if at least one stream uses 16 bit internal.

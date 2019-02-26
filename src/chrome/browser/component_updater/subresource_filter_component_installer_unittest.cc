@@ -37,14 +37,15 @@ static const char kTestRulesetVersion[] = "1.2.3.4";
 
 class TestRulesetService : public subresource_filter::RulesetService {
  public:
-  TestRulesetService(PrefService* local_state,
-                     scoped_refptr<base::SequencedTaskRunner> task_runner,
-                     subresource_filter::ContentRulesetService* content_service,
-                     const base::FilePath& base_dir)
+  TestRulesetService(
+      PrefService* local_state,
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
+      const base::FilePath& base_dir,
+      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
       : subresource_filter::RulesetService(local_state,
                                            task_runner,
-                                           content_service,
-                                           base_dir) {}
+                                           base_dir,
+                                           blocking_task_runner) {}
 
   ~TestRulesetService() override {}
 
@@ -105,18 +106,13 @@ class SubresourceFilterComponentInstallerTest : public PlatformTest {
     subresource_filter::IndexedRulesetVersion::RegisterPrefs(
         pref_service_.registry());
 
-    auto content_service =
-        std::make_unique<subresource_filter::ContentRulesetService>(
-            base::ThreadTaskRunnerHandle::Get());
     auto test_ruleset_service = std::make_unique<TestRulesetService>(
         &pref_service_, base::ThreadTaskRunnerHandle::Get(),
-        content_service.get(), ruleset_service_dir_.GetPath());
+        ruleset_service_dir_.GetPath(), base::ThreadTaskRunnerHandle::Get());
     test_ruleset_service_ = test_ruleset_service.get();
-    content_service->SetAndInitializeRulesetService(
-        std::move(test_ruleset_service));
 
     TestingBrowserProcess::GetGlobal()->SetRulesetService(
-        std::move(content_service));
+        std::move(test_ruleset_service));
     policy_ = std::make_unique<SubresourceFilterComponentInstallerPolicy>();
   }
 

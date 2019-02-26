@@ -182,9 +182,10 @@ class PLATFORM_EXPORT ScriptWrappable
 // i.e. "extern template class EXPORT_API X;"
 // However, once we instantiate X, we cannot specialize X after
 // the instantiation. i.e. we will see "error: explicit specialization of ...
-// after instantiation". So we cannot define X's s_wrapperTypeInfo in generated
-// code by using specialization. Instead, we need to implement wrapperTypeInfo
-// in X's cpp code, and instantiate X, i.e. "template class X;".
+// after instantiation". So we cannot define X's s_wrapper_type_info in
+// generated code by using specialization. Instead, we need to implement
+// wrapper_type_info in X's cpp code, and instantiate X, i.e. "template class
+// X;".
 #define DECLARE_WRAPPERTYPEINFO()                             \
  public:                                                      \
   const WrapperTypeInfo* GetWrapperTypeInfo() const override; \

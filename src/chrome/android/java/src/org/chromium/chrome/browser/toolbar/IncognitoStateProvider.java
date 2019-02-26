@@ -19,10 +19,11 @@ import org.chromium.chrome.browser.toolbar.ThemeColorProvider.ThemeColorObserver
 
 /** A provider that notifies its observers when incognito mode is entered or exited. */
 public class IncognitoStateProvider implements ThemeColorProvider {
-    /**
-     * An interface to be notified when incognito mode is entered or left.
-     */
-    public interface IncognitoStateObserver { void onIncognitoStateChanged(boolean isIncognito); }
+    /** An interface to be notified about changes to the incognito state. */
+    public interface IncognitoStateObserver {
+        /** Called when incognito state changes. */
+        void onIncognitoStateChanged(boolean isIncognito);
+    }
 
     /** List of {@link IncognitoStateObserver}s. These are used to broadcast events to listeners. */
     private final ObserverList<ThemeColorObserver> mThemeColorObservers;

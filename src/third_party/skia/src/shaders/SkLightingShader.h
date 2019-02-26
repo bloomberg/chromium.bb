@@ -8,7 +8,6 @@
 #ifndef SkLightingShader_DEFINED
 #define SkLightingShader_DEFINED
 
-#include "SkFlattenablePriv.h"
 #include "SkLights.h"
 #include "SkShader.h"
 
@@ -34,7 +33,7 @@ public:
     static sk_sp<SkShader> Make(sk_sp<SkShader> diffuseShader, sk_sp<SkNormalSource> normalSource,
                                 sk_sp<SkLights> lights);
 
-    SK_DECLARE_FLATTENABLE_REGISTRAR_GROUP()
+    static void RegisterFlattenables();
 };
 
 #endif

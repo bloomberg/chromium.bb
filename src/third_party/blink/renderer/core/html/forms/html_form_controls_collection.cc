@@ -33,7 +33,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 // Since the collections are to be "live", we have to do the
 // calculation every time if anything has changed.
@@ -50,7 +50,7 @@ HTMLFormControlsCollection* HTMLFormControlsCollection::Create(
     ContainerNode& owner_node,
     CollectionType type) {
   DCHECK_EQ(type, kFormControls);
-  return new HTMLFormControlsCollection(owner_node);
+  return MakeGarbageCollected<HTMLFormControlsCollection>(owner_node);
 }
 
 HTMLFormControlsCollection::~HTMLFormControlsCollection() = default;
@@ -107,7 +107,7 @@ void HTMLFormControlsCollection::InvalidateCache(Document* old_document) const {
 static HTMLElement* FirstNamedItem(const ListedElement::List& elements_array,
                                    const QualifiedName& attr_name,
                                    const String& name) {
-  DCHECK(attr_name == idAttr || attr_name == nameAttr);
+  DCHECK(attr_name == kIdAttr || attr_name == kNameAttr);
 
   for (const auto& listed_element : elements_array) {
     HTMLElement* element = ToHTMLElement(listed_element);
@@ -125,9 +125,9 @@ HTMLElement* HTMLFormControlsCollection::namedItem(
   // attribute. If a match is not found, the method then searches for an
   // object with a matching name attribute, but only on those elements
   // that are allowed a name attribute.
-  if (HTMLElement* item = FirstNamedItem(ListedElements(), idAttr, name))
+  if (HTMLElement* item = FirstNamedItem(ListedElements(), kIdAttr, name))
     return item;
-  return FirstNamedItem(ListedElements(), nameAttr, name);
+  return FirstNamedItem(ListedElements(), kNameAttr, name);
 }
 
 void HTMLFormControlsCollection::UpdateIdNameCache() const {

@@ -15,7 +15,7 @@
 #include "ui/aura/mus/window_mus.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/test/env_test_helper.h"
-#include "ui/aura/test/mus/window_tree_client_private.h"
+#include "ui/aura/test/mus/window_tree_client_test_api.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/views/mus/mus_client.h"
@@ -63,7 +63,6 @@ TEST_F(AshWindowManagerTest, AddWindowToTabletMode) {
   mus_client_init_params.connector =
       ash_test_helper()->GetWindowServiceConnector();
   mus_client_init_params.create_wm_state = false;
-  mus_client_init_params.create_cursor_factory = false;
   mus_client_init_params.running_in_ws_process = true;
   views::MusClient mus_client(mus_client_init_params);
 
@@ -77,7 +76,7 @@ TEST_F(AshWindowManagerTest, AddWindowToTabletMode) {
 
   // Flush all messages from the WindowTreeClient to ensure the window service
   // has finished Widget createion.
-  aura::WindowTreeClientPrivate(mus_client.window_tree_client())
+  aura::WindowTreeClientTestApi(mus_client.window_tree_client())
       .FlushForTesting();
 
   // Turn on tablet mode.

@@ -16,9 +16,9 @@
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/sync/base/sync_prefs.h"
 #include "components/sync/protocol/sync_protocol_error.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(OS_CHROMEOS)
@@ -178,7 +178,7 @@ MessageType GetStatusInfo(Profile* profile,
   if (!signin.IsAuthenticated())
     return PRE_SYNCED;
 
-  if (!service || service->IsFirstSetupComplete() ||
+  if (!service || service->GetUserSettings()->IsFirstSetupComplete() ||
       service->HasDisableReason(
           syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY) ||
       service->HasDisableReason(
@@ -203,9 +203,8 @@ MessageType GetStatusInfo(Profile* profile,
       return PRE_SYNCED;
     }
 
-    PrefService* pref_service = profile->GetPrefs();
-    syncer::SyncPrefs sync_prefs(pref_service);
-    bool sync_everything = sync_prefs.HasKeepEverythingSynced();
+    bool sync_everything =
+        service->GetUserSettings()->IsSyncEverythingEnabled();
 
     // Check for sync errors if the sync service is enabled.
     if (service) {
@@ -231,8 +230,8 @@ MessageType GetStatusInfo(Profile* profile,
       }
 
       // Check for a passphrase error.
-      if (service->IsPassphraseRequired() &&
-          service->IsPassphraseRequiredForDecryption()) {
+      if (service->GetUserSettings()->IsPassphraseRequired() &&
+          service->GetUserSettings()->IsPassphraseRequiredForDecryption()) {
         if (status_label && link_label) {
           status_label->assign(
               l10n_util::GetStringUTF16(IDS_SYNC_STATUS_NEEDS_PASSWORD));
@@ -335,7 +334,7 @@ MessageType GetStatusLabels(Profile* profile,
 #if !defined(OS_CHROMEOS)
 AvatarSyncErrorType GetMessagesForAvatarSyncError(
     Profile* profile,
-    const SigninManagerBase& signin,
+    const identity::IdentityManager& identity_manager,
     int* content_string_id,
     int* button_string_id) {
   const ProfileSyncService* service =
@@ -403,7 +402,8 @@ AvatarSyncErrorType GetMessagesForAvatarSyncError(
     }
 
     // Check for a sync confirmation error.
-    if (signin.IsAuthenticated() && service->IsSyncConfirmationNeeded()) {
+    if (identity_manager.HasPrimaryAccount() &&
+        service->IsSyncConfirmationNeeded()) {
       *content_string_id = IDS_SYNC_SETTINGS_NOT_CONFIRMED;
       *button_string_id = IDS_SYNC_ERROR_USER_MENU_CONFIRM_SYNC_SETTINGS_BUTTON;
       return SETTINGS_UNCONFIRMED_ERROR;
@@ -424,8 +424,9 @@ MessageType GetStatus(Profile* profile,
 }
 
 bool ShouldShowPassphraseError(const ProfileSyncService* service) {
-  return service->IsFirstSetupComplete() && service->IsPassphraseRequired() &&
-         service->IsPassphraseRequiredForDecryption();
+  return service->GetUserSettings()->IsFirstSetupComplete() &&
+         service->GetUserSettings()->IsPassphraseRequired() &&
+         service->GetUserSettings()->IsPassphraseRequiredForDecryption();
 }
 
 }  // namespace sync_ui_util

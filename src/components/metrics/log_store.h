@@ -24,9 +24,14 @@ class LogStore {
   // Will trigger a DCHECK if there is no staged log.
   virtual const std::string& staged_log() const = 0;
 
-  // The SHA1 hash of the staged log.
+  // The SHA1 hash of the staged log. This is used to detect log corruption.
   // Will trigger a DCHECK if there is no staged log.
   virtual const std::string& staged_log_hash() const = 0;
+
+  // The HMAC-SHA256 signature of the staged log. This is used to validate that
+  // a log originated from Chrome, and to detect corruption.
+  // Will trigger a DCHECK if there is no staged log.
+  virtual const std::string& staged_log_signature() const = 0;
 
   // Populates staged_log() with the next stored log to send.
   // The order in which logs are staged is up to the implementor.

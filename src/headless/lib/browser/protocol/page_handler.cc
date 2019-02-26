@@ -4,7 +4,6 @@
 
 #include "headless/lib/browser/protocol/page_handler.h"
 
-#include "base/base64.h"
 #include "content/public/browser/web_contents.h"
 #include "printing/units.h"
 
@@ -21,12 +20,10 @@ const double kScaleMinVal = 10;
 
 void PDFCreated(std::unique_ptr<PageHandler::PrintToPDFCallback> callback,
                 HeadlessPrintManager::PrintResult print_result,
-                const std::string& data) {
+                scoped_refptr<base::RefCountedMemory> data) {
   std::unique_ptr<base::DictionaryValue> response;
   if (print_result == HeadlessPrintManager::PRINT_SUCCESS) {
-    std::string base_64_data;
-    base::Base64Encode(data, &base_64_data);
-    callback->sendSuccess(base_64_data);
+    callback->sendSuccess(protocol::Binary::fromRefCounted(data));
   } else {
     callback->sendFailure(Response::Error(
         HeadlessPrintManager::PrintResultToString(print_result)));

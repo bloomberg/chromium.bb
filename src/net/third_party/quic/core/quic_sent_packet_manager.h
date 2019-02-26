@@ -340,6 +340,16 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
     return unacked_packets_;
   }
 
+  // Sets the send algorithm to the given congestion control type and points the
+  // pacing sender at |send_algorithm_|. Can be called any number of times.
+  void SetSendAlgorithm(CongestionControlType congestion_control_type);
+
+  // Sets the send algorithm to |send_algorithm| and points the pacing sender at
+  // |send_algorithm_|. Takes ownership of |send_algorithm|. Can be called any
+  // number of times.
+  // Setting the send algorithm once the connection is underway is dangerous.
+  void SetSendAlgorithm(SendAlgorithmInterface* send_algorithm);
+
  private:
   friend class test::QuicConnectionPeer;
   friend class test::QuicSentPacketManagerPeer;
@@ -457,15 +467,6 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // QuicTransmissionInfo |info|.
   void RecordSpuriousRetransmissions(const QuicTransmissionInfo& info,
                                      QuicPacketNumber acked_packet_number);
-
-  // Sets the send algorithm to the given congestion control type and points the
-  // pacing sender at |send_algorithm_|. Can be called any number of times.
-  void SetSendAlgorithm(CongestionControlType congestion_control_type);
-
-  // Sets the send algorithm to |send_algorithm| and points the pacing sender at
-  // |send_algorithm_|. Takes ownership of |send_algorithm|. Can be called any
-  // number of times.
-  void SetSendAlgorithm(SendAlgorithmInterface* send_algorithm);
 
   // Sets the initial RTT of the connection.
   void SetInitialRtt(QuicTime::Delta rtt);

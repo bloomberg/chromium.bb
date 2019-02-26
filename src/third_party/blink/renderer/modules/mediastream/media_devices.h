@@ -38,17 +38,23 @@ class MODULES_EXPORT MediaDevices final
 
  public:
   static MediaDevices* Create(ExecutionContext*);
+
+  explicit MediaDevices(ExecutionContext*);
   ~MediaDevices() override;
 
   ScriptPromise enumerateDevices(ScriptState*);
-  void getSupportedConstraints(MediaTrackSupportedConstraints& result) {}
+  MediaTrackSupportedConstraints* getSupportedConstraints() const;
   ScriptPromise getUserMedia(ScriptState*,
-                             const MediaStreamConstraints&,
+                             const MediaStreamConstraints*,
                              ExceptionState&);
   ScriptPromise SendUserMediaRequest(ScriptState*,
                                      WebUserMediaRequest::MediaType,
-                                     const MediaStreamConstraints&,
+                                     const MediaStreamConstraints*,
                                      ExceptionState&);
+
+  ScriptPromise getDisplayMedia(ScriptState*,
+                                const MediaStreamConstraints*,
+                                ExceptionState&);
 
   // EventTarget overrides.
   const AtomicString& InterfaceName() const override;
@@ -88,7 +94,7 @@ class MODULES_EXPORT MediaDevices final
 
   void Trace(blink::Visitor*) override;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(devicechange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(devicechange, kDevicechange);
 
  protected:
   // EventTarget overrides.
@@ -99,7 +105,6 @@ class MODULES_EXPORT MediaDevices final
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaDevicesTest, ObserveDeviceChangeEvent);
-  explicit MediaDevices(ExecutionContext*);
   void ScheduleDispatchEvent(Event*);
   void DispatchScheduledEvent();
   void StartObserving();

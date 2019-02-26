@@ -20,7 +20,7 @@ Environment* env = new Environment();
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   base::FuzzedDataProvider data_provider(data, size);
   const std::string machine_name = data_provider.ConsumeRandomLengthString(32);
-  std::string str_to_expand = data_provider.ConsumeRemainingBytes();
+  std::string str_to_expand = data_provider.ConsumeRemainingBytesAsString();
 
   VariableExpander expander({{"machine_name", machine_name}});
   expander.ExpandString(&str_to_expand);

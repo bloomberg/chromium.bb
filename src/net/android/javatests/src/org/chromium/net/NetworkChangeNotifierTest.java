@@ -37,7 +37,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ApplicationState;
-import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
@@ -435,7 +434,7 @@ public class NetworkChangeNotifierTest {
             @Override
             public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
                 // Should not be used starting with Pie.
-                Assert.assertFalse(BuildInfo.isAtLeastP());
+                Assert.assertFalse(Build.VERSION.SDK_INT >= Build.VERSION_CODES.P);
                 return null;
             }
 
@@ -609,7 +608,7 @@ public class NetworkChangeNotifierTest {
      * Uses same signals that system would use.
      */
     private void notifyConnectivityChange() {
-        if (BuildInfo.isAtLeastP()) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             mConnectivityDelegate.getDefaultNetworkCallback().onAvailable(null);
         } else {
             Intent connectivityIntent = new Intent(ConnectivityManager.CONNECTIVITY_ACTION);
@@ -656,7 +655,7 @@ public class NetworkChangeNotifierTest {
         Assert.assertFalse(observer.hasReceivedNotification());
 
         // We should be notified if use of DNS-over-TLS changes.
-        if (BuildInfo.isAtLeastP()) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             // Verify notification for enabling.
             mConnectivityDelegate.setIsPrivateDnsActive(true);
             mConnectivityDelegate.getDefaultNetworkCallback().onLinkPropertiesChanged(null, null);
@@ -674,7 +673,7 @@ public class NetworkChangeNotifierTest {
 
         // Mimic that connectivity has been lost and ensure that Chrome notifies our observer.
         mConnectivityDelegate.setActiveNetworkExists(false);
-        if (BuildInfo.isAtLeastP()) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             mConnectivityDelegate.getDefaultNetworkCallback().onLost(null);
         } else {
             mReceiver.onReceive(InstrumentationRegistry.getTargetContext(), connectivityIntent);

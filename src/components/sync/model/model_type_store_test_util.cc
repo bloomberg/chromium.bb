@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/debug/leak_annotations.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/model_impl/blocking_model_type_store_impl.h"
@@ -37,6 +38,14 @@ class ForwardingModelTypeStore : public ModelTypeStore {
     other_->ReadAllMetadata(std::move(callback));
   }
 
+  void ReadAllDataAndPreprocess(
+      PreprocessCallback preprocess_on_backend_sequence_callback,
+      CallbackWithResult completion_on_frontend_sequence_callback) override {
+    other_->ReadAllDataAndPreprocess(
+        std::move(preprocess_on_backend_sequence_callback),
+        std::move(completion_on_frontend_sequence_callback));
+  }
+
   std::unique_ptr<WriteBatch> CreateWriteBatch() override {
     return other_->CreateWriteBatch();
   }
@@ -54,51 +63,22 @@ class ForwardingModelTypeStore : public ModelTypeStore {
   ModelTypeStore* other_;
 };
 
-// Superclass for base::OnTaskRunnerDeleter required to hold a unique_ptr
-// because it needs to outlive the other subclass (BlockingModelTypeStoreImpl).
-class InMemoryBackendOwner {
- public:
-  InMemoryBackendOwner()
-      : backend_(ModelTypeStoreBackend::CreateInMemoryForTest()) {}
-
-  ModelTypeStoreBackend* GetBackend() { return backend_.get(); }
-
- private:
-  std::unique_ptr<ModelTypeStoreBackend> backend_;
-
-  DISALLOW_COPY_AND_ASSIGN(InMemoryBackendOwner);
-};
-
-// Subclass of ModelTypeStoreImpl to own a backend while the
-// BlockingModelTypeStoreImpl exists.
-class BlockingModelTypeStoreWithOwnedBackend
-    : public InMemoryBackendOwner,
-      public BlockingModelTypeStoreImpl {
- public:
-  explicit BlockingModelTypeStoreWithOwnedBackend(ModelType type)
-      : BlockingModelTypeStoreImpl(type, GetBackend()) {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BlockingModelTypeStoreWithOwnedBackend);
-};
-
 }  // namespace
 
 // static
 std::unique_ptr<ModelTypeStore>
 ModelTypeStoreTestUtil::CreateInMemoryStoreForTest(ModelType type) {
-  auto* backend = new BlockingModelTypeStoreWithOwnedBackend(type);
+  std::unique_ptr<BlockingModelTypeStoreImpl, base::OnTaskRunnerDeleter>
+      blocking_store(
+          new BlockingModelTypeStoreImpl(
+              type, ModelTypeStoreBackend::CreateInMemoryForTest()),
+          base::OnTaskRunnerDeleter(base::SequencedTaskRunnerHandle::Get()));
   // Not all tests issue a RunUntilIdle() at the very end, to guarantee that
   // the backend is properly destroyed. They also don't need to verify that, so
   // let keep memory sanitizers happy.
-  ANNOTATE_LEAKING_OBJECT_PTR(backend);
+  ANNOTATE_LEAKING_OBJECT_PTR(blocking_store.get());
   return std::make_unique<ModelTypeStoreImpl>(
-      type,
-      std::unique_ptr<BlockingModelTypeStoreWithOwnedBackend,
-                      base::OnTaskRunnerDeleter>(
-          backend,
-          base::OnTaskRunnerDeleter(base::SequencedTaskRunnerHandle::Get())),
-      base::SequencedTaskRunnerHandle::Get());
+      type, std::move(blocking_store), base::SequencedTaskRunnerHandle::Get());
 }
 
 // static
@@ -112,12 +92,14 @@ ModelTypeStoreTestUtil::FactoryForInMemoryStoreForTest() {
 }
 
 // static
-void ModelTypeStoreTestUtil::MoveStoreToCallback(
-    std::unique_ptr<ModelTypeStore> store,
-    ModelType type,
-    ModelTypeStore::InitCallback callback) {
-  ASSERT_TRUE(store);
-  std::move(callback).Run(/*error=*/base::nullopt, std::move(store));
+OnceModelTypeStoreFactory ModelTypeStoreTestUtil::MoveStoreToFactory(
+    std::unique_ptr<ModelTypeStore> store) {
+  return base::BindOnce(
+      [](std::unique_ptr<ModelTypeStore> store, ModelType type,
+         ModelTypeStore::InitCallback callback) {
+        std::move(callback).Run(/*error=*/base::nullopt, std::move(store));
+      },
+      std::move(store));
 }
 
 // static

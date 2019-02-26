@@ -25,8 +25,8 @@
         flex: 1;
       }
     </style>
-    <div id="outer" actionable>
-      <div id="label"><slot></slot></div>
+    <div id="outer">
+      <div id="label" actionable><slot></slot></div>
       <paper-icon-button-light class$="[[iconName_(expanded)]]">
         <button disabled="[[disabled]]" aria-label$="[[alt]]"
             aria-pressed$="[[getAriaPressed_(expanded)]]"

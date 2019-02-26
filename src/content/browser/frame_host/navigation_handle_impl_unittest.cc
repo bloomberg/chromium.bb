@@ -7,7 +7,6 @@
 #include "base/optional.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/ssl_status.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_side_navigation_test_utils.h"
 #include "content/public/test/test_navigation_throttle.h"
@@ -167,7 +166,7 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
     test_handle_->WillProcessResponse(
         main_test_rfh(), scoped_refptr<net::HttpResponseHeaders>(),
         net::HttpResponseInfo::CONNECTION_INFO_QUIC_35, net::HostPortPair(),
-        net::SSLInfo(), GlobalRequestID(), false, false, false, false,
+        net::SSLInfo(), GlobalRequestID(), false, false, false, false, false,
         base::Bind(&NavigationHandleImplTest::UpdateThrottleCheckResult,
                    base::Unretained(this)));
   }

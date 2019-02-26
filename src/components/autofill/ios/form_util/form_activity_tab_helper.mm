@@ -91,7 +91,6 @@ bool FormActivityTabHelper::HandleFormActivity(
     web::WebFrame* sender_frame) {
   FormActivityParams params;
   if (!message.GetString("formName", &params.form_name) ||
-      !message.GetString("fieldName", &params.field_name) ||
       !message.GetString("fieldIdentifier", &params.field_identifier) ||
       !message.GetString("fieldType", &params.field_type) ||
       !message.GetString("type", &params.type) ||

@@ -316,4 +316,9 @@ public class SnippetArticle
     public Collection<PartialBindCallback> getAllSetProperties() {
         return Collections.emptyList();
     }
+
+    @Override
+    public Collection<PartialBindCallback> getAllProperties() {
+        return Collections.emptyList();
+    }
 }

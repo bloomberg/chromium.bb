@@ -39,9 +39,6 @@ struct OriginRequestSummary;
 struct PageRequestSummary;
 
 namespace internal {
-constexpr char kResourcePrefetchPredictorPrefetchingDurationHistogram[] =
-    "ResourcePrefetchPredictor.PrefetchingDuration";
-
 struct LastVisitTimeCompare {
   template <typename T>
   bool operator()(const T& lhs, const T& rhs) const {
@@ -232,10 +229,6 @@ class ResourcePrefetchPredictor : public history::HistoryServiceObserver {
   void LearnOrigins(const std::string& host,
                     const GURL& main_frame_origin,
                     const std::map<GURL, OriginRequestSummary>& summaries);
-
-  // Reports database readiness metric defined as percentage of navigated hosts
-  // found in DB for last X entries in history.
-  void ReportDatabaseReadiness(const history::TopHostsList& top_hosts) const;
 
   // history::HistoryServiceObserver:
   void OnURLsDeleted(history::HistoryService* history_service,

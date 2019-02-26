@@ -32,7 +32,30 @@
 
 class CPDF_RenderOptions {
  public:
-  enum Type { kNormal = 0, kGray, kAlpha };
+  enum Type : uint8_t { kNormal = 0, kGray, kAlpha };
+
+  struct Options {
+    Options();
+    Options(const Options& rhs);
+
+    bool bClearType = false;
+    bool bPrintGraphicText = false;
+    bool bForceDownsample = false;
+    bool bPrintPreview = false;
+    bool bBGRStripe = false;
+    bool bNoNativeText = false;
+    bool bForceHalftone = false;
+    bool bRectAA = false;
+    bool bFillFullcover = false;
+    bool bPrintImageText = false;
+    bool bOverprint = false;
+    bool bThinLine = false;
+    bool bBreakForMasks = false;
+    bool bNoTextSmooth = false;
+    bool bNoPathSmooth = false;
+    bool bNoImageSmooth = false;
+    bool bLimitedImageCache = false;
+  };
 
   CPDF_RenderOptions();
   CPDF_RenderOptions(const CPDF_RenderOptions& rhs);
@@ -43,11 +66,10 @@ class CPDF_RenderOptions {
   void SetColorMode(Type mode) { m_ColorMode = mode; }
   bool ColorModeIs(Type mode) const { return m_ColorMode == mode; }
 
-  bool HasFlag(uint32_t flag) const { return !!(m_Flags & flag); }
-  uint32_t GetFlags() const { return m_Flags; }
-  void SetFlags(uint32_t flags) { m_Flags = flags; }
+  const Options& GetOptions() const { return m_Options; }
+  Options& GetOptions() { return m_Options; }
 
-  uint32_t GetCacheSizeLimit() const { return m_dwLimitCacheSize; }
+  uint32_t GetCacheSizeLimit() const;
 
   void SetDrawAnnots(bool draw) { m_bDrawAnnots = draw; }
   bool GetDrawAnnots() const { return m_bDrawAnnots; }
@@ -55,13 +77,12 @@ class CPDF_RenderOptions {
   void SetOCContext(RetainPtr<CPDF_OCContext> context) {
     m_pOCContext = context;
   }
-  CPDF_OCContext* GetOCContext() const { return m_pOCContext.Get(); }
+  const CPDF_OCContext* GetOCContext() const { return m_pOCContext.Get(); }
 
  private:
-  Type m_ColorMode;
-  uint32_t m_Flags;
-  uint32_t m_dwLimitCacheSize;
-  bool m_bDrawAnnots;
+  Type m_ColorMode = kNormal;
+  bool m_bDrawAnnots = false;
+  Options m_Options;
   RetainPtr<CPDF_OCContext> m_pOCContext;
 };
 

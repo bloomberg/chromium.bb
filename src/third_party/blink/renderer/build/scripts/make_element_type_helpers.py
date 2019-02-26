@@ -8,12 +8,11 @@ from collections import defaultdict
 
 import hasher
 import json5_generator
-import name_utilities
 import template_expander
 
 
 def _symbol(tag):
-    return name_utilities.cpp_name(tag).replace('-', '_')
+    return 'k' + tag['name'].to_upper_camel_case()
 
 
 class MakeElementTypeHelpersWriter(json5_generator.Writer):
@@ -60,6 +59,7 @@ class MakeElementTypeHelpersWriter(json5_generator.Writer):
                               '{0}/{0}_element.h'.format(self.namespace.lower())
         self._template_context = {
             'base_element_header': base_element_header,
+            'cpp_namespace': self.namespace.lower() + '_names',
             'input_files': self._input_files,
             'namespace': self.namespace,
             'tags': self.json5_file.name_dictionaries,

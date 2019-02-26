@@ -31,6 +31,7 @@
 #include "ash/new_window_controller.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/public/interfaces/accessibility_controller.mojom.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
@@ -44,14 +45,12 @@
 #include "ash/system/brightness_control_delegate.h"
 #include "ash/system/ime_menu/ime_menu_tray.h"
 #include "ash/system/keyboard_brightness_control_delegate.h"
-#include "ash/system/message_center/notification_tray.h"
 #include "ash/system/palette/palette_tray.h"
 #include "ash/system/palette/palette_utils.h"
 #include "ash/system/power/power_button_controller.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/toast/toast_data.h"
 #include "ash/system/toast/toast_manager.h"
-#include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/touch/touch_observer_hud.h"
@@ -65,13 +64,14 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -161,16 +161,14 @@ void ShowDeprecatedAcceleratorNotification(const char* const notification_id,
               Shell::Get()->shell_delegate()->OpenKeyboardShortcutHelpPage();
           }));
 
-  std::unique_ptr<Notification> notification =
-      message_center::Notification::CreateSystemNotification(
-          message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
-          l10n_util::GetStringUTF16(IDS_DEPRECATED_SHORTCUT_TITLE), message,
-          base::string16(), GURL(),
-          message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT,
-              kNotifierAccelerator),
-          message_center::RichNotificationData(), std::move(delegate),
-          kNotificationKeyboardIcon, SystemNotificationWarningLevel::NORMAL);
+  std::unique_ptr<Notification> notification = ash::CreateSystemNotification(
+      message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
+      l10n_util::GetStringUTF16(IDS_DEPRECATED_SHORTCUT_TITLE), message,
+      base::string16(), GURL(),
+      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
+                                 kNotifierAccelerator),
+      message_center::RichNotificationData(), std::move(delegate),
+      kNotificationKeyboardIcon, SystemNotificationWarningLevel::NORMAL);
   notification->set_priority(message_center::SYSTEM_PRIORITY);
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));
@@ -240,6 +238,20 @@ void HandleFocusShelf() {
   // TODO(jamescook): Should this be GetRootWindowForNewWindows()?
   Shelf* shelf = Shelf::ForWindow(Shell::GetPrimaryRootWindow());
   Shell::Get()->focus_cycler()->FocusWidget(shelf->shelf_widget());
+}
+
+views::Widget* FindPipWidget() {
+  return Shell::Get()->focus_cycler()->FindWidget(
+      base::BindRepeating([](views::Widget* widget) {
+        return wm::GetWindowState(widget->GetNativeWindow())->IsPip();
+      }));
+}
+
+void HandleFocusPip() {
+  base::RecordAction(UserMetricsAction("Accel_Focus_Pip"));
+  auto* widget = FindPipWidget();
+  if (widget)
+    Shell::Get()->focus_cycler()->FocusWidget(widget);
 }
 
 void HandleLaunchAppN(int n) {
@@ -348,12 +360,7 @@ display::Display::Rotation GetNextRotation(display::Display::Rotation current) {
   return display::Display::ROTATE_0;
 }
 
-// Rotates the screen.
-void HandleRotateScreen() {
-  if (Shell::Get()->display_manager()->IsInUnifiedMode())
-    return;
-
-  base::RecordAction(UserMetricsAction("Accel_Rotate_Screen"));
+void RotateScreen() {
   gfx::Point point = display::Screen::GetScreen()->GetCursorScreenPoint();
   display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestPoint(point);
@@ -362,6 +369,31 @@ void HandleRotateScreen() {
   Shell::Get()->display_configuration_controller()->SetDisplayRotation(
       display.id(), GetNextRotation(display_info.GetActiveRotation()),
       display::Display::RotationSource::USER);
+}
+
+// Rotates the screen.
+void HandleRotateScreen() {
+  if (Shell::Get()->display_manager()->IsInUnifiedMode())
+    return;
+
+  base::RecordAction(UserMetricsAction("Accel_Rotate_Screen"));
+  const bool dialog_ever_accepted =
+      Shell::Get()
+          ->accessibility_controller()
+          ->HasDisplayRotationAcceleratorDialogBeenAccepted();
+
+  if (!dialog_ever_accepted) {
+    Shell::Get()->accelerator_controller()->MaybeShowConfirmationDialog(
+        IDS_ASH_ROTATE_SCREEN_TITLE, IDS_ASH_ROTATE_SCREEN_BODY,
+        base::BindOnce([]() {
+          RotateScreen();
+          Shell::Get()
+              ->accessibility_controller()
+              ->SetDisplayRotationAcceleratorDialogBeenAccepted();
+        }));
+  } else {
+    RotateScreen();
+  }
 }
 
 void HandleRestoreTab() {
@@ -386,9 +418,8 @@ void HandleRotateActiveWindow() {
           std::make_unique<WindowRotation>(360, active_window->layer())));
 }
 
-void HandleShowKeyboardOverlay() {
-  base::RecordAction(UserMetricsAction("Accel_Show_Keyboard_Overlay"));
-  Shell::Get()->new_window_controller()->ShowKeyboardOverlay();
+void HandleShowKeyboardShortcutViewer() {
+  Shell::Get()->new_window_controller()->ShowKeyboardShortcutViewer();
 }
 
 void HandleTakeWindowScreenshot() {
@@ -407,61 +438,27 @@ void HandleTakeScreenshot() {
   Shell::Get()->screenshot_controller()->TakeScreenshotForAllRootWindows();
 }
 
-bool CanHandleToggleMessageCenterBubble() {
-  if (features::IsSystemTrayUnifiedEnabled())
-    return true;
+void HandleToggleSystemTrayBubbleInternal() {
   aura::Window* target_root = Shell::GetRootWindowForNewWindows();
-  StatusAreaWidget* status_area_widget =
-      Shelf::ForWindow(target_root)->shelf_widget()->status_area_widget();
-  return status_area_widget &&
-         status_area_widget->notification_tray()->visible();
+  UnifiedSystemTray* tray = RootWindowController::ForWindow(target_root)
+                                ->GetStatusAreaWidget()
+                                ->unified_system_tray();
+  if (tray->IsBubbleShown()) {
+    tray->CloseBubble();
+  } else {
+    tray->ShowBubble(false /* show_by_click */);
+    tray->ActivateBubble();
+  }
 }
 
 void HandleToggleSystemTrayBubble() {
   base::RecordAction(UserMetricsAction("Accel_Toggle_System_Tray_Bubble"));
-  aura::Window* target_root = Shell::GetRootWindowForNewWindows();
-  if (features::IsSystemTrayUnifiedEnabled()) {
-    UnifiedSystemTray* tray = RootWindowController::ForWindow(target_root)
-                                  ->GetStatusAreaWidget()
-                                  ->unified_system_tray();
-    if (tray->IsBubbleShown()) {
-      tray->CloseBubble();
-    } else {
-      tray->ShowBubble(false /* show_by_click */);
-      tray->ActivateBubble();
-    }
-  } else {
-    SystemTray* tray =
-        RootWindowController::ForWindow(target_root)->GetSystemTray();
-    if (tray->HasSystemBubble()) {
-      tray->CloseBubble();
-    } else {
-      tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
-      tray->ActivateBubble();
-    }
-  }
+  HandleToggleSystemTrayBubbleInternal();
 }
 
 void HandleToggleMessageCenterBubble() {
   base::RecordAction(UserMetricsAction("Accel_Toggle_Message_Center_Bubble"));
-  if (features::IsSystemTrayUnifiedEnabled()) {
-    HandleToggleSystemTrayBubble();
-    return;
-  }
-  aura::Window* target_root = Shell::GetRootWindowForNewWindows();
-  StatusAreaWidget* status_area_widget =
-      Shelf::ForWindow(target_root)->shelf_widget()->status_area_widget();
-  if (!status_area_widget)
-    return;
-  NotificationTray* notification_tray = status_area_widget->notification_tray();
-  if (!notification_tray->visible())
-    return;
-  if (notification_tray->IsMessageCenterVisible()) {
-    notification_tray->CloseBubble();
-  } else {
-    notification_tray->ShowBubble(false /* show_by_click */);
-    notification_tray->ActivateBubble();
-  }
+  HandleToggleSystemTrayBubbleInternal();
 }
 
 void HandleShowTaskManager() {
@@ -514,15 +511,10 @@ bool CanHandleToggleAppList(const ui::Accelerator& accelerator,
 }
 
 void HandleToggleAppList(const ui::Accelerator& accelerator) {
-  if (Shell::Get()
-          ->app_list_controller()
-          ->IsHomeLauncherEnabledInTabletMode()) {
-    return;
-  }
   if (accelerator.key_code() == ui::VKEY_LWIN)
     base::RecordAction(UserMetricsAction("Accel_Search_LWin"));
 
-  Shell::Get()->app_list_controller()->ToggleAppList(
+  Shell::Get()->app_list_controller()->OnAppListButtonPressed(
       display::Screen::GetScreen()
           ->GetDisplayNearestWindow(Shell::GetRootWindowForNewWindows())
           .id(),
@@ -677,7 +669,9 @@ void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
         base::UserMetricsAction("VoiceInteraction.Started.Assistant"));
   }
 
-  switch (Shell::Get()->voice_interaction_controller()->allowed_state()) {
+  switch (
+      Shell::Get()->voice_interaction_controller()->allowed_state().value_or(
+          mojom::AssistantAllowedState::ALLOWED)) {
     case mojom::AssistantAllowedState::DISALLOWED_BY_NONPRIMARY_USER:
       // Show a toast if the active user is not primary.
       ShowToast(kVoiceInteractionErrorToastId,
@@ -728,7 +722,8 @@ void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
     Shell::Get()->app_list_controller()->ToggleVoiceInteractionSession();
   } else {
     Shell::Get()->assistant_controller()->ui_controller()->ToggleUi(
-        AssistantSource::kHotkey);
+        /*entry_point=*/AssistantEntryPoint::kHotkey,
+        /*exit_point=*/AssistantExitPoint::kHotkey);
   }
 }
 
@@ -819,21 +814,28 @@ bool CanHandleToggleDockedMagnifier() {
   return features::IsDockedMagnifierEnabled();
 }
 
+bool CanHandleToggleOverview() {
+  auto windows = Shell::Get()->mru_window_tracker()->BuildMruWindowList();
+  // Do not toggle overview if there is a window being dragged.
+  for (auto* window : windows) {
+    if (wm::GetWindowState(window)->is_dragged())
+      return false;
+  }
+  return true;
+}
+
 void CreateAndShowStickyNotification(const int title_id,
                                      const int message_id,
                                      const std::string& notification_id) {
-  std::unique_ptr<Notification> notification =
-      Notification::CreateSystemNotification(
-          message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
-          l10n_util::GetStringUTF16(title_id),
-          l10n_util::GetStringUTF16(message_id),
-          base::string16() /* display source */, GURL(),
-          message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT,
-              kNotifierAccelerator),
-          message_center::RichNotificationData(), nullptr,
-          kNotificationAccessibilityIcon,
-          SystemNotificationWarningLevel::NORMAL);
+  std::unique_ptr<Notification> notification = ash::CreateSystemNotification(
+      message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
+      l10n_util::GetStringUTF16(title_id),
+      l10n_util::GetStringUTF16(message_id),
+      base::string16() /* display source */, GURL(),
+      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
+                                 kNotifierAccelerator),
+      message_center::RichNotificationData(), nullptr,
+      kNotificationAccessibilityIcon, SystemNotificationWarningLevel::NORMAL);
   notification->set_priority(message_center::SYSTEM_PRIORITY);
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));
@@ -1331,9 +1333,11 @@ bool AcceleratorController::CanPerformAction(
     case TOGGLE_FULLSCREEN_MAGNIFIER:
       return true;
     case TOGGLE_MESSAGE_CENTER_BUBBLE:
-      return CanHandleToggleMessageCenterBubble();
+      return true;
     case TOGGLE_MIRROR_MODE:
       return true;
+    case TOGGLE_OVERVIEW:
+      return CanHandleToggleOverview();
     case TOUCH_HUD_CLEAR:
     case TOUCH_HUD_MODE_CHANGE:
       return CanHandleTouchHud();
@@ -1344,6 +1348,8 @@ bool AcceleratorController::CanPerformAction(
       return CanHandleWindowSnap();
     case WINDOW_POSITION_CENTER:
       return CanHandlePositionCenter();
+    case FOCUS_PIP:
+      return !!FindPipWidget();
 
     // The following are always enabled.
     case BRIGHTNESS_DOWN:
@@ -1380,7 +1386,7 @@ bool AcceleratorController::CanPerformAction(
     case RESTORE_TAB:
     case ROTATE_WINDOW:
     case SHOW_IME_MENU_BUBBLE:
-    case SHOW_KEYBOARD_OVERLAY:
+    case SHOW_SHORTCUT_VIEWER:
     case SHOW_TASK_MANAGER:
     case SUSPEND:
     case TAKE_PARTIAL_SCREENSHOT:
@@ -1389,7 +1395,6 @@ bool AcceleratorController::CanPerformAction(
     case TOGGLE_FULLSCREEN:
     case TOGGLE_HIGH_CONTRAST:
     case TOGGLE_MAXIMIZED:
-    case TOGGLE_OVERVIEW:
     case TOGGLE_SPOKEN_FEEDBACK:
     case TOGGLE_SYSTEM_TRAY_BUBBLE:
     case TOGGLE_WIFI:
@@ -1477,6 +1482,9 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       break;
     case FOCUS_SHELF:
       HandleFocusShelf();
+      break;
+    case FOCUS_PIP:
+      HandleFocusPip();
       break;
     case KEYBOARD_BRIGHTNESS_DOWN: {
       KeyboardBrightnessControlDelegate* delegate =
@@ -1609,8 +1617,8 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
     case SHOW_IME_MENU_BUBBLE:
       HandleShowImeMenuBubble();
       break;
-    case SHOW_KEYBOARD_OVERLAY:
-      HandleShowKeyboardOverlay();
+    case SHOW_SHORTCUT_VIEWER:
+      HandleShowKeyboardShortcutViewer();
       break;
     case SHOW_STYLUS_TOOLS:
       HandleShowStylusTools();

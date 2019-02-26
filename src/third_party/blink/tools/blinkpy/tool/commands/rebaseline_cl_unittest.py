@@ -395,7 +395,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         self.command.trigger_try_jobs(['MOCK Try Linux', 'MOCK Try Win'])
         self.assertEqual(
             self.command.git_cl.calls,
-            [['git', 'cl', 'try', '-B', 'master.tryserver.blink',
+            [['git', 'cl', 'try', '-B', 'luci.chromium.try',
               '-b', 'MOCK Try Linux', '-b', 'MOCK Try Win']])
         self.assertLog([
             'INFO: Triggering try jobs:\n',

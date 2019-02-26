@@ -4,29 +4,34 @@
 
 #include "ash/system/bluetooth/bluetooth_feature_pod_controller.h"
 
+#include <utility>
+
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/bluetooth/tray_bluetooth_helper.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/unified/feature_pod_button.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "base/i18n/number_formatting.h"
+#include "services/device/public/cpp/bluetooth/bluetooth_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using device::mojom::BluetoothSystem;
+using device::mojom::BluetoothDeviceInfo;
 
 namespace ash {
 
 BluetoothFeaturePodController::BluetoothFeaturePodController(
     UnifiedSystemTrayController* tray_controller)
     : tray_controller_(tray_controller) {
-  Shell::Get()->system_tray_notifier()->AddBluetoothObserver(this);
+  Shell::Get()->tray_bluetooth_helper()->AddObserver(this);
 }
 
 BluetoothFeaturePodController::~BluetoothFeaturePodController() {
-  Shell::Get()->system_tray_notifier()->RemoveBluetoothObserver(this);
+  auto* helper = Shell::Get()->tray_bluetooth_helper();
+  if (helper)
+    helper->RemoveObserver(this);
 }
 
 FeaturePodButton* BluetoothFeaturePodController::CreateButton() {
@@ -90,10 +95,12 @@ void BluetoothFeaturePodController::UpdateButton() {
   }
 
   BluetoothDeviceList connected_devices;
-  for (const auto& device :
+  for (auto& device :
        Shell::Get()->tray_bluetooth_helper()->GetAvailableBluetoothDevices()) {
-    if (device.connected)
-      connected_devices.push_back(device);
+    if (device->connection_state ==
+        BluetoothDeviceInfo::ConnectionState::kConnected) {
+      connected_devices.push_back(device->Clone());
+    }
   }
 
   if (connected_devices.size() > 1) {
@@ -106,7 +113,8 @@ void BluetoothFeaturePodController::UpdateButton() {
         IDS_ASH_STATUS_TRAY_BLUETOOTH_MULTIPLE_DEVICES_CONNECTED_TOOLTIP,
         device_count));
   } else if (connected_devices.size() == 1) {
-    const base::string16& device_name = connected_devices.back().display_name;
+    const base::string16 device_name =
+        device::GetBluetoothDeviceNameForDisplay(connected_devices.back());
     button_->SetVectorIcon(kUnifiedMenuBluetoothConnectedIcon);
     button_->SetLabel(device_name);
     button_->SetSubLabel(l10n_util::GetStringUTF16(
@@ -131,11 +139,15 @@ void BluetoothFeaturePodController::SetTooltipState(
       IDS_ASH_STATUS_TRAY_BLUETOOTH_SETTINGS_TOOLTIP, tooltip_state));
 }
 
-void BluetoothFeaturePodController::OnBluetoothRefresh() {
+void BluetoothFeaturePodController::OnBluetoothSystemStateChanged() {
   UpdateButton();
 }
 
-void BluetoothFeaturePodController::OnBluetoothDiscoveringChanged() {
+void BluetoothFeaturePodController::OnBluetoothScanStateChanged() {
+  UpdateButton();
+}
+
+void BluetoothFeaturePodController::OnBluetoothDeviceListChanged() {
   UpdateButton();
 }
 

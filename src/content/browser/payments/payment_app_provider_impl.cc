@@ -125,11 +125,9 @@ class RespondWithCallbacks
   }
 
   void OnResponseForPaymentRequest(
-      payments::mojom::PaymentHandlerResponsePtr response,
-      base::TimeTicks dispatch_event_time) override {
+      payments::mojom::PaymentHandlerResponsePtr response) override {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    service_worker_version_->FinishRequest(request_id_, false,
-                                           std::move(dispatch_event_time));
+    service_worker_version_->FinishRequest(request_id_, false);
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(std::move(invoke_payment_app_callback_),
@@ -139,12 +137,9 @@ class RespondWithCallbacks
     delete this;
   }
 
-  void OnResponseForCanMakePayment(
-      bool can_make_payment,
-      base::TimeTicks dispatch_event_time) override {
+  void OnResponseForCanMakePayment(bool can_make_payment) override {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    service_worker_version_->FinishRequest(request_id_, false,
-                                           std::move(dispatch_event_time));
+    service_worker_version_->FinishRequest(request_id_, false);
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(std::move(payment_event_result_callback_),
@@ -152,11 +147,9 @@ class RespondWithCallbacks
     delete this;
   }
 
-  void OnResponseForAbortPayment(bool payment_aborted,
-                                 base::TimeTicks dispatch_event_time) override {
+  void OnResponseForAbortPayment(bool payment_aborted) override {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    service_worker_version_->FinishRequest(request_id_, false,
-                                           std::move(dispatch_event_time));
+    service_worker_version_->FinishRequest(request_id_, false);
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(std::move(payment_event_result_callback_),
@@ -195,8 +188,7 @@ class RespondWithCallbacks
   void AbortPaymentSinceOpennedWindowClosing() {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-    service_worker_version_->FinishRequest(request_id_, false,
-                                           base::TimeTicks::Now());
+    service_worker_version_->FinishRequest(request_id_, false);
     OnErrorStatus(blink::ServiceWorkerStatusCode::kErrorAbort);
   }
 

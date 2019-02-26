@@ -14,6 +14,8 @@ using AuthenticateUserWithPasswordOrPinCallback =
     ash::mojom::LoginScreenClient::AuthenticateUserWithPasswordOrPinCallback;
 using AuthenticateUserWithExternalBinaryCallback =
     ash::mojom::LoginScreenClient::AuthenticateUserWithExternalBinaryCallback;
+using EnrollUserWithExternalBinaryCallback =
+    ash::mojom::LoginScreenClient::EnrollUserWithExternalBinaryCallback;
 
 namespace chromeos {
 class LoginAuthRecorder;
@@ -36,10 +38,11 @@ class LoginScreenClient : public ash::mojom::LoginScreenClient {
     virtual void HandleAuthenticateUserWithExternalBinary(
         const AccountId& account_id,
         AuthenticateUserWithExternalBinaryCallback callback) = 0;
+    virtual void HandleEnrollUserWithExternalBinary(
+        EnrollUserWithExternalBinaryCallback) = 0;
     virtual void HandleAuthenticateUserWithEasyUnlock(
         const AccountId& account_id) = 0;
     virtual void HandleHardlockPod(const AccountId& account_id) = 0;
-    virtual void HandleRecordClickOnLockIcon(const AccountId& account_id) = 0;
     virtual void HandleOnFocusPod(const AccountId& account_id) = 0;
     virtual void HandleOnNoPodFocused() = 0;
     // Handles request to focus a lock screen app window. Returns whether the
@@ -78,9 +81,10 @@ class LoginScreenClient : public ash::mojom::LoginScreenClient {
   void AuthenticateUserWithExternalBinary(
       const AccountId& account_id,
       AuthenticateUserWithExternalBinaryCallback callback) override;
+  void EnrollUserWithExternalBinary(
+      EnrollUserWithExternalBinaryCallback callback) override;
   void AuthenticateUserWithEasyUnlock(const AccountId& account_id) override;
   void HardlockPod(const AccountId& account_id) override;
-  void RecordClickOnLockIcon(const AccountId& account_id) override;
   void OnFocusPod(const AccountId& account_id) override;
   void OnNoPodFocused() override;
   void LoadWallpaper(const AccountId& account_id) override;

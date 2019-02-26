@@ -13,6 +13,7 @@
 #include "base/memory/singleton.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/payments/content/developer_console_logger.h"
 #include "components/payments/content/installable_payment_app_crawler.h"
 #include "components/payments/content/manifest_verifier.h"
 #include "components/payments/content/payment_manifest_web_data_service.h"
@@ -108,7 +109,8 @@ class SelfDeletingServiceWorkerPaymentAppFactory {
     DCHECK(!verifier_);
 
     downloader_ = std::move(downloader);
-    parser_ = std::make_unique<PaymentManifestParser>();
+    parser_ = std::make_unique<PaymentManifestParser>(
+        std::make_unique<DeveloperConsoleLogger>(web_contents));
     cache_ = cache;
     verifier_ = std::make_unique<ManifestVerifier>(
         web_contents, downloader_.get(), parser_.get(), cache_.get());
@@ -257,19 +259,22 @@ void ServiceWorkerPaymentAppFactory::GetAllPaymentApps(
     base::OnceClosure finished_writing_cache_callback_for_testing) {
   SelfDeletingServiceWorkerPaymentAppFactory* self_delete_factory =
       new SelfDeletingServiceWorkerPaymentAppFactory();
-  if (test_downloader_ != nullptr)
+
+  std::unique_ptr<PaymentManifestDownloader> downloader;
+  if (test_downloader_ != nullptr) {
+    downloader = std::move(test_downloader_);
     self_delete_factory->IgnorePortInAppScopeForTesting();
+  } else {
+    downloader = std::make_unique<payments::PaymentManifestDownloader>(
+        std::make_unique<DeveloperConsoleLogger>(web_contents),
+        content::BrowserContext::GetDefaultStoragePartition(
+            web_contents->GetBrowserContext())
+            ->GetURLLoaderFactoryForBrowserProcess());
+  }
 
   self_delete_factory->GetAllPaymentApps(
-      web_contents,
-      test_downloader_ == nullptr
-          ? std::make_unique<payments::PaymentManifestDownloader>(
-                content::BrowserContext::GetDefaultStoragePartition(
-                    web_contents->GetBrowserContext())
-                    ->GetURLLoaderFactoryForBrowserProcess())
-          : std::move(test_downloader_),
-      cache, requested_method_data, may_crawl_for_installable_payment_apps,
-      std::move(callback),
+      web_contents, std::move(downloader), cache, requested_method_data,
+      may_crawl_for_installable_payment_apps, std::move(callback),
       std::move(finished_writing_cache_callback_for_testing));
 }
 

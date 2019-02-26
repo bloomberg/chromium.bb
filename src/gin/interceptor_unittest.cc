@@ -157,7 +157,8 @@ class InterceptorTest : public V8Test {
     v8::Local<v8::Value> argv[] = {
         ConvertToV8(isolate, obj.get()).ToLocalChecked(),
     };
-    func->Call(v8::Undefined(isolate), 1, argv);
+    func->Call(context_.Get(isolate), v8::Undefined(isolate), 1, argv)
+        .ToLocalChecked();
     EXPECT_FALSE(try_catch.HasCaught());
     EXPECT_EQ("", try_catch.GetStackTrace());
 

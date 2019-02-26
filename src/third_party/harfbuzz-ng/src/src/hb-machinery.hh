@@ -82,10 +82,7 @@ static inline Type& StructAfter(TObject &X)
 /* Check _assertion in a method environment */
 #define _DEFINE_INSTANCE_ASSERTION1(_line, _assertion) \
   inline void _instance_assertion_on_line_##_line (void) const \
-  { \
-    static_assert ((_assertion), ""); \
-    ASSERT_INSTANCE_POD (*this); /* Make sure it's POD. */ \
-  }
+  { static_assert ((_assertion), ""); }
 # define _DEFINE_INSTANCE_ASSERTION0(_line, _assertion) _DEFINE_INSTANCE_ASSERTION1 (_line, _assertion)
 # define DEFINE_INSTANCE_ASSERTION(_assertion) _DEFINE_INSTANCE_ASSERTION0 (__LINE__, _assertion)
 
@@ -98,32 +95,36 @@ static inline Type& StructAfter(TObject &X)
 
 
 #define DEFINE_SIZE_STATIC(size) \
-  DEFINE_INSTANCE_ASSERTION (sizeof (*this) == (size)); \
-  enum { static_size = (size) }; \
+  DEFINE_INSTANCE_ASSERTION (sizeof (*this) == (size)) \
+  inline unsigned int get_size (void) const { return (size); } \
+  enum { null_size = (size) }; \
   enum { min_size = (size) }; \
-  inline unsigned int get_size (void) const { return (size); }
+  enum { static_size = (size) }
 
 #define DEFINE_SIZE_UNION(size, _member) \
-  DEFINE_INSTANCE_ASSERTION (0*sizeof(this->u._member.static_size) + sizeof(this->u._member) == (size)); \
-  static const unsigned int min_size = (size)
+  DEFINE_COMPILES_ASSERTION ((void) this->u._member.static_size) \
+  DEFINE_INSTANCE_ASSERTION (sizeof(this->u._member) == (size)) \
+  enum { null_size = (size) }; \
+  enum { min_size = (size) }
 
 #define DEFINE_SIZE_MIN(size) \
-  DEFINE_INSTANCE_ASSERTION (sizeof (*this) >= (size)); \
-  static const unsigned int min_size = (size)
+  DEFINE_INSTANCE_ASSERTION (sizeof (*this) >= (size)) \
+  enum { null_size = (size) }; \
+  enum { min_size = (size) }
+
+#define DEFINE_SIZE_UNBOUNDED(size) \
+  DEFINE_INSTANCE_ASSERTION (sizeof (*this) >= (size)) \
+  enum { min_size = (size) }
 
 #define DEFINE_SIZE_ARRAY(size, array) \
-  DEFINE_INSTANCE_ASSERTION (sizeof (*this) == (size) + VAR * sizeof (array[0])); \
-  DEFINE_COMPILES_ASSERTION ((void) array[0].static_size) \
-  enum { min_size = (size) }; \
+  DEFINE_COMPILES_ASSERTION ((void) (array)[0].static_size) \
+  DEFINE_INSTANCE_ASSERTION (sizeof (*this) == (size) + VAR * sizeof ((array)[0])) \
+  enum { null_size = (size) }; \
+  enum { min_size = (size) }
 
 #define DEFINE_SIZE_ARRAY_SIZED(size, array) \
-	DEFINE_SIZE_ARRAY(size, array); \
-	inline unsigned int get_size (void) const { return (size - array[0].min_size + array.get_size ()); }
-
-#define DEFINE_SIZE_ARRAY2(size, array1, array2) \
-  DEFINE_INSTANCE_ASSERTION (sizeof (*this) == (size) + sizeof (this->array1[0]) + sizeof (this->array2[0])); \
-  DEFINE_COMPILES_ASSERTION ((void) array1[0].static_size; (void) array2[0].static_size) \
-  static const unsigned int min_size = (size)
+  inline unsigned int get_size (void) const { return (size - (array).min_size + (array).get_size ()); } \
+  DEFINE_SIZE_ARRAY(size, array)
 
 
 /*
@@ -136,7 +137,7 @@ struct hb_dispatch_context_t
   enum { max_debug_depth = MaxDebugDepth };
   typedef Return return_t;
   template <typename T, typename F>
-  inline bool may_dispatch (const T *obj, const F *format) { return true; }
+  inline bool may_dispatch (const T *obj HB_UNUSED, const F *format HB_UNUSED) { return true; }
   static return_t no_dispatch_return_value (void) { return Context::default_return_value (); }
 };
 
@@ -204,7 +205,7 @@ struct hb_dispatch_context_t
  * The same argument can be made re GSUB/GPOS/GDEF, but there, the table
  * structure is so complicated that by checking all offsets at sanitize() time,
  * we make the code much simpler in other methods, as offsets and referenced
- * objectes do not need to be validated at each use site.
+ * objects do not need to be validated at each use site.
  */
 
 /* This limits sanitizing time on really broken fonts. */
@@ -217,6 +218,9 @@ struct hb_dispatch_context_t
 #ifndef HB_SANITIZE_MAX_OPS_MIN
 #define HB_SANITIZE_MAX_OPS_MIN 16384
 #endif
+#ifndef HB_SANITIZE_MAX_OPS_MAX
+#define HB_SANITIZE_MAX_OPS_MAX 0x3FFFFFFF
+#endif
 
 struct hb_sanitize_context_t :
        hb_dispatch_context_t<hb_sanitize_context_t, bool, HB_DEBUG_SANITIZE>
@@ -224,14 +228,15 @@ struct hb_sanitize_context_t :
   inline hb_sanitize_context_t (void) :
 	debug_depth (0),
 	start (nullptr), end (nullptr),
-	writable (false), edit_count (0), max_ops (0),
+	max_ops (0),
+	writable (false), edit_count (0),
 	blob (nullptr),
 	num_glyphs (65536),
 	num_glyphs_set (false) {}
 
   inline const char *get_name (void) { return "SANITIZE"; }
   template <typename T, typename F>
-  inline bool may_dispatch (const T *obj, const F *format)
+  inline bool may_dispatch (const T *obj HB_UNUSED, const F *format)
   { return format->sanitize (this); }
   template <typename T>
   inline return_t dispatch (const T &obj) { return obj.sanitize (this); }
@@ -252,11 +257,38 @@ struct hb_sanitize_context_t :
   }
   inline unsigned int get_num_glyphs (void) { return num_glyphs; }
 
-  inline void start_processing (void)
+  inline void set_max_ops (int max_ops_) { max_ops = max_ops_; }
+
+  template <typename T>
+  inline void set_object (const T *obj)
+  {
+    reset_object ();
+
+    if (!obj) return;
+
+    const char *obj_start = (const char *) obj;
+    const char *obj_end = (const char *) obj + obj->get_size ();
+    assert (obj_start <= obj_end); /* Must not overflow. */
+
+    if (unlikely (obj_end < this->start || this->end < obj_start))
+      this->start = this->end = nullptr;
+    else
+    {
+      this->start = MAX (this->start, obj_start);
+      this->end   = MIN (this->end  , obj_end  );
+    }
+  }
+
+  inline void reset_object (void)
   {
     this->start = this->blob->data;
     this->end = this->start + this->blob->length;
     assert (this->start <= this->end); /* Must not overflow. */
+  }
+
+  inline void start_processing (void)
+  {
+    reset_object ();
     this->max_ops = MAX ((unsigned int) (this->end - this->start) * HB_SANITIZE_MAX_OPS_FACTOR,
 			 (unsigned) HB_SANITIZE_MAX_OPS_MIN);
     this->edit_count = 0;
@@ -279,13 +311,14 @@ struct hb_sanitize_context_t :
     this->start = this->end = nullptr;
   }
 
-  inline bool check_range (const void *base, unsigned int len) const
+  inline bool check_range (const void *base,
+			   unsigned int len) const
   {
     const char *p = (const char *) base;
-    bool ok = this->max_ops-- > 0 &&
-	      this->start <= p &&
+    bool ok = this->start <= p &&
 	      p <= this->end &&
-	      (unsigned int) (this->end - p) >= len;
+	      (unsigned int) (this->end - p) >= len &&
+	      this->max_ops-- > 0;
 
     DEBUG_MSG_LEVEL (SANITIZE, p, this->debug_depth+1, 0,
        "check_range [%p..%p] (%d bytes) in [%p..%p] -> %s",
@@ -297,20 +330,37 @@ struct hb_sanitize_context_t :
   }
 
   template <typename T>
-  inline bool check_array (const T *base, unsigned int len, unsigned int record_size = T::static_size) const
+  inline bool check_range (const T *base,
+			   unsigned int a,
+			   unsigned int b) const
   {
-    const char *p = (const char *) base;
-    bool overflows = hb_unsigned_mul_overflows (len, record_size);
-    unsigned int array_size = record_size * len;
-    bool ok = !overflows && this->check_range (base, array_size);
+    return !hb_unsigned_mul_overflows (a, b) &&
+	   this->check_range (base, a * b);
+  }
 
-    DEBUG_MSG_LEVEL (SANITIZE, p, this->debug_depth+1, 0,
-       "check_array [%p..%p] (%d*%d=%d bytes) in [%p..%p] -> %s",
-       p, p + (record_size * len), record_size, len, (unsigned int) array_size,
-       this->start, this->end,
-       overflows ? "OVERFLOWS" : ok ? "OK" : "OUT-OF-RANGE");
+  template <typename T>
+  inline bool check_range (const T *base,
+			   unsigned int a,
+			   unsigned int b,
+			   unsigned int c) const
+  {
+    return !hb_unsigned_mul_overflows (a, b) &&
+	   this->check_range (base, a * b, c);
+  }
 
-    return likely (ok);
+  template <typename T>
+  inline bool check_array (const T *base,
+			   unsigned int len) const
+  {
+    return this->check_range (base, len, T::static_size);
+  }
+
+  template <typename T>
+  inline bool check_array (const T *base,
+			   unsigned int a,
+			   unsigned int b) const
+  {
+    return this->check_range (base, a, b, T::static_size);
   }
 
   template <typename Type>
@@ -423,13 +473,30 @@ struct hb_sanitize_context_t :
 
   mutable unsigned int debug_depth;
   const char *start, *end;
+  mutable int max_ops;
   private:
   bool writable;
   unsigned int edit_count;
-  mutable int max_ops;
   hb_blob_t *blob;
   unsigned int num_glyphs;
   bool  num_glyphs_set;
+};
+
+struct hb_sanitize_with_object_t
+{
+  template <typename T>
+  inline hb_sanitize_with_object_t (hb_sanitize_context_t *c,
+				    const T& obj) : c (c)
+  {
+    c->set_object (obj);
+  }
+  inline ~hb_sanitize_with_object_t (void)
+  {
+    c->reset_object ();
+  }
+
+  private:
+  hb_sanitize_context_t *c;
 };
 
 
@@ -591,7 +658,7 @@ struct Supplier
   }
   inline Supplier (const hb_vector_t<Type> *v)
   {
-    head = v->arrayZ;
+    head = *v;
     len = v->len;
     stride = sizeof (Type);
   }
@@ -631,6 +698,7 @@ template <typename Type>
 struct BEInt<Type, 1>
 {
   public:
+  typedef Type type;
   inline void set (Type V)
   {
     v = V;
@@ -645,6 +713,7 @@ template <typename Type>
 struct BEInt<Type, 2>
 {
   public:
+  typedef Type type;
   inline void set (Type V)
   {
     v[0] = (V >>  8) & 0xFF;
@@ -652,6 +721,12 @@ struct BEInt<Type, 2>
   }
   inline operator Type (void) const
   {
+#if defined(__GNUC__) || defined(__clang__)
+    /* Spoon-feed the compiler a big-endian integer with alignment 1.
+     * https://github.com/harfbuzz/harfbuzz/pull/1398 */
+    struct __attribute__((packed)) packed_uint16_t { uint16_t v; };
+    return __builtin_bswap16 (((packed_uint16_t *) this)->v);
+#endif
     return (v[0] <<  8)
          + (v[1]      );
   }
@@ -661,6 +736,7 @@ template <typename Type>
 struct BEInt<Type, 3>
 {
   public:
+  typedef Type type;
   inline void set (Type V)
   {
     v[0] = (V >> 16) & 0xFF;
@@ -679,6 +755,7 @@ template <typename Type>
 struct BEInt<Type, 4>
 {
   public:
+  typedef Type type;
   inline void set (Type V)
   {
     v[0] = (V >> 24) & 0xFF;
@@ -711,21 +788,18 @@ struct hb_data_wrapper_t
     return *(((Data **) (void *) this) - WheresData);
   }
 
+  inline bool is_inert (void) const { return !get_data (); }
+
   template <typename Stored, typename Subclass>
-  inline Stored * call_create (void) const
-  {
-    Data *data = this->get_data ();
-    return likely (data) ? Subclass::create (data) : nullptr;
-  }
+  inline Stored * call_create (void) const { return Subclass::create (get_data ()); }
 };
 template <>
 struct hb_data_wrapper_t<void, 0>
 {
+  inline bool is_inert (void) const { return false; }
+
   template <typename Stored, typename Funcs>
-  inline Stored * call_create (void) const
-  {
-    return Funcs::create ();
-  }
+  inline Stored * call_create (void) const { return Funcs::create (); }
 };
 
 template <typename T1, typename T2> struct hb_non_void_t { typedef T1 value; };
@@ -752,31 +826,22 @@ struct hb_lazy_loader_t : hb_data_wrapper_t<Data, WheresData>
   {
   retry:
     Stored *p = instance.get ();
-    if (unlikely (p && !this->instance.cmpexch (p, nullptr)))
+    if (unlikely (p && !cmpexch (p, nullptr)))
       goto retry;
     do_destroy (p);
   }
 
-  inline Stored * do_create (void) const
-  {
-    Stored *p = this->template call_create<Stored, Funcs> ();
-    if (unlikely (!p))
-      p = const_cast<Stored *> (Funcs::get_null ());
-    return p;
-  }
   static inline void do_destroy (Stored *p)
   {
-    if (p && p != Funcs::get_null ())
+    if (p && p != const_cast<Stored *> (Funcs::get_null ()))
       Funcs::destroy (p);
   }
 
   inline const Returned * operator -> (void) const { return get (); }
   inline const Returned & operator * (void) const { return *get (); }
-
-  inline Data * get_data (void) const
-  {
-    return *(((Data **) this) - WheresData);
-  }
+  explicit_operator inline operator bool (void) const
+  { return get_stored () != Funcs::get_null (); }
+  template <typename C> inline operator const C * (void) const { return get (); }
 
   inline Stored * get_stored (void) const
   {
@@ -784,8 +849,14 @@ struct hb_lazy_loader_t : hb_data_wrapper_t<Data, WheresData>
     Stored *p = this->instance.get ();
     if (unlikely (!p))
     {
-      p = do_create ();
-      if (unlikely (!this->instance.cmpexch (nullptr, p)))
+      if (unlikely (this->is_inert ()))
+	return const_cast<Stored *> (Funcs::get_null ());
+
+      p = this->template call_create<Stored, Funcs> ();
+      if (unlikely (!p))
+	p = const_cast<Stored *> (Funcs::get_null ());
+
+      if (unlikely (!cmpexch (nullptr, p)))
       {
         do_destroy (p);
 	goto retry;
@@ -798,15 +869,10 @@ struct hb_lazy_loader_t : hb_data_wrapper_t<Data, WheresData>
     return this->instance.get_relaxed ();
   }
 
-  inline void set_stored (Stored *instance_)
+  inline bool cmpexch (Stored *current, Stored *value) const
   {
-    /* This *must* be called when there are no other threads accessing.
-     * However, to make TSan, etc, happy, we using cmpexch. */
-  retry:
-    Stored *p = this->instance.get ();
-    if (unlikely (!this->instance.cmpexch (p, instance_)))
-      goto retry;
-    do_destroy (p);
+    /* This *must* be called when there are no other threads accessing. */
+    return this->instance.cmpexch (current, value);
   }
 
   inline const Returned * get (void) const { return Funcs::convert (get_stored ()); }
@@ -838,7 +904,7 @@ struct hb_lazy_loader_t : hb_data_wrapper_t<Data, WheresData>
     free (p);
   }
 
-  private:
+//  private:
   /* Must only have one pointer. */
   hb_atomic_ptr_t<Stored *> instance;
 };

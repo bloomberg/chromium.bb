@@ -54,6 +54,12 @@ struct AX_EXPORT AXActionData {
   int focus_node_id = -1;
   int focus_offset = -1;
 
+  // Start index of the text which should be queried for.
+  int32_t start_index = -1;
+
+  // End index of the text which should be queried for.
+  int32_t end_index = -1;
+
   // For custom action.
   int custom_action_id = -1;
 

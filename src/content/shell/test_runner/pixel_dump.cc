@@ -69,7 +69,8 @@ void CapturePixelsForPrinting(
     blink::WebLocalFrame* web_frame,
     base::OnceCallback<void(const SkBitmap&)> callback) {
   auto* frame_widget = web_frame->LocalRoot()->FrameWidget();
-  frame_widget->UpdateAllLifecyclePhases();
+  frame_widget->UpdateAllLifecyclePhases(
+      blink::WebWidget::LifecycleUpdateReason::kTest);
 
   blink::WebSize page_size_in_pixels = frame_widget->Size();
 

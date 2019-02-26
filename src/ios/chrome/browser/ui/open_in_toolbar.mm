@@ -8,9 +8,9 @@
 
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
-#include "ios/chrome/browser/ui/rtl_geometry.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
+#include "ios/chrome/browser/ui/util/rtl_geometry.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
@@ -56,6 +56,9 @@ const CGFloat kToolbarBackgroundTransparency = 0.97f;
 // not using autolayout so the toolbar cannot use autolayout either. See
 // https://crbug.com/857371.
 @property(nonatomic, strong) UIView* bottomMargin;
+
+// Constraint to have the open in toolbar be displayed above the bottom toolbar.
+@property(nonatomic, strong) NSLayoutConstraint* bottomMarginConstraint;
 
 // Relayout the frame of the Open In toolbar, based on its superview and the
 // bottom margin.
@@ -162,6 +165,27 @@ const CGFloat kToolbarBackgroundTransparency = 0.97f;
   return _topBorder;
 }
 
+- (void)setBottomMarginConstraint:(NSLayoutConstraint*)bottomMarginConstraint {
+  if (_bottomMarginConstraint == bottomMarginConstraint)
+    return;
+
+  _bottomMarginConstraint.active = NO;
+  _bottomMarginConstraint = bottomMarginConstraint;
+  _bottomMarginConstraint.active = YES;
+}
+
+#pragma mark Public
+
+- (void)updateBottomMarginHeight {
+  NSLayoutDimension* marginHeightAnchor = self.bottomMargin.heightAnchor;
+  NamedGuide* guide = [NamedGuide guideWithName:kSecondaryToolbarGuide
+                                           view:self];
+  self.bottomMarginConstraint =
+      guide ? [marginHeightAnchor constraintEqualToAnchor:guide.heightAnchor]
+            : [marginHeightAnchor constraintEqualToConstant:0];
+  [self relayout];
+}
+
 #pragma mark Layout
 
 - (CGSize)sizeThatFits:(CGSize)size {
@@ -172,21 +196,7 @@ const CGFloat kToolbarBackgroundTransparency = 0.97f;
 }
 
 - (void)didMoveToWindow {
-  if (!self.window) {
-    self.bottomMarginConstraint = nil;
-    return;
-  }
-
-  self.bottomMarginConstraint.active = NO;
-  // If the bottom toolbar isn't present on screen, guide is nil and then
-  // bottomMarginConstraint is also nil.
-  NamedGuide* guide =
-      [NamedGuide guideWithName:kSecondaryToolbarGuide view:self];
-  self.bottomMarginConstraint = [guide.heightAnchor
-      constraintEqualToAnchor:self.bottomMargin.heightAnchor];
-  self.bottomMarginConstraint.active = YES;
-
-  [self relayout];
+  [self updateBottomMarginHeight];
 }
 
 - (void)relayout {

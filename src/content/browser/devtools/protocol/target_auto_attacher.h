@@ -11,6 +11,8 @@
 
 namespace content {
 
+class DevToolsAgentHostImpl;
+class DevToolsRendererChannel;
 class NavigationHandleImpl;
 class RenderFrameHostImpl;
 
@@ -19,11 +21,13 @@ namespace protocol {
 class TargetAutoAttacher : public ServiceWorkerDevToolsManager::Observer {
  public:
   // Second parameter is |waiting_for_debugger|, returns whether it succeeded.
-  using AttachCallback = base::Callback<void(DevToolsAgentHost*, bool)>;
-  using DetachCallback = base::Callback<void(DevToolsAgentHost*)>;
+  using AttachCallback =
+      base::RepeatingCallback<void(DevToolsAgentHost*, bool)>;
+  using DetachCallback = base::RepeatingCallback<void(DevToolsAgentHost*)>;
 
   TargetAutoAttacher(AttachCallback attach_callback,
-                     DetachCallback detach_callback);
+                     DetachCallback detach_callback,
+                     DevToolsRendererChannel* renderer_channel);
   ~TargetAutoAttacher() override;
 
   void SetRenderFrameHost(RenderFrameHostImpl* host);
@@ -34,6 +38,8 @@ class TargetAutoAttacher : public ServiceWorkerDevToolsManager::Observer {
 
   bool ShouldThrottleFramesNavigation();
   DevToolsAgentHost* AutoAttachToFrame(NavigationHandleImpl* navigation_handle);
+  void ChildWorkerCreated(DevToolsAgentHostImpl* agent_host,
+                          bool waiting_for_debugger);
 
  private:
   using Hosts = base::flat_set<scoped_refptr<DevToolsAgentHost>>;
@@ -54,6 +60,7 @@ class TargetAutoAttacher : public ServiceWorkerDevToolsManager::Observer {
 
   AttachCallback attach_callback_;
   DetachCallback detach_callback_;
+  DevToolsRendererChannel* renderer_channel_;
   RenderFrameHostImpl* render_frame_host_;
   base::flat_set<GURL> frame_urls_;
 

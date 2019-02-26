@@ -83,9 +83,8 @@ WebDOMMessageEvent::WebDOMMessageEvent(TransferableMessage message,
 
   UserActivation* user_activation = nullptr;
   if (msg.user_activation) {
-    user_activation =
-        new UserActivation(msg.user_activation->has_been_active,
-                           msg.user_activation->was_active);
+    user_activation = MakeGarbageCollected<UserActivation>(
+        msg.user_activation->has_been_active, msg.user_activation->was_active);
   }
 
   // TODO(esprehn): Chromium always passes empty string for lastEventId, is that

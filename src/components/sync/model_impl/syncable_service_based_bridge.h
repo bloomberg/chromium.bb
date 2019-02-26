@@ -10,12 +10,20 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "components/sync/model/model_error.h"
 #include "components/sync/model/model_type_store.h"
 #include "components/sync/model/model_type_sync_bridge.h"
 #include "components/sync/model/sync_change_processor.h"
+
+namespace sync_pb {
+class EntitySpecifics;
+class PersistedEntityData;
+}  // namespace sync_pb
 
 namespace syncer {
 
@@ -30,12 +38,37 @@ class SyncableService;
 // considered an implementation detail.
 class SyncableServiceBasedBridge : public ModelTypeSyncBridge {
  public:
+  using InMemoryStore = std::map<std::string, sync_pb::PersistedEntityData>;
+
+  // Used for passwords only.
+  // TODO(crbug.com/856941): Remove when PASSWORDS are migrated to USS, which
+  // will likely make this API unnecessary.
+  class ModelCryptographer
+      : public base::RefCountedThreadSafe<ModelCryptographer> {
+   public:
+    ModelCryptographer();
+
+    virtual base::Optional<ModelError> Decrypt(
+        sync_pb::EntitySpecifics* specifics) = 0;
+    virtual base::Optional<ModelError> Encrypt(
+        sync_pb::EntitySpecifics* specifics) = 0;
+
+   protected:
+    virtual ~ModelCryptographer();
+
+   private:
+    friend class base::RefCountedThreadSafe<ModelCryptographer>;
+
+    DISALLOW_COPY_AND_ASSIGN(ModelCryptographer);
+  };
+
   // Pointers must not be null and |syncable_service| must outlive this object.
   SyncableServiceBasedBridge(
       ModelType type,
       OnceModelTypeStoreFactory store_factory,
       std::unique_ptr<ModelTypeChangeProcessor> change_processor,
-      SyncableService* syncable_service);
+      SyncableService* syncable_service,
+      scoped_refptr<ModelCryptographer> cryptographer = nullptr);
   ~SyncableServiceBasedBridge() override;
 
   // ModelTypeSyncBridge implementation.
@@ -59,32 +92,41 @@ class SyncableServiceBasedBridge : public ModelTypeSyncBridge {
   StopSyncResponse ApplyStopSyncChanges(
       std::unique_ptr<MetadataChangeList> delete_metadata_change_list) override;
   size_t EstimateSyncOverheadMemoryUsage() const override;
+  base::Optional<ModelError> ApplySyncChangesWithNewEncryptionRequirements(
+      std::unique_ptr<MetadataChangeList> metadata_change_list,
+      EntityChangeList entity_changes) override;
+
+  // For testing.
+  static std::unique_ptr<SyncChangeProcessor>
+  CreateLocalChangeProcessorForTesting(ModelType type,
+                                       ModelTypeStore* store,
+                                       InMemoryStore* in_memory_store,
+                                       ModelTypeChangeProcessor* other);
 
  private:
   void OnStoreCreated(const base::Optional<ModelError>& error,
                       std::unique_ptr<ModelTypeStore> store);
-  void OnReadAllDataForInit(
-      const base::Optional<ModelError>& error,
-      std::unique_ptr<ModelTypeStore::RecordList> record_list);
+  void OnReadAllDataForInit(std::unique_ptr<InMemoryStore> in_memory_store,
+                            const base::Optional<ModelError>& error);
   void OnReadAllMetadataForInit(const base::Optional<ModelError>& error,
                                 std::unique_ptr<MetadataBatch> metadata_batch);
-  void MaybeStartSyncableService();
-  SyncChangeList StoreAndConvertRemoteChanges(
-      std::unique_ptr<MetadataChangeList> metadata_change_list,
-      EntityChangeList entity_change_list);
-  void OnReadDataForProcessor(
-      DataCallback callback,
-      const base::Optional<ModelError>& error,
-      std::unique_ptr<ModelTypeStore::RecordList> record_list,
-      std::unique_ptr<ModelTypeStore::IdList> missing_id_list);
-  void OnReadAllDataForProcessor(
-      DataCallback callback,
-      const base::Optional<ModelError>& error,
-      std::unique_ptr<ModelTypeStore::RecordList> record_list);
+  base::Optional<ModelError> MaybeStartSyncableService() WARN_UNUSED_RESULT;
+  base::Optional<ModelError> StoreAndConvertRemoteChanges(
+      std::unique_ptr<ModelTypeStore::WriteBatch> batch,
+      EntityChangeList input_entity_change_list,
+      SyncChangeList* output_sync_change_list) WARN_UNUSED_RESULT;
   void ReportErrorIfSet(const base::Optional<ModelError>& error);
+  base::Optional<ModelError> ReencryptEverything(
+      ModelTypeStore::WriteBatch* batch);
+  base::Optional<ModelError> ApplySyncChangesWithBatch(
+      std::unique_ptr<MetadataChangeList> metadata_change_list,
+      EntityChangeList entity_change_list,
+      std::unique_ptr<ModelTypeStore::WriteBatch> batch);
+  void RecordAssociationTime(base::TimeDelta time) const;
 
   const ModelType type_;
   SyncableService* const syncable_service_;
+  const scoped_refptr<ModelCryptographer> cryptographer_;
   OnceModelTypeStoreFactory store_factory_;
 
   std::unique_ptr<ModelTypeStore> store_;
@@ -92,7 +134,9 @@ class SyncableServiceBasedBridge : public ModelTypeSyncBridge {
 
   // In-memory copy of |store_|, needed for remote deletions, because we need to
   // provide specifics of the deleted entity to the SyncableService.
-  std::map<std::string, sync_pb::EntitySpecifics> in_memory_store_;
+  InMemoryStore in_memory_store_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<SyncableServiceBasedBridge> weak_ptr_factory_;
 

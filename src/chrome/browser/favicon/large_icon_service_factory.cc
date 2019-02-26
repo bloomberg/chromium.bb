@@ -11,7 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/suggestions/image_decoder_impl.h"
 #include "components/favicon/core/favicon_service.h"
-#include "components/favicon/core/large_icon_service.h"
+#include "components/favicon/core/large_icon_service_impl.h"
 #include "components/image_fetcher/core/image_decoder.h"
 #include "components/image_fetcher/core/image_fetcher_impl.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -50,7 +50,7 @@ KeyedService* LargeIconServiceFactory::BuildServiceInstanceFor(
   favicon::FaviconService* favicon_service =
       FaviconServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::EXPLICIT_ACCESS);
-  return new favicon::LargeIconService(
+  return new favicon::LargeIconServiceImpl(
       favicon_service,
       std::make_unique<image_fetcher::ImageFetcherImpl>(
           std::make_unique<suggestions::ImageDecoderImpl>(),

@@ -81,8 +81,8 @@ void SpellCheckHostChromeImpl::CallSpellingService(
   // a response is received (including an error) from the remote Spelling
   // service, calls CallSpellingServiceDone.
   content::BrowserContext* context =
-      content::BrowserContext::GetBrowserContextForServiceUserId(
-          renderer_identity_.user_id());
+      content::BrowserContext::GetBrowserContextForServiceInstanceGroup(
+          renderer_identity_.instance_group());
   client_.RequestTextCheck(
       context, SpellingServiceClient::SPELLCHECK, text,
       base::BindOnce(&SpellCheckHostChromeImpl::CallSpellingServiceDone,

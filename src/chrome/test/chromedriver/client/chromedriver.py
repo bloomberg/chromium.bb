@@ -71,9 +71,6 @@ def _ExceptionForLegacyResponse(response):
     11: ElementNotVisible,
     12: InvalidElementState,
     13: UnknownError,
-    14: InvalidArgument,
-    15: ElementNotInteractable,
-    16: UnsupportedOperation,
     17: JavaScriptError,
     19: XPathLookupError,
     21: Timeout,
@@ -84,7 +81,10 @@ def _ExceptionForLegacyResponse(response):
     28: ScriptTimeout,
     32: InvalidSelector,
     33: SessionNotCreated,
-    105: NoSuchCookie
+    60: ElementNotInteractable,
+    61: InvalidArgument,
+    62: NoSuchCookie,
+    405: UnsupportedOperation
   }
   status = response['status']
   msg = response['value']['message']
@@ -124,6 +124,7 @@ class ChromeDriver(object):
   """Starts and controls a single Chrome instance on this machine."""
 
   retry_count = 0
+  retried_tests = []
 
   def __init__(self, *args, **kwargs):
     try:
@@ -134,6 +135,7 @@ class ChromeDriver(object):
       else:
         if ChromeDriver.retry_count < MAX_RETRY_COUNT:
           ChromeDriver.retry_count = ChromeDriver.retry_count + 1
+          ChromeDriver.retried_tests.append(kwargs.get('test_name'))
           self._InternalInit(*args, **kwargs)
         else:
           raise
@@ -228,7 +230,7 @@ class ChromeDriver(object):
       options['w3c'] = send_w3c_capability
 
     params = {
-        'chromeOptions': options,
+        'goog:chromeOptions': options,
         'loggingPrefs': logging_prefs
     }
 
@@ -238,7 +240,10 @@ class ChromeDriver(object):
 
     if unexpected_alert_behaviour:
       assert type(unexpected_alert_behaviour) is str
-      params['unexpectedAlertBehaviour'] = unexpected_alert_behaviour
+      if send_w3c_request:
+        params['unhandledPromptBehavior'] = unexpected_alert_behaviour
+      else:
+        params['unexpectedAlertBehaviour'] = unexpected_alert_behaviour
 
     if network_connection:
       params['networkConnectionEnabled'] = network_connection
@@ -312,7 +317,7 @@ class ChromeDriver(object):
     if (not self.w3c_compliant and 'status' in response
         and response['status'] != 0):
       raise _ExceptionForLegacyResponse(response)
-    elif (self.w3c_compliant and response['value'] is not None
+    elif (self.w3c_compliant and type(response['value']) is dict
           and 'error' in response['value']):
       raise _ExceptionForStandardResponse(response)
     return response
@@ -445,6 +450,12 @@ class ChromeDriver(object):
   def TouchPinch(self, x, y, scale):
     params = {'x': x, 'y': y, 'scale': scale}
     self.ExecuteCommand(Command.TOUCH_PINCH, params)
+
+  def PerformActions(self, actions):
+    """
+    actions: a dictionary containing the specified actions users wish to perform
+    """
+    self.ExecuteCommand(Command.PERFORM_ACTIONS, actions)
 
   def GetCookies(self):
     return self.ExecuteCommand(Command.GET_COOKIES)

@@ -18,14 +18,17 @@ class SensorErrorEvent : public Event {
  public:
   static SensorErrorEvent* Create(const AtomicString& event_type,
                                   DOMException* error) {
-    return new SensorErrorEvent(event_type, error);
+    return MakeGarbageCollected<SensorErrorEvent>(event_type, error);
   }
 
   static SensorErrorEvent* Create(const AtomicString& event_type,
-                                  const SensorErrorEventInit& initializer) {
-    return new SensorErrorEvent(event_type, initializer);
+                                  const SensorErrorEventInit* initializer) {
+    return MakeGarbageCollected<SensorErrorEvent>(event_type, initializer);
   }
 
+  SensorErrorEvent(const AtomicString& event_type, DOMException* error);
+  SensorErrorEvent(const AtomicString& event_type,
+                   const SensorErrorEventInit* initializer);
   ~SensorErrorEvent() override;
 
   void Trace(blink::Visitor*) override;
@@ -35,18 +38,16 @@ class SensorErrorEvent : public Event {
   DOMException* error() { return error_; }
 
  private:
-  SensorErrorEvent(const AtomicString& event_type, DOMException* error);
-  SensorErrorEvent(const AtomicString& event_type,
-                   const SensorErrorEventInit& initializer);
-
   Member<DOMException> error_;
 };
 
 DEFINE_TYPE_CASTS(SensorErrorEvent,
                   Event,
                   event,
-                  event->InterfaceName() == EventNames::SensorErrorEvent,
-                  event.InterfaceName() == EventNames::SensorErrorEvent);
+                  event->InterfaceName() ==
+                      event_interface_names::kSensorErrorEvent,
+                  event.InterfaceName() ==
+                      event_interface_names::kSensorErrorEvent);
 
 }  // namepsace blink
 

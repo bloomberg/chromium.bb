@@ -32,7 +32,6 @@
 #include "base/debug/stack_trace.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
-#include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/user_activation_state.h"
 #include "third_party/blink/public/common/frame/user_activation_update_source.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
@@ -40,6 +39,7 @@
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/frame/frame_lifecycle.h"
 #include "third_party/blink/renderer/core/frame/frame_view.h"
+#include "third_party/blink/renderer/core/frame/navigation_rate_limiter.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
@@ -56,22 +56,20 @@ class Document;
 class FrameClient;
 class FrameOwner;
 class HTMLFrameOwnerElement;
+class KURL;
 class LayoutEmbeddedContent;
 class LocalFrame;
-class KURL;
 class Page;
 class SecurityContext;
 class Settings;
 class WindowProxy;
 class WindowProxyManager;
-enum class ReportOptions;
 struct FrameLoadRequest;
 
 enum class FrameDetachType { kRemove, kSwap };
 
 // Status of user gesture.
 enum class UserGestureStatus { kActive, kNone };
-
 
 // Frame is the base class of LocalFrame and RemoteFrame and should only contain
 // functionality shared between both. In particular, any method related to
@@ -171,6 +169,9 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   // This should never be called from outside Frame or WebFrame.
   bool ConsumeTransientUserActivationInLocalTree();
 
+  // This should never be called from outside Frame or WebFrame.
+  void ClearUserActivationInLocalTree();
+
   bool HasBeenActivated() const {
     return user_activation_state_.HasBeenActive();
   }
@@ -188,17 +189,6 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   bool IsAttached() const {
     return lifecycle_.GetState() == FrameLifecycle::kAttached;
   }
-
-  // Tests whether the policy-controlled feature is enabled in this frame.
-  // Optionally sends a report to any registered reporting observers or
-  // Report-To endpoints, via ReportFeaturePolicyViolation(), if the feature is
-  // disabled.
-  // TODO(iclelland): Replace these with methods on SecurityContext/Document
-  bool DeprecatedIsFeatureEnabled(mojom::FeaturePolicyFeature) const;
-  bool DeprecatedIsFeatureEnabled(mojom::FeaturePolicyFeature,
-                                  ReportOptions report_on_failure) const;
-  virtual void DeprecatedReportFeaturePolicyViolation(
-      mojom::FeaturePolicyFeature) const {}
 
   // Called to make a frame inert or non-inert. A frame is inert when there
   // is a modal dialog displayed within an ancestor frame, and this frame
@@ -229,6 +219,10 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   }
   const base::debug::StackTrace& DetachStackForDebugging() {
     return detach_stack_;
+  }
+
+  NavigationRateLimiter& navigation_rate_limiter() {
+    return navigation_rate_limiter_;
   }
 
  protected:
@@ -267,6 +261,9 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   Member<FrameClient> client_;
   const Member<WindowProxyManager> window_proxy_manager_;
   FrameLifecycle lifecycle_;
+
+  NavigationRateLimiter navigation_rate_limiter_;
+
   // TODO(sashab): Investigate if this can be represented with m_lifecycle.
   bool is_loading_;
   base::UnguessableToken devtools_frame_token_;

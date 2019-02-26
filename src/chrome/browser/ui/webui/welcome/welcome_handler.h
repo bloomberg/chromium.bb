@@ -11,6 +11,7 @@
 
 class Browser;
 class Profile;
+class GURL;
 
 // Handles actions on Welcome page.
 class WelcomeHandler : public content::WebUIMessageHandler,
@@ -47,12 +48,18 @@ class WelcomeHandler : public content::WebUIMessageHandler,
   void HandleActivateSignIn(const base::ListValue* args);
   void HandleUserDecline(const base::ListValue* args);
   void GoToNewTabPage();
+  void GoToURL(GURL url);
+  bool isValidRedirectUrl();
 
   Browser* GetBrowser();
 
   Profile* profile_;
   LoginUIService* login_ui_service_;
   WelcomeResult result_;
+
+  // Indicates whether this WelcomeHandler instance is spawned due to users
+  // being redirected back to welcome page as part of the onboarding flow.
+  bool is_redirected_welcome_impression_;
 
   DISALLOW_COPY_AND_ASSIGN(WelcomeHandler);
 };

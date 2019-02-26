@@ -42,6 +42,12 @@ struct GL_EXPORT GLVersionInfo {
     return is_es || IsAtLeastGL(4, 1);
   }
 
+  // We need to emulate GL_ALPHA and GL_LUMINANCE and GL_LUMINANCE_ALPHA
+  // texture formats on core profile and ES3, except for ANGLE and Swiftshader.
+  bool NeedsLuminanceAlphaEmulation() const {
+    return !is_angle && !is_swiftshader && (is_es3 || is_desktop_core_profile);
+  }
+
   bool is_es;
   bool is_angle;
   bool is_d3d;

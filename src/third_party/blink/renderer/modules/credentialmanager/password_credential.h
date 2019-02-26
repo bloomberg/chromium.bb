@@ -20,13 +20,18 @@ class MODULES_EXPORT PasswordCredential final : public Credential {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static PasswordCredential* Create(const PasswordCredentialData&,
+  static PasswordCredential* Create(const PasswordCredentialData*,
                                     ExceptionState&);
   static PasswordCredential* Create(HTMLFormElement*, ExceptionState&);
   static PasswordCredential* Create(const String& id,
                                     const String& password,
                                     const String& name,
                                     const KURL& icon_url);
+
+  PasswordCredential(const String& id,
+                     const String& password,
+                     const String& name,
+                     const KURL& icon);
 
   // Credential:
   bool IsPasswordCredential() const override;
@@ -37,11 +42,6 @@ class MODULES_EXPORT PasswordCredential final : public Credential {
   const KURL& iconURL() const { return icon_url_; }
 
  private:
-  PasswordCredential(const String& id,
-                     const String& password,
-                     const String& name,
-                     const KURL& icon);
-
   const String password_;
   const String name_;
   const KURL icon_url_;

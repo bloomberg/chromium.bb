@@ -252,8 +252,21 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   // Whether or not this frame is currently pasting.
   virtual bool IsPasting() const = 0;
 
-  // Returns the current visibility of the frame.
-  virtual blink::mojom::PageVisibilityState GetVisibilityState() const = 0;
+  // Returns true if the current visibility of the frame is to be overridden
+  // from the state requested from brower visibility IPCs. If true, then the
+  // kPrerender visibility state should replace it.
+  virtual bool ShouldOverrideVisibilityAsPrerender() const = 0;
+
+  // Loads specified |html| to this frame. |base_url| is used to resolve
+  // relative urls in the document.
+  // |replace_current_item| should be true if we load html instead of the
+  // existing page. In this case |unreachable_url| might be the original url
+  // which did fail loading.
+  virtual void LoadHTMLString(const std::string& html,
+                              const GURL& base_url,
+                              const std::string& text_encoding,
+                              const GURL& unreachable_url,
+                              bool replace_current_item) = 0;
 
   // If PlzNavigate is enabled, returns true in between teh time that Blink
   // requests navigation until the browser responds with the result.

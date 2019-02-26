@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
@@ -22,6 +23,7 @@
 namespace blink {
 
 using testing::Return;
+using testing::MatchesRegex;
 
 class LayoutObjectTest : public RenderingTest {
  public:
@@ -54,8 +56,8 @@ TEST_F(LayoutObjectTest, LayoutDecoratedNameCalledWithPositionedObject) {
   DCHECK(div);
   LayoutObject* obj = div->GetLayoutObject();
   DCHECK(obj);
-  EXPECT_STREQ("LayoutBlockFlow (positioned)",
-               obj->DecoratedName().Ascii().data());
+  EXPECT_THAT(obj->DecoratedName().Ascii().data(),
+              MatchesRegex("LayoutN?G?BlockFlow \\(positioned\\)"));
 }
 
 // Some display checks.
@@ -327,8 +329,8 @@ TEST_F(LayoutObjectTest, MutableForPaintingClearPaintFlags) {
   EXPECT_TRUE(object->MayNeedPaintInvalidationAnimatedBackgroundImage());
   object->SetShouldInvalidateSelection();
   EXPECT_TRUE(object->ShouldInvalidateSelection());
-  object->SetBackgroundChangedSinceLastPaintInvalidation();
-  EXPECT_TRUE(object->BackgroundChangedSinceLastPaintInvalidation());
+  object->SetBackgroundNeedsFullPaintInvalidation();
+  EXPECT_TRUE(object->BackgroundNeedsFullPaintInvalidation());
   object->SetNeedsPaintPropertyUpdate();
   EXPECT_TRUE(object->NeedsPaintPropertyUpdate());
   EXPECT_TRUE(object->Parent()->DescendantNeedsPaintPropertyUpdate());
@@ -343,7 +345,7 @@ TEST_F(LayoutObjectTest, MutableForPaintingClearPaintFlags) {
   EXPECT_FALSE(object->SubtreeShouldCheckForPaintInvalidation());
   EXPECT_FALSE(object->MayNeedPaintInvalidationAnimatedBackgroundImage());
   EXPECT_FALSE(object->ShouldInvalidateSelection());
-  EXPECT_FALSE(object->BackgroundChangedSinceLastPaintInvalidation());
+  EXPECT_FALSE(object->BackgroundNeedsFullPaintInvalidation());
   EXPECT_FALSE(object->NeedsPaintPropertyUpdate());
   EXPECT_FALSE(object->DescendantNeedsPaintPropertyUpdate());
 }
@@ -465,7 +467,7 @@ TEST_F(LayoutObjectTest, AssociatedLayoutObjectOfFirstLetterSplit) {
   Node* first_letter = sample->firstChild();
   // Split "abc" into "a" "bc"
   ToText(first_letter)->splitText(1, ASSERT_NO_EXCEPTION);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   const LayoutTextFragment* layout_object0 =
       ToLayoutTextFragment(AssociatedLayoutObjectOf(*first_letter, 0));
@@ -565,7 +567,7 @@ TEST_F(LayoutObjectTest, DisplayContentsAddInlineWrapper) {
   ExpectAnonymousInlineWrapperFor<false>(text);
 
   div->SetInlineStyleProperty(CSSPropertyColor, "pink");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   ExpectAnonymousInlineWrapperFor<true>(text);
 }
 
@@ -578,7 +580,7 @@ TEST_F(LayoutObjectTest, DisplayContentsRemoveInlineWrapper) {
   ExpectAnonymousInlineWrapperFor<true>(text);
 
   div->RemoveInlineStyleProperty(CSSPropertyColor);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   ExpectAnonymousInlineWrapperFor<false>(text);
 }
 
@@ -618,7 +620,7 @@ TEST_F(LayoutObjectTest, DisplayContentsWrapperInTable) {
   ExpectAnonymousInlineWrapperFor<true>(contents->firstChild());
 
   none->SetInlineStyleProperty(CSSPropertyDisplay, "inline");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   ASSERT_TRUE(none->GetLayoutObject());
   LayoutObject* inline_parent = none->GetLayoutObject()->Parent();
   ASSERT_TRUE(inline_parent);
@@ -644,7 +646,7 @@ TEST_F(LayoutObjectTest, DisplayContentsWrapperInTableSection) {
   ExpectAnonymousInlineWrapperFor<true>(contents->firstChild());
 
   none->SetInlineStyleProperty(CSSPropertyDisplay, "inline");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   ASSERT_TRUE(none->GetLayoutObject());
   LayoutObject* inline_parent = none->GetLayoutObject()->Parent();
   ASSERT_TRUE(inline_parent);
@@ -670,7 +672,7 @@ TEST_F(LayoutObjectTest, DisplayContentsWrapperInTableRow) {
   ExpectAnonymousInlineWrapperFor<true>(contents->firstChild());
 
   none->SetInlineStyleProperty(CSSPropertyDisplay, "inline");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   ASSERT_TRUE(none->GetLayoutObject());
   LayoutObject* inline_parent = none->GetLayoutObject()->Parent();
   ASSERT_TRUE(inline_parent);
@@ -697,7 +699,7 @@ TEST_F(LayoutObjectTest, DisplayContentsWrapperInTableCell) {
   ExpectAnonymousInlineWrapperFor<true>(contents->firstChild());
 
   none->SetInlineStyleProperty(CSSPropertyDisplay, "inline");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   ASSERT_TRUE(none->GetLayoutObject());
   EXPECT_EQ(cell->GetLayoutObject(), none->GetLayoutObject()->Parent());
 }
@@ -719,9 +721,9 @@ lime'>
 
   StringBuilder result;
   block->DumpLayoutObject(result, false, 0);
-  EXPECT_EQ(
-      result.ToString(),
-      String("LayoutBlockFlow\tDIV id=\"block\" style=\"background:\\nlime\""));
+  EXPECT_THAT(result.ToString().Utf8().data(),
+              MatchesRegex("LayoutN?G?BlockFlow\tDIV id=\"block\" "
+                           "style=\"background:\\\\nlime\""));
 
   result.Clear();
   text->DumpLayoutObject(result, false, 0);
@@ -744,7 +746,7 @@ TEST_F(LayoutObjectTest, DisplayContentsSVGGElementInHTML) {
   svg_element->appendChild(text);
   span->appendChild(svg_element);
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   ASSERT_FALSE(svg_element->GetLayoutObject());
   ASSERT_FALSE(text->GetLayoutObject());
@@ -763,7 +765,7 @@ TEST_F(LayoutObjectTest, HasDistortingVisualEffects) {
       <div class=inner></div>
     </div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   Element* outer = GetDocument().getElementById("opaque");
   Element* inner = outer->QuerySelector(".inner");
@@ -810,7 +812,8 @@ TEST_F(LayoutObjectTest, DistortingVisualEffectsUnaliases) {
 class LayoutObjectSimTest : public SimTest {
  public:
   bool DocumentHasTouchActionRegion(const EventHandlerRegistry& registry) {
-    GetDocument().View()->UpdateAllLifecyclePhases();
+    GetDocument().View()->UpdateAllLifecyclePhases(
+        DocumentLifecycle::LifecycleUpdateReason::kTest);
     return registry.HasEventHandlers(
         EventHandlerRegistry::EventHandlerClass::kTouchAction);
   }
@@ -884,20 +887,22 @@ TEST_F(LayoutObjectSimTest, HitTestForOcclusionInIframe) {
     <div id='target'>target</div>
   )HTML");
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
   Element* iframe_element = GetDocument().QuerySelector("iframe");
   HTMLFrameOwnerElement* frame_owner_element =
       ToHTMLFrameOwnerElement(iframe_element);
   Document* iframe_doc = frame_owner_element->contentDocument();
   Element* target = iframe_doc->getElementById("target");
   HitTestResult result = target->GetLayoutObject()->HitTestForOcclusion();
-  EXPECT_TRUE(result.InnerNode() == target);
+  EXPECT_EQ(result.InnerNode(), target);
 
   Element* occluder = GetDocument().getElementById("occluder");
   occluder->SetInlineStyleProperty(CSSPropertyMarginTop, "-150px");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
   result = target->GetLayoutObject()->HitTestForOcclusion();
-  EXPECT_TRUE(result.InnerNode() == occluder);
+  EXPECT_EQ(result.InnerNode(), occluder);
 }
 
 }  // namespace blink

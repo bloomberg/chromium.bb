@@ -26,7 +26,7 @@ StereoPanner::StereoPanner(float sample_rate) {}
 void StereoPanner::PanWithSampleAccurateValues(const AudioBus* input_bus,
                                                AudioBus* output_bus,
                                                const float* pan_values,
-                                               size_t frames_to_process) {
+                                               uint32_t frames_to_process) {
   bool is_input_safe = input_bus &&
                        (input_bus->NumberOfChannels() == 1 ||
                         input_bus->NumberOfChannels() == 2) &&
@@ -92,7 +92,7 @@ void StereoPanner::PanWithSampleAccurateValues(const AudioBus* input_bus,
 void StereoPanner::PanToTargetValue(const AudioBus* input_bus,
                                     AudioBus* output_bus,
                                     float pan_value,
-                                    size_t frames_to_process) {
+                                    uint32_t frames_to_process) {
   bool is_input_safe = input_bus &&
                        (input_bus->NumberOfChannels() == 1 ||
                         input_bus->NumberOfChannels() == 2) &&
@@ -131,7 +131,7 @@ void StereoPanner::PanToTargetValue(const AudioBus* input_bus,
     double gain_l = std::cos(pan_radian);
     double gain_r = std::sin(pan_radian);
 
-    // TODO(rtoy): This can be vectorized using VectorMath::Vsmul
+    // TODO(rtoy): This can be vectorized using vector_math::Vsmul
     while (n--) {
       float input_l = *source_l++;
       *destination_l++ = static_cast<float>(input_l * gain_l);

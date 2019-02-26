@@ -63,11 +63,18 @@ class MarkingVerifier final : public Visitor {
 
  private:
   void VerifyChild(void* base_object_payload) {
+    // The following check ensures that an object is currently not under
+    // construction. All verifier runs are assumed to be run outside of mixin
+    // construction. Consequently, the following cases can lead to a failing
+    // check:
+    // 1. The garbage collector ignoring no-GC scopes for mixin construction.
+    // 2. Missing macro USING_GARBAGE_COLLECTED_MIXIN for users of
+    //    GarbageCollectedMixin.
     CHECK(base_object_payload);
     HeapObjectHeader* child_header =
         HeapObjectHeader::FromPayload(base_object_payload);
-    // This CHECKs ensure that any children reachable from marked parents are
-    // also marked. If you hit these CHECKs then marking is in an inconsistent
+    // These checks ensure that any children reachable from marked parents are
+    // also marked. If you hit these checks then marking is in an inconsistent
     // state meaning that there are unmarked objects reachable from marked
     // ones.
     CHECK(child_header);

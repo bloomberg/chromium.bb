@@ -40,7 +40,7 @@
 #endif
 
 #if defined(OS_MACOSX)
-#include "services/service_manager/public/cpp/standalone_service/mach_broker.h"
+#include "mojo/core/embedder/default_mach_broker.h"
 #endif
 
 namespace service_manager {
@@ -106,7 +106,8 @@ mojom::ServicePtr ServiceProcessLauncher::Start(const Identity& target,
   child_command_line->AppendArguments(parent_command_line, false);
   child_command_line->AppendSwitchASCII(switches::kServiceName, target.name());
 #ifndef NDEBUG
-  child_command_line->AppendSwitchASCII("u", target.user_id());
+  child_command_line->AppendSwitchASCII("g",
+                                        target.instance_group().ToString());
 #endif
 
   if (!IsUnsandboxedSandboxType(sandbox_type)) {
@@ -197,7 +198,8 @@ base::ProcessId ServiceProcessLauncher::ProcessState::LaunchInBackground(
 #endif
   {
 #if defined(OS_MACOSX)
-    MachBroker* mach_broker = MachBroker::GetInstance();
+    mojo::core::DefaultMachBroker* mach_broker =
+        mojo::core::DefaultMachBroker::Get();
     base::AutoLock locker(mach_broker->GetLock());
 #endif
     child_process_ = base::LaunchProcess(*child_command_line, options);
@@ -222,8 +224,7 @@ base::ProcessId ServiceProcessLauncher::ProcessState::LaunchInBackground(
   DVLOG(0)
 #endif
       << "Launched child process pid=" << child_process_.Pid()
-      << ", instance=" << target.instance() << ", name=" << target.name()
-      << ", user_id=" << target.user_id();
+      << " id=" << target.ToString();
 
   mojo::OutgoingInvitation::Send(std::move(invitation), child_process_.Handle(),
                                  channel.TakeLocalEndpoint());

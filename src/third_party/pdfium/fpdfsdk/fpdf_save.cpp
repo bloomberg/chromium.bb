@@ -78,7 +78,7 @@ bool SaveXFADocumentData(CPDFXFA_Context* pContext,
   if (!pArray)
     return false;
 
-  int size = pArray->GetCount();
+  int size = pArray->size();
   int iFormIndex = -1;
   int iDataSetsIndex = -1;
   int iLast = size - 2;
@@ -129,8 +129,7 @@ bool SaveXFADocumentData(CPDFXFA_Context* pContext,
             ToNode(ffdoc->GetXFADoc()->GetXFAObject(XFA_HASHCODE_Datasets)),
             pDsfileWrite) &&
         pDsfileWrite->GetSize() > 0) {
-      auto pDataDict = pdfium::MakeUnique<CPDF_Dictionary>(
-          pPDFDocument->GetByteStringPool());
+      auto pDataDict = pPDFDocument->New<CPDF_Dictionary>();
       if (iDataSetsIndex != -1) {
         if (pDataSetsStream) {
           pDataSetsStream->InitStreamFromFile(pDsfileWrite,
@@ -139,7 +138,7 @@ bool SaveXFADocumentData(CPDFXFA_Context* pContext,
       } else {
         CPDF_Stream* pData = pPDFDocument->NewIndirect<CPDF_Stream>();
         pData->InitStreamFromFile(pDsfileWrite, std::move(pDataDict));
-        iLast = pArray->GetCount() - 2;
+        iLast = pArray->size() - 2;
         pArray->InsertNewAt<CPDF_String>(iLast, "datasets", false);
         pArray->InsertAt(iLast + 1, pData->MakeReference(pPDFDocument));
       }
@@ -156,15 +155,14 @@ bool SaveXFADocumentData(CPDFXFA_Context* pContext,
             ToNode(ffdoc->GetXFADoc()->GetXFAObject(XFA_HASHCODE_Form)),
             pfileWrite) &&
         pfileWrite->GetSize() > 0) {
-      auto pDataDict = pdfium::MakeUnique<CPDF_Dictionary>(
-          pPDFDocument->GetByteStringPool());
+      auto pDataDict = pPDFDocument->New<CPDF_Dictionary>();
       if (iFormIndex != -1) {
         if (pFormStream)
           pFormStream->InitStreamFromFile(pfileWrite, std::move(pDataDict));
       } else {
         CPDF_Stream* pData = pPDFDocument->NewIndirect<CPDF_Stream>();
         pData->InitStreamFromFile(pfileWrite, std::move(pDataDict));
-        iLast = pArray->GetCount() - 2;
+        iLast = pArray->size() - 2;
         pArray->InsertNewAt<CPDF_String>(iLast, "form", false);
         pArray->InsertAt(iLast + 1, pData->MakeReference(pPDFDocument));
       }

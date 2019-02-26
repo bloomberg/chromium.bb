@@ -41,16 +41,17 @@ class CORE_EXPORT InsertTextCommand : public CompositeEditCommand {
       Document& document,
       const String& text,
       RebalanceType rebalance_type = kRebalanceLeadingAndTrailingWhitespaces) {
-    return new InsertTextCommand(document, text, rebalance_type);
+    return MakeGarbageCollected<InsertTextCommand>(document, text,
+                                                   rebalance_type);
   }
 
-  String TextDataForInputEvent() const final;
-
- protected:
   InsertTextCommand(Document&,
                     const String& text,
                     RebalanceType);
 
+  String TextDataForInputEvent() const final;
+
+ protected:
   void DoApply(EditingState*) override;
 
   Position PositionInsideTextNode(const Position&, EditingState*);

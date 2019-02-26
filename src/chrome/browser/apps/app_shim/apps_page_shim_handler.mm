@@ -6,6 +6,7 @@
 
 #import "base/mac/foundation_util.h"
 #import "chrome/browser/app_controller_mac.h"
+#include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
@@ -53,15 +54,13 @@ void OpenAppsPage(Profile* fallback_profile) {
 }  // namespace
 
 void AppsPageShimHandler::OnShimLaunch(
-    apps::AppShimHandler::Host* host,
-    apps::AppShimLaunchType launch_type,
-    const std::vector<base::FilePath>& files) {
+    std::unique_ptr<AppShimHostBootstrap> bootstrap) {
   AppController* controller =
       base::mac::ObjCCastStrict<AppController>([NSApp delegate]);
   OpenAppsPage([controller lastProfile]);
 
   // Always close the shim process immediately.
-  host->OnAppLaunchComplete(apps::APP_SHIM_LAUNCH_DUPLICATE_HOST);
+  bootstrap->OnLaunchAppFailed(apps::APP_SHIM_LAUNCH_DUPLICATE_HOST);
 }
 
 void AppsPageShimHandler::OnShimClose(apps::AppShimHandler::Host* host) {}

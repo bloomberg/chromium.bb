@@ -74,7 +74,7 @@ void NetworkScreenHandler::Unbind() {
 }
 
 void NetworkScreenHandler::ShowError(const base::string16& message) {
-  CallJS("showError", message);
+  CallJSWithPrefix("showError", message);
 }
 
 void NetworkScreenHandler::ClearErrors() {

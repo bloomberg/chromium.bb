@@ -194,17 +194,15 @@ arabic_fallback_synthesize_lookup (const hb_ot_shape_plan_t *plan,
 
 struct arabic_fallback_plan_t
 {
-  ASSERT_POD ();
-
   unsigned int num_lookups;
   bool free_lookups;
 
   hb_mask_t mask_array[ARABIC_FALLBACK_MAX_LOOKUPS];
   OT::SubstLookup *lookup_array[ARABIC_FALLBACK_MAX_LOOKUPS];
-  hb_ot_layout_lookup_accelerator_t accel_array[ARABIC_FALLBACK_MAX_LOOKUPS];
+  OT::hb_ot_layout_lookup_accelerator_t accel_array[ARABIC_FALLBACK_MAX_LOOKUPS];
 };
 
-#if (defined(_WIN32) || defined(__CYGWIN__)) && !defined(HB_NO_WIN1256)
+#if defined(_WIN32) && !defined(HB_NO_WIN1256)
 #define HB_WITH_WIN1256
 #endif
 
@@ -214,15 +212,18 @@ struct arabic_fallback_plan_t
 
 struct ManifestLookup
 {
+  public:
   OT::Tag tag;
   OT::OffsetTo<OT::SubstLookup> lookupOffset;
+  public:
+  DEFINE_SIZE_STATIC (6);
 };
 typedef OT::ArrayOf<ManifestLookup> Manifest;
 
 static bool
-arabic_fallback_plan_init_win1256 (arabic_fallback_plan_t *fallback_plan,
-				   const hb_ot_shape_plan_t *plan,
-				   hb_font_t *font)
+arabic_fallback_plan_init_win1256 (arabic_fallback_plan_t *fallback_plan HB_UNUSED,
+				   const hb_ot_shape_plan_t *plan HB_UNUSED,
+				   hb_font_t *font HB_UNUSED)
 {
 #ifdef HB_WITH_WIN1256
   /* Does this font look like it's Windows-1256-encoded? */

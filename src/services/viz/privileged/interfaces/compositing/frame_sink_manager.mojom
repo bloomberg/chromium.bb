@@ -56,8 +56,10 @@ interface FrameSinkManager {
   // Starts the scope of temporary references tied to this |frame_sink_id|.
   // Temporary references tied to this |frame_sink_id| will be dropped on
   // InvalidateFrameSinkId.This must be called before Create(Root)
-  // CompositorFrameSink() is called.
-  RegisterFrameSinkId(FrameSinkId frame_sink_id);
+  // CompositorFrameSink() is called. |report_activation| indicates whether
+  // the Viz host is interested in FirstSurfaceActivation notifications of
+  // surfaces from this |frame_sink_id|.
+  RegisterFrameSinkId(FrameSinkId frame_sink_id, bool report_activation);
 
   // Invalidates |frame_sink_id| which cleans up any unsatisified surface
   // sequences or dangling temporary references assigned to it. If there is a
@@ -127,6 +129,13 @@ interface FrameSinkManager {
   // FrameSinkId. The request will be queued up until such surface exists and is
   // reachable from the root surface.
   RequestCopyOfOutput(SurfaceId surface_id, CopyOutputRequest request);
+
+  // Marks a region as having been recently async queried. This is used by the
+  // HitTestAggregator to highlight queried regions if hit-test debugging is
+  // enabled.
+  SetHitTestAsyncQueriedDebugRegions(
+      FrameSinkId root_frame_sink_id,
+      array<FrameSinkId> hit_test_async_queried_debug_queue);
 };
 
 // The FrameSinkManagerClient interface is implemented by the Display

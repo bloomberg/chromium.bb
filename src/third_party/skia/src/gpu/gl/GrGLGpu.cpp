@@ -78,7 +78,10 @@ static const GrGLenum gXfermodeEquation2Blend[] = {
     GR_GL_HSL_HUE,
     GR_GL_HSL_SATURATION,
     GR_GL_HSL_COLOR,
-    GR_GL_HSL_LUMINOSITY
+    GR_GL_HSL_LUMINOSITY,
+
+    // Illegal... needs to map to something.
+    GR_GL_FUNC_ADD,
 };
 GR_STATIC_ASSERT(0 == kAdd_GrBlendEquation);
 GR_STATIC_ASSERT(1 == kSubtract_GrBlendEquation);
@@ -121,6 +124,9 @@ static const GrGLenum gXfermodeCoeff2Blend[] = {
     GR_GL_ONE_MINUS_SRC1_COLOR,
     GR_GL_SRC1_ALPHA,
     GR_GL_ONE_MINUS_SRC1_ALPHA,
+
+    // Illegal... needs to map to something.
+    GR_GL_ZERO,
 };
 
 bool GrGLGpu::BlendCoeffReferencesConstant(GrBlendCoeff coeff) {
@@ -144,6 +150,9 @@ bool GrGLGpu::BlendCoeffReferencesConstant(GrBlendCoeff coeff) {
         false,
         false,
         false,
+        false,
+
+        // Illegal.
         false,
     };
     return gCoeffReferencesBlendConst[coeff];
@@ -172,6 +181,123 @@ bool GrGLGpu::BlendCoeffReferencesConstant(GrBlendCoeff coeff) {
     // assertion for gXfermodeCoeff2Blend have to be in GrGpu scope
     GR_STATIC_ASSERT(kGrBlendCoeffCnt == SK_ARRAY_COUNT(gXfermodeCoeff2Blend));
 }
+
+static GrGLenum filter_to_gl_mag_filter(GrSamplerState::Filter filter) {
+    switch (filter) {
+        case GrSamplerState::Filter::kNearest: return GR_GL_NEAREST;
+        case GrSamplerState::Filter::kBilerp:  return GR_GL_LINEAR;
+        case GrSamplerState::Filter::kMipMap:  return GR_GL_LINEAR;
+    }
+    SK_ABORT("Unknown filter");
+    return 0;
+}
+
+static GrGLenum filter_to_gl_min_filter(GrSamplerState::Filter filter) {
+    switch (filter) {
+        case GrSamplerState::Filter::kNearest: return GR_GL_NEAREST;
+        case GrSamplerState::Filter::kBilerp:  return GR_GL_LINEAR;
+        case GrSamplerState::Filter::kMipMap:  return GR_GL_LINEAR_MIPMAP_LINEAR;
+    }
+    SK_ABORT("Unknown filter");
+    return 0;
+}
+
+static inline GrGLenum wrap_mode_to_gl_wrap(GrSamplerState::WrapMode wrapMode) {
+    switch (wrapMode) {
+        case GrSamplerState::WrapMode::kClamp:        return GR_GL_CLAMP_TO_EDGE;
+        case GrSamplerState::WrapMode::kRepeat:       return GR_GL_REPEAT;
+        case GrSamplerState::WrapMode::kMirrorRepeat: return GR_GL_MIRRORED_REPEAT;
+    };
+    SK_ABORT("Unknown wrap mode");
+    return 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+class GrGLGpu::SamplerObjectCache {
+public:
+    SamplerObjectCache(GrGLGpu* gpu) : fGpu(gpu) {
+        fNumTextureUnits = fGpu->glCaps().shaderCaps()->maxFragmentSamplers();
+        fHWBoundSamplers.reset(new GrGLuint[fNumTextureUnits]);
+        std::fill_n(fHWBoundSamplers.get(), fNumTextureUnits, 0);
+        std::fill_n(fSamplers, kNumSamplers, 0);
+    }
+
+    ~SamplerObjectCache() {
+        if (!fNumTextureUnits) {
+            // We've already been abandoned.
+            return;
+        }
+        GR_GL_CALL(fGpu->glInterface(), DeleteSamplers(kNumSamplers, fSamplers));
+    }
+
+    void bindSampler(int unitIdx, const GrSamplerState& state) {
+        int index = StateToIndex(state);
+        if (!fSamplers[index]) {
+            GrGLuint s;
+            GR_GL_CALL(fGpu->glInterface(), GenSamplers(1, &s));
+            if (!s) {
+                return;
+            }
+            fSamplers[index] = s;
+            auto minFilter = filter_to_gl_min_filter(state.filter());
+            auto magFilter = filter_to_gl_mag_filter(state.filter());
+            auto wrapX = wrap_mode_to_gl_wrap(state.wrapModeX());
+            auto wrapY = wrap_mode_to_gl_wrap(state.wrapModeY());
+            GR_GL_CALL(fGpu->glInterface(),
+                       SamplerParameteri(s, GR_GL_TEXTURE_MIN_FILTER, minFilter));
+            GR_GL_CALL(fGpu->glInterface(),
+                       SamplerParameteri(s, GR_GL_TEXTURE_MAG_FILTER, magFilter));
+            GR_GL_CALL(fGpu->glInterface(), SamplerParameteri(s, GR_GL_TEXTURE_WRAP_S, wrapX));
+            GR_GL_CALL(fGpu->glInterface(), SamplerParameteri(s, GR_GL_TEXTURE_WRAP_T, wrapY));
+        }
+        if (fHWBoundSamplers[unitIdx] != fSamplers[index]) {
+            GR_GL_CALL(fGpu->glInterface(), BindSampler(unitIdx, fSamplers[index]));
+            fHWBoundSamplers[unitIdx] = fSamplers[index];
+        }
+    }
+
+    void invalidateBindings() {
+        // When we have sampler support we always use samplers. So setting these to zero will cause
+        // a rebind on next usage.
+        std::fill_n(fHWBoundSamplers.get(), fNumTextureUnits, 0);
+    }
+
+    void abandon() {
+        fHWBoundSamplers.reset();
+        fNumTextureUnits = 0;
+    }
+
+    void release() {
+        if (!fNumTextureUnits) {
+            // We've already been abandoned.
+            return;
+        }
+        GR_GL_CALL(fGpu->glInterface(), DeleteSamplers(kNumSamplers, fSamplers));
+        std::fill_n(fSamplers, kNumSamplers, 0);
+        // Deleting a bound sampler implicitly binds sampler 0.
+        std::fill_n(fHWBoundSamplers.get(), fNumTextureUnits, 0);
+    }
+
+private:
+    static int StateToIndex(const GrSamplerState& state) {
+        int filter = static_cast<int>(state.filter());
+        SkASSERT(filter >= 0 && filter < 3);
+        int wrapX = static_cast<int>(state.wrapModeX());
+        SkASSERT(wrapX >= 0 && wrapX < 3);
+        int wrapY = static_cast<int>(state.wrapModeY());
+        SkASSERT(wrapY >= 0 && wrapY < 3);
+        int idx = 9 * filter + 3 * wrapX + wrapY;
+        SkASSERT(idx < kNumSamplers);
+        return idx;
+    }
+
+    GrGLGpu* fGpu;
+    static constexpr int kNumSamplers = 27;
+    std::unique_ptr<GrGLuint[]> fHWBoundSamplers;
+    GrGLuint fSamplers[kNumSamplers];
+    int fNumTextureUnits;
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -208,6 +334,7 @@ GrGLGpu::GrGLGpu(std::unique_ptr<GrGLContext> ctx, GrContext* context)
         , fStencilClearFBOID(0)
         , fHWMinSampleShading(0.0) {
     SkASSERT(fGLContext);
+    GrGLClearErr(this->glInterface());
     fCaps = sk_ref_sp(fGLContext->caps());
 
     fHWBoundTextureUniqueIDs.reset(this->caps()->shaderCaps()->maxFragmentSamplers());
@@ -234,7 +361,9 @@ GrGLGpu::GrGLGpu(std::unique_ptr<GrGLContext> ctx, GrContext* context)
         fPathRendering.reset(new GrGLPathRendering(this));
     }
 
-    GrGLClearErr(this->glInterface());
+    if (this->glCaps().samplerObjectSupport()) {
+        fSamplerObjectCache.reset(new SamplerObjectCache(this));
+    }
 }
 
 GrGLGpu::~GrGLGpu() {
@@ -283,6 +412,7 @@ GrGLGpu::~GrGLGpu() {
     }
 
     delete fProgramCache;
+    fSamplerObjectCache.reset();
 }
 
 void GrGLGpu::disconnect(DisconnectType type) {
@@ -317,9 +447,15 @@ void GrGLGpu::disconnect(DisconnectType type) {
         if (fClearColorProgram.fProgram) {
             GL_CALL(DeleteProgram(fClearColorProgram.fProgram));
         }
+        if (fSamplerObjectCache) {
+            fSamplerObjectCache->release();
+        }
     } else {
         if (fProgramCache) {
             fProgramCache->abandon();
+        }
+        if (fSamplerObjectCache) {
+            fSamplerObjectCache->abandon();
         }
     }
 
@@ -432,6 +568,9 @@ void GrGLGpu::onResetContext(uint32_t resetBits) {
         for (int s = 0; s < fHWBoundTextureUniqueIDs.count(); ++s) {
             fHWBoundTextureUniqueIDs[s].makeInvalid();
         }
+        if (fSamplerObjectCache) {
+            fSamplerObjectCache->invalidateBindings();
+        }
     }
 
     if (resetBits & kBlend_GrGLBackendState) {
@@ -454,9 +593,6 @@ void GrGLGpu::onResetContext(uint32_t resetBits) {
         fHWVertexArrayState.invalidate();
         fHWBufferState[kVertex_GrBufferType].invalidate();
         fHWBufferState[kIndex_GrBufferType].invalidate();
-        if (this->glCaps().requiresFlushBetweenNonAndInstancedDraws()) {
-            fRequiresFlushBeforeNextInstancedDraw = true;
-        }
     }
 
     if (resetBits & kRenderTarget_GrGLBackendState) {
@@ -516,7 +652,7 @@ static bool check_backend_texture(const GrBackendTexture& backendTex, const GrGL
 }
 
 sk_sp<GrTexture> GrGLGpu::onWrapBackendTexture(const GrBackendTexture& backendTex,
-                                               GrWrapOwnership ownership) {
+                                               GrWrapOwnership ownership, bool purgeImmediately) {
     GrGLTexture::IDDesc idDesc;
     if (!check_backend_texture(backendTex, this->glCaps(), &idDesc)) {
         return nullptr;
@@ -540,7 +676,11 @@ sk_sp<GrTexture> GrGLGpu::onWrapBackendTexture(const GrBackendTexture& backendTe
     GrMipMapsStatus mipMapsStatus = backendTex.hasMipMaps() ? GrMipMapsStatus::kValid
                                                             : GrMipMapsStatus::kNotAllocated;
 
-    return GrGLTexture::MakeWrapped(this, surfDesc, mipMapsStatus, idDesc);
+    auto texture = GrGLTexture::MakeWrapped(this, surfDesc, mipMapsStatus, idDesc,
+                                            purgeImmediately);
+    // We don't know what parameters are already set on wrapped textures.
+    texture->textureParamsModified();
+    return std::move(texture);
 }
 
 sk_sp<GrTexture> GrGLGpu::onWrapRenderableBackendTexture(const GrBackendTexture& backendTex,
@@ -586,6 +726,8 @@ sk_sp<GrTexture> GrGLGpu::onWrapRenderableBackendTexture(const GrBackendTexture&
     sk_sp<GrGLTextureRenderTarget> texRT(
             GrGLTextureRenderTarget::MakeWrapped(this, surfDesc, idDesc, rtIDDesc, mipMapsStatus));
     texRT->baseLevelWasBoundToFBO();
+    // We don't know what parameters are already set on wrapped textures.
+    texRT->textureParamsModified();
     return std::move(texRT);
 }
 
@@ -610,7 +752,7 @@ sk_sp<GrRenderTarget> GrGLGpu::onWrapBackendRenderTarget(const GrBackendRenderTa
     desc.fSampleCnt =
             this->caps()->getRenderTargetSampleCount(backendRT.sampleCnt(), backendRT.config());
 
-    return GrGLRenderTarget::MakeWrapped(this, desc, idDesc, backendRT.stencilBits());
+    return GrGLRenderTarget::MakeWrapped(this, desc, info.fFormat, idDesc, backendRT.stencilBits());
 }
 
 sk_sp<GrRenderTarget> GrGLGpu::onWrapBackendTextureAsRenderTarget(const GrBackendTexture& tex,
@@ -639,7 +781,7 @@ sk_sp<GrRenderTarget> GrGLGpu::onWrapBackendTextureAsRenderTarget(const GrBacken
     if (!this->createRenderTargetObjects(surfDesc, info, &rtIDDesc)) {
         return nullptr;
     }
-    return GrGLRenderTarget::MakeWrapped(this, surfDesc, rtIDDesc, 0);
+    return GrGLRenderTarget::MakeWrapped(this, surfDesc, info.fFormat, rtIDDesc, 0);
 }
 
 static bool check_write_and_transfer_input(GrGLTexture* glTex) {
@@ -1247,36 +1389,21 @@ static sk_sp<GrTexture> return_null_texture() {
     return nullptr;
 }
 
-#if 0 && defined(SK_DEBUG)
-static size_t as_size_t(int x) {
-    return x;
-}
-#endif
-
-static void set_initial_texture_params(const GrGLInterface* interface,
-                                       const GrGLTextureInfo& info,
-                                       GrGLTexture::TexParams* initialTexParams) {
+static GrGLTexture::SamplerParams set_initial_texture_params(const GrGLInterface* interface,
+                                                             const GrGLTextureInfo& info) {
     // Some drivers like to know filter/wrap before seeing glTexImage2D. Some
     // drivers have a bug where an FBO won't be complete if it includes a
     // texture that is not mipmap complete (considering the filter in use).
-    // we only set a subset here so invalidate first
-    initialTexParams->invalidate();
-    initialTexParams->fMinFilter = GR_GL_NEAREST;
-    initialTexParams->fMagFilter = GR_GL_NEAREST;
-    initialTexParams->fWrapS = GR_GL_CLAMP_TO_EDGE;
-    initialTexParams->fWrapT = GR_GL_CLAMP_TO_EDGE;
-    GR_GL_CALL(interface, TexParameteri(info.fTarget,
-                                        GR_GL_TEXTURE_MAG_FILTER,
-                                        initialTexParams->fMagFilter));
-    GR_GL_CALL(interface, TexParameteri(info.fTarget,
-                                        GR_GL_TEXTURE_MIN_FILTER,
-                                        initialTexParams->fMinFilter));
-    GR_GL_CALL(interface, TexParameteri(info.fTarget,
-                                        GR_GL_TEXTURE_WRAP_S,
-                                        initialTexParams->fWrapS));
-    GR_GL_CALL(interface, TexParameteri(info.fTarget,
-                                        GR_GL_TEXTURE_WRAP_T,
-                                        initialTexParams->fWrapT));
+    GrGLTexture::SamplerParams params;
+    params.fMinFilter = GR_GL_NEAREST;
+    params.fMagFilter = GR_GL_NEAREST;
+    params.fWrapS = GR_GL_CLAMP_TO_EDGE;
+    params.fWrapT = GR_GL_CLAMP_TO_EDGE;
+    GR_GL_CALL(interface, TexParameteri(info.fTarget, GR_GL_TEXTURE_MAG_FILTER, params.fMagFilter));
+    GR_GL_CALL(interface, TexParameteri(info.fTarget, GR_GL_TEXTURE_MIN_FILTER, params.fMinFilter));
+    GR_GL_CALL(interface, TexParameteri(info.fTarget, GR_GL_TEXTURE_WRAP_S, params.fWrapS));
+    GR_GL_CALL(interface, TexParameteri(info.fTarget, GR_GL_TEXTURE_WRAP_T, params.fWrapT));
+    return params;
 }
 
 sk_sp<GrTexture> GrGLGpu::onCreateTexture(const GrSurfaceDesc& desc,
@@ -1311,7 +1438,7 @@ sk_sp<GrTexture> GrGLGpu::onCreateTexture(const GrSurfaceDesc& desc,
     GrGLTexture::IDDesc idDesc;
     idDesc.fOwnership = GrBackendObjectOwnership::kOwned;
     GrMipMapsStatus mipMapsStatus;
-    GrGLTexture::TexParams initialTexParams;
+    GrGLTexture::SamplerParams initialTexParams;
     if (!this->createTextureImpl(desc, &idDesc.fInfo, isRenderTarget, &initialTexParams, texels,
                                  mipLevelCount, &mipMapsStatus)) {
         return return_null_texture();
@@ -1333,7 +1460,9 @@ sk_sp<GrTexture> GrGLGpu::onCreateTexture(const GrSurfaceDesc& desc,
     } else {
         tex = sk_make_sp<GrGLTexture>(this, budgeted, desc, idDesc, mipMapsStatus);
     }
-    tex->setCachedTexParams(initialTexParams, this->getResetTimestamp());
+
+    tex->setCachedParams(&initialTexParams, tex->getCachedNonSamplerParams(),
+                         this->getResetTimestamp());
 #ifdef TRACE_TEXTURE_CREATION
     SkDebugf("--- new texture [%d] size=(%d %d) config=%d\n",
              idDesc.fInfo.fID, desc.fWidth, desc.fHeight, desc.fConfig);
@@ -1499,8 +1628,9 @@ int GrGLGpu::getCompatibleStencilIndex(GrPixelConfig config) {
 }
 
 bool GrGLGpu::createTextureImpl(const GrSurfaceDesc& desc, GrGLTextureInfo* info, bool renderTarget,
-                                GrGLTexture::TexParams* initialTexParams, const GrMipLevel texels[],
-                                int mipLevelCount, GrMipMapsStatus* mipMapsStatus) {
+                                GrGLTexture::SamplerParams* initialTexParams,
+                                const GrMipLevel texels[], int mipLevelCount,
+                                GrMipMapsStatus* mipMapsStatus) {
     info->fID = 0;
     info->fTarget = GR_GL_TEXTURE_2D;
     GL_CALL(GenTextures(1, &(info->fID)));
@@ -1520,7 +1650,7 @@ bool GrGLGpu::createTextureImpl(const GrSurfaceDesc& desc, GrGLTextureInfo* info
     }
 
     if (info) {
-        set_initial_texture_params(this->glInterface(), *info, initialTexParams);
+        *initialTexParams = set_initial_texture_params(this->glInterface(), *info);
     }
 
     if (!this->uploadTexData(desc.fConfig, desc.fWidth, desc.fHeight, info->fTarget,
@@ -1739,12 +1869,10 @@ bool GrGLGpu::flushGLState(const GrPrimitiveProcessor& primProc,
 
     this->flushProgram(std::move(program));
 
-    if (blendInfo.fWriteColor) {
-        // Swizzle the blend to match what the shader will output.
-        const GrSwizzle& swizzle = this->caps()->shaderCaps()->configOutputSwizzle(
-            pipeline.proxy()->config());
-        this->flushBlend(blendInfo, swizzle);
-    }
+    // Swizzle the blend to match what the shader will output.
+    const GrSwizzle& swizzle = this->caps()->shaderCaps()->configOutputSwizzle(
+        pipeline.proxy()->config());
+    this->flushBlend(blendInfo, swizzle);
 
     fHWProgram->updateUniformsAndTextureBindings(primProc, pipeline, primProcProxiesToBind);
 
@@ -1823,7 +1951,8 @@ void GrGLGpu::setupGeometry(const GrBuffer* indexBuffer,
 
     if (int vertexStride = fHWProgram->vertexStride()) {
         SkASSERT(vertexBuffer && !vertexBuffer->isMapped());
-        size_t bufferOffset = vertexBuffer->baseOffset() + baseVertex * vertexStride;
+        size_t bufferOffset = vertexBuffer->baseOffset();
+        bufferOffset += baseVertex * static_cast<size_t>(vertexStride);
         for (int i = 0; i < fHWProgram->numVertexAttributes(); ++i) {
             const auto& attrib = fHWProgram->vertexAttribute(i);
             static constexpr int kDivisor = 0;
@@ -1833,7 +1962,8 @@ void GrGLGpu::setupGeometry(const GrBuffer* indexBuffer,
     }
     if (int instanceStride = fHWProgram->instanceStride()) {
         SkASSERT(instanceBuffer && !instanceBuffer->isMapped());
-        size_t bufferOffset = instanceBuffer->baseOffset() + baseInstance * instanceStride;
+        size_t bufferOffset = instanceBuffer->baseOffset();
+        bufferOffset += baseInstance * static_cast<size_t>(instanceStride);
         int attribIdx = fHWProgram->numVertexAttributes();
         for (int i = 0; i < fHWProgram->numInstanceAttributes(); ++i, ++attribIdx) {
             const auto& attrib = fHWProgram->instanceAttribute(i);
@@ -1879,23 +2009,15 @@ void GrGLGpu::disableScissor() {
     }
 }
 
-void GrGLGpu::clear(const GrFixedClip& clip, GrColor color,
+void GrGLGpu::clear(const GrFixedClip& clip, const SkPMColor4f& color,
                     GrRenderTarget* target, GrSurfaceOrigin origin) {
     // parent class should never let us get here with no RT
     SkASSERT(target);
 
     this->handleDirtyContext();
 
-    GrGLfloat r, g, b, a;
-    static const GrGLfloat scale255 = 1.f / 255.f;
-    a = GrColorUnpackA(color) * scale255;
-    GrGLfloat scaleRGB = scale255;
-    r = GrColorUnpackR(color) * scaleRGB;
-    g = GrColorUnpackG(color) * scaleRGB;
-    b = GrColorUnpackB(color) * scaleRGB;
-
     if (this->glCaps().useDrawToClearColor()) {
-        this->clearColorAsDraw(clip, r, g, b, a, target, origin);
+        this->clearColorAsDraw(clip, color, target, origin);
         return;
     }
 
@@ -1911,6 +2033,8 @@ void GrGLGpu::clear(const GrFixedClip& clip, GrColor color,
 
     GL_CALL(ColorMask(GR_GL_TRUE, GR_GL_TRUE, GR_GL_TRUE, GR_GL_TRUE));
     fHWWriteToColor = kYes_TriState;
+
+    GrGLfloat r = color.fR, g = color.fG, b = color.fB, a = color.fA;
 
     if (this->glCaps().clearToBoundaryValuesIsBroken() &&
         (1 == r || 0 == r) && (1 == g || 0 == g) && (1 == b || 0 == b) && (1 == a || 0 == a)) {
@@ -2174,7 +2298,7 @@ bool GrGLGpu::onReadPixels(GrSurface* surface, int left, int top, int width, int
 }
 
 GrGpuRTCommandBuffer* GrGLGpu::getCommandBuffer(
-        GrRenderTarget* rt, GrSurfaceOrigin origin,
+        GrRenderTarget* rt, GrSurfaceOrigin origin, const SkRect& bounds,
         const GrGpuRTCommandBuffer::LoadAndStoreInfo& colorInfo,
         const GrGpuRTCommandBuffer::StencilLoadAndStoreInfo& stencilInfo) {
     if (!fCachedRTCommandBuffer) {
@@ -2223,9 +2347,6 @@ void GrGLGpu::flushRenderTargetNoColorWrites(GrGLRenderTarget* target) {
             }
         }
 #endif
-        if (this->glCaps().requiresFlushBetweenNonAndInstancedDraws()) {
-            fRequiresFlushBeforeNextInstancedDraw = false;
-        }
         fHWBoundRenderTargetUniqueID = rtID;
         this->flushViewport(target->getViewport());
     }
@@ -2368,9 +2489,6 @@ void GrGLGpu::sendMeshToGpu(GrPrimitiveType primitiveType, const GrBuffer* verte
         this->setupGeometry(nullptr, vertexBuffer, 0, nullptr, 0, GrPrimitiveRestart::kNo);
         GL_CALL(DrawArrays(glPrimType, baseVertex, vertexCount));
     }
-    if (this->glCaps().requiresFlushBetweenNonAndInstancedDraws()) {
-        fRequiresFlushBeforeNextInstancedDraw = true;
-    }
     fStats.incNumDraws();
 }
 
@@ -2390,9 +2508,6 @@ void GrGLGpu::sendIndexedMeshToGpu(GrPrimitiveType primitiveType, const GrBuffer
     } else {
         GL_CALL(DrawElements(glPrimType, indexCount, GR_GL_UNSIGNED_SHORT, indices));
     }
-    if (this->glCaps().requiresFlushBetweenNonAndInstancedDraws()) {
-        fRequiresFlushBeforeNextInstancedDraw = true;
-    }
     fStats.incNumDraws();
 }
 
@@ -2400,11 +2515,6 @@ void GrGLGpu::sendInstancedMeshToGpu(GrPrimitiveType primitiveType, const GrBuff
                                      int vertexCount, int baseVertex,
                                      const GrBuffer* instanceBuffer, int instanceCount,
                                      int baseInstance) {
-    if (fRequiresFlushBeforeNextInstancedDraw) {
-        SkASSERT(this->glCaps().requiresFlushBetweenNonAndInstancedDraws());
-        GL_CALL(Flush());
-        fRequiresFlushBeforeNextInstancedDraw = false;
-    }
     GrGLenum glPrimType = gr_primitive_type_to_gl_mode(primitiveType);
     int maxInstances = this->glCaps().maxInstancesPerDrawWithoutCrashing(instanceCount);
     for (int i = 0; i < instanceCount; i += maxInstances) {
@@ -2422,11 +2532,6 @@ void GrGLGpu::sendIndexedInstancedMeshToGpu(GrPrimitiveType primitiveType,
                                             int baseVertex, const GrBuffer* instanceBuffer,
                                             int instanceCount, int baseInstance,
                                             GrPrimitiveRestart enablePrimitiveRestart) {
-    if (fRequiresFlushBeforeNextInstancedDraw) {
-        SkASSERT(this->glCaps().requiresFlushBetweenNonAndInstancedDraws());
-        GL_CALL(Flush());
-        fRequiresFlushBeforeNextInstancedDraw = false;
-    }
     const GrGLenum glPrimType = gr_primitive_type_to_gl_mode(primitiveType);
     GrGLvoid* indices = reinterpret_cast<void*>(indexBuffer->baseOffset() +
                                                 sizeof(uint16_t) * baseIndex);
@@ -2631,8 +2736,10 @@ void GrGLGpu::flushBlend(const GrXferProcessor::BlendInfo& blendInfo, const GrSw
     GrBlendEquation equation = blendInfo.fEquation;
     GrBlendCoeff srcCoeff = blendInfo.fSrcBlend;
     GrBlendCoeff dstCoeff = blendInfo.fDstBlend;
-    bool blendOff = (kAdd_GrBlendEquation == equation || kSubtract_GrBlendEquation == equation) &&
-                    kOne_GrBlendCoeff == srcCoeff && kZero_GrBlendCoeff == dstCoeff;
+    bool blendOff =
+        ((kAdd_GrBlendEquation == equation || kSubtract_GrBlendEquation == equation) &&
+        kOne_GrBlendCoeff == srcCoeff && kZero_GrBlendCoeff == dstCoeff) ||
+        !blendInfo.fWriteColor;
     if (blendOff) {
         if (kNo_TriState != fHWBlendState.fEnabled) {
             GL_CALL(Disable(GR_GL_BLEND));
@@ -2678,85 +2785,28 @@ void GrGLGpu::flushBlend(const GrXferProcessor::BlendInfo& blendInfo, const GrSw
     }
 
     if ((BlendCoeffReferencesConstant(srcCoeff) || BlendCoeffReferencesConstant(dstCoeff))) {
-        GrColor blendConst = blendInfo.fBlendConstant;
-        blendConst = swizzle.applyTo(blendConst);
+        SkPMColor4f blendConst = swizzle.applyTo(blendInfo.fBlendConstant);
         if (!fHWBlendState.fConstColorValid || fHWBlendState.fConstColor != blendConst) {
-            GrGLfloat c[4];
-            GrColorToRGBAFloat(blendConst, c);
-            GL_CALL(BlendColor(c[0], c[1], c[2], c[3]));
+            GL_CALL(BlendColor(blendConst.fR, blendConst.fG, blendConst.fB, blendConst.fA));
             fHWBlendState.fConstColor = blendConst;
             fHWBlendState.fConstColorValid = true;
         }
     }
 }
 
-static inline GrGLenum wrap_mode_to_gl_wrap(GrSamplerState::WrapMode wrapMode) {
-    switch (wrapMode) {
-        case GrSamplerState::WrapMode::kClamp:
-            return GR_GL_CLAMP_TO_EDGE;
-        case GrSamplerState::WrapMode::kRepeat:
-            return GR_GL_REPEAT;
-        case GrSamplerState::WrapMode::kMirrorRepeat:
-            return GR_GL_MIRRORED_REPEAT;
-    };
-    SK_ABORT("Unknown wrap mode");
-    return 0;
-}
-
-static GrGLenum get_component_enum_from_char(char component) {
-    switch (component) {
-        case 'r':
-           return GR_GL_RED;
-        case 'g':
-           return GR_GL_GREEN;
-        case 'b':
-           return GR_GL_BLUE;
-        case 'a':
-           return GR_GL_ALPHA;
-        default:
-            SK_ABORT("Unsupported component");
-            return 0;
-    }
-}
-
-/** If texture swizzling is available using tex parameters then it is preferred over mangling
-  the generated shader code. This potentially allows greater reuse of cached shaders. */
-static void get_tex_param_swizzle(GrPixelConfig config,
-                                  const GrGLCaps& caps,
-                                  GrGLenum* glSwizzle) {
-    const GrSwizzle& swizzle = caps.configSwizzle(config);
+static void get_gl_swizzle_values(const GrSwizzle& swizzle, GrGLenum glValues[4]) {
     for (int i = 0; i < 4; ++i) {
-        glSwizzle[i] = get_component_enum_from_char(swizzle.c_str()[i]);
+        switch (swizzle[i]) {
+            case 'r': glValues[i] = GR_GL_RED;   break;
+            case 'g': glValues[i] = GR_GL_GREEN; break;
+            case 'b': glValues[i] = GR_GL_BLUE;  break;
+            case 'a': glValues[i] = GR_GL_ALPHA; break;
+            default:  SK_ABORT("Unsupported component");
+        }
     }
 }
 
-static GrGLenum filter_to_gl_mag_filter(GrSamplerState::Filter filter) {
-    switch (filter) {
-        case GrSamplerState::Filter::kNearest:
-            return GR_GL_NEAREST;
-        case GrSamplerState::Filter::kBilerp:
-            return GR_GL_LINEAR;
-        case GrSamplerState::Filter::kMipMap:
-            return GR_GL_LINEAR;
-    }
-    SK_ABORT("Unknown filter");
-    return 0;
-}
-
-static GrGLenum filter_to_gl_min_filter(GrSamplerState::Filter filter) {
-    switch (filter) {
-        case GrSamplerState::Filter::kNearest:
-            return GR_GL_NEAREST;
-        case GrSamplerState::Filter::kBilerp:
-            return GR_GL_LINEAR;
-        case GrSamplerState::Filter::kMipMap:
-            return GR_GL_LINEAR_MIPMAP_LINEAR;
-    }
-    SK_ABORT("Unknown filter");
-    return 0;
-}
-
-void GrGLGpu::bindTexture(int unitIdx, const GrSamplerState& samplerState, GrGLTexture* texture) {
+void GrGLGpu::bindTexture(int unitIdx, GrSamplerState samplerState, GrGLTexture* texture) {
     SkASSERT(texture);
 
 #ifdef SK_DEBUG
@@ -2785,87 +2835,112 @@ void GrGLGpu::bindTexture(int unitIdx, const GrSamplerState& samplerState, GrGLT
         fHWBoundTextureUniqueIDs[unitIdx] = textureID;
     }
 
-    ResetTimestamp timestamp;
-    const GrGLTexture::TexParams& oldTexParams = texture->getCachedTexParams(&timestamp);
-    bool setAll = timestamp < this->getResetTimestamp();
-    GrGLTexture::TexParams newTexParams;
-
-    GrSamplerState::Filter filterMode = samplerState.filter();
-
-    if (GrSamplerState::Filter::kMipMap == filterMode) {
+    if (samplerState.filter() == GrSamplerState::Filter::kMipMap) {
         if (!this->caps()->mipMapSupport() ||
             texture->texturePriv().mipMapped() == GrMipMapped::kNo) {
-            filterMode = GrSamplerState::Filter::kBilerp;
+            samplerState.setFilterMode(GrSamplerState::Filter::kBilerp);
         }
     }
 
-    newTexParams.fMinFilter = filter_to_gl_min_filter(filterMode);
-    newTexParams.fMagFilter = filter_to_gl_mag_filter(filterMode);
-
 #ifdef SK_DEBUG
     // We were supposed to ensure MipMaps were up-to-date before getting here.
-    if (GrSamplerState::Filter::kMipMap == filterMode) {
+    if (samplerState.filter() == GrSamplerState::Filter::kMipMap) {
         SkASSERT(!texture->texturePriv().mipMapsAreDirty());
     }
 #endif
 
-    newTexParams.fMaxMipMapLevel = texture->texturePriv().maxMipMapLevel();
+    ResetTimestamp timestamp = texture->getCachedParamsTimestamp();
+    bool setAll = timestamp < this->getResetTimestamp();
 
-    newTexParams.fWrapS = wrap_mode_to_gl_wrap(samplerState.wrapModeX());
-    newTexParams.fWrapT = wrap_mode_to_gl_wrap(samplerState.wrapModeY());
-    get_tex_param_swizzle(texture->config(), this->glCaps(), newTexParams.fSwizzleRGBA);
-    if (setAll || newTexParams.fMagFilter != oldTexParams.fMagFilter) {
-        this->setTextureUnit(unitIdx);
-        GL_CALL(TexParameteri(target, GR_GL_TEXTURE_MAG_FILTER, newTexParams.fMagFilter));
-    }
-    if (setAll || newTexParams.fMinFilter != oldTexParams.fMinFilter) {
-        this->setTextureUnit(unitIdx);
-        GL_CALL(TexParameteri(target, GR_GL_TEXTURE_MIN_FILTER, newTexParams.fMinFilter));
-    }
-    if (setAll || newTexParams.fMaxMipMapLevel != oldTexParams.fMaxMipMapLevel) {
-        // These are not supported in ES2 contexts
+    const GrGLTexture::SamplerParams* samplerParamsToRecord = nullptr;
+    GrGLTexture::SamplerParams newSamplerParams;
+    if (fSamplerObjectCache) {
+        fSamplerObjectCache->bindSampler(unitIdx, samplerState);
+    } else {
+        const GrGLTexture::SamplerParams& oldSamplerParams = texture->getCachedSamplerParams();
+        samplerParamsToRecord = &newSamplerParams;
+
+        newSamplerParams.fMinFilter = filter_to_gl_min_filter(samplerState.filter());
+        newSamplerParams.fMagFilter = filter_to_gl_mag_filter(samplerState.filter());
+
+        newSamplerParams.fWrapS = wrap_mode_to_gl_wrap(samplerState.wrapModeX());
+        newSamplerParams.fWrapT = wrap_mode_to_gl_wrap(samplerState.wrapModeY());
+
+        // These are the OpenGL default values.
+        newSamplerParams.fMinLOD = -1000;
+        newSamplerParams.fMaxLOD = 1000;
+
+        if (setAll || newSamplerParams.fMagFilter != oldSamplerParams.fMagFilter) {
+            this->setTextureUnit(unitIdx);
+            GL_CALL(TexParameteri(target, GR_GL_TEXTURE_MAG_FILTER, newSamplerParams.fMagFilter));
+        }
+        if (setAll || newSamplerParams.fMinFilter != oldSamplerParams.fMinFilter) {
+            this->setTextureUnit(unitIdx);
+            GL_CALL(TexParameteri(target, GR_GL_TEXTURE_MIN_FILTER, newSamplerParams.fMinFilter));
+        }
         if (this->glCaps().mipMapLevelAndLodControlSupport()) {
-            if (newTexParams.fMaxMipMapLevel != 0) {
+            // Min and max LOD are actually floats. We don't curently support glTexParameterf.
+            // However, we only set these to integral floats (see above).
+            if (setAll || newSamplerParams.fMinLOD != oldSamplerParams.fMinLOD) {
                 this->setTextureUnit(unitIdx);
-                GL_CALL(TexParameteri(target, GR_GL_TEXTURE_MIN_LOD, 0));
-                GL_CALL(TexParameteri(target, GR_GL_TEXTURE_BASE_LEVEL, 0));
-                GL_CALL(TexParameteri(target, GR_GL_TEXTURE_MAX_LOD,
-                                      newTexParams.fMaxMipMapLevel));
-                GL_CALL(TexParameteri(target, GR_GL_TEXTURE_MAX_LEVEL,
-                                      newTexParams.fMaxMipMapLevel));
+                GL_CALL(TexParameteri(target, GR_GL_TEXTURE_MIN_LOD, newSamplerParams.fMinLOD));
+            }
+            if (setAll || newSamplerParams.fMaxLOD != oldSamplerParams.fMaxLOD) {
+                this->setTextureUnit(unitIdx);
+                GL_CALL(TexParameteri(target, GR_GL_TEXTURE_MAX_LOD, newSamplerParams.fMaxLOD));
+            }
+        }
+        if (setAll || newSamplerParams.fWrapS != oldSamplerParams.fWrapS) {
+            this->setTextureUnit(unitIdx);
+            GL_CALL(TexParameteri(target, GR_GL_TEXTURE_WRAP_S, newSamplerParams.fWrapS));
+        }
+        if (setAll || newSamplerParams.fWrapT != oldSamplerParams.fWrapT) {
+            this->setTextureUnit(unitIdx);
+            GL_CALL(TexParameteri(target, GR_GL_TEXTURE_WRAP_T, newSamplerParams.fWrapT));
+        }
+    }
+    GrGLTexture::NonSamplerParams newNonSamplerParams;
+    newNonSamplerParams.fBaseMipMapLevel = 0;
+    newNonSamplerParams.fMaxMipMapLevel = texture->texturePriv().maxMipMapLevel();
+    if (this->glCaps().clampMaxTextureLevelToOne()) {
+        newNonSamplerParams.fMaxMipMapLevel = SkTMax(newNonSamplerParams.fMaxMipMapLevel, 1);
+    }
+
+    const GrGLTexture::NonSamplerParams& oldNonSamplerParams = texture->getCachedNonSamplerParams();
+    if (this->glCaps().textureSwizzleSupport()) {
+        auto swizzle = this->glCaps().configSwizzle(texture->config());
+        newNonSamplerParams.fSwizzleKey = swizzle.asKey();
+        if (setAll || swizzle.asKey() != oldNonSamplerParams.fSwizzleKey) {
+            GrGLenum glValues[4];
+            get_gl_swizzle_values(swizzle, glValues);
+            this->setTextureUnit(unitIdx);
+            if (this->glStandard() == kGLES_GrGLStandard) {
+                // ES3 added swizzle support but not GL_TEXTURE_SWIZZLE_RGBA.
+                GL_CALL(TexParameteri(target, GR_GL_TEXTURE_SWIZZLE_R, glValues[0]));
+                GL_CALL(TexParameteri(target, GR_GL_TEXTURE_SWIZZLE_G, glValues[1]));
+                GL_CALL(TexParameteri(target, GR_GL_TEXTURE_SWIZZLE_B, glValues[2]));
+                GL_CALL(TexParameteri(target, GR_GL_TEXTURE_SWIZZLE_A, glValues[3]));
+            } else {
+                GR_STATIC_ASSERT(sizeof(glValues[0]) == sizeof(GrGLint));
+                GL_CALL(TexParameteriv(target, GR_GL_TEXTURE_SWIZZLE_RGBA,
+                                       reinterpret_cast<const GrGLint*>(glValues)));
             }
         }
     }
-    if (setAll || newTexParams.fWrapS != oldTexParams.fWrapS) {
-        this->setTextureUnit(unitIdx);
-        GL_CALL(TexParameteri(target, GR_GL_TEXTURE_WRAP_S, newTexParams.fWrapS));
+    // These are not supported in ES2 contexts
+    if (this->glCaps().mipMapLevelAndLodControlSupport()) {
+        if (newNonSamplerParams.fBaseMipMapLevel != oldNonSamplerParams.fBaseMipMapLevel) {
+            this->setTextureUnit(unitIdx);
+            GL_CALL(TexParameteri(target, GR_GL_TEXTURE_BASE_LEVEL,
+                                  newNonSamplerParams.fBaseMipMapLevel));
+        }
+        if (newNonSamplerParams.fMaxMipMapLevel != oldNonSamplerParams.fMaxMipMapLevel) {
+            this->setTextureUnit(unitIdx);
+            GL_CALL(TexParameteri(target, GR_GL_TEXTURE_MAX_LEVEL,
+                                  newNonSamplerParams.fMaxMipMapLevel));
+        }
     }
-    if (setAll || newTexParams.fWrapT != oldTexParams.fWrapT) {
-        this->setTextureUnit(unitIdx);
-        GL_CALL(TexParameteri(target, GR_GL_TEXTURE_WRAP_T, newTexParams.fWrapT));
-    }
-    if (this->glCaps().textureSwizzleSupport() &&
-        (setAll || memcmp(newTexParams.fSwizzleRGBA,
-                          oldTexParams.fSwizzleRGBA,
-                          sizeof(newTexParams.fSwizzleRGBA)))) {
-        this->setTextureSwizzle(unitIdx, target, newTexParams.fSwizzleRGBA);
-    }
-    texture->setCachedTexParams(newTexParams, this->getResetTimestamp());
-}
-
-void GrGLGpu::setTextureSwizzle(int unitIdx, GrGLenum target, const GrGLenum swizzle[]) {
-    this->setTextureUnit(unitIdx);
-    if (this->glStandard() == kGLES_GrGLStandard) {
-        // ES3 added swizzle support but not GL_TEXTURE_SWIZZLE_RGBA.
-        GL_CALL(TexParameteri(target, GR_GL_TEXTURE_SWIZZLE_R, swizzle[0]));
-        GL_CALL(TexParameteri(target, GR_GL_TEXTURE_SWIZZLE_G, swizzle[1]));
-        GL_CALL(TexParameteri(target, GR_GL_TEXTURE_SWIZZLE_B, swizzle[2]));
-        GL_CALL(TexParameteri(target, GR_GL_TEXTURE_SWIZZLE_A, swizzle[3]));
-    } else {
-        GR_STATIC_ASSERT(sizeof(swizzle[0]) == sizeof(GrGLint));
-        GL_CALL(TexParameteriv(target, GR_GL_TEXTURE_SWIZZLE_RGBA,
-                               reinterpret_cast<const GrGLint*>(swizzle)));
-    }
+    texture->setCachedParams(samplerParamsToRecord, newNonSamplerParams, this->getResetTimestamp());
 }
 
 void GrGLGpu::flushColorWrite(bool writeColor) {
@@ -3556,8 +3631,8 @@ bool GrGLGpu::createClearColorProgram() {
     return true;
 }
 
-void GrGLGpu::clearColorAsDraw(const GrFixedClip& clip, GrGLfloat r, GrGLfloat g, GrGLfloat b,
-                               GrGLfloat a, GrRenderTarget* dst, GrSurfaceOrigin origin) {
+void GrGLGpu::clearColorAsDraw(const GrFixedClip& clip, const SkPMColor4f& color,
+                               GrRenderTarget* dst, GrSurfaceOrigin origin) {
     if (!fClearColorProgram.fProgram) {
         if (!this->createClearColorProgram()) {
             SkDebugf("Failed to create clear color program.\n");
@@ -3583,7 +3658,7 @@ void GrGLGpu::clearColorAsDraw(const GrFixedClip& clip, GrGLfloat r, GrGLfloat g
     this->flushScissor(clip.scissorState(), glrt->getViewport(), origin);
     this->flushWindowRectangles(clip.windowRectsState(), glrt, origin);
 
-    GL_CALL(Uniform4f(fClearColorProgram.fColorUniform, r, g, b, a));
+    GL_CALL(Uniform4f(fClearColorProgram.fColorUniform, color.fR, color.fG, color.fB, color.fA));
 
     GrXferProcessor::BlendInfo blendInfo;
     blendInfo.reset();
@@ -3854,12 +3929,15 @@ bool GrGLGpu::onRegenerateMipMapLevels(GrTexture* texture) {
     GrGLIRect viewport;
     viewport.fLeft = 0;
     viewport.fBottom = 0;
+
     for (GrGLint level = 1; level < levelCount; ++level) {
         // Get and bind the program for this particular downsample (filter shape can vary):
         int progIdx = TextureSizeToMipmapProgramIdx(width, height);
         if (!fMipmapPrograms[progIdx].fProgram) {
             if (!this->createMipmapProgram(progIdx)) {
                 SkDebugf("Failed to create mipmap program.\n");
+                // Invalidate all params to cover base level change in a previous iteration.
+                glTex->textureParamsModified();
                 return false;
             }
         }
@@ -3892,7 +3970,10 @@ bool GrGLGpu::onRegenerateMipMapLevels(GrTexture* texture) {
                                  GR_GL_TEXTURE_2D, 0, 0));
 
     // We modified the base level param.
-    texture->textureParamsModified();
+    GrGLTexture::NonSamplerParams params = glTex->getCachedNonSamplerParams();
+    params.fBaseMipMapLevel = levelCount - 2; // we drew the 2nd to last level into the last level.
+    glTex->setCachedParams(nullptr, params, this->getResetTimestamp());
+
     return true;
 }
 
@@ -4025,7 +4106,7 @@ GrBackendTexture GrGLGpu::createTestingOnlyBackendTexture(const void* pixels, in
 }
 
 bool GrGLGpu::isTestingOnlyBackendTexture(const GrBackendTexture& tex) const {
-    SkASSERT(kOpenGL_GrBackend == tex.backend());
+    SkASSERT(GrBackendApi::kOpenGL == tex.backend());
 
     GrGLTextureInfo info;
     if (!tex.getGLTextureInfo(&info)) {
@@ -4039,7 +4120,7 @@ bool GrGLGpu::isTestingOnlyBackendTexture(const GrBackendTexture& tex) const {
 }
 
 void GrGLGpu::deleteTestingOnlyBackendTexture(const GrBackendTexture& tex) {
-    SkASSERT(kOpenGL_GrBackend == tex.backend());
+    SkASSERT(GrBackendApi::kOpenGL == tex.backend());
 
     GrGLTextureInfo info;
     if (tex.getGLTextureInfo(&info)) {
@@ -4165,7 +4246,7 @@ GrBackendRenderTarget GrGLGpu::createTestingOnlyBackendRenderTarget(int w, int h
 }
 
 void GrGLGpu::deleteTestingOnlyBackendRenderTarget(const GrBackendRenderTarget& backendRT) {
-    SkASSERT(kOpenGL_GrBackend == backendRT.backend());
+    SkASSERT(GrBackendApi::kOpenGL == backendRT.backend());
     GrGLFramebufferInfo info;
     if (backendRT.getGLFramebufferInfo(&info)) {
         if (info.fFBOID) {

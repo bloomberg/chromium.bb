@@ -36,6 +36,9 @@ enum PrivateKeyType {
   PRIVATE_KEY_TYPE_INVALID = 255,
 };
 
+// Returns the name of the class which implements the private key.
+std::string GetPrivateKeyClassName(const base::android::JavaRef<jobject>& key);
+
 // Compute the signature of a given input using a private key. For more
 // details, please read the comments for the signWithPrivateKey method in
 // AndroidKeyStore.java.

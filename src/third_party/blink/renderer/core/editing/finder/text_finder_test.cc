@@ -35,7 +35,8 @@ class TextFinderTest : public testing::Test {
     web_view_helper_.Initialize();
     WebLocalFrameImpl& frame_impl = *web_view_helper_.LocalMainFrame();
     frame_impl.ViewImpl()->Resize(WebSize(640, 480));
-    frame_impl.ViewImpl()->UpdateAllLifecyclePhases();
+    frame_impl.ViewImpl()->MainFrameWidget()->UpdateAllLifecyclePhases(
+        WebWidget::LifecycleUpdateReason::kTest);
     document_ = static_cast<Document*>(frame_impl.GetDocument());
     text_finder_ = &frame_impl.EnsureTextFinder();
   }
@@ -49,7 +50,7 @@ class TextFinderTest : public testing::Test {
                                      int end_offset);
 
  private:
-  FrameTestHelpers::WebViewHelper web_view_helper_;
+  frame_test_helpers::WebViewHelper web_view_helper_;
   Persistent<Document> document_;
   Persistent<TextFinder> text_finder_;
 };
@@ -329,7 +330,7 @@ TEST_F(TextFinderTest, ScopeTextMatchesSimple) {
 
   // Modify the document size and ensure the cached match rects are recomputed
   // to reflect the updated layout.
-  GetDocument().body()->setAttribute(HTMLNames::styleAttr, "margin: 2000px");
+  GetDocument().body()->setAttribute(html_names::kStyleAttr, "margin: 2000px");
   GetDocument().UpdateStyleAndLayout();
 
   match_rects = GetTextFinder().FindMatchRects();

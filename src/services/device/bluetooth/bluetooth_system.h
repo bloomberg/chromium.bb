@@ -5,7 +5,10 @@
 #ifndef SERVICES_DEVICE_BLUETOOTH_BLUETOOTH_SYSTEM_H_
 #define SERVICES_DEVICE_BLUETOOTH_BLUETOOTH_SYSTEM_H_
 
+#include <string>
+
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/dbus/bluetooth_adapter_client.h"
@@ -34,11 +37,26 @@ class BluetoothSystem : public mojom::BluetoothSystem,
 
   // mojom::BluetoothSystem
   void GetState(GetStateCallback callback) override;
+  void SetPowered(bool powered, SetPoweredCallback callback) override;
+  void GetScanState(GetScanStateCallback callback) override;
+  void StartScan(StartScanCallback callback) override;
+  void StopScan(StopScanCallback callback) override;
 
  private:
   bluez::BluetoothAdapterClient* GetBluetoothAdapterClient();
 
   void UpdateStateAndNotifyIfNecessary();
+
+  ScanState GetScanStateFromActiveAdapter();
+
+  void OnSetPoweredFinished(SetPoweredCallback callback, bool succeeded);
+
+  void OnStartDiscovery(
+      StartScanCallback callback,
+      const base::Optional<bluez::BluetoothAdapterClient::Error>& error);
+  void OnStopDiscovery(
+      StopScanCallback callback,
+      const base::Optional<bluez::BluetoothAdapterClient::Error>& error);
 
   mojom::BluetoothSystemClientPtr client_ptr_;
 
@@ -49,6 +67,10 @@ class BluetoothSystem : public mojom::BluetoothSystem,
   // State of |active_adapter_| or kUnavailable if there is no
   // |active_adapter_|.
   State state_ = State::kUnavailable;
+
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<BluetoothSystem> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothSystem);
 };

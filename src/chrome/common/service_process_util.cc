@@ -32,6 +32,7 @@
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "google_apis/gaia/gaia_switches.h"
+#include "services/network/public/cpp/network_switches.h"
 #include "ui/base/ui_base_switches.h"
 
 #if !defined(OS_MACOSX)
@@ -168,6 +169,7 @@ std::unique_ptr<base::CommandLine> CreateServiceProcessCommandLine() {
 #endif  // defined(OS_WIN)
 
   static const char* const kSwitchesToCopy[] = {
+    network::switches::kIgnoreUrlFetcherCertRequests,
     switches::kCloudPrintSetupProxy,
     switches::kCloudPrintURL,
     switches::kCloudPrintXmppEndpoint,
@@ -175,7 +177,6 @@ std::unique_ptr<base::CommandLine> CreateServiceProcessCommandLine() {
     switches::kEnableCloudPrintXps,
 #endif
     switches::kEnableLogging,
-    switches::kIgnoreUrlFetcherCertRequests,
     switches::kLang,
     switches::kLoggingLevel,
     switches::kLsoUrl,

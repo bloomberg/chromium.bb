@@ -183,5 +183,4 @@ def IsCommitOnThisBranch(robo_configuration, commit_title):
   # Get all commit titles between us and origin/master
   titles = check_output(["git", "log", "--format=%s",
           "origin/master..%s" % robo_configuration.branch_name()])
-  print titles
   return commit_title in titles

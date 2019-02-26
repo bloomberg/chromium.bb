@@ -230,7 +230,8 @@ tree .tree-item[selected] > .tree-row >
       url(../images/volumes/2x/downloads.png) 2x);
 }
 
-.tree-row[selected] [volume-type-icon='downloads'] {
+.tree-row[selected] [volume-type-icon='downloads'],
+.tree-row[selected] [file-type-icon='downloads'] {
   background-image: -webkit-image-set(
       url(../images/volumes/downloads_active.png) 1x,
       url(../images/volumes/2x/downloads_active.png) 2x);
@@ -259,13 +260,15 @@ tree .tree-item[selected] > .tree-row >
       url(../images/volumes/2x/shortcut_active.png) 2x);
 }
 
-.drive-volume > .tree-row > [volume-type-icon='drive'] {
+.drive-volume > .tree-row > [volume-type-icon='drive'],
+[root-type-icon='drive'] {
   background-image: -webkit-image-set(
       url(../images/volumes/service_drive.png) 1x,
       url(../images/volumes/2x/service_drive.png) 2x);
 }
 
-.drive-volume > .tree-row[selected] > [volume-type-icon='drive'] {
+.drive-volume > .tree-row[selected] > [volume-type-icon='drive'],
+.tree-row[selected] [root-type-icon='drive'] {
   background-image: -webkit-image-set(
       url(../images/volumes/service_drive_active.png) 1x,
       url(../images/volumes/2x/service_drive_active.png) 2x);
@@ -293,6 +296,33 @@ tree .tree-item[selected] > .tree-row >
   background-image: -webkit-image-set(
       url(../images/volumes/hard_drive_active.png) 1x,
       url(../images/volumes/2x/hard_drive_active.png) 2x);
+}
+
+[volume-type-icon='computers_grand_root'] {
+  background-image: -webkit-image-set(
+      url(../images/volumes/devices.png) 1x,
+      url(../images/volumes/2x/devices.png) 2x);
+}
+
+.tree-row[selected] [volume-type-icon='computers_grand_root'] {
+  background-image: -webkit-image-set(
+      url(../images/volumes/devices_active.png) 1x,
+      url(../images/volumes/2x/devices_active.png) 2x);
+}
+
+[volume-type-icon='computer'],
+.computers-root[file-type-icon='folder'] {
+  background-image: -webkit-image-set(
+      url(../images/volumes/computer.png) 1x,
+      url(../images/volumes/2x/computer.png) 2x);
+}
+
+.tree-row[selected] [volume-type-icon='computer'],
+tree .tree-item[selected] > .tree-row >
+.computers-root[file-type-icon='folder'] {
+  background-image: -webkit-image-set(
+      url(../images/volumes/computer_active.png) 1x,
+      url(../images/volumes/2x/computer_active.png) 2x);
 }
 
 [volume-type-icon='drive_offline'] {
@@ -331,12 +361,17 @@ tree .tree-item[selected] > .tree-row >
       url(../images/volumes/2x/recent_active.png) 2x);
 }
 
+.external-media-root[file-type-icon='folder'],
+[volume-type-icon='external_media'],
 [volume-type-icon='removable'] {
   background-image: -webkit-image-set(
       url(../images/volumes/usb.png) 1x,
       url(../images/volumes/2x/usb.png) 2x);
 }
 
+tree .tree-item[selected] > .tree-row >
+.external-media-root[file-type-icon='folder'],
+.tree-row[selected] [volume-type-icon='external_media'],
 .tree-row[selected] [volume-type-icon='removable'] {
   background-image: -webkit-image-set(
       url(../images/volumes/usb_active.png) 1x,

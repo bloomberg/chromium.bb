@@ -12,28 +12,28 @@
 #include "base/containers/queue.h"
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_checker.h"
 #include "remoting/base/compound_buffer.h"
+#include "remoting/protocol/file_transfer_helpers.h"
 
 namespace {
 
 constexpr char kTempFileExtension[] = ".crdownload";
 
-remoting::protocol::FileTransferResponse_ErrorCode FileErrorToResponseError(
+remoting::protocol::FileTransfer_Error_Type FileErrorToResponseErrorType(
     base::File::Error file_error) {
   switch (file_error) {
     case base::File::FILE_ERROR_ACCESS_DENIED:
-      return remoting::protocol::
-          FileTransferResponse_ErrorCode_PERMISSIONS_ERROR;
+      return remoting::protocol::FileTransfer_Error_Type_PERMISSION_DENIED;
     case base::File::FILE_ERROR_NO_SPACE:
-      return remoting::protocol::
-          FileTransferResponse_ErrorCode_OUT_OF_DISK_SPACE;
+      return remoting::protocol::FileTransfer_Error_Type_OUT_OF_DISK_SPACE;
     default:
-      return remoting::protocol::FileTransferResponse_ErrorCode_FILE_IO_ERROR;
+      return remoting::protocol::FileTransfer_Error_Type_IO_ERROR;
   }
 }
 
@@ -47,12 +47,12 @@ class FileProxyWrapperLinux : public FileProxyWrapper {
   ~FileProxyWrapperLinux() override;
 
   // FileProxyWrapper implementation.
-  void Init(StatusCallback status_callback) override;
+  void Init(ResultCallback result_callback) override;
   void CreateFile(const base::FilePath& directory,
                   const std::string& filename) override;
   void OpenFile(const base::FilePath& filepath,
                 OpenFileCallback open_callback) override;
-  void WriteChunk(std::unique_ptr<CompoundBuffer> buffer) override;
+  void WriteChunk(std::string buffer) override;
   void ReadChunk(uint64_t chunk_size, ReadCallback read_callback) override;
   void Close() override;
   void Cancel() override;
@@ -72,7 +72,7 @@ class FileProxyWrapperLinux : public FileProxyWrapper {
 
   struct FileChunk {
     int64_t write_offset;
-    std::vector<char> data;
+    std::string data;
   };
 
   // Callbacks for CreateFile().
@@ -84,7 +84,7 @@ class FileProxyWrapperLinux : public FileProxyWrapper {
   void GetInfoCallback(base::File::Error error, const base::File::Info& info);
 
   // Callbacks for WriteChunk().
-  void WriteFileChunk(std::unique_ptr<FileChunk> chunk);
+  void WriteFileChunk(FileChunk chunk);
   void WriteCallback(base::File::Error error, int bytes_written);
 
   // Callbacks for ReadChunk().
@@ -98,14 +98,15 @@ class FileProxyWrapperLinux : public FileProxyWrapper {
   void MoveToDestination(int unique_path_number);
   void MoveFileCallback(bool success);
 
-  void CancelWithError(protocol::FileTransferResponse_ErrorCode error);
+  void CancelWithError(protocol::FileTransfer_Error error,
+                       const std::string& log_message);
   void SetState(State state);
 
   State state_ = kUninitialized;
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
   std::unique_ptr<base::FileProxy> file_proxy_;
 
-  StatusCallback status_callback_;
+  ResultCallback result_callback_;
 
   // CreateFile() state - for writing only
   bool temp_file_created_ = false;
@@ -118,10 +119,10 @@ class FileProxyWrapperLinux : public FileProxyWrapper {
 
   // WriteChunk() state - for writing only
   int64_t next_write_file_offset_ = 0;
-  base::queue<std::unique_ptr<FileChunk>> file_chunks_;
+  base::queue<FileChunk> file_chunks_;
   // active_file_chunk_ is the chunk currently being written to disk. It is
   // empty if nothing is being written to disk right now.
-  std::unique_ptr<FileChunk> active_file_chunk_;
+  base::Optional<FileChunk> active_file_chunk_;
 
   // ReadChunk() state - for reading only
   ReadCallback read_callback_;
@@ -141,11 +142,11 @@ FileProxyWrapperLinux::~FileProxyWrapperLinux() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-void FileProxyWrapperLinux::Init(StatusCallback status_callback) {
+void FileProxyWrapperLinux::Init(ResultCallback result_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   SetState(kInitialized);
-  status_callback_ = std::move(status_callback);
+  result_callback_ = std::move(result_callback);
 
   file_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
@@ -154,7 +155,10 @@ void FileProxyWrapperLinux::Init(StatusCallback status_callback) {
   file_proxy_.reset(new base::FileProxy(file_task_runner_.get()));
 
   if (!file_task_runner_) {
-    CancelWithError(protocol::FileTransferResponse_ErrorCode_UNEXPECTED_ERROR);
+    CancelWithError(
+        protocol::MakeFileTransferError(
+            FROM_HERE, protocol::FileTransfer_Error_Type_UNEXPECTED_ERROR),
+        "Failed to create file task runner.");
   }
 }
 
@@ -184,16 +188,19 @@ void FileProxyWrapperLinux::CreateTempFile(int unique_path_number) {
           temp_filepath_, base::File::FLAG_CREATE | base::File::FLAG_WRITE,
           base::Bind(&FileProxyWrapperLinux::CreateTempFileCallback,
                      weak_ptr_))) {
-    // file_proxy_ failed to post a task to file_task_runner_.
-    CancelWithError(protocol::FileTransferResponse_ErrorCode_UNEXPECTED_ERROR);
+    CancelWithError(
+        protocol::MakeFileTransferError(
+            FROM_HERE, protocol::FileTransfer_Error_Type_UNEXPECTED_ERROR),
+        "File proxy failed to post task to file task runner.");
   }
 }
 
 void FileProxyWrapperLinux::CreateTempFileCallback(base::File::Error error) {
   if (error) {
-    LOG(ERROR) << "Creating temp file \"" << temp_filepath_.value()
-               << "\" failed with error: " << error;
-    CancelWithError(FileErrorToResponseError(error));
+    CancelWithError(
+        protocol::MakeFileTransferError(
+            FROM_HERE, FileErrorToResponseErrorType(error), error),
+        base::StringPrintf("Creating temp file failed with error: %d", error));
   } else {
     // Now that the temp file has been created successfully, we could lock it
     // using base::File::Lock(), but this would not prevent the file from being
@@ -205,8 +212,7 @@ void FileProxyWrapperLinux::CreateTempFileCallback(base::File::Error error) {
     // Chunks to write may have been queued while we were creating the file,
     // start writing them now if there were any.
     if (!file_chunks_.empty()) {
-      std::unique_ptr<FileChunk> chunk_to_write =
-          std::move(file_chunks_.front());
+      FileChunk chunk_to_write = std::move(file_chunks_.front());
       file_chunks_.pop();
       WriteFileChunk(std::move(chunk_to_write));
     }
@@ -225,37 +231,46 @@ void FileProxyWrapperLinux::OpenFile(const base::FilePath& filepath,
   if (!file_proxy_->CreateOrOpen(
           read_filepath_, base::File::FLAG_OPEN | base::File::FLAG_READ,
           base::Bind(&FileProxyWrapperLinux::OpenCallback, weak_ptr_))) {
-    // file_proxy_ failed to post a task to file_task_runner_.
-    CancelWithError(protocol::FileTransferResponse_ErrorCode_UNEXPECTED_ERROR);
+    CancelWithError(
+        protocol::MakeFileTransferError(
+            FROM_HERE, protocol::FileTransfer_Error_Type_UNEXPECTED_ERROR),
+        "File proxy failed to post task to file task runner.");
   }
 }
 
 void FileProxyWrapperLinux::OpenCallback(base::File::Error error) {
   if (error) {
-    LOG(ERROR) << "Opening file \"" << read_filepath_.value()
-               << "\" failed with error: " << error;
-    CancelWithError(FileErrorToResponseError(error));
+    CancelWithError(
+        protocol::MakeFileTransferError(
+            FROM_HERE, FileErrorToResponseErrorType(error), error),
+        base::StringPrintf("Opening file failed with error: %d", error));
     return;
   }
 
   if (!file_proxy_->GetInfo(
           base::Bind(&FileProxyWrapperLinux::GetInfoCallback, weak_ptr_))) {
-    // file_proxy_ failed to post a task to file_task_runner_.
-    CancelWithError(protocol::FileTransferResponse_ErrorCode_UNEXPECTED_ERROR);
+    CancelWithError(
+        protocol::MakeFileTransferError(
+            FROM_HERE, protocol::FileTransfer_Error_Type_UNEXPECTED_ERROR),
+        "File proxy failed to post task to file task runner.");
   }
 }
 
 void FileProxyWrapperLinux::GetInfoCallback(base::File::Error error,
                                             const base::File::Info& info) {
   if (error) {
-    LOG(ERROR) << "Getting file info failed with error: " << error;
-    CancelWithError(FileErrorToResponseError(error));
+    CancelWithError(
+        protocol::MakeFileTransferError(
+            FROM_HERE, FileErrorToResponseErrorType(error), error),
+        base::StringPrintf("Getting file info failed with error: %d", error));
     return;
   }
 
   if (info.is_directory) {
-    LOG(ERROR) << "Tried to open directory for reading chunks.";
-    CancelWithError(protocol::FileTransferResponse_ErrorCode_UNEXPECTED_ERROR);
+    CancelWithError(
+        protocol::MakeFileTransferError(
+            FROM_HERE, protocol::FileTransfer_Error_Type_UNEXPECTED_ERROR),
+        "Tried to open directory for reading chunks.");
     return;
   }
 
@@ -263,21 +278,15 @@ void FileProxyWrapperLinux::GetInfoCallback(base::File::Error error,
   std::move(open_callback_).Run(info.size);
 }
 
-void FileProxyWrapperLinux::WriteChunk(std::unique_ptr<CompoundBuffer> buffer) {
+void FileProxyWrapperLinux::WriteChunk(std::string buffer) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(mode_, kWriting);
   DCHECK_EQ(state_, kReady);
 
-  std::unique_ptr<FileChunk> new_file_chunk = base::WrapUnique(new FileChunk());
-  new_file_chunk->data.resize(buffer->total_bytes());
-  // This copy could be avoided if CompoundBuffer were updated to allowed us to
-  // access the individual buffers in |buffer|.
-  // TODO(jarhar): Update CompoundBuffer to allow data transfer without a
-  // memcopy.
-  buffer->CopyTo(new_file_chunk->data.data(), new_file_chunk->data.size());
-
-  new_file_chunk->write_offset = next_write_file_offset_;
-  next_write_file_offset_ += new_file_chunk->data.size();
+  FileChunk new_file_chunk;
+  new_file_chunk.data = std::move(buffer);
+  new_file_chunk.write_offset = next_write_file_offset_;
+  next_write_file_offset_ += new_file_chunk.data.size();
 
   // If the file hasn't been created yet or there is another chunk currently
   // being written, we have to queue this chunk to be written later.
@@ -292,15 +301,16 @@ void FileProxyWrapperLinux::WriteChunk(std::unique_ptr<CompoundBuffer> buffer) {
   }
 }
 
-void FileProxyWrapperLinux::WriteFileChunk(std::unique_ptr<FileChunk> chunk) {
+void FileProxyWrapperLinux::WriteFileChunk(FileChunk chunk) {
   active_file_chunk_ = std::move(chunk);
-  DCHECK(active_file_chunk_);
   if (!file_proxy_->Write(
           active_file_chunk_->write_offset, active_file_chunk_->data.data(),
           active_file_chunk_->data.size(),
           base::Bind(&FileProxyWrapperLinux::WriteCallback, weak_ptr_))) {
-    // file_proxy_ failed to post a task to file_task_runner_.
-    CancelWithError(protocol::FileTransferResponse_ErrorCode_UNEXPECTED_ERROR);
+    CancelWithError(
+        protocol::MakeFileTransferError(
+            FROM_HERE, protocol::FileTransfer_Error_Type_UNEXPECTED_ERROR),
+        "File proxy failed to post task to file task runner.");
   }
 }
 
@@ -311,14 +321,15 @@ void FileProxyWrapperLinux::WriteCallback(base::File::Error error,
     if (!error) {
       error = base::File::FILE_ERROR_FAILED;
     }
-    LOG(ERROR) << "Write failed with error: " << error;
-    CancelWithError(FileErrorToResponseError(error));
+    CancelWithError(protocol::MakeFileTransferError(
+                        FROM_HERE, FileErrorToResponseErrorType(error), error),
+                    base::StringPrintf("Write failed with error: %d", error));
     return;
   }
 
   active_file_chunk_.reset();
   if (!file_chunks_.empty()) {
-    std::unique_ptr<FileChunk> chunk_to_write = std::move(file_chunks_.front());
+    FileChunk chunk_to_write = std::move(file_chunks_.front());
     file_chunks_.pop();
     WriteFileChunk(std::move(chunk_to_write));
   } else if (state_ == kBusy) {
@@ -339,8 +350,10 @@ void FileProxyWrapperLinux::ReadChunk(uint64_t size,
   if (!file_proxy_->Read(
           next_read_file_offset_, expected_bytes_read_,
           base::Bind(&FileProxyWrapperLinux::ReadChunkCallback, weak_ptr_))) {
-    // file_proxy_ failed to post a task to file_task_runner_.
-    CancelWithError(protocol::FileTransferResponse_ErrorCode_UNEXPECTED_ERROR);
+    CancelWithError(
+        protocol::MakeFileTransferError(
+            FROM_HERE, protocol::FileTransfer_Error_Type_UNEXPECTED_ERROR),
+        "File proxy failed to post task to file task runner.");
   }
 }
 
@@ -351,8 +364,9 @@ void FileProxyWrapperLinux::ReadChunkCallback(base::File::Error error,
     if (!error) {
       error = base::File::FILE_ERROR_FAILED;
     }
-    LOG(ERROR) << "Read failed with error: " << error;
-    CancelWithError(FileErrorToResponseError(error));
+    CancelWithError(protocol::MakeFileTransferError(
+                        FROM_HERE, FileErrorToResponseErrorType(error), error),
+                    base::StringPrintf("Read failed with error: %d", error));
     return;
   }
 
@@ -392,7 +406,9 @@ void FileProxyWrapperLinux::CloseFileAndMoveToDestination() {
 
 void FileProxyWrapperLinux::CloseCallback(base::File::Error error) {
   if (error) {
-    CancelWithError(FileErrorToResponseError(error));
+    CancelWithError(protocol::MakeFileTransferError(
+                        FROM_HERE, FileErrorToResponseErrorType(error), error),
+                    base::StringPrintf("Close failed with error: %d", error));
     return;
   }
 
@@ -419,11 +435,11 @@ void FileProxyWrapperLinux::MoveFileCallback(bool success) {
 
   if (success) {
     SetState(kClosed);
-    std::move(status_callback_)
-        .Run(state_,
-             base::Optional<protocol::FileTransferResponse_ErrorCode>());
+    std::move(result_callback_).Run(base::nullopt);
   } else {
-    CancelWithError(protocol::FileTransferResponse_ErrorCode_FILE_IO_ERROR);
+    CancelWithError(protocol::MakeFileTransferError(
+                        FROM_HERE, protocol::FileTransfer_Error_Type_IO_ERROR),
+                    "Failed to move file to final destination.");
   }
 }
 
@@ -431,6 +447,10 @@ void FileProxyWrapperLinux::Cancel() {
   if (file_proxy_->IsValid()) {
     file_proxy_->Close(base::DoNothing());
   }
+
+  // Invalidate any outstanding weak pointers to ensure we don't get unexpected
+  // callbacks.
+  weak_factory_.InvalidateWeakPtrs();
 
   if (mode_ == kWriting) {
     if (state_ == kReady || state_ == kBusy) {
@@ -450,12 +470,11 @@ void FileProxyWrapperLinux::Cancel() {
   SetState(kFailed);
 }
 
-void FileProxyWrapperLinux::CancelWithError(
-    protocol::FileTransferResponse_ErrorCode error) {
+void FileProxyWrapperLinux::CancelWithError(protocol::FileTransfer_Error error,
+                                            const std::string& log_message) {
+  LOG(ERROR) << log_message;
   Cancel();
-  std::move(status_callback_)
-      .Run(state_,
-           base::Optional<protocol::FileTransferResponse_ErrorCode>(error));
+  std::move(result_callback_).Run(error);
 }
 
 void FileProxyWrapperLinux::SetState(State state) {

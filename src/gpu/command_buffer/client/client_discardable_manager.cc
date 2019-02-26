@@ -6,7 +6,7 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/containers/flat_set.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 
 namespace gpu {
 namespace {

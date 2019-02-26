@@ -86,8 +86,8 @@ struct QUIC_EXPORT_PRIVATE QuicPacketHeader {
   // packet, |nonce| will be empty.
   DiversificationNonce* nonce;
   QuicPacketNumber packet_number;
-  // Only used if this is an IETF QUIC packet.
-  QuicIetfPacketHeaderForm form;
+  // Format of this header.
+  PacketHeaderFormat form;
   // Short packet type is reflected in packet_number_length.
   QuicLongHeaderType long_packet_type;
   // Only valid if |has_possible_stateless_reset_token| is true.
@@ -103,6 +103,10 @@ struct QUIC_EXPORT_PRIVATE QuicPublicResetPacket {
   QuicConnectionId connection_id;
   QuicPublicResetNonceProof nonce_proof;
   QuicSocketAddress client_address;
+  // An arbitrary string to identify an endpoint. Used by clients to
+  // differentiate traffic from Google servers vs Non-google servers.
+  // Will not be used if empty().
+  QuicString endpoint_id;
 };
 
 struct QUIC_EXPORT_PRIVATE QuicVersionNegotiationPacket {
@@ -210,6 +214,16 @@ class QUIC_EXPORT_PRIVATE QuicReceivedPacket : public QuicEncryptedPacket {
                      bool owns_buffer,
                      int ttl,
                      bool ttl_valid);
+  QuicReceivedPacket(const char* buffer,
+                     size_t length,
+                     QuicTime receipt_time,
+                     bool owns_buffer,
+                     int ttl,
+                     bool ttl_valid,
+                     char* packet_headers,
+                     size_t headers_length,
+                     bool owns_header_buffer);
+  ~QuicReceivedPacket();
   QuicReceivedPacket(const QuicReceivedPacket&) = delete;
   QuicReceivedPacket& operator=(const QuicReceivedPacket&) = delete;
 
@@ -222,6 +236,12 @@ class QUIC_EXPORT_PRIVATE QuicReceivedPacket : public QuicEncryptedPacket {
   // This is the TTL of the packet, assuming ttl_vaild_ is true.
   int ttl() const { return ttl_; }
 
+  // Start of packet headers.
+  char* packet_headers() const { return packet_headers_; }
+
+  // Length of packet headers.
+  int headers_length() const { return headers_length_; }
+
   // By default, gtest prints the raw bytes of an object. The bool data
   // member (in the base class QuicData) causes this object to have padding
   // bytes, which causes the default gtest object printer to read
@@ -233,6 +253,12 @@ class QUIC_EXPORT_PRIVATE QuicReceivedPacket : public QuicEncryptedPacket {
  private:
   const QuicTime receipt_time_;
   int ttl_;
+  // Points to the start of packet headers.
+  char* packet_headers_;
+  // Length of packet headers.
+  int headers_length_;
+  // Whether owns the buffer for packet headers.
+  bool owns_header_buffer_;
 };
 
 struct QUIC_EXPORT_PRIVATE SerializedPacket {

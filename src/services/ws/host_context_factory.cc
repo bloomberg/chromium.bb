@@ -74,10 +74,6 @@ void HostContextFactory::RemoveCompositor(ui::Compositor* compositor) {
   context_factory_private_->UnconfigureCompositor(compositor);
 }
 
-double HostContextFactory::GetRefreshRate() const {
-  return 60.0;
-}
-
 gpu::GpuMemoryBufferManager* HostContextFactory::GetGpuMemoryBufferManager() {
   return gpu_->gpu_memory_buffer_manager();
 }

@@ -39,7 +39,8 @@ class ArcImeBridgeImpl : public ArcImeBridge, public mojom::ImeHost {
 
   // mojom::ImeHost overrides:
   void OnTextInputTypeChanged(ui::TextInputType type,
-                              bool is_personalized_learning_allowed) override;
+                              bool is_personalized_learning_allowed,
+                              int32_t flags) override;
   void OnCursorRectChanged(const gfx::Rect& rect,
                            bool screen_coordinates) override;
   void OnCancelComposition() override;

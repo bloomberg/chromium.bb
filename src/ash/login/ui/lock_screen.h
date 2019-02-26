@@ -10,6 +10,7 @@
 #include "ash/tray_action/tray_action_observer.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
+#include "ui/base/clipboard/clipboard.h"
 
 namespace ash {
 
@@ -84,6 +85,8 @@ class ASH_EXPORT LockScreen : public TrayActionObserver,
   LockContentsView* contents_view_ = nullptr;
 
   bool is_shown_ = false;
+
+  std::unique_ptr<ui::Clipboard> saved_clipboard_;
 
   ScopedObserver<TrayAction, TrayActionObserver> tray_action_observer_{this};
   ScopedSessionObserver session_observer_{this};

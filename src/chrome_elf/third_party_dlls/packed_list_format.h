@@ -10,6 +10,7 @@
 #ifndef CHROME_ELF_THIRD_PARTY_DLLS_PACKED_LIST_FORMAT_H_
 #define CHROME_ELF_THIRD_PARTY_DLLS_PACKED_LIST_FORMAT_H_
 
+#include <array>
 #include <string>
 
 #include <stdint.h>
@@ -53,9 +54,9 @@ struct PackedListMetadata {
 
 struct PackedListModule {
   // SHA1 of lowercase, UTF-8 basename (no path).
-  uint8_t basename_hash[elf_sha1::kSHA1Length];
+  elf_sha1::Digest basename_hash;
   // Code ID. Get the formatted string via GetFingerprintString(), then SHA1.
-  uint8_t code_id_hash[elf_sha1::kSHA1Length];
+  elf_sha1::Digest code_id_hash;
   // A timestamp used for tracking "last attempted load".  Used to manage
   // lifetime of entries in the local caches.
   uint32_t time_date_stamp;

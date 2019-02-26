@@ -80,14 +80,16 @@ public:
         typedef Context INHERITED;
     };
 
-    SK_DECLARE_PUBLIC_FLATTENABLE_DESERIALIZATION_PROCS(SkLightingShaderImpl)
-
 protected:
     void flatten(SkWriteBuffer&) const override;
+#ifdef SK_ENABLE_LEGACY_SHADERCONTEXT
     Context* onMakeContext(const ContextRec&, SkArenaAlloc*) const override;
+#endif
     sk_sp<SkShader> onMakeColorSpace(SkColorSpaceXformer* xformer) const override;
 
 private:
+    SK_FLATTENABLE_HOOKS(SkLightingShaderImpl)
+
     sk_sp<SkShader> fDiffuseShader;
     sk_sp<SkNormalSource> fNormalSource;
     sk_sp<SkLights> fLights;
@@ -450,6 +452,7 @@ void SkLightingShaderImpl::flatten(SkWriteBuffer& buf) const {
     }
 }
 
+#ifdef SK_ENABLE_LEGACY_SHADERCONTEXT
 SkShaderBase::Context* SkLightingShaderImpl::onMakeContext(
     const ContextRec& rec, SkArenaAlloc* alloc) const
 {
@@ -468,6 +471,7 @@ SkShaderBase::Context* SkLightingShaderImpl::onMakeContext(
 
     return alloc->make<LightingShaderContext>(*this, rec, diffuseContext, normalProvider, nullptr);
 }
+#endif
 
 sk_sp<SkShader> SkLightingShaderImpl::onMakeColorSpace(SkColorSpaceXformer* xformer) const {
     sk_sp<SkShader> xformedDiffuseShader =
@@ -492,8 +496,6 @@ sk_sp<SkShader> SkLightingShader::Make(sk_sp<SkShader> diffuseShader,
 
 ///////////////////////////////////////////////////////////////////////////////
 
-SK_DEFINE_FLATTENABLE_REGISTRAR_GROUP_START(SkLightingShader)
-    SK_DEFINE_FLATTENABLE_REGISTRAR_ENTRY(SkLightingShaderImpl)
-SK_DEFINE_FLATTENABLE_REGISTRAR_GROUP_END
-
-///////////////////////////////////////////////////////////////////////////////
+void SkLightingShader::RegisterFlattenables() {
+    SK_REGISTER_FLATTENABLE(SkLightingShaderImpl)
+}

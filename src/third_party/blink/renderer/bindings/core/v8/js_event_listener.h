@@ -18,7 +18,17 @@ class CORE_EXPORT JSEventListener final : public JSBasedEventListener {
   static JSEventListener* Create(ScriptState* script_state,
                                  v8::Local<v8::Object> listener,
                                  const V8PrivateProperty::Symbol& property) {
-    return new JSEventListener(script_state, listener, property);
+    return MakeGarbageCollected<JSEventListener>(script_state, listener,
+                                                 property);
+  }
+
+  JSEventListener(ScriptState* script_state,
+                  v8::Local<v8::Object> listener,
+                  const V8PrivateProperty::Symbol& property)
+      : JSBasedEventListener(kJSEventListenerType),
+        event_listener_(V8EventListener::CreateOrNull(listener)) {
+    DCHECK(event_listener_);
+    Attach(script_state, listener, property, this);
   }
 
   // blink::CustomWrappable overrides:
@@ -58,19 +68,10 @@ class CORE_EXPORT JSEventListener final : public JSBasedEventListener {
   }
 
  private:
-  JSEventListener(ScriptState* script_state,
-                  v8::Local<v8::Object> listener,
-                  const V8PrivateProperty::Symbol& property)
-      : JSBasedEventListener(kJSEventListenerType),
-        event_listener_(V8EventListener::CreateOrNull(listener)) {
-    DCHECK(event_listener_);
-    Attach(script_state, listener, property, this);
-  }
-
   // blink::JSBasedEventListener override:
-  void CallListenerFunction(EventTarget&,
-                            Event&,
-                            v8::Local<v8::Value> js_event) override;
+  void InvokeInternal(EventTarget&,
+                      Event&,
+                      v8::Local<v8::Value> js_event) override;
 
   const TraceWrapperMember<V8EventListener> event_listener_;
 };

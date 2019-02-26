@@ -121,7 +121,7 @@ class RunTaskEventListener final : public EventListener {
  public:
   RunTaskEventListener(base::RepeatingClosure task)
       : EventListener(kCPPEventListenerType), task_(std::move(task)) {}
-  void handleEvent(ExecutionContext*, Event*) override { task_.Run(); }
+  void Invoke(ExecutionContext*, Event*) override { task_.Run(); }
   bool operator==(const EventListener& other) const override {
     return this == &other;
   }

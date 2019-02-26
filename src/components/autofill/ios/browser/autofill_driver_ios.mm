@@ -98,7 +98,7 @@ void AutofillDriverIOS::SendFormDataToRenderer(
     int query_id,
     RendererFormDataAction action,
     const FormData& data) {
-  [bridge_ onFormDataFilled:query_id inFrame:web_frame_ result:data];
+  [bridge_ fillFormData:data inFrame:web_frame_];
 }
 
 void AutofillDriverIOS::PropagateAutofillPredictions(
@@ -108,9 +108,8 @@ void AutofillDriverIOS::PropagateAutofillPredictions(
 
 void AutofillDriverIOS::SendAutofillTypePredictionsToRenderer(
     const std::vector<FormStructure*>& forms) {
-  [bridge_ sendAutofillTypePredictionsToRenderer:
-               FormStructure::GetFieldTypePredictions(forms)
-                                         toFrame:web_frame_];
+  [bridge_ fillFormDataPredictions:FormStructure::GetFieldTypePredictions(forms)
+                           inFrame:web_frame_];
 }
 
 void AutofillDriverIOS::RendererShouldAcceptDataListSuggestion(

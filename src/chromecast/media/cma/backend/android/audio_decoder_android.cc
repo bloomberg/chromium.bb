@@ -189,11 +189,11 @@ bool AudioDecoderAndroid::SetPlaybackRate(float rate) {
 AudioDecoderAndroid::BufferStatus AudioDecoderAndroid::PushBuffer(
     CastDecoderBuffer* buffer) {
   if (buffer->end_of_stream()) {
-    VLOG(3) << __func__ << ": EOS";
+    DVLOG(3) << __func__ << ": EOS";
   } else {
-    VLOG(3) << __func__ << ":"
-            << " size=" << buffer->data_size()
-            << " pts=" << buffer->timestamp();
+    DVLOG(3) << __func__ << ":"
+             << " size=" << buffer->data_size()
+             << " pts=" << buffer->timestamp();
   }
   TRACE_FUNCTION_ENTRY0();
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -239,7 +239,7 @@ void AudioDecoderAndroid::GetStatistics(Statistics* stats) {
   DCHECK(stats);
   DCHECK(task_runner_->BelongsToCurrentThread());
   *stats = stats_;
-  VLOG(1) << __func__ << ": decoded_bytes=" << stats->decoded_bytes;
+  LOG(INFO) << __func__ << ": decoded_bytes=" << stats->decoded_bytes;
 }
 
 bool AudioDecoderAndroid::SetConfig(const AudioConfig& config) {
@@ -353,9 +353,9 @@ AudioDecoderAndroid::RenderingDelay AudioDecoderAndroid::GetRenderingDelay() {
     }
   }
 
-  VLOG(2) << __func__ << ":"
-          << " delay=" << delay.delay_microseconds
-          << " ts=" << delay.timestamp_microseconds;
+  LOG(INFO) << __func__ << ":"
+            << " delay=" << delay.delay_microseconds
+            << " ts=" << delay.timestamp_microseconds;
 
   return delay;
 }
@@ -381,11 +381,11 @@ void AudioDecoderAndroid::OnBufferDecoded(
   DCHECK(rate_shifter_);
 
   if (decoded->end_of_stream()) {
-    VLOG(3) << __func__ << ": EOS";
+    DVLOG(3) << __func__ << ": EOS";
   } else {
-    VLOG(3) << __func__ << ":"
-            << " input_bytes=" << input_bytes
-            << " decoded.size=" << decoded->data_size();
+    DVLOG(3) << __func__ << ":"
+             << " input_bytes=" << input_bytes
+             << " decoded.size=" << decoded->data_size();
   }
 
   if (status == CastAudioDecoder::Status::kDecodeError) {
@@ -473,8 +473,8 @@ void AudioDecoderAndroid::OnBufferDecoded(
 }
 
 void AudioDecoderAndroid::CheckBufferComplete() {
-  VLOG(3) << __func__
-          << ": pending_buffer_complete_=" << pending_buffer_complete_;
+  DVLOG(3) << __func__
+           << ": pending_buffer_complete_=" << pending_buffer_complete_;
 
   if (!pending_buffer_complete_) {
     return;
@@ -498,10 +498,10 @@ void AudioDecoderAndroid::CheckBufferComplete() {
 }
 
 void AudioDecoderAndroid::PushRateShifted() {
-  VLOG(3) << __func__ << ":"
-          << " pushed_eos_=" << pushed_eos_
-          << " pending_output_frames_=" << pending_output_frames_
-          << " got_eos_=" << got_eos_;
+  DVLOG(3) << __func__ << ":"
+           << " pushed_eos_=" << pushed_eos_
+           << " pending_output_frames_=" << pending_output_frames_
+           << " got_eos_=" << got_eos_;
 
   DCHECK(sink_);
 
@@ -531,7 +531,7 @@ void AudioDecoderAndroid::PushRateShifted() {
 
       scoped_refptr<DecoderBufferBase> eos_buffer(
           new DecoderBufferAdapter(::media::DecoderBuffer::CreateEOSBuffer()));
-      VLOG(3) << __func__ << ": WritePcm(eos_buffer)";
+      DVLOG(3) << __func__ << ": WritePcm(eos_buffer)";
       sink_->WritePcm(eos_buffer);
     }
     return;
@@ -605,7 +605,7 @@ bool AudioDecoderAndroid::BypassDecoder() const {
 
 void AudioDecoderAndroid::OnWritePcmCompletion(BufferStatus status,
                                                const RenderingDelay& delay) {
-  VLOG(3) << __func__ << ": status=" << status;
+  DVLOG(3) << __func__ << ": status=" << status;
 
   TRACE_FUNCTION_ENTRY0();
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -619,7 +619,7 @@ void AudioDecoderAndroid::OnWritePcmCompletion(BufferStatus status,
 }
 
 void AudioDecoderAndroid::PushMorePcm() {
-  VLOG(3) << __func__ << ":";
+  DVLOG(3) << __func__ << ":";
 
   PushRateShifted();
 

@@ -36,7 +36,7 @@ WebGLExtensionName WebGLColorBufferFloat::GetName() const {
 
 WebGLColorBufferFloat* WebGLColorBufferFloat::Create(
     WebGLRenderingContextBase* context) {
-  return new WebGLColorBufferFloat(context);
+  return MakeGarbageCollected<WebGLColorBufferFloat>(context);
 }
 
 bool WebGLColorBufferFloat::Supported(WebGLRenderingContextBase* context) {

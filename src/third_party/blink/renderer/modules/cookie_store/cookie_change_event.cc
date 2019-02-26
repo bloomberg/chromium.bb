@@ -16,7 +16,7 @@ namespace blink {
 CookieChangeEvent::~CookieChangeEvent() = default;
 
 const AtomicString& CookieChangeEvent::InterfaceName() const {
-  return EventNames::CookieChangeEvent;
+  return event_interface_names::kCookieChangeEvent;
 }
 
 void CookieChangeEvent::Trace(blink::Visitor* visitor) {
@@ -28,19 +28,19 @@ void CookieChangeEvent::Trace(blink::Visitor* visitor) {
 CookieChangeEvent::CookieChangeEvent() = default;
 
 CookieChangeEvent::CookieChangeEvent(const AtomicString& type,
-                                     HeapVector<CookieListItem> changed,
-                                     HeapVector<CookieListItem> deleted)
+                                     HeapVector<Member<CookieListItem>> changed,
+                                     HeapVector<Member<CookieListItem>> deleted)
     : Event(type, Bubbles::kNo, Cancelable::kNo),
       changed_(std::move(changed)),
       deleted_(std::move(deleted)) {}
 
 CookieChangeEvent::CookieChangeEvent(const AtomicString& type,
-                                     const CookieChangeEventInit& initializer)
+                                     const CookieChangeEventInit* initializer)
     : Event(type, initializer) {
-  if (initializer.hasChanged())
-    changed_ = initializer.changed();
-  if (initializer.hasDeleted())
-    deleted_ = initializer.deleted();
+  if (initializer->hasChanged())
+    changed_ = initializer->changed();
+  if (initializer->hasDeleted())
+    deleted_ = initializer->deleted();
 }
 
 namespace {
@@ -61,48 +61,52 @@ String ToCookieListItemSameSite(network::mojom::CookieSameSite same_site) {
 }  // namespace
 
 // static
-void CookieChangeEvent::ToCookieListItem(
+CookieListItem* CookieChangeEvent::ToCookieListItem(
     const WebCanonicalCookie& canonical_cookie,
-    bool is_deleted,  // True for the information from a cookie deletion event.
-    CookieListItem& list_item) {
-  list_item.setName(canonical_cookie.Name());
-  list_item.setPath(canonical_cookie.Path());
-  list_item.setSecure(canonical_cookie.IsSecure());
-  list_item.setSameSite(ToCookieListItemSameSite(canonical_cookie.SameSite()));
+    bool is_deleted) {
+  CookieListItem* list_item = CookieListItem::Create();
+
+  list_item->setName(canonical_cookie.Name());
+  list_item->setPath(canonical_cookie.Path());
+  list_item->setSecure(canonical_cookie.IsSecure());
+  list_item->setSameSite(ToCookieListItemSameSite(canonical_cookie.SameSite()));
 
   // The domain of host-only cookies is the host name, without a dot (.) prefix.
   String cookie_domain = canonical_cookie.Domain();
   if (cookie_domain.StartsWith("."))
-    list_item.setDomain(cookie_domain.Substring(1));
+    list_item->setDomain(cookie_domain.Substring(1));
 
   if (!is_deleted) {
-    list_item.setValue(canonical_cookie.Value());
+    list_item->setValue(canonical_cookie.Value());
     if (!canonical_cookie.ExpiryDate().is_null()) {
-      list_item.setExpires(ConvertSecondsToDOMTimeStamp(
+      list_item->setExpires(ConvertSecondsToDOMTimeStamp(
           canonical_cookie.ExpiryDate().ToDoubleT()));
     }
   }
+  return list_item;
 }
 
 // static
 void CookieChangeEvent::ToEventInfo(
     const WebCanonicalCookie& backend_cookie,
     ::network::mojom::CookieChangeCause change_cause,
-    HeapVector<CookieListItem>& changed,
-    HeapVector<CookieListItem>& deleted) {
+    HeapVector<Member<CookieListItem>>& changed,
+    HeapVector<Member<CookieListItem>>& deleted) {
   switch (change_cause) {
     case ::network::mojom::CookieChangeCause::INSERTED:
     case ::network::mojom::CookieChangeCause::EXPLICIT: {
-      CookieListItem& cookie = changed.emplace_back();
-      ToCookieListItem(backend_cookie, false /* is_deleted */, cookie);
+      CookieListItem* cookie =
+          ToCookieListItem(backend_cookie, false /* is_deleted */);
+      changed.push_back(cookie);
       break;
     }
     case ::network::mojom::CookieChangeCause::UNKNOWN_DELETION:
     case ::network::mojom::CookieChangeCause::EXPIRED:
     case ::network::mojom::CookieChangeCause::EVICTED:
     case ::network::mojom::CookieChangeCause::EXPIRED_OVERWRITE: {
-      CookieListItem& cookie = deleted.emplace_back();
-      ToCookieListItem(backend_cookie, true /* is_deleted */, cookie);
+      CookieListItem* cookie =
+          ToCookieListItem(backend_cookie, true /* is_deleted */);
+      deleted.push_back(cookie);
       break;
     }
 

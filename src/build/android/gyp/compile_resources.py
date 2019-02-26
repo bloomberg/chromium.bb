@@ -27,6 +27,11 @@ from xml.etree import ElementTree
 from util import build_utils
 from util import resource_utils
 
+# Name of environment variable that can be used to force this script to
+# put temporary resource files into specific sub-directories, instead of
+# temporary ones.
+_ENV_DEBUG_VARIABLE = 'ANDROID_DEBUG_TEMP_RESOURCES_DIR'
+
 # Import jinja2 from third_party/jinja2
 sys.path.insert(1, os.path.join(build_utils.DIR_SOURCE_ROOT, 'third_party'))
 from jinja2 import Template # pylint: disable=F0401
@@ -136,6 +141,17 @@ def _ParseArgs(args):
                           action='store_true',
                           help='Whether to strip xml namespaces from processed '
                                'xml resources')
+  input_opts.add_argument(
+      '--resources-config-path', help='Path to aapt2 resources config file.')
+  input_opts.add_argument(
+      '--optimize-resources',
+      default=False,
+      action='store_true',
+      help='Whether to run the `aapt2 optimize` step on the resources.')
+  input_opts.add_argument(
+      '--unoptimized-resources-path',
+      help='Path to output the intermediate apk before running '
+      '`aapt2 optimize`.')
 
   input_opts.add_argument(
       '--check-resources-pkg-id', type=_PackageIdArgument,
@@ -301,7 +317,6 @@ def _CreateLinkApkArgs(options):
     '--version-name', options.version_name,
     '--auto-add-overlay',
     '--no-version-vectors',
-    '-o', options.apk_path,
   ]
 
   for j in options.include_resources:
@@ -476,7 +491,11 @@ def _CompileDeps(aapt2_path, dep_subdirs, temp_dir):
     partial_path = os.path.join(partials_dir, dirname + '.zip')
     compile_command = (partial_compile_command +
                        ['--dir', directory, '-o', partial_path])
-    build_utils.CheckOutput(compile_command)
+    build_utils.CheckOutput(
+        compile_command,
+        stderr_filter=lambda output:
+            build_utils.FilterLines(
+                output, r'ignoring configuration .* for styleable'))
 
     # Sorting the files in the partial ensures deterministic output from the
     # aapt2 link step which uses order of files in the partial.
@@ -536,7 +555,15 @@ def _PackageApk(options, dep_subdirs, temp_dir, gen_dir, r_txt_path):
   for directory in dep_subdirs:
     renamed_paths.update(_MoveImagesToNonMdpiFolders(directory))
 
+  if options.optimize_resources:
+    if options.unoptimized_resources_path:
+      unoptimized_apk_path = options.unoptimized_resources_path
+    else:
+      unoptimized_apk_path = os.path.join(gen_dir, 'intermediate.ap_')
+  else:
+    unoptimized_apk_path = options.apk_path
   link_command = _CreateLinkApkArgs(options)
+  link_command += ['-o', unoptimized_apk_path]
   link_command += ['--output-text-symbols', r_txt_path]
   # TODO(digit): Is this below actually required for R.txt generation?
   link_command += ['--java', gen_dir]
@@ -552,8 +579,67 @@ def _PackageApk(options, dep_subdirs, temp_dir, gen_dir, r_txt_path):
   # Also creates R.txt
   build_utils.CheckOutput(
       link_command, print_stdout=False, print_stderr=False)
+
+  if options.optimize_resources:
+    _OptimizeApk(options, temp_dir, unoptimized_apk_path, r_txt_path)
+
   _CreateResourceInfoFile(
       renamed_paths, options.apk_info_path, options.dependencies_res_zips)
+
+
+def _OptimizeApk(options, temp_dir, unoptimized_apk_path, r_txt_path):
+  """Optimize intermediate .ap_ file with aapt2.
+
+  Args:
+    options: The command-line options tuple. E.g. the generated apk
+      will be written to |options.apk_path|.
+    temp_dir: A temporary directory.
+    unoptimized_apk_path: path of the apk to optimize.
+    r_txt_path: path to the R.txt file of the unoptimized apk.
+  """
+  # Resources of type ID are references to UI elements/views. They are used by
+  # UI automation testing frameworks. They are kept in so that they dont break
+  # tests, even though they may not actually be used during runtime. See
+  # https://crbug.com/900993
+  id_resources = _ExtractIdResources(r_txt_path)
+  gen_config_path = os.path.join(temp_dir, 'aapt2.config')
+  if options.resources_config_path:
+    shutil.copyfile(options.resources_config_path, gen_config_path)
+  with open(gen_config_path, 'a+') as config:
+    for resource in id_resources:
+      config.write('{}#no_obfuscate\n'.format(resource))
+
+  # Optimize the resources.arsc file by obfuscating resource names and only
+  # allow usage via R.java constant.
+  optimize_command = [
+      options.aapt2_path,
+      'optimize',
+      '--enable-resource-obfuscation',
+      '-o',
+      options.apk_path,
+      '--resources-config-path',
+      gen_config_path,
+      unoptimized_apk_path,
+  ]
+  build_utils.CheckOutput(
+      optimize_command, print_stdout=False, print_stderr=False)
+
+
+def _ExtractIdResources(rtxt_path):
+  """Extract resources of type ID from the R.txt file
+
+  Args:
+    rtxt_path: Path to R.txt file with all the resources
+  Returns:
+    List of id resources in the form of id/<resource_name>
+  """
+  id_resources = []
+  with open(rtxt_path) as rtxt:
+    for line in rtxt:
+      if ' id ' in line:
+        resource_name = line.split()[2]
+        id_resources.append('id/{}'.format(resource_name))
+  return id_resources
 
 
 def _WriteFinalRTxtFile(options, aapt_r_txt_path):
@@ -581,8 +667,8 @@ def _WriteFinalRTxtFile(options, aapt_r_txt_path):
   return r_txt_file
 
 
-def _OnStaleMd5(options):
-  with resource_utils.BuildContext() as build:
+def _OnStaleMd5(options, debug_temp_resources_dir):
+  with resource_utils.BuildContext(debug_temp_resources_dir) as build:
     dep_subdirs = resource_utils.ExtractDeps(options.dependencies_res_zips,
                                              build.deps_dir)
 
@@ -634,34 +720,45 @@ def main(args):
   # Order of these must match order specified in GN so that the correct one
   # appears first in the depfile.
   possible_output_paths = [
-    options.apk_path,
-    options.apk_path + '.info',
-    options.r_text_out,
-    options.srcjar_out,
-    options.proguard_file,
-    options.proguard_file_main_dex,
+      options.apk_path,
+      options.apk_path + '.info',
+      options.r_text_out,
+      options.srcjar_out,
+      options.proguard_file,
+      options.proguard_file_main_dex,
+      options.unoptimized_resources_path,
   ]
   output_paths = [x for x in possible_output_paths if x]
 
   # List python deps in input_strings rather than input_paths since the contents
   # of them does not change what gets written to the depsfile.
   input_strings = options.extra_res_packages + [
-    options.shared_resources,
-    options.resource_blacklist_regex,
-    options.resource_blacklist_exceptions,
-    str(options.debuggable),
-    str(options.png_to_webp),
-    str(options.support_zh_hk),
-    str(options.no_xml_namespaces),
+      options.shared_resources,
+      options.resource_blacklist_regex,
+      options.resource_blacklist_exceptions,
+      str(options.debuggable),
+      str(options.png_to_webp),
+      str(options.support_zh_hk),
+      str(options.no_xml_namespaces),
+      str(options.optimize_resources),
   ]
 
   input_strings.extend(_CreateLinkApkArgs(options))
 
+  debug_temp_resources_dir = os.environ.get(_ENV_DEBUG_VARIABLE)
+  if debug_temp_resources_dir:
+    debug_temp_resources_dir = os.path.join(debug_temp_resources_dir,
+                                            os.path.basename(options.apk_path))
+    build_utils.DeleteDirectory(debug_temp_resources_dir)
+    build_utils.MakeDirectory(debug_temp_resources_dir)
+
+
   possible_input_paths = [
-    options.aapt_path,
-    options.aapt2_path,
-    options.android_manifest,
-    options.shared_resources_whitelist,
+      options.aapt_path,
+      options.aapt2_path,
+      options.android_manifest,
+      options.shared_resources_whitelist,
+      options.resources_config_path,
   ]
   possible_input_paths += options.include_resources
   input_paths = [x for x in possible_input_paths if x]
@@ -672,11 +769,12 @@ def main(args):
     input_paths.append(options.webp_binary)
 
   build_utils.CallAndWriteDepfileIfStale(
-      lambda: _OnStaleMd5(options),
+      lambda: _OnStaleMd5(options, debug_temp_resources_dir),
       options,
       input_paths=input_paths,
       input_strings=input_strings,
       output_paths=output_paths,
+      force=bool(debug_temp_resources_dir),
       depfile_deps=options.dependencies_res_zips + options.extra_r_text_files,
       add_pydeps=False)
 

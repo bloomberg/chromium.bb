@@ -4,6 +4,8 @@
 
 #include "net/third_party/http2/decoder/decode_http2_structures.h"
 
+#include <cstdint>
+
 #include "base/logging.h"
 #include "net/third_party/http2/decoder/decode_buffer.h"
 #include "net/third_party/http2/http2_constants.h"

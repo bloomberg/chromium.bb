@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/dom/mutation_observer_options.h"
 #include "third_party/blink/renderer/core/dom/node_rare_data.h"
 #include "third_party/blink/renderer/core/dom/tree_scope.h"
+#include "third_party/blink/renderer/core/scroll/scroll_customization.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
@@ -50,6 +51,7 @@ class Element;
 class Event;
 class EventDispatchHandlingState;
 class ExceptionState;
+class FlatTreeNodeData;
 class GetRootNodeOptions;
 class HTMLQualifiedName;
 class HTMLSlotElement;
@@ -67,11 +69,15 @@ class NodeRareData;
 class QualifiedName;
 class RegisteredEventListener;
 class SVGQualifiedName;
+class ScrollState;
+class ScrollStateCallback;
 class ShadowRoot;
 template <typename NodeType>
 class StaticNodeTypeList;
 using StaticNodeList = StaticNodeTypeList<Node>;
+class StringOrTrustedScript;
 class StyleChangeReasonForTracing;
+class V8ScrollStateCallback;
 class WebPluginContainerImpl;
 
 const int kNodeStyleChangeShift = 18;
@@ -189,7 +195,23 @@ class CORE_EXPORT Node : public EventTarget {
   NodeList* childNodes();
   Node* firstChild() const;
   Node* lastChild() const;
-  Node* getRootNode(const GetRootNodeOptions&) const;
+  Node* getRootNode(const GetRootNodeOptions*) const;
+
+  // Scroll Customization API. See crbug.com/410974 for details.
+  void setDistributeScroll(V8ScrollStateCallback*,
+                           const String& native_scroll_behavior);
+  void setApplyScroll(V8ScrollStateCallback*,
+                      const String& native_scroll_behavior);
+  void SetApplyScroll(ScrollStateCallback*);
+  void RemoveApplyScroll();
+  ScrollStateCallback* GetApplyScroll();
+  void NativeDistributeScroll(ScrollState&);
+  void NativeApplyScroll(ScrollState&);
+  void CallDistributeScroll(ScrollState&);
+  void CallApplyScroll(ScrollState&);
+  void WillBeginCustomizedScrollPhase(scroll_customization::ScrollDirection);
+  void DidEndCustomizedScrollPhase();
+
   Node& TreeRoot() const;
   Node& ShadowIncludingRoot() const;
   // closed-shadow-hidden is defined at
@@ -236,6 +258,8 @@ class CORE_EXPORT Node : public EventTarget {
 
   String textContent(bool convert_brs_to_newlines = false) const;
   void setTextContent(const String&);
+  void textContent(StringOrTrustedScript& result);
+  virtual void setTextContent(const StringOrTrustedScript&, ExceptionState&);
 
   bool SupportsAltText();
 
@@ -442,6 +466,9 @@ class CORE_EXPORT Node : public EventTarget {
   void SetNeedsStyleRecalc(StyleChangeType, const StyleChangeReasonForTracing&);
   void ClearNeedsStyleRecalc();
 
+  // Propagates a dirty bit breadcrumb for this element up the ancestor chain.
+  void MarkAncestorsWithChildNeedsStyleRecalc();
+
   bool NeedsReattachLayoutTree() const {
     return GetFlag(kNeedsReattachLayoutTree);
   }
@@ -460,6 +487,11 @@ class CORE_EXPORT Node : public EventTarget {
   }
 
   void MarkAncestorsWithChildNeedsReattachLayoutTree();
+
+  void SetForceReattachLayoutTree() { SetFlag(kForceReattachLayoutTree); }
+  bool GetForceReattachLayoutTree() {
+    return GetFlag(kForceReattachLayoutTree);
+  }
 
   bool NeedsDistributionRecalc() const;
 
@@ -512,7 +544,7 @@ class CORE_EXPORT Node : public EventTarget {
 
   // Please don't use this function.
   // Background: When we investigated the usage of (old) UpdateDistribution,
-  // some caller's intents were unclear. Thus, we had to introduce this funtion
+  // some caller's intents were unclear. Thus, we had to introduce this function
   // for the sake of safety. If we can figure out the intent of each caller, we
   // can replace that with calling UpdateDistributionForFlatTreeTraversal (or
   // just RecalcSlotAssignments()) on a case-by-case basis.
@@ -611,7 +643,7 @@ class CORE_EXPORT Node : public EventTarget {
   // Whether or not a selection can be started in this object
   virtual bool CanStartSelection() const;
 
-  // -----------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
   // Integration with layout tree
 
   // As layoutObject() includes a branch you should avoid calling it repeatedly
@@ -637,7 +669,6 @@ class CORE_EXPORT Node : public EventTarget {
     // objects when we need to do whitespace re-attachment.
     LayoutObject* previous_in_flow = nullptr;
     bool performing_reattach = false;
-    bool clear_invalidation = false;
     // True if the previous_in_flow member is up-to-date, even if it is nullptr.
     bool use_previous_in_flow = false;
 
@@ -666,20 +697,26 @@ class CORE_EXPORT Node : public EventTarget {
   // such a method (on Document and Element).
   bool ShouldCallRecalcStyle(StyleRecalcChange);
 
+  // ---------------------------------------------------------------------------
+  // Inline ComputedStyle accessors
+  //
+  // Note that the following 'inline' functions are not defined in this header,
+  // but in node_computed_style.h. Please include that file if you want to use
+  // these functions.
+
   // Wrapper for nodes that don't have a layoutObject, but still cache the style
   // (like HTMLOptionElement).
-  ComputedStyle* MutableComputedStyle() const;
-  const ComputedStyle* GetComputedStyle() const;
-  const ComputedStyle* ParentComputedStyle() const;
-
-  const ComputedStyle& ComputedStyleRef() const;
+  inline ComputedStyle* MutableComputedStyle() const;
+  inline const ComputedStyle* GetComputedStyle() const;
+  inline const ComputedStyle* ParentComputedStyle() const;
+  inline const ComputedStyle& ComputedStyleRef() const;
 
   const ComputedStyle* EnsureComputedStyle(
       PseudoId pseudo_element_specifier = kPseudoIdNone) {
     return VirtualEnsureComputedStyle(pseudo_element_specifier);
   }
 
-  // -----------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
   // Notification of document structure changes (see container_node.h for more
   // notification methods)
   //
@@ -742,6 +779,10 @@ class CORE_EXPORT Node : public EventTarget {
 
   NodeListsNodeData* NodeLists();
   void ClearNodeLists();
+
+  FlatTreeNodeData* GetFlatTreeNodeData() const;
+  FlatTreeNodeData& EnsureFlatTreeNodeData();
+  void ClearFlatTreeNodeData();
 
   virtual bool WillRespondToMouseMoveEvents();
   virtual bool WillRespondToMouseClickEvents();
@@ -842,6 +883,8 @@ class CORE_EXPORT Node : public EventTarget {
     return GetFlag(kInDOMNodeRemovedHandler);
   }
 
+  bool IsEffectiveRootScroller() const;
+
   // If the node is a plugin, then this returns its WebPluginContainer.
   WebPluginContainerImpl* GetWebPluginContainer() const;
 
@@ -900,11 +943,13 @@ class CORE_EXPORT Node : public EventTarget {
     // Temporary flag for some UseCounter items. crbug.com/859391.
     kInDOMNodeRemovedHandler = 1 << 29,
 
+    kForceReattachLayoutTree = 1 << 30,
+
     kDefaultNodeFlags =
         kIsFinishedParsingChildrenFlag | kNeedsReattachStyleChange
   };
 
-  // 3 bits remaining.
+  // 1 bit remaining.
 
   bool GetFlag(NodeFlags mask) const { return node_flags_ & mask; }
   void SetFlag(bool f, NodeFlags mask) {
@@ -928,8 +973,6 @@ class CORE_EXPORT Node : public EventTarget {
     kCreateDocument = kCreateContainer | kIsConnectedFlag,
     kCreateV0InsertionPoint = kCreateHTMLElement | kIsV0InsertionPointFlag,
     kCreateEditingText = kCreateText | kHasNameOrIsEditingTextFlag,
-    kCreatePseudoElement = kDefaultNodeFlags | kIsContainerFlag |
-                           kIsElementFlag | kNeedsReattachLayoutTree,
   };
 
   Node(TreeScope*, ConstructionType);
@@ -963,7 +1006,6 @@ class CORE_EXPORT Node : public EventTarget {
 
   void SetTreeScope(TreeScope* scope) { tree_scope_ = scope; }
 
-  void MarkAncestorsWithChildNeedsStyleRecalc();
   static void MarkAncestorsWithChildNeedsStyleRecalc(Node* child) {
     child->MarkAncestorsWithChildNeedsStyleRecalc();
   }

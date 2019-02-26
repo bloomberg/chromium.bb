@@ -129,15 +129,7 @@ TEST_F(StructTraitsTest, Transform) {
   EXPECT_EQ(col4row4, output.matrix().get(3, 3));
 }
 
-// AcceleratedWidgets can only be sent between processes on some platforms.
-#if defined(OS_WIN) || defined(USE_OZONE) || defined(USE_X11) || \
-    defined(OS_MACOSX)
-#define MAYBE_AcceleratedWidget AcceleratedWidget
-#else
-#define MAYBE_AcceleratedWidget DISABLED_AcceleratedWidget
-#endif
-
-TEST_F(StructTraitsTest, MAYBE_AcceleratedWidget) {
+TEST_F(StructTraitsTest, AcceleratedWidget) {
   gfx::AcceleratedWidget input(CastToAcceleratedWidget(1001));
   gfx::AcceleratedWidget output;
   mojo::test::SerializeAndDeserialize<gfx::mojom::AcceleratedWidget>(&input,
@@ -149,14 +141,15 @@ TEST_F(StructTraitsTest, GpuMemoryBufferHandle) {
   const gfx::GpuMemoryBufferId kId(99);
   const uint32_t kOffset = 126;
   const int32_t kStride = 256;
-  base::SharedMemory shared_memory;
-  ASSERT_TRUE(shared_memory.CreateAnonymous(1024));
-  ASSERT_TRUE(shared_memory.Map(1024));
+  base::UnsafeSharedMemoryRegion shared_memory_region =
+      base::UnsafeSharedMemoryRegion::Create(1024);
+  ASSERT_TRUE(shared_memory_region.IsValid());
+  ASSERT_TRUE(shared_memory_region.Map().IsValid());
 
   gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::SHARED_MEMORY_BUFFER;
   handle.id = kId;
-  handle.handle = base::SharedMemory::DuplicateHandle(shared_memory.handle());
+  handle.region = shared_memory_region.Duplicate();
   handle.offset = kOffset;
   handle.stride = kStride;
 
@@ -168,8 +161,8 @@ TEST_F(StructTraitsTest, GpuMemoryBufferHandle) {
   EXPECT_EQ(kOffset, output.offset);
   EXPECT_EQ(kStride, output.stride);
 
-  base::SharedMemory output_memory(output.handle, true);
-  EXPECT_TRUE(output_memory.Map(1024));
+  base::UnsafeSharedMemoryRegion output_memory = std::move(output.region);
+  EXPECT_TRUE(output_memory.Map().IsValid());
 
 #if defined(OS_LINUX)
   gfx::GpuMemoryBufferHandle handle2;

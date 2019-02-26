@@ -73,13 +73,15 @@ class ServiceWorkerGlobalScopeProxy final
  public:
   static ServiceWorkerGlobalScopeProxy* Create(WebEmbeddedWorkerImpl&,
                                                WebServiceWorkerContextClient&);
+
+  ServiceWorkerGlobalScopeProxy(WebEmbeddedWorkerImpl&,
+                                WebServiceWorkerContextClient&);
   ~ServiceWorkerGlobalScopeProxy() override;
 
   // WebServiceWorkerContextProxy overrides:
   void BindServiceWorkerHost(
       mojo::ScopedInterfaceEndpointHandle service_worker_host) override;
-  void SetRegistration(
-      std::unique_ptr<WebServiceWorkerRegistration::Handle>) override;
+  void SetRegistration(WebServiceWorkerRegistrationObjectInfo info) override;
   // Must be called after the above BindServiceWorkerHost() and
   // SetRegistration() got called.
   void ReadyToEvaluateScript() override;
@@ -152,10 +154,11 @@ class ServiceWorkerGlobalScopeProxy final
                             MessageLevel,
                             const String& message,
                             SourceLocation*) override;
-  void PostMessageToPageInspector(int session_id, const String&) override;
   void DidCreateWorkerGlobalScope(WorkerOrWorkletGlobalScope*) override;
   void DidInitializeWorkerContext() override;
   void DidLoadInstalledScript() override;
+  void DidFailToLoadInstalledClassicScript() override;
+  void DidFailToFetchModuleScript() override;
   void WillEvaluateClassicScript(size_t script_size,
                                  size_t cached_metadata_size) override;
   void WillEvaluateImportedClassicScript(size_t script_size,
@@ -179,9 +182,6 @@ class ServiceWorkerGlobalScopeProxy final
   void TerminateWorkerContext();
 
  private:
-  ServiceWorkerGlobalScopeProxy(WebEmbeddedWorkerImpl&,
-                                WebServiceWorkerContextClient&);
-
   WebServiceWorkerContextClient& Client() const;
   ServiceWorkerGlobalScope* WorkerGlobalScope() const;
 

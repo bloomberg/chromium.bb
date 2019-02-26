@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "extensions/browser/value_store/value_store.h"
 
@@ -20,7 +19,7 @@ class ValueStoreFactory;
 }  // namespace extensions
 
 // A frontend for a LeveldbValueStore, for use on the UI thread.
-class ValueStoreFrontend : public base::SupportsWeakPtr<ValueStoreFrontend> {
+class ValueStoreFrontend {
  public:
   // The kind of extensions data stored in a backend.
   enum class BackendType { RULES, STATE };

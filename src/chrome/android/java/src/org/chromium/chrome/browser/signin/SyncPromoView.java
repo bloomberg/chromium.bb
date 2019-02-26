@@ -92,9 +92,9 @@ public class SyncPromoView extends LinearLayout implements AndroidSyncSettingsOb
 
     private void update() {
         ViewState viewState;
-        if (!AndroidSyncSettings.isMasterSyncEnabled()) {
+        if (!AndroidSyncSettings.get().isMasterSyncEnabled()) {
             viewState = getStateForEnableAndroidSync();
-        } else if (!AndroidSyncSettings.isChromeSyncEnabled()) {
+        } else if (!AndroidSyncSettings.get().isChromeSyncEnabled()) {
             viewState = getStateForEnableChromeSync();
         } else {
             viewState = getStateForStartUsing();
@@ -174,7 +174,7 @@ public class SyncPromoView extends LinearLayout implements AndroidSyncSettingsOb
 
         ButtonState positiveButton = new ButtonPresent(R.string.enable_sync_button,
                 view -> PreferencesLauncher.launchSettingsPage(
-                        getContext(), SyncCustomizationFragment.class.getName()));
+                        getContext(), SyncCustomizationFragment.class));
 
         return new ViewState(descId, positiveButton);
     }
@@ -193,14 +193,14 @@ public class SyncPromoView extends LinearLayout implements AndroidSyncSettingsOb
         assert mInitialized : "init(...) must be called on SyncPromoView before use.";
 
         super.onAttachedToWindow();
-        AndroidSyncSettings.registerObserver(this);
+        AndroidSyncSettings.get().registerObserver(this);
         update();
     }
 
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        AndroidSyncSettings.unregisterObserver(this);
+        AndroidSyncSettings.get().unregisterObserver(this);
     }
 
     // AndroidSyncStateObserver

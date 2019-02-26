@@ -33,38 +33,35 @@ class CORE_EXPORT MojoHandle final : public ScriptWrappable {
  public:
   static MojoHandle* Create(mojo::ScopedHandle);
 
+  explicit MojoHandle(mojo::ScopedHandle);
+
   mojo::ScopedHandle TakeHandle();
 
   void close();
   MojoWatcher* watch(ScriptState*,
-                     const MojoHandleSignals&,
+                     const MojoHandleSignals*,
                      V8MojoWatchCallback*);
 
   // MessagePipe handle.
   MojoResult writeMessage(ArrayBufferOrArrayBufferView&,
                           const HeapVector<Member<MojoHandle>>&);
-  void readMessage(const MojoReadMessageFlags&, MojoReadMessageResult&);
+  MojoReadMessageResult* readMessage(const MojoReadMessageFlags*);
 
   // DataPipe handle.
-  void writeData(const ArrayBufferOrArrayBufferView&,
-                 const MojoWriteDataOptions&,
-                 MojoWriteDataResult&);
-  void queryData(MojoReadDataResult&);
-  void discardData(unsigned num_bytes,
-                   const MojoDiscardDataOptions&,
-                   MojoReadDataResult&);
-  void readData(ArrayBufferOrArrayBufferView&,
-                const MojoReadDataOptions&,
-                MojoReadDataResult&);
+  MojoWriteDataResult* writeData(const ArrayBufferOrArrayBufferView&,
+                                 const MojoWriteDataOptions*);
+  MojoReadDataResult* queryData() const;
+  MojoReadDataResult* discardData(unsigned num_bytes,
+                                  const MojoDiscardDataOptions*);
+  MojoReadDataResult* readData(ArrayBufferOrArrayBufferView&,
+                               const MojoReadDataOptions*) const;
 
   // SharedBuffer handle.
-  void mapBuffer(unsigned offset, unsigned num_bytes, MojoMapBufferResult&);
-  void duplicateBufferHandle(const MojoDuplicateBufferHandleOptions&,
-                             MojoCreateSharedBufferResult&);
+  MojoMapBufferResult* mapBuffer(unsigned offset, unsigned num_bytes);
+  MojoCreateSharedBufferResult* duplicateBufferHandle(
+      const MojoDuplicateBufferHandleOptions*);
 
  private:
-  explicit MojoHandle(mojo::ScopedHandle);
-
   mojo::ScopedHandle handle_;
 };
 

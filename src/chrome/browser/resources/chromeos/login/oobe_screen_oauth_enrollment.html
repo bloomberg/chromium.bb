@@ -60,7 +60,9 @@
                       icon1x="oobe-enrollment-32:briefcase"
                       icon2x="oobe-enrollment-64:briefcase"></hd-iron-icon>
         <h1 slot="title" i18n-content="oauthEnrollSuccessTitle"></h1>
-        <div slot="subtitle" i18n-content="oauthEnrollSuccess"></div>
+        <oobe-enrollment-success-with-domain id="oauth-enroll-success-subtitle"
+                                             slot="subtitle">
+        </oobe-enrollment-success-with-domain>
         <div slot="footer" class="flex layout vertical center end-justified">
           <img srcset="images/enrollment_success_illustration_1x.png 1x,
                   images/enrollment_success_illustration_2x.png 2x"
@@ -73,29 +75,6 @@
           </oobe-text-button>
         </div>
       </oobe-dialog>
-    </div>
-      <div id="oauth-enroll-step-abe-success" role="alert">
-        <oobe-dialog id="oauth-enroll-abe-success-card" has-buttons>
-          <hd-iron-icon slot="oobe-icon"
-                        icon1x="oobe-enrollment-32:briefcase"
-                        icon2x="oobe-enrollment-64:briefcase"></hd-iron-icon>
-          <h1 slot="title" i18n-content="oauthEnrollSuccessTitle"></h1>
-          <div slot="subtitle" id="oauth-enroll-abe-success-comment-no-domain"
-               i18n-content="oauthEnrollSuccess"></div>
-          <div slot="subtitle" id="oauth-enroll-abe-success-comment-domain"
-               hidden></div>
-          <div slot="footer" class="flex layout vertical center end-justified">
-            <img srcset="images/enrollment_success_illustration_1x.png 1x,
-                  images/enrollment_success_illustration_2x.png 2x"
-                 i18n-values="alt:enrollmentSuccessIllustrationTitle">
-          </div>
-          <div slot="bottom-buttons" class="layout horizontal end-justified">
-            <oobe-text-button inverse id="enroll-success-abe-done-button"
-                class="focus-on-show">
-              <div i18n-content="oauthEnrollDone"></div>
-            </oobe-text-button>
-          </div>
-        </oobe-dialog>
     </div>
     <div id="oauth-enroll-step-attribute-prompt">
       <oobe-dialog id="oauth-enroll-attribute-prompt-card" has-buttons>

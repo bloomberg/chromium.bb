@@ -6,11 +6,17 @@
 
 #include <lib/zx/event.h>
 
+#include "base/fuchsia/component_context.h"
+#include "base/fuchsia/fuchsia_logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "ui/gfx/native_pixmap.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/vsync_provider.h"
+#include "ui/gl/gl_surface_egl.h"
+#include "ui/ozone/common/egl_util.h"
+#include "ui/ozone/common/gl_ozone_egl.h"
+#include "ui/ozone/platform/scenic/scenic_gpu_service.h"
 #include "ui/ozone/platform/scenic/scenic_window.h"
 #include "ui/ozone/platform/scenic/scenic_window_canvas.h"
 #include "ui/ozone/platform/scenic/scenic_window_manager.h"
@@ -22,6 +28,37 @@
 namespace ui {
 
 namespace {
+
+class GLOzoneEGLScenic : public GLOzoneEGL {
+ public:
+  GLOzoneEGLScenic() = default;
+  ~GLOzoneEGLScenic() override = default;
+
+  // GLOzone:
+  scoped_refptr<gl::GLSurface> CreateViewGLSurface(
+      gfx::AcceleratedWidget window) override {
+    NOTIMPLEMENTED();
+    return nullptr;
+  }
+
+  scoped_refptr<gl::GLSurface> CreateOffscreenGLSurface(
+      const gfx::Size& size) override {
+    return gl::InitializeGLSurface(
+        base::MakeRefCounted<gl::PbufferGLSurfaceEGL>(size));
+  }
+
+  EGLNativeDisplayType GetNativeDisplay() override {
+    return EGL_DEFAULT_DISPLAY;
+  }
+
+ protected:
+  bool LoadGLES2Bindings(gl::GLImplementation implementation) override {
+    return LoadDefaultEGLGLES2Bindings(implementation);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(GLOzoneEGLScenic);
+};
 
 // TODO(crbug.com/852011): Implement this class - currently it's just a stub.
 class ScenicPixmap : public gfx::NativePixmap {
@@ -69,31 +106,49 @@ class ScenicPixmap : public gfx::NativePixmap {
 }  // namespace
 
 ScenicSurfaceFactory::ScenicSurfaceFactory(ScenicWindowManager* window_manager)
-    : window_manager_(window_manager) {}
+    : window_manager_(window_manager),
+      egl_implementation_(std::make_unique<GLOzoneEGLScenic>()) {}
+
+ScenicSurfaceFactory::ScenicSurfaceFactory(ScenicGpuService* scenic_gpu_service)
+    : scenic_gpu_service_(scenic_gpu_service),
+      egl_implementation_(std::make_unique<GLOzoneEGLScenic>()) {}
 
 ScenicSurfaceFactory::~ScenicSurfaceFactory() = default;
 
+fuchsia::ui::scenic::Scenic* ScenicSurfaceFactory::GetScenic() {
+  if (!scenic_) {
+    scenic_ = base::fuchsia::ComponentContext::GetDefault()
+                  ->ConnectToService<fuchsia::ui::scenic::Scenic>();
+    scenic_.set_error_handler([](zx_status_t status) {
+      ZX_LOG(FATAL, status) << "Scenic connection failed";
+    });
+  }
+  return scenic_.get();
+}
+
 std::vector<gl::GLImplementation>
 ScenicSurfaceFactory::GetAllowedGLImplementations() {
-  return std::vector<gl::GLImplementation>{};
+  // TODO(spang): Remove this after crbug.com/897208 is fixed.
+  return std::vector<gl::GLImplementation>{gl::kGLImplementationSwiftShaderGL};
 }
 
 GLOzone* ScenicSurfaceFactory::GetGLOzone(gl::GLImplementation implementation) {
-  NOTREACHED();
-  return nullptr;
+  switch (implementation) {
+    case gl::kGLImplementationSwiftShaderGL:
+      return egl_implementation_.get();
+    default:
+      return nullptr;
+  }
 }
 
 std::unique_ptr<SurfaceOzoneCanvas> ScenicSurfaceFactory::CreateCanvasForWidget(
     gfx::AcceleratedWidget widget) {
+  if (!window_manager_)
+    LOG(FATAL) << "Software output not supported from GPU process";
   ScenicWindow* window = window_manager_->GetWindow(widget);
   if (!window)
     return nullptr;
-  return std::make_unique<ScenicWindowCanvas>(window);
-}
-
-std::vector<gfx::BufferFormat> ScenicSurfaceFactory::GetScanoutFormats(
-    gfx::AcceleratedWidget widget) {
-  return std::vector<gfx::BufferFormat>{gfx::BufferFormat::RGBA_8888};
+  return std::make_unique<ScenicWindowCanvas>(GetScenic(), window);
 }
 
 scoped_refptr<gfx::NativePixmap> ScenicSurfaceFactory::CreateNativePixmap(
@@ -107,7 +162,11 @@ scoped_refptr<gfx::NativePixmap> ScenicSurfaceFactory::CreateNativePixmap(
 #if BUILDFLAG(ENABLE_VULKAN)
 std::unique_ptr<gpu::VulkanImplementation>
 ScenicSurfaceFactory::CreateVulkanImplementation() {
-  return std::make_unique<ui::VulkanImplementationScenic>(window_manager_);
+  if (!scenic_gpu_service_)
+    LOG(FATAL) << "Vulkan implementation requires InitializeForGPU";
+
+  return std::make_unique<ui::VulkanImplementationScenic>(
+      scenic_gpu_service_->gpu_host(), GetScenic());
 }
 #endif
 

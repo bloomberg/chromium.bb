@@ -10,26 +10,42 @@
 
 #include "base/containers/ring_buffer.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/power/auto_screen_brightness/trainer.h"
 
 namespace chromeos {
 namespace power {
 namespace auto_screen_brightness {
 
-// Replaces |curve| with the parsed curve data from |data|, returning true if
-// successful. Correct formatting in |data| should be 1 row per
-// (<ambient_light>, <brightness>) mapping. Ambient light should be a double and
-// brightness should be a double.
-bool CurveFromString(const std::string& data, BrightnessCurve* const curve);
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class DataError {
+  kAlsValue = 0,
+  kBrightnessPercent = 1,
+  kMaxValue = kBrightnessPercent
+};
 
-// Converts |curve| to a string. An empty string will be returned if |curve| is
-// empty.
-std::string CurveToString(const BrightnessCurve& curve);
+// Logs data errors to UMA.
+void LogDataError(DataError error);
+
+// Returns natural log of 1+|value|.
+double ConvertToLog(double value);
 
 struct AmbientLightSample {
   int lux;
   base::TimeTicks sample_time;
 };
+
+// Represents whether any trainer or adapter parameter has been set incorrectly.
+// This does *not* include the status of the user's personal curve.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class ParameterError {
+  kModelError = 0,
+  kAdapterError = 1,
+  kMaxValue = kAdapterError
+};
+
+// Logs to UMA that a parameter is invalid.
+void LogParameterError(ParameterError error);
 
 // Calculates average ambient light over the most recent |num_recent| samples.
 // |num_recent| has to be no larger than the capacity of the buffer, but it can

@@ -55,19 +55,21 @@ FileSystemDirectoryIterator::FileSystemDirectoryIterator(
     DOMFileSystemBase* file_system,
     const String& full_path)
     : DirectoryReaderBase(file_system, full_path) {
-  Filesystem()->ReadDirectory(this, full_path_, new EntriesCallbackHelper(this),
-                              new ErrorCallbackHelper(this));
+  Filesystem()->ReadDirectory(this, full_path_,
+                              MakeGarbageCollected<EntriesCallbackHelper>(this),
+                              MakeGarbageCollected<ErrorCallbackHelper>(this));
 }
 
 ScriptPromise FileSystemDirectoryIterator::next(ScriptState* script_state) {
   if (error_ != base::File::FILE_OK) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, FileError::CreateDOMException(error_));
+        script_state, file_error::CreateDOMException(error_));
   }
 
   if (!entries_.IsEmpty()) {
-    FileSystemDirectoryIteratorEntry result;
-    result.setValue(entries_.TakeFirst()->asFileSystemHandle());
+    FileSystemDirectoryIteratorEntry* result =
+        FileSystemDirectoryIteratorEntry::Create();
+    result->setValue(entries_.TakeFirst()->asFileSystemHandle());
     return ScriptPromise::Cast(script_state, ToV8(result, script_state));
   }
 
@@ -77,8 +79,9 @@ ScriptPromise FileSystemDirectoryIterator::next(ScriptState* script_state) {
     return pending_next_->Promise();
   }
 
-  FileSystemDirectoryIteratorEntry result;
-  result.setDone(true);
+  FileSystemDirectoryIteratorEntry* result =
+      FileSystemDirectoryIteratorEntry::Create();
+  result->setDone(true);
   return ScriptPromise::Cast(script_state, ToV8(result, script_state));
 }
 
@@ -102,7 +105,7 @@ void FileSystemDirectoryIterator::AddEntries(const EntryHeapVector& entries) {
 void FileSystemDirectoryIterator::OnError(base::File::Error error) {
   error_ = error;
   if (pending_next_) {
-    pending_next_->Reject(FileError::CreateDOMException(error));
+    pending_next_->Reject(file_error::CreateDOMException(error));
     pending_next_ = nullptr;
   }
 }

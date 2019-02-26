@@ -22,57 +22,49 @@ namespace {
 
 bool CheckIfAuthenticatorSelectionCriteriaAreSatisfied(
     FidoAuthenticator* authenticator,
-    const AuthenticatorSelectionCriteria& authenticator_selection_criteria,
-    CtapMakeCredentialRequest* request) {
-  using AuthenticatorAttachment =
-      AuthenticatorSelectionCriteria::AuthenticatorAttachment;
+    const AuthenticatorSelectionCriteria& authenticator_selection_criteria) {
   using UvAvailability =
       AuthenticatorSupportedOptions::UserVerificationAvailability;
 
-  const auto& options = authenticator->Options();
-  if ((authenticator_selection_criteria.authenticator_attachement() ==
-           AuthenticatorAttachment::kPlatform &&
-       !options.is_platform_device()) ||
-      (authenticator_selection_criteria.authenticator_attachement() ==
-           AuthenticatorAttachment::kCrossPlatform &&
-       options.is_platform_device())) {
-    return false;
+  const auto& opt_options = authenticator->Options();
+  if (!opt_options) {
+    // This authenticator doesn't know its capabilities yet, so we need
+    // to assume it can handle the request. This is the case for Windows,
+    // where we proxy the request to the native API.
+    return true;
   }
+
+  if ((authenticator_selection_criteria.authenticator_attachment() ==
+           AuthenticatorAttachment::kPlatform &&
+       !opt_options->is_platform_device()) ||
+      (authenticator_selection_criteria.authenticator_attachment() ==
+           AuthenticatorAttachment::kCrossPlatform &&
+       opt_options->is_platform_device()))
+    return false;
 
   if (authenticator_selection_criteria.require_resident_key() &&
-      !options.supports_resident_key()) {
+      !opt_options->supports_resident_key())
     return false;
-  }
-  request->SetResidentKeySupported(
-      authenticator_selection_criteria.require_resident_key());
 
-  const auto& user_verification_requirement =
-      authenticator_selection_criteria.user_verification_requirement();
-  if (user_verification_requirement == UserVerificationRequirement::kRequired) {
-    request->SetUserVerificationRequired(true);
-  }
-
-  return user_verification_requirement !=
+  return authenticator_selection_criteria.user_verification_requirement() !=
              UserVerificationRequirement::kRequired ||
-         options.user_verification_availability() ==
+         opt_options->user_verification_availability() ==
              UvAvailability::kSupportedAndConfigured;
 }
 
 base::flat_set<FidoTransportProtocol> GetTransportsAllowedByRP(
     const AuthenticatorSelectionCriteria& authenticator_selection_criteria) {
-  using AttachmentType =
-      AuthenticatorSelectionCriteria::AuthenticatorAttachment;
   const auto attachment_type =
-      authenticator_selection_criteria.authenticator_attachement();
+      authenticator_selection_criteria.authenticator_attachment();
   switch (attachment_type) {
-    case AttachmentType::kPlatform:
+    case AuthenticatorAttachment::kPlatform:
       return {FidoTransportProtocol::kInternal};
-    case AttachmentType::kCrossPlatform:
+    case AuthenticatorAttachment::kCrossPlatform:
       // Cloud-assisted BLE is not yet supported for MakeCredential requests.
       return {FidoTransportProtocol::kUsbHumanInterfaceDevice,
               FidoTransportProtocol::kBluetoothLowEnergy,
               FidoTransportProtocol::kNearFieldCommunication};
-    case AttachmentType::kAny:
+    case AuthenticatorAttachment::kAny:
       // Cloud-assisted BLE is not yet supported for MakeCredential requests.
       return {FidoTransportProtocol::kInternal,
               FidoTransportProtocol::kNearFieldCommunication,
@@ -91,7 +83,7 @@ MakeCredentialRequestHandler::MakeCredentialRequestHandler(
     const base::flat_set<FidoTransportProtocol>& supported_transports,
     CtapMakeCredentialRequest request,
     AuthenticatorSelectionCriteria authenticator_selection_criteria,
-    RegisterResponseCallback completion_callback)
+    CompletionCallback completion_callback)
     : FidoRequestHandler(
           connector,
           base::STLSetIntersection<base::flat_set<FidoTransportProtocol>>(
@@ -112,16 +104,23 @@ MakeCredentialRequestHandler::~MakeCredentialRequestHandler() = default;
 
 void MakeCredentialRequestHandler::DispatchRequest(
     FidoAuthenticator* authenticator) {
-  // The user verification field of the request may be adjusted to the
-  // authenticator, so we need to make a copy.
-  CtapMakeCredentialRequest request_copy = request_parameter_;
   if (!CheckIfAuthenticatorSelectionCriteriaAreSatisfied(
-          authenticator, authenticator_selection_criteria_, &request_copy)) {
+          authenticator, authenticator_selection_criteria_))
     return;
-  }
+
+  // Set the rk, uv and attachment fields, which were only initialized to
+  // default values up to here.  TODO(martinkr): Initialize these fields earlier
+  // (in AuthenticatorImpl) and get rid of the separate
+  // AuthenticatorSelectionCriteriaParameter.
+  request_parameter_.SetResidentKeyRequired(
+      authenticator_selection_criteria_.require_resident_key());
+  request_parameter_.SetUserVerification(
+      authenticator_selection_criteria_.user_verification_requirement());
+  request_parameter_.SetAuthenticatorAttachment(
+      authenticator_selection_criteria_.authenticator_attachment());
 
   authenticator->MakeCredential(
-      std::move(request_copy),
+      request_parameter_,
       base::BindOnce(&MakeCredentialRequestHandler::HandleResponse,
                      weak_factory_.GetWeakPtr(), authenticator));
 }
@@ -157,8 +156,8 @@ void MakeCredentialRequestHandler::SetPlatformAuthenticatorOrMarkUnavailable(
     const bool has_transport_selection_ui =
         observer() && observer()->EmbedderControlsAuthenticatorDispatch(
                           *platform_authenticator_info->authenticator);
-    if (authenticator_selection_criteria_.authenticator_attachement() ==
-            AuthenticatorSelectionCriteria::AuthenticatorAttachment::kAny &&
+    if (authenticator_selection_criteria_.authenticator_attachment() ==
+            AuthenticatorAttachment::kAny &&
         !has_transport_selection_ui) {
       platform_authenticator_info = base::nullopt;
     }

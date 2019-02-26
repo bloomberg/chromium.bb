@@ -29,11 +29,11 @@
 """A utility module used to find files. It exposes one public function: find().
 
 If a list is passed in, the returned list of files is constrained to those
-found under the paths passed in. i.e. calling find(["LayoutTests/fast"])
+found under the paths passed in. i.e. calling find(["web_tests/fast"])
 will only return files under that directory.
 
 If a set of skipped directories is passed in, the function will filter out
-the files lying in these directories i.e. find(["LayoutTests"], set(["fast"]))
+the files lying in these directories i.e. find(["web_tests"], set(["fast"]))
 will return everything except files in the "fast" subdirectory.
 
 If a callback is passed in, it will be called for the each file and the file

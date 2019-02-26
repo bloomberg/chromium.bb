@@ -111,7 +111,7 @@ ScriptErrorCallback* ScriptErrorCallback::Wrap(V8ErrorCallback* callback) {
   // and checking during invoke().
   if (!callback)
     return nullptr;
-  return new ScriptErrorCallback(callback);
+  return MakeGarbageCollected<ScriptErrorCallback>(callback);
 }
 
 void ScriptErrorCallback::Trace(blink::Visitor* visitor) {
@@ -121,7 +121,7 @@ void ScriptErrorCallback::Trace(blink::Visitor* visitor) {
 
 void ScriptErrorCallback::Invoke(base::File::Error error) {
   callback_->InvokeAndReportException(nullptr,
-                                      FileError::CreateDOMException(error));
+                                      file_error::CreateDOMException(error));
 };
 
 ScriptErrorCallback::ScriptErrorCallback(V8ErrorCallback* callback)
@@ -138,7 +138,7 @@ void PromiseErrorCallback::Trace(Visitor* visitor) {
 }
 
 void PromiseErrorCallback::Invoke(base::File::Error error) {
-  resolver_->Reject(FileError::CreateDOMException(error));
+  resolver_->Reject(file_error::CreateDOMException(error));
 }
 
 // EntryCallbacks -------------------------------------------------------------
@@ -223,7 +223,7 @@ EntriesCallbacks::EntriesCallbacks(OnDidGetEntriesCallback* success_callback,
       success_callback_(success_callback),
       directory_reader_(directory_reader),
       base_path_(base_path),
-      entries_(new HeapVector<Member<Entry>>()) {
+      entries_(MakeGarbageCollected<HeapVector<Member<Entry>>>()) {
   DCHECK(directory_reader_);
 }
 
@@ -240,7 +240,8 @@ void EntriesCallbacks::DidReadDirectoryEntry(const String& name,
 
 void EntriesCallbacks::DidReadDirectoryEntries(bool has_more) {
   directory_reader_->SetHasMoreEntries(has_more);
-  EntryHeapVector* entries = new EntryHeapVector(std::move(*entries_));
+  EntryHeapVector* entries =
+      MakeGarbageCollected<EntryHeapVector>(std::move(*entries_));
 
   if (!success_callback_)
     return;

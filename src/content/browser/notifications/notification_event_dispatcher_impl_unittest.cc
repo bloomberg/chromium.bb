@@ -119,7 +119,7 @@ TEST_F(NotificationEventDispatcherImplTest,
 }
 
 TEST_F(NotificationEventDispatcherImplTest,
-       RegisterReplacementNonPersistentListener_FirstListenerGetsOnClose) {
+       RegisterNonPersistentListener_FirstListenerGetsOnClose) {
   auto original_listener = std::make_unique<TestNotificationListener>();
   dispatcher_->RegisterNonPersistentNotificationListener(
       kPrimaryUniqueId, original_listener->GetPtr());
@@ -135,6 +135,31 @@ TEST_F(NotificationEventDispatcherImplTest,
   WaitForMojoTasksToComplete();
 
   EXPECT_EQ(original_listener->on_close_count(), 1);
+  EXPECT_EQ(replacement_listener->on_close_count(), 0);
+}
+
+TEST_F(NotificationEventDispatcherImplTest,
+       RegisterNonPersistentListener_ReplacedListenerGetsOnClick) {
+  auto original_listener = std::make_unique<TestNotificationListener>();
+  dispatcher_->RegisterNonPersistentNotificationListener(
+      kPrimaryUniqueId, original_listener->GetPtr());
+
+  dispatcher_->DispatchNonPersistentShowEvent(kPrimaryUniqueId);
+
+  auto replacement_listener = std::make_unique<TestNotificationListener>();
+  dispatcher_->RegisterNonPersistentNotificationListener(
+      kPrimaryUniqueId, replacement_listener->GetPtr());
+
+  WaitForMojoTasksToComplete();
+
+  dispatcher_->DispatchNonPersistentClickEvent(kPrimaryUniqueId,
+                                               base::DoNothing());
+
+  WaitForMojoTasksToComplete();
+
+  EXPECT_EQ(original_listener->on_click_count(), 0);
+  EXPECT_EQ(original_listener->on_close_count(), 1);
+  EXPECT_EQ(replacement_listener->on_click_count(), 1);
   EXPECT_EQ(replacement_listener->on_close_count(), 0);
 }
 

@@ -24,9 +24,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/image/canvas_image_source.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -42,52 +41,27 @@ namespace {
 
 constexpr int kSearchTileWidth = 80;
 constexpr int kSearchTileTopPadding = 4;
-constexpr int kSearchTitleSpacing = 5;
+constexpr int kSearchTitleSpacing = 7;
 constexpr int kSearchPriceSize = 37;
 constexpr int kSearchRatingSize = 26;
 constexpr int kSearchRatingStarSize = 12;
 constexpr int kSearchRatingStarHorizontalSpacing = 1;
 constexpr int kSearchRatingStarVerticalSpacing = 2;
+// Text line height in the search result tile.
+constexpr int kTileTextLineHeight = 16;
 
-// Delta applied to the font size of SearchResultTile rating.
-constexpr int kSearchRatingTextSizeDelta = 1;
-// Delta applied to the font size of SearchResultTile price.
-constexpr int kSearchPriceTextSizeDelta = 1;
+// Delta applied to the font size of SearchResultTile title.
+constexpr int kSearchResultTileTitleTextSizeDelta = 1;
 
 constexpr int kIconSelectedSize = 56;
 constexpr int kIconSelectedCornerRadius = 4;
-// Icon selected color, #000 8%.
-constexpr int kIconSelectedColor = SkColorSetARGB(0x14, 0x00, 0x00, 0x00);
+// Icon selected color, Google Grey 900 8%.
+constexpr int kIconSelectedColor = SkColorSetA(gfx::kGoogleGrey900, 0x14);
 
-constexpr SkColor kSearchTitleColor = SkColorSetARGB(0xDF, 0x00, 0x00, 0x00);
-constexpr SkColor kSearchAppRatingColor =
-    SkColorSetARGB(0x8F, 0x00, 0x00, 0x00);
-constexpr SkColor kSearchAppPriceColor = SkColorSetARGB(0xFF, 0x0F, 0x9D, 0x58);
-constexpr SkColor kSearchRatingStarColor =
-    SkColorSetARGB(0x8F, 0x00, 0x00, 0x00);
-
-// The background image source for badge.
-class BadgeBackgroundImageSource : public gfx::CanvasImageSource {
- public:
-  explicit BadgeBackgroundImageSource(int size)
-      : CanvasImageSource(gfx::Size(size, size), false),
-        radius_(static_cast<float>(size / 2)) {}
-  ~BadgeBackgroundImageSource() override = default;
-
- private:
-  // gfx::CanvasImageSource overrides:
-  void Draw(gfx::Canvas* canvas) override {
-    cc::PaintFlags flags;
-    flags.setColor(SK_ColorWHITE);
-    flags.setAntiAlias(true);
-    flags.setStyle(cc::PaintFlags::kFill_Style);
-    canvas->DrawCircle(gfx::PointF(radius_, radius_), radius_, flags);
-  }
-
-  const float radius_;
-
-  DISALLOW_COPY_AND_ASSIGN(BadgeBackgroundImageSource);
-};
+constexpr SkColor kSearchTitleColor = gfx::kGoogleGrey900;
+constexpr SkColor kSearchAppRatingColor = gfx::kGoogleGrey700;
+constexpr SkColor kSearchAppPriceColor = gfx::kGoogleGreen600;
+constexpr SkColor kSearchRatingStarColor = gfx::kGoogleGrey700;
 
 }  // namespace
 
@@ -122,21 +96,18 @@ SearchResultTileItemView::SearchResultTileItemView(
     AddChildView(badge_);
   }
 
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   title_ = new views::Label;
   title_->SetAutoColorReadabilityEnabled(false);
   title_->SetEnabledColor(AppListConfig::instance().grid_title_color());
-  title_->SetFontList(rb.GetFontList(kItemTextFontStyle));
+  title_->SetLineHeight(kTileTextLineHeight);
   title_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   title_->SetHandlesTooltips(false);
   AddChildView(title_);
 
   if (is_play_store_app_search_enabled_) {
-    const gfx::FontList& font = AppListConfig::instance().app_title_font();
     rating_ = new views::Label;
     rating_->SetEnabledColor(kSearchAppRatingColor);
-    rating_->SetFontList(font);
-    rating_->SetLineHeight(font.GetHeight());
+    rating_->SetLineHeight(kTileTextLineHeight);
     rating_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
     rating_->SetVisible(false);
     AddChildView(rating_);
@@ -151,8 +122,7 @@ SearchResultTileItemView::SearchResultTileItemView(
 
     price_ = new views::Label;
     price_->SetEnabledColor(kSearchAppPriceColor);
-    price_->SetFontList(font);
-    price_->SetLineHeight(font.GetHeight());
+    price_->SetLineHeight(kTileTextLineHeight);
     price_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     price_->SetVisible(false);
     AddChildView(price_);
@@ -191,7 +161,6 @@ void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
   const gfx::FontList& font = AppListConfig::instance().app_title_font();
   if (IsSuggestedAppTileShownInAppPage()) {
     title_->SetFontList(font);
-    title_->SetLineHeight(font.GetHeight());
     title_->SetEnabledColor(AppListConfig::instance().grid_title_color());
   } else {
     // Set solid color background to avoid broken text. See crbug.com/746563.
@@ -201,27 +170,20 @@ void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
       if (!IsSuggestedAppTile()) {
         // App search results use different fonts than AppList apps.
         rating_->SetFontList(
-            ui::ResourceBundle::GetSharedInstance()
-                .GetFontList(kSearchResultTitleFontStyle)
-                .DeriveWithSizeDelta(kSearchRatingTextSizeDelta));
-        rating_->SetLineHeight(rating_->font_list().GetHeight());
+            ui::ResourceBundle::GetSharedInstance().GetFontList(
+                kSearchResultTitleFontStyle));
       } else {
         rating_->SetFontList(font);
-        rating_->SetLineHeight(font.GetHeight());
       }
     }
     if (price_) {
       price_->SetBackground(views::CreateSolidBackground(kCardBackgroundColor));
       if (!IsSuggestedAppTile()) {
         // App search results use different fonts than AppList apps.
-        price_->SetFontList(
-            ui::ResourceBundle::GetSharedInstance()
-                .GetFontList(kSearchResultTitleFontStyle)
-                .DeriveWithSizeDelta(kSearchPriceTextSizeDelta));
-        price_->SetLineHeight(price_->font_list().GetHeight());
+        price_->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
+            kSearchResultTitleFontStyle));
       } else {
         price_->SetFontList(font);
-        price_->SetLineHeight(font.GetHeight());
       }
     }
     title_->SetBackground(views::CreateSolidBackground(kCardBackgroundColor));
@@ -230,11 +192,9 @@ void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
       title_->SetFontList(
           ui::ResourceBundle::GetSharedInstance()
               .GetFontList(kSearchResultTitleFontStyle)
-              .DeriveWithSizeDelta(kSearchResultTitleTextSizeDelta));
-      title_->SetLineHeight(title_->font_list().GetHeight());
+              .DeriveWithSizeDelta(kSearchResultTileTitleTextSizeDelta));
     } else {
       title_->SetFontList(font);
-      title_->SetLineHeight(font.GetHeight());
     }
     title_->SetEnabledColor(kSearchTitleColor);
   }
@@ -250,7 +210,12 @@ void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
   if (!item->icon().isNull())
     OnMetadataChanged();
 
-  base::string16 accessible_name = title_->text();
+  base::string16 accessible_name;
+  if (!item_->accessible_name().empty())
+    accessible_name = item_->accessible_name();
+  else
+    accessible_name = title_->text();
+
   if (rating_ && rating_->visible()) {
     accessible_name +=
         base::UTF8ToUTF16(", ") +
@@ -401,27 +366,20 @@ void SearchResultTileItemView::OnGetContextMenuModel(
   if (menu.empty() || (context_menu_ && context_menu_->IsShowingMenu()))
     return;
 
-  int run_types = views::MenuRunner::HAS_MNEMONICS;
-  views::MenuAnchorPosition anchor_position = views::MENU_ANCHOR_TOPLEFT;
-  gfx::Rect anchor_rect = gfx::Rect(point, gfx::Size());
-
-  if (::features::IsTouchableAppContextMenuEnabled()) {
-    anchor_position = views::MENU_ANCHOR_BUBBLE_TOUCHABLE_RIGHT;
-    run_types |= views::MenuRunner::USE_TOUCHABLE_LAYOUT |
-                 views::MenuRunner::CONTEXT_MENU |
-                 views::MenuRunner::FIXED_ANCHOR;
-    anchor_rect = source->GetBoundsInScreen();
-    // Anchor the menu to the same rect that is used for selection highlight.
-    anchor_rect.ClampToCenteredSize(
-        AppListConfig::instance().grid_focus_size());
-  }
+  gfx::Rect anchor_rect = source->GetBoundsInScreen();
+  // Anchor the menu to the same rect that is used for selection highlight.
+  anchor_rect.ClampToCenteredSize(AppListConfig::instance().grid_focus_size());
 
   context_menu_ = std::make_unique<AppListMenuModelAdapter>(
       item_->id(), this, source_type, this, GetAppType(),
       base::BindOnce(&SearchResultTileItemView::OnMenuClosed,
                      weak_ptr_factory_.GetWeakPtr()));
   context_menu_->Build(std::move(menu));
-  context_menu_->Run(anchor_rect, anchor_position, run_types);
+  context_menu_->Run(anchor_rect, views::MENU_ANCHOR_BUBBLE_TOUCHABLE_RIGHT,
+                     views::MenuRunner::HAS_MNEMONICS |
+                         views::MenuRunner::USE_TOUCHABLE_LAYOUT |
+                         views::MenuRunner::CONTEXT_MENU |
+                         views::MenuRunner::FIXED_ANCHOR);
   source->RequestFocus();
 }
 
@@ -453,13 +411,10 @@ void SearchResultTileItemView::SetBadgeIcon(const gfx::ImageSkia& badge_icon) {
     return;
   }
 
-  const int size = app_list::AppListConfig::instance()
-                       .search_tile_badge_background_radius() *
-                   2;
-  gfx::ImageSkia background(std::make_unique<BadgeBackgroundImageSource>(size),
-                            gfx::Size(size, size));
-  gfx::ImageSkia icon_with_background =
-      gfx::ImageSkiaOperations::CreateSuperimposedImage(background, badge_icon);
+  gfx::ImageSkia resized_badge_icon(
+      gfx::ImageSkiaOperations::CreateResizedImage(
+          badge_icon, skia::ImageOperations::RESIZE_BEST,
+          AppListConfig::instance().search_tile_badge_icon_size()));
 
   gfx::ShadowValues shadow_values;
   shadow_values.push_back(
@@ -467,7 +422,7 @@ void SearchResultTileItemView::SetBadgeIcon(const gfx::ImageSkia& badge_icon) {
   shadow_values.push_back(
       gfx::ShadowValue(gfx::Vector2d(0, 1), 2, SkColorSetARGB(0x33, 0, 0, 0)));
   badge_->SetImage(gfx::ImageSkiaOperations::CreateImageWithDropShadow(
-      icon_with_background, shadow_values));
+      resized_badge_icon, shadow_values));
   badge_->SetVisible(true);
 }
 
@@ -564,26 +519,24 @@ void SearchResultTileItemView::Layout() {
     title_->SetBoundsRect(AppListItemView::GetTitleBoundsForTargetViewBounds(
         rect, title_->GetPreferredSize()));
   } else {
-    rect.Inset(0, kSearchTileTopPadding, 0, 0);
-    icon_->SetBoundsRect(rect);
+    gfx::Rect icon_rect(rect);
+    icon_rect.ClampToCenteredSize(icon_->GetImage().size());
+    icon_rect.set_y(kSearchTileTopPadding);
+    icon_->SetBoundsRect(icon_rect);
 
     if (badge_) {
-      gfx::Rect badge_rect(rect);
-      const gfx::Size icon_size = icon_->GetImage().size();
       const int badge_icon_dimension =
           AppListConfig::instance().search_tile_badge_icon_dimension();
-      const int badge_background_radius =
-          AppListConfig::instance().search_tile_badge_background_radius();
-      badge_rect.Offset((icon_size.width() - badge_icon_dimension) / 2,
-                        icon_size.height() - badge_background_radius -
-                            badge_icon_dimension / 2);
+      const int badge_icon_offset =
+          AppListConfig::instance().search_tile_badge_icon_offset();
+      const gfx::Rect badge_rect(
+          icon_rect.right() - badge_icon_dimension + badge_icon_offset,
+          icon_rect.bottom() - badge_icon_dimension + badge_icon_offset,
+          badge_icon_dimension, badge_icon_dimension);
       badge_->SetBoundsRect(badge_rect);
     }
 
-    rect.Inset(0,
-               AppListConfig::instance().search_tile_icon_dimension() +
-                   kSearchTitleSpacing,
-               0, 0);
+    rect.set_y(icon_rect.bottom() + kSearchTitleSpacing);
     rect.set_height(title_->GetPreferredSize().height());
     title_->SetBoundsRect(rect);
 

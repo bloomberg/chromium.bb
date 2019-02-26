@@ -1690,6 +1690,14 @@ _NAMED_TYPE_INFO = {
       'gpu::SwapBuffersFlags::kVSyncParams',
     ],
   },
+  'SharedImageAccessMode': {
+    'type': 'GLenum',
+    'is_complete': True,
+    'valid': [
+      'GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM',
+      'GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM',
+    ],
+  },
 }
 
 # A function info object specifies the type and other special data for the
@@ -1853,6 +1861,8 @@ _FUNCTION_INFO = {
     'type': 'Custom',
     'impl_func': False,
     'data_transfer_methods': ['shm'],
+    'size_args': {
+      'data': 'size', },
     'client_test': False,
     'trace_level': 2,
   },
@@ -1861,6 +1871,8 @@ _FUNCTION_INFO = {
     'client_test': False,
     'decoder_func': 'DoBufferSubData',
     'data_transfer_methods': ['shm'],
+    'size_args': {
+      'data': 'size', },
     'trace_level': 2,
   },
   'CheckFramebufferStatus': {
@@ -1889,6 +1901,7 @@ _FUNCTION_INFO = {
   },
   'ClearBufferuiv': {
     'type': 'PUT',
+    'use_count_func': True,
     'count': 4,
     'decoder_func': 'DoClearBufferuiv',
     'unit_test': False,
@@ -1961,6 +1974,7 @@ _FUNCTION_INFO = {
     'internal': True,
     'type': 'PUT',
     'count': 16,  # GL_MAILBOX_SIZE_CHROMIUM
+    'impl_func': False,
     'unit_test': False,
     'trace_level': 2,
   },
@@ -3672,6 +3686,14 @@ _FUNCTION_INFO = {
     'unit_test': False,
     'extension': 'CHROMIUM_trace_marker',
   },
+  'SetActiveURLCHROMIUM': {
+    'type': 'Custom',
+    'impl_func': False,
+    'client_test': False,
+    'cmd_args': 'GLuint url_bucket_id',
+    'extension': True,
+    'chromium': True,
+  },
   'DiscardFramebufferEXT': {
     'type': 'PUTn',
     'count': 1,
@@ -3765,7 +3787,8 @@ _FUNCTION_INFO = {
     'client_test': False,
     'cmd_args': 'GLsizei num_textures, GLuint background_color, '
                 'GLuint edge_aa_mask, GLuint filter, GLuint shm_id, '
-                'GLuint shm_offset, bool is_protected_video',
+                'GLuint shm_offset, GLuint protected_video_type',
+
     'extension': 'CHROMIUM_schedule_ca_layer',
   },
   'CommitOverlayPlanesCHROMIUM': {
@@ -4106,6 +4129,32 @@ _FUNCTION_INFO = {
     'client_test': False,
     'extension': 'KHRParallelShaderCompile',
     'extension_flag': 'khr_parallel_shader_compile',
+  },
+  'CreateAndTexStorage2DSharedImageCHROMIUM': {
+    'type': 'NoCommand',
+    'extension': "CHROMIUM_shared_image",
+    'trace_level': 2,
+  },
+  'CreateAndTexStorage2DSharedImageINTERNAL': {
+    'decoder_func': 'DoCreateAndTexStorage2DSharedImageINTERNAL',
+    'internal': True,
+    'type': 'PUT',
+    'count': 16,  # GL_MAILBOX_SIZE_CHROMIUM
+    'impl_func': False,
+    'unit_test': False,
+    'trace_level': 2,
+  },
+  'BeginSharedImageAccessDirectCHROMIUM': {
+    'decoder_func': 'DoBeginSharedImageAccessDirectCHROMIUM',
+    'extension': 'CHROMIUM_shared_image',
+    'unit_test': False,
+    'client_test': False,
+    'cmd_args': 'GLuint texture, GLenumSharedImageAccessMode mode',
+  },
+  'EndSharedImageAccessDirectCHROMIUM': {
+    'decoder_func': 'DoEndSharedImageAccessDirectCHROMIUM',
+    'extension': 'CHROMIUM_shared_image',
+    'unit_test': False,
   }
 }
 

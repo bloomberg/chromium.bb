@@ -23,8 +23,8 @@
 #include "third_party/blink/renderer/core/html/html_hr_element.h"
 
 #include "third_party/blink/renderer/core/css/css_color_value.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
-#include "third_party/blink/renderer/core/css_property_names.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/html/forms/html_opt_group_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
@@ -33,16 +33,16 @@
 namespace blink {
 
 using namespace cssvalue;
-using namespace HTMLNames;
+using namespace html_names;
 
 inline HTMLHRElement::HTMLHRElement(Document& document)
-    : HTMLElement(hrTag, document) {}
+    : HTMLElement(kHrTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLHRElement)
 
 bool HTMLHRElement::IsPresentationAttribute(const QualifiedName& name) const {
-  if (name == alignAttr || name == widthAttr || name == colorAttr ||
-      name == noshadeAttr || name == sizeAttr)
+  if (name == kAlignAttr || name == kWidthAttr || name == kColorAttr ||
+      name == kNoshadeAttr || name == kSizeAttr)
     return true;
   return HTMLElement::IsPresentationAttribute(name);
 }
@@ -51,7 +51,7 @@ void HTMLHRElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
-  if (name == alignAttr) {
+  if (name == kAlignAttr) {
     if (DeprecatedEqualIgnoringCase(value, "left")) {
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyMarginLeft, 0,
@@ -70,7 +70,7 @@ void HTMLHRElement::CollectStyleForPresentationAttribute(
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyMarginRight,
                                               CSSValueAuto);
     }
-  } else if (name == widthAttr) {
+  } else if (name == kWidthAttr) {
     bool ok;
     int v = value.ToInt(&ok);
     if (ok && !v)
@@ -78,13 +78,13 @@ void HTMLHRElement::CollectStyleForPresentationAttribute(
           style, CSSPropertyWidth, 1, CSSPrimitiveValue::UnitType::kPixels);
     else
       AddHTMLLengthToStyle(style, CSSPropertyWidth, value);
-  } else if (name == colorAttr) {
+  } else if (name == kColorAttr) {
     AddPropertyToPresentationAttributeStyle(style, CSSPropertyBorderStyle,
                                             CSSValueSolid);
     AddHTMLColorToStyle(style, CSSPropertyBorderColor, value);
     AddHTMLColorToStyle(style, CSSPropertyBackgroundColor, value);
-  } else if (name == noshadeAttr) {
-    if (!hasAttribute(colorAttr)) {
+  } else if (name == kNoshadeAttr) {
+    if (!hasAttribute(kColorAttr)) {
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyBorderStyle,
                                               CSSValueSolid);
 
@@ -93,7 +93,7 @@ void HTMLHRElement::CollectStyleForPresentationAttribute(
       style->SetProperty(CSSPropertyBorderColor, dark_gray_value);
       style->SetProperty(CSSPropertyBackgroundColor, dark_gray_value);
     }
-  } else if (name == sizeAttr) {
+  } else if (name == kSizeAttr) {
     int size = value.ToInt();
     if (size <= 1)
       AddPropertyToPresentationAttributeStyle(

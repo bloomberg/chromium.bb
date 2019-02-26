@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/guid.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
@@ -18,8 +19,10 @@
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/local_card_migration_manager.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_function_registry.h"
@@ -36,7 +39,7 @@ namespace {
 static const char kSettingsOrigin[] = "Chrome settings";
 static const char kErrorDataUnavailable[] = "Autofill data unavailable.";
 
-// TODO(mad): This does basically the same thing as
+// TODO(crbug.com/903594): This does basically the same thing as
 //            components/autofill/core/browser/autofill_address_util.cc, we
 //            should refactor to use a single code path for this.
 // Fills |components| with the address UI components that should be used to
@@ -70,6 +73,11 @@ void PopulateAddressComponents(
 
   autofill_private::AddressComponentRow* row = nullptr;
   for (size_t i = 0; i < components.size(); ++i) {
+    if (components[i].field == ::i18n::addressinput::ORGANIZATION &&
+        !base::FeatureList::IsEnabled(
+            autofill::features::kAutofillEnableCompanyName)) {
+      continue;
+    }
     if (!row ||
         components[i - 1].length_hint ==
             addressinput::AddressUiComponent::HINT_LONG ||
@@ -362,7 +370,7 @@ ExtensionFunction::ResponseAction AutofillPrivateGetAddressListFunction::Run() {
 
   autofill_util::AddressEntryList address_list =
       autofill_util::GenerateAddressList(*personal_data);
-
+  base::RecordAction(base::UserMetricsAction("AutofillAddressesViewed"));
   return RespondNow(ArgumentList(
       api::autofill_private::GetAddressList::Results::Create(address_list)));
 }
@@ -431,6 +439,7 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveCreditCardFunction::Run() {
     personal_data->UpdateCreditCard(credit_card);
   } else {
     personal_data->AddCreditCard(credit_card);
+    base::RecordAction(base::UserMetricsAction("AutofillCreditCardsAdded"));
   }
 
   return RespondNow(NoArguments());
@@ -530,7 +539,7 @@ AutofillPrivateGetCreditCardListFunction::Run() {
 
   autofill_util::CreditCardEntryList credit_card_list =
       autofill_util::GenerateCreditCardList(*personal_data);
-
+  base::RecordAction(base::UserMetricsAction("AutofillCreditCardsViewed"));
   return RespondNow(
       ArgumentList(api::autofill_private::GetCreditCardList::Results::Create(
           credit_card_list)));
@@ -556,19 +565,19 @@ AutofillPrivateMigrateCreditCardsFunction::Run() {
   if (!personal_data || !personal_data->IsDataLoaded() || !web_contents)
     return RespondNow(Error(kErrorDataUnavailable));
 
-  // Get the autofill manager from the web contains. Autofill manager owns an
-  // unique_ptr of form data importer.
+  // Get the AutofillManager from the web contents. AutofillManager has a
+  // pointer to its AutofillClient which owns FormDataImporter.
   autofill::AutofillManager* autofill_manager =
       autofill::ContentAutofillDriverFactory::FromWebContents(web_contents)
           ->DriverForFrame(web_contents->GetMainFrame())
           ->autofill_manager();
-  if (!autofill_manager)
+  if (!autofill_manager || !autofill_manager->client())
     return RespondNow(Error(kErrorDataUnavailable));
 
-  // Get the form data importer from autofill manager. Form data importer owns
-  // an unique_ptr of local card migration manager.
+  // Get the FormDataImporter from AutofillClient. FormDataImporter owns
+  // LocalCardMigrationManager.
   autofill::FormDataImporter* form_data_importer =
-      autofill_manager->form_data_importer();
+      autofill_manager->client()->GetFormDataImporter();
   if (!form_data_importer)
     return RespondNow(Error(kErrorDataUnavailable));
 
@@ -583,6 +592,29 @@ AutofillPrivateMigrateCreditCardsFunction::Run() {
   local_card_migration_manager->GetMigratableCreditCards();
   local_card_migration_manager->AttemptToOfferLocalCardMigration(
       /*is_from_settings_page=*/true);
+  return RespondNow(NoArguments());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// AutofillPrivateLogServerCardLinkClickedFunction
+
+AutofillPrivateLogServerCardLinkClickedFunction::
+    AutofillPrivateLogServerCardLinkClickedFunction()
+    : chrome_details_(this) {}
+
+AutofillPrivateLogServerCardLinkClickedFunction::
+    ~AutofillPrivateLogServerCardLinkClickedFunction() {}
+
+ExtensionFunction::ResponseAction
+AutofillPrivateLogServerCardLinkClickedFunction::Run() {
+  autofill::PersonalDataManager* personal_data =
+      autofill::PersonalDataManagerFactory::GetForProfile(
+          chrome_details_.GetProfile());
+
+  if (!personal_data || !personal_data->IsDataLoaded())
+    return RespondNow(Error(kErrorDataUnavailable));
+
+  personal_data->LogServerCardLinkClicked();
   return RespondNow(NoArguments());
 }
 

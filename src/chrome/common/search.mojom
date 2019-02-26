@@ -55,6 +55,9 @@ interface EmbeddedSearch {
                    url.mojom.Url new_url,
                    string new_title) => (bool success);
 
+  // Tells InstantExtended to reorder a custom link.
+  ReorderCustomLink(int32 page_seq_no, url.mojom.Url url, int32 new_pos);
+
   // Tells InstantExtended to delete a custom link. Returns true if successful.
   DeleteCustomLink(int32 page_seq_no, url.mojom.Url url) => (bool success);
 
@@ -65,11 +68,6 @@ interface EmbeddedSearch {
   // Tells InstantExtended to delete all custom links and use most visited sites
   // instead.
   ResetCustomLinks(int32 page_seq_no);
-
-  // Tells InstantExtended to return true if the URL resolves and the edit
-  // custom link dialog has not timed out.
-  DoesUrlResolve(int32 page_seq_no, url.mojom.Url url)
-      => (bool resolves, bool timeout);
 
   // Logs events from InstantExtended New Tab Pages.
   LogEvent(int32 page_seq_no,

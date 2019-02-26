@@ -9,7 +9,7 @@ using device::mojom::blink::SensorType;
 namespace blink {
 
 Accelerometer* Accelerometer::Create(ExecutionContext* execution_context,
-                                     const SpatialSensorOptions& options,
+                                     const SpatialSensorOptions* options,
                                      ExceptionState& exception_state) {
   return new Accelerometer(execution_context, options, exception_state,
                            SensorType::ACCELEROMETER,
@@ -19,12 +19,13 @@ Accelerometer* Accelerometer::Create(ExecutionContext* execution_context,
 // static
 Accelerometer* Accelerometer::Create(ExecutionContext* execution_context,
                                      ExceptionState& exception_state) {
-  return Create(execution_context, SpatialSensorOptions(), exception_state);
+  return Create(execution_context, SpatialSensorOptions::Create(),
+                exception_state);
 }
 
 Accelerometer::Accelerometer(
     ExecutionContext* execution_context,
-    const SpatialSensorOptions& options,
+    const SpatialSensorOptions* options,
     ExceptionState& exception_state,
     SensorType sensor_type,
     const Vector<mojom::FeaturePolicyFeature>& features)

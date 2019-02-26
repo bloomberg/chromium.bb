@@ -14,7 +14,7 @@ NavigableContents::NavigableContents(mojom::NavigableContentsFactory* factory)
 
 NavigableContents::NavigableContents(mojom::NavigableContentsFactory* factory,
                                      mojom::NavigableContentsParamsPtr params)
-    : client_binding_(this) {
+    : client_binding_(this), content_ax_tree_id_(ui::AXTreeIDUnknown()) {
   mojom::NavigableContentsClientPtr client;
   client_binding_.Bind(mojo::MakeRequest(&client));
   factory->CreateContents(std::move(params), mojo::MakeRequest(&contents_),
@@ -33,7 +33,7 @@ void NavigableContents::RemoveObserver(NavigableContentsObserver* observer) {
 
 NavigableContentsView* NavigableContents::GetView() {
   if (!view_) {
-    view_ = base::WrapUnique(new NavigableContentsView);
+    view_ = base::WrapUnique(new NavigableContentsView(this));
     contents_->CreateView(
         NavigableContentsView::IsClientRunningInServiceProcess(),
         base::BindOnce(&NavigableContents::OnEmbedTokenReceived,
@@ -49,6 +49,19 @@ void NavigableContents::Navigate(const GURL& url) {
 void NavigableContents::NavigateWithParams(const GURL& url,
                                            mojom::NavigateParamsPtr params) {
   contents_->Navigate(url, std::move(params));
+}
+
+void NavigableContents::GoBack(
+    content::mojom::NavigableContents::GoBackCallback callback) {
+  contents_->GoBack(std::move(callback));
+}
+
+void NavigableContents::Focus() {
+  contents_->Focus();
+}
+
+void NavigableContents::FocusThroughTabTraversal(bool reverse) {
+  contents_->FocusThroughTabTraversal(reverse);
 }
 
 void NavigableContents::DidFinishNavigation(
@@ -70,6 +83,19 @@ void NavigableContents::DidStopLoading() {
 void NavigableContents::DidAutoResizeView(const gfx::Size& new_size) {
   for (auto& observer : observers_)
     observer.DidAutoResizeView(new_size);
+}
+
+void NavigableContents::DidSuppressNavigation(const GURL& url,
+                                              WindowOpenDisposition disposition,
+                                              bool from_user_gesture) {
+  for (auto& observer : observers_)
+    observer.DidSuppressNavigation(url, disposition, from_user_gesture);
+}
+
+void NavigableContents::UpdateContentAXTree(const ui::AXTreeID& id) {
+  content_ax_tree_id_ = id;
+  if (view_)
+    view_->NotifyAccessibilityTreeChange();
 }
 
 void NavigableContents::OnEmbedTokenReceived(

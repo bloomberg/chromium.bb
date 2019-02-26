@@ -91,6 +91,7 @@ class GCMSocketStreamTest : public testing::Test {
 
   // net:: components.
   net::AddressList address_list_;
+  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   std::unique_ptr<network::NetworkService> network_service_;
   network::mojom::NetworkContextPtr network_context_ptr_;
   net::MockClientSocketFactory socket_factory_;
@@ -104,6 +105,7 @@ class GCMSocketStreamTest : public testing::Test {
 GCMSocketStreamTest::GCMSocketStreamTest()
     : scoped_task_environment_(
           base::test::ScopedTaskEnvironment::MainThreadType::IO),
+      network_change_notifier_(net::NetworkChangeNotifier::CreateMock()),
       network_service_(network::NetworkService::CreateForTesting()),
       url_request_context_(true /* delay_initialization */) {
   address_list_ = net::AddressList::CreateFromIPAddress(
@@ -222,8 +224,11 @@ void GCMSocketStreamTest::OpenConnection() {
   base::RunLoop run_loop;
   int net_error = net::ERR_FAILED;
   const GURL kDestination("https://example.com");
+  network::mojom::ProxyResolvingSocketOptionsPtr options =
+      network::mojom::ProxyResolvingSocketOptions::New();
+  options->use_tls = true;
   mojo_socket_factory_ptr_->CreateProxyResolvingSocket(
-      kDestination, true /* use_tls */,
+      kDestination, std::move(options),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
       mojo::MakeRequest(&mojo_socket_ptr_), nullptr /* observer */,
       base::BindLambdaForTesting(

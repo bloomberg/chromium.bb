@@ -49,26 +49,26 @@ class ReportingServiceProxyPtrHolder {
   void QueueCspViolationReport(
       const KURL& url,
       const String& group,
-      const SecurityPolicyViolationEventInit& violation_data) {
+      const SecurityPolicyViolationEventInit* violation_data) {
     if (reporting_service_proxy) {
       reporting_service_proxy->QueueCspViolationReport(
           url, group ? group : "default",
-          violation_data.documentURI() ? violation_data.documentURI() : "",
-          violation_data.referrer() ? violation_data.referrer() : "",
-          violation_data.violatedDirective()
-              ? violation_data.violatedDirective()
+          violation_data->documentURI() ? violation_data->documentURI() : "",
+          violation_data->referrer() ? violation_data->referrer() : "",
+          violation_data->violatedDirective()
+              ? violation_data->violatedDirective()
               : "",
-          violation_data.effectiveDirective()
-              ? violation_data.effectiveDirective()
+          violation_data->effectiveDirective()
+              ? violation_data->effectiveDirective()
               : "",
-          violation_data.originalPolicy() ? violation_data.originalPolicy()
-                                          : "",
-          violation_data.disposition() ? violation_data.disposition() : "",
-          violation_data.blockedURI() ? violation_data.blockedURI() : "",
-          violation_data.lineNumber(), violation_data.columnNumber(),
-          violation_data.sourceFile() ? violation_data.sourceFile() : "",
-          violation_data.statusCode(),
-          violation_data.sample() ? violation_data.sample() : "");
+          violation_data->originalPolicy() ? violation_data->originalPolicy()
+                                           : "",
+          violation_data->disposition() ? violation_data->disposition() : "",
+          violation_data->blockedURI() ? violation_data->blockedURI() : "",
+          violation_data->lineNumber(), violation_data->columnNumber(),
+          violation_data->sourceFile() ? violation_data->sourceFile() : "",
+          violation_data->statusCode(),
+          violation_data->sample() ? violation_data->sample() : "");
     }
   }
 

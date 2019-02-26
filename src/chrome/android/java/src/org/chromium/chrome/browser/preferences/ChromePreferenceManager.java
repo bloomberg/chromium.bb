@@ -232,6 +232,15 @@ public class ChromePreferenceManager {
     public static final String LATEST_UNSUPPORTED_VERSION = "android_os_unsupported_chrome_version";
 
     /**
+     * Keys for deferred recording of the outcomes of showing the clear data dialog after
+     * Trusted Web Activity client apps are uninstalled or have their data cleared.
+     */
+    public static final String TWA_DIALOG_NUMBER_OF_DIMSISSALS_ON_UNINSTALL =
+            "twa_dialog_number_of_dismissals_on_uninstall";
+    public static final String TWA_DIALOG_NUMBER_OF_DIMSISSALS_ON_CLEAR_DATA =
+            "twa_dialog_number_of_dismissals_on_clear_data";
+
+    /**
      * Deprecated keys for Chrome Home.
      */
     private static final String CHROME_HOME_USER_ENABLED_KEY = "chrome_home_user_enabled";
@@ -477,6 +486,18 @@ public class ChromePreferenceManager {
         packages.add(packageName);
         mSharedPreferences.edit().putStringSet(
                 TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES, packages).apply();
+    }
+
+    /**
+     * Removes the record of accepting the Trusted Web Activity "Running in Chrome" disclosure for
+     * TWAs launched by the given package.
+     */
+    public void removeTwaDisclosureAcceptanceForPackage(String packageName) {
+        Set<String> packages = new HashSet<>(getTrustedWebActivityDisclosureAcceptedPackages());
+        if (packages.remove(packageName)) {
+            mSharedPreferences.edit().putStringSet(
+                    TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES, packages).apply();
+        }
     }
 
     /**

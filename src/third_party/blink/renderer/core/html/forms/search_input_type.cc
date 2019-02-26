@@ -44,7 +44,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 inline SearchInputType::SearchInputType(HTMLInputElement& element)
     : BaseTextInputType(element),
@@ -54,7 +54,7 @@ inline SearchInputType::SearchInputType(HTMLInputElement& element)
           &SearchInputType::SearchEventTimerFired) {}
 
 InputType* SearchInputType::Create(HTMLInputElement& element) {
-  return new SearchInputType(element);
+  return MakeGarbageCollected<SearchInputType>(element);
 }
 
 void SearchInputType::CountUsage() {
@@ -66,7 +66,7 @@ LayoutObject* SearchInputType::CreateLayoutObject(const ComputedStyle&) const {
 }
 
 const AtomicString& SearchInputType::FormControlType() const {
-  return InputTypeNames::search;
+  return input_type_names::kSearch;
 }
 
 bool SearchInputType::NeedsContainer() const {
@@ -77,7 +77,7 @@ void SearchInputType::CreateShadowSubtree() {
   TextFieldInputType::CreateShadowSubtree();
   Element* container = ContainerElement();
   Element* view_port = GetElement().UserAgentShadowRoot()->getElementById(
-      ShadowElementNames::EditingViewPort());
+      shadow_element_names::EditingViewPort());
   DCHECK(container);
   DCHECK(view_port);
   container->InsertBefore(
@@ -123,7 +123,7 @@ void SearchInputType::StartSearchEventTimer() {
 
 void SearchInputType::DispatchSearchEvent() {
   search_event_timer_.Stop();
-  GetElement().DispatchEvent(*Event::CreateBubble(EventTypeNames::search));
+  GetElement().DispatchEvent(*Event::CreateBubble(event_type_names::kSearch));
 }
 
 void SearchInputType::SearchEventTimerFired(TimerBase*) {
@@ -131,7 +131,7 @@ void SearchInputType::SearchEventTimerFired(TimerBase*) {
 }
 
 bool SearchInputType::SearchEventsShouldBeDispatched() const {
-  return GetElement().hasAttribute(incrementalAttr);
+  return GetElement().hasAttribute(kIncrementalAttr);
 }
 
 void SearchInputType::DidSetValueByUserEdit() {
@@ -151,7 +151,7 @@ void SearchInputType::UpdateView() {
 
 void SearchInputType::UpdateCancelButtonVisibility() {
   Element* button = GetElement().UserAgentShadowRoot()->getElementById(
-      ShadowElementNames::SearchClearButton());
+      shadow_element_names::SearchClearButton());
   if (!button)
     return;
   if (GetElement().value().IsEmpty()) {

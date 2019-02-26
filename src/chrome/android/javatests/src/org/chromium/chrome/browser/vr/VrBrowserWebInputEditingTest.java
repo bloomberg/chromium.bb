@@ -404,12 +404,7 @@ public class VrBrowserWebInputEditingTest {
                 "Keyboard did not show from focusing a web input box", POLL_TIMEOUT_SHORT_MS,
                 POLL_CHECK_INTERVAL_SHORT_MS);
 
-        NativeUiUtils.revertToRealInput();
-        EmulatedVrController controller = new EmulatedVrController(mVrTestRule.getActivity());
-        // Do this several times to help combat the flakiness of the emulated controller.
-        for (int i = 0; i < 3; ++i) {
-            controller.pressReleaseAppButton();
-        }
+        NativeUiUtils.clickAppButton(UserFriendlyElementName.NONE, new PointF());
         CriteriaHelper.pollInstrumentationThread(
                 ()
                         -> {

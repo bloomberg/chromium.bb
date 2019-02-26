@@ -12,7 +12,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* JustifyItems::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -20,15 +20,18 @@ const CSSValue* JustifyItems::ParseSingleValue(
     const CSSParserLocalContext&) const {
   CSSParserTokenRange range_copy = range;
   // justify-items property does not allow the 'auto' value.
-  if (CSSPropertyParserHelpers::IdentMatches<CSSValueAuto>(range.Peek().Id()))
+  if (css_property_parser_helpers::IdentMatches<CSSValueAuto>(
+          range.Peek().Id()))
     return nullptr;
   CSSIdentifierValue* legacy =
-      CSSPropertyParserHelpers::ConsumeIdent<CSSValueLegacy>(range_copy);
+      css_property_parser_helpers::ConsumeIdent<CSSValueLegacy>(range_copy);
   CSSIdentifierValue* position_keyword =
-      CSSPropertyParserHelpers::ConsumeIdent<CSSValueCenter, CSSValueLeft,
-                                             CSSValueRight>(range_copy);
-  if (!legacy)
-    legacy = CSSPropertyParserHelpers::ConsumeIdent<CSSValueLegacy>(range_copy);
+      css_property_parser_helpers::ConsumeIdent<CSSValueCenter, CSSValueLeft,
+                                                CSSValueRight>(range_copy);
+  if (!legacy) {
+    legacy =
+        css_property_parser_helpers::ConsumeIdent<CSSValueLegacy>(range_copy);
+  }
   if (legacy) {
     range = range_copy;
     if (position_keyword) {
@@ -39,8 +42,8 @@ const CSSValue* JustifyItems::ParseSingleValue(
     return legacy;
   }
 
-  return CSSParsingUtils::ConsumeSelfPositionOverflowPosition(
-      range, CSSParsingUtils::IsSelfPositionOrLeftOrRightKeyword);
+  return css_parsing_utils::ConsumeSelfPositionOverflowPosition(
+      range, css_parsing_utils::IsSelfPositionOrLeftOrRightKeyword);
 }
 
 const CSSValue* JustifyItems::CSSValueFromComputedStyleInternal(
@@ -55,5 +58,5 @@ const CSSValue* JustifyItems::CSSValueFromComputedStyleInternal(
           : style.JustifyItems());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

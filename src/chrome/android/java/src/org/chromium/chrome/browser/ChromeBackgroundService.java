@@ -15,6 +15,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.chrome.browser.init.ServiceManagerStartupUtils;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsLauncher;
 import org.chromium.chrome.browser.offlinepages.BackgroundScheduler;
@@ -54,6 +55,11 @@ public class ChromeBackgroundService extends GcmTaskService {
                         handleSnippetsOnPersistentSchedulerWakeUp(context, taskTag);
                         break;
 
+                    // This is only for tests.
+                    case ServiceManagerStartupUtils.TASK_TAG:
+                        handleServicificationStartupTask(context, taskTag);
+                        break;
+
                     default:
                         Log.i(TAG, "Unknown task tag " + taskTag);
                         break;
@@ -79,6 +85,10 @@ public class ChromeBackgroundService extends GcmTaskService {
     private void handleSnippetsOnPersistentSchedulerWakeUp(Context context, String tag) {
         if (!SnippetsLauncher.hasInstance()) launchBrowser(context, tag);
         snippetsOnPersistentSchedulerWakeUp();
+    }
+
+    private void handleServicificationStartupTask(Context context, String tag) {
+        launchBrowser(context, tag);
     }
 
     @VisibleForTesting

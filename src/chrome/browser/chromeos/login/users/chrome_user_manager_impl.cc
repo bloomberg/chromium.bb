@@ -26,7 +26,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -72,6 +72,7 @@
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_util.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
+#include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/upstart_client.h"
 #include "chromeos/login/login_state.h"
@@ -120,6 +121,12 @@ const char kDeviceLocalAccountPendingDataRemoval[] =
     "PublicAccountPendingDataRemoval";
 
 constexpr char kGoogleDotCom[] = "@google.com";
+
+constexpr char kBluetoothLoggingUpstartJob[] = "bluetoothlog";
+
+// If the service doesn't exist or the policy is not set, enable managed
+// session by default.
+constexpr bool kManagedSessionEnabledByDefault = true;
 
 bool FakeOwnership() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -204,9 +211,17 @@ void MaybeStartBluetoothLogging(const AccountId& account_id) {
   const std::string board_name = board[0];
   if (board_name != "eve" && board_name != "nocturne")
     return;
-  chromeos::DBusThreadManager::Get()
-      ->GetUpstartClient()
-      ->StartBluetoothLogging();
+  chromeos::DBusThreadManager::Get()->GetUpstartClient()->StartJob(
+      kBluetoothLoggingUpstartJob, {}, EmptyVoidDBusMethodCallback());
+}
+
+bool IsManagedSessionEnabled(policy::DeviceLocalAccountPolicyBroker* broker) {
+  const policy::PolicyMap::Entry* entry =
+      broker->core()->store()->policy_map().Get(
+          policy::key::kDeviceLocalAccountManagedSessionEnabled);
+  if (!entry)
+    return kManagedSessionEnabledByDefault;
+  return entry->value && entry->value->GetBool();
 }
 
 }  // namespace
@@ -363,24 +378,6 @@ void ChromeUserManagerImpl::Shutdown() {
   printers_policy_observer_.reset();
   ExternalPrintersFactory::Get()->Shutdown();
   registrar_.RemoveAll();
-}
-
-void ChromeUserManagerImpl::UserLoggedIn(const AccountId& account_id,
-                                         const std::string& username_hash,
-                                         bool browser_restart,
-                                         bool is_child) {
-  if (FakeOwnership()) {
-    std::string owner_email;
-    chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner,
-                                             &owner_email);
-    if (owner_email.empty()) {
-      owner_email = account_id.GetUserEmail();
-      VLOG(1) << "Set device owner to: " << owner_email;
-      CrosSettings::Get()->SetString(kDeviceOwner, owner_email);
-    }
-  }
-  ChromeUserManager::UserLoggedIn(account_id, username_hash, browser_restart,
-                                  is_child);
 }
 
 MultiProfileUserController*
@@ -1423,6 +1420,24 @@ bool ChromeUserManagerImpl::ShouldReportUser(const std::string& user_id) const {
       *(GetLocalState()->GetList(prefs::kReportingUsers));
   base::Value user_id_value(FullyCanonicalize(user_id));
   return !(reporting_users.Find(user_id_value) == reporting_users.end());
+}
+
+bool ChromeUserManagerImpl::IsManagedSessionEnabledForUser(
+    const user_manager::User& active_user) const {
+  policy::DeviceLocalAccountPolicyService* service =
+      g_browser_process->platform_part()
+          ->browser_policy_connector_chromeos()
+          ->GetDeviceLocalAccountPolicyService();
+  if (!service)
+    return kManagedSessionEnabledByDefault;
+
+  return IsManagedSessionEnabled(
+      service->GetBrokerForUser(active_user.GetAccountId().GetUserEmail()));
+}
+
+bool ChromeUserManagerImpl::IsFullManagementDisclosureNeeded(
+    policy::DeviceLocalAccountPolicyBroker* broker) const {
+  return IsManagedSessionEnabled(broker);
 }
 
 void ChromeUserManagerImpl::AddReportingUser(const AccountId& account_id) {

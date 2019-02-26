@@ -521,10 +521,13 @@ class TabActivationWaiter : public TabStripModelObserver {
   }
 
   // TabStripModelObserver overrides.
-  void ActiveTabChanged(content::WebContents* old_contents,
-                        content::WebContents* new_contents,
-                        int index,
-                        int reason) override {
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override {
+    if (tab_strip_model->empty() || !selection.active_tab_changed())
+      return;
+
     number_of_unconsumed_active_tab_changes_++;
     DCHECK_EQ(1, number_of_unconsumed_active_tab_changes_);
     if (message_loop_runner_)

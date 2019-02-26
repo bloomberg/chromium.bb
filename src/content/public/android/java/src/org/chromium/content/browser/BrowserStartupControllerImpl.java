@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.StrictMode;
 import android.support.annotation.IntDef;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
@@ -21,7 +22,6 @@ import org.chromium.base.library_loader.LoaderErrors;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.app.ContentMain;
 import org.chromium.content_public.browser.BrowserStartupController;
-import org.chromium.content_public.browser.BrowserStartupController.StartupCallback;
 import org.chromium.ui.resources.ResourceExtractor;
 
 import java.lang.annotation.Retention;
@@ -121,31 +121,35 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
     // Whether ServiceManager is started.
     private boolean mServiceManagerStarted;
 
-    private TracingControllerAndroid mTracingController;
+    private TracingControllerAndroidImpl mTracingController;
 
     BrowserStartupControllerImpl(int libraryProcessType) {
         mAsyncStartupCallbacks = new ArrayList<>();
         mServiceManagerCallbacks = new ArrayList<>();
         mLibraryProcessType = libraryProcessType;
-        ThreadUtils.postOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                addStartupCompletedObserver(new StartupCallback() {
-                    @Override
-                    public void onSuccess() {
-                        assert mTracingController == null;
-                        Context context = ContextUtils.getApplicationContext();
-                        mTracingController = new TracingControllerAndroid(context);
-                        mTracingController.registerReceiver(context);
-                    }
+        if (BuildInfo.isDebugAndroid()) {
+            // Only set up the tracing broadcast receiver on debug builds of the OS. Normal tracing
+            // should use the DevTools API.
+            ThreadUtils.postOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    addStartupCompletedObserver(new StartupCallback() {
+                        @Override
+                        public void onSuccess() {
+                            assert mTracingController == null;
+                            Context context = ContextUtils.getApplicationContext();
+                            mTracingController = new TracingControllerAndroidImpl(context);
+                            mTracingController.registerReceiver(context);
+                        }
 
-                    @Override
-                    public void onFailure() {
-                        // Startup failed.
-                    }
-                });
-            }
-        });
+                        @Override
+                        public void onFailure() {
+                            // Startup failed.
+                        }
+                    });
+                }
+            });
+        }
     }
 
     /**

@@ -16,7 +16,6 @@
 #include "ui/views/window/non_client_view.h"
 
 class BrowserView;
-class HostedAppButtonContainer;
 
 class GlassBrowserFrameView : public BrowserNonClientFrameView,
                               public views::ButtonListener,
@@ -40,10 +39,10 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   int GetTopInset(bool restored) const override;
   int GetThemeBackgroundXInset() const override;
   bool HasVisibleBackgroundTabShapes(ActiveState active_state) const override;
+  bool CanDrawStrokes() const override;
   void UpdateThrobber(bool running) override;
   gfx::Size GetMinimumSize() const override;
   bool IsSingleTabModeAvailable() const override;
-  bool ShouldDrawStrokes() const override;
 
   // views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;
@@ -71,23 +70,15 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
 
   SkColor GetTitlebarColor() const;
 
-  HostedAppButtonContainer* hosted_app_button_container_for_testing() {
-    return hosted_app_button_container_;
-  }
-
   views::Label* window_title_for_testing() { return window_title_; }
 
  protected:
   // views::View:
-  void ChildPreferredSizeChanged(views::View* child) override;
   const char* GetClassName() const override;
   void OnPaint(gfx::Canvas* canvas) override;
   void Layout() override;
 
  private:
-  // views::NonClientFrameView:
-  void ActivationChanged(bool active) override;
-
   // Returns the thickness of the window border for the left, right, and bottom
   // edges of the frame. On Windows 10 this is a mostly-transparent handle that
   // allows you to resize the window.
@@ -165,9 +156,6 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   // Icon and title. Only used when custom-drawing the titlebar for popups.
   TabIconView* window_icon_;
   views::Label* window_title_;
-
-  // Menu button and page status icons. Only used by hosted app windows.
-  HostedAppButtonContainer* hosted_app_button_container_ = nullptr;
 
   // Custom-drawn caption buttons. Only used when custom-drawing the titlebar.
   Windows10CaptionButton* minimize_button_;

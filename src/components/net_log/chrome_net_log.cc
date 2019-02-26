@@ -7,13 +7,13 @@
 #include <memory>
 #include <utility>
 
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "components/version_info/version_info.h"
 #include "net/log/file_net_log_observer.h"
 #include "net/log/net_log_util.h"
@@ -79,9 +79,6 @@ std::unique_ptr<base::DictionaryValue> ChromeNetLog::GetPlatformConstants(
   dict->SetString("command_line", command_line_string);
 
   constants_dict->Set("clientInfo", std::move(dict));
-
-  data_reduction_proxy::DataReductionProxyEventStore::AddConstants(
-      constants_dict.get());
 
   return constants_dict;
 }

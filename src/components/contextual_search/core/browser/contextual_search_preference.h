@@ -45,12 +45,9 @@ class ContextualSearchPreference {
   // |pref_service|.  The previous state of the preference is ignored.
   void SetPref(PrefService* pref_service, bool enable);
 
-  // Should be called by Unified Consent when the user is granting access
-  // through system-initiated flow, but not for a user-initiated preference
-  // change (use |SetPref| in those situations).
   // Enables Contextual Search for users that are currently undecided about the
   // feature.  Uses the given |pref_service| to make the change.
-  void OnUnifiedConsentGiven(PrefService* pref_service);
+  void EnableIfUndecided(PrefService* pref_service);
 
   // Gets the previous preference setting's metadata.
   ContextualSearchPreviousPreferenceMetadata GetPreviousPreferenceMetadata();

@@ -1,48 +1,55 @@
 SkColor4f Reference
 ===
 
+
 <a name='SkPM4f'></a>
+
+---
+
 <a name='SkRGBA4f'></a>
 
+---
+
 <pre style="padding: 1em 1em 1em 1em;width: 62.5em; background-color: #f0f0f0">
-struct <a href='#SkRGBA4f'>SkRGBA4f</a> {
+struct <a href='SkColor4f_Reference#SkRGBA4f'>SkRGBA4f</a> {
     float <a href='#SkRGBA4f_fR'>fR</a>;
     float <a href='#SkRGBA4f_fG'>fG</a>;
     float <a href='#SkRGBA4f_fB'>fB</a>;
     float <a href='#SkRGBA4f_fA'>fA</a>;
 
-    bool <a href='#SkRGBA4f_equal1_operator'>operator==(const SkRGBA4f& other)_const</a>;
-    bool <a href='#SkRGBA4f_notequal1_operator'>operator!=(const SkRGBA4f& other)_const</a>;
-    <a href='#SkRGBA4f'>SkRGBA4f</a> <a href='#SkRGBA4f_multiply_operator'>operator*(float scale)_const</a>;
-    <a href='#SkRGBA4f'>SkRGBA4f</a> <a href='#SkRGBA4f_multiply1_operator'>operator*(const SkRGBA4f& scale)_const</a>;
-    const float* <a href='#SkRGBA4f_vec'>vec</a>() const;
-          float* <a href='#SkRGBA4f_vec'>vec</a>();
-    float <a href='#SkRGBA4f_array_operator'>operator[](int index)_const</a>;
-    float& <a href='#SkRGBA4f_array1_operator'>operator[](int index)</a>;
+    bool operator==(const <a href='SkColor4f_Reference#SkRGBA4f'>SkRGBA4f</a>& other) const;
+    bool operator!=(const <a href='SkColor4f_Reference#SkRGBA4f'>SkRGBA4f</a>& other) const;
+    <a href='SkColor4f_Reference#SkRGBA4f'>SkRGBA4f</a> operator*(float scale) const;
+    <a href='SkColor4f_Reference#SkRGBA4f'>SkRGBA4f</a> operator*(const <a href='SkColor4f_Reference#SkRGBA4f'>SkRGBA4f</a>& scale) const;
+    const float* <a href='#SkRGBA4f_vec'>vec()</a> const;
+    float* <a href='#SkRGBA4f_vec'>vec()</a>;
+    float operator[](int index) const;
+    float& operator[](int index);
     bool <a href='#SkRGBA4f_isOpaque'>isOpaque</a>() const;
-    static <a href='#SkRGBA4f'>SkRGBA4f</a> <a href='#SkRGBA4f_Pin'>Pin</a>(float r, float g, float b, float a);
-    <a href='#SkRGBA4f'>SkRGBA4f</a> <a href='#SkRGBA4f_pin'>pin</a>() const;
-    static <a href='#SkRGBA4f'>SkRGBA4f</a> <a href='#SkRGBA4f_FromColor'>FromColor</a>(<a href='SkColor_Reference#SkColor'>SkColor</a>);
+    static <a href='SkColor4f_Reference#SkRGBA4f'>SkRGBA4f</a> <a href='#SkRGBA4f_FromColor'>FromColor</a>(<a href='SkColor_Reference#SkColor'>SkColor</a>);
     <a href='SkColor_Reference#SkColor'>SkColor</a> <a href='#SkRGBA4f_toSkColor'>toSkColor</a>() const;
-    static <a href='#SkRGBA4f'>SkRGBA4f</a> <a href='#SkRGBA4f_FromPMColor'>FromPMColor</a>(<a href='SkColor_Reference#SkPMColor'>SkPMColor</a>);
-    <a href='#SkRGBA4f'>SkRGBA4f</a><<a href='SkImageInfo_Reference#kPremul_SkAlphaType'>kPremul_SkAlphaType</a>> <a href='#SkRGBA4f_premul'>premul</a>() const;
-    <a href='#SkRGBA4f'>SkRGBA4f</a><<a href='SkImageInfo_Reference#kUnpremul_SkAlphaType'>kUnpremul_SkAlphaType</a>> <a href='#SkRGBA4f_unpremul'>unpremul</a>() const;
+    static <a href='SkColor4f_Reference#SkRGBA4f'>SkRGBA4f</a> <a href='#SkRGBA4f_FromPMColor'>FromPMColor</a>(<a href='SkColor_Reference#SkPMColor'>SkPMColor</a>);
+    <a href='SkColor4f_Reference#SkRGBA4f'>SkRGBA4f</a><<a href='SkImageInfo_Reference#kPremul_SkAlphaType'>kPremul_SkAlphaType</a>> <a href='#SkRGBA4f_premul'>premul()</a> const;
+    <a href='SkColor4f_Reference#SkRGBA4f'>SkRGBA4f</a><<a href='SkImageInfo_Reference#kUnpremul_SkAlphaType'>kUnpremul_SkAlphaType</a>> <a href='#SkRGBA4f_unpremul'>unpremul()</a> const;
+    uint32_t <a href='#SkRGBA4f_toBytes_RGBA'>toBytes_RGBA</a>() const;
+    static <a href='SkColor4f_Reference#SkRGBA4f'>SkRGBA4f</a> <a href='#SkRGBA4f_FromBytes_RGBA'>FromBytes_RGBA</a>(uint32_t <a href='SkColor_Reference#Color'>color</a>);
+    <a href='SkColor4f_Reference#SkRGBA4f'>SkRGBA4f</a> <a href='#SkRGBA4f_makeOpaque'>makeOpaque</a>() const;
 };
 </pre>
 
-Each component is stored as a 32-bit single precision floating point float value.
+Each component is stored as a 32-bit single precision floating <a href='SkPoint_Reference#Point'>point</a> float value.
 All values are allowed, but only the range from zero to one is meaningful.
 
 Components are independent of the others if defined with <a href='SkImageInfo_Reference#kUnpremul_SkAlphaType'>kUnpremul_SkAlphaType</a>;
 <a href='#SkRGBA4f_fA'>fA</a> <a href='SkColor_Reference#Alpha'>Alpha</a> is may be greater or smaller than <a href='#SkRGBA4f_fG'>fG</a> green, <a href='#SkRGBA4f_fB'>fB</a> blue, or <a href='#SkRGBA4f_fR'>fR</a> red.
-<a href='#SkColor4f'>SkColor4f</a> is shorthand for <a href='undocumented#Unpremultiply'>Unpremultiplied</a> <a href='#SkRGBA4f'>SkRGBA4f</a>.
+<a href='SkColor4f_Reference#SkColor4f'>SkColor4f</a> is shorthand for <a href='undocumented#Unpremultiply'>Unpremultiplied</a> <a href='SkColor4f_Reference#SkRGBA4f'>SkRGBA4f</a>.
 
-Components are connnected if defined with <a href='SkImageInfo_Reference#kPremul_SkAlphaType'>kPremul_SkAlphaType</a>;
+Components are connected if defined with <a href='SkImageInfo_Reference#kPremul_SkAlphaType'>kPremul_SkAlphaType</a>;
 <a href='#SkRGBA4f_fA'>fA</a> <a href='SkColor_Reference#Alpha'>Alpha</a> is equal to or larger than <a href='#SkRGBA4f_fG'>fG</a> green, <a href='#SkRGBA4f_fB'>fB</a> blue, and <a href='#SkRGBA4f_fR'>fR</a> red. The values
-stored in <a href='#SkRGBA4f_fG'>fG</a>, <a href='#SkRGBA4f_fB'>fB</a>, and <a href='#SkRGBA4f_fR'>fR</a> combine the color component with the <a href='SkColor_Reference#Alpha'>Alpha</a> component.
+stored in <a href='#SkRGBA4f_fG'>fG</a>, <a href='#SkRGBA4f_fB'>fB</a>, and <a href='#SkRGBA4f_fR'>fR</a> combine the <a href='SkColor_Reference#Color'>color</a> component with the <a href='SkColor_Reference#Alpha'>Alpha</a> component.
 
 Values smaller than zero or larger than one are allowed. Values out of range
-may be used with <a href='SkBlendMode_Reference#Blend_Mode'>Blend Mode</a> so that the final component is in range.<table style='border-collapse: collapse; width: 62.5em'>
+may be used with <a href='#Blend_Mode'>Blend_Mode</a> so that the final component is in range.<table style='border-collapse: collapse; width: 62.5em'>
 
   <tr><th style='text-align: left; border: 2px solid #dddddd; padding: 8px; '>Type</th>
 <th style='text-align: left; border: 2px solid #dddddd; padding: 8px; '>Member</th>
@@ -78,24 +85,25 @@ Single precision float for <a href='SkColor_Reference#Alpha'>Alpha</a> ranges fr
 </table>
 
 <a name='SkRGBA4f_equal1_operator'></a>
-## operator==
+
+---
 
 <pre style="padding: 1em 1em 1em 1em; width: 62.5em;background-color: #f0f0f0">
-bool operator==(const SkRGBA4f& other) const
+bool operator==(const <a href='SkColor4f_Reference#SkRGBA4f'>SkRGBA4f</a>& other) const
 </pre>
 
-Compares <a href='#SkRGBA4f'>SkRGBA4f</a> with <a href='#SkRGBA4f_equal1_operator_other'>other</a>, and returns true if all components are equivalent.
+Compares <a href='SkColor4f_Reference#SkRGBA4f'>SkRGBA4f</a> with <a href='#SkRGBA4f_equal1_operator_other'>other</a>, and returns true if all components are equivalent.
 
 ### Parameters
 
 <table>  <tr>    <td><a name='SkRGBA4f_equal1_operator_other'><code><strong>other</strong></code></a></td>
-    <td><a href='#SkRGBA4f'>SkRGBA4f</a> to compare</td>
+    <td><a href='SkColor4f_Reference#SkRGBA4f'>SkRGBA4f</a> to compare</td>
   </tr>
 </table>
 
 ### Return Value
 
-true if <a href='#SkRGBA4f'>SkRGBA4f</a> equals <a href='#SkRGBA4f_equal1_operator_other'>other</a>
+true if <a href='SkColor4f_Reference#SkRGBA4f'>SkRGBA4f</a> equals <a href='#SkRGBA4f_equal1_operator_other'>other</a>
 
 ### Example
 
@@ -111,30 +119,29 @@ colorRed == colorNamedRed
 
 ### See Also
 
-<a href='#SkRGBA4f_notequal1_operator'>operator!=(const SkRGBA4f& other) const</a>
+<a href='#SkRGBA4f_notequal1_operator'>operator!=(const SkRGBA4f& other)_const</a>
+
+<a name='SkRGBA4f_notequal1_operator'></a>
 
 ---
 
-<a name='SkRGBA4f_notequal1_operator'></a>
-## operator!=
-
 <pre style="padding: 1em 1em 1em 1em; width: 62.5em;background-color: #f0f0f0">
-bool operator!=(const SkRGBA4f& other) const
+bool operator!=(const <a href='SkColor4f_Reference#SkRGBA4f'>SkRGBA4f</a>& other) const
 </pre>
 
-Compares <a href='#SkRGBA4f'>SkRGBA4f</a> with <a href='#SkRGBA4f_notequal1_operator_other'>other</a>, and returns true if all components are not
+Compares <a href='SkColor4f_Reference#SkRGBA4f'>SkRGBA4f</a> with <a href='#SkRGBA4f_notequal1_operator_other'>other</a>, and returns true if all components are not
 equivalent.
 
 ### Parameters
 
 <table>  <tr>    <td><a name='SkRGBA4f_notequal1_operator_other'><code><strong>other</strong></code></a></td>
-    <td><a href='#SkRGBA4f'>SkRGBA4f</a> to compare</td>
+    <td><a href='SkColor4f_Reference#SkRGBA4f'>SkRGBA4f</a> to compare</td>
   </tr>
 </table>
 
 ### Return Value
 
-true if <a href='#SkRGBA4f'>SkRGBA4f</a> is not equal to <a href='#SkRGBA4f_notequal1_operator_other'>other</a>
+true if <a href='SkColor4f_Reference#SkRGBA4f'>SkRGBA4f</a> is not equal to <a href='#SkRGBA4f_notequal1_operator_other'>other</a>
 
 ### Example
 
@@ -150,15 +157,14 @@ colorGray != colorNamedGray
 
 ### See Also
 
-<a href='#SkRGBA4f_equal1_operator'>operator==(const SkRGBA4f& other) const</a>
+<a href='#SkRGBA4f_equal1_operator'>operator==(const SkRGBA4f& other)_const</a>
+
+<a name='SkRGBA4f_multiply_operator'></a>
 
 ---
 
-<a name='SkRGBA4f_multiply_operator'></a>
-## operator*
-
 <pre style="padding: 1em 1em 1em 1em; width: 62.5em;background-color: #f0f0f0">
-<a href='#SkRGBA4f'>SkRGBA4f</a> operator*(float scale) const
+<a href='SkColor4f_Reference#SkRGBA4f'>SkRGBA4f</a> operator*(float scale) const
 </pre>
 
 Multiplies each component by <a href='#SkRGBA4f_multiply_operator_scale'>scale</a>. Does not pin the result.
@@ -172,19 +178,18 @@ Multiplies each component by <a href='#SkRGBA4f_multiply_operator_scale'>scale</
 
 ### Return Value
 
-scaled color
+scaled <a href='SkColor_Reference#Color'>color</a>
 
 ### See Also
 
-<a href='SkBlendMode_Reference#SkBlendMode_kMultiply'>SkBlendMode::kMultiply</a>
+<a href='SkBlendMode_Reference#SkBlendMode'>SkBlendMode</a>::<a href='#SkBlendMode_kMultiply'>kMultiply</a>
+
+<a name='SkRGBA4f_multiply1_operator'></a>
 
 ---
 
-<a name='SkRGBA4f_multiply1_operator'></a>
-## operator*
-
 <pre style="padding: 1em 1em 1em 1em; width: 62.5em;background-color: #f0f0f0">
-<a href='#SkRGBA4f'>SkRGBA4f</a> operator*(const SkRGBA4f& scale) const
+<a href='SkColor4f_Reference#SkRGBA4f'>SkRGBA4f</a> operator*(const <a href='SkColor4f_Reference#SkRGBA4f'>SkRGBA4f</a>& scale) const
 </pre>
 
 Multiplies each component by <a href='#SkRGBA4f_multiply1_operator_scale'>scale</a> component. Does not pin the result.
@@ -192,30 +197,29 @@ Multiplies each component by <a href='#SkRGBA4f_multiply1_operator_scale'>scale<
 ### Parameters
 
 <table>  <tr>    <td><a name='SkRGBA4f_multiply1_operator_scale'><code><strong>scale</strong></code></a></td>
-    <td><a href='#SkRGBA4f'>SkRGBA4f</a> component multipliers</td>
+    <td><a href='SkColor4f_Reference#SkRGBA4f'>SkRGBA4f</a> component multipliers</td>
   </tr>
 </table>
 
 ### Return Value
 
-scaled color
+scaled <a href='SkColor_Reference#Color'>color</a>
 
 ### See Also
 
-<a href='SkBlendMode_Reference#SkBlendMode_kMultiply'>SkBlendMode::kMultiply</a>
+<a href='SkBlendMode_Reference#SkBlendMode'>SkBlendMode</a>::<a href='#SkBlendMode_kMultiply'>kMultiply</a>
+
+<a name='Property_Functions'></a>
+
+<a name='SkRGBA4f_vec'></a>
 
 ---
 
-## <a name='Property_Functions'>Property Functions</a>
-
-<a name='SkRGBA4f_vec'></a>
-## vec
-
 <pre style="padding: 1em 1em 1em 1em; width: 62.5em;background-color: #f0f0f0">
-const float* <a href='#SkRGBA4f_vec'>vec</a>() const
+const float* <a href='#SkRGBA4f_vec'>vec()</a> const
 </pre>
 
-Returns <a href='#SkRGBA4f'>SkRGBA4f</a> components as a read-only array.
+Returns <a href='SkColor4f_Reference#SkRGBA4f'>SkRGBA4f</a> components as a read-only array.
 
 ### Return Value
 
@@ -236,17 +240,17 @@ red=0.266667 green=0.533333 blue=0.8 alpha=0.533333
 
 ### See Also
 
-<a href='#SkColor4f'>SkColor4f</a>
-
----
+<a href='SkColor4f_Reference#SkColor4f'>SkColor4f</a>
 
 <a name='SkRGBA4f_vec_2'></a>
 
+---
+
 <pre style="padding: 1em 1em 1em 1em; width: 62.5em;background-color: #f0f0f0">
-float* <a href='#SkRGBA4f_vec'>vec</a>()
+float* <a href='#SkRGBA4f_vec'>vec()</a>
 </pre>
 
-Returns <a href='#SkRGBA4f'>SkRGBA4f</a> components as a writable array.
+Returns <a href='SkColor4f_Reference#SkRGBA4f'>SkRGBA4f</a> components as a writable array.
 
 ### Return Value
 
@@ -267,18 +271,17 @@ red=0.266667 green=0.533333 blue=0.8 alpha=0.533333
 
 ### See Also
 
-<a href='#SkColor4f'>SkColor4f</a>
+<a href='SkColor4f_Reference#SkColor4f'>SkColor4f</a>
+
+<a name='SkRGBA4f_array_operator'></a>
 
 ---
 
-<a name='SkRGBA4f_array_operator'></a>
-## operator[]
-
 <pre style="padding: 1em 1em 1em 1em; width: 62.5em;background-color: #f0f0f0">
-float <a href='#SkRGBA4f_array1_operator'>operator[](int index)</a> const
+float operator[](int index) const
 </pre>
 
-Returns <a href='#SkRGBA4f'>SkRGBA4f</a> component by <a href='#SkRGBA4f_array_operator_index'>index</a>, zero through three. <a href='#SkRGBA4f_array_operator_index'>index</a> out of range
+Returns <a href='SkColor4f_Reference#SkRGBA4f'>SkRGBA4f</a> component by index, zero through three. index out of range
 triggers an assert in debug builds.
 
 ### Parameters
@@ -290,22 +293,21 @@ triggers an assert in debug builds.
 
 ### Return Value
 
-component by <a href='#SkRGBA4f_array_operator_index'>index</a>
+component by index
 
 ### See Also
 
-<a href='#SkRGBA4f_vec'>vec</a><sup><a href='#SkRGBA4f_vec_2'>[2]</a></sup>
+<a href='#SkRGBA4f_vec'>vec</a>
+
+<a name='SkRGBA4f_array1_operator'></a>
 
 ---
 
-<a name='SkRGBA4f_array1_operator'></a>
-## operator[]
-
 <pre style="padding: 1em 1em 1em 1em; width: 62.5em;background-color: #f0f0f0">
-float& <a href='#SkRGBA4f_array1_operator'>operator[](int index)</a>
+float& operator[](int index)
 </pre>
 
-Returns writable component reference by <a href='#SkRGBA4f_array1_operator_index'>index</a>, zero through three. <a href='#SkRGBA4f_array1_operator_index'>index</a> out of range
+Returns writable component reference by index, zero through three. index out of range
 triggers an assert in debug builds.
 
 ### Parameters
@@ -317,25 +319,24 @@ triggers an assert in debug builds.
 
 ### Return Value
 
-writable component reference by <a href='#SkRGBA4f_array1_operator_index'>index</a>
+writable component reference by index
 
 ### See Also
 
-<a href='#SkRGBA4f_vec'>vec</a><sup><a href='#SkRGBA4f_vec_2'>[2]</a></sup>
+<a href='#SkRGBA4f_vec'>vec</a>
 
----
-
-## <a name='Utility_Functions'>Utility Functions</a>
+<a name='Utility_Functions'></a>
 
 <a name='SkRGBA4f_isOpaque'></a>
-## isOpaque
+
+---
 
 <pre style="padding: 1em 1em 1em 1em; width: 62.5em;background-color: #f0f0f0">
 bool <a href='#SkRGBA4f_isOpaque'>isOpaque</a>() const
 </pre>
 
 Returns true if <a href='SkColor_Reference#Alpha'>Alpha</a> component is one. <a href='SkColor_Reference#Color'>Color</a> has no transparency regardless of
-whether color is <a href='undocumented#Premultiply'>Premultiplied</a> or <a href='undocumented#Unpremultiply'>Unpremultiplied</a>. Triggers a debugging assert
+whether <a href='SkColor_Reference#Color'>color</a> is <a href='undocumented#Premultiply'>Premultiplied</a> or <a href='undocumented#Unpremultiply'>Unpremultiplied</a>. Triggers a <a href='undocumented#Debugging'>debugging</a> assert
 if <a href='SkColor_Reference#Alpha'>Alpha</a> not valid.
 
 ### Return Value
@@ -344,80 +345,17 @@ true if <a href='SkColor_Reference#Alpha'>Alpha</a> is one
 
 ### See Also
 
-<a href='#SkRGBA4f_vec'>vec</a><sup><a href='#SkRGBA4f_vec_2'>[2]</a></sup> <a href='SkColor_Reference#SkColorGetA'>SkColorGetA</a>
-
----
-
-<a name='SkRGBA4f_Pin'></a>
-## Pin
-
-<pre style="padding: 1em 1em 1em 1em; width: 62.5em;background-color: #f0f0f0">
-static <a href='#SkRGBA4f'>SkRGBA4f</a> <a href='#SkRGBA4f_Pin'>Pin</a>(float r, float g, float b, float a)
-</pre>
-
-Constructs and returns <a href='#SkRGBA4f'>SkRGBA4f</a> with each component pinned from zero to one.
-
-### Parameters
-
-<table>  <tr>    <td><a name='SkRGBA4f_Pin_r'><code><strong>r</strong></code></a></td>
-    <td>red component</td>
-  </tr>
-  <tr>    <td><a name='SkRGBA4f_Pin_g'><code><strong>g</strong></code></a></td>
-    <td>green component</td>
-  </tr>
-  <tr>    <td><a name='SkRGBA4f_Pin_b'><code><strong>b</strong></code></a></td>
-    <td>blue component</td>
-  </tr>
-  <tr>    <td><a name='SkRGBA4f_Pin_a'><code><strong>a</strong></code></a></td>
-    <td><a href='SkColor_Reference#Alpha'>Alpha</a> component</td>
-  </tr>
-</table>
-
-### Return Value
-
-<a href='#Color4f'>Color4f</a> with valid components
-
-### Example
-
-<div><fiddle-embed name="c989cf16c7f8849874eb008cd701af76"></fiddle-embed></div>
-
-### See Also
-
-<a href='#SkRGBA4f_pin'>pin</a>() <a href='#SkRGBA4f_FromColor'>FromColor</a>
-
----
-
-<a name='SkRGBA4f_pin'></a>
-## pin
-
-<pre style="padding: 1em 1em 1em 1em; width: 62.5em;background-color: #f0f0f0">
-<a href='#SkRGBA4f'>SkRGBA4f</a> <a href='#SkRGBA4f_pin'>pin</a>() const
-</pre>
-
-Returns <a href='#SkRGBA4f'>SkRGBA4f</a> with all components in the range from zero to one.
-
-### Return Value
-
-<a href='#SkRGBA4f'>SkRGBA4f</a> with valid components
-
-### Example
-
-<div><fiddle-embed name="9e349862c5189a44d2acef5da24f2e79"></fiddle-embed></div>
-
-### See Also
-
-<a href='#SkRGBA4f_Pin'>Pin</a>
-
----
+<a href='#SkRGBA4f_vec'>vec</a> <a href='SkColor_Reference#SkColorGetA'>SkColorGetA</a>
 
 <a name='SkRGBA4f_FromColor'></a>
-## FromColor
+
+---
 
 <pre style="padding: 1em 1em 1em 1em; width: 62.5em;background-color: #f0f0f0">
-static <a href='#SkRGBA4f'>SkRGBA4f</a> <a href='#SkRGBA4f_FromColor'>FromColor</a>(<a href='SkColor_Reference#SkColor'>SkColor</a>)
+static <a href='SkColor4f_Reference#SkRGBA4f'>SkRGBA4f</a> <a href='#SkRGBA4f_FromColor'>FromColor</a>(<a href='SkColor_Reference#SkColor'>SkColor</a>)
 </pre>
 
-Converts to closest <a href='#SkRGBA4f'>SkRGBA4f</a>.
+Converts to closest <a href='SkColor4f_Reference#SkRGBA4f'>SkRGBA4f</a>.
 
 ### Parameters
 
@@ -428,7 +366,7 @@ Converts to closest <a href='#SkRGBA4f'>SkRGBA4f</a>.
 
 ### Return Value
 
-<a href='#SkRGBA4f'>SkRGBA4f</a> equivalent
+<a href='SkColor4f_Reference#SkRGBA4f'>SkRGBA4f</a> equivalent
 
 ### Example
 
@@ -447,10 +385,9 @@ red=77 green=101 blue=153 alpha=43
 
 <a href='#SkRGBA4f_toSkColor'>toSkColor</a>
 
----
-
 <a name='SkRGBA4f_toSkColor'></a>
-## toSkColor
+
+---
 
 <pre style="padding: 1em 1em 1em 1em; width: 62.5em;background-color: #f0f0f0">
 <a href='SkColor_Reference#SkColor'>SkColor</a> <a href='#SkRGBA4f_toSkColor'>toSkColor</a>() const
@@ -479,13 +416,12 @@ red=0.0705882 green=0.129412 blue=0.321569 alpha=0.168627
 
 <a href='#SkRGBA4f_FromColor'>FromColor</a>
 
+<a name='SkRGBA4f_FromPMColor'></a>
+
 ---
 
-<a name='SkRGBA4f_FromPMColor'></a>
-## FromPMColor
-
 <pre style="padding: 1em 1em 1em 1em; width: 62.5em;background-color: #f0f0f0">
-static <a href='#SkRGBA4f'>SkRGBA4f</a> <a href='#SkRGBA4f_FromPMColor'>FromPMColor</a>(<a href='SkColor_Reference#SkPMColor'>SkPMColor</a>)
+static <a href='SkColor4f_Reference#SkRGBA4f'>SkRGBA4f</a> <a href='#SkRGBA4f_FromPMColor'>FromPMColor</a>(<a href='SkColor_Reference#SkPMColor'>SkPMColor</a>)
 </pre>
 
 Converts from <a href='undocumented#Premultiply'>Premultiplied</a> integer components to <a href='undocumented#Unpremultiply'>Unpremultiplied</a> float
@@ -494,61 +430,109 @@ components.
 ### Parameters
 
 <table>  <tr>    <td><a name='SkRGBA4f_FromPMColor_SkPMColor'><code><strong>SkPMColor</strong></code></a></td>
-    <td><a href='undocumented#Premultiply'>Premultiplied</a> color</td>
+    <td><a href='undocumented#Premultiply'>Premultiplied</a> <a href='SkColor_Reference#Color'>color</a></td>
   </tr>
 </table>
 
 ### Return Value
 
-<a href='undocumented#Unpremultiply'>Unpremultiplied</a> color
+<a href='undocumented#Unpremultiply'>Unpremultiplied</a> <a href='SkColor_Reference#Color'>color</a>
 
 ### See Also
 
 <a href='#SkRGBA4f_FromColor'>FromColor</a>
 
+<a name='SkRGBA4f_premul'></a>
+
 ---
 
-<a name='SkRGBA4f_premul'></a>
-## premul
-
 <pre style="padding: 1em 1em 1em 1em; width: 62.5em;background-color: #f0f0f0">
-<a href='#SkRGBA4f'>SkRGBA4f</a>&lt;<a href='SkImageInfo_Reference#kPremul_SkAlphaType'>kPremul_SkAlphaType</a>&gt; <a href='#SkRGBA4f_premul'>premul</a>() const
+<a href='SkColor4f_Reference#SkRGBA4f'>SkRGBA4f</a>&lt;<a href='SkImageInfo_Reference#kPremul_SkAlphaType'>kPremul_SkAlphaType</a>&gt; <a href='#SkRGBA4f_premul'>premul()</a> const
 </pre>
 
-Returns <a href='#SkColor4f'>SkColor4f</a> with all components premultiplied by <a href='SkColor_Reference#Alpha'>Alpha</a>.
+Returns <a href='SkColor4f_Reference#SkColor4f'>SkColor4f</a> with all components <a href='undocumented#Premultiply'>premultiplied</a> by <a href='SkColor_Reference#Alpha'>Alpha</a>.
 
 ### Return Value
 
-<a href='undocumented#Premultiply'>Premultiplied</a> color
+<a href='undocumented#Premultiply'>Premultiplied</a> <a href='SkColor_Reference#Color'>color</a>
 
 ### See Also
 
 <a href='#SkRGBA4f_unpremul'>unpremul</a>
 
+<a name='SkRGBA4f_unpremul'></a>
+
 ---
 
-<a name='SkRGBA4f_unpremul'></a>
-## unpremul
-
 <pre style="padding: 1em 1em 1em 1em; width: 62.5em;background-color: #f0f0f0">
-<a href='#SkRGBA4f'>SkRGBA4f</a>&lt;<a href='SkImageInfo_Reference#kUnpremul_SkAlphaType'>kUnpremul_SkAlphaType</a>&gt; <a href='#SkRGBA4f_unpremul'>unpremul</a>() const
+<a href='SkColor4f_Reference#SkRGBA4f'>SkRGBA4f</a>&lt;<a href='SkImageInfo_Reference#kUnpremul_SkAlphaType'>kUnpremul_SkAlphaType</a>&gt; <a href='#SkRGBA4f_unpremul'>unpremul()</a> const
 </pre>
 
-Returns <a href='#SkRGBA4f'>SkRGBA4f</a> with all components independent of <a href='SkColor_Reference#Alpha'>Alpha</a>.
+Returns <a href='SkColor4f_Reference#SkRGBA4f'>SkRGBA4f</a> with all components independent of <a href='SkColor_Reference#Alpha'>Alpha</a>.
 
 ### Return Value
 
-<a href='undocumented#Unpremultiply'>Unpremultiplied</a> color
+<a href='undocumented#Unpremultiply'>Unpremultiplied</a> <a href='SkColor_Reference#Color'>color</a>
 
 ### See Also
 
 <a href='#SkRGBA4f_premul'>premul</a>
 
+<a name='SkRGBA4f_toBytes_RGBA'></a>
+
 ---
 
-## <a name='SkColor4f'>Typedef SkColor4f</a>
+<pre style="padding: 1em 1em 1em 1em; width: 62.5em;background-color: #f0f0f0">
+uint32_t <a href='#SkRGBA4f_toBytes_RGBA'>toBytes_RGBA</a>() const
+</pre>
+
+Produces bytes in RGBA order. Component values are not affected by <a href='SkColor_Reference#Color'>color</a> <a href='SkColor_Reference#Alpha'>Alpha</a>.
+
+### Return Value
+
+<a href='SkColor_Reference#Color'>color</a>
+
+<a name='SkRGBA4f_FromBytes_RGBA'></a>
+
+---
+
+<pre style="padding: 1em 1em 1em 1em; width: 62.5em;background-color: #f0f0f0">
+static <a href='SkColor4f_Reference#SkRGBA4f'>SkRGBA4f</a> <a href='#SkRGBA4f_FromBytes_RGBA'>FromBytes_RGBA</a>(uint32_t <a href='SkColor_Reference#Color'>color</a>)
+</pre>
+
+Returns from <a href='SkColor_Reference#Color'>color</a> <a href='SkImageInfo_Reference#kRGBA_8888_SkColorType'>kRGBA_8888_SkColorType</a> order. Component values are
+not affected by <a href='SkColor_Reference#Color'>color</a> <a href='SkColor_Reference#Alpha'>Alpha</a>.
+
+### Parameters
+
+<table>  <tr>    <td><a name='SkRGBA4f_FromBytes_RGBA_color'><code><strong>color</strong></code></a></td>
+    <td><a href='undocumented#Premultiply'>Premultiplied</a> or <a href='undocumented#Unpremultiply'>Unpremultiplied</a></td>
+  </tr>
+</table>
+
+### Return Value
+
+<a href='SkColor_Reference#Color'>color</a>
+
+<a name='SkRGBA4f_makeOpaque'></a>
+
+---
+
+<pre style="padding: 1em 1em 1em 1em; width: 62.5em;background-color: #f0f0f0">
+<a href='SkColor4f_Reference#SkRGBA4f'>SkRGBA4f</a> <a href='#SkRGBA4f_makeOpaque'>makeOpaque</a>() const
+</pre>
+
+Returns <a href='SkColor_Reference#Color'>color</a> with <a href='SkColor_Reference#Alpha'>Alpha</a> set to one.
+
+### Return Value
+
+<a href='SkColor_Reference#Color'>color</a>
+
+<a name='SkColor4f'></a>
+
+---
 
 <pre style="padding: 1em 1em 1em 1em;width: 62.5em; background-color: #f0f0f0">
-using <a href='#SkColor4f'>SkColor4f</a> = <a href='#SkRGBA4f'>SkRGBA4f</a><<a href='SkImageInfo_Reference#kUnpremul_SkAlphaType'>kUnpremul_SkAlphaType</a>>;
+using <a href='SkColor4f_Reference#SkColor4f'>SkColor4f</a> = <a href='SkColor4f_Reference#SkRGBA4f'>SkRGBA4f</a><<a href='SkImageInfo_Reference#kUnpremul_SkAlphaType'>kUnpremul_SkAlphaType</a>>;
 </pre>
 

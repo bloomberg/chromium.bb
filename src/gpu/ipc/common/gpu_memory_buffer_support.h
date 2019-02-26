@@ -28,10 +28,6 @@ namespace gpu {
 class GPU_EXPORT GpuMemoryBufferSupport {
  public:
   GpuMemoryBufferSupport();
-#if defined(OS_LINUX) || defined(USE_OZONE)
-  GpuMemoryBufferSupport(std::unique_ptr<gfx::ClientNativePixmapFactory>
-                             client_native_pixmap_factory);
-#endif
   ~GpuMemoryBufferSupport();
 
   // Returns the native GPU memory buffer factory type. Returns EMPTY_BUFFER

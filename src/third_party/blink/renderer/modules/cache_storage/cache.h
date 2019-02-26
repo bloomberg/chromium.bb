@@ -37,12 +37,12 @@ class MODULES_EXPORT Cache final : public ScriptWrappable {
   // From Cache.idl:
   ScriptPromise match(ScriptState*,
                       const RequestInfo&,
-                      const CacheQueryOptions&,
+                      const CacheQueryOptions*,
                       ExceptionState&);
   ScriptPromise matchAll(ScriptState*, ExceptionState&);
   ScriptPromise matchAll(ScriptState*,
                          const RequestInfo&,
-                         const CacheQueryOptions&,
+                         const CacheQueryOptions*,
                          ExceptionState&);
   ScriptPromise add(ScriptState*, const RequestInfo&, ExceptionState&);
   ScriptPromise addAll(ScriptState*,
@@ -50,7 +50,7 @@ class MODULES_EXPORT Cache final : public ScriptWrappable {
                        ExceptionState&);
   ScriptPromise Delete(ScriptState*,
                        const RequestInfo&,
-                       const CacheQueryOptions&,
+                       const CacheQueryOptions*,
                        ExceptionState&);
   ScriptPromise put(ScriptState*,
                     const RequestInfo&,
@@ -59,10 +59,10 @@ class MODULES_EXPORT Cache final : public ScriptWrappable {
   ScriptPromise keys(ScriptState*, ExceptionState&);
   ScriptPromise keys(ScriptState*,
                      const RequestInfo&,
-                     const CacheQueryOptions&,
+                     const CacheQueryOptions*,
                      ExceptionState&);
 
-  static mojom::blink::QueryParamsPtr ToQueryParams(const CacheQueryOptions&);
+  static mojom::blink::QueryParamsPtr ToQueryParams(const CacheQueryOptions*);
 
   void Trace(blink::Visitor*) override;
 
@@ -77,17 +77,17 @@ class MODULES_EXPORT Cache final : public ScriptWrappable {
 
   ScriptPromise MatchImpl(ScriptState*,
                           const Request*,
-                          const CacheQueryOptions&);
+                          const CacheQueryOptions*);
   ScriptPromise MatchAllImpl(ScriptState*,
                              const Request*,
-                             const CacheQueryOptions&);
+                             const CacheQueryOptions*);
   ScriptPromise AddAllImpl(ScriptState*,
                            const String& method_name,
                            const HeapVector<Member<Request>>&,
                            ExceptionState&);
   ScriptPromise DeleteImpl(ScriptState*,
                            const Request*,
-                           const CacheQueryOptions&);
+                           const CacheQueryOptions*);
   ScriptPromise PutImpl(ScriptState*,
                         const String& method_name,
                         const HeapVector<Member<Request>>&,
@@ -95,7 +95,7 @@ class MODULES_EXPORT Cache final : public ScriptWrappable {
                         ExceptionState&);
   ScriptPromise KeysImpl(ScriptState*,
                          const Request*,
-                         const CacheQueryOptions&);
+                         const CacheQueryOptions*);
 
   Member<GlobalFetch::ScopedFetcher> scoped_fetcher_;
 

@@ -38,6 +38,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/common/constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/models/menu_model.h"
@@ -136,6 +137,61 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, ShowContextMenu) {
     base::string16 label = menu_model->GetLabelAt(i);
     EXPECT_FALSE(label.empty());
   }
+}
+
+// Test that browser launch time is recorded is recorded in preferences.
+// This is important for suggested apps sorting.
+IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest,
+                       BrowserLaunchTimeRecorded) {
+  AppListClientImpl* client = AppListClientImpl::GetInstance();
+  AppListControllerDelegate* controller = client;
+  ASSERT_TRUE(controller);
+
+  Profile* profile = browser()->profile();
+  Profile* profile_otr = profile->GetOffTheRecordProfile();
+
+  extensions::ExtensionPrefs* prefs = extensions::ExtensionPrefs::Get(profile);
+
+  // Starting with just one regular browser.
+  EXPECT_EQ(1U, chrome::GetBrowserCount(profile));
+  EXPECT_EQ(0U, chrome::GetBrowserCount(profile_otr));
+
+  // First browser launch time should be recorded.
+  const base::Time time_recorded1 =
+      prefs->GetLastLaunchTime(extension_misc::kChromeAppId);
+  EXPECT_NE(base::Time(), time_recorded1);
+
+  // Create an incognito browser so that we can close the regular one without
+  // exiting the test.
+  controller->CreateNewWindow(profile, true);
+  EXPECT_EQ(1U, chrome::GetBrowserCount(profile_otr));
+  // Creating incognito browser should not update the launch time.
+  EXPECT_EQ(time_recorded1,
+            prefs->GetLastLaunchTime(extension_misc::kChromeAppId));
+
+  // Close the regular browser.
+  CloseBrowserSynchronously(chrome::FindBrowserWithProfile(profile));
+  EXPECT_EQ(0U, chrome::GetBrowserCount(profile));
+  // Recorded the launch time should not update.
+  EXPECT_EQ(time_recorded1,
+            prefs->GetLastLaunchTime(extension_misc::kChromeAppId));
+
+  // Launch another regular browser.
+  const base::Time time_before_launch = base::Time::Now();
+  controller->CreateNewWindow(profile, false);
+  const base::Time time_after_launch = base::Time::Now();
+  EXPECT_EQ(1U, chrome::GetBrowserCount(profile));
+
+  const base::Time time_recorded2 =
+      prefs->GetLastLaunchTime(extension_misc::kChromeAppId);
+  EXPECT_LE(time_before_launch, time_recorded2);
+  EXPECT_GE(time_after_launch, time_recorded2);
+
+  // Creating a second regular browser should not update the launch time.
+  controller->CreateNewWindow(profile, false);
+  EXPECT_EQ(2U, chrome::GetBrowserCount(profile));
+  EXPECT_EQ(time_recorded2,
+            prefs->GetLastLaunchTime(extension_misc::kChromeAppId));
 }
 
 // Browser Test for AppListClient that observes search result changes.

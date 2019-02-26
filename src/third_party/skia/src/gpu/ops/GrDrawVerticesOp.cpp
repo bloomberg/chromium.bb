@@ -29,7 +29,7 @@ std::unique_ptr<GrDrawOp> GrDrawVerticesOp::Make(GrContext* context,
                                                    std::move(colorSpaceXform), viewMatrix);
 }
 
-GrDrawVerticesOp::GrDrawVerticesOp(const Helper::MakeArgs& helperArgs, GrColor color,
+GrDrawVerticesOp::GrDrawVerticesOp(const Helper::MakeArgs& helperArgs, const SkPMColor4f& color,
                                    sk_sp<SkVertices> vertices, const SkVertices::Bone bones[],
                                    int boneCount, GrPrimitiveType primitiveType, GrAAType aaType,
                                    sk_sp<GrColorSpaceXform> colorSpaceXform,
@@ -114,6 +114,7 @@ GrDrawVerticesOp::GrDrawVerticesOp(const Helper::MakeArgs& helperArgs, GrColor c
     }
 }
 
+#ifdef SK_DEBUG
 SkString GrDrawVerticesOp::dumpInfo() const {
     SkString string;
     string.appendf("PrimType: %d, MeshCount %d, VCount: %d, ICount: %d\n", (int)fPrimitiveType,
@@ -122,6 +123,7 @@ SkString GrDrawVerticesOp::dumpInfo() const {
     string += INHERITED::dumpInfo();
     return string;
 }
+#endif
 
 GrDrawOp::FixedFunctionFlags GrDrawVerticesOp::fixedFunctionFlags() const {
     return fHelper.fixedFunctionFlags();
@@ -224,14 +226,8 @@ void GrDrawVerticesOp::drawVolatile(Target* target) {
                                                  &hasLocalCoordsAttribute,
                                                  &hasBoneAttribute);
 
-    // Calculate the stride.
-    size_t vertexStride = sizeof(SkPoint) +
-                          (hasColorAttribute ? sizeof(uint32_t) : 0) +
-                          (hasLocalCoordsAttribute ? sizeof(SkPoint) : 0) +
-                          (hasBoneAttribute ? 4 * (sizeof(int8_t) + sizeof(uint8_t)) : 0);
-    SkASSERT(vertexStride == gp->debugOnly_vertexStride());
-
     // Allocate buffers.
+    size_t vertexStride = gp->vertexStride();
     const GrBuffer* vertexBuffer = nullptr;
     int firstVertex = 0;
     void* verts = target->makeVertexSpace(vertexStride, fVertexCount, &vertexBuffer, &firstVertex);
@@ -301,14 +297,8 @@ void GrDrawVerticesOp::drawNonVolatile(Target* target) {
         return;
     }
 
-    // Calculate the stride.
-    size_t vertexStride = sizeof(SkPoint) +
-                          (hasColorAttribute ? sizeof(uint32_t) : 0) +
-                          (hasLocalCoordsAttribute ? sizeof(SkPoint) : 0) +
-                          (hasBoneAttribute ? 4 * (sizeof(int8_t) + sizeof(uint8_t)) : 0);
-    SkASSERT(vertexStride == gp->debugOnly_vertexStride());
-
     // Allocate vertex buffer.
+    size_t vertexStride = gp->vertexStride();
     vertexBuffer.reset(rp->createBuffer(fVertexCount * vertexStride,
                                         kVertex_GrBufferType,
                                         kStatic_GrAccessPattern,
@@ -426,6 +416,9 @@ void GrDrawVerticesOp::fillBuffers(bool hasColorAttribute,
             }
             size_t boneWeightOffset = offset;
 
+            // TODO4F: Preserve float colors
+            GrColor color = mesh.fColor.toBytes_RGBA();
+
             for (int j = 0; j < vertexCount; ++j) {
                 if (this->hasMultipleViewMatrices()) {
                     mesh.fViewMatrix.mapPoints(((SkPoint*)verts), &positions[j], 1);
@@ -436,7 +429,7 @@ void GrDrawVerticesOp::fillBuffers(bool hasColorAttribute,
                     if (mesh.hasPerVertexColors()) {
                         *(uint32_t*)((intptr_t)verts + kColorOffset) = colors[j];
                     } else {
-                        *(uint32_t*)((intptr_t)verts + kColorOffset) = mesh.fColor;
+                        *(uint32_t*)((intptr_t)verts + kColorOffset) = color;
                     }
                 }
                 if (hasLocalCoordsAttribute) {
@@ -539,7 +532,6 @@ GrOp::CombineResult GrDrawVerticesOp::onCombineIfPossible(GrOp* t, const GrCaps&
     fVertexCount += that->fVertexCount;
     fIndexCount += that->fIndexCount;
 
-    this->joinBounds(*that);
     return CombineResult::kMerged;
 }
 

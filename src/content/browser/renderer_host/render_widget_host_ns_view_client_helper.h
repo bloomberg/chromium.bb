@@ -26,7 +26,6 @@ namespace mojom {
 class RenderWidgetHostNSViewClient;
 }  // namespace mojom
 
-class BrowserAccessibilityManager;
 struct EditCommand;
 struct NativeWebKeyboardEvent;
 
@@ -34,23 +33,19 @@ struct NativeWebKeyboardEvent;
 // communicate with the RenderWidgetHostViewMac (potentially in another
 // process). Unlike mojom::RenderWidgetHostNSViewClient, this object is always
 // instantiated in the local process. This is to implement functions that
-// cannot be sent across mojo (e.g, GetRootBrowserAccessibilityManager), or
-// to avoid unnecessary translation of event types.
+// cannot be sent across mojo or to avoid unnecessary translation of event
+// types.
 class RenderWidgetHostNSViewClientHelper {
  public:
-  // Create a RenderWidgetHostNSViewClientHelper that will only implement
-  // functionality through mojo (this is in contrast with an in-process
-  // RenderWidgetHostNSViewClientHelper that would use raw pointer access).
-  static std::unique_ptr<RenderWidgetHostNSViewClientHelper>
-  CreateForMojoClient(content::mojom::RenderWidgetHostNSViewClient* client);
-
   RenderWidgetHostNSViewClientHelper() {}
   virtual ~RenderWidgetHostNSViewClientHelper() {}
 
-  // Return the RenderWidget's BrowserAccessibilityManager.
-  // TODO(ccameron): This returns nullptr for non-local NSViews. A scheme for
-  // non-local accessibility needs to be developed.
-  virtual BrowserAccessibilityManager* GetRootBrowserAccessibilityManager() = 0;
+  // Return the RenderWidget's BrowserAccessibilityManager's root accessibility
+  // node.
+  virtual id GetRootBrowserAccessibilityElement() = 0;
+
+  // Return the currently focused accessibility element.
+  virtual id GetFocusedBrowserAccessibilityElement() = 0;
 
   // Forward a keyboard event to the RenderWidgetHost that is currently handling
   // the key-down event.

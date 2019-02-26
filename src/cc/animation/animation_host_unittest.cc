@@ -50,7 +50,8 @@ class AnimationHostTest : public AnimationTimelinesTest {
   }
 
   void SetOutputState(base::TimeDelta local_time) {
-    MutatorOutputState::AnimationState state(worklet_animation_id_, local_time);
+    MutatorOutputState::AnimationState state(worklet_animation_id_);
+    state.local_times.push_back(local_time);
     worklet_animation_impl_->SetOutputState(state);
   }
 
@@ -262,7 +263,7 @@ void CreateScrollingNodeForElement(ElementId element_id,
   // A scrolling node in cc has a corresponding transform node (See
   // |ScrollNode::transform_id|). This setup here creates both nodes and links
   // them as they would normally be. This more complete setup is necessary here
-  // because ScrollTimelin depends on both nodes for its calculations.
+  // because ScrollTimeline depends on both nodes for its calculations.
   TransformNode transform_node;
   transform_node.scrolls = true;
   transform_node.source_node_id = TransformTree::kRootNodeId;
@@ -327,8 +328,9 @@ TEST_F(AnimationHostTest, LayerTreeMutatorUpdateReflectsScrollAnimations) {
 
   // Create scroll timeline that links scroll animation and worklet animation
   // together. Use timerange so that we have 1:1 time & scroll mapping.
-  auto scroll_timeline = std::make_unique<ScrollTimeline>(
-      element_id, ScrollTimeline::Vertical, 100);
+  auto scroll_timeline =
+      std::make_unique<ScrollTimeline>(element_id, ScrollTimeline::ScrollDown,
+                                       base::nullopt, base::nullopt, 100);
 
   // Create a worklet animation that is bound to the scroll timeline.
   scoped_refptr<WorkletAnimation> worklet_animation(

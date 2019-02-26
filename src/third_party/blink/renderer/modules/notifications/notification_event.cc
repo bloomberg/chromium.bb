@@ -10,28 +10,28 @@
 namespace blink {
 
 NotificationEvent::NotificationEvent(const AtomicString& type,
-                                     const NotificationEventInit& initializer)
+                                     const NotificationEventInit* initializer)
     : ExtendableEvent(type, initializer),
-      action_(initializer.action()),
-      reply_(initializer.reply()) {
-  if (initializer.hasNotification())
-    notification_ = initializer.notification();
+      action_(initializer->action()),
+      reply_(initializer->reply()) {
+  if (initializer->hasNotification())
+    notification_ = initializer->notification();
 }
 
 NotificationEvent::NotificationEvent(const AtomicString& type,
-                                     const NotificationEventInit& initializer,
+                                     const NotificationEventInit* initializer,
                                      WaitUntilObserver* observer)
     : ExtendableEvent(type, initializer, observer),
-      action_(initializer.action()),
-      reply_(initializer.reply()) {
-  if (initializer.hasNotification())
-    notification_ = initializer.notification();
+      action_(initializer->action()),
+      reply_(initializer->reply()) {
+  if (initializer->hasNotification())
+    notification_ = initializer->notification();
 }
 
 NotificationEvent::~NotificationEvent() = default;
 
 const AtomicString& NotificationEvent::InterfaceName() const {
-  return EventNames::NotificationEvent;
+  return event_interface_names::kNotificationEvent;
 }
 
 void NotificationEvent::Trace(blink::Visitor* visitor) {

@@ -105,9 +105,8 @@ class UnifiedAutoplayBrowserTest : public InProcessBrowserTest {
     content::WebContents* active_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
 
-    content::Referrer referrer(
-        active_contents->GetLastCommittedURL(),
-        blink::WebReferrerPolicy::kWebReferrerPolicyAlways);
+    content::Referrer referrer(active_contents->GetLastCommittedURL(),
+                               network::mojom::ReferrerPolicy::kAlways);
 
     content::OpenURLParams open_url_params(
         url, referrer, disposition, ui::PAGE_TRANSITION_LINK,

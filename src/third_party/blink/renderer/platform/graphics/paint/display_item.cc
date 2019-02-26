@@ -26,9 +26,9 @@ static WTF::String PaintPhaseAsDebugString(int paint_phase) {
     case 0:
       return "PaintPhaseBlockBackground";
     case 1:
-      return "PaintPhaseSelfBlockBackground";
+      return "PaintPhaseSelfBlockBackgroundOnly";
     case 2:
-      return "PaintPhaseChildBlockBackgrounds";
+      return "PaintPhaseDescendantBlockBackgroundsOnly";
     case 3:
       return "PaintPhaseFloat";
     case 4:
@@ -36,9 +36,9 @@ static WTF::String PaintPhaseAsDebugString(int paint_phase) {
     case 5:
       return "PaintPhaseOutline";
     case 6:
-      return "PaintPhaseSelfOutline";
+      return "PaintPhaseSelfOutlineOnly";
     case 7:
-      return "PaintPhaseChildOutlines";
+      return "PaintPhaseDescendantOutlinesOnly";
     case 8:
       return "PaintPhaseSelection";
     case 9:
@@ -88,6 +88,7 @@ static WTF::String SpecialDrawingTypeAsDebugString(DisplayItem::Type type) {
     DEBUG_STRING_CASE(PopupListBoxRow);
     DEBUG_STRING_CASE(PrintedContentDestinationLocations);
     DEBUG_STRING_CASE(PrintedContentPDFURLRect);
+    DEBUG_STRING_CASE(ReflectionMask);
     DEBUG_STRING_CASE(Resizer);
     DEBUG_STRING_CASE(SVGClip);
     DEBUG_STRING_CASE(SVGFilter);
@@ -107,10 +108,8 @@ static WTF::String SpecialDrawingTypeAsDebugString(DisplayItem::Type type) {
     DEBUG_STRING_CASE(SelectionTint);
     DEBUG_STRING_CASE(TableCollapsedBorders);
     DEBUG_STRING_CASE(VideoBitmap);
-    DEBUG_STRING_CASE(WebPlugin);
     DEBUG_STRING_CASE(WebFont);
-    DEBUG_STRING_CASE(ReflectionMask);
-    DEBUG_STRING_CASE(HitTest);
+    DEBUG_STRING_CASE(WebPlugin);
 
     DEFAULT_CASE;
   }
@@ -146,6 +145,7 @@ WTF::String DisplayItem::TypeAsDebugString(Type type) {
   PAINT_PHASE_BASED_DEBUG_STRINGS(SVGEffect);
 
   switch (type) {
+    DEBUG_STRING_CASE(HitTest);
     DEBUG_STRING_CASE(ScrollHitTest);
     DEBUG_STRING_CASE(LayerChunkBackground);
     DEBUG_STRING_CASE(LayerChunkNegativeZOrderChildren);
@@ -174,15 +174,35 @@ void DisplayItem::PropertiesAsJSON(JSONObject& json) const {
     json.SetDouble("outset", OutsetForRasterEffects());
 }
 
-#endif
+#endif  // DCHECK_IS_ON()
 
 String DisplayItem::Id::ToString() const {
 #if DCHECK_IS_ON()
-  return String::Format("%p:%s:%d", &client,
-                        DisplayItem::TypeAsDebugString(type).Ascii().data(),
+  return String::Format("%s:%s:%d", client.ToString().Utf8().data(),
+                        DisplayItem::TypeAsDebugString(type).Utf8().data(),
                         fragment);
 #else
   return String::Format("%p:%d:%d", &client, static_cast<int>(type), fragment);
+#endif
+}
+
+std::ostream& operator<<(std::ostream& os, DisplayItem::Type type) {
+#if DCHECK_IS_ON()
+  return os << DisplayItem::TypeAsDebugString(type).Utf8().data();
+#else
+  return os << static_cast<int>(type);
+#endif
+}
+
+std::ostream& operator<<(std::ostream& os, const DisplayItem::Id& id) {
+  return os << id.ToString().Utf8().data();
+}
+
+std::ostream& operator<<(std::ostream& os, const DisplayItem& item) {
+#if DCHECK_IS_ON()
+  return os << item.AsDebugString().Utf8().data();
+#else
+  return os << "{\"id\": " << item.GetId() << "}";
 #endif
 }
 

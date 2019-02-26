@@ -491,10 +491,8 @@ TEST_P(GLES2DecoderWithShaderTest, GetAttachedShadersSucceeds) {
   result->size = 0;
   EXPECT_CALL(*gl_, GetAttachedShaders(kServiceProgramId, 1, _, _)).WillOnce(
       DoAll(SetArgPointee<2>(1), SetArgPointee<3>(kServiceShaderId)));
-  cmd.Init(client_program_id_,
-           shared_memory_id_,
-           shared_memory_offset_,
-           Result::ComputeSize(1));
+  cmd.Init(client_program_id_, shared_memory_id_, shared_memory_offset_,
+           Result::ComputeSize(1).ValueOrDie());
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(1, result->GetNumResults());
   EXPECT_EQ(client_shader_id_, result->GetData()[0]);
@@ -507,10 +505,8 @@ TEST_P(GLES2DecoderWithShaderTest, GetAttachedShadersResultNotInitFail) {
   Result* result = static_cast<Result*>(shared_memory_address_);
   result->size = 1;
   EXPECT_CALL(*gl_, GetAttachedShaders(_, _, _, _)).Times(0);
-  cmd.Init(client_program_id_,
-           shared_memory_id_,
-           shared_memory_offset_,
-           Result::ComputeSize(1));
+  cmd.Init(client_program_id_, shared_memory_id_, shared_memory_offset_,
+           Result::ComputeSize(1).ValueOrDie());
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 
@@ -520,10 +516,8 @@ TEST_P(GLES2DecoderWithShaderTest, GetAttachedShadersBadProgramFails) {
   Result* result = static_cast<Result*>(shared_memory_address_);
   result->size = 0;
   EXPECT_CALL(*gl_, GetAttachedShaders(_, _, _, _)).Times(0);
-  cmd.Init(kInvalidClientId,
-           shared_memory_id_,
-           shared_memory_offset_,
-           Result::ComputeSize(1));
+  cmd.Init(kInvalidClientId, shared_memory_id_, shared_memory_offset_,
+           Result::ComputeSize(1).ValueOrDie());
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(0U, result->size);
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
@@ -532,16 +526,12 @@ TEST_P(GLES2DecoderWithShaderTest, GetAttachedShadersBadProgramFails) {
 TEST_P(GLES2DecoderWithShaderTest, GetAttachedShadersBadSharedMemoryFails) {
   GetAttachedShaders cmd;
   typedef GetAttachedShaders::Result Result;
-  cmd.Init(client_program_id_,
-           kInvalidSharedMemoryId,
-           shared_memory_offset_,
-           Result::ComputeSize(1));
+  cmd.Init(client_program_id_, kInvalidSharedMemoryId, shared_memory_offset_,
+           Result::ComputeSize(1).ValueOrDie());
   EXPECT_CALL(*gl_, GetAttachedShaders(_, _, _, _)).Times(0);
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
-  cmd.Init(client_program_id_,
-           shared_memory_id_,
-           kInvalidSharedMemoryOffset,
-           Result::ComputeSize(1));
+  cmd.Init(client_program_id_, shared_memory_id_, kInvalidSharedMemoryOffset,
+           Result::ComputeSize(1).ValueOrDie());
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 

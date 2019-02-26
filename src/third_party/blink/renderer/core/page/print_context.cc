@@ -206,7 +206,8 @@ void PrintContext::CollectLinkedDestinations(Node* node) {
 
   if (!node->IsLink() || !node->IsElementNode())
     return;
-  const AtomicString& href = ToElement(node)->getAttribute(HTMLNames::hrefAttr);
+  const AtomicString& href =
+      ToElement(node)->getAttribute(html_names::kHrefAttr);
   if (href.IsNull())
     return;
   KURL url = node->GetDocument().CompleteURL(href);
@@ -326,7 +327,9 @@ bool PrintContext::use_printing_layout() const {
 }
 
 ScopedPrintContext::ScopedPrintContext(LocalFrame* frame)
-    : context_(new PrintContext(frame, /*use_printing_layout=*/true)) {}
+    : context_(
+          MakeGarbageCollected<PrintContext>(frame,
+                                             /*use_printing_layout=*/true)) {}
 
 ScopedPrintContext::~ScopedPrintContext() {
   context_->EndPrintMode();

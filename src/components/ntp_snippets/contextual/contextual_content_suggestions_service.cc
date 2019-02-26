@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "components/ntp_snippets/contextual/contextual_content_suggestions_service_proxy.h"
+#include "components/ntp_snippets/contextual/contextual_suggestions_features.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_result.h"
 #include "components/ntp_snippets/remote/cached_image_fetcher.h"
 #include "components/ntp_snippets/remote/remote_suggestions_database.h"
@@ -30,8 +31,6 @@ namespace {
 bool IsEligibleURL(const GURL& url) {
   return url.is_valid() && url.SchemeIsHTTPOrHTTPS() && !url.HostIsIPAddress();
 }
-
-static constexpr float kMinimumConfidence = 0.75;
 
 }  // namespace
 
@@ -64,7 +63,7 @@ void ContextualContentSuggestionsService::FetchContextualSuggestionClusters(
         url, std::move(callback), metrics_callback);
     contextual_suggestions_fetcher_->FetchContextualSuggestionsClusters(
         url, std::move(internal_callback), metrics_callback);
-  } else if (result.peek_conditions.confidence < kMinimumConfidence) {
+  } else if (result.peek_conditions.confidence < GetMinimumConfidence()) {
     BelowConfidenceThresholdFetchDone(std::move(callback), metrics_callback);
   } else {
     std::move(callback).Run(result);
@@ -91,7 +90,7 @@ void ContextualContentSuggestionsService::FetchDone(
     fetch_cache_.AddSuggestionsResult(url, result);
   }
 
-  if (result.peek_conditions.confidence < kMinimumConfidence) {
+  if (result.peek_conditions.confidence < GetMinimumConfidence()) {
     BelowConfidenceThresholdFetchDone(std::move(callback), metrics_callback);
     return;
   }

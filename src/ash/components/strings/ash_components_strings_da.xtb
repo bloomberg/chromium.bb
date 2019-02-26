@@ -11,6 +11,7 @@
 <translation id="1299858300159559687">Udskriv den aktuelle side</translation>
 <translation id="1383876407941801731">Søg</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> eller <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
+<translation id="1477442857810932985">Gå til slutningen af linjen</translation>
 <translation id="1510238584712386396">Appliste</translation>
 <translation id="152892567002884378">Lydstyrke op</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> og derefter <ph name="ESC" /></translation>
@@ -180,7 +181,7 @@
 <translation id="8609384513243082612">Åbn en ny fane</translation>
 <translation id="8644639153978066712">Vis skjulte filer i appen Filer</translation>
 <translation id="8717459106217102612">Markér det forrige ord eller bogstav</translation>
-<translation id="8727232706774971183">Se dine underretninger</translation>
+<translation id="8727232706774971183">Se dine notifikationer</translation>
 <translation id="8855885154700222542">Tast til fuld skærm</translation>
 <translation id="88986195241502842">Gå en side ned</translation>
 <translation id="8924883688469390268">Skift til forrige bruger</translation>
@@ -191,6 +192,7 @@
 <translation id="9041599225465145264">Indsæt indholdet fra udklipsholderen</translation>
 <translation id="9052808072970550123">Skift til næste bruger</translation>
 <translation id="906458777597946297">Maksimér vinduet</translation>
+<translation id="9091855755813503076">Gå til begyndelsen af linjen</translation>
 <translation id="9106898733795143799">Side- og webbrowser</translation>
 <translation id="9162942292291287644">Der er ingen søgeresultater for <ph name="QUERY" /></translation>
 <translation id="9179672198516322668">Populære genveje</translation>

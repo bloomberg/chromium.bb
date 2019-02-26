@@ -15,9 +15,10 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 
 import java.util.List;
 
-class TabCountProvider {
+/** A provider that notifies its observers when the number of tabs changes. */
+public class TabCountProvider {
     /** An observer that is notified of changes to the number of open tabs. */
-    interface TabCountObserver {
+    public interface TabCountObserver {
         /**
          * @param tabCount Number of open tabs in the selected tab model.
          * @param isIncognito Whether the selected tab model is incognito.
@@ -40,9 +41,9 @@ class TabCountProvider {
      */
     private TabModelSelectorTabModelObserver mTabModelSelectorTabModelObserver;
 
-    private int mTabCount = 0;
+    private int mTabCount;
 
-    private boolean mIsIncognito = false;
+    private boolean mIsIncognito;
 
     TabCountProvider() {
         mTabCountObservers = new ObserverList<TabCountObserver>();
@@ -51,14 +52,14 @@ class TabCountProvider {
     /**
      * @param observer The observer that will have events broadcast to.
      */
-    void addObserver(TabCountObserver observer) {
+    public void addObserver(TabCountObserver observer) {
         mTabCountObservers.addObserver(observer);
     }
 
     /**
      * @param observer The observer that will be removed.
      */
-    void removeObserver(TabCountObserver observer) {
+    public void removeObserver(TabCountObserver observer) {
         mTabCountObservers.removeObserver(observer);
     }
 

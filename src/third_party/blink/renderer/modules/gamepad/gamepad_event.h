@@ -11,7 +11,7 @@
 
 namespace blink {
 
-class GamepadEvent final : public Event {
+class GamepadEvent : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -19,12 +19,16 @@ class GamepadEvent final : public Event {
                               Bubbles bubbles,
                               Cancelable cancelable,
                               Gamepad* gamepad) {
-    return new GamepadEvent(type, bubbles, cancelable, gamepad);
+    return MakeGarbageCollected<GamepadEvent>(type, bubbles, cancelable,
+                                              gamepad);
   }
   static GamepadEvent* Create(const AtomicString& type,
-                              const GamepadEventInit& initializer) {
-    return new GamepadEvent(type, initializer);
+                              const GamepadEventInit* initializer) {
+    return MakeGarbageCollected<GamepadEvent>(type, initializer);
   }
+
+  GamepadEvent(const AtomicString& type, Bubbles, Cancelable, Gamepad*);
+  GamepadEvent(const AtomicString&, const GamepadEventInit*);
   ~GamepadEvent() override;
 
   Gamepad* getGamepad() const { return gamepad_.Get(); }
@@ -34,9 +38,6 @@ class GamepadEvent final : public Event {
   void Trace(blink::Visitor*) override;
 
  private:
-  GamepadEvent(const AtomicString& type, Bubbles, Cancelable, Gamepad*);
-  GamepadEvent(const AtomicString&, const GamepadEventInit&);
-
   Member<Gamepad> gamepad_;
 };
 

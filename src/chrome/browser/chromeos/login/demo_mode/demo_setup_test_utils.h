@@ -7,14 +7,13 @@
 
 #include <string>
 
-#include "base/files/file_path.h"
-#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper_mock.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
-#include "components/policy/proto/device_management_backend.pb.h"
+#include "chromeos/settings/install_attributes.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,7 +22,12 @@ namespace chromeos {
 namespace test {
 
 // Result of Demo Mode setup.
-enum class DemoModeSetupResult { SUCCESS, ERROR };
+// TODO(agawronska, wzang): Test more error types.
+enum class DemoModeSetupResult {
+  SUCCESS,
+  ERROR_DEFAULT,
+  ERROR_POWERWASH_REQUIRED
+};
 
 // Helper method that mocks EnterpriseEnrollmentHelper for online Demo Mode
 // setup. It simulates specified Demo Mode enrollment |result|.
@@ -38,13 +42,23 @@ EnterpriseEnrollmentHelper* MockDemoModeOnlineEnrollmentHelperCreator(
   EXPECT_EQ(enrollment_config.mode, policy::EnrollmentConfig::MODE_ATTESTATION);
   EXPECT_CALL(*mock, EnrollUsingAttestation())
       .WillRepeatedly(testing::Invoke([mock]() {
-        if (result == DemoModeSetupResult::SUCCESS) {
-          mock->status_consumer()->OnDeviceEnrolled("");
-        } else {
-          // TODO(agawronska): Test different error types.
-          mock->status_consumer()->OnEnrollmentError(
-              policy::EnrollmentStatus::ForStatus(
-                  policy::EnrollmentStatus::REGISTRATION_FAILED));
+        switch (result) {
+          case DemoModeSetupResult::SUCCESS:
+            mock->status_consumer()->OnDeviceEnrolled("");
+            break;
+          case DemoModeSetupResult::ERROR_POWERWASH_REQUIRED:
+            mock->status_consumer()->OnEnrollmentError(
+                policy::EnrollmentStatus::ForLockError(
+                    chromeos::InstallAttributes::LOCK_ALREADY_LOCKED));
+            break;
+          case DemoModeSetupResult::ERROR_DEFAULT:
+            mock->status_consumer()->OnEnrollmentError(
+                policy::EnrollmentStatus::ForRegistrationError(
+                    policy::DeviceManagementStatus::
+                        DM_STATUS_TEMPORARY_UNAVAILABLE));
+            break;
+          default:
+            NOTREACHED();
         }
       }));
   return mock;
@@ -64,13 +78,22 @@ EnterpriseEnrollmentHelper* MockDemoModeOfflineEnrollmentHelperCreator(
             policy::EnrollmentConfig::MODE_OFFLINE_DEMO);
   EXPECT_CALL(*mock, EnrollForOfflineDemo())
       .WillRepeatedly(testing::Invoke([mock]() {
-        if (result == DemoModeSetupResult::SUCCESS) {
-          mock->status_consumer()->OnDeviceEnrolled("");
-        } else {
-          // TODO(agawronska): Test different error types.
-          mock->status_consumer()->OnEnrollmentError(
-              policy::EnrollmentStatus::ForStatus(
-                  policy::EnrollmentStatus::Status::LOCK_ERROR));
+        switch (result) {
+          case DemoModeSetupResult::SUCCESS:
+            mock->status_consumer()->OnDeviceEnrolled("");
+            break;
+          case DemoModeSetupResult::ERROR_POWERWASH_REQUIRED:
+            mock->status_consumer()->OnEnrollmentError(
+                policy::EnrollmentStatus::ForLockError(
+                    chromeos::InstallAttributes::LOCK_READBACK_ERROR));
+            break;
+          case DemoModeSetupResult::ERROR_DEFAULT:
+            mock->status_consumer()->OnEnrollmentError(
+                policy::EnrollmentStatus::ForStatus(
+                    policy::EnrollmentStatus::OFFLINE_POLICY_DECODING_FAILED));
+            break;
+          default:
+            NOTREACHED();
         }
       }));
   return mock;
@@ -78,37 +101,7 @@ EnterpriseEnrollmentHelper* MockDemoModeOfflineEnrollmentHelperCreator(
 
 // Creates fake offline policy directory to be used in tests.
 bool SetupDummyOfflinePolicyDir(const std::string& account_id,
-                                base::ScopedTempDir* temp_dir) {
-  if (!temp_dir->CreateUniqueTempDir()) {
-    LOG(ERROR) << "Failed to create unique tempdir";
-    return false;
-  }
-
-  if (base::WriteFile(temp_dir->GetPath().AppendASCII("device_policy"), "",
-                      0) != 0) {
-    LOG(ERROR) << "Failed to create device_policy file";
-    return false;
-  }
-
-  // We use MockCloudPolicyStore for the device local account policy in the
-  // tests, thus actual policy content can be empty. account_id is specified
-  // since it is used by DemoSetupController to look up the store.
-  std::string policy_blob;
-  if (!account_id.empty()) {
-    enterprise_management::PolicyData policy_data;
-    policy_data.set_username(account_id);
-    enterprise_management::PolicyFetchResponse policy;
-    policy.set_policy_data(policy_data.SerializeAsString());
-    policy_blob = policy.SerializeAsString();
-  }
-  if (base::WriteFile(temp_dir->GetPath().AppendASCII("local_account_policy"),
-                      policy_blob.data(), policy_blob.size()) !=
-      static_cast<int>(policy_blob.size())) {
-    LOG(ERROR) << "Failed to create local_account_policy file";
-    return false;
-  }
-  return true;
-}
+                                base::ScopedTempDir* temp_dir);
 
 }  // namespace test
 

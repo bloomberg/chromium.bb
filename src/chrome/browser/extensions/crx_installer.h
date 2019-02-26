@@ -395,11 +395,6 @@ class CrxInstaller : public SandboxedUnpackerClient {
   // to false.
   bool delete_source_;
 
-  // Whether to create an app shortcut after successful installation. This is
-  // set based on the user's selection in the UI and can only ever be true for
-  // apps.
-  bool create_app_shortcut_;
-
   // The ordinal of the NTP apps page |extension_| will be shown on.
   syncer::StringOrdinal page_ordinal_;
 

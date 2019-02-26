@@ -12,6 +12,10 @@
 #include "base/values.h"
 #include "url/gurl.h"
 
+namespace net {
+class IPAddress;
+}
+
 namespace media_router {
 
 // Dial device information that is used within the DialService and Registry on
@@ -60,6 +64,11 @@ class DialDeviceData {
   // Validates that the URL is valid for the device description.
   static bool IsDeviceDescriptionUrl(const GURL& url);
 
+  // Returns true if |app_url| is a valid DIAL Application URL with a hostname
+  // matching |expected_ip_address|.
+  static bool IsValidDialAppUrl(const GURL& url,
+                                const net::IPAddress& expected_ip_address);
+
  private:
   // Hardware identifier from the DIAL response.  Not exposed to API clients.
   std::string device_id_;
@@ -81,6 +90,7 @@ class DialDeviceData {
   int config_id_;
 };
 
+// TODO(mfoltz): Do we need this as well as ParsedDialDeviceDescriptionData?
 struct DialDeviceDescriptionData {
  public:
   DialDeviceDescriptionData() = default;

@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "core/fxcrt/fx_string.h"
-#include "core/fxcrt/xml/cfx_xmlnode.h"
 #include "core/fxge/fx_dib.h"
 #include "third_party/base/optional.h"
 #include "xfa/fxfa/cxfa_ffwidget.h"
@@ -20,6 +19,7 @@
 
 class CFGAS_GEFont;
 class CFX_DIBitmap;
+class CFX_XMLNode;
 class CXFA_Bind;
 class CXFA_Border;
 class CXFA_Calculate;
@@ -141,10 +141,6 @@ class CXFA_Node : public CXFA_Object {
       binding_nodes_.emplace_back(node);
   }
 
-  // TODO(dsinclair): This should not be needed. Nodes should get un-bound when
-  // they're deleted instead of us pointing to bad objects.
-  void ReleaseBindingNodes();
-
   bool HasRemovedChildren() const {
     return HasFlag(XFA_NodeFlag_HasRemovedChildren);
   }
@@ -199,7 +195,7 @@ class CXFA_Node : public CXFA_Object {
   CXFA_Node* GetDataDescriptionNode();
   void SetDataDescriptionNode(CXFA_Node* pDataDescriptionNode);
   CXFA_Node* GetBindData();
-  std::vector<UnownedPtr<CXFA_Node>>* GetBindItems();
+  std::vector<CXFA_Node*>* GetBindItems() { return &binding_nodes_; }
   int32_t AddBindItem(CXFA_Node* pFormNode);
   int32_t RemoveBindItem(CXFA_Node* pFormNode);
   bool HasBindItem();
@@ -469,7 +465,7 @@ class CXFA_Node : public CXFA_Object {
   CXFA_Node* GetBindingNode() const {
     if (binding_nodes_.empty())
       return nullptr;
-    return binding_nodes_[0].Get();
+    return binding_nodes_[0];
   }
   bool BindsFormItems() const { return HasFlag(XFA_NodeFlag_BindFormItems); }
   bool NeedsInitApp() const { return HasFlag(XFA_NodeFlag_NeedsInitApp); }
@@ -505,8 +501,8 @@ class CXFA_Node : public CXFA_Object {
   uint8_t m_ExecuteRecursionDepth = 0;
   uint16_t m_uNodeFlags = XFA_NodeFlag_None;
   uint32_t m_dwNameHash = 0;
-  CXFA_Node* m_pAuxNode = nullptr;  // Raw, node tree cleanup order.
-  std::vector<UnownedPtr<CXFA_Node>> binding_nodes_;
+  CXFA_Node* m_pAuxNode = nullptr;         // Raw, node tree cleanup order.
+  std::vector<CXFA_Node*> binding_nodes_;  // Raw, node tree cleanup order.
   bool m_bIsNull = true;
   bool m_bPreNull = true;
   bool is_widget_ready_ = false;

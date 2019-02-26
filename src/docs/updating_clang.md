@@ -26,8 +26,6 @@ An archive of all packages built so far is at https://is.gd/chromeclang
             gs://chromium-browser-clang/$x/llvmobjdump-$rev.tgz ; \
         gsutil.py cp -n -a public-read gs://chromium-browser-clang-staging/$x/llvmcfiverify-$rev.tgz \
             gs://chromium-browser-clang/$x/llvmcfiverify-$rev.tgz ; \
-        gsutil.py cp -n -a public-read gs://chromium-browser-clang-staging/$x/safestack-$rev.tgz \
-            gs://chromium-browser-clang/$x/safestack-$rev.tgz ; \
         gsutil.py cp -n -a public-read gs://chromium-browser-clang-staging/$x/translation_unit-$rev.tgz \
             gs://chromium-browser-clang/$x/translation_unit-$rev.tgz ; \
         gsutil.py cp -n -a public-read gs://chromium-browser-clang-staging/$x/llvm-code-coverage-$rev.tgz \

@@ -25,6 +25,10 @@
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/ash/tablet_mode_client.h"
+#endif
+
 using content::BrowserContext;
 using content::WebContents;
 
@@ -52,17 +56,17 @@ ExtensionDialog::~ExtensionDialog() {
 }
 
 // static
-ExtensionDialog* ExtensionDialog::Show(
-    const GURL& url,
-    gfx::NativeWindow parent_window,
-    Profile* profile,
-    WebContents* web_contents,
-    int width,
-    int height,
-    int min_width,
-    int min_height,
-    const base::string16& title,
-    ExtensionDialogObserver* observer) {
+ExtensionDialog* ExtensionDialog::Show(const GURL& url,
+                                       gfx::NativeWindow parent_window,
+                                       Profile* profile,
+                                       WebContents* web_contents,
+                                       bool is_modal,
+                                       int width,
+                                       int height,
+                                       int min_width,
+                                       int min_height,
+                                       const base::string16& title,
+                                       ExtensionDialogObserver* observer) {
   extensions::ExtensionViewHost* host =
       extensions::ExtensionViewHostFactory::CreateDialogHost(url, profile);
   if (!host)
@@ -77,7 +81,7 @@ ExtensionDialog* ExtensionDialog::Show(
   DCHECK(parent_window);
   ExtensionDialog* dialog = new ExtensionDialog(host, observer);
   dialog->set_title(title);
-  dialog->InitWindow(parent_window, width, height);
+  dialog->InitWindow(parent_window, is_modal, width, height);
 
   // Show a white background while the extension loads.  This is prettier than
   // flashing a black unfilled window frame.
@@ -90,23 +94,27 @@ ExtensionDialog* ExtensionDialog::Show(
 }
 
 void ExtensionDialog::InitWindow(gfx::NativeWindow parent,
+                                 bool is_modal,
                                  int width,
                                  int height) {
   views::Widget* window =
-      constrained_window::CreateBrowserModalDialogViews(this, parent);
+      is_modal ? constrained_window::CreateBrowserModalDialogViews(this, parent)
+               : views::DialogDelegate::CreateDialogWidget(
+                     this, nullptr /* context */, nullptr /* parent */);
 
-  // Center the window over the browser.
-  views::Widget* parent_widget =
-      views::Widget::GetWidgetForNativeWindow(parent);
-  gfx::Rect bounds_rect = parent_widget->GetWindowBoundsInScreen();
+  // Center the window over the parent browser window or the screen.
+  gfx::Rect screen_rect =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(parent).work_area();
+  gfx::Rect bounds_rect = parent
+                              ? views::Widget::GetWidgetForNativeWindow(parent)
+                                    ->GetWindowBoundsInScreen()
+                              : screen_rect;
   bounds_rect.ClampToCenteredSize({width, height});
 
   // Ensure the top left and top right of the window are on screen, with
   // priority given to the top left. Use the display's work_area() rather than
   // bounds(), since the work_area() may be smaller e.g. when the docked
   // magnifier is enabled.
-  gfx::Rect screen_rect =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(parent).work_area();
   bounds_rect.AdjustToFit(screen_rect);
   window->SetBounds(bounds_rect);
 
@@ -153,6 +161,12 @@ int ExtensionDialog::GetDialogButtons() const {
 }
 
 bool ExtensionDialog::CanResize() const {
+#if defined(OS_CHROMEOS)
+  // Prevent dialog resize mouse cursor in tablet mode, crbug.com/453634.
+  const auto* client = TabletModeClient::Get();
+  if (client && client->tablet_mode_enabled())
+    return false;
+#endif
   // Can resize only if minimum contents size set.
   return GetExtensionView()->GetPreferredSize() != gfx::Size();
 }

@@ -423,4 +423,123 @@ class LayerTreeHostProxyTestCommitWaitsForActivationMFBA
 
 MULTI_THREAD_TEST_F(LayerTreeHostProxyTestCommitWaitsForActivationMFBA);
 
+// Tests that SingleThreadProxy correctly reports pending animations when
+// requested from the impl-side.
+class LayerTreeHostProxyTestImplFrameCausesAnimatePending
+    : public LayerTreeHostProxyTest {
+ protected:
+  LayerTreeHostProxyTestImplFrameCausesAnimatePending() = default;
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
+    switch (host_impl->sync_tree()->source_frame_number()) {
+      case 0: {
+        EXPECT_FALSE(proxy()->RequestedAnimatePending());
+        host_impl->SetNeedsOneBeginImplFrame();
+        EXPECT_TRUE(proxy()->RequestedAnimatePending());
+        PostSetNeedsCommitToMainThread();
+        break;
+      }
+      case 1: {
+        EXPECT_FALSE(proxy()->RequestedAnimatePending());
+        EndTest();
+        break;
+      }
+      default: { NOTREACHED(); }
+    }
+  }
+
+  void AfterTest() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LayerTreeHostProxyTestImplFrameCausesAnimatePending);
+};
+
+SINGLE_THREAD_TEST_F(LayerTreeHostProxyTestImplFrameCausesAnimatePending);
+
+// Test that the SingleThreadProxy correctly records and clears commit requests
+// from the impl-side.
+class LayerTreeHostProxyTestNeedsCommitFromImpl
+    : public LayerTreeHostProxyTest {
+ protected:
+  LayerTreeHostProxyTestNeedsCommitFromImpl() = default;
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
+    switch (host_impl->sync_tree()->source_frame_number()) {
+      case 0: {
+        host_impl->SetNeedsCommit();
+        MainThreadTaskRunner()->PostTask(
+            FROM_HERE,
+            base::BindOnce(&LayerTreeHostProxyTestNeedsCommitFromImpl::
+                               CheckCommitRequested,
+                           base::Unretained(this)));
+        break;
+      }
+      case 1: {
+        MainThreadTaskRunner()->PostTask(
+            FROM_HERE,
+            base::BindOnce(&LayerTreeHostProxyTestNeedsCommitFromImpl::
+                               CheckRequestClearedAndEnd,
+                           base::Unretained(this)));
+        break;
+      }
+      default: { NOTREACHED(); }
+    }
+  }
+
+  void CheckCommitRequested() { EXPECT_TRUE(proxy()->CommitRequested()); }
+
+  void CheckRequestClearedAndEnd() {
+    EXPECT_FALSE(proxy()->CommitRequested());
+    EndTest();
+  }
+
+  void AfterTest() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LayerTreeHostProxyTestNeedsCommitFromImpl);
+};
+
+SINGLE_THREAD_TEST_F(LayerTreeHostProxyTestNeedsCommitFromImpl);
+
+// Test that a commit is correctly delayed but is not lost when turning
+// invisible, and after turning visible, the commit is executed.
+// This is a regression test for https://crbug.com/890008
+class LayerTreeHostProxyTestDelayedCommitDueToVisibility
+    : public LayerTreeHostProxyTest {
+ protected:
+  LayerTreeHostProxyTestDelayedCommitDueToVisibility() = default;
+  ~LayerTreeHostProxyTestDelayedCommitDueToVisibility() override = default;
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void WillSendBeginMainFrameOnThread(LayerTreeHostImpl*) override {
+    if (!set_invisible_once_) {
+      set_invisible_once_ = true;
+      PostSetVisibleToMainThread(false);
+    }
+  }
+
+  void BeginMainFrameAbortedOnThread(LayerTreeHostImpl*,
+                                     CommitEarlyOutReason reason) override {
+    EXPECT_EQ(CommitEarlyOutReason::ABORTED_NOT_VISIBLE, reason);
+    PostSetVisibleToMainThread(true);
+  }
+
+  void DidCommit() override { EndTest(); }
+
+  void AfterTest() override {}
+
+ private:
+  bool set_invisible_once_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(LayerTreeHostProxyTestDelayedCommitDueToVisibility);
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostProxyTestDelayedCommitDueToVisibility);
+
 }  // namespace cc

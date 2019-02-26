@@ -40,19 +40,18 @@
 #include <stdlib.h>
 
 
-DEFINE_NULL_INSTANCE (hb_blob_t) =
-{
-  HB_OBJECT_HEADER_STATIC,
+/**
+ * SECTION: hb-blob
+ * @title: hb-blob
+ * @short_description: Binary data containers
+ * @include: hb.h
+ *
+ * Blobs wrap a chunk of binary data to handle lifecycle management of data
+ * while it is passed between client and HarfBuzz.  Blobs are primarily used
+ * to create font faces, but also to access font face tables, as well as
+ * pass around other binary data.
+ **/
 
-  true, /* immutable */
-
-  nullptr, /* data */
-  0, /* length */
-  HB_MEMORY_MODE_READONLY, /* mode */
-
-  nullptr, /* user_data */
-  nullptr  /* destroy */
-};
 
 /**
  * hb_blob_create: (skip)
@@ -138,7 +137,7 @@ hb_blob_create_sub_blob (hb_blob_t    *parent,
 {
   hb_blob_t *blob;
 
-  if (!length || offset >= parent->length)
+  if (!length || !parent || offset >= parent->length)
     return hb_blob_get_empty ();
 
   hb_blob_make_immutable (parent);
@@ -286,12 +285,10 @@ hb_blob_get_user_data (hb_blob_t          *blob,
 void
 hb_blob_make_immutable (hb_blob_t *blob)
 {
-  if (hb_object_is_inert (blob))
-    return;
-  if (blob->immutable)
+  if (hb_object_is_immutable (blob))
     return;
 
-  blob->immutable = true;
+  hb_object_make_immutable (blob);
 }
 
 /**
@@ -307,7 +304,7 @@ hb_blob_make_immutable (hb_blob_t *blob)
 hb_bool_t
 hb_blob_is_immutable (hb_blob_t *blob)
 {
-  return blob->immutable;
+  return hb_object_is_immutable (blob);
 }
 
 
@@ -441,7 +438,7 @@ hb_blob_t::try_make_writable_inplace (void)
 bool
 hb_blob_t::try_make_writable (void)
 {
-  if (this->immutable)
+  if (hb_object_is_immutable (this))
     return false;
 
   if (this->mode == HB_MEMORY_MODE_WRITABLE)
@@ -484,11 +481,11 @@ hb_blob_t::try_make_writable (void)
 # include <fcntl.h>
 #endif
 
-#if defined(_WIN32) || defined(__CYGWIN__)
+#ifdef _WIN32
 # include <windows.h>
 #else
-# ifndef _O_BINARY
-#  define _O_BINARY 0
+# ifndef O_BINARY
+#  define O_BINARY 0
 # endif
 #endif
 
@@ -500,18 +497,19 @@ struct hb_mapped_file_t
 {
   char *contents;
   unsigned long length;
-#if defined(_WIN32) || defined(__CYGWIN__)
+#ifdef _WIN32
   HANDLE mapping;
 #endif
 };
 
-#if (defined(HAVE_MMAP) || defined(_WIN32) || defined(__CYGWIN__)) && !defined(HB_NO_MMAP)
+#if (defined(HAVE_MMAP) || defined(_WIN32)) && !defined(HB_NO_MMAP)
 static void
-_hb_mapped_file_destroy (hb_mapped_file_t *file)
+_hb_mapped_file_destroy (void *file_)
 {
+  hb_mapped_file_t *file = (hb_mapped_file_t *) file_;
 #ifdef HAVE_MMAP
   munmap (file->contents, file->length);
-#elif defined(_WIN32) || defined(__CYGWIN__)
+#elif defined(_WIN32)
   UnmapViewOfFile (file->contents);
   CloseHandle (file->mapping);
 #else
@@ -539,7 +537,7 @@ hb_blob_create_from_file (const char *file_name)
   hb_mapped_file_t *file = (hb_mapped_file_t *) calloc (1, sizeof (hb_mapped_file_t));
   if (unlikely (!file)) return hb_blob_get_empty ();
 
-  int fd = open (file_name, O_RDONLY | _O_BINARY, 0);
+  int fd = open (file_name, O_RDONLY | O_BINARY, 0);
   if (unlikely (fd == -1)) goto fail_without_close;
 
   struct stat st;
@@ -562,7 +560,7 @@ fail:
 fail_without_close:
   free (file);
 
-#elif (defined(_WIN32) || defined(__CYGWIN__)) && !defined(HB_NO_MMAP)
+#elif defined(_WIN32) && !defined(HB_NO_MMAP)
   hb_mapped_file_t *file = (hb_mapped_file_t *) calloc (1, sizeof (hb_mapped_file_t));
   if (unlikely (!file)) return hb_blob_get_empty ();
 

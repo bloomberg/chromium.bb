@@ -630,7 +630,7 @@ Value FunLang::Evaluate(EvaluationContext& context) const {
   while (node) {
     if (node->IsElementNode()) {
       Element* element = ToElement(node);
-      language_attribute = element->Attributes().Find(XMLNames::langAttr);
+      language_attribute = element->Attributes().Find(xml_names::kLangAttr);
     }
     if (language_attribute)
       break;

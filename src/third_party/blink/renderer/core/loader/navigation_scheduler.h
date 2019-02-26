@@ -41,7 +41,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -57,9 +57,10 @@ class CORE_EXPORT NavigationScheduler final
     : public GarbageCollectedFinalized<NavigationScheduler> {
  public:
   static NavigationScheduler* Create(LocalFrame* frame) {
-    return new NavigationScheduler(frame);
+    return MakeGarbageCollected<NavigationScheduler>(frame);
   }
 
+  explicit NavigationScheduler(LocalFrame*);
   ~NavigationScheduler();
 
   bool LocationChangePending();
@@ -77,8 +78,6 @@ class CORE_EXPORT NavigationScheduler final
   void Trace(blink::Visitor*);
 
  private:
-  explicit NavigationScheduler(LocalFrame*);
-
   bool ShouldScheduleReload() const;
   bool ShouldScheduleNavigation(const KURL&) const;
 

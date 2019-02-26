@@ -223,6 +223,8 @@ jumbo_source_set("base") {
     "routing_token_callback.h",
     "sample_rates.cc",
     "sample_rates.h",
+    "scoped_async_trace.cc",
+    "scoped_async_trace.h",
     "seekable_buffer.cc",
     "seekable_buffer.h",
     "serial_runner.cc",

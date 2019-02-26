@@ -60,12 +60,10 @@ class ASH_PUBLIC_EXPORT FrameCaptionButton : public views::Button {
   // Sets the alpha to use for painting. Used to animate visibility changes.
   void SetAlpha(int alpha);
 
-  // views::View overrides:
+  // views::Button:
   const char* GetClassName() const override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   views::PaintInfo::ScaleType GetPaintScaleType() const override;
-
-  // views::InkDropHostView:
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;

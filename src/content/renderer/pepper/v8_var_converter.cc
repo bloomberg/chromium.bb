@@ -210,11 +210,12 @@ bool GetOrCreateVar(v8::Local<v8::Value> val,
   // we still add them to |visited_handles| so that the corresponding string
   // PP_Var created will be properly refcounted.
   if (val->IsObject() || val->IsString()) {
-    if (parent_handles->count(HashedHandle(val->ToObject(isolate))) != 0)
+    if (parent_handles->count(
+            HashedHandle(val->ToObject(context).ToLocalChecked())) != 0)
       return false;
 
-    HandleVarMap::const_iterator it =
-        visited_handles->find(HashedHandle(val->ToObject(isolate)));
+    HandleVarMap::const_iterator it = visited_handles->find(
+        HashedHandle(val->ToObject(context).ToLocalChecked()));
     if (it != visited_handles->end()) {
       *result = it->second.get();
       return true;
@@ -228,11 +229,12 @@ bool GetOrCreateVar(v8::Local<v8::Value> val,
   } else if (val->IsBoolean() || val->IsBooleanObject()) {
     *result = PP_MakeBool(PP_FromBool(val->ToBoolean(isolate)->Value()));
   } else if (val->IsInt32()) {
-    *result = PP_MakeInt32(val->ToInt32(isolate)->Value());
+    *result = PP_MakeInt32(val.As<v8::Int32>()->Value());
   } else if (val->IsNumber() || val->IsNumberObject()) {
-    *result = PP_MakeDouble(val->ToNumber(isolate)->Value());
+    *result = PP_MakeDouble(val->NumberValue(context).ToChecked());
   } else if (val->IsString() || val->IsStringObject()) {
-    v8::String::Utf8Value utf8(isolate, val->ToString(isolate));
+    v8::String::Utf8Value utf8(isolate,
+                               val->ToString(context).ToLocalChecked());
     *result = StringVar::StringToPPVar(std::string(*utf8, utf8.length()));
   } else if (val->IsObject()) {
     // For any other v8 objects, the conversion happens as follows:
@@ -274,7 +276,7 @@ bool GetOrCreateVar(v8::Local<v8::Value> val,
   *did_create = true;
   if (val->IsObject() || val->IsString()) {
     visited_handles->insert(
-        make_pair(HashedHandle(val->ToObject(isolate)),
+        make_pair(HashedHandle(val->ToObject(context).ToLocalChecked()),
                   ScopedPPVar(ScopedPPVar::PassRef(), *result)));
   }
   return true;
@@ -383,9 +385,8 @@ bool V8VarConverter::ToV8Value(const PP_Var& var,
         }
         if (did_create && CanHaveChildren(child_var))
           stack.push_back(child_var);
-        v8::TryCatch try_catch(isolate);
-        v8_array->Set(static_cast<uint32_t>(i), child_v8);
-        if (try_catch.HasCaught()) {
+        if (v8_array->Set(context, static_cast<uint32_t>(i), child_v8)
+                .IsNothing()) {
           LOG(ERROR) << "Setter for index " << i << " threw an exception.";
           return false;
         }
@@ -418,13 +419,15 @@ bool V8VarConverter::ToV8Value(const PP_Var& var,
         }
         if (did_create && CanHaveChildren(child_var))
           stack.push_back(child_var);
-        v8::TryCatch try_catch(isolate);
-        v8_object->Set(v8::String::NewFromUtf8(isolate, key.c_str(),
-                                               v8::NewStringType::kInternalized,
-                                               key.length())
-                           .ToLocalChecked(),
-                       child_v8);
-        if (try_catch.HasCaught()) {
+
+        if (v8_object
+                ->Set(context,
+                      v8::String::NewFromUtf8(isolate, key.c_str(),
+                                              v8::NewStringType::kInternalized,
+                                              key.length())
+                          .ToLocalChecked(),
+                      child_v8)
+                .IsNothing()) {
           LOG(ERROR) << "Setter for property " << key.c_str() << " threw an "
                      << "exception.";
           return false;
@@ -524,12 +527,11 @@ bool V8VarConverter::FromV8ValueInternal(
       }
 
       for (uint32_t i = 0; i < v8_array->Length(); ++i) {
-        v8::TryCatch try_catch(context->GetIsolate());
-        v8::Local<v8::Value> child_v8 = v8_array->Get(i);
-        if (try_catch.HasCaught())
+        v8::Local<v8::Value> child_v8;
+        if (!v8_array->Get(context, i).ToLocal(&child_v8))
           return false;
 
-        if (!v8_array->HasRealIndexedProperty(i))
+        if (!v8_array->HasRealIndexedProperty(context, i).FromMaybe(false))
           continue;
 
         PP_Var child_var;
@@ -560,9 +562,11 @@ bool V8VarConverter::FromV8ValueInternal(
         return false;
       }
 
-      v8::Local<v8::Array> property_names(v8_object->GetOwnPropertyNames());
+      v8::Local<v8::Array> property_names(
+          v8_object->GetOwnPropertyNames(context).ToLocalChecked());
       for (uint32_t i = 0; i < property_names->Length(); ++i) {
-        v8::Local<v8::Value> key(property_names->Get(i));
+        v8::Local<v8::Value> key(
+            property_names->Get(context, i).ToLocalChecked());
 
         // Extend this test to cover more types as necessary and if sensible.
         if (!key->IsString() && !key->IsNumber()) {
@@ -574,16 +578,17 @@ bool V8VarConverter::FromV8ValueInternal(
         }
 
         v8::Local<v8::String> key_string =
-            key->ToString(context->GetIsolate());
+            key->ToString(context).ToLocalChecked();
         // Skip all callbacks: crbug.com/139933
-        if (v8_object->HasRealNamedCallbackProperty(key_string))
+        if (v8_object->HasRealNamedCallbackProperty(context, key_string)
+                .ToChecked()) {
           continue;
+        }
 
         v8::String::Utf8Value name_utf8(context->GetIsolate(), key_string);
 
-        v8::TryCatch try_catch(context->GetIsolate());
-        v8::Local<v8::Value> child_v8 = v8_object->Get(key);
-        if (try_catch.HasCaught())
+        v8::Local<v8::Value> child_v8;
+        if (!v8_object->Get(context, key).ToLocal(&child_v8))
           return false;
 
         PP_Var child_var;

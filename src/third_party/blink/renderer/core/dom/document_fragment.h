@@ -36,6 +36,8 @@ class CORE_EXPORT DocumentFragment : public ContainerNode {
  public:
   static DocumentFragment* Create(Document&);
 
+  DocumentFragment(Document*, ConstructionType = kCreateContainer);
+
   void ParseHTML(const String&,
                  Element* context_element,
                  ParserContentPolicy = kAllowScriptingContent);
@@ -47,7 +49,6 @@ class CORE_EXPORT DocumentFragment : public ContainerNode {
   virtual bool IsTemplateContent() const { return false; }
 
  protected:
-  DocumentFragment(Document*, ConstructionType = kCreateContainer);
   String nodeName() const final;
 
  private:

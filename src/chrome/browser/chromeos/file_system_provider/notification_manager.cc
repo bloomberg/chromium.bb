@@ -93,7 +93,7 @@ void NotificationManager::ShowNotification() {
           IDS_FILE_SYSTEM_PROVIDER_UNRESPONSIVE_ABORT_BUTTON)));
 
   message_center::NotifierId notifier_id(
-      message_center::NotifierId::SYSTEM_COMPONENT,
+      message_center::NotifierType::SYSTEM_COMPONENT,
       "chrome://file_system_provider_notification");
   notifier_id.profile_id =
       multi_user_util::GetAccountIdFromProfile(profile_).GetUserEmail();

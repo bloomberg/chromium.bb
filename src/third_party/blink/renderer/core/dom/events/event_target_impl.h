@@ -27,14 +27,12 @@ class CORE_EXPORT EventTargetImpl final : public EventTargetWithInlineData,
  public:
   static EventTargetImpl* Create(ScriptState*);
 
+  EventTargetImpl(ScriptState*);
   ~EventTargetImpl() override = default;
 
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
   void Trace(blink::Visitor*) override;
-
- private:
-  EventTargetImpl(ScriptState*);
 };
 
 }  // namespace blink

@@ -13,36 +13,50 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/net/chrome_accept_language_settings.h"
+#include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_content_client.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/pref_names.h"
 #include "components/certificate_transparency/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "components/metrics/metrics_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
+#include "net/http/http_util.h"
 #include "net/net_buildflags.h"
+#include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/cpp/features.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/policy/policy_cert_service.h"
+#include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "components/user_manager/user.h"
+#endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/common/constants.h"
 #endif
 
 namespace {
+
+bool* g_discard_domain_reliability_uploads_for_testing = nullptr;
 
 std::vector<std::string> TranslateStringArray(const base::ListValue* list) {
   std::vector<std::string> strings;
@@ -51,6 +65,14 @@ std::vector<std::string> TranslateStringArray(const base::ListValue* list) {
     strings.push_back(value.GetString());
   }
   return strings;
+}
+
+std::string ComputeAcceptLanguageFromPref(const std::string& language_pref) {
+  std::string accept_languages_str =
+      base::FeatureList::IsEnabled(features::kUseNewAcceptLanguageHeader)
+          ? net::HttpUtil::ExpandLanguageList(language_pref)
+          : language_pref;
+  return net::HttpUtil::GenerateAcceptLanguageHeader(accept_languages_str);
 }
 
 }  // namespace
@@ -179,6 +201,28 @@ void ProfileNetworkContextService::SetUpProfileIODataNetworkContext(
   *network_context_params = network::mojom::NetworkContextParams::New();
 }
 
+#if defined(OS_CHROMEOS)
+void ProfileNetworkContextService::UpdateAdditionalCertificates(
+    const net::CertificateList& all_additional_certificates,
+    const net::CertificateList& trust_anchors) {
+  content::BrowserContext::ForEachStoragePartition(
+      profile_, base::BindRepeating(
+                    [](const net::CertificateList& all_additional_certificates,
+                       const net::CertificateList& trust_anchors,
+                       content::StoragePartition* storage_partition) {
+                      auto additional_certificates =
+                          network::mojom::AdditionalCertificates::New();
+                      additional_certificates->all_certificates =
+                          all_additional_certificates;
+                      additional_certificates->trust_anchors = trust_anchors;
+                      storage_partition->GetNetworkContext()
+                          ->UpdateAdditionalCertificates(
+                              std::move(additional_certificates));
+                    },
+                    all_additional_certificates, trust_anchors));
+}
+#endif
+
 void ProfileNetworkContextService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kQuicAllowed, true);
@@ -218,8 +262,7 @@ void ProfileNetworkContextService::UpdateBlockThirdPartyCookies() {
 }
 
 std::string ProfileNetworkContextService::ComputeAcceptLanguage() const {
-  return chrome_accept_language_settings::ComputeAcceptLanguageFromPref(
-      pref_accept_language_.GetValue());
+  return ComputeAcceptLanguageFromPref(pref_accept_language_.GetValue());
 }
 
 void ProfileNetworkContextService::UpdateReferrersEnabled() {
@@ -281,6 +324,11 @@ void ProfileNetworkContextService::ScheduleUpdateCTPolicy() {
 
 void ProfileNetworkContextService::FlushProxyConfigMonitorForTesting() {
   proxy_config_monitor_.FlushForTesting();
+}
+
+void ProfileNetworkContextService::SetDiscardDomainReliabilityUploadsForTesting(
+    bool value) {
+  g_discard_domain_reliability_uploads_for_testing = new bool(value);
 }
 
 network::mojom::NetworkContextParamsPtr
@@ -391,6 +439,19 @@ ProfileNetworkContextService::CreateNetworkContextParams(
   network_context_params->enable_certificate_reporting = true;
   network_context_params->enable_expect_ct_reporting = true;
 
+  if (domain_reliability::DomainReliabilityServiceFactory::
+          ShouldCreateService()) {
+    network_context_params->enable_domain_reliability = true;
+    network_context_params->domain_reliability_upload_reporter =
+        domain_reliability::DomainReliabilityServiceFactory::
+            kUploadReporterString;
+    network_context_params->discard_domain_reliablity_uploads =
+        g_discard_domain_reliability_uploads_for_testing
+            ? *g_discard_domain_reliability_uploads_for_testing
+            : !g_browser_process->local_state()->GetBoolean(
+                  metrics::prefs::kMetricsReportingEnabled);
+  }
+
   if (data_reduction_proxy::params::IsEnabledWithNetworkService()) {
     auto* drp_settings =
         DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile_);
@@ -400,6 +461,42 @@ ProfileNetworkContextService::CreateNetworkContextParams(
           mojo::MakeRequest(&config_client_info);
       drp_settings->SetCustomProxyConfigClient(std::move(config_client_info));
     }
+  }
+
+#if defined(OS_CHROMEOS)
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
+      user_manager &&
+      policy::PolicyCertServiceFactory::CreateAndStartObservingForProfile(
+          profile_)) {
+    const user_manager::User* user =
+        chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
+    // No need to initialize NSS for users with empty username hash:
+    // Getters for a user's NSS slots always return NULL slot if the user's
+    // username hash is empty, even when the NSS is not initialized for the
+    // user.
+    if (user && !user->username_hash().empty()) {
+      network_context_params->username_hash = user->username_hash();
+      network_context_params->nss_path = profile_->GetPath();
+
+      policy::PolicyCertService* service =
+          policy::PolicyCertServiceFactory::GetForProfile(profile_);
+      network_context_params->initial_additional_certificates =
+          network::mojom::AdditionalCertificates::New();
+      network_context_params->initial_additional_certificates
+          ->all_certificates = service->all_server_and_authority_certs();
+      network_context_params->initial_additional_certificates->trust_anchors =
+          service->trust_anchors();
+    }
+  }
+#endif
+
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    // Should be initialized with existing per-profile CORS access lists.
+    network_context_params->cors_origin_access_list =
+        content::BrowserContext::GetSharedCorsOriginAccessList(profile_)
+            ->GetOriginAccessList()
+            .CreateCorsOriginAccessPatternsList();
   }
 
   return network_context_params;

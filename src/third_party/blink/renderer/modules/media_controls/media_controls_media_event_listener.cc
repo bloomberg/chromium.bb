@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/modules/remoteplayback/availability_callback_wrapper.h"
 #include "third_party/blink/renderer/modules/remoteplayback/html_media_element_remote_playback.h"
 #include "third_party/blink/renderer/modules/remoteplayback/remote_playback.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
@@ -26,30 +27,33 @@ MediaControlsMediaEventListener::MediaControlsMediaEventListener(
 void MediaControlsMediaEventListener::Attach() {
   DCHECK(GetMediaElement().isConnected());
 
-  GetMediaElement().addEventListener(EventTypeNames::volumechange, this, false);
-  GetMediaElement().addEventListener(EventTypeNames::focusin, this, false);
-  GetMediaElement().addEventListener(EventTypeNames::timeupdate, this, false);
-  GetMediaElement().addEventListener(EventTypeNames::play, this, false);
-  GetMediaElement().addEventListener(EventTypeNames::playing, this, false);
-  GetMediaElement().addEventListener(EventTypeNames::pause, this, false);
-  GetMediaElement().addEventListener(EventTypeNames::durationchange, this,
+  GetMediaElement().addEventListener(event_type_names::kVolumechange, this,
                                      false);
-  GetMediaElement().addEventListener(EventTypeNames::error, this, false);
-  GetMediaElement().addEventListener(EventTypeNames::loadedmetadata, this,
+  GetMediaElement().addEventListener(event_type_names::kFocusin, this, false);
+  GetMediaElement().addEventListener(event_type_names::kTimeupdate, this,
                                      false);
-  GetMediaElement().addEventListener(EventTypeNames::keypress, this, false);
-  GetMediaElement().addEventListener(EventTypeNames::keydown, this, false);
-  GetMediaElement().addEventListener(EventTypeNames::keyup, this, false);
-  GetMediaElement().addEventListener(EventTypeNames::waiting, this, false);
-  GetMediaElement().addEventListener(EventTypeNames::progress, this, false);
-  GetMediaElement().addEventListener(EventTypeNames::loadeddata, this, false);
+  GetMediaElement().addEventListener(event_type_names::kPlay, this, false);
+  GetMediaElement().addEventListener(event_type_names::kPlaying, this, false);
+  GetMediaElement().addEventListener(event_type_names::kPause, this, false);
+  GetMediaElement().addEventListener(event_type_names::kDurationchange, this,
+                                     false);
+  GetMediaElement().addEventListener(event_type_names::kError, this, false);
+  GetMediaElement().addEventListener(event_type_names::kLoadedmetadata, this,
+                                     false);
+  GetMediaElement().addEventListener(event_type_names::kKeypress, this, false);
+  GetMediaElement().addEventListener(event_type_names::kKeydown, this, false);
+  GetMediaElement().addEventListener(event_type_names::kKeyup, this, false);
+  GetMediaElement().addEventListener(event_type_names::kWaiting, this, false);
+  GetMediaElement().addEventListener(event_type_names::kProgress, this, false);
+  GetMediaElement().addEventListener(event_type_names::kLoadeddata, this,
+                                     false);
 
   // Listen to two different fullscreen events in order to make sure the new and
   // old APIs are handled.
-  GetMediaElement().addEventListener(EventTypeNames::webkitfullscreenchange,
+  GetMediaElement().addEventListener(event_type_names::kWebkitfullscreenchange,
                                      this, false);
   media_controls_->GetDocument().addEventListener(
-      EventTypeNames::fullscreenchange, this, false);
+      event_type_names::kFullscreenchange, this, false);
 
   // Picture-in-Picture events.
   if (RuntimeEnabledFeatures::PictureInPictureEnabled() &&
@@ -58,29 +62,29 @@ void MediaControlsMediaEventListener::Attach() {
           .GetSettings()
           ->GetPictureInPictureEnabled() &&
       GetMediaElement().IsHTMLVideoElement()) {
-    GetMediaElement().addEventListener(EventTypeNames::enterpictureinpicture,
+    GetMediaElement().addEventListener(event_type_names::kEnterpictureinpicture,
                                        this, false);
-    GetMediaElement().addEventListener(EventTypeNames::leavepictureinpicture,
+    GetMediaElement().addEventListener(event_type_names::kLeavepictureinpicture,
                                        this, false);
   }
 
   // TextTracks events.
   TextTrackList* text_tracks = GetMediaElement().textTracks();
-  text_tracks->addEventListener(EventTypeNames::addtrack, this, false);
-  text_tracks->addEventListener(EventTypeNames::change, this, false);
-  text_tracks->addEventListener(EventTypeNames::removetrack, this, false);
+  text_tracks->addEventListener(event_type_names::kAddtrack, this, false);
+  text_tracks->addEventListener(event_type_names::kChange, this, false);
+  text_tracks->addEventListener(event_type_names::kRemovetrack, this, false);
 
   // Keypress events.
   if (media_controls_->PanelElement()) {
-    media_controls_->PanelElement()->addEventListener(EventTypeNames::keypress,
-                                                      this, false);
+    media_controls_->PanelElement()->addEventListener(
+        event_type_names::kKeypress, this, false);
   }
 
   RemotePlayback* remote = GetRemotePlayback();
   if (remote) {
-    remote->addEventListener(EventTypeNames::connect, this);
-    remote->addEventListener(EventTypeNames::connecting, this);
-    remote->addEventListener(EventTypeNames::disconnect, this);
+    remote->addEventListener(event_type_names::kConnect, this);
+    remote->addEventListener(event_type_names::kConnecting, this);
+    remote->addEventListener(event_type_names::kDisconnect, this);
 
     // TODO(avayvod, mlamouri): Attach can be called twice. See
     // https://crbug.com/713275.
@@ -98,23 +102,23 @@ void MediaControlsMediaEventListener::Detach() {
   DCHECK(!GetMediaElement().isConnected());
 
   media_controls_->GetDocument().removeEventListener(
-      EventTypeNames::fullscreenchange, this, false);
+      event_type_names::kFullscreenchange, this, false);
 
   TextTrackList* text_tracks = GetMediaElement().textTracks();
-  text_tracks->removeEventListener(EventTypeNames::addtrack, this, false);
-  text_tracks->removeEventListener(EventTypeNames::change, this, false);
-  text_tracks->removeEventListener(EventTypeNames::removetrack, this, false);
+  text_tracks->removeEventListener(event_type_names::kAddtrack, this, false);
+  text_tracks->removeEventListener(event_type_names::kChange, this, false);
+  text_tracks->removeEventListener(event_type_names::kRemovetrack, this, false);
 
   if (media_controls_->PanelElement()) {
     media_controls_->PanelElement()->removeEventListener(
-        EventTypeNames::keypress, this, false);
+        event_type_names::kKeypress, this, false);
   }
 
   RemotePlayback* remote = GetRemotePlayback();
   if (remote) {
-    remote->removeEventListener(EventTypeNames::connect, this);
-    remote->removeEventListener(EventTypeNames::connecting, this);
-    remote->removeEventListener(EventTypeNames::disconnect, this);
+    remote->removeEventListener(event_type_names::kConnect, this);
+    remote->removeEventListener(event_type_names::kConnecting, this);
+    remote->removeEventListener(event_type_names::kDisconnect, this);
 
     // TODO(avayvod): apparently Detach() can be called without a previous
     // Attach() call. See https://crbug.com/713275 for more details.
@@ -141,61 +145,61 @@ RemotePlayback* MediaControlsMediaEventListener::GetRemotePlayback() {
   return HTMLMediaElementRemotePlayback::remote(GetMediaElement());
 }
 
-void MediaControlsMediaEventListener::handleEvent(
+void MediaControlsMediaEventListener::Invoke(
     ExecutionContext* execution_context,
     Event* event) {
-  if (event->type() == EventTypeNames::volumechange) {
+  if (event->type() == event_type_names::kVolumechange) {
     media_controls_->OnVolumeChange();
     return;
   }
-  if (event->type() == EventTypeNames::focusin) {
+  if (event->type() == event_type_names::kFocusin) {
     media_controls_->OnFocusIn();
     return;
   }
-  if (event->type() == EventTypeNames::timeupdate) {
+  if (event->type() == event_type_names::kTimeupdate) {
     media_controls_->OnTimeUpdate();
     return;
   }
-  if (event->type() == EventTypeNames::durationchange) {
+  if (event->type() == event_type_names::kDurationchange) {
     media_controls_->OnDurationChange();
     return;
   }
-  if (event->type() == EventTypeNames::play) {
+  if (event->type() == event_type_names::kPlay) {
     media_controls_->OnPlay();
     return;
   }
-  if (event->type() == EventTypeNames::playing) {
+  if (event->type() == event_type_names::kPlaying) {
     media_controls_->OnPlaying();
     return;
   }
-  if (event->type() == EventTypeNames::pause) {
+  if (event->type() == event_type_names::kPause) {
     media_controls_->OnPause();
     return;
   }
-  if (event->type() == EventTypeNames::error) {
+  if (event->type() == event_type_names::kError) {
     media_controls_->OnError();
     return;
   }
-  if (event->type() == EventTypeNames::loadedmetadata) {
+  if (event->type() == event_type_names::kLoadedmetadata) {
     media_controls_->OnLoadedMetadata();
     return;
   }
-  if (event->type() == EventTypeNames::waiting) {
+  if (event->type() == event_type_names::kWaiting) {
     media_controls_->OnWaiting();
     return;
   }
-  if (event->type() == EventTypeNames::progress) {
+  if (event->type() == event_type_names::kProgress) {
     media_controls_->OnLoadingProgress();
     return;
   }
-  if (event->type() == EventTypeNames::loadeddata) {
+  if (event->type() == event_type_names::kLoadeddata) {
     media_controls_->OnLoadedData();
     return;
   }
 
   // Fullscreen handling.
-  if (event->type() == EventTypeNames::fullscreenchange ||
-      event->type() == EventTypeNames::webkitfullscreenchange) {
+  if (event->type() == event_type_names::kFullscreenchange ||
+      event->type() == event_type_names::kWebkitfullscreenchange) {
     if (GetMediaElement().IsFullscreen())
       media_controls_->OnEnteredFullscreen();
     else
@@ -204,42 +208,42 @@ void MediaControlsMediaEventListener::handleEvent(
   }
 
   // Picture-in-Picture events.
-  if (event->type() == EventTypeNames::enterpictureinpicture ||
-      event->type() == EventTypeNames::leavepictureinpicture) {
+  if (event->type() == event_type_names::kEnterpictureinpicture ||
+      event->type() == event_type_names::kLeavepictureinpicture) {
     media_controls_->OnPictureInPictureChanged();
     return;
   }
 
   // TextTracks events.
-  if (event->type() == EventTypeNames::addtrack ||
-      event->type() == EventTypeNames::removetrack) {
+  if (event->type() == event_type_names::kAddtrack ||
+      event->type() == event_type_names::kRemovetrack) {
     media_controls_->OnTextTracksAddedOrRemoved();
     return;
   }
-  if (event->type() == EventTypeNames::change) {
+  if (event->type() == event_type_names::kChange) {
     media_controls_->OnTextTracksChanged();
     return;
   }
 
   // Keypress events.
-  if (event->type() == EventTypeNames::keypress) {
+  if (event->type() == event_type_names::kKeypress) {
     if (event->currentTarget() == media_controls_->PanelElement()) {
       media_controls_->OnPanelKeypress();
       return;
     }
   }
 
-  if (event->type() == EventTypeNames::keypress ||
-      event->type() == EventTypeNames::keydown ||
-      event->type() == EventTypeNames::keyup) {
+  if (event->type() == event_type_names::kKeypress ||
+      event->type() == event_type_names::kKeydown ||
+      event->type() == event_type_names::kKeyup) {
     media_controls_->OnMediaKeyboardEvent(event);
     return;
   }
 
   // RemotePlayback state change events.
-  if (event->type() == EventTypeNames::connect ||
-      event->type() == EventTypeNames::connecting ||
-      event->type() == EventTypeNames::disconnect) {
+  if (event->type() == event_type_names::kConnect ||
+      event->type() == event_type_names::kConnecting ||
+      event->type() == event_type_names::kDisconnect) {
     media_controls_->RemotePlaybackStateChanged();
     return;
   }

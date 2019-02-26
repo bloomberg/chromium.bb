@@ -12,7 +12,20 @@
 
 #include "third_party/base/compiler_specific.h"
 
-time_t (*time_func)() = []() -> time_t { return time(nullptr); };
+namespace {
+
+time_t DefaultTimeFunction() {
+  return time(nullptr);
+}
+
+struct tm* DefaultLocaltimeFunction(const time_t* tp) {
+  return localtime(tp);
+}
+
+time_t (*g_time_func)() = DefaultTimeFunction;
+struct tm* (*g_localtime_func)(const time_t*) = DefaultLocaltimeFunction;
+
+}  // namespace
 
 float FXSYS_wcstof(const wchar_t* pwsStr, int32_t iLength, int32_t* pUsedLen) {
   ASSERT(pwsStr);
@@ -102,7 +115,10 @@ float FXSYS_wcstof(const wchar_t* pwsStr, int32_t iLength, int32_t* pUsedLen) {
 }
 
 wchar_t* FXSYS_wcsncpy(wchar_t* dstStr, const wchar_t* srcStr, size_t count) {
-  ASSERT(dstStr && srcStr && count > 0);
+  ASSERT(dstStr);
+  ASSERT(srcStr);
+  ASSERT(count > 0);
+
   for (size_t i = 0; i < count; ++i)
     if ((dstStr[i] = srcStr[i]) == L'\0')
       break;
@@ -110,7 +126,10 @@ wchar_t* FXSYS_wcsncpy(wchar_t* dstStr, const wchar_t* srcStr, size_t count) {
 }
 
 int32_t FXSYS_wcsnicmp(const wchar_t* s1, const wchar_t* s2, size_t count) {
-  ASSERT(s1 && s2 && count > 0);
+  ASSERT(s1);
+  ASSERT(s2);
+  ASSERT(count > 0);
+
   wchar_t wch1 = 0, wch2 = 0;
   while (count-- > 0) {
     wch1 = static_cast<wchar_t>(FXSYS_towlower(*s1++));
@@ -171,12 +190,20 @@ size_t FXSYS_ToUTF16BE(uint32_t unicode, char* buf) {
 }
 
 void FXSYS_SetTimeFunction(time_t (*func)()) {
-  time_func = func ? func : []() -> time_t { return time(nullptr); };
+  g_time_func = func ? func : DefaultTimeFunction;
+}
+
+void FXSYS_SetLocaltimeFunction(struct tm* (*func)(const time_t*)) {
+  g_localtime_func = func ? func : DefaultLocaltimeFunction;
 }
 
 time_t FXSYS_time(time_t* tloc) {
-  time_t ret_val = time_func();
+  time_t ret_val = g_time_func();
   if (tloc)
     *tloc = ret_val;
   return ret_val;
+}
+
+struct tm* FXSYS_localtime(const time_t* tp) {
+  return g_localtime_func(tp);
 }

@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_FONT_UNIQUE_NAME_LOOKUP_FONT_TABLE_MATCHER_H_
 
 #include "base/memory/read_only_shared_memory_region.h"
-#include "third_party/blink/common/common_export.h"
+#include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/common/font_unique_name_lookup/font_unique_name_table.pb.h"
 
 #include <stddef.h>

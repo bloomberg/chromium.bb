@@ -54,7 +54,7 @@ class WTF_EXPORT StringBuilder {
     if (!length_ && !HasBuffer() && !other.string_.IsNull()) {
       string_ = other.string_;
       length_ = other.string_.length();
-      is8_bit_ = other.string_.Is8Bit();
+      is_8bit_ = other.string_.Is8Bit();
       return;
     }
 
@@ -94,7 +94,7 @@ class WTF_EXPORT StringBuilder {
     if (!length_ && !HasBuffer() && impl) {
       string_ = impl;
       length_ = impl->length();
-      is8_bit_ = impl->Is8Bit();
+      is_8bit_ = impl->Is8Bit();
       return;
     }
 
@@ -105,7 +105,7 @@ class WTF_EXPORT StringBuilder {
   }
 
   void Append(UChar c) {
-    if (is8_bit_ && c <= 0xFF) {
+    if (is_8bit_ && c <= 0xFF) {
       Append(static_cast<LChar>(c));
       return;
     }
@@ -115,7 +115,7 @@ class WTF_EXPORT StringBuilder {
   }
 
   void Append(LChar c) {
-    if (!is8_bit_) {
+    if (!is_8bit_) {
       Append(static_cast<UChar>(c));
       return;
     }
@@ -160,13 +160,13 @@ class WTF_EXPORT StringBuilder {
 
   UChar operator[](unsigned i) const {
     SECURITY_DCHECK(i < length_);
-    if (is8_bit_)
+    if (is_8bit_)
       return Characters8()[i];
     return Characters16()[i];
   }
 
   const LChar* Characters8() const {
-    DCHECK(is8_bit_);
+    DCHECK(is_8bit_);
     if (!length())
       return nullptr;
     if (!string_.IsNull())
@@ -176,7 +176,7 @@ class WTF_EXPORT StringBuilder {
   }
 
   const UChar* Characters16() const {
-    DCHECK(!is8_bit_);
+    DCHECK(!is_8bit_);
     if (!length())
       return nullptr;
     if (!string_.IsNull())
@@ -185,7 +185,7 @@ class WTF_EXPORT StringBuilder {
     return buffer16_.data();
   }
 
-  bool Is8Bit() const { return is8_bit_; }
+  bool Is8Bit() const { return is_8bit_; }
 
   void Clear();
   void Swap(StringBuilder&);
@@ -198,13 +198,13 @@ class WTF_EXPORT StringBuilder {
   typedef Vector<UChar, kInlineBufferSize / sizeof(UChar)> Buffer16;
 
   void EnsureBuffer8(unsigned added_size) {
-    DCHECK(is8_bit_);
+    DCHECK(is_8bit_);
     if (!HasBuffer())
       CreateBuffer8(added_size);
   }
 
   void EnsureBuffer16(unsigned added_size) {
-    if (is8_bit_ || !HasBuffer())
+    if (is_8bit_ || !HasBuffer())
       CreateBuffer16(added_size);
   }
 
@@ -220,7 +220,7 @@ class WTF_EXPORT StringBuilder {
     Buffer16 buffer16_;
   };
   unsigned length_ = 0;
-  bool is8_bit_ = true;
+  bool is_8bit_ = true;
   bool has_buffer_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(StringBuilder);

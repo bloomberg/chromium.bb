@@ -95,6 +95,7 @@ if (rtc_include_tests) {
       "../rtc_base:rtc_base_tests_utils",
       "../test:fileutils",
       "../test:test_main",
+      "../test:test_support",
       "../test:video_test_common",
       "//testing/gtest",
       "//third_party/libyuv",

@@ -29,8 +29,8 @@
 
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_editing_command_type.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
-#include "third_party/blink/renderer/core/css_property_names.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/tag_collection.h"
@@ -73,7 +73,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 namespace {
 
@@ -202,7 +202,7 @@ StaticRangeVector* RangesFromCurrentSelectionOrExtendCaret(
   if (selection_modifier.Selection().IsCaret())
     selection_modifier.Modify(SelectionModifyAlteration::kExtend, direction,
                               granularity);
-  StaticRangeVector* ranges = new StaticRangeVector;
+  StaticRangeVector* ranges = MakeGarbageCollected<StaticRangeVector>();
   // We only supports single selections.
   if (selection_modifier.Selection().IsNone())
     return ranges;
@@ -312,7 +312,8 @@ static EditingTriState SelectionListState(const FrameSelection& selection,
       // If the selected list has the different type of list as child, return
       // |FalseTriState|.
       // See http://crbug.com/385374
-      if (HasChildTags(*start_element, tag_name.Matches(ulTag) ? olTag : ulTag))
+      if (HasChildTags(*start_element,
+                       tag_name.Matches(kUlTag) ? kOlTag : kUlTag))
         return EditingTriState::kFalse;
       return EditingTriState::kTrue;
     }
@@ -898,10 +899,11 @@ static bool ExecuteTranspose(LocalFrame& frame,
     return false;
   const String& transposed = text.Right(1) + text.Left(1);
 
-  if (DispatchBeforeInputInsertText(
-          EventTargetNodeForDocument(document), transposed,
-          InputEvent::InputType::kInsertTranspose,
-          new StaticRangeVector(1, StaticRange::Create(range))) !=
+  if (DispatchBeforeInputInsertText(EventTargetNodeForDocument(document),
+                                    transposed,
+                                    InputEvent::InputType::kInsertTranspose,
+                                    MakeGarbageCollected<StaticRangeVector>(
+                                        1, StaticRange::Create(range))) !=
       DispatchEventResult::kNotCanceled)
     return false;
 
@@ -1196,11 +1198,11 @@ static EditingTriState StateNone(LocalFrame&, Event*) {
 }
 
 EditingTriState StateOrderedList(LocalFrame& frame, Event*) {
-  return SelectionListState(frame.Selection(), olTag);
+  return SelectionListState(frame.Selection(), kOlTag);
 }
 
 static EditingTriState StateUnorderedList(LocalFrame& frame, Event*) {
-  return SelectionListState(frame.Selection(), ulTag);
+  return SelectionListState(frame.Selection(), kUlTag);
 }
 
 static EditingTriState StateJustifyCenter(LocalFrame& frame, Event*) {
@@ -1243,9 +1245,9 @@ static String ValueDefaultParagraphSeparator(const EditorInternalCommand&,
                                              Event*) {
   switch (frame.GetEditor().DefaultParagraphSeparator()) {
     case EditorParagraphSeparator::kIsDiv:
-      return divTag.LocalName();
+      return kDivTag.LocalName();
     case EditorParagraphSeparator::kIsP:
-      return pTag.LocalName();
+      return kPTag.LocalName();
   }
 
   NOTREACHED();

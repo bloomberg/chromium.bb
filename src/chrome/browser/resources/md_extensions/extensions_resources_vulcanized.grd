@@ -5,7 +5,7 @@
       <emit emit_type='prepend'></emit>
     </output>
     <output filename="grit/extensions_resources_map.cc"
-            type="resource_file_map_source" />
+            type="resource_map_source" />
     <output filename="grit/extensions_resources_map.h"
             type="resource_map_header" />
     <output filename="extensions_resources.pak" type="data_package" />

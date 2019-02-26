@@ -12,6 +12,7 @@
 
 #include "base/strings/string_piece.h"
 #include "extensions/common/permissions/api_permission_set.h"
+#include "services/network/public/mojom/cors_origin_pattern.mojom.h"
 
 class GURL;
 
@@ -149,6 +150,13 @@ class ExtensionsClient {
 
   // Returns the user agent used by the content module.
   virtual std::string GetUserAgent() const;
+
+  // Adds client specific permitted origins to |origin_patterns| for
+  // cross-origin communication for an extension context.
+  virtual void AddOriginAccessPermissions(
+      const Extension& extension,
+      bool is_extension_active,
+      std::vector<network::mojom::CorsOriginPatternPtr>* origin_patterns) const;
 
  private:
   // Performs common initialization and calls Initialize() to allow subclasses

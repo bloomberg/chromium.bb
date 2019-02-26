@@ -8,8 +8,8 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_box_fragment_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float_vector.h"
@@ -69,6 +69,9 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
   NGInlineBoxState* HandleOpenTag(const NGInlineItem&,
                                   const NGInlineItemResult&,
                                   NGInlineLayoutStateStack*) const;
+  NGInlineBoxState* HandleCloseTag(const NGInlineItem&,
+                                   const NGInlineItemResult&,
+                                   NGInlineBoxState*);
 
   void BidiReorder();
 
@@ -80,8 +83,8 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
                              UBiDiLevel,
                              NGInlineBoxState*);
   NGInlineBoxState* PlaceAtomicInline(const NGInlineItem&,
-                                      NGInlineItemResult*,
-                                      const NGLineInfo&);
+                                      const NGLineInfo&,
+                                      NGInlineItemResult*);
   void PlaceLayoutResult(NGInlineItemResult*,
                          NGInlineBoxState*,
                          LayoutUnit inline_offset = LayoutUnit());

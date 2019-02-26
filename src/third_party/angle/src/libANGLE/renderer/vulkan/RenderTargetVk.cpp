@@ -17,21 +17,15 @@ namespace rx
 {
 RenderTargetVk::RenderTargetVk(vk::ImageHelper *image, vk::ImageView *imageView, size_t layerIndex)
     : mImage(image), mImageView(imageView), mLayerIndex(layerIndex)
-{
-}
+{}
 
-RenderTargetVk::~RenderTargetVk()
-{
-}
+RenderTargetVk::~RenderTargetVk() {}
 
 RenderTargetVk::RenderTargetVk(RenderTargetVk &&other)
-    : mImage(other.mImage),
-      mImageView(other.mImageView),
-      mLayerIndex(other.mLayerIndex)
-{
-}
+    : mImage(other.mImage), mImageView(other.mImageView), mLayerIndex(other.mLayerIndex)
+{}
 
-void RenderTargetVk::onColorDraw(vk::CommandGraphResource *framebufferVk,
+void RenderTargetVk::onColorDraw(vk::FramebufferHelper *framebufferVk,
                                  vk::CommandBuffer *commandBuffer,
                                  vk::RenderPassDesc *renderPassDesc)
 {
@@ -39,7 +33,7 @@ void RenderTargetVk::onColorDraw(vk::CommandGraphResource *framebufferVk,
     ASSERT(!mImage->getFormat().textureFormat().hasDepthOrStencilBits());
 
     // Store the attachment info in the renderPassDesc.
-    renderPassDesc->packColorAttachment(*mImage);
+    renderPassDesc->packAttachment(mImage->getFormat());
 
     // TODO(jmadill): Use automatic layout transition. http://anglebug.com/2361
     mImage->changeLayoutWithStages(VK_IMAGE_ASPECT_COLOR_BIT,
@@ -51,7 +45,7 @@ void RenderTargetVk::onColorDraw(vk::CommandGraphResource *framebufferVk,
     mImage->addWriteDependency(framebufferVk);
 }
 
-void RenderTargetVk::onDepthStencilDraw(vk::CommandGraphResource *framebufferVk,
+void RenderTargetVk::onDepthStencilDraw(vk::FramebufferHelper *framebufferVk,
                                         vk::CommandBuffer *commandBuffer,
                                         vk::RenderPassDesc *renderPassDesc)
 {
@@ -59,7 +53,7 @@ void RenderTargetVk::onDepthStencilDraw(vk::CommandGraphResource *framebufferVk,
     ASSERT(mImage->getFormat().textureFormat().hasDepthOrStencilBits());
 
     // Store the attachment info in the renderPassDesc.
-    renderPassDesc->packDepthStencilAttachment(*mImage);
+    renderPassDesc->packAttachment(mImage->getFormat());
 
     // TODO(jmadill): Use automatic layout transition. http://anglebug.com/2361
     const angle::Format &format    = mImage->getFormat().textureFormat();
@@ -104,7 +98,7 @@ void RenderTargetVk::updateSwapchainImage(vk::ImageHelper *image, vk::ImageView 
     mImageView = imageView;
 }
 
-vk::ImageHelper *RenderTargetVk::getImageForRead(vk::CommandGraphResource *readingResource,
+vk::ImageHelper *RenderTargetVk::getImageForRead(vk::RecordableGraphResource *readingResource,
                                                  VkImageLayout layout,
                                                  vk::CommandBuffer *commandBuffer)
 {
@@ -120,7 +114,8 @@ vk::ImageHelper *RenderTargetVk::getImageForRead(vk::CommandGraphResource *readi
     return mImage;
 }
 
-vk::ImageHelper *RenderTargetVk::getImageForWrite(vk::CommandGraphResource *writingResource) const
+vk::ImageHelper *RenderTargetVk::getImageForWrite(
+    vk::RecordableGraphResource *writingResource) const
 {
     ASSERT(mImage && mImage->valid());
     mImage->addWriteDependency(writingResource);

@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "mojo/public/cpp/bindings/enum_traits.h"
-#include "third_party/blink/common/common_export.h"
+#include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-shared.h"
@@ -82,6 +82,10 @@ class BLINK_COMMON_EXPORT
   static bool matches_all_origins(
       const blink::ParsedFeaturePolicyDeclaration& policy) {
     return policy.matches_all_origins;
+  }
+  static blink::mojom::FeaturePolicyDisposition disposition(
+      const blink::ParsedFeaturePolicyDeclaration& policy) {
+    return policy.disposition;
   }
   static const std::vector<url::Origin>& origins(
       const blink::ParsedFeaturePolicyDeclaration& policy) {

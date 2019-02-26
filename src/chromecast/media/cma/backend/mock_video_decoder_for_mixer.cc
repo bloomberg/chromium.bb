@@ -34,7 +34,7 @@ bool MockVideoDecoderForMixer<CRN, CRD, CF>::Initialize() {
 template <int64_t CRN, int64_t CRD, int64_t CF>
 bool MockVideoDecoderForMixer<CRN, CRD, CF>::Start(int64_t start_pts,
                                                    bool need_avsync) {
-  VLOG(4) << "start_pts=" << start_pts;
+  DVLOG(4) << "start_pts=" << start_pts;
   start_pts_ = start_pts;
   vsync_timer_.Start(FROM_HERE,
                      base::TimeDelta::FromMicroseconds(
@@ -147,12 +147,12 @@ void MockVideoDecoderForMixer<CRN, CRD, CF>::UpkeepVsync() {
           std::max(difference_in_frames - 1, static_cast<int64_t>(0));
       repeated_frames_ +=
           std::max(1 - difference_in_frames, static_cast<int64_t>(0));
-      VLOG(4) << "last_displayed_frame_pts_=" << last_displayed_frame_pts_
-              << " current_displayed_frame=" << current_displayed_frame
-              << " difference_in_frames=" << difference_in_frames
-              << " difference_in_time="
-              << (current_displayed_frame - last_displayed_frame_pts_)
-              << " dropped_frames_=" << dropped_frames_;
+      DVLOG(4) << "last_displayed_frame_pts_=" << last_displayed_frame_pts_
+               << " current_displayed_frame=" << current_displayed_frame
+               << " difference_in_frames=" << difference_in_frames
+               << " difference_in_time="
+               << (current_displayed_frame - last_displayed_frame_pts_)
+               << " dropped_frames_=" << dropped_frames_;
     }
 
     last_displayed_frame_pts_ = current_displayed_frame;

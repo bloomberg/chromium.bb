@@ -20,7 +20,7 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/common/extensions/api/cast_streaming_receiver_session.h"
@@ -43,7 +43,7 @@
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/web_dom_media_stream_track.h"
-#include "third_party/blink/public/web/web_media_stream_registry.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 #include "url/gurl.h"
 
 using content::V8ValueConverter;
@@ -61,10 +61,7 @@ namespace {
 
 constexpr char kInvalidAesIvMask[] = "Invalid value for AES IV mask";
 constexpr char kInvalidAesKey[] = "Invalid value for AES key";
-constexpr char kInvalidAudioParams[] = "Invalid audio params";
 constexpr char kInvalidDestination[] = "Invalid destination";
-constexpr char kInvalidFPS[] = "Invalid FPS";
-constexpr char kInvalidMediaStreamURL[] = "Invalid MediaStream URL";
 constexpr char kInvalidRtpParams[] = "Invalid value for RTP params";
 constexpr char kInvalidLatency[] = "Invalid value for max_latency. (0-1000)";
 constexpr char kInvalidRtpTimebase[] = "Invalid rtp_timebase. (1000-1000000)";
@@ -377,10 +374,6 @@ void CastStreamingNativeHandler::AddRoutes() {
   RouteHandlerFunction("GetStats", "cast.streaming.rtpStream",
                        base::Bind(&CastStreamingNativeHandler::GetStats,
                                   weak_factory_.GetWeakPtr()));
-  RouteHandlerFunction(
-      "StartCastRtpReceiver", "cast.streaming.receiverSession",
-      base::Bind(&CastStreamingNativeHandler::StartCastRtpReceiver,
-                 weak_factory_.GetWeakPtr()));
 }
 
 void CastStreamingNativeHandler::Invalidate() {
@@ -448,11 +441,14 @@ void CastStreamingNativeHandler::CreateCastSession(
 
   create_callback_.Reset(isolate, args[2].As<v8::Function>());
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&CastStreamingNativeHandler::CallCreateCallback,
-                 weak_factory_.GetWeakPtr(), base::Passed(&stream1),
-                 base::Passed(&stream2), base::Passed(&udp_transport)));
+  context()
+      ->web_frame()
+      ->GetTaskRunner(blink::TaskType::kInternalMedia)
+      ->PostTask(
+          FROM_HERE,
+          base::BindOnce(&CastStreamingNativeHandler::CallCreateCallback,
+                         weak_factory_.GetWeakPtr(), base::Passed(&stream1),
+                         base::Passed(&stream2), base::Passed(&udp_transport)));
 }
 
 void CastStreamingNativeHandler::CallCreateCallback(
@@ -515,7 +511,7 @@ void CastStreamingNativeHandler::DestroyCastRtpStream(
   CHECK_EQ(1, args.Length());
   CHECK(args[0]->IsInt32());
 
-  const int transport_id = args[0]->ToInt32(args.GetIsolate())->Value();
+  const int transport_id = args[0].As<v8::Int32>()->Value();
   if (!GetRtpStreamOrThrow(transport_id))
     return;
   rtp_stream_map_.erase(transport_id);
@@ -526,7 +522,7 @@ void CastStreamingNativeHandler::GetSupportedParamsCastRtpStream(
   CHECK_EQ(1, args.Length());
   CHECK(args[0]->IsInt32());
 
-  const int transport_id = args[0]->ToInt32(args.GetIsolate())->Value();
+  const int transport_id = args[0].As<v8::Int32>()->Value();
   CastRtpStream* transport = GetRtpStreamOrThrow(transport_id);
   if (!transport)
     return;
@@ -552,7 +548,7 @@ void CastStreamingNativeHandler::StartCastRtpStream(
   CHECK(args[0]->IsInt32());
   CHECK(args[1]->IsObject());
 
-  const int transport_id = args[0]->ToInt32(args.GetIsolate())->Value();
+  const int transport_id = args[0].As<v8::Int32>()->Value();
   CastRtpStream* transport = GetRtpStreamOrThrow(transport_id);
   if (!transport)
     return;
@@ -603,7 +599,7 @@ void CastStreamingNativeHandler::StopCastRtpStream(
   CHECK_EQ(1, args.Length());
   CHECK(args[0]->IsInt32());
 
-  const int transport_id = args[0]->ToInt32(args.GetIsolate())->Value();
+  const int transport_id = args[0].As<v8::Int32>()->Value();
   CastRtpStream* transport = GetRtpStreamOrThrow(transport_id);
   if (!transport)
     return;
@@ -615,7 +611,7 @@ void CastStreamingNativeHandler::DestroyCastUdpTransport(
   CHECK_EQ(1, args.Length());
   CHECK(args[0]->IsInt32());
 
-  const int transport_id = args[0]->ToInt32(args.GetIsolate())->Value();
+  const int transport_id = args[0].As<v8::Int32>()->Value();
   if (!GetUdpTransportOrThrow(transport_id))
     return;
   udp_transport_map_.erase(transport_id);
@@ -627,7 +623,7 @@ void CastStreamingNativeHandler::SetDestinationCastUdpTransport(
   CHECK(args[0]->IsInt32());
   CHECK(args[1]->IsObject());
 
-  const int transport_id = args[0]->ToInt32(args.GetIsolate())->Value();
+  const int transport_id = args[0].As<v8::Int32>()->Value();
   CastUdpTransport* transport = GetUdpTransportOrThrow(transport_id);
   if (!transport)
     return;
@@ -651,7 +647,7 @@ void CastStreamingNativeHandler::SetOptionsCastUdpTransport(
   CHECK(args[0]->IsInt32());
   CHECK(args[1]->IsObject());
 
-  const int transport_id = args[0]->ToInt32(args.GetIsolate())->Value();
+  const int transport_id = args[0].As<v8::Int32>()->Value();
   CastUdpTransport* transport = GetUdpTransportOrThrow(transport_id);
   if (!transport)
     return;
@@ -675,7 +671,7 @@ void CastStreamingNativeHandler::ToggleLogging(
   CHECK(args[0]->IsInt32());
   CHECK(args[1]->IsBoolean());
 
-  const int stream_id = args[0]->ToInt32(args.GetIsolate())->Value();
+  const int stream_id = args[0].As<v8::Int32>()->Value();
   CastRtpStream* stream = GetRtpStreamOrThrow(stream_id);
   if (!stream)
     return;
@@ -691,7 +687,7 @@ void CastStreamingNativeHandler::GetRawEvents(
   CHECK(args[1]->IsNull() || args[1]->IsString());
   CHECK(args[2]->IsFunction());
 
-  const int transport_id = args[0]->ToInt32(args.GetIsolate())->Value();
+  const int transport_id = args[0].As<v8::Int32>()->Value();
   v8::Isolate* isolate = args.GetIsolate();
   v8::Global<v8::Function> callback(isolate, args[2].As<v8::Function>());
   std::string extra_data;
@@ -718,7 +714,7 @@ void CastStreamingNativeHandler::GetStats(
   CHECK_EQ(2, args.Length());
   CHECK(args[0]->IsInt32());
   CHECK(args[1]->IsFunction());
-  const int transport_id = args[0]->ToInt32(args.GetIsolate())->Value();
+  const int transport_id = args[0].As<v8::Int32>()->Value();
   CastRtpStream* transport = GetRtpStreamOrThrow(transport_id);
   if (!transport)
     return;
@@ -913,117 +909,6 @@ bool CastStreamingNativeHandler::IPEndPointFromArg(
   return true;
 }
 
-void CastStreamingNativeHandler::StartCastRtpReceiver(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  if (args.Length() < 8 || args.Length() > 9 ||
-      !args[0]->IsObject() ||
-      !args[1]->IsObject() ||
-      !args[2]->IsObject() ||
-      !args[3]->IsInt32() ||
-      !args[4]->IsInt32() ||
-      !args[5]->IsNumber() ||
-      !args[6]->IsString()) {
-    args.GetIsolate()->ThrowException(v8::Exception::TypeError(
-        v8::String::NewFromUtf8(args.GetIsolate(), kUnableToConvertArgs,
-                                v8::NewStringType::kNormal)
-            .ToLocalChecked()));
-    return;
-  }
-
-  v8::Isolate* isolate = context()->v8_context()->GetIsolate();
-
-  scoped_refptr<CastReceiverSession> session(
-      new CastReceiverSession());
-  media::cast::FrameReceiverConfig audio_config;
-  media::cast::FrameReceiverConfig video_config;
-  net::IPEndPoint local_endpoint;
-  net::IPEndPoint remote_endpoint;
-
-  if (!FrameReceiverConfigFromArg(isolate, args[0], &audio_config) ||
-      !FrameReceiverConfigFromArg(isolate, args[1], &video_config) ||
-      !IPEndPointFromArg(isolate, args[2], &local_endpoint)) {
-    return;
-  }
-
-  const int max_width = args[3]->ToInt32(args.GetIsolate())->Value();
-  const int max_height = args[4]->ToInt32(args.GetIsolate())->Value();
-  const double fps = args[5].As<v8::Number>()->Value();
-
-  if (fps <= 1) {
-    args.GetIsolate()->ThrowException(v8::Exception::TypeError(
-        v8::String::NewFromUtf8(args.GetIsolate(), kInvalidFPS,
-                                v8::NewStringType::kNormal)
-            .ToLocalChecked()));
-    return;
-  }
-
-  const std::string url = *v8::String::Utf8Value(isolate, args[6]);
-  blink::WebMediaStream stream =
-      blink::WebMediaStreamRegistry::LookupMediaStreamDescriptor(GURL(url));
-
-  if (stream.IsNull()) {
-    args.GetIsolate()->ThrowException(v8::Exception::TypeError(
-        v8::String::NewFromUtf8(args.GetIsolate(), kInvalidMediaStreamURL,
-                                v8::NewStringType::kNormal)
-            .ToLocalChecked()));
-    return;
-  }
-
-  media::VideoCaptureFormat capture_format(gfx::Size(max_width, max_height),
-                                           fps, media::PIXEL_FORMAT_I420);
-
-  video_config.target_frame_rate = fps;
-  audio_config.target_frame_rate = 100;
-
-  media::AudioParameters params(
-      media::AudioParameters::AUDIO_PCM_LINEAR,
-      media::GuessChannelLayout(audio_config.channels),
-      audio_config.rtp_timebase,  // sampling rate
-      static_cast<int>(audio_config.rtp_timebase /
-                       audio_config.target_frame_rate));
-
-  if (!params.IsValid()) {
-    args.GetIsolate()->ThrowException(v8::Exception::TypeError(
-        v8::String::NewFromUtf8(args.GetIsolate(), kInvalidAudioParams,
-                                v8::NewStringType::kNormal)
-            .ToLocalChecked()));
-    return;
-  }
-
-  std::unique_ptr<base::DictionaryValue> options;
-  if (args.Length() >= 9) {
-    std::unique_ptr<base::Value> options_value =
-        V8ValueConverter::Create()->FromV8Value(args[8],
-                                                context()->v8_context());
-    if (!options_value->is_none()) {
-      options = base::DictionaryValue::From(std::move(options_value));
-      if (!options) {
-        args.GetIsolate()->ThrowException(v8::Exception::TypeError(
-            v8::String::NewFromUtf8(args.GetIsolate(), kUnableToConvertArgs,
-                                    v8::NewStringType::kNormal)
-                .ToLocalChecked()));
-        return;
-      }
-    }
-  }
-
-  if (!options) {
-    options.reset(new base::DictionaryValue());
-  }
-
-  v8::CopyablePersistentTraits<v8::Function>::CopyablePersistent error_callback;
-  error_callback.Reset(args.GetIsolate(),
-                       v8::Local<v8::Function>(args[7].As<v8::Function>()));
-
-  session->Start(
-      audio_config, video_config, local_endpoint, remote_endpoint,
-      std::move(options), capture_format,
-      base::Bind(&CastStreamingNativeHandler::AddTracksToMediaStream,
-                 weak_factory_.GetWeakPtr(), url, params),
-      base::Bind(&CastStreamingNativeHandler::CallReceiverErrorCallback,
-                 weak_factory_.GetWeakPtr(), error_callback));
-}
-
 void CastStreamingNativeHandler::CallReceiverErrorCallback(
     v8::CopyablePersistentTraits<v8::Function>::CopyablePersistent function,
     const std::string& error_message) {
@@ -1034,29 +919,6 @@ void CastStreamingNativeHandler::CallReceiverErrorCallback(
           .ToLocalChecked();
   context()->SafeCallFunction(v8::Local<v8::Function>::New(isolate, function),
                               1, &arg);
-}
-
-void CastStreamingNativeHandler::AddTracksToMediaStream(
-    const std::string& url,
-    const media::AudioParameters& params,
-    scoped_refptr<media::AudioCapturerSource> audio,
-    std::unique_ptr<media::VideoCapturerSource> video) {
-  blink::WebMediaStream web_stream =
-      blink::WebMediaStreamRegistry::LookupMediaStreamDescriptor(GURL(url));
-  if (web_stream.IsNull()) {
-    LOG(DFATAL) << "Stream not found.";
-    return;
-  }
-  if (!content::AddAudioTrackToMediaStream(
-          audio, params.sample_rate(), params.channel_layout(),
-          params.frames_per_buffer(), true,  // is_remote
-          &web_stream)) {
-    LOG(ERROR) << "Failed to add Cast audio track to media stream.";
-  }
-  if (!content::AddVideoTrackToMediaStream(std::move(video), true,  // is_remote
-                                           &web_stream)) {
-    LOG(ERROR) << "Failed to add Cast video track to media stream.";
-  }
 }
 
 }  // namespace extensions

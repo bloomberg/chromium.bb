@@ -21,8 +21,9 @@
 - (CRWWebViewProxyImpl*)contentViewProxyForContainerView:
         (CRWWebControllerContainerView*)containerView;
 
-// Returns the height for any toolbars that overlap the top native content.
-- (CGFloat)nativeContentHeaderHeightForContainerView:
+// Returns the insets from |containerView|'s bounds in which to lay out native
+// content.
+- (UIEdgeInsets)nativeContentInsetsForContainerView:
     (CRWWebControllerContainerView*)containerView;
 
 @end

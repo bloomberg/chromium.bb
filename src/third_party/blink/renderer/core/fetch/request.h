@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_REQUEST_H_
 
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
 #include "third_party/blink/renderer/bindings/core/v8/request_or_usv_string.h"
@@ -37,21 +38,25 @@ class CORE_EXPORT Request final : public Body {
   // From Request.idl:
   static Request* Create(ScriptState*,
                          const RequestInfo&,
-                         const RequestInit&,
+                         const RequestInit*,
                          ExceptionState&);
 
   static Request* Create(ScriptState*, const String&, ExceptionState&);
   static Request* Create(ScriptState*,
                          const String&,
-                         const RequestInit&,
+                         const RequestInit*,
                          ExceptionState&);
   static Request* Create(ScriptState*, Request*, ExceptionState&);
   static Request* Create(ScriptState*,
                          Request*,
-                         const RequestInit&,
+                         const RequestInit*,
                          ExceptionState&);
   static Request* Create(ScriptState*, FetchRequestData*);
   static Request* Create(ScriptState*, const WebServiceWorkerRequest&);
+  static Request* Create(ScriptState*, const mojom::blink::FetchAPIRequest&);
+
+  Request(ScriptState*, FetchRequestData*, Headers*, AbortSignal*);
+  Request(ScriptState*, FetchRequestData*);
 
   // Returns false if |credentials_mode| doesn't represent a valid credentials
   // mode.
@@ -79,7 +84,7 @@ class CORE_EXPORT Request final : public Body {
   Request* clone(ScriptState*, ExceptionState&);
 
   FetchRequestData* PassRequestData(ScriptState*, ExceptionState&);
-  void PopulateWebServiceWorkerRequest(WebServiceWorkerRequest&) const;
+  mojom::blink::FetchAPIRequestPtr CreateFetchAPIRequest() const;
   bool HasBody() const;
   BodyStreamBuffer* BodyBuffer() override { return request_->Buffer(); }
   const BodyStreamBuffer* BodyBuffer() const override {
@@ -89,14 +94,11 @@ class CORE_EXPORT Request final : public Body {
   void Trace(blink::Visitor*) override;
 
  private:
-  Request(ScriptState*, FetchRequestData*, Headers*, AbortSignal*);
-  Request(ScriptState*, FetchRequestData*);
-
   const FetchRequestData* GetRequest() const { return request_; }
   static Request* CreateRequestWithRequestOrString(ScriptState*,
                                                    Request*,
                                                    const String&,
-                                                   const RequestInit&,
+                                                   const RequestInit*,
                                                    ExceptionState&);
 
   String ContentType() const override;

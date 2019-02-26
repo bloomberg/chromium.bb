@@ -20,14 +20,14 @@
 #include "libANGLE/Thread.h"
 #include "libANGLE/formatutils.h"
 #include "libANGLE/renderer/EGLImplFactory.h"
+#include "third_party/trace_event/trace_event.h"
 
 namespace egl
 {
 
 SurfaceState::SurfaceState(const egl::Config *configIn, const AttributeMap &attributesIn)
-    : label(nullptr), config(configIn), attributes(attributesIn)
-{
-}
+    : label(nullptr), config(configIn), attributes(attributesIn), timestampsEnabled(false)
+{}
 
 Surface::Surface(EGLint surfaceType,
                  const egl::Config *config,
@@ -107,9 +107,7 @@ Surface::Surface(EGLint surfaceType,
     mOrientation = static_cast<EGLint>(attributes.get(EGL_SURFACE_ORIENTATION_ANGLE, 0));
 }
 
-Surface::~Surface()
-{
-}
+Surface::~Surface() {}
 
 rx::FramebufferAttachmentObjectImpl *Surface::getAttachmentImpl() const
 {
@@ -168,6 +166,12 @@ Error Surface::initialize(const Display *display)
         }
     }
 
+    if (mType == EGL_WINDOW_BIT && display->getExtensions().getFrameTimestamps)
+    {
+        mState.supportedCompositorTimings = mImplementation->getSupportedCompositorTimings();
+        mState.supportedTimestamps        = mImplementation->getSupportedTimestamps();
+    }
+
     return NoError();
 }
 
@@ -222,6 +226,8 @@ EGLint Surface::getType() const
 
 Error Surface::swap(const gl::Context *context)
 {
+    TRACE_EVENT0("gpu.angle", "egl::Surface::swap");
+
     ANGLE_TRY(mImplementation->swap(context));
     postSwap(context);
     return NoError();
@@ -391,13 +397,12 @@ EGLint Surface::getHeight() const
     return mFixedSize ? static_cast<EGLint>(mFixedHeight) : mImplementation->getHeight();
 }
 
-Error Surface::bindTexImage(const gl::Context *context, gl::Texture *texture, EGLint buffer)
+Error Surface::bindTexImage(gl::Context *context, gl::Texture *texture, EGLint buffer)
 {
     ASSERT(!mTexture);
     ANGLE_TRY(mImplementation->bindTexImage(context, texture, buffer));
 
-    auto glErr = texture->bindTexImageFromSurface(context, this);
-    if (glErr.isError())
+    if (texture->bindTexImageFromSurface(context, this) == angle::Result::Stop())
     {
         return Error(EGL_BAD_SURFACE);
     }
@@ -478,6 +483,47 @@ void Surface::setInitState(const gl::ImageIndex & /*imageIndex*/, gl::InitState 
     mInitState = initState;
 }
 
+void Surface::setTimestampsEnabled(bool enabled)
+{
+    mImplementation->setTimestampsEnabled(enabled);
+    mState.timestampsEnabled = enabled;
+}
+
+bool Surface::isTimestampsEnabled() const
+{
+    return mState.timestampsEnabled;
+}
+
+const SupportedCompositorTiming &Surface::getSupportedCompositorTimings() const
+{
+    return mState.supportedCompositorTimings;
+}
+
+Error Surface::getCompositorTiming(EGLint numTimestamps,
+                                   const EGLint *names,
+                                   EGLnsecsANDROID *values) const
+{
+    return mImplementation->getCompositorTiming(numTimestamps, names, values);
+}
+
+Error Surface::getNextFrameId(EGLuint64KHR *frameId) const
+{
+    return mImplementation->getNextFrameId(frameId);
+}
+
+const SupportedTimestamps &Surface::getSupportedTimestamps() const
+{
+    return mState.supportedTimestamps;
+}
+
+Error Surface::getFrameTimestamps(EGLuint64KHR frameId,
+                                  EGLint numTimestamps,
+                                  const EGLint *timestamps,
+                                  EGLnsecsANDROID *values) const
+{
+    return mImplementation->getFrameTimestamps(frameId, numTimestamps, timestamps, values);
+}
+
 WindowSurface::WindowSurface(rx::EGLImplFactory *implFactory,
                              const egl::Config *config,
                              EGLNativeWindowType window,
@@ -487,9 +533,7 @@ WindowSurface::WindowSurface(rx::EGLImplFactory *implFactory,
     mImplementation = implFactory->createWindowSurface(mState, window, attribs);
 }
 
-WindowSurface::~WindowSurface()
-{
-}
+WindowSurface::~WindowSurface() {}
 
 PbufferSurface::PbufferSurface(rx::EGLImplFactory *implFactory,
                                const Config *config,
@@ -510,9 +554,7 @@ PbufferSurface::PbufferSurface(rx::EGLImplFactory *implFactory,
         implFactory->createPbufferFromClientBuffer(mState, buftype, clientBuffer, attribs);
 }
 
-PbufferSurface::~PbufferSurface()
-{
-}
+PbufferSurface::~PbufferSurface() {}
 
 PixmapSurface::PixmapSurface(rx::EGLImplFactory *implFactory,
                              const Config *config,
@@ -523,19 +565,13 @@ PixmapSurface::PixmapSurface(rx::EGLImplFactory *implFactory,
     mImplementation = implFactory->createPixmapSurface(mState, nativePixmap, attribs);
 }
 
-PixmapSurface::~PixmapSurface()
-{
-}
+PixmapSurface::~PixmapSurface() {}
 
 // SurfaceDeleter implementation.
 
-SurfaceDeleter::SurfaceDeleter(const Display *display) : mDisplay(display)
-{
-}
+SurfaceDeleter::SurfaceDeleter(const Display *display) : mDisplay(display) {}
 
-SurfaceDeleter::~SurfaceDeleter()
-{
-}
+SurfaceDeleter::~SurfaceDeleter() {}
 
 void SurfaceDeleter::operator()(Surface *surface)
 {

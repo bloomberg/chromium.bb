@@ -25,6 +25,7 @@ _V8_GC_HIGH_LEVEL_STATS_RE = re.compile(r'^v8-gc-('
     r'incremental-finalize_|'
     r'incremental-step_|'
     r'latency-mark-compactor_|'
+    r'mark-compactor-|'
     r'memory-mark-compactor_|'
     r'scavenger_|'
     r'total_)')

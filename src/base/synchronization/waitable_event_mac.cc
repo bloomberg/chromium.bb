@@ -14,6 +14,7 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/mach_logging.h"
 #include "base/mac/scoped_dispatch_object.h"
+#include "base/optional.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_restrictions.h"
@@ -111,10 +112,16 @@ bool WaitableEvent::TimedWait(const TimeDelta& wait_delta) {
 }
 
 bool WaitableEvent::TimedWaitUntil(const TimeTicks& end_time) {
-  internal::ScopedBlockingCallWithBaseSyncPrimitives scoped_blocking_call(
-      BlockingType::MAY_BLOCK);
-  // Record the event that this thread is blocking upon (for hang diagnosis).
-  debug::ScopedEventWaitActivity event_activity(this);
+  // Record the event that this thread is blocking upon (for hang diagnosis) and
+  // consider blocked for scheduling purposes. Ignore this for non-blocking
+  // WaitableEvents.
+  Optional<debug::ScopedEventWaitActivity> event_activity;
+  Optional<internal::ScopedBlockingCallWithBaseSyncPrimitives>
+      scoped_blocking_call;
+  if (waiting_is_blocking_) {
+    event_activity.emplace(this);
+    scoped_blocking_call.emplace(BlockingType::MAY_BLOCK);
+  }
 
   mach_msg_empty_rcv_t msg{};
   msg.header.msgh_local_port = receive_right_->Name();

@@ -26,6 +26,7 @@ enum Modifiers {
 struct ProcessKeyResult {
   bool key_handled = false;
   std::string commit_text;
+  std::string composition_text;
 };
 
 class Engine {
@@ -42,9 +43,27 @@ class Engine {
   uint32_t process_key_count() const { return process_key_count_; }
 
  private:
+  void ClearHistory();
+  ProcessKeyResult ProcessBackspace();
+
   std::unique_ptr<const RulesData> current_data_;
   std::string current_id_;
   uint32_t process_key_count_;
+
+  // Current state.
+  // The current context (composition).
+  std::string context_;
+  // The current transat position.
+  // Refers to RulesData::Transform for details about transat.
+  int transat_ = -1;
+
+  // History state.
+  // The history context, before entering ambiguous transforms.
+  std::string history_context_;
+  // The history transat, before entering ambiguous transforms.
+  int history_transat_ = -1;
+  // The history ambiguous string which matches the history prune regexp.
+  std::string history_ambi_;
 
   DISALLOW_COPY_AND_ASSIGN(Engine);
 };

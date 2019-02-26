@@ -41,6 +41,8 @@
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
+#include "chrome/browser/previews/previews_service.h"
+#include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/profiles/bookmark_model_loaded_observer.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -52,9 +54,8 @@
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/signin/account_fetcher_service_factory.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -62,6 +63,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
+#include "chrome/browser/ui/webui/welcome/nux_helper.h"
 #include "chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_constants.h"
@@ -84,9 +86,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/search_engines/default_search_manager.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
-#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/sync/base/stop_source.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -98,6 +98,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -345,14 +346,6 @@ bool IsProfileEphemeral(ProfileAttributesStorage* storage,
   ProfileAttributesEntry* entry = nullptr;
   return storage->GetProfileAttributesWithPath(profile_dir, &entry) &&
          entry->IsEphemeral();
-}
-#endif
-
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-void SignOut(SigninManager* signin_manager) {
-  signin_manager->SignOutAndRemoveAllAccounts(
-      signin_metrics::AUTHENTICATION_FAILED_WITH_FORCE_SIGNIN,
-      signin_metrics::SignoutDelete::IGNORE_METRIC);
 }
 #endif
 
@@ -1086,12 +1079,10 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
   if (profile->IsNewProfile() || first_run::IsChromeFirstRun()) {
     profile->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage, false);
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-    // Enterprise users should not be included in any NUX flow.
+    // Enterprise users should not be included in any NUX/Navi flow.
     if (!base::win::IsEnterpriseManaged()) {
-      profile->GetPrefs()->SetBoolean(prefs::kHasSeenGoogleAppsPromoPage,
-                                      false);
-      profile->GetPrefs()->SetBoolean(prefs::kHasSeenEmailPromoPage, false);
-      profile->GetPrefs()->SetBoolean(prefs::kOnboardDuringNUX, true);
+      profile->GetPrefs()->SetString(prefs::kNaviOnboardGroup,
+                                     nux::GetOnboardingGroup());
     }
 #endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
   }
@@ -1285,6 +1276,12 @@ void ProfileManager::DoFinalInit(Profile* profile, bool go_off_the_record) {
       chrome::NOTIFICATION_PROFILE_ADDED,
       content::Source<Profile>(profile),
       content::NotificationService::NoDetails());
+
+  // At this point, the user policy service and the child account service
+  // had enough time to initialize and should have updated the user signout
+  // flag attached to the profile.
+  signin_util::EnsureUserSignoutAllowedIsInitializedForProfile(profile);
+  signin_util::EnsurePrimaryAccountAllowedForProfile(profile);
 }
 
 void ProfileManager::DoFinalInitForServices(Profile* profile,
@@ -1341,6 +1338,13 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
   // URL request to check if the data reduction proxy server is reachable.
   DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile)->
       MaybeActivateDataReductionProxy(true);
+
+  // Create the Previews Service and begin loading opt out history from
+  // persistent memory.
+  PreviewsServiceFactory::GetForProfile(profile)->Initialize(
+      g_browser_process->optimization_guide_service(),
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
+      profile->GetPath());
 
   GaiaCookieManagerServiceFactory::GetForProfile(profile)->InitCookieListener();
   invalidation::ProfileInvalidationProvider* invalidation_provider =
@@ -1651,13 +1655,9 @@ void ProfileManager::AddProfileToStorage(Profile* profile) {
     return;
   }
 
-
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(profile);
-  AccountTrackerService* account_tracker =
-      AccountTrackerServiceFactory::GetForProfile(profile);
-  AccountInfo account_info = account_tracker->GetAccountInfo(
-      signin_manager->GetAuthenticatedAccountId());
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
+  AccountInfo account_info = identity_manager->GetPrimaryAccountInfo();
   base::string16 username = base::UTF8ToUTF16(account_info.email);
 
   ProfileAttributesStorage& storage = GetProfileAttributesStorage();
@@ -1671,7 +1671,7 @@ void ProfileManager::AddProfileToStorage(Profile* profile) {
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
       bool was_authenticated_status = entry->IsAuthenticated();
 #endif
-      // The ProfileAttributesStorage's info must match the Signin Manager.
+      // The ProfileAttributesStorage's info must match the Identity Manager.
       entry->SetAuthInfo(account_info.gaia, username);
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
       // Sign out if force-sign-in policy is enabled and profile is not signed
@@ -1680,8 +1680,12 @@ void ProfileManager::AddProfileToStorage(Profile* profile) {
           !entry->IsAuthenticated()) {
         base::PostTaskWithTraits(
             FROM_HERE, {BrowserThread::UI},
-            base::BindOnce(&SignOut, SigninManager::FromSigninManagerBase(
-                                         signin_manager)));
+            base::BindOnce(
+                &identity::IdentityManager::ClearPrimaryAccount,
+                base::Unretained(identity_manager),
+                identity::IdentityManager::ClearAccountTokensAction::kRemoveAll,
+                signin_metrics::AUTHENTICATION_FAILED_WITH_FORCE_SIGNIN,
+                signin_metrics::SignoutDelete::IGNORE_METRIC));
       }
 #endif
       return;

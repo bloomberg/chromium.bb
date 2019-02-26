@@ -137,6 +137,7 @@ public class ExternalNavigationHandlerTest {
 
         HashMap<String, Boolean> features = new HashMap<String, Boolean>();
         features.put(ChromeFeatureList.CCT_EXTERNAL_LINK_HANDLING, true);
+        features.put(ChromeFeatureList.INTENT_BLOCK_EXTERNAL_FORM_REDIRECT_NO_GESTURE, true);
         ChromeFeatureList.setTestFeatures(features);
 
         mNativeLibraryTestRule.loadNativeLibraryNoBrowserProcess();
@@ -216,11 +217,13 @@ public class ExternalNavigationHandlerTest {
         checkUrl("market://1234")
                 .withPageTransition(PageTransition.FORM_SUBMIT)
                 .withIsRedirect(true)
+                .withHasUserGesture(true)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
         checkUrl("http://youtube.com://")
                 .withPageTransition(PageTransition.FORM_SUBMIT)
                 .withIsRedirect(true)
+                .withHasUserGesture(true)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
 
@@ -229,6 +232,7 @@ public class ExternalNavigationHandlerTest {
                 .withReferrer(YOUTUBE_URL)
                 .withPageTransition(PageTransition.FORM_SUBMIT)
                 .withIsRedirect(true)
+                .withHasUserGesture(true)
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
 
         // If the page does not match the referrer, then prompt an intent.
@@ -236,14 +240,28 @@ public class ExternalNavigationHandlerTest {
                 .withReferrer("http://google.com")
                 .withPageTransition(PageTransition.FORM_SUBMIT)
                 .withIsRedirect(true)
+                .withHasUserGesture(true)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
+
+        // If the redirect is not associated with a user gesture, then continue loading in Chrome.
+        checkUrl("market://1234")
+                .withPageTransition(PageTransition.FORM_SUBMIT)
+                .withIsRedirect(true)
+                .withHasUserGesture(false)
+                .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
+        checkUrl("http://youtube.com://")
+                .withPageTransition(PageTransition.FORM_SUBMIT)
+                .withIsRedirect(true)
+                .withHasUserGesture(false)
+                .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
 
         // It doesn't make sense to allow intent picker without redirect, since form data
         // is not encoded in the intent (although, in theory, it could be passed in as
         // an extra data in the intent).
         checkUrl("http://youtube.com://")
                 .withPageTransition(PageTransition.FORM_SUBMIT)
+                .withHasUserGesture(true)
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
 
@@ -1162,6 +1180,7 @@ public class ExternalNavigationHandlerTest {
                 .withReferrer(referrer)
                 .withPageTransition(PageTransition.FORM_SUBMIT)
                 .withIsRedirect(true)
+                .withHasUserGesture(true)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
         Assert.assertEquals(Uri.parse(referrer),
@@ -1480,7 +1499,7 @@ public class ExternalNavigationHandlerTest {
 
     private static WebappInfo newWebappInfoFromScope(String scope) {
         return WebappInfo.create("", "", scope, null, null, null, WebDisplayMode.STANDALONE, 0, 0,
-                0, 0, null, false, false);
+                0, 0, null, false, false, false);
     }
 
     private static class IntentActivity {
@@ -1827,6 +1846,11 @@ public class ExternalNavigationHandlerTest {
             return this;
         }
 
+        public ExternalNavigationTestParams withHasUserGesture(boolean hasGesture) {
+            mHasUserGesture = hasGesture;
+            return this;
+        }
+
         public ExternalNavigationTestParams withChromeAppInForegroundRequired(
                 boolean foregroundRequired) {
             mChromeAppInForegroundRequired = foregroundRequired;
@@ -1889,6 +1913,18 @@ public class ExternalNavigationHandlerTest {
             Assert.assertEquals(expectStartWebApk, startWebApkCalled);
             Assert.assertEquals(expectStartFile, mDelegate.startFileIntentCalled);
             Assert.assertEquals(expectProxyForIA, mDelegate.mCalledWithProxy);
+
+            if (startActivityCalled) {
+                final Intent intent = mDelegate.startActivityIntent;
+                final Uri uri = intent.getData();
+                if (uri == null || uri.getScheme() == null || !uri.getScheme().equals("market")) {
+                    Assert.assertTrue("The intent URL " + mUrl + " (" + uri
+                                    + ") doesn't have FLAG_EXCLUDE_STOPPED_PACKAGES set\n",
+                            (mDelegate.startActivityIntent.getFlags()
+                                    & Intent.FLAG_EXCLUDE_STOPPED_PACKAGES)
+                                    != 0);
+                }
+            }
 
             if (startActivityCalled && expectSaneIntent) {
                 checkIntentSanity(mDelegate.startActivityIntent, "Intent");

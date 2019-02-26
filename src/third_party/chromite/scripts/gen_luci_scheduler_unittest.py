@@ -259,8 +259,18 @@ job {
             schedule='run daily',
             schedule_branch='test-branch',
         ),
+        default_config.derive(
+            name='branch_tester_triggered',
+            luci_builder='TestBuilder',
+            display_label='TestLabel',
+            schedule='run daily',
+            schedule_branch='test-branch',
+            triggered_gitiles=[[
+                'gitiles_url_a',
+                ['ref_a', 'ref_b'],
+            ]],
+        ),
     ]
-
 
     expected = '''# Defines buckets on luci-scheduler.appspot.com.
 #
@@ -282,6 +292,10 @@ acl_sets {
     role: OWNER
     granted_to: "group:project-chromeos-admins"
   }
+  acls {
+    role: TRIGGERER
+    granted_to: "group:mdb/chromeos-build-access"
+  }
 }
 
 trigger {
@@ -294,6 +308,7 @@ trigger {
     refs: "ref_b"
   }
   triggers: "build_triggered_a"
+  triggers: "test-branch-branch_tester_triggered"
 }
 
 trigger {
@@ -393,6 +408,24 @@ job {
     tags: "cbb_display_label:TestLabel"
     properties: "cbb_branch:test-branch"
     properties: "cbb_config:branch_tester"
+    properties: "cbb_display_label:TestLabel"
+    properties: "cbb_extra_args:[\\"--buildbot\\"]"
+  }
+}
+
+job {
+  id: "test-branch-branch_tester_triggered"
+  acl_sets: "default"
+  schedule: "run daily"
+  buildbucket: {
+    server: "cr-buildbucket.appspot.com"
+    bucket: "luci.chromeos.general"
+    builder: "TestBuilder"
+    tags: "cbb_branch:test-branch"
+    tags: "cbb_config:branch_tester_triggered"
+    tags: "cbb_display_label:TestLabel"
+    properties: "cbb_branch:test-branch"
+    properties: "cbb_config:branch_tester_triggered"
     properties: "cbb_display_label:TestLabel"
     properties: "cbb_extra_args:[\\"--buildbot\\"]"
   }

@@ -148,6 +148,8 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
       std::numeric_limits<size_t>::max();
 
   static ResourceLoadScheduler* Create(FetchContext* = nullptr);
+
+  ResourceLoadScheduler(FetchContext*);
   ~ResourceLoadScheduler() override;
 
   void Trace(blink::Visitor*);
@@ -251,8 +253,6 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
   // on life cycle state.
   bool IsClientDelayable(const ClientIdWithPriority& info,
                          ThrottleOption option) const;
-
-  ResourceLoadScheduler(FetchContext*);
 
   // Generates the next ClientId.
   ClientId GenerateClientId();

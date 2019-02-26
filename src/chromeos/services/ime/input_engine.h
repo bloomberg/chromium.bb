@@ -17,7 +17,7 @@ class Engine;
 
 class InputEngineContext {
  public:
-  InputEngineContext(const std::string& ime);
+  explicit InputEngineContext(const std::string& ime);
   ~InputEngineContext();
 
   std::string ime_spec;
@@ -52,8 +52,8 @@ class InputEngine : public mojom::InputChannel {
   // TODO(https://crbug.com/837156): Implement a state for the interface.
 
  private:
-  const std::string Process(const std::string& message,
-                            const InputEngineContext* context);
+  std::string Process(const std::string& message,
+                      const InputEngineContext* context);
 
   mojo::BindingSet<mojom::InputChannel, std::unique_ptr<InputEngineContext>>
       channel_bindings_;

@@ -16,7 +16,7 @@
 namespace blink {
 
 TextDetector* TextDetector::Create(ExecutionContext* context) {
-  return new TextDetector(context);
+  return MakeGarbageCollected<TextDetector>(context);
 }
 
 TextDetector::TextDetector(ExecutionContext* context) : ShapeDetector() {
@@ -55,11 +55,11 @@ void TextDetector::OnDetectText(
 
   HeapVector<Member<DetectedText>> detected_text;
   for (const auto& text : text_detection_results) {
-    HeapVector<Point2D> corner_points;
+    HeapVector<Member<Point2D>> corner_points;
     for (const auto& corner_point : text->corner_points) {
-      Point2D point;
-      point.setX(corner_point.x);
-      point.setY(corner_point.y);
+      Point2D* point = Point2D::Create();
+      point->setX(corner_point.x);
+      point->setY(corner_point.y);
       corner_points.push_back(point);
     }
     detected_text.push_back(DetectedText::Create(

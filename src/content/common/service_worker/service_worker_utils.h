@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -23,6 +24,8 @@ namespace content {
 
 class ServiceWorkerUtils {
  public:
+  using RequestHeaderMap = base::flat_map<std::string, std::string>;
+
   static bool IsMainResourceType(ResourceType type) {
     return IsResourceTypeFrame(type) || type == RESOURCE_TYPE_SHARED_WORKER;
   }
@@ -70,7 +73,6 @@ class ServiceWorkerUtils {
     return oss.str();
   }
 
-
   static bool ShouldBypassCacheDueToUpdateViaCache(
       bool is_main_script,
       blink::mojom::ServiceWorkerUpdateViaCache cache_mode);
@@ -79,6 +81,17 @@ class ServiceWorkerUtils {
   // blink::mojom::FetchCacheMode.
   CONTENT_EXPORT static blink::mojom::FetchCacheMode GetCacheModeFromLoadFlags(
       int load_flags);
+
+  CONTENT_EXPORT static std::string SerializeFetchRequestToString(
+      const blink::mojom::FetchAPIRequest& request);
+
+  CONTENT_EXPORT static blink::mojom::FetchAPIRequestPtr
+  DeserializeFetchRequestFromString(const std::string& serialized);
+
+  // TODO(https://crbug.com/789854) Remove this once ServiceWorkerHeaderMap is
+  // removed.
+  CONTENT_EXPORT static content::ServiceWorkerHeaderMap
+  ToServiceWorkerHeaderMap(const RequestHeaderMap& header_);
 
  private:
   static bool IsPathRestrictionSatisfiedInternal(

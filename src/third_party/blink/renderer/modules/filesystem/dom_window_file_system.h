@@ -64,7 +64,7 @@ class DOMWindowFileSystem {
   static ScriptPromise chooseFileSystemEntries(
       ScriptState*,
       LocalDOMWindow&,
-      const ChooseFileSystemEntriesOptions&);
+      const ChooseFileSystemEntriesOptions*);
 };
 
 }  // namespace blink

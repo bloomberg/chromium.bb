@@ -65,13 +65,15 @@ class CustomLinksManager {
   // no longer be considered Most Visited. Returns false and does nothing if
   // custom links is not initialized, either URL is invalid, |url| does not
   // exist in the list, |new_url| already exists in the list, or both parameters
-  // are empty. |is_user_action| is true if this was executed by the user (i.e.
-  // by editing a custom link). Only user actions will update the previous state
-  // that is restored when CustomLinksManager::UndoAction is called.
+  // are empty.
   virtual bool UpdateLink(const GURL& url,
                           const GURL& new_url,
-                          const base::string16& new_title,
-                          bool is_user_action) = 0;
+                          const base::string16& new_title) = 0;
+  // Moves the specified link from its current index and inserts it at
+  // |new_pos|. Returns false and does nothing if custom links is not
+  // initialized, |url| is invalid, |url| does not exist in the list, or
+  // |new_pos| is invalid/already the current index.
+  virtual bool ReorderLink(const GURL& url, size_t new_pos) = 0;
   // Deletes the link with the specified |url|. Returns false and does nothing
   // if custom links is not initialized, |url| is invalid, or |url| does not
   // exist in the list.

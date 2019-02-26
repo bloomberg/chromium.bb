@@ -39,7 +39,7 @@ WebGLExtensionName WebGLDepthTexture::GetName() const {
 
 WebGLDepthTexture* WebGLDepthTexture::Create(
     WebGLRenderingContextBase* context) {
-  return new WebGLDepthTexture(context);
+  return MakeGarbageCollected<WebGLDepthTexture>(context);
 }
 
 bool WebGLDepthTexture::Supported(WebGLRenderingContextBase* context) {

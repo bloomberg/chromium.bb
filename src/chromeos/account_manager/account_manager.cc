@@ -18,7 +18,6 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
-#include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/protobuf/src/google/protobuf/message_lite.h"
@@ -94,6 +93,12 @@ std::vector<AccountManager::AccountKey> GetAccountKeys(
 
 }  // namespace
 
+// static
+const char AccountManager::kActiveDirectoryDummyToken[] = "dummy_ad_token";
+
+// static
+const char AccountManager::kInvalidToken[] = "";
+
 class AccountManager::GaiaTokenRevocationRequest : public GaiaAuthConsumer {
  public:
   GaiaTokenRevocationRequest(
@@ -106,7 +111,7 @@ class AccountManager::GaiaTokenRevocationRequest : public GaiaAuthConsumer {
         weak_factory_(this) {
     DCHECK(!refresh_token_.empty());
     gaia_auth_fetcher_ = std::make_unique<GaiaAuthFetcher>(
-        this, GaiaConstants::kChromeOSSource, url_loader_factory);
+        this, gaia::GaiaSource::kChromeOS, url_loader_factory);
     base::RepeatingClosure start_revoke_token = base::BindRepeating(
         &GaiaTokenRevocationRequest::Start, weak_factory_.GetWeakPtr());
     delay_network_call_runner.Run(start_revoke_token);
@@ -160,6 +165,10 @@ bool AccountManager::AccountKey::operator<(const AccountKey& other) const {
 
 bool AccountManager::AccountKey::operator==(const AccountKey& other) const {
   return id == other.id && account_type == other.account_type;
+}
+
+bool AccountManager::AccountKey::operator!=(const AccountKey& other) const {
+  return !(*this == other);
 }
 
 AccountManager::Observer::Observer() = default;
@@ -286,6 +295,11 @@ void AccountManager::UpsertToken(const AccountKey& account_key,
                                  const std::string& token) {
   DCHECK_NE(init_state_, InitializationState::kNotStarted);
 
+  if (account_key.account_type ==
+      account_manager::AccountType::ACCOUNT_TYPE_ACTIVE_DIRECTORY) {
+    DCHECK_EQ(token, kActiveDirectoryDummyToken);
+  }
+
   base::OnceClosure closure =
       base::BindOnce(&AccountManager::UpsertTokenInternal,
                      weak_factory_.GetWeakPtr(), account_key, token);
@@ -367,7 +381,9 @@ bool AccountManager::IsTokenAvailable(const AccountKey& account_key) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   auto it = tokens_.find(account_key);
-  return it != tokens_.end() && !it->second.empty();
+  return it != tokens_.end() && !it->second.empty() &&
+         it->second != kActiveDirectoryDummyToken &&
+         it->second != kInvalidToken;
 }
 
 void AccountManager::MaybeRevokeTokenOnServer(const AccountKey& account_key) {

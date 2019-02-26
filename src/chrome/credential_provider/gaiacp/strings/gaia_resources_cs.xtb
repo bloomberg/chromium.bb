@@ -3,15 +3,17 @@
 <translationbundle lang="cs">
 <translation id="1296843352074373664">Uživatel Googlu</translation>
 <translation id="1383286653814676580">Používá se ke spuštění přihlašovací stránky poskytovatele identifikačních údajů Google.</translation>
-<translation id="2119303206591679297">Přihlášení pomocí tohoto účtu Google není povoleno.</translation>
-<translation id="3374277789313311065">Došlo k interní chybě. Pokud chyba přetrvává, nahlaste to společnosti Google.</translation>
-<translation id="3713454256426064844">Přihlaste se pomocí účtu Google.</translation>
-<translation id="440343981193409132">Přihlaste se pomocí aktualizovaného hesla účtu Google.</translation>
-<translation id="4735679347289592174">Přihlášení k účtu Google se nezdařilo, zkuste to znovu. Zkontrolujte, zda má počítač platné připojení k internetu. Pokud chyba přetrvává, nahlaste to společnosti Google.</translation>
-<translation id="7000592418234387954">Přihlášení k účtu Google</translation>
+<translation id="195232392645680541">Přihlaste se pomocí účtu Google.</translation>
+<translation id="3623301090691182018">Přihlášení k účtu Google</translation>
+<translation id="4057329986137569701">Došlo k interní chybě.</translation>
+<translation id="4128734677223009352">Přihlášení k účtu Google se nezdařilo. Zkontrolujte, zda je počítač připojen k internetu, a potom to zkuste znovu.</translation>
+<translation id="4307406925561182259">Přihlaste se pomocí aktualizovaného hesla svého účtu Google.</translation>
+<translation id="6064337552080329342">Litujeme, heslo se nepodařilo ověřit. Zkuste to znovu.</translation>
+<translation id="6613125771987245372">Přihlášení pomocí tohoto účtu Google není povoleno. Zkuste jiný účet.</translation>
+<translation id="7357241217513796177">Zkontrolujte, zda jste připojeni k síti a zkuste to znovu.</translation>
+<translation id="7463006580194749499">Přidat osobu</translation>
 <translation id="8474372283141585908">Poskytovatel identifikačních údajů Google</translation>
 <translation id="866458870819756755">Uživatele se nepodařilo vytvořit.</translation>
 <translation id="8860262547644202689">Pomocný nástroj poskytovatele identifikačních údajů Google</translation>
-<translation id="8912362522468806198">Účet Google</translation>
 <translation id="9094033019050270033">Aktualizovat heslo</translation>
 </translationbundle>

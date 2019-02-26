@@ -30,8 +30,6 @@ class HTTP2_EXPORT_PRIVATE HpackString {
   // Not sure yet whether this move ctor is required/sensible.
   HpackString(HpackString&& other) = default;
 
-  HpackString& operator=(const HpackString& other) = default;
-
   ~HpackString();
 
   size_t size() const { return str_.size(); }
@@ -65,8 +63,8 @@ struct HTTP2_EXPORT_PRIVATE HpackStringPair {
 
   Http2String DebugString() const;
 
-  HpackString name;
-  HpackString value;
+  const HpackString name;
+  const HpackString value;
 };
 
 HTTP2_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& os,

@@ -10,4 +10,5 @@ include_rules = [
   "+crypto",
   "+google/cacheinvalidation",
   "+third_party/zlib",  # For UniquePosition compression
+  "+net/base",
 ]

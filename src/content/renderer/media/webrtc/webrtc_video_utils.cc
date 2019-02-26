@@ -59,7 +59,6 @@ media::VideoColorSpace WebRtcToMediaVideoColorSpace(
     case webrtc::ColorSpace::PrimaryID::kJEDECP22:
       primaries = media::VideoColorSpace::PrimaryID::EBU_3213_E;
       break;
-    case webrtc::ColorSpace::PrimaryID::kInvalid:
     default:
       break;
   }
@@ -115,7 +114,6 @@ media::VideoColorSpace WebRtcToMediaVideoColorSpace(
     case webrtc::ColorSpace::TransferID::kARIB_STD_B67:
       transfer = media::VideoColorSpace::TransferID::ARIB_STD_B67;
       break;
-    case webrtc::ColorSpace::TransferID::kInvalid:
     default:
       break;
   }
@@ -153,7 +151,6 @@ media::VideoColorSpace WebRtcToMediaVideoColorSpace(
     case webrtc::ColorSpace::MatrixID::kSMPTE2085:
       matrix = media::VideoColorSpace::MatrixID::YDZDX;
       break;
-    case webrtc::ColorSpace::MatrixID::kInvalid:
     default:
       break;
   }
@@ -166,7 +163,6 @@ media::VideoColorSpace WebRtcToMediaVideoColorSpace(
     case webrtc::ColorSpace::RangeID::kFull:
       range = gfx::ColorSpace::RangeID::FULL;
       break;
-    case webrtc::ColorSpace::RangeID::kInvalid:
     default:
       break;
   }

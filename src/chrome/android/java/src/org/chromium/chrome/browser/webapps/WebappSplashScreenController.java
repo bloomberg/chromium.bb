@@ -144,7 +144,7 @@ class WebappSplashScreenController extends EmptyTabObserver {
     }
 
     @Override
-    public void onPageLoadFinished(Tab tab) {
+    public void onPageLoadFinished(Tab tab, String url) {
         if (canHideSplashScreen()) {
             hideSplashScreenOnDrawingFinished(tab, WebappUma.SplashScreenHidesReason.LOAD_FINISHED);
         }
@@ -234,9 +234,11 @@ class WebappSplashScreenController extends EmptyTabObserver {
 
         Bitmap displayIcon = splashImage;
         boolean displayIconGenerated = false;
+        boolean displayIconAdaptive = false;
         if (displayIcon == null) {
             displayIcon = webappInfo.icon();
             displayIconGenerated = webappInfo.isIconGenerated();
+            displayIconAdaptive = webappInfo.isIconAdaptive();
         }
         @SplashLayout.IconClassification
         int displayIconClassification =
@@ -261,8 +263,8 @@ class WebappSplashScreenController extends EmptyTabObserver {
                             / resources.getDisplayMetrics().density));
         }
 
-        SplashLayout.createLayout(context, mSplashScreen, displayIcon, displayIconClassification,
-                webappInfo.name(),
+        SplashLayout.createLayout(context, mSplashScreen, displayIcon, displayIconAdaptive,
+                displayIconClassification, webappInfo.name(),
                 ColorUtils.shouldUseLightForegroundOnBackground(backgroundColor));
 
         if (mNativeLoaded) mWebappUma.commitMetrics();

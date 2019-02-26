@@ -94,8 +94,7 @@ bool CustomLinksManagerImpl::AddLink(const GURL& url,
 
 bool CustomLinksManagerImpl::UpdateLink(const GURL& url,
                                         const GURL& new_url,
-                                        const base::string16& new_title,
-                                        bool is_user_action) {
+                                        const base::string16& new_title) {
   if (!IsInitialized() || !url.is_valid() ||
       (new_url.is_empty() && new_title.empty())) {
     return false;
@@ -113,16 +112,42 @@ bool CustomLinksManagerImpl::UpdateLink(const GURL& url,
     return false;
 
   // At this point, we will be modifying at least one of the values.
-  if (is_user_action) {
-    // Save the previous state since this was a user update.
-    previous_links_ = current_links_;
-  }
+  previous_links_ = current_links_;
 
   if (!new_url.is_empty())
     it->url = new_url;
   if (!new_title.empty())
     it->title = new_title;
   it->is_most_visited = false;
+
+  StoreLinks();
+  return true;
+}
+
+bool CustomLinksManagerImpl::ReorderLink(const GURL& url, size_t new_pos) {
+  if (!IsInitialized() || !url.is_valid() || new_pos < 0 ||
+      new_pos >= current_links_.size()) {
+    return false;
+  }
+
+  auto curr_it = FindLinkWithUrl(url);
+  if (curr_it == current_links_.end())
+    return false;
+
+  auto new_it = current_links_.begin() + new_pos;
+  if (new_it == curr_it)
+    return false;
+
+  previous_links_ = current_links_;
+
+  // If the new position is to the left of the current position, left rotate the
+  // range [new_pos, curr_pos] until the link is first.
+  if (new_it < curr_it)
+    std::rotate(new_it, curr_it, curr_it + 1);
+  // If the new position is to the right, we only need to left rotate the range
+  // [curr_pos, new_pos] once so that the link is last.
+  else
+    std::rotate(curr_it, curr_it + 1, new_it + 1);
 
   StoreLinks();
   return true;

@@ -58,13 +58,6 @@ class WebFrameWidget : public WebWidget {
       WebWidgetClient*,
       WebLocalFrame* local_root);
 
-  // Sets the visibility of the WebFrameWidget.
-  // We still track page-level visibility, but additionally we need to notify a
-  // WebFrameWidget when its owning RenderWidget receives a Show or Hide
-  // directive, so that it knows whether it needs to draw or not.
-  virtual void SetVisibilityState(mojom::PageVisibilityState visibility_state) {
-  }
-
   // Overrides the WebFrameWidget's background and base background color. You
   // can use this to enforce a transparent background, which is useful if you
   // want to have some custom background rendered behind the widget.

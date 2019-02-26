@@ -12,14 +12,14 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* WillChange::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   if (range.Peek().Id() == CSSValueAuto)
-    return CSSPropertyParserHelpers::ConsumeIdent(range);
+    return css_property_parser_helpers::ConsumeIdent(range);
 
   CSSValueList* values = CSSValueList::CreateCommaSeparated();
   // Every comma-separated list of identifiers is a valid will-change value,
@@ -53,7 +53,7 @@ const CSSValue* WillChange::ParseSingleValue(
           return nullptr;
         case CSSValueContents:
         case CSSValueScrollPosition:
-          values->Append(*CSSPropertyParserHelpers::ConsumeIdent(range));
+          values->Append(*css_property_parser_helpers::ConsumeIdent(range));
           break;
         default:
           range.ConsumeIncludingWhitespace();
@@ -63,7 +63,7 @@ const CSSValue* WillChange::ParseSingleValue(
 
     if (range.AtEnd())
       break;
-    if (!CSSPropertyParserHelpers::ConsumeCommaIncludingWhitespace(range))
+    if (!css_property_parser_helpers::ConsumeCommaIncludingWhitespace(range))
       return nullptr;
   }
 
@@ -132,5 +132,5 @@ void WillChange::ApplyValue(StyleResolverState& state,
       will_change_contents || state.ParentStyle()->SubtreeWillChangeContents());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

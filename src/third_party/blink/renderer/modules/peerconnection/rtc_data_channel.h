@@ -64,6 +64,8 @@ class MODULES_EXPORT RTCDataChannel final
                                 const String& label,
                                 const WebRTCDataChannelInit&,
                                 ExceptionState&);
+
+  RTCDataChannel(ExecutionContext*, std::unique_ptr<WebRTCDataChannelHandler>);
   ~RTCDataChannel() override;
 
   ReadyState GetHandlerState() const;
@@ -95,11 +97,11 @@ class MODULES_EXPORT RTCDataChannel final
 
   void close();
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(open);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(bufferedamountlow);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(close);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(open, kOpen);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(bufferedamountlow, kBufferedamountlow);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(close, kClose);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(message, kMessage);
 
   // EventTarget
   const AtomicString& InterfaceName() const override;
@@ -123,7 +125,6 @@ class MODULES_EXPORT RTCDataChannel final
   void DidDetectError() override;
 
  private:
-  RTCDataChannel(ExecutionContext*, std::unique_ptr<WebRTCDataChannelHandler>);
   void Dispose();
 
   void ScheduleDispatchEvent(Event*);

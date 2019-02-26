@@ -35,6 +35,7 @@ class TestHooks : public AnimationDelegate {
   virtual void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
                                           const viz::BeginFrameArgs& args) {}
   virtual void DidFinishImplFrameOnThread(LayerTreeHostImpl* host_impl) {}
+  virtual void WillSendBeginMainFrameOnThread(LayerTreeHostImpl* host_impl) {}
   virtual void DidSendBeginMainFrameOnThread(LayerTreeHostImpl* host_impl) {}
   virtual void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* host_impl,
                                              CommitEarlyOutReason reason) {}

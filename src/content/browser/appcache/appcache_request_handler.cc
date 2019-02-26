@@ -134,8 +134,12 @@ AppCacheJob* AppCacheRequestHandler::MaybeLoadFallbackForRedirect(
     return nullptr;
   if (is_main_resource())
     return nullptr;
-  // TODO(vabr) This is a temporary fix (see crbug/141114). We should get rid of
-  // it once a more general solution to crbug/121325 is in place.
+  // If MaybeLoadResourceExecuted did not run, this might be, e.g., a redirect
+  // caused by the Web Request API late in the loading progress. AppCache might
+  // misinterpret the rules for the new target and cause unnecessary
+  // fallbacks/errors, therefore it is better to give up on app-caching in this
+  // case. More information in https://crbug.com/141114 and the discussion at
+  // https://chromiumcodereview.appspot.com/10829356.
   if (!maybe_load_resource_executed_)
     return nullptr;
   if (request_->GetURL().GetOrigin() == location.GetOrigin())
@@ -224,14 +228,12 @@ void AppCacheRequestHandler::GetExtraResponseInfo(int64_t* cache_id,
 std::unique_ptr<AppCacheRequestHandler>
 AppCacheRequestHandler::InitializeForMainResourceNetworkService(
     const network::ResourceRequest& request,
-    base::WeakPtr<AppCacheHost> appcache_host,
-    scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory) {
+    base::WeakPtr<AppCacheHost> appcache_host) {
   std::unique_ptr<AppCacheRequestHandler> handler =
       appcache_host->CreateRequestHandler(
           AppCacheURLLoaderRequest::Create(request),
           static_cast<ResourceType>(request.resource_type),
           request.should_reset_appcache);
-  handler->network_loader_factory_ = std::move(network_loader_factory);
   handler->appcache_host_ = std::move(appcache_host);
   return handler;
 }
@@ -570,6 +572,7 @@ void AppCacheRequestHandler::MaybeCreateLoader(
 }
 
 bool AppCacheRequestHandler::MaybeCreateLoaderForResponse(
+    const GURL& request_url,
     const network::ResourceResponseHead& response,
     network::mojom::URLLoaderPtr* loader,
     network::mojom::URLLoaderClientRequest* client_request,
@@ -613,11 +616,12 @@ AppCacheRequestHandler::MaybeCreateSubresourceLoaderParams() {
 
   // The factory is destroyed when the renderer drops the connection.
   network::mojom::URLLoaderFactoryPtr factory_ptr;
-  AppCacheSubresourceURLFactory::CreateURLLoaderFactory(
-      network_loader_factory_, appcache_host_, &factory_ptr);
+
+  AppCacheSubresourceURLFactory::CreateURLLoaderFactory(appcache_host_,
+                                                        &factory_ptr);
 
   SubresourceLoaderParams params;
-  params.loader_factory_info = factory_ptr.PassInterface();
+  params.appcache_loader_factory_info = factory_ptr.PassInterface();
   return base::Optional<SubresourceLoaderParams>(std::move(params));
 }
 

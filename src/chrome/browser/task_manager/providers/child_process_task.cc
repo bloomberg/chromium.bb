@@ -159,7 +159,7 @@ ChildProcessTask::ChildProcessTask(const content::ChildProcessData& data)
     : Task(GetLocalizedTitle(data.name, data.process_type),
            base::UTF16ToUTF8(data.name),
            FetchIcon(IDR_PLUGINS_FAVICON, &s_icon_),
-           data.GetHandle()),
+           data.GetProcess().Handle()),
       process_resources_sampler_(CreateProcessResourcesSampler(data.id)),
       v8_memory_allocated_(-1),
       v8_memory_used_(-1),

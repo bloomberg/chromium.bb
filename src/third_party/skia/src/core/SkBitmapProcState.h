@@ -64,8 +64,6 @@ struct SkBitmapProcState : public SkBitmapProcInfo {
 
     typedef void (*ShaderProc32)(const void* ctx, int x, int y, SkPMColor[], int count);
 
-    typedef void (*ShaderProc16)(const void* ctx, int x, int y, uint16_t[], int count);
-
     typedef void (*MatrixProc)(const SkBitmapProcState&,
                                uint32_t bitmapXY[],
                                int count,
@@ -76,16 +74,10 @@ struct SkBitmapProcState : public SkBitmapProcInfo {
                                  int count,
                                  SkPMColor colors[]);
 
-    typedef U16CPU (*FixedTileProc)(SkFixed);   // returns 0..0xFFFF
-    typedef U16CPU (*IntTileProc)(int value, int count);   // returns 0..count-1
-
     SkMatrixPriv::MapXYProc fInvProc;           // chooseProcs
     SkFractionalInt     fInvSxFractionalInt;
     SkFractionalInt     fInvKyFractionalInt;
 
-    FixedTileProc       fTileProcX;         // chooseProcs
-    FixedTileProc       fTileProcY;         // chooseProcs
-    IntTileProc         fIntTileProcY;      // chooseProcs
     SkFixed             fFilterOneX;
     SkFixed             fFilterOneY;
 
@@ -98,9 +90,7 @@ struct SkBitmapProcState : public SkBitmapProcInfo {
         following fields:
 
         fShaderProc32
-        fShaderProc16
         fMatrixProc
-        fSampleProc32
         fSampleProc32
 
         They will already have valid function pointers, so a platform that does
@@ -123,7 +113,6 @@ struct SkBitmapProcState : public SkBitmapProcInfo {
     // If a shader proc is present, then the corresponding matrix/sample procs
     // are ignored
     ShaderProc32 getShaderProc32() const { return fShaderProc32; }
-    ShaderProc16 getShaderProc16() const { return fShaderProc16; }
 
 #ifdef SK_DEBUG
     MatrixProc getMatrixProc() const;
@@ -134,14 +123,12 @@ struct SkBitmapProcState : public SkBitmapProcInfo {
 
 private:
     ShaderProc32        fShaderProc32;      // chooseProcs
-    ShaderProc16        fShaderProc16;      // chooseProcs
     // These are used if the shaderproc is nullptr
     MatrixProc          fMatrixProc;        // chooseProcs
     SampleProc32        fSampleProc32;      // chooseProcs
 
     MatrixProc chooseMatrixProc(bool trivial_matrix);
     bool chooseProcs(); // caller must have called init() first (on our base-class)
-    bool chooseScanlineProcs(bool trivialMatrix, bool clampClamp);
     ShaderProc32 chooseShaderProc32();
 
     // Return false if we failed to setup for fast translate (e.g. overflow)
@@ -179,10 +166,9 @@ private:
 
 // These functions are generated via macros, but are exposed here so that
 // platformProcs may test for them by name.
-void S32_opaque_D32_filter_DX(const SkBitmapProcState& s, const uint32_t xy[],
-                              int count, SkPMColor colors[]);
-void S32_alpha_D32_filter_DX(const SkBitmapProcState& s, const uint32_t xy[],
-                             int count, SkPMColor colors[]);
+void S32_alpha_D32_filter_DX(const SkBitmapProcState& s,
+                             const uint32_t xy[], int count, SkPMColor colors[]);
+
 void ClampX_ClampY_filter_scale(const SkBitmapProcState& s, uint32_t xy[],
                                 int count, int x, int y);
 void ClampX_ClampY_nofilter_scale(const SkBitmapProcState& s, uint32_t xy[],

@@ -43,13 +43,13 @@ void DidFocus(ScriptPromiseResolver* resolver,
 ServiceWorkerWindowClient* ServiceWorkerWindowClient::Create(
     const WebServiceWorkerClientInfo& info) {
   DCHECK_EQ(mojom::blink::ServiceWorkerClientType::kWindow, info.client_type);
-  return new ServiceWorkerWindowClient(info);
+  return MakeGarbageCollected<ServiceWorkerWindowClient>(info);
 }
 
 ServiceWorkerWindowClient* ServiceWorkerWindowClient::Create(
     const mojom::blink::ServiceWorkerClientInfo& info) {
   DCHECK_EQ(mojom::blink::ServiceWorkerClientType::kWindow, info.client_type);
-  return new ServiceWorkerWindowClient(info);
+  return MakeGarbageCollected<ServiceWorkerWindowClient>(info);
 }
 
 ServiceWorkerWindowClient::ServiceWorkerWindowClient(
@@ -92,7 +92,8 @@ ScriptPromise ServiceWorkerWindowClient::navigate(ScriptState* script_state,
   ScriptPromise promise = resolver->Promise();
   ExecutionContext* context = ExecutionContext::From(script_state);
 
-  KURL parsed_url = KURL(ToWorkerGlobalScope(context)->location()->Url(), url);
+  KURL parsed_url =
+      KURL(To<WorkerGlobalScope>(context)->location()->Url(), url);
   if (!parsed_url.IsValid() || parsed_url.ProtocolIsAbout()) {
     resolver->Reject(V8ThrowException::CreateTypeError(
         script_state->GetIsolate(), "'" + url + "' is not a valid URL."));

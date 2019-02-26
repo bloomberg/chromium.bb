@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "jingle/glue/fake_ssl_client_socket.h"
 #include "net/url_request/url_request_context.h"
 #include "services/network/proxy_resolving_client_socket.h"
 #include "services/network/proxy_resolving_client_socket_factory.h"
@@ -24,13 +25,21 @@ ProxyResolvingSocketFactoryMojo::~ProxyResolvingSocketFactoryMojo() {}
 
 void ProxyResolvingSocketFactoryMojo::CreateProxyResolvingSocket(
     const GURL& url,
-    bool use_tls,
+    mojom::ProxyResolvingSocketOptionsPtr options,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     mojom::ProxyResolvingSocketRequest request,
     mojom::SocketObserverPtr observer,
     CreateProxyResolvingSocketCallback callback) {
+  std::unique_ptr<net::StreamSocket> net_socket =
+      factory_impl_.CreateSocket(url, options && options->use_tls);
+  if (options && options->fake_tls_handshake) {
+    DCHECK(!options->use_tls);
+    net_socket = std::make_unique<jingle_glue::FakeSSLClientSocket>(
+        std::move(net_socket));
+  }
+
   auto socket = std::make_unique<ProxyResolvingSocketMojo>(
-      factory_impl_.CreateSocket(url, use_tls),
+      std::move(net_socket),
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
       std::move(observer), &tls_socket_factory_);
   ProxyResolvingSocketMojo* socket_raw = socket.get();

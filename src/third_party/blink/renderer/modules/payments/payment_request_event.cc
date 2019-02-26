@@ -20,23 +20,24 @@ namespace blink {
 
 PaymentRequestEvent* PaymentRequestEvent::Create(
     const AtomicString& type,
-    const PaymentRequestEventInit& initializer) {
-  return new PaymentRequestEvent(type, initializer, nullptr, nullptr);
+    const PaymentRequestEventInit* initializer) {
+  return MakeGarbageCollected<PaymentRequestEvent>(type, initializer, nullptr,
+                                                   nullptr);
 }
 
 PaymentRequestEvent* PaymentRequestEvent::Create(
     const AtomicString& type,
-    const PaymentRequestEventInit& initializer,
+    const PaymentRequestEventInit* initializer,
     RespondWithObserver* respond_with_observer,
     WaitUntilObserver* wait_until_observer) {
-  return new PaymentRequestEvent(type, initializer, respond_with_observer,
-                                 wait_until_observer);
+  return MakeGarbageCollected<PaymentRequestEvent>(
+      type, initializer, respond_with_observer, wait_until_observer);
 }
 
 PaymentRequestEvent::~PaymentRequestEvent() = default;
 
 const AtomicString& PaymentRequestEvent::InterfaceName() const {
-  return EventNames::PaymentRequestEvent;
+  return event_interface_names::kPaymentRequestEvent;
 }
 
 const String& PaymentRequestEvent::topOrigin() const {
@@ -51,7 +52,8 @@ const String& PaymentRequestEvent::paymentRequestId() const {
   return payment_request_id_;
 }
 
-const HeapVector<PaymentMethodData>& PaymentRequestEvent::methodData() const {
+const HeapVector<Member<PaymentMethodData>>& PaymentRequestEvent::methodData()
+    const {
   return method_data_;
 }
 
@@ -59,8 +61,8 @@ const ScriptValue PaymentRequestEvent::total(ScriptState* script_state) const {
   return ScriptValue::From(script_state, total_);
 }
 
-const HeapVector<PaymentDetailsModifier>& PaymentRequestEvent::modifiers()
-    const {
+const HeapVector<Member<PaymentDetailsModifier>>&
+PaymentRequestEvent::modifiers() const {
   return modifiers_;
 }
 
@@ -125,6 +127,7 @@ void PaymentRequestEvent::respondWith(ScriptState* script_state,
 
 void PaymentRequestEvent::Trace(blink::Visitor* visitor) {
   visitor->Trace(method_data_);
+  visitor->Trace(total_);
   visitor->Trace(modifiers_);
   visitor->Trace(observer_);
   ExtendableEvent::Trace(visitor);
@@ -132,22 +135,22 @@ void PaymentRequestEvent::Trace(blink::Visitor* visitor) {
 
 PaymentRequestEvent::PaymentRequestEvent(
     const AtomicString& type,
-    const PaymentRequestEventInit& initializer,
+    const PaymentRequestEventInit* initializer,
     RespondWithObserver* respond_with_observer,
     WaitUntilObserver* wait_until_observer)
     : ExtendableEvent(type, initializer, wait_until_observer),
-      top_origin_(initializer.topOrigin()),
-      payment_request_origin_(initializer.paymentRequestOrigin()),
-      payment_request_id_(initializer.paymentRequestId()),
-      method_data_(initializer.hasMethodData()
-                       ? initializer.methodData()
-                       : HeapVector<PaymentMethodData>()),
-      total_(initializer.hasTotal() ? initializer.total()
-                                    : PaymentCurrencyAmount()),
-      modifiers_(initializer.hasModifiers()
-                     ? initializer.modifiers()
-                     : HeapVector<PaymentDetailsModifier>()),
-      instrument_key_(initializer.instrumentKey()),
+      top_origin_(initializer->topOrigin()),
+      payment_request_origin_(initializer->paymentRequestOrigin()),
+      payment_request_id_(initializer->paymentRequestId()),
+      method_data_(initializer->hasMethodData()
+                       ? initializer->methodData()
+                       : HeapVector<Member<PaymentMethodData>>()),
+      total_(initializer->hasTotal() ? initializer->total()
+                                     : PaymentCurrencyAmount::Create()),
+      modifiers_(initializer->hasModifiers()
+                     ? initializer->modifiers()
+                     : HeapVector<Member<PaymentDetailsModifier>>()),
+      instrument_key_(initializer->instrumentKey()),
       observer_(respond_with_observer) {}
 
 }  // namespace blink

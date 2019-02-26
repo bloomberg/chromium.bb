@@ -41,12 +41,15 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   // |this| creates an instance of it itself (meant for production code). Once
   // the fetcher is shared between PasswordFormManager instances, it will be
   // required that |form_fetcher| is not null. |form_saver| is used to
-  // save/update the form.
-  NewPasswordFormManager(PasswordManagerClient* client,
-                         const base::WeakPtr<PasswordManagerDriver>& driver,
-                         const autofill::FormData& observed_form,
-                         FormFetcher* form_fetcher,
-                         std::unique_ptr<FormSaver> form_saver);
+  // save/update the form. |metrics_recorder| records metrics for |*this|. If
+  // null a new instance will be created.
+  NewPasswordFormManager(
+      PasswordManagerClient* client,
+      const base::WeakPtr<PasswordManagerDriver>& driver,
+      const autofill::FormData& observed_form,
+      FormFetcher* form_fetcher,
+      std::unique_ptr<FormSaver> form_saver,
+      scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder);
 
   ~NewPasswordFormManager() override;
 
@@ -68,8 +71,8 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   // |submitted_form| and |driver|) then saves |submitted_form| to
   // |submitted_form_| field, sets |is_submitted| = true and returns true.
   // Otherwise returns false.
-  bool SetSubmittedFormIfIsManaged(const autofill::FormData& submitted_form,
-                                   const PasswordManagerDriver* driver);
+  bool ProvisionallySaveIfIsManaged(const autofill::FormData& submitted_form,
+                                    const PasswordManagerDriver* driver);
   bool is_submitted() { return is_submitted_; }
   void set_not_submitted() { is_submitted_ = false; }
 
@@ -117,9 +120,15 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   // PasswordFormManagerInterface:
   bool IsNewLogin() const override;
   bool IsPendingCredentialsPublicSuffixMatch() const override;
+  void PresaveGeneratedPassword(const autofill::PasswordForm& form) override;
+  void PasswordNoLongerGenerated() override;
   bool HasGeneratedPassword() const override;
+  void SetGenerationPopupWasShown(bool generation_popup_was_shown,
+                                  bool is_manual_generation) override;
+  void SetGenerationElement(const base::string16& generation_element) override;
   bool IsPossibleChangePasswordFormWithoutUsername() const override;
   bool RetryPasswordFormPasswordUpdate() const override;
+  bool IsPasswordUpdate() const override;
   std::vector<base::WeakPtr<PasswordManagerDriver>> GetDrivers() const override;
   const autofill::PasswordForm* GetSubmittedForm() const override;
 
@@ -286,8 +295,9 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   // existing one.
   bool is_new_login_ = true;
 
-  // Whether this form has an auto generated password.
-  bool has_generated_password_ = false;
+  // Contains a generated password, empty if no password generation happened or
+  // a generated password removed by the user.
+  base::string16 generated_password_;
 
   // Whether the saved password was overridden.
   bool password_overridden_ = false;

@@ -31,7 +31,7 @@ class HTMLBDIElement final : public HTMLElement {
 
  private:
   inline explicit HTMLBDIElement(Document& document)
-      : HTMLElement(HTMLNames::bdiTag, document) {}
+      : HTMLElement(html_names::kBdiTag, document) {}
 };
 
 DEFINE_NODE_FACTORY(HTMLBDIElement)

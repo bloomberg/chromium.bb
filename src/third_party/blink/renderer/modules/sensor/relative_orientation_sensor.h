@@ -15,16 +15,15 @@ class RelativeOrientationSensor final : public OrientationSensor {
 
  public:
   static RelativeOrientationSensor* Create(ExecutionContext*,
-                                           const SpatialSensorOptions&,
+                                           const SpatialSensorOptions*,
                                            ExceptionState&);
   static RelativeOrientationSensor* Create(ExecutionContext*, ExceptionState&);
 
-  void Trace(blink::Visitor*) override;
-
- private:
   RelativeOrientationSensor(ExecutionContext*,
-                            const SpatialSensorOptions&,
+                            const SpatialSensorOptions*,
                             ExceptionState&);
+
+  void Trace(blink::Visitor*) override;
 };
 
 }  // namespace blink

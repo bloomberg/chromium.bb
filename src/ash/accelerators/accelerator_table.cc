@@ -29,8 +29,8 @@ namespace ash {
 //      the notification text. Also found in |ash_strings.grd|.
 //    - {true or false} whether the deprecated accelerator is still enabled (we
 //      don't disable a deprecated accelerator abruptly).
-// 5- Don't forget to update the keyboard overlay. Find 'shortcut' in the file
-//    keyboard_overlay_data.js.
+// 5- Don't forget to update the keyboard_shortcut_viewer_metadata.cc and
+//    shortcut_viewer_strings.grdp.
 const AcceleratorData kDeprecatedAccelerators[] = {
     {true, ui::VKEY_L, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, LOCK_SCREEN},
     {true, ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN, SHOW_TASK_MANAGER},
@@ -227,7 +227,7 @@ const AcceleratorAction kActionsAllowedAtModalWindow[] = {
     SCALE_UI_RESET,
     SCALE_UI_UP,
     SHOW_IME_MENU_BUBBLE,
-    SHOW_KEYBOARD_OVERLAY,
+    SHOW_SHORTCUT_VIEWER,
     SUSPEND,
     SWAP_PRIMARY_DISPLAY,
     TAKE_PARTIAL_SCREENSHOT,

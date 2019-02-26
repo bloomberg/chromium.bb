@@ -142,7 +142,7 @@ sk_sp<sksg::RenderNode> AttachMask(const skjson::ArrayValue* jmask,
             std::vector<sksg::Merge::Rec> merge_recs;
             merge_recs.reserve(SkToSizeT(mask_stack.count()));
 
-            for (const auto& mask : mask_stack) {
+            for (auto& mask : mask_stack) {
                 const auto mode = merge_recs.empty() ? sksg::Merge::Mode::kMerge : mask.merge_mode;
                 merge_recs.push_back({std::move(mask.mask_path), mode});
             }
@@ -160,7 +160,7 @@ sk_sp<sksg::RenderNode> AttachMask(const skjson::ArrayValue* jmask,
     } else {
         std::vector<sk_sp<sksg::RenderNode>> masks;
         masks.reserve(SkToSizeT(mask_stack.count()));
-        for (const auto& rec : mask_stack) {
+        for (auto& rec : mask_stack) {
             masks.push_back(sksg::Draw::Make(std::move(rec.mask_path),
                                              std::move(rec.mask_paint)));
         }
@@ -373,8 +373,9 @@ sk_sp<sksg::RenderNode> AnimationBuilder::attachImageAsset(const skjson::ObjectV
     }
 
     return sksg::Transform::Make(std::move(image_node),
-        SkMatrix::MakeScale(static_cast<float>(asset_size.width())  / image->width(),
-                            static_cast<float>(asset_size.height()) / image->height()));
+        SkMatrix::MakeRectToRect(SkRect::Make(image->bounds()),
+                                 SkRect::Make(asset_size),
+                                 SkMatrix::kCenter_ScaleToFit));
 }
 
 sk_sp<sksg::RenderNode> AnimationBuilder::attachImageLayer(const skjson::ObjectValue& jlayer,

@@ -105,6 +105,12 @@ TransitionalURLLoaderFactoryOwner::GetURLLoaderFactory() {
   return shared_url_loader_factory_;
 }
 
+network::mojom::NetworkContext*
+TransitionalURLLoaderFactoryOwner::GetNetworkContext() {
+  GetURLLoaderFactory();
+  return network_context_pipe_.get();
+}
+
 void TransitionalURLLoaderFactoryOwner::DisallowUsageInProcess() {
   disallowed_in_process().Set();
 }

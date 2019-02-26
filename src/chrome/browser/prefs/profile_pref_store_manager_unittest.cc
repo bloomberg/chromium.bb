@@ -38,6 +38,7 @@
 #include "services/preferences/public/cpp/tracked/pref_names.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -356,7 +357,8 @@ class ProfilePrefStoreManagerTest : public testing::Test,
                      mojo::ScopedMessagePipeHandle handle) {
     service_manager::BindSourceInfo source(
         service_manager::Identity(content::mojom::kBrowserServiceName,
-                                  service_manager::mojom::kRootUserID),
+                                  service_manager::kSystemInstanceGroup,
+                                  base::Token{}, base::Token::CreateRandom()),
         service_manager::CapabilitySet());
     static_cast<service_manager::mojom::Service*>(pref_service_context_.get())
         ->OnBindInterface(source, interface_name, std::move(handle),

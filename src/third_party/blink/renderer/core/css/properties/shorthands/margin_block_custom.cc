@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 
 namespace blink {
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool MarginBlock::ParseShorthand(
     bool important,
@@ -18,7 +18,7 @@ bool MarginBlock::ParseShorthand(
     const CSSParserContext& context,
     const CSSParserLocalContext&,
     HeapVector<CSSPropertyValue, 256>& properties) const {
-  return CSSPropertyParserHelpers::ConsumeShorthandVia2Longhands(
+  return css_property_parser_helpers::ConsumeShorthandVia2Longhands(
       marginBlockShorthand(), important, context, range, properties);
 }
 
@@ -33,5 +33,5 @@ const CSSValue* MarginBlock::CSSValueFromComputedStyleInternal(
       allow_visited_style);
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink

@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "core/fxcrt/observable.h"
+#include "fxjs/cjs_object.h"
 #include "fxjs/js_define.h"
 
 class CPDFSDK_InteractiveForm;
@@ -99,6 +100,7 @@ class CJS_Document final : public CJS_Object, public Observable<CJS_Document> {
   JS_STATIC_METHOD(importAnXFDF, CJS_Document);
   JS_STATIC_METHOD(importTextData, CJS_Document);
   JS_STATIC_METHOD(insertPages, CJS_Document);
+  JS_STATIC_METHOD(mailDoc, CJS_Document);
   JS_STATIC_METHOD(mailForm, CJS_Document);
   JS_STATIC_METHOD(print, CJS_Document);
   JS_STATIC_METHOD(removeField, CJS_Document);
@@ -108,7 +110,6 @@ class CJS_Document final : public CJS_Object, public Observable<CJS_Document> {
   JS_STATIC_METHOD(saveAs, CJS_Document);
   JS_STATIC_METHOD(submitForm, CJS_Document);
   JS_STATIC_METHOD(syncAnnotScan, CJS_Document);
-  JS_STATIC_METHOD(mailDoc, CJS_Document);
 
  private:
   static int ObjDefnID;

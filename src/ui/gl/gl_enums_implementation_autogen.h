@@ -1732,6 +1732,9 @@ static const GLEnums::EnumToString enum_to_string_table[] = {
         0x8867, "GL_QUERY_RESULT_AVAILABLE_EXT",
     },
     {
+        0x8868, "GL_QUERY_RESULT_AVAILABLE_NO_FLUSH_CHROMIUM_EXT",
+    },
+    {
         0x8869, "GL_MAX_VERTEX_ATTRIBS",
     },
     {
@@ -2018,6 +2021,12 @@ static const GLEnums::EnumToString enum_to_string_table[] = {
     },
     {
         0x8AF4, "GL_COLOR_SPACE_DISPLAY_P3_CHROMIUM",
+    },
+    {
+        0x8AF5, "GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM",
+    },
+    {
+        0x8AF6, "GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM",
     },
     {
         0x8B30, "GL_FRAGMENT_SHADER",

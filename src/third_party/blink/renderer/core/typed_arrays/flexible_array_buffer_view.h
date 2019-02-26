@@ -43,7 +43,7 @@ class CORE_EXPORT FlexibleArrayBufferView {
   // FlexibleArrayBufferView object.
   void* BaseAddressMaybeOnStack() const {
     DCHECK(!IsEmpty());
-    return IsFull() ? full_->BaseAddress() : small_data_;
+    return IsFull() ? full_->BaseAddressMaybeShared() : small_data_;
   }
 
   unsigned ByteOffset() const {

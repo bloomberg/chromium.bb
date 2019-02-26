@@ -13,9 +13,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "crypto/crypto_export.h"
-
-// Forward declaration for openssl/*.h
-typedef struct env_md_ctx_st EVP_MD_CTX;
+#include "third_party/boringssl/src/include/openssl/base.h"
 
 namespace crypto {
 

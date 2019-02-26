@@ -23,7 +23,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/signin/core/browser/profile_management_switches.h"
+#include "components/signin/core/browser/account_consistency_method.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -143,6 +143,7 @@ class UserManagerUIAuthenticatedUserBrowserTest
 
 IN_PROC_BROWSER_TEST_F(UserManagerUIAuthenticatedUserBrowserTest, Reauth) {
   Init();
+  signin_util::SetForceSigninForTesting(true);
   entry_->SetLocalAuthCredentials("1mock_credentials");
 
   LaunchAuthenticatedUser("email@mock.com");

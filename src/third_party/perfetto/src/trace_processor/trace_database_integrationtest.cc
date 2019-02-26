@@ -21,9 +21,9 @@
 #include "gtest/gtest.h"
 #include "perfetto/base/logging.h"
 #include "perfetto/base/scoped_file.h"
+#include "perfetto/trace_processor/trace_processor.h"
 #include "src/base/test/utils.h"
 #include "src/trace_processor/json_trace_parser.h"
-#include "src/trace_processor/trace_processor.h"
 
 #include "perfetto/trace_processor/raw_query.pb.h"
 
@@ -33,9 +33,8 @@ namespace {
 
 class TraceProcessorIntegrationTest : public ::testing::Test {
  public:
-  TraceProcessorIntegrationTest() : processor(TraceProcessor::Config()) {}
-
-  TraceProcessor processor;
+  TraceProcessorIntegrationTest()
+      : processor_(TraceProcessor::CreateInstance(Config())) {}
 
  protected:
   bool LoadTrace(const char* name, int min_chunk_size = 1) {
@@ -46,10 +45,10 @@ class TraceProcessorIntegrationTest : public ::testing::Test {
       size_t chunk_size = static_cast<size_t>(dist(rnd_engine));
       std::unique_ptr<uint8_t[]> buf(new uint8_t[chunk_size]);
       auto rsize = fread(reinterpret_cast<char*>(buf.get()), 1, chunk_size, *f);
-      if (!processor.Parse(std::move(buf), rsize))
+      if (!processor_->Parse(std::move(buf), rsize))
         return false;
     }
-    processor.NotifyEndOfFile();
+    processor_->NotifyEndOfFile();
     return true;
   }
 
@@ -59,8 +58,11 @@ class TraceProcessorIntegrationTest : public ::testing::Test {
     auto on_result = [&result](const protos::RawQueryResult& res) {
       result->CopyFrom(res);
     };
-    processor.ExecuteQuery(args, on_result);
+    processor_->ExecuteQuery(args, on_result);
   }
+
+ private:
+  std::unique_ptr<TraceProcessor> processor_;
 };
 
 TEST_F(TraceProcessorIntegrationTest, AndroidSchedAndPs) {
@@ -76,12 +78,17 @@ TEST_F(TraceProcessorIntegrationTest, AndroidSchedAndPs) {
 }
 
 TEST_F(TraceProcessorIntegrationTest, Sfgate) {
-  ASSERT_TRUE(LoadTrace("sfgate.json", strlen(JsonTraceParser::kPreamble)));
+  ASSERT_TRUE(LoadTrace("sfgate.json", strlen("{\"traceEvents\":[")));
   protos::RawQueryResult res;
   Query("select count(*), max(ts) - min(ts) from slices where utid != 0", &res);
   ASSERT_EQ(res.num_records(), 1);
-  ASSERT_EQ(res.columns(0).long_values(0), 39830);
+  ASSERT_EQ(res.columns(0).long_values(0), 39828);
   ASSERT_EQ(res.columns(1).long_values(0), 40532506000);
+}
+
+// TODO(hjd): Add trace to test_data.
+TEST_F(TraceProcessorIntegrationTest, DISABLED_AndroidBuildTrace) {
+  ASSERT_TRUE(LoadTrace("android_build_trace.json", strlen("[\n{")));
 }
 
 }  // namespace

@@ -122,8 +122,8 @@ SpellCheckRequest* SpellCheckRequest::Create(
 
   Range* checking_range_object = CreateRange(checking_range);
 
-  SpellCheckRequest* request =
-      new SpellCheckRequest(checking_range_object, text, request_number);
+  SpellCheckRequest* request = MakeGarbageCollected<SpellCheckRequest>(
+      checking_range_object, text, request_number);
   if (request->RootEditableElement())
     return request;
 

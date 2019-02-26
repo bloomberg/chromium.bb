@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/test/scoped_task_environment.h"
+#include "build/build_config.h"
 #include "chromecast/common/mojom/constants.mojom.h"
 #include "chromecast/common/mojom/multiroom.mojom.h"
 #include "chromecast/media/cma/backend/cma_backend.h"
@@ -23,6 +24,9 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#if defined(OS_ANDROID)
+#include "media/audio/android/audio_track_output_stream.h"
+#endif  // defined(OS_ANDROID)
 
 using testing::_;
 using testing::AnyNumber;
@@ -58,11 +62,14 @@ int OnMoreData(base::TimeDelta delay,
   return kDefaultAudioParams.frames_per_buffer();
 }
 
+std::string DummyGetSessionId(std::string /* audio_group_id */) {
+  return "";
+}
+
 }  // namespace
 
 namespace chromecast {
 namespace media {
-namespace {
 
 class CastAudioManagerTest : public testing::Test {
  public:
@@ -90,9 +97,9 @@ class CastAudioManagerTest : public testing::Test {
   void CreateConnectorForTesting() {
     connector_ = CreateConnector();
     // Override the MultiroomManager interface for testing.
-    service_manager::Connector::TestApi connector_test_api(connector_.get());
-    connector_test_api.OverrideBinderForTesting(
-        service_manager::Identity(chromecast::mojom::kChromecastServiceName),
+    connector_->OverrideBinderForTesting(
+        service_manager::ServiceFilter::ByName(
+            chromecast::mojom::kChromecastServiceName),
         mojom::MultiroomManager::Name_,
         base::BindRepeating(&CastAudioManagerTest::BindMultiroomManager,
                             base::Unretained(this)));
@@ -111,13 +118,15 @@ class CastAudioManagerTest : public testing::Test {
     }
 
     mock_backend_factory_ = std::make_unique<MockCmaBackendFactory>();
-    audio_manager_ = std::make_unique<CastAudioManager>(
+    audio_manager_ = base::WrapUnique(new CastAudioManager(
         std::make_unique<::media::TestAudioThread>(), &fake_audio_log_factory_,
         base::BindRepeating(&CastAudioManagerTest::GetCmaBackendFactory,
                             base::Unretained(this)),
+        base::BindRepeating(&DummyGetSessionId),
         scoped_task_environment_.GetMainThreadTaskRunner(),
         scoped_task_environment_.GetMainThreadTaskRunner(), connector_.get(),
-        use_mixer);
+        use_mixer, true /* force_use_cma_backend_for_output*/
+        ));
     // A few AudioManager implementations post initialization tasks to
     // audio thread. Flush the thread to ensure that |audio_manager_| is
     // initialized and ready to use before returning from this function.
@@ -189,6 +198,29 @@ TEST_F(CastAudioManagerTest, CanMakeStream) {
   stream->Close();
 }
 
+#if defined(OS_ANDROID)
+TEST_F(CastAudioManagerTest, CanMakeAC3Stream) {
+  const ::media::AudioParameters kAC3AudioParams(
+      ::media::AudioParameters::AUDIO_BITSTREAM_AC3,
+      ::media::CHANNEL_LAYOUT_5_1, ::media::AudioParameters::kAudioCDSampleRate,
+      256);
+  ::media::AudioOutputStream* stream = audio_manager_->MakeAudioOutputStream(
+      kAC3AudioParams, "", ::media::AudioManager::LogCallback());
+  EXPECT_TRUE(stream->Open());
+
+  EXPECT_CALL(mock_source_callback_, OnMoreData(_, _, _, _))
+      .WillRepeatedly(Invoke(OnMoreData));
+  EXPECT_CALL(mock_source_callback_, OnError()).Times(0);
+  stream->Start(&mock_source_callback_);
+  scoped_task_environment_.RunUntilIdle();
+
+  stream->Stop();
+  scoped_task_environment_.RunUntilIdle();
+
+  stream->Close();
+}
+#endif  // defined(OS_ANDROID)
+
 TEST_F(CastAudioManagerTest, CanMakeStreamProxy) {
   SetUpBackendAndDecoder();
   ::media::AudioOutputStream* stream =
@@ -226,6 +258,5 @@ TEST_F(CastAudioManagerTest, CanMakeMixerStream) {
   stream->Close();
 }
 
-}  // namespace
 }  // namespace media
 }  // namespace chromecast

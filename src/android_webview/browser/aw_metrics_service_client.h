@@ -11,6 +11,7 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
+#include "base/sequence_checker.h"
 #include "components/metrics/enabled_state_provider.h"
 #include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_service_client.h"
@@ -90,6 +91,12 @@ class AwMetricsServiceClient : public metrics::MetricsServiceClient,
   PrefService* pref_service_;
   bool consent_;    // = (user has consented) && !(app has opted out)
   bool in_sample_;  // Is this client enabled by sampling?
+
+  // The AwMetricsServiceClient may be created before the ui thread be promoted
+  // to BrowserThread::UI thread. Therefore, we use |sequence_checker_| to check
+  // whether the AwMetricsServiceClient instance is accessed on the same
+  // thread.
+  base::SequenceChecker sequence_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(AwMetricsServiceClient);
 };

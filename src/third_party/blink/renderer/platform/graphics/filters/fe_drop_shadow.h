@@ -31,6 +31,8 @@ class PLATFORM_EXPORT FEDropShadow final : public FilterEffect {
   static FEDropShadow*
   Create(Filter*, float, float, float, float, const Color&, float);
 
+  FEDropShadow(Filter*, float, float, float, float, const Color&, float);
+
   // Compute which destination area will be affected when applying a drop
   // shadow effect with |stdDeviation| and |offset| to an area |rect|.
   static FloatRect MapEffect(const FloatSize& std_deviation,
@@ -44,8 +46,6 @@ class PLATFORM_EXPORT FEDropShadow final : public FilterEffect {
                                           int indention) const override;
 
  private:
-  FEDropShadow(Filter*, float, float, float, float, const Color&, float);
-
   FloatRect MapEffect(const FloatRect&) const override;
 
   sk_sp<PaintFilter> CreateImageFilter() override;

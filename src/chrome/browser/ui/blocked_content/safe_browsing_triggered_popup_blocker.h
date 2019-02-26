@@ -17,7 +17,6 @@
 #include "content/public/browser/web_contents_observer.h"
 
 namespace content {
-struct OpenURLParams;
 class WebContents;
 }  // namespace content
 
@@ -41,6 +40,7 @@ constexpr char kAbusiveWarnMessage[] =
 // tab helper in applying a stronger policy for blocked popups.
 class SafeBrowsingTriggeredPopupBlocker
     : public content::WebContentsObserver,
+      public content::WebContentsUserData<SafeBrowsingTriggeredPopupBlocker>,
       public subresource_filter::SubresourceFilterObserver {
  public:
   // This enum backs a histogram. Please append new entries to the end, and
@@ -71,12 +71,12 @@ class SafeBrowsingTriggeredPopupBlocker
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  static std::unique_ptr<SafeBrowsingTriggeredPopupBlocker> MaybeCreate(
-      content::WebContents* web_contents);
+  // Creates a SafeBrowsingTriggeredPopupBlocker and attaches it (via UserData)
+  // to |web_contents|.
+  static void MaybeCreate(content::WebContents* web_contents);
   ~SafeBrowsingTriggeredPopupBlocker() override;
 
-  bool ShouldApplyStrongPopupBlocker(
-      const content::OpenURLParams* open_url_params);
+  bool ShouldApplyAbusivePopupBlocker();
 
  private:
   // The |web_contents| and |observer_manager| are expected to be
@@ -97,7 +97,7 @@ class SafeBrowsingTriggeredPopupBlocker
 
   // Enabled state is governed by both a feature flag and a pref (which can be
   // controlled by enterprise policy).
-  static bool IsEnabled(const content::WebContents* web_contents);
+  static bool IsEnabled(content::WebContents* web_contents);
 
   // Data scoped to a single page. Will be reset at navigation commit.
   class PageData {

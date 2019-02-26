@@ -4025,9 +4025,7 @@ const char* kImplicityBypassedHosts[] = {
 
 const char* kUrlSchemes[] = {"http://", "https://", "ftp://"};
 
-// Tests that the implicit bypass rules do not affect when configured with
-// manual proxy settings.
-TEST_F(ProxyResolutionServiceTest, DontBypassWithManualSettings) {
+TEST_F(ProxyResolutionServiceTest, ImplicitlyBypassWithManualSettings) {
   // Use manual proxy settings that specify a single proxy for all traffic.
   ProxyConfig config;
   config.proxy_rules().ParseFromString("foopy1:8080");
@@ -4046,8 +4044,8 @@ TEST_F(ProxyResolutionServiceTest, DontBypassWithManualSettings) {
   EXPECT_THAT(rv, IsOk());
   EXPECT_EQ("foopy1:8080", info1.proxy_server().ToURI());
 
-  // Test that localhost and link-local URLs do not bypass the proxy
-  // (independent of the URL scheme).
+  // Test that localhost and link-local URLs bypass the proxy (independent of
+  // the URL scheme).
   for (auto* host : kImplicityBypassedHosts) {
     for (auto* scheme : kUrlSchemes) {
       auto url = GURL(std::string(scheme) + std::string(host));
@@ -4059,13 +4057,12 @@ TEST_F(ProxyResolutionServiceTest, DontBypassWithManualSettings) {
           service->ResolveProxy(url, std::string(), &info, callback.callback(),
                                 &request, NetLogWithSource());
       EXPECT_THAT(rv, IsOk());
-      EXPECT_FALSE(info.is_direct());
-      EXPECT_EQ("foopy1:8080", info.proxy_server().ToURI());
+      EXPECT_TRUE(info.is_direct());
     }
   }
 }
 
-// Test that the when using a PAC script (sourced via auto-detect),
+// Test that the when using a PAC script (sourced via auto-detect) certain
 // localhost names are implicitly bypassed.
 TEST_F(ProxyResolutionServiceTest, ImplicitlyBypassWithPac) {
   ProxyConfig config;

@@ -53,11 +53,12 @@ class FeedSchedulerBridge {
                     const base::android::JavaRef<jobject>& j_this,
                     const base::android::JavaRef<jobject>& j_callback);
 
-  void OnTaskReschedule(JNIEnv* env,
-                        const base::android::JavaRef<jobject>& j_this);
-
   void OnSuggestionConsumed(JNIEnv* env,
                             const base::android::JavaRef<jobject>& j_this);
+
+  void OnArticlesCleared(JNIEnv* env,
+                         const base::android::JavaRef<jobject>& j_this,
+                         jboolean j_suppress_refreshes);
 
  private:
   // Callable by native code to invoke Java code. Sends a request to the Feed
@@ -70,6 +71,9 @@ class FeedSchedulerBridge {
 
   // Cancels previously scheduled background task.
   void CancelWakeUp();
+
+  void FixedTimerHandlingDone(
+      base::android::ScopedJavaGlobalRef<jobject> j_callback);
 
   // Reference to the Java half of this bridge. Always valid.
   base::android::ScopedJavaGlobalRef<jobject> j_this_;

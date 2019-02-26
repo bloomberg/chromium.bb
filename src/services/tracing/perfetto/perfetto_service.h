@@ -12,6 +12,7 @@
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/tracing/public/cpp/perfetto/task_runner.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
@@ -58,6 +59,7 @@ class PerfettoService : public mojom::PerfettoService {
   PerfettoTaskRunner perfetto_task_runner_;
   std::unique_ptr<perfetto::TracingService> service_;
   mojo::BindingSet<mojom::PerfettoService, service_manager::Identity> bindings_;
+  mojo::StrongBindingSet<mojom::ProducerHost> producer_bindings_;
   SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(PerfettoService);

@@ -74,10 +74,6 @@
   [[self scrollView] setDelegate:nil];
 }
 
-- (void)loadURLWithParams:(const web::NavigationManager::WebLoadParams&)params {
-  [_loader loadURLWithParams:params];
-}
-
 - (OverscrollActionsController*)overscrollActionsController {
   return _overscrollActionsController;
 }

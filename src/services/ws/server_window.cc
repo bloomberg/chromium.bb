@@ -168,10 +168,6 @@ class ServerWindowEventHandler : public ui::EventHandler {
 
   // ui::EventHandler:
   void OnEvent(ui::Event* event) override {
-    // This code doesn't handle PointerEvents, because they should never be
-    // generated at this layer.
-    DCHECK(!event->IsPointerEvent());
-
     if (event->phase() != ui::EP_PRETARGET) {
       // All work is done in the pre-phase. If this branch is hit, it means
       // event propagation was not stopped, and normal processing should
@@ -234,8 +230,6 @@ class ServerWindowEventHandler : public ui::EventHandler {
     switch (type) {
       case ui::ET_MOUSE_CAPTURE_CHANGED:
       case ui::ET_MOUSE_ENTERED:
-      case ui::ET_POINTER_CAPTURE_CHANGED:
-      case ui::ET_POINTER_ENTERED:
         return true;
       default:
         break;
@@ -338,10 +332,6 @@ class TopLevelEventHandler : public ServerWindowEventHandler {
 
   // ServerWindowEventHandler:
   void OnEvent(ui::Event* event) override {
-    // This code doesn't handle PointerEvents, because they should never be
-    // generated at this layer.
-    DCHECK(!event->IsPointerEvent());
-
     if (event->phase() != ui::EP_PRETARGET) {
       // All work is done in the pre-phase. If this branch is hit, it means
       // event propagation was not stopped, and normal processing should

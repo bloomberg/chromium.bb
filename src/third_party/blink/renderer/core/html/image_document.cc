@@ -25,11 +25,11 @@
 #include "third_party/blink/renderer/core/html/image_document.h"
 
 #include <limits>
+#include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/renderer/core/dom/events/event_listener.h"
 #include "third_party/blink/renderer/core/dom/raw_data_document_parser.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
-#include "third_party/blink/renderer/core/frame/content_settings_client.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -57,18 +57,21 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 class ImageEventListener : public EventListener {
  public:
   static ImageEventListener* Create(ImageDocument* document) {
-    return new ImageEventListener(document);
+    return MakeGarbageCollected<ImageEventListener>(document);
   }
   static const ImageEventListener* Cast(const EventListener* listener) {
     return listener->GetType() == kImageEventListenerType
                ? static_cast<const ImageEventListener*>(listener)
                : nullptr;
   }
+
+  ImageEventListener(ImageDocument* document)
+      : EventListener(kImageEventListenerType), doc_(document) {}
 
   bool operator==(const EventListener& other) const override;
 
@@ -78,10 +81,7 @@ class ImageEventListener : public EventListener {
   }
 
  private:
-  ImageEventListener(ImageDocument* document)
-      : EventListener(kImageEventListenerType), doc_(document) {}
-
-  void handleEvent(ExecutionContext*, Event*) override;
+  void Invoke(ExecutionContext*, Event*) override;
 
   Member<ImageDocument> doc_;
 };
@@ -89,17 +89,17 @@ class ImageEventListener : public EventListener {
 class ImageDocumentParser : public RawDataDocumentParser {
  public:
   static ImageDocumentParser* Create(ImageDocument* document) {
-    return new ImageDocumentParser(document);
+    return MakeGarbageCollected<ImageDocumentParser>(document);
   }
+
+  ImageDocumentParser(ImageDocument* document)
+      : RawDataDocumentParser(document) {}
 
   ImageDocument* GetDocument() const {
     return ToImageDocument(RawDataDocumentParser::GetDocument());
   }
 
  private:
-  ImageDocumentParser(ImageDocument* document)
-      : RawDataDocumentParser(document) {}
-
   void AppendBytes(const char*, size_t) override;
   void Finish() override;
 };
@@ -128,8 +128,10 @@ void ImageDocumentParser::AppendBytes(const char* data, size_t length) {
 
   LocalFrame* frame = GetDocument()->GetFrame();
   Settings* settings = frame->GetSettings();
-  if (!frame->GetContentSettingsClient()->AllowImage(
-          !settings || settings->GetImagesEnabled(), GetDocument()->Url()))
+  bool allow_image = !settings || settings->GetImagesEnabled();
+  if (auto* client = frame->GetContentSettingsClient())
+    allow_image = client->AllowImage(allow_image, GetDocument()->Url());
+  if (!allow_image)
     return;
 
   if (GetDocument()->CachedImageResourceDeprecated()) {
@@ -223,20 +225,20 @@ void ImageDocument::CreateDocumentStructure() {
 
   HTMLHeadElement* head = HTMLHeadElement::Create(*this);
   HTMLMetaElement* meta = HTMLMetaElement::Create(*this);
-  meta->setAttribute(nameAttr, "viewport");
-  meta->setAttribute(contentAttr, "width=device-width, minimum-scale=0.1");
+  meta->setAttribute(kNameAttr, "viewport");
+  meta->setAttribute(kContentAttr, "width=device-width, minimum-scale=0.1");
   head->AppendChild(meta);
 
   HTMLBodyElement* body = HTMLBodyElement::Create(*this);
 
   if (ShouldShrinkToFit()) {
     // Display the image prominently centered in the frame.
-    body->setAttribute(styleAttr, "margin: 0px; background: #0e0e0e;");
+    body->setAttribute(kStyleAttr, "margin: 0px; background: #0e0e0e;");
 
     // See w3c example on how to center an element:
     // https://www.w3.org/Style/Examples/007/center.en.html
     div_element_ = HTMLDivElement::Create(*this);
-    div_element_->setAttribute(styleAttr,
+    div_element_->setAttribute(kStyleAttr,
                                "display: flex;"
                                "flex-direction: column;"
                                "justify-content: center;"
@@ -255,7 +257,7 @@ void ImageDocument::CreateDocumentStructure() {
     ShadowRoot& shadow_root = body->EnsureUserAgentShadowRoot();
     shadow_root.AppendChild(div_element_);
   } else {
-    body->setAttribute(styleAttr, "margin: 0px;");
+    body->setAttribute(kStyleAttr, "margin: 0px;");
   }
 
   WillInsertBody();
@@ -274,14 +276,15 @@ void ImageDocument::CreateDocumentStructure() {
     // Add event listeners
     EventListener* listener = ImageEventListener::Create(this);
     if (LocalDOMWindow* dom_window = domWindow())
-      dom_window->addEventListener(EventTypeNames::resize, listener, false);
+      dom_window->addEventListener(event_type_names::kResize, listener, false);
 
     if (shrink_to_fit_mode_ == kDesktop) {
-      image_element_->addEventListener(EventTypeNames::click, listener, false);
-    } else if (shrink_to_fit_mode_ == kViewport) {
-      image_element_->addEventListener(EventTypeNames::touchend, listener,
+      image_element_->addEventListener(event_type_names::kClick, listener,
                                        false);
-      image_element_->addEventListener(EventTypeNames::touchcancel, listener,
+    } else if (shrink_to_fit_mode_ == kViewport) {
+      image_element_->addEventListener(event_type_names::kTouchend, listener,
+                                       false);
+      image_element_->addEventListener(event_type_names::kTouchcancel, listener,
                                        false);
     }
   }
@@ -407,7 +410,7 @@ void ImageDocument::UpdateImageStyle() {
     }
   }
 
-  image_element_->setAttribute(styleAttr, image_style.ToAtomicString());
+  image_element_->setAttribute(kStyleAttr, image_style.ToAtomicString());
 }
 
 void ImageDocument::ImageUpdated() {
@@ -559,14 +562,15 @@ void ImageDocument::Trace(blink::Visitor* visitor) {
 
 // --------
 
-void ImageEventListener::handleEvent(ExecutionContext*, Event* event) {
-  if (event->type() == EventTypeNames::resize) {
+void ImageEventListener::Invoke(ExecutionContext*, Event* event) {
+  if (event->type() == event_type_names::kResize) {
     doc_->WindowSizeChanged();
-  } else if (event->type() == EventTypeNames::click && event->IsMouseEvent()) {
+  } else if (event->type() == event_type_names::kClick &&
+             event->IsMouseEvent()) {
     MouseEvent* mouse_event = ToMouseEvent(event);
     doc_->ImageClicked(mouse_event->x(), mouse_event->y());
-  } else if ((event->type() == EventTypeNames::touchend ||
-              event->type() == EventTypeNames::touchcancel) &&
+  } else if ((event->type() == event_type_names::kTouchend ||
+              event->type() == event_type_names::kTouchcancel) &&
              event->IsTouchEvent()) {
     doc_->UpdateImageStyle();
   }

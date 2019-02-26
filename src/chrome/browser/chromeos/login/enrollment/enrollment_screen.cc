@@ -145,13 +145,15 @@ void EnrollmentScreen::SetParameters(
 
 void EnrollmentScreen::SetConfig() {
   config_ = enrollment_config_;
-  if (current_auth_ == AUTH_OAUTH &&
-      enrollment_config_.mode ==
-          policy::EnrollmentConfig::MODE_ATTESTATION_SERVER_FORCED) {
-    config_.mode = policy::EnrollmentConfig::MODE_ATTESTATION_MANUAL_FALLBACK;
+  if (current_auth_ == AUTH_OAUTH && config_.is_mode_attestation_server()) {
+    config_.mode =
+        config_.mode ==
+                policy::EnrollmentConfig::MODE_ATTESTATION_INITIAL_SERVER_FORCED
+            ? policy::EnrollmentConfig::MODE_ATTESTATION_INITIAL_MANUAL_FALLBACK
+            : policy::EnrollmentConfig::MODE_ATTESTATION_MANUAL_FALLBACK;
   } else if (current_auth_ == AUTH_ATTESTATION &&
              !enrollment_config_.is_mode_attestation()) {
-    config_.mode = enrollment_config_.is_attestation_forced()
+    config_.mode = config_.is_attestation_forced()
                        ? policy::EnrollmentConfig::MODE_ATTESTATION_LOCAL_FORCED
                        : policy::EnrollmentConfig::MODE_ATTESTATION;
   }
@@ -192,6 +194,11 @@ void EnrollmentScreen::OnAuthCleared(const base::Closure& callback) {
 
 void EnrollmentScreen::Show() {
   UMA(policy::kMetricEnrollmentTriggered);
+  if (enrollment_config_.mode ==
+      policy::EnrollmentConfig::MODE_ENROLLED_ROLLBACK) {
+    RestoreAfterRollback();
+    return;
+  }
   switch (current_auth_) {
     case AUTH_OAUTH:
       ShowInteractiveScreen();
@@ -213,6 +220,15 @@ void EnrollmentScreen::ShowInteractiveScreen() {
 void EnrollmentScreen::Hide() {
   view_->Hide();
   weak_ptr_factory_.InvalidateWeakPtrs();
+}
+
+void EnrollmentScreen::RestoreAfterRollback() {
+  VLOG(1) << "Restoring after version rollback.";
+  elapsed_timer_.reset(new base::ElapsedTimer());
+  view_->Show();
+  view_->ShowEnrollmentSpinnerScreen();
+  CreateEnrollmentHelper();
+  enrollment_helper_->RestoreAfterRollback();
 }
 
 void EnrollmentScreen::AuthenticateUsingAttestation() {
@@ -267,24 +283,27 @@ void EnrollmentScreen::ProcessRetry() {
 }
 
 void EnrollmentScreen::OnCancel() {
-  if (AdvanceToNextAuth()) {
-    Show();
-    return;
-  }
-
   if (enrollment_succeeded_) {
     // Cancellation is the same to confirmation after the successful enrollment.
     OnConfirmationClosed();
     return;
   }
 
+  // Record cancellation for that one enrollment mode.
+  UMA(policy::kMetricEnrollmentCancelled);
+
+  if (AdvanceToNextAuth()) {
+    Show();
+    return;
+  }
+
+  // Record the total time for all auth attempts until final cancellation.
+  if (elapsed_timer_)
+    UMA_ENROLLMENT_TIME(kMetricEnrollmentTimeCancel, elapsed_timer_);
+
   on_joined_callback_.Reset();
   if (authpolicy_login_helper_)
     authpolicy_login_helper_->CancelRequestsAndRestart();
-
-  UMA(policy::kMetricEnrollmentCancelled);
-  if (elapsed_timer_)
-    UMA_ENROLLMENT_TIME(kMetricEnrollmentTimeCancel, elapsed_timer_);
 
   const ScreenExitCode exit_code =
       config_.is_forced() ? ScreenExitCode::ENTERPRISE_ENROLLMENT_BACK
@@ -343,13 +362,17 @@ void EnrollmentScreen::OnEnrollmentError(policy::EnrollmentStatus status) {
   // based enrollment and we have a fallback authentication, show it.
   if (status.status() == policy::EnrollmentStatus::REGISTRATION_FAILED &&
       status.client_status() == policy::DM_STATUS_SERVICE_DEVICE_NOT_FOUND &&
-      current_auth_ == AUTH_ATTESTATION && AdvanceToNextAuth()) {
-    Show();
-  } else {
-    view_->ShowEnrollmentStatus(status);
-    if (WizardController::UsingHandsOffEnrollment())
-      AutomaticRetry();
+      current_auth_ == AUTH_ATTESTATION) {
+    UMA(policy::kMetricEnrollmentDeviceNotPreProvisioned);
+    if (AdvanceToNextAuth()) {
+      Show();
+      return;
+    }
   }
+
+  view_->ShowEnrollmentStatus(status);
+  if (WizardController::UsingHandsOffEnrollment())
+    AutomaticRetry();
 }
 
 void EnrollmentScreen::OnOtherError(
@@ -398,6 +421,12 @@ void EnrollmentScreen::OnDeviceAttributeUpdatePermission(bool granted) {
         base::BindOnce(&EnrollmentScreen::ShowEnrollmentStatusOnSuccess,
                        weak_ptr_factory_.GetWeakPtr()));
   }
+}
+
+void EnrollmentScreen::OnRestoreAfterRollbackCompleted() {
+  StartupUtils::MarkDeviceRegistered(
+      base::BindOnce(&EnrollmentScreen::ShowEnrollmentStatusOnSuccess,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void EnrollmentScreen::OnDeviceAttributeUploadCompleted(bool success) {
@@ -472,7 +501,9 @@ void EnrollmentScreen::ShowEnrollmentStatusOnSuccess() {
   if (elapsed_timer_)
     UMA_ENROLLMENT_TIME(kMetricEnrollmentTimeSuccess, elapsed_timer_);
   if (WizardController::UsingHandsOffEnrollment() ||
-      WizardController::skip_enrollment_prompts()) {
+      WizardController::skip_enrollment_prompts() ||
+      enrollment_config_.mode ==
+          policy::EnrollmentConfig::MODE_ENROLLED_ROLLBACK) {
     OnConfirmationClosed();
   } else {
     view_->ShowEnrollmentStatus(
@@ -491,8 +522,8 @@ void EnrollmentScreen::ShowSigninScreen() {
 
 void EnrollmentScreen::RecordEnrollmentErrorMetrics() {
   enrollment_failed_once_ = true;
-  //  TODO(drcrash): Maybe create multiple metrics (http://crbug.com/640313)?
-  if (elapsed_timer_)
+  //  TODO(crbug.com/896793): Have other metrics for each auth mechanism.
+  if (elapsed_timer_ && current_auth_ == last_auth_)
     UMA_ENROLLMENT_TIME(kMetricEnrollmentTimeFailure, elapsed_timer_);
 }
 

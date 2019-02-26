@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool PageBreakBefore::ParseShorthand(
     bool important,
@@ -19,15 +19,16 @@ bool PageBreakBefore::ParseShorthand(
     const CSSParserLocalContext&,
     HeapVector<CSSPropertyValue, 256>& properties) const {
   CSSValueID value;
-  if (!CSSParsingUtils::ConsumeFromPageBreakBetween(range, value)) {
+  if (!css_parsing_utils::ConsumeFromPageBreakBetween(range, value)) {
     return false;
   }
 
   DCHECK_NE(value, CSSValueInvalid);
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyBreakBefore, CSSPropertyPageBreakBefore,
       *CSSIdentifierValue::Create(value), important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
   return true;
 }
 
@@ -40,5 +41,5 @@ const CSSValue* PageBreakBefore::CSSValueFromComputedStyleInternal(
   return ComputedStyleUtils::ValueForPageBreakBetween(style.BreakBefore());
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink

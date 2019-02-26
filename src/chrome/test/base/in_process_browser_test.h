@@ -97,8 +97,6 @@ class ScopedBundleSwizzlerMac;
 // By default a single Browser is created in BrowserMain(). You can obviously
 // create more as needed.
 
-// InProcessBrowserTest disables the sandbox when running.
-//
 // See ui_test_utils for a handful of methods designed for use with this class.
 //
 // It's possible to write browser tests that span a restart by splitting each

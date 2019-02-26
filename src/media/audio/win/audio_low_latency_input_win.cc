@@ -43,13 +43,14 @@ enum FormatRelatedInitError {
   kCount
 };
 
-bool IsSupportedFormatForConversion(const WAVEFORMATEX& format) {
-  if (format.nSamplesPerSec < limits::kMinSampleRate ||
-      format.nSamplesPerSec > limits::kMaxSampleRate) {
+bool IsSupportedFormatForConversion(WAVEFORMATEXTENSIBLE* format_ex) {
+  WAVEFORMATEX* format = &format_ex->Format;
+  if (format->nSamplesPerSec < limits::kMinSampleRate ||
+      format->nSamplesPerSec > limits::kMaxSampleRate) {
     return false;
   }
 
-  switch (format.wBitsPerSample) {
+  switch (format->wBitsPerSample) {
     case 8:
     case 16:
     case 32:
@@ -58,7 +59,7 @@ bool IsSupportedFormatForConversion(const WAVEFORMATEX& format) {
       return false;
   }
 
-  if (GuessChannelLayout(format.nChannels) == CHANNEL_LAYOUT_UNSUPPORTED) {
+  if (GuessChannelLayout(format->nChannels) == CHANNEL_LAYOUT_UNSUPPORTED) {
     LOG(ERROR) << "Hardware configuration not supported for audio conversion";
     return false;
   }
@@ -85,27 +86,34 @@ WASAPIAudioInputStream::WASAPIAudioInputStream(
   const SampleFormat kSampleFormat = kSampleFormatS16;
 
   // Set up the desired output format specified by the client.
-  output_format_.wFormatTag = WAVE_FORMAT_PCM;
-  output_format_.nChannels = params.channels();
-  output_format_.nSamplesPerSec = params.sample_rate();
-  output_format_.wBitsPerSample = SampleFormatToBitsPerChannel(kSampleFormat);
-  output_format_.nBlockAlign =
-      (output_format_.wBitsPerSample / 8) * output_format_.nChannels;
-  output_format_.nAvgBytesPerSec =
-      output_format_.nSamplesPerSec * output_format_.nBlockAlign;
-  output_format_.cbSize = 0;
+  DVLOG(1) << params.AsHumanReadableString();
+  WAVEFORMATEX* format = &output_format_.Format;
+  format->wFormatTag = WAVE_FORMAT_EXTENSIBLE;
+  format->nChannels = params.channels();
+  format->nSamplesPerSec = params.sample_rate();
+  format->wBitsPerSample = SampleFormatToBitsPerChannel(kSampleFormat);
+  format->nBlockAlign = (format->wBitsPerSample / 8) * format->nChannels;
+  format->nAvgBytesPerSec = format->nSamplesPerSec * format->nBlockAlign;
+  format->cbSize = sizeof(WAVEFORMATEXTENSIBLE) - sizeof(WAVEFORMATEX);
+
+  // Add the parts which are unique to WAVE_FORMAT_EXTENSIBLE.
+  output_format_.Samples.wValidBitsPerSample = format->wBitsPerSample;
+  output_format_.dwChannelMask =
+      CoreAudioUtil::GetChannelConfig(device_id, eCapture);
+  output_format_.SubFormat = KSDATAFORMAT_SUBTYPE_PCM;
 
   // Set the input (capture) format to the desired output format. In most cases,
   // it will be used unchanged.
   input_format_ = output_format_;
+  DVLOG(1) << CoreAudioUtil::WaveFormatToString(&input_format_);
 
   // Size in bytes of each audio frame.
-  frame_size_bytes_ = input_format_.nBlockAlign;
+  frame_size_bytes_ = format->nBlockAlign;
 
   // Store size of audio packets which we expect to get from the audio
   // endpoint device in each capture event.
   packet_size_bytes_ = params.GetBytesPerBuffer(kSampleFormat);
-  packet_size_frames_ = packet_size_bytes_ / input_format_.nBlockAlign;
+  packet_size_frames_ = packet_size_bytes_ / format->nBlockAlign;
   DVLOG(1) << "Number of bytes per audio frame  : " << frame_size_bytes_;
   DVLOG(1) << "Number of audio frames per packet: " << packet_size_frames_;
 
@@ -127,7 +135,6 @@ WASAPIAudioInputStream::~WASAPIAudioInputStream() {
 
 bool WASAPIAudioInputStream::Open() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(OPEN_RESULT_OK, open_result_);
 
   // Verify that we are not already opened.
   if (opened_) {
@@ -405,8 +412,8 @@ void WASAPIAudioInputStream::Run() {
     ++buffers_required;
 
   DCHECK(!fifo_);
-  fifo_.reset(new AudioBlockFifo(input_format_.nChannels, packet_size_frames_,
-                                 buffers_required));
+  fifo_.reset(new AudioBlockFifo(input_format_.Format.nChannels,
+                                 packet_size_frames_, buffers_required));
 
   DVLOG(1) << "AudioBlockFifo buffer count: " << buffers_required;
 
@@ -451,7 +458,7 @@ void WASAPIAudioInputStream::Run() {
 
 void WASAPIAudioInputStream::PullCaptureDataAndPushToSink() {
   TRACE_EVENT1("audio", "WASAPIAudioInputStream::PullCaptureDataAndPushToSink",
-               "sample rate", input_format_.nSamplesPerSec);
+               "sample rate", input_format_.Format.nSamplesPerSec);
 
   UINT64 last_device_position = 0;
 
@@ -527,7 +534,7 @@ void WASAPIAudioInputStream::PullCaptureDataAndPushToSink() {
 
     // Adjust |capture_time| for the FIFO before pushing.
     capture_time -= AudioTimestampHelper::FramesToTime(
-        fifo_->GetAvailableFrames(), input_format_.nSamplesPerSec);
+        fifo_->GetAvailableFrames(), input_format_.Format.nSamplesPerSec);
 
     // TODO(grunell): Since we check |hr == AUDCLNT_S_BUFFER_EMPTY| above,
     // should we instead assert that |num_frames_to_read != 0|?
@@ -536,7 +543,7 @@ void WASAPIAudioInputStream::PullCaptureDataAndPushToSink() {
         fifo_->PushSilence(num_frames_to_read);
       } else {
         fifo_->Push(data_ptr, num_frames_to_read,
-                    input_format_.wBitsPerSample / 8);
+                    input_format_.Format.wBitsPerSample / 8);
       }
     }
 
@@ -565,13 +572,13 @@ void WASAPIAudioInputStream::PullCaptureDataAndPushToSink() {
 
         // Move the capture time forward for each vended block.
         capture_time += AudioTimestampHelper::FramesToTime(
-            convert_bus_->frames(), output_format_.nSamplesPerSec);
+            convert_bus_->frames(), output_format_.Format.nSamplesPerSec);
       } else {
         sink_->OnData(fifo_->Consume(), capture_time, volume);
 
         // Move the capture time forward for each vended block.
         capture_time += AudioTimestampHelper::FramesToTime(
-            packet_size_frames_, input_format_.nSamplesPerSec);
+            packet_size_frames_, input_format_.Format.nSamplesPerSec);
       }
     }
   }  // while (true)
@@ -652,39 +659,11 @@ HRESULT WASAPIAudioInputStream::SetCaptureDevice() {
 HRESULT WASAPIAudioInputStream::GetAudioEngineStreamFormat() {
   HRESULT hr = S_OK;
 #ifndef NDEBUG
-  // The GetMixFormat() method retrieves the stream format that the
-  // audio engine uses for its internal processing of shared-mode streams.
-  // The method always uses a WAVEFORMATEXTENSIBLE structure, instead
-  // of a stand-alone WAVEFORMATEX structure, to specify the format.
-  // An WAVEFORMATEXTENSIBLE structure can specify both the mapping of
-  // channels to speakers and the number of bits of precision in each sample.
-  base::win::ScopedCoMem<WAVEFORMATEXTENSIBLE> format_ex;
-  hr =
-      audio_client_->GetMixFormat(reinterpret_cast<WAVEFORMATEX**>(&format_ex));
-
-  // See http://msdn.microsoft.com/en-us/windows/hardware/gg463006#EFH
-  // for details on the WAVE file format.
-  WAVEFORMATEX format = format_ex->Format;
-  DVLOG(2) << "WAVEFORMATEX:";
-  DVLOG(2) << "  wFormatTags    : 0x" << std::hex << format.wFormatTag;
-  DVLOG(2) << "  nChannels      : " << format.nChannels;
-  DVLOG(2) << "  nSamplesPerSec : " << format.nSamplesPerSec;
-  DVLOG(2) << "  nAvgBytesPerSec: " << format.nAvgBytesPerSec;
-  DVLOG(2) << "  nBlockAlign    : " << format.nBlockAlign;
-  DVLOG(2) << "  wBitsPerSample : " << format.wBitsPerSample;
-  DVLOG(2) << "  cbSize         : " << format.cbSize;
-
-  DVLOG(2) << "WAVEFORMATEXTENSIBLE:";
-  DVLOG(2) << " wValidBitsPerSample: "
-           << format_ex->Samples.wValidBitsPerSample;
-  DVLOG(2) << " dwChannelMask      : 0x" << std::hex
-           << format_ex->dwChannelMask;
-  if (format_ex->SubFormat == KSDATAFORMAT_SUBTYPE_PCM)
-    DVLOG(2) << " SubFormat          : KSDATAFORMAT_SUBTYPE_PCM";
-  else if (format_ex->SubFormat == KSDATAFORMAT_SUBTYPE_IEEE_FLOAT)
-    DVLOG(2) << " SubFormat          : KSDATAFORMAT_SUBTYPE_IEEE_FLOAT";
-  else if (format_ex->SubFormat == KSDATAFORMAT_SUBTYPE_WAVEFORMATEX)
-    DVLOG(2) << " SubFormat          : KSDATAFORMAT_SUBTYPE_WAVEFORMATEX";
+  base::win::ScopedCoMem<WAVEFORMATEX> format;
+  hr = audio_client_->GetMixFormat(&format);
+  if (FAILED(hr))
+    return hr;
+  DVLOG(2) << CoreAudioUtil::WaveFormatToString(format.get());
 #endif
   return hr;
 }
@@ -701,7 +680,8 @@ bool WASAPIAudioInputStream::DesiredFormatIsSupported(HRESULT* hr) {
   // the audio engine can mix only PCM streams.
   base::win::ScopedCoMem<WAVEFORMATEX> closest_match;
   HRESULT hresult = audio_client_->IsFormatSupported(
-      AUDCLNT_SHAREMODE_SHARED, &input_format_, &closest_match);
+      AUDCLNT_SHAREMODE_SHARED,
+      reinterpret_cast<const WAVEFORMATEX*>(&input_format_), &closest_match);
   DLOG_IF(ERROR, hresult == S_FALSE)
       << "Format is not supported but a closest match exists.";
 
@@ -710,39 +690,28 @@ bool WASAPIAudioInputStream::DesiredFormatIsSupported(HRESULT* hr) {
     // can provide.  If we succeed in initializing the audio client in this
     // format and are able to convert from this format, we will do that
     // conversion.
-    input_format_.nChannels = closest_match->nChannels;
-    input_format_.nSamplesPerSec = closest_match->nSamplesPerSec;
+    WAVEFORMATEX* input_format = &input_format_.Format;
+    input_format->nChannels = closest_match->nChannels;
+    input_format->nSamplesPerSec = closest_match->nSamplesPerSec;
 
     // If the closest match is fixed point PCM (WAVE_FORMAT_PCM or
     // KSDATAFORMAT_SUBTYPE_PCM), we use the closest match's bits per sample.
     // Otherwise, we keep the bits sample as is since we still request fixed
     // point PCM. In that case the closest match is typically in float format
     // (KSDATAFORMAT_SUBTYPE_IEEE_FLOAT).
-    auto format_is_pcm = [](const WAVEFORMATEX* format) {
-      if (format->wFormatTag == WAVE_FORMAT_PCM)
-        return true;
-      if (format->wFormatTag == WAVE_FORMAT_EXTENSIBLE) {
-        const WAVEFORMATEXTENSIBLE* format_ex =
-            reinterpret_cast<const WAVEFORMATEXTENSIBLE*>(format);
-        return format_ex->SubFormat == KSDATAFORMAT_SUBTYPE_PCM;
-      }
-      return false;
-    };
-    if (format_is_pcm(closest_match))
-      input_format_.wBitsPerSample = closest_match->wBitsPerSample;
+    if (CoreAudioUtil::WaveFormatWrapper(closest_match.get()).IsPcm()) {
+      input_format->wBitsPerSample = closest_match->wBitsPerSample;
+    }
 
-    input_format_.nBlockAlign =
-        (input_format_.wBitsPerSample / 8) * input_format_.nChannels;
-    input_format_.nAvgBytesPerSec =
-        input_format_.nSamplesPerSec * input_format_.nBlockAlign;
+    input_format->nBlockAlign =
+        (input_format->wBitsPerSample / 8) * input_format->nChannels;
+    input_format->nAvgBytesPerSec =
+        input_format->nSamplesPerSec * input_format->nBlockAlign;
 
-    if (IsSupportedFormatForConversion(input_format_)) {
-      DVLOG(1) << "Will convert capture audio from: \nbits: "
-               << input_format_.wBitsPerSample
-               << "\nsample rate: " << input_format_.nSamplesPerSec
-               << "\nchannels: " << input_format_.nChannels
-               << "\nblock align: " << input_format_.nBlockAlign
-               << "\navg bytes per sec: " << input_format_.nAvgBytesPerSec;
+    if (IsSupportedFormatForConversion(&input_format_)) {
+      DVLOG(1) << "Will convert captured audio: \n"
+               << CoreAudioUtil::WaveFormatToString(&input_format_) << " ==> \n"
+               << CoreAudioUtil::WaveFormatToString(&output_format_);
 
       SetupConverterAndStoreFormatInfo();
 
@@ -763,22 +732,24 @@ void WASAPIAudioInputStream::SetupConverterAndStoreFormatInfo() {
   // Ideally, we want a 1:1 ratio between the buffers we get and the buffers
   // we give to OnData so that each buffer we receive from the OS can be
   // directly converted to a buffer that matches with what was asked for.
-  const double buffer_ratio =
-      output_format_.nSamplesPerSec / static_cast<double>(packet_size_frames_);
-  double new_frames_per_buffer = input_format_.nSamplesPerSec / buffer_ratio;
+  const double buffer_ratio = output_format_.Format.nSamplesPerSec /
+                              static_cast<double>(packet_size_frames_);
+  double new_frames_per_buffer =
+      input_format_.Format.nSamplesPerSec / buffer_ratio;
 
-  const auto input_layout = GuessChannelLayout(input_format_.nChannels);
+  const auto input_layout = GuessChannelLayout(input_format_.Format.nChannels);
   DCHECK_NE(CHANNEL_LAYOUT_UNSUPPORTED, input_layout);
-  const auto output_layout = GuessChannelLayout(output_format_.nChannels);
+  const auto output_layout =
+      GuessChannelLayout(output_format_.Format.nChannels);
   DCHECK_NE(CHANNEL_LAYOUT_UNSUPPORTED, output_layout);
 
   const AudioParameters input(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                              input_layout, input_format_.nSamplesPerSec,
+                              input_layout, input_format_.Format.nSamplesPerSec,
                               static_cast<int>(new_frames_per_buffer));
 
-  const AudioParameters output(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                               output_layout, output_format_.nSamplesPerSec,
-                               packet_size_frames_);
+  const AudioParameters output(
+      AudioParameters::AUDIO_PCM_LOW_LATENCY, output_layout,
+      output_format_.Format.nSamplesPerSec, packet_size_frames_);
 
   converter_.reset(new AudioConverter(input, output, false));
   converter_->AddInput(this);
@@ -786,11 +757,11 @@ void WASAPIAudioInputStream::SetupConverterAndStoreFormatInfo() {
   convert_bus_ = AudioBus::Create(output);
 
   // Update our packet size assumptions based on the new format.
-  const auto new_bytes_per_buffer =
-      static_cast<int>(new_frames_per_buffer) * input_format_.nBlockAlign;
-  packet_size_frames_ = new_bytes_per_buffer / input_format_.nBlockAlign;
+  const auto new_bytes_per_buffer = static_cast<int>(new_frames_per_buffer) *
+                                    input_format_.Format.nBlockAlign;
+  packet_size_frames_ = new_bytes_per_buffer / input_format_.Format.nBlockAlign;
   packet_size_bytes_ = new_bytes_per_buffer;
-  frame_size_bytes_ = input_format_.nBlockAlign;
+  frame_size_bytes_ = input_format_.Format.nBlockAlign;
 
   imperfect_buffer_size_conversion_ =
       std::modf(new_frames_per_buffer, &new_frames_per_buffer) != 0.0;
@@ -801,8 +772,8 @@ void WASAPIAudioInputStream::SetupConverterAndStoreFormatInfo() {
 HRESULT WASAPIAudioInputStream::InitializeAudioEngine() {
   DCHECK_EQ(OPEN_RESULT_OK, open_result_);
   DWORD flags;
-  // Use event-driven mode only fo regular input devices. For loopback the
-  // EVENTCALLBACK flag is specified when intializing
+  // Use event-driven mode only for regular input devices. For loopback the
+  // EVENTCALLBACK flag is specified when initializing
   // |audio_render_client_for_loopback_|.
   if (AudioDeviceDescription::IsLoopbackDevice(device_id_)) {
     flags = AUDCLNT_STREAMFLAGS_LOOPBACK | AUDCLNT_STREAMFLAGS_NOPERSIST;
@@ -825,7 +796,7 @@ HRESULT WASAPIAudioInputStream::InitializeAudioEngine() {
   HRESULT hr = audio_client_->Initialize(
       AUDCLNT_SHAREMODE_SHARED, flags, buffer_duration,
       0,  // device period, n/a for shared mode.
-      &input_format_,
+      reinterpret_cast<const WAVEFORMATEX*>(&input_format_),
       device_id_ == AudioDeviceDescription::kCommunicationsDeviceId
           ? &kCommunicationsSessionId
           : nullptr);
@@ -848,7 +819,7 @@ HRESULT WASAPIAudioInputStream::InitializeAudioEngine() {
   }
   const int endpoint_buffer_size_ms =
       static_cast<double>(endpoint_buffer_size_frames_ * 1000) /
-          input_format_.nSamplesPerSec +
+          input_format_.Format.nSamplesPerSec +
       0.5;  // Round to closest integer
   UMA_HISTOGRAM_CUSTOM_TIMES(
       "Media.Audio.Capture.Win.EndpointBufferSize",
@@ -917,7 +888,7 @@ HRESULT WASAPIAudioInputStream::InitializeAudioEngine() {
     hr = audio_render_client_for_loopback_->Initialize(
         AUDCLNT_SHAREMODE_SHARED,
         AUDCLNT_STREAMFLAGS_EVENTCALLBACK | AUDCLNT_STREAMFLAGS_NOPERSIST, 0, 0,
-        &input_format_, NULL);
+        reinterpret_cast<const WAVEFORMATEX*>(&input_format_), NULL);
     if (FAILED(hr)) {
       open_result_ = OPEN_RESULT_LOOPBACK_INIT_FAILED;
       return hr;
@@ -967,14 +938,17 @@ void WASAPIAudioInputStream::ReportOpenResult(HRESULT hr) const {
         "output format = %#x/%d/%ld/%d/%d/%ld/%d",
         // clang-format off
         open_result_, hr,
-        input_format_.wFormatTag, input_format_.nChannels,
-        input_format_.nSamplesPerSec, input_format_.wBitsPerSample,
-        input_format_.nBlockAlign, input_format_.nAvgBytesPerSec,
-        input_format_.cbSize,
-        output_format_.wFormatTag, output_format_.nChannels,
-        output_format_.nSamplesPerSec, output_format_.wBitsPerSample,
-        output_format_.nBlockAlign, output_format_.nAvgBytesPerSec,
-        output_format_.cbSize));
+        input_format_.Format.wFormatTag, input_format_.Format.nChannels,
+        input_format_.Format.nSamplesPerSec,
+        input_format_.Format.wBitsPerSample,
+        input_format_.Format.nBlockAlign, input_format_.Format.nAvgBytesPerSec,
+        input_format_.Format.cbSize,
+        output_format_.Format.wFormatTag, output_format_.Format.nChannels,
+        output_format_.Format.nSamplesPerSec,
+        output_format_.Format.wBitsPerSample,
+        output_format_.Format.nBlockAlign,
+        output_format_.Format.nAvgBytesPerSec,
+        output_format_.Format.cbSize));
     // clang-format on
   }
 }
@@ -1052,7 +1026,7 @@ void WASAPIAudioInputStream::ReportAndResetGlitchStats() {
       total_concurrent_glitch_and_discontinuities_);
 
   double lost_frames_ms =
-      (total_lost_frames_ * 1000) / input_format_.nSamplesPerSec;
+      (total_lost_frames_ * 1000) / input_format_.Format.nSamplesPerSec;
   std::string log_message = base::StringPrintf(
       "WASAPIAIS: Total glitches=%d. Total frames lost=%llu (%.0lf ms). Total "
       "discontinuities=%d. Total concurrent glitch and discont=%d. Total low "
@@ -1067,7 +1041,7 @@ void WASAPIAudioInputStream::ReportAndResetGlitchStats() {
     UMA_HISTOGRAM_LONG_TIMES("Media.Audio.Capture.LostFramesInMs",
                              base::TimeDelta::FromMilliseconds(lost_frames_ms));
     int64_t largest_glitch_ms =
-        (largest_glitch_frames_ * 1000) / input_format_.nSamplesPerSec;
+        (largest_glitch_frames_ * 1000) / input_format_.Format.nSamplesPerSec;
     UMA_HISTOGRAM_CUSTOM_TIMES(
         "Media.Audio.Capture.LargestGlitchMs",
         base::TimeDelta::FromMilliseconds(largest_glitch_ms),

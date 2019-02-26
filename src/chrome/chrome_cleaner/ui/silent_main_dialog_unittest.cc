@@ -11,10 +11,10 @@
 
 #include "base/files/file_path.h"
 #include "chrome/chrome_cleaner/constants/uws_id.h"
-#include "chrome/chrome_cleaner/test/test_name_helper.h"
 #include "chrome/chrome_cleaner/test/test_pup_data.h"
 #include "chrome/chrome_cleaner/test/test_settings_util.h"
 #include "chrome/chrome_cleaner/ui/mock_main_dialog_delegate.h"
+#include "components/chrome_cleaner/test/test_name_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -8,9 +8,8 @@ namespace cc {
 namespace devtools_instrumentation {
 
 namespace internal {
-const char kCategory[] = TRACE_DISABLED_BY_DEFAULT("devtools.timeline");
-const char kCategoryFrame[] =
-    TRACE_DISABLED_BY_DEFAULT("devtools.timeline.frame");
+constexpr const char CategoryName::CategoryName::kTimeline[];
+constexpr const char CategoryName::CategoryName::kTimelineFrame[];
 const char kData[] = "data";
 const char kFrameId[] = "frameId";
 const char kLayerId[] = "layerId";
@@ -36,13 +35,14 @@ ScopedImageDecodeTask::ScopedImageDecodeTask(const void* image_ptr,
     : decode_type_(decode_type),
       task_type_(task_type),
       start_time_(base::TimeTicks::Now()) {
-  TRACE_EVENT_BEGIN1(internal::kCategory, internal::kImageDecodeTask,
-                     internal::kPixelRefId,
+  TRACE_EVENT_BEGIN1(internal::CategoryName::kTimeline,
+                     internal::kImageDecodeTask, internal::kPixelRefId,
                      reinterpret_cast<uint64_t>(image_ptr));
 }
 
 ScopedImageDecodeTask::~ScopedImageDecodeTask() {
-  TRACE_EVENT_END0(internal::kCategory, internal::kImageDecodeTask);
+  TRACE_EVENT_END0(internal::CategoryName::kTimeline,
+                   internal::kImageDecodeTask);
   base::TimeDelta duration = base::TimeTicks::Now() - start_time_;
   switch (task_type_) {
     case kInRaster:

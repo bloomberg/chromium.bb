@@ -28,13 +28,13 @@ CSSValue* ConsumeFontVariantList(CSSParserTokenRange& range) {
       // 'all' is only allowed in @font-face and with no other values.
       if (values->length())
         return nullptr;
-      return CSSPropertyParserHelpers::ConsumeIdent(range);
+      return css_property_parser_helpers::ConsumeIdent(range);
     }
     CSSIdentifierValue* font_variant =
-        CSSParsingUtils::ConsumeFontVariantCSS21(range);
+        css_parsing_utils::ConsumeFontVariantCSS21(range);
     if (font_variant)
       values->Append(*font_variant);
-  } while (CSSPropertyParserHelpers::ConsumeCommaIncludingWhitespace(range));
+  } while (css_property_parser_helpers::ConsumeCommaIncludingWhitespace(range));
 
   if (values->length())
     return values;
@@ -43,9 +43,9 @@ CSSValue* ConsumeFontVariantList(CSSParserTokenRange& range) {
 }
 
 CSSIdentifierValue* ConsumeFontDisplay(CSSParserTokenRange& range) {
-  return CSSPropertyParserHelpers::ConsumeIdent<CSSValueAuto, CSSValueBlock,
-                                                CSSValueSwap, CSSValueFallback,
-                                                CSSValueOptional>(range);
+  return css_property_parser_helpers::ConsumeIdent<
+      CSSValueAuto, CSSValueBlock, CSSValueSwap, CSSValueFallback,
+      CSSValueOptional>(range);
 }
 
 CSSValueList* ConsumeFontFaceUnicodeRange(CSSParserTokenRange& range) {
@@ -61,7 +61,7 @@ CSSValueList* ConsumeFontFaceUnicodeRange(CSSParserTokenRange& range) {
     if (start > end)
       return nullptr;
     values->Append(*CSSUnicodeRangeValue::Create(start, end));
-  } while (CSSPropertyParserHelpers::ConsumeCommaIncludingWhitespace(range));
+  } while (css_property_parser_helpers::ConsumeCommaIncludingWhitespace(range));
 
   return values;
 }
@@ -69,7 +69,7 @@ CSSValueList* ConsumeFontFaceUnicodeRange(CSSParserTokenRange& range) {
 CSSValue* ConsumeFontFaceSrcURI(CSSParserTokenRange& range,
                                 const CSSParserContext& context) {
   String url =
-      CSSPropertyParserHelpers::ConsumeUrlAsStringView(range).ToString();
+      css_property_parser_helpers::ConsumeUrlAsStringView(range).ToString();
   if (url.IsNull())
     return nullptr;
   CSSFontFaceSrcValue* uri_value(CSSFontFaceSrcValue::Create(
@@ -82,7 +82,8 @@ CSSValue* ConsumeFontFaceSrcURI(CSSParserTokenRange& range,
   // FIXME: https://drafts.csswg.org/css-fonts says that format() contains a
   // comma-separated list of strings, but CSSFontFaceSrcValue stores only one
   // format. Allowing one format for now.
-  CSSParserTokenRange args = CSSPropertyParserHelpers::ConsumeFunction(range);
+  CSSParserTokenRange args =
+      css_property_parser_helpers::ConsumeFunction(range);
   const CSSParserToken& arg = args.ConsumeIncludingWhitespace();
   if ((arg.GetType() != kStringToken) || !args.AtEnd())
     return nullptr;
@@ -92,7 +93,8 @@ CSSValue* ConsumeFontFaceSrcURI(CSSParserTokenRange& range,
 
 CSSValue* ConsumeFontFaceSrcLocal(CSSParserTokenRange& range,
                                   const CSSParserContext& context) {
-  CSSParserTokenRange args = CSSPropertyParserHelpers::ConsumeFunction(range);
+  CSSParserTokenRange args =
+      css_property_parser_helpers::ConsumeFunction(range);
   ContentSecurityPolicyDisposition should_check_content_security_policy =
       context.ShouldCheckContentSecurityPolicy();
   if (args.Peek().GetType() == kStringToken) {
@@ -103,7 +105,7 @@ CSSValue* ConsumeFontFaceSrcLocal(CSSParserTokenRange& range,
         arg.Value().ToString(), should_check_content_security_policy);
   }
   if (args.Peek().GetType() == kIdentToken) {
-    String family_name = CSSParsingUtils::ConcatenateFamilyName(args);
+    String family_name = css_parsing_utils::ConcatenateFamilyName(args);
     if (!args.AtEnd())
       return nullptr;
     return CSSFontFaceSrcValue::CreateLocal(
@@ -127,7 +129,7 @@ CSSValueList* ConsumeFontFaceSrc(CSSParserTokenRange& range,
     if (!parsed_value)
       return nullptr;
     values->Append(*parsed_value);
-  } while (CSSPropertyParserHelpers::ConsumeCommaIncludingWhitespace(range));
+  } while (css_property_parser_helpers::ConsumeCommaIncludingWhitespace(range));
   return values;
 }
 
@@ -141,9 +143,9 @@ CSSValue* AtRuleDescriptorParser::ParseFontFaceDescriptor(
   range.ConsumeWhitespace();
   switch (id) {
     case AtRuleDescriptorID::FontFamily:
-      if (CSSParsingUtils::ConsumeGenericFamily(range))
+      if (css_parsing_utils::ConsumeGenericFamily(range))
         return nullptr;
-      parsed_value = CSSParsingUtils::ConsumeFamilyName(range);
+      parsed_value = css_parsing_utils::ConsumeFamilyName(range);
       break;
     case AtRuleDescriptorID::Src:  // This is a list of urls or local
                                    // references.
@@ -157,21 +159,21 @@ CSSValue* AtRuleDescriptorParser::ParseFontFaceDescriptor(
       break;
     case AtRuleDescriptorID::FontStretch:
       parsed_value =
-          CSSParsingUtils::ConsumeFontStretch(range, kCSSFontFaceRuleMode);
+          css_parsing_utils::ConsumeFontStretch(range, kCSSFontFaceRuleMode);
       break;
     case AtRuleDescriptorID::FontStyle:
       parsed_value =
-          CSSParsingUtils::ConsumeFontStyle(range, kCSSFontFaceRuleMode);
+          css_parsing_utils::ConsumeFontStyle(range, kCSSFontFaceRuleMode);
       break;
     case AtRuleDescriptorID::FontVariant:
       parsed_value = ConsumeFontVariantList(range);
       break;
     case AtRuleDescriptorID::FontWeight:
       parsed_value =
-          CSSParsingUtils::ConsumeFontWeight(range, kCSSFontFaceRuleMode);
+          css_parsing_utils::ConsumeFontWeight(range, kCSSFontFaceRuleMode);
       break;
     case AtRuleDescriptorID::FontFeatureSettings:
-      parsed_value = CSSParsingUtils::ConsumeFontFeatureSettings(range);
+      parsed_value = css_parsing_utils::ConsumeFontFeatureSettings(range);
       break;
     default:
       break;

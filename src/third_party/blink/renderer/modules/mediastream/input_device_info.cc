@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/modules/mediastream/input_device_info.h"
 
 #include <algorithm>
+
+#include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/renderer/modules/mediastream/media_track_capabilities.h"
 
 namespace blink {
@@ -36,7 +38,8 @@ InputDeviceInfo* InputDeviceInfo::Create(const String& device_id,
                                          const String& label,
                                          const String& group_id,
                                          MediaDeviceType device_type) {
-  return new InputDeviceInfo(device_id, label, group_id, device_type);
+  return MakeGarbageCollected<InputDeviceInfo>(device_id, label, group_id,
+                                               device_type);
 }
 
 InputDeviceInfo::InputDeviceInfo(const String& device_id,
@@ -71,45 +74,47 @@ void InputDeviceInfo::SetVideoInputCapabilities(
   }
 }
 
-void InputDeviceInfo::getCapabilities(MediaTrackCapabilities& capabilities) {
+MediaTrackCapabilities* InputDeviceInfo::getCapabilities() const {
+  MediaTrackCapabilities* capabilities = MediaTrackCapabilities::Create();
+
   // If label is null, permissions have not been given and no capabilities
   // should be returned.
   if (label().IsEmpty())
-    return;
+    return capabilities;
 
-  capabilities.setDeviceId(deviceId());
-  capabilities.setGroupId(groupId());
+  capabilities->setDeviceId(deviceId());
+  capabilities->setGroupId(groupId());
 
   if (DeviceType() == MediaDeviceType::MEDIA_AUDIO_INPUT) {
-    capabilities.setEchoCancellation({true, false});
-    capabilities.setAutoGainControl({true, false});
-    capabilities.setNoiseSuppression({true, false});
+    capabilities->setEchoCancellation({true, false});
+    capabilities->setAutoGainControl({true, false});
+    capabilities->setNoiseSuppression({true, false});
   }
 
   if (DeviceType() == MediaDeviceType::MEDIA_VIDEO_INPUT) {
     if (!platform_capabilities_.width.empty()) {
-      LongRange width;
-      width.setMin(platform_capabilities_.width[0]);
-      width.setMax(platform_capabilities_.width[1]);
-      capabilities.setWidth(width);
+      LongRange* width = LongRange::Create();
+      width->setMin(platform_capabilities_.width[0]);
+      width->setMax(platform_capabilities_.width[1]);
+      capabilities->setWidth(width);
     }
     if (!platform_capabilities_.height.empty()) {
-      LongRange height;
-      height.setMin(platform_capabilities_.height[0]);
-      height.setMax(platform_capabilities_.height[1]);
-      capabilities.setHeight(height);
+      LongRange* height = LongRange::Create();
+      height->setMin(platform_capabilities_.height[0]);
+      height->setMax(platform_capabilities_.height[1]);
+      capabilities->setHeight(height);
     }
     if (!platform_capabilities_.aspect_ratio.empty()) {
-      DoubleRange aspect_ratio;
-      aspect_ratio.setMin(platform_capabilities_.aspect_ratio[0]);
-      aspect_ratio.setMax(platform_capabilities_.aspect_ratio[1]);
-      capabilities.setAspectRatio(aspect_ratio);
+      DoubleRange* aspect_ratio = DoubleRange::Create();
+      aspect_ratio->setMin(platform_capabilities_.aspect_ratio[0]);
+      aspect_ratio->setMax(platform_capabilities_.aspect_ratio[1]);
+      capabilities->setAspectRatio(aspect_ratio);
     }
     if (!platform_capabilities_.frame_rate.empty()) {
-      DoubleRange frame_rate;
-      frame_rate.setMin(platform_capabilities_.frame_rate[0]);
-      frame_rate.setMax(platform_capabilities_.frame_rate[1]);
-      capabilities.setFrameRate(frame_rate);
+      DoubleRange* frame_rate = DoubleRange::Create();
+      frame_rate->setMin(platform_capabilities_.frame_rate[0]);
+      frame_rate->setMax(platform_capabilities_.frame_rate[1]);
+      capabilities->setFrameRate(frame_rate);
     }
     Vector<String> facing_mode;
     switch (platform_capabilities_.facing_mode) {
@@ -128,8 +133,11 @@ void InputDeviceInfo::getCapabilities(MediaTrackCapabilities& capabilities) {
       case WebMediaStreamTrack::FacingMode::kNone:
         break;
     }
-    capabilities.setFacingMode(facing_mode);
+    capabilities->setFacingMode(facing_mode);
+    capabilities->setResizeMode({WebMediaStreamTrack::kResizeModeNone,
+                                 WebMediaStreamTrack::kResizeModeRescale});
   }
+  return capabilities;
 }
 
 }  // namespace blink

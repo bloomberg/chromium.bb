@@ -142,8 +142,9 @@ bool AggressiveDCEPass::AllExtensionsSupported() const {
 
 bool AggressiveDCEPass::IsDead(Instruction* inst) {
   if (IsLive(inst)) return false;
-  if (inst->IsBranch() && !IsStructuredHeader(context()->get_instr_block(inst),
-                                              nullptr, nullptr, nullptr))
+  if ((inst->IsBranch() || inst->opcode() == SpvOpUnreachable) &&
+      !IsStructuredHeader(context()->get_instr_block(inst), nullptr, nullptr,
+                          nullptr))
     return false;
   return true;
 }
@@ -195,6 +196,7 @@ bool AggressiveDCEPass::IsStructuredHeader(BasicBlock* bp,
 void AggressiveDCEPass::ComputeBlock2HeaderMaps(
     std::list<BasicBlock*>& structuredOrder) {
   block2headerBranch_.clear();
+  header2nextHeaderBranch_.clear();
   branch2merge_.clear();
   structured_order_index_.clear();
   std::stack<Instruction*> currentHeaderBranch;
@@ -217,8 +219,10 @@ void AggressiveDCEPass::ComputeBlock2HeaderMaps(
     uint32_t mergeBlockId;
     bool is_header =
         IsStructuredHeader(*bi, &mergeInst, &branchInst, &mergeBlockId);
+    // Map header block to next enclosing header.
+    if (is_header) header2nextHeaderBranch_[*bi] = currentHeaderBranch.top();
     // If this is a loop header, update state first so the block will map to
-    // the loop.
+    // itself.
     if (is_header && mergeInst->opcode() == SpvOpLoopMerge) {
       currentHeaderBranch.push(branchInst);
       branch2merge_[branchInst] = mergeInst;
@@ -380,7 +384,8 @@ bool AggressiveDCEPass::AggressiveDCE(Function* func) {
         } break;
         case SpvOpSwitch:
         case SpvOpBranch:
-        case SpvOpBranchConditional: {
+        case SpvOpBranchConditional:
+        case SpvOpUnreachable: {
           if (assume_branches_live.top()) {
             AddToWorklist(&*ii);
           }
@@ -427,24 +432,30 @@ bool AggressiveDCEPass::AggressiveDCE(Function* func) {
       AddToWorklist(get_def_use_mgr()->GetDef(liveInst->type_id()));
     }
     // If in a structured if or loop construct, add the controlling
-    // conditional branch and its merge. Any containing control construct
-    // is marked live when the merge and branch are processed out of the
-    // worklist.
+    // conditional branch and its merge.
     BasicBlock* blk = context()->get_instr_block(liveInst);
     Instruction* branchInst = block2headerBranch_[blk];
     if (branchInst != nullptr) {
       AddToWorklist(branchInst);
       Instruction* mergeInst = branch2merge_[branchInst];
       AddToWorklist(mergeInst);
-      AddBreaksAndContinuesToWorklist(mergeInst);
+    }
+    // If the block is a header, add the next outermost controlling
+    // conditional branch and its merge.
+    Instruction* nextBranchInst = header2nextHeaderBranch_[blk];
+    if (nextBranchInst != nullptr) {
+      AddToWorklist(nextBranchInst);
+      Instruction* mergeInst = branch2merge_[nextBranchInst];
+      AddToWorklist(mergeInst);
     }
     // If local load, add all variable's stores if variable not already live
-    if (liveInst->opcode() == SpvOpLoad) {
+    if (liveInst->opcode() == SpvOpLoad || liveInst->IsAtomicWithLoad()) {
       uint32_t varId;
       (void)GetPtr(liveInst, &varId);
       if (varId != 0) {
         ProcessLoad(varId);
       }
+      // Process memory copies like loads
     } else if (liveInst->opcode() == SpvOpCopyMemory ||
                liveInst->opcode() == SpvOpCopyMemorySized) {
       uint32_t varId;
@@ -453,6 +464,10 @@ bool AggressiveDCEPass::AggressiveDCE(Function* func) {
       if (varId != 0) {
         ProcessLoad(varId);
       }
+      // If merge, add other branches that are part of its control structure
+    } else if (liveInst->opcode() == SpvOpLoopMerge ||
+               liveInst->opcode() == SpvOpSelectionMerge) {
+      AddBreaksAndContinuesToWorklist(liveInst);
       // If function call, treat as if it loads from all pointer arguments
     } else if (liveInst->opcode() == SpvOpFunctionCall) {
       liveInst->ForEachInId([this](const uint32_t* iid) {
@@ -628,6 +643,7 @@ bool AggressiveDCEPass::ProcessGlobalValues() {
       case SpvOpDecorate:
       case SpvOpMemberDecorate:
       case SpvOpDecorateStringGOOGLE:
+      case SpvOpMemberDecorateStringGOOGLE:
         if (IsTargetDead(annotation)) {
           context()->KillInst(annotation);
           modified = true;
@@ -780,7 +796,8 @@ void AggressiveDCEPass::InitExtensions() {
       "SPV_NV_shader_image_footprint",
       "SPV_NV_shading_rate",
       "SPV_NV_mesh_shader",
-      "SPV_NVX_raytracing",
+      "SPV_NV_ray_tracing",
+      "SPV_EXT_fragment_invocation_density",
   });
 }
 

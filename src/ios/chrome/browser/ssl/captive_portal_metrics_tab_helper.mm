@@ -14,8 +14,6 @@
 #error "This file requires ARC support."
 #endif
 
-DEFINE_WEB_STATE_USER_DATA_KEY(CaptivePortalMetricsTabHelper);
-
 // Result of captive portal network check after a request takes longer than
 // |kCaptivePortalTestDelayInMilliseconds|.
 const char kCaptivePortalCausingTimeoutHistogram[] =

@@ -196,8 +196,8 @@ bool CrashpadCrashClient::InitializeCrashReporting(Mode mode,
     case SandboxType::kEset:
       SetCrashKey(kProcessType, "eset");
       break;
-    case SandboxType::kJsonParser:
-      SetCrashKey(kProcessType, "json_parser");
+    case SandboxType::kParser:
+      SetCrashKey(kProcessType, "parser");
       break;
     case SandboxType::kZipArchiver:
       SetCrashKey(kProcessType, "zip_archiver");

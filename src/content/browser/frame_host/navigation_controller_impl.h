@@ -232,6 +232,13 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // navigation failed due to an SSL error.
   void SetPendingNavigationSSLError(bool error);
 
+// Returns true if the string corresponds to a valid data URL, false
+// otherwise.
+#if defined(OS_ANDROID)
+  static bool ValidateDataURLAsString(
+      const scoped_refptr<const base::RefCountedString>& data_url_as_string);
+#endif
+
  private:
   friend class RestoreHelper;
 
@@ -241,6 +248,15 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   FRIEND_TEST_ALL_PREFIXES(TimeSmoother, SingleDuplicate);
   FRIEND_TEST_ALL_PREFIXES(TimeSmoother, ManyDuplicates);
   FRIEND_TEST_ALL_PREFIXES(TimeSmoother, ClockBackwardsJump);
+
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class NeedsReloadType {
+    kRequestedByClient = 0,
+    kRestoreSession = 1,
+    kCopyStateFrom = 2,
+    kMaxValue = kCopyStateFrom
+  };
 
   // Helper class to smooth out runs of duplicate timestamps while still
   // allowing time to jump backwards.
@@ -279,24 +295,47 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
 
   // Creates and returns a NavigationEntry based on |load_params| for a
   // navigation in |node|.
+  // |override_user_agent|, |should_replace_current_entry| and
+  // |has_user_gesture| will override the values from |load_params|. The same
+  // values should be passed to CreateNavigationRequestFromLoadParams.
   std::unique_ptr<NavigationEntryImpl> CreateNavigationEntryFromLoadParams(
       FrameTreeNode* node,
-      const LoadURLParams& load_params);
+      const LoadURLParams& load_params,
+      bool override_user_agent,
+      bool should_replace_current_entry,
+      bool has_user_gesture);
 
-  // Creates and returns a NavigationRequest based on the provided parameters.
+  // Creates and returns a NavigationRequest based on |load_params| for a
+  // new navigation in |node|.
   // Will return nullptr if the parameters are invalid and the navigation cannot
   // start.
-  std::unique_ptr<NavigationRequest> CreateNavigationRequest(
+  // |override_user_agent|, |should_replace_current_entry| and
+  // |has_user_gesture| will override the values from |load_params|. The same
+  // values should be passed to CreateNavigationEntryFromLoadParams.
+  // TODO(clamy): Remove the dependency on NavigationEntry and
+  // FrameNavigationEntry.
+  std::unique_ptr<NavigationRequest> CreateNavigationRequestFromLoadParams(
+      FrameTreeNode* node,
+      const LoadURLParams& load_params,
+      bool override_user_agent,
+      bool should_replace_current_entry,
+      bool has_user_gesture,
+      ReloadType reload_type,
+      const NavigationEntryImpl& entry,
+      FrameNavigationEntry* frame_entry);
+
+  // Creates and returns a NavigationRequest for a navigation to |entry|. Will
+  // return nullptr if the parameters are invalid and the navigation cannot
+  // start.
+  // TODO(clamy): Ensure this is only called for navigations to existing
+  // NavigationEntries.
+  std::unique_ptr<NavigationRequest> CreateNavigationRequestFromEntry(
       FrameTreeNode* frame_tree_node,
       const NavigationEntryImpl& entry,
       FrameNavigationEntry* frame_entry,
       ReloadType reload_type,
       bool is_same_document_history_load,
-      bool is_history_navigation_in_new_child,
-      const scoped_refptr<network::ResourceRequestBody>& post_body,
-      std::unique_ptr<NavigationUIData> navigation_ui_data,
-      base::TimeTicks input_start,
-      WasActivatedOption was_activated);
+      bool is_history_navigation_in_new_child);
 
   // Returns whether there is a pending NavigationEntry whose unique ID matches
   // the given NavigationHandle's pending_nav_entry_id.
@@ -336,6 +375,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   void RendererDidNavigateToSamePage(
       RenderFrameHostImpl* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
+      bool is_same_document,
       NavigationHandleImpl* handle);
   void RendererDidNavigateNewSubframe(
       RenderFrameHostImpl* rfh,
@@ -445,6 +485,10 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
 
   // Whether we need to be reloaded when made active.
   bool needs_reload_;
+
+  // Source of when |needs_reload_| is set. Only valid when |needs_reload_|
+  // is set.
+  NeedsReloadType needs_reload_type_ = NeedsReloadType::kRequestedByClient;
 
   // Whether this is the initial navigation.
   // Becomes false when initial navigation commits.

@@ -5,8 +5,8 @@
 package org.chromium.chrome.browser.download.home.list.holder;
 
 import android.support.annotation.CallSuper;
-import android.support.v7.widget.AppCompatImageButton;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import org.chromium.chrome.browser.download.home.list.ListItem;
@@ -27,7 +27,7 @@ public abstract class InProgressViewHolder extends ListItemViewHolder {
 
     private final TextView mCaption;
     private final CircularProgressView mActionButton;
-    private final AppCompatImageButton mCancelButton;
+    private final ImageButton mCancelButton;
 
     /** Constructor. */
     public InProgressViewHolder(View view, boolean constrainCaption) {
@@ -55,12 +55,10 @@ public abstract class InProgressViewHolder extends ListItemViewHolder {
                 case OfflineItemState.PENDING:
                     properties.get(ListProperties.CALLBACK_PAUSE).onResult(offlineItem);
                     break;
-                case OfflineItemState.PAUSED:
-                    properties.get(ListProperties.CALLBACK_RESUME).onResult(offlineItem);
-                    break;
+                case OfflineItemState.PAUSED: // Intentional fallthrough.
+                case OfflineItemState.FAILED: // Intentional fallthrough.
                 case OfflineItemState.INTERRUPTED: // Intentional fallthrough.
                 case OfflineItemState.CANCELLED: // Intentional fallthrough.
-                case OfflineItemState.FAILED:
                     properties.get(ListProperties.CALLBACK_RESUME).onResult(offlineItem);
                     break;
                 case OfflineItemState.COMPLETE: // Intentional fallthrough.

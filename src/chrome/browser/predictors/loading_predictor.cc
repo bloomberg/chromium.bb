@@ -91,12 +91,12 @@ void LoadingPredictor::PrepareForPageLoad(const GURL& url,
   has_preconnect_prediction =
       AddInitialUrlToPreconnectPrediction(url, &prediction);
 
-  if (has_preconnect_prediction) {
-    // To report hint durations and deduplicate hints to the same url.
-    active_hints_.emplace(url, base::TimeTicks::Now());
-    if (IsPreconnectAllowed(profile_))
-      MaybeAddPreconnect(url, std::move(prediction.requests), origin);
-  }
+  if (!has_preconnect_prediction)
+    return;
+
+  active_hints_.emplace(url, base::TimeTicks::Now());
+  if (IsPreconnectAllowed(profile_))
+    MaybeAddPreconnect(url, std::move(prediction.requests), origin);
 }
 
 void LoadingPredictor::CancelPageLoadHint(const GURL& url) {
@@ -169,9 +169,6 @@ std::map<GURL, base::TimeTicks>::iterator LoadingPredictor::CancelActiveHint(
 
   const GURL& url = hint_it->first;
   MaybeRemovePreconnect(url);
-  UMA_HISTOGRAM_TIMES(
-      internal::kResourcePrefetchPredictorPrefetchingDurationHistogram,
-      base::TimeTicks::Now() - hint_it->second);
   return active_hints_.erase(hint_it);
 }
 

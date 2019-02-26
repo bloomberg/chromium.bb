@@ -295,13 +295,10 @@ void OomInterventionTabHelper::StartDetectionInRenderer() {
     DCHECK(!web_contents()->GetBrowserContext()->IsOffTheRecord());
     const std::string& host = web_contents()->GetVisibleURL().host();
     if (!decider_->CanTriggerIntervention(host)) {
-      renderer_pause_enabled = false;
-      navigate_ads_enabled = false;
+      return;
     }
   }
 
-  if (!renderer_pause_enabled && !navigate_ads_enabled)
-    return;
   content::RenderFrameHost* main_frame = web_contents()->GetMainFrame();
   DCHECK(main_frame);
   content::RenderProcessHost* render_process_host = main_frame->GetProcess();

@@ -1,5 +1,5 @@
 rootWebArea
-++genericContainer editable multiline richlyEditable value='A contenteditable with a link and an   and a  .<newline><newline>Always expose editable tables as tables.<newline>Editable list item.<newline>' editableRoot=true
+++genericContainer editable multiline richlyEditable value='A contenteditable with a link and an  and a .<newline><newline>Always expose editable tables as tables.<newline>Editable list item.' editableRoot=true
 ++++paragraph editable richlyEditable
 ++++++staticText editable richlyEditable name='A contenteditable with a '
 ++++++++inlineTextBox name='A contenteditable with a '
@@ -21,7 +21,7 @@ rootWebArea
 ++++++++++++inlineTextBox name='Always expose editable tables as tables.'
 ++++list editable richlyEditable
 ++++++listItem editable richlyEditable
-++++++++listMarker name='1. '
+++++++++listMarker editable richlyEditable name='1. '
 ++++++++staticText editable richlyEditable name='Editable list item.'
 ++++++++++inlineTextBox name='Editable list item.'
 ++paragraph

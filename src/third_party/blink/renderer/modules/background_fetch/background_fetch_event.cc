@@ -6,16 +6,16 @@
 
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_event_init.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_registration.h"
-#include "third_party/blink/renderer/modules/event_modules_names.h"
+#include "third_party/blink/renderer/modules/event_interface_modules_names.h"
 
 namespace blink {
 
 BackgroundFetchEvent::BackgroundFetchEvent(
     const AtomicString& type,
-    const BackgroundFetchEventInit& initializer,
+    const BackgroundFetchEventInit* initializer,
     WaitUntilObserver* observer)
     : ExtendableEvent(type, initializer, observer),
-      registration_(initializer.registration()) {}
+      registration_(initializer->registration()) {}
 
 BackgroundFetchEvent::~BackgroundFetchEvent() = default;
 
@@ -24,7 +24,7 @@ BackgroundFetchRegistration* BackgroundFetchEvent::registration() const {
 }
 
 const AtomicString& BackgroundFetchEvent::InterfaceName() const {
-  return EventNames::BackgroundFetchEvent;
+  return event_interface_names::kBackgroundFetchEvent;
 }
 
 void BackgroundFetchEvent::Trace(blink::Visitor* visitor) {

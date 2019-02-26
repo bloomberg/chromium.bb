@@ -18,8 +18,8 @@
 
 namespace {
 std::unique_ptr<GaiaAuthFetcher> CreateGaiaAuthFetcher(
+    gaia::GaiaSource source,
     GaiaAuthConsumer* consumer,
-    const std::string& source,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   return std::make_unique<GaiaAuthFetcher>(consumer, source,
                                            url_loader_factory);
@@ -31,24 +31,21 @@ const int UbertokenFetcher::kMaxRetries = 3;
 UbertokenFetcher::UbertokenFetcher(
     OAuth2TokenService* token_service,
     UbertokenConsumer* consumer,
-    const std::string& source,
+    gaia::GaiaSource source,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : UbertokenFetcher(token_service,
                        consumer,
-                       source,
                        url_loader_factory,
-                       base::BindRepeating(CreateGaiaAuthFetcher)) {}
+                       base::BindRepeating(CreateGaiaAuthFetcher, source)) {}
 
 UbertokenFetcher::UbertokenFetcher(
     OAuth2TokenService* token_service,
     UbertokenConsumer* consumer,
-    const std::string& source,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     GaiaAuthFetcherFactory factory)
     : OAuth2TokenService::Consumer("uber_token_fetcher"),
       token_service_(token_service),
       consumer_(consumer),
-      source_(source),
       url_loader_factory_(url_loader_factory),
       is_bound_to_channel_id_(true),
       gaia_auth_fetcher_factory_(factory),
@@ -151,7 +148,7 @@ void UbertokenFetcher::RequestAccessToken() {
 
 void UbertokenFetcher::ExchangeTokens() {
   gaia_auth_fetcher_ =
-      gaia_auth_fetcher_factory_.Run(this, source_, url_loader_factory_);
+      gaia_auth_fetcher_factory_.Run(this, url_loader_factory_);
   gaia_auth_fetcher_->StartTokenFetchForUberAuthExchange(
       access_token_, is_bound_to_channel_id_);
 }

@@ -135,9 +135,10 @@ TabletModeController::TabletModeController()
     Shell::Get()->window_tree_host_manager()->AddObserver(this);
     chromeos::AccelerometerReader::GetInstance()->AddObserver(this);
     ui::InputDeviceManager::GetInstance()->AddObserver(this);
-    bluetooth_devices_observer_ = std::make_unique<BluetoothDevicesObserver>(
-        base::BindRepeating(&TabletModeController::UpdateBluetoothDevice,
-                            base::Unretained(this)));
+    bluetooth_devices_observer_ =
+        std::make_unique<BluetoothDevicesObserver>(base::BindRepeating(
+            &TabletModeController::OnBluetoothAdapterOrDeviceChanged,
+            base::Unretained(this)));
   }
   chromeos::PowerManagerClient* power_manager_client =
       chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
@@ -160,6 +161,9 @@ TabletModeController::~TabletModeController() {
   }
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
       this);
+
+  for (auto& observer : tablet_mode_observers_)
+    observer.OnTabletControllerDestroyed();
 
   TabletMode::SetCallback(TabletMode::TabletModeCallback());
 }
@@ -186,6 +190,7 @@ void TabletModeController::EnableTabletModeWindowManager(bool should_enable) {
 
     if (client_)  // Null at startup and in tests.
       client_->OnTabletModeToggled(true);
+    VLOG(1) << "Enter tablet mode.";
   } else {
     tablet_mode_window_manager_->SetIgnoreWmEventsForExit();
     for (auto& observer : tablet_mode_observers_)
@@ -198,6 +203,7 @@ void TabletModeController::EnableTabletModeWindowManager(bool should_enable) {
 
     if (client_)  // Null at startup and in tests.
       client_->OnTabletModeToggled(false);
+    VLOG(1) << "Exit tablet mode.";
   }
 
   UpdateInternalInputDevicesEventBlocker();
@@ -237,7 +243,7 @@ bool TabletModeController::ShouldAutoHideTitlebars(views::Widget* widget) {
 }
 
 bool TabletModeController::AreInternalInputDeviceEventsBlocked() const {
-  return event_blocker_->is_blocked();
+  return event_blocker_->should_be_blocked();
 }
 
 void TabletModeController::FlushForTesting() {
@@ -338,6 +344,7 @@ void TabletModeController::LidEventReceived(
   if (!AllowUiModeChange())
     return;
 
+  VLOG(1) << "Lid event received: " << static_cast<int>(state);
   const bool open = state == chromeos::PowerManagerClient::LidState::OPEN;
   lid_is_closed_ = !open;
 
@@ -351,6 +358,7 @@ void TabletModeController::TabletModeEventReceived(
   if (!AllowUiModeChange())
     return;
 
+  VLOG(1) << "Tablet mode event received: " << static_cast<int>(mode);
   const bool on = mode == chromeos::PowerManagerClient::TabletMode::ON;
   tablet_mode_switch_is_on_ = on;
   // Do not change if docked.
@@ -388,10 +396,12 @@ void TabletModeController::SuspendDone(const base::TimeDelta& sleep_duration) {
 }
 
 void TabletModeController::OnMouseDeviceConfigurationChanged() {
+  VLOG(1) << "Mouse device configuration changed.";
   HandlePointingDeviceAddedOrRemoved();
 }
 
 void TabletModeController::OnTouchpadDeviceConfigurationChanged() {
+  VLOG(1) << "Touchpad device configuration changed.";
   HandlePointingDeviceAddedOrRemoved();
 }
 
@@ -610,20 +620,20 @@ void TabletModeController::HandlePointingDeviceAddedOrRemoved() {
   }
 }
 
-void TabletModeController::UpdateBluetoothDevice(
+void TabletModeController::OnBluetoothAdapterOrDeviceChanged(
     device::BluetoothDevice* device) {
   // We only care about pointing type bluetooth device change. Note KEYBOARD
   // type is also included here as sometimes a bluetooth keyboard comes with a
   // touch pad.
-  if (device->GetDeviceType() != device::BluetoothDeviceType::MOUSE &&
-      device->GetDeviceType() !=
-          device::BluetoothDeviceType::KEYBOARD_MOUSE_COMBO &&
-      device->GetDeviceType() != device::BluetoothDeviceType::KEYBOARD &&
-      device->GetDeviceType() != device::BluetoothDeviceType::TABLET) {
-    return;
+  if (!device ||
+      device->GetDeviceType() == device::BluetoothDeviceType::MOUSE ||
+      device->GetDeviceType() ==
+          device::BluetoothDeviceType::KEYBOARD_MOUSE_COMBO ||
+      device->GetDeviceType() == device::BluetoothDeviceType::KEYBOARD ||
+      device->GetDeviceType() == device::BluetoothDeviceType::TABLET) {
+    VLOG(1) << "Bluetooth device configuration changed.";
+    HandlePointingDeviceAddedOrRemoved();
   }
-
-  HandlePointingDeviceAddedOrRemoved();
 }
 
 void TabletModeController::UpdateInternalInputDevicesEventBlocker() {

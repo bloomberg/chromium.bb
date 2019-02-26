@@ -75,6 +75,7 @@ void EnumerateDx12VulkanVersionInfo(const gpu::Dx12VulkanVersionInfo& info,
 
 namespace gpu {
 
+#if defined(OS_WIN)
 const char* OverlayFormatToString(OverlayFormat format) {
   switch (format) {
     case OverlayFormat::kBGRA:
@@ -90,6 +91,7 @@ bool OverlayCapability::operator==(const OverlayCapability& other) const {
   return format == other.format &&
          is_scaling_supported == other.is_scaling_supported;
 }
+#endif
 
 VideoDecodeAcceleratorCapabilities::VideoDecodeAcceleratorCapabilities()
     : flags(0) {}

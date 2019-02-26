@@ -68,6 +68,12 @@ class PLATFORM_EXPORT ResourceLoader final
                                 ResourceLoadScheduler*,
                                 Resource*,
                                 uint32_t inflight_keepalive_bytes = 0);
+
+  // Assumes ResourceFetcher and Resource are non-null.
+  ResourceLoader(ResourceFetcher*,
+                 ResourceLoadScheduler*,
+                 Resource*,
+                 uint32_t inflight_keepalive_bytes);
   ~ResourceLoader() override;
   void Trace(blink::Visitor*) override;
 
@@ -106,7 +112,7 @@ class PLATFORM_EXPORT ResourceLoader final
   bool WillFollowRedirect(const WebURL& new_url,
                           const WebURL& new_site_for_cookies,
                           const WebString& new_referrer,
-                          WebReferrerPolicy new_referrer_policy,
+                          network::mojom::ReferrerPolicy new_referrer_policy,
                           const WebString& new_method,
                           const WebURLResponse& passed_redirect_response,
                           bool& report_raw_headers) override;
@@ -149,12 +155,6 @@ class PLATFORM_EXPORT ResourceLoader final
   friend class SubresourceIntegrityTest;
   class CodeCacheRequest;
 
-  // Assumes ResourceFetcher and Resource are non-null.
-  ResourceLoader(ResourceFetcher*,
-                 ResourceLoadScheduler*,
-                 Resource*,
-                 uint32_t inflight_keepalive_bytes);
-
   bool ShouldFetchCodeCache();
   void StartWith(const ResourceRequest&);
 
@@ -178,13 +178,13 @@ class PLATFORM_EXPORT ResourceLoader final
   void OnProgress(uint64_t delta) override;
   void FinishedCreatingBlob(const scoped_refptr<BlobDataHandle>&);
 
-  bool GetCORSFlag() const { return resource_->Options().cors_flag; }
+  bool GetCorsFlag() const { return resource_->Options().cors_flag; }
 
   base::Optional<ResourceRequestBlockedReason> CheckResponseNosniff(
       mojom::RequestContextType,
       const ResourceResponse&) const;
 
-  bool ShouldCheckCORSInResourceLoader() const;
+  bool ShouldCheckCorsInResourceLoader() const;
 
   std::unique_ptr<WebURLLoader> loader_;
   ResourceLoadScheduler::ClientId scheduler_client_id_;
@@ -201,6 +201,7 @@ class PLATFORM_EXPORT ResourceLoader final
   uint32_t inflight_keepalive_bytes_;
   bool is_cache_aware_loading_activated_;
 
+  bool should_use_isolated_code_cache_ = false;
   bool is_downloading_to_blob_ = false;
   mojo::AssociatedBinding<mojom::blink::ProgressClient> progress_binding_;
   bool blob_finished_ = false;

@@ -12,8 +12,8 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/pointer/touch_editing_controller.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/touch/touch_editing_controller.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
@@ -842,7 +842,7 @@ TEST_F(TouchSelectionControllerImplTest, MouseEventDeactivatesTouchSelection) {
   ui::test::EventGenerator generator(
       textfield_widget_->GetNativeView()->GetRootWindow());
 
-  generator.set_current_location(gfx::Point(5, 5));
+  generator.set_current_screen_location(gfx::Point(5, 5));
   RunPendingMessages();
 
   // Start touch editing; then move mouse over the textfield and ensure it

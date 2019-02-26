@@ -4,6 +4,9 @@
 
 #include "services/resource_coordinator/public/cpp/process_resource_coordinator.h"
 
+#include "base/time/time.h"
+#include "build/build_config.h"
+
 namespace resource_coordinator {
 
 ProcessResourceCoordinator::ProcessResourceCoordinator(
@@ -16,45 +19,43 @@ ProcessResourceCoordinator::ProcessResourceCoordinator(
 
 ProcessResourceCoordinator::~ProcessResourceCoordinator() = default;
 
+void ProcessResourceCoordinator::OnProcessLaunched(
+    const base::Process& process) {
+  if (!service_)
+    return;
+
+  // TODO(fdoray): Merge ProcessCoordinationUnit::SetPID/SetLaunchTime().
+  service_->SetPID(process.Pid());
+  service_->SetLaunchTime(
+#if defined(OS_ANDROID)
+      // Process::CreationTime() is not available on Android. Since this method
+      // is called immediately after the process is launched, the process launch
+      // time can be approximated with the current time.
+      base::Time::Now()
+#else
+      process.CreationTime()
+#endif
+          );
+}
+
 void ProcessResourceCoordinator::SetCPUUsage(double cpu_usage) {
   if (!service_)
     return;
+
   service_->SetCPUUsage(cpu_usage);
 }
 
-void ProcessResourceCoordinator::SetLaunchTime(base::Time launch_time) {
+void ProcessResourceCoordinator::SetProcessExitStatus(int32_t exit_status) {
   if (!service_)
     return;
-  service_->SetLaunchTime(launch_time);
-}
 
-void ProcessResourceCoordinator::SetPID(base::ProcessId pid) {
-  if (!service_)
-    return;
-  service_->SetPID(pid);
-}
-
-void ProcessResourceCoordinator::AddFrame(
-    const FrameResourceCoordinator& frame) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (!service_)
-    return;
-  // We could keep the ID around ourselves, but this hop ensures that the child
-  // has been created on the service-side.
-  frame.service()->GetID(
-      base::BindOnce(&ProcessResourceCoordinator::AddFrameByID,
-                     weak_ptr_factory_.GetWeakPtr()));
+  service_->SetProcessExitStatus(exit_status);
 }
 
 void ProcessResourceCoordinator::ConnectToService(
     mojom::CoordinationUnitProviderPtr& provider,
     const CoordinationUnitID& cu_id) {
   provider->CreateProcessCoordinationUnit(mojo::MakeRequest(&service_), cu_id);
-}
-
-void ProcessResourceCoordinator::AddFrameByID(const CoordinationUnitID& cu_id) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  service_->AddFrame(cu_id);
 }
 
 }  // namespace resource_coordinator

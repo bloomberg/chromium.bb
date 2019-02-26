@@ -17,11 +17,13 @@ FUZZ_PREFIX = 'fuzz-'
 IPC_FUZZER_APPLICATION = 'ipc_fuzzer'
 IPC_REPLAY_APPLICATION = 'ipc_fuzzer_replay'
 IPCDUMP_EXTENSION = '.ipcdump'
-LAUNCH_PREFIXES = [
-    '--gpu-launcher',
+UNCOMMON_PREFIX_CHANCE = 10  # 1 in 10
+COMMON_LAUNCH_PREFIXES = [
+    '--renderer-cmd-prefix',
+]
+UNCOMMON_LAUNCH_PEFIXES = [
     '--plugin-launcher',
     '--ppapi-plugin-launcher',
-    '--renderer-cmd-prefix',
     '--utility-cmd-prefix',
 ]
 
@@ -35,7 +37,10 @@ def application_name_for_platform(application_name):
 
 def create_flags_file(ipcdump_testcase_path):
   """Create a flags file to add launch prefix to application command line."""
-  random_launch_prefix = random.choice(LAUNCH_PREFIXES)
+  prefixes = (UNCOMMON_LAUNCH_PREFIXES if
+              random.randint(1, UNCOMMON_PREFIX_CHANCE) == 1 else
+              COMMON_LAUNCH_PREFIXES)
+  random_launch_prefix = random.choice(prefixes)
   application_name = application_name_for_platform(IPC_REPLAY_APPLICATION)
   file_content = '%s=%%APP_DIR%%%s%s' % (random_launch_prefix, os.path.sep,
                                          application_name)

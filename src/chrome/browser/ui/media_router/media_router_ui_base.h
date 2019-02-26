@@ -14,6 +14,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/router/issues_observer.h"
 #include "chrome/browser/media/router/media_router_dialog_controller.h"
@@ -110,8 +111,8 @@ class MediaRouterUIBase
   // excludes the wired display that the initiator WebContents is on.
   virtual std::vector<MediaSinkWithCastModes> GetEnabledSinks() const;
 
-  // Returns a source name that can be shown in the dialog.
-  std::string GetTruncatedPresentationRequestSourceName() const;
+  // Returns a PresentationRequest source name that can be shown in the dialog.
+  base::string16 GetPresentationRequestSourceName() const;
 
   // Calls MediaRouter to add the given issue.
   void AddIssue(const IssueInfo& issue);
@@ -196,10 +197,13 @@ class MediaRouterUIBase
   // Creates and sends an issue if route creation timed out.
   void SendIssueForRouteTimeout(
       MediaCastMode cast_mode,
+      const MediaSink::Id& sink_id,
       const base::string16& presentation_request_source_name);
 
-  // Creates and sends an issue if casting fails for any other reason.
-  void SendIssueForUnableToCast(MediaCastMode cast_mode);
+  // Creates and sends an issue if casting fails for any reason other than
+  // timeout.
+  void SendIssueForUnableToCast(MediaCastMode cast_mode,
+                                const MediaSink::Id& sink_id);
 
   // Returns the IssueManager associated with |router_|.
   IssueManager* GetIssueManager();

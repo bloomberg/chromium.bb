@@ -379,11 +379,6 @@ suite('<history-list>', function() {
     const dialog = element.$.dialog.get();
     app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
     app.historyResult(createHistoryInfo(), ADDITIONAL_RESULTS);
-    app.historyResult(createHistoryInfo(), [
-      createHistoryEntry('2015-01-01', 'http://example.com'),
-      createHistoryEntry('2015-01-01', 'http://example.com'),
-      createHistoryEntry('2015-01-01', 'http://example.com')
-    ]);
     return PolymerTest.flushTasks()
         .then(function() {
           Polymer.dom.flush();
@@ -392,9 +387,6 @@ suite('<history-list>', function() {
           items[2].$.checkbox.click();
           items[5].$.checkbox.click();
           items[7].$.checkbox.click();
-          items[8].$.checkbox.click();
-          items[9].$.checkbox.click();
-          items[10].$.checkbox.click();
 
           return PolymerTest.flushTasks();
         })

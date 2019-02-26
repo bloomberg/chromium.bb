@@ -6,15 +6,47 @@
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace flags_ui {
+namespace {
+
+// WARNING: '@' is also used in the html file. If you update this constant you
+// also need to update the html file.
+const char kMultiSeparatorChar = '@';
+
+}  // namespace
 
 const char kGenericExperimentChoiceDefault[] = "Default";
 const char kGenericExperimentChoiceEnabled[] = "Enabled";
 const char kGenericExperimentChoiceDisabled[] = "Disabled";
 const char kGenericExperimentChoiceAutomatic[] = "Automatic";
+
+bool FeatureEntry::InternalNameMatches(const std::string& name) const {
+  if (!base::StartsWith(name, internal_name, base::CompareCase::SENSITIVE))
+    return false;
+
+  const size_t internal_name_length = strlen(internal_name);
+  switch (type) {
+    case FeatureEntry::SINGLE_VALUE:
+    case FeatureEntry::SINGLE_DISABLE_VALUE:
+    case FeatureEntry::ORIGIN_LIST_VALUE:
+      return name.size() == internal_name_length;
+
+    case FeatureEntry::MULTI_VALUE:
+    case FeatureEntry::ENABLE_DISABLE_VALUE:
+    case FeatureEntry::FEATURE_VALUE:
+    case FeatureEntry::FEATURE_WITH_PARAMS_VALUE:
+      // Check that the pattern matches what's produced by NameForOption().
+      int index = -1;
+      return name.size() > internal_name_length + 1 &&
+             name[internal_name_length] == kMultiSeparatorChar &&
+             base::StringToInt(name.substr(internal_name_length + 1), &index) &&
+             index >= 0 && index < num_options;
+  }
+}
 
 std::string FeatureEntry::NameForOption(int index) const {
   DCHECK(type == FeatureEntry::MULTI_VALUE ||
@@ -100,9 +132,7 @@ const FeatureEntry::FeatureVariation* FeatureEntry::VariationForOption(
 
 namespace testing {
 
-// WARNING: '@' is also used in the html file. If you update this constant you
-// also need to update the html file.
-const char kMultiSeparator[] = "@";
+const char kMultiSeparator[] = {kMultiSeparatorChar, '\0'};
 
 }  // namespace testing
 

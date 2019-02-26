@@ -42,8 +42,11 @@ class CORE_EXPORT InspectorApplicationCacheAgent final
  public:
   static InspectorApplicationCacheAgent* Create(
       InspectedFrames* inspected_frames) {
-    return new InspectorApplicationCacheAgent(inspected_frames);
+    return MakeGarbageCollected<InspectorApplicationCacheAgent>(
+        inspected_frames);
   }
+
+  explicit InspectorApplicationCacheAgent(InspectedFrames*);
   ~InspectorApplicationCacheAgent() override = default;
   void Trace(blink::Visitor*) override;
 
@@ -71,7 +74,6 @@ class CORE_EXPORT InspectorApplicationCacheAgent final
   // Unconditionally enables the agent, even if |enabled_.Get()==true|.
   // For idempotence, call enable().
   void InnerEnable();
-  explicit InspectorApplicationCacheAgent(InspectedFrames*);
 
   std::unique_ptr<protocol::ApplicationCache::ApplicationCache>
   BuildObjectForApplicationCache(const ApplicationCacheHost::ResourceInfoList&,

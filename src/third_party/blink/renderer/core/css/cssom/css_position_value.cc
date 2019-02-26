@@ -86,14 +86,14 @@ CSSPositionValue* CSSPositionValue::Create(CSSNumericValue* x,
         "Must pass length or percentage to y in CSSPositionValue");
     return nullptr;
   }
-  return new CSSPositionValue(x, y);
+  return MakeGarbageCollected<CSSPositionValue>(x, y);
 }
 
 CSSPositionValue* CSSPositionValue::Create(CSSNumericValue* x,
                                            CSSNumericValue* y) {
   if (!IsValidPositionCoord(x) || !IsValidPositionCoord(y))
     return nullptr;
-  return new CSSPositionValue(x, y);
+  return MakeGarbageCollected<CSSPositionValue>(x, y);
 }
 
 CSSPositionValue* CSSPositionValue::FromCSSValue(const CSSValue& value) {

@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.download.ui.DownloadFilter;
 import org.chromium.components.download.DownloadState;
+import org.chromium.components.download.ResumeMode;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.FailState;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
@@ -345,13 +346,23 @@ public final class DownloadInfo {
                 break;
             case DownloadState.INTERRUPTED:
                 DownloadItem downloadItem = new DownloadItem(false, downloadInfo);
-                if (DownloadUtils.isDownloadPaused(downloadItem)) {
+                @ResumeMode
+                int resumeMode = DownloadUtils.getResumeMode(
+                        downloadInfo.getUrl(), downloadInfo.getFailState());
+                if (resumeMode == ResumeMode.INVALID || resumeMode == ResumeMode.USER_RESTART) {
+                    // Fail but can restart from the beginning. The UI should let the user to retry.
+                    offlineItem.state = OfflineItemState.INTERRUPTED;
+                }
+                // TODO(xingliu): isDownloadPaused and isDownloadPending rely on isAutoResumable
+                // is set correctly in {@link DownloadSharedPreferenceEntry}. The states of
+                // notification UI and download home currently may not match. Also pending is
+                // related to Java side auto resumption on good network condition.
+                else if (DownloadUtils.isDownloadPaused(downloadItem)) {
                     offlineItem.state = OfflineItemState.PAUSED;
                 } else if (DownloadUtils.isDownloadPending(downloadItem)) {
                     offlineItem.state = OfflineItemState.PENDING;
-                } else if (downloadInfo.isResumable()) {
-                    offlineItem.state = OfflineItemState.INTERRUPTED;
                 } else {
+                    // Unknown failure state.
                     offlineItem.state = OfflineItemState.FAILED;
                 }
                 break;

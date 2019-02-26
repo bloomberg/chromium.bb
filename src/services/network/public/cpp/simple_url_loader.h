@@ -23,6 +23,8 @@ class scoped_refptr;
 
 namespace base {
 class FilePath;
+class TickClock;
+class TimeDelta;
 }
 
 namespace net {
@@ -84,8 +86,11 @@ class COMPONENT_EXPORT(NETWORK_CPP) SimpleURLLoader {
   static const size_t kMaxUploadStringSizeToCopy;
 
   // Callback used when downloading the response body as a std::string.
-  // |response_body| is the body of the response, or nullptr on failure. It is
-  // safe to delete the SimpleURLLoader during the callback.
+  // |response_body| is the body of the response, or nullptr on failure. Note
+  // that |response_body| may be nullptr even if there's a valid response code
+  // like HTTP_OK, which could happen if there's an interruption before the
+  // full response body is received. It is safe to delete the SimpleURLLoader
+  // during the callback.
   using BodyAsStringCallback =
       base::OnceCallback<void(std::unique_ptr<std::string> response_body)>;
 
@@ -134,6 +139,12 @@ class COMPONENT_EXPORT(NETWORK_CPP) SimpleURLLoader {
   static std::unique_ptr<SimpleURLLoader> Create(
       std::unique_ptr<ResourceRequest> resource_request,
       const net::NetworkTrafficAnnotationTag& annotation_tag);
+
+  // The TickClock to use to configure a timer that tracks if |timeout_duration|
+  // has been reached or not. This can be removed once https://crbug.com/905412
+  // is completed. When null, the timer falls back to base::TimeTicks::Now().
+  static void SetTimeoutTickClockForTest(
+      const base::TickClock* timeout_tick_clock);
 
   virtual ~SimpleURLLoader();
 
@@ -307,6 +318,11 @@ class COMPONENT_EXPORT(NETWORK_CPP) SimpleURLLoader {
   // Cannot retry requests with an upload body that contains a data pipe that
   // was added to the ResourceRequest passed to Create() by the consumer.
   virtual void SetRetryOptions(int max_retries, int retry_mode) = 0;
+
+  // The amount of time to wait before giving up on a given network request and
+  // considering it an error. If not set, then the request is allowed to take
+  // as much time as it wants.
+  virtual void SetTimeoutDuration(base::TimeDelta timeout_duration) = 0;
 
   // Returns the net::Error representing the final status of the request. May
   // only be called once the loader has informed the caller of completion.

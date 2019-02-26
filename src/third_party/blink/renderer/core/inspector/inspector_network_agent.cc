@@ -36,6 +36,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
+#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
 #include "services/network/public/mojom/websocket.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -77,7 +78,6 @@
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
@@ -186,7 +186,7 @@ class InspectorFileReaderLoaderClient final : public FileReaderLoaderClient {
 
   void DidFinishLoading() override { Done(raw_data_); }
 
-  void DidFail(FileError::ErrorCode) override { Done(nullptr); }
+  void DidFail(FileErrorCode) override { Done(nullptr); }
 
  private:
   void Done(scoped_refptr<SharedBuffer> output) {
@@ -375,11 +375,11 @@ WebConnectionType ToWebConnectionType(const String& connection_type) {
   return kWebConnectionTypeUnknown;
 }
 
-String GetReferrerPolicy(ReferrerPolicy policy) {
+String GetReferrerPolicy(network::mojom::ReferrerPolicy policy) {
   switch (policy) {
-    case kReferrerPolicyAlways:
+    case network::mojom::ReferrerPolicy::kAlways:
       return protocol::Network::Request::ReferrerPolicyEnum::UnsafeUrl;
-    case kReferrerPolicyDefault:
+    case network::mojom::ReferrerPolicy::kDefault:
       if (RuntimeEnabledFeatures::ReducedReferrerGranularityEnabled()) {
         return protocol::Network::Request::ReferrerPolicyEnum::
             StrictOriginWhenCrossOrigin;
@@ -387,21 +387,22 @@ String GetReferrerPolicy(ReferrerPolicy policy) {
         return protocol::Network::Request::ReferrerPolicyEnum::
             NoReferrerWhenDowngrade;
       }
-    case kReferrerPolicyNoReferrerWhenDowngrade:
+    case network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade:
       return protocol::Network::Request::ReferrerPolicyEnum::
           NoReferrerWhenDowngrade;
-    case kReferrerPolicyNever:
+    case network::mojom::ReferrerPolicy::kNever:
       return protocol::Network::Request::ReferrerPolicyEnum::NoReferrer;
-    case kReferrerPolicyOrigin:
+    case network::mojom::ReferrerPolicy::kOrigin:
       return protocol::Network::Request::ReferrerPolicyEnum::Origin;
-    case kReferrerPolicyOriginWhenCrossOrigin:
+    case network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin:
       return protocol::Network::Request::ReferrerPolicyEnum::
           OriginWhenCrossOrigin;
-    case kReferrerPolicySameOrigin:
+    case network::mojom::ReferrerPolicy::kSameOrigin:
       return protocol::Network::Request::ReferrerPolicyEnum::SameOrigin;
-    case kReferrerPolicyStrictOrigin:
+    case network::mojom::ReferrerPolicy::kStrictOrigin:
       return protocol::Network::Request::ReferrerPolicyEnum::StrictOrigin;
-    case kReferrerPolicyStrictOriginWhenCrossOrigin:
+    case network::mojom::ReferrerPolicy::
+        kNoReferrerWhenDowngradeOriginWhenCrossOrigin:
       return protocol::Network::Request::ReferrerPolicyEnum::
           StrictOriginWhenCrossOrigin;
   }
@@ -663,6 +664,7 @@ void InspectorNetworkAgent::Trace(blink::Visitor* visitor) {
   visitor->Trace(inspected_frames_);
   visitor->Trace(worker_global_scope_);
   visitor->Trace(resources_data_);
+  visitor->Trace(pending_request_);
   visitor->Trace(replay_xhrs_);
   visitor->Trace(replay_xhrs_to_be_deleted_);
   visitor->Trace(pending_xhr_replay_data_);
@@ -748,9 +750,9 @@ void InspectorNetworkAgent::WillSendRequestInternal(
 
   resources_data_->ResourceCreated(execution_context, request_id, loader_id,
                                    request.Url(), post_data);
-  if (initiator_info.name == FetchInitiatorTypeNames::xmlhttprequest)
+  if (initiator_info.name == fetch_initiator_type_names::kXmlhttprequest)
     type = InspectorPageAgent::kXHRResource;
-  else if (initiator_info.name == FetchInitiatorTypeNames::fetch)
+  else if (initiator_info.name == fetch_initiator_type_names::kFetch)
     type = InspectorPageAgent::kFetchResource;
 
   if (pending_request_)
@@ -818,10 +820,10 @@ void InspectorNetworkAgent::WillSendRequest(
     const FetchInitiatorInfo& initiator_info,
     ResourceType resource_type) {
   // Ignore the request initiated internally.
-  if (initiator_info.name == FetchInitiatorTypeNames::internal)
+  if (initiator_info.name == fetch_initiator_type_names::kInternal)
     return;
 
-  if (initiator_info.name == FetchInitiatorTypeNames::document &&
+  if (initiator_info.name == fetch_initiator_type_names::kDocument &&
       loader->GetSubstituteData().IsValid())
     return;
 
@@ -835,10 +837,12 @@ void InspectorNetworkAgent::WillSendRequest(
       // use ResourceRequest::referrer_. See https://crbug.com/850813. This
       // seems to require storing the referrer info that is currently stored
       // inside state_'s kExtraRequestHeaders, somewhere else.
-      if (header_name.LowerASCII() == HTTPNames::Referer.LowerASCII())
-        request.SetHTTPReferrer(Referrer(value, kReferrerPolicyAlways));
-      else
+      if (header_name.LowerASCII() == http_names::kReferer.LowerASCII()) {
+        request.SetHTTPReferrer(
+            Referrer(value, network::mojom::ReferrerPolicy::kAlways));
+      } else {
         request.SetHTTPHeaderField(header_name, AtomicString(value));
+      }
     }
   }
 
@@ -951,7 +955,7 @@ static bool IsErrorStatusCode(int status_code) {
 void InspectorNetworkAgent::DidReceiveData(unsigned long identifier,
                                            DocumentLoader* loader,
                                            const char* data,
-                                           int data_length) {
+                                           size_t data_length) {
   String request_id = IdentifiersFactory::RequestId(loader, identifier);
 
   if (data) {
@@ -980,7 +984,7 @@ void InspectorNetworkAgent::DidReceiveBlob(unsigned long identifier,
 void InspectorNetworkAgent::DidReceiveEncodedDataLength(
     DocumentLoader* loader,
     unsigned long identifier,
-    int encoded_data_length) {
+    size_t encoded_data_length) {
   String request_id = IdentifiersFactory::RequestId(loader, identifier);
   resources_data_->AddPendingEncodedDataLength(request_id, encoded_data_length);
 }
@@ -1020,7 +1024,7 @@ void InspectorNetworkAgent::DidFinishLoading(unsigned long identifier,
       encoded_data_length, should_report_corb_blocking);
 }
 
-void InspectorNetworkAgent::DidReceiveCORSRedirectResponse(
+void InspectorNetworkAgent::DidReceiveCorsRedirectResponse(
     unsigned long identifier,
     DocumentLoader* loader,
     const ResourceResponse& response,
@@ -1659,7 +1663,7 @@ InspectorNetworkAgent::InspectorNetworkAgent(
          (!IsMainThread() && worker_global_scope_));
 }
 
-void InspectorNetworkAgent::ShouldForceCORSPreflight(bool* result) {
+void InspectorNetworkAgent::ShouldForceCorsPreflight(bool* result) {
   if (cache_disabled_.Get())
     *result = true;
 }

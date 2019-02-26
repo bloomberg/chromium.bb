@@ -170,6 +170,8 @@ class InputMethodPrivateShowInputViewFunction
   ResponseAction Run() override;
 
  private:
+  void OnGetIsEnabled(bool enabled);
+
   DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.showInputView",
                              INPUTMETHODPRIVATE_SHOWINPUTVIEW)
   DISALLOW_COPY_AND_ASSIGN(InputMethodPrivateShowInputViewFunction);
@@ -206,6 +208,38 @@ class InputMethodPrivateGetSurroundingTextFunction
   DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.getSurroundingText",
                              INPUTMETHODPRIVATE_GETSURROUNDINGTEXT)
   DISALLOW_COPY_AND_ASSIGN(InputMethodPrivateGetSurroundingTextFunction);
+};
+
+class InputMethodPrivateGetSettingFunction : public UIThreadExtensionFunction {
+ public:
+  InputMethodPrivateGetSettingFunction() = default;
+
+ protected:
+  ~InputMethodPrivateGetSettingFunction() override = default;
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+
+ private:
+  DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.getSetting",
+                             INPUTMETHODPRIVATE_GETSETTING)
+  DISALLOW_COPY_AND_ASSIGN(InputMethodPrivateGetSettingFunction);
+};
+
+class InputMethodPrivateSetSettingFunction : public UIThreadExtensionFunction {
+ public:
+  InputMethodPrivateSetSettingFunction() = default;
+
+ protected:
+  ~InputMethodPrivateSetSettingFunction() override = default;
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+
+ private:
+  DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.setSetting",
+                             INPUTMETHODPRIVATE_SETSETTING)
+  DISALLOW_COPY_AND_ASSIGN(InputMethodPrivateSetSettingFunction);
 };
 
 class InputMethodAPI : public BrowserContextKeyedAPI,

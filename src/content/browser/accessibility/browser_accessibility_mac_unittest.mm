@@ -80,8 +80,8 @@ class BrowserAccessibilityMacTest : public ui::CocoaTest {
     // times in a test.
     root_ = ui::AXNodeData();
     root_.id = 1000;
-    root_.location.set_width(500);
-    root_.location.set_height(100);
+    root_.relative_bounds.bounds.set_width(500);
+    root_.relative_bounds.bounds.set_height(100);
     root_.role = ax::mojom::Role::kRootWebArea;
     root_.AddStringAttribute(ax::mojom::StringAttribute::kDescription,
                              "HelpText");
@@ -91,15 +91,15 @@ class BrowserAccessibilityMacTest : public ui::CocoaTest {
     ui::AXNodeData child1;
     child1.id = 1001;
     child1.SetName("Child1");
-    child1.location.set_width(250);
-    child1.location.set_height(100);
+    child1.relative_bounds.bounds.set_width(250);
+    child1.relative_bounds.bounds.set_height(100);
     child1.role = ax::mojom::Role::kButton;
 
     ui::AXNodeData child2;
     child2.id = 1002;
-    child2.location.set_x(250);
-    child2.location.set_width(250);
-    child2.location.set_height(100);
+    child2.relative_bounds.bounds.set_x(250);
+    child2.relative_bounds.bounds.set_width(250);
+    child2.relative_bounds.bounds.set_height(100);
     child2.role = ax::mojom::Role::kHeading;
 
     manager_.reset(new BrowserAccessibilityManagerMac(

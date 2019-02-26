@@ -53,7 +53,7 @@ namespace blink {
 
 // static
 GamepadHapticActuator* GamepadHapticActuator::Create(int pad_index) {
-  return new GamepadHapticActuator(
+  return MakeGarbageCollected<GamepadHapticActuator>(
       pad_index, device::GamepadHapticActuatorType::kDualRumble);
 }
 
@@ -82,19 +82,19 @@ void GamepadHapticActuator::SetType(device::GamepadHapticActuatorType type) {
 ScriptPromise GamepadHapticActuator::playEffect(
     ScriptState* script_state,
     const String& type,
-    const GamepadEffectParameters& params) {
+    const GamepadEffectParameters* params) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
 
-  if (params.duration() < 0.0 || params.startDelay() < 0.0 ||
-      params.strongMagnitude() < 0.0 || params.strongMagnitude() > 1.0 ||
-      params.weakMagnitude() < 0.0 || params.weakMagnitude() > 1.0) {
+  if (params->duration() < 0.0 || params->startDelay() < 0.0 ||
+      params->strongMagnitude() < 0.0 || params->strongMagnitude() > 1.0 ||
+      params->weakMagnitude() < 0.0 || params->weakMagnitude() > 1.0) {
     ScriptPromise promise = resolver->Promise();
     resolver->Resolve(kGamepadHapticsResultInvalidParameter);
     return promise;
   }
 
   // Limit the total effect duration.
-  double effect_duration = params.duration() + params.startDelay();
+  double effect_duration = params->duration() + params->startDelay();
   if (effect_duration >
       device::GamepadHapticActuator::kMaxEffectDurationMillis) {
     ScriptPromise promise = resolver->Promise();
@@ -108,8 +108,8 @@ ScriptPromise GamepadHapticActuator::playEffect(
   GamepadDispatcher::Instance().PlayVibrationEffectOnce(
       pad_index_, EffectTypeFromString(type),
       device::mojom::blink::GamepadEffectParameters::New(
-          params.duration(), params.startDelay(), params.strongMagnitude(),
-          params.weakMagnitude()),
+          params->duration(), params->startDelay(), params->strongMagnitude(),
+          params->weakMagnitude()),
       std::move(callback));
 
   return resolver->Promise();

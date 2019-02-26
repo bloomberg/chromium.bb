@@ -59,8 +59,10 @@ class PLATFORM_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
     kInvalidWorldId = -1,
     kMainWorldId = 0,
 
-    kEmbedderWorldIdLimit = IsolatedWorldId::kEmbedderWorldIdLimit,
-    kIsolatedWorldIdLimit = IsolatedWorldId::kIsolatedWorldIdLimit,
+    kDOMWrapperWorldEmbedderWorldIdLimit =
+        IsolatedWorldId::kEmbedderWorldIdLimit,
+    kDOMWrapperWorldIsolatedWorldIdLimit =
+        IsolatedWorldId::kIsolatedWorldIdLimit,
 
     // Other worlds can use IDs after this. Don't manually pick up an ID from
     // this range. generateWorldIdForType() picks it up on behalf of you.
@@ -76,6 +78,11 @@ class PLATFORM_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
     kForV8ContextSnapshotNonMain,
     kWorker,
   };
+
+  static bool IsIsolatedWorldId(int world_id) {
+    return DOMWrapperWorld::kMainWorldId < world_id &&
+           world_id < DOMWrapperWorld::kDOMWrapperWorldIsolatedWorldIdLimit;
+  }
 
   // Creates a world other than IsolatedWorld. Note this can return nullptr if
   // GenerateWorldIdForType fails to allocate a valid id.
@@ -118,18 +125,6 @@ class PLATFORM_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
   static void SetIsolatedWorldSecurityOrigin(int world_id,
                                              scoped_refptr<SecurityOrigin>);
   SecurityOrigin* IsolatedWorldSecurityOrigin();
-
-  // Associated an isolated world with a Content Security Policy. Resources
-  // embedded into the main world's DOM from script executed in an isolated
-  // world should be restricted based on the isolated world's DOM, not the
-  // main world's.
-  //
-  // FIXME: Right now, resource injection simply bypasses the main world's
-  // DOM. More work is necessary to allow the isolated world's policy to be
-  // applied correctly.
-  static void SetIsolatedWorldContentSecurityPolicy(int world_id,
-                                                    const String& policy);
-  bool IsolatedWorldHasContentSecurityPolicy();
 
   static bool HasWrapperInAnyWorldInMainThread(ScriptWrappable*);
 

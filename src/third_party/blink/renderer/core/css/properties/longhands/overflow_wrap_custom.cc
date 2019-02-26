@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/overflow_wrap.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* OverflowWrap::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -16,5 +16,5 @@ const CSSValue* OverflowWrap::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.OverflowWrap());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

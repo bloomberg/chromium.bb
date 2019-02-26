@@ -35,7 +35,7 @@ namespace {
 class ScrollbarsTest : public SimTest {
  public:
   HitTestResult HitTest(int x, int y) {
-    return WebView().CoreHitTestResultAt(WebPoint(x, y));
+    return WebView().CoreHitTestResultAt(gfx::Point(x, y));
   }
 
   EventHandler& GetEventHandler() {
@@ -48,7 +48,8 @@ class ScrollbarsTest : public SimTest {
                         WebPointerProperties::Button::kNoButton, 0,
                         WebInputEvent::kNoModifiers, CurrentTimeTicks());
     event.SetFrameScale(1);
-    GetEventHandler().HandleMouseMoveEvent(event, Vector<WebMouseEvent>());
+    GetEventHandler().HandleMouseMoveEvent(event, Vector<WebMouseEvent>(),
+                                           Vector<WebMouseEvent>());
   }
 
   void HandleMousePressEvent(int x, int y) {
@@ -179,7 +180,7 @@ TEST_F(ScrollbarsTest, DocumentStyleRecalcPreservesScrollbars) {
               layout_viewport->HorizontalScrollbar());
 }
 
-class ScrollbarsWebViewClient : public FrameTestHelpers::TestWebViewClient {
+class ScrollbarsWebViewClient : public frame_test_helpers::TestWebViewClient {
  public:
   void ConvertWindowToViewport(WebFloatRect* rect) override {
     rect->x *= device_scale_factor_;
@@ -199,7 +200,7 @@ TEST_F(ScrollbarsTest, ScrollbarSizeForUseZoomDSF) {
   ScrollbarsWebViewClient client;
   client.set_device_scale_factor(1.f);
 
-  FrameTestHelpers::WebViewHelper web_view_helper;
+  frame_test_helpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view_impl =
       web_view_helper.Initialize(nullptr, &client, nullptr, nullptr);
 
@@ -207,19 +208,20 @@ TEST_F(ScrollbarsTest, ScrollbarSizeForUseZoomDSF) {
   web_view_impl->GetSettings()->SetViewportEnabled(true);
   web_view_impl->Resize(IntSize(800, 600));
 
-  WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
-  FrameTestHelpers::LoadHTMLString(web_view_impl->MainFrameImpl(),
-                                   "<!DOCTYPE html>"
-                                   "<style>"
-                                   "  body {"
-                                   "    width: 1600px;"
-                                   "    height: 1200px;"
-                                   "  }"
-                                   "</style>"
-                                   "<body>"
-                                   "</body>",
-                                   base_url);
-  web_view_impl->UpdateAllLifecyclePhases();
+  WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
+  frame_test_helpers::LoadHTMLString(web_view_impl->MainFrameImpl(),
+                                     "<!DOCTYPE html>"
+                                     "<style>"
+                                     "  body {"
+                                     "    width: 1600px;"
+                                     "    height: 1200px;"
+                                     "  }"
+                                     "</style>"
+                                     "<body>"
+                                     "</body>",
+                                     base_url);
+  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases(
+      WebWidget::LifecycleUpdateReason::kTest);
 
   Document* document =
       ToLocalFrame(web_view_impl->GetPage()->MainFrame())->GetDocument();
@@ -411,8 +413,8 @@ TEST_F(ScrollbarsTest, OverlayScrollbarChangeToDisplayNoneDynamically) {
   DCHECK(!scrollable_root->HorizontalScrollbar());
 
   // Set display:none.
-  div->setAttribute(HTMLNames::classAttr, "noscrollbars");
-  document.body()->setAttribute(HTMLNames::classAttr, "noscrollbars");
+  div->setAttribute(html_names::kClassAttr, "noscrollbars");
+  document.body()->setAttribute(html_names::kClassAttr, "noscrollbars");
   Compositor().BeginFrame();
 
   EXPECT_TRUE(scrollable_div->VerticalScrollbar());
@@ -1263,7 +1265,7 @@ TEST_F(ScrollbarsTest, CustomScrollbarWhenStyleOwnerChange) {
   DCHECK(!div_scrollable->VerticalScrollbar()->IsOverlayScrollbar());
   DCHECK(!div_scrollable->VerticalScrollbar()->GetTheme().IsMockTheme());
 
-  div->setAttribute(HTMLNames::classAttr, "custom");
+  div->setAttribute(html_names::kClassAttr, "custom");
   Compositor().BeginFrame();
 
   EXPECT_TRUE(div_scrollable->VerticalScrollbar()->IsCustomScrollbar());
@@ -1998,7 +2000,7 @@ TEST_F(ScrollbarsTest,
   EXPECT_FALSE(scrollable_div->ScrollbarsHiddenIfOverlay());
 
   // Set display:none calls Dispose().
-  div->setAttribute(HTMLNames::classAttr, "hide");
+  div->setAttribute(html_names::kClassAttr, "hide");
   Compositor().BeginFrame();
 
   // After paint layer in scrollable dispose, we can still call scrollbar hidden
@@ -2044,7 +2046,7 @@ TEST_F(ScrollbarsTest, PLSADisposeShouldClearPointerInLayers) {
   GraphicsLayer* graphics_layer = scrollable_div->LayerForScrolling();
   ASSERT_TRUE(graphics_layer);
 
-  div->setAttribute(HTMLNames::classAttr, "hide");
+  div->setAttribute(html_names::kClassAttr, "hide");
   document.UpdateStyleAndLayout();
 
   EXPECT_FALSE(paint_layer->GetScrollableArea());

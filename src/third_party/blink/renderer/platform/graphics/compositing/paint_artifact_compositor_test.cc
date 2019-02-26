@@ -167,13 +167,13 @@ class PaintArtifactCompositorTest : public testing::Test,
       const auto* scroll_node = scroll_offset.ScrollNode();
       scoped_refptr<cc::Layer> layer = cc::Layer::Create();
       auto rect = scroll_node->ContainerRect();
-      layer->SetScrollable(gfx::Size(rect.Width(), rect.Height()));
-      layer->SetBounds(gfx::Size(rect.Width(), rect.Height()));
+      layer->SetOffsetToTransformParent(gfx::Vector2dF(rect.X(), rect.Y()));
+      layer->SetScrollable(gfx::Size(rect.Size()));
+      layer->SetBounds(gfx::Size(rect.Size()));
       layer->SetElementId(scroll_node->GetCompositorElementId());
       layer->set_did_scroll_callback(
           paint_artifact_compositor_->scroll_callback_);
-      artifact.Chunk(scroll_offset, clip, effect)
-          .ForeignLayer(FloatPoint(rect.Location()), rect.Size(), layer);
+      artifact.Chunk(scroll_offset, clip, effect).ForeignLayer(layer);
       return;
     }
     // Scroll hit test layers are marked as scrollable for hit testing but are
@@ -904,12 +904,12 @@ TEST_P(PaintArtifactCompositorTest, SiblingClipsWithAlias) {
 TEST_P(PaintArtifactCompositorTest, ForeignLayerPassesThrough) {
   scoped_refptr<cc::Layer> layer = cc::Layer::Create();
   layer->SetIsDrawable(true);
+  layer->SetOffsetToTransformParent(gfx::Vector2dF(50, 60));
   layer->SetBounds(gfx::Size(400, 300));
 
   TestPaintArtifact test_artifact;
   test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
-  test_artifact.Chunk().ForeignLayer(FloatPoint(50, 60), IntSize(400, 300),
-                                     layer);
+  test_artifact.Chunk().ForeignLayer(layer);
   test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 100, 100), Color::kGray);
 
   auto artifact = test_artifact.Build();
@@ -1059,9 +1059,9 @@ TEST_P(PaintArtifactCompositorTest, OneScrollNode) {
 
   // The scrolling contents layer is clipped to the scrolling range.
   EXPECT_EQ(gfx::Size(27, 19), layer->bounds());
-  EXPECT_EQ(gfx::Vector2dF(0, 12), layer->offset_to_transform_parent());
+  EXPECT_EQ(gfx::Vector2dF(3, 12), layer->offset_to_transform_parent());
   EXPECT_THAT(layer->GetPicture(),
-              Pointee(DrawsRectangle(FloatRect(0, 0, 60, 19), Color::kWhite)));
+              Pointee(DrawsRectangle(FloatRect(0, 0, 57, 19), Color::kWhite)));
 
   auto* scroll_layer = ScrollableLayerAt(0);
   EXPECT_TRUE(scroll_layer->scrollable());
@@ -1105,10 +1105,10 @@ TEST_P(PaintArtifactCompositorTest, TransformUnderScrollNode) {
   EXPECT_EQ(scroll_node.id, layer1->scroll_tree_index());
 
   // The scrolling layer is clipped to the scrollable range.
-  EXPECT_EQ(gfx::Vector2dF(0, 4), layer0->offset_to_transform_parent());
-  EXPECT_EQ(gfx::Size(27, 8), layer0->bounds());
+  EXPECT_EQ(gfx::Vector2dF(3, 5), layer0->offset_to_transform_parent());
+  EXPECT_EQ(gfx::Size(27, 7), layer0->bounds());
   EXPECT_THAT(layer0->GetPicture(),
-              Pointee(DrawsRectangle(FloatRect(0, 0, 40, 8), Color::kBlack)));
+              Pointee(DrawsRectangle(FloatRect(0, 0, 37, 7), Color::kBlack)));
 
   // The layer under the transform without a scroll node is not clipped.
   EXPECT_EQ(gfx::Vector2dF(1, -30), layer1->offset_to_transform_parent());
@@ -1863,7 +1863,7 @@ TEST_P(PaintArtifactCompositorTest, PendingLayer) {
   PendingLayer pending_layer(chunk1, 0, false);
 
   EXPECT_EQ(FloatRect(0, 0, 30, 40), pending_layer.bounds);
-  EXPECT_EQ((Vector<size_t>{0}), pending_layer.paint_chunk_indices);
+  EXPECT_EQ((Vector<wtf_size_t>{0}), pending_layer.paint_chunk_indices);
   EXPECT_EQ(pending_layer.bounds, pending_layer.rect_known_to_be_opaque);
 
   PaintChunk chunk2 = DefaultChunk();
@@ -1874,7 +1874,7 @@ TEST_P(PaintArtifactCompositorTest, PendingLayer) {
 
   // Bounds not equal to one PaintChunk.
   EXPECT_EQ(FloatRect(0, 0, 40, 60), pending_layer.bounds);
-  EXPECT_EQ((Vector<size_t>{0, 1}), pending_layer.paint_chunk_indices);
+  EXPECT_EQ((Vector<wtf_size_t>{0, 1}), pending_layer.paint_chunk_indices);
   EXPECT_NE(pending_layer.bounds, pending_layer.rect_known_to_be_opaque);
 
   PaintChunk chunk3 = DefaultChunk();
@@ -1884,7 +1884,7 @@ TEST_P(PaintArtifactCompositorTest, PendingLayer) {
   pending_layer.Merge(PendingLayer(chunk3, 2, false));
 
   EXPECT_EQ(FloatRect(-5, -25, 45, 85), pending_layer.bounds);
-  EXPECT_EQ((Vector<size_t>{0, 1, 2}), pending_layer.paint_chunk_indices);
+  EXPECT_EQ((Vector<wtf_size_t>{0, 1, 2}), pending_layer.paint_chunk_indices);
   EXPECT_NE(pending_layer.bounds, pending_layer.rect_known_to_be_opaque);
 }
 
@@ -2290,9 +2290,43 @@ TEST_P(PaintArtifactCompositorTest, UpdatePopulatesCompositedElementIds) {
 
   EXPECT_EQ(2u, composited_element_ids.size());
   EXPECT_TRUE(
-      composited_element_ids.Contains(transform->GetCompositorElementId()));
+      composited_element_ids.count(transform->GetCompositorElementId()));
+  EXPECT_TRUE(composited_element_ids.count(effect->GetCompositorElementId()));
+}
+
+// If we have both a transform and an opacity animation, they should both be
+// included in the composited element id set returned from
+// |PaintArtifactCompositor::Update(...)|.
+TEST_P(PaintArtifactCompositorTest, UniqueAnimationCompositedElementIds) {
+  TransformPaintPropertyNode::State transform_state;
+  transform_state.direct_compositing_reasons =
+      CompositingReason::kActiveTransformAnimation;
+  transform_state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
+      31, CompositorElementIdNamespace::kPrimaryTransform);
+  auto transform =
+      TransformPaintPropertyNode::Create(t0(), std::move(transform_state));
+
+  EffectPaintPropertyNode::State effect_state;
+  effect_state.local_transform_space = transform;
+  effect_state.output_clip = &c0();
+  effect_state.opacity = 2.0 / 255.0;
+  effect_state.direct_compositing_reasons =
+      CompositingReason::kActiveOpacityAnimation;
+  effect_state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
+      41, CompositorElementIdNamespace::kPrimaryEffect);
+  auto effect = EffectPaintPropertyNode::Create(e0(), std::move(effect_state));
+
+  TestPaintArtifact artifact;
+  artifact.Chunk(*transform, c0(), *effect)
+      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+
+  CompositorElementIdSet composited_element_ids;
+  Update(artifact.Build(), composited_element_ids);
+
+  EXPECT_EQ(2u, composited_element_ids.size());
   EXPECT_TRUE(
-      composited_element_ids.Contains(effect->GetCompositorElementId()));
+      composited_element_ids.count(transform->GetCompositorElementId()));
+  EXPECT_TRUE(composited_element_ids.count(effect->GetCompositorElementId()));
 }
 
 TEST_P(PaintArtifactCompositorTest, SkipChunkWithOpacityZero) {
@@ -2444,15 +2478,18 @@ TEST_P(PaintArtifactCompositorTest, UpdateManagesLayerElementIds) {
 
     Update(artifact.Build());
     ASSERT_EQ(1u, ContentLayerCount());
-    ASSERT_TRUE(GetLayerTreeHost().LayerByElementId(element_id));
+    ASSERT_TRUE(GetLayerTreeHost().IsElementInList(
+        element_id, cc::ElementListType::ACTIVE));
   }
 
   {
     TestPaintArtifact artifact;
-    ASSERT_TRUE(GetLayerTreeHost().LayerByElementId(element_id));
+    ASSERT_TRUE(GetLayerTreeHost().IsElementInList(
+        element_id, cc::ElementListType::ACTIVE));
     Update(artifact.Build());
     ASSERT_EQ(0u, ContentLayerCount());
-    ASSERT_FALSE(GetLayerTreeHost().LayerByElementId(element_id));
+    ASSERT_FALSE(GetLayerTreeHost().IsElementInList(
+        element_id, cc::ElementListType::ACTIVE));
   }
 }
 

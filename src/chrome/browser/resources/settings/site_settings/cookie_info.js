@@ -58,8 +58,7 @@ const cookieInfo = {
     ['created', 'channelIdCreated']
   ],
   'service_worker': [
-    ['origin', 'serviceWorkerOrigin'], ['size', 'serviceWorkerSize'],
-    ['scopes', 'serviceWorkerScopes']
+    ['origin', 'serviceWorkerOrigin'], ['size', 'serviceWorkerSize']
   ],
   'shared_worker':
       [['worker', 'sharedWorkerWorker'], ['name', 'sharedWorkerName']],

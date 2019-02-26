@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_PROXY_DHCP_PAC_FILE_ADAPTER_FETCHER_WIN_H_
-#define NET_PROXY_DHCP_PAC_FILE_ADAPTER_FETCHER_WIN_H_
+#ifndef NET_PROXY_RESOLUTION_DHCP_PAC_FILE_ADAPTER_FETCHER_WIN_H_
+#define NET_PROXY_RESOLUTION_DHCP_PAC_FILE_ADAPTER_FETCHER_WIN_H_
 
 #include <stddef.h>
 
@@ -194,4 +194,4 @@ class NET_EXPORT_PRIVATE DhcpPacFileAdapterFetcher
 
 }  // namespace net
 
-#endif  // NET_PROXY_DHCP_PAC_FILE_ADAPTER_FETCHER_WIN_H_
+#endif  // NET_PROXY_RESOLUTION_DHCP_PAC_FILE_ADAPTER_FETCHER_WIN_H_

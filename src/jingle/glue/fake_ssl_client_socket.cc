@@ -102,6 +102,20 @@ int FakeSSLClientSocket::Read(net::IOBuffer* buf,
   return transport_socket_->Read(buf, buf_len, std::move(callback));
 }
 
+int FakeSSLClientSocket::ReadIfReady(net::IOBuffer* buf,
+                                     int buf_len,
+                                     net::CompletionOnceCallback callback) {
+  DCHECK_EQ(next_handshake_state_, STATE_NONE);
+  DCHECK(handshake_completed_);
+  return transport_socket_->ReadIfReady(buf, buf_len, std::move(callback));
+}
+
+int FakeSSLClientSocket::CancelReadIfReady() {
+  DCHECK_EQ(next_handshake_state_, STATE_NONE);
+  DCHECK(handshake_completed_);
+  return transport_socket_->CancelReadIfReady();
+}
+
 int FakeSSLClientSocket::Write(
     net::IOBuffer* buf,
     int buf_len,

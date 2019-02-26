@@ -28,6 +28,7 @@ class MODULES_EXPORT PresentationRequest final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  PresentationRequest(ExecutionContext*, const Vector<KURL>&);
   ~PresentationRequest() override = default;
 
   static PresentationRequest* Create(ExecutionContext*,
@@ -44,15 +45,13 @@ class MODULES_EXPORT PresentationRequest final
   // ScriptWrappable implementation.
   bool HasPendingActivity() const final;
 
-  static void RecordStartOriginTypeAccess(ExecutionContext&);
-
   ScriptPromise start(ScriptState*);
   ScriptPromise reconnect(ScriptState*, const String& id);
   ScriptPromise getAvailability(ScriptState*);
 
   const Vector<KURL>& Urls() const;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(connectionavailable);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(connectionavailable, kConnectionavailable);
 
   void Trace(blink::Visitor*) override;
 
@@ -62,9 +61,6 @@ class MODULES_EXPORT PresentationRequest final
                           RegisteredEventListener&) override;
 
  private:
-  PresentationRequest(ExecutionContext*, const Vector<KURL>&);
-  static void RecordConstructorOriginTypeAccess(ExecutionContext&);
-
   Member<PresentationAvailabilityProperty> availability_property_;
   Vector<KURL> urls_;
 };

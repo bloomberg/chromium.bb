@@ -36,17 +36,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightController final {
   // PreflightTimingInfo is provided only when a preflight request was made.
   using CompletionCallback =
       base::OnceCallback<void(int net_error,
-                              base::Optional<CORSErrorStatus>,
+                              base::Optional<CorsErrorStatus>,
                               base::Optional<PreflightTimingInfo>)>;
   // Creates a CORS-preflight ResourceRequest for a specified |request| for a
   // URL that is originally requested.
   static std::unique_ptr<ResourceRequest> CreatePreflightRequestForTesting(
       const ResourceRequest& request,
       bool tainted = false);
-
-  // Obtains the shared default controller instance.
-  // TODO(toyoshim): Find a right owner rather than a single design.
-  static PreflightController* GetDefaultController();
 
   PreflightController();
   ~PreflightController();

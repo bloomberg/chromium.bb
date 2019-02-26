@@ -30,7 +30,6 @@ class ConsentSyncBridgeImpl : public ConsentSyncBridge,
   ~ConsentSyncBridgeImpl() override;
 
   // ModelTypeSyncBridge implementation.
-  void OnSyncStarting(const DataTypeActivationRequest& request) override;
   std::unique_ptr<MetadataChangeList> CreateMetadataChangeList() override;
   base::Optional<ModelError> MergeSyncData(
       std::unique_ptr<MetadataChangeList> metadata_change_list,
@@ -53,6 +52,7 @@ class ConsentSyncBridgeImpl : public ConsentSyncBridge,
 
   static std::string GetStorageKeyFromSpecificsForTest(
       const sync_pb::UserConsentSpecifics& specifics);
+  std::unique_ptr<ModelTypeStore> StealStoreForTest();
 
  private:
   void RecordConsentImpl(
@@ -90,9 +90,6 @@ class ConsentSyncBridgeImpl : public ConsentSyncBridge,
   // ready.
   std::vector<std::unique_ptr<sync_pb::UserConsentSpecifics>>
       deferred_consents_while_initializing_;
-
-  // Empty if sync not running.
-  std::string syncing_account_id_;
 
   base::WeakPtrFactory<ConsentSyncBridgeImpl> weak_ptr_factory_;
 

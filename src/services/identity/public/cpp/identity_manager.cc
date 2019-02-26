@@ -5,6 +5,8 @@
 #include "services/identity/public/cpp/identity_manager.h"
 
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "services/identity/public/cpp/primary_account_mutator.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace identity {
 
@@ -46,11 +48,14 @@ IdentityManager::IdentityManager(
     SigninManagerBase* signin_manager,
     ProfileOAuth2TokenService* token_service,
     AccountTrackerService* account_tracker_service,
-    GaiaCookieManagerService* gaia_cookie_manager_service)
+    GaiaCookieManagerService* gaia_cookie_manager_service,
+    std::unique_ptr<PrimaryAccountMutator> primary_account_mutator)
     : signin_manager_(signin_manager),
       token_service_(token_service),
       account_tracker_service_(account_tracker_service),
-      gaia_cookie_manager_service_(gaia_cookie_manager_service) {
+      gaia_cookie_manager_service_(gaia_cookie_manager_service),
+      primary_account_mutator_(std::move(primary_account_mutator)),
+      accounts_mutator_(token_service_) {
   signin_manager_->AddObserver(this);
   token_service_->AddDiagnosticsObserver(this);
   token_service_->AddObserver(this);
@@ -116,13 +121,12 @@ std::vector<AccountInfo> IdentityManager::GetAccountsWithRefreshTokens() const {
   return accounts;
 }
 
-std::vector<AccountInfo> IdentityManager::GetAccountsInCookieJar(
-    const std::string& source) const {
+std::vector<AccountInfo> IdentityManager::GetAccountsInCookieJar() const {
   // TODO(859882): Change this implementation to interact asynchronously with
   // GaiaCookieManagerService as detailed in
   // https://docs.google.com/document/d/1hcrJ44facCSHtMGBmPusvcoP-fAR300Hi-UFez8ffYQ/edit?pli=1#heading=h.w97eil1cygs2.
   std::vector<gaia::ListedAccount> listed_accounts;
-  gaia_cookie_manager_service_->ListAccounts(&listed_accounts, nullptr, source);
+  gaia_cookie_manager_service_->ListAccounts(&listed_accounts, nullptr);
 
   return ListedAccountsToAccountInfos(listed_accounts);
 }
@@ -150,7 +154,7 @@ std::unique_ptr<AccessTokenFetcher>
 IdentityManager::CreateAccessTokenFetcherForAccount(
     const std::string& account_id,
     const std::string& oauth_consumer_name,
-    const OAuth2TokenService::ScopeSet& scopes,
+    const identity::ScopeSet& scopes,
     AccessTokenFetcher::TokenCallback callback,
     AccessTokenFetcher::Mode mode) {
   return std::make_unique<AccessTokenFetcher>(account_id, oauth_consumer_name,
@@ -158,9 +162,22 @@ IdentityManager::CreateAccessTokenFetcherForAccount(
                                               std::move(callback), mode);
 }
 
+std::unique_ptr<AccessTokenFetcher>
+IdentityManager::CreateAccessTokenFetcherForAccount(
+    const std::string& account_id,
+    const std::string& oauth_consumer_name,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    const identity::ScopeSet& scopes,
+    AccessTokenFetcher::TokenCallback callback,
+    AccessTokenFetcher::Mode mode) {
+  return std::make_unique<AccessTokenFetcher>(
+      account_id, oauth_consumer_name, token_service_, url_loader_factory,
+      scopes, std::move(callback), mode);
+}
+
 void IdentityManager::RemoveAccessTokenFromCache(
     const std::string& account_id,
-    const OAuth2TokenService::ScopeSet& scopes,
+    const identity::ScopeSet& scopes,
     const std::string& access_token) {
   // TODO(843510): Consider making the request to ProfileOAuth2TokenService
   // asynchronously once there are no direct clients of PO2TS. This change would
@@ -169,6 +186,14 @@ void IdentityManager::RemoveAccessTokenFromCache(
   // as well (to maintain ordering in the case where a client removes an access
   // token from the cache and then immediately requests an access token).
   token_service_->InvalidateAccessToken(account_id, scopes, access_token);
+}
+
+PrimaryAccountMutator* IdentityManager::GetPrimaryAccountMutator() {
+  return primary_account_mutator_.get();
+}
+
+AccountsMutator* IdentityManager::GetAccountsMutator() {
+  return &accounts_mutator_;
 }
 
 void IdentityManager::AddObserver(Observer* observer) {
@@ -187,6 +212,18 @@ void IdentityManager::RemoveDiagnosticsObserver(DiagnosticsObserver* observer) {
   diagnostics_observer_list_.RemoveObserver(observer);
 }
 
+SigninManagerBase* IdentityManager::GetSigninManager() {
+  return signin_manager_;
+}
+
+ProfileOAuth2TokenService* IdentityManager::GetTokenService() {
+  return token_service_;
+}
+
+AccountTrackerService* IdentityManager::GetAccountTrackerService() {
+  return account_tracker_service_;
+}
+
 void IdentityManager::SetPrimaryAccountSynchronouslyForTests(
     const std::string& gaia_id,
     const std::string& email_address,
@@ -202,14 +239,16 @@ void IdentityManager::SetPrimaryAccountSynchronously(
   signin_manager_->SetAuthenticatedAccountInfo(gaia_id, email_address);
 
   if (!refresh_token.empty()) {
-    token_service_->UpdateCredentials(GetPrimaryAccountId(), refresh_token);
+    // Note: Source for the operation is |Unknown| as the method
+    // |SetPrimaryAccountSynchronously| is only used for testing.
+    token_service_->UpdateCredentials(
+        GetPrimaryAccountId(), refresh_token,
+        signin_metrics::SourceForRefreshTokenOperation::kUnknown);
   }
 }
 
-// Populates and returns an AccountInfo object corresponding to |account_id|,
-// which must be an account with a refresh token.
 AccountInfo IdentityManager::GetAccountInfoForAccountWithRefreshToken(
-    std::string account_id) const {
+    const std::string& account_id) const {
   DCHECK(HasAccountWithRefreshToken(account_id));
 
   AccountInfo account_info =
@@ -237,6 +276,14 @@ AccountInfo IdentityManager::GetAccountInfoForAccountWithRefreshToken(
 void IdentityManager::GoogleSigninSucceeded(const AccountInfo& account_info) {
   for (auto& observer : observer_list_) {
     observer.OnPrimaryAccountSet(account_info);
+  }
+}
+
+void IdentityManager::GoogleSigninSucceededWithPassword(
+    const AccountInfo& account_info,
+    const std::string& password) {
+  for (auto& observer : observer_list_) {
+    observer.OnPrimaryAccountSetWithPassword(account_info, password);
   }
 }
 
@@ -282,6 +329,16 @@ void IdentityManager::OnRefreshTokenRevoked(const std::string& account_id) {
 void IdentityManager::OnRefreshTokensLoaded() {
   for (auto& observer : observer_list_)
     observer.OnRefreshTokensLoaded();
+}
+
+void IdentityManager::OnStartBatchChanges() {
+  for (auto& observer : observer_list_)
+    observer.OnStartBatchOfRefreshTokenStateChanges();
+}
+
+void IdentityManager::OnEndBatchChanges() {
+  for (auto& observer : observer_list_)
+    observer.OnEndBatchOfRefreshTokenStateChanges();
 }
 
 void IdentityManager::OnGaiaAccountsInCookieUpdated(

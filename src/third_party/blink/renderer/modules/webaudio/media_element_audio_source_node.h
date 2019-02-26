@@ -53,7 +53,7 @@ class MediaElementAudioSourceHandler final : public AudioHandler {
 
   // AudioHandler
   void Dispose() override;
-  void Process(size_t frames_to_process) override;
+  void Process(uint32_t frames_to_process) override;
 
   // AudioNode
   double TailTime() const override { return 0; }
@@ -61,7 +61,7 @@ class MediaElementAudioSourceHandler final : public AudioHandler {
 
   // Helpers for AudioSourceProviderClient implementation of
   // MediaElementAudioSourceNode.
-  void SetFormat(size_t number_of_channels, float sample_rate);
+  void SetFormat(uint32_t number_of_channels, float sample_rate);
   void lock() EXCLUSIVE_LOCK_FUNCTION(GetProcessLock());
   void unlock() UNLOCK_FUNCTION(GetProcessLock());
 
@@ -84,7 +84,7 @@ class MediaElementAudioSourceHandler final : public AudioHandler {
 
   // Print warning if CORS restrictions cause MediaElementAudioSource to output
   // zeroes.
-  void PrintCORSMessage(const String& message);
+  void PrintCorsMessage(const String& message);
 
   // This Persistent doesn't make a reference cycle. The reference from
   // HTMLMediaElement to AudioSourceProvideClient, which
@@ -119,7 +119,9 @@ class MediaElementAudioSourceNode final : public AudioNode,
                                              HTMLMediaElement&,
                                              ExceptionState&);
   static MediaElementAudioSourceNode*
-  Create(AudioContext*, const MediaElementAudioSourceOptions&, ExceptionState&);
+  Create(AudioContext*, const MediaElementAudioSourceOptions*, ExceptionState&);
+
+  MediaElementAudioSourceNode(AudioContext&, HTMLMediaElement&);
 
   void Trace(blink::Visitor*) override;
   MediaElementAudioSourceHandler& GetMediaElementAudioSourceHandler() const;
@@ -127,14 +129,11 @@ class MediaElementAudioSourceNode final : public AudioNode,
   HTMLMediaElement* mediaElement() const;
 
   // AudioSourceProviderClient functions:
-  void SetFormat(size_t number_of_channels, float sample_rate) override;
+  void SetFormat(uint32_t number_of_channels, float sample_rate) override;
   void lock() override EXCLUSIVE_LOCK_FUNCTION(
       GetMediaElementAudioSourceHandler().GetProcessLock());
   void unlock() override
       UNLOCK_FUNCTION(GetMediaElementAudioSourceHandler().GetProcessLock());
-
- private:
-  MediaElementAudioSourceNode(AudioContext&, HTMLMediaElement&);
 };
 
 }  // namespace blink

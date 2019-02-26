@@ -21,7 +21,7 @@
 #include "third_party/blink/renderer/core/html/html_details_element.h"
 
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -41,16 +41,17 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 HTMLDetailsElement* HTMLDetailsElement::Create(Document& document) {
-  HTMLDetailsElement* details = new HTMLDetailsElement(document);
+  HTMLDetailsElement* details =
+      MakeGarbageCollected<HTMLDetailsElement>(document);
   details->EnsureUserAgentShadowRoot();
   return details;
 }
 
 HTMLDetailsElement::HTMLDetailsElement(Document& document)
-    : HTMLElement(detailsTag, document), is_open_(false) {
+    : HTMLElement(kDetailsTag, document), is_open_(false) {
   UseCounter::Count(document, WebFeature::kDetailsElement);
 }
 
@@ -67,7 +68,7 @@ bool HTMLDetailsElement::IsFirstSummary(const Node& node) {
 }
 
 void HTMLDetailsElement::DispatchPendingEvent() {
-  DispatchEvent(*Event::Create(EventTypeNames::toggle));
+  DispatchEvent(*Event::Create(event_type_names::kToggle));
 }
 
 LayoutObject* HTMLDetailsElement::CreateLayoutObject(
@@ -84,12 +85,12 @@ void HTMLDetailsElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {
 
   HTMLSlotElement* summary_slot =
       HTMLSlotElement::CreateUserAgentCustomAssignSlot(GetDocument());
-  summary_slot->SetIdAttribute(ShadowElementNames::DetailsSummary());
+  summary_slot->SetIdAttribute(shadow_element_names::DetailsSummary());
   summary_slot->AppendChild(default_summary);
   root.AppendChild(summary_slot);
 
   HTMLDivElement* content = HTMLDivElement::Create(GetDocument());
-  content->SetIdAttribute(ShadowElementNames::DetailsContent());
+  content->SetIdAttribute(shadow_element_names::DetailsContent());
   content->AppendChild(
       HTMLSlotElement::CreateUserAgentDefaultSlot(GetDocument()));
   content->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
@@ -110,7 +111,7 @@ Element* HTMLDetailsElement::FindMainSummary() const {
 
 void HTMLDetailsElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  if (params.name == openAttr) {
+  if (params.name == kOpenAttr) {
     bool old_value = is_open_;
     is_open_ = !params.new_value.IsNull();
     if (is_open_ == old_value)
@@ -123,7 +124,7 @@ void HTMLDetailsElement::ParseAttribute(
                   WrapPersistent(this)));
 
     Element* content = EnsureUserAgentShadowRoot().getElementById(
-        ShadowElementNames::DetailsContent());
+        shadow_element_names::DetailsContent());
     DCHECK(content);
     if (is_open_)
       content->RemoveInlineStyleProperty(CSSPropertyDisplay);
@@ -145,7 +146,7 @@ void HTMLDetailsElement::ParseAttribute(
 }
 
 void HTMLDetailsElement::ToggleOpen() {
-  setAttribute(openAttr, is_open_ ? g_null_atom : g_empty_atom);
+  setAttribute(kOpenAttr, is_open_ ? g_null_atom : g_empty_atom);
 }
 
 bool HTMLDetailsElement::IsInteractiveContent() const {

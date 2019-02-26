@@ -88,11 +88,6 @@ class CONTENT_EXPORT ContentMainDelegate {
   virtual void ZygoteForked() {}
 #endif  // defined(OS_LINUX)
 
-  // TODO(vadimt, yiyaoliu): Remove this function once crbug.com/453640 is
-  // fixed.
-  // Returns whether or not profiler recording should be enabled.
-  virtual bool ShouldEnableProfilerRecording();
-
   // Fatal errors during initialization are reported by this function, so that
   // the embedder can implement graceful exit by displaying some message and
   // returning initialization error code. Default behavior is CHECK(false).
@@ -129,9 +124,15 @@ class CONTENT_EXPORT ContentMainDelegate {
 
   // Allows the embedder to perform its own initialization after content
   // performed its own and already brought up MessageLoop, TaskScheduler, field
-  // tials and FeatureList (by default).
+  // trials and FeatureList (by default).
   // |is_running_tests| indicates whether it is running in tests.
   virtual void PostEarlyInitialization(bool is_running_tests) {}
+
+  // Allows the embedder to perform initialization once field trials/FeatureList
+  // initialization has completed if ShouldCreateFeatureList() returns true.
+  // Otherwise, the embedder is responsible for calling this method once feature
+  // list initialization is complete.
+  virtual void PostFieldTrialInitialization() {}
 
  protected:
   friend class ContentClientInitializer;

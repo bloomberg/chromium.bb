@@ -181,6 +181,9 @@ enum class TaskType : unsigned {
   // * //third_party/blink/renderer/core/workers
   kInternalWorker = 36,
 
+  // Translation task that freezes when the frame is not visible.
+  kInternalTranslation = 55,
+
   // Tasks used at IntersectionObserver.
   kInternalIntersectionObserver = 44,
 
@@ -202,7 +205,7 @@ enum class TaskType : unsigned {
   kWorkerThreadTaskQueueV8 = 47,
   kWorkerThreadTaskQueueCompositor = 48,
 
-  kCount = 55,
+  kCount = 56,
 };
 
 }  // namespace blink

@@ -13,9 +13,8 @@
 #include "ios/chrome/browser/infobars/infobar_controller_delegate.h"
 #import "ios/chrome/browser/ui/autofill/save_card_infobar_view.h"
 #import "ios/chrome/browser/ui/autofill/save_card_infobar_view_delegate.h"
-#import "ios/chrome/browser/ui/infobars/infobar_view_sizing_delegate.h"
-#include "ios/chrome/browser/ui/ui_util.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/window_open_disposition.h"
@@ -69,9 +68,9 @@ base::string16 GetTitleForButton(ConfirmInfoBarDelegate* delegate,
   return [super initWithInfoBarDelegate:infoBarDelegate];
 }
 
-- (UIView<InfoBarViewSizing>*)viewForFrame:(CGRect)frame {
+- (UIView*)infobarView {
   SaveCardInfoBarView* infoBarView =
-      [[SaveCardInfoBarView alloc] initWithFrame:frame];
+      [[SaveCardInfoBarView alloc] initWithFrame:CGRectZero];
   self.infoBarView = infoBarView;
   self.infoBarView.accessibilityIdentifier =
       self.infoBarDelegate->upload() ? kSaveCardInfobarViewUploadAccessibilityID

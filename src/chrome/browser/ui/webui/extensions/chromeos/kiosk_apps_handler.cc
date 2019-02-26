@@ -16,7 +16,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/strings/string_util.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"

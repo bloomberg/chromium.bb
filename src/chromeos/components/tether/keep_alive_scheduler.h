@@ -41,7 +41,6 @@ class KeepAliveScheduler : public ActiveHost::Observer,
       device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client,
       ActiveHost* active_host,
-      BleConnectionManager* connection_manager,
       HostScanCache* host_scan_cache,
       DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map);
   virtual ~KeepAliveScheduler();
@@ -62,7 +61,6 @@ class KeepAliveScheduler : public ActiveHost::Observer,
       device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client,
       ActiveHost* active_host,
-      BleConnectionManager* connection_manager,
       HostScanCache* host_scan_cache,
       DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map,
       std::unique_ptr<base::RepeatingTimer> timer);
@@ -74,7 +72,6 @@ class KeepAliveScheduler : public ActiveHost::Observer,
   device_sync::DeviceSyncClient* device_sync_client_;
   secure_channel::SecureChannelClient* secure_channel_client_;
   ActiveHost* active_host_;
-  BleConnectionManager* connection_manager_;
   HostScanCache* host_scan_cache_;
   DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map_;
 

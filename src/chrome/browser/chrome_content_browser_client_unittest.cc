@@ -29,6 +29,7 @@
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
@@ -103,8 +104,9 @@ TEST_F(ChromeContentBrowserClientWindowTest, OpenURL) {
     // only be ran on platforms where OpenURL is implemented synchronously.
     // See https://crbug.com/457667.
     content::WebContents* web_contents = nullptr;
-    client.OpenURL(browser()->profile(),
-                   params,
+    scoped_refptr<content::SiteInstance> site_instance =
+        content::SiteInstance::Create(browser()->profile());
+    client.OpenURL(site_instance.get(), params,
                    base::Bind(&DidOpenURLForWindowTest, &web_contents));
 
     EXPECT_TRUE(web_contents);
@@ -279,7 +281,8 @@ class InstantNTPURLRewriteTest : public BrowserWithTestWindowTest {
 
   void InstallTemplateURLWithNewTabPage(GURL new_tab_page_url) {
     TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-        profile(), &TemplateURLServiceFactory::BuildInstanceFor);
+        profile(),
+        base::BindRepeating(&TemplateURLServiceFactory::BuildInstanceFor));
     TemplateURLService* template_url_service =
         TemplateURLServiceFactory::GetForProfile(browser()->profile());
     search_test_utils::WaitForTemplateURLServiceToLoad(template_url_service);
@@ -388,7 +391,7 @@ TEST(ChromeContentBrowserClientTest, ShouldTerminateOnServiceQuit) {
     bool expect_terminate;
   } kTestCases[] = {
       // Don't terminate for invalid service names.
-      {"", false},
+      {"x", false},
       {"unknown-name", false},
       // Don't terminate for some well-known browser services.
       {content::mojom::kBrowserServiceName, false},
@@ -400,7 +403,8 @@ TEST(ChromeContentBrowserClientTest, ShouldTerminateOnServiceQuit) {
   };
   ChromeContentBrowserClient client;
   for (const auto& test : kTestCases) {
-    service_manager::Identity id(test.service_name);
+    service_manager::Identity id(test.service_name, base::Token{1, 2},
+                                 base::Token{}, base::Token{3, 4});
     EXPECT_EQ(test.expect_terminate, client.ShouldTerminateOnServiceQuit(id))
         << "for service name " << test.service_name;
   }

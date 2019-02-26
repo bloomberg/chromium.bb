@@ -57,20 +57,20 @@ class ServiceWorkerContextWrapper;
 //
 // Storage schema is documented in storage/README.md
 class CONTENT_EXPORT BackgroundFetchDataManager
-    : public BackgroundFetchScheduler::RequestProvider,
-      public background_fetch::DatabaseTaskHost {
+    : public background_fetch::DatabaseTaskHost {
  public:
   using GetInitializationDataCallback = base::OnceCallback<void(
       blink::mojom::BackgroundFetchError,
       std::vector<background_fetch::BackgroundFetchInitializationData>)>;
-  using SettledFetchesCallback = base::OnceCallback<void(
-      blink::mojom::BackgroundFetchError,
-      blink::mojom::BackgroundFetchFailureReason,
-      std::vector<BackgroundFetchSettledFetch>,
-      std::vector<std::unique_ptr<storage::BlobDataHandle>>)>;
+  using SettledFetchesCallback =
+      base::OnceCallback<void(blink::mojom::BackgroundFetchError,
+                              std::vector<BackgroundFetchSettledFetch>)>;
   using GetRegistrationCallback =
       base::OnceCallback<void(blink::mojom::BackgroundFetchError,
                               const BackgroundFetchRegistration&)>;
+  using MarkRegistrationForDeletionCallback =
+      base::OnceCallback<void(blink::mojom::BackgroundFetchError,
+                              blink::mojom::BackgroundFetchFailureReason)>;
   using MarkRequestCompleteCallback =
       base::OnceCallback<void(blink::mojom::BackgroundFetchError)>;
   using NextRequestCallback =
@@ -102,7 +102,7 @@ class CONTENT_EXPORT BackgroundFetchDataManager
   // fail due to invalid input or storage errors.
   void CreateRegistration(
       const BackgroundFetchRegistrationId& registration_id,
-      const std::vector<ServiceWorkerFetchRequest>& requests,
+      std::vector<blink::mojom::FetchAPIRequestPtr> requests,
       const BackgroundFetchOptions& options,
       const SkBitmap& icon,
       bool start_paused,
@@ -114,21 +114,25 @@ class CONTENT_EXPORT BackgroundFetchDataManager
                        const std::string& developer_id,
                        GetRegistrationCallback callback);
 
-  // Updates the UI values for a Background Fetch registration.
-  void UpdateRegistrationUI(
-      const BackgroundFetchRegistrationId& registration_id,
-      const base::Optional<std::string>& title,
-      const base::Optional<SkBitmap>& icon,
-      blink::mojom::BackgroundFetchService::UpdateUICallback callback);
-
   // Reads the settled fetches for the given |registration_id| based on
   // |match_params|. Both the Request and Response objects will be initialised
   // based on the stored data. Will invoke the |callback| when the list of
   // fetches has been compiled.
-  void GetSettledFetchesForRegistration(
+  void MatchRequests(
       const BackgroundFetchRegistrationId& registration_id,
       std::unique_ptr<BackgroundFetchRequestMatchParams> match_params,
       SettledFetchesCallback callback);
+
+  // Retrieves the next pending request for |registration_id| and invoke
+  // |callback| with it.
+  void PopNextRequest(const BackgroundFetchRegistrationId& registration_id,
+                      NextRequestCallback callback);
+
+  // Marks |request_info| as complete and calls |callback| when done.
+  void MarkRequestAsComplete(
+      const BackgroundFetchRegistrationId& registration_id,
+      scoped_refptr<BackgroundFetchRequestInfo> request_info,
+      MarkRequestCompleteCallback callback);
 
   // Marks that the
   // backgroundfetchsuccess/backgroundfetchfail/backgroundfetchabort event is
@@ -140,10 +144,13 @@ class CONTENT_EXPORT BackgroundFetchDataManager
   // memory. So instead this step disassociates the |developer_id| from the
   // |unique_id|, so that existing JS objects with a reference to |unique_id|
   // can still access the data, but it can no longer be reached using GetIds or
-  // GetRegistration.
+  // GetRegistration. If |check_for_failure| is true, the task will also check
+  // whether there is any associated failure reason with the fetches. This
+  // helps figure out whether a success or fail event should be dispatched.
   void MarkRegistrationForDeletion(
       const BackgroundFetchRegistrationId& registration_id,
-      HandleBackgroundFetchErrorCallback callback);
+      bool check_for_failure,
+      MarkRegistrationForDeletionCallback callback);
 
   // Deletes the registration identified by |registration_id|. Should only be
   // called once the refcount of JavaScript BackgroundFetchRegistration objects
@@ -163,14 +170,6 @@ class CONTENT_EXPORT BackgroundFetchDataManager
   observers() {
     return observers_;
   }
-
-  // BackgroundFetchScheduler::RequestProvider implementation:
-  void PopNextRequest(const BackgroundFetchRegistrationId& registration_id,
-                      NextRequestCallback callback) override;
-  void MarkRequestAsComplete(
-      const BackgroundFetchRegistrationId& registration_id,
-      scoped_refptr<BackgroundFetchRequestInfo> request_info,
-      MarkRequestCompleteCallback callback) override;
 
   void ShutdownOnIO();
 

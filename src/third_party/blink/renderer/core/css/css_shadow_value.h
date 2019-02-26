@@ -39,8 +39,16 @@ class CORE_EXPORT CSSShadowValue : public CSSValue {
                                 CSSPrimitiveValue* spread,
                                 CSSIdentifierValue* style,
                                 CSSValue* color) {
-    return new CSSShadowValue(x, y, blur, spread, style, color);
+    return MakeGarbageCollected<CSSShadowValue>(x, y, blur, spread, style,
+                                                color);
   }
+
+  CSSShadowValue(CSSPrimitiveValue* x,
+                 CSSPrimitiveValue* y,
+                 CSSPrimitiveValue* blur,
+                 CSSPrimitiveValue* spread,
+                 CSSIdentifierValue* style,
+                 CSSValue* color);
 
   String CustomCSSText() const;
 
@@ -54,14 +62,6 @@ class CORE_EXPORT CSSShadowValue : public CSSValue {
   Member<CSSValue> color;
 
   void TraceAfterDispatch(blink::Visitor*);
-
- private:
-  CSSShadowValue(CSSPrimitiveValue* x,
-                 CSSPrimitiveValue* y,
-                 CSSPrimitiveValue* blur,
-                 CSSPrimitiveValue* spread,
-                 CSSIdentifierValue* style,
-                 CSSValue* color);
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSShadowValue, IsShadowValue());

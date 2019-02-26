@@ -94,7 +94,18 @@ class AddHistogramsProcessHandler(request_handler.RequestHandler):
 
 class AddHistogramsHandler(api_request_handler.ApiRequestHandler):
 
-  def PrivilegedPost(self):
+  def _CheckUser(self):
+    self._CheckIsInternalUser()
+
+  def Post(self):
+    if utils.IsDevAppserver():
+      # Don't require developers to zip the body.
+      # In prod, the data will be written to cloud storage and processed on the
+      # taskqueue, so the caller will not see any errors. In dev_appserver,
+      # process the data immediately so the caller will see errors.
+      ProcessHistogramSet(json.loads(self.request.body))
+      return
+
     with timing.WallTimeLogger('decompress'):
       try:
         data_str = self.request.body
@@ -179,7 +190,7 @@ def ProcessHistogramSet(histogram_dicts):
   with timing.WallTimeLogger('InlineDenseSharedDiagnostics'):
     InlineDenseSharedDiagnostics(histograms)
 
-  # TODO(eakuefner): Get rid of this.
+  # TODO(#4242): Get rid of this.
   # https://github.com/catapult-project/catapult/issues/4242
   with timing.WallTimeLogger('_PurgeHistogramBinData'):
     _PurgeHistogramBinData(histograms)
@@ -227,7 +238,7 @@ def ProcessHistogramSet(histogram_dicts):
     suite_level_sparse_diagnostic_entities = FindSuiteLevelSparseDiagnostics(
         histograms, suite_key, revision, internal_only)
 
-  # TODO(eakuefner): Refactor master/bot computation to happen above this line
+  # TODO(896856): Refactor master/bot computation to happen above this line
   # so that we can replace with a DiagnosticRef rather than a full diagnostic.
   with timing.WallTimeLogger('DeduplicateAndPut'):
     new_guids_to_old_diagnostics = (
@@ -283,7 +294,7 @@ def _BatchHistogramsIntoTasks(
   for hist in histograms:
     diagnostics = FindHistogramLevelSparseDiagnostics(hist)
 
-    # TODO(eakuefner): Don't compute full diagnostics, because we need anyway to
+    # TODO(896856): Don't compute full diagnostics, because we need anyway to
     # call GetOrCreate here and in the queue.
     test_path = '%s/%s' % (suite_path, histogram_helpers.ComputeTestPath(hist))
 
@@ -292,7 +303,7 @@ def _BatchHistogramsIntoTasks(
           'Duplicate histogram detected: %s' % test_path)
     duplicate_check.add(test_path)
 
-    # TODO(eakuefner): Batch these better than one per task.
+    # TODO(#4135): Batch these better than one per task.
     task_dict = _MakeTaskDict(
         hist, test_path, revision, benchmark_description, diagnostics)
 
@@ -413,7 +424,7 @@ def ComputeRevision(histograms):
 
 
 def InlineDenseSharedDiagnostics(histograms):
-  # TODO(eakuefner): Delete inlined diagnostics from the set
+  # TODO(896856): Delete inlined diagnostics from the set
   for hist in histograms:
     diagnostics = hist.diagnostics
     for name, diag in diagnostics.iteritems():

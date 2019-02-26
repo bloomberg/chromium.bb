@@ -68,6 +68,7 @@ ThemePainter::ThemePainter() = default;
 #define COUNT_APPEARANCE(doc, feature) \
   UseCounter::Count(doc, WebFeature::kCSSValueAppearance##feature##Rendered)
 
+// Returns true; Needs CSS painting and/or PaintBorderOnly().
 bool ThemePainter::Paint(const LayoutObject& o,
                          const PaintInfo& paint_info,
                          const IntRect& r) {
@@ -99,14 +100,14 @@ bool ThemePainter::Paint(const LayoutObject& o,
     case kCheckboxPart: {
       COUNT_APPEARANCE(doc, Checkbox);
       auto* input = ToHTMLInputElementOrNull(node);
-      if (!input || input->type() != InputTypeNames::checkbox)
+      if (!input || input->type() != input_type_names::kCheckbox)
         COUNT_APPEARANCE(doc, CheckboxForOthers);
       return PaintCheckbox(node, o.GetDocument(), style, paint_info, r);
     }
     case kRadioPart: {
       COUNT_APPEARANCE(doc, Radio);
       auto* input = ToHTMLInputElementOrNull(node);
-      if (!input || input->type() != InputTypeNames::radio)
+      if (!input || input->type() != input_type_names::kRadio)
         COUNT_APPEARANCE(doc, RadioForOthers);
       return PaintRadio(node, o.GetDocument(), style, paint_info, r);
     }
@@ -120,7 +121,7 @@ bool ThemePainter::Paint(const LayoutObject& o,
     case kSquareButtonPart: {
       COUNT_APPEARANCE(doc, SquareButton);
       auto* input = ToHTMLInputElementOrNull(node);
-      if (!input || input->type() != InputTypeNames::color)
+      if (!input || input->type() != input_type_names::kColor)
         COUNT_APPEARANCE(doc, SquareButtonForOthers);
       return PaintButton(node, o.GetDocument(), style, paint_info, r);
     }
@@ -148,14 +149,14 @@ bool ThemePainter::Paint(const LayoutObject& o,
     case kSliderHorizontalPart: {
       COUNT_APPEARANCE(doc, SliderHorizontal);
       auto* input = ToHTMLInputElementOrNull(node);
-      if (!input || input->type() != InputTypeNames::range)
+      if (!input || input->type() != input_type_names::kRange)
         COUNT_APPEARANCE(doc, SliderHorizontalForOthers);
       return PaintSliderTrack(o, paint_info, r);
     }
     case kSliderVerticalPart: {
       COUNT_APPEARANCE(doc, SliderVertical);
       auto* input = ToHTMLInputElementOrNull(node);
-      if (!input || input->type() != InputTypeNames::range)
+      if (!input || input->type() != input_type_names::kRange)
         COUNT_APPEARANCE(doc, SliderVerticalForOthers);
       return PaintSliderTrack(o, paint_info, r);
     }
@@ -163,7 +164,7 @@ bool ThemePainter::Paint(const LayoutObject& o,
       COUNT_APPEARANCE(doc, SliderThumbHorizontal);
       auto* input =
           ToHTMLInputElementOrNull(node ? node->OwnerShadowHost() : nullptr);
-      if (!input || input->type() != InputTypeNames::range)
+      if (!input || input->type() != input_type_names::kRange)
         COUNT_APPEARANCE(doc, SliderThumbHorizontalForOthers);
       return PaintSliderThumb(node, style, paint_info, r);
     }
@@ -171,7 +172,7 @@ bool ThemePainter::Paint(const LayoutObject& o,
       COUNT_APPEARANCE(doc, SliderThumbVertical);
       auto* input =
           ToHTMLInputElementOrNull(node ? node->OwnerShadowHost() : nullptr);
-      if (!input || input->type() != InputTypeNames::range)
+      if (!input || input->type() != input_type_names::kRange)
         COUNT_APPEARANCE(doc, SliderThumbVerticalForOthers);
       return PaintSliderThumb(node, style, paint_info, r);
     }
@@ -205,7 +206,7 @@ bool ThemePainter::Paint(const LayoutObject& o,
     case kSearchFieldPart: {
       COUNT_APPEARANCE(doc, SearchField);
       auto* input = ToHTMLInputElementOrNull(node);
-      if (!input || input->type() != InputTypeNames::search)
+      if (!input || input->type() != input_type_names::kSearch)
         COUNT_APPEARANCE(doc, SearchFieldForOthers);
       return PaintSearchField(node, style, paint_info, r);
     }
@@ -213,8 +214,8 @@ bool ThemePainter::Paint(const LayoutObject& o,
       COUNT_APPEARANCE(doc, SearchCancel);
       auto* element = ToElementOrNull(node);
       if (!element || !element->OwnerShadowHost() ||
-          element->FastGetAttribute(HTMLNames::idAttr) !=
-              ShadowElementNames::SearchClearButton())
+          element->FastGetAttribute(html_names::kIdAttr) !=
+              shadow_element_names::SearchClearButton())
         COUNT_APPEARANCE(doc, SearchCancelForOthers);
       return PaintSearchFieldCancelButton(o, paint_info, r);
     }
@@ -226,6 +227,7 @@ bool ThemePainter::Paint(const LayoutObject& o,
   return true;
 }
 
+// Returns true; Needs CSS border painting.
 bool ThemePainter::PaintBorderOnly(const Node* node,
                                    const ComputedStyle& style,
                                    const PaintInfo& paint_info,
@@ -237,7 +239,7 @@ bool ThemePainter::PaintBorderOnly(const Node* node,
         UseCounter::Count(node->GetDocument(),
                           WebFeature::kCSSValueAppearanceTextFieldRendered);
         if (auto* input = ToHTMLInputElementOrNull(node)) {
-          if (input->type() == InputTypeNames::search) {
+          if (input->type() == input_type_names::kSearch) {
             UseCounter::Count(
                 node->GetDocument(),
                 WebFeature::kCSSValueAppearanceTextFieldForSearch);
@@ -261,21 +263,30 @@ bool ThemePainter::PaintBorderOnly(const Node* node,
     case kSearchFieldPart:
     case kListboxPart:
       return true;
-    case kCheckboxPart:
-    case kRadioPart:
-    case kPushButtonPart:
-    case kSquareButtonPart:
     case kButtonPart:
+    case kCheckboxPart:
+    case kInnerSpinButtonPart:
     case kMenulistPart:
-    case kMeterPart:
     case kProgressBarPart:
+    case kPushButtonPart:
+    case kRadioPart:
+    case kSearchFieldCancelButtonPart:
     case kSliderHorizontalPart:
-    case kSliderVerticalPart:
     case kSliderThumbHorizontalPart:
     case kSliderThumbVerticalPart:
-    case kSearchFieldCancelButtonPart:
+    case kSliderVerticalPart:
+    case kSquareButtonPart:
+      // Supported appearance values don't need CSS border painting.
+      return false;
     default:
-      break;
+      if (node) {
+        UseCounter::Count(
+            node->GetDocument(),
+            WebFeature::kCSSValueAppearanceNoImplementationSkipBorder);
+      }
+      // TODO(tkent): Should do CSS border painting for non-supported
+      // appearance values.
+      return false;
   }
 
   return false;
@@ -326,7 +337,7 @@ void ThemePainter::PaintSliderTicks(const LayoutObject& o,
     return;
 
   HTMLInputElement* input = ToHTMLInputElement(node);
-  if (input->type() != InputTypeNames::range ||
+  if (input->type() != input_type_names::kRange ||
       !input->UserAgentShadowRoot()->HasChildren())
     return;
 
@@ -345,7 +356,7 @@ void ThemePainter::PaintSliderTicks(const LayoutObject& o,
   IntSize thumb_size;
   LayoutObject* thumb_layout_object =
       input->UserAgentShadowRoot()
-          ->getElementById(ShadowElementNames::SliderThumb())
+          ->getElementById(shadow_element_names::SliderThumb())
           ->GetLayoutObject();
   if (thumb_layout_object) {
     const ComputedStyle& thumb_style = thumb_layout_object->StyleRef();
@@ -363,7 +374,7 @@ void ThemePainter::PaintSliderTicks(const LayoutObject& o,
   IntRect track_bounds;
   LayoutObject* track_layout_object =
       input->UserAgentShadowRoot()
-          ->getElementById(ShadowElementNames::SliderTrack())
+          ->getElementById(shadow_element_names::SliderTrack())
           ->GetLayoutObject();
   // We can ignoring transforms because transform is handled by the graphics
   // context.

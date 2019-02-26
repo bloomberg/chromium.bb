@@ -90,6 +90,12 @@ class NetworkScanner : public base::SupportsWeakPtr<NetworkScanner> {
   // regardless if any hosts are found.
   bool find_hosts_returned_ = false;
 
+  // True if FindHostsInNetwork() has been called and is waiting for
+  // FindHostsCallback to be invoked. This is to prevent multiple calls of
+  // FindHostsInNetwork() from concurrently executing. Used only for DCHECKing
+  // if FindHostsInNetwork() is already running.
+  bool running_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(NetworkScanner);
 };
 

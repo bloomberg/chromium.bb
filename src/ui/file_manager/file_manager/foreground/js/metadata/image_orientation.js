@@ -79,14 +79,6 @@ ImageOrientation.fromExifOrientation = function(orientation) {
  * @param {number} rotation90 Clockwise degrees / 90.
  * @return {!ImageOrientation}
  */
-ImageOrientation.fromDriveOrientation = function(rotation90) {
-  return ImageOrientation.fromClockwiseRotation(rotation90);
-};
-
-/**
- * @param {number} rotation90 Clockwise degrees / 90.
- * @return {!ImageOrientation}
- */
 ImageOrientation.fromClockwiseRotation = function(rotation90) {
   switch (~~(rotation90 % 4)) {
     case 0:

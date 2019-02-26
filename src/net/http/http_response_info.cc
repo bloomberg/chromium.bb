@@ -5,6 +5,7 @@
 #include "net/http/http_response_info.h"
 
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/pickle.h"
 #include "base/time/time.h"
 #include "net/base/auth.h"
@@ -56,8 +57,8 @@ enum {
   // versions include the available certificate chain.
   RESPONSE_INFO_HAS_CERT = 1 << 8,
 
-  // This bit is set if the response info has a security-bits field (security
-  // strength, in bits, of the SSL connection) at the end.
+  // This bit was historically set if the response info had a security-bits
+  // field (security strength, in bits, of the SSL connection) at the end.
   RESPONSE_INFO_HAS_SECURITY_BITS = 1 << 9,
 
   // This bit is set if the response info has a cert status at the end.
@@ -106,6 +107,9 @@ enum {
 
   // This bit is set if stale_revalidate_time is stored.
   RESPONSE_INFO_HAS_STALENESS = 1 << 24,
+
+  // This bit is set if the response has a peer signature algorithm.
+  RESPONSE_INFO_HAS_PEER_SIGNATURE_ALGORITHM = 1 << 25,
 
   // TODO(darin): Add other bits to indicate alternate request methods.
   // For now, we don't support storing those.
@@ -176,10 +180,11 @@ bool HttpResponseInfo::InitFromPickle(const base::Pickle& pickle,
     ssl_info.cert_status = cert_status;
   }
   if (flags & RESPONSE_INFO_HAS_SECURITY_BITS) {
+    // The security_bits field has been removed from ssl_info. For backwards
+    // compatibility, we should still read the value out of iter.
     int security_bits;
     if (!iter.ReadInt(&security_bits))
       return false;
-    ssl_info.security_bits = security_bits;
   }
 
   if (flags & RESPONSE_INFO_HAS_SSL_CONNECTION_STATUS) {
@@ -279,6 +284,18 @@ bool HttpResponseInfo::InitFromPickle(const base::Pickle& pickle,
 
   ssl_info.pkp_bypassed = (flags & RESPONSE_INFO_PKP_BYPASSED) != 0;
 
+  // Read peer_signature_algorithm.
+  if (flags & RESPONSE_INFO_HAS_PEER_SIGNATURE_ALGORITHM) {
+    int peer_signature_algorithm;
+    if (!iter.ReadInt(&peer_signature_algorithm) ||
+        !base::IsValueInRangeForNumericType<uint16_t>(
+            peer_signature_algorithm)) {
+      return false;
+    }
+    ssl_info.peer_signature_algorithm =
+        base::checked_cast<uint16_t>(peer_signature_algorithm);
+  }
+
   return true;
 }
 
@@ -289,12 +306,12 @@ void HttpResponseInfo::Persist(base::Pickle* pickle,
   if (ssl_info.is_valid()) {
     flags |= RESPONSE_INFO_HAS_CERT;
     flags |= RESPONSE_INFO_HAS_CERT_STATUS;
-    if (ssl_info.security_bits != -1)
-      flags |= RESPONSE_INFO_HAS_SECURITY_BITS;
     if (ssl_info.key_exchange_group != 0)
       flags |= RESPONSE_INFO_HAS_KEY_EXCHANGE_GROUP;
     if (ssl_info.connection_status != 0)
       flags |= RESPONSE_INFO_HAS_SSL_CONNECTION_STATUS;
+    if (ssl_info.peer_signature_algorithm != 0)
+      flags |= RESPONSE_INFO_HAS_PEER_SIGNATURE_ALGORITHM;
   }
   if (vary_data.is_valid())
     flags |= RESPONSE_INFO_HAS_VARY_DATA;
@@ -340,8 +357,6 @@ void HttpResponseInfo::Persist(base::Pickle* pickle,
   if (ssl_info.is_valid()) {
     ssl_info.cert->Persist(pickle);
     pickle->WriteUInt32(ssl_info.cert_status);
-    if (ssl_info.security_bits != -1)
-      pickle->WriteInt(ssl_info.security_bits);
     if (ssl_info.connection_status != 0)
       pickle->WriteInt(ssl_info.connection_status);
   }
@@ -365,6 +380,9 @@ void HttpResponseInfo::Persist(base::Pickle* pickle,
     pickle->WriteInt64(
         (stale_revalidate_timeout - base::Time()).InMicroseconds());
   }
+
+  if (ssl_info.is_valid() && ssl_info.peer_signature_algorithm != 0)
+    pickle->WriteInt(ssl_info.peer_signature_algorithm);
 }
 
 bool HttpResponseInfo::DidUseQuic() const {
@@ -394,6 +412,7 @@ bool HttpResponseInfo::DidUseQuic() const {
     case CONNECTION_INFO_QUIC_43:
     case CONNECTION_INFO_QUIC_44:
     case CONNECTION_INFO_QUIC_45:
+    case CONNECTION_INFO_QUIC_46:
     case CONNECTION_INFO_QUIC_99:
       return true;
     case NUM_OF_CONNECTION_INFOS:
@@ -455,6 +474,8 @@ std::string HttpResponseInfo::ConnectionInfoToString(
       return "http/2+quic/44";
     case CONNECTION_INFO_QUIC_45:
       return "http/2+quic/45";
+    case CONNECTION_INFO_QUIC_46:
+      return "http/2+quic/46";
     case CONNECTION_INFO_QUIC_99:
       return "http/2+quic/99";
     case CONNECTION_INFO_HTTP0_9:

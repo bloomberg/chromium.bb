@@ -78,15 +78,15 @@ TEST_F(AXTreeSourceMusTest, Serialize) {
   tree.SerializeNode(root, &node_data);
 
   // Root is at the origin and has no parent container.
-  EXPECT_EQ(gfx::RectF(0, 0, 333, 444), node_data.location);
-  EXPECT_EQ(-1, node_data.offset_container_id);
+  EXPECT_EQ(gfx::RectF(0, 0, 333, 444), node_data.relative_bounds.bounds);
+  EXPECT_EQ(-1, node_data.relative_bounds.offset_container_id);
 
   // Serialize a child.
   tree.SerializeNode(cache->GetOrCreate(label_), &node_data);
 
   // Child has relative position with the root as the container.
-  EXPECT_EQ(gfx::RectF(1, 1, 111, 111), node_data.location);
-  EXPECT_EQ(root->GetUniqueId().Get(), node_data.offset_container_id);
+  EXPECT_EQ(gfx::RectF(1, 1, 111, 111), node_data.relative_bounds.bounds);
+  EXPECT_EQ(root->GetUniqueId(), node_data.relative_bounds.offset_container_id);
 }
 
 TEST_F(AXTreeSourceMusTest, ScaleFactor) {
@@ -102,9 +102,10 @@ TEST_F(AXTreeSourceMusTest, ScaleFactor) {
   tree.SerializeNode(root, &node_data);
 
   // Transform is scaled.
-  ASSERT_TRUE(node_data.transform);
-  EXPECT_TRUE(node_data.transform->IsScale2d());
-  EXPECT_EQ(gfx::Vector2dF(2.f, 2.f), node_data.transform->Scale2d());
+  ASSERT_TRUE(node_data.relative_bounds.transform);
+  EXPECT_TRUE(node_data.relative_bounds.transform->IsScale2d());
+  EXPECT_EQ(gfx::Vector2dF(2.f, 2.f),
+            node_data.relative_bounds.transform->Scale2d());
 }
 
 }  // namespace

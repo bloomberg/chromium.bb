@@ -4,9 +4,16 @@
 
 module user_id.mojom;
 
-// Provides access to the user ID of the service in which this interface is
-// running.
+import "mojo/public/mojom/base/token.mojom";
+
+// Provides access to the instance group ID of the service in which this
+// interface is running.
+//
+// TODO(https://crbug.com/895591): This should be renamed or the entire service
+// removed. There are other test services, and Connector.BindInterface already
+// replies with the instance's instance group ID when connecting to any service.
 interface UserId {
-  // Returns the user ID of the service in which this interface is running.
-  GetUserId() => (string user_id);
+  // Returns the instance group of the service in which this interface is
+  // running.
+  GetInstanceGroup() => (mojo_base.mojom.Token instance_group);
 };

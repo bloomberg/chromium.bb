@@ -26,8 +26,7 @@ java_prebuilt("guava_java") {
     "//third_party/robolectric:*",
 
     # jni_processor is a build tool even though it's in base.
-    "//base/android/jni_generator:jni_processor",
-    "//base/android/jni_generator:jni_processor__compile_java",
+    "//base/android/jni_generator:*",
   ]
   jar_path = "lib/guava.jar"
 }

@@ -5,6 +5,7 @@
 #include "ash/system/power/power_notification_controller.h"
 
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/power/battery_notification.h"
@@ -130,19 +131,17 @@ bool PowerNotificationController::MaybeShowUsbChargerNotification() {
 
   // Check if the notification needs to be created.
   if (show && !usb_charger_was_connected_ && !usb_notification_dismissed_) {
-    std::unique_ptr<Notification> notification =
-        Notification::CreateSystemNotification(
-            message_center::NOTIFICATION_TYPE_SIMPLE, kUsbNotificationId,
-            l10n_util::GetStringUTF16(
-                IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_TITLE),
-            ui::SubstituteChromeOSDeviceType(
-                IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_MESSAGE_SHORT),
-            base::string16(), GURL(),
-            message_center::NotifierId(
-                message_center::NotifierId::SYSTEM_COMPONENT, kNotifierPower),
-            message_center::RichNotificationData(),
-            new UsbNotificationDelegate(this), kNotificationLowPowerChargerIcon,
-            message_center::SystemNotificationWarningLevel::WARNING);
+    std::unique_ptr<Notification> notification = ash::CreateSystemNotification(
+        message_center::NOTIFICATION_TYPE_SIMPLE, kUsbNotificationId,
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_TITLE),
+        ui::SubstituteChromeOSDeviceType(
+            IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_MESSAGE_SHORT),
+        base::string16(), GURL(),
+        message_center::NotifierId(
+            message_center::NotifierType::SYSTEM_COMPONENT, kNotifierPower),
+        message_center::RichNotificationData(),
+        new UsbNotificationDelegate(this), kNotificationLowPowerChargerIcon,
+        message_center::SystemNotificationWarningLevel::WARNING);
     notification->set_priority(message_center::SYSTEM_PRIORITY);
     message_center_->AddNotification(std::move(notification));
     return true;

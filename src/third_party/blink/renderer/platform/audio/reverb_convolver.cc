@@ -36,12 +36,12 @@
 #include "third_party/blink/renderer/platform/audio/audio_bus.h"
 #include "third_party/blink/renderer/platform/audio/vector_math.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
-#include "third_party/blink/renderer/platform/web_task_runner.h"
 
 namespace blink {
 
-using namespace VectorMath;
+using namespace vector_math;
 
 const int kInputBufferSize = 8 * 16384;
 
@@ -173,7 +173,7 @@ void ReverbConvolver::ProcessInBackground() {
 
 void ReverbConvolver::Process(const AudioChannel* source_channel,
                               AudioChannel* destination_channel,
-                              size_t frames_to_process) {
+                              uint32_t frames_to_process) {
   bool is_safe = source_channel && destination_channel &&
                  source_channel->length() >= frames_to_process &&
                  destination_channel->length() >= frames_to_process;

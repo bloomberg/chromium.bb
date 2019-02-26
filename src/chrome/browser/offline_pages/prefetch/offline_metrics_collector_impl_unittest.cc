@@ -10,13 +10,15 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "chrome/common/pref_names.h"
+#include "components/offline_pages/core/offline_store_utils.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 namespace offline_pages {
-using UsageType = OfflineMetricsCollectorImpl::DailyUsageType;
+
+using DailyUsageType = OfflineMetricsCollectorImpl::DailyUsageType;
 
 class OfflineMetricsCollectorTest : public testing::Test {
  public:
@@ -25,12 +27,14 @@ class OfflineMetricsCollectorTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override {
-    test_clock().SetNow(base::Time::Now().LocalMidnight());
+    base::Time epoch;
+    ASSERT_TRUE(base::Time::FromUTCString("1 Jan 1994 GMT", &epoch));
+    test_clock().SetNow(epoch.LocalMidnight());
     OfflineMetricsCollectorImpl::RegisterPrefs(pref_service_.registry());
     Reload();
   }
 
-  // This creates new collector whcih will read the initial values from Prefs.
+  // This creates new collector which will read the initial values from Prefs.
   void Reload() {
     collector_ =
         std::make_unique<OfflineMetricsCollectorImpl>(&prefs());
@@ -43,8 +47,28 @@ class OfflineMetricsCollectorTest : public testing::Test {
   const base::HistogramTester& histograms() const { return histogram_tester_; }
 
   base::Time GetTimestampFromPrefs() {
-    return base::Time::FromInternalValue(
-        prefs().GetInt64(prefs::kOfflineUsageTrackingDay));
+    return prefs().GetTime(prefs::kOfflineUsageTrackingDay);
+  }
+
+  void ExpectOfflineUsageBucketCount(DailyUsageType bucket, int count) {
+    histograms().ExpectBucketCount("OfflinePages.OfflineUsage",
+                                   static_cast<int>(bucket), count);
+  }
+
+  void ExpectNotResilientOfflineUsageBucketCount(DailyUsageType bucket,
+                                                 int count) {
+    histograms().ExpectBucketCount(
+        "OfflinePages.OfflineUsage.NotOfflineResilient",
+        static_cast<int>(bucket), count);
+  }
+
+  void ExpectOfflineUsageTotalCount(int count) {
+    histograms().ExpectTotalCount("OfflinePages.OfflineUsage", count);
+  }
+
+  void ExpectNotResilientOfflineUsageTotalCount(int count) {
+    histograms().ExpectTotalCount(
+        "OfflinePages.OfflineUsage.NotOfflineResilient", count);
   }
 
  protected:
@@ -76,6 +100,10 @@ TEST_F(OfflineMetricsCollectorTest, CheckCleanInit) {
   EXPECT_EQ(0, prefs().GetInteger(prefs::kPrefetchUsageFetchedCount));
   EXPECT_EQ(0, prefs().GetInteger(prefs::kPrefetchUsageOpenedCount));
   EXPECT_EQ(0, prefs().GetInteger(prefs::kPrefetchUsageMixedCount));
+
+  // No offline usage metrics should have been be reported.
+  ExpectOfflineUsageTotalCount(0);
+  ExpectNotResilientOfflineUsageTotalCount(0);
 }
 
 TEST_F(OfflineMetricsCollectorTest, FirstStart) {
@@ -97,6 +125,10 @@ TEST_F(OfflineMetricsCollectorTest, FirstStart) {
   EXPECT_EQ(0, prefs().GetInteger(prefs::kOfflineUsageOfflineCount));
   EXPECT_EQ(0, prefs().GetInteger(prefs::kOfflineUsageOnlineCount));
   EXPECT_EQ(0, prefs().GetInteger(prefs::kOfflineUsageMixedCount));
+
+  // No offline usage metrics should have been be reported.
+  ExpectOfflineUsageTotalCount(0);
+  ExpectNotResilientOfflineUsageTotalCount(0);
 }
 
 TEST_F(OfflineMetricsCollectorTest, SetTrackingFlags) {
@@ -112,6 +144,10 @@ TEST_F(OfflineMetricsCollectorTest, SetTrackingFlags) {
   EXPECT_EQ(true, prefs().GetBoolean(prefs::kOfflineUsageStartObserved));
   EXPECT_EQ(true, prefs().GetBoolean(prefs::kOfflineUsageOfflineObserved));
   EXPECT_EQ(true, prefs().GetBoolean(prefs::kOfflineUsageOnlineObserved));
+
+  // No offline usage metrics should have been be reported.
+  ExpectOfflineUsageTotalCount(0);
+  ExpectNotResilientOfflineUsageTotalCount(0);
 }
 
 TEST_F(OfflineMetricsCollectorTest, SetTrackingFlagsPrefech) {
@@ -143,6 +179,10 @@ TEST_F(OfflineMetricsCollectorTest, TrueIsFinalState) {
   EXPECT_EQ(true, prefs().GetBoolean(prefs::kOfflineUsageStartObserved));
   EXPECT_EQ(true, prefs().GetBoolean(prefs::kOfflineUsageOfflineObserved));
   EXPECT_EQ(true, prefs().GetBoolean(prefs::kOfflineUsageOnlineObserved));
+
+  // No offline usage metrics should have been be reported.
+  ExpectOfflineUsageTotalCount(0);
+  ExpectNotResilientOfflineUsageTotalCount(0);
 }
 
 // Restore from Prefs keeps accumulated state, counters and timestamp.
@@ -167,17 +207,19 @@ TEST_F(OfflineMetricsCollectorTest, RestoreFromPrefs) {
   EXPECT_EQ(true, prefs().GetBoolean(prefs::kOfflineUsageOnlineObserved));
   EXPECT_EQ(GetTimestampFromPrefs(), start);
 
+  // No offline resilient metrics should have been be reported up to this point.
+  ExpectOfflineUsageTotalCount(0);
+
   collector()->ReportAccumulatedStats();
-  histograms().ExpectBucketCount("OfflinePages.OfflineUsage",
-                                 0 /* UsageType::UNUSED */, 1);
-  histograms().ExpectBucketCount("OfflinePages.OfflineUsage",
-                                 1 /* UsageType::STARTED */, 2);
-  histograms().ExpectBucketCount("OfflinePages.OfflineUsage",
-                                 2 /* UsageType::OFFLINE */, 3);
-  histograms().ExpectBucketCount("OfflinePages.OfflineUsage",
-                                 3 /* UsageType::ONLINE */, 4);
-  histograms().ExpectBucketCount("OfflinePages.OfflineUsage",
-                                 4 /* UsageType::MIXED */, 5);
+  ExpectOfflineUsageBucketCount(DailyUsageType::kUnused, 1);
+  ExpectOfflineUsageBucketCount(DailyUsageType::kStarted, 2);
+  ExpectOfflineUsageBucketCount(DailyUsageType::kOffline, 3);
+  ExpectOfflineUsageBucketCount(DailyUsageType::kOnline, 4);
+  ExpectOfflineUsageBucketCount(DailyUsageType::kMixed, 5);
+
+  // As the reported metrics are all from restored values, there should be no
+  // values reported to the non-resilient metric.
+  ExpectNotResilientOfflineUsageTotalCount(0);
 
   // After reporting, counters should be reset.
   EXPECT_EQ(0, prefs().GetInteger(prefs::kOfflineUsageUnusedCount));
@@ -207,13 +249,13 @@ TEST_F(OfflineMetricsCollectorTest, RestoreFromPrefsPrefetch) {
   collector()->ReportAccumulatedStats();
   histograms().ExpectBucketCount("OfflinePages.PrefetchEnabled", true, 1);
   histograms().ExpectBucketCount("OfflinePages.PrefetchUsage",
-                                 1 /* PrefetchUsageType::FETCHED_NEW_PAGES */,
+                                 1 /* PrefetchUsageType::kFetchedNewPages */,
                                  2);
   histograms().ExpectBucketCount("OfflinePages.PrefetchUsage",
-                                 2 /* PrefetchUsageType::OPENED_PAGES */, 3);
+                                 2 /* PrefetchUsageType::kOpenedPages */, 3);
   histograms().ExpectBucketCount(
       "OfflinePages.PrefetchUsage",
-      3 /* PrefetchUsageType::FETCHED_AND_OPENED_PAGES */, 4);
+      3 /* PrefetchUsageType::kFetchedAndOpenedPages */, 4);
 
   // After reporting, counters should be reset.
   EXPECT_EQ(0, prefs().GetInteger(prefs::kPrefetchUsageEnabledCount));
@@ -243,11 +285,17 @@ TEST_F(OfflineMetricsCollectorTest, ChangesWithinDay) {
   EXPECT_EQ(0, prefs().GetInteger(prefs::kOfflineUsageOfflineCount));
   EXPECT_EQ(0, prefs().GetInteger(prefs::kOfflineUsageOnlineCount));
   EXPECT_EQ(0, prefs().GetInteger(prefs::kOfflineUsageMixedCount));
+
+  // No offline usage metrics should have been be reported.
+  ExpectOfflineUsageTotalCount(0);
+  ExpectNotResilientOfflineUsageTotalCount(0);
 }
 
 TEST_F(OfflineMetricsCollectorTest, MultipleDays) {
   base::Time start = test_clock().Now();
   collector()->OnAppStartupOrResume();
+
+  ExpectNotResilientOfflineUsageTotalCount(0);
 
   base::Time nextDay = start + base::TimeDelta::FromHours(25);
   test_clock().SetNow(nextDay);
@@ -259,6 +307,10 @@ TEST_F(OfflineMetricsCollectorTest, MultipleDays) {
   EXPECT_EQ(true, prefs().GetBoolean(prefs::kOfflineUsageStartObserved));
   EXPECT_EQ(false, prefs().GetBoolean(prefs::kOfflineUsageOfflineObserved));
   EXPECT_EQ(false, prefs().GetBoolean(prefs::kOfflineUsageOnlineObserved));
+
+  // Non-resilient metrics are reported for past days.
+  ExpectNotResilientOfflineUsageBucketCount(DailyUsageType::kStarted, 1);
+  ExpectNotResilientOfflineUsageTotalCount(1);
 
   base::Time skip4Days = nextDay + base::TimeDelta::FromHours(24 * 4);
   test_clock().SetNow(skip4Days);
@@ -276,18 +328,20 @@ TEST_F(OfflineMetricsCollectorTest, MultipleDays) {
   EXPECT_EQ(0, prefs().GetInteger(prefs::kOfflineUsageOfflineCount));
   EXPECT_EQ(0, prefs().GetInteger(prefs::kOfflineUsageMixedCount));
 
+  // Non-resilient metrics are reported for past days.
+  ExpectNotResilientOfflineUsageBucketCount(DailyUsageType::kStarted, 2);
+  ExpectNotResilientOfflineUsageBucketCount(DailyUsageType::kUnused, 3);
+  ExpectNotResilientOfflineUsageTotalCount(5);
+
+  // Up to this point, no offline resilient metrics should be reported.
+  ExpectOfflineUsageTotalCount(0);
+
   // Force collector to report stats and observe them reported correctly.
   collector()->ReportAccumulatedStats();
-  histograms().ExpectBucketCount("OfflinePages.OfflineUsage",
-                                 0 /* UsageType::UNUSED */, 3);
-  histograms().ExpectBucketCount("OfflinePages.OfflineUsage",
-                                 1 /* UsageType::STARTED */, 2);
-  histograms().ExpectBucketCount("OfflinePages.OfflineUsage",
-                                 2 /* UsageType::OFFLINE */, 0);
-  histograms().ExpectBucketCount("OfflinePages.OfflineUsage",
-                                 3 /* UsageType::ONLINE */, 0);
-  histograms().ExpectBucketCount("OfflinePages.OfflineUsage",
-                                 4 /* UsageType::MIXED */, 0);
+  ExpectOfflineUsageBucketCount(DailyUsageType::kUnused, 3);
+  ExpectOfflineUsageBucketCount(DailyUsageType::kStarted, 2);
+  ExpectNotResilientOfflineUsageTotalCount(5);
+  ExpectOfflineUsageTotalCount(5);
 }
 
 TEST_F(OfflineMetricsCollectorTest, OverDayBoundaryPrefetch) {
@@ -315,13 +369,13 @@ TEST_F(OfflineMetricsCollectorTest, OverDayBoundaryPrefetch) {
   collector()->ReportAccumulatedStats();
   histograms().ExpectBucketCount("OfflinePages.PrefetchEnabled", true, 3);
   histograms().ExpectBucketCount("OfflinePages.PrefetchUsage",
-                                 1 /* PrefetchUsageType::FETCHED_NEW_PAGES */,
+                                 1 /* PrefetchUsageType::kFetchedNewPages */,
                                  1);
   histograms().ExpectBucketCount("OfflinePages.PrefetchUsage",
-                                 2 /* PrefetchUsageType::OPENED_PAGES */, 1);
+                                 2 /* PrefetchUsageType::kOpenedPages */, 1);
   histograms().ExpectBucketCount(
       "OfflinePages.PrefetchUsage",
-      3 /* PrefetchUsageType::FETCHED_AND_OPENED_PAGES */, 1);
+      3 /* PrefetchUsageType::kFetchedAndOpenedPages */, 1);
 }
 
 }  // namespace offline_pages

@@ -17,7 +17,6 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/base/backoff_entry.h"
-#include "net/log/net_log_with_source.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 #include "url/gurl.h"
 
@@ -28,7 +27,6 @@
 namespace net {
 class HttpRequestHeaders;
 class HttpResponseHeaders;
-class NetLog;
 struct LoadTimingInfo;
 class ProxyServer;
 }
@@ -42,7 +40,6 @@ namespace data_reduction_proxy {
 
 class ClientConfig;
 class DataReductionProxyConfig;
-class DataReductionProxyEventCreator;
 class DataReductionProxyIOData;
 class DataReductionProxyMutableConfigValues;
 class DataReductionProxyRequestOptions;
@@ -92,9 +89,7 @@ class DataReductionProxyConfigServiceClient
       DataReductionProxyRequestOptions* request_options,
       DataReductionProxyMutableConfigValues* config_values,
       DataReductionProxyConfig* config,
-      DataReductionProxyEventCreator* event_creator,
       DataReductionProxyIOData* io_data,
-      net::NetLog* net_log,
       network::NetworkConnectionTracker* network_connection_tracker,
       ConfigStorer config_storer);
 
@@ -126,6 +121,10 @@ class DataReductionProxyConfigServiceClient
       const net::HttpResponseHeaders* response_headers,
       const net::ProxyServer& proxy_server,
       const net::LoadTimingInfo& load_timing_info);
+
+  void SetRemoteConfigAppliedForTesting(bool remote_config_applied) {
+    remote_config_applied_ = remote_config_applied;
+  }
 
  protected:
   // Retrieves the backoff entry object being used to throttle request failures.
@@ -201,14 +200,8 @@ class DataReductionProxyConfigServiceClient
   // The caller must ensure that the |config_| outlives this instance.
   DataReductionProxyConfig* config_;
 
-  // The caller must ensure that the |event_creator_| outlives this instance.
-  DataReductionProxyEventCreator* event_creator_;
-
   // The caller must ensure that the |io_data_| outlives this instance.
   DataReductionProxyIOData* io_data_;
-
-  // The caller must ensure that the |net_log_| outlives this instance.
-  net::NetLog* net_log_;
 
   // Watches for network changes.
   network::NetworkConnectionTracker* network_connection_tracker_;
@@ -238,9 +231,6 @@ class DataReductionProxyConfigServiceClient
 
   // A |network::URLLoader| to retrieve the Date Reduction Proxy configuration.
   std::unique_ptr<network::SimpleURLLoader> url_loader_;
-
-  // Used to correlate the start and end of requests.
-  net::NetLogWithSource net_log_with_source_;
 
   // Used to determine the latency in retrieving the Data Reduction Proxy
   // configuration.

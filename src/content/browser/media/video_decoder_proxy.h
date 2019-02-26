@@ -35,7 +35,7 @@ class VideoDecoderProxy : public media::mojom::InterfaceFactory {
                  media::mojom::ContentDecryptionModuleRequest request) final;
   void CreateDecryptor(int cdm_id,
                        media::mojom::DecryptorRequest request) final;
-  void CreateCdmProxy(const std::string& cdm_guid,
+  void CreateCdmProxy(const base::Token& cdm_guid,
                       media::mojom::CdmProxyRequest request) final;
 
  private:

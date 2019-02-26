@@ -58,6 +58,7 @@
 /cros_system_api
 /custom_tabs_client/src
 /cygwin
+/dawn
 /depot_tools
 /devtools-node-modules
 /directxsdk
@@ -76,10 +77,12 @@
 /gestures/gestures
 /gles1_conform
 /gles2_conform
+/glfw/src
 /glslang/src
 /glslang-angle/src
 /gn/
 /gnu_binutils/
+/google_android_play_core/core-*.aar
 /google_appengine_cloudstorage
 /google_toolbox_for_mac/src
 /googlemac
@@ -105,7 +108,6 @@
 /icu
 /icu4j/lib/
 /intellij/lib/
-/inspector_protocol
 /instrumented_libraries/scripts/*.tgz
 /instrumented_libraries/scripts/out/*
 /javax_inject/lib/
@@ -150,6 +152,7 @@
 /mocha
 /mockito/src
 /nacl_sdk_binaries/
+/nasm
 /netty-tcnative/src
 /netty4/src
 /node/linux
@@ -170,6 +173,7 @@
 /perl
 /ppapi
 /proguard/lib/
+/protoc_javalite/protoc-gen-javalite
 /psyco_win32
 /pthreads-win32
 /py_trace_event/src
@@ -197,6 +201,7 @@
 /smhasher/src
 /snappy/src
 /speex
+/spirv-cross/spirv-cross
 /spirv-headers/src
 /SPIRV-Tools/src
 /spirv-tools-angle/src

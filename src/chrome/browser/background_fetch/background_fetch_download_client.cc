@@ -147,8 +147,7 @@ bool BackgroundFetchDownloadClient::CanServiceRemoveDownloadedFile(
 void BackgroundFetchDownloadClient::GetUploadData(
     const std::string& guid,
     download::GetUploadDataCallback callback) {
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), nullptr));
+  GetDelegate()->GetUploadData(guid, std::move(callback));
 }
 
 BackgroundFetchDelegateImpl* BackgroundFetchDownloadClient::GetDelegate() {

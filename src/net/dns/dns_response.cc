@@ -6,18 +6,21 @@
 
 #include <limits>
 #include <numeric>
+#include <utility>
 #include <vector>
 
 #include "base/big_endian.h"
+#include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
-#include "net/dns/dns_protocol.h"
 #include "net/dns/dns_query.h"
 #include "net/dns/dns_util.h"
+#include "net/dns/public/dns_protocol.h"
 #include "net/dns/record_rdata.h"
 
 namespace net {
@@ -36,12 +39,80 @@ const size_t kResourceRecordSizeInBytesWithoutNameAndRData = 10;
 
 DnsResourceRecord::DnsResourceRecord() = default;
 
-DnsResourceRecord::DnsResourceRecord(const DnsResourceRecord& other) = default;
+DnsResourceRecord::DnsResourceRecord(const DnsResourceRecord& other)
+    : name(other.name),
+      type(other.type),
+      klass(other.klass),
+      ttl(other.ttl),
+      owned_rdata(other.owned_rdata) {
+  if (!owned_rdata.empty())
+    rdata = owned_rdata;
+  else
+    rdata = other.rdata;
+}
+
+DnsResourceRecord::DnsResourceRecord(DnsResourceRecord&& other)
+    : name(std::move(other.name)),
+      type(other.type),
+      klass(other.klass),
+      ttl(other.ttl),
+      owned_rdata(std::move(other.owned_rdata)) {
+  if (!owned_rdata.empty())
+    rdata = owned_rdata;
+  else
+    rdata = other.rdata;
+}
 
 DnsResourceRecord::~DnsResourceRecord() = default;
 
-DnsRecordParser::DnsRecordParser() : packet_(NULL), length_(0), cur_(0) {
+DnsResourceRecord& DnsResourceRecord::operator=(
+    const DnsResourceRecord& other) {
+  name = other.name;
+  type = other.type;
+  klass = other.klass;
+  ttl = other.ttl;
+  owned_rdata = other.owned_rdata;
+
+  if (!owned_rdata.empty())
+    rdata = owned_rdata;
+  else
+    rdata = other.rdata;
+
+  return *this;
 }
+
+DnsResourceRecord& DnsResourceRecord::operator=(DnsResourceRecord&& other) {
+  name = std::move(other.name);
+  type = other.type;
+  klass = other.klass;
+  ttl = other.ttl;
+  owned_rdata = std::move(other.owned_rdata);
+
+  if (!owned_rdata.empty())
+    rdata = owned_rdata;
+  else
+    rdata = other.rdata;
+
+  return *this;
+}
+
+void DnsResourceRecord::SetOwnedRdata(std::string value) {
+  owned_rdata = std::move(value);
+  rdata = owned_rdata;
+}
+
+size_t DnsResourceRecord::CalculateRecordSize() const {
+  bool has_final_dot = name.back() == '.';
+  // Depending on if |name| in the dotted format has the final dot for the root
+  // domain or not, the corresponding wire data in the DNS domain name format is
+  // 1 byte (with dot) or 2 bytes larger in size. See RFC 1035, Section 3.1 and
+  // DNSDomainFromDot.
+  return name.size() + (has_final_dot ? 1 : 2) +
+         kResourceRecordSizeInBytesWithoutNameAndRData +
+         (owned_rdata.empty() ? rdata.size() : owned_rdata.size());
+}
+
+DnsRecordParser::DnsRecordParser() : packet_(nullptr), length_(0), cur_(0) {}
 
 DnsRecordParser::DnsRecordParser(const void* packet,
                                  size_t length,
@@ -146,7 +217,7 @@ bool DnsRecordParser::ReadRecord(DnsResourceRecord* out) {
 }
 
 bool DnsRecordParser::SkipQuestion() {
-  size_t consumed = ReadName(cur_, NULL);
+  size_t consumed = ReadName(cur_, nullptr);
   if (!consumed)
     return false;
 
@@ -176,9 +247,9 @@ DnsResponse::DnsResponse(
     header.qdcount = 1;
   }
   header.flags |= dns_protocol::kFlagResponse;
-  if (is_authoritative) {
+  if (is_authoritative)
     header.flags |= dns_protocol::kFlagAA;
-  }
+
   header.ancount = answers.size();
   header.arcount = additional_records.size();
 
@@ -187,18 +258,11 @@ DnsResponse::DnsResponse(
                              ? sizeof(header) + query.value().question_size()
                              : sizeof(header);
   // Add the size of all answers and additional records.
-  auto do_accumulation = [](size_t cur_size, const DnsResourceRecord& answer) {
-    bool has_final_dot = answer.name.back() == '.';
-    // Depending on if answer.name in the dotted format has the final dot
-    // for the root domain or not, the corresponding DNS domain name format
-    // to be written to rdata is 1 byte (with dot) or 2 bytes larger in
-    // size. See RFC 1035, Section 3.1 and DNSDomainFromDot.
-    return cur_size + answer.name.size() + (has_final_dot ? 1 : 2) +
-           kResourceRecordSizeInBytesWithoutNameAndRData + answer.rdata.size();
+  auto do_accumulation = [](size_t cur_size, const DnsResourceRecord& record) {
+    return cur_size + record.CalculateRecordSize();
   };
   response_size = std::accumulate(answers.begin(), answers.end(), response_size,
                                   do_accumulation);
-
   response_size =
       std::accumulate(additional_records.begin(), additional_records.end(),
                       response_size, do_accumulation);
@@ -227,11 +291,13 @@ DnsResponse::DnsResponse(
     io_buffer_size_ = 0;
     return;
   }
-  if (has_query) {
+  // Ensure we don't have any remaining uninitialized bytes in the buffer.
+  DCHECK(!writer.remaining());
+  memset(writer.ptr(), 0, writer.remaining());
+  if (has_query)
     InitParse(io_buffer_size_, query.value());
-  } else {
+  else
     InitParseWithoutQuery(io_buffer_size_);
-  }
 }
 
 DnsResponse::DnsResponse()
@@ -257,13 +323,17 @@ DnsResponse::~DnsResponse() = default;
 
 bool DnsResponse::InitParse(size_t nbytes, const DnsQuery& query) {
   // Response includes query, it should be at least that size.
-  if (nbytes < static_cast<size_t>(query.io_buffer()->size()) ||
+  if (nbytes < base::checked_cast<size_t>(query.io_buffer()->size()) ||
       nbytes > io_buffer_size_) {
     return false;
   }
 
   // Match the query id.
   if (base::NetToHost16(header()->id) != query.id())
+    return false;
+
+  // Not a response?
+  if ((base::NetToHost16(header()->flags) & dns_protocol::kFlagResponse) == 0)
     return false;
 
   // Match question count.
@@ -289,6 +359,10 @@ bool DnsResponse::InitParseWithoutQuery(size_t nbytes) {
   }
 
   parser_ = DnsRecordParser(io_buffer_->data(), nbytes, kHeaderSize);
+
+  // Not a response?
+  if ((base::NetToHost16(header()->flags) & dns_protocol::kFlagResponse) == 0)
+    return false;
 
   unsigned qdcount = base::NetToHost16(header()->qdcount);
   for (unsigned i = 0; i < qdcount; ++i) {
@@ -449,7 +523,13 @@ bool DnsResponse::WriteQuestion(base::BigEndianWriter* writer,
 
 bool DnsResponse::WriteRecord(base::BigEndianWriter* writer,
                               const DnsResourceRecord& record) {
-  if (!RecordRdata::HasValidSize(record.rdata, record.type)) {
+  if (record.rdata.data() != record.owned_rdata.data() ||
+      record.rdata.size() != record.owned_rdata.size()) {
+    VLOG(1) << "record.rdata should point to record.owned_rdata.";
+    return false;
+  }
+
+  if (!RecordRdata::HasValidSize(record.owned_rdata, record.type)) {
     VLOG(1) << "Invalid RDATA size for a record.";
     return false;
   }
@@ -461,8 +541,10 @@ bool DnsResponse::WriteRecord(base::BigEndianWriter* writer,
   return writer->WriteBytes(domain_name.data(), domain_name.size()) &&
          writer->WriteU16(record.type) && writer->WriteU16(record.klass) &&
          writer->WriteU32(record.ttl) &&
-         writer->WriteU16(record.rdata.size()) &&
-         writer->WriteBytes(record.rdata.data(), record.rdata.size());
+         writer->WriteU16(record.owned_rdata.size()) &&
+         // Use the owned RDATA in the record to construct the response.
+         writer->WriteBytes(record.owned_rdata.data(),
+                            record.owned_rdata.size());
 }
 
 bool DnsResponse::WriteAnswer(base::BigEndianWriter* writer,

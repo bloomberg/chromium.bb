@@ -62,8 +62,6 @@ class CORE_EXPORT HTMLFormControlElement : public LabelableElement,
   void setFormMethod(const AtomicString&);
   bool FormNoValidate() const;
 
-  void AncestorDisabledStateWasChanged();
-
   void Reset();
 
   void DispatchChangeEvent();
@@ -162,7 +160,7 @@ class CORE_EXPORT HTMLFormControlElement : public LabelableElement,
   void AttributeChanged(const AttributeModificationParams&) override;
   void ParseAttribute(const AttributeModificationParams&) override;
   virtual void RequiredAttributeChanged();
-  virtual void DisabledAttributeChanged();
+  void DisabledAttributeChanged() override;
   void AttachLayoutTree(AttachContext&) override;
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void RemovedFrom(ContainerNode&) override;
@@ -194,7 +192,6 @@ class CORE_EXPORT HTMLFormControlElement : public LabelableElement,
 
   bool IsValidElement() override;
   bool MatchesValidityPseudoClasses() const override;
-  void UpdateAncestorDisabledState() const;
 
   ValidationMessageClient* GetValidationMessageClient() const;
 
@@ -208,16 +205,8 @@ class CORE_EXPORT HTMLFormControlElement : public LabelableElement,
   WebString autofill_section_;
   enum WebAutofillState autofill_state_;
 
-  enum AncestorDisabledState {
-    kAncestorDisabledStateUnknown,
-    kAncestorDisabledStateEnabled,
-    kAncestorDisabledStateDisabled
-  };
-
-  mutable AncestorDisabledState ancestor_disabled_state_;
   enum DataListAncestorState { kUnknown, kInsideDataList, kNotInsideDataList };
   mutable enum DataListAncestorState data_list_ancestor_state_;
-  mutable bool may_have_field_set_ancestor_ : 1;
 
   bool has_validation_message_ : 1;
   // The initial value of will_validate_ depends on the derived class. We can't

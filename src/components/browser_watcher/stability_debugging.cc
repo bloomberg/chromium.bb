@@ -28,6 +28,8 @@ uintptr_t GetProgramCounter(const CONTEXT& context) {
   return context.Eip;
 #elif defined(ARCH_CPU_X86_64)
   return context.Rip;
+#elif defined(ARCH_CPU_ARM64)
+  return context.Pc;
 #endif
 }
 

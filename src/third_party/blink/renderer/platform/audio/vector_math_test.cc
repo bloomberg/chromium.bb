@@ -17,7 +17,7 @@
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
-namespace VectorMath {
+namespace vector_math {
 namespace {
 
 struct MemoryLayout {
@@ -67,7 +67,7 @@ bool Equal(float a, float b) {
 
 // This represents a real source or destination vector which is aligned, can be
 // non-contiguous and can be used as a source or destination vector for
-// blink::VectorMath functions.
+// blink::vector_math functions.
 template <typename T>
 class TestVector {
   class Iterator {
@@ -272,7 +272,7 @@ TEST_F(VectorMathTest, Conv) {
       // process only |source.size() - filter_size| frames here.
       if (filter_size >= source.size())
         break;
-      size_t frames_to_process = source.size() - filter_size;
+      uint32_t frames_to_process = source.size() - filter_size;
       // The stride of a convolution filter must be -1. Let's first create
       // a reversed filter whose stride is 1.
       TestVector<const float> reversed_filter(
@@ -515,5 +515,5 @@ TEST_F(VectorMathTest, Zvmul) {
 }
 
 }  // namespace
-}  // namespace VectorMath
+}  // namespace vector_math
 }  // namespace blink

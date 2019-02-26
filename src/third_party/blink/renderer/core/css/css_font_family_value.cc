@@ -12,11 +12,13 @@ namespace blink {
 
 CSSFontFamilyValue* CSSFontFamilyValue::Create(const String& family_name) {
   if (family_name.IsNull())
-    return new CSSFontFamilyValue(family_name);
+    return MakeGarbageCollected<CSSFontFamilyValue>(family_name);
   CSSValuePool::FontFamilyValueCache::AddResult entry =
       CssValuePool().GetFontFamilyCacheEntry(family_name);
-  if (!entry.stored_value->value)
-    entry.stored_value->value = new CSSFontFamilyValue(family_name);
+  if (!entry.stored_value->value) {
+    entry.stored_value->value =
+        MakeGarbageCollected<CSSFontFamilyValue>(family_name);
+  }
   return entry.stored_value->value;
 }
 

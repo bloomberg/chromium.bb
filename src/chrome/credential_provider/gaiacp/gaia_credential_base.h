@@ -45,7 +45,7 @@ class ATL_NO_VTABLE CGaiaCredentialBase
  public:
   // Size in wchar_t of string buffer to pass account information to background
   // process to save that information into the registry.
-  const static int kAccountInfoBufferSize = 1024;
+  static const int kAccountInfoBufferSize = 2048;
 
   // Called when the DLL is registered or unregistered.
   static HRESULT OnDllRegisterServer();
@@ -98,9 +98,6 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   HRESULT FinishOnUserAuthenticated(BSTR username, BSTR password, BSTR sid);
 
  private:
-   static HRESULT GetAppNameAndCommandline(const wchar_t* email,
-                                           base::CommandLine* command_line);
-
   // Resets the state of the credential, forgetting any username or password
   // that may have been set previously.  Derived classes may override to
   // perform more state resetting if needed, but should always call the base
@@ -110,6 +107,13 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   // Derived classes should implement this function to return an email address
   // only when reauthenticating the user.
   virtual HRESULT GetEmailForReauth(wchar_t* email, size_t length);
+
+  // Gets the command line to run the Gaia Logon stub (GLS).
+  virtual HRESULT GetGlsCommandline(const wchar_t* email,
+                                    base::CommandLine* command_line);
+
+  // Display error message to the user.  Virtual so that tests can override.
+  virtual void DisplayErrorInUI(LONG status, LONG substatus, BSTR status_text);
 
   // Called from GetSerialization() to handle auto-logon.  If the credential
   // has enough information in internal state to auto-logon, the two arguments
@@ -129,8 +133,7 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   // Creates a restricted token for the Gaia account that can be used to run
   // the logon stub.  The returned SID is a logon SID and not the SID of the
   // Gaia account.
-  static HRESULT CreateGaiaLogonToken(OSProcessManager* manager,
-                                      base::win::ScopedHandle* token,
+  static HRESULT CreateGaiaLogonToken(base::win::ScopedHandle* token,
                                       PSID* sid);
 
   // Forks the logon stub process and waits for it to start.
@@ -152,7 +155,7 @@ class ATL_NO_VTABLE CGaiaCredentialBase
       BSTR* status_text);
 
   // ICredentialProviderCredential2
-  IFACEMETHODIMP Advise(ICredentialProviderCredentialEvents* pcpce) override;
+  IFACEMETHODIMP Advise(ICredentialProviderCredentialEvents* cpce) override;
   IFACEMETHODIMP UnAdvise(void) override;
   IFACEMETHODIMP SetSelected(BOOL* auto_login) override;
   IFACEMETHODIMP SetDeselected(void) override;
@@ -179,10 +182,10 @@ class ATL_NO_VTABLE CGaiaCredentialBase
                                           DWORD dwSelectedItem) override;
   IFACEMETHODIMP CommandLinkClicked(DWORD field_id) override;
   IFACEMETHODIMP GetSerialization(
-      CREDENTIAL_PROVIDER_GET_SERIALIZATION_RESPONSE* pcpgsr,
-      CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* pcpcs,
-      wchar_t** ppszOptionalStatusText,
-      CREDENTIAL_PROVIDER_STATUS_ICON* pcpsiOptionalStatusIcon) override;
+      CREDENTIAL_PROVIDER_GET_SERIALIZATION_RESPONSE* cpgsr,
+      CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* cpcs,
+      wchar_t** status_text,
+      CREDENTIAL_PROVIDER_STATUS_ICON* status_icon) override;
   IFACEMETHODIMP ReportResult(
       NTSTATUS ntsStatus,
       NTSTATUS ntsSubstatus,
@@ -204,6 +207,8 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   IFACEMETHODIMP ReportError(LONG status,
                              LONG substatus,
                              BSTR status_text) override;
+
+  void TerminateLogonProcess();
 
   CComPtr<ICredentialProviderCredentialEvents> events_;
 

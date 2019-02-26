@@ -150,6 +150,12 @@ class DeviceSyncImpl : public DeviceSyncBase,
 
     void InvokeCallback(mojom::NetworkRequestResult result);
 
+    cryptauth::SoftwareFeature software_feature() const {
+      return software_feature_;
+    }
+
+    bool enabled() const { return enabled_; }
+
    private:
     std::string device_public_key_;
     cryptauth::SoftwareFeature software_feature_;

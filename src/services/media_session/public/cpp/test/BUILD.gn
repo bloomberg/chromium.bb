@@ -8,10 +8,15 @@ component("test_support") {
   sources = [
     "audio_focus_test_util.cc",
     "audio_focus_test_util.h",
+    "mock_media_session.cc",
+    "mock_media_session.h",
+    "test_media_controller.cc",
+    "test_media_controller.h",
   ]
 
   deps = [
     "//base",
+    "//services/media_session/public/cpp",
     "//services/media_session/public/mojom",
   ]
 

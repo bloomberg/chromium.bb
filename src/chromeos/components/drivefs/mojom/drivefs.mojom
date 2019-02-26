@@ -50,6 +50,12 @@ interface DriveFs {
 
   // Start a search query with given parameters.
   StartSearchQuery(SearchQuery& query, QueryParameters query_params);
+
+  // Fetches all changelogs, i.e. for My Drive and all Team Drives.
+  FetchAllChangeLogs();
+
+  // Fetches the changelog(s) using the provided |options|.
+  FetchChangeLog(array<FetchChangeLogOptions> options);
 };
 
 // Implemented by Chrome, used from DriveFS.
@@ -78,10 +84,28 @@ interface DriveFsDelegate {
 
   // Invoked when a supported error occurs.
   OnError(DriveError error);
+
+  // Invoked with the list of team drive IDs.
+  OnTeamDrivesListReady(array<string> team_drive_ids);
+
+  enum CreateOrDelete {
+    kCreated,
+    kDeleted,
+  };
+
+  // Invoked whenever a Team Drive root changes or gets deleted.
+  OnTeamDriveChanged(string team_drive_id, CreateOrDelete change_type);
+
+  // Invoked from time to time to indicate that drivefs is operational.
+  OnHeartbeat();
 };
 
+// Next MinVersion: 2
 struct DriveFsConfiguration {
   string user_email;
+
+  [MinVersion=1]
+  string? access_token;
 };
 
 enum AccessTokenStatus {
@@ -132,6 +156,7 @@ struct DriveError {
   mojo_base.mojom.FilePath path;
 };
 
+// Next MinVersion: 2
 struct FileMetadata {
   enum Type {
     // A regular file.
@@ -173,6 +198,8 @@ struct FileMetadata {
   array<uint8>? deprecated_thumbnail;
 
   Capabilities capabilities;
+
+  [MinVersion=1] FolderFeature? folder_feature;
 };
 
 struct ImageMetadata {
@@ -191,6 +218,20 @@ struct Capabilities {
   bool can_delete = true;
   bool can_rename = true;
   bool can_add_children = true;
+};
+
+// Set on Drive Uploader roots and optionally on select sub-folders.
+struct FolderFeature {
+  // Identifies a root directory of a machine sync, used for the backup and
+  // restore feature.
+  bool is_machine_root = false;
+
+  // Identifies a sync folder.
+  bool is_arbitrary_sync_folder = false;
+
+  // Identifies an external media folder, that contains one time only uploads
+  // for USB devices, SD cards etc.
+  bool is_external_media = false;
 };
 
 struct ItemEvent {
@@ -294,4 +335,14 @@ interface SearchQuery {
 struct QueryItem {
   FileMetadata metadata;
   mojo_base.mojom.FilePath path;
+};
+
+struct FetchChangeLogOptions {
+  // Change ID for My Drive or Team Drive specified in a received push
+  // notification.
+  int64 change_id = -1;
+
+  // ID of the Team Drive to fetch the changelog for. Set to an empty string to
+  // fetch the My Drive changelog instead.
+  string team_drive_id;
 };

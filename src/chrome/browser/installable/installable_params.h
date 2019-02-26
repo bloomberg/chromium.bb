@@ -20,6 +20,9 @@ struct InstallableParams {
   // conforming to the primary icon size parameters.
   bool valid_primary_icon = false;
 
+  // Whether to prefer an icon with purpose 'maskable' for the primary icon.
+  bool prefer_maskable_icon = false;
+
   // Check whether there is a fetchable, non-empty icon in the manifest
   // conforming to the badge icon size parameters.
   bool valid_badge_icon = false;

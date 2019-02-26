@@ -156,7 +156,7 @@ void KeyboardHookX11::CaptureKeyForDomCode(DomCode dom_code) {
 }  // namespace
 
 // static
-std::unique_ptr<KeyboardHook> KeyboardHook::Create(
+std::unique_ptr<KeyboardHook> KeyboardHook::CreateModifierKeyboardHook(
     base::Optional<base::flat_set<DomCode>> dom_codes,
     gfx::AcceleratedWidget accelerated_widget,
     KeyboardHook::KeyEventCallback callback) {
@@ -167,6 +167,12 @@ std::unique_ptr<KeyboardHook> KeyboardHook::Create(
   keyboard_hook->Register();
 
   return keyboard_hook;
+}
+
+// static
+std::unique_ptr<KeyboardHook> KeyboardHook::CreateMediaKeyboardHook(
+    KeyEventCallback callback) {
+  return nullptr;
 }
 
 }  // namespace ui

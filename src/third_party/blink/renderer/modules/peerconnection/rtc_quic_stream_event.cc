@@ -14,18 +14,18 @@ RTCQuicStreamEvent* RTCQuicStreamEvent::Create(RTCQuicStream* stream) {
 
 RTCQuicStreamEvent* RTCQuicStreamEvent::Create(
     const AtomicString& type,
-    const RTCQuicStreamEventInit& initializer) {
+    const RTCQuicStreamEventInit* initializer) {
   return new RTCQuicStreamEvent(type, initializer);
 }
 
 RTCQuicStreamEvent::RTCQuicStreamEvent(RTCQuicStream* stream)
-    : Event(EventTypeNames::quicstream, Bubbles::kNo, Cancelable::kNo),
+    : Event(event_type_names::kQuicstream, Bubbles::kNo, Cancelable::kNo),
       stream_(stream) {}
 
 RTCQuicStreamEvent::RTCQuicStreamEvent(
     const AtomicString& type,
-    const RTCQuicStreamEventInit& initializer)
-    : Event(type, initializer), stream_(initializer.stream()) {}
+    const RTCQuicStreamEventInit* initializer)
+    : Event(type, initializer), stream_(initializer->stream()) {}
 
 RTCQuicStreamEvent::~RTCQuicStreamEvent() = default;
 
@@ -34,7 +34,7 @@ RTCQuicStream* RTCQuicStreamEvent::stream() const {
 }
 
 const AtomicString& RTCQuicStreamEvent::InterfaceName() const {
-  return EventNames::RTCQuicStreamEvent;
+  return event_interface_names::kRTCQuicStreamEvent;
 }
 
 void RTCQuicStreamEvent::Trace(blink::Visitor* visitor) {

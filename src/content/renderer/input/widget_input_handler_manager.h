@@ -146,6 +146,8 @@ class CONTENT_EXPORT WidgetInputHandlerManager
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
 
+  base::Optional<cc::TouchAction> white_listed_touch_action_;
+
 #if defined(OS_ANDROID)
   std::unique_ptr<SynchronousCompositorProxyRegistry>
       synchronous_compositor_registry_;

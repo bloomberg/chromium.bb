@@ -19,7 +19,7 @@
 #include "third_party/blink/public/platform/web_string.h"
 
 #if defined(OS_MACOSX)
-#include "third_party/blink/public/platform/mac/web_sandbox_support.h"
+#include "content/child/child_process_sandbox_support_impl_mac.h"
 #elif defined(OS_POSIX) && !defined(OS_ANDROID)
 #include "content/child/child_process_sandbox_support_impl_linux.h"
 #include "third_party/blink/public/platform/linux/out_of_process_font.h"
@@ -36,19 +36,14 @@ typedef struct CGFont* CGFontRef;
 
 namespace content {
 
-#if !defined(OS_ANDROID) && !defined(OS_WIN)
+#if defined(OS_LINUX)
 
 class PpapiBlinkPlatformImpl::SandboxSupport : public WebSandboxSupport {
  public:
-#if defined(OS_LINUX)
   explicit SandboxSupport(sk_sp<font_service::FontLoader> font_loader)
       : font_loader_(std::move(font_loader)) {}
-#endif
   ~SandboxSupport() override {}
 
-#if defined(OS_MACOSX)
-  bool LoadFont(CTFontRef srcFont, CGFontRef* out, uint32_t* fontID) override;
-#elif defined(OS_LINUX)
   SandboxSupport();
   void GetFallbackFontForCharacter(
       WebUChar32 character,
@@ -72,22 +67,7 @@ class PpapiBlinkPlatformImpl::SandboxSupport : public WebSandboxSupport {
   sk_sp<font_service::FontLoader> font_loader_;
   // For debugging https://crbug.com/312965
   base::SequenceCheckerImpl creation_thread_sequence_checker_;
-#endif
 };
-
-#if defined(OS_MACOSX)
-
-bool PpapiBlinkPlatformImpl::SandboxSupport::LoadFont(CTFontRef src_font,
-                                                      CGFontRef* out,
-                                                      uint32_t* font_id) {
-  // TODO(brettw) this should do the something similar to what
-  // RendererBlinkPlatformImpl does and request that the browser load the font.
-  // Note: need to unlock the proxy lock like ensureFontLoaded does.
-  NOTIMPLEMENTED();
-  return false;
-}
-
-#elif defined(OS_POSIX)
 
 PpapiBlinkPlatformImpl::SandboxSupport::SandboxSupport() {}
 
@@ -137,8 +117,6 @@ void PpapiBlinkPlatformImpl::SandboxSupport::
 
 #endif
 
-#endif  // !defined(OS_ANDROID) && !defined(OS_WIN)
-
 PpapiBlinkPlatformImpl::PpapiBlinkPlatformImpl() {
 #if defined(OS_LINUX)
   font_loader_ =
@@ -147,7 +125,8 @@ PpapiBlinkPlatformImpl::PpapiBlinkPlatformImpl() {
   sandbox_support_.reset(
       new PpapiBlinkPlatformImpl::SandboxSupport(font_loader_));
 #elif defined(OS_MACOSX)
-  sandbox_support_.reset(new PpapiBlinkPlatformImpl::SandboxSupport());
+  sandbox_support_.reset(
+      new WebSandboxSupportMac(ChildThread::Get()->GetConnector()));
 #endif
 }
 
@@ -155,7 +134,7 @@ PpapiBlinkPlatformImpl::~PpapiBlinkPlatformImpl() {
 }
 
 void PpapiBlinkPlatformImpl::Shutdown() {
-#if !defined(OS_ANDROID) && !defined(OS_WIN)
+#if defined(OS_LINUX) || defined(OS_MACOSX)
   // SandboxSupport contains a map of OutOfProcessFont objects, which hold
   // WebStrings and WebVectors, which become invalidated when blink is shut
   // down. Hence, we need to clear that map now, just before blink::shutdown()
@@ -165,7 +144,7 @@ void PpapiBlinkPlatformImpl::Shutdown() {
 }
 
 blink::WebSandboxSupport* PpapiBlinkPlatformImpl::GetSandboxSupport() {
-#if !defined(OS_ANDROID) && !defined(OS_WIN)
+#if defined(OS_LINUX) || defined(OS_MACOSX)
   return sandbox_support_.get();
 #else
   return nullptr;

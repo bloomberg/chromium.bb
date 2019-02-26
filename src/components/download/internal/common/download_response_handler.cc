@@ -170,6 +170,14 @@ void DownloadResponseHandler::OnReceiveRedirect(
     OnComplete(network::URLLoaderCompletionStatus(net::OK));
     return;
   }
+
+  // Check if redirect URL is web safe.
+  if (delegate_ && !delegate_->CanRequestURL(redirect_info.new_url)) {
+    abort_reason_ = DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST;
+    OnComplete(network::URLLoaderCompletionStatus(net::OK));
+    return;
+  }
+
   url_chain_.push_back(redirect_info.new_url);
   method_ = redirect_info.new_method;
   referrer_ = GURL(redirect_info.new_referrer);

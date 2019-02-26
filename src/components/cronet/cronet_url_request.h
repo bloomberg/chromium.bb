@@ -256,6 +256,10 @@ class CronetURLRequest {
     // Count of bytes received during redirect is added to received byte count.
     int64_t received_byte_count_from_redirects_;
 
+    // Whether error has been already reported, for example from
+    // OnSSLCertificateError().
+    bool error_reported_;
+
     // Whether detailed metrics should be collected and reported.
     const bool enable_metrics_;
     // Whether metrics have been reported.

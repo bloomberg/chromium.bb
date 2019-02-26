@@ -8,59 +8,9 @@
 #include "gm.h"
 #include "SkColorSpace.h"
 #include "SkColorSpaceXformSteps.h"
+#include "SkDashPathEffect.h"
 #include "SkGradientShader.h"
 #include "SkString.h"
-
-template <typename Fn>
-static void mark(SkCanvas* canvas, Fn&& fn) {
-    SkPaint alpha;
-    alpha.setAlpha(0x50);
-    canvas->saveLayer(nullptr, &alpha);
-        canvas->translate(140,40);
-        canvas->scale(2,2);
-        fn();
-    canvas->restore();
-}
-
-static void mark_good(SkCanvas* canvas) {
-    mark(canvas, [&]{
-        SkPaint paint;
-
-        // A green circle.
-        paint.setColor(SkColorSetRGB(27, 158, 119));
-        canvas->drawCircle(0,0, 12, paint);
-
-        // Cut out a check mark.
-        paint.setBlendMode(SkBlendMode::kSrc);
-        paint.setColor(0x00000000);
-        paint.setStrokeWidth(2);
-        paint.setStyle(SkPaint::kStroke_Style);
-        canvas->drawLine(-6, 0,
-                         -1, 5, paint);
-        canvas->drawLine(-1, +5,
-                         +7, -5, paint);
-    });
-}
-
-static void mark_bad(SkCanvas* canvas) {
-    mark(canvas, [&] {
-        SkPaint paint;
-
-        // A red circle.
-        paint.setColor(SkColorSetRGB(231, 41, 138));
-        canvas->drawCircle(0,0, 12, paint);
-
-        // Cut out an 'X'.
-        paint.setBlendMode(SkBlendMode::kSrc);
-        paint.setColor(0x00000000);
-        paint.setStrokeWidth(2);
-        paint.setStyle(SkPaint::kStroke_Style);
-        canvas->drawLine(-5,-5,
-                         +5,+5, paint);
-        canvas->drawLine(+5,-5,
-                         -5,+5, paint);
-    });
-}
 
 static bool nearly_equal(SkColor4f x, SkColor4f y) {
     const float K = 0.01f;
@@ -99,7 +49,7 @@ static void compare_pixel(const char* label,
     SkBitmap bm;
     bm.allocPixels(SkImageInfo::Make(1,1, kRGBA_F32_SkColorType, kUnpremul_SkAlphaType, canvas_cs));
     if (!canvas->readPixels(bm, x,y)) {
-        mark_good(canvas);
+        MarkGMGood(canvas, 140,40);
         canvas->drawString("can't readPixels() on this canvas :(", 100,20, text);
         return;
     }
@@ -110,7 +60,9 @@ static void compare_pixel(const char* label,
     SkColor4f expected = transform(color,cs, canvas_cs.get());
     if (canvas->imageInfo().colorType() < kRGBA_F16_SkColorType) {
         // We can't expect normalized formats to hold values outside [0,1].
-        expected = expected.pin();
+        for (int i = 0; i < 4; ++i) {
+            expected[i] = SkTPin(expected[i], 0.0f, 1.0f);
+        }
     }
     if (canvas->imageInfo().colorType() == kGray_8_SkColorType) {
         // Drawing into Gray8 is known to be maybe-totally broken.
@@ -119,9 +71,9 @@ static void compare_pixel(const char* label,
     }
 
     if (nearly_equal(pixel, expected)) {
-        mark_good(canvas);
+        MarkGMGood(canvas, 140,40);
     } else {
-        mark_bad(canvas);
+        MarkGMBad(canvas, 140,40);
     }
 
     struct {
@@ -141,9 +93,16 @@ static void compare_pixel(const char* label,
     }
 }
 
-DEF_SIMPLE_GM(p3, canvas, 450, 1000) {
+DEF_SIMPLE_GM(p3, canvas, 450, 1300) {
     auto p3 = SkColorSpace::MakeRGB(SkColorSpace::kSRGB_RenderTargetGamma,
                                     SkColorSpace::kDCIP3_D65_Gamut);
+    auto srgb = SkColorSpace::MakeSRGB();
+
+    auto p3_to_srgb = [&](SkColor4f c) {
+        SkPaint p;
+        p.setColor4f(c, p3.get());
+        return p.getColor4f();
+    };
 
     // Draw a P3 red rectangle and check the corner.
     {
@@ -208,7 +167,29 @@ DEF_SIMPLE_GM(p3, canvas, 450, 1000) {
 
     canvas->translate(0,80);
 
-    // Draw a gradient from P3 red to P3 green interpolating in unpremul, and check the corners.
+    // Draw a P3 red bitmap wrapped in a shader, using SkPixmap::erase().
+    {
+        SkBitmap bm;
+        bm.allocPixels(SkImageInfo::Make(60,60, kRGBA_F16_SkColorType, kPremul_SkAlphaType, p3));
+
+        // At the moment only SkPixmap has an erase() that takes an SkColor4f.
+        SkPixmap pm;
+        SkAssertResult(bm.peekPixels(&pm));
+        SkAssertResult(pm.erase({1,0,0,1} /*in p3*/));
+
+        SkPaint paint;
+        paint.setShader(SkShader::MakeBitmapShader(bm, SkShader::kRepeat_TileMode,
+                                                   SkShader::kRepeat_TileMode));
+
+        canvas->drawRect({10,10,70,70}, paint);
+        compare_pixel("drawBitmapAsShader P3 red, from SkPixmap::erase",
+                      canvas, 10,10,
+                      {1,0,0,1}, p3.get());
+    }
+
+    canvas->translate(0,80);
+
+    // Draw a gradient from P3 red to P3 green interpolating in unpremul P3, checking the corners.
     {
 
         SkPoint points[] = {{10.5,10.5}, {69.5,69.5}};
@@ -220,13 +201,13 @@ DEF_SIMPLE_GM(p3, canvas, 450, 1000) {
                                                      SkShader::kClamp_TileMode));
         canvas->drawRect({10,10,70,70}, paint);
         canvas->save();
-            compare_pixel("gradient P3 red",
+            compare_pixel("UPM P3 gradient, P3 red",
                           canvas, 10,10,
                           {1,0,0,1}, p3.get());
 
             canvas->translate(180, 0);
 
-            compare_pixel("gradient P3 green",
+            compare_pixel("UPM P3 gradient, P3 green",
                           canvas, 69,69,
                           {0,1,0,1}, p3.get());
         canvas->restore();
@@ -234,7 +215,7 @@ DEF_SIMPLE_GM(p3, canvas, 450, 1000) {
 
     canvas->translate(0,80);
 
-    // Draw a gradient from P3 red to P3 green interpolating in premul, and check the corners.
+    // Draw a gradient from P3 red to P3 green interpolating in premul P3, checking the corners.
     {
 
         SkPoint points[] = {{10.5,10.5}, {69.5,69.5}};
@@ -249,13 +230,68 @@ DEF_SIMPLE_GM(p3, canvas, 450, 1000) {
                                              nullptr/*local matrix*/));
         canvas->drawRect({10,10,70,70}, paint);
         canvas->save();
-            compare_pixel("gradient P3 red",
+            compare_pixel("PM P3 gradient, P3 red",
                           canvas, 10,10,
                           {1,0,0,1}, p3.get());
 
             canvas->translate(180, 0);
 
-            compare_pixel("gradient P3 green",
+            compare_pixel("PM P3 gradient, P3 green",
+                          canvas, 69,69,
+                          {0,1,0,1}, p3.get());
+        canvas->restore();
+    }
+
+    canvas->translate(0,80);
+
+    // Draw a gradient from P3 red to P3 green interpolating in unpremul sRGB, checking the corners.
+    {
+
+        SkPoint points[] = {{10.5,10.5}, {69.5,69.5}};
+        SkColor4f colors[] = {p3_to_srgb({1,0,0,1}), p3_to_srgb({0,1,0,1})};
+
+        SkPaint paint;
+        paint.setShader(SkGradientShader::MakeLinear(points, colors, srgb,
+                                                     nullptr, SK_ARRAY_COUNT(colors),
+                                                     SkShader::kClamp_TileMode));
+        canvas->drawRect({10,10,70,70}, paint);
+        canvas->save();
+            compare_pixel("UPM sRGB gradient, P3 red",
+                          canvas, 10,10,
+                          {1,0,0,1}, p3.get());
+
+            canvas->translate(180, 0);
+
+            compare_pixel("UPM sRGB gradient, P3 green",
+                          canvas, 69,69,
+                          {0,1,0,1}, p3.get());
+        canvas->restore();
+    }
+
+    canvas->translate(0,80);
+
+    // Draw a gradient from P3 red to P3 green interpolating in premul sRGB, checking the corners.
+    {
+
+        SkPoint points[] = {{10.5,10.5}, {69.5,69.5}};
+        SkColor4f colors[] = {p3_to_srgb({1,0,0,1}), p3_to_srgb({0,1,0,1})};
+
+        SkPaint paint;
+        paint.setShader(
+                SkGradientShader::MakeLinear(points, colors, srgb,
+                                             nullptr, SK_ARRAY_COUNT(colors),
+                                             SkShader::kClamp_TileMode,
+                                             SkGradientShader::kInterpolateColorsInPremul_Flag,
+                                             nullptr/*local matrix*/));
+        canvas->drawRect({10,10,70,70}, paint);
+        canvas->save();
+            compare_pixel("PM P3 gradient, P3 red",
+                          canvas, 10,10,
+                          {1,0,0,1}, p3.get());
+
+            canvas->translate(180, 0);
+
+            compare_pixel("PM P3 gradient, P3 green",
                           canvas, 69,69,
                           {0,1,0,1}, p3.get());
         canvas->restore();
@@ -317,4 +353,75 @@ DEF_SIMPLE_GM(p3, canvas, 450, 1000) {
     }
 
     // TODO: draw P3 colors more ways
+}
+
+DEF_SIMPLE_GM(p3_ovals, canvas, 450, 320) {
+    auto p3 = SkColorSpace::MakeRGB(SkColorSpace::kSRGB_RenderTargetGamma,
+                                    SkColorSpace::kDCIP3_D65_Gamut);
+
+    // Test cases that exercise each Op in GrOvalOpFactory.cpp
+
+    // Draw a circle and check the center (CircleOp)
+    {
+        SkPaint paint;
+        paint.setAntiAlias(true);
+        paint.setColor4f({ 1,0,0,1 }, p3.get());
+
+        canvas->drawCircle(40, 40, 30, paint);
+        compare_pixel("drawCircle P3 red ",
+                      canvas, 40, 40,
+                      { 1,0,0,1 }, p3.get());
+    }
+
+    canvas->translate(0, 80);
+
+    // Draw an oval and check the center (EllipseOp)
+    {
+        SkPaint paint;
+        paint.setAntiAlias(true);
+        paint.setColor4f({ 1,0,0,1 }, p3.get());
+
+        canvas->drawOval({ 20,10,60,70 }, paint);
+        compare_pixel("drawOval P3 red ",
+                      canvas, 40, 40,
+                      { 1,0,0,1 }, p3.get());
+    }
+
+    canvas->translate(0, 80);
+
+    // Draw a butt-capped dashed circle and check the top of the stroke (ButtCappedDashedCircleOp)
+    {
+        SkPaint paint;
+        paint.setAntiAlias(true);
+        paint.setColor4f({ 1,0,0,1 }, p3.get());
+        paint.setStyle(SkPaint::kStroke_Style);
+        float intervals[] = { 70, 10 };
+        paint.setPathEffect(SkDashPathEffect::Make(intervals, 2, 0));
+        paint.setStrokeWidth(10);
+
+        canvas->drawCircle(40, 40, 30, paint);
+        compare_pixel("drawDashedCircle P3 red ",
+                      canvas, 40, 10,
+                      { 1,0,0,1 }, p3.get());
+    }
+
+    canvas->translate(0, 80);
+
+    // Draw an oval with rotation and check the center (DIEllipseOp)
+    {
+        SkPaint paint;
+        paint.setAntiAlias(true);
+        paint.setColor4f({ 1,0,0,1 }, p3.get());
+
+        canvas->save();
+            canvas->translate(40, 40);
+            canvas->rotate(45);
+            canvas->drawOval({ -20,-30,20,30 }, paint);
+        canvas->restore();
+        compare_pixel("drawRotatedOval P3 red ",
+                      canvas, 40, 40,
+                      { 1,0,0,1 }, p3.get());
+    }
+
+    canvas->translate(0, 80);
 }

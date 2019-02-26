@@ -37,7 +37,6 @@
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
-#include "third_party/blink/renderer/platform/web_task_runner.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_position.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
@@ -65,8 +64,6 @@ static const size_t kPendingTokenLimit = 1000;
 
 static_assert(kOutstandingTokenLimit > kPendingTokenLimit,
               "Outstanding token limit is applied after pending token limit.");
-
-using namespace HTMLNames;
 
 base::WeakPtr<BackgroundHTMLParser> BackgroundHTMLParser::Create(
     std::unique_ptr<Configuration> config,
@@ -249,6 +246,7 @@ void BackgroundHTMLParser::PumpTokenizer() {
     if (simulated_token == HTMLTreeBuilderSimulator::kScriptEnd ||
         simulated_token == HTMLTreeBuilderSimulator::kStyleEnd ||
         simulated_token == HTMLTreeBuilderSimulator::kLink ||
+        simulated_token == HTMLTreeBuilderSimulator::kCustomElementBegin ||
         pending_tokens_.size() >= kPendingTokenLimit) {
       EnqueueTokenizedChunk();
 

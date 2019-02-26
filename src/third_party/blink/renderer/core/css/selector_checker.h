@@ -153,6 +153,7 @@ class SelectorChecker {
 
   static bool MatchesFocusPseudoClass(const Element&);
   static bool MatchesFocusVisiblePseudoClass(const Element&);
+  static bool MatchesSpatialNavigationFocusPseudoClass(const Element&);
 
  private:
   // Does the work of checking whether the simple selector and element pointed

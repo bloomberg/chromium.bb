@@ -41,7 +41,7 @@
 #include "gl/GrGLTypes.h"
 
 #ifdef SK_VULKAN
-#include "vk/GrVkDefines.h"
+#include <vulkan/vulkan_core.h>
 #endif
 
 #include <initializer_list>
@@ -56,7 +56,7 @@ static GrBackendFormat create_backend_format(GrContext* context,
     const GrCaps* caps = context->contextPriv().caps();
 
     switch (context->contextPriv().getBackend()) {
-    case kOpenGL_GrBackend: {
+    case GrBackendApi::kOpenGL: {
         const GrGLCaps* glCaps = static_cast<const GrGLCaps*>(caps);
         GrGLStandard standard = glCaps->standard();
 
@@ -126,7 +126,7 @@ static GrBackendFormat create_backend_format(GrContext* context,
     }
     break;
 #ifdef SK_VULKAN
-    case kVulkan_GrBackend:
+    case GrBackendApi::kVulkan:
         switch (ct) {
             case kUnknown_SkColorType:
                 return GrBackendFormat();
@@ -184,7 +184,7 @@ static GrBackendFormat create_backend_format(GrContext* context,
         }
         break;
 #endif
-    case kMock_GrBackend:
+    case GrBackendApi::kMock:
         switch (ct) {
             case kUnknown_SkColorType:
                 return GrBackendFormat();
@@ -834,7 +834,7 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(DDLTextureFlagsTest, reporter, ctxInfo) {
             }
             REPORTER_ASSERT(reporter, image);
 
-            GrTextureProxy* backingProxy = ((SkImage_Gpu*) image.get())->peekProxy();
+            GrTextureProxy* backingProxy = ((SkImage_GpuBase*) image.get())->peekProxy();
 
             REPORTER_ASSERT(reporter, backingProxy->mipMapped() == mipMapped);
             if (GR_GL_TEXTURE_2D == target) {

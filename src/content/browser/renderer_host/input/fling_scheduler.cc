@@ -31,6 +31,7 @@ void FlingScheduler::ScheduleFlingProgress(
   // Don't do anything if a ui::Compositor is already being observed.
   if (observed_compositor_)
     return;
+
   ui::Compositor* compositor = GetCompositor();
   // If a ui::Compositor can't be obtained, ask the host for BeginFrames.
   if (!compositor) {

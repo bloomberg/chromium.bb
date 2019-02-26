@@ -36,9 +36,9 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.media.router.CastSessionUtil;
 import org.chromium.chrome.browser.media.router.ClientRecord;
+import org.chromium.chrome.browser.media.router.JSONTestUtils.JSONObjectLike;
+import org.chromium.chrome.browser.media.router.JSONTestUtils.JSONStringLike;
 import org.chromium.chrome.browser.media.router.cast.CastMessageHandler.RequestRecord;
-import org.chromium.chrome.browser.media.router.cast.JSONTestUtils.JSONObjectLike;
-import org.chromium.chrome.browser.media.router.cast.JSONTestUtils.JSONStringLike;
 
 import java.util.ArrayDeque;
 import java.util.HashMap;

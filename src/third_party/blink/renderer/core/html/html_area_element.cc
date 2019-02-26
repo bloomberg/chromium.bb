@@ -42,10 +42,10 @@ float ClampCoordinate(double value) {
 }
 }
 
-using namespace HTMLNames;
+using namespace html_names;
 
 inline HTMLAreaElement::HTMLAreaElement(Document& document)
-    : HTMLAnchorElement(areaTag, document), shape_(kRect) {}
+    : HTMLAnchorElement(kAreaTag, document), shape_(kRect) {}
 
 // An explicit empty destructor should be in html_area_element.cc, because
 // if an implicit destructor is used or an empty destructor is defined in
@@ -59,7 +59,7 @@ DEFINE_NODE_FACTORY(HTMLAreaElement)
 void HTMLAreaElement::ParseAttribute(
     const AttributeModificationParams& params) {
   const AtomicString& value = params.new_value;
-  if (params.name == shapeAttr) {
+  if (params.name == kShapeAttr) {
     if (EqualIgnoringASCIICase(value, "default")) {
       shape_ = kDefault;
     } else if (EqualIgnoringASCIICase(value, "circle") ||
@@ -74,10 +74,10 @@ void HTMLAreaElement::ParseAttribute(
       shape_ = kRect;
     }
     InvalidateCachedPath();
-  } else if (params.name == coordsAttr) {
+  } else if (params.name == kCoordsAttr) {
     coords_ = ParseHTMLListOfFloatingPointNumbers(value.GetString());
     InvalidateCachedPath();
-  } else if (params.name == altAttr || params.name == accesskeyAttr) {
+  } else if (params.name == kAltAttr || params.name == kAccesskeyAttr) {
     // Do nothing.
   } else {
     HTMLAnchorElement::ParseAttribute(params);
@@ -222,7 +222,7 @@ void HTMLAreaElement::SetFocused(bool should_be_focused,
 
 void HTMLAreaElement::UpdateFocusAppearanceWithOptions(
     SelectionBehaviorOnFocus selection_behavior,
-    const FocusOptions& options) {
+    const FocusOptions* options) {
   GetDocument().UpdateStyleAndLayoutTreeForNode(this);
   if (!IsFocusable())
     return;

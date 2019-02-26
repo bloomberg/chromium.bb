@@ -13,8 +13,8 @@
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/card_unmask_delegate.h"
+#include "components/autofill/core/browser/legacy_strike_database.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/autofill/core/browser/strike_database.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
@@ -32,7 +32,7 @@ class WebViewAutofillClientIOS : public AutofillClient {
       web::WebState* web_state,
       id<CWVAutofillClientIOSBridge> bridge,
       identity::IdentityManager* identity_manager,
-      StrikeDatabase* strike_database,
+      LegacyStrikeDatabase* strike_database,
       scoped_refptr<AutofillWebDataService> autofill_web_data_service,
       syncer::SyncService* sync_service);
   ~WebViewAutofillClientIOS() override;
@@ -42,7 +42,9 @@ class WebViewAutofillClientIOS : public AutofillClient {
   PrefService* GetPrefs() override;
   syncer::SyncService* GetSyncService() override;
   identity::IdentityManager* GetIdentityManager() override;
-  StrikeDatabase* GetStrikeDatabase() override;
+  FormDataImporter* GetFormDataImporter() override;
+  payments::PaymentsClient* GetPaymentsClient() override;
+  LegacyStrikeDatabase* GetLegacyStrikeDatabase() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
   AddressNormalizer* GetAddressNormalizer() override;
@@ -58,6 +60,11 @@ class WebViewAutofillClientIOS : public AutofillClient {
       std::unique_ptr<base::DictionaryValue> legal_message,
       const std::vector<MigratableCreditCard>& migratable_credit_cards,
       LocalCardMigrationCallback start_migrating_cards_callback) override;
+  void ShowLocalCardMigrationResults(
+      const bool has_server_error,
+      const base::string16& tip_message,
+      const std::vector<MigratableCreditCard>& migratable_credit_cards,
+      MigrationDeleteCardCallback delete_local_card_callback) override;
   void ConfirmSaveAutofillProfile(const AutofillProfile& profile,
                                   base::OnceClosure callback) override;
   void ConfirmSaveCreditCardLocally(const CreditCard& card,
@@ -67,10 +74,11 @@ class WebViewAutofillClientIOS : public AutofillClient {
       const CreditCard& card,
       std::unique_ptr<base::DictionaryValue> legal_message,
       bool should_request_name_from_user,
+      bool should_request_expiration_date_from_user,
       bool show_prompt,
-      base::OnceCallback<void(const base::string16&)> callback) override;
+      UserAcceptedUploadCallback callback) override;
   void ConfirmCreditCardFillAssist(const CreditCard& card,
-                                   const base::Closure& callback) override;
+                                   base::OnceClosure callback) override;
   void LoadRiskData(
       base::OnceCallback<void(const std::string&)> callback) override;
   bool HasCreditCardScanFeature() override;
@@ -104,7 +112,9 @@ class WebViewAutofillClientIOS : public AutofillClient {
   web::WebState* web_state_;
   __weak id<CWVAutofillClientIOSBridge> bridge_;
   identity::IdentityManager* identity_manager_;
-  StrikeDatabase* strike_database_;
+  std::unique_ptr<payments::PaymentsClient> payments_client_;
+  std::unique_ptr<FormDataImporter> form_data_importer_;
+  LegacyStrikeDatabase* legacy_strike_database_;
   scoped_refptr<AutofillWebDataService> autofill_web_data_service_;
   syncer::SyncService* sync_service_ = nullptr;
 

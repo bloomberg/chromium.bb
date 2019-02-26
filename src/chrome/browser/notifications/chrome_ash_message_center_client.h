@@ -45,6 +45,7 @@ class ChromeAshMessageCenterClient : public ash::mojom::AshMessageCenterClient,
   void GetArcAppIdByPackageName(
       const std::string& package_name,
       GetArcAppIdByPackageNameCallback callback) override;
+  void ShowLockScreenNotificationSettings() override;
 
   // NotifierController::Observer:
   void OnIconImageUpdated(const message_center::NotifierId& notifier_id,
@@ -67,8 +68,7 @@ class ChromeAshMessageCenterClient : public ash::mojom::AshMessageCenterClient,
   std::map<base::UnguessableToken, std::string> displayed_notifications_;
 
   // Notifier source for each notifier type.
-  std::map<message_center::NotifierId::NotifierType,
-           std::unique_ptr<NotifierController>>
+  std::map<message_center::NotifierType, std::unique_ptr<NotifierController>>
       sources_;
 
   ash::mojom::AshMessageCenterControllerPtr controller_;

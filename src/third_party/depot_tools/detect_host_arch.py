@@ -12,7 +12,7 @@ import sys
 
 def HostArch():
   """Returns the host architecture with a predictable string."""
-  host_arch = platform.machine()
+  host_arch = platform.machine().lower()
 
   # Convert machine type to format recognized by gyp.
   if re.match(r'i.86', host_arch) or host_arch == 'i86pc':

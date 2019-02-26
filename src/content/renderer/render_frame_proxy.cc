@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "components/viz/common/features.h"
+#include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/frame_message_structs.h"
 #include "content/common/frame_owner_properties.h"
@@ -141,22 +142,21 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
     render_widget = render_view->GetWidget();
 
     // If the RenderView is reused by this proxy after having been used for a
-    // pending RenderFrame that was discarded, its swapped out state needs to
-    // be updated, as the OnSwapOut flow which normally does this won't happen
-    // in that case.  See https://crbug.com/653746 and
-    // https://crbug.com/651980.
-    if (!render_widget->is_swapped_out())
-      render_widget->SetSwappedOut(true);
+    // pending RenderFrame that was discarded, its widget needs to be frozen, as
+    // the OnSwapOut flow which normally does this won't happen in that case.
+    // See https://crbug.com/653746 and https://crbug.com/651980.
+    if (!render_widget->is_frozen())
+      render_widget->SetIsFrozen(true);
   } else {
     // Create a frame under an existing parent. The parent is always expected
     // to be a RenderFrameProxy, because navigations initiated by local frames
     // should not wind up here.
-
     web_frame = parent->web_frame()->CreateRemoteChild(
         replicated_state.scope,
         blink::WebString::FromUTF8(replicated_state.name),
         replicated_state.frame_policy.sandbox_flags,
-        replicated_state.frame_policy.container_policy, proxy.get(), opener);
+        replicated_state.frame_policy.container_policy,
+        replicated_state.frame_owner_element_type, proxy.get(), opener);
     proxy->unique_name_ = replicated_state.unique_name;
     render_view = parent->render_view();
     render_widget = parent->render_widget();
@@ -270,10 +270,9 @@ void RenderFrameProxy::ResendVisualProperties() {
 }
 
 void RenderFrameProxy::WillBeginCompositorFrame() {
-  if (compositing_helper_ &&
-      compositing_helper_->primary_surface_id().is_valid()) {
+  if (compositing_helper_ && compositing_helper_->surface_id().is_valid()) {
     FrameHostMsg_HittestData_Params params;
-    params.surface_id = compositing_helper_->primary_surface_id();
+    params.surface_id = compositing_helper_->surface_id();
     params.ignored_for_hittest = web_frame_->IsIgnoredForHitTest();
     render_widget_->QueueMessage(
         new FrameHostMsg_HittestData(render_widget_->routing_id(), params));
@@ -293,6 +292,11 @@ void RenderFrameProxy::OnScreenInfoChanged(const ScreenInfo& screen_info) {
 
 void RenderFrameProxy::OnZoomLevelChanged(double zoom_level) {
   pending_visual_properties_.zoom_level = zoom_level;
+  SynchronizeVisualProperties();
+}
+
+void RenderFrameProxy::OnPageScaleFactorChanged(float page_scale_factor) {
+  pending_visual_properties_.page_scale_factor = page_scale_factor;
   SynchronizeVisualProperties();
 }
 
@@ -433,6 +437,7 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_BubbleLogicalScroll, OnBubbleLogicalScroll)
     IPC_MESSAGE_HANDLER(FrameMsg_SetHasReceivedUserGestureBeforeNavigation,
                         OnSetHasReceivedUserGestureBeforeNavigation)
+    IPC_MESSAGE_HANDLER(FrameMsg_RenderFallbackContent, OnRenderFallbackContent)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -457,6 +462,8 @@ void RenderFrameProxy::OnChildFrameProcessGone() {
 
 void RenderFrameProxy::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
+  DCHECK(!enable_surface_synchronization_);
+
   // If this WebFrame has already been detached, its parent will be null. This
   // can happen when swapping a WebRemoteFrame with a WebLocalFrame, where this
   // message may arrive after the frame was removed from the frame tree, but
@@ -464,13 +471,8 @@ void RenderFrameProxy::OnFirstSurfaceActivation(
   if (!web_frame()->Parent())
     return;
 
-  if (!enable_surface_synchronization_) {
-    compositing_helper_->SetPrimarySurfaceId(
-        surface_info.id(), local_frame_size(),
-        cc::DeadlinePolicy::UseDefaultDeadline());
-  }
-  compositing_helper_->SetFallbackSurfaceId(surface_info.id(),
-                                            local_frame_size());
+  compositing_helper_->SetSurfaceId(surface_info.id(), local_frame_size(),
+                                    cc::DeadlinePolicy::UseDefaultDeadline());
 }
 
 void RenderFrameProxy::OnIntrinsicSizingInfoOfChildChanged(
@@ -593,7 +595,8 @@ void RenderFrameProxy::OnBubbleLogicalScroll(
 void RenderFrameProxy::OnDidUpdateVisualProperties(
     const cc::RenderFrameMetadata& metadata) {
   if (!parent_local_surface_id_allocator_.UpdateFromChild(
-          metadata.local_surface_id.value_or(viz::LocalSurfaceId()))) {
+          metadata.local_surface_id_allocation.value_or(
+              viz::LocalSurfaceIdAllocation()))) {
     return;
   }
 
@@ -651,12 +654,16 @@ void RenderFrameProxy::SynchronizeVisualProperties() {
           pending_visual_properties_.screen_info ||
       sent_visual_properties_->zoom_level !=
           pending_visual_properties_.zoom_level ||
+      sent_visual_properties_->page_scale_factor !=
+          pending_visual_properties_.page_scale_factor ||
       capture_sequence_number_changed;
 
-  if (synchronized_props_changed)
+  if (synchronized_props_changed) {
     parent_local_surface_id_allocator_.GenerateId();
+    pending_visual_properties_.local_surface_id_allocation =
+        parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation();
+  }
 
-  viz::SurfaceId surface_id(frame_sink_id_, GetLocalSurfaceId());
   if (enable_surface_synchronization_) {
     // If we're synchronizing surfaces, then use an infinite deadline to ensure
     // everything is synchronized.
@@ -664,8 +671,8 @@ void RenderFrameProxy::SynchronizeVisualProperties() {
         capture_sequence_number_changed
             ? cc::DeadlinePolicy::UseInfiniteDeadline()
             : cc::DeadlinePolicy::UseDefaultDeadline();
-    compositing_helper_->SetPrimarySurfaceId(surface_id, local_frame_size(),
-                                             deadline);
+    viz::SurfaceId surface_id(frame_sink_id_, GetLocalSurfaceId());
+    compositing_helper_->SetSurfaceId(surface_id, local_frame_size(), deadline);
   }
 
   bool rect_changed = !sent_visual_properties_ ||
@@ -685,7 +692,7 @@ void RenderFrameProxy::SynchronizeVisualProperties() {
 
   // Let the browser know about the updated view rect.
   Send(new FrameHostMsg_SynchronizeVisualProperties(
-      routing_id_, surface_id, pending_visual_properties_));
+      routing_id_, frame_sink_id_, pending_visual_properties_));
   sent_visual_properties_ = pending_visual_properties_;
 
   // The visible rect that the OOPIF needs to raster depends partially on
@@ -699,6 +706,10 @@ void RenderFrameProxy::SynchronizeVisualProperties() {
 
 void RenderFrameProxy::OnSetHasReceivedUserGestureBeforeNavigation(bool value) {
   web_frame_->SetHasReceivedUserGestureBeforeNavigation(value);
+}
+
+void RenderFrameProxy::OnRenderFallbackContent() const {
+  web_frame_->RenderFallbackContent();
 }
 
 void RenderFrameProxy::FrameDetached(DetachType type) {
@@ -926,7 +937,14 @@ uint32_t RenderFrameProxy::Print(const blink::WebRect& rect,
 }
 
 const viz::LocalSurfaceId& RenderFrameProxy::GetLocalSurfaceId() const {
-  return parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
+  return parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
+      .local_surface_id();
+}
+
+void RenderFrameProxy::WasEvicted() {
+  // On eviction, the last SurfaceId is invalidated. We need to allocate a new
+  // id.
+  ResendVisualProperties();
 }
 
 }  // namespace content

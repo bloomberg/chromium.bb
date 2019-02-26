@@ -10,10 +10,18 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
+#include "content/public/browser/visibility.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "third_party/blink/public/mojom/loader/navigation_predictor.mojom.h"
+#include "url/origin.h"
+
+#ifdef OS_ANDROID
+#include "base/android/application_status_listener.h"
+#endif  // OS_ANDROID
 
 namespace content {
 class BrowserContext;
@@ -21,11 +29,13 @@ class RenderFrameHost;
 }
 
 class SiteEngagementService;
+class TemplateURLService;
 
 // This class gathers metrics of anchor elements from both renderer process
 // and browser process. Then it uses these metrics to make predictions on what
 // are the most likely anchor elements that the user will click.
-class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost {
+class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
+                            public content::WebContentsObserver {
  public:
   // |render_frame_host| is the host associated with the render frame. It is
   // used to retrieve metrics at the browser side.
@@ -35,6 +45,58 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost {
   // Create and bind NavigationPredictor.
   static void Create(mojo::InterfaceRequest<AnchorElementMetricsHost> request,
                      content::RenderFrameHost* render_frame_host);
+
+  // Enum describing the possible set of actions that navigation predictor may
+  // take. This enum should remain synchronized with enum
+  // NavigationPredictorActionTaken in enums.xml. Order of enum values should
+  // not be changed since the values are recorded in UMA.
+  enum class Action {
+    kUnknown = 0,
+    kNone = 1,
+    kPreresolve = 2,
+    kPreconnect = 3,
+    kPrefetch = 4,
+    kPreconnectOnVisibilityChange = 5,
+    kPreconnectOnAppForeground = 6,
+    kMaxValue = kPreconnectOnAppForeground,
+  };
+
+  // Enum describing the accuracy of actions taken by the navigation predictor.
+  // This enum should remain synchronized with enum
+  // NavigationPredictorAccuracyActionTaken in enums.xml. Order of enum values
+  // should not be changed since the values are recorded in UMA.
+  enum class ActionAccuracy {
+    // No action was taken, but an anchor element was clicked.
+    kNoActionTakenClickHappened = 0,
+
+    // Navigation predictor prefetched a URL, and an anchor element was clicked
+    // which pointed to the same URL as prefetched URL.
+    kPrefetchActionClickToSameURL = 1,
+
+    // Navigation predictor prefetched a URL, and an anchor element was clicked
+    // whose URL had the same origin as the prefetched URL.
+    kPrefetchActionClickToSameOrigin = 2,
+
+    // Navigation predictor prefetched a URL, and an anchor element was clicked
+    // whose URL had a different origin than the prefetched URL.
+    kPrefetchActionClickToDifferentOrigin = 3,
+
+    // Navigation predictor preconnected to an origin, and an anchor element was
+    // clicked whose URL had the same origin as the preconnected origin.
+    kPreconnectActionClickToSameOrigin = 4,
+
+    // Navigation predictor preconnected to an origin, and an anchor element was
+    // clicked whose URL had a different origin than the preconnected origin.
+    kPreconnectActionClickToDifferentOrigin = 5,
+    kMaxValue = kPreconnectActionClickToDifferentOrigin,
+  };
+
+ protected:
+  // Origin that we decided to preconnect to.
+  base::Optional<url::Origin> preconnect_origin_;
+
+  // URL that we decided to prefetch.
+  base::Optional<GURL> prefetch_url_;
 
  private:
   // Struct holding navigation score, rank and other info of the anchor element.
@@ -55,6 +117,9 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost {
   // Returns site engagement service, which can be used to get site engagement
   // score. Return value is guaranteed to be non-null.
   SiteEngagementService* GetEngagementService() const;
+
+  // Returns template URL service. Guaranteed to be non-null.
+  TemplateURLService* GetTemplateURLService() const;
 
   // Merge anchor element metrics that have the same target url (href).
   void MergeMetricsSameTargetUrl(
@@ -78,6 +143,17 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost {
   // action to take, or decide not to do anything. Example actions including
   // preresolve, preload, prerendering, etc.
   void MaybeTakeActionOnLoad(
+      const url::Origin& document_origin,
+      const std::vector<std::unique_ptr<NavigationScore>>&
+          sorted_navigation_scores);
+
+  base::Optional<GURL> GetUrlToPrefetch(
+      const url::Origin& document_origin,
+      const std::vector<std::unique_ptr<NavigationScore>>&
+          sorted_navigation_scores) const;
+
+  base::Optional<url::Origin> GetOriginToPreconnect(
+      const url::Origin& document_origin,
       const std::vector<std::unique_ptr<NavigationScore>>&
           sorted_navigation_scores) const;
 
@@ -87,6 +163,28 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost {
 
   // Record timing information when an anchor element is clicked.
   void RecordTimingOnClick();
+
+  // Records the accuracy of the action taken by the navigator predictor based
+  // on the action taken as well as the URL that was navigated to.
+  // |target_url| is the URL navigated to by the user.
+  void RecordActionAccuracyOnClick(const GURL& target_url) const;
+
+  // content::WebContentsObserver:
+  void OnVisibilityChanged(content::Visibility visibility) override;
+
+#ifdef OS_ANDROID
+  // Called when application state changes. e.g., application is brought to the
+  // background or the foreground.
+  void OnApplicationStateChange(
+      base::android::ApplicationState application_state);
+#endif  // OS_ANDROID
+
+  // Called when tab or app visibility change. Takes a pre* action.
+  // |log_action| should be set to the reason why this method was called.
+  void TakeActionNowOnTabOrAppVisibilityChange(Action log_action);
+
+  // MaybePreconnectNow preconnects to an origin server if it's allowed.
+  void MaybePreconnectNow(Action log_action);
 
   // Used to get keyed services.
   content::BrowserContext* const browser_context_;
@@ -115,9 +213,41 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost {
   // Sum of all scales. Used to normalize the final computed weight.
   const int sum_scales_;
 
+  // True if device is a low end device.
+  const bool is_low_end_device_;
+
+  // Minimum score that a URL should have for it to be prefetched. Note
+  // that scores of origins are computed differently from scores of URLs, so
+  // they are not comparable.
+  const int prefetch_url_score_threshold_;
+
+  // Minimum preconnect score that the origin should have for preconnect. Note
+  // that scores of origins are computed differently from scores of URLs, so
+  // they are not comparable.
+  const int preconnect_origin_score_threshold_;
+
+  // True if |this| is allowed to preconnect to same origin hosts.
+  const bool same_origin_preconnecting_allowed_;
+
   // Timing of document loaded and last click.
   base::TimeTicks document_loaded_timing_;
   base::TimeTicks last_click_timing_;
+
+  // True if the source webpage (i.e., the page on which we are trying to
+  // predict the next navigation) is a page from user's default search engine.
+  bool source_is_default_search_engine_page_ = false;
+
+  // Current visibility state of the web contents.
+  content::Visibility current_visibility_;
+
+#ifdef OS_ANDROID
+  // Used to listen to the changes in the application state changes. e.g., when
+  // the application is brought to the background or the foreground.
+  std::unique_ptr<base::android::ApplicationStatusListener>
+      application_status_listener_;
+
+  base::android::ApplicationState application_state_;
+#endif  // OS_ANDROID
 
   SEQUENCE_CHECKER(sequence_checker_);
 

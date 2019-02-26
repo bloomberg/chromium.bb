@@ -7,12 +7,9 @@
 #include "base/i18n/case_conversion.h"
 #include "base/strings/string_util.h"
 
-AnswersQueryData::AnswersQueryData() {
-}
-AnswersQueryData::AnswersQueryData(const base::string16& text,
-                                   const base::string16& type)
-    : full_query_text(text), query_type(type) {
-}
+AnswersQueryData::AnswersQueryData() : query_type(-1) {}
+AnswersQueryData::AnswersQueryData(const base::string16& text, int type)
+    : full_query_text(text), query_type(type) {}
 
 AnswersCache::AnswersCache(size_t max_entries) : max_entries_(max_entries) {
 }
@@ -36,7 +33,7 @@ AnswersQueryData AnswersCache::GetTopAnswerEntry(const base::string16& query) {
 }
 
 void AnswersCache::UpdateRecentAnswers(const base::string16& full_query_text,
-                                       const base::string16& query_type) {
+                                       int query_type) {
   // If this entry is already part of the cache, just update recency.
   for (auto it = cache_.begin(); it != cache_.end(); ++it) {
     if (full_query_text == it->full_query_text &&

@@ -58,16 +58,16 @@ class CORE_EXPORT MemoryInfo final : public ScriptWrappable {
   // and cached for a long period of time (20 minutes).
   enum class Precision { Precise, Bucketized };
   static MemoryInfo* Create(Precision precision) {
-    return new MemoryInfo(precision);
+    return MakeGarbageCollected<MemoryInfo>(precision);
   }
+
+  explicit MemoryInfo(Precision precision);
 
   size_t totalJSHeapSize() const { return info_.total_js_heap_size; }
   size_t usedJSHeapSize() const { return info_.used_js_heap_size; }
   size_t jsHeapSizeLimit() const { return info_.js_heap_size_limit; }
 
  private:
-  explicit MemoryInfo(Precision precision);
-
   HeapInfo info_;
 };
 

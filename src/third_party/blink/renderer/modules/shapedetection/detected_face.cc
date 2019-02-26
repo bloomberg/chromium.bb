@@ -10,23 +10,25 @@
 namespace blink {
 
 DetectedFace* DetectedFace::Create() {
-  return new DetectedFace(DOMRectReadOnly::Create(0, 0, 0, 0));
+  return MakeGarbageCollected<DetectedFace>(
+      DOMRectReadOnly::Create(0, 0, 0, 0));
 }
 
 DetectedFace* DetectedFace::Create(DOMRectReadOnly* bounding_box) {
-  return new DetectedFace(bounding_box);
+  return MakeGarbageCollected<DetectedFace>(bounding_box);
 }
 
-DetectedFace* DetectedFace::Create(DOMRectReadOnly* bounding_box,
-                                   const HeapVector<Landmark>& landmarks) {
-  return new DetectedFace(bounding_box, landmarks);
+DetectedFace* DetectedFace::Create(
+    DOMRectReadOnly* bounding_box,
+    const HeapVector<Member<Landmark>>& landmarks) {
+  return MakeGarbageCollected<DetectedFace>(bounding_box, landmarks);
 }
 
 DOMRectReadOnly* DetectedFace::boundingBox() const {
   return bounding_box_.Get();
 }
 
-const HeapVector<Landmark>& DetectedFace::landmarks() const {
+const HeapVector<Member<Landmark>>& DetectedFace::landmarks() const {
   return landmarks_;
 }
 
@@ -34,7 +36,7 @@ DetectedFace::DetectedFace(DOMRectReadOnly* bounding_box)
     : bounding_box_(bounding_box) {}
 
 DetectedFace::DetectedFace(DOMRectReadOnly* bounding_box,
-                           const HeapVector<Landmark>& landmarks)
+                           const HeapVector<Member<Landmark>>& landmarks)
     : bounding_box_(bounding_box), landmarks_(landmarks) {}
 
 ScriptValue DetectedFace::toJSONForBinding(ScriptState* script_state) const {
@@ -43,12 +45,12 @@ ScriptValue DetectedFace::toJSONForBinding(ScriptState* script_state) const {
   Vector<ScriptValue> landmarks;
   for (const auto& landmark : landmarks_) {
     V8ObjectBuilder landmark_builder(script_state);
-    landmark_builder.AddString("type", landmark.type());
+    landmark_builder.AddString("type", landmark->type());
     Vector<ScriptValue> locations;
-    for (const auto& location : landmark.locations()) {
+    for (const auto& location : landmark->locations()) {
       V8ObjectBuilder location_builder(script_state);
-      location_builder.AddNumber("x", location.x());
-      location_builder.AddNumber("y", location.y());
+      location_builder.AddNumber("x", location->x());
+      location_builder.AddNumber("y", location->y());
       locations.push_back(location_builder.GetScriptValue());
     }
     landmark_builder.Add("locations", locations);

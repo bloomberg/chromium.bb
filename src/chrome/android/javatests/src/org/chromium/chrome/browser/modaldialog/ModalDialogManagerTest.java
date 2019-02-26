@@ -17,6 +17,7 @@ import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.not;
 
+import android.content.res.Resources;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.Espresso;
 import android.support.test.filters.SmallTest;
@@ -38,6 +39,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.modaldialog.ModalDialogManager.ModalDialogType;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -72,7 +74,7 @@ public class ModalDialogManagerTest {
     private static final int MAX_DIALOGS = 4;
     private ChromeTabbedActivity mActivity;
     private ModalDialogManager mManager;
-    private ModalDialogView[] mModalDialogViews;
+    private PropertyModel[] mDialogModels;
     private TestObserver mTestObserver;
     private Integer mExpectedDismissalCause;
 
@@ -81,11 +83,13 @@ public class ModalDialogManagerTest {
         mActivityTestRule.startMainActivityOnBlankPage();
         mActivity = mActivityTestRule.getActivity();
         mManager = mActivity.getModalDialogManager();
-        mModalDialogViews = new ModalDialogView[MAX_DIALOGS];
-        for (int i = 0; i < MAX_DIALOGS; i++) mModalDialogViews[i] = createDialog(i);
+        mDialogModels = new PropertyModel[MAX_DIALOGS];
+        for (int i = 0; i < MAX_DIALOGS; i++) mDialogModels[i] = createDialog(i);
         mTestObserver = new TestObserver();
-        mActivity.getToolbarManager().getToolbarLayout().getLocationBar().addUrlFocusChangeListener(
-                mTestObserver);
+        mActivity.getToolbarManager()
+                .getToolbarLayoutForTesting()
+                .getLocationBar()
+                .addUrlFocusChangeListener(mTestObserver);
         TabModalPresenter presenter =
                 (TabModalPresenter) mManager.getPresenterForTest(ModalDialogType.TAB);
         presenter.disableAnimationForTest();
@@ -739,17 +743,18 @@ public class ModalDialogManagerTest {
         mExpectedDismissalCause = null;
     }
 
-    private ModalDialogView createDialog(final int index) throws Exception {
+    private PropertyModel createDialog(final int index) throws Exception {
         return ThreadUtils.runOnUiThreadBlocking(() -> {
             ModalDialogView.Controller controller = new ModalDialogView.Controller() {
                 @Override
-                public void onDismiss(@DialogDismissalCause int dismissalCause) {
+                public void onDismiss(
+                        PropertyModel model, @DialogDismissalCause int dismissalCause) {
                     mTestObserver.onDialogDismissed();
                     checkDialogDismissalCause(dismissalCause);
                 }
 
                 @Override
-                public void onClick(int buttonType) {
+                public void onClick(PropertyModel model, int buttonType) {
                     switch (buttonType) {
                         case ModalDialogView.ButtonType.POSITIVE:
                         case ModalDialogView.ButtonType.NEGATIVE:
@@ -760,28 +765,35 @@ public class ModalDialogManagerTest {
                     }
                 }
             };
-            final ModalDialogView.Params p = new ModalDialogView.Params();
-            p.title = Integer.toString(index);
-            p.positiveButtonTextId = R.string.ok;
-            p.negativeButtonTextId = R.string.cancel;
-            return new ModalDialogView(controller, p);
+            Resources resources = mActivity.getResources();
+            final PropertyModel model =
+                    new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
+                            .with(ModalDialogProperties.CONTROLLER, controller)
+                            .with(ModalDialogProperties.TITLE, Integer.toString(index))
+                            .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, resources,
+                                    R.string.ok)
+                            .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, resources,
+                                    R.string.cancel)
+                            .build();
+            return model;
         });
     }
 
     private void showDialog(
             final int index, final @ModalDialogManager.ModalDialogType int dialogType) {
         ThreadUtils.runOnUiThreadBlocking(
-                () -> mManager.showDialog(mModalDialogViews[index], dialogType));
+                () -> mManager.showDialog(mDialogModels[index], dialogType));
     }
 
     private void showDialogAsNext(
             final int index, final @ModalDialogManager.ModalDialogType int dialogType) {
         ThreadUtils.runOnUiThreadBlocking(
-                () -> mManager.showDialog(mModalDialogViews[index], dialogType, true));
+                () -> mManager.showDialog(mDialogModels[index], dialogType, true));
     }
 
     private void dismissDialog(final int index) {
-        ThreadUtils.runOnUiThreadBlocking(() -> mManager.dismissDialog(mModalDialogViews[index]));
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> mManager.dismissDialog(mDialogModels[index], DialogDismissalCause.UNKNOWN));
     }
 
     private void checkPendingSize(

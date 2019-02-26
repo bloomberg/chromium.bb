@@ -5,6 +5,8 @@
 #ifndef CHROMECAST_MEDIA_CMA_BACKEND_VIDEO_DECODER_WRAPPER_H_
 #define CHROMECAST_MEDIA_CMA_BACKEND_VIDEO_DECODER_WRAPPER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chromecast/media/cma/backend/cma_backend.h"
@@ -17,17 +19,26 @@ class DecoderBufferBase;
 
 class VideoDecoderWrapper : public CmaBackend::VideoDecoder {
  public:
+  // Create a functional VideoDecoderWrapper.
   explicit VideoDecoderWrapper(MediaPipelineBackend::VideoDecoder* decoder);
+  // Create a VideoDecoderWrapper that's already been revoked.
+  VideoDecoderWrapper();
+
   ~VideoDecoderWrapper() override;
 
+  void Revoke();
+
  private:
+  class RevokedVideoDecoder;
+
   // CmaBackend::VideoDecoder implementation:
   void SetDelegate(Delegate* delegate) override;
   BufferStatus PushBuffer(scoped_refptr<DecoderBufferBase> buffer) override;
   bool SetConfig(const VideoConfig& config) override;
   void GetStatistics(Statistics* statistics) override;
 
-  MediaPipelineBackend::VideoDecoder* const decoder_;
+  MediaPipelineBackend::VideoDecoder* decoder_;
+  std::unique_ptr<RevokedVideoDecoder> revoked_video_decoder_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoDecoderWrapper);
 };

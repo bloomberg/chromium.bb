@@ -52,9 +52,9 @@ class TextRunIterator {
   void Increment() { offset_++; }
   bool AtEnd() const { return offset_ >= length_; }
   UChar Current() const { return (*text_run_)[offset_]; }
-  WTF::Unicode::CharDirection Direction() const {
-    return AtEnd() ? WTF::Unicode::kOtherNeutral
-                   : WTF::Unicode::Direction(Current());
+  WTF::unicode::CharDirection Direction() const {
+    return AtEnd() ? WTF::unicode::kOtherNeutral
+                   : WTF::unicode::Direction(Current());
   }
   bool AtParagraphSeparator() const { return Current() == '\n'; }
 

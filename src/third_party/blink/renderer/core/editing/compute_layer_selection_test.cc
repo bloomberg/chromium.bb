@@ -22,6 +22,8 @@ class ComputeLayerSelectionTest : public EditingTestBase {
  public:
   void SetUp() override {
     EditingTestBase::SetUp();
+    // This Page is not actually being shown by a compositor, but we act like it
+    // will in order to test behaviour.
     GetPage().GetSettings().SetAcceleratedCompositingEnabled(true);
     GetDocument().View()->SetParentVisible(true);
     GetDocument().View()->SetSelfVisible(true);
@@ -34,7 +36,7 @@ class ComputeLayerSelectionTest : public EditingTestBase {
     Selection().SetSelection(
         SelectionInDOMTree::Builder().SelectAllChildren(select).Build(),
         SetSelectionOptions::Builder().SetShouldShowHandle(true).Build());
-    UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhasesForTest();
   }
 
   void FocusAndSelectAll(TextControlElement* target) {
@@ -94,7 +96,7 @@ TEST_F(ComputeLayerSelectionTest, PositionInScrollableRoot) {
   root_scroller->SetScrollOffset(ScrollOffset(800, 500), kProgrammaticScroll);
   ASSERT_EQ(ScrollOffset(800, 500), root_scroller->GetScrollOffset());
 
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   const cc::LayerSelection& composited_selection =
       ComputeLayerSelection(Selection());
@@ -157,7 +159,7 @@ TEST_F(ComputeLayerSelectionTest, PositionInScroller) {
   scroller->SetScrollOffset(ScrollOffset(900, 800), kProgrammaticScroll);
   ASSERT_EQ(ScrollOffset(900, 800), scroller->GetScrollOffset());
 
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   const cc::LayerSelection& composited_selection =
       ComputeLayerSelection(Selection());
@@ -213,7 +215,7 @@ TEST_F(ComputeLayerSelectionTest, CaretBeforeSoftWrap) {
               PositionWithAffinity({text_foo, 2}, TextAffinity::kUpstream))
           .Build(),
       SetSelectionOptions::Builder().SetShouldShowHandle(true).Build());
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   const cc::LayerSelection& composited_selection =
       ComputeLayerSelection(Selection());
   EXPECT_EQ(composited_selection.start.edge_top, gfx::Point(27, 8));
@@ -235,7 +237,7 @@ TEST_F(ComputeLayerSelectionTest, CaretAfterSoftWrap) {
               PositionWithAffinity({text_foo, 2}, TextAffinity::kDownstream))
           .Build(),
       SetSelectionOptions::Builder().SetShouldShowHandle(true).Build());
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   const cc::LayerSelection& composited_selection =
       ComputeLayerSelection(Selection());
   EXPECT_EQ(composited_selection.start.edge_top, gfx::Point(8, 18));
@@ -254,7 +256,7 @@ TEST_F(ComputeLayerSelectionTest, RangeBeginAtBlockEnd) {
       SetSelectionOptions::Builder().SetShouldShowHandle(true).Build());
   Element* target = GetDocument().QuerySelector("div");
   target->focus();
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   const cc::LayerSelection& composited_selection =
       ComputeLayerSelection(Selection());
   EXPECT_EQ(composited_selection.start.edge_top, gfx::Point(38, 8));
@@ -337,6 +339,45 @@ TEST_F(ComputeLayerSelectionTest, SamplePointOnBoundary) {
       ComputeLayerSelection(Selection());
   EXPECT_FALSE(composited_selection.start.hidden);
   EXPECT_FALSE(composited_selection.end.hidden);
+}
+
+// https://crbug.com/892584.
+TEST_F(ComputeLayerSelectionTest, CrossingBlock1) {
+  // TODO(yoichio): To support this case with ComputeLayoutSelection,
+  // we may need to fix LocalCaretRectOfPosition(<after first br>).
+  Selection().SetSelection(
+      SetSelectionTextToBody("<div style='font: 10px/10px Ahem;'>"
+                             "<div>^<br></div>"
+                             "<div>|<br></div>"
+                             "</div>"),
+      SetSelectionOptions::Builder().SetShouldShowHandle(true).Build());
+  Selection().CommitAppearanceIfNeeded();
+  const cc::LayerSelection& layer_selection =
+      ComputeLayerSelection(Selection());
+  EXPECT_EQ(layer_selection.start.edge_top, gfx::Point(8, 8));
+  EXPECT_EQ(layer_selection.start.edge_bottom, gfx::Point(8, 18));
+  EXPECT_EQ(layer_selection.end.edge_top, gfx::Point(8, 18));
+  EXPECT_EQ(layer_selection.end.edge_bottom, gfx::Point(8, 28));
+}
+
+// https://crbug.com/892584.
+TEST_F(ComputeLayerSelectionTest, CrossingBlock2) {
+  // TODO(yoichio): To support this case with ComputeLayoutSelection,
+  // we may need to fix LocalCaretRectOfPosition(<after first br>).
+  Selection().SetSelection(
+      SetSelectionTextToBody(
+          "<div contenteditable style='font: 10px/10px Ahem;'>"
+          "<div>^<br></div>"
+          "<div>|<br></div>"
+          "</div>"),
+      SetSelectionOptions::Builder().SetShouldShowHandle(true).Build());
+  Selection().CommitAppearanceIfNeeded();
+  const cc::LayerSelection& layer_selection =
+      ComputeLayerSelection(Selection());
+  EXPECT_EQ(layer_selection.start.edge_top, gfx::Point(8, 8));
+  EXPECT_EQ(layer_selection.start.edge_bottom, gfx::Point(8, 18));
+  EXPECT_EQ(layer_selection.end.edge_top, gfx::Point(8, 18));
+  EXPECT_EQ(layer_selection.end.edge_bottom, gfx::Point(8, 28));
 }
 
 }  // namespace blink

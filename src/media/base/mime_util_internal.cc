@@ -30,58 +30,64 @@
 namespace media {
 namespace internal {
 
+// A map from codec string to MimeUtil::Codec.
+using StringToCodecMap = base::flat_map<std::string, MimeUtil::Codec>;
+
 // Wrapped to avoid static initializer startup cost.
-const base::flat_map<std::string, MimeUtil::Codec>& GetStringToCodecMap() {
-  static const base::NoDestructor<base::flat_map<std::string, MimeUtil::Codec>>
-      kStringToCodecMap(base::flat_map<std::string, MimeUtil::Codec>(
-          {
-            // We only allow this for WAV so it isn't ambiguous.
-            {"1", MimeUtil::PCM},
-                // avc1/avc3.XXXXXX may be unambiguous; handled by
-                // ParseAVCCodecId(). hev1/hvc1.XXXXXX may be unambiguous;
-                // handled by ParseHEVCCodecID(). vp9, vp9.0,
-                // vp09.xx.xx.xx.xx.xx.xx.xx may be unambiguous; handled by
-                // ParseVp9CodecID().
-                {"mp3", MimeUtil::MP3},
-                // Following is the list of RFC 6381 compliant audio codec
-                // strings:
-                //   mp4a.66     - MPEG-2 AAC MAIN
-                //   mp4a.67     - MPEG-2 AAC LC
-                //   mp4a.68     - MPEG-2 AAC SSR
-                //   mp4a.69     - MPEG-2 extension to MPEG-1 (MP3)
-                //   mp4a.6B     - MPEG-1 audio (MP3)
-                //   mp4a.40.2   - MPEG-4 AAC LC
-                //   mp4a.40.02  - MPEG-4 AAC LC (leading 0 in aud-oti for
-                //                 compatibility)
-                //   mp4a.40.5   - MPEG-4 HE-AAC v1 (AAC LC + SBR)
-                //   mp4a.40.05  - MPEG-4 HE-AAC v1 (AAC LC + SBR) (leading 0
-                //                 in aud-oti for compatibility)
-                //   mp4a.40.29  - MPEG-4 HE-AAC v2 (AAC LC + SBR + PS)
-                {"mp4a.66", MimeUtil::MPEG2_AAC},
-                {"mp4a.67", MimeUtil::MPEG2_AAC},
-                {"mp4a.68", MimeUtil::MPEG2_AAC}, {"mp4a.69", MimeUtil::MP3},
-                {"mp4a.6B", MimeUtil::MP3}, {"mp4a.40.2", MimeUtil::MPEG4_AAC},
-                {"mp4a.40.02", MimeUtil::MPEG4_AAC},
-                {"mp4a.40.5", MimeUtil::MPEG4_AAC},
-                {"mp4a.40.05", MimeUtil::MPEG4_AAC},
-                {"mp4a.40.29", MimeUtil::MPEG4_AAC},
-#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
-                // TODO(servolk): Strictly speaking only mp4a.A5 and mp4a.A6
-                // codec ids are valid according to RFC 6381 section 3.3, 3.4.
-                // Lower-case oti (mp4a.a5 and mp4a.a6) should be rejected. But
-                // we used to allow those in older versions of Chromecast
-                // firmware and some apps (notably MPL) depend on those codec
-                // types being supported, so they should be allowed for now
-                // (crbug.com/564960).
-                {"ac-3", MimeUtil::AC3}, {"mp4a.a5", MimeUtil::AC3},
-                {"mp4a.A5", MimeUtil::AC3}, {"ec-3", MimeUtil::EAC3},
-                {"mp4a.a6", MimeUtil::EAC3}, {"mp4a.A6", MimeUtil::EAC3},
-#endif
-                {"vorbis", MimeUtil::VORBIS}, {"opus", MimeUtil::OPUS},
-                {"flac", MimeUtil::FLAC}, {"vp8", MimeUtil::VP8},
-                {"vp8.0", MimeUtil::VP8}, {"theora", MimeUtil::THEORA},
-          },
-          base::KEEP_FIRST_OF_DUPES));
+const StringToCodecMap& GetStringToCodecMap() {
+  static const base::NoDestructor<StringToCodecMap> kStringToCodecMap({
+      // We only allow this for WAV so it isn't ambiguous.
+      {"1", MimeUtil::PCM},
+      // avc1/avc3.XXXXXX may be unambiguous; handled by
+      // ParseAVCCodecId(). hev1/hvc1.XXXXXX may be unambiguous;
+      // handled by ParseHEVCCodecID(). vp9, vp9.0,
+      // vp09.xx.xx.xx.xx.xx.xx.xx may be unambiguous; handled by
+      // ParseVp9CodecID().
+      {"mp3", MimeUtil::MP3},
+      // Following is the list of RFC 6381 compliant audio codec
+      // strings:
+      //   mp4a.66     - MPEG-2 AAC MAIN
+      //   mp4a.67     - MPEG-2 AAC LC
+      //   mp4a.68     - MPEG-2 AAC SSR
+      //   mp4a.69     - MPEG-2 extension to MPEG-1 (MP3)
+      //   mp4a.6B     - MPEG-1 audio (MP3)
+      //   mp4a.40.2   - MPEG-4 AAC LC
+      //   mp4a.40.02  - MPEG-4 AAC LC (leading 0 in aud-oti for
+      //                 compatibility)
+      //   mp4a.40.5   - MPEG-4 HE-AAC v1 (AAC LC + SBR)
+      //   mp4a.40.05  - MPEG-4 HE-AAC v1 (AAC LC + SBR) (leading 0
+      //                 in aud-oti for compatibility)
+      //   mp4a.40.29  - MPEG-4 HE-AAC v2 (AAC LC + SBR + PS)
+      {"mp4a.66", MimeUtil::MPEG2_AAC},
+      {"mp4a.67", MimeUtil::MPEG2_AAC},
+      {"mp4a.68", MimeUtil::MPEG2_AAC},
+      {"mp4a.69", MimeUtil::MP3},
+      {"mp4a.6B", MimeUtil::MP3},
+      {"mp4a.40.2", MimeUtil::MPEG4_AAC},
+      {"mp4a.40.02", MimeUtil::MPEG4_AAC},
+      {"mp4a.40.5", MimeUtil::MPEG4_AAC},
+      {"mp4a.40.05", MimeUtil::MPEG4_AAC},
+      {"mp4a.40.29", MimeUtil::MPEG4_AAC},
+      // TODO(servolk): Strictly speaking only mp4a.A5 and mp4a.A6
+      // codec ids are valid according to RFC 6381 section 3.3, 3.4.
+      // Lower-case oti (mp4a.a5 and mp4a.a6) should be rejected. But
+      // we used to allow those in older versions of Chromecast
+      // firmware and some apps (notably MPL) depend on those codec
+      // types being supported, so they should be allowed for now
+      // (crbug.com/564960).
+      {"ac-3", MimeUtil::AC3},
+      {"mp4a.a5", MimeUtil::AC3},
+      {"mp4a.A5", MimeUtil::AC3},
+      {"ec-3", MimeUtil::EAC3},
+      {"mp4a.a6", MimeUtil::EAC3},
+      {"mp4a.A6", MimeUtil::EAC3},
+      {"vorbis", MimeUtil::VORBIS},
+      {"opus", MimeUtil::OPUS},
+      {"flac", MimeUtil::FLAC},
+      {"vp8", MimeUtil::VP8},
+      {"vp8.0", MimeUtil::VP8},
+      {"theora", MimeUtil::THEORA},
+  });
 
   return *kStringToCodecMap;
 }
@@ -114,7 +120,7 @@ static bool IsValidH264Level(uint8_t level_idc) {
           (level_idc >= 20 && level_idc <= 22) ||
           (level_idc >= 30 && level_idc <= 32) ||
           (level_idc >= 40 && level_idc <= 42) ||
-          (level_idc >= 50 && level_idc <= 51));
+          (level_idc >= 50 && level_idc <= 52));
 }
 
 MimeUtil::MimeUtil() : allow_proprietary_codecs_(false) {
@@ -275,8 +281,7 @@ void MimeUtil::AddSupportedMediaFormats() {
   const CodecSet webm_audio_codecs{OPUS, VORBIS};
   CodecSet webm_video_codecs{VP8, VP9};
 #if BUILDFLAG(ENABLE_AV1_DECODER)
-  if (base::FeatureList::IsEnabled(kAv1Decoder))
-    webm_video_codecs.emplace(AV1);
+  webm_video_codecs.emplace(AV1);
 #endif
 
   CodecSet webm_codecs(webm_audio_codecs);
@@ -317,8 +322,7 @@ void MimeUtil::AddSupportedMediaFormats() {
 #endif  // BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 #if BUILDFLAG(ENABLE_AV1_DECODER)
-  if (base::FeatureList::IsEnabled(kAv1Decoder))
-    mp4_video_codecs.emplace(AV1);
+  mp4_video_codecs.emplace(AV1);
 #endif
 
   CodecSet mp4_codecs(mp4_audio_codecs);
@@ -815,8 +819,7 @@ bool MimeUtil::ParseCodecHelper(const std::string& mime_type_lower_case,
   }
 
 #if BUILDFLAG(ENABLE_AV1_DECODER)
-  if (base::FeatureList::IsEnabled(kAv1Decoder) &&
-      ParseAv1CodecId(codec_id, out_profile, out_level, out_color_space)) {
+  if (ParseAv1CodecId(codec_id, out_profile, out_level, out_color_space)) {
     out_result->codec = MimeUtil::AV1;
     return true;
   }
@@ -904,13 +907,6 @@ SupportsType MimeUtil::IsCodecSupported(const std::string& mime_type_lower_case,
       default:
         ambiguous_platform_support = true;
     }
-  } else if (codec == MimeUtil::VP9 && video_profile != VP9PROFILE_PROFILE0 &&
-             is_encrypted) {
-    // LibVPX is not generally used for encrypted videos, so we do not know
-    // whether higher profiles are supported.
-    // TODO(chcunningham/xhwang): Add details to indicate which key system will
-    // be used and check support by querying the matching KeySystemProperties.
-    ambiguous_platform_support = true;
   }
 
   AudioCodec audio_codec = MimeUtilToAudioCodec(codec);

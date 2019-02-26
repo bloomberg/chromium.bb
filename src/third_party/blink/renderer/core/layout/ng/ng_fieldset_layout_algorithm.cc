@@ -22,7 +22,9 @@ NGFieldsetLayoutAlgorithm::NGFieldsetLayoutAlgorithm(
     NGBlockNode node,
     const NGConstraintSpace& space,
     const NGBreakToken* break_token)
-    : NGLayoutAlgorithm(node, space, ToNGBlockBreakToken(break_token)) {}
+    : NGLayoutAlgorithm(node, space, ToNGBlockBreakToken(break_token)) {
+  container_builder_.SetIsNewFormattingContext(space.IsNewFormattingContext());
+}
 
 scoped_refptr<NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
   // TODO(mstensho): Support block fragmentation.
@@ -146,33 +148,7 @@ base::Optional<MinMaxSize> NGFieldsetLayoutAlgorithm::ComputeMinMaxSize(
     return sizes;
 
   if (NGBlockNode legend = Node().GetRenderedLegend()) {
-    // We'll need extrinsic sizing data when computing min/max for orthogonal
-    // flow roots, because calculating min/max in that case will involve doing
-    // layout. Note that we only need to do this for the legend, and not for the
-    // fieldset contents. The contents child is just an anonymous one, which
-    // inherits writing-mode from the fieldset, so it can never be a writing
-    // mode root.
-    NGConstraintSpace extrinsic_constraint_space;
-    const NGConstraintSpace* optional_constraint_space = nullptr;
-    if (!IsParallelWritingMode(Style().GetWritingMode(),
-                               legend.Style().GetWritingMode())) {
-      NGBoxStrut border_padding = ComputeBorders(ConstraintSpace(), Node()) +
-                                  ComputePadding(ConstraintSpace(), Style());
-      // If there is a resolvable extrinsic block size, use that as input.
-      // Otherwise we'll fall back to the initial containing block size as a
-      // constraint.
-      LayoutUnit extrinsic_block_size = ComputeBlockSizeForFragment(
-          ConstraintSpace(), Style(), NGSizeIndefinite, border_padding);
-      if (extrinsic_block_size != NGSizeIndefinite) {
-        extrinsic_block_size -= border_padding.BlockSum();
-        extrinsic_block_size = extrinsic_block_size.ClampNegativeToZero();
-      }
-      extrinsic_constraint_space = CreateExtrinsicConstraintSpaceForChild(
-          ConstraintSpace(), extrinsic_block_size, legend);
-      optional_constraint_space = &extrinsic_constraint_space;
-    }
-    sizes = ComputeMinAndMaxContentContribution(
-        Style().GetWritingMode(), legend, input, optional_constraint_space);
+    sizes = ComputeMinAndMaxContentContribution(Style(), legend, input);
     sizes += ComputeMinMaxMargins(Style(), legend).InlineSum();
   }
   // The fieldset content includes the fieldset padding (and any scrollbars),
@@ -181,8 +157,8 @@ base::Optional<MinMaxSize> NGFieldsetLayoutAlgorithm::ComputeMinMaxSize(
   sizes += ComputePadding(ConstraintSpace(), node_.Style()).InlineSum();
 
   if (NGBlockNode content = Node().GetFieldsetContent()) {
-    MinMaxSize content_minmax = ComputeMinAndMaxContentContribution(
-        Style().GetWritingMode(), content, input);
+    MinMaxSize content_minmax =
+        ComputeMinAndMaxContentContribution(Style(), content, input);
     content_minmax += ComputeMinMaxMargins(Style(), content).InlineSum();
     sizes.Encompass(content_minmax);
   }
@@ -195,27 +171,30 @@ const NGConstraintSpace
 NGFieldsetLayoutAlgorithm::CreateConstraintSpaceForLegend(
     NGBlockNode legend,
     NGLogicalSize available_size) {
-  NGConstraintSpaceBuilder builder(ConstraintSpace());
+  NGConstraintSpaceBuilder builder(
+      ConstraintSpace(), legend.Style().GetWritingMode(), /* is_new_fc */ true);
+  SetOrthogonalFallbackInlineSizeIfNeeded(Style(), legend, &builder);
+
   builder.SetAvailableSize(available_size);
   NGLogicalSize percentage_size =
       CalculateChildPercentageSize(ConstraintSpace(), Node(), available_size);
   builder.SetPercentageResolutionSize(percentage_size);
-  builder.SetIsNewFormattingContext(true);
-  builder.SetIsShrinkToFit(true);
+  builder.SetIsShrinkToFit(legend.Style().LogicalWidth().IsAuto());
   builder.SetTextDirection(legend.Style().Direction());
-  return builder.ToConstraintSpace(legend.Style().GetWritingMode());
+  return builder.ToConstraintSpace();
 }
 
 const NGConstraintSpace
 NGFieldsetLayoutAlgorithm::CreateConstraintSpaceForFieldsetContent(
     NGLogicalSize padding_box_size) {
-  NGConstraintSpaceBuilder builder(ConstraintSpace());
+  NGConstraintSpaceBuilder builder(ConstraintSpace(),
+                                   ConstraintSpace().GetWritingMode(),
+                                   /* is_new_fc */ true);
+  builder.SetAvailableSize(padding_box_size);
   builder.SetPercentageResolutionSize(
       ConstraintSpace().PercentageResolutionSize());
-  builder.SetAvailableSize(padding_box_size);
   builder.SetIsFixedSizeBlock(padding_box_size.block_size != NGSizeIndefinite);
-  builder.SetIsNewFormattingContext(true);
-  return builder.ToConstraintSpace(ConstraintSpace().GetWritingMode());
+  return builder.ToConstraintSpace();
 }
 
 }  // namespace blink

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.compositor.bottombar;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.RectF;
+import android.os.Handler;
 import android.support.annotation.IntDef;
 import android.view.ViewGroup;
 
@@ -46,6 +47,9 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
 
     /** The extra dp added around the close button touch target. */
     private static final int CLOSE_BUTTON_TOUCH_SLOP_DP = 5;
+
+    /** The delay after which the hide progress will be hidden. */
+    private static final long HIDE_PROGRESS_BAR_DELAY_MS = 1000 / 60 * 4;
 
     /** State of the Overlay Panel. */
     public static enum PanelState {
@@ -398,6 +402,37 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
      */
     public void onLoadUrlFailed() {
         if (mContent != null) mContent.onLoadUrlFailed();
+    }
+
+    /**
+     * Progress observer progress indicator animation for a panel.
+     */
+    public class PanelProgressObserver extends OverlayContentProgressObserver {
+        @Override
+        public void onProgressBarStarted() {
+            setProgressBarCompletion(0);
+            setProgressBarVisible(true);
+            requestUpdate();
+        }
+
+        @Override
+        public void onProgressBarUpdated(int progress) {
+            setProgressBarCompletion(progress);
+            requestUpdate();
+        }
+
+        @Override
+        public void onProgressBarFinished() {
+            // Hides the Progress Bar after a delay to make sure it is rendered for at least
+            // a few frames, otherwise its completion won't be visually noticeable.
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    setProgressBarVisible(false);
+                    requestUpdate();
+                }
+            }, HIDE_PROGRESS_BAR_DELAY_MS);
+        }
     }
 
     /**

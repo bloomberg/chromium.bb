@@ -12,10 +12,12 @@
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl_hash.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
+class BackgroundFetchRecord;
 class CacheQueryOptions;
 class ScriptPromiseResolver;
 class ScriptState;
@@ -67,13 +69,13 @@ class BackgroundFetchRegistration final
   String id() const;
   ScriptPromise match(ScriptState* script_state,
                       const RequestOrUSVString& request,
-                      const CacheQueryOptions& options,
+                      const CacheQueryOptions* options,
                       ExceptionState& exception_state);
   ScriptPromise matchAll(ScriptState* scrip_state,
                          ExceptionState& exception_state);
   ScriptPromise matchAll(ScriptState* script_state,
                          const RequestOrUSVString& request,
-                         const CacheQueryOptions& options,
+                         const CacheQueryOptions* options,
                          ExceptionState& exception_state);
 
   unsigned long long uploadTotal() const;
@@ -86,7 +88,7 @@ class BackgroundFetchRegistration final
 
   const String& unique_id() const { return unique_id_; }
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(progress);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(progress, kProgress);
 
   ScriptPromise abort(ScriptState* script_state);
 
@@ -111,7 +113,17 @@ class BackgroundFetchRegistration final
       bool return_all,
       Vector<mojom::blink::BackgroundFetchSettledFetchPtr> settled_fetches);
 
+  // Updates the |record| with a |response|, if one is available, else marks
+  // the |record|'s request as aborted or failed.
+  void UpdateRecord(BackgroundFetchRecord* record,
+                    mojom::blink::FetchAPIResponsePtr& response);
+
+  bool IsAborted();
+
   Member<ServiceWorkerRegistration> registration_;
+
+  // TODO(crbug.com/774054): Update the key once we support duplicate requests.
+  HeapHashMap<KURL, Member<BackgroundFetchRecord>> records_;
 
   // Corresponds to IDL 'id' attribute. Not unique - an active registration can
   // have the same |developer_id_| as one or more inactive registrations.

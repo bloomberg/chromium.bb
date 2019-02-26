@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/login/hwid_checker.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/test/scoped_command_line.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/scoped_set_running_on_chromeos_for_testing.h"

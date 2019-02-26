@@ -49,6 +49,11 @@ class CORE_EXPORT DOMException final : public ScriptWrappable {
   // Constructor exposed to script.
   static DOMException* Create(const String& message, const String& name);
 
+  DOMException(unsigned short legacy_code,
+               const String& name,
+               const String& sanitized_message,
+               const String& unsanitized_message);
+
   static String GetErrorName(DOMExceptionCode);
   static String GetErrorMessage(DOMExceptionCode);
 
@@ -68,11 +73,6 @@ class CORE_EXPORT DOMException final : public ScriptWrappable {
   String ToStringForConsole() const;
 
  private:
-  DOMException(unsigned short legacy_code,
-               const String& name,
-               const String& sanitized_message,
-               const String& unsanitized_message);
-
   unsigned short legacy_code_;
   String name_;
   String sanitized_message_;

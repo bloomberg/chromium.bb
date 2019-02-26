@@ -71,13 +71,14 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
                      const WebDragData&,
                      WebDragOperationsMask,
                      const SkBitmap& drag_image,
-                     const WebPoint& drag_image_offset) override;
+                     const gfx::Point& drag_image_offset) override;
   bool AcceptsLoadDrops() const override;
-  Page* CreateWindow(LocalFrame*,
-                     const FrameLoadRequest&,
-                     const WebWindowFeatures&,
-                     NavigationPolicy,
-                     SandboxFlags) override;
+  Page* CreateWindowDelegate(LocalFrame*,
+                             const FrameLoadRequest&,
+                             const WebWindowFeatures&,
+                             NavigationPolicy,
+                             SandboxFlags,
+                             const SessionStorageNamespaceId&) override;
   void Show(NavigationPolicy) override;
   void DidOverscroll(const FloatSize& overscroll_delta,
                      const FloatSize& accumulated_overscroll,
@@ -112,6 +113,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   WebScreenInfo GetScreenInfo() const override;
   base::Optional<IntRect> VisibleContentRectForPainting() const override;
   void ContentsSizeChanged(LocalFrame*, const IntSize&) const override;
+  bool DoubleTapToZoomEnabled() const override;
   void PageScaleFactorChanged() const override;
   float ClampPageScaleFactorToLimits(float scale) const override;
   void MainFrameScrollOffsetChanged() const override;
@@ -129,7 +131,6 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
       DateTimeChooserClient*,
       const DateTimeChooserParameters&) override;
   void OpenFileChooser(LocalFrame*, scoped_refptr<FileChooser>) override;
-  void EnumerateChosenDirectory(FileChooser*) override;
   void SetCursor(const Cursor&, LocalFrame*) override;
   void SetCursorOverridden(bool) override;
   Cursor LastSetCursorForTesting() const override;
@@ -160,7 +161,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   void DetachCompositorAnimationTimeline(CompositorAnimationTimeline*,
                                          LocalFrame*) override;
 
-  void EnterFullscreen(LocalFrame&, const FullscreenOptions&) override;
+  void EnterFullscreen(LocalFrame&, const FullscreenOptions*) override;
   void ExitFullscreen(LocalFrame&) override;
   void FullscreenElementChanged(Element* old_element,
                                 Element* new_element) override;
@@ -194,9 +195,9 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
                                bool shrinks_layout) override;
   void SetBrowserControlsShownRatio(float) override;
 
-  bool ShouldOpenModalDialogDuringPageDismissal(
+  bool ShouldOpenUIElementDuringPageDismissal(
       LocalFrame&,
-      DialogType,
+      UIElementType,
       const String& dialog_message,
       Document::PageDismissalType) const override;
 

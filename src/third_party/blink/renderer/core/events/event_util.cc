@@ -8,30 +8,30 @@
 
 namespace blink {
 
-namespace EventUtil {
+namespace event_util {
 
 bool IsPointerEventType(const AtomicString& event_type) {
-  return event_type == EventTypeNames::gotpointercapture ||
-         event_type == EventTypeNames::lostpointercapture ||
-         event_type == EventTypeNames::pointercancel ||
-         event_type == EventTypeNames::pointerdown ||
-         event_type == EventTypeNames::pointerenter ||
-         event_type == EventTypeNames::pointerleave ||
-         event_type == EventTypeNames::pointermove ||
-         event_type == EventTypeNames::pointerout ||
-         event_type == EventTypeNames::pointerover ||
-         event_type == EventTypeNames::pointerup;
+  return event_type == event_type_names::kGotpointercapture ||
+         event_type == event_type_names::kLostpointercapture ||
+         event_type == event_type_names::kPointercancel ||
+         event_type == event_type_names::kPointerdown ||
+         event_type == event_type_names::kPointerenter ||
+         event_type == event_type_names::kPointerleave ||
+         event_type == event_type_names::kPointermove ||
+         event_type == event_type_names::kPointerout ||
+         event_type == event_type_names::kPointerover ||
+         event_type == event_type_names::kPointerup;
 }
 
 bool IsDOMMutationEventType(const AtomicString& event_type) {
-  return event_type == EventTypeNames::DOMCharacterDataModified ||
-         event_type == EventTypeNames::DOMNodeInserted ||
-         event_type == EventTypeNames::DOMNodeInsertedIntoDocument ||
-         event_type == EventTypeNames::DOMNodeRemoved ||
-         event_type == EventTypeNames::DOMNodeRemovedFromDocument ||
-         event_type == EventTypeNames::DOMSubtreeModified;
+  return event_type == event_type_names::kDOMCharacterDataModified ||
+         event_type == event_type_names::kDOMNodeInserted ||
+         event_type == event_type_names::kDOMNodeInsertedIntoDocument ||
+         event_type == event_type_names::kDOMNodeRemoved ||
+         event_type == event_type_names::kDOMNodeRemovedFromDocument ||
+         event_type == event_type_names::kDOMSubtreeModified;
 }
 
-}  // namespace eventUtil
+}  // namespace event_util
 
 }  // namespace blink

@@ -76,9 +76,9 @@ Element* V0CustomElementRegistrationContext::CreateCustomTagElement(
 
   Element* element;
 
-  if (HTMLNames::xhtmlNamespaceURI == tag_name.NamespaceURI()) {
+  if (html_names::xhtmlNamespaceURI == tag_name.NamespaceURI()) {
     element = HTMLElement::Create(tag_name, document);
-  } else if (SVGNames::svgNamespaceURI == tag_name.NamespaceURI()) {
+  } else if (svg_names::kNamespaceURI == tag_name.NamespaceURI()) {
     element = SVGUnknownElement::Create(tag_name, document);
   } else {
     // XML elements are not custom elements, so return early.
@@ -132,7 +132,7 @@ void V0CustomElementRegistrationContext::SetIsAttributeAndTypeExtension(
     const AtomicString& type) {
   DCHECK(element);
   DCHECK(!type.IsEmpty());
-  element->setAttribute(HTMLNames::isAttr, type);
+  element->setAttribute(html_names::kIsAttr, type);
   SetTypeExtension(element, type);
 }
 

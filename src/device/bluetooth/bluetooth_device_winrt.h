@@ -37,9 +37,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWinrt : public BluetoothDevice {
   static constexpr uint8_t k32BitServiceDataSection = 0x20;
   static constexpr uint8_t k128BitServiceDataSection = 0x21;
 
-  BluetoothDeviceWinrt(BluetoothAdapterWinrt* adapter,
-                       uint64_t raw_address,
-                       base::Optional<std::string> local_name);
+  BluetoothDeviceWinrt(BluetoothAdapterWinrt* adapter, uint64_t raw_address);
   ~BluetoothDeviceWinrt() override;
 
   // BluetoothDevice:
@@ -91,6 +89,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWinrt : public BluetoothDevice {
   // each 'X' is a hex digit.
   static std::string CanonicalizeAddress(uint64_t address);
 
+  // Called by BluetoothAdapterWinrt when an advertisement packet is received.
+  void UpdateLocalName(base::Optional<std::string> local_name);
+
  protected:
   // BluetoothDevice:
   void CreateGattConnectionImpl() override;
@@ -117,9 +118,14 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWinrt : public BluetoothDevice {
       ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice* ble_device,
       IInspectable* object);
 
+  void OnNameChanged(
+      ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice* ble_device,
+      IInspectable* object);
+
   void OnGattDiscoveryComplete(bool success);
 
   void ClearGattServices();
+  void ClearEventRegistrations();
 
   uint64_t raw_address_;
   std::string address_;
@@ -131,6 +137,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWinrt : public BluetoothDevice {
 
   base::Optional<EventRegistrationToken> connection_changed_token_;
   base::Optional<EventRegistrationToken> gatt_services_changed_token_;
+  base::Optional<EventRegistrationToken> name_changed_token_;
 
   THREAD_CHECKER(thread_checker_);
 

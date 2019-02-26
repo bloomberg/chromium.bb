@@ -21,13 +21,9 @@
 // does not currently exist.
 + (ConfirmQuitPanelController*)sharedController;
 
-// Checks whether the |event| should trigger the feature.
-+ (BOOL)eventTriggersFeature:(NSEvent*)event;
-
 // Runs a modal loop that brings up the panel and handles the logic for if and
-// when to terminate. Returns NSApplicationTerminateReply for use in
-// -[NSApplicationDelegate applicationShouldTerminate:].
-- (NSApplicationTerminateReply)runModalLoopForApplication:(NSApplication*)app;
+// when to terminate. Returns YES if the quit should continue.
+- (BOOL)runModalLoopForApplication:(NSApplication*)app;
 
 // Shows the window.
 - (void)showWindow:(id)sender;
@@ -36,13 +32,13 @@
 // instructions on how to quit.
 - (void)dismissPanel;
 
-// Returns a string representation fit for display of |+quitAccelerator|.
+// Returns a string representation fit for display.
 + (NSString*)keyCommandString;
 
 @end
 
 @interface ConfirmQuitPanelController (UnitTesting)
-+ (NSString*)keyCombinationForAccelerator:(NSMenuItem*)item;
++ (NSString*)keyCombinationForMenuItem:(NSMenuItem*)item;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_CONFIRM_QUIT_PANEL_CONTROLLER_H_

@@ -3,15 +3,17 @@
 <translationbundle lang="zh-CN">
 <translation id="1296843352074373664">Google 用户</translation>
 <translation id="1383286653814676580">用于运行 Google Credential Provider 登录页面。</translation>
-<translation id="2119303206591679297">不允许使用此 Google 帐号登录。</translation>
-<translation id="3374277789313311065">发生内部错误。如果错误仍然存在，请向 Google 报告。</translation>
-<translation id="3713454256426064844">请使用您的 Google 帐号登录。</translation>
-<translation id="440343981193409132">请使用更新后的 Google 帐号密码登录。</translation>
-<translation id="4735679347289592174">登录您的 Google 帐号失败，请重试。确保计算机已连接到互联网。如果错误仍然存在，请向 Google 报告。</translation>
-<translation id="7000592418234387954">Google 帐号登录</translation>
+<translation id="195232392645680541">使用您的 Google 帐号登录。</translation>
+<translation id="3623301090691182018">Google 帐号登录</translation>
+<translation id="4057329986137569701">发生了内部错误。</translation>
+<translation id="4128734677223009352">未能成功登录您的 Google 帐号。请确保计算机已连接到互联网，然后重试。</translation>
+<translation id="4307406925561182259">请使用更新后的 Google 帐号密码登录。</translation>
+<translation id="6064337552080329342">抱歉，系统无法验证您的密码。请重试。</translation>
+<translation id="6613125771987245372">不允许使用此 Google 帐号登录。请尝试改用其他帐号。</translation>
+<translation id="7357241217513796177">请确保您已连接到网络，然后重试。</translation>
+<translation id="7463006580194749499">添加用户</translation>
 <translation id="8474372283141585908">Google Credential Provider</translation>
 <translation id="866458870819756755">无法创建用户。</translation>
 <translation id="8860262547644202689">Google Credential Provider 助手</translation>
-<translation id="8912362522468806198">Google 帐号</translation>
 <translation id="9094033019050270033">更新密码</translation>
 </translationbundle>

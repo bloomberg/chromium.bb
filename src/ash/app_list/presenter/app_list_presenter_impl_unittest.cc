@@ -67,10 +67,10 @@ class AppListPresenterDelegateTest : public AppListPresenterDelegate {
                                                  bool is_visible) override {
     return base::TimeDelta::FromMilliseconds(0);
   }
-  bool IsHomeLauncherEnabledInTabletMode() override { return false; }
+  bool IsTabletMode() const override { return false; }
   bool GetOnScreenKeyboardShown() override { return false; }
   aura::Window* GetRootWindowForDisplayId(int64_t display_id) override {
-    return nullptr;
+    return container_->GetRootWindow();
   }
   void OnVisibilityChanged(bool visible, aura::Window* root_window) override {}
   void OnTargetVisibilityChanged(bool visible) override {}
@@ -216,8 +216,9 @@ TEST_F(AppListPresenterImplTest, ClickingContextMenuDoesNotDismiss) {
 
   // Press the left mouse button on the menu window, it should not close the
   // app list nor the context menu on this pointer event.
-  ui::test::EventGenerator menu_event_generator(menu);
-  menu_event_generator.set_current_location(menu->GetBoundsInScreen().origin());
+  ui::test::EventGenerator menu_event_generator(menu->GetRootWindow());
+  menu_event_generator.set_current_screen_location(
+      menu->GetBoundsInScreen().origin());
   menu_event_generator.PressLeftButton();
 
   // Check that the window and the app list are still open.

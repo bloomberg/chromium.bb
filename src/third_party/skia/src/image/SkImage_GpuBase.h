@@ -11,6 +11,7 @@
 #include "GrBackendSurface.h"
 #include "GrTypesPriv.h"
 #include "SkImage_Base.h"
+#include "SkYUVAIndex.h"
 
 class GrContext;
 class SkColorSpace;
@@ -23,7 +24,7 @@ public:
 
     GrContext* context() const final { return fContext.get(); }
 
-    bool getROPixels(SkBitmap*, SkColorSpace* dstColorSpace, CachingHint) const final;
+    bool getROPixels(SkBitmap*, CachingHint) const final;
     sk_sp<SkImage> onMakeSubset(const SkIRect& subset) const final;
 
     bool onReadPixels(const SkImageInfo& dstInfo, void* dstPixels, size_t dstRB,
@@ -34,8 +35,7 @@ public:
         SkASSERT(false);
         return this->INHERITED::asTextureProxyRef();
     }
-    sk_sp<GrTextureProxy> asTextureProxyRef(GrContext*, const GrSamplerState&, SkColorSpace*,
-                                            sk_sp<SkColorSpace>*,
+    sk_sp<GrTextureProxy> asTextureProxyRef(GrContext*, const GrSamplerState&,
                                             SkScalar scaleAdjust[2]) const final;
 
     sk_sp<GrTextureProxy> refPinnedTextureProxy(uint32_t* uniqueID) const final {
@@ -52,15 +52,36 @@ public:
 
     bool onIsValid(GrContext*) const final;
 
+#if GR_TEST_UTILS
+    void resetContext(sk_sp<GrContext> newContext) {
+        SkASSERT(fContext->uniqueID() == newContext->uniqueID());
+        fContext = newContext;
+    }
+#endif
+
     static bool ValidateBackendTexture(GrContext* ctx, const GrBackendTexture& tex,
                                        GrPixelConfig* config, SkColorType ct, SkAlphaType at,
                                        sk_sp<SkColorSpace> cs);
+    static bool MakeTempTextureProxies(GrContext* ctx, const GrBackendTexture yuvaTextures[],
+                                       int numTextures, const SkYUVAIndex [4],
+                                       GrSurfaceOrigin imageOrigin,
+                                       sk_sp<GrTextureProxy> tempTextureProxies[4]);
+
+    static SkAlphaType GetAlphaTypeFromYUVAIndices(const SkYUVAIndex yuvaIndices[4]) {
+        return -1 != yuvaIndices[SkYUVAIndex::kA_Index].fIndex ? kPremul_SkAlphaType
+                                                               : kOpaque_SkAlphaType;
+    }
 
     typedef ReleaseContext TextureContext;
     typedef void(*TextureFulfillProc)(TextureContext textureContext, GrBackendTexture* outTexture);
     typedef void(*PromiseDoneProc)(TextureContext textureContext);
 
 protected:
+    static bool RenderYUVAToRGBA(GrContext* ctx, GrRenderTargetContext* renderTargetContext,
+                                 const SkRect& rect, SkYUVColorSpace yuvColorSpace,
+                                 const sk_sp<GrTextureProxy> proxies[4],
+                                 const SkYUVAIndex yuvaIndices[4]);
+
     sk_sp<GrContext>      fContext;
     const SkAlphaType     fAlphaType;  // alpha type for final image
     const SkBudgeted      fBudgeted;

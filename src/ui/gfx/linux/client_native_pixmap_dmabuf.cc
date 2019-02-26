@@ -16,6 +16,7 @@
 #include "base/process/memory.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0)
 #include <linux/dma-buf.h>
@@ -57,6 +58,68 @@ void PrimeSyncEnd(int dmabuf_fd) {
 }
 
 }  // namespace
+
+// static
+bool ClientNativePixmapDmaBuf::IsConfigurationSupported(
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage) {
+  switch (usage) {
+    case gfx::BufferUsage::GPU_READ:
+      return format == gfx::BufferFormat::BGR_565 ||
+             format == gfx::BufferFormat::RGBA_8888 ||
+             format == gfx::BufferFormat::RGBX_8888 ||
+             format == gfx::BufferFormat::BGRA_8888 ||
+             format == gfx::BufferFormat::BGRX_8888 ||
+             format == gfx::BufferFormat::YVU_420;
+    case gfx::BufferUsage::SCANOUT:
+      return format == gfx::BufferFormat::BGRX_8888 ||
+             format == gfx::BufferFormat::RGBX_8888 ||
+             format == gfx::BufferFormat::RGBA_8888 ||
+             format == gfx::BufferFormat::BGRA_8888;
+    case gfx::BufferUsage::SCANOUT_CPU_READ_WRITE:
+      return
+#if defined(ARCH_CPU_X86_FAMILY)
+          // Currently only Intel driver (i.e. minigbm and Mesa) supports R_8
+          // RG_88, NV12 and XB30. https://crbug.com/356871
+          format == gfx::BufferFormat::R_8 ||
+          format == gfx::BufferFormat::RG_88 ||
+          format == gfx::BufferFormat::YUV_420_BIPLANAR ||
+          format == gfx::BufferFormat::RGBX_1010102 ||
+#endif
+
+          format == gfx::BufferFormat::BGRX_8888 ||
+          format == gfx::BufferFormat::BGRA_8888 ||
+          format == gfx::BufferFormat::RGBX_8888 ||
+          format == gfx::BufferFormat::RGBA_8888;
+    case gfx::BufferUsage::SCANOUT_VDA_WRITE:
+      return false;
+
+    case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
+    case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:
+      return
+#if defined(ARCH_CPU_X86_FAMILY)
+          // Currently only Intel driver (i.e. minigbm and
+          // Mesa) supports R_8 RG_88 and NV12.
+          // https://crbug.com/356871
+          format == gfx::BufferFormat::R_8 ||
+          format == gfx::BufferFormat::RG_88 ||
+          format == gfx::BufferFormat::YUV_420_BIPLANAR ||
+#endif
+          format == gfx::BufferFormat::BGRA_8888;
+    case gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE:
+      // Each platform only supports one camera buffer type. We list the
+      // supported buffer formats on all platforms here. When allocating a
+      // camera buffer the caller is responsible for making sure a buffer is
+      // successfully allocated. For example, allocating YUV420_BIPLANAR
+      // for SCANOUT_CAMERA_READ_WRITE may only work on Intel boards.
+      return format == gfx::BufferFormat::YUV_420_BIPLANAR;
+    case gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE:
+      // R_8 is used as the underlying pixel format for BLOB buffers.
+      return format == gfx::BufferFormat::R_8;
+  }
+  NOTREACHED();
+  return false;
+}
 
 // static
 std::unique_ptr<gfx::ClientNativePixmap>

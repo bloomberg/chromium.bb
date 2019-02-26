@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/signin/core/browser/webdata/token_service_table.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -67,8 +66,6 @@ void FakeCookieManager::SetCanonicalCookie(
     SetCanonicalCookieCallback callback) {
   std::move(callback).Run(false);
 }
-
-void TestSigninClient::OnSignedOut() {}
 
 void TestSigninClient::PostSignedIn(const std::string& account_id,
                   const std::string& username,
@@ -137,7 +134,7 @@ void TestSigninClient::DelayNetworkCall(const base::Closure& callback) {
 
 std::unique_ptr<GaiaAuthFetcher> TestSigninClient::CreateGaiaAuthFetcher(
     GaiaAuthConsumer* consumer,
-    const std::string& source,
+    gaia::GaiaSource source,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   return std::make_unique<GaiaAuthFetcher>(consumer, source,
                                            url_loader_factory);

@@ -35,8 +35,17 @@ class CSSCounterValue : public CSSValue {
   static CSSCounterValue* Create(CSSCustomIdentValue* identifier,
                                  CSSIdentifierValue* list_style,
                                  CSSStringValue* separator) {
-    return new CSSCounterValue(identifier, list_style, separator);
+    return MakeGarbageCollected<CSSCounterValue>(identifier, list_style,
+                                                 separator);
   }
+
+  CSSCounterValue(CSSCustomIdentValue* identifier,
+                  CSSIdentifierValue* list_style,
+                  CSSStringValue* separator)
+      : CSSValue(kCounterClass),
+        identifier_(identifier),
+        list_style_(list_style),
+        separator_(separator) {}
 
   String Identifier() const { return identifier_->Value(); }
   CSSValueID ListStyle() const { return list_style_->GetValueID(); }
@@ -52,14 +61,6 @@ class CSSCounterValue : public CSSValue {
   void TraceAfterDispatch(blink::Visitor*);
 
  private:
-  CSSCounterValue(CSSCustomIdentValue* identifier,
-                  CSSIdentifierValue* list_style,
-                  CSSStringValue* separator)
-      : CSSValue(kCounterClass),
-        identifier_(identifier),
-        list_style_(list_style),
-        separator_(separator) {}
-
   Member<CSSCustomIdentValue> identifier_;  // string
   Member<CSSIdentifierValue> list_style_;   // ident
   Member<CSSStringValue> separator_;        // string

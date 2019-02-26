@@ -4,11 +4,9 @@
 
 import("//build/config/ui.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
-import("//testing/test.gni")
 import("//services/catalog/public/tools/catalog.gni")
-import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
-import("//services/service_manager/public/tools/test/service_test.gni")
+import("//testing/test.gni")
 
 component("lib") {
   friend = [
@@ -19,6 +17,8 @@ component("lib") {
     "//ash:ash_unittests",
   ]
   public = [
+    "host_event_dispatcher.h",
+    "host_event_queue.h",
     "ids.h",
     "window_delegate_impl.h",
     "window_manager_interface.h",
@@ -43,12 +43,15 @@ component("lib") {
     "embedding.h",
     "event_injector.cc",
     "event_injector.h",
+    "event_observer_helper.cc",
+    "event_observer_helper.h",
+    "event_queue.cc",
+    "event_queue.h",
     "focus_handler.cc",
     "focus_handler.h",
+    "host_event_queue.cc",
     "injected_event_handler.cc",
     "injected_event_handler.h",
-    "pointer_watcher.cc",
-    "pointer_watcher.h",
     "remoting_event_injector.cc",
     "remoting_event_injector.h",
     "screen_provider.cc",
@@ -125,12 +128,16 @@ static_library("test_support") {
   sources = [
     "client_root_test_helper.cc",
     "client_root_test_helper.h",
+    "event_queue_test_helper.cc",
+    "event_queue_test_helper.h",
     "event_test_utils.cc",
     "event_test_utils.h",
     "server_window_test_helper.cc",
     "server_window_test_helper.h",
     "test_change_tracker.cc",
     "test_change_tracker.h",
+    "test_host_event_dispatcher.cc",
+    "test_host_event_dispatcher.h",
     "test_screen_provider_observer.cc",
     "test_screen_provider_observer.h",
     "test_window_service_delegate.cc",
@@ -139,6 +146,8 @@ static_library("test_support") {
     "test_window_tree_client.h",
     "window_server_service_test_base.cc",
     "window_server_service_test_base.h",
+    "window_service_test_helper.cc",
+    "window_service_test_helper.h",
     "window_service_test_setup.cc",
     "window_service_test_setup.h",
     "window_tree_test_helper.cc",
@@ -147,12 +156,13 @@ static_library("test_support") {
 
   deps = [
     ":lib",
+    ":tests_catalog_source",
     "//base",
     "//base/test:test_support",
     "//components/viz/test:test_support",
     "//mojo/public/cpp/bindings:bindings",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/cpp:service_test_support",
+    "//services/service_manager/public/cpp/test:test_support",
     "//services/ws/common",
     "//services/ws/public/cpp",
     "//services/ws/public/cpp/host",
@@ -162,6 +172,7 @@ static_library("test_support") {
     "//ui/aura:test_support",
     "//ui/compositor:test_support",
     "//ui/display:test_support",
+    "//ui/events:test_support",
     "//ui/gfx/geometry/mojo",
     "//ui/gl",
     "//ui/gl:test_support",
@@ -184,6 +195,12 @@ catalog("tests_catalog") {
   standalone_services = [ "//services/ws/test_ws:manifest" ]
 }
 
+catalog_cpp_source("tests_catalog_source") {
+  testonly = true
+  catalog = ":tests_catalog"
+  generated_function_name = "ws::test::CreateTestCatalog"
+}
+
 source_set("tests") {
   testonly = true
 
@@ -191,6 +208,8 @@ source_set("tests") {
     "client_root_unittest.cc",
     "drag_drop_delegate_unittest.cc",
     "embedding_unittest.cc",
+    "event_injector_unittest.cc",
+    "event_queue_unittest.cc",
     "focus_handler_unittest.cc",
     "injected_event_handler_unittest.cc",
     "screen_provider_unittest.cc",
@@ -213,7 +232,6 @@ source_set("tests") {
     "//components/viz/common",
     "//components/viz/test:test_support",
     "//mojo/public/cpp/bindings",
-    "//services/service_manager/public/cpp:service_test_support",
     "//services/service_manager/public/cpp/test:test_support",
     "//services/service_manager/public/mojom",
     "//services/ws/common:task_runner_test_base",

@@ -15,6 +15,7 @@ constexpr SkColor kPlaceholderColor = SK_ColorRED;
 
 // The number refers to the shade of darkness. Each color in the MD
 // palette ranges from 050-900.
+constexpr SkColor kGoogleBlue100 = SkColorSetRGB(0xD2, 0xE3, 0xFC);
 constexpr SkColor kGoogleBlue300 = SkColorSetRGB(0x8A, 0xB4, 0xF8);
 constexpr SkColor kGoogleBlue500 = SkColorSetRGB(0x42, 0x85, 0xF4);
 constexpr SkColor kGoogleBlue600 = SkColorSetRGB(0x1A, 0x73, 0xE8);

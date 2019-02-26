@@ -45,13 +45,14 @@
 
 namespace blink {
 
-ExecutionContext::ExecutionContext()
-    : circular_sequential_id_(0),
+ExecutionContext::ExecutionContext(v8::Isolate* isolate)
+    : isolate_(isolate),
+      circular_sequential_id_(0),
       in_dispatch_error_event_(false),
       is_context_paused_(false),
       is_context_destroyed_(false),
       window_interaction_tokens_(0),
-      referrer_policy_(kReferrerPolicyDefault),
+      referrer_policy_(network::mojom::ReferrerPolicy::kDefault),
       invalidator_(std::make_unique<InterfaceInvalidator>()) {}
 
 ExecutionContext::~ExecutionContext() = default;
@@ -111,25 +112,16 @@ void ExecutionContext::PausePausableObjectIfNeeded(PausableObject* object) {
     object->Pause();
 }
 
-bool ExecutionContext::ShouldSanitizeScriptError(
-    const String& source_url,
-    AccessControlStatus cors_status) {
-  if (cors_status == kOpaqueResource)
-    return true;
-  const KURL& url = CompleteURL(source_url);
-  return !(GetSecurityOrigin()->CanReadContent(url) ||
-           cors_status == kSharableCrossOrigin);
-}
-
-void ExecutionContext::DispatchErrorEvent(ErrorEvent* error_event,
-                                          AccessControlStatus cors_status) {
+void ExecutionContext::DispatchErrorEvent(
+    ErrorEvent* error_event,
+    SanitizeScriptErrors sanitize_script_errors) {
   if (in_dispatch_error_event_) {
     pending_exceptions_.push_back(error_event);
     return;
   }
 
   // First report the original exception and only then all the nested ones.
-  if (!DispatchErrorEventInternal(error_event, cors_status))
+  if (!DispatchErrorEventInternal(error_event, sanitize_script_errors))
     ExceptionThrown(error_event);
 
   if (pending_exceptions_.IsEmpty())
@@ -141,13 +133,15 @@ void ExecutionContext::DispatchErrorEvent(ErrorEvent* error_event,
 
 bool ExecutionContext::DispatchErrorEventInternal(
     ErrorEvent* error_event,
-    AccessControlStatus cors_status) {
+    SanitizeScriptErrors sanitize_script_errors) {
   EventTarget* target = ErrorEventTarget();
   if (!target)
     return false;
 
-  if (ShouldSanitizeScriptError(error_event->filename(), cors_status))
-    error_event = ErrorEvent::CreateSanitizedError(error_event->World());
+  if (sanitize_script_errors == SanitizeScriptErrors::kSanitize) {
+    error_event = ErrorEvent::CreateSanitizedError(
+        ToScriptState(this, *error_event->World()));
+  }
 
   DCHECK(!in_dispatch_error_event_);
   in_dispatch_error_event_ = true;
@@ -212,13 +206,14 @@ String ExecutionContext::OutgoingReferrer() const {
 
 FetchClientSettingsObjectSnapshot*
 ExecutionContext::CreateFetchClientSettingsObjectSnapshot() {
-  return new FetchClientSettingsObjectSnapshot(
-      BaseURL(), GetSecurityOrigin(), GetReferrerPolicy(), OutgoingReferrer());
+  return MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
+      BaseURL(), GetSecurityOrigin(), GetReferrerPolicy(), OutgoingReferrer(),
+      GetHttpsState());
 }
 
 void ExecutionContext::ParseAndSetReferrerPolicy(const String& policies,
                                                  bool support_legacy_keywords) {
-  ReferrerPolicy referrer_policy;
+  network::mojom::ReferrerPolicy referrer_policy;
 
   if (!SecurityPolicy::ReferrerPolicyFromHeaderValue(
           policies,
@@ -243,11 +238,12 @@ void ExecutionContext::ParseAndSetReferrerPolicy(const String& policies,
   SetReferrerPolicy(referrer_policy);
 }
 
-void ExecutionContext::SetReferrerPolicy(ReferrerPolicy referrer_policy) {
+void ExecutionContext::SetReferrerPolicy(
+    network::mojom::ReferrerPolicy referrer_policy) {
   // When a referrer policy has already been set, the latest value takes
   // precedence.
   UseCounter::Count(this, WebFeature::kSetReferrerPolicy);
-  if (referrer_policy_ != kReferrerPolicyDefault)
+  if (referrer_policy_ != network::mojom::ReferrerPolicy::kDefault)
     UseCounter::Count(this, WebFeature::kResetReferrerPolicy);
 
   referrer_policy_ = referrer_policy;

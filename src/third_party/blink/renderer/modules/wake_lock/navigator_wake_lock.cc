@@ -46,7 +46,7 @@ NavigatorWakeLock& NavigatorWakeLock::From(Navigator& navigator) {
   NavigatorWakeLock* supplement =
       Supplement<Navigator>::From<NavigatorWakeLock>(navigator);
   if (!supplement) {
-    supplement = new NavigatorWakeLock(navigator);
+    supplement = MakeGarbageCollected<NavigatorWakeLock>(navigator);
     ProvideTo(navigator, supplement);
   }
   return *supplement;

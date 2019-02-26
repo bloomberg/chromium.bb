@@ -64,6 +64,14 @@ class RequestCoordinator : public KeyedService,
                                    int64_t received_bytes) = 0;
   };
 
+  class ActiveTabInfo {
+   public:
+    virtual ~ActiveTabInfo() {}
+    // Returns true if the active tab's URL matches |url|. If Chrome is in the
+    // background, this should return false.
+    virtual bool DoesActiveTabMatch(const GURL& url) = 0;
+  };
+
   enum class RequestAvailability {
     ENABLED_FOR_OFFLINER,
     DISABLED_FOR_OFFLINER,
@@ -121,7 +129,8 @@ class RequestCoordinator : public KeyedService,
                      std::unique_ptr<RequestQueue> queue,
                      std::unique_ptr<Scheduler> scheduler,
                      network::NetworkQualityTracker* network_quality_tracker,
-                     std::unique_ptr<OfflinePagesUkmReporter> ukm_reporter);
+                     std::unique_ptr<OfflinePagesUkmReporter> ukm_reporter,
+                     std::unique_ptr<ActiveTabInfo> active_tab_info);
 
   ~RequestCoordinator() override;
 
@@ -313,6 +322,7 @@ class RequestCoordinator : public KeyedService,
   void ResetActiveRequestCallback(int64_t offline_id);
   void StartSchedulerCallback(int64_t offline_id);
   void TryNextRequestCallback(int64_t offline_id);
+  void MarkDeferredAttemptCallback(UpdateRequestsResult result);
 
   bool StartProcessingInternal(
       const ProcessingWindowState processing_state,
@@ -348,7 +358,8 @@ class RequestCoordinator : public KeyedService,
   // The parameter is a signal for what (if any) conditions to schedule future
   // processing for.
   void RequestNotPicked(bool non_user_requested_tasks_remaining,
-                        bool cleanup_needed);
+                        bool cleanup_needed,
+                        base::Time available_time);
 
   // Callback from request picker that receives the current available queued
   // request count as well as the total queued request count (which may be
@@ -503,6 +514,8 @@ class RequestCoordinator : public KeyedService,
   base::circular_deque<int64_t> prioritized_requests_;
   // Updates a request's PendingState.
   PendingStateUpdater pending_state_updater_;
+
+  std::unique_ptr<ActiveTabInfo> active_tab_info_;
   // Allows us to pass a weak pointer to callbacks.
   base::WeakPtrFactory<RequestCoordinator> weak_ptr_factory_;
 

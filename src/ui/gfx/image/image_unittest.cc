@@ -249,15 +249,7 @@ TEST_F(ImageTest, MultiResolutionPNGToImageSkia) {
 #endif
 }
 
-// TODO(crbug.com/153782): disable this test as it fails on iOS retina devices.
-#if defined(OS_IOS)
-#define MAYBE_MultiResolutionPNGToPlatform \
-    DISABLED_MultiResolutionPNGToPlatform
-#else
-#define MAYBE_MultiResolutionPNGToPlatform \
-    MultiResolutionPNGToPlatform
-#endif
-TEST_F(ImageTest, MAYBE_MultiResolutionPNGToPlatform) {
+TEST_F(ImageTest, MultiResolutionPNGToPlatform) {
   const int kSize1x = 25;
   const int kSize2x = 50;
 
@@ -307,15 +299,7 @@ TEST_F(ImageTest, PlatformToPNGEncodeAndDecode) {
 
 // The platform types use the platform provided encoding/decoding of PNGs. Make
 // sure these work with the Skia Encode/Decode.
-// TODO(crbug.com/153782): disable this test as it fails on iOS retina devices.
-#if defined(OS_IOS)
-#define MAYBE_PNGEncodeFromSkiaDecodeToPlatform \
-    DISABLED_PNGEncodeFromSkiaDecodeToPlatform
-#else
-#define MAYBE_PNGEncodeFromSkiaDecodeToPlatform \
-    PNGEncodeFromSkiaDecodeToPlatform
-#endif
-TEST_F(ImageTest, MAYBE_PNGEncodeFromSkiaDecodeToPlatform) {
+TEST_F(ImageTest, PNGEncodeFromSkiaDecodeToPlatform) {
   // Force the conversion sequence skia to png to platform_type.
   gfx::Image from_bitmap = gfx::Image::CreateFrom1xBitmap(
       gt::CreateBitmap(25, 25));
@@ -434,41 +418,6 @@ TEST_F(ImageTest, PlatformToPlatform) {
   EXPECT_EQ(25, image.Width());
   EXPECT_EQ(25, image.Height());
 }
-
-TEST_F(ImageTest, PlatformToSkiaToCopy) {
-  const gfx::ImageSkia* image_skia = NULL;
-  {
-    gfx::Image image(gt::CreatePlatformImage());
-    image_skia = image.CopyImageSkia();
-  }
-  EXPECT_TRUE(image_skia);
-  EXPECT_FALSE(image_skia->isNull());
-  delete image_skia;
-
-  const SkBitmap* bitmap = NULL;
-  {
-    gfx::Image image(gt::CreatePlatformImage());
-    bitmap = image.CopySkBitmap();
-  }
-
-  EXPECT_TRUE(bitmap);
-  EXPECT_FALSE(bitmap->isNull());
-  delete bitmap;
-}
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-TEST_F(ImageTest, SkiaToCocoaCopy) {
-  NSImage* ns_image;
-
-  {
-    gfx::Image image(gt::CreateImageSkia(25, 25));
-    ns_image = image.CopyNSImage();
-  }
-
-  EXPECT_TRUE(ns_image);
-  base::mac::NSObjectRelease(ns_image);
-}
-#endif
 
 TEST_F(ImageTest, CheckSkiaColor) {
   gfx::Image image(gt::CreatePlatformImage());

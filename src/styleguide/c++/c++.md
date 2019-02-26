@@ -54,8 +54,6 @@ separate [C++11 use in Chromium](https://chromium-cpp.appspot.com/) page.
 
   * Prefer `(foo == 0)` to `(0 == foo)`.
 
-  * Function declaration order should match function definition order.
-
   * Prefer putting delegate classes in their own header files. Implementors of
     the delegate interface will often be included elsewhere, which will often
     cause more coupling with the header of the main class.

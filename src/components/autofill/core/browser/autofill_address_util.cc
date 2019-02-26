@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/country_combobox_model.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_ui.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_ui_component.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/localization.h"
@@ -94,6 +95,10 @@ void GetAddressComponents(const std::string& country_code,
 
   base::ListValue* line = nullptr;
   for (size_t i = 0; i < components.size(); ++i) {
+    if (components[i].field == ::i18n::addressinput::ORGANIZATION &&
+        !base::FeatureList::IsEnabled(features::kAutofillEnableCompanyName)) {
+      continue;
+    }
     if (i == 0 ||
         components[i - 1].length_hint == AddressUiComponent::HINT_LONG ||
         components[i].length_hint == AddressUiComponent::HINT_LONG) {

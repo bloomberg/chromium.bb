@@ -44,8 +44,7 @@ class SharedWorkerDevToolsAgentHost : public DevToolsAgentHostImpl {
   ~SharedWorkerDevToolsAgentHost() override;
 
   // DevToolsAgentHostImpl overrides.
-  bool AttachSession(DevToolsSession* session,
-                     TargetRegistry* registry) override;
+  bool AttachSession(DevToolsSession* session) override;
   void DetachSession(DevToolsSession* session) override;
   void UpdateRendererChannel(bool force) override;
 

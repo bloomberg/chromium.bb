@@ -50,6 +50,13 @@ class MIDIInput final : public MIDIPort {
                            const String& name,
                            const String& version,
                            midi::mojom::PortState);
+
+  MIDIInput(MIDIAccess*,
+            const String& id,
+            const String& manufacturer,
+            const String& name,
+            const String& version,
+            midi::mojom::PortState);
   ~MIDIInput() override = default;
 
   EventListener* onmidimessage();
@@ -57,7 +64,7 @@ class MIDIInput final : public MIDIPort {
 
   // EventTarget
   const AtomicString& InterfaceName() const override {
-    return EventTargetNames::MIDIInput;
+    return event_target_names::kMIDIInput;
   }
 
   void DidReceiveMIDIData(unsigned port_index,
@@ -70,14 +77,6 @@ class MIDIInput final : public MIDIPort {
  protected:
   void AddedEventListener(const AtomicString& event_type,
                           RegisteredEventListener&) override;
-
- private:
-  MIDIInput(MIDIAccess*,
-            const String& id,
-            const String& manufacturer,
-            const String& name,
-            const String& version,
-            midi::mojom::PortState);
 };
 
 }  // namespace blink

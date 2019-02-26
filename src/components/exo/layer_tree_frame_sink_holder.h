@@ -60,6 +60,7 @@ class LayerTreeFrameSinkHolder : public cc::LayerTreeFrameSinkClient,
       uint32_t presentation_token,
       const gfx::PresentationFeedback& feedback) override;
   void DidLoseLayerTreeFrameSink() override;
+  void DidNotNeedBeginFrame() override {}
   void OnDraw(const gfx::Transform& transform,
               const gfx::Rect& viewport,
               bool resourceless_software_draw,
@@ -89,6 +90,7 @@ class LayerTreeFrameSinkHolder : public cc::LayerTreeFrameSinkClient,
 
   gfx::Size last_frame_size_in_pixels_;
   float last_frame_device_scale_factor_ = 1.0f;
+  base::TimeTicks last_local_surface_id_allocation_time_;
   std::vector<viz::ResourceId> last_frame_resources_;
 
   bool delete_pending_ = false;

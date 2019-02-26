@@ -30,7 +30,6 @@
 // https://html.spec.whatwg.org/multipage/webappapis.html#windoweventhandlers
 
 [
-    ImplementedAs=DOMWindowEventHandlers,
     LegacyTreatAsPartialInterface,
     NoInterfaceObject // Always used on target of 'implements'
 ] interface WindowEventHandlers {

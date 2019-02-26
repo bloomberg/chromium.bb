@@ -34,24 +34,35 @@
 #include "hb-font.hh"
 #include "hb-buffer.hh"
 #include "hb-open-type.hh"
+#include "hb-ot-shape.hh"
 #include "hb-set-digest.hh"
 
 
-namespace OT
-{
-  struct GDEF;
-  struct GSUB;
-  struct GPOS;
-}
+struct hb_ot_shape_plan_t;
 
-HB_INTERNAL const OT::GDEF& _get_gdef (hb_face_t *face);
-HB_INTERNAL const OT::GSUB& _get_gsub_relaxed (hb_face_t *face);
-HB_INTERNAL const OT::GPOS& _get_gpos_relaxed (hb_face_t *face);
+
+/*
+ * kern
+ */
+
+HB_INTERNAL bool
+hb_ot_layout_has_kerning (hb_face_t *face);
+
+HB_INTERNAL bool
+hb_ot_layout_has_machine_kerning (hb_face_t *face);
+
+HB_INTERNAL bool
+hb_ot_layout_has_cross_kerning (hb_face_t *face);
+
+HB_INTERNAL void
+hb_ot_layout_kern (const hb_ot_shape_plan_t *plan,
+		   hb_font_t *font,
+		   hb_buffer_t  *buffer);
 
 
 /* Private API corresponding to hb-ot-layout.h: */
 
-HB_INTERNAL hb_bool_t
+HB_INTERNAL bool
 hb_ot_layout_table_find_feature (hb_face_t    *face,
 				 hb_tag_t      table_tag,
 				 hb_tag_t      feature_tag,
@@ -85,12 +96,12 @@ HB_MARK_AS_FLAG_T (hb_ot_layout_glyph_props_flags_t);
  * GSUB/GPOS
  */
 
-HB_INTERNAL hb_bool_t
+HB_INTERNAL bool
 hb_ot_layout_lookup_would_substitute_fast (hb_face_t            *face,
 					   unsigned int          lookup_index,
 					   const hb_codepoint_t *glyphs,
 					   unsigned int          glyphs_length,
-					   hb_bool_t             zero_context);
+					   bool                  zero_context);
 
 
 /* Should be called before all the substitute_lookup's are done. */
@@ -98,33 +109,20 @@ HB_INTERNAL void
 hb_ot_layout_substitute_start (hb_font_t    *font,
 			       hb_buffer_t  *buffer);
 
-
-struct hb_ot_layout_lookup_accelerator_t
-{
-  template <typename TLookup>
-  inline void init (const TLookup &lookup)
-  {
-    digest.init ();
-    lookup.add_coverage (&digest);
-  }
-  inline void fini (void) {}
-
-  inline bool may_have (hb_codepoint_t g) const
-  { return digest.may_have (g); }
-
-  private:
-  hb_set_digest_t digest;
-};
+HB_INTERNAL void
+hb_ot_layout_delete_glyphs_inplace (hb_buffer_t *buffer,
+				    bool (*filter) (const hb_glyph_info_t *info));
 
 namespace OT {
   struct hb_ot_apply_context_t;
   struct SubstLookup;
+  struct hb_ot_layout_lookup_accelerator_t;
 }
 
 HB_INTERNAL void
 hb_ot_layout_substitute_lookup (OT::hb_ot_apply_context_t *c,
 				const OT::SubstLookup &lookup,
-				const hb_ot_layout_lookup_accelerator_t &accel);
+				const OT::hb_ot_layout_lookup_accelerator_t &accel);
 
 
 /* Should be called before all the position_lookup's are done. */
@@ -314,13 +312,13 @@ _hb_glyph_info_get_unicode_space_fallback_type (const hb_glyph_info_t *info)
 
 static inline bool _hb_glyph_info_ligated (const hb_glyph_info_t *info);
 
-static inline hb_bool_t
+static inline bool
 _hb_glyph_info_is_default_ignorable (const hb_glyph_info_t *info)
 {
   return (info->unicode_props() & UPROPS_MASK_IGNORABLE) &&
 	 !_hb_glyph_info_ligated (info);
 }
-static inline hb_bool_t
+static inline bool
 _hb_glyph_info_is_default_ignorable_and_not_hidden (const hb_glyph_info_t *info)
 {
   return ((info->unicode_props() & (UPROPS_MASK_IGNORABLE|UPROPS_MASK_HIDDEN))
@@ -374,17 +372,17 @@ _hb_glyph_info_is_unicode_format (const hb_glyph_info_t *info)
   return _hb_glyph_info_get_general_category (info) ==
 	 HB_UNICODE_GENERAL_CATEGORY_FORMAT;
 }
-static inline hb_bool_t
+static inline bool
 _hb_glyph_info_is_zwnj (const hb_glyph_info_t *info)
 {
   return _hb_glyph_info_is_unicode_format (info) && (info->unicode_props() & UPROPS_MASK_Cf_ZWNJ);
 }
-static inline hb_bool_t
+static inline bool
 _hb_glyph_info_is_zwj (const hb_glyph_info_t *info)
 {
   return _hb_glyph_info_is_unicode_format (info) && (info->unicode_props() & UPROPS_MASK_Cf_ZWJ);
 }
-static inline hb_bool_t
+static inline bool
 _hb_glyph_info_is_joiner (const hb_glyph_info_t *info)
 {
   return _hb_glyph_info_is_unicode_format (info) && (info->unicode_props() & (UPROPS_MASK_Cf_ZWNJ|UPROPS_MASK_Cf_ZWJ));

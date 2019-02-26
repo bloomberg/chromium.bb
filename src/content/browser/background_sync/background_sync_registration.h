@@ -21,10 +21,6 @@ namespace content {
 
 class CONTENT_EXPORT BackgroundSyncRegistration {
  public:
-  using RegistrationId = int64_t;
-
-  static const RegistrationId kInitialId;
-
   BackgroundSyncRegistration() = default;
   BackgroundSyncRegistration(const BackgroundSyncRegistration& other) = default;
   BackgroundSyncRegistration& operator=(
@@ -32,14 +28,10 @@ class CONTENT_EXPORT BackgroundSyncRegistration {
   ~BackgroundSyncRegistration() = default;
 
   bool Equals(const BackgroundSyncRegistration& other) const;
-  bool IsValid() const;
   bool IsFiring() const;
 
   const BackgroundSyncRegistrationOptions* options() const { return &options_; }
   BackgroundSyncRegistrationOptions* options() { return &options_; }
-
-  RegistrationId id() const { return id_; }
-  void set_id(RegistrationId id) { id_ = id; }
 
   blink::mojom::BackgroundSyncState sync_state() const { return sync_state_; }
   void set_sync_state(blink::mojom::BackgroundSyncState state) {
@@ -52,15 +44,21 @@ class CONTENT_EXPORT BackgroundSyncRegistration {
   base::Time delay_until() const { return delay_until_; }
   void set_delay_until(base::Time delay_until) { delay_until_ = delay_until; }
 
- private:
-  static const RegistrationId kInvalidRegistrationId;
+  // By default, new registrations will not fire until set_resolved is called
+  // after the registration resolves.
+  bool resolved() const { return resolved_; }
+  void set_resolved() { resolved_ = true; }
 
+ private:
   BackgroundSyncRegistrationOptions options_;
-  RegistrationId id_ = kInvalidRegistrationId;
   blink::mojom::BackgroundSyncState sync_state_ =
       blink::mojom::BackgroundSyncState::PENDING;
   int num_attempts_ = 0;
   base::Time delay_until_;
+
+  // This member is not persisted to disk. It should be false until the client
+  // has acknowledged tha it has resolved its registration promise.
+  bool resolved_ = false;
 };
 
 }  // namespace content

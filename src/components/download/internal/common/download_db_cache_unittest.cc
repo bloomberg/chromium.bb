@@ -33,7 +33,10 @@ namespace {
 DownloadDBEntry CreateDownloadDBEntry() {
   DownloadDBEntry entry;
   DownloadInfo download_info;
+  download_info.in_progress_info = InProgressInfo();
   download_info.guid = base::GenerateGUID();
+  static int id = 0;
+  download_info.id = ++id;
   entry.download_info = download_info;
   return entry;
 }
@@ -44,42 +47,12 @@ std::string GetKey(const std::string& guid) {
          "," + guid;
 }
 
-std::unique_ptr<DownloadItem> CreateDownloadItem(const std::string& guid) {
-  std::unique_ptr<MockDownloadItem> item(
-      new ::testing::NiceMock<MockDownloadItem>());
-  ON_CALL(*item, GetGuid()).WillByDefault(ReturnRefOfCopy(guid));
-  ON_CALL(*item, GetUrlChain())
-      .WillByDefault(ReturnRefOfCopy(std::vector<GURL>()));
-  ON_CALL(*item, GetReferrerUrl()).WillByDefault(ReturnRefOfCopy(GURL()));
-  ON_CALL(*item, GetSiteUrl()).WillByDefault(ReturnRefOfCopy(GURL()));
-  ON_CALL(*item, GetTabUrl()).WillByDefault(ReturnRefOfCopy(GURL()));
-  ON_CALL(*item, GetTabReferrerUrl()).WillByDefault(ReturnRefOfCopy(GURL()));
-  ON_CALL(*item, GetETag()).WillByDefault(ReturnRefOfCopy(std::string("etag")));
-  ON_CALL(*item, GetLastModifiedTime())
-      .WillByDefault(ReturnRefOfCopy(std::string("last-modified")));
-  ON_CALL(*item, GetMimeType()).WillByDefault(Return("text/html"));
-  ON_CALL(*item, GetOriginalMimeType()).WillByDefault(Return("text/html"));
-  ON_CALL(*item, GetTotalBytes()).WillByDefault(Return(1000));
-  ON_CALL(*item, GetFullPath())
-      .WillByDefault(ReturnRefOfCopy(base::FilePath()));
-  ON_CALL(*item, GetTargetFilePath())
-      .WillByDefault(ReturnRefOfCopy(base::FilePath()));
-  ON_CALL(*item, GetReceivedBytes()).WillByDefault(Return(1000));
-  ON_CALL(*item, GetStartTime()).WillByDefault(Return(base::Time()));
-  ON_CALL(*item, GetEndTime()).WillByDefault(Return(base::Time()));
-  ON_CALL(*item, GetReceivedSlices())
-      .WillByDefault(
-          ReturnRefOfCopy(std::vector<DownloadItem::ReceivedSlice>()));
-  ON_CALL(*item, GetHash()).WillByDefault(ReturnRefOfCopy(std::string("hash")));
-  ON_CALL(*item, IsTransient()).WillByDefault(Return(false));
-  ON_CALL(*item, GetDangerType())
-      .WillByDefault(Return(DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS));
-  ON_CALL(*item, GetLastReason())
-      .WillByDefault(Return(DOWNLOAD_INTERRUPT_REASON_NONE));
-  ON_CALL(*item, GetState()).WillByDefault(Return(DownloadItem::IN_PROGRESS));
-  ON_CALL(*item, IsPaused()).WillByDefault(Return(false));
-  ON_CALL(*item, GetBytesWasted()).WillByDefault(Return(10));
-  return std::move(item);
+// Clean up an in-progress entry that's loaded from the download DB, since
+// newly loaded entries should be in an interrupted state.
+void CleanUpInProgressEntry(DownloadDBEntry* entry) {
+  entry->download_info->in_progress_info->state = DownloadItem::INTERRUPTED;
+  entry->download_info->in_progress_info->interrupt_reason =
+      DOWNLOAD_INTERRUPT_REASON_CRASH;
 }
 
 }  // namespace
@@ -144,18 +117,19 @@ TEST_F(DownloadDBCacheTest, InitializeAndRetrieve) {
   CreateDBCache();
   std::vector<DownloadDBEntry> loaded_entries;
   db_cache_->Initialize(
-      std::vector<DownloadEntry>(),
       base::BindOnce(&DownloadDBCacheTest::InitCallback, base::Unretained(this),
                      &loaded_entries));
   db_->InitCallback(true);
   db_->LoadCallback(true);
   ASSERT_EQ(loaded_entries.size(), 2u);
 
-  for (auto db_entry : loaded_entries) {
-    ASSERT_EQ(db_entry, db_cache_->RetrieveEntry(db_entry.GetGuid()));
-    ASSERT_EQ(db_entry,
-              DownloadDBConversions::DownloadDBEntryFromProto(
-                  db_entries_.find(GetKey(db_entry.GetGuid()))->second));
+  for (auto& db_entry : loaded_entries) {
+    DownloadDBEntry entry = DownloadDBConversions::DownloadDBEntryFromProto(
+        db_entries_.find(GetKey(db_entry.GetGuid()))->second);
+    // Newly loaded entries should be in an interrupted state.
+    CleanUpInProgressEntry(&entry);
+    ASSERT_EQ(db_entry, entry);
+    EXPECT_FALSE(db_cache_->RetrieveEntry(db_entry.GetGuid()));
   }
 }
 
@@ -165,7 +139,6 @@ TEST_F(DownloadDBCacheTest, AddNewEntry) {
   CreateDBCache();
   std::vector<DownloadDBEntry> loaded_entries;
   db_cache_->Initialize(
-      std::vector<DownloadEntry>(),
       base::BindOnce(&DownloadDBCacheTest::InitCallback, base::Unretained(this),
                      &loaded_entries));
   db_->InitCallback(true);
@@ -191,17 +164,26 @@ TEST_F(DownloadDBCacheTest, ModifyExistingEntry) {
   CreateDBCache();
   std::vector<DownloadDBEntry> loaded_entries;
   db_cache_->Initialize(
-      std::vector<DownloadEntry>(),
       base::BindOnce(&DownloadDBCacheTest::InitCallback, base::Unretained(this),
                      &loaded_entries));
   db_->InitCallback(true);
   db_->LoadCallback(true);
   ASSERT_EQ(loaded_entries.size(), 2u);
 
-  loaded_entries[0].download_info->id = 100;
-  loaded_entries[1].download_info->id = 100;
+  // Let the DBCache to cache the entries first.
+  loaded_entries[0].download_info->in_progress_info->state =
+      DownloadItem::IN_PROGRESS;
+  loaded_entries[1].download_info->id = 101;
   db_cache_->AddOrReplaceEntry(loaded_entries[0]);
+  db_->UpdateCallback(true);
   db_cache_->AddOrReplaceEntry(loaded_entries[1]);
+  db_->UpdateCallback(true);
+  // Only the first entry is cached, as the second entry is still interrupted.
+  EXPECT_TRUE(db_cache_->RetrieveEntry(loaded_entries[0].GetGuid()));
+  EXPECT_FALSE(db_cache_->RetrieveEntry(loaded_entries[1].GetGuid()));
+
+  loaded_entries[0].download_info->id = 100;
+  db_cache_->AddOrReplaceEntry(loaded_entries[0]);
 
   ASSERT_EQ(task_runner_->GetPendingTaskCount(), 1u);
   ASSERT_GT(task_runner_->NextPendingTaskDelay(), base::TimeDelta());
@@ -216,7 +198,7 @@ TEST_F(DownloadDBCacheTest, ModifyExistingEntry) {
   db_->LoadCallback(true);
   ASSERT_EQ(loaded_entries.size(), 2u);
   ASSERT_EQ(loaded_entries[0].download_info->id, 100);
-  ASSERT_EQ(loaded_entries[1].download_info->id, 100);
+  ASSERT_EQ(loaded_entries[1].download_info->id, 101);
 }
 
 // Test that modifying current path will immediately update the DB.
@@ -232,7 +214,6 @@ TEST_F(DownloadDBCacheTest, FilePathChange) {
   CreateDBCache();
   std::vector<DownloadDBEntry> loaded_entries;
   db_cache_->Initialize(
-      std::vector<DownloadEntry>(),
       base::BindOnce(&DownloadDBCacheTest::InitCallback, base::Unretained(this),
                      &loaded_entries));
   db_->InitCallback(true);
@@ -262,7 +243,6 @@ TEST_F(DownloadDBCacheTest, RemoveEntry) {
   CreateDBCache();
   std::vector<DownloadDBEntry> loaded_entries;
   db_cache_->Initialize(
-      std::vector<DownloadEntry>(),
       base::BindOnce(&DownloadDBCacheTest::InitCallback, base::Unretained(this),
                      &loaded_entries));
   db_->InitCallback(true);
@@ -273,8 +253,6 @@ TEST_F(DownloadDBCacheTest, RemoveEntry) {
   std::string guid2 = loaded_entries[1].GetGuid();
   db_cache_->RemoveEntry(loaded_entries[0].GetGuid());
   db_->UpdateCallback(true);
-  ASSERT_FALSE(db_cache_->RetrieveEntry(guid));
-  ASSERT_TRUE(db_cache_->RetrieveEntry(guid2));
 
   loaded_entries.clear();
   DownloadDB* download_db = GetDownloadDB();
@@ -292,13 +270,19 @@ TEST_F(DownloadDBCacheTest, RemoveWhileModifyExistingEntry) {
   CreateDBCache();
   std::vector<DownloadDBEntry> loaded_entries;
   db_cache_->Initialize(
-      std::vector<DownloadEntry>(),
       base::BindOnce(&DownloadDBCacheTest::InitCallback, base::Unretained(this),
                      &loaded_entries));
   db_->InitCallback(true);
   db_->LoadCallback(true);
   ASSERT_EQ(loaded_entries.size(), 2u);
+  // Let the DBCache to cache the entry first.
+  loaded_entries[0].download_info->in_progress_info->state =
+      DownloadItem::IN_PROGRESS;
+  db_cache_->AddOrReplaceEntry(loaded_entries[0]);
+  ASSERT_EQ(task_runner_->GetPendingTaskCount(), 0u);
+  db_->UpdateCallback(true);
 
+  // Update the cached entry. A task will be posted to update the DB.
   loaded_entries[0].download_info->id = 100;
   db_cache_->AddOrReplaceEntry(loaded_entries[0]);
 
@@ -315,54 +299,8 @@ TEST_F(DownloadDBCacheTest, RemoveWhileModifyExistingEntry) {
                                           &loaded_entries));
   db_->LoadCallback(true);
   ASSERT_EQ(loaded_entries.size(), 1u);
+  CleanUpInProgressEntry(&loaded_entries[0]);
   ASSERT_EQ(remaining, loaded_entries[0]);
-}
-
-// Tests that Migrating a DownloadEntry from InProgressCache should store
-// a DownloadDBEntry in the DownloadDB.
-TEST_F(DownloadDBCacheTest, MigrateFromInProgressCache) {
-  CreateDBCache();
-  std::vector<DownloadEntry> download_entries;
-  download_entries.emplace_back(
-      "guid1", "foo.com", DownloadSource::DRAG_AND_DROP, true,
-      DownloadUrlParameters::RequestHeadersType(), 100);
-  download_entries.emplace_back(
-      "guid2", "foobar.com", DownloadSource::UNKNOWN, false,
-      DownloadUrlParameters::RequestHeadersType(), 200);
-
-  std::vector<DownloadDBEntry> loaded_entries;
-  db_cache_->Initialize(
-      download_entries,
-      base::BindOnce(&DownloadDBCacheTest::InitCallback, base::Unretained(this),
-                     &loaded_entries));
-  db_->InitCallback(true);
-  db_->UpdateCallback(true);
-  db_->LoadCallback(true);
-  ASSERT_FALSE(loaded_entries.empty());
-
-  std::unique_ptr<DownloadItem> item = CreateDownloadItem("guid1");
-  OnDownloadUpdated(item.get());
-
-  ASSERT_EQ(task_runner_->GetPendingTaskCount(), 1u);
-  ASSERT_GT(task_runner_->NextPendingTaskDelay(), base::TimeDelta());
-  task_runner_->FastForwardUntilNoTasksRemain();
-  db_->UpdateCallback(true);
-
-  DownloadDBEntry entry1 = CreateDownloadDBEntryFromItem(
-      *item, UkmInfo(DownloadSource::DRAG_AND_DROP, 100), true,
-      DownloadUrlParameters::RequestHeadersType());
-  DownloadDBEntry entry2 =
-      DownloadDBConversions::DownloadDBEntryFromDownloadEntry(
-          download_entries[1]);
-
-  DownloadDB* download_db = GetDownloadDB();
-  download_db->LoadEntries(base::BindOnce(&DownloadDBCacheTest::InitCallback,
-                                          base::Unretained(this),
-                                          &loaded_entries));
-  db_->LoadCallback(true);
-  ASSERT_EQ(loaded_entries.size(), 2u);
-  ASSERT_TRUE(entry1 == loaded_entries[0]);
-  ASSERT_TRUE(entry2 == loaded_entries[1]);
 }
 
 }  // namespace download

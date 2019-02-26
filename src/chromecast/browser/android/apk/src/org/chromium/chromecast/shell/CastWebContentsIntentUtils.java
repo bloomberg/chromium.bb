@@ -85,6 +85,9 @@ public class CastWebContentsIntentUtils {
     /** Key of extra value of the intent to start a web content, value is app ID of cast app */
     static final String INTENT_EXTRA_APP_ID = "content_app_id";
 
+    /** Key of extra value of the intent to start a web content, value is session ID of cast app */
+    static final String INTENT_EXTRA_SESSION_ID = "content_session_id";
+
     /** Key of extra value of the intent to start a web content, value is object of WebContents */
     static final String INTENT_EXTRA_WEB_CONTENTS =
             "com.google.android.apps.castshell.intent.extra.WEB_CONTENTS";
@@ -306,6 +309,7 @@ public class CastWebContentsIntentUtils {
         intent.setAction(CastIntents.ACTION_SHOW_WEB_CONTENT);
         intent.putExtra(INTENT_EXTRA_URI, getInstanceUri(instanceId).toString());
         intent.putExtra(INTENT_EXTRA_APP_ID, appId);
+        intent.putExtra(INTENT_EXTRA_SESSION_ID, instanceId);
         intent.putExtra(INTENT_EXTRA_VISIBILITY_PRIORITY, visibilityPriority);
         intent.putExtra(INTENT_EXTRA_TOUCH_INPUT_ENABLED, enableTouch);
         intent.putExtra(INTENT_EXTRA_TURN_ON_SCREEN, turnOnScreen);
@@ -338,6 +342,16 @@ public class CastWebContentsIntentUtils {
     // Used by ACTION_SHOW_WEB_CONTENT
     public static String getAppId(Intent in) {
         return getAppId(in.getExtras());
+    }
+
+    // Used by ACTION_SHOW_WEB_CONTENT
+    public static String getSessionId(Bundle bundle) {
+        return bundle.getString(INTENT_EXTRA_SESSION_ID);
+    }
+
+    // Used by ACTION_SHOW_WEB_CONTENT
+    public static String getSessionId(Intent in) {
+        return getSessionId(in.getExtras());
     }
 
     // Used by ACTION_VIEW, ACTION_SHOW_WEB_CONTENT

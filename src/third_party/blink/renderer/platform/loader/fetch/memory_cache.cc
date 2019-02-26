@@ -47,8 +47,8 @@ static const float kCTargetPrunePercentage = .95f;
 MemoryCache* GetMemoryCache() {
   DCHECK(WTF::IsMainThread());
   if (!g_memory_cache) {
-    g_memory_cache = new Persistent<MemoryCache>(MemoryCache::Create(
-        Platform::Current()->MainThread()->GetTaskRunner()));
+    g_memory_cache = new Persistent<MemoryCache>(
+        MemoryCache::Create(Thread::MainThread()->GetTaskRunner()));
   }
   return g_memory_cache->Get();
 }
@@ -93,7 +93,7 @@ inline MemoryCache::MemoryCache(
 
 MemoryCache* MemoryCache::Create(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  return new MemoryCache(std::move(task_runner));
+  return MakeGarbageCollected<MemoryCache>(std::move(task_runner));
 }
 
 MemoryCache::~MemoryCache() = default;
@@ -124,8 +124,8 @@ String MemoryCache::DefaultCacheIdentifier() {
 MemoryCache::ResourceMap* MemoryCache::EnsureResourceMap(
     const String& cache_identifier) {
   if (!resource_maps_.Contains(cache_identifier)) {
-    ResourceMapIndex::AddResult result =
-        resource_maps_.insert(cache_identifier, new ResourceMap);
+    ResourceMapIndex::AddResult result = resource_maps_.insert(
+        cache_identifier, MakeGarbageCollected<ResourceMap>());
     CHECK(result.is_new_entry);
   }
   return resource_maps_.at(cache_identifier);

@@ -22,18 +22,20 @@ class USBIsochronousInTransferResult final : public ScriptWrappable {
       DOMArrayBuffer* data,
       const HeapVector<Member<USBIsochronousInTransferPacket>>& packets) {
     DOMDataView* data_view = DOMDataView::Create(data, 0, data->ByteLength());
-    return new USBIsochronousInTransferResult(data_view, packets);
+    return MakeGarbageCollected<USBIsochronousInTransferResult>(data_view,
+                                                                packets);
   }
 
   static USBIsochronousInTransferResult* Create(
       const HeapVector<Member<USBIsochronousInTransferPacket>>& packets,
       DOMDataView* data) {
-    return new USBIsochronousInTransferResult(data, packets);
+    return MakeGarbageCollected<USBIsochronousInTransferResult>(data, packets);
   }
 
   static USBIsochronousInTransferResult* Create(
       const HeapVector<Member<USBIsochronousInTransferPacket>>& packets) {
-    return new USBIsochronousInTransferResult(nullptr, packets);
+    return MakeGarbageCollected<USBIsochronousInTransferResult>(nullptr,
+                                                                packets);
   }
 
   USBIsochronousInTransferResult(

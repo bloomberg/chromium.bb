@@ -66,6 +66,17 @@ AudioParameters::AudioParameters(Format format,
   Reset(format, channel_layout, sample_rate, frames_per_buffer);
 }
 
+AudioParameters::AudioParameters(
+    Format format,
+    ChannelLayout channel_layout,
+    int sample_rate,
+    int frames_per_buffer,
+    const HardwareCapabilities& hardware_capabilities)
+    : latency_tag_(AudioLatency::LATENCY_COUNT),
+      hardware_capabilities_(hardware_capabilities) {
+  Reset(format, channel_layout, sample_rate, frames_per_buffer);
+}
+
 AudioParameters::~AudioParameters() = default;
 
 AudioParameters::AudioParameters(const AudioParameters&) = default;
@@ -91,6 +102,15 @@ bool AudioParameters::IsValid() const {
          (sample_rate_ <= media::limits::kMaxSampleRate) &&
          (frames_per_buffer_ > 0) &&
          (frames_per_buffer_ <= media::limits::kMaxSamplesPerPacket) &&
+         (!hardware_capabilities_ ||
+          ((hardware_capabilities_->min_frames_per_buffer >= 0) &&
+           (hardware_capabilities_->min_frames_per_buffer <=
+            media::limits::kMaxSamplesPerPacket) &&
+           (hardware_capabilities_->max_frames_per_buffer >= 0) &&
+           (hardware_capabilities_->max_frames_per_buffer <=
+            media::limits::kMaxSamplesPerPacket) &&
+           (hardware_capabilities_->max_frames_per_buffer >=
+            hardware_capabilities_->min_frames_per_buffer))) &&
          (channel_layout_ == CHANNEL_LAYOUT_DISCRETE ||
           channels_ == ChannelLayoutToChannelCount(channel_layout_));
 }
@@ -102,6 +122,12 @@ std::string AudioParameters::AsHumanReadableString() const {
     << " frames_per_buffer: " << frames_per_buffer()
     << " effects: " << effects()
     << " mic_positions: " << PointsToString(mic_positions_);
+  if (hardware_capabilities_) {
+    s << ", hw_cap.min_frames_per_buffer: "
+      << hardware_capabilities_->min_frames_per_buffer
+      << ", hw_cap.max_frames_per_buffer: "
+      << hardware_capabilities_->max_frames_per_buffer;
+  }
   return s.str();
 }
 

@@ -5,6 +5,20 @@
 #include "chrome/browser/ui/blocked_content/framebust_block_tab_helper.h"
 
 #include "base/logging.h"
+#include "chrome/browser/chrome_notification_types.h"
+#include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/notification_service.h"
+
+namespace {
+
+void UpdateLocationBarUI(content::WebContents* contents) {
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
+      content::Source<content::WebContents>(contents),
+      content::NotificationService::NoDetails());
+}
+
+}  // namespace
 
 FramebustBlockTabHelper::~FramebustBlockTabHelper() = default;
 
@@ -14,9 +28,8 @@ void FramebustBlockTabHelper::AddBlockedUrl(const GURL& blocked_url,
   callbacks_.push_back(std::move(click_callback));
   DCHECK_EQ(blocked_urls_.size(), callbacks_.size());
 
-  for (Observer& observer : observers_) {
-    observer.OnBlockedUrlAdded(blocked_url);
-  }
+  manager_.NotifyObservers(0 /* id */, blocked_url);
+  UpdateLocationBarUI(web_contents());
 }
 
 bool FramebustBlockTabHelper::HasBlockedUrls() const {
@@ -29,21 +42,24 @@ void FramebustBlockTabHelper::OnBlockedUrlClicked(size_t index) {
   const GURL& url = blocked_urls_[index];
   if (!callbacks_[index].is_null())
     std::move(callbacks_[index]).Run(url, index, total_size);
-  web_contents_->OpenURL(content::OpenURLParams(
+  web_contents()->OpenURL(content::OpenURLParams(
       url, content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
       ui::PAGE_TRANSITION_LINK, false));
-  blocked_urls_.clear();
-  callbacks_.clear();
-}
-
-void FramebustBlockTabHelper::AddObserver(Observer* observer) {
-  observers_.AddObserver(observer);
-}
-
-void FramebustBlockTabHelper::RemoveObserver(const Observer* observer) {
-  observers_.RemoveObserver(observer);
 }
 
 FramebustBlockTabHelper::FramebustBlockTabHelper(
     content::WebContents* web_contents)
-    : web_contents_(web_contents) {}
+    : content::WebContentsObserver(web_contents) {}
+
+void FramebustBlockTabHelper::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame() ||
+      !navigation_handle->HasCommitted() ||
+      navigation_handle->IsSameDocument()) {
+    return;
+  }
+  blocked_urls_.clear();
+  callbacks_.clear();
+
+  UpdateLocationBarUI(web_contents());
+}

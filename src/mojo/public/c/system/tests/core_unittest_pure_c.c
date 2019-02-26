@@ -14,6 +14,7 @@
 // core.h, since it's the most important one.
 #include "mojo/public/c/system/core.h"
 #include "mojo/public/c/system/macros.h"
+#include "mojo/public/c/system/thunks.h"
 
 // The joys of the C preprocessor....
 #define STRINGIFY(x) #x

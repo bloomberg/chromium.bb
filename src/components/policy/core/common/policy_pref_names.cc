@@ -30,5 +30,10 @@ const char kUrlWhitelist[] = "policy.url_whitelist";
 // by the cloud policy subsystem.
 const char kUserPolicyRefreshRate[] = "policy.user_refresh_rate";
 
+// Boolean indicates whether the cloud management enrollment is mandatory or
+// not.
+const char kCloudManagementEnrollmentMandatory[] =
+    "policy.cloud_management_enrollment_mandatory";
+
 }  // namespace policy_prefs
 }  // namespace policy

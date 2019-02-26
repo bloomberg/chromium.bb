@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/base/ui_features.h"
@@ -45,20 +46,30 @@ struct AX_EXPORT AXHypertext {
 
 class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
  public:
+  AXPlatformNodeBase();
+  ~AXPlatformNodeBase() override;
+
   virtual void Init(AXPlatformNodeDelegate* delegate);
 
   // These are simple wrappers to our delegate.
   const AXNodeData& GetData() const;
+  gfx::NativeViewAccessible GetFocus();
   gfx::NativeViewAccessible GetParent();
   int GetChildCount();
   gfx::NativeViewAccessible ChildAtIndex(int index);
 
   // This needs to be implemented for each platform.
-  virtual int GetIndexInParent() = 0;
+  virtual int GetIndexInParent();
 
   // AXPlatformNode.
   void Destroy() override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
+  void NotifyAccessibilityEvent(ax::mojom::Event event_type) override;
+
+#if defined(OS_MACOSX)
+  void AnnounceText(base::string16& text) override;
+#endif
+
   AXPlatformNodeDelegate* GetDelegate() const override;
 
   // Helpers.
@@ -164,6 +175,8 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // that might send notifications.
   bool IsLeaf();
 
+  bool IsInvisibleOrIgnored() const;
+
   // Returns true if this node can be scrolled either in the horizontal or the
   // vertical direction.
   bool IsScrollable() const;
@@ -192,9 +205,6 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   AXPlatformNodeDelegate* delegate_;
 
  protected:
-  AXPlatformNodeBase();
-  ~AXPlatformNodeBase() override;
-
   bool IsTextOnlyObject() const;
   bool IsPlainTextField() const;
   // Is in a focused textfield with a related suggestion popup available,
@@ -258,11 +268,11 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
                                   const std::string& value,
                                   PlatformAttributeList* attributes);
 
-  // A pure virtual method that subclasses use to actually add the attribute to
+  // A virtual method that subclasses use to actually add the attribute to
   // |attributes|.
   virtual void AddAttributeToList(const char* name,
                                   const char* value,
-                                  PlatformAttributeList* attributes) = 0;
+                                  PlatformAttributeList* attributes);
 
   // Escapes characters in string attributes as required by the IA2 Spec
   // and AT-SPI2. It's okay for input to be the same as output.

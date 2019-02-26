@@ -665,7 +665,7 @@ void GetCertificatesWithDB(std::unique_ptr<GetCertificatesState> state,
   // Get the pointer to slot before base::Passed releases |state|.
   PK11SlotInfo* slot = state->slot_.get();
   cert_db->ListCertsInSlot(
-      base::Bind(&DidGetCertificates, base::Passed(&state)), slot);
+      base::BindOnce(&DidGetCertificates, std::move(state)), slot);
 }
 
 // Does the actual certificate importing on the IO thread. Used by

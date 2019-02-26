@@ -19,6 +19,7 @@
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/perfetto/include/perfetto/protozero/scattered_stream_null_delegate.h"
+#include "third_party/perfetto/include/perfetto/protozero/scattered_stream_writer.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/trace_writer.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pb.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pbzero.h"
@@ -27,7 +28,7 @@ namespace tracing {
 
 namespace {
 
-const char kCategoryGroup[] = "foo";
+constexpr const char kCategoryGroup[] = "foo";
 
 class MockProducerClient : public ProducerClient {
  public:
@@ -547,7 +548,7 @@ TEST_F(TraceEventDataSourceTest, EventWithConvertableArgs) {
   EXPECT_EQ(kArgValue2, trace_args[1].json_value());
 }
 
-TEST_F(TraceEventDataSourceTest, CompleteTraceEventsIntoSeparateBeginAndEnd) {
+TEST_F(TraceEventDataSourceTest, UpdateDurationOfCompleteEvent) {
   static const char kEventName[] = "bar";
 
   CreateTraceEventDataSource();
@@ -568,23 +569,31 @@ TEST_F(TraceEventDataSourceTest, CompleteTraceEventsIntoSeparateBeginAndEnd) {
 
   base::trace_event::TraceLog::GetInstance()->UpdateTraceEventDurationExplicit(
       category_group_enabled, kEventName, handle,
-      base::TimeTicks() + base::TimeDelta::FromMicroseconds(20),
+      base::TimeTicks() + base::TimeDelta::FromMicroseconds(30),
       base::ThreadTicks() + base::TimeDelta::FromMicroseconds(50));
 
-  // TRACE_EVENT_PHASE_COMPLETE events should internally emit a
-  // TRACE_EVENT_PHASE_BEGIN event first, and then a TRACE_EVENT_PHASE_END event
-  // when the duration is attempted set on the first event.
+  // The call to UpdateTraceEventDurationExplicit should have successfully
+  // updated the duration of the event which was added in the
+  // AddTraceEventWithThreadIdAndTimestamp call.
   auto events = producer_client()->GetChromeTraceEvents(0);
-  EXPECT_EQ(events.size(), 2);
+  EXPECT_EQ(events.size(), 1);
 
-  auto begin_trace_event = events[0];
-  EXPECT_EQ(TRACE_EVENT_PHASE_BEGIN, begin_trace_event.phase());
-  EXPECT_EQ(10, begin_trace_event.timestamp());
+  auto trace_event = events[0];
+  EXPECT_EQ(TRACE_EVENT_PHASE_COMPLETE, trace_event.phase());
+  EXPECT_EQ(10, trace_event.timestamp());
+  EXPECT_EQ(20, trace_event.duration());
 
-  auto end_trace_event = events[1];
-  EXPECT_EQ(TRACE_EVENT_PHASE_END, end_trace_event.phase());
-  EXPECT_EQ(20, end_trace_event.timestamp());
-  EXPECT_EQ(50, end_trace_event.thread_timestamp());
+  // Updating the duration of an invalid event should cause no further events to
+  // be emitted.
+  handle.event_index = 0;
+
+  base::trace_event::TraceLog::GetInstance()->UpdateTraceEventDurationExplicit(
+      category_group_enabled, kEventName, handle,
+      base::TimeTicks() + base::TimeDelta::FromMicroseconds(30),
+      base::ThreadTicks() + base::TimeDelta::FromMicroseconds(50));
+
+  auto new_events = producer_client()->GetChromeTraceEvents(0);
+  EXPECT_EQ(new_events.size(), 1);
 }
 
 }  // namespace

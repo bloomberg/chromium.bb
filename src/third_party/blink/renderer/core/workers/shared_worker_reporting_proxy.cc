@@ -58,18 +58,6 @@ void SharedWorkerReportingProxy::ReportConsoleMessage(MessageSource,
   // Not supported in SharedWorker.
 }
 
-void SharedWorkerReportingProxy::PostMessageToPageInspector(
-    int session_id,
-    const String& message) {
-  DCHECK(!IsMainThread());
-  PostCrossThreadTask(
-      *parent_execution_context_task_runners_->Get(
-          TaskType::kInternalInspector),
-      FROM_HERE,
-      CrossThreadBind(&WebSharedWorkerImpl::PostMessageToPageInspector,
-                      CrossThreadUnretained(worker_), session_id, message));
-}
-
 void SharedWorkerReportingProxy::DidCloseWorkerGlobalScope() {
   DCHECK(!IsMainThread());
   PostCrossThreadTask(

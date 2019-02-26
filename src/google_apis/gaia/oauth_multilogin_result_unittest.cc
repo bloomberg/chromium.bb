@@ -21,7 +21,7 @@ using ::testing::Property;
 using ::testing::_;
 
 TEST(OAuthMultiloginResultTest, TryParseCookiesFromValue) {
-  OAuthMultiloginResult result;
+  OAuthMultiloginResult result("");
   // SID: typical response for a domain cookie
   // APISID: typical response for a host cookie
   // SSID: not canonical cookie because of the wrong path, should not be added
@@ -148,32 +148,67 @@ TEST(OAuthMultiloginResultTest, TryParseCookiesFromValue) {
 }
 
 TEST(OAuthMultiloginResultTest, CreateOAuthMultiloginResultFromString) {
-  OAuthMultiloginResult result1;
-  EXPECT_EQ(OAuthMultiloginResult::CreateOAuthMultiloginResultFromString(
-                ")]}\'\n{ \"status\" : \"OK\" }", &result1)
-                .state(),
-            GoogleServiceAuthError::State::NONE);
-  EXPECT_TRUE(result1.cookies().empty());
+  OAuthMultiloginResult result1(R"()]}'
+        {
+          "status": "OK",
+          "cookies":[
+            {
+              "name":"SID",
+              "value":"vAlUe1",
+              "domain":".google.ru",
+              "path":"/",
+              "isSecure":true,
+              "isHttpOnly":false,
+              "priority":"HIGH",
+              "maxAge":63070000
+            }
+          ]
+        }
+      )");
+  EXPECT_EQ(result1.error().state(), GoogleServiceAuthError::State::NONE);
+  EXPECT_FALSE(result1.cookies().empty());
 
-  OAuthMultiloginResult result2;
-  EXPECT_EQ(
-      OAuthMultiloginResult::CreateOAuthMultiloginResultFromString(
-          "many_random_characters_before_newline\'\n{ \"status\" : \"OK\" }",
-          &result2)
-          .state(),
-      GoogleServiceAuthError::State::NONE);
-  EXPECT_TRUE(result2.cookies().empty());
+  OAuthMultiloginResult result2(R"(many_random_characters_before_newline
+        {
+          "status": "OK",
+          "cookies":[
+            {
+              "name":"SID",
+              "value":"vAlUe1",
+              "domain":".google.ru",
+              "path":"/",
+              "isSecure":true,
+              "isHttpOnly":false,
+              "priority":"HIGH",
+              "maxAge":63070000
+            }
+          ]
+        }
+      )");
+  EXPECT_EQ(result2.error().state(), GoogleServiceAuthError::State::NONE);
+  EXPECT_FALSE(result2.cookies().empty());
 
-  OAuthMultiloginResult result3;
-  EXPECT_EQ(OAuthMultiloginResult::CreateOAuthMultiloginResultFromString(
-                ")]}\'\n)]}'\n{ \"status\" : \"OK\" }", &result3)
-                .state(),
+  OAuthMultiloginResult result3(R"())]}\'\n)]}'\n{
+          "status": "OK",
+          "cookies":[
+            {
+              "name":"SID",
+              "value":"vAlUe1",
+              "domain":".google.ru",
+              "path":"/",
+              "isSecure":true,
+              "isHttpOnly":false,
+              "priority":"HIGH",
+              "maxAge":63070000
+            }
+          ]
+        }
+      )");
+  EXPECT_EQ(result3.error().state(),
             GoogleServiceAuthError::State::UNEXPECTED_SERVICE_RESPONSE);
-  EXPECT_TRUE(result3.cookies().empty());
 }
 
 TEST(OAuthMultiloginResultTest, ProduceErrorFromResponseStatus) {
-  OAuthMultiloginResult result1;
   std::string data_error_none =
       R"()]}'
         {
@@ -192,12 +227,9 @@ TEST(OAuthMultiloginResultTest, ProduceErrorFromResponseStatus) {
           ]
         }
       )";
-  EXPECT_EQ(OAuthMultiloginResult::CreateOAuthMultiloginResultFromString(
-                data_error_none, &result1)
-                .state(),
-            GoogleServiceAuthError::State::NONE);
+  OAuthMultiloginResult result1(data_error_none);
+  EXPECT_EQ(result1.error().state(), GoogleServiceAuthError::State::NONE);
 
-  OAuthMultiloginResult result2;
   std::string data_error_transient =
       R"(()]}'
         {
@@ -216,11 +248,9 @@ TEST(OAuthMultiloginResultTest, ProduceErrorFromResponseStatus) {
           ]
         }
       )";
-  EXPECT_TRUE(OAuthMultiloginResult::CreateOAuthMultiloginResultFromString(
-                  data_error_transient, &result2)
-                  .IsTransientError());
+  OAuthMultiloginResult result2(data_error_transient);
+  EXPECT_TRUE(result2.error().IsTransientError());
 
-  OAuthMultiloginResult result3;
   // "ERROR" is a real response status that Gaia sends. This is a persistent
   // error.
   std::string data_error_persistent =
@@ -241,15 +271,23 @@ TEST(OAuthMultiloginResultTest, ProduceErrorFromResponseStatus) {
           ]
         }
       )";
-  EXPECT_TRUE(OAuthMultiloginResult::CreateOAuthMultiloginResultFromString(
-                  data_error_persistent, &result3)
-                  .IsPersistentError());
+  OAuthMultiloginResult result3(data_error_persistent);
+  EXPECT_TRUE(result3.error().IsPersistentError());
 
-  OAuthMultiloginResult result4;
   std::string data_error_invalid_credentials =
       R"()]}'
         {
           "status": "INVALID_TOKENS",
+          "failed_accounts": [
+            {
+              "status": "RECOVERABLE",
+              "obfuscated_id": "account1"
+            },
+            {
+              "status": "OK",
+              "obfuscated_id": "account2"
+            }
+          ],
           "cookies":[
             {
               "name":"SID",
@@ -264,10 +302,51 @@ TEST(OAuthMultiloginResultTest, ProduceErrorFromResponseStatus) {
           ]
         }
       )";
-  const GoogleServiceAuthError error =
-      OAuthMultiloginResult::CreateOAuthMultiloginResultFromString(
-          data_error_invalid_credentials, &result4);
-  EXPECT_EQ(error.state(),
+  OAuthMultiloginResult result4(data_error_invalid_credentials);
+  EXPECT_EQ(result4.error().state(),
             GoogleServiceAuthError::State::INVALID_GAIA_CREDENTIALS);
-  EXPECT_TRUE(error.IsPersistentError());
+  EXPECT_TRUE(result4.error().IsPersistentError());
+  EXPECT_THAT(result4.failed_accounts(), ElementsAre(Eq("account1")));
+
+  // Unknown status.
+  OAuthMultiloginResult unknown_status(R"()]}'
+        {
+          "status": "Foo",
+          "cookies":[
+            {
+              "name":"SID",
+              "value":"vAlUe1",
+              "domain":".google.ru",
+              "path":"/",
+              "isSecure":true,
+              "isHttpOnly":false,
+              "priority":"HIGH",
+              "maxAge":63070000
+            }
+          ]
+        }
+      )");
+  EXPECT_EQ(unknown_status.error().state(),
+            GoogleServiceAuthError::State::UNEXPECTED_SERVICE_RESPONSE);
+  EXPECT_TRUE(unknown_status.cookies().empty());
+}
+
+TEST(OAuthMultiloginResultTest, ParseResponseStatus) {
+  struct TestCase {
+    std::string status_string;
+    OAuthMultiloginResponseStatus expected_status;
+  };
+
+  std::vector<TestCase> test_cases = {
+      {"FOO", OAuthMultiloginResponseStatus::kUnknownStatus},
+      {"OK", OAuthMultiloginResponseStatus::kOk},
+      {"RETRY", OAuthMultiloginResponseStatus::kRetry},
+      {"INVALID_INPUT", OAuthMultiloginResponseStatus::kInvalidInput},
+      {"INVALID_TOKENS", OAuthMultiloginResponseStatus::kInvalidTokens},
+      {"ERROR", OAuthMultiloginResponseStatus::kError}};
+
+  for (const auto& test_case : test_cases) {
+    EXPECT_EQ(test_case.expected_status,
+              ParseOAuthMultiloginResponseStatus(test_case.status_string));
+  }
 }

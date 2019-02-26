@@ -14,13 +14,14 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "chrome/browser/chromeos/account_mapper_util.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/auth/arc_active_directory_enrollment_token_fetcher.h"
 #include "chromeos/account_manager/account_manager.h"
 #include "components/arc/common/auth.mojom.h"
 #include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 
-class AccountTrackerService;
 class Profile;
 
 namespace content {
@@ -42,7 +43,9 @@ class ArcFetcherBase;
 class ArcAuthService : public KeyedService,
                        public mojom::AuthHost,
                        public ConnectionObserver<mojom::AuthInstance>,
-                       public chromeos::AccountManager::Observer {
+                       public chromeos::AccountManager::Observer,
+                       public AccountTrackerService::Observer,
+                       public ArcSessionManager::Observer {
  public:
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
@@ -56,11 +59,14 @@ class ArcAuthService : public KeyedService,
   static const char kArcServiceName[];
 
   // ConnectionObserver<mojom::AuthInstance>:
+  void OnConnectionReady() override;
   void OnConnectionClosed() override;
 
   // mojom::AuthHost:
-  void OnAuthorizationComplete(mojom::ArcSignInStatus status,
-                               bool initial_signin) override;
+  void OnAuthorizationComplete(
+      mojom::ArcSignInStatus status,
+      bool initial_signin,
+      const base::Optional<std::string>& account_name) override;
   void OnSignInCompleteDeprecated() override;
   void OnSignInFailedDeprecated(mojom::ArcSignInStatus reason) override;
   void RequestAccountInfoDeprecated(bool initial_signin) override;
@@ -82,6 +88,12 @@ class ArcAuthService : public KeyedService,
   void OnAccountRemoved(
       const chromeos::AccountManager::AccountKey& account_key) override;
 
+  // AccountTrackerService::Observer:
+  void OnAccountRemoved(const AccountInfo& account_info) override;
+
+  // ArcSessionManager::Observer:
+  void OnArcInitialStart() override;
+
   void SkipMergeSessionForTesting();
 
  private:
@@ -96,8 +108,8 @@ class ArcAuthService : public KeyedService,
       const std::string& user_id);
 
   // Issues a request for fetching AccountInfo for the Device Account.
-  // |initial_signin| denotes whether this is the initial ARC++ provisioning
-  // flow or a subsequent sign-in.
+  // |initial_signin| denotes whether this is the initial ARC provisioning flow
+  // or a subsequent sign-in.
   // |callback| is completed with |ArcSignInStatus| and |AccountInfo| depending
   // on the success / failure of the operation.
   void FetchPrimaryAccountInfo(bool initial_signin,
@@ -120,6 +132,26 @@ class ArcAuthService : public KeyedService,
   void OnAccountInfoReadyDeprecated(mojom::ArcSignInStatus status,
                                     mojom::AccountInfoPtr account_info);
 
+  // Issues a request for fetching AccountInfo for a Secondary Account
+  // represented by |account_name|. |account_name| is the account identifier
+  // used by ARC/Android.
+  void FetchSecondaryAccountInfo(const std::string& account_name,
+                                 RequestAccountInfoCallback callback);
+
+  // Callback for |FetchSecondaryAccountInfo|, issued by
+  // |ArcBackgroundAuthCodeFetcher::Fetch|.
+  // |account_name| is the account identifier used by ARC/Android.
+  // |fetcher| is used to identify the |ArcBackgroundAuthCodeFetcher| instance
+  // that completed the request. |callback| is completed with |ArcSignInStatus|
+  // and |AccountInfo| depending on the success / failure of the operation.
+  // |success| and |auth_code| are arguments passed by
+  // |ArcBackgroundAuthCodeFetcher::Fetch| callback.
+  void OnSecondaryAccountAuthCodeFetched(const std::string& account_name,
+                                         ArcBackgroundAuthCodeFetcher* fetcher,
+                                         RequestAccountInfoCallback callback,
+                                         bool success,
+                                         const std::string& auth_code);
+
   // Callback for data removal confirmation.
   void OnDataRemovalAccepted(bool accepted);
 
@@ -129,7 +161,7 @@ class ArcAuthService : public KeyedService,
 
   // Creates an |ArcBackgroundAuthCodeFetcher| for |account_id|. Can be used for
   // Device Account and Secondary Accounts. |initial_signin| denotes whether the
-  // fetcher is being created for the initial ARC++ provisioning flow or for a
+  // fetcher is being created for the initial ARC provisioning flow or for a
   // subsequent sign-in.
   std::unique_ptr<ArcBackgroundAuthCodeFetcher>
   CreateArcBackgroundAuthCodeFetcher(const std::string& account_id,
@@ -138,6 +170,9 @@ class ArcAuthService : public KeyedService,
   // Deletes a completed enrollment token / auth code fetch request from
   // |pending_token_requests_|.
   void DeletePendingTokenRequest(ArcFetcherBase* fetcher);
+
+  // Triggers an async push of the accounts in Chrome OS Account Manager to ARC.
+  void TriggerAccountsPushToArc();
 
   // Non-owning pointers.
   Profile* const profile_;
@@ -148,6 +183,7 @@ class ArcAuthService : public KeyedService,
   chromeos::AccountMapperUtil account_mapper_util_;
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+  bool url_loader_factory_for_testing_set_ = false;
 
   // A list of pending enrollment token / auth code requests.
   std::vector<std::unique_ptr<ArcFetcherBase>> pending_token_requests_;

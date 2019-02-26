@@ -31,7 +31,7 @@ WebVector<WebServerTimingInfo> PerformanceServerTiming::ParseServerTiming(
   WebVector<WebServerTimingInfo> result;
   const ResourceResponse& response = info.FinalResponse();
   std::unique_ptr<ServerTimingHeaderVector> headers = ParseServerTimingHeader(
-      response.HttpHeaderField(HTTPNames::Server_Timing));
+      response.HttpHeaderField(http_names::kServerTiming));
   result.reserve(headers->size());
   for (const auto& header : *headers) {
     result.emplace_back(header->Name(), header->Duration(),
@@ -45,8 +45,8 @@ PerformanceServerTiming::FromParsedServerTiming(
     const WebVector<WebServerTimingInfo>& entries) {
   HeapVector<Member<PerformanceServerTiming>> result;
   for (const auto& entry : entries) {
-    result.push_back(new PerformanceServerTiming(entry.name, entry.duration,
-                                                 entry.description));
+    result.push_back(MakeGarbageCollected<PerformanceServerTiming>(
+        entry.name, entry.duration, entry.description));
   }
   return result;
 }

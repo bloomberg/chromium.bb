@@ -10,6 +10,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
@@ -29,6 +30,7 @@
 namespace offline_pages {
 
 class CleanupTaskFactory;
+class ClientPolicyController;
 class RequestQueueStore;
 
 // Class responsible for managing save page requests.
@@ -86,6 +88,10 @@ class RequestQueue : public TaskQueue::Delegate {
   // |callback|.
   void MarkAttemptAborted(int64_t request_id, UpdateCallback callback);
 
+  // Marks attempt with |request_id| as deferred. Results are returned through
+  // |callback|.
+  void MarkAttemptDeferred(int64_t request_id, UpdateCallback callback);
+
   // Marks attempt with |request_id| as completed. The attempt may have
   // completed with either success or failure (stored in FailState). Results are
   // returned through |callback|.
@@ -97,6 +103,7 @@ class RequestQueue : public TaskQueue::Delegate {
   // callbacks.
   void PickNextRequest(
       OfflinerPolicy* policy,
+      ClientPolicyController* policy_controller,
       PickRequestTask::RequestPickedCallback picked_callback,
       PickRequestTask::RequestNotPickedCallback not_picked_callback,
       PickRequestTask::RequestCountCallback request_count_callback,
@@ -118,6 +125,8 @@ class RequestQueue : public TaskQueue::Delegate {
   void SetCleanupFactory(std::unique_ptr<CleanupTaskFactory> factory) {
     cleanup_factory_ = std::move(factory);
   }
+
+  RequestQueueStore* GetStoreForTesting() { return store_.get(); }
 
  private:
   // Store initialization functions.

@@ -5,11 +5,8 @@
 #include "components/zucchini/reloc_elf.h"
 
 #include <algorithm>
-#include <tuple>
-#include <utility>
 
 #include "base/logging.h"
-#include "base/numerics/safe_conversions.h"
 #include "components/zucchini/algorithm.h"
 
 namespace zucchini {

@@ -8,11 +8,12 @@
 #include <string>
 
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
 namespace content {
 
 struct IndexedDBDataLossInfo {
-  blink::WebIDBDataLoss status = blink::kWebIDBDataLossNone;
+  blink::mojom::IDBDataLoss status = blink::mojom::IDBDataLoss::None;
   std::string message;
 };
 

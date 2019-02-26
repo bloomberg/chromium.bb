@@ -29,7 +29,6 @@
 #if BUILDFLAG(ENABLE_VULKAN)
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "ui/ozone/platform/drm/gpu/vulkan_implementation_gbm.h"
-#if defined(OS_CHROMEOS)
 #define VK_STRUCTURE_TYPE_DMA_BUF_IMAGE_CREATE_INFO_INTEL 1024
 typedef struct VkDmaBufImageCreateInfo_ {
   VkStructureType sType;
@@ -46,7 +45,6 @@ typedef VkResult(VKAPI_PTR* PFN_vkCreateDmaBufImageINTEL)(
     const VkAllocationCallbacks* pAllocator,
     VkDeviceMemory* pMem,
     VkImage* pImage);
-#endif
 #endif
 
 namespace ui {
@@ -155,7 +153,6 @@ scoped_refptr<gfx::NativePixmap> GbmSurfaceFactory::CreateNativePixmapForVulkan(
     VkDevice vk_device,
     VkDeviceMemory* vk_device_memory,
     VkImage* vk_image) {
-#if defined(OS_CHROMEOS)
   std::unique_ptr<GbmBuffer> buffer;
   scoped_refptr<DrmFramebuffer> framebuffer;
 
@@ -209,9 +206,6 @@ scoped_refptr<gfx::NativePixmap> GbmSurfaceFactory::CreateNativePixmapForVulkan(
 
   return base::MakeRefCounted<GbmPixmap>(this, std::move(buffer),
                                          std::move(framebuffer));
-#else
-  return nullptr;
-#endif
 }
 #endif
 
@@ -226,13 +220,6 @@ std::unique_ptr<SurfaceOzoneCanvas> GbmSurfaceFactory::CreateCanvasForWidget(
   DCHECK(thread_checker_.CalledOnValidThread());
   LOG(ERROR) << "Software rendering mode is not supported with GBM platform";
   return nullptr;
-}
-
-std::vector<gfx::BufferFormat> GbmSurfaceFactory::GetScanoutFormats(
-    gfx::AcceleratedWidget widget) {
-  std::vector<gfx::BufferFormat> scanout_formats;
-  drm_thread_proxy_->GetScanoutFormats(widget, &scanout_formats);
-  return scanout_formats;
 }
 
 scoped_refptr<gfx::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(

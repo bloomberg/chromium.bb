@@ -17,12 +17,17 @@ class FocusElementAction : public Action {
   explicit FocusElementAction(const ActionProto& proto);
   ~FocusElementAction() override;
 
-  // Overrides Action:
-  void ProcessAction(ActionDelegate* delegate,
-                     ProcessActionCallback callback) override;
-
  private:
-  void OnFocusElement(ProcessActionCallback callback, bool status);
+  // Overrides Action:
+  void InternalProcessAction(ActionDelegate* delegate,
+                             ProcessActionCallback callback) override;
+
+  void OnWaitForElement(ActionDelegate* delegate,
+                        ProcessActionCallback callback,
+                        bool element_found);
+  void OnFocusElement(ActionDelegate* delegate,
+                      ProcessActionCallback callback,
+                      bool status);
 
   base::WeakPtrFactory<FocusElementAction> weak_ptr_factory_;
 

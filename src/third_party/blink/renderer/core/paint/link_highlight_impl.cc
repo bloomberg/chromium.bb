@@ -59,7 +59,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_recorder.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/gfx/geometry/rect.h"
@@ -246,6 +246,13 @@ bool LinkHighlightImpl::ComputeHighlightLayerPathAndPosition(
 
   content_layer_->SetPosition(bounding_rect.Location());
 
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    FloatPoint offset(current_graphics_layer_->GetOffsetFromTransformNode());
+    offset.MoveBy(bounding_rect.Location());
+    content_layer_->SetOffsetToTransformParent(
+        gfx::Vector2dF(offset.X(), offset.Y()));
+  }
+
   return path_has_changed;
 }
 
@@ -310,15 +317,14 @@ void LinkHighlightImpl::StartHighlightAnimationIfNeeded() {
     curve->AddKeyframe(CompositorFloatKeyframe(
         extra_duration_required.InSecondsF(), kStartOpacity, timing_function));
   }
-  // For layout tests we don't fade out.
+  // For web tests we don't fade out.
   curve->AddKeyframe(CompositorFloatKeyframe(
       (kFadeDuration + extra_duration_required).InSecondsF(),
-      LayoutTestSupport::IsRunningLayoutTest() ? kStartOpacity : 0,
-      timing_function));
+      WebTestSupport::IsRunningWebTest() ? kStartOpacity : 0, timing_function));
 
   std::unique_ptr<CompositorKeyframeModel> keyframe_model =
-      CompositorKeyframeModel::Create(*curve, CompositorTargetProperty::OPACITY,
-                                      0, 0);
+      CompositorKeyframeModel::Create(
+          *curve, compositor_target_property::OPACITY, 0, 0);
 
   content_layer_->SetIsDrawable(true);
   compositor_animation_->AddKeyframeModel(std::move(keyframe_model));
@@ -348,6 +354,12 @@ class LinkHighlightDisplayItemClientForTracking : public DisplayItemClient {
 };
 
 void LinkHighlightImpl::UpdateGeometry() {
+  if (!node_ || !node_->GetLayoutObject()) {
+    ClearGraphicsLayerLinkHighlightPointer();
+    ReleaseResources();
+    return;
+  }
+
   // To avoid unnecessary updates (e.g. other entities have requested animations
   // from our WebViewImpl), only proceed if we actually requested an update.
   if (!geometry_needs_update_)
@@ -355,28 +367,22 @@ void LinkHighlightImpl::UpdateGeometry() {
 
   geometry_needs_update_ = false;
 
-  bool has_layout_object = node_ && node_->GetLayoutObject();
-  if (has_layout_object) {
-    const LayoutBoxModelObject& paint_invalidation_container =
-        node_->GetLayoutObject()->ContainerForPaintInvalidation();
-    AttachLinkHighlightToCompositingLayer(paint_invalidation_container);
-    if (ComputeHighlightLayerPathAndPosition(paint_invalidation_container)) {
-      // We only need to invalidate the layer if the highlight size has changed,
-      // otherwise we can just re-position the layer without needing to
-      // repaint.
-      content_layer_->SetNeedsDisplay();
+  const LayoutBoxModelObject& paint_invalidation_container =
+      node_->GetLayoutObject()->ContainerForPaintInvalidation();
+  AttachLinkHighlightToCompositingLayer(paint_invalidation_container);
+  if (ComputeHighlightLayerPathAndPosition(paint_invalidation_container)) {
+    // We only need to invalidate the layer if the highlight size has changed,
+    // otherwise we can just re-position the layer without needing to
+    // repaint.
+    content_layer_->SetNeedsDisplay();
 
-      if (current_graphics_layer_) {
-        gfx::Rect rect = gfx::ToEnclosingRect(
-            gfx::RectF(Layer()->position(), gfx::SizeF(Layer()->bounds())));
-        current_graphics_layer_->TrackRasterInvalidation(
-            LinkHighlightDisplayItemClientForTracking(), IntRect(rect),
-            PaintInvalidationReason::kFullLayer);
-      }
+    if (current_graphics_layer_) {
+      gfx::Rect rect = gfx::ToEnclosingRect(
+          gfx::RectF(Layer()->position(), gfx::SizeF(Layer()->bounds())));
+      current_graphics_layer_->TrackRasterInvalidation(
+          LinkHighlightDisplayItemClientForTracking(), IntRect(rect),
+          PaintInvalidationReason::kFullLayer);
     }
-  } else {
-    ClearGraphicsLayerLinkHighlightPointer();
-    ReleaseResources();
   }
 }
 

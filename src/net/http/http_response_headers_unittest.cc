@@ -504,19 +504,28 @@ TEST(HttpResponseHeadersTest, EnumerateHeader_Coalesced) {
   // Ensure that whitespace following a value is trimmed properly.
   std::string headers =
       "HTTP/1.1 200 OK\n"
-      "Cache-control:private , no-cache=\"set-cookie,server\" \n"
-      "cache-Control: no-store\n";
+      "Cache-control:,,private , no-cache=\"set-cookie,server\",\n"
+      "cache-Control: no-store\n"
+      "cache-Control:\n";
   HeadersToRaw(&headers);
   scoped_refptr<HttpResponseHeaders> parsed(new HttpResponseHeaders(headers));
 
   size_t iter = 0;
   std::string value;
-  EXPECT_TRUE(parsed->EnumerateHeader(&iter, "cache-control", &value));
+  ASSERT_TRUE(parsed->EnumerateHeader(&iter, "cache-control", &value));
+  EXPECT_EQ("", value);
+  ASSERT_TRUE(parsed->EnumerateHeader(&iter, "cache-control", &value));
+  EXPECT_EQ("", value);
+  ASSERT_TRUE(parsed->EnumerateHeader(&iter, "cache-control", &value));
   EXPECT_EQ("private", value);
-  EXPECT_TRUE(parsed->EnumerateHeader(&iter, "cache-control", &value));
+  ASSERT_TRUE(parsed->EnumerateHeader(&iter, "cache-control", &value));
   EXPECT_EQ("no-cache=\"set-cookie,server\"", value);
-  EXPECT_TRUE(parsed->EnumerateHeader(&iter, "cache-control", &value));
+  ASSERT_TRUE(parsed->EnumerateHeader(&iter, "cache-control", &value));
+  EXPECT_EQ("", value);
+  ASSERT_TRUE(parsed->EnumerateHeader(&iter, "cache-control", &value));
   EXPECT_EQ("no-store", value);
+  ASSERT_TRUE(parsed->EnumerateHeader(&iter, "cache-control", &value));
+  EXPECT_EQ("", value);
   EXPECT_FALSE(parsed->EnumerateHeader(&iter, "cache-control", &value));
 }
 
@@ -1047,84 +1056,107 @@ TEST_P(UpdateTest, Update) {
 }
 
 const UpdateTestData update_tests[] = {
-  { "HTTP/1.1 200 OK\n",
+    {"HTTP/1.1 200 OK\n",
 
-    "HTTP/1/1 304 Not Modified\n"
-    "connection: keep-alive\n"
-    "Cache-control: max-age=10000\n",
+     "HTTP/1/1 304 Not Modified\n"
+     "connection: keep-alive\n"
+     "Cache-control: max-age=10000\n",
 
-    "HTTP/1.1 200 OK\n"
-    "Cache-control: max-age=10000\n"
-  },
-  { "HTTP/1.1 200 OK\n"
-    "Foo: 1\n"
-    "Cache-control: private\n",
+     "HTTP/1.1 200 OK\n"
+     "Cache-control: max-age=10000\n"},
+    {"HTTP/1.1 200 OK\n"
+     "Foo: 1\n"
+     "Cache-control: private\n",
 
-    "HTTP/1/1 304 Not Modified\n"
-    "connection: keep-alive\n"
-    "Cache-control: max-age=10000\n",
+     "HTTP/1/1 304 Not Modified\n"
+     "connection: keep-alive\n"
+     "Cache-control: max-age=10000\n",
 
-    "HTTP/1.1 200 OK\n"
-    "Cache-control: max-age=10000\n"
-    "Foo: 1\n"
-  },
-  { "HTTP/1.1 200 OK\n"
-    "Foo: 1\n"
-    "Cache-control: private\n",
+     "HTTP/1.1 200 OK\n"
+     "Cache-control: max-age=10000\n"
+     "Foo: 1\n"},
+    {"HTTP/1.1 200 OK\n"
+     "Foo: 1\n"
+     "Cache-control: private\n",
 
-    "HTTP/1/1 304 Not Modified\n"
-    "connection: keep-alive\n"
-    "Cache-CONTROL: max-age=10000\n",
+     "HTTP/1/1 304 Not Modified\n"
+     "connection: keep-alive\n"
+     "Cache-CONTROL: max-age=10000\n",
 
-    "HTTP/1.1 200 OK\n"
-    "Cache-CONTROL: max-age=10000\n"
-    "Foo: 1\n"
-  },
-  { "HTTP/1.1 200 OK\n"
-    "Content-Length: 450\n",
+     "HTTP/1.1 200 OK\n"
+     "Cache-CONTROL: max-age=10000\n"
+     "Foo: 1\n"},
+    {"HTTP/1.1 200 OK\n"
+     "Content-Length: 450\n",
 
-    "HTTP/1/1 304 Not Modified\n"
-    "connection: keep-alive\n"
-    "Cache-control:      max-age=10001   \n",
+     "HTTP/1/1 304 Not Modified\n"
+     "connection: keep-alive\n"
+     "Cache-control:      max-age=10001   \n",
 
-    "HTTP/1.1 200 OK\n"
-    "Cache-control: max-age=10001\n"
-    "Content-Length: 450\n"
-  },
-  { "HTTP/1.1 200 OK\n"
-    "X-Frame-Options: DENY\n",
+     "HTTP/1.1 200 OK\n"
+     "Cache-control: max-age=10001\n"
+     "Content-Length: 450\n"},
+    {
+        "HTTP/1.1 200 OK\n"
+        "X-Frame-Options: DENY\n",
 
-    "HTTP/1/1 304 Not Modified\n"
-    "X-Frame-Options: ALLOW\n",
+        "HTTP/1/1 304 Not Modified\n"
+        "X-Frame-Options: ALLOW\n",
 
-    "HTTP/1.1 200 OK\n"
-    "X-Frame-Options: DENY\n",
-  },
-  { "HTTP/1.1 200 OK\n"
-    "X-WebKit-CSP: default-src 'none'\n",
+        "HTTP/1.1 200 OK\n"
+        "X-Frame-Options: DENY\n",
+    },
+    {
+        "HTTP/1.1 200 OK\n"
+        "X-WebKit-CSP: default-src 'none'\n",
 
-    "HTTP/1/1 304 Not Modified\n"
-    "X-WebKit-CSP: default-src *\n",
+        "HTTP/1/1 304 Not Modified\n"
+        "X-WebKit-CSP: default-src *\n",
 
-    "HTTP/1.1 200 OK\n"
-    "X-WebKit-CSP: default-src 'none'\n",
-  },
-  { "HTTP/1.1 200 OK\n"
-    "X-XSS-Protection: 1\n",
+        "HTTP/1.1 200 OK\n"
+        "X-WebKit-CSP: default-src 'none'\n",
+    },
+    {
+        "HTTP/1.1 200 OK\n"
+        "X-XSS-Protection: 1\n",
 
-    "HTTP/1/1 304 Not Modified\n"
-    "X-XSS-Protection: 0\n",
+        "HTTP/1/1 304 Not Modified\n"
+        "X-XSS-Protection: 0\n",
 
-    "HTTP/1.1 200 OK\n"
-    "X-XSS-Protection: 1\n",
-  },
-  { "HTTP/1.1 200 OK\n",
+        "HTTP/1.1 200 OK\n"
+        "X-XSS-Protection: 1\n",
+    },
+    {"HTTP/1.1 200 OK\n",
 
-    "HTTP/1/1 304 Not Modified\n"
-    "X-Content-Type-Options: nosniff\n",
+     "HTTP/1/1 304 Not Modified\n"
+     "X-Content-Type-Options: nosniff\n",
 
-    "HTTP/1.1 200 OK\n"
-  },
+     "HTTP/1.1 200 OK\n"},
+    {"HTTP/1.1 200 OK\n"
+     "Content-Encoding: identity\n"
+     "Content-Length: 100\n"
+     "Content-Type: text/html\n"
+     "Content-Security-Policy: default-src 'none'\n",
+
+     "HTTP/1/1 304 Not Modified\n"
+     "Content-Encoding: gzip\n"
+     "Content-Length: 200\n"
+     "Content-Type: text/xml\n"
+     "Content-Security-Policy: default-src 'self'\n",
+
+     "HTTP/1.1 200 OK\n"
+     "Content-Security-Policy: default-src 'self'\n"
+     "Content-Encoding: identity\n"
+     "Content-Length: 100\n"
+     "Content-Type: text/html\n"},
+    {"HTTP/1.1 200 OK\n"
+     "Content-Location: /example_page.html\n",
+
+     "HTTP/1/1 304 Not Modified\n"
+     "Content-Location: /not_example_page.html\n",
+
+     "HTTP/1.1 200 OK\n"
+     "Content-Location: /example_page.html\n"},
 };
 
 INSTANTIATE_TEST_CASE_P(HttpResponseHeaders,
@@ -1162,27 +1194,27 @@ TEST_P(EnumerateHeaderLinesTest, EnumerateHeaderLines) {
 }
 
 const EnumerateHeaderTestData enumerate_header_tests[] = {
-  { "HTTP/1.1 200 OK\n",
+    {"HTTP/1.1 200 OK\n",
 
-    ""
-  },
-  { "HTTP/1.1 200 OK\n"
-    "Foo: 1\n",
+     ""},
+    {"HTTP/1.1 200 OK\n"
+     "Foo: 1\n",
 
-    "Foo: 1\n"
-  },
-  { "HTTP/1.1 200 OK\n"
-    "Foo: 1\n"
-    "Bar: 2\n"
-    "Foo: 3\n",
+     "Foo: 1\n"},
+    {"HTTP/1.1 200 OK\n"
+     "Foo: 1\n"
+     "Bar: 2\n"
+     "Foo: 3\n",
 
-    "Foo: 1\nBar: 2\nFoo: 3\n"
-  },
-  { "HTTP/1.1 200 OK\n"
-    "Foo: 1, 2, 3\n",
+     "Foo: 1\nBar: 2\nFoo: 3\n"},
+    {"HTTP/1.1 200 OK\n"
+     "Foo: 1, 2, 3\n",
 
-    "Foo: 1, 2, 3\n"
-  },
+     "Foo: 1, 2, 3\n"},
+    {"HTTP/1.1 200 OK\n"
+     "Foo: ,, 1,, 2, 3,, \n",
+
+     "Foo: ,, 1,, 2, 3,,\n"},
 };
 
 INSTANTIATE_TEST_CASE_P(HttpResponseHeaders,
@@ -1706,6 +1738,34 @@ TEST(HttpResponseHeadersTest, GetNormalizedHeaderWithEmptyValues) {
   EXPECT_EQ(value, "*, *");
   EXPECT_TRUE(parsed->GetNormalizedHeader("e", &value));
   EXPECT_EQ(value, "");
+  EXPECT_FALSE(parsed->GetNormalizedHeader("f", &value));
+}
+
+TEST(HttpResponseHeadersTest, GetNormalizedHeaderWithCommas) {
+  std::string headers(
+      "HTTP/1.1 200 OK\n"
+      "a: foo, bar\n"
+      "b: , foo, bar,\n"
+      "c: ,,,\n"
+      "d:  ,  ,  ,  \n"
+      "e:\t,\t,\t,\t\n"
+      "a: ,");
+  HeadersToRaw(&headers);
+  auto parsed = base::MakeRefCounted<HttpResponseHeaders>(headers);
+  std::string value;
+
+  // TODO(mmenke): "Normalized" headers probably should preserve the
+  // leading/trailing whitespace from the original headers.
+  ASSERT_TRUE(parsed->GetNormalizedHeader("a", &value));
+  EXPECT_EQ("foo, bar, ,", value);
+  ASSERT_TRUE(parsed->GetNormalizedHeader("b", &value));
+  EXPECT_EQ(", foo, bar,", value);
+  ASSERT_TRUE(parsed->GetNormalizedHeader("c", &value));
+  EXPECT_EQ(",,,", value);
+  ASSERT_TRUE(parsed->GetNormalizedHeader("d", &value));
+  EXPECT_EQ(",  ,  ,", value);
+  ASSERT_TRUE(parsed->GetNormalizedHeader("e", &value));
+  EXPECT_EQ(",\t,\t,", value);
   EXPECT_FALSE(parsed->GetNormalizedHeader("f", &value));
 }
 

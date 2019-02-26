@@ -38,7 +38,6 @@
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input_messages.h"
 #include "content/common/render_frame_metadata.mojom.h"
-#include "content/common/view_messages.h"
 #include "content/common/visual_properties.h"
 #include "content/common/widget_messages.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
@@ -99,20 +98,21 @@ class MockInputRouter : public InputRouter {
         sent_keyboard_event_(false),
         sent_gesture_event_(false),
         send_touch_event_not_cancelled_(false),
-        message_received_(false),
+        has_handlers_(false),
         client_(client) {}
   ~MockInputRouter() override {}
 
   // InputRouter
-  void SendMouseEvent(const MouseEventWithLatencyInfo& mouse_event) override {
+  void SendMouseEvent(const MouseEventWithLatencyInfo& mouse_event,
+                      MouseEventCallback event_result_callback) override {
     sent_mouse_event_ = true;
   }
   void SendWheelEvent(
       const MouseWheelEventWithLatencyInfo& wheel_event) override {
     sent_wheel_event_ = true;
   }
-  void SendKeyboardEvent(
-      const NativeWebKeyboardEventWithLatencyInfo& key_event) override {
+  void SendKeyboardEvent(const NativeWebKeyboardEventWithLatencyInfo& key_event,
+                         KeyboardEventCallback event_result_callback) override {
     sent_keyboard_event_ = true;
   }
   void SendGestureEvent(
@@ -138,11 +138,8 @@ class MockInputRouter : public InputRouter {
   bool FlingCancellationIsDeferred() override { return false; }
   void OnSetTouchAction(cc::TouchAction touch_action) override {}
   void ForceSetTouchActionAuto() override {}
-
-  // IPC::Listener
-  bool OnMessageReceived(const IPC::Message& message) override {
-    message_received_ = true;
-    return false;
+  void OnHasTouchEventHandlers(bool has_handlers) override {
+    has_handlers_ = has_handlers;
   }
 
   bool sent_mouse_event_;
@@ -150,7 +147,7 @@ class MockInputRouter : public InputRouter {
   bool sent_keyboard_event_;
   bool sent_gesture_event_;
   bool send_touch_event_not_cancelled_;
-  bool message_received_;
+  bool has_handlers_;
 
  private:
   InputRouterClient* client_;
@@ -334,7 +331,9 @@ class TestView : public TestRenderWidgetHostView {
         use_fake_compositor_viewport_pixel_size_(false),
         ack_result_(INPUT_EVENT_ACK_STATE_UNKNOWN),
         top_controls_height_(0.f),
-        bottom_controls_height_(0.f) {}
+        bottom_controls_height_(0.f) {
+    local_surface_id_allocator_.GenerateId();
+  }
 
   // Sets the bounds returned by GetViewBounds.
   void SetBounds(const gfx::Rect& bounds) override {
@@ -409,8 +408,9 @@ class TestView : public TestRenderWidgetHostView {
   float GetBottomControlsHeight() const override {
     return bottom_controls_height_;
   }
-  const viz::LocalSurfaceId& GetLocalSurfaceId() const override {
-    return local_surface_id_allocator_.GetCurrentLocalSurfaceId();
+  const viz::LocalSurfaceIdAllocation& GetLocalSurfaceIdAllocation()
+      const override {
+    return local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation();
   }
 
   void ProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,
@@ -569,7 +569,7 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
 
   void SetZoomLevel(double zoom_level) { zoom_level_ = zoom_level; }
 
-  double GetPendingPageZoomLevel() const override { return zoom_level_; }
+  double GetPendingPageZoomLevel() override { return zoom_level_; }
 
   void FocusOwningWebContents(
       RenderWidgetHostImpl* render_widget_host) override {
@@ -600,9 +600,10 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
                : KeyboardEventProcessingResult::NOT_HANDLED;
   }
 
-  void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) override {
+  bool HandleKeyboardEvent(const NativeWebKeyboardEvent& event) override {
     unhandled_keyboard_event_type_ = event.GetType();
     unhandled_keyboard_event_called_ = true;
+    return true;
   }
 
   bool HandleWheelEvent(const blink::WebMouseWheelEvent& event) override {
@@ -660,12 +661,7 @@ class RenderWidgetHostTest : public testing::Test {
         handle_key_press_event_(false),
         handle_mouse_event_(false),
         last_simulated_event_time_(ui::EventTimeForNow()) {
-    std::vector<base::StringPiece> features;
-    std::vector<base::StringPiece> disabled_features;
-    features.push_back(features::kVsyncAlignedInputEvents.name);
-
-    feature_list_.InitFromCommandLine(base::JoinString(features, ","),
-                                      base::JoinString(disabled_features, ","));
+    feature_list_.Init();
   }
   ~RenderWidgetHostTest() override {}
 
@@ -1006,7 +1002,7 @@ TEST_F(RenderWidgetHostTest, SynchronizeVisualProperties) {
       WidgetMsg_SynchronizeVisualProperties::ID));
   cc::RenderFrameMetadata metadata;
   metadata.viewport_size_in_pixels = original_size.size();
-  metadata.local_surface_id = base::nullopt;
+  metadata.local_surface_id_allocation = base::nullopt;
   host_->DidUpdateVisualProperties(metadata);
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
 
@@ -1032,7 +1028,7 @@ TEST_F(RenderWidgetHostTest, SynchronizeVisualProperties) {
   // immediately send a new resize message for the new size to the renderer.
   process_->sink().ClearMessages();
   metadata.viewport_size_in_pixels = original_size.size();
-  metadata.local_surface_id = base::nullopt;
+  metadata.local_surface_id_allocation = base::nullopt;
   host_->DidUpdateVisualProperties(metadata);
   EXPECT_TRUE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(third_size.size(), host_->old_visual_properties_->new_size);
@@ -1042,7 +1038,7 @@ TEST_F(RenderWidgetHostTest, SynchronizeVisualProperties) {
   // Send the visual properties ACK for the latest size.
   process_->sink().ClearMessages();
   metadata.viewport_size_in_pixels = third_size.size();
-  metadata.local_surface_id = base::nullopt;
+  metadata.local_surface_id_allocation = base::nullopt;
   host_->DidUpdateVisualProperties(metadata);
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(third_size.size(), host_->old_visual_properties_->new_size);
@@ -1218,7 +1214,7 @@ TEST_F(RenderWidgetHostTest, HideShowMessages) {
   process_->sink().ClearMessages();
   cc::RenderFrameMetadata metadata;
   metadata.viewport_size_in_pixels = gfx::Size(100, 100);
-  metadata.local_surface_id = base::nullopt;
+  metadata.local_surface_id_allocation = base::nullopt;
   host_->DidUpdateVisualProperties(metadata);
 
   // Now unhide.
@@ -1791,9 +1787,10 @@ TEST_F(RenderWidgetHostTest, MouseEventCallbackCanHandleEvent) {
 TEST_F(RenderWidgetHostTest, InputRouterReceivesHasTouchEventHandlers) {
   host_->SetupForInputRouterTest();
 
-  host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, true));
+  ASSERT_FALSE(host_->mock_input_router()->has_handlers_);
 
-  EXPECT_TRUE(host_->mock_input_router()->message_received_);
+  host_->OnMessageReceived(WidgetHostMsg_HasTouchEventHandlers(0, true));
+  EXPECT_TRUE(host_->mock_input_router()->has_handlers_);
 }
 
 void CheckLatencyInfoComponentInMessage(
@@ -1831,7 +1828,7 @@ void CheckLatencyInfoComponentInGestureScrollUpdate(
 // ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT will always present in the
 // event's LatencyInfo.
 TEST_F(RenderWidgetHostTest, InputEventRWHLatencyComponent) {
-  host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, true));
+  host_->OnMessageReceived(WidgetHostMsg_HasTouchEventHandlers(0, true));
 
   // Tests RWHI::ForwardWheelEvent().
   SimulateWheelEvent(-5, 0, 0, true, WebMouseWheelEvent::kPhaseBegan);
@@ -1964,7 +1961,8 @@ TEST_F(RenderWidgetHostTest, VisualPropertiesDeviceScale) {
 }
 
 // Make sure no dragging occurs after renderer exited. See crbug.com/704832.
-TEST_F(RenderWidgetHostTest, RendererExitedNoDrag) {
+// DISABLED for crbug.com/908012
+TEST_F(RenderWidgetHostTest, DISABLED_RendererExitedNoDrag) {
   host_->SetView(new TestView(host_.get()));
 
   EXPECT_EQ(delegate_->mock_delegate_view()->start_dragging_count(), 0);
@@ -2030,7 +2028,7 @@ TEST_F(RenderWidgetHostTest, HideUnthrottlesResize) {
 // Tests that event dispatch after the delegate has been detached doesn't cause
 // a crash. See crbug.com/563237.
 TEST_F(RenderWidgetHostTest, EventDispatchPostDetach) {
-  host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, true));
+  host_->OnMessageReceived(WidgetHostMsg_HasTouchEventHandlers(0, true));
   process_->sink().ClearMessages();
 
   host_->DetachDelegate();
@@ -2053,7 +2051,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_MessageThenFrame) {
   const viz::LocalSurfaceId local_surface_id(1,
                                              base::UnguessableToken::Create());
   std::vector<IPC::Message> messages;
-  messages.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(5));
+  messages.push_back(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint(5));
 
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
@@ -2081,7 +2079,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_FrameThenMessage) {
   const viz::LocalSurfaceId local_surface_id(1,
                                              base::UnguessableToken::Create());
   std::vector<IPC::Message> messages;
-  messages.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(5));
+  messages.push_back(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint(5));
 
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
@@ -2111,8 +2109,8 @@ TEST_F(RenderWidgetHostTest, FrameToken_MultipleMessagesThenTokens) {
                                              base::UnguessableToken::Create());
   std::vector<IPC::Message> messages1;
   std::vector<IPC::Message> messages2;
-  messages1.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(5));
-  messages2.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(6));
+  messages1.push_back(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint(5));
+  messages2.push_back(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint(6));
 
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
@@ -2157,8 +2155,8 @@ TEST_F(RenderWidgetHostTest, FrameToken_MultipleTokensThenMessages) {
                                              base::UnguessableToken::Create());
   std::vector<IPC::Message> messages1;
   std::vector<IPC::Message> messages2;
-  messages1.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(5));
-  messages2.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(6));
+  messages1.push_back(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint(5));
+  messages2.push_back(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint(6));
 
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
@@ -2203,8 +2201,8 @@ TEST_F(RenderWidgetHostTest, FrameToken_DroppedFrame) {
                                              base::UnguessableToken::Create());
   std::vector<IPC::Message> messages1;
   std::vector<IPC::Message> messages2;
-  messages1.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(5));
-  messages2.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(6));
+  messages1.push_back(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint(5));
+  messages2.push_back(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint(6));
 
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
@@ -2240,8 +2238,8 @@ TEST_F(RenderWidgetHostTest, FrameToken_RendererCrash) {
                                              base::UnguessableToken::Create());
   std::vector<IPC::Message> messages1;
   std::vector<IPC::Message> messages3;
-  messages1.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(5));
-  messages3.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(6));
+  messages1.push_back(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint(5));
+  messages3.push_back(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint(6));
 
   // Mocking |renderer_compositor_frame_sink_| to prevent crashes in
   // renderer_compositor_frame_sink_->DidReceiveCompositorFrameAck(resources).

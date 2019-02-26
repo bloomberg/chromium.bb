@@ -1,11 +1,11 @@
 Name: icu
-URL: http://site.icu-project.org/
-Version: 62.1
+URL: https://github.com/unicode-org/icu
+Version: 63.1
 License: MIT
 Security Critical: yes
 
 Description:
-This directory contains the source code of ICU 62.1 for C/C++.
+This directory contains the source code of ICU 63.1 for C/C++.
 
 A. How to update ICU
 
@@ -151,10 +151,9 @@ them when updating ICU.
     https://unicode-org.atlassian.net/browse/ICU-9451
   - rules/word_ja.txt (used only on Android)
     Added for Japanese-specific word-breaking without the C+J dictionary.
-  - rules/{fi,root,zh,zh_Hant}.txt
-    a. Drop *_loose.txt for fi/root and use the corresponding line_normal.txt
-    b. Use line_normal by default.
-    c. Drop local patches we used to have for the following issues. They'll
+  - rules/{root,zh,zh_Hant}.txt
+    a. Use line_normal by default.
+    b. Drop local patches we used to have for the following issues. They'll
        be dealt with in the upstream (Unicode/CLDR).
        http://unicode.org/cldr/trac/ticket/6557
        http://unicode.org/cldr/trac/ticket/4200 (http://crbug.com/39779)
@@ -207,7 +206,7 @@ D. Local Modifications
      windowsZones.txt
      zoneinfo64.txt
 
-  As of Oct 27, 2018, the latest version is 2018g and the above files
+  As of Dec 31, 2018, the latest version is 2018i and the above files
   are available at the ICU github repos.
 
 4. Build-related changes
@@ -231,81 +230,44 @@ D. Local Modifications
   - patches/isvalidenum.patch
     upstream bug: https://unicode-org.atlassian.net/browse/ICU-13509
 
-7. Update IANA language tag/subtag mapping and add missing canonicalization for
-    deprecated regions
-
-  - patches/locid_map.patch
-  - upstream bugs:
-    https://unicode-org.atlassian.net/browse/ICU-13726
-    https://unicode-org.atlassian.net/browse/ICU-13723
-    https://unicode-org.atlassian.net/browse/ICU-13721
-    https://unicode-org.atlassian.net/browse/ICU-13720
-    https://unicode-org.atlassian.net/browse/ICU-13719
-
-8. Double conversion library build failure
+6. Double conversion library build failure
 
   - patches/double_conversion.patch
   - upstream bugs:
     https://unicode-org.atlassian.net/browse/ICU-13750
     https://github.com/google/double-conversion/issues/66
 
-9. Cherry-pick Greek lowercase fix from the upstream
+7. Fix std::atomic related compilation issue
 
-  - patches/greek_lowercase.patch
-  - upstream bug (fixed in 62.2-to-be)
-    https://unicode-org.atlassian.net/browse/ICU-13851
-
-10. Max significant digit is always 6
-
-  - patches/nf_maxsig.patch
-  - upstream bug:
-    https://unicode-org.atlassian.net/browse/ICU-13852
-
-11. Align memory buffer used in Decimal Format
-
-  - patches/decimalformat_align.patch
-  - upstream bug:
-    https://unicode-org.atlassian.net/browse/ICU-20039
-
-12. Cherry-pick an upstream CL for quarter support in RelativeDate format
-
-  - patches/reldate_quarter.patch
-  - upstream bug:
-    https://unicode-org.atlassian.net/browse/ICU-20022
-  - fix: https://github.com/unicode-org/icu/pull/77
-
-13. Cherry-pick an upstream CL for BCP47 language tag validation
-
-  - patches/langtag_bcp47.patch
-  - upstream bug:
-    https://unicode-org.atlassian.net/browse/ICU-20098
-  - fix: https://github.com/unicode-org/icu/pull/102
-
-14. Another cherry-pick of upstream CL for duplicate U-extension
-    handling.
-
-  - patches/langtag_uext.patch
-  - upstream bug:
-    https://unicode-org.atlassian.net/browse/ICU-20140
-  - fix: https://github.com/unicode-org/icu/pull/136
-
-15. Cherry pick an upstream patch for Windows timezone detection
-
-  - patches/wintz_detection.patch
+  - patches/atomic_win.patch
   - upstream bugs:
-    https://unicode-org.atlassian.net/browse/ICU-13842
-    https://unicode-org.atlassian.net/browse/ICU-13827
-  - fixes:
-      https://github.com/unicode-org/icu/pull/55
-      https://github.com/unicode-org/icu/pull/129
+    https://unicode-org.atlassian.net/browse/ICU-20222
+  - Fix: https://github.com/unicode-org/icu/pull/228
 
-16. Align memory buffer used in UnicodeSet on ARM.
+8. Fix an integer overflow in the number parsing
 
-  - patches/arm_align.patch
+  - patches/numparse_overflow.patch
   - upstream bug:
-    https://unicode-org.atlassian.net/browse/ICU-20001
+    https://unicode-org.atlassian.net/browse/ICU-20246
+  - Fix:
+    https://github.com/unicode-org/icu/pull/253
 
-17. Windows 7 timezone detection fix
+9. ISO-2022-JP encoding (fromUnicode) change per WHATWG encoding spec.
+
+  - patches/iso2022jp.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-20251
+
+10. UnicodeSet creation performance enhancement
+
+  - patches/uniset_perf.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-20250
+  - Fix:
+    https://github.com/unicode-org/icu/pull/265
+    https://github.com/unicode-org/icu/pull/278
+
+11. Windows 7 timezone detection fix
 
   - patches/win7_tz.patch
   - upstream bug:

@@ -11,11 +11,11 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.MarginLayoutParamsCompat;
 import android.support.v7.content.res.AppCompatResources;
-import android.support.v7.widget.AppCompatImageButton;
 import android.text.TextUtils;
 import android.text.format.Formatter;
 import android.util.AttributeSet;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -84,7 +84,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
     private TextView mDownloadStatusView;
     private TextView mDownloadPercentageView;
     private MaterialProgressBar mProgressView;
-    private AppCompatImageButton mPauseResumeButton;
+    private ImageButton mPauseResumeButton;
     private View mCancelButton;
 
     /**
@@ -138,7 +138,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
         mDownloadStatusView = (TextView) findViewById(R.id.status_view);
         mDownloadPercentageView = (TextView) findViewById(R.id.percentage_view);
 
-        mPauseResumeButton = (AppCompatImageButton) findViewById(R.id.pause_button);
+        mPauseResumeButton = findViewById(R.id.pause_button);
         mCancelButton = findViewById(R.id.cancel_button);
 
         mMoreButton.setDelegate(this);

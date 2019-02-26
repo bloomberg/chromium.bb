@@ -21,7 +21,6 @@
 #include "build/build_config.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_shader.h"
-#include "cc/paint/paint_text_blob.h"
 #include "third_party/icu/source/common/unicode/rbbi.h"
 #include "third_party/icu/source/common/unicode/utf16.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
@@ -232,7 +231,7 @@ void SkiaTextRenderer::DrawPosText(const SkPoint* pos,
                                    const uint16_t* glyphs,
                                    size_t glyph_count) {
   SkTextBlobBuilder builder;
-  const auto& run_buffer = builder.allocRunPos(flags_.ToSkPaint(), glyph_count);
+  const auto& run_buffer = builder.allocRunPos(flags_.ToSkFont(), glyph_count);
 
   static_assert(sizeof(*glyphs) == sizeof(*run_buffer.glyphs), "");
   memcpy(run_buffer.glyphs, glyphs, glyph_count * sizeof(*glyphs));
@@ -240,10 +239,7 @@ void SkiaTextRenderer::DrawPosText(const SkPoint* pos,
   static_assert(sizeof(*pos) == 2 * sizeof(*run_buffer.pos), "");
   memcpy(run_buffer.pos, pos, glyph_count * sizeof(*pos));
 
-  canvas_skia_->drawTextBlob(
-      base::MakeRefCounted<cc::PaintTextBlob>(builder.make(),
-                                              std::vector<sk_sp<SkTypeface>>{}),
-      0, 0, flags_);
+  canvas_skia_->drawTextBlob(builder.make(), 0, 0, flags_);
 }
 
 void SkiaTextRenderer::DrawUnderline(int x,

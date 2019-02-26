@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/common/extensions/api/gcm.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -32,39 +33,28 @@
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/aura/test/test_screen.h"
-#include "ui/display/screen.h"
 
 namespace chromeos {
 
-class ExtensionEventObserverTest : public ::testing::Test {
+class ExtensionEventObserverTest : public ChromeRenderViewHostTestHarness {
  public:
   ExtensionEventObserverTest()
       : power_manager_client_(new FakePowerManagerClient()),
-        test_screen_(aura::TestScreen::Create(gfx::Size())),
         fake_user_manager_(new FakeChromeUserManager()),
-        scoped_user_manager_enabler_(base::WrapUnique(fake_user_manager_)) {
+        scoped_user_manager_enabler_(base::WrapUnique(fake_user_manager_)) {}
+
+  ~ExtensionEventObserverTest() override = default;
+
+  // ChromeRenerViewHostTestHarness overrides:
+  void SetUp() override {
+    ChromeRenderViewHostTestHarness::SetUp();
+
     DBusThreadManager::GetSetterForTesting()->SetPowerManagerClient(
         base::WrapUnique(power_manager_client_));
-
-    profile_manager_.reset(
-        new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
-
-    extension_event_observer_.reset(new ExtensionEventObserver());
+    profile_manager_ = std::make_unique<TestingProfileManager>(
+        TestingBrowserProcess::GetGlobal());
+    extension_event_observer_ = std::make_unique<ExtensionEventObserver>();
     test_api_ = extension_event_observer_->CreateTestApi();
-  }
-
-  ~ExtensionEventObserverTest() override {
-    extension_event_observer_.reset();
-    profile_manager_.reset();
-    DBusThreadManager::Shutdown();
-  }
-
-  // ::testing::Test overrides.
-  void SetUp() override {
-    ::testing::Test::SetUp();
-
-    display::Screen::SetScreenInstance(test_screen_.get());
 
     // Must be called from ::testing::Test::SetUp.
     ASSERT_TRUE(profile_manager_->SetUp());
@@ -79,10 +69,12 @@ class ExtensionEventObserverTest : public ::testing::Test {
     profile_manager_->SetLoggedIn(true);
   }
   void TearDown() override {
+    extension_event_observer_.reset();
     profile_ = NULL;
     profile_manager_->DeleteAllTestingProfiles();
-    display::Screen::SetScreenInstance(nullptr);
-    ::testing::Test::TearDown();
+    profile_manager_.reset();
+    DBusThreadManager::Shutdown();
+    ChromeRenderViewHostTestHarness::TearDown();
   }
 
  protected:
@@ -137,13 +129,6 @@ class ExtensionEventObserverTest : public ::testing::Test {
   std::unique_ptr<TestingProfileManager> profile_manager_;
 
  private:
-  std::unique_ptr<aura::TestScreen> test_screen_;
-  content::TestBrowserThreadBundle browser_thread_bundle_;
-
-  // Needed to ensure we don't end up creating actual RenderViewHosts
-  // and RenderProcessHosts.
-  content::RenderViewHostTestEnabler render_view_host_test_enabler_;
-
   // Chrome OS needs the CrosSettings test helper.
   ScopedCrosSettingsTestHelper cros_settings_test_helper_;
 

@@ -135,18 +135,18 @@ class BASE_EXPORT TaskTracker {
   // metadata on |task| if desired.
   bool WillPostTask(Task* task, TaskShutdownBehavior shutdown_behavior);
 
-  // Informs this TaskTracker that |sequence| is about to be scheduled. If this
-  // returns |sequence|, it is expected that RunAndPopNextTask() will soon be
-  // called with |sequence| as argument. Otherwise, RunAndPopNextTask() must not
-  // be called with |sequence| as argument until |observer| is notified that
-  // |sequence| can be scheduled (the caller doesn't need to keep a pointer to
-  // |sequence|; it will be included in the notification to |observer|).
-  // WillPostTask() must have allowed the task in front of |sequence| to be
-  // posted before this is called. |observer| is only required if the priority
-  // of |sequence| is TaskPriority::BEST_EFFORT
-  scoped_refptr<Sequence> WillScheduleSequence(
-      scoped_refptr<Sequence> sequence,
-      CanScheduleSequenceObserver* observer);
+  // Informs this TaskTracker that the Sequence locked by |sequence_transaction|
+  // is about to be scheduled. If this returns true, it is expected that
+  // RunAndPopNextTask() will soon be called with the Sequence as argument.
+  // Otherwise, RunAndPopNextTask() must not be called with the Sequence as
+  // argument until |observer| is notified that the Sequence can be scheduled
+  // (the caller doesn't need to keep a pointer to the Sequence; it will be
+  // included in the notification to |observer|). WillPostTask() must have
+  // allowed the task in front of the Sequence to be posted before this is
+  // called. |observer| is only required if the priority of the Sequence is
+  // TaskPriority::BEST_EFFORT.
+  bool WillScheduleSequence(const Sequence::Transaction& sequence_transaction,
+                            CanScheduleSequenceObserver* observer);
 
   // Runs the next task in |sequence| unless the current shutdown state prevents
   // that. Then, pops the task from |sequence| (even if it didn't run). Returns
@@ -215,17 +215,14 @@ class BASE_EXPORT TaskTracker {
  protected:
   // Runs and deletes |task| if |can_run_task| is true. Otherwise, just deletes
   // |task|. |task| is always deleted in the environment where it runs or would
-  // have run. |sequence| is the sequence from which |task| was extracted. An
-  // override is expected to call its parent's implementation but is free to
-  // perform extra work before and after doing so.
-  virtual void RunOrSkipTask(Task task, Sequence* sequence, bool can_run_task);
-
-#if DCHECK_IS_ON()
-  // Returns true if this context should be exempt from blocking shutdown
-  // DCHECKs.
-  // TODO(robliao): Remove when http://crbug.com/698140 is fixed.
-  virtual bool IsPostingBlockShutdownTaskAfterShutdownAllowed();
-#endif
+  // have run. |sequence| is the sequence from which |task| was extracted.
+  // |traits| are the traits of |sequence|. An override is expected to call its
+  // parent's implementation but is free to perform extra work before and after
+  // doing so.
+  virtual void RunOrSkipTask(Task task,
+                             Sequence* sequence,
+                             const TaskTraits& traits,
+                             bool can_run_task);
 
   // Returns true if there are undelayed tasks that haven't completed their
   // execution (still queued or in progress). If it returns false: the side-
@@ -402,9 +399,6 @@ class BASE_EXPORT TaskTracker {
   // Indicates whether to prevent tasks running.
   bool execution_fence_enabled_ = false;
 #endif
-
-  // Number of BLOCK_SHUTDOWN tasks posted during shutdown.
-  HistogramBase::Sample num_block_shutdown_tasks_posted_during_shutdown_ = 0;
 
   // Enforces that |max_scheduled_sequences| and
   // |max_scheduled_sequences_before_fence| in PreemptedState are only written

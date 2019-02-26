@@ -121,7 +121,7 @@ void IOSTranslateDriver::DidFinishNavigation(
   const bool reload = ui::PageTransitionCoreTypeIs(
       navigation_context->GetPageTransition(), ui::PAGE_TRANSITION_RELOAD);
   translate_manager_->GetLanguageState().DidNavigate(
-      navigation_context->IsSameDocument(), true, reload);
+      navigation_context->IsSameDocument(), true, reload, std::string());
 }
 
 void IOSTranslateDriver::WebStateDestroyed(web::WebState* web_state) {

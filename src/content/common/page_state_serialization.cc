@@ -14,7 +14,6 @@
 #include "build/build_config.h"
 #include "content/common/page_state.mojom.h"
 #include "content/common/unique_name_helper.h"
-#include "content/public/common/referrer_struct_traits.h"
 #include "ipc/ipc_message_utils.h"
 #include "mojo/public/cpp/base/string16_mojom_traits.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
@@ -552,7 +551,7 @@ void ReadFrameState(
 
   if (obj->version >= 18) {
     state->referrer_policy =
-        static_cast<blink::WebReferrerPolicy>(ReadInteger(obj));
+        static_cast<network::mojom::ReferrerPolicy>(ReadInteger(obj));
   }
 
   if (obj->version >= 20 && state->did_save_scroll_or_scale_state) {
@@ -956,7 +955,7 @@ ExplodedFrameState::ExplodedFrameState()
       item_sequence_number(0),
       document_sequence_number(0),
       page_scale_factor(0.0),
-      referrer_policy(blink::kWebReferrerPolicyDefault),
+      referrer_policy(network::mojom::ReferrerPolicy::kDefault),
       scroll_anchor_simhash(0) {}
 
 ExplodedFrameState::ExplodedFrameState(const ExplodedFrameState& other) {

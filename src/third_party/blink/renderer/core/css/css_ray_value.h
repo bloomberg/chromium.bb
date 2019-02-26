@@ -20,6 +20,10 @@ class CSSRayValue : public CSSValue {
                              const CSSIdentifierValue& size,
                              const CSSIdentifierValue* contain);
 
+  CSSRayValue(const CSSPrimitiveValue& angle,
+              const CSSIdentifierValue& size,
+              const CSSIdentifierValue* contain);
+
   const CSSPrimitiveValue& Angle() const { return *angle_; }
   const CSSIdentifierValue& Size() const { return *size_; }
   const CSSIdentifierValue* Contain() const { return contain_.Get(); }
@@ -31,10 +35,6 @@ class CSSRayValue : public CSSValue {
   void TraceAfterDispatch(blink::Visitor*);
 
  private:
-  CSSRayValue(const CSSPrimitiveValue& angle,
-              const CSSIdentifierValue& size,
-              const CSSIdentifierValue* contain);
-
   Member<const CSSPrimitiveValue> angle_;
   Member<const CSSIdentifierValue> size_;
   Member<const CSSIdentifierValue> contain_;

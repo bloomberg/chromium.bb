@@ -7,7 +7,7 @@ module media_session.mojom;
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/media_session/public/mojom/media_session.mojom";
 
-// Next MinVersion: 4
+// Next MinVersion: 5
 
 // These are the different types of audio focus that can be requested.
 [Extensible]
@@ -38,13 +38,18 @@ struct AudioFocusRequestState {
 };
 
 // The observer for audio focus events.
-// Next Method ID: 2
 interface AudioFocusObserver {
   // The given |session| gained audio focus with the specified |type|.
-  OnFocusGained@0(MediaSessionInfo session, AudioFocusType type);
+  OnFocusGained(MediaSessionInfo session, AudioFocusType type);
 
   // The given |session| lost audio focus.
-  OnFocusLost@1(MediaSessionInfo session);
+  OnFocusLost(MediaSessionInfo session);
+
+  // The currently active session changed. The active session is the top most
+  // session that is not temporary. This is the session that will be associated
+  // with the MediaController interface. If all the media sessions have ended
+  // then |session| will be null.
+  OnActiveSessionChanged(AudioFocusRequestState? session);
 };
 
 // Controls audio focus for an associated request.
@@ -67,16 +72,26 @@ interface AudioFocusRequestClient {
 };
 
 // Controls audio focus across the entire system.
-// Next Method ID: 4
+// Next Method ID: 5
 interface AudioFocusManager {
   // Requests audio focus with |type| for the |media_session| with
   // |session_info|. Media sessions should provide a |request| that will
   // provide an AudioFocusRequestClient that can be used to control this
   // request. The callback will resolve when audio focus has been granted.
   RequestAudioFocus@0(AudioFocusRequestClient& client,
-                    MediaSession media_session,
-                    MediaSessionInfo session_info,
-                    AudioFocusType type) => ();
+                      MediaSession media_session,
+                      MediaSessionInfo session_info,
+                      AudioFocusType type) => ();
+
+  // Requests audio focus as above but with a |group_id| that is used for
+  // grouping sessions together. This is when a group of media sessions
+  // will share audio focus.
+  [MinVersion=4] RequestGroupedAudioFocus@4(
+      AudioFocusRequestClient& client,
+      MediaSession media_session,
+      MediaSessionInfo session_info,
+      AudioFocusType type,
+      mojo_base.mojom.UnguessableToken group_id) => ();
 
   // Gets all the information about all |MediaSessions| that have requested
   // audio focus and their current requested type.

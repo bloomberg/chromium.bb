@@ -26,11 +26,21 @@ struct NET_EXPORT DnsConfigOverrides {
   DnsConfigOverrides& operator=(const DnsConfigOverrides& other);
 
   bool operator==(const DnsConfigOverrides& other) const;
+  bool operator!=(const DnsConfigOverrides& other) const;
+
+  // Creation method that initializes all values with the defaults from
+  // DnsConfig. Guarantees the result of OverridesEverything() will be |true|.
+  static DnsConfigOverrides CreateOverridingEverythingWithDefaults();
 
   // Creates a new DnsConfig where any field with an overriding value in |this|
   // is replaced with that overriding value. Any field without an overriding
   // value (|base::nullopt|) will be copied as-is from |config|.
   DnsConfig ApplyOverrides(const DnsConfig& config) const;
+
+  // Returns |true| if the overriding configuration is comprehensive and would
+  // override everything in a base DnsConfig. This is the case if all Optional
+  // fields have a value.
+  bool OverridesEverything() const;
 
   // Overriding values. See same-named fields in DnsConfig for explanations.
   base::Optional<std::vector<IPEndPoint>> nameservers;

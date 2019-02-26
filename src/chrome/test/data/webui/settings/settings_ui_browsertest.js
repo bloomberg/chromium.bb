@@ -58,20 +58,7 @@ TEST_F('SettingsUIBrowserTest', 'MAYBE_All', function() {
       const drawer = ui.$.drawer;
       assertFalse(!!drawer.open);
 
-      const whenDone = test_util.eventToPromise('cr-drawer-opened', drawer)
-                           .then(function() {
-                             const whenClosed = test_util.eventToPromise(
-                                 'open-changed', drawer);
-                             drawer.closeDrawer();
-                             return whenClosed;
-                           })
-                           .then(function(e) {
-                             // Drawer is closed, but menu is still stamped so
-                             // its contents remain visible as the drawer slides
-                             // out.
-                             assertFalse(e.detail.value);
-                             assertTrue(!!ui.$$('settings-menu'));
-                           });
+      const whenDone = test_util.eventToPromise('cr-drawer-opened', drawer);
       drawer.openDrawer();
       Polymer.dom.flush();
 
@@ -79,7 +66,18 @@ TEST_F('SettingsUIBrowserTest', 'MAYBE_All', function() {
       assertTrue(drawer.open);
       assertTrue(!!ui.$$('settings-menu'));
 
-      return whenDone;
+      return whenDone
+          .then(function() {
+            const whenClosed = test_util.eventToPromise('close', drawer);
+            drawer.cancel();
+            return whenClosed;
+          })
+          .then(() => {
+            // Drawer is closed, but menu is still stamped so
+            // its contents remain visible as the drawer slides
+            // out.
+            assertTrue(!!ui.$$('settings-menu'));
+          });
     });
 
     test('advanced UIs stay in sync', function() {

@@ -45,8 +45,8 @@ std::unique_ptr<const PermissionSet> CreatePermissions(
   if (include_clipboard)
     apis.insert(APIPermission::kClipboardRead);
   ManifestPermissionSet manifest;
-  manifest.insert(new MockManifestPermission("author"));
-  manifest.insert(new MockManifestPermission("background"));
+  manifest.insert(std::make_unique<MockManifestPermission>("author"));
+  manifest.insert(std::make_unique<MockManifestPermission>("background"));
   URLPatternSet explicit_hosts({
       URLPattern(URLPattern::SCHEME_ALL, "http://www.google.com/*"),
       URLPattern(URLPattern::SCHEME_ALL, "<all_urls>")});

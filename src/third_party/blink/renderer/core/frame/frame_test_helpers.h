@@ -41,9 +41,10 @@
 #include "content/renderer/gpu/layer_tree_view.h"
 #include "content/test/stub_layer_tree_view_delegate.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/scheduler/test/fake_renderer_scheduler.h"
+#include "third_party/blink/public/platform/scheduler/test/web_fake_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -86,7 +87,7 @@ class WebLocalFrameImpl;
 class WebRemoteFrameImpl;
 class WebSettings;
 
-namespace FrameTestHelpers {
+namespace frame_test_helpers {
 
 class TestWebFrameClient;
 class TestWebRemoteFrameClient;
@@ -174,7 +175,7 @@ class LayerTreeViewFactory {
  private:
   content::StubLayerTreeViewDelegate delegate_;
   cc::TestTaskGraphRunner test_task_graph_runner_;
-  blink::scheduler::FakeRendererScheduler fake_renderer_scheduler_;
+  blink::scheduler::WebFakeThreadScheduler fake_thread_scheduler_;
   std::unique_ptr<content::LayerTreeView> layer_tree_view_;
 };
 
@@ -205,6 +206,7 @@ class TestWebViewClient : public WebViewClient, public WebWidgetClient {
   bool CanHandleGestureEvent() override { return true; }
   bool CanUpdateLayout() override { return true; }
   WebWidgetClient* WidgetClient() override { return this; }
+  blink::WebScreenInfo GetScreenInfo() override { return {}; }
 
   bool AnimationScheduled() { return animation_scheduled_; }
   void ClearAnimationScheduled() { animation_scheduled_ = false; }
@@ -298,7 +300,7 @@ class TestWebFrameClient : public WebLocalFrameClient {
 
   static bool IsLoading() { return loads_in_progress_ > 0; }
 
-  WebLocalFrame* Frame() const { return frame_; }
+  WebNavigationControl* Frame() const { return frame_; }
   // Pass ownership of the TestWebFrameClient to |self_owned| here if the
   // TestWebFrameClient should delete itself on frame detach.
   void Bind(WebLocalFrame*,
@@ -314,7 +316,8 @@ class TestWebFrameClient : public WebLocalFrameClient {
                                   const WebString& fallback_name,
                                   WebSandboxFlags,
                                   const ParsedFeaturePolicy&,
-                                  const WebFrameOwnerProperties&) override;
+                                  const WebFrameOwnerProperties&,
+                                  FrameOwnerElementType) override;
   void DidStartLoading() override;
   void DidStopLoading() override;
   void DidCreateDocumentLoader(WebDocumentLoader*) override;
@@ -327,6 +330,7 @@ class TestWebFrameClient : public WebLocalFrameClient {
     // its own WebURLLoaderFactoryWithMock. (crbug.com/751425)
     return Platform::Current()->CreateDefaultURLLoaderFactory();
   }
+  void BeginNavigation(std::unique_ptr<WebNavigationInfo> info) override;
 
  private:
   static int loads_in_progress_;
@@ -340,7 +344,7 @@ class TestWebFrameClient : public WebLocalFrameClient {
 
   // This is null from when the client is created until it is initialized with
   // Bind().
-  WebLocalFrame* frame_ = nullptr;
+  WebNavigationControl* frame_ = nullptr;
 
   std::unique_ptr<WebWidgetClient> owned_widget_client_;
 };
@@ -376,7 +380,7 @@ class TestWebRemoteFrameClient : public WebRemoteFrameClient {
   WebRemoteFrame* frame_ = nullptr;
 };
 
-}  // namespace FrameTestHelpers
+}  // namespace frame_test_helpers
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_TEST_HELPERS_H_

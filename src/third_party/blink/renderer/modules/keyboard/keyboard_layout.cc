@@ -99,7 +99,7 @@ void KeyboardLayout::GotKeyboardLayoutMap(
   switch (result->status) {
     case mojom::blink::GetKeyboardLayoutMapStatus::kSuccess:
       script_promise_resolver_->Resolve(
-          new KeyboardLayoutMap(result->layout_map));
+          MakeGarbageCollected<KeyboardLayoutMap>(result->layout_map));
       break;
     case mojom::blink::GetKeyboardLayoutMapStatus::kFail:
       script_promise_resolver_->Reject(

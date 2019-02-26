@@ -104,7 +104,8 @@ public:
     /**
      * Implements GrResourceProvider::wrapBackendTexture
      */
-    sk_sp<GrTexture> wrapBackendTexture(const GrBackendTexture&, GrWrapOwnership);
+    sk_sp<GrTexture> wrapBackendTexture(const GrBackendTexture&, GrWrapOwnership,
+                                        bool purgeImmediately);
 
     /**
      * Implements GrResourceProvider::wrapRenderableBackendTexture
@@ -240,9 +241,9 @@ public:
                      bool canDiscardOutsideDstRect = false);
 
     // Returns a GrGpuRTCommandBuffer which GrOpLists send draw commands to instead of directly
-    // to the Gpu object.
+    // to the Gpu object. The 'bounds' rect is the content rect of the destination.
     virtual GrGpuRTCommandBuffer* getCommandBuffer(
-            GrRenderTarget*, GrSurfaceOrigin,
+            GrRenderTarget*, GrSurfaceOrigin, const SkRect& bounds,
             const GrGpuRTCommandBuffer::LoadAndStoreInfo&,
             const GrGpuRTCommandBuffer::StencilLoadAndStoreInfo&) = 0;
 
@@ -431,7 +432,8 @@ private:
     virtual sk_sp<GrTexture> onCreateTexture(const GrSurfaceDesc&, SkBudgeted,
                                              const GrMipLevel texels[], int mipLevelCount) = 0;
 
-    virtual sk_sp<GrTexture> onWrapBackendTexture(const GrBackendTexture&, GrWrapOwnership) = 0;
+    virtual sk_sp<GrTexture> onWrapBackendTexture(const GrBackendTexture&, GrWrapOwnership,
+                                                  bool purgeImmediately) = 0;
     virtual sk_sp<GrTexture> onWrapRenderableBackendTexture(const GrBackendTexture&,
                                                             int sampleCnt,
                                                             GrWrapOwnership) = 0;

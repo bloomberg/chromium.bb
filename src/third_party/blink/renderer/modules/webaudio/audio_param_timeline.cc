@@ -642,7 +642,7 @@ bool AudioParamTimeline::HasValues(size_t current_frame,
         // Need automation if the event starts somewhere before the
         // end of the current render quantum.
         return events_[0]->Time() <=
-               (current_frame + AudioUtilities::kRenderQuantumFrames) /
+               (current_frame + audio_utilities::kRenderQuantumFrames) /
                    sample_rate;
       default:
         // Otherwise, there's some kind of other event running, so we
@@ -675,7 +675,7 @@ void AudioParamTimeline::CancelScheduledValues(
   MutexLocker locker(events_lock_);
 
   // Remove all events starting at startTime.
-  for (unsigned i = 0; i < events_.size(); ++i) {
+  for (wtf_size_t i = 0; i < events_.size(); ++i) {
     if (events_[i]->Time() >= start_time) {
       RemoveCancelledEvents(i);
       break;
@@ -692,7 +692,7 @@ void AudioParamTimeline::CancelAndHoldAtTime(double cancel_time,
 
   MutexLocker locker(events_lock_);
 
-  unsigned i;
+  wtf_size_t i;
   // Find the first event at or just past cancelTime.
   for (i = 0; i < events_.size(); ++i) {
     if (events_[i]->Time() > cancel_time) {
@@ -702,7 +702,7 @@ void AudioParamTimeline::CancelAndHoldAtTime(double cancel_time,
 
   // The event that is being cancelled.  This is the event just past
   // cancelTime, if any.
-  unsigned cancelled_event_index = i;
+  wtf_size_t cancelled_event_index = i;
 
   // If the event just before cancelTime is a SetTarget or SetValueCurve
   // event, we need to handle that event specially instead of the event after.
@@ -821,7 +821,7 @@ float AudioParamTimeline::ValueForContextTime(
   double sample_rate = audio_destination.SampleRate();
   size_t start_frame = audio_destination.CurrentSampleFrame();
   // One parameter change per render quantum.
-  double control_rate = sample_rate / AudioUtilities::kRenderQuantumFrames;
+  double control_rate = sample_rate / audio_utilities::kRenderQuantumFrames;
   value =
       ValuesForFrameRange(start_frame, start_frame + 1, default_value, &value,
                           1, sample_rate, control_rate, min_value, max_value);
@@ -854,8 +854,8 @@ float AudioParamTimeline::ValuesForFrameRange(size_t start_frame,
                               number_of_values, sample_rate, control_rate);
 
   // Clamp the values now to the nominal range
-  VectorMath::Vclip(values, 1, &min_value, &max_value, values, 1,
-                    number_of_values);
+  vector_math::Vclip(values, 1, &min_value, &max_value, values, 1,
+                     number_of_values);
 
   return last_value;
 }
@@ -1212,7 +1212,7 @@ bool AudioParamTimeline::HandleAllEventsInThePast(double current_time,
   // the curve, so we don't need to worry that SetValueCurve time is a
   // start time, not an end time.
   if (last_event_time +
-          1.5 * AudioUtilities::kRenderQuantumFrames / sample_rate <
+          1.5 * audio_utilities::kRenderQuantumFrames / sample_rate <
       current_time) {
     // If the last event is SetTarget, make sure we've converged and, that
     // we're at least 5 time constants past the start of the event.  If not, we
@@ -1291,7 +1291,7 @@ void AudioParamTimeline::ProcessSetTargetFollowedByRamp(
       // SetTarget has already started.  Update |value| one frame because it's
       // the value from the previous frame.
       float discrete_time_constant =
-          static_cast<float>(AudioUtilities::DiscreteTimeConstantForSampleRate(
+          static_cast<float>(audio_utilities::DiscreteTimeConstantForSampleRate(
               event->TimeConstant(), control_rate));
       value += (event->Value() - value) * discrete_time_constant;
     }
@@ -1560,7 +1560,7 @@ std::tuple<size_t, float, unsigned> AudioParamTimeline::ProcessSetTarget(
   float target = value1;
   float time_constant = event->TimeConstant();
   float discrete_time_constant =
-      static_cast<float>(AudioUtilities::DiscreteTimeConstantForSampleRate(
+      static_cast<float>(audio_utilities::DiscreteTimeConstantForSampleRate(
           time_constant, control_rate));
 
   // Set the starting value correctly.  This is only needed when the
@@ -1864,8 +1864,8 @@ std::tuple<size_t, float, unsigned> AudioParamTimeline::ProcessCancelValues(
         float target = events_[event_index - 1]->Value();
         float time_constant = events_[event_index - 1]->TimeConstant();
         float discrete_time_constant = static_cast<float>(
-            AudioUtilities::DiscreteTimeConstantForSampleRate(time_constant,
-                                                              control_rate));
+            audio_utilities::DiscreteTimeConstantForSampleRate(time_constant,
+                                                               control_rate));
         value += (target - value) * discrete_time_constant;
       }
     }
@@ -1880,11 +1880,11 @@ std::tuple<size_t, float, unsigned> AudioParamTimeline::ProcessCancelValues(
   return std::make_tuple(current_frame, value, write_index);
 }
 
-unsigned AudioParamTimeline::FillWithDefault(float* values,
+uint32_t AudioParamTimeline::FillWithDefault(float* values,
                                              float default_value,
-                                             size_t end_frame,
-                                             unsigned write_index) {
-  size_t index = write_index;
+                                             uint32_t end_frame,
+                                             uint32_t write_index) {
+  uint32_t index = write_index;
 
   for (; index < end_frame; ++index)
     values[index] = default_value;
@@ -1892,11 +1892,12 @@ unsigned AudioParamTimeline::FillWithDefault(float* values,
   return index;
 }
 
-void AudioParamTimeline::RemoveCancelledEvents(size_t first_event_to_remove) {
+void AudioParamTimeline::RemoveCancelledEvents(
+    wtf_size_t first_event_to_remove) {
   // For all the events that are being removed, also remove that event
   // from |new_events_|.
   if (new_events_.size() > 0) {
-    for (size_t k = first_event_to_remove; k < events_.size(); ++k) {
+    for (wtf_size_t k = first_event_to_remove; k < events_.size(); ++k) {
       new_events_.erase(events_[k].get());
     }
   }

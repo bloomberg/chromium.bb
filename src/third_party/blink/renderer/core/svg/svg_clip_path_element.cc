@@ -26,11 +26,11 @@
 namespace blink {
 
 inline SVGClipPathElement::SVGClipPathElement(Document& document)
-    : SVGGraphicsElement(SVGNames::clipPathTag, document),
+    : SVGGraphicsElement(svg_names::kClipPathTag, document),
       clip_path_units_(
           SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::Create(
               this,
-              SVGNames::clipPathUnitsAttr,
+              svg_names::kClipPathUnitsAttr,
               SVGUnitTypes::kSvgUnitTypeUserspaceonuse)) {
   AddToPropertyMap(clip_path_units_);
 }
@@ -43,7 +43,7 @@ void SVGClipPathElement::Trace(blink::Visitor* visitor) {
 DEFINE_NODE_FACTORY(SVGClipPathElement)
 
 void SVGClipPathElement::SvgAttributeChanged(const QualifiedName& attr_name) {
-  if (attr_name == SVGNames::clipPathUnitsAttr) {
+  if (attr_name == svg_names::kClipPathUnitsAttr) {
     SVGElement::InvalidationGuard invalidation_guard(this);
 
     LayoutSVGResourceContainer* layout_object =
@@ -62,9 +62,10 @@ void SVGClipPathElement::ChildrenChanged(const ChildrenChange& change) {
   if (change.by_parser)
     return;
 
-  if (LayoutObject* object = GetLayoutObject())
+  if (LayoutObject* object = GetLayoutObject()) {
     object->SetNeedsLayoutAndFullPaintInvalidation(
-        LayoutInvalidationReason::kChildChanged);
+        layout_invalidation_reason::kChildChanged);
+  }
 }
 
 LayoutObject* SVGClipPathElement::CreateLayoutObject(const ComputedStyle&) {

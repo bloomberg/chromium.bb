@@ -9,7 +9,7 @@
 
 namespace blink {
 
-class SimWebViewClient final : public FrameTestHelpers::TestWebViewClient {
+class SimWebViewClient final : public frame_test_helpers::TestWebViewClient {
  public:
   explicit SimWebViewClient(content::LayerTreeViewDelegate* delegate);
 
@@ -30,7 +30,8 @@ class SimWebViewClient final : public FrameTestHelpers::TestWebViewClient {
                       const WebString& name,
                       WebNavigationPolicy,
                       bool,
-                      WebSandboxFlags) override;
+                      WebSandboxFlags,
+                      const SessionStorageNamespaceId&) override;
 
  private:
   // WebWidgetClient overrides.
@@ -40,7 +41,7 @@ class SimWebViewClient final : public FrameTestHelpers::TestWebViewClient {
   int finished_parsing_layout_count_ = 0;
   int finished_loading_layout_count_ = 0;
 
-  FrameTestHelpers::WebViewHelper web_view_helper_;
+  frame_test_helpers::WebViewHelper web_view_helper_;
 };
 
 }  // namespace blink

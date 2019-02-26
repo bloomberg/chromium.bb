@@ -9,8 +9,10 @@
 #include "content/child/image_decoder.h"
 #include "content/public/renderer/associated_resource_fetcher.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/web/web_associated_url_loader_options.h"
+#include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size.h"
@@ -38,16 +40,22 @@ MultiResolutionImageResourceFetcher::MultiResolutionImageResourceFetcher(
   WebAssociatedURLLoaderOptions options;
   fetcher_->SetLoaderOptions(options);
 
-  // To prevent cache tainting, the favicon requests have to by-pass the service
-  // workers. This should ideally not happen or at least not all the time.
-  // See https://crbug.com/448427
-  if (request_context == blink::mojom::RequestContextType::FAVICON)
-    fetcher_->SetSkipServiceWorker(true);
+  if (request_context == blink::mojom::RequestContextType::FAVICON) {
+    // To prevent cache tainting, the cross-origin favicon requests have to
+    // by-pass the service workers. This should ideally not happen. But Chrome’s
+    // ThumbnailDatabase is using the icon URL as a key of the "favicons" table.
+    // So if we don't set the skip flag here, malicious service workers can
+    // override the favicon image of any origins.
+    if (!frame->GetDocument().GetSecurityOrigin().CanAccess(
+            blink::WebSecurityOrigin::Create(image_url_))) {
+      fetcher_->SetSkipServiceWorker(true);
+    }
+  }
 
   fetcher_->SetCacheMode(cache_mode);
 
   fetcher_->Start(
-      frame, request_context, network::mojom::FetchRequestMode::kNoCORS,
+      frame, request_context, network::mojom::FetchRequestMode::kNoCors,
       network::mojom::FetchCredentialsMode::kInclude,
       network::mojom::RequestContextFrameType::kNone,
       base::Bind(&MultiResolutionImageResourceFetcher::OnURLFetchComplete,

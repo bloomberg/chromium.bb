@@ -40,6 +40,7 @@ struct COMPONENT_EXPORT(MOJO_BASE_SHARED_TRAITS)
   static const std::vector<uint8_t>& bytes(const mojo_base::BigBuffer& buffer);
   static mojo_base::internal::BigBufferSharedMemoryRegion& shared_memory(
       mojo_base::BigBuffer& buffer);
+  static bool invalid_buffer(mojo_base::BigBuffer& buffer);
 
   static bool Read(mojo_base::mojom::BigBufferDataView data,
                    mojo_base::BigBuffer* out);
@@ -54,6 +55,7 @@ struct COMPONENT_EXPORT(MOJO_BASE_SHARED_TRAITS)
   static base::span<const uint8_t> bytes(const mojo_base::BigBufferView& view);
   static mojo_base::internal::BigBufferSharedMemoryRegion& shared_memory(
       mojo_base::BigBufferView& view);
+  static bool invalid_buffer(mojo_base::BigBufferView& buffer);
 
   static bool Read(mojo_base::mojom::BigBufferDataView data,
                    mojo_base::BigBufferView* out);

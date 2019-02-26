@@ -21,7 +21,6 @@ class WebContents;
 }  // namespace content
 
 namespace tab_ranker {
-struct MRUFeatures;
 struct TabFeatures;
 }  // namespace tab_ranker
 
@@ -54,27 +53,31 @@ class TabMetricsLogger {
     PageMetrics page_metrics = {};
   };
 
+  // A struct that contains metrics to be logged in ForegroundedOrClosed event.
+  struct ForegroundedOrClosedMetrics {
+    bool is_foregrounded = false;
+    bool is_discarded = false;
+    int64_t time_from_backgrounded = 0;
+    int mru_index = 0;
+    int total_tab_count = 0;
+    int64_t label_id = 0;
+  };
+
   TabMetricsLogger();
   ~TabMetricsLogger();
 
-  // Logs metrics for the tab with the given main frame WebContents. Does
-  // nothing if |ukm_source_id| is zero.
-  void LogBackgroundTab(ukm::SourceId ukm_source_id,
-                        const TabMetrics& tab_metrics);
+  // Logs metrics for the tab with the given |tab_features|. Does nothing if
+  // |ukm_source_id| is zero.
+  void LogTabMetrics(ukm::SourceId ukm_source_id,
+                     const tab_ranker::TabFeatures& tab_features,
+                     content::WebContents* web_contents,
+                     int64_t label_id);
 
   // Logs TabManager.Background.ForegroundedOrClosed UKM for a tab that was
-  // shown after being inactive.
-  void LogBackgroundTabShown(ukm::SourceId ukm_source_id,
-                             base::TimeDelta inactive_duration,
-                             const tab_ranker::MRUFeatures& mru_metrics,
-                             bool is_discarded);
-
-  // Logs TabManager.Background.ForegroundedOrClosed UKM for a tab that was
-  // closed after being inactive.
-  void LogBackgroundTabClosed(ukm::SourceId ukm_source_id,
-                              base::TimeDelta inactive_duration,
-                              const tab_ranker::MRUFeatures& mru_metrics,
-                              bool is_discarded);
+  // shown or closed after being inactive.
+  void LogForegroundedOrClosedMetrics(
+      ukm::SourceId ukm_source_id,
+      const ForegroundedOrClosedMetrics& metrics);
 
   // Logs TabManager.TabLifetime UKM for a closed tab.
   void LogTabLifetime(ukm::SourceId ukm_source_id,
@@ -86,7 +89,7 @@ class TabMetricsLogger {
 
   // Returns the site engagement score for the WebContents, rounded down to 10s
   // to limit granularity. Returns -1 if site engagement service is disabled.
-  static int GetSiteEngagementScore(const content::WebContents* web_contents);
+  static int GetSiteEngagementScore(content::WebContents* web_contents);
 
   // Creates TabFeatures for logging or scoring tabs.
   // A common function for populating these features ensures that the same
@@ -97,10 +100,12 @@ class TabMetricsLogger {
       const TabMetrics& tab_metrics,
       base::TimeDelta inactive_duration);
 
+  void set_query_id(int64_t query_id) { query_id_ = query_id; }
+
  private:
-  // A counter to be incremented and logged with each UKM entry, used to
-  // indicate the order that events within the same report were logged.
-  int sequence_id_ = 0;
+  // query_id should be set whenever a new tabRanker query happens, so all logs
+  // that happened within the same query will have same query_id_.
+  int64_t query_id_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TabMetricsLogger);
 };

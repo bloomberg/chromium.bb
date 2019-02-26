@@ -15,7 +15,7 @@ template <>
 struct StructTraits<gfx::mojom::AcceleratedWidgetDataView,
                     gfx::AcceleratedWidget> {
   static uint64_t widget(gfx::AcceleratedWidget widget) {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_ANDROID) || defined(OS_IOS)
     return reinterpret_cast<uint64_t>(widget);
 #elif defined(USE_OZONE) || defined(USE_X11) || defined(OS_MACOSX)
     return static_cast<uint64_t>(widget);
@@ -27,7 +27,7 @@ struct StructTraits<gfx::mojom::AcceleratedWidgetDataView,
 
   static bool Read(gfx::mojom::AcceleratedWidgetDataView data,
                    gfx::AcceleratedWidget* out) {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_ANDROID) || defined(OS_IOS)
     *out = reinterpret_cast<gfx::AcceleratedWidget>(data.widget());
     return true;
 #elif defined(USE_OZONE) || defined(USE_X11) || defined(OS_MACOSX)

@@ -108,7 +108,8 @@ base::WeakPtr<AppCacheURLLoaderJob> AppCacheURLLoaderJob::GetDerivedWeakPtr() {
 void AppCacheURLLoaderJob::FollowRedirect(
     const base::Optional<std::vector<std::string>>&
         to_be_removed_request_headers,
-    const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
+    const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
+    const base::Optional<GURL>& new_url) {
   NOTREACHED() << "appcache never produces redirects";
 }
 
@@ -205,8 +206,8 @@ void AppCacheURLLoaderJob::OnResponseInfoLoaded(
     // Wait for the data pipe to be ready to accept data.
     writable_handle_watcher_.Watch(
         response_body_stream_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
-        base::Bind(&AppCacheURLLoaderJob::OnResponseBodyStreamReady,
-                   GetDerivedWeakPtr()));
+        base::BindRepeating(&AppCacheURLLoaderJob::OnResponseBodyStreamReady,
+                            GetDerivedWeakPtr()));
 
     SendResponseInfo();
     ReadMore();

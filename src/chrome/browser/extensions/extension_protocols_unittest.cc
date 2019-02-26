@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/test/power_monitor_test_base.h"
 #include "base/test/test_file_util.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
@@ -25,7 +26,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/previews_state.h"
-#include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
@@ -190,14 +190,13 @@ class ExtensionProtocolsTest
   ExtensionProtocolsTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         rvh_test_enabler_(new content::RenderViewHostTestEnabler()),
-        old_factory_(NULL),
-        resource_context_(&test_url_request_context_) {}
+        old_factory_(NULL) {}
 
   void SetUp() override {
     testing::Test::SetUp();
     testing_profile_ = TestingProfile::Builder().Build();
     contents_ = CreateTestWebContents();
-    old_factory_ = resource_context_.GetRequestContext()->job_factory();
+    old_factory_ = test_url_request_context_.job_factory();
 
     // Set up content verification.
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -212,7 +211,7 @@ class ExtensionProtocolsTest
 
   void TearDown() override {
     loader_factory_.reset();
-    resource_context_.GetRequestContext()->set_job_factory(old_factory_);
+    test_url_request_context_.set_job_factory(old_factory_);
     content_verifier_->Shutdown();
   }
 
@@ -226,7 +225,7 @@ class ExtensionProtocolsTest
         job_factory_.SetProtocolHandler(
             kExtensionScheme,
             CreateExtensionProtocolHandler(is_incognito, info_map()));
-        resource_context_.GetRequestContext()->set_job_factory(&job_factory_);
+        test_url_request_context_.set_job_factory(&job_factory_);
         break;
     }
     testing_profile_->ForceIncognito(is_incognito);
@@ -289,6 +288,12 @@ class ExtensionProtocolsTest
 
   content::BrowserContext* browser_context() { return testing_profile_.get(); }
 
+  void SimulateSystemSuspendForRequests() {
+    power_monitor_source_ = new base::PowerMonitorTestSource();
+    power_monitor_ = std::make_unique<base::PowerMonitor>(
+        std::unique_ptr<base::PowerMonitorSource>(power_monitor_source_));
+  }
+
  protected:
   scoped_refptr<ContentVerifier> content_verifier_;
 
@@ -306,18 +311,24 @@ class ExtensionProtocolsTest
         client.CreateInterfacePtr(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
+    if (power_monitor_source_) {
+      power_monitor_source_->GenerateSuspendEvent();
+      power_monitor_source_->GenerateResumeEvent();
+    }
+
     client.RunUntilComplete();
     return GetResult(client.response_head(),
                      client.completion_status().error_code);
   }
 
   GetResult RequestURL(const GURL& url, ResourceType resource_type) {
-    auto request = resource_context_.GetRequestContext()->CreateRequest(
+    auto request = test_url_request_context_.CreateRequest(
         url, net::DEFAULT_PRIORITY, &test_delegate_,
         TRAFFIC_ANNOTATION_FOR_TESTS);
 
     content::ResourceRequestInfo::AllocateForTesting(
-        request.get(), resource_type, &resource_context_,
+        request.get(), resource_type,
+        /* resource_context */nullptr,
         /*render_process_id=*/-1,
         /*render_view_id=*/-1,
         /*render_frame_id=*/-1,
@@ -326,7 +337,18 @@ class ExtensionProtocolsTest
         /*is_async=*/false, content::PREVIEWS_OFF,
         /*navigation_ui_data*/ nullptr);
     request->Start();
-    base::RunLoop().Run();
+
+    if (power_monitor_source_) {
+      power_monitor_source_->GenerateSuspendEvent();
+      power_monitor_source_->GenerateResumeEvent();
+
+      // PowerMonitorTestSource calls RunLoop().RunUntilIdle() which causes the
+      // request to be completed.
+      EXPECT_TRUE(test_delegate_.response_completed());
+    } else {
+      base::RunLoop().Run();
+    }
+
     return GetResult(std::move(request), test_delegate_.request_status());
   }
 
@@ -350,10 +372,14 @@ class ExtensionProtocolsTest
   const net::URLRequestJobFactory* old_factory_;
   std::unique_ptr<network::mojom::URLLoaderFactory> loader_factory_;
   net::TestURLRequestContext test_url_request_context_;
-  content::MockResourceContext resource_context_;
   std::unique_ptr<TestingProfile> testing_profile_;
   net::TestDelegate test_delegate_;
   std::unique_ptr<content::WebContents> contents_;
+
+  std::unique_ptr<base::PowerMonitor> power_monitor_;
+
+  // |power_monitor_source_| is owned by |power_monitor_|
+  base::PowerMonitorTestSource* power_monitor_source_ = nullptr;
 };
 
 // Tests that making a chrome-extension request in an incognito context is
@@ -759,6 +785,31 @@ TEST_P(ExtensionProtocolsTest, MimeTypesForKnownFiles) {
         test_case.expected_mime_type,
         result.GetResponseHeaderByName(net::HttpRequestHeaders::kContentType));
   }
+}
+
+// Tests that requests for extension resources (including the generated
+// background page) are not aborted on system suspend.
+TEST_P(ExtensionProtocolsTest, ExtensionRequestsNotAborted) {
+  // Register a non-incognito extension protocol handler.
+  SetProtocolHandler(false);
+
+  base::FilePath extension_dir =
+      GetTestPath("common").AppendASCII("background_script");
+  std::string error;
+  scoped_refptr<Extension> extension = file_util::LoadExtension(
+      extension_dir, Manifest::INTERNAL, Extension::NO_FLAGS, &error);
+  ASSERT_TRUE(extension.get()) << error;
+
+  SimulateSystemSuspendForRequests();
+
+  // Request the generated background page. Ensure the request completes
+  // successfully.
+  EXPECT_EQ(net::OK,
+            DoRequestOrLoad(extension.get(), kGeneratedBackgroundPageFilename)
+                .result());
+
+  // Request the background.js file. Ensure the request completes successfully.
+  EXPECT_EQ(net::OK, DoRequestOrLoad(extension.get(), "background.js").result());
 }
 
 INSTANTIATE_TEST_CASE_P(Extensions,

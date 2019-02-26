@@ -154,8 +154,8 @@ void HistogramController::GetHistogramDataFromChildProcesses(
     // In some cases, there may be no child process of the given type (for
     // example, the GPU process may not exist and there may instead just be a
     // GPU thread in the browser process). If that's the case, then the process
-    // handle will be base::kNullProcessHandle and we shouldn't ask it for data.
-    if (!data.IsHandleValid())
+    // will be invalid and we shouldn't ask it for data.
+    if (!data.GetProcess().IsValid())
       continue;
 
     if (auto* child_histogram_fetcher =

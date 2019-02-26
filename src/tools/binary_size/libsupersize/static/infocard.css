@@ -9,7 +9,7 @@
   left: 8px;
   right: 8px;
   margin: 0 auto;
-  max-width: 512px;
+  max-width: 720px;
   max-height: 50vh;
   overflow-y: auto;
   background: white;
@@ -94,6 +94,7 @@
   border-top: 1px solid #dadce0;
   padding-top: 8px;
   clear: right;
+  text-align: left;
 }
 .canvas-overlay {
   position: absolute;
@@ -107,9 +108,6 @@
 .type-breakdown-info table {
   min-width: 100%;
   font-size: 14px;
-}
-.type-breakdown-info th {
-  text-align: left;
 }
 .type-breakdown-info th[scope='row'] {
   font-weight: normal;

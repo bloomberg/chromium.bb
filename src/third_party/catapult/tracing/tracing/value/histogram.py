@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import datetime
 import json
 import math
 import numbers
@@ -12,6 +11,13 @@ import uuid
 from tracing.value.diagnostics import diagnostic
 from tracing.value.diagnostics import diagnostic_ref
 from tracing.value.diagnostics import reserved_infos
+from tracing.value.diagnostics import unmergeable_diagnostic_set
+
+
+try:
+  StringTypes = basestring
+except NameError:
+  StringTypes = str
 
 
 # pylint: disable=too-many-lines
@@ -98,22 +104,22 @@ def UniformlySampleStream(samples, stream_length, new_element, num_samples):
 def MergeSampledStreams(a_samples, a_stream_length,
                         b_samples, b_stream_length, num_samples):
   if b_stream_length < num_samples:
-    for i in xrange(min(b_stream_length, len(b_samples))):
+    for i in range(min(b_stream_length, len(b_samples))):
       UniformlySampleStream(
           a_samples, a_stream_length + i + 1, b_samples[i], num_samples)
     return
 
   if a_stream_length < num_samples:
     temp_samples = list(b_samples)
-    for i in xrange(min(a_stream_length, len(a_samples))):
+    for i in range(min(a_stream_length, len(a_samples))):
       UniformlySampleStream(
           temp_samples, b_stream_length + i + 1, a_samples[i], num_samples)
-    for i in xrange(len(temp_samples)):
-      a_samples[i] = temp_samples[i]
+    for i, temp_sample in enumerate(temp_samples):
+      a_samples[i] = temp_sample
     return
 
   prob_swap = b_stream_length / (a_stream_length + b_stream_length)
-  for i in xrange(min(num_samples, len(b_samples))):
+  for i in range(min(num_samples, len(b_samples))):
     if random.random() < prob_swap:
       a_samples[i] = b_samples[i]
 
@@ -142,6 +148,9 @@ class Range(object):
     if self.empty != other.empty:
       return False
     return  (self.min == other.min) and (self.max == other.max)
+
+  def __hash__(self):
+    return id(self)
 
   @staticmethod
   def FromExplicitRange(lower, upper):
@@ -348,65 +357,6 @@ class RunningStatistics(object):
     return result
 
 
-class DateRange(diagnostic.Diagnostic):
-  __slots__ = '_range',
-
-  def __init__(self, ms):
-    super(DateRange, self).__init__()
-    self._range = Range()
-    self._range.AddValue(ms)
-
-  def __eq__(self, other):
-    if not isinstance(other, DateRange):
-      return False
-    return self._range == other._range
-
-  @property
-  def min_date(self):
-    return datetime.datetime.fromtimestamp(self._range.min / 1000)
-
-  @property
-  def max_date(self):
-    return datetime.datetime.fromtimestamp(self._range.max / 1000)
-
-  @property
-  def min_timestamp(self):
-    return self._range.min
-
-  @property
-  def max_timestamp(self):
-    return self._range.max
-
-  @property
-  def duration_ms(self):
-    return self._range.duration
-
-  def __str__(self):
-    min_date = self.min_date.isoformat().replace('T', ' ')[:19]
-    if self.duration_ms == 0:
-      return min_date
-    max_date = self.max_date.isoformat().replace('T', ' ')[:19]
-    return min_date + ' - ' + max_date
-
-  def _AsDictInto(self, dct):
-    dct['min'] = self._range.min
-    if self.duration_ms == 0:
-      return
-    dct['max'] = self._range.max
-
-  @staticmethod
-  def FromDict(dct):
-    dr = DateRange(dct['min'])
-    if 'max' in dct:
-      dr._range.AddValue(dct['max'])
-    return dr
-
-  def CanAddDiagnostic(self, other_diagnostic):
-    return isinstance(other_diagnostic, DateRange)
-
-  def AddDiagnostic(self, other_diagnostic):
-    self._range.AddRange(other_diagnostic._range)
-
 class HistogramRef(object):
   __slots__ = '_guid',
 
@@ -416,60 +366,6 @@ class HistogramRef(object):
   @property
   def guid(self):
     return self._guid
-
-
-class RelatedNameMap(diagnostic.Diagnostic):
-  __slots__ = '_map',
-
-  def __init__(self):
-    super(RelatedNameMap, self).__init__()
-    self._map = {}
-
-  def __eq__(self, other):
-    if not isinstance(other, RelatedNameMap):
-      return False
-    if set(self._map.keys()) != set(other._map.keys()):
-      return False
-    for key, name in self._map.iteritems():
-      if name != other.Get(key):
-        return False
-    return True
-
-  def CanAddDiagnostic(self, other):
-    return isinstance(other, RelatedNameMap)
-
-  def AddDiagnostic(self, other):
-    for key, name in other._map.iteritems():
-      existing = self.Get(key)
-      if existing is None:
-        self.Set(key, name)
-      elif existing != name:
-        raise ValueError('Histogram names differ: "%s" != "%s"' % (
-            existing, name))
-
-  def Get(self, key):
-    return self._map.get(key)
-
-  def Set(self, key, name):
-    self._map[key] = name
-
-  def __iter__(self):
-    for key, name in self._map.iteritems():
-      yield key, name
-
-  def Values(self):
-    return self._map.values()
-
-  def _AsDictInto(self, dct):
-    dct['names'] = dict(self._map)
-
-  @staticmethod
-  def FromDict(dct):
-    names = RelatedNameMap()
-    for key, name in dct['names'].iteritems():
-      names.Set(key, name)
-    return names
-
 
 
 class RelatedHistogramMap(diagnostic.Diagnostic):
@@ -495,7 +391,7 @@ class RelatedHistogramMap(diagnostic.Diagnostic):
     return len(self._histograms_by_name)
 
   def __iter__(self):
-    for name, hist in self._histograms_by_name.iteritems():
+    for name, hist in self._histograms_by_name.items():
       yield name, hist
 
   def Resolve(self, histograms, required=False):
@@ -518,157 +414,9 @@ class RelatedHistogramMap(diagnostic.Diagnostic):
   @staticmethod
   def FromDict(d):
     result = RelatedHistogramMap()
-    for name, guid in d['values'].iteritems():
+    for name, guid in d['values'].items():
       result.Set(name, HistogramRef(guid))
     return result
-
-
-class RelatedHistogramBreakdown(RelatedHistogramMap):
-  __slots__ = '_color_scheme',
-
-  def __init__(self):
-    super(RelatedHistogramBreakdown, self).__init__()
-    self._color_scheme = None
-
-  def Set(self, name, hist):
-    if not isinstance(hist, HistogramRef):
-      assert isinstance(hist, Histogram), (
-          'Expected Histogram, found %s: "%r"' % (type(hist).__name__, hist))
-      # All Histograms must have the same unit.
-      for _, other_hist in self:
-        expected_unit = other_hist.unit
-        assert expected_unit == hist.unit, (
-            'Units mismatch ' + expected_unit + ' != ' + hist.unit)
-        break  # Only the first Histogram needs to be checked.
-    super(RelatedHistogramBreakdown, self).Set(name, hist)
-
-  def _AsDictInto(self, d):
-    RelatedHistogramMap._AsDictInto(self, d)
-    if self._color_scheme:
-      d['colorScheme'] = self._color_scheme
-
-  @staticmethod
-  def FromDict(d):
-    result = RelatedHistogramBreakdown()
-    for name, guid in d['values'].iteritems():
-      result.Set(name, HistogramRef(guid))
-    if 'colorScheme' in d:
-      result._color_scheme = d['colorScheme']
-    return result
-
-
-class TagMap(diagnostic.Diagnostic):
-  __slots__ = '_tags_to_story_names',
-
-  def __init__(self, info):
-    super(TagMap, self).__init__()
-    self._tags_to_story_names = dict(
-        (k, set(v)) for k, v in info.get(
-            'tagsToStoryNames', {}).iteritems())
-
-  def __eq__(self, other):
-    if not isinstance(other, TagMap):
-      return False
-
-    return self.tags_to_story_names == other.tags_to_story_names
-
-  def _AsDictInto(self, d):
-    d['tagsToStoryNames'] = dict(
-        (k, list(v)) for k, v in self.tags_to_story_names.iteritems())
-
-  @staticmethod
-  def FromDict(d):
-    return TagMap(d)
-
-  @property
-  def tags_to_story_names(self):
-    return self._tags_to_story_names
-
-  def AddTagAndStoryDisplayName(self, tag, story_display_name):
-    if not tag in self.tags_to_story_names:
-      self.tags_to_story_names[tag] = set()
-    self.tags_to_story_names[tag].add(story_display_name)
-
-  def CanAddDiagnostic(self, other_diagnostic):
-    return isinstance(other_diagnostic, TagMap)
-
-  def AddDiagnostic(self, other_diagnostic):
-    for name, story_display_names in\
-        other_diagnostic.tags_to_story_names.iteritems():
-      if not name in self.tags_to_story_names:
-        self.tags_to_story_names[name] = set()
-
-      for t in story_display_names:
-        self.tags_to_story_names[name].add(t)
-
-
-class RelatedEventSet(diagnostic.Diagnostic):
-  __slots__ = '_events_by_stable_id',
-
-  def __init__(self):
-    super(RelatedEventSet, self).__init__()
-    self._events_by_stable_id = {}
-
-  def Add(self, event):
-    self._events_by_stable_id[event['stableId']] = event
-
-  def __len__(self):
-    return len(self._events_by_stable_id)
-
-  def __iter__(self):
-    for event in self._events_by_stable_id.itervalues():
-      yield event
-
-  @staticmethod
-  def FromDict(d):
-    result = RelatedEventSet()
-    for event in d['events']:
-      result.Add(event)
-    return result
-
-  def _AsDictInto(self, d):
-    d['events'] = [event for event in self]
-
-
-class UnmergeableDiagnosticSet(diagnostic.Diagnostic):
-  __slots__ = '_diagnostics',
-
-  def __init__(self, diagnostics):
-    super(UnmergeableDiagnosticSet, self).__init__()
-    self._diagnostics = diagnostics
-
-  def __len__(self):
-    return len(self._diagnostics)
-
-  def __iter__(self):
-    for diag in self._diagnostics:
-      yield diag
-
-  def CanAddDiagnostic(self, unused_other_diagnostic):
-    return True
-
-  def AddDiagnostic(self, other_diagnostic):
-    if isinstance(other_diagnostic, UnmergeableDiagnosticSet):
-      self._diagnostics.extend(other_diagnostic._diagnostics)
-      return
-    for diag in self:
-      if diag.CanAddDiagnostic(other_diagnostic):
-        diag.AddDiagnostic(other_diagnostic)
-        return
-    self._diagnostics.append(other_diagnostic)
-
-  def _AsDictInto(self, d):
-    d['diagnostics'] = [d.AsDictOrReference() for d in self]
-
-  @staticmethod
-  def FromDict(dct):
-    def RefOrDiagnostic(d):
-      if isinstance(d, basestring):
-        return diagnostic_ref.DiagnosticRef(d)
-      return diagnostic.Diagnostic.FromDict(d)
-
-    return UnmergeableDiagnosticSet(
-        [RefOrDiagnostic(d) for d in dct['diagnostics']])
 
 
 class DiagnosticMap(dict):
@@ -682,13 +430,14 @@ class DiagnosticMap(dict):
     self._allow_reserved_names = False
 
   def __setitem__(self, name, diag):
-    if not isinstance(name, basestring):
+    if not isinstance(name, StringTypes):
       raise TypeError('name must be string')
     if not isinstance(diag, (diagnostic.Diagnostic,
                              diagnostic_ref.DiagnosticRef)):
       raise TypeError('diag must be Diagnostic or DiagnosticRef')
     if (not self._allow_reserved_names and
-        not isinstance(diag, UnmergeableDiagnosticSet) and
+        not isinstance(diag,
+                       unmergeable_diagnostic_set.UnmergeableDiagnosticSet) and
         not isinstance(diag, diagnostic_ref.DiagnosticRef)):
       expected_type = reserved_infos.GetTypeForName(name)
       if expected_type and diag.__class__.__name__ != expected_type:
@@ -703,14 +452,14 @@ class DiagnosticMap(dict):
     return dm
 
   def AddDicts(self, dct):
-    for name, diagnostic_dict in dct.iteritems():
-      if isinstance(diagnostic_dict, basestring):
+    for name, diagnostic_dict in dct.items():
+      if isinstance(diagnostic_dict, StringTypes):
         self[name] = diagnostic_ref.DiagnosticRef(diagnostic_dict)
       else:
         self[name] = diagnostic.Diagnostic.FromDict(diagnostic_dict)
 
   def ResolveSharedDiagnostics(self, histograms, required=False):
-    for name, diag in self.iteritems():
+    for name, diag in self.items():
       if not isinstance(diag, diagnostic_ref.DiagnosticRef):
         continue
       guid = diag.guid
@@ -722,12 +471,12 @@ class DiagnosticMap(dict):
 
   def AsDict(self):
     dct = {}
-    for name, diag in self.iteritems():
+    for name, diag in self.items():
       dct[name] = diag.AsDictOrReference()
     return dct
 
   def Merge(self, other):
-    for name, other_diagnostic in other.iteritems():
+    for name, other_diagnostic in other.items():
       if name not in self:
         self[name] = other_diagnostic
         continue
@@ -735,7 +484,7 @@ class DiagnosticMap(dict):
       if my_diagnostic.CanAddDiagnostic(other_diagnostic):
         my_diagnostic.AddDiagnostic(other_diagnostic)
         continue
-      self[name] = UnmergeableDiagnosticSet([
+      self[name] = unmergeable_diagnostic_set.UnmergeableDiagnosticSet([
           my_diagnostic, other_diagnostic])
 
 
@@ -792,8 +541,12 @@ UNIT_NAMES = [
     'tsMs',
     'n%',
     'sizeInBytes',
-    'J',
-    'W',
+    'bytesPerSecond',
+    'J',  # Joule
+    'W',  # Watt
+    'A',  # Ampere
+    'V',  # Volt
+    'Hz',  # Hertz
     'unitless',
     'count',
     'sigma',
@@ -970,7 +723,7 @@ class Histogram(object):
           hist._bins[i] = HistogramBin(hist._bins[i].range)
           hist._bins[i].FromDict(bin_dct)
       else:
-        for i, bin_dct in dct['allBins'].iteritems():
+        for i, bin_dct in dct['allBins'].items():
           i = int(i)
           hist._bins[i] = HistogramBin(hist._bins[i].range)
           hist._bins[i].FromDict(bin_dct)
@@ -1120,7 +873,7 @@ class Histogram(object):
     self.diagnostics.Merge(other.diagnostics)
 
   def CustomizeSummaryOptions(self, options):
-    for key, value in options.iteritems():
+    for key, value in options.items():
       self._summary_options[key] = value
 
   def Clone(self):
@@ -1133,7 +886,7 @@ class Histogram(object):
   @property
   def statistics_scalars(self):
     results = {}
-    for stat_name, option in self._summary_options.iteritems():
+    for stat_name, option in self._summary_options.items():
       if not option:
         continue
       if stat_name == 'percentile':
@@ -1188,7 +941,7 @@ class Histogram(object):
 
     summary_options = {}
     any_overridden_summary_options = False
-    for name, option in self._summary_options.iteritems():
+    for name, option in self._summary_options.items():
       if name == 'percentile':
         if len(option) == 0:
           continue
@@ -1368,7 +1121,7 @@ class HistogramBinBoundaries(object):
 
       if slic[0] == self.SLICE_TYPE_LINEAR:
         bin_width = (next_max_bin_boundary - prev_boundary) / bin_count
-        for i in xrange(1, bin_count):
+        for i in range(1, bin_count):
           boundary = slice_min_bin_boundary + (i * bin_width)
           self._bin_ranges.append(Range.FromExplicitRange(
               prev_boundary, boundary))
@@ -1376,7 +1129,7 @@ class HistogramBinBoundaries(object):
       elif slic[0] == self.SLICE_TYPE_EXPONENTIAL:
         bin_exponent_width = (
             math.log(next_max_bin_boundary / prev_boundary) / bin_count)
-        for i in xrange(1, bin_count):
+        for i in range(1, bin_count):
           boundary = slice_min_bin_boundary * math.exp(i * bin_exponent_width)
           self._bin_ranges.append(Range.FromExplicitRange(
               prev_boundary, boundary))
@@ -1435,8 +1188,12 @@ DEFAULT_BOUNDARIES_FOR_UNIT = {
     'msBestFitFormat': _CreateMsAutoFormatBins(),
     'n%': HistogramBinBoundaries.CreateLinear(0, 1.0, 20),
     'sizeInBytes': HistogramBinBoundaries.CreateExponential(1, 1e12, 100),
+    'bytesPerSecond': HistogramBinBoundaries.CreateExponential(1, 1e12, 100),
     'J': HistogramBinBoundaries.CreateExponential(1e-3, 1e3, 50),
     'W': HistogramBinBoundaries.CreateExponential(1e-3, 1, 50),
+    'A': HistogramBinBoundaries.CreateExponential(1e-3, 1, 50),
+    'V': HistogramBinBoundaries.CreateExponential(1e-3, 1, 50),
+    'Hz': HistogramBinBoundaries.CreateExponential(1e-3, 1, 50),
     'unitless': HistogramBinBoundaries.CreateExponential(1e-3, 1e3, 50),
     'count': HistogramBinBoundaries.CreateExponential(1, 1e3, 20),
     'sigma': HistogramBinBoundaries.CreateLinear(-5, 5, 50),

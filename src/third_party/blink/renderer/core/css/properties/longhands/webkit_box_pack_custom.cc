@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/webkit_box_pack.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* WebkitBoxPack::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -16,5 +16,5 @@ const CSSValue* WebkitBoxPack::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.BoxPack());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

@@ -269,7 +269,7 @@ void MojoVideoDecoderService::Reset(ResetCallback callback) {
 
 void MojoVideoDecoderService::OnDecoderInitialized(bool success) {
   DVLOG(1) << __func__;
-  DCHECK(decoder_);
+  DCHECK(!success || decoder_);
   DCHECK(init_cb_);
   TRACE_EVENT_ASYNC_END1("media", kInitializeTraceName, this, "success",
                          success);

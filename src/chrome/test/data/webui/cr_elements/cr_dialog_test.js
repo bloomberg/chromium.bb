@@ -471,4 +471,13 @@ suite('cr-dialog', function() {
       document.removeEventListener('keydown', assertKeydownCount);
     });
   });
+
+  test('show on attach', () => {
+    document.body.innerHTML = `
+      <cr-dialog show-on-attach>
+        <div slot="title">title</div>
+      </cr-dialog>`;
+    const dialog = document.body.querySelector('cr-dialog');
+    assertTrue(dialog.open);
+  });
 });

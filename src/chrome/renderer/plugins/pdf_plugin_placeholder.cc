@@ -4,8 +4,10 @@
 
 #include "chrome/renderer/plugins/pdf_plugin_placeholder.h"
 
+#include "base/command_line.h"
 #include "chrome/common/pdf_util.h"
 #include "chrome/common/render_messages.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_thread.h"
 #include "gin/object_template_builder.h"
 
@@ -32,9 +34,19 @@ v8::Local<v8::Value> PDFPluginPlaceholder::GetV8Handle(v8::Isolate* isolate) {
 
 gin::ObjectTemplateBuilder PDFPluginPlaceholder::GetObjectTemplateBuilder(
     v8::Isolate* isolate) {
-  return gin::Wrappable<PDFPluginPlaceholder>::GetObjectTemplateBuilder(isolate)
-      .SetMethod<void (PDFPluginPlaceholder::*)()>(
-          "openPDF", &PDFPluginPlaceholder::OpenPDFCallback);
+  gin::ObjectTemplateBuilder builder =
+      gin::Wrappable<PDFPluginPlaceholder>::GetObjectTemplateBuilder(isolate)
+          .SetMethod<void (PDFPluginPlaceholder::*)()>(
+              "openPDF", &PDFPluginPlaceholder::OpenPDFCallback);
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnablePluginPlaceholderTesting)) {
+    builder.SetMethod<void (PDFPluginPlaceholder::*)()>(
+        "notifyPlaceholderReadyForTesting",
+        &PDFPluginPlaceholder::NotifyPlaceholderReadyForTestingCallback);
+  }
+
+  return builder;
 }
 
 void PDFPluginPlaceholder::OpenPDFCallback() {

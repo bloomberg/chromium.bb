@@ -11,25 +11,23 @@
 #ifndef RTC_BASE_OPENSSLIDENTITY_H_
 #define RTC_BASE_OPENSSLIDENTITY_H_
 
-#include <openssl/base.h>  // for EVP_PKEY, ssl_ctx_st
+#include <openssl/ossl_typ.h>
 
-#include <ctime>   // for time_t
-#include <memory>  // for unique_ptr
+#include <ctime>
+#include <memory>
 #include <string>
 
-#include "rtc_base/checks.h"              // for RTC_DCHECK
-#include "rtc_base/constructormagic.h"    // for RTC_DISALLOW_COPY_AND_ASSIGN
-#include "rtc_base/opensslcertificate.h"  // for OpenSSLCertificate
-#include "rtc_base/sslcertificate.h"      // for SSLCertChain
-#include "rtc_base/sslidentity.h"         // for SSLIdentity, KeyParams, SSL...
-
-typedef struct ssl_ctx_st SSL_CTX;
+#include "rtc_base/checks.h"
+#include "rtc_base/constructormagic.h"
+#include "rtc_base/opensslcertificate.h"
+#include "rtc_base/sslcertificate.h"
+#include "rtc_base/sslidentity.h"
 
 namespace rtc {
 
 // OpenSSLKeyPair encapsulates an OpenSSL EVP_PKEY* keypair object,
 // which is reference counted inside the OpenSSL library.
-class OpenSSLKeyPair {
+class OpenSSLKeyPair final {
  public:
   explicit OpenSSLKeyPair(EVP_PKEY* pkey) : pkey_(pkey) {
     RTC_DCHECK(pkey_ != nullptr);
@@ -60,7 +58,7 @@ class OpenSSLKeyPair {
 
 // Holds a keypair and certificate together, and a method to generate
 // them consistently.
-class OpenSSLIdentity : public SSLIdentity {
+class OpenSSLIdentity final : public SSLIdentity {
  public:
   static OpenSSLIdentity* GenerateWithExpiration(const std::string& common_name,
                                                  const KeyParams& key_params,

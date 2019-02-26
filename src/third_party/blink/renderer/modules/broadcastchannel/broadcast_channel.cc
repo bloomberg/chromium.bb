@@ -78,11 +78,11 @@ void BroadcastChannel::close() {
 }
 
 const AtomicString& BroadcastChannel::InterfaceName() const {
-  return EventTargetNames::BroadcastChannel;
+  return event_target_names::kBroadcastChannel;
 }
 
 bool BroadcastChannel::HasPendingActivity() const {
-  return binding_.is_bound() && HasEventListeners(EventTypeNames::message);
+  return binding_.is_bound() && HasEventListeners(event_type_names::kMessage);
 }
 
 void BroadcastChannel::ContextDestroyed(ExecutionContext*) {

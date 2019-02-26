@@ -10,10 +10,6 @@
 #include "ipc/struct_constructor_macros.h"
 #include "ipc/ipc_test_message_generator.h"
 
-// Generate destructors.
-#include "ipc/struct_destructor_macros.h"
-#include "ipc/ipc_test_message_generator.h"
-
 // Generate param traits write methods.
 #include "ipc/param_traits_write_macros.h"
 namespace IPC {

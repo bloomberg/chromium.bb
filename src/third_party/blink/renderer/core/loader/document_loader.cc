@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
+#include "third_party/blink/renderer/core/frame/intervention.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -116,32 +117,77 @@ DocumentLoader::DocumentLoader(
     const ResourceRequest& req,
     const SubstituteData& substitute_data,
     ClientRedirectPolicy client_redirect_policy,
-    const base::UnguessableToken& devtools_navigation_token)
+    const base::UnguessableToken& devtools_navigation_token,
+    WebFrameLoadType load_type,
+    WebNavigationType navigation_type,
+    std::unique_ptr<WebNavigationParams> navigation_params)
     : frame_(frame),
       fetcher_(FrameFetchContext::CreateFetcherFromDocumentLoader(this)),
       original_request_(req),
       substitute_data_(substitute_data),
       request_(req),
-      load_type_(WebFrameLoadType::kStandard),
+      load_type_(load_type),
       is_client_redirect_(client_redirect_policy ==
                           ClientRedirectPolicy::kClientRedirect),
       replaces_current_history_item_(false),
       data_received_(false),
-      navigation_type_(kWebNavigationTypeOther),
+      navigation_type_(navigation_type),
       document_load_timing_(*this),
       application_cache_host_(ApplicationCacheHost::Create(this)),
+      service_worker_network_provider_(
+          navigation_params
+              ? std::move(navigation_params->service_worker_network_provider)
+              : nullptr),
       was_blocked_after_csp_(false),
       state_(kNotStarted),
       committed_data_buffer_(nullptr),
       in_data_received_(false),
       data_buffer_(SharedBuffer::Create()),
       devtools_navigation_token_(devtools_navigation_token),
-      had_sticky_activation_(false),
-      had_transient_activation_(false),
+      had_sticky_activation_(navigation_params &&
+                             navigation_params->is_user_activated),
+      had_transient_activation_(request_.HasUserGesture()),
       use_counter_(frame_->GetChromeClient().IsSVGImageChromeClient()
                        ? UseCounter::kSVGImageContext
                        : UseCounter::kDefaultContext) {
   DCHECK(frame_);
+
+  WebNavigationTimings timings;
+  if (navigation_params)
+    timings = navigation_params->navigation_timings;
+  if (!timings.input_start.is_null())
+    document_load_timing_.SetInputStart(timings.input_start);
+  if (timings.navigation_start.is_null()) {
+    // If we don't have any navigation timings yet, it starts now.
+    document_load_timing_.SetNavigationStart(CurrentTimeTicks());
+  } else {
+    document_load_timing_.SetNavigationStart(timings.navigation_start);
+    if (!timings.redirect_start.is_null()) {
+      document_load_timing_.SetRedirectStart(timings.redirect_start);
+      document_load_timing_.SetRedirectEnd(timings.redirect_end);
+    }
+    if (!timings.fetch_start.is_null()) {
+      // If we started fetching, we should have started the navigation.
+      DCHECK(!timings.navigation_start.is_null());
+      document_load_timing_.SetFetchStart(timings.fetch_start);
+    }
+  }
+
+  if (navigation_params && navigation_params->source_location.has_value()) {
+    WebSourceLocation& location = navigation_params->source_location.value();
+    source_location_ = SourceLocation::Create(
+        location.url, location.line_number, location.column_number, nullptr);
+  }
+
+  // TODO(japhet): This is needed because the browser process DCHECKs if the
+  // first entry we commit in a new frame has replacement set. It's unclear
+  // whether the DCHECK is right, investigate removing this special case.
+  // TODO(dgozman): we should get rid of this boolean field, and make client
+  // responsible for it's own view of "replaces current item", based on the
+  // frame load type.
+  replaces_current_history_item_ =
+      load_type_ == WebFrameLoadType::kReplaceCurrentItem &&
+      (!frame_->Loader().Opener() || !request_.Url().IsEmpty());
 
   // The document URL needs to be added to the head of the list as that is
   // where the redirects originated.
@@ -221,7 +267,8 @@ Resource* DocumentLoader::StartPreload(ResourceType type,
       break;
     case ResourceType::kScript:
       params.SetRequestContext(mojom::RequestContextType::SCRIPT);
-      resource = ScriptResource::Fetch(params, Fetcher(), nullptr);
+      resource = ScriptResource::Fetch(params, Fetcher(), nullptr,
+                                       ScriptResource::kAllowStreaming);
       break;
     case ResourceType::kCSSStyleSheet:
       resource = CSSStyleSheetResource::Fetch(params, Fetcher(), nullptr);
@@ -254,14 +301,6 @@ void DocumentLoader::SetServiceWorkerNetworkProvider(
   service_worker_network_provider_ = std::move(provider);
 }
 
-void DocumentLoader::SetSourceLocation(
-    const WebSourceLocation& source_location) {
-  std::unique_ptr<SourceLocation> location =
-      SourceLocation::Create(source_location.url, source_location.line_number,
-                             source_location.column_number, nullptr);
-  source_location_ = std::move(location);
-}
-
 void DocumentLoader::ResetSourceLocation() {
   source_location_ = nullptr;
 }
@@ -275,7 +314,7 @@ void DocumentLoader::DispatchLinkHeaderPreloads(
     LinkLoader::MediaPreloadPolicy media_policy) {
   DCHECK_GE(state_, kCommitted);
   LinkLoader::LoadLinksFromHeader(
-      GetResponse().HttpHeaderField(HTTPNames::Link), GetResponse().Url(),
+      GetResponse().HttpHeaderField(http_names::kLink), GetResponse().Url(),
       *frame_, frame_->GetDocument(), NetworkHintsInterfaceImpl(),
       LinkLoader::kOnlyLoadResources, media_policy, viewport);
 }
@@ -331,7 +370,7 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
   request_.SetURL(new_url);
   SetReplacesCurrentHistoryItem(type != WebFrameLoadType::kStandard);
   if (same_document_navigation_source == kSameDocumentNavigationHistoryApi) {
-    request_.SetHTTPMethod(HTTPNames::GET);
+    request_.SetHTTPMethod(http_names::kGET);
     request_.SetHTTPBody(nullptr);
   }
   ClearRedirectChain();
@@ -432,7 +471,7 @@ void DocumentLoader::NotifyFinished(Resource* resource) {
 
 void DocumentLoader::LoadFailed(const ResourceError& error) {
   if (!error.IsCancellation() && frame_->Owner())
-    frame_->Owner()->RenderFallbackContent();
+    frame_->Owner()->RenderFallbackContent(frame_);
   fetcher_->ClearResourcesFromPreviousFetcher();
 
   WebHistoryCommitType history_commit_type = LoadTypeToCommitType(load_type_);
@@ -463,10 +502,6 @@ void DocumentLoader::LoadFailed(const ResourceError& error) {
 
 void DocumentLoader::SetUserActivated() {
   had_sticky_activation_ = true;
-}
-
-void DocumentLoader::SetHadTransientUserActivation() {
-  had_transient_activation_ = true;
 }
 
 const AtomicString& DocumentLoader::RequiredCSP() {
@@ -561,7 +596,7 @@ bool DocumentLoader::ShouldContinueForResponse() const {
   }
 
   if (IsContentDispositionAttachment(
-          response_.HttpHeaderField(HTTPNames::Content_Disposition))) {
+          response_.HttpHeaderField(http_names::kContentDisposition))) {
     // The server wants us to download instead of replacing the page contents.
     // Downloading is handled by the embedder, but we still get the initial
     // response so that we can ignore it and clean up properly.
@@ -619,6 +654,12 @@ void DocumentLoader::ResponseReceived(
 
   content_security_policy_ = ContentSecurityPolicy::Create();
   content_security_policy_->SetOverrideURLForSelf(response.Url());
+
+  AtomicString mixed_content_header = response.HttpHeaderField("mixed-content");
+  if (EqualIgnoringASCIICase(mixed_content_header, "noupgrade")) {
+    frame_->GetDocument()->SetMixedAutoupgradeOptOut(true);
+  }
+
   if (!frame_->GetSettings()->BypassCSP()) {
     content_security_policy_->DidReceiveHeaders(
         ContentSecurityPolicyResponseHeaders(response));
@@ -699,8 +740,8 @@ void DocumentLoader::ResponseReceived(
   }
 
   if (frame_->Owner() && response_.IsHTTP() &&
-      !CORS::IsOkStatus(response_.HttpStatusCode()))
-    frame_->Owner()->RenderFallbackContent();
+      !cors::IsOkStatus(response_.HttpStatusCode()))
+    frame_->Owner()->RenderFallbackContent(frame_);
 }
 
 void DocumentLoader::CommitNavigation(const AtomicString& mime_type,
@@ -753,8 +794,9 @@ void DocumentLoader::CommitNavigation(const AtomicString& mime_type,
   if (request_.WasDiscarded())
     frame_->GetDocument()->SetWasDiscarded(true);
   frame_->GetDocument()->MaybeHandleHttpRefresh(
-      response_.HttpHeaderField(HTTPNames::Refresh),
+      response_.HttpHeaderField(http_names::kRefresh),
       Document::kHttpRefreshFromHeader);
+  ReportPreviewsIntervention();
 }
 
 void DocumentLoader::CommitData(const char* bytes, size_t length) {
@@ -933,7 +975,7 @@ void DocumentLoader::StartLoading() {
 
   ResourceLoaderOptions options;
   options.data_buffering_policy = kDoNotBufferData;
-  options.initiator_info.name = FetchInitiatorTypeNames::document;
+  options.initiator_info.name = fetch_initiator_type_names::kDocument;
   FetchParameters fetch_params(request_, options);
   RawResource::FetchMainResource(fetch_params, Fetcher(), this,
                                  substitute_data_);
@@ -966,14 +1008,14 @@ void DocumentLoader::DidInstallNewDocument(
   fetcher_->SetAutoLoadImages(settings->GetLoadsImagesAutomatically());
 
   const AtomicString& dns_prefetch_control =
-      response_.HttpHeaderField(HTTPNames::X_DNS_Prefetch_Control);
+      response_.HttpHeaderField(http_names::kXDNSPrefetchControl);
   if (!dns_prefetch_control.IsEmpty())
     document->ParseDNSPrefetchControlHeader(dns_prefetch_control);
 
   String header_content_language =
-      response_.HttpHeaderField(HTTPNames::Content_Language);
+      response_.HttpHeaderField(http_names::kContentLanguage);
   if (!header_content_language.IsEmpty()) {
-    size_t comma_index = header_content_language.find(',');
+    wtf_size_t comma_index = header_content_language.find(',');
     // kNotFound == -1 == don't truncate
     header_content_language.Truncate(comma_index);
     header_content_language =
@@ -983,14 +1025,19 @@ void DocumentLoader::DidInstallNewDocument(
   }
 
   String referrer_policy_header =
-      response_.HttpHeaderField(HTTPNames::Referrer_Policy);
+      response_.HttpHeaderField(http_names::kReferrerPolicy);
   if (!referrer_policy_header.IsNull()) {
     UseCounter::Count(*document, WebFeature::kReferrerPolicyHeader);
     document->ParseAndSetReferrerPolicy(referrer_policy_header);
   }
 
-  if (response_.IsSignedExchangeInnerResponse())
+  if (response_.IsSignedExchangeInnerResponse()) {
     UseCounter::Count(*document, WebFeature::kSignedExchangeInnerResponse);
+    UseCounter::Count(*document,
+                      document->GetFrame()->IsMainFrame()
+                          ? WebFeature::kSignedExchangeInnerResponseInMainFrame
+                          : WebFeature::kSignedExchangeInnerResponseInSubFrame);
+  }
 
   GetLocalFrameClient().DidCreateNewDocument();
 }
@@ -1047,7 +1094,7 @@ void DocumentLoader::DidCommitNavigation(
     interactive_detector->SetNavigationStartTime(GetTiming().NavigationStart());
 
   TRACE_EVENT1("devtools.timeline", "CommitLoad", "data",
-               InspectorCommitLoadEvent::Data(frame_));
+               inspector_commit_load_event::Data(frame_));
 
   // Needs to run before dispatching preloads, as it may evict the memory cache.
   probe::didCommitLoad(frame_, this);
@@ -1059,8 +1106,8 @@ void DocumentLoader::DidCommitNavigation(
   frame_->GetPage()->DidCommitLoad(frame_);
   GetUseCounter().DidCommitLoad(frame_);
 
-  // Report legacy Symantec certificates after Page::DidCommitLoad, because the
-  // latter clears the console.
+  // Report legacy Symantec certificates and TLS versions after
+  // Page::DidCommitLoad, because the latter clears the console.
   if (response_.IsLegacySymantecCert()) {
     UseCounter::Count(
         this, frame_->Tree().Parent()
@@ -1068,6 +1115,14 @@ void DocumentLoader::DidCommitNavigation(
                   : WebFeature::kLegacySymantecCertMainFrameResource);
     GetLocalFrameClient().ReportLegacySymantecCert(response_.Url(),
                                                    false /* did_fail */);
+  }
+
+  if (response_.IsLegacyTLSVersion()) {
+    UseCounter::Count(this,
+                      frame_->Tree().Parent()
+                          ? WebFeature::kLegacyTLSVersionInSubframeMainResource
+                          : WebFeature::kLegacyTLSVersionInMainFrameResource);
+    GetLocalFrameClient().ReportLegacyTLSVersion(response_.Url());
   }
 }
 
@@ -1085,6 +1140,29 @@ bool DocumentLoader::ShouldClearWindowName(
 
   return !new_document.GetSecurityOrigin()->IsSameSchemeHostPort(
       previous_security_origin);
+}
+
+// Helper function: Merge the feature policy strings from HTTP headers and the
+// origin policy (if any).
+// Headers go first, which means that the per-page headers override the
+// origin policy features.
+void MergeFeaturesFromOriginPolicy(WTF::String& feature_policy,
+                                   const String& origin_policy_string) {
+  if (origin_policy_string.IsEmpty())
+    return;
+
+  std::unique_ptr<OriginPolicy> origin_policy = OriginPolicy::From(
+      StringUTF8Adaptor(origin_policy_string).AsStringPiece());
+  if (!origin_policy)
+    return;
+
+  for (const std::string& policy : origin_policy->GetFeaturePolicies()) {
+    if (!feature_policy.IsEmpty()) {
+      feature_policy.append(',');
+    }
+    feature_policy.append(
+        WTF::String::FromUTF8(policy.data(), policy.length()));
+  }
 }
 
 void DocumentLoader::InstallNewDocument(
@@ -1179,10 +1257,10 @@ void DocumentLoader::InstallNewDocument(
           "ForceTouchEventFeatureDetectionForInspector");
     }
     OriginTrialContext::AddTokensFromHeader(
-        document, response_.HttpHeaderField(HTTPNames::Origin_Trial));
+        document, response_.HttpHeaderField(http_names::kOriginTrial));
   }
   bool stale_while_revalidate_enabled =
-      OriginTrials::StaleWhileRevalidateEnabled(document);
+      origin_trials::StaleWhileRevalidateEnabled(document);
   fetcher_->SetStaleWhileRevalidateEnabled(stale_while_revalidate_enabled);
 
   // If stale while revalidate is enabled via Origin Trials count it as such.
@@ -1204,8 +1282,10 @@ void DocumentLoader::InstallNewDocument(
   // FeaturePolicy is reset in the browser process on commit, so this needs to
   // be initialized and replicated to the browser process after commit messages
   // are sent in didCommitNavigation().
-  document->ApplyFeaturePolicyFromHeader(
-      response_.HttpHeaderField(HTTPNames::Feature_Policy));
+  WTF::String feature_policy(
+      response_.HttpHeaderField(http_names::kFeaturePolicy));
+  MergeFeaturesFromOriginPolicy(feature_policy, request_.GetOriginPolicy());
+  document->ApplyFeaturePolicyFromHeader(feature_policy);
 
   GetFrameLoader().DispatchDidClearDocumentOfWindowObject();
 }
@@ -1270,32 +1350,35 @@ void DocumentLoader::ResumeParser() {
   }
 }
 
-void DocumentLoader::UpdateNavigationTimings(
-    base::TimeTicks navigation_start_time,
-    base::TimeTicks redirect_start_time,
-    base::TimeTicks redirect_end_time,
-    base::TimeTicks fetch_start_time,
-    base::TimeTicks input_start_time) {
-  if (!input_start_time.is_null()) {
-    GetTiming().SetInputStart(input_start_time);
-  }
+void DocumentLoader::ReportPreviewsIntervention() const {
+  // Only send reports for main frames.
+  if (!frame_->IsMainFrame())
+    return;
 
-  // If we don't have any navigation timings yet, just start the navigation.
-  if (navigation_start_time.is_null()) {
-    GetTiming().SetNavigationStart(CurrentTimeTicks());
+  WebURLRequest::PreviewsState previews_state = request_.GetPreviewsState();
+
+  // Verify that certain types are not on main frame requests.
+  DCHECK_NE(WebURLRequest::kClientLoFiAutoReload, previews_state);
+  DCHECK_NE(WebURLRequest::kLazyImageLoadDeferred, previews_state);
+
+  static_assert(WebURLRequest::kPreviewsStateLast ==
+                    WebURLRequest::kLazyImageLoadDeferred,
+                "If a new Preview type is added, verify that the Intervention "
+                "Report should be sent (or not sent) for that type.");
+
+  // If the preview type is not unspecified, off, or no transform, it is a
+  // preview that needs to be reported.
+  if (previews_state == WebURLRequest::kPreviewsUnspecified ||
+      previews_state & WebURLRequest::kPreviewsOff ||
+      previews_state & WebURLRequest::kPreviewsNoTransform) {
     return;
   }
 
-  GetTiming().SetNavigationStart(navigation_start_time);
-  if (!redirect_start_time.is_null()) {
-    GetTiming().SetRedirectStart(redirect_start_time);
-    GetTiming().SetRedirectEnd(redirect_end_time);
-  }
-  if (!fetch_start_time.is_null()) {
-    // If we started fetching, we should have started the navigation.
-    DCHECK(!navigation_start_time.is_null());
-    GetTiming().SetFetchStart(fetch_start_time);
-  }
+  Intervention::GenerateReport(
+      frame_, "LitePageServed",
+      "Modified page load behavior on the page because the page was expected "
+      "to take a long amount of time to load. "
+      "https://www.chromestatus.com/feature/5148050062311424");
 }
 
 DEFINE_WEAK_IDENTIFIER_MAP(DocumentLoader);

@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/translate/translate_bubble_model_impl.h"
 #include "chrome/browser/ui/translate/translate_bubble_view_state_transition.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/md_text_button_with_down_arrow.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
@@ -41,7 +42,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/bubble/bubble_frame_view.h"
-#include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -615,10 +615,9 @@ views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
   accept_button->set_id(BUTTON_ID_TRANSLATE);
 
   accept_button->SetIsDefault(true);
-  before_translate_options_button_ =
-      views::MdTextButton::CreateSecondaryUiButton(
-          this,
-          l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_OPTIONS_MENU_BUTTON));
+  before_translate_options_button_ = new views::MdTextButtonWithDownArrow(
+      this,
+      l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_OPTIONS_MENU_BUTTON));
   before_translate_options_button_->set_id(BUTTON_ID_OPTIONS_MENU);
   before_translate_options_button_->set_request_focus_on_press(true);
 
@@ -703,10 +702,9 @@ views::View* TranslateBubbleView::CreateViewAfterTranslate() {
   button->set_id(BUTTON_ID_SHOW_ORIGINAL);
   layout->AddView(button);
 
-  views::Button* options_menu_button =
-      views::MdTextButton::CreateSecondaryUiButton(
-          this,
-          l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_OPTIONS_MENU_BUTTON));
+  views::Button* options_menu_button = new views::MdTextButtonWithDownArrow(
+      this,
+      l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_OPTIONS_MENU_BUTTON));
   options_menu_button->set_id(BUTTON_ID_OPTIONS_MENU);
   options_menu_button->set_request_focus_on_press(true);
 

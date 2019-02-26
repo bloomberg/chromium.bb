@@ -12,7 +12,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
-#include "third_party/blink/renderer/platform/length_functions.h"
+#include "third_party/blink/renderer/platform/geometry/length_functions.h"
 
 namespace blink {
 
@@ -158,9 +158,11 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
                                const WritingMode container_writing_mode,
                                const TextDirection container_direction,
                                NGAbsolutePhysicalPosition* position) {
-  NGPhysicalSize percentage_physical =
-      space.PercentageResolutionSize().ConvertToPhysical(
-          space.GetWritingMode());
+  LayoutUnit percentage_width =
+      LIKELY(space.GetWritingMode() == WritingMode::kHorizontalTb)
+          ? space.PercentageResolutionInlineSize()
+          : space.PercentageResolutionBlockSize();
+
   base::Optional<LayoutUnit> margin_left;
   if (!style.MarginLeft().IsAuto())
     margin_left = ResolveMarginPaddingLength(space, style.MarginLeft());
@@ -169,13 +171,13 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
     margin_right = ResolveMarginPaddingLength(space, style.MarginRight());
   base::Optional<LayoutUnit> left;
   if (!style.Left().IsAuto())
-    left = ValueForLength(style.Left(), percentage_physical.width);
+    left = ValueForLength(style.Left(), percentage_width);
   base::Optional<LayoutUnit> right;
   if (!style.Right().IsAuto())
-    right = ValueForLength(style.Right(), percentage_physical.width);
+    right = ValueForLength(style.Right(), percentage_width);
   base::Optional<LayoutUnit> width = incoming_width;
   NGPhysicalSize container_size =
-      space.AvailableSize().ConvertToPhysical(space.GetWritingMode());
+      ToNGPhysicalSize(space.AvailableSize(), space.GetWritingMode());
   DCHECK_NE(container_size.width, NGSizeIndefinite);
 
   // Solving the equation:
@@ -206,7 +208,7 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
     if (!margin_left && !margin_right) {
       if (margin_space > 0) {
         margin_left = margin_space / 2;
-        margin_right = margin_space / 2;
+        margin_right = margin_space - *margin_left;
       } else {
         // Margins are negative.
         if (IsLeftDominant(container_writing_mode, container_direction)) {
@@ -321,9 +323,10 @@ void ComputeAbsoluteVertical(const NGConstraintSpace& space,
                              const WritingMode container_writing_mode,
                              const TextDirection container_direction,
                              NGAbsolutePhysicalPosition* position) {
-  NGPhysicalSize percentage_physical =
-      space.PercentageResolutionSize().ConvertToPhysical(
-          space.GetWritingMode());
+  LayoutUnit percentage_height =
+      LIKELY(space.GetWritingMode() == WritingMode::kHorizontalTb)
+          ? space.PercentageResolutionBlockSize()
+          : space.PercentageResolutionInlineSize();
 
   base::Optional<LayoutUnit> margin_top;
   if (!style.MarginTop().IsAuto())
@@ -333,15 +336,15 @@ void ComputeAbsoluteVertical(const NGConstraintSpace& space,
     margin_bottom = ResolveMarginPaddingLength(space, style.MarginBottom());
   base::Optional<LayoutUnit> top;
   if (!style.Top().IsAuto())
-    top = ValueForLength(style.Top(), percentage_physical.height);
+    top = ValueForLength(style.Top(), percentage_height);
   base::Optional<LayoutUnit> bottom;
   if (!style.Bottom().IsAuto())
-    bottom = ValueForLength(style.Bottom(), percentage_physical.height);
+    bottom = ValueForLength(style.Bottom(), percentage_height);
   LayoutUnit border_padding = VerticalBorderPadding(space, style);
   base::Optional<LayoutUnit> height = incoming_height;
 
   NGPhysicalSize container_size =
-      space.AvailableSize().ConvertToPhysical(space.GetWritingMode());
+      ToNGPhysicalSize(space.AvailableSize(), space.GetWritingMode());
   DCHECK_NE(container_size.height, NGSizeIndefinite);
 
   // Solving the equation:

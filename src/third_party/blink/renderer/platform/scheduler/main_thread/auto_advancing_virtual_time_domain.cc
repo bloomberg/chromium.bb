@@ -83,15 +83,26 @@ AutoAdvancingVirtualTimeDomain::DelayTillNextTask(
   if (run_time <= Now())
     return base::TimeDelta();
 
+  // Rely on MaybeFastForwardToNextTask to be called to advance
+  // virtual time.
+  return base::nullopt;
+}
+
+bool AutoAdvancingVirtualTimeDomain::MaybeFastForwardToNextTask(
+    bool quit_when_idle_requested) {
   if (!can_advance_virtual_time_)
-    return base::nullopt;
+    return false;
+
+  base::Optional<base::TimeTicks> run_time = NextScheduledRunTime();
+  if (!run_time)
+    return false;
 
   if (MaybeAdvanceVirtualTime(*run_time)) {
     task_starvation_count_ = 0;
-    return base::TimeDelta();  // Makes DoWork post an immediate continuation.
+    return true;
   }
 
-  return base::nullopt;
+  return false;
 }
 
 void AutoAdvancingVirtualTimeDomain::SetNextDelayedDoWork(

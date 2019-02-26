@@ -17,19 +17,12 @@ std::string SurfaceId::ToString() const {
                             local_surface_id_.ToString().c_str());
 }
 
-uint32_t SurfaceId::ManhattanDistanceTo(const SurfaceId& other) const {
-  DCHECK_EQ(frame_sink_id_, other.frame_sink_id());
-  DCHECK_EQ(local_surface_id_.embed_token(),
-            other.local_surface_id().embed_token());
-
-  return (std::max(local_surface_id_.parent_sequence_number(),
-                   other.local_surface_id().parent_sequence_number()) -
-          std::min(local_surface_id_.parent_sequence_number(),
-                   other.local_surface_id().parent_sequence_number())) +
-         (std::max(local_surface_id_.child_sequence_number(),
-                   other.local_surface_id().child_sequence_number()) -
-          std::min(local_surface_id_.child_sequence_number(),
-                   other.local_surface_id().child_sequence_number()));
+std::string SurfaceId::ToString(
+    base::StringPiece frame_sink_debug_label) const {
+  return base::StringPrintf(
+      "SurfaceId(%s, %s)",
+      frame_sink_id_.ToString(frame_sink_debug_label).c_str(),
+      local_surface_id_.ToString().c_str());
 }
 
 SurfaceId SurfaceId::ToSmallestId() const {

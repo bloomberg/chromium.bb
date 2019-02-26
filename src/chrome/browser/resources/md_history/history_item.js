@@ -102,6 +102,11 @@ cr.define('md_history', function() {
         notify: true,
       },
 
+      listBlurred: {
+        type: Boolean,
+        notify: true,
+      },
+
       ironListTabIndex: {
         type: Number,
         observer: 'ironListTabIndexChanged_',
@@ -137,8 +142,13 @@ cr.define('md_history', function() {
         this.row_ = new HistoryFocusRow(
             this.$['main-container'], null, new FocusRowDelegate(this));
         this.row_.makeActive(this.ironListTabIndex == 0);
+
+        // Adding listeners asynchronously to reduce blocking time, since these
+        // history items are items in a potentially long list.
         this.listen(this, 'focus', 'onFocus_');
+        this.listen(this, 'blur', 'onBlur_');
         this.listen(this, 'dom-change', 'onDomChange_');
+        this.listen(this.$.checkbox, 'keydown', 'onCheckboxKeydown_');
       });
     },
 
@@ -146,26 +156,54 @@ cr.define('md_history', function() {
     detached: function() {
       this.unlisten(this, 'focus', 'onFocus_');
       this.unlisten(this, 'dom-change', 'onDomChange_');
+      this.unlisten(this.$.checkbox, 'keydown', 'onCheckboxKeydown_');
       if (this.row_)
         this.row_.destroy();
     },
 
     /**
+     * @param {!Event} e The focus event
      * @private
      */
-    onFocus_: function() {
+    onFocus_: function(e) {
       // Don't change the focus while the mouse is down, as it prevents text
       // selection. Not changing focus here is acceptable because the checkbox
       // will be focused in onItemClick_() anyway.
       if (this.mouseDown_)
         return;
 
-      if (this.lastFocused)
+      // If focus is being restored from outside the item and the event is fired
+      // by the list item itself, focus the first control so that the user can
+      // tab through all the controls. When the user shift-tabs back to the row,
+      // or focus is restored to the row from a dropdown on the last item, the
+      // last child item will be focused before the row itself. Since this is
+      // the desired behavior, do not shift focus to the first item in these
+      // cases.
+      const restoreFocusToFirst =
+          this.listBlurred && e.composedPath()[0] === this;
+
+      if (this.lastFocused && !restoreFocusToFirst)
         this.row_.getEquivalentElement(this.lastFocused).focus();
       else
         this.row_.getFirstFocusable().focus();
+      this.listBlurred = false;
+    },
 
-      this.tabIndex = -1;
+    /**
+     * @param {!Event} e
+     * @private
+     */
+    onBlur_: function(e) {
+      const node =
+          e.relatedTarget ? /** @type {!Node} */ (e.relatedTarget) : null;
+      if (!this.parentNode.contains(node))
+        this.listBlurred = true;
+    },
+
+    /** @param {!KeyboardEvent} e */
+    onCheckboxKeydown_: function(e) {
+      if (e.shiftKey && e.key === 'Tab')
+        this.focus();
     },
 
     /**

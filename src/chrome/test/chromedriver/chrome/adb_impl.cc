@@ -82,7 +82,7 @@ class ResponseBuffer : public base::RefCountedThreadSafe<ResponseBuffer> {
 void ExecuteCommandOnIOThread(
     const std::string& command, scoped_refptr<ResponseBuffer> response_buffer,
     int port) {
-  CHECK(base::MessageLoopForIO::IsCurrent());
+  CHECK(base::MessageLoopCurrentForIO::IsSet());
   AdbClientSocket::AdbQuery(port, command,
       base::Bind(&ResponseBuffer::OnResponse, response_buffer));
 }
@@ -92,7 +92,7 @@ void SendFileOnIOThread(const std::string& device_serial,
                         const std::string& content,
                         scoped_refptr<ResponseBuffer> response_buffer,
                         int port) {
-  CHECK(base::MessageLoopForIO::IsCurrent());
+  CHECK(base::MessageLoopCurrentForIO::IsSet());
   AdbClientSocket::SendFile(
       port, device_serial, filename, content,
       base::Bind(&ResponseBuffer::OnResponse, response_buffer));

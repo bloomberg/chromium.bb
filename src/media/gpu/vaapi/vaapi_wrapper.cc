@@ -22,7 +22,7 @@
 #include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 
@@ -629,6 +629,16 @@ bool VASupportedProfiles::GetMaxResolution_Locked(
       vaCreateConfig(va_display_, va_profile, entrypoint, &required_attribs[0],
                      required_attribs.size(), &va_config_id);
   VA_SUCCESS_OR_RETURN(va_res, "vaCreateConfig failed", false);
+  base::ScopedClosureRunner vaconfig_destroyer(base::BindOnce(
+      [](VADisplay display, VAConfigID id) {
+        if (id != VA_INVALID_ID) {
+          VAStatus va_res = vaDestroyConfig(display, id);
+          if (va_res != VA_STATUS_SUCCESS)
+            LOG(ERROR) << "vaDestroyConfig failed. VA error: "
+                       << vaErrorStr(va_res);
+        }
+      },
+      va_display_, va_config_id));
 
   // Calls vaQuerySurfaceAttributes twice. The first time is to get the number
   // of attributes to prepare the space and the second time is to get all
@@ -882,46 +892,58 @@ bool VaapiWrapper::IsImageFormatSupported(const VAImageFormat& format) {
   return VASupportedImageFormats::Get().IsImageFormatSupported(format);
 }
 
-bool VaapiWrapper::CreateSurfaces(unsigned int va_format,
-                                  const gfx::Size& size,
-                                  size_t num_surfaces,
-                                  std::vector<VASurfaceID>* va_surfaces) {
-  base::AutoLock auto_lock(*va_lock_);
-  DVLOG(2) << "Creating " << num_surfaces << " surfaces";
-  DCHECK(va_surfaces->empty());
+bool VaapiWrapper::CreateContextAndSurfaces(
+    unsigned int va_format,
+    const gfx::Size& size,
+    size_t num_surfaces,
+    std::vector<VASurfaceID>* va_surfaces) {
+  {
+    base::AutoLock auto_lock(*va_lock_);
+    DVLOG(2) << "Creating " << num_surfaces << " surfaces";
+    DCHECK(va_surfaces->empty());
 
-  if (!va_surface_ids_.empty() || va_surface_format_ != 0u) {
-    LOG(ERROR) << "Surfaces should be destroyed before creating new surfaces";
-    return false;
-  }
+    if (!va_surface_ids_.empty() || va_surface_format_ != 0u) {
+      LOG(ERROR) << "Surfaces should be destroyed before creating new surfaces";
+      return false;
+    }
 
-  // Allocate surfaces in driver.
-  va_surface_ids_.resize(num_surfaces);
-  VAStatus va_res =
-      vaCreateSurfaces(va_display_, va_format, size.width(), size.height(),
-                       &va_surface_ids_[0], va_surface_ids_.size(), NULL, 0);
+    // Allocate surfaces in driver.
+    va_surface_ids_.resize(num_surfaces);
+    VAStatus va_res =
+        vaCreateSurfaces(va_display_, va_format, size.width(), size.height(),
+                         &va_surface_ids_[0], va_surface_ids_.size(), NULL, 0);
 
-  VA_LOG_ON_ERROR(va_res, "vaCreateSurfaces failed");
-  if (va_res != VA_STATUS_SUCCESS) {
-    va_surface_ids_.clear();
-    return false;
+    VA_LOG_ON_ERROR(va_res, "vaCreateSurfaces failed");
+    if (va_res != VA_STATUS_SUCCESS) {
+      va_surface_ids_.clear();
+      return false;
+    }
   }
 
   // And create a context associated with them.
-  const bool success = CreateContext(va_format, size, va_surface_ids_);
+  const bool success = CreateContext(va_format, size);
   if (success)
     *va_surfaces = va_surface_ids_;
   else
-    DestroySurfaces_Locked();
+    DestroyContextAndSurfaces();
+
   return success;
 }
 
 bool VaapiWrapper::CreateContext(unsigned int va_format,
-                                 const gfx::Size& size,
-                                 const std::vector<VASurfaceID>& va_surfaces) {
-  VAStatus va_res = vaCreateContext(
-      va_display_, va_config_id_, size.width(), size.height(), VA_PROGRESSIVE,
-      &va_surface_ids_[0], va_surface_ids_.size(), &va_context_id_);
+                                 const gfx::Size& size) {
+  base::AutoLock auto_lock(*va_lock_);
+
+  // vaCreateContext() doesn't really need an array of VASurfaceIDs (see
+  // https://lists.01.org/pipermail/intel-vaapi-media/2017-July/000052.html and
+  // https://github.com/intel/libva/issues/251); pass a dummy list of valid
+  // (non-null) IDs until the signature gets updated.
+  constexpr VASurfaceID* empty_va_surfaces_ids_pointer = nullptr;
+  constexpr size_t empty_va_surfaces_ids_size = 0u;
+  const VAStatus va_res =
+      vaCreateContext(va_display_, va_config_id_, size.width(), size.height(),
+                      VA_PROGRESSIVE, empty_va_surfaces_ids_pointer,
+                      empty_va_surfaces_ids_size, &va_context_id_);
 
   VA_LOG_ON_ERROR(va_res, "vaCreateContext failed");
   if (va_res == VA_STATUS_SUCCESS)
@@ -929,11 +951,24 @@ bool VaapiWrapper::CreateContext(unsigned int va_format,
   return va_res == VA_STATUS_SUCCESS;
 }
 
-void VaapiWrapper::DestroySurfaces() {
+void VaapiWrapper::DestroyContextAndSurfaces() {
   base::AutoLock auto_lock(*va_lock_);
   DVLOG(2) << "Destroying " << va_surface_ids_.size() << " surfaces";
 
-  DestroySurfaces_Locked();
+  if (va_context_id_ != VA_INVALID_ID) {
+    VAStatus va_res = vaDestroyContext(va_display_, va_context_id_);
+    VA_LOG_ON_ERROR(va_res, "vaDestroyContext failed");
+  }
+
+  if (!va_surface_ids_.empty()) {
+    VAStatus va_res = vaDestroySurfaces(va_display_, &va_surface_ids_[0],
+                                        va_surface_ids_.size());
+    VA_LOG_ON_ERROR(va_res, "vaDestroySurfaces failed");
+  }
+
+  va_surface_ids_.clear();
+  va_context_id_ = VA_INVALID_ID;
+  va_surface_format_ = 0;
 }
 
 scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceForPixmap(
@@ -1161,13 +1196,32 @@ bool VaapiWrapper::UploadVideoFrameToSurface(
   int ret = 0;
   {
     base::AutoUnlock auto_unlock(*va_lock_);
-    ret = libyuv::I420ToNV12(
-        frame->data(VideoFrame::kYPlane), frame->stride(VideoFrame::kYPlane),
-        frame->data(VideoFrame::kUPlane), frame->stride(VideoFrame::kUPlane),
-        frame->data(VideoFrame::kVPlane), frame->stride(VideoFrame::kVPlane),
-        image_ptr + image.offsets[0], image.pitches[0],
-        image_ptr + image.offsets[1], image.pitches[1], image.width,
-        image.height);
+    switch (frame->format()) {
+      case PIXEL_FORMAT_I420:
+        ret = libyuv::I420ToNV12(frame->data(VideoFrame::kYPlane),
+                                 frame->stride(VideoFrame::kYPlane),
+                                 frame->data(VideoFrame::kUPlane),
+                                 frame->stride(VideoFrame::kUPlane),
+                                 frame->data(VideoFrame::kVPlane),
+                                 frame->stride(VideoFrame::kVPlane),
+                                 image_ptr + image.offsets[0], image.pitches[0],
+                                 image_ptr + image.offsets[1], image.pitches[1],
+                                 image.width, image.height);
+        break;
+      case PIXEL_FORMAT_NV12:
+        libyuv::CopyPlane(frame->data(VideoFrame::kYPlane),
+                          frame->stride(VideoFrame::kYPlane),
+                          image_ptr + image.offsets[0], image.pitches[0],
+                          image.width, image.height);
+        libyuv::CopyPlane(frame->data(VideoFrame::kUVPlane),
+                          frame->stride(VideoFrame::kUVPlane),
+                          image_ptr + image.offsets[1], image.pitches[1],
+                          image.width, image.height / 2);
+        break;
+      default:
+        LOG(ERROR) << "Unsupported pixel format: " << frame->format();
+        return false;
+    }
   }
   return ret == 0;
 }
@@ -1363,7 +1417,7 @@ VaapiWrapper::VaapiWrapper()
 VaapiWrapper::~VaapiWrapper() {
   DestroyPendingBuffers();
   DestroyCodedBuffers();
-  DestroySurfaces();
+  DestroyContextAndSurfaces();
   DeinitializeVpp();
   Deinitialize();
 }
@@ -1410,25 +1464,6 @@ bool VaapiWrapper::VaInitialize(const base::Closure& report_error_to_uma_cb) {
   va_display_ = VADisplayState::Get()->va_display();
   DCHECK(va_display_) << "VADisplayState hasn't been properly Initialize()d";
   return true;
-}
-
-void VaapiWrapper::DestroySurfaces_Locked() {
-  va_lock_->AssertAcquired();
-
-  if (va_context_id_ != VA_INVALID_ID) {
-    VAStatus va_res = vaDestroyContext(va_display_, va_context_id_);
-    VA_LOG_ON_ERROR(va_res, "vaDestroyContext failed");
-  }
-
-  if (!va_surface_ids_.empty()) {
-    VAStatus va_res = vaDestroySurfaces(va_display_, &va_surface_ids_[0],
-                                        va_surface_ids_.size());
-    VA_LOG_ON_ERROR(va_res, "vaDestroySurfaces failed");
-  }
-
-  va_surface_ids_.clear();
-  va_context_id_ = VA_INVALID_ID;
-  va_surface_format_ = 0;
 }
 
 void VaapiWrapper::DestroySurface(VASurfaceID va_surface_id) {

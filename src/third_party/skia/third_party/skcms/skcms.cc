@@ -720,7 +720,10 @@ static bool read_tag_mab(const skcms_ICCTag* tag, skcms_A2B* a2b, bool pcs_is_xy
     return true;
 }
 
-static int fit_linear(const skcms_Curve* curve, int N, float tol, float* c, float* d, float* f) {
+// If you pass f, we'll fit a possibly-non-zero value for *f.
+// If you pass nullptr, we'll assume you want *f to be treated as zero.
+static int fit_linear(const skcms_Curve* curve, int N, float tol,
+                      float* c, float* d, float* f = nullptr) {
     assert(N > 1);
     // We iteratively fit the first points to the TF's linear piece.
     // We want the cx + f line to pass through the first and last points we fit exactly.
@@ -735,7 +738,14 @@ static int fit_linear(const skcms_Curve* curve, int N, float tol, float* c, floa
     const float dx = 1.0f / (N - 1);
 
     int lin_points = 1;
-    *f = eval_curve(curve, 0);
+
+    float f_zero = 0.0f;
+    if (f) {
+        *f = eval_curve(curve, 0);
+    } else {
+        f = &f_zero;
+    }
+
 
     float slope_min = -INFINITY_;
     float slope_max = +INFINITY_;
@@ -797,7 +807,7 @@ static bool read_a2b(const skcms_ICCTag* tag, skcms_A2B* a2b, bool pcs_is_xyz) {
         if (curve && curve->table_entries && curve->table_entries <= (uint32_t)INT_MAX) {
             int N = (int)curve->table_entries;
 
-            float c,d,f;
+            float c = 0.0f, d = 0.0f, f = 0.0f;
             if (N == fit_linear(curve, N, 1.0f/(2*N), &c,&d,&f)
                 && c == 1.0f
                 && f == 0.0f) {
@@ -1686,7 +1696,10 @@ bool skcms_ApproximateCurve(const skcms_Curve* curve,
     for (int t = 0; t < ARRAY_COUNT(kTolerances); t++) {
         skcms_TransferFunction tf,
                                tf_inv;
-        int L = fit_linear(curve, N, kTolerances[t], &tf.c, &tf.d, &tf.f);
+
+        // It's problematic to fit curves with non-zero f, so always force it to zero explicitly.
+        tf.f = 0.0f;
+        int L = fit_linear(curve, N, kTolerances[t], &tf.c, &tf.d);
 
         if (L == N) {
             // If the entire data set was linear, move the coefficients to the nonlinear portion
@@ -1752,6 +1765,7 @@ bool skcms_ApproximateCurve(const skcms_Curve* curve,
 typedef enum {
     Op_load_a8,
     Op_load_g8,
+    Op_load_8888_palette8,
     Op_load_4444,
     Op_load_565,
     Op_load_888,
@@ -1781,24 +1795,12 @@ typedef enum {
     Op_tf_b,
     Op_tf_a,
 
-    Op_table_8_r,
-    Op_table_8_g,
-    Op_table_8_b,
-    Op_table_8_a,
+    Op_table_r,
+    Op_table_g,
+    Op_table_b,
+    Op_table_a,
 
-    Op_table_16_r,
-    Op_table_16_g,
-    Op_table_16_b,
-    Op_table_16_a,
-
-    Op_clut_1D_8,
-    Op_clut_1D_16,
-    Op_clut_2D_8,
-    Op_clut_2D_16,
-    Op_clut_3D_8,
-    Op_clut_3D_16,
-    Op_clut_4D_8,
-    Op_clut_4D_16,
+    Op_clut,
 
     Op_store_a8,
     Op_store_g8,
@@ -1971,11 +1973,11 @@ typedef struct {
 } OpAndArg;
 
 static OpAndArg select_curve_op(const skcms_Curve* curve, int channel) {
-    static const struct { Op parametric, table_8, table_16; } ops[] = {
-        { Op_tf_r, Op_table_8_r, Op_table_16_r },
-        { Op_tf_g, Op_table_8_g, Op_table_16_g },
-        { Op_tf_b, Op_table_8_b, Op_table_16_b },
-        { Op_tf_a, Op_table_8_a, Op_table_16_a },
+    static const struct { Op parametric, table; } ops[] = {
+        { Op_tf_r, Op_table_r },
+        { Op_tf_g, Op_table_g },
+        { Op_tf_b, Op_table_b },
+        { Op_tf_a, Op_table_a },
     };
 
     const OpAndArg noop = { Op_load_a8/*doesn't matter*/, nullptr };
@@ -1984,33 +1986,29 @@ static OpAndArg select_curve_op(const skcms_Curve* curve, int channel) {
         return is_identity_tf(&curve->parametric)
             ? noop
             : OpAndArg{ ops[channel].parametric, &curve->parametric };
-    } else if (curve->table_8) {
-        return OpAndArg{ ops[channel].table_8,  curve };
-    } else if (curve->table_16) {
-        return OpAndArg{ ops[channel].table_16, curve };
     }
 
-    assert(false);
-    return noop;
+    return OpAndArg{ ops[channel].table, curve };
 }
 
 static size_t bytes_per_pixel(skcms_PixelFormat fmt) {
     switch (fmt >> 1) {   // ignore rgb/bgr
-        case skcms_PixelFormat_A_8             >> 1: return  1;
-        case skcms_PixelFormat_G_8             >> 1: return  1;
-        case skcms_PixelFormat_ABGR_4444       >> 1: return  2;
-        case skcms_PixelFormat_RGB_565         >> 1: return  2;
-        case skcms_PixelFormat_RGB_888         >> 1: return  3;
-        case skcms_PixelFormat_RGBA_8888       >> 1: return  4;
-        case skcms_PixelFormat_RGBA_1010102    >> 1: return  4;
-        case skcms_PixelFormat_RGB_161616LE    >> 1: return  6;
-        case skcms_PixelFormat_RGBA_16161616LE >> 1: return  8;
-        case skcms_PixelFormat_RGB_161616BE    >> 1: return  6;
-        case skcms_PixelFormat_RGBA_16161616BE >> 1: return  8;
-        case skcms_PixelFormat_RGB_hhh         >> 1: return  6;
-        case skcms_PixelFormat_RGBA_hhhh       >> 1: return  8;
-        case skcms_PixelFormat_RGB_fff         >> 1: return 12;
-        case skcms_PixelFormat_RGBA_ffff       >> 1: return 16;
+        case skcms_PixelFormat_A_8                >> 1: return  1;
+        case skcms_PixelFormat_G_8                >> 1: return  1;
+        case skcms_PixelFormat_RGBA_8888_Palette8 >> 1: return  1;
+        case skcms_PixelFormat_ABGR_4444          >> 1: return  2;
+        case skcms_PixelFormat_RGB_565            >> 1: return  2;
+        case skcms_PixelFormat_RGB_888            >> 1: return  3;
+        case skcms_PixelFormat_RGBA_8888          >> 1: return  4;
+        case skcms_PixelFormat_RGBA_1010102       >> 1: return  4;
+        case skcms_PixelFormat_RGB_161616LE       >> 1: return  6;
+        case skcms_PixelFormat_RGBA_16161616LE    >> 1: return  8;
+        case skcms_PixelFormat_RGB_161616BE       >> 1: return  6;
+        case skcms_PixelFormat_RGBA_16161616BE    >> 1: return  8;
+        case skcms_PixelFormat_RGB_hhh            >> 1: return  6;
+        case skcms_PixelFormat_RGBA_hhhh          >> 1: return  8;
+        case skcms_PixelFormat_RGB_fff            >> 1: return 12;
+        case skcms_PixelFormat_RGBA_ffff          >> 1: return 16;
     }
     assert(false);
     return 0;
@@ -2042,7 +2040,22 @@ bool skcms_Transform(const void*             src,
                      skcms_PixelFormat       dstFmt,
                      skcms_AlphaFormat       dstAlpha,
                      const skcms_ICCProfile* dstProfile,
-                     size_t                  nz) {
+                     size_t                  npixels) {
+    return skcms_TransformWithPalette(src, srcFmt, srcAlpha, srcProfile,
+                                      dst, dstFmt, dstAlpha, dstProfile,
+                                      npixels, nullptr);
+}
+
+bool skcms_TransformWithPalette(const void*             src,
+                                skcms_PixelFormat       srcFmt,
+                                skcms_AlphaFormat       srcAlpha,
+                                const skcms_ICCProfile* srcProfile,
+                                void*                   dst,
+                                skcms_PixelFormat       dstFmt,
+                                skcms_AlphaFormat       dstAlpha,
+                                const skcms_ICCProfile* dstProfile,
+                                size_t                  nz,
+                                const void*             palette) {
     const size_t dst_bpp = bytes_per_pixel(dstFmt),
                  src_bpp = bytes_per_pixel(srcFmt);
     // Let's just refuse if the request is absurdly big.
@@ -2064,6 +2077,10 @@ bool skcms_Transform(const void*             src,
         return false;
     }
     // TODO: more careful alias rejection (like, dst == src + 1)?
+
+    if (needs_palette(srcFmt) && !palette) {
+        return false;
+    }
 
     Op          program  [32];
     const void* arguments[32];
@@ -2091,6 +2108,10 @@ bool skcms_Transform(const void*             src,
         case skcms_PixelFormat_RGBA_hhhh       >> 1: *ops++ = Op_load_hhhh;       break;
         case skcms_PixelFormat_RGB_fff         >> 1: *ops++ = Op_load_fff;        break;
         case skcms_PixelFormat_RGBA_ffff       >> 1: *ops++ = Op_load_ffff;       break;
+
+        case skcms_PixelFormat_RGBA_8888_Palette8 >> 1: *ops++  = Op_load_8888_palette8;
+                                                        *args++ = palette;
+                                                        break;
     }
     if (srcFmt & 1) {
         *ops++ = Op_swap_rb;
@@ -2134,13 +2155,8 @@ bool skcms_Transform(const void*             src,
                         *args++ = oa.arg;
                     }
                 }
-                switch (srcProfile->A2B.input_channels) {
-                    case 1: *ops++ = srcProfile->A2B.grid_8 ? Op_clut_1D_8 : Op_clut_1D_16; break;
-                    case 2: *ops++ = srcProfile->A2B.grid_8 ? Op_clut_2D_8 : Op_clut_2D_16; break;
-                    case 3: *ops++ = srcProfile->A2B.grid_8 ? Op_clut_3D_8 : Op_clut_3D_16; break;
-                    case 4: *ops++ = srcProfile->A2B.grid_8 ? Op_clut_4D_8 : Op_clut_4D_16; break;
-                    default: return false;
-                }
+                *ops++ = Op_clamp;
+                *ops++ = Op_clut;
                 *args++ = &srcProfile->A2B;
             }
 
@@ -2314,7 +2330,9 @@ bool skcms_MakeUsableAsDestinationWithSingleCurve(skcms_ICCProfile* profile) {
     float min_max_error = INFINITY_;
     for (int i = 0; i < 3; i++) {
         skcms_TransferFunction inv;
-        skcms_TransferFunction_invert(&result.trc[i].parametric, &inv);
+        if (!skcms_TransferFunction_invert(&result.trc[i].parametric, &inv)) {
+            return false;
+        }
 
         float err = 0;
         for (int j = 0; j < 3; ++j) {

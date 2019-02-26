@@ -13,7 +13,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "content/renderer/dom_storage/dom_storage_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/scheduler/test/fake_renderer_scheduler.h"
+#include "third_party/blink/public/platform/scheduler/test/web_fake_thread_scheduler.h"
 
 namespace content {
 
@@ -131,7 +131,7 @@ class DOMStorageCachedAreaTest : public testing::Test {
 
   void SetUp() override {
     main_thread_scheduler_ =
-        std::make_unique<blink::scheduler::FakeRendererScheduler>();
+        std::make_unique<blink::scheduler::WebFakeThreadScheduler>();
     mock_proxy_ = new MockProxy();
   }
 

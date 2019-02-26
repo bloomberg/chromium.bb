@@ -57,13 +57,6 @@ class V8V0CustomElementLifecycleCallbacks final
       v8::MaybeLocal<v8::Function> detached,
       v8::MaybeLocal<v8::Function> attribute_changed);
 
-  ~V8V0CustomElementLifecycleCallbacks() override;
-
-  bool SetBinding(std::unique_ptr<V0CustomElementBinding>);
-
-  void Trace(blink::Visitor*) override;
-
- private:
   V8V0CustomElementLifecycleCallbacks(
       ScriptState*,
       v8::Local<v8::Object> prototype,
@@ -71,7 +64,13 @@ class V8V0CustomElementLifecycleCallbacks final
       v8::MaybeLocal<v8::Function> attached,
       v8::MaybeLocal<v8::Function> detached,
       v8::MaybeLocal<v8::Function> attribute_changed);
+  ~V8V0CustomElementLifecycleCallbacks() override;
 
+  bool SetBinding(std::unique_ptr<V0CustomElementBinding>);
+
+  void Trace(blink::Visitor*) override;
+
+ private:
   void Created(Element*) override;
   void Attached(Element*) override;
   void Detached(Element*) override;

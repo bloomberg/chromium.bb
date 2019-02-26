@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
+#include "cc/layers/layer_collections.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/property_tree_manager.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
@@ -106,12 +107,24 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   void ShowDebugData();
 #endif
 
+  const Vector<std::unique_ptr<ContentLayerClientImpl>>&
+  ContentLayerClientsForTesting() const {
+    return content_layer_clients_;
+  }
+
+  // Update the cc::Layer's touch action region from the touch action rects of
+  // the paint chunks.
+  static void UpdateTouchActionRects(cc::Layer*,
+                                     const gfx::Vector2dF& layer_offset,
+                                     const PropertyTreeState& layer_state,
+                                     const PaintChunkSubset& paint_chunks);
+
  private:
   // A pending layer is a collection of paint chunks that will end up in
   // the same cc::Layer.
   struct PLATFORM_EXPORT PendingLayer {
     PendingLayer(const PaintChunk& first_paint_chunk,
-                 size_t first_chunk_index,
+                 wtf_size_t first_chunk_index,
                  bool requires_own_layer);
     // Merge another pending layer after this one, appending all its paint
     // chunks after chunks in this layer, with appropriate space conversion
@@ -127,7 +140,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
     void Upcast(const PropertyTreeState&);
 
     FloatRect bounds;
-    Vector<size_t> paint_chunk_indices;
+    Vector<wtf_size_t> paint_chunk_indices;
     FloatRect rect_known_to_be_opaque;
     PropertyTreeState property_tree_state;
     bool requires_own_layer;
@@ -179,6 +192,8 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
       Vector<std::unique_ptr<ContentLayerClientImpl>>&
           new_content_layer_clients,
       Vector<scoped_refptr<cc::Layer>>& new_scroll_hit_test_layers);
+
+  bool PropertyTreeStateChanged(const PropertyTreeState&) const;
 
   const TransformPaintPropertyNode& ScrollTranslationForPendingLayer(
       const PaintArtifact&,

@@ -64,7 +64,7 @@ FakeCompositorDependencies::GetCompositorImplThreadTaskRunner() {
 
 blink::scheduler::WebThreadScheduler*
 FakeCompositorDependencies::GetWebMainThreadScheduler() {
-  return &renderer_scheduler_;
+  return &main_thread_scheduler_;
 }
 
 cc::TaskGraphRunner* FakeCompositorDependencies::GetTaskGraphRunner() {

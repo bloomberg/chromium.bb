@@ -20,14 +20,20 @@ namespace ash {
 // bluetooth device changes.
 class BluetoothDevicesObserver : public device::BluetoothAdapter::Observer {
  public:
-  using DeviceChangedCallback =
+  // Note |device| can be nullptr here if only the bluetooth adapter status
+  // changes.
+  using AdapterOrDeviceChangedCallback =
       base::RepeatingCallback<void(device::BluetoothDevice* device)>;
 
   explicit BluetoothDevicesObserver(
-      const DeviceChangedCallback& device_changed_callback);
+      const AdapterOrDeviceChangedCallback& device_changed_callback);
   ~BluetoothDevicesObserver() override;
 
   // device::BluetoothAdapter::Observer:
+  void AdapterPresentChanged(device::BluetoothAdapter* adapter,
+                             bool present) override;
+  void AdapterPoweredChanged(device::BluetoothAdapter* adapter,
+                             bool powered) override;
   void DeviceChanged(device::BluetoothAdapter* adapter,
                      device::BluetoothDevice* device) override;
 
@@ -50,8 +56,9 @@ class BluetoothDevicesObserver : public device::BluetoothAdapter::Observer {
   // device change event.
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
 
-  // Callback function to be called when a bluetooth device status changes.
-  DeviceChangedCallback device_changed_callback_;
+  // Callback function to be called when the bluetooth adapter's status or a
+  // bluetooth device's status changes.
+  AdapterOrDeviceChangedCallback adapter_or_device_changed_callback_;
 
   base::WeakPtrFactory<BluetoothDevicesObserver> weak_factory_;
 

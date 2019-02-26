@@ -28,7 +28,7 @@
 
 #include <memory>
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -320,7 +320,7 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
 
     needs_section_recalc_ = true;
     SetNeedsLayoutAndFullPaintInvalidation(
-        LayoutInvalidationReason::kTableChanged);
+        layout_invalidation_reason::kTableChanged);
 
     // Grid structure affects cell adjacence relationships which affect
     // conflict resolution of collapsed borders.
@@ -474,7 +474,9 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
       OverlayScrollbarClipBehavior =
           kIgnorePlatformOverlayScrollbarSize) const override;
 
-  void AddVisualOverflowFromChildren() override;
+  void ComputeVisualOverflow(const LayoutRect&, bool recompute_floats) final;
+
+  void AddVisualOverflowFromChildren();
   void AddLayoutOverflowFromChildren() override;
 
   void RecalcSections() const;

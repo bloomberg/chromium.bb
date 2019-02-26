@@ -242,8 +242,8 @@ Build Chromium (the "chrome" target) with Ninja using the command:
 $ autoninja -C out/Default chrome
 ```
 
-`autoninja` is a wrapper that automatically provides optimal values for the
-arguments passed to `ninja`.
+(`autoninja` is a wrapper that automatically provides optimal values for the
+arguments passed to `ninja`.)
 
 You can get a list of all of the other build targets from GN by running `gn ls
 out/Default` from the command line. To compile one, pass the GN label to Ninja
@@ -413,7 +413,7 @@ pulseaudio-libs-devel zlib.i686 httpd mod_ssl php php-cli python-psutil wdiff \
 xorg-x11-server-Xvfb'
 ```
 
-The fonts needed by Blink's LayoutTests can be obtained by following [these
+The fonts needed by Blink's web tests can be obtained by following [these
 instructions](https://gist.github.com/pwnall/32a3b11c2b10f6ae5c6a6de66c1e12ae).
 For the optional packages:
 

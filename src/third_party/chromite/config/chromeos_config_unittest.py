@@ -12,9 +12,11 @@ import json
 import mock
 import os
 import re
+import unittest
 
 from chromite.cbuildbot import builders
 from chromite.config import chromeos_config
+from chromite.config import chromeos_config_test as chromeos_test
 from chromite.lib import config_lib
 from chromite.lib import config_lib_unittest
 from chromite.lib import constants
@@ -268,6 +270,8 @@ class UnifiedBuildConfigTestCase(object):
 
     chromeos_config.GeneralTemplates(
         self._site_config, self._fake_ge_build_config)
+    chromeos_test.GeneralTemplates(
+        self._site_config, self._fake_ge_build_config)
     chromeos_config.ReleaseBuilders(
         self._site_config, self._boards_dict, self._fake_ge_build_config)
     chromeos_config.CqBuilders(
@@ -315,10 +319,10 @@ class ConfigClassTest(ChromeosConfigTestBase):
   def testAppendUseflags(self):
     base_config = config_lib.BuildConfig(useflags=[])
     inherited_config_1 = base_config.derive(
-        useflags=chromeos_config.append_useflags(
+        useflags=config_lib.append_useflags(
             ['foo', 'bar', '-baz']))
     inherited_config_2 = inherited_config_1.derive(
-        useflags=chromeos_config.append_useflags(['-bar', 'baz']))
+        useflags=config_lib.append_useflags(['-bar', 'baz']))
     self.assertEqual(base_config.useflags, [])
     self.assertEqual(inherited_config_1.useflags, ['-baz', 'bar', 'foo'])
     self.assertEqual(inherited_config_2.useflags, ['-bar', 'baz', 'foo'])
@@ -384,6 +388,16 @@ class CBuildBotTest(ChromeosConfigTestBase):
       self.assertIn(config.luci_builder, config_lib.ALL_LUCI_BUILDER,
                     'Invalid luci_builder "%s" on "%s"' %
                     (config.luci_builder, build_name))
+
+  def testAffinityConfigsHaveAffinityLuciBuilder(self):
+    """Configs must have names set."""
+    for build_name, config in self.site_config.iteritems():
+      if config.build_affinity:
+        self.assertIn(config.luci_builder,
+                      (config_lib.LUCI_BUILDER_INCREMENTAL,
+                       config_lib.LUCI_BUILDER_CQ),
+                      'Non affinity luci_builder "%s" on "%s"' %
+                      (config.luci_builder, build_name))
 
   def testMasterSlaveConfigsExist(self):
     """Configs listing slave configs, must list valid configs."""
@@ -596,12 +610,12 @@ class CBuildBotTest(ChromeosConfigTestBase):
     for _, config in self.site_config.iteritems():
       if config['vm_tests'] or config['vm_tests_override']:
         for board in config['boards']:
-          self.assertIn(board, chromeos_config._vmtest_boards,
+          self.assertIn(board, chromeos_test.vmtest_boards,
                         'Board %s not able to run VM tests.' % board)
       for child_config in config.child_configs:
         if child_config['vm_tests'] or child_config['vm_tests_override']:
           for board in config['boards']:
-            self.assertIn(board, chromeos_config._vmtest_boards,
+            self.assertIn(board, chromeos_test.vmtest_boards,
                           'Board %s not able to run VM tests.' % board)
 
   def testHWTestsArchivingHWTestArtifacts(self):
@@ -629,9 +643,27 @@ class CBuildBotTest(ChromeosConfigTestBase):
           'Config %s: is tryjob safe, but defines hw_tests_override.' % \
           build_name)
 
+  # TODO(crbug/871967) Remove expectedFailure once clapper-release* gets its
+  # hwtests back.
+  @unittest.expectedFailure
   def testHWTestsReleaseBuilderRequirement(self):
     """Make sure all release configs run hw tests."""
     for build_name, config in self.site_config.iteritems():
+      if (config.build_type == 'canary' and 'test' in config.images and
+          config.upload_hw_test_artifacts and config.hwqual):
+        self.assertTrue(
+            config.hw_tests,
+            "Release builder %s must run hw tests." % build_name)
+
+
+  def testHWTestsReleaseBuilderWeakRequirement(self):
+    """Make sure most release configs run hw tests."""
+    for build_name, config in self.site_config.iteritems():
+      # crbug/871967: clapper-release* hwtests are intentionally currently
+      # turned off.
+      if build_name.startswith('clapper'):
+        continue
+
       if (config.build_type == 'canary' and 'test' in config.images and
           config.upload_hw_test_artifacts and config.hwqual):
         self.assertTrue(
@@ -686,6 +718,7 @@ class CBuildBotTest(ChromeosConfigTestBase):
         constants.CANARY_TYPE,
         constants.PFQ_TYPE,
         constants.PALADIN_TYPE,
+        constants.POSTSUBMIT_TYPE,
         constants.TOOLCHAIN_TYPE,
         constants.CHROME_PFQ_TYPE,
         constants.ANDROID_PFQ_TYPE,
@@ -948,9 +981,14 @@ class CBuildBotTest(ChromeosConfigTestBase):
     """Verifies that all config boards are in _all_boards."""
     boards_dict = self._GetBoardTypeToBoardsDict()
     for build_name, config in self.site_config.iteritems():
-      self.assertIsNotNone(config['boards'],
+      self.assertIsNotNone(config.boards,
                            'Config %s has boards = None' % build_name)
-      for board in config['boards']:
+      for board in config.boards:
+        if config.workspace_branch:
+          # Builds on workspace branches may reference boards which no
+          # longer exist.
+          continue
+
         self.assertIn(board, boards_dict['all_boards'],
                       'Config %s has unknown board %s.' %
                       (build_name, board))
@@ -970,9 +1008,10 @@ class CBuildBotTest(ChromeosConfigTestBase):
     """paygen testing requires upload_hw_test_artifacts."""
     for build_name, config in self.site_config.iteritems():
 
-      # This requirement doesn't apply to payloads builds. Payloads are
-      # using artifacts from a previous build.
-      if build_name.endswith('-payloads'):
+      # This requirement doesn't apply to payloads(-tryjob)
+      # builds. Payloads(-tryjob) are using artifacts from a previous build.
+      if build_name.endswith('-payloads') or \
+         build_name.endswith('-payloads-tryjob'):
         continue
 
       if config['paygen'] and not config['paygen_skip_testing']:

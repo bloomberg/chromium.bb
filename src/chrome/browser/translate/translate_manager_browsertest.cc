@@ -9,15 +9,20 @@
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
+#include "chrome/browser/translate/translate_accept_languages_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/translate/core/browser/translate_accept_languages.h"
 #include "components/translate/core/browser/translate_error_details.h"
 #include "components/translate/core/common/language_detection_details.h"
 #include "components/translate/core/common/translate_switches.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "url/gurl.h"
@@ -244,6 +249,10 @@ class TranslateManagerBrowserTest : public InProcessBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
 
+    // Enable Experimental web platform features for HrefTranslate tests
+    command_line->AppendSwitch(
+        switches::kEnableExperimentalWebPlatformFeatures);
+
     command_line->AppendSwitchASCII(
         translate::switches::kTranslateScriptURL,
         embedded_test_server()->GetURL("/mock_translate_script.js").spec());
@@ -388,6 +397,193 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, PageTranslationSuccess) {
 
   EXPECT_FALSE(chrome_translate_client->GetLanguageState().translation_error());
   EXPECT_EQ(translate::TranslateErrors::NONE, GetPageTranslatedResult());
+}
+
+// Test that hrefTranslate is propagating properly
+IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, HrefTranslateSuccess) {
+  ChromeTranslateClient* chrome_translate_client = GetChromeTranslateClient();
+  chrome_translate_client->GetTranslateManager()->SetIgnoreMissingKeyForTesting(
+      true);
+  SetTranslateScript(kTestValidScript);
+
+  // There is a possible race condition, when the language is not yet detected,
+  // so we check for that and wait if necessary.
+  if (chrome_translate_client->GetLanguageState().original_language().empty())
+    WaitUntilLanguageDetected();
+
+  EXPECT_EQ("und",
+            chrome_translate_client->GetLanguageState().original_language());
+
+  ResetObserver();
+  // Load a German page and detect it's language
+  AddTabAtIndex(
+      0, GURL(embedded_test_server()->GetURL("/href_translate_test.html")),
+      ui::PAGE_TRANSITION_TYPED);
+  chrome_translate_client = GetChromeTranslateClient();
+  WaitUntilLanguageDetected();
+  EXPECT_EQ("de",
+            chrome_translate_client->GetLanguageState().original_language());
+
+  // Navigate to the French page by way of a link on the original page
+  ResetObserver();
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+
+  const std::string click_link_js =
+      "(function() { document.getElementById('test').click(); })();";
+  ASSERT_TRUE(content::ExecuteScript(web_contents, click_link_js));
+
+  // Detect language on the new page
+  WaitUntilLanguageDetected();
+  EXPECT_EQ("fr",
+            chrome_translate_client->GetLanguageState().original_language());
+
+  // See that the page was translated automatically
+  WaitUntilPageTranslated();
+  EXPECT_EQ("ja",
+            chrome_translate_client->GetLanguageState().current_language());
+
+  // The target shouldn't be added to accept languages.
+  EXPECT_FALSE(TranslateAcceptLanguagesFactory::GetForBrowserContext(
+                   browser()->profile())
+                   ->IsAcceptLanguage("ja"));
+}
+
+// Test that hrefTranslate with an unsupported language doesn't trigger.
+IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, HrefTranslateUnsupported) {
+  ChromeTranslateClient* chrome_translate_client = GetChromeTranslateClient();
+  chrome_translate_client->GetTranslateManager()->SetIgnoreMissingKeyForTesting(
+      true);
+  SetTranslateScript(kTestValidScript);
+
+  // There is a possible race condition, when the language is not yet detected,
+  // so we check for that and wait if necessary.
+  if (chrome_translate_client->GetLanguageState().original_language().empty())
+    WaitUntilLanguageDetected();
+
+  EXPECT_EQ("und",
+            chrome_translate_client->GetLanguageState().original_language());
+
+  ResetObserver();
+  // Load a German page and detect it's language
+  AddTabAtIndex(
+      0, GURL(embedded_test_server()->GetURL("/href_translate_test.html")),
+      ui::PAGE_TRANSITION_TYPED);
+  chrome_translate_client = GetChromeTranslateClient();
+  WaitUntilLanguageDetected();
+  EXPECT_EQ("de",
+            chrome_translate_client->GetLanguageState().original_language());
+
+  // Navigate to the French page by way of a link on the original page. This
+  // link has the hrefTranslate attribute set to "unsupported", so it shouldn't
+  // trigger translate.
+  ResetObserver();
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+
+  const std::string click_link_js =
+      "(function() { "
+      "document.getElementById('test-unsupported-language').click(); })();";
+  ASSERT_TRUE(content::ExecuteScript(web_contents, click_link_js));
+
+  // Detect language on the new page
+  WaitUntilLanguageDetected();
+  EXPECT_EQ("fr",
+            chrome_translate_client->GetLanguageState().original_language());
+
+  EXPECT_EQ("", chrome_translate_client->GetLanguageState().AutoTranslateTo());
+}
+
+// Test an href translate link to a conflicted page
+IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, HrefTranslateConflict) {
+  ChromeTranslateClient* chrome_translate_client = GetChromeTranslateClient();
+  chrome_translate_client->GetTranslateManager()->SetIgnoreMissingKeyForTesting(
+      true);
+  SetTranslateScript(kTestValidScript);
+
+  // There is a possible race condition, when the language is not yet detected,
+  // so we check for that and wait if necessary.
+  if (chrome_translate_client->GetLanguageState().original_language().empty())
+    WaitUntilLanguageDetected();
+
+  EXPECT_EQ("und",
+            chrome_translate_client->GetLanguageState().original_language());
+
+  ResetObserver();
+  // Load a German page and detect it's language
+  AddTabAtIndex(
+      0, GURL(embedded_test_server()->GetURL("/href_translate_test.html")),
+      ui::PAGE_TRANSITION_TYPED);
+  chrome_translate_client = GetChromeTranslateClient();
+  WaitUntilLanguageDetected();
+  EXPECT_EQ("de",
+            chrome_translate_client->GetLanguageState().original_language());
+
+  // Navigate to the French page that thinks its in English by way of a link on
+  // the original page
+  ResetObserver();
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+
+  const std::string click_link_js =
+      "(function() { document.getElementById('test-conflict').click(); })();";
+  ASSERT_TRUE(content::ExecuteScript(web_contents, click_link_js));
+
+  // Detect language on the new page
+  WaitUntilLanguageDetected();
+  EXPECT_EQ("fr",
+            chrome_translate_client->GetLanguageState().original_language());
+
+  // See that the page was translated automatically
+  WaitUntilPageTranslated();
+  EXPECT_EQ("en",
+            chrome_translate_client->GetLanguageState().current_language());
+}
+
+// Test an href translate link without an href lang for the landing page
+IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, HrefTranslateNoHrefLang) {
+  ChromeTranslateClient* chrome_translate_client = GetChromeTranslateClient();
+  chrome_translate_client->GetTranslateManager()->SetIgnoreMissingKeyForTesting(
+      true);
+  SetTranslateScript(kTestValidScript);
+
+  // There is a possible race condition, when the language is not yet detected,
+  // so we check for that and wait if necessary.
+  if (chrome_translate_client->GetLanguageState().original_language().empty())
+    WaitUntilLanguageDetected();
+
+  EXPECT_EQ("und",
+            chrome_translate_client->GetLanguageState().original_language());
+
+  ResetObserver();
+  // Load a German page and detect it's language
+  AddTabAtIndex(
+      0, GURL(embedded_test_server()->GetURL("/href_translate_test.html")),
+      ui::PAGE_TRANSITION_TYPED);
+  chrome_translate_client = GetChromeTranslateClient();
+  WaitUntilLanguageDetected();
+  EXPECT_EQ("de",
+            chrome_translate_client->GetLanguageState().original_language());
+
+  // Use a link with no hrefLang to navigate to a French page
+  ResetObserver();
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+
+  const std::string click_link_js =
+      "(function() { document.getElementById('test-no-hrefLang').click(); "
+      "})();";
+  ASSERT_TRUE(content::ExecuteScript(web_contents, click_link_js));
+
+  // Detect language on the new page
+  WaitUntilLanguageDetected();
+  EXPECT_EQ("fr",
+            chrome_translate_client->GetLanguageState().original_language());
+
+  // See that the page was translated automatically
+  WaitUntilPageTranslated();
+  EXPECT_EQ("en",
+            chrome_translate_client->GetLanguageState().current_language());
 }
 
 // Test if there was an error during translation.

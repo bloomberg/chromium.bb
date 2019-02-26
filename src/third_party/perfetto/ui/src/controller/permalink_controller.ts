@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {DraftObject, produce} from 'immer';
 import * as uuidv4 from 'uuid/v4';
 
 import {assertExists} from '../base/logging';
@@ -53,20 +54,33 @@ export class PermalinkController extends Controller<'main'> {
   }
 
   private static async createPermalink() {
-    const state = {...globals.state};
-    state.engines = {...state.engines};
+    const state = globals.state;
+
+    // Upload each loaded trace.
+    const fileToUrl = new Map<File, string>();
     for (const engine of Object.values<EngineConfig>(state.engines)) {
-      // If the trace was opened from a local file, upload it and store the
-      // url of the uploaded trace instead.
-      if (engine.source instanceof File) {
-        const url = await this.saveTrace(engine.source);
-        engine.source = url;
-      }
+      if (!(engine.source instanceof File)) continue;
+      PermalinkController.updateStatus(`Uploading ${engine.source.name}`);
+      const url = await this.saveTrace(engine.source);
+      fileToUrl.set(engine.source, url);
     }
-    const hash = await this.saveState(state);
+
+    // Convert state to use URLs and remove permalink.
+    const uploadState = produce(state, draft => {
+      for (const engine of Object.values<DraftObject<EngineConfig>>(
+               draft.engines)) {
+        if (!(engine.source instanceof File)) continue;
+        engine.source = fileToUrl.get(engine.source)!;
+      }
+      draft.permalink = {};
+    });
+
+    // Upload state.
+    PermalinkController.updateStatus(`Creating permalink...`);
+    const hash = await this.saveState(uploadState);
+    PermalinkController.updateStatus(`Permalink ready`);
     return hash;
   }
-
 
   private static async saveState(state: State): Promise<string> {
     const text = JSON.stringify(state);
@@ -102,7 +116,6 @@ export class PermalinkController extends Controller<'main'> {
     return `https://storage.googleapis.com/${BUCKET_NAME}/${name}`;
   }
 
-
   private static async loadState(id: string): Promise<State> {
     const url = `https://storage.googleapis.com/${BUCKET_NAME}/${id}`;
     const response = await fetch(url);
@@ -121,5 +134,13 @@ export class PermalinkController extends Controller<'main'> {
     const buffer = new (TextEncoder as any)('utf-8').encode(str);
     const digest = await crypto.subtle.digest('SHA-256', buffer);
     return Array.from(new Uint8Array(digest)).map(x => x.toString(16)).join('');
+  }
+
+  private static updateStatus(msg: string): void {
+    // TODO(hjd): Unify loading updates.
+    globals.dispatch(Actions.updateStatus({
+      msg,
+      timestamp: Date.now() / 1000,
+    }));
   }
 }

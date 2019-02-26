@@ -15,11 +15,14 @@ namespace blink {
 // and the result and the reasons why changes occurred are stored in this class.
 class CORE_EXPORT AddEventListenerOptionsResolved
     : public AddEventListenerOptions {
-  DISALLOW_NEW();
-
  public:
-  AddEventListenerOptionsResolved();
-  AddEventListenerOptionsResolved(const AddEventListenerOptions&);
+  static AddEventListenerOptionsResolved* Create() {
+    return new AddEventListenerOptionsResolved();
+  }
+  static AddEventListenerOptionsResolved* Create(
+      const AddEventListenerOptions* options) {
+    return new AddEventListenerOptionsResolved(options);
+  }
   ~AddEventListenerOptionsResolved() override;
 
   void SetPassiveForcedForDocumentTarget(bool forced) {
@@ -37,6 +40,9 @@ class CORE_EXPORT AddEventListenerOptionsResolved
   void Trace(blink::Visitor*) override;
 
  private:
+  AddEventListenerOptionsResolved();
+  AddEventListenerOptionsResolved(const AddEventListenerOptions*);
+
   bool passive_forced_for_document_target_;
   bool passive_specified_;
 };

@@ -85,7 +85,7 @@ void InFlightIO::OnIOComplete(BackgroundIO* operation) {
 void InFlightIO::InvokeCallback(BackgroundIO* operation, bool cancel_task) {
   {
     // http://crbug.com/74623
-    base::ThreadRestrictions::ScopedAllowWait allow_wait;
+    base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
     operation->io_completed()->Wait();
   }
   running_ = true;

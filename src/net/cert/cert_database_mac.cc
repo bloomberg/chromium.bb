@@ -28,13 +28,15 @@ class CertDatabase::Notifier {
   // Creates a new Notifier that will forward Keychain events to |cert_db|.
   // |message_loop| must refer to a thread with an associated CFRunLoop - a
   // TYPE_UI thread. Events will be dispatched from this message loop.
-  Notifier(CertDatabase* cert_db, base::MessageLoop* message_loop)
+  Notifier(CertDatabase* cert_db,
+           scoped_refptr<base::SingleThreadTaskRunner> task_runner)
       : cert_db_(cert_db),
+        task_runner_(std::move(task_runner)),
         registered_(false),
         called_shutdown_(false) {
     // Ensure an associated CFRunLoop.
-    DCHECK(base::MessageLoopForUI::IsCurrent());
-    task_runner_ = message_loop->task_runner();
+    DCHECK(base::MessageLoopCurrentForUI::IsSet());
+    DCHECK(task_runner_->BelongsToCurrentThread());
     task_runner_->PostTask(FROM_HERE,
                            base::Bind(&Notifier::Init,
                                       base::Unretained(this)));
@@ -115,9 +117,9 @@ OSStatus CertDatabase::Notifier::KeychainCallback(
   return errSecSuccess;
 }
 
-void CertDatabase::SetMessageLoopForKeychainEvents() {
+void CertDatabase::StartListeningForKeychainEvents() {
   ReleaseNotifier();
-  notifier_ = new Notifier(this, base::MessageLoopCurrentForUI::Get());
+  notifier_ = new Notifier(this, base::ThreadTaskRunnerHandle::Get());
 }
 
 void CertDatabase::ReleaseNotifier() {

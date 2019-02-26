@@ -44,7 +44,7 @@
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/main/browser_view_information.h"
 #import "ios/chrome/browser/ui/safe_mode/safe_mode_coordinator.h"
-#include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/net/cookies/cookie_store_ios.h"
 #include "ios/net/cookies/system_cookie_util.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -210,7 +210,11 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
         UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     _incognitoBlocker.autoresizingMask =
         UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-    [_window addSubview:_incognitoBlocker];
+
+    // Adding |_incognitoBlocker| to |_window| won't cover overlay windows such
+    // as fullscreen video.  Instead use the sharedApplication |keyWindow|.
+    UIWindow* window = [[UIApplication sharedApplication] keyWindow];
+    [window addSubview:_incognitoBlocker];
   }
 
   // Do not save cookies if it is already in progress.
@@ -421,6 +425,9 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 
   base::TimeDelta duration = base::TimeTicks::Now() - _sessionStartTime;
   UMA_HISTOGRAM_LONG_TIMES("Session.TotalDuration", duration);
+  UMA_HISTOGRAM_CUSTOM_TIMES("Session.TotalDurationMax1Day", duration,
+                             base::TimeDelta::FromMilliseconds(1),
+                             base::TimeDelta::FromHours(24), 50);
   [[[_browserLauncher browserViewInformation] mainTabModel]
       recordSessionMetrics];
 }

@@ -14,11 +14,8 @@
 #include "mash/public/mojom/launchable.mojom.h"
 #include "services/catalog/public/mojom/catalog.mojom.h"
 #include "services/catalog/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/c/main.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_context.h"
-#include "services/service_manager/public/cpp/service_runner.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/views/background.h"
@@ -155,7 +152,9 @@ class QuickLaunchUI : public views::WidgetDelegateView,
 
 }  // namespace
 
-QuickLaunchApplication::QuickLaunchApplication() = default;
+QuickLaunchApplication::QuickLaunchApplication(
+    service_manager::mojom::ServiceRequest request)
+    : service_binding_(this, std::move(request)) {}
 
 QuickLaunchApplication::~QuickLaunchApplication() {
   if (window_)
@@ -164,21 +163,21 @@ QuickLaunchApplication::~QuickLaunchApplication() {
 
 void QuickLaunchApplication::Quit() {
   window_ = nullptr;
-  context()->QuitNow();
+  Terminate();
 }
 
 void QuickLaunchApplication::OnStart() {
   // If AuraInit was unable to initialize there is no longer a peer connection.
   // The ServiceManager is in the process of shutting down, however we haven't
-  // been notified yet. Close our ServiceContext and shutdown.
+  // been notified yet. We just self-terminate in this case.
   views::AuraInit::InitParams params;
-  params.connector = context()->connector();
-  params.identity = context()->identity();
+  params.connector = service_binding_.GetConnector();
+  params.identity = service_binding_.identity();
   params.register_path_provider = running_standalone_;
   params.use_accessibility_host = true;
   aura_init_ = views::AuraInit::Create(params);
   if (!aura_init_) {
-    context()->QuitNow();
+    Terminate();
     return;
   }
 
@@ -186,10 +185,12 @@ void QuickLaunchApplication::OnStart() {
   ash::ash_client::Init();
 
   catalog::mojom::CatalogPtr catalog;
-  context()->connector()->BindInterface(catalog::mojom::kServiceName, &catalog);
+  service_binding_.GetConnector()->BindInterface(catalog::mojom::kServiceName,
+                                                 &catalog);
 
   window_ = views::Widget::CreateWindowWithContextAndBounds(
-      new QuickLaunchUI(this, context()->connector(), std::move(catalog)),
+      new QuickLaunchUI(this, service_binding_.GetConnector(),
+                        std::move(catalog)),
       nullptr, gfx::Rect(10, 640, 0, 0));
   window_->GetNativeWindow()->GetHost()->window()->SetName("QuickLaunch");
   window_->Show();

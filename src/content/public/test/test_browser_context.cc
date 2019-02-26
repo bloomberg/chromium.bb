@@ -50,8 +50,8 @@ namespace content {
 TestBrowserContext::TestBrowserContext(
     base::FilePath browser_context_dir_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI))
-      << "Please construct content::TestBrowserTheadBundle before constructing "
-      << "TestBrowserContext instances.  "
+      << "Please construct content::TestBrowserThreadBundle before "
+      << "constructing TestBrowserContext instances.  "
       << BrowserThread::GetDCheckCurrentlyOnErrorMessage(BrowserThread::UI);
 
   if (browser_context_dir_path.empty()) {
@@ -97,10 +97,6 @@ base::FilePath TestBrowserContext::GetPath() const {
   return browser_context_dir_.GetPath();
 }
 
-base::FilePath TestBrowserContext::GetCachePath() const {
-  return browser_context_dir_.GetPath();
-}
-
 #if !defined(OS_ANDROID)
 std::unique_ptr<ZoomLevelDelegate> TestBrowserContext::CreateZoomLevelDelegate(
     const base::FilePath& partition_path) {
@@ -118,8 +114,7 @@ DownloadManagerDelegate* TestBrowserContext::GetDownloadManagerDelegate() {
 
 ResourceContext* TestBrowserContext::GetResourceContext() {
   if (!resource_context_)
-    resource_context_.reset(new MockResourceContext(
-        GetRequestContext()->GetURLRequestContext()));
+    resource_context_.reset(new MockResourceContext);
   return resource_context_.get();
 }
 

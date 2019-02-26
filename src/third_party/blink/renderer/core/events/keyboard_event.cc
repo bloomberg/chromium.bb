@@ -26,6 +26,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/renderer/core/editing/ime/input_method_controller.h"
+#include "third_party/blink/renderer/core/event_interface_names.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/input/input_device_capabilities.h"
@@ -40,11 +41,11 @@ namespace {
 const AtomicString& EventTypeForKeyboardEventType(WebInputEvent::Type type) {
   switch (type) {
     case WebInputEvent::kKeyUp:
-      return EventTypeNames::keyup;
+      return event_type_names::kKeyup;
     case WebInputEvent::kRawKeyDown:
-      return EventTypeNames::keydown;
+      return event_type_names::kKeydown;
     case WebInputEvent::kChar:
-      return EventTypeNames::keypress;
+      return event_type_names::kKeypress;
     case WebInputEvent::kKeyDown:
       // The caller should disambiguate the combined event into RawKeyDown or
       // Char events.
@@ -53,7 +54,7 @@ const AtomicString& EventTypeForKeyboardEventType(WebInputEvent::Type type) {
       break;
   }
   NOTREACHED();
-  return EventTypeNames::keydown;
+  return event_type_names::kKeydown;
 }
 
 KeyboardEvent::KeyLocationCode GetKeyLocationCode(const WebInputEvent& key) {
@@ -79,12 +80,13 @@ bool HasCurrentComposition(LocalDOMWindow* dom_window) {
 
 KeyboardEvent* KeyboardEvent::Create(ScriptState* script_state,
                                      const AtomicString& type,
-                                     const KeyboardEventInit& initializer) {
-  if (script_state->World().IsIsolatedWorld())
+                                     const KeyboardEventInit* initializer) {
+  if (script_state->World().IsIsolatedWorld()) {
     UIEventWithKeyState::DidCreateEventInIsolatedWorld(
-        initializer.ctrlKey(), initializer.altKey(), initializer.shiftKey(),
-        initializer.metaKey());
-  return new KeyboardEvent(type, initializer);
+        initializer->ctrlKey(), initializer->altKey(), initializer->shiftKey(),
+        initializer->metaKey());
+  }
+  return MakeGarbageCollected<KeyboardEvent>(type, initializer);
 }
 
 KeyboardEvent::KeyboardEvent() : location_(kDomKeyLocationStandard) {}
@@ -113,10 +115,11 @@ KeyboardEvent::KeyboardEvent(const WebKeyboardEvent& key,
 
   // Firefox: 0 for keydown/keyup events, character code for keypress
   // We match Firefox
-  if (type() == EventTypeNames::keypress)
+  if (type() == event_type_names::kKeypress)
     char_code_ = key.text[0];
 
-  if (type() == EventTypeNames::keydown || type() == EventTypeNames::keyup)
+  if (type() == event_type_names::kKeydown ||
+      type() == event_type_names::kKeyup)
     key_code_ = key.windows_key_code;
   else
     key_code_ = char_code_;
@@ -130,17 +133,17 @@ KeyboardEvent::KeyboardEvent(const WebKeyboardEvent& key,
 }
 
 KeyboardEvent::KeyboardEvent(const AtomicString& event_type,
-                             const KeyboardEventInit& initializer)
+                             const KeyboardEventInit* initializer)
     : UIEventWithKeyState(event_type, initializer),
-      code_(initializer.code()),
-      key_(initializer.key()),
-      location_(initializer.location()),
-      is_composing_(initializer.isComposing()),
-      char_code_(initializer.charCode()),
-      key_code_(initializer.keyCode()) {
-  if (initializer.repeat())
+      code_(initializer->code()),
+      key_(initializer->key()),
+      location_(initializer->location()),
+      is_composing_(initializer->isComposing()),
+      char_code_(initializer->charCode()),
+      key_code_(initializer->keyCode()) {
+  if (initializer->repeat())
     modifiers_ |= WebInputEvent::kIsAutoRepeat;
-  InitLocationModifiers(initializer.location());
+  InitLocationModifiers(initializer->location());
 }
 
 KeyboardEvent::~KeyboardEvent() = default;
@@ -179,7 +182,7 @@ int KeyboardEvent::charCode() const {
 }
 
 const AtomicString& KeyboardEvent::InterfaceName() const {
-  return EventNames::KeyboardEvent;
+  return event_interface_names::kKeyboardEvent;
 }
 
 bool KeyboardEvent::IsKeyboardEvent() const {

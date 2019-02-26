@@ -58,7 +58,7 @@ void LayoutNGListItem::OrdinalValueChanged() {
     is_marker_text_updated_ = false;
     DCHECK(marker_);
     marker_->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-        LayoutInvalidationReason::kListValueChange);
+        layout_invalidation_reason::kListValueChange);
   }
 }
 
@@ -245,6 +245,12 @@ LayoutNGListItem::MarkerType LayoutNGListItem::MarkerText(
   }
   NOTREACHED();
   return kStatic;
+}
+
+String LayoutNGListItem::MarkerTextWithSuffix() const {
+  StringBuilder text;
+  MarkerText(&text, kWithSuffix);
+  return text.ToString();
 }
 
 String LayoutNGListItem::MarkerTextWithoutSuffix() const {

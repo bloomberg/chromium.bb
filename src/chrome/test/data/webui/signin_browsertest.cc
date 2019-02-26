@@ -20,5 +20,5 @@ void SigninBrowserTest::EnableUnity() {
   EnableDice();
   scoped_unified_consent_ =
       std::make_unique<unified_consent::ScopedUnifiedConsent>(
-          unified_consent::UnifiedConsentFeatureState::kEnabledNoBump);
+          unified_consent::UnifiedConsentFeatureState::kEnabled);
 }

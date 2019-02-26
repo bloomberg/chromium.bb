@@ -23,7 +23,7 @@ AbortSignal::AbortSignal(ExecutionContext* execution_context)
 AbortSignal::~AbortSignal() = default;
 
 const AtomicString& AbortSignal::InterfaceName() const {
-  return EventTargetNames::AbortSignal;
+  return event_target_names::kAbortSignal;
 }
 
 ExecutionContext* AbortSignal::GetExecutionContext() const {
@@ -44,7 +44,7 @@ void AbortSignal::SignalAbort() {
     std::move(closure).Run();
   }
   abort_algorithms_.clear();
-  DispatchEvent(*Event::Create(EventTypeNames::abort));
+  DispatchEvent(*Event::Create(event_type_names::kAbort));
 }
 
 void AbortSignal::Follow(AbortSignal* parentSignal) {

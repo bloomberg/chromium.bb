@@ -33,8 +33,7 @@ class ServiceWorkerContentSettingsProxyImpl final
   ~ServiceWorkerContentSettingsProxyImpl() override;
 
   // blink::mojom::WorkerContentSettingsProxy implementation
-  void AllowIndexedDB(const base::string16& name,
-                      AllowIndexedDBCallback callback) override;
+  void AllowIndexedDB(AllowIndexedDBCallback callback) override;
   void RequestFileSystemAccessSync(
       RequestFileSystemAccessSyncCallback callback) override;
 

@@ -36,16 +36,16 @@ class Node;
 class NativeXPathNSResolver final : public XPathNSResolver {
  public:
   static NativeXPathNSResolver* Create(Node* node) {
-    return new NativeXPathNSResolver(node);
+    return MakeGarbageCollected<NativeXPathNSResolver>(node);
   }
+
+  explicit NativeXPathNSResolver(Node*);
 
   AtomicString lookupNamespaceURI(const String& prefix) override;
 
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit NativeXPathNSResolver(Node*);
-
   Member<Node> node_;
 };
 

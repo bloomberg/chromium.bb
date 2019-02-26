@@ -334,9 +334,8 @@ IN_PROC_BROWSER_TEST_F(SingleProcessMemoryTracingTest, DISABLED_QueuedDumps) {
 
 #endif  // defined(OS_ANDROID)
 
-// Non-deterministic races under TSan. crbug.com/529678
 // Flaky on Mac. crbug.com/809809
-#if defined(THREAD_SANITIZER) || defined(OS_MACOSX)
+#if defined(OS_MACOSX)
 #define MAYBE_BrowserInitiatedDump DISABLED_BrowserInitiatedDump
 #else
 #define MAYBE_BrowserInitiatedDump BrowserInitiatedDump

@@ -12,11 +12,11 @@ namespace blink {
 
 TEST(ReferrerScriptInfo, IsDefaultValue) {
   EXPECT_TRUE(ReferrerScriptInfo().IsDefaultValue());
-  EXPECT_FALSE(
-      ReferrerScriptInfo(KURL("http://example.com"),
-                         network::mojom::FetchCredentialsMode::kInclude, "",
-                         kNotParserInserted, kReferrerPolicyDefault)
-          .IsDefaultValue());
+  EXPECT_FALSE(ReferrerScriptInfo(
+                   KURL("http://example.com"),
+                   network::mojom::FetchCredentialsMode::kInclude, "",
+                   kNotParserInserted, network::mojom::ReferrerPolicy::kDefault)
+                   .IsDefaultValue());
 }
 
 TEST(ReferrerScriptInfo, ToFromV8) {
@@ -28,7 +28,8 @@ TEST(ReferrerScriptInfo, ToFromV8) {
                   .IsEmpty());
 
   ReferrerScriptInfo info(url, network::mojom::FetchCredentialsMode::kInclude,
-                          "foobar", kNotParserInserted, kReferrerPolicyOrigin);
+                          "foobar", kNotParserInserted,
+                          network::mojom::ReferrerPolicy::kOrigin);
   v8::Local<v8::PrimitiveArray> v8_info =
       info.ToV8HostDefinedOptions(scope.GetIsolate());
 
@@ -39,7 +40,8 @@ TEST(ReferrerScriptInfo, ToFromV8) {
             decoded.CredentialsMode());
   EXPECT_EQ("foobar", decoded.Nonce());
   EXPECT_EQ(kNotParserInserted, decoded.ParserState());
-  EXPECT_EQ(kReferrerPolicyOrigin, decoded.GetReferrerPolicy());
+  EXPECT_EQ(network::mojom::ReferrerPolicy::kOrigin,
+            decoded.GetReferrerPolicy());
 }
 
 }  // namespace blink

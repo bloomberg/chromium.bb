@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -145,7 +146,8 @@ void HeadlessPrintManager::GetPDFContents(content::RenderFrameHost* rfh,
   DCHECK(callback);
 
   if (callback_) {
-    std::move(callback).Run(SIMULTANEOUS_PRINT_ACTIVE, std::string());
+    std::move(callback).Run(SIMULTANEOUS_PRINT_ACTIVE,
+                            base::MakeRefCounted<base::RefCountedString>());
     return;
   }
   printing_rfh_ = rfh;
@@ -311,10 +313,13 @@ void HeadlessPrintManager::ReleaseJob(PrintResult result) {
     return;
   }
 
-  if (result == PRINT_SUCCESS)
-    std::move(callback_).Run(result, std::move(data_));
-  else
-    std::move(callback_).Run(result, std::string());
+  if (result == PRINT_SUCCESS) {
+    std::move(callback_).Run(result,
+                             base::RefCountedString::TakeString(&data_));
+  } else {
+    std::move(callback_).Run(result,
+                             base::MakeRefCounted<base::RefCountedString>());
+  }
   printing_rfh_->Send(new PrintMsg_PrintingDone(printing_rfh_->GetRoutingID(),
                                                 result == PRINT_SUCCESS));
   Reset();

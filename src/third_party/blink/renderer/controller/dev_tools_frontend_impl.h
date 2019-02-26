@@ -61,13 +61,13 @@ class DevToolsFrontendImpl final
                               mojom::blink::DevToolsFrontendAssociatedRequest);
   static DevToolsFrontendImpl* From(LocalFrame*);
 
+  DevToolsFrontendImpl(LocalFrame&,
+                       mojom::blink::DevToolsFrontendAssociatedRequest);
   ~DevToolsFrontendImpl() override;
   void DidClearWindowObject();
   void Trace(blink::Visitor*) override;
 
  private:
-  DevToolsFrontendImpl(LocalFrame&,
-                       mojom::blink::DevToolsFrontendAssociatedRequest);
   void DestroyOnHostGone();
 
   // mojom::blink::DevToolsFrontend implementation.

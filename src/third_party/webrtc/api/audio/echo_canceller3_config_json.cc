@@ -30,6 +30,7 @@ void ReadParam(const Json::Value& root, std::string param_name, size_t* param) {
   RTC_DCHECK(param);
   int v;
   if (rtc::GetIntFromJsonObject(root, param_name, &v)) {
+    RTC_DCHECK_GE(v, 0);
     *param = v;
   }
 }
@@ -108,21 +109,29 @@ void ReadParam(const Json::Value& root,
 }
 }  // namespace
 
-EchoCanceller3Config Aec3ConfigFromJsonString(absl::string_view json_string) {
-  EchoCanceller3Config cfg;
+void Aec3ConfigFromJsonString(absl::string_view json_string,
+                              EchoCanceller3Config* config,
+                              bool* parsing_successful) {
+  RTC_DCHECK(config);
+  RTC_DCHECK(parsing_successful);
+  EchoCanceller3Config& cfg = *config;
+  cfg = EchoCanceller3Config();
+  *parsing_successful = true;
 
   Json::Value root;
   bool success = Json::Reader().parse(std::string(json_string), root);
   if (!success) {
     RTC_LOG(LS_ERROR) << "Incorrect JSON format: " << json_string;
-    return EchoCanceller3Config();
+    *parsing_successful = false;
+    return;
   }
 
   Json::Value aec3_root;
   success = rtc::GetValueFromJsonObject(root, "aec3", &aec3_root);
   if (!success) {
     RTC_LOG(LS_ERROR) << "Missing AEC3 config field: " << json_string;
-    return EchoCanceller3Config();
+    *parsing_successful = false;
+    return;
   }
 
   Json::Value section;
@@ -188,6 +197,7 @@ EchoCanceller3Config Aec3ConfigFromJsonString(absl::string_view json_string) {
     ReadParam(section, "max_l", &cfg.erle.max_l);
     ReadParam(section, "max_h", &cfg.erle.max_h);
     ReadParam(section, "onset_detection", &cfg.erle.onset_detection);
+    ReadParam(section, "num_sections", &cfg.erle.num_sections);
   }
 
   if (rtc::GetValueFromJsonObject(aec3_root, "ep_strength", &section)) {
@@ -199,26 +209,6 @@ EchoCanceller3Config Aec3ConfigFromJsonString(absl::string_view json_string) {
               &cfg.ep_strength.reverb_based_on_render);
     ReadParam(section, "echo_can_saturate", &cfg.ep_strength.echo_can_saturate);
     ReadParam(section, "bounded_erl", &cfg.ep_strength.bounded_erl);
-  }
-
-  if (rtc::GetValueFromJsonObject(aec3_root, "gain_mask", &section)) {
-    ReadParam(section, "m1", &cfg.gain_mask.m1);
-    ReadParam(section, "m2", &cfg.gain_mask.m2);
-    ReadParam(section, "m3", &cfg.gain_mask.m3);
-    ReadParam(section, "m5", &cfg.gain_mask.m5);
-    ReadParam(section, "m6", &cfg.gain_mask.m6);
-    ReadParam(section, "m7", &cfg.gain_mask.m7);
-    ReadParam(section, "m8", &cfg.gain_mask.m8);
-    ReadParam(section, "m9", &cfg.gain_mask.m9);
-
-    ReadParam(section, "gain_curve_offset", &cfg.gain_mask.gain_curve_offset);
-    ReadParam(section, "gain_curve_slope", &cfg.gain_mask.gain_curve_slope);
-    ReadParam(section, "temporal_masking_lf",
-              &cfg.gain_mask.temporal_masking_lf);
-    ReadParam(section, "temporal_masking_hf",
-              &cfg.gain_mask.temporal_masking_hf);
-    ReadParam(section, "temporal_masking_lf_bands",
-              &cfg.gain_mask.temporal_masking_lf_bands);
   }
 
   if (rtc::GetValueFromJsonObject(aec3_root, "echo_audibility", &section)) {
@@ -236,8 +226,17 @@ EchoCanceller3Config Aec3ConfigFromJsonString(absl::string_view json_string) {
               &cfg.echo_audibility.audibility_threshold_hf);
     ReadParam(section, "use_stationary_properties",
               &cfg.echo_audibility.use_stationary_properties);
-    ReadParam(section, "use_stationary_properties_at_init",
+    ReadParam(section, "use_stationarity_properties_at_init",
               &cfg.echo_audibility.use_stationarity_properties_at_init);
+  }
+
+  if (rtc::GetValueFromJsonObject(aec3_root, "render_levels", &section)) {
+    ReadParam(section, "active_render_limit",
+              &cfg.render_levels.active_render_limit);
+    ReadParam(section, "poor_excitation_render_limit",
+              &cfg.render_levels.poor_excitation_render_limit);
+    ReadParam(section, "poor_excitation_render_limit_ds8",
+              &cfg.render_levels.poor_excitation_render_limit_ds8);
   }
 
   if (rtc::GetValueFromJsonObject(aec3_root, "echo_removal_control",
@@ -315,6 +314,9 @@ EchoCanceller3Config Aec3ConfigFromJsonString(absl::string_view json_string) {
                 &cfg.suppressor.dominant_nearend_detection.hold_duration);
       ReadParam(subsection, "trigger_threshold",
                 &cfg.suppressor.dominant_nearend_detection.trigger_threshold);
+      ReadParam(
+          subsection, "use_during_initial_phase",
+          &cfg.suppressor.dominant_nearend_detection.use_during_initial_phase);
     }
 
     if (rtc::GetValueFromJsonObject(section, "high_bands_suppression",
@@ -332,6 +334,12 @@ EchoCanceller3Config Aec3ConfigFromJsonString(absl::string_view json_string) {
     ReadParam(section, "enforce_empty_higher_bands",
               &cfg.suppressor.enforce_empty_higher_bands);
   }
+}
+
+EchoCanceller3Config Aec3ConfigFromJsonString(absl::string_view json_string) {
+  EchoCanceller3Config cfg;
+  bool not_used;
+  Aec3ConfigFromJsonString(json_string, &cfg, &not_used);
   return cfg;
 }
 
@@ -418,7 +426,8 @@ std::string Aec3ConfigToJsonString(const EchoCanceller3Config& config) {
   ost << "\"max_l\": " << config.erle.max_l << ",";
   ost << "\"max_h\": " << config.erle.max_h << ",";
   ost << "\"onset_detection\": "
-      << (config.erle.onset_detection ? "true" : "false");
+      << (config.erle.onset_detection ? "true" : "false") << ",";
+  ost << "\"num_sections\": " << config.erle.num_sections;
   ost << "},";
 
   ost << "\"ep_strength\": {";
@@ -433,26 +442,6 @@ std::string Aec3ConfigToJsonString(const EchoCanceller3Config& config) {
   ost << "\"bounded_erl\": "
       << (config.ep_strength.bounded_erl ? "true" : "false");
 
-  ost << "},";
-
-  ost << "\"gain_mask\": {";
-  ost << "\"m0\": " << config.gain_mask.m0 << ",";
-  ost << "\"m1\": " << config.gain_mask.m1 << ",";
-  ost << "\"m2\": " << config.gain_mask.m2 << ",";
-  ost << "\"m3\": " << config.gain_mask.m3 << ",";
-  ost << "\"m5\": " << config.gain_mask.m5 << ",";
-  ost << "\"m6\": " << config.gain_mask.m6 << ",";
-  ost << "\"m7\": " << config.gain_mask.m7 << ",";
-  ost << "\"m8\": " << config.gain_mask.m8 << ",";
-  ost << "\"m9\": " << config.gain_mask.m9 << ",";
-  ost << "\"gain_curve_offset\": " << config.gain_mask.gain_curve_offset << ",";
-  ost << "\"gain_curve_slope\": " << config.gain_mask.gain_curve_slope << ",";
-  ost << "\"temporal_masking_lf\": " << config.gain_mask.temporal_masking_lf
-      << ",";
-  ost << "\"temporal_masking_hf\": " << config.gain_mask.temporal_masking_hf
-      << ",";
-  ost << "\"temporal_masking_lf_bands\": "
-      << config.gain_mask.temporal_masking_lf_bands;
   ost << "},";
 
   ost << "\"echo_audibility\": {";
@@ -569,7 +558,9 @@ std::string Aec3ConfigToJsonString(const EchoCanceller3Config& config) {
   ost << "\"hold_duration\": "
       << config.suppressor.dominant_nearend_detection.hold_duration << ",";
   ost << "\"trigger_threshold\": "
-      << config.suppressor.dominant_nearend_detection.trigger_threshold;
+      << config.suppressor.dominant_nearend_detection.trigger_threshold << ",";
+  ost << "\"use_during_initial_phase\": "
+      << config.suppressor.dominant_nearend_detection.use_during_initial_phase;
   ost << "},";
   ost << "\"high_bands_suppression\": {";
   ost << "\"enr_threshold\": "

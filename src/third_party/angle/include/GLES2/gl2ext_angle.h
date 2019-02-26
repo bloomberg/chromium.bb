@@ -46,6 +46,11 @@ GL_APICALL void GL_APIENTRY glCoverageModulationCHROMIUM(GLenum components);
 #define GL_BIND_GENERATES_RESOURCE_CHROMIUM 0x9244
 #endif /* GL_CHROMIUM_bind_generates_resource */
 
+#ifndef GL_ANGLE_memory_size
+#define GL_ANGLE_memory_size
+#define GL_MEMORY_SIZE_ANGLE 0x93AD
+#endif /* GL_ANGLE_memory_size */
+
 // needed by NV_path_rendering (and thus CHROMIUM_path_rendering)
 // but CHROMIUM_path_rendering only needs MatrixLoadfEXT, MatrixLoadIdentityEXT
 #ifndef GL_EXT_direct_state_access
@@ -607,6 +612,45 @@ GL_APICALL void GL_APIENTRY glFramebufferTextureMultiviewSideBySideANGLE(GLenum 
 #define GL_SAMPLER_2D_RECT_ANGLE 0x8B63
 #endif /* GL_ANGLE_texture_rectangle */
 
+#ifndef GL_ANGLE_texture_multisample
+#define GL_ANGLE_texture_multisample 1
+#define GL_SAMPLE_POSITION_ANGLE 0x8E50
+#define GL_SAMPLE_MASK_ANGLE 0x8E51
+#define GL_SAMPLE_MASK_VALUE_ANGLE 0x8E52
+#define GL_TEXTURE_2D_MULTISAMPLE_ANGLE 0x9100
+#define GL_MAX_SAMPLE_MASK_WORDS_ANGLE 0x8E59
+#define GL_MAX_COLOR_TEXTURE_SAMPLES_ANGLE 0x910E
+#define GL_MAX_DEPTH_TEXTURE_SAMPLES_ANGLE 0x910F
+#define GL_MAX_INTEGER_SAMPLES_ANGLE 0x9110
+#define GL_TEXTURE_BINDING_2D_MULTISAMPLE_ANGLE 0x9104
+#define GL_TEXTURE_SAMPLES_ANGLE 0x9106
+#define GL_TEXTURE_FIXED_SAMPLE_LOCATIONS_ANGLE 0x9107
+typedef void(GL_APIENTRYP PFNGLTEXSTORAGE2DMULTISAMPLEANGLE)(GLenum target,
+                                                             GLsizei samples,
+                                                             GLenum internalformat,
+                                                             GLsizei width,
+                                                             GLsizei height,
+                                                             GLboolean fixedsamplelocations);
+typedef void(GL_APIENTRYP PFNGLGETTEXLEVELPARAMETERFVANGLE)(GLenum target, GLint level,
+                                        GLenum pname, GLfloat *params);
+typedef void(GL_APIENTRYP PFNGLGETTEXLEVELPARAMETERIVANGLE)(GLenum target, GLint level,
+                                        GLenum pname, GLint *params);
+#ifdef GL_GLEXT_PROTOTYPES
+GL_APICALL void GL_APIENTRY glTexStorage2DMultisampleANGLE(GLenum target,
+                                                           GLsizei samples,
+                                                           GLenum internalformat,
+                                                           GLsizei width,
+                                                           GLsizei height,
+                                                           GLboolean fixedsamplelocations);
+GL_APICALL void GL_APIENTRY glGetTexLevelParameterfvANGLE(GLenum target, GLint level,
+                                        GLenum pname, GLfloat *params);
+GL_APICALL void GL_APIENTRY glGetTexLevelParameterivANGLE(GLenum target, GLint level,
+                                        GLenum pname, GLint *params);
+GL_APICALL void GL_APIENTRY glGetMultisamplefvANGLE(GLenum pname, GLuint index, GLfloat *val);
+GL_APICALL void GL_APIENTRY glSampleMaskiANGLE(GLuint maskNumber, GLbitfield mask);
+#endif
+#endif  // !GL_ANGLE_texture_multisample
+
 #ifndef GL_ANGLE_explicit_context
 #define GL_ANGLE_explicit_context
 typedef void *GLeglContext;
@@ -614,6 +658,20 @@ typedef void *GLeglContext;
 #include "../GLES3/gl3ext_explicit_context_autogen.inc"
 #include "../GLES3/gl31ext_explicit_context_autogen.inc"
 #endif /* GL_ANGLE_explicit_context */
+
+#ifndef GL_ANGLE_multi_draw
+#define GL_ANGLE_multi_draw 1
+typedef void (GL_APIENTRYP PFNGLMULTIDRAWARRAYSANGLEPROC) (GLenum mode, const GLint *firsts, const GLsizei *counts, GLsizei drawcount);
+typedef void (GL_APIENTRYP PFNGLMULTIDRAWARRAYSINSTANCEDANGLEPROC) (GLenum mode, const GLint *firsts, const GLsizei *counts, const GLsizei *instanceCounts, GLsizei drawcount);
+typedef void (GL_APIENTRYP PFNGLMULTIDRAWELEMENTSANGLEPROC) (GLenum mode, const GLsizei *counts, GLenum type, const GLvoid* const *indices, GLsizei drawcount);
+typedef void (GL_APIENTRYP PFNGLMULTIDRAWELEMENTSINSTANCEDANGLEPROC) (GLenum mode, const GLsizei *counts, GLenum type, const GLvoid* const *indices, const GLsizei *instanceCounts, GLsizei drawcount);
+#ifdef GL_GLEXT_PROTOTYPES
+GL_APICALL void GL_APIENTRY glMultiDrawArraysANGLE (GLenum mode, const GLint *firsts, const GLsizei *counts, GLsizei drawcount);
+GL_APICALL void GL_APIENTRY glMultiDrawArraysInstancedANGLE (GLenum mode, const GLint *firsts, const GLsizei *counts, const GLsizei *instanceCounts, GLsizei drawcount);
+GL_APICALL void GL_APIENTRY glMultiDrawElementsANGLE (GLenum mode, const GLsizei *counts, GLenum type, const GLvoid* const *indices, GLsizei drawcount);
+GL_APICALL void GL_APIENTRY glMultiDrawElementsInstancedANGLE (GLenum mode, const GLsizei *counts, GLenum type, const GLvoid* const *indices, const GLsizei *instanceCounts, GLsizei drawcount);
+#endif
+#endif /* GL_ANGLE_multi_draw */
 
 // clang-format on
 

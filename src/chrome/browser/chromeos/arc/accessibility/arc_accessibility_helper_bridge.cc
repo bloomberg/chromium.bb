@@ -17,6 +17,7 @@
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/exo/shell_surface.h"
+#include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
 #include "ui/accessibility/ax_action_data.h"
@@ -39,12 +40,12 @@ exo::Surface* GetArcSurface(const aura::Window* window) {
 
   exo::Surface* arc_surface = exo::Surface::AsSurface(window);
   if (!arc_surface)
-    arc_surface = exo::ShellSurface::GetMainSurface(window);
+    arc_surface = exo::GetShellMainSurface(window);
   return arc_surface;
 }
 
 int32_t GetTaskId(aura::Window* window) {
-  const std::string* arc_app_id = exo::ShellSurface::GetApplicationId(window);
+  const std::string* arc_app_id = exo::GetShellApplicationId(window);
   if (!arc_app_id)
     return kNoTaskId;
 
@@ -186,7 +187,7 @@ void ArcAccessibilityHelperBridge::OnSetNativeChromeVoxArcSupportProcessed(
   if (!enabled) {
     task_id_to_tree_.erase(task_id);
 
-    exo::Surface* surface = exo::ShellSurfaceBase::GetMainSurface(window);
+    exo::Surface* surface = exo::GetShellMainSurface(window);
     if (surface) {
       views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
       static_cast<exo::ShellSurfaceBase*>(widget->widget_delegate())
@@ -282,8 +283,7 @@ void ArcAccessibilityHelperBridge::OnAccessibilityEvent(
 
         ui::AXTreeData tree_data;
         tree_source->GetTreeData(&tree_data);
-        exo::Surface* surface =
-            exo::ShellSurfaceBase::GetMainSurface(active_window);
+        exo::Surface* surface = exo::GetShellMainSurface(active_window);
         if (surface) {
           views::Widget* widget =
               views::Widget::GetWidgetForNativeWindow(active_window);
@@ -486,12 +486,38 @@ void ArcAccessibilityHelperBridge::OnAction(
       action_data->action_type =
           arc::mojom::AccessibilityActionType::CLEAR_ACCESSIBILITY_FOCUS;
       break;
+    case ax::mojom::Action::kGetTextLocation: {
+      action_data->action_type =
+          arc::mojom::AccessibilityActionType::GET_TEXT_LOCATION;
+      action_data->start_index = data.start_index;
+      action_data->end_index = data.end_index;
+
+      auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
+          arc_bridge_service_->accessibility_helper(), RefreshWithExtraData);
+      if (!instance) {
+        OnActionResult(data, false);
+        return;
+      }
+
+      instance->RefreshWithExtraData(
+          std::move(action_data),
+          base::BindOnce(
+              &ArcAccessibilityHelperBridge::OnGetTextLocationDataResult,
+              base::Unretained(this), data));
+      return;
+    }
     default:
       return;
   }
 
   auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_bridge_service_->accessibility_helper(), PerformAction);
+  if (!instance) {
+    // This case should probably destroy all trees.
+    OnActionResult(data, false);
+    return;
+  }
+
   instance->PerformAction(
       std::move(action_data),
       base::BindOnce(&ArcAccessibilityHelperBridge::OnActionResult,
@@ -506,6 +532,17 @@ void ArcAccessibilityHelperBridge::OnActionResult(const ui::AXActionData& data,
     return;
 
   tree_source->NotifyActionResult(data, result);
+}
+
+void ArcAccessibilityHelperBridge::OnGetTextLocationDataResult(
+    const ui::AXActionData& data,
+    const base::Optional<gfx::Rect>& result_rect) const {
+  AXTreeSourceArc* tree_source = GetFromTreeId(data.target_tree_id);
+
+  if (!tree_source)
+    return;
+
+  tree_source->NotifyGetTextLocationDataResult(data, result_rect);
 }
 
 void ArcAccessibilityHelperBridge::OnAccessibilityStatusChanged(

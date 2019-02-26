@@ -9,6 +9,7 @@
 #include <algorithm>
 
 #include "core/fxcrt/fx_unicode.h"
+#include "third_party/base/stl_util.h"
 
 #ifdef PDF_ENABLE_XFA
 #include "core/fxcrt/fx_extension.h"
@@ -482,7 +483,8 @@ size_t ReorderLevel(std::vector<CFX_Char>* chars,
                     int32_t iBaseLevel,
                     size_t iStart,
                     bool bReverse) {
-  ASSERT(iBaseLevel >= 0 && iBaseLevel <= kBidiMaxLevel);
+  ASSERT(iBaseLevel >= 0);
+  ASSERT(iBaseLevel <= kBidiMaxLevel);
   ASSERT(iStart < iCount);
 
   if (iCount < 1)

@@ -25,7 +25,7 @@
 #include "chrome/browser/ui/views/accelerator_table.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
 #include "chrome/browser/ui/views/media_router/presentation_receiver_window_frame.h"
-#include "components/toolbar/toolbar_model_impl.h"
+#include "components/omnibox/browser/location_bar_model_impl.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_constants.h"
 #include "ui/base/accelerators/accelerator_manager.h"
@@ -104,9 +104,9 @@ PresentationReceiverWindowView::PresentationReceiverWindowView(
     PresentationReceiverWindowDelegate* delegate)
     : frame_(frame),
       delegate_(delegate),
-      toolbar_model_(
-          std::make_unique<ToolbarModelImpl>(this,
-                                             content::kMaxURLDisplayChars)),
+      location_bar_model_(
+          std::make_unique<LocationBarModelImpl>(this,
+                                                 content::kMaxURLDisplayChars)),
       command_updater_(this),
       exclusive_access_manager_(this) {
   DCHECK(frame);
@@ -221,12 +221,13 @@ WebContents* PresentationReceiverWindowView::GetWebContents() {
   return delegate_->web_contents();
 }
 
-ToolbarModel* PresentationReceiverWindowView::GetToolbarModel() {
-  return toolbar_model_.get();
+LocationBarModel* PresentationReceiverWindowView::GetLocationBarModel() {
+  return location_bar_model_.get();
 }
 
-const ToolbarModel* PresentationReceiverWindowView::GetToolbarModel() const {
-  return toolbar_model_.get();
+const LocationBarModel* PresentationReceiverWindowView::GetLocationBarModel()
+    const {
+  return location_bar_model_.get();
 }
 
 ContentSettingBubbleModelDelegate*
@@ -345,15 +346,6 @@ content::WebContents* PresentationReceiverWindowView::GetActiveWebContents() {
 void PresentationReceiverWindowView::UnhideDownloadShelf() {}
 
 void PresentationReceiverWindowView::HideDownloadShelf() {}
-
-bool PresentationReceiverWindowView::ShouldHideUIForFullscreen() const {
-  return false;
-}
-
-ExclusiveAccessBubbleViews*
-PresentationReceiverWindowView::GetExclusiveAccessBubble() {
-  return exclusive_access_bubble_.get();
-}
 
 bool PresentationReceiverWindowView::CanUserExitFullscreen() const {
   return true;

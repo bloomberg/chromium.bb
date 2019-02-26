@@ -123,7 +123,10 @@ function isGreaterOrEqual(v1, v2) {
   form.addEventListener('submit', event => {
     event.preventDefault();
     const dataUrl = getDataUrl();
-    window.open(`viewer.html?load_url=milestones/${dataUrl}`);
+    // Exclude unwind_cfi via a filter as a work-around for it being included
+    // in the size data. It's a file that exists in dev but not beta/stable.
+    window.open(`viewer.html?load_url=milestones/${dataUrl}` +
+                `&exclude=assets%2Funwind_cfi`);
   });
 })();
   </script>
@@ -167,6 +170,8 @@ function isGreaterOrEqual(v1, v2) {
       Open report
     </button>
     <div class="msg-bad-compare">Version 1 must be older than Version 2</div>
+    <div style="margin:20pt 0 10pt"><b>Note:</b> AndroidWebview.apk size information exists only for M71 and above.</div>
+    <div>To upload your own .ndjson file, use the upload button within <a href="viewer.html">the viewer</a>.</div>
   </form>
 </body>
 

@@ -42,30 +42,27 @@ class MODULES_EXPORT CanvasGradient final : public ScriptWrappable {
 
  public:
   static CanvasGradient* Create(const FloatPoint& p0, const FloatPoint& p1) {
-    return new CanvasGradient(p0, p1);
+    return MakeGarbageCollected<CanvasGradient>(p0, p1);
   }
   static CanvasGradient* Create(const FloatPoint& p0,
                                 float r0,
                                 const FloatPoint& p1,
                                 float r1) {
-    return new CanvasGradient(p0, r0, p1, r1);
+    return MakeGarbageCollected<CanvasGradient>(p0, r0, p1, r1);
   }
 
-  Gradient* GetGradient() const { return gradient_.get(); }
-
-  void addColorStop(float value, const String& color, ExceptionState&);
-
-  bool IsZeroSize() const { return is_zero_size_; }
-
- private:
   CanvasGradient(const FloatPoint& p0, const FloatPoint& p1);
   CanvasGradient(const FloatPoint& p0,
                  float r0,
                  const FloatPoint& p1,
                  float r1);
 
+  Gradient* GetGradient() const { return gradient_.get(); }
+
+  void addColorStop(float value, const String& color, ExceptionState&);
+
+ private:
   scoped_refptr<Gradient> gradient_;
-  const bool is_zero_size_;
 };
 
 }  // namespace blink

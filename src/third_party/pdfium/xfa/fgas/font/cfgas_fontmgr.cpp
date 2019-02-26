@@ -27,6 +27,23 @@
 #include "xfa/fgas/font/cfx_fontsourceenum_file.h"
 #endif
 
+namespace {
+
+bool VerifyUnicode(const RetainPtr<CFGAS_GEFont>& pFont, wchar_t wcUnicode) {
+  FXFT_Face pFace = pFont->GetDevFont()->GetFace();
+  FXFT_CharMap charmap = FXFT_Get_Face_Charmap(pFace);
+  if (FXFT_Select_Charmap(pFace, FXFT_ENCODING_UNICODE) != 0)
+    return false;
+
+  if (FXFT_Get_Char_Index(pFace, wcUnicode) == 0) {
+    FXFT_Set_Charmap(pFace, charmap);
+    return false;
+  }
+  return true;
+}
+
+}  // namespace
+
 #if _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
 
 namespace {
@@ -156,6 +173,39 @@ CFGAS_FontMgr::~CFGAS_FontMgr() = default;
 
 bool CFGAS_FontMgr::EnumFonts() {
   return true;
+}
+
+RetainPtr<CFGAS_GEFont> CFGAS_FontMgr::GetFontByUnicodeImpl(
+    wchar_t wUnicode,
+    uint32_t dwFontStyles,
+    const wchar_t* pszFontFamily,
+    uint32_t dwHash,
+    uint16_t wCodePage,
+    uint16_t wBitField) {
+  const FX_FONTDESCRIPTOR* pFD = FindFont(pszFontFamily, dwFontStyles, false,
+                                          wCodePage, wBitField, wUnicode);
+  if (!pFD && pszFontFamily) {
+    pFD =
+        FindFont(nullptr, dwFontStyles, false, wCodePage, wBitField, wUnicode);
+  }
+  if (!pFD)
+    return nullptr;
+
+  uint16_t newCodePage = FX_GetCodePageFromCharset(pFD->uCharSet);
+  const wchar_t* pFontFace = pFD->wsFontFace;
+  RetainPtr<CFGAS_GEFont> pFont =
+      CFGAS_GEFont::LoadFont(pFontFace, dwFontStyles, newCodePage, this);
+  if (!pFont)
+    return nullptr;
+
+  pFont->SetLogicalFontStyle(dwFontStyles);
+  if (!VerifyUnicode(pFont, wUnicode)) {
+    m_FailedUnicodesSet.insert(wUnicode);
+    return nullptr;
+  }
+
+  m_Hash2Fonts[dwHash].push_back(pFont);
+  return pFont;
 }
 
 const FX_FONTDESCRIPTOR* CFGAS_FontMgr::FindFont(const wchar_t* pszFontFamily,
@@ -299,7 +349,7 @@ unsigned long ftStreamRead(FXFT_Stream stream,
 
   IFX_SeekableReadStream* pFile =
       static_cast<IFX_SeekableReadStream*>(stream->descriptor.pointer);
-  if (!pFile->ReadBlock(buffer, offset, count))
+  if (!pFile->ReadBlockAtOffset(buffer, offset, count))
     return 0;
 
   return count;
@@ -472,7 +522,7 @@ FXFT_Face LoadFace(const RetainPtr<IFX_SeekableReadStream>& pFontStream,
 bool VerifyUnicodeForFontDescriptor(CFX_FontDescriptor* pDesc,
                                     wchar_t wcUnicode) {
   RetainPtr<IFX_SeekableReadStream> pFileRead =
-      CreateFontStream(pDesc->m_wsFaceName.UTF8Encode());
+      CreateFontStream(pDesc->m_wsFaceName.ToUTF8());
   if (!pFileRead)
     return false;
 
@@ -596,7 +646,7 @@ bool CFGAS_FontMgr::EnumFontsFromFontMapper() {
       continue;
 
     WideString wsFaceName =
-        WideString::FromLocal(pFontMapper->GetFaceName(i).AsStringView());
+        WideString::FromDefANSI(pFontMapper->GetFaceName(i).AsStringView());
     RegisterFaces(pFontStream, &wsFaceName);
   }
 
@@ -619,6 +669,39 @@ bool CFGAS_FontMgr::EnumFonts() {
   return EnumFontsFromFontMapper() || EnumFontsFromFiles();
 }
 
+RetainPtr<CFGAS_GEFont> CFGAS_FontMgr::GetFontByUnicodeImpl(
+    wchar_t wUnicode,
+    uint32_t dwFontStyles,
+    const wchar_t* pszFontFamily,
+    uint32_t dwHash,
+    uint16_t wCodePage,
+    uint16_t /* wBitField */) {
+  std::vector<CFX_FontDescriptorInfo>* sortedFontInfos =
+      m_Hash2CandidateList[dwHash].get();
+  if (!sortedFontInfos) {
+    auto pNewFonts = pdfium::MakeUnique<std::vector<CFX_FontDescriptorInfo>>();
+    sortedFontInfos = pNewFonts.get();
+    MatchFonts(sortedFontInfos, wCodePage, dwFontStyles,
+               WideString(pszFontFamily), wUnicode);
+    m_Hash2CandidateList[dwHash] = std::move(pNewFonts);
+  }
+  for (const auto& info : *sortedFontInfos) {
+    CFX_FontDescriptor* pDesc = info.pFont;
+    if (!VerifyUnicodeForFontDescriptor(pDesc, wUnicode))
+      continue;
+    RetainPtr<CFGAS_GEFont> pFont =
+        LoadFontInternal(pDesc->m_wsFaceName, pDesc->m_nFaceIndex);
+    if (!pFont)
+      continue;
+    pFont->SetLogicalFontStyle(dwFontStyles);
+    m_Hash2Fonts[dwHash].push_back(pFont);
+    return pFont;
+  }
+  if (!pszFontFamily)
+    m_FailedUnicodesSet.insert(wUnicode);
+  return nullptr;
+}
+
 RetainPtr<CFGAS_GEFont> CFGAS_FontMgr::LoadFontInternal(
     const WideString& wsFaceName,
     int32_t iFaceIndex) {
@@ -632,7 +715,7 @@ RetainPtr<CFGAS_GEFont> CFGAS_FontMgr::LoadFontInternal(
     return nullptr;
 
   RetainPtr<IFX_SeekableReadStream> pFontStream =
-      CreateFontStream(wsFaceName.UTF8Encode());
+      CreateFontStream(wsFaceName.ToUTF8());
   if (!pFontStream)
     return nullptr;
 
@@ -689,10 +772,10 @@ void CFGAS_FontMgr::RegisterFace(FXFT_Face pFace, const WideString* pFaceName) {
       table.clear();
   }
   pFont->m_wsFamilyNames = GetNames(table.empty() ? nullptr : table.data());
-  pFont->m_wsFamilyNames.push_back(ByteString(pFace->family_name).UTF8Decode());
+  pFont->m_wsFamilyNames.push_back(WideString::FromUTF8(pFace->family_name));
   pFont->m_wsFaceName =
       pFaceName ? *pFaceName
-                : WideString::FromLocal(FXFT_Get_Postscript_Name(pFace));
+                : WideString::FromDefANSI(FXFT_Get_Postscript_Name(pFace));
   pFont->m_nFaceIndex = pFace->face_index;
   m_InstalledFonts.push_back(std::move(pFont));
 }
@@ -717,26 +800,6 @@ void CFGAS_FontMgr::RegisterFaces(
 }
 
 #endif  // _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
-
-namespace {
-
-bool VerifyUnicode(const RetainPtr<CFGAS_GEFont>& pFont, wchar_t wcUnicode) {
-  if (!pFont)
-    return false;
-
-  FXFT_Face pFace = pFont->GetDevFont()->GetFace();
-  FXFT_CharMap charmap = FXFT_Get_Face_Charmap(pFace);
-  if (FXFT_Select_Charmap(pFace, FXFT_ENCODING_UNICODE) != 0)
-    return false;
-
-  if (FXFT_Get_Char_Index(pFace, wcUnicode) == 0) {
-    FXFT_Set_Charmap(pFace, charmap);
-    return false;
-  }
-  return true;
-}
-
-}  // namespace
 
 RetainPtr<CFGAS_GEFont> CFGAS_FontMgr::GetFontByCodePage(
     uint16_t wCodePage,
@@ -796,10 +859,8 @@ RetainPtr<CFGAS_GEFont> CFGAS_FontMgr::GetFontByUnicode(
     wchar_t wUnicode,
     uint32_t dwFontStyles,
     const wchar_t* pszFontFamily) {
-#if _FX_PLATFORM_ != _FX_PLATFORM_WINDOWS_
   if (pdfium::ContainsKey(m_FailedUnicodesSet, wUnicode))
     return nullptr;
-#endif  // _FX_PLATFORM_ != _FX_PLATFORM_WINDOWS_
 
   const FGAS_FONTUSB* x = FGAS_GetUnicodeBitField(wUnicode);
   uint16_t wCodePage = x ? x->wCodePage : 0xFFFF;
@@ -813,57 +874,14 @@ RetainPtr<CFGAS_GEFont> CFGAS_FontMgr::GetFontByUnicode(
   }
   bsHash += FX_UTF8Encode(WideStringView(pszFontFamily));
   uint32_t dwHash = FX_HashCode_GetA(bsHash.AsStringView(), false);
-  std::vector<RetainPtr<CFGAS_GEFont>>* pFonts = &m_Hash2Fonts[dwHash];
-  for (size_t i = 0; i < pFonts->size(); ++i) {
-    if (VerifyUnicode((*pFonts)[i], wUnicode))
-      return (*pFonts)[i];
+  std::vector<RetainPtr<CFGAS_GEFont>>& fonts = m_Hash2Fonts[dwHash];
+  for (auto& pFont : fonts) {
+    if (VerifyUnicode(pFont, wUnicode))
+      return pFont;
   }
-#if _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
-  const FX_FONTDESCRIPTOR* pFD = FindFont(pszFontFamily, dwFontStyles, false,
-                                          wCodePage, wBitField, wUnicode);
-  if (!pFD && pszFontFamily) {
-    pFD =
-        FindFont(nullptr, dwFontStyles, false, wCodePage, wBitField, wUnicode);
-  }
-  if (!pFD)
-    return nullptr;
 
-  uint16_t newCodePage = FX_GetCodePageFromCharset(pFD->uCharSet);
-  const wchar_t* pFontFace = pFD->wsFontFace;
-  RetainPtr<CFGAS_GEFont> pFont =
-      CFGAS_GEFont::LoadFont(pFontFace, dwFontStyles, newCodePage, this);
-  if (!pFont)
-    return nullptr;
-
-  pFont->SetLogicalFontStyle(dwFontStyles);
-  pFonts->push_back(pFont);
-  return pFont;
-#else   // _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
-  std::vector<CFX_FontDescriptorInfo>* sortedFontInfos =
-      m_Hash2CandidateList[dwHash].get();
-  if (!sortedFontInfos) {
-    auto pNewFonts = pdfium::MakeUnique<std::vector<CFX_FontDescriptorInfo>>();
-    sortedFontInfos = pNewFonts.get();
-    MatchFonts(sortedFontInfos, wCodePage, dwFontStyles,
-               WideString(pszFontFamily), wUnicode);
-    m_Hash2CandidateList[dwHash] = std::move(pNewFonts);
-  }
-  for (const auto& info : *sortedFontInfos) {
-    CFX_FontDescriptor* pDesc = info.pFont;
-    if (!VerifyUnicodeForFontDescriptor(pDesc, wUnicode))
-      continue;
-    RetainPtr<CFGAS_GEFont> pFont =
-        LoadFontInternal(pDesc->m_wsFaceName, pDesc->m_nFaceIndex);
-    if (!pFont)
-      continue;
-    pFont->SetLogicalFontStyle(dwFontStyles);
-    pFonts->push_back(pFont);
-    return pFont;
-  }
-  if (!pszFontFamily)
-    m_FailedUnicodesSet.insert(wUnicode);
-  return nullptr;
-#endif  // _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+  return GetFontByUnicodeImpl(wUnicode, dwFontStyles, pszFontFamily, dwHash,
+                              wCodePage, wBitField);
 }
 
 RetainPtr<CFGAS_GEFont> CFGAS_FontMgr::LoadFont(const wchar_t* pszFontFamily,

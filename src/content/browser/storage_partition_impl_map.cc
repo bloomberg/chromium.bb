@@ -482,8 +482,7 @@ void StoragePartitionImplMap::AsyncObliterate(
           // All except shader cache.
           ~StoragePartition::REMOVE_DATA_MASK_SHADER_CACHE,
           StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL, GURL(),
-          StoragePartition::OriginMatcherFunction(), base::Time(),
-          base::Time::Max(), base::DoNothing());
+          base::Time(), base::Time::Max(), base::DoNothing());
       if (!config.in_memory) {
         paths_to_keep.push_back(it->second->GetPath());
       }
@@ -550,6 +549,10 @@ void StoragePartitionImplMap::PostCreateInitialization(
     InitializeResourceContext(browser_context_);
   }
 
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter;
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+    request_context_getter = partition->GetURLRequestContext();
+
   // Check first to avoid memory leak in unittests.
   if (BrowserThread::IsThreadInitialized(BrowserThread::IO)) {
     base::PostTaskWithTraits(
@@ -559,15 +562,13 @@ void StoragePartitionImplMap::PostCreateInitialization(
             partition->GetAppCacheService(),
             in_memory ? base::FilePath()
                       : partition->GetPath().Append(kAppCacheDirname),
-            browser_context_->GetResourceContext(),
-            base::RetainedRef(partition->GetURLRequestContext()),
+            browser_context_->GetResourceContext(), request_context_getter,
             base::RetainedRef(browser_context_->GetSpecialStoragePolicy())));
 
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&CacheStorageContextImpl::SetBlobParametersForCache,
                        partition->GetCacheStorageContext(),
-                       base::RetainedRef(partition->GetURLRequestContext()),
                        base::RetainedRef(ChromeBlobStorageContext::GetFor(
                            browser_context_))));
 
@@ -582,7 +583,7 @@ void StoragePartitionImplMap::PostCreateInitialization(
         base::BindOnce(&PrefetchURLLoaderService::InitializeResourceContext,
                        partition->GetPrefetchURLLoaderService(),
                        browser_context_->GetResourceContext(),
-                       base::RetainedRef(partition->GetURLRequestContext())));
+                       request_context_getter));
 
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},

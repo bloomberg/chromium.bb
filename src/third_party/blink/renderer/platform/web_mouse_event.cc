@@ -29,11 +29,6 @@ WebMouseEvent::WebMouseEvent(WebInputEvent::Type type,
   SetMenuSourceType(gesture_event.GetType());
 }
 
-WebFloatPoint WebMouseEvent::MovementInRootFrame() const {
-  return WebFloatPoint((movement_x / frame_scale_),
-                       (movement_y / frame_scale_));
-}
-
 WebFloatPoint WebMouseEvent::PositionInRootFrame() const {
   return WebFloatPoint(
       (position_in_widget_.x / frame_scale_) + frame_translate_.x,

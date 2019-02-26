@@ -39,7 +39,6 @@ class PdfCompositorImpl : public mojom::PdfCompositor {
       const ContentToFrameMap& subframe_content_map) override;
   void CompositePageToPdf(
       uint64_t frame_guid,
-      uint32_t page_num,
       base::ReadOnlySharedMemoryRegion serialized_content,
       const ContentToFrameMap& subframe_content_map,
       mojom::PdfCompositor::CompositePageToPdfCallback callback) override;
@@ -60,8 +59,6 @@ class PdfCompositorImpl : public mojom::PdfCompositor {
 
   // Make this function virtual so tests can override it.
   virtual void FulfillRequest(
-      uint64_t frame_guid,
-      base::Optional<uint32_t> page_num,
       base::ReadOnlySharedMemoryMapping serialized_content,
       const ContentToFrameMap& subframe_content_map,
       CompositeToPdfCallback callback);
@@ -110,16 +107,11 @@ class PdfCompositorImpl : public mojom::PdfCompositor {
 
   // Stores the page or document's request information.
   struct RequestInfo : public FrameContentInfo {
-    RequestInfo(uint64_t frame_guid,
-                base::Optional<uint32_t> page_num,
-                base::ReadOnlySharedMemoryMapping content,
+    RequestInfo(base::ReadOnlySharedMemoryMapping content,
                 const ContentToFrameMap& content_info,
                 const base::flat_set<uint64_t>& pending_subframes,
                 CompositeToPdfCallback callback);
     ~RequestInfo();
-
-    uint64_t frame_guid;
-    base::Optional<uint32_t> page_number;
 
     // All pending frame ids whose content is not available but needed
     // for composition.
@@ -151,15 +143,12 @@ class PdfCompositorImpl : public mojom::PdfCompositor {
   // requests.
   void HandleCompositionRequest(
       uint64_t frame_guid,
-      base::Optional<uint32_t> page_num,
       base::ReadOnlySharedMemoryRegion serialized_content,
       const ContentToFrameMap& subframe_content_ids,
       CompositeToPdfCallback callback);
 
   // The core function for content composition and conversion to a pdf file.
   mojom::PdfCompositor::Status CompositeToPdf(
-      uint64_t frame_guid,
-      base::Optional<uint32_t> page_num,
       base::ReadOnlySharedMemoryMapping shared_mem,
       const ContentToFrameMap& subframe_content_map,
       base::ReadOnlySharedMemoryRegion* region);

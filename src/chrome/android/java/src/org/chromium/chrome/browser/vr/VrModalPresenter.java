@@ -4,42 +4,64 @@
 
 package org.chromium.chrome.browser.vr;
 
+import android.content.Context;
+import android.view.ContextThemeWrapper;
 import android.view.Gravity;
-import android.view.View;
+import android.view.LayoutInflater;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.widget.FrameLayout;
 
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
 import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
+import org.chromium.chrome.browser.modaldialog.ModalDialogView;
+import org.chromium.chrome.browser.modaldialog.ModalDialogViewBinder;
+import org.chromium.chrome.browser.modelutil.PropertyKey;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
+import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 
 /** The presenter that shows a {@link ModalDialogView} in an Android dialog. */
 public class VrModalPresenter extends ModalDialogManager.Presenter {
-    private VrDialog mVrDialog;
-    private VrDialogManager mVrDialogManager;
+    private final Context mContext;
+    private final VrDialogManager mVrDialogManager;
 
-    public VrModalPresenter(VrDialogManager vrDialogManager) {
+    private VrDialog mVrDialog;
+    private PropertyModelChangeProcessor<PropertyModel, ModalDialogView, PropertyKey>
+            mModelChangeProcessor;
+
+    public VrModalPresenter(Context context, VrDialogManager vrDialogManager) {
+        mContext = context;
         mVrDialogManager = vrDialogManager;
     }
 
     @Override
-    protected void addDialogView(View dialogView) {
+    protected void addDialogView(PropertyModel model) {
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
                 MarginLayoutParams.MATCH_PARENT, MarginLayoutParams.WRAP_CONTENT, Gravity.CENTER);
 
-        mVrDialog = new VrDialog(dialogView.getContext(), mVrDialogManager);
+        mVrDialog = new VrDialog(mContext, mVrDialogManager);
+        ModalDialogView dialogView =
+                (ModalDialogView) LayoutInflater
+                        .from(new ContextThemeWrapper(mContext, R.style.ModalDialogTheme))
+                        .inflate(R.layout.modal_dialog_view, null);
+        mModelChangeProcessor =
+                PropertyModelChangeProcessor.create(model, dialogView, new ModalDialogViewBinder());
         mVrDialog.addView(dialogView, params);
         mVrDialogManager.setDialogView(mVrDialog);
         mVrDialog.initVrDialog();
     }
 
     @Override
-    protected void removeDialogView(View dialogView) {
+    protected void removeDialogView(PropertyModel model) {
         // Dismiss the currently showing dialog.
-        if (mVrDialog != null) {
-            mVrDialog.dismiss();
-        }
+        if (mVrDialog != null) mVrDialog.dismiss();
         mVrDialogManager.setDialogView(null);
         mVrDialog = null;
+
+        if (mModelChangeProcessor != null) {
+            mModelChangeProcessor.destroy();
+            mModelChangeProcessor = null;
+        }
     }
 
     public void closeCurrentDialog() {

@@ -18,7 +18,7 @@
 namespace autofill {
 class AutofillProfile;
 class CreditCard;
-}
+}  // namespace autofill
 
 namespace autofill_assistant {
 // An action to autofill a form using a local address or credit card.
@@ -27,12 +27,12 @@ class AutofillAction : public Action {
   explicit AutofillAction(const ActionProto& proto);
   ~AutofillAction() override;
 
-  // Overrides Action:
-  void ProcessAction(ActionDelegate* delegate,
-                     ProcessActionCallback callback) override;
-
  private:
   enum FieldValueStatus { UNKNOWN, EMPTY, NOT_EMPTY };
+
+  // Overrides Action:
+  void InternalProcessAction(ActionDelegate* delegate,
+                             ProcessActionCallback callback) override;
 
   void EndAction(bool successful);
 
@@ -40,31 +40,30 @@ class AutofillAction : public Action {
   void OnDataSelected(ActionDelegate* delegate,
                       const std::string& guid);
 
-  // Fill the form using data with GUID |guid|. Return whether filling succeeded
-  // or not through |callback|.
-  void FillFormWithData(const std::string& guid, ActionDelegate* delegate);
+  // Fill the form using data in client memory. Return whether filling succeeded
+  // or not through OnAddressFormFilled or OnCardFormFilled.
+  void FillFormWithData(ActionDelegate* delegate);
+  void OnWaitForElement(ActionDelegate* delegate, bool element_found);
 
   // Called after getting full credit card with its cvc.
   void OnGetFullCard(ActionDelegate* delegate,
                      std::unique_ptr<autofill::CreditCard> card,
                      const base::string16& cvc);
 
-  // Called when the form has been filled.
-  void OnFormFilled(const std::string& guid,
-                    ActionDelegate* delegate,
-                    bool successful);
+  // Called when the credit card form has been filled.
+  void OnCardFormFilled(bool successful);
+
+  // Called when the address form has been filled.
+  void OnAddressFormFilled(ActionDelegate* delegate, bool successful);
 
   // Check whether all required fields have a non-empty value. If it is the
   // case, finish the action successfully. If it's not and |allow_fallback|
   // false, fail the action. If |allow_fallback| is true, try again by filling
   // the failed fields without Autofill.
-  void CheckRequiredFields(const std::string& guid,
-                           ActionDelegate* delegate,
-                           bool allow_fallback);
+  void CheckRequiredFields(ActionDelegate* delegate, bool allow_fallback);
 
   // Triggers the check for a specific field.
-  void CheckRequiredFieldsSequentially(const std::string& guid,
-                                       ActionDelegate* delegate,
+  void CheckRequiredFieldsSequentially(ActionDelegate* delegate,
                                        bool allow_fallback,
                                        int required_fields_index);
 
@@ -74,9 +73,7 @@ class AutofillAction : public Action {
                                const std::string& value);
 
   // Called when all required fields have been checked.
-  void OnCheckRequiredFieldsDone(const std::string& guid,
-                                 ActionDelegate* delegate,
-                                 bool allow_fallback);
+  void OnCheckRequiredFieldsDone(ActionDelegate* delegate, bool allow_fallback);
 
   // Get the value of |address_field| associated to profile |profile|. Return
   // empty string if there is no data available.
@@ -86,21 +83,19 @@ class AutofillAction : public Action {
 
   // Sets fallback field values for empty fields from
   // |required_fields_value_status_|.
-  void SetFallbackFieldValuesSequentially(const std::string& guid,
-                                          ActionDelegate* delegate,
+  void SetFallbackFieldValuesSequentially(ActionDelegate* delegate,
                                           int required_fields_index);
 
   // Called after trying to set form values without Autofill in case of fallback
   // after failed validation.
-  void OnSetFallbackFieldValue(const std::string& guid,
-                               ActionDelegate* delegate,
+  void OnSetFallbackFieldValue(ActionDelegate* delegate,
                                int required_fields_index,
                                bool successful);
 
   // Usage of the autofilled address. Ignored if autofilling a card.
   std::string name_;
   std::string prompt_;
-  std::vector<std::string> selectors_;
+  Selector selector_;
   std::string fill_form_message_;
   std::string check_form_message_;
 

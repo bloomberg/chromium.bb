@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
@@ -30,17 +31,20 @@ class USB final : public EventTargetWithInlineData,
   USING_PRE_FINALIZER(USB, Dispose);
 
  public:
-  static USB* Create(ExecutionContext& context) { return new USB(context); }
+  static USB* Create(ExecutionContext& context) {
+    return MakeGarbageCollected<USB>(context);
+  }
 
+  explicit USB(ExecutionContext&);
   ~USB() override;
 
   void Dispose();
 
   // USB.idl
   ScriptPromise getDevices(ScriptState*);
-  ScriptPromise requestDevice(ScriptState*, const USBDeviceRequestOptions&);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(connect);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect);
+  ScriptPromise requestDevice(ScriptState*, const USBDeviceRequestOptions*);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(connect, kConnect);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect, kDisconnect);
 
   // EventTarget overrides.
   ExecutionContext* GetExecutionContext() const override;
@@ -74,12 +78,10 @@ class USB final : public EventTargetWithInlineData,
                           RegisteredEventListener&) override;
 
  private:
-  explicit USB(ExecutionContext&);
-
   void EnsureServiceConnection();
 
   bool IsContextSupported() const;
-  bool IsFeatureEnabled() const;
+  FeatureEnabledState GetFeatureEnabledState() const;
 
   mojom::blink::WebUsbServicePtr service_;
   HeapHashSet<Member<ScriptPromiseResolver>> get_devices_requests_;

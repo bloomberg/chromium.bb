@@ -148,10 +148,11 @@ class MetricsWebContentsObserver
   // public only for testing
   void OnTimingUpdated(
       content::RenderFrameHost* render_frame_host,
-      const mojom::PageLoadTiming& timing,
-      const mojom::PageLoadMetadata& metadata,
-      const mojom::PageLoadFeatures& new_features,
-      const std::vector<mojom::ResourceDataUpdatePtr>& resources);
+      mojom::PageLoadTimingPtr timing,
+      mojom::PageLoadMetadataPtr metadata,
+      mojom::PageLoadFeaturesPtr new_features,
+      const std::vector<mojom::ResourceDataUpdatePtr>& resources,
+      mojom::PageRenderDataPtr render_data);
 
   // Informs the observers of the currently committed load that the event
   // corresponding to |event_key| has occurred. This should not be called within
@@ -163,11 +164,11 @@ class MetricsWebContentsObserver
   friend class content::WebContentsUserData<MetricsWebContentsObserver>;
 
   // page_load_metrics::mojom::PageLoadMetrics implementation.
-  void UpdateTiming(
-      const mojom::PageLoadTimingPtr timing,
-      const mojom::PageLoadMetadataPtr metadata,
-      const mojom::PageLoadFeaturesPtr new_features,
-      const std::vector<mojom::ResourceDataUpdatePtr> resources) override;
+  void UpdateTiming(mojom::PageLoadTimingPtr timing,
+                    mojom::PageLoadMetadataPtr metadata,
+                    mojom::PageLoadFeaturesPtr new_features,
+                    std::vector<mojom::ResourceDataUpdatePtr> resources,
+                    mojom::PageRenderDataPtr render_data) override;
 
   void HandleFailedNavigationForTrackedLoad(
       content::NavigationHandle* navigation_handle,

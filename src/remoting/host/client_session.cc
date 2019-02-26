@@ -14,8 +14,10 @@
 #include "build/build_config.h"
 #include "remoting/base/capabilities.h"
 #include "remoting/base/constants.h"
-#include "remoting/base/session_options.h"
 #include "remoting/base/logging.h"
+#include "remoting/base/session_options.h"
+#include "remoting/host/action_executor.h"
+#include "remoting/host/action_message_handler.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/file_transfer_message_handler.h"
@@ -37,6 +39,8 @@
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 
 namespace remoting {
+
+using protocol::ActionRequest;
 
 namespace {
 
@@ -188,6 +192,21 @@ void ClientSession::SetCapabilities(
         kFileTransferDataChannelPrefix,
         base::Bind(&ClientSession::CreateFileTransferMessageHandler,
                    base::Unretained(this)));
+  }
+
+  std::vector<ActionRequest::Action> supported_actions;
+  if (HasCapability(capabilities_, protocol::kSendAttentionSequenceAction))
+    supported_actions.push_back(ActionRequest::SEND_ATTENTION_SEQUENCE);
+  if (HasCapability(capabilities_, protocol::kLockWorkstationAction))
+    supported_actions.push_back(ActionRequest::LOCK_WORKSTATION);
+
+  if (supported_actions.size() > 0) {
+    // Register the action message handler.
+    data_channel_manager_.RegisterCreateHandlerCallback(
+        kActionDataChannelPrefix,
+        base::BindRepeating(&ClientSession::CreateActionMessageHandler,
+                            base::Unretained(this),
+                            std::move(supported_actions)));
   }
 
   VLOG(1) << "Client capabilities: " << *client_capabilities_;
@@ -488,6 +507,51 @@ void ClientSession::OnVideoSizeChanged(protocol::VideoStream* video_stream,
   }
 }
 
+void ClientSession::OnDesktopDisplayChanged(
+    std::unique_ptr<protocol::VideoLayout> displays) {
+  // Scan display list to calculate the full desktop size.
+  int min_x = 0;
+  int max_x = 0;
+  int min_y = 0;
+  int max_y = 0;
+  int dpi_x = 0;
+  int dpi_y = 0;
+  for (int display_id = 0; display_id < displays->video_track_size();
+       display_id++) {
+    protocol::VideoTrackLayout track = displays->video_track(display_id);
+    int x = track.position_x();
+    int y = track.position_y();
+    min_x = std::min(x, min_x);
+    min_y = std::min(y, min_y);
+    max_x = std::max(x + track.width(), max_x);
+    max_y = std::max(y + track.height(), max_y);
+
+    if (dpi_x == 0)
+      dpi_x = track.x_dpi();
+    if (dpi_y == 0)
+      dpi_y = track.y_dpi();
+  }
+
+  // Generate and send VideoLayout message.
+  protocol::VideoLayout layout;
+  protocol::VideoTrackLayout* video_track = layout.add_video_track();
+  video_track->set_position_x(0);
+  video_track->set_position_y(0);
+  video_track->set_width(max_x - min_x);
+  video_track->set_height(max_y - min_y);
+  video_track->set_x_dpi(dpi_x);
+  video_track->set_y_dpi(dpi_y);
+
+  // Add a VideoTrackLayout entry for each separate display.
+  for (int display_id = 0; display_id < displays->video_track_size();
+       display_id++) {
+    protocol::VideoTrackLayout* video_track = layout.add_video_track();
+    video_track->CopyFrom(displays->video_track(display_id));
+  }
+
+  connection_->client_stub()->SetVideoLayout(layout);
+}
+
 void ClientSession::CreateFileTransferMessageHandler(
     const std::string& channel_name,
     std::unique_ptr<protocol::MessagePipe> pipe) {
@@ -497,6 +561,21 @@ void ClientSession::CreateFileTransferMessageHandler(
   new FileTransferMessageHandler(
       channel_name, std::move(pipe),
       desktop_environment_->CreateFileProxyWrapper());
+}
+
+void ClientSession::CreateActionMessageHandler(
+    std::vector<ActionRequest::Action> capabilities,
+    const std::string& channel_name,
+    std::unique_ptr<protocol::MessagePipe> pipe) {
+  std::unique_ptr<ActionExecutor> action_executor =
+      desktop_environment_->CreateActionExecutor();
+  if (!action_executor)
+    return;
+
+  // ActionMessageHandler manages its own lifetime and is tied to the lifetime
+  // of |pipe|. Once |pipe| is closed, this instance will be cleaned up.
+  new ActionMessageHandler(channel_name, capabilities, std::move(pipe),
+                           std::move(action_executor));
 }
 
 }  // namespace remoting

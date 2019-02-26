@@ -16,7 +16,7 @@ NavigatorUserActivation& NavigatorUserActivation::From(Navigator& navigator) {
   NavigatorUserActivation* supplement =
       Supplement<Navigator>::From<NavigatorUserActivation>(navigator);
   if (!supplement) {
-    supplement = new NavigatorUserActivation(navigator);
+    supplement = MakeGarbageCollected<NavigatorUserActivation>(navigator);
     ProvideTo(navigator, supplement);
   }
   return *supplement;

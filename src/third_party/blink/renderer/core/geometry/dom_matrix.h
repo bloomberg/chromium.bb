@@ -31,10 +31,12 @@ class CORE_EXPORT DOMMatrix : public DOMMatrixReadOnly {
                                      ExceptionState&);
   static DOMMatrix* fromFloat64Array(NotShared<DOMFloat64Array>,
                                      ExceptionState&);
-  static DOMMatrix* fromMatrix(DOMMatrixInit&, ExceptionState&);
+  static DOMMatrix* fromMatrix(DOMMatrixInit*, ExceptionState&);
   static DOMMatrix* CreateForSerialization(double[], int size);
-  // Used by Canvas2D, not defined on the IDL.
-  static DOMMatrix* fromMatrix2D(DOMMatrix2DInit&);
+
+  DOMMatrix(const TransformationMatrix&, bool is2d = true);
+  template <typename T>
+  DOMMatrix(T sequence, int size);
 
   void setA(double value) { matrix_->SetM11(value); }
   void setB(double value) { matrix_->SetM12(value); }
@@ -90,9 +92,9 @@ class CORE_EXPORT DOMMatrix : public DOMMatrixReadOnly {
     SetIs2D(value == 1);
   }
 
-  DOMMatrix* multiplySelf(DOMMatrixInit&, ExceptionState&);
+  DOMMatrix* multiplySelf(DOMMatrixInit*, ExceptionState&);
   DOMMatrix* multiplySelf(const DOMMatrix& other_matrix);
-  DOMMatrix* preMultiplySelf(DOMMatrixInit&, ExceptionState&);
+  DOMMatrix* preMultiplySelf(DOMMatrixInit*, ExceptionState&);
   DOMMatrix* translateSelf(double tx = 0, double ty = 0, double tz = 0);
   DOMMatrix* scaleSelf(double sx = 1);
   DOMMatrix* scaleSelf(double sx,
@@ -123,10 +125,6 @@ class CORE_EXPORT DOMMatrix : public DOMMatrixReadOnly {
                             ExceptionState&);
 
  private:
-  DOMMatrix(const TransformationMatrix&, bool is2d = true);
-  template <typename T>
-  DOMMatrix(T sequence, int size);
-
   void SetIs2D(bool value);
   void SetNAN();
 };

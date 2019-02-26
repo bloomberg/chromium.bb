@@ -16,11 +16,14 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gfx_export.h"
 
+namespace cc {
+class SkottieWrapper;
+}  // namespace cc
+
 namespace gfx {
 class Canvas;
 class SkiaVectorAnimationTest;
 class SkiaVectorAnimationObserver;
-class SkottieWrapper;
 
 // This class is a wrapper over the Skia object for lottie vector graphic
 // animations. It has its own timeline manager for the animation controls. The
@@ -81,7 +84,7 @@ class GFX_EXPORT SkiaVectorAnimation {
     kLoop         // Same as LINEAR, except the animation repeats after it ends.
   };
 
-  explicit SkiaVectorAnimation(scoped_refptr<SkottieWrapper> skottie);
+  explicit SkiaVectorAnimation(scoped_refptr<cc::SkottieWrapper> skottie);
   ~SkiaVectorAnimation();
 
   void SetAnimationObserver(SkiaVectorAnimationObserver* Observer);
@@ -138,7 +141,7 @@ class GFX_EXPORT SkiaVectorAnimation {
   void PaintFrame(gfx::Canvas* canvas, float t, const gfx::Size& size);
 
   // Returns the skottie object that contins the animation data.
-  scoped_refptr<SkottieWrapper> skottie() const { return skottie_; }
+  scoped_refptr<cc::SkottieWrapper> skottie() const { return skottie_; }
 
  private:
   friend class SkiaVectorAnimationTest;
@@ -231,7 +234,7 @@ class GFX_EXPORT SkiaVectorAnimation {
 
   SkiaVectorAnimationObserver* observer_ = nullptr;
 
-  scoped_refptr<SkottieWrapper> skottie_;
+  scoped_refptr<cc::SkottieWrapper> skottie_;
 
   DISALLOW_COPY_AND_ASSIGN(SkiaVectorAnimation);
 };

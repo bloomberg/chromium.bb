@@ -94,6 +94,7 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   // Returns true if the position changed. In that case, the child will have to
   // be laid out again.
   bool SetStaticPositionForPositionedLayout(LayoutBox& child);
+  LayoutUnit CrossAxisContentExtent() const;
 
  protected:
   void ComputeIntrinsicLogicalWidths(
@@ -108,7 +109,7 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
 
   enum class SizeDefiniteness { kDefinite, kIndefinite, kUnknown };
 
-  bool HasOrthogonalFlow(const LayoutBox& child) const;
+  bool MainAxisIsInlineAxis(const LayoutBox& child) const;
   bool IsColumnFlow() const;
   bool IsLeftToRightFlow() const;
   bool IsMultiline() const;
@@ -121,7 +122,6 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   LayoutUnit MainAxisContentExtentForChildIncludingScrollbar(
       const LayoutBox& child) const;
   LayoutUnit CrossAxisExtent() const;
-  LayoutUnit CrossAxisContentExtent() const;
   LayoutUnit MainAxisContentExtent(LayoutUnit content_logical_height);
   LayoutUnit ComputeMainAxisExtentForChild(const LayoutBox& child,
                                            SizeType,
@@ -182,6 +182,7 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
 
   void ResetAutoMarginsAndLogicalTopInCrossAxis(LayoutBox& child);
   void SetOverrideMainAxisContentSizeForChild(FlexItem&);
+  bool ChildLogicalHeightStretchesToFlexboxSize(FlexItem&) const;
   void PrepareChildForPositionedLayout(LayoutBox& child);
   void LayoutLineItems(FlexLine*, bool relayout_children, SubtreeLayoutScope&);
   void ApplyLineItemsPosition(FlexLine*);
@@ -190,10 +191,6 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
                            LayoutUnit available_free_space);
   void AlignFlexLines(Vector<FlexLine>&);
   void AlignChildren(Vector<FlexLine>&);
-  // Computes the cross-axis size that a stretched child should have and stores
-  // it in child.cross_axis_size.
-  void ComputeStretchedSizeForChild(FlexItem& child,
-                                    LayoutUnit line_cross_axis_extent);
   void ApplyStretchAlignmentToChild(FlexItem& child);
   void FlipForRightToLeftColumn(const Vector<FlexLine>& line_contexts);
   void FlipForWrapReverse(const Vector<FlexLine>&,

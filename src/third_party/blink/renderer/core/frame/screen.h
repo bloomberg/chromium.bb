@@ -46,7 +46,11 @@ class CORE_EXPORT Screen final : public ScriptWrappable,
   USING_GARBAGE_COLLECTED_MIXIN(Screen);
 
  public:
-  static Screen* Create(LocalFrame* frame) { return new Screen(frame); }
+  static Screen* Create(LocalFrame* frame) {
+    return MakeGarbageCollected<Screen>(frame);
+  }
+
+  explicit Screen(LocalFrame*);
 
   int height() const;
   int width() const;
@@ -58,9 +62,6 @@ class CORE_EXPORT Screen final : public ScriptWrappable,
   int availWidth() const;
 
   void Trace(blink::Visitor*) override;
-
- private:
-  explicit Screen(LocalFrame*);
 };
 
 }  // namespace blink

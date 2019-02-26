@@ -24,6 +24,7 @@
 #include "oobe_config/dbus-constants.h"
 #include "permission_broker/dbus-constants.h"
 #include "power_manager/dbus-constants.h"
+#include "runtime_probe/dbus-constants.h"
 #include "seneschal/dbus-constants.h"
 #include "shill/dbus-constants.h"
 #include "smbprovider/dbus-constants.h"
@@ -81,6 +82,8 @@ const char kLoadDlcImage[] = "LoadDlcImage";
 // Constants
 const char kBadResult[] = "";
 const char kTerminaComponentName[] = "cros-termina";
+const char kSlotNameA[] = "Dlc-A";
+const char kSlotNameB[] = "Dlc-B";
 }  // namespace imageloader
 
 namespace dlcservice {
@@ -192,6 +195,8 @@ const char kChromeFeaturesServiceIsUsbguardEnabledMethod[] =
     "IsUsbguardEnabled";
 const char kChromeFeaturesServiceIsShillSandboxingEnabledMethod[] =
     "IsShillSandboxingEnabled";
+const char kChromeFeaturesServiceIsFsNosymfollowEnabledMethod[] =
+    "IsFsNosymfollowEnabled";
 
 const char kUrlHandlerServiceName[] = "org.chromium.UrlHandlerService";
 const char kUrlHandlerServicePath[] = "/org/chromium/UrlHandlerService";
@@ -772,6 +777,9 @@ const char kUnregisterAdvertisement[] = "UnregisterAdvertisement";
 const char kSetAdvertisingIntervals[] = "SetAdvertisingIntervals";
 const char kResetAdvertising[] = "ResetAdvertising";
 
+// Bluetooth LE Advertising Manager properties.
+const char kIsTXPowerSupportedProperty[] = "IsTXPowerSupported";
+
 // Bluetooth LE Advertising Manager errors.
 const char kErrorAlreadyExists[] = "org.bluez.Error.AlreadyExists";
 const char kErrorDoesNotExist[] = "org.bluez.Error.DoesNotExist";
@@ -861,6 +869,7 @@ const char kGetNumberOfActiveOutputStreams[] = "GetNumberOfActiveOutputStreams";
 const char kIsAudioOutputActive[] = "IsAudioOutputActive";
 const char kSetGlobalOutputChannelRemix[] = "SetGlobalOutputChannelRemix";
 const char kGetSystemAecSupported[] = "GetSystemAecSupported";
+const char kGetSystemAecGroupId[] = "GetSystemAecGroupId";
 
 // Names of properties returned by GetNodes()
 const char kIsInputProperty[] = "IsInput";

@@ -28,13 +28,13 @@ namespace blink {
 
 RTCDataChannelEvent* RTCDataChannelEvent::Create(const AtomicString& type,
                                                  RTCDataChannel* channel) {
-  return new RTCDataChannelEvent(type, channel);
+  return MakeGarbageCollected<RTCDataChannelEvent>(type, channel);
 }
 
 RTCDataChannelEvent* RTCDataChannelEvent::Create(
     const AtomicString& type,
-    const RTCDataChannelEventInit& initializer) {
-  return new RTCDataChannelEvent(type, initializer);
+    const RTCDataChannelEventInit* initializer) {
+  return MakeGarbageCollected<RTCDataChannelEvent>(type, initializer);
 }
 
 RTCDataChannelEvent::RTCDataChannelEvent(const AtomicString& type,
@@ -43,8 +43,8 @@ RTCDataChannelEvent::RTCDataChannelEvent(const AtomicString& type,
 
 RTCDataChannelEvent::RTCDataChannelEvent(
     const AtomicString& type,
-    const RTCDataChannelEventInit& initializer)
-    : Event(type, initializer), channel_(initializer.channel()) {}
+    const RTCDataChannelEventInit* initializer)
+    : Event(type, initializer), channel_(initializer->channel()) {}
 
 RTCDataChannelEvent::~RTCDataChannelEvent() = default;
 
@@ -53,7 +53,7 @@ RTCDataChannel* RTCDataChannelEvent::channel() const {
 }
 
 const AtomicString& RTCDataChannelEvent::InterfaceName() const {
-  return EventNames::RTCDataChannelEvent;
+  return event_interface_names::kRTCDataChannelEvent;
 }
 
 void RTCDataChannelEvent::Trace(blink::Visitor* visitor) {

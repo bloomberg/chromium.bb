@@ -16,6 +16,7 @@
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/events/event_observer.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/point.h"
@@ -32,6 +33,7 @@
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget_deletion_observer.h"
 #include "ui/views/widget/widget_removals_observer.h"
+#include "ui/views/widget/widget_utils.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "ui/views/window/native_frame_view.h"
 
@@ -1697,6 +1699,8 @@ TEST_F(WidgetTest, EventHandlersOnRootView) {
   EXPECT_EQ(0, h1.GetEventCount(ui::ET_MOUSEWHEEL));
   EXPECT_EQ(0, view->GetEventCount(ui::ET_MOUSEWHEEL));
   EXPECT_EQ(0, h2.GetEventCount(ui::ET_MOUSEWHEEL));
+
+  root_view->RemovePreTargetHandler(&h1);
 }
 
 TEST_F(WidgetTest, SynthesizeMouseMoveEvent) {
@@ -1720,7 +1724,7 @@ TEST_F(WidgetTest, SynthesizeMouseMoveEvent) {
 
   gfx::Point cursor_location(5, 5);
   ui::test::EventGenerator generator(
-      IsMus() ? widget->GetNativeWindow() : GetContext(),
+      IsMus() ? GetRootWindow(widget.get()) : GetContext(),
       widget->GetNativeWindow());
   generator.MoveMouseTo(cursor_location);
 
@@ -1777,7 +1781,7 @@ TEST_F(WidgetTest, MouseEventDispatchWhileTouchIsDown) {
   event_count_view->AddPostTargetHandler(&consumer);
 
   ui::test::EventGenerator generator(
-      IsMus() ? widget->GetNativeWindow() : GetContext(),
+      IsMus() ? GetRootWindow(widget) : GetContext(),
       widget->GetNativeWindow());
   generator.PressTouch();
   generator.ClickLeftButton();
@@ -1803,13 +1807,14 @@ TEST_F(WidgetTest, MousePressCausesCapture) {
   widget->GetRootView()->AddChildView(event_count_view);
 
   // No capture has been set.
-  EXPECT_EQ(nullptr, internal::NativeWidgetPrivate::GetGlobalCapture(
-                         widget->GetNativeView()));
+  EXPECT_EQ(
+      gfx::kNullNativeView,
+      internal::NativeWidgetPrivate::GetGlobalCapture(widget->GetNativeView()));
 
   MousePressEventConsumer consumer;
   event_count_view->AddPostTargetHandler(&consumer);
   ui::test::EventGenerator generator(
-      IsMus() ? widget->GetNativeWindow() : GetContext(),
+      IsMus() ? GetRootWindow(widget) : GetContext(),
       widget->GetNativeWindow());
   generator.PressLeftButton();
 
@@ -1864,15 +1869,16 @@ TEST_F(WidgetTest, CaptureDuringMousePressNotOverridden) {
   event_count_view->SetBounds(0, 0, 300, 300);
   widget->GetRootView()->AddChildView(event_count_view);
 
-  EXPECT_EQ(nullptr, internal::NativeWidgetPrivate::GetGlobalCapture(
-                         widget->GetNativeView()));
+  EXPECT_EQ(
+      gfx::kNullNativeView,
+      internal::NativeWidgetPrivate::GetGlobalCapture(widget->GetNativeView()));
 
   Widget* widget2 = CreateTopLevelNativeWidget();
   // Gives explicit capture to |widget2|
   CaptureEventConsumer consumer(widget2);
   event_count_view->AddPostTargetHandler(&consumer);
   ui::test::EventGenerator generator(
-      IsMus() ? widget->GetNativeWindow() : GetContext(),
+      IsMus() ? GetRootWindow(widget) : GetContext(),
       widget->GetNativeWindow());
   // This event should implicitly give capture to |widget|, except that
   // |consumer| will explicitly set capture on |widget2|.
@@ -1890,52 +1896,69 @@ TEST_F(WidgetTest, CaptureDuringMousePressNotOverridden) {
   widget->CloseNow();
 }
 
-class ClosingEventHandler : public View {
+class ClosingEventObserver : public ui::EventObserver {
  public:
-  explicit ClosingEventHandler(Widget* widget) : widget_(widget) {}
+  explicit ClosingEventObserver(Widget* widget) : widget_(widget) {}
 
-  // ui::EventHandler:
-  void OnMouseEvent(ui::MouseEvent* event) override {
-    // Don't close twice if closing the Widget generates a capture update event.
-    if (event->type() != ui::ET_MOUSE_CAPTURE_CHANGED)
+  // ui::EventObserver:
+  void OnEvent(const ui::Event& event) override {
+    // Guard against attempting to close the widget twice.
+    if (widget_)
       widget_->CloseNow();
+    widget_ = nullptr;
   }
 
  private:
   Widget* widget_;
 
-  DISALLOW_COPY_AND_ASSIGN(ClosingEventHandler);
+  DISALLOW_COPY_AND_ASSIGN(ClosingEventObserver);
+};
+
+class ClosingView : public View {
+ public:
+  explicit ClosingView(Widget* widget) : widget_(widget) {}
+
+  // View:
+  void OnEvent(ui::Event* event) override {
+    // Guard against closing twice and writing to freed memory.
+    if (widget_ && event->type() == ui::ET_MOUSE_PRESSED) {
+      Widget* widget = widget_;
+      widget_ = nullptr;
+      widget->CloseNow();
+    }
+  }
+
+ private:
+  Widget* widget_;
+
+  DISALLOW_COPY_AND_ASSIGN(ClosingView);
 };
 
 // Ensures that when multiple objects are intercepting OS-level events, that one
 // can safely close a Widget that has capture.
 TEST_F(WidgetTest, DestroyedWithCaptureViaEventMonitor) {
-  // On Mus, a CHECK(!details.dispatcher_destroyed) is hit in the EventGenerator
-  // call below. TODO(crbug/799428): Investigate.
-  if (IsMus())
-    return;
-
   Widget* widget = CreateTopLevelNativeWidget();
   TestWidgetObserver observer(widget);
   widget->Show();
   widget->SetSize(gfx::Size(300, 300));
 
-  // We need two ClosingEventHandler (both will try to close the Widget). On Mac
+  // ClosingView and ClosingEventObserver both try to close the Widget. On Mac
   // the order that EventMonitors receive OS events is not deterministic. If the
   // one installed via SetCapture() sees it first, the event is swallowed (so
   // both need to try). Note the regression test would only fail when the
   // SetCapture() handler did _not_ swallow the event, but it still needs to try
   // to close the Widget otherwise it will be left open, which fails elsewhere.
-  ClosingEventHandler* view_handler = new ClosingEventHandler(widget);
-  widget->GetContentsView()->AddChildView(view_handler);
-  widget->SetCapture(view_handler);
+  ClosingView* closing_view = new ClosingView(widget);
+  widget->GetContentsView()->AddChildView(closing_view);
+  widget->SetCapture(closing_view);
 
-  ClosingEventHandler monitor_handler(widget);
+  ClosingEventObserver closing_event_observer(widget);
   auto monitor = EventMonitor::CreateApplicationMonitor(
-      &monitor_handler, widget->GetNativeWindow());
+      &closing_event_observer, widget->GetNativeWindow(),
+      {ui::ET_MOUSE_PRESSED});
 
   ui::test::EventGenerator generator(
-      IsMus() ? widget->GetNativeWindow() : GetContext(),
+      IsMus() ? GetRootWindow(widget) : GetContext(),
       widget->GetNativeWindow());
   generator.set_target(ui::test::EventGenerator::Target::APPLICATION);
 
@@ -2045,7 +2068,7 @@ TEST_F(WidgetTest, WidgetDeleted_InOnMousePressed) {
   widget->Show();
 
   ui::test::EventGenerator generator(
-      IsMus() ? widget->GetNativeWindow() : GetContext(),
+      IsMus() ? GetRootWindow(widget) : GetContext(),
       widget->GetNativeWindow());
 
   WidgetDeletionObserver deletion_observer(widget);
@@ -3384,7 +3407,7 @@ TEST_F(WidgetTest, MouseEventTypesViaGenerator) {
   widget->Show();
 
   ui::test::EventGenerator generator(GetContext(), widget->GetNativeWindow());
-  generator.set_current_location(gfx::Point(20, 20));
+  generator.set_current_screen_location(gfx::Point(20, 20));
 
   generator.ClickLeftButton();
   EXPECT_EQ(1, view->GetEventCount(ui::ET_MOUSE_PRESSED));

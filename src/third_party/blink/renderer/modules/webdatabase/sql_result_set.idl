@@ -32,6 +32,6 @@
 ] interface SQLResultSet {
     readonly attribute SQLResultSetRowList rows;
 
-    [RaisesException=Getter] readonly attribute long insertId;
+    [RaisesException=Getter] readonly attribute long long insertId;
     readonly attribute long rowsAffected;
 };

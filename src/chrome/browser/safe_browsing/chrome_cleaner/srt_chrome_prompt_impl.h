@@ -50,7 +50,7 @@ class ChromePromptImpl : public chrome_cleaner::mojom::ChromePrompt {
   mojo::Binding<chrome_cleaner::mojom::ChromePrompt> binding_;
   extensions::ExtensionService* extension_service_;
   OnPromptUser on_prompt_user_;
-  base::Optional<std::vector<base::string16>> extension_ids_;
+  std::vector<base::string16> extension_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromePromptImpl);
 };

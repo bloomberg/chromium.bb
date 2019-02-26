@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_SHADOW_DATA_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_SHADOW_DATA_H_
 
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/style_color.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect_outsets.h"
@@ -36,7 +37,7 @@ enum ShadowStyle { kNormal, kInset };
 
 // This class holds information about shadows for the text-shadow and box-shadow
 // properties, as well as the drop-shadow(...) filter operation.
-class ShadowData {
+class CORE_EXPORT ShadowData {
   USING_FAST_MALLOC(ShadowData);
 
  public:

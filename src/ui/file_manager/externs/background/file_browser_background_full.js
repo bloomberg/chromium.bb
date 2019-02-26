@@ -44,3 +44,8 @@ FileBrowserBackgroundFull.prototype.mediaScanner;
  * @type {!importer.HistoryLoader}
  */
 FileBrowserBackgroundFull.prototype.historyLoader;
+
+/**
+ * @type {!Crostini}
+ */
+FileBrowserBackgroundFull.prototype.crostini;

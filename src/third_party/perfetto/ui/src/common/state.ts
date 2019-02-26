@@ -19,13 +19,25 @@
  */
 export interface ObjectById<Class extends{id: string}> { [id: string]: Class; }
 
+export const SCROLLING_TRACK_GROUP = 'ScrollingTracks';
+
 export interface TrackState {
   id: string;
   engineId: string;
   kind: string;
   name: string;
+  trackGroup?: string;
   dataReq?: TrackDataRequest;
   config: {};
+}
+
+export interface TrackGroupState {
+  id: string;
+  engineId: string;
+  name: string;
+  collapsed: boolean;
+  tracks: string[];  // Child track ids.
+  summaryTrackId: string;
 }
 
 export interface TrackDataRequest {
@@ -51,6 +63,40 @@ export interface PermalinkConfig {
   hash?: string;       // Set by the controller when the link has been created.
 }
 
+export interface RecordConfig {
+  [key: string]: null|number|boolean|string|string[];
+
+  // Global settings
+  durationSeconds: number;
+  writeIntoFile: boolean;
+  fileWritePeriodMs: number|null;
+
+  // Buffer setup
+  bufferSizeMb: number;
+
+  // Ftrace
+  ftrace: boolean;
+  ftraceEvents: string[];
+  atraceCategories: string[];
+  atraceApps: string[];
+  ftraceDrainPeriodMs: number|null;
+  ftraceBufferSizeKb: number|null;
+
+  // Ps
+  processMetadata: boolean;
+  scanAllProcessesOnStart: boolean;
+  procStatusPeriodMs: number|null;
+
+  // SysStats
+  sysStats: boolean;
+  meminfoPeriodMs: number|null;
+  meminfoCounters: string[];
+  vmstatPeriodMs: number|null;
+  vmstatCounters: string[];
+  statPeriodMs: number|null;
+  statCounters: string[];
+}
+
 export interface TraceTime {
   startSec: number;
   endSec: number;
@@ -67,11 +113,18 @@ export interface State {
   nextId: number;
 
   /**
+   * State of the ConfigEditor.
+   */
+  recordConfig: RecordConfig;
+  displayConfigAsPbtxt: boolean;
+
+  /**
    * Open traces.
    */
   engines: ObjectById<EngineConfig>;
   traceTime: TraceTime;
   visibleTraceTime: TraceTime;
+  trackGroups: ObjectById<TrackGroupState>;
   tracks: ObjectById<TrackState>;
   scrollingTracks: string[];
   pinnedTracks: string[];
@@ -94,10 +147,43 @@ export function createEmptyState(): State {
     traceTime: {...defaultTraceTime},
     visibleTraceTime: {...defaultTraceTime},
     tracks: {},
+    trackGroups: {},
     pinnedTracks: [],
     scrollingTracks: [],
     queries: {},
     permalink: {},
+
+    recordConfig: createEmptyRecordConfig(),
+    displayConfigAsPbtxt: false,
+
     status: {msg: '', timestamp: 0},
+  };
+}
+
+export function createEmptyRecordConfig(): RecordConfig {
+  return {
+    durationSeconds: 10.0,
+    writeIntoFile: false,
+    fileWritePeriodMs: null,
+    bufferSizeMb: 10.0,
+
+    ftrace: false,
+    ftraceEvents: [],
+    atraceApps: [],
+    atraceCategories: [],
+    ftraceDrainPeriodMs: null,
+    ftraceBufferSizeKb: null,
+
+    processMetadata: false,
+    scanAllProcessesOnStart: false,
+    procStatusPeriodMs: null,
+
+    sysStats: false,
+    meminfoPeriodMs: null,
+    meminfoCounters: [],
+    vmstatPeriodMs: null,
+    vmstatCounters: [],
+    statPeriodMs: null,
+    statCounters: [],
   };
 }

@@ -69,8 +69,8 @@ class CORE_EXPORT HTMLTableCellElement final : public HTMLTablePartElement {
 };
 
 inline bool IsHTMLTableCellElement(const HTMLElement& element) {
-  return element.HasTagName(HTMLNames::tdTag) ||
-         element.HasTagName(HTMLNames::thTag);
+  return element.HasTagName(html_names::kTdTag) ||
+         element.HasTagName(html_names::kThTag);
 }
 
 DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLTableCellElement);

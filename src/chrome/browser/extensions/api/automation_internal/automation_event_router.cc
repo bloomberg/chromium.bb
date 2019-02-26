@@ -21,6 +21,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_messages.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -137,6 +138,36 @@ void AutomationEventRouter::DispatchActionResult(const ui::AXActionData& data,
 void AutomationEventRouter::SetTreeDestroyedCallbackForTest(
     base::RepeatingCallback<void(ui::AXTreeID)> cb) {
   tree_destroyed_callback_for_test_ = cb;
+}
+
+void AutomationEventRouter::DispatchGetTextLocationDataResult(
+    const ui::AXActionData& data,
+    const base::Optional<gfx::Rect>& rect) {
+  CHECK(!data.source_extension_id.empty());
+
+  if (listeners_.empty())
+    return;
+  extensions::api::automation_internal::AXTextLocationParams params;
+  params.tree_id = data.target_tree_id;
+  params.node_id = data.target_node_id;
+  params.result = false;
+  if (rect) {
+    params.left = rect.value().x();
+    params.top = rect.value().y();
+    params.width = rect.value().width();
+    params.height = rect.value().height();
+    params.result = true;
+  }
+  params.request_id = data.request_id;
+
+  std::unique_ptr<base::ListValue> args(
+      api::automation_internal::OnGetTextLocationResult::Create(params));
+  auto event = std::make_unique<Event>(
+      events::AUTOMATION_INTERNAL_ON_GET_TEXT_LOCATION_RESULT,
+      api::automation_internal::OnGetTextLocationResult::kEventName,
+      std::move(args), active_profile_);
+  EventRouter::Get(active_profile_)
+      ->DispatchEventToExtension(data.source_extension_id, std::move(event));
 }
 
 AutomationEventRouter::AutomationListener::AutomationListener() {

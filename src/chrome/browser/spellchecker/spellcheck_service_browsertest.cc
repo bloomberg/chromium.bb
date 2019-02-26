@@ -83,14 +83,13 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest,
         SpellcheckServiceFactory::GetForRenderer(renderer_identity);
     ASSERT_NE(nullptr, spellcheck);
 
-    // Override requests for the spellcheck::mojom::SpellChecker
-    // interface so we can test the SpellChecker request flow.
-    service_manager::Connector::TestApi test_api(
-        ChromeService::GetInstance()->connector());
-    test_api.OverrideBinderForTesting(
-        service_manager::Identity(chrome::mojom::kRendererServiceName,
-                                  renderer_identity.user_id(),
-                                  renderer_identity.instance()),
+    // Override requests for the spellcheck::mojom::SpellChecker interface so we
+    // can test the SpellChecker request flow.
+    ChromeService::GetInstance()->connector()->OverrideBinderForTesting(
+        service_manager::ServiceFilter::ByNameWithIdInGroup(
+            chrome::mojom::kRendererServiceName,
+            renderer_identity.instance_id(),
+            renderer_identity.instance_group()),
         spellcheck::mojom::SpellChecker::Name_,
         base::BindRepeating(&SpellcheckServiceBrowserTest::Bind,
                             base::Unretained(this)));

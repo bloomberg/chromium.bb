@@ -52,11 +52,11 @@ class WorkerGlobalScopeCrypto final
   static Crypto* crypto(Supplementable<WorkerGlobalScope>&);
   Crypto* crypto() const;
 
+  WorkerGlobalScopeCrypto();
+
   void Trace(blink::Visitor*) override;
 
  private:
-  WorkerGlobalScopeCrypto();
-
   mutable Member<Crypto> crypto_;
 };
 

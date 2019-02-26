@@ -2870,12 +2870,20 @@ void ScheduleDCLayerCHROMIUM(GLsizei num_textures,
                              GLuint filter,
                              GLuint shm_id,
                              GLuint shm_offset,
-                             bool is_protected_video) {
+                             GLuint protected_video_type) {
   gles2::cmds::ScheduleDCLayerCHROMIUM* c =
       GetCmdSpace<gles2::cmds::ScheduleDCLayerCHROMIUM>();
   if (c) {
     c->Init(num_textures, background_color, edge_aa_mask, filter, shm_id,
-            shm_offset, is_protected_video);
+            shm_offset, protected_video_type);
+  }
+}
+
+void SetActiveURLCHROMIUM(GLuint url_bucket_id) {
+  gles2::cmds::SetActiveURLCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::SetActiveURLCHROMIUM>();
+  if (c) {
+    c->Init(url_bucket_id);
   }
 }
 
@@ -3385,6 +3393,35 @@ void MaxShaderCompilerThreadsKHR(GLuint count) {
       GetCmdSpace<gles2::cmds::MaxShaderCompilerThreadsKHR>();
   if (c) {
     c->Init(count);
+  }
+}
+
+void CreateAndTexStorage2DSharedImageINTERNALImmediate(GLuint texture,
+                                                       GLenum internalFormat,
+                                                       const GLbyte* mailbox) {
+  const uint32_t size = gles2::cmds::
+      CreateAndTexStorage2DSharedImageINTERNALImmediate::ComputeSize();
+  gles2::cmds::CreateAndTexStorage2DSharedImageINTERNALImmediate* c =
+      GetImmediateCmdSpaceTotalSize<
+          gles2::cmds::CreateAndTexStorage2DSharedImageINTERNALImmediate>(size);
+  if (c) {
+    c->Init(texture, internalFormat, mailbox);
+  }
+}
+
+void BeginSharedImageAccessDirectCHROMIUM(GLuint texture, GLenum mode) {
+  gles2::cmds::BeginSharedImageAccessDirectCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::BeginSharedImageAccessDirectCHROMIUM>();
+  if (c) {
+    c->Init(texture, mode);
+  }
+}
+
+void EndSharedImageAccessDirectCHROMIUM(GLuint texture) {
+  gles2::cmds::EndSharedImageAccessDirectCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::EndSharedImageAccessDirectCHROMIUM>();
+  if (c) {
+    c->Init(texture);
   }
 }
 

@@ -147,7 +147,9 @@ class CanvasRenderingContext2DTest : public PageTestBase {
 
   class WrapGradients final : public GarbageCollectedFinalized<WrapGradients> {
    public:
-    static WrapGradients* Create() { return new WrapGradients; }
+    static WrapGradients* Create() {
+      return MakeGarbageCollected<WrapGradients>();
+    }
 
     void Trace(blink::Visitor* visitor) {
       visitor->Trace(opaque_gradient_);
@@ -544,12 +546,12 @@ TEST_F(CanvasRenderingContext2DTest, detectOverdrawWithCompositeOperations) {
 }
 
 TEST_F(CanvasRenderingContext2DTest, ImageResourceLifetime) {
-  auto* canvas =
-      ToHTMLCanvasElement(GetDocument().CreateRawElement(HTMLNames::canvasTag));
+  auto* canvas = ToHTMLCanvasElement(
+      GetDocument().CreateRawElement(html_names::kCanvasTag));
   canvas->SetSize(IntSize(40, 40));
   ImageBitmap* image_bitmap_derived = nullptr;
   {
-    const ImageBitmapOptions default_options;
+    const ImageBitmapOptions* default_options = ImageBitmapOptions::Create();
     base::Optional<IntRect> crop_rect =
         IntRect(0, 0, canvas->width(), canvas->height());
     ImageBitmap* image_bitmap_from_canvas =
@@ -644,7 +646,8 @@ TEST_F(CanvasRenderingContext2DTest, CanvasDisposedBeforeContext) {
 
   // This is the only method that is callable after DetachHost
   // Test passes by not crashing.
-  Context2d()->DidProcessTask();
+  base::PendingTask dummy_pending_task(FROM_HERE, base::Closure());
+  Context2d()->DidProcessTask(dummy_pending_task);
 
   // Test passes by not crashing during teardown
 }
@@ -666,6 +669,8 @@ TEST_F(CanvasRenderingContext2DTest, ContextDisposedBeforeCanvas) {
 TEST_F(CanvasRenderingContext2DTest, MAYBE_GetImageDataDisablesAcceleration) {
   ScopedCanvas2dFixedRenderingModeForTest canvas_2d_fixed_rendering_mode(false);
 
+  // This Page is not actually being shown by a compositor, but we act like it
+  // will in order to test behaviour.
   GetPage().GetSettings().SetAcceleratedCompositingEnabled(true);
   CreateContext(kNonOpaque);
   IntSize size(300, 300);
@@ -680,7 +685,7 @@ TEST_F(CanvasRenderingContext2DTest, MAYBE_GetImageDataDisablesAcceleration) {
 
   DummyExceptionStateForTesting exception_state;
   for (int i = 0;
-       i < CanvasHeuristicParameters::kGPUReadbackMinSuccessiveFrames - 1;
+       i < canvas_heuristic_parameters::kGPUReadbackMinSuccessiveFrames - 1;
        i++) {
     Context2d()->getImageData(0, 0, 1, 1, exception_state);
     CanvasElement().FinalizeFrame();
@@ -695,7 +700,7 @@ TEST_F(CanvasRenderingContext2DTest, MAYBE_GetImageDataDisablesAcceleration) {
   CanvasElement().FinalizeFrame();
 
   EXPECT_FALSE(exception_state.HadException());
-  if (CanvasHeuristicParameters::kGPUReadbackForcesNoAcceleration) {
+  if (canvas_heuristic_parameters::kGPUReadbackForcesNoAcceleration) {
     EXPECT_FALSE(CanvasElement().GetCanvas2DLayerBridge()->IsAccelerated());
     EXPECT_EQ(0u, GetGlobalAcceleratedContextCount());
     EXPECT_EQ(0, GetGlobalGPUMemoryUsage());
@@ -926,8 +931,8 @@ TEST_F(CanvasRenderingContext2DTest, ImageBitmapColorSpaceConversion) {
        conversion_iterator <= kColorSpaceConversion_Last;
        conversion_iterator++) {
     // Color convert using ImageBitmap
-    ImageBitmapOptions options;
-    options.setColorSpaceConversion(
+    ImageBitmapOptions* options = ImageBitmapOptions::Create();
+    options->setColorSpaceConversion(
         ColorCorrectionTestUtils::ColorSpaceConversionToString(
             static_cast<ColorSpaceConversion>(conversion_iterator)));
     ImageBitmap* image_bitmap = ImageBitmap::Create(canvas, crop_rect, options);
@@ -988,9 +993,10 @@ enum class CanvasColorSpaceSettings : uint8_t {
 void TestPutImageDataOnCanvasWithColorSpaceSettings(
     HTMLCanvasElement& canvas_element,
     CanvasColorSpaceSettings canvas_colorspace_setting) {
-  unsigned num_image_data_color_spaces = 3;
+  unsigned num_image_data_color_spaces = 4;
   CanvasColorSpace image_data_color_spaces[] = {
-      kSRGBCanvasColorSpace, kRec2020CanvasColorSpace, kP3CanvasColorSpace,
+      kSRGBCanvasColorSpace, kLinearRGBCanvasColorSpace,
+      kRec2020CanvasColorSpace, kP3CanvasColorSpace,
   };
 
   unsigned num_image_data_storage_formats = 3;
@@ -1000,22 +1006,25 @@ void TestPutImageDataOnCanvasWithColorSpaceSettings(
   };
 
   CanvasColorSpace canvas_color_spaces[] = {
-      kSRGBCanvasColorSpace, kSRGBCanvasColorSpace, kRec2020CanvasColorSpace,
+      kSRGBCanvasColorSpace,      kSRGBCanvasColorSpace,
+      kLinearRGBCanvasColorSpace, kRec2020CanvasColorSpace,
       kP3CanvasColorSpace,
   };
 
   String canvas_color_space_names[] = {
       kSRGBCanvasColorSpaceName, kSRGBCanvasColorSpaceName,
-      kRec2020CanvasColorSpaceName, kP3CanvasColorSpaceName};
+      kLinearRGBCanvasColorSpaceName, kRec2020CanvasColorSpaceName,
+      kP3CanvasColorSpaceName};
 
   CanvasPixelFormat canvas_pixel_formats[] = {
       kRGBA8CanvasPixelFormat, kF16CanvasPixelFormat, kF16CanvasPixelFormat,
-      kF16CanvasPixelFormat,
+      kF16CanvasPixelFormat,   kF16CanvasPixelFormat,
   };
 
   String canvas_pixel_format_names[] = {
       kRGBA8CanvasPixelFormatName, kF16CanvasPixelFormatName,
-      kF16CanvasPixelFormatName, kF16CanvasPixelFormatName};
+      kF16CanvasPixelFormatName, kF16CanvasPixelFormatName,
+      kF16CanvasPixelFormatName};
 
   // Source pixels in RGBA32
   uint8_t u8_pixels[] = {255, 0,   0,   255,  // Red
@@ -1046,7 +1055,7 @@ void TestPutImageDataOnCanvasWithColorSpaceSettings(
   EXPECT_EQ(data_length, data_f32->length());
 
   ImageData* image_data = nullptr;
-  ImageDataColorSettings color_settings;
+  ImageDataColorSettings* color_settings = ImageDataColorSettings::Create();
   int num_pixels = data_length / 4;
 
   // At most four bytes are needed for Float32 output per color component.
@@ -1056,29 +1065,29 @@ void TestPutImageDataOnCanvasWithColorSpaceSettings(
   // Loop through different possible combinations of image data color space and
   // storage formats and create the respective test image data objects.
   for (unsigned i = 0; i < num_image_data_color_spaces; i++) {
-    color_settings.setColorSpace(
+    color_settings->setColorSpace(
         ImageData::CanvasColorSpaceName(image_data_color_spaces[i]));
 
     for (unsigned j = 0; j < num_image_data_storage_formats; j++) {
       switch (image_data_storage_formats[j]) {
         case kUint8ClampedArrayStorageFormat:
           data_array = static_cast<DOMArrayBufferView*>(data_u8);
-          color_settings.setStorageFormat(kUint8ClampedArrayStorageFormatName);
+          color_settings->setStorageFormat(kUint8ClampedArrayStorageFormatName);
           break;
         case kUint16ArrayStorageFormat:
           data_array = static_cast<DOMArrayBufferView*>(data_u16);
-          color_settings.setStorageFormat(kUint16ArrayStorageFormatName);
+          color_settings->setStorageFormat(kUint16ArrayStorageFormatName);
           break;
         case kFloat32ArrayStorageFormat:
           data_array = static_cast<DOMArrayBufferView*>(data_f32);
-          color_settings.setStorageFormat(kFloat32ArrayStorageFormatName);
+          color_settings->setStorageFormat(kFloat32ArrayStorageFormatName);
           break;
         default:
           NOTREACHED();
       }
 
       image_data =
-          ImageData::CreateForTest(IntSize(2, 2), data_array, &color_settings);
+          ImageData::CreateForTest(IntSize(2, 2), data_array, color_settings);
 
       unsigned k = (unsigned)(canvas_colorspace_setting);
       // Convert the original data used to create ImageData to the
@@ -1163,6 +1172,8 @@ class CanvasRenderingContext2DTestWithTestingPlatform
 // In these cases, the element should request a compositing update.
 TEST_F(CanvasRenderingContext2DTestWithTestingPlatform,
        ElementRequestsCompositingUpdateOnHibernateAndWakeUp) {
+  // This Page is not actually being shown by a compositor, but we act like it
+  // will in order to test behaviour.
   GetPage().GetSettings().SetAcceleratedCompositingEnabled(true);
   CreateContext(kNonOpaque);
   IntSize size(300, 300);
@@ -1182,7 +1193,7 @@ TEST_F(CanvasRenderingContext2DTestWithTestingPlatform,
   EXPECT_TRUE(CanvasElement().GetLayoutBoxModelObject());
   PaintLayer* layer = CanvasElement().GetLayoutBoxModelObject()->Layer();
   EXPECT_TRUE(layer);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Hide element to trigger hibernation (if enabled).
   GetDocument().GetPage()->SetVisibilityState(
@@ -1194,7 +1205,7 @@ TEST_F(CanvasRenderingContext2DTestWithTestingPlatform,
   EXPECT_EQ(!!CANVAS2D_HIBERNATION_ENABLED,
             !CanvasElement().ResourceProvider());
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(layer->NeedsCompositingInputsUpdate());
 
   // Wake up again, which should request a compositing update synchronously.
@@ -1221,7 +1232,7 @@ TEST_F(CanvasRenderingContext2DTestWithTestingPlatform,
   EXPECT_TRUE(CanvasElement().GetLayoutBoxModelObject());
   PaintLayer* layer = CanvasElement().GetLayoutBoxModelObject()->Layer();
   EXPECT_TRUE(layer);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Hide element to trigger hibernation (if enabled).
   GetDocument().GetPage()->SetVisibilityState(

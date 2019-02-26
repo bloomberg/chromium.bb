@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/clock.h"
 #include "components/offline_pages/core/background/offliner_policy.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
 #include "components/offline_pages/core/background/request_coordinator_event_logger.h"
@@ -18,6 +19,7 @@
 #include "components/offline_pages/core/background/request_queue_task_test_base.h"
 #include "components/offline_pages/core/background/save_page_request.h"
 #include "components/offline_pages/core/background/test_request_queue_store.h"
+#include "components/offline_pages/core/offline_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
@@ -159,7 +161,7 @@ void CleanupTaskTest::MakeFactoryAndTask() {
 }
 
 TEST_F(CleanupTaskTest, CleanupExpiredRequest) {
-  base::Time creation_time = base::Time::Now();
+  base::Time creation_time = OfflineClock()->Now();
   base::Time expired_time =
       creation_time - base::TimeDelta::FromSeconds(
                           policy()->GetRequestExpirationTimeInSeconds() + 10);
@@ -183,7 +185,7 @@ TEST_F(CleanupTaskTest, CleanupExpiredRequest) {
 }
 
 TEST_F(CleanupTaskTest, CleanupStartCountExceededRequest) {
-  base::Time creation_time = base::Time::Now();
+  base::Time creation_time = OfflineClock()->Now();
   // Request2 will have an exceeded start count.
   SavePageRequest request1(kRequestId1, kUrl1, kClientId1, creation_time,
                            kUserRequested);
@@ -205,7 +207,7 @@ TEST_F(CleanupTaskTest, CleanupStartCountExceededRequest) {
 }
 
 TEST_F(CleanupTaskTest, CleanupCompletionCountExceededRequest) {
-  base::Time creation_time = base::Time::Now();
+  base::Time creation_time = OfflineClock()->Now();
   // Request2 will have an exceeded completion count.
   SavePageRequest request1(kRequestId1, kUrl1, kClientId1, creation_time,
                            kUserRequested);
@@ -227,7 +229,7 @@ TEST_F(CleanupTaskTest, CleanupCompletionCountExceededRequest) {
 }
 
 TEST_F(CleanupTaskTest, IgnoreRequestInProgress) {
-  base::Time creation_time = base::Time::Now();
+  base::Time creation_time = OfflineClock()->Now();
   // Both requests will have an exceeded completion count.
   // The first request will be marked as started.
   SavePageRequest request1(kRequestId1, kUrl1, kClientId1, creation_time,

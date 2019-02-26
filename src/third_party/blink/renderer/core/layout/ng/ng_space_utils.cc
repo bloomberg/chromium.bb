@@ -7,21 +7,11 @@
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
 
 namespace blink {
-
-bool ShouldShrinkToFit(const ComputedStyle& parent_style,
-                       const ComputedStyle& style) {
-  // Whether the child and the containing block are parallel to each other.
-  // Example: vertical-rl and vertical-lr
-  bool is_in_parallel_flow = IsParallelWritingMode(
-      parent_style.GetWritingMode(), style.GetWritingMode());
-
-  return style.Display() == EDisplay::kInlineBlock || style.IsFloating() ||
-         !is_in_parallel_flow;
-}
 
 bool AdjustToClearance(LayoutUnit clearance_offset, NGBfcOffset* offset) {
   DCHECK(offset);
@@ -33,20 +23,79 @@ bool AdjustToClearance(LayoutUnit clearance_offset, NGBfcOffset* offset) {
   return false;
 }
 
-NGConstraintSpace CreateExtrinsicConstraintSpaceForChild(
-    const NGConstraintSpace& container_constraint_space,
-    LayoutUnit container_extrinsic_block_size,
+NGConstraintSpace CreateIndefiniteConstraintSpaceForChild(
+    const ComputedStyle& container_style,
     NGLayoutInputNode child) {
-  NGLogicalSize extrinsic_size(NGSizeIndefinite,
-                               container_extrinsic_block_size);
+  WritingMode parent_writing_mode = container_style.GetWritingMode();
+  WritingMode child_writing_mode = child.Style().GetWritingMode();
+  DCHECK(!IsParallelWritingMode(parent_writing_mode, child_writing_mode));
 
-  return NGConstraintSpaceBuilder(container_constraint_space)
-      .SetAvailableSize(extrinsic_size)
-      .SetPercentageResolutionSize(extrinsic_size)
+  NGLogicalSize indefinite_size(NGSizeIndefinite, NGSizeIndefinite);
+  NGConstraintSpaceBuilder builder(parent_writing_mode, child_writing_mode,
+                                   child.CreatesNewFormattingContext());
+  SetOrthogonalFallbackInlineSizeIfNeeded(container_style, child, &builder);
+
+  return builder.SetAvailableSize(indefinite_size)
+      .SetPercentageResolutionSize(indefinite_size)
+      .SetReplacedPercentageResolutionSize(indefinite_size)
       .SetIsIntermediateLayout(true)
-      .SetIsNewFormattingContext(child.CreatesNewFormattingContext())
       .SetFloatsBfcBlockOffset(LayoutUnit())
-      .ToConstraintSpace(child.Style().GetWritingMode());
+      .ToConstraintSpace();
+}
+
+void SetOrthogonalFallbackInlineSizeIfNeeded(
+    const ComputedStyle& parent_style,
+    const NGLayoutInputNode child,
+    NGConstraintSpaceBuilder* builder) {
+  if (IsParallelWritingMode(parent_style.GetWritingMode(),
+                            child.Style().GetWritingMode()))
+    return;
+
+  NGPhysicalSize orthogonal_children_containing_block_size =
+      child.InitialContainingBlockSize();
+
+  LayoutUnit fallback_size;
+  if (IsHorizontalWritingMode(parent_style.GetWritingMode()))
+    fallback_size = orthogonal_children_containing_block_size.height;
+  else
+    fallback_size = orthogonal_children_containing_block_size.width;
+
+  LayoutUnit size(LayoutUnit::Max());
+  if (parent_style.LogicalHeight().IsFixed()) {
+    // Note that during layout, fixed size will already be taken care of (and
+    // set in the constraint space), but when calculating intrinsic sizes of
+    // orthogonal children, that won't be the case.
+    size = LayoutUnit(parent_style.LogicalHeight().GetFloatValue());
+  }
+  if (parent_style.LogicalMaxHeight().IsFixed()) {
+    size = std::min(
+        size, LayoutUnit(parent_style.LogicalMaxHeight().GetFloatValue()));
+  }
+  if (parent_style.LogicalMinHeight().IsFixed()) {
+    size = std::max(
+        size, LayoutUnit(parent_style.LogicalMinHeight().GetFloatValue()));
+  }
+  // Calculate the content-box size.
+  if (parent_style.BoxSizing() == EBoxSizing::kBorderBox) {
+    // We're unable to resolve percentages at this point, so make sure we're
+    // only dealing with fixed-size values.
+    if (!parent_style.PaddingBefore().IsFixed() ||
+        !parent_style.PaddingAfter().IsFixed()) {
+      builder->SetOrthogonalFallbackInlineSize(fallback_size);
+      return;
+    }
+
+    LayoutUnit border_padding(parent_style.BorderBefore().Width() +
+                              parent_style.BorderAfter().Width() +
+                              parent_style.PaddingBefore().GetFloatValue() +
+                              parent_style.PaddingAfter().GetFloatValue());
+
+    size -= border_padding;
+    size = size.ClampNegativeToZero();
+  }
+
+  fallback_size = std::min(fallback_size, size);
+  builder->SetOrthogonalFallbackInlineSize(fallback_size);
 }
 
 }  // namespace blink

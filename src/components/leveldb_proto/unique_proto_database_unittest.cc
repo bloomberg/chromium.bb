@@ -48,12 +48,16 @@ const char kTestLevelDBClientName[] = "Test";
 
 class MockDB : public LevelDB {
  public:
-  MOCK_METHOD2(Init,
-               bool(const base::FilePath& database_dir,
-                    const leveldb_env::Options& options));
-  MOCK_METHOD2(Save, bool(const KeyValueVector&, const KeyVector&));
-  MOCK_METHOD2(UpdateWithRemoveFilter,
-               bool(const base::StringPairs&, const KeyFilter&));
+  MOCK_METHOD3(Init,
+               leveldb::Status(const base::FilePath& database_dir,
+                               const leveldb_env::Options& options,
+                               bool));
+  MOCK_METHOD3(Save,
+               bool(const KeyValueVector&, const KeyVector&, leveldb::Status*));
+  MOCK_METHOD3(UpdateWithRemoveFilter,
+               bool(const base::StringPairs&,
+                    const KeyFilter&,
+                    leveldb::Status*));
   MOCK_METHOD1(Load, bool(std::vector<std::string>*));
   MOCK_METHOD2(LoadWithFilter,
                bool(const KeyFilter&, std::vector<std::string>*));
@@ -70,8 +74,9 @@ class MockDB : public LevelDB {
                     std::map<std::string, std::string>*,
                     const leveldb::ReadOptions&,
                     const std::string&));
-  MOCK_METHOD3(Get, bool(const std::string&, bool*, std::string*));
-  MOCK_METHOD0(Destroy, bool());
+  MOCK_METHOD4(Get,
+               bool(const std::string&, bool*, std::string*, leveldb::Status*));
+  MOCK_METHOD0(Destroy, leveldb::Status());
 
   MockDB() : LevelDB(kTestLevelDBClientName) {}
 };
@@ -200,7 +205,8 @@ TEST_F(UniqueProtoDatabaseTest, TestDBInitSuccess) {
   base::FilePath path(FILE_PATH_LITERAL("/fake/path"));
 
   auto mock_db = std::make_unique<MockDB>();
-  EXPECT_CALL(*mock_db, Init(path, options_)).WillOnce(Return(true));
+  EXPECT_CALL(*mock_db, Init(path, options_, _))
+      .WillOnce(Return(leveldb::Status()));
 
   MockDatabaseCaller caller;
   EXPECT_CALL(caller, InitCallback(true));
@@ -218,7 +224,9 @@ TEST_F(UniqueProtoDatabaseTest, TestDBInitFailure) {
   auto mock_db = std::make_unique<MockDB>();
   Options options;
   options.create_if_missing = true;
-  EXPECT_CALL(*mock_db, Init(path, OptionsEq(options))).WillOnce(Return(false));
+  EXPECT_CALL(*mock_db, Init(path, OptionsEq(options), _))
+      .WillOnce(
+          Return(leveldb::Status::IOError(leveldb::Slice(), leveldb::Slice())));
 
   MockDatabaseCaller caller;
   EXPECT_CALL(caller, InitCallback(false));
@@ -234,7 +242,8 @@ TEST_F(UniqueProtoDatabaseTest, TestDBDestroySuccess) {
   base::FilePath path(FILE_PATH_LITERAL("/fake/path"));
 
   auto mock_db = std::make_unique<MockDB>();
-  EXPECT_CALL(*mock_db, Init(path, options_)).WillOnce(Return(true));
+  EXPECT_CALL(*mock_db, Init(path, options_, _))
+      .WillOnce(Return(leveldb::Status()));
 
   MockDatabaseCaller caller;
   EXPECT_CALL(caller, InitCallback(true));
@@ -246,7 +255,7 @@ TEST_F(UniqueProtoDatabaseTest, TestDBDestroySuccess) {
   EXPECT_CALL(caller, DestroyCallback(true));
   db_->Destroy(base::BindOnce(&MockDatabaseCaller::DestroyCallback,
                               base::Unretained(&caller)));
-  EXPECT_CALL(*mock_db, Destroy()).WillOnce(Return(true));
+  EXPECT_CALL(*mock_db, Destroy()).WillOnce(Return(leveldb::Status()));
 
   base::RunLoop().RunUntilIdle();
 }
@@ -255,7 +264,8 @@ TEST_F(UniqueProtoDatabaseTest, TestDBDestroyFailure) {
   base::FilePath path(FILE_PATH_LITERAL("/fake/path"));
 
   auto mock_db = std::make_unique<MockDB>();
-  EXPECT_CALL(*mock_db, Init(path, options_)).WillOnce(Return(true));
+  EXPECT_CALL(*mock_db, Init(path, options_, _))
+      .WillOnce(Return(leveldb::Status()));
 
   MockDatabaseCaller caller;
   EXPECT_CALL(caller, InitCallback(true));
@@ -267,7 +277,9 @@ TEST_F(UniqueProtoDatabaseTest, TestDBDestroyFailure) {
   EXPECT_CALL(caller, DestroyCallback(false));
   db_->Destroy(base::BindOnce(&MockDatabaseCaller::DestroyCallback,
                               base::Unretained(&caller)));
-  EXPECT_CALL(*mock_db, Destroy()).WillOnce(Return(false));
+  EXPECT_CALL(*mock_db, Destroy())
+      .WillOnce(
+          Return(leveldb::Status::IOError(leveldb::Slice(), leveldb::Slice())));
 
   base::RunLoop().RunUntilIdle();
 }
@@ -312,7 +324,7 @@ TEST_F(UniqueProtoDatabaseTest, TestDBLoadSuccess) {
   MockDatabaseCaller caller;
   EntryMap model = GetSmallModel();
 
-  EXPECT_CALL(*mock_db, Init(_, options_));
+  EXPECT_CALL(*mock_db, Init(_, options_, _));
   EXPECT_CALL(caller, InitCallback(_));
   db_->InitWithDatabase(mock_db.get(), path, CreateSimpleOptions(),
                         base::BindOnce(&MockDatabaseCaller::InitCallback,
@@ -335,7 +347,7 @@ TEST_F(UniqueProtoDatabaseTest, TestDBLoadFailure) {
   auto mock_db = std::make_unique<MockDB>();
   MockDatabaseCaller caller;
 
-  EXPECT_CALL(*mock_db, Init(_, options_));
+  EXPECT_CALL(*mock_db, Init(_, options_, _));
   EXPECT_CALL(caller, InitCallback(_));
   db_->InitWithDatabase(mock_db.get(), path, CreateSimpleOptions(),
                         base::BindOnce(&MockDatabaseCaller::InitCallback,
@@ -375,7 +387,7 @@ TEST_F(UniqueProtoDatabaseTest, TestDBGetSuccess) {
   MockDatabaseCaller caller;
   EntryMap model = GetSmallModel();
 
-  EXPECT_CALL(*mock_db, Init(_, options_));
+  EXPECT_CALL(*mock_db, Init(_, options_, _));
   EXPECT_CALL(caller, InitCallback(_));
   db_->InitWithDatabase(mock_db.get(), path, CreateSimpleOptions(),
                         base::BindOnce(&MockDatabaseCaller::InitCallback,
@@ -383,7 +395,7 @@ TEST_F(UniqueProtoDatabaseTest, TestDBGetSuccess) {
 
   std::string key("1");
   ASSERT_TRUE(model.count(key));
-  EXPECT_CALL(*mock_db, Get(key, _, _)).WillOnce(SetGetEntry(model));
+  EXPECT_CALL(*mock_db, Get(key, _, _, _)).WillOnce(SetGetEntry(model));
   EXPECT_CALL(caller, GetCallback1(true, _))
       .WillOnce(VerifyGetEntry(model[key]));
   db_->GetEntry(key, base::BindOnce(&MockDatabaseCaller::GetCallback,
@@ -462,7 +474,7 @@ TEST_F(UniqueProtoDatabaseTest, TestDBGetNotFound) {
   MockDatabaseCaller caller;
   EntryMap model = GetSmallModel();
 
-  EXPECT_CALL(*mock_db, Init(_, options_));
+  EXPECT_CALL(*mock_db, Init(_, options_, _));
   EXPECT_CALL(caller, InitCallback(_));
   db_->InitWithDatabase(mock_db.get(), path, CreateSimpleOptions(),
                         base::BindOnce(&MockDatabaseCaller::InitCallback,
@@ -470,7 +482,7 @@ TEST_F(UniqueProtoDatabaseTest, TestDBGetNotFound) {
 
   std::string key("does_not_exist");
   ASSERT_FALSE(model.count(key));
-  EXPECT_CALL(*mock_db, Get(key, _, _)).WillOnce(SetGetEntry(model));
+  EXPECT_CALL(*mock_db, Get(key, _, _, _)).WillOnce(SetGetEntry(model));
   EXPECT_CALL(caller, GetCallback1(true, nullptr));
   db_->GetEntry(key, base::BindOnce(&MockDatabaseCaller::GetCallback,
                                     base::Unretained(&caller)));
@@ -485,7 +497,7 @@ TEST_F(UniqueProtoDatabaseTest, TestDBGetFailure) {
   MockDatabaseCaller caller;
   EntryMap model = GetSmallModel();
 
-  EXPECT_CALL(*mock_db, Init(_, options_));
+  EXPECT_CALL(*mock_db, Init(_, options_, _));
   EXPECT_CALL(caller, InitCallback(_));
   db_->InitWithDatabase(mock_db.get(), path, CreateSimpleOptions(),
                         base::BindOnce(&MockDatabaseCaller::InitCallback,
@@ -493,7 +505,7 @@ TEST_F(UniqueProtoDatabaseTest, TestDBGetFailure) {
 
   std::string key("does_not_exist");
   ASSERT_FALSE(model.count(key));
-  EXPECT_CALL(*mock_db, Get(key, _, _)).WillOnce(Return(false));
+  EXPECT_CALL(*mock_db, Get(key, _, _, _)).WillOnce(Return(false));
   EXPECT_CALL(caller, GetCallback1(false, nullptr));
   db_->GetEntry(key, base::BindOnce(&MockDatabaseCaller::GetCallback,
                                     base::Unretained(&caller)));
@@ -530,7 +542,7 @@ TEST_F(UniqueProtoDatabaseTest, TestDBSaveSuccess) {
   MockDatabaseCaller caller;
   EntryMap model = GetSmallModel();
 
-  EXPECT_CALL(*mock_db, Init(_, options_));
+  EXPECT_CALL(*mock_db, Init(_, options_, _));
   EXPECT_CALL(caller, InitCallback(_));
   db_->InitWithDatabase(mock_db.get(), path, CreateSimpleOptions(),
                         base::BindOnce(&MockDatabaseCaller::InitCallback,
@@ -543,7 +555,7 @@ TEST_F(UniqueProtoDatabaseTest, TestDBSaveSuccess) {
 
   std::unique_ptr<KeyVector> keys_to_remove(new KeyVector());
 
-  EXPECT_CALL(*mock_db, Save(_, _)).WillOnce(VerifyUpdateEntries(model));
+  EXPECT_CALL(*mock_db, Save(_, _, _)).WillOnce(VerifyUpdateEntries(model));
   EXPECT_CALL(caller, SaveCallback(true));
   db_->UpdateEntries(std::move(entries), std::move(keys_to_remove),
                      base::BindOnce(&MockDatabaseCaller::SaveCallback,
@@ -561,13 +573,13 @@ TEST_F(UniqueProtoDatabaseTest, TestDBSaveFailure) {
       new ProtoDatabase<TestProto>::KeyEntryVector());
   std::unique_ptr<KeyVector> keys_to_remove(new KeyVector());
 
-  EXPECT_CALL(*mock_db, Init(_, options_));
+  EXPECT_CALL(*mock_db, Init(_, options_, _));
   EXPECT_CALL(caller, InitCallback(_));
   db_->InitWithDatabase(mock_db.get(), path, CreateSimpleOptions(),
                         base::BindOnce(&MockDatabaseCaller::InitCallback,
                                        base::Unretained(&caller)));
 
-  EXPECT_CALL(*mock_db, Save(_, _)).WillOnce(Return(false));
+  EXPECT_CALL(*mock_db, Save(_, _, _)).WillOnce(Return(false));
   EXPECT_CALL(caller, SaveCallback(false));
   db_->UpdateEntries(std::move(entries), std::move(keys_to_remove),
                      base::BindOnce(&MockDatabaseCaller::SaveCallback,
@@ -586,7 +598,7 @@ TEST_F(UniqueProtoDatabaseTest, TestDBRemoveSuccess) {
   MockDatabaseCaller caller;
   EntryMap model = GetSmallModel();
 
-  EXPECT_CALL(*mock_db, Init(_, options_));
+  EXPECT_CALL(*mock_db, Init(_, options_, _));
   EXPECT_CALL(caller, InitCallback(_));
   db_->InitWithDatabase(mock_db.get(), path, CreateSimpleOptions(),
                         base::BindOnce(&MockDatabaseCaller::InitCallback,
@@ -599,7 +611,7 @@ TEST_F(UniqueProtoDatabaseTest, TestDBRemoveSuccess) {
     keys_to_remove->push_back(pair.second.id());
 
   KeyVector keys_copy(*keys_to_remove.get());
-  EXPECT_CALL(*mock_db, Save(_, keys_copy)).WillOnce(Return(true));
+  EXPECT_CALL(*mock_db, Save(_, keys_copy, _)).WillOnce(Return(true));
   EXPECT_CALL(caller, SaveCallback(true));
   db_->UpdateEntries(std::move(entries), std::move(keys_to_remove),
                      base::BindOnce(&MockDatabaseCaller::SaveCallback,
@@ -617,13 +629,13 @@ TEST_F(UniqueProtoDatabaseTest, TestDBRemoveFailure) {
       new ProtoDatabase<TestProto>::KeyEntryVector());
   std::unique_ptr<KeyVector> keys_to_remove(new KeyVector());
 
-  EXPECT_CALL(*mock_db, Init(_, options_));
+  EXPECT_CALL(*mock_db, Init(_, options_, _));
   EXPECT_CALL(caller, InitCallback(_));
   db_->InitWithDatabase(mock_db.get(), path, CreateSimpleOptions(),
                         base::BindOnce(&MockDatabaseCaller::InitCallback,
                                        base::Unretained(&caller)));
 
-  EXPECT_CALL(*mock_db, Save(_, _)).WillOnce(Return(false));
+  EXPECT_CALL(*mock_db, Save(_, _, _)).WillOnce(Return(false));
   EXPECT_CALL(caller, SaveCallback(false));
   db_->UpdateEntries(std::move(entries), std::move(keys_to_remove),
                      base::BindOnce(&MockDatabaseCaller::SaveCallback,
@@ -648,9 +660,16 @@ TEST(UniqueProtoDatabaseThreadingTest, TestDBDestruction) {
 
   MockDatabaseCaller caller;
   EXPECT_CALL(caller, InitCallback(_));
+  base::RunLoop init_loop;
   db->Init(kTestLevelDBClientName, temp_dir.GetPath(), CreateSimpleOptions(),
-           base::BindOnce(&MockDatabaseCaller::InitCallback,
-                          base::Unretained(&caller)));
+           base::BindOnce(
+               [](MockDatabaseCaller* caller, base::OnceClosure closure,
+                  bool success) {
+                 caller->InitCallback(success);
+                 std::move(closure).Run();
+               },
+               &caller, init_loop.QuitClosure()));
+  init_loop.Run();
 
   db.reset();
 
@@ -676,9 +695,16 @@ TEST(UniqueProtoDatabaseThreadingTest, TestDBDestroy) {
 
   MockDatabaseCaller caller;
   EXPECT_CALL(caller, InitCallback(_));
+  base::RunLoop init_loop;
   db->Init(kTestLevelDBClientName, temp_dir.GetPath(), CreateSimpleOptions(),
-           base::BindOnce(&MockDatabaseCaller::InitCallback,
-                          base::Unretained(&caller)));
+           base::BindOnce(
+               [](MockDatabaseCaller* caller, base::OnceClosure closure,
+                  bool success) {
+                 caller->InitCallback(success);
+                 std::move(closure).Run();
+               },
+               &caller, init_loop.QuitClosure()));
+  init_loop.Run();
 
   EXPECT_CALL(caller, DestroyCallback(_));
   db->Destroy(base::BindOnce(&MockDatabaseCaller::DestroyCallback,
@@ -715,7 +741,8 @@ void TestLevelDBSaveAndLoad(bool close_after_save) {
 
   std::unique_ptr<LevelDB> db(new LevelDB(kTestLevelDBClientName));
   EXPECT_TRUE(db->Init(temp_dir.GetPath(), CreateSimpleOptions()));
-  EXPECT_TRUE(db->Save(save_entries, remove_keys));
+  leveldb::Status status;
+  EXPECT_TRUE(db->Save(save_entries, remove_keys, &status));
 
   if (close_after_save) {
     db.reset(new LevelDB(kTestLevelDBClientName));
@@ -760,7 +787,8 @@ TEST_F(UniqueProtoDatabaseLevelDBTest, TestDBLoadWithFilter) {
 
   std::unique_ptr<LevelDB> db(new LevelDB(kTestLevelDBClientName));
   EXPECT_TRUE(db->Init(temp_dir.GetPath(), CreateSimpleOptions()));
-  EXPECT_TRUE(db->Save(save_entries, remove_keys));
+  leveldb::Status status;
+  EXPECT_TRUE(db->Save(save_entries, remove_keys, &status));
 
   EXPECT_TRUE(
       db->LoadWithFilter(base::BindRepeating(&ZeroFilter), &load_entries));
@@ -788,7 +816,8 @@ TEST_F(UniqueProtoDatabaseLevelDBTest, TestDBLoadKeysAndEntries) {
 
   std::unique_ptr<LevelDB> db(new LevelDB(kTestLevelDBClientName));
   EXPECT_TRUE(db->Init(temp_dir.GetPath(), CreateSimpleOptions()));
-  EXPECT_TRUE(db->Save(save_entries, remove_keys));
+  leveldb::Status status;
+  EXPECT_TRUE(db->Save(save_entries, remove_keys, &status));
 
   EXPECT_TRUE(db->LoadKeysAndEntries(&load_keys_entries));
 
@@ -814,7 +843,8 @@ TEST_F(UniqueProtoDatabaseLevelDBTest, TestDBInitFail) {
 
   EXPECT_FALSE(db->Init(temp_dir.GetPath(), options));
   EXPECT_FALSE(db->Load(&load_entries));
-  EXPECT_FALSE(db->Save(save_entries, remove_keys));
+  leveldb::Status status;
+  EXPECT_FALSE(db->Save(save_entries, remove_keys, &status));
 }
 
 TEST_F(UniqueProtoDatabaseLevelDBTest, TestMemoryDatabase) {
@@ -830,7 +860,8 @@ TEST_F(UniqueProtoDatabaseLevelDBTest, TestMemoryDatabase) {
   KeyValueVector save_entries(1, std::make_pair("foo", "bar"));
   KeyVector remove_keys;
 
-  ASSERT_TRUE(db->Save(save_entries, remove_keys));
+  leveldb::Status status;
+  ASSERT_TRUE(db->Save(save_entries, remove_keys, &status));
 
   std::vector<std::string> second_load_entries;
 
@@ -850,7 +881,8 @@ TEST_F(UniqueProtoDatabaseLevelDBTest, TestCorruptDBReset) {
     base::StringPairs pairs_to_save;
     pairs_to_save.push_back(std::make_pair("TheKey", "KeyValue"));
     std::vector<std::string> keys_to_remove;
-    ASSERT_TRUE(db.Save(pairs_to_save, keys_to_remove));
+    leveldb::Status status;
+    ASSERT_TRUE(db.Save(pairs_to_save, keys_to_remove, &status));
   }
 
   EXPECT_TRUE(leveldb_chrome::CorruptClosedDBForTesting(temp_dir.GetPath()));
@@ -863,7 +895,8 @@ TEST_F(UniqueProtoDatabaseLevelDBTest, TestCorruptDBReset) {
   ASSERT_TRUE(db.Init(temp_dir.GetPath(), options));
   bool found = false;
   std::string value;
-  ASSERT_TRUE(db.Get("TheKey", &found, &value));
+  leveldb::Status status;
+  ASSERT_TRUE(db.Get("TheKey", &found, &value, &status));
   ASSERT_EQ("", value);
   ASSERT_FALSE(found);
 }
@@ -885,7 +918,9 @@ TEST_F(UniqueProtoDatabaseLevelDBTest, TestDBDeleteWithFilter) {
 
   std::unique_ptr<LevelDB> db(new LevelDB(kTestLevelDBClientName));
   EXPECT_TRUE(db->Init(temp_dir.GetPath(), CreateSimpleOptions()));
-  EXPECT_TRUE(db->UpdateWithRemoveFilter(save_entries, LevelDB::KeyFilter()));
+  leveldb::Status status;
+  EXPECT_TRUE(
+      db->UpdateWithRemoveFilter(save_entries, LevelDB::KeyFilter(), &status));
 
   // Make sure the "0" entry is in database.
   EXPECT_TRUE(
@@ -894,8 +929,8 @@ TEST_F(UniqueProtoDatabaseLevelDBTest, TestDBDeleteWithFilter) {
 
   // Delete "0" entry.
   save_entries.clear();
-  EXPECT_TRUE(db->UpdateWithRemoveFilter(save_entries,
-                                         base::BindRepeating(&ZeroFilter)));
+  EXPECT_TRUE(db->UpdateWithRemoveFilter(
+      save_entries, base::BindRepeating(&ZeroFilter), &status));
 
   // Make sure the "0" entry is not there.
   load_entries.clear();

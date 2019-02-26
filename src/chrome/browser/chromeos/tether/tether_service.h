@@ -39,7 +39,6 @@ class NotificationPresenter;
 
 namespace cryptauth {
 class CryptAuthService;
-class RemoteDeviceProvider;
 }  // namespace cryptauth
 
 namespace session_manager {
@@ -313,7 +312,6 @@ class TetherService
       notification_presenter_;
   std::unique_ptr<chromeos::tether::GmsCoreNotificationsStateTrackerImpl>
       gms_core_notifications_state_tracker_;
-  std::unique_ptr<cryptauth::RemoteDeviceProvider> remote_device_provider_;
   std::unique_ptr<chromeos::tether::TetherHostFetcher> tether_host_fetcher_;
   std::unique_ptr<chromeos::tether::TetherComponent> tether_component_;
 

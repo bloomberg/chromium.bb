@@ -17,8 +17,10 @@ VP9Decoder::VP9Accelerator::VP9Accelerator() {}
 
 VP9Decoder::VP9Accelerator::~VP9Accelerator() {}
 
-VP9Decoder::VP9Decoder(std::unique_ptr<VP9Accelerator> accelerator)
+VP9Decoder::VP9Decoder(std::unique_ptr<VP9Accelerator> accelerator,
+                       const VideoColorSpace& container_color_space)
     : state_(kNeedStreamMetadata),
+      container_color_space_(container_color_space),
       accelerator_(std::move(accelerator)),
       parser_(accelerator_->IsFrameContextRequired()) {
   ref_frames_.resize(kVp9NumRefFrames);
@@ -32,15 +34,14 @@ void VP9Decoder::SetStream(int32_t id,
                            const DecryptConfig* decrypt_config) {
   DCHECK(ptr);
   DCHECK(size);
-  if (decrypt_config) {
-    NOTIMPLEMENTED();
-    state_ = kError;
-    return;
-  }
   DVLOG(4) << "New input stream id: " << id << " at: " << (void*)ptr
            << " size: " << size;
   stream_id_ = id;
-  parser_.SetStream(ptr, size);
+  if (decrypt_config) {
+    parser_.SetStream(ptr, size, decrypt_config->Clone());
+  } else {
+    parser_.SetStream(ptr, size, nullptr);
+  }
 }
 
 bool VP9Decoder::Flush() {
@@ -63,9 +64,11 @@ void VP9Decoder::Reset() {
 VP9Decoder::DecodeResult VP9Decoder::Decode() {
   while (1) {
     // Read a new frame header if one is not awaiting decoding already.
+    std::unique_ptr<DecryptConfig> decrypt_config;
     if (!curr_frame_hdr_) {
       std::unique_ptr<Vp9FrameHeader> hdr(new Vp9FrameHeader());
-      Vp9Parser::Result res = parser_.ParseNextFrame(hdr.get());
+      Vp9Parser::Result res =
+          parser_.ParseNextFrame(hdr.get(), &decrypt_config);
       switch (res) {
         case Vp9Parser::kOk:
           curr_frame_hdr_ = std::move(hdr);
@@ -89,7 +92,10 @@ VP9Decoder::DecodeResult VP9Decoder::Decode() {
       // Not kDecoding, so we need a resume point (a keyframe), as we are after
       // reset or at the beginning of the stream. Drop anything that is not
       // a keyframe in such case, and continue looking for a keyframe.
-      if (curr_frame_hdr_->IsKeyframe()) {
+      // Only exception is when the stream/sequence starts with an Intra only
+      // frame.
+      if (curr_frame_hdr_->IsKeyframe() ||
+          (curr_frame_hdr_->IsIntra() && pic_size_.IsEmpty())) {
         state_ = kDecoding;
       } else {
         curr_frame_hdr_.reset();
@@ -108,7 +114,16 @@ VP9Decoder::DecodeResult VP9Decoder::Decode() {
         return kDecodeError;
       }
 
-      if (!accelerator_->OutputPicture(ref_frames_[frame_to_show])) {
+      // Duplicate the VP9Picture and set the current bitstream id to keep the
+      // correct timestamp.
+      scoped_refptr<VP9Picture> pic = ref_frames_[frame_to_show]->Duplicate();
+      if (pic == nullptr) {
+        DVLOG(1) << "Failed to duplicate the VP9Picture.";
+        SetError();
+        return kDecodeError;
+      }
+      pic->set_bitstream_id(stream_id_);
+      if (!accelerator_->OutputPicture(std::move(pic))) {
         SetError();
         return kDecodeError;
       }
@@ -124,11 +139,14 @@ VP9Decoder::DecodeResult VP9Decoder::Decode() {
     if (new_pic_size != pic_size_) {
       DVLOG(1) << "New resolution: " << new_pic_size.ToString();
 
-      if (!curr_frame_hdr_->IsKeyframe()) {
+      if (!curr_frame_hdr_->IsKeyframe() &&
+          (curr_frame_hdr_->IsIntra() && pic_size_.IsEmpty())) {
         // TODO(posciak): This is doable, but requires a few modifications to
         // VDA implementations to allow multiple picture buffer sets in flight.
         // http://crbug.com/832264
-        DVLOG(1) << "Resolution change currently supported for keyframes only";
+        DVLOG(1) << "Resolution change currently supported for keyframes and "
+                    "sequence begins with Intra only when there is no prior "
+                    "frames in the context";
         if (++size_change_failure_counter_ > kVPxMaxNumOfSizeChangeFailures) {
           SetError();
           return kDecodeError;
@@ -167,6 +185,15 @@ VP9Decoder::DecodeResult VP9Decoder::Decode() {
 
     pic->set_visible_rect(new_render_rect);
     pic->set_bitstream_id(stream_id_);
+
+    pic->set_decrypt_config(std::move(decrypt_config));
+
+    // For VP9, container color spaces override video stream color spaces.
+    if (container_color_space_.IsSpecified()) {
+      pic->set_colorspace(container_color_space_);
+    } else if (curr_frame_hdr_) {
+      pic->set_colorspace(curr_frame_hdr_->GetColorSpace());
+    }
     pic->frame_hdr = std::move(curr_frame_hdr_);
 
     if (!DecodeAndOutputPicture(pic)) {

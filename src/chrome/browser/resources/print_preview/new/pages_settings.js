@@ -79,7 +79,6 @@ Polymer({
     controlsDisabled_: {
       type: Boolean,
       computed: 'computeControlsDisabled_(disabled, hasError_)',
-      observer: 'onControlsDisabledChanged_',
     },
 
     /** @private {number} */
@@ -333,8 +332,10 @@ Polymer({
   /** @private */
   onOptionSelectedChange_: function() {
     if (this.optionSelected_ === PagesValue.CUSTOM) {
-      /** @type {!CrInputElement} */ (this.$.pageSettingsCustomInput)
-          .inputElement.focus();
+      this.async(() => {
+        /** @type {!CrInputElement} */ (this.$.pageSettingsCustomInput)
+            .inputElement.focus();
+      });
     }
   },
 
@@ -413,16 +414,6 @@ Polymer({
   onCustomRadioClick_: function() {
     /** @type {!CrInputElement} */ (this.$.pageSettingsCustomInput)
         .inputElement.focus();
-  },
-
-  /** @private */
-  onControlsDisabledChanged_: function() {
-    if (!this.controlsDisabled_) {
-      if (this.optionSelected_ === PagesValue.CUSTOM)
-        this.$.allRadioButton.tabIndex = -1;
-      else
-        this.$.customRadioButton.tabIndex = -1;
-    }
   },
 
   /**

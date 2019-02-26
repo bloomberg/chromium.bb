@@ -35,6 +35,8 @@
   const _readableStreamDefaultControllerBits = v8.createPrivateSymbol(
       'bit field for [[started]], [[closeRequested]], [[pulling]], ' +
         '[[pullAgain]]');
+  const internalReadableStreamSymbol = v8.createPrivateSymbol(
+      'internal ReadableStream in exposed ReadableStream interface');
   // Remove this once C++ code has been updated to use CreateReadableStream.
   const _lockNotifyTarget = v8.createPrivateSymbol('[[lockNotifyTarget]]');
   const _strategySizeAlgorithm = v8.createPrivateSymbol(
@@ -49,7 +51,6 @@
   // it.
   const BLINK_LOCK_NOTIFICATIONS = 0b10000;
 
-  const defineProperty = global.Object.defineProperty;
   const ObjectCreate = global.Object.create;
 
   const callFunction = v8.uncurryThis(global.Function.prototype.call);
@@ -58,7 +59,6 @@
   const TypeError = global.TypeError;
   const RangeError = global.RangeError;
 
-  const Boolean = global.Boolean;
   const String = global.String;
 
   const Promise = global.Promise;
@@ -77,6 +77,8 @@
     CallOrNoop1,
     CreateAlgorithmFromUnderlyingMethod,
     CreateAlgorithmFromUnderlyingMethodPassingController,
+    CreateCrossRealmTransformReadable,
+    CreateCrossRealmTransformWritable,
     DequeueValue,
     EnqueueValueWithSize,
     MakeSizeAlgorithmFromSizeFunction,
@@ -84,8 +86,6 @@
   } = binding.streamOperations;
 
   const streamErrors = binding.streamErrors;
-  const errCancelLockedStream =
-        'Cannot cancel a readable stream that is locked to a reader';
   const errEnqueueCloseRequestedStream =
         'Cannot enqueue a chunk into a readable stream that is closed or ' +
         'has been requested to be closed';
@@ -104,10 +104,6 @@
         'Cannot enqueue a chunk into an errored readable stream';
   const errCloseClosedStream = 'Cannot close a closed readable stream';
   const errCloseErroredStream = 'Cannot close an errored readable stream';
-  const errGetReaderNotByteStream =
-        'This readable stream does not support BYOB readers';
-  const errGetReaderBadMode =
-        'Invalid reader mode given: expected undefined or "byob"';
   const errReaderConstructorBadArgument =
         'ReadableStreamReader constructor argument is not a readable stream';
   const errReaderConstructorStreamAlreadyLocked =
@@ -120,15 +116,7 @@
         'This readable stream reader has been released and cannot be used ' +
         'to monitor the stream\'s state';
 
-  const errCannotPipeLockedStream = 'Cannot pipe a locked stream';
-  const errCannotPipeToALockedStream = 'Cannot pipe to a locked stream';
   const errDestinationStreamClosed = 'Destination stream closed';
-  const errPipeThroughUndefinedWritable =
-        'Failed to execute \'pipeThrough\' on \'ReadableStream\': parameter ' +
-        '1\'s \'writable\' property is undefined.';
-  const errPipeThroughUndefinedReadable =
-        'Failed to execute \'pipeThrough\' on \'ReadableStream\': parameter ' +
-        '1\'s \'readable\' property is undefined.';
 
   let useCounted = false;
 
@@ -170,95 +158,6 @@
       SetUpReadableStreamDefaultControllerFromUnderlyingSource(
           this, underlyingSource, highWaterMark, sizeAlgorithm,
           enableBlinkLockNotifications);
-    }
-
-    get locked() {
-      if (IsReadableStream(this) === false) {
-        throw new TypeError(streamErrors.illegalInvocation);
-      }
-
-      return IsReadableStreamLocked(this);
-    }
-
-    cancel(reason) {
-      if (IsReadableStream(this) === false) {
-        return Promise_reject(new TypeError(streamErrors.illegalInvocation));
-      }
-
-      if (IsReadableStreamLocked(this) === true) {
-        return Promise_reject(new TypeError(errCancelLockedStream));
-      }
-
-      return ReadableStreamCancel(this, reason);
-    }
-
-    getReader({mode} = {}) {
-      if (IsReadableStream(this) === false) {
-        throw new TypeError(streamErrors.illegalInvocation);
-      }
-
-      if (mode === undefined) {
-        return AcquireReadableStreamDefaultReader(this);
-      }
-
-      mode = String(mode);
-
-      if (mode === 'byob') {
-        // TODO(ricea): When BYOB readers are supported:
-        //
-        // Return ? AcquireReadableStreamBYOBReader(this).
-        throw new TypeError(errGetReaderNotByteStream);
-      }
-
-      throw new RangeError(errGetReaderBadMode);
-    }
-
-    pipeThrough({writable, readable}, options) {
-      if (writable === undefined) {
-        throw new TypeError(errPipeThroughUndefinedWritable);
-      }
-      if (readable === undefined) {
-        throw new TypeError(errPipeThroughUndefinedReadable);
-      }
-      const promise = this.pipeTo(writable, options);
-      if (v8.isPromise(promise)) {
-        markPromiseAsHandled(promise);
-      }
-      return readable;
-    }
-
-    pipeTo(dest, {preventClose, preventAbort, preventCancel} = {}) {
-      if (!IsReadableStream(this)) {
-        return Promise_reject(new TypeError(streamErrors.illegalInvocation));
-      }
-
-      if (!binding.IsWritableStream(dest)) {
-        // TODO(ricea): Think about having a better error message.
-        return Promise_reject(new TypeError(streamErrors.illegalInvocation));
-      }
-
-      preventClose = Boolean(preventClose);
-      preventAbort = Boolean(preventAbort);
-      preventCancel = Boolean(preventCancel);
-
-      if (IsReadableStreamLocked(this)) {
-        return Promise_reject(new TypeError(errCannotPipeLockedStream));
-      }
-
-      if (binding.IsWritableStreamLocked(dest)) {
-        return Promise_reject(new TypeError(errCannotPipeToALockedStream));
-      }
-
-      return ReadableStreamPipeTo(
-          this, dest, preventClose, preventAbort, preventCancel);
-    }
-
-    tee() {
-      if (IsReadableStream(this) === false) {
-        throw new TypeError(streamErrors.illegalInvocation);
-      }
-
-      return ReadableStreamTee(this);
     }
   }
 
@@ -709,6 +608,15 @@
 
   class ReadableStreamDefaultReader {
     constructor(stream) {
+      // |stream| here can be either an external ReadableStream (i.e.,
+      // IDL defined ReadableStream) or an internal ReadableStream (i.e.,
+      // the class defined in this file). In the former case, the
+      // internal stream is stored in [internalReadableStreamSymbol], so use it
+      // from now on.
+      if (stream[internalReadableStreamSymbol] !== undefined) {
+        stream = stream[internalReadableStreamSymbol];
+      }
+
       if (IsReadableStream(stream) === false) {
         throw new TypeError(errReaderConstructorBadArgument);
       }
@@ -1127,6 +1035,34 @@
   }
 
   //
+  // Functions for transferable streams.
+  //
+
+  // The |port| which is passed to this function must be a MessagePort which is
+  // attached by a MessageChannel to the |port| that will be passed to
+  // ReadableStreamDeserialize.
+  function ReadableStreamSerialize(readable, port) {
+    // assert(IsReadableStream(readable),
+    //        `! IsReadableStream(_readable_) is true`);
+    if (IsReadableStreamLocked(readable)) {
+      throw new TypeError(streamErrors.cannotTransferLockedStream);
+    }
+
+    if (!binding.MessagePort_postMessage) {
+      throw new TypeError(streamErrors.cannotTransferContext);
+    }
+
+    const writable = CreateCrossRealmTransformWritable(port);
+    const promise =
+          ReadableStreamPipeTo(readable, writable, false, false, false);
+    markPromiseAsHandled(promise);
+  }
+
+  function ReadableStreamDeserialize(port) {
+    return CreateCrossRealmTransformReadable(port);
+  }
+
+  //
   // Internal functions. Not part of the standard.
   //
 
@@ -1185,31 +1121,27 @@
     return stream[_storedError];
   }
 
+  // TODO(yhirano): Rename this to constructReadableStream.
+  function createReadableStream(underlyingSource, strategy) {
+    return new ReadableStream(underlyingSource, strategy);
+  }
+
+  // TODO(yhirano): Rename this to
+  // constructReadableStreamWithExternalController.
   // TODO(ricea): Remove this once the C++ code switches to calling
   // CreateReadableStream().
-  function createReadableStreamWithExternalController(underlyingSource,
-                                                      strategy) {
+  function createReadableStreamWithExternalController(
+      underlyingSource, strategy) {
     return new ReadableStream(
         underlyingSource, strategy, createWithExternalControllerSentinel);
   }
-
-  //
-  // Additions to the global
-  //
-
-  defineProperty(global, 'ReadableStream', {
-    value: ReadableStream,
-    enumerable: false,
-    configurable: true,
-    writable: true
-  });
-
 
   Object.assign(binding, {
     //
     // ReadableStream exports to Blink C++
     //
     AcquireReadableStreamDefaultReader,
+    createReadableStream,
     createReadableStreamWithExternalController,
     IsReadableStream,
     IsReadableStreamDisturbed,
@@ -1219,7 +1151,12 @@
     IsReadableStreamErrored,
     IsReadableStreamDefaultReader,
     ReadableStreamDefaultReaderRead,
+    ReadableStreamCancel,
     ReadableStreamTee,
+    ReadableStreamPipeTo,
+    ReadableStreamSerialize,
+    ReadableStreamDeserialize,
+    internalReadableStreamSymbol,
 
     //
     // Controller exports to Blink C++

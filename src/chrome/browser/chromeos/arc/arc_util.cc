@@ -18,13 +18,15 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
+#include "chrome/browser/chromeos/login/configuration_keys.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
+#include "chrome/browser/chromeos/login/oobe_configuration.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
@@ -48,9 +50,6 @@
 namespace arc {
 
 namespace {
-
-constexpr char kLsbReleaseArcVersionKey[] = "CHROMEOS_ARC_ANDROID_SDK_VERSION";
-constexpr char kAndroidMSdkVersion[] = "23";
 
 // Contains map of profile to check result of ARC allowed. Contains true if ARC
 // allowed check was performed and ARC is allowed. If map does not contain
@@ -341,18 +340,12 @@ bool IsArcCompatibleFileSystemUsedForUser(const user_manager::User* user) {
   const bool is_filesystem_compatible =
       filesystem_compatibility != kFileSystemIncompatible ||
       g_known_compatible_users.Get().count(user->GetAccountId()) != 0;
-  std::string arc_sdk_version;
-  const bool is_M = base::SysInfo::GetLsbReleaseValue(kLsbReleaseArcVersionKey,
-                                                      &arc_sdk_version) &&
-                    arc_sdk_version == kAndroidMSdkVersion;
 
-  // To run ARC we want to make sure either
-  // - Underlying file system is compatible with ARC, or
-  // - SDK version is M.
-  if (!is_filesystem_compatible && !is_M) {
+  // To run ARC we want to make sure the underlying file system is compatible
+  // with ARC.
+  if (!is_filesystem_compatible) {
     VLOG(1)
-        << "Users with SDK version (" << arc_sdk_version
-        << ") are not supported when they postponed to migrate to dircrypto.";
+        << "ARC is not supported since the user hasn't migrated to dircrypto.";
     return false;
   }
 
@@ -453,6 +446,25 @@ bool IsArcOobeOptInActive() {
   // Later in the same user session user activates Assistant and we show
   // Assistant Wizard with ARC terms. This case is not considered as OOBE OptIn.
   return !IsArcOptInWizardForAssistantActive();
+}
+
+bool IsArcOobeOptInConfigurationBased() {
+  // Ignore if not applicable.
+  if (!IsArcOobeOptInActive())
+    return false;
+  // Check that configuration exist.
+  auto* oobe_configuration = chromeos::OobeConfiguration::Get();
+  if (!oobe_configuration)
+    return false;
+  if (!oobe_configuration->CheckCompleted())
+    return false;
+  // Check configuration value that triggers automatic ARC TOS acceptance.
+  auto& configuration = oobe_configuration->GetConfiguration();
+  auto* auto_accept = configuration.FindKeyOfType(
+      chromeos::configuration::kArcTosAutoAccept, base::Value::Type::BOOLEAN);
+  if (!auto_accept)
+    return false;
+  return auto_accept->GetBool();
 }
 
 bool IsArcOptInWizardForAssistantActive() {

@@ -69,10 +69,13 @@ struct StreamControls {
   bool disable_local_echo;
 };
 
-// Per-frame renderer-side interface that receives device stopped notifications
-// from the browser process.
+// Per-frame renderer-side interface that receives device stopped/change
+// notifications from the browser process.
 interface MediaStreamDeviceObserver {
   OnDeviceStopped(string label, MediaStreamDevice device);
+  OnDeviceChanged(string label,
+                  MediaStreamDevice old_device,
+                  MediaStreamDevice new_device);
 };
 
 // Per-frame browser-side interface that is used by the renderer process to

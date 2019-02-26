@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/html/anchor_element_metrics_sender.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -11,6 +12,20 @@
 #include "third_party/blink/renderer/core/html/html_anchor_element.h"
 
 namespace blink {
+
+namespace {
+
+// Returns true if |anchor_element| should be discarded, and not used for
+// navigation prediction.
+bool ShouldDiscardAnchorElement(const HTMLAnchorElement& anchor_element) {
+  Frame* frame = anchor_element.GetDocument().GetFrame();
+  if (!frame || !frame->IsLocalFrame())
+    return true;
+  LocalFrame* local_frame = ToLocalFrame(frame);
+  return local_frame->IsAdSubframe();
+}
+
+}  // namespace
 
 // static
 const char AnchorElementMetricsSender::kSupplementName[] =
@@ -64,6 +79,15 @@ void AnchorElementMetricsSender::SendAnchorMetricsVectorToBrowser(
 void AnchorElementMetricsSender::AddAnchorElement(HTMLAnchorElement& element) {
   if (has_onload_report_sent_)
     return;
+
+  bool is_ad_frame_element = ShouldDiscardAnchorElement(element);
+  UMA_HISTOGRAM_BOOLEAN("AnchorElementMetrics.IsAdFrameElement",
+                        is_ad_frame_element);
+
+  // We ignore anchor elements that are in ad frames.
+  if (is_ad_frame_element)
+    return;
+
   anchor_elements_.insert(&element);
 }
 

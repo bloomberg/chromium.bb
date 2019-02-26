@@ -16,10 +16,11 @@ TEST(GCInfoTest, InitialEmpty) {
 TEST(GCInfoTest, ResizeToMaxIndex) {
   GCInfoTable table;
   GCInfo info = {nullptr, nullptr, nullptr, false, false};
-  uint32_t slot = 0;
+  std::atomic_uint32_t slot{0};
   for (uint32_t i = 0; i < (GCInfoTable::kMaxIndex - 1); i++) {
     slot = 0;
-    table.EnsureGCInfoIndex(&info, &slot);
+    uint32_t index = table.EnsureGCInfoIndex(&info, &slot);
+    EXPECT_EQ(index, slot);
     EXPECT_LT(0u, slot);
     EXPECT_EQ(&info, table.GCInfoFromIndex(slot));
   }

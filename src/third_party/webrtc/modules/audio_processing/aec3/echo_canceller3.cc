@@ -9,9 +9,12 @@
  */
 #include "modules/audio_processing/aec3/echo_canceller3.h"
 
+#include <algorithm>
+#include <utility>
+
+#include "modules/audio_processing/aec3/aec3_common.h"
 #include "modules/audio_processing/logging/apm_data_dumper.h"
 #include "rtc_base/atomicops.h"
-#include "rtc_base/logging.h"
 #include "system_wrappers/include/field_trial.h"
 
 namespace webrtc {
@@ -39,19 +42,6 @@ bool EnableReverbBasedOnRender() {
 
 bool EnableReverbModelling() {
   return !field_trial::IsEnabled("WebRTC-Aec3ReverbModellingKillSwitch");
-}
-
-bool EnableSuppressorNearendAveraging() {
-  return !field_trial::IsEnabled(
-      "WebRTC-Aec3SuppressorNearendAveragingKillSwitch");
-}
-
-bool EnableSlowFilterAdaptation() {
-  return !field_trial::IsEnabled("WebRTC-Aec3SlowFilterAdaptationKillSwitch");
-}
-
-bool EnableShadowFilterJumpstart() {
-  return !field_trial::IsEnabled("WebRTC-Aec3ShadowFilterJumpstartKillSwitch");
 }
 
 bool EnableUnityInitialRampupGain() {
@@ -86,12 +76,12 @@ bool ActivateStationarityPropertiesAtInit() {
   return field_trial::IsEnabled("WebRTC-Aec3UseStationarityPropertiesAtInit");
 }
 
-bool UseEarlyDelayDetection() {
-  return !field_trial::IsEnabled("WebRTC-Aec3EarlyDelayDetectionKillSwitch");
-}
-
 bool EnableNewRenderBuffering() {
   return !field_trial::IsEnabled("WebRTC-Aec3NewRenderBufferingKillSwitch");
+}
+
+bool UseEarlyDelayDetection() {
+  return !field_trial::IsEnabled("WebRTC-Aec3EarlyDelayDetectionKillSwitch");
 }
 
 // Method for adjusting config parameter dependencies..
@@ -117,30 +107,6 @@ EchoCanceller3Config AdjustConfig(const EchoCanceller3Config& config) {
 
   if (EnableReverbBasedOnRender() == false) {
     adjusted_cfg.ep_strength.reverb_based_on_render = false;
-  }
-
-  if (!EnableSuppressorNearendAveraging()) {
-    adjusted_cfg.suppressor.nearend_average_blocks = 1;
-  }
-
-  if (!EnableSlowFilterAdaptation()) {
-    if (!EnableShadowFilterJumpstart()) {
-      adjusted_cfg.filter.main.leakage_converged = 0.005f;
-      adjusted_cfg.filter.main.leakage_diverged = 0.1f;
-    }
-    adjusted_cfg.filter.main_initial.leakage_converged = 0.05f;
-    adjusted_cfg.filter.main_initial.leakage_diverged = 5.f;
-  }
-
-  if (!EnableShadowFilterJumpstart()) {
-    if (EnableSlowFilterAdaptation()) {
-      adjusted_cfg.filter.main.leakage_converged = 0.0005f;
-      adjusted_cfg.filter.main.leakage_diverged = 0.01f;
-    } else {
-      adjusted_cfg.filter.main.leakage_converged = 0.005f;
-      adjusted_cfg.filter.main.leakage_diverged = 0.1f;
-    }
-    adjusted_cfg.filter.main.error_floor = 0.001f;
   }
 
   if (!EnableNewFilterParams()) {
@@ -181,7 +147,7 @@ EchoCanceller3Config AdjustConfig(const EchoCanceller3Config& config) {
             EchoCanceller3Config::Suppressor::MaskingThresholds(.07f, .1f, .3f),
             2.0f, 0.25f);
 
-    adjusted_cfg.suppressor.dominant_nearend_detection.enr_threshold = 10.f;
+    adjusted_cfg.suppressor.dominant_nearend_detection.enr_threshold = 0.1f;
     adjusted_cfg.suppressor.dominant_nearend_detection.snr_threshold = 10.f;
     adjusted_cfg.suppressor.dominant_nearend_detection.hold_duration = 25;
   }

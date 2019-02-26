@@ -28,8 +28,7 @@
 namespace blink {
 
 inline SVGMPathElement::SVGMPathElement(Document& document)
-    : SVGElement(SVGNames::mpathTag, document), SVGURIReference(this) {
-  DCHECK(RuntimeEnabledFeatures::SMILEnabled());
+    : SVGElement(svg_names::kMPathTag, document), SVGURIReference(this) {
 }
 
 void SVGMPathElement::Trace(blink::Visitor* visitor) {

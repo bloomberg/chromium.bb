@@ -71,12 +71,16 @@ enum FtraceFieldType {
 // into the ProtoFieldType.
 enum TranslationStrategy {
   kUint8ToUint32 = 1,
+  kUint8ToUint64,
   kUint16ToUint32,
+  kUint16ToUint64,
   kUint32ToUint32,
   kUint32ToUint64,
   kUint64ToUint64,
   kInt8ToInt32,
+  kInt8ToInt64,
   kInt16ToInt32,
+  kInt16ToInt64,
   kInt32ToInt32,
   kInt32ToInt64,
   kInt64ToInt64,
@@ -84,10 +88,13 @@ enum TranslationStrategy {
   kCStringToString,
   kStringPtrToString,
   kBoolToUint32,
+  kBoolToUint64,
   kInode32ToUint64,
   kInode64ToUint64,
   kPid32ToInt32,
+  kPid32ToInt64,
   kCommonPid32ToInt32,
+  kCommonPid32ToInt64,
   kDevId32ToUint64,
   kDevId64ToUint64,
   kDataLocToString,
@@ -212,19 +219,6 @@ struct Event {
   // that string.
   uint16_t size;
 };
-
-// The compile time information needed to read the raw ftrace buffer.
-// Specifically for each event we have a proto we fill:
-//  The event name (e.g. sched_switch)
-//  The event group  (e.g. sched)
-//  The the proto field ID of this event in the FtraceEvent proto.
-//  For each field in the proto:
-//    The field name (e.g. prev_comm)
-//    The proto field id for this field
-//    The proto field type for this field (e.g. kProtoString or kProtoUint32)
-// The other fields: ftrace_event_id, ftrace_size, ftrace_offset, ftrace_type
-// are zeroed.
-std::vector<Event> GetStaticEventInfo();
 
 // The compile time information needed to read the common fields from
 // the raw ftrace buffer.

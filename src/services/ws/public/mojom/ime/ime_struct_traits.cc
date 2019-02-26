@@ -55,6 +55,7 @@ bool StructTraits<ws::mojom::ImeTextSpanDataView, ui::ImeTextSpan>::Read(
     return false;
   out->background_color = data.background_color();
   out->suggestion_highlight_color = data.suggestion_highlight_color();
+  out->remove_on_finish_composing = data.remove_on_finish_composing();
   if (!data.ReadSuggestions(&out->suggestions))
     return false;
   return true;

@@ -8,13 +8,14 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
-#include "third_party/blink/renderer/core/css_property_names.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
+class CSSSyntaxComponent;
 class ExceptionState;
 class ExecutionContext;
 enum class SecureContextMode;
@@ -66,7 +67,9 @@ class CORE_EXPORT CSSStyleValue : public ScriptWrappable {
 
   virtual const CSSValue* ToCSSValue() const = 0;
   // FIXME: We should make this a method on CSSProperty instead.
-  virtual const CSSValue* ToCSSValueWithProperty(CSSPropertyID) const {
+  virtual const CSSValue* ToCSSValueWithProperty(
+      CSSPropertyID,
+      const CSSSyntaxComponent*) const {
     return ToCSSValue();
   }
   virtual String toString() const;

@@ -160,10 +160,10 @@ TEST_F(VRDeviceTest, NoMagicWindowPosesWhileBrowsing) {
       std::make_unique<FakeVRDevice>(static_cast<device::mojom::XRDeviceId>(1));
   device->SetPose(mojom::VRPose::New());
 
-  device->GetFrameData(base::BindOnce(
+  device->GetInlineFrameData(base::BindOnce(
       [](device::mojom::XRFrameDataPtr data) { EXPECT_TRUE(data); }));
-  device->SetMagicWindowEnabled(false);
-  device->GetFrameData(base::BindOnce(
+  device->SetInlinePosesEnabled(false);
+  device->GetInlineFrameData(base::BindOnce(
       [](device::mojom::XRFrameDataPtr data) { EXPECT_FALSE(data); }));
 }
 

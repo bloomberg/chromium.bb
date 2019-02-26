@@ -108,6 +108,11 @@ LocationLine.prototype.getComponents_ = function(entry) {
         displayRootUrl, VolumeManagerCommon.TEAM_DRIVES_DIRECTORY_PATH);
     components.push(new LocationLine.PathComponent(
         util.getRootTypeLabel(locationInfo), displayRootUrl));
+  } else if (locationInfo.rootType === VolumeManagerCommon.RootType.COMPUTER) {
+    displayRootUrl = this.replaceRootName_(
+        displayRootUrl, VolumeManagerCommon.COMPUTERS_DIRECTORY_PATH);
+    components.push(new LocationLine.PathComponent(
+        util.getRootTypeLabel(locationInfo), displayRootUrl));
   } else {
     components.push(new LocationLine.PathComponent(
         util.getRootTypeLabel(locationInfo), displayRootUrl));
@@ -119,6 +124,10 @@ LocationLine.prototype.getComponents_ = function(entry) {
           VolumeManagerCommon.TEAM_DRIVES_DIRECTORY_PATH)) {
     relativePath = entry.fullPath.slice(
         VolumeManagerCommon.TEAM_DRIVES_DIRECTORY_PATH.length);
+  } else if (entry.fullPath.startsWith(
+                 VolumeManagerCommon.COMPUTERS_DIRECTORY_PATH)) {
+    relativePath = entry.fullPath.slice(
+        VolumeManagerCommon.COMPUTERS_DIRECTORY_PATH.length);
   }
   if (relativePath.indexOf('/') === 0) {
     relativePath = relativePath.slice(1);

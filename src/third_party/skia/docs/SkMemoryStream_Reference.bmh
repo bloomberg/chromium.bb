@@ -29,7 +29,8 @@
 #In Constructors
 #Line # incomplete ##
 
-We allocate (and free) the memory. Write to it via getMemoryBase()
+Allocates memory for stream data. Call getMemoryBase() to access allocated
+memory.
 
 #Param length  incomplete ##
 
@@ -161,27 +162,6 @@ if copyData is true, the stream makes a private copy of the data
 #Param data  incomplete ##
 #Param length  incomplete ##
 #Param copyData  incomplete ##
-
-#Example
-// incomplete
-##
-
-#SeeAlso incomplete
-
-#Method ##
-
-# ------------------------------------------------------------------------------
-
-#Method void setMemoryOwned(const void* data, size_t length)
-#In incomplete
-#Line # incomplete ##
-
-#Private
-Internal use only.
-##
-
-#Param data  incomplete ##
-#Param length  incomplete ##
 
 #Example
 // incomplete

@@ -118,24 +118,11 @@ class KillProcessObserver : public content::BrowserChildProcessObserver {
   void BrowserChildProcessHostConnected(
       const content::ChildProcessData& data) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    if (!data.IsHandleValid() || data.name != utility_process_name_) {
+    if (!data.GetProcess().IsValid() || data.name != utility_process_name_) {
       return;
     }
 
     ASSERT_FALSE(did_kill_);
-    base::ProcessHandle handle = data.GetHandle();
-
-#if defined(OS_WIN)
-    // On windows, duplicate the process handle since base::Process closes it on
-    // destruction.
-    base::ProcessHandle out_handle;
-    if (!::DuplicateHandle(GetCurrentProcess(), handle,
-                           GetCurrentProcess(), &out_handle,
-                           0, FALSE, DUPLICATE_SAME_ACCESS)) {
-      return;
-    }
-    handle = out_handle;
-#endif
 
     // Use a non-zero exit code so it counts as a crash.
     // Don't wait for the process after sending the termination signal
@@ -143,7 +130,7 @@ class KillProcessObserver : public content::BrowserChildProcessObserver {
     // removed from the process table. However, Chromium treats an error on
     // |waitpid| (in this case, ECHILD) as a "normal" termination and doesn't
     // invoke the process host delegate's OnProcessCrashed().
-    EXPECT_TRUE(base::Process(handle).Terminate(1, false));
+    EXPECT_TRUE(data.GetProcess().Terminate(1, false));
     did_kill_ = true;
   }
 

@@ -41,6 +41,9 @@ struct VectorIcon;
 const char kACMatchPropertySuggestionText[] = "match suggestion text";
 const char kACMatchPropertyContentsPrefix[] = "match contents prefix";
 const char kACMatchPropertyContentsStartIndex[] = "match contents start index";
+// A match attribute when a default match's score has been boosted with a higher
+// scoring non-default match.
+const char kACMatchPropertyScoreBoostedFrom[] = "score_boosted_from";
 
 // AutocompleteMatch ----------------------------------------------------------
 
@@ -79,7 +82,6 @@ struct AutocompleteMatch {
       URL       = 1 << 0,  // A URL
       MATCH     = 1 << 1,  // A match for the user's search term
       DIM       = 1 << 2,  // "Helper text"
-      INVISIBLE = 1 << 3,  // "Prefix" text we don't want to see
     };
     // clang-format on
 
@@ -137,12 +139,11 @@ struct AutocompleteMatch {
   AutocompleteMatch& operator=(const AutocompleteMatch& match);
 
 #if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
-  // Gets the vector icon identifier for the icon to be shown for |type|. If
+  // Gets the vector icon identifier for the icon to be shown for this match. If
   // |is_bookmark| is true, returns a bookmark icon rather than what the type
-  // would determine.
-  static const gfx::VectorIcon& TypeToVectorIcon(Type type,
-                                                 bool is_bookmark,
-                                                 DocumentType document_type);
+  // would normally determine.  Note that in addition to |type|, the icon chosen
+  // may depend on match contents (e.g. Drive |document_type| or |pedal|).
+  const gfx::VectorIcon& GetVectorIcon(bool is_bookmark) const;
 #endif
 
   // Comparison function for determining when one match is better than another.
@@ -235,28 +236,20 @@ struct AutocompleteMatch {
   // - If the match's keyword is known, it can be provided in |keyword|.
   //   Otherwise, it can be left empty and the template URL (if any) is
   //   determined from the destination's hostname.
-  // - If |additional_query_params| is provided, these will be added to the
-  //   resulting URL in the cases where a template URL is used. This is used to
-  //   distinguish cases such as entity suggestions where the response contains
-  //   additional meaningful parameters beyond the search terms themselves.
-  static GURL GURLToStrippedGURL(
-      const GURL& url,
-      const AutocompleteInput& input,
-      const TemplateURLService* template_url_service,
-      const base::string16& keyword,
-      const std::string& additional_query_params = "");
+  static GURL GURLToStrippedGURL(const GURL& url,
+                                 const AutocompleteInput& input,
+                                 const TemplateURLService* template_url_service,
+                                 const base::string16& keyword);
 
-  // Sets the |match_in_scheme|, |match_in_subdomain|, and |match_after_host|
-  // flags based on the provided |url| and list of substring |match_positions|.
-  // |match_positions| is the [begin, end) positions of a match within the
-  // unstripped URL spec.
+  // Sets the |match_in_scheme| and |match_in_subdomain| flags based on the
+  // provided |url| and list of substring |match_positions|. |match_positions|
+  // is the [begin, end) positions of a match within the unstripped URL spec.
   using MatchPosition = std::pair<size_t, size_t>;
   static void GetMatchComponents(
       const GURL& url,
       const std::vector<MatchPosition>& match_positions,
       bool* match_in_scheme,
-      bool* match_in_subdomain,
-      bool* match_after_host);
+      bool* match_in_subdomain);
 
   // Gets the formatting flags used for display of suggestions. This method
   // encapsulates the return of experimental flags too, so any URLs displayed
@@ -265,12 +258,10 @@ struct AutocompleteMatch {
   // This function returns flags that may destructively format the URL, and
   // therefore should never be used for the |fill_into_edit| field.
   //
-  // |preserve_scheme|, |preserve_subdomain|, and |preserve_after_host| indicate
-  // that these URL components are important (part of the match), and should
-  // not be trimmed or elided.
+  // |preserve_scheme| and |preserve_subdomain| indicate that these URL
+  // components are important (part of the match), and should not be trimmed.
   static url_formatter::FormatUrlTypes GetFormatTypes(bool preserve_scheme,
-                                                      bool preserve_subdomain,
-                                                      bool preserve_after_host);
+                                                      bool preserve_subdomain);
 
   // Computes the stripped destination URL (via GURLToStrippedGURL()) and
   // stores the result in |stripped_destination_url|.  |input| is used for the
@@ -434,6 +425,9 @@ struct AutocompleteMatch {
   // Optional override to use for types that specify an icon sub-type.
   DocumentType document_type;
 
+  // Holds the common part of tail suggestion.
+  base::string16 tail_suggest_common_prefix;
+
   // The main text displayed in the address bar dropdown.
   base::string16 contents;
   ACMatchClassifications contents_class;
@@ -446,11 +440,7 @@ struct AutocompleteMatch {
   // before displaying.
   bool swap_contents_and_description;
 
-  // TODO(jdonnelly): Remove the first two properties once the downstream
-  // clients are using the SuggestionAnswer.
   // A rich-format version of the display for the dropdown.
-  base::string16 answer_contents;
-  base::string16 answer_type;
   base::Optional<SuggestionAnswer> answer;
 
   // The transition type to use when the user opens this match.  By default
@@ -516,6 +506,9 @@ struct AutocompleteMatch {
   // A list of matches culled during de-duplication process, retained to
   // ensure if a match is deleted, the duplicates are deleted as well.
   std::vector<AutocompleteMatch> duplicate_matches;
+
+  // So users of AutocompleteMatch can use the same ellipsis that it uses.
+  static const char kEllipsis[];
 
 #if DCHECK_IS_ON()
   // Does a data integrity check on this match.

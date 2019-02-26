@@ -49,9 +49,6 @@
 #define MIN_DECAY_FACTOR 0.01
 #define NEW_MV_MODE_PENALTY 32
 #define DARK_THRESH 64
-#define DEFAULT_GRP_WEIGHT 1.0
-#define RC_FACTOR_MIN 0.75
-#define RC_FACTOR_MAX 1.75
 #define SECTION_NOISE_DEF 250.0
 #define LOW_I_THRESH 24000
 
@@ -1828,10 +1825,12 @@ static int detect_flash(const TWO_PASS *twopass, int offset) {
   // brief break in prediction (such as a flash) but subsequent frames
   // are reasonably well predicted by an earlier (pre flash) frame.
   // The recovery after a flash is indicated by a high pcnt_second_ref
-  // compared to pcnt_inter.
+  // useage or a second ref coded error notabley lower than the last
+  // frame coded error.
   return next_frame != NULL &&
-         next_frame->pcnt_second_ref > next_frame->pcnt_inter &&
-         next_frame->pcnt_second_ref >= 0.5;
+         ((next_frame->sr_coded_error < next_frame->coded_error) ||
+          ((next_frame->pcnt_second_ref > next_frame->pcnt_inter) &&
+           (next_frame->pcnt_second_ref >= 0.5)));
 }
 
 // Update the motion related elements to the GF arf boost calculation.
@@ -2113,21 +2112,23 @@ static void find_arf_order(VP9_COMP *cpi, GF_GROUP *gf_group,
   TWO_PASS *twopass = &cpi->twopass;
   const FIRSTPASS_STATS *const start_pos = twopass->stats_in;
   FIRSTPASS_STATS fpf_frame;
-  const int mid = (start + end) >> 1;
-  const int min_frame_interval = 3;
+  const int mid = (start + end + 1) >> 1;
+  const int min_frame_interval = 2;
   int idx;
 
   // Process regular P frames
   if ((end - start < min_frame_interval) ||
-      (depth > cpi->oxcf.enable_auto_arf)) {
-    int idx;
-    for (idx = start; idx < end; ++idx) {
+      (depth > gf_group->allowed_max_layer_depth)) {
+    for (idx = start; idx <= end; ++idx) {
       gf_group->update_type[*index_counter] = LF_UPDATE;
       gf_group->arf_src_offset[*index_counter] = 0;
+      gf_group->frame_gop_index[*index_counter] = idx;
       gf_group->rf_level[*index_counter] = INTER_NORMAL;
       gf_group->layer_depth[*index_counter] = depth;
+      gf_group->gfu_boost[*index_counter] = NORMAL_BOOST;
       ++(*index_counter);
     }
+    gf_group->max_layer_depth = VPXMAX(gf_group->max_layer_depth, depth);
     return;
   }
 
@@ -2137,22 +2138,25 @@ static void find_arf_order(VP9_COMP *cpi, GF_GROUP *gf_group,
   gf_group->layer_depth[*index_counter] = depth;
   gf_group->update_type[*index_counter] = ARF_UPDATE;
   gf_group->arf_src_offset[*index_counter] = mid - start;
+  gf_group->frame_gop_index[*index_counter] = mid;
   gf_group->rf_level[*index_counter] = GF_ARF_LOW;
 
   for (idx = 0; idx <= mid; ++idx)
     if (EOF == input_stats(twopass, &fpf_frame)) break;
 
-  gf_group->gfu_boost[*index_counter] = VPXMAX(
-      MIN_ARF_GF_BOOST, calc_arf_boost(cpi, end - mid, mid - start) >> depth);
+  gf_group->gfu_boost[*index_counter] =
+      VPXMAX(MIN_ARF_GF_BOOST,
+             calc_arf_boost(cpi, end - mid + 1, mid - start) >> depth);
 
   reset_fpf_position(twopass, start_pos);
 
   ++(*index_counter);
 
-  find_arf_order(cpi, gf_group, index_counter, depth + 1, start, mid);
+  find_arf_order(cpi, gf_group, index_counter, depth + 1, start, mid - 1);
 
   gf_group->update_type[*index_counter] = USE_BUF_FRAME;
   gf_group->arf_src_offset[*index_counter] = 0;
+  gf_group->frame_gop_index[*index_counter] = mid;
   gf_group->rf_level[*index_counter] = INTER_NORMAL;
   gf_group->layer_depth[*index_counter] = depth;
   ++(*index_counter);
@@ -2167,6 +2171,7 @@ static INLINE void set_gf_overlay_frame_type(GF_GROUP *gf_group,
     gf_group->update_type[frame_index] = OVERLAY_UPDATE;
     gf_group->rf_level[frame_index] = INTER_NORMAL;
     gf_group->layer_depth[frame_index] = MAX_ARF_LAYERS - 1;
+    gf_group->gfu_boost[frame_index] = NORMAL_BOOST;
   } else {
     gf_group->update_type[frame_index] = GF_UPDATE;
     gf_group->rf_level[frame_index] = GF_ARF_STD;
@@ -2174,19 +2179,20 @@ static INLINE void set_gf_overlay_frame_type(GF_GROUP *gf_group,
   }
 }
 
-static int define_gf_group_structure(VP9_COMP *cpi) {
+static void define_gf_group_structure(VP9_COMP *cpi) {
   RATE_CONTROL *const rc = &cpi->rc;
   TWO_PASS *const twopass = &cpi->twopass;
   GF_GROUP *const gf_group = &twopass->gf_group;
-  int i;
   int frame_index = 0;
-  int key_frame;
-  int normal_frames;
-
-  key_frame = cpi->common.frame_type == KEY_FRAME;
+  int key_frame = cpi->common.frame_type == KEY_FRAME;
+  int layer_depth = 1;
+  int gop_frames =
+      rc->baseline_gf_interval - (key_frame || rc->source_alt_ref_pending);
 
   gf_group->frame_start = cpi->common.current_video_frame;
-  gf_group->frame_end = gf_group->frame_start + rc->baseline_gf_interval - 1;
+  gf_group->frame_end = gf_group->frame_start + rc->baseline_gf_interval;
+  gf_group->max_layer_depth = 0;
+  gf_group->allowed_max_layer_depth = 0;
 
   // For key frames the frame target rate is already set and it
   // is also the golden frame.
@@ -2200,55 +2206,24 @@ static int define_gf_group_structure(VP9_COMP *cpi) {
   if (rc->source_alt_ref_pending) {
     gf_group->update_type[frame_index] = ARF_UPDATE;
     gf_group->rf_level[frame_index] = GF_ARF_STD;
-    gf_group->layer_depth[frame_index] = 1;
+    gf_group->layer_depth[frame_index] = layer_depth;
     gf_group->arf_src_offset[frame_index] =
         (unsigned char)(rc->baseline_gf_interval - 1);
+    gf_group->frame_gop_index[frame_index] = rc->baseline_gf_interval;
+    gf_group->max_layer_depth = 1;
     ++frame_index;
+    ++layer_depth;
+    gf_group->allowed_max_layer_depth = cpi->oxcf.enable_auto_arf;
   }
 
-  if (rc->source_alt_ref_pending && cpi->multi_layer_arf) {
-    find_arf_order(cpi, gf_group, &frame_index, 2, 0,
-                   rc->baseline_gf_interval - 1);
-
-    set_gf_overlay_frame_type(gf_group, frame_index,
-                              rc->source_alt_ref_pending);
-
-    gf_group->arf_src_offset[frame_index] = 0;
-
-    return frame_index;
-  }
-
-  normal_frames =
-      rc->baseline_gf_interval - (key_frame || rc->source_alt_ref_pending);
-
-  for (i = 0; i < normal_frames; ++i) {
-    if (twopass->stats_in >= twopass->stats_in_end) break;
-
-    gf_group->update_type[frame_index] = LF_UPDATE;
-    gf_group->rf_level[frame_index] = INTER_NORMAL;
-    gf_group->arf_src_offset[frame_index] = 0;
-    gf_group->layer_depth[frame_index] = MAX_ARF_LAYERS - 1;
-
-    ++frame_index;
-  }
-
-  // Note:
-  // We need to configure the frame at the end of the sequence + 1 that will be
-  // the start frame for the next group. Otherwise prior to the call to
-  // vp9_rc_get_second_pass_params() the data will be undefined.
+  find_arf_order(cpi, gf_group, &frame_index, layer_depth, 1, gop_frames);
 
   set_gf_overlay_frame_type(gf_group, frame_index, rc->source_alt_ref_pending);
-
-  if (rc->source_alt_ref_pending) {
-    gf_group->update_type[frame_index] = OVERLAY_UPDATE;
-    gf_group->rf_level[frame_index] = INTER_NORMAL;
-  } else {
-    gf_group->update_type[frame_index] = GF_UPDATE;
-    gf_group->rf_level[frame_index] = GF_ARF_STD;
-  }
   gf_group->arf_src_offset[frame_index] = 0;
+  gf_group->frame_gop_index[frame_index] = rc->baseline_gf_interval;
 
-  return frame_index;
+  // Set the frame ops number.
+  gf_group->gf_group_size = frame_index;
 }
 
 static void allocate_gf_group_bits(VP9_COMP *cpi, int64_t gf_group_bits,
@@ -2273,7 +2248,7 @@ static void allocate_gf_group_bits(VP9_COMP *cpi, int64_t gf_group_bits,
   double this_frame_score = 1.0;
 
   // Define the GF structure and specify
-  int gop_frames = define_gf_group_structure(cpi);
+  int gop_frames = gf_group->gf_group_size;
 
   key_frame = cpi->common.frame_type == KEY_FRAME;
 
@@ -2326,8 +2301,9 @@ static void allocate_gf_group_bits(VP9_COMP *cpi, int64_t gf_group_bits,
 
     for (idx = 2; idx < MAX_ARF_LAYERS; ++idx) {
       if (arf_depth_boost[idx] == 0) break;
-      arf_depth_bits[idx] = calculate_boost_bits(
-          rc->baseline_gf_interval, arf_depth_boost[idx], total_group_bits);
+      arf_depth_bits[idx] =
+          calculate_boost_bits(rc->baseline_gf_interval - total_arfs,
+                               arf_depth_boost[idx], total_group_bits);
 
       total_group_bits -= arf_depth_bits[idx];
       total_arfs += arf_depth_count[idx];
@@ -2570,16 +2546,16 @@ static void define_gf_group(VP9_COMP *cpi, FIRSTPASS_STATS *this_frame) {
         &next_frame, &this_frame_mv_in_out, &mv_in_out_accumulator,
         &abs_mv_in_out_accumulator, &mv_ratio_accumulator);
 
+    // Monitor for static sections.
+    if ((rc->frames_since_key + i - 1) > 1) {
+      zero_motion_accumulator = VPXMIN(
+          zero_motion_accumulator, get_zero_motion_factor(cpi, &next_frame));
+    }
+
     // Accumulate the effect of prediction quality decay.
     if (!flash_detected) {
       last_loop_decay_rate = loop_decay_rate;
       loop_decay_rate = get_prediction_decay_rate(cpi, &next_frame);
-
-      // Monitor for static sections.
-      if ((rc->frames_since_key + i - 1) > 1) {
-        zero_motion_accumulator = VPXMIN(
-            zero_motion_accumulator, get_zero_motion_factor(cpi, &next_frame));
-      }
 
       // Break clause to detect very still sections after motion. For example,
       // a static image after a fade or other transition.
@@ -2705,6 +2681,9 @@ static void define_gf_group(VP9_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   // Adjust KF group bits and error remaining.
   twopass->kf_group_error_left -= gf_group_err;
 
+  // Decide GOP structure.
+  define_gf_group_structure(cpi);
+
   // Allocate bits to each of the frames in the GF group.
   allocate_gf_group_bits(cpi, gf_group_bits, gf_arf_bits);
 
@@ -2748,17 +2727,11 @@ static int slide_transition(const FIRSTPASS_STATS *this_frame,
          (this_frame->coded_error > (next_frame->coded_error * ERROR_SPIKE));
 }
 
-// Threshold for use of the lagging second reference frame. High second ref
-// usage may point to a transient event like a flash or occlusion rather than
-// a real scene cut.
-#define SECOND_REF_USEAGE_THRESH 0.1
 // Minimum % intra coding observed in first pass (1.0 = 100%)
 #define MIN_INTRA_LEVEL 0.25
-// Minimum ratio between the % of intra coding and inter coding in the first
-// pass after discounting neutral blocks (discounting neutral blocks in this
-// way helps catch scene cuts in clips with very flat areas or letter box
-// format clips with image padding.
-#define INTRA_VS_INTER_THRESH 2.0
+// Threshold for use of the lagging second reference frame. Scene cuts do not
+// usually have a high second ref useage.
+#define SECOND_REF_USEAGE_THRESH 0.125
 // Hard threshold where the first pass chooses intra for almost all blocks.
 // In such a case even if the frame is not a scene cut coding a key frame
 // may be a good option.
@@ -2766,12 +2739,6 @@ static int slide_transition(const FIRSTPASS_STATS *this_frame,
 // Maximum threshold for the relative ratio of intra error score vs best
 // inter error score.
 #define KF_II_ERR_THRESHOLD 2.5
-// In real scene cuts there is almost always a sharp change in the intra
-// or inter error score.
-#define ERR_CHANGE_THRESHOLD 0.4
-// For real scene cuts we expect an improvment in the intra inter error
-// ratio in the next frame.
-#define II_IMPROVEMENT_THRESHOLD 3.5
 #define KF_II_MAX 128.0
 #define II_FACTOR 12.5
 // Test for very low intra complexity which could cause false key frames
@@ -2783,30 +2750,21 @@ static int test_candidate_kf(TWO_PASS *twopass,
                              const FIRSTPASS_STATS *next_frame) {
   int is_viable_kf = 0;
   double pcnt_intra = 1.0 - this_frame->pcnt_inter;
-  double modified_pcnt_inter =
-      this_frame->pcnt_inter - this_frame->pcnt_neutral;
 
   // Does the frame satisfy the primary criteria of a key frame?
   // See above for an explanation of the test criteria.
   // If so, then examine how well it predicts subsequent frames.
-  if ((this_frame->pcnt_second_ref < SECOND_REF_USEAGE_THRESH) &&
-      (next_frame->pcnt_second_ref < SECOND_REF_USEAGE_THRESH) &&
+  if (!detect_flash(twopass, -1) && !detect_flash(twopass, 0) &&
+      (this_frame->pcnt_second_ref < SECOND_REF_USEAGE_THRESH) &&
       ((this_frame->pcnt_inter < VERY_LOW_INTER_THRESH) ||
        (slide_transition(this_frame, last_frame, next_frame)) ||
-       ((pcnt_intra > MIN_INTRA_LEVEL) &&
-        (pcnt_intra > (INTRA_VS_INTER_THRESH * modified_pcnt_inter)) &&
+       (((this_frame->coded_error > (next_frame->coded_error * 1.1)) &&
+         (this_frame->coded_error > (last_frame->coded_error * 1.1))) &&
+        (pcnt_intra > MIN_INTRA_LEVEL) &&
+        ((pcnt_intra + this_frame->pcnt_neutral) > 0.5) &&
         ((this_frame->intra_error /
           DOUBLE_DIVIDE_CHECK(this_frame->coded_error)) <
-         KF_II_ERR_THRESHOLD) &&
-        ((fabs(last_frame->coded_error - this_frame->coded_error) /
-              DOUBLE_DIVIDE_CHECK(this_frame->coded_error) >
-          ERR_CHANGE_THRESHOLD) ||
-         (fabs(last_frame->intra_error - this_frame->intra_error) /
-              DOUBLE_DIVIDE_CHECK(this_frame->intra_error) >
-          ERR_CHANGE_THRESHOLD) ||
-         ((next_frame->intra_error /
-           DOUBLE_DIVIDE_CHECK(next_frame->coded_error)) >
-          II_IMPROVEMENT_THRESHOLD))))) {
+         KF_II_ERR_THRESHOLD)))) {
     int i;
     const FIRSTPASS_STATS *start_pos = twopass->stats_in;
     FIRSTPASS_STATS local_next_frame = *next_frame;
@@ -3247,9 +3205,9 @@ void vp9_rc_get_second_pass_params(VP9_COMP *cpi) {
       FILE *fpfile;
       fpfile = fopen("arf.stt", "a");
       ++arf_count;
-      fprintf(fpfile, "%10d %10ld %10d %10d %10ld\n", cm->current_video_frame,
-              rc->frames_till_gf_update_due, rc->kf_boost, arf_count,
-              rc->gfu_boost);
+      fprintf(fpfile, "%10d %10ld %10d %10d %10ld %10ld\n",
+              cm->current_video_frame, rc->frames_till_gf_update_due,
+              rc->kf_boost, arf_count, rc->gfu_boost, cm->frame_type);
 
       fclose(fpfile);
     }

@@ -195,8 +195,7 @@ HttpStreamFactory::Job::Job(Delegate* delegate,
                  origin_url_.SchemeIs(url::kWssScheme)),
       using_quic_(
           alternative_protocol == kProtoQUIC ||
-          (ShouldForceQuic(session, destination, origin_url, proxy_info) &&
-           !(proxy_info.is_quic() && using_ssl_))),
+          ShouldForceQuic(session, destination, origin_url, proxy_info)),
       quic_version_(quic_version),
       expect_spdy_(alternative_protocol == kProtoHTTP2 && !using_quic_),
       using_spdy_(false),
@@ -562,12 +561,12 @@ int HttpStreamFactory::Job::OnHostResolution(
 }
 
 void HttpStreamFactory::Job::OnIOComplete(int result) {
-  TRACE_EVENT0(kNetTracingCategory, "HttpStreamFactory::Job::OnIOComplete");
+  TRACE_EVENT0(NetTracingCategory(), "HttpStreamFactory::Job::OnIOComplete");
   RunLoop(result);
 }
 
 void HttpStreamFactory::Job::RunLoop(int result) {
-  TRACE_EVENT0(kNetTracingCategory, "HttpStreamFactory::Job::RunLoop");
+  TRACE_EVENT0(NetTracingCategory(), "HttpStreamFactory::Job::RunLoop");
   result = DoLoop(result);
 
   if (result == ERR_IO_PENDING)
@@ -872,6 +871,12 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
   }
 
   if (using_quic_) {
+    if (proxy_info_.is_quic() &&
+        !request_info_.url.SchemeIs(url::kHttpScheme)) {
+      NOTREACHED();
+      // TODO(rch): support QUIC proxies for HTTPS urls.
+      return ERR_NOT_IMPLEMENTED;
+    }
     HostPortPair destination;
     SSLConfig* ssl_config;
     GURL url(request_info_.url);
@@ -945,7 +950,7 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
     }
   }
 
-  if (proxy_info_.is_http() || proxy_info_.is_https() || proxy_info_.is_quic())
+  if (proxy_info_.is_http() || proxy_info_.is_https())
     establishing_tunnel_ = using_ssl_;
 
   HttpServerProperties* http_server_properties =
@@ -1206,8 +1211,7 @@ int HttpStreamFactory::Job::DoCreateStream() {
   if (!using_spdy_) {
     DCHECK(!expect_spdy_);
     // We may get ftp scheme when fetching ftp resources through proxy.
-    bool using_proxy = (proxy_info_.is_http() || proxy_info_.is_https() ||
-                        proxy_info_.is_quic()) &&
+    bool using_proxy = (proxy_info_.is_http() || proxy_info_.is_https()) &&
                        (request_info_.url.SchemeIs(url::kHttpScheme) ||
                         request_info_.url.SchemeIs(url::kFtpScheme));
     if (is_websocket_) {
@@ -1416,11 +1420,10 @@ int HttpStreamFactory::Job::HandleCertificateError(int error) {
   server_ssl_config_.allowed_bad_certs.emplace_back(ssl_info.cert,
                                                     ssl_info.cert_status);
 
-  int load_flags = request_info_.load_flags;
-  if (session_->params().ignore_certificate_errors)
-    load_flags |= LOAD_IGNORE_ALL_CERT_ERRORS;
-  if (SSLClientSocket::IgnoreCertError(error, load_flags))
+  if (session_->params().ignore_certificate_errors &&
+      IsCertificateError(error)) {
     return OK;
+  }
   return error;
 }
 

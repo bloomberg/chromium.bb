@@ -19,6 +19,8 @@ This translation layer should be temporary until the descriptor concept can be
 pushed down into the Model layer.
 """
 
+import re
+
 from google.appengine.ext import ndb
 
 from dashboard.common import bot_configurations
@@ -53,13 +55,9 @@ POLY_MEASUREMENT_TEST_SUITES_KEY = 'poly_measurement_test_suites'
 # cases are each composed of two test path components.
 TWO_TWO_TEST_SUITES_KEY = 'two_two_test_suites'
 
-COMPLEX_TEST_SUITES = [
-    'tab_switching.typical_25',
-    'v8:browsing_desktop',
-    'v8:browsing_desktop-future',
-    'v8:browsing_mobile',
-    'v8:browsing_mobile-future',
-]
+# This stored object contains a list of test suites whose test cases are
+# partially duplicated to two test path components like 'prefix/prefix_suffix'.
+COMPLEX_CASES_TEST_SUITES_KEY = 'complex_cases_test_suites'
 
 
 class Descriptor(object):
@@ -127,14 +125,10 @@ class Descriptor(object):
       parts, path[:] = path[:], []
       raise ndb.Return((':'.join(parts[:6]), ':'.join(parts[6:])))
 
+    complex_cases_test_suites = yield cls._GetConfiguration(
+        COMPLEX_CASES_TEST_SUITES_KEY, [])
     if (test_suite.startswith('system_health') or
-        (test_suite in [
-            'tab_switching.typical_25',
-            'v8:browsing_desktop',
-            'v8:browsing_desktop-future',
-            'v8:browsing_mobile',
-            'v8:browsing_mobile-future',
-            ])):
+        (test_suite in complex_cases_test_suites)):
       measurement = path.pop(0)
       path.pop(0)
       if len(path) == 0:
@@ -222,10 +216,14 @@ class Descriptor(object):
     measurement, test_case = yield cls._MeasurementCase(test_suite, path)
 
     statistic = None
-    for suffix in STATISTICS:
-      if measurement.endswith('_' + suffix):
-        statistic = suffix
-        measurement = measurement[:-(1 + len(suffix))]
+    pct_match = re.match(r'(.*)_(pct_[\d_]+)', measurement)
+    if pct_match:
+      measurement, statistic = pct_match.groups()
+    else:
+      for suffix in STATISTICS:
+        if measurement.endswith('_' + suffix):
+          statistic = suffix
+          measurement = measurement[:-(1 + len(suffix))]
 
     if path:
       raise ValueError('Unable to parse %r' % test_path)
@@ -305,8 +303,10 @@ class Descriptor(object):
 
   @ndb.tasklet
   def _AppendTestCase(self, test_paths):
+    complex_cases_test_suites = yield self._GetConfiguration(
+        COMPLEX_CASES_TEST_SUITES_KEY, [])
     if (self.test_suite.startswith('system_health') or
-        (self.test_suite in COMPLEX_TEST_SUITES)):
+        (self.test_suite in complex_cases_test_suites)):
       test_case = self.test_case.split(':')
       if test_case[0] == 'long_running_tools':
         test_paths = {p + '/' + test_case[0] for p in test_paths}

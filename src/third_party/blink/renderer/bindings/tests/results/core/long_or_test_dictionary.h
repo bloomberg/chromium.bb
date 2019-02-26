@@ -8,8 +8,8 @@
 // DO NOT MODIFY!
 
 // clang-format off
-#ifndef LongOrTestDictionary_h
-#define LongOrTestDictionary_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_LONG_OR_TEST_DICTIONARY_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_LONG_OR_TEST_DICTIONARY_H_
 
 #include "base/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
@@ -34,9 +34,9 @@ class CORE_EXPORT LongOrTestDictionary final {
   static LongOrTestDictionary FromLong(int32_t);
 
   bool IsTestDictionary() const { return type_ == SpecificType::kTestDictionary; }
-  const TestDictionary& GetAsTestDictionary() const;
-  void SetTestDictionary(const TestDictionary&);
-  static LongOrTestDictionary FromTestDictionary(const TestDictionary&);
+  TestDictionary* GetAsTestDictionary() const;
+  void SetTestDictionary(TestDictionary*);
+  static LongOrTestDictionary FromTestDictionary(TestDictionary*);
 
   LongOrTestDictionary(const LongOrTestDictionary&);
   ~LongOrTestDictionary();
@@ -52,7 +52,7 @@ class CORE_EXPORT LongOrTestDictionary final {
   SpecificType type_;
 
   int32_t long_;
-  TestDictionary test_dictionary_;
+  Member<TestDictionary> test_dictionary_;
 
   friend CORE_EXPORT v8::Local<v8::Value> ToV8(const LongOrTestDictionary&, v8::Local<v8::Object>, v8::Isolate*);
 };
@@ -93,4 +93,4 @@ struct V8TypeOf<LongOrTestDictionary> {
 // See https://codereview.chromium.org/1118993002/#msg5 for more details.
 WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::LongOrTestDictionary);
 
-#endif  // LongOrTestDictionary_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_LONG_OR_TEST_DICTIONARY_H_

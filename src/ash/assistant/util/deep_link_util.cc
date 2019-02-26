@@ -12,6 +12,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "net/base/escape.h"
+#include "net/base/url_util.h"
 #include "url/gurl.h"
 
 namespace ash {
@@ -22,6 +23,7 @@ namespace {
 
 // Supported deep link param keys. These values must be kept in sync with the
 // server. See more details at go/cros-assistant-deeplink.
+constexpr char kIdParamKey[] = "id";
 constexpr char kQueryParamKey[] = "q";
 constexpr char kPageParamKey[] = "page";
 constexpr char kRelaunchParamKey[] = "relaunch";
@@ -40,7 +42,18 @@ constexpr char kAssistantTaskManagerPrefix[] = "googleassistant://task-manager";
 constexpr char kAssistantWhatsOnMyScreenPrefix[] =
     "googleassistant://whats-on-my-screen";
 
+// Helpers ---------------------------------------------------------------------
+
+// Returns a GURL for the specified |url| having set the locale query parameter.
+GURL CreateLocalizedGURL(const std::string& url) {
+  static constexpr char kLocaleParamKey[] = "hl";
+  return net::AppendOrReplaceQueryParameter(GURL(url), kLocaleParamKey,
+                                            base::i18n::GetConfiguredLocale());
+}
+
 }  // namespace
+
+// Utilities -------------------------------------------------------------------
 
 GURL CreateAssistantSettingsDeepLink() {
   return GURL(kAssistantSettingsPrefix);
@@ -78,6 +91,7 @@ base::Optional<std::string> GetDeepLinkParam(
     DeepLinkParam param) {
   // Map of supported deep link params to their keys.
   static const std::map<DeepLinkParam, std::string> kDeepLinkParamKeys = {
+      {DeepLinkParam::kId, kIdParamKey},
       {DeepLinkParam::kPage, kPageParamKey},
       {DeepLinkParam::kQuery, kQueryParamKey},
       {DeepLinkParam::kRelaunch, kRelaunchParamKey}};
@@ -133,6 +147,17 @@ bool IsDeepLinkUrl(const GURL& url) {
   return GetDeepLinkType(url) != DeepLinkType::kUnsupported;
 }
 
+GURL GetAssistantRemindersUrl(const base::Optional<std::string>& id) {
+  // TODO(b/113357196): Make these URLs configurable for development purposes.
+  static constexpr char kAssistantRemindersWebUrl[] =
+      "https://assistant.google.com/reminders/mainview";
+  static constexpr char kAssistantRemindersByIdWebUrl[] =
+      "https://assistant.google.com/reminders/id/";
+  return (id && !id.value().empty())
+             ? CreateLocalizedGURL(kAssistantRemindersByIdWebUrl + id.value())
+             : CreateLocalizedGURL(kAssistantRemindersWebUrl);
+}
+
 GURL GetChromeSettingsUrl(const base::Optional<std::string>& page) {
   static constexpr char kChromeSettingsUrl[] = "chrome://settings/";
 
@@ -149,25 +174,25 @@ GURL GetChromeSettingsUrl(const base::Optional<std::string>& page) {
 }
 
 base::Optional<GURL> GetWebUrl(const GURL& deep_link) {
-  return GetWebUrl(GetDeepLinkType(deep_link));
+  return GetWebUrl(GetDeepLinkType(deep_link), GetDeepLinkParams(deep_link));
 }
 
-base::Optional<GURL> GetWebUrl(DeepLinkType type) {
+base::Optional<GURL> GetWebUrl(
+    DeepLinkType type,
+    const std::map<std::string, std::string>& params) {
   // TODO(b/113357196): Make these URLs configurable for development purposes.
-  static constexpr char kAssistantRemindersWebUrl[] =
-      "https://assistant.google.com/reminders/mainview?hl=";
   static constexpr char kAssistantSettingsWebUrl[] =
-      "https://assistant.google.com/settings/mainpage?hl=";
+      "https://assistant.google.com/settings/mainpage";
 
   if (!IsWebDeepLinkType(type))
     return base::nullopt;
 
   switch (type) {
     case DeepLinkType::kReminders:
-      return GURL(kAssistantRemindersWebUrl +
-                  base::i18n::GetConfiguredLocale());
+      return GetAssistantRemindersUrl(
+          GetDeepLinkParam(params, DeepLinkParam::kId));
     case DeepLinkType::kSettings:
-      return GURL(kAssistantSettingsWebUrl + base::i18n::GetConfiguredLocale());
+      return CreateLocalizedGURL(kAssistantSettingsWebUrl);
     case DeepLinkType::kUnsupported:
     case DeepLinkType::kChromeSettings:
     case DeepLinkType::kFeedback:

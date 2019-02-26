@@ -49,8 +49,6 @@ var AudioNode = function() {
 Polymer({
   is: 'audio-settings',
 
-  behaviors: [Polymer.NeonAnimatableBehavior],
-
   properties: {
     /**
      * An AudioNode which is currently being edited.

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
@@ -22,7 +23,7 @@ class UrlIndexTest : public testing::Test {
   UrlIndexTest() : url_index_(nullptr) {}
 
   scoped_refptr<UrlData> GetByUrl(const GURL& gurl,
-                                  UrlData::CORSMode cors_mode) {
+                                  UrlData::CorsMode cors_mode) {
     scoped_refptr<UrlData> ret = url_index_.GetByUrl(gurl, cors_mode);
     EXPECT_EQ(ret->url(), gurl);
     EXPECT_EQ(ret->cors_mode(), cors_mode);
@@ -178,13 +179,16 @@ TEST_F(UrlIndexTest, SetLoadingState) {
   AddToLoadQueue(a.get(), base::BindOnce(&SetBoolWhenCalled, &called));
   UrlData::UrlDataWithLoadingState url_data_with_loading_state;
   url_data_with_loading_state.SetUrlData(a);
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(called);
   url_data_with_loading_state.SetLoadingState(
       UrlData::UrlDataWithLoadingState::LoadingState::kPreload);
   AddToLoading(a.get());
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(called);
   url_data_with_loading_state.SetLoadingState(
       UrlData::UrlDataWithLoadingState::LoadingState::kHasPlayed);
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
 }
 

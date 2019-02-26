@@ -47,10 +47,6 @@ namespace base {
 class CommandLine;
 }
 
-namespace network {
-class SharedURLLoaderFactory;
-}
-
 namespace user_manager {
 class User;
 }  // namespace user_manager
@@ -280,11 +276,6 @@ class UserSessionManager
 
   // Update Easy unlock cryptohome keys for given user context.
   void UpdateEasyUnlockKeys(const UserContext& user_context);
-
-  // Returns the auth request context/URLLoaderFactory associated with auth
-  // data.
-  scoped_refptr<network::SharedURLLoaderFactory> GetAuthURLLoaderFactory()
-      const;
 
   // Removes a profile from the per-user input methods states map.
   void RemoveProfileForTesting(Profile* profile);

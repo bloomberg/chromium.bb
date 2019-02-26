@@ -43,7 +43,6 @@ class PLATFORM_EXPORT ImageObserver : public GarbageCollectedMixin {
   virtual void DecodedSizeChangedTo(const Image*, size_t new_size) = 0;
 
   virtual bool ShouldPauseAnimation(const Image*) = 0;
-  virtual void AnimationAdvanced(const Image*) = 0;
 
   // Notification for when the image's contents have changed such as when an
   // SVG image animates.

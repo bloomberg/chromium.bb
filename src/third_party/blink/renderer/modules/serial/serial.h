@@ -30,10 +30,10 @@ class Serial final : public EventTargetWithInlineData,
   ExecutionContext* GetExecutionContext() const override;
   const AtomicString& InterfaceName() const override;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(connect);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(connect, kConnect);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect, kDisconnect);
   ScriptPromise getPorts(ScriptState*);
-  ScriptPromise requestPort(ScriptState*, const SerialPortRequestOptions&);
+  ScriptPromise requestPort(ScriptState*, const SerialPortRequestOptions*);
 
   void Trace(Visitor*) override;
 

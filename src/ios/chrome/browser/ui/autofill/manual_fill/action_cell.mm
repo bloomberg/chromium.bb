@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/autofill/manual_fill/action_cell.h"
 
+#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_cell_utils.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/uicolor_manualfill.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
@@ -13,29 +14,23 @@
 #endif
 
 namespace {
-// Left and right margins of the cell contents.
-static const CGFloat sideMargins = 16;
-// The base multiplier for the top and bottom margins.  This number multiplied
-// by the font size plus the base margins will give similar results to
-// |constraintEqualToSystemSpacingBelowAnchor:|.
-static const CGFloat iOS10MarginFontMultiplier = 1.18;
-// The base top margin, only used in iOS 10. Refer to
-// |iOS10MarginFontMultiplier| for how it is used.
-static const CGFloat iOS10BaseTopMargin = 4;
-// The base bottom margin, only used in iOS 10. Refer to
-// |iOS10MarginFontMultiplier| for how it is used.
-static const CGFloat iOS10BaseBottomMargin = 4;
+
 // The multiplier for the base system spacing at the top margin.
-static const CGFloat TopBaseSystemSpacingMultiplier = 1.1;
+static const CGFloat TopBaseSystemSpacingMultiplier = 0.8;
+
 // The multiplier for the base system spacing at the bottom margin.
-static const CGFloat BottomBaseSystemSpacingMultiplier = 1.5;
+static const CGFloat BottomBaseSystemSpacingMultiplier = 1.8;
+
 }  // namespace
 
 @interface ManualFillActionItem ()
+
 // The action block to be called when the user taps the title.
 @property(nonatomic, copy, readonly) void (^action)(void);
+
 // The title for the action.
 @property(nonatomic, copy, readonly) NSString* title;
+
 @end
 
 @implementation ManualFillActionItem
@@ -45,6 +40,7 @@ static const CGFloat BottomBaseSystemSpacingMultiplier = 1.5;
   if (self) {
     _title = [title copy];
     _action = [action copy];
+    _enabled = YES;
     self.cellClass = [ManualFillActionCell class];
   }
   return self;
@@ -56,41 +52,83 @@ static const CGFloat BottomBaseSystemSpacingMultiplier = 1.5;
   cell.accessibilityIdentifier = nil;
   [cell setUpWithTitle:self.title
        accessibilityID:self.accessibilityIdentifier
-                action:self.action];
+                action:self.action
+               enabled:self.enabled
+         showSeparator:self.showSeparator];
 }
 
 @end
 
 @interface ManualFillActionCell ()
+
 // The action block to be called when the user taps the title button.
 @property(nonatomic, copy) void (^action)(void);
+
+// The dynamic constraints for all the lines (i.e. not set in createView).
+@property(nonatomic, strong)
+    NSMutableArray<NSLayoutConstraint*>* dynamicConstraints;
+
 // The title button of this cell.
 @property(nonatomic, strong) UIButton* titleButton;
+
+// Separator line after cell, if needed.
+@property(nonatomic, strong) UIView* grayLine;
+
 @end
 
 @implementation ManualFillActionCell
-@synthesize action = _action;
-@synthesize titleButton = _titleButton;
 
 #pragma mark - Public
 
 - (void)prepareForReuse {
   [super prepareForReuse];
+  [NSLayoutConstraint deactivateConstraints:self.dynamicConstraints];
+  [self.dynamicConstraints removeAllObjects];
+
   self.action = nil;
   [self.titleButton setTitle:nil forState:UIControlStateNormal];
   self.titleButton.accessibilityIdentifier = nil;
+  [self.titleButton setTitleColor:UIColor.cr_manualFillTintColor
+                         forState:UIControlStateNormal];
+  self.titleButton.enabled = YES;
+  self.grayLine.hidden = YES;
 }
 
 - (void)setUpWithTitle:(NSString*)title
        accessibilityID:(NSString*)accessibilityID
-                action:(void (^)(void))action {
+                action:(void (^)(void))action
+               enabled:(BOOL)enabled
+         showSeparator:(BOOL)showSeparator {
   if (self.contentView.subviews.count == 0) {
     [self createView];
   }
 
+  self.grayLine.hidden = !showSeparator;
+
   [self.titleButton setTitle:title forState:UIControlStateNormal];
   self.titleButton.accessibilityIdentifier = accessibilityID;
+  self.titleButton.enabled = enabled;
+  if (!enabled) {
+    [self.titleButton setTitleColor:UIColor.lightGrayColor
+                           forState:UIControlStateNormal];
+  }
   self.action = action;
+
+  NSMutableArray<UIView*>* verticalLeadViews = [[NSMutableArray alloc] init];
+  [verticalLeadViews addObject:self.titleButton];
+
+  // When disabled, the label is in 'message' mode, and needs to be centered
+  // differently because it is in the data area rather than in the action area.
+  CGFloat topMultiplier =
+      enabled ? TopBaseSystemSpacingMultiplier : TopSystemSpacingMultiplier;
+  CGFloat bottomMultiplier = enabled ? BottomBaseSystemSpacingMultiplier
+                                     : MiddleSystemSpacingMultiplier;
+
+  self.dynamicConstraints = [[NSMutableArray alloc] init];
+  AppendVerticalConstraintsSpacingForViews(
+      self.dynamicConstraints, verticalLeadViews, self.contentView,
+      topMultiplier, MiddleSystemSpacingMultiplier, bottomMultiplier);
+  [NSLayoutConstraint activateConstraints:self.dynamicConstraints];
 }
 
 #pragma mark - Private
@@ -98,66 +136,19 @@ static const CGFloat BottomBaseSystemSpacingMultiplier = 1.5;
 - (void)createView {
   self.selectionStyle = UITableViewCellSelectionStyleNone;
 
-  self.titleButton = [UIButton buttonWithType:UIButtonTypeSystem];
-  [self.titleButton setTitleColor:UIColor.cr_manualFillTintColor
-                         forState:UIControlStateNormal];
-  self.titleButton.translatesAutoresizingMaskIntoConstraints = NO;
-  self.titleButton.titleLabel.font =
-      [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
-  self.titleButton.titleLabel.adjustsFontForContentSizeCategory = YES;
-  [self.titleButton addTarget:self
-                       action:@selector(userDidTapTitleButton:)
-             forControlEvents:UIControlEventTouchUpInside];
+  UIView* guide = self.contentView;
+  self.grayLine = CreateGraySeparatorForContainer(guide);
+
+  self.titleButton = CreateButtonWithSelectorAndTarget(
+      @selector(userDidTapTitleButton:), self);
   self.titleButton.titleLabel.lineBreakMode = NSLineBreakByTruncatingTail;
   [self.contentView addSubview:self.titleButton];
-  id<LayoutGuideProvider> safeArea =
-      SafeAreaLayoutGuideForView(self.contentView);
 
-  NSArray* verticalConstraints;
-  if (@available(iOS 11, *)) {
-    // Multipliers of these constraints are calculated based on a 24 base
-    // system spacing.
-    verticalConstraints = @[
-      // Vertical constraints.
-      [self.titleButton.firstBaselineAnchor
-          constraintEqualToSystemSpacingBelowAnchor:self.contentView.topAnchor
-                                         multiplier:
-                                             TopBaseSystemSpacingMultiplier],
-      [self.contentView.bottomAnchor
-          constraintEqualToSystemSpacingBelowAnchor:self.titleButton
-                                                        .lastBaselineAnchor
-                                         multiplier:
-                                             BottomBaseSystemSpacingMultiplier],
-    ];
-  } else {
-    CGFloat pointSize = self.titleButton.titleLabel.font.pointSize;
-    // These margins are based on the design size and the current point size.
-    // The multipliers were selected by manually testing the different system
-    // font sizes.
-    CGFloat marginTop =
-        iOS10BaseTopMargin + pointSize * iOS10MarginFontMultiplier;
-    CGFloat marginBottom =
-        iOS10BaseBottomMargin + pointSize * iOS10MarginFontMultiplier;
-
-    verticalConstraints = @[
-      [self.titleButton.firstBaselineAnchor
-          constraintEqualToAnchor:self.contentView.topAnchor
-                         constant:marginTop],
-      [self.contentView.bottomAnchor
-          constraintEqualToAnchor:self.titleButton.lastBaselineAnchor
-                         constant:marginBottom],
-    ];
-  }
-  [NSLayoutConstraint activateConstraints:verticalConstraints];
-  // Horizontal constraints.
-  [NSLayoutConstraint activateConstraints:@[
-    [self.titleButton.leadingAnchor
-        constraintEqualToAnchor:safeArea.leadingAnchor
-                       constant:sideMargins],
-    [safeArea.trailingAnchor
-        constraintGreaterThanOrEqualToAnchor:self.titleButton.trailingAnchor
-                                    constant:sideMargins],
-  ]];
+  NSMutableArray<NSLayoutConstraint*>* staticConstraints =
+      [[NSMutableArray alloc] init];
+  AppendHorizontalConstraintsForViews(staticConstraints, @[ self.titleButton ],
+                                      guide);
+  [NSLayoutConstraint activateConstraints:staticConstraints];
 }
 
 - (void)userDidTapTitleButton:(UIButton*)sender {

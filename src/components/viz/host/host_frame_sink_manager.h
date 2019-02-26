@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -35,6 +36,8 @@ namespace viz {
 class CompositorFrameSinkSupport;
 class FrameSinkManagerImpl;
 class SurfaceInfo;
+
+enum class ReportFirstSurfaceActivation { kYes, kNo };
 
 // Browser side wrapper of mojom::FrameSinkManager, to be used from the
 // UI thread. Manages frame sinks and is intended to replace all usage of
@@ -72,19 +75,29 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   // Sets a callback to be notified after Viz sent bad message to Viz host.
   void SetBadMessageReceivedFromGpuCallback(base::RepeatingClosure callback);
 
-  // Registers |frame_sink_id| will be used. This must be called before
-  // CreateCompositorFrameSink(Support) is called.
+  // Registers |frame_sink_id| so that a client can submit CompositorFrames
+  // using it. This must be called before creating a CompositorFrameSink or
+  // registering FrameSinkId hierarchy.
+  //
+  // When the client is done submitting CompositorFrames to |frame_sink_id| then
+  // InvalidateFrameSink() should be called.
   void RegisterFrameSinkId(const FrameSinkId& frame_sink_id,
-                           HostFrameSinkClient* client);
+                           HostFrameSinkClient* client,
+                           ReportFirstSurfaceActivation report_activation);
 
   // Returns true if RegisterFrameSinkId() was called with |frame_sink_id| and
   // InvalidateFrameSinkId() has not been called.
   bool IsFrameSinkIdRegistered(const FrameSinkId& frame_sink_id) const;
 
-  // Invalidates |frame_sink_id| which cleans up any dangling temporary
-  // references assigned to it. If there is a CompositorFrameSink for
-  // |frame_sink_id| then it will be destroyed and the message pipe to the
-  // client will be closed.
+  // Invalidates |frame_sink_id| when the client is done submitting
+  // CompositorFrames. If there is a CompositorFrameSink for |frame_sink_id|
+  // then it will be destroyed and the message pipe to the client will be
+  // closed.
+  //
+  // It's expected, but not enforced, that RegisterFrameSinkId() will never be
+  // called for |frame_sink_id| again. This is to avoid problems with re-entrant
+  // code. If the same client wants to submit CompositorFrames later a new
+  // FrameSinkId should be allocated.
   void InvalidateFrameSinkId(const FrameSinkId& frame_sink_id);
 
   // Tells FrameSinkManger to report when a synchronization event completes via
@@ -185,6 +198,10 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   void OnFrameTokenChanged(const FrameSinkId& frame_sink_id,
                            uint32_t frame_token) override;
 
+  void SetHitTestAsyncQueriedDebugRegions(
+      const FrameSinkId& root_frame_sink_id,
+      const std::vector<FrameSinkId>& hit_test_async_queried_debug_queue);
+
  private:
   friend class HostFrameSinkManagerTestApi;
   friend class HostFrameSinkManagerTestBase;
@@ -205,6 +222,11 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
 
     // The client to be notified of changes to this FrameSink.
     HostFrameSinkClient* client = nullptr;
+
+    // Indicates whether or not this client cares to receive
+    // FirstSurfaceActivation notifications.
+    ReportFirstSurfaceActivation report_activation =
+        ReportFirstSurfaceActivation::kYes;
 
     // The label to use whether this client would like reporting for
     // synchronization events.
@@ -259,7 +281,8 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   FrameSinkManagerImpl* frame_sink_manager_impl_ = nullptr;
 
   // Per CompositorFrameSink data.
-  base::flat_map<FrameSinkId, FrameSinkData> frame_sink_data_map_;
+  std::unordered_map<FrameSinkId, FrameSinkData, FrameSinkIdHash>
+      frame_sink_data_map_;
 
   // If |frame_sink_manager_ptr_| connection was lost.
   bool connection_was_lost_ = false;

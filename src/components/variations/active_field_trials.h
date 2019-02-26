@@ -63,6 +63,18 @@ void GetFieldTrialActiveGroupIdsAsStrings(base::StringPiece suffix,
 // which hasn't been chosen yet are NOT returned in this list.
 void GetSyntheticTrialGroupIdsAsString(std::vector<std::string>* output);
 
+// Sets the version of the seed that the current set of FieldTrials was
+// generated from.
+// TODO(crbug/507665): Move this to field_trials_provider once it moves
+// into components/variations
+void SetSeedVersion(const std::string& seed_version);
+
+// Gets the version of the seed that the current set of FieldTrials was
+// generated from.
+// TODO(crbug/507665): Move this to field_trials_provider once it moves
+// into components/variations
+const std::string& GetSeedVersion();
+
 // Expose some functions for testing. These functions just wrap functionality
 // that is implemented above.
 namespace testing {

@@ -30,13 +30,15 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/line/line_box_list.h"
 #include "third_party/blink/renderer/core/layout/text_run_constructor.h"
-#include "third_party/blink/renderer/platform/length_functions.h"
+#include "third_party/blink/renderer/platform/geometry/length_functions.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
 class AbstractInlineTextBox;
 class InlineTextBox;
+class NGInlineItem;
+class NGInlineItems;
 class NGOffsetMapping;
 
 enum class OnlyWhitespaceOrNbsp : unsigned { kUnknown = 0, kNo = 1, kYes = 2 };
@@ -312,7 +314,17 @@ class CORE_EXPORT LayoutText : public LayoutObject {
                                        unsigned* start,
                                        unsigned* end) const;
 
+  void AddInlineItem(NGInlineItem* item);
+  void ClearInlineItems();
+  bool HasValidInlineItems() const { return valid_ng_items_; }
+  const Vector<NGInlineItem*>& InlineItems() const;
+  // Inline items depends on context. It needs to be invalidated not only when
+  // it was inserted/changed but also it was moved.
+  void InvalidateInlineItems() { valid_ng_items_ = false; }
+
  protected:
+  virtual const NGInlineItems* GetNGInlineItems() const { return nullptr; }
+  virtual NGInlineItems* GetNGInlineItems() { return nullptr; }
   void WillBeDestroyed() override;
 
   void StyleWillChange(StyleDifference, const ComputedStyle&) final {}
@@ -386,6 +398,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   LayoutRect LocalVisualRectIgnoringVisibility() const final;
 
   bool CanOptimizeSetText() const;
+  void SetFirstTextBoxLogicalLeft(float text_width) const;
 
   // We put the bitfield first to minimize padding on 64-bit.
  protected:

@@ -8,6 +8,7 @@
 
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 
@@ -25,16 +26,15 @@ base::TimeDelta GetStrongAuthTimeout(PrefService* pref_service) {
 
 }  // namespace
 
-QuickUnlockStorage::QuickUnlockStorage(PrefService* pref_service)
-    : pref_service_(pref_service) {
-  fingerprint_storage_ = std::make_unique<FingerprintStorage>(pref_service);
-  pin_storage_prefs_ = std::make_unique<PinStoragePrefs>(pref_service);
+QuickUnlockStorage::QuickUnlockStorage(Profile* profile) : profile_(profile) {
+  fingerprint_storage_ = std::make_unique<FingerprintStorage>(profile);
+  pin_storage_prefs_ = std::make_unique<PinStoragePrefs>(profile->GetPrefs());
 }
 
 QuickUnlockStorage::~QuickUnlockStorage() {}
 
 void QuickUnlockStorage::MarkStrongAuth() {
-  last_strong_auth_ = base::TimeTicks::Now();
+  last_strong_auth_ = base::Time::Now();
   fingerprint_storage()->ResetUnlockAttemptCount();
   pin_storage_prefs()->ResetUnlockAttemptCount();
 }
@@ -42,17 +42,17 @@ void QuickUnlockStorage::MarkStrongAuth() {
 bool QuickUnlockStorage::HasStrongAuth() const {
   if (last_strong_auth_.is_null())
     return false;
-  return TimeSinceLastStrongAuth() < GetStrongAuthTimeout(pref_service_);
+  return TimeSinceLastStrongAuth() < GetStrongAuthTimeout(profile_->GetPrefs());
 }
 
 base::TimeDelta QuickUnlockStorage::TimeSinceLastStrongAuth() const {
   DCHECK(!last_strong_auth_.is_null());
-  return base::TimeTicks::Now() - last_strong_auth_;
+  return base::Time::Now() - last_strong_auth_;
 }
 
 base::TimeDelta QuickUnlockStorage::TimeUntilNextStrongAuth() const {
   DCHECK(!last_strong_auth_.is_null());
-  return GetStrongAuthTimeout(pref_service_) - TimeSinceLastStrongAuth();
+  return GetStrongAuthTimeout(profile_->GetPrefs()) - TimeSinceLastStrongAuth();
 }
 
 bool QuickUnlockStorage::IsFingerprintAuthenticationAvailable() const {

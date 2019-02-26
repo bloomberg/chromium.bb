@@ -12,7 +12,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "base/trace_event/trace_buffer.h"
-#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/traced_value.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -822,8 +822,8 @@ TEST_F(TraceEventAnalyzerTest, FindOf) {
 
   std::vector<TraceEvent> events;
   events.resize(num_events);
-  for (size_t i = 0; i < events.size(); ++i)
-    event_ptrs.push_back(&events[i]);
+  for (auto& i : events)
+    event_ptrs.push_back(&i);
   size_t bam_index = num_events/2;
   events[bam_index].name = "bam";
   Query query_bam = Query::EventName() == Query::String(events[bam_index].name);
@@ -907,8 +907,8 @@ TEST_F(TraceEventAnalyzerTest, CountMatches) {
   size_t num_named = 3;
   std::vector<TraceEvent> events;
   events.resize(num_events);
-  for (size_t i = 0; i < events.size(); ++i)
-    event_ptrs.push_back(&events[i]);
+  for (auto& i : events)
+    event_ptrs.push_back(&i);
   events[0].name = "one";
   events[2].name = "two";
   events[4].name = "three";

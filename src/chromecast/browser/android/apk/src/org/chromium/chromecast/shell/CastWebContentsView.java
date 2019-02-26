@@ -4,86 +4,89 @@
 
 package org.chromium.chromecast.shell;
 
-import android.app.Activity;
 import android.content.Context;
-import android.graphics.drawable.ColorDrawable;
+import android.content.Intent;
+import android.graphics.Color;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.IBinder;
+import android.support.annotation.Nullable;
+import android.view.LayoutInflater;
 import android.widget.FrameLayout;
 
-import org.chromium.chromecast.base.Observer;
-import org.chromium.components.embedder_support.view.ContentView;
-import org.chromium.components.embedder_support.view.ContentViewRenderView;
-import org.chromium.content_public.browser.WebContents;
-import org.chromium.ui.base.ActivityWindowAndroid;
-import org.chromium.ui.base.ViewAndroidDelegate;
-import org.chromium.ui.base.WindowAndroid;
+import org.chromium.base.Log;
+import org.chromium.chromecast.base.CastSwitches;
 
-class CastWebContentsView {
-    public static Observer<WebContents> onLayoutActivity(
-            Activity activity, FrameLayout layout, int backgroundColor) {
-        layout.setBackgroundColor(backgroundColor);
-        WindowAndroid window = new ActivityWindowAndroid(activity);
-        return onLayoutInternal(activity, layout, window, backgroundColor);
+/**
+ * View for displaying a WebContents in CastShell.
+ *
+ * <p>Intended to be used with {@link android.app.Presentation}.
+ *
+ * <p>
+ * Typically, this class is controlled by CastContentWindowAndroid through
+ * CastWebContentsSurfaceHelper. If the CastContentWindowAndroid is destroyed,
+ * CastWebContentsView should be removed from the activity holding it.
+ * Similarily, if the view is removed from a activity or the activity holding
+ * it is destroyed, CastContentWindowAndroid should be notified by intent.
+ */
+public class CastWebContentsView extends FrameLayout {
+    private static final String TAG = "cr_CastWebContentV";
+
+    private CastWebContentsSurfaceHelper mSurfaceHelper;
+
+    public CastWebContentsView(Context context) {
+        super(context);
+        initView();
     }
 
-    public static Observer<WebContents> onLayoutFragment(
-            Activity activity, FrameLayout layout, int backgroundColor) {
-        layout.setBackgroundColor(backgroundColor);
-        WindowAndroid window = new WindowAndroid(activity);
-        return onLayoutInternal(activity, layout, window, backgroundColor);
+    private void initView() {
+        addView(LayoutInflater.from(getContext())
+                        .inflate(R.layout.cast_web_contents_activity, null));
     }
 
-    private static Observer<WebContents> onLayoutInternal(
-            Activity activity, FrameLayout layout, WindowAndroid window, int backgroundColor) {
-        return (WebContents webContents) -> {
-            ContentViewRenderView contentViewRenderView = new ContentViewRenderView(activity) {
-                @Override
-                protected void onReadyToRender() {
-                    setOverlayVideoMode(true);
-                }
-            };
-            contentViewRenderView.onNativeLibraryLoaded(window);
-            contentViewRenderView.setSurfaceViewBackgroundColor(backgroundColor);
-            FrameLayout.LayoutParams matchParent = new FrameLayout.LayoutParams(
-                    FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
-            layout.addView(contentViewRenderView, matchParent);
+    public void onStart(Bundle startArgumentsBundle) {
+        Log.d(TAG, "onStart");
 
-            ContentView contentView = ContentView.createContentView(activity, webContents);
-            // TODO(derekjchow): productVersion
-            webContents.initialize("", ViewAndroidDelegate.createBasicDelegate(contentView),
-                    contentView, window, WebContents.createDefaultInternalsHolder());
+        if (mSurfaceHelper != null) {
+            return;
+        }
 
-            // Enable display of current webContents.
-            webContents.onShow();
-            layout.addView(contentView, matchParent);
-            contentView.setFocusable(true);
-            contentView.requestFocus();
-            contentViewRenderView.setCurrentWebContents(webContents);
-            return () -> {
-                layout.setForeground(new ColorDrawable(backgroundColor));
-                layout.removeView(contentView);
-                layout.removeView(contentViewRenderView);
-                contentViewRenderView.destroy();
-                window.destroy();
-            };
-        };
+        mSurfaceHelper = new CastWebContentsSurfaceHelper(
+                CastWebContentsScopes.onLayoutView(getContext(),
+                        findViewById(R.id.web_contents_container),
+                        CastSwitches.getSwitchValueColor(
+                                CastSwitches.CAST_APP_BACKGROUND_COLOR, Color.BLACK),
+                        this ::getHostWindowToken),
+                (Uri uri) -> sendIntentSync(CastWebContentsIntentUtils.onWebContentStopped(uri)));
+
+        CastWebContentsSurfaceHelper.StartParams params =
+                CastWebContentsSurfaceHelper.StartParams.fromBundle(startArgumentsBundle);
+        if (params == null) return;
+
+        mSurfaceHelper.onNewStartParams(params);
     }
 
-    public static Observer<WebContents> withoutLayout(Context context) {
-        return (WebContents webContents) -> {
-            WindowAndroid window = new WindowAndroid(context);
-            ContentView contentView = ContentView.createContentView(context, webContents);
-            // TODO(derekjchow): productVersion
-            webContents.initialize("", ViewAndroidDelegate.createBasicDelegate(contentView),
-                    contentView, window, WebContents.createDefaultInternalsHolder());
-            // Enable display of current webContents.
-            webContents.onShow();
-            return () -> {
-                if (!webContents.isDestroyed()) {
-                    // WebContents can be destroyed by the app before CastWebContentsComponent
-                    // unbinds, which is why we need this check.
-                    webContents.onHide();
-                }
-            };
-        };
+    public void onResume() {
+        Log.d(TAG, "onResume");
+    }
+
+    public void onPause() {
+        Log.d(TAG, "onPause");
+    }
+
+    public void onStop() {
+        Log.d(TAG, "onStop");
+        if (mSurfaceHelper != null) {
+            mSurfaceHelper.onDestroy();
+        }
+    }
+
+    @Nullable
+    protected IBinder getHostWindowToken() {
+        return getWindowToken();
+    }
+
+    private void sendIntentSync(Intent in) {
+        CastWebContentsIntentUtils.getLocalBroadcastManager().sendBroadcastSync(in);
     }
 }

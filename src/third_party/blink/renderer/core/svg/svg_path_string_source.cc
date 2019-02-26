@@ -26,12 +26,12 @@
 namespace blink {
 
 SVGPathStringSource::SVGPathStringSource(const String& string)
-    : is8_bit_source_(string.Is8Bit()),
+    : is_8bit_source_(string.Is8Bit()),
       previous_command_(kPathSegUnknown),
       string_(string) {
   DCHECK(!string.IsNull());
 
-  if (is8_bit_source_) {
+  if (is_8bit_source_) {
     current_.character8_ = string.Characters8();
     end_.character8_ = current_.character8_ + string.length();
   } else {
@@ -42,7 +42,7 @@ SVGPathStringSource::SVGPathStringSource(const String& string)
 }
 
 void SVGPathStringSource::EatWhitespace() {
-  if (is8_bit_source_)
+  if (is_8bit_source_)
     SkipOptionalSVGSpaces(current_.character8_, end_.character8_);
   else
     SkipOptionalSVGSpaces(current_.character16_, end_.character16_);
@@ -124,7 +124,7 @@ static bool MaybeImplicitCommand(unsigned lookahead,
 void SVGPathStringSource::SetErrorMark(SVGParseStatus status) {
   if (error_.Status() != SVGParseStatus::kNoError)
     return;
-  size_t locus = is8_bit_source_
+  size_t locus = is_8bit_source_
                      ? current_.character8_ - string_.Characters8()
                      : current_.character16_ - string_.Characters16();
   error_ = SVGParsingError(status, locus);
@@ -133,7 +133,7 @@ void SVGPathStringSource::SetErrorMark(SVGParseStatus status) {
 float SVGPathStringSource::ParseNumberWithError() {
   float number_value = 0;
   bool error;
-  if (is8_bit_source_)
+  if (is_8bit_source_)
     error = !ParseNumber(current_.character8_, end_.character8_, number_value);
   else
     error =
@@ -146,7 +146,7 @@ float SVGPathStringSource::ParseNumberWithError() {
 bool SVGPathStringSource::ParseArcFlagWithError() {
   bool flag_value = false;
   bool error;
-  if (is8_bit_source_)
+  if (is_8bit_source_)
     error = !ParseArcFlag(current_.character8_, end_.character8_, flag_value);
   else
     error = !ParseArcFlag(current_.character16_, end_.character16_, flag_value);
@@ -159,7 +159,7 @@ PathSegmentData SVGPathStringSource::ParseSegment() {
   DCHECK(HasMoreData());
   PathSegmentData segment;
   unsigned lookahead =
-      is8_bit_source_ ? *current_.character8_ : *current_.character16_;
+      is_8bit_source_ ? *current_.character8_ : *current_.character16_;
   SVGPathSegType command = MapLetterToSegmentType(lookahead);
   if (UNLIKELY(previous_command_ == kPathSegUnknown)) {
     // First command has to be a moveto.
@@ -168,7 +168,7 @@ PathSegmentData SVGPathStringSource::ParseSegment() {
       return segment;
     }
     // Consume command letter.
-    if (is8_bit_source_)
+    if (is_8bit_source_)
       current_.character8_++;
     else
       current_.character16_++;
@@ -181,7 +181,7 @@ PathSegmentData SVGPathStringSource::ParseSegment() {
     }
   } else {
     // Valid explicit command.
-    if (is8_bit_source_)
+    if (is_8bit_source_)
       current_.character8_++;
     else
       current_.character16_++;

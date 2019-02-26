@@ -46,7 +46,9 @@ class PLATFORM_EXPORT DirectConvolver {
   DirectConvolver(size_t input_block_size,
                   std::unique_ptr<AudioFloatArray> convolution_kernel);
 
-  void Process(const float* source_p, float* dest_p, size_t frames_to_process);
+  void Process(const float* source_p,
+               float* dest_p,
+               uint32_t frames_to_process);
 
   void Reset();
 

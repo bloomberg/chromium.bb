@@ -159,305 +159,37 @@ documentation](https://code.visualstudio.com/docs/customization/overview) for an
 introduction to VS Code customization.
 
 ### Workspace Settings
-Open the file chromium/src/.vscode/settings.json and add the following settings.
-Remember to replace `<full_path_to_your_home>`!
-
+Open the file [//tools/vscode/settings.json5](/tools/vscode/settings.json5),
+and check out the default settings there. Feel free to commit added or removed
+settings to enable better team development, or change settings locally to suit
+personal preference. Remember to replace `<full_path_to_your_home>`! To use
+these settings wholesale, enter the following commands into your terminal while
+at the src directory:
 ```
-{
-  // Default tab size of 2.
-  "editor.tabSize": 2,
-  // Do not figure out tab size from opening a file.
-  "editor.detectIndentation": false,
-  // Add a line at 80 characters.
-  "editor.rulers": [80],
-  // Optional: Highlight current line at the left of the editor.
-  "editor.renderLineHighlight": "gutter",
-  // Optional: Don't automatically add closing brackets. It gets in the way.
-  "editor.autoClosingBrackets": false,
-  // Optional: Enable a tiny 30k feet view of your doc.
-  "editor.minimap.enabled": true,
-  "editor.minimap.maxColumn": 80,
-  "editor.minimap.renderCharacters": false,
-  // Trim tailing whitespace on save.
-  "files.trimTrailingWhitespace": true,
-  // Optional: Do not open files in 'preview' mode. Opening a new file in can
-  //           replace an existing one in preview mode, which can be confusing.
-  "workbench.editor.enablePreview": false,
-  // Optional: Same for files opened from quick open (Ctrl+P).
-  "workbench.editor.enablePreviewFromQuickOpen": false,
-  // Optional: Don't continuously fetch remote changes.
-  "git.autofetch": false,
-
-  "files.associations": {
-    // Adds xml syntax highlighting for grd files.
-    "*.grd" : "xml",
-    // Optional: .gn and .gni are not JavaScript, but at least it gives some
-    // approximate syntax highlighting. Ignore the linter warnings!
-    "*.gni" : "javascript",
-    "*.gn" : "javascript"
-  },
-
-  "files.exclude": {
-    // Ignore build output folders.
-    "out*/**": true
-  },
-
-  "files.watcherExclude": {
-    // Don't watch out*/ and third_party/ for changes to fix an issue
-    // where vscode doesn't notice that files have changed.
-    // https://github.com/Microsoft/vscode/issues/3998
-    // There is currently another issue that requires a leading **/ for
-    // watcherExlude. Beware that this pattern might affect other out* folders
-    // like src/cc/output/.
-    "**/out*/**": true,
-    "**/third_party/**": true
-  },
-
-  // Wider author column for annotator extension.
-  "annotator.annotationColumnWidth": "24em",
-
-  // C++ clang format settings.
-  "C_Cpp.clang_format_path": "${workspaceRoot}/third_party/depot_tools/clang-format",
-  "C_Cpp.clang_format_sortIncludes": true,
-  "C_Cpp.clang_format_formatOnSave": true,
-
-  // YouCompleteMe
-  "ycmd.path": "<full_path_to_your_home>/.ycmd",
-  "ycmd.global_extra_config": "${workspaceRoot}/tools/vim/chromium.ycm_extra_conf.py",
-  "ycmd.confirm_extra_conf": false,
-}
+$ mkdir .vscode/
+$ cp tools/vscode/settings.json5 .vscode/settings.json
 ```
 
 ### Tasks
 Next, we'll tell VS Code how to compile our code and how to read warnings and
-errors from the build output. Copy the code below to
-chromium/src/.vscode/tasks.json. This will provide 5 tasks to do basic things.
-You might have to adjust the commands to your situation and needs.
-
+errors from the build output. Open the file
+[//tools/vscode/tasks.json5](/tools/vscode/tasks.json5). This will provide 5
+tasks to do basic things. You might have to adjust the commands to your
+situation and needs. To use these settings wholesale, enter the following
+command into your terminal:
 ```
-{
-  "version": "0.1.0",
-  "runner": "terminal",
-  "showOutput": "always",
-  "echoCommand": true,
-  "tasks": [
-  {
-    "taskName": "1-build_chrome_debug",
-    "command": "ninja -C out/Debug -j 2000 chrome",
-    "isShellCommand": true,
-    "isTestCommand": true,
-    "problemMatcher": [
-    {
-      "owner": "cpp",
-      "fileLocation": ["relative", "${workspaceRoot}"],
-      "pattern": {
-        "regexp": "^../../(.*):(\\d+):(\\d+):\\s+(warning|\\w*\\s?error):\\s+(.*)$",
-        "file": 1, "line": 2, "column": 3, "severity": 4, "message": 5
-      }
-    },
-    {
-      "owner": "cpp",
-      "fileLocation": ["relative", "${workspaceRoot}"],
-      "pattern": {
-        "regexp": "^../../(.*?):(.*):\\s+(warning|\\w*\\s?error):\\s+(.*)$",
-        "file": 1, "severity": 3, "message": 4
-      }
-    }]
-  },
-  {
-    "taskName": "2-build_chrome_release",
-    "command": "ninja -C out/Release -j 2000 chrome",
-    "isShellCommand": true,
-    "isBuildCommand": true,
-    "problemMatcher": [
-    {
-      "owner": "cpp",
-      "fileLocation": ["relative", "${workspaceRoot}"],
-      "pattern": {
-        "regexp": "^../../(.*):(\\d+):(\\d+):\\s+(warning|\\w*\\s?error):\\s+(.*)$",
-        "file": 1, "line": 2, "column": 3, "severity": 4, "message": 5
-      }
-    },
-    {
-      "owner": "cpp",
-      "fileLocation": ["relative", "${workspaceRoot}"],
-      "pattern": {
-        "regexp": "^../../(.*?):(.*):\\s+(warning|\\w*\\s?error):\\s+(.*)$",
-        "file": 1, "severity": 3, "message": 4
-      }
-    }]
-  },
-  {
-    "taskName": "3-build_all_debug",
-    "command": "ninja -C out/Debug -j 2000",
-    "isShellCommand": true,
-    "problemMatcher": [
-    {
-      "owner": "cpp",
-      "fileLocation": ["relative", "${workspaceRoot}"],
-      "pattern": {
-        "regexp": "^../../(.*):(\\d+):(\\d+):\\s+(warning|\\w*\\s?error):\\s+(.*)$",
-        "file": 1, "line": 2, "column": 3, "severity": 4, "message": 5
-      }
-    },
-    {
-      "owner": "cpp",
-      "fileLocation": ["relative", "${workspaceRoot}"],
-      "pattern": {
-        "regexp": "^../../(.*?):(.*):\\s+(warning|\\w*\\s?error):\\s+(.*)$",
-        "file": 1, "severity": 3, "message": 4
-      }
-    }]
-  },
-  {
-    "taskName": "4-build_all_release",
-    "command": "ninja -C out/Release -j 2000",
-    "isShellCommand": true,
-    "problemMatcher": [
-    {
-      "owner": "cpp",
-      "fileLocation": ["relative", "${workspaceRoot}"],
-      "pattern": {
-        "regexp": "^../../(.*):(\\d+):(\\d+):\\s+(warning|\\w*\\s?error):\\s+(.*)$",
-        "file": 1, "line": 2, "column": 3, "severity": 4, "message": 5
-      }
-    },
-    {
-      "owner": "cpp",
-      "fileLocation": ["relative", "${workspaceRoot}"],
-      "pattern": {
-        "regexp": "^../../(.*?):(.*):\\s+(warning|\\w*\\s?error):\\s+(.*)$",
-        "file": 1, "severity": 3, "message": 4
-      }
-    }]
-  },
-  {
-    "taskName": "5-build_test_debug",
-    "command": "ninja -C out/Debug -j 2000 unit_tests components_unittests browser_tests",
-    "isShellCommand": true,
-    "problemMatcher": [
-    {
-      "owner": "cpp",
-      "fileLocation": ["relative", "${workspaceRoot}"],
-      "pattern": {
-        "regexp": "^../../(.*):(\\d+):(\\d+):\\s+(warning|\\w*\\s?error):\\s+(.*)$",
-        "file": 1, "line": 2, "column": 3, "severity": 4, "message": 5
-      }
-    },
-    {
-      "owner": "cpp",
-      "fileLocation": ["relative", "${workspaceRoot}"],
-      "pattern": {
-        "regexp": "^../../(.*?):(.*):\\s+(warning|\\w*\\s?error):\\s+(.*)$",
-        "file": 1, "severity": 3, "message": 4
-      }
-    }]
-  },
-  {
-    "taskName": "6-build_current_file",
-    "command": "compile_single_file --build-dir=out/Debug --file-path=${file}",
-    "isShellCommand": true,
-    "problemMatcher": [
-    {
-      "owner": "cpp",
-      "fileLocation": ["relative", "${workspaceRoot}"],
-      "pattern": {
-        "regexp": "^../../(.*):(\\d+):(\\d+):\\s+(warning|\\w*\\s?error):\\s+(.*)$",
-        "file": 1, "line": 2, "column": 3, "severity": 4, "message": 5
-      }
-    },
-    {
-      "owner": "cpp",
-      "fileLocation": ["relative", "${workspaceRoot}"],
-      "pattern": {
-        "regexp": "^../../(.*?):(.*):\\s+(warning|\\w*\\s?error):\\s+(.*)$",
-        "file": 1, "severity": 3, "message": 4
-      }
-    }]
-  }]
-}
+$ cp tools/vscode/tasks.json5 .vscode/tasks.json
 ```
 
 ### Launch Commands
 Launch commands are the equivalent of `F5` in Visual Studio: They launch some
 program or a debugger. Optionally, they can run some task defined in
 `tasks.json`. Launch commands can be run from the debug view (`Ctrl+Shift+D`).
-Copy the code below to `//.vscode/launch.json` and adjust them to your situation
-and needs.
+Open the file at [//tools/vscode/launch.json5](/tools/vscode/launch.json5) and
+adjust the example launch commands to your situation and needs. To use these
+settings wholesale, enter the following command into your terminal:
 ```
-{
-  "version": "0.2.0",
-  "configurations": [
-  {
-    "name": "Chrome Debug",
-    "type": "cppdbg",
-    "request": "launch",
-    "targetArchitecture": "x64",
-    "program": "${workspaceRoot}/out/Debug/chrome",
-    "args": [],  // Optional command line args
-    "preLaunchTask": "1-build_chrome_debug",
-    "stopAtEntry": false,
-    "cwd": "${workspaceRoot}/out/Debug/",
-    "environment": [],
-    "externalConsole": true
-  },
-  {
-    "name": "Chrome Release",
-    "type": "cppdbg",
-    "request": "launch",
-    "targetArchitecture": "x64",
-    "program": "${workspaceRoot}/out/Release/chrome",
-    "args": [],  // Optional command line args
-    "preLaunchTask": "2-build_chrome_release",
-    "stopAtEntry": false,
-    "cwd": "${workspaceRoot}/out/Release/",
-    "environment": [],
-    "externalConsole": true
-  },
-  {
-    "name": "Custom Test Debug",
-    "type": "cppdbg",
-    "request": "launch",
-    "targetArchitecture": "x64",
-    "program": "${workspaceRoot}/out/Debug/unit_tests",
-    "args": ["--gtest_filter=*",
-              "--single_process",
-              "--ui-test-action-max-timeout=1000000",
-              "--test-launcher-timeout=1000000"],
-    "preLaunchTask": "5-build_test_debug",
-    "stopAtEntry": false,
-    "cwd": "${workspaceRoot}/out/Debug/",
-    "environment": [],
-    "externalConsole": true
-  },
-  {
-    "name": "Attach Debug",
-    "type": "cppdbg",
-    "request": "launch",
-    "targetArchitecture": "x64",
-    "program": "${workspaceRoot}/out/Debug/chrome",
-    "args": ["--remote-debugging-port=2224"],
-    "stopAtEntry": false,
-    "cwd": "${workspaceRoot}/out/Debug/",
-    "environment": [],
-    "externalConsole": false
-  },
-  {
-    // Must be running before launching: out/Debug/bin/chrome_public_apk gdb --ide
-    "name": "Attach Android",
-    "type": "cppdbg",
-    "request": "launch",
-    "targetArchitecture": "arm",
-    "program": "/tmp/adb-gdb-support-${env:USER}/app_process",
-    "miDebuggerPath": "/tmp/adb-gdb-support-${env:USER}/gdb",
-    "miDebuggerServerAddress": "ignored",
-    "cwd": "${workspaceRoot}",
-    "customLaunchSetupCommands": [{
-      "text": "-interpreter-exec console \"source -v /tmp/adb-gdb-support-${env:USER}/gdbinit\""
-    }],
-    "launchCompleteCommand": "None",
-  }]
-}
+$ cp tools/vscode/launch.json5 .vscode/launch.json
 ```
 
 ### Key Bindings
@@ -479,59 +211,12 @@ For instance, to install eclipse keymaps, install the
 `vscode-eclipse-keybindings` extension. More keymaps can be found
 [in the marketplace](https://marketplace.visualstudio.com/search?target=vscode&category=Keymaps).
 
-Here are some key bindings that are likely to be useful for you:
-
+Some key bindings that are likely to be useful for you are available at
+[//tools/vscode/keybindings.json5](/tools/vscode/keybindings.json5). Please
+take a look and adjust them to your situation and needs. To use these settings
+wholesale, enter the following command into your terminal:
 ```
-// Place your key bindings in this file to overwrite the defaults
-[
-// Run the task marked as "isTestCommand": true, see tasks.json.
-{ "key": "ctrl+shift+t",       "command": "workbench.action.tasks.test" },
-// Jump to the previous change in the built-in diff tool.
-{ "key": "ctrl+up",            "command": "workbench.action.compareEditor.previousChange" },
-// Jump to the next change in the built-in diff tool.
-{ "key": "ctrl+down",          "command": "workbench.action.compareEditor.nextChange" },
-// Jump to previous location in the editor (useful to get back from viewing a symbol definition).
-{ "key": "alt+left",           "command": "workbench.action.navigateBack" },
-// Jump to next location in the editor.
-{ "key": "alt+right",          "command": "workbench.action.navigateForward" },
-// Get a blame view of the current file. Requires the annotator extension.
-{ "key": "ctrl+alt+a",         "command": "annotator.annotate" },
-// Toggle header/source with the Toggle Header/Source extension (overrides the
-// key binding from the C/C++ extension as I found it to be slow).
-{ "key": "alt+o",              "command": "togglehs.toggleHS" },
-// Quickly run a task, see tasks.json. Since we named them 1-, 2- etc., it is
-// suffucient to press the corresponding number.
-{ "key": "ctrl+r",             "command": "workbench.action.tasks.runTask",
-                                  "when": "!inDebugMode" },
-// The following keybindings are useful on laptops with small keyboards such as
-// Chromebooks that don't provide all keys.
-{ "key": "shift+alt+down",     "command": "cursorColumnSelectDown",
-                                  "when": "editorTextFocus" },
-{ "key": "shift+alt+left",     "command": "cursorColumnSelectLeft",
-                                  "when": "editorTextFocus" },
-{ "key": "shift+alt+pagedown", "command": "cursorColumnSelectPageDown",
-                                  "when": "editorTextFocus" },
-{ "key": "shift+alt+pageup",   "command": "cursorColumnSelectPageUp",
-                                  "when": "editorTextFocus" },
-{ "key": "shift+alt+right",    "command": "cursorColumnSelectRight",
-                                  "when": "editorTextFocus" },
-{ "key": "shift+alt+up",       "command": "cursorColumnSelectUp",
-                                  "when": "editorTextFocus" },
-{ "key": "alt+down",           "command": "scrollPageDown",
-                                  "when": "editorTextFocus" },
-{ "key": "alt+up",             "command": "scrollPageUp",
-                                  "when": "editorTextFocus" },
-{ "key": "alt+backspace",      "command": "deleteRight",
-                                  "when": "editorTextFocus && !editorReadonly" },
-{ "key": "ctrl+right",         "command": "cursorEnd",
-                                  "when": "editorTextFocus" },
-{ "key": "ctrl+shift+right",   "command": "cursorEndSelect",
-                                  "when": "editorTextFocus" },
-{ "key": "ctrl+left",          "command": "cursorHome",
-                                  "when": "editorTextFocus" },
-{ "key": "ctrl+shift+left",    "command": "cursorHomeSelect",
-                                  "when": "editorTextFocus" },
-]
+$ cp tools/vscode/keybindings.json5 .vscode/keybindings.json
 ```
 
 ### Tips

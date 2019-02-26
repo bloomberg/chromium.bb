@@ -6,13 +6,14 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "components/omnibox/browser/location_bar_model.h"
 #include "components/security_state/core/security_state_ui.h"
-#include "components/toolbar/toolbar_model.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_consumer.h"
+#import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_util.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
@@ -41,13 +42,13 @@
 @synthesize consumer = _consumer;
 @synthesize webState = _webState;
 @synthesize webStateList = _webStateList;
-@synthesize toolbarModel = _toolbarModel;
+@synthesize locationBarModel = _locationBarModel;
 
-- (instancetype)initWithToolbarModel:(ToolbarModel*)toolbarModel {
-  DCHECK(toolbarModel);
+- (instancetype)initWithLocationBarModel:(LocationBarModel*)locationBarModel {
+  DCHECK(locationBarModel);
   self = [super init];
   if (self) {
-    _toolbarModel = toolbarModel;
+    _locationBarModel = locationBarModel;
     _webStateObserver = std::make_unique<web::WebStateObserverBridge>(self);
     _webStateListObserver = std::make_unique<WebStateListObserverBridge>(self);
   }
@@ -184,7 +185,7 @@
 - (void)notifyConsumerOfChangedLocation {
   [self.consumer updateLocationText:[self currentLocationString]];
   GURL URL = self.webState->GetVisibleURL();
-  BOOL isNTP = URL.GetOrigin() == kChromeUINewTabURL;
+  BOOL isNTP = IsURLNewTabPage(URL);
   if (isNTP) {
     [self.consumer updateAfterNavigatingToNTP];
   }
@@ -192,32 +193,32 @@
 }
 
 - (void)notifyConsumerOfChangedSecurityIcon {
-  [self.consumer
-      updateLocationIcon:[self currentLocationIcon]
-      securityStatusText:base::SysUTF16ToNSString(
-                             self.toolbarModel->GetSecureAccessibilityText())];
+  [self.consumer updateLocationIcon:[self currentLocationIcon]
+                 securityStatusText:base::SysUTF16ToNSString(
+                                        self.locationBarModel
+                                            ->GetSecureAccessibilityText())];
 }
 
 #pragma mark Location helpers
 
 - (NSString*)currentLocationString {
-  base::string16 string = self.toolbarModel->GetURLForDisplay();
+  base::string16 string = self.locationBarModel->GetURLForDisplay();
   return base::SysUTF16ToNSString(string);
 }
 
 #pragma mark Security status icon helpers
 
 - (UIImage*)currentLocationIcon {
-  if (!self.toolbarModel->ShouldDisplayURL()) {
+  if (!self.locationBarModel->ShouldDisplayURL()) {
     return nil;
   }
 
-  if (self.toolbarModel->IsOfflinePage()) {
+  if (self.locationBarModel->IsOfflinePage()) {
     return [self imageForOfflinePage];
   }
 
   return GetLocationBarSecurityIconForSecurityState(
-      self.toolbarModel->GetSecurityLevel(true));
+      self.locationBarModel->GetSecurityLevel(true));
 }
 
 // Returns a location icon for offline pages.

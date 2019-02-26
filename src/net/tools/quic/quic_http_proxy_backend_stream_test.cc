@@ -136,7 +136,6 @@ class TestQuicServerStreamDelegate
   bool send_success_;
   bool did_complete_;
   std::unique_ptr<QuicHttpProxyBackendStream> quic_backend_stream_;
-  base::test::ScopedTaskEnvironment scoped_task_environment;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_ =
       base::ThreadTaskRunnerHandle::Get();
   base::RunLoop run_loop_;
@@ -185,6 +184,7 @@ class QuicHttpProxyBackendStreamTest : public QuicTest {
   }
 
  protected:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::string backend_url_;
   std::unique_ptr<QuicHttpProxyBackend> proxy_backend_;
   std::unique_ptr<QuicHttpProxyBackend> proxy_backend_fail_;

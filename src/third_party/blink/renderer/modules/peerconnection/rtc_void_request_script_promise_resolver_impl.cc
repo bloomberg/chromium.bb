@@ -14,8 +14,8 @@ RTCVoidRequestScriptPromiseResolverImpl*
 RTCVoidRequestScriptPromiseResolverImpl::Create(ScriptPromiseResolver* resolver,
                                                 const char* interface_name,
                                                 const char* property_name) {
-  return new RTCVoidRequestScriptPromiseResolverImpl(resolver, interface_name,
-                                                     property_name);
+  return MakeGarbageCollected<RTCVoidRequestScriptPromiseResolverImpl>(
+      resolver, interface_name, property_name);
 }
 
 RTCVoidRequestScriptPromiseResolverImpl::

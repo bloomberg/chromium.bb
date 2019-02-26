@@ -36,7 +36,6 @@
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chrome/browser/chromeos/settings/install_attributes.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/policy/device_management_service_configuration.h"
 #include "chrome/common/pref_names.h"
@@ -52,6 +51,7 @@
 #include "chromeos/network/onc/onc_certificate_importer_impl.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/cros_settings_provider.h"
+#include "chromeos/settings/install_attributes.h"
 #include "chromeos/settings/timezone_settings.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
@@ -244,6 +244,11 @@ void BrowserPolicyConnectorChromeOS::Shutdown() {
 
 bool BrowserPolicyConnectorChromeOS::IsEnterpriseManaged() const {
   return chromeos::InstallAttributes::Get()->IsEnterpriseManaged();
+}
+
+bool BrowserPolicyConnectorChromeOS::HasMachineLevelPolicies() {
+  NOTREACHED() << "This method is only defined for desktop Chrome";
+  return false;
 }
 
 bool BrowserPolicyConnectorChromeOS::IsCloudManaged() const {

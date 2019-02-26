@@ -13,7 +13,7 @@
 #include "ui/compositor/compositor_export.h"
 
 namespace cc {
-class ScopedDeferCommits;
+class ScopedDeferMainFrameUpdate;
 }
 
 namespace ui {
@@ -45,7 +45,8 @@ class COMPOSITOR_EXPORT CompositorLockManager {
   std::unique_ptr<CompositorLock> GetCompositorLock(
       CompositorLockClient* client,
       base::TimeDelta timeout,
-      std::unique_ptr<cc::ScopedDeferCommits> scoped_defer_commits);
+      std::unique_ptr<cc::ScopedDeferMainFrameUpdate>
+          scoped_defer_main_frame_update);
 
   void set_allow_locks_to_extend_timeout(bool allowed) {
     allow_locks_to_extend_timeout_ = allowed;
@@ -92,10 +93,10 @@ class COMPOSITOR_EXPORT CompositorLock {
   // The |client| is informed about events from the CompositorLock. The
   // |delegate| is used to perform actual unlocking. If |timeout| is zero then
   // no timeout is scheduled, else a timeout is scheduled on the |task_runner|.
-  explicit CompositorLock(
-      CompositorLockClient* client,
-      base::WeakPtr<CompositorLockManager> manager,
-      std::unique_ptr<cc::ScopedDeferCommits> scoped_defer_commits);
+  explicit CompositorLock(CompositorLockClient* client,
+                          base::WeakPtr<CompositorLockManager> manager,
+                          std::unique_ptr<cc::ScopedDeferMainFrameUpdate>
+                              scoped_defer_main_frame_update);
   ~CompositorLock();
 
  private:
@@ -105,7 +106,8 @@ class COMPOSITOR_EXPORT CompositorLock {
   void TimeoutLock();
 
   CompositorLockClient* const client_;
-  std::unique_ptr<cc::ScopedDeferCommits> scoped_defer_commits_;
+  std::unique_ptr<cc::ScopedDeferMainFrameUpdate>
+      scoped_defer_main_frame_update_;
   base::WeakPtr<CompositorLockManager> manager_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorLock);

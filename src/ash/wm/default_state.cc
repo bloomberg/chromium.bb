@@ -214,6 +214,8 @@ void DefaultState::HandleWorkspaceEvents(WindowState* window_state,
         window_state->SetBoundsDirectAnimated(bounds);
       return;
     }
+    case WM_EVENT_SYSTEM_UI_AREA_CHANGED:
+      break;
     default:
       NOTREACHED() << "Unknown event:" << event->type();
   }
@@ -392,7 +394,8 @@ void DefaultState::SetBounds(WindowState* window_state,
     window_state->SetBoundsDirect(event->requested_bounds());
   } else if (!SetMaximizedOrFullscreenBounds(window_state)) {
     if (event->animate()) {
-      window_state->SetBoundsDirectAnimated(event->requested_bounds());
+      window_state->SetBoundsDirectAnimated(event->requested_bounds(),
+                                            event->duration());
     } else {
       window_state->SetBoundsConstrained(event->requested_bounds());
     }

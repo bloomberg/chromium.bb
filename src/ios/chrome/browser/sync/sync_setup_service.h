@@ -5,16 +5,11 @@
 #ifndef IOS_CHROME_BROWSER_SYNC_SYNC_SETUP_SERVICE_H_
 #define IOS_CHROME_BROWSER_SYNC_SYNC_SETUP_SERVICE_H_
 
-#include <map>
 #include <memory>
 
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/syncer_error.h"
-
-class PrefService;
 
 namespace syncer {
 class SyncService;
@@ -45,11 +40,10 @@ class SyncSetupService : public KeyedService {
     kSyncAutofill,
     kSyncPreferences,
     kSyncReadingList,
-    kSyncUserEvent,
     kNumberOfSyncableDatatypes
   };
 
-  SyncSetupService(syncer::SyncService* sync_service, PrefService* prefs);
+  explicit SyncSetupService(syncer::SyncService* sync_service);
   ~SyncSetupService() override;
 
   // Returns the |syncer::ModelType| associated to the given
@@ -77,8 +71,8 @@ class SyncSetupService : public KeyedService {
   void SetDataTypeEnabled(syncer::ModelType datatype, bool enabled);
 
   // Returns whether the user needs to enter a passphrase or enable sync to make
-  // sync work.
-  bool UserActionIsRequiredToHaveSyncWork();
+  // tab sync work.
+  bool UserActionIsRequiredToHaveTabSyncWork();
 
   // Returns whether all datatypes are being synced.
   virtual bool IsSyncingAllDataTypes() const;
@@ -111,7 +105,6 @@ class SyncSetupService : public KeyedService {
   void SetSyncEnabledWithoutChangingDatatypes(bool sync_enabled);
 
   syncer::SyncService* const sync_service_;
-  PrefService* const prefs_;
   syncer::ModelTypeSet user_selectable_types_;
 
   // Prevents Sync from running until configuration is complete.

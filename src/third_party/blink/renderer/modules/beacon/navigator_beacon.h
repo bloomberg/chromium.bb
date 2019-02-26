@@ -24,6 +24,8 @@ class NavigatorBeacon final : public GarbageCollectedFinalized<NavigatorBeacon>,
   static const char kSupplementName[];
 
   static NavigatorBeacon& From(Navigator&);
+
+  explicit NavigatorBeacon(Navigator&);
   virtual ~NavigatorBeacon();
 
   static bool sendBeacon(ScriptState*,
@@ -35,8 +37,6 @@ class NavigatorBeacon final : public GarbageCollectedFinalized<NavigatorBeacon>,
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit NavigatorBeacon(Navigator&);
-
   bool SendBeaconImpl(ScriptState*,
                       const String&,
                       const ArrayBufferViewOrBlobOrStringOrFormData&,

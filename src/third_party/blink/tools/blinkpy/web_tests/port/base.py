@@ -47,7 +47,6 @@ from blinkpy.common import find_files
 from blinkpy.common import read_checksum_from_png
 from blinkpy.common.memoized import memoized
 from blinkpy.common.path_finder import PathFinder
-from blinkpy.common.path_finder import TESTS_IN_BLINK
 from blinkpy.common.system.executive import ScriptError
 from blinkpy.common.system.path import abspath_to_uri
 from blinkpy.w3c.wpt_manifest import WPTManifest
@@ -103,7 +102,8 @@ FONT_FILES = [
 WPT_FINGERPRINT = 'Nxvaj3+bY3oVrTc+Jp7m3E3sB1n3lXtnMDCyBsqEXiY='
 # One for 127.0.0.1.sxg.pem
 SXG_FINGERPRINT = '55qC1nKu2A88ESbFmk5sTPQS/ScG+8DD7P+2bgFA9iM='
-
+# And one for external/wpt/signed-exchange/resources/127.0.0.1.sxg.pem
+SXG_WPT_FINGERPRINT = '0Rt4mT6SJXojEMHTnKnlJ/hBKMBcI4kteBlhR1eTTdk='
 
 class Port(object):
     """Abstract class for Port-specific hooks for the layout_test package."""
@@ -222,7 +222,6 @@ class Port(object):
         if not hasattr(options, 'target') or not options.target:
             self.set_option_default('target', self._options.configuration)
         self._test_configuration = None
-        self._reftest_list = {}
         self._results_directory = None
         self._virtual_test_suites = None
 
@@ -232,7 +231,7 @@ class Port(object):
 
     def primary_driver_flag(self):
         """Returns the driver flag that is used for flag-specific expectations and baselines. This
-           is the flag in LayoutTests/additional-driver-flag.setting, if present, otherwise the
+           is the flag in web_tests/additional-driver-flag.setting, if present, otherwise the
            first flag passed by --additional-driver-flag.
         """
         flag_file = self._filesystem.join(self.layout_tests_dir(), 'additional-driver-flag.setting')
@@ -253,10 +252,17 @@ class Port(object):
             flags += [
                 '--run-web-tests',
                 '--ignore-certificate-errors-spki-list=' + WPT_FINGERPRINT +
-                ',' + SXG_FINGERPRINT,
+                ',' + SXG_FINGERPRINT + ',' + SXG_WPT_FINGERPRINT,
                 '--user-data-dir']
-        if TESTS_IN_BLINK:
-            flags += ['--tests-in-blink']
+
+        # If we're already repeating the tests more than once, then we're not
+        # particularly concerned with speed. Resetting the shell between tests
+        # increases test run time by 2-5X, but provides more consistent results
+        # [less state leaks between tests].
+        if (self.get_option('reset_shell_between_tests') or
+            self.get_option('repeat_each') > 1 or
+            self.get_option('iterations') > 1):
+            flags += ['--reset-shell-between-tests']
         return flags
 
     def supports_per_test_timeout(self):
@@ -286,7 +292,7 @@ class Port(object):
             # Relaunching the driver periodically helps keep it under control.
             return 40
         # The default is infinite batch size.
-        return None
+        return 0
 
     def default_child_processes(self):
         """Returns the number of child processes to use for this port."""
@@ -365,7 +371,7 @@ class Port(object):
         if not self._check_driver_build_up_to_date(self.get_option('configuration')):
             return exit_codes.UNEXPECTED_ERROR_EXIT_STATUS
 
-        if self.get_option('pixel_tests') and not self.check_image_diff():
+        if not self._check_file_exists(self._path_to_image_diff(), 'image_diff'):
             return exit_codes.UNEXPECTED_ERROR_EXIT_STATUS
 
         if self._dump_reader and not self._dump_reader.check_is_functional():
@@ -376,14 +382,7 @@ class Port(object):
 
         return exit_codes.OK_EXIT_STATUS
 
-    def _check_driver(self):
-        driver_path = self._path_to_driver()
-        if not self._filesystem.exists(driver_path):
-            _log.error('%s was not found at %s', self.driver_name(), driver_path)
-            return False
-        return True
-
-    def check_sys_deps(self, needs_http):
+    def check_sys_deps(self):
         """Checks whether the system is properly configured.
 
         Most checks happen during invocation of the driver prior to running
@@ -393,14 +392,6 @@ class Port(object):
             An exit status code.
         """
         return exit_codes.OK_EXIT_STATUS
-
-    def check_image_diff(self):
-        """Checks whether image_diff binary exists."""
-        image_diff_path = self._path_to_image_diff()
-        if not self._filesystem.exists(image_diff_path):
-            _log.error('image_diff was not found at %s', image_diff_path)
-            return False
-        return True
 
     def check_httpd(self):
         httpd_path = self.path_to_apache()
@@ -538,7 +529,7 @@ class Port(object):
         platform specific.
 
         Args:
-            test_name: Name of test file (usually a relative path under LayoutTests/)
+            test_name: Name of test file (usually a relative path under web_tests/)
             extension: File extension of the expected results, including dot;
                 e.g. '.txt' or '.png'.  This should not be None, but may be an
                 empty string.
@@ -591,7 +582,7 @@ class Port(object):
         the other baseline and filename manipulation routines.
 
         Args:
-            test_name: Name of test file (usually a relative path under LayoutTests/)
+            test_name: Name of test file (usually a relative path under web_tests/)
             extension: File extension of the expected results, including dot;
                 e.g. '.txt' or '.png'.  This should not be None, but may be an
                 empty string.
@@ -606,7 +597,8 @@ class Port(object):
         Returns:
             An absolute path to its expected results, or None if not found.
         """
-        # FIXME: The [0] here is very mysterious, as is the destructured return.
+        # The [0] means the first expected baseline (which is the one to be
+        # used) in the fallback paths.
         platform_dir, baseline_filename = self.expected_baselines(test_name, extension, match=match)[0]
         if platform_dir:
             return self._filesystem.join(platform_dir, baseline_filename)
@@ -618,6 +610,30 @@ class Port(object):
 
         if return_default:
             return self._filesystem.join(self.layout_tests_dir(), baseline_filename)
+        return None
+
+    def fallback_expected_filename(self, test_name, extension):
+        """Given a test name, returns an absolute path to its next fallback baseline.
+        Args:
+            same as expected_filename()
+        Returns:
+            An absolute path to the next fallback baseline, or None if not found.
+        """
+        baselines = self.expected_baselines(test_name, extension, all_baselines=True)
+        if len(baselines) < 2:
+            actual_test_name = self.lookup_virtual_test_base(test_name)
+            if actual_test_name:
+                if len(baselines) == 0:
+                    return self.fallback_expected_filename(actual_test_name, extension)
+                # In this case, baselines[0] is the current baseline of the
+                # virtual test, so the first base test baseline is the fallback
+                # baseline of the virtual test.
+                return self.expected_filename(actual_test_name, extension, return_default=False)
+            return None
+
+        platform_dir, baseline_filename = baselines[1]
+        if platform_dir:
+            return self._filesystem.join(platform_dir, baseline_filename)
         return None
 
     def expected_checksum(self, test_name):
@@ -660,42 +676,8 @@ class Port(object):
         text = self._filesystem.read_binary_file(baseline_path)
         return text.replace('\r\n', '\n')
 
-    def _get_reftest_list(self, test_name):
-        dirname = self._filesystem.join(self.layout_tests_dir(), self._filesystem.dirname(test_name))
-        if dirname not in self._reftest_list:
-            self._reftest_list[dirname] = Port._parse_reftest_list(self._filesystem, dirname)
-        return self._reftest_list[dirname]
-
-    @staticmethod
-    def _parse_reftest_list(filesystem, test_dirpath):
-        reftest_list_path = filesystem.join(test_dirpath, 'reftest.list')
-        if not filesystem.isfile(reftest_list_path):
-            return None
-        reftest_list_file = filesystem.read_text_file(reftest_list_path)
-
-        parsed_list = {}
-        for line in reftest_list_file.split('\n'):
-            line = re.sub('#.+$', '', line)
-            split_line = line.split()
-            if len(split_line) == 4:
-                # FIXME: Probably one of mozilla's extensions in the
-                # reftest.list format. Do we need to support this?
-                _log.warning("unsupported reftest.list line '%s' in %s", line, reftest_list_path)
-                continue
-            if len(split_line) < 3:
-                continue
-            expectation_type, test_file, ref_file = split_line
-            parsed_list.setdefault(filesystem.join(test_dirpath, test_file), []).append(
-                (expectation_type, filesystem.join(test_dirpath, ref_file)))
-        return parsed_list
-
     def reference_files(self, test_name):
         """Returns a list of expectation (== or !=) and filename pairs"""
-
-        # Try to extract information from reftest.list.
-        reftest_list = self._get_reftest_list(test_name)
-        if reftest_list:
-            return reftest_list.get(self._filesystem.join(self.layout_tests_dir(), test_name), [])
 
         # Try to find -expected.* or -expected-mismatch.* in the same directory.
         reftest_list = []
@@ -908,7 +890,7 @@ class Port(object):
 
     def driver_cmd_line(self):
         """Prints the DRT (DumpRenderTree) command that will be used."""
-        return self.create_driver(0).cmd_line(self.get_option('pixel_tests'), [])
+        return self.create_driver(0).cmd_line([])
 
     def update_baseline(self, baseline_path, data):
         """Updates the baseline for a test.
@@ -980,8 +962,8 @@ class Port(object):
         Note: this will not work with skipped directories. See also the same
         issue with update_all_test_expectations_files in test_importer.py.
         """
-        # TODO(qyearsley): Extract parsing logic (reading the file,
-        # constructing a parser, etc.) from here and test_copier.py.
+        # Note: The parsing logic here (reading the file, constructing a
+        # parser, etc.) is very similar to blinkpy/w3c/test_copier.py.
         path = self.path_to_never_fix_tests_file()
         contents = self._filesystem.read_text_file(path)
         parser = TestExpectationParser(self, all_tests=(), is_lint_mode=False)
@@ -1025,7 +1007,7 @@ class Port(object):
         return self._options.ensure_value(name, default_value)
 
     def relative_test_filename(self, filename):
-        """Returns a Unix-style path for a filename relative to LayoutTests.
+        """Returns a Unix-style path for a filename relative to web_tests.
 
         Ports may legitimately return absolute paths here if no relative path
         makes sense.
@@ -1167,7 +1149,7 @@ class Port(object):
         """Returns a newly created Driver subclass for starting/stopping the
         test driver.
         """
-        return self._driver_class()(self, worker_number, pixel_tests=self.get_option('pixel_tests'), no_timeout=no_timeout)
+        return self._driver_class()(self, worker_number, no_timeout=no_timeout)
 
     def requires_http_server(self):
         # Does the port require an HTTP server for running tests? This could
@@ -1206,19 +1188,6 @@ class Port(object):
     @staticmethod
     def should_use_wptserve(test):
         return Port.is_wpt_test(test)
-
-    @staticmethod
-    def should_run_in_wpt_mode(test):
-        """Whether content_shell should run a test in the WPT mode.
-
-        Some tests outside external/wpt should also be run in the WPT mode in
-        content_shell, namely: harness-tests/wpt/ (tests for console log
-        filtering).
-        """
-        # Note: match rules in TestInterfaces::ConfigureForTestWithURL in
-        # //src/content/shell/test_runner/test_interfaces.cc.
-        return (Port.is_wpt_test(test) or
-                re.match(r'harness-tests/wpt/', test))
 
     def start_wptserve(self):
         """Starts a WPT web server.
@@ -1715,29 +1684,6 @@ class Port(object):
             if test_name.startswith(suite.name):
                 return suite.reference_args
         return []
-
-    def should_run_as_pixel_test(self, test_name):
-        """Whether a test should run as pixel test (when there is no reference).
-
-        This provides the *default* value for whether a test should run as
-        pixel test. When reference files exist (checked by layout_test_runner
-        before calling this method), the test always runs as pixel test.
-        """
-        if not self._options.pixel_tests:
-            return False
-        # WPT should not run as pixel test by default, except reftests
-        # (for which reference files would exist).
-        return not self.should_run_in_wpt_mode(test_name)
-
-    def should_run_pixel_test_first(self, test_name):
-        """Returns true if the directory of the test (or the base test if the
-           test is virtual) is listed in _options.image_first_tests (which comes
-           from LayoutTests/ImageFirstTests or the command line).
-        """
-        if any(test_name.startswith(directory) for directory in self._options.image_first_tests):
-            return True
-        base = self.lookup_virtual_test_base(test_name)
-        return base and self.should_run_pixel_test_first(base)
 
     def _build_path(self, *comps):
         """Returns a path from the build directory."""

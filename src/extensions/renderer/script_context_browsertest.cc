@@ -45,7 +45,8 @@ TEST_F(ScriptContextTest, GetEffectiveDocumentURL) {
   WebLocalFrame* frame = GetMainFrame();
   ASSERT_TRUE(frame);
 
-  frame->LoadHTMLString(frame_html, top_url);
+  content::RenderFrame::FromWebFrame(frame)->LoadHTMLString(
+      frame_html, top_url, "UTF-8", GURL(), false /* replace_current_item */);
   content::FrameLoadWaiter(content::RenderFrame::FromWebFrame(frame)).Wait();
 
   WebLocalFrame* frame1 = frame->FirstChild()->ToWebLocalFrame();
@@ -68,7 +69,9 @@ TEST_F(ScriptContextTest, GetEffectiveDocumentURL) {
   ASSERT_EQ("frame3", frame3->AssignedName());
 
   // Load a blank document in a frame from a different origin.
-  frame3->LoadHTMLString(frame3_html, different_url);
+  content::RenderFrame::FromWebFrame(frame3)->LoadHTMLString(
+      frame3_html, different_url, "UTF-8", GURL(),
+      false /* replace_current_item */);
   content::FrameLoadWaiter(content::RenderFrame::FromWebFrame(frame3)).Wait();
 
   WebLocalFrame* frame3_1 = frame3->FirstChild()->ToWebLocalFrame();

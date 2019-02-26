@@ -64,6 +64,8 @@ component("fido") {
     "device_response_converter.h",
     "ec_public_key.cc",
     "ec_public_key.h",
+    "features.cc",
+    "features.h",
     "fido_authenticator.h",
     "fido_constants.cc",
     "fido_constants.h",
@@ -75,6 +77,8 @@ component("fido") {
     "fido_device_discovery.h",
     "fido_discovery_base.cc",
     "fido_discovery_base.h",
+    "fido_discovery_factory.cc",
+    "fido_discovery_factory.h",
     "fido_parsing_utils.cc",
     "fido_parsing_utils.h",
     "fido_request_handler.h",
@@ -138,6 +142,7 @@ component("fido") {
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
     "//third_party/boringssl",
+    "//third_party/microsoft_webauthn",
     "//ui/base",
   ]
 
@@ -191,6 +196,19 @@ component("fido") {
       "Foundation.framework",
       "LocalAuthentication.framework",
       "Security.framework",
+    ]
+  }
+
+  if (is_win) {
+    sources += [
+      "win/authenticator.cc",
+      "win/authenticator.h",
+      "win/discovery.cc",
+      "win/discovery.h",
+      "win/type_conversions.cc",
+      "win/type_conversions.h",
+      "win/webauthn_api.cc",
+      "win/webauthn_api.h",
     ]
   }
 }
@@ -280,6 +298,8 @@ source_set("test_support") {
     "//device/fido",
     "//mojo/public/cpp/bindings",
     "//services/device/public/mojom",
+    "//services/service_manager/public/cpp",
+    "//services/service_manager/public/mojom",
     "//testing/gmock",
     "//testing/gtest",
   ]
@@ -300,6 +320,13 @@ source_set("test_support") {
       "mac/fake_touch_id_context.mm",
       "mac/scoped_touch_id_test_environment.h",
       "mac/scoped_touch_id_test_environment.mm",
+    ]
+  }
+
+  if (is_win) {
+    sources += [
+      "win/fake_webauthn_api.cc",
+      "win/fake_webauthn_api.h",
     ]
   }
 }

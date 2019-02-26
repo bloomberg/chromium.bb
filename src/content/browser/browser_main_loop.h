@@ -174,6 +174,9 @@ class CONTENT_EXPORT BrowserMainLoop {
   media::UserInputMonitor* user_input_monitor() const {
     return user_input_monitor_.get();
   }
+  net::NetworkChangeNotifier* network_change_notifier() const {
+    return network_change_notifier_.get();
+  }
 
 #if defined(OS_CHROMEOS)
   KeyboardMicRegistration* keyboard_mic_registration() {
@@ -351,8 +354,10 @@ class CONTENT_EXPORT BrowserMainLoop {
       gpu_data_manager_visual_proxy_;
 #endif
 
+  ServiceManagerContext* service_manager_context_ = nullptr;
+  std::unique_ptr<ServiceManagerContext> owned_service_manager_context_;
+
   // Members initialized in |BrowserThreadsStarted()| --------------------------
-  std::unique_ptr<ServiceManagerContext> service_manager_context_;
   std::unique_ptr<mojo::core::ScopedIPCSupport> mojo_ipc_support_;
 
   // |user_input_monitor_| has to outlive |audio_manager_|, so declared first.

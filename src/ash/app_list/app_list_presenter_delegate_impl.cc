@@ -80,16 +80,15 @@ void AppListPresenterDelegateImpl::Init(app_list::AppListView* view,
   aura::Window* root_window = Shell::GetRootWindowForDisplayId(display_id);
 
   app_list::AppListView::InitParams params;
+  const bool is_tablet_mode = IsTabletMode();
   aura::Window* parent_window =
       RootWindowController::ForWindow(root_window)
-          ->GetContainer(IsHomeLauncherEnabledInTabletMode()
+          ->GetContainer(is_tablet_mode
                              ? kShellWindowId_AppListTabletModeContainer
                              : kShellWindowId_AppListContainer);
   params.parent = parent_window;
   params.initial_apps_page = current_apps_page;
-  params.is_tablet_mode = Shell::Get()
-                              ->tablet_mode_controller()
-                              ->IsTabletModeWindowManagerEnabled();
+  params.is_tablet_mode = is_tablet_mode;
   params.is_side_shelf = IsSideShelf(root_window);
 
   view->Initialize(params);
@@ -148,8 +147,10 @@ base::TimeDelta AppListPresenterDelegateImpl::GetVisibilityAnimationDuration(
                                         view_->is_fullscreen());
 }
 
-bool AppListPresenterDelegateImpl::IsHomeLauncherEnabledInTabletMode() {
-  return controller_->IsHomeLauncherEnabledInTabletMode();
+bool AppListPresenterDelegateImpl::IsTabletMode() const {
+  return Shell::Get()
+      ->tablet_mode_controller()
+      ->IsTabletModeWindowManagerEnabled();
 }
 
 app_list::AppListViewDelegate*
@@ -238,8 +239,7 @@ void AppListPresenterDelegateImpl::ProcessLocatedEvent(
 
   aura::Window* window = view_->GetWidget()->GetNativeView()->parent();
   if (!window->Contains(target) && !presenter_->CloseOpenedPage() &&
-      !app_list::switches::ShouldNotDismissOnBlur() &&
-      !IsHomeLauncherEnabledInTabletMode()) {
+      !app_list::switches::ShouldNotDismissOnBlur() && !IsTabletMode()) {
     presenter_->Dismiss(event->time_stamp());
   }
 }

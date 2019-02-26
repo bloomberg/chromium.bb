@@ -17,7 +17,6 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
-#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/views_export.h"
@@ -37,8 +36,6 @@ namespace views {
 
 class NativeWidget;
 class NonClientFrameView;
-class PointerWatcher;
-class View;
 class Widget;
 
 #if defined(USE_AURA)
@@ -126,9 +123,6 @@ class VIEWS_EXPORT ViewsDelegate {
                                        gfx::Rect* bounds,
                                        ui::WindowShowState* show_state) const;
 
-  virtual void NotifyAccessibilityEvent(View* view,
-                                        ax::mojom::Event event_type);
-
   // For accessibility, notify the delegate that a menu item was focused
   // so that alternate feedback (speech / magnified text) can be provided.
   virtual void NotifyMenuItemFocused(const base::string16& menu_name,
@@ -196,19 +190,13 @@ class VIEWS_EXPORT ViewsDelegate {
                                      const base::Closure& callback);
 #endif
 
-  // Whether to mirror the arrow of bubble dialogs in RTL, such that the bubble
-  // opens in the opposite direction.
-  virtual bool ShouldMirrorArrowsInRTL() const;
-
-  // Allows lower-level views components to use Mus-only PointerWatcher wiring.
-  // TODO(crbug.com/887725): Support PointerWatcher without mus, refactor.
-  virtual void AddPointerWatcher(PointerWatcher* pointer_watcher,
-                                 bool wants_moves);
-  virtual void RemovePointerWatcher(PointerWatcher* pointer_watcher);
-  virtual bool IsPointerWatcherSupported() const;
-
  protected:
   ViewsDelegate();
+
+#if defined(USE_AURA)
+  void SetTouchSelectionMenuRunner(
+      std::unique_ptr<TouchSelectionMenuRunnerViews> menu_runner);
+#endif
 
  private:
   std::unique_ptr<ui::TouchEditingControllerFactory>

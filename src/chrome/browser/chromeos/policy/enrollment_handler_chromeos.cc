@@ -83,6 +83,19 @@ em::DeviceRegisterRequest::Flavor EnrollmentModeToRegistrationFlavor(
     case EnrollmentConfig::MODE_ATTESTATION_MANUAL_FALLBACK:
       return em::DeviceRegisterRequest::
           FLAVOR_ENROLLMENT_ATTESTATION_MANUAL_FALLBACK;
+    case EnrollmentConfig::MODE_ENROLLED_ROLLBACK:
+      return em::DeviceRegisterRequest::FLAVOR_ENROLLMENT_RECOVERY;
+    case EnrollmentConfig::MODE_INITIAL_SERVER_FORCED:
+      return em::DeviceRegisterRequest::FLAVOR_ENROLLMENT_INITIAL_SERVER_FORCED;
+    case EnrollmentConfig::MODE_ATTESTATION_INITIAL_SERVER_FORCED:
+      return em::DeviceRegisterRequest::
+          FLAVOR_ENROLLMENT_ATTESTATION_INITIAL_SERVER_FORCED;
+    case EnrollmentConfig::MODE_ATTESTATION_INITIAL_MANUAL_FALLBACK:
+      return em::DeviceRegisterRequest::
+          FLAVOR_ENROLLMENT_ATTESTATION_INITIAL_MANUAL_FALLBACK;
+    case EnrollmentConfig::MODE_ATTESTATION_ENROLLMENT_TOKEN:
+      return em::DeviceRegisterRequest::
+          FLAVOR_ENROLLMENT_ATTESTATION_USB_ENROLLMENT;
   }
 
   NOTREACHED() << "Bad enrollment mode: " << mode;
@@ -177,9 +190,13 @@ EnrollmentHandlerChromeOS::EnrollmentHandlerChromeOS(
   dm_auth_ = std::move(dm_auth);
   CHECK(!client_->is_registered());
   CHECK_EQ(DM_STATUS_SUCCESS, client_->status());
-  CHECK((enrollment_config_.is_mode_attestation() ||
-         enrollment_config.mode == EnrollmentConfig::MODE_OFFLINE_DEMO) ==
-        dm_auth_->empty());
+  if (enrollment_config_.is_mode_attestation()) {
+    CHECK(dm_auth_->empty() || dm_auth_->has_enrollment_token());
+  } else if (enrollment_config.mode == EnrollmentConfig::MODE_OFFLINE_DEMO) {
+    CHECK(dm_auth_->empty());
+  } else {
+    CHECK(!dm_auth_->empty());
+  }
   CHECK_NE(enrollment_config.mode == EnrollmentConfig::MODE_OFFLINE_DEMO,
            enrollment_config.offline_policy_path.empty());
   CHECK(enrollment_config_.auth_mechanism !=
@@ -353,10 +370,13 @@ void EnrollmentHandlerChromeOS::OnRegistrationStateChanged(
 void EnrollmentHandlerChromeOS::OnClientError(CloudPolicyClient* client) {
   DCHECK_EQ(client_.get(), client);
 
-  if (enrollment_step_ == STEP_ROBOT_AUTH_FETCH) {
-    LOG(ERROR) << "API authentication code fetch failed: " << client_->status();
-    ReportResult(EnrollmentStatus::ForRobotAuthFetchError(client_->status()));
-  } else if (enrollment_step_ < STEP_POLICY_FETCH) {
+  if (enrollment_step_ == STEP_ROBOT_AUTH_FETCH ||
+      enrollment_step_ == STEP_STORE_ROBOT_AUTH) {
+    // Handled in OnDeviceAccountTokenError().
+    return;
+  }
+
+  if (enrollment_step_ < STEP_POLICY_FETCH) {
     ReportResult(EnrollmentStatus::ForRegistrationError(client_->status()));
   } else {
     ReportResult(EnrollmentStatus::ForFetchError(client_->status()));
@@ -442,7 +462,8 @@ void EnrollmentHandlerChromeOS::HandleRegistrationCertificateResult(
         em::DeviceRegisterRequest::DEVICE,
         EnrollmentModeToRegistrationFlavor(enrollment_config_.mode),
         em::DeviceRegisterRequest::LIFETIME_INDEFINITE, license_type_,
-        pem_certificate_chain, client_id_, requisition_, current_state_key_);
+        dm_auth_->Clone(), pem_certificate_chain, client_id_, requisition_,
+        current_state_key_);
   } else {
     ReportResult(EnrollmentStatus::ForStatus(
         EnrollmentStatus::REGISTRATION_CERT_FETCH_FAILED));
@@ -551,59 +572,32 @@ void EnrollmentHandlerChromeOS::HandlePolicyValidationResult(
     } else {
       domain_ = gaia::ExtractDomainName(gaia::CanonicalizeEmail(username));
       SetStep(STEP_ROBOT_AUTH_FETCH);
-      client_->FetchRobotAuthCodes(
-          dm_auth_->Clone(),
-          base::BindOnce(&EnrollmentHandlerChromeOS::OnRobotAuthCodesFetched,
-                         weak_ptr_factory_.GetWeakPtr()));
+      device_account_initializer_ =
+          std::make_unique<DeviceAccountInitializer>(client_.get(), this);
+      device_account_initializer_->FetchToken();
     }
   } else {
     ReportResult(EnrollmentStatus::ForValidationError(validator->status()));
   }
 }
 
-void EnrollmentHandlerChromeOS::OnRobotAuthCodesFetched(
-    DeviceManagementStatus status,
-    const std::string& auth_code) {
+void EnrollmentHandlerChromeOS::OnDeviceAccountTokenFetched(bool empty_token) {
   CHECK_EQ(STEP_ROBOT_AUTH_FETCH, enrollment_step_);
-  if (status != DM_STATUS_SUCCESS) {
-    OnClientError(client_.get());
-    return;
-  }
-  if (auth_code.empty()) {
-    // If the server doesn't provide an auth code, skip the robot auth setup.
-    // This allows clients running against the test server to transparently skip
-    // robot auth.
-    skip_robot_auth_ = true;
-    SetStep(STEP_AD_DOMAIN_JOIN);
-    StartJoinAdDomain();
-    return;
-  }
-
-  SetStep(STEP_ROBOT_AUTH_REFRESH);
-  gaia::OAuthClientInfo client_info;
-  client_info.client_id = GaiaUrls::GetInstance()->oauth2_chrome_client_id();
-  client_info.client_secret =
-      GaiaUrls::GetInstance()->oauth2_chrome_client_secret();
-  client_info.redirect_uri = "oob";
-
-  // Use the system request context to avoid sending user cookies.
-  gaia_oauth_client_.reset(new gaia::GaiaOAuthClient(
-      g_browser_process->shared_url_loader_factory()));
-  gaia_oauth_client_->GetTokensFromAuthCode(client_info, auth_code,
-                                            0 /* max_retries */, this);
-}
-
-// GaiaOAuthClient::Delegate callback for OAuth2 refresh token fetched.
-void EnrollmentHandlerChromeOS::OnGetTokensResponse(
-    const std::string& refresh_token,
-    const std::string& access_token,
-    int expires_in_seconds) {
-  CHECK_EQ(STEP_ROBOT_AUTH_REFRESH, enrollment_step_);
-
-  robot_refresh_token_ = refresh_token;
-
+  skip_robot_auth_ = empty_token;
   SetStep(STEP_AD_DOMAIN_JOIN);
   StartJoinAdDomain();
+}
+
+void EnrollmentHandlerChromeOS::OnDeviceAccountTokenError(
+    EnrollmentStatus status) {
+  CHECK(enrollment_step_ == STEP_ROBOT_AUTH_FETCH ||
+        enrollment_step_ == STEP_STORE_ROBOT_AUTH);
+  ReportResult(status);
+}
+
+void EnrollmentHandlerChromeOS::OnDeviceAccountClientError(
+    DeviceManagementStatus status) {
+  // Do nothing, it would be handled in OnClientError.
 }
 
 void EnrollmentHandlerChromeOS::SetFirmwareManagementParametersData() {
@@ -633,32 +627,6 @@ void EnrollmentHandlerChromeOS::OnFirmwareManagementParametersDataSet(
 
   SetStep(STEP_LOCK_DEVICE);
   StartLockDevice();
-}
-
-// GaiaOAuthClient::Delegate
-void EnrollmentHandlerChromeOS::OnRefreshTokenResponse(
-    const std::string& access_token,
-    int expires_in_seconds) {
-  // We never use the code that should trigger this callback.
-  LOG(FATAL) << "Unexpected callback invoked.";
-}
-
-// GaiaOAuthClient::Delegate OAuth2 error when fetching refresh token request.
-void EnrollmentHandlerChromeOS::OnOAuthError() {
-  CHECK_EQ(STEP_ROBOT_AUTH_REFRESH, enrollment_step_);
-  // OnOAuthError is only called if the request is bad (malformed) or the
-  // response is bad (empty access token returned).
-  LOG(ERROR) << "OAuth protocol error while fetching API refresh token.";
-  ReportResult(
-      EnrollmentStatus::ForRobotRefreshFetchError(net::HTTP_BAD_REQUEST));
-}
-
-// GaiaOAuthClient::Delegate network error when fetching refresh token.
-void EnrollmentHandlerChromeOS::OnNetworkError(int response_code) {
-  CHECK_EQ(STEP_ROBOT_AUTH_REFRESH, enrollment_step_);
-  LOG(ERROR) << "Network error while fetching API refresh token: "
-             << response_code;
-  ReportResult(EnrollmentStatus::ForRobotRefreshFetchError(response_code));
 }
 
 void EnrollmentHandlerChromeOS::StartJoinAdDomain() {
@@ -763,26 +731,14 @@ void EnrollmentHandlerChromeOS::StartStoreRobotAuth() {
 
   // Don't store the token if robot auth was skipped.
   if (skip_robot_auth_) {
-    HandleStoreRobotAuthTokenResult(true);
+    OnDeviceAccountTokenStored();
     return;
   }
-
-  chromeos::DeviceOAuth2TokenServiceFactory::Get()->SetAndSaveRefreshToken(
-      robot_refresh_token_,
-      base::Bind(&EnrollmentHandlerChromeOS::HandleStoreRobotAuthTokenResult,
-                 weak_ptr_factory_.GetWeakPtr()));
+  device_account_initializer_->StoreToken();
 }
 
-void EnrollmentHandlerChromeOS::HandleStoreRobotAuthTokenResult(bool result) {
+void EnrollmentHandlerChromeOS::OnDeviceAccountTokenStored() {
   DCHECK_EQ(STEP_STORE_ROBOT_AUTH, enrollment_step_);
-
-  if (!result) {
-    LOG(ERROR) << "Failed to store API refresh token.";
-    ReportResult(EnrollmentStatus::ForStatus(
-        EnrollmentStatus::ROBOT_REFRESH_STORE_FAILED));
-    return;
-  }
-
   SetStep(STEP_STORE_POLICY);
   if (device_mode_ == policy::DEVICE_MODE_ENTERPRISE_AD) {
     CHECK(install_attributes_->IsActiveDirectoryManaged());
@@ -818,6 +774,10 @@ void EnrollmentHandlerChromeOS::HandleActiveDirectoryPolicyRefreshed(
 void EnrollmentHandlerChromeOS::Stop() {
   if (client_.get())
     client_->RemoveObserver(this);
+  if (device_account_initializer_.get()) {
+    device_account_initializer_->Stop();
+    device_account_initializer_.reset();
+  }
   SetStep(STEP_FINISHED);
   weak_ptr_factory_.InvalidateWeakPtrs();
   completion_callback_.Reset();

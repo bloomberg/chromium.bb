@@ -315,6 +315,8 @@ void DesktopNativeWidgetAura::OnHostClosed() {
   wm::SetActivationClient(host_->window(), NULL);
   focus_client_.reset();
 
+  host_->window()->RemovePreTargetHandler(root_window_event_filter_.get());
+
   host_->RemoveObserver(this);
   host_.reset();
   // WindowEventDispatcher owns |desktop_window_tree_host_|.
@@ -353,6 +355,13 @@ void DesktopNativeWidgetAura::OnDesktopWindowTreeHostDestroyed(
   event_client_.reset();
 }
 
+void DesktopNativeWidgetAura::NotifyAccessibilityEvent(
+    ax::mojom::Event event_type) {
+  if (!GetWidget() || !GetWidget()->GetRootView())
+    return;
+  GetWidget()->GetRootView()->NotifyAccessibilityEvent(event_type, true);
+}
+
 void DesktopNativeWidgetAura::HandleActivationChanged(bool active) {
   if (!native_widget_delegate_->OnNativeWidgetActivationChanged(active))
     return;
@@ -361,6 +370,11 @@ void DesktopNativeWidgetAura::HandleActivationChanged(bool active) {
   if (!activation_client)
     return;
   if (active) {
+    // TODO(nektar): We need to harmonize the firing of accessibility
+    // events between platforms.
+    // https://crbug.com/897177
+    NotifyAccessibilityEvent(ax::mojom::Event::kWindowActivated);
+
     if (GetWidget()->HasFocusManager()) {
       // This function can be called before the focus manager has had a
       // chance to set the focused view. In which case we should get the
@@ -392,6 +406,11 @@ void DesktopNativeWidgetAura::HandleActivationChanged(bool active) {
       GetInputMethod()->OnFocus();
     }
   } else {
+    // TODO(nektar): We need to harmonize the firing of accessibility
+    // events between platforms.
+    // https://crbug.com/897177
+    NotifyAccessibilityEvent(ax::mojom::Event::kWindowDeactivated);
+
     // If we're not active we need to deactivate the corresponding
     // aura::Window. This way if a child widget is active it gets correctly
     // deactivated (child widgets don't get native desktop activation changes,

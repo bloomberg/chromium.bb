@@ -91,6 +91,8 @@ jumbo_component("base") {
     "clipboard/clipboard_win.cc",
     "clipboard/clipboard_win.h",
     "clipboard/custom_data_helper_mac.mm",
+    "cocoa/accessibility_focus_overrider.h",
+    "cocoa/accessibility_focus_overrider.mm",
     "cocoa/animation_utils.h",
     "cocoa/appkit_utils.h",
     "cocoa/appkit_utils.mm",
@@ -116,10 +118,6 @@ jumbo_component("base") {
     "cocoa/focus_tracker.mm",
     "cocoa/focus_window_set.h",
     "cocoa/focus_window_set.mm",
-    "cocoa/hover_button.h",
-    "cocoa/hover_button.mm",
-    "cocoa/hover_image_button.h",
-    "cocoa/hover_image_button.mm",
     "cocoa/menu_controller.h",
     "cocoa/menu_controller.mm",
     "cocoa/nib_loading.h",
@@ -128,6 +126,8 @@ jumbo_component("base") {
     "cocoa/ns_view_ids.mm",
     "cocoa/quartz_util.h",
     "cocoa/quartz_util.mm",
+    "cocoa/remote_accessibility_api.h",
+    "cocoa/remote_accessibility_api.mm",
     "cocoa/remote_layer_api.h",
     "cocoa/remote_layer_api.mm",
     "cocoa/secure_password_input.h",
@@ -298,8 +298,6 @@ jumbo_component("base") {
     "win/message_box_win.h",
     "win/mouse_wheel_util.cc",
     "win/mouse_wheel_util.h",
-    "win/open_file_name_win.cc",
-    "win/open_file_name_win.h",
     "win/scoped_ole_initializer.cc",
     "win/scoped_ole_initializer.h",
     "win/shell.cc",
@@ -310,7 +308,6 @@ jumbo_component("base") {
     "win/window_event_target.h",
     "window_open_disposition.cc",
     "window_open_disposition.h",
-    "work_area_watcher_observer.h",
   ]
 
   if (is_posix) {
@@ -354,12 +351,12 @@ jumbo_component("base") {
       "idle/idle_linux.cc",
       "idle/idle_mac.mm",
       "idle/idle_win.cc",
+      "pointer/pointer_device.h",
+      "pointer/pointer_device_util.cc",
+      "pointer/touch_editing_controller.cc",
+      "pointer/touch_editing_controller.h",
       "text/bytes_formatting.cc",
       "text/bytes_formatting.h",
-      "touch/touch_device.h",
-      "touch/touch_device_util.cc",
-      "touch/touch_editing_controller.cc",
-      "touch/touch_editing_controller.h",
     ]
   }
 
@@ -381,17 +378,17 @@ jumbo_component("base") {
   }
 
   if (is_win) {
-    sources += [ "touch/touch_device_win.cc" ]
+    sources += [ "pointer/pointer_device_win.cc" ]
   } else if (is_android) {
-    sources += [ "touch/touch_device_android.cc" ]
+    sources += [ "pointer/pointer_device_android.cc" ]
   } else if (is_ios) {
-    sources += [ "touch/touch_device_ios.cc" ]
+    sources += [ "pointer/pointer_device_ios.cc" ]
   } else if (is_linux) {
-    sources += [ "touch/touch_device_linux.cc" ]
+    sources += [ "pointer/pointer_device_linux.cc" ]
   } else {
     # Empty implementation for all other cases.
-    sources += [ "touch/touch_device.cc" ]
-    sources -= [ "touch/touch_device_util.cc" ]
+    sources += [ "pointer/pointer_device.cc" ]
+    sources -= [ "pointer/pointer_device_util.cc" ]
   }
 
   if (is_fuchsia) {
@@ -590,8 +587,6 @@ jumbo_component("base") {
       "cursor/cursor_ozone.cc",
       "cursor/ozone/bitmap_cursor_factory_ozone.cc",
       "cursor/ozone/bitmap_cursor_factory_ozone.h",
-      "cursor/ozone/cursor_data_factory_ozone.cc",
-      "cursor/ozone/cursor_data_factory_ozone.h",
     ]
 
     deps += [
@@ -630,8 +625,8 @@ jumbo_component("base") {
       "l10n/l10n_font_util.cc",
       "models/button_menu_item_model.cc",
       "models/dialog_model.cc",
+      "pointer/touch_editing_controller.cc",
       "theme_provider.cc",
-      "touch/touch_editing_controller.cc",
       "ui_base_types.cc",
     ]
   }
@@ -710,8 +705,6 @@ jumbo_static_library("test_support") {
       "test/ios/keyboard_appearance_listener.mm",
       "test/ios/ui_image_test_utils.h",
       "test/ios/ui_image_test_utils.mm",
-      "test/ios/ui_view_test_utils.h",
-      "test/ios/ui_view_test_utils.mm",
     ]
   }
 
@@ -856,8 +849,6 @@ test("ui_base_unittests") {
       "cocoa/cocoa_base_utils_unittest.mm",
       "cocoa/constrained_window/constrained_window_animation_unittest.mm",
       "cocoa/focus_tracker_unittest.mm",
-      "cocoa/hover_button_unittest.mm",
-      "cocoa/hover_image_button_unittest.mm",
       "cocoa/menu_controller_unittest.mm",
       "cocoa/touch_bar_util_unittest.mm",
       "cocoa/tracking_area_unittest.mm",
@@ -940,7 +931,6 @@ test("ui_base_unittests") {
       "dragdrop/os_exchange_data_win_unittest.cc",
       "win/direct_manipulation_unittest.cc",
       "win/hwnd_subclass_unittest.cc",
-      "win/open_file_name_win_unittest.cc",
     ]
 
     ldflags = [

@@ -24,11 +24,9 @@ void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchAbortEvent(
   last_registration_ = registration;
 
   if (fail_abort_event_) {
-    std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::REJECTED,
-                            base::TimeTicks::Now());
+    std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::REJECTED);
   } else {
-    std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-                            base::TimeTicks::Now());
+    std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
   }
 
   if (abort_event_closure_)
@@ -41,11 +39,9 @@ void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchClickEvent(
   last_registration_ = registration;
 
   if (fail_click_event_) {
-    std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::REJECTED,
-                            base::TimeTicks::Now());
+    std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::REJECTED);
   } else {
-    std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-                            base::TimeTicks::Now());
+    std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
   }
 
   if (click_event_closure_)
@@ -58,11 +54,9 @@ void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchFailEvent(
   last_registration_ = registration;
 
   if (fail_fetch_fail_event_) {
-    std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::REJECTED,
-                            base::TimeTicks::Now());
+    std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::REJECTED);
   } else {
-    std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-                            base::TimeTicks::Now());
+    std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
   }
 
   if (fetch_fail_event_closure_)
@@ -76,11 +70,9 @@ void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchSuccessEvent(
   last_registration_ = registration;
 
   if (fail_fetched_event_) {
-    std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::REJECTED,
-                            base::TimeTicks::Now());
+    std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::REJECTED);
   } else {
-    std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-                            base::TimeTicks::Now());
+    std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
   }
 
   if (fetched_event_closure_)

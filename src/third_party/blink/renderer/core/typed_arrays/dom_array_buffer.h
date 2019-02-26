@@ -18,7 +18,7 @@ class CORE_EXPORT DOMArrayBuffer final : public DOMArrayBufferBase {
 
  public:
   static DOMArrayBuffer* Create(scoped_refptr<WTF::ArrayBuffer> buffer) {
-    return new DOMArrayBuffer(std::move(buffer));
+    return MakeGarbageCollected<DOMArrayBuffer>(std::move(buffer));
   }
   static DOMArrayBuffer* Create(unsigned num_elements,
                                 unsigned element_byte_size) {
@@ -37,6 +37,9 @@ class CORE_EXPORT DOMArrayBuffer final : public DOMArrayBufferBase {
   static DOMArrayBuffer* CreateUninitializedOrNull(unsigned num_elements,
                                                    unsigned element_byte_size);
 
+  explicit DOMArrayBuffer(scoped_refptr<WTF::ArrayBuffer> buffer)
+      : DOMArrayBufferBase(std::move(buffer)) {}
+
   DOMArrayBuffer* Slice(int begin, int end) const {
     return Create(Buffer()->Slice(begin, end));
   }
@@ -52,10 +55,6 @@ class CORE_EXPORT DOMArrayBuffer final : public DOMArrayBufferBase {
 
   v8::Local<v8::Object> Wrap(v8::Isolate*,
                              v8::Local<v8::Object> creation_context) override;
-
- private:
-  explicit DOMArrayBuffer(scoped_refptr<WTF::ArrayBuffer> buffer)
-      : DOMArrayBufferBase(std::move(buffer)) {}
 };
 
 }  // namespace blink

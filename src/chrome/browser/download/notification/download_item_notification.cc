@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/files/file_util.h"
 #include "base/metrics/user_metrics.h"
@@ -198,7 +199,7 @@ DownloadItemNotification::DownloadItemNotification(
       l10n_util::GetStringUTF16(
           IDS_DOWNLOAD_NOTIFICATION_DISPLAY_SOURCE),  // display_source
       GURL(kDownloadNotificationOrigin),              // origin_url
-      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
+      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
                                  kDownloadNotificationNotifierId),
       rich_notification_data,
       base::MakeRefCounted<message_center::ThunkNotificationDelegate>(
@@ -476,17 +477,17 @@ void DownloadItemNotification::UpdateNotificationData(bool display,
 SkColor DownloadItemNotification::GetNotificationIconColor() {
   if (item_->IsDangerous()) {
     return item_->MightBeMalicious()
-               ? message_center::kSystemNotificationColorCriticalWarning
-               : message_center::kSystemNotificationColorWarning;
+               ? ash::kSystemNotificationColorCriticalWarning
+               : ash::kSystemNotificationColorWarning;
   }
 
   switch (item_->GetState()) {
     case download::DownloadItem::IN_PROGRESS:
     case download::DownloadItem::COMPLETE:
-      return message_center::kSystemNotificationColorNormal;
+      return ash::kSystemNotificationColorNormal;
 
     case download::DownloadItem::INTERRUPTED:
-      return message_center::kSystemNotificationColorCriticalWarning;
+      return ash::kSystemNotificationColorCriticalWarning;
 
     case download::DownloadItem::CANCELLED:
       break;

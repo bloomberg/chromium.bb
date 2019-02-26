@@ -127,6 +127,34 @@ mr.ProviderManagerMirrorServiceCallbacks = class {
    * @param {!mr.mirror.Activity} mirrorActivity
    */
   handleMirrorActivityUpdate(route, mirrorActivity) {}
+
+  /**
+   * Invoked by the mirror service to start Tab mirroring use the Mirroring
+   * Service.
+   * @param {number} targetTabId
+   * @param {!mojo.InterfaceRequest} request
+   */
+  getMirroringServiceHostForTab(targetTabId, request) {}
+
+  /**
+   * Invoked by the mirror service to start Desktop mirroring use the Mirroring
+   * Service.
+   * @param {number} initiatorTabId
+   * @param {string} desktopStreamId
+   * @param {!mojo.InterfaceRequest} request
+   */
+  getMirroringServiceHostForDesktop(initiatorTabId, desktopStreamId, request) {}
+
+
+  /**
+   * Invoked by the mirror service to start OffscreenTab mirroring use the
+   * Mirroring Service.
+   * @param {!mojo.Url} presentationUrl
+   * @param {string} presentationId
+   * @param {!mojo.InterfaceRequest} request
+   */
+  getMirroringServiceHostForOffscreenTab(
+      presentationUrl, presentationId, request) {}
 };
 
 

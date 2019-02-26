@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "net/third_party/quic/core/http/quic_spdy_client_session.h"
 #include "net/third_party/quic/core/http/spdy_utils.h"
+#include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/core/tls_client_handshaker.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
@@ -31,9 +32,11 @@ namespace {
 class MockQuicSpdyClientSession : public QuicSpdyClientSession {
  public:
   explicit MockQuicSpdyClientSession(
+      const ParsedQuicVersionVector& supported_versions,
       QuicConnection* connection,
       QuicClientPushPromiseIndex* push_promise_index)
       : QuicSpdyClientSession(DefaultQuicConfig(),
+                              supported_versions,
                               connection,
                               QuicServerId("example.com", 443, false),
                               &crypto_config_,
@@ -68,9 +71,12 @@ class QuicClientPromisedInfoTest : public QuicTest {
       : connection_(new StrictMock<MockQuicConnection>(&helper_,
                                                        &alarm_factory_,
                                                        Perspective::IS_CLIENT)),
-        session_(connection_, &push_promise_index_),
+        session_(connection_->supported_versions(),
+                 connection_,
+                 &push_promise_index_),
         body_("hello world"),
-        promise_id_(kInvalidStreamId) {
+        promise_id_(
+            QuicUtils::GetInvalidStreamId(connection_->transport_version())) {
     connection_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
     session_.Initialize();
 

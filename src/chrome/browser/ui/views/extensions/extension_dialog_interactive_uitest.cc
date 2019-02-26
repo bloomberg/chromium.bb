@@ -46,8 +46,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionDialogUiTest, MAYBE_TabFocusLoop) {
   // The main.html contains three buttons.
   ExtensionDialog* dialog = ExtensionDialog::Show(
       extension->url().Resolve("main.html"),
-      browser()->window()->GetNativeWindow(), browser()->profile(),
-      NULL, 300, 300, 300, 300, base::string16(), NULL);
+      browser()->window()->GetNativeWindow(), browser()->profile(), nullptr,
+      true, 300, 300, 300, 300, base::string16(), nullptr);
   ASSERT_TRUE(dialog);
   ASSERT_TRUE(init_listener.WaitUntilSatisfied());
 

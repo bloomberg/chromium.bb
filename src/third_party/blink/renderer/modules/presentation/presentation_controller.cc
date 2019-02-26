@@ -35,7 +35,8 @@ PresentationController* PresentationController::From(LocalFrame& frame) {
 
 // static
 void PresentationController::ProvideTo(LocalFrame& frame) {
-  Supplement<LocalFrame>::ProvideTo(frame, new PresentationController(frame));
+  Supplement<LocalFrame>::ProvideTo(
+      frame, MakeGarbageCollected<PresentationController>(frame));
 }
 
 // static
@@ -121,7 +122,6 @@ void PresentationController::OnDefaultPresentationStarted(
   if (!presentation_ || !presentation_->defaultRequest())
     return;
 
-  PresentationRequest::RecordStartOriginTypeAccess(*GetExecutionContext());
   auto* connection = ControllerPresentationConnection::Take(
       this, *result->presentation_info, presentation_->defaultRequest());
   // TODO(btolsch): Convert this and similar calls to just use InterfacePtrInfo

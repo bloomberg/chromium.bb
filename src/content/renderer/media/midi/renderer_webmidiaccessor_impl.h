@@ -14,7 +14,7 @@
 
 namespace content {
 
-class MidiMessageFilter;
+class MidiSessionClientImpl;
 
 class RendererWebMIDIAccessorImpl
     : public blink::WebMIDIAccessor {
@@ -35,7 +35,7 @@ class RendererWebMIDIAccessorImpl
 
   bool is_client_added_;
 
-  MidiMessageFilter* midi_message_filter();
+  MidiSessionClientImpl* midi_session_client_impl();
 
   DISALLOW_COPY_AND_ASSIGN(RendererWebMIDIAccessorImpl);
 };

@@ -135,40 +135,16 @@ source_set("host_resolver") {
   # Whitelist-only access so we can keep track of all usage external to the
   # network stack and network service.
   friend = [
-    # chrome/browser/devtools/device/tcp_device_provider.cc
-    # TODO(crbug.com/874653): Remove once migrated to network service IPC.
-    #
-    # chrome/browser/devtools/device/port_forwarding_controller.cc
-    # TODO(crbug.com/874651): Remove once migrated to network service IPC.
-    "//chrome/browser/devtools",
-
     # chrome/browser/io_thread.cc
     # Used to build in-process HostResolver when network service disabled.
     #
     # chrome/browser/net/dns_probe_service.cc
     # TODO(crbug.com/874660): Remove once migrated to network service IPC.
-    #
-    # chrome/browser/net/url_info.h
-    # chrome/browser/net_benchmarking.cc
-    # HostResolver only used for deprecated net::Predictor.
-    # TODO(crbug.com/875238): Remove once deprecated code is removed.
     "//chrome/browser",
-
-    # chrome/browser/ui/webui/net_internals/net_internals_ui.cc
-    # TODO(crbug.com/876110): Remove once migrated to network service IPC.
-    "//chrome/browser/ui",
 
     # chromecast/browser/url_request_context_factory.cc
     # URLRequestContext creation for chromecast.
     "//chromecast/browser",
-
-    # components/network_hints/browser/network_hints_message_filter.cc
-    # TODO(crbug.com/874654): Remove once migrated to network service IPC.
-    "//components/network_hints/browser",
-
-    # headless/lib/browser/headless_url_request_context_getter.cc
-    # URLRequestContext creation for headless.
-    "//headless",
 
     # URLRequestContext and HttpNetworkSession::Context creation for iOS.
     "//ios/components/io_thread",
@@ -178,6 +154,7 @@ source_set("host_resolver") {
     # Tests and test support.
     "//chrome/browser:test_support",
     "//chrome/test:browser_tests",
+    "//chrome/test:unit_tests",
     "//components/grpc_support/test:unit_tests",
     "//content/shell:content_shell_lib",
 
@@ -190,6 +167,10 @@ source_set("host_resolver") {
     "//components/cronet/*",
     "//net/*",
     "//services/network/*",
+
+    # The proxy resolution service uses its own host cache and HostResolver Mojo
+    # wrapper.
+    "//services/proxy_resolver/*",
   ]
 
   sources = []
@@ -207,6 +188,7 @@ source_set("host_resolver") {
 
   deps = [
     "//net:net_deps",
+    "//net/dns/public",
   ]
   public_deps = [
     "//net:net_public_deps",
@@ -214,7 +196,6 @@ source_set("host_resolver") {
 }
 
 # Overridable implementation details of HostResolver.
-# TODO(crbug.com/846423): Servicify or remove external usage.
 source_set("host_resolver_impl") {
   # Due to circular dependencies, should only be depended on through //net.
   # Limit visibility to //net and other source_sets with the same access
@@ -227,9 +208,15 @@ source_set("host_resolver_impl") {
   # Whitelist-only access so we can keep track of all usage external to the
   # network stack.
   friend = [
-    "//chromeos",
+    # chromeos/network/network_change_notifier_chromeos.cc
+    # ChromeOS-specific change notifier with some overrides for DnsConfigService
+    # TODO(crbug.com/882610): Remove/cleanup once we figure out servicification.
+    "//chromeos/network",
+
+    # Network stack/service
     "//components/cronet/*",
     "//net/*",
+    "//services/network:tests",
   ]
 
   sources = []
@@ -246,17 +233,16 @@ source_set("host_resolver_impl") {
   deps = [
     ":host_resolver",
     "//net:net_deps",
+    "//net/dns/public",
   ]
   public_deps = [
     "//net:net_public_deps",
   ]
 }
 
-# DnsClient interfaces. Primarily intended as part of the impelementation of the
+# DnsClient interfaces. Primarily intended as part of the implementation of the
 # standard HostResolver interface, but can be used as an alternative external
 # interface for advanced usage.
-# TODO(crbug.com/846423): Figure out what we want to do with these for
-# servicification.
 source_set("dns_client") {
   # Due to circular dependencies, should only be depended on through //net.
   # Limit visibility to //net and other source_sets with the same access
@@ -270,10 +256,26 @@ source_set("dns_client") {
   # Whitelist-only access so we can keep track of all usage external to the
   # network stack.
   friend = [
+    # chrome/browser/local_discovery/service_discovery_client_impl.cc
+    # Result parsing utilities for parsing results read through MdnsClient.
+    # TODO(crbug.com/874662): Remove once migrated to network service.
+    #
+    # chrome/browser/net/dns_probe_runner.cc
+    # chrome/browser/net/dns_probe_service.cc
+    # DNS lookups using DnsClient.
+    # TODO(crbug.com/874660): Remove once migrated to network service.
     "//chrome/browser",
-    "//chrome/browser:test_support",
+
+    # chrome/browser/chromeos/smb_client/discovery/mdns_host_locator.cc
+    # Result parsing for results read through MdnsClient.
+    # TODO(crbug.com/902531): Remove once migrated to network service.
     "//chrome/browser/chromeos",
+
+    # Tests and test support
+    "//chrome/browser:test_support",
     "//chrome/test/*",
+
+    # Network stack/service
     "//components/certificate_transparency/*",
     "//net/*",
     "//services/network/*",
@@ -285,7 +287,6 @@ source_set("dns_client") {
   if (!is_nacl) {
     sources += [
       "dns_client.h",
-      "dns_protocol.h",
       "dns_response.h",
       "dns_transaction.h",
       "record_parsed.h",
@@ -298,12 +299,11 @@ source_set("dns_client") {
   ]
   public_deps = [
     "//net:net_public_deps",
+    "//net/dns/public",
   ]
 }
 
 # MdnsClient interfaces.
-# TODO(crbug.com/846423): Figure out what we want to do with these for
-# servicification.
 source_set("mdns_client") {
   # Due to circular dependencies, should only be depended on through //net.
   # Limit visibility to //net and other source_sets with the same access
@@ -316,11 +316,29 @@ source_set("mdns_client") {
   # Whitelist-only access so we can keep track of all usage external to the
   # network stack.
   friend = [
+    # chrome/browser/local_discovery/service_discovery_client_mdns.h
+    # chrome/browser/local_discovery/service_discovery_client_impl.h
+    # Makes MDNS queries using MDnsClient.
+    # TODO(crbug.com/874662): Remove once migrated to network service.
     "//chrome/browser",
-    "//chrome/browser:test_support",
-    "//chrome/browser/chromeos",
+
+    # chrome/tools/service_discovery_sniffer/service_discovery_sniffer.cc
+    # Creates MDnsClient instance and passes to ServiceDiscoveryClientImpl.
+    # TODO(crbug.com/874662): Remove once discovery client migrated.
     "//chrome/tools/service_discovery_sniffer",
+
+    # chrome/browser/chromeos/smb_client/discovery/mdns_host_locator.h
+    # chrome/browser/chromeos/smb_client/discovery/mdns_host_locator.cc
+    # Makes MDNS queries using MDnsClient.
+    # TODO(crbug.com/902531): Remove once migrated to network service.
+    "//chrome/browser/chromeos",
+
+    # Tests and test support
+    "//chrome/browser:test_support",
+
+    # Network stack/service
     "//net/*",
+    "//services/network/*",
   ]
 
   public = []
@@ -338,51 +356,6 @@ source_set("mdns_client") {
   public_deps = [
     "//net:net_public_deps",
   ]
-}
-
-if (enable_net_mojo) {
-  # A host resolver implementation that forwards resolve requests to a mojo
-  # service, thus acting as a client library to a servicified host resolver.
-  # TODO(crbug.com/821021): Decide if this has any place in the generalized
-  # host resolver servicification.
-  source_set("mojo_client") {
-    sources = [
-      "host_resolver_mojo.cc",
-      "host_resolver_mojo.h",
-    ]
-
-    deps = [
-      "//base",
-      "//net",
-    ]
-
-    public_deps = [
-      "//mojo/public/cpp/bindings",
-      "//net/interfaces",
-    ]
-  }
-
-  # A utility to handle host resolver requests coming into the network service
-  # via mojo and pass the requests on to the actual host resolver. This utility
-  # therefore acts as the service side of mojo interactions for host resolver.
-  # TODO(crbug.com/821021): Decide if this has any place in the generalized
-  # host resolver servicification.
-  source_set("mojo_service") {
-    sources = [
-      "mojo_host_resolver_impl.cc",
-      "mojo_host_resolver_impl.h",
-    ]
-
-    deps = [
-      "//base",
-      "//net",
-    ]
-
-    public_deps = [
-      "//mojo/public/cpp/bindings",
-      "//net/interfaces",
-    ]
-  }
 }
 
 source_set("tests") {
@@ -416,13 +389,6 @@ source_set("tests") {
     }
   }
 
-  if (enable_net_mojo) {
-    sources += [
-      "host_resolver_mojo_unittest.cc",
-      "mojo_host_resolver_impl_unittest.cc",
-    ]
-  }
-
   if (enable_mdns) {
     sources += [
       "mdns_cache_unittest.cc",
@@ -437,13 +403,6 @@ source_set("tests") {
     "//testing/gmock",
     "//testing/gtest",
   ]
-
-  if (enable_net_mojo) {
-    deps += [
-      "//net/dns:mojo_client",
-      "//net/dns:mojo_service",
-    ]
-  }
 }
 
 source_set("test_support") {

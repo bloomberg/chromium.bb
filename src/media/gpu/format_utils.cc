@@ -4,6 +4,7 @@
 
 #include "media/gpu/format_utils.h"
 #include "base/logging.h"
+#include "ui/gfx/buffer_format_util.h"
 
 namespace media {
 
@@ -30,7 +31,8 @@ VideoPixelFormat GfxBufferFormatToVideoPixelFormat(gfx::BufferFormat format) {
       return PIXEL_FORMAT_NV12;
 
     default:
-      LOG(FATAL) << "Add more cases as needed";
+      LOG(FATAL) << "Unsupported BufferFormat: "
+                 << gfx::BufferFormatToString(format);
       return PIXEL_FORMAT_UNKNOWN;
   }
 }
@@ -51,7 +53,7 @@ gfx::BufferFormat VideoPixelFormatToGfxBufferFormat(
       return gfx::BufferFormat::YUV_420_BIPLANAR;
 
     default:
-      LOG(FATAL) << "Add more cases as needed";
+      LOG(FATAL) << "Unsupported VideoPixelFormat: " << pixel_format;
       return gfx::BufferFormat::BGRX_8888;
   }
 }

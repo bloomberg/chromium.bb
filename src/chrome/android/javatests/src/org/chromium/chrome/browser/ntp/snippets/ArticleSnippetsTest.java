@@ -485,12 +485,12 @@ public class ArticleSnippetsTest {
     private class MockImageFetcher extends ImageFetcher {
         public MockImageFetcher(
                 SuggestionsSource suggestionsSource, DiscardableReferencePool referencePool) {
-            super(suggestionsSource, null, referencePool, null);
+            super(suggestionsSource, null, referencePool);
         }
 
         @Override
-        public void makeFaviconRequest(SnippetArticle suggestion, final int faviconSizePx,
-                final Callback<Bitmap> faviconCallback) {
+        public void makeFaviconRequest(
+                SnippetArticle suggestion, final Callback<Bitmap> faviconCallback) {
             // Run the callback asynchronously in case the caller made that assumption.
             ThreadUtils.postOnUiThread(() -> {
                 // Return an arbitrary drawable.

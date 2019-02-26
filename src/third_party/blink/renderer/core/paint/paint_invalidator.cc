@@ -226,10 +226,8 @@ void PaintInvalidator::UpdatePaintingLayer(const LayoutObject& object,
     context.painting_layer->SetNeedsPaintPhaseDescendantBlockBackgrounds();
   } else if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()) {
     // Hit testing rects for touch action paint in the background phase.
-    if (object.EffectiveWhitelistedTouchAction() !=
-        TouchAction::kTouchActionAuto) {
+    if (object.HasEffectiveWhitelistedTouchAction())
       context.painting_layer->SetNeedsPaintPhaseDescendantBlockBackgrounds();
-    }
   }
 }
 
@@ -490,7 +488,9 @@ void PaintInvalidator::InvalidatePaint(
   auto reason = static_cast<const DisplayItemClient&>(object)
                     .GetPaintInvalidationReason();
   if (object.ShouldDelayFullPaintInvalidation() &&
-      !IsFullPaintInvalidationReason(reason))
+      (!IsFullPaintInvalidationReason(reason) ||
+       // Delay invalidation if the client has never been painted.
+       reason == PaintInvalidationReason::kJustCreated))
     pending_delayed_paint_invalidations_.push_back(&object);
 
   if (object.SubtreeShouldDoFullPaintInvalidation()) {

@@ -8,11 +8,12 @@
 #ifndef GrVkCommandBuffer_DEFINED
 #define GrVkCommandBuffer_DEFINED
 
+#include "GrVkVulkan.h"
+
 #include "GrVkGpu.h"
 #include "GrVkResource.h"
 #include "GrVkSemaphore.h"
 #include "GrVkUtil.h"
-#include "vk/GrVkDefines.h"
 
 class GrVkBuffer;
 class GrVkFramebuffer;
@@ -310,6 +311,8 @@ public:
     void begin(const GrVkGpu* gpu, const GrVkFramebuffer* framebuffer,
                const GrVkRenderPass* compatibleRenderPass);
     void end(const GrVkGpu* gpu);
+
+    VkCommandBuffer vkCommandBuffer() { return fCmdBuffer; }
 
 #ifdef SK_TRACE_VK_RESOURCES
     void dumpInfo() const override {

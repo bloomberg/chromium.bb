@@ -17,6 +17,7 @@
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/render_text.h"
@@ -35,15 +36,18 @@ constexpr int kIconLeftRightPadding = 19;
 constexpr int kTextTrailPadding = 16;
 // Extra margin at the right of the rightmost action icon.
 constexpr int kActionButtonRightMargin = 8;
+// Text line height in the search result.
+constexpr int kTitleLineHeight = 20;
+constexpr int kDetailsLineHeight = 16;
 
-// Matched text color, #000 87%.
-constexpr SkColor kMatchedTextColor = SkColorSetARGB(0xDE, 0x00, 0x00, 0x00);
-// Default text color, #000 54%.
-constexpr SkColor kDefaultTextColor = SkColorSetARGB(0x8A, 0x00, 0x00, 0x00);
+// Matched text color.
+constexpr SkColor kMatchedTextColor = gfx::kGoogleGrey900;
+// Default text color.
+constexpr SkColor kDefaultTextColor = gfx::kGoogleGrey700;
 // URL color.
-constexpr SkColor kUrlColor = SkColorSetARGB(0xFF, 0x33, 0x67, 0xD6);
-// Row selected color, #000 8%.
-constexpr SkColor kRowHighlightedColor = SkColorSetARGB(0x14, 0x00, 0x00, 0x00);
+constexpr SkColor kUrlColor = gfx::kGoogleBlue600;
+// Row selected color, Google Grey 8%.
+constexpr SkColor kRowHighlightedColor = SkColorSetA(gfx::kGoogleGrey900, 0x14);
 // Search result border color.
 constexpr SkColor kResultBorderColor = SkColorSetARGB(0xFF, 0xE5, 0xE5, 0xE5);
 
@@ -298,10 +302,8 @@ void SearchResultView::PaintButtonContents(gfx::Canvas* canvas) {
   canvas->FillRect(border_bottom, kResultBorderColor);
 
   if (title_text_ && details_text_) {
-    gfx::Size title_size(text_bounds.width(),
-                         title_text_->GetStringSize().height());
-    gfx::Size details_size(text_bounds.width(),
-                           details_text_->GetStringSize().height());
+    gfx::Size title_size(text_bounds.width(), kTitleLineHeight);
+    gfx::Size details_size(text_bounds.width(), kDetailsLineHeight);
     int total_height = title_size.height() + details_size.height();
     int y = text_bounds.y() + (text_bounds.height() - total_height) / 2;
 
@@ -390,6 +392,10 @@ void SearchResultView::OnPercentDownloadedChanged() {
 
 void SearchResultView::OnItemInstalled() {
   list_view_->OnSearchResultInstalled(this);
+}
+
+void SearchResultView::OnResultDestroying() {
+  SetResult(nullptr);
 }
 
 void SearchResultView::OnSearchResultActionActivated(size_t index,

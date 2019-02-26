@@ -27,6 +27,24 @@ class MultiDeviceSetupScreen : public BaseScreen {
   void OnUserAction(const std::string& action_id) override;
 
  private:
+  friend class MultiDeviceSetupScreenTest;
+
+  // This enum is tied directly to a UMA enum defined in
+  // //tools/metrics/histograms/enums.xml, and should always reflect it (do not
+  // change one without changing the other).  Entries should be never modified
+  // or deleted.  Only additions possible.
+  enum class MultiDeviceSetupOOBEUserChoice {
+    kAccepted = 0,
+    kDeclined = 1,
+    kMaxValue = kDeclined
+  };
+
+  static void RecordMultiDeviceSetupOOBEUserChoiceHistogram(
+      MultiDeviceSetupOOBEUserChoice value);
+
+  // Exits the screen.
+  void ExitScreen();
+
   MultiDeviceSetupScreenView* view_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiDeviceSetupScreen);

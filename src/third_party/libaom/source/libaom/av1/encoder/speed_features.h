@@ -250,6 +250,12 @@ typedef enum {
   LOW_TXFM_RD,
 } TXFM_RD_MODEL;
 
+typedef enum {
+  JNT_COMP_ENABLED,
+  JNT_COMP_SKIP_MV_SEARCH,
+  JNT_COMP_DISABLED,
+} JNT_COMP_FLAG;
+
 typedef struct SPEED_FEATURES {
   MV_SPEED_FEATURES mv;
 
@@ -333,7 +339,7 @@ typedef struct SPEED_FEATURES {
   BLOCK_SIZE always_this_block_size;
 
   // Drop less likely to be picked reference frames in the RD search.
-  // Has three levels for now: 0, 1 and 2, where higher levels prune more
+  // Has four levels for now: 0, 1, 2 and 3, where higher levels prune more
   // aggressively than lower ones. (0 means no pruning).
   int selective_ref_frame;
 
@@ -370,6 +376,9 @@ typedef struct SPEED_FEATURES {
 
   // Prune reference frames for rectangular partitions.
   int prune_ref_frame_for_rect_partitions;
+
+  // Prune ref/mode choices for partitions.
+  int prune_ref_mode_for_partitions;
 
   // Sets min and max partition sizes for this superblock based on the
   // same superblock in last encoded frame, and the left and above neighbor.
@@ -473,7 +482,7 @@ typedef struct SPEED_FEATURES {
 
   // If true, sub-pixel search uses the exact convolve function used for final
   // encoding and decoding; otherwise, it uses bilinear interpolation.
-  int use_accurate_subpel_search;
+  SUBPEL_SEARCH_TYPE use_accurate_subpel_search;
 
   // Whether to compute distortion in the image domain (slower but
   // more accurate), or in the transform domain (faster but less acurate).
@@ -491,6 +500,9 @@ typedef struct SPEED_FEATURES {
   // Do limited interpolation filter search for dual filters, since best choice
   // usually includes EIGHTTAP_REGULAR.
   int use_fast_interpolation_filter_search;
+
+  // Disable dual filter
+  int disable_dual_filter;
 
   // Save results of interpolation_filter_search for a block
   // Check mv and ref_frames before search, if they are same with previous
@@ -525,8 +537,8 @@ typedef struct SPEED_FEATURES {
   // Use model rd instead of transform search in jnt_comp
   int jnt_comp_fast_tx_search;
 
-  // Skip mv search in jnt_comp
-  int jnt_comp_skip_mv_search;
+  // Decide when and how to use joint_comp.
+  JNT_COMP_FLAG use_jnt_comp_flag;
 
   // Decoder side speed feature to add penalty for use of dual-sgr filters.
   // Takes values 0 - 10, 0 indicating no penalty and each additional level
@@ -543,6 +555,10 @@ typedef struct SPEED_FEATURES {
   // single inter mode as a group.
   int prune_comp_search_by_single_result;
 
+  // Skip certain motion modes (OBMC, warped, interintra) for single reference
+  // motion search, using the results of single ref SIMPLE_TRANSLATION
+  int prune_single_motion_modes_by_simple_trans;
+
   // Reuse the inter_intra_mode search result from NEARESTMV mode to other
   // single ref modes
   int reuse_inter_intra_mode;
@@ -554,6 +570,9 @@ typedef struct SPEED_FEATURES {
 
   // flag to skip NEWMV mode in drl if the motion search result is the same
   int skip_repeated_newmv;
+
+  // Prune intra mode candidates based on source block gradient stats.
+  int intra_angle_estimation;
 } SPEED_FEATURES;
 
 struct AV1_COMP;

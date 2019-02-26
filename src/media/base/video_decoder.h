@@ -128,6 +128,13 @@ class MEDIA_EXPORT VideoDecoder {
   // Returns maximum number of parallel decode requests.
   virtual int GetMaxDecodeRequests() const;
 
+  // Returns the recommended number of threads for software video decoding. If
+  // the --video-threads command line option is specified and is valid, that
+  // value is returned. Otherwise |desired_threads| is clamped to the number of
+  // logical processors and then further clamped to
+  // [|limits::kMinVideoDecodeThreads|, |limits::kMaxVideoDecodeThreads|].
+  static int GetRecommendedThreadCount(int desired_threads);
+
  protected:
   // Deletion is only allowed via Destroy().
   virtual ~VideoDecoder();

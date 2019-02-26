@@ -48,73 +48,6 @@ namespace egl
 class Error;
 }  // namespace egl
 
-namespace gl
-{
-
-class ANGLE_NO_DISCARD Error final
-{
-  public:
-    explicit inline Error(GLenum errorCode);
-    Error(GLenum errorCode, std::string &&message);
-    Error(GLenum errorCode, GLuint id, std::string &&message);
-    inline Error(const Error &other);
-    inline Error(Error &&other);
-    inline ~Error() = default;
-
-    // automatic error type conversion
-    inline Error(egl::Error &&eglErr);
-    inline Error(egl::Error eglErr);
-
-    inline Error &operator=(const Error &other);
-    inline Error &operator=(Error &&other);
-
-    inline GLenum getCode() const;
-    inline GLuint getID() const;
-    inline bool isError() const;
-
-    const std::string &getMessage() const;
-
-    // Useful for mocking and testing
-    bool operator==(const Error &other) const;
-    bool operator!=(const Error &other) const;
-
-    static inline Error NoError();
-
-  private:
-    void createMessageString() const;
-
-    friend std::ostream &operator<<(std::ostream &os, const Error &err);
-    friend class egl::Error;
-
-    GLenum mCode;
-    GLuint mID;
-    mutable std::unique_ptr<std::string> mMessage;
-};
-
-namespace priv
-{
-
-template <GLenum EnumT>
-using ErrorStream = angle::ErrorStreamBase<Error, GLenum, GL_NO_ERROR, GLenum, EnumT>;
-
-}  // namespace priv
-
-using InternalError = priv::ErrorStream<GL_INVALID_OPERATION>;
-
-using InvalidEnum                 = priv::ErrorStream<GL_INVALID_ENUM>;
-using InvalidValue                = priv::ErrorStream<GL_INVALID_VALUE>;
-using InvalidOperation            = priv::ErrorStream<GL_INVALID_OPERATION>;
-using StackOverflow               = priv::ErrorStream<GL_STACK_OVERFLOW>;
-using StackUnderflow              = priv::ErrorStream<GL_STACK_UNDERFLOW>;
-using OutOfMemory                 = priv::ErrorStream<GL_OUT_OF_MEMORY>;
-using InvalidFramebufferOperation = priv::ErrorStream<GL_INVALID_FRAMEBUFFER_OPERATION>;
-
-inline Error NoError()
-{
-    return Error::NoError();
-}
-}  // namespace gl
-
 namespace egl
 {
 
@@ -127,10 +60,6 @@ class ANGLE_NO_DISCARD Error final
     inline Error(const Error &other);
     inline Error(Error &&other);
     inline ~Error() = default;
-
-    // automatic error type conversion
-    inline Error(gl::Error &&glErr);
-    inline Error(const gl::Error &glErr);
 
     inline Error &operator=(const Error &other);
     inline Error &operator=(Error &&other);
@@ -147,7 +76,6 @@ class ANGLE_NO_DISCARD Error final
     void createMessageString() const;
 
     friend std::ostream &operator<<(std::ostream &os, const Error &err);
-    friend class gl::Error;
 
     EGLint mCode;
     EGLint mID;
@@ -191,40 +119,28 @@ inline Error NoError()
 #define ANGLE_LOCAL_VAR ANGLE_CONCAT2(_localVar, __LINE__)
 
 #define ANGLE_TRY_TEMPLATE(EXPR, FUNC)                 \
+    do                                                 \
     {                                                  \
         auto ANGLE_LOCAL_VAR = EXPR;                   \
         if (ANGLE_UNLIKELY(ANGLE_LOCAL_VAR.isError())) \
         {                                              \
             FUNC(ANGLE_LOCAL_VAR);                     \
         }                                              \
-    }                                                  \
-    ANGLE_EMPTY_STATEMENT
+    } while (0)
 
 #define ANGLE_RETURN(X) return X;
 #define ANGLE_TRY(EXPR) ANGLE_TRY_TEMPLATE(EXPR, ANGLE_RETURN);
 
-// TODO(jmadill): Remove this once refactor is complete. http://anglebug.com/2491
-#define ANGLE_TRY_HANDLE(CONTEXT, EXPR)                \
-    {                                                  \
-        auto ANGLE_LOCAL_VAR = (EXPR);                 \
-        if (ANGLE_UNLIKELY(ANGLE_LOCAL_VAR.isError())) \
-        {                                              \
-            CONTEXT->handleError(ANGLE_LOCAL_VAR);     \
-            return angle::Result::Stop();              \
-        }                                              \
-    }                                                  \
-    ANGLE_EMPTY_STATEMENT
-
 // TODO(jmadill): Introduce way to store errors to a const Context. http://anglebug.com/2491
 #define ANGLE_SWALLOW_ERR(EXPR)                                       \
+    do                                                                \
     {                                                                 \
         auto ANGLE_LOCAL_VAR = EXPR;                                  \
         if (ANGLE_UNLIKELY(ANGLE_LOCAL_VAR.isError()))                \
         {                                                             \
             ERR() << "Unhandled internal error: " << ANGLE_LOCAL_VAR; \
         }                                                             \
-    }                                                                 \
-    ANGLE_EMPTY_STATEMENT
+    } while (0)
 
 #undef ANGLE_LOCAL_VAR
 #undef ANGLE_CONCAT2
@@ -255,12 +171,12 @@ class ANGLE_NO_DISCARD Result
     static Result Continue() { return Result(Value::Continue); }
     static Result Incomplete() { return Result(Value::Incomplete); }
 
-    // TODO(jmadill): Remove when refactor is complete. http://anglebug.com/2491
-    operator gl::Error() const;
-
     bool operator==(Result other) const { return mValue == other.mValue; }
 
     bool operator!=(Result other) const { return mValue != other.mValue; }
+
+    // TODO(jmadill): Remove when refactor is complete. http://anglebug.com/2491
+    egl::Error toEGL() const;
 
   private:
     enum class Value
@@ -277,4 +193,4 @@ class ANGLE_NO_DISCARD Result
 
 #include "Error.inl"
 
-#endif // LIBANGLE_ERROR_H_
+#endif  // LIBANGLE_ERROR_H_

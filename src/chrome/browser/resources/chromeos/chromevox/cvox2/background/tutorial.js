@@ -109,6 +109,21 @@ Tutorial.PAGES = [
     {msgid: 'tutorial_earcon_page_body'}, {custom: Tutorial.buildEarconPage_}
   ],
   [
+    {msgid: 'tutorial_touch_heading', heading: true},
+    {msgid: 'tutorial_touch_intro'}, {
+      list: true,
+      items: [
+        {msgid: 'tutorial_touch_drag_one_finger', listItem: true},
+        {msgid: 'tutorial_touch_swipe_left_right', listItem: true},
+        {msgid: 'tutorial_touch_swipe_up_down', listItem: true},
+        {msgid: 'tutorial_touch_double_tap', listItem: true},
+        {msgid: 'tutorial_touch_four_finger_tap', listItem: true},
+        {msgid: 'tutorial_touch_two_finger_tap', listItem: true},
+      ]
+    },
+    {msgid: 'tutorial_touch_learn_more'}
+  ],
+  [
     {msgid: 'tutorial_learn_more_heading', heading: true},
     {msgid: 'tutorial_learn_more'},
     {

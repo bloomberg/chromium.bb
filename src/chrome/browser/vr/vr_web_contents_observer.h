@@ -17,13 +17,13 @@ class NavigationHandle;
 namespace vr {
 
 class BrowserUiInterface;
-class ToolbarHelper;
+class LocationBarHelper;
 
 class VR_EXPORT VrWebContentsObserver : public content::WebContentsObserver {
  public:
   VrWebContentsObserver(content::WebContents* web_contents,
                         BrowserUiInterface* ui_interface,
-                        ToolbarHelper* toolbar,
+                        LocationBarHelper* toolbar,
                         base::OnceClosure on_destroy);
   ~VrWebContentsObserver() override;
 
@@ -46,7 +46,7 @@ class VR_EXPORT VrWebContentsObserver : public content::WebContentsObserver {
 
   // This class does not own these pointers.
   BrowserUiInterface* ui_interface_;
-  ToolbarHelper* toolbar_;
+  LocationBarHelper* toolbar_;
 
   base::OnceClosure on_destroy_;
 

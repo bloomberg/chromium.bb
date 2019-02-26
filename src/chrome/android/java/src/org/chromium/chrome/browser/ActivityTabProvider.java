@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser;
 
+import android.support.annotation.CallSuper;
+
 import org.chromium.base.ObserverList;
 import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
@@ -11,6 +13,7 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
 import org.chromium.chrome.browser.compositor.layouts.StaticLayout;
 import org.chromium.chrome.browser.compositor.layouts.phone.SimpleAnimationLayout;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -48,6 +51,64 @@ public class ActivityTabProvider {
          * @param tab The activity's tab.
          */
         public abstract void onActivityTabChanged(Tab tab);
+    }
+
+    /**
+     * A utility class for observing the activity tab via {@link TabObserver}. When the activity
+     * tab changes, the observer is switched to that tab.
+     */
+    public static class ActivityTabTabObserver extends EmptyTabObserver {
+        /** A handle to the activity tab provider. */
+        private final ActivityTabProvider mTabProvider;
+
+        /** An observer to watch for a changing activity tab and move this tab observer. */
+        private final ActivityTabObserver mActivityTabObserver;
+
+        /** The current activity tab. */
+        private Tab mTab;
+
+        /**
+         * Create a new {@link TabObserver} that only observes the activity tab.
+         * @param tabProvider An {@link ActivityTabProvider} to get the activity tab.
+         */
+        public ActivityTabTabObserver(ActivityTabProvider tabProvider) {
+            mTabProvider = tabProvider;
+            mActivityTabObserver = (tab, hint) -> {
+                updateObservedTab(tab);
+                onObservingDifferentTab(tab);
+            };
+            mTabProvider.addObserver(mActivityTabObserver);
+            updateObservedTab(mTabProvider.getActivityTab());
+        }
+
+        /**
+         * Update the tab being observed.
+         * @param newTab The new tab to observe.
+         */
+        private void updateObservedTab(Tab newTab) {
+            if (mTab != null) mTab.removeObserver(ActivityTabTabObserver.this);
+            mTab = newTab;
+            if (mTab != null) mTab.addObserver(ActivityTabTabObserver.this);
+        }
+
+        /**
+         * A notification that the observer has switched to observing a different tab. This will not
+         * be called for the initial tab being attached to after creation.
+         * @param tab The tab that the observer is now observing. This can be null.
+         */
+        protected void onObservingDifferentTab(Tab tab) {}
+
+        /**
+         * Clean up any state held by this observer.
+         */
+        @CallSuper
+        public void destroy() {
+            if (mTab != null) {
+                mTab.removeObserver(this);
+                mTab = null;
+            }
+            mTabProvider.removeObserver(mActivityTabObserver);
+        }
     }
 
     /** The list of observers to send events to. */
@@ -164,6 +225,16 @@ public class ActivityTabProvider {
         while (mRewindableIterator.hasNext()) {
             mRewindableIterator.next().onActivityTabChanged(tab, false);
         }
+    }
+
+    /**
+     * Add an observer but do not immediately trigger the event. This should only be used in
+     * extremely specific cases where the observer would trigger an event from the constructor of
+     * the implementing class (see {@link ActivityTabTabObserver}).
+     * @param observer The observer to be added.
+     */
+    private void addObserver(ActivityTabObserver observer) {
+        mObservers.addObserver(observer);
     }
 
     /**

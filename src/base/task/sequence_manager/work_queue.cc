@@ -156,13 +156,8 @@ Task WorkQueue::TakeTaskFromWorkQueue() {
 bool WorkQueue::RemoveAllCanceledTasksFromFront() {
   DCHECK(work_queue_sets_);
   bool task_removed = false;
-  const SequenceManagerImpl* sequence_manager = task_queue_->sequence_manager();
-  // TODO(alexclarke): Use IsCancelled once we've understood the bug.
-  // See http://crbug.com/798554
-  while (
-      !tasks_.empty() &&
-      (!tasks_.front().task ||
-       sequence_manager->SetCrashKeysAndCheckIsTaskCancelled(tasks_.front()))) {
+  while (!tasks_.empty() &&
+         (!tasks_.front().task || tasks_.front().task.IsCancelled())) {
     tasks_.pop_front();
     task_removed = true;
   }
@@ -244,14 +239,21 @@ bool WorkQueue::ShouldRunBefore(const WorkQueue* other_queue) const {
   return enqueue_order < other_enqueue_order;
 }
 
+void WorkQueue::MaybeShrinkQueue() {
+  tasks_.MaybeShrinkQueue();
+}
+
+void WorkQueue::DeletePendingTasks() {
+  tasks_.clear();
+
+  if (work_queue_sets_ && heap_handle().IsValid())
+    work_queue_sets_->OnPopQueue(this);
+}
+
 void WorkQueue::PopTaskForTesting() {
   if (tasks_.empty())
     return;
   tasks_.pop_front();
-}
-
-void WorkQueue::MaybeShrinkQueue() {
-  tasks_.MaybeShrinkQueue();
 }
 
 }  // namespace internal

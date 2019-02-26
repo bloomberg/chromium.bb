@@ -15,6 +15,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/notifications/notification_interactive_uitest_support.h"
 #include "chrome/browser/notifications/notification_ui_manager_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -103,7 +104,7 @@ class NotificationUIManagerBrowserTest : public InProcessBrowserTest {
         base::ASCIIToUTF16("title"), base::ASCIIToUTF16("message"),
         gfx::Image(), base::UTF8ToUTF16("chrome-test://testing/"),
         GURL("chrome-test://testing/"),
-        message_center::NotifierId(message_center::NotifierId::APPLICATION,
+        message_center::NotifierId(message_center::NotifierType::APPLICATION,
                                    "extension_id"),
         data, new_delegate);
   }
@@ -126,11 +127,15 @@ IN_PROC_BROWSER_TEST_F(NotificationUIManagerBrowserTest, BasicAddCancel) {
   // mode..." or something which may change the expectation.
   // TODO(mukai): move this to SetUpOnMainThread() after fixing the side-effect
   // of canceling animation which prevents some Displayed() event.
+  TestMessageCenterObserver observer;
+  message_center()->AddObserver(&observer);
   manager()->CancelAll();
   manager()->Add(CreateTestNotification("hey"), profile());
   EXPECT_EQ(1u, message_center()->NotificationCount());
+  EXPECT_NE("", observer.last_displayed_id());
   manager()->CancelById("hey", NotificationUIManager::GetProfileID(profile()));
   EXPECT_EQ(0u, message_center()->NotificationCount());
+  message_center()->RemoveObserver(&observer);
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationUIManagerBrowserTest, BasicDelegate) {

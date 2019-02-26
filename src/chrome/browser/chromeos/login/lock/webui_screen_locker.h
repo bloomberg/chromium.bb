@@ -38,10 +38,6 @@ namespace login {
 class NetworkStateHelper;
 }
 
-namespace test {
-class WebUIScreenLockerTester;
-}
-
 // Displays a WebUI lock screen based on the Oobe account picker screen.
 class WebUIScreenLocker : public WebUILoginView,
                           public ScreenLocker::Delegate,
@@ -62,8 +58,9 @@ class WebUIScreenLocker : public WebUILoginView,
   // ScreenLockReady is called when all initialization has finished.
   void LockScreen();
 
+  bool webui_ready_for_testing() const { return webui_ready_; }
+
  private:
-  friend class test::WebUIScreenLockerTester;
 
   // Returns true if the lock screen should be preloaded.
   static bool ShouldPreloadLockScreen();
@@ -75,13 +72,14 @@ class WebUIScreenLocker : public WebUILoginView,
   void ShowErrorMessage(int error_msg_id,
                         HelpAppLauncher::HelpTopic help_topic_id) override;
   void ClearErrors() override;
-  void AnimateAuthenticationSuccess() override;
   void OnLockWebUIReady() override;
   void OnLockBackgroundDisplayed() override;
   void OnHeaderBarVisible() override;
   void OnAshLockAnimationFinished() override;
   void SetFingerprintState(const AccountId& account_id,
-                           ScreenLocker::FingerprintState state) override;
+                           ash::mojom::FingerprintState state) override;
+  void NotifyFingerprintAuthResult(const AccountId& account_id,
+                                   bool success) override;
   content::WebContents* GetWebContents() override;
 
   // LoginDisplay::Delegate:

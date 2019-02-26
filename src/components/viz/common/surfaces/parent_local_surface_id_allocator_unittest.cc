@@ -4,10 +4,12 @@
 
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 
+#include "base/test/simple_test_tick_clock.h"
+#include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // ParentLocalSurfaceIdAllocator has 2 accessors which do not alter state:
-// - GetCurrentLocalSurfaceId()
+// - GetCurrentLocalSurfaceIdAllocation().local_surface_id()
 // - is_allocation_suppressed()
 //
 // For every operation which changes state we can test:
@@ -22,74 +24,68 @@ namespace {
     const LocalSurfaceId& local_surface_id);
 ::testing::AssertionResult ChildSequenceNumberIsSet(
     const LocalSurfaceId& local_surface_id);
-::testing::AssertionResult NonceIsEmpty(const LocalSurfaceId& local_surface_id);
-
-LocalSurfaceId GetFakeChildAllocatedLocalSurfaceId(
-    const ParentLocalSurfaceIdAllocator& parent_allocator);
-ParentLocalSurfaceIdAllocator GetChildUpdatedAllocator();
+::testing::AssertionResult EmbedTokenIsValid(
+    const LocalSurfaceId& local_surface_id);
 
 }  // namespace
 
-// The default constructor should generate a embed_token and initialize the
-// last known LocalSurfaceId.
-// Allocation should not be suppressed.
-TEST(ParentLocalSurfaceIdAllocatorTest,
-     DefaultConstructorShouldInitializeLocalSurfaceIdAndNotBeSuppressed) {
-  ParentLocalSurfaceIdAllocator default_constructed_parent_allocator;
+class ParentLocalSurfaceIdAllocatorTest : public testing::Test {
+ public:
+  ParentLocalSurfaceIdAllocatorTest() = default;
 
-  const LocalSurfaceId& default_local_surface_id =
-      default_constructed_parent_allocator.GetCurrentLocalSurfaceId();
-  EXPECT_TRUE(default_local_surface_id.is_valid());
-  EXPECT_TRUE(ParentSequenceNumberIsSet(default_local_surface_id));
-  EXPECT_TRUE(ChildSequenceNumberIsSet(default_local_surface_id));
-  EXPECT_FALSE(NonceIsEmpty(default_local_surface_id));
-  EXPECT_FALSE(default_constructed_parent_allocator.is_allocation_suppressed());
-}
+  ~ParentLocalSurfaceIdAllocatorTest() override {}
 
-// The move constructor should move the last-known LocalSurfaceId.
-TEST(ParentLocalSurfaceIdAllocatorTest,
-     MoveConstructorShouldMoveLastKnownLocalSurfaceId) {
-  ParentLocalSurfaceIdAllocator moving_parent_allocator =
-      GetChildUpdatedAllocator();
-  LocalSurfaceId premoved_local_surface_id =
-      moving_parent_allocator.GetCurrentLocalSurfaceId();
+  ParentLocalSurfaceIdAllocator& allocator() { return *allocator_.get(); }
 
-  ParentLocalSurfaceIdAllocator moved_to_parent_allocator =
-      std::move(moving_parent_allocator);
+  base::TimeTicks Now() { return now_src_->NowTicks(); }
 
-  EXPECT_EQ(premoved_local_surface_id,
-            moved_to_parent_allocator.GetCurrentLocalSurfaceId());
-  EXPECT_FALSE(moved_to_parent_allocator.is_allocation_suppressed());
-}
+  void AdvanceTime(base::TimeDelta delta) { now_src_->Advance(delta); }
 
-// The move assignment operator should move the last-known LocalSurfaceId.
-TEST(ParentLocalSurfaceIdAllocatorTest,
-     MoveAssignmentOperatorShouldMoveLastKnownLocalSurfaceId) {
-  ParentLocalSurfaceIdAllocator moving_parent_allocator =
-      GetChildUpdatedAllocator();
-  LocalSurfaceId premoved_local_surface_id =
-      moving_parent_allocator.GetCurrentLocalSurfaceId();
-  ParentLocalSurfaceIdAllocator moved_to_parent_allocator;
-  EXPECT_NE(premoved_local_surface_id,
-            moved_to_parent_allocator.GetCurrentLocalSurfaceId());
+  LocalSurfaceIdAllocation GenerateChildLocalSurfaceIdAllocation() {
+    const LocalSurfaceId& current_local_surface_id =
+        allocator_->GetCurrentLocalSurfaceIdAllocation().local_surface_id();
 
-  moved_to_parent_allocator = std::move(moving_parent_allocator);
+    return LocalSurfaceIdAllocation(
+        LocalSurfaceId(current_local_surface_id.parent_sequence_number(),
+                       current_local_surface_id.child_sequence_number() + 1,
+                       current_local_surface_id.embed_token()),
+        base::TimeTicks::Now());
+  }
 
-  EXPECT_EQ(premoved_local_surface_id,
-            moved_to_parent_allocator.GetCurrentLocalSurfaceId());
-  EXPECT_FALSE(moved_to_parent_allocator.is_allocation_suppressed());
-}
+  // testing::Test:
+  void SetUp() override {
+    testing::Test::SetUp();
+    now_src_ = std::make_unique<base::SimpleTestTickClock>();
+    // Advance time by one millisecond to ensure all time stamps are non-null.
+    AdvanceTime(base::TimeDelta::FromMilliseconds(1u));
+    allocator_ =
+        std::make_unique<ParentLocalSurfaceIdAllocator>(now_src_.get());
+  }
+
+  void TearDown() override {
+    allocator_.reset();
+    now_src_.reset();
+  }
+
+ private:
+  std::unique_ptr<base::SimpleTestTickClock> now_src_;
+  std::unique_ptr<ParentLocalSurfaceIdAllocator> allocator_;
+
+  DISALLOW_COPY_AND_ASSIGN(ParentLocalSurfaceIdAllocatorTest);
+};
 
 // UpdateFromChild() on a parent allocator should accept the child's sequence
 // number. But it should continue to use its own parent sequence number and
 // embed_token.
-TEST(ParentLocalSurfaceIdAllocatorTest,
-     UpdateFromChildOnlyUpdatesExpectedLocalSurfaceIdComponents) {
-  ParentLocalSurfaceIdAllocator child_updated_parent_allocator;
+TEST_F(ParentLocalSurfaceIdAllocatorTest,
+       UpdateFromChildOnlyUpdatesExpectedLocalSurfaceIdComponents) {
+  allocator().GenerateId();
   LocalSurfaceId preupdate_local_surface_id =
-      child_updated_parent_allocator.GenerateId();
-  LocalSurfaceId child_allocated_local_surface_id =
-      GetFakeChildAllocatedLocalSurfaceId(child_updated_parent_allocator);
+      allocator().GetCurrentLocalSurfaceIdAllocation().local_surface_id();
+  LocalSurfaceIdAllocation child_local_surface_id_allocation =
+      GenerateChildLocalSurfaceIdAllocation();
+  const LocalSurfaceId& child_allocated_local_surface_id =
+      child_local_surface_id_allocation.local_surface_id();
   EXPECT_EQ(preupdate_local_surface_id.parent_sequence_number(),
             child_allocated_local_surface_id.parent_sequence_number());
   EXPECT_NE(preupdate_local_surface_id.child_sequence_number(),
@@ -97,73 +93,116 @@ TEST(ParentLocalSurfaceIdAllocatorTest,
   EXPECT_EQ(preupdate_local_surface_id.embed_token(),
             child_allocated_local_surface_id.embed_token());
 
-  bool changed = child_updated_parent_allocator.UpdateFromChild(
-      child_allocated_local_surface_id);
+  bool changed = allocator().UpdateFromChild(child_local_surface_id_allocation);
   EXPECT_TRUE(changed);
 
   const LocalSurfaceId& postupdate_local_surface_id =
-      child_updated_parent_allocator.GetCurrentLocalSurfaceId();
+      allocator().GetCurrentLocalSurfaceIdAllocation().local_surface_id();
   EXPECT_EQ(postupdate_local_surface_id.parent_sequence_number(),
             child_allocated_local_surface_id.parent_sequence_number());
   EXPECT_EQ(postupdate_local_surface_id.child_sequence_number(),
             child_allocated_local_surface_id.child_sequence_number());
   EXPECT_EQ(postupdate_local_surface_id.embed_token(),
             child_allocated_local_surface_id.embed_token());
-  EXPECT_FALSE(child_updated_parent_allocator.is_allocation_suppressed());
+  EXPECT_FALSE(allocator().is_allocation_suppressed());
 }
 
 // GenerateId() on a parent allocator should monotonically increment the parent
 // sequence number and use the previous embed_token.
-TEST(ParentLocalSurfaceIdAllocatorTest,
-     GenerateIdOnlyUpdatesExpectedLocalSurfaceIdComponents) {
-  ParentLocalSurfaceIdAllocator generating_parent_allocator =
-      GetChildUpdatedAllocator();
+TEST_F(ParentLocalSurfaceIdAllocatorTest,
+       GenerateIdOnlyUpdatesExpectedLocalSurfaceIdComponents) {
+  allocator().GenerateId();
   LocalSurfaceId pregenerateid_local_surface_id =
-      generating_parent_allocator.GetCurrentLocalSurfaceId();
+      allocator().GetCurrentLocalSurfaceIdAllocation().local_surface_id();
 
+  allocator().GenerateId();
   const LocalSurfaceId& returned_local_surface_id =
-      generating_parent_allocator.GenerateId();
+      allocator().GetCurrentLocalSurfaceIdAllocation().local_surface_id();
 
   const LocalSurfaceId& postgenerateid_local_surface_id =
-      generating_parent_allocator.GetCurrentLocalSurfaceId();
+      allocator().GetCurrentLocalSurfaceIdAllocation().local_surface_id();
   EXPECT_EQ(pregenerateid_local_surface_id.parent_sequence_number() + 1,
             postgenerateid_local_surface_id.parent_sequence_number());
   EXPECT_EQ(pregenerateid_local_surface_id.child_sequence_number(),
             postgenerateid_local_surface_id.child_sequence_number());
   EXPECT_EQ(pregenerateid_local_surface_id.embed_token(),
             postgenerateid_local_surface_id.embed_token());
-  EXPECT_EQ(returned_local_surface_id,
-            generating_parent_allocator.GetCurrentLocalSurfaceId());
-  EXPECT_FALSE(generating_parent_allocator.is_allocation_suppressed());
+  EXPECT_EQ(
+      returned_local_surface_id,
+      allocator().GetCurrentLocalSurfaceIdAllocation().local_surface_id());
+  EXPECT_FALSE(allocator().is_allocation_suppressed());
 }
 
 // This test verifies that calling reset with a LocalSurfaceId updates the
 // GetCurrentLocalSurfaceId and affects GenerateId.
-TEST(ParentLocalSurfaceIdAllocatorTest, ResetUpdatesComponents) {
-  ParentLocalSurfaceIdAllocator default_constructed_parent_allocator;
-
+TEST_F(ParentLocalSurfaceIdAllocatorTest, ResetUpdatesComponents) {
+  allocator().GenerateId();
   LocalSurfaceId default_local_surface_id =
-      default_constructed_parent_allocator.GetCurrentLocalSurfaceId();
+      allocator().GetCurrentLocalSurfaceIdAllocation().local_surface_id();
   EXPECT_TRUE(default_local_surface_id.is_valid());
   EXPECT_TRUE(ParentSequenceNumberIsSet(default_local_surface_id));
   EXPECT_TRUE(ChildSequenceNumberIsSet(default_local_surface_id));
-  EXPECT_FALSE(NonceIsEmpty(default_local_surface_id));
+  EXPECT_TRUE(EmbedTokenIsValid(default_local_surface_id));
 
   LocalSurfaceId new_local_surface_id(
       2u, 2u, base::UnguessableToken::Deserialize(0, 1u));
 
-  default_constructed_parent_allocator.Reset(new_local_surface_id);
-  EXPECT_EQ(new_local_surface_id,
-            default_constructed_parent_allocator.GetCurrentLocalSurfaceId());
+  allocator().Reset(new_local_surface_id);
+  EXPECT_EQ(
+      new_local_surface_id,
+      allocator().GetCurrentLocalSurfaceIdAllocation().local_surface_id());
 
+  allocator().GenerateId();
   LocalSurfaceId generated_id =
-      default_constructed_parent_allocator.GenerateId();
+      allocator().GetCurrentLocalSurfaceIdAllocation().local_surface_id();
 
   EXPECT_EQ(generated_id.embed_token(), new_local_surface_id.embed_token());
   EXPECT_EQ(generated_id.child_sequence_number(),
             new_local_surface_id.child_sequence_number());
   EXPECT_EQ(generated_id.parent_sequence_number(),
             new_local_surface_id.child_sequence_number() + 1);
+}
+
+// This test verifies that if the child-allocated LocalSurfaceId has the most
+// recent parent sequence number at the time UpdateFromChild is called, then
+// its allocation time is used as the latest allocation time in
+// ParentLocalSurfaceIdAllocator. In the event that the child-allocated
+// LocalSurfaceId does not correspond to the latest parent sequence number
+// then UpdateFromChild represents a new allocation and thus the allocation time
+// is updated.
+TEST_F(ParentLocalSurfaceIdAllocatorTest,
+       CorrectTimeStampUsedInUpdateFromChild) {
+  allocator().GenerateId();
+  LocalSurfaceIdAllocation child_allocated_id =
+      GenerateChildLocalSurfaceIdAllocation();
+
+  // Advance time by one millisecond.
+  AdvanceTime(base::TimeDelta::FromMilliseconds(1u));
+
+  {
+    bool changed = allocator().UpdateFromChild(child_allocated_id);
+    EXPECT_TRUE(changed);
+    EXPECT_EQ(child_allocated_id,
+              allocator().GetCurrentLocalSurfaceIdAllocation());
+  }
+
+  LocalSurfaceIdAllocation child_allocated_id2 =
+      GenerateChildLocalSurfaceIdAllocation();
+  allocator().GenerateId();
+  {
+    bool changed = allocator().UpdateFromChild(child_allocated_id2);
+    EXPECT_TRUE(changed);
+    EXPECT_NE(child_allocated_id2,
+              allocator().GetCurrentLocalSurfaceIdAllocation());
+    EXPECT_EQ(child_allocated_id2.local_surface_id().child_sequence_number(),
+              allocator()
+                  .GetCurrentLocalSurfaceIdAllocation()
+                  .local_surface_id()
+                  .child_sequence_number());
+    EXPECT_EQ(
+        Now(),
+        allocator().GetCurrentLocalSurfaceIdAllocation().allocation_time());
+  }
 }
 
 namespace {
@@ -173,7 +212,8 @@ namespace {
   if (local_surface_id.parent_sequence_number() != kInvalidParentSequenceNumber)
     return ::testing::AssertionSuccess();
 
-  return ::testing::AssertionFailure() << "parent_sequence_number() is not set";
+  return ::testing::AssertionFailure()
+         << "parent_sequence_number() is not set.";
 }
 
 ::testing::AssertionResult ChildSequenceNumberIsSet(
@@ -181,34 +221,15 @@ namespace {
   if (local_surface_id.child_sequence_number() != kInvalidChildSequenceNumber)
     return ::testing::AssertionSuccess();
 
-  return ::testing::AssertionFailure() << "child_sequence_number() is not set";
+  return ::testing::AssertionFailure() << "child_sequence_number() is not set.";
 }
 
-::testing::AssertionResult NonceIsEmpty(
+::testing::AssertionResult EmbedTokenIsValid(
     const LocalSurfaceId& local_surface_id) {
-  if (local_surface_id.embed_token().is_empty())
+  if (!local_surface_id.embed_token().is_empty())
     return ::testing::AssertionSuccess();
 
-  return ::testing::AssertionFailure() << "embed_token() is not empty";
-}
-
-LocalSurfaceId GetFakeChildAllocatedLocalSurfaceId(
-    const ParentLocalSurfaceIdAllocator& parent_allocator) {
-  const LocalSurfaceId& current_local_surface_id =
-      parent_allocator.GetCurrentLocalSurfaceId();
-
-  return LocalSurfaceId(current_local_surface_id.parent_sequence_number(),
-                        current_local_surface_id.child_sequence_number() + 1,
-                        current_local_surface_id.embed_token());
-}
-
-ParentLocalSurfaceIdAllocator GetChildUpdatedAllocator() {
-  ParentLocalSurfaceIdAllocator child_updated_parent_allocator;
-  LocalSurfaceId child_allocated_local_surface_id =
-      GetFakeChildAllocatedLocalSurfaceId(child_updated_parent_allocator);
-  child_updated_parent_allocator.UpdateFromChild(
-      child_allocated_local_surface_id);
-  return child_updated_parent_allocator;
+  return ::testing::AssertionFailure() << "embed_token() is invalid.";
 }
 
 }  // namespace

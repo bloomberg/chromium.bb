@@ -41,14 +41,12 @@
 #include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_text_utils.h"
 
-using std::string;
-
 // If set, specify the QUIC version to use.
-string FLAGS_quic_version = "";
+quic::QuicString FLAGS_quic_version = "";
 
 namespace {
 
-string ArgToString(base::CommandLine::StringType arg) {
+quic::QuicString ArgToString(base::CommandLine::StringType arg) {
 #if defined(OS_WIN)
   return base::UTF16ToASCII(arg);
 #else
@@ -67,7 +65,8 @@ class QuicPacketPrinter : public QuicFramerVisitorInterface {
     std::cerr << "OnError: " << QuicErrorCodeToString(framer->error())
               << " detail: " << framer->detailed_error() << "\n";
   }
-  bool OnProtocolVersionMismatch(ParsedQuicVersion received_version) override {
+  bool OnProtocolVersionMismatch(ParsedQuicVersion received_version,
+                                 PacketHeaderFormat form) override {
     framer_->set_version(received_version);
     std::cerr << "OnProtocolVersionMismatch: "
               << ParsedQuicVersionToString(received_version) << "\n";
@@ -160,6 +159,11 @@ class QuicPacketPrinter : public QuicFramerVisitorInterface {
     std::cerr << "OnNewConnectionIdFrame: " << frame;
     return true;
   }
+  bool OnRetireConnectionIdFrame(
+      const QuicRetireConnectionIdFrame& frame) override {
+    std::cerr << "OnRetireConnectionIdFrame: " << frame;
+    return true;
+  }
   bool OnNewTokenFrame(const QuicNewTokenFrame& frame) override {
     std::cerr << "OnNewTokenFrame: " << frame;
     return true;
@@ -231,7 +235,7 @@ int main(int argc, char* argv[]) {
     FLAGS_quic_version = line->GetSwitchValueASCII("quic_version");
   }
 
-  string perspective_string = ArgToString(args[0]);
+  quic::QuicString perspective_string = ArgToString(args[0]);
   quic::Perspective perspective;
   if (perspective_string == "client") {
     perspective = quic::Perspective::IS_CLIENT;
@@ -242,7 +246,7 @@ int main(int argc, char* argv[]) {
               << " Usage: " << args[0] << " client|server <hex>\n";
     return 1;
   }
-  string hex = quic::QuicTextUtils::HexDecode(argv[2]);
+  quic::QuicString hex = quic::QuicTextUtils::HexDecode(argv[2]);
   quic::ParsedQuicVersionVector versions = quic::AllSupportedVersions();
   // Fake a time since we're not actually generating acks.
   quic::QuicTime start(quic::QuicTime::Zero());

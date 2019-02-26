@@ -180,6 +180,12 @@ TEST(ChromeContentClientTest, AdditionalSchemes) {
             origin.Serialize());
 
   EXPECT_TRUE(content::IsOriginSecure(GURL("chrome-native://newtab/")));
+
+  GURL chrome_url("chrome://dummyurl");
+  EXPECT_TRUE(content::IsOriginSecure(chrome_url));
+  EXPECT_FALSE(content::OriginCanAccessServiceWorkers(chrome_url));
+  EXPECT_TRUE(
+      content::IsPotentiallyTrustworthyOrigin(url::Origin::Create(chrome_url)));
 }
 
 class OriginTrialInitializationTestThread

@@ -100,10 +100,11 @@ class PendingConnectionRequestBase
     DCHECK(!has_finished_without_connection_);
     has_finished_without_connection_ = true;
 
-    PA_LOG(INFO) << "Request finished without connection; notifying delegate. "
-                 << "Request type: \"" << readable_request_type_for_logging_
-                 << "\", Reason: " << reason
-                 << ", Client parameters: " << *client_connection_parameters_;
+    PA_LOG(VERBOSE)
+        << "Request finished without connection; notifying delegate. "
+        << "Request type: \"" << readable_request_type_for_logging_
+        << "\", Reason: " << reason
+        << ", Client parameters: " << *client_connection_parameters_;
     NotifyRequestFinishedWithoutConnection(reason);
   }
 

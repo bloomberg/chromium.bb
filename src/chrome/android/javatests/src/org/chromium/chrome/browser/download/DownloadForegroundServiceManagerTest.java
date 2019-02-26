@@ -65,7 +65,7 @@ public final class DownloadForegroundServiceManagerTest {
         void startAndBindServiceInternal(Context context) {}
 
         @Override
-        void stopAndUnbindService(@DownloadNotificationService2.DownloadStatus int downloadStatus) {
+        void stopAndUnbindService(@DownloadNotificationService.DownloadStatus int downloadStatus) {
             mIsServiceBound = false;
             super.stopAndUnbindService(downloadStatus);
         }
@@ -132,38 +132,38 @@ public final class DownloadForegroundServiceManagerTest {
     public void testBasicStartAndStop() {
         // Service starts and stops with addition and removal of one active download.
         mDownloadServiceManager.updateDownloadStatus(mContext,
-                DownloadNotificationService2.DownloadStatus.IN_PROGRESS, FAKE_DOWNLOAD_1,
+                DownloadNotificationService.DownloadStatus.IN_PROGRESS, FAKE_DOWNLOAD_1,
                 mNotification);
         assertTrue(mDownloadServiceManager.mIsServiceBound);
         mDownloadServiceManager.onServiceConnected();
 
         mDownloadServiceManager.updateDownloadStatus(mContext,
-                DownloadNotificationService2.DownloadStatus.COMPLETED, FAKE_DOWNLOAD_1,
+                DownloadNotificationService.DownloadStatus.COMPLETED, FAKE_DOWNLOAD_1,
                 mNotification);
         assertFalse(mDownloadServiceManager.mIsServiceBound);
 
         // Service does not get affected by addition of inactive download.
         mDownloadServiceManager.updateDownloadStatus(mContext,
-                DownloadNotificationService2.DownloadStatus.IN_PROGRESS, FAKE_DOWNLOAD_1,
+                DownloadNotificationService.DownloadStatus.IN_PROGRESS, FAKE_DOWNLOAD_1,
                 mNotification);
         assertTrue(mDownloadServiceManager.mIsServiceBound);
         mDownloadServiceManager.onServiceConnected();
 
         mDownloadServiceManager.updateDownloadStatus(mContext,
-                DownloadNotificationService2.DownloadStatus.PAUSED, FAKE_DOWNLOAD_2, mNotification);
+                DownloadNotificationService.DownloadStatus.PAUSED, FAKE_DOWNLOAD_2, mNotification);
         assertTrue(mDownloadServiceManager.mIsServiceBound);
 
         // Service continues as long as there is at least one active download.
         mDownloadServiceManager.updateDownloadStatus(mContext,
-                DownloadNotificationService2.DownloadStatus.IN_PROGRESS, FAKE_DOWNLOAD_3,
+                DownloadNotificationService.DownloadStatus.IN_PROGRESS, FAKE_DOWNLOAD_3,
                 mNotification);
         assertTrue(mDownloadServiceManager.mIsServiceBound);
         mDownloadServiceManager.updateDownloadStatus(mContext,
-                DownloadNotificationService2.DownloadStatus.PAUSED, FAKE_DOWNLOAD_1, mNotification);
+                DownloadNotificationService.DownloadStatus.PAUSED, FAKE_DOWNLOAD_1, mNotification);
         assertEquals(FAKE_DOWNLOAD_3, mDownloadServiceManager.mUpdatedNotificationId);
         assertTrue(mDownloadServiceManager.mIsServiceBound);
         mDownloadServiceManager.updateDownloadStatus(mContext,
-                DownloadNotificationService2.DownloadStatus.COMPLETED, FAKE_DOWNLOAD_3,
+                DownloadNotificationService.DownloadStatus.COMPLETED, FAKE_DOWNLOAD_3,
                 mNotification);
         assertFalse(mDownloadServiceManager.mIsServiceBound);
     }
@@ -175,10 +175,10 @@ public final class DownloadForegroundServiceManagerTest {
         // Calls to start and stop service.
         assertFalse(mDownloadServiceManager.mIsServiceBound);
         mDownloadServiceManager.updateDownloadStatus(mContext,
-                DownloadNotificationService2.DownloadStatus.IN_PROGRESS, FAKE_DOWNLOAD_1,
+                DownloadNotificationService.DownloadStatus.IN_PROGRESS, FAKE_DOWNLOAD_1,
                 mNotification);
         mDownloadServiceManager.updateDownloadStatus(mContext,
-                DownloadNotificationService2.DownloadStatus.COMPLETED, FAKE_DOWNLOAD_1,
+                DownloadNotificationService.DownloadStatus.COMPLETED, FAKE_DOWNLOAD_1,
                 mNotification);
 
         assertTrue(mDownloadServiceManager.mIsServiceBound);
@@ -195,13 +195,13 @@ public final class DownloadForegroundServiceManagerTest {
         // Calls to start and stop and start service.
         assertFalse(mDownloadServiceManager.mIsServiceBound);
         mDownloadServiceManager.updateDownloadStatus(mContext,
-                DownloadNotificationService2.DownloadStatus.IN_PROGRESS, FAKE_DOWNLOAD_1,
+                DownloadNotificationService.DownloadStatus.IN_PROGRESS, FAKE_DOWNLOAD_1,
                 mNotification);
         mDownloadServiceManager.updateDownloadStatus(mContext,
-                DownloadNotificationService2.DownloadStatus.COMPLETED, FAKE_DOWNLOAD_1,
+                DownloadNotificationService.DownloadStatus.COMPLETED, FAKE_DOWNLOAD_1,
                 mNotification);
         mDownloadServiceManager.updateDownloadStatus(mContext,
-                DownloadNotificationService2.DownloadStatus.IN_PROGRESS, FAKE_DOWNLOAD_2,
+                DownloadNotificationService.DownloadStatus.IN_PROGRESS, FAKE_DOWNLOAD_2,
                 mNotification);
         assertTrue(mDownloadServiceManager.mIsServiceBound);
 
@@ -212,7 +212,7 @@ public final class DownloadForegroundServiceManagerTest {
 
         // Make sure service is able to be shut down.
         mDownloadServiceManager.updateDownloadStatus(mContext,
-                DownloadNotificationService2.DownloadStatus.COMPLETED, FAKE_DOWNLOAD_2,
+                DownloadNotificationService.DownloadStatus.COMPLETED, FAKE_DOWNLOAD_2,
                 mNotification);
         assertFalse(mDownloadServiceManager.mIsServiceBound);
     }
@@ -223,26 +223,26 @@ public final class DownloadForegroundServiceManagerTest {
     public void testIsNotificationKilledOrDetached() {
         // Service starts and is paused, not complete, so notification not killed but is detached.
         mDownloadServiceManager.updateDownloadStatus(mContext,
-                DownloadNotificationService2.DownloadStatus.IN_PROGRESS, FAKE_DOWNLOAD_1,
+                DownloadNotificationService.DownloadStatus.IN_PROGRESS, FAKE_DOWNLOAD_1,
                 mNotification);
         assertTrue(mDownloadServiceManager.mIsServiceBound);
         mDownloadServiceManager.onServiceConnected();
 
         mDownloadServiceManager.updateDownloadStatus(mContext,
-                DownloadNotificationService2.DownloadStatus.PAUSED, FAKE_DOWNLOAD_1, mNotification);
+                DownloadNotificationService.DownloadStatus.PAUSED, FAKE_DOWNLOAD_1, mNotification);
         assertFalse(mDownloadServiceManager.mIsServiceBound);
         assertEquals(DownloadForegroundService.StopForegroundNotification.DETACH_OR_PERSIST,
                 mDownloadServiceManager.mStopForegroundNotificationFlag);
 
         // Service restarts and then is cancelled, so notification is killed.
         mDownloadServiceManager.updateDownloadStatus(mContext,
-                DownloadNotificationService2.DownloadStatus.IN_PROGRESS, FAKE_DOWNLOAD_1,
+                DownloadNotificationService.DownloadStatus.IN_PROGRESS, FAKE_DOWNLOAD_1,
                 mNotification);
         assertTrue(mDownloadServiceManager.mIsServiceBound);
         mDownloadServiceManager.onServiceConnected();
 
         mDownloadServiceManager.updateDownloadStatus(mContext,
-                DownloadNotificationService2.DownloadStatus.CANCELLED, FAKE_DOWNLOAD_1,
+                DownloadNotificationService.DownloadStatus.CANCELLED, FAKE_DOWNLOAD_1,
                 mNotification);
         assertFalse(mDownloadServiceManager.mIsServiceBound);
         assertEquals(DownloadForegroundService.StopForegroundNotification.KILL,
@@ -250,13 +250,13 @@ public final class DownloadForegroundServiceManagerTest {
 
         // Download starts and completes, notification is either detached or killed.
         mDownloadServiceManager.updateDownloadStatus(mContext,
-                DownloadNotificationService2.DownloadStatus.IN_PROGRESS, FAKE_DOWNLOAD_2,
+                DownloadNotificationService.DownloadStatus.IN_PROGRESS, FAKE_DOWNLOAD_2,
                 mNotification);
         assertTrue(mDownloadServiceManager.mIsServiceBound);
         mDownloadServiceManager.onServiceConnected();
 
         mDownloadServiceManager.updateDownloadStatus(mContext,
-                DownloadNotificationService2.DownloadStatus.COMPLETED, FAKE_DOWNLOAD_2,
+                DownloadNotificationService.DownloadStatus.COMPLETED, FAKE_DOWNLOAD_2,
                 mNotification);
         assertFalse(mDownloadServiceManager.mIsServiceBound);
         assertEquals(DownloadForegroundService.StopForegroundNotification.DETACH_OR_ADJUST,
@@ -270,7 +270,7 @@ public final class DownloadForegroundServiceManagerTest {
         // First call is a download being cancelled.
         assertFalse(mDownloadServiceManager.mIsServiceBound);
         mDownloadServiceManager.updateDownloadStatus(mContext,
-                DownloadNotificationService2.DownloadStatus.CANCELLED, FAKE_DOWNLOAD_1,
+                DownloadNotificationService.DownloadStatus.CANCELLED, FAKE_DOWNLOAD_1,
                 mNotification);
 
         // Make sure that nothing gets called, service is still not bound, and queue is empty.
@@ -279,38 +279,38 @@ public final class DownloadForegroundServiceManagerTest {
 
         // Start next two downloads.
         mDownloadServiceManager.updateDownloadStatus(mContext,
-                DownloadNotificationService2.DownloadStatus.IN_PROGRESS, FAKE_DOWNLOAD_2,
+                DownloadNotificationService.DownloadStatus.IN_PROGRESS, FAKE_DOWNLOAD_2,
                 mNotification);
         assertEquals(1, mDownloadServiceManager.mDownloadUpdateQueue.size());
         assertTrue(mDownloadServiceManager.mIsServiceBound);
         mDownloadServiceManager.onServiceConnected();
 
         mDownloadServiceManager.updateDownloadStatus(mContext,
-                DownloadNotificationService2.DownloadStatus.IN_PROGRESS, FAKE_DOWNLOAD_3,
+                DownloadNotificationService.DownloadStatus.IN_PROGRESS, FAKE_DOWNLOAD_3,
                 mNotification);
         assertEquals(2, mDownloadServiceManager.mDownloadUpdateQueue.size());
         assertTrue(mDownloadServiceManager.mIsServiceBound);
 
         // Queue is cleaned as each download becomes inactive (paused or complete).
         mDownloadServiceManager.updateDownloadStatus(mContext,
-                DownloadNotificationService2.DownloadStatus.PAUSED, FAKE_DOWNLOAD_2, mNotification);
+                DownloadNotificationService.DownloadStatus.PAUSED, FAKE_DOWNLOAD_2, mNotification);
         assertTrue(mDownloadServiceManager.mIsServiceBound);
         assertEquals(1, mDownloadServiceManager.mDownloadUpdateQueue.size());
 
         mDownloadServiceManager.updateDownloadStatus(mContext,
-                DownloadNotificationService2.DownloadStatus.IN_PROGRESS, FAKE_DOWNLOAD_2,
+                DownloadNotificationService.DownloadStatus.IN_PROGRESS, FAKE_DOWNLOAD_2,
                 mNotification);
         assertTrue(mDownloadServiceManager.mIsServiceBound);
         assertEquals(2, mDownloadServiceManager.mDownloadUpdateQueue.size());
 
         mDownloadServiceManager.updateDownloadStatus(mContext,
-                DownloadNotificationService2.DownloadStatus.COMPLETED, FAKE_DOWNLOAD_2,
+                DownloadNotificationService.DownloadStatus.COMPLETED, FAKE_DOWNLOAD_2,
                 mNotification);
         assertTrue(mDownloadServiceManager.mIsServiceBound);
         assertEquals(1, mDownloadServiceManager.mDownloadUpdateQueue.size());
 
         mDownloadServiceManager.updateDownloadStatus(mContext,
-                DownloadNotificationService2.DownloadStatus.COMPLETED, FAKE_DOWNLOAD_3,
+                DownloadNotificationService.DownloadStatus.COMPLETED, FAKE_DOWNLOAD_3,
                 mNotification);
         assertTrue(mDownloadServiceManager.mDownloadUpdateQueue.isEmpty());
         assertFalse(mDownloadServiceManager.mIsServiceBound);

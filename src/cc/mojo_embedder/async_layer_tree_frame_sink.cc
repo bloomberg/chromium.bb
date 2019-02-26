@@ -16,6 +16,7 @@
 #include "cc/trees/layer_tree_frame_sink_client.h"
 #include "components/viz/client/hit_test_data_provider.h"
 #include "components/viz/client/local_surface_id_provider.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/hit_test/hit_test_region_list.h"
 #include "components/viz/common/quads/compositor_frame.h"
@@ -97,6 +98,10 @@ AsyncLayerTreeFrameSink::AsyncLayerTreeFrameSink(
           "GraphicsPipeline.%s.SubmitCompositorFrameAfterBeginFrame",
           params->client_name)),
       weak_factory_(this) {
+  // We should not create hit test data provider if we want to use cc layer tree
+  // to generated data.
+  if (features::IsVizHitTestingSurfaceLayerEnabled())
+    DCHECK(!params->hit_test_data_provider);
   DETACH_FROM_THREAD(thread_checker_);
 }
 
@@ -161,7 +166,8 @@ void AsyncLayerTreeFrameSink::SetLocalSurfaceId(
 }
 
 void AsyncLayerTreeFrameSink::SubmitCompositorFrame(
-    viz::CompositorFrame frame) {
+    viz::CompositorFrame frame,
+    bool show_hit_test_borders) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(compositor_frame_sink_ptr_);
   DCHECK(frame.metadata.begin_frame_ack.has_damage);
@@ -180,8 +186,11 @@ void AsyncLayerTreeFrameSink::SubmitCompositorFrame(
   }
 
   if (!enable_surface_synchronization_) {
-    local_surface_id_ =
-        local_surface_id_provider_->GetLocalSurfaceIdForFrame(frame);
+    const viz::LocalSurfaceIdAllocation& local_surface_id_allocation =
+        local_surface_id_provider_->GetLocalSurfaceIdAllocationForFrame(frame);
+    local_surface_id_ = local_surface_id_allocation.local_surface_id();
+    frame.metadata.local_surface_id_allocation_time =
+        local_surface_id_allocation.allocation_time();
   } else {
     if (local_surface_id_ == last_submitted_local_surface_id_) {
       DCHECK_EQ(last_submitted_device_scale_factor_,
@@ -204,6 +213,9 @@ void AsyncLayerTreeFrameSink::SubmitCompositorFrame(
     hit_test_region_list = hit_test_data_provider_->GetHitTestData(frame);
   else
     hit_test_region_list = client_->BuildHitTestData();
+
+  if (show_hit_test_borders && hit_test_region_list)
+    hit_test_region_list->flags |= viz::HitTestRegionFlags::kHitTestDebug;
 
   if (last_submitted_local_surface_id_ != local_surface_id_) {
     last_submitted_local_surface_id_ = local_surface_id_;
@@ -260,6 +272,11 @@ void AsyncLayerTreeFrameSink::DidDeleteSharedBitmap(
   compositor_frame_sink_ptr_->DidDeleteSharedBitmap(id);
 }
 
+void AsyncLayerTreeFrameSink::ForceAllocateNewId() {
+  DCHECK(!enable_surface_synchronization_);
+  local_surface_id_provider_->ForceAllocateNewId();
+}
+
 void AsyncLayerTreeFrameSink::DidReceiveCompositorFrameAck(
     const std::vector<viz::ReturnedResource>& resources) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -267,14 +284,13 @@ void AsyncLayerTreeFrameSink::DidReceiveCompositorFrameAck(
   client_->DidReceiveCompositorFrameAck();
 }
 
-void AsyncLayerTreeFrameSink::DidPresentCompositorFrame(
-    uint32_t presentation_token,
-    const gfx::PresentationFeedback& feedback) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  client_->DidPresentCompositorFrame(presentation_token, feedback);
-}
+void AsyncLayerTreeFrameSink::OnBeginFrame(
+    const viz::BeginFrameArgs& args,
+    const base::flat_map<uint32_t, gfx::PresentationFeedback>& feedbacks) {
+  for (const auto& pair : feedbacks) {
+    client_->DidPresentCompositorFrame(pair.first, pair.second);
+  }
 
-void AsyncLayerTreeFrameSink::OnBeginFrame(const viz::BeginFrameArgs& args) {
   DCHECK_LE(pipeline_reporting_frame_times_.size(), 25u);
   if (args.trace_id != -1) {
     base::TimeTicks current_time = base::TimeTicks::Now();

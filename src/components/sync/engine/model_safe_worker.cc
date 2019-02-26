@@ -103,12 +103,12 @@ SyncerError ModelSafeWorker::DoWorkAndWaitUntilDone(WorkCallback work) {
     //         run after RequestStop() is called.
     base::AutoLock auto_lock(lock_);
     if (stopped_)
-      return CANNOT_DO_WORK;
+      return SyncerError(SyncerError::CANNOT_DO_WORK);
     DCHECK(!is_work_running_);
     work_done_or_abandoned_.Reset();
   }
 
-  SyncerError error = UNSET;
+  SyncerError error;
   bool did_run = false;
   ScheduleWork(base::BindOnce(&ModelSafeWorker::DoWork, this, std::move(work),
                               base::ScopedClosureRunner(base::BindOnce(
@@ -123,7 +123,7 @@ SyncerError ModelSafeWorker::DoWorkAndWaitUntilDone(WorkCallback work) {
   // before the task starts running.
   work_done_or_abandoned_.Wait();
 
-  return did_run ? error : CANNOT_DO_WORK;
+  return did_run ? error : SyncerError(SyncerError::CANNOT_DO_WORK);
 }
 
 void ModelSafeWorker::DoWork(WorkCallback work,

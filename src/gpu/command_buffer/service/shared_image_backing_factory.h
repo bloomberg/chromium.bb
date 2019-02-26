@@ -8,6 +8,9 @@
 #include <memory>
 
 #include "components/viz/common/resources/resource_format.h"
+#include "gpu/ipc/common/surface_handle.h"
+#include "ui/gfx/buffer_types.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 
 namespace gfx {
 class Size;
@@ -16,12 +19,23 @@ class ColorSpace;
 
 namespace gpu {
 class SharedImageBacking;
+struct Mailbox;
 
 class SharedImageBackingFactory {
  public:
   virtual ~SharedImageBackingFactory() = default;
   virtual std::unique_ptr<SharedImageBacking> CreateSharedImage(
+      const Mailbox& mailbox,
       viz::ResourceFormat format,
+      const gfx::Size& size,
+      const gfx::ColorSpace& color_space,
+      uint32_t usage) = 0;
+  virtual std::unique_ptr<SharedImageBacking> CreateSharedImage(
+      const Mailbox& mailbox,
+      int client_id,
+      gfx::GpuMemoryBufferHandle handle,
+      gfx::BufferFormat format,
+      SurfaceHandle surface_handle,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
       uint32_t usage) = 0;

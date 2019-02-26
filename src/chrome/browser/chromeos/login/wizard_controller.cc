@@ -108,7 +108,6 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
-#include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/cros_settings_provider.h"
 #include "chromeos/settings/timezone_settings.h"
@@ -258,15 +257,6 @@ bool IsBootstrappingSlave() {
 bool IsBootstrappingMaster() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kOobeBootstrappingMaster);
-}
-
-bool IsPublicSessionOrEphemeralLogin() {
-  const user_manager::UserManager* user_manager =
-      user_manager::UserManager::Get();
-  return user_manager->IsLoggedInAsPublicAccount() ||
-         (user_manager->IsCurrentUserNonCryptohomeDataEphemeral() &&
-          user_manager->GetActiveUser()->GetType() !=
-              user_manager::USER_TYPE_REGULAR);
 }
 
 bool NetworkAllowUpdate(const chromeos::NetworkState* network) {
@@ -608,19 +598,11 @@ void WizardController::ShowPreviousScreen() {
 }
 
 void WizardController::ShowUserImageScreen() {
-  // Skip user image selection for public sessions and ephemeral non-regular
-  // user logins.
-  if (IsPublicSessionOrEphemeralLogin()) {
-    OnUserImageSkipped();
-    return;
-  }
   VLOG(1) << "Showing user image screen.";
-
   // Status area has been already shown at sign in screen so it
   // doesn't make sense to hide it here and then show again at user session as
   // this produces undesired UX transitions.
   UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_USER_IMAGE_PICKER);
-
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_USER_IMAGE_PICKER));
 }
 
@@ -701,26 +683,12 @@ void WizardController::ShowSyncConsentScreen() {
 }
 
 void WizardController::ShowFingerprintSetupScreen() {
-  // Skip the screen for public sessions and non-regular ephemeral users.
-  // TODO(agawronska): Test that there are no wizard screens shown every time
-  // Public Session launches.
-  if (IsPublicSessionOrEphemeralLogin()) {
-    OnFingerprintSetupFinished();
-    return;
-  }
   VLOG(1) << "Showing Fingerprint Setup screen.";
   UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_FINGERPRINT_SETUP);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_FINGERPRINT_SETUP));
 }
 
 void WizardController::ShowMarketingOptInScreen() {
-  // Skip the screen for public sessions and non-regular ephemeral users.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableMarketingOptInScreen) ||
-      IsPublicSessionOrEphemeralLogin()) {
-    OnMarketingOptInFinished();
-    return;
-  }
   VLOG(1) << "Showing Marketing Opt-In screen.";
   UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_MARKETING_OPT_IN);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_MARKETING_OPT_IN));
@@ -852,48 +820,12 @@ void WizardController::ShowAssistantOptInFlowScreen() {
 }
 
 void WizardController::ShowMultiDeviceSetupScreen() {
-  // If multi-device flags are disabled, skip the associated setup flow.
-  if (!base::FeatureList::IsEnabled(features::kMultiDeviceApi) ||
-      !base::FeatureList::IsEnabled(features::kEnableUnifiedMultiDeviceSetup)) {
-    OnMultiDeviceSetupFinished();
-    return;
-  }
-
-  // Only attempt the setup flow for non-guest users.
-  if (IsPublicSessionOrEphemeralLogin()) {
-    OnMultiDeviceSetupFinished();
-    return;
-  }
-
-  multidevice_setup::MultiDeviceSetupClient* client =
-      multidevice_setup::MultiDeviceSetupClientFactory::GetForProfile(
-          ProfileManager::GetActiveUserProfile());
-
-  if (!client) {
-    OnMultiDeviceSetupFinished();
-    return;
-  }
-
-  // If there is no eligible multi-device host phone or if there is a phone and
-  // it has already been set, skip the setup flow.
-  if (client->GetHostStatus().first !=
-      multidevice_setup::mojom::HostStatus::kEligibleHostExistsButNoHostSet) {
-    VLOG(1) << "Skipping MultiDevice setup screen; host status: "
-            << client->GetHostStatus().first;
-    OnMultiDeviceSetupFinished();
-    return;
-  }
-
   VLOG(1) << "Showing MultiDevice setup screen.";
   UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_MULTIDEVICE_SETUP);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_MULTIDEVICE_SETUP));
 }
 
 void WizardController::ShowDiscoverScreen() {
-  if (IsPublicSessionOrEphemeralLogin()) {
-    OnDiscoverScreenFinished();
-    return;
-  }
   VLOG(1) << "Showing Discover screen.";
   UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_DISCOVER);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_DISCOVER));
@@ -1030,7 +962,7 @@ void WizardController::OnEulaAccepted() {
 }
 
 void WizardController::OnEulaBack() {
-    ShowNetworkScreen();
+  ShowNetworkScreen();
 }
 
 void WizardController::OnChangedMetricsReportingState(bool enabled) {
@@ -1064,24 +996,8 @@ void WizardController::OnUpdateErrorUpdating(bool is_critical_update) {
     OnUpdateCompleted();
 }
 
-void WizardController::EnableUserImageScreenReturnToPreviousHack() {
-  user_image_screen_return_to_previous_hack_ = true;
-}
-
 void WizardController::OnUserImageSelected() {
-  if (user_image_screen_return_to_previous_hack_) {
-    user_image_screen_return_to_previous_hack_ = false;
-    DCHECK(previous_screen_);
-    if (previous_screen_) {
-      SetCurrentScreen(previous_screen_);
-      return;
-    }
-  }
   OnOobeFlowFinished();
-}
-
-void WizardController::OnUserImageSkipped() {
-  OnUserImageSelected();
 }
 
 void WizardController::OnEnrollmentDone() {
@@ -1090,7 +1006,9 @@ void WizardController::OnEnrollmentDone() {
   // Restart to make the login page pick up the policy changes resulting from
   // enrollment recovery.  (Not pretty, but this codepath is rarely exercised.)
   if (prescribed_enrollment_config_.mode ==
-      policy::EnrollmentConfig::MODE_RECOVERY) {
+          policy::EnrollmentConfig::MODE_RECOVERY ||
+      prescribed_enrollment_config_.mode ==
+          policy::EnrollmentConfig::MODE_ENROLLED_ROLLBACK) {
     chrome::AttemptRestart();
   }
 
@@ -1141,10 +1059,12 @@ void WizardController::OnTermsOfServiceAccepted() {
 }
 
 void WizardController::OnSyncConsentFinished() {
-  if (chromeos::quick_unlock::IsFingerprintEnabled())
+  if (chromeos::quick_unlock::IsFingerprintEnabled(
+          ProfileManager::GetActiveUserProfile())) {
     ShowFingerprintSetupScreen();
-  else
+  } else {
     ShowDiscoverScreen();
+  }
 }
 
 void WizardController::OnDiscoverScreenFinished() {
@@ -1236,7 +1156,7 @@ void WizardController::OnAssistantOptInFlowFinished() {
 }
 
 void WizardController::OnMultiDeviceSetupFinished() {
-  ShowUserImageScreen();
+  OnOobeFlowFinished();
 }
 
 void WizardController::OnControllerPairingFinished() {
@@ -2175,6 +2095,7 @@ void WizardController::StartEnrollmentScreen(bool force_interactive) {
   // Determine the effective enrollment configuration. If there is a valid
   // prescribed configuration, use that. If not, figure out which variant of
   // manual enrollment is taking place.
+  // If OOBE Configuration exits, it might also affect enrollment configuration.
   policy::EnrollmentConfig effective_config = prescribed_enrollment_config_;
   if (!effective_config.should_enroll() ||
       (force_interactive && !effective_config.should_enroll_interactively())) {
@@ -2183,6 +2104,13 @@ void WizardController::StartEnrollmentScreen(bool force_interactive) {
             ? policy::EnrollmentConfig::MODE_MANUAL
             : policy::EnrollmentConfig::MODE_MANUAL_REENROLLMENT;
   }
+
+  // If chrome version is rolled back via policy, the device is actually
+  // enrolled but some enrollment-flow steps still need to be taken.
+  auto* restore_after_rollback_value = oobe_configuration_.FindKeyOfType(
+      configuration::kRestoreAfterRollback, base::Value::Type::BOOLEAN);
+  if (restore_after_rollback_value && restore_after_rollback_value->GetBool())
+    effective_config.mode = policy::EnrollmentConfig::MODE_ENROLLED_ROLLBACK;
 
   EnrollmentScreen* screen = EnrollmentScreen::Get(screen_manager());
   screen->SetParameters(effective_config, shark_controller_.get());

@@ -27,9 +27,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_CANVAS_PATTERN_H_
 
 #include "third_party/blink/renderer/core/geometry/dom_matrix_2d_init.h"
-#include "third_party/blink/renderer/core/svg/svg_matrix_tear_off.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/graphics/pattern.h"
+#include "third_party/blink/renderer/platform/transforms/affine_transform.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
@@ -47,19 +47,20 @@ class CanvasPattern final : public ScriptWrappable {
   static CanvasPattern* Create(scoped_refptr<Image> image,
                                Pattern::RepeatMode repeat,
                                bool origin_clean) {
-    return new CanvasPattern(std::move(image), repeat, origin_clean);
+    return MakeGarbageCollected<CanvasPattern>(std::move(image), repeat,
+                                               origin_clean);
   }
+
+  CanvasPattern(scoped_refptr<Image>, Pattern::RepeatMode, bool origin_clean);
 
   Pattern* GetPattern() const { return pattern_.get(); }
   const AffineTransform& GetTransform() const { return pattern_transform_; }
 
   bool OriginClean() const { return origin_clean_; }
 
-  void setTransform(DOMMatrix2DInit&, ExceptionState&);
+  void setTransform(DOMMatrix2DInit*, ExceptionState&);
 
  private:
-  CanvasPattern(scoped_refptr<Image>, Pattern::RepeatMode, bool origin_clean);
-
   scoped_refptr<Pattern> pattern_;
   AffineTransform pattern_transform_;
   bool origin_clean_;

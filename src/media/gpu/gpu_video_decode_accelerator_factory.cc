@@ -98,7 +98,8 @@ GpuVideoDecodeAcceleratorFactory::Create(
     const BindGLImageCallback& bind_image_cb) {
   return base::WrapUnique(new GpuVideoDecodeAcceleratorFactory(
       get_gl_context_cb, make_context_current_cb, bind_image_cb,
-      GetContextGroupCallback(), AndroidOverlayMojoFactoryCB()));
+      GetContextGroupCallback(), AndroidOverlayMojoFactoryCB(),
+      CreateAbstractTextureCallback()));
 }
 
 // static
@@ -108,10 +109,11 @@ GpuVideoDecodeAcceleratorFactory::CreateWithGLES2Decoder(
     const MakeGLContextCurrentCallback& make_context_current_cb,
     const BindGLImageCallback& bind_image_cb,
     const GetContextGroupCallback& get_context_group_cb,
-    const AndroidOverlayMojoFactoryCB& overlay_factory_cb) {
+    const AndroidOverlayMojoFactoryCB& overlay_factory_cb,
+    const CreateAbstractTextureCallback& create_abstract_texture_cb) {
   return base::WrapUnique(new GpuVideoDecodeAcceleratorFactory(
       get_gl_context_cb, make_context_current_cb, bind_image_cb,
-      get_context_group_cb, overlay_factory_cb));
+      get_context_group_cb, overlay_factory_cb, create_abstract_texture_cb));
 }
 
 // static
@@ -270,7 +272,7 @@ GpuVideoDecodeAcceleratorFactory::CreateAndroidVDA(
       std::make_unique<AndroidVideoSurfaceChooserImpl>(
           DeviceInfo::GetInstance()->IsSetOutputSurfaceSupported()),
       make_context_current_cb_, get_context_group_cb_, overlay_factory_cb_,
-      DeviceInfo::GetInstance()));
+      create_abstract_texture_cb_, DeviceInfo::GetInstance()));
   return decoder;
 }
 #endif
@@ -280,12 +282,14 @@ GpuVideoDecodeAcceleratorFactory::GpuVideoDecodeAcceleratorFactory(
     const MakeGLContextCurrentCallback& make_context_current_cb,
     const BindGLImageCallback& bind_image_cb,
     const GetContextGroupCallback& get_context_group_cb,
-    const AndroidOverlayMojoFactoryCB& overlay_factory_cb)
+    const AndroidOverlayMojoFactoryCB& overlay_factory_cb,
+    const CreateAbstractTextureCallback& create_abstract_texture_cb)
     : get_gl_context_cb_(get_gl_context_cb),
       make_context_current_cb_(make_context_current_cb),
       bind_image_cb_(bind_image_cb),
       get_context_group_cb_(get_context_group_cb),
-      overlay_factory_cb_(overlay_factory_cb) {}
+      overlay_factory_cb_(overlay_factory_cb),
+      create_abstract_texture_cb_(create_abstract_texture_cb) {}
 
 GpuVideoDecodeAcceleratorFactory::~GpuVideoDecodeAcceleratorFactory() = default;
 

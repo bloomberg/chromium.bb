@@ -15,7 +15,6 @@
 #include "core/fxcrt/fx_string.h"
 #include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/unowned_ptr.h"
-#include "third_party/base/stl_util.h"
 
 class CPDF_Dictionary;
 class CPDF_Font;
@@ -86,16 +85,16 @@ WideString FPDF_GetFullName(CPDF_Dictionary* pFieldDict);
 class CPDF_FormField {
  public:
   enum Type {
-    Unknown,
-    PushButton,
-    RadioButton,
-    CheckBox,
-    Text,
-    RichText,
-    File,
-    ListBox,
-    ComboBox,
-    Sign
+    kUnknown,
+    kPushButton,
+    kRadioButton,
+    kCheckBox,
+    kText,
+    kRichText,
+    kFile,
+    kListBox,
+    kComboBox,
+    kSign
   };
 
   CPDF_FormField(CPDF_InteractiveForm* pForm, CPDF_Dictionary* pDict);
@@ -110,13 +109,9 @@ class CPDF_FormField {
 
   bool ResetField(NotificationOption notify);
 
-  int CountControls() const {
-    return pdfium::CollectionSize<int>(m_ControlList);
-  }
+  int CountControls() const;
 
-  CPDF_FormControl* GetControl(int index) const {
-    return m_ControlList[index].Get();
-  }
+  CPDF_FormControl* GetControl(int index) const;
 
   int GetControlIndex(const CPDF_FormControl* pControl) const;
   FormFieldType GetFieldType() const;
@@ -175,10 +170,6 @@ class CPDF_FormField {
 
   WideString GetCheckValue(bool bDefault) const;
 
-  void AddFormControl(CPDF_FormControl* pFormControl) {
-    m_ControlList.emplace_back(pFormControl);
-  }
-
   void SetOpt(std::unique_ptr<CPDF_Object> pOpt);
 
  private:
@@ -200,7 +191,9 @@ class CPDF_FormField {
   bool NotifyListOrComboBoxBeforeChange(const WideString& value);
   void NotifyListOrComboBoxAfterChange();
 
-  CPDF_FormField::Type m_Type = Unknown;
+  const std::vector<UnownedPtr<CPDF_FormControl>>& GetControls() const;
+
+  CPDF_FormField::Type m_Type = kUnknown;
   uint32_t m_Flags = 0;
   bool m_bReadOnly = false;
   bool m_bRequired = false;
@@ -208,8 +201,6 @@ class CPDF_FormField {
 
   UnownedPtr<CPDF_InteractiveForm> const m_pForm;
   UnownedPtr<CPDF_Dictionary> const m_pDict;
-  // Owned by InteractiveForm parent.
-  std::vector<UnownedPtr<CPDF_FormControl>> m_ControlList;
   float m_FontSize = 0;
   UnownedPtr<CPDF_Font> m_pFont;
 };

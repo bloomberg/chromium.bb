@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 
+#include <memory>
+
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "base/logging.h"
@@ -15,8 +17,9 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/session_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/ksv/keyboard_shortcut_viewer_util.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -26,6 +29,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/chromeos_features.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_features_parser.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
@@ -36,6 +40,7 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/protocol/sync_enums.pb.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
+#include "components/sync_sessions/session_sync_service.h"
 #include "components/sync_sessions/synced_session.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
@@ -109,8 +114,7 @@ const std::vector<InternalApp>& GetInternalAppListImpl(bool get_all,
 
   const bool add_discover_app =
       get_all || !chromeos::ProfileHelper::IsEphemeralUserProfile(profile);
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableDiscoverApp) &&
+  if (base::FeatureList::IsEnabled(chromeos::features::kDiscoverApp) &&
       add_discover_app) {
     internal_app_list->push_back(
         {kInternalAppIdDiscover, IDS_INTERNAL_APP_DISCOVER,
@@ -235,15 +239,20 @@ void OnArcFeaturesRead(Profile* profile,
       registry->GetInstalledExtension(chrome_app_id);
 
   bool arc_enabled = arc::IsArcPlayStoreEnabledForProfile(profile);
+  bool is_android_camera_app_registered =
+      arc_enabled &&
+      ArcAppListPrefs::Get(profile)->IsRegistered(kAndroidCameraAppId);
   bool chrome_camera_migrated =
       profile->GetPrefs()->GetBoolean(prefs::kCameraMediaConsolidated);
 
   VLOG(1) << "Launching camera app. arc_enabled = " << arc_enabled
+          << " is_android_camera_app_registered = "
+          << is_android_camera_app_registered
           << " arc_p_or_above = " << arc_p_or_above
           << " chrome_camera_migrated = " << chrome_camera_migrated
           << " cca_exist = " << (extension != nullptr);
-
-  if (arc_enabled && arc_p_or_above && (!extension || chrome_camera_migrated)) {
+  if (arc_p_or_above && is_android_camera_app_registered &&
+      (!extension || chrome_camera_migrated)) {
     // Open Google camera app or GCA migration app according to GCA
     // migration system property.
     arc::ArcPropertyBridge* property =
@@ -290,11 +299,11 @@ gfx::ImageSkia GetIconForResourceId(int resource_id, int resource_size_in_dip) {
 bool HasRecommendableForeignTab(Profile* profile,
                                 base::string16* title,
                                 GURL* url) {
-  syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile);
+  sync_sessions::SessionSyncService* service =
+      SessionSyncServiceFactory::GetForProfile(profile);
   std::vector<const sync_sessions::SyncedSession*> foreign_sessions;
   sync_sessions::OpenTabsUIDelegate* delegate =
-      sync_service->GetOpenTabsUIDelegate();
+      service->GetOpenTabsUIDelegate();
   if (delegate != nullptr)
     delegate->GetAllForeignSessions(&foreign_sessions);
 

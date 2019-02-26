@@ -16,6 +16,11 @@ FakeCiceroneClient::FakeCiceroneClient() {
 
   container_app_icon_response_.Clear();
 
+  get_linux_package_info_response_.Clear();
+  get_linux_package_info_response_.set_success(true);
+  get_linux_package_info_response_.set_package_id("Fake Package;1.0;x86-64");
+  get_linux_package_info_response_.set_summary("A package that is fake");
+
   install_linux_package_response_.Clear();
   install_linux_package_response_.set_status(
       vm_tools::cicerone::InstallLinuxPackageResponse::STARTED);
@@ -82,6 +87,14 @@ void FakeCiceroneClient::GetContainerAppIcons(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), container_app_icon_response_));
+}
+
+void FakeCiceroneClient::GetLinuxPackageInfo(
+    const vm_tools::cicerone::LinuxPackageInfoRequest& request,
+    DBusMethodCallback<vm_tools::cicerone::LinuxPackageInfoResponse> callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), get_linux_package_info_response_));
 }
 
 void FakeCiceroneClient::InstallLinuxPackage(

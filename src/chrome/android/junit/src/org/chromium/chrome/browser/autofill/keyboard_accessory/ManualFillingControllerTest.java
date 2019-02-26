@@ -10,12 +10,15 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryAction.GENERATE_PASSWORD_AUTOMATIC;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.ACTIVE_TAB;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.TABS;
 import static org.chromium.chrome.browser.tab.Tab.INVALID_TAB_ID;
 import static org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType.FROM_BROWSER_ACTIONS;
@@ -25,7 +28,7 @@ import static org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType.FRO
 
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
-import android.support.v4.view.ViewPager;
+import android.view.ViewGroup;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -40,6 +43,8 @@ import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.ChromeKeyboardVisibilityDelegate;
+import org.chromium.chrome.browser.ChromeWindow;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Action;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Item;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.PropertyProvider;
@@ -55,7 +60,9 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.modelutil.FakeViewProvider;
-import org.chromium.ui.base.WindowAndroid;
+import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.KeyboardVisibilityDelegate;
+import org.chromium.ui.display.DisplayAndroid;
 
 import java.lang.ref.WeakReference;
 import java.util.Map;
@@ -65,17 +72,22 @@ import java.util.Map;
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, shadows = {ShadowRecordHistogram.class})
-@EnableFeatures(ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY)
+@EnableFeatures({ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY,
+        ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY})
 @DisableFeatures(ChromeFeatureList.EXPERIMENTAL_UI)
 public class ManualFillingControllerTest {
     @Mock
-    private WindowAndroid mMockWindow;
+    private ChromeWindow mMockWindow;
     @Mock
     private ChromeActivity mMockActivity;
     @Mock
-    private KeyboardAccessoryView mMockKeyboardAccessoryView;
+    private WebContents mMockWebContents;
     @Mock
-    private ViewPager mMockViewPager;
+    private ViewGroup mMockContentView;
+    @Mock
+    private KeyboardAccessoryModernView mMockKeyboardAccessoryView;
+    @Mock
+    private AccessorySheetView mMockViewPager;
     @Mock
     private ListObservable.ListObserver<Void> mMockTabListObserver;
     @Mock
@@ -86,6 +98,8 @@ public class ManualFillingControllerTest {
     private Drawable mMockIcon;
     @Mock
     private android.content.res.Resources mMockResources;
+    @Mock
+    private ChromeKeyboardVisibilityDelegate mMockKeyboard;
 
     @Rule
     public Features.JUnitProcessor mFeaturesProcessor = new Features.JUnitProcessor();
@@ -98,11 +112,14 @@ public class ManualFillingControllerTest {
     public void setUp() {
         ShadowRecordHistogram.reset();
         MockitoAnnotations.initMocks(this);
+        KeyboardVisibilityDelegate.setInstance(mMockKeyboard);
+        when(mMockWindow.getKeyboardDelegate()).thenReturn(mMockKeyboard);
         when(mMockWindow.getActivity()).thenReturn(new WeakReference<>(mMockActivity));
         when(mMockActivity.getTabModelSelector()).thenReturn(mMockTabModelSelector);
         ChromeFullscreenManager fullscreenManager = new ChromeFullscreenManager(mMockActivity, 0);
         when(mMockActivity.getFullscreenManager()).thenReturn(fullscreenManager);
         when(mMockActivity.getResources()).thenReturn(mMockResources);
+        when(mMockActivity.findViewById(android.R.id.content)).thenReturn(mMockContentView);
         when(mMockResources.getDimensionPixelSize(anyInt())).thenReturn(48);
         PasswordAccessorySheetCoordinator.IconProvider.getInstance().setIconForTesting(mMockIcon);
         mController.initialize(mMockWindow,
@@ -167,8 +184,8 @@ public class ManualFillingControllerTest {
     @Test
     public void testPasswordItemsPersistAfterSwitchingBrowserTabs() {
         ManualFillingMediator mediator = mController.getMediatorForTesting();
-        Provider<Item> firstTabProvider = new PropertyProvider<>();
-        Provider<Item> secondTabProvider = new PropertyProvider<>();
+        Provider<Item[]> firstTabProvider = new PropertyProvider<>();
+        Provider<Item[]> secondTabProvider = new PropertyProvider<>();
 
         // Simulate opening a new tab which automatically triggers the registration:
         Tab firstTab = addTab(mediator, 1111, null);
@@ -200,9 +217,9 @@ public class ManualFillingControllerTest {
     @Test
     public void testKeyboardAccessoryActionsPersistAfterSwitchingBrowserTabs() {
         ManualFillingMediator mediator = mController.getMediatorForTesting();
-        PropertyProvider<Action> firstTabProvider =
+        PropertyProvider<Action[]> firstTabProvider =
                 new PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
-        PropertyProvider<Action> secondTabProvider =
+        PropertyProvider<Action[]> secondTabProvider =
                 new PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
         ListModel<Action> keyboardActions =
                 mediator.getKeyboardAccessory().getMediatorForTesting().getModelForTesting().get(
@@ -309,7 +326,7 @@ public class ManualFillingControllerTest {
         // Open a tab but pretend that the states became inconsistent.
         Tab tab = addTab(mediator, 1111, null);
         mediator.getModelForTesting().get(tab).mPasswordAccessorySheet =
-                new PasswordAccessorySheetCoordinator(mMockActivity);
+                new PasswordAccessorySheetCoordinator(mMockActivity, null);
 
         // Create a new tab with a passwords tab:
         addTab(mediator, 1111, tab);
@@ -324,14 +341,12 @@ public class ManualFillingControllerTest {
         // Open a tab.
         Tab tab = addTab(mediator, 1111, null);
         // Add an action provider that never provided actions.
-        mController.registerActionProvider(
-                new PropertyProvider<Action>(GENERATE_PASSWORD_AUTOMATIC));
+        mController.registerActionProvider(new PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC));
         assertThat(keyboardAccessoryModel.get(KeyboardAccessoryProperties.ACTIONS).size(), is(0));
 
         // Create a new tab with an action:
         Tab secondTab = addTab(mediator, 1111, tab);
-        PropertyProvider<Action> provider =
-                new PropertyProvider<Action>(GENERATE_PASSWORD_AUTOMATIC);
+        PropertyProvider<Action[]> provider = new PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
         mController.registerActionProvider(provider);
         provider.notifyObservers(new Action[] {
                 new Action("Test Action", GENERATE_PASSWORD_AUTOMATIC, (action) -> {})});
@@ -350,15 +365,14 @@ public class ManualFillingControllerTest {
         // Open a tab.
         Tab tab = addTab(mediator, 1111, null);
         // Add an action provider that hasn't provided actions yet.
-        PropertyProvider<Action> delayedProvider =
+        PropertyProvider<Action[]> delayedProvider =
                 new PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
         mController.registerActionProvider(delayedProvider);
         assertThat(keyboardAccessoryModel.get(KeyboardAccessoryProperties.ACTIONS).size(), is(0));
 
         // Create and switch to a new tab:
         Tab secondTab = addTab(mediator, 1111, tab);
-        PropertyProvider<Action> provider =
-                new PropertyProvider<Action>(GENERATE_PASSWORD_AUTOMATIC);
+        PropertyProvider<Action[]> provider = new PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
         mController.registerActionProvider(provider);
 
         // And provide data to the active tab.
@@ -392,12 +406,12 @@ public class ManualFillingControllerTest {
                                                     .getMediatorForTesting()
                                                     .getModelForTesting();
 
-        Provider<Item> firstTabProvider = new PropertyProvider<>();
-        PropertyProvider<Action> firstActionProvider =
-                new PropertyProvider<Action>(GENERATE_PASSWORD_AUTOMATIC);
-        Provider<Item> secondTabProvider = new PropertyProvider<>();
-        PropertyProvider<Action> secondActionProvider =
-                new PropertyProvider<Action>(GENERATE_PASSWORD_AUTOMATIC);
+        Provider<Item[]> firstTabProvider = new PropertyProvider<>();
+        PropertyProvider<Action[]> firstActionProvider =
+                new PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
+        Provider<Item[]> secondTabProvider = new PropertyProvider<>();
+        PropertyProvider<Action[]> secondActionProvider =
+                new PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
 
         // Simulate opening a new tab:
         Tab firstTab = addTab(mediator, 1111, null);
@@ -467,6 +481,36 @@ public class ManualFillingControllerTest {
     }
 
     @Test
+    public void testDisplaysAccessoryOnlyWhenSpaceIsSufficient() {
+        ManualFillingMediator mediator = mController.getMediatorForTesting();
+        Tab tab = addTab(mediator, 1234, null);
+        when(mMockKeyboard.isSoftKeyboardShowing(eq(mMockActivity), any())).thenReturn(true);
+
+        // Show the accessory bar for the default dimensions (300x80@2.f).
+        mediator.getKeyboardAccessory().addTab(
+                new KeyboardAccessoryData.Tab(null, null, 0, 0, null));
+        mediator.showWhenKeyboardIsVisible();
+        assertThat(mediator.getKeyboardAccessory().isShown(), is(true));
+
+        // Use a width that is too small (e.g. on tiny phones).
+        simulateOrientationChange(mediator, 2.0f, 170, 80);
+        assertThat(mediator.getKeyboardAccessory().isShown(), is(false));
+
+        // Use a height that is too small but with a valid width (e.g. rotated to landscape).
+        simulateOrientationChange(mediator, 2.0f, 600, 20);
+        assertThat(mediator.getKeyboardAccessory().isShown(), is(false));
+
+        // Use valid dimension at another density.
+        simulateOrientationChange(mediator, 1.5f, 180, 80);
+        assertThat(mediator.getKeyboardAccessory().isShown(), is(true));
+
+        // Now that the accessory is shown, the content area is already smaller due to the bar.
+        setContentAreaDimensions(3.f, 180, (80 - /* bar height = */ 48));
+        mediator.onLayoutChange(mMockContentView, 0, 0, 540, 96, 0, 0, 270, 120);
+        assertThat(mediator.getKeyboardAccessory().isShown(), is(true));
+    }
+
+    @Test
     public void testClosingTabDoesntAffectUnitializedComponents() {
         ManualFillingMediator mediator = mController.getMediatorForTesting();
 
@@ -475,6 +519,28 @@ public class ManualFillingControllerTest {
 
         // Without any tab, there should be no state that would allow creating a sheet.
         assertThat(mediator.getPasswordAccessorySheet(), is(nullValue()));
+    }
+
+    @Test
+    public void testIsFillingViewShownReturnsTargetValueAheadOfComponentUpdate() {
+        // After initialization with one tab, the accessory sheet is closed.
+        KeyboardAccessoryCoordinator accessory =
+                mController.getMediatorForTesting().getKeyboardAccessory();
+        addTab(mController.getMediatorForTesting(), 1234, null);
+        mController.getMediatorForTesting().addTab(
+                new KeyboardAccessoryData.Tab(null, null, 0, 0, null));
+        accessory.requestShowing();
+        assertThat(mController.isFillingViewShown(null), is(false));
+
+        // As soon as active tab and keyboard change, |isFillingViewShown| returns the expected
+        // state - even if the sheet component wasn't updated yet.
+        accessory.getMediatorForTesting().getModelForTesting().set(ACTIVE_TAB, 0);
+        when(mMockKeyboard.isSoftKeyboardShowing(eq(mMockActivity), any())).thenReturn(false);
+        assertThat(mController.isFillingViewShown(null), is(true));
+
+        // The layout change impacts the component, but not the coordinator method.
+        mController.getMediatorForTesting().onLayoutChange(null, 0, 0, 0, 0, 0, 0, 0, 0);
+        assertThat(mController.isFillingViewShown(null), is(true));
     }
 
     /**
@@ -493,10 +559,14 @@ public class ManualFillingControllerTest {
         Tab tab = mock(Tab.class);
         when(tab.getId()).thenReturn(id);
         when(tab.getUserDataHost()).thenReturn(mUserDataHost);
+        when(tab.getWebContents()).thenReturn(mMockWebContents);
+        when(tab.getContentView()).thenReturn(mMockContentView);
+        when(mMockActivity.getActivityTab()).thenReturn(tab);
         when(mMockTabModelSelector.getCurrentTab()).thenReturn(tab);
         mediator.getTabModelObserverForTesting().didAddTab(tab, FROM_BROWSER_ACTIONS);
         mediator.getTabObserverForTesting().onShown(tab, FROM_NEW);
         mediator.getTabModelObserverForTesting().didSelectTab(tab, FROM_NEW, lastId);
+        setContentAreaDimensions(2.f, 300, 80);
         return tab;
     }
 
@@ -532,5 +602,38 @@ public class ManualFillingControllerTest {
                     next, FROM_CLOSE, tabToBeClosed.getId());
         }
         mediator.getTabObserverForTesting().onDestroyed(tabToBeClosed);
+    }
+
+    private void setContentAreaDimensions(float density, int widthDp, int heightDp) {
+        DisplayAndroid mockDisplay = mock(DisplayAndroid.class);
+        when(mockDisplay.getDipScale()).thenReturn(density);
+        when(mMockWindow.getDisplay()).thenReturn(mockDisplay);
+        when(mMockWebContents.getHeight()).thenReturn(heightDp);
+        when(mMockWebContents.getWidth()).thenReturn(widthDp);
+    }
+
+    /**
+     * This function initializes mocks and then calls the given mediator events in the order in
+     * which a rotation call would trigger them.
+     * It mains sets the {@link WebContents} size and calls |onLayoutChange| with the new bounds.
+     * @param mediator The mediator to be called.
+     * @param density The logical screen density (e.g. 1.f).
+     * @param width The new {@link WebContents} width in dp.
+     * @param height The new {@link WebContents} height in dp.
+     */
+    private void simulateOrientationChange(
+            ManualFillingMediator mediator, float density, int width, int height) {
+        int oldHeight = mMockWebContents.getHeight();
+        int oldWidth = mMockWebContents.getWidth();
+        int newHeight = (int) (density * height);
+        int newWidth = (int) (density * width);
+        setContentAreaDimensions(density, width, height);
+        // A rotation always closes the keyboard for a brief period before reopening it.
+        when(mMockKeyboard.isSoftKeyboardShowing(eq(mMockActivity), any())).thenReturn(false);
+        mediator.onLayoutChange(
+                mMockContentView, 0, 0, newWidth, newHeight, 0, 0, oldWidth, oldHeight);
+        when(mMockKeyboard.isSoftKeyboardShowing(eq(mMockActivity), any())).thenReturn(true);
+        mediator.onLayoutChange(
+                mMockContentView, 0, 0, newWidth, newHeight, 0, 0, oldWidth, oldHeight);
     }
 }

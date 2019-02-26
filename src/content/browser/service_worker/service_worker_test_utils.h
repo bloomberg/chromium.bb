@@ -14,6 +14,7 @@
 #include "base/task/post_task.h"
 #include "content/browser/service_worker/service_worker_database.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
+#include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"

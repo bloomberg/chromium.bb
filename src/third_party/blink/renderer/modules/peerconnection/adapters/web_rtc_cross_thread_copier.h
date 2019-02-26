@@ -28,6 +28,8 @@ class SocketAddress;
 
 namespace blink {
 
+struct P2PQuicTransportConfig;
+
 template <>
 struct CrossThreadCopier<std::string>
     : public CrossThreadCopierPassThrough<std::string> {
@@ -83,6 +85,12 @@ template <>
 struct CrossThreadCopier<std::pair<cricket::Candidate, cricket::Candidate>>
     : public CrossThreadCopierPassThrough<
           std::pair<cricket::Candidate, cricket::Candidate>> {
+  STATIC_ONLY(CrossThreadCopier);
+};
+
+template <>
+struct CrossThreadCopier<P2PQuicTransportConfig>
+    : public CrossThreadCopierPassThrough<P2PQuicTransportConfig> {
   STATIC_ONLY(CrossThreadCopier);
 };
 

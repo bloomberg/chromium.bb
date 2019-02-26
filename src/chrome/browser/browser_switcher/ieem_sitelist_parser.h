@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "url/gurl.h"
 
 namespace browser_switcher {
 
@@ -29,12 +30,9 @@ class ParsedXml {
   DISALLOW_COPY_AND_ASSIGN(ParsedXml);
 };
 
-// Callback type for the |ParseIeemXml()| method.
-using ParseIeemXmlCallback = base::OnceCallback<void(ParsedXml)>;
-
 // Parses the XML contained in |xml|, and calls |callback| with the parsed XML
 // result.
-void ParseIeemXml(const std::string& xml, ParseIeemXmlCallback callback);
+void ParseIeemXml(const std::string& xml, base::OnceCallback<void(ParsedXml)>);
 
 }  // namespace browser_switcher
 

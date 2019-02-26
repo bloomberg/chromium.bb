@@ -27,7 +27,8 @@ void DocumentModuleScriptFetcher::Fetch(FetchParameters& fetch_params,
   if (FetchIfLayeredAPI(fetch_params))
     return;
 
-  ScriptResource::Fetch(fetch_params, fetcher_, this);
+  ScriptResource::Fetch(fetch_params, fetcher_, this,
+                        ScriptResource::kNoStreaming);
 }
 
 void DocumentModuleScriptFetcher::NotifyFinished(Resource* resource) {
@@ -43,8 +44,7 @@ void DocumentModuleScriptFetcher::NotifyFinished(Resource* resource) {
 
   ModuleScriptCreationParams params(
       script_resource->GetResponse().Url(), script_resource->SourceText(),
-      script_resource->GetResourceRequest().GetFetchCredentialsMode(),
-      script_resource->CalculateAccessControlStatus());
+      script_resource->GetResourceRequest().GetFetchCredentialsMode());
   client_->NotifyFetchFinished(params, error_messages);
 }
 
@@ -77,8 +77,7 @@ bool DocumentModuleScriptFetcher::FetchIfLayeredAPI(
 
   ModuleScriptCreationParams params(
       layered_api_url, ParkableString(source_text.ReleaseImpl()),
-      fetch_params.GetResourceRequest().GetFetchCredentialsMode(),
-      kSharableCrossOrigin);
+      fetch_params.GetResourceRequest().GetFetchCredentialsMode());
   client_->NotifyFetchFinished(params, HeapVector<Member<ConsoleMessage>>());
   return true;
 }

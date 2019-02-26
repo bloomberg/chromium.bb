@@ -146,6 +146,7 @@ const Flag<bool> kBoolFlags[] = {
   { "-is-handshaker-supported", &TestConfig::is_handshaker_supported },
   { "-handshaker-resume", &TestConfig::handshaker_resume },
   { "-reverify-on-resume", &TestConfig::reverify_on_resume },
+  { "-jdk11-workaround", &TestConfig::jdk11_workaround },
 };
 
 const Flag<std::string> kStringFlags[] = {
@@ -1624,6 +1625,9 @@ bssl::UniquePtr<SSL> TestConfig::NewSSL(
       return nullptr;
     }
   }
+  if (jdk11_workaround) {
+    SSL_set_jdk11_workaround(ssl.get(), 1);
+  }
 
   if (session != NULL) {
     if (!is_server) {
@@ -1636,11 +1640,6 @@ bssl::UniquePtr<SSL> TestConfig::NewSSL(
       SSL_SESSION_up_ref(session);
       GetTestState(ssl.get())->pending_session.reset(session);
     }
-  }
-
-  if (SSL_get_current_cipher(ssl.get()) != nullptr) {
-    fprintf(stderr, "non-null cipher before handshake\n");
-    return nullptr;
   }
 
   return ssl;

@@ -34,7 +34,7 @@ NavigatorBeacon& NavigatorBeacon::From(Navigator& navigator) {
   NavigatorBeacon* supplement =
       Supplement<Navigator>::From<NavigatorBeacon>(navigator);
   if (!supplement) {
-    supplement = new NavigatorBeacon(navigator);
+    supplement = MakeGarbageCollected<NavigatorBeacon>(navigator);
     ProvideTo(navigator, supplement);
   }
   return *supplement;
@@ -88,7 +88,7 @@ bool NavigatorBeacon::SendBeaconImpl(
                                      data.GetAsArrayBufferView().View());
   } else if (data.IsBlob()) {
     Blob* blob = data.GetAsBlob();
-    if (!CORS::IsCORSSafelistedContentType(blob->type())) {
+    if (!cors::IsCorsSafelistedContentType(blob->type())) {
       UseCounter::Count(context,
                         WebFeature::kSendBeaconWithNonSimpleContentType);
       if (RuntimeEnabledFeatures::

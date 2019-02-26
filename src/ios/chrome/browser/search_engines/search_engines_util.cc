@@ -11,6 +11,7 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/country_codes/country_codes.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
@@ -86,17 +87,18 @@ namespace search_engines {
 
 void UpdateSearchEnginesIfNeeded(PrefService* preferences,
                                  TemplateURLService* service) {
-  if (!preferences->HasPrefPath(prefs::kCountryIDAtInstall)) {
+  if (!preferences->HasPrefPath(country_codes::kCountryIDAtInstall)) {
     // No search engines were ever installed, just return.
     return;
   }
-  int old_country_id = preferences->GetInteger(prefs::kCountryIDAtInstall);
-  int country_id = TemplateURLPrepopulateData::GetCurrentCountryID();
+  int old_country_id =
+      preferences->GetInteger(country_codes::kCountryIDAtInstall);
+  int country_id = country_codes::GetCurrentCountryID();
   if (country_id == old_country_id) {
     // User's locale did not change, just return.
     return;
   }
-  preferences->SetInteger(prefs::kCountryIDAtInstall, country_id);
+  preferences->SetInteger(country_codes::kCountryIDAtInstall, country_id);
   // If the current search engine is managed by policy then we can't set the
   // default search engine, which is required by UpdateSearchEngine(). This
   // isn't a problem as long as the default search engine is enforced via

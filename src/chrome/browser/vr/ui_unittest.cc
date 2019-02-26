@@ -1354,7 +1354,7 @@ TEST_F(UiTest, MenuItems) {
   EXPECT_EQ(IsVisible(kOverflowMenuCloseAllIncognitoTabsItem), false);
   EXPECT_EQ(IsVisible(kOverflowMenuPreferencesItem), false);
 
-  model_->incognito_tabs.emplace_back(TabModel(0, base::string16()));
+  model_->incognito_tabs_open = true;
   OnBeginFrame();
   EXPECT_EQ(IsVisible(kOverflowMenuNewIncognitoTabItem), true);
   EXPECT_EQ(IsVisible(kOverflowMenuCloseAllIncognitoTabsItem), true);

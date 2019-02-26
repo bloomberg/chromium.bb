@@ -14,7 +14,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* Translate::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -23,22 +23,27 @@ const CSSValue* Translate::ParseSingleValue(
   DCHECK(RuntimeEnabledFeatures::CSSIndependentTransformPropertiesEnabled());
   CSSValueID id = range.Peek().Id();
   if (id == CSSValueNone)
-    return CSSPropertyParserHelpers::ConsumeIdent(range);
+    return css_property_parser_helpers::ConsumeIdent(range);
 
-  CSSValue* translate = CSSPropertyParserHelpers::ConsumeLengthOrPercent(
+  CSSValue* translate_x = css_property_parser_helpers::ConsumeLengthOrPercent(
       range, context.Mode(), kValueRangeAll);
-  if (!translate)
+  if (!translate_x)
     return nullptr;
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  list->Append(*translate);
-  translate = CSSPropertyParserHelpers::ConsumeLengthOrPercent(
-      range, context.Mode(), kValueRangeAll);
-  if (translate) {
-    list->Append(*translate);
-    translate = CSSPropertyParserHelpers::ConsumeLength(range, context.Mode(),
-                                                        kValueRangeAll);
-    if (translate)
-      list->Append(*translate);
+  list->Append(*translate_x);
+  CSSPrimitiveValue* translate_y =
+      css_property_parser_helpers::ConsumeLengthOrPercent(range, context.Mode(),
+                                                          kValueRangeAll);
+  if (translate_y) {
+    CSSValue* translate_z = css_property_parser_helpers::ConsumeLength(
+        range, context.Mode(), kValueRangeAll);
+    if (translate_y->GetIntValue() == 0 && !translate_z)
+      return list;
+
+    list->Append(*translate_y);
+    if (translate_z) {
+      list->Append(*translate_z);
+    }
   }
 
   return list;
@@ -73,5 +78,5 @@ const CSSValue* Translate::CSSValueFromComputedStyleInternal(
   return list;
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

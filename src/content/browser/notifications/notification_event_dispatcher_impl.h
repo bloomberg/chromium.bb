@@ -67,6 +67,13 @@ class CONTENT_EXPORT NotificationEventDispatcherImpl
   void OnNonPersistentCloseComplete(const std::string& notification_id,
                                     base::OnceClosure completed_closure);
 
+  // Replace listener for existing non-persistent notification.
+  // This method is called after a non-persistent notification has
+  // been replaced and |OnNonPersistentCloseComplete| is executed.
+  void ReplaceNonPersistentNotificationListener(
+      const std::string& notification_id,
+      blink::mojom::NonPersistentNotificationListenerPtr event_listener_ptr);
+
   // Removes all references to the listener registered to receive events
   // from the non-persistent notification identified by |notification_id|.
   // Should be called when the connection to this listener goes away.

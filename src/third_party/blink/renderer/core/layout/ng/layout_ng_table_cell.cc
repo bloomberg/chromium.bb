@@ -33,7 +33,7 @@ void LayoutNGTableCell::UpdateBlockLayout(bool relayout_children) {
     descendant.node.UseOldOutOfFlowPositioning();
 
   const NGPhysicalBoxFragment* fragment =
-      ToNGPhysicalBoxFragment(result->PhysicalFragment().get());
+      ToNGPhysicalBoxFragment(result->PhysicalFragment());
 
   const LayoutBox* section = LocationContainer();
   NGPhysicalOffset physical_offset;

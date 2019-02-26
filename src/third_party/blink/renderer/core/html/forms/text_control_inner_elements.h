@@ -36,8 +36,9 @@ class TextControlInnerContainer final : public HTMLDivElement {
  public:
   static TextControlInnerContainer* Create(Document&);
 
- protected:
   explicit TextControlInnerContainer(Document&);
+
+ protected:
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
 };
 
@@ -45,8 +46,9 @@ class EditingViewPortElement final : public HTMLDivElement {
  public:
   static EditingViewPortElement* Create(Document&);
 
- protected:
   explicit EditingViewPortElement(Document&);
+
+ protected:
   scoped_refptr<ComputedStyle> CustomStyleForLayoutObject() override;
 
  private:
@@ -57,13 +59,14 @@ class TextControlInnerEditorElement final : public HTMLDivElement {
  public:
   static TextControlInnerEditorElement* Create(Document&);
 
+  explicit TextControlInnerEditorElement(Document&);
+
   void DefaultEventHandler(Event&) override;
 
   void SetVisibility(bool is_visible);
   scoped_refptr<ComputedStyle> CreateInnerEditorStyle() const;
 
  private:
-  explicit TextControlInnerEditorElement(Document&);
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
   scoped_refptr<ComputedStyle> CustomStyleForLayoutObject() override;
   bool SupportsFocus() const override { return false; }
@@ -74,15 +77,13 @@ class SearchFieldCancelButtonElement final : public HTMLDivElement {
  public:
   static SearchFieldCancelButtonElement* Create(Document&);
 
+  explicit SearchFieldCancelButtonElement(Document&);
+
   void DefaultEventHandler(Event&) override;
   bool WillRespondToMouseClickEvents() override;
 
  private:
-  explicit SearchFieldCancelButtonElement(Document&);
-  void DetachLayoutTree(const AttachContext& = AttachContext()) override;
   bool SupportsFocus() const override { return false; }
-
-  bool capturing_;
 };
 
 }  // namespace blink

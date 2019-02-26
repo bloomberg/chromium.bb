@@ -15,11 +15,11 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
-#include "base/process/process_info.h"
+#include "base/process/process.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/values.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -116,6 +116,36 @@ GetTokenRevocationStatusFromResponseData(const std::string& data,
   return GaiaAuthConsumer::TokenRevocationStatus::kUnknownError;
 }
 
+std::string GaiaSourceToString(gaia::GaiaSource source) {
+  std::string source_string;
+  switch (source) {
+    case gaia::GaiaSource::kChrome:
+      source_string = GaiaConstants::kChromeSource;
+      break;
+    case gaia::GaiaSource::kChromeOS:
+      source_string = GaiaConstants::kChromeOSSource;
+      break;
+    case gaia::GaiaSource::kAccountReconcilorDice:
+      source_string = "ChromiumAccountReconcilorDice";
+      break;
+    case gaia::GaiaSource::kAccountReconcilorMirror:
+      source_string = "ChromiumAccountReconcilor";
+      break;
+    case gaia::GaiaSource::kOAuth2LoginVerifier:
+      source_string = "ChromiumOAuth2LoginVerifier";
+      break;
+    case gaia::GaiaSource::kSigninManager:
+      source_string = "ChromiumSigninManager";
+      break;
+  }
+
+  // All sources should start with Chromium or chromeos for better server logs.
+  DCHECK(source_string == "chromeos" ||
+         base::StartsWith(source_string, "Chromium",
+                          base::CompareCase::SENSITIVE));
+  return source_string;
+}
+
 }  // namespace
 
 // static
@@ -191,25 +221,25 @@ const char GaiaAuthFetcher::kOAuth2BearerHeaderFormat[] =
 
 GaiaAuthFetcher::GaiaAuthFetcher(
     GaiaAuthConsumer* consumer,
-    const std::string& source,
+    gaia::GaiaSource source,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : url_loader_factory_(url_loader_factory),
       consumer_(consumer),
-      source_(source),
+      source_(GaiaSourceToString(source)),
       oauth2_token_gurl_(GaiaUrls::GetInstance()->oauth2_token_url()),
       oauth2_revoke_gurl_(GaiaUrls::GetInstance()->oauth2_revoke_url()),
       get_user_info_gurl_(GaiaUrls::GetInstance()->get_user_info_url()),
       merge_session_gurl_(GaiaUrls::GetInstance()->merge_session_url()),
       uberauth_token_gurl_(GaiaUrls::GetInstance()->oauth1_login_url().Resolve(
-          base::StringPrintf(kUberAuthTokenURLFormat, source.c_str()))),
+          base::StringPrintf(kUberAuthTokenURLFormat, source_.c_str()))),
       oauth_login_gurl_(GaiaUrls::GetInstance()->oauth1_login_url()),
       oauth_multilogin_gurl_(GaiaUrls::GetInstance()->oauth_multilogin_url()),
       list_accounts_gurl_(
-          GaiaUrls::GetInstance()->ListAccountsURLWithSource(source)),
-      logout_gurl_(GaiaUrls::GetInstance()->LogOutURLWithSource(source)),
+          GaiaUrls::GetInstance()->ListAccountsURLWithSource(source_)),
+      logout_gurl_(GaiaUrls::GetInstance()->LogOutURLWithSource(source_)),
       get_check_connection_info_url_(
           GaiaUrls::GetInstance()->GetCheckConnectionInfoURLWithSource(
-              source)) {}
+              source_)) {}
 
 GaiaAuthFetcher::~GaiaAuthFetcher() {}
 
@@ -691,9 +721,9 @@ void GaiaAuthFetcher::StartOAuthLogin(const std::string& access_token,
 void GaiaAuthFetcher::StartListAccounts() {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
   list_accounts_system_uptime_ = base::SysInfo::Uptime();
-#if !defined(OS_IOS)
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
   list_accounts_process_uptime_ =
-      base::Time::Now() - base::CurrentProcessInfo::CreationTime();
+      base::Time::Now() - base::Process::Current().CreationTime();
 #endif
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
@@ -732,6 +762,9 @@ void GaiaAuthFetcher::StartListAccounts() {
 void GaiaAuthFetcher::StartOAuthMultilogin(
     const std::vector<MultiloginTokenIDPair>& accounts) {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
+
+  UMA_HISTOGRAM_COUNTS_100("Signin.Multilogin.NumberOfAccounts",
+                           accounts.size());
 
   std::vector<std::string> authorization_header_parts;
   for (const MultiloginTokenIDPair& account : accounts) {
@@ -953,7 +986,7 @@ void GaiaAuthFetcher::OnListAccountsFetched(const std::string& data,
     UMA_HISTOGRAM_LONG_TIMES(
         "Gaia.AuthFetcher.ListAccounts.SystemUptime.Success",
         list_accounts_system_uptime_);
-#if !defined(OS_IOS)
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
     UMA_HISTOGRAM_LONG_TIMES(
         "Gaia.AuthFetcher.ListAccounts.ProcessUptime.Success",
         list_accounts_process_uptime_);
@@ -961,7 +994,7 @@ void GaiaAuthFetcher::OnListAccountsFetched(const std::string& data,
   } else {
     UMA_HISTOGRAM_LONG_TIMES("Gaia.AuthFetcher.ListAccounts.SystemUptime.Error",
                              list_accounts_system_uptime_);
-#if !defined(OS_IOS)
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
     UMA_HISTOGRAM_LONG_TIMES(
         "Gaia.AuthFetcher.ListAccounts.ProcessUptime.Error",
         list_accounts_process_uptime_);
@@ -1052,20 +1085,11 @@ void GaiaAuthFetcher::OnOAuthMultiloginFetched(const std::string& data,
                                                net::Error net_error,
                                                int response_code) {
   GoogleServiceAuthError auth_error = GoogleServiceAuthError::AuthErrorNone();
-  if (net_error == net::Error::OK && response_code == net::HTTP_OK) {
-    OAuthMultiloginResult result;
-    const GoogleServiceAuthError error =
-        OAuthMultiloginResult::CreateOAuthMultiloginResultFromString(data,
-                                                                     &result);
-    if (error.state() != GoogleServiceAuthError::State::NONE) {
-      consumer_->OnOAuthMultiloginFailure(error);
-    } else {
-      consumer_->OnOAuthMultiloginSuccess(result);
-    }
-  } else {
-    auth_error = GenerateAuthError(data, net_error);
-    consumer_->OnOAuthMultiloginFailure(auth_error);
-  }
+  OAuthMultiloginResult result =
+      (net_error == net::Error::OK)
+          ? OAuthMultiloginResult(data)
+          : OAuthMultiloginResult(GenerateAuthError(data, net_error));
+  consumer_->OnOAuthMultiloginFinished(result);
 }
 
 void GaiaAuthFetcher::OnURLLoadComplete(

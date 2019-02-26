@@ -15,6 +15,7 @@ import android.os.Handler;
 import android.os.ResultReceiver;
 import android.os.SystemClock;
 import android.text.SpannableString;
+import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.CharacterStyle;
@@ -1001,6 +1002,7 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver, UserData
         SpannableString spannableString = ((SpannableString) text);
         CharacterStyle spans[] = spannableString.getSpans(0, text.length(), CharacterStyle.class);
         for (CharacterStyle span : spans) {
+            final int spanFlags = spannableString.getSpanFlags(span);
             if (span instanceof BackgroundColorSpan) {
                 nativeAppendBackgroundColorSpan(imeTextSpans, spannableString.getSpanStart(span),
                         spannableString.getSpanEnd(span),
@@ -1010,24 +1012,29 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver, UserData
                         spannableString.getSpanEnd(span));
             } else if (span instanceof SuggestionSpan) {
                 final SuggestionSpan suggestionSpan = (SuggestionSpan) span;
+                // See android.text.Spanned#SPAN_COMPOSING, We are using this flag to determine if
+                // we need to remove the SuggestionSpan after IMEs done with composing state.
+                final boolean removeOnFinishComposing = (spanFlags & Spanned.SPAN_COMPOSING) != 0;
+                // We support all three flags of SuggestionSpans with caveat:
+                // - FLAG_EASY_CORRECT, full support.
+                // - FLAG_MISSPELLED, full support.
+                // - FLAG_AUTO_CORRECTION, no animation support for this flag for
+                //   commitCorrection().
+                // Note that FLAG_AUTO_CORRECTION has precedence than the other two flags.
 
-                // We currently only support FLAG_EASY_CORRECT and FLAG_MISSPELLED SuggestionSpans.
-
-                // Other types:
-                // - FLAG_AUTO_CORRECTION is used e.g. by Samsung's IME to flash a blue background
-                //   on a word being replaced by an autocorrect suggestion. We don't currently
-                //   support this.
-                //
+                // Other cases:
                 // - Some IMEs (e.g. the AOSP keyboard on Jelly Bean) add SuggestionSpans with no
                 //   flags set and no underline color to add suggestions to words marked as
                 //   misspelled (instead of having the spell checker return the suggestions when
                 //   called). We don't support these either.
+                final boolean isEasyCorrectSpan =
+                        (suggestionSpan.getFlags() & SuggestionSpan.FLAG_EASY_CORRECT) != 0;
                 final boolean isMisspellingSpan =
                         (suggestionSpan.getFlags() & SuggestionSpan.FLAG_MISSPELLED) != 0;
-                if (suggestionSpan.getFlags() != SuggestionSpan.FLAG_EASY_CORRECT
-                        && !isMisspellingSpan) {
-                    continue;
-                }
+                final boolean isAutoCorrectionSpan =
+                        (suggestionSpan.getFlags() & SuggestionSpan.FLAG_AUTO_CORRECTION) != 0;
+
+                if (!isEasyCorrectSpan && !isMisspellingSpan && !isAutoCorrectionSpan) continue;
 
                 // Copied from Android's Editor.java so we use the same colors
                 // as the native Android text widget.
@@ -1037,10 +1044,14 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver, UserData
                 final int suggestionHighlightColor =
                         (underlineColor & 0x00FFFFFF) + (newAlpha << 24);
 
+                // In native side, we treat FLAG_AUTO_CORRECTION span as kMisspellingSuggestion
+                // marker with 0 suggestion.
                 nativeAppendSuggestionSpan(imeTextSpans,
                         spannableString.getSpanStart(suggestionSpan),
-                        spannableString.getSpanEnd(suggestionSpan), isMisspellingSpan,
-                        underlineColor, suggestionHighlightColor, suggestionSpan.getSuggestions());
+                        spannableString.getSpanEnd(suggestionSpan),
+                        isMisspellingSpan || isAutoCorrectionSpan, removeOnFinishComposing,
+                        underlineColor, suggestionHighlightColor,
+                        isAutoCorrectionSpan ? new String[0] : suggestionSpan.getSuggestions());
             }
         }
     }
@@ -1074,8 +1085,8 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver, UserData
     private static native void nativeAppendBackgroundColorSpan(
             long spanPtr, int start, int end, int backgroundColor);
     private static native void nativeAppendSuggestionSpan(long spanPtr, int start, int end,
-            boolean isMisspelling, int underlineColor, int suggestionHighlightColor,
-            String[] suggestions);
+            boolean isMisspelling, boolean removeOnFinishComposing, int underlineColor,
+            int suggestionHighlightColor, String[] suggestions);
     private native void nativeSetComposingText(
             long nativeImeAdapterAndroid, CharSequence text, String textStr, int newCursorPosition);
     private native void nativeCommitText(

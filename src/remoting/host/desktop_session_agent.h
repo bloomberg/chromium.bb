@@ -21,6 +21,7 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "remoting/host/client_session_control.h"
 #include "remoting/host/current_process_stats_agent.h"
+#include "remoting/host/desktop_display_info.h"
 #include "remoting/host/desktop_environment_options.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/process_stats_stub.h"
@@ -35,6 +36,7 @@ class Message;
 
 namespace remoting {
 
+class ActionExecutor;
 class AudioCapturer;
 class AudioPacket;
 class AutoThreadTaskRunner;
@@ -47,6 +49,7 @@ class ScreenControls;
 class ScreenResolution;
 
 namespace protocol {
+class ActionRequest;
 class InputEventTracker;
 }  // namespace protocol
 
@@ -116,6 +119,8 @@ class DesktopSessionAgent
   void DisconnectSession(protocol::ErrorCode error) override;
   void OnLocalMouseMoved(const webrtc::DesktopVector& position) override;
   void SetDisableInputs(bool disable_inputs) override;
+  void OnDesktopDisplayChanged(
+      std::unique_ptr<protocol::VideoLayout> layout) override;
 
   // ProcessStatsStub interface.
   void OnProcessStats(
@@ -135,6 +140,7 @@ class DesktopSessionAgent
   void OnInjectTextEvent(const std::string& serialized_event);
   void OnInjectMouseEvent(const std::string& serialized_event);
   void OnInjectTouchEvent(const std::string& serialized_event);
+  void OnExecuteActionRequestEvent(const protocol::ActionRequest& request);
 
   // Handles ChromotingNetworkDesktopMsg_SetScreenResolution request from
   // the client.
@@ -180,6 +186,9 @@ class DesktopSessionAgent
   // The DesktopEnvironment instance used by this agent.
   std::unique_ptr<DesktopEnvironment> desktop_environment_;
 
+  // Executes action request events.
+  std::unique_ptr<ActionExecutor> action_executor_;
+
   // Executes keyboard, mouse and clipboard events.
   std::unique_ptr<InputInjector> input_injector_;
 
@@ -191,6 +200,9 @@ class DesktopSessionAgent
 
   // Used to apply client-requested changes in screen resolution.
   std::unique_ptr<ScreenControls> screen_controls_;
+
+  // Contains the most recently gathered into about the desktop displays.
+  std::unique_ptr<DesktopDisplayInfo> desktop_display_info_;
 
   // IPC channel connecting the desktop process with the network process.
   std::unique_ptr<IPC::ChannelProxy> network_channel_;

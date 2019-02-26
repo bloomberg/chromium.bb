@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -16,14 +15,16 @@ from grit import util
 def GetFormatter(type):
   if type == 'resource_map_header':
     return _FormatHeader
-  if type == 'resource_map_source':
-    return partial(_FormatSource, _GetItemName)
   if type == 'resource_file_map_source':
     return partial(_FormatSource, _GetItemPath)
+  if type == 'resource_map_source':
+    return partial(_FormatSource, _GetItemName)
   if type == 'gzipped_resource_map_header':
     return partial(_FormatHeader, include_gzipped=True)
   if type == 'gzipped_resource_file_map_source':
     return partial(_FormatSource, _GetItemPath, include_gzipped=True)
+  if type == 'gzipped_resource_map_source':
+    return partial(_FormatSource, _GetItemName, include_gzipped=True)
 
 
 def GetMapName(root):
@@ -143,4 +144,9 @@ def _GetItemName(item):
 
 
 def _GetItemPath(item):
-  return item.GetInputPath().replace("\\", "/")
+  path = item.GetInputPath().replace("\\", "/")
+  # resource_maps don't currently work with variables. See crbug.com/899437
+  # for why you might not need this, and if you still think you need it then
+  # comment 17 has a patch for how to make it work.
+  assert '$' not in path, 'see comment above'
+  return path

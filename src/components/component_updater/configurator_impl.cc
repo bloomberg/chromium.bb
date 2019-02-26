@@ -8,6 +8,7 @@
 
 #include <algorithm>
 
+#include "base/feature_list.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -16,6 +17,7 @@
 #include "components/component_updater/component_updater_switches.h"
 #include "components/component_updater/component_updater_url_constants.h"
 #include "components/update_client/command_line_config_policy.h"
+#include "components/update_client/protocol_handler.h"
 #include "components/update_client/utils.h"
 #include "components/version_info/version_info.h"
 
@@ -31,6 +33,13 @@ namespace {
 const int kDelayOneMinute = 60;
 const int kDelayOneHour = kDelayOneMinute * 60;
 
+// Enables using JSON as an update client protocol encoding instead of XML.
+//
+// The JSON implementation is available behind a flag:
+// --enable-features=UpdateClientUseJSON
+const base::Feature kFeatureUpdateClientUseJSON{
+    "UpdateClientUseJSON", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace
 
 ConfiguratorImpl::ConfiguratorImpl(
@@ -43,8 +52,10 @@ ConfiguratorImpl::ConfiguratorImpl(
       require_encryption_(require_encryption),
       url_source_override_(config_policy.UrlSourceOverride()),
       initial_delay_(config_policy.InitialDelay()) {
-  if (config_policy.TestRequest())
+  if (config_policy.TestRequest()) {
     extra_info_["testrequest"] = "1";
+    extra_info_["testsource"] = "dev";
+  }
 }
 
 ConfiguratorImpl::~ConfiguratorImpl() {}
@@ -68,11 +79,15 @@ int ConfiguratorImpl::UpdateDelay() const {
 }
 
 std::vector<GURL> ConfiguratorImpl::UpdateUrl() const {
-  if (url_source_override_.is_valid()) {
+  if (url_source_override_.is_valid())
     return {GURL(url_source_override_)};
-  }
 
-  std::vector<GURL> urls{GURL(kUpdaterDefaultUrl), GURL(kUpdaterFallbackUrl)};
+  std::vector<GURL> urls =
+      base::FeatureList::IsEnabled(kFeatureUpdateClientUseJSON)
+          ? std::vector<GURL>{GURL(kUpdaterJSONDefaultUrl),
+                              GURL(kUpdaterJSONFallbackUrl)}
+          : std::vector<GURL>{GURL(kUpdaterDefaultUrl),
+                              GURL(kUpdaterFallbackUrl)};
   if (require_encryption_)
     update_client::RemoveUnsecureUrls(&urls);
 
@@ -128,6 +143,13 @@ std::vector<uint8_t> ConfiguratorImpl::GetRunActionKeyHash() const {
 // meaningful implementation for this function.
 std::string ConfiguratorImpl::GetAppGuid() const {
   return {};
+}
+
+std::unique_ptr<update_client::ProtocolHandlerFactory>
+ConfiguratorImpl::GetProtocolHandlerFactory() const {
+  if (base::FeatureList::IsEnabled(kFeatureUpdateClientUseJSON))
+    return std::make_unique<update_client::ProtocolHandlerFactoryJSON>();
+  return std::make_unique<update_client::ProtocolHandlerFactoryXml>();
 }
 
 }  // namespace component_updater

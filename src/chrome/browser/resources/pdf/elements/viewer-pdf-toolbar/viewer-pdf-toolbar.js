@@ -5,8 +5,6 @@
 Polymer({
   is: 'viewer-pdf-toolbar',
 
-  behaviors: [Polymer.NeonAnimationRunnerBehavior],
-
   properties: {
     /**
      * The current loading progress of the PDF document (0 - 100).
@@ -38,32 +36,12 @@ Polymer({
      */
     opened: {type: Boolean, value: true},
 
+    /**
+     * Whether the PDF Annotations feature is enabled.
+     */
+    pdfAnnotationsEnabled: Boolean,
+
     strings: Object,
-
-    animationConfig: {
-      value: function() {
-        return {
-          'entry': {
-            name: 'transform-animation',
-            node: this,
-            transformFrom: 'translateY(-100%)',
-            transformTo: 'translateY(0%)',
-            timing: {easing: 'cubic-bezier(0, 0, 0.2, 1)', duration: 250}
-          },
-          'exit': {
-            name: 'slide-up-animation',
-            node: this,
-            timing: {easing: 'cubic-bezier(0.4, 0, 1, 1)', duration: 250}
-          }
-        };
-      }
-    }
-  },
-
-  listeners: {'neon-animation-finish': '_onAnimationFinished'},
-
-  _onAnimationFinished: function() {
-    this.style.transform = this.opened ? 'none' : 'translateY(-100%)';
   },
 
   loadProgressChanged: function() {
@@ -87,8 +65,34 @@ Polymer({
 
   toggleVisibility: function() {
     this.opened = !this.opened;
-    this.cancelAnimation();
-    this.playAnimation(this.opened ? 'entry' : 'exit');
+
+    // We keep a handle on the animation in order to cancel the filling
+    // behavior of previous animations.
+    if (this.animation_) {
+      this.animation_.cancel();
+    }
+
+    if (this.opened) {
+      this.animation_ = this.animate(
+          {
+            transform: ['translateY(-100%)', 'translateY(0%)'],
+          },
+          {
+            easing: 'cubic-bezier(0, 0, 0.2, 1)',
+            duration: 250,
+            fill: 'forwards',
+          });
+    } else {
+      this.animation_ = this.animate(
+          {
+            transform: ['translateY(0%)', 'translateY(-100%)'],
+          },
+          {
+            easing: 'cubic-bezier(0.4, 0, 1, 1)',
+            duration: 250,
+            fill: 'forwards',
+          });
+    }
   },
 
   selectPageNumber: function() {

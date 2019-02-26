@@ -46,9 +46,10 @@ class CpuSliceTrackController extends TrackController<Config, Data> {
     this.busy = true;
     if (this.setup === false) {
       await this.query(
-          `create virtual table window_${this.trackState.id} using window;`);
-      await this.query(`create virtual table span_${this.trackState.id}
-                     using span(sched, window_${this.trackState.id}, cpu);`);
+          `create virtual table ${this.tableName('window')} using window;`);
+      await this.query(`create virtual table ${this.tableName('span')}
+              using span_join(sched PARTITIONED cpu,
+                              ${this.tableName('window')} PARTITIONED cpu);`);
       this.setup = true;
     }
 
@@ -61,7 +62,7 @@ class CpuSliceTrackController extends TrackController<Config, Data> {
     if (isQuantized) {
       windowStartNs = Math.floor(windowStartNs / bucketSizeNs) * bucketSizeNs;
     }
-    const windowDurNs = endNs - windowStartNs;
+    const windowDurNs = Math.max(1, endNs - windowStartNs);
 
     this.query(`update window_${this.trackState.id} set
       window_start=${windowStartNs},
@@ -89,7 +90,7 @@ class CpuSliceTrackController extends TrackController<Config, Data> {
     const query = `select
         quantum_ts as bucket,
         sum(dur)/cast(${bucketSizeNs} as float) as utilization
-        from span_${this.trackState.id}
+        from ${this.tableName('span')}
         where cpu = ${this.config.cpu}
         and utid != 0
         group by quantum_ts`;
@@ -135,8 +136,8 @@ class CpuSliceTrackController extends TrackController<Config, Data> {
       utids: new Uint32Array(numRows),
     };
 
+    const cols = rawResult.columns;
     for (let row = 0; row < numRows; row++) {
-      const cols = rawResult.columns;
       const startSec = fromNs(+cols[0].longValues![row]);
       slices.starts[row] = startSec;
       slices.ends[row] = startSec + fromNs(+cols[1].longValues![row]);
@@ -159,8 +160,8 @@ class CpuSliceTrackController extends TrackController<Config, Data> {
 
   onDestroy(): void {
     if (this.setup) {
-      this.query(`drop table window_${this.trackState.id}`);
-      this.query(`drop table span_${this.trackState.id}`);
+      this.query(`drop table ${this.tableName('window')}`);
+      this.query(`drop table ${this.tableName('span')}`);
       this.setup = false;
     }
   }

@@ -33,8 +33,8 @@
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_image.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
-#include "third_party/skia/include/core/SkImage.h"
 
 namespace blink {
 
@@ -46,7 +46,7 @@ void GeneratedImage::DrawPattern(GraphicsContext& dest_context,
                                  const FloatRect& dest_rect,
                                  const FloatSize& repeat_spacing) {
   FloatRect tile_rect = src_rect;
-  tile_rect.Expand(FloatSize(repeat_spacing));
+  tile_rect.Expand(repeat_spacing);
 
   std::unique_ptr<PaintController> paint_controller = PaintController::Create();
   GraphicsContext context(*paint_controller);
@@ -58,11 +58,12 @@ void GeneratedImage::DrawPattern(GraphicsContext& dest_context,
   pattern_matrix.preScale(scale.Width(), scale.Height());
   pattern_matrix.preTranslate(tile_rect.X(), tile_rect.Y());
 
-  scoped_refptr<Pattern> pattern =
-      Pattern::CreatePaintRecordPattern(std::move(record), tile_rect);
+  sk_sp<PaintShader> tile_shader = PaintShader::MakePaintRecord(
+      std::move(record), tile_rect, SkShader::kRepeat_TileMode,
+      SkShader::kRepeat_TileMode, &pattern_matrix);
 
   PaintFlags fill_flags = dest_context.FillFlags();
-  pattern->ApplyToFlags(fill_flags, pattern_matrix);
+  fill_flags.setShader(std::move(tile_shader));
   fill_flags.setColor(SK_ColorBLACK);
   fill_flags.setBlendMode(composite_op);
 

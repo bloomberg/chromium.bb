@@ -10,6 +10,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url_loader_factory.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
@@ -36,10 +37,24 @@ class MockFetchContext : public FetchContext {
       LoadPolicy load_policy,
       scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner = nullptr,
       std::unique_ptr<WebURLLoaderFactory> url_loader_factory = nullptr) {
-    return new MockFetchContext(load_policy, std::move(loading_task_runner),
-                                std::move(url_loader_factory));
+    return MakeGarbageCollected<MockFetchContext>(
+        load_policy, std::move(loading_task_runner),
+        std::move(url_loader_factory));
   }
 
+  MockFetchContext(
+      LoadPolicy load_policy,
+      scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
+      std::unique_ptr<WebURLLoaderFactory> url_loader_factory)
+      : FetchContext(loading_task_runner
+                         ? std::move(loading_task_runner)
+                         : base::MakeRefCounted<scheduler::FakeTaskRunner>()),
+        load_policy_(load_policy),
+        security_origin_(SecurityOrigin::CreateUniqueOpaque()),
+        frame_scheduler_(new MockFrameScheduler(GetLoadingTaskRunner())),
+        url_loader_factory_(std::move(url_loader_factory)),
+        complete_(false),
+        transfer_size_(-1) {}
   ~MockFetchContext() override = default;
 
   void SetLoadComplete(bool complete) { complete_ = complete; }
@@ -51,6 +66,13 @@ class MockFetchContext : public FetchContext {
 
   void SetSecurityOrigin(scoped_refptr<const SecurityOrigin> security_origin) {
     security_origin_ = security_origin;
+  }
+
+  const FetchClientSettingsObject* GetFetchClientSettingsObject()
+      const override {
+    return MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
+        KURL(), security_origin_, network::mojom::ReferrerPolicy::kDefault,
+        String(), HttpsState::kNone);
   }
 
   // The last ResourceRequest passed to DispatchWillSendRequest.
@@ -137,20 +159,6 @@ class MockFetchContext : public FetchContext {
    private:
     scoped_refptr<base::SingleThreadTaskRunner> runner_;
   };
-
-  MockFetchContext(
-      LoadPolicy load_policy,
-      scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
-      std::unique_ptr<WebURLLoaderFactory> url_loader_factory)
-      : FetchContext(loading_task_runner
-                         ? std::move(loading_task_runner)
-                         : base::MakeRefCounted<scheduler::FakeTaskRunner>()),
-        load_policy_(load_policy),
-        security_origin_(SecurityOrigin::CreateUniqueOpaque()),
-        frame_scheduler_(new MockFrameScheduler(GetLoadingTaskRunner())),
-        url_loader_factory_(std::move(url_loader_factory)),
-        complete_(false),
-        transfer_size_(-1) {}
 
   enum LoadPolicy load_policy_;
   scoped_refptr<const SecurityOrigin> security_origin_;

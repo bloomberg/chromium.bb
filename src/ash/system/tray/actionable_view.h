@@ -12,7 +12,6 @@
 #include "ui/views/controls/button/button.h"
 
 namespace ash {
-class SystemTrayItem;
 
 // A focusable view that performs an action when user clicks on it, or presses
 // enter or space when focused. Note that the action is triggered on mouse-up,
@@ -28,18 +27,11 @@ class ASH_EXPORT ActionableView : public views::ButtonListener,
  public:
   static const char kViewClassName[];
 
-  // The owner is used to close the system tray bubble. Can be null if
-  // the action will not close the bubble.
-  ActionableView(SystemTrayItem* owner, TrayPopupInkDropStyle ink_drop_style);
+  explicit ActionableView(TrayPopupInkDropStyle ink_drop_style);
 
   ~ActionableView() override;
 
-  // Closes the system tray bubble. The |owner_| must not be nullptr.
-  void CloseSystemBubble();
-
  protected:
-  SystemTrayItem* owner() { return owner_; }
-
   // Performs an action when user clicks on the view (on mouse-press event), or
   // presses a key when this view is in focus. Returns true if the event has
   // been handled and an action was performed. Returns false otherwise.
@@ -72,8 +64,6 @@ class ASH_EXPORT ActionableView : public views::ButtonListener,
   // the not-destroyed case ButtonPressed() uses member variables.
   bool* destroyed_;
 
-  SystemTrayItem* owner_;
-
   // Defines the flavor of ink drop ripple/highlight that should be constructed.
   TrayPopupInkDropStyle ink_drop_style_;
 
@@ -84,8 +74,7 @@ class ASH_EXPORT ActionableView : public views::ButtonListener,
 // extend ActionableView and override PerformAction().
 class ASH_EXPORT ButtonListenerActionableView : public ActionableView {
  public:
-  ButtonListenerActionableView(SystemTrayItem* owner,
-                               TrayPopupInkDropStyle ink_drop_style,
+  ButtonListenerActionableView(TrayPopupInkDropStyle ink_drop_style,
                                views::ButtonListener* listener);
 
   // ActionableView:

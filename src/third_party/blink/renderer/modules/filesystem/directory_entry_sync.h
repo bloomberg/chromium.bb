@@ -47,23 +47,23 @@ class DirectoryEntrySync final : public EntrySync {
  public:
   static DirectoryEntrySync* Create(DOMFileSystemBase* file_system,
                                     const String& full_path) {
-    return new DirectoryEntrySync(file_system, full_path);
+    return MakeGarbageCollected<DirectoryEntrySync>(file_system, full_path);
   }
+
+  DirectoryEntrySync(DOMFileSystemBase*, const String& full_path);
+
   bool isDirectory() const override { return true; }
 
   DirectoryReaderSync* createReader();
   FileEntrySync* getFile(const String& path,
-                         const FileSystemFlags&,
+                         const FileSystemFlags*,
                          ExceptionState&);
   DirectoryEntrySync* getDirectory(const String& path,
-                                   const FileSystemFlags&,
+                                   const FileSystemFlags*,
                                    ExceptionState&);
   void removeRecursively(ExceptionState&);
 
   void Trace(blink::Visitor*) override;
-
- private:
-  DirectoryEntrySync(DOMFileSystemBase*, const String& full_path);
 };
 
 DEFINE_TYPE_CASTS(DirectoryEntrySync,

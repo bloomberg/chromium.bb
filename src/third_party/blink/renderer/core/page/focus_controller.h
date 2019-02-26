@@ -57,10 +57,15 @@ class CORE_EXPORT FocusController final
 
   static FocusController* Create(Page*);
 
+  explicit FocusController(Page*);
+
   void SetFocusedFrame(Frame*, bool notify_embedder = true);
   void FocusDocumentView(Frame*, bool notify_embedder = true);
   LocalFrame* FocusedFrame() const;
   Frame* FocusedOrMainFrame() const;
+
+  // Clears |focused_frame_| if it's been detached.
+  void FrameDetached(Frame* detached_frame);
 
   // Finds the focused HTMLFrameOwnerElement, if any, in the provided frame.
   // An HTMLFrameOwnerElement is considered focused if the frame it owns, or
@@ -104,8 +109,6 @@ class CORE_EXPORT FocusController final
 
  private:
   using SkipList = HeapHashSet<Member<Node>>;
-
-  explicit FocusController(Page*);
 
   Element* FindFocusableElement(WebFocusType, Element&, OwnerMap&);
 

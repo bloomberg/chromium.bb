@@ -26,6 +26,29 @@ typedef unsigned long VisualID;
 
 namespace gpu {
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class GpuSeriesType {
+  kUnknown = 0,
+  // Intel 6th gen
+  kIntelSandyBridge = 1,
+  // Intel 7th gen
+  kIntelValleyView = 2,  // BayTrail
+  kIntelIvyBridge = 3,
+  kIntelHaswell = 4,
+  // Intel 8th gen
+  kIntelCherryView = 5,  // Braswell
+  kIntelBroadwell = 6,
+  // Intel 9th gen
+  kIntelApolloLake = 7,
+  kIntelSkyLake = 8,
+  kIntelGeminiLake = 9,
+  kIntelKabyLake = 10,
+  kIntelCoffeeLake = 11,
+  // Please also update |gpu_series_map| in process_json.py.
+  kMaxValue = kIntelCoffeeLake,
+};
+
 // Video profile.  This *must* match media::VideoCodecProfile.
 enum VideoCodecProfile {
   VIDEO_CODEC_PROFILE_UNKNOWN = -1,
@@ -90,6 +113,7 @@ struct GPU_EXPORT VideoEncodeAcceleratorSupportedProfile {
 using VideoEncodeAcceleratorSupportedProfiles =
     std::vector<VideoEncodeAcceleratorSupportedProfile>;
 
+#if defined(OS_WIN)
 // Common overlay formats that we're interested in. Must match the OverlayFormat
 // enum in //tools/metrics/histograms/enums.xml. Mapped to corresponding DXGI
 // formats in DirectCompositionSurfaceWin.
@@ -119,6 +143,7 @@ struct GPU_EXPORT Dx12VulkanVersionInfo {
   // The support Vulkan API version in the gpu driver;
   uint32_t vulkan_version = 0;
 };
+#endif
 
 struct GPU_EXPORT GPUInfo {
   struct GPU_EXPORT GPUDevice {
@@ -250,10 +275,10 @@ struct GPU_EXPORT GPUInfo {
   bool can_support_threaded_texture_mailbox = false;
 
 #if defined(OS_WIN)
-  // True if we use direct composition surfaces on Windows.
+  // True if we use direct composition surface on Windows.
   bool direct_composition = false;
 
-  // True if the current set of outputs supports overlays.
+  // True if we use direct composition surface overlays on Windows.
   bool supports_overlays = false;
 
   OverlayCapabilities overlay_capabilities;

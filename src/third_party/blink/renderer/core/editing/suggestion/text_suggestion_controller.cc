@@ -198,7 +198,7 @@ SuggestionInfosWithNodeAndHighlightColor ComputeSuggestionInfos(
 TextSuggestionController::TextSuggestionController(LocalFrame& frame)
     : is_suggestion_menu_open_(false), frame_(&frame) {}
 
-void TextSuggestionController::DocumentAttached(Document* document) {
+void TextSuggestionController::DidAttachDocument(Document* document) {
   DCHECK(document);
   SetContext(document);
 }
@@ -230,6 +230,11 @@ void TextSuggestionController::HandlePotentialSuggestionTap(
                                       DocumentMarker::kGrammar |
                                       DocumentMarker::kSuggestion));
   if (!node_and_marker.first)
+    return;
+
+  const SuggestionMarker* marker =
+      ToSuggestionMarkerOrNull(node_and_marker.second);
+  if (marker && marker->Suggestions().IsEmpty())
     return;
 
   if (!text_suggestion_host_) {
@@ -454,6 +459,9 @@ void TextSuggestionController::ShowSuggestionMenu(
 
   Vector<TextSuggestionInfo>& suggestion_infos =
       suggestion_infos_with_node_and_highlight_color.suggestion_infos;
+  if (suggestion_infos.IsEmpty())
+    return;
+
   int span_union_start = suggestion_infos[0].span_start;
   int span_union_end = suggestion_infos[0].span_end;
   for (wtf_size_t i = 1; i < suggestion_infos.size(); ++i) {

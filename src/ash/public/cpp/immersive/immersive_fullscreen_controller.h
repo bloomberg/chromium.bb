@@ -13,9 +13,10 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "ui/aura/window_observer.h"
+#include "ui/events/event_handler.h"
+#include "ui/events/event_observer.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
-#include "ui/views/pointer_watcher.h"
 #include "ui/views/view_observer.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -45,12 +46,12 @@ class ImmersiveContext;
 class ImmersiveFocusWatcher;
 class ImmersiveFullscreenControllerDelegate;
 class ImmersiveFullscreenControllerTestApi;
-class ImmersiveGestureHandler;
 
 class ASH_PUBLIC_EXPORT ImmersiveFullscreenController
     : public aura::WindowObserver,
       public gfx::AnimationDelegate,
-      public views::PointerWatcher,
+      public ui::EventObserver,
+      public ui::EventHandler,
       public views::ViewObserver,
       public ImmersiveRevealedLock::Delegate {
  public:
@@ -109,19 +110,12 @@ class ASH_PUBLIC_EXPORT ImmersiveFullscreenController
   views::Widget* widget() { return widget_; }
   views::View* top_container() { return top_container_; }
 
-  // TODO(sky): move OnMouseEvent/OnTouchEvent to private section.
-  void OnMouseEvent(const ui::MouseEvent& event,
-                    const gfx::Point& location_in_screen,
-                    views::Widget* target);
-  void OnTouchEvent(const ui::TouchEvent& event,
-                    const gfx::Point& location_in_screen);
-  // Processes a GestureEvent. This may call SetHandled() on the supplied event.
-  void OnGestureEvent(ui::GestureEvent* event);
+  // ui::EventObserver:
+  void OnEvent(const ui::Event& event) override;
 
-  // views::PointerWatcher:
-  void OnPointerEventObserved(const ui::PointerEvent& event,
-                              const gfx::Point& location_in_screen,
-                              gfx::NativeView target) override;
+  // ui::EventHandler:
+  void OnEvent(ui::Event* event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
   // aura::WindowObserver:
   void OnWindowPropertyChanged(aura::Window* window,
@@ -166,6 +160,13 @@ class ASH_PUBLIC_EXPORT ImmersiveFullscreenController
 
   // Enables or disables observers for mouse, touch, focus, and activation.
   void EnableEventObservers(bool enable);
+
+  // Called to handle EventObserver::OnEvent.
+  void HandleMouseEvent(const ui::MouseEvent& event,
+                        const gfx::Point& location_in_screen,
+                        views::Widget* target);
+  void HandleTouchEvent(const ui::TouchEvent& event,
+                        const gfx::Point& location_in_screen);
 
   // Updates |top_edge_hover_timer_| based on a mouse |event|. If the mouse is
   // hovered at the top of the screen the timer is started. If the mouse moves
@@ -291,7 +292,6 @@ class ASH_PUBLIC_EXPORT ImmersiveFullscreenController
   bool animations_disabled_for_test_;
 
   std::unique_ptr<ImmersiveFocusWatcher> immersive_focus_watcher_;
-  std::unique_ptr<ImmersiveGestureHandler> immersive_gesture_handler_;
 
   // The window targeter that was in use before immersive fullscreen mode was
   // entered, if any. Will be re-installed on the window after leaving immersive

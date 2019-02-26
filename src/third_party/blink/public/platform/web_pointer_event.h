@@ -12,7 +12,7 @@
 
 namespace blink {
 
-// See WebInputEvent.h for details why this pack is here.
+// See web_input_event.h for details why this pack is here.
 #pragma pack(push, 4)
 
 // WebPointerEvent

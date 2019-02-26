@@ -18,6 +18,7 @@
 #include "base/debug/activity_tracker.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "base/threading/platform_thread_internal_posix.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_id_name_manager.h"
@@ -134,6 +135,30 @@ bool CreateThread(size_t stack_size,
   return success;
 }
 
+#if defined(OS_LINUX)
+
+// Store the thread ids in local storage since calling the SWI can
+// expensive and PlatformThread::CurrentId is used liberally. Clear
+// the stored value after a fork() because forking changes the thread
+// id. Forking without going through fork() (e.g. clone()) is not
+// supported, but there is no known usage. Using thread_local is
+// fine here (despite being banned) since it is going to be allowed
+// but is blocked on a clang bug for Mac (https://crbug.com/829078)
+// and we can't use ThreadLocalStorage because of re-entrancy due to
+// CHECK/DCHECKs.
+thread_local pid_t g_thread_id = -1;
+
+void ClearTidCache() {
+  g_thread_id = -1;
+}
+
+class InitAtFork {
+ public:
+  InitAtFork() { pthread_atfork(nullptr, nullptr, ClearTidCache); }
+};
+
+#endif  // defined(OS_LINUX)
+
 }  // namespace
 
 // static
@@ -143,7 +168,16 @@ PlatformThreadId PlatformThread::CurrentId() {
 #if defined(OS_MACOSX)
   return pthread_mach_thread_np(pthread_self());
 #elif defined(OS_LINUX)
-  return syscall(__NR_gettid);
+  static NoDestructor<InitAtFork> init_at_fork;
+  if (g_thread_id == -1) {
+    g_thread_id = syscall(__NR_gettid);
+  } else {
+    DCHECK_EQ(g_thread_id, syscall(__NR_gettid))
+        << "Thread id stored in TLS is different from thread id returned by "
+           "the system. It is likely that the process was forked without going "
+           "through fork().";
+  }
+  return g_thread_id;
 #elif defined(OS_ANDROID)
   return gettid();
 #elif defined(OS_FUCHSIA)
@@ -230,6 +264,8 @@ void PlatformThread::Join(PlatformThreadHandle thread_handle) {
   // Joining another thread may block the current thread for a long time, since
   // the thread referred to by |thread_handle| may still be running long-lived /
   // blocking tasks.
+  // TODO(https://crbug.com/707362): Make this a
+  // ScopedBlockingCallWithBaseSyncPrimitives.
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   CHECK_EQ(0, pthread_join(thread_handle.platform_handle(), nullptr));
 }
@@ -248,13 +284,18 @@ bool PlatformThread::CanIncreaseThreadPriority(ThreadPriority priority) {
 #if defined(OS_NACL)
   return false;
 #else
+  auto platform_specific_ability =
+      internal::CanIncreaseCurrentThreadPriorityForPlatform(priority);
+  if (platform_specific_ability)
+    return platform_specific_ability.value();
+
   return internal::CanLowerNiceTo(
       internal::ThreadPriorityToNiceValue(priority));
 #endif  // defined(OS_NACL)
 }
 
 // static
-void PlatformThread::SetCurrentThreadPriority(ThreadPriority priority) {
+void PlatformThread::SetCurrentThreadPriorityImpl(ThreadPriority priority) {
 #if defined(OS_NACL)
   NOTIMPLEMENTED();
 #else
@@ -282,11 +323,10 @@ ThreadPriority PlatformThread::GetCurrentThreadPriority() {
   return ThreadPriority::NORMAL;
 #else
   // Mirrors SetCurrentThreadPriority()'s implementation.
-  ThreadPriority platform_specific_priority;
-  if (internal::GetCurrentThreadPriorityForPlatform(
-          &platform_specific_priority)) {
-    return platform_specific_priority;
-  }
+  auto platform_specific_priority =
+      internal::GetCurrentThreadPriorityForPlatform();
+  if (platform_specific_priority)
+    return platform_specific_priority.value();
 
   // Need to clear errno before calling getpriority():
   // http://man7.org/linux/man-pages/man2/getpriority.2.html
@@ -303,5 +343,12 @@ ThreadPriority PlatformThread::GetCurrentThreadPriority() {
 }
 
 #endif  // !defined(OS_MACOSX) && !defined(OS_FUCHSIA)
+
+// static
+size_t PlatformThread::GetDefaultThreadStackSize() {
+  pthread_attr_t attributes;
+  pthread_attr_init(&attributes);
+  return base::GetDefaultThreadStackSize(attributes);
+}
 
 }  // namespace base

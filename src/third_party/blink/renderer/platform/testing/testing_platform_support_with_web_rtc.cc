@@ -10,6 +10,7 @@
 #include "third_party/blink/public/platform/web_rtc_dtmf_sender_handler.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 #include "third_party/blink/public/platform/web_rtc_session_description.h"
+#include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_vector.h"
 
 namespace blink {
@@ -43,7 +44,8 @@ class DummyWebRTCRtpSender : public WebRTCRtpSender {
   void SetParameters(blink::WebVector<webrtc::RtpEncodingParameters>,
                      webrtc::DegradationPreference,
                      WebRTCVoidRequest) override {}
-  void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>) override {}
+  void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>,
+                blink::RTCStatsFilter) override {}
 
   void set_track(WebMediaStreamTrack track) { track_ = std::move(track); }
 
@@ -167,7 +169,8 @@ webrtc::RTCErrorType MockWebRTCPeerConnectionHandler::SetConfiguration(
 void MockWebRTCPeerConnectionHandler::GetStats(const WebRTCStatsRequest&) {}
 
 void MockWebRTCPeerConnectionHandler::GetStats(
-    std::unique_ptr<WebRTCStatsReportCallback>) {}
+    std::unique_ptr<WebRTCStatsReportCallback>,
+    blink::RTCStatsFilter) {}
 
 webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>>
 MockWebRTCPeerConnectionHandler::AddTransceiverWithTrack(

@@ -13,7 +13,6 @@
 #include "SkImage_Base.h"
 #include "SkSpecialSurface.h"
 #include "SkSurfacePriv.h"
-#include "SkPixelRef.h"
 #include <atomic>
 
 #if SK_SUPPORT_GPU
@@ -187,13 +186,12 @@ static bool rect_fits(const SkIRect& rect, int width, int height) {
 
 sk_sp<SkSpecialImage> SkSpecialImage::MakeFromImage(const SkIRect& subset,
                                                     sk_sp<SkImage> image,
-                                                    SkColorSpace* dstColorSpace,
                                                     const SkSurfaceProps* props) {
     SkASSERT(rect_fits(subset, image->width(), image->height()));
 
 #if SK_SUPPORT_GPU
     if (sk_sp<GrTextureProxy> proxy = as_IB(image)->asTextureProxyRef()) {
-        GrContext* context = ((SkImage_Gpu*) as_IB(image))->context();
+        GrContext* context = ((SkImage_GpuBase*) as_IB(image))->context();
 
         return MakeDeferredFromGpu(context, subset, image->uniqueID(), std::move(proxy),
                                    as_IB(image)->onImageInfo().refColorSpace(), props);
@@ -201,7 +199,7 @@ sk_sp<SkSpecialImage> SkSpecialImage::MakeFromImage(const SkIRect& subset,
 #endif
     {
         SkBitmap bm;
-        if (as_IB(image)->getROPixels(&bm, dstColorSpace)) {
+        if (as_IB(image)->getROPixels(&bm)) {
             return MakeFromRaster(subset, bm, props);
         }
     }
@@ -396,8 +394,7 @@ public:
     }
 
     bool onGetROPixels(SkBitmap* dst) const override {
-        const auto desc = SkBitmapCacheDesc::Make(this->uniqueID(), kN32_SkColorType,
-                                                  fColorSpace.get(), this->subset());
+        const auto desc = SkBitmapCacheDesc::Make(this->uniqueID(), this->subset());
         if (SkBitmapCache::Find(desc, dst)) {
             SkASSERT(dst->getGenerationID() == this->uniqueID());
             SkASSERT(dst->isImmutable());
@@ -439,8 +436,11 @@ public:
             return nullptr;
         }
 
+        GrBackendFormat format =
+            fContext->contextPriv().caps()->getBackendFormatFromColorType(outProps.colorType());
+
         return SkSpecialSurface::MakeRenderTarget(
-            fContext, size.width(), size.height(),
+            fContext, format, size.width(), size.height(),
             SkColorType2GrPixelConfig(outProps.colorType()), sk_ref_sp(outProps.colorSpace()),
             props);
     }

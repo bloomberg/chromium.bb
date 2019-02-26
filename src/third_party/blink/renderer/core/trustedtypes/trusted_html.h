@@ -16,15 +16,15 @@ class CORE_EXPORT TrustedHTML final : public ScriptWrappable {
 
  public:
   static TrustedHTML* Create(const String& html) {
-    return new TrustedHTML(html);
+    return MakeGarbageCollected<TrustedHTML>(html);
   }
+
+  TrustedHTML(const String& html);
 
   // TrustedHTML.idl
   String toString() const;
 
  private:
-  TrustedHTML(const String& html);
-
   const String html_;
 };
 

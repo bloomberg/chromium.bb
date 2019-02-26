@@ -75,14 +75,14 @@ Polymer({
   onValueChange_: function(event) {
     if (!this.propertyDict)
       return;
-    var key = event.target.id;
-    var curValue = this.get(key, this.propertyDict);
+    const key = event.target.id;
+    let curValue = this.get(key, this.propertyDict);
     if (typeof curValue == 'object' && !Array.isArray(curValue)) {
       // Extract the property from an ONC managed dictionary.
       curValue = CrOnc.getActiveValue(
           /** @type {!CrOnc.ManagedProperty} */ (curValue));
     }
-    var newValue = this.getValueFromEditField_(key, event.target.value);
+    const newValue = this.getValueFromEditField_(key, event.target.value);
     if (newValue == curValue)
       return;
     this.fire('property-change', {field: key, value: newValue});
@@ -95,15 +95,15 @@ Polymer({
    * @private
    */
   getPropertyLabel_: function(key, prefix) {
-    var oncKey = 'Onc' + prefix + key;
+    let oncKey = 'Onc' + prefix + key;
     oncKey = oncKey.replace(/\./g, '-');
     if (this.i18nExists(oncKey))
       return this.i18n(oncKey);
     // We do not provide translations for every possible network property key.
     // For keys specific to a type, strip the type prefix.
-    var result = prefix + key;
-    for (var entry in chrome.networkingPrivate.NetworkType) {
-      var type = chrome.networkingPrivate.NetworkType[entry];
+    let result = prefix + key;
+    for (const entry in chrome.networkingPrivate.NetworkType) {
+      const type = chrome.networkingPrivate.NetworkType[entry];
       if (result.startsWith(type + '.')) {
         result = result.substr(type.length + 1);
         break;
@@ -123,7 +123,7 @@ Polymer({
     return key => {
       if (editFieldTypes.hasOwnProperty(key))
         return true;
-      var value = this.getPropertyValue_(key, prefix, propertyDict);
+      const value = this.getPropertyValue_(key, prefix, propertyDict);
       return value !== undefined && value !== '';
     };
   },
@@ -135,12 +135,12 @@ Polymer({
    * @private
    */
   isPropertyEditable_: function(key, propertyDict) {
-    var property = /** @type {!CrOnc.ManagedProperty|undefined} */ (
+    const property = /** @type {!CrOnc.ManagedProperty|undefined} */ (
         this.get(key, propertyDict));
     if (property === undefined) {
       // Unspecified properties in policy configurations are not user
       // modifiable. https://crbug.com/819837.
-      var source = propertyDict.Source;
+      const source = propertyDict.Source;
       return source != 'UserPolicy' && source != 'DevicePolicy';
     }
     return !this.isNetworkPolicyEnforced(property);
@@ -153,7 +153,7 @@ Polymer({
    * @private
    */
   isEditType_: function(key, editFieldTypes) {
-    var editType = editFieldTypes[key];
+    const editType = editFieldTypes[key];
     return editType == 'String' || editType == 'StringArray' ||
         editType == 'Password';
   },
@@ -198,7 +198,7 @@ Polymer({
    * @private
    */
   getProperty_: function(key, propertyDict) {
-    var property = this.get(key, propertyDict);
+    const property = this.get(key, propertyDict);
     if (property === undefined && propertyDict.Source) {
       // Provide an empty property object with the network policy source.
       // See https://crbug.com/819837 for more info.
@@ -215,7 +215,7 @@ Polymer({
    * @private
    */
   getPropertyValue_: function(key, prefix, propertyDict) {
-    var value = this.get(key, propertyDict);
+    let value = this.get(key, propertyDict);
     if (value === undefined)
       return '';
     if (typeof value == 'object' && !Array.isArray(value)) {
@@ -226,15 +226,15 @@ Polymer({
     if (Array.isArray(value))
       return value.join(', ');
 
-    var customValue = this.getCustomPropertyValue_(key, value);
+    const customValue = this.getCustomPropertyValue_(key, value);
     if (customValue)
       return customValue;
     if (typeof value == 'number' || typeof value == 'boolean')
       return value.toString();
 
     assert(typeof value == 'string');
-    var valueStr = /** @type {string} */ (value);
-    var oncKey = 'Onc' + prefix + key;
+    const valueStr = /** @type {string} */ (value);
+    let oncKey = 'Onc' + prefix + key;
     oncKey = oncKey.replace(/\./g, '-');
     oncKey += '_' + valueStr;
     if (this.i18nExists(oncKey))
@@ -250,7 +250,7 @@ Polymer({
    * @private
    */
   getValueFromEditField_(key, fieldValue) {
-    var editType = this.editFieldTypes[key];
+    const editType = this.editFieldTypes[key];
     if (editType == 'StringArray')
       return fieldValue.toString().split(/, */);
     return fieldValue;

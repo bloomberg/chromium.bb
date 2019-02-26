@@ -48,6 +48,7 @@ source_set("payments") {
     "//ios/chrome/browser/signin",
     "//ios/web",
     "//net",
+    "//services/identity/public/cpp:cpp",
     "//ui/base",
     "//url",
   ]
@@ -121,5 +122,6 @@ source_set("test_support") {
     "//ios/web",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
+    "//services/identity/public/cpp:cpp",
   ]
 }

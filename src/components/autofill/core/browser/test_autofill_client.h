@@ -13,9 +13,13 @@
 #include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
+#include "components/autofill/core/browser/payments/test_payments_client.h"
 #include "components/autofill/core/browser/test_address_normalizer.h"
-#include "components/autofill/core/browser/test_strike_database.h"
+#include "components/autofill/core/browser/test_form_data_importer.h"
+#include "components/autofill/core/browser/test_legacy_strike_database.h"
+#include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
@@ -34,7 +38,9 @@ class TestAutofillClient : public AutofillClient {
   PrefService* GetPrefs() override;
   syncer::SyncService* GetSyncService() override;
   identity::IdentityManager* GetIdentityManager() override;
-  StrikeDatabase* GetStrikeDatabase() override;
+  FormDataImporter* GetFormDataImporter() override;
+  payments::PaymentsClient* GetPaymentsClient() override;
+  LegacyStrikeDatabase* GetLegacyStrikeDatabase() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
   AddressNormalizer* GetAddressNormalizer() override;
@@ -50,19 +56,30 @@ class TestAutofillClient : public AutofillClient {
       std::unique_ptr<base::DictionaryValue> legal_message,
       const std::vector<MigratableCreditCard>& migratable_credit_cards,
       LocalCardMigrationCallback start_migrating_cards_callback) override;
+  void ShowLocalCardMigrationResults(
+      const bool has_server_error,
+      const base::string16& tip_message,
+      const std::vector<MigratableCreditCard>& migratable_credit_cards,
+      MigrationDeleteCardCallback delete_local_card_callback) override;
   void ConfirmSaveAutofillProfile(const AutofillProfile& profile,
                                   base::OnceClosure callback) override;
   void ConfirmSaveCreditCardLocally(const CreditCard& card,
                                     bool show_prompt,
                                     base::OnceClosure callback) override;
+#if defined(OS_ANDROID)
+  void ConfirmAccountNameFixFlow(
+      base::OnceCallback<void(const base::string16&)> callback) override;
+#endif  // defined(OS_ANDROID)
+
   void ConfirmSaveCreditCardToCloud(
       const CreditCard& card,
       std::unique_ptr<base::DictionaryValue> legal_message,
       bool should_request_name_from_user,
+      bool should_request_expiration_date_from_user,
       bool show_prompt,
-      base::OnceCallback<void(const base::string16&)> callback) override;
+      UserAcceptedUploadCallback callback) override;
   void ConfirmCreditCardFillAssist(const CreditCard& card,
-                                   const base::Closure& callback) override;
+                                   base::OnceClosure callback) override;
   void LoadRiskData(
       base::OnceCallback<void(const std::string&)> callback) override;
   bool HasCreditCardScanFeature() override;
@@ -101,8 +118,18 @@ class TestAutofillClient : public AutofillClient {
   }
 
   void set_test_strike_database(
-      std::unique_ptr<TestStrikeDatabase> test_strike_database) {
-    test_strike_database_ = std::move(test_strike_database);
+      std::unique_ptr<TestLegacyStrikeDatabase> test_strike_database) {
+    test_legacy_strike_database_ = std::move(test_strike_database);
+  }
+
+  void set_test_payments_client(
+      std::unique_ptr<payments::TestPaymentsClient> payments_client) {
+    payments_client_ = std::move(payments_client);
+  }
+
+  void set_test_form_data_importer(
+      std::unique_ptr<TestFormDataImporter> form_data_importer) {
+    form_data_importer_ = std::move(form_data_importer);
   }
 
   void set_form_origin(const GURL& url);
@@ -138,10 +165,13 @@ class TestAutofillClient : public AutofillClient {
   identity::IdentityTestEnvironment identity_test_env_;
   syncer::SyncService* test_sync_service_ = nullptr;
   TestAddressNormalizer test_address_normalizer_;
+  TestPersonalDataManager test_personal_data_manager_;
 
   // NULL by default.
   std::unique_ptr<PrefService> prefs_;
-  std::unique_ptr<TestStrikeDatabase> test_strike_database_;
+  std::unique_ptr<TestLegacyStrikeDatabase> test_legacy_strike_database_;
+  std::unique_ptr<payments::PaymentsClient> payments_client_;
+  std::unique_ptr<FormDataImporter> form_data_importer_;
   GURL form_origin_;
   ukm::SourceId source_id_ = -1;
 
@@ -152,6 +182,10 @@ class TestAutofillClient : public AutofillClient {
 
   // Populated if save was offered. True if bubble was shown, false otherwise.
   base::Optional<bool> offer_to_save_credit_card_bubble_was_shown_;
+
+  // Populated if name fix flow was offered. True if bubble was shown, false
+  // otherwise.
+  base::Optional<bool> credit_card_name_fix_flow_bubble_was_shown_;
 
   std::vector<std::string> migration_card_selection_;
 

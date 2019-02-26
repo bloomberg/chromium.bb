@@ -23,23 +23,24 @@
 #include "net/third_party/http2/hpack/tools/hpack_block_builder.h"
 #include "net/third_party/http2/platform/api/http2_string.h"
 #include "net/third_party/http2/platform/api/http2_string_piece.h"
+#include "net/third_party/http2/test_tools/http2_random.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace http2 {
 namespace test {
 
-class RandomBase;
-
 class HpackBlockCollector : public HpackEntryDecoderListener {
  public:
+  HpackBlockCollector();
+  HpackBlockCollector(const HpackBlockCollector& other);
+  ~HpackBlockCollector() override;
+
   // Implementations of HpackEntryDecoderListener, forwarding to pending_entry_,
   // an HpackEntryCollector for the "in-progress" HPACK entry. OnIndexedHeader
   // and OnDynamicTableSizeUpdate are pending only for that one call, while
   // OnStartLiteralHeader is followed by many calls, ending with OnValueEnd.
   // Once all the calls for one HPACK entry have been received, PushPendingEntry
   // is used to append the pending_entry_ entry to the collected entries_.
-  HpackBlockCollector();
-  HpackBlockCollector(const HpackBlockCollector& other);
-  ~HpackBlockCollector() override;
   void OnIndexedHeader(size_t index) override;
   void OnDynamicTableSizeUpdate(size_t size) override;
   void OnStartLiteralHeader(HpackEntryType header_type,
@@ -76,7 +77,7 @@ class HpackBlockCollector : public HpackEntryDecoderListener {
 
   // Shuffle the entries, in support of generating an HPACK block of entries
   // in some random order.
-  void ShuffleEntries(RandomBase* rng);
+  void ShuffleEntries(Http2Random* rng);
 
   // Serialize entries_ to the HpackBlockBuilder.
   void AppendToHpackBlockBuilder(HpackBlockBuilder* hbb) const;

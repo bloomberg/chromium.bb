@@ -426,16 +426,6 @@ void NotificationEventDispatcherImpl::DispatchNotificationCloseEvent(
 void NotificationEventDispatcherImpl::RegisterNonPersistentNotificationListener(
     const std::string& notification_id,
     blink::mojom::NonPersistentNotificationListenerPtr event_listener_ptr) {
-  if (non_persistent_notification_listeners_.count(notification_id)) {
-    // Dispatch the close event for any previously displayed notification with
-    // the same notification id. This happens whenever a non-persistent
-    // notification is replaced (by creating another with the same tag), since
-    // from the JavaScript point of view there will be two notification objects,
-    // and the old one needs to receive a close event before the new one
-    // receives a show event.
-    DispatchNonPersistentCloseEvent(notification_id, base::DoNothing());
-  }
-
   // Observe connection errors, which occur when the JavaScript object or the
   // renderer hosting them goes away. (For example through navigation.) The
   // listener gets freed together with |this|, thus the Unretained is safe.
@@ -443,6 +433,22 @@ void NotificationEventDispatcherImpl::RegisterNonPersistentNotificationListener(
       &NotificationEventDispatcherImpl::
           HandleConnectionErrorForNonPersistentNotificationListener,
       base::Unretained(this), notification_id));
+
+  if (non_persistent_notification_listeners_.count(notification_id)) {
+    // Dispatch the close event for any previously displayed notification with
+    // the same notification id. This happens whenever a non-persistent
+    // notification is replaced (by creating another with the same tag), since
+    // from the JavaScript point of view there will be two notification objects,
+    // and the old one needs to receive a close event before the new one
+    // receives a show event.
+    DispatchNonPersistentCloseEvent(
+        notification_id,
+        base::BindOnce(&NotificationEventDispatcherImpl::
+                           ReplaceNonPersistentNotificationListener,
+                       base::Unretained(this), notification_id,
+                       std::move(event_listener_ptr)));
+    return;
+  }
 
   non_persistent_notification_listeners_.emplace(notification_id,
                                                  std::move(event_listener_ptr));
@@ -487,6 +493,13 @@ void NotificationEventDispatcherImpl::OnNonPersistentCloseComplete(
     base::OnceClosure completed_closure) {
   non_persistent_notification_listeners_.erase(notification_id);
   std::move(completed_closure).Run();
+}
+
+void NotificationEventDispatcherImpl::ReplaceNonPersistentNotificationListener(
+    const std::string& notification_id,
+    blink::mojom::NonPersistentNotificationListenerPtr event_listener_ptr) {
+  non_persistent_notification_listeners_.emplace(notification_id,
+                                                 std::move(event_listener_ptr));
 }
 
 void NotificationEventDispatcherImpl::

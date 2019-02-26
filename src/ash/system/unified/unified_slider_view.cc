@@ -79,6 +79,8 @@ void UnifiedSliderButton::PaintButtonContents(gfx::Canvas* canvas) {
 }
 
 void UnifiedSliderButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  if (!enabled())
+    return;
   TopShortcutButton::GetAccessibleNodeData(node_data);
   node_data->role = ax::mojom::Role::kToggleButton;
   node_data->SetCheckedState(toggled_ ? ax::mojom::CheckedState::kTrue

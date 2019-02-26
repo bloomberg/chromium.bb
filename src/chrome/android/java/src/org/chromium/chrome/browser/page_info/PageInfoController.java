@@ -12,7 +12,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
-import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.IntDef;
 import android.text.Spannable;
@@ -35,12 +34,12 @@ import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView.ButtonType;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
 import org.chromium.chrome.browser.page_info.PageInfoView.ConnectionInfoParams;
 import org.chromium.chrome.browser.page_info.PageInfoView.PageInfoViewParams;
-import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
@@ -57,6 +56,7 @@ import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
+import org.chromium.net.GURLUtils;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
@@ -120,9 +120,8 @@ public class PageInfoController
     // URL'.
     private String mFullUrl;
 
-    // A parsed version of mFullUrl. Is null if the URL is invalid/cannot be
-    // parsed.
-    private URI mParsedUrl;
+    // The scheme of the URL of this page.
+    private String mScheme;
 
     // Whether or not this page is an internal chrome page (e.g. the
     // chrome://settings page).
@@ -199,12 +198,11 @@ public class PageInfoController
         // This can happen if an invalid chrome-distiller:// url was entered.
         if (mFullUrl == null) mFullUrl = "";
 
+        mScheme = GURLUtils.getScheme(mFullUrl);
         try {
-            mParsedUrl = new URI(mFullUrl);
-            mIsInternalPage = UrlUtilities.isInternalScheme(mParsedUrl);
+            mIsInternalPage = UrlUtilities.isInternalScheme(new URI(mFullUrl));
         } catch (URISyntaxException e) {
-            mParsedUrl = null;
-            mIsInternalPage = false;
+            // Ignore exception since this is for displaying some specific content on page info.
         }
 
         String displayUrl = UrlFormatter.formatUrlForCopy(mFullUrl);
@@ -228,17 +226,14 @@ public class PageInfoController
         viewParams.urlOriginLength = OmniboxUrlEmphasizer.getOriginEndIndex(
                 displayUrlBuilder.toString(), mTab.getProfile());
 
-        if (shouldShowSiteSettingsButton(mParsedUrl)) {
+        if (shouldShowSiteSettingsButton()) {
             viewParams.siteSettingsButtonClickCallback = () -> {
                 // Delay while the dialog closes.
                 runAfterDismiss(() -> {
                     recordAction(PageInfoAction.PAGE_INFO_SITE_SETTINGS_OPENED);
-                    Bundle fragmentArguments =
-                            SingleWebsitePreferences.createFragmentArgsForSite(mFullUrl);
                     Intent preferencesIntent = PreferencesLauncher.createIntentForSettingsPage(
-                            mContext, SingleWebsitePreferences.class.getName());
-                    preferencesIntent.putExtra(
-                            Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, fragmentArguments);
+                            mContext, SingleWebsitePreferences.class.getName(),
+                            SingleWebsitePreferences.createFragmentArgsForSite(mFullUrl));
                     // Disabling StrictMode to avoid violations (https://crbug.com/819410).
                     try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
                         mContext.startActivity(preferencesIntent);
@@ -347,7 +342,8 @@ public class PageInfoController
                     bridge.loadOriginal(mTab.getWebContents());
                 });
             };
-            final String previewOriginalHost = bridge.getOriginalHost(mTab.getWebContents());
+            final String previewOriginalHost =
+                    bridge.getOriginalHost(mTab.getWebContents().getVisibleUrl());
             final String loadOriginalText = mContext.getString(
                     R.string.page_info_preview_load_original, previewOriginalHost);
             final SpannableString loadOriginalSpan = SpanApplier.applySpans(loadOriginalText,
@@ -364,13 +360,10 @@ public class PageInfoController
     }
 
     /**
-     * Whether to show a 'Details' link to the connection info popup. The link is only shown for
-     * HTTPS connections.
+     * Whether to show a 'Details' link to the connection info popup.
      */
     private boolean isConnectionDetailsLinkVisible() {
-        return mContentPublisher == null && !isShowingOfflinePage() && !isShowingPreview()
-                && mParsedUrl != null && mParsedUrl.getScheme() != null
-                && mParsedUrl.getScheme().equals(UrlConstants.HTTPS_SCHEME);
+        return mContentPublisher == null && !isShowingOfflinePage() && !isShowingPreview();
     }
 
     /**
@@ -486,10 +479,10 @@ public class PageInfoController
     }
 
     @Override
-    public void onClick(@ButtonType int buttonType) {}
+    public void onClick(PropertyModel model, @ButtonType int buttonType) {}
 
     @Override
-    public void onDismiss(@DialogDismissalCause int dismissalCause) {
+    public void onDismiss(PropertyModel model, @DialogDismissalCause int dismissalCause) {
         assert mNativePageInfoController != 0;
         if (mPendingRunAfterDismissTask != null) {
             mPendingRunAfterDismissTask.run();
@@ -521,21 +514,12 @@ public class PageInfoController
     }
 
     /**
-     *  Whether the site settings button should be displayed for the given URI.
-     *
-     * @param uri The URI used to determine if the site settings button should be displayed.
+     * Whether the site settings button should be displayed for the given URL.
      */
-    private boolean shouldShowSiteSettingsButton(URI uri) {
-        if (uri == null || uri.getScheme() == null) {
-            return false;
-        }
-
-        if (isShowingOfflinePage() || isShowingPreview()) {
-            return false;
-        }
-
-        return uri.getScheme().equals(UrlConstants.HTTP_SCHEME)
-                || uri.getScheme().equals(UrlConstants.HTTPS_SCHEME);
+    private boolean shouldShowSiteSettingsButton() {
+        return !isShowingOfflinePage() && !isShowingPreview()
+                && (UrlConstants.HTTP_SCHEME.equals(mScheme)
+                           || UrlConstants.HTTPS_SCHEME.equals(mScheme));
     }
 
     private boolean isSheet() {

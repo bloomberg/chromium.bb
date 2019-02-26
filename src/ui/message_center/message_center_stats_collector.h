@@ -12,6 +12,7 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/message_center_types.h"
+#include "ui/message_center/public/cpp/notifier_id.h"
 
 namespace message_center {
 
@@ -60,6 +61,9 @@ class MessageCenterStatsCollector : public MessageCenterObserver {
     std::string id_;
     bool actions_[NOTIFICATION_ACTION_COUNT];
   };
+
+  // Sends notifier type to UMA. Called when a notification is added.
+  void RecordNotifierType(NotifierType type);
 
   // MessageCenterObserver
   void OnNotificationAdded(const std::string& notification_id) override;

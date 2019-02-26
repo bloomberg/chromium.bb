@@ -174,7 +174,7 @@ NSFont* MatchNSFontFamily(const AtomicString& desired_family_string,
                           float size) {
   DCHECK_NE(desired_family_string, FontCache::LegacySystemFontFamily());
 
-  if (desired_family_string == FontFamilyNames::system_ui) {
+  if (desired_family_string == font_family_names::kSystemUi) {
     NSFont* font = nil;
 // Normally we'd use an availability macro here, but
 // systemFontOfSize:weight: is available but not visible on macOS 10.10,

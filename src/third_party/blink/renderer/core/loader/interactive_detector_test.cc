@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 
 namespace blink {
@@ -42,7 +43,7 @@ class InteractiveDetectorTest : public testing::Test {
 
     Document* document = &dummy_page_holder_->GetDocument();
 
-    detector_ = new InteractiveDetector(
+    detector_ = MakeGarbageCollected<InteractiveDetector>(
         *document, new NetworkActivityCheckerForTest(document));
 
     // By this time, the DummyPageHolder has created an InteractiveDetector, and
@@ -521,7 +522,7 @@ TEST_F(InteractiveDetectorTest, TaskLongerThan5sBlocksTTI) {
 
   // Post a task with 6 seconds duration.
   PostCrossThreadTask(
-      *platform_->CurrentThread()->GetTaskRunner(), FROM_HERE,
+      *Thread::Current()->GetTaskRunner(), FROM_HERE,
       CrossThreadBind(&InteractiveDetectorTest::DummyTaskWithDuration,
                       CrossThreadUnretained(this), 6.0));
 
@@ -542,7 +543,7 @@ TEST_F(InteractiveDetectorTest, LongTaskAfterTTIDoesNothing) {
 
   // Long task 1.
   PostCrossThreadTask(
-      *platform_->CurrentThread()->GetTaskRunner(), FROM_HERE,
+      *Thread::Current()->GetTaskRunner(), FROM_HERE,
       CrossThreadBind(&InteractiveDetectorTest::DummyTaskWithDuration,
                       CrossThreadUnretained(this), 0.1));
 
@@ -555,7 +556,7 @@ TEST_F(InteractiveDetectorTest, LongTaskAfterTTIDoesNothing) {
 
   // Long task 2.
   PostCrossThreadTask(
-      *platform_->CurrentThread()->GetTaskRunner(), FROM_HERE,
+      *Thread::Current()->GetTaskRunner(), FROM_HERE,
       CrossThreadBind(&InteractiveDetectorTest::DummyTaskWithDuration,
                       CrossThreadUnretained(this), 0.1));
 

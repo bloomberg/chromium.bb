@@ -25,6 +25,7 @@
 #include "modules/audio_processing/echo_cancellation_impl.h"
 #include "modules/audio_processing/echo_control_mobile_impl.h"
 #include "modules/audio_processing/include/audio_processing.h"
+#include "modules/audio_processing/logging/apm_data_dumper.h"
 #include "modules/audio_processing/test/fake_recording_device.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/logging.h"
@@ -47,7 +48,18 @@ EchoCanceller3Config ReadAec3ConfigFromJsonFile(const std::string& filename) {
   while (std::getline(f, s)) {
     json_string += s;
   }
-  return Aec3ConfigFromJsonString(json_string);
+
+  bool parsing_successful;
+  EchoCanceller3Config cfg;
+  Aec3ConfigFromJsonString(json_string, &cfg, &parsing_successful);
+  if (!parsing_successful) {
+    std::cout << "Parsing of json string failed: " << std::endl
+              << json_string << std::endl;
+    RTC_CHECK(false);
+  }
+  RTC_CHECK(EchoCanceller3Config::Validate(&cfg));
+
+  return cfg;
 }
 
 void CopyFromAudioFrame(const AudioFrame& src, ChannelBuffer<float>* dest) {
@@ -114,6 +126,13 @@ AudioProcessingSimulator::AudioProcessingSimulator(
           settings.initial_mic_level,
           settings_.simulate_mic_gain ? *settings.simulated_mic_kind : 0),
       worker_queue_("file_writer_task_queue") {
+  RTC_CHECK(!settings_.dump_internal_data || WEBRTC_APM_DEBUG_DUMP == 1);
+  ApmDataDumper::SetActivated(settings_.dump_internal_data);
+  if (settings_.dump_internal_data_output_dir.has_value()) {
+    ApmDataDumper::SetOutputDirectory(
+        settings_.dump_internal_data_output_dir.value());
+  }
+
   if (settings_.ed_graph_output_filename &&
       !settings_.ed_graph_output_filename->empty()) {
     residual_echo_likelihood_graph_writer_.open(
@@ -195,9 +214,9 @@ void AudioProcessingSimulator::ProcessStream(bool fixed_interface) {
   }
 
   if (residual_echo_likelihood_graph_writer_.is_open()) {
-    auto stats = ap_->GetStatistics();
-    residual_echo_likelihood_graph_writer_ << stats.residual_echo_likelihood
-                                           << ", ";
+    auto stats = ap_->GetStatistics(true /*has_remote_tracks*/);
+    residual_echo_likelihood_graph_writer_
+        << stats.residual_echo_likelihood.value_or(-1.f) << ", ";
   }
 
   ++num_process_stream_calls_;
@@ -337,10 +356,13 @@ void AudioProcessingSimulator::CreateAudioProcessor() {
   }
   if (settings_.use_agc2) {
     apm_config.gain_controller2.enabled = *settings_.use_agc2;
-    apm_config.gain_controller2.fixed_gain_db = settings_.agc2_fixed_gain_db;
+    apm_config.gain_controller2.fixed_digital.gain_db =
+        settings_.agc2_fixed_gain_db;
     if (settings_.agc2_use_adaptive_gain) {
-      apm_config.gain_controller2.adaptive_digital_mode =
+      apm_config.gain_controller2.adaptive_digital.enabled =
           *settings_.agc2_use_adaptive_gain;
+      apm_config.gain_controller2.adaptive_digital.level_estimator =
+          settings_.agc2_adaptive_level_estimator;
     }
   }
   if (settings_.use_pre_amplifier) {

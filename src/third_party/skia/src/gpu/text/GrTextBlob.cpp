@@ -30,8 +30,8 @@ sk_sp<GrTextBlob> GrTextBlob::Make(int glyphCount, int runCount) {
     // and size for the glyphIds array.
     size_t verticesCount = glyphCount * kVerticesPerGlyph * kMaxVASize;
 
-    size_t   blob = 0;
-    size_t vertex = sk_align<alignof(char)>           (blob + sizeof(GrTextBlob) * 1);
+    size_t blobStart = 0;
+    size_t vertex = sk_align<alignof(char)>           (blobStart + sizeof(GrTextBlob) * 1);
     size_t glyphs = sk_align<alignof(GrGlyph*)>       (vertex + sizeof(char) * verticesCount);
     size_t   runs = sk_align<alignof(GrTextBlob::Run)>(glyphs + sizeof(GrGlyph*) * glyphCount);
     size_t   size =                                   (runs + sizeof(GrTextBlob::Run) * runCount);
@@ -42,111 +42,46 @@ sk_sp<GrTextBlob> GrTextBlob::Make(int glyphCount, int runCount) {
         sk_bzero(allocation, size);
     }
 
-    sk_sp<GrTextBlob> cacheBlob(new (allocation) GrTextBlob);
-    cacheBlob->fSize = size;
+    sk_sp<GrTextBlob> blob{new (allocation) GrTextBlob{}};
+    blob->fSize = size;
 
     // setup offsets for vertices / glyphs
-    cacheBlob->fVertices = SkTAddOffset<char>(cacheBlob.get(), vertex);
-    cacheBlob->fGlyphs = SkTAddOffset<GrGlyph*>(cacheBlob.get(), glyphs);
-    cacheBlob->fRuns = SkTAddOffset<GrTextBlob::Run>(cacheBlob.get(), runs);
+    blob->fVertices = SkTAddOffset<char>(blob.get(), vertex);
+    blob->fGlyphs = SkTAddOffset<GrGlyph*>(blob.get(), glyphs);
+    blob->fRuns = SkTAddOffset<GrTextBlob::Run>(blob.get(), runs);
 
     // Initialize runs
     for (int i = 0; i < runCount; i++) {
-        new (&cacheBlob->fRuns[i]) GrTextBlob::Run;
+        new (&blob->fRuns[i]) GrTextBlob::Run{blob.get()};
     }
-    cacheBlob->fRunCount = runCount;
-    return cacheBlob;
+    blob->fRunCountLimit = runCount;
+    return blob;
 }
 
-SkExclusiveStrikePtr GrTextBlob::setupCache(int runIndex,
+SkExclusiveStrikePtr GrTextBlob::Run::setupCache(const SkPaint& skPaint,
                                                  const SkSurfaceProps& props,
                                                  SkScalerContextFlags scalerContextFlags,
-                                                 const SkPaint& skPaint,
-                                                 const SkMatrix* viewMatrix) {
-    GrTextBlob::Run* run = &fRuns[runIndex];
+                                                 const SkMatrix& viewMatrix) {
 
     // if we have an override descriptor for the run, then we should use that
-    SkAutoDescriptor* desc = run->fOverrideDescriptor.get() ? run->fOverrideDescriptor.get() :
-                                                              &run->fDescriptor;
+    SkAutoDescriptor* desc = fOverrideDescriptor.get() ? fOverrideDescriptor.get() : &fDescriptor;
     SkScalerContextEffects effects;
     SkScalerContext::CreateDescriptorAndEffectsUsingPaint(
-        skPaint, &props, scalerContextFlags, viewMatrix, desc, &effects);
-    run->fTypeface = SkPaintPriv::RefTypefaceOrDefault(skPaint);
-    run->fPathEffect = sk_ref_sp(effects.fPathEffect);
-    run->fMaskFilter = sk_ref_sp(effects.fMaskFilter);
-    return SkStrikeCache::FindOrCreateStrikeExclusive(*desc->getDesc(), effects, *run->fTypeface);
+        skPaint, props, scalerContextFlags, viewMatrix, desc, &effects);
+    fTypeface = SkPaintPriv::RefTypefaceOrDefault(skPaint);
+    fPathEffect = sk_ref_sp(effects.fPathEffect);
+    fMaskFilter = sk_ref_sp(effects.fMaskFilter);
+    return SkStrikeCache::FindOrCreateStrikeExclusive(*desc->getDesc(), effects, *fTypeface);
 }
 
-void GrTextBlob::appendGlyph(int runIndex,
-                             const SkRect& positions,
-                             GrColor color,
-                             const sk_sp<GrTextStrike>& strike,
-                             GrGlyph* glyph, bool preTransformed) {
-
-    Run& run = fRuns[runIndex];
-    GrMaskFormat format = glyph->fMaskFormat;
-
-    Run::SubRunInfo* subRun = &run.fSubRunInfo.back();
-    if (run.fInitialized && subRun->maskFormat() != format) {
-        subRun = &run.push_back();
-        subRun->setStrike(strike);
-    } else if (!run.fInitialized) {
-        subRun->setStrike(strike);
-    }
-
-    run.fInitialized = true;
-
-    bool hasW = subRun->hasWCoord();
-    // glyphs drawn in perspective must always have a w coord.
-    SkASSERT(hasW || !fInitialViewMatrix.hasPerspective());
-
-    size_t vertexStride = GetVertexStride(format, hasW);
-
-    subRun->setMaskFormat(format);
-
-    subRun->joinGlyphBounds(positions);
-    subRun->setColor(color);
-
-    intptr_t vertex = reinterpret_cast<intptr_t>(this->fVertices + subRun->vertexEndIndex());
-
-    // We always write the third position component used by SDFs. If it is unused it gets
-    // overwritten. Similarly, we always write the color and the blob will later overwrite it
-    // with texture coords if it is unused.
-    size_t colorOffset = hasW ? sizeof(SkPoint3) : sizeof(SkPoint);
-    // V0
-    *reinterpret_cast<SkPoint3*>(vertex) = {positions.fLeft, positions.fTop, 1.f};
-    *reinterpret_cast<GrColor*>(vertex + colorOffset) = color;
-    vertex += vertexStride;
-
-    // V1
-    *reinterpret_cast<SkPoint3*>(vertex) = {positions.fLeft, positions.fBottom, 1.f};
-    *reinterpret_cast<GrColor*>(vertex + colorOffset) = color;
-    vertex += vertexStride;
-
-    // V2
-    *reinterpret_cast<SkPoint3*>(vertex) = {positions.fRight, positions.fTop, 1.f};
-    *reinterpret_cast<GrColor*>(vertex + colorOffset) = color;
-    vertex += vertexStride;
-
-    // V3
-    *reinterpret_cast<SkPoint3*>(vertex) = {positions.fRight, positions.fBottom, 1.f};
-    *reinterpret_cast<GrColor*>(vertex + colorOffset) = color;
-
-    subRun->appendVertices(vertexStride);
-    fGlyphs[subRun->glyphEndIndex()] = glyph;
-    subRun->glyphAppended();
-    subRun->setNeedsTransform(!preTransformed);
-}
-
-void GrTextBlob::appendPathGlyph(int runIndex, const SkPath& path, SkScalar x, SkScalar y,
+void GrTextBlob::Run::appendPathGlyph(const SkPath& path, SkPoint position,
                                       SkScalar scale, bool preTransformed) {
-    Run& run = fRuns[runIndex];
-    run.fPathGlyphs.push_back(GrTextBlob::Run::PathGlyph(path, x, y, scale, preTransformed));
+    fPathGlyphs.push_back(PathGlyph(path, position.x(), position.y(), scale, preTransformed));
 }
 
-bool GrTextBlob::mustRegenerate(const SkPaint& paint,
-                                     const SkMaskFilterBase::BlurRec& blurRec,
-                                     const SkMatrix& viewMatrix, SkScalar x, SkScalar y) {
+bool GrTextBlob::mustRegenerate(const SkPaint& paint, bool anyRunHasSubpixelPosition,
+                                const SkMaskFilterBase::BlurRec& blurRec,
+                                const SkMatrix& viewMatrix, SkScalar x, SkScalar y) {
     // If we have LCD text then our canonical color will be set to transparent, in this case we have
     // to regenerate the blob on any color change
     // We use the grPaint to get any color filter effects
@@ -196,20 +131,24 @@ bool GrTextBlob::mustRegenerate(const SkPaint& paint,
             return true;
         }
 
-        // We can update the positions in the cachedtextblobs without regenerating the whole blob,
-        // but only for integer translations.
-        // This cool bit of math will determine the necessary translation to apply to the already
-        // generated vertex coordinates to move them to the correct position
-        SkScalar transX = viewMatrix.getTranslateX() +
-                          viewMatrix.getScaleX() * (x - fInitialX) +
-                          viewMatrix.getSkewX() * (y - fInitialY) -
-                          fInitialViewMatrix.getTranslateX();
-        SkScalar transY = viewMatrix.getTranslateY() +
-                          viewMatrix.getSkewY() * (x - fInitialX) +
-                          viewMatrix.getScaleY() * (y - fInitialY) -
-                          fInitialViewMatrix.getTranslateY();
-        if (!SkScalarIsInt(transX) || !SkScalarIsInt(transY)) {
-            return true;
+        // If the text blob only has full pixel glyphs, then fractional part of the position does
+        // not affect the SkGlyphs used.
+        if (anyRunHasSubpixelPosition) {
+            // We can update the positions in the text blob without regenerating the whole
+            // blob, but only for integer translations.
+            // This cool bit of math will determine the necessary translation to apply to the
+            // already generated vertex coordinates to move them to the correct position.
+            SkScalar transX = viewMatrix.getTranslateX() +
+                              viewMatrix.getScaleX() * (x - fInitialX) +
+                              viewMatrix.getSkewX() * (y - fInitialY) -
+                              fInitialViewMatrix.getTranslateX();
+            SkScalar transY = viewMatrix.getTranslateY() +
+                              viewMatrix.getSkewY() * (x - fInitialX) +
+                              viewMatrix.getScaleY() * (y - fInitialY) -
+                              fInitialViewMatrix.getTranslateY();
+            if (!SkScalarIsInt(transX) || !SkScalarIsInt(transY)) {
+                return true;
+            }
         }
     } else if (this->hasDistanceField()) {
         // A scale outside of [blob.fMaxMinScale, blob.fMinMaxScale] would result in a different
@@ -229,9 +168,9 @@ bool GrTextBlob::mustRegenerate(const SkPaint& paint,
 }
 
 inline std::unique_ptr<GrAtlasTextOp> GrTextBlob::makeOp(
-        const Run::SubRunInfo& info, int glyphCount, uint16_t run, uint16_t subRun,
+        const SubRun& info, int glyphCount, uint16_t run, uint16_t subRun,
         const SkMatrix& viewMatrix, SkScalar x, SkScalar y, const SkIRect& clipRect,
-        const SkPaint& paint, GrColor filteredColor, const SkSurfaceProps& props,
+        const SkPaint& paint, const SkPMColor4f& filteredColor, const SkSurfaceProps& props,
         const GrDistanceFieldAdjustTable* distanceAdjustTable, GrTextTarget* target) {
     GrMaskFormat format = info.maskFormat();
 
@@ -254,8 +193,7 @@ inline std::unique_ptr<GrAtlasTextOp> GrTextBlob::makeOp(
     geometry.fBlob = SkRef(this);
     geometry.fRun = run;
     geometry.fSubRun = subRun;
-    geometry.fColor =
-            info.maskFormat() == kARGB_GrMaskFormat ? GrColor_WHITE : filteredColor;
+    geometry.fColor = info.maskFormat() == kARGB_GrMaskFormat ? SK_PMColor4fWHITE : filteredColor;
     geometry.fX = x;
     geometry.fY = y;
     op->init();
@@ -284,12 +222,12 @@ static void calculate_translation(bool applyVM,
 
 void GrTextBlob::flush(GrTextTarget* target, const SkSurfaceProps& props,
                        const GrDistanceFieldAdjustTable* distanceAdjustTable,
-                       const SkPaint& paint, GrColor filteredColor, const GrClip& clip,
+                       const SkPaint& paint, const SkPMColor4f& filteredColor, const GrClip& clip,
                        const SkMatrix& viewMatrix, SkScalar x, SkScalar y) {
 
     // GrTextBlob::makeOp only takes uint16_t values for run and subRun indices.
     // Encountering something larger than this is highly unlikely, so we'll just not draw it.
-    int lastRun = SkTMin(fRunCount, (1 << 16)) - 1;
+    int lastRun = SkTMin(fRunCountLimit, (1 << 16)) - 1;
     // For each run in the GrTextBlob we're going to churn through all the glyphs.
     // Each run is broken into a path part and a Mask / DFT / ARGB part.
     for (int runIndex = 0; runIndex <= lastRun; runIndex++) {
@@ -382,7 +320,7 @@ void GrTextBlob::flush(GrTextTarget* target, const SkSurfaceProps& props,
 
         int lastSubRun = SkTMin(run.fSubRunInfo.count(), 1 << 16) - 1;
         for (int subRun = 0; subRun <= lastSubRun; subRun++) {
-            const Run::SubRunInfo& info = run.fSubRunInfo[subRun];
+            const SubRun& info = run.fSubRunInfo[subRun];
             int glyphCount = info.glyphCount();
             if (0 == glyphCount) {
                 continue;
@@ -435,10 +373,10 @@ void GrTextBlob::flush(GrTextTarget* target, const SkSurfaceProps& props,
 
 std::unique_ptr<GrDrawOp> GrTextBlob::test_makeOp(
         int glyphCount, uint16_t run, uint16_t subRun, const SkMatrix& viewMatrix,
-        SkScalar x, SkScalar y, const SkPaint& paint, GrColor filteredColor,
+        SkScalar x, SkScalar y, const SkPaint& paint, const SkPMColor4f& filteredColor,
         const SkSurfaceProps& props, const GrDistanceFieldAdjustTable* distanceAdjustTable,
         GrTextTarget* target) {
-    const GrTextBlob::Run::SubRunInfo& info = fRuns[run].fSubRunInfo[subRun];
+    const GrTextBlob::SubRun& info = fRuns[run].fSubRunInfo[subRun];
     SkIRect emptyRect = SkIRect::MakeEmpty();
     return this->makeOp(info, glyphCount, run, subRun, viewMatrix, x, y, emptyRect,
                         paint, filteredColor, props, distanceAdjustTable, target);
@@ -460,8 +398,8 @@ void GrTextBlob::AssertEqual(const GrTextBlob& l, const GrTextBlob& r) {
     SkASSERT_RELEASE(l.fMinMaxScale == r.fMinMaxScale);
     SkASSERT_RELEASE(l.fTextType == r.fTextType);
 
-    SkASSERT_RELEASE(l.fRunCount == r.fRunCount);
-    for (int i = 0; i < l.fRunCount; i++) {
+    SkASSERT_RELEASE(l.fRunCountLimit == r.fRunCountLimit);
+    for (int i = 0; i < l.fRunCountLimit; i++) {
         const Run& lRun = l.fRuns[i];
         const Run& rRun = r.fRuns[i];
 
@@ -492,8 +430,8 @@ void GrTextBlob::AssertEqual(const GrTextBlob& l, const GrTextBlob& r) {
 
         SkASSERT_RELEASE(lRun.fSubRunInfo.count() == rRun.fSubRunInfo.count());
         for(int j = 0; j < lRun.fSubRunInfo.count(); j++) {
-            const Run::SubRunInfo& lSubRun = lRun.fSubRunInfo[j];
-            const Run::SubRunInfo& rSubRun = rRun.fSubRunInfo[j];
+            const SubRun& lSubRun = lRun.fSubRunInfo[j];
+            const SubRun& rSubRun = rRun.fSubRunInfo[j];
 
             // TODO we can do this check, but we have to apply the VM to the old vertex bounds
             //SkASSERT_RELEASE(lSubRun.vertexBounds() == rSubRun.vertexBounds());
@@ -527,9 +465,9 @@ void GrTextBlob::AssertEqual(const GrTextBlob& l, const GrTextBlob& r) {
     }
 }
 
-void GrTextBlob::Run::SubRunInfo::computeTranslation(const SkMatrix& viewMatrix,
-                                                          SkScalar x, SkScalar y, SkScalar* transX,
-                                                          SkScalar* transY) {
+void GrTextBlob::SubRun::computeTranslation(const SkMatrix& viewMatrix,
+                                                SkScalar x, SkScalar y, SkScalar* transX,
+                                                SkScalar* transY) {
     calculate_translation(!this->drawAsDistanceFields(), viewMatrix, x, y,
                           fCurrentViewMatrix, fX, fY, transX, transY);
     fCurrentViewMatrix = viewMatrix;

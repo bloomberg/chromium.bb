@@ -2,14 +2,15 @@
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 '''Unit test suite that collects template_writer tests.'''
 
 import os
 import sys
 import unittest
 
+
 class TestSuiteAll(unittest.TestSuite):
+
   def __init__(self):
     super(TestSuiteAll, self).__init__()
     # Imports placed here to prevent circular imports.

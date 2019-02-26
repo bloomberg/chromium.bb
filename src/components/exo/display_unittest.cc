@@ -39,22 +39,18 @@ TEST_F(DisplayTest, CreateSharedMemory) {
   std::unique_ptr<Display> display(new Display);
 
   int shm_size = 8192;
-  std::unique_ptr<base::SharedMemory> shared_memory(new base::SharedMemory);
-  bool rv = shared_memory->CreateAnonymous(shm_size);
-  ASSERT_TRUE(rv);
+  base::UnsafeSharedMemoryRegion shared_memory =
+      base::UnsafeSharedMemoryRegion::Create(shm_size);
+  ASSERT_TRUE(shared_memory.IsValid());
 
-  base::SharedMemoryHandle handle =
-      base::SharedMemory::DuplicateHandle(shared_memory->handle());
-  ASSERT_TRUE(base::SharedMemory::IsHandleValid(handle));
-
-  // Creating a shared memory instance from a valid handle should succeed.
+  // Creating a shared memory instance from a valid region should succeed.
   std::unique_ptr<SharedMemory> shm1 =
-      display->CreateSharedMemory(handle, shm_size);
+      display->CreateSharedMemory(std::move(shared_memory));
   EXPECT_TRUE(shm1);
 
-  // Creating a shared memory instance from a invalid handle should fail.
+  // Creating a shared memory instance from a invalid region should fail.
   std::unique_ptr<SharedMemory> shm2 =
-      display->CreateSharedMemory(base::SharedMemoryHandle(), shm_size);
+      display->CreateSharedMemory(base::UnsafeSharedMemoryRegion());
   EXPECT_FALSE(shm2);
 }
 
@@ -78,14 +74,14 @@ TEST_F(DisplayTest, DISABLED_CreateLinuxDMABufBuffer) {
   fds.push_back(base::ScopedFD(native_pixmap_handle.fds[0].fd));
 
   std::unique_ptr<Buffer> buffer1 = display->CreateLinuxDMABufBuffer(
-      buffer_size, gfx::BufferFormat::RGBA_8888, planes, std::move(fds));
+      buffer_size, gfx::BufferFormat::RGBA_8888, planes, false, std::move(fds));
   EXPECT_TRUE(buffer1);
 
   std::vector<base::ScopedFD> invalid_fds;
   invalid_fds.push_back(base::ScopedFD());
   // Creating a prime buffer using an invalid fd should fail.
   std::unique_ptr<Buffer> buffer2 = display->CreateLinuxDMABufBuffer(
-      buffer_size, gfx::BufferFormat::RGBA_8888, planes,
+      buffer_size, gfx::BufferFormat::RGBA_8888, planes, false,
       std::move(invalid_fds));
   EXPECT_FALSE(buffer2);
 }

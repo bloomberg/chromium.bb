@@ -73,8 +73,9 @@ void HistogramsMessageHandler::HandleRequestHistograms(
   args->GetString(1, &query);
 
   base::ListValue histograms_list;
-  for (base::HistogramBase* histogram : base::StatisticsRecorder::WithName(
-           base::StatisticsRecorder::GetHistograms(), query)) {
+  for (base::HistogramBase* histogram :
+       base::StatisticsRecorder::Sort(base::StatisticsRecorder::WithName(
+           base::StatisticsRecorder::GetHistograms(), query))) {
     // TODO(crbug.com/809820): Return the histogram object as a DictionaryValue
     // for better UI that is built client side.
     std::string ascii_output;

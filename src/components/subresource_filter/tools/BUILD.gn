@@ -15,7 +15,7 @@ static_library("tools_lib") {
     "../core/browser",
     "../core/common",
     "//base",
-    "//components/url_pattern_index:util",
+    "//components/url_pattern_index",
     "//url",
   ]
 }

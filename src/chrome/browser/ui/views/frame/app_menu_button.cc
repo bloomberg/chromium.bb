@@ -12,7 +12,7 @@
 #include "ui/views/controls/menu/menu_listener.h"
 
 AppMenuButton::AppMenuButton(views::MenuButtonListener* menu_button_listener)
-    : views::MenuButton(base::string16(), menu_button_listener, false) {}
+    : views::MenuButton(base::string16(), menu_button_listener) {}
 
 AppMenuButton::~AppMenuButton() {}
 

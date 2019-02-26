@@ -142,6 +142,10 @@ class UI_BASE_EXPORT Clipboard : public base::ThreadChecker {
   // the IO thread.
   static Clipboard* GetForCurrentThread();
 
+  // Removes and transfers ownership of the current thread's clipboard to the
+  // caller. If the clipboard was never initialized, returns nullptr.
+  static std::unique_ptr<Clipboard> TakeForCurrentThread();
+
   // Does any work necessary prior to Chrome shutdown for the current thread.
   // All platforms but Windows have a single clipboard shared accross all
   // threads. This function is a no-op on Windows. On Desktop Linux, if Chrome

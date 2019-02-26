@@ -25,7 +25,6 @@
 #include "ash/shell.h"
 #include "ash/system/status_area_layout_manager.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/system/tray/system_tray.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "chromeos/chromeos_switches.h"
@@ -409,7 +408,7 @@ bool ShelfWidget::IsShowingAppList() const {
   return GetAppListButton() && GetAppListButton()->is_showing_app_list();
 }
 
-bool ShelfWidget::IsShowingContextMenu() const {
+bool ShelfWidget::IsShowingMenu() const {
   return shelf_view_->IsShowingMenu();
 }
 

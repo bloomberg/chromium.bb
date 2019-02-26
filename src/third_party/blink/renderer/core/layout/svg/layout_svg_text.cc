@@ -35,12 +35,14 @@
 #include "third_party/blink/renderer/core/layout/pointer_events_hit_rules.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_inline.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_inline_text.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_container.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
 #include "third_party/blink/renderer/core/layout/svg/line/svg_root_inline_box.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_text_layout_attributes_builder.h"
+#include "third_party/blink/renderer/core/layout/svg/transformed_hit_test_location.h"
 #include "third_party/blink/renderer/core/paint/svg_text_painter.h"
 #include "third_party/blink/renderer/core/style/shadow_list.h"
 #include "third_party/blink/renderer/core/svg/svg_text_element.h"
@@ -113,7 +115,8 @@ void LayoutSVGText::InvalidatePositioningValues(
     LayoutInvalidationReasonForTracing reason) {
   descendant_text_nodes_.clear();
   SetNeedsPositioningValuesUpdate();
-  SetNeedsLayoutAndFullPaintInvalidation(reason);
+  // TODO(fs): Restore the passing of |reason| here.
+  LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(*this);
 }
 
 void LayoutSVGText::SubtreeChildWasAdded() {
@@ -127,7 +130,7 @@ void LayoutSVGText::SubtreeChildWasAdded() {
   // The positioning elements cache depends on the size of each text
   // layoutObject in the subtree. If this changes, clear the cache. It will be
   // rebuilt on the next layout.
-  InvalidatePositioningValues(LayoutInvalidationReason::kChildChanged);
+  InvalidatePositioningValues(layout_invalidation_reason::kChildChanged);
   SetNeedsTextMetricsUpdate();
 }
 
@@ -140,7 +143,7 @@ void LayoutSVGText::SubtreeChildWillBeRemoved() {
   // The positioning elements cache depends on the size of each text
   // layoutObject in the subtree. If this changes, clear the cache. It will be
   // rebuilt on the next layout.
-  InvalidatePositioningValues(LayoutInvalidationReason::kChildChanged);
+  InvalidatePositioningValues(layout_invalidation_reason::kChildChanged);
   SetNeedsTextMetricsUpdate();
 }
 
@@ -154,7 +157,7 @@ void LayoutSVGText::SubtreeTextDidChange() {
   // The positioning elements cache depends on the size of each text object in
   // the subtree. If this changes, clear the cache and mark it for rebuilding
   // in the next layout.
-  InvalidatePositioningValues(LayoutInvalidationReason::kTextChanged);
+  InvalidatePositioningValues(layout_invalidation_reason::kTextChanged);
   SetNeedsTextMetricsUpdate();
 }
 
@@ -314,12 +317,11 @@ bool LayoutSVGText::NodeAtPoint(HitTestResult& result,
   if (hit_test_action != kHitTestForeground)
     return false;
 
-  base::Optional<HitTestLocation> local_storage;
-  const HitTestLocation* local_location =
-      SVGLayoutSupport::TransformToUserSpaceAndCheckClipping(
-          *this, LocalToSVGParentTransform(), location_in_parent,
-          local_storage);
+  TransformedHitTestLocation local_location(location_in_parent,
+                                            LocalToSVGParentTransform());
   if (!local_location)
+    return false;
+  if (!SVGLayoutSupport::IntersectsClipPath(*this, *local_location))
     return false;
 
   if (LayoutBlock::NodeAtPoint(result, *local_location, accumulated_offset,

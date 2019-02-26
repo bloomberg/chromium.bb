@@ -40,7 +40,7 @@ const base::Feature kIndexedDBLargeValueWrapping{
 //    This may be necessary when extracting the primary key and/or index keys
 //    for the serialized value.
 // 2) Wrapping - DoneCloning() transitions the instance to an internal
-//    reprensetation optimized for wrapping via WrapIfBiggerThan().
+//    representation optimized for wrapping via WrapIfBiggerThan().
 // 3) Reading results - After any desired wrapping is performed, the Take*()
 //    methods yield the serialized value components passed to the backing store.
 //    To avoid unnecessary copies, the Take*() methods move out parts of the

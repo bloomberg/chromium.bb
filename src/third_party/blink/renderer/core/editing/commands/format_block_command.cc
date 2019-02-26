@@ -40,7 +40,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 static Node* EnclosingBlockToSplitTreeTo(Node* start_node);
 static bool IsElementForFormatBlock(const QualifiedName& tag_name);
@@ -141,10 +141,11 @@ void FormatBlockCommand::FormatRange(const Position& start,
   // Copy the inline style of the original block element to the newly created
   // block-style element.
   if (outer_block != node_after_insertion_position &&
-      ToHTMLElement(node_after_insertion_position)->hasAttribute(styleAttr))
+      ToHTMLElement(node_after_insertion_position)->hasAttribute(kStyleAttr)) {
     block_element->setAttribute(
-        styleAttr,
-        ToHTMLElement(node_after_insertion_position)->getAttribute(styleAttr));
+        kStyleAttr,
+        ToHTMLElement(node_after_insertion_position)->getAttribute(kStyleAttr));
+  }
 
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
@@ -176,10 +177,11 @@ bool IsElementForFormatBlock(const QualifiedName& tag_name) {
   DEFINE_STATIC_LOCAL(
       HashSet<QualifiedName>, block_tags,
       ({
-          addressTag, articleTag, asideTag,  blockquoteTag, ddTag,     divTag,
-          dlTag,      dtTag,      footerTag, h1Tag,         h2Tag,     h3Tag,
-          h4Tag,      h5Tag,      h6Tag,     headerTag,     hgroupTag, mainTag,
-          navTag,     pTag,       preTag,    sectionTag,
+          kAddressTag, kArticleTag, kAsideTag, kBlockquoteTag, kDdTag,
+          kDivTag,     kDlTag,      kDtTag,    kFooterTag,     kH1Tag,
+          kH2Tag,      kH3Tag,      kH4Tag,    kH5Tag,         kH6Tag,
+          kHeaderTag,  kHgroupTag,  kMainTag,  kNavTag,        kPTag,
+          kPreTag,     kSectionTag,
       }));
   return block_tags.Contains(tag_name);
 }

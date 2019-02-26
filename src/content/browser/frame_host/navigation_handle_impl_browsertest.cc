@@ -19,7 +19,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/bindings_policy.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
@@ -2484,13 +2483,12 @@ INSTANTIATE_TEST_CASE_P(
 // * NavigationHandleImplDownloadBrowserTest.AllowedResourceNotDownloaded
 // * NavigationHandleImplDownloadBrowserTest.Disallowed
 //
-// ...covers every combinaison of possible states for:
-// * CommonNavigationParams::allow_download
+// ...covers every combination of possible states for:
+// * CommonNavigationParams::download_policy (allow vs disallow)
 // * NavigationHandle::IsDownload()
 //
-// |allow_download| is false only when the URL is a view-source URL. In this
-// case, downloads are prohibited (i.e. |is_download| is false in
-// NavigationURLLoaderDelegate::OnResponseStarted()).
+// Download policies that enumerate allowed / disallowed options are not tested
+// here.
 IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest,
                        AllowedResourceDownloaded) {
   GURL simple_url(embedded_test_server()->GetURL("/simple_page.html"));
@@ -2504,7 +2502,8 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest,
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetMainFrame()
                             ->frame_tree_node();
-  EXPECT_TRUE(root->navigation_request()->common_params().allow_download);
+  EXPECT_EQ(NavigationDownloadPolicy::kAllow,
+            root->navigation_request()->common_params().download_policy);
 
   // The response is not handled as a download.
   manager.WaitForNavigationFinished();
@@ -2526,7 +2525,8 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest,
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetMainFrame()
                             ->frame_tree_node();
-  EXPECT_TRUE(root->navigation_request()->common_params().allow_download);
+  EXPECT_EQ(NavigationDownloadPolicy::kAllow,
+            root->navigation_request()->common_params().download_policy);
 
   // The response is handled as a download.
   manager.WaitForNavigationFinished();
@@ -2551,7 +2551,8 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest, Disallowed) {
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetMainFrame()
                             ->frame_tree_node();
-  EXPECT_FALSE(root->navigation_request()->common_params().allow_download);
+  EXPECT_EQ(NavigationDownloadPolicy::kDisallowViewSource,
+            root->navigation_request()->common_params().download_policy);
 
   // The response is not handled as a download.
   manager.WaitForNavigationFinished();

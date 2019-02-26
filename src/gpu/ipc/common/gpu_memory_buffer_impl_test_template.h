@@ -14,10 +14,14 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
+#include "mojo/public/cpp/base/shared_memory_mojom_traits.h"
+#include "mojo/public/cpp/test_support/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/buffer_format_util.h"
+#include "ui/gfx/mojo/buffer_types_struct_traits.h"
 
 #if defined(OS_WIN)
 #include "ui/gl/init/gl_factory.h"
@@ -245,12 +249,59 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, PersistentMap) {
   }
 }
 
+TYPED_TEST_P(GpuMemoryBufferImplTest, SerializeAndDeserialize) {
+  base::MessageLoop message_loop;
+  const gfx::Size kBufferSize(8, 8);
+  const gfx::GpuMemoryBufferType kBufferType = TypeParam::kBufferType;
+
+  for (auto format : gfx::GetBufferFormatsForTesting()) {
+    gfx::BufferUsage usages[] = {
+        gfx::BufferUsage::GPU_READ,
+        gfx::BufferUsage::SCANOUT,
+        gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
+        gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE,
+        gfx::BufferUsage::SCANOUT_CPU_READ_WRITE,
+        gfx::BufferUsage::SCANOUT_VDA_WRITE,
+        gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
+        gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT};
+    for (auto usage : usages) {
+      if (!TestFixture::gpu_memory_buffer_support()->IsConfigurationSupported(
+              TypeParam::kBufferType, format, usage))
+        continue;
+
+      bool destroyed = false;
+      gfx::GpuMemoryBufferHandle handle;
+      GpuMemoryBufferImpl::DestructionCallback destroy_callback =
+          TestFixture::CreateGpuMemoryBuffer(kBufferSize, format, usage,
+                                             &handle, &destroyed);
+
+      gfx::GpuMemoryBufferHandle output_handle;
+      mojo::test::SerializeAndDeserialize<gfx::mojom::GpuMemoryBufferHandle>(
+          &handle, &output_handle);
+      EXPECT_EQ(output_handle.type, kBufferType);
+
+      std::unique_ptr<GpuMemoryBufferImpl> buffer(
+          TestFixture::gpu_memory_buffer_support()
+              ->CreateGpuMemoryBufferImplFromHandle(std::move(output_handle),
+                                                    kBufferSize, format, usage,
+                                                    destroy_callback));
+      ASSERT_TRUE(buffer);
+      EXPECT_EQ(buffer->GetFormat(), format);
+
+      // Check if destruction callback is executed when deleting the buffer.
+      buffer.reset();
+      ASSERT_TRUE(destroyed);
+    }
+  }
+}
+
 // The GpuMemoryBufferImplTest test case verifies behavior that is expected
 // from a GpuMemoryBuffer implementation in order to be conformant.
 REGISTER_TYPED_TEST_CASE_P(GpuMemoryBufferImplTest,
                            CreateFromHandle,
                            Map,
-                           PersistentMap);
+                           PersistentMap,
+                           SerializeAndDeserialize);
 
 TYPED_TEST_CASE_P(GpuMemoryBufferImplCreateTest);
 

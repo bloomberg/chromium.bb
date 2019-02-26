@@ -32,7 +32,7 @@ namespace chromecast {
 namespace media {
 namespace {
 
-#if defined(PLAYREADY_CDM_AVAILABLE)
+#if BUILDFLAG(ENABLE_PLAYREADY)
 class PlayReadyKeySystemProperties : public ::media::KeySystemProperties {
  public:
   PlayReadyKeySystemProperties(SupportedCodecs supported_non_secure_codecs,
@@ -84,7 +84,7 @@ class PlayReadyKeySystemProperties : public ::media::KeySystemProperties {
                                        : EmeSessionTypeSupport::NOT_SUPPORTED;
   }
 
-  EmeSessionTypeSupport GetPersistentReleaseMessageSessionSupport()
+  EmeSessionTypeSupport GetPersistentUsageRecordSessionSupport()
       const override {
     return EmeSessionTypeSupport::NOT_SUPPORTED;
   }
@@ -96,9 +96,11 @@ class PlayReadyKeySystemProperties : public ::media::KeySystemProperties {
     return EmeFeatureSupport::ALWAYS_ENABLED;
   }
 
-  bool IsEncryptionSchemeSupported(
+  EmeConfigRule GetEncryptionSchemeConfigRule(
       ::media::EncryptionMode encryption_mode) const override {
-    return encryption_mode == ::media::EncryptionMode::kCenc;
+    if (encryption_mode == ::media::EncryptionMode::kCenc)
+      return EmeConfigRule::SUPPORTED;
+    return EmeConfigRule::NOT_SUPPORTED;
   }
 
  private:
@@ -108,13 +110,14 @@ class PlayReadyKeySystemProperties : public ::media::KeySystemProperties {
 #endif  // defined(OS_ANDROID)
   const bool persistent_license_support_;
 };
-#endif  // PLAYREADY_CDM_AVAILABLE
+#endif  // BUILDFLAG(ENABLE_PLAYREADY)
 
-#if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
+#if BUILDFLAG(USE_CHROMECAST_CDMS)
 SupportedCodecs GetCastEmeSupportedCodecs() {
   SupportedCodecs codecs = ::media::EME_CODEC_AAC | ::media::EME_CODEC_AVC1 |
-                           ::media::EME_CODEC_VP9 | ::media::EME_CODEC_VP8 |
-                           ::media::EME_CODEC_LEGACY_VP9;
+                           ::media::EME_CODEC_VP9_PROFILE0 |
+                           ::media::EME_CODEC_VP9_PROFILE2 |
+                           ::media::EME_CODEC_VP8;
 
 #if !BUILDFLAG(DISABLE_SECURE_FLAC_OPUS_DECODING)
   codecs |= ::media::EME_CODEC_FLAC | ::media::EME_CODEC_OPUS;
@@ -151,10 +154,10 @@ void AddCmaKeySystems(
   // |codecs| may not be used if Widevine and Playready aren't supported.
   ANALYZER_ALLOW_UNUSED(codecs);
 
-#if defined(PLAYREADY_CDM_AVAILABLE)
+#if BUILDFLAG(ENABLE_PLAYREADY)
   key_systems_properties->emplace_back(new PlayReadyKeySystemProperties(
       codecs, codecs, enable_persistent_license_support));
-#endif  // defined(PLAYREADY_CDM_AVAILABLE)
+#endif  // BUILDFLAG(ENABLE_PLAYREADY)
 
 #if BUILDFLAG(ENABLE_WIDEVINE)
   using Robustness = cdm::WidevineKeySystemProperties::Robustness;
@@ -177,7 +180,7 @@ void AddCmaKeySystems(
 #endif                                      // BUILDFLAG(ENABLE_WIDEVINE)
 }
 #elif defined(OS_ANDROID)
-#if defined(PLAYREADY_CDM_AVAILABLE)
+#if BUILDFLAG(ENABLE_PLAYREADY)
 void AddCastPlayreadyKeySystemAndroid(
     std::vector<std::unique_ptr<::media::KeySystemProperties>>*
         key_systems_properties) {
@@ -192,14 +195,14 @@ void AddCastPlayreadyKeySystemAndroid(
       response.non_secure_codecs, response.secure_codecs,
       false /* persistent_license_support */));
 }
-#endif  // defined(PLAYREADY_CDM_AVAILABLE)
+#endif  // BUILDFLAG(ENABLE_PLAYREADY)
 
 void AddCastAndroidKeySystems(
     std::vector<std::unique_ptr<::media::KeySystemProperties>>*
         key_systems_properties) {
-#if defined(PLAYREADY_CDM_AVAILABLE)
+#if BUILDFLAG(ENABLE_PLAYREADY)
   AddCastPlayreadyKeySystemAndroid(key_systems_properties);
-#endif  // defined(PLAYREADY_CDM_AVAILABLE)
+#endif  // BUILDFLAG(ENABLE_PLAYREADY)
 
 #if BUILDFLAG(ENABLE_WIDEVINE)
   cdm::AddAndroidWidevine(key_systems_properties);
@@ -215,7 +218,7 @@ void AddChromecastKeySystems(
         key_systems_properties,
     bool enable_persistent_license_support,
     bool force_software_crypto) {
-#if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
+#if BUILDFLAG(USE_CHROMECAST_CDMS)
   AddCmaKeySystems(key_systems_properties, enable_persistent_license_support);
 #elif defined(OS_ANDROID)
   AddCastAndroidKeySystems(key_systems_properties);

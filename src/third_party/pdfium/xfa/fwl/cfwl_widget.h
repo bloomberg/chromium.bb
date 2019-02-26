@@ -53,7 +53,7 @@ class CFWL_Widget : public IFWL_WidgetDelegate {
   ~CFWL_Widget() override;
 
   virtual FWL_Type GetClassID() const = 0;
-  virtual bool IsInstance(const WideStringView& wsClass) const;
+  virtual bool IsForm() const;
   virtual CFX_RectF GetAutosizedWidgetRect();
   virtual CFX_RectF GetWidgetRect();
   virtual CFX_RectF GetClientRect();
@@ -77,6 +77,11 @@ class CFWL_Widget : public IFWL_WidgetDelegate {
   void SetWidgetRect(const CFX_RectF& rect);
 
   void SetParent(CFWL_Widget* pParent);
+
+  bool IsVisible() const;
+  bool IsOverLapper() const;
+  bool IsPopup() const;
+  bool IsChild() const;
 
   CFWL_Widget* GetOwner() { return m_pWidgetMgr->GetOwnerWidget(this); }
   CFWL_Widget* GetOuter() const { return m_pOuter; }
@@ -114,7 +119,6 @@ class CFWL_Widget : public IFWL_WidgetDelegate {
   void SetLayoutItem(CXFA_FFWidget* pItem) { m_pLayoutItem = pItem; }
 
   void RepaintRect(const CFX_RectF& pRect);
-  void Repaint();
 
  protected:
   CFWL_Widget(const CFWL_App* app,
@@ -155,12 +159,6 @@ class CFWL_Widget : public IFWL_WidgetDelegate {
  private:
   CFWL_Widget* GetParent() const { return m_pWidgetMgr->GetParentWidget(this); }
   CFX_SizeF GetOffsetFromParent(CFWL_Widget* pParent);
-
-  bool IsVisible() const;
-  bool IsOverLapper() const;
-  bool IsPopup() const;
-  bool IsChild() const;
-  CFWL_Widget* GetRootOuter();
   void DrawBackground(CXFA_Graphics* pGraphics,
                       CFWL_Part iPartBk,
                       IFWL_ThemeProvider* pTheme,

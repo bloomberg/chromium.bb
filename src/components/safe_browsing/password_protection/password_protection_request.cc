@@ -178,12 +178,9 @@ void PasswordProtectionRequest::FillRequestProto() {
             request_proto_->add_frames();
         password_frame->set_url(password_form_frame_url_.spec());
         password_frame->set_has_password_field(true);
-        // TODO(jialiul): Add referrer chain for subframes later.
         password_form = password_frame->add_forms();
       }
       password_form->set_action_url(password_form_action_.spec());
-      // TODO(jialiul): Fill more frame specific info when Safe Browsing backend
-      // is ready to handle these pieces of information.
       break;
     }
     case LoginReputationClientRequest::PASSWORD_REUSE_EVENT: {

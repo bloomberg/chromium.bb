@@ -34,16 +34,16 @@ namespace blink {
 
 IDBCursorWithValue* IDBCursorWithValue::Create(
     std::unique_ptr<WebIDBCursor> backend,
-    WebIDBCursorDirection direction,
+    mojom::IDBCursorDirection direction,
     IDBRequest* request,
     const Source& source,
     IDBTransaction* transaction) {
-  return new IDBCursorWithValue(std::move(backend), direction, request, source,
-                                transaction);
+  return MakeGarbageCollected<IDBCursorWithValue>(std::move(backend), direction,
+                                                  request, source, transaction);
 }
 
 IDBCursorWithValue::IDBCursorWithValue(std::unique_ptr<WebIDBCursor> backend,
-                                       WebIDBCursorDirection direction,
+                                       mojom::IDBCursorDirection direction,
                                        IDBRequest* request,
                                        const Source& source,
                                        IDBTransaction* transaction)

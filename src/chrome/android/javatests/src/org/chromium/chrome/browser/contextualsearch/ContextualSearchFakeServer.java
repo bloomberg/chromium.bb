@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.contextualsearch;
 
 import android.net.Uri;
+import android.support.annotation.Nullable;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -21,8 +22,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
-
-import javax.annotation.Nullable;
 
 /**
  * Implements a fake Contextual Search server, for testing purposes.
@@ -295,8 +294,8 @@ class ContextualSearchFakeServer
                     if (!mDidFinishResolution) {
                         handleSearchTermResolutionResponse(mIsNetworkUnavailable, mResponseCode,
                                 mSearchTerm, mDisplayText, mAlternateTerm, mMid, mDoPreventPreload,
-                                mStartAdjust, mEndAdjust, mContextLanguage, mThumbnailUrl,
-                                mCaption, mQuickActionUri, mQuickActionCategory);
+                                mStartAdjust, mEndAdjust, mContextLanguage, mThumbnailUrl, mCaption,
+                                mQuickActionUri, mQuickActionCategory);
 
                         mActiveFakeTapSearch = null;
                         mDidFinishResolution = true;
@@ -613,12 +612,10 @@ class ContextualSearchFakeServer
         registerFakeLongPressSearch(new FakeLongPressSearch("term", "Term"));
         registerFakeLongPressSearch(new FakeLongPressSearch("resolution", "Resolution"));
 
-        registerFakeTapSearch(new FakeTapSearch(
-                "search", false, 200, "Search", "Search", "alternate-term", "", false, 0, 0, "",
-                "", "", "", QuickActionCategory.NONE));
-        registerFakeTapSearch(new FakeTapSearch(
-                "term", false, 200, "Term", "Term", "alternate-term", "", false, 0, 0, "",
-                "", "", "", QuickActionCategory.NONE));
+        registerFakeTapSearch(new FakeTapSearch("search", false, 200, "Search", "Search",
+                "alternate-term", "", false, 0, 0, "", "", "", "", QuickActionCategory.NONE));
+        registerFakeTapSearch(new FakeTapSearch("term", false, 200, "Term", "Term",
+                "alternate-term", "", false, 0, 0, "", "", "", "", QuickActionCategory.NONE));
         registerFakeTapSearch(new FakeTapSearch("resolution", false, 200, "Resolution",
                 "Resolution", "alternate-term", "", false, 0, 0, "", "", "", "",
                 QuickActionCategory.NONE));
@@ -632,9 +629,9 @@ class ContextualSearchFakeServer
         registerFakeSlowResolveSearch(new FakeSlowResolveSearch("states", false, 200, "States",
                 "States", "alternate-term", "", false, -7, 0, "", "", "", "",
                 QuickActionCategory.NONE));
-        registerFakeSlowResolveSearch(new FakeSlowResolveSearch(
-                "search", false, 200, "Search", "Search", "alternate-term", "", false, 0, 0, "",
-                "", "", "", QuickActionCategory.NONE));
+        registerFakeSlowResolveSearch(new FakeSlowResolveSearch("search", false, 200, "Search",
+                "Search", "alternate-term", "", false, 0, 0, "", "", "", "",
+                QuickActionCategory.NONE));
     }
 
     /**

@@ -13,17 +13,20 @@ glslang
 
 An OpenGL and OpenGL ES shader front end and validator.
 
-There are two components:
+There are several components:
 
-1. A front-end library for programmatic parsing of GLSL/ESSL into an AST.
+1. A GLSL/ESSL front-end for reference validation and translation of GLSL/ESSL into an AST.
 
-2. A standalone wrapper, `glslangValidator`, that can be used as a shader
-   validation tool.
+2. An HLSL front-end for translation of a broad generic HLL into the AST. See [issue 362](https://github.com/KhronosGroup/glslang/issues/362) and [issue 701](https://github.com/KhronosGroup/glslang/issues/701) for current status.
+
+3. A SPIR-V back end for translating the AST to SPIR-V.
+
+4. A standalone wrapper, `glslangValidator`, that can be used as a command-line tool for the above.
 
 How to add a feature protected by a version/extension/stage/profile:  See the
 comment in `glslang/MachineIndependent/Versions.cpp`.
 
-Things left to do:  See `Todo.txt`
+Tasks waiting to be done are documented as GitHub issues.
 
 Execution of Standalone Wrapper
 -------------------------------
@@ -46,53 +49,93 @@ There is also a non-shader extension
 Building
 --------
 
+Instead of building manually, you can also download the binaries for your
+platform directly from the [master-tot release][master-tot-release] on GitHub.
+Those binaries are automatically uploaded by the buildbots after successful
+testing and they always reflect the current top of the tree of the master
+branch.
+
 ### Dependencies
 
+* A C++11 compiler.
+  (For MSVS: 2015 is recommended, 2013 is fully supported/tested, and 2010 support is attempted, but not tested.)
 * [CMake][cmake]: for generating compilation targets.
+* make: _Linux_, ninja is an alternative, if configured.
+* [Python 2.7][python]: for executing SPIRV-Tools scripts. (Optional if not using SPIRV-Tools.)
 * [bison][bison]: _optional_, but needed when changing the grammar (glslang.y).
 * [googletest][googletest]: _optional_, but should use if making any changes to glslang.
 
 ### Build steps
 
-#### 1) Check-Out External Projects
+The following steps assume a Bash shell. On Windows, that could be the Git Bash
+shell or some other shell of your choosing.
+
+#### 1) Check-Out this project 
 
 ```bash
-cd <the directory glslang was cloned to, External will be a subdirectory>
+cd <parent of where you want glslang to be>
+git clone https://github.com/KhronosGroup/glslang.git
+```
+
+#### 2) Check-Out External Projects
+
+```bash
+cd <the directory glslang was cloned to, "External" will be a subdirectory>
 git clone https://github.com/google/googletest.git External/googletest
 ```
 
-#### 2) Configure
-
-Assume the source directory is `$SOURCE_DIR` and
-the build directory is `$BUILD_DIR`:
-
-For building on Linux (assuming using the Ninja generator):
+If you want to use googletest with Visual Studio 2013, you also need to check out an older version:
 
 ```bash
-cd $BUILD_DIR
+# to use googletest with Visual Studio 2013
+cd External/googletest
+git checkout 440527a61e1c91188195f7de212c63c77e8f0a45
+cd ../..
+```
 
-cmake -GNinja -DCMAKE_BUILD_TYPE={Debug|Release|RelWithDebInfo} \
-      -DCMAKE_INSTALL_PREFIX=`pwd`/install $SOURCE_DIR
+If you wish to assure that SPIR-V generated from HLSL is legal for Vulkan,
+or wish to invoke -Os to reduce SPIR-V size from HLSL or GLSL, install
+spirv-tools with this:
+
+```bash
+./update_glslang_sources.py
+```
+
+#### 3) Configure
+
+Assume the source directory is `$SOURCE_DIR` and the build directory is
+`$BUILD_DIR`. First ensure the build directory exists, then navigate to it:
+
+```bash
+mkdir -p $BUILD_DIR
+cd $BUILD_DIR
+```
+
+For building on Linux:
+
+```bash
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$(pwd)/install" $SOURCE_DIR
+# "Release" (for CMAKE_BUILD_TYPE) could also be "Debug" or "RelWithDebInfo"
 ```
 
 For building on Windows:
 
 ```bash
-cmake $SOURCE_DIR -DCMAKE_INSTALL_PREFIX=`pwd`/install
+cmake $SOURCE_DIR -DCMAKE_INSTALL_PREFIX="$(pwd)/install"
 # The CMAKE_INSTALL_PREFIX part is for testing (explained later).
 ```
 
 The CMake GUI also works for Windows (version 3.4.1 tested).
 
-#### 3) Build and Install
+#### 4) Build and Install
 
 ```bash
 # for Linux:
-ninja install
+make -j4 install
 
 # for Windows:
-cmake --build . --config {Release|Debug|MinSizeRel|RelWithDebInfo} \
-      --target install
+cmake --build . --config Release --target install
+# "Release" (for --config) could also be "Debug", "MinSizeRel", or "RelWithDebInfo"
 ```
 
 If using MSVC, after running CMake to configure, use the
@@ -177,15 +220,11 @@ For more information, please check `gtests/` directory's
 
 For the `runtests` script, it will generate current results in the
 `localResults/` directory and `diff` them against the `baseResults/`.
-The integration tests to run via the `runtests` script is registered
-via various `Test/test-*` text files and `Test/testlist`.
 When you want to update the tracked test results, they need to be
 copied from `localResults/` to `baseResults/`.  This can be done by
 the `bump` shell script.
 
-The list of files tested comes from `testlist`, and lists input shaders
-in this directory, which must all be public for this to work.  However,
-you can add your own private list of tests, not tracked here, by using
+You can add your own private list of tests, not tracked publicly, by using
 `localtestlist` to list non-tracked tests.  This is automatically read
 by `runtests` and included in the `diff` and `bump` process.
 
@@ -211,8 +250,11 @@ bool InitializeProcess();
 void FinalizeProcess();
 
 class TShader
+    setStrings(...);
+    setEnvInput(EShSourceHlsl or EShSourceGlsl, stage,  EShClientVulkan or EShClientOpenGL, 100);
+    setEnvClient(EShClientVulkan or EShClientOpenGL, EShTargetVulkan_1_0 or EShTargetVulkan_1_1 or EShTargetOpenGL_450);
+    setEnvTarget(EShTargetSpv, EShTargetSpv_1_0 or EShTargetSpv_1_3);
     bool parse(...);
-    void setStrings(...);
     const char* getInfoLog();
 
 class TProgram
@@ -292,6 +334,8 @@ Basic Internal Operation
 
 
 [cmake]: https://cmake.org/
+[python]: https://www.python.org/
 [bison]: https://www.gnu.org/software/bison/
 [googletest]: https://github.com/google/googletest
 [bison-gnu-win32]: http://gnuwin32.sourceforge.net/packages/bison.htm
+[master-tot-release]: https://github.com/KhronosGroup/glslang/releases/tag/master-tot

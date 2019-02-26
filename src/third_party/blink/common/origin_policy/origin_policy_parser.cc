@@ -33,7 +33,12 @@ bool OriginPolicyParser::DoParse(base::StringPiece policy_text) {
     return false;
 
   base::Value* csp = json->FindKey("content-security-policy");
-  return !csp || ParseContentSecurityPolicies(*csp);
+  bool csp_ok = !csp || ParseContentSecurityPolicies(*csp);
+
+  base::Value* features = json->FindKey("feature-policy");
+  bool features_ok = !features || ParseFeaturePolicies(*features);
+
+  return csp_ok && features_ok;
 }
 
 bool OriginPolicyParser::ParseContentSecurityPolicies(
@@ -60,6 +65,25 @@ bool OriginPolicyParser::ParseContentSecurityPolicy(const base::Value& csp) {
       csp.FindKeyOfType("report-only", base::Value::Type::BOOLEAN);
   policy_->csp_.push_back(
       {policy->GetString(), report_only && report_only->GetBool()});
+  return true;
+}
+
+bool OriginPolicyParser::ParseFeaturePolicies(const base::Value& policies) {
+  if (!policies.is_list())
+    return false;
+
+  bool ok = true;
+  for (const auto& feature : policies.GetList()) {
+    ok &= ParseFeaturePolicy(feature);
+  }
+  return ok;
+}
+
+bool OriginPolicyParser::ParseFeaturePolicy(const base::Value& policy) {
+  if (!policy.is_string())
+    return false;
+
+  policy_->features_.push_back(policy.GetString());
   return true;
 }
 

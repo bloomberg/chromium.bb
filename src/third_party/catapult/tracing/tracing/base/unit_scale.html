@@ -10,9 +10,9 @@ found in the LICENSE file.
 <script>
 'use strict';
 
-const GREEK_SMALL_LETTER_MU = String.fromCharCode(956);
-
 tr.exportTo('tr.b', function() {
+  const GREEK_SMALL_LETTER_MU = String.fromCharCode(956);
+
   const SECONDS_IN_A_MINUTE = 60;
   const SECONDS_IN_AN_HOUR = SECONDS_IN_A_MINUTE * 60;
   const SECONDS_IN_A_DAY = SECONDS_IN_AN_HOUR * 24;
@@ -54,6 +54,27 @@ tr.exportTo('tr.b', function() {
     if (name) UnitScale[name] = unitScale;
     return unitScale;
   };
+
+  function definePrefixScaleFromUnitScale(prefixName, unitScale) {
+    if (!unitScale) {
+      throw new Error('Cannot create PrefixScale without a unit scale.');
+    }
+    const prefixScale = {};
+    for (const [curPrefix, curScale] of Object.entries(unitScale)) {
+      if (curPrefix === 'AUTO') {
+        continue;
+      }
+      if (curScale.symbol === undefined || !curScale.value) {
+        throw new Error(
+            `Cannot create PrefixScale from malformed unit ${curScale}.`);
+      }
+      prefixScale[curPrefix] = {
+        value: curScale.value,
+        symbol: curScale.symbol
+      };
+    }
+    return defineUnitPrefixScale(prefixName, prefixScale);
+  }
 
   UnitScale.defineUnitScaleFromPrefixScale = function(
       baseSymbol, baseName, prefixScale, opt_scaleName) {
@@ -145,10 +166,16 @@ tr.exportTo('tr.b', function() {
   UnitScale.defineUnitScaleFromPrefixScale(
       'B', 'BYTE', UnitPrefixScale.BINARY, 'MEMORY');
 
+  definePrefixScaleFromUnitScale('DATA_SIZE', UnitScale.MEMORY);
+
+  UnitScale.defineUnitScaleFromPrefixScale(
+      '/s', 'SECONDS', UnitPrefixScale.DATA_SIZE, 'BANDWIDTH_BYTES');
+
   return {
     UnitPrefixScale,
     UnitScale,
     convertUnit,
+    GREEK_SMALL_LETTER_MU,
   };
 });
 </script>

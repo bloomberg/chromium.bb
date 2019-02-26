@@ -33,7 +33,7 @@
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/sensor.mojom.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
-#include "services/service_manager/public/cpp/service_context.h"
+#include "services/service_manager/public/cpp/service_binding.h"
 
 namespace content {
 
@@ -47,15 +47,15 @@ class DeviceSensorBrowserTest : public ContentBrowserTest {
     // Because Device Service also runs in this process (browser process), here
     // we can directly set our binder to intercept interface requests against
     // it.
-    service_manager::ServiceContext::SetGlobalBinderForTesting(
-        device::mojom::kServiceName, device::mojom::SensorProvider::Name_,
-        base::BindRepeating(&DeviceSensorBrowserTest::Bind,
+    service_manager::ServiceBinding::OverrideInterfaceBinderForTesting(
+        device::mojom::kServiceName,
+        base::BindRepeating(&DeviceSensorBrowserTest::BindSensorProvider,
                             base::Unretained(this)));
   }
 
   ~DeviceSensorBrowserTest() override {
-    service_manager::ServiceContext::ClearGlobalBindersForTesting(
-        device::mojom::kServiceName);
+    service_manager::ServiceBinding::ClearInterfaceBinderOverrideForTesting<
+        device::mojom::SensorProvider>(device::mojom::kServiceName);
   }
 
   void SetUpOnMainThread() override {
@@ -104,11 +104,8 @@ class DeviceSensorBrowserTest : public ContentBrowserTest {
   std::unique_ptr<net::EmbeddedTestServer> https_embedded_test_server_;
 
  private:
-  void Bind(const std::string& interface_name,
-            mojo::ScopedMessagePipeHandle handle,
-            const service_manager::BindSourceInfo& source_info) {
-    sensor_provider_->Bind(
-        device::mojom::SensorProviderRequest(std::move(handle)));
+  void BindSensorProvider(device::mojom::SensorProviderRequest request) {
+    sensor_provider_->Bind(std::move(request));
   }
 };
 

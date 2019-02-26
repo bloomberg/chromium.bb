@@ -117,6 +117,7 @@ public class NavigationBarColorController implements VrModeObserver {
     @Override
     public void onEnterVr() {}
 
+    @SuppressLint("NewApi")
     private void updateNavigationBarColor() {
         boolean overviewVisible = mOverviewModeBehavior.overviewVisible() && !mOverviewModeHiding;
 

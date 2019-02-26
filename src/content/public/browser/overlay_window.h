@@ -34,7 +34,7 @@ class OverlayWindow {
   enum PlaybackState {
     kPlaying = 0,
     kPaused,
-    kNoVideo,
+    kEndOfVideo,
   };
 
   OverlayWindow() = default;

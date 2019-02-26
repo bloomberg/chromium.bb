@@ -6,6 +6,7 @@
 """Unittest for chrome_messages_json.py.
 """
 
+import json
 import os
 import sys
 if __name__ == '__main__':
@@ -19,6 +20,10 @@ from grit import util
 from grit.tool import build
 
 class ChromeMessagesJsonFormatUnittest(unittest.TestCase):
+
+  # The default unittest diff limit is too low for our unittests.
+  # Allow the framework to show the full diff output all the time.
+  maxDiff = None
 
   def testMessages(self):
     root = util.ParseGrdForUnittest(u"""
@@ -96,7 +101,7 @@ class ChromeMessagesJsonFormatUnittest(unittest.TestCase):
   }
 }
 """
-    self.assertEqual(test.strip(), output.strip())
+    self.assertEqual(json.loads(test), json.loads(output))
 
   def testTranslations(self):
     root = util.ParseGrdForUnittest("""
@@ -121,7 +126,7 @@ class ChromeMessagesJsonFormatUnittest(unittest.TestCase):
   }
 }
 """
-    self.assertEqual(test.strip(), output.strip())
+    self.assertEqual(json.loads(test), json.loads(output))
 
   def testSkipMissingTranslations(self):
     grd = """<?xml version="1.0" encoding="UTF-8"?>
@@ -141,12 +146,25 @@ class ChromeMessagesJsonFormatUnittest(unittest.TestCase):
     build.RcBuilder.ProcessNode(root, DummyOutput('chrome_messages_json', 'fr'),
                                 buf)
     output = buf.getvalue()
-    test = u"""
-{
+    test = u'{}'
+    self.assertEqual(test, output)
 
-}
-"""
-    self.assertEqual(test.strip(), output.strip())
+  def testVerifyMinification(self):
+    root = util.ParseGrdForUnittest(u"""
+    <messages>
+      <message name="IDS">
+        <ph name="BEGIN">$1<ex>a</ex></ph>test<ph name="END">$2<ex>b</ex></ph>
+      </message>
+    </messages>
+    """)
+
+    buf = StringIO.StringIO()
+    build.RcBuilder.ProcessNode(root, DummyOutput('chrome_messages_json', 'en'),
+                                buf)
+    output = buf.getvalue()
+    test = (u'{"IDS":{"message":"$1$test$2$","placeholders":'
+            u'{"1":{"content":"$1"},"2":{"content":"$2"}}}}')
+    self.assertEqual(test, output)
 
 
 class DummyOutput(object):

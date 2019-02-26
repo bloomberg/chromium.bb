@@ -28,14 +28,15 @@ class CSSStyleSheetTest : public PageTestBase {
    public:
     static v8::Local<v8::Function> CreateFunction(ScriptState* script_state,
                                                   ScriptValue* output) {
-      FunctionForTest* self = new FunctionForTest(script_state, output);
+      FunctionForTest* self =
+          MakeGarbageCollected<FunctionForTest>(script_state, output);
       return self->BindToV8Function();
     }
 
-   private:
     FunctionForTest(ScriptState* script_state, ScriptValue* output)
         : ScriptFunction(script_state), output_(output) {}
 
+   private:
     ScriptValue Call(ScriptValue value) override {
       DCHECK(!value.IsEmpty());
       *output_ = value;
@@ -49,7 +50,7 @@ class CSSStyleSheetTest : public PageTestBase {
 TEST_F(CSSStyleSheetTest, ConstructorWithoutRuntimeFlagThrowsException) {
   DummyExceptionStateForTesting exception_state;
   RuntimeEnabledFeatures::SetConstructableStylesheetsEnabled(false);
-  EXPECT_EQ(CSSStyleSheet::Create(GetDocument(), CSSStyleSheetInit(),
+  EXPECT_EQ(CSSStyleSheet::Create(GetDocument(), CSSStyleSheetInit::Create(),
                                   exception_state),
             nullptr);
   ASSERT_TRUE(exception_state.HadException());
@@ -58,11 +59,11 @@ TEST_F(CSSStyleSheetTest, ConstructorWithoutRuntimeFlagThrowsException) {
 TEST_F(CSSStyleSheetTest,
        CSSStyleSheetConstructionWithNonEmptyCSSStyleSheetInit) {
   DummyExceptionStateForTesting exception_state;
-  CSSStyleSheetInit init;
-  init.setMedia(MediaListOrString::FromString("screen, print"));
-  init.setTitle("test");
-  init.setAlternate(true);
-  init.setDisabled(true);
+  CSSStyleSheetInit* init = CSSStyleSheetInit::Create();
+  init->setMedia(MediaListOrString::FromString("screen, print"));
+  init->setTitle("test");
+  init->setAlternate(true);
+  init->setDisabled(true);
   CSSStyleSheet* sheet =
       CSSStyleSheet::Create(GetDocument(), init, exception_state);
   ASSERT_FALSE(exception_state.HadException());
@@ -71,8 +72,8 @@ TEST_F(CSSStyleSheetTest,
   EXPECT_EQ(sheet->ownerNode(), nullptr);
   EXPECT_EQ(sheet->ownerRule(), nullptr);
   EXPECT_EQ(sheet->media()->length(), 2U);
-  EXPECT_EQ(sheet->media()->mediaText(), init.media().GetAsString());
-  EXPECT_EQ(sheet->title(), init.title());
+  EXPECT_EQ(sheet->media()->mediaText(), init->media().GetAsString());
+  EXPECT_EQ(sheet->title(), init->title());
   EXPECT_TRUE(sheet->AlternateFromConstructor());
   EXPECT_TRUE(sheet->disabled());
   EXPECT_EQ(sheet->cssRules(exception_state)->length(), 0U);
@@ -83,7 +84,7 @@ TEST_F(CSSStyleSheetTest, CreateEmptyCSSStyleSheetWithEmptyCSSStyleSheetInit) {
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;
   CSSStyleSheet* sheet = GetDocument().createEmptyCSSStyleSheet(
-      scope.GetScriptState(), CSSStyleSheetInit(), exception_state);
+      scope.GetScriptState(), CSSStyleSheetInit::Create(), exception_state);
   ASSERT_FALSE(exception_state.HadException());
   EXPECT_TRUE(sheet->href().IsNull());
   EXPECT_EQ(sheet->parentStyleSheet(), nullptr);
@@ -99,11 +100,11 @@ TEST_F(CSSStyleSheetTest, CreateEmptyCSSStyleSheetWithEmptyCSSStyleSheetInit) {
 
 TEST_F(CSSStyleSheetTest,
        CreateEmptyCSSStyleSheetWithNonEmptyCSSStyleSheetInit) {
-  CSSStyleSheetInit init;
-  init.setMedia(MediaListOrString::FromString("screen, print"));
-  init.setTitle("test");
-  init.setAlternate(true);
-  init.setDisabled(true);
+  CSSStyleSheetInit* init = CSSStyleSheetInit::Create();
+  init->setMedia(MediaListOrString::FromString("screen, print"));
+  init->setTitle("test");
+  init->setAlternate(true);
+  init->setDisabled(true);
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;
   CSSStyleSheet* sheet = GetDocument().createEmptyCSSStyleSheet(
@@ -114,8 +115,8 @@ TEST_F(CSSStyleSheetTest,
   EXPECT_EQ(sheet->ownerNode(), nullptr);
   EXPECT_EQ(sheet->ownerRule(), nullptr);
   EXPECT_EQ(sheet->media()->length(), 2U);
-  EXPECT_EQ(sheet->media()->mediaText(), init.media().GetAsString());
-  EXPECT_EQ(sheet->title(), init.title());
+  EXPECT_EQ(sheet->media()->mediaText(), init->media().GetAsString());
+  EXPECT_EQ(sheet->title(), init->title());
   EXPECT_TRUE(sheet->AlternateFromConstructor());
   EXPECT_TRUE(sheet->disabled());
   ASSERT_FALSE(exception_state.HadException());
@@ -126,7 +127,7 @@ TEST_F(CSSStyleSheetTest,
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;
   ScriptPromise promise = GetDocument().createCSSStyleSheet(
-      scope.GetScriptState(), "", CSSStyleSheetInit(), exception_state);
+      scope.GetScriptState(), "", CSSStyleSheetInit::Create(), exception_state);
   EXPECT_FALSE(promise.IsEmpty());
   ASSERT_FALSE(exception_state.HadException());
   ScriptValue on_fulfilled, on_rejected;
@@ -153,11 +154,11 @@ TEST_F(CSSStyleSheetTest,
        CreateCSSStyleSheetWithNonEmptyCSSStyleSheetInitAndText) {
   String styleText[2] = {".red { color: red; }",
                          ".red + span + span { color: red; }"};
-  CSSStyleSheetInit init;
-  init.setMedia(MediaListOrString::FromString("screen, print"));
-  init.setTitle("test");
-  init.setAlternate(true);
-  init.setDisabled(true);
+  CSSStyleSheetInit* init = CSSStyleSheetInit::Create();
+  init->setMedia(MediaListOrString::FromString("screen, print"));
+  init->setTitle("test");
+  init->setAlternate(true);
+  init->setDisabled(true);
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;
   ScriptPromise promise = GetDocument().createCSSStyleSheet(
@@ -179,8 +180,8 @@ TEST_F(CSSStyleSheetTest,
   EXPECT_EQ(sheet->ownerNode(), nullptr);
   EXPECT_EQ(sheet->ownerRule(), nullptr);
   EXPECT_EQ(sheet->media()->length(), 2U);
-  EXPECT_EQ(sheet->media()->mediaText(), init.media().GetAsString());
-  EXPECT_EQ(sheet->title(), init.title());
+  EXPECT_EQ(sheet->media()->mediaText(), init->media().GetAsString());
+  EXPECT_EQ(sheet->title(), init->title());
   EXPECT_TRUE(sheet->AlternateFromConstructor());
   EXPECT_TRUE(sheet->disabled());
   EXPECT_EQ(sheet->cssRules(exception_state)->length(), 2U);

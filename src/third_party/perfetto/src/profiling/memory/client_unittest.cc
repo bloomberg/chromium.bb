@@ -21,6 +21,7 @@
 #include <thread>
 
 namespace perfetto {
+namespace profiling {
 namespace {
 
 TEST(SocketPoolTest, Basic) {
@@ -28,6 +29,13 @@ TEST(SocketPoolTest, Basic) {
   files.emplace_back(base::OpenFile("/dev/null", O_RDONLY));
   SocketPool pool(std::move(files));
   BorrowedSocket sock = pool.Borrow();
+}
+TEST(SocketPoolTest, Close) {
+  std::vector<base::ScopedFile> files;
+  files.emplace_back(base::OpenFile("/dev/null", O_RDONLY));
+  SocketPool pool(std::move(files));
+  BorrowedSocket sock = pool.Borrow();
+  sock.Close();
 }
 
 TEST(SocketPoolTest, Multiple) {
@@ -52,6 +60,20 @@ TEST(SocketPoolTest, Blocked) {
   t.join();
 }
 
+TEST(SocketPoolTest, BlockedClose) {
+  std::vector<base::ScopedFile> files;
+  files.emplace_back(base::OpenFile("/dev/null", O_RDONLY));
+  SocketPool pool(std::move(files));
+  BorrowedSocket sock = pool.Borrow();
+  std::thread t([&pool] { pool.Borrow(); });
+  {
+    // Return fd to unblock thread.
+    BorrowedSocket temp = std::move(sock);
+    temp.Close();
+  }
+  t.join();
+}
+
 TEST(SocketPoolTest, MultipleBlocked) {
   std::vector<base::ScopedFile> files;
   files.emplace_back(base::OpenFile("/dev/null", O_RDONLY));
@@ -62,6 +84,22 @@ TEST(SocketPoolTest, MultipleBlocked) {
   {
     // Return fd to unblock thread.
     BorrowedSocket temp = std::move(sock);
+  }
+  t.join();
+  t2.join();
+}
+
+TEST(SocketPoolTest, MultipleBlockedClose) {
+  std::vector<base::ScopedFile> files;
+  files.emplace_back(base::OpenFile("/dev/null", O_RDONLY));
+  SocketPool pool(std::move(files));
+  BorrowedSocket sock = pool.Borrow();
+  std::thread t([&pool] { pool.Borrow(); });
+  std::thread t2([&pool] { pool.Borrow(); });
+  {
+    // Return fd to unblock thread.
+    BorrowedSocket temp = std::move(sock);
+    temp.Close();
   }
   t.join();
   t2.join();
@@ -80,4 +118,5 @@ TEST(ClientTest, GetThreadStackBase) {
 }
 
 }  // namespace
+}  // namespace profiling
 }  // namespace perfetto

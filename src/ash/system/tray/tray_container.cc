@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/shelf/shelf.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ui/gfx/geometry/insets.h"
@@ -69,14 +68,8 @@ void TrayContainer::UpdateLayout() {
       is_horizontal ? views::BoxLayout::kHorizontal
                     : views::BoxLayout::kVertical;
 
-  const int hit_region_with_separator =
-      kHitRegionPadding + TrayConstants::separator_width();
-  gfx::Insets insets(
-      is_horizontal
-          ? gfx::Insets(0, kHitRegionPadding, 0, hit_region_with_separator)
-          : gfx::Insets(kHitRegionPadding, 0, hit_region_with_separator, 0));
-  if (base::i18n::IsRTL())
-    insets.Set(insets.top(), insets.right(), insets.bottom(), insets.left());
+  gfx::Insets insets(is_horizontal ? gfx::Insets(0, kHitRegionPadding)
+                                   : gfx::Insets(kHitRegionPadding, 0));
   SetBorder(views::CreateEmptyBorder(insets));
 
   int horizontal_margin = main_axis_margin_;
@@ -86,8 +79,7 @@ void TrayContainer::UpdateLayout() {
 
   auto layout = std::make_unique<views::BoxLayout>(
       orientation, gfx::Insets(vertical_margin, horizontal_margin),
-      features::IsSystemTrayUnifiedEnabled() ? kUnifiedTraySpacingBetweenIcons
-                                             : 0);
+      kUnifiedTraySpacingBetweenIcons);
   layout->set_minimum_cross_axis_size(kTrayItemSize);
   views::View::SetLayoutManager(std::move(layout));
 

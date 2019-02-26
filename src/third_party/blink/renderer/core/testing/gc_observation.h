@@ -43,21 +43,19 @@ class GCObservation final : public ScriptWrappable {
 
  public:
   static GCObservation* Create(v8::Local<v8::Value> observed_value) {
-    return new GCObservation(observed_value);
+    return MakeGarbageCollected<GCObservation>(observed_value);
   }
+
+  explicit GCObservation(v8::Local<v8::Value>);
 
   // Caution: It is only feasible to determine whether an object was
   // "near death"; it may have been kept alive through a weak
   // handle. After reaching near-death, having been collected is the
   // common case.
-  bool wasCollected() const { return collected_; }
-  void SetWasCollected();
+  bool wasCollected() const { return observed_.IsEmpty(); }
 
  private:
-  explicit GCObservation(v8::Local<v8::Value>);
-
   ScopedPersistent<v8::Value> observed_;
-  bool collected_;
 };
 
 }  // namespace blink

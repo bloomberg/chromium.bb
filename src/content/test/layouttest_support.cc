@@ -23,7 +23,7 @@
 #include "content/browser/bluetooth/bluetooth_device_chooser_controller.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
-#include "content/browser/shared_worker/shared_worker_service_impl.h"
+#include "content/browser/worker_host/shared_worker_service_impl.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/unique_name_helper.h"
 #include "content/public/browser/storage_partition.h"
@@ -42,8 +42,8 @@
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/shell/common/layout_test/layout_test_switches.h"
 #include "content/shell/common/shell_switches.h"
-#include "content/shell/renderer/layout_test/blink_test_runner.h"
-#include "content/shell/renderer/layout_test/layout_test_render_thread_observer.h"
+#include "content/shell/renderer/web_test/blink_test_runner.h"
+#include "content/shell/renderer/web_test/web_test_render_thread_observer.h"
 #include "content/shell/test_runner/test_common.h"
 #include "content/shell/test_runner/web_frame_test_proxy.h"
 #include "content/shell/test_runner/web_test_interfaces.h"
@@ -83,7 +83,7 @@ namespace {
 RenderViewImpl* CreateWebViewTestProxy(CompositorDependencies* compositor_deps,
                                        const mojom::CreateViewParams& params) {
   test_runner::WebTestInterfaces* interfaces =
-      LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
+      WebTestRenderThreadObserver::GetInstance()->test_interfaces();
 
   auto* render_view_proxy =
       new test_runner::WebViewTestProxy(compositor_deps, params);
@@ -119,7 +119,7 @@ RenderWidget* CreateWebWidgetTestProxy(int32_t routing_id,
 
 void RenderWidgetInitialized(RenderWidget* render_widget) {
   test_runner::WebTestInterfaces* interfaces =
-      LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
+      WebTestRenderThreadObserver::GetInstance()->test_interfaces();
 
   blink::WebWidget* web_widget = render_widget->GetWebWidget();
   // This callback is run only for RenderWidgets that are for a frame.
@@ -141,7 +141,7 @@ void RenderWidgetInitialized(RenderWidget* render_widget) {
 
 RenderFrameImpl* CreateWebFrameTestProxy(RenderFrameImpl::CreateParams params) {
   test_runner::WebTestInterfaces* interfaces =
-      LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
+      WebTestRenderThreadObserver::GetInstance()->test_interfaces();
 
   // RenderFrameImpl always has a RenderViewImpl for it.
   RenderViewImpl* render_view_impl = params.render_view;
@@ -402,9 +402,8 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
       const viz::LocalSurfaceId& local_surface_id) override {}
   void DisplayReceivedCompositorFrame(
       const viz::CompositorFrame& frame) override {}
-  void DisplayWillDrawAndSwap(
-      bool will_draw_and_swap,
-      const viz::RenderPassList& render_passes) override {}
+  void DisplayWillDrawAndSwap(bool will_draw_and_swap,
+                              viz::RenderPassList* render_passes) override {}
   void DisplayDidDrawAndSwap() override {}
 
  private:

@@ -8,7 +8,7 @@
 #ifndef GrTextBlobCache_DEFINED
 #define GrTextBlobCache_DEFINED
 
-#include "GrTextContext.h"
+#include "GrTextBlob.h"
 #include "SkMessageBus.h"
 #include "SkRefCnt.h"
 #include "SkTArray.h"
@@ -116,7 +116,6 @@ public:
     struct PurgeBlobMessage {
         PurgeBlobMessage(uint32_t blobID, uint32_t contextUniqueID)
                 : fBlobID(blobID), fContextID(contextUniqueID) {}
-        bool shouldSend(uint32_t inboxID) const { return fContextID == inboxID; }
 
         uint32_t fBlobID;
         uint32_t fContextID;
@@ -125,6 +124,8 @@ public:
     static void PostPurgeBlobMessage(uint32_t blobID, uint32_t cacheID);
 
     void purgeStaleBlobs();
+
+    size_t usedBytes() const { return fCurrentSize; }
 
 private:
     using BitmapBlobList = SkTInternalLList<GrTextBlob>;

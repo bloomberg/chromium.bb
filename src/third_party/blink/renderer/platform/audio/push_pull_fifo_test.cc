@@ -32,13 +32,13 @@ TEST(PushPullFIFOBasicTest, BasicTests) {
   std::unique_ptr<PushPullFIFO> test_fifo =
       std::make_unique<PushPullFIFO>(2, 1024);
 
-  // The input bus length must be |AudioUtilities::kRenderQuantumFrames|.
+  // The input bus length must be |audio_utilities::kRenderQuantumFrames|.
   // i.e.) input_bus->length() == kRenderQuantumFrames
   scoped_refptr<AudioBus> input_bus_129_frames =
-      AudioBus::Create(2, AudioUtilities::kRenderQuantumFrames + 1);
+      AudioBus::Create(2, audio_utilities::kRenderQuantumFrames + 1);
   EXPECT_DEATH(test_fifo->Push(input_bus_129_frames.get()), "");
   scoped_refptr<AudioBus> input_bus_127_frames =
-      AudioBus::Create(2, AudioUtilities::kRenderQuantumFrames - 1);
+      AudioBus::Create(2, audio_utilities::kRenderQuantumFrames - 1);
   EXPECT_DEATH(test_fifo->Push(input_bus_127_frames.get()), "");
 
   // Pull request frames cannot exceed the length of output bus.

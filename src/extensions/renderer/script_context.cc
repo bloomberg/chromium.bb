@@ -193,9 +193,10 @@ void ScriptContext::SafeCallFunction(
     web_frame_->RequestExecuteV8Function(v8_context(), function, global, argc,
                                          argv, wrapper_callback);
   } else {
-    // TODO(devlin): This probably isn't safe.
-    v8::Local<v8::Value> result = function->Call(global, argc, argv);
-    if (!callback.is_null()) {
+    v8::MaybeLocal<v8::Value> maybe_result =
+        function->Call(v8_context(), global, argc, argv);
+    v8::Local<v8::Value> result;
+    if (!callback.is_null() && maybe_result.ToLocal(&result)) {
       std::vector<v8::Local<v8::Value>> results(1, result);
       callback.Run(results);
     }
@@ -518,8 +519,16 @@ v8::Local<v8::Value> ScriptContext::CallFunction(
   }
 
   v8::Local<v8::Object> global = v8_context()->Global();
-  if (!web_frame_)
-    return handle_scope.Escape(function->Call(global, argc, argv));
+  if (!web_frame_) {
+    v8::MaybeLocal<v8::Value> maybe_result =
+        function->Call(v8_context(), global, argc, argv);
+    v8::Local<v8::Value> result;
+    if (!maybe_result.ToLocal(&result)) {
+      return handle_scope.Escape(
+          v8::Local<v8::Primitive>(v8::Undefined(isolate())));
+    }
+    return handle_scope.Escape(result);
+  }
 
   v8::MaybeLocal<v8::Value> result =
       web_frame_->CallFunctionEvenIfScriptDisabled(function, global, argc,

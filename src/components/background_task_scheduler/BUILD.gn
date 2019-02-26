@@ -47,6 +47,8 @@ if (is_android) {
       "android/java/src/org/chromium/components/background_task_scheduler/TaskParameters.java",
     ]
 
+    proguard_configs = [ "android/proguard.flags" ]
+
     deps = [
       ":background_task_scheduler_task_ids_java",
       "$google_play_services_package:google_play_services_base_java",
@@ -68,6 +70,7 @@ if (is_android) {
 
     deps = [
       ":background_task_scheduler_java",
+      ":background_task_scheduler_task_ids_java",
       "$google_play_services_package:google_play_services_base_java",
       "$google_play_services_package:google_play_services_basement_java",
       "$google_play_services_package:google_play_services_gcm_java",

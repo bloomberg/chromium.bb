@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/overflow_y.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* OverflowY::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -16,5 +16,5 @@ const CSSValue* OverflowY::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.OverflowY());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

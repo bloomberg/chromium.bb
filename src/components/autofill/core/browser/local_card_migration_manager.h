@@ -31,12 +31,10 @@ const char kMigrationResultSuccess[] = "SUCCESS";
 // credit card information, it also includes a boolean that represents whether
 // the card was chosen for upload. We use each card's guid to distinguish each
 // credit card for upload request/response.
-// TODO(crbug.com/852904): Create one Enum to represent migration status such as
-// whether the card is successfully uploaded or failure on uploading.
 class MigratableCreditCard {
  public:
   // Possible states for the migratable local card.
-  enum MigrationStatus {
+  enum class MigrationStatus {
     // Set if the migratable card have not been uploaded.
     UNKNOWN,
     // Set if the migratable card was successfully uploaded to the server.
@@ -98,6 +96,12 @@ class LocalCardMigrationManager {
   // once risk data is available. Exposed for testing.
   virtual void OnUserAcceptedMainMigrationDialog(
       const std::vector<std::string>& selected_card_guids);
+
+  // Callback function when user clicks the trash can button in the
+  // action-required dialog to delete one credit card from Chrome.
+  // |deleted_card_guid| is the GUID of the card to be deleted.
+  virtual void OnUserDeletedLocalCardViaMigrationDialog(
+      const std::string& deleted_card_guid);
 
   // Check that the user is signed in, syncing, and the proper experiment
   // flags are enabled. Override in the test class.

@@ -32,7 +32,7 @@ typedef unsigned char LChar;
 static_assert(sizeof(UChar) == 2, "UChar should be two bytes");
 
 namespace WTF {
-namespace Unicode {
+namespace unicode {
 
 enum CharDirection {
   kLeftToRight = U_LEFT_TO_RIGHT,
@@ -223,7 +223,7 @@ inline int Umemcasecmp(const UChar* a, const UChar* b, int len) {
   return u_memcasecmp(a, b, len, U_FOLD_CASE_DEFAULT);
 }
 
-}  // namespace Unicode
+}  // namespace unicode
 }  // namespace WTF
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_UNICODE_H_

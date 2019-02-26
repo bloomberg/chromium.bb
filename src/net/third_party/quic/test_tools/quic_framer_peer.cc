@@ -74,8 +74,9 @@ bool QuicFramerPeer::AppendCryptoFrame(QuicFramer* framer,
 // static
 bool QuicFramerPeer::ProcessIetfAckFrame(QuicFramer* framer,
                                          QuicDataReader* reader,
+                                         uint64_t frame_type,
                                          QuicAckFrame* ack_frame) {
-  return framer->ProcessIetfAckFrame(reader, ack_frame);
+  return framer->ProcessIetfAckFrame(reader, frame_type, ack_frame);
 }
 
 // static
@@ -285,6 +286,22 @@ bool QuicFramerPeer::ProcessNewConnectionIdFrame(
 }
 
 // static
+bool QuicFramerPeer::AppendRetireConnectionIdFrame(
+    QuicFramer* framer,
+    const QuicRetireConnectionIdFrame& frame,
+    QuicDataWriter* writer) {
+  return framer->AppendRetireConnectionIdFrame(frame, writer);
+}
+
+// static
+bool QuicFramerPeer::ProcessRetireConnectionIdFrame(
+    QuicFramer* framer,
+    QuicDataReader* reader,
+    QuicRetireConnectionIdFrame* frame) {
+  return framer->ProcessRetireConnectionIdFrame(reader, frame);
+}
+
+// static
 void QuicFramerPeer::SwapCrypters(QuicFramer* framer1, QuicFramer* framer2) {
   for (int i = ENCRYPTION_NONE; i < NUM_ENCRYPTION_LEVELS; i++) {
     framer1->encrypter_[i].swap(framer2->encrypter_[i]);
@@ -308,12 +325,6 @@ void QuicFramerPeer::SwapCrypters(QuicFramer* framer1, QuicFramer* framer2) {
 QuicEncrypter* QuicFramerPeer::GetEncrypter(QuicFramer* framer,
                                             EncryptionLevel level) {
   return framer->encrypter_[level].get();
-}
-
-// static
-void QuicFramerPeer::SetLastPacketIsIetfQuic(QuicFramer* framer,
-                                             bool last_packet_is_ietf_quic) {
-  framer->last_packet_is_ietf_quic_ = last_packet_is_ietf_quic;
 }
 
 // static

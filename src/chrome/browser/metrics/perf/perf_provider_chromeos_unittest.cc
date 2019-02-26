@@ -130,9 +130,9 @@ class TestIncognitoObserver : public WindowedIncognitoObserver {
   // Used for passing observers to ParseOutputProtoIfValid().
   static std::unique_ptr<WindowedIncognitoObserver> CreateWithIncognitoLaunched(
       bool incognito_launched) {
-    std::unique_ptr<TestIncognitoObserver> observer(new TestIncognitoObserver);
+    auto observer = base::WrapUnique(new TestIncognitoObserver());
     observer->set_incognito_launched(incognito_launched);
-    return std::move(observer);
+    return observer;
   }
 
  private:
@@ -164,10 +164,11 @@ class TestPerfProvider : public PerfProvider {
 
 class PerfProviderTest : public testing::Test {
  public:
-  PerfProviderTest() : task_runner_(new base::TestSimpleTaskRunner),
-                       task_runner_handle_(task_runner_),
-                       perf_data_proto_(GetExamplePerfDataProto()),
-                       perf_stat_proto_(GetExamplePerfStatProto()) {}
+  PerfProviderTest()
+      : task_runner_(base::MakeRefCounted<base::TestSimpleTaskRunner>()),
+        task_runner_handle_(task_runner_),
+        perf_data_proto_(GetExamplePerfDataProto()),
+        perf_stat_proto_(GetExamplePerfStatProto()) {}
 
   void SetUp() override {
     // PerfProvider requires chromeos::LoginState and
@@ -175,7 +176,7 @@ class PerfProviderTest : public testing::Test {
     chromeos::LoginState::Initialize();
     chromeos::DBusThreadManager::Initialize();
 
-    perf_provider_.reset(new TestPerfProvider);
+    perf_provider_ = std::make_unique<TestPerfProvider>();
     perf_provider_->Init();
 
     // PerfProvider requires the user to be logged in.
@@ -221,7 +222,7 @@ TEST_F(PerfProviderTest, CheckSetup) {
 
 // If quipper fails, or the DBus call fails, no data will be returned.
 TEST_F(PerfProviderTest, NoPerfData) {
-  std::unique_ptr<SampledProfile> sampled_profile(new SampledProfile);
+  auto sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::PERIODIC_COLLECTION);
 
   perf_provider_->ParseOutputProtoIfValid(
@@ -235,7 +236,7 @@ TEST_F(PerfProviderTest, NoPerfData) {
 }
 
 TEST_F(PerfProviderTest, PerfDataProto) {
-  std::unique_ptr<SampledProfile> sampled_profile(new SampledProfile);
+  auto sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::PERIODIC_COLLECTION);
 
   perf_provider_->ParseOutputProtoIfValid(
@@ -307,7 +308,7 @@ TEST_F(PerfProviderTest, PerfDataProto_UnknownFieldsDiscarded) {
   EXPECT_TRUE(temp_proto.ParseFromString(perf_data_string));
 
   // Now pass it to |perf_provider_|.
-  std::unique_ptr<SampledProfile> sampled_profile(new SampledProfile);
+  auto sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::PERIODIC_COLLECTION);
 
   perf_provider_->ParseOutputProtoIfValid(
@@ -364,7 +365,7 @@ TEST_F(PerfProviderTest, PerfDataProto_UnknownFieldsDiscarded) {
 }
 
 TEST_F(PerfProviderTest, PerfStatProto) {
-  std::unique_ptr<SampledProfile> sampled_profile(new SampledProfile);
+  auto sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::PERIODIC_COLLECTION);
 
   perf_provider_->ParseOutputProtoIfValid(
@@ -389,7 +390,7 @@ TEST_F(PerfProviderTest, PerfStatProto) {
 
 // Change |sampled_profile| between calls to ParseOutputProtoIfValid().
 TEST_F(PerfProviderTest, MultipleCalls) {
-  std::unique_ptr<SampledProfile> sampled_profile(new SampledProfile);
+  auto sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::PERIODIC_COLLECTION);
 
   perf_provider_->ParseOutputProtoIfValid(
@@ -398,7 +399,7 @@ TEST_F(PerfProviderTest, MultipleCalls) {
       TestPerfProvider::PerfSubcommand::PERF_COMMAND_RECORD,
       perf_data_proto_.SerializeAsString());
 
-  sampled_profile.reset(new SampledProfile);
+  sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::RESTORE_SESSION);
   sampled_profile->set_ms_after_restore(3000);
   perf_provider_->ParseOutputProtoIfValid(
@@ -407,7 +408,7 @@ TEST_F(PerfProviderTest, MultipleCalls) {
       TestPerfProvider::PerfSubcommand::PERF_COMMAND_STAT,
       perf_stat_proto_.SerializeAsString());
 
-  sampled_profile.reset(new SampledProfile);
+  sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::RESUME_FROM_SUSPEND);
   sampled_profile->set_suspend_duration_ms(60000);
   sampled_profile->set_ms_after_resume(1500);
@@ -417,7 +418,7 @@ TEST_F(PerfProviderTest, MultipleCalls) {
       TestPerfProvider::PerfSubcommand::PERF_COMMAND_RECORD,
       perf_data_proto_.SerializeAsString());
 
-  sampled_profile.reset(new SampledProfile);
+  sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::PERIODIC_COLLECTION);
   perf_provider_->ParseOutputProtoIfValid(
       TestIncognitoObserver::CreateWithIncognitoLaunched(false),
@@ -468,7 +469,7 @@ TEST_F(PerfProviderTest, MultipleCalls) {
 // Simulate opening and closing of incognito window in between calls to
 // ParseOutputProtoIfValid().
 TEST_F(PerfProviderTest, IncognitoWindowOpened) {
-  std::unique_ptr<SampledProfile> sampled_profile(new SampledProfile);
+  auto sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::PERIODIC_COLLECTION);
 
   perf_provider_->ParseOutputProtoIfValid(
@@ -489,7 +490,7 @@ TEST_F(PerfProviderTest, IncognitoWindowOpened) {
   EXPECT_EQ(SerializeMessageToVector(perf_data_proto_),
             SerializeMessageToVector(profile1.perf_data()));
 
-  sampled_profile.reset(new SampledProfile);
+  sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::RESTORE_SESSION);
   sampled_profile->set_ms_after_restore(3000);
   perf_provider_->ParseOutputProtoIfValid(
@@ -511,7 +512,7 @@ TEST_F(PerfProviderTest, IncognitoWindowOpened) {
   EXPECT_EQ(SerializeMessageToVector(perf_stat_proto_),
             SerializeMessageToVector(profile2.perf_stat()));
 
-  sampled_profile.reset(new SampledProfile);
+  sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::RESUME_FROM_SUSPEND);
   // An incognito window opens.
   perf_provider_->ParseOutputProtoIfValid(
@@ -523,7 +524,7 @@ TEST_F(PerfProviderTest, IncognitoWindowOpened) {
   std::vector<SampledProfile> stored_profiles_empty;
   EXPECT_FALSE(perf_provider_->GetSampledProfiles(&stored_profiles_empty));
 
-  sampled_profile.reset(new SampledProfile);
+  sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::PERIODIC_COLLECTION);
   // Incognito window is still open.
   perf_provider_->ParseOutputProtoIfValid(
@@ -534,7 +535,7 @@ TEST_F(PerfProviderTest, IncognitoWindowOpened) {
 
   EXPECT_FALSE(perf_provider_->GetSampledProfiles(&stored_profiles_empty));
 
-  sampled_profile.reset(new SampledProfile);
+  sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::RESUME_FROM_SUSPEND);
   sampled_profile->set_suspend_duration_ms(60000);
   sampled_profile->set_ms_after_resume(1500);
@@ -834,7 +835,7 @@ TEST_F(PerfProviderTest, CommandMatching_SpecificModel_LongestMatch) {
 class PerfProviderCollectionParamsTest : public testing::Test {
  public:
   PerfProviderCollectionParamsTest()
-      : task_runner_(new base::TestSimpleTaskRunner),
+      : task_runner_(base::MakeRefCounted<base::TestSimpleTaskRunner>()),
         task_runner_handle_(task_runner_),
         field_trial_list_(nullptr) {}
 

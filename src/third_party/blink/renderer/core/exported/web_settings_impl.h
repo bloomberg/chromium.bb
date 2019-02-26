@@ -51,7 +51,6 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   bool ShrinksViewportContentToFit() const override;
   bool ViewportEnabled() const override;
   void SetAccelerated2dCanvasMSAASampleCount(int) override;
-  void SetAcceleratedCompositingEnabled(bool) override;
   void SetAutoplayPolicy(AutoplayPolicy) override;
   void SetPreferCompositingToLCDTextEnabled(bool) override;
   void SetAccessibilityPasswordValuesEnabled(bool) override;
@@ -138,7 +137,7 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetAvailableHoverTypes(int) override;
   void SetPrimaryHoverType(HoverType) override;
   void SetPreferHiddenVolumeControls(bool) override;
-  void SetShouldThrottlePushState(bool) override;
+  void SetShouldProtectAgainstIpcFlooding(bool) override;
   void SetRenderVSyncNotificationEnabled(bool) override;
   void SetReportScreenSizeInPhysicalPixelsQuirk(bool) override;
   void SetRubberBandingOnCompositorThread(bool) override;
@@ -204,6 +203,8 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetDoNotUpdateSelectionOnMutatingSelectionRange(bool) override;
   void SetMediaDownloadInProductHelpEnabled(bool) override;
   void SetLowPriorityIframesThreshold(WebEffectiveConnectionType) override;
+
+  void SetLazyLoadEnabled(bool) override;
 
   // TODO(rajendrant): Remove these lazyload distance threshold settings for
   // frames and images, once the values are finalized from the experiment.

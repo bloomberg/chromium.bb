@@ -4,10 +4,9 @@
 
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_bottom_toolbar.h"
 
-#include "base/i18n/rtl.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_constants.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_new_tab_button.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -51,22 +50,10 @@
   UIButton* trailingButton = [UIButton buttonWithType:UIButtonTypeSystem];
   trailingButton.translatesAutoresizingMaskIntoConstraints = NO;
 
-  if (@available(iOS 11, *)) {
-    leadingButton.contentHorizontalAlignment =
-        UIControlContentHorizontalAlignmentLeading;
-    trailingButton.contentHorizontalAlignment =
-        UIControlContentHorizontalAlignmentTrailing;
-  } else if (base::i18n::IsRTL()) {
-    leadingButton.contentHorizontalAlignment =
-        UIControlContentHorizontalAlignmentRight;
-    trailingButton.contentHorizontalAlignment =
-        UIControlContentHorizontalAlignmentLeft;
-  } else {
-    leadingButton.contentHorizontalAlignment =
-        UIControlContentHorizontalAlignmentLeft;
-    trailingButton.contentHorizontalAlignment =
-        UIControlContentHorizontalAlignmentRight;
-  }
+  leadingButton.contentHorizontalAlignment =
+      UIControlContentHorizontalAlignmentLeading;
+  trailingButton.contentHorizontalAlignment =
+      UIControlContentHorizontalAlignmentTrailing;
 
   trailingButton.tintColor = UIColorFromRGB(kTabGridToolbarTextButtonColor);
   TabGridNewTabButton* centerButton = [TabGridNewTabButton

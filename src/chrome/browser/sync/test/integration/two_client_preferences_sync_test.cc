@@ -7,7 +7,7 @@
 #include "base/guid.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
-#include "build/build_config.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/sync/test/integration/feature_toggler.h"
 #include "chrome/browser/sync/test/integration/preferences_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
@@ -51,11 +51,22 @@ IN_PROC_BROWSER_TEST_P(TwoClientPreferencesSyncTest, E2E_ENABLED(Sanity)) {
   ASSERT_TRUE(StringPrefMatchChecker(prefs::kHomePage).Wait());
   const std::string new_home_page = base::StringPrintf(
       "https://example.com/%s", base::GenerateGUID().c_str());
+
+  base::HistogramTester histogram_tester;
   ChangeStringPref(0, prefs::kHomePage, new_home_page);
   ASSERT_TRUE(StringPrefMatchChecker(prefs::kHomePage).Wait());
   for (int i = 0; i < num_clients(); ++i) {
     ASSERT_EQ(new_home_page, GetPrefs(i)->GetString(prefs::kHomePage));
   }
+
+  EXPECT_EQ(0, histogram_tester.GetBucketCount(
+                   "Sync.ModelTypeEntityChange3.PREFERENCE",
+                   /*REMOTE_INITIAL_UPDATE=*/5));
+  // Client 0 may or may not see its own reflection during the test, but at
+  // least client 1 should have received one update.
+  EXPECT_NE(0, histogram_tester.GetBucketCount(
+                   "Sync.ModelTypeEntityChange3.PREFERENCE",
+                   /*REMOTE_NON_INITIAL_UPDATE=*/4));
 }
 
 IN_PROC_BROWSER_TEST_P(TwoClientPreferencesSyncTest, E2E_ENABLED(BooleanPref)) {
@@ -128,17 +139,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientPreferencesSyncTest,
   ASSERT_TRUE(ListPrefMatchChecker(prefs::kURLsToRestoreOnStartup).Wait());
 }
 
-// Disabled due to flakiness on Chrome OS: https://crbug.com/873902.
-#if defined(OS_CHROMEOS)
-#define MAYBE_SingleClientEnabledEncryptionBothChanged \
-  DISABLED_SingleClientEnabledEncryptionBothChanged
-#else
-#define MAYBE_SingleClientEnabledEncryptionBothChanged \
-  SingleClientEnabledEncryptionBothChanged
-#endif
-IN_PROC_BROWSER_TEST_P(
-    TwoClientPreferencesSyncTest,
-    E2E_ENABLED(MAYBE_SingleClientEnabledEncryptionBothChanged)) {
+IN_PROC_BROWSER_TEST_P(TwoClientPreferencesSyncTest,
+                       E2E_ENABLED(SingleClientEnabledEncryptionBothChanged)) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(BooleanPrefMatchChecker(prefs::kHomePageIsNewTabPage).Wait());
   ASSERT_TRUE(StringPrefMatchChecker(prefs::kHomePage).Wait());

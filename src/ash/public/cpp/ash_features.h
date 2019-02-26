@@ -26,11 +26,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kDragAppsInTabletMode;
 // https://crbug.com/823769.
 ASH_PUBLIC_EXPORT extern const base::Feature kDragTabsInTabletMode;
 
-// Enables the keyboard shortcut viewer.
-// TODO(wutao): Remove this after the feature is fully launched.
-// https://crbug.com/755448.
-ASH_PUBLIC_EXPORT extern const base::Feature kKeyboardShortcutViewer;
-
 // Enables the keyboard shortcut viewer mojo app.
 // TODO(msw): Remove this after the feature is fully launched.
 // https://crbug.com/841020.
@@ -48,27 +43,32 @@ ASH_PUBLIC_EXPORT extern const base::Feature kLockScreenInlineReply;
 ASH_PUBLIC_EXPORT extern const base::Feature
     kLockScreenHideSensitiveNotificationsSupport;
 
-// Enables new message list view. https://crbug.com/769219
-ASH_PUBLIC_EXPORT extern const base::Feature kNewMessageListView;
+// Enables media session service integration. If this is enabled, accelerators
+// that are associated with media playback will be handled by the media
+// session service.
+// TODO(beccahughes): Remove after launch. (https://crbug.com/894255)
+ASH_PUBLIC_EXPORT extern const base::Feature kMediaSessionAccelerators;
 
-// Enables the new wallpaper picker.
-// TODO(wzang): Remove this after the feature is fully launched.
-// https://crbug.com/777293.
-ASH_PUBLIC_EXPORT extern const base::Feature kNewWallpaperPicker;
+// Enables the media session notification. If this is enabled, we will show
+// a notification that shows the currently playing media with controls.
+// TODO(beccahughes): Remove after launch. (https://crbug.com/897836)
+ASH_PUBLIC_EXPORT extern const base::Feature kMediaSessionNotification;
 
 // Enables the Night Light feature.
 ASH_PUBLIC_EXPORT extern const base::Feature kNightLight;
 
+// Enabled notification expansion animation.
+ASH_PUBLIC_EXPORT extern const base::Feature kNotificationExpansionAnimation;
+
 // Enables notification scroll bar in UnifiedSystemTray.
 ASH_PUBLIC_EXPORT extern const base::Feature kNotificationScrollBar;
 
-// Enables swipe to close in overview mode.
-// TODO(sammiequon): Remove this after the feature is fully launched.
-// https://crbug.com/828646.
-ASH_PUBLIC_EXPORT extern const base::Feature kOverviewSwipeToClose;
+// Enables rounded corners for the Picture-in-picture window.
+ASH_PUBLIC_EXPORT extern const base::Feature kPipRoundedCorners;
 
-// Enables new system menu.
-ASH_PUBLIC_EXPORT extern const base::Feature kSystemTrayUnified;
+// Enables displaying separate network icons for different networks types.
+// https://crbug.com/902409
+ASH_PUBLIC_EXPORT extern const base::Feature kSeparateNetworkIcons;
 
 // Enables trilinear filtering.
 ASH_PUBLIC_EXPORT extern const base::Feature kTrilinearFiltering;
@@ -76,15 +76,19 @@ ASH_PUBLIC_EXPORT extern const base::Feature kTrilinearFiltering;
 // Enables running an external binary which provides lock screen authentication.
 ASH_PUBLIC_EXPORT extern const base::Feature kUnlockWithExternalBinary;
 
+// Enables the ContainedShell feature.
+ASH_PUBLIC_EXPORT extern const base::Feature kContainedShell;
+
 // Enables views login.
 ASH_PUBLIC_EXPORT extern const base::Feature kViewsLogin;
 
 // Enables using the BluetoothSystem Mojo interface for Bluetooth operations.
 ASH_PUBLIC_EXPORT extern const base::Feature kUseBluetoothSystemInAsh;
 
-ASH_PUBLIC_EXPORT bool IsDockedMagnifierEnabled();
+// Enables the Supervised User Deprecation notices.
+ASH_PUBLIC_EXPORT extern const base::Feature kSupervisedUserDeprecationNotice;
 
-ASH_PUBLIC_EXPORT bool IsKeyboardShortcutViewerEnabled();
+ASH_PUBLIC_EXPORT bool IsDockedMagnifierEnabled();
 
 ASH_PUBLIC_EXPORT bool IsKeyboardShortcutViewerAppEnabled();
 
@@ -94,19 +98,21 @@ ASH_PUBLIC_EXPORT bool IsLockScreenInlineReplyEnabled();
 
 ASH_PUBLIC_EXPORT bool IsLockScreenHideSensitiveNotificationsSupported();
 
-ASH_PUBLIC_EXPORT bool IsNewMessageListViewEnabled();
-
-ASH_PUBLIC_EXPORT bool IsNewWallpaperPickerEnabled();
-
 ASH_PUBLIC_EXPORT bool IsNightLightEnabled();
+
+ASH_PUBLIC_EXPORT bool IsNotificationExpansionAnimationEnabled();
 
 ASH_PUBLIC_EXPORT bool IsNotificationScrollBarEnabled();
 
-ASH_PUBLIC_EXPORT bool IsSystemTrayUnifiedEnabled();
+ASH_PUBLIC_EXPORT bool IsPipRoundedCornersEnabled();
+
+ASH_PUBLIC_EXPORT bool IsSeparateNetworkIconsEnabled();
 
 ASH_PUBLIC_EXPORT bool IsTrilinearFilteringEnabled();
 
 ASH_PUBLIC_EXPORT bool IsViewsLoginEnabled();
+
+ASH_PUBLIC_EXPORT bool IsSupervisedUserDeprecationNoticeEnabled();
 
 }  // namespace features
 }  // namespace ash

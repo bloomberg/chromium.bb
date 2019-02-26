@@ -202,15 +202,6 @@ TEST_F(WebStateObserverBridgeTest, DidChangeVisibleSecurityState) {
             [observer_ didChangeVisibleSecurityStateInfo]->web_state);
 }
 
-// Tests |webStateDidSuppressDialog:| forwarding.
-TEST_F(WebStateObserverBridgeTest, DidSuppressDialog) {
-  ASSERT_FALSE([observer_ didSuppressDialogInfo]);
-
-  observer_bridge_.DidSuppressDialog(&test_web_state_);
-  ASSERT_TRUE([observer_ didSuppressDialogInfo]);
-  EXPECT_EQ(&test_web_state_, [observer_ didSuppressDialogInfo]->web_state);
-}
-
 // Tests |webState:didUpdateFaviconURLCandidates:| forwarding.
 TEST_F(WebStateObserverBridgeTest, FaviconUrlUpdated) {
   ASSERT_FALSE([observer_ updateFaviconUrlCandidatesInfo]);

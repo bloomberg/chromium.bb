@@ -162,7 +162,6 @@ Polymer({
       } else {
         const parentFolderNode = this.getParentFolderNode_();
         if (parentFolderNode.itemId != ROOT_NODE_ID) {
-          parentFolderNode.selectFolder_();
           parentFolderNode.getFocusTarget().focus();
         }
       }
@@ -202,7 +201,6 @@ Polymer({
 
     // The root node is not navigable.
     if (newFocusFolderNode.itemId != ROOT_NODE_ID) {
-      newFocusFolderNode.selectFolder_();
       newFocusFolderNode.getFocusTarget().focus();
     }
   },

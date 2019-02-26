@@ -378,8 +378,8 @@ void CoordinatorImpl::PerformNextQueuedGlobalMemoryDump() {
     auto client_identity = kv.second->identity;
     const base::ProcessId pid = GetProcessIdForClientIdentity(client_identity);
     if (pid == base::kNullProcessId) {
-      VLOG(1) << "Couldn't find a PID for client \"" << client_identity.name()
-              << "." << client_identity.instance() << "\"";
+      VLOG(1) << "Couldn't find a PID for client "
+              << client_identity.ToString();
       continue;
     }
     clients.emplace_back(kv.second->client.get(), pid, kv.second->process_type);

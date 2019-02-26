@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_PAGE_LAUNCHING_PROCESS_STATE_H_
 
 #include "build/build_config.h"
-#include "third_party/blink/common/common_export.h"
+#include "third_party/blink/public/common/common_export.h"
 
 namespace blink {
 

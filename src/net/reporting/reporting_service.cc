@@ -67,6 +67,7 @@ class ReportingServiceImpl : public ReportingService {
       return;
     }
 
+    DVLOG(1) << "Received Reporting policy for " << url.GetOrigin();
     ReportingHeaderParser::ParseHeader(context_.get(), url,
                                        std::move(header_value));
   }
@@ -81,10 +82,6 @@ class ReportingServiceImpl : public ReportingService {
   void RemoveAllBrowsingData(int data_type_mask) override {
     ReportingBrowsingDataRemover::RemoveAllBrowsingData(context_->cache(),
                                                         data_type_mask);
-  }
-
-  int GetUploadDepth(const URLRequest& request) override {
-    return context_->uploader()->GetUploadDepth(request);
   }
 
   const ReportingPolicy& GetPolicy() const override {

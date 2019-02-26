@@ -15,6 +15,7 @@ import subprocess
 import sys
 import time
 
+from devil import base_error
 
 logger = logging.getLogger(__name__)
 
@@ -157,7 +158,7 @@ def _ValidateAndLogCommand(args, cwd, shell):
     cwd = ''
   else:
     cwd = ':' + cwd
-  logger.info('[host]%s> %s', cwd, args)
+  logger.debug('[host]%s> %s', cwd, args)
   return args
 
 
@@ -231,11 +232,11 @@ def GetCmdStatusOutputAndError(args, cwd=None, shell=False, env=None):
   return (pipe.returncode, stdout, stderr)
 
 
-class TimeoutError(Exception):
+class TimeoutError(base_error.BaseError):
   """Module-specific timeout exception."""
 
   def __init__(self, output=None):
-    super(TimeoutError, self).__init__()
+    super(TimeoutError, self).__init__('Timeout')
     self._output = output
 
   @property

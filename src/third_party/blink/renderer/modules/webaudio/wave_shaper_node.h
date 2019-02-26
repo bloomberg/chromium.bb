@@ -52,8 +52,10 @@ class WaveShaperNode final : public AudioNode {
  public:
   static WaveShaperNode* Create(BaseAudioContext&, ExceptionState&);
   static WaveShaperNode* Create(BaseAudioContext*,
-                                const WaveShaperOptions&,
+                                const WaveShaperOptions*,
                                 ExceptionState&);
+
+  explicit WaveShaperNode(BaseAudioContext&);
 
   // setCurve() is called on the main thread.
   void setCurve(NotShared<DOMFloat32Array>, ExceptionState&);
@@ -64,8 +66,6 @@ class WaveShaperNode final : public AudioNode {
   String oversample() const;
 
  private:
-  explicit WaveShaperNode(BaseAudioContext&);
-
   void SetCurveImpl(const float* curve_data,
                     unsigned curve_length,
                     ExceptionState&);

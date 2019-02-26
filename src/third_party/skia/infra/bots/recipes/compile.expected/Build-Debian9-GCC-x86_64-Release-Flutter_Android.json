@@ -45,7 +45,7 @@
       "--output_json",
       "/path/to/tmp/json",
       "--revision",
-      "src/flutter@origin/master",
+      "src/flutter@origin/skia-master",
       "--revision",
       "src/third_party/skia@abc123"
     ],
@@ -62,7 +62,7 @@
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"did_run\": true, @@@",
       "@@@STEP_LOG_LINE@json.output@  \"fixed_revisions\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"src/flutter\": \"origin/master\", @@@",
+      "@@@STEP_LOG_LINE@json.output@    \"src/flutter\": \"origin/skia-master\", @@@",
       "@@@STEP_LOG_LINE@json.output@    \"src/third_party/skia\": \"abc123\"@@@",
       "@@@STEP_LOG_LINE@json.output@  }, @@@",
       "@@@STEP_LOG_LINE@json.output@  \"manifest\": {@@@",
@@ -223,8 +223,29 @@
     ]
   },
   {
-    "name": "$result",
-    "recipe_result": null,
-    "status_code": 0
+    "cmd": [
+      "python",
+      "-u",
+      "\nimport shutil\nimport sys\n\nsrc = sys.argv[1]\ndst = sys.argv[2]\n\nshutil.copyfile(src, dst)\n",
+      "[START_DIR]/cache/work/flutter/src/out/android_release/lib.stripped/libflutter.so",
+      "[START_DIR]/[SWARM_OUT_DIR]/libflutter_stripped.so"
+    ],
+    "infra_step": true,
+    "name": "copy stripped library",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@python.inline@@@@",
+      "@@@STEP_LOG_LINE@python.inline@import shutil@@@",
+      "@@@STEP_LOG_LINE@python.inline@import sys@@@",
+      "@@@STEP_LOG_LINE@python.inline@@@@",
+      "@@@STEP_LOG_LINE@python.inline@src = sys.argv[1]@@@",
+      "@@@STEP_LOG_LINE@python.inline@dst = sys.argv[2]@@@",
+      "@@@STEP_LOG_LINE@python.inline@@@@",
+      "@@@STEP_LOG_LINE@python.inline@shutil.copyfile(src, dst)@@@",
+      "@@@STEP_LOG_END@python.inline@@@"
+    ]
+  },
+  {
+    "jsonResult": null,
+    "name": "$result"
   }
 ]

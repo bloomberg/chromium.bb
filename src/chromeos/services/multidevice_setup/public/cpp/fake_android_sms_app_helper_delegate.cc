@@ -14,13 +14,14 @@ FakeAndroidSmsAppHelperDelegate::FakeAndroidSmsAppHelperDelegate() {}
 
 FakeAndroidSmsAppHelperDelegate::~FakeAndroidSmsAppHelperDelegate() = default;
 
-void FakeAndroidSmsAppHelperDelegate::InstallAndroidSmsApp() {
+void FakeAndroidSmsAppHelperDelegate::SetUpAndroidSmsApp() {
   // TODO(jlklein): Add error simulation when error codes are added to the API.
   has_installed_ = true;
+  is_default_to_persist_cookie_set_ = true;
 }
 
-void FakeAndroidSmsAppHelperDelegate::InstallAndLaunchAndroidSmsApp() {
-  InstallAndroidSmsApp();
+void FakeAndroidSmsAppHelperDelegate::SetUpAndLaunchAndroidSmsApp() {
+  SetUpAndroidSmsApp();
   has_launched_ = true;
 }
 
@@ -32,9 +33,18 @@ bool FakeAndroidSmsAppHelperDelegate::HasLaunchedApp() {
   return has_launched_;
 }
 
+bool FakeAndroidSmsAppHelperDelegate::IsDefaultToPersistCookieSet() {
+  return is_default_to_persist_cookie_set_;
+}
+
 void FakeAndroidSmsAppHelperDelegate::Reset() {
   has_installed_ = false;
   has_launched_ = false;
+  is_default_to_persist_cookie_set_ = false;
+}
+
+void FakeAndroidSmsAppHelperDelegate::TearDownAndroidSmsApp() {
+  is_default_to_persist_cookie_set_ = false;
 }
 
 }  // namespace multidevice_setup

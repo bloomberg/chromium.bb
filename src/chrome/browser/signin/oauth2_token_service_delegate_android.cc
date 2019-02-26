@@ -242,7 +242,7 @@ std::vector<std::string> OAuth2TokenServiceDelegateAndroid::GetAccounts() {
   ScopedJavaLocalRef<jobjectArray> j_accounts =
       Java_OAuth2TokenService_getAccounts(env);
   // TODO(fgorski): We may decide to filter out some of the accounts.
-  base::android::AppendJavaStringArrayToStringVector(env, j_accounts.obj(),
+  base::android::AppendJavaStringArrayToStringVector(env, j_accounts,
                                                      &accounts);
   return accounts;
 }
@@ -253,7 +253,7 @@ OAuth2TokenServiceDelegateAndroid::GetSystemAccountNames() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobjectArray> j_accounts =
       Java_OAuth2TokenService_getSystemAccountNames(env);
-  base::android::AppendJavaStringArrayToStringVector(env, j_accounts.obj(),
+  base::android::AppendJavaStringArrayToStringVector(env, j_accounts,
                                                      &account_names);
   return account_names;
 }

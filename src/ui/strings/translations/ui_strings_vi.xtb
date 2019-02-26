@@ -30,16 +30,19 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Chọn &amp;tất cả</translation>
+<translation id="1938451708255335766">Để điều chỉnh mật độ hiển thị cửa sổ, hãy khởi động lại ứng dụng.</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 ngày}other{# ngày}}</translation>
 <translation id="2148716181193084225">Hôm nay</translation>
 <translation id="2168039046890040389">Page Up</translation>
 <translation id="2190355936436201913">(trống)</translation>
+<translation id="2192232475740621500">Sử dụng mật độ thấp</translation>
 <translation id="219905428774326614">Trình khởi chạy, tất cả ứng dụng</translation>
 <translation id="2267918077332197517">Chặn tất cả thông báo từ trang web này</translation>
 <translation id="2289052229480071835">Nhấn vào các mục tiêu cảm ứng trên màn hình của bạn.</translation>
 <translation id="2295140143284145483">Khảo sát</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/giây</translation>
 <translation id="24452542372838207">Mở rộng thông báo</translation>
+<translation id="2445449901874883781">Sử dụng mật độ cao</translation>
 <translation id="2482878487686419369">Thông báo</translation>
 <translation id="2497284189126895209">Tất cả Tệp tin</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -60,6 +63,7 @@
 <translation id="3234408098842461169">Phím mũi tên Xuống</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 ngày}other{# ngày}}</translation>
 <translation id="335581015389089642">Giọng nói</translation>
+<translation id="3479552764303398839">Không phải bây giờ</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Còn 1 ngày}other{Còn # ngày}}</translation>
 <translation id="3618849550573277856">Tra cứu “<ph name="LOOKUP_STRING" />”</translation>
 <translation id="364720409959344976">Chọn thư mục để tải lên</translation>
@@ -99,6 +103,7 @@
 <translation id="5613020302032141669">Mũi tên trái</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 phút}other{# phút}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 ngày và }other{# ngày và }}</translation>
+<translation id="5895138241574237353">Khởi động lại</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{Còn 1 giây}other{Còn # giây}}</translation>
 <translation id="5941711191222866238">Thu nhỏ</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 giờ}other{# giờ}}</translation>

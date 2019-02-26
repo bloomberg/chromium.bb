@@ -12,14 +12,14 @@ namespace blink {
 
 {% for feature in features %}
 {% if feature.origin_trial_feature_name %}
-const char OriginTrials::k{{feature.name}}TrialName[] = "{{feature.origin_trial_feature_name}}";
+const char origin_trials::k{{feature.name}}TrialName[] = "{{feature.origin_trial_feature_name}}";
 {% endif %}
 {% endfor %}
 
 {% for feature in features %}
 {% if feature.origin_trial_feature_name %}
 
-bool OriginTrials::{{feature.name}}Enabled(const ExecutionContext* executionContext) {
+bool origin_trials::{{feature.name}}Enabled(const ExecutionContext* executionContext) {
   if (RuntimeEnabledFeatures::{{feature.name}}EnabledByRuntimeFlag())
     return true;
 {% if feature.origin_trial_os %}
@@ -29,6 +29,11 @@ bool OriginTrials::{{feature.name}}Enabled(const ExecutionContext* executionCont
  defined(OS_{{os | upper}})
 {%- endfor %}
 {% endif %}
+
+{%- for depends_on in feature.depends_on %}
+  if (!RuntimeEnabledFeatures::{{depends_on}}Enabled())
+    return false;
+{%- endfor %}
 
   const OriginTrialContext* context = OriginTrialContext::From(executionContext);
   if (!context) return false;
@@ -52,7 +57,7 @@ bool OriginTrials::{{feature.name}}Enabled(const ExecutionContext* executionCont
 {% endif %}
 {% endfor %}
 
-Vector<AtomicString> OriginTrials::GetImpliedTrials(const String& trial_name) {
+Vector<AtomicString> origin_trials::GetImpliedTrials(const String& trial_name) {
 {% for implied_by_name, implied_list in implied_origin_trial_features.items() %}
   if (trial_name == k{{implied_by_name}}TrialName) {
     Vector<AtomicString> implied_trials = {

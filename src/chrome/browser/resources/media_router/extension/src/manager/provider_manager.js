@@ -161,6 +161,12 @@ mr.ProviderManager = class extends mr.Module {
      */
     this.dialogType = '';
 
+    /**
+     * Indicates whether to use mirroring service for cast mirroring.
+     * @private {boolean}
+     */
+    this.useMirroringService_ = false;
+
     mr.ProviderManager.exportProperties_(this);
   }
 
@@ -187,7 +193,7 @@ mr.ProviderManager = class extends mr.Module {
     const moduleId = this.mirrorServiceModules_.get(serviceName);
     return mr.Module.load(moduleId).then(module => {
       let service = /** @type {!mr.mirror.Service} */ (module);
-      service.initialize(this);
+      service.initialize(this, this.useMirroringService_);
       return service;
     });
   }
@@ -231,6 +237,9 @@ mr.ProviderManager = class extends mr.Module {
     this.registerAllProviders(providers, config);
     if (config && config.use_views_dialog !== undefined) {
       this.dialogType = config.use_views_dialog ? 'Views' : 'WebUI';
+    }
+    if (config && config.use_mirroring_service !== undefined) {
+      this.useMirroringService_ = config.use_mirroring_service;
     }
 
     mr.PersistentDataManager.register(this);
@@ -1141,6 +1150,33 @@ mr.ProviderManager = class extends mr.Module {
     }
     return this.mediaRouterService_.getMediaSinkServiceStatus();
   }
+
+  /**
+   * @override
+   */
+  getMirroringServiceHostForTab(targetTabId, request) {
+    this.mediaRouterService_.getMirroringServiceHostForTab(
+        targetTabId, request);
+  }
+
+  /**
+   * @override
+   */
+  getMirroringServiceHostForDesktop(initiatorTabId, desktopStreamId, request) {
+    this.mediaRouterService_.getMirroringServiceHostForDesktop(
+        initiatorTabId, desktopStreamId, request);
+  }
+
+
+  /**
+   * @override
+   */
+  getMirroringServiceHostForOffscreenTab(
+      presentationUrl, presentationId, request) {
+    this.mediaRouterService_.getMirroringServiceHostForOffscreenTab(
+        presentationUrl, presentationId, request);
+  }
+
 
   /**
    * Exports methods for Mojo handler.

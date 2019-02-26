@@ -7,7 +7,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* WebkitTextCombine::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -20,5 +20,5 @@ const CSSValue* WebkitTextCombine::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.TextCombine());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

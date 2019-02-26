@@ -35,14 +35,15 @@ class SimplifyMarkupCommand final : public CompositeEditCommand {
   static SimplifyMarkupCommand* Create(Document& document,
                                        Node* first_node,
                                        Node* node_after_last) {
-    return new SimplifyMarkupCommand(document, first_node, node_after_last);
+    return MakeGarbageCollected<SimplifyMarkupCommand>(document, first_node,
+                                                       node_after_last);
   }
+
+  SimplifyMarkupCommand(Document&, Node* first_node, Node* node_after_last);
 
   void Trace(blink::Visitor*) override;
 
  private:
-  SimplifyMarkupCommand(Document&, Node* first_node, Node* node_after_last);
-
   void DoApply(EditingState*) override;
   int PruneSubsequentAncestorsToRemove(
       HeapVector<Member<ContainerNode>>& nodes_to_remove,

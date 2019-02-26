@@ -8,7 +8,6 @@
 #include "base/metrics/user_metrics_action.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
-#import "ios/chrome/browser/ui/commands/external_search_commands.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_constants.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
@@ -62,10 +61,6 @@
 - (void)keyboardAccessoryCameraSearchTouchUp {
   base::RecordAction(base::UserMetricsAction("MobileCustomRowCameraSearch"));
   [self.dispatcher showQRScanner];
-}
-
-- (void)keyboardAccessoryExternalSearchTouchUp {
-  [self.dispatcher launchExternalSearch];
 }
 
 - (void)keyPressed:(NSString*)title {

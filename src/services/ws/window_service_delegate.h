@@ -23,7 +23,6 @@
 namespace aura {
 class PropertyConverter;
 class Window;
-class WindowTreeHost;
 }  // namespace aura
 
 namespace gfx {
@@ -117,11 +116,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceDelegate {
   // remote client. A return value of null (the default) results in disallowing
   // injection.
   virtual ui::SystemInputInjector* GetSystemInputInjector();
-
-  // Returns the WindowTreeHost for the specified display id, null if not a
-  // valid display.
-  virtual aura::WindowTreeHost* GetWindowTreeHostForDisplayId(
-      int64_t display_id);
 
   // Returns the topmost visible window at the location in screen coordinate,
   // excluding |ignore|. |real_topmost| is updated to the topmost visible window

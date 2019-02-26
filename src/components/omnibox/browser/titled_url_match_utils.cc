@@ -72,13 +72,11 @@ AutocompleteMatch TitledUrlMatchToAutocompleteMatch(
 
   bool match_in_scheme = false;
   bool match_in_subdomain = false;
-  bool match_after_host = false;
-  AutocompleteMatch::GetMatchComponents(
-      url, titled_url_match.url_match_positions, &match_in_scheme,
-      &match_in_subdomain, &match_after_host);
+  AutocompleteMatch::GetMatchComponents(url,
+                                        titled_url_match.url_match_positions,
+                                        &match_in_scheme, &match_in_subdomain);
   auto format_types = AutocompleteMatch::GetFormatTypes(
-      input.parts().scheme.len > 0 || match_in_scheme, match_in_subdomain,
-      match_after_host);
+      input.parts().scheme.len > 0 || match_in_scheme, match_in_subdomain);
 
   std::vector<size_t> offsets = TitledUrlMatch::OffsetsFromMatchPositions(
       titled_url_match.url_match_positions);

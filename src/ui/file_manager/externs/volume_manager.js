@@ -114,6 +114,13 @@ VolumeManager.prototype.findByDevicePath = function(devicePath) {};
 VolumeManager.prototype.whenVolumeInfoReady = function(volumeId) {};
 
 /**
+ * Obtains the default display root entry.
+ * @param {function(DirectoryEntry)|function(FilesAppDirEntry)} callback
+ * Callback passed the default display root.
+ */
+VolumeManager.prototype.getDefaultDisplayRoot = function(callback) {};
+
+/**
  * Event object which is dispached with 'externally-unmounted' event.
  * @constructor
  * @extends {Event}

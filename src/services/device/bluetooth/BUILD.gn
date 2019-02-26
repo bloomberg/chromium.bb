@@ -37,6 +37,7 @@ source_set("bluetooth_system_tests") {
 
   deps = [
     ":bluetooth_system",
+    "//base/test:test_support",
     "//dbus",
     "//device/bluetooth",
     "//net",

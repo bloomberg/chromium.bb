@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
@@ -32,21 +31,6 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
 
   const AppBannerUiDelegateAndroid* GetUiDelegate() const;
 
-  // Called when the AppBannerInfoBarAndroid's button needs to be updated.
-  void UpdateInstallState(JNIEnv* env,
-                          const base::android::JavaParamRef<jobject>& obj);
-
-  // Called when the native app installation Intent has been handled and focus
-  // has been returned to Chrome.
-  void OnInstallIntentReturned(JNIEnv* env,
-                               const base::android::JavaParamRef<jobject>& obj,
-                               jboolean jis_installing);
-
-  // Called when the native app InstallerDelegate task has finished.
-  void OnInstallFinished(JNIEnv* env,
-                         const base::android::JavaParamRef<jobject>& obj,
-                         jboolean success);
-
   // ConfirmInfoBarDelegate:
   bool Accept() override;
   base::string16 GetMessageText() const override;
@@ -55,8 +39,6 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
   AppBannerInfoBarDelegateAndroid(
       std::unique_ptr<AppBannerUiDelegateAndroid> ui_delegate);
 
-  void CreateJavaDelegate(JNIEnv* env);
-
   // ConfirmInfoBarDelegate:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   void InfoBarDismissed() override;
@@ -64,7 +46,6 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
   bool LinkClicked(WindowOpenDisposition disposition) override;
 
   std::unique_ptr<AppBannerUiDelegateAndroid> ui_delegate_;
-  base::android::ScopedJavaGlobalRef<jobject> java_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AppBannerInfoBarDelegateAndroid);
 };

@@ -11,6 +11,22 @@
  */
 let NuxOnboardingModules;
 
+/**
+ * This list needs to be updated if new modules need to be supported in the
+ * onboarding flow.
+ * @const {!Set<string>}
+ */
+const MODULES_WHITELIST = new Set(
+    ['nux-email', 'nux-google-apps', 'nux-set-as-default', 'signin-view']);
+
+/**
+ * This list needs to be updated if new modules that need step-indicators are
+ * added.
+ * @const {!Set<string>}
+ */
+const MODULES_NEEDING_INDICATOR =
+    new Set(['nux-email', 'nux-google-apps', 'nux-set-as-default']);
+
 Polymer({
   is: 'welcome-app',
 
@@ -19,11 +35,46 @@ Polymer({
   /** @private {?welcome.Routes} */
   currentRoute_: null,
 
-  // TODO(scottchen): instead of dummy, get data from finch/load time data.
+  /** @private {?PromiseResolver} */
+  defaultCheckPromise_: null,
+
   /** @private {NuxOnboardingModules} */
   modules_: {
-    'new-user': ['h1', 'h1', 'h1'],
-    'returning-user': ['h3', 'h3'],
+    'new-user': loadTimeData.getString('newUserModules').split(','),
+    'returning-user': loadTimeData.getString('returningUserModules').split(','),
+  },
+
+  properties: {
+    /** @private */
+    modulesInitialized_: {
+      type: Boolean,
+      // Default to false so view-manager is hidden until views are initialized.
+      value: false,
+    },
+  },
+
+  /** @override */
+  ready: function() {
+    this.defaultCheckPromise_ = new PromiseResolver();
+
+    /** @param {!nux.DefaultBrowserInfo} status */
+    const defaultCheckCallback = status => {
+      if (status.isDefault || !status.canBeDefault) {
+        this.defaultCheckPromise_.resolve(false);
+      } else if (!status.isDisabledByPolicy && !status.isUnknownError) {
+        this.defaultCheckPromise_.resolve(true);
+      } else {  // Unknown error.
+        this.defaultCheckPromise_.resolve(false);
+      }
+
+      cr.removeWebUIListener(defaultCheckCallback);
+    };
+
+    cr.addWebUIListener('browser-default-state-changed', defaultCheckCallback);
+
+    // TODO(scottchen): convert the request to cr.sendWithPromise
+    // (see https://crbug.com/874520#c6).
+    nux.NuxSetAsDefaultProxyImpl.getInstance().requestDefaultBrowserState();
   },
 
   /**
@@ -32,46 +83,79 @@ Polymer({
    * @private
    */
   onRouteChange: function(route, step) {
+    const setStep = () => {
+      // If the specified step doesn't exist, that means there are no more
+      // steps. In that case, replace this page with NTP.
+      if (!this.$$(`#step-${step}`)) {
+        welcome.WelcomeBrowserProxyImpl.getInstance().goToNewTabPage(
+            /* replace */ true);
+      } else {  // Otherwise, go to the chosen step of that route.
+        // At this point, views are ready to be shown.
+        this.modulesInitialized_ = true;
+        this.$.viewManager.switchView(
+            `step-${step}`, 'fade-in', 'no-animation');
+      }
+    };
+
     // If the route changed, initialize the steps of modules for that route.
     if (this.currentRoute_ != route) {
-      this.currentRoute_ = route;
-      this.initializeModules(this.modules_[route]);
+      this.initializeModules(route).then(setStep);
+    } else {
+      setStep();
     }
 
-    // If the specified step doesn't exist, that means there are no more steps.
-    // In that case, go to NTP.
-    if (!this.$$('#step-' + step))
-      welcome.WelcomeBrowserProxyImpl.getInstance().goToNewTabPage();
-    else  // Otherwise, go to the chosen step of that route.
-      this.$.viewManager.switchView('step-' + step);
+    this.currentRoute_ = route;
   },
 
-  /** @param {!Array<string>} modules Array of valid DOM element names. */
-  initializeModules: function(modules) {
-    assert(this.currentRoute_);  // this.currentRoute_ should be set by now.
-    if (this.currentRoute_ == welcome.Routes.LANDING)
-      return;
-    assert(modules);  // modules should be defined if on a valid route.
-
+  /** @param {welcome.Routes} route */
+  initializeModules: function(route) {
     // Remove all views except landing.
     this.$.viewManager
         .querySelectorAll('[slot="view"]:not([id="step-landing"])')
-        .forEach(element => {
-          element.remove();
+        .forEach(element => element.remove());
+
+    // If it is on landing route, end here.
+    if (route == welcome.Routes.LANDING) {
+      return Promise.resolve();
+    }
+
+    let modules = this.modules_[route];
+    assert(modules);  // Modules should be defined if on a valid route.
+
+    // Wait until the default-browser state and bookmark visibility are known
+    // before anything initializes.
+    return Promise
+        .all([
+          this.defaultCheckPromise_.promise,
+          nux.BookmarkBarManager.getInstance().initialized,
+        ])
+        .then(args => {
+          const canSetDefault = args[0];
+          if (!canSetDefault)
+            modules = modules.filter(module => module != 'nux-set-as-default');
+
+          const indicatorElementCount = modules.reduce((count, module) => {
+            return count += MODULES_NEEDING_INDICATOR.has(module) ? 1 : 0;
+          }, 0);
+
+          let indicatorActiveCount = 0;
+          modules.forEach((elementTagName, index) => {
+            // Makes sure the module specified by the feature configuration is
+            // whitelisted.
+            assert(MODULES_WHITELIST.has(elementTagName));
+
+            const element = document.createElement(elementTagName);
+            element.id = 'step-' + (index + 1);
+            element.setAttribute('slot', 'view');
+            this.$.viewManager.appendChild(element);
+
+            if (MODULES_NEEDING_INDICATOR.has(elementTagName)) {
+              element.indicatorModel = {
+                total: indicatorElementCount,
+                active: indicatorActiveCount++,
+              };
+            }
+          });
         });
-
-    modules.forEach((elementTagName, index) => {
-      const element = document.createElement(elementTagName);
-      element.id = 'step-' + (index + 1);
-      element.setAttribute('slot', 'view');
-      this.$.viewManager.appendChild(element);
-
-      // TODO(scottchen): this is just to test routing works. Actual elements
-      //     will have buttons that are responsible for navigation.
-      element.textContent = index + 1;
-      element.addEventListener('click', () => {
-        this.navigateToNextStep();
-      });
-    });
   },
 });

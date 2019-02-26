@@ -13,6 +13,7 @@
 #include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/http/http_response_headers.h"
+#include "services/network/public/cpp/cors/cors.h"
 
 namespace content {
 
@@ -23,7 +24,7 @@ MockBackgroundFetchDelegate::TestResponse::~TestResponse() = default;
 MockBackgroundFetchDelegate::TestResponseBuilder::TestResponseBuilder(
     int response_code)
     : response_(std::make_unique<TestResponse>()) {
-  response_->succeeded_ = (response_code >= 200 && response_code < 300);
+  response_->succeeded = network::cors::IsOkStatus(response_code);
   response_->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       "HTTP/1.1 " + std::to_string(response_code));
 }
@@ -45,6 +46,12 @@ MockBackgroundFetchDelegate::TestResponseBuilder::SetResponseData(
     std::string data) {
   DCHECK(response_);
   response_->data.swap(data);
+  return *this;
+}
+
+MockBackgroundFetchDelegate::TestResponseBuilder&
+MockBackgroundFetchDelegate::TestResponseBuilder::MakeIndefinitelyPending() {
+  response_->pending = true;
   return *this;
 }
 
@@ -78,7 +85,8 @@ void MockBackgroundFetchDelegate::DownloadUrl(
     const std::string& method,
     const GURL& url,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
-    const net::HttpRequestHeaders& headers) {
+    const net::HttpRequestHeaders& headers,
+    bool has_request_body) {
   // TODO(delphick): Currently we just disallow re-using GUIDs but later when we
   // use the DownloadService, we should signal StartResult::UNEXPECTED_GUID.
   DCHECK(seen_guids_.find(guid) == seen_guids_.end());
@@ -94,6 +102,9 @@ void MockBackgroundFetchDelegate::DownloadUrl(
 
   std::unique_ptr<TestResponse> test_response = std::move(url_iter->second);
   url_responses_.erase(url_iter);
+
+  if (test_response->pending)
+    return;
 
   PostAbortCheckingTask(
       job_unique_id,
@@ -118,7 +129,7 @@ void MockBackgroundFetchDelegate::DownloadUrl(
                        test_response->data.size()));
   }
 
-  if (test_response->succeeded_) {
+  if (test_response->succeeded) {
     base::FilePath response_path;
     if (!temp_directory_.IsValid()) {
       CHECK(temp_directory_.CreateUniqueTempDir());
@@ -161,10 +172,17 @@ void MockBackgroundFetchDelegate::Abort(const std::string& job_unique_id) {
   aborted_jobs_.insert(job_unique_id);
 }
 
+void MockBackgroundFetchDelegate::MarkJobComplete(
+    const std::string& job_unique_id) {
+  completed_jobs_.insert(job_unique_id);
+}
+
 void MockBackgroundFetchDelegate::UpdateUI(
     const std::string& job_unique_id,
     const base::Optional<std::string>& title,
-    const base::Optional<SkBitmap>& icon) {}
+    const base::Optional<SkBitmap>& icon) {
+  client()->OnUIUpdated(job_unique_id);
+}
 
 void MockBackgroundFetchDelegate::RegisterResponse(
     const GURL& url,

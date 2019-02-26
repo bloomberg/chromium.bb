@@ -13,14 +13,13 @@
 #include "chrome/browser/vr/model/color_scheme.h"
 #include "chrome/browser/vr/model/controller_model.h"
 #include "chrome/browser/vr/model/hosted_platform_ui.h"
+#include "chrome/browser/vr/model/location_bar_state.h"
 #include "chrome/browser/vr/model/modal_prompt_type.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
 #include "chrome/browser/vr/model/platform_toast.h"
 #include "chrome/browser/vr/model/reticle_model.h"
 #include "chrome/browser/vr/model/speech_recognition_model.h"
-#include "chrome/browser/vr/model/tab_model.h"
 #include "chrome/browser/vr/model/text_input_info.h"
-#include "chrome/browser/vr/model/toolbar_state.h"
 #include "chrome/browser/vr/model/ui_mode.h"
 #include "chrome/browser/vr/model/web_vr_model.h"
 #include "chrome/browser/vr/vr_ui_export.h"
@@ -39,7 +38,7 @@ struct VR_UI_EXPORT Model {
   bool incognito = false;
   bool can_navigate_back = false;
   bool can_navigate_forward = false;
-  ToolbarState toolbar_state;
+  LocationBarState location_bar_state;
   std::vector<OmniboxSuggestion> omnibox_suggestions;
   SpeechRecognitionModel speech;
   const ColorScheme& color_scheme() const;
@@ -54,12 +53,10 @@ struct VR_UI_EXPORT Model {
   bool supports_selection = true;
   bool needs_keyboard_update = false;
   bool overflow_menu_enabled = false;
+  bool regular_tabs_open = false;
+  bool incognito_tabs_open = false;
   bool standalone_vr_device = false;
   bool menu_button_long_pressed = false;
-  std::vector<TabModel> regular_tabs;
-  std::vector<TabModel> incognito_tabs;
-  bool incognito_tabs_view_selected = false;
-  bool create_tabs_view = false;
   float floor_height = 0.0f;
   bool use_new_incognito_strings = false;
 

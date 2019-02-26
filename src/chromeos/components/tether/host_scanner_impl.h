@@ -14,6 +14,7 @@
 #include "base/observer_list.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/components/tether/host_scanner.h"
 #include "chromeos/components/tether/host_scanner_operation.h"
 #include "chromeos/components/tether/notification_presenter.h"
@@ -37,7 +38,6 @@ class SecureChannelClient;
 
 namespace tether {
 
-class BleConnectionManager;
 class ConnectionPreserver;
 class DeviceIdTetherNetworkGuidMap;
 class GmsCoreNotificationsStateTrackerImpl;
@@ -66,7 +66,6 @@ class HostScannerImpl : public HostScanner,
       NetworkStateHandler* network_state_handler,
       session_manager::SessionManager* session_manager,
       TetherHostFetcher* tether_host_fetcher,
-      BleConnectionManager* connection_manager,
       HostScanDevicePrioritizer* host_scan_device_prioritizer,
       TetherHostResponseRecorder* tether_host_response_recorder,
       GmsCoreNotificationsStateTrackerImpl*
@@ -122,7 +121,6 @@ class HostScannerImpl : public HostScanner,
   NetworkStateHandler* network_state_handler_;
   session_manager::SessionManager* session_manager_;
   TetherHostFetcher* tether_host_fetcher_;
-  BleConnectionManager* connection_manager_;
   HostScanDevicePrioritizer* host_scan_device_prioritizer_;
   TetherHostResponseRecorder* tether_host_response_recorder_;
   GmsCoreNotificationsStateTrackerImpl* gms_core_notifications_state_tracker_;

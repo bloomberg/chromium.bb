@@ -6,8 +6,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_PROPERTY_HANDLE_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_property_name.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
-#include "third_party/blink/renderer/core/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
@@ -69,6 +70,13 @@ class CORE_EXPORT PropertyHandle {
   const QualifiedName& SvgAttribute() const {
     DCHECK(IsSVGAttribute());
     return *svg_attribute_;
+  }
+
+  CSSPropertyName GetCSSPropertyName() const {
+    if (handle_type_ == kHandleCSSCustomProperty)
+      return CSSPropertyName(property_name_);
+    DCHECK(IsCSSProperty() || IsPresentationAttribute());
+    return CSSPropertyName(css_property_->PropertyID());
   }
 
  private:

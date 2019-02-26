@@ -37,7 +37,8 @@ MojoInterfaceInterceptor* MojoInterfaceInterceptor::Create(
     return nullptr;
   }
 
-  return new MojoInterfaceInterceptor(context, interface_name, process_scope);
+  return MakeGarbageCollected<MojoInterfaceInterceptor>(context, interface_name,
+                                                        process_scope);
 }
 
 MojoInterfaceInterceptor::~MojoInterfaceInterceptor() = default;
@@ -58,11 +59,11 @@ void MojoInterfaceInterceptor::start(ExceptionState& exception_state) {
       StringUTF8Adaptor(interface_name_).AsStringPiece().as_string();
 
   if (process_scope_) {
-    service_manager::Identity identity(
+    service_manager::Connector* connector = Platform::Current()->GetConnector();
+    auto browser_service_filter = service_manager::ServiceFilter::ByName(
         Platform::Current()->GetBrowserServiceName());
-    service_manager::Connector::TestApi test_api(
-        Platform::Current()->GetConnector());
-    if (test_api.HasBinderOverride(identity, interface_name)) {
+    if (connector->HasBinderOverrideForTesting(browser_service_filter,
+                                               interface_name)) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kInvalidModificationError,
           "Interface " + interface_name_ +
@@ -71,8 +72,8 @@ void MojoInterfaceInterceptor::start(ExceptionState& exception_state) {
     }
 
     started_ = true;
-    test_api.OverrideBinderForTesting(
-        identity, interface_name,
+    connector->OverrideBinderForTesting(
+        browser_service_filter, interface_name,
         WTF::BindRepeating(&MojoInterfaceInterceptor::OnInterfaceRequest,
                            WrapWeakPersistent(this)));
     return;
@@ -103,12 +104,12 @@ void MojoInterfaceInterceptor::stop() {
       StringUTF8Adaptor(interface_name_).AsStringPiece().as_string();
 
   if (process_scope_) {
-    service_manager::Identity identity(
+    auto filter = service_manager::ServiceFilter::ByName(
         Platform::Current()->GetBrowserServiceName());
     service_manager::Connector::TestApi test_api(
         Platform::Current()->GetConnector());
-    DCHECK(test_api.HasBinderOverride(identity, interface_name));
-    test_api.ClearBinderOverride(identity, interface_name);
+    DCHECK(test_api.HasBinderOverride(filter, interface_name));
+    test_api.ClearBinderOverride(filter, interface_name);
     return;
   }
 
@@ -125,7 +126,7 @@ void MojoInterfaceInterceptor::Trace(blink::Visitor* visitor) {
 }
 
 const AtomicString& MojoInterfaceInterceptor::InterfaceName() const {
-  return EventTargetNames::MojoInterfaceInterceptor;
+  return event_target_names::kMojoInterfaceInterceptor;
 }
 
 ExecutionContext* MojoInterfaceInterceptor::GetExecutionContext() const {

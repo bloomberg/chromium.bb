@@ -12,7 +12,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool WebkitMaskBoxImage::ParseShorthand(
     bool important,
@@ -26,32 +26,37 @@ bool WebkitMaskBoxImage::ParseShorthand(
   CSSValue* outset = nullptr;
   CSSValue* repeat = nullptr;
 
-  if (!CSSParsingUtils::ConsumeBorderImageComponents(
+  if (!css_parsing_utils::ConsumeBorderImageComponents(
           range, context, source, slice, width, outset, repeat,
-          CSSParsingUtils::DefaultFill::kFill)) {
+          css_parsing_utils::DefaultFill::kFill)) {
     return false;
   }
 
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyWebkitMaskBoxImageSource, CSSPropertyWebkitMaskBoxImage,
       source ? *source : *CSSInitialValue::Create(), important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
-  CSSPropertyParserHelpers::AddProperty(
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
+  css_property_parser_helpers::AddProperty(
       CSSPropertyWebkitMaskBoxImageSlice, CSSPropertyWebkitMaskBoxImage,
       slice ? *slice : *CSSInitialValue::Create(), important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
-  CSSPropertyParserHelpers::AddProperty(
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
+  css_property_parser_helpers::AddProperty(
       CSSPropertyWebkitMaskBoxImageWidth, CSSPropertyWebkitMaskBoxImage,
       width ? *width : *CSSInitialValue::Create(), important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
-  CSSPropertyParserHelpers::AddProperty(
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
+  css_property_parser_helpers::AddProperty(
       CSSPropertyWebkitMaskBoxImageOutset, CSSPropertyWebkitMaskBoxImage,
       outset ? *outset : *CSSInitialValue::Create(), important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
-  CSSPropertyParserHelpers::AddProperty(
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
+  css_property_parser_helpers::AddProperty(
       CSSPropertyWebkitMaskBoxImageRepeat, CSSPropertyWebkitMaskBoxImage,
       repeat ? *repeat : *CSSInitialValue::Create(), important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
 
   return true;
 }
@@ -66,5 +71,5 @@ const CSSValue* WebkitMaskBoxImage::CSSValueFromComputedStyleInternal(
                                                     style);
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink

@@ -10,7 +10,6 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
-#include "google_apis/gaia/gaia_constants.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -57,7 +56,7 @@ class UbertokenFetcherTest : public testing::Test {
 
   void SetUp() override {
     fetcher_ = std::make_unique<UbertokenFetcher>(&token_service_, &consumer_,
-                                                  GaiaConstants::kChromeSource,
+                                                  gaia::GaiaSource::kChrome,
                                                   test_shared_loader_factory_);
   }
 

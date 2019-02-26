@@ -15,6 +15,7 @@
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/display/unified_mouse_warp_controller.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/keyboard/ash_keyboard_controller.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
@@ -44,7 +45,6 @@
 #include "services/ws/window_tree.h"
 #include "services/ws/window_tree_test_helper.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/property_converter.h"
@@ -80,11 +80,6 @@ class AshEventGeneratorDelegate
     display::Screen* screen = display::Screen::GetScreen();
     display::Display display = screen->GetDisplayNearestPoint(point_in_screen);
     return Shell::GetRootWindowForDisplayId(display.id())->GetHost()->window();
-  }
-
-  aura::client::ScreenPositionClient* GetScreenPositionClient(
-      const aura::Window* window) const override {
-    return aura::client::GetScreenPositionClient(window->GetRootWindow());
   }
 
   ui::EventDispatchDetails DispatchKeyEventToIME(ui::EventTarget* target,
@@ -196,11 +191,6 @@ void AshTestBase::TearDown() {
 // static
 Shelf* AshTestBase::GetPrimaryShelf() {
   return Shell::GetPrimaryRootWindowController()->shelf();
-}
-
-// static
-SystemTray* AshTestBase::GetPrimarySystemTray() {
-  return Shell::Get()->GetPrimarySystemTray();
 }
 
 // static
@@ -478,6 +468,17 @@ void AshTestBase::BlockUserSession(UserSessionBlockReason block_reason) {
 void AshTestBase::UnblockUserSession() {
   CreateUserSessions(1);
   GetSessionControllerClient()->UnlockScreen();
+}
+
+void AshTestBase::SetTouchKeyboardEnabled(bool enabled) {
+  auto flag = keyboard::mojom::KeyboardEnableFlag::kTouchEnabled;
+  if (enabled)
+    Shell::Get()->ash_keyboard_controller()->SetEnableFlag(flag);
+  else
+    Shell::Get()->ash_keyboard_controller()->ClearEnableFlag(flag);
+  // Ensure that observer methods and mojo calls between AshKeyboardController,
+  // keyboard::KeyboardController, and AshKeyboardUI complete.
+  base::RunLoop().RunUntilIdle();
 }
 
 void AshTestBase::DisableIME() {

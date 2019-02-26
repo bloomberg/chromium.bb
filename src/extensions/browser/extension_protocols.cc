@@ -129,6 +129,14 @@ class GeneratedBackgroundPageJob : public net::URLRequestSimpleJob {
     return net::OK;
   }
 
+  // base::PowerObserver override:
+  void OnSuspend() override {
+    // Unlike URLRequestJob, don't suspend active requests here. Requests for
+    // generated background pages need not be suspended when the system
+    // suspends. This is not needed for URLRequestExtensionJob since it inherits
+    // from URLRequestFileJob, which has the same behavior.
+  }
+
   void GetResponseInfo(net::HttpResponseInfo* info) override {
     *info = response_info_;
   }

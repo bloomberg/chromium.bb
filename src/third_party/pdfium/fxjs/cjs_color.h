@@ -9,7 +9,7 @@
 
 #include <vector>
 
-#include "fpdfsdk/pwl/cpwl_wnd.h"
+#include "fxjs/cjs_object.h"
 #include "fxjs/js_define.h"
 
 class CJS_Color final : public CJS_Object {

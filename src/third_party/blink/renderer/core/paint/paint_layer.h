@@ -59,6 +59,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_stacking_node_iterator.h"
 #include "third_party/blink/renderer/core/paint/paint_result.h"
 #include "third_party/blink/renderer/platform/graphics/compositing_reasons.h"
+#include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
 #include "third_party/blink/renderer/platform/graphics/squashing_disallowed_reasons.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
@@ -292,10 +293,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   void SetSizeHackForLayoutTreeAsText(const LayoutSize& size) { size_ = size; }
 
-  // For LayoutTreeAsText
-  LayoutRect RectIgnoringNeedsPositionUpdate() const {
-    return LayoutRect(LocationInternal(), size_);
-  }
 #if DCHECK_IS_ON()
   bool NeedsPositionUpdate() const { return needs_position_update_; }
 #endif
@@ -531,12 +528,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // Returns nullptr if this PaintLayer is not composited.
   GraphicsLayer* GraphicsLayerBacking(const LayoutObject* = nullptr) const;
 
-  // TODO(yigu): PaintLayerScrollableArea::computeNeedsCompositedScrolling
-  // calls this method to obtain main thread scrolling reasons due to
-  // background paint location. Once the cases get handled on compositor the
-  // parameter "reasons" could be removed.
-  BackgroundPaintLocation GetBackgroundPaintLocation(
-      uint32_t* reasons = nullptr) const;
   // NOTE: If you are using hasCompositedLayerMapping to determine the state of
   // compositing for this layer, (and not just to do bookkeeping related to the
   // mapping like, say, allocating or deallocating a mapping), then you may have
@@ -607,7 +598,10 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   // Returns true if background phase is painted opaque in the given rect.
   // The query rect is given in local coordinates.
-  bool BackgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const;
+  // if |should_check_children| is true, checks non-composited stacking children
+  // recursively to see if they paint opaquely over the rect.
+  bool BackgroundIsKnownToBeOpaqueInRect(const LayoutRect&,
+                                         bool should_check_children) const;
 
   bool ContainsDirtyOverlayScrollbars() const {
     return contains_dirty_overlay_scrollbars_;
@@ -624,6 +618,9 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   void SetFilterOnEffectNodeDirty() { filter_on_effect_node_dirty_ = true; }
   void ClearFilterOnEffectNodeDirty() { filter_on_effect_node_dirty_ = false; }
 
+  void UpdateCompositorFilterOperationsForBackdropFilter(
+      CompositorFilterOperations&) const;
+
   void SetIsUnderSVGHiddenContainer(bool value) {
     is_under_svg_hidden_container_ = value;
   }
@@ -633,7 +630,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       const;
 
   bool PaintsWithFilters() const;
-  bool PaintsWithBackdropFilters() const;
   FilterEffect* LastFilterEffect() const;
 
   // Maps "forward" to determine which pixels in a destination rect are
@@ -758,6 +754,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     IntRect unclipped_absolute_bounding_box;
 
     const LayoutBoxModelObject* clipping_container = nullptr;
+
+    bool is_under_video = false;
   };
 
   void SetNeedsCompositingInputsUpdate();
@@ -825,6 +823,9 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   }
   const PaintLayer* MaskAncestor() const {
     return GetAncestorDependentCompositingInputs().mask_ancestor;
+  }
+  bool IsUnderVideo() const {
+    return GetAncestorDependentCompositingInputs().is_under_video;
   }
   bool HasDescendantWithClipPath() const {
     DCHECK(!needs_descendant_dependent_flags_update_);
@@ -917,7 +918,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   void AppendSingleFragmentIgnoringPagination(
       PaintLayerFragments&,
       const PaintLayer* root_layer,
-      const LayoutRect* dirty_rect,
+      const CullRect* cull_rect,
       OverlayScrollbarClipBehavior = kIgnorePlatformOverlayScrollbarSize,
       ShouldRespectOverflowClipType = kRespectOverflowClip,
       const LayoutPoint* offset_from_root = nullptr,
@@ -926,7 +927,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   void CollectFragments(
       PaintLayerFragments&,
       const PaintLayer* root_layer,
-      const LayoutRect* dirty_rect,
+      const CullRect* cull_rect,
       OverlayScrollbarClipBehavior = kIgnorePlatformOverlayScrollbarSize,
       ShouldRespectOverflowClipType = kRespectOverflowClip,
       const LayoutPoint* offset_from_root = nullptr,
@@ -965,12 +966,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // shouldCreateSubsequence() in PaintLayerPainter.cpp for the cases we use
   // subsequence when painting a PaintLayer.
 
-  LayoutRect PreviousPaintDirtyRect() const {
-    return previous_paint_dirty_rect_;
-  }
-  void SetPreviousPaintDirtyRect(const LayoutRect& rect) {
-    previous_paint_dirty_rect_ = rect;
-  }
+  CullRect PreviousCullRect() const { return previous_cull_rect_; }
+  void SetPreviousCullRect(const CullRect& rect) { previous_cull_rect_ = rect; }
 
   PaintResult PreviousPaintResult() const {
     return static_cast<PaintResult>(previous_paint_result_);
@@ -1341,7 +1338,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   std::unique_ptr<PaintLayerStackingNode> stacking_node_;
 
-  LayoutRect previous_paint_dirty_rect_;
+  CullRect previous_cull_rect_;
 
   std::unique_ptr<PaintLayerRareData> rare_data_;
 

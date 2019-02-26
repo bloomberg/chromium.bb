@@ -1087,6 +1087,10 @@ HttpCache::ParallelWritingPattern HttpCache::CanTransactionJoinExistingWriters(
     return PARALLEL_WRITING_NOT_JOIN_RANGE;
   if (transaction->mode() == Transaction::READ)
     return PARALLEL_WRITING_NOT_JOIN_READ_ONLY;
+  if (transaction->GetResponseInfo()->headers &&
+      transaction->GetResponseInfo()->headers->GetContentLength() >
+          disk_cache_->MaxFileSize())
+    return PARALLEL_WRITING_NOT_JOIN_TOO_BIG_FOR_CACHE;
   return PARALLEL_WRITING_JOIN;
 }
 

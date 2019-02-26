@@ -8,16 +8,18 @@
 
 namespace nux {
 
-extern const base::Feature kNuxEmailFeature{"NuxEmail",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kNuxOnboardingFeature{"NuxOnboarding",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
-extern const base::Feature kNuxGoogleAppsFeature{
-    "NuxGoogleApps", base::FEATURE_DISABLED_BY_DEFAULT};
-
-extern const base::Feature kNuxOnboardingFeature{
-    "NuxOnboarding", base::FEATURE_DISABLED_BY_DEFAULT};
-
-extern const char kNuxEmailUrl[] = "chrome://welcome/email";
-extern const char kNuxGoogleAppsUrl[] = "chrome://welcome/apps";
+// The value of these FeatureParam values should be a comma-delimited list
+// of element names whitelisted in the MODULES_WHITELIST list, defined in
+// chrome/browser/resources/welcome/onboarding_welcome/welcome_app.js
+const base::FeatureParam<std::string> kNuxOnboardingNewUserModules{
+    &kNuxOnboardingFeature, "new-user-modules",
+    "nux-email,nux-google-apps,nux-set-as-default,signin-view"};
+const base::FeatureParam<std::string> kNuxOnboardingReturningUserModules{
+    &kNuxOnboardingFeature, "returning-user-modules", "nux-set-as-default"};
+const base::FeatureParam<bool> kNuxOnboardingShowEmailInterstitial{
+    &kNuxOnboardingFeature, "show-email-interstitial", true};
 
 }  // namespace nux

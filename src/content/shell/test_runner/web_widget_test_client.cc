@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "content/shell/test_runner/event_sender.h"
-#include "content/shell/test_runner/mock_screen_orientation_client.h"
 #include "content/shell/test_runner/test_interfaces.h"
 #include "content/shell/test_runner/test_runner.h"
 #include "content/shell/test_runner/test_runner_for_specific_view.h"
@@ -58,21 +57,6 @@ void WebWidgetTestClient::AnimateNow() {
         animation_requires_raster);
 }
 
-blink::WebScreenInfo WebWidgetTestClient::GetScreenInfo() {
-  blink::WebScreenInfo screen_info;
-  MockScreenOrientationClient* mock_client =
-      test_runner()->getMockScreenOrientationClient();
-  if (mock_client->IsDisabled()) {
-    // Indicate to WebViewTestProxy that there is no test/mock info.
-    screen_info.orientation_type = blink::kWebScreenOrientationUndefined;
-  } else {
-    // Override screen orientation information with mock data.
-    screen_info.orientation_type = mock_client->CurrentOrientationType();
-    screen_info.orientation_angle = mock_client->CurrentOrientationAngle();
-  }
-  return screen_info;
-}
-
 bool WebWidgetTestClient::RequestPointerLock() {
   return view_test_runner()->RequestPointerLock();
 }
@@ -90,11 +74,11 @@ void WebWidgetTestClient::SetToolTipText(const blink::WebString& text,
   test_runner()->setToolTipText(text);
 }
 
-void WebWidgetTestClient::StartDragging(blink::WebReferrerPolicy policy,
+void WebWidgetTestClient::StartDragging(network::mojom::ReferrerPolicy policy,
                                         const blink::WebDragData& data,
                                         blink::WebDragOperationsMask mask,
                                         const SkBitmap& drag_image,
-                                        const blink::WebPoint& image_offset) {
+                                        const gfx::Point& image_offset) {
   test_runner()->setDragImage(drag_image);
 
   // When running a test, we need to fake a drag drop operation otherwise

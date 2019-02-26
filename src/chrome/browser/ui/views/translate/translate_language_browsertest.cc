@@ -100,8 +100,6 @@ class TranslateLanguageBrowserTest : public InProcessBrowserTest {
     embedded_test_server()->StartAcceptingConnections();
   }
 
-  void TearDown() override { InProcessBrowserTest::TearDown(); }
-
   void TearDownOnMainThread() override {
     EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
     InProcessBrowserTest::TearDownOnMainThread();
@@ -142,7 +140,7 @@ class TranslateLanguageBrowserTest : public InProcessBrowserTest {
   }
 
   language::UrlLanguageHistogram* GetUrlLanguageHistogram() {
-    const content::WebContents* const web_contents =
+    content::WebContents* const web_contents =
         browser_->tab_strip_model()->GetActiveWebContents();
     EXPECT_TRUE(web_contents);
     content::BrowserContext* const browser_context =

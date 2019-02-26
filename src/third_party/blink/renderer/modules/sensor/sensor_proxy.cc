@@ -13,7 +13,7 @@
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/modules/sensor/sensor_provider_proxy.h"
 #include "third_party/blink/renderer/modules/sensor/sensor_reading_remapper.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
@@ -67,7 +67,7 @@ void SensorProxy::ReportError(DOMExceptionCode code, const String& message) {
 namespace {
 
 uint16_t GetScreenOrientationAngleForPage(Page* page) {
-  if (LayoutTestSupport::IsRunningLayoutTest()) {
+  if (WebTestSupport::IsRunningWebTest()) {
     // Simulate that the device is turned 90 degrees on the right.
     // 'orientation_angle' must be 270 as per
     // https://w3c.github.io/screen-orientation/#dfn-update-the-orientation-information.

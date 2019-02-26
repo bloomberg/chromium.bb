@@ -38,8 +38,8 @@
 #include "third_party/blink/renderer/modules/webaudio/default_audio_destination_node.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/waitable_event.h"
-#include "third_party/blink/renderer/platform/web_task_runner.h"
 
 namespace blink {
 
@@ -51,19 +51,20 @@ ScriptProcessorHandler::ScriptProcessorHandler(
     unsigned number_of_output_channels)
     : AudioHandler(kNodeTypeScriptProcessor, node, sample_rate),
       double_buffer_index_(0),
-      input_buffers_(new HeapVector<Member<AudioBuffer>>()),
-      output_buffers_(new HeapVector<Member<AudioBuffer>>()),
+      input_buffers_(MakeGarbageCollected<HeapVector<Member<AudioBuffer>>>()),
+      output_buffers_(MakeGarbageCollected<HeapVector<Member<AudioBuffer>>>()),
       buffer_size_(buffer_size),
       buffer_read_write_index_(0),
       number_of_input_channels_(number_of_input_channels),
       number_of_output_channels_(number_of_output_channels),
-      internal_input_bus_(AudioBus::Create(number_of_input_channels,
-                                           AudioUtilities::kRenderQuantumFrames,
-                                           false)) {
+      internal_input_bus_(
+          AudioBus::Create(number_of_input_channels,
+                           audio_utilities::kRenderQuantumFrames,
+                           false)) {
   // Regardless of the allowed buffer sizes, we still need to process at the
   // granularity of the AudioNode.
-  if (buffer_size_ < AudioUtilities::kRenderQuantumFrames)
-    buffer_size_ = AudioUtilities::kRenderQuantumFrames;
+  if (buffer_size_ < audio_utilities::kRenderQuantumFrames)
+    buffer_size_ = audio_utilities::kRenderQuantumFrames;
 
   DCHECK_LE(number_of_input_channels, BaseAudioContext::MaxNumberOfChannels());
 
@@ -124,7 +125,7 @@ void ScriptProcessorHandler::Initialize() {
   AudioHandler::Initialize();
 }
 
-void ScriptProcessorHandler::Process(size_t frames_to_process) {
+void ScriptProcessorHandler::Process(uint32_t frames_to_process) {
   // Discussion about inputs and outputs:
   // As in other AudioNodes, ScriptProcessorNode uses an AudioBus for its input
   // and output (see inputBus and outputBus below).  Additionally, there is a
@@ -333,7 +334,7 @@ double ScriptProcessorHandler::LatencyTime() const {
   return std::numeric_limits<double>::infinity();
 }
 
-void ScriptProcessorHandler::SetChannelCount(unsigned long channel_count,
+void ScriptProcessorHandler::SetChannelCount(unsigned channel_count,
                                              ExceptionState& exception_state) {
   DCHECK(IsMainThread());
   BaseAudioContext::GraphAutoLocker locker(Context());
@@ -498,7 +499,7 @@ ScriptProcessorNode* ScriptProcessorNode::Create(
       return nullptr;
   }
 
-  ScriptProcessorNode* node = new ScriptProcessorNode(
+  ScriptProcessorNode* node = MakeGarbageCollected<ScriptProcessorNode>(
       context, context.sampleRate(), buffer_size, number_of_input_channels,
       number_of_output_channels);
 
@@ -511,7 +512,7 @@ ScriptProcessorNode* ScriptProcessorNode::Create(
   return node;
 }
 
-size_t ScriptProcessorNode::bufferSize() const {
+uint32_t ScriptProcessorNode::bufferSize() const {
   return static_cast<ScriptProcessorHandler&>(Handler()).BufferSize();
 }
 
@@ -522,7 +523,7 @@ bool ScriptProcessorNode::HasPendingActivity() const {
 
   // If |onaudioprocess| event handler is defined, the node should not be
   // GCed even if it is out of scope.
-  if (HasEventListeners(EventTypeNames::audioprocess))
+  if (HasEventListeners(event_type_names::kAudioprocess))
     return true;
 
   return false;

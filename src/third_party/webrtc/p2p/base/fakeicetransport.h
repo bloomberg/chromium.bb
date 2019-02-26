@@ -23,8 +23,13 @@ namespace cricket {
 
 class FakeIceTransport : public IceTransportInternal {
  public:
-  explicit FakeIceTransport(const std::string& name, int component)
-      : name_(name), component_(component) {}
+  explicit FakeIceTransport(const std::string& name,
+                            int component,
+                            rtc::Thread* network_thread = nullptr)
+      : name_(name),
+        component_(component),
+        network_thread_(network_thread ? network_thread
+                                       : rtc::Thread::Current()) {}
   ~FakeIceTransport() override {
     if (dest_ && dest_->dest_ == this) {
       dest_->dest_ = nullptr;
@@ -115,6 +120,15 @@ class FakeIceTransport : public IceTransportInternal {
   }
 
   webrtc::IceTransportState GetIceTransportState() const override {
+    if (connection_count_ == 0) {
+      return had_connection_ ? webrtc::IceTransportState::kFailed
+                             : webrtc::IceTransportState::kNew;
+    }
+
+    if (connection_count_ == 1) {
+      return webrtc::IceTransportState::kCompleted;
+    }
+
     return webrtc::IceTransportState::kConnected;
   }
 
@@ -230,6 +244,8 @@ class FakeIceTransport : public IceTransportInternal {
   }
   void SetNetworkRoute(absl::optional<rtc::NetworkRoute> network_route) {
     network_route_ = network_route;
+    network_thread_->Invoke<void>(
+        RTC_FROM_HERE, [this] { SignalNetworkRouteChanged(network_route_); });
   }
 
  private:
@@ -257,7 +273,7 @@ class FakeIceTransport : public IceTransportInternal {
     if (dest_) {
       last_sent_packet_ = packet;
       dest_->SignalReadPacket(dest_, packet.data<char>(), packet.size(),
-                              rtc::CreatePacketTime(0), 0);
+                              rtc::TimeMicros(), 0);
     }
   }
 
@@ -286,6 +302,7 @@ class FakeIceTransport : public IceTransportInternal {
   absl::optional<rtc::NetworkRoute> network_route_;
   std::map<rtc::Socket::Option, int> socket_options_;
   rtc::CopyOnWriteBuffer last_sent_packet_;
+  rtc::Thread* const network_thread_;
 };
 
 }  // namespace cricket

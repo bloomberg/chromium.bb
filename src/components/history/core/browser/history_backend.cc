@@ -421,19 +421,6 @@ bool HistoryBackend::IsUntypedIntranetHost(const GURL& url) {
   return (registry_length == 0) && !db_->IsTypedHost(host, /*scheme=*/nullptr);
 }
 
-TopHostsList HistoryBackend::TopHosts(size_t num_hosts) const {
-  if (!db_)
-    return TopHostsList();
-
-  auto top_hosts = db_->TopHosts(num_hosts);
-
-  host_ranks_.clear();
-  int i = 0;
-  for (const auto& host_count : top_hosts)
-    host_ranks_[host_count.first] = i++;
-  return top_hosts;
-}
-
 OriginCountAndLastVisitMap HistoryBackend::GetCountsAndLastVisitForOrigins(
     const std::set<GURL>& origins) const {
   if (!db_)
@@ -462,11 +449,6 @@ OriginCountAndLastVisitMap HistoryBackend::GetCountsAndLastVisitForOrigins(
   }
 
   return origin_count_map;
-}
-
-int HistoryBackend::HostRankIfAvailable(const GURL& url) const {
-  auto it = host_ranks_.find(HostForTopHosts(url));
-  return it != host_ranks_.end() ? it->second : kMaxTopHosts;
 }
 
 void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
@@ -814,12 +796,6 @@ void HistoryBackend::CloseAllDatabases() {
   }
 }
 
-void HistoryBackend::RecordTopHostsMetrics(const GURL& url) {
-  // Convert index from 0-based to 1-based.
-  UMA_HISTOGRAM_EXACT_LINEAR("History.TopHostsVisitsByRank",
-                             HostRankIfAvailable(url) + 1, kMaxTopHosts + 2);
-}
-
 std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
     const GURL& url,
     Time time,
@@ -829,11 +805,6 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
     VisitSource visit_source,
     bool should_increment_typed_count,
     base::Optional<base::string16> title) {
-  if (!host_ranks_.empty() && visit_source == SOURCE_BROWSED &&
-      (transition & ui::PAGE_TRANSITION_CHAIN_END)) {
-    RecordTopHostsMetrics(url);
-  }
-
   // See if this URL is already in the DB.
   URLRow url_info(url);
   URLID url_id = db_->GetRowForURL(url, &url_info);
@@ -944,7 +915,7 @@ void HistoryBackend::AddPagesWithDetails(const URLRows& urls,
   //
   // TODO(brettw) bug 1140015: Add an "add page" notification so the history
   // views can keep in sync.
-  NotifyURLsModified(changed_urls);
+  NotifyURLsModified(changed_urls, /*is_from_expiration=*/false);
   ScheduleCommit();
 }
 
@@ -990,7 +961,7 @@ void HistoryBackend::SetPageTitle(const GURL& url,
   // Broadcast notifications for any URLs that have changed. This will
   // update the in-memory database and the InMemoryURLIndex.
   if (!changed_urls.empty()) {
-    NotifyURLsModified(changed_urls);
+    NotifyURLsModified(changed_urls, /*is_from_expiration=*/false);
     ScheduleCommit();
   }
 }
@@ -1066,7 +1037,7 @@ size_t HistoryBackend::UpdateURLs(const URLRows& urls) {
   // will update the in-memory database and the InMemoryURLIndex.
   size_t num_updated_records = changed_urls.size();
   if (num_updated_records) {
-    NotifyURLsModified(changed_urls);
+    NotifyURLsModified(changed_urls, /*is_from_expiration=*/false);
     ScheduleCommit();
   }
   return num_updated_records;
@@ -2670,12 +2641,13 @@ void HistoryBackend::NotifyURLVisited(ui::PageTransition transition,
     delegate_->NotifyURLVisited(transition, row, redirects, visit_time);
 }
 
-void HistoryBackend::NotifyURLsModified(const URLRows& rows) {
+void HistoryBackend::NotifyURLsModified(const URLRows& changed_urls,
+                                        bool is_from_expiration) {
   for (HistoryBackendObserver& observer : observers_)
-    observer.OnURLsModified(this, rows);
+    observer.OnURLsModified(this, changed_urls, is_from_expiration);
 
   if (delegate_)
-    delegate_->NotifyURLsModified(rows);
+    delegate_->NotifyURLsModified(changed_urls);
 }
 
 void HistoryBackend::NotifyURLsDeleted(DeletionInfo deletion_info) {

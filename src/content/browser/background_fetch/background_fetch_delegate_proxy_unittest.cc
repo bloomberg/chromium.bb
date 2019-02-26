@@ -49,7 +49,8 @@ class FakeBackgroundFetchDelegate : public BackgroundFetchDelegate {
                    const std::string& method,
                    const GURL& url,
                    const net::NetworkTrafficAnnotationTag& traffic_annotation,
-                   const net::HttpRequestHeaders& headers) override {
+                   const net::HttpRequestHeaders& headers,
+                   bool has_request_body) override {
     if (!client())
       return;
 
@@ -68,9 +69,12 @@ class FakeBackgroundFetchDelegate : public BackgroundFetchDelegate {
                          base::Unretained(this), job_unique_id, guid));
     }
   }
+
   void Abort(const std::string& job_unique_id) override {
     aborted_jobs_.insert(job_unique_id);
   }
+
+  void MarkJobComplete(const std::string& job_unique_id) override {}
 
   void UpdateUI(const std::string& job_unique_id,
                 const base::Optional<std::string>& title,
@@ -129,8 +133,12 @@ class FakeController : public BackgroundFetchDelegateProxy::Controller {
     request_completed_ = true;
   }
 
-  void Abort(
+  void AbortFromDelegate(
       blink::mojom::BackgroundFetchFailureReason reason_to_abort) override {}
+
+  void GetUploadData(
+      blink::mojom::FetchAPIRequestPtr request,
+      BackgroundFetchDelegate::GetUploadDataCallback callback) override {}
 
   bool request_started_ = false;
   bool request_completed_ = false;
@@ -155,9 +163,9 @@ class BackgroundFetchDelegateProxyTest : public BackgroundFetchTestBase {
 
 scoped_refptr<BackgroundFetchRequestInfo> CreateRequestInfo(
     int request_index,
-    const ServiceWorkerFetchRequest& fetch_request) {
+    blink::mojom::FetchAPIRequestPtr fetch_request) {
   auto request = base::MakeRefCounted<BackgroundFetchRequestInfo>(
-      request_index, fetch_request);
+      request_index, std::move(fetch_request));
   request->InitializeDownloadGuid();
   return request;
 }
@@ -170,8 +178,9 @@ TEST_F(BackgroundFetchDelegateProxyTest, SetDelegate) {
 
 TEST_F(BackgroundFetchDelegateProxyTest, StartRequest) {
   FakeController controller;
-  ServiceWorkerFetchRequest fetch_request;
-  auto request = CreateRequestInfo(0 /* request_index */, fetch_request);
+  auto fetch_request = blink::mojom::FetchAPIRequest::New();
+  auto request =
+      CreateRequestInfo(0 /* request_index */, std::move(fetch_request));
 
   EXPECT_FALSE(controller.request_started_);
   EXPECT_FALSE(controller.request_completed_);
@@ -194,8 +203,9 @@ TEST_F(BackgroundFetchDelegateProxyTest, StartRequest) {
 
 TEST_F(BackgroundFetchDelegateProxyTest, StartRequest_NotCompleted) {
   FakeController controller;
-  ServiceWorkerFetchRequest fetch_request;
-  auto request = CreateRequestInfo(0 /* request_index */, fetch_request);
+  auto fetch_request = blink::mojom::FetchAPIRequest::New();
+  auto request =
+      CreateRequestInfo(0 /* request_index */, std::move(fetch_request));
 
   EXPECT_FALSE(controller.request_started_);
   EXPECT_FALSE(controller.request_completed_);
@@ -220,10 +230,12 @@ TEST_F(BackgroundFetchDelegateProxyTest, StartRequest_NotCompleted) {
 TEST_F(BackgroundFetchDelegateProxyTest, Abort) {
   FakeController controller;
   FakeController controller2;
-  ServiceWorkerFetchRequest fetch_request;
-  ServiceWorkerFetchRequest fetch_request2;
-  auto request = CreateRequestInfo(0 /* request_index */, fetch_request);
-  auto request2 = CreateRequestInfo(1 /* request_index */, fetch_request2);
+  auto fetch_request = blink::mojom::FetchAPIRequest::New();
+  auto fetch_request2 = blink::mojom::FetchAPIRequest::New();
+  auto request =
+      CreateRequestInfo(0 /* request_index */, std::move(fetch_request));
+  auto request2 =
+      CreateRequestInfo(1 /* request_index */, std::move(fetch_request2));
 
   EXPECT_FALSE(controller.request_started_);
   EXPECT_FALSE(controller.request_completed_);
@@ -253,7 +265,6 @@ TEST_F(BackgroundFetchDelegateProxyTest, Abort) {
   delegate_proxy_.Abort(kExampleUniqueId);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_FALSE(controller.request_started_) << "Aborted job started";
   EXPECT_FALSE(controller.request_completed_) << "Aborted job completed";
   EXPECT_TRUE(controller2.request_started_) << "Normal job did not start";
   EXPECT_TRUE(controller2.request_completed_) << "Normal job did not complete";
@@ -272,9 +283,10 @@ TEST_F(BackgroundFetchDelegateProxyTest, GetIconDisplaySize) {
 
 TEST_F(BackgroundFetchDelegateProxyTest, UpdateUI) {
   FakeController controller;
-  ServiceWorkerFetchRequest fetch_request;
+  auto fetch_request = blink::mojom::FetchAPIRequest::New();
 
-  auto request = CreateRequestInfo(0 /* request_index */, fetch_request);
+  auto request =
+      CreateRequestInfo(0 /* request_index */, std::move(fetch_request));
   auto fetch_description = std::make_unique<BackgroundFetchDescription>(
       kExampleUniqueId, "Job 1 Started.", url::Origin(), SkBitmap(),
       0 /* completed_parts */, 1 /* total_parts */,
@@ -291,7 +303,8 @@ TEST_F(BackgroundFetchDelegateProxyTest, UpdateUI) {
   EXPECT_TRUE(controller.request_started_);
   EXPECT_TRUE(controller.request_completed_);
 
-  delegate_proxy_.UpdateUI(kExampleUniqueId, "Job 1 Complete!", base::nullopt);
+  delegate_proxy_.UpdateUI(kExampleUniqueId, "Job 1 Complete!", base::nullopt,
+                           base::DoNothing());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(delegate_.ui_update_count_, 1);
 }

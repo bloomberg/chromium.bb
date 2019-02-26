@@ -24,6 +24,7 @@
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/gpu_export.h"
+#include "gpu/ipc/client/image_decode_accelerator_proxy.h"
 #include "gpu/ipc/client/shared_image_interface_proxy.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/message_filter.h"
@@ -150,6 +151,10 @@ class GPU_EXPORT GpuChannelHost
     return &shared_image_interface_;
   }
 
+  ImageDecodeAcceleratorProxy* image_decode_accelerator_proxy() {
+    return &image_decode_accelerator_proxy_;
+  }
+
  protected:
   friend class base::RefCountedThreadSafe<GpuChannelHost>;
   ~GpuChannelHost() override;
@@ -158,7 +163,7 @@ class GPU_EXPORT GpuChannelHost
   // A filter used internally to route incoming messages from the IO thread
   // to the correct message loop. It also maintains some shared state between
   // all the contexts.
-  class Listener : public IPC::Listener {
+  class GPU_EXPORT Listener : public IPC::Listener {
    public:
     Listener(mojo::ScopedMessagePipeHandle handle,
              scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
@@ -252,6 +257,9 @@ class GPU_EXPORT GpuChannelHost
   std::unique_ptr<Listener, base::OnTaskRunnerDeleter> listener_;
 
   SharedImageInterfaceProxy shared_image_interface_;
+
+  // A client-side helper to send image decode requests to the GPU process.
+  ImageDecodeAcceleratorProxy image_decode_accelerator_proxy_;
 
   // Image IDs are allocated in sequence.
   base::AtomicSequenceNumber next_image_id_;

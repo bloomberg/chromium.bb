@@ -43,6 +43,8 @@ ResultCode MojoSandboxSetupHooks::TargetSpawned(
     const base::win::ScopedHandle& target_thread) {
   DCHECK(message_pipe_was_created_);
 
+  ReportProcessLaunchAttempt();
+
   // TODO(joenotcharles): Hook up the |error_callback| parameter of Send to a
   // function that logs a security warning and exits. This callback will be
   // called when an invalid message is written to the pipe.
@@ -51,6 +53,22 @@ ResultCode MojoSandboxSetupHooks::TargetSpawned(
                                  mojo_channel_.TakeLocalEndpoint());
 
   return RESULT_CODE_SUCCESS;
+}
+
+void MojoSandboxSetupHooks::SetupFailed() {
+  if (process_launch_attempt_reported_) {
+    // Setup failed after calling TargetSpawned, so don't report the launch
+    // attempt again.
+    return;
+  }
+
+  ReportProcessLaunchAttempt();
+}
+
+void MojoSandboxSetupHooks::ReportProcessLaunchAttempt() {
+  DCHECK(!process_launch_attempt_reported_);
+  mojo_channel_.RemoteProcessLaunchAttempted();
+  process_launch_attempt_reported_ = true;
 }
 
 MojoSandboxTargetHooks::MojoSandboxTargetHooks() = default;

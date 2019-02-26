@@ -6,6 +6,7 @@
 
 [
     RuntimeEnabled=Presentation,
+    SecureContext,
     Exposed=Window
 ] interface PresentationReceiver {
     [SameObject, CallWith=ScriptState] readonly attribute Promise<PresentationConnectionList> connectionList;

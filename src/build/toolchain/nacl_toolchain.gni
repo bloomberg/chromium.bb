@@ -54,6 +54,7 @@ template("nacl_toolchain") {
 
       # We do not support clang code coverage in the NaCl toolchains.
       use_clang_coverage = false
+      coverage_instrumentation_input_file = ""
     }
   }
 }

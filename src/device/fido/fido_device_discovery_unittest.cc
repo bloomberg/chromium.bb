@@ -59,6 +59,8 @@ TEST(FidoDiscoveryTest, TestAddAndRemoveObserver) {
 }
 
 TEST(FidoDiscoveryTest, TestNotificationsOnSuccessfulStart) {
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
   ConcreteFidoDiscovery discovery(FidoTransportProtocol::kBluetoothLowEnergy);
   MockFidoDiscoveryObserver observer;
   discovery.set_observer(&observer);
@@ -68,6 +70,8 @@ TEST(FidoDiscoveryTest, TestNotificationsOnSuccessfulStart) {
 
   EXPECT_CALL(discovery, StartInternal());
   discovery.Start();
+  scoped_task_environment_.RunUntilIdle();
+
   EXPECT_TRUE(discovery.is_start_requested());
   EXPECT_FALSE(discovery.is_running());
   ::testing::Mock::VerifyAndClearExpectations(&discovery);
@@ -80,11 +84,14 @@ TEST(FidoDiscoveryTest, TestNotificationsOnSuccessfulStart) {
 }
 
 TEST(FidoDiscoveryTest, TestNotificationsOnFailedStart) {
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
   ConcreteFidoDiscovery discovery(FidoTransportProtocol::kBluetoothLowEnergy);
   MockFidoDiscoveryObserver observer;
   discovery.set_observer(&observer);
 
   discovery.Start();
+  scoped_task_environment_.RunUntilIdle();
 
   EXPECT_CALL(observer, DiscoveryStarted(&discovery, false));
   discovery.NotifyDiscoveryStarted(false);

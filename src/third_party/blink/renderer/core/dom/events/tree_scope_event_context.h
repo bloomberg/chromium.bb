@@ -48,21 +48,23 @@ class CORE_EXPORT TreeScopeEventContext final
     : public GarbageCollected<TreeScopeEventContext> {
  public:
   static TreeScopeEventContext* Create(TreeScope&);
+
+  TreeScopeEventContext(TreeScope&);
   void Trace(blink::Visitor*);
 
   TreeScope& GetTreeScope() const { return *tree_scope_; }
   ContainerNode& RootNode() const { return tree_scope_->RootNode(); }
 
   EventTarget* Target() const { return target_.Get(); }
-  void SetTarget(EventTarget*);
+  void SetTarget(EventTarget&);
 
   EventTarget* RelatedTarget() const { return related_target_.Get(); }
-  void SetRelatedTarget(EventTarget*);
+  void SetRelatedTarget(EventTarget&);
 
   TouchEventContext* GetTouchEventContext() const {
     return touch_event_context_.Get();
   }
-  TouchEventContext* EnsureTouchEventContext();
+  TouchEventContext& EnsureTouchEventContext();
 
   HeapVector<Member<EventTarget>>& EnsureEventPath(EventPath&);
 
@@ -84,8 +86,6 @@ class CORE_EXPORT TreeScopeEventContext final
   }
 
  private:
-  TreeScopeEventContext(TreeScope&);
-
   void CheckReachableNode(EventTarget&);
 
   bool IsUnclosedTreeOf(const TreeScopeEventContext& other);
@@ -118,16 +118,14 @@ inline void TreeScopeEventContext::CheckReachableNode(EventTarget& target) {
 inline void TreeScopeEventContext::CheckReachableNode(EventTarget&) {}
 #endif
 
-inline void TreeScopeEventContext::SetTarget(EventTarget* target) {
-  DCHECK(target);
-  CheckReachableNode(*target);
+inline void TreeScopeEventContext::SetTarget(EventTarget& target) {
+  CheckReachableNode(target);
   target_ = target;
 }
 
 inline void TreeScopeEventContext::SetRelatedTarget(
-    EventTarget* related_target) {
-  DCHECK(related_target);
-  CheckReachableNode(*related_target);
+    EventTarget& related_target) {
+  CheckReachableNode(related_target);
   related_target_ = related_target;
 }
 

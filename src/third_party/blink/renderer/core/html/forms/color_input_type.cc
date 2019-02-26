@@ -31,7 +31,7 @@
 #include "third_party/blink/renderer/core/html/forms/color_input_type.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
-#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
@@ -53,7 +53,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 // Upper limit of number of datalist suggestions shown.
 static const unsigned kMaxSuggestions = 1000;
@@ -102,7 +102,7 @@ void ColorInputType::CountUsage() {
 }
 
 const AtomicString& ColorInputType::FormControlType() const {
-  return InputTypeNames::color;
+  return input_type_names::kColor;
 }
 
 bool ColorInputType::SupportsRequired() const {
@@ -243,7 +243,7 @@ Color ColorInputType::CurrentColor() {
 }
 
 bool ColorInputType::ShouldShowSuggestions() const {
-  return GetElement().FastHasAttribute(listAttr);
+  return GetElement().FastHasAttribute(kListAttr);
 }
 
 Vector<mojom::blink::ColorSuggestionPtr> ColorInputType::Suggestions() const {

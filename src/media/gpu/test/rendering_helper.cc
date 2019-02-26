@@ -24,7 +24,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "media/gpu/test/texture_ref.h"
 #include "media/gpu/test/video_decode_accelerator_unittest_helpers.h"
+#include "ui/gfx/buffer_types.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
@@ -335,7 +337,8 @@ scoped_refptr<media::test::TextureRef> RenderingHelper::CreateTexture(
       use_gl_ ? base::BindOnce(DeleteTexture, texture_id) : base::DoNothing();
   if (pre_allocate) {
     return media::test::TextureRef::CreatePreallocated(
-        texture_id, std::move(delete_texture_cb), pixel_format, size);
+        texture_id, std::move(delete_texture_cb), pixel_format, size,
+        gfx::BufferUsage::SCANOUT_VDA_WRITE);
   }
   return media::test::TextureRef::Create(texture_id,
                                          std::move(delete_texture_cb));

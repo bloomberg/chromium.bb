@@ -35,7 +35,7 @@ class MediaControlsMediaEventListener final : public EventListener {
   HTMLMediaElement& GetMediaElement();
   RemotePlayback* GetRemotePlayback();
 
-  void handleEvent(ExecutionContext*, Event*) override;
+  void Invoke(ExecutionContext*, Event*) override;
 
   void OnRemotePlaybackAvailabilityChanged();
 

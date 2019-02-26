@@ -150,7 +150,6 @@ void VariationsCrashKeys::UpdateCrashKeys() {
     combined_string.resize(comma_index + 1);
     // NOTREACHED() will let us know of the problem and adjust the limit.
     NOTREACHED();
-    return;
   }
 
   g_variations_crash_key.Set(combined_string);

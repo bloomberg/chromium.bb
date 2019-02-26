@@ -7,14 +7,13 @@
 #ifndef FXJS_CJS_SCALEWHEN_H_
 #define FXJS_CJS_SCALEWHEN_H_
 
-#include "fxjs/js_define.h"
+#include "fxjs/cjs_object.h"
 
 class CJS_ScaleWhen final : public CJS_Object {
  public:
   static void DefineJSObjects(CFXJS_Engine* pEngine);
 
-  CJS_ScaleWhen(v8::Local<v8::Object> pObject, CJS_Runtime* pRuntime);
-  ~CJS_ScaleWhen() override;
+  CJS_ScaleWhen() = delete;
 
  private:
   static int ObjDefnID;

@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
+#include "build/buildflag.h"
 #include "crypto/ec_private_key.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/completion_repeating_callback.h"
@@ -27,6 +28,7 @@
 #include "net/http/http_stream_request.h"
 #include "net/http/http_transaction.h"
 #include "net/log/net_log_with_source.h"
+#include "net/net_buildflags.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/socket/connection_attempts.h"
 #include "net/ssl/channel_id_service.h"
@@ -202,6 +204,22 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
 
   int BuildRequestHeaders(bool using_http_proxy_without_tunnel);
 
+#if BUILDFLAG(ENABLE_REPORTING)
+  // Processes the Report-To header, if one exists. This header configures where
+  // the Reporting API (in //net/reporting) will send reports for the origin.
+  void ProcessReportToHeader();
+
+  // Processes the NEL header, if one exists. This header configures whether
+  // network errors will be reported to a specified group of endpoints using the
+  // Reporting API.
+  void ProcessNetworkErrorLoggingHeader();
+
+  // Generates a NEL report about this request.  The NetworkErrorLoggingService
+  // will discard the report if there is no NEL policy registered for this
+  // origin.
+  void GenerateNetworkErrorLoggingReport(int rv);
+#endif
+
   // Writes a log message to help debugging in the field when we block a proxy
   // response to a CONNECT request.
   void LogBlockedTunnelResponse(int response_code) const;
@@ -337,6 +355,15 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   SSLConfig proxy_ssl_config_;
 
   HttpRequestHeaders request_headers_;
+#if BUILDFLAG(ENABLE_REPORTING)
+  // Cache some fields from |request_| that we'll need to construct a NEL
+  // report about the request.  (NEL report construction happens after we've
+  // cleared the |request_| pointer.)
+  std::string request_method_;
+  std::string request_referrer_;
+  std::string request_user_agent_;
+  int request_reporting_upload_depth_;
+#endif
 
   // The size in bytes of the buffer we use to drain the response body that
   // we want to throw away.  The response body is typically a small error

@@ -119,6 +119,11 @@ class NET_EXPORT_PRIVATE HttpAuthController
   // The identity that was rejected is |identity_|.
   void InvalidateRejectedAuthFromCache();
 
+  // Allows reusing last used identity source.  If the authentication handshake
+  // breaks down halfway, then the controller needs to restart it from the
+  // beginning and resue the same identity.
+  void PrepareIdentityForReuse();
+
   // Sets |identity_| to the next identity that the transaction should try. It
   // chooses candidates by searching the auth cache and the URL for a
   // username:password. Returns true if an identity was found.

@@ -15,15 +15,13 @@
 
 namespace blink {
 
-using testing::Invoke;
-
 class MockAutoplayUmaHelper : public AutoplayUmaHelper {
  public:
   MockAutoplayUmaHelper(HTMLMediaElement* element)
       : AutoplayUmaHelper(element) {
     ON_CALL(*this, HandleContextDestroyed())
-        .WillByDefault(
-            Invoke(this, &MockAutoplayUmaHelper::ReallyHandleContextDestroyed));
+        .WillByDefault(testing::Invoke(
+            this, &MockAutoplayUmaHelper::ReallyHandleContextDestroyed));
   }
 
   void HandlePlayingEvent() { AutoplayUmaHelper::HandlePlayingEvent(); }
@@ -52,7 +50,7 @@ class AutoplayUmaHelperTest : public PageTestBase {
     GetDocument().documentElement()->SetInnerHTMLFromString(
         "<video id=video></video>", ASSERT_NO_EXCEPTION);
     HTMLMediaElement& element = MediaElement();
-    uma_helper_ = new MockAutoplayUmaHelper(&element);
+    uma_helper_ = MakeGarbageCollected<MockAutoplayUmaHelper>(&element);
     element.autoplay_policy_->autoplay_uma_helper_ = uma_helper_;
     testing::Mock::AllowLeak(&UmaHelper());
   }

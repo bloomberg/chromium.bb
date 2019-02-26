@@ -78,7 +78,8 @@ void FakeRTCRtpSender::SetParameters(
 }
 
 void FakeRTCRtpSender::GetStats(
-    std::unique_ptr<blink::WebRTCStatsReportCallback>) {
+    std::unique_ptr<blink::WebRTCStatsReportCallback>,
+    blink::RTCStatsFilter) {
   NOTIMPLEMENTED();
 }
 
@@ -123,7 +124,8 @@ FakeRTCRtpReceiver::GetSources() {
 }
 
 void FakeRTCRtpReceiver::GetStats(
-    std::unique_ptr<blink::WebRTCStatsReportCallback>) {
+    std::unique_ptr<blink::WebRTCStatsReportCallback>,
+    blink::RTCStatsFilter) {
   NOTIMPLEMENTED();
 }
 

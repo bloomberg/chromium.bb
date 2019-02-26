@@ -23,7 +23,7 @@ class BeforeInstallPromptEventInit;
 
 using UserChoiceProperty =
     ScriptPromiseProperty<Member<BeforeInstallPromptEvent>,
-                          AppBannerPromptResult,
+                          Member<AppBannerPromptResult>,
                           ToV8UndefinedGenerator>;
 
 class BeforeInstallPromptEvent final
@@ -53,7 +53,7 @@ class BeforeInstallPromptEvent final
   static BeforeInstallPromptEvent* Create(
       ExecutionContext* execution_context,
       const AtomicString& name,
-      const BeforeInstallPromptEventInit& init) {
+      const BeforeInstallPromptEventInit* init) {
     return new BeforeInstallPromptEvent(execution_context, name, init);
   }
 
@@ -80,7 +80,7 @@ class BeforeInstallPromptEvent final
                            bool require_gesture);
   BeforeInstallPromptEvent(ExecutionContext*,
                            const AtomicString& name,
-                           const BeforeInstallPromptEventInit&);
+                           const BeforeInstallPromptEventInit*);
 
   // mojom::blink::AppBannerEvent methods:
   void BannerAccepted(const String& platform) override;
@@ -100,9 +100,9 @@ DEFINE_TYPE_CASTS(BeforeInstallPromptEvent,
                   Event,
                   event,
                   event->InterfaceName() ==
-                      EventNames::BeforeInstallPromptEvent,
+                      event_interface_names::kBeforeInstallPromptEvent,
                   event.InterfaceName() ==
-                      EventNames::BeforeInstallPromptEvent);
+                      event_interface_names::kBeforeInstallPromptEvent);
 
 }  // namespace blink
 

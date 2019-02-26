@@ -170,10 +170,6 @@ class SafeBrowsingNetworkContext::SharedURLLoaderFactory
     network_context_params->cookie_path = cookie_path;
     network_context_params->enable_encrypted_cookies = false;
 
-    base::FilePath channel_id_path = user_data_dir_.Append(
-        base::FilePath::StringType(kSafeBrowsingBaseFilename) + kChannelIDFile);
-    network_context_params->channel_id_path = channel_id_path;
-
     return network_context_params;
   }
 

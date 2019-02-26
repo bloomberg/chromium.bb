@@ -2276,6 +2276,29 @@ TEST_F(LayerTreeImplTest, HitTestingCorrectLayerWheelListener) {
   EXPECT_EQ(2, result_layer->id());
 }
 
+// When using layer lists, we may not have layers for the outer viewport. This
+// test verifies that scroll size can be calculated using property tree nodes.
+TEST_F(LayerTreeImplTest, ScrollSizeWithoutLayers) {
+  const gfx::Size inner_viewport_size(1000, 1000);
+  const gfx::Size outer_viewport_size(1000, 1000);
+  const gfx::Size scroll_layer_size(2000, 2000);
+
+  auto* tree_impl = host_impl().active_tree();
+  LayerTestCommon::SetupBrowserControlsAndScrollLayerWithVirtualViewport(
+      &host_impl(), tree_impl, 50, inner_viewport_size, outer_viewport_size,
+      scroll_layer_size);
+
+  // With viewport layers the scrollable size should be correct.
+  EXPECT_EQ(gfx::SizeF(scroll_layer_size), tree_impl->ScrollableSize());
+
+  // The scrollable size should be correct without non-outer viewport layers.
+  LayerTreeImpl::ViewportLayerIds updated_viewport_ids;
+  updated_viewport_ids.outer_viewport_scroll =
+      tree_impl->OuterViewportScrollLayer()->id();
+  tree_impl->SetViewportLayersFromIds(updated_viewport_ids);
+  EXPECT_EQ(gfx::SizeF(scroll_layer_size), tree_impl->ScrollableSize());
+}
+
 namespace {
 
 class StubSwapPromise : public SwapPromise,

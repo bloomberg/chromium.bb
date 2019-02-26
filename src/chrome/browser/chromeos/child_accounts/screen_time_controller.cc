@@ -4,41 +4,26 @@
 
 #include "chrome/browser/chromeos/child_accounts/screen_time_controller.h"
 
-#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/optional.h"
+#include "base/time/clock.h"
+#include "base/time/default_clock.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/chromeos/child_accounts/consumer_status_reporting_service.h"
 #include "chrome/browser/chromeos/child_accounts/consumer_status_reporting_service_factory.h"
+#include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/browser_context.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/l10n/time_format.h"
-#include "ui/message_center/public/cpp/notification.h"
 
 namespace chromeos {
 
 namespace {
-
-constexpr base::TimeDelta kWarningNotificationTimeout =
-    base::TimeDelta::FromMinutes(5);
-constexpr base::TimeDelta kExitNotificationTimeout =
-    base::TimeDelta::FromMinutes(1);
-
-// The notification id. All the time limit notifications share the same id so
-// that a subsequent notification can replace the previous one.
-constexpr char kTimeLimitNotificationId[] = "time-limit-notification";
-
-// The notifier id representing the app.
-constexpr char kTimeLimitNotifierId[] = "family-link";
 
 // Dictionary keys for prefs::kScreenTimeLastState.
 constexpr char kScreenStateLocked[] = "locked";
@@ -61,7 +46,10 @@ void ScreenTimeController::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 
 ScreenTimeController::ScreenTimeController(content::BrowserContext* context)
     : context_(context),
-      pref_service_(Profile::FromBrowserContext(context)->GetPrefs()) {
+      pref_service_(Profile::FromBrowserContext(context)->GetPrefs()),
+      clock_(base::DefaultClock::GetInstance()),
+      next_state_timer_(std::make_unique<base::OneShotTimer>()),
+      time_limit_notifier_(context) {
   session_manager::SessionManager::Get()->AddObserver(this);
   system::TimezoneSettings::GetInstance()->AddObserver(this);
   chromeos::DBusThreadManager::Get()->GetSystemClockClient()->AddObserver(this);
@@ -84,6 +72,13 @@ base::TimeDelta ScreenTimeController::GetScreenTimeDuration() {
       ->GetChildScreenTime();
 }
 
+void ScreenTimeController::SetClocksForTesting(
+    const base::Clock* clock,
+    const base::TickClock* tick_clock) {
+  clock_ = clock;
+  next_state_timer_ = std::make_unique<base::OneShotTimer>(tick_clock);
+}
+
 void ScreenTimeController::CheckTimeLimit(const std::string& source) {
   VLOG(1) << "Checking time limits (source=" << source << ")";
 
@@ -91,7 +86,7 @@ void ScreenTimeController::CheckTimeLimit(const std::string& source) {
   ResetStateTimers();
   ResetInSessionTimers();
 
-  base::Time now = base::Time::Now();
+  base::Time now = clock_->Now();
   const icu::TimeZone& time_zone =
       system::TimezoneSettings::GetInstance()->GetTimezone();
   base::Optional<usage_time_limit::State> last_state = GetLastStateFromPref();
@@ -117,13 +112,13 @@ void ScreenTimeController::CheckTimeLimit(const std::string& source) {
       ForceScreenLockByPolicy(state.next_unlock_time);
     }
   } else {
-    base::Optional<TimeLimitNotificationType> notification_type;
+    base::Optional<TimeLimitNotifier::LimitType> notification_type;
     switch (state.next_state_active_policy) {
       case usage_time_limit::ActivePolicies::kFixedLimit:
-        notification_type = kBedTime;
+        notification_type = TimeLimitNotifier::LimitType::kBedTime;
         break;
       case usage_time_limit::ActivePolicies::kUsageLimit:
-        notification_type = kScreenTime;
+        notification_type = TimeLimitNotifier::LimitType::kScreenTime;
         break;
       case usage_time_limit::ActivePolicies::kNoActivePolicy:
       case usage_time_limit::ActivePolicies::kOverride:
@@ -134,21 +129,11 @@ void ScreenTimeController::CheckTimeLimit(const std::string& source) {
 
     if (notification_type.has_value()) {
       // Schedule notification based on the remaining screen time until lock.
+      // TODO(crbug.com/898000): Dismiss a shown notification when it no longer
+      // applies.
       const base::TimeDelta remaining_time = state.next_state_change_time - now;
-      if (remaining_time >= kWarningNotificationTimeout) {
-        warning_notification_timer_.Start(
-            FROM_HERE, remaining_time - kWarningNotificationTimeout,
-            base::BindRepeating(
-                &ScreenTimeController::ShowNotification, base::Unretained(this),
-                notification_type.value(), kWarningNotificationTimeout));
-      }
-      if (remaining_time >= kExitNotificationTimeout) {
-        exit_notification_timer_.Start(
-            FROM_HERE, remaining_time - kExitNotificationTimeout,
-            base::BindRepeating(
-                &ScreenTimeController::ShowNotification, base::Unretained(this),
-                notification_type.value(), kExitNotificationTimeout));
-      }
+      time_limit_notifier_.MaybeScheduleNotifications(notification_type.value(),
+                                                      remaining_time);
     }
   }
 
@@ -159,7 +144,7 @@ void ScreenTimeController::CheckTimeLimit(const std::string& source) {
   if (!next_get_state_time.is_null()) {
     VLOG(1) << "Scheduling state change timer in "
             << state.next_state_change_time - now;
-    next_state_timer_.Start(
+    next_state_timer_->Start(
         FROM_HERE, next_get_state_time - now,
         base::BindRepeating(&ScreenTimeController::CheckTimeLimit,
                             base::Unretained(this), "next_state_timer_"));
@@ -188,35 +173,9 @@ void ScreenTimeController::UpdateTimeLimitsMessage(
       chromeos::ProfileHelper::Get()
           ->GetUserByProfile(Profile::FromBrowserContext(context_))
           ->GetAccountId();
-  LoginScreenClient::Get()->login_screen()->SetAuthEnabledForUser(
+  ScreenLocker::default_screen_locker()->SetAuthEnabledForUser(
       account_id, !visible,
       visible ? next_unlock_time : base::Optional<base::Time>());
-}
-
-void ScreenTimeController::ShowNotification(
-    ScreenTimeController::TimeLimitNotificationType type,
-    const base::TimeDelta& time_remaining) {
-  const base::string16 title = l10n_util::GetStringUTF16(
-      type == kScreenTime ? IDS_SCREEN_TIME_NOTIFICATION_TITLE
-                          : IDS_BED_TIME_NOTIFICATION_TITLE);
-  std::unique_ptr<message_center::Notification> notification =
-      message_center::Notification::CreateSystemNotification(
-          message_center::NOTIFICATION_TYPE_SIMPLE, kTimeLimitNotificationId,
-          title,
-          ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_DURATION,
-                                 ui::TimeFormat::LENGTH_LONG, time_remaining),
-          l10n_util::GetStringUTF16(IDS_TIME_LIMIT_NOTIFICATION_DISPLAY_SOURCE),
-          GURL(),
-          message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT,
-              kTimeLimitNotifierId),
-          message_center::RichNotificationData(),
-          new message_center::NotificationDelegate(),
-          ash::kNotificationSupervisedUserIcon,
-          message_center::SystemNotificationWarningLevel::NORMAL);
-  NotificationDisplayService::GetForProfile(
-      Profile::FromBrowserContext(context_))
-      ->Display(NotificationHandler::Type::TRANSIENT, *notification);
 }
 
 void ScreenTimeController::OnPolicyChanged() {
@@ -225,13 +184,12 @@ void ScreenTimeController::OnPolicyChanged() {
 
 void ScreenTimeController::ResetStateTimers() {
   VLOG(1) << "Stopping state timers";
-  next_state_timer_.Stop();
+  next_state_timer_->Stop();
 }
 
 void ScreenTimeController::ResetInSessionTimers() {
   VLOG(1) << "Stopping in-session timers";
-  warning_notification_timer_.Stop();
-  exit_notification_timer_.Stop();
+  time_limit_notifier_.UnscheduleNotifications();
 }
 
 void ScreenTimeController::SaveCurrentStateToPref(

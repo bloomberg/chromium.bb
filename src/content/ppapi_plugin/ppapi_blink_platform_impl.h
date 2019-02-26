@@ -42,12 +42,12 @@ class PpapiBlinkPlatformImpl : public BlinkPlatformImpl {
                          bool sync_dir) override;
 
  private:
-#if !defined(OS_ANDROID) && !defined(OS_WIN)
-  class SandboxSupport;
-  std::unique_ptr<SandboxSupport> sandbox_support_;
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+  std::unique_ptr<blink::WebSandboxSupport> sandbox_support_;
 #endif
 
 #if defined(OS_LINUX)
+  class SandboxSupport;
   sk_sp<font_service::FontLoader> font_loader_;
 #endif
 

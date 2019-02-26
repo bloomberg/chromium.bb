@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_test_helper.h"
-#include "ash/system/tray/system_tray.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/window_factory.h"
@@ -164,15 +162,11 @@ class ExtendedDesktopTest : public AshTestBase {
 
  protected:
   bool IsBubbleShown() {
-    return features::IsSystemTrayUnifiedEnabled()
-               ? GetPrimaryUnifiedSystemTray()->IsBubbleShown()
-               : GetPrimarySystemTray()->HasSystemBubble();
+    return GetPrimaryUnifiedSystemTray()->IsBubbleShown();
   }
 
   gfx::Rect GetSystemTrayBoundsInScreen() {
-    return features::IsSystemTrayUnifiedEnabled()
-               ? GetPrimaryUnifiedSystemTray()->GetBoundsInScreen()
-               : GetPrimarySystemTray()->GetBoundsInScreen();
+    return GetPrimaryUnifiedSystemTray()->GetBoundsInScreen();
   }
 
  private:
@@ -441,7 +435,7 @@ TEST_F(ExtendedDesktopTest, CaptureEventLocation) {
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->MoveMouseToCenterOf(r2_w1.get());
   EXPECT_EQ(gfx::Point(1060, 60).ToString(),
-            generator->current_location().ToString());
+            generator->current_screen_location().ToString());
 
   EventLocationHandler location_handler;
   r1_w1->AddPreTargetHandler(&location_handler);
@@ -473,7 +467,7 @@ TEST_F(ExtendedDesktopTest, CaptureEventLocationHighDPI) {
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->MoveMouseToCenterOf(r2_w1.get());
   EXPECT_EQ(gfx::Point(560, 60).ToString(),
-            generator->current_location().ToString());
+            generator->current_screen_location().ToString());
 
   EventLocationHandler location_handler;
   r1_w1->AddPreTargetHandler(&location_handler);
@@ -505,7 +499,7 @@ TEST_F(ExtendedDesktopTest, CaptureEventLocationHighDPI_2) {
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->MoveMouseToCenterOf(r2_w1.get());
   EXPECT_EQ(gfx::Point(1060, 60).ToString(),
-            generator->current_location().ToString());
+            generator->current_screen_location().ToString());
 
   EventLocationHandler location_handler;
   r1_w1->AddPreTargetHandler(&location_handler);

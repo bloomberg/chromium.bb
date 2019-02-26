@@ -29,6 +29,8 @@ class OriginPolicyParser {
   bool DoParse(base::StringPiece);
   bool ParseContentSecurityPolicies(const base::Value&);
   bool ParseContentSecurityPolicy(const base::Value&);
+  bool ParseFeaturePolicies(const base::Value&);
+  bool ParseFeaturePolicy(const base::Value&);
 
   std::unique_ptr<OriginPolicy> policy_;
 

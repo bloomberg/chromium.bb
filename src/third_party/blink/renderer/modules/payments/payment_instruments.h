@@ -35,7 +35,7 @@ class MODULES_EXPORT PaymentInstruments final : public ScriptWrappable {
   ScriptPromise has(ScriptState*, const String& instrument_key);
   ScriptPromise set(ScriptState*,
                     const String& instrument_key,
-                    const PaymentInstrument& details,
+                    const PaymentInstrument* details,
                     ExceptionState&);
   ScriptPromise clear(ScriptState*);
 

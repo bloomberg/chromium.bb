@@ -23,7 +23,8 @@ namespace rx
 {
 class EGLImplFactory;
 class ImageImpl;
-}
+class ExternalImageSiblingImpl;
+}  // namespace rx
 
 namespace egl
 {
@@ -52,7 +53,7 @@ class ImageSibling : public gl::FramebufferAttachmentObject
     void setTargetImage(const gl::Context *context, egl::Image *imageTarget);
 
     // Orphan all EGL image sources and targets
-    gl::Error orphanImages(const gl::Context *context);
+    angle::Result orphanImages(const gl::Context *context);
 
   private:
     friend class Image;
@@ -65,6 +66,41 @@ class ImageSibling : public gl::FramebufferAttachmentObject
 
     std::set<Image *> mSourcesOf;
     BindingPointer<Image> mTargetOf;
+};
+
+// Wrapper for EGLImage sources that are not owned by ANGLE, these often have to do
+// platform-specific queries for format and size information.
+class ExternalImageSibling : public ImageSibling
+{
+  public:
+    ExternalImageSibling(rx::EGLImplFactory *factory,
+                         const gl::Context *context,
+                         EGLenum target,
+                         EGLClientBuffer buffer,
+                         const AttributeMap &attribs);
+
+    gl::Extents getAttachmentSize(const gl::ImageIndex &imageIndex) const override;
+    gl::Format getAttachmentFormat(GLenum binding, const gl::ImageIndex &imageIndex) const override;
+    GLsizei getAttachmentSamples(const gl::ImageIndex &imageIndex) const override;
+    bool isRenderable(const gl::Context *context,
+                      GLenum binding,
+                      const gl::ImageIndex &imageIndex) const override;
+    bool isTextureable(const gl::Context *context) const;
+
+    void onAttach(const gl::Context *context) override;
+    void onDetach(const gl::Context *context) override;
+    GLuint getId() const override;
+
+    gl::InitState initState(const gl::ImageIndex &imageIndex) const override;
+    void setInitState(const gl::ImageIndex &imageIndex, gl::InitState initState) override;
+
+    rx::ExternalImageSiblingImpl *getImplementation() const;
+
+  protected:
+    rx::FramebufferAttachmentObjectImpl *getAttachmentImpl() const override;
+
+  private:
+    std::unique_ptr<rx::ExternalImageSiblingImpl> mImplementation;
 };
 
 struct ImageState : private angle::NonCopyable
@@ -122,7 +158,7 @@ class Image final : public RefCountObject, public LabeledObject
 
     // Called from ImageSibling only to notify the image that a sibling (source or target) has
     // been respecified and state tracking should be updated.
-    gl::Error orphanSibling(const gl::Context *context, ImageSibling *sibling);
+    angle::Result orphanSibling(const gl::Context *context, ImageSibling *sibling);
 
     ImageState mState;
     rx::ImageImpl *mImplementation;

@@ -19,6 +19,7 @@ bool WMEvent::IsWorkspaceEvent() const {
     case WM_EVENT_ADDED_TO_WORKSPACE:
     case WM_EVENT_WORKAREA_BOUNDS_CHANGED:
     case WM_EVENT_DISPLAY_BOUNDS_CHANGED:
+    case WM_EVENT_SYSTEM_UI_AREA_CHANGED:
       return true;
     default:
       break;
@@ -75,6 +76,7 @@ bool WMEvent::IsTransitionEvent() const {
     case WM_EVENT_SHOW_INACTIVE:
     case WM_EVENT_PIN:
     case WM_EVENT_TRUSTED_PIN:
+    case WM_EVENT_PIP:
       return true;
     default:
       break;
@@ -84,8 +86,12 @@ bool WMEvent::IsTransitionEvent() const {
 
 SetBoundsEvent::SetBoundsEvent(WMEventType type,
                                const gfx::Rect& bounds,
-                               bool animate)
-    : WMEvent(type), requested_bounds_(bounds), animate_(animate) {}
+                               bool animate,
+                               base::TimeDelta duration)
+    : WMEvent(type),
+      requested_bounds_(bounds),
+      animate_(animate),
+      duration_(duration) {}
 
 SetBoundsEvent::~SetBoundsEvent() = default;
 

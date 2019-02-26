@@ -9,6 +9,7 @@
 #include "base/time/time.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target_base.h"
 #include "content/common/input/synthetic_gesture_params.h"
+#include "ui/aura/event_injector.h"
 
 namespace aura {
 class Window;
@@ -54,6 +55,8 @@ class SyntheticGestureTargetAura : public SyntheticGestureTargetBase {
   // device_scale_factor to convert the input event from DIP to device pixel
   // before dispatching it into platform.
   float device_scale_factor_;
+
+  aura::EventInjector event_injector_;
 
   DISALLOW_COPY_AND_ASSIGN(SyntheticGestureTargetAura);
 };

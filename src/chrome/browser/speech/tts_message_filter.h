@@ -8,11 +8,11 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
-#include "chrome/browser/speech/tts_controller.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/tts_controller.h"
 
 namespace content {
 class BrowserContext;
@@ -20,11 +20,10 @@ class BrowserContext;
 
 struct TtsUtteranceRequest;
 
-class TtsMessageFilter
-    : public content::BrowserMessageFilter,
-      public content::NotificationObserver,
-      public UtteranceEventDelegate,
-      public VoicesChangedDelegate {
+class TtsMessageFilter : public content::BrowserMessageFilter,
+                         public content::NotificationObserver,
+                         public content::UtteranceEventDelegate,
+                         public content::VoicesChangedDelegate {
  public:
   explicit TtsMessageFilter(content::BrowserContext* browser_context);
 
@@ -36,8 +35,8 @@ class TtsMessageFilter
   void OnDestruct() const override;
 
   // UtteranceEventDelegate implementation.
-  void OnTtsEvent(Utterance* utterance,
-                  TtsEventType event_type,
+  void OnTtsEvent(content::Utterance* utterance,
+                  content::TtsEventType event_type,
                   int char_index,
                   const std::string& error_message) override;
 

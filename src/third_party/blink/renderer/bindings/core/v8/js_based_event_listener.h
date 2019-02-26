@@ -49,7 +49,7 @@ class CORE_EXPORT JSBasedEventListener : public EventListener {
   bool BelongsToTheCurrentWorld(ExecutionContext*) const final;
   // Implements step 2. of "inner invoke".
   // See: https://dom.spec.whatwg.org/#concept-event-listener-inner-invoke
-  void handleEvent(ExecutionContext*, Event*) final;
+  void Invoke(ExecutionContext*, Event*) final;
 
   // |GetListenerObject()| and |GetEffectiveFunction()| may cause JS in the
   // content attribute to get compiled, potentially unsuccessfully.
@@ -83,9 +83,9 @@ class CORE_EXPORT JSBasedEventListener : public EventListener {
   // This may throw an exception on invoking the listener.
   // See step 2-10:
   // https://dom.spec.whatwg.org/#concept-event-listener-inner-invoke
-  virtual void CallListenerFunction(EventTarget&,
-                                    Event&,
-                                    v8::Local<v8::Value> js_event) = 0;
+  virtual void InvokeInternal(EventTarget&,
+                              Event&,
+                              v8::Local<v8::Value> js_event) = 0;
 };
 
 }  // namespace blink

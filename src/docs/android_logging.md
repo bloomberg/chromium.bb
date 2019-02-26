@@ -62,7 +62,7 @@ string formatting.
 
 ## Logging Best Practices
 
-### Rule #1: Never log PII (Personal Identification Information):
+### Rule #1: Never log user data or PII (Personal Identification Information)
 
 This is a huge concern, because other applications can access the log and
 extract a lot of data from your own by doing so. Even if JellyBean restricted
@@ -70,14 +70,15 @@ this, people are going to run your application on rooted devices and allow some
 apps to access it. Also anyone with USB access to the device can use ADB to get
 the full logcat and get the same data right now.
 
-If you really need to print something , print a series of Xs instead
-(e.g. "XXXXXX"), or print a truncated hash of the PII instead. Truncation is
+If you really need to print something, print a series of Xs instead
+(e.g. "XXXXXX"), or print a truncated hash of the data instead. Truncation is
 required to make it harder for an attacker to recover the full data through
 rainbow tables and similar methods.
 
-Similarly, avoid dumping API keys, cookies, etc...
+Similarly, avoid dumping API keys, cookies, IP addresses, URLs, page content,
+etc...
 
-### Rule #2: Do not build debug logs in production code:
+### Rule #2: Do not build debug logs in production code
 
 The log methods are removed in release builds using Proguard. Because log
 messages might not be written, the cost of creating them should also be avoided.

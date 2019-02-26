@@ -23,7 +23,7 @@
   }
 
   function runGetDisplayMedia(constraints) {
-    navigator.getDisplayMedia(constraints).
+    navigator.mediaDevices.getDisplayMedia(constraints).
       then(handleSuccess).catch(handleError);
   }
 
@@ -37,6 +37,14 @@
 
   function getCursorSetting() {
     returnToTest(settings.cursor);
+  }
+
+  function getWidthSetting() {
+    returnToTest(settings.width.toString());
+  }
+
+  function getFrameRateSetting() {
+    returnToTest(settings.frameRate.toString());
   }
   </script>
 </head>

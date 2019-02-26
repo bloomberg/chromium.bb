@@ -6,6 +6,7 @@
 
 #include "fxjs/cjs_annot.h"
 
+#include "fpdfsdk/cpdfsdk_baannot.h"
 #include "fxjs/cjs_event_context.h"
 #include "fxjs/cjs_object.h"
 #include "fxjs/js_define.h"
@@ -36,6 +37,10 @@ CJS_Annot::CJS_Annot(v8::Local<v8::Object> pObject, CJS_Runtime* pRuntime)
     : CJS_Object(pObject, pRuntime) {}
 
 CJS_Annot::~CJS_Annot() = default;
+
+void CJS_Annot::SetSDKAnnot(CPDFSDK_BAAnnot* annot) {
+  m_pAnnot.Reset(annot);
+}
 
 CJS_Result CJS_Annot::get_hidden(CJS_Runtime* pRuntime) {
   if (!m_pAnnot)
@@ -98,7 +103,7 @@ CJS_Result CJS_Annot::get_type(CJS_Runtime* pRuntime) {
     return CJS_Result::Failure(JSMessage::kBadObjectError);
 
   return CJS_Result::Success(pRuntime->NewString(
-      WideString::FromLocal(
+      WideString::FromDefANSI(
           CPDF_Annot::AnnotSubtypeToString(pBAAnnot->GetAnnotSubtype())
               .AsStringView())
           .AsStringView()));

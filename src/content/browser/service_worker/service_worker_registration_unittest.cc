@@ -60,7 +60,7 @@ class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {
       const GURL& scope,
       const GURL& first_party,
       content::ResourceContext* context,
-      const base::Callback<WebContents*(void)>& wc_getter) override {
+      base::RepeatingCallback<WebContents*()> wc_getter) override {
     return false;
   }
 };
@@ -259,7 +259,7 @@ TEST_F(ServiceWorkerRegistrationTest, SetAndUnsetVersions) {
   EXPECT_EQ(version_1.get(), registration->active_version());
   EXPECT_EQ(registration, listener.observed_registration_);
   EXPECT_TRUE(listener.observed_changed_mask_->active);
-  EXPECT_EQ(kScope, listener.observed_info_.pattern);
+  EXPECT_EQ(kScope, listener.observed_info_.scope);
   EXPECT_EQ(version_1_id, listener.observed_info_.active_version.version_id);
   EXPECT_EQ(kScript, listener.observed_info_.active_version.script_url);
   EXPECT_EQ(listener.observed_info_.installing_version.version_id,
@@ -524,8 +524,7 @@ TEST_P(ServiceWorkerActivationTest, NoInflightRequest) {
     EXPECT_TRUE(helper_->is_zero_idle_timer_delay());
 
   // Finish the request. Activation should happen.
-  version_1->FinishRequest(inflight_request_id(), true /* was_handled */,
-                           base::TimeTicks::Now());
+  version_1->FinishRequest(inflight_request_id(), true /* was_handled */);
   base::RunLoop().RunUntilIdle();
 
   if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
@@ -551,8 +550,7 @@ TEST_P(ServiceWorkerActivationTest, NoControllee) {
 
   // Finish the request. Since there is a controllee, activation should not yet
   // happen.
-  version_1->FinishRequest(inflight_request_id(), true /* was_handled */,
-                           base::TimeTicks::Now());
+  version_1->FinishRequest(inflight_request_id(), true /* was_handled */);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(version_1.get(), reg->active_version());
 
@@ -584,8 +582,7 @@ TEST_P(ServiceWorkerActivationTest, SkipWaitingWithInflightRequest) {
   // S13nServiceWorker: FinishRequest() doesn't immediately make the worker
   // "no work" state. It needs to be notfied the idle state by
   // RequestTermination().
-  version_1->FinishRequest(inflight_request_id(), true /* was_handled */,
-                           base::TimeTicks::Now());
+  version_1->FinishRequest(inflight_request_id(), true /* was_handled */);
 
   if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
     EXPECT_EQ(version_1.get(), reg->active_version());
@@ -611,8 +608,7 @@ TEST_P(ServiceWorkerActivationTest, SkipWaiting) {
 
   // Finish the in-flight request. Since there is a controllee,
   // activation should not happen.
-  version_1->FinishRequest(inflight_request_id(), true /* was_handled */,
-                           base::TimeTicks::Now());
+  version_1->FinishRequest(inflight_request_id(), true /* was_handled */);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(version_1.get(), reg->active_version());
 
@@ -914,7 +910,7 @@ class ServiceWorkerRegistrationObjectHostTest
                                     provider_id,
                                     true /* is_parent_frame_secure */,
                                     context()->AsWeakPtr(), &remote_endpoint);
-    host->SetDocumentUrl(document_url);
+    host->UpdateUrls(document_url, document_url);
     context()->AddProviderHost(std::move(host));
     return remote_endpoint;
   }
@@ -1001,9 +997,10 @@ TEST_F(ServiceWorkerRegistrationObjectHostTest, Update_CrossOriginShouldFail) {
   registration_host_ptr.Bind(std::move(info->host_ptr_info));
 
   ASSERT_TRUE(bad_messages_.empty());
-  context()
-      ->GetProviderHost(helper_->mock_render_process_id(), kProviderId)
-      ->SetDocumentUrl(GURL("https://does.not.exist/"));
+  auto* provider_host = context()->GetProviderHost(
+      helper_->mock_render_process_id(), kProviderId);
+  GURL url("https://does.not.exist/");
+  provider_host->UpdateUrls(url, url);
   CallUpdate(registration_host_ptr.get());
   EXPECT_EQ(1u, bad_messages_.size());
 }
@@ -1105,7 +1102,7 @@ TEST_F(ServiceWorkerRegistrationObjectHostTest,
       helper_->mock_render_process_id(), kProviderId,
       true /* is_parent_frame_secure */, context()->AsWeakPtr(),
       &remote_endpoint);
-  host->SetDocumentUrl(kScope);
+  host.get()->UpdateUrls(kScope, kScope);
   version->AddControllee(host.get());
 
   // Initially set |self_update_delay| to zero.
@@ -1170,9 +1167,10 @@ TEST_F(ServiceWorkerRegistrationObjectHostTest,
   registration_host_ptr.Bind(std::move(info->host_ptr_info));
 
   ASSERT_TRUE(bad_messages_.empty());
-  context()
-      ->GetProviderHost(helper_->mock_render_process_id(), kProviderId)
-      ->SetDocumentUrl(GURL("https://does.not.exist/"));
+  auto* provider_host = context()->GetProviderHost(
+      helper_->mock_render_process_id(), kProviderId);
+  provider_host->UpdateUrls(GURL("https://does.not.exist/"),
+                            GURL("https://does.not.exist/"));
   CallUnregister(registration_host_ptr.get());
   EXPECT_EQ(1u, bad_messages_.size());
 }

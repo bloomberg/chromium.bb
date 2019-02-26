@@ -5,9 +5,16 @@
 #include "components/omnibox/browser/omnibox_pedal_implementations.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
+#include "components/omnibox/browser/autocomplete_provider_client.h"
+#include "components/omnibox/browser/buildflags.h"
 #include "components/omnibox/browser/omnibox_client.h"
 #include "components/omnibox/browser/omnibox_pedal.h"
 #include "components/strings/grit/components_strings.h"
+
+#if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
+#include "components/omnibox/browser/vector_icons.h"  // nogncheck
+#endif
 
 // A small convenience wrapper for the common implementation pattern below.
 class OmniboxPedalCommon : public OmniboxPedal {
@@ -55,6 +62,12 @@ class OmniboxPedalClearBrowsingData : public OmniboxPedalCommon {
                 "history clear",
                 "history clear chrome",
             }) {}
+
+#if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
+  const gfx::VectorIcon& GetVectorIcon() const override {
+    return omnibox::kAnswerWhenIsIcon;
+  }
+#endif
 };
 
 // =============================================================================
@@ -149,6 +162,26 @@ class OmniboxPedalUpdateCreditCard : public OmniboxPedalCommon {
 
 // =============================================================================
 
+class OmniboxPedalLaunchIncognito : public OmniboxPedalCommon {
+ public:
+  OmniboxPedalLaunchIncognito()
+      : OmniboxPedalCommon(
+            LabelStrings(
+                IDS_OMNIBOX_PEDAL_LAUNCH_INCOGNITO_HINT,
+                IDS_OMNIBOX_PEDAL_LAUNCH_INCOGNITO_HINT_SHORT,
+                IDS_OMNIBOX_PEDAL_LAUNCH_INCOGNITO_SUGGESTION_CONTENTS),
+            GURL(),
+            {
+                "what is incognito", "what's incognito mode",
+            }) {}
+
+  void Execute(ExecutionContext& context) const override {
+    context.client_.NewIncognitoWindow();
+  }
+};
+
+// =============================================================================
+
 class OmniboxPedalTranslate : public OmniboxPedalCommon {
  public:
   OmniboxPedalTranslate()
@@ -172,6 +205,33 @@ class OmniboxPedalTranslate : public OmniboxPedalCommon {
 
 // =============================================================================
 
+class OmniboxPedalUpdateChrome : public OmniboxPedalCommon {
+ public:
+  OmniboxPedalUpdateChrome()
+      : OmniboxPedalCommon(
+            LabelStrings(IDS_OMNIBOX_PEDAL_UPDATE_CHROME_HINT,
+                         IDS_OMNIBOX_PEDAL_UPDATE_CHROME_HINT_SHORT,
+                         IDS_OMNIBOX_PEDAL_UPDATE_CHROME_SUGGESTION_CONTENTS),
+            GURL(),
+            {
+                "how to update google chrome", "how to update chrome",
+                "how do i update google chrome", "how to update chrome browser",
+                "update google chrome", "update chrome",
+                "update chrome browser",
+            }) {}
+
+  void Execute(ExecutionContext& context) const override {
+    context.client_.OpenUpdateChromeDialog();
+  }
+
+  bool IsReadyToTrigger(
+      const AutocompleteProviderClient& client) const override {
+    return client.IsBrowserUpdateAvailable();
+  }
+};
+
+// =============================================================================
+
 std::vector<std::unique_ptr<OmniboxPedal>> GetPedalImplementations() {
   std::vector<std::unique_ptr<OmniboxPedal>> pedals;
   const auto add = [&](OmniboxPedal* pedal) {
@@ -182,6 +242,8 @@ std::vector<std::unique_ptr<OmniboxPedal>> GetPedalImplementations() {
   add(new OmniboxPedalManagePasswords());
   add(new OmniboxPedalChangeHomePage());
   add(new OmniboxPedalUpdateCreditCard());
+  add(new OmniboxPedalLaunchIncognito());
   add(new OmniboxPedalTranslate());
+  add(new OmniboxPedalUpdateChrome());
   return pedals;
 }

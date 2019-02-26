@@ -6,9 +6,9 @@
   bottom: 0;
   left: 0;
   margin: auto;
-  min-width: 192px;
   max-height: 100%;
   max-width: 100%;
+  min-width: 192px;
   padding: 0;
   position: absolute;
   right: 0;
@@ -30,7 +30,21 @@ img {
   display: none;
 }
 
+video::-webkit-media-controls-timeline,
+video::-webkit-media-controls-mute-button,
+video::-webkit-media-controls-play-button {
+  cursor: pointer;
+}
+
 video::-webkit-media-controls-fullscreen-button,
 video::-webkit-media-controls-volume-slider {
   display: none;
+}
+
+video:focus,
+video::-webkit-media-controls-timeline:focus,
+video::-webkit-media-controls-mute-button:focus,
+video::-webkit-media-controls-play-button:focus {
+  outline: 2px solid rgba(66, 133, 244, 0.5);
+  outline-offset: -2px;
 }

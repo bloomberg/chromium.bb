@@ -14,6 +14,7 @@
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
@@ -29,8 +30,8 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/navigation_policy.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_util.h"
@@ -301,6 +302,23 @@ const net::NetworkTrafficAnnotationTag kNavigationPreloadTrafficAnnotation =
       "policies (or a combination of both) limits the scope of these requests."
 )");
 
+// A copy of RenderFrameHostImpl's GrantFileAccess since there's not a great
+// central place to put this.
+//
+// Abuse is prevented, because the files listed in ResourceRequestBody are
+// validated earlier by navigation or ResourceDispatcherHost machinery before
+// ServiceWorkerFetchDispatcher is used to send the request to a service worker.
+void GrantFileAccessToProcess(int process_id,
+                              const std::vector<base::FilePath>& file_paths) {
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+
+  for (const auto& file : file_paths) {
+    if (!policy->CanReadFile(process_id, file))
+      policy->GrantReadFile(process_id, file);
+  }
+}
+
 }  // namespace
 
 // ResponseCallback is owned by the callback that is passed to
@@ -360,8 +378,7 @@ class ServiceWorkerFetchDispatcher::ResponseCallback
       FetchEventResult fetch_result,
       blink::mojom::ServiceWorkerFetchEventTimingPtr timing) {
     if (!version->FinishRequest(fetch_event_id.value(),
-                                fetch_result == FetchEventResult::kGotResponse,
-                                timing->dispatch_event_time))
+                                fetch_result == FetchEventResult::kGotResponse))
       NOTREACHED() << "Should only receive one reply per event";
     // |fetch_dispatcher| is null if the URLRequest was killed.
     if (!fetch_dispatcher)
@@ -434,7 +451,7 @@ ServiceWorkerFetchDispatcher::ServiceWorkerFetchDispatcher(
 #if DCHECK_IS_ON()
   if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
     DCHECK((request_body_blob_uuid_.empty() && request_body_blob_size_ == 0 &&
-            !request_body_blob_ && client_id_.empty()));
+            !request_body_blob_));
   }
 #endif  // DCHECK_IS_ON()
   net_log_.BeginEvent(net::NetLogEventType::SERVICE_WORKER_DISPATCH_FETCH_EVENT,
@@ -506,6 +523,12 @@ void ServiceWorkerFetchDispatcher::DidStartWorker(
 void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
   DCHECK_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status())
       << "Worker stopped too soon after it was started.";
+
+  // Grant the service worker's process access to files in the request body.
+  if (request_->request_body) {
+    GrantFileAccessToProcess(version_->embedded_worker()->process_id(),
+                             request_->request_body->GetReferencedFiles());
+  }
 
   // Run callback to say that the fetch event will be dispatched.
   DCHECK(prepare_callback_);
@@ -620,12 +643,14 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   ResourceRequesterInfo* requester_info = original_info->requester_info();
   DCHECK(requester_info->IsBrowserSideNavigation());
   auto url_loader_factory = std::make_unique<URLLoaderFactoryImpl>(
-      ResourceRequesterInfo::CreateForNavigationPreload(requester_info));
+      ResourceRequesterInfo::CreateForNavigationPreload(
+          requester_info,
+          const_cast<net::URLRequestContext*>(original_request->context())));
 
   network::ResourceRequest request;
   request.method = original_request->method();
   request.url = original_request->url();
-  // TODO(horo): Set site_for_cookies to support Same-site Cookies.
+  request.site_for_cookies = original_request->site_for_cookies();
   request.request_initiator =
       original_request->initiator().has_value()
           ? original_request->initiator()
@@ -759,12 +784,10 @@ void ServiceWorkerFetchDispatcher::OnFetchEventFinished(
     ServiceWorkerVersion* version,
     int event_finish_id,
     scoped_refptr<URLLoaderAssets> url_loader_assets,
-    blink::mojom::ServiceWorkerEventStatus status,
-    base::TimeTicks dispatch_event_time) {
+    blink::mojom::ServiceWorkerEventStatus status) {
   version->FinishRequest(
       event_finish_id,
-      status != blink::mojom::ServiceWorkerEventStatus::ABORTED,
-      dispatch_event_time);
+      status != blink::mojom::ServiceWorkerEventStatus::ABORTED);
 }
 
 }  // namespace content

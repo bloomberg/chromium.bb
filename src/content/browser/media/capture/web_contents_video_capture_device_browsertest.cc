@@ -99,10 +99,18 @@ class WebContentsVideoCaptureDeviceBrowserTest
             << average_mainframe_rgb << ", letterbox region has average color "
             << average_letterbox_rgb;
 
+        // TODO(crbug/810131): The software compositor ignores color space and
+        // always uses the REC609 conversion factors. Once that's fixed and
+        // color space info is fully plumbed-through, remove this.
+        const int max_color_diff =
+            IsSoftwareCompositingTest()
+                ? FrameTestUtil::kMaxInaccurateColorDifference
+                : FrameTestUtil::kMaxColorDifference;
+
         // The letterboxed region should always be black.
         if (IsFixedAspectRatioTest()) {
           EXPECT_TRUE(FrameTestUtil::IsApproximatelySameColor(
-              SK_ColorBLACK, average_letterbox_rgb));
+              SK_ColorBLACK, average_letterbox_rgb, max_color_diff));
         }
 
         if (testing::Test::HasFailure()) {
@@ -113,17 +121,17 @@ class WebContentsVideoCaptureDeviceBrowserTest
 
         // Return if the content region(s) now has/have the expected color(s).
         if (IsCrossSiteCaptureTest() &&
-            FrameTestUtil::IsApproximatelySameColor(color,
-                                                    average_iframe_rgb) &&
-            FrameTestUtil::IsApproximatelySameColor(SK_ColorWHITE,
-                                                    average_mainframe_rgb)) {
+            FrameTestUtil::IsApproximatelySameColor(color, average_iframe_rgb,
+                                                    max_color_diff) &&
+            FrameTestUtil::IsApproximatelySameColor(
+                SK_ColorWHITE, average_mainframe_rgb, max_color_diff)) {
           VLOG(1) << "Observed desired frame.";
           return;
         } else if (!IsCrossSiteCaptureTest() &&
                    FrameTestUtil::IsApproximatelySameColor(
-                       color, average_iframe_rgb) &&
+                       color, average_iframe_rgb, max_color_diff) &&
                    FrameTestUtil::IsApproximatelySameColor(
-                       color, average_mainframe_rgb)) {
+                       color, average_mainframe_rgb, max_color_diff)) {
           VLOG(1) << "Observed desired frame.";
           return;
         } else {
@@ -323,12 +331,19 @@ INSTANTIATE_TEST_CASE_P(
                         true /* page contains a cross-site iframe */)));
 #endif  // defined(OS_CHROMEOS)
 
+// TODO(crbug/908854): This test is flaky on Win7 Tests.
+#if defined(OS_WIN)
+#define MAYBE_CapturesContentChanges DISABLED_CapturesContentChanges
+#else
+#define MAYBE_CapturesContentChanges CapturesContentChanges
+#endif
+
 // Tests that the device successfully captures a series of content changes,
 // whether the browser is running with software compositing or GPU-accelerated
 // compositing, whether the WebContents is visible/hidden or occluded/unoccluded
 // and whether the main document contains a cross-site iframe.
 IN_PROC_BROWSER_TEST_P(WebContentsVideoCaptureDeviceBrowserTestP,
-                       CapturesContentChanges) {
+                       MAYBE_CapturesContentChanges) {
   SCOPED_TRACE(testing::Message()
                << "Test parameters: "
                << (IsSoftwareCompositingTest() ? "Software Compositing"

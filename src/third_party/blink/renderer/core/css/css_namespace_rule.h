@@ -17,9 +17,10 @@ class CSSNamespaceRule final : public CSSRule {
  public:
   static CSSNamespaceRule* Create(StyleRuleNamespace* rule,
                                   CSSStyleSheet* sheet) {
-    return new CSSNamespaceRule(rule, sheet);
+    return MakeGarbageCollected<CSSNamespaceRule>(rule, sheet);
   }
 
+  CSSNamespaceRule(StyleRuleNamespace*, CSSStyleSheet*);
   ~CSSNamespaceRule() override;
 
   String cssText() const override;
@@ -31,8 +32,6 @@ class CSSNamespaceRule final : public CSSRule {
   void Trace(blink::Visitor*) override;
 
  private:
-  CSSNamespaceRule(StyleRuleNamespace*, CSSStyleSheet*);
-
   CSSRule::Type type() const override { return kNamespaceRule; }
 
   Member<StyleRuleNamespace> namespace_rule_;

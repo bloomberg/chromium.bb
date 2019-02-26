@@ -179,7 +179,7 @@ void RecordLastRunAppBundlePath() {
   // real, user-visible app bundle directory. (The alternatives give either the
   // framework's path or the initial app's path, which may be an app mode shim
   // or a unit test.)
-  base::AssertBlockingAllowed();
+  base::AssertBlockingAllowedDeprecated();
 
   base::FilePath app_bundle_path =
       chrome::GetVersionedDirectory().DirName().DirName().DirName();
@@ -378,6 +378,12 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
              name:NSWorkspaceWillPowerOffNotification
            object:nil];
 
+  NSMenu* fileMenu = [[[NSApp mainMenu] itemWithTag:IDC_FILE_MENU] submenu];
+  closeTabMenuItem_ = [fileMenu itemWithTag:IDC_CLOSE_TAB];
+  DCHECK(closeTabMenuItem_);
+  closeWindowMenuItem_ = [fileMenu itemWithTag:IDC_CLOSE_WINDOW];
+  DCHECK(closeWindowMenuItem_);
+
   // Set up the command updater for when there are no windows open
   [self initMenuState];
 
@@ -457,12 +463,6 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   // them in, but I'm not sure about UX; we'd also want to disable other things
   // though.) http://crbug.com/40861
 
-  // Check if the user really wants to quit by employing the confirm-to-quit
-  // mechanism.
-  if (!browser_shutdown::IsTryingToQuit() &&
-      [self applicationShouldTerminate:app] != NSTerminateNow)
-    return NO;
-
   // Check for active apps. If quitting is prevented, only close browsers and
   // sessions.
   if (!browser_shutdown::IsTryingToQuit() && !isPoweringOff &&
@@ -513,30 +513,26 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   }
 }
 
-- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication*)app {
+- (BOOL)runConfirmQuitPanel {
   // If there are no windows, quit immediately.
   if (BrowserList::GetInstance()->empty() &&
       !AppWindowRegistryUtil::IsAppWindowVisibleInAnyProfile(0)) {
-    return NSTerminateNow;
+    return YES;
   }
 
   // Check if the preference is turned on.
   const PrefService* prefs = g_browser_process->local_state();
   if (!prefs->GetBoolean(prefs::kConfirmToQuitEnabled)) {
     confirm_quit::RecordHistogram(confirm_quit::kNoConfirm);
-    return NSTerminateNow;
+    return YES;
   }
 
-  // If the application is going to terminate as the result of a Cmd+Q
-  // invocation, use the special sauce to prevent accidental quitting.
-  // http://dev.chromium.org/developers/design-documents/confirm-to-quit-experiment
-
-  // This logic is only for keyboard-initiated quits.
-  if (![ConfirmQuitPanelController eventTriggersFeature:[app currentEvent]])
+  // Run only for keyboard-initiated quits.
+  if ([[NSApp currentEvent] type] != NSKeyDown)
     return NSTerminateNow;
 
   return [[ConfirmQuitPanelController sharedController]
-      runModalLoopForApplication:app];
+      runModalLoopForApplication:NSApp];
 }
 
 // Called when the app is shutting down. Clean-up as appropriate.
@@ -635,12 +631,11 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   // happened during a space change. Now that the change has
   // completed, raise browser windows.
   reopenTime_ = base::TimeTicks();
-  std::set<NSWindow*> browserWindows;
+  std::set<gfx::NativeWindow> browserWindows;
   for (auto* browser : *BrowserList::GetInstance())
     browserWindows.insert(browser->window()->GetNativeWindow());
-  if (!browserWindows.empty()) {
+  if (!browserWindows.empty())
     ui::FocusWindowSetOnCurrentSpace(browserWindows);
-  }
 }
 
 // Called when shutting down or logging out.
@@ -925,9 +920,8 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
     return YES;
 
   Browser* browser = chrome::GetLastActiveBrowser();
-  return browser &&
-         [[browser->window()->GetNativeWindow() attachedSheet]
-             isKindOfClass:[NSWindow class]];
+  return browser && [[browser->window()->GetNativeWindow().GetNativeNSWindow()
+                            attachedSheet] isKindOfClass:[NSWindow class]];
 }
 
 // Called to validate menu items when there are no key windows. All the
@@ -1175,7 +1169,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   // If there are any, return here. Otherwise, the windows are panels or
   // notifications so we still need to open a new window.
   if (hasVisibleWindows) {
-    std::set<NSWindow*> browserWindows;
+    std::set<gfx::NativeWindow> browserWindows;
     for (auto* browser : *BrowserList::GetInstance()) {
       // When focusing Chrome, don't focus any browser windows associated with
       // a currently running app shim, so ignore them.

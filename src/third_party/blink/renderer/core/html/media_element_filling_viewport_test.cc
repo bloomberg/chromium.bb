@@ -27,11 +27,15 @@ class MediaElementFillingViewportTest : public SimTest {
     return element->mostly_filling_viewport_;
   }
 
-  void CheckViewportIntersectionChanged(HTMLMediaElement* element) {
-    element->ActivateViewportIntersectionMonitoring(true);
-    EXPECT_TRUE(element->check_viewport_intersection_timer_.IsActive());
-    // TODO(xjz): Mock the time and wait for 1s instead.
-    element->CheckViewportIntersectionTimerFired(nullptr);
+  void ActivateViewportIntersectionMonitoring(HTMLMediaElement* element,
+                                              bool enable) {
+    element->ActivateViewportIntersectionMonitoring(enable);
+    EXPECT_EQ(enable, !!element->viewport_intersection_observer_);
+  }
+
+  void DoCompositeAndPropagate() {
+    Compositor().BeginFrame();
+    test::RunPendingTasks();
   }
 
   std::unique_ptr<SimRequest> CreateMainResource() {
@@ -57,8 +61,14 @@ TEST_F(MediaElementFillingViewportTest, MostlyFillingViewport) {
 
   HTMLMediaElement* element =
       ToElement<HTMLMediaElement>(GetDocument().getElementById("video"));
-  CheckViewportIntersectionChanged(element);
+
+  ActivateViewportIntersectionMonitoring(element, true);
+  DoCompositeAndPropagate();
   EXPECT_TRUE(IsMostlyFillingViewport(element));
+
+  ActivateViewportIntersectionMonitoring(element, false);
+  DoCompositeAndPropagate();
+  EXPECT_FALSE(IsMostlyFillingViewport(element));
 }
 
 TEST_F(MediaElementFillingViewportTest, NotMostlyFillingViewport) {
@@ -76,7 +86,8 @@ TEST_F(MediaElementFillingViewportTest, NotMostlyFillingViewport) {
 
   HTMLMediaElement* element =
       ToElement<HTMLMediaElement>(GetDocument().getElementById("video"));
-  CheckViewportIntersectionChanged(element);
+  ActivateViewportIntersectionMonitoring(element, true);
+  DoCompositeAndPropagate();
   EXPECT_FALSE(IsMostlyFillingViewport(element));
 }
 
@@ -95,15 +106,15 @@ TEST_F(MediaElementFillingViewportTest, FillingViewportChanged) {
 
   HTMLMediaElement* element =
       ToElement<HTMLMediaElement>(GetDocument().getElementById("video"));
-  CheckViewportIntersectionChanged(element);
+
+  ActivateViewportIntersectionMonitoring(element, true);
+  DoCompositeAndPropagate();
   EXPECT_TRUE(IsMostlyFillingViewport(element));
 
   element->setAttribute("style",
                         "position:fixed; left:0; top:0; width:80%; height:80%;",
                         ASSERT_NO_EXCEPTION);
-  Compositor().BeginFrame();
-
-  CheckViewportIntersectionChanged(element);
+  DoCompositeAndPropagate();
   EXPECT_FALSE(IsMostlyFillingViewport(element));
 }
 
@@ -122,7 +133,9 @@ TEST_F(MediaElementFillingViewportTest, LargeVideo) {
 
   HTMLMediaElement* element =
       ToElement<HTMLMediaElement>(GetDocument().getElementById("video"));
-  CheckViewportIntersectionChanged(element);
+
+  ActivateViewportIntersectionMonitoring(element, true);
+  DoCompositeAndPropagate();
   EXPECT_TRUE(IsMostlyFillingViewport(element));
 }
 
@@ -141,14 +154,15 @@ TEST_F(MediaElementFillingViewportTest, VideoScrollOutHalf) {
 
   HTMLMediaElement* element =
       ToElement<HTMLMediaElement>(GetDocument().getElementById("video"));
-  CheckViewportIntersectionChanged(element);
+
+  ActivateViewportIntersectionMonitoring(element, true);
+  DoCompositeAndPropagate();
   EXPECT_TRUE(IsMostlyFillingViewport(element));
 
   element->setAttribute(
       "style", "position:fixed; left:0; top:240px; width:100%; height:100%;",
       ASSERT_NO_EXCEPTION);
-  Compositor().BeginFrame();
-  CheckViewportIntersectionChanged(element);
+  DoCompositeAndPropagate();
   EXPECT_FALSE(IsMostlyFillingViewport(element));
 }
 

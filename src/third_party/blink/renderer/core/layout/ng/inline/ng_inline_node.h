@@ -45,6 +45,9 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
                                        const NGBreakToken*,
                                        NGInlineChildLayoutContext* context);
 
+  // Prepare to reuse fragments. Returns false if reuse is not possible.
+  bool PrepareReuseFragments(const NGConstraintSpace&);
+
   // Computes the value of min-content and max-content for this anonymous block
   // box. min-content is the inline size when lines wrap at every break
   // opportunity, and max-content is when lines do not wrap at all.
@@ -66,6 +69,17 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   // computed before, compute and store it in NGInlineNodeData.
   // This funciton must be called with clean layout.
   const NGOffsetMapping* ComputeOffsetMappingIfNeeded();
+
+  // Get |NGOffsetMapping| for the |layout_block_flow|. If |layout_block_flow|
+  // is LayoutNG and it is already laid out, this function is the same as
+  // |ComputeOffsetMappingIfNeeded|. |storage| is not used in this case.
+  //
+  // Otherwise, this function computes |NGOffsetMapping| and store in |storage|
+  // as well as returning the pointer. The caller is responsible for keeping
+  // |storage| for the life cycle of the returned |NGOffsetMapping|.
+  static const NGOffsetMapping* GetOffsetMapping(
+      LayoutBlockFlow* layout_block_flow,
+      std::unique_ptr<NGOffsetMapping>* storage);
 
   bool IsBidiEnabled() const { return Data().is_bidi_enabled_; }
   TextDirection BaseDirection() const { return Data().BaseDirection(); }
@@ -106,6 +120,8 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
 
   void ClearAssociatedFragments(const NGInlineBreakToken*);
 
+  bool MarkLineBoxesDirty(LayoutBlockFlow*);
+
   NGInlineNodeData* MutableData() {
     return ToLayoutBlockFlow(box_)->GetNGInlineNodeData();
   }
@@ -115,6 +131,9 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
     return *ToLayoutBlockFlow(box_)->GetNGInlineNodeData();
   }
   const NGInlineNodeData& EnsureData();
+
+  static void ComputeOffsetMapping(LayoutBlockFlow* layout_block_flow,
+                                   NGInlineNodeData* data);
 
   friend class NGLineBreakerTest;
   friend class NGInlineNodeLegacy;

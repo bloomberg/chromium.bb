@@ -105,11 +105,15 @@ class WindowedNetworkObserver {
       return false;
     }
 
-    if (network::GetUploadData(resource_request) == expected_upload_data_ ||
-        GetQueryParam(resource_request.url.query(), "q") ==
-            expected_upload_data_) {
+    const std::string& data =
+        (resource_request.method == "GET")
+            ? GetQueryParam(resource_request.url.query(), "q")
+            : network::GetUploadData(resource_request);
+    EXPECT_EQ(data, expected_upload_data_);
+
+    if (data == expected_upload_data_)
       message_loop_runner_->Quit();
-    }
+
     return false;
   }
 
@@ -130,8 +134,11 @@ class AutofillServerTest : public InProcessBrowserTest  {
     // Enable data-url support.
     // TODO(crbug.com/894428) - fix this suite to use the embedded test server
     // instead of data urls.
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kAutofillAllowNonHttpActivation);
+    scoped_feature_list_.InitWithFeatures(
+        // Enabled.
+        {features::kAutofillAllowNonHttpActivation},
+        // Disabled.
+        {features::kAutofillMetadataUploads});
 
     // Note that features MUST be enabled/disabled before continuing with
     // SetUp(); otherwise, the feature state doesn't propagate to the test
@@ -164,10 +171,10 @@ IN_PROC_BROWSER_TEST_F(AutofillServerTest,
   const char kDataURIPrefix[] = "data:text/html;charset=utf-8,";
   const char kFormHtml[] =
       "<form id='test_form' action='about:blank'>"
-      "  <input id='one'>"
-      "  <input id='two' autocomplete='off'>"
-      "  <input id='three'>"
-      "  <input id='four' autocomplete='off'>"
+      "  <input name='one'>"
+      "  <input name='two' autocomplete='off'>"
+      "  <input name='three'>"
+      "  <input name='four' autocomplete='off'>"
       "  <input type='submit'>"
       "</form>"
       "<script>"

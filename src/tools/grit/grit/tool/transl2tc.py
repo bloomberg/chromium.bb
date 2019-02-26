@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -6,6 +5,7 @@
 '''The 'grit transl2tc' tool.
 '''
 
+import sys
 
 from grit import grd_reader
 from grit import util
@@ -60,7 +60,7 @@ Bulk Translation Upload tool.
     if len(args) and args[0] == '-l':
       self.limits = util.ReadFile(args[1], util.RAW_TEXT).split('\n')
       args = args[2:]
-    return self.rc2grd.ParseOptions(args)
+    return self.rc2grd.ParseOptions(args, help_func=self.ShowUsage)
 
   def Run(self, globopt, args):
     args = self.Setup(globopt, args)

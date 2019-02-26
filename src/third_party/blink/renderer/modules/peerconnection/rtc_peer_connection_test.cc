@@ -8,21 +8,32 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_receiver.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_sender.h"
 #include "third_party/blink/public/platform/web_rtc_session_description.h"
+#include "third_party/blink/public/platform/web_rtc_session_description_request.h"
+#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_void_function.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_peer_connection_error_callback.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_session_description_callback.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_answer_options.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_configuration.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_server.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_offer_options.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_session_description_init.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_web_rtc.h"
+#include "third_party/webrtc/api/rtcerror.h"
+#include "v8/include/v8.h"
 
 namespace blink {
 
@@ -359,17 +370,19 @@ static const char* kOfferSdpPlanBMultipleAudioTracks =
     "a=ssrc:4092260337 mslabel:46f8615e-7599-49f3-9a45-3cf0faf58614\r\n"
     "a=ssrc:4092260337 label:6b5f436e-f85d-40a1-83e4-acec63ca4b82\r\n";
 
-class RTCPeerConnectionTest : public testing::Test {
+template <typename PlatformSupportType>
+class RTCPeerConnectionTestWithPlatformTestingPlatformType
+    : public testing::Test {
  public:
   RTCPeerConnection* CreatePC(V8TestingScope& scope,
                               const String& sdpSemantics = String()) {
-    RTCConfiguration config;
-    config.setSdpSemantics(sdpSemantics);
-    RTCIceServer ice_server;
-    ice_server.setURL("stun:fake.stun.url");
-    HeapVector<RTCIceServer> ice_servers;
+    RTCConfiguration* config = RTCConfiguration::Create();
+    config->setSdpSemantics(sdpSemantics);
+    RTCIceServer* ice_server = RTCIceServer::Create();
+    ice_server->setURL("stun:fake.stun.url");
+    HeapVector<Member<RTCIceServer>> ice_servers;
     ice_servers.push_back(ice_server);
-    config.setIceServers(ice_servers);
+    config->setIceServers(ice_servers);
     return RTCPeerConnection::Create(scope.GetExecutionContext(), config,
                                      Dictionary(), scope.GetExceptionState());
   }
@@ -405,8 +418,14 @@ class RTCPeerConnectionTest : public testing::Test {
     EXPECT_EQ("", GetExceptionMessage(scope));
   }
 
- private:
-  ScopedTestingPlatformSupport<TestingPlatformSupportWithWebRTC> platform;
+ protected:
+  ScopedTestingPlatformSupport<PlatformSupportType> platform_;
+};
+
+class RTCPeerConnectionTest
+    : public RTCPeerConnectionTestWithPlatformTestingPlatformType<
+          TestingPlatformSupportWithWebRTC> {
+ public:
 };
 
 TEST_F(RTCPeerConnectionTest, GetAudioTrack) {
@@ -572,78 +591,549 @@ TEST_F(RTCPeerConnectionTest, GetTrackRemoveStreamAndGCWithPersistentStream) {
   EXPECT_FALSE(pc->GetTrack(track_component));
 }
 
-TEST_F(RTCPeerConnectionTest, PlanBSdpWarningNotShownWhenPlanBSpecified) {
+TEST_F(RTCPeerConnectionTest, CheckForComplexSdpWithSdpSemanticsPlanB) {
   V8TestingScope scope;
   Persistent<RTCPeerConnection> pc = CreatePC(scope, "plan-b");
-  RTCSessionDescriptionInit sdp;
-  sdp.setType("offer");
-  // It doesn't matter the SDP, never show a warning if sdpSemantics was
-  // specified at construction.
-  sdp.setSdp(kOfferSdpUnifiedPlanSingleAudioSingleVideo);
-  ASSERT_FALSE(pc->ShouldShowComplexPlanBSdpWarning(sdp));
-  sdp.setSdp(kOfferSdpUnifiedPlanMultipleAudioTracks);
-  ASSERT_FALSE(pc->ShouldShowComplexPlanBSdpWarning(sdp));
-  sdp.setSdp(kOfferSdpPlanBSingleAudioSingleVideo);
-  ASSERT_FALSE(pc->ShouldShowComplexPlanBSdpWarning(sdp));
-  sdp.setSdp(kOfferSdpPlanBMultipleAudioTracks);
-  ASSERT_FALSE(pc->ShouldShowComplexPlanBSdpWarning(sdp));
+  RTCSessionDescriptionInit* sdp = RTCSessionDescriptionInit::Create();
+  sdp->setType("offer");
+  sdp->setSdp(kOfferSdpUnifiedPlanMultipleAudioTracks);
+  ASSERT_TRUE(pc->CheckForComplexSdp(sdp).has_value());
+  ASSERT_EQ(pc->CheckForComplexSdp(sdp),
+            ComplexSdpCategory::kUnifiedPlanExplicitSemantics);
+  sdp->setSdp(kOfferSdpPlanBMultipleAudioTracks);
+  ASSERT_TRUE(pc->CheckForComplexSdp(sdp).has_value());
+  ASSERT_EQ(pc->CheckForComplexSdp(sdp),
+            ComplexSdpCategory::kPlanBExplicitSemantics);
+  sdp->setSdp("invalid sdp");
+  ASSERT_TRUE(pc->CheckForComplexSdp(sdp).has_value());
+  ASSERT_EQ(pc->CheckForComplexSdp(sdp),
+            ComplexSdpCategory::kErrorExplicitSemantics);
+  // No Complex SDP is detected if only a single track per m= section is used.
+  sdp->setSdp(kOfferSdpUnifiedPlanSingleAudioSingleVideo);
+  ASSERT_FALSE(pc->CheckForComplexSdp(sdp).has_value());
+  sdp->setSdp(kOfferSdpPlanBSingleAudioSingleVideo);
+  ASSERT_FALSE(pc->CheckForComplexSdp(sdp).has_value());
 }
 
-TEST_F(RTCPeerConnectionTest, PlanBSdpWarningNotShownWhenUnifiedPlanSpecified) {
+TEST_F(RTCPeerConnectionTest, CheckForComplexSdpWithSdpSemanticsUnifiedPlan) {
   V8TestingScope scope;
   Persistent<RTCPeerConnection> pc = CreatePC(scope, "unified-plan");
-  RTCSessionDescriptionInit sdp;
-  sdp.setType("offer");
-  // It doesn't matter the SDP, never show a warning if sdpSemantics was
-  // specified at construction.
-  sdp.setSdp(kOfferSdpUnifiedPlanSingleAudioSingleVideo);
-  ASSERT_FALSE(pc->ShouldShowComplexPlanBSdpWarning(sdp));
-  sdp.setSdp(kOfferSdpUnifiedPlanMultipleAudioTracks);
-  ASSERT_FALSE(pc->ShouldShowComplexPlanBSdpWarning(sdp));
-  sdp.setSdp(kOfferSdpPlanBSingleAudioSingleVideo);
-  ASSERT_FALSE(pc->ShouldShowComplexPlanBSdpWarning(sdp));
-  sdp.setSdp(kOfferSdpPlanBMultipleAudioTracks);
-  ASSERT_FALSE(pc->ShouldShowComplexPlanBSdpWarning(sdp));
+  RTCSessionDescriptionInit* sdp = RTCSessionDescriptionInit::Create();
+  sdp->setType("offer");
+  sdp->setSdp(kOfferSdpUnifiedPlanMultipleAudioTracks);
+  ASSERT_TRUE(pc->CheckForComplexSdp(sdp).has_value());
+  ASSERT_EQ(pc->CheckForComplexSdp(sdp),
+            ComplexSdpCategory::kUnifiedPlanExplicitSemantics);
+  sdp->setSdp(kOfferSdpPlanBMultipleAudioTracks);
+  ASSERT_TRUE(pc->CheckForComplexSdp(sdp).has_value());
+  ASSERT_EQ(pc->CheckForComplexSdp(sdp),
+            ComplexSdpCategory::kPlanBExplicitSemantics);
+  sdp->setSdp("invalid sdp");
+  ASSERT_TRUE(pc->CheckForComplexSdp(sdp).has_value());
+  ASSERT_EQ(pc->CheckForComplexSdp(sdp),
+            ComplexSdpCategory::kErrorExplicitSemantics);
+  // No Complex SDP is detected if only a single track per m= section is used.
+  sdp->setSdp(kOfferSdpUnifiedPlanSingleAudioSingleVideo);
+  ASSERT_FALSE(pc->CheckForComplexSdp(sdp).has_value());
+  sdp->setSdp(kOfferSdpPlanBSingleAudioSingleVideo);
+  ASSERT_FALSE(pc->CheckForComplexSdp(sdp).has_value());
 }
 
-TEST_F(RTCPeerConnectionTest, PlanBSdpWarningNotShownWhenInvalidSdp) {
+TEST_F(RTCPeerConnectionTest, CheckForComplexSdpWithSdpSemanticsUnspecified) {
   V8TestingScope scope;
   Persistent<RTCPeerConnection> pc = CreatePC(scope);
-  RTCSessionDescriptionInit sdp;
-  sdp.setType("offer");
-  sdp.setSdp("invalid sdp");
-  ASSERT_FALSE(pc->ShouldShowComplexPlanBSdpWarning(sdp));
+  RTCSessionDescriptionInit* sdp = RTCSessionDescriptionInit::Create();
+  sdp->setType("offer");
+  sdp->setSdp(kOfferSdpPlanBMultipleAudioTracks);
+  ASSERT_TRUE(pc->CheckForComplexSdp(sdp).has_value());
+  ASSERT_EQ(pc->CheckForComplexSdp(sdp),
+            ComplexSdpCategory::kPlanBImplicitSemantics);
+  sdp->setSdp(kOfferSdpUnifiedPlanMultipleAudioTracks);
+  ASSERT_TRUE(pc->CheckForComplexSdp(sdp).has_value());
+  ASSERT_EQ(pc->CheckForComplexSdp(sdp),
+            ComplexSdpCategory::kUnifiedPlanImplicitSemantics);
+  sdp->setSdp("invalid sdp");
+  ASSERT_TRUE(pc->CheckForComplexSdp(sdp).has_value());
+  ASSERT_EQ(pc->CheckForComplexSdp(sdp),
+            ComplexSdpCategory::kErrorImplicitSemantics);
+  // No Complex SDP is detected if only a single track per m= section is used.
+  sdp->setSdp(kOfferSdpUnifiedPlanSingleAudioSingleVideo);
+  ASSERT_FALSE(pc->CheckForComplexSdp(sdp).has_value());
+  sdp->setSdp(kOfferSdpPlanBSingleAudioSingleVideo);
+  ASSERT_FALSE(pc->CheckForComplexSdp(sdp).has_value());
 }
 
-TEST_F(RTCPeerConnectionTest, PlanBSdpWarningNotShownForSingleTracks) {
-  V8TestingScope scope;
-  Persistent<RTCPeerConnection> pc = CreatePC(scope);
-  RTCSessionDescriptionInit sdp;
-  sdp.setType("offer");
-  // Neither Unified Plan or Plan B SDP should result in a warning if only a
-  // single track per m= section is used.
-  sdp.setSdp(kOfferSdpUnifiedPlanSingleAudioSingleVideo);
-  ASSERT_FALSE(pc->ShouldShowComplexPlanBSdpWarning(sdp));
-  sdp.setSdp(kOfferSdpPlanBSingleAudioSingleVideo);
-  ASSERT_FALSE(pc->ShouldShowComplexPlanBSdpWarning(sdp));
+enum class AsyncOperationAction {
+  kLeavePending,
+  kResolve,
+  kReject,
+};
+
+template <typename RequestType>
+void CompleteRequest(RequestType request, bool resolve);
+
+template <>
+void CompleteRequest(WebRTCSessionDescriptionRequest request, bool resolve) {
+  if (resolve) {
+    WebRTCSessionDescription description =
+        WebRTCSessionDescription(WebString(), WebString());
+    request.RequestSucceeded(description);
+  } else {
+    request.RequestFailed(
+        webrtc::RTCError(webrtc::RTCErrorType::INVALID_MODIFICATION));
+  }
 }
 
-TEST_F(RTCPeerConnectionTest, PlanBSdpWarningShownForComplexPlanB) {
-  V8TestingScope scope;
-  Persistent<RTCPeerConnection> pc = CreatePC(scope);
-  RTCSessionDescriptionInit sdp;
-  sdp.setType("offer");
-  sdp.setSdp(kOfferSdpPlanBMultipleAudioTracks);
-  ASSERT_TRUE(pc->ShouldShowComplexPlanBSdpWarning(sdp));
+template <>
+void CompleteRequest(WebRTCVoidRequest request, bool resolve) {
+  if (resolve) {
+    request.RequestSucceeded();
+  } else {
+    request.RequestFailed(
+        webrtc::RTCError(webrtc::RTCErrorType::INVALID_MODIFICATION));
+  }
 }
 
-TEST_F(RTCPeerConnectionTest, PlanBSdpWarningNotShownForComplexUnifiedPlan) {
+template <typename RequestType>
+void PostToCompleteRequest(AsyncOperationAction action,
+                           const RequestType& request) {
+  switch (action) {
+    case AsyncOperationAction::kLeavePending:
+      return;
+    case AsyncOperationAction::kResolve:
+      scheduler::GetSequencedTaskRunnerForTesting()->PostTask(
+          FROM_HERE,
+          base::BindOnce(&CompleteRequest<RequestType>, request, true));
+      return;
+    case AsyncOperationAction::kReject:
+      scheduler::GetSequencedTaskRunnerForTesting()->PostTask(
+          FROM_HERE,
+          base::BindOnce(&CompleteRequest<RequestType>, request, false));
+      return;
+  }
+}
+
+class FakeWebRTCPeerConnectionHandler : public MockWebRTCPeerConnectionHandler {
+ public:
+  void CreateOffer(const WebRTCSessionDescriptionRequest& request,
+                   const WebMediaConstraints&) override {
+    PostToCompleteRequest<WebRTCSessionDescriptionRequest>(
+        async_operation_action_, request);
+  }
+
+  void CreateOffer(const WebRTCSessionDescriptionRequest& request,
+                   const WebRTCOfferOptions&) override {
+    PostToCompleteRequest<WebRTCSessionDescriptionRequest>(
+        async_operation_action_, request);
+  }
+
+  void CreateAnswer(const WebRTCSessionDescriptionRequest& request,
+                    const WebMediaConstraints&) override {
+    PostToCompleteRequest<WebRTCSessionDescriptionRequest>(
+        async_operation_action_, request);
+  }
+
+  void CreateAnswer(const WebRTCSessionDescriptionRequest& request,
+                    const WebRTCAnswerOptions&) override {
+    PostToCompleteRequest<WebRTCSessionDescriptionRequest>(
+        async_operation_action_, request);
+  }
+
+  void SetLocalDescription(const WebRTCVoidRequest& request,
+                           const WebRTCSessionDescription&) override {
+    PostToCompleteRequest<WebRTCVoidRequest>(async_operation_action_, request);
+  }
+
+  void SetRemoteDescription(const WebRTCVoidRequest& request,
+                            const WebRTCSessionDescription&) override {
+    PostToCompleteRequest<WebRTCVoidRequest>(async_operation_action_, request);
+  }
+
+  void set_async_operation_action(AsyncOperationAction action) {
+    async_operation_action_ = action;
+  }
+
+ private:
+  // Decides what to do with future async operations' promises/callbacks.
+  AsyncOperationAction async_operation_action_ =
+      AsyncOperationAction::kLeavePending;
+};
+
+class TestingPlatformSupportWithFakeWebRTC : public TestingPlatformSupport {
+ public:
+  std::unique_ptr<WebRTCPeerConnectionHandler> CreateRTCPeerConnectionHandler(
+      WebRTCPeerConnectionHandlerClient*,
+      scoped_refptr<base::SingleThreadTaskRunner>) override {
+    handler_ = new FakeWebRTCPeerConnectionHandler();
+    return std::unique_ptr<WebRTCPeerConnectionHandler>(handler_);
+  }
+
+  FakeWebRTCPeerConnectionHandler* handler() const { return handler_; }
+
+ private:
+  FakeWebRTCPeerConnectionHandler* handler_;
+};
+
+// These tests verifies the code paths for notifying the peer connection's
+// CallSetupStateTracker of offerer and answerer events. Because fakes are used
+// the test can pass empty SDP around, deciding whether to resolve or reject
+// based on controlling the fake instead of validify of SDP, and
+// platform_->RunUntilIdle() is enough to ensure a pending operation has
+// completed. Without fakes we would have had to await promises and callbacks,
+// passing SDP returned by one operation to the next.
+class RTCPeerConnectionCallSetupStateTest
+    : public RTCPeerConnectionTestWithPlatformTestingPlatformType<
+          TestingPlatformSupportWithFakeWebRTC> {
+ public:
+  RTCPeerConnection* Initialize(V8TestingScope& scope) {
+    RTCPeerConnection* pc = CreatePC(scope);
+    tracker_ = &pc->call_setup_state_tracker();
+    SetNextOperationIsSuccessful(true);
+    return pc;
+  }
+
+  void SetNextOperationIsSuccessful(bool successful) {
+    platform_->handler()->set_async_operation_action(
+        successful ? AsyncOperationAction::kResolve
+                   : AsyncOperationAction::kReject);
+  }
+
+  RTCSessionDescriptionInit* EmptyOffer() {
+    auto* sdp = RTCSessionDescriptionInit::Create();
+    sdp->setType("offer");
+    return sdp;
+  }
+
+  RTCSessionDescriptionInit* EmptyAnswer() {
+    auto* sdp = RTCSessionDescriptionInit::Create();
+    sdp->setType("answer");
+    return sdp;
+  }
+
+  template <typename CallbackType>
+  CallbackType* CreateEmptyCallback(V8TestingScope& scope) {
+    v8::Local<v8::Function> v8_function =
+        v8::Function::New(scope.GetContext(), EmptyHandler).ToLocalChecked();
+    return CallbackType::Create(v8_function);
+  }
+
+  Dictionary ToDictionary(V8TestingScope& scope,
+                          const IDLDictionaryBase* value) {
+    return Dictionary(
+        scope.GetIsolate(),
+        ToV8(value, scope.GetContext()->Global(), scope.GetIsolate()),
+        scope.GetExceptionState());
+  }
+
+ private:
+  static void EmptyHandler(const v8::FunctionCallbackInfo<v8::Value>& args) {}
+
+ protected:
+  const CallSetupStateTracker* tracker_ = nullptr;
+};
+
+TEST_F(RTCPeerConnectionCallSetupStateTest, InitialState) {
   V8TestingScope scope;
-  Persistent<RTCPeerConnection> pc = CreatePC(scope);
-  RTCSessionDescriptionInit sdp;
-  sdp.setType("offer");
-  sdp.setSdp(kOfferSdpUnifiedPlanMultipleAudioTracks);
-  ASSERT_FALSE(pc->ShouldShowComplexPlanBSdpWarning(sdp));
+  Initialize(scope);
+  EXPECT_EQ(OffererState::kNotStarted, tracker_->offerer_state());
+  EXPECT_EQ(AnswererState::kNotStarted, tracker_->answerer_state());
+  EXPECT_EQ(CallSetupState::kNotStarted, tracker_->GetCallSetupState());
+}
+
+TEST_F(RTCPeerConnectionCallSetupStateTest, OffererSucceeded) {
+  V8TestingScope scope;
+  RTCPeerConnection* pc = Initialize(scope);
+  // createOffer()
+  pc->createOffer(scope.GetScriptState(), RTCOfferOptions::Create());
+  EXPECT_EQ(OffererState::kCreateOfferPending, tracker_->offerer_state());
+  EXPECT_EQ(CallSetupState::kStarted, tracker_->GetCallSetupState());
+  platform_->RunUntilIdle();
+  EXPECT_EQ(OffererState::kCreateOfferResolved, tracker_->offerer_state());
+  // setLocalDescription(offer)
+  pc->setLocalDescription(scope.GetScriptState(), EmptyOffer());
+  EXPECT_EQ(OffererState::kSetLocalOfferPending, tracker_->offerer_state());
+  platform_->RunUntilIdle();
+  EXPECT_EQ(OffererState::kSetLocalOfferResolved, tracker_->offerer_state());
+  // setRemoteDescription(answer)
+  pc->setRemoteDescription(scope.GetScriptState(), EmptyAnswer());
+  EXPECT_EQ(OffererState::kSetRemoteAnswerPending, tracker_->offerer_state());
+  EXPECT_EQ(CallSetupState::kStarted, tracker_->GetCallSetupState());
+  platform_->RunUntilIdle();
+  EXPECT_EQ(OffererState::kSetRemoteAnswerResolved, tracker_->offerer_state());
+  EXPECT_EQ(CallSetupState::kSucceeded, tracker_->GetCallSetupState());
+}
+
+TEST_F(RTCPeerConnectionCallSetupStateTest, OffererFailedAtCreateOffer) {
+  V8TestingScope scope;
+  RTCPeerConnection* pc = Initialize(scope);
+  // createOffer()
+  SetNextOperationIsSuccessful(false);
+  pc->createOffer(scope.GetScriptState(), RTCOfferOptions::Create());
+  platform_->RunUntilIdle();
+  EXPECT_EQ(OffererState::kCreateOfferRejected, tracker_->offerer_state());
+  EXPECT_EQ(CallSetupState::kFailed, tracker_->GetCallSetupState());
+}
+
+TEST_F(RTCPeerConnectionCallSetupStateTest,
+       OffererFailedAtSetLocalDescription) {
+  V8TestingScope scope;
+  RTCPeerConnection* pc = Initialize(scope);
+  // createOffer()
+  pc->createOffer(scope.GetScriptState(), RTCOfferOptions::Create());
+  platform_->RunUntilIdle();
+  // setLocalDescription(offer)
+  SetNextOperationIsSuccessful(false);
+  pc->setLocalDescription(scope.GetScriptState(), EmptyOffer());
+  platform_->RunUntilIdle();
+  EXPECT_EQ(OffererState::kSetLocalOfferRejected, tracker_->offerer_state());
+  EXPECT_EQ(CallSetupState::kFailed, tracker_->GetCallSetupState());
+}
+
+TEST_F(RTCPeerConnectionCallSetupStateTest,
+       OffererFailedAtSetRemoteDescription) {
+  V8TestingScope scope;
+  RTCPeerConnection* pc = Initialize(scope);
+  // createOffer()
+  pc->createOffer(scope.GetScriptState(), RTCOfferOptions::Create());
+  platform_->RunUntilIdle();
+  // setLocalDescription(offer)
+  pc->setLocalDescription(scope.GetScriptState(), EmptyOffer());
+  platform_->RunUntilIdle();
+  // setRemoteDescription(answer)
+  SetNextOperationIsSuccessful(false);
+  pc->setRemoteDescription(scope.GetScriptState(), EmptyAnswer());
+  platform_->RunUntilIdle();
+  EXPECT_EQ(OffererState::kSetRemoteAnswerRejected, tracker_->offerer_state());
+  EXPECT_EQ(CallSetupState::kFailed, tracker_->GetCallSetupState());
+}
+
+TEST_F(RTCPeerConnectionCallSetupStateTest, OffererLegacyApiPath) {
+  V8TestingScope scope;
+  RTCPeerConnection* pc = Initialize(scope);
+  // Legacy createOffer() with callbacks
+  pc->createOffer(scope.GetScriptState(),
+                  CreateEmptyCallback<V8RTCSessionDescriptionCallback>(scope),
+                  CreateEmptyCallback<V8RTCPeerConnectionErrorCallback>(scope),
+                  ToDictionary(scope, RTCOfferOptions::Create()),
+                  scope.GetExceptionState());
+  EXPECT_EQ(OffererState::kCreateOfferPending, tracker_->offerer_state());
+  EXPECT_EQ(CallSetupState::kStarted, tracker_->GetCallSetupState());
+  platform_->RunUntilIdle();
+  EXPECT_EQ(OffererState::kCreateOfferResolved, tracker_->offerer_state());
+  // Legacy setLocalDescription(offer) with callbacks
+  pc->setLocalDescription(
+      scope.GetScriptState(), EmptyOffer(),
+      CreateEmptyCallback<V8VoidFunction>(scope),
+      CreateEmptyCallback<V8RTCPeerConnectionErrorCallback>(scope));
+  EXPECT_EQ(OffererState::kSetLocalOfferPending, tracker_->offerer_state());
+  platform_->RunUntilIdle();
+  EXPECT_EQ(OffererState::kSetLocalOfferResolved, tracker_->offerer_state());
+  // Legacy setRemoteDescription(answer) with callbacks
+  pc->setRemoteDescription(
+      scope.GetScriptState(), EmptyAnswer(),
+      CreateEmptyCallback<V8VoidFunction>(scope),
+      CreateEmptyCallback<V8RTCPeerConnectionErrorCallback>(scope));
+  EXPECT_EQ(OffererState::kSetRemoteAnswerPending, tracker_->offerer_state());
+  EXPECT_EQ(CallSetupState::kStarted, tracker_->GetCallSetupState());
+  platform_->RunUntilIdle();
+  EXPECT_EQ(OffererState::kSetRemoteAnswerResolved, tracker_->offerer_state());
+  EXPECT_EQ(CallSetupState::kSucceeded, tracker_->GetCallSetupState());
+}
+
+TEST_F(RTCPeerConnectionCallSetupStateTest, AnswererSucceeded) {
+  V8TestingScope scope;
+  RTCPeerConnection* pc = Initialize(scope);
+  // setRemoteDescription(offer)
+  pc->setRemoteDescription(scope.GetScriptState(), EmptyOffer());
+  EXPECT_EQ(AnswererState::kSetRemoteOfferPending, tracker_->answerer_state());
+  EXPECT_EQ(CallSetupState::kStarted, tracker_->GetCallSetupState());
+  platform_->RunUntilIdle();
+  EXPECT_EQ(AnswererState::kSetRemoteOfferResolved, tracker_->answerer_state());
+  // createAnswer()
+  pc->createAnswer(scope.GetScriptState(), RTCAnswerOptions::Create());
+  EXPECT_EQ(AnswererState::kCreateAnswerPending, tracker_->answerer_state());
+  platform_->RunUntilIdle();
+  EXPECT_EQ(AnswererState::kCreateAnswerResolved, tracker_->answerer_state());
+  // setLocalDescription(answer)
+  pc->setLocalDescription(scope.GetScriptState(), EmptyAnswer());
+  EXPECT_EQ(AnswererState::kSetLocalAnswerPending, tracker_->answerer_state());
+  EXPECT_EQ(CallSetupState::kStarted, tracker_->GetCallSetupState());
+  platform_->RunUntilIdle();
+  EXPECT_EQ(AnswererState::kSetLocalAnswerResolved, tracker_->answerer_state());
+  EXPECT_EQ(CallSetupState::kSucceeded, tracker_->GetCallSetupState());
+}
+
+TEST_F(RTCPeerConnectionCallSetupStateTest,
+       AnswererFailedAtSetRemoteDescription) {
+  V8TestingScope scope;
+  RTCPeerConnection* pc = Initialize(scope);
+  // setRemoteDescription(offer)
+  SetNextOperationIsSuccessful(false);
+  pc->setRemoteDescription(scope.GetScriptState(), EmptyOffer());
+  platform_->RunUntilIdle();
+  EXPECT_EQ(AnswererState::kSetRemoteOfferRejected, tracker_->answerer_state());
+  EXPECT_EQ(CallSetupState::kFailed, tracker_->GetCallSetupState());
+}
+
+TEST_F(RTCPeerConnectionCallSetupStateTest, AnswererFailedAtCreateAnswer) {
+  V8TestingScope scope;
+  RTCPeerConnection* pc = Initialize(scope);
+  // setRemoteDescription(offer)
+  pc->setRemoteDescription(scope.GetScriptState(), EmptyOffer());
+  platform_->RunUntilIdle();
+  // createAnswer()
+  SetNextOperationIsSuccessful(false);
+  pc->createAnswer(scope.GetScriptState(), RTCAnswerOptions::Create());
+  platform_->RunUntilIdle();
+  EXPECT_EQ(AnswererState::kCreateAnswerRejected, tracker_->answerer_state());
+  EXPECT_EQ(CallSetupState::kFailed, tracker_->GetCallSetupState());
+}
+
+TEST_F(RTCPeerConnectionCallSetupStateTest,
+       AnswererFailedAtSetLocalDescription) {
+  V8TestingScope scope;
+  RTCPeerConnection* pc = Initialize(scope);
+  // setRemoteDescription(offer)
+  pc->setRemoteDescription(scope.GetScriptState(), EmptyOffer());
+  platform_->RunUntilIdle();
+  // createAnswer()
+  pc->createAnswer(scope.GetScriptState(), RTCAnswerOptions::Create());
+  platform_->RunUntilIdle();
+  // setLocalDescription(answer)
+  SetNextOperationIsSuccessful(false);
+  pc->setLocalDescription(scope.GetScriptState(), EmptyAnswer());
+  platform_->RunUntilIdle();
+  EXPECT_EQ(AnswererState::kSetLocalAnswerRejected, tracker_->answerer_state());
+  EXPECT_EQ(CallSetupState::kFailed, tracker_->GetCallSetupState());
+}
+
+TEST_F(RTCPeerConnectionCallSetupStateTest, AnswererLegacyApiPath) {
+  V8TestingScope scope;
+  RTCPeerConnection* pc = Initialize(scope);
+  // Legacy setRemoteDescription(offer) with callbacks
+  pc->setRemoteDescription(
+      scope.GetScriptState(), EmptyOffer(),
+      CreateEmptyCallback<V8VoidFunction>(scope),
+      CreateEmptyCallback<V8RTCPeerConnectionErrorCallback>(scope));
+  EXPECT_EQ(AnswererState::kSetRemoteOfferPending, tracker_->answerer_state());
+  EXPECT_EQ(CallSetupState::kStarted, tracker_->GetCallSetupState());
+  platform_->RunUntilIdle();
+  EXPECT_EQ(AnswererState::kSetRemoteOfferResolved, tracker_->answerer_state());
+  // Legacy createAnswer() with callbacks
+  pc->createAnswer(scope.GetScriptState(),
+                   CreateEmptyCallback<V8RTCSessionDescriptionCallback>(scope),
+                   CreateEmptyCallback<V8RTCPeerConnectionErrorCallback>(scope),
+                   Dictionary() /* media_constraints */);
+  EXPECT_EQ(AnswererState::kCreateAnswerPending, tracker_->answerer_state());
+  platform_->RunUntilIdle();
+  EXPECT_EQ(AnswererState::kCreateAnswerResolved, tracker_->answerer_state());
+  // Legacy setLocalDescription(answer) with callbacks
+  pc->setLocalDescription(
+      scope.GetScriptState(), EmptyAnswer(),
+      CreateEmptyCallback<V8VoidFunction>(scope),
+      CreateEmptyCallback<V8RTCPeerConnectionErrorCallback>(scope));
+  EXPECT_EQ(AnswererState::kSetLocalAnswerPending, tracker_->answerer_state());
+  EXPECT_EQ(CallSetupState::kStarted, tracker_->GetCallSetupState());
+  platform_->RunUntilIdle();
+  EXPECT_EQ(AnswererState::kSetLocalAnswerResolved, tracker_->answerer_state());
+  EXPECT_EQ(CallSetupState::kSucceeded, tracker_->GetCallSetupState());
+}
+
+// Test that simple Plan B is considered safe regardless of configurations.
+TEST(DeduceSdpUsageCategory, SimplePlanBIsAlwaysSafe) {
+  // If the default is Plan B.
+  EXPECT_EQ(
+      SdpUsageCategory::kSafe,
+      DeduceSdpUsageCategory("offer", kOfferSdpPlanBSingleAudioSingleVideo,
+                             false, webrtc::SdpSemantics::kPlanB));
+  // If the default is Unified Plan.
+  EXPECT_EQ(
+      SdpUsageCategory::kSafe,
+      DeduceSdpUsageCategory("offer", kOfferSdpPlanBSingleAudioSingleVideo,
+                             false, webrtc::SdpSemantics::kUnifiedPlan));
+  // If sdpSemantics is explicitly set to Plan B.
+  EXPECT_EQ(
+      SdpUsageCategory::kSafe,
+      DeduceSdpUsageCategory("offer", kOfferSdpPlanBSingleAudioSingleVideo,
+                             true, webrtc::SdpSemantics::kPlanB));
+  // If sdpSemantics is explicitly set to Unified Plan.
+  EXPECT_EQ(
+      SdpUsageCategory::kSafe,
+      DeduceSdpUsageCategory("offer", kOfferSdpPlanBSingleAudioSingleVideo,
+                             true, webrtc::SdpSemantics::kUnifiedPlan));
+}
+
+// Test that simple Unified Plan is considered safe regardless of
+// configurations.
+TEST(DeduceSdpUsageCategory, SimpleUnifiedPlanIsAlwaysSafe) {
+  // If the default is Plan B.
+  EXPECT_EQ(SdpUsageCategory::kSafe,
+            DeduceSdpUsageCategory("offer",
+                                   kOfferSdpUnifiedPlanSingleAudioSingleVideo,
+                                   false, webrtc::SdpSemantics::kPlanB));
+  // If the default is Unified Plan.
+  EXPECT_EQ(SdpUsageCategory::kSafe,
+            DeduceSdpUsageCategory("offer",
+                                   kOfferSdpUnifiedPlanSingleAudioSingleVideo,
+                                   false, webrtc::SdpSemantics::kUnifiedPlan));
+  // If sdpSemantics is explicitly set to Plan B.
+  EXPECT_EQ(SdpUsageCategory::kSafe,
+            DeduceSdpUsageCategory("offer",
+                                   kOfferSdpUnifiedPlanSingleAudioSingleVideo,
+                                   true, webrtc::SdpSemantics::kPlanB));
+  // If sdpSemantics is explicitly set to Unified Plan.
+  EXPECT_EQ(SdpUsageCategory::kSafe,
+            DeduceSdpUsageCategory("offer",
+                                   kOfferSdpUnifiedPlanSingleAudioSingleVideo,
+                                   true, webrtc::SdpSemantics::kUnifiedPlan));
+}
+
+// Test that complex SDP is always unsafe when relying on default sdpSemantics.
+TEST(DeduceSdpUsageCategory, ComplexSdpIsAlwaysUnsafeWithDefaultSdpSemantics) {
+  // If the default is Plan B and the SDP is complex Plan B.
+  EXPECT_EQ(SdpUsageCategory::kUnsafe,
+            DeduceSdpUsageCategory("offer", kOfferSdpPlanBMultipleAudioTracks,
+                                   false, webrtc::SdpSemantics::kPlanB));
+  // If the default is Plan B and the SDP is complex Unified Plan.
+  EXPECT_EQ(
+      SdpUsageCategory::kUnsafe,
+      DeduceSdpUsageCategory("offer", kOfferSdpUnifiedPlanMultipleAudioTracks,
+                             false, webrtc::SdpSemantics::kPlanB));
+  // If the default is Unified Plan and the SDP is complex Plan B.
+  EXPECT_EQ(SdpUsageCategory::kUnsafe,
+            DeduceSdpUsageCategory("offer", kOfferSdpPlanBMultipleAudioTracks,
+                                   false, webrtc::SdpSemantics::kUnifiedPlan));
+  // If the default is Unified Plan and the SDP is complex UNified Plan.
+  EXPECT_EQ(
+      SdpUsageCategory::kUnsafe,
+      DeduceSdpUsageCategory("offer", kOfferSdpUnifiedPlanMultipleAudioTracks,
+                             false, webrtc::SdpSemantics::kUnifiedPlan));
+}
+
+// Test that when sdpSemantics is explicitly set, complex SDP is safe if it is
+// of the same format and unsafe if the format is different.
+TEST(DeduceSdpUsageCategory, ComplexSdpIsSafeIfMatchingExplicitSdpSemantics) {
+  // If sdpSemantics is explicitly set to Plan B and the SDP is complex Plan B.
+  EXPECT_EQ(SdpUsageCategory::kSafe,
+            DeduceSdpUsageCategory("offer", kOfferSdpPlanBMultipleAudioTracks,
+                                   true, webrtc::SdpSemantics::kPlanB));
+  // If sdpSemantics is explicitly set to Unified Plan and the SDP is complex
+  // Unified Plan.
+  EXPECT_EQ(
+      SdpUsageCategory::kSafe,
+      DeduceSdpUsageCategory("offer", kOfferSdpUnifiedPlanMultipleAudioTracks,
+                             true, webrtc::SdpSemantics::kUnifiedPlan));
+  // If the sdpSemantics is explicitly set to Plan B but the SDP is complex
+  // Unified Plan.
+  EXPECT_EQ(
+      SdpUsageCategory::kUnsafe,
+      DeduceSdpUsageCategory("offer", kOfferSdpUnifiedPlanMultipleAudioTracks,
+                             true, webrtc::SdpSemantics::kPlanB));
+  // If the sdpSemantics is explicitly set to Unified Plan but the SDP is
+  // complex Plan B.
+  EXPECT_EQ(SdpUsageCategory::kUnsafe,
+            DeduceSdpUsageCategory("offer", kOfferSdpPlanBMultipleAudioTracks,
+                                   true, webrtc::SdpSemantics::kUnifiedPlan));
 }
 
 }  // namespace blink

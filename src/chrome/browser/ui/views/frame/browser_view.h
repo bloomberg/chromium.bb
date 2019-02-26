@@ -49,6 +49,10 @@
 #include "chrome/browser/ui/views/intent_picker_bubble_view.h"
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#include "chrome/browser/ui/views/quit_instruction_bubble_controller.h"
+#endif
+
 // NOTE: For more information about the objects and files in this directory,
 // view: http://dev.chromium.org/developers/design-documents/browser-window
 
@@ -61,6 +65,7 @@ class ExclusiveAccessBubbleViews;
 class FullscreenControlHost;
 class InfoBarContainerView;
 class LocationBarView;
+class ReopenTabPromoController;
 class StatusBubbleViews;
 class TabStrip;
 class ToolbarButtonProvider;
@@ -80,7 +85,6 @@ enum class Channel;
 }
 
 namespace views {
-class EventMonitor;
 class ExternalFocusTracker;
 class WebView;
 }
@@ -243,6 +247,10 @@ class BrowserView : public BrowserWindow,
     return browser_->is_type_tabbed();
   }
 
+  // Returns true if the Browser object associated with this BrowserView is a
+  // for an installed hosted app.
+  bool IsBrowserTypeHostedApp() const;
+
   // Returns true if the top browser controls (a.k.a. top-chrome UIs) are
   // allowed to slide up and down with the gesture scrolls on the current tab's
   // page.
@@ -306,6 +314,7 @@ class BrowserView : public BrowserWindow,
                           content::WebContents* new_contents,
                           int index,
                           int reason) override;
+  void OnTabDetached(content::WebContents* contents, bool was_active) override;
   void ZoomChangedForActiveTab(bool can_show_bubble) override;
   gfx::Rect GetRestoredBounds() const override;
   ui::WindowShowState GetRestoredState() const override;
@@ -333,10 +342,12 @@ class BrowserView : public BrowserWindow,
   void SetFocusToLocationBar(bool select_all) override;
   void UpdateReloadStopState(bool is_loading, bool force) override;
   void UpdateToolbar(content::WebContents* contents) override;
+  void UpdateToolbarVisibility(bool visible, bool animate) override;
   void ResetToolbarTabState(content::WebContents* contents) override;
   void FocusToolbar() override;
   ToolbarActionsBar* GetToolbarActionsBar() override;
   void ToolbarSizeChanged(bool is_animating) override;
+  void TabDraggingStatusChanged(bool is_dragging) override;
   void FocusAppMenu() override;
   void FocusBookmarksToolbar() override;
   void FocusInactivePopupForAccessibility() override;
@@ -387,7 +398,7 @@ class BrowserView : public BrowserWindow,
   void ShowAppMenu() override;
   content::KeyboardEventProcessingResult PreHandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) override;
-  void HandleKeyboardEvent(
+  bool HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) override;
   void CutCopyPaste(int command_id) override;
   FindBar* CreateFindBar() override;
@@ -413,15 +424,15 @@ class BrowserView : public BrowserWindow,
   BookmarkBarView* GetBookmarkBarView() const;
   LocationBarView* GetLocationBarView() const;
 
+#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+  void ShowInProductHelpPromo(InProductHelpFeature iph_feature) override;
+#endif
+
   // TabStripModelObserver:
-  void TabInsertedAt(TabStripModel* tab_strip_model,
-                     content::WebContents* contents,
-                     int index,
-                     bool foreground) override;
-  void TabDetachedAt(content::WebContents* contents,
-                     int index,
-                     bool was_active) override;
-  void TabDeactivated(content::WebContents* contents) override;
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override;
   void TabStripEmpty() override;
   void WillCloseAllTabs(TabStripModel* tab_strip_model) override;
   void CloseAllTabsStopped(TabStripModel* tab_strip_model,
@@ -493,7 +504,6 @@ class BrowserView : public BrowserWindow,
   content::WebContents* GetActiveWebContents() override;
   void HideDownloadShelf() override;
   void UnhideDownloadShelf() override;
-  ExclusiveAccessBubbleViews* GetExclusiveAccessBubble() override;
   bool CanUserExitFullscreen() const override;
 
   // ExclusiveAccessBubbleViewsContext:
@@ -526,13 +536,12 @@ class BrowserView : public BrowserWindow,
   // Testing interface:
   views::View* GetContentsContainerForTest() { return contents_container_; }
   views::WebView* GetDevToolsWebViewForTest() { return devtools_web_view_; }
+  FullscreenControlHost* fullscreen_control_host_for_test() {
+    return fullscreen_control_host_.get();
+  }
 
   // Called by BrowserFrame during theme changes.
   void NativeThemeUpdated(const ui::NativeTheme* theme);
-
-  // Gets the FullscreenControlHost for this BrowserView, creating it if it does
-  // not yet exist.
-  FullscreenControlHost* GetFullscreenControlHost();
 
   // Gets the amount to vertically shift the placement of the icons on the
   // bookmark bar so the icons appear centered relative to the views above and
@@ -767,6 +776,13 @@ class BrowserView : public BrowserWindow,
   // jankiness.
   bool in_process_fullscreen_ = false;
 
+  // True if we're participating in a tab dragging process. The value can be
+  // true if the accociated browser is the dragged browser or the source browser
+  // that the drag tab(s) originates from. During tab dragging process, the
+  // dragged browser or the source browser's bounds may change, the fast resize
+  // strategy will be used to resize its web contents for smoother dragging.
+  bool in_tab_dragging_ = false;
+
   std::unique_ptr<ExclusiveAccessBubbleViews> exclusive_access_bubble_;
 
 #if defined(OS_WIN)
@@ -774,8 +790,13 @@ class BrowserView : public BrowserWindow,
   std::unique_ptr<LoadCompleteListener> load_complete_listener_;
 #endif
 
-  // The timer used to update frames for the Loading Animation.
+  // The timer used to update frames for tab-loading animations.
   base::RepeatingTimer loading_animation_timer_;
+
+  // Start timestamp for all throbbers. Set when |loading_animation_timer_|
+  // starts and used for all consecutive tabs (while any are loading) to keep
+  // throbbers in sync.
+  base::TimeTicks loading_animation_start_;
 
   views::UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;
 
@@ -798,8 +819,8 @@ class BrowserView : public BrowserWindow,
 
   std::unique_ptr<FullscreenControlHost> fullscreen_control_host_;
 
-#if !defined(USE_AURA)
-  std::unique_ptr<views::EventMonitor> fullscreen_control_host_event_monitor_;
+#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+  std::unique_ptr<ReopenTabPromoController> reopen_tab_promo_controller_;
 #endif
 
   struct ResizeSession {
@@ -811,6 +832,11 @@ class BrowserView : public BrowserWindow,
     size_t step_count = 0;
   };
   base::Optional<ResizeSession> interactive_resize_;
+
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  scoped_refptr<QuitInstructionBubbleController>
+      quit_instruction_bubble_controller_;
+#endif
 
   mutable base::WeakPtrFactory<BrowserView> activate_modal_dialog_factory_{
       this};

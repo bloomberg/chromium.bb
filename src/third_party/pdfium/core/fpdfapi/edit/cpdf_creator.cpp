@@ -23,7 +23,7 @@
 #include "core/fxcrt/fx_extension.h"
 #include "core/fxcrt/fx_random.h"
 #include "third_party/base/ptr_util.h"
-#include "third_party/base/span.h"
+#include "third_party/base/stl_util.h"
 
 namespace {
 
@@ -31,7 +31,8 @@ const size_t kArchiveBufferSize = 32768;
 
 class CFX_FileBufferArchive final : public IFX_ArchiveStream {
  public:
-  explicit CFX_FileBufferArchive(const RetainPtr<IFX_WriteStream>& archive);
+  explicit CFX_FileBufferArchive(
+      const RetainPtr<IFX_RetainableWriteStream>& archive);
   ~CFX_FileBufferArchive() override;
 
   bool WriteBlock(const void* pBuf, size_t size) override;
@@ -47,11 +48,11 @@ class CFX_FileBufferArchive final : public IFX_ArchiveStream {
   FX_FILESIZE offset_;
   size_t current_length_;
   std::vector<uint8_t> buffer_;
-  RetainPtr<IFX_WriteStream> backing_file_;
+  RetainPtr<IFX_RetainableWriteStream> backing_file_;
 };
 
 CFX_FileBufferArchive::CFX_FileBufferArchive(
-    const RetainPtr<IFX_WriteStream>& file)
+    const RetainPtr<IFX_RetainableWriteStream>& file)
     : offset_(0),
       current_length_(0),
       buffer_(kArchiveBufferSize),
@@ -74,7 +75,8 @@ bool CFX_FileBufferArchive::Flush() {
 }
 
 bool CFX_FileBufferArchive::WriteBlock(const void* pBuf, size_t size) {
-  ASSERT(pBuf && size > 0);
+  ASSERT(pBuf);
+  ASSERT(size > 0);
 
   const uint8_t* buffer = reinterpret_cast<const uint8_t*>(pBuf);
   size_t temp_size = size;
@@ -140,7 +142,7 @@ bool OutputIndex(IFX_ArchiveStream* archive, FX_FILESIZE offset) {
 }  // namespace
 
 CPDF_Creator::CPDF_Creator(CPDF_Document* pDoc,
-                           const RetainPtr<IFX_WriteStream>& archive)
+                           const RetainPtr<IFX_RetainableWriteStream>& archive)
     : m_pDocument(pDoc),
       m_pParser(pDoc->GetParser()),
       m_pEncryptDict(m_pParser ? m_pParser->GetEncryptDict() : nullptr),
@@ -445,7 +447,8 @@ CPDF_Creator::Stage CPDF_Creator::WriteDoc_Stage4() {
 
   if (m_pParser) {
     std::unique_ptr<CPDF_Dictionary> p = m_pParser->GetCombinedTrailer();
-    for (const auto& it : *p) {
+    CPDF_DictionaryLocker locker(p.get());
+    for (const auto& it : locker) {
       const ByteString& key = it.first;
       CPDF_Object* pValue = it.second.get();
       if (key == "Encrypt" || key == "Size" || key == "Filter" ||

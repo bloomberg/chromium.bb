@@ -5,9 +5,9 @@
 #include "net/third_party/quic/core/crypto/quic_random.h"
 
 #include "base/macros.h"
-#include "crypto/random.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quic/platform/api/quic_singleton.h"
+#include "third_party/boringssl/src/include/openssl/rand.h"
 
 namespace quic {
 
@@ -35,7 +35,7 @@ DefaultRandom* DefaultRandom::GetInstance() {
 }
 
 void DefaultRandom::RandBytes(void* data, size_t len) {
-  crypto::RandBytes(data, len);
+  RAND_bytes(reinterpret_cast<uint8_t*>(data), len);
 }
 
 uint64_t DefaultRandom::RandUint64() {

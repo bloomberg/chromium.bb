@@ -7,14 +7,43 @@ Polymer({
 
   behaviors: [welcome.NavigationBehavior],
 
+  /** @private {?nux.LandingViewProxy} */
+  landingViewProxy_: null,
+
+  /** @private {boolean} */
+  finalized_: false,
+
+  /** @override */
+  ready() {
+    this.landingViewProxy_ = nux.LandingViewProxyImpl.getInstance();
+  },
+
+  onRouteEnter: function() {
+    this.finalized_ = false;
+    this.landingViewProxy_.recordPageShown();
+  },
+
+  onRouteUnload: function() {
+    // Clicking on 'Returning user' will change the URL.
+    if (this.finalized_) {
+      return;
+    }
+    this.finalized_ = true;
+    this.landingViewProxy_.recordNavigatedAway();
+  },
+
   /** @private */
   onExistingUserClick_: function() {
+    this.finalized_ = true;
+    this.landingViewProxy_.recordExistingUser();
     welcome.WelcomeBrowserProxyImpl.getInstance().handleActivateSignIn(
         'chrome://welcome/returning-user');
   },
 
   /** @private */
   onNewUserClick_: function() {
-    this.navigateTo(welcome.Routes.NEW_USER, 1);
+    this.finalized_ = true;
+    this.landingViewProxy_.recordNewUser();
+    welcome.navigateTo(welcome.Routes.NEW_USER, 1);
   }
 });

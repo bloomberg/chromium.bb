@@ -80,6 +80,16 @@ config("internal_config") {
   if (angle_force_thread_safety) {
     defines += [ "ANGLE_FORCE_THREAD_SAFETY=1" ]
   }
+
+  if (angle_enable_vulkan) {
+    if (angle_enable_vulkan_gpu_trace_events) {
+      defines += [ "ANGLE_ENABLE_VULKAN_GPU_TRACE_EVENTS=1" ]
+    }
+  }
+
+  if (angle_enable_trace) {
+    defines += [ "ANGLE_ENABLE_DEBUG_TRACE=1" ]
+  }
 }
 
 config("extra_warnings") {
@@ -408,6 +418,7 @@ if (angle_use_commit_id) {
 config("libANGLE_config") {
   cflags = []
   defines = []
+  libs = []
   if (angle_enable_d3d9) {
     defines += [ "ANGLE_ENABLE_D3D9" ]
   }
@@ -433,6 +444,14 @@ config("libANGLE_config") {
 
   if (is_win) {
     cflags += [ "/wd4530" ]  # C++ exception handler used, but unwind semantics are not enabled.
+  }
+
+  if (is_android && (angle_enable_gl || angle_enable_vulkan)) {
+    if (ndk_supports_nativewindow) {
+      libs += [ "nativewindow" ]
+    } else {
+      libs += [ "android" ]
+    }
   }
 }
 
@@ -503,6 +522,8 @@ static_library("libANGLE") {
     sources += libangle_d3d11_sources
     sources += libangle_d3d11_win32_sources
     libs += [ "dxguid.lib" ]
+    import("src/libANGLE/renderer/d3d/d3d11/d3d11_blit_shaders_autogen.gni")
+    sources += libangle_d3d11_blit_shaders
   }
 
   if (angle_enable_gl) {
@@ -537,12 +558,6 @@ static_library("libANGLE") {
       sources += libangle_gl_egl_sources
       sources += libangle_gl_egl_dl_sources
       sources += libangle_gl_egl_android_sources
-      if (ndk_supports_nativewindow) {
-        libs += [ "nativewindow" ]
-      } else {
-        libs += [ "android" ]
-      }
-      libs += [ "log" ]
     }
     if (ozone_platform_gbm) {
       configs += [ ":libdrm" ]
@@ -564,6 +579,7 @@ static_library("libANGLE") {
     }
     if (is_android) {
       sources += libangle_vulkan_android_sources
+      libs += [ "vulkan" ]
     }
     deps += [ ":angle_vulkan" ]
     public_deps += [ "$angle_root/third_party/vulkan-headers:vulkan_headers" ]
@@ -933,6 +949,7 @@ if (is_android) {
     libs = [ "log" ]
 
     sources = [
+      "src/feature_support_util/angle_feature_support_util.h",
       "src/feature_support_util/feature_support_util.cpp",
       "src/feature_support_util/feature_support_util.h",
     ]

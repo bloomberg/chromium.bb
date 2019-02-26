@@ -49,6 +49,15 @@ SelectionPopupController::SelectionPopupController(
   wcva->set_selection_popup_controller(this);
 }
 
+SelectionPopupController::~SelectionPopupController() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_obj_.get(env);
+  if (!obj.is_null()) {
+    Java_SelectionPopupControllerImpl_nativeSelectionPopupControllerDestroyed(
+        env, obj);
+  }
+}
+
 ScopedJavaLocalRef<jobject> SelectionPopupController::GetContext() const {
   JNIEnv* env = AttachCurrentThread();
 

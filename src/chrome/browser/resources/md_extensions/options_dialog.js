@@ -44,30 +44,31 @@ cr.define('extensions', function() {
     },
 
     /** @private {?Function} */
-    boundResizeListener_: null,
+    boundUpdateDialogSize_: null,
+
+    /** @private {?{height: number, width: number}} */
+    preferredSize_: null,
 
     get open() {
-      return /** @type {!CrDialogElement} */ (this.$.dialog).open;
+      return this.$.dialog.open;
     },
 
     /**
-     * Resizes the dialog to the given width/height, taking into account the
-     * window width/height.
-     * @param {number} width The desired height of the dialog contents.
-     * @param {number} height The desired width of the dialog contents.
+     * Resizes the dialog to the width/height stored in |preferredSize_|, taking
+     * into account the window width/height.
      * @private
      */
-    updateDialogSize_: function(width, height) {
+    updateDialogSize_: function() {
       const headerHeight = this.$.body.offsetTop;
       const maxHeight = Math.min(0.9 * window.innerHeight, MAX_HEIGHT);
-      const effectiveHeight = Math.min(maxHeight, headerHeight + height);
-      const effectiveWidth = Math.max(MIN_WIDTH, width);
+      const effectiveHeight =
+          Math.min(maxHeight, headerHeight + this.preferredSize_.height);
+      const effectiveWidth = Math.max(MIN_WIDTH, this.preferredSize_.width);
 
-      // Get a reference to the inner native <dialog>.
-      const nativeDialog =
-          /** @type {!CrDialogElement} */ (this.$.dialog).getNative();
+      const nativeDialog = this.$.dialog.getNative();
       nativeDialog.style.height = `${effectiveHeight}px`;
       nativeDialog.style.width = `${effectiveWidth}px`;
+      nativeDialog.style.opacity = '1';
     },
 
     /** @param {chrome.developerPrivate.ExtensionInfo} data */
@@ -77,44 +78,31 @@ cr.define('extensions', function() {
         if (!this.extensionOptions_)
           this.extensionOptions_ = document.createElement('ExtensionOptions');
         this.extensionOptions_.extension = this.data_.id;
-        this.extensionOptions_.onclose = this.close.bind(this);
+        this.extensionOptions_.onclose = () => this.$.dialog.close();
 
-        let preferredSize = null;
+        const boundUpdateDialogSize = this.updateDialogSize_.bind(this);
+        this.boundUpdateDialogSize_ = boundUpdateDialogSize;
         this.extensionOptions_.onpreferredsizechanged = e => {
-          preferredSize = e;
           if (!this.$.dialog.open)
             this.$.dialog.showModal();
-          // Updating the dialog size can result in a preferred size change, so
-          // wait until request animation frame fires before updating the dialog
-          // size. This hysteresis prevents the preferred size from oscillating
-          // (see: https://crbug.com/882835).
-          requestAnimationFrame(() => {
-            this.updateDialogSize_(preferredSize.width, preferredSize.height);
-          });
-        };
-
-        this.boundResizeListener_ = () => {
-          this.updateDialogSize_(preferredSize.width, preferredSize.height);
+          this.preferredSize_ = e;
+          this.debounce('updateDialogSize_', boundUpdateDialogSize, 50);
         };
 
         // Add a 'resize' such that the dialog is resized when window size
         // changes.
-        window.addEventListener('resize', this.boundResizeListener_);
+        window.addEventListener('resize', this.boundUpdateDialogSize_);
         this.$.body.appendChild(this.extensionOptions_);
       });
-    },
-
-    close: function() {
-      /** @type {!CrDialogElement} */ (this.$.dialog).close();
     },
 
     /** @private */
     onClose_: function() {
       this.extensionOptions_.onpreferredsizechanged = null;
 
-      if (this.boundResizeListener_) {
-        window.removeEventListener('resize', this.boundResizeListener_);
-        this.boundResizeListener_ = null;
+      if (this.boundUpdateDialogSize_) {
+        window.removeEventListener('resize', this.boundUpdateDialogSize_);
+        this.boundUpdateDialogSize_ = null;
       }
 
       const currentPage = extensions.navigation.getCurrentPage();

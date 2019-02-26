@@ -86,7 +86,7 @@ FontResource& CSSFontFaceSrcValue::Fetch(ExecutionContext* context,
     resource_request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
         referrer_.referrer_policy, resource_request.Url(), referrer_.referrer));
     ResourceLoaderOptions options;
-    options.initiator_info.name = FetchInitiatorTypeNames::css;
+    options.initiator_info.name = fetch_initiator_type_names::kCSS;
     FetchParameters params(resource_request, options);
     if (RuntimeEnabledFeatures::WebFontsCacheAwareTimeoutAdaptationEnabled())
       params.SetCacheAwareLoadingEnabled(kIsCacheAwareLoadingEnabled);
@@ -101,8 +101,8 @@ FontResource& CSSFontFaceSrcValue::Fetch(ExecutionContext* context,
     }
     // For Workers, Fetcher is lazily loaded, so we must ensure it's available
     // here.
-    if (context->IsWorkerGlobalScope()) {
-      ToWorkerGlobalScope(context)->EnsureFetcher();
+    if (auto* scope = DynamicTo<WorkerGlobalScope>(context)) {
+      scope->EnsureFetcher();
     }
     fetched_ = FontResourceHelper::Create(
         FontResource::Fetch(params, context->Fetcher(), client),
@@ -131,7 +131,7 @@ void CSSFontFaceSrcValue::RestoreCachedResourceIfNeeded(
             fetched_->GetResource()->Options().content_security_policy_option);
   context->Fetcher()->EmulateLoadStartedForInspector(
       fetched_->GetResource(), KURL(resource_url),
-      mojom::RequestContextType::FONT, FetchInitiatorTypeNames::css);
+      mojom::RequestContextType::FONT, fetch_initiator_type_names::kCSS);
 }
 
 bool CSSFontFaceSrcValue::Equals(const CSSFontFaceSrcValue& other) const {

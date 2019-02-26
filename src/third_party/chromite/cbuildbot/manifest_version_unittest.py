@@ -155,6 +155,49 @@ class VersionInfoTest(cros_test_lib.MockTempDirTestCase):
     self.assertEqual(new_info.chrome_branch, '30')
 
 
+class ResolveHelpersTest(cros_test_lib.TempDirTestCase):
+  """Test the buildspec resolution helper functions."""
+
+  def setUp(self):
+    self.mv_path = self.tempdir
+
+    self.version = '1.2.3'
+    self.resolvedVersionSpec = os.path.join(
+        self.mv_path, 'buildspecs', '12', '1.2.3.xml')
+
+    self.invalidSpec = os.path.join('invalid', 'spec')
+
+    self.validSpec = os.path.join('valid', 'spec')
+    self.resolvedValidSpec = os.path.join(
+        self.mv_path, 'valid', 'spec.xml')
+
+    osutils.Touch(self.resolvedVersionSpec, makedirs=True)
+    osutils.Touch(self.resolvedValidSpec, makedirs=True)
+
+  def testResolveBuildspec(self):
+    """Test ResolveBuildspec."""
+    result = manifest_version.ResolveBuildspec(
+        self.mv_path, self.validSpec)
+    self.assertEqual(result, self.resolvedValidSpec)
+
+    result = manifest_version.ResolveBuildspec(
+        self.mv_path, self.validSpec+'.xml')
+    self.assertEqual(result, self.resolvedValidSpec)
+
+    with self.assertRaises(manifest_version.BuildSpecsValueError):
+      manifest_version.ResolveBuildspec(
+          self.mv_path, self.invalidSpec)
+
+  def testResolveBuildspecVersion(self):
+    """Test ResolveBuildspecVersion."""
+    result = manifest_version.ResolveBuildspecVersion(
+        self.mv_path, self.version)
+    self.assertEqual(result, self.resolvedVersionSpec)
+
+    with self.assertRaises(manifest_version.BuildSpecsValueError):
+      manifest_version.ResolveBuildspecVersion(
+          self.mv_path, '1.2.0')
+
 class BuildSpecFunctionsTest(cros_test_lib.MockTempDirTestCase):
   """Tests for methods related to publishing buildspecs."""
 
@@ -210,8 +253,16 @@ class BuildSpecFunctionsTest(cros_test_lib.MockTempDirTestCase):
         dryrun=True)
 
     self.assertEqual(commitMock.call_args_list, [
-        mock.call(self.manifest_versions_int, 'spec', 'int mani', True),
-        mock.call(self.manifest_versions_ext, 'spec', 'filtered mani', True),
+        mock.call(
+            self.manifest_versions_int,
+            ('https://chrome-internal.googlesource.com/chromeos/'
+             'manifest-versions'),
+            'spec', 'int mani', True),
+        mock.call(
+            self.manifest_versions_ext,
+            ('https://chromium.googlesource.com/chromiumos/'
+             'manifest-versions'),
+            'spec', 'filtered mani', True),
     ])
 
   def testPopulateAndPublishBuildSpecIntOnly(self):
@@ -231,7 +282,11 @@ class BuildSpecFunctionsTest(cros_test_lib.MockTempDirTestCase):
         dryrun=False)
 
     self.assertEqual(commitMock.call_args_list, [
-        mock.call(self.manifest_versions_int, 'spec', 'int mani', False),
+        mock.call(
+            self.manifest_versions_int,
+            ('https://chrome-internal.googlesource.com/chromeos/'
+             'manifest-versions'),
+            'spec', 'int mani', False),
     ])
 
 

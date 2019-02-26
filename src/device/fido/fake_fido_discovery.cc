@@ -80,7 +80,7 @@ FakeFidoDiscovery* ScopedFakeFidoDiscoveryFactory::ForgeNextCableDiscovery(
   return next_cable_discovery_.get();
 }
 
-std::unique_ptr<FidoDeviceDiscovery>
+std::unique_ptr<FidoDiscoveryBase>
 ScopedFakeFidoDiscoveryFactory::CreateFidoDiscovery(
     FidoTransportProtocol transport,
     ::service_manager::Connector* connector) {

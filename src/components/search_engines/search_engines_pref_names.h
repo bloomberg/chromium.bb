@@ -11,7 +11,6 @@ extern const char kSyncedDefaultSearchProviderGUID[];
 extern const char kDefaultSearchProviderEnabled[];
 extern const char kSearchProviderOverrides[];
 extern const char kSearchProviderOverridesVersion[];
-extern const char kCountryIDAtInstall[];
 
 }  // namespace prefs
 

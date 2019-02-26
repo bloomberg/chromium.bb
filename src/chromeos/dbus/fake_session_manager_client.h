@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -100,7 +101,7 @@ class FakeSessionManagerClient : public SessionManagerClient {
       StartArcMiniContainerCallback callback) override;
   void UpgradeArcContainer(
       const login_manager::UpgradeArcContainerRequest& request,
-      UpgradeArcContainerCallback success_callback,
+      base::OnceClosure success_callback,
       UpgradeErrorCallback error_callback) override;
   void StopArcInstance(VoidDBusMethodCallback callback) override;
   void SetArcCpuRestriction(
@@ -109,8 +110,6 @@ class FakeSessionManagerClient : public SessionManagerClient {
   void EmitArcBooted(const cryptohome::AccountIdentifier& cryptohome_id,
                      VoidDBusMethodCallback callback) override;
   void GetArcStartTime(DBusMethodCallback<base::TimeTicks> callback) override;
-  void RemoveArcData(const cryptohome::AccountIdentifier& cryptohome_id,
-                     VoidDBusMethodCallback callback) override;
 
   // Notifies observers as if ArcInstanceStopped signal is received.
   void NotifyArcInstanceStopped(login_manager::ArcContainerStopReason,

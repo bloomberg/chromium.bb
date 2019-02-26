@@ -70,6 +70,21 @@ blink::mojom::FetchAPIResponsePtr BackgroundFetchSettledFetch::CloneResponse(
       response->cors_exposed_header_names, response->is_in_cache_storage,
       CloneSerializedBlob(response->side_data_blob));
 }
+
+// static
+blink::mojom::FetchAPIRequestPtr BackgroundFetchSettledFetch::CloneRequest(
+    const blink::mojom::FetchAPIRequestPtr& request) {
+  if (!request)
+    return nullptr;
+  return blink::mojom::FetchAPIRequest::New(
+      request->mode, request->is_main_resource_load,
+      request->request_context_type, request->frame_type, request->url,
+      request->method, request->headers, CloneSerializedBlob(request->blob),
+      request->referrer.Clone(), request->credentials_mode, request->cache_mode,
+      request->redirect_mode, request->integrity, request->keepalive,
+      request->client_id, request->is_reload, request->is_history_navigation);
+}
+
 BackgroundFetchSettledFetch::BackgroundFetchSettledFetch() = default;
 
 BackgroundFetchSettledFetch::BackgroundFetchSettledFetch(
@@ -79,7 +94,7 @@ BackgroundFetchSettledFetch::BackgroundFetchSettledFetch(
 
 BackgroundFetchSettledFetch& BackgroundFetchSettledFetch::operator=(
     const BackgroundFetchSettledFetch& other) {
-  request = other.request;
+  request = CloneRequest(other.request);
   response = CloneResponse(other.response);
   return *this;
 }

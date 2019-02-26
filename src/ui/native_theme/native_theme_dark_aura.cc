@@ -82,11 +82,6 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
     case kColorId_UnfocusedBorderColor:
     case kColorId_ButtonDisabledColor:
     case kColorId_ButtonHoverColor:
-    case kColorId_BlueButtonEnabledColor:
-    case kColorId_BlueButtonDisabledColor:
-    case kColorId_BlueButtonPressedColor:
-    case kColorId_BlueButtonHoverColor:
-    case kColorId_BlueButtonShadowColor:
     case kColorId_EnabledMenuItemForegroundColor:
     case kColorId_DisabledMenuItemForegroundColor:
     case kColorId_SelectedMenuItemForegroundColor:
@@ -97,6 +92,9 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
     case kColorId_MenuSeparatorColor:
     case kColorId_MenuBackgroundColor:
     case kColorId_MenuBorderColor:
+    case kColorId_HighlightedMenuItemBackgroundColor:
+    case kColorId_HighlightedMenuItemForegroundColor:
+    case kColorId_FocusedHighlightedMenuItemBackgroundColor:
     case kColorId_LinkDisabled:
     case kColorId_TabBottomBorder:
     case kColorId_TabTitleColorActive:

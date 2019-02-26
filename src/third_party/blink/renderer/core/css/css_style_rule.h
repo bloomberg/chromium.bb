@@ -38,9 +38,10 @@ class CORE_EXPORT CSSStyleRule final : public CSSRule {
 
  public:
   static CSSStyleRule* Create(StyleRule* rule, CSSStyleSheet* sheet) {
-    return new CSSStyleRule(rule, sheet);
+    return MakeGarbageCollected<CSSStyleRule>(rule, sheet);
   }
 
+  CSSStyleRule(StyleRule*, CSSStyleSheet*);
   ~CSSStyleRule() override;
 
   String cssText() const override;
@@ -59,8 +60,6 @@ class CORE_EXPORT CSSStyleRule final : public CSSRule {
   void Trace(blink::Visitor*) override;
 
  private:
-  CSSStyleRule(StyleRule*, CSSStyleSheet*);
-
   CSSRule::Type type() const override { return kStyleRule; }
 
   Member<StyleRule> style_rule_;

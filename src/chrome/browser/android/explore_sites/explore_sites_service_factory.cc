@@ -29,10 +29,27 @@ namespace explore_sites {
 const base::FilePath::CharType kExploreSitesStoreDirname[] =
     FILE_PATH_LITERAL("Explore");
 
+class URLLoaderFactoryGetterImpl
+    : public ExploreSitesServiceImpl::URLLoaderFactoryGetter {
+ public:
+  explicit URLLoaderFactoryGetterImpl(Profile* profile) : profile_(profile) {}
+
+  scoped_refptr<network::SharedURLLoaderFactory> GetFactory() override {
+    return profile_->GetURLLoaderFactory();
+  }
+
+ private:
+  Profile* profile_;
+
+  DISALLOW_COPY_AND_ASSIGN(URLLoaderFactoryGetterImpl);
+};
+
 ExploreSitesServiceFactory::ExploreSitesServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "ExploreSitesService",
-          BrowserContextDependencyManager::GetInstance()) {}
+          BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(HistoryServiceFactory::GetInstance());
+}
 ExploreSitesServiceFactory::~ExploreSitesServiceFactory() = default;
 
 // static
@@ -62,8 +79,8 @@ KeyedService* ExploreSitesServiceFactory::BuildServiceInstanceFor(
       profile->GetPath().Append(kExploreSitesStoreDirname);
   auto explore_sites_store =
       std::make_unique<ExploreSitesStore>(background_task_runner, store_path);
-  scoped_refptr<network::SharedURLLoaderFactory> url_fetcher =
-      profile->GetURLLoaderFactory();
+  auto url_loader_factory_getter =
+      std::make_unique<URLLoaderFactoryGetterImpl>(profile);
   history::HistoryService* history_service =
       HistoryServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::EXPLICIT_ACCESS);
@@ -71,7 +88,7 @@ KeyedService* ExploreSitesServiceFactory::BuildServiceInstanceFor(
       history_service, profile->GetPrefs(), base::DefaultClock::GetInstance());
 
   return new ExploreSitesServiceImpl(std::move(explore_sites_store),
-                                     url_fetcher,
+                                     std::move(url_loader_factory_getter),
                                      std::move(history_stats_reporter));
 }
 }  // namespace explore_sites

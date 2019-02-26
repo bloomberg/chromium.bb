@@ -17,7 +17,7 @@ namespace blink {
 MediaControlFullscreenButtonElement::MediaControlFullscreenButtonElement(
     MediaControlsImpl& media_controls)
     : MediaControlInputElement(media_controls, kMediaEnterFullscreenButton) {
-  setType(InputTypeNames::button);
+  setType(input_type_names::kButton);
   SetShadowPseudoId(AtomicString("-webkit-media-controls-fullscreen-button"));
   SetIsFullscreen(MediaElement().IsFullscreen());
   SetIsWanted(false);
@@ -49,7 +49,7 @@ const char* MediaControlFullscreenButtonElement::GetNameForHistograms() const {
 }
 
 void MediaControlFullscreenButtonElement::DefaultEventHandler(Event& event) {
-  if (event.type() == EventTypeNames::click) {
+  if (event.type() == event_type_names::kClick) {
     RecordClickMetrics();
     if (MediaElement().IsFullscreen())
       GetMediaControls().ExitFullscreen();

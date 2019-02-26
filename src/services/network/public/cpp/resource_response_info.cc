@@ -21,7 +21,6 @@ ResourceResponseInfo::ResourceResponseInfo()
       was_alpn_negotiated(false),
       was_alternate_protocol_available(false),
       connection_info(net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN),
-      was_fetched_via_proxy(false),
       was_fetched_via_service_worker(false),
       was_fallback_required_by_service_worker(false),
       response_type(mojom::FetchResponseType::kDefault),

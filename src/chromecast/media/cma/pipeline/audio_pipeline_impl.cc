@@ -8,8 +8,8 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "chromecast/media/cma/base/buffering_defs.h"
-#include "chromecast/media/cma/base/cma_logging.h"
 #include "chromecast/media/cma/base/coded_frame_provider.h"
 #include "chromecast/media/cma/base/decoder_config_adapter.h"
 #include "chromecast/media/cma/pipeline/backend_decryptor.h"
@@ -38,8 +38,7 @@ AudioPipelineImpl::~AudioPipelineImpl() = default;
 ::media::PipelineStatus AudioPipelineImpl::Initialize(
     const ::media::AudioDecoderConfig& audio_config,
     std::unique_ptr<CodedFrameProvider> frame_provider) {
-  CMALOG(kLogControl) << __FUNCTION__ << " "
-                      << audio_config.AsHumanReadableString();
+  LOG(INFO) << __FUNCTION__ << " " << audio_config.AsHumanReadableString();
   if (frame_provider) {
     SetCodedFrameProvider(std::move(frame_provider), kAppAudioBufferSize,
                           kMaxAudioFrameSize);
@@ -64,8 +63,8 @@ void AudioPipelineImpl::OnUpdateConfig(
     const ::media::AudioDecoderConfig& audio_config,
     const ::media::VideoDecoderConfig& video_config) {
   if (audio_config.IsValidConfig()) {
-    CMALOG(kLogControl) << __FUNCTION__ << " id:" << id << " "
-                        << audio_config.AsHumanReadableString();
+    LOG(INFO) << __FUNCTION__ << " id:" << id << " "
+              << audio_config.AsHumanReadableString();
 
     audio_config_ = DecoderConfigAdapter::ToCastAudioConfig(id, audio_config);
     bool success = audio_decoder_->SetConfig(audio_config_);
@@ -83,7 +82,7 @@ std::unique_ptr<StreamDecryptor> AudioPipelineImpl::CreateDecryptor() {
   bool clear_buffer_needed = audio_decoder_->RequiresDecryption();
   if (audio_config_.encryption_scheme.is_encrypted() &&
       MediaPipelineBackend::CreateAudioDecryptor && clear_buffer_needed) {
-    CMALOG(kLogControl) << __func__ << " Create backend decryptor for audio.";
+    LOG(INFO) << __func__ << " Create backend decryptor for audio.";
     return std::make_unique<BackendDecryptor>(audio_config_.encryption_scheme);
   }
 

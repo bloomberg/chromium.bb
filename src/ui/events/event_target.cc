@@ -31,17 +31,26 @@ gfx::Point EventTarget::GetScreenLocation(const ui::LocatedEvent& event) const {
 
 void EventTarget::AddPreTargetHandler(EventHandler* handler,
                                       Priority priority) {
-  DCHECK(handler);
-  PrioritizedHandler prioritized = PrioritizedHandler();
+  CHECK(handler);
+  PrioritizedHandler prioritized;
   prioritized.handler = handler;
   prioritized.priority = priority;
   if (priority == Priority::kDefault)
     pre_target_list_.push_back(prioritized);
   else
     pre_target_list_.insert(pre_target_list_.begin(), prioritized);
+  handler->targets_installed_on_.push_back(this);
 }
 
 void EventTarget::RemovePreTargetHandler(EventHandler* handler) {
+  CHECK(handler);
+  // Only erase a single one, which matches the removal code right after this.
+  auto installed_on_iter =
+      std::find(handler->targets_installed_on_.begin(),
+                handler->targets_installed_on_.end(), this);
+  if (installed_on_iter != handler->targets_installed_on_.end())
+    handler->targets_installed_on_.erase(installed_on_iter);
+
   EventHandlerPriorityList::iterator it, end;
   for (it = pre_target_list_.begin(), end = pre_target_list_.end(); it != end;
        ++it) {
@@ -97,11 +106,8 @@ void EventTarget::GetPreTargetHandlers(EventHandlerList* list) {
 void EventTarget::GetPostTargetHandlers(EventHandlerList* list) {
   EventTarget* target = this;
   while (target) {
-    for (auto it = target->post_target_list_.begin(),
-              end = target->post_target_list_.end();
-         it != end; ++it) {
-      list->push_back(*it);
-    }
+    list->insert(list->end(), target->post_target_list_.begin(),
+                 target->post_target_list_.end());
     target = target->GetParentTarget();
   }
 }

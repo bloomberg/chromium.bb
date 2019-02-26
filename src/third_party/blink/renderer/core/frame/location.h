@@ -54,8 +54,10 @@ class CORE_EXPORT Location final : public ScriptWrappable {
 
  public:
   static Location* Create(DOMWindow* dom_window) {
-    return new Location(dom_window);
+    return MakeGarbageCollected<Location>(dom_window);
   }
+
+  explicit Location(DOMWindow*);
 
   DOMWindow* DomWindow() const { return dom_window_.Get(); }
 
@@ -125,8 +127,6 @@ class CORE_EXPORT Location final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit Location(DOMWindow*);
-
   // Note: it is only valid to call this if this is a Location object for a
   // LocalDOMWindow.
   Document* GetDocument() const;

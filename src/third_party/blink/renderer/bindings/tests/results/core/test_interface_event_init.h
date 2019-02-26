@@ -8,8 +8,8 @@
 // DO NOT MODIFY!
 
 // clang-format off
-#ifndef TestInterfaceEventInit_h
-#define TestInterfaceEventInit_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_TEST_INTERFACE_EVENT_INIT_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_TEST_INTERFACE_EVENT_INIT_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event_init.h"
@@ -19,12 +19,11 @@
 namespace blink {
 
 class CORE_EXPORT TestInterfaceEventInit : public EventInit {
-  DISALLOW_NEW();
  public:
+  static TestInterfaceEventInit* Create() { return MakeGarbageCollected<TestInterfaceEventInit>(); }
+
   TestInterfaceEventInit();
   virtual ~TestInterfaceEventInit();
-  TestInterfaceEventInit(const TestInterfaceEventInit&);
-  TestInterfaceEventInit& operator=(const TestInterfaceEventInit&);
 
   bool hasStringMember() const { return !string_member_.IsNull(); }
   const String& stringMember() const {
@@ -48,4 +47,4 @@ void TestInterfaceEventInit::setStringMember(const String& value) {
 
 }  // namespace blink
 
-#endif  // TestInterfaceEventInit_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_TEST_INTERFACE_EVENT_INIT_H_

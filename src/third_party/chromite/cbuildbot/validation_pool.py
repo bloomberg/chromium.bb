@@ -405,6 +405,8 @@ class ValidationPool(object):
             self.HandleDraftChange(change)
           elif change.IsPrivate():
             self.HandlePrivateChange(change)
+          elif change.topic:
+            self.HandleTopicUsage(change)
 
       if ready_fn:
         # The query passed in may include a dictionary of flags to use for
@@ -1750,6 +1752,23 @@ class ValidationPool(object):
     """
     msg = ('%(queue)s could not apply your change because the CL is private. '
            'Please make your CL public before marking your commit as ready.')
+    self.SendNotification(change, msg)
+    self.RemoveReady(change)
+
+  def HandleTopicUsage(self, change):
+    """Handler for when the latest patch set of |change| is using a topic.
+
+    This handler removes the commit ready bit from the specified changes and
+    sends the developer a message explaining why.
+
+    Args:
+      change: GerritPatch instance to operate upon.
+    """
+    msg = ('%(queue)s could not apply your change because the CL has its topic '
+           'set, but the CQ does not yet support that. If you want to organize '
+           'or group your CLs, use hashtags instead. Star '
+           'https://crbug.com/852823 for updates. '
+           'Please clear the topic field before marking your commit as ready.')
     self.SendNotification(change, msg)
     self.RemoveReady(change)
 

@@ -51,6 +51,12 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   void SetFullDamageForSurface(const SurfaceId& surface_id);
   void set_output_is_secure(bool secure) { output_is_secure_ = secure; }
 
+  // The set of surfaces that are referenced, but do not contribute to the
+  // aggregated CompositorFrame.
+  const base::flat_set<SurfaceId>& undrawn_surfaces() const {
+    return undrawn_surfaces_;
+  }
+
   // Set the color spaces for the created RenderPasses, which is propagated
   // to the output surface.
   void SetOutputColorSpace(const gfx::ColorSpace& blending_color_space,
@@ -82,26 +88,6 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
     int id;
     // This is true if the pass was used in the last aggregated frame.
     bool in_use = true;
-  };
-
-  struct SurfaceDrawQuadUmaStats {
-    void Reset() {
-      valid_surface = 0;
-      using_fallback_surface = 0;
-    }
-
-    // The surface exists and has an active frame.
-    int valid_surface;
-
-    // The surface doesn't exist.
-    int missing_surface;
-
-    // The surface exists but doesn't have an active frame.
-    int no_active_frame;
-
-    // The primary surface is not available but the fallback
-    // is used.
-    int using_fallback_surface;
   };
 
   ClipData CalculateClipRect(const ClipData& surface_clip,
@@ -274,14 +260,12 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   // passes. This is valid during Aggregate after PrewalkTree is called.
   bool has_cached_render_passes_;
 
-  // Tracks UMA stats for SurfaceDrawQuads during a call to Aggregate().
-  SurfaceDrawQuadUmaStats uma_stats_;
-
   // For each FrameSinkId, contains a vector of SurfaceRanges that will damage
   // the display if they're damaged.
   base::flat_map<FrameSinkId, std::vector<SurfaceRange>> damage_ranges_;
 
   int64_t display_trace_id_ = -1;
+  base::flat_set<SurfaceId> undrawn_surfaces_;
 
   base::WeakPtrFactory<SurfaceAggregator> weak_factory_;
 

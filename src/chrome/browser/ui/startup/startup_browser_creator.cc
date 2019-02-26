@@ -93,6 +93,7 @@
 #include "chrome/browser/metrics/jumplist_metrics_win.h"
 #include "chrome/browser/notifications/win/notification_launch_id.h"
 #include "chrome/browser/ui/webui/settings/reset_settings_handler.h"
+#include "chrome/credential_provider/common/gcp_strings.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -329,6 +330,12 @@ bool StartupBrowserCreator::LaunchBrowser(
                  << "browser session.";
   }
 
+#if defined(OS_WIN)
+  // Continue with the incognito profile if this is a credential provider logon.
+  if (command_line.HasSwitch(credential_provider::kGcpwSigninSwitch))
+    profile = profile->GetOffTheRecordProfile();
+#endif
+
   // Note: This check should have been done in ProcessCmdLineImpl()
   // before calling this function. However chromeos/login/login_utils.cc
   // calls this function directly (see comments there) so it has to be checked
@@ -463,15 +470,9 @@ void StartupBrowserCreator::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   // creation.
   registry->RegisterBooleanPref(prefs::kHasSeenWelcomePage, true);
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-  // TODO(scottchen): To make this testable early by trybots, instead of hiding
-  // behind GOOGLE_CHROME_BUILD, use a function that returns true for official
-  // builds and conditionally returns true based on a command line switch to
-  // be set by tests.
-  registry->RegisterBooleanPref(prefs::kHasSeenGoogleAppsPromoPage, true);
-  registry->RegisterBooleanPref(prefs::kHasSeenEmailPromoPage, true);
-  // This  will be set to true for newly created profiles, and is used to
-  // indicate which users went through FRE after NUX is enabled.
-  registry->RegisterBooleanPref(prefs::kOnboardDuringNUX, false);
+  // This will be set for newly created profiles, and is used to indicate which
+  // users went through onboarding with the current experiment group.
+  registry->RegisterStringPref(prefs::kNaviOnboardGroup, "");
 #endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 }
 

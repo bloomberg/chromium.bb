@@ -349,12 +349,10 @@ String StringForSkPaintFlags(const SkPaint& paint) {
   AppendFlagToString(&flags_string, paint.isFakeBoldText(), "FakeBoldText");
   AppendFlagToString(&flags_string, paint.isLinearText(), "LinearText");
   AppendFlagToString(&flags_string, paint.isSubpixelText(), "SubpixelText");
-  AppendFlagToString(&flags_string, paint.isDevKernText(), "DevKernText");
   AppendFlagToString(&flags_string, paint.isLCDRenderText(), "LCDRenderText");
   AppendFlagToString(&flags_string, paint.isEmbeddedBitmapText(),
                      "EmbeddedBitmapText");
   AppendFlagToString(&flags_string, paint.isAutohinted(), "Autohinted");
-  AppendFlagToString(&flags_string, paint.isVerticalText(), "VerticalText");
   return flags_string;
 }
 
@@ -368,20 +366,6 @@ String FilterQualityName(SkFilterQuality filter_quality) {
       return "Medium";
     case kHigh_SkFilterQuality:
       return "High";
-    default:
-      NOTREACHED();
-      return "?";
-  };
-}
-
-String TextAlignName(SkPaint::Align align) {
-  switch (align) {
-    case SkPaint::kLeft_Align:
-      return "Left";
-    case SkPaint::kCenter_Align:
-      return "Center";
-    case SkPaint::kRight_Align:
-      return "Right";
     default:
       NOTREACHED();
       return "?";
@@ -446,15 +430,15 @@ String TextEncodingName(SkPaint::TextEncoding encoding) {
   };
 }
 
-String HintingName(SkPaint::Hinting hinting) {
+String HintingName(SkFontHinting hinting) {
   switch (hinting) {
-    case SkPaint::kNo_Hinting:
+    case SkFontHinting::kNone:
       return "None";
-    case SkPaint::kSlight_Hinting:
+    case SkFontHinting::kSlight:
       return "Slight";
-    case SkPaint::kNormal_Hinting:
+    case SkFontHinting::kNormal:
       return "Normal";
-    case SkPaint::kFull_Hinting:
+    case SkFontHinting::kFull:
       return "Full";
     default:
       NOTREACHED();
@@ -475,7 +459,6 @@ std::unique_ptr<JSONObject> ObjectForSkPaint(const SkPaint& paint) {
   paint_item->SetString("flags", StringForSkPaintFlags(paint));
   paint_item->SetString("filterLevel",
                         FilterQualityName(paint.getFilterQuality()));
-  paint_item->SetString("textAlign", TextAlignName(paint.getTextAlign()));
   paint_item->SetString("strokeCap", StrokeCapName(paint.getStrokeCap()));
   paint_item->SetString("strokeJoin", StrokeJoinName(paint.getStrokeJoin()));
   paint_item->SetString("styleName", StyleName(paint.getStyle()));
@@ -594,7 +577,7 @@ JSONObject* AutoLogger::LogItemWithParams(const String& name) {
 }
 
 LoggingCanvas::LoggingCanvas()
-    : InterceptingCanvasBase(0, 0), log_(JSONArray::Create()) {}
+    : InterceptingCanvasBase(999999, 999999), log_(JSONArray::Create()) {}
 
 void LoggingCanvas::onDrawPaint(const SkPaint& paint) {
   AutoLogger logger(this);

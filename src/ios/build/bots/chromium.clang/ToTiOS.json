@@ -2,13 +2,12 @@
   "comments": [
     "Clang tip-of-tree builder for iOS."
   ],
-  "xcode build version": "10a254a",
+  "xcode build version": "10b61",
   "gn_args": [
     "ios_enable_code_signing=false",
     "is_component_build=false",
     "is_debug=false",
     "llvm_force_head_revision=true",
-    "additional_target_cpus=[\"x86\"]",
     "target_cpu=\"x64\"",
     "target_os=\"ios\""
   ],
@@ -28,7 +27,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "os": "12.0"
+      "os": "12.1"
     },
     {
       "app": "boringssl_crypto_tests",
@@ -38,7 +37,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "os": "12.0"
+      "os": "12.1"
     },
     {
       "app": "boringssl_ssl_tests",
@@ -48,7 +47,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "os": "12.0"
+      "os": "12.1"
     },
     {
       "app": "components_unittests",
@@ -58,7 +57,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "os": "12.0"
+      "os": "12.1"
     },
     {
       "app": "crypto_unittests",
@@ -68,7 +67,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "os": "12.0"
+      "os": "12.1"
     },
     {
       "app": "gfx_unittests",
@@ -78,7 +77,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "os": "12.0"
+      "os": "12.1"
     },
     {
       "app": "google_apis_unittests",
@@ -88,7 +87,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "os": "12.0"
+      "os": "12.1"
     },
     {
       "app": "ios_chrome_unittests",
@@ -98,7 +97,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "os": "12.0"
+      "os": "12.1"
     },
     {
       "app": "ios_net_unittests",
@@ -108,7 +107,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "os": "12.0"
+      "os": "12.1"
     },
     {
       "app": "ios_web_inttests",
@@ -118,7 +117,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "os": "12.0"
+      "os": "12.1"
     },
     {
       "app": "ios_web_unittests",
@@ -128,7 +127,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "os": "12.0"
+      "os": "12.1"
     },
     {
       "app": "ios_web_view_inttests",
@@ -138,7 +137,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "os": "12.0"
+      "os": "12.1"
     },
     {
       "app": "net_unittests",
@@ -148,7 +147,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "os": "12.0"
+      "os": "12.1"
     },
     {
       "app": "skia_unittests",
@@ -158,7 +157,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "os": "12.0"
+      "os": "12.1"
     },
     {
       "app": "sql_unittests",
@@ -168,7 +167,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "os": "12.0"
+      "os": "12.1"
     },
     {
       "app": "ui_base_unittests",
@@ -178,7 +177,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "os": "12.0"
+      "os": "12.1"
     },
     {
       "app": "url_unittests",
@@ -188,7 +187,7 @@
         { "os": "Mac-10.13.5", "pool": "Chrome" },
         { "os": "Mac-10.13.6", "pool": "Chrome" }
       ],
-      "os": "12.0"
+      "os": "12.1"
     }
   ]
 }

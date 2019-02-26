@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/login/ui/login_base_bubble_view.h"
+#include "ash/login/ui/login_button.h"
 #include "base/callback.h"
 #include "ui/views/view.h"
 
@@ -46,11 +47,15 @@ class ASH_EXPORT LoginMenuView : public LoginBaseBubbleView {
 
   LoginMenuView(const std::vector<Item>& items,
                 views::View* anchor_view,
+                LoginButton* opener_,
                 const OnSelect& on_select);
   ~LoginMenuView() override;
 
   void OnHighLightChange(int item_index, bool by_selection);
   int FindNextItem(bool reverse);
+
+  // LoginBaseBubbleView:
+  LoginButton* GetBubbleOpener() const override;
 
   // views::View:
   void OnFocus() override;
@@ -63,6 +68,8 @@ class ASH_EXPORT LoginMenuView : public LoginBaseBubbleView {
 
   // Owned by ScrollView.
   views::View* contents_ = nullptr;
+
+  LoginButton* opener_ = nullptr;
 
   const OnSelect on_select_;
   int selected_index_ = 0;

@@ -6,8 +6,10 @@
 
 #include "base/files/file_path.h"
 #include "base/path_service.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "extensions/common/extension_paths.h"
 #include "extensions/common/image_util.h"
+#include "extensions/test/logging_timer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -184,41 +186,133 @@ TEST(ImageUtilTest, IsIconSufficientlyVisible) {
   base::FilePath test_dir;
   ASSERT_TRUE(base::PathService::Get(DIR_TEST_DATA, &test_dir));
   base::FilePath icon_path;
+  const std::string metric_name =
+      "Extensions.IsRenderedIconSufficientlyVisibleTime";
   {
+    base::HistogramTester histogram_tester;
     // This icon has all transparent pixels, so it will fail.
     icon_path = test_dir.AppendASCII("transparent_icon.png");
     SkBitmap transparent_icon;
     ASSERT_TRUE(image_util::LoadPngFromFile(icon_path, &transparent_icon));
     EXPECT_FALSE(image_util::IsIconSufficientlyVisible(transparent_icon));
+    EXPECT_FALSE(image_util::IsRenderedIconSufficientlyVisible(transparent_icon,
+                                                               SK_ColorWHITE));
+    histogram_tester.ExpectTotalCount(metric_name, 1);
   }
   {
+    base::HistogramTester histogram_tester;
     // Test with an icon that has one opaque pixel.
     icon_path = test_dir.AppendASCII("one_pixel_opaque_icon.png");
     SkBitmap visible_icon;
     ASSERT_TRUE(image_util::LoadPngFromFile(icon_path, &visible_icon));
     EXPECT_FALSE(image_util::IsIconSufficientlyVisible(visible_icon));
+    EXPECT_FALSE(image_util::IsRenderedIconSufficientlyVisible(visible_icon,
+                                                               SK_ColorWHITE));
+    histogram_tester.ExpectTotalCount(metric_name, 1);
   }
   {
+    base::HistogramTester histogram_tester;
     // Test with an icon that has one transparent pixel.
     icon_path = test_dir.AppendASCII("one_pixel_transparent_icon.png");
     SkBitmap visible_icon;
     ASSERT_TRUE(image_util::LoadPngFromFile(icon_path, &visible_icon));
     EXPECT_TRUE(image_util::IsIconSufficientlyVisible(visible_icon));
+    EXPECT_TRUE(image_util::IsRenderedIconSufficientlyVisible(visible_icon,
+                                                              SK_ColorWHITE));
+    histogram_tester.ExpectTotalCount(metric_name, 1);
   }
   {
+    base::HistogramTester histogram_tester;
     // Test with an icon that is completely opaque.
     icon_path = test_dir.AppendASCII("opaque_icon.png");
     SkBitmap visible_icon;
     ASSERT_TRUE(image_util::LoadPngFromFile(icon_path, &visible_icon));
     EXPECT_TRUE(image_util::IsIconSufficientlyVisible(visible_icon));
+    EXPECT_TRUE(image_util::IsRenderedIconSufficientlyVisible(visible_icon,
+                                                              SK_ColorWHITE));
+    histogram_tester.ExpectTotalCount(metric_name, 1);
   }
   {
+    base::HistogramTester histogram_tester;
     // Test with an icon that is rectangular.
     icon_path = test_dir.AppendASCII("rectangle.png");
     SkBitmap visible_icon;
     ASSERT_TRUE(image_util::LoadPngFromFile(icon_path, &visible_icon));
     EXPECT_TRUE(image_util::IsIconSufficientlyVisible(visible_icon));
+    EXPECT_TRUE(image_util::IsRenderedIconSufficientlyVisible(visible_icon,
+                                                              SK_ColorWHITE));
+    histogram_tester.ExpectTotalCount(metric_name, 1);
   }
+  {
+    base::HistogramTester histogram_tester;
+    // Test with a solid color icon that is completely opaque. Use the icon's
+    // color as the background color in the call to analyze its visibility.
+    // It should be invisible in this case.
+    icon_path = test_dir.AppendASCII("grey_21x21.png");
+    SkBitmap solid_icon;
+    ASSERT_TRUE(image_util::LoadPngFromFile(icon_path, &solid_icon));
+    const SkColor pixel_color = solid_icon.getColor(0, 0);
+    EXPECT_FALSE(
+        image_util::IsRenderedIconSufficientlyVisible(solid_icon, pixel_color));
+    histogram_tester.ExpectTotalCount(metric_name, 1);
+  }
+  {
+    base::HistogramTester histogram_tester;
+    // Test with a two-color icon that is completely opaque. Use one of the
+    // icon's colors as the background color in the call to analyze its
+    // visibility. It should be visible in this case.
+    icon_path = test_dir.AppendASCII("two_color_21x21.png");
+    SkBitmap two_color_icon;
+    ASSERT_TRUE(image_util::LoadPngFromFile(icon_path, &two_color_icon));
+    const SkColor pixel_color = two_color_icon.getColor(0, 0);
+    EXPECT_TRUE(image_util::IsRenderedIconSufficientlyVisible(two_color_icon,
+                                                              pixel_color));
+    histogram_tester.ExpectTotalCount(metric_name, 1);
+  }
+}
+
+TEST(ImageUtilTest, MANUAL_IsIconSufficientlyVisiblePerfTest) {
+  base::FilePath test_dir;
+  ASSERT_TRUE(base::PathService::Get(DIR_TEST_DATA, &test_dir));
+  base::FilePath icon_path;
+  // This icon has all transparent pixels.
+  icon_path = test_dir.AppendASCII("transparent_icon.png");
+  SkBitmap invisible_icon;
+  ASSERT_TRUE(image_util::LoadPngFromFile(icon_path, &invisible_icon));
+  // This icon is completely opaque.
+  icon_path = test_dir.AppendASCII("opaque_icon.png");
+  SkBitmap visible_icon;
+  ASSERT_TRUE(image_util::LoadPngFromFile(icon_path, &visible_icon));
+
+  static constexpr char kInvisibleTimerId[] = "InvisibleIcon";
+  static constexpr char kVisibleTimerId[] = "VisibleIcon";
+  static constexpr char kInvisibleRenderedTimerId[] = "InvisibleRenderedIcon";
+  static constexpr char kVisibleRenderedTimerId[] = "VisibleRenderedIcon";
+  constexpr int kIterations = 100000;
+
+  for (int i = 0; i < kIterations; ++i) {
+    LoggingTimer timer(kInvisibleTimerId);
+    EXPECT_FALSE(image_util::IsIconSufficientlyVisible(invisible_icon));
+  }
+
+  for (int i = 0; i < kIterations; ++i) {
+    LoggingTimer timer(kVisibleTimerId);
+    EXPECT_TRUE(image_util::IsIconSufficientlyVisible(visible_icon));
+  }
+
+  for (int i = 0; i < kIterations; ++i) {
+    LoggingTimer timer(kInvisibleRenderedTimerId);
+    EXPECT_FALSE(image_util::IsRenderedIconSufficientlyVisible(invisible_icon,
+                                                               SK_ColorWHITE));
+  }
+
+  for (int i = 0; i < kIterations; ++i) {
+    LoggingTimer timer(kVisibleRenderedTimerId);
+    EXPECT_TRUE(image_util::IsRenderedIconSufficientlyVisible(visible_icon,
+                                                              SK_ColorWHITE));
+  }
+
+  LoggingTimer::Print();
 }
 
 }  // namespace extensions

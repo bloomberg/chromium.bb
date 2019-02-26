@@ -12,7 +12,7 @@
 namespace ash {
 
 TrayInfoLabel::TrayInfoLabel(TrayInfoLabel::Delegate* delegate, int message_id)
-    : ActionableView(nullptr /* owner */, TrayPopupInkDropStyle::FILL_BOUNDS),
+    : ActionableView(TrayPopupInkDropStyle::FILL_BOUNDS),
       label_(TrayPopupUtils::CreateDefaultLabel()),
       message_id_(message_id),
       delegate_(delegate) {
@@ -43,10 +43,10 @@ void TrayInfoLabel::Update(int message_id) {
   TrayPopupItemStyle::FontStyle font_style;
 
   if (IsClickable()) {
-    SetInkDropMode(InkDropHostView::InkDropMode::ON);
+    SetInkDropMode(InkDropMode::ON);
     font_style = TrayPopupItemStyle::FontStyle::CLICKABLE_SYSTEM_INFO;
   } else {
-    SetInkDropMode(InkDropHostView::InkDropMode::OFF);
+    SetInkDropMode(InkDropMode::OFF);
     font_style = TrayPopupItemStyle::FontStyle::SYSTEM_INFO;
   }
 

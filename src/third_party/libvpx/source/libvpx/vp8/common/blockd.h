@@ -13,6 +13,7 @@
 
 void vpx_log(const char *format, ...);
 
+#include "vpx/internal/vpx_codec_internal.h"
 #include "vpx_config.h"
 #include "vpx_scale/yv12config.h"
 #include "mv.h"
@@ -201,8 +202,9 @@ typedef struct blockd {
   union b_mode_info bmi;
 } BLOCKD;
 
-typedef void (*vp8_subpix_fn_t)(unsigned char *src, int src_pitch, int xofst,
-                                int yofst, unsigned char *dst, int dst_pitch);
+typedef void (*vp8_subpix_fn_t)(unsigned char *src_ptr, int src_pixels_per_line,
+                                int xoffset, int yoffset,
+                                unsigned char *dst_ptr, int dst_pitch);
 
 typedef struct macroblockd {
   DECLARE_ALIGNED(16, unsigned char, predictor[384]);
@@ -287,6 +289,8 @@ typedef struct macroblockd {
   void *current_bc;
 
   int corrupted;
+
+  struct vpx_internal_error_info error_info;
 
 #if ARCH_X86 || ARCH_X86_64
   /* This is an intermediate buffer currently used in sub-pixel motion search

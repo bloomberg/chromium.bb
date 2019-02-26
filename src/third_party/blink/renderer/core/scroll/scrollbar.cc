@@ -162,7 +162,7 @@ void Scrollbar::SetProportion(int visible_size, int total_size) {
 
 void Scrollbar::Paint(GraphicsContext& context,
                       const CullRect& cull_rect) const {
-  if (!cull_rect.IntersectsCullRect(FrameRect()))
+  if (!cull_rect.Intersects(FrameRect()))
     return;
 
   GetTheme().Paint(*this, context, cull_rect);

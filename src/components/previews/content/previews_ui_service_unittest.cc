@@ -7,9 +7,9 @@
 #include <memory>
 
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/time/default_clock.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_blacklist_data.h"
 #include "components/previews/content/previews_decider_impl.h"
@@ -23,39 +23,27 @@ namespace previews {
 
 namespace {
 
+// Dummy method for creating TestPreviewsUIService.
+bool MockedPreviewsIsEnabled(previews::PreviewsType type) {
+  return true;
+}
+
 class TestPreviewsUIService : public PreviewsUIService {
  public:
   TestPreviewsUIService(
-      PreviewsDeciderImpl* previews_decider_impl,
-      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
+      std::unique_ptr<PreviewsDeciderImpl> previews_decider_impl,
       std::unique_ptr<blacklist::OptOutStore> previews_opt_out_store,
       std::unique_ptr<PreviewsOptimizationGuide> previews_opt_guide,
       std::unique_ptr<PreviewsLogger> logger,
       network::TestNetworkQualityTracker* test_network_quality_tracker)
-      : PreviewsUIService(previews_decider_impl,
-                          io_task_runner,
+      : PreviewsUIService(std::move(previews_decider_impl),
                           std::move(previews_opt_out_store),
                           std::move(previews_opt_guide),
-                          PreviewsIsEnabledCallback(),
+                          base::BindRepeating(&MockedPreviewsIsEnabled),
                           std::move(logger),
                           blacklist::BlacklistData::AllowedTypesAndVersions(),
-                          test_network_quality_tracker),
-        previews_decider_impl_set_(false) {}
+                          test_network_quality_tracker) {}
   ~TestPreviewsUIService() override {}
-
-  // Set |previews_decider_impl_set_| to true and use base class functionality.
-  void SetIOData(
-      base::WeakPtr<PreviewsDeciderImpl> previews_decider_impl) override {
-    previews_decider_impl_set_ = true;
-    PreviewsUIService::SetIOData(previews_decider_impl);
-  }
-
-  // Whether SetIOData was called.
-  bool previews_decider_impl_set() { return previews_decider_impl_set_; }
-
- private:
-  // Whether SetIOData was called.
-  bool previews_decider_impl_set_;
 };
 
 // Mock class of PreviewsLogger for checking passed in parameters.
@@ -167,12 +155,8 @@ class TestPreviewsLogger : public PreviewsLogger {
 
 class TestPreviewsDeciderImpl : public PreviewsDeciderImpl {
  public:
-  TestPreviewsDeciderImpl(
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
-      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
-      : PreviewsDeciderImpl(ui_task_runner,
-                            io_task_runner,
-                            base::DefaultClock::GetInstance()),
+  TestPreviewsDeciderImpl()
+      : PreviewsDeciderImpl(base::DefaultClock::GetInstance()),
         blacklist_ignored_(false) {}
 
   // PreviewsDeciderImpl:
@@ -202,28 +186,30 @@ class PreviewsUIServiceTest : public testing::Test {
     // Use to testing logger data.
     logger_ptr_ = logger.get();
 
-    previews_decider_impl_ = std::make_unique<TestPreviewsDeciderImpl>(
-        loop_.task_runner(), loop_.task_runner());
+    std::unique_ptr<TestPreviewsDeciderImpl> previews_decider_impl =
+        std::make_unique<TestPreviewsDeciderImpl>();
+    previews_decider_impl_ = previews_decider_impl.get();
+
     ui_service_ = std::make_unique<TestPreviewsUIService>(
-        previews_decider_impl(), loop_.task_runner(),
-        nullptr /* previews_opt_out_store */, nullptr /* previews_opt_guide */,
-        std::move(logger), &test_network_quality_tracker_);
-    base::RunLoop().RunUntilIdle();
+        std::move(previews_decider_impl), nullptr /* previews_opt_out_store */,
+        nullptr /* previews_opt_guide */, std::move(logger),
+        &test_network_quality_tracker_);
   }
 
   TestPreviewsDeciderImpl* previews_decider_impl() {
-    return previews_decider_impl_.get();
+    return previews_decider_impl_;
   }
+
   TestPreviewsUIService* ui_service() { return ui_service_.get(); }
 
  protected:
   // Run this test on a single thread.
-  base::MessageLoopForIO loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   TestPreviewsLogger* logger_ptr_;
   network::TestNetworkQualityTracker test_network_quality_tracker_;
 
  private:
-  std::unique_ptr<TestPreviewsDeciderImpl> previews_decider_impl_;
+  TestPreviewsDeciderImpl* previews_decider_impl_;
   std::unique_ptr<TestPreviewsUIService> ui_service_;
 };
 
@@ -232,7 +218,7 @@ class PreviewsUIServiceTest : public testing::Test {
 TEST_F(PreviewsUIServiceTest, TestInitialization) {
   // After the outstanding posted tasks have run, SetIOData should have been
   // called for |ui_service_|.
-  EXPECT_TRUE(ui_service()->previews_decider_impl_set());
+  EXPECT_TRUE(ui_service()->previews_decider_impl());
 }
 
 TEST_F(PreviewsUIServiceTest, TestLogPreviewNavigationPassInCorrectParams) {

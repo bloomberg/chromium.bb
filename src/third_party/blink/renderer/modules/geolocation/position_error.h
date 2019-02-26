@@ -43,8 +43,11 @@ class PositionError final : public ScriptWrappable {
   };
 
   static PositionError* Create(ErrorCode code, const String& message) {
-    return new PositionError(code, message);
+    return MakeGarbageCollected<PositionError>(code, message);
   }
+
+  PositionError(ErrorCode code, const String& message)
+      : code_(code), message_(message), is_fatal_(false) {}
 
   ErrorCode code() const { return code_; }
   const String& message() const { return message_; }
@@ -52,9 +55,6 @@ class PositionError final : public ScriptWrappable {
   bool IsFatal() const { return is_fatal_; }
 
  private:
-  PositionError(ErrorCode code, const String& message)
-      : code_(code), message_(message), is_fatal_(false) {}
-
   ErrorCode code_;
   String message_;
   // Whether the error is fatal, such that no request can ever obtain a good

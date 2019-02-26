@@ -7,8 +7,8 @@
 #include <numeric>
 
 #include "base/big_endian.h"
-#include "net/dns/dns_protocol.h"
 #include "net/dns/dns_response.h"
+#include "net/dns/public/dns_protocol.h"
 
 namespace net {
 

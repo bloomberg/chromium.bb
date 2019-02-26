@@ -12,21 +12,21 @@ import("//build/config/sanitizers/sanitizers.gni")
 platform_config_root =
     "chromium/config/$ffmpeg_branding/$os_config/$ffmpeg_arch"
 
-has_yasm_deps =
-    ffmpeg_yasm_sources != [] &&
+has_nasm_deps =
+    ffmpeg_asm_sources != [] &&
     (current_cpu == "x86" || current_cpu == "x64") && os_config != "linux-noasm"
-if (has_yasm_deps) {
-  import("//third_party/yasm/yasm_assemble.gni")
-  yasm_assemble("ffmpeg_yasm") {
-    sources = ffmpeg_yasm_sources
+if (has_nasm_deps) {
+  import("//third_party/nasm/nasm_assemble.gni")
+  nasm_assemble("ffmpeg_nasm") {
+    sources = ffmpeg_asm_sources
 
     # Ensure the architecture defines go in the command line before the -P
     # file below, so don't use defines.
-    yasm_flags = []
+    nasm_flags = []
     if (current_cpu == "x86") {
-      yasm_flags += [ "-DARCH_X86_32" ]
+      nasm_flags += [ "-DARCH_X86_32" ]
     } else if (current_cpu == "x64") {
-      yasm_flags += [ "-DARCH_X86_64" ]
+      nasm_flags += [ "-DARCH_X86_64" ]
     }
 
     inputs = [
@@ -43,11 +43,9 @@ if (has_yasm_deps) {
       ".",
     ]
 
-    # Disable warnings, prevents log spam for things we won't fix.
-    yasm_flags += [
-      "-w",
-      "-P",
-      rebase_path("$platform_config_root/config.asm", root_build_dir),
+    nasm_flags += [
+      "-W+error=all",
+      "-P" + rebase_path("$platform_config_root/config.asm", root_build_dir),
     ]
 
     if (is_mac) {
@@ -178,6 +176,10 @@ target(link_target_type, "ffmpeg_internal") {
     "PIC",
     "FFMPEG_CONFIGURATION=NULL",
   ]
+
+  if (is_component_ffmpeg) {
+    configs += [ "//build/config/sanitizers:cfi_icall_disable" ]
+  }
 
   # Disable internal ffmpeg logs in the official build; this saves ~158kb.
   if (is_official_build) {
@@ -372,8 +374,8 @@ target(link_target_type, "ffmpeg_internal") {
     }
   }
 
-  if (has_yasm_deps) {
-    deps += [ ":ffmpeg_yasm" ]
+  if (has_nasm_deps) {
+    deps += [ ":ffmpeg_nasm" ]
   }
 }
 
@@ -403,6 +405,10 @@ if (is_component_ffmpeg) {
       sources = [
         "$target_gen_dir/ffmpeg.def",
       ]
+    }
+
+    if (is_mac && !is_component_build) {
+      ldflags += [ "-Wl,-install_name,@rpath/libffmpeg.dylib" ]
     }
   }
 } else {

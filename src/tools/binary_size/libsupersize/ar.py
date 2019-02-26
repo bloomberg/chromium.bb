@@ -20,6 +20,11 @@ def IsThinArchive(path):
 
 def CreateThinObjectPath(archive_path, subpath):
   """Given the .a path and .o subpath, returns the .o path."""
+  # |subpath| is path complete under Gold, and incomplete under LLD. Check its
+  # prefix to test completeness, and if not, use |archive_path| to supply the
+  # required prefix.
+  if subpath.startswith('obj/'):
+    return subpath
   # .o subpaths in thin archives are relative to the directory of the .a.
   parent_path = os.path.dirname(archive_path)
   return os.path.normpath(os.path.join(parent_path, subpath))
@@ -104,16 +109,6 @@ def ExpandThinArchives(paths, output_directory):
   logging.info('%d of %d .a files were thin archives',
                len(thin_paths), num_archives)
   return expanded_paths, thin_paths
-
-
-def CreateThinObjectPath(archive_path, subpath):
-  # |subpath| is path complete under Gold, and incomplete under LLD. Check its
-  # prefix to test completeness, and if not, use |archive_path| to supply the
-  # required prefix.
-  if subpath.startswith('obj/'):
-    return subpath
-  parent_path = os.path.dirname(archive_path)
-  return os.path.normpath(os.path.join(parent_path, subpath))
 
 
 def main():

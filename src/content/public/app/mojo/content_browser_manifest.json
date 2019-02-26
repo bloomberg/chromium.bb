@@ -24,9 +24,6 @@
         "font_cache": [
           "content.mojom.FontCacheWin"
         ],
-        "font_loader": [
-          "content.mojom.FontLoaderMac"
-        ],
         "gpu": [
           "discardable_memory.mojom.DiscardableSharedMemoryManager",
           "media.mojom.AndroidOverlayProvider"
@@ -75,11 +72,16 @@
           "media.mojom.VideoDecodePerfHistory",
           "memory_coordinator.mojom.MemoryCoordinatorHandle",
           "metrics.mojom.SingleSampleMetricsProvider",
+          "midi.mojom.MidiSessionProvider",
           "network.mojom.P2PSocketManager",
+          "network.mojom.MdnsResponder",
           "network.mojom.URLLoaderFactory",
           "resource_coordinator.mojom.ProcessCoordinationUnit",
           "viz.mojom.CompositingModeReporter",
           "ws.mojom.Gpu"
+        ],
+        "sandbox_support": [
+          "content.mojom.SandboxSupportMac"
         ],
         "service_manager:service_factory": [
           "service_manager.mojom.ServiceFactory"
@@ -105,6 +107,7 @@
         "data_decoder": [ "image_decoder", "json_parser", "xml_parser" ],
         "device": [
           "device:battery_monitor",
+          "device:bluetooth_system",
           "device:generic_sensor",
           "device:geolocation",
           "device:hid",
@@ -165,6 +168,7 @@
           "blink.mojom.CredentialManager",
           "blink.mojom.DisplayCutoutHost",
           "blink.mojom.DedicatedWorkerFactory",
+          "blink.mojom.FileChooser",
           "blink.mojom.FileSystemManager",
           "blink.mojom.LockManager",
           "blink.mojom.GeolocationService",

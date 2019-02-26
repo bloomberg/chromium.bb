@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fil">
 <translation id="1002108253973310084">Nakakita ng hindi tugmang bersyon ng protocol. Pakitiyak na na-install mo ang pinakabagong bersyon ng software sa parehong computer at subukang muli.</translation>
+<translation id="1008557486741366299">Hindi Ngayon</translation>
 <translation id="1050693411695664090">Mahina</translation>
 <translation id="1152528166145813711">Pumili…</translation>
 <translation id="1199593201721843963">Huwag paganahin ang mga malayuang koneksyon</translation>
@@ -62,6 +63,7 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="2314101195544969792">Ilang sandali nang hindi aktibo ang iyong session ng <ph name="APPLICATION_NAME" /> at aalisin na ito sa pagkakakonekta maya-maya.</translation>
 <translation id="2317666076142640974">Maunang makita ang bagong <ph name="LINK_BEGIN" />web app na Remote na Desktop ng Chrome<ph name="LINK_END" />. Gusto naming marinig ang iyong feedback.</translation>
 <translation id="2320166752086256636">Itago ang keyboard</translation>
+<translation id="2332192922827071008">Buksan ang Mga Kagustuhan</translation>
 <translation id="2353140552984634198">Maaari mong ligtas na i-access ang computer na ito gamit ang Chromoting.</translation>
 <translation id="2359808026110333948">Magpatuloy</translation>
 <translation id="2366718077645204424">Hindi maabot ang host. Malamang na dahil ito sa configuration ng network na iyong ginagamit.</translation>
@@ -82,6 +84,7 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="2841013758207633010">Oras</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2888969873284818612">Nagkaroon ng error sa network. Ire-restart namin ang app kapag on-line nang muli ang iyong device.</translation>
+<translation id="2891243864890517178">Para sa Mac (OS X Yosemite 10.10 at mas bago)</translation>
 <translation id="289405675947420287">Secure na i-access ang iyong computer mula sa iOS device mo. Mabilis, simple, at libre ito.
 
 • I-download ang app na Remote na Desktop ng Chrome mula sa Chrome WebStore sa computer na gusto mong i-access nang malayuan.
@@ -188,6 +191,9 @@ PC</translation>
 <translation id="4973800994433240357">Sa pamamagitan ng pagda-download ng Chromoting Host Installer, sumasang-ayon ka sa <ph name="LINK_BEGIN" />Mga Tuntunin ng Serbisyo<ph name="LINK_END" /> ng Google.</translation>
 <translation id="4974476491460646149">Isinara ang koneksyon para sa <ph name="HOSTNAME" /></translation>
 <translation id="4985296110227979402">Kailangan mo munang i-set up ang iyong computer para sa remote na access</translation>
+<translation id="5059773780693835145">May kinakailangang karagdagang hakbang sa pag-configure bago mo makontrol nang malayuan ang machine na ito gamit ang <ph name="PRODUCT_NAME" />.
+
+Para ma-enable ang functionality na ito, piliin ang '<ph name="BUTTON_NAME" />' para ipakita ang pane ng mga kagustuhan sa Seguridad at Privacy, pagkatapos ay lagyan ng check ang kahon sa tabi ng '<ph name="SERVICE_SCRIPT_NAME" />.'</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">Hinihiling sa iyo ng remote host na magpatunay sa isang website ng third-party. Upang makapagpatuloy, dapat mong bigyan ng mga karagdagang pahintulot ang Remote na Desktop ng Chrome upang ma-access ang address na ito:</translation>
 <translation id="507204348399810022">Sigurado ka bang gusto mong i-disable ang mga malayuang koneksyon sa <ph name="HOSTNAME" />?</translation>
@@ -249,7 +255,6 @@ PC</translation>
 <translation id="6542902059648396432">Mag-ulat ng isyu…</translation>
 <translation id="6550675742724504774">Mga Pagpipilian</translation>
 <translation id="6570205395680337606">I-reset ang application. Mawawala ang anumang hindi na-save na gawa.</translation>
-<translation id="6572345186230665992">Para sa Mac (OS X Mavericks 10.9 at mas bago)</translation>
 <translation id="6583902294974160967">Suporta</translation>
 <translation id="6612717000975622067">Magpadala ng Ctrl-Alt-Del</translation>
 <translation id="6654753848497929428">Ibahagi</translation>
@@ -313,6 +318,7 @@ PC</translation>
 <translation id="809687642899217504">Aking Mga Computer</translation>
 <translation id="811307782653349804">I-access ang sarili mong computer mula saanman.</translation>
 <translation id="8116630183974937060">May nangyaring error sa network. Pakitiyak na on-line ang iyong device at subukang muli.</translation>
+<translation id="8123581458650016326">Payagan ang malalayong user na kontrolin ang machine na ito</translation>
 <translation id="8178433417677596899">Pagbabahagi ng screen na user-sa-user, mainam para sa malayuang suportang panteknikal.</translation>
 <translation id="8187079423890319756">Copyright 2013 Ang Mga May-akda ng Chromium. Nakalaan ang Lahat ng Karapatan.</translation>
 <translation id="8196755618196986400">Upang mabigyang-daan kaming makipag-ugnayan sa iyo para sa karagdagang impormasyon, isasama ang iyong email address sa anumang feedback na iyong isusumite.</translation>

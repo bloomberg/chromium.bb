@@ -32,12 +32,19 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/view.h"
 #include "ui/views/view_targeter.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
+DEFINE_UI_CLASS_PROPERTY_TYPE(ash::NonClientFrameViewAsh*);
+
 namespace ash {
+
+DEFINE_UI_CLASS_PROPERTY_KEY(NonClientFrameViewAsh*,
+                             kNonClientFrameViewAshKey,
+                             nullptr);
 
 ///////////////////////////////////////////////////////////////////////////////
 // NonClientFrameViewAshWindowStateDelegate
@@ -250,12 +257,19 @@ NonClientFrameViewAsh::NonClientFrameViewAsh(views::Widget* frame)
   }
   Shell::Get()->AddShellObserver(this);
   Shell::Get()->split_view_controller()->AddObserver(this);
+
+  frame_window->SetProperty(kNonClientFrameViewAshKey, this);
 }
 
 NonClientFrameViewAsh::~NonClientFrameViewAsh() {
   Shell::Get()->RemoveShellObserver(this);
   if (Shell::Get()->split_view_controller())
     Shell::Get()->split_view_controller()->RemoveObserver(this);
+}
+
+// static
+NonClientFrameViewAsh* NonClientFrameViewAsh::Get(aura::Window* window) {
+  return window->GetProperty(kNonClientFrameViewAshKey);
 }
 
 void NonClientFrameViewAsh::InitImmersiveFullscreenControllerForView(
@@ -289,6 +303,23 @@ gfx::Rect NonClientFrameViewAsh::GetClientBoundsForWindowBounds(
   gfx::Rect client_bounds(window_bounds);
   client_bounds.Inset(0, NonClientTopBorderHeight(), 0, 0);
   return client_bounds;
+}
+
+void NonClientFrameViewAsh::SetWindowFrameMenuItems(
+    const menu_utils::MenuItemList& menu_item_list,
+    mojom::MenuDelegatePtr delegate) {
+  if (menu_item_list.empty()) {
+    menu_model_.reset();
+    menu_delegate_.reset();
+  } else {
+    menu_model_ = std::make_unique<ui::SimpleMenuModel>(this);
+    menu_utils::PopulateMenuFromMojoMenuItems(menu_model_.get(), nullptr,
+                                              menu_item_list, nullptr);
+    menu_delegate_ = std::move(delegate);
+  }
+
+  header_view_->set_context_menu_controller(menu_item_list.empty() ? nullptr
+                                                                   : this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -454,6 +485,33 @@ void NonClientFrameViewAsh::OnSplitViewStateChanged(
     SplitViewController::State /* previous_state */,
     SplitViewController::State /* current_state */) {
   UpdateHeaderView();
+}
+
+void NonClientFrameViewAsh::ShowContextMenuForView(
+    views::View* source,
+    const gfx::Point& point,
+    ui::MenuSourceType source_type) {
+  DCHECK_EQ(header_view_, source);
+  DCHECK(menu_model_);
+
+  menu_runner_ = std::make_unique<views::MenuRunner>(
+      menu_model_.get(),
+      views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU);
+  menu_runner_->RunMenuAt(GetWidget(), nullptr,
+                          gfx::Rect(point, gfx::Size(0, 0)),
+                          views::MENU_ANCHOR_TOPLEFT, source_type);
+}
+
+bool NonClientFrameViewAsh::IsCommandIdChecked(int command_id) const {
+  return false;
+}
+
+bool NonClientFrameViewAsh::IsCommandIdEnabled(int command_id) const {
+  return true;
+}
+
+void NonClientFrameViewAsh::ExecuteCommand(int command_id, int event_flags) {
+  menu_delegate_->MenuItemActivated(command_id);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

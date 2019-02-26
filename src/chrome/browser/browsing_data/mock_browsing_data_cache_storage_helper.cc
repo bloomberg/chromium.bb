@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/storage_usage_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 MockBrowsingDataCacheStorageHelper::MockBrowsingDataCacheStorageHelper(
@@ -19,16 +20,16 @@ MockBrowsingDataCacheStorageHelper::MockBrowsingDataCacheStorageHelper(
 
 MockBrowsingDataCacheStorageHelper::~MockBrowsingDataCacheStorageHelper() {}
 
-void MockBrowsingDataCacheStorageHelper::StartFetching(
-    const FetchCallback& callback) {
+void MockBrowsingDataCacheStorageHelper::StartFetching(FetchCallback callback) {
   ASSERT_FALSE(callback.is_null());
   ASSERT_TRUE(callback_.is_null());
-  callback_ = callback;
+  callback_ = std::move(callback);
+  fetched_ = true;
 }
 
 void MockBrowsingDataCacheStorageHelper::DeleteCacheStorage(
     const GURL& origin) {
-  ASSERT_FALSE(callback_.is_null());
+  ASSERT_TRUE(fetched_);
   ASSERT_TRUE(origins_.find(origin) != origins_.end());
   origins_[origin] = false;
 }
@@ -36,16 +37,17 @@ void MockBrowsingDataCacheStorageHelper::DeleteCacheStorage(
 void MockBrowsingDataCacheStorageHelper::AddCacheStorageSamples() {
   const GURL kOrigin1("https://cshost1:1/");
   const GURL kOrigin2("https://cshost2:2/");
-  content::CacheStorageUsageInfo info1(kOrigin1, 1, base::Time());
+  content::StorageUsageInfo info1(kOrigin1, 1, base::Time());
   response_.push_back(info1);
   origins_[kOrigin1] = true;
-  content::CacheStorageUsageInfo info2(kOrigin2, 2, base::Time());
+  content::StorageUsageInfo info2(kOrigin2, 2, base::Time());
   response_.push_back(info2);
   origins_[kOrigin2] = true;
 }
 
 void MockBrowsingDataCacheStorageHelper::Notify() {
-  callback_.Run(response_);
+  ASSERT_FALSE(callback_.is_null());
+  std::move(callback_).Run(response_);
 }
 
 void MockBrowsingDataCacheStorageHelper::Reset() {

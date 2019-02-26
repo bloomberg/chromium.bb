@@ -14,3 +14,8 @@ tandrii@chromium.org
 
 per-file ninja*=thakis@chromium.org
 per-file ninja*=scottmg@chromium.org
+
+per-file autoninja*=brucedawson@chromium.org
+
+per-file ninjalog_uploader.py=tikuta@chromium.org
+per-file ninjalog_uploader_wrapper.py=tikuta@chromium.org

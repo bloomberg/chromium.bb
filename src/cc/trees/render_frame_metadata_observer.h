@@ -32,7 +32,8 @@ class CC_EXPORT RenderFrameMetadataObserver {
   // the display compositor.
   virtual void OnRenderFrameSubmission(
       const RenderFrameMetadata& render_frame_metadata,
-      viz::CompositorFrameMetadata* compositor_frame_metadata) = 0;
+      viz::CompositorFrameMetadata* compositor_frame_metadata,
+      bool force_send) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderFrameMetadataObserver);

@@ -39,10 +39,10 @@
 #include "third_party/blink/renderer/bindings/modules/v8/rendering_context.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
-#include "third_party/blink/renderer/core/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -228,7 +228,7 @@ void CanvasRenderingContext2D::Trace(blink::Visitor* visitor) {
 
 void CanvasRenderingContext2D::DispatchContextLostEvent(TimerBase*) {
   if (canvas() && ContextLostRestoredEventsEnabled()) {
-    Event* event = Event::CreateCancelable(EventTypeNames::contextlost);
+    Event* event = Event::CreateCancelable(event_type_names::kContextlost);
     canvas()->DispatchEvent(*event);
     if (event->defaultPrevented()) {
       context_restorable_ = false;
@@ -273,7 +273,7 @@ void CanvasRenderingContext2D::DispatchContextRestoredEvent(TimerBase*) {
   Reset();
   context_lost_mode_ = kNotLostContext;
   if (ContextLostRestoredEventsEnabled()) {
-    Event* event(Event::Create(EventTypeNames::contextrestored));
+    Event* event(Event::Create(event_type_names::kContextrestored));
     canvas()->DispatchEvent(*event);
   }
 }
@@ -557,8 +557,9 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
   ModifiableState().SetUnparsedFont(new_font_safe_copy);
 }
 
-void CanvasRenderingContext2D::DidProcessTask() {
-  CanvasRenderingContext::DidProcessTask();
+void CanvasRenderingContext2D::DidProcessTask(
+    const base::PendingTask& pending_task) {
+  CanvasRenderingContext::DidProcessTask(pending_task);
   // This should be the only place where canvas() needs to be checked for
   // nullness because the circular refence with HTMLCanvasElement means the
   // canvas and the context keep each other alive. As long as the pair is
@@ -926,11 +927,14 @@ cc::Layer* CanvasRenderingContext2D::CcLayer() const {
   return IsPaintable() ? canvas()->GetCanvas2DLayerBridge()->Layer() : nullptr;
 }
 
-void CanvasRenderingContext2D::getContextAttributes(
-    CanvasRenderingContext2DSettings& settings) const {
-  settings.setAlpha(CreationAttributes().alpha);
-  settings.setColorSpace(ColorSpaceAsString());
-  settings.setPixelFormat(PixelFormatAsString());
+CanvasRenderingContext2DSettings*
+CanvasRenderingContext2D::getContextAttributes() const {
+  CanvasRenderingContext2DSettings* settings =
+      CanvasRenderingContext2DSettings::Create();
+  settings->setAlpha(CreationAttributes().alpha);
+  settings->setColorSpace(ColorSpaceAsString());
+  settings->setPixelFormat(PixelFormatAsString());
+  return settings;
 }
 
 void CanvasRenderingContext2D::drawFocusIfNeeded(Element* element) {
@@ -1018,16 +1022,16 @@ void CanvasRenderingContext2D::UpdateElementAccessibility(const Path& path,
   ax_object_cache->SetCanvasObjectBounds(canvas(), element, element_rect);
 }
 
-void CanvasRenderingContext2D::addHitRegion(const HitRegionOptions& options,
+void CanvasRenderingContext2D::addHitRegion(const HitRegionOptions* options,
                                             ExceptionState& exception_state) {
-  if (options.id().IsEmpty() && !options.control()) {
+  if (options->id().IsEmpty() && !options->control()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "Both id and control are null.");
     return;
   }
 
-  if (options.control() &&
-      !canvas()->IsSupportedInteractiveCanvasFallback(*options.control())) {
+  if (options->control() &&
+      !canvas()->IsSupportedInteractiveCanvasFallback(*options->control())) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "The control is neither null nor a "
                                       "supported interactive canvas fallback "
@@ -1035,7 +1039,7 @@ void CanvasRenderingContext2D::addHitRegion(const HitRegionOptions& options,
     return;
   }
 
-  Path hit_region_path = options.path() ? options.path()->GetPath() : path_;
+  Path hit_region_path = options->path() ? options->path()->GetPath() : path_;
 
   cc::PaintCanvas* c = DrawingCanvas();
 
@@ -1060,8 +1064,8 @@ void CanvasRenderingContext2D::addHitRegion(const HitRegionOptions& options,
     hit_region_manager_ = HitRegionManager::Create();
 
   // Remove previous region (with id or control)
-  hit_region_manager_->RemoveHitRegionById(options.id());
-  hit_region_manager_->RemoveHitRegionByControl(options.control());
+  hit_region_manager_->RemoveHitRegionById(options->id());
+  hit_region_manager_->RemoveHitRegionByControl(options->control());
 
   HitRegion* hit_region = HitRegion::Create(hit_region_path, options);
   Element* element = hit_region->Control();

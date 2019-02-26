@@ -80,7 +80,7 @@ TEST_F(TabSpecificContentSettingsTest, BlockedContent) {
 #if !defined(OS_ANDROID)
   content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES);
 #endif
-  content_settings->SetPopupsBlocked(true);
+  content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS);
   TabSpecificContentSettings::MicrophoneCameraState
       blocked_microphone_camera_state =
           TabSpecificContentSettings::MICROPHONE_ACCESSED |
@@ -264,7 +264,6 @@ TEST_F(TabSpecificContentSettingsTest, SiteDataObserver) {
   content_settings->OnFileSystemAccessed(GURL("http://google.com"),
                                               blocked_by_policy);
   content_settings->OnIndexedDBAccessed(GURL("http://google.com"),
-                                        base::UTF8ToUTF16("text"),
                                         blocked_by_policy);
   content_settings->OnLocalStorageAccessed(GURL("http://google.com"),
                                            true,

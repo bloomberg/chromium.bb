@@ -77,6 +77,12 @@ platform_pkg_test() {
 
   _SINGLE_LINE_TEST = 'src_test() { echo "foo" }'
 
+  _INHERIT_CROS_GO = 'inherit cros-workon cros-go'
+
+  _INHERIT_TAST_BUNDLE = 'inherit tast-bundle'
+
+  _INHERIT_CROS_DEBUG = 'inherit cros-debug'
+
   _EBUILD_BASE = """
 CROS_WORKON_COMMIT=commit1
 CROS_WORKON_TREE=("tree1" "tree2")
@@ -201,6 +207,9 @@ inherit cros-workon superpower
     run_case(self._MULTILINE_COMMENTED, False)
     run_case(self._MULTILINE_PLATFORM, True)
     run_case(self._SINGLE_LINE_TEST, True)
+    run_case(self._INHERIT_CROS_GO, True)
+    run_case(self._INHERIT_TAST_BUNDLE, True)
+    run_case(self._INHERIT_CROS_DEBUG, False)
 
   def testCheckHasTestWithoutEbuild(self):
     """Test CheckHasTest on a package without ebuild config file"""

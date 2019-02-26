@@ -81,7 +81,7 @@ void foo()
     a[0] = s.m[1].z;     // 7.0
     b % 0;  // int
     b / 0;
-    e / 0;
+    e / 0;  -e / 0;  0.0 / 0.0;
     const uint ua = 5;
     const uvec2 ub = uvec2(6, 7);
     const uint uc = 8;
@@ -139,3 +139,10 @@ void foo4()
 {
     int a = int(a0[2].f);
 }
+
+const bool cval1 = all(bvec4(true, true, true, true));
+const bool cval2 = all(bvec4(false, false, false, false));
+const bool cval3 = all(bvec4(true, true, false, true));
+const bool cval4 = any(bvec4(true, true, true, true));
+const bool cval5 = any(bvec4(false, false, false, false));
+const bool cval6 = any(bvec4(false, true, false, false));

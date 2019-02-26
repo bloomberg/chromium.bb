@@ -33,7 +33,7 @@ class URLLoaderThrottle : public content::URLLoaderThrottle {
   // content::URLLoaderThrottle
   void WillStartRequest(network::ResourceRequest* request,
                         bool* defer) override;
-  void WillRedirectRequest(const net::RedirectInfo& redirect_info,
+  void WillRedirectRequest(net::RedirectInfo* redirect_info,
                            const network::ResourceResponseHead& response_head,
                            bool* defer,
                            std::vector<std::string>* headers_to_remove,
@@ -58,7 +58,6 @@ class URLLoaderThrottle : public content::URLLoaderThrottle {
   GURL request_referrer_;
   net::HttpRequestHeaders request_headers_;
   content::ResourceType request_resource_type_;
-  bool is_main_frame_ = false;
 
   base::OnceClosure destruction_callback_;
 

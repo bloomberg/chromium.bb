@@ -20,14 +20,18 @@
 #include "tools/trace_to_text/ftrace_event_formatter.h"
 
 #include <string>
+#include <unordered_map>
 
 #include "perfetto/trace/trace_packet.pb.h"
 
 namespace perfetto {
 
-std::string FormatFtraceEvent(uint64_t timestamp,
-                              size_t cpu,
-                              const protos::FtraceEvent&);
+std::string FormatFtraceEvent(
+    uint64_t timestamp,
+    uint32_t cpu,
+    const protos::FtraceEvent&,
+    const std::unordered_map<uint32_t /*tid*/, uint32_t /*tgid*/>& thread_map,
+    std::unordered_map<uint32_t /*tid*/, std::string>& thread_names);
 
 }  // namespace perfetto
 

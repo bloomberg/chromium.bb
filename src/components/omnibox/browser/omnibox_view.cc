@@ -16,11 +16,11 @@
 #include "build/build_config.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/omnibox/browser/autocomplete_match.h"
+#include "components/omnibox/browser/location_bar_model.h"
 #include "components/omnibox/browser/omnibox_edit_controller.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/query_in_omnibox.h"
-#include "components/toolbar/toolbar_model.h"
 #include "extensions/common/constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -128,14 +128,14 @@ gfx::ImageSkia OmniboxView::GetIcon(int dip_size,
     }
 
     return gfx::CreateVectorIcon(
-        controller_->GetToolbarModel()->GetVectorIcon(), dip_size, color);
+        controller_->GetLocationBarModel()->GetVectorIcon(), dip_size, color);
   }
 
   // For tests, model_ will be null.
   if (!model_) {
-    const gfx::VectorIcon& vector_icon = AutocompleteMatch::TypeToVectorIcon(
-        AutocompleteMatchType::URL_WHAT_YOU_TYPED, false /*is_bookmark*/,
-        AutocompleteMatch::DocumentType::NONE);
+    AutocompleteMatch fake_match;
+    fake_match.type = AutocompleteMatchType::URL_WHAT_YOU_TYPED;
+    const gfx::VectorIcon& vector_icon = fake_match.GetVectorIcon(false);
     return gfx::CreateVectorIcon(vector_icon, dip_size, color);
   }
 
@@ -147,7 +147,8 @@ gfx::ImageSkia OmniboxView::GetIcon(int dip_size,
     favicon = model_->client()->GetFaviconForDefaultSearchProvider(
         std::move(on_icon_fetched));
 
-  } else if (OmniboxFieldTrial::IsShowSuggestionFaviconsEnabled()) {
+  } else if (base::FeatureList::IsEnabled(
+                 omnibox::kUIExperimentShowSuggestionFavicons)) {
     // For site suggestions, display site's favicon.
     favicon = model_->client()->GetFaviconForPageUrl(
         match.destination_url, std::move(on_icon_fetched));
@@ -165,8 +166,7 @@ gfx::ImageSkia OmniboxView::GetIcon(int dip_size,
   const bool is_bookmarked =
       bookmark_model && bookmark_model->IsBookmarked(match.destination_url);
 
-  const gfx::VectorIcon& vector_icon = AutocompleteMatch::TypeToVectorIcon(
-      match.type, is_bookmarked, match.document_type);
+  const gfx::VectorIcon& vector_icon = match.GetVectorIcon(is_bookmarked);
   return gfx::CreateVectorIcon(vector_icon, dip_size, color);
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
 }

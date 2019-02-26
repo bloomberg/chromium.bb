@@ -25,8 +25,9 @@ class FakeArCore : public ArCore {
   FakeArCore();
   ~FakeArCore() override;
 
-  // ArCoreDriverBase implementation.
-  bool Initialize() override;
+  // ArCore implementation.
+  bool Initialize(
+      base::android::ScopedJavaLocalRef<jobject> application_context) override;
   void SetCameraTexture(GLuint texture) override;
   void SetDisplayGeometry(const gfx::Size& frame_size,
                           display::Display::Rotation display_rotation) override;
@@ -56,6 +57,11 @@ class FakeArCore : public ArCore {
   scoped_refptr<gl::GLImageAHardwareBuffer> placeholder_camera_image_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeArCore);
+};
+
+class FakeArCoreFactory : public ArCoreFactory {
+ public:
+  std::unique_ptr<ArCore> Create() override;
 };
 
 }  // namespace device

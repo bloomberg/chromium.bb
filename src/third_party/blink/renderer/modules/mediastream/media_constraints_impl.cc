@@ -45,7 +45,7 @@
 
 namespace blink {
 
-namespace MediaConstraintsImpl {
+namespace media_constraints_impl {
 
 // A naked value is treated as an "ideal" value in the basic constraints,
 // but as an exact value in "advanced" constraints.
@@ -235,19 +235,19 @@ static bool Parse(const Dictionary& constraints_dictionary,
   return true;
 }
 
-static bool Parse(const MediaTrackConstraints& constraints_in,
+static bool Parse(const MediaTrackConstraints* constraints_in,
                   Vector<NameValueStringConstraint>& optional,
                   Vector<NameValueStringConstraint>& mandatory) {
   Vector<NameValueStringConstraint> mandatory_constraints_vector;
-  if (constraints_in.hasMandatory()) {
-    bool ok = ParseMandatoryConstraintsDictionary(constraints_in.mandatory(),
+  if (constraints_in->hasMandatory()) {
+    bool ok = ParseMandatoryConstraintsDictionary(constraints_in->mandatory(),
                                                   mandatory);
     if (!ok)
       return false;
   }
 
-  if (constraints_in.hasOptional()) {
-    const Vector<Dictionary>& optional_constraints = constraints_in.optional();
+  if (constraints_in->hasOptional()) {
+    const Vector<Dictionary>& optional_constraints = constraints_in->optional();
 
     for (const auto& constraint : optional_constraints) {
       if (constraint.IsUndefinedOrNull())
@@ -509,18 +509,18 @@ void CopyLongConstraint(const LongOrConstrainLongRange& blink_union_form,
     }
     return;
   }
-  const auto& blink_form = blink_union_form.GetAsConstrainLongRange();
-  if (blink_form.hasMin()) {
-    web_form.SetMin(blink_form.min());
+  const auto* blink_form = blink_union_form.GetAsConstrainLongRange();
+  if (blink_form->hasMin()) {
+    web_form.SetMin(blink_form->min());
   }
-  if (blink_form.hasMax()) {
-    web_form.SetMax(blink_form.max());
+  if (blink_form->hasMax()) {
+    web_form.SetMax(blink_form->max());
   }
-  if (blink_form.hasIdeal()) {
-    web_form.SetIdeal(blink_form.ideal());
+  if (blink_form->hasIdeal()) {
+    web_form.SetIdeal(blink_form->ideal());
   }
-  if (blink_form.hasExact()) {
-    web_form.SetExact(blink_form.exact());
+  if (blink_form->hasExact()) {
+    web_form.SetExact(blink_form->exact());
   }
 }
 
@@ -538,18 +538,18 @@ void CopyDoubleConstraint(const DoubleOrConstrainDoubleRange& blink_union_form,
     }
     return;
   }
-  const auto& blink_form = blink_union_form.GetAsConstrainDoubleRange();
-  if (blink_form.hasMin()) {
-    web_form.SetMin(blink_form.min());
+  auto* blink_form = blink_union_form.GetAsConstrainDoubleRange();
+  if (blink_form->hasMin()) {
+    web_form.SetMin(blink_form->min());
   }
-  if (blink_form.hasMax()) {
-    web_form.SetMax(blink_form.max());
+  if (blink_form->hasMax()) {
+    web_form.SetMax(blink_form->max());
   }
-  if (blink_form.hasIdeal()) {
-    web_form.SetIdeal(blink_form.ideal());
+  if (blink_form->hasIdeal()) {
+    web_form.SetIdeal(blink_form->ideal());
   }
-  if (blink_form.hasExact()) {
-    web_form.SetExact(blink_form.exact());
+  if (blink_form->hasExact()) {
+    web_form.SetExact(blink_form->exact());
   }
 }
 
@@ -581,19 +581,19 @@ void CopyStringConstraint(
     }
     return;
   }
-  const auto& blink_form = blink_union_form.GetAsConstrainDOMStringParameters();
-  if (blink_form.hasIdeal()) {
-    if (blink_form.ideal().IsStringSequence()) {
-      web_form.SetIdeal(blink_form.ideal().GetAsStringSequence());
-    } else if (blink_form.ideal().IsString()) {
-      web_form.SetIdeal(Vector<String>(1, blink_form.ideal().GetAsString()));
+  auto* blink_form = blink_union_form.GetAsConstrainDOMStringParameters();
+  if (blink_form->hasIdeal()) {
+    if (blink_form->ideal().IsStringSequence()) {
+      web_form.SetIdeal(blink_form->ideal().GetAsStringSequence());
+    } else if (blink_form->ideal().IsString()) {
+      web_form.SetIdeal(Vector<String>(1, blink_form->ideal().GetAsString()));
     }
   }
-  if (blink_form.hasExact()) {
-    if (blink_form.exact().IsStringSequence()) {
-      web_form.SetExact(blink_form.exact().GetAsStringSequence());
-    } else if (blink_form.exact().IsString()) {
-      web_form.SetExact(Vector<String>(1, blink_form.exact().GetAsString()));
+  if (blink_form->hasExact()) {
+    if (blink_form->exact().IsStringSequence()) {
+      web_form.SetExact(blink_form->exact().GetAsStringSequence());
+    } else if (blink_form->exact().IsString()) {
+      web_form.SetExact(Vector<String>(1, blink_form->exact().GetAsString()));
     }
   }
 }
@@ -613,113 +613,118 @@ void CopyBooleanConstraint(
     }
     return;
   }
-  const auto& blink_form = blink_union_form.GetAsConstrainBooleanParameters();
-  if (blink_form.hasIdeal()) {
-    web_form.SetIdeal(blink_form.ideal());
+  auto* blink_form = blink_union_form.GetAsConstrainBooleanParameters();
+  if (blink_form->hasIdeal()) {
+    web_form.SetIdeal(blink_form->ideal());
   }
-  if (blink_form.hasExact()) {
-    web_form.SetExact(blink_form.exact());
+  if (blink_form->hasExact()) {
+    web_form.SetExact(blink_form->exact());
   }
 }
 
-void CopyConstraintSet(const MediaTrackConstraintSet& constraints_in,
+void CopyConstraintSet(const MediaTrackConstraintSet* constraints_in,
                        NakedValueDisposition naked_treatment,
                        WebMediaTrackConstraintSet& constraint_buffer) {
-  if (constraints_in.hasWidth()) {
-    CopyLongConstraint(constraints_in.width(), naked_treatment,
+  if (constraints_in->hasWidth()) {
+    CopyLongConstraint(constraints_in->width(), naked_treatment,
                        constraint_buffer.width);
   }
-  if (constraints_in.hasHeight()) {
-    CopyLongConstraint(constraints_in.height(), naked_treatment,
+  if (constraints_in->hasHeight()) {
+    CopyLongConstraint(constraints_in->height(), naked_treatment,
                        constraint_buffer.height);
   }
-  if (constraints_in.hasAspectRatio()) {
-    CopyDoubleConstraint(constraints_in.aspectRatio(), naked_treatment,
+  if (constraints_in->hasAspectRatio()) {
+    CopyDoubleConstraint(constraints_in->aspectRatio(), naked_treatment,
                          constraint_buffer.aspect_ratio);
   }
-  if (constraints_in.hasFrameRate()) {
-    CopyDoubleConstraint(constraints_in.frameRate(), naked_treatment,
+  if (constraints_in->hasFrameRate()) {
+    CopyDoubleConstraint(constraints_in->frameRate(), naked_treatment,
                          constraint_buffer.frame_rate);
   }
-  if (constraints_in.hasFacingMode()) {
-    CopyStringConstraint(constraints_in.facingMode(), naked_treatment,
+  if (constraints_in->hasFacingMode()) {
+    CopyStringConstraint(constraints_in->facingMode(), naked_treatment,
                          constraint_buffer.facing_mode);
   }
-  if (constraints_in.hasVolume()) {
-    CopyDoubleConstraint(constraints_in.volume(), naked_treatment,
+  if (constraints_in->hasResizeMode()) {
+    CopyStringConstraint(constraints_in->resizeMode(), naked_treatment,
+                         constraint_buffer.resize_mode);
+  }
+  if (constraints_in->hasVolume()) {
+    CopyDoubleConstraint(constraints_in->volume(), naked_treatment,
                          constraint_buffer.volume);
   }
-  if (constraints_in.hasSampleRate()) {
-    CopyLongConstraint(constraints_in.sampleRate(), naked_treatment,
+  if (constraints_in->hasSampleRate()) {
+    CopyLongConstraint(constraints_in->sampleRate(), naked_treatment,
                        constraint_buffer.sample_rate);
   }
-  if (constraints_in.hasSampleSize()) {
-    CopyLongConstraint(constraints_in.sampleSize(), naked_treatment,
+  if (constraints_in->hasSampleSize()) {
+    CopyLongConstraint(constraints_in->sampleSize(), naked_treatment,
                        constraint_buffer.sample_size);
   }
-  if (constraints_in.hasEchoCancellation()) {
-    CopyBooleanConstraint(constraints_in.echoCancellation(), naked_treatment,
+  if (constraints_in->hasEchoCancellation()) {
+    CopyBooleanConstraint(constraints_in->echoCancellation(), naked_treatment,
                           constraint_buffer.echo_cancellation);
   }
-  if (constraints_in.hasEchoCancellationType()) {
-    CopyStringConstraint(constraints_in.echoCancellationType(), naked_treatment,
+  if (constraints_in->hasEchoCancellationType()) {
+    CopyStringConstraint(constraints_in->echoCancellationType(),
+                         naked_treatment,
                          constraint_buffer.echo_cancellation_type);
   }
-  if (constraints_in.hasAutoGainControl()) {
-    CopyBooleanConstraint(constraints_in.autoGainControl(), naked_treatment,
+  if (constraints_in->hasAutoGainControl()) {
+    CopyBooleanConstraint(constraints_in->autoGainControl(), naked_treatment,
                           constraint_buffer.goog_auto_gain_control);
   }
-  if (constraints_in.hasNoiseSuppression()) {
-    CopyBooleanConstraint(constraints_in.noiseSuppression(), naked_treatment,
+  if (constraints_in->hasNoiseSuppression()) {
+    CopyBooleanConstraint(constraints_in->noiseSuppression(), naked_treatment,
                           constraint_buffer.goog_noise_suppression);
   }
-  if (constraints_in.hasLatency()) {
-    CopyDoubleConstraint(constraints_in.latency(), naked_treatment,
+  if (constraints_in->hasLatency()) {
+    CopyDoubleConstraint(constraints_in->latency(), naked_treatment,
                          constraint_buffer.latency);
   }
-  if (constraints_in.hasChannelCount()) {
-    CopyLongConstraint(constraints_in.channelCount(), naked_treatment,
+  if (constraints_in->hasChannelCount()) {
+    CopyLongConstraint(constraints_in->channelCount(), naked_treatment,
                        constraint_buffer.channel_count);
   }
-  if (constraints_in.hasDeviceId()) {
-    CopyStringConstraint(constraints_in.deviceId(), naked_treatment,
+  if (constraints_in->hasDeviceId()) {
+    CopyStringConstraint(constraints_in->deviceId(), naked_treatment,
                          constraint_buffer.device_id);
   }
-  if (constraints_in.hasGroupId()) {
-    CopyStringConstraint(constraints_in.groupId(), naked_treatment,
+  if (constraints_in->hasGroupId()) {
+    CopyStringConstraint(constraints_in->groupId(), naked_treatment,
                          constraint_buffer.group_id);
   }
-  if (constraints_in.hasVideoKind()) {
-    CopyStringConstraint(constraints_in.videoKind(), naked_treatment,
+  if (constraints_in->hasVideoKind()) {
+    CopyStringConstraint(constraints_in->videoKind(), naked_treatment,
                          constraint_buffer.video_kind);
   }
-  if (constraints_in.hasDepthNear()) {
-    CopyDoubleConstraint(constraints_in.depthNear(), naked_treatment,
+  if (constraints_in->hasDepthNear()) {
+    CopyDoubleConstraint(constraints_in->depthNear(), naked_treatment,
                          constraint_buffer.depth_near);
   }
-  if (constraints_in.hasDepthFar()) {
-    CopyDoubleConstraint(constraints_in.depthFar(), naked_treatment,
+  if (constraints_in->hasDepthFar()) {
+    CopyDoubleConstraint(constraints_in->depthFar(), naked_treatment,
                          constraint_buffer.depth_far);
   }
-  if (constraints_in.hasFocalLengthX()) {
-    CopyDoubleConstraint(constraints_in.focalLengthX(), naked_treatment,
+  if (constraints_in->hasFocalLengthX()) {
+    CopyDoubleConstraint(constraints_in->focalLengthX(), naked_treatment,
                          constraint_buffer.focal_length_x);
   }
-  if (constraints_in.hasFocalLengthY()) {
-    CopyDoubleConstraint(constraints_in.focalLengthY(), naked_treatment,
+  if (constraints_in->hasFocalLengthY()) {
+    CopyDoubleConstraint(constraints_in->focalLengthY(), naked_treatment,
                          constraint_buffer.focal_length_y);
   }
 }
 
 WebMediaConstraints ConvertConstraintsToWeb(
-    const MediaTrackConstraints& constraints_in) {
+    const MediaTrackConstraints* constraints_in) {
   WebMediaConstraints constraints;
   WebMediaTrackConstraintSet constraint_buffer;
   Vector<WebMediaTrackConstraintSet> advanced_buffer;
   CopyConstraintSet(constraints_in, NakedValueDisposition::kTreatAsIdeal,
                     constraint_buffer);
-  if (constraints_in.hasAdvanced()) {
-    for (const auto& element : constraints_in.advanced()) {
+  if (constraints_in->hasAdvanced()) {
+    for (const auto& element : constraints_in->advanced()) {
       WebMediaTrackConstraintSet advanced_element;
       CopyConstraintSet(element, NakedValueDisposition::kTreatAsExact,
                         advanced_element);
@@ -731,10 +736,10 @@ WebMediaConstraints ConvertConstraintsToWeb(
 }
 
 WebMediaConstraints Create(ExecutionContext* context,
-                           const MediaTrackConstraints& constraints_in,
+                           const MediaTrackConstraints* constraints_in,
                            MediaErrorState& error_state) {
   WebMediaConstraints standard_form = ConvertConstraintsToWeb(constraints_in);
-  if (constraints_in.hasOptional() || constraints_in.hasMandatory()) {
+  if (constraints_in->hasOptional() || constraints_in->hasMandatory()) {
     if (!standard_form.IsEmpty()) {
       UseCounter::Count(context, WebFeature::kMediaStreamConstraintsOldAndNew);
       error_state.ThrowTypeError(
@@ -812,15 +817,15 @@ LongOrConstrainLongRange ConvertLong(const LongConstraint& input,
   if (UseNakedNumeric(input, naked_treatment)) {
     output_union.SetLong(GetNakedValue<uint32_t>(input, naked_treatment));
   } else if (!input.IsEmpty()) {
-    ConstrainLongRange output;
+    ConstrainLongRange* output = ConstrainLongRange::Create();
     if (input.HasExact())
-      output.setExact(input.Exact());
+      output->setExact(input.Exact());
     if (input.HasMin())
-      output.setMin(input.Min());
+      output->setMin(input.Min());
     if (input.HasMax())
-      output.setMax(input.Max());
+      output->setMax(input.Max());
     if (input.HasIdeal())
-      output.setIdeal(input.Ideal());
+      output->setIdeal(input.Ideal());
     output_union.SetConstrainLongRange(output);
   }
   return output_union;
@@ -833,15 +838,15 @@ DoubleOrConstrainDoubleRange ConvertDouble(
   if (UseNakedNumeric(input, naked_treatment)) {
     output_union.SetDouble(GetNakedValue<double>(input, naked_treatment));
   } else if (!input.IsEmpty()) {
-    ConstrainDoubleRange output;
+    ConstrainDoubleRange* output = ConstrainDoubleRange::Create();
     if (input.HasExact())
-      output.setExact(input.Exact());
+      output->setExact(input.Exact());
     if (input.HasIdeal())
-      output.setIdeal(input.Ideal());
+      output->setIdeal(input.Ideal());
     if (input.HasMin())
-      output.setMin(input.Min());
+      output->setMin(input.Min());
     if (input.HasMax())
-      output.setMax(input.Max());
+      output->setMax(input.Max());
     output_union.SetConstrainDoubleRange(output);
   }
   return output_union;
@@ -877,11 +882,12 @@ StringOrStringSequenceOrConstrainDOMStringParameters ConvertString(
       output_union.SetString(input_buffer[0]);
     }
   } else if (!input.IsEmpty()) {
-    ConstrainDOMStringParameters output;
+    ConstrainDOMStringParameters* output =
+        ConstrainDOMStringParameters::Create();
     if (input.HasExact())
-      output.setExact(ConvertStringSequence(input.Exact()));
+      output->setExact(ConvertStringSequence(input.Exact()));
     if (input.HasIdeal())
-      output.setIdeal(ConvertStringSequence(input.Ideal()));
+      output->setIdeal(ConvertStringSequence(input.Ideal()));
     output_union.SetConstrainDOMStringParameters(output);
   }
   return output_union;
@@ -894,11 +900,11 @@ BooleanOrConstrainBooleanParameters ConvertBoolean(
   if (UseNakedNonNumeric(input, naked_treatment)) {
     output_union.SetBoolean(GetNakedValue<bool>(input, naked_treatment));
   } else if (!input.IsEmpty()) {
-    ConstrainBooleanParameters output;
+    ConstrainBooleanParameters* output = ConstrainBooleanParameters::Create();
     if (input.HasExact())
-      output.setExact(input.Exact());
+      output->setExact(input.Exact());
     if (input.HasIdeal())
-      output.setIdeal(input.Ideal());
+      output->setIdeal(input.Ideal());
     output_union.SetConstrainBooleanParameters(output);
   }
   return output_union;
@@ -906,65 +912,70 @@ BooleanOrConstrainBooleanParameters ConvertBoolean(
 
 void ConvertConstraintSet(const WebMediaTrackConstraintSet& input,
                           NakedValueDisposition naked_treatment,
-                          MediaTrackConstraintSet& output) {
+                          MediaTrackConstraintSet* output) {
   if (!input.width.IsEmpty())
-    output.setWidth(ConvertLong(input.width, naked_treatment));
+    output->setWidth(ConvertLong(input.width, naked_treatment));
   if (!input.height.IsEmpty())
-    output.setHeight(ConvertLong(input.height, naked_treatment));
+    output->setHeight(ConvertLong(input.height, naked_treatment));
   if (!input.aspect_ratio.IsEmpty())
-    output.setAspectRatio(ConvertDouble(input.aspect_ratio, naked_treatment));
+    output->setAspectRatio(ConvertDouble(input.aspect_ratio, naked_treatment));
   if (!input.frame_rate.IsEmpty())
-    output.setFrameRate(ConvertDouble(input.frame_rate, naked_treatment));
+    output->setFrameRate(ConvertDouble(input.frame_rate, naked_treatment));
   if (!input.facing_mode.IsEmpty())
-    output.setFacingMode(ConvertString(input.facing_mode, naked_treatment));
+    output->setFacingMode(ConvertString(input.facing_mode, naked_treatment));
+  if (!input.resize_mode.IsEmpty())
+    output->setResizeMode(ConvertString(input.resize_mode, naked_treatment));
   if (!input.volume.IsEmpty())
-    output.setVolume(ConvertDouble(input.volume, naked_treatment));
+    output->setVolume(ConvertDouble(input.volume, naked_treatment));
   if (!input.sample_rate.IsEmpty())
-    output.setSampleRate(ConvertLong(input.sample_rate, naked_treatment));
+    output->setSampleRate(ConvertLong(input.sample_rate, naked_treatment));
   if (!input.sample_size.IsEmpty())
-    output.setSampleSize(ConvertLong(input.sample_size, naked_treatment));
+    output->setSampleSize(ConvertLong(input.sample_size, naked_treatment));
   if (!input.echo_cancellation.IsEmpty()) {
-    output.setEchoCancellation(
+    output->setEchoCancellation(
         ConvertBoolean(input.echo_cancellation, naked_treatment));
   }
   if (!input.goog_auto_gain_control.IsEmpty()) {
-    output.setAutoGainControl(
+    output->setAutoGainControl(
         ConvertBoolean(input.goog_auto_gain_control, naked_treatment));
   }
   if (!input.goog_noise_suppression.IsEmpty()) {
-    output.setNoiseSuppression(
+    output->setNoiseSuppression(
         ConvertBoolean(input.goog_noise_suppression, naked_treatment));
   }
   if (!input.latency.IsEmpty())
-    output.setLatency(ConvertDouble(input.latency, naked_treatment));
+    output->setLatency(ConvertDouble(input.latency, naked_treatment));
   if (!input.channel_count.IsEmpty())
-    output.setChannelCount(ConvertLong(input.channel_count, naked_treatment));
+    output->setChannelCount(ConvertLong(input.channel_count, naked_treatment));
   if (!input.device_id.IsEmpty())
-    output.setDeviceId(ConvertString(input.device_id, naked_treatment));
+    output->setDeviceId(ConvertString(input.device_id, naked_treatment));
   if (!input.group_id.IsEmpty())
-    output.setGroupId(ConvertString(input.group_id, naked_treatment));
+    output->setGroupId(ConvertString(input.group_id, naked_treatment));
   if (!input.video_kind.IsEmpty())
-    output.setVideoKind(ConvertString(input.video_kind, naked_treatment));
+    output->setVideoKind(ConvertString(input.video_kind, naked_treatment));
   // TODO(hta): Decide the future of the nonstandard constraints.
   // If they go forward, they need to be added here.
   // https://crbug.com/605673
 }
 
-void ConvertConstraints(const WebMediaConstraints& input,
-                        MediaTrackConstraints& output) {
+MediaTrackConstraints* ConvertConstraints(const WebMediaConstraints& input) {
+  MediaTrackConstraints* output = MediaTrackConstraints::Create();
   if (input.IsNull())
-    return;
+    return output;
   ConvertConstraintSet(input.Basic(), NakedValueDisposition::kTreatAsIdeal,
                        output);
-  HeapVector<MediaTrackConstraintSet> advanced_vector;
+
+  HeapVector<Member<MediaTrackConstraintSet>> advanced_vector;
   for (const auto& it : input.Advanced()) {
-    MediaTrackConstraintSet element;
+    MediaTrackConstraintSet* element = MediaTrackConstraintSet::Create();
     ConvertConstraintSet(it, NakedValueDisposition::kTreatAsExact, element);
     advanced_vector.push_back(element);
   }
   if (!advanced_vector.IsEmpty())
-    output.setAdvanced(advanced_vector);
+    output->setAdvanced(advanced_vector);
+
+  return output;
 }
 
-}  // namespace MediaConstraintsImpl
+}  // namespace media_constraints_impl
 }  // namespace blink

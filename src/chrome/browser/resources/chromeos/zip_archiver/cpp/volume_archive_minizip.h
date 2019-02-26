@@ -9,35 +9,10 @@
 #include <memory>
 #include <string>
 
-#include "third_party/minizip/src/unzip.h"
-#include "third_party/minizip/src/zip.h"
-
+#include "base/optional.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/minizip_helpers.h"
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/volume_archive.h"
-
-class VolumeArchiveMinizip;
-
-// A namespace with custom functions passed to minizip.
-namespace volume_archive_functions {
-
-int64_t DynamicCache(VolumeArchiveMinizip* archive, int64_t unz_size);
-
-uint32_t CustomArchiveRead(void* archive,
-                           void* stream,
-                           void* buf,
-                           uint32_t size);
-
-// Returns the offset from the beginning of the data.
-long CustomArchiveTell(void* archive, void* stream);
-
-// Moves the current offset to the specified position.
-long CustomArchiveSeek(void* archive,
-                       void* stream,
-                       uint32_t offset,
-                       int origin);
-
-}  // namespace volume_archive_functions
-
-class VolumeArchiveMinizip;
+#include "third_party/minizip/src/mz_strm.h"
 
 // Defines an implementation of VolumeArchive that wraps all minizip
 // operations.
@@ -70,36 +45,35 @@ class VolumeArchiveMinizip : public VolumeArchive {
   // See volume_archive_interface.h.
   void MaybeDecompressAhead() override;
 
-  int64_t reader_data_size() const { return reader_data_size_; }
-
-  // Custom functions need to access private variables of
-  // CompressorArchiveMinizip frequently.
-  friend int64_t volume_archive_functions::DynamicCache(
-      VolumeArchiveMinizip* va,
-      int64_t unz_size);
-
-  friend uint32_t volume_archive_functions::CustomArchiveRead(void* archive,
-                                                              void* stream,
-                                                              void* buf,
-                                                              uint32_t size);
-
-  friend long volume_archive_functions::CustomArchiveTell(void* archive,
-                                                          void* stream);
-
-  friend long volume_archive_functions::CustomArchiveSeek(void* archive,
-                                                          void* stream,
-                                                          uint32_t offset,
-                                                          int origin);
-
  private:
+  static mz_stream_vtbl minizip_vtable;
+  struct MinizipStream;
+
+  // Stream functions used by minizip. In all cases, |stream| points to
+  // |this->stream_|.
+  static int32_t MinizipRead(void* stream, void* buf, int32_t size);
+  static int64_t MinizipTell(void* stream);
+  static int32_t MinizipSeek(void* stream, int64_t offset, int32_t origin);
+
+  // Implementation of stream functions used by minizip.
+  int32_t StreamRead(void* buf, int32_t size);
+  int64_t StreamTell();
+  int32_t StreamSeek(int64_t offset, int32_t origin);
+
+  // Read cache.
+  int64_t DynamicCache(int64_t unz_size);
+
   // Decompress length bytes of data starting from offset.
   void DecompressData(int64_t offset, int64_t length);
+
+  // Closes the current zip file entry.
+  bool CloseZipEntry();
 
   // The size of the requested data from VolumeReader.
   int64_t reader_data_size_;
 
-  // The minizip correspondent archive object.
-  zipFile zip_file_;
+  // The minizip stream used to read the archive file.
+  std::unique_ptr<MinizipStream> stream_;
 
   // We use two kinds of cache strategies here: dynamic and static.
   // Dynamic cache is a common cache strategy used in most of IO streams such as
@@ -176,7 +150,12 @@ class VolumeArchiveMinizip : public VolumeArchive {
   bool decompressed_error_;
 
   // The password cache to access password protected files.
-  std::unique_ptr<std::string> password_cache_;
+  base::Optional<std::string> password_cache_;
+
+  // The minizip correspondent archive object.
+  // This must be destroyed before the archive stream and any of its buffers
+  // because AES encryption in minizip will try to read the file on close.
+  ScopedMzZip zip_file_;
 };
 
 #endif  // CHROME_BROWSER_RESOURCES_CHROMEOS_ZIP_ARCHIVER_CPP_VOLUME_ARCHIVE_MINIZIP_H_

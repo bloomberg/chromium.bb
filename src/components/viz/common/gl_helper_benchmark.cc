@@ -8,11 +8,11 @@
 // but cannot really "fail". There is no point in making these tests part
 // of any test automation run.
 
-#include <stddef.h>
-#include <stdio.h>
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
+#include <stddef.h>
+#include <stdio.h>
 
 #include <cmath>
 #include <string>
@@ -32,6 +32,7 @@
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/ipc/gl_in_process_context.h"
+#include "gpu/ipc/test_gpu_thread_holder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkTypes.h"
@@ -68,15 +69,14 @@ class GLHelperBenchmark : public testing::Test {
     attributes.gpu_preference = gl::PreferDiscreteGpu;
 
     context_ = std::make_unique<gpu::GLInProcessContext>();
-    auto result =
-        context_->Initialize(nullptr,                 /* service */
-                             nullptr,                 /* surface */
-                             true,                    /* offscreen */
-                             gpu::kNullSurfaceHandle, /* window */
-                             attributes, gpu::SharedMemoryLimits(),
-                             nullptr, /* gpu_memory_buffer_manager */
-                             nullptr, /* image_factory */
-                             base::ThreadTaskRunnerHandle::Get());
+    auto result = context_->Initialize(
+        gpu::GetTestGpuThreadHolder()->GetTaskExecutor(), nullptr, /* surface */
+        true,                    /* offscreen */
+        gpu::kNullSurfaceHandle, /* window */
+        attributes, gpu::SharedMemoryLimits(),
+        nullptr, /* gpu_memory_buffer_manager */
+        nullptr, /* image_factory */
+        base::ThreadTaskRunnerHandle::Get());
     DCHECK_EQ(result, gpu::ContextResult::kSuccess);
     gl_ = context_->GetImplementation();
     gpu::ContextSupport* support = context_->GetImplementation();

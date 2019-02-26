@@ -81,16 +81,16 @@ Polymer({
       this.savedNameservers_ = [];
 
     // Update the 'nameservers' property.
-    var nameservers = [];
-    var ipv4 =
+    let nameservers = [];
+    const ipv4 =
         CrOnc.getIPConfigForType(this.networkProperties, CrOnc.IPType.IPV4);
     if (ipv4 && ipv4.NameServers)
       nameservers = ipv4.NameServers;
 
     // Update the 'nameserversType' property.
-    var configType =
+    const configType =
         CrOnc.getActiveValue(this.networkProperties.NameServersConfigType);
-    var type;
+    let type;
     if (configType == CrOnc.IPConfigType.STATIC) {
       if (nameservers.join(',') == this.GOOGLE_NAMESERVERS.join(',')) {
         type = 'google';
@@ -114,7 +114,7 @@ Polymer({
   setNameservers_: function(nameserversType, nameservers, sendNameservers) {
     if (nameserversType == 'custom') {
       // Add empty entries for unset custom nameservers.
-      for (var i = nameservers.length; i < this.MAX_NAMESERVERS; ++i)
+      for (let i = nameservers.length; i < this.MAX_NAMESERVERS; ++i)
         nameservers[i] = '';
       this.savedNameservers_ = nameservers.slice();
     }
@@ -162,11 +162,10 @@ Polymer({
   /**
    * Event triggered when the selected type changes. Updates nameservers and
    * sends the change value if necessary.
-   * @param {!Event} event
    * @private
    */
-  onTypeChange_: function(event) {
-    var type = this.$$('#nameserverType').selected;
+  onTypeChange_: function() {
+    const type = this.$$('#nameserverType').selected;
     this.nameserversType_ = type;
     if (type == 'custom') {
       // Restore the saved nameservers.
@@ -194,12 +193,12 @@ Polymer({
    * @private
    */
   sendNameServers_: function() {
-    var type = this.nameserversType_;
+    const type = this.nameserversType_;
 
     if (type == 'custom') {
-      var nameservers = new Array(this.MAX_NAMESERVERS);
-      for (var i = 0; i < this.MAX_NAMESERVERS; ++i) {
-        var nameserverInput = this.$$('#nameserver' + i);
+      const nameservers = new Array(this.MAX_NAMESERVERS);
+      for (let i = 0; i < this.MAX_NAMESERVERS; ++i) {
+        const nameserverInput = this.$$('#nameserver' + i);
         nameservers[i] = nameserverInput ? nameserverInput.value : '';
       }
       this.nameservers_ = nameservers;

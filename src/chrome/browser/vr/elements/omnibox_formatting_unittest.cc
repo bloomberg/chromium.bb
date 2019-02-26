@@ -31,7 +31,6 @@ TEST(OmniboxSuggestionFormatting, TextFormatting) {
       ACMatchClassification(0, ACMatchClassification::NONE),
       ACMatchClassification(1, ACMatchClassification::URL),
       ACMatchClassification(2, ACMatchClassification::MATCH),
-      ACMatchClassification(3, ACMatchClassification::INVISIBLE),
   };
   size_t string_length = classifications.size();
 
@@ -43,7 +42,7 @@ TEST(OmniboxSuggestionFormatting, TextFormatting) {
   TextFormatting formatting =
       ConvertClassification(classifications, string_length, color_scheme);
 
-  ASSERT_EQ(formatting.size(), 5u);
+  ASSERT_EQ(formatting.size(), 4u);
 
   EXPECT_EQ(formatting[0].type(), TextFormattingAttribute::COLOR);
   EXPECT_EQ(formatting[0].color(), kDefaultColor);
@@ -60,10 +59,6 @@ TEST(OmniboxSuggestionFormatting, TextFormatting) {
   EXPECT_EQ(formatting[3].type(), TextFormattingAttribute::WEIGHT);
   EXPECT_EQ(formatting[3].weight(), gfx::Font::Weight::BOLD);
   EXPECT_EQ(formatting[3].range(), gfx::Range(2, 3));
-
-  EXPECT_EQ(formatting[4].type(), TextFormattingAttribute::COLOR);
-  EXPECT_EQ(formatting[4].color(), SK_ColorTRANSPARENT);
-  EXPECT_EQ(formatting[4].range(), gfx::Range(3, 4));
 }
 
 struct ElisionTestcase {

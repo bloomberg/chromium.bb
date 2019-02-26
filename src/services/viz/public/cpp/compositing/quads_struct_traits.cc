@@ -133,7 +133,8 @@ bool StructTraits<viz::mojom::TextureQuadStateDataView, viz::DrawQuad>::Read(
   quad->resources.count = 1;
   quad->premultiplied_alpha = data.premultiplied_alpha();
   if (!data.ReadUvTopLeft(&quad->uv_top_left) ||
-      !data.ReadUvBottomRight(&quad->uv_bottom_right)) {
+      !data.ReadUvBottomRight(&quad->uv_bottom_right) ||
+      !data.ReadProtectedVideoType(&quad->protected_video_type)) {
     return false;
   }
   quad->background_color = data.background_color();
@@ -175,7 +176,8 @@ bool StructTraits<viz::mojom::YUVVideoQuadStateDataView, viz::DrawQuad>::Read(
       !data.ReadUvTexCoordRect(&quad->uv_tex_coord_rect) ||
       !data.ReadYaTexSize(&quad->ya_tex_size) ||
       !data.ReadUvTexSize(&quad->uv_tex_size) ||
-      !data.ReadVideoColorSpace(&quad->video_color_space)) {
+      !data.ReadVideoColorSpace(&quad->video_color_space) ||
+      !data.ReadProtectedVideoType(&quad->protected_video_type)) {
     return false;
   }
   quad->resources.ids[viz::YUVVideoDrawQuad::kYPlaneResourceIdIndex] =
@@ -198,8 +200,6 @@ bool StructTraits<viz::mojom::YUVVideoQuadStateDataView, viz::DrawQuad>::Read(
       quad->bits_per_channel > viz::YUVVideoDrawQuad::kMaxBitsPerChannel) {
     return false;
   }
-  quad->require_overlay = data.require_overlay();
-  quad->is_protected_video = data.is_protected_video();
   return true;
 }
 

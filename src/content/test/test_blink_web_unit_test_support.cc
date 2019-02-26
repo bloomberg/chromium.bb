@@ -168,9 +168,8 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport()
   blink_interface_provider_.reset(
       new BlinkInterfaceProviderImpl(connector_.get()));
 
-  service_manager::Connector::TestApi test_api(connector_.get());
-  test_api.OverrideBinderForTesting(
-      service_manager::Identity(mojom::kBrowserServiceName),
+  connector_->OverrideBinderForTesting(
+      service_manager::ServiceFilter::ByName(mojom::kBrowserServiceName),
       blink::mojom::ClipboardHost::Name_,
       base::BindRepeating(&TestBlinkWebUnitTestSupport::BindClipboardHost,
                           weak_factory_.GetWeakPtr()));
@@ -212,13 +211,6 @@ TestBlinkWebUnitTestSupport::~TestBlinkWebUnitTestSupport() {
 
 blink::WebBlobRegistry* TestBlinkWebUnitTestSupport::GetBlobRegistry() {
   return &blob_registry_;
-}
-
-std::unique_ptr<blink::WebIDBFactory>
-TestBlinkWebUnitTestSupport::CreateIdbFactory() {
-  NOTREACHED() <<
-      "IndexedDB cannot be tested with in-process harnesses.";
-  return nullptr;
 }
 
 std::unique_ptr<blink::WebURLLoaderFactory>

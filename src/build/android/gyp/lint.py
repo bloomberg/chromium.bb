@@ -226,22 +226,12 @@ def _OnStaleMd5(lint_path, config_path, processed_config_path,
           print 'File contents:'
           with open(result_path) as f:
             print f.read()
-        if not can_fail_build:
+          if can_fail_build:
+            traceback.print_exc()
+        if can_fail_build:
+          raise
+        else:
           return
-
-      if can_fail_build and not silent:
-        traceback.print_exc()
-
-      # There are actual lint issues
-      try:
-        num_issues = _ParseAndShowResultFile()
-      except Exception: # pylint: disable=broad-except
-        if not silent:
-          print 'Lint created unparseable xml file...'
-          print 'File contents:'
-          with open(result_path) as f:
-            print f.read()
-        raise
 
       _ProcessResultFile()
       if num_issues == 0 and include_unexpected:

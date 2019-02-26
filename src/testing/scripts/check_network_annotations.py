@@ -35,7 +35,7 @@ def main_run(args):
 
 
 def main_compile_targets(args):
-  json.dump(['gn_all'], args.output)
+  json.dump(['shipped_binaries'], args.output)
 
 
 if __name__ == '__main__':

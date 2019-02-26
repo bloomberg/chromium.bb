@@ -101,7 +101,7 @@ std::string GetPermissionRequestString(PermissionRequestType type) {
 }
 
 void RecordEngagementMetric(const std::vector<PermissionRequest*>& requests,
-                            const content::WebContents* web_contents,
+                            content::WebContents* web_contents,
                             const std::string& action) {
   PermissionRequestType type = requests[0]->GetPermissionRequestType();
   if (requests.size() > 1)
@@ -239,7 +239,7 @@ void PermissionUmaUtil::PermissionPromptShown(
 
 void PermissionUmaUtil::PermissionPromptResolved(
     const std::vector<PermissionRequest*>& requests,
-    const content::WebContents* web_contents,
+    content::WebContents* web_contents,
     PermissionAction permission_action) {
   std::string action_string;
 

@@ -211,10 +211,16 @@
     "glGetTexLevelParameterfvRobustANGLE": {
         "target": "TextureTarget"
     },
+    "glGetTexLevelParameterfvANGLE": {
+        "target": "TextureTarget"
+    },
     "glGetTexLevelParameteriv": {
         "target": "TextureTarget"
     },
     "glGetTexLevelParameterivRobustANGLE": {
+        "target": "TextureTarget"
+    },
+    "glGetTexLevelParameterivANGLE": {
         "target": "TextureTarget"
     },
     "glGetTexParameterfv": {
@@ -233,6 +239,12 @@
         "target": "TextureType"
     },
     "glGetTexParameterIuivRobustANGLE": {
+        "target": "TextureType"
+    },
+    "glGetTexParameterIivOES": {
+        "target": "TextureType"
+    },
+    "glGetTexParameterIuivOES": {
         "target": "TextureType"
     },
     "glGetTexParameterxv": {
@@ -279,6 +291,18 @@
     },
     "glMatrixMode": {
         "mode": "MatrixType"
+    },
+    "glMultiDrawArraysANGLE": {
+        "mode": "PrimitiveMode"
+    },
+    "glMultiDrawArraysInstancedANGLE": {
+        "mode": "PrimitiveMode"
+    },
+    "glMultiDrawElementsANGLE": {
+        "mode": "PrimitiveMode"
+    },
+    "glMultiDrawElementsInstancedANGLE": {
+        "mode": "PrimitiveMode"
     },
     "glPointParameterf": {
         "pname" : "PointParameter"
@@ -358,6 +382,12 @@
     "glTexParameterIuivRobustANGLE": {
         "target": "TextureType"
     },
+    "glTexParameterIivOES": {
+        "target": "TextureType"
+    },
+    "glTexParameterIuivOES": {
+        "target": "TextureType"
+    },
     "glTexParameterx": {
         "target": "TextureType"
     },
@@ -372,6 +402,9 @@
     },
     "glTexStorage2DMultisample": {
         "target": "TextureType"
+    },
+    "glTexStorage2DMultisampleANGLE": {
+        "target":  "TextureType"
     },
     "glTexStorage3DMultisampleOES": {
         "target": "TextureType"

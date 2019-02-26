@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"
@@ -147,7 +148,12 @@ CategorizedWorkerPool::CategorizedWorkerPool()
       has_ready_to_run_foreground_tasks_cv_(&lock_),
       has_ready_to_run_background_tasks_cv_(&lock_),
       has_namespaces_with_finished_running_tasks_cv_(&lock_),
-      shutdown_(false) {}
+      shutdown_(false) {
+  // Declare the two ConditionVariables which are used by worker threads to
+  // sleep-while-idle as such to avoid throwing off //base heuristics.
+  has_ready_to_run_foreground_tasks_cv_.declare_only_used_while_idle();
+  has_ready_to_run_background_tasks_cv_.declare_only_used_while_idle();
+}
 
 void CategorizedWorkerPool::Start(int num_threads) {
   DCHECK(threads_.empty());
@@ -223,9 +229,7 @@ bool CategorizedWorkerPool::PostDelayedTask(const base::Location& from_here,
 
   auto end = std::remove_if(
       tasks_.begin(), tasks_.end(), [this](const scoped_refptr<cc::Task>& e) {
-        return std::find(this->completed_tasks_.begin(),
-                         this->completed_tasks_.end(),
-                         e) != this->completed_tasks_.end();
+        return base::ContainsValue(this->completed_tasks_, e);
       });
   tasks_.erase(end, tasks_.end());
 
@@ -332,7 +336,8 @@ void CategorizedWorkerPool::WaitForTasksToFinishRunning(
 
   {
     base::AutoLock lock(lock_);
-    base::ThreadRestrictions::ScopedAllowWait allow_wait;
+    // http://crbug.com/902823
+    base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
 
     auto* task_namespace = work_queue_.GetNamespaceForToken(token);
 

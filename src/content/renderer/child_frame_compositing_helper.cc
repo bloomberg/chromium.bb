@@ -33,8 +33,7 @@ ChildFrameCompositingHelper::~ChildFrameCompositingHelper() = default;
 void ChildFrameCompositingHelper::ChildFrameGone(
     const gfx::Size& frame_size_in_dip,
     float device_scale_factor) {
-  primary_surface_id_ = viz::SurfaceId();
-  fallback_surface_id_ = viz::SurfaceId();
+  surface_id_ = viz::SurfaceId();
 
   scoped_refptr<cc::SolidColorLayer> crashed_layer =
       cc::SolidColorLayer::Create();
@@ -71,22 +70,21 @@ void ChildFrameCompositingHelper::ChildFrameGone(
                                     false /* is_surface_layer */);
 }
 
-void ChildFrameCompositingHelper::SetPrimarySurfaceId(
+void ChildFrameCompositingHelper::SetSurfaceId(
     const viz::SurfaceId& surface_id,
     const gfx::Size& frame_size_in_dip,
     const cc::DeadlinePolicy& deadline) {
-  if (primary_surface_id_ == surface_id)
+  if (surface_id_ == surface_id)
     return;
 
-  primary_surface_id_ = surface_id;
+  surface_id_ = surface_id;
 
   surface_layer_ = cc::SurfaceLayer::Create();
   surface_layer_->SetMasksToBounds(true);
   surface_layer_->SetSurfaceHitTestable(true);
   surface_layer_->SetBackgroundColor(SK_ColorTRANSPARENT);
 
-  surface_layer_->SetPrimarySurfaceId(surface_id, deadline);
-  surface_layer_->SetFallbackSurfaceId(fallback_surface_id_);
+  surface_layer_->SetSurfaceId(surface_id, deadline);
 
   // TODO(lfg): Investigate if it's possible to propagate the information
   // about the child surface's opacity. https://crbug.com/629851.
@@ -98,20 +96,6 @@ void ChildFrameCompositingHelper::SetPrimarySurfaceId(
   UpdateVisibility(true);
 
   surface_layer_->SetBounds(frame_size_in_dip);
-}
-
-void ChildFrameCompositingHelper::SetFallbackSurfaceId(
-    const viz::SurfaceId& surface_id,
-    const gfx::Size& frame_size_in_dip) {
-  fallback_surface_id_ = surface_id;
-
-  if (!surface_layer_) {
-    SetPrimarySurfaceId(surface_id, frame_size_in_dip,
-                        cc::DeadlinePolicy::UseDefaultDeadline());
-    return;
-  }
-
-  surface_layer_->SetFallbackSurfaceId(surface_id);
 }
 
 void ChildFrameCompositingHelper::UpdateVisibility(bool visible) {

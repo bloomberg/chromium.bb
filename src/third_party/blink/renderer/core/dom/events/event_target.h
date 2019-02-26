@@ -40,7 +40,6 @@
 #include "third_party/blink/renderer/core/dom/events/add_event_listener_options_resolved.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_result.h"
 #include "third_party/blink/renderer/core/dom/events/event_listener_map.h"
-#include "third_party/blink/renderer/core/event_names.h"
 #include "third_party/blink/renderer/core/event_target_names.h"
 #include "third_party/blink/renderer/core/event_type_names.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -141,7 +140,7 @@ class CORE_EXPORT EventTarget : public ScriptWrappable {
                         const AddEventListenerOptionsOrBoolean&);
   bool addEventListener(const AtomicString& event_type,
                         EventListener*,
-                        AddEventListenerOptionsResolved&);
+                        AddEventListenerOptionsResolved*);
 
   bool removeEventListener(const AtomicString& event_type,
                            const EventListener*,
@@ -151,7 +150,7 @@ class CORE_EXPORT EventTarget : public ScriptWrappable {
                            const EventListenerOptionsOrBoolean&);
   bool removeEventListener(const AtomicString& event_type,
                            const EventListener*,
-                           EventListenerOptions&);
+                           EventListenerOptions*);
   virtual void RemoveAllEventListeners();
 
   DispatchEventResult DispatchEvent(Event&);
@@ -191,10 +190,10 @@ class CORE_EXPORT EventTarget : public ScriptWrappable {
 
   virtual bool AddEventListenerInternal(const AtomicString& event_type,
                                         EventListener*,
-                                        const AddEventListenerOptionsResolved&);
+                                        const AddEventListenerOptionsResolved*);
   virtual bool RemoveEventListenerInternal(const AtomicString& event_type,
                                            const EventListener*,
-                                           const EventListenerOptions&);
+                                           const EventListenerOptions*);
 
   // Called when an event listener has been successfully added.
   virtual void AddedEventListener(const AtomicString& event_type,
@@ -216,7 +215,7 @@ class CORE_EXPORT EventTarget : public ScriptWrappable {
   LocalDOMWindow* ExecutingWindow();
   void SetDefaultAddEventListenerOptions(const AtomicString& event_type,
                                          EventListener*,
-                                         AddEventListenerOptionsResolved&);
+                                         AddEventListenerOptionsResolved*);
 
   RegisteredEventListener* GetAttributeRegisteredEventListener(
       const AtomicString& event_type);
@@ -252,62 +251,61 @@ class CORE_EXPORT EventTargetWithInlineData : public EventTarget {
   GC_PLUGIN_IGNORE("513199") EventTargetData event_target_data_;
 };
 
+// Macros to define an attribute event listener.
+//  |lower_name| - Lower-cased event type name.  e.g. |focus|
+//  |symbol_name| - C++ symbol name in event_type_names namespace. e.g. |kFocus|
 // FIXME: These macros should be split into separate DEFINE and DECLARE
 // macros to avoid causing so many header includes.
-#define DEFINE_ATTRIBUTE_EVENT_LISTENER(attribute)                  \
-  EventListener* on##attribute() {                                  \
-    return GetAttributeEventListener(EventTypeNames::attribute);    \
-  }                                                                 \
-  void setOn##attribute(EventListener* listener) {                  \
-    SetAttributeEventListener(EventTypeNames::attribute, listener); \
+
+#define DEFINE_ATTRIBUTE_EVENT_LISTENER(lower_name, symbol_name)        \
+  EventListener* on##lower_name() {                                     \
+    return GetAttributeEventListener(event_type_names::symbol_name);    \
+  }                                                                     \
+  void setOn##lower_name(EventListener* listener) {                     \
+    SetAttributeEventListener(event_type_names::symbol_name, listener); \
   }
 
-#define DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(attribute)                    \
-  static EventListener* on##attribute(EventTarget& eventTarget) {            \
-    return eventTarget.GetAttributeEventListener(EventTypeNames::attribute); \
-  }                                                                          \
-  static void setOn##attribute(EventTarget& eventTarget,                     \
-                               EventListener* listener) {                    \
-    eventTarget.SetAttributeEventListener(EventTypeNames::attribute,         \
-                                          listener);                         \
+#define DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(lower_name, symbol_name)  \
+  static EventListener* on##lower_name(EventTarget& eventTarget) {       \
+    return eventTarget.GetAttributeEventListener(                        \
+        event_type_names::symbol_name);                                  \
+  }                                                                      \
+  static void setOn##lower_name(EventTarget& eventTarget,                \
+                                EventListener* listener) {               \
+    eventTarget.SetAttributeEventListener(event_type_names::symbol_name, \
+                                          listener);                     \
   }
 
-#define DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(attribute)                    \
-  EventListener* on##attribute() {                                           \
-    return GetDocument().GetWindowAttributeEventListener(                    \
-        EventTypeNames::attribute);                                          \
-  }                                                                          \
-  void setOn##attribute(EventListener* listener) {                           \
-    GetDocument().SetWindowAttributeEventListener(EventTypeNames::attribute, \
-                                                  listener);                 \
+#define DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(lower_name, symbol_name) \
+  EventListener* on##lower_name() {                                     \
+    return GetDocument().GetWindowAttributeEventListener(               \
+        event_type_names::symbol_name);                                 \
+  }                                                                     \
+  void setOn##lower_name(EventListener* listener) {                     \
+    GetDocument().SetWindowAttributeEventListener(                      \
+        event_type_names::symbol_name, listener);                       \
   }
 
-#define DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(attribute)             \
-  static EventListener* on##attribute(EventTarget& eventTarget) {            \
-    if (Node* node = eventTarget.ToNode())                                   \
-      return node->GetDocument().GetWindowAttributeEventListener(            \
-          EventTypeNames::attribute);                                        \
-    DCHECK(eventTarget.ToLocalDOMWindow());                                  \
-    return eventTarget.GetAttributeEventListener(EventTypeNames::attribute); \
-  }                                                                          \
-  static void setOn##attribute(EventTarget& eventTarget,                     \
-                               EventListener* listener) {                    \
-    if (Node* node = eventTarget.ToNode())                                   \
-      node->GetDocument().SetWindowAttributeEventListener(                   \
-          EventTypeNames::attribute, listener);                              \
-    else {                                                                   \
-      DCHECK(eventTarget.ToLocalDOMWindow());                                \
-      eventTarget.SetAttributeEventListener(EventTypeNames::attribute,       \
-                                            listener);                       \
-    }                                                                        \
-  }
-
-#define DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(attribute, eventName) \
-  EventListener* on##attribute() {                                   \
-    return GetAttributeEventListener(EventTypeNames::eventName);     \
-  }                                                                  \
-  void setOn##attribute(EventListener* listener) {                   \
-    SetAttributeEventListener(EventTypeNames::eventName, listener);  \
+#define DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(lower_name, symbol_name) \
+  static EventListener* on##lower_name(EventTarget& eventTarget) {             \
+    if (Node* node = eventTarget.ToNode()) {                                   \
+      return node->GetDocument().GetWindowAttributeEventListener(              \
+          event_type_names::symbol_name);                                      \
+    }                                                                          \
+    DCHECK(eventTarget.ToLocalDOMWindow());                                    \
+    return eventTarget.GetAttributeEventListener(                              \
+        event_type_names::symbol_name);                                        \
+  }                                                                            \
+  static void setOn##lower_name(EventTarget& eventTarget,                      \
+                                EventListener* listener) {                     \
+    if (Node* node = eventTarget.ToNode()) {                                   \
+      node->GetDocument().SetWindowAttributeEventListener(                     \
+          event_type_names::symbol_name, listener);                            \
+    } else {                                                                   \
+      DCHECK(eventTarget.ToLocalDOMWindow());                                  \
+      eventTarget.SetAttributeEventListener(event_type_names::symbol_name,     \
+                                            listener);                         \
+    }                                                                          \
   }
 
 DISABLE_CFI_PERF

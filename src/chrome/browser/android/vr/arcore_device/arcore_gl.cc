@@ -15,9 +15,10 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/traced_value.h"
 #include "chrome/browser/android/vr/arcore_device/ar_image_transport.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_impl.h"
+#include "chrome/browser/android/vr/arcore_device/arcore_install_utils.h"
 #include "chrome/browser/android/vr/mailbox_to_surface_bridge.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl_android_hardware_buffer.h"
@@ -88,16 +89,16 @@ struct ArCoreHitTestRequest {
   DISALLOW_COPY_AND_ASSIGN(ArCoreHitTestRequest);
 };
 
-ArCoreGl::ArCoreGl(std::unique_ptr<vr::MailboxToSurfaceBridge> mailbox_bridge)
+ArCoreGl::ArCoreGl(std::unique_ptr<ArImageTransport> ar_image_transport)
     : gl_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      arcore_(std::make_unique<ArCoreImpl>()),
-      ar_image_transport_(
-          std::make_unique<ARImageTransport>(std::move(mailbox_bridge))),
+      ar_image_transport_(std::move(ar_image_transport)),
       weak_ptr_factory_(this) {}
 
 ArCoreGl::~ArCoreGl() {}
 
-void ArCoreGl::Initialize(base::OnceCallback<void(bool)> callback) {
+void ArCoreGl::Initialize(vr::ArCoreInstallUtils* install_utils,
+                          ArCoreFactory* arcore_factory,
+                          base::OnceCallback<void(bool)> callback) {
   DCHECK(IsOnGlThread());
 
   // Do not DCHECK !is_initialized to allow multiple calls to correctly
@@ -115,8 +116,18 @@ void ArCoreGl::Initialize(base::OnceCallback<void(bool)> callback) {
     return;
   }
 
-  if (!arcore_->Initialize()) {
-    DLOG(ERROR) << "ArCore failed to initialize";
+  // Get the activity context.
+  base::android::ScopedJavaLocalRef<jobject> application_context =
+      install_utils->GetApplicationContext();
+  if (!application_context.obj()) {
+    DLOG(ERROR) << "Unable to retrieve the Java context/activity!";
+    std::move(callback).Run(false);
+    return;
+  }
+
+  arcore_ = arcore_factory->Create();
+  if (!arcore_->Initialize(application_context)) {
+    DLOG(ERROR) << "ARCore failed to initialize";
     std::move(callback).Run(false);
     return;
   }
@@ -180,7 +191,8 @@ void ArCoreGl::ProduceFrame(
   DCHECK(IsOnGlThread());
   DCHECK(is_initialized_);
 
-  // Check if the frame_size and display_rotation updated last frame.
+  // Check if the frame_size and display_rotation updated last frame. If yes,
+  // apply the update for this frame.
   if (should_recalculate_uvs_) {
     // Get the UV transform matrix from ArCore's UV transform.
     std::vector<float> uvs_transformed =
@@ -196,6 +208,9 @@ void ArCoreGl::ProduceFrame(
     should_recalculate_uvs_ = false;
   }
 
+  // Now check if the frame_size or display_rotation neds to be updated
+  // for the next frame. This must happen after the should_recalculate_uvs_
+  // check above to ensure it executes with the needed one-frame delay.
   if (transfer_size_ != frame_size || display_rotation_ != display_rotation) {
     // Set display geometry before calling Update. It's a pending request that
     // applies to the next frame.

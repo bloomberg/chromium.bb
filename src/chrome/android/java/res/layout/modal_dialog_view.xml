@@ -3,8 +3,7 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<!-- TODO(huayinz): rename menu_bg or change the dialog background to the desired one. -->
-<org.chromium.chrome.browser.widget.BoundedLinearLayout
+<org.chromium.chrome.browser.modaldialog.ModalDialogView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -13,11 +12,8 @@
     app:maxWidthLandscape="@dimen/abc_dialog_min_width_major"
     app:maxWidthPortrait="@dimen/abc_dialog_min_width_minor" >
 
-    <android.support.v7.widget.DialogTitle
-        android:id="@+id/title"
-        android:textAppearance="@style/BlackHeadline"
-        android:visibility="gone"
-        style="@style/AlertDialogContent" />
+    <include layout="@layout/modal_dialog_title"
+        android:id="@+id/title_container" />
 
     <org.chromium.chrome.browser.widget.FadingEdgeScrollView
         android:id="@+id/modal_dialog_scroll_view"
@@ -31,11 +27,9 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <android.support.v7.widget.DialogTitle
-                android:id="@+id/scrollable_title"
-                android:textAppearance="@style/BlackHeadline"
-                android:visibility="gone"
-                style="@style/AlertDialogContent" />
+            <include layout="@layout/modal_dialog_title"
+                android:id="@+id/scrollable_title_container"
+                android:visibility="gone" />
 
             <org.chromium.ui.widget.TextViewWithLeading
                 android:id="@+id/message"
@@ -51,25 +45,29 @@
         android:id="@+id/custom"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="1"
+        android:visibility="gone" />
 
-    <android.support.v7.widget.ButtonBarLayout
+    <org.chromium.chrome.browser.widget.DualControlLayout
+        android:id="@+id/button_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        style="?attr/buttonBarStyle">
+        android:padding="@dimen/modal_dialog_control_padding"
+        app:stackedMargin="@dimen/button_bar_stacked_margin"
+        app:buttonAlignment="end">
 
-        <android.support.v7.widget.AppCompatButton
-            android:id="@+id/negative_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="?attr/buttonBarNegativeButtonStyle" />
-
-        <android.support.v7.widget.AppCompatButton
+        <org.chromium.ui.widget.ButtonCompat
             android:id="@+id/positive_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             style="?attr/buttonBarPositiveButtonStyle" />
 
-    </android.support.v7.widget.ButtonBarLayout>
+        <org.chromium.ui.widget.ButtonCompat
+            android:id="@+id/negative_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="?attr/buttonBarNegativeButtonStyle" />
 
-</org.chromium.chrome.browser.widget.BoundedLinearLayout>
+    </org.chromium.chrome.browser.widget.DualControlLayout>
+
+</org.chromium.chrome.browser.modaldialog.ModalDialogView>

@@ -7,12 +7,15 @@
 
 #include "SkDrawCommand.h"
 
+#include <algorithm>
 #include "SkAutoMalloc.h"
+#include "SkClipOpPriv.h"
 #include "SkColorFilter.h"
 #include "SkDashPathEffect.h"
 #include "SkDrawable.h"
 #include "SkImageFilter.h"
 #include "SkJsonWriteBuffer.h"
+#include "SkLatticeIter.h"
 #include "SkMaskFilterBase.h"
 #include "SkPaintDefaults.h"
 #include "SkPathEffect.h"
@@ -20,13 +23,11 @@
 #include "SkPngEncoder.h"
 #include "SkReadBuffer.h"
 #include "SkRectPriv.h"
-#include "SkTextBlobPriv.h"
+#include "SkShadowFlags.h"
 #include "SkTHash.h"
+#include "SkTextBlobPriv.h"
 #include "SkTypeface.h"
 #include "SkWriteBuffer.h"
-#include "SkClipOpPriv.h"
-#include <SkLatticeIter.h>
-#include <SkShadowFlags.h>
 
 #define SKDEBUGCANVAS_ATTRIBUTE_COMMAND           "command"
 #define SKDEBUGCANVAS_ATTRIBUTE_VISIBLE           "visible"
@@ -59,7 +60,6 @@
 #define SKDEBUGCANVAS_ATTRIBUTE_LCDRENDERTEXT     "lcdRenderText"
 #define SKDEBUGCANVAS_ATTRIBUTE_EMBEDDEDBITMAPTEXT "embeddedBitmapText"
 #define SKDEBUGCANVAS_ATTRIBUTE_AUTOHINTING       "forceAutoHinting"
-#define SKDEBUGCANVAS_ATTRIBUTE_VERTICALTEXT      "verticalText"
 #define SKDEBUGCANVAS_ATTRIBUTE_REGION            "region"
 #define SKDEBUGCANVAS_ATTRIBUTE_REGIONOP          "op"
 #define SKDEBUGCANVAS_ATTRIBUTE_EDGESTYLE         "edgeStyle"
@@ -67,7 +67,6 @@
 #define SKDEBUGCANVAS_ATTRIBUTE_BLUR              "blur"
 #define SKDEBUGCANVAS_ATTRIBUTE_SIGMA             "sigma"
 #define SKDEBUGCANVAS_ATTRIBUTE_QUALITY           "quality"
-#define SKDEBUGCANVAS_ATTRIBUTE_TEXTALIGN         "textAlign"
 #define SKDEBUGCANVAS_ATTRIBUTE_TEXTSIZE          "textSize"
 #define SKDEBUGCANVAS_ATTRIBUTE_TEXTSCALEX        "textScaleX"
 #define SKDEBUGCANVAS_ATTRIBUTE_TEXTSKEWX         "textSkewX"
@@ -155,10 +154,6 @@
 #define SKDEBUGCANVAS_BLURQUALITY_LOW             "low"
 #define SKDEBUGCANVAS_BLURQUALITY_HIGH            "high"
 
-#define SKDEBUGCANVAS_ALIGN_LEFT                  "left"
-#define SKDEBUGCANVAS_ALIGN_CENTER                "center"
-#define SKDEBUGCANVAS_ALIGN_RIGHT                 "right"
-
 #define SKDEBUGCANVAS_FILLTYPE_WINDING            "winding"
 #define SKDEBUGCANVAS_FILLTYPE_EVENODD            "evenOdd"
 #define SKDEBUGCANVAS_FILLTYPE_INVERSEWINDING     "inverseWinding"
@@ -227,6 +222,7 @@ const char* SkDrawCommand::GetCommandString(OpType type) {
         case kDrawImageLattice_OpType: return "DrawImageLattice";
         case kDrawImageNine_OpType: return "DrawImageNine";
         case kDrawImageRect_OpType: return "DrawImageRect";
+        case kDrawImageSet_OpType: return "DrawImageSet";
         case kDrawOval_OpType: return "DrawOval";
         case kDrawPaint_OpType: return "DrawPaint";
         case kDrawPatch_OpType: return "DrawPatch";
@@ -795,19 +791,19 @@ bool SkDrawCommand::flatten(const SkBitmap& bitmap, Json::Value* target,
 }
 
 static void apply_paint_hinting(const SkPaint& paint, Json::Value* target) {
-    SkPaint::Hinting hinting = paint.getHinting();
+    SkFontHinting hinting = (SkFontHinting)paint.getHinting();
     if (hinting != SkPaintDefaults_Hinting) {
         switch (hinting) {
-            case SkPaint::kNo_Hinting:
+            case kNo_SkFontHinting:
                 (*target)[SKDEBUGCANVAS_ATTRIBUTE_HINTING] = SKDEBUGCANVAS_HINTING_NONE;
                 break;
-            case SkPaint::kSlight_Hinting:
+            case kSlight_SkFontHinting:
                 (*target)[SKDEBUGCANVAS_ATTRIBUTE_HINTING] = SKDEBUGCANVAS_HINTING_SLIGHT;
                 break;
-            case SkPaint::kNormal_Hinting:
+            case kNormal_SkFontHinting:
                 (*target)[SKDEBUGCANVAS_ATTRIBUTE_HINTING] = SKDEBUGCANVAS_HINTING_NORMAL;
                 break;
-            case SkPaint::kFull_Hinting:
+            case kFull_SkFontHinting:
                 (*target)[SKDEBUGCANVAS_ATTRIBUTE_HINTING] = SKDEBUGCANVAS_HINTING_FULL;
                 break;
         }
@@ -967,23 +963,6 @@ static void apply_paint_patheffect(const SkPaint& paint, Json::Value* target,
     }
 }
 
-static void apply_paint_textalign(const SkPaint& paint, Json::Value* target) {
-    SkPaint::Align textAlign = paint.getTextAlign();
-    if (textAlign != SkPaint::kLeft_Align) {
-        switch (textAlign) {
-            case SkPaint::kCenter_Align: {
-                (*target)[SKDEBUGCANVAS_ATTRIBUTE_TEXTALIGN] = SKDEBUGCANVAS_ALIGN_CENTER;
-                break;
-            }
-            case SkPaint::kRight_Align: {
-                (*target)[SKDEBUGCANVAS_ATTRIBUTE_TEXTALIGN] = SKDEBUGCANVAS_ALIGN_RIGHT;
-                break;
-            }
-            default: SkASSERT(false);
-        }
-    }
-}
-
 static void apply_paint_typeface(const SkPaint& paint, Json::Value* target,
                                  UrlDataManager& urlDataManager) {
     SkTypeface* typeface = paint.getTypeface();
@@ -1055,7 +1034,6 @@ Json::Value SkDrawCommand::MakeJsonPaint(const SkPaint& paint, UrlDataManager& u
     store_bool(&result, SKDEBUGCANVAS_ATTRIBUTE_LCDRENDERTEXT, paint.isLCDRenderText(), false);
     store_bool(&result, SKDEBUGCANVAS_ATTRIBUTE_EMBEDDEDBITMAPTEXT, paint.isEmbeddedBitmapText(), false);
     store_bool(&result, SKDEBUGCANVAS_ATTRIBUTE_AUTOHINTING, paint.isAutohinted(), false);
-    store_bool(&result, SKDEBUGCANVAS_ATTRIBUTE_VERTICALTEXT, paint.isVerticalText(), false);
     //kGenA8FromLCD_Flag
 
     store_scalar(&result, SKDEBUGCANVAS_ATTRIBUTE_TEXTSIZE, paint.getTextSize(),
@@ -1069,7 +1047,6 @@ Json::Value SkDrawCommand::MakeJsonPaint(const SkPaint& paint, UrlDataManager& u
     apply_paint_cap(paint, &result);
     apply_paint_join(paint, &result);
     apply_paint_filterquality(paint, &result);
-    apply_paint_textalign(paint, &result);
     apply_paint_patheffect(paint, &result, urlDataManager);
     apply_paint_maskfilter(paint, &result, urlDataManager);
     apply_paint_shader(paint, &result, urlDataManager);
@@ -1550,6 +1527,20 @@ Json::Value SkDrawImageRectCommand::toJSON(UrlDataManager& urlDataManager) const
     result[SKDEBUGCANVAS_ATTRIBUTE_SHORTDESC] = Json::Value(str_append(&desc, fDst)->c_str());
 
     return result;
+}
+
+SkDrawImageSetCommand::SkDrawImageSetCommand(const SkCanvas::ImageSetEntry set[], int count,
+                                             SkFilterQuality filterQuality, SkBlendMode mode)
+        : INHERITED(kDrawImageSet_OpType)
+        , fSet(count)
+        , fCount(count)
+        , fFilterQuality(filterQuality)
+        , fMode(mode) {
+    std::copy_n(set, count, fSet.get());
+}
+
+void SkDrawImageSetCommand::execute(SkCanvas* canvas) const {
+    canvas->experimental_DrawImageSetV1(fSet.get(), fCount, fFilterQuality, fMode);
 }
 
 SkDrawImageNineCommand::SkDrawImageNineCommand(const SkImage* image, const SkIRect& center,

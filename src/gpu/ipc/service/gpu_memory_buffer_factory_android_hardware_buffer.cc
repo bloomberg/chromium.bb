@@ -7,6 +7,7 @@
 #include "base/android/android_hardware_buffer_compat.h"
 #include "base/logging.h"
 #include "base/memory/shared_memory_handle.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl_android_hardware_buffer.h"
 #include "ui/gl/gl_image_ahardwarebuffer.h"
@@ -14,10 +15,10 @@
 namespace gpu {
 
 GpuMemoryBufferFactoryAndroidHardwareBuffer::
-    GpuMemoryBufferFactoryAndroidHardwareBuffer() {}
+    GpuMemoryBufferFactoryAndroidHardwareBuffer() = default;
 
 GpuMemoryBufferFactoryAndroidHardwareBuffer::
-    ~GpuMemoryBufferFactoryAndroidHardwareBuffer() {}
+    ~GpuMemoryBufferFactoryAndroidHardwareBuffer() = default;
 
 gfx::GpuMemoryBufferHandle
 GpuMemoryBufferFactoryAndroidHardwareBuffer::CreateGpuMemoryBuffer(
@@ -27,28 +28,30 @@ GpuMemoryBufferFactoryAndroidHardwareBuffer::CreateGpuMemoryBuffer(
     gfx::BufferUsage usage,
     int client_id,
     SurfaceHandle surface_handle) {
-  if (buffer_map_.find(id) != buffer_map_.end()) {
-    LOG(ERROR) << "Tried to create new GpuMemoryBuffer with an existing id";
-    return gfx::GpuMemoryBufferHandle();
-  }
-
   auto buffer = GpuMemoryBufferImplAndroidHardwareBuffer::Create(
       id, size, format, usage, GpuMemoryBufferImpl::DestructionCallback());
+  if (!buffer) {
+    LOG(ERROR) << "Error creating new GpuMemoryBuffer";
+    return gfx::GpuMemoryBufferHandle();
+  }
   auto handle = buffer->CloneHandle();
-  buffer_map_[id] = std::move(buffer);
+
+  {
+    base::AutoLock lock(lock_);
+    BufferMapKey key(id, client_id);
+    DLOG_IF(ERROR, base::ContainsKey(buffer_map_, key))
+        << "Created GpuMemoryBuffer with duplicate id";
+    buffer_map_[key] = std::move(buffer);
+  }
   return handle;
 }
 
 void GpuMemoryBufferFactoryAndroidHardwareBuffer::DestroyGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     int client_id) {
-  auto it = buffer_map_.find(id);
-  if (it == buffer_map_.end()) {
-    LOG(ERROR) << "Tried to delete non existent GpuMemoryBuffer";
-    return;
-  }
-
-  buffer_map_.erase(it);
+  base::AutoLock lock(lock_);
+  BufferMapKey key(id, client_id);
+  buffer_map_.erase(key);
 }
 
 ImageFactory* GpuMemoryBufferFactoryAndroidHardwareBuffer::AsImageFactory() {
@@ -60,12 +63,10 @@ GpuMemoryBufferFactoryAndroidHardwareBuffer::CreateImageForGpuMemoryBuffer(
     gfx::GpuMemoryBufferHandle handle,
     const gfx::Size& size,
     gfx::BufferFormat format,
-    unsigned internalformat,
     int client_id,
     SurfaceHandle surface_handle) {
-  // We should only end up in this code path if the memory buffer has a valid
-  // AHardwareBuffer.
-  DCHECK_EQ(handle.type, gfx::ANDROID_HARDWARE_BUFFER);
+  if (handle.type != gfx::ANDROID_HARDWARE_BUFFER)
+    return nullptr;
 
   base::android::ScopedHardwareBufferHandle& buffer =
       handle.android_hardware_buffer;

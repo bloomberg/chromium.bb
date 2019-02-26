@@ -169,7 +169,7 @@ public interface ContextMenuItemDelegate {
 
     /**
      * Called when the {@code url} should be opened in a new Chrome tab from CCT.
-     * @param url The URL to open.
+     * @param linkUrl The URL to open.
      * @param isIncognito true if the {@code url} should be opened in a new incognito tab.
      */
     void onOpenInNewChromeTabFromCCT(String linkUrl, boolean isIncognito);
@@ -184,4 +184,11 @@ public interface ContextMenuItemDelegate {
      * @param url The URL to open.
      */
     void onOpenInDefaultBrowser(String url);
+
+    /**
+     * Called when the {@code url} should be opened in an ephemeral tab.
+     * @param url The URL to open.
+     * @param title The title text to show on top control.
+     */
+    void onOpenInEphemeralTab(String url, String title);
 }

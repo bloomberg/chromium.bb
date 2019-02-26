@@ -68,6 +68,16 @@ class CrasAudioClientImpl : public CrasAudioClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  void GetSystemAecGroupId(DBusMethodCallback<int32_t> callback) override {
+    dbus::MethodCall method_call(cras::kCrasControlInterface,
+                                 cras::kGetSystemAecGroupId);
+
+    cras_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&CrasAudioClientImpl::OnGetSystemAecGroupId,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
   void GetNodes(DBusMethodCallback<AudioNodeList> callback) override {
     dbus::MethodCall method_call(cras::kCrasControlInterface,
                                  cras::kGetNodes);
@@ -460,6 +470,25 @@ class CrasAudioClientImpl : public CrasAudioClient {
     }
 
     std::move(callback).Run(system_aec_supported);
+  }
+
+  void OnGetSystemAecGroupId(DBusMethodCallback<int32_t> callback,
+                             dbus::Response* response) {
+    if (!response) {
+      LOG(ERROR) << "Error calling " << cras::kGetSystemAecGroupId;
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+    int32_t system_aec_group_id = 0;
+    dbus::MessageReader reader(response);
+    if (!reader.PopInt32(&system_aec_group_id)) {
+      LOG(ERROR) << "Error reading response from cras: "
+                 << response->ToString();
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+
+    std::move(callback).Run(system_aec_group_id);
   }
 
   void OnGetNodes(DBusMethodCallback<AudioNodeList> callback,

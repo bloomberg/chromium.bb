@@ -57,16 +57,16 @@ class MODULES_EXPORT PaymentsValidators final {
                                     String* optional_error_message);
 
   // Returns false if |errors| has too long string (greater than 2048).
-  static bool IsValidAddressErrorsFormat(const AddressErrors& errors,
+  static bool IsValidAddressErrorsFormat(const AddressErrors* errors,
                                          String* optional_error_message);
 
   // Returns false if |errors| has too long string (greater than 2048).
-  static bool IsValidPayerErrorsFormat(const PayerErrors& errors,
+  static bool IsValidPayerErrorsFormat(const PayerErrors* errors,
                                        String* optional_error_message);
 
   // Returns false if |errors| has too long string (greater than 2048).
   static bool IsValidPaymentValidationErrorsFormat(
-      const PaymentValidationErrors& errors,
+      const PaymentValidationErrors* errors,
       String* optional_error_message);
 };
 

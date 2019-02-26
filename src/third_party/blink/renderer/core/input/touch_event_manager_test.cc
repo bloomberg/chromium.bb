@@ -41,7 +41,7 @@ class CheckEventListenerCallback final : public EventListener {
     return this == &other;
   }
 
-  void handleEvent(ExecutionContext*, Event* event) override {
+  void Invoke(ExecutionContext*, Event* event) override {
     event_received_ = true;
   }
 
@@ -65,23 +65,24 @@ TEST_F(TouchEventManagerTest, LostTouchDueToInnerIframeRemove) {
     </body>
   )HTML");
   CheckEventListenerCallback* callback = CheckEventListenerCallback::Create();
-  GetDocument().body()->addEventListener(EventTypeNames::touchstart, callback);
+  GetDocument().body()->addEventListener(event_type_names::kTouchstart,
+                                         callback);
 
   GetEventHandler().HandlePointerEvent(
       CreateTouchPointerEvent(WebInputEvent::kPointerDown),
-      Vector<WebPointerEvent>());
+      Vector<WebPointerEvent>(), Vector<WebPointerEvent>());
   GetEventHandler().DispatchBufferedTouchEvents();
 
   GetDocument().getElementById("target")->remove();
 
   GetEventHandler().HandlePointerEvent(
       CreateTouchPointerEvent(WebInputEvent::kPointerUp),
-      Vector<WebPointerEvent>());
+      Vector<WebPointerEvent>(), Vector<WebPointerEvent>());
   GetEventHandler().DispatchBufferedTouchEvents();
 
   GetEventHandler().HandlePointerEvent(
       CreateTouchPointerEvent(WebInputEvent::kPointerDown),
-      Vector<WebPointerEvent>());
+      Vector<WebPointerEvent>(), Vector<WebPointerEvent>());
   GetEventHandler().DispatchBufferedTouchEvents();
 
   ASSERT_TRUE(callback->HasReceivedEvent());

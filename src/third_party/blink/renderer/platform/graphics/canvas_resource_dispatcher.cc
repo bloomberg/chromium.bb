@@ -6,6 +6,7 @@
 
 #include <memory>
 #include "base/single_thread_task_runner.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/resources/resource_format.h"
@@ -19,8 +20,8 @@
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/offscreen_canvas_placeholder.h"
 #include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
-#include "third_party/blink/renderer/platform/web_task_runner.h"
 
 namespace blink {
 
@@ -58,6 +59,8 @@ CanvasResourceDispatcher::CanvasResourceDispatcher(
       placeholder_canvas_id_(canvas_id),
       num_unreclaimed_frames_posted_(0),
       client_(client),
+      enable_surface_synchronization_(
+          features::IsSurfaceSynchronizationEnabled()),
       weak_ptr_factory_(this) {
   // Frameless canvas pass an invalid |frame_sink_id_|; don't create mojo
   // channel for this special case.
@@ -72,7 +75,8 @@ CanvasResourceDispatcher::CanvasResourceDispatcher(
   DCHECK(provider);
   binding_.Bind(mojo::MakeRequest(&client_ptr_));
   provider->CreateCompositorFrameSink(frame_sink_id_, std::move(client_ptr_),
-                                      mojo::MakeRequest(&sink_));
+                                      mojo::MakeRequest(&sink_),
+                                      mojo::MakeRequest(&surface_embedder_));
 }
 
 CanvasResourceDispatcher::~CanvasResourceDispatcher() = default;
@@ -125,15 +129,14 @@ void CanvasResourceDispatcher::PostImageToPlaceholder(
     scoped_refptr<CanvasResource> canvas_resource,
     viz::ResourceId resource_id) {
   scoped_refptr<base::SingleThreadTaskRunner> dispatcher_task_runner =
-      Platform::Current()->CurrentThread()->GetTaskRunner();
+      Thread::Current()->GetTaskRunner();
 
   // After this point, |canvas_resource| can only be used on the main thread,
   // until it is returned.
   canvas_resource->Transfer();
 
   PostCrossThreadTask(
-      *Platform::Current()->MainThread()->Scheduler()->CompositorTaskRunner(),
-      FROM_HERE,
+      *Thread::MainThread()->Scheduler()->CompositorTaskRunner(), FROM_HERE,
       CrossThreadBind(UpdatePlaceholderImage, this->GetWeakPtr(),
                       WTF::Passed(std::move(dispatcher_task_runner)),
                       placeholder_canvas_id_, std::move(canvas_resource),
@@ -156,7 +159,8 @@ void CanvasResourceDispatcher::DispatchFrameSync(
   pending_compositor_frames_++;
   WTF::Vector<viz::ReturnedResource> resources;
   sink_->SubmitCompositorFrameSync(
-      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
+      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
+          .local_surface_id(),
       std::move(frame), nullptr, 0, &resources);
   DidReceiveCompositorFrameAck(resources);
 }
@@ -176,7 +180,8 @@ void CanvasResourceDispatcher::DispatchFrame(
 
   pending_compositor_frames_++;
   sink_->SubmitCompositorFrame(
-      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
+      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
+          .local_surface_id(),
       std::move(frame), nullptr, 0);
 }
 
@@ -226,33 +231,6 @@ bool CanvasResourceDispatcher::PrepareFrame(
   sqs->SetAll(gfx::Transform(), bounds, bounds, bounds, is_clipped, is_opaque,
               1.f, SkBlendMode::kSrcOver, 0);
 
-  OffscreenCanvasCommitType commit_type;
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      EnumerationHistogram, commit_type_histogram,
-      ("OffscreenCanvas.CommitType", kOffscreenCanvasCommitTypeCount));
-  if (canvas_resource->IsAccelerated()) {
-    // While |image| is texture backed, it could be generated with "software
-    // rendering" aka swiftshader. If the compositor is not also using
-    // swiftshader, then we could not give a swiftshader based texture
-    // to the compositor. However in that case, IsGpuCompositingEnabled() will
-    // also be false, so we will avoid doing so.
-    if (SharedGpuContext::IsGpuCompositingEnabled()) {
-      // Case 1: both canvas and compositor are gpu accelerated.
-      commit_type = kCommitGPUCanvasGPUCompositing;
-    } else {
-      // Case 2: canvas is accelerated but gpu compositing is disabled.
-      commit_type = kCommitGPUCanvasSoftwareCompositing;
-    }
-  } else {
-    if (SharedGpuContext::IsGpuCompositingEnabled()) {
-      // Case 3: canvas is not gpu-accelerated, but compositor is.
-      commit_type = kCommitSoftwareCanvasGPUCompositing;
-    } else {
-      // Case 4: both canvas and compositor are not gpu accelerated.
-      commit_type = kCommitSoftwareCanvasSoftwareCompositing;
-    }
-  }
-
   viz::TransferableResource resource;
   auto frame_resource = std::make_unique<FrameResource>();
 
@@ -264,8 +242,6 @@ bool CanvasResourceDispatcher::PrepareFrame(
 
   // TODO(crbug.com/869913): add unit testing for this.
   const gfx::Size canvas_resource_size(canvas_resource->Size());
-
-  commit_type_histogram.Count(commit_type);
 
   PostImageToPlaceholderIfNotBlocked(std::move(canvas_resource),
                                      next_resource_id_);
@@ -295,100 +271,25 @@ bool CanvasResourceDispatcher::PrepareFrame(
   quad->SetAll(sqs, bounds, bounds, needs_blending, resource.id,
                canvas_resource_size, kPremultipliedAlpha, uv_top_left,
                uv_bottom_right, SK_ColorTRANSPARENT, vertex_opacity, yflipped,
-               kNearestNeighbor, false);
+               kNearestNeighbor, /*secure_output_only=*/false,
+               ui::ProtectedVideoType::kClear);
 
   frame->render_pass_list.push_back(std::move(pass));
 
-  base::TimeDelta elapsed_time = WTF::CurrentTimeTicks() - commit_start_time;
-
-  switch (commit_type) {
-    case kCommitGPUCanvasGPUCompositing:
-      if (IsMainThread()) {
-        DEFINE_STATIC_LOCAL(
-            CustomCountHistogram, commit_gpu_canvas_gpu_compositing_main_timer,
-            ("Blink.Canvas.OffscreenCommit.GPUCanvasGPUCompositingMain", 0,
-             10000000, 50));
-        commit_gpu_canvas_gpu_compositing_main_timer.CountMicroseconds(
-            elapsed_time);
-      } else {
-        DEFINE_THREAD_SAFE_STATIC_LOCAL(
-            CustomCountHistogram,
-            commit_gpu_canvas_gpu_compositing_worker_timer,
-            ("Blink.Canvas.OffscreenCommit.GPUCanvasGPUCompositingWorker", 0,
-             10000000, 50));
-        commit_gpu_canvas_gpu_compositing_worker_timer.CountMicroseconds(
-            elapsed_time);
-      }
-      break;
-    case kCommitGPUCanvasSoftwareCompositing:
-      if (IsMainThread()) {
-        DEFINE_STATIC_LOCAL(
-            CustomCountHistogram,
-            commit_gpu_canvas_software_compositing_main_timer,
-            ("Blink.Canvas.OffscreenCommit.GPUCanvasSoftwareCompositingMain", 0,
-             10000000, 50));
-        commit_gpu_canvas_software_compositing_main_timer.CountMicroseconds(
-            elapsed_time);
-      } else {
-        DEFINE_THREAD_SAFE_STATIC_LOCAL(
-            CustomCountHistogram,
-            commit_gpu_canvas_software_compositing_worker_timer,
-            ("Blink.Canvas.OffscreenCommit."
-             "GPUCanvasSoftwareCompositingWorker",
-             0, 10000000, 50));
-        commit_gpu_canvas_software_compositing_worker_timer.CountMicroseconds(
-            elapsed_time);
-      }
-      break;
-    case kCommitSoftwareCanvasGPUCompositing:
-      if (IsMainThread()) {
-        DEFINE_STATIC_LOCAL(
-            CustomCountHistogram,
-            commit_software_canvas_gpu_compositing_main_timer,
-            ("Blink.Canvas.OffscreenCommit.SoftwareCanvasGPUCompositingMain", 0,
-             10000000, 50));
-        commit_software_canvas_gpu_compositing_main_timer.CountMicroseconds(
-            elapsed_time);
-      } else {
-        DEFINE_THREAD_SAFE_STATIC_LOCAL(
-            CustomCountHistogram,
-            commit_software_canvas_gpu_compositing_worker_timer,
-            ("Blink.Canvas.OffscreenCommit."
-             "SoftwareCanvasGPUCompositingWorker",
-             0, 10000000, 50));
-        commit_software_canvas_gpu_compositing_worker_timer.CountMicroseconds(
-            elapsed_time);
-      }
-      break;
-    case kCommitSoftwareCanvasSoftwareCompositing:
-      if (IsMainThread()) {
-        DEFINE_STATIC_LOCAL(
-            CustomCountHistogram,
-            commit_software_canvas_software_compositing_main_timer,
-            ("Blink.Canvas.OffscreenCommit."
-             "SoftwareCanvasSoftwareCompositingMain",
-             0, 10000000, 50));
-        commit_software_canvas_software_compositing_main_timer
-            .CountMicroseconds(elapsed_time);
-      } else {
-        DEFINE_THREAD_SAFE_STATIC_LOCAL(
-            CustomCountHistogram,
-            commit_software_canvas_software_compositing_worker_timer,
-            ("Blink.Canvas.OffscreenCommit."
-             "SoftwareCanvasSoftwareCompositingWorker",
-             0, 10000000, 50));
-        commit_software_canvas_software_compositing_worker_timer
-            .CountMicroseconds(elapsed_time);
-      }
-      break;
-    case kOffscreenCanvasCommitTypeCount:
-      NOTREACHED();
-  }
-
-  if (change_size_for_next_commit_) {
+  if (change_size_for_next_commit_ ||
+      !parent_local_surface_id_allocator_.HasValidLocalSurfaceIdAllocation()) {
     parent_local_surface_id_allocator_.GenerateId();
+    if (enable_surface_synchronization_) {
+      surface_embedder_->SetLocalSurfaceId(
+          parent_local_surface_id_allocator_
+              .GetCurrentLocalSurfaceIdAllocation()
+              .local_surface_id());
+    }
     change_size_for_next_commit_ = false;
   }
+  frame->metadata.local_surface_id_allocation_time =
+      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
+          .allocation_time();
 
   return true;
 }
@@ -398,12 +299,6 @@ void CanvasResourceDispatcher::DidReceiveCompositorFrameAck(
   ReclaimResources(resources);
   pending_compositor_frames_--;
   DCHECK_GE(pending_compositor_frames_, 0);
-}
-
-void CanvasResourceDispatcher::DidPresentCompositorFrame(
-    uint32_t presentation_token,
-    ::gfx::mojom::blink::PresentationFeedbackPtr feedback) {
-  NOTIMPLEMENTED();
 }
 
 void CanvasResourceDispatcher::SetNeedsBeginFrame(bool needs_begin_frame) {
@@ -428,7 +323,8 @@ void CanvasResourceDispatcher::SetNeedsBeginFrameInternal() {
 }
 
 void CanvasResourceDispatcher::OnBeginFrame(
-    const viz::BeginFrameArgs& begin_frame_args) {
+    const viz::BeginFrameArgs& begin_frame_args,
+    WTF::HashMap<uint32_t, ::gfx::mojom::blink::PresentationFeedbackPtr>) {
   current_begin_frame_ack_ = viz::BeginFrameAck(begin_frame_args, false);
   if (pending_compositor_frames_ >= kMaxPendingCompositorFrames ||
       (begin_frame_args.type == viz::BeginFrameArgs::MISSED &&

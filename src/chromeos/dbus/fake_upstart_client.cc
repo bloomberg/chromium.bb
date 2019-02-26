@@ -17,6 +17,19 @@ FakeUpstartClient::~FakeUpstartClient() = default;
 
 void FakeUpstartClient::Init(dbus::Bus* bus) {}
 
+void FakeUpstartClient::StartJob(const std::string& job,
+                                 const std::vector<std::string>& upstart_env,
+                                 VoidDBusMethodCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true));
+}
+
+void FakeUpstartClient::StopJob(const std::string& job,
+                                VoidDBusMethodCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true));
+}
+
 void FakeUpstartClient::StartAuthPolicyService() {
   static_cast<FakeAuthPolicyClient*>(
       DBusThreadManager::Get()->GetAuthPolicyClient())
@@ -71,10 +84,6 @@ void FakeUpstartClient::StopMediaAnalytics(VoidDBusMethodCallback callback) {
   media_analytics_client->set_process_running(false);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), true));
-}
-
-void FakeUpstartClient::StartBluetoothLogging() {
-  NOTIMPLEMENTED();
 }
 
 }  // namespace chromeos

@@ -56,7 +56,6 @@ class PrintCompositeClient
   void DoCompositePageToPdf(
       int cookie,
       content::RenderFrameHost* render_frame_host,
-      int page_num,
       const PrintHostMsg_DidPrintContent_Params& content,
       mojom::PdfCompositor::CompositePageToPdfCallback callback);
 

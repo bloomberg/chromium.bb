@@ -11,8 +11,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
+#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/webdata/token_web_data.h"
@@ -55,6 +55,8 @@ class MutableProfileOAuth2TokenServiceDelegate
   void UpdateAuthError(const std::string& account_id,
                        const GoogleServiceAuthError& error) override;
 
+  std::string GetTokenForMultilogin(
+      const std::string& account_id) const override;
   bool RefreshTokenIsAvailable(const std::string& account_id) const override;
   GoogleServiceAuthError GetAuthError(
       const std::string& account_id) const override;
@@ -136,6 +138,8 @@ class MutableProfileOAuth2TokenServiceDelegate
   FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceDelegateTest,
                            ShutdownDuringRevoke);
   FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceDelegateTest,
+                           RevokeRetries);
+  FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceDelegateTest,
                            UpdateInvalidToken);
   FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceDelegateTest,
                            LoadInvalidToken);
@@ -151,6 +155,8 @@ class MutableProfileOAuth2TokenServiceDelegate
                            ShutdownService);
   FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceDelegateTest,
                            ClearTokensOnStartup);
+  FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceDelegateTest,
+                           InvalidateTokensForMultilogin);
 
   // WebDataServiceConsumer implementation:
   void OnWebDataServiceRequestDone(
@@ -164,6 +170,9 @@ class MutableProfileOAuth2TokenServiceDelegate
   // Updates the in-memory representation of the credentials.
   void UpdateCredentialsInMemory(const std::string& account_id,
                                  const std::string& refresh_token);
+
+  // Sets refresh token in error.
+  void InvalidateTokenForMultilogin(const std::string& failed_account) override;
 
   // Persists credentials for |account_id|. Enables overriding for
   // testing purposes, or other cases, when accessing the DB is not desired.

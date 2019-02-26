@@ -21,7 +21,7 @@ class Env;
 namespace ui {
 class EventTarget;
 class LocatedEvent;
-}
+}  // namespace ui
 
 namespace wm {
 
@@ -61,8 +61,11 @@ class WM_CORE_EXPORT WindowModalityController : public ui::EventHandler,
  private:
   // Processes a mouse/touch event, and returns true if the event should be
   // consumed.
-  bool ProcessLocatedEvent(aura::Window* target,
-                           ui::LocatedEvent* event);
+  bool ProcessLocatedEvent(aura::Window* target, ui::LocatedEvent* event);
+
+  // Cancel touches on the transient window tree rooted to the top level
+  // transient window of the |window|.
+  void CancelTouchesOnTransientWindowTree(aura::Window* window);
 
   aura::Env* env_;
 

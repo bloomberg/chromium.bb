@@ -6,6 +6,7 @@
   <template>
     <style>
       :host {
+        color: var(--google-grey-900);
         display: block;
         white-space: nowrap;
       }
@@ -35,7 +36,7 @@
       }
 
       .option.keyboard-focused:focus {
-        outline: -webkit-focus-ring-color auto 5px;
+        outline: rgba(26, 115, 232, 0.4) solid 3px;
       }
 
       .option .option-name {
@@ -72,8 +73,8 @@
         height: 12px;
         margin: 0;
         position: absolute;
-        right: 10px;
-        top: 10px;
+        right: 6px;
+        top: 6px;
         width: 12px;
       }
 
@@ -86,6 +87,7 @@
       .option[active] {
         border: 1px solid var(--google-blue-600);
         color: var(--google-blue-600);
+        font-weight: 500;
       }
 
       .option[active] iron-icon[icon='cr:check'] {
@@ -96,6 +98,13 @@
         display: flex;
         justify-content: space-between;
         margin-top: 64px;
+      }
+
+      iron-icon[icon='cr:chevron-right'] {
+        height: 20px;
+        margin-left: 6px;
+        margin-right: -10px;
+        width: 20px;
       }
     </style>
   </template>

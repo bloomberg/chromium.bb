@@ -129,7 +129,7 @@ inline Range::Range(Document& owner_document)
 }
 
 Range* Range::Create(Document& owner_document) {
-  return new Range(owner_document);
+  return MakeGarbageCollected<Range>(owner_document);
 }
 
 inline Range::Range(Document& owner_document,
@@ -153,17 +153,17 @@ Range* Range::Create(Document& owner_document,
                      unsigned start_offset,
                      Node* end_container,
                      unsigned end_offset) {
-  return new Range(owner_document, start_container, start_offset, end_container,
-                   end_offset);
+  return MakeGarbageCollected<Range>(owner_document, start_container,
+                                     start_offset, end_container, end_offset);
 }
 
 Range* Range::Create(Document& owner_document,
                      const Position& start,
                      const Position& end) {
-  return new Range(owner_document, start.ComputeContainerNode(),
-                   start.ComputeOffsetInContainerNode(),
-                   end.ComputeContainerNode(),
-                   end.ComputeOffsetInContainerNode());
+  return MakeGarbageCollected<Range>(
+      owner_document, start.ComputeContainerNode(),
+      start.ComputeOffsetInContainerNode(), end.ComputeContainerNode(),
+      end.ComputeOffsetInContainerNode());
 }
 
 void Range::Dispose() {
@@ -1435,10 +1435,31 @@ static inline void BoundaryNodeChildrenWillBeRemoved(
   }
 }
 
+static void BoundaryShadowNodeChildrenWillBeRemoved(
+    RangeBoundaryPoint& boundary,
+    ContainerNode& container) {
+  for (Node* node_to_be_removed = container.firstChild(); node_to_be_removed;
+       node_to_be_removed = node_to_be_removed->nextSibling()) {
+    for (Node* n = &boundary.Container(); n;
+         n = n->ParentOrShadowHostElement()) {
+      if (n == node_to_be_removed) {
+        boundary.SetToStartOfNode(container);
+        return;
+      }
+    }
+  }
+}
+
 void Range::NodeChildrenWillBeRemoved(ContainerNode& container) {
   DCHECK_EQ(container.GetDocument(), owner_document_);
   BoundaryNodeChildrenWillBeRemoved(start_, container);
   BoundaryNodeChildrenWillBeRemoved(end_, container);
+}
+
+void Range::FixupRemovedChildrenAcrossShadowBoundary(ContainerNode& container) {
+  DCHECK_EQ(container.GetDocument(), owner_document_);
+  BoundaryShadowNodeChildrenWillBeRemoved(start_, container);
+  BoundaryShadowNodeChildrenWillBeRemoved(end_, container);
 }
 
 static inline void BoundaryNodeWillBeRemoved(RangeBoundaryPoint& boundary,
@@ -1456,6 +1477,19 @@ static inline void BoundaryNodeWillBeRemoved(RangeBoundaryPoint& boundary,
   }
 }
 
+static inline void BoundaryShadowNodeWillBeRemoved(RangeBoundaryPoint& boundary,
+                                                   Node& node_to_be_removed) {
+  DCHECK_NE(boundary.ChildBefore(), node_to_be_removed);
+
+  for (Node* node = &boundary.Container(); node;
+       node = node->ParentOrShadowHostElement()) {
+    if (node == node_to_be_removed) {
+      boundary.SetToBeforeChild(node_to_be_removed);
+      return;
+    }
+  }
+}
+
 void Range::NodeWillBeRemoved(Node& node) {
   DCHECK_EQ(node.GetDocument(), owner_document_);
   DCHECK_NE(node, owner_document_.Get());
@@ -1466,6 +1500,11 @@ void Range::NodeWillBeRemoved(Node& node) {
     return;
   BoundaryNodeWillBeRemoved(start_, node);
   BoundaryNodeWillBeRemoved(end_, node);
+}
+
+void Range::FixupRemovedNodeAcrossShadowBoundary(Node& node) {
+  BoundaryShadowNodeWillBeRemoved(start_, node);
+  BoundaryShadowNodeWillBeRemoved(end_, node);
 }
 
 static inline void BoundaryTextInserted(RangeBoundaryPoint& boundary,
@@ -1579,11 +1618,12 @@ void Range::expand(const String& unit, ExceptionState& exception_state) {
   VisiblePosition start = CreateVisiblePosition(StartPosition());
   VisiblePosition end = CreateVisiblePosition(EndPosition());
   if (unit == "word") {
-    start = StartOfWord(start);
-    end = EndOfWord(end);
+    start = CreateVisiblePosition(StartOfWordPosition(start.DeepEquivalent()));
+    end = CreateVisiblePosition(EndOfWordPosition(end.DeepEquivalent()));
   } else if (unit == "sentence") {
-    start = StartOfSentence(start);
-    end = EndOfSentence(end);
+    start =
+        CreateVisiblePosition(StartOfSentencePosition(start.DeepEquivalent()));
+    end = CreateVisiblePosition(EndOfSentence(end.DeepEquivalent()));
   } else if (unit == "block") {
     start = StartOfParagraph(start);
     end = EndOfParagraph(end);

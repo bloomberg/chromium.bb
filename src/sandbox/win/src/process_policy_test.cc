@@ -11,6 +11,7 @@
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
 #include "base/win/windows_version.h"
+#include "build/build_config.h"
 #include "sandbox/win/src/process_thread_interception.h"
 #include "sandbox/win/src/sandbox.h"
 #include "sandbox/win/src/sandbox_factory.h"
@@ -419,7 +420,13 @@ TEST(ProcessPolicyTest, CreateProcessAW) {
 }
 
 // Tests that the broker correctly handles a process crashing within the job.
-TEST(ProcessPolicyTest, CreateProcessCrashy) {
+// Fails on Windows ARM64: https://crbug.com/905526
+#if defined(ARCH_CPU_ARM64)
+#define MAYBE_CreateProcessCrashy DISABLED_CreateProcessCrashy
+#else
+#define MAYBE_CreateProcessCrashy CreateProcessCrashy
+#endif
+TEST(ProcessPolicyTest, MAYBE_CreateProcessCrashy) {
   TestRunner runner;
   EXPECT_EQ(static_cast<int>(STATUS_BREAKPOINT),
             runner.RunTest(L"Process_Crash"));

@@ -11,6 +11,7 @@ var NavigationModelItemType = {
   RECENT: 'recent',
   CROSTINI: 'crostini',
   ENTRY_LIST: 'entry-list',
+  DRIVE: 'drive',
 };
 
 /**
@@ -146,15 +147,11 @@ NavigationModelFakeItem.prototype = /** @struct */ {
  * @param {(!cr.ui.ArrayDataModel|!FolderShortcutsDataModel)} shortcutListModel
  *     The list of folder shortcut.
  * @param {NavigationModelFakeItem} recentModelItem Recent folder.
- * @param {boolean=} opt_disableMyFilesNavigation true if should use the new
- *     navigation style, value should come from flag
- *     disable-my-files-navigation.
  * @constructor
  * @extends {cr.EventTarget}
  */
 function NavigationListModel(
-    volumeManager, shortcutListModel, recentModelItem,
-    opt_disableMyFilesNavigation) {
+    volumeManager, shortcutListModel, recentModelItem) {
   cr.EventTarget.call(this);
 
   /**
@@ -189,6 +186,16 @@ function NavigationListModel(
    * @private {NavigationModelFakeItem}
    */
   this.myFilesModel_ = null;
+
+  /**
+   * True when MyFiles should be a volume and Downloads just a plain folder
+   * inside it. When false MyFiles is an EntryList, which means UI only type,
+   * which contains Downloads as a child volume.
+   * @private {boolean}
+   */
+  this.myFilesVolumeEnabled_ =
+      loadTimeData.valueExists('MY_FILES_VOLUME_ENABLED') &&
+      loadTimeData.getBoolean('MY_FILES_VOLUME_ENABLED');
 
   /**
    * All root navigation items in display order.
@@ -233,9 +240,6 @@ function NavigationListModel(
     var volumeInfo = this.volumeManager_.getVolumeInfo(shortcutEntry);
     this.shortcutList_.push(entryToModelItem(shortcutEntry));
   }
-
-  // True if the flag disable-my-files-navigation is enabled.
-  this.disableMyFilesNavigation_ = !!opt_disableMyFilesNavigation;
 
   // Reorder volumes, shortcuts, and optional items for initial display.
   this.reorderNavigationItems_();
@@ -381,10 +385,15 @@ NavigationListModel.prototype = {
     this.linuxFilesItem_ = item;
     this.reorderNavigationItems_();
   },
-  /** @type {boolean} */
-  get disableMyFilesNavigation() {
-    return this.disableMyFilesNavigation_;
-  }
+
+  /**
+   * Set the fake Drive root and reorder items.
+   * @param {NavigationModelFakeItem} item Fake Drive root.
+   */
+  set fakeDriveItem(item) {
+    this.fakeDriveItem_ = item;
+    this.reorderNavigationItems_();
+  },
 };
 
 /**
@@ -393,47 +402,7 @@ NavigationListModel.prototype = {
  * it's disabled it has a flat structure with Linux files after Recent menu.
  */
 NavigationListModel.prototype.reorderNavigationItems_ = function() {
-  if (!this.disableMyFilesNavigation_) {
-    return this.orderAndNestItems_();
-  } else {
-    return this.flatNavigationItems_();
-  }
-};
-
-/**
- * Reorder navigation items in the following order:
- *  1. Volumes.
- *  2. If Downloads exists, then immediately after Downloads should be:
- *  2a. Recent if it exists.
- *  2b. Linux files if it exists and is not mounted.
- *      When mounted, it will be located in Volumes at this position.
- *  3. Shortcuts.
- *  4. Add new services if it exists.
- * @private
- */
-NavigationListModel.prototype.flatNavigationItems_ = function() {
-  // Check if Linux files already mounted.
-  let linuxFilesMounted = false;
-  for (let i = 0; i < this.volumeList_.length; i++) {
-    if (this.volumeList_[i].volumeInfo.volumeType ===
-        VolumeManagerCommon.VolumeType.CROSTINI) {
-      linuxFilesMounted = true;
-      break;
-    }
-  }
-
-  // Items as per required order.
-  this.navigationItems_ = this.volumeList_.slice();
-  var downloadsVolumeIndex = this.findDownloadsVolumeIndex_();
-  if (this.linuxFilesItem_ && !linuxFilesMounted && downloadsVolumeIndex >= 0)
-    this.navigationItems_.splice(
-        downloadsVolumeIndex + 1, 0, this.linuxFilesItem_);
-  if (this.recentModelItem_ && downloadsVolumeIndex >= 0)
-    this.navigationItems_.splice(
-        downloadsVolumeIndex + 1, 0, this.recentModelItem_);
-  Array.prototype.push.apply(this.navigationItems_, this.shortcutList_);
-  if (this.addNewServicesItem_)
-    this.navigationItems_.push(this.addNewServicesItem_);
+  return this.orderAndNestItems_();
 };
 
 /**
@@ -538,12 +507,38 @@ NavigationListModel.prototype.orderAndNestItems_ = function() {
 
   let myFilesEntry, myFilesModel;
   if (!this.myFilesModel_) {
-    myFilesEntry = new EntryList(
-        str('MY_FILES_ROOT_LABEL'), VolumeManagerCommon.RootType.MY_FILES);
-    myFilesModel = new NavigationModelFakeItem(
-        myFilesEntry.label, NavigationModelItemType.ENTRY_LIST, myFilesEntry);
-    myFilesModel.section = NavigationSection.MY_FILES;
-    this.myFilesModel_ = myFilesModel;
+    if (this.myFilesVolumeEnabled_) {
+      // When MyFilesVolume is enabled we use the Downloads volume to be the
+      // MyFiles volume.
+      const myFilesVolumeModel =
+          getSingleVolume(VolumeManagerCommon.VolumeType.DOWNLOADS);
+      if (myFilesVolumeModel) {
+        myFilesEntry = new VolumeEntry(myFilesVolumeModel.volumeInfo);
+        myFilesModel = new NavigationModelFakeItem(
+            str('MY_FILES_ROOT_LABEL'), NavigationModelItemType.ENTRY_LIST,
+            myFilesEntry);
+        this.myFilesModel_ = myFilesModel;
+      } else {
+        // When MyFilesVolume isn't available we create a empty EntryList to be
+        // MyFiles to be able to display Linux or Play volumes. However we don't
+        // save it back to this.MyFilesModel_ so it's always re-created.
+        myFilesEntry = new EntryList(
+            str('MY_FILES_ROOT_LABEL'), VolumeManagerCommon.RootType.MY_FILES);
+        myFilesModel = new NavigationModelFakeItem(
+            myFilesEntry.label, NavigationModelItemType.ENTRY_LIST,
+            myFilesEntry);
+      }
+    } else {
+      // Here is the initial version for MyFiles, which is only an entry in JS
+      // to be displayed in the DirectoryTree, cotaining Downloads, Linux and
+      // Play files volumes.
+      myFilesEntry = new EntryList(
+          str('MY_FILES_ROOT_LABEL'), VolumeManagerCommon.RootType.MY_FILES);
+      myFilesModel = new NavigationModelFakeItem(
+          myFilesEntry.label, NavigationModelItemType.ENTRY_LIST, myFilesEntry);
+      myFilesModel.section = NavigationSection.MY_FILES;
+      this.myFilesModel_ = myFilesModel;
+    }
   } else {
     myFilesEntry = this.myFilesModel_.entry;
     myFilesModel = this.myFilesModel_;
@@ -551,15 +546,18 @@ NavigationListModel.prototype.orderAndNestItems_ = function() {
   this.navigationItems_.push(myFilesModel);
 
   // Add Downloads to My Files.
-  const downloadsVolume =
-      getSingleVolume(VolumeManagerCommon.VolumeType.DOWNLOADS);
-  if (downloadsVolume) {
-    // Only add volume if MyFiles doesn't have it yet.
-    if (myFilesEntry.findIndexByVolumeInfo(downloadsVolume.volumeInfo) === -1) {
-      myFilesEntry.addEntry(new VolumeEntry(downloadsVolume.volumeInfo));
+  if (!this.myFilesVolumeEnabled_) {
+    const downloadsVolume =
+        getSingleVolume(VolumeManagerCommon.VolumeType.DOWNLOADS);
+    if (downloadsVolume) {
+      // Only add volume if MyFiles doesn't have it yet.
+      if (myFilesEntry.findIndexByVolumeInfo(downloadsVolume.volumeInfo) ===
+          -1) {
+        myFilesEntry.addEntry(new VolumeEntry(downloadsVolume.volumeInfo));
+      }
+    } else {
+      myFilesEntry.removeByVolumeType(VolumeManagerCommon.VolumeType.DOWNLOADS);
     }
-  } else {
-    myFilesEntry.removeByVolumeType(VolumeManagerCommon.VolumeType.DOWNLOADS);
   }
 
   // Add Android to My Files.
@@ -597,9 +595,15 @@ NavigationListModel.prototype.orderAndNestItems_ = function() {
   }
 
   // Add Drive.
+  let hasDrive = false;
   for (const driveItem of getVolumes(VolumeManagerCommon.VolumeType.DRIVE)) {
     this.navigationItems_.push(driveItem);
     driveItem.section = NavigationSection.CLOUD;
+    hasDrive = true;
+  }
+  if (!hasDrive && this.fakeDriveItem_) {
+    this.navigationItems_.push(this.fakeDriveItem_);
+    this.fakeDriveItem_.section = NavigationSection.CLOUD;
   }
 
   // Add FSP.

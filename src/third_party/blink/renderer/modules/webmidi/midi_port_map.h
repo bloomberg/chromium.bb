@@ -36,7 +36,8 @@ class MIDIPortMap : public ScriptWrappable, public Maplike<String, T*> {
   typename PairIterable<String, T*>::IterationSource* StartIteration(
       ScriptState*,
       ExceptionState&) override {
-    return new MapIterationSource(this, entries_.begin(), entries_.end());
+    return MakeGarbageCollected<MapIterationSource>(this, entries_.begin(),
+                                                    entries_.end());
   }
 
   bool GetMapEntry(ScriptState*,

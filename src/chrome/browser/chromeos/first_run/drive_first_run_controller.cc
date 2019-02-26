@@ -452,7 +452,7 @@ void DriveFirstRunController::ShowNotification() {
       l10n_util::GetStringUTF16(IDS_DRIVE_OFFLINE_NOTIFICATION_MESSAGE),
       resource_bundle.GetImageNamed(IDR_NOTIFICATION_DRIVE),
       base::UTF8ToUTF16(extension->name()), GURL(),
-      message_center::NotifierId(message_center::NotifierId::APPLICATION,
+      message_center::NotifierId(message_center::NotifierType::APPLICATION,
                                  kDriveHostedAppId),
       data, std::move(delegate));
   notification.set_priority(message_center::LOW_PRIORITY);

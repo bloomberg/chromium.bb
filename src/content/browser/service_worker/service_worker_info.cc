@@ -6,7 +6,6 @@
 
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/child_process_host.h"
 #include "ipc/ipc_message.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
@@ -58,10 +57,10 @@ ServiceWorkerRegistrationInfo::ServiceWorkerRegistrationInfo()
       navigation_preload_header_length(0) {}
 
 ServiceWorkerRegistrationInfo::ServiceWorkerRegistrationInfo(
-    const GURL& pattern,
+    const GURL& scope,
     int64_t registration_id,
     DeleteFlag delete_flag)
-    : pattern(pattern),
+    : scope(scope),
       registration_id(registration_id),
       delete_flag(delete_flag),
       stored_version_size_bytes(0),
@@ -69,7 +68,7 @@ ServiceWorkerRegistrationInfo::ServiceWorkerRegistrationInfo(
       navigation_preload_header_length(0) {}
 
 ServiceWorkerRegistrationInfo::ServiceWorkerRegistrationInfo(
-    const GURL& pattern,
+    const GURL& scope,
     blink::mojom::ServiceWorkerUpdateViaCache update_via_cache,
     int64_t registration_id,
     DeleteFlag delete_flag,
@@ -79,7 +78,7 @@ ServiceWorkerRegistrationInfo::ServiceWorkerRegistrationInfo(
     int64_t stored_version_size_bytes,
     bool navigation_preload_enabled,
     size_t navigation_preload_header_length)
-    : pattern(pattern),
+    : scope(scope),
       update_via_cache(update_via_cache),
       registration_id(registration_id),
       delete_flag(delete_flag),

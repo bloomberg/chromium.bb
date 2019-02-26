@@ -54,12 +54,14 @@ namespace cc {
 struct ApplyViewportChangesArgs;
 }
 
-namespace blink {
+namespace gfx {
+class Point;
+}
 
+namespace blink {
 class WebCoalescedInputEvent;
 class WebLayerTreeView;
 class WebPagePopup;
-struct WebPoint;
 
 class WebWidget {
  public:
@@ -102,15 +104,23 @@ class WebWidget {
 
   // Called to run through the entire set of document lifecycle phases needed
   // to render a frame of the web widget. This MUST be called before Paint,
-  // and it may result in calls to WebWidgetClient::didInvalidateRect.
-  virtual void UpdateAllLifecyclePhases() { UpdateLifecycle(); }
-
-  // By default, all phases are updated by |UpdateLifecycle| (e.g., style,
-  // layout, prepaint, paint, etc. See: document_lifecycle.h). |LifecycleUpdate|
-  // can be used to only update to a specific lifecycle phase.
+  // and it may result in calls to WebWidgetClient::DidInvalidateRect.
+  // |LifecycleUpdateReason| must be used to indicate the source of the
+  // update for the purposes of metrics gathering.
   enum class LifecycleUpdate { kLayout, kPrePaint, kAll };
-  virtual void UpdateLifecycle(
-      LifecycleUpdate requested_update = LifecycleUpdate::kAll) {}
+  // This must be kept coordinated with DocumentLifecycle::LifecycleUpdateReason
+  enum class LifecycleUpdateReason { kBeginMainFrame, kTest, kOther };
+  virtual void UpdateAllLifecyclePhases(LifecycleUpdateReason reason) {
+    UpdateLifecycle(LifecycleUpdate::kAll, reason);
+  }
+
+  // UpdateLifecycle is used to update to a specific lifestyle phase, as given
+  // by |LifecycleUpdate|. To update all lifecycle phases, use
+  // UpdateAllLifecyclePhases.
+  // |LifecycleUpdateReason| must be used to indicate the source of the
+  // update for the purposes of metrics gathering.
+  virtual void UpdateLifecycle(LifecycleUpdate requested_update,
+                               LifecycleUpdateReason reason) {}
 
   // Synchronously performs the complete set of document lifecycle phases,
   // including updates to the compositor state, optionally including
@@ -146,15 +156,19 @@ class WebWidget {
   virtual void CompositeAndReadbackAsync(
       base::OnceCallback<void(const SkBitmap&)> callback) {}
 
+  // Runs |callback| after a new frame has been submitted to the display
+  // compositor, and the display-compositor has displayed it on screen. Forces a
+  // redraw so that a new frame is submitted.
+  virtual void RequestPresentationCallbackForTesting(
+      base::OnceClosure callback) {}
+
   // Called to inform the WebWidget of a change in theme.
   // Implementors that cache rendered copies of widgets need to re-render
   // on receiving this message
   virtual void ThemeChanged() {}
 
   // Do a hit test at given point and return the WebHitTestResult.
-  virtual WebHitTestResult HitTestResultAt(const WebPoint&) {
-    return WebHitTestResult();
-  }
+  virtual WebHitTestResult HitTestResultAt(const gfx::Point&) = 0;
 
   // Called to inform the WebWidget of an input event.
   virtual WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&) {
@@ -232,13 +246,6 @@ class WebWidget {
   // The currently open page popup, which are calendar and datalist pickers
   // but not the select popup.
   virtual WebPagePopup* GetPagePopup() const { return 0; }
-
-  // Updates browser controls constraints and current state. Allows embedder to
-  // control what are valid states for browser controls and if it should
-  // animate.
-  virtual void UpdateBrowserControlsState(cc::BrowserControlsState constraints,
-                                          cc::BrowserControlsState current,
-                                          bool animate) {}
 
   // Called by client to request showing the context menu.
   virtual void ShowContextMenu(WebMenuSourceType) {}

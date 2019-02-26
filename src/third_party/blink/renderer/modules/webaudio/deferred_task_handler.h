@@ -75,11 +75,11 @@ class MODULES_EXPORT DeferredTaskHandler final
   // called by the nodes who want to add/remove themselves into/from the
   // automatic pull lists.
   void AddAutomaticPullNode(scoped_refptr<AudioHandler>);
-  void RemoveAutomaticPullNode(scoped_refptr<AudioHandler>);
+  void RemoveAutomaticPullNode(AudioHandler*);
 
   // Called right before handlePostRenderTasks() to handle nodes which need to
   // be pulled even when they are not connected to anything.
-  void ProcessAutomaticPullNodes(size_t frames_to_process);
+  void ProcessAutomaticPullNodes(uint32_t frames_to_process);
 
   // Keep track of AudioNode's that have their channel count mode changed. We
   // process the changes in the post rendering phase.
@@ -109,6 +109,9 @@ class MODULES_EXPORT DeferredTaskHandler final
   void RequestToDeleteHandlersOnMainThread();
   void ClearHandlersToBeDeleted();
 
+  bool AcceptsTailProcessing() const { return accepts_tail_processing_; }
+  void StopAcceptingTailProcessing() { accepts_tail_processing_ = false; }
+
   // If |node| requires tail processing, add it to the list of tail
   // nodes so the tail is processed.
   void AddTailProcessingHandler(scoped_refptr<AudioHandler>);
@@ -117,8 +120,7 @@ class MODULES_EXPORT DeferredTaskHandler final
   // complete).  Set |disable_outputs| to true if the outputs of the handler
   // should also be disabled.  This should be true if the tail is done.  But if
   // we're reconnected or re-enabled, then |disable_outputs| should be false.
-  void RemoveTailProcessingHandler(scoped_refptr<AudioHandler> node,
-                                   bool disable_outputs);
+  void RemoveTailProcessingHandler(AudioHandler*, bool disable_outputs);
 
   // Remove all tail processing nodes.  Should be called only when the
   // context is done.
@@ -161,7 +163,7 @@ class MODULES_EXPORT DeferredTaskHandler final
     explicit GraphAutoLocker(DeferredTaskHandler& handler) : handler_(handler) {
       handler_.lock();
     }
-    explicit GraphAutoLocker(BaseAudioContext*);
+    explicit GraphAutoLocker(const BaseAudioContext*);
 
     ~GraphAutoLocker() { handler_.unlock(); }
 
@@ -229,10 +231,15 @@ class MODULES_EXPORT DeferredTaskHandler final
 
   // Nodes that are processing its tail.
   Vector<scoped_refptr<AudioHandler>> tail_processing_handlers_;
+
   // Tail processing nodes that are now finished and want the output to be
   // disabled.  This is updated in the audio thread (with the graph lock).  The
   // main thread will disable the outputs.
   Vector<scoped_refptr<AudioHandler>> finished_tail_processing_handlers_;
+
+  // Once the associated context closes, new tail processing handlers are not
+  // accepted.
+  bool accepts_tail_processing_ = true;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 

@@ -4,8 +4,8 @@
 
 /**
  * Progress center at the background page.
- * @constructor
- * @struct
+ *
+ * @interface
  */
 var ProgressCenter = function() {};
 

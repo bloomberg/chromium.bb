@@ -63,7 +63,7 @@ void CanvasRenderingContext2DAPITest::SetUp() {
   PageTestBase::SetUp();
   GetDocument().documentElement()->SetInnerHTMLFromString(
       "<body><canvas id='c'></canvas></body>");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   canvas_element_ = ToHTMLCanvasElement(GetDocument().getElementById("c"));
 }
 
@@ -333,8 +333,8 @@ TEST_F(CanvasRenderingContext2DAPITest, AccessibilityRectTestForAddHitRegion) {
       static_cast<CanvasRenderingContext2D*>(canvas->RenderingContext());
 
   NonThrowableExceptionState exception_state;
-  HitRegionOptions options;
-  options.setControl(button_element);
+  HitRegionOptions* options = HitRegionOptions::Create();
+  options->setControl(button_element);
 
   context->beginPath();
   context->rect(10, 10, 40, 40);

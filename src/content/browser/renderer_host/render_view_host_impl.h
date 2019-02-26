@@ -33,6 +33,7 @@
 #include "third_party/blink/public/web/web_console_message.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/mojo/window_open_disposition.mojom.h"
+#include "ui/gl/gpu_switching_observer.h"
 
 namespace content {
 
@@ -63,6 +64,7 @@ class TimeoutMonitor;
 class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
                                           public RenderWidgetHostOwnerDelegate,
                                           public RenderProcessHostObserver,
+                                          public ui::GpuSwitchingObserver,
                                           public IPC::Listener {
  public:
   // Convenience function, just like RenderViewHost::FromID.
@@ -91,10 +93,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   RenderProcessHost* GetProcess() const override;
   int GetRoutingID() const override;
   RenderFrameHost* GetMainFrame() override;
-  void DirectoryEnumerationFinished(
-      int request_id,
-      const std::vector<base::FilePath>& files) override;
-  void DisableScrollbarsForThreshold(const gfx::Size& size) override;
   void EnablePreferredSizeMode() override;
   void ExecutePluginActionAtLocation(
       const gfx::Point& location,
@@ -113,11 +111,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   // RenderProcessHostObserver implementation
   void RenderProcessExited(RenderProcessHost* host,
                            const ChildProcessTerminationInfo& info) override;
-
-  void set_delegate(RenderViewHostDelegate* d) {
-    CHECK(d);  // http://crbug.com/82827
-    delegate_ = d;
-  }
 
   // Set up the RenderView child process. Virtual because it is overridden by
   // TestRenderViewHost.
@@ -145,8 +138,7 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   // Tracks whether this RenderViewHost is in an active state (rather than
   // pending swap out or swapped out), according to its main frame
   // RenderFrameHost.
-  bool is_active() const { return is_active_; }
-  void SetIsActive(bool is_active);
+  bool is_active() const { return main_frame_routing_id_ != MSG_ROUTING_NONE; }
 
   // Tracks whether this RenderViewHost is swapped out, according to its main
   // frame RenderFrameHost.
@@ -201,9 +193,12 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   // re-entrantly.
   void PostRenderViewReady();
 
-  void set_main_frame_routing_id(int routing_id) {
-    main_frame_routing_id_ = routing_id;
-  }
+  // GpuSwitchingObserver implementation.
+  void OnGpuSwitched() override;
+
+  // Sets the routing id for the main frame. When set to MSG_ROUTING_NONE, the
+  // view is not considered active.
+  void SetMainFrameRoutingId(int routing_id);
 
   // Increases the refcounting on this RVH. This is done by the FrameTree on
   // creation of a RenderFrameHost or RenderFrameProxyHost.
@@ -217,6 +212,10 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   // and RenderFrameProxyHosts currently using it.
   int ref_count() { return frames_ref_count_; }
 
+  // Called during frame eviction to return all SurfaceIds in the frame tree.
+  // Marks all views in the frame tree as evicted.
+  std::vector<viz::SurfaceId> CollectSurfaceIdsForEviction();
+
   // NOTE: Do not add functions that just send an IPC message that are called in
   // one or two places. Have the caller send the IPC message directly (unless
   // the caller places are in different platforms, in which case it's better
@@ -224,9 +223,12 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
 
  protected:
   // RenderWidgetHostOwnerDelegate overrides.
-  bool OnMessageReceived(const IPC::Message& msg) override;
   void RenderWidgetDidInit() override;
+  void RenderWidgetDidClose() override;
+  void RenderWidgetNeedsToRouteCloseEvent() override;
   void RenderWidgetWillSetIsLoading(bool is_loading) override;
+  void RenderWidgetDidFirstVisuallyNonEmptyPaint() override;
+  void RenderWidgetDidCommitAndDrawCompositorFrame() override;
   void RenderWidgetGotFocus() override;
   void RenderWidgetLostFocus() override;
   void RenderWidgetDidForwardMouseEvent(
@@ -244,11 +246,9 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   void OnShowWidget(int widget_route_id, const gfx::Rect& initial_rect);
   void OnShowFullscreenWidget(int widget_route_id);
   void OnUpdateTargetURL(const GURL& url);
-  void OnClose();
   void OnDocumentAvailableInMainFrame(bool uses_temporary_zoom_level);
   void OnDidContentsPreferredSizeChange(const gfx::Size& new_size);
   void OnPasteFromSelectionClipboard();
-  void OnRouteCloseEvent();
   void OnTakeFocus(bool reverse);
   void OnClosePageACK();
   void OnDidZoomURL(double zoom_level, const GURL& url);
@@ -268,6 +268,9 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
                            CloseWithPendingWhileUnresponsive);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
                            NavigateMainFrameToChildSite);
+
+  // IPC::Listener implementation.
+  bool OnMessageReceived(const IPC::Message& msg) override;
 
   void RenderViewReady();
 
@@ -299,13 +302,8 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   // over time.
   scoped_refptr<SiteInstanceImpl> instance_;
 
-  // Tracks whether this RenderViewHost is in an active state.  False if the
-  // main frame is pending swap out, pending deletion, or swapped out, because
-  // it is not visible to the user in any of these cases.
-  bool is_active_;
-
   // Tracks whether the main frame RenderFrameHost is swapped out.  Unlike
-  // is_active_, this is false when the frame is pending swap out or deletion.
+  // is_active(), this is false when the frame is pending swap out or deletion.
   // TODO(creis): Remove this when we no longer filter IPCs after swap out.
   // See https://crbug.com/745091.
   bool is_swapped_out_;

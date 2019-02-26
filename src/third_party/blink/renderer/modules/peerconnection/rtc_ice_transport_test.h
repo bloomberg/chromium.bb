@@ -21,12 +21,12 @@ class MockEventListener final : public EventListener {
     return this == &other;
   }
 
-  MOCK_METHOD2(handleEvent, void(ExecutionContext*, Event*));
+  MOCK_METHOD2(Invoke, void(ExecutionContext*, Event*));
 };
 
 class RTCIceTransportTest : public testing::Test {
  public:
-  static RTCIceParameters CreateRemoteRTCIceParameters1();
+  static RTCIceParameters* CreateRemoteRTCIceParameters1();
 
   RTCIceTransportTest();
   ~RTCIceTransportTest() override;

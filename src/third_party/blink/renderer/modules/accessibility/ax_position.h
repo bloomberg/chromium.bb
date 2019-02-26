@@ -5,15 +5,17 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_POSITION_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_POSITION_H_
 
-#include <base/logging.h>
 #include <stdint.h>
+
 #include <ostream>
 
+#include <base/logging.h>
 #include "third_party/blink/renderer/core/editing/forward.h"
 #include "third_party/blink/renderer/core/editing/text_affinity.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -107,7 +109,8 @@ class MODULES_EXPORT AXPosition final {
   // When the same character offset could correspond to two possible caret
   // positions, upstream means it's on the previous line rather than the next
   // line.
-  TextAffinity Affinity() const { return affinity_; }
+  // Only valid for text positions.
+  TextAffinity Affinity() const;
 
   // Verifies if the anchor is present and if it's set to a live object with a
   // connected node.
@@ -144,6 +147,9 @@ class MODULES_EXPORT AXPosition final {
   const PositionWithAffinity ToPositionWithAffinity(
       const AXPositionAdjustmentBehavior =
           AXPositionAdjustmentBehavior::kMoveLeft) const;
+
+  // Returns a string representation of this object.
+  String ToString() const;
 
  private:
   // Only used by static Create... methods.

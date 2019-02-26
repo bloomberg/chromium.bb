@@ -67,10 +67,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void SetFrameSinkId(const viz::FrameSinkId& frame_sink_id);
 #endif  // defined(USE_AURA)
 
-  bool OnMessageReceived(const IPC::Message& msg) override;
-
-  void OnIntrinsicSizingInfoChanged(blink::WebIntrinsicSizingInfo);
-
   // This functions registers single-use callbacks that want to be notified when
   // the next frame is swapped. The callback is triggered by
   // SubmitCompositorFrame, which is the appropriate time to request pixel
@@ -102,6 +98,8 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void Show() override;
   void Hide() override;
   bool IsShowing() override;
+  void WasUnOccluded() override;
+  void WasOccluded() override;
   gfx::Rect GetViewBounds() const override;
   gfx::Size GetVisibleViewportSize() const override;
   void SetInsets(const gfx::Insets& insets) override;
@@ -145,7 +143,8 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   bool LockMouse() override;
   void UnlockMouse() override;
   const viz::FrameSinkId& GetFrameSinkId() const override;
-  const viz::LocalSurfaceId& GetLocalSurfaceId() const override;
+  const viz::LocalSurfaceIdAllocation& GetLocalSurfaceIdAllocation()
+      const override;
   void PreProcessTouchEvent(const blink::WebTouchEvent& event) override;
   viz::FrameSinkId GetRootFrameSinkId() override;
   viz::SurfaceId GetCurrentSurfaceId() const override;
@@ -167,6 +166,8 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   TouchSelectionControllerClientManager*
   GetTouchSelectionControllerClientManager() override;
   void OnRenderFrameMetadataChangedAfterActivation() override;
+  void UpdateIntrinsicSizingInfo(
+      const blink::WebIntrinsicSizingInfo& sizing_info) override;
 
   bool IsRenderWidgetHostViewChildFrame() override;
 
@@ -196,10 +197,9 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   // viz::mojom::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(
       const std::vector<viz::ReturnedResource>& resources) override;
-  void DidPresentCompositorFrame(
-      uint32_t presentation_token,
-      const gfx::PresentationFeedback& feedback) override;
-  void OnBeginFrame(const viz::BeginFrameArgs& args) override;
+  void OnBeginFrame(const viz::BeginFrameArgs& args,
+                    const base::flat_map<uint32_t, gfx::PresentationFeedback>&
+                        feedbacks) override;
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override;
   void OnBeginFramePausedChanged(bool paused) override;
@@ -210,11 +210,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
 
   FrameConnectorDelegate* FrameConnectorForTesting() const {
     return frame_connector_;
-  }
-
-  // Returns the current surface scale factor.
-  float current_surface_scale_factor() {
-    return last_activated_surface_info_.device_scale_factor();
   }
 
   // Returns the view into which this view is directly embedded. This can
@@ -234,8 +229,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void UpdateInheritedEffectiveTouchAction();
 
   void UpdateRenderThrottlingStatus();
-
-  bool has_frame() { return has_frame_; }
 
   ui::TextInputType GetTextInputType() const;
   bool GetSelectionRange(gfx::Range* range) const;
@@ -265,6 +258,9 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
 
   // RenderWidgetHostViewBase:
   void UpdateBackgroundColor() override;
+
+  void StopFlingingIfNecessary(const blink::WebGestureEvent& event,
+                               InputEventAckState ack_result) override;
 
   // The ID for FrameSink associated with this view.
   viz::FrameSinkId frame_sink_id_;
@@ -305,10 +301,11 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void OnDidUpdateVisualPropertiesComplete(
       const cc::RenderFrameMetadata& metadata);
 
-  void ProcessTouchpadPinchAckInRoot(const blink::WebGestureEvent& event,
-                                     InputEventAckState ack_result);
-  void ForwardTouchpadPinchIfNecessary(const blink::WebGestureEvent& event,
-                                       InputEventAckState ack_result) override;
+  void ProcessTouchpadZoomEventAckInRoot(const blink::WebGestureEvent& event,
+                                         InputEventAckState ack_result);
+  void ForwardTouchpadZoomEventIfNecessary(
+      const blink::WebGestureEvent& event,
+      InputEventAckState ack_result) override;
 
   std::vector<base::OnceClosure> frame_swapped_callbacks_;
 
@@ -316,7 +313,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   viz::FrameSinkId parent_frame_sink_id_;
 
   const bool enable_viz_;
-  bool has_frame_ = false;
+  const bool enable_surface_synchronization_;
   viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink_ =
       nullptr;
 

@@ -49,6 +49,7 @@ class CORE_EXPORT MouseEventManager final
                                          const AtomicString&,
                                          const WebMouseEvent&,
                                          const String& canvas_region_id,
+                                         const FloatPoint* last_position,
                                          EventTarget* related_target,
                                          bool check_for_listener = false);
 
@@ -154,6 +155,8 @@ class CORE_EXPORT MouseEventManager final
 
   bool FakeMouseMovePending() const;
 
+  void RecomputeMouseHoverState();
+
  private:
   class MouseEventBoundaryEventDispatcher : public BoundaryEventDispatcher {
    public:
@@ -199,7 +202,7 @@ class CORE_EXPORT MouseEventManager final
   void ClearDragDataTransfer();
   DataTransfer* CreateDraggingDataTransfer() const;
 
-  void ResetDragState();
+  void ResetDragSource();
 
   // Implementations of |SynchronousMutationObserver|
   void NodeChildrenWillBeRemoved(ContainerNode&) final;

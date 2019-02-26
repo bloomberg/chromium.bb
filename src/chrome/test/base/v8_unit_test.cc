@@ -126,15 +126,16 @@ bool V8UnitTest::RunJavascriptTestF(const std::string& test_fixture,
       params};
 
   v8::TryCatch try_catch(isolate);
-  v8::Local<v8::Value> result = function->Call(context->Global(), 3, args);
+  v8::Local<v8::Value> result =
+      function->Call(context, context->Global(), 3, args)
+          .FromMaybe(v8::Local<v8::Value>());
   // The test fails if an exception was thrown.
   EXPECT_FALSE(result.IsEmpty());
   if (::testing::Test::HasNonfatalFailure())
     return false;
 
   // Ok if ran successfully, passed tests, and didn't have console errors.
-  return result->BooleanValue(context).ToChecked() && g_test_result_ok &&
-         !g_had_errors;
+  return result->BooleanValue(isolate) && g_test_result_ok && !g_had_errors;
 }
 
 void V8UnitTest::InitPathsAndLibraries() {
@@ -315,7 +316,9 @@ void V8UnitTest::TestFunction(const std::string& function_name) {
       v8::Local<v8::Function>::Cast(function_property);
 
   v8::TryCatch try_catch(isolate);
-  v8::Local<v8::Value> result = function->Call(context->Global(), 0, NULL);
+  v8::Local<v8::Value> result =
+      function->Call(context, context->Global(), 0, NULL)
+          .FromMaybe(v8::Local<v8::Value>());
   // The test fails if an exception was thrown.
   if (result.IsEmpty())
     FAIL() << ExceptionToString(try_catch);
@@ -351,9 +354,7 @@ void V8UnitTest::ChromeSend(const v8::FunctionCallbackInfo<v8::Value>& args) {
   EXPECT_EQ(2U, test_result->Length());
   if (::testing::Test::HasNonfatalFailure())
     return;
-  g_test_result_ok = test_result->Get(0)
-                         ->BooleanValue(isolate->GetCurrentContext())
-                         .ToChecked();
+  g_test_result_ok = test_result->Get(0)->BooleanValue(isolate);
   if (!g_test_result_ok) {
     v8::String::Utf8Value message(isolate, test_result->Get(1));
     LOG(ERROR) << *message;

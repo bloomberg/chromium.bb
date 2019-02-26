@@ -122,7 +122,8 @@ InsertIncrementalTextCommand* InsertIncrementalTextCommand::Create(
     Document& document,
     const String& text,
     RebalanceType rebalance_type) {
-  return new InsertIncrementalTextCommand(document, text, rebalance_type);
+  return MakeGarbageCollected<InsertIncrementalTextCommand>(document, text,
+                                                            rebalance_type);
 }
 
 InsertIncrementalTextCommand::InsertIncrementalTextCommand(

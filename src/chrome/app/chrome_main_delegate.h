@@ -61,13 +61,13 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
           delegates) override;
   void ZygoteForked() override;
 #endif
-  bool ShouldEnableProfilerRecording() override;
   service_manager::ProcessType OverrideProcessType() override;
   void PreCreateMainMessageLoop() override;
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
   void PostEarlyInitialization(bool is_running_tests) override;
   bool ShouldCreateFeatureList() override;
 #endif
+  void PostFieldTrialInitialization() override;
 
   content::ContentBrowserClient* CreateContentBrowserClient() override;
   content::ContentGpuClient* CreateContentGpuClient() override;

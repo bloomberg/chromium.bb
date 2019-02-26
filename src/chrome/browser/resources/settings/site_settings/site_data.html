@@ -50,7 +50,8 @@
         <site-data-entry id$="siteItem_[[item.site]]" actionable
             model="[[item]]" first$="[[!index]]" tabindex$="[[tabIndex]]"
             iron-list-tab-index="[[tabIndex]]" last-focused="{{lastFocused_}}"
-            on-click="onSiteClick_" on-remove-site="onRemoveSite_">
+            list-blurred="{{listBlurred_}}" on-click="onSiteClick_"
+            on-remove-site="onRemoveSite_">
         </site-data-entry>
       </template>
     </iron-list>

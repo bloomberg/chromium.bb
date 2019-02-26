@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_canvas.h"
+#include "content/renderer/gpu/layer_tree_view.h"
 #include "content/shell/test_runner/layout_and_paint_async_then.h"
 #include "content/shell/test_runner/layout_dump.h"
 #include "content/shell/test_runner/mock_content_settings_client.h"
@@ -34,7 +35,6 @@
 #include "gin/wrappable.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_registration.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_url_response.h"
@@ -63,15 +63,15 @@
 namespace test_runner {
 
 TestRunnerForSpecificView::TestRunnerForSpecificView(
-    WebViewTestProxyBase* web_view_test_proxy_base)
-    : web_view_test_proxy_base_(web_view_test_proxy_base), weak_factory_(this) {
+    WebViewTestProxy* web_view_test_proxy)
+    : web_view_test_proxy_(web_view_test_proxy), weak_factory_(this) {
   Reset();
 }
 
 TestRunnerForSpecificView::~TestRunnerForSpecificView() {}
 
 void TestRunnerForSpecificView::Install(blink::WebLocalFrame* frame) {
-  web_view_test_proxy_base_->test_interfaces()->GetTestRunner()->Install(
+  web_view_test_proxy_->test_interfaces()->GetTestRunner()->Install(
       frame, weak_factory_.GetWeakPtr());
 }
 
@@ -79,24 +79,32 @@ void TestRunnerForSpecificView::Reset() {
   pointer_locked_ = false;
   pointer_lock_planned_result_ = PointerLockWillSucceed;
 
-  if (web_view() && web_view()->MainFrame()) {
-    RemoveWebPageOverlay();
-    SetTabKeyCyclesThroughElements(true);
+  if (!web_view() || !web_view()->MainFrame())
+    return;
+
+  RemoveWebPageOverlay();
+  SetTabKeyCyclesThroughElements(true);
 
 #if !defined(OS_MACOSX) && !defined(OS_WIN)
-    // (Constants copied because we can't depend on the header that defined
-    // them from this file.)
-    web_view()->SetSelectionColors(0xff1e90ff, 0xff000000, 0xffc8c8c8,
-                                   0xff323232);
+  // (Constants copied because we can't depend on the header that defined
+  // them from this file.)
+  web_view()->SetSelectionColors(0xff1e90ff, 0xff000000, 0xffc8c8c8,
+                                 0xff323232);
 #endif
-    web_view()->SetVisibilityState(blink::mojom::PageVisibilityState::kVisible,
-                                   true);
-    if (web_view()->MainFrame()->IsWebLocalFrame()) {
-      web_view()->MainFrame()->ToWebLocalFrame()->EnableViewSourceMode(false);
-      web_view()->SetTextZoomFactor(1);
-      web_view()->SetZoomLevel(0);
-    }
+  if (web_view()->MainFrame()->IsWebLocalFrame()) {
+    web_view()->MainFrame()->ToWebLocalFrame()->EnableViewSourceMode(false);
+    web_view()->SetTextZoomFactor(1);
+    web_view()->SetZoomLevel(0);
+    // As would the browser via IPC, set visibility on the RenderWidget then on
+    // the Page.
+    // TODO(danakj): This should set visibility on all RenderWidgets not just
+    // the main frame.
+    // TODO(danakj): This should set visible on the RenderWidget not just the
+    // LayerTreeView.
+    main_frame_render_widget()->layer_tree_view()->SetVisible(true);
   }
+  web_view_test_proxy_->ApplyPageVisibility(
+      blink::mojom::PageVisibilityState::kVisible, /*initial_setting=*/true);
 }
 
 bool TestRunnerForSpecificView::RequestPointerLock() {
@@ -236,13 +244,11 @@ void TestRunnerForSpecificView::CapturePixelsAsyncThen(
       << "Layout tests harness doesn't currently support running "
       << "testRuner.capturePixelsAsyncThen from an OOPIF";
 
-  web_view_test_proxy_base_->test_interfaces()
-      ->GetTestRunner()
-      ->DumpPixelsAsync(
-          web_view()->MainFrame()->ToWebLocalFrame(),
-          base::BindOnce(&TestRunnerForSpecificView::CapturePixelsCallback,
-                         weak_factory_.GetWeakPtr(),
-                         std::move(persistent_callback)));
+  web_view_test_proxy_->test_interfaces()->GetTestRunner()->DumpPixelsAsync(
+      web_view()->MainFrame()->ToWebLocalFrame(),
+      base::BindOnce(&TestRunnerForSpecificView::CapturePixelsCallback,
+                     weak_factory_.GetWeakPtr(),
+                     std::move(persistent_callback)));
 }
 
 void TestRunnerForSpecificView::CapturePixelsCallback(
@@ -473,15 +479,28 @@ void TestRunnerForSpecificView::ForceRedSelectionColors() {
 
 void TestRunnerForSpecificView::SetPageVisibility(
     const std::string& new_visibility) {
+  blink::mojom::PageVisibilityState visibility_state;
   if (new_visibility == "visible")
-    web_view()->SetVisibilityState(blink::mojom::PageVisibilityState::kVisible,
-                                   false);
+    visibility_state = blink::mojom::PageVisibilityState::kVisible;
   else if (new_visibility == "hidden")
-    web_view()->SetVisibilityState(blink::mojom::PageVisibilityState::kHidden,
-                                   false);
+    visibility_state = blink::mojom::PageVisibilityState::kHidden;
   else if (new_visibility == "prerender")
-    web_view()->SetVisibilityState(
-        blink::mojom::PageVisibilityState::kPrerender, false);
+    visibility_state = blink::mojom::PageVisibilityState::kPrerender;
+  else
+    return;
+
+  bool visible =
+      visibility_state == blink::mojom::PageVisibilityState::kVisible;
+
+  // As would the browser via IPC, set visibility on the RenderWidget then on
+  // the Page.
+  // TODO(danakj): This should set visibility on all RenderWidgets not just the
+  // main frame.
+  // TODO(danakj): This should set visible on the RenderWidget not just the
+  // LayerTreeView.
+  main_frame_render_widget()->layer_tree_view()->SetVisible(visible);
+  web_view_test_proxy_->ApplyPageVisibility(visibility_state,
+                                            /*initial_setting=*/false);
 }
 
 void TestRunnerForSpecificView::SetTextDirection(
@@ -517,8 +536,8 @@ void TestRunnerForSpecificView::ForceNextDrawingBufferCreationToFail() {
 }
 
 void TestRunnerForSpecificView::SetWindowIsKey(bool value) {
-  web_view_test_proxy_base_->test_interfaces()->GetTestRunner()->SetFocus(
-      web_view(), value);
+  web_view_test_proxy_->test_interfaces()->GetTestRunner()->SetFocus(web_view(),
+                                                                     value);
 }
 
 void TestRunnerForSpecificView::DidAcquirePointerLock() {
@@ -543,7 +562,7 @@ void TestRunnerForSpecificView::SetPointerLockWillRespondAsynchronously() {
 
 void TestRunnerForSpecificView::DidAcquirePointerLockInternal() {
   pointer_locked_ = true;
-  web_view()->DidAcquirePointerLock();
+  web_view()->MainFrameWidget()->DidAcquirePointerLock();
 
   // Reset planned result to default.
   pointer_lock_planned_result_ = PointerLockWillSucceed;
@@ -552,7 +571,7 @@ void TestRunnerForSpecificView::DidAcquirePointerLockInternal() {
 void TestRunnerForSpecificView::DidNotAcquirePointerLockInternal() {
   DCHECK(!pointer_locked_);
   pointer_locked_ = false;
-  web_view()->DidNotAcquirePointerLock();
+  web_view()->MainFrameWidget()->DidNotAcquirePointerLock();
 
   // Reset planned result to default.
   pointer_lock_planned_result_ = PointerLockWillSucceed;
@@ -562,11 +581,7 @@ void TestRunnerForSpecificView::DidLosePointerLockInternal() {
   bool was_locked = pointer_locked_;
   pointer_locked_ = false;
   if (was_locked)
-    web_view()->DidLosePointerLock();
-}
-
-bool TestRunnerForSpecificView::CallShouldCloseOnWebView() {
-  return GetLocalMainFrame()->DispatchBeforeUnloadEvent(false);
+    web_view()->MainFrameWidget()->DidLosePointerLock();
 }
 
 void TestRunnerForSpecificView::SetDomainRelaxationForbiddenForURLScheme(
@@ -676,12 +691,17 @@ blink::WebLocalFrame* TestRunnerForSpecificView::GetLocalMainFrame() {
   return web_view()->MainFrame()->ToWebLocalFrame();
 }
 
+content::RenderWidget* TestRunnerForSpecificView::main_frame_render_widget() {
+  return web_view_test_proxy_->GetWidget();
+}
+
 blink::WebView* TestRunnerForSpecificView::web_view() {
-  return web_view_test_proxy_base_->web_view();
+  // TODO(danakj): This could grab the GetWebView() off RenderViewImpl instead.
+  return web_view_test_proxy_->web_view();
 }
 
 WebTestDelegate* TestRunnerForSpecificView::delegate() {
-  return web_view_test_proxy_base_->delegate();
+  return web_view_test_proxy_->delegate();
 }
 
 }  // namespace test_runner

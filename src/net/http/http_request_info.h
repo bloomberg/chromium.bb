@@ -47,6 +47,14 @@ struct NET_EXPORT HttpRequestInfo {
 
   // Network traffic annotation received from URL request.
   net::MutableNetworkTrafficAnnotationTag traffic_annotation;
+
+  // Reporting upload nesting depth of this request.
+  //
+  // If the request is not a Reporting upload, the depth is 0.
+  //
+  // If the request is a Reporting upload, the depth is the max of the depth
+  // of the requests reported within it plus 1.
+  int reporting_upload_depth;
 };
 
 }  // namespace net

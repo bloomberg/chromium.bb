@@ -8,6 +8,11 @@ import("//build/config/jumbo.gni")
 import("//components/sync/protocol/protocol_sources.gni")
 import("//testing/test.gni")
 
+declare_args() {
+  # Controls the product part of the user agent calculated in sync_util.cc.
+  sync_user_agent_product = "Chrome"
+}
+
 jumbo_static_library("sync") {
   sources = [
     "base/bind_to_task_runner.h",
@@ -61,6 +66,7 @@ jumbo_static_library("sync") {
     "base/report_unrecoverable_error.cc",
     "base/report_unrecoverable_error.h",
     "base/stop_source.h",
+    "base/storage_option.h",
     "base/sync_base_switches.cc",
     "base/sync_base_switches.h",
     "base/sync_prefs.cc",
@@ -128,6 +134,8 @@ jumbo_static_library("sync") {
     "driver/model_associator.h",
     "driver/model_type_controller.cc",
     "driver/model_type_controller.h",
+    "driver/non_ui_syncable_service_based_model_type_controller.cc",
+    "driver/non_ui_syncable_service_based_model_type_controller.h",
     "driver/proxy_data_type_controller.cc",
     "driver/proxy_data_type_controller.h",
     "driver/shared_change_processor.cc",
@@ -138,6 +146,8 @@ jumbo_static_library("sync") {
     "driver/startup_controller.h",
     "driver/sync_api_component_factory.cc",
     "driver/sync_api_component_factory.h",
+    "driver/sync_auth_util.cc",
+    "driver/sync_auth_util.h",
     "driver/sync_client.cc",
     "driver/sync_client.h",
     "driver/sync_driver_switches.cc",
@@ -155,11 +165,11 @@ jumbo_static_library("sync") {
     "driver/sync_token_status.cc",
     "driver/sync_token_status.h",
     "driver/sync_type_preference_provider.h",
+    "driver/sync_user_settings.h",
     "driver/sync_util.cc",
     "driver/sync_util.h",
     "driver/syncable_service_based_model_type_controller.cc",
     "driver/syncable_service_based_model_type_controller.h",
-    "driver/user_selectable_sync_type.h",
     "engine/commit_queue.cc",
     "engine/commit_queue.h",
     "engine/configure_reason.h",
@@ -565,8 +575,8 @@ jumbo_static_library("sync") {
   ]
   deps = [
     "//base:i18n",
-    "//base/third_party/dynamic_annotations",
     "//components/data_use_measurement/core",
+    "//components/invalidation/impl:feature_list",
     "//components/invalidation/public",
     "//components/keyed_service/core",
     "//components/metrics",
@@ -575,7 +585,6 @@ jumbo_static_library("sync") {
     "//components/prefs",
     "//components/reading_list/features:reading_list_buildflags",
     "//components/signin/core/browser",
-    "//components/strings",
     "//components/variations",
     "//components/version_info",
     "//crypto",
@@ -617,6 +626,8 @@ jumbo_static_library("sync") {
       "//components/policy/core/browser",
     ]
   }
+
+  defines = [ "SYNC_USER_AGENT_PRODUCT=$sync_user_agent_product" ]
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
@@ -800,6 +811,8 @@ static_library("test_support_driver") {
     "driver/sync_client_mock.h",
     "driver/test_sync_service.cc",
     "driver/test_sync_service.h",
+    "driver/test_sync_user_settings.cc",
+    "driver/test_sync_user_settings.h",
     "engine/fake_sync_engine.cc",
     "engine/fake_sync_engine.h",
     "engine/mock_sync_engine.cc",
@@ -815,7 +828,7 @@ static_library("test_support_driver") {
   deps = [
     ":sync",
     ":test_support_engine",
-    "//components/signin/core/browser:account_info",
+    "//components/signin/core/browser:shared",
     "//components/sync_preferences:test_support",
     "//components/version_info",
     "//google_apis",
@@ -1074,7 +1087,7 @@ if (is_android) {
     testonly = true
     jni_package = "sync/test/fake_server"
     sources = [
-      "//chrome/android/sync_shell/javatests/src/org/chromium/chrome/browser/sync/FakeServerHelper.java",
+      "//chrome/android/javatests/src/org/chromium/chrome/browser/sync/FakeServerHelper.java",
     ]
   }
 

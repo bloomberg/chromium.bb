@@ -42,6 +42,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) TransitionalURLLoaderFactoryOwner {
 
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory();
 
+  network::mojom::NetworkContext* GetNetworkContext();
+
   // If this is called, any creation, use, or destruction of a
   // TransitionalURLLoaderFactoryOwner will DCHECK-fail.
   static void DisallowUsageInProcess();

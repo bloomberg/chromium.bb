@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/search/background/ntp_background_service_observer.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_service_observer.h"
+#include "chrome/browser/search/promos/promo_service_observer.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "content/public/browser/url_data_source.h"
 
@@ -25,8 +26,10 @@
 #endif
 
 struct OneGoogleBarData;
+struct PromoData;
 class NtpBackgroundService;
 class OneGoogleBarService;
+class PromoService;
 class Profile;
 
 namespace search_provider_logos {
@@ -42,7 +45,8 @@ class LogoService;
 // are implemented as non-member functions.
 class LocalNtpSource : public content::URLDataSource,
                        public NtpBackgroundServiceObserver,
-                       public OneGoogleBarServiceObserver {
+                       public OneGoogleBarServiceObserver,
+                       public PromoServiceObserver {
  public:
   explicit LocalNtpSource(Profile* profile);
   ~LocalNtpSource() override;
@@ -68,6 +72,16 @@ class LocalNtpSource : public content::URLDataSource,
         const content::URLDataSource::GotDataCallback& callback);
     OneGoogleBarRequest(const OneGoogleBarRequest&);
     ~OneGoogleBarRequest();
+
+    base::TimeTicks start_time;
+    content::URLDataSource::GotDataCallback callback;
+  };
+
+  struct PromoRequest {
+    PromoRequest(base::TimeTicks start_time,
+                 const content::URLDataSource::GotDataCallback& callback);
+    PromoRequest(const PromoRequest&);
+    ~PromoRequest();
 
     base::TimeTicks start_time;
     content::URLDataSource::GotDataCallback callback;
@@ -100,7 +114,13 @@ class LocalNtpSource : public content::URLDataSource,
   void OnOneGoogleBarDataUpdated() override;
   void OnOneGoogleBarServiceShuttingDown() override;
 
+  // Overridden from PromoServiceObserver:
+  void OnPromoDataUpdated() override;
+  void OnPromoServiceShuttingDown() override;
+
   void ServeOneGoogleBar(const base::Optional<OneGoogleBarData>& data);
+
+  void ServePromo(const base::Optional<PromoData>& data);
 
   Profile* const profile_;
 
@@ -120,6 +140,12 @@ class LocalNtpSource : public content::URLDataSource,
 
   ScopedObserver<OneGoogleBarService, OneGoogleBarServiceObserver>
       one_google_bar_service_observer_;
+
+  std::vector<PromoRequest> promo_requests_;
+
+  PromoService* promo_service_;
+
+  ScopedObserver<PromoService, PromoServiceObserver> promo_service_observer_;
 
   search_provider_logos::LogoService* logo_service_;
   std::unique_ptr<DesktopLogoObserver> logo_observer_;

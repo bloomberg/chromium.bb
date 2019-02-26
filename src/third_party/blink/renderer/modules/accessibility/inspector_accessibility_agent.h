@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_INSPECTOR_ACCESSIBILITY_AGENT_H_
 
 #include "base/macros.h"
+#include "third_party/blink/renderer/core/accessibility/ax_context.h"
 #include "third_party/blink/renderer/core/inspector/inspector_base_agent.h"
 #include "third_party/blink/renderer/core/inspector/protocol/Accessibility.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -16,6 +17,7 @@ class AXObject;
 class AXObjectCacheImpl;
 class InspectorDOMAgent;
 class InspectedFrames;
+class LocalFrame;
 
 using protocol::Accessibility::AXNode;
 using protocol::Accessibility::AXNodeId;
@@ -25,10 +27,16 @@ class MODULES_EXPORT InspectorAccessibilityAgent
  public:
   InspectorAccessibilityAgent(InspectedFrames*, InspectorDOMAgent*);
 
+  static void ProvideTo(LocalFrame* frame);
+  void CreateAXContext();
+
   // Base agent methods.
   void Trace(blink::Visitor*) override;
+  void Restore() override;
 
   // Protocol methods.
+  protocol::Response enable() override;
+  protocol::Response disable() override;
   protocol::Response getPartialAXTree(
       protocol::Maybe<int> dom_node_id,
       protocol::Maybe<int> backend_node_id,
@@ -41,6 +49,9 @@ class MODULES_EXPORT InspectorAccessibilityAgent
       override;
 
  private:
+  // Unconditionally enables the agent, even if |enabled_.Get()==true|.
+  // For idempotence, call enable().
+  void EnableAndReset();
   std::unique_ptr<AXNode> BuildObjectForIgnoredNode(
       Node* dom_node,
       AXObject*,
@@ -91,6 +102,8 @@ class MODULES_EXPORT InspectorAccessibilityAgent
 
   Member<InspectedFrames> inspected_frames_;
   Member<InspectorDOMAgent> dom_agent_;
+  InspectorAgentState::Boolean enabled_;
+  std::unique_ptr<AXContext> context_;
 
   DISALLOW_COPY_AND_ASSIGN(InspectorAccessibilityAgent);
 };

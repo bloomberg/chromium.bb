@@ -52,7 +52,9 @@ class FilterData final : public GarbageCollected<FilterData> {
     kPaintingFilterCycleDetected
   };
 
-  static FilterData* Create() { return new FilterData(); }
+  static FilterData* Create() { return MakeGarbageCollected<FilterData>(); }
+
+  FilterData() : state_(kInitial) {}
 
   void Dispose();
 
@@ -61,9 +63,6 @@ class FilterData final : public GarbageCollected<FilterData> {
   Member<FilterEffect> last_effect;
   Member<SVGFilterGraphNodeMap> node_map;
   FilterDataState state_;
-
- private:
-  FilterData() : state_(kInitial) {}
 };
 
 class LayoutSVGResourceFilter final : public LayoutSVGResourceContainer {

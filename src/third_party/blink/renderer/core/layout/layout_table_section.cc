@@ -42,8 +42,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 void LayoutTableSection::TableGridRow::
     SetRowLogicalHeightToRowStyleLogicalHeight() {
   DCHECK(row);
@@ -209,7 +207,7 @@ static inline void CheckThatVectorIsDOMOrdered(
   DCHECK_GT(cells.size(), 0u);
 
   const LayoutTableCell* previous_cell = cells[0];
-  for (size_t i = 1; i < cells.size(); ++i) {
+  for (wtf_size_t i = 1; i < cells.size(); ++i) {
     const LayoutTableCell* current_cell = cells[i];
     // The check assumes that all cells belong to the same row group.
     DCHECK_EQ(previous_cell->Section(), current_cell->Section());
@@ -1602,9 +1600,9 @@ void LayoutTableSection::DirtiedRowsAndEffectiveColumns(
 
 CellSpan LayoutTableSection::SpannedRows(const LayoutRect& flipped_rect) const {
   // Find the first row that starts after rect top.
-  unsigned next_row =
+  unsigned next_row = static_cast<unsigned>(
       std::upper_bound(row_pos_.begin(), row_pos_.end(), flipped_rect.Y()) -
-      row_pos_.begin();
+      row_pos_.begin());
 
   // After all rows.
   if (next_row == row_pos_.size())
@@ -1617,9 +1615,10 @@ CellSpan LayoutTableSection::SpannedRows(const LayoutRect& flipped_rect) const {
   if (row_pos_[next_row] >= flipped_rect.MaxY()) {
     end_row = next_row;
   } else {
-    end_row = std::upper_bound(row_pos_.begin() + next_row, row_pos_.end(),
-                               flipped_rect.MaxY()) -
-              row_pos_.begin();
+    end_row = static_cast<unsigned>(
+        std::upper_bound(row_pos_.begin() + next_row, row_pos_.end(),
+                         flipped_rect.MaxY()) -
+        row_pos_.begin());
     if (end_row == row_pos_.size())
       end_row = row_pos_.size() - 1;
   }
@@ -1636,9 +1635,9 @@ CellSpan LayoutTableSection::SpannedEffectiveColumns(
   // wrongly return the cell on the logical top/left.
   // upper_bound on the other hand properly returns the cell on the logical
   // bottom/right, which also matches the behavior of other browsers.
-  unsigned next_column =
+  unsigned next_column = static_cast<unsigned>(
       std::upper_bound(column_pos.begin(), column_pos.end(), flipped_rect.X()) -
-      column_pos.begin();
+      column_pos.begin());
 
   if (next_column == column_pos.size())
     return CellSpan(column_pos.size() - 1,
@@ -1651,9 +1650,10 @@ CellSpan LayoutTableSection::SpannedEffectiveColumns(
   if (column_pos[next_column] >= flipped_rect.MaxX()) {
     end_column = next_column;
   } else {
-    end_column = std::upper_bound(column_pos.begin() + next_column,
-                                  column_pos.end(), flipped_rect.MaxX()) -
-                 column_pos.begin();
+    end_column = static_cast<unsigned>(
+        std::upper_bound(column_pos.begin() + next_column, column_pos.end(),
+                         flipped_rect.MaxX()) -
+        column_pos.begin());
     if (end_column == column_pos.size())
       end_column = column_pos.size() - 1;
   }
@@ -1702,7 +1702,7 @@ void LayoutTableSection::RecalcCells() {
   }
 
   grid_.ShrinkToFit();
-  SetNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::kUnknown);
+  SetNeedsLayoutAndFullPaintInvalidation(layout_invalidation_reason::kUnknown);
 }
 
 // FIXME: This function could be made O(1) in certain cases (like for the

@@ -16,22 +16,22 @@ class MODULES_EXPORT InstallEvent : public ExtendableEvent {
 
  public:
   static InstallEvent* Create(const AtomicString& type,
-                              const ExtendableEventInit&);
+                              const ExtendableEventInit*);
   static InstallEvent* Create(const AtomicString& type,
-                              const ExtendableEventInit&,
+                              const ExtendableEventInit*,
                               int event_id,
                               WaitUntilObserver*);
 
+  InstallEvent(const AtomicString& type, const ExtendableEventInit*);
+  InstallEvent(const AtomicString& type,
+               const ExtendableEventInit*,
+               int event_id,
+               WaitUntilObserver*);
   ~InstallEvent() override;
 
   const AtomicString& InterfaceName() const override;
 
  protected:
-  InstallEvent(const AtomicString& type, const ExtendableEventInit&);
-  InstallEvent(const AtomicString& type,
-               const ExtendableEventInit&,
-               int event_id,
-               WaitUntilObserver*);
   const int event_id_;
 };
 

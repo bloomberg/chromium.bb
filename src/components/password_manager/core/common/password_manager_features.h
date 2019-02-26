@@ -18,14 +18,15 @@ namespace features {
 // alongside the definition of their values in the .cc file.
 
 extern const base::Feature kAffiliationBasedMatching;
-extern const base::Feature kAutofillHome;
 extern const base::Feature kDeleteCorruptedPasswords;
 extern const base::Feature kHtmlBasedUsernameDetector;
 extern const base::Feature kPasswordGenerationRequirementsDomainOverrides;
 extern const base::Feature kFillOnAccountSelect;
+extern const base::Feature kGooglePasswordManager;
 extern const base::Feature kMigrateLinuxToLoginDB;
 extern const base::Feature kNewPasswordFormParsing;
 extern const base::Feature kNewPasswordFormParsingForSaving;
+extern const base::Feature kOnlyNewParser;
 extern const base::Feature kPasswordImport;
 extern const base::Feature kPasswordSearchMobile;
 extern const base::Feature kPasswordsKeyboardAccessory;

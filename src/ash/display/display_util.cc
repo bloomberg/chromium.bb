@@ -13,12 +13,13 @@
 #include "ash/display/unified_mouse_warp_controller.h"
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/new_window_controller.h"
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -152,14 +153,14 @@ void ShowDisplayErrorNotification(const base::string16& message,
   }
 
   std::unique_ptr<message_center::Notification> notification =
-      message_center::Notification::CreateSystemNotification(
+      ash::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kDisplayErrorNotificationId,
           base::string16(),  // title
           message,
           base::string16(),  // display_source
           GURL(),
           message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT,
+              message_center::NotifierType::SYSTEM_COMPONENT,
               kNotifierDisplayError),
           data,
           base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(

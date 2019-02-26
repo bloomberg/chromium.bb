@@ -17,11 +17,14 @@ struct AccountInfo;
 class GaiaCookieManagerService;
 class PrefRegistrySimple;
 class PrefService;
-class SigninManagerBase;
 
 namespace base {
 class Time;
 }  // namespace base
+
+namespace identity {
+class IdentityManager;
+}
 
 namespace signin_metrics {
 enum class AccountRelation;
@@ -42,7 +45,7 @@ class AccountInvestigator : public KeyedService,
 
   AccountInvestigator(GaiaCookieManagerService* cookie_service,
                       PrefService* pref_service,
-                      SigninManagerBase* signin_manager);
+                      identity::IdentityManager* identity_manager);
   ~AccountInvestigator() override;
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
@@ -113,7 +116,7 @@ class AccountInvestigator : public KeyedService,
 
   GaiaCookieManagerService* cookie_service_;
   PrefService* pref_service_;
-  SigninManagerBase* signin_manager_;
+  identity::IdentityManager* identity_manager_;
 
   // Handles invoking our periodic logic at the right time. As part of our
   // handling of this call we reset the timer for the next loop.

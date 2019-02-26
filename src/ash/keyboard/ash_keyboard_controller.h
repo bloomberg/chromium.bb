@@ -25,7 +25,9 @@ class KeyboardController;
 
 namespace ash {
 
+class RootWindowController;
 class SessionController;
+class VirtualKeyboardController;
 
 // Contains and observes a keyboard::KeyboardController instance. Ash specific
 // behavior, including implementing the mojo interface, is implemented in this
@@ -49,12 +51,34 @@ class ASH_EXPORT AshKeyboardController
   // Disables the keyboard.
   void DisableKeyboard();
 
+  // Create or destroy the virtual keyboard. Called from Shell. TODO(stevenjb):
+  // Fix dependencies so that the virtual keyboard can be created with the
+  // keyboard controller.
+  void CreateVirtualKeyboard();
+  void DestroyVirtualKeyboard();
+
   // mojom::KeyboardController:
-  void AddObserver(
-      mojom::KeyboardControllerObserverAssociatedPtrInfo observer) override;
   void GetKeyboardConfig(GetKeyboardConfigCallback callback) override;
   void SetKeyboardConfig(
       keyboard::mojom::KeyboardConfigPtr keyboard_config) override;
+  void IsKeyboardEnabled(IsKeyboardEnabledCallback callback) override;
+  void SetEnableFlag(keyboard::mojom::KeyboardEnableFlag flag) override;
+  void ClearEnableFlag(keyboard::mojom::KeyboardEnableFlag flag) override;
+  void GetEnableFlags(GetEnableFlagsCallback callback) override;
+  void ReloadKeyboardIfNeeded() override;
+  void RebuildKeyboardIfEnabled() override;
+  void IsKeyboardVisible(IsKeyboardVisibleCallback callback) override;
+  void ShowKeyboard() override;
+  void HideKeyboard(mojom::HideReason reason) override;
+  void SetContainerType(keyboard::mojom::ContainerType container_type,
+                        const base::Optional<gfx::Rect>& target_bounds,
+                        SetContainerTypeCallback callback) override;
+  void SetKeyboardLocked(bool locked) override;
+  void SetOccludedBounds(const std::vector<gfx::Rect>& bounds) override;
+  void SetHitTestBounds(const std::vector<gfx::Rect>& bounds) override;
+  void SetDraggableArea(const gfx::Rect& bounds) override;
+  void AddObserver(
+      mojom::KeyboardControllerObserverAssociatedPtrInfo observer) override;
 
   // SessionObserver:
   void OnSessionStateChanged(session_manager::SessionState state) override;
@@ -63,18 +87,40 @@ class ASH_EXPORT AshKeyboardController
     return keyboard_controller_.get();
   }
 
- private:
-  // Ensures that the keyboard controller is activated for the primary window.
+  VirtualKeyboardController* virtual_keyboard_controller() {
+    return virtual_keyboard_controller_.get();
+  }
+
+  // Activates the keyboard controller for the primary root window controller.
   void ActivateKeyboard();
+
+  // Activates the keyboard controller for |controller|.
+  void ActivateKeyboardForRoot(RootWindowController* controller);
+
+  // Deactivates the keyboard controller.
+  void DeactivateKeyboard();
+
+ private:
+  // Called whenever the enable flags may have changed the enabled state from
+  // |was_enabled|. If changed, enables or disables the keyboard.
+  void UpdateEnableFlag(bool was_enabled);
 
   // keyboard::KeyboardControllerObserver
   void OnKeyboardConfigChanged() override;
   void OnKeyboardVisibilityStateChanged(bool is_visible) override;
   void OnKeyboardVisibleBoundsChanged(const gfx::Rect& bounds) override;
-  void OnKeyboardDisabled() override;
+  void OnKeyboardWorkspaceOccludedBoundsChanged(
+      const gfx::Rect& bounds) override;
+  void OnKeyboardEnableFlagsChanged(
+      std::set<keyboard::mojom::KeyboardEnableFlag>& keyboard_enable_flags)
+      override;
+  void OnKeyboardEnabledChanged(bool is_enabled) override;
+
+  gfx::Rect BoundsToScreen(const gfx::Rect& bounds);
 
   SessionController* session_controller_;  // unowned
   std::unique_ptr<keyboard::KeyboardController> keyboard_controller_;
+  std::unique_ptr<VirtualKeyboardController> virtual_keyboard_controller_;
   mojo::BindingSet<mojom::KeyboardController> bindings_;
   mojo::AssociatedInterfacePtrSet<mojom::KeyboardControllerObserver> observers_;
 

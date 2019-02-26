@@ -21,6 +21,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
+#include "base/thread_annotations.h"
 #include "media/base/audio_converter.h"
 #include "media/base/audio_latency.h"
 #include "media/base/audio_renderer_sink.h"
@@ -46,11 +47,13 @@ class MEDIA_EXPORT AudioRendererMixerInput
   void Pause() override;
   bool SetVolume(double volume) override;
   OutputDeviceInfo GetOutputDeviceInfo() override;
+  void GetOutputDeviceInfoAsync(OutputDeviceInfoCB info_cb) override;
+
   bool IsOptimizedForHardwareParameters() override;
   void Initialize(const AudioParameters& params,
                   AudioRendererSink::RenderCallback* renderer) override;
   void SwitchOutputDevice(const std::string& device_id,
-                          const OutputDeviceStatusCB& callback) override;
+                          OutputDeviceStatusCB callback) override;
   // This is expected to be called on the audio rendering thread. The caller
   // must ensure that this input has been added to a mixer before calling the
   // function, and that it is not removed from the mixer before this function
@@ -73,12 +76,30 @@ class MEDIA_EXPORT AudioRendererMixerInput
   // SetVolume().
   base::Lock volume_lock_;
 
-  bool started_;
-  bool playing_;
-  double volume_;
+  bool started_ = false;
+  bool playing_ = false;
+  double volume_ GUARDED_BY(volume_lock_) = 1.0;
+
+  scoped_refptr<AudioRendererSink> sink_;
+  base::Optional<OutputDeviceInfo> device_info_;
 
   // AudioConverter::InputCallback implementation.
   double ProvideInput(AudioBus* audio_bus, uint32_t frames_delayed) override;
+
+  void OnDeviceInfoReceived(OutputDeviceInfoCB info_cb,
+                            OutputDeviceInfo device_info);
+
+  // Method to help handle device changes. Must be static to ensure we can still
+  // execute the |switch_cb| even if the pipeline is destructed. Restarts (if
+  // necessary) Start() and Play() state with a new |sink| and |device_info|.
+  //
+  // |switch_cb| is the callback given to the SwitchOutputDevice() call.
+  // |sink| is a fresh sink which should be used if device info is good.
+  // |device_info| is the OutputDeviceInfo for |sink| after
+  // GetOutputDeviceInfoAsync() completes.
+  void OnDeviceSwitchReady(OutputDeviceStatusCB switch_cb,
+                           scoped_refptr<AudioRendererSink> sink,
+                           OutputDeviceInfo device_info);
 
   // AudioParameters received during Initialize().
   AudioParameters params_;
@@ -89,13 +110,10 @@ class MEDIA_EXPORT AudioRendererMixerInput
 
   // AudioRendererMixer obtained from mixer pool during Initialize(),
   // guaranteed to live (at least) until it is returned to the pool.
-  AudioRendererMixer* mixer_;
+  AudioRendererMixer* mixer_ = nullptr;
 
   // Source of audio data which is provided to the mixer.
-  AudioRendererSink::RenderCallback* callback_;
-
-  // Error callback for handing to AudioRendererMixer.
-  const base::Closure error_cb_;
+  AudioRendererSink::RenderCallback* callback_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererMixerInput);
 };

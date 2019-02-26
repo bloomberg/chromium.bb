@@ -360,6 +360,10 @@
       "_",
       "image",
       "gen_platf",
+      "incInterlaced.png",
+      "_",
+      "image",
+      "gen_platf",
       "incInterlaced.gif",
       "_",
       "image",
@@ -385,6 +389,10 @@
       "image",
       "gen_platf",
       "rle4-height-negative.bmp",
+      "_",
+      "image",
+      "gen_platf",
+      "error",
       "_",
       "image",
       "_",
@@ -494,7 +502,6 @@
       "~^RGB565TextureTest$",
       "~^RGBA4444TextureTest$",
       "~^TransferPixelsTest$",
-      "~^SurfaceCreationWithColorSpace_Gpu$",
       "~^SurfaceSemaphores$",
       "~^VertexAttributeCount$",
       "~^WrappedProxyTest$",
@@ -508,8 +515,7 @@
     "name": "dm"
   },
   {
-    "name": "$result",
-    "recipe_result": null,
-    "status_code": 0
+    "jsonResult": null,
+    "name": "$result"
   }
 ]

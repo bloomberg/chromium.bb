@@ -131,10 +131,10 @@ public class WebappVisibilityTest {
         return scopePolicy == WebappScopePolicy.Type.LEGACY
                 ? WebappInfo.create("", webappStartUrlOrScopeUrl, null, null, null, null,
                           displayMode, 0, 0, 0, 0, null, false /* isIconGenerated */,
-                          false /* forceNavigation */)
+                          false /* isIconAdaptive */, false /* forceNavigation */)
                 : WebApkInfo.create("", "", webappStartUrlOrScopeUrl, null, null, null, null, null,
                           displayMode, 0, 0, 0, 0, "", 0, null, "",
                           WebApkInfo.WebApkDistributor.BROWSER, null, null,
-                          false /* forceNavigation */);
+                          false /* forceNavigation */, false /* useTransparentSplash */, null /* shareData */);
     }
 }

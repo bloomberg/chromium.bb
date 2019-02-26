@@ -34,8 +34,11 @@ namespace blink {
 class CSSUnicodeRangeValue : public CSSValue {
  public:
   static CSSUnicodeRangeValue* Create(UChar32 from, UChar32 to) {
-    return new CSSUnicodeRangeValue(from, to);
+    return MakeGarbageCollected<CSSUnicodeRangeValue>(from, to);
   }
+
+  CSSUnicodeRangeValue(UChar32 from, UChar32 to)
+      : CSSValue(kUnicodeRangeClass), from_(from), to_(to) {}
 
   UChar32 From() const { return from_; }
   UChar32 To() const { return to_; }
@@ -49,9 +52,6 @@ class CSSUnicodeRangeValue : public CSSValue {
   }
 
  private:
-  CSSUnicodeRangeValue(UChar32 from, UChar32 to)
-      : CSSValue(kUnicodeRangeClass), from_(from), to_(to) {}
-
   UChar32 from_;
   UChar32 to_;
 };

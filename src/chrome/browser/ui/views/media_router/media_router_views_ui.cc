@@ -4,6 +4,10 @@
 
 #include "chrome/browser/ui/views/media_router/media_router_views_ui.h"
 
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -21,8 +25,8 @@ namespace {
 // Returns true if |issue| is associated with |ui_sink|.
 bool IssueMatches(const Issue& issue, const UIMediaSink& ui_sink) {
   return issue.info().sink_id == ui_sink.id ||
-         (!issue.info().route_id.empty() &&
-          issue.info().route_id == ui_sink.route_id);
+         (!issue.info().route_id.empty() && ui_sink.route &&
+          issue.info().route_id == ui_sink.route->media_route_id());
 }
 
 base::string16 GetSinkFriendlyName(const MediaSink& sink) {
@@ -56,13 +60,8 @@ void MediaRouterViewsUI::RemoveObserver(
 
 void MediaRouterViewsUI::StartCasting(const std::string& sink_id,
                                       MediaCastMode cast_mode) {
-  if (cast_mode == LOCAL_FILE) {
-    local_file_sink_id_ = sink_id;
-    OpenFileDialog();
-  } else {
-    CreateRoute(sink_id, cast_mode);
-    UpdateSinks();
-  }
+  CreateRoute(sink_id, cast_mode);
+  UpdateSinks();
 }
 
 void MediaRouterViewsUI::StopCasting(const std::string& route_id) {
@@ -71,6 +70,12 @@ void MediaRouterViewsUI::StopCasting(const std::string& route_id) {
   // |route_id| below this line.
   UpdateSinks();
   TerminateRoute(terminating_route_id_.value());
+}
+
+void MediaRouterViewsUI::ChooseLocalFile(
+    base::OnceCallback<void(const ui::SelectedFileInfo*)> callback) {
+  file_selection_callback_ = std::move(callback);
+  OpenFileDialog();
 }
 
 std::vector<MediaSinkWithCastModes> MediaRouterViewsUI::GetEnabledSinks()
@@ -134,7 +139,7 @@ UIMediaSink MediaRouterViewsUI::ConvertToUISink(
 
   if (route) {
     ui_sink.status_text = base::UTF8ToUTF16(route->description());
-    ui_sink.route_id = route->media_route_id();
+    ui_sink.route = *route;
     ui_sink.state = terminating_route_id_ && route->media_route_id() ==
                                                  terminating_route_id_.value()
                         ? UIMediaSinkState::DISCONNECTING
@@ -179,12 +184,12 @@ void MediaRouterViewsUI::OnDefaultPresentationRemoved() {
 }
 
 void MediaRouterViewsUI::UpdateModelHeader() {
-  const std::string source_name = GetTruncatedPresentationRequestSourceName();
+  const base::string16 source_name = GetPresentationRequestSourceName();
   const base::string16 header_text =
       source_name.empty()
           ? l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_CAST_DIALOG_TITLE)
           : l10n_util::GetStringFUTF16(IDS_MEDIA_ROUTER_PRESENTATION_CAST_MODE,
-                                       base::UTF8ToUTF16(source_name));
+                                       source_name);
   model_.set_dialog_header(header_text);
   for (CastDialogController::Observer& observer : observers_)
     observer.OnModelUpdated(model_);
@@ -192,13 +197,17 @@ void MediaRouterViewsUI::UpdateModelHeader() {
 
 void MediaRouterViewsUI::FileDialogFileSelected(
     const ui::SelectedFileInfo& file_info) {
-  CreateRoute(local_file_sink_id_.value(), LOCAL_FILE);
-  local_file_sink_id_.reset();
+  std::move(file_selection_callback_).Run(&file_info);
 }
 
 void MediaRouterViewsUI::FileDialogSelectionFailed(const IssueInfo& issue) {
   MediaRouterUIBase::FileDialogSelectionFailed(issue);
-  local_file_sink_id_.reset();
+  std::move(file_selection_callback_).Run(nullptr);
+}
+
+void MediaRouterViewsUI::FileDialogSelectionCanceled() {
+  MediaRouterUIBase::FileDialogSelectionCanceled();
+  std::move(file_selection_callback_).Run(nullptr);
 }
 
 }  // namespace media_router

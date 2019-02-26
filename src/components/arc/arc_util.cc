@@ -4,6 +4,7 @@
 
 #include "components/arc/arc_util.h"
 
+#include <algorithm>
 #include <string>
 
 #include "ash/public/cpp/app_types.h"
@@ -31,7 +32,6 @@ const base::Feature kEnableArcFeature{"EnableARC",
 constexpr char kAvailabilityNone[] = "none";
 constexpr char kAvailabilityInstalled[] = "installed";
 constexpr char kAvailabilityOfficiallySupported[] = "officially-supported";
-constexpr char kAlwaysStart[] = "always-start";
 constexpr char kAlwaysStartWithNoPlayStore[] =
     "always-start-with-no-play-store";
 
@@ -71,17 +71,17 @@ bool IsArcAvailable() {
           base::FeatureList::IsEnabled(kEnableArcFeature));
 }
 
-bool IsWebstoreSearchEnabled() {
-  return false;
+bool IsArcVmEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kEnableArcVm);
 }
 
 bool ShouldArcAlwaysStart() {
   const auto* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(chromeos::switches::kArcStartMode))
     return false;
-  const std::string value =
-      command_line->GetSwitchValueASCII(chromeos::switches::kArcStartMode);
-  return value == kAlwaysStartWithNoPlayStore || value == kAlwaysStart;
+  return command_line->GetSwitchValueASCII(chromeos::switches::kArcStartMode) ==
+         kAlwaysStartWithNoPlayStore;
 }
 
 bool ShouldArcAlwaysStartWithNoPlayStore() {
@@ -94,10 +94,9 @@ bool ShouldShowOptInForTesting() {
       chromeos::switches::kArcForceShowOptInUi);
 }
 
-void SetArcAlwaysStartForTesting(bool play_store_available) {
+void SetArcAlwaysStartWithoutPlayStoreForTesting() {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      chromeos::switches::kArcStartMode,
-      play_store_available ? kAlwaysStart : kAlwaysStartWithNoPlayStore);
+      chromeos::switches::kArcStartMode, kAlwaysStartWithNoPlayStore);
 }
 
 bool IsArcKioskAvailable() {
@@ -195,6 +194,16 @@ void SetArcCpuRestriction(bool do_restrict) {
 bool IsArcDataCleanupOnStartRequested() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kArcDataCleanupOnStart);
+}
+
+bool IsArcAppSyncFlowDisabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kArcDisableAppSync);
+}
+
+bool IsArcPlayAutoInstallDisabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kArcDisablePlayAutoInstall);
 }
 
 // static

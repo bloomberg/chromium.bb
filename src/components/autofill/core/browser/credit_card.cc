@@ -553,11 +553,12 @@ bool CreditCard::UpdateFromImportedCard(const CreditCard& imported_card,
   // the UI is not cluttered with duplicate cards.
   if (this->IsVerified() && !imported_card.IsVerified()) {
     // If the original card is expired and the imported card is not, and the
-    // name on the cards are identical, update the expiration date.
+    // name on the cards are identical, and the imported card's expiration date
+    // is not empty, update the expiration date.
     if (this->IsExpired(AutofillClock::Now()) &&
         !imported_card.IsExpired(AutofillClock::Now()) &&
-        (name_on_card_ == imported_card.name_on_card_)) {
-      DCHECK(imported_card.expiration_month_ && imported_card.expiration_year_);
+        (name_on_card_ == imported_card.name_on_card_) &&
+        (imported_card.expiration_month_ && imported_card.expiration_year_)) {
       expiration_month_ = imported_card.expiration_month_;
       expiration_year_ = imported_card.expiration_year_;
     }
@@ -572,10 +573,12 @@ bool CreditCard::UpdateFromImportedCard(const CreditCard& imported_card,
   if (!imported_card.name_on_card_.empty())
     name_on_card_ = imported_card.name_on_card_;
 
-  // The expiration date for |imported_card| should always be set.
-  DCHECK(imported_card.expiration_month_ && imported_card.expiration_year_);
-  expiration_month_ = imported_card.expiration_month_;
-  expiration_year_ = imported_card.expiration_year_;
+  // If |imported_card| has an expiration date, overwrite |this|'s expiration
+  // date with its value.
+  if (imported_card.expiration_month_ && imported_card.expiration_year_) {
+    expiration_month_ = imported_card.expiration_month_;
+    expiration_year_ = imported_card.expiration_year_;
+  }
 
   return true;
 }
@@ -875,6 +878,10 @@ base::string16 CreditCard::Expiration4DigitYearAsString() const {
 bool CreditCard::HasFirstAndLastName() const {
   return !temp_card_first_name_.empty() && !temp_card_last_name_.empty() &&
          !name_on_card_.empty();
+}
+
+bool CreditCard::HasNameOnCard() const {
+  return !name_on_card_.empty();
 }
 
 base::string16 CreditCard::Expiration2DigitYearAsString() const {

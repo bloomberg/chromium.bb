@@ -38,12 +38,12 @@ class AudioWorkletHandler final : public AudioHandler {
       float sample_rate,
       String name,
       HashMap<String, scoped_refptr<AudioParamHandler>> param_handler_map,
-      const AudioWorkletNodeOptions&);
+      const AudioWorkletNodeOptions*);
 
   ~AudioWorkletHandler() override;
 
   // Called from render thread.
-  void Process(size_t frames_to_process) override;
+  void Process(uint32_t frames_to_process) override;
 
   void CheckNumberOfChannelsForInput(AudioNodeInput*) override;
 
@@ -68,7 +68,7 @@ class AudioWorkletHandler final : public AudioHandler {
       float sample_rate,
       String name,
       HashMap<String, scoped_refptr<AudioParamHandler>> param_handler_map,
-      const AudioWorkletNodeOptions&);
+      const AudioWorkletNodeOptions*);
 
   String name_;
 
@@ -99,7 +99,7 @@ class AudioWorkletNode final : public AudioNode,
   static AudioWorkletNode* Create(ScriptState*,
                                   BaseAudioContext*,
                                   const String& name,
-                                  const AudioWorkletNodeOptions&,
+                                  const AudioWorkletNodeOptions*,
                                   ExceptionState&);
 
   // ActiveScriptWrappable
@@ -108,7 +108,7 @@ class AudioWorkletNode final : public AudioNode,
   // IDL
   AudioParamMap* parameters() const;
   MessagePort* port() const;
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(processorerror);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(processorerror, kProcessorerror);
 
   void FireProcessorError();
 
@@ -117,7 +117,7 @@ class AudioWorkletNode final : public AudioNode,
  private:
   AudioWorkletNode(BaseAudioContext&,
                    const String& name,
-                   const AudioWorkletNodeOptions&,
+                   const AudioWorkletNodeOptions*,
                    const Vector<CrossThreadAudioParamInfo>,
                    MessagePort* node_port);
 

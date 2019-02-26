@@ -9,10 +9,55 @@
 namespace chromecast {
 namespace media {
 
+// This fake VideoDecoder would behave as one with buffer filled
+// up and the playback is stalled.
+class VideoDecoderWrapper::RevokedVideoDecoder
+    : public MediaPipelineBackend::VideoDecoder {
+ public:
+  explicit RevokedVideoDecoder(const Statistics& statistics)
+      : statistics_(statistics) {}
+
+  ~RevokedVideoDecoder() override = default;
+
+ private:
+  // MediaPipelineBackend::VideoDecoder implementation:
+  void SetDelegate(Delegate* delegate) override {}
+
+  BufferStatus PushBuffer(CastDecoderBuffer* buffer) override {
+    return MediaPipelineBackend::kBufferPending;
+  }
+
+  bool SetConfig(const VideoConfig& config) override { return true; }
+
+  void GetStatistics(Statistics* statistics) override {
+    *statistics = statistics_;
+  }
+
+  Statistics statistics_;
+  DISALLOW_COPY_AND_ASSIGN(RevokedVideoDecoder);
+};
+
 VideoDecoderWrapper::VideoDecoderWrapper(
     MediaPipelineBackend::VideoDecoder* decoder)
     : decoder_(decoder) {
   DCHECK(decoder_);
+}
+
+VideoDecoderWrapper::VideoDecoderWrapper() {
+  Statistics default_statistics;
+  revoked_video_decoder_ =
+      std::make_unique<RevokedVideoDecoder>(default_statistics);
+  decoder_ = revoked_video_decoder_.get();
+}
+
+void VideoDecoderWrapper::Revoke() {
+  if (!revoked_video_decoder_) {
+    Statistics statistics;
+    decoder_->GetStatistics(&statistics);
+
+    revoked_video_decoder_ = std::make_unique<RevokedVideoDecoder>(statistics);
+    decoder_ = revoked_video_decoder_.get();
+  }
 }
 
 VideoDecoderWrapper::~VideoDecoderWrapper() = default;

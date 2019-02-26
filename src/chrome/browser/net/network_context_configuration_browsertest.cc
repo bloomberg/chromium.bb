@@ -42,6 +42,7 @@
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
@@ -64,10 +65,12 @@
 #include "net/test/embedded_test_server/embedded_test_server_connection_listener.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "net/test/gtest_util.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/resource_response_info.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -580,20 +583,26 @@ class NetworkContextConfigurationBrowserTest
     EXPECT_TRUE(found_matching_type);
   }
 
+  bool IsRestartStateWithInProcessNetworkService() {
+    return GetParam().network_service_state ==
+               NetworkServiceState::kRestarted &&
+           content::IsNetworkServiceRunningInProcess();
+  }
+
  private:
   void SimulateNetworkServiceCrashIfNecessary() {
-    if (GetParam().network_service_state != NetworkServiceState::kRestarted)
+    if (GetParam().network_service_state != NetworkServiceState::kRestarted ||
+        content::IsNetworkServiceRunningInProcess()) {
       return;
+    }
 
     // Make sure |network_context()| is working as expected. Use '/echoheader'
     // instead of '/echo' to avoid a disk_cache bug.
     // See https://crbug.com/792255.
     int net_error = content::LoadBasicRequest(
-        network_context(), embedded_test_server()->GetURL("/echoheader"));
-    // The error code could be |net::ERR_PROXY_CONNECTION_FAILED| if the test is
-    // using 'bad_server.pac'.
-    EXPECT_TRUE(net_error == net::OK ||
-                net_error == net::ERR_PROXY_CONNECTION_FAILED);
+        network_context(), embedded_test_server()->GetURL("/echoheader"), 0, 0,
+        net::LOAD_BYPASS_PROXY);
+    EXPECT_THAT(net_error, net::test::IsOk());
 
     // Crash the NetworkService process. Existing interfaces should receive
     // error notifications at some point.
@@ -618,6 +627,8 @@ class NetworkContextConfigurationBrowserTest
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
                        SecureCookiesAllowedForChromeScheme) {
+  if (IsRestartStateWithInProcessNetworkService())
+    return;
   // Cookies are only allowed for chrome:// schemes requesting a secure origin,
   // so create an HTTPS server.
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
@@ -658,6 +669,9 @@ std::unique_ptr<net::test_server::HttpResponse> EchoCookieHeader(
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
                        ThirdPartyCookiesAllowedForExtensions) {
+  if (IsRestartStateWithInProcessNetworkService())
+    return;
+
   // Loading an extension only makes sense for profile contexts.
   if (GetParam().network_context_type != NetworkContextType::kProfile &&
       GetParam().network_context_type !=
@@ -705,6 +719,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
 #endif
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, BasicRequest) {
+  if (IsRestartStateWithInProcessNetworkService())
+    return;
   std::unique_ptr<network::ResourceRequest> request =
       std::make_unique<network::ResourceRequest>();
   request->url = embedded_test_server()->GetURL("/echo");
@@ -725,6 +741,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, BasicRequest) {
 }
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, DataURL) {
+  if (IsRestartStateWithInProcessNetworkService())
+    return;
   std::unique_ptr<network::ResourceRequest> request =
       std::make_unique<network::ResourceRequest>();
   request->url = GURL("data:text/plain,foo");
@@ -746,6 +764,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, DataURL) {
 }
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, FileURL) {
+  if (IsRestartStateWithInProcessNetworkService())
+    return;
   // File URLs require a FileURLFactory that is not present in the default
   // URLLoaderFactories.
   if (base::FeatureList::IsEnabled(network::features::kNetworkService))
@@ -781,6 +801,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, FileURL) {
 
 // Make sure a cache is used when expected.
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, Cache) {
+  if (IsRestartStateWithInProcessNetworkService())
+    return;
   // Crashing the network service may corrupt the disk cache, so skip this test
   // in tests that crash the network service and use an on-disk cache.
   if (GetParam().network_service_state == NetworkServiceState::kRestarted &&
@@ -836,6 +858,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, Cache) {
 
 // Make sure that NetworkContexts can't access each other's disk caches.
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, CacheIsolation) {
+  if (IsRestartStateWithInProcessNetworkService())
+    return;
   // Make a request whose response should be cached.
   GURL request_url = embedded_test_server()->GetURL("/cachetime");
   std::unique_ptr<network::ResourceRequest> request =
@@ -880,6 +904,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, CacheIsolation) {
 // cache. DiskCache then makes sure the cache entry is still there (Or not) as
 // expected.
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, PRE_DiskCache) {
+  if (IsRestartStateWithInProcessNetworkService())
+    return;
   // Save test URL to disk, so it can be used in the next test (Test server uses
   // a random port, so need to know the port to try and retrieve it from the
   // cache in the next test). The profile directory is preserved between the
@@ -919,6 +945,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, PRE_DiskCache) {
 // Check if the URL loaded in PRE_DiskCache is still in the cache, across a
 // browser restart.
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, DiskCache) {
+  if (IsRestartStateWithInProcessNetworkService())
+    return;
   // Crashing the network service may corrupt the disk cache, so skip this phase
   // in tests that crash the network service and use an on-disk cache.
   if (GetParam().network_service_state == NetworkServiceState::kRestarted &&
@@ -967,6 +995,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, DiskCache) {
 
 // Visits a URL with an HSTS header, and makes sure it is respected.
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, PRE_Hsts) {
+  if (IsRestartStateWithInProcessNetworkService())
+    return;
   net::test_server::EmbeddedTestServer ssl_server(
       net::test_server::EmbeddedTestServer::TYPE_HTTPS);
   ssl_server.SetSSLConfig(
@@ -1030,6 +1060,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, PRE_Hsts) {
 // Checks if the HSTS information from the last test is still available after a
 // restart.
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, Hsts) {
+  if (IsRestartStateWithInProcessNetworkService())
+    return;
   // The network service must be cleanly shut down to guarantee HSTS information
   // is flushed to disk, but that currently generally doesn't happen. See
   // https://crbug.com/820996.
@@ -1086,6 +1118,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, Hsts) {
 // local_state() after start modifies the SSLConfig, SSLConfig makes sure the
 // (now modified) initial value of local_state() is respected.
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, PRE_SSLConfig) {
+  if (IsRestartStateWithInProcessNetworkService())
+    return;
   // Start a TLS 1.0 server.
   net::EmbeddedTestServer ssl_server(net::EmbeddedTestServer::TYPE_HTTPS);
   net::SSLServerConfig ssl_config;
@@ -1131,6 +1165,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, PRE_SSLConfig) {
 }
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, SSLConfig) {
+  if (IsRestartStateWithInProcessNetworkService())
+    return;
   // Start a TLS 1.0 server.
   net::EmbeddedTestServer ssl_server(net::EmbeddedTestServer::TYPE_HTTPS);
   net::SSLServerConfig ssl_config;
@@ -1156,6 +1192,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, SSLConfig) {
 }
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, ProxyConfig) {
+  if (IsRestartStateWithInProcessNetworkService())
+    return;
   SetProxyPref(embedded_test_server()->host_port_pair());
   TestProxyConfigured(/*expect_success=*/true);
 }
@@ -1163,11 +1201,15 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, ProxyConfig) {
 // This test should not end in an AssertNoURLLRequests CHECK.
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
                        ShutdownWithLiveRequest) {
+  if (IsRestartStateWithInProcessNetworkService())
+    return;
   MakeLongLivedRequestThatHangsUntilShutdown();
 }
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
                        UserAgentAndLanguagePrefs) {
+  if (IsRestartStateWithInProcessNetworkService())
+    return;
   // The system and SafeBrowsing network contexts aren't associated with any
   // profile, so changing the language settings for the profile's main network
   // context won't affect what they send.
@@ -1210,6 +1252,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
 // referrers, and make sure that they aren't set.
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
                        PRE_EnableReferrers) {
+  if (IsRestartStateWithInProcessNetworkService())
+    return;
   const GURL kReferrer("http://referrer/");
 
   // Referrers should be enabled by default.
@@ -1251,6 +1295,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
 // after changing it.
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
                        EnableReferrers) {
+  if (IsRestartStateWithInProcessNetworkService())
+    return;
   const GURL kReferrer("http://referrer/");
 
   // The preference is expected to be reset in incognito mode.
@@ -1275,6 +1321,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
 // errors.
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
                        PolicyViolatingReferrers) {
+  if (IsRestartStateWithInProcessNetworkService())
+    return;
   std::unique_ptr<network::ResourceRequest> request =
       std::make_unique<network::ResourceRequest>();
   request->url = embedded_test_server()->GetURL("/echoheader?Referer");
@@ -1305,6 +1353,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
 // disk as expected.
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
                        PRE_CookiesEnabled) {
+  if (IsRestartStateWithInProcessNetworkService())
+    return;
   EXPECT_TRUE(GetCookies(embedded_test_server()->base_url()).empty());
 
   SetCookie(CookieType::kFirstParty, CookiePersistenceType::kPersistent);
@@ -1312,6 +1362,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, CookiesEnabled) {
+  if (IsRestartStateWithInProcessNetworkService())
+    return;
 #if defined(OS_MACOSX)
   // TODO(https://crbug.com/880496): Fix and reenable test.
   if (base::mac::IsOS10_11())
@@ -1325,6 +1377,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, CookiesEnabled) {
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
                        CookieIsolation) {
+  if (IsRestartStateWithInProcessNetworkService())
+    return;
   SetCookie(CookieType::kFirstParty, CookiePersistenceType::kPersistent);
   EXPECT_FALSE(GetCookies(embedded_test_server()->base_url()).empty());
 
@@ -1338,6 +1392,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
                        PRE_ThirdPartyCookiesBlocked) {
+  if (IsRestartStateWithInProcessNetworkService())
+    return;
   // The system and SafeBrowsing network contexts don't support the third party
   // cookie blocking options, since they have no notion of third parties.
   bool system =
@@ -1354,6 +1410,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
                        ThirdPartyCookiesBlocked) {
+  if (IsRestartStateWithInProcessNetworkService())
+    return;
   // The system and SafeBrowsing network contexts don't support the third party
   // cookie blocking options, since they have no notion of third parties.
   bool system =
@@ -1383,6 +1441,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
                        PRE_CookieSettings) {
+  if (IsRestartStateWithInProcessNetworkService())
+    return;
   // The system and SafeBrowsing network contexts don't respect cookie blocking
   // options, which are per-profile.
   bool system =
@@ -1400,6 +1460,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, CookieSettings) {
+  if (IsRestartStateWithInProcessNetworkService())
+    return;
   // The system and SafeBrowsing network contexts don't respect cookie blocking
   // options, which are per-profile.
   bool system =
@@ -1424,6 +1486,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, CookieSettings) {
 
 // Make sure file uploads work.
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, UploadFile) {
+  if (IsRestartStateWithInProcessNetworkService())
+    return;
   std::unique_ptr<network::ResourceRequest> request =
       std::make_unique<network::ResourceRequest>();
   request->method = "POST";
@@ -1470,6 +1534,8 @@ class NetworkContextConfigurationFixedPortBrowserTest
 // respected.
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationFixedPortBrowserTest,
                        TestingFixedPort) {
+  if (IsRestartStateWithInProcessNetworkService())
+    return;
   std::unique_ptr<network::ResourceRequest> request =
       std::make_unique<network::ResourceRequest>();
   // This URL does not use the port the embedded test server is using. The
@@ -1510,6 +1576,8 @@ class NetworkContextConfigurationProxyOnStartBrowserTest
 // use that configuration.
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationProxyOnStartBrowserTest,
                        TestInitialProxyConfig) {
+  if (IsRestartStateWithInProcessNetworkService())
+    return;
   TestProxyConfigured(/*expect_success=*/true);
 }
 
@@ -1549,13 +1617,16 @@ class NetworkContextConfigurationHttpPacBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpPacBrowserTest, HttpPac) {
+  if (IsRestartStateWithInProcessNetworkService())
+    return;
   TestProxyConfigured(/*expect_success=*/true);
 }
 
 // Make sure the system URLRequestContext can handle fetching PAC scripts from
 // file URLs.
 class NetworkContextConfigurationFilePacBrowserTest
-    : public NetworkContextConfigurationBrowserTest {
+    : public NetworkContextConfigurationBrowserTest,
+      public network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
   NetworkContextConfigurationFilePacBrowserTest() {}
 
@@ -1577,13 +1648,44 @@ class NetworkContextConfigurationFilePacBrowserTest
         switches::kProxyPacUrl, net::FilePathToFileURL(pac_file_path).spec());
   }
 
+  void SetUpOnMainThread() override {
+    NetworkContextConfigurationBrowserTest::SetUpOnMainThread();
+
+    // The network service will have just been killed if network_service_state
+    // is kRestarted. Make sure it knows about the correct network state before
+    // continuing.
+    network::NetworkConnectionTracker* tracker =
+        content::GetNetworkConnectionTracker();
+    auto connection_type = network::mojom::ConnectionType::CONNECTION_NONE;
+    run_loop_.reset(new base::RunLoop());
+    tracker->AddNetworkConnectionObserver(this);
+    while (!tracker->GetConnectionType(
+               &connection_type,
+               base::BindOnce(&NetworkContextConfigurationFilePacBrowserTest::
+                                  OnConnectionChanged,
+                              base::Unretained(this))) ||
+           connection_type == network::mojom::ConnectionType::CONNECTION_NONE) {
+      run_loop_->Run();
+      run_loop_.reset(new base::RunLoop());
+    }
+    tracker->RemoveNetworkConnectionObserver(this);
+  }
+
+  // network::NetworkConnectionTracker::NetworkConnectionObserver
+  void OnConnectionChanged(network::mojom::ConnectionType type) override {
+    run_loop_->Quit();
+  }
+
  private:
   base::ScopedTempDir temp_dir_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkContextConfigurationFilePacBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationFilePacBrowserTest, FilePac) {
+  if (IsRestartStateWithInProcessNetworkService())
+    return;
   bool network_service_disabled =
       !base::FeatureList::IsEnabled(network::features::kNetworkService);
   // PAC file URLs are not supported with the network service
@@ -1610,6 +1712,8 @@ class NetworkContextConfigurationDataPacBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationDataPacBrowserTest, DataPac) {
+  if (IsRestartStateWithInProcessNetworkService())
+    return;
   TestProxyConfigured(/*expect_success=*/true);
 }
 
@@ -1641,6 +1745,8 @@ class NetworkContextConfigurationFtpPacBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationFtpPacBrowserTest, FtpPac) {
+  if (IsRestartStateWithInProcessNetworkService())
+    return;
   std::unique_ptr<network::ResourceRequest> request =
       std::make_unique<network::ResourceRequest>();
   // This URL should be directed to the test server because of the proxy.
@@ -1709,6 +1815,8 @@ class NetworkContextConfigurationHttpsStrippingPacBrowserTest
 // Start Chrome and check that PAC HTTPS path stripping is enabled.
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpsStrippingPacBrowserTest,
                        PRE_PacHttpsUrlStripping) {
+  if (IsRestartStateWithInProcessNetworkService())
+    return;
   ASSERT_FALSE(CreateDefaultNetworkContextParams()
                    ->dangerously_allow_pac_access_to_secure_urls);
 
@@ -1745,6 +1853,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpsStrippingPacBrowserTest,
 // Flaky. See https://crbug.com/840127.
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpsStrippingPacBrowserTest,
                        DISABLED_PacHttpsUrlStripping) {
+  if (IsRestartStateWithInProcessNetworkService())
+    return;
   ASSERT_TRUE(CreateDefaultNetworkContextParams()
                   ->dangerously_allow_pac_access_to_secure_urls);
 

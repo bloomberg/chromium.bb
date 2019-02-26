@@ -80,7 +80,7 @@ void OnHelloMessageValidatedForResponderAuth(
     bool hello_message_validated,
     const std::string& hello_public_key) {
   if (!hello_message_validated) {
-    PA_LOG(INFO) << "Invalid [Hello] while creating [Responder Auth]";
+    PA_LOG(VERBOSE) << "Invalid [Hello] while creating [Responder Auth]";
     context.callback.Run(std::string());
     return;
   }
@@ -108,7 +108,7 @@ void OnInnerMessageCreatedForResponderAuth(
     CreateResponderAuthMessageContext context,
     const std::string& inner_message) {
   if (inner_message.empty()) {
-    PA_LOG(INFO) << "Failed to create middle message for [Responder Auth]";
+    PA_LOG(VERBOSE) << "Failed to create middle message for [Responder Auth]";
     context.callback.Run(std::string());
     return;
   }
@@ -201,7 +201,7 @@ void OnInnerMessageUnwrappedForInitiatorAuth(
     const std::string& payload,
     const securemessage::Header& header) {
   if (!verified)
-    PA_LOG(INFO) << "Failed to inner [Initiator Auth] message.";
+    PA_LOG(VERBOSE) << "Failed to inner [Initiator Auth] message.";
   context.callback.Run(verified);
 }
 
@@ -212,7 +212,7 @@ void OnOuterMessageUnwrappedForInitiatorAuth(
     const std::string& payload,
     const securemessage::Header& header) {
   if (!verified) {
-    PA_LOG(INFO) << "Failed to verify outer [Initiator Auth] message";
+    PA_LOG(VERBOSE) << "Failed to verify outer [Initiator Auth] message";
     context.callback.Run(false);
     return;
   }
@@ -221,7 +221,7 @@ void OnOuterMessageUnwrappedForInitiatorAuth(
   securemessage::DeviceToDeviceMessage device_to_device_message;
   if (!device_to_device_message.ParseFromString(payload) ||
       device_to_device_message.sequence_number() != 1) {
-    PA_LOG(INFO) << "Failed to validate DeviceToDeviceMessage payload.";
+    PA_LOG(VERBOSE) << "Failed to validate DeviceToDeviceMessage payload.";
     context.callback.Run(false);
     return;
   }

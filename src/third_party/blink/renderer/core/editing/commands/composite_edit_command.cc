@@ -84,7 +84,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 CompositeEditCommand::CompositeEditCommand(Document& document)
     : EditCommand(document) {
@@ -363,9 +363,9 @@ void CompositeEditCommand::AppendNode(Node* node,
   // TODO(yosin): We should get rid of |canHaveChildrenForEditing()|, since
   // |cloneParagraphUnderNewElement()| attempt to clone non-well-formed HTML,
   // produced by JavaScript.
-  ABORT_EDITING_COMMAND_IF(
-      !CanHaveChildrenForEditing(parent) &&
-      !(parent->IsElementNode() && ToElement(parent)->TagQName() == objectTag));
+  ABORT_EDITING_COMMAND_IF(!CanHaveChildrenForEditing(parent) &&
+                           !(parent->IsElementNode() &&
+                             ToElement(parent)->TagQName() == kObjectTag));
   ABORT_EDITING_COMMAND_IF(!HasEditableStyle(*parent) &&
                            parent->InActiveDocument());
   ApplyCommandToComposite(AppendNodeCommand::Create(parent, node),
@@ -1644,8 +1644,10 @@ bool CompositeEditCommand::BreakOutOfEmptyListItem(
   if (ContainerNode* block_enclosing_list = list_node->parentNode()) {
     if (IsHTMLLIElement(
             *block_enclosing_list)) {  // listNode is inside another list item
-      if (VisiblePositionAfterNode(*block_enclosing_list).DeepEquivalent() ==
-          VisiblePositionAfterNode(*list_node).DeepEquivalent()) {
+      if (CreateVisiblePosition(PositionAfterNode(*block_enclosing_list))
+              .DeepEquivalent() ==
+          CreateVisiblePosition(PositionAfterNode(*list_node))
+              .DeepEquivalent()) {
         // If listNode appears at the end of the outer list item, then move
         // listNode outside of this list item, e.g.
         //   <ul><li>hello <ul><li><br></li></ul> </li></ul>
@@ -1981,7 +1983,7 @@ bool CompositeEditCommand::IsNodeVisiblyContainedWithin(
     return true;
 
   bool start_is_visually_same =
-      VisiblePositionBeforeNode(node).DeepEquivalent() ==
+      CreateVisiblePosition(PositionBeforeNode(node)).DeepEquivalent() ==
       CreateVisiblePosition(selected_range.StartPosition()).DeepEquivalent();
   if (start_is_visually_same &&
       ComparePositions(Position::InParentAfterNode(node),
@@ -1989,7 +1991,7 @@ bool CompositeEditCommand::IsNodeVisiblyContainedWithin(
     return true;
 
   bool end_is_visually_same =
-      VisiblePositionAfterNode(node).DeepEquivalent() ==
+      CreateVisiblePosition(PositionAfterNode(node)).DeepEquivalent() ==
       CreateVisiblePosition(selected_range.EndPosition()).DeepEquivalent();
   if (end_is_visually_same &&
       ComparePositions(selected_range.StartPosition(),

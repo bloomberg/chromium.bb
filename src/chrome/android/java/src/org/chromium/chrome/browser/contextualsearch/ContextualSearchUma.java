@@ -834,7 +834,7 @@ public class ContextualSearchUma {
     public static void logTapResultsSeen(boolean wasPanelSeen) {
         RecordHistogram.recordBooleanHistogram(
                 "Search.ContextualSearch.Tap.ResultsSeen", wasPanelSeen);
-        if (AndroidSyncSettings.isSyncEnabled()) {
+        if (AndroidSyncSettings.get().isSyncEnabled()) {
             RecordHistogram.recordBooleanHistogram(
                     "Search.ContextualSearch.Tap.SyncEnabled.ResultsSeen", wasPanelSeen);
         }
@@ -893,10 +893,10 @@ public class ContextualSearchUma {
      */
     public static void logSelectionLengthResultsSeen(boolean wasPanelSeen, int selectionLength) {
         if (wasPanelSeen) {
-            RecordHistogram.recordSparseSlowlyHistogram(
+            RecordHistogram.recordSparseHistogram(
                     "Search.ContextualSearchSelectionLengthSeen", selectionLength);
         } else {
-            RecordHistogram.recordSparseSlowlyHistogram(
+            RecordHistogram.recordSparseHistogram(
                     "Search.ContextualSearchSelectionLengthNotSeen", selectionLength);
         }
     }

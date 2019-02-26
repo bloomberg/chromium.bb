@@ -14,6 +14,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/token.h"
 #include "base/version.h"
 #include "content/public/common/cdm_info.h"
 #include "media/base/video_codecs.h"
@@ -30,7 +31,7 @@ using CdmProxy = media::CdmProxy;
 
 const char kTestCdmName[] = "Test CDM";
 const char kAlternateCdmName[] = "Alternate CDM";
-const char kTestCdmGuid[] = "62FE9C4B-384E-48FD-B28A-9F6F248BC8CC";
+const base::Token kTestCdmGuid{1234, 5678};
 const char kTestPath[] = "/aa/bb";
 const char kVersion1[] = "1.1.1.1";
 const char kVersion2[] = "1.1.1.2";
@@ -93,7 +94,7 @@ class CdmRegistryImplTest : public testing::Test {
     return false;
   }
 
-  std::vector<std::string> GetVersions(const std::string& guid) {
+  std::vector<std::string> GetVersions(const base::Token& guid) {
     std::vector<std::string> versions;
     for (const auto& cdm : cdm_registry_.GetAllRegisteredCdms()) {
       if (cdm.guid == guid)

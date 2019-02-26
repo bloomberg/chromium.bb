@@ -7,6 +7,10 @@
 #include <utility>
 
 #include "device/fido/fido_parsing_utils.h"
+#include "services/device/public/mojom/constants.mojom.h"
+#include "services/device/public/mojom/hid.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/mojom/connector.mojom.h"
 
 namespace device {
 
@@ -126,6 +130,20 @@ void FakeHidManager::AddBinding2(device::mojom::HidManagerRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
+void FakeHidManager::AddFidoHidDevice(std::string guid) {
+  auto c_info = device::mojom::HidCollectionInfo::New();
+  c_info->usage = device::mojom::HidUsageAndPage::New(1, 0xf1d0);
+  auto device = device::mojom::HidDeviceInfo::New();
+  device->guid = std::move(guid);
+  device->product_name = "Test Fido Device";
+  device->serial_number = "123FIDO";
+  device->bus_type = device::mojom::HidBusType::kHIDBusTypeUSB;
+  device->collections.push_back(std::move(c_info));
+  device->max_input_report_size = 64;
+  device->max_output_report_size = 64;
+  AddDevice(std::move(device));
+}
+
 void FakeHidManager::GetDevicesAndSetClient(
     device::mojom::HidManagerClientAssociatedPtrInfo client,
     GetDevicesCallback callback) {
@@ -183,5 +201,16 @@ void FakeHidManager::RemoveDevice(const std::string device_guid) {
   });
   devices_.erase(it);
 }
+
+ScopedFakeHidManager::ScopedFakeHidManager() {
+  service_manager::mojom::ConnectorRequest request;
+  connector_ = service_manager::Connector::Create(&request);
+  connector_->OverrideBinderForTesting(
+      service_manager::ServiceFilter::ByName(device::mojom::kServiceName),
+      device::mojom::HidManager::Name_,
+      base::BindRepeating(&FakeHidManager::AddBinding, base::Unretained(this)));
+}
+
+ScopedFakeHidManager::~ScopedFakeHidManager() = default;
 
 }  // namespace device

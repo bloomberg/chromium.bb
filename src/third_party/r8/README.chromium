@@ -1,13 +1,14 @@
 Name: R8
 URL: https://r8.googlesource.com/r8
-Version: 1.2.48
+Revision: 97efc6605ceee3e7c12238ae48718d63e5906b4a
+Version: 1.3.40
 License: BSD 3-Clause
 License File: NOT_SHIPPED
 Security Critical: no
 
 Description:
-D8 is a dexer that converts java byte code to dex code.
-It is contained in the R8 repo.
+D8 is a dexer that converts java byte code to dex code. R8 is a proguard-like
+optimizer that also has the ability to dex. D8 is found within R8's repo.
 
 Local Modifications:
 None

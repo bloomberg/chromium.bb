@@ -19,7 +19,7 @@
         <include layout="@layout/modern_list_item_view" />
 
         <!-- TODO(huayinz): Remove custom padding after https://crbug.com/746712 is fixed. -->
-        <android.support.v7.widget.AppCompatImageButton
+        <org.chromium.ui.widget.ChromeImageButton
             android:id="@+id/close_btn_modern"
             style="@style/ListItemEndIconSmall"
             android:paddingStart="23dp"
@@ -35,7 +35,7 @@
         android:layout_height="match_parent"
         android:visibility="invisible" >
 
-        <Button
+        <org.chromium.ui.widget.ButtonCompat
             android:id="@+id/undo_button"
             android:layout_height="match_parent"
             android:layout_width="0dp"
@@ -45,8 +45,7 @@
             android:textAlignment="viewStart"
             android:text="@string/accessibility_tab_switcher_undo_tab_closed"
             android:contentDescription="@string/accessibility_tab_switcher_undo_tab_closed"
-            android:textAppearance="@style/BlueButtonText2"
-            android:background="?attr/selectableItemBackground" />
+            style="@style/TextButton" />
     </LinearLayout>
 
 </org.chromium.chrome.browser.widget.accessibility.AccessibilityTabModelListItem>

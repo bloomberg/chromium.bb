@@ -235,7 +235,7 @@ class PathContext(object):
       if self.platform == 'chromeos':
         extract_dir = 'chrome-chromeos'
       elif self.platform in ('win', 'win64'):
-        extract_dir = 'chrome-winp'
+        extract_dir = 'chrome-win'
 
     return os.path.join(extract_dir, self._binary_name)
 
@@ -738,6 +738,7 @@ def VerifyEndpoint(fetch, context, rev, profile, num_runs, command, try_args,
         context, rev, fetch.zip_file, profile, num_runs, command, try_args)
   except Exception, e:
     print >> sys.stderr, e
+    raise SystemExit
   if (evaluate(rev, exit_status, stdout, stderr) != expected_answer):
     print 'Unexpected result at a range boundary! Your range is not correct.'
     raise SystemExit

@@ -7,8 +7,6 @@ if (is_android) {
 }
 
 browser_sources = [
-  "data_reduction_proxy_bypass_protocol.cc",
-  "data_reduction_proxy_bypass_protocol.h",
   "data_reduction_proxy_bypass_stats.cc",
   "data_reduction_proxy_bypass_stats.h",
   "data_reduction_proxy_compression_stats.cc",
@@ -76,6 +74,7 @@ if (is_android) {
       "//components/previews/core",
       "//components/variations",
       "//components/variations/net",
+      "//content/public/browser",
       "//crypto",
       "//google_apis",
       "//net:net",
@@ -111,6 +110,7 @@ static_library("browser") {
     "//components/previews/core",
     "//components/variations",
     "//components/variations/net",
+    "//content/public/browser",
     "//crypto",
     "//google_apis",
     "//net",
@@ -218,6 +218,7 @@ source_set("unit_tests") {
     "//components/previews/core",
     "//components/previews/core:test_support",
     "//components/variations",
+    "//content/public/browser",
     "//net:test_support",
     "//services/network:network_service",
     "//services/network:test_support",

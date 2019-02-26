@@ -34,7 +34,7 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
 
  public:
   static AudioContext* Create(Document&,
-                              const AudioContextOptions&,
+                              const AudioContextOptions*,
                               ExceptionState&);
 
   ~AudioContext() override;
@@ -51,7 +51,7 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
 
   bool HasRealtimeConstraint() final { return true; }
 
-  void getOutputTimestamp(ScriptState*, AudioTimestamp&);
+  AudioTimestamp* getOutputTimestamp(ScriptState*) const;
   double baseLatency() const;
 
   MediaElementAudioSourceNode* createMediaElementSource(HTMLMediaElement*,
@@ -72,6 +72,7 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
 
  private:
   friend class AudioContextAutoplayTest;
+  friend class AudioContextTest;
 
   // Do not change the order of this enum, it is used for metrics.
   enum AutoplayStatus {
@@ -122,6 +123,9 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
   // playing audible audio.
   void NotifyAudibleAudioStarted() final;
   void NotifyAudibleAudioStopped() final;
+
+  void EnsureAudioContextManagerService();
+  void OnAudioContextManagerServiceConnectionError();
 
   unsigned context_id_;
   Member<ScriptPromiseResolver> close_resolver_;

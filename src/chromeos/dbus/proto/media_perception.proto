@@ -94,10 +94,29 @@ message State {
     FEATURE_AUTOZOOM = 1;
     FEATURE_HOTWORD_DETECTION = 2;
     FEATURE_OCCUPANCY_DETECTION = 3;
+    FEATURE_EDGE_EMBEDDINGS = 4;
+    FEATURE_SOFTWARE_CROPPING = 5;
   }
 
   // A list of enabled media perception features.
   repeated Feature features = 6;
+
+  message NamedTemplateArgument {
+    optional string name = 1;
+    oneof value {
+      string str = 2;
+      double num = 3;
+    }
+  }
+
+  // An optional list of template arguments to be substituted at
+  // run-time.  Each argument present in this list will be set to the
+  // specified values, others will not be changed. Furthermore, nested
+  // arguments (dictionaries) are not supported.
+  // CAUTION: These template args can be used to overwrite the
+  // Feature flags defined above since feature flags are implemented
+  // as numeric template args.
+  repeated NamedTemplateArgument named_template_arguments = 7;
 }
 
 // This is the output of the MediaPerceptionSinkCalculator.

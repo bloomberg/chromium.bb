@@ -53,7 +53,6 @@
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/window_util.h"
-#include "ui/wm/public/activation_client.h"
 
 namespace ash {
 
@@ -159,39 +158,33 @@ gfx::Rect GetGridBoundsInScreen(aura::Window* root_window,
       split_view_controller->IsCurrentScreenOrientationLandscape();
   const int min_length =
       (landscape ? work_area.width() : work_area.height()) / 3;
-  if ((landscape ? bounds.width() : bounds.height()) > min_length)
+  const int current_length = landscape ? bounds.width() : bounds.height();
+
+  if (current_length > min_length)
     return bounds;
 
-  // Helper function which shifts and clamps |out_bounds|. Handles the
-  // orientation and whether |opposite_position| is physically on the left
-  // or top of the screen.
-  auto shift_bounds = [&min_length, &landscape](bool left_or_top,
-                                                gfx::Rect* out_bounds) {
-    // If we are shifting to the left or top we need to update the origin as
-    // well.
-    if (left_or_top) {
-      if (landscape) {
-        out_bounds->set_x(out_bounds->x() - (min_length - out_bounds->width()));
-      } else {
-        out_bounds->set_y(out_bounds->y() -
-                          (min_length - out_bounds->height()));
-      }
-    }
+  // Clamp bounds' length to the minimum length.
+  if (landscape)
+    bounds.set_width(min_length);
+  else
+    bounds.set_height(min_length);
 
-    if (landscape)
-      out_bounds->set_width(min_length);
-    else
-      out_bounds->set_height(min_length);
-  };
-
-  // Shift the opposite direction when |primary| is false because the physical
-  // location will not be aligned with |opposite_position|.
+  // The |opposite_position| will be physically on the left or top of the screen
+  // (depending on whether the orientation is landscape or portrait
+  //  respectively), if |opposite_position| is left AND current orientation is
+  // primary, OR |opposite_position| is right AND current orientation is not
+  // primary. This is an X-NOR condition.
   const bool primary =
       split_view_controller->IsCurrentScreenOrientationPrimary();
-  if (opposite_position == SplitViewController::LEFT)
-    shift_bounds(primary, &bounds);
-  else
-    shift_bounds(!primary, &bounds);
+  const bool left_or_top =
+      (primary == (opposite_position == SplitViewController::LEFT));
+  if (left_or_top) {
+    // If we are shifting to the left or top we need to update the origin as
+    // well.
+    const int offset = min_length - current_length;
+    bounds.Offset(landscape ? gfx::Vector2d(-offset, 0)
+                            : gfx::Vector2d(0, -offset));
+  }
 
   return bounds;
 }
@@ -273,27 +266,7 @@ views::Widget* CreateTextFilter(views::TextfieldController* controller,
   return widget;
 }
 
-// Gets the window that's currently being dragged in |root_window|. Returns
-// nullptr if there is no such window.
-aura::Window* GetDraggedWindow(
-    const aura::Window* root_window,
-    const std::vector<aura::Window*>& mru_window_list) {
-  for (auto* window : mru_window_list) {
-    if (wm::GetWindowState(window)->is_dragged() &&
-        window->GetRootWindow() == root_window) {
-      return window;
-    }
-  }
-  return nullptr;
-}
-
 }  // namespace
-
-// static
-bool WindowSelector::IsSelectable(const aura::Window* window) {
-  auto* window_state = wm::GetWindowState(window);
-  return window_state->IsUserPositionable() && !window_state->IsPip();
-}
 
 WindowSelector::WindowSelector(WindowSelectorDelegate* delegate)
     : delegate_(delegate),
@@ -347,9 +320,9 @@ void WindowSelector::Init(const WindowList& windows,
       observed_windows_.insert(container);
     }
 
-    std::unique_ptr<WindowGrid> grid(
-        new WindowGrid(root, windows, this,
-                       GetGridBoundsInScreen(root, /*divider_changed=*/false)));
+    auto grid = std::make_unique<WindowGrid>(
+        root, windows, this,
+        GetGridBoundsInScreen(root, /*divider_changed=*/false));
     num_items_ += grid->size();
     grid_list_.push_back(std::move(grid));
   }
@@ -361,20 +334,15 @@ void WindowSelector::Init(const WindowList& windows,
     // these layouts should be suppressed during overview mode so they don't
     // conflict with overview mode animations.
 
-    WindowList mru_window_list =
-        Shell::Get()->mru_window_tracker()->BuildMruWindowList();
-
     // Do not call PrepareForOverview until all items are added to window_list_
     // as we don't want to cause any window updates until all windows in
     // overview are observed. See http://crbug.com/384495.
     for (std::unique_ptr<WindowGrid>& window_grid : grid_list_) {
       window_grid->PrepareForOverview();
 
-      // Check if there is any window that's being dragged in the grid. If so,
-      // do not do the animation when entering overview.
-      aura::Window* dragged_window =
-          GetDraggedWindow(window_grid->root_window(), mru_window_list);
-      if (dragged_window) {
+      // Do not animate if there is any window that is being dragged in the
+      // grid.
+      if (enter_exit_overview_type_ == EnterExitOverviewType::kWindowDragged) {
         window_grid->PositionWindows(/*animate=*/false);
       } else if (enter_exit_overview_type_ ==
                  EnterExitOverviewType::kWindowsMinimized) {
@@ -383,7 +351,8 @@ void WindowSelector::Init(const WindowList& windows,
       } else {
         // EnterExitOverviewType::kSwipeFromShelf is an exit only type, so it
         // should not appear here.
-        DCHECK_EQ(enter_exit_overview_type_, EnterExitOverviewType::kNormal);
+        DCHECK_NE(enter_exit_overview_type_,
+                  EnterExitOverviewType::kSwipeFromShelf);
         window_grid->CalculateWindowListAnimationStates(
             /*selected_item=*/nullptr, OverviewTransition::kEnter);
         window_grid->PositionWindows(/*animate=*/true, /*ignore_item=*/nullptr,
@@ -392,7 +361,7 @@ void WindowSelector::Init(const WindowList& windows,
     }
 
     // Image used for text filter textfield.
-    gfx::ImageSkia search_image =
+    const gfx::ImageSkia search_image =
         gfx::CreateVectorIcon(kOverviewTextFilterSearchIcon,
                               kTextFilterIconSize, kTextFilterIconColor);
 
@@ -403,7 +372,6 @@ void WindowSelector::Init(const WindowList& windows,
 
   UMA_HISTOGRAM_COUNTS_100("Ash.WindowSelector.Items", num_items_);
 
-  Shell::Get()->activation_client()->AddObserver(this);
   Shell::Get()->split_view_controller()->AddObserver(this);
 
   display::Screen::GetScreen()->AddObserver(this);
@@ -413,6 +381,8 @@ void WindowSelector::Init(const WindowList& windows,
       mojom::AccessibilityAlert::WINDOW_OVERVIEW_MODE_ENTERED);
 
   UpdateShelfVisibility();
+
+  ignore_activations_ = false;
 }
 
 // NOTE: The work done in Shutdown() is not done in the destructor because it
@@ -780,63 +750,23 @@ void WindowSelector::OnStartingAnimationComplete(bool canceled) {
   }
 }
 
-void WindowSelector::OnDisplayRemoved(const display::Display& display) {
-  // TODO(flackr): Keep window selection active on remaining displays.
-  CancelSelection();
-}
-
-void WindowSelector::OnDisplayMetricsChanged(const display::Display& display,
-                                             uint32_t metrics) {
-  // For metrics changes that happen when the split view mode is active, the
-  // display bounds will be adjusted in OnSplitViewDividerPositionChanged().
-  if (Shell::Get()->IsSplitViewModeActive())
-    return;
-  OnDisplayBoundsChanged();
-}
-
-void WindowSelector::OnWindowHierarchyChanged(
-    const HierarchyChangeParams& params) {
-  // Only care about newly added children of |observed_windows_|.
-  if (!observed_windows_.count(params.receiver) ||
-      !observed_windows_.count(params.new_parent)) {
-    return;
-  }
-
-  aura::Window* new_window = params.target;
-  if (!IsSelectable(new_window))
-    return;
-
-  // If the new window is added when splitscreen is active, do nothing.
-  // SplitViewController will do the right thing to snap the window or end
-  // overview mode.
-  if (Shell::Get()->IsSplitViewModeActive() &&
-      new_window->GetRootWindow() == Shell::Get()
-                                         ->split_view_controller()
-                                         ->GetDefaultSnappedWindow()
-                                         ->GetRootWindow()) {
-    return;
-  }
-
-  for (size_t i = 0; i < wm::kSwitchableWindowContainerIdsLength; ++i) {
-    if (new_window->parent()->id() == wm::kSwitchableWindowContainerIds[i] &&
-        !::wm::GetTransientParent(new_window)) {
-      // The new window is in one of the switchable containers, abort overview.
-      CancelSelection();
-      return;
+bool WindowSelector::IsWindowGridAnimating() {
+  for (auto& grid : grid_list_) {
+    if (grid->shield_widget()
+            ->GetNativeWindow()
+            ->layer()
+            ->GetAnimator()
+            ->is_animating()) {
+      return true;
     }
   }
+  return false;
 }
 
-void WindowSelector::OnWindowDestroying(aura::Window* window) {
-  window->RemoveObserver(this);
-  observed_windows_.erase(window);
-  if (window == restore_focus_window_)
-    restore_focus_window_ = nullptr;
-}
-
-void WindowSelector::OnWindowActivated(ActivationReason reason,
-                                       aura::Window* gained_active,
-                                       aura::Window* lost_active) {
+void WindowSelector::OnWindowActivating(
+    ::wm::ActivationChangeObserver::ActivationReason reason,
+    aura::Window* gained_active,
+    aura::Window* lost_active) {
   if (ignore_activations_ || !gained_active ||
       gained_active == GetTextFilterWidgetWindow()) {
     return;
@@ -875,10 +805,59 @@ void WindowSelector::OnWindowActivated(ActivationReason reason,
   CancelSelection();
 }
 
-void WindowSelector::OnAttemptToReactivateWindow(aura::Window* request_active,
-                                                 aura::Window* actual_active) {
-  OnWindowActivated(ActivationReason::ACTIVATION_CLIENT, request_active,
-                    actual_active);
+void WindowSelector::OnDisplayRemoved(const display::Display& display) {
+  // TODO(flackr): Keep window selection active on remaining displays.
+  CancelSelection();
+}
+
+void WindowSelector::OnDisplayMetricsChanged(const display::Display& display,
+                                             uint32_t metrics) {
+  // For metrics changes that happen when the split view mode is active, the
+  // display bounds will be adjusted in OnSplitViewDividerPositionChanged().
+  if (Shell::Get()->IsSplitViewModeActive())
+    return;
+  OnDisplayBoundsChanged();
+}
+
+void WindowSelector::OnWindowHierarchyChanged(
+    const HierarchyChangeParams& params) {
+  // Only care about newly added children of |observed_windows_|.
+  if (!observed_windows_.count(params.receiver) ||
+      !observed_windows_.count(params.new_parent)) {
+    return;
+  }
+
+  aura::Window* new_window = params.target;
+  wm::WindowState* state = wm::GetWindowState(new_window);
+  if (!state->IsUserPositionable() || state->IsPip())
+    return;
+
+  // If the new window is added when splitscreen is active, do nothing.
+  // SplitViewController will do the right thing to snap the window or end
+  // overview mode.
+  if (Shell::Get()->IsSplitViewModeActive() &&
+      new_window->GetRootWindow() == Shell::Get()
+                                         ->split_view_controller()
+                                         ->GetDefaultSnappedWindow()
+                                         ->GetRootWindow()) {
+    return;
+  }
+
+  for (size_t i = 0; i < wm::kSwitchableWindowContainerIdsLength; ++i) {
+    if (new_window->parent()->id() == wm::kSwitchableWindowContainerIds[i] &&
+        !::wm::GetTransientParent(new_window)) {
+      // The new window is in one of the switchable containers, abort overview.
+      CancelSelection();
+      return;
+    }
+  }
+}
+
+void WindowSelector::OnWindowDestroying(aura::Window* window) {
+  window->RemoveObserver(this);
+  observed_windows_.erase(window);
+  if (window == restore_focus_window_)
+    restore_focus_window_ = nullptr;
 }
 
 void WindowSelector::ContentsChanged(views::Textfield* sender,
@@ -1094,7 +1073,6 @@ void WindowSelector::RemoveAllObservers() {
     window->RemoveObserver(this);
   observed_windows_.clear();
 
-  Shell::Get()->activation_client()->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
   if (restore_focus_window_)
     restore_focus_window_->RemoveObserver(this);

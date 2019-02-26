@@ -276,7 +276,7 @@ class TabManagerTest : public InProcessBrowserTest {
   // indicates that the page is frozen. In production, this is sent by the
   // renderer process. This is done to finish a proactive tab discard.
   void SimulateFreezeSignal(content::WebContents* contents) {
-    TabLifecycleUnitSource::GetInstance()
+    GetTabLifecycleUnitSource()
         ->GetTabLifecycleUnit(contents)
         ->UpdateLifecycleState(mojom::LifecycleState::kFrozen);
   }
@@ -289,7 +289,7 @@ class TabManagerTest : public InProcessBrowserTest {
   }
 
   LifecycleUnit* GetLifecycleUnitAt(int index) {
-    return TabLifecycleUnitSource::GetInstance()->GetTabLifecycleUnit(
+    return GetTabLifecycleUnitSource()->GetTabLifecycleUnit(
         GetWebContentsAt(index));
   }
 
@@ -307,8 +307,7 @@ class TabManagerTestWithTwoTabs : public TabManagerTest {
     TabManagerTest::SetUpOnMainThread();
 
     // Open 2 tabs with default URLs in a focused tab strip.
-    TabLifecycleUnitSource::GetInstance()->SetFocusedTabStripModelForTesting(
-        tsm());
+    GetTabLifecycleUnitSource()->SetFocusedTabStripModelForTesting(tsm());
     OpenTwoTabs(GURL(chrome::kChromeUIAboutURL),
                 GURL(chrome::kChromeUICreditsURL));
   }

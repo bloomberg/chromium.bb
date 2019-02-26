@@ -81,4 +81,46 @@ class ResizeObserver {
  * @param {...*} args The function arguments.
  * TODO(rbpotter): Remove this once it is added to Closure Compiler itself.
  */
-Polymer.RenderStatus.beforeNextRender = function(element, fn, args) {}
+Polymer.RenderStatus.beforeNextRender = function(element, fn, args) {};
+
+/**
+ * @see
+ * https://github.com/tc39/proposal-bigint
+ * This supports wrapping and operating on arbitrarily large integers.
+ *
+ * @param {number} value
+ */
+let BigInt = function(value) {};
+
+/**
+ * TODO(manukh): Remove this once it is added to Closure Compiler itself.
+ * @see https://w3c.github.io/clipboard-apis/#async-clipboard-api
+ * @interface
+ */
+function Clipboard() {}
+
+/**
+ * @return {!Promise<string>}
+ */
+Clipboard.prototype.readText = function() {};
+
+/**
+ * @param {string} text
+ * @return {!Promise<void>}
+ */
+Clipboard.prototype.writeText = function(text) {};
+
+/** @const {!Clipboard} */
+Navigator.prototype.clipboard;
+
+/**
+ * TODO(manukh): remove this once it is added to Closure Compiler itself.
+ * @see https://tc39.github.io/proposal-flatMap/#sec-Array.prototype.flatMap
+ * @param {?function(this:S, T, number, !Array<T>): R} callback
+ * @param {S=} opt_this
+ * @return {!Array<R>}
+ * @this {IArrayLike<T>|string}
+ * @template T,S,R
+ * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flatMap
+ */
+Array.prototype.flatMap = function(callback, opt_this) {};

@@ -1,7 +1,7 @@
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
+
 // The base class for streams which deliver data to/from an application.
 // In each direction, the data on such a stream first contains compressed
 // headers then body data.
@@ -96,6 +96,13 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream : public QuicStream {
   // QUIC_STREAM_NO_ERROR.
   void OnStreamReset(const QuicRstStreamFrame& frame) override;
 
+  // Called by the sequencer when new data is available. Decodes the data and
+  // calls OnBodyAvailable() to pass to the upper layer.
+  void OnDataAvailable() override;
+
+  // Called in OnDataAvailable() after it finishes the decoding job.
+  virtual void OnBodyAvailable() = 0;
+
   // Writes the headers contained in |header_block| to the dedicated
   // headers stream.
   virtual size_t WriteHeaders(
@@ -105,7 +112,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream : public QuicStream {
 
   // Sends |data| to the peer, or buffers if it can't be sent immediately.
   void WriteOrBufferBody(
-      const QuicString& data,
+      QuicStringPiece data,
       bool fin,
       QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
 
@@ -114,6 +121,16 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream : public QuicStream {
   virtual size_t WriteTrailers(
       spdy::SpdyHeaderBlock trailer_block,
       QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
+
+  // Does the same thing as WriteOrBufferBody except this method takes iovec
+  // as the data input. Right now it only calls WritevData.
+  // TODO(renjietang): Write data frame header before writing body.
+  QuicConsumedData WritevBody(const struct iovec* iov, int count, bool fin);
+
+  // Does the same thing as WriteOrBufferBody except this method takes
+  // memslicespan as the data input. Right now it only calls WriteMemSlices.
+  // TODO(renjietang): Write data frame header before writing body.
+  QuicConsumedData WriteBodySlices(QuicMemSliceSpan slices, bool fin);
 
   // Marks the trailers as consumed. This applies to the case where this object
   // receives headers and trailers as QuicHeaderLists via calls to

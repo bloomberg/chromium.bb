@@ -31,11 +31,11 @@ bool V8ScriptValueSerializerForModules::WriteDOMObject(
     return false;
 
   const WrapperTypeInfo* wrapper_type_info = wrappable->GetWrapperTypeInfo();
-  if (wrapper_type_info == &V8CryptoKey::wrapperTypeInfo) {
+  if (wrapper_type_info == &V8CryptoKey::wrapper_type_info) {
     return WriteCryptoKey(wrappable->ToImpl<CryptoKey>()->Key(),
                           exception_state);
   }
-  if (wrapper_type_info == &V8DOMFileSystem::wrapperTypeInfo) {
+  if (wrapper_type_info == &V8DOMFileSystem::wrapper_type_info) {
     DOMFileSystem* fs = wrappable->ToImpl<DOMFileSystem>();
     if (!fs->Clonable()) {
       exception_state.ThrowDOMException(
@@ -50,7 +50,7 @@ bool V8ScriptValueSerializerForModules::WriteDOMObject(
     WriteUTF8String(fs->RootURL().GetString());
     return true;
   }
-  if (wrapper_type_info == &V8RTCCertificate::wrapperTypeInfo) {
+  if (wrapper_type_info == &V8RTCCertificate::wrapper_type_info) {
     RTCCertificate* certificate = wrappable->ToImpl<RTCCertificate>();
     rtc::RTCCertificatePEM pem = certificate->Certificate()->ToPEM();
     WriteTag(kRTCCertificateTag);
@@ -58,7 +58,7 @@ bool V8ScriptValueSerializerForModules::WriteDOMObject(
     WriteUTF8String(pem.certificate().c_str());
     return true;
   }
-  if (wrapper_type_info == &V8DetectedBarcode::wrapperTypeInfo) {
+  if (wrapper_type_info == &V8DetectedBarcode::wrapper_type_info) {
     DetectedBarcode* detected_barcode = wrappable->ToImpl<DetectedBarcode>();
     WriteTag(kDetectedBarcodeTag);
     WriteUTF8String(detected_barcode->rawValue());
@@ -67,15 +67,16 @@ bool V8ScriptValueSerializerForModules::WriteDOMObject(
     WriteDouble(bounding_box->y());
     WriteDouble(bounding_box->width());
     WriteDouble(bounding_box->height());
-    const HeapVector<Point2D>& corner_points = detected_barcode->cornerPoints();
+    const HeapVector<Member<Point2D>>& corner_points =
+        detected_barcode->cornerPoints();
     WriteUint32(static_cast<uint32_t>(corner_points.size()));
     for (const auto& corner_point : corner_points) {
-      WriteDouble(corner_point.x());
-      WriteDouble(corner_point.y());
+      WriteDouble(corner_point->x());
+      WriteDouble(corner_point->y());
     }
     return true;
   }
-  if (wrapper_type_info == &V8DetectedFace::wrapperTypeInfo) {
+  if (wrapper_type_info == &V8DetectedFace::wrapper_type_info) {
     DetectedFace* detected_face = wrappable->ToImpl<DetectedFace>();
     WriteTag(kDetectedFaceTag);
     DOMRectReadOnly* bounding_box = detected_face->boundingBox();
@@ -83,20 +84,20 @@ bool V8ScriptValueSerializerForModules::WriteDOMObject(
     WriteDouble(bounding_box->y());
     WriteDouble(bounding_box->width());
     WriteDouble(bounding_box->height());
-    const HeapVector<Landmark>& landmarks = detected_face->landmarks();
+    const HeapVector<Member<Landmark>>& landmarks = detected_face->landmarks();
     WriteUint32(static_cast<uint32_t>(landmarks.size()));
     for (const auto& landmark : landmarks) {
-      WriteUTF8String(landmark.type());
-      const HeapVector<Point2D>& locations = landmark.locations();
+      WriteUTF8String(landmark->type());
+      const HeapVector<Member<Point2D>>& locations = landmark->locations();
       WriteUint32(static_cast<uint32_t>(locations.size()));
       for (const auto& location : locations) {
-        WriteDouble(location.x());
-        WriteDouble(location.y());
+        WriteDouble(location->x());
+        WriteDouble(location->y());
       }
     }
     return true;
   }
-  if (wrapper_type_info == &V8DetectedText::wrapperTypeInfo) {
+  if (wrapper_type_info == &V8DetectedText::wrapper_type_info) {
     DetectedText* detected_text = wrappable->ToImpl<DetectedText>();
     WriteTag(kDetectedTextTag);
     WriteUTF8String(detected_text->rawValue());
@@ -105,11 +106,12 @@ bool V8ScriptValueSerializerForModules::WriteDOMObject(
     WriteDouble(bounding_box->y());
     WriteDouble(bounding_box->width());
     WriteDouble(bounding_box->height());
-    const HeapVector<Point2D>& corner_points = detected_text->cornerPoints();
+    const HeapVector<Member<Point2D>>& corner_points =
+        detected_text->cornerPoints();
     WriteUint32(static_cast<uint32_t>(corner_points.size()));
     for (const auto& corner_point : corner_points) {
-      WriteDouble(corner_point.x());
-      WriteDouble(corner_point.y());
+      WriteDouble(corner_point->x());
+      WriteDouble(corner_point->y());
     }
     return true;
   }

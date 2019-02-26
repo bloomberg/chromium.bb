@@ -184,10 +184,18 @@ MediaStreamVideoCapturerSource::MediaStreamVideoCapturerSource(
   SetStopCallback(stop_callback);
   SetDevice(device);
   SetDeviceRotationDetection(true /* enabled */);
+  device_video_capturer_factory_callback_ = base::BindRepeating(
+      &MediaStreamVideoCapturerSource::RecreateLocalVideoCapturerSource);
 }
 
 MediaStreamVideoCapturerSource::~MediaStreamVideoCapturerSource() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
+
+void MediaStreamVideoCapturerSource::
+    SetDeviceVideoCapturerFactoryCallbackForTesting(
+        DeviceVideoCapturerFactoryCallback testing_factory_callback) {
+  device_video_capturer_factory_callback_ = std::move(testing_factory_callback);
 }
 
 void MediaStreamVideoCapturerSource::RequestRefreshFrame() {
@@ -267,6 +275,25 @@ MediaStreamVideoCapturerSource::GetCurrentCaptureParams() const {
   return capture_params_;
 }
 
+void MediaStreamVideoCapturerSource::ChangeSourceImpl(
+    const MediaStreamDevice& new_device) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(device_video_capturer_factory_callback_);
+
+  if (state_ != STARTED) {
+    return;
+  }
+
+  state_ = STOPPING_FOR_CHANGE_SOURCE;
+  source_->StopCapture();
+  SetDevice(new_device);
+  source_ = device_video_capturer_factory_callback_.Run(new_device.session_id);
+  source_->StartCapture(
+      capture_params_, frame_callback_,
+      base::BindRepeating(&MediaStreamVideoCapturerSource::OnRunStateChanged,
+                          base::Unretained(this), capture_params_));
+}
+
 void MediaStreamVideoCapturerSource::OnRunStateChanged(
     const media::VideoCaptureParams& new_capture_params,
     bool is_running) {
@@ -292,6 +319,9 @@ void MediaStreamVideoCapturerSource::OnRunStateChanged(
       state_ = is_running ? STARTED : STOPPED;
       OnStopForRestartDone(!is_running);
       break;
+    case STOPPING_FOR_CHANGE_SOURCE:
+      state_ = is_running ? STARTED : STOPPED;
+      break;
     case RESTARTING:
       if (is_running) {
         state_ = STARTED;
@@ -315,6 +345,13 @@ MediaStreamVideoCapturerSource::GetMediaStreamDispatcherHost(
         mojo::MakeRequest(&dispatcher_host_));
   }
   return dispatcher_host_;
+}
+
+// static
+std::unique_ptr<media::VideoCapturerSource>
+MediaStreamVideoCapturerSource::RecreateLocalVideoCapturerSource(
+    int session_id) {
+  return std::make_unique<LocalVideoCapturerSource>(session_id);
 }
 
 }  // namespace content

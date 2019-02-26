@@ -4,11 +4,10 @@
 
 module network.mojom;
 
-import "services/network/public/mojom/mutable_network_traffic_annotation_tag.mojom";
 import "mojo/public/mojom/base/read_only_buffer.mojom";
-import "net/interfaces/address_family.mojom";
-import "net/interfaces/ip_address.mojom";
-import "net/interfaces/ip_endpoint.mojom";
+import "services/network/public/mojom/ip_address.mojom";
+import "services/network/public/mojom/ip_endpoint.mojom";
+import "services/network/public/mojom/mutable_network_traffic_annotation_tag.mojom";
 
 // Represents options that consumers can set when requesting a UDPSocket
 // interface pointer.
@@ -16,11 +15,22 @@ struct UDPSocketOptions {
   // If true, this enables SO_REUSEADDR on the underlying socket.
   bool allow_address_reuse = false;
 
-  // It true, allows sending and receiving packets to and from broadcast
+  // If true, allows sending and receiving packets to and from broadcast
   // addresses. It's recommended this be used instead of SetBroadcast(), as
   // Bind() may fail on some platforms when reusing a UDP port and broadcast
   // is not enabled when the socket is created.
   bool allow_broadcast = false;
+
+  // If true, allows the socket to share the local address to which the socket
+  // will be bound with other processes and attempts to allow all such sockets
+  // to receive the same multicast messages.
+  //
+  // For best cross-platform results in allowing the messages to be shared, all
+  // sockets sharing the same address should join the same multicast group (via
+  // UDPSocket::JoinGroup()) and set the same |multicast_interface|. Also, the
+  // socket should bind to the specific multicast group address rather than a
+  // wildcard address (e.g. 0.0.0.0) on platforms where doing so is allowed.
+  bool allow_address_sharing_for_multicast = false;
 
   // Sets interface to use for multicast. Default value is 0, in which case the
   // default interface is used.
@@ -79,20 +89,19 @@ interface UDPSocket {
   // configures the socket with the options before binding the socket.
   // Returns net::OK and the real local address used on success and a negative
   // net error code on failure.
-  Bind(net.interfaces.IPEndPoint local_addr, UDPSocketOptions? socket_options)
-      => (int32 result, net.interfaces.IPEndPoint? local_addr_out);
+  Bind(IPEndPoint local_addr, UDPSocketOptions? socket_options)
+      => (int32 result, IPEndPoint? local_addr_out);
 
   // Connects the socket to |remote_addr|. This automatically binds the socket
   // to an available local port, so this cannot be used with Bind().
   // If |socket_options| is not null, configures the socket with the options
   // before connecting the socket.
   // The address family of the local socket will be of the same
-  // net.interfaces.AddressFamily as |remote_addr|. Returns net::OK and the
-  // local address of socket on success. Subsequent packets received will be
-  // from |remote_addr|. Returns a negative net error code on failure.
-  Connect(net.interfaces.IPEndPoint remote_addr,
-          UDPSocketOptions? socket_options) =>
-      (int32 result, net.interfaces.IPEndPoint? local_addr_out);
+  // AddressFamily as |remote_addr|. Returns net::OK and the local address of
+  // socket on success. Subsequent packets received will be from |remote_addr|.
+  // Returns a negative net error code on failure.
+  Connect(IPEndPoint remote_addr, UDPSocketOptions? socket_options) =>
+      (int32 result, IPEndPoint? local_addr_out);
 
   // Allows or disallows sending and receiving packets to and from broadcast
   // addresses. Returns a net error code. Should only be called after Bind().
@@ -111,13 +120,13 @@ interface UDPSocket {
   // Joins a multicast group. |group_address| is the group address to join,
   // could be either an IPv4 or IPv6 address. Returns a net error code.
   // See RFC 1112 for details on multicast.
-  JoinGroup(net.interfaces.IPAddress group_address) => (int32 result);
+  JoinGroup(IPAddress group_address) => (int32 result);
 
   // Leaves the multicast group. |group_address| is the group address to leave,
   // could be either an IPv4 or IPv6 address. If the socket hasn't joined the
   // group, this call will be ignored. It's optional to leave the multicast
   // group before destroying the socket. Returns a net error code.
-  LeaveGroup(net.interfaces.IPAddress group_address) => (int32 result);
+  LeaveGroup(IPAddress group_address) => (int32 result);
 
   // Notifies that the receiver is ready to accept |number| of datagrams.
   // Correspondingly, OnReceived() of the UDPSocketReceiver interface will be
@@ -180,7 +189,7 @@ interface UDPSocket {
   //   sufficient resource to complete the operation. When this happens, the
   //   requests will be failed quickly (which might happen before the completion
   //   of requests that were sent earlier).
-  SendTo(net.interfaces.IPEndPoint dest_addr,
+  SendTo(IPEndPoint dest_addr,
          mojo_base.mojom.ReadOnlyBuffer data,
          MutableNetworkTrafficAnnotationTag traffic_annotation)
       => (int32 result);
@@ -214,6 +223,6 @@ interface UDPSocketReceiver {
   // Note that in both cases, |data| can be an empty buffer when |result| is
   // net::OK, which indicates a zero-byte payload.
   OnReceived(int32 result,
-             net.interfaces.IPEndPoint? src_addr,
+             IPEndPoint? src_addr,
              mojo_base.mojom.ReadOnlyBuffer? data);
 };

@@ -41,7 +41,7 @@ static const size_t kDataSize = 1024;
 // Common routine used with Posix file descriptors. Check that shared memory
 // file descriptor |fd| does not allow writable mappings. Return true on
 // success, false otherwise.
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) && !(defined(OS_MACOSX) && !defined(OS_IOS))
 static bool CheckReadOnlySharedMemoryFdPosix(int fd) {
 // Note that the error on Android is EPERM, unlike other platforms where
 // it will be EACCES.
@@ -66,7 +66,7 @@ static bool CheckReadOnlySharedMemoryFdPosix(int fd) {
   }
   return true;
 }
-#endif  // OS_POSIX
+#endif  // OS_POSIX && !(defined(OS_MACOSX) && !defined(OS_IOS))
 
 #if defined(OS_FUCHSIA)
 // Fuchsia specific implementation.
@@ -118,11 +118,7 @@ bool CheckReadOnlySharedMemoryWindowsHandle(HANDLE handle) {
 
 bool CheckReadOnlySharedMemoryHandleForTesting(SharedMemoryHandle handle) {
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-  // For OSX, the code has to deal with both POSIX and MACH handles.
-  if (handle.type_ == SharedMemoryHandle::POSIX)
-    return CheckReadOnlySharedMemoryFdPosix(handle.file_descriptor_.fd);
-  else
-    return CheckReadOnlySharedMemoryMachPort(handle.memory_object_);
+  return CheckReadOnlySharedMemoryMachPort(handle.memory_object_);
 #elif defined(OS_FUCHSIA)
   return CheckReadOnlySharedMemoryFuchsiaHandle(
       zx::unowned_vmo(handle.GetHandle()));

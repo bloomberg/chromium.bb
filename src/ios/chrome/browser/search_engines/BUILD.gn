@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//ios/web/js_compile.gni")
 import("//build/config/features.gni")
 import("//rlz/buildflags/buildflags.gni")
 
@@ -20,8 +21,12 @@ source_set("search_engines") {
   sources = [
     "search_engine_observer_bridge.h",
     "search_engine_observer_bridge.mm",
+    "search_engine_tab_helper.h",
+    "search_engine_tab_helper.mm",
     "search_engines_util.cc",
     "search_engines_util.h",
+    "template_url_fetcher_factory.cc",
+    "template_url_fetcher_factory.h",
     "template_url_service_client_impl.cc",
     "template_url_service_client_impl.h",
     "template_url_service_factory.cc",
@@ -31,6 +36,8 @@ source_set("search_engines") {
   ]
   deps = [
     "//base",
+    "//components/country_codes",
+    "//components/favicon/ios",
     "//components/google/core/browser",
     "//components/history/core/browser",
     "//components/keyed_service/core",
@@ -56,4 +63,36 @@ source_set("search_engines") {
   if (enable_rlz) {
     deps += [ "//components/rlz" ]
   }
+}
+
+source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "search_engine_js_unittest.mm",
+    "search_engine_tab_helper_unittest.mm",
+  ]
+  deps = [
+    ":search_engine_js",
+    ":search_engines",
+    "//base:base",
+    "//base/test:test_support",
+    "//components/favicon/ios",
+    "//components/search_engines",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/browser/favicon:favicon",
+    "//ios/chrome/browser/web:test_support",
+    "//ios/web",
+    "//ios/web/public/test",
+    "//ios/web/public/test/fakes",
+    "//net:test_support",
+    "//testing/gtest",
+  ]
+}
+
+js_compile_checked("search_engine_js") {
+  sources = [
+    "resources/search_engine.js",
+  ]
 }

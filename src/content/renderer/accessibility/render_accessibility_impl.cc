@@ -11,6 +11,7 @@
 #include "base/containers/queue.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -415,7 +416,7 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
   if (document.IsNull())
     return;
 
-  if (pending_events_.empty())
+  if (pending_events_.empty() && dirty_objects_.empty())
     return;
 
   ack_pending_ = true;
@@ -436,6 +437,9 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
   // If there's a layout complete message, we need to send location changes.
   bool had_layout_complete_messages = false;
 
+  // If there's a load complete message, we need to send image metrics.
+  bool had_load_complete_messages = false;
+
   ScopedFreezeBlinkAXTreeSource freeze(&tree_source_);
 
   // Loop over each event and generate an updated event message.
@@ -443,6 +447,9 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
     ui::AXEvent& event = src_events[i];
     if (event.event_type == ax::mojom::Event::kLayoutComplete)
       had_layout_complete_messages = true;
+
+    if (event.event_type == ax::mojom::Event::kLoadComplete)
+      had_load_complete_messages = true;
 
     auto obj = WebAXObject::FromWebDocumentByID(document, event.id);
 
@@ -464,11 +471,11 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
 
     // Whenever there's a change within a table, invalidate the
     // whole table so that row and cell indexes are recomputed.
-    ax::mojom::Role role = obj.Role();
-    if (ui::IsTableLikeRole(role) || role == ax::mojom::Role::kRow ||
-        ui::IsCellOrTableHeaderRole(role)) {
+    const ax::mojom::Role role = obj.Role();
+    if (ui::IsTableLike(role) || role == ax::mojom::Role::kRow ||
+        ui::IsCellOrTableHeader(role)) {
       auto table = obj;
-      while (!table.IsDetached() && !ui::IsTableLikeRole(table.Role()))
+      while (!table.IsDetached() && !ui::IsTableLike(table.Role()))
         table = table.ParentObject();
       if (!table.IsDetached())
         serializer_.InvalidateSubtree(table);
@@ -511,17 +518,16 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
     for (size_t j = 0; j < update.nodes.size(); ++j) {
       ui::AXNodeData& src = update.nodes[j];
       ui::AXRelativeBounds& dst = locations_[update.nodes[j].id];
-      dst.offset_container_id = src.offset_container_id;
-      dst.bounds = src.location;
-      dst.transform.reset(nullptr);
-      if (src.transform)
-        dst.transform.reset(new gfx::Transform(*src.transform));
+      dst = src.relative_bounds;
     }
 
     for (size_t j = 0; j < update.nodes.size(); ++j)
       already_serialized_ids.insert(update.nodes[j].id);
 
     bundle.updates.push_back(update);
+
+    if (had_load_complete_messages)
+      RecordImageMetrics(&update);
 
     VLOG(1) << "Accessibility tree update:\n" << update.ToString();
   }
@@ -679,6 +685,8 @@ void RenderAccessibilityImpl::OnPerformAction(
     case ax::mojom::Action::kNone:
       NOTREACHED();
       break;
+    case ax::mojom::Action::kGetTextLocation:
+      break;
   }
 }
 
@@ -830,7 +838,7 @@ void RenderAccessibilityImpl::Scroll(const WebAXObject& target,
   WebPoint min = target.MinimumScrollOffset();
   WebPoint max = target.MaximumScrollOffset();
 
-  // TODO(zhelfins): This 4/5ths came from the Android implementation, revisit
+  // TODO(anastasi): This 4/5ths came from the Android implementation, revisit
   // to find the appropriate modifier to keep enough context onscreen after
   // scrolling.
   int page_x = std::max((int)(bounds.width * 4 / 5), 1);
@@ -891,9 +899,9 @@ void RenderAccessibilityImpl::ScrollPlugin(int id_to_make_visible) {
   ui::AXNodeData target_data =
       plugin_tree_source_->GetFromId(id_to_make_visible)->data();
 
-  gfx::RectF bounds = target_data.location;
-  if (root_data.transform)
-    root_data.transform->TransformRect(&bounds);
+  gfx::RectF bounds = target_data.relative_bounds.bounds;
+  if (root_data.relative_bounds.transform)
+    root_data.relative_bounds.transform->TransformRect(&bounds);
 
   const WebDocument& document = GetMainDocument();
   if (document.IsNull())
@@ -901,6 +909,51 @@ void RenderAccessibilityImpl::ScrollPlugin(int id_to_make_visible) {
 
   WebAXObject::FromWebDocument(document).ScrollToMakeVisibleWithSubFocus(
       WebRect(bounds.x(), bounds.y(), bounds.width(), bounds.height()));
+}
+
+void RenderAccessibilityImpl::RecordImageMetrics(AXContentTreeUpdate* update) {
+  if (!render_frame_->accessibility_mode().has_mode(ui::AXMode::kScreenReader))
+    return;
+  float scale_factor = render_frame_->GetRenderView()->GetDeviceScaleFactor();
+  for (size_t i = 0; i < update->nodes.size(); ++i) {
+    ui::AXNodeData& node_data = update->nodes[i];
+    if (node_data.role != ax::mojom::Role::kImage)
+      continue;
+    // Convert to DIPs based on screen scale factor.
+    int width = node_data.relative_bounds.bounds.width() / scale_factor;
+    int height = node_data.relative_bounds.bounds.height() / scale_factor;
+    if (width == 0 || height == 0)
+      continue;
+    // We log the min size in a histogram with a max of 10000, so set a ceiling
+    // of 10000 on min_size.
+    int min_size = std::min(std::min(width, height), 10000);
+    int max_size = std::max(width, height);
+    // The ratio is always the smaller divided by the larger so as not to go
+    // over 100%.
+    int ratio = min_size * 100.0 / max_size;
+    const std::string name =
+        node_data.GetStringAttribute(ax::mojom::StringAttribute::kName);
+    bool explicitly_empty = node_data.GetNameFrom() ==
+                            ax::mojom::NameFrom::kAttributeExplicitlyEmpty;
+    if (!name.empty()) {
+      UMA_HISTOGRAM_PERCENTAGE(
+          "Accessibility.ScreenReader.Image.SizeRatio.Labeled", ratio);
+      UMA_HISTOGRAM_COUNTS_10000(
+          "Accessibility.ScreenReader.Image.MinSize.Labeled", min_size);
+    } else if (explicitly_empty) {
+      UMA_HISTOGRAM_PERCENTAGE(
+          "Accessibility.ScreenReader.Image.SizeRatio.ExplicitlyUnlabeled",
+          ratio);
+      UMA_HISTOGRAM_COUNTS_10000(
+          "Accessibility.ScreenReader.Image.MinSize.ExplicitlyUnlabeled",
+          min_size);
+    } else {
+      UMA_HISTOGRAM_PERCENTAGE(
+          "Accessibility.ScreenReader.Image.SizeRatio.Unlabeled", ratio);
+      UMA_HISTOGRAM_COUNTS_10000(
+          "Accessibility.ScreenReader.Image.MinSize.Unlabeled", min_size);
+    }
+  }
 }
 
 }  // namespace content

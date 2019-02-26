@@ -15,20 +15,19 @@ class HTMLDataListOptionsCollection : public HTMLCollection {
   static HTMLDataListOptionsCollection* Create(ContainerNode& owner_node,
                                                CollectionType type) {
     DCHECK_EQ(type, kDataListOptions);
-    return new HTMLDataListOptionsCollection(owner_node);
+    return MakeGarbageCollected<HTMLDataListOptionsCollection>(owner_node);
   }
+
+  explicit HTMLDataListOptionsCollection(ContainerNode& owner_node)
+      : HTMLCollection(owner_node,
+                       kDataListOptions,
+                       kDoesNotOverrideItemAfter) {}
 
   HTMLOptionElement* Item(unsigned offset) const {
     return ToHTMLOptionElement(HTMLCollection::item(offset));
   }
 
   bool ElementMatches(const HTMLElement&) const;
-
- private:
-  explicit HTMLDataListOptionsCollection(ContainerNode& owner_node)
-      : HTMLCollection(owner_node,
-                       kDataListOptions,
-                       kDoesNotOverrideItemAfter) {}
 };
 
 DEFINE_TYPE_CASTS(HTMLDataListOptionsCollection,

@@ -84,7 +84,8 @@ HTMLImportChild* HTMLImportsController::CreateChild(
                       WebFeature::kHTMLImportsAsyncAttribute);
   }
 
-  HTMLImportChild* child = new HTMLImportChild(url, loader, client, mode);
+  HTMLImportChild* child =
+      MakeGarbageCollected<HTMLImportChild>(url, loader, client, mode);
   parent->AppendImport(child);
   loader->AddImport(child);
   return root_->Add(child);

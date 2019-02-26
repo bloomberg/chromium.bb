@@ -17,7 +17,7 @@
 
 namespace ash {
 
-ImeModeView::ImeModeView() : TrayItemView(nullptr) {
+ImeModeView::ImeModeView(Shelf* shelf) : TrayItemView(shelf) {
   SetVisible(false);
   CreateLabel();
   SetupLabelForTray(label());

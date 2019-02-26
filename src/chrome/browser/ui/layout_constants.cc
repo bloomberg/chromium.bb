@@ -27,16 +27,18 @@ int GetCocoaLayoutConstant(LayoutConstant constant) {
 #endif
 
 int GetLayoutConstant(LayoutConstant constant) {
-  const bool touch = ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
+  const bool touch_ui = ui::MaterialDesignController::touch_ui();
   switch (constant) {
     case BOOKMARK_BAR_HEIGHT:
       // The fixed margin ensures the bookmark buttons appear centered relative
       // to the white space above and below.
-      return GetLayoutConstant(BOOKMARK_BAR_BUTTON_HEIGHT) + 4;
+      static constexpr int kBookmarkBarAttachedVerticalMargin = 5;
+      return GetLayoutConstant(BOOKMARK_BAR_BUTTON_HEIGHT) +
+             kBookmarkBarAttachedVerticalMargin;
     case BOOKMARK_BAR_BUTTON_HEIGHT:
-      return touch ? 36 : 28;
+      return touch_ui ? 36 : 28;
     case BOOKMARK_BAR_NTP_HEIGHT:
-      return touch ? GetLayoutConstant(BOOKMARK_BAR_HEIGHT) : 39;
+      return touch_ui ? GetLayoutConstant(BOOKMARK_BAR_HEIGHT) : 39;
     case HOSTED_APP_MENU_BUTTON_SIZE:
       return 24;
     case HOSTED_APP_PAGE_ACTION_ICON_SIZE:
@@ -55,29 +57,29 @@ int GetLayoutConstant(LayoutConstant constant) {
     case LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET:
       return 1;
     case LOCATION_BAR_ELEMENT_PADDING:
-      return touch ? 3 : 2;
+      return touch_ui ? 3 : 2;
     case LOCATION_BAR_HEIGHT:
-      return touch ? 36 : 28;
+      return touch_ui ? 36 : 28;
     case LOCATION_BAR_ICON_SIZE:
-      return touch ? 20 : 16;
+      return touch_ui ? 20 : 16;
     case TAB_AFTER_TITLE_PADDING:
-      return touch ? 8 : 4;
+      return touch_ui ? 8 : 4;
     case TAB_ALERT_INDICATOR_CAPTURE_ICON_WIDTH:
       return 16;
     case TAB_ALERT_INDICATOR_ICON_WIDTH:
-      return touch ? 12 : 16;
+      return touch_ui ? 12 : 16;
     case TAB_HEIGHT:
-      return (touch ? 41 : 34) + GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP);
+      return (touch_ui ? 41 : 34) + GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP);
     case TAB_PRE_TITLE_PADDING:
       return 8;
     case TAB_STACK_DISTANCE:
-      return touch ? 4 : 6;
+      return touch_ui ? 4 : 6;
     case TABSTRIP_TOOLBAR_OVERLAP:
       return 1;
     case TOOLBAR_ELEMENT_PADDING:
-      return touch ? 0 : 4;
+      return touch_ui ? 0 : 4;
     case TOOLBAR_STANDARD_SPACING:
-      return touch ? 12 : 8;
+      return touch_ui ? 12 : 8;
     default:
       break;
   }
@@ -86,18 +88,18 @@ int GetLayoutConstant(LayoutConstant constant) {
 }
 
 gfx::Insets GetLayoutInsets(LayoutInset inset) {
-  const bool touch = ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
+  const bool touch_ui = ui::MaterialDesignController::touch_ui();
   switch (inset) {
     case LOCATION_BAR_ICON_INTERIOR_PADDING:
-      return touch ? gfx::Insets(5, 10) : gfx::Insets(4, 8);
+      return touch_ui ? gfx::Insets(5, 10) : gfx::Insets(4, 8);
 
     case TOOLBAR_BUTTON:
-      return gfx::Insets(touch ? 12 : 6);
+      return gfx::Insets(touch_ui ? 12 : 6);
 
     case TOOLBAR_ACTION_VIEW: {
       // TODO(afakhry): Unify all toolbar button sizes on all platforms.
       // https://crbug.com/822967.
-      return gfx::Insets(touch ? 10 : 2);
+      return gfx::Insets(touch_ui ? 10 : 2);
     }
   }
   NOTREACHED();

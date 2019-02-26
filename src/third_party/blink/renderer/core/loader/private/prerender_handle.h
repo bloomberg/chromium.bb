@@ -53,6 +53,7 @@ class PrerenderHandle final : public GarbageCollectedFinalized<PrerenderHandle>,
                                  const KURL&,
                                  unsigned prerender_rel_types);
 
+  PrerenderHandle(Document&, Prerender*);
   virtual ~PrerenderHandle();
 
   void Cancel();
@@ -65,8 +66,6 @@ class PrerenderHandle final : public GarbageCollectedFinalized<PrerenderHandle>,
   EAGERLY_FINALIZE();
 
  private:
-  PrerenderHandle(Document&, Prerender*);
-
   void Detach();
 
   Member<Prerender> prerender_;

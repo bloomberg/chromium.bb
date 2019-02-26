@@ -53,6 +53,11 @@ class Database final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  Database(DatabaseContext*,
+           const String& name,
+           const String& expected_version,
+           const String& display_name,
+           unsigned estimated_size);
   ~Database() override;
   void Trace(blink::Visitor*) override;
 
@@ -128,11 +133,6 @@ class Database final : public ScriptWrappable {
   class DatabaseTransactionTask;
   class DatabaseTableNamesTask;
 
-  Database(DatabaseContext*,
-           const String& name,
-           const String& expected_version,
-           const String& display_name,
-           unsigned estimated_size);
   bool PerformOpenAndVerify(bool set_version_in_new_database,
                             DatabaseError&,
                             String& error_message);
@@ -158,23 +158,7 @@ class Database final : public ScriptWrappable {
                       const ChangeVersionData* = nullptr);
   Vector<String> PerformGetTableNames();
 
-  void ReportOpenDatabaseResult(int error_site,
-                                int web_sql_error_code,
-                                int sqlite_error_code,
-                                TimeDelta duration);
-  void ReportChangeVersionResult(int error_site,
-                                 int web_sql_error_code,
-                                 int sqlite_error_code);
-  void ReportStartTransactionResult(int error_site,
-                                    int web_sql_error_code,
-                                    int sqlite_error_code);
-  void ReportCommitTransactionResult(int error_site,
-                                     int web_sql_error_code,
-                                     int sqlite_error_code);
-  void ReportExecuteStatementResult(int error_site,
-                                    int web_sql_error_code,
-                                    int sqlite_error_code);
-  void ReportVacuumDatabaseResult(int sqlite_error_code);
+  void ReportSqliteError(int sqlite_error_code);
   void LogErrorMessage(const String&);
   static const char* DatabaseInfoTableName();
   String DatabaseDebugName() const {
@@ -193,7 +177,7 @@ class Database final : public ScriptWrappable {
   String name_;
   String expected_version_;
   String display_name_;
-  unsigned long estimated_size_;
+  unsigned estimated_size_;
   String filename_;
 
   DatabaseGuid guid_;

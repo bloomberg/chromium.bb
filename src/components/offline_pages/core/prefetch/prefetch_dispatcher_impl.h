@@ -15,6 +15,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
+#include "components/offline_pages/core/prefetch/suggestions_provider.h"
+#include "components/offline_pages/core/prefetch/tasks/get_thumbnail_info_task.h"
 #include "components/offline_pages/task/task_queue.h"
 #include "components/version_info/channel.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -64,6 +66,10 @@ class PrefetchDispatcherImpl : public PrefetchDispatcher,
  private:
   friend class PrefetchDispatcherTest;
 
+  base::WeakPtr<PrefetchDispatcherImpl> GetWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
   void DisposeTask();
 
   // Callbacks for network requests.
@@ -112,6 +118,10 @@ class PrefetchDispatcherImpl : public PrefetchDispatcher,
                                  std::unique_ptr<IdsVector> remaining_ids,
                                  bool is_first_attempt,
                                  bool thumbnail_exists);
+  void ThumbnailInfoReceived(const int64_t offline_id,
+                             std::unique_ptr<IdsVector> remaining_ids,
+                             bool is_first_attempt,
+                             GetThumbnailInfoTask::Result result);
   void ThumbnailFetchComplete(const int64_t offline_id,
                               std::unique_ptr<IdsVector> remaining_ids,
                               bool is_first_attempt,

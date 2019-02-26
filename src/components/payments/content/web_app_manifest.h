@@ -38,7 +38,7 @@ struct WebAppInstallationInfo {
   std::string name;
   std::string sw_js_url;
   std::string sw_scope;
-  bool sw_use_cache;
+  bool sw_use_cache = false;
 };
 
 }  // namespace payments

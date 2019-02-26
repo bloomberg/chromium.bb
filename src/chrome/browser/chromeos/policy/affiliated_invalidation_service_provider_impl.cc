@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -32,12 +33,42 @@
 #include "components/invalidation/public/invalidator_state.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/user_manager/user.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 
 namespace policy {
+
+namespace {
+
+// Runs on UI thread.
+void RequestProxyResolvingSocketFactoryOnUIThread(
+    base::WeakPtr<invalidation::TiclInvalidationService> owner,
+    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+  if (!owner)
+    return;
+  if (g_browser_process->system_network_context_manager()) {
+    g_browser_process->system_network_context_manager()
+        ->GetContext()
+        ->CreateProxyResolvingSocketFactory(std::move(request));
+  }
+}
+
+// Runs on IO thread.
+void RequestProxyResolvingSocketFactory(
+    base::WeakPtr<invalidation::TiclInvalidationService> owner,
+    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(&RequestProxyResolvingSocketFactoryOnUIThread, owner,
+                     std::move(request)));
+}
+
+}  // namespace
 
 class AffiliatedInvalidationServiceProviderImpl::InvalidationServiceObserver
     : public syncer::InvalidationHandler {
@@ -323,7 +354,9 @@ AffiliatedInvalidationServiceProviderImpl::FindConnectedInvalidationService() {
             std::unique_ptr<invalidation::TiclSettingsProvider>(
                 new TiclDeviceSettingsProvider),
             g_browser_process->gcm_driver(),
-            g_browser_process->system_request_context(),
+            base::BindRepeating(&RequestProxyResolvingSocketFactory),
+            base::CreateSingleThreadTaskRunnerWithTraits(
+                {content::BrowserThread::IO}),
             std::move(url_loader_factory),
             content::GetNetworkConnectionTracker());
     device_invalidation_service_->Init(

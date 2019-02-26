@@ -5,10 +5,8 @@
 package org.chromium.chrome.browser.preferences;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Build;
-import android.os.Bundle;
 import android.support.annotation.IntDef;
 import android.support.annotation.StringRes;
 import android.text.SpannableString;
@@ -475,11 +473,8 @@ public class SearchEngineAdapter extends BaseAdapter
         if (linkBeingShown == R.string.search_engine_system_location_disabled) {
             mContext.startActivity(LocationUtils.getInstance().getSystemLocationSettingsIntent());
         } else {
-            Intent settingsIntent = PreferencesLauncher.createIntentForSettingsPage(
-                    mContext, SingleWebsitePreferences.class.getName());
-            Bundle fragmentArgs = SingleWebsitePreferences.createFragmentArgsForSite(url);
-            settingsIntent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, fragmentArgs);
-            mContext.startActivity(settingsIntent);
+            PreferencesLauncher.launchSettingsPage(mContext, SingleWebsitePreferences.class,
+                    SingleWebsitePreferences.createFragmentArgsForSite(url));
         }
     }
 

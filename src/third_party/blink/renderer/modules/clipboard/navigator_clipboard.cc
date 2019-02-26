@@ -18,7 +18,7 @@ Clipboard* NavigatorClipboard::clipboard(ScriptState* script_state,
   NavigatorClipboard* supplement =
       Supplement<Navigator>::From<NavigatorClipboard>(navigator);
   if (!supplement) {
-    supplement = new NavigatorClipboard(navigator);
+    supplement = MakeGarbageCollected<NavigatorClipboard>(navigator);
     ProvideTo(navigator, supplement);
   }
 

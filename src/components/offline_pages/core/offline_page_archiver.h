@@ -80,16 +80,21 @@ class OfflinePageArchiver {
 
   // Describes the parameters to control how to create an archive.
   struct CreateArchiveParams {
-    CreateArchiveParams()
-        : remove_popup_overlay(false), use_page_problem_detectors(false) {}
+    explicit CreateArchiveParams(const std::string& name_space);
+
+    // The offline page namespace associated with the archive to be created.
+    std::string name_space;
 
     // Whether to remove popup overlay that obstructs viewing normal content.
-    bool remove_popup_overlay;
+    bool remove_popup_overlay = false;
 
     // Run page problem detectors while generating MTHML if true.
-    bool use_page_problem_detectors;
+    bool use_page_problem_detectors = false;
   };
 
+  // Callback for the final result of an attempt to generate of offline page
+  // archive. All parameters after |result| are only set in the case of a
+  // successful archive creation.
   using CreateArchiveCallback =
       base::OnceCallback<void(ArchiverResult /* result */,
                               const GURL& /* url */,

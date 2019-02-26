@@ -60,6 +60,7 @@ class UnittestStressBuilder(generic_builders.ManifestVersionedBuilder):
 
     self._RunStage(build_stages.UprevStage)
     self._RunStage(build_stages.InitSDKStage)
+    self._RunStage(build_stages.UpdateSDKStage)
     self._RunStage(build_stages.RegenPortageCacheStage)
     self._RunStage(build_stages.SetupBoardStage, board)
     self._RunStage(chrome_stages.SyncChromeStage)
@@ -84,6 +85,7 @@ class ChromiteTestsBuilder(generic_builders.PreCqBuilder):
   def RunTestStages(self):
     """Run something after sync/reexec."""
     self._RunStage(build_stages.InitSDKStage)
+    self._RunStage(build_stages.UpdateSDKStage)
     self._RunStage(test_stages.ChromiteTestStage)
     # TODO(crbug.com/820305): Enable after the flake issue is fixed.
     # self._RunStage(test_stages.CidbIntegrationTestStage)
@@ -93,7 +95,6 @@ class CbuildbotLaunchTestBuilder(generic_builders.PreCqBuilder):
   """Builder that runs cbuildbot_launch tests."""
   def RunTestStages(self):
     """Run something after sync/reexec."""
-    self._RunStage(build_stages.InitSDKStage)
     self._RunStage(test_stages.CbuildbotLaunchTestStage)
 
 
@@ -111,6 +112,7 @@ class VMInformationalBuilder(simple_builders.SimpleBuilder):
 
     self._RunStage(build_stages.UprevStage)
     self._RunStage(build_stages.InitSDKStage)
+    self._RunStage(build_stages.UpdateSDKStage)
     self._RunStage(build_stages.RegenPortageCacheStage)
     self._RunStage(build_stages.SetupBoardStage, board)
     self._RunStage(chrome_stages.SyncChromeStage)

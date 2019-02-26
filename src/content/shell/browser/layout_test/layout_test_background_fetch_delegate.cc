@@ -199,7 +199,8 @@ void LayoutTestBackgroundFetchDelegate::DownloadUrl(
     const std::string& method,
     const GURL& url,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
-    const net::HttpRequestHeaders& headers) {
+    const net::HttpRequestHeaders& headers,
+    bool has_request_body) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Lazily create the |download_service_| because only very few layout tests
@@ -251,6 +252,9 @@ void LayoutTestBackgroundFetchDelegate::Abort(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // TODO(peter): Implement the ability to abort the |job_unique_id|.
 }
+
+void LayoutTestBackgroundFetchDelegate::MarkJobComplete(
+    const std::string& job_unique_id) {}
 
 void LayoutTestBackgroundFetchDelegate::UpdateUI(
     const std::string& job_unique_id,

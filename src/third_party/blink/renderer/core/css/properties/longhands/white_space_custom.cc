@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/white_space.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* WhiteSpace::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -16,5 +16,5 @@ const CSSValue* WhiteSpace::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.WhiteSpace());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

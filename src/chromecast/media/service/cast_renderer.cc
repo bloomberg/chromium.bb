@@ -18,7 +18,6 @@
 #include "chromecast/media/base/video_resolution_policy.h"
 #include "chromecast/media/cdm/cast_cdm_context.h"
 #include "chromecast/media/cma/base/balanced_media_task_runner_factory.h"
-#include "chromecast/media/cma/base/cma_logging.h"
 #include "chromecast/media/cma/base/demuxer_stream_adapter.h"
 #include "chromecast/media/cma/pipeline/media_pipeline_impl.h"
 #include "chromecast/media/cma/pipeline/video_pipeline_client.h"
@@ -51,7 +50,7 @@ void VideoModeSwitchCompletionCb(const ::media::PipelineStatusCB& init_cb,
     init_cb.Run(::media::PIPELINE_ERROR_INITIALIZATION_FAILED);
     return;
   }
-  VLOG(1) << "Video mode switched successfully.";
+  LOG(INFO) << "Video mode switched successfully.";
   init_cb.Run(::media::PIPELINE_OK);
 }
 }  // namespace
@@ -81,14 +80,14 @@ CastRenderer::CastRenderer(
           new BalancedMediaTaskRunnerFactory(kMaxDeltaFetcher)),
       weak_factory_(this) {
   DCHECK(backend_factory_);
-  CMALOG(kLogControl) << __FUNCTION__ << ": " << this;
+  LOG(INFO) << __FUNCTION__ << ": " << this;
 
   if (video_resolution_policy_)
     video_resolution_policy_->AddObserver(this);
 }
 
 CastRenderer::~CastRenderer() {
-  CMALOG(kLogControl) << __FUNCTION__ << ": " << this;
+  LOG(INFO) << __FUNCTION__ << ": " << this;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (video_resolution_policy_)
@@ -98,7 +97,7 @@ CastRenderer::~CastRenderer() {
 void CastRenderer::Initialize(::media::MediaResource* media_resource,
                               ::media::RendererClient* client,
                               const ::media::PipelineStatusCB& init_cb) {
-  CMALOG(kLogControl) << __FUNCTION__ << ": " << this;
+  LOG(INFO) << __FUNCTION__ << ": " << this;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!application_session_id_manager_ptr_);
 
@@ -155,10 +154,10 @@ void CastRenderer::OnGetMultiroomInfo(
     chromecast::mojom::MultiroomInfoPtr multiroom_info) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(multiroom_info);
-  CMALOG(kLogControl) << __FUNCTION__ << ": " << this
-                      << " session_id=" << application_session_id
-                      << ", multiroom=" << multiroom_info->multiroom
-                      << ", audio_channel=" << multiroom_info->audio_channel;
+  LOG(INFO) << __FUNCTION__ << ": " << this
+            << " session_id=" << application_session_id
+            << ", multiroom=" << multiroom_info->multiroom
+            << ", audio_channel=" << multiroom_info->audio_channel;
   // Close the MultiroomManager message pipe so that a connection error does not
   // trigger a second call to this function.
   multiroom_manager_.reset();
@@ -369,8 +368,8 @@ void CastRenderer::OnEnded(Stream stream) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!eos_[stream]);
   eos_[stream] = true;
-  CMALOG(kLogControl) << __FUNCTION__ << ": eos_audio=" << eos_[STREAM_AUDIO]
-                      << " eos_video=" << eos_[STREAM_VIDEO];
+  LOG(INFO) << __FUNCTION__ << ": eos_audio=" << eos_[STREAM_AUDIO]
+            << " eos_video=" << eos_[STREAM_VIDEO];
   if (eos_[STREAM_AUDIO] && eos_[STREAM_VIDEO])
     client_->OnEnded();
 }

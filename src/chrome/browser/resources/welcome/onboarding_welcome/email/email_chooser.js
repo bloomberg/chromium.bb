@@ -2,17 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @const
- */
-var nuxEmail = nuxEmail || {};
+cr.exportPath('nuxEmail');
 
 /**
- * @typedef {?{
- *    name: string,
- *    icon: string,
- *    url: string,
- *    bookmarkId: (string|undefined),
+ * @typedef {{
+ *   id: number,
+ *   name: string,
+ *   icon: string,
+ *   url: string,
+ *   bookmarkId: (string|undefined|null),
  * }}
  */
 nuxEmail.EmailProviderModel;
@@ -23,27 +21,42 @@ Polymer({
   behaviors: [I18nBehavior],
 
   properties: {
-    emailList: Array,
-
-    /** @private */
-    bookmarkBarWasShown_: {
-      type: Boolean,
-      value: loadTimeData.getBoolean('bookmark_bar_shown'),
-    },
+    /**
+     * @type {!Array<!nux.BookmarkListItem>}
+     * @private
+     */
+    emailList_: Array,
 
     /** @private */
     finalized_: Boolean,
 
-    /** @private {nuxEmail.EmailProviderModel} */
+    /** @type {nux.stepIndicatorModel} */
+    indicatorModel: Object,
+
+    /** @private {?nuxEmail.EmailProviderModel} */
     selectedEmailProvider_: {
       type: Object,
-      value: () => null,
       observer: 'onSelectedEmailProviderChange_',
     },
   },
 
   /** @private {nux.NuxEmailProxy} */
-  browserProxy_: null,
+  emailProxy_: null,
+
+  /** @private {nux.BookmarkProxy} */
+  bookmarkProxy_: null,
+
+  /** @private {nux.BookmarkBarManager} */
+  bookmarkBarManager_: null,
+
+  /** @private {boolean} */
+  wasBookmarkBarShownOnInit_: false,
+
+  /** @private {Promise} */
+  listInitialized_: null,
+
+  /** @private {?nux.ModuleMetricsManager} */
+  metricsManager_: null,
 
   /** @override */
   attached: function() {
@@ -54,23 +67,61 @@ Polymer({
 
   /** @override */
   ready: function() {
-    this.browserProxy_ = nux.NuxEmailProxyImpl.getInstance();
-    this.browserProxy_.recordPageInitialized();
+    this.emailProxy_ = nux.NuxEmailProxyImpl.getInstance();
+    this.bookmarkProxy_ = nux.BookmarkProxyImpl.getInstance();
+    this.bookmarkBarManager_ = nux.BookmarkBarManager.getInstance();
+    this.metricsManager_ =
+        new nux.ModuleMetricsManager(nux.EmailMetricsProxyImpl.getInstance());
 
-    this.emailList = this.browserProxy_.getEmailList();
+    this.listInitialized_ = this.emailProxy_.getEmailList().then(list => {
+      this.emailList_ = list;
+    });
+  },
 
-    window.addEventListener('beforeunload', () => {
-      // Only need to clean up if user didn't interact with the buttons.
-      if (this.finalized_)
-        return;
+  onRouteEnter: function() {
+    this.wasBookmarkBarShownOnInit_ = this.bookmarkBarManager_.getShown();
+    this.metricsManager_.recordPageInitialized();
+    this.finalized_ = false;
 
-      if (this.selectedEmailProvider_) {
-        this.browserProxy_.recordProviderSelected(
-            this.selectedEmailProvider_.id);
+    assert(this.listInitialized_);
+    this.listInitialized_.then(() => {
+      // If selectedEmailProvider_ was never initialized, and not explicitly
+      // cancelled by the user at some point (in which case it would be null),
+      // then default to the first option.
+      if (this.selectedEmailProvider_ === undefined) {
+        this.selectedEmailProvider_ = this.emailList_[0];
       }
 
-      this.browserProxy_.recordFinalize();
+      if (this.selectedEmailProvider_) {
+        this.addBookmark_(this.selectedEmailProvider_);
+      }
     });
+  },
+
+  onRouteExit: function() {
+    if (this.finalized_)
+      return;
+    this.cleanUp_();
+    this.metricsManager_.recordBrowserBackOrForward();
+  },
+
+  onRouteUnload: function() {
+    if (this.finalized_)
+      return;
+    this.cleanUp_();
+    this.metricsManager_.recordNavigatedAway();
+  },
+
+  /**
+   * Removes any bookarks and hides the bookmark bar when finalizing.
+   * @private
+   */
+  cleanUp_: function() {
+    this.finalized_ = true;
+    if (this.selectedEmailProvider_) {
+      this.revertBookmark_();
+      this.bookmarkBarManager_.setShown(this.wasBookmarkBarShownOnInit_);
+    }
   },
 
   /**
@@ -84,7 +135,7 @@ Polymer({
     else
       this.selectedEmailProvider_ = e.model.item;
 
-    this.browserProxy_.recordClickedOption();
+    this.metricsManager_.recordClickedOption();
   },
 
   /**
@@ -103,21 +154,52 @@ Polymer({
     e.currentTarget.classList.add('keyboard-focused');
   },
 
-  /** @private */
+  /**
+   * Returns whether |item| is selected or not.
+   * @param {!nuxEmail.EmailProviderModel} item
+   * @return boolean
+   * @private
+   */
   getSelected_: function(item) {
     return this.selectedEmailProvider_ &&
         item.name === this.selectedEmailProvider_.name;
   },
 
   /**
-   * @param {nuxEmail.EmailProviderModel=} emailProvider
+   * @param {nuxEmail.EmailProviderModel} emailProvider
    * @private
    */
-  revertBookmark_: function(emailProvider) {
-    emailProvider = emailProvider || this.selectedEmailProvider_;
+  addBookmark_: function(emailProvider) {
+    if (emailProvider.bookmarkId)
+      return;
 
-    if (emailProvider && emailProvider.bookmarkId)
-      this.browserProxy_.removeBookmark(emailProvider.bookmarkId);
+    // Indicates that the emailProvider is being added as a bookmark.
+    emailProvider.bookmarkId = 'pending';
+
+    this.emailProxy_.cacheBookmarkIcon(emailProvider.id);
+    this.bookmarkBarManager_.setShown(true);
+    this.bookmarkProxy_.addBookmark(
+        {
+          title: emailProvider.name,
+          url: emailProvider.url,
+          parentId: '1',
+        },
+        results => {
+          this.selectedEmailProvider_.bookmarkId = results.id;
+        });
+  },
+
+  /**
+   * @param {nuxEmail.EmailProviderModel=} opt_emailProvider
+   * @private
+   */
+  revertBookmark_: function(opt_emailProvider) {
+    const emailProvider = opt_emailProvider || this.selectedEmailProvider_;
+
+    if (emailProvider && emailProvider.bookmarkId) {
+      this.bookmarkProxy_.removeBookmark(emailProvider.bookmarkId);
+      emailProvider.bookmarkId = null;
+    }
   },
 
   /**
@@ -126,7 +208,7 @@ Polymer({
    * @private
    */
   onSelectedEmailProviderChange_: function(newEmail, prevEmail) {
-    if (!this.browserProxy_)
+    if (!this.emailProxy_ || !this.bookmarkProxy_)
       return;
 
     if (prevEmail) {
@@ -135,20 +217,10 @@ Polymer({
       this.revertBookmark_(prevEmail);
     }
 
-    if (newEmail) {
-      this.browserProxy_.toggleBookmarkBar(true);
-      this.browserProxy_.addBookmark(
-          {
-            title: newEmail.name,
-            url: newEmail.url,
-            parentId: '1',
-          },
-          newEmail.id, results => {
-            this.selectedEmailProvider_.bookmarkId = results.id;
-          });
-    } else {
-      this.browserProxy_.toggleBookmarkBar(this.bookmarkBarWasShown_);
-    }
+    if (newEmail)
+      this.addBookmark_(newEmail);
+    else
+      this.bookmarkBarManager_.setShown(this.wasBookmarkBarShownOnInit_);
 
     // Announcements are mutually exclusive, so keeping separate.
     if (prevEmail && newEmail) {
@@ -162,24 +234,33 @@ Polymer({
 
   /** @private */
   onNoThanksClicked_: function() {
-    this.finalized_ = true;
-    this.revertBookmark_();
-    this.browserProxy_.toggleBookmarkBar(this.bookmarkBarWasShown_);
-    this.browserProxy_.recordNoThanks();
-    window.location.replace('chrome://newtab');
+    this.cleanUp_();
+    this.metricsManager_.recordNoThanks();
+    welcome.navigateToNextStep();
   },
 
   /** @private */
   onGetStartedClicked_: function() {
     this.finalized_ = true;
-    this.browserProxy_.recordProviderSelected(this.selectedEmailProvider_.id);
-    this.browserProxy_.recordGetStarted();
-    window.location.replace(this.selectedEmailProvider_.url);
+    this.emailProxy_.recordProviderSelected(
+        this.selectedEmailProvider_.id, this.emailList_.length);
+    this.metricsManager_.recordGetStarted();
+    welcome.navigateToNextStep();
   },
 
   /** @private */
   onActionButtonClicked_: function() {
     if (this.$$('.action-button').disabled)
-      this.browserProxy_.recordClickedDisabledButton();
+      this.metricsManager_.recordClickedDisabledButton();
   },
+
+  /**
+   * Converts a boolean to a string because aria-pressed needs a string value.
+   * @param {!nuxEmail.EmailProviderModel} item
+   * @return {string}
+   * @private
+   */
+  getAriaPressed_: function(item) {
+    return this.getSelected_(item) ? 'true' : 'false';
+  }
 });

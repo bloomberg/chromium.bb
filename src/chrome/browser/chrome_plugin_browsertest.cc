@@ -155,9 +155,7 @@ class ChromePluginTest : public InProcessBrowserTest {
     for (content::BrowserChildProcessHostIterator iter; !iter.Done(); ++iter) {
       if (iter.GetData().process_type != content::PROCESS_TYPE_PPAPI_PLUGIN)
         continue;
-      base::Process process = base::Process::DeprecatedGetProcessFromHandle(
-          iter.GetData().GetHandle());
-      process.Terminate(0, true);
+      iter.GetData().GetProcess().Terminate(0, true);
       found = true;
     }
     ASSERT_TRUE(found) << "Didn't find Flash process!";

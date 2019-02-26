@@ -21,7 +21,7 @@ namespace blink {
 MediaControlDownloadButtonElement::MediaControlDownloadButtonElement(
     MediaControlsImpl& media_controls)
     : MediaControlInputElement(media_controls, kMediaDownloadButton) {
-  setType(InputTypeNames::button);
+  setType(input_type_names::kButton);
   SetShadowPseudoId(AtomicString("-internal-media-controls-download-button"));
   SetIsWanted(false);
 }
@@ -71,7 +71,7 @@ void MediaControlDownloadButtonElement::UpdateShownState() {
 
 void MediaControlDownloadButtonElement::DefaultEventHandler(Event& event) {
   const KURL& url = MediaElement().currentSrc();
-  if (event.type() == EventTypeNames::click &&
+  if (event.type() == event_type_names::kClick &&
       !(url.IsNull() || url.IsEmpty())) {
     Platform::Current()->RecordAction(
         UserMetricsAction("Media.Controls.Download"));

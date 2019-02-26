@@ -5,14 +5,12 @@
 #include "ash/system/status_area_widget_delegate.h"
 
 #include "ash/focus_cycler.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -26,8 +24,6 @@ namespace {
 using session_manager::SessionState;
 
 constexpr int kAnimationDurationMs = 250;
-
-constexpr int kPaddingFromEdgeOfShelf = 3;
 
 constexpr int kPaddingBetweenWidgetsNewUi = 8;
 
@@ -203,16 +199,9 @@ void StatusAreaWidgetDelegate::SetBorderOnChild(views::View* child,
   int top_edge = vertical_padding;
   int left_edge = 0;
   int bottom_edge = vertical_padding;
-  int right_edge =
-      !features::IsSystemTrayUnifiedEnabled() && extend_border_to_edge
-          ? kPaddingFromEdgeOfShelf
-          : 0;
-
-  // Since all corners are rounded, add some extra space so that borders
-  // don't overlap. This padding between items also takes care of padding
-  // at the edge of the shelf.
-  right_edge = kPaddingBetweenWidgetsNewUi;
-  left_edge = 0;
+  // Add some extra space so that borders don't overlap. This padding between
+  // items also takes care of padding at the edge of the shelf.
+  int right_edge = kPaddingBetweenWidgetsNewUi;
 
   // Swap edges if alignment is not horizontal (bottom-to-top).
   if (!shelf_->IsHorizontalAlignment()) {

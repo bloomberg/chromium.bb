@@ -5,7 +5,7 @@
 #include "chrome/credential_provider/gaiacp/reauth_credential.h"
 
 #include "base/stl_util.h"
-#include "chrome/credential_provider/gaiacp/gcp_strings.h"
+#include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
 #include "chrome/credential_provider/gaiacp/os_user_manager.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
@@ -96,6 +96,7 @@ HRESULT CReauthCredential::FinishAuthentication(BSTR username,
   hr = SetUserProperty(OLE2CW(user_sid_), kUserNeedsReauth, 0);
   if (FAILED(hr)) {
     LOGFN(ERROR) << "SetUserProperty hr=" << putHR(hr);
+    *error_text = AllocErrorString(IDS_INTERNAL_ERROR);
     return hr;
   }
 

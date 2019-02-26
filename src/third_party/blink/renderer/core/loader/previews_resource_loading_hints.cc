@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/core/loader/previews_resource_loading_hints.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -28,16 +30,25 @@ String GetConsoleLogStringForBlockedLoad(const KURL& url) {
 // static
 PreviewsResourceLoadingHints* PreviewsResourceLoadingHints::Create(
     ExecutionContext& execution_context,
+    int64_t ukm_source_id,
     const std::vector<WTF::String>& subresource_patterns_to_block) {
-  return new PreviewsResourceLoadingHints(&execution_context,
-                                          subresource_patterns_to_block);
+  return MakeGarbageCollected<PreviewsResourceLoadingHints>(
+      &execution_context, ukm_source_id, subresource_patterns_to_block);
 }
 
 PreviewsResourceLoadingHints::PreviewsResourceLoadingHints(
     ExecutionContext* execution_context,
+    int64_t ukm_source_id,
     const std::vector<WTF::String>& subresource_patterns_to_block)
     : execution_context_(execution_context),
-      subresource_patterns_to_block_(subresource_patterns_to_block) {}
+      ukm_source_id_(ukm_source_id),
+      subresource_patterns_to_block_(subresource_patterns_to_block) {
+  DCHECK_NE(ukm::kInvalidSourceId, ukm_source_id_);
+
+  subresource_patterns_to_block_usage_.assign(
+      subresource_patterns_to_block.size(), false);
+  blocked_resource_load_priority_counts_.fill(0);
+}
 
 PreviewsResourceLoadingHints::~PreviewsResourceLoadingHints() = default;
 
@@ -51,14 +62,19 @@ bool PreviewsResourceLoadingHints::AllowLoad(
   resource_url_string = resource_url_string.Left(resource_url.PathEnd());
   bool allow_load = true;
 
+  int pattern_index = 0;
   for (const WTF::String& subresource_pattern :
        subresource_patterns_to_block_) {
     // TODO(tbansal): https://crbug.com/856247. Add support for wildcard
     // matching.
     if (resource_url_string.Find(subresource_pattern) != kNotFound) {
       allow_load = false;
+      subresource_patterns_to_block_usage_[pattern_index] = true;
+      blocked_resource_load_priority_counts_[static_cast<int>(
+          resource_load_priority)]++;
       break;
     }
+    pattern_index++;
   }
 
   UMA_HISTOGRAM_BOOLEAN("ResourceLoadingHints.ResourceLoadingBlocked",
@@ -89,6 +105,38 @@ void PreviewsResourceLoadingHints::ReportBlockedLoading(
 
 void PreviewsResourceLoadingHints::Trace(blink::Visitor* visitor) {
   visitor->Trace(execution_context_);
+}
+
+void PreviewsResourceLoadingHints::RecordUKM(
+    ukm::UkmRecorder* ukm_recorder) const {
+  DCHECK(ukm_recorder);
+
+  size_t patterns_to_block_used_count = 0;
+  for (bool pattern_used : subresource_patterns_to_block_usage_) {
+    if (pattern_used) {
+      patterns_to_block_used_count++;
+    }
+  }
+
+  ukm::builders::PreviewsResourceLoadingHints(ukm_source_id_)
+      .Setpatterns_to_block_total(subresource_patterns_to_block_.size())
+      .Setpatterns_to_block_used(patterns_to_block_used_count)
+      .Setblocked_very_low_priority(
+          blocked_resource_load_priority_counts_[static_cast<int>(
+              ResourceLoadPriority::kVeryLow)])
+      .Setblocked_low_priority(
+          blocked_resource_load_priority_counts_[static_cast<int>(
+              ResourceLoadPriority::kLow)])
+      .Setblocked_medium_priority(
+          blocked_resource_load_priority_counts_[static_cast<int>(
+              ResourceLoadPriority::kMedium)])
+      .Setblocked_high_priority(
+          blocked_resource_load_priority_counts_[static_cast<int>(
+              ResourceLoadPriority::kHigh)])
+      .Setblocked_very_high_priority(
+          blocked_resource_load_priority_counts_[static_cast<int>(
+              ResourceLoadPriority::kVeryHigh)])
+      .Record(ukm_recorder);
 }
 
 }  // namespace blink

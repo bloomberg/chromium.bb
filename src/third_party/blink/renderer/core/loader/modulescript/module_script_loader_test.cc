@@ -97,15 +97,14 @@ class ModuleScriptLoaderTestModulator final : public DummyModulator {
   ModuleScriptFetcher* CreateModuleScriptFetcher(
       ModuleScriptCustomFetchType custom_fetch_type) override {
     auto* execution_context = ExecutionContext::From(script_state_);
-    if (execution_context->IsWorkletGlobalScope()) {
+    if (auto* scope = DynamicTo<WorkletGlobalScope>(execution_context)) {
       EXPECT_EQ(ModuleScriptCustomFetchType::kWorkletAddModule,
                 custom_fetch_type);
-      auto* global_scope = ToWorkletGlobalScope(execution_context);
-      return new WorkletModuleScriptFetcher(
-          Fetcher(), global_scope->GetModuleResponsesMap());
+      return MakeGarbageCollected<WorkletModuleScriptFetcher>(
+          Fetcher(), scope->GetModuleResponsesMap());
     }
     EXPECT_EQ(ModuleScriptCustomFetchType::kNone, custom_fetch_type);
-    return new DocumentModuleScriptFetcher(Fetcher());
+    return MakeGarbageCollected<DocumentModuleScriptFetcher>(Fetcher());
   }
 
   ResourceFetcher* Fetcher() const { return fetcher_.Get(); }
@@ -183,7 +182,8 @@ void ModuleScriptLoaderTest::InitializeForWorklet() {
   reporting_proxy_ =
       std::make_unique<MainThreadWorkletReportingProxy>(&GetDocument());
   auto creation_params = std::make_unique<GlobalScopeCreationParams>(
-      GetDocument().Url(), ScriptType::kModule, GetDocument().UserAgent(),
+      GetDocument().Url(), mojom::ScriptType::kModule,
+      GetDocument().UserAgent(), nullptr /* web_worker_fetch_context */,
       Vector<CSPHeaderAndType>(), GetDocument().GetReferrerPolicy(),
       GetDocument().GetSecurityOrigin(), GetDocument().IsSecureContext(),
       GetDocument().GetHttpsState(), nullptr /* worker_clients */,
@@ -191,8 +191,8 @@ void ModuleScriptLoaderTest::InitializeForWorklet() {
       OriginTrialContext::GetTokens(&GetDocument()).get(),
       base::UnguessableToken::Create(), nullptr /* worker_settings */,
       kV8CacheOptionsDefault, new WorkletModuleResponsesMap);
-  global_scope_ = new WorkletGlobalScope(std::move(creation_params),
-                                         *reporting_proxy_, &GetFrame());
+  global_scope_ = MakeGarbageCollected<WorkletGlobalScope>(
+      std::move(creation_params), *reporting_proxy_, &GetFrame());
   global_scope_->ScriptController()->InitializeContextIfNeeded("Dummy Context",
                                                                NullURL());
   modulator_ = new ModuleScriptLoaderTestModulator(
@@ -218,8 +218,10 @@ TEST_F(ModuleScriptLoaderTest, FetchDataURL) {
   TestModuleScriptLoaderClient* client = new TestModuleScriptLoaderClient;
   TestFetchDataURL(ModuleScriptCustomFetchType::kNone, client);
 
-  EXPECT_TRUE(client->WasNotifyFinished())
-      << "ModuleScriptLoader should finish synchronously.";
+  // TODO(leszeks): This should finish synchronously, but currently due
+  // to the script resource/script streamer interaction, it does not.
+  RunUntilIdle();
+  EXPECT_TRUE(client->WasNotifyFinished());
   ASSERT_TRUE(client->GetModuleScript());
   EXPECT_FALSE(client->GetModuleScript()->HasEmptyRecord());
   EXPECT_FALSE(client->GetModuleScript()->HasParseError());
@@ -273,8 +275,11 @@ TEST_F(ModuleScriptLoaderTest, InvalidSpecifier) {
   TestModuleScriptLoaderClient* client = new TestModuleScriptLoaderClient;
   TestInvalidSpecifier(ModuleScriptCustomFetchType::kNone, client);
 
-  EXPECT_TRUE(client->WasNotifyFinished())
-      << "ModuleScriptLoader should finish synchronously.";
+  // TODO(leszeks): This should finish synchronously, but currently due
+  // to the script resource/script streamer interaction, it does not.
+  RunUntilIdle();
+  EXPECT_TRUE(client->WasNotifyFinished());
+
   ASSERT_TRUE(client->GetModuleScript());
   EXPECT_TRUE(client->GetModuleScript()->HasEmptyRecord());
   EXPECT_TRUE(client->GetModuleScript()->HasParseError());
@@ -314,8 +319,10 @@ TEST_F(ModuleScriptLoaderTest, FetchInvalidURL) {
   TestModuleScriptLoaderClient* client = new TestModuleScriptLoaderClient;
   TestFetchInvalidURL(ModuleScriptCustomFetchType::kNone, client);
 
-  EXPECT_TRUE(client->WasNotifyFinished())
-      << "ModuleScriptLoader should finish synchronously.";
+  // TODO(leszeks): This should finish synchronously, but currently due
+  // to the script resource/script streamer interaction, it does not.
+  RunUntilIdle();
+  EXPECT_TRUE(client->WasNotifyFinished());
   EXPECT_FALSE(client->GetModuleScript());
 }
 
@@ -336,7 +343,7 @@ void ModuleScriptLoaderTest::TestFetchURL(
     ModuleScriptCustomFetchType custom_fetch_type,
     TestModuleScriptLoaderClient* client) {
   KURL url("https://example.test/module.js");
-  URLTestHelpers::RegisterMockedURLLoad(
+  url_test_helpers::RegisterMockedURLLoad(
       url, test::CoreTestDataPath("module.js"), "text/javascript");
   auto* fetch_client_settings_object =
       GetDocument().CreateFetchClientSettingsObjectSnapshot();
@@ -356,6 +363,9 @@ TEST_F(ModuleScriptLoaderTest, FetchURL) {
   EXPECT_FALSE(client->WasNotifyFinished())
       << "ModuleScriptLoader unexpectedly finished synchronously.";
   platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  // TODO(leszeks): This should finish synchronously, but currently due
+  // to the script resource/script streamer interaction, it does not.
+  RunUntilIdle();
 
   EXPECT_TRUE(client->WasNotifyFinished());
   EXPECT_TRUE(client->GetModuleScript());

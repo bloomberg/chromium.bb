@@ -63,6 +63,7 @@ MediaPipelineBackendManager::MediaPipelineBackendManager(
                                   {AudioContentType::kCommunication, 1.0f},
                                   {AudioContentType::kOther, 1.0f}},
                                  base::KEEP_FIRST_OF_DUPES),
+      active_backend_wrapper_(nullptr),
       buffer_delegate_(nullptr),
       weak_factory_(this) {
   DCHECK(media_task_runner_);
@@ -84,7 +85,25 @@ MediaPipelineBackendManager::~MediaPipelineBackendManager() {
 std::unique_ptr<CmaBackend> MediaPipelineBackendManager::CreateCmaBackend(
     const media::MediaPipelineDeviceParams& params) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
-  return std::make_unique<MediaPipelineBackendWrapper>(params, this);
+
+  if (active_backend_wrapper_) {
+    active_backend_wrapper_->Revoke();
+    active_backend_wrapper_ = nullptr;
+  }
+
+  std::unique_ptr<MediaPipelineBackendWrapper> backend_wrapper =
+      std::make_unique<MediaPipelineBackendWrapper>(params, this);
+
+  active_backend_wrapper_ = backend_wrapper.get();
+  return backend_wrapper;
+}
+
+void MediaPipelineBackendManager::BackendDestroyed(
+    MediaPipelineBackendWrapper* backend_wrapper) {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+  if (active_backend_wrapper_ == backend_wrapper) {
+    active_backend_wrapper_ = nullptr;
+  }
 }
 
 bool MediaPipelineBackendManager::IncrementDecoderCount(DecoderType type) {
@@ -167,6 +186,9 @@ int MediaPipelineBackendManager::TotalPlayingNoneffectsAudioStreamsCount() {
 void MediaPipelineBackendManager::EnterPowerSaveMode() {
   DCHECK_EQ(TotalPlayingAudioStreamsCount(), 0);
   DCHECK(VolumeControl::SetPowerSaveMode);
+  if (!power_save_enabled_) {
+    return;
+  }
   metrics::CastMetricsHelper::GetInstance()->RecordSimpleAction(
       "Cast.Platform.VolumeControl.PowerSaveOn");
   VolumeControl::SetPowerSaveMode(true);
@@ -227,7 +249,7 @@ bool MediaPipelineBackendManager::IsPlaying(bool include_sfx,
 }
 
 void MediaPipelineBackendManager::AddAudioDecoder(
-    AudioDecoderWrapper* decoder) {
+    ActiveAudioDecoderWrapper* decoder) {
   DCHECK(decoder);
   audio_decoders_.insert(decoder);
   decoder->SetGlobalVolumeMultiplier(
@@ -235,8 +257,18 @@ void MediaPipelineBackendManager::AddAudioDecoder(
 }
 
 void MediaPipelineBackendManager::RemoveAudioDecoder(
-    AudioDecoderWrapper* decoder) {
+    ActiveAudioDecoderWrapper* decoder) {
   audio_decoders_.erase(decoder);
+}
+
+void MediaPipelineBackendManager::SetPowerSaveEnabled(bool power_save_enabled) {
+  MAKE_SURE_MEDIA_THREAD(SetPowerSaveEnabled, power_save_enabled);
+  power_save_enabled_ = power_save_enabled;
+  if (!power_save_enabled_) {
+    if (VolumeControl::SetPowerSaveMode) {
+      VolumeControl::SetPowerSaveMode(false);
+    }
+  }
 }
 
 }  // namespace media

@@ -41,6 +41,7 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
   // AutofillPopupDelegate implementation.
   void OnPopupShown() override;
   void OnPopupHidden() override;
+  void OnPopupSuppressed() override;
   void DidSelectSuggestion(const base::string16& value,
                            int identifier) override;
   void DidAcceptSuggestion(const base::string16& value,
@@ -143,7 +144,7 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
 
   // The ID of the last request sent for form field Autofill.  Used to ignore
   // out of date responses.
-  int query_id_;
+  int query_id_ = 0;
 
   // The current form and field selected by Autofill.
   FormData query_form_;
@@ -153,13 +154,15 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
   gfx::RectF element_bounds_;
 
   // Does the popup include any Autofill profile or credit card suggestions?
-  bool has_autofill_suggestions_;
+  bool has_autofill_suggestions_ = false;
 
-  bool should_show_scan_credit_card_;
-  PopupType popup_type_;
+  bool should_show_scan_credit_card_ = false;
+  PopupType popup_type_ = PopupType::kUnspecified;
 
   // Whether the credit card signin promo should be shown to the user.
-  bool should_show_cc_signin_promo_;
+  bool should_show_cc_signin_promo_ = false;
+
+  bool should_show_cards_from_account_option_ = false;
 
   // The current data list values.
   std::vector<base::string16> data_list_values_;
@@ -168,7 +171,7 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
   // If not null then it will be called in destructor.
   base::OnceClosure deletion_callback_;
 
-  base::WeakPtrFactory<AutofillExternalDelegate> weak_ptr_factory_;
+  base::WeakPtrFactory<AutofillExternalDelegate> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AutofillExternalDelegate);
 };

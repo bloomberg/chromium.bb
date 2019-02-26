@@ -4,141 +4,61 @@
 
 #include "components/optimization_guide/optimization_guide_service.h"
 
-#include <string>
-
 #include "base/bind.h"
-#include "base/files/file.h"
-#include "base/files/file_util.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 
 namespace optimization_guide {
 
-namespace {
-
-// Version "0" corresponds to no processed version. By service conventions,
-// we represent it as a dotted triple.
-const char kNullVersion[] = "0.0.0";
-
-void RecordProcessHintsResult(
-    OptimizationGuideService::ProcessHintsResult result) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "OptimizationGuide.ProcessHintsResult", static_cast<int>(result),
-      static_cast<int>(OptimizationGuideService::ProcessHintsResult::MAX));
-}
-
-}  // namespace
-
-ComponentInfo::ComponentInfo(const base::Version& hints_version,
-                             const base::FilePath& hints_path)
-    : hints_version(hints_version), hints_path(hints_path) {}
-
-ComponentInfo::~ComponentInfo() {}
-
 OptimizationGuideService::OptimizationGuideService(
-    const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_task_runner)
-    : background_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT})),
-      io_thread_task_runner_(io_thread_task_runner),
-      latest_processed_version_(kNullVersion) {
-  DETACH_FROM_SEQUENCE(sequence_checker_);
+    const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread_task_runner)
+    : ui_thread_task_runner_(ui_thread_task_runner), weak_ptr_factory_(this) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 OptimizationGuideService::~OptimizationGuideService() {}
 
-void OptimizationGuideService::SetLatestProcessedVersionForTesting(
-    const base::Version& version) {
-  latest_processed_version_ = version;
-}
-
 void OptimizationGuideService::AddObserver(
     OptimizationGuideServiceObserver* observer) {
-  if (io_thread_task_runner_->BelongsToCurrentThread()) {
-    AddObserverOnIOThread(observer);
-  } else {
-    io_thread_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&OptimizationGuideService::AddObserverOnIOThread,
-                       base::Unretained(this), observer));
-  }
-}
-
-void OptimizationGuideService::AddObserverOnIOThread(
-    OptimizationGuideServiceObserver* observer) {
-  DCHECK(io_thread_task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observers_.AddObserver(observer);
+  if (hints_component_info_) {
+    observer->OnHintsComponentAvailable(*hints_component_info_);
+  }
 }
 
 void OptimizationGuideService::RemoveObserver(
     OptimizationGuideServiceObserver* observer) {
-  if (io_thread_task_runner_->BelongsToCurrentThread()) {
-    RemoveObserverOnIOThread(observer);
-  } else {
-    io_thread_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&OptimizationGuideService::RemoveObserverOnIOThread,
-                       base::Unretained(this), observer));
-  }
-}
-
-void OptimizationGuideService::RemoveObserverOnIOThread(
-    OptimizationGuideServiceObserver* observer) {
-  DCHECK(io_thread_task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observers_.RemoveObserver(observer);
 }
 
-void OptimizationGuideService::ProcessHints(
-    const ComponentInfo& component_info) {
-  background_task_runner_->PostTask(
+void OptimizationGuideService::MaybeUpdateHintsComponent(
+    const HintsComponentInfo& info) {
+  ui_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&OptimizationGuideService::ProcessHintsInBackground,
-                     base::Unretained(this), component_info));
+      base::BindOnce(
+          &OptimizationGuideService::MaybeUpdateHintsComponentOnUIThread,
+          weak_ptr_factory_.GetWeakPtr(), info));
 }
 
-void OptimizationGuideService::ProcessHintsInBackground(
-    const ComponentInfo& component_info) {
+void OptimizationGuideService::MaybeUpdateHintsComponentOnUIThread(
+    const HintsComponentInfo& info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(info.version.IsValid());
+  DCHECK(!info.path.empty());
 
-  // TODO(crbug.com/783246): Add crash loop detection to ensure bad component
-  // updates do not crash Chrome.
-
-  if (!component_info.hints_version.IsValid()) {
-    RecordProcessHintsResult(ProcessHintsResult::FAILED_INVALID_PARAMETERS);
-    return;
-  }
-  if (latest_processed_version_.CompareTo(component_info.hints_version) >= 0)
-    return;
-  if (component_info.hints_path.empty()) {
-    RecordProcessHintsResult(ProcessHintsResult::FAILED_INVALID_PARAMETERS);
-    return;
-  }
-  std::string binary_pb;
-  if (!base::ReadFileToString(component_info.hints_path, &binary_pb)) {
-    RecordProcessHintsResult(ProcessHintsResult::FAILED_READING_FILE);
+  // Do not update the component if the version isn't newer. This differs from
+  // the check in ComponentInstaller::InstallHelper(), because this rejects
+  // version equality, whereas InstallHelper() accepts it.
+  if (hints_component_info_ &&
+      hints_component_info_->version.CompareTo(info.version) >= 0) {
     return;
   }
 
-  proto::Configuration new_config;
-  if (!new_config.ParseFromString(binary_pb)) {
-    RecordProcessHintsResult(ProcessHintsResult::FAILED_INVALID_CONFIGURATION);
-    return;
+  hints_component_info_.emplace(info.version, info.path);
+  for (auto& observer : observers_) {
+    observer.OnHintsComponentAvailable(*hints_component_info_);
   }
-  latest_processed_version_ = component_info.hints_version;
-
-  RecordProcessHintsResult(ProcessHintsResult::SUCCESS);
-  io_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&OptimizationGuideService::DispatchHintsOnIOThread,
-                     base::Unretained(this), new_config, component_info));
-}
-
-void OptimizationGuideService::DispatchHintsOnIOThread(
-    const proto::Configuration& config,
-    const ComponentInfo& component_info) {
-  DCHECK(io_thread_task_runner_->BelongsToCurrentThread());
-
-  for (auto& observer : observers_)
-    observer.OnHintsProcessed(config, component_info);
 }
 
 }  // namespace optimization_guide

@@ -161,7 +161,7 @@ v8::Local<v8::Value> JSEventHandlerForContentAttribute::GetCompiledHandler(
       v8::Integer::New(isolate, position_.column_.ZeroBasedInt()),
       // TODO(yukiy): consider which value should be passed here.
       v8::True(isolate));
-  v8::ScriptCompiler::Source source(V8String(isolate, code_), origin);
+  v8::ScriptCompiler::Source source(V8String(isolate, script_body_), origin);
 
   v8::Local<v8::Function> compiled_function;
   {

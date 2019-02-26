@@ -20,8 +20,8 @@ class URLRequestContextGetter;
 }
 
 namespace content {
-struct LocalStorageUsageInfo;
 struct SessionStorageUsageInfo;
+struct StorageUsageInfo;
 }
 
 namespace url {
@@ -55,7 +55,7 @@ class SiteDataCountingHelper {
   void GetLocalStorageUsageInfoCallback(
       const scoped_refptr<storage::SpecialStoragePolicy>&
           special_storage_policy,
-      const std::vector<content::LocalStorageUsageInfo>& infos);
+      const std::vector<content::StorageUsageInfo>& infos);
   void GetQuotaOriginsCallback(const std::set<url::Origin>& origin_set,
                                blink::mojom::StorageType type);
   void SitesWithFlashDataCallback(const std::vector<std::string>& sites);

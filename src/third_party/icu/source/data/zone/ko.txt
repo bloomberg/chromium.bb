@@ -1,7 +1,7 @@
 ﻿// © 2016 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html#License
 ko{
-    Version{"2.1.41.97"}
+    Version{"2.1.44.91"}
     zoneStrings{
         "Africa:Abidjan"{
             ec{"아비장"}
@@ -1387,9 +1387,9 @@ ko{
             ls{"아르메니아 표준시"}
         }
         "meta:Atlantic"{
-            ld{"북미 대서양 하계 표준시"}
-            lg{"북미 대서양 시간"}
-            ls{"북미 대서양 표준시"}
+            ld{"대서양 하계 표준시"}
+            lg{"대서양 시간"}
+            ls{"대서양 표준시"}
         }
         "meta:Australia_Central"{
             ld{"호주 중부 하계 표준시"}

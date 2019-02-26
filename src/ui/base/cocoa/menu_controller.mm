@@ -16,7 +16,6 @@
 #import "ui/events/event_utils.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/text_elider.h"
 #include "ui/strings/grit/ui_strings.h"
 
 namespace {
@@ -96,20 +95,13 @@ bool MenuHasVisibleItems(const ui::MenuModel* model) {
 @synthesize useWithPopUpButtonCell = useWithPopUpButtonCell_;
 @synthesize postItemSelectedAsTask = postItemSelectedAsTask_;
 
-+ (base::string16)elideMenuTitle:(const base::string16&)title
-                         toWidth:(int)width {
-  NSFont* nsfont = [NSFont menuBarFontOfSize:0];  // 0 means "default"
-  return gfx::ElideText(title, gfx::FontList(gfx::Font(nsfont)), width,
-                        gfx::ELIDE_TAIL, gfx::Typesetter::NATIVE);
-}
-
-- (id)init {
+- (instancetype)init {
   self = [super init];
   return self;
 }
 
-- (id)initWithModel:(ui::MenuModel*)model
-    useWithPopUpButtonCell:(BOOL)useWithCell {
+- (instancetype)initWithModel:(ui::MenuModel*)model
+       useWithPopUpButtonCell:(BOOL)useWithCell {
   if ((self = [super init])) {
     model_ = model;
     useWithPopUpButtonCell_ = useWithCell;
@@ -237,10 +229,8 @@ bool MenuHasVisibleItems(const ui::MenuModel* model) {
     }
     const gfx::FontList* font_list = model->GetLabelFontListAt(modelIndex);
     if (font_list) {
-      NSDictionary *attributes =
-          [NSDictionary dictionaryWithObject:font_list->GetPrimaryFont().
-                                             GetNativeFont()
-                                      forKey:NSFontAttributeName];
+      NSDictionary* attributes =
+          @{NSFontAttributeName : font_list->GetPrimaryFont().GetNativeFont()};
       base::scoped_nsobject<NSAttributedString> title(
           [[NSAttributedString alloc] initWithString:[(id)item title]
                                           attributes:attributes]);

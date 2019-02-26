@@ -3,14 +3,13 @@
     "Goma canary builder for iOS.",
     "It is chromium.mac/ios-device.json + use_goma_canary, clobber."
   ],
-  "xcode build version": "10a254a",
+  "xcode build version": "10b61",
   "gn_args": [
-    "additional_target_cpus=[ \"arm64\" ]",
     "goma_dir=\"$(goma_dir)\"",
     "ios_enable_code_signing=false",
     "is_component_build=false",
     "is_debug=false",
-    "target_cpu=\"arm\"",
+    "target_cpu=\"arm64\"",
     "target_os=\"ios\"",
     "use_goma=true"
   ],

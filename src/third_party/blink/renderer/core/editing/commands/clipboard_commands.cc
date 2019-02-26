@@ -31,6 +31,7 @@
 
 #include "third_party/blink/renderer/core/editing/commands/clipboard_commands.h"
 
+#include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/renderer/core/clipboard/data_transfer_access_policy.h"
 #include "third_party/blink/renderer/core/clipboard/paste_mode.h"
 #include "third_party/blink/renderer/core/clipboard/system_clipboard.h"
@@ -43,7 +44,6 @@
 #include "third_party/blink/renderer/core/editing/serializers/serialization.h"
 #include "third_party/blink/renderer/core/events/clipboard_event.h"
 #include "third_party/blink/renderer/core/events/text_event.h"
-#include "third_party/blink/renderer/core/frame/content_settings_client.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -147,7 +147,7 @@ bool ClipboardCommands::DispatchCopyOrCutEvent(LocalFrame& frame,
 bool ClipboardCommands::DispatchPasteEvent(LocalFrame& frame,
                                            PasteMode paste_mode,
                                            EditorCommandSource source) {
-  return DispatchClipboardEvent(frame, EventTypeNames::paste,
+  return DispatchClipboardEvent(frame, event_type_names::kPaste,
                                 DataTransferAccessPolicy::kReadable, source,
                                 paste_mode);
 }
@@ -163,7 +163,8 @@ bool ClipboardCommands::EnabledCopy(LocalFrame& frame,
                                     EditorCommandSource source) {
   if (!CanWriteClipboard(frame, source))
     return false;
-  return !DispatchCopyOrCutEvent(frame, source, EventTypeNames::beforecopy) ||
+  return !DispatchCopyOrCutEvent(frame, source,
+                                 event_type_names::kBeforecopy) ||
          frame.GetEditor().CanCopy();
 }
 
@@ -175,7 +176,7 @@ bool ClipboardCommands::EnabledCut(LocalFrame& frame,
   if (source == EditorCommandSource::kMenuOrKeyBinding &&
       !frame.Selection().SelectionHasFocus())
     return false;
-  return !DispatchCopyOrCutEvent(frame, source, EventTypeNames::beforecut) ||
+  return !DispatchCopyOrCutEvent(frame, source, event_type_names::kBeforecut) ||
          frame.GetEditor().CanCut();
 }
 
@@ -221,7 +222,7 @@ bool ClipboardCommands::ExecuteCopy(LocalFrame& frame,
                                     Event*,
                                     EditorCommandSource source,
                                     const String&) {
-  if (!DispatchCopyOrCutEvent(frame, source, EventTypeNames::copy))
+  if (!DispatchCopyOrCutEvent(frame, source, event_type_names::kCopy))
     return true;
   if (!frame.GetEditor().CanCopy())
     return true;
@@ -279,7 +280,7 @@ bool ClipboardCommands::ExecuteCut(LocalFrame& frame,
                                    Event*,
                                    EditorCommandSource source,
                                    const String&) {
-  if (!DispatchCopyOrCutEvent(frame, source, EventTypeNames::cut))
+  if (!DispatchCopyOrCutEvent(frame, source, event_type_names::kCut))
     return true;
   if (!frame.GetEditor().CanCut())
     return true;

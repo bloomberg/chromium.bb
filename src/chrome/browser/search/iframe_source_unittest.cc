@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
 #include "chrome/browser/search/instant_io_context.h"
-#include "chrome/grit/browser_resources.h"
+#include "chrome/grit/local_ntp_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/previews_state.h"
@@ -74,7 +74,6 @@ class IframeSourceTest : public testing::Test {
   // those constraints.
   IframeSourceTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-        resource_context_(&test_url_request_context_),
         instant_io_context_(NULL),
         response_(NULL) {
   }

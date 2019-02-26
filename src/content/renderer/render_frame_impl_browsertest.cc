@@ -204,14 +204,16 @@ TEST_F(RenderFrameImplTest, FrameResize) {
   frame_widget()->OnMessageReceived(resize_message);
 
   EXPECT_EQ(frame_widget()->GetWebWidget()->Size(), blink::WebSize(size));
-  EXPECT_EQ(view_->GetWebView()->Size(), blink::WebSize(size));
+  EXPECT_EQ(view_->GetWebView()->MainFrameWidget()->Size(),
+            blink::WebSize(size));
 }
 
 // Verify a subframe RenderWidget properly processes a WasShown message.
 TEST_F(RenderFrameImplTest, FrameWasShown) {
   RenderFrameTestObserver observer(frame());
 
-  WidgetMsg_WasShown was_shown_message(0, base::TimeTicks());
+  WidgetMsg_WasShown was_shown_message(0, base::TimeTicks(),
+                                       false /* was_evicted */);
   frame_widget()->OnMessageReceived(was_shown_message);
 
   EXPECT_FALSE(frame_widget()->is_hidden());
@@ -241,7 +243,8 @@ TEST_F(RenderFrameImplTest, LocalChildFrameWasShown) {
 
   RenderFrameTestObserver observer(grandchild);
 
-  WidgetMsg_WasShown was_shown_message(0, base::TimeTicks());
+  WidgetMsg_WasShown was_shown_message(0, base::TimeTicks(),
+                                       false /* was_evicted */);
   frame_widget()->OnMessageReceived(was_shown_message);
 
   EXPECT_FALSE(frame_widget()->is_hidden());
@@ -254,7 +257,8 @@ TEST_F(RenderFrameImplTest, FrameWasShownAfterWidgetClose) {
   WidgetMsg_Close close_message(0);
   frame_widget()->OnMessageReceived(close_message);
 
-  WidgetMsg_WasShown was_shown_message(0, base::TimeTicks());
+  WidgetMsg_WasShown was_shown_message(0, base::TimeTicks(),
+                                       false /* was_evicted */);
   // Test passes if this does not crash.
   RenderWidget* render_widget =
       static_cast<RenderViewImpl*>(view_)->GetWidget();

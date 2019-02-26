@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
 <translation id="1002108253973310084">ระบบตรวจพบเวอร์ชันของโปรโตคอลที่เข้ากันไม่ได้ โปรดตรวจสอบว่าคุณมีซอฟต์แวร์เวอร์ชันล่าสุดติดตั้งอยู่บนคอมพิวเตอร์ทั้ง 2 เครื่องแล้ว และลองอีกครั้ง</translation>
+<translation id="1008557486741366299">ไม่ใช่ตอนนี้</translation>
 <translation id="1050693411695664090">แย่</translation>
 <translation id="1152528166145813711">เลือก…</translation>
 <translation id="1199593201721843963">ปิดใช้งานการเชื่อมต่อระยะไกล</translation>
@@ -62,8 +63,9 @@
 <translation id="2314101195544969792">เซสชัน <ph name="APPLICATION_NAME" /> ไม่มีการใช้งานมาระยะหนึ่งแล้ว และระบบจะยกเลิกการเชื่อมต่อเร็วๆ นี้</translation>
 <translation id="2317666076142640974">ลองใช้<ph name="LINK_BEGIN" />เว็บแอป Chrome Remote Desktop<ph name="LINK_END" /> ใหม่ก่อนใคร เราอยากฟังความคิดเห็นของคุณ</translation>
 <translation id="2320166752086256636">ซ่อนแป้นพิมพ์</translation>
+<translation id="2332192922827071008">เปิดค่ากำหนด</translation>
 <translation id="2353140552984634198">คุณสามารถเข้าถึงคอมพิวเตอร์เครื่องนี้ได้อย่างปลอดภัยโดยใช้ Chromoting</translation>
-<translation id="2359808026110333948">ดำเนินการต่อ</translation>
+<translation id="2359808026110333948">ต่อไป</translation>
 <translation id="2366718077645204424">ไม่สามารถเข้าถึงโฮสต์ อาจเป็นเพราะการกำหนดค่าของเครือข่ายที่คุณกำลังใช้อยู่</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  ออนไลน์ล่าสุด<ph name="RELATIVE_TIMESTAMP" /></translation>
 <translation id="2405928220797050937">แอปนี้ใช้งานไม่ได้อีกต่อไป โปรดใช้<ph name="LINK_BEGIN" />เว็บแอป Chrome Remote Desktop<ph name="LINK_END" /> เพื่อให้คุณได้รับฟีเจอร์และการอัปเดตความปลอดภัยล่าสุดอยู่เสมอ</translation>
@@ -82,6 +84,7 @@
 <translation id="2841013758207633010">เวลา</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2888969873284818612">เกิดข้อผิดพลาดในเครือข่าย เราจะรีสตาร์ทแอปเมื่ออุปกรณ์ของคุณออนไลน์อีกครั้ง</translation>
+<translation id="2891243864890517178">สำหรับ Mac (OS X Yosemite 10.10 ขึ้นไป)</translation>
 <translation id="289405675947420287">เข้าถึงคอมพิวเตอร์จากอุปกรณ์ iOS อย่างปลอดภัย รวดเร็ว ง่ายดาย และฟรี
 
 • ดาวน์โหลดแอป Chrome Remote Desktop จาก Chrome เว็บสโตร์ลงในคอมพิวเตอร์ที่คุณต้องการเข้าถึงจากระยะไกล
@@ -188,6 +191,9 @@
 <translation id="4973800994433240357">การดาวน์โหลด Chromoting Host Installer หมายถึงคุณยอมรับ<ph name="LINK_BEGIN" />ข้อกำหนดในการให้บริการ<ph name="LINK_END" />ของ Google</translation>
 <translation id="4974476491460646149">ปิดการเชื่อมต่อของ <ph name="HOSTNAME" /> แล้ว</translation>
 <translation id="4985296110227979402">คุณต้องตั้งค่าคอมพิวเตอร์สำหรับการเข้าถึงระยะไกลก่อน</translation>
+<translation id="5059773780693835145">คุณต้องทำขั้นตอนการกำหนดค่าเพิ่มเติมก่อนที่จะควบคุมคอมพิวเตอร์เครื่องนี้จากระยะไกลได้โดยใช้ <ph name="PRODUCT_NAME" />
+
+หากต้องการเปิดใช้ฟังก์ชันการทำงานนี้ ให้เลือก "<ph name="BUTTON_NAME" />" เพื่อแสดงแผงค่ากำหนดความปลอดภัยและความเป็นส่วนตัว จากนั้นเลือกช่องถัดจาก "<ph name="SERVICE_SCRIPT_NAME" />"</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (ออฟไลน์)</translation>
 <translation id="5070121137485264635">โฮสต์ระยะไกลกำหนดให้คุณตรวจสอบสิทธิ์กับเว็บไซต์ของบุคคลที่สาม หากต้องการดำเนินการต่อ คุณต้องให้สิทธิ์อนุญาตเพิ่มเติมแก่ Chrome Remote Desktop เพื่อเข้าถึงที่อยู่นี้:</translation>
 <translation id="507204348399810022">คุณแน่ใจไหมว่าต้องการปิดใช้การเชื่อมต่อระยะไกลกับ <ph name="HOSTNAME" /></translation>
@@ -249,7 +255,6 @@
 <translation id="6542902059648396432">รายงานปัญหา…</translation>
 <translation id="6550675742724504774">ตัวเลือก</translation>
 <translation id="6570205395680337606">รีเซ็ตแอปพลิเคชัน คุณจะสูญเสียงานที่ไม่ได้บันทึกไว้ทั้งหมด</translation>
-<translation id="6572345186230665992">สำหรับ Mac (OS X Mavericks 10.9 ขึ้นไป)</translation>
 <translation id="6583902294974160967">การสนับสนุน</translation>
 <translation id="6612717000975622067">ส่ง Ctrl-Alt-Del</translation>
 <translation id="6654753848497929428">แชร์</translation>
@@ -313,6 +318,7 @@
 <translation id="809687642899217504">คอมพิวเตอร์ของฉัน</translation>
 <translation id="811307782653349804">เข้าถึงคอมพิวเตอร์ของคุณเองจากที่ใดก็ได้</translation>
 <translation id="8116630183974937060">เกิดข้อผิดพลาดในเครือข่าย โปรดตรวจสอบว่าอุปกรณ์ของคุณออนไลน์อยู่และลองอีกครั้ง</translation>
+<translation id="8123581458650016326">อนุญาตให้ผู้ใช้ระยะไกลควบคุมคอมพิวเตอร์เครื่องนี้</translation>
 <translation id="8178433417677596899">การแชร์หน้าจอระหว่างผู้ใช้กับผู้ใช้ เหมาะสำหรับการสนับสนุนทางเทคนิคจากระยะไกล</translation>
 <translation id="8187079423890319756">ลิขสิทธิ์ 2013 The Chromium Authors สงวนลิขสิทธิ์</translation>
 <translation id="8196755618196986400">หากต้องการอนุญาตให้เราติดต่อคุณสำหรับข้อมูลเพิ่มเติม จะมีการใส่ที่อยู่อีเมลของคุณในความคิดเห็นทั้งหมดที่คุณส่งมา</translation>

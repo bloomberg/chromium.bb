@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.media.router.caf;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.VisibleForTesting;
 import android.support.v7.media.MediaRouteSelector;
 import android.support.v7.media.MediaRouter;
 import android.support.v7.media.MediaRouter.RouteInfo;
@@ -43,7 +44,8 @@ public abstract class CafBaseMediaRouteProvider
     protected final MediaRouteManager mManager;
     protected final Map<String, DiscoveryCallback> mDiscoveryCallbacks =
             new HashMap<String, DiscoveryCallback>();
-    protected final Map<String, MediaRoute> mRoutes = new HashMap<String, MediaRoute>();
+    @VisibleForTesting
+    final Map<String, MediaRoute> mRoutes = new HashMap<String, MediaRoute>();
     protected Handler mHandler = new Handler();
 
     private CreateRouteRequestInfo mPendingCreateRouteRequestInfo;
@@ -129,7 +131,7 @@ public abstract class CafBaseMediaRouteProvider
         MediaSource source = getSourceFromId(sourceId);
         if (source == null) return;
 
-        // No-op, if already monitoring the application for this source.
+        // No-op, if not monitoring the application for this source.
         String applicationId = source.getApplicationId();
         DiscoveryCallback callback = mDiscoveryCallbacks.get(applicationId);
         if (callback == null) return;
@@ -154,11 +156,8 @@ public abstract class CafBaseMediaRouteProvider
             handleSessionEnd();
         }
         if (mPendingCreateRouteRequestInfo != null) {
-            cancelPendingRequest("Request repaced");
+            cancelPendingRequest("Request replaced");
         }
-
-        CastUtils.getCastContext().getSessionManager().addSessionManagerListener(
-                this, CastSession.class);
 
         MediaSink sink = MediaSink.fromSinkId(sinkId, mAndroidMediaRouter);
         if (sink == null) {
@@ -183,6 +182,9 @@ public abstract class CafBaseMediaRouteProvider
             mManager.onRouteRequestError("The sink does not exist", nativeRequestId);
         }
 
+        CastUtils.getCastContext().getSessionManager().addSessionManagerListener(
+                this, CastSession.class);
+
         mPendingCreateRouteRequestInfo = new CreateRouteRequestInfo(source, sink, presentationId,
                 origin, tabId, isIncognito, nativeRequestId, targetRouteInfo);
 
@@ -199,6 +201,8 @@ public abstract class CafBaseMediaRouteProvider
             return;
         }
 
+        // Don't remove the route while the session is still active. All the routes will be removed
+        // upon session end.
         sessionController().endSession();
     }
 
@@ -302,16 +306,11 @@ public abstract class CafBaseMediaRouteProvider
 
     abstract public BaseSessionController sessionController();
 
-    public CafMessageHandler getMessageHandler() {
-        return null;
-    }
-
     /** Adds a route for bookkeeping. */
     protected void addRoute(
             MediaRoute route, String origin, int tabId, int nativeRequestId, boolean wasLaunched) {
         mRoutes.put(route.id, route);
-        mManager.onRouteCreated(route.id, route.sinkId,
-                sessionController().getRouteCreationInfo().nativeRequestId, this, wasLaunched);
+        mManager.onRouteCreated(route.id, route.sinkId, nativeRequestId, this, wasLaunched);
     }
 
     /**
@@ -320,7 +319,7 @@ public abstract class CafBaseMediaRouteProvider
      *
      * @param error the reason for the route close, {@code null} indicates no error.
      */
-    protected final void removeRoute(String routeId, @Nullable String error) {
+    protected void removeRoute(String routeId, @Nullable String error) {
         removeRouteFromRecord(routeId);
         mManager.onRouteClosed(routeId, error);
     }
@@ -331,7 +330,7 @@ public abstract class CafBaseMediaRouteProvider
      *
      * @param error the reason for the route close, {@code null} indicates no error.
      */
-    protected final void removeAllRoutes(@Nullable String error) {
+    protected void removeAllRoutes(@Nullable String error) {
         Set<String> routeIds = new HashSet<>(mRoutes.keySet());
         for (String routeId : routeIds) {
             removeRoute(routeId, error);
@@ -342,7 +341,7 @@ public abstract class CafBaseMediaRouteProvider
      * Removes all routes for bookkeeping. This should be called whenever the receiver app is
      * terminated.
      */
-    protected final void terminateAllRoutes() {
+    protected void terminateAllRoutes() {
         Set<String> routeIds = new HashSet<>(mRoutes.keySet());
         for (String routeId : routeIds) {
             removeRouteFromRecord(routeId);

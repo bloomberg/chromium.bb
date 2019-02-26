@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/modules/accessibility/testing/accessibility_test.h"
 
 namespace blink {
+namespace test {
 
 // TODO(nektar): Break test up into multiple tests.
 TEST_F(AccessibilityTest, IsARIAWidget) {
@@ -55,4 +56,5 @@ TEST_F(AccessibilityTest, IsARIAWidget) {
       *root->getElementById("focusable-parent")));
 }
 
+}  // namespace test
 }  // namespace blink

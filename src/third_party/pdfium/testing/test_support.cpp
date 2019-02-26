@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "core/fdrm/crypto/fx_crypt.h"
+#include "core/fdrm/fx_crypt.h"
 #include "core/fxcrt/fx_memory.h"
 #include "core/fxcrt/fx_string.h"
 #include "testing/utils/path_service.h"
@@ -66,10 +66,16 @@ std::unique_ptr<v8::Platform> InitializeV8Common(const std::string& exe_path) {
   std::unique_ptr<v8::Platform> platform = v8::platform::NewDefaultPlatform();
   v8::V8::InitializePlatform(platform.get());
 
+  const char* recommended_v8_flags = FPDF_GetRecommendedV8Flags();
+  v8::V8::SetFlagsFromString(recommended_v8_flags,
+                             static_cast<int>(strlen(recommended_v8_flags)));
+
   // By enabling predictable mode, V8 won't post any background tasks.
   // By enabling GC, it makes it easier to chase use-after-free.
-  const char v8_flags[] = "--predictable --expose-gc";
-  v8::V8::SetFlagsFromString(v8_flags, static_cast<int>(strlen(v8_flags)));
+  static const char kAdditionalV8Flags[] = "--predictable --expose-gc";
+  v8::V8::SetFlagsFromString(kAdditionalV8Flags,
+                             static_cast<int>(strlen(kAdditionalV8Flags)));
+
   v8::V8::Initialize();
   return platform;
 }
@@ -108,7 +114,7 @@ std::unique_ptr<char, pdfium::FreeDeleter> GetFileContents(const char* filename,
 std::string GetPlatformString(FPDF_WIDESTRING wstr) {
   WideString wide_string =
       WideString::FromUTF16LE(wstr, WideString::WStringLength(wstr));
-  return std::string(wide_string.UTF8Encode().c_str());
+  return std::string(wide_string.ToUTF8().c_str());
 }
 
 std::wstring GetPlatformWString(FPDF_WIDESTRING wstr) {

@@ -6,7 +6,7 @@
 
 FakePasswordManagerClient::FakePasswordManagerClient() : binding_(this) {}
 
-FakePasswordManagerClient::~FakePasswordManagerClient() {}
+FakePasswordManagerClient::~FakePasswordManagerClient() = default;
 
 void FakePasswordManagerClient::BindRequest(
     autofill::mojom::PasswordManagerClientAssociatedRequest request) {
@@ -32,10 +32,6 @@ void FakePasswordManagerClient::ShowManualPasswordGenerationPopup(
     const autofill::password_generation::PasswordGenerationUIData& ui_data) {
   called_show_manual_pw_generation_popup_ = true;
 }
-
-void FakePasswordManagerClient::ShowPasswordEditingPopup(
-    const gfx::RectF& bounds,
-    const autofill::PasswordForm& form) {}
 
 void FakePasswordManagerClient::GenerationAvailableForForm(
     const autofill::PasswordForm& form) {

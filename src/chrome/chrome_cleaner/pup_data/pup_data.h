@@ -10,12 +10,14 @@
 #include <stdint.h>
 
 #include <memory>
+#include <set>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "chrome/chrome_cleaner/chrome_utils/force_installed_extension.h"
 #include "chrome/chrome_cleaner/constants/uws_id.h"
 #include "chrome/chrome_cleaner/logging/proto/shared_data.pb.h"
 #include "chrome/chrome_cleaner/os/disk_util_types.h"
@@ -308,6 +310,9 @@ class PUPData {
 
     // Mapping from detected files to where they were found.
     FileInfoMap disk_footprints_info;
+
+    // List of UwE found by the scanner.
+    std::vector<ForceInstalledExtension> matched_extensions;
 
    protected:
     // Allow PUPData to update |signature_| when UpdateCachedUwS is called.

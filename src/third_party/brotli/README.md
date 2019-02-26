@@ -32,6 +32,8 @@ The basic commands to build, test and install brotli are:
     $ make
     $ make test
     $ make install
+  
+By default, debug binaries are built. To generate "release" `Makefile` specify `--disable-debug` option to `configure-cmake`.
 
 #### Bazel
 
@@ -79,3 +81,5 @@ JavaScript port of brotli [decoder](https://github.com/devongovett/brotli.js). C
 Hand ported [decoder / encoder](https://github.com/dominikhlbg/BrotliHaxe) in haxe by Dominik Homberger. Output source code: JavaScript, PHP, Python, Java and C#
 
 7Zip [plugin](https://github.com/mcmilk/7-Zip-Zstd)
+
+Dart [native bindings](https://github.com/thosakwe/brotli)

@@ -8,7 +8,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/components/tether/active_host.h"
-#include "chromeos/components/tether/ble_connection_manager.h"
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"
 #include "chromeos/components/tether/disconnect_tethering_request_sender.h"
 #include "chromeos/components/tether/host_connection_metrics_logger.h"
@@ -44,7 +43,6 @@ TetherConnectorImpl::TetherConnectorImpl(
     WifiHotspotConnector* wifi_hotspot_connector,
     ActiveHost* active_host,
     TetherHostFetcher* tether_host_fetcher,
-    BleConnectionManager* connection_manager,
     TetherHostResponseRecorder* tether_host_response_recorder,
     DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map,
     HostScanCache* host_scan_cache,
@@ -58,7 +56,6 @@ TetherConnectorImpl::TetherConnectorImpl(
       wifi_hotspot_connector_(wifi_hotspot_connector),
       active_host_(active_host),
       tether_host_fetcher_(tether_host_fetcher),
-      connection_manager_(connection_manager),
       tether_host_response_recorder_(tether_host_response_recorder),
       device_id_tether_network_guid_map_(device_id_tether_network_guid_map),
       host_scan_cache_(host_scan_cache),
@@ -81,8 +78,8 @@ void TetherConnectorImpl::ConnectToNetwork(
   DCHECK(!success_callback.is_null());
   DCHECK(!error_callback.is_null());
 
-  PA_LOG(INFO) << "Attempting to connect to network with GUID "
-               << tether_network_guid << ".";
+  PA_LOG(VERBOSE) << "Attempting to connect to network with GUID "
+                  << tether_network_guid << ".";
   notification_presenter_->RemoveConnectionToHostFailedNotification();
 
   const std::string device_id =
@@ -97,9 +94,9 @@ void TetherConnectorImpl::ConnectToNetwork(
   DCHECK(device_id_pending_connection_ != device_id);
 
   if (!device_id_pending_connection_.empty()) {
-    PA_LOG(INFO) << "A connection attempt was already in progress to device "
-                 << "with ID " << device_id_pending_connection_ << ". "
-                 << "Canceling that connection attempt before continuing.";
+    PA_LOG(VERBOSE) << "A connection attempt was already in progress to device "
+                    << "with ID " << device_id_pending_connection_ << ". "
+                    << "Canceling that connection attempt before continuing.";
     CancelConnectionAttempt(
         device_id_tether_network_guid_map_->GetTetherNetworkGuidForDeviceId(
             device_id_pending_connection_));
@@ -130,8 +127,8 @@ bool TetherConnectorImpl::CancelConnectionAttempt(
     return false;
   }
 
-  PA_LOG(INFO) << "Canceling connection attempt to Tether network with GUID "
-               << tether_network_guid;
+  PA_LOG(VERBOSE) << "Canceling connection attempt to Tether network with GUID "
+                  << tether_network_guid;
 
   if (connect_tethering_operation_) {
     // If a ConnectTetheringOperation is in progress, stop it.
@@ -178,17 +175,18 @@ void TetherConnectorImpl::OnSuccessfulConnectTetheringResponse(
   if (device_id_pending_connection_ != remote_device.GetDeviceId()) {
     // If the success was part of a previous attempt for a different device,
     // ignore it.
-    PA_LOG(INFO) << "Received successful ConnectTetheringResponse from "
-                 << "device with ID "
-                 << remote_device.GetTruncatedDeviceIdForLogs() << ", but the "
-                 << "connection attempt to that device has been canceled.";
+    PA_LOG(VERBOSE) << "Received successful ConnectTetheringResponse from "
+                    << "device with ID "
+                    << remote_device.GetTruncatedDeviceIdForLogs()
+                    << ", but the "
+                    << "connection attempt to that device has been canceled.";
 
     return;
   }
 
-  PA_LOG(INFO) << "Received successful ConnectTetheringResponse from device "
-               << "with ID " << remote_device.GetTruncatedDeviceIdForLogs()
-               << ". SSID: \"" << ssid << "\".";
+  PA_LOG(VERBOSE) << "Received successful ConnectTetheringResponse from device "
+                  << "with ID " << remote_device.GetTruncatedDeviceIdForLogs()
+                  << ". SSID: \"" << ssid << "\".";
 
   // Make a copy of the device ID, SSID, and password to pass below before
   // destroying |connect_tethering_operation_|.
@@ -212,9 +210,10 @@ void TetherConnectorImpl::OnConnectTetheringFailure(
   if (device_id_pending_connection_ != device_id_copy) {
     // If the failure was part of a previous attempt for a different device,
     // ignore it.
-    PA_LOG(INFO) << "Received failed ConnectTetheringResponse from device with "
-                 << "ID " << remote_device.GetTruncatedDeviceIdForLogs()
-                 << ", but a connection to another device has already started.";
+    PA_LOG(VERBOSE)
+        << "Received failed ConnectTetheringResponse from device with "
+        << "ID " << remote_device.GetTruncatedDeviceIdForLogs()
+        << ", but a connection to another device has already started.";
     return;
   }
 
@@ -233,10 +232,10 @@ void TetherConnectorImpl::OnTetherHostToConnectFetched(
     const std::string& device_id,
     base::Optional<cryptauth::RemoteDeviceRef> tether_host_to_connect) {
   if (device_id_pending_connection_ != device_id) {
-    PA_LOG(INFO) << "Device to connect to has changed while device with ID "
-                 << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
-                        device_id)
-                 << " was being fetched.";
+    PA_LOG(VERBOSE) << "Device to connect to has changed while device with ID "
+                    << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                           device_id)
+                    << " was being fetched.";
     return;
   }
 
@@ -260,7 +259,7 @@ void TetherConnectorImpl::OnTetherHostToConnectFetched(
   connect_tethering_operation_ =
       ConnectTetheringOperation::Factory::NewInstance(
           *tether_host_to_connect, device_sync_client_, secure_channel_client_,
-          connection_manager_, tether_host_response_recorder_,
+          tether_host_response_recorder_,
           host_scan_cache_->DoesHostRequireSetup(tether_network_guid));
   connect_tethering_operation_->AddObserver(this);
   connect_tethering_operation_->Initialize();
@@ -340,11 +339,11 @@ void TetherConnectorImpl::OnWifiConnection(
       return;
     }
 
-    PA_LOG(INFO) << "Connected to Wi-Fi hotspot for device with ID "
-                 << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
-                        device_id)
-                 << ", but the connection to that device was canceled. "
-                 << "Disconnecting.";
+    PA_LOG(VERBOSE) << "Connected to Wi-Fi hotspot for device with ID "
+                    << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                           device_id)
+                    << ", but the connection to that device was canceled. "
+                    << "Disconnecting.";
 
     // Disconnect from the Wi-Fi hotspot; otherwise, it is possible to be
     // connected to the Wi-Fi hotspot despite there being no active host. See

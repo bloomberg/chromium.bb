@@ -187,6 +187,10 @@ void VdaVideoDecoder::DestroyOnGpuThread() {
   vda_ = nullptr;
   media_log_ = nullptr;
 
+  // Because |parent_weak_this_| was invalidated in Destroy(), picture buffer
+  // dismissals since then have been dropped on the floor.
+  picture_buffer_manager_->DismissAllPictureBuffers();
+
   delete this;
 }
 
@@ -500,12 +504,26 @@ void VdaVideoDecoder::DismissPictureBuffer(int32_t picture_buffer_id) {
   DCHECK(gpu_task_runner_->BelongsToCurrentThread());
   DCHECK(vda_initialized_);
 
-  if (!picture_buffer_manager_->DismissPictureBuffer(picture_buffer_id)) {
-    parent_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&VdaVideoDecoder::EnterErrorState, parent_weak_this_));
+  if (parent_task_runner_->BelongsToCurrentThread()) {
+    if (!parent_weak_this_)
+      return;
+    DismissPictureBufferOnParentThread(picture_buffer_id);
     return;
   }
+
+  parent_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&VdaVideoDecoder::DismissPictureBufferOnParentThread,
+                     parent_weak_this_, picture_buffer_id));
+}
+
+void VdaVideoDecoder::DismissPictureBufferOnParentThread(
+    int32_t picture_buffer_id) {
+  DVLOG(2) << __func__ << "(" << picture_buffer_id << ")";
+  DCHECK(parent_task_runner_->BelongsToCurrentThread());
+
+  if (!picture_buffer_manager_->DismissPictureBuffer(picture_buffer_id))
+    EnterErrorState();
 }
 
 void VdaVideoDecoder::PictureReady(const Picture& picture) {

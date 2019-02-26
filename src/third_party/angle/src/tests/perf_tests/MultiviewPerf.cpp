@@ -64,13 +64,14 @@ struct MultiviewPerfParams final : public RenderTestParams
                         const MultiviewPerfWorkload &workloadIn,
                         MultiviewOption multiviewOptionIn)
     {
-        majorVersion    = 3;
-        minorVersion    = 0;
-        eglParameters   = platformParametersIn;
-        windowWidth     = workloadIn.first;
-        windowHeight    = workloadIn.second;
-        multiviewOption = multiviewOptionIn;
-        numViews        = 2;
+        iterationsPerStep = 1;
+        majorVersion      = 3;
+        minorVersion      = 0;
+        eglParameters     = platformParametersIn;
+        windowWidth       = workloadIn.first;
+        windowHeight      = workloadIn.second;
+        multiviewOption   = multiviewOptionIn;
+        numViews          = 2;
     }
 
     std::string suffix() const override
@@ -109,9 +110,11 @@ class MultiviewBenchmark : public ANGLERenderTest,
 {
   public:
     MultiviewBenchmark(const std::string &testName)
-        : ANGLERenderTest(testName, GetParam(), {"GL_ANGLE_multiview"}), mProgram(0)
+        : ANGLERenderTest(testName, GetParam()), mProgram(0)
     {
+        addExtensionPrerequisite("GL_ANGLE_multiview");
     }
+
     virtual ~MultiviewBenchmark()
     {
         if (mProgram != 0)

@@ -37,11 +37,10 @@ namespace blink {
 class AXObjectCacheImpl;
 
 class AXList final : public AXLayoutObject {
- private:
-  AXList(LayoutObject*, AXObjectCacheImpl&);
-
  public:
   static AXList* Create(LayoutObject*, AXObjectCacheImpl&);
+
+  AXList(LayoutObject*, AXObjectCacheImpl&);
   ~AXList() override;
 
   bool IsList() const override { return true; }

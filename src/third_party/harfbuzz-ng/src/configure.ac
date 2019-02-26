@@ -1,6 +1,6 @@
 AC_PREREQ([2.64])
 AC_INIT([HarfBuzz],
-        [1.9.0],
+        [2.1.3],
         [https://github.com/harfbuzz/harfbuzz/issues/new],
         [harfbuzz],
         [http://harfbuzz.org/])
@@ -147,12 +147,6 @@ fi
 AM_CONDITIONAL(HAVE_PTHREAD, $have_pthread)
 
 dnl ==========================================================================
-
-have_ot=true
-if $have_ot; then
-	AC_DEFINE(HAVE_OT, 1, [Have native OpenType Layout backend])
-fi
-AM_CONDITIONAL(HAVE_OT, $have_ot)
 
 have_fallback=true
 if $have_fallback; then
@@ -514,6 +508,7 @@ test/api/Makefile
 test/fuzzing/Makefile
 test/shaping/Makefile
 test/shaping/data/Makefile
+test/shaping/data/aots/Makefile
 test/shaping/data/in-house/Makefile
 test/shaping/data/text-rendering-tests/Makefile
 test/subset/Makefile

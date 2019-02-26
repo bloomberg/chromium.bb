@@ -115,9 +115,9 @@ TEST(HpackBlockBuilderTest, ExamplesFromSpecC4) {
     b.AppendIndexedHeader(kStaticTableMethodGET);
     b.AppendIndexedHeader(kStaticTableSchemeHttp);
     b.AppendIndexedHeader(kStaticTablePathSlash);
-    const char kHuffmanWwwExampleCom[] = {0xf1u, 0xe3u, 0xc2u, 0xe5u,
-                                          0xf2u, 0x3au, 0x6bu, 0xa0u,
-                                          0xabu, 0x90u, 0xf4u, 0xffu};
+    const char kHuffmanWwwExampleCom[] = {'\xf1', '\xe3', '\xc2', '\xe5',
+                                          '\xf2', '\x3a', '\x6b', '\xa0',
+                                          '\xab', '\x90', '\xf4', '\xff'};
     b.AppendNameIndexAndLiteralValue(
         HpackEntryType::kIndexedLiteralHeader, 1, kCompressed,
         Http2StringPiece(kHuffmanWwwExampleCom, sizeof kHuffmanWwwExampleCom));
@@ -139,7 +139,7 @@ TEST(HpackBlockBuilderTest, DynamicTableSizeUpdate) {
     b.AppendDynamicTableSizeUpdate(0);
     EXPECT_EQ(1u, b.size());
 
-    const char kData[] = {0x20};
+    const char kData[] = {'\x20'};
     Http2StringPiece expected(kData, sizeof kData);
     EXPECT_EQ(expected, b.buffer());
   }
@@ -148,7 +148,7 @@ TEST(HpackBlockBuilderTest, DynamicTableSizeUpdate) {
     b.AppendDynamicTableSizeUpdate(4096);  // The default size.
     EXPECT_EQ(3u, b.size());
 
-    const char kData[] = {0x3f, 0xe1u, 0x1f};
+    const char kData[] = {'\x3f', '\xe1', '\x1f'};
     Http2StringPiece expected(kData, sizeof kData);
     EXPECT_EQ(expected, b.buffer());
   }
@@ -157,7 +157,8 @@ TEST(HpackBlockBuilderTest, DynamicTableSizeUpdate) {
     b.AppendDynamicTableSizeUpdate(1000000000000);  // A very large value.
     EXPECT_EQ(7u, b.size());
 
-    const char kData[] = {0x3fu, 0xe1u, 0x9fu, 0x94u, 0xa5u, 0x8du, 0x1du};
+    const char kData[] = {'\x3f', '\xe1', '\x9f', '\x94',
+                          '\xa5', '\x8d', '\x1d'};
     Http2StringPiece expected(kData, sizeof kData);
     EXPECT_EQ(expected, b.buffer());
   }

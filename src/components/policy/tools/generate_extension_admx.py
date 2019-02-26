@@ -66,13 +66,19 @@ class AdmxGenerator(object):
     self._BeginAdmlTemplate()
     self._BeginAdmxTemplate()
 
+    root_category_name = 'extension'
+
+    # Add a category element for the root
+    self._AddCategory(self._extension_name, root_category_name,
+                      'Google:Cat_Google')
+
     properties = self._schema['properties']
     for policy_name, policy_schema in properties.items():
-      self._AddPolicy(policy_name, policy_schema, 'extension',
+      self._AddPolicy(policy_name, policy_schema, root_category_name,
                       self._REGISTRY_KEY)
 
-    return self._ToPrettyXml(self._admx_doc.toxml()), \
-           self._adml_doc.toxml()
+    return self._ToPrettyXml(self._admx_doc.toxml()), self._ToPrettyXml(
+        self._adml_doc.toxml())
 
   def _AddElement(self, parent, name):
     '''
@@ -131,16 +137,25 @@ class AdmxGenerator(object):
     self._SetAttribute(namespace_elem, 'namespace', namespace)
     self._SetAttribute(namespace_elem, 'prefix', prefix)
 
-  def _AddCategory(self, display_name, name, parent_category):
+  def _AddCategory(self, display_name, category_full_name,
+                   parent_category_full_name):
     '''
     Adds an ADMX category.
 
+    Args:
+      display_name: The human-readable name of the category.
+      category_full_name:
+        A unique name for the category.
+        This is used in 'name' attributes, which may only contain lowercase
+        letters, uppercase letters, digits and the underscore character.
+      parent_category_full_name: The unique 'full name' of the parent category.
     '''
     category_elem = self._AddElement(self.categories_elem_, 'category')
-    self._SetAttribute(category_elem, 'displayName', display_name, name)
-    self._SetAttribute(category_elem, 'name', name)
+    self._SetAttribute(category_elem, 'displayName', display_name,
+                       category_full_name)
+    self._SetAttribute(category_elem, 'name', category_full_name)
     parent_category_elem = self._AddElement(category_elem, 'parentCategory')
-    self._SetAttribute(parent_category_elem, 'ref', parent_category)
+    self._SetAttribute(parent_category_elem, 'ref', parent_category_full_name)
 
   def _BeginAdmlTemplate(self):
     '''
@@ -191,17 +206,24 @@ class AdmxGenerator(object):
     self._SetAttribute(definition_elem, 'name', 'SUPPORTED_WIN7')
 
     self.categories_elem_ = self._AddElement(root_elem, 'categories')
-    self._AddCategory(self._extension_name, 'extension', 'Google:Cat_Google')
-
     self._policies_elem = self._AddElement(root_elem, 'policies')
 
-  def _AddPolicy(self, policy_name, policy_schema, parent_category, parent_key):
+  def _AddPolicy(self, policy_name, policy_schema, parent_category_full_name,
+                 parent_key):
     '''
     Adds a policy with name |policy_name| and schema data |policy_schema| to
     the ADMX/ADML docs.
-
+    Args:
+      policy_name: The name of the policy.
+      policy_schema: Schema data of the policy.
+      parent_category_full_name:
+        The unique 'full name' of the category this policy should be placed
+        under.
+        This is used in 'name' attributes, which may only contain lowercase
+        letters, uppercase letters, digits and the underscore character.
+      parenty_key: The registry key of the parent.
     '''
-    policy_id = self._ToId(policy_name)
+    full_name = parent_category_full_name + '_' + self._ToId(policy_name)
     policy_title = policy_schema.get('title', policy_name)
 
     if 'id' in policy_schema:
@@ -216,36 +238,36 @@ class AdmxGenerator(object):
 
     # For 'object' type items create a new category (folder) and add children.
     if (policy_schema['type'] == 'object'):
-      self._AddCategory(policy_title, policy_id, parent_category)
+      self._AddCategory(policy_title, full_name, parent_category_full_name)
       properties = policy_schema['properties']
       for child_policy_name, child_policy_schema in properties.items():
-        self._AddPolicy(child_policy_name, child_policy_schema, policy_id,
+        self._AddPolicy(child_policy_name, child_policy_schema, full_name,
                         parent_key + '\\' + policy_name)
     else:
       policy_elem = self._AddElement(self._policies_elem, 'policy')
       policy_desc = policy_schema.get('description', None)
-      self._SetAttribute(policy_elem, 'name', policy_name)
+      self._SetAttribute(policy_elem, 'name', full_name)
       self._SetAttribute(policy_elem, 'class', 'Both')
-      self._SetAttribute(policy_elem, 'displayName', policy_title, policy_id)
+      self._SetAttribute(policy_elem, 'displayName', policy_title, full_name)
       if policy_desc:
         self._SetAttribute(policy_elem, 'explainText', policy_desc,
-                           policy_id + '_Explain')
+                           full_name + '_Explain')
       self._SetAttribute(policy_elem, 'presentation',
-                         '$(presentation.%s)' % policy_id)
+                         '$(presentation.%s)' % full_name)
       self._SetAttribute(policy_elem, 'key', parent_key)
 
       parent_category_elem = self._AddElement(policy_elem, 'parentCategory')
-      self._SetAttribute(parent_category_elem, 'ref', parent_category)
+      self._SetAttribute(parent_category_elem, 'ref', parent_category_full_name)
 
       supported_on_elem = self._AddElement(policy_elem, 'supportedOn')
       self._SetAttribute(supported_on_elem, 'ref', 'SUPPORTED_WIN7')
 
-      desc_id = policy_id + '_Part'
+      desc_id = full_name + '_Part'
       presentation_elem = self._AddElement(self._presentation_table_elem,
                                            'presentation')
-      self._SetAttribute(presentation_elem, 'id', policy_id)
+      self._SetAttribute(presentation_elem, 'id', full_name)
       if policy_schema['type'] == 'boolean':
-        self._SetAttribute(policy_elem, 'valueName', policy_id)
+        self._SetAttribute(policy_elem, 'valueName', full_name)
 
         enabled_value_elem = self._AddElement(policy_elem, 'enabledValue')
         decimal_elem = self._AddElement(enabled_value_elem, 'decimal')
@@ -258,7 +280,7 @@ class AdmxGenerator(object):
         elements_elem = self._AddElement(policy_elem, 'elements')
         decimal_elem = self._AddElement(elements_elem, 'decimal')
         self._SetAttribute(decimal_elem, 'id', desc_id)
-        self._SetAttribute(decimal_elem, 'valueName', policy_id)
+        self._SetAttribute(decimal_elem, 'valueName', full_name)
 
         textbox_elem = self._AddElement(presentation_elem, 'decimalTextBox')
         self._SetAttribute(textbox_elem, 'refId', desc_id)
@@ -271,7 +293,7 @@ class AdmxGenerator(object):
         elements_elem = self._AddElement(policy_elem, 'elements')
         text_elem = self._AddElement(elements_elem, 'text')
         self._SetAttribute(text_elem, 'id', desc_id)
-        self._SetAttribute(text_elem, 'valueName', policy_id)
+        self._SetAttribute(text_elem, 'valueName', full_name)
 
         textbox_elem = self._AddElement(presentation_elem, 'textBox')
         self._SetAttribute(textbox_elem, 'refId', desc_id)
@@ -368,8 +390,9 @@ def main():
       '--adml', dest='adml_file', help='Output ADML file', metavar='FILE')
   (options, args) = parser.parse_args()
 
-  if not options.extension_name or not options.extension_id or \
-     not options.schema_file or not options.admx_file or not options.adml_file:
+  if (not options.extension_name or not options.extension_id or
+      not options.schema_file or not options.admx_file or
+      not options.adml_file):
     parser.print_help()
     return 1
 

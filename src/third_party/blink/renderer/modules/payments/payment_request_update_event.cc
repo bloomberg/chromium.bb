@@ -23,31 +23,32 @@ constexpr TimeDelta kAbortTimeout = TimeDelta::FromSeconds(60);
 
 class UpdatePaymentDetailsFunction : public ScriptFunction {
  public:
-  static v8::Local<v8::Function> CreateFunction(ScriptState* script_state,
-                                                PaymentUpdater* updater) {
+  static v8::Local<v8::Function> CreateFunction(
+      ScriptState* script_state,
+      PaymentRequestUpdateEvent* update_event) {
     UpdatePaymentDetailsFunction* self =
-        new UpdatePaymentDetailsFunction(script_state, updater);
+        new UpdatePaymentDetailsFunction(script_state, update_event);
     return self->BindToV8Function();
   }
 
   void Trace(blink::Visitor* visitor) override {
-    visitor->Trace(updater_);
+    visitor->Trace(update_event_);
     ScriptFunction::Trace(visitor);
   }
 
  private:
   UpdatePaymentDetailsFunction(ScriptState* script_state,
-                               PaymentUpdater* updater)
-      : ScriptFunction(script_state), updater_(updater) {
-    DCHECK(updater_);
+                               PaymentRequestUpdateEvent* update_event)
+      : ScriptFunction(script_state), update_event_(update_event) {
+    DCHECK(update_event_);
   }
 
   ScriptValue Call(ScriptValue value) override {
-    updater_->OnUpdatePaymentDetails(value);
+    update_event_->OnUpdatePaymentDetails(update_event_->type(), value);
     return ScriptValue();
   }
 
-  Member<PaymentUpdater> updater_;
+  Member<PaymentRequestUpdateEvent> update_event_;
 };
 
 class UpdatePaymentDetailsErrorFunction : public ScriptFunction {
@@ -89,8 +90,9 @@ PaymentRequestUpdateEvent::~PaymentRequestUpdateEvent() = default;
 PaymentRequestUpdateEvent* PaymentRequestUpdateEvent::Create(
     ExecutionContext* execution_context,
     const AtomicString& type,
-    const PaymentRequestUpdateEventInit& init) {
-  return new PaymentRequestUpdateEvent(execution_context, type, init);
+    const PaymentRequestUpdateEventInit* init) {
+  return MakeGarbageCollected<PaymentRequestUpdateEvent>(execution_context,
+                                                         type, init);
 }
 
 void PaymentRequestUpdateEvent::SetPaymentDetailsUpdater(
@@ -130,11 +132,12 @@ void PaymentRequestUpdateEvent::updateWith(ScriptState* script_state,
 }
 
 void PaymentRequestUpdateEvent::OnUpdatePaymentDetails(
+    const AtomicString& event_type,
     const ScriptValue& details_script_value) {
   if (!updater_)
     return;
   abort_timer_.Stop();
-  updater_->OnUpdatePaymentDetails(details_script_value);
+  updater_->OnUpdatePaymentDetails(event_type, details_script_value);
   updater_ = nullptr;
 }
 
@@ -159,7 +162,7 @@ void PaymentRequestUpdateEvent::OnUpdateEventTimeoutForTesting() {
 PaymentRequestUpdateEvent::PaymentRequestUpdateEvent(
     ExecutionContext* execution_context,
     const AtomicString& type,
-    const PaymentRequestUpdateEventInit& init)
+    const PaymentRequestUpdateEventInit* init)
     : Event(type, init),
       wait_for_update_(false),
       abort_timer_(execution_context->GetTaskRunner(TaskType::kUserInteraction),

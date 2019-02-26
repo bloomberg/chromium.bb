@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/break_after.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* BreakAfter::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -16,5 +16,5 @@ const CSSValue* BreakAfter::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.BreakAfter());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

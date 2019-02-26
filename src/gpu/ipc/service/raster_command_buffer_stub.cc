@@ -15,7 +15,6 @@
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
-#include "gpu/command_buffer/service/gl_state_restorer_impl.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
@@ -61,10 +60,7 @@ RasterCommandBufferStub::RasterCommandBufferStub(
                         command_buffer_id,
                         sequence_id,
                         stream_id,
-                        route_id) {
-  original_url_ = active_url_;
-  original_url_hash_ = active_url_hash_;
-}
+                        route_id) {}
 
 RasterCommandBufferStub::~RasterCommandBufferStub() {}
 
@@ -72,12 +68,6 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
     CommandBufferStub* share_command_buffer_stub,
     const GPUCreateCommandBufferConfig& init_params,
     base::UnsafeSharedMemoryRegion shared_state_shm) {
-#if defined(OS_FUCHSIA)
-  // TODO(crbug.com/707031): Implement this.
-  NOTIMPLEMENTED();
-  LOG(ERROR) << "ContextResult::kFatalFailure: no fuchsia support";
-  return gpu::ContextResult::kFatalFailure;
-#else
   TRACE_EVENT0("gpu", "RasterBufferStub::Initialize");
   FastSetActiveURL(active_url_, active_url_hash_, channel_);
 
@@ -115,7 +105,9 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
       init_params.attribs.bind_generates_resource, channel_->image_manager(),
       gmb_factory ? gmb_factory->AsImageFactory() : nullptr,
       /*progress_reporter=*/manager->watchdog(), manager->gpu_feature_info(),
-      manager->discardable_manager(), manager->shared_image_manager());
+      manager->discardable_manager(),
+      manager->passthrough_discardable_manager(),
+      manager->shared_image_manager());
 
   ContextResult result;
   auto raster_decoder_context_state =
@@ -163,8 +155,6 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
                     "Failed to initialize virtual GL context.";
       return gpu::ContextResult::kFatalFailure;
     }
-
-    context->SetGLStateRestorer(new GLStateRestorerImpl(decoder->AsWeakPtr()));
   }
 
   if (!context->MakeCurrent(surface_.get())) {
@@ -225,7 +215,6 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
   manager->delegate()->DidCreateContextSuccessfully();
   initialized_ = true;
   return gpu::ContextResult::kSuccess;
-#endif  // defined(OS_FUCHSIA)
 }
 
 // RasterInterface clients should not manipulate the front buffer.
@@ -242,12 +231,6 @@ void RasterCommandBufferStub::OnSwapBuffers(uint64_t swap_id, uint32_t flags) {}
 void RasterCommandBufferStub::SetActiveURL(GURL url) {
   active_url_ = std::move(url);
   active_url_hash_ = base::Hash(active_url_.possibly_invalid_spec());
-  FastSetActiveURL(active_url_, active_url_hash_, channel_);
-}
-
-void RasterCommandBufferStub::ResetActiveURL() {
-  active_url_ = original_url_;
-  active_url_hash_ = original_url_hash_;
   FastSetActiveURL(active_url_, active_url_hash_, channel_);
 }
 

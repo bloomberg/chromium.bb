@@ -165,7 +165,7 @@ void ControllerPairingScreenHandler::SetDelegate(Delegate* delegate) {
 
 void ControllerPairingScreenHandler::OnContextChanged(
     const base::DictionaryValue& diff) {
-  CallJS(kMethodContextChanged, diff);
+  CallJSWithPrefix(kMethodContextChanged, diff);
 }
 
 content::BrowserContext* ControllerPairingScreenHandler::GetBrowserContext() {

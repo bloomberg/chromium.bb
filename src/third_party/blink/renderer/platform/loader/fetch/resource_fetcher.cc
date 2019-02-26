@@ -31,6 +31,8 @@
 #include <limits>
 #include <utility>
 
+#include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/time/time.h"
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -112,7 +114,7 @@ constexpr base::TimeDelta kKeepaliveLoadersTimeout =
 void AddRedirectsToTimingInfo(Resource* resource, ResourceTimingInfo* info) {
   // Store redirect responses that were packed inside the final response.
   const auto& responses = resource->GetResponse().RedirectResponses();
-  for (size_t i = 0; i < responses.size(); ++i) {
+  for (wtf_size_t i = 0; i < responses.size(); ++i) {
     const KURL& new_url = i + 1 < responses.size()
                               ? KURL(responses[i + 1].Url())
                               : resource->GetResourceRequest().Url();
@@ -160,7 +162,7 @@ ResourceLoadPriority TypeToPriority(ResourceType type) {
 static bool IsCacheableHTTPMethod(const AtomicString& method) {
   // Per http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html#sec13.10,
   // these methods always invalidate the cache entry.
-  return method != HTTPNames::POST && method != HTTPNames::PUT &&
+  return method != http_names::kPOST && method != http_names::kPUT &&
          method != "DELETE";
 }
 
@@ -178,8 +180,9 @@ bool ShouldResourceBeAddedToMemoryCache(const FetchParameters& params,
 }
 
 static ResourceFetcher::ResourceFetcherSet& MainThreadFetchersSet() {
-  DEFINE_STATIC_LOCAL(Persistent<ResourceFetcher::ResourceFetcherSet>, fetchers,
-                      (new ResourceFetcher::ResourceFetcherSet));
+  DEFINE_STATIC_LOCAL(
+      Persistent<ResourceFetcher::ResourceFetcherSet>, fetchers,
+      (MakeGarbageCollected<ResourceFetcher::ResourceFetcherSet>()));
   return *fetchers;
 }
 
@@ -234,6 +237,27 @@ ResourceLoadPriority AdjustPriorityWithPriorityHint(
   }
 
   return new_priority;
+}
+
+const base::Feature kStaleWhileRevalidateExperiment{
+    "StaleWhileRevalidateExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool MatchesStaleWhileRevalidateControlList(const String& host) {
+  DEFINE_STATIC_LOCAL(String, kStaleWhileRevalidateControlHosts,
+                      (GetFieldTrialParamValueByFeature(
+                           kStaleWhileRevalidateExperiment, "control_hosts")
+                           .c_str()));
+  return !host.IsEmpty() &&
+         kStaleWhileRevalidateControlHosts.Find(host) != kNotFound;
+}
+
+bool MatchesStaleWhileRevalidateAllowList(const String& host) {
+  DEFINE_STATIC_LOCAL(String, kStaleWhileRevalidateAllowHosts,
+                      (GetFieldTrialParamValueByFeature(
+                           kStaleWhileRevalidateExperiment, "hosts")
+                           .c_str()));
+  return !host.IsEmpty() &&
+         kStaleWhileRevalidateAllowHosts.Find(host) != kNotFound;
 }
 
 }  // namespace
@@ -539,7 +563,7 @@ Resource* ResourceFetcher::ResourceForStaticData(
     response.SetExpectedContentLength(data->size());
     response.SetTextEncodingName(substitute_data.TextEncoding());
   } else if (url.ProtocolIsData()) {
-    data = NetworkUtils::ParseDataURLAndPopulateResponse(url, response);
+    data = network_utils::ParseDataURLAndPopulateResponse(url, response);
     if (!data)
       return nullptr;
     // |response| is modified by parseDataURLAndPopulateResponse() and is
@@ -701,8 +725,26 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
         resource_type, kImageNotImageSet, Context().IsMainFrame()));
   }
   if (resource_type == ResourceType::kLinkPrefetch)
-    resource_request.SetHTTPHeaderField(HTTPNames::Purpose, "prefetch");
+    resource_request.SetHTTPHeaderField(http_names::kPurpose, "prefetch");
 
+  bool resource_allows_stale_while_revalidate = false;
+  bool host_matches_control =
+      MatchesStaleWhileRevalidateControlList(params.Url().Host());
+  bool host_matches_allow = false;
+  if (!host_matches_control) {
+    host_matches_allow =
+        MatchesStaleWhileRevalidateAllowList(params.Url().Host());
+  }
+  if (host_matches_allow)
+    resource_allows_stale_while_revalidate = host_matches_allow;
+
+  // For the finch experiment indicate that the resource likely supports
+  // stale while revalidate (based on a list of hosts). This allows us
+  // to only log metrics for sites that would possibly benefit from
+  // stale while revalidate being enabled.
+  resource_request.SetStaleRevalidateCandidate(
+      (host_matches_allow || host_matches_control) &&
+      !params.IsStaleRevalidation());
   // Indicate whether the network stack can return a stale resource. If a
   // stale resource is returned a StaleRevalidation request will be scheduled.
   // Explicitly disallow stale responses for fetchers that don't have SWR
@@ -711,8 +753,9 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
   // unintentional SWR, as bugs around RawResources tend to be complicated and
   // critical.
   resource_request.SetAllowStaleResponse(
-      stale_while_revalidate_enabled_ &&
-      resource_request.HttpMethod() == HTTPNames::GET &&
+      (resource_allows_stale_while_revalidate ||
+       stale_while_revalidate_enabled_) &&
+      resource_request.HttpMethod() == http_names::kGET &&
       !IsRawResource(resource_type) && !params.IsStaleRevalidation());
 
   Context().AddAdditionalRequestHeaders(
@@ -745,24 +788,24 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
   if (!params.Url().IsValid())
     return ResourceRequestBlockedReason::kOther;
 
-  if (!RuntimeEnabledFeatures::OutOfBlinkCORSEnabled() &&
+  if (!RuntimeEnabledFeatures::OutOfBlinkCorsEnabled() &&
       options.cors_handling_by_resource_fetcher ==
-          kEnableCORSHandlingByResourceFetcher) {
+          kEnableCorsHandlingByResourceFetcher) {
     const scoped_refptr<const SecurityOrigin> origin =
         resource_request.RequestorOrigin();
     DCHECK(!options.cors_flag);
-    params.MutableOptions().cors_flag = CORS::CalculateCORSFlag(
+    params.MutableOptions().cors_flag = cors::CalculateCorsFlag(
         params.Url(), origin.get(), resource_request.GetFetchRequestMode());
     // TODO(yhirano): Reject requests for non CORS-enabled schemes.
     // See https://crrev.com/c/1298828.
-    resource_request.SetAllowStoredCredentials(CORS::CalculateCredentialsFlag(
+    resource_request.SetAllowStoredCredentials(cors::CalculateCredentialsFlag(
         resource_request.GetFetchCredentialsMode(),
-        CORS::CalculateResponseTainting(
+        cors::CalculateResponseTainting(
             params.Url(), resource_request.GetFetchRequestMode(), origin.get(),
-            params.Options().cors_flag ? CORSFlag::Set : CORSFlag::Unset)));
+            params.Options().cors_flag ? CorsFlag::Set : CorsFlag::Unset)));
   }
 
-  if (RuntimeEnabledFeatures::OutOfBlinkCORSEnabled() &&
+  if (RuntimeEnabledFeatures::OutOfBlinkCorsEnabled() &&
       resource_request.GetFetchCredentialsMode() ==
           network::mojom::FetchCredentialsMode::kOmit) {
     // See comments at network::ResourceRequest::fetch_credentials_mode.
@@ -783,7 +826,6 @@ Resource* ResourceFetcher::RequestResource(
       scoped_resource_load_tracker(identifier, resource_request);
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER_THREAD_SAFE(
       "Blink.Fetch.RequestResourceTime");
-  // TODO(dproy): Remove this. http://crbug.com/659666
   TRACE_EVENT1("blink", "ResourceFetcher::requestResource", "url",
                UrlForTraceEvent(params.Url()));
 
@@ -870,9 +912,19 @@ Resource* ResourceFetcher::RequestResource(
       InitializeRevalidation(resource_request, resource);
       break;
     case kUse:
+      bool used_stale = false;
       if (resource_request.AllowsStaleResponse() &&
           resource->ShouldRevalidateStaleResponse()) {
+        used_stale = true;
         ScheduleStaleRevalidate(resource);
+      }
+      if (resource_request.IsStaleRevalidateCandidate()) {
+        context_->DidObserveLoadingBehavior(
+            used_stale
+                ? WebLoadingBehaviorFlag::
+                      kStaleWhileRevalidateResourceCandidateStaleCacheLoad
+                : WebLoadingBehaviorFlag::
+                      kStaleWhileRevalidateResourceCandidateCacheLoad);
       }
 
       if (resource->IsLinkPreload() && !params.IsLinkPreload())
@@ -918,9 +970,7 @@ Resource* ResourceFetcher::RequestResource(
   // the resource was already initialized for the revalidation here, but won't
   // start loading.
   if (ResourceNeedsLoad(resource, params, policy)) {
-    if (StartLoad(resource)) {
-      scoped_resource_load_tracker.ResourceLoadContinuesBeyondScope();
-    } else {
+    if (!StartLoad(resource)) {
       resource->FinishAsError(ResourceError::CancelledError(params.Url()),
                               Context().GetLoadingTaskRunner().get());
     }
@@ -928,6 +978,11 @@ Resource* ResourceFetcher::RequestResource(
 
   if (policy != kUse)
     InsertAsPreloadIfNecessary(resource, params, resource_type);
+
+  if (resource->Identifier() == identifier &&
+      (resource->StillNeedsLoad() || resource->IsLoading())) {
+    scoped_resource_load_tracker.ResourceLoadContinuesBeyondScope();
+  }
 
   return resource;
 }
@@ -956,24 +1011,24 @@ void ResourceFetcher::InitializeRevalidation(
   revalidating_request.SetIsRevalidating(true);
 
   const AtomicString& last_modified =
-      resource->GetResponse().HttpHeaderField(HTTPNames::Last_Modified);
+      resource->GetResponse().HttpHeaderField(http_names::kLastModified);
   const AtomicString& e_tag =
-      resource->GetResponse().HttpHeaderField(HTTPNames::ETag);
+      resource->GetResponse().HttpHeaderField(http_names::kETag);
   if (!last_modified.IsEmpty() || !e_tag.IsEmpty()) {
     DCHECK_NE(mojom::FetchCacheMode::kBypassCache,
               revalidating_request.GetCacheMode());
     if (revalidating_request.GetCacheMode() ==
         mojom::FetchCacheMode::kValidateCache) {
-      revalidating_request.SetHTTPHeaderField(HTTPNames::Cache_Control,
+      revalidating_request.SetHTTPHeaderField(http_names::kCacheControl,
                                               "max-age=0");
     }
   }
   if (!last_modified.IsEmpty()) {
-    revalidating_request.SetHTTPHeaderField(HTTPNames::If_Modified_Since,
+    revalidating_request.SetHTTPHeaderField(http_names::kIfModifiedSince,
                                             last_modified);
   }
   if (!e_tag.IsEmpty())
-    revalidating_request.SetHTTPHeaderField(HTTPNames::If_None_Match, e_tag);
+    revalidating_request.SetHTTPHeaderField(http_names::kIfNoneMatch, e_tag);
 
   resource->SetRevalidatingRequest(revalidating_request);
 }
@@ -1009,7 +1064,7 @@ Resource* ResourceFetcher::CreateResourceForLoading(
 void ResourceFetcher::StorePerformanceTimingInitiatorInformation(
     Resource* resource) {
   const AtomicString& fetch_initiator = resource->Options().initiator_info.name;
-  if (fetch_initiator == FetchInitiatorTypeNames::internal)
+  if (fetch_initiator == fetch_initiator_type_names::kInternal)
     return;
 
   bool is_main_resource = resource->GetType() == ResourceType::kMainResource;
@@ -1034,7 +1089,7 @@ void ResourceFetcher::StorePerformanceTimingInitiatorInformation(
 
   if (resource->IsCacheValidator()) {
     const AtomicString& timing_allow_origin =
-        resource->GetResponse().HttpHeaderField(HTTPNames::Timing_Allow_Origin);
+        resource->GetResponse().HttpHeaderField(http_names::kTimingAllowOrigin);
     if (!timing_allow_origin.IsEmpty())
       info->SetOriginalTimingAllowOrigin(timing_allow_origin);
   }
@@ -1441,9 +1496,9 @@ void ResourceFetcher::ReloadImagesIfNotDeferred() {
 }
 
 FetchContext& ResourceFetcher::Context() const {
-  return context_ ? *context_.Get()
-                  : FetchContext::NullInstance(
-                        Platform::Current()->CurrentThread()->GetTaskRunner());
+  return context_
+             ? *context_.Get()
+             : FetchContext::NullInstance(Thread::Current()->GetTaskRunner());
 }
 
 void ResourceFetcher::ClearContext() {
@@ -1631,7 +1686,7 @@ void ResourceFetcher::HandleLoaderFinish(
           WebString::FromUTF8(timing_info.alpn_negotiated_protocol));
       response.SetConnectionInfo(timing_info.connection_info);
       response.SetHTTPHeaderField(
-          HTTPNames::Timing_Allow_Origin,
+          http_names::kTimingAllowOrigin,
           WebString::FromUTF8(timing_info.timing_allow_origin));
       response.SetEncodedDataLength(timing_info.transfer_size);
       preflight_info->SetFinalResponse(response);
@@ -1655,9 +1710,24 @@ void ResourceFetcher::HandleLoaderFinish(
     // is fresh at the time of the network stack handling but not at the time
     // handling here and we should not be forcing a revalidation in that case.
     // eg. network stack returning a resource with max-age=0.
+    bool used_stale = false;
     if (resource->GetResourceRequest().AllowsStaleResponse() &&
         resource->StaleRevalidationRequested()) {
+      used_stale = true;
       ScheduleStaleRevalidate(resource);
+    }
+
+    if (resource->GetResourceRequest().IsStaleRevalidateCandidate()) {
+      WebLoadingBehaviorFlag behavior = WebLoadingBehaviorFlag::
+          kStaleWhileRevalidateResourceCandidateCacheLoad;
+      if (used_stale) {
+        behavior = WebLoadingBehaviorFlag::
+            kStaleWhileRevalidateResourceCandidateStaleCacheLoad;
+      } else if (resource->NetworkAccessed()) {
+        behavior = WebLoadingBehaviorFlag::
+            kStaleWhileRevalidateResourceCandidateNetworkLoad;
+      }
+      context_->DidObserveLoadingBehavior(behavior);
     }
   }
 
@@ -1677,7 +1747,7 @@ void ResourceFetcher::HandleLoaderError(Resource* resource,
   resource_timing_info_map_.Take(resource);
 
   bool is_internal_request = resource->Options().initiator_info.name ==
-                             FetchInitiatorTypeNames::internal;
+                             fetch_initiator_type_names::kInternal;
 
   resource->VirtualTimePauser().UnpauseVirtualTime();
   Context().DispatchDidFail(
@@ -1924,8 +1994,9 @@ void ResourceFetcher::RevalidateStaleResource(Resource* stale_resource) {
   // requests.
   FetchParameters params(stale_resource->GetResourceRequest());
   params.SetStaleRevalidation(true);
-  RawResource::Fetch(params, this,
-                     new StaleRevalidationResourceClient(stale_resource));
+  RawResource::Fetch(
+      params, this,
+      MakeGarbageCollected<StaleRevalidationResourceClient>(stale_resource));
 }
 
 void ResourceFetcher::Trace(blink::Visitor* visitor) {

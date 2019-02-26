@@ -19,14 +19,15 @@ namespace vr {
 
 // Helper class to trace GPU work.
 // It creates a fence in the constructor and extracts the time when the fence
-// completed in the destructor. The duration is reported to trace. It assumes
-// that fence has completed when destructor is triggered. If for some reason it
-// failed to extract fence completion time, no trace event will be recorded.
-// NB: This class is not thread safe due to static id generation. If you need to
-// use it on different threads, consider a thread safe id generator.
+// completed in the destructor. The duration is reported to trace in the "gpu"
+// category. It assumes that fence has completed when destructor is triggered.
+// If for some reason it failed to extract fence completion time, no trace event
+// will be recorded. NB: This class is not thread safe due to static id
+// generation. If you need to use it on different threads, consider a thread
+// safe id generator.
 class ScopedGpuTrace {
  public:
-  ScopedGpuTrace(const char* categoray, const char* name);
+  explicit ScopedGpuTrace(const char* name);
 
   virtual ~ScopedGpuTrace();
 
@@ -37,7 +38,6 @@ class ScopedGpuTrace {
   static uint32_t s_trace_id_;
   base::TimeTicks start_time_;
   std::unique_ptr<gl::GLFenceAndroidNativeFenceSync> fence_;
-  const char* const categoray_;
   const char* const name_;
   uint32_t trace_id_;
 

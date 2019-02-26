@@ -37,7 +37,7 @@ std::unique_ptr<variations::SeedResponse> GetAndClearJavaSeed() {
   Java_AwVariationsSeedBridge_clearSeed(env);
 
   auto java_seed = std::make_unique<variations::SeedResponse>();
-  base::android::JavaByteArrayToString(env, j_data.obj(), &java_seed->data);
+  base::android::JavaByteArrayToString(env, j_data, &java_seed->data);
   java_seed->signature = ConvertJavaStringToUTF8(j_signature);
   java_seed->country = ConvertJavaStringToUTF8(j_country);
   java_seed->date = ConvertJavaStringToUTF8(j_date);

@@ -1,0 +1,6 @@
+file://base/trace_event/OWNERS
+eseckler@chromium.org
+skyostil@chromium.org
+
+# TEAM: tracing@chromium.org
+# COMPONENT: Speed>Tracing

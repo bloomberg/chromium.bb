@@ -383,7 +383,7 @@
       </message>
       <if expr="_google_chrome">
         <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS" desc="A short paragraph explaining to the user that they has reuse their google password on current website.">
-          You could lose access to your Google Account or experience identity theft. Chrome recommends changing your password now.
+          You could lose access to your Google Account. Chrome recommends changing your password now. You'll be asked to sign in.
         </message>
         <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_ENTERPRISE" desc="A short paragraph explaining to the user that they have reused their password on the current website.">
           You could lose access to your organization's account or experience identity theft. Chrome recommends changing your password now.
@@ -394,7 +394,7 @@
       </if>
       <if expr="not _google_chrome">
         <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS" desc="A short paragraph explaining to the user that they has reuse their google password on current website.">
-          You could lose access to your Google Account or experience identity theft. Chromium recommends changing your password now.
+          You could lose access to your Google Account. Chromium recommends changing your password now. You'll be asked to sign in.
         </message>
         <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_ENTERPRISE" desc="A short paragraph explaining to the user that they have reused their password on the current website.">
           You could lose access to your organization's account or experience identity theft. Chromium recommends changing your password now.
@@ -406,7 +406,7 @@
 
       <if expr="use_titlecase">
         <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_BUTTON" desc="In Title Case: The string used in the page info change password button.">
-          Help Me Fix This
+          Change Password
         </message>
         <message name="IDS_PAGE_INFO_IGNORE_PASSWORD_WARNING_BUTTON" desc="In Title Case: The string used in the page info ignore password warning button.">
           Ignore
@@ -414,7 +414,7 @@
       </if>
       <if expr="not use_titlecase">
         <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_BUTTON" desc="The string used in the page info change password button.">
-          Help me fix this
+          Change password
         </message>
         <message name="IDS_PAGE_INFO_IGNORE_PASSWORD_WARNING_BUTTON" desc="The string used in the page info ignore password warning button.">
           Ignore

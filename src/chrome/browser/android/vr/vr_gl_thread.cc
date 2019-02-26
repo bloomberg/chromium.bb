@@ -15,8 +15,8 @@
 #include "chrome/browser/vr/browser_renderer.h"
 #include "chrome/browser/vr/browser_ui_interface.h"
 #include "chrome/browser/vr/model/assets.h"
+#include "chrome/browser/vr/model/location_bar_state.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
-#include "chrome/browser/vr/model/toolbar_state.h"
 #include "chrome/browser/vr/sounds_manager_audio_delegate.h"
 #include "chrome/browser/vr/ui_factory.h"
 #include "chrome/browser/vr/ui_test_input.h"
@@ -214,13 +214,6 @@ void VrGLThread::OpenNewTab(bool incognito) {
       base::BindOnce(&VrShell::OpenNewTab, weak_vr_shell_, incognito));
 }
 
-void VrGLThread::SelectTab(int id, bool incognito) {
-  DCHECK(OnGlThread());
-  main_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&VrShell::SelectTab, weak_vr_shell_, id, incognito));
-}
-
 void VrGLThread::OpenBookmarks() {
   DCHECK(OnGlThread());
   main_thread_task_runner_->PostTask(
@@ -255,19 +248,6 @@ void VrGLThread::OpenSettings() {
   DCHECK(OnGlThread());
   main_thread_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&VrShell::OpenSettings, weak_vr_shell_));
-}
-
-void VrGLThread::CloseTab(int id, bool incognito) {
-  DCHECK(OnGlThread());
-  main_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&VrShell::CloseTab, weak_vr_shell_, id, incognito));
-}
-
-void VrGLThread::CloseAllTabs() {
-  DCHECK(OnGlThread());
-  main_thread_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&VrShell::CloseAllTabs, weak_vr_shell_));
 }
 
 void VrGLThread::CloseAllIncognitoTabs() {
@@ -380,11 +360,11 @@ void VrGLThread::SetLoading(bool loading) {
                                          weak_browser_ui_, loading));
 }
 
-void VrGLThread::SetToolbarState(const ToolbarState& state) {
+void VrGLThread::SetLocationBarState(const LocationBarState& state) {
   DCHECK(OnMainThread());
-  task_runner()->PostTask(FROM_HERE,
-                          base::BindOnce(&BrowserUiInterface::SetToolbarState,
-                                         weak_browser_ui_, state));
+  task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&BrowserUiInterface::SetLocationBarState,
+                                weak_browser_ui_, state));
 }
 
 void VrGLThread::SetWebVrMode(bool enabled) {
@@ -468,6 +448,20 @@ void VrGLThread::WaitForAssets() {
       base::BindOnce(&BrowserUiInterface::WaitForAssets, weak_browser_ui_));
 }
 
+void VrGLThread::SetRegularTabsOpen(bool open) {
+  DCHECK(OnMainThread());
+  task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&BrowserUiInterface::SetRegularTabsOpen,
+                                weak_browser_ui_, open));
+}
+
+void VrGLThread::SetIncognitoTabsOpen(bool open) {
+  DCHECK(OnMainThread());
+  task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&BrowserUiInterface::SetIncognitoTabsOpen,
+                                weak_browser_ui_, open));
+}
+
 void VrGLThread::SetOverlayTextureEmpty(bool empty) {
   DCHECK(OnMainThread());
   task_runner()->PostTask(
@@ -530,29 +524,6 @@ void VrGLThread::OnContentBoundsChanged(int width, int height) {
                           weak_browser_ui_, width, height));
 }
 
-void VrGLThread::AddOrUpdateTab(int id,
-                                bool incognito,
-                                const base::string16& title) {
-  DCHECK(OnMainThread());
-  task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&BrowserUiInterface::AddOrUpdateTab,
-                                weak_browser_ui_, id, incognito, title));
-}
-
-void VrGLThread::RemoveTab(int id, bool incognito) {
-  DCHECK(OnMainThread());
-  task_runner()->PostTask(FROM_HERE,
-                          base::BindOnce(&BrowserUiInterface::RemoveTab,
-                                         weak_browser_ui_, id, incognito));
-}
-
-void VrGLThread::RemoveAllTabs() {
-  DCHECK(OnMainThread());
-  task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&BrowserUiInterface::RemoveAllTabs, weak_browser_ui_));
-}
-
 void VrGLThread::PerformKeyboardInputForTesting(
     KeyboardTestInput keyboard_input) {
   DCHECK(OnMainThread());
@@ -560,6 +531,12 @@ void VrGLThread::PerformKeyboardInputForTesting(
       FROM_HERE,
       base::BindOnce(&BrowserUiInterface::PerformKeyboardInputForTesting,
                      weak_browser_ui_, keyboard_input));
+}
+
+void VrGLThread::SetVisibleExternalPromptNotification(
+    ExternalPromptNotificationType prompt) {
+  // Not reached on Android.
+  NOTREACHED();
 }
 
 void VrGLThread::ReportUiOperationResultForTesting(

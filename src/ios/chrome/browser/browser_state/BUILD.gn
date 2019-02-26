@@ -84,7 +84,6 @@ source_set("browser_state_impl") {
     "//ios/chrome/browser/browser_state_metrics",
     "//ios/chrome/browser/browsing_data",
     "//ios/chrome/browser/content_settings",
-    "//ios/chrome/browser/desktop_promotion",
     "//ios/chrome/browser/dom_distiller",
     "//ios/chrome/browser/download",
     "//ios/chrome/browser/favicon",
@@ -112,7 +111,6 @@ source_set("browser_state_impl") {
     "//ios/chrome/browser/ui/browser_list",
     "//ios/chrome/browser/ui/browser_list:browser_list_impl",
     "//ios/chrome/browser/ui/fullscreen",
-    "//ios/chrome/browser/ui/overlays",
     "//ios/chrome/browser/ui/voice",
     "//ios/chrome/browser/undo",
     "//ios/chrome/browser/unified_consent",
@@ -124,6 +122,8 @@ source_set("browser_state_impl") {
     "//ios/web/net/cookies",
     "//net",
     "//net:extras",
+    "//services/identity/public/cpp",
+    "//services/identity/public/mojom",
   ]
   allow_circular_includes_from = [
     "//ios/chrome/browser",

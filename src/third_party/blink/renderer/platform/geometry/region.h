@@ -71,7 +71,7 @@ class PLATFORM_EXPORT Region {
   // Returns true if the query region intersects any part of this region.
   bool Intersects(const Region&) const;
 
-  double Area() const;
+  uint64_t Area() const;
 
 #ifndef NDEBUG
   void Dump() const;

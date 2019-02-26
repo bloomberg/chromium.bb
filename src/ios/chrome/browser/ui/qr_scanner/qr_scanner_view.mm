@@ -8,7 +8,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/numerics/math_constants.h"
 #include "ios/chrome/browser/ui/icons/chrome_icon.h"
-#include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #include "ui/base/l10n/l10n_util.h"

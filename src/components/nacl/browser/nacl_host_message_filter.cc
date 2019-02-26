@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <utility>
 
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "components/nacl/browser/bad_message.h"

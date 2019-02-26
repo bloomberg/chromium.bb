@@ -11,23 +11,23 @@
     android:layout_gravity="top|start"
     android:orientation="horizontal">
 
-    <android.support.v7.widget.AppCompatImageButton
+    <org.chromium.ui.widget.ChromeImageButton
         android:id="@+id/button_one"
         style="@style/OverflowMenuButton" />
 
-    <android.support.v7.widget.AppCompatImageButton
+    <org.chromium.ui.widget.ChromeImageButton
         android:id="@+id/button_two"
         style="@style/OverflowMenuButton" />
 
-    <android.support.v7.widget.AppCompatImageButton
+    <org.chromium.ui.widget.ChromeImageButton
         android:id="@+id/button_three"
         style="@style/OverflowMenuButton" />
 
-    <android.support.v7.widget.AppCompatImageButton
+    <org.chromium.ui.widget.ChromeImageButton
         android:id="@+id/button_four"
         style="@style/OverflowMenuButton" />
 
-    <android.support.v7.widget.AppCompatImageButton
+    <org.chromium.ui.widget.ChromeImageButton
         android:id="@+id/button_five"
         style="@style/OverflowMenuButton" />
 </LinearLayout>

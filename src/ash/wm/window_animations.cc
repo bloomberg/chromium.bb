@@ -15,6 +15,7 @@
 #include "ash/public/cpp/window_animation_types.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
+#include "ash/wm/pip/pip_positioner.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/i18n/rtl.h"
@@ -52,6 +53,9 @@ const float kCrossFadeDurationMaxMs = 400.f;
 
 // Durations for the brightness/grayscale fade animation, in milliseconds.
 const int kBrightnessGrayscaleFadeDurationMs = 1000;
+
+// Duration for fade in animation, in milliseconds.
+const int kFadeInAnimationMs = 200;
 
 // Brightness/grayscale values for hide/show window animations.
 const float kWindowAnimation_HideBrightnessGrayscale = 1.f;
@@ -227,6 +231,16 @@ void AnimateShowWindow_BrightnessGrayscale(aura::Window* window) {
   AnimateShowHideWindowCommon_BrightnessGrayscale(window, true);
 }
 
+// TODO(edcourtney): Consolidate with AnimateShowWindow_Fade in ui/wm/core.
+void AnimateShowWindow_FadeIn(aura::Window* window) {
+  window->layer()->SetOpacity(kWindowAnimation_HideOpacity);
+  ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
+  settings.SetTransitionDuration(
+      base::TimeDelta::FromMilliseconds(kFadeInAnimationMs));
+  window->layer()->SetVisible(true);
+  window->layer()->SetOpacity(kWindowAnimation_ShowOpacity);
+}
+
 void AnimateHideWindow_BrightnessGrayscale(aura::Window* window) {
   AnimateShowHideWindowCommon_BrightnessGrayscale(window, false);
 }
@@ -234,9 +248,11 @@ void AnimateHideWindow_BrightnessGrayscale(aura::Window* window) {
 bool AnimateShowWindow_SlideDown(aura::Window* window) {
   AppListControllerImpl* app_list_controller =
       Shell::Get()->app_list_controller();
+  const TabletModeController* tablet_mode_controller =
+      Shell::Get()->tablet_mode_controller();
 
-  if (app_list_controller &&
-      app_list_controller->IsHomeLauncherEnabledInTabletMode()) {
+  if (app_list_controller && tablet_mode_controller &&
+      tablet_mode_controller->IsTabletModeWindowManagerEnabled()) {
     // Slide down the window from above screen to show and, meanwhile, slide
     // down the home launcher off screen.
     HomeLauncherGestureHandler* handler =
@@ -263,6 +279,23 @@ bool AnimateHideWindow_SlideDown(aura::Window* window) {
   return false;
 }
 
+void AnimateHideWindow_SlideOut(aura::Window* window) {
+  base::TimeDelta duration =
+      base::TimeDelta::FromMilliseconds(PipPositioner::kPipDismissTimeMs);
+
+  ::wm::ScopedHidingAnimationSettings settings(window);
+  settings.layer_animation_settings()->SetTransitionDuration(duration);
+  window->layer()->SetOpacity(kWindowAnimation_HideOpacity);
+  window->layer()->SetVisible(false);
+
+  gfx::Rect bounds = window->GetBoundsInScreen();
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(window);
+  gfx::Rect dismissed_bounds =
+      PipPositioner::GetDismissedPosition(display, bounds);
+  window->layer()->SetBounds(dismissed_bounds);
+}
+
 bool AnimateShowWindow(aura::Window* window) {
   if (!::wm::HasWindowVisibilityAnimationTransition(window,
                                                     ::wm::ANIMATE_SHOW)) {
@@ -278,6 +311,10 @@ bool AnimateShowWindow(aura::Window* window) {
       return true;
     case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_SLIDE_DOWN:
       return AnimateShowWindow_SlideDown(window);
+      return true;
+    case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE_IN_SLIDE_OUT:
+      AnimateShowWindow_FadeIn(window);
+      return true;
     default:
       NOTREACHED();
       return false;
@@ -299,6 +336,9 @@ bool AnimateHideWindow(aura::Window* window) {
       return true;
     case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_SLIDE_DOWN:
       return AnimateHideWindow_SlideDown(window);
+    case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE_IN_SLIDE_OUT:
+      AnimateHideWindow_SlideOut(window);
+      return true;
     default:
       NOTREACHED();
       return false;

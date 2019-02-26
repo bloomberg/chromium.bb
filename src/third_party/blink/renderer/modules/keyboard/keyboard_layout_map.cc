@@ -40,7 +40,7 @@ KeyboardLayoutMap::KeyboardLayoutMap(const HashMap<String, String>& map)
 
 PairIterable<String, String>::IterationSource*
 KeyboardLayoutMap::StartIteration(ScriptState*, ExceptionState&) {
-  return new KeyboardLayoutMapIterationSource(*this);
+  return MakeGarbageCollected<KeyboardLayoutMapIterationSource>(*this);
 }
 
 bool KeyboardLayoutMap::GetMapEntry(ScriptState*,

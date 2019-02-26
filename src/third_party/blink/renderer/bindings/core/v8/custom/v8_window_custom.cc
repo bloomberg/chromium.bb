@@ -58,12 +58,11 @@
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 
-void V8Window::locationAttributeGetterCustom(
+void V8Window::LocationAttributeGetterCustom(
     const v8::PropertyCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   v8::Local<v8::Object> holder = info.Holder();
@@ -84,15 +83,15 @@ void V8Window::locationAttributeGetterCustom(
   // cross-origin status changes by changing properties like |document.domain|.
   if (window->IsRemoteDOMWindow()) {
     DOMWrapperWorld& world = DOMWrapperWorld::Current(isolate);
-    const auto* wrapper_type_info = location->GetWrapperTypeInfo();
+    const auto* location_wrapper_type = location->GetWrapperTypeInfo();
     v8::Local<v8::Object> new_wrapper =
-        wrapper_type_info->domTemplate(isolate, world)
+        location_wrapper_type->DomTemplate(isolate, world)
             ->NewRemoteInstance()
             .ToLocalChecked();
 
     DCHECK(!DOMDataStore::ContainsWrapper(location, isolate));
     wrapper = V8DOMWrapper::AssociateObjectWithWrapper(
-        isolate, location, wrapper_type_info, new_wrapper);
+        isolate, location, location_wrapper_type, new_wrapper);
   } else {
     wrapper = ToV8(location, holder, isolate);
   }
@@ -100,7 +99,7 @@ void V8Window::locationAttributeGetterCustom(
   V8SetReturnValue(info, wrapper);
 }
 
-void V8Window::eventAttributeGetterCustom(
+void V8Window::EventAttributeGetterCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   LocalDOMWindow* impl = ToLocalDOMWindow(V8Window::ToImpl(info.Holder()));
   v8::Isolate* isolate = info.GetIsolate();
@@ -136,7 +135,7 @@ void V8Window::eventAttributeGetterCustom(
   V8SetReturnValue(info, js_event);
 }
 
-void V8Window::frameElementAttributeGetterCustom(
+void V8Window::FrameElementAttributeGetterCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   LocalDOMWindow* impl = ToLocalDOMWindow(V8Window::ToImpl(info.Holder()));
   Element* frameElement = impl->frameElement();
@@ -161,7 +160,7 @@ void V8Window::frameElementAttributeGetterCustom(
   V8SetReturnValue(info, wrapper);
 }
 
-void V8Window::openerAttributeSetterCustom(
+void V8Window::OpenerAttributeSetterCustom(
     v8::Local<v8::Value> value,
     const v8::PropertyCallbackInfo<void>& info) {
   v8::Isolate* isolate = info.GetIsolate();
@@ -197,7 +196,7 @@ void V8Window::openerAttributeSetterCustom(
   }
 }
 
-void V8Window::namedPropertyGetterCustom(
+void V8Window::NamedPropertyGetterCustom(
     const AtomicString& name,
     const v8::PropertyCallbackInfo<v8::Value>& info) {
   DOMWindow* window = V8Window::ToImpl(info.Holder());
@@ -235,13 +234,16 @@ void V8Window::namedPropertyGetterCustom(
         CurrentExecutionContext(info.GetIsolate()),
         WebFeature::
             kNamedAccessOnWindow_ChildBrowsingContext_CrossOriginNameMismatch);
-    // In addition to the above spec'ed case, we return the child window
-    // regardless of step 3 due to crbug.com/701489 for the time being.
-    // TODO(yukishiino): Makes iframe.name update the browsing context name
-    // appropriately and makes the new name available in the named access on
-    // window.  Then, removes the following two lines.
-    V8SetReturnValueFast(info, child->DomWindow(), window);
-    return;
+    if (!RuntimeEnabledFeatures::
+            IgnoreCrossOriginWindowWhenNamedAccessOnWindowEnabled()) {
+      // In addition to the above spec'ed case, we return the child window
+      // regardless of step 3 due to crbug.com/701489 for the time being.
+      // TODO(yukishiino): Makes iframe.name update the browsing context name
+      // appropriately and makes the new name available in the named access on
+      // window.  Then, removes the following two lines.
+      V8SetReturnValueFast(info, child->DomWindow(), window);
+      return;
+    }
   }
 
   // This is a cross-origin interceptor. Check that the caller has access to the

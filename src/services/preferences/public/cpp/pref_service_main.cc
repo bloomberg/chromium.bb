@@ -10,7 +10,8 @@
 namespace prefs {
 
 std::pair<std::unique_ptr<service_manager::Service>, base::OnceClosure>
-CreatePrefService(PrefStore* managed_prefs,
+CreatePrefService(service_manager::mojom::ServiceRequest request,
+                  PrefStore* managed_prefs,
                   PrefStore* supervised_user_prefs,
                   PrefStore* extension_prefs,
                   PrefStore* command_line_prefs,
@@ -20,9 +21,9 @@ CreatePrefService(PrefStore* managed_prefs,
                   PrefRegistry* pref_registry,
                   std::vector<const char*> persistent_perf_names) {
   auto service = std::make_unique<PrefStoreManagerImpl>(
-      managed_prefs, supervised_user_prefs, extension_prefs, command_line_prefs,
-      user_prefs, incognito_user_prefs_underlay, recommended_prefs,
-      pref_registry, std::move(persistent_perf_names));
+      std::move(request), managed_prefs, supervised_user_prefs, extension_prefs,
+      command_line_prefs, user_prefs, incognito_user_prefs_underlay,
+      recommended_prefs, pref_registry, std::move(persistent_perf_names));
   auto quit_closure = service->ShutDownClosure();
   return std::make_pair(std::move(service), std::move(quit_closure));
 }

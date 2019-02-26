@@ -58,7 +58,7 @@ class SHA1EntropyProvider : public base::FieldTrial::EntropyProvider {
                             uint32_t randomization_seed) const override;
 
  private:
-  std::string entropy_source_;
+  const std::string entropy_source_;
 
   DISALLOW_COPY_AND_ASSIGN(SHA1EntropyProvider);
 };
@@ -86,10 +86,34 @@ class PermutedEntropyProvider : public base::FieldTrial::EntropyProvider {
   virtual uint16_t GetPermutedValue(uint32_t randomization_seed) const;
 
  private:
-  uint16_t low_entropy_source_;
-  size_t low_entropy_source_max_;
+  const uint16_t low_entropy_source_;
+  const size_t low_entropy_source_max_;
 
   DISALLOW_COPY_AND_ASSIGN(PermutedEntropyProvider);
+};
+
+// NormalizedMurmurHashEntropyProvider is an entropy provider suitable for low
+// entropy sources (below 16 bits). It uses MurmurHash3_32 to hash the study
+// name along with all possible low entropy sources. It finds the index where
+// the actual low entropy source's hash would fall in the sorted list of all
+// those hashes, and uses that as the final value. For more info, see:
+// https://docs.google.com/document/d/1cPF5PruriWNP2Z5gSkq4MBTm0wSZqLyIJkUO9ekibeo
+class NormalizedMurmurHashEntropyProvider
+    : public base::FieldTrial::EntropyProvider {
+ public:
+  NormalizedMurmurHashEntropyProvider(uint16_t low_entropy_source,
+                                      size_t low_entropy_source_max);
+  ~NormalizedMurmurHashEntropyProvider() override;
+
+  // base::FieldTrial::EntropyProvider:
+  double GetEntropyForTrial(const std::string& trial_name,
+                            uint32_t randomization_seed) const override;
+
+ private:
+  const uint16_t low_entropy_source_;
+  const size_t low_entropy_source_max_;
+
+  DISALLOW_COPY_AND_ASSIGN(NormalizedMurmurHashEntropyProvider);
 };
 
 }  // namespace variations

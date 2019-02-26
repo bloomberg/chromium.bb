@@ -28,6 +28,11 @@ class CORE_EXPORT CSSUnitValue final : public CSSNumericValue {
       CSSPrimitiveValue::UnitType = CSSPrimitiveValue::UnitType::kNumber);
   static CSSUnitValue* FromCSSValue(const CSSPrimitiveValue&);
 
+  CSSUnitValue(double value, CSSPrimitiveValue::UnitType unit)
+      : CSSNumericValue(CSSNumericValueType(unit)),
+        value_(value),
+        unit_(unit) {}
+
   // Setters and getters for attributes defined in the IDL.
   void setValue(double new_value) { value_ = new_value; }
   double value() const { return value_; }
@@ -46,15 +51,12 @@ class CORE_EXPORT CSSUnitValue final : public CSSNumericValue {
   // From CSSStyleValue.
   StyleValueType GetType() const final;
   const CSSPrimitiveValue* ToCSSValue() const final;
-  const CSSPrimitiveValue* ToCSSValueWithProperty(CSSPropertyID) const final;
+  const CSSPrimitiveValue* ToCSSValueWithProperty(
+      CSSPropertyID,
+      const CSSSyntaxComponent*) const final;
   CSSCalcExpressionNode* ToCalcExpressionNode() const final;
 
  private:
-  CSSUnitValue(double value, CSSPrimitiveValue::UnitType unit)
-      : CSSNumericValue(CSSNumericValueType(unit)),
-        value_(value),
-        unit_(unit) {}
-
   double ConvertFixedLength(CSSPrimitiveValue::UnitType) const;
   double ConvertAngle(CSSPrimitiveValue::UnitType) const;
 

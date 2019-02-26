@@ -19,10 +19,10 @@
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
-#include "net/dns/dns_protocol.h"
 #include "net/dns/dns_query.h"
 #include "net/dns/dns_response.h"
 #include "net/dns/dns_util.h"
+#include "net/dns/public/dns_protocol.h"
 
 namespace {
 

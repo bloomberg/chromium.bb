@@ -17,7 +17,6 @@
 <translation id="2647554856022461007">Chromium bruger muligvis webtjenester for at forbedre din browseroplevelse. Du kan vælge at deaktivere disse tjenester. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="2687023731466035790">Få Googles smarte funktioner i Chromium</translation>
 <translation id="2730884209570016437">Chromium kan ikke bruge dit kamera, da det bruges af en anden app</translation>
-<translation id="2797210818057553964">Du kan til enhver tid tilpasse dette i Chromium-indstillingerne</translation>
 <translation id="2915596697727466327">Chromium bruger Face ID til at sikre autoriseret adgang til dine adgangskoder.</translation>
 <translation id="3256316712990552818">Kopieret til Chromium</translation>
 <translation id="3413120535237193088">Log ind på Chromium for at se dine bogmærker på alle dine enheder.</translation>
@@ -31,8 +30,8 @@
 <translation id="4555020257205549924">Når denne funktion er aktiveret, vil Chromium tilbyde at oversætte sider, der er skrevet på andre sprog, ved hjælp af Google Oversæt. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="4787850887676698916">Faner, du har åbnet i Chromium på dine andre enheder, vises her.</translation>
 <translation id="495292094137889840">Begynd at bruge QR-scanneren fra Chromium</translation>
+<translation id="4999538639245140991">Da du er ved at logge ud af en konto, der administreres af <ph name="SIGNOUT_MANAGED_DOMAIN" />, slettes dine Chromium-data på denne enhed. Dine data forbliver på din Google-konto.</translation>
 <translation id="5231355151045086930">Log ud af Chromium</translation>
-<translation id="5416919929805616771">Kan du lide Chromium? <ph name="BEGIN_LINK" />Bedøm denne app<ph name="END_LINK" /></translation>
 <translation id="5862307444128926510">Velkommen til Chromium</translation>
 <translation id="5945387852661427312">Du er ved at logge ind med en konto, der administreres af <ph name="DOMAIN" />, hvilket giver administratoren kontrol over dine Chromium-data. Dine data tilknyttes denne konto permanent. Hvis du logger ud af Chromium, slettes dine data fra denne enhed, men de forbliver gemt på din Google-konto.</translation>
 <translation id="6068866989048414399">Chromium Servicevilkår</translation>
@@ -47,10 +46,10 @@
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7357211569052832586">De valgte data er fjernet fra Chromium og synkroniserede enheder. Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og aktivitet fra andre Google-tjenester, på history.google.com.</translation>
 <translation id="7400689562045506105">Brug Chromium, uanset hvor du er</translation>
-<translation id="7499048969477415415">De indstillinger, der styrer synkronisering, tilpasning og andre Google-tjenester i Chromium, er blevet ændret. Dette kan påvirke dine aktuelle indstillinger.</translation>
 <translation id="7674213385180944843">Åbn Indstillinger &gt; Privatliv &gt; Kamera &gt; Chromium, og slå kameraet til.</translation>
 <translation id="7746854981345936341">Chromium-tip. Nogle knapper som f.eks. Tilbage, Frem og Søg findes nu nederst på skærmen.</translation>
 <translation id="786327964234957808">Du er ved at skifte synkroniseringskonto fra <ph name="USER_EMAIL1" /> til <ph name="USER_EMAIL2" />. Dine eksisterende Chromium-data administreres af <ph name="DOMAIN" />. Denne handling sletter dine data fra denne enhed, men dine data forbliver gemt på <ph name="USER_EMAIL1" />.</translation>
+<translation id="8073677936375100957">Vil du rydde dine Chromium-data på denne enhed?</translation>
 <translation id="8175055321229419309">Tip! <ph name="BEGIN_LINK" />Flyt Chromium til din dock<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Angiv din placering, og få en bedre oplevelse, når du bruger Chromium.</translation>
 <translation id="8508544542427105412"><ph name="BEGIN_LINK" />Indstillinger<ph name="END_LINK" /> kan tilpasses når som helst. Google kan bruge indholdet på de websites, du besøger, samt browserinteraktioner og -aktivitet til at tilpasse Chromium og andre Google-tjenester såsom Oversæt, Søgning og annoncer.</translation>

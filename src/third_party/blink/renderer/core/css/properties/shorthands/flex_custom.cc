@@ -13,7 +13,7 @@
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 
 namespace blink {
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool Flex::ParseShorthand(bool important,
                           CSSParserTokenRange& range,
@@ -34,7 +34,7 @@ bool Flex::ParseShorthand(bool important,
     unsigned index = 0;
     while (!range.AtEnd() && index++ < 3) {
       double num;
-      if (CSSPropertyParserHelpers::ConsumeNumberRaw(range, num)) {
+      if (css_property_parser_helpers::ConsumeNumberRaw(range, num)) {
         if (num < 0)
           return false;
         if (flex_grow == kUnsetValue) {
@@ -52,9 +52,9 @@ bool Flex::ParseShorthand(bool important,
         }
       } else if (!flex_basis) {
         if (range.Peek().Id() == CSSValueAuto)
-          flex_basis = CSSPropertyParserHelpers::ConsumeIdent(range);
+          flex_basis = css_property_parser_helpers::ConsumeIdent(range);
         if (!flex_basis) {
-          flex_basis = CSSPropertyParserHelpers::ConsumeLengthOrPercent(
+          flex_basis = css_property_parser_helpers::ConsumeLengthOrPercent(
               range, context.Mode(), kValueRangeNonNegative);
         }
         if (index == 2 && !range.AtEnd())
@@ -75,22 +75,23 @@ bool Flex::ParseShorthand(bool important,
 
   if (!range.AtEnd())
     return false;
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyFlexGrow, CSSPropertyFlex,
       *CSSPrimitiveValue::Create(clampTo<float>(flex_grow),
                                  CSSPrimitiveValue::UnitType::kNumber),
-      important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyFlexShrink, CSSPropertyFlex,
       *CSSPrimitiveValue::Create(clampTo<float>(flex_shrink),
                                  CSSPrimitiveValue::UnitType::kNumber),
-      important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
 
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyFlexBasis, CSSPropertyFlex, *flex_basis, important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
 
   return true;
 }
@@ -105,5 +106,5 @@ const CSSValue* Flex::CSSValueFromComputedStyleInternal(
       flexShorthand(), style, layout_object, styled_node, allow_visited_style);
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink

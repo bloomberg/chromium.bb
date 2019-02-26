@@ -138,11 +138,11 @@ class CaseFoldingHash {
   static inline UChar FoldCase(T ch) {
     if (std::is_same<T, LChar>::value)
       return StringImpl::kLatin1CaseFoldTable[ch];
-    // It's possible for WTF::Unicode::foldCase() to return a 32-bit value
+    // It's possible for WTF::unicode::foldCase() to return a 32-bit value
     // that's not representable as a UChar.  However, since this is rare and
     // deterministic, and the result of this is merely used for hashing, go
     // ahead and clamp the value.
-    return static_cast<UChar>(WTF::Unicode::FoldCase(ch));
+    return static_cast<UChar>(WTF::unicode::FoldCase(ch));
   }
 };
 

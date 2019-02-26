@@ -61,7 +61,8 @@ CORE_EXPORT bool DictionaryHelper::Get(const Dictionary& dictionary,
   if (!dictionary.Get(key, v8_value))
     return false;
 
-  return v8_value->BooleanValue(dictionary.V8Context()).To(&value);
+  value = v8_value->BooleanValue(dictionary.GetIsolate());
+  return true;
 }
 
 template <>
@@ -205,7 +206,7 @@ bool DictionaryHelper::Get(const Dictionary& dictionary,
 
     // FIXME: this will need to be changed so it can also return an AudioTrack
     // or a VideoTrack once we add them.
-    v8::Local<v8::Object> track = V8TextTrack::findInstanceInPrototypeChain(
+    v8::Local<v8::Object> track = V8TextTrack::FindInstanceInPrototypeChain(
         wrapper, dictionary.GetIsolate());
     if (!track.IsEmpty())
       source = V8TextTrack::ToImpl(track);

@@ -8,10 +8,11 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_breaker.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_positioned_float.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -35,10 +36,10 @@ class NGLineBreakerTest : public NGBaseLayoutAlgorithmTest {
 
     NGConstraintSpace space =
         NGConstraintSpaceBuilder(
-            WritingMode::kHorizontalTb,
-            /* icb_size */ {NGSizeIndefinite, NGSizeIndefinite})
+            WritingMode::kHorizontalTb, WritingMode::kHorizontalTb,
+            /* is_new_fc */ false)
             .SetAvailableSize({available_width, NGSizeIndefinite})
-            .ToConstraintSpace(WritingMode::kHorizontalTb);
+            .ToConstraintSpace();
 
     Vector<NGPositionedFloat> positioned_floats;
     NGUnpositionedFloatVector unpositioned_floats;
@@ -207,6 +208,29 @@ TEST_F(NGLineBreakerTest, OverflowMargin) {
   EXPECT_EQ("456", ToString(lines[1], node));
   DCHECK_EQ(NGInlineItem::kCloseTag, items[lines[1].back().item_index].Type());
   EXPECT_EQ("789", ToString(lines[2], node));
+}
+
+TEST_F(NGLineBreakerTest, OverflowAfterSpacesAcrossElements) {
+  LoadAhem();
+  NGInlineNode node = CreateInlineNode(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    div {
+      font: 10px/1 Ahem;
+      white-space: pre-wrap;
+      width: 10ch;
+      word-wrap: break-word;
+    }
+    </style>
+    <div id=container><span>12345 </span> 1234567890123</div>
+  )HTML");
+
+  Vector<NGInlineItemResults> lines;
+  lines = BreakLines(node, LayoutUnit(100));
+  EXPECT_EQ(3u, lines.size());
+  EXPECT_EQ("12345  ", ToString(lines[0], node));
+  EXPECT_EQ("1234567890", ToString(lines[1], node));
+  EXPECT_EQ("123", ToString(lines[2], node));
 }
 
 // Tests when the last word in a node wraps, and another node continues.

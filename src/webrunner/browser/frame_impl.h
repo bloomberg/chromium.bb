@@ -7,9 +7,11 @@
 
 #include <lib/fidl/cpp/binding_set.h>
 #include <lib/zx/channel.h>
+#include <list>
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/macros.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -17,6 +19,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/wm/core/focus_controller.h"
 #include "url/gurl.h"
+#include "webrunner/common/on_load_script_injector.mojom.h"
 #include "webrunner/fidl/chromium/web/cpp/fidl.h"
 
 namespace aura {
@@ -51,9 +54,15 @@ class FrameImpl : public chromium::web::Frame,
   void CreateView(
       fidl::InterfaceRequest<fuchsia::ui::viewsv1token::ViewOwner> view_owner,
       fidl::InterfaceRequest<fuchsia::sys::ServiceProvider> services) override;
+  void CreateView2(
+      zx::eventpair view_token,
+      fidl::InterfaceRequest<fuchsia::sys::ServiceProvider> incoming_services,
+      fidl::InterfaceHandle<fuchsia::sys::ServiceProvider> outgoing_services)
+      override;
   void GetNavigationController(
       fidl::InterfaceRequest<chromium::web::NavigationController> controller)
       override;
+  void SetJavaScriptLogLevel(chromium::web::LogLevel level) override;
 
   // chromium::web::NavigationController implementation.
   void LoadUrl(fidl::StringPtr url,
@@ -66,6 +75,13 @@ class FrameImpl : public chromium::web::Frame,
   void SetNavigationEventObserver(
       fidl::InterfaceHandle<chromium::web::NavigationEventObserver> observer)
       override;
+  void ExecuteJavaScript(fidl::VectorPtr<::fidl::StringPtr> origins,
+                         fuchsia::mem::Buffer script,
+                         chromium::web::ExecuteMode mode,
+                         ExecuteJavaScriptCallback callback) override;
+  void PostMessage(chromium::web::WebMessage message,
+                   fidl::StringPtr targetOrigin,
+                   PostMessageCallback callback) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(FrameImplTest, DelayedNavigationEventAck);
@@ -73,6 +89,17 @@ class FrameImpl : public chromium::web::Frame,
   FRIEND_TEST_ALL_PREFIXES(FrameImplTest, NoNavigationObserverAttached);
   FRIEND_TEST_ALL_PREFIXES(FrameImplTest, ReloadFrame);
   FRIEND_TEST_ALL_PREFIXES(FrameImplTest, Stop);
+
+  struct OriginScopedScript {
+    OriginScopedScript(std::vector<std::string> origins, base::string16 script);
+    ~OriginScopedScript();
+
+    std::vector<std::string> origins;
+    base::string16 script;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(OriginScopedScript);
+  };
 
   aura::Window* root_window() const { return window_tree_host_->window(); }
 
@@ -94,10 +121,17 @@ class FrameImpl : public chromium::web::Frame,
       const GURL& target_url,
       const std::string& partition_id,
       content::SessionStorageNamespace* session_storage_namespace) override;
+  bool DidAddMessageToConsole(content::WebContents* source,
+                              int32_t level,
+                              const base::string16& message,
+                              int32_t line_no,
+                              const base::string16& source_id) override;
 
   // content::WebContentsObserver implementation.
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
+  void ReadyToCommitNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
   std::unique_ptr<aura::WindowTreeHost> window_tree_host_;
   std::unique_ptr<content::WebContents> web_contents_;
@@ -108,6 +142,8 @@ class FrameImpl : public chromium::web::Frame,
   chromium::web::NavigationEvent pending_navigation_event_;
   bool waiting_for_navigation_event_ack_;
   bool pending_navigation_event_is_dirty_;
+  chromium::web::LogLevel log_level_ = chromium::web::LogLevel::NONE;
+  std::list<OriginScopedScript> before_load_scripts_;
 
   ContextImpl* context_ = nullptr;
   fidl::Binding<chromium::web::Frame> binding_;

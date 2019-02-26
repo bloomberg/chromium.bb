@@ -173,6 +173,10 @@ class FakeChromeUserManager : public ChromeUserManager {
       const AccountId& account_id,
       const AffiliationIDSet& user_affiliation_ids) override;
   bool ShouldReportUser(const std::string& user_id) const override;
+  bool IsManagedSessionEnabledForUser(
+      const user_manager::User& active_user) const override;
+  bool IsFullManagementDisclosureNeeded(
+      policy::DeviceLocalAccountPolicyBroker* broker) const override;
 
   void set_ephemeral_users_enabled(bool ephemeral_users_enabled) {
     fake_ephemeral_users_enabled_ = ephemeral_users_enabled;
@@ -192,6 +196,9 @@ class FakeChromeUserManager : public ChromeUserManager {
   void set_current_user_ephemeral(bool user_ephemeral) {
     current_user_ephemeral_ = user_ephemeral;
   }
+  void set_current_user_child(bool child_user) {
+    current_user_child_ = child_user;
+  }
 
   void set_is_enterprise_managed(bool is_enterprise_managed) {
     is_enterprise_managed_ = is_enterprise_managed;
@@ -208,6 +215,7 @@ class FakeChromeUserManager : public ChromeUserManager {
   bool fake_ephemeral_users_enabled_ = false;
   bool current_user_new_ = false;
   bool current_user_ephemeral_ = false;
+  bool current_user_child_ = false;
 
   MultiProfileUserController* multi_profile_user_controller_ = nullptr;
 

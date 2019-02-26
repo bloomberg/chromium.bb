@@ -4,10 +4,11 @@
 
 #include "chrome/browser/page_load_metrics/observers/previews_ukm_observer.h"
 
+#include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
@@ -15,10 +16,8 @@
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/previews/content/previews_content_util.h"
-#include "components/previews/core/previews_experiments.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/previews_state.h"
@@ -28,7 +27,8 @@
 
 namespace previews {
 
-PreviewsUKMObserver::PreviewsUKMObserver() {}
+PreviewsUKMObserver::PreviewsUKMObserver()
+    : committed_preview_(PreviewsType::NONE) {}
 
 PreviewsUKMObserver::~PreviewsUKMObserver() {}
 
@@ -39,23 +39,27 @@ PreviewsUKMObserver::OnCommit(content::NavigationHandle* navigation_handle,
 
   save_data_enabled_ = IsDataSaverEnabled(navigation_handle);
 
-  // As documented in content/public/browser/navigation_handle.h, this
-  // NavigationData is a clone of the NavigationData instance returned from
-  // ResourceDispatcherHostDelegate::GetNavigationData during commit.
-  // Because ChromeResourceDispatcherHostDelegate always returns a
-  // ChromeNavigationData, it is safe to static_cast here.
-  ChromeNavigationData* chrome_navigation_data =
-      static_cast<ChromeNavigationData*>(
-          navigation_handle->GetNavigationData());
-  if (!chrome_navigation_data)
+  PreviewsUITabHelper* ui_tab_helper =
+      PreviewsUITabHelper::FromWebContents(navigation_handle->GetWebContents());
+  if (!ui_tab_helper)
     return STOP_OBSERVING;
-  data_reduction_proxy::DataReductionProxyData* data =
-      chrome_navigation_data->GetDataReductionProxyData();
-  if (data && data->lite_page_received()) {
+
+  previews::PreviewsUserData* previews_user_data =
+      ui_tab_helper->GetPreviewsUserData(navigation_handle);
+  if (!previews_user_data)
+    return STOP_OBSERVING;
+
+  committed_preview_ = previews_user_data->committed_previews_type();
+  content::PreviewsState previews_state =
+      previews_user_data->committed_previews_state();
+  if (previews_state && previews::GetMainFramePreviewsType(previews_state) ==
+                            previews::PreviewsType::LITE_PAGE) {
     lite_page_seen_ = true;
   }
-  content::PreviewsState previews_state =
-      chrome_navigation_data->previews_state();
+  if (previews_state && previews::GetMainFramePreviewsType(previews_state) ==
+                            previews::PreviewsType::LITE_PAGE_REDIRECT) {
+    lite_page_redirect_seen_ = true;
+  }
   if (previews_state && previews::GetMainFramePreviewsType(previews_state) ==
                             previews::PreviewsType::NOSCRIPT) {
     noscript_seen_ = true;
@@ -64,11 +68,14 @@ PreviewsUKMObserver::OnCommit(content::NavigationHandle* navigation_handle,
                             previews::PreviewsType::RESOURCE_LOADING_HINTS) {
     resource_loading_hints_seen_ = true;
   }
-  previews::PreviewsUserData* previews_user_data =
-      chrome_navigation_data->previews_user_data();
   if (previews_user_data &&
       previews_user_data->cache_control_no_transform_directive()) {
     origin_opt_out_occurred_ = true;
+  }
+  if (previews_user_data && previews_user_data->server_lite_page_info()) {
+    navigation_restart_penalty_ =
+        navigation_handle->NavigationStart() -
+        previews_user_data->server_lite_page_info()->original_navigation_start;
   }
 
   return CONTINUE_OBSERVING;
@@ -111,10 +118,25 @@ void PreviewsUKMObserver::OnComplete(
 
 void PreviewsUKMObserver::RecordPreviewsTypes(
     const page_load_metrics::PageLoadExtraInfo& info) {
+  // Record the page end reason in UMA.
+  UMA_HISTOGRAM_ENUMERATION(
+      "Previews.PageEndReason", info.page_end_reason,
+      page_load_metrics::PageEndReason::PAGE_END_REASON_COUNT);
+  base::UmaHistogramExactLinear(
+      base::StringPrintf(
+          "Previews.PageEndReason.%s",
+          previews::GetStringNameForType(committed_preview_).c_str()),
+      info.page_end_reason,
+      page_load_metrics::PageEndReason::PAGE_END_REASON_COUNT);
+
   // Only record previews types when they are active.
+  // |navigation_restart_penalty_| is included here because a Lite Page Redirect
+  // preview can be attempted and not commit. This incurs the penalty but may
+  // also cause no preview to be committed.
   if (!server_lofi_seen_ && !client_lofi_seen_ && !lite_page_seen_ &&
       !noscript_seen_ && !resource_loading_hints_seen_ &&
-      !origin_opt_out_occurred_ && !save_data_enabled_) {
+      !origin_opt_out_occurred_ && !save_data_enabled_ &&
+      !lite_page_redirect_seen_ && !navigation_restart_penalty_.has_value()) {
     return;
   }
 
@@ -125,6 +147,8 @@ void PreviewsUKMObserver::RecordPreviewsTypes(
     builder.Setclient_lofi(1);
   if (lite_page_seen_)
     builder.Setlite_page(1);
+  if (lite_page_redirect_seen_)
+    builder.Setlite_page_redirect(1);
   if (noscript_seen_)
     builder.Setnoscript(1);
   if (resource_loading_hints_seen_)
@@ -135,6 +159,10 @@ void PreviewsUKMObserver::RecordPreviewsTypes(
     builder.Setorigin_opt_out(1);
   if (save_data_enabled_)
     builder.Setsave_data_enabled(1);
+  if (navigation_restart_penalty_.has_value()) {
+    builder.Setnavigation_restart_penalty(
+        navigation_restart_penalty_->InMilliseconds());
+  }
   builder.Record(ukm::UkmRecorder::Get());
 }
 

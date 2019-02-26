@@ -23,15 +23,18 @@ class GrCaps;
 class GrProxyProvider;
 class SkString;
 class SkTraceMemoryDump;
+class GrSingleOwner;
 
 struct GrGpuResourceFreedMessage {
     GrGpuResource* fResource;
     uint32_t fOwningUniqueID;
-    bool shouldSend(uint32_t inboxID) const {
-        // The inbox's ID is the unique ID of the owning GrContext.
-        return inboxID == fOwningUniqueID;
-    }
 };
+
+static inline bool SkShouldPostMessageToBus(
+        const GrGpuResourceFreedMessage& msg, uint32_t msgBusUniqueID) {
+    // The inbox's ID is the unique ID of the owning GrContext.
+    return msgBusUniqueID == msg.fOwningUniqueID;
+}
 
 /**
  * Manages the lifetime of all GrGpuResource instances.
@@ -52,7 +55,7 @@ struct GrGpuResourceFreedMessage {
  */
 class GrResourceCache {
 public:
-    GrResourceCache(const GrCaps*, uint32_t contextUniqueID);
+    GrResourceCache(const GrCaps*, GrSingleOwner* owner, uint32_t contextUniqueID);
     ~GrResourceCache();
 
     // Default maximum number of budgeted resources in the cache.
@@ -352,6 +355,7 @@ private:
     SkTDArray<GrGpuResource*>           fResourcesWaitingForFreeMsg;
 
     uint32_t                            fContextUniqueID;
+    GrSingleOwner*                      fSingleOwner;
 
     // This resource is allowed to be in the nonpurgeable array for the sake of validate() because
     // we're in the midst of converting it to purgeable status.

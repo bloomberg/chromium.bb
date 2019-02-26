@@ -250,6 +250,17 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
           ssh_port=self._ssh_port
       )
 
+  def WaitUntilReady(self):
+    """Block until Archive completes tarring autotest/.
+
+    The attribute 'autotest_tarball_generated' is set by ArchiveStage.
+
+    Returns:
+      Boolean that authorizes running of this stage.
+    """
+    return self.board_runattrs.GetParallel('autotest_tarball_generated',
+                                           timeout=None)
+
   def PerformStage(self):
     # These directories are used later to archive test artifacts.
     if not self._run.options.vmtests:

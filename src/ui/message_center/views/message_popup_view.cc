@@ -83,11 +83,13 @@ void MessagePopupView::UpdateContents(const Notification& notification) {
   }
 }
 
+#if !defined(OS_MACOSX)
 float MessagePopupView::GetOpacity() const {
   if (!IsWidgetValid())
     return 0.f;
   return GetWidget()->GetLayer()->opacity();
 }
+#endif
 
 void MessagePopupView::SetPopupBounds(const gfx::Rect& bounds) {
   if (!IsWidgetValid())

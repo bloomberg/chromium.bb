@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/drive/drivefs_test_support.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_misc.h"
 #include "chrome/browser/chromeos/file_manager/file_watcher.h"
@@ -24,18 +25,17 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/file_system_provider_capabilities/file_system_provider_capabilities_handler.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/chromeos_features.h"
 #include "chromeos/dbus/concierge/service.pb.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/disks/disk.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
+#include "components/drive/drive_pref_names.h"
 #include "components/drive/file_change.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/signin_manager_base.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/install_warning.h"
 #include "google_apis/drive/test_util.h"
@@ -163,10 +163,13 @@ void AddLocalFileSystem(Profile* profile, base::FilePath root) {
   const char kLocalMountPointName[] = "local";
   const char kTestFileContent[] = "The five boxing wizards jumped quickly";
 
-  ASSERT_TRUE(base::CreateDirectory(root.AppendASCII("test_dir")));
-  ASSERT_TRUE(google_apis::test_util::WriteStringToFile(
-      root.AppendASCII("test_dir").AppendASCII("test_file.txt"),
-      kTestFileContent));
+  {
+    base::ScopedAllowBlockingForTesting allow_io;
+    ASSERT_TRUE(base::CreateDirectory(root.AppendASCII("test_dir")));
+    ASSERT_TRUE(google_apis::test_util::WriteStringToFile(
+        root.AppendASCII("test_dir").AppendASCII("test_file.txt"),
+        kTestFileContent));
+  }
 
   ASSERT_TRUE(
       content::BrowserContext::GetMountPoints(profile)->RegisterFileSystem(
@@ -191,8 +194,13 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
     DCHECK(!event_router_);
   }
 
+  bool SetUpUserDataDirectory() override {
+    return drive::SetUpUserDataDirectoryForDriveFsTest();
+  }
+
   void SetUpOnMainThread() override {
     extensions::ExtensionApiTest::SetUpOnMainThread();
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     testing_profile_ = std::make_unique<TestingProfile>();
     event_router_ =
@@ -352,12 +360,11 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
     browser()->profile()->GetPrefs()->SetBoolean(
         crostini::prefs::kCrostiniEnabled, true);
     scoped_feature_list->InitWithFeatures(
-        {features::kCrostini, features::kExperimentalCrostiniUI}, {});
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        chromeos::switches::kCrostiniFiles);
+        {features::kCrostini, features::kExperimentalCrostiniUI,
+         chromeos::features::kCrostiniFiles},
+        {});
     // Profile must be signed in with email for crostini.
     identity::SetPrimaryAccount(
-        SigninManagerFactory::GetForProfileIfExists(browser()->profile()),
         IdentityManagerFactory::GetForProfileIfExists(browser()->profile()),
         "testuser@gmail.com");
   }
@@ -378,6 +385,7 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
         .WillOnce(Invoke(this, &FileManagerPrivateApiTest::SshfsMount));
   }
 
+  base::ScopedTempDir temp_dir_;
   chromeos::disks::MockDiskMountManager* disk_mount_manager_mock_;
   DiskMountManager::DiskMap volumes_;
   DiskMountManager::MountPointMap mount_points_;
@@ -387,8 +395,7 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
 
 IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Mount) {
   using chromeos::file_system_provider::IconSet;
-  file_manager::test_util::WaitUntilDriveMountPointIsAdded(
-      browser()->profile());
+  profile()->GetPrefs()->SetBoolean(drive::prefs::kDisableDrive, true);
 
   // Add a provided file system, to test passing the |configurable| and
   // |source| flags properly down to Files app.
@@ -514,23 +521,20 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, OnFileChanged) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, ContentChecksum) {
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  AddLocalFileSystem(browser()->profile(), temp_dir.GetPath());
+  AddLocalFileSystem(browser()->profile(), temp_dir_.GetPath());
 
   ASSERT_TRUE(RunComponentExtensionTest("file_browser/content_checksum_test"));
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Recent) {
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  const base::FilePath downloads_dir = temp_dir.GetPath();
+  const base::FilePath downloads_dir = temp_dir_.GetPath();
 
   ASSERT_TRUE(file_manager::VolumeManager::Get(browser()->profile())
                   ->RegisterDownloadsDirectoryForTesting(downloads_dir));
 
   // Create an empty file.
   {
+    base::ScopedAllowBlockingForTesting allow_io;
     base::File file(downloads_dir.Append("all-justice.jpg"),
                     base::File::FLAG_CREATE | base::File::FLAG_WRITE);
     ASSERT_TRUE(file.IsValid());
@@ -554,21 +558,21 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Crostini) {
   ExpectCrostiniMount();
 
   // Add 'testing' volume with 'test_dir', create 'share_dir' in Downloads.
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  AddLocalFileSystem(browser()->profile(), temp_dir.GetPath());
+  AddLocalFileSystem(browser()->profile(), temp_dir_.GetPath());
   base::FilePath downloads;
   ASSERT_TRUE(
       storage::ExternalMountPoints::GetSystemInstance()->GetRegisteredPath(
           file_manager::util::GetDownloadsMountPointName(browser()->profile()),
           &downloads));
-  ASSERT_TRUE(base::CreateDirectory(downloads.AppendASCII("share_dir")));
-
   // Setup prefs crostini.shared_paths.
   base::FilePath shared1 = downloads.AppendASCII("shared1");
   base::FilePath shared2 = downloads.AppendASCII("shared2");
-  ASSERT_TRUE(base::CreateDirectory(shared1));
-  ASSERT_TRUE(base::CreateDirectory(shared2));
+  {
+    base::ScopedAllowBlockingForTesting allow_io;
+    ASSERT_TRUE(base::CreateDirectory(downloads.AppendASCII("share_dir")));
+    ASSERT_TRUE(base::CreateDirectory(shared1));
+    ASSERT_TRUE(base::CreateDirectory(shared2));
+  }
   base::ListValue shared_paths;
   shared_paths.AppendString(shared1.value());
   shared_paths.AppendString(shared2.value());

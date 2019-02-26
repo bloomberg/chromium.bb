@@ -211,7 +211,7 @@ void AppCacheInternalsUI::Proxy::DeleteAppCache(
   if (appcache_service_) {
     appcache_service_->DeleteAppCacheGroup(
         GURL(manifest_url),
-        base::Bind(&Proxy::OnAppCacheInfoDeleted, this, manifest_url));
+        base::BindOnce(&Proxy::OnAppCacheInfoDeleted, this, manifest_url));
   }
 }
 
@@ -364,8 +364,8 @@ AppCacheInternalsUI::AppCacheInternalsUI(WebUI* web_ui)
 
   WebUIDataSource::Add(browser_context(), source);
 
-  BrowserContext::StoragePartitionCallback callback =
-      base::Bind(&AppCacheInternalsUI::CreateProxyForPartition, AsWeakPtr());
+  BrowserContext::StoragePartitionCallback callback = base::BindRepeating(
+      &AppCacheInternalsUI::CreateProxyForPartition, AsWeakPtr());
   BrowserContext::ForEachStoragePartition(browser_context(), callback);
 }
 

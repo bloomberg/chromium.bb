@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.customtabs;
 
+import org.chromium.chrome.browser.dependency_injection.ActivityScope;
+import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.metrics.PageLoadMetrics;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
@@ -12,13 +15,16 @@ import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.inject.Inject;
+
 /**
  * Adds and removes the given {@link PageLoadMetrics.Observer}s and {@link TabObserver}s to Tabs as
  * they enter/leave the TabModel.
  *
  * // TODO(peconn): Get rid of EmptyTabModelObserver now that we have Java 8 default methods.
  */
-public class TabObserverRegistrar extends EmptyTabModelObserver {
+@ActivityScope
+public class TabObserverRegistrar extends EmptyTabModelObserver implements Destroyable {
     private final Set<PageLoadMetrics.Observer> mPageLoadMetricsObservers = new HashSet<>();
     private final Set<TabObserver> mTabObservers = new HashSet<>();
 
@@ -34,6 +40,18 @@ public class TabObserverRegistrar extends EmptyTabModelObserver {
      */
     public void registerTabObserver(TabObserver observer) {
         mTabObservers.add(observer);
+    }
+
+    /**
+     * Unregisters a {@link TabObserver} to be managed by this Registrar.
+     */
+    public void unregisterTabObserver(TabObserver observer) {
+        mTabObservers.remove(observer);
+    }
+
+    @Inject
+    public TabObserverRegistrar(ActivityLifecycleDispatcher lifecycleDispatcher) {
+        lifecycleDispatcher.register(this);
     }
 
     @Override
@@ -85,5 +103,10 @@ public class TabObserverRegistrar extends EmptyTabModelObserver {
         for (TabObserver observer : mTabObservers) {
             tab.removeObserver(observer);
         }
+    }
+
+    @Override
+    public void destroy() {
+        removePageLoadMetricsObservers();
     }
 }

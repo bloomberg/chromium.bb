@@ -11,10 +11,6 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/ws/public/mojom/ime/ime.mojom.h"
 
-namespace service_manager {
-class Connector;
-}
-
 namespace ws {
 
 class IMEDriverBridge : public mojom::IMEDriver {
@@ -22,7 +18,6 @@ class IMEDriverBridge : public mojom::IMEDriver {
   IMEDriverBridge();
   ~IMEDriverBridge() override;
 
-  void Init(service_manager::Connector* connector, bool is_test_config);
   void AddBinding(mojom::IMEDriverRequest request);
   void SetDriver(mojom::IMEDriverPtr driver);
 

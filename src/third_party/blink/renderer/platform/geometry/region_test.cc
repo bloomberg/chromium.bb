@@ -383,19 +383,22 @@ TEST(RegionTest, unite) {
 
 TEST(RegionTest, Area) {
   Region r;
-  EXPECT_EQ(0.0, r.Area());
+  EXPECT_EQ(0u, r.Area());
 
   r.Unite(IntRect(10, 20, 30, 10));
-  EXPECT_EQ(300.0, r.Area());
+  EXPECT_EQ(300u, r.Area());
 
   r.Unite(IntRect(20, 10, 10, 30));
-  EXPECT_EQ(500.0, r.Area());
+  EXPECT_EQ(500u, r.Area());
 
   r.Unite(IntRect(10, 10, 30, 30));
-  EXPECT_EQ(900.0, r.Area());
+  EXPECT_EQ(900u, r.Area());
 
   r.Subtract(IntRect(20, 20, 10, 10));
-  EXPECT_EQ(800.0, r.Area());
+  EXPECT_EQ(800u, r.Area());
+
+  r.Unite(IntRect(0, 0, 50000, 50000));
+  EXPECT_EQ(2500000000u, r.Area());
 }
 
 }  // namespace blink

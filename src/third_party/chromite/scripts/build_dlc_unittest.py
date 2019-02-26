@@ -25,7 +25,7 @@ _NAME = 'name'
 
 def GetDLCGenerator(temp_dir, fs_type):
   """Factory method for a DLCGenerator object"""
-  return build_dlc.DLCGenerator(temp_dir, _SRC_DIR, fs_type,
+  return build_dlc.DLCGenerator(temp_dir, temp_dir, _SRC_DIR, fs_type,
                                 _PRE_ALLOCATED_BLOCKS, _VERSION, _ID, _NAME)
 
 

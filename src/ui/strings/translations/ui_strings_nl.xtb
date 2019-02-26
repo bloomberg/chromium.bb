@@ -30,16 +30,19 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">&amp;Alles selecteren</translation>
+<translation id="1938451708255335766">Als je de weergavedichtheid van het venster wilt aanpassen, start je de app opnieuw.</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 d}other{# d}}</translation>
 <translation id="2148716181193084225">Vandaag</translation>
 <translation id="2168039046890040389">Pagina omhoog</translation>
 <translation id="2190355936436201913">(leeg)</translation>
+<translation id="2192232475740621500">Lage dichtheid gebruiken</translation>
 <translation id="219905428774326614">Launcher, alle apps</translation>
 <translation id="2267918077332197517">Alle meldingen van deze site blokkeren</translation>
 <translation id="2289052229480071835">Tik op de tikdoelen op je scherm.</translation>
 <translation id="2295140143284145483">Enquête</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="24452542372838207">Melding uitvouwen</translation>
+<translation id="2445449901874883781">Hoge dichtheid gebruiken</translation>
 <translation id="2482878487686419369">Meldingen</translation>
 <translation id="2497284189126895209">Alle bestanden</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -60,6 +63,7 @@
 <translation id="3234408098842461169">Pijl-omlaag</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 dag}other{# dagen}}</translation>
 <translation id="335581015389089642">Spraak</translation>
+<translation id="3479552764303398839">Niet nu</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 dag resterend}other{# dagen resterend}}</translation>
 <translation id="3618849550573277856">'<ph name="LOOKUP_STRING" />' opzoeken</translation>
 <translation id="364720409959344976">Map voor uploaden selecteren</translation>
@@ -99,6 +103,7 @@
 <translation id="5613020302032141669">Pijl-links</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min.}other{# min.}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 dag en }other{# dagen en }}</translation>
+<translation id="5895138241574237353">Opnieuw starten</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 seconde resterend}other{# seconden reseterend}}</translation>
 <translation id="5941711191222866238">Minimaliseren</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 uur}other{# uur}}</translation>

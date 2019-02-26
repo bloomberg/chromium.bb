@@ -16,6 +16,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer_animation_observer.h"
+#include "ui/compositor/layer_tree_owner.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
@@ -104,7 +105,7 @@ class ArcNotificationContentView::EventForwarder : public ui::EventHandler {
         widget->OnMouseEvent(located_event->AsMouseEvent());
       } else if (located_event->IsScrollEvent()) {
         widget->OnScrollEvent(located_event->AsScrollEvent());
-        owner_->item_->CancelLongPress();
+        owner_->item_->CancelPress();
       } else if (located_event->IsGestureEvent() &&
                  event->type() != ui::ET_GESTURE_TAP) {
         bool slide_handled_by_android = false;
@@ -127,7 +128,7 @@ class ArcNotificationContentView::EventForwarder : public ui::EventHandler {
         }
 
         if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN)
-          owner_->item_->CancelLongPress();
+          owner_->item_->CancelPress();
 
         if (event->type() == ui::ET_GESTURE_SCROLL_END)
           swipe_captured_ = false;
@@ -184,12 +185,9 @@ class ArcNotificationContentView::EventForwarder : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(EventForwarder);
 };
 
-class ArcNotificationContentView::SlideHelper
-    : public ui::LayerAnimationObserver {
+class ArcNotificationContentView::SlideHelper {
  public:
   explicit SlideHelper(ArcNotificationContentView* owner) : owner_(owner) {
-    GetSlideOutLayer()->GetAnimator()->AddObserver(this);
-
     // Reset opacity to 1 to handle to case when the surface is sliding before
     // getting managed by this class, e.g. sliding in a popup before showing
     // in a message center view.
@@ -198,25 +196,25 @@ class ArcNotificationContentView::SlideHelper
       owner_->surface_->GetWindow()->layer()->SetOpacity(1.0f);
     }
   }
-  ~SlideHelper() override {
-    if (GetSlideOutLayer())
-      GetSlideOutLayer()->GetAnimator()->RemoveObserver(this);
-  }
+  virtual ~SlideHelper() = default;
 
-  void Update() {
+  void Update(base::Optional<bool> slide_in_progress) {
+    if (slide_in_progress.has_value())
+      slide_in_progress_ = slide_in_progress.value();
+
     const bool has_animation =
         GetSlideOutLayer()->GetAnimator()->is_animating();
     const bool has_transform = !GetSlideOutLayer()->transform().IsIdentity();
-    const bool sliding = has_transform || has_animation;
-    if (sliding_ == sliding)
+    const bool moving = (slide_in_progress_ && has_transform) || has_animation;
+
+    if (moving_ == moving)
       return;
+    moving_ = moving;
 
-    sliding_ = sliding;
-
-    if (sliding_)
-      OnSlideStart();
+    if (moving_)
+      owner_->ShowCopiedSurface();
     else
-      OnSlideEnd();
+      owner_->HideCopiedSurface();
   }
 
  private:
@@ -226,21 +224,9 @@ class ArcNotificationContentView::SlideHelper
     return layer ? layer : owner_->GetWidget()->GetLayer();
   }
 
-  void OnSlideStart() { owner_->ShowCopiedSurface(); }
-
-  void OnSlideEnd() { owner_->HideCopiedSurface(); }
-
-  // ui::LayerAnimationObserver
-  void OnLayerAnimationEnded(ui::LayerAnimationSequence* seq) override {
-    Update();
-  }
-  void OnLayerAnimationAborted(ui::LayerAnimationSequence* seq) override {
-    Update();
-  }
-  void OnLayerAnimationScheduled(ui::LayerAnimationSequence* seq) override {}
-
   ArcNotificationContentView* const owner_;
-  bool sliding_ = false;
+  bool slide_in_progress_ = false;
+  bool moving_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SlideHelper);
 };
@@ -360,16 +346,19 @@ void ArcNotificationContentView::UpdateControlButtonsVisibility() {
 
 void ArcNotificationContentView::UpdateCornerRadius(int top_radius,
                                                     int bottom_radius) {
+  bool force_update =
+      top_radius_ != top_radius || bottom_radius_ != bottom_radius;
+
   top_radius_ = top_radius;
   bottom_radius_ = bottom_radius;
 
   if (GetWidget())
-    UpdateMask();
+    UpdateMask(force_update);
 }
 
-void ArcNotificationContentView::OnSlideChanged() {
+void ArcNotificationContentView::OnSlideChanged(bool in_progress) {
   if (slide_helper_)
-    slide_helper_->Update();
+    slide_helper_->Update(in_progress);
 }
 
 void ArcNotificationContentView::OnContainerAnimationStarted() {
@@ -414,6 +403,11 @@ void ArcNotificationContentView::SetSurface(ArcNotificationSurface* surface) {
   if (surface_ == surface)
     return;
 
+  if (floating_control_buttons_widget_) {
+    floating_control_buttons_widget_->GetNativeWindow()->RemovePreTargetHandler(
+        mouse_enter_exit_handler_.get());
+  }
+
   // Reset |floating_control_buttons_widget_| when |surface_| is changed.
   floating_control_buttons_widget_.reset();
 
@@ -446,6 +440,11 @@ void ArcNotificationContentView::SetSurface(ArcNotificationSurface* surface) {
         surface_->Detach();
       }
       AttachSurface();
+
+      if (activate_on_attach_) {
+        ActivateWidget(true);
+        activate_on_attach_ = false;
+      }
     }
   }
 }
@@ -497,12 +496,12 @@ void ArcNotificationContentView::AttachSurface() {
   slide_helper_.reset(new SlideHelper(this));
 
   // Invokes Update() in case surface is attached during a slide.
-  slide_helper_->Update();
+  slide_helper_->Update(base::nullopt);
 
   // (Re-)create the floating buttons after |surface_| is attached to a widget.
   MaybeCreateFloatingControlButtons();
 
-  UpdateMask();
+  UpdateMask(false /* force_update */);
 }
 
 void ArcNotificationContentView::ShowCopiedSurface() {
@@ -540,10 +539,10 @@ void ArcNotificationContentView::HideCopiedSurface() {
 
   // Re-install the mask since the custom mask is unset by
   // |::wm::RecreateLayers()| in |ShowCopiedSurface()| method.
-  UpdateMask();
+  UpdateMask(true /* force_update */);
 }
 
-void ArcNotificationContentView::UpdateMask() {
+void ArcNotificationContentView::UpdateMask(bool force_update) {
   if (top_radius_ == 0 && bottom_radius_ == 0) {
     SetCustomMask(nullptr);
     mask_insets_.reset();
@@ -551,7 +550,7 @@ void ArcNotificationContentView::UpdateMask() {
   }
 
   gfx::Insets new_insets = GetContentsBounds().InsetsFrom(GetVisibleBounds());
-  if (mask_insets_ == new_insets)
+  if (mask_insets_ == new_insets && !force_update)
     return;
   mask_insets_ = new_insets;
 
@@ -625,7 +624,7 @@ void ArcNotificationContentView::Layout() {
     views::NativeViewHost::Layout();
     // Reinstall mask to update rounded mask insets. Set null mask unless radius
     // is set.
-    UpdateMask();
+    UpdateMask(false /* force_update */);
 
     // Scale notification surface if necessary.
     gfx::Transform transform;
@@ -746,7 +745,11 @@ void ArcNotificationContentView::ActivateWidget(bool activate) {
   if (activate) {
     GetWidget()->widget_delegate()->set_can_activate(true);
     GetWidget()->Activate();
-    surface_->FocusSurfaceWindow();
+
+    if (surface_)
+      surface_->FocusSurfaceWindow();
+    else
+      activate_on_attach_ = true;
   } else {
     GetWidget()->widget_delegate()->set_can_activate(false);
   }

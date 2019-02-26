@@ -7,7 +7,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* Float::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -20,27 +20,5 @@ const CSSValue* Float::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.Floating());
 }
 
-void Float::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
-  const CSSIdentifierValue& identifier_value = ToCSSIdentifierValue(value);
-
-  EFloat f;
-  CSSValueID id = identifier_value.GetValueID();
-  switch (id) {
-    case CSSValueInlineStart:
-    case CSSValueInlineEnd:
-      if ((id == CSSValueInlineStart) ==
-          (state.Style()->Direction() == TextDirection::kLtr)) {
-        f = EFloat::kLeft;
-      } else {
-        f = EFloat::kRight;
-      }
-      break;
-    default:
-      f = identifier_value.ConvertTo<EFloat>();
-      break;
-  }
-  state.Style()->SetFloating(f);
-}
-
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

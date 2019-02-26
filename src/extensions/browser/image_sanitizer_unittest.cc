@@ -18,6 +18,7 @@
 #include "build/build_config.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "services/data_decoder/public/cpp/test_data_decoder_service.h"
+#include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -72,12 +73,19 @@ class ImageSanitizerTest : public testing::Test {
  protected:
   void InitTestDataDecoderService(
       std::unique_ptr<service_manager::Service> service) {
-    if (!service)
-      service = data_decoder::DataDecoderService::Create();
-    connector_factory_ =
-        service_manager::TestConnectorFactory::CreateForUniqueService(
-            std::move(service));
-    connector_ = connector_factory_->CreateConnector();
+    if (service) {
+      test_data_decoder_service_ = std::move(service);
+    } else {
+      test_data_decoder_service_ =
+          std::make_unique<data_decoder::DataDecoderService>(
+              RegisterDataDecoder());
+    }
+    connector_ = connector_factory_.CreateConnector();
+  }
+
+  service_manager::mojom::ServiceRequest RegisterDataDecoder() {
+    return connector_factory_.RegisterInstance(
+        data_decoder::mojom::kServiceName);
   }
 
   void CreateValidImage(const base::FilePath::StringPieceType& file_name) {
@@ -150,9 +158,11 @@ class ImageSanitizerTest : public testing::Test {
       ImageSanitizer::ImageDecodedCallback image_decoded_callback,
       ImageSanitizer::SanitizationDoneCallback done_callback) {
     sanitizer_ = ImageSanitizer::CreateAndStart(
-        connector_.get(), service_manager::Identity(), temp_dir_.GetPath(),
-        image_relative_paths, std::move(image_decoded_callback),
-        std::move(done_callback));
+        connector_.get(),
+        service_manager::ServiceFilter::ByName(
+            data_decoder::mojom::kServiceName),
+        temp_dir_.GetPath(), image_relative_paths,
+        std::move(image_decoded_callback), std::move(done_callback));
   }
 
   bool WriteBase64DataToFile(const std::string& base64_data,
@@ -183,8 +193,9 @@ class ImageSanitizerTest : public testing::Test {
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
-  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
+  service_manager::TestConnectorFactory connector_factory_;
   std::unique_ptr<service_manager::Connector> connector_;
+  std::unique_ptr<service_manager::Service> test_data_decoder_service_;
   ImageSanitizer::Status last_status_ = ImageSanitizer::Status::kSuccess;
   base::FilePath last_reported_path_;
   base::OnceClosure done_callback_;
@@ -335,7 +346,7 @@ TEST_F(ImageSanitizerTest, DontHoldOnToCallbacksOnSuccess) {
 TEST_F(ImageSanitizerTest, DataDecoderServiceCrashes) {
   InitTestDataDecoderService(
       std::make_unique<data_decoder::CrashyDataDecoderService>(
-          /*crash_json=*/false, /*crash_image=*/true));
+          RegisterDataDecoder(), /*crash_json=*/false, /*crash_image=*/true));
   constexpr base::FilePath::CharType kGoodPngName[] =
       FILE_PATH_LITERAL("good.png");
   CreateValidImage(kGoodPngName);

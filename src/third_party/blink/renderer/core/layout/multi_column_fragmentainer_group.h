@@ -231,16 +231,18 @@ class CORE_EXPORT MultiColumnFragmentainerGroupList {
   iterator end() { return groups_.end(); }
   const_iterator end() const { return groups_.end(); }
 
-  size_t size() const { return groups_.size(); }
-  MultiColumnFragmentainerGroup& operator[](size_t i) { return groups_.at(i); }
-  const MultiColumnFragmentainerGroup& operator[](size_t i) const {
+  wtf_size_t size() const { return groups_.size(); }
+  MultiColumnFragmentainerGroup& operator[](wtf_size_t i) {
+    return groups_.at(i);
+  }
+  const MultiColumnFragmentainerGroup& operator[](wtf_size_t i) const {
     return groups_.at(i);
   }
 
   void Append(const MultiColumnFragmentainerGroup& group) {
     groups_.push_back(group);
   }
-  void Shrink(size_t size) { groups_.Shrink(size); }
+  void Shrink(wtf_size_t size) { groups_.Shrink(size); }
 
  private:
   LayoutMultiColumnSet& column_set_;

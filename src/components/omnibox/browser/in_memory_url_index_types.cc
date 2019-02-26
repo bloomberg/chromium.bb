@@ -10,12 +10,10 @@
 #include <numeric>
 #include <set>
 
-#include "base/feature_list.h"
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/case_conversion.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/memory_usage_estimator.h"
-#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/tailored_word_break_iterator.h"
 #include "net/base/escape.h"
 
@@ -136,29 +134,18 @@ String16Vector String16VectorFromString16(
     WordStarts* word_starts) {
   if (word_starts)
     word_starts->clear();
-  static const bool experiment_enabled =
-      base::FeatureList::IsEnabled(omnibox::kBreakWordsAtUnderscores);
-  return String16VectorFromString16(cleaned_uni_string, break_on_space,
-                                    experiment_enabled, word_starts);
-}
-
-String16Vector String16VectorFromString16(
-    const base::string16& cleaned_uni_string,
-    bool break_on_space,
-    bool break_on_underscore,
-    WordStarts* word_starts) {
   base::i18n::BreakIterator::BreakType break_mode =
       break_on_space ? base::i18n::BreakIterator::BREAK_SPACE
                      : base::i18n::BreakIterator::BREAK_WORD;
   String16Vector words;
-  if (break_on_underscore && !break_on_space) {
+  if (!break_on_space) {
     TailoredWordBreakIterator iter(cleaned_uni_string, break_mode);
     if (!iter.Init())
       return words;
     while (iter.Advance()) {
-      if (break_on_space || iter.IsWord()) {
-        String16VectorFromString16Internal(iter.GetString(), iter.prev(),
-                                           break_on_space, &words, word_starts);
+      if (iter.IsWord()) {
+        String16VectorFromString16Internal(iter.GetString(), iter.prev(), false,
+                                           &words, word_starts);
       }
     }
   } else {
@@ -166,10 +153,8 @@ String16Vector String16VectorFromString16(
     if (!iter.Init())
       return words;
     while (iter.Advance()) {
-      if (break_on_space || iter.IsWord()) {
-        String16VectorFromString16Internal(iter.GetString(), iter.prev(),
-                                           break_on_space, &words, word_starts);
-      }
+      String16VectorFromString16Internal(iter.GetString(), iter.prev(), true,
+                                         &words, word_starts);
     }
   }
   return words;

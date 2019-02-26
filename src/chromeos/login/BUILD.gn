@@ -9,6 +9,7 @@ import("//third_party/protobuf/proto_library.gni")
 assert(is_chromeos, "Non-Chrome-OS builds must not depend on //chromeos")
 
 source_set("login") {
+  configs += [ "//chromeos:chromeos_implementation" ]
   public_deps = [
     ":challenge_response_key",
   ]
@@ -66,10 +67,10 @@ source_set("login") {
     "login_state.cc",
     "login_state.h",
   ]
-  defines = [ "CHROMEOS_IMPLEMENTATION" ]
 }
 
 source_set("challenge_response_key") {
+  configs += [ "//chromeos:chromeos_implementation" ]
   deps = [
     "//base",
     "//chromeos:chromeos_export",
@@ -78,7 +79,6 @@ source_set("challenge_response_key") {
     "auth/challenge_response_key.cc",
     "auth/challenge_response_key.h",
   ]
-  defines = [ "CHROMEOS_IMPLEMENTATION" ]
 }
 
 source_set("unit_tests") {

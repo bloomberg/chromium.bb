@@ -475,6 +475,14 @@ MenuScrollViewContainer* SubmenuView::GetScrollViewContainer() {
   return scroll_view_container_;
 }
 
+MenuItemView* SubmenuView::GetLastItem() {
+  for (int i = child_count() - 1; i >= 0; i--) {
+    if (child_at(i)->id() == MenuItemView::kMenuItemViewID)
+      return static_cast<MenuItemView*>(child_at(i));
+  }
+  return nullptr;
+}
+
 void SubmenuView::MenuHostDestroyed() {
   host_ = NULL;
   MenuController* controller = GetMenuItem()->GetMenuController();

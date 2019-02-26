@@ -19,7 +19,7 @@ NavigatorNetworkInformation& NavigatorNetworkInformation::From(
   NavigatorNetworkInformation* supplement =
       ToNavigatorNetworkInformation(navigator);
   if (!supplement) {
-    supplement = new NavigatorNetworkInformation(navigator);
+    supplement = MakeGarbageCollected<NavigatorNetworkInformation>(navigator);
     ProvideTo(navigator, supplement);
   }
   return *supplement;

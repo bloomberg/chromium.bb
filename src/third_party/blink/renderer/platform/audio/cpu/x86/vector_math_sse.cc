@@ -11,17 +11,17 @@
 #include <xmmintrin.h>
 
 namespace blink {
-namespace VectorMath {
-namespace SSE {
+namespace vector_math {
+namespace sse {
 
 using MType = __m128;
 
-}  // namespace SSE
-}  // namespace VectorMath
+}  // namespace sse
+}  // namespace vector_math
 }  // namespace blink
 
 #define MM_PS(name) _mm_##name##_ps
-#define VECTOR_MATH_SIMD_NAMESPACE_NAME SSE
+#define VECTOR_MATH_SIMD_NAMESPACE_NAME sse
 
 #include "third_party/blink/renderer/platform/audio/cpu/x86/vector_math_impl.h"
 

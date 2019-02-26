@@ -105,7 +105,7 @@ class MODULES_EXPORT BaseAudioContext
 
   // Create an AudioContext for rendering to the audio hardware.
   static BaseAudioContext* Create(Document&,
-                                  const AudioContextOptions&,
+                                  const AudioContextOptions*,
                                   ExceptionState&);
 
   ~BaseAudioContext() override;
@@ -138,7 +138,7 @@ class MODULES_EXPORT BaseAudioContext
   void ThrowExceptionForClosedState(ExceptionState&);
 
   AudioBuffer* createBuffer(unsigned number_of_channels,
-                            size_t number_of_frames,
+                            uint32_t number_of_frames,
                             float sample_rate,
                             ExceptionState&);
 
@@ -206,7 +206,7 @@ class MODULES_EXPORT BaseAudioContext
                                    ExceptionState&);
   PeriodicWave* createPeriodicWave(const Vector<float>& real,
                                    const Vector<float>& imag,
-                                   const PeriodicWaveConstraints&,
+                                   const PeriodicWaveConstraints*,
                                    ExceptionState&);
 
   // IIRFilter
@@ -261,7 +261,7 @@ class MODULES_EXPORT BaseAudioContext
   const AtomicString& InterfaceName() const final;
   ExecutionContext* GetExecutionContext() const final;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange, kStatechange);
 
   void StartRendering();
 
@@ -296,6 +296,8 @@ class MODULES_EXPORT BaseAudioContext
   // Does nothing when the worklet global scope does not exist.
   void UpdateWorkletGlobalScopeOnRenderingThread();
 
+  void set_was_audible_for_testing(bool value) { was_audible_ = value; }
+
  protected:
   enum ContextType { kRealtimeContext, kOfflineContext };
 
@@ -322,7 +324,7 @@ class MODULES_EXPORT BaseAudioContext
 
   void RejectPendingDecodeAudioDataResolvers();
 
-  AudioIOPosition OutputPosition();
+  AudioIOPosition OutputPosition() const;
 
   // Returns the Document wich wich the instance is associated.
   Document* GetDocument() const;

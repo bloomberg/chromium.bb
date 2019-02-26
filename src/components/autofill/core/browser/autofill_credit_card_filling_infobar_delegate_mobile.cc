@@ -17,9 +17,9 @@ namespace autofill {
 AutofillCreditCardFillingInfoBarDelegateMobile::
     AutofillCreditCardFillingInfoBarDelegateMobile(
         const CreditCard& card,
-        const base::Closure& card_filling_callback)
+        base::OnceClosure card_filling_callback)
     : ConfirmInfoBarDelegate(),
-      card_filling_callback_(card_filling_callback),
+      card_filling_callback_(std::move(card_filling_callback)),
       had_user_interaction_(false),
       was_shown_(false),
       issuer_icon_id_(CreditCard::IconResourceId(card.network())),
@@ -64,7 +64,7 @@ void AutofillCreditCardFillingInfoBarDelegateMobile::InfoBarDismissed() {
 }
 
 bool AutofillCreditCardFillingInfoBarDelegateMobile::Accept() {
-  card_filling_callback_.Run();
+  std::move(card_filling_callback_).Run();
   LogUserAction(AutofillMetrics::INFOBAR_ACCEPTED);
   return true;
 }

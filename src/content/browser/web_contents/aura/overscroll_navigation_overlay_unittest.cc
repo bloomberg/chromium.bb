@@ -15,9 +15,8 @@
 #include "content/browser/web_contents/aura/types.h"
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/frame_messages.h"
-#include "content/common/view_messages.h"
+#include "content/common/widget_messages.h"
 #include "content/public/browser/overscroll_configuration.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_render_view_host.h"
@@ -107,7 +106,7 @@ class OverscrollTestWebContents : public TestWebContents {
     return fake_contents_window_.get();
   }
 
-  bool IsBeingDestroyed() const override { return is_being_destroyed_; }
+  bool IsBeingDestroyed() override { return is_being_destroyed_; }
 
  private:
   std::unique_ptr<aura::Window> fake_native_view_;
@@ -139,8 +138,7 @@ class OverscrollNavigationOverlayTest : public RenderViewHostImplTestHarness {
   }
 
   void ReceivePaintUpdate() {
-    ViewHostMsg_DidFirstVisuallyNonEmptyPaint msg(test_rvh()->GetRoutingID());
-    RenderViewHostTester::TestOnMessageReceived(test_rvh(), msg);
+    RenderViewHostTester::SimulateFirstPaint(test_rvh());
   }
 
   void PerformBackNavigationViaSliderCallbacks(OverscrollSource source) {
@@ -250,7 +248,8 @@ class OverscrollNavigationOverlayTest : public RenderViewHostImplTestHarness {
                                          base::UnguessableToken::Create());
     cc::RenderFrameMetadata metadata;
     metadata.viewport_size_in_pixels = gfx::Size(10, 10);
-    metadata.local_surface_id = local_surface_id;
+    metadata.local_surface_id_allocation =
+        viz::LocalSurfaceIdAllocation(local_surface_id, base::TimeTicks());
     test_rvh()->GetWidget()->DidUpdateVisualProperties(metadata);
 
     // Reset pending flags for size/paint.

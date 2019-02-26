@@ -54,8 +54,8 @@ class PerfettoTracingCoordinator::TracingSession {
       base::ResetAndReturn(&stop_and_flush_callback_)
           .Run(/*metadata=*/std::move(*metadata));
 
-      base::SequencedTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, std::move(tracing_over_callback_));
+      std::move(tracing_over_callback_).Run();
+      // |this| is now destroyed.
     }
   }
 

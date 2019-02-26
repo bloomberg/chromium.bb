@@ -37,7 +37,7 @@ std::unique_ptr<variations::SeedResponse> GetVariationsFirstRunSeed() {
 
   auto seed = std::make_unique<variations::SeedResponse>();
   if (!j_seed_data.is_null()) {
-    base::android::JavaByteArrayToString(env, j_seed_data.obj(), &seed->data);
+    base::android::JavaByteArrayToString(env, j_seed_data, &seed->data);
   }
   seed->signature = ConvertJavaStringToUTF8(j_seed_signature);
   seed->country = ConvertJavaStringToUTF8(j_seed_country);

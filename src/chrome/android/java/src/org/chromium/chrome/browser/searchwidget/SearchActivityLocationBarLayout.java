@@ -19,7 +19,7 @@ import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.omnibox.UrlBarCoordinator.SelectionState;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.toolbar.ToolbarPhone;
+import org.chromium.chrome.browser.toolbar.top.ToolbarPhone;
 
 /** Implementation of the {@link LocationBarLayout} that is displayed for widget searches. */
 public class SearchActivityLocationBarLayout extends LocationBarLayout {
@@ -137,6 +137,12 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
         super.updateButtonVisibility();
         updateMicButtonVisibility(1.0f);
         findViewById(R.id.url_action_container).setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void onUrlFocusChange(boolean hasFocus) {
+        super.onUrlFocusChange(hasFocus);
+        if (hasFocus) setUrlFocusChangeInProgress(false);
     }
 
     // TODO(tedchoc): Investigate focusing regardless of the search promo state and just ensure

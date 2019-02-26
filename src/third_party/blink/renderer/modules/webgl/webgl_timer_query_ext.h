@@ -7,7 +7,7 @@
 
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_context_object.h"
-#include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 
 namespace gpu {
 namespace gles2 {
@@ -22,6 +22,8 @@ class WebGLTimerQueryEXT : public WebGLContextObject {
 
  public:
   static WebGLTimerQueryEXT* Create(WebGLRenderingContextBase*);
+
+  WebGLTimerQueryEXT(WebGLRenderingContextBase*);
   ~WebGLTimerQueryEXT() override;
 
   void SetTarget(GLenum target) { target_ = target; }
@@ -35,9 +37,6 @@ class WebGLTimerQueryEXT : public WebGLContextObject {
 
   bool IsQueryResultAvailable();
   GLuint64 GetQueryResult();
-
- protected:
-  WebGLTimerQueryEXT(WebGLRenderingContextBase*);
 
  private:
   bool HasObject() const override { return query_id_ != 0; }

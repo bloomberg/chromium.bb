@@ -50,12 +50,9 @@ class PageLoadMetricsObserverTester : public test::WeakMockTimerProvider {
   void SimulateTimingAndMetadataUpdate(const mojom::PageLoadTiming& timing,
                                        const mojom::PageLoadMetadata& metadata);
   void SimulateFeaturesUpdate(const mojom::PageLoadFeatures& new_features);
-  void SimulatePageLoadTimingUpdate(
-      const mojom::PageLoadTiming& timing,
-      const mojom::PageLoadMetadata& metadata,
-      const mojom::PageLoadFeatures& new_features);
   void SimulateResourceDataUseUpdate(
       const std::vector<mojom::ResourceDataUpdatePtr>& resources);
+  void SimulateRenderDataUpdate(const mojom::PageRenderData& render_data);
 
   // Simulates a loaded resource. Main frame resources must specify a
   // GlobalRequestID, using the SimulateLoadedResource() method that takes a
@@ -83,6 +80,11 @@ class PageLoadMetricsObserverTester : public test::WeakMockTimerProvider {
   void RegisterObservers(PageLoadTracker* tracker);
 
  private:
+  void SimulatePageLoadTimingUpdate(const mojom::PageLoadTiming& timing,
+                                    const mojom::PageLoadMetadata& metadata,
+                                    const mojom::PageLoadFeatures& new_features,
+                                    const mojom::PageRenderData& render_data);
+
   content::WebContents* web_contents() const { return web_contents_; }
 
   RegisterObserversCallback register_callback_;

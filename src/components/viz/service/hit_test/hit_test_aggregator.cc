@@ -8,9 +8,12 @@
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
 #include "components/viz/common/hit_test/hit_test_region_list.h"
+#include "components/viz/common/quads/debug_border_draw_quad.h"
+#include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/service/hit_test/hit_test_aggregator_delegate.h"
 #include "components/viz/service/surfaces/latest_local_surface_id_lookup_delegate.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 
 namespace viz {
 
@@ -32,7 +35,8 @@ HitTestAggregator::HitTestAggregator(
 
 HitTestAggregator::~HitTestAggregator() = default;
 
-void HitTestAggregator::Aggregate(const SurfaceId& display_surface_id) {
+void HitTestAggregator::Aggregate(const SurfaceId& display_surface_id,
+                                  RenderPassList* render_passes) {
   DCHECK(referenced_child_regions_.empty());
 
   // Reset states.
@@ -40,6 +44,9 @@ void HitTestAggregator::Aggregate(const SurfaceId& display_surface_id) {
   hit_test_data_capacity_ = initial_region_size_;
   hit_test_data_size_ = 0;
   hit_test_data_.resize(hit_test_data_capacity_);
+
+  hit_test_debug_ = false;
+  hit_test_debug_ask_regions_ = 0;
 
   base::ElapsedTimer aggregate_timer;
   AppendRoot(display_surface_id);
@@ -49,6 +56,78 @@ void HitTestAggregator::Aggregate(const SurfaceId& display_surface_id) {
                                           base::TimeDelta::FromSeconds(10), 50);
   referenced_child_regions_.clear();
   SendHitTestData();
+
+  if (hit_test_debug_ && render_passes) {
+    InsertHitTestDebugQuads(render_passes);
+  }
+}
+
+void HitTestAggregator::InsertHitTestDebugQuads(RenderPassList* render_passes) {
+  const base::flat_set<FrameSinkId>* hit_test_async_queried_debug_regions =
+      hit_test_manager_->GetHitTestAsyncQueriedDebugRegions(
+          root_frame_sink_id_);
+
+  QuadList& ql = render_passes->back()->quad_list;
+  ql.InsertBeforeAndInvalidateAllPointers<DebugBorderDrawQuad>(
+      ql.begin(), hit_test_data_size_);
+  ql.InsertBeforeAndInvalidateAllPointers<SolidColorDrawQuad>(
+      ql.begin(), hit_test_debug_ask_regions_);
+
+  SharedQuadState* sqs =
+      render_passes->back()->CreateAndAppendSharedQuadState();
+  sqs->opacity = 0.25f;
+
+  const SkColor colors[3] = {SK_ColorCYAN, SK_ColorGREEN, SK_ColorMAGENTA};
+
+  base::stack<uint32_t> parents;
+  base::stack<gfx::Transform> parent_transforms;
+  parent_transforms.push(gfx::Transform());
+
+  for (uint32_t i = 0, ask_i = 0; i < hit_test_data_size_; ++i) {
+    const AggregatedHitTestRegion& htr = hit_test_data_[i];
+
+    gfx::Transform child_to_parent;
+    // Hit-test transforms are guaranteed to be invertible.
+    if (!htr.transform().GetInverse(&child_to_parent)) {
+      return;
+    }
+
+    SkColor color = colors[parents.size() % 3];
+    if (hit_test_async_queried_debug_regions &&
+        hit_test_async_queried_debug_regions->count(htr.frame_sink_id)) {
+      color = SK_ColorRED;
+    }
+
+    parents.push(i);
+    // Concatenate transformation.
+    parent_transforms.push(child_to_parent * parent_transforms.top());
+
+    // We can only transform gfx::RectF.
+    gfx::RectF rf(hit_test_data_[i].rect);
+    parent_transforms.top().TransformRect(&rf);
+    const gfx::Rect debug_rect = gfx::ToNearestRect(rf);
+
+    DebugBorderDrawQuad* debug_quad = static_cast<DebugBorderDrawQuad*>(
+        ql.ElementAt(hit_test_debug_ask_regions_ + i));
+    debug_quad->SetNew(sqs, debug_rect, debug_rect, color, /*width=*/5);
+
+    if (htr.flags & kHitTestAsk) {
+      SolidColorDrawQuad* ask_quad =
+          static_cast<SolidColorDrawQuad*>(ql.ElementAt(ask_i++));
+      ask_quad->SetNew(sqs, debug_rect, debug_rect, color,
+                       /*force_anti_aliasing_off=*/false);
+    }
+
+    while (!parents.empty()) {
+      uint32_t parent_index = parents.top();
+      uint32_t max_child_index =
+          parent_index + hit_test_data_[parent_index].child_count;
+      if (max_child_index > i)
+        break;
+      parents.pop();
+      parent_transforms.pop();
+    }
+  }
 }
 
 void HitTestAggregator::SendHitTestData() {
@@ -58,16 +137,15 @@ void HitTestAggregator::SendHitTestData() {
 }
 
 base::Optional<int64_t> HitTestAggregator::GetTraceIdIfUpdated(
-    const SurfaceId& surface_id) {
+    const SurfaceId& surface_id,
+    uint64_t active_frame_index) {
   bool enabled;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(
       TRACE_DISABLED_BY_DEFAULT("viz.hit_testing_flow"), &enabled);
   if (!enabled)
     return base::nullopt;
 
-  int32_t active_frame_index =
-      hit_test_manager_->GetActiveFrameIndex(surface_id);
-  int32_t& frame_index = last_active_frame_index_[surface_id];
+  uint64_t& frame_index = last_active_frame_index_[surface_id.frame_sink_id()];
   if (frame_index == active_frame_index)
     return base::nullopt;
   frame_index = active_frame_index;
@@ -75,13 +153,17 @@ base::Optional<int64_t> HitTestAggregator::GetTraceIdIfUpdated(
 }
 
 void HitTestAggregator::AppendRoot(const SurfaceId& surface_id) {
+  uint64_t active_frame_index;
   const HitTestRegionList* hit_test_region_list =
       hit_test_manager_->GetActiveHitTestRegionList(
-          local_surface_id_lookup_delegate_, surface_id.frame_sink_id());
+          local_surface_id_lookup_delegate_, surface_id.frame_sink_id(),
+          &active_frame_index);
+
   if (!hit_test_region_list)
     return;
 
-  base::Optional<int64_t> trace_id = GetTraceIdIfUpdated(surface_id);
+  base::Optional<int64_t> trace_id =
+      GetTraceIdIfUpdated(surface_id, active_frame_index);
   TRACE_EVENT_WITH_FLOW1(
       TRACE_DISABLED_BY_DEFAULT("viz.hit_testing_flow"), "Event.Pipeline",
       TRACE_ID_GLOBAL(trace_id.value_or(-1)),
@@ -101,6 +183,7 @@ void HitTestAggregator::AppendRoot(const SurfaceId& surface_id) {
   int32_t child_count = region_index - 1;
   UMA_HISTOGRAM_COUNTS_1000("Event.VizHitTest.HitTestRegions", region_index);
   SetRegionAt(0, surface_id.frame_sink_id(), hit_test_region_list->flags,
+              hit_test_region_list->async_hit_test_reasons,
               hit_test_region_list->bounds, hit_test_region_list->transform,
               child_count);
 }
@@ -118,6 +201,7 @@ size_t HitTestAggregator::AppendRegion(size_t region_index,
   }
 
   uint32_t flags = region.flags;
+  uint32_t reasons = region.async_hit_test_reasons;
   gfx::Transform transform = region.transform;
 
   if (region.flags & HitTestRegionFlags::kHitTestChildSurface) {
@@ -126,9 +210,11 @@ size_t HitTestAggregator::AppendRegion(size_t region_index,
 
     referenced_child_regions_.insert(region.frame_sink_id);
 
+    uint64_t active_frame_index;
     const HitTestRegionList* hit_test_region_list =
         hit_test_manager_->GetActiveHitTestRegionList(
-            local_surface_id_lookup_delegate_, region.frame_sink_id);
+            local_surface_id_lookup_delegate_, region.frame_sink_id,
+            &active_frame_index);
     if (!hit_test_region_list) {
       // Hit-test data not found with this FrameSinkId. This means that it
       // failed to find a surface corresponding to this FrameSinkId at surface
@@ -137,6 +223,7 @@ size_t HitTestAggregator::AppendRegion(size_t region_index,
       // targeting for this embedded client.
       flags |= (HitTestRegionFlags::kHitTestAsk |
                 HitTestRegionFlags::kHitTestNotActive);
+      reasons |= AsyncHitTestReasons::kRegionNotActive;
     } else {
       // Rather than add a node in the tree for this hit_test_region_list
       // element we can simplify the tree by merging the flags and transform
@@ -145,6 +232,7 @@ size_t HitTestAggregator::AppendRegion(size_t region_index,
         transform.PreconcatTransform(hit_test_region_list->transform);
 
       flags |= hit_test_region_list->flags;
+      reasons |= hit_test_region_list->async_hit_test_reasons;
 
       bool enabled;
       TRACE_EVENT_CATEGORY_GROUP_ENABLED(
@@ -156,7 +244,8 @@ size_t HitTestAggregator::AppendRegion(size_t region_index,
                 region.frame_sink_id);
         SurfaceId surface_id(region.frame_sink_id, local_surface_id);
 
-        base::Optional<int64_t> trace_id = GetTraceIdIfUpdated(surface_id);
+        base::Optional<int64_t> trace_id =
+            GetTraceIdIfUpdated(surface_id, active_frame_index);
         TRACE_EVENT_WITH_FLOW1(
             TRACE_DISABLED_BY_DEFAULT("viz.hit_testing_flow"), "Event.Pipeline",
             TRACE_ID_GLOBAL(trace_id.value_or(-1)),
@@ -173,20 +262,26 @@ size_t HitTestAggregator::AppendRegion(size_t region_index,
   }
   DCHECK_GE(region_index - parent_index - 1, 0u);
   int32_t child_count = region_index - parent_index - 1;
-  SetRegionAt(parent_index, region.frame_sink_id, flags, region.rect, transform,
-              child_count);
+  SetRegionAt(parent_index, region.frame_sink_id, flags, reasons, region.rect,
+              transform, child_count);
   return region_index;
 }
 
 void HitTestAggregator::SetRegionAt(size_t index,
                                     const FrameSinkId& frame_sink_id,
                                     uint32_t flags,
+                                    uint32_t async_hit_test_reasons,
                                     const gfx::Rect& rect,
                                     const gfx::Transform& transform,
                                     int32_t child_count) {
-  hit_test_data_[index] = AggregatedHitTestRegion(frame_sink_id, flags, rect,
-                                                  transform, child_count);
+  hit_test_data_[index] =
+      AggregatedHitTestRegion(frame_sink_id, flags, rect, transform,
+                              child_count, async_hit_test_reasons);
   hit_test_data_size_++;
+
+  hit_test_debug_ |= flags & kHitTestDebug;
+  if (flags & kHitTestAsk)
+    ++hit_test_debug_ask_regions_;
 }
 
 }  // namespace viz

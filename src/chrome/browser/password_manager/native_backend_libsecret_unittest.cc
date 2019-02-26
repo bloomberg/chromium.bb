@@ -707,8 +707,6 @@ TEST_F(NativeBackendLibsecretTest, PSLUpdatingStrictUpdateLogin) {
 }
 
 TEST_F(NativeBackendLibsecretTest, PSLUpdatingStrictAddLogin) {
-  // TODO(vabr): if AddLogin becomes no longer valid for existing logins, then
-  // just delete this test.
   CheckPSLUpdate(UPDATE_BY_ADDLOGIN);
 }
 

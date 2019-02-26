@@ -39,9 +39,9 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/common/bindings_policy.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/common/navigation_policy.h"
 #include "content/public/common/url_utils.h"
 #include "net/base/net_errors.h"
 #include "services/network/public/cpp/resource_response.h"
@@ -324,6 +324,9 @@ void NavigatorImpl::Navigate(std::unique_ptr<NavigationRequest> request,
                              ReloadType reload_type,
                              RestoreType restore_type) {
   TRACE_EVENT0("browser,navigation", "NavigatorImpl::Navigate");
+  TRACE_EVENT_INSTANT_WITH_TIMESTAMP0(
+      "navigation,rail", "NavigationTiming navigationStart",
+      TRACE_EVENT_SCOPE_GLOBAL, request->common_params().navigation_start);
 
   const GURL& dest_url = request->common_params().url;
   FrameTreeNode* frame_tree_node = request->frame_tree_node();
@@ -389,6 +392,7 @@ void NavigatorImpl::RequestOpenURL(
     bool should_replace_current_entry,
     bool user_gesture,
     blink::WebTriggeringEventInfo triggering_event_info,
+    const std::string& href_translate,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory) {
   // Note: This can be called for subframes (even when OOPIFs are not possible)
   // if the disposition calls for a different window.
@@ -460,6 +464,7 @@ void NavigatorImpl::RequestOpenURL(
   }
 
   params.blob_url_loader_factory = std::move(blob_url_loader_factory);
+  params.href_translate = href_translate;
 
   GetContentClient()->browser()->OverrideNavigationParams(
       current_site_instance, &params.transition, &params.is_renderer_initiated,

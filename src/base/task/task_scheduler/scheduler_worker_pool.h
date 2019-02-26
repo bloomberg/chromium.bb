@@ -7,47 +7,52 @@
 
 #include "base/base_export.h"
 #include "base/memory/ref_counted.h"
-#include "base/sequenced_task_runner.h"
 #include "base/task/task_scheduler/can_schedule_sequence_observer.h"
 #include "base/task/task_scheduler/sequence.h"
 #include "base/task/task_scheduler/task.h"
 #include "base/task/task_scheduler/tracked_ref.h"
-#include "base/task/task_traits.h"
-#include "base/task_runner.h"
 
 namespace base {
 namespace internal {
 
-class DelayedTaskManager;
 class TaskTracker;
 
 // Interface for a worker pool.
 class BASE_EXPORT SchedulerWorkerPool : public CanScheduleSequenceObserver {
  public:
+  // Delegate interface for SchedulerWorkerPool.
+  class BASE_EXPORT Delegate {
+   public:
+    virtual ~Delegate() = default;
+
+    // Invoked when the Sequence in |sequence_and_transaction| is non-empty
+    // after the SchedulerWorkerPool has run a task from it. The implementation
+    // must enqueue the Sequence in the appropriate priority queue, depending
+    // on the Sequence's traits.
+    virtual void ReEnqueueSequence(
+        SequenceAndTransaction sequence_and_transaction) = 0;
+  };
+
   ~SchedulerWorkerPool() override;
 
-  // Returns a TaskRunner whose PostTask invocations result in scheduling tasks
-  // in this SchedulerWorkerPool using |traits|. Tasks may run in any order and
-  // in parallel.
-  scoped_refptr<TaskRunner> CreateTaskRunnerWithTraits(
-      const TaskTraits& traits);
-
-  // Returns a SequencedTaskRunner whose PostTask invocations result in
-  // scheduling tasks in this SchedulerWorkerPool using |traits|. Tasks run one
-  // at a time in posting order.
-  scoped_refptr<SequencedTaskRunner> CreateSequencedTaskRunnerWithTraits(
-      const TaskTraits& traits);
+  // CanScheduleSequenceObserver:
+  void OnCanScheduleSequence(scoped_refptr<Sequence> sequence) override = 0;
 
   // Posts |task| to be executed by this SchedulerWorkerPool as part of
-  // |sequence|. |task| won't be executed before its delayed run time, if any.
-  // Returns true if |task| is posted.
-  bool PostTaskWithSequence(Task task, scoped_refptr<Sequence> sequence);
+  // the Sequence in |sequence_and_transaction|. This must only be called after
+  // |task| has gone through TaskTracker::WillPostTask() and after |task|'s
+  // delayed run time.
+  void PostTaskWithSequenceNow(Task task,
+                               SequenceAndTransaction sequence_and_transaction);
 
   // Registers the worker pool in TLS.
   void BindToCurrentThread();
 
   // Resets the worker pool in TLS.
   void UnbindFromCurrentThread();
+
+  // Returns true if the worker pool is registered in TLS.
+  bool IsBoundToCurrentThread() const;
 
   // Prevents new tasks from starting to run and waits for currently running
   // tasks to complete their execution. It is guaranteed that no thread will do
@@ -57,17 +62,25 @@ class BASE_EXPORT SchedulerWorkerPool : public CanScheduleSequenceObserver {
   // task during JoinForTesting(). This can only be called once.
   virtual void JoinForTesting() = 0;
 
+  // Enqueues the Sequence in |sequence_and_transaction| in the worker pool's
+  // priority queue, then wakes up a worker if |is_changing_pools|, i.e. if the
+  // Sequence came from a different worker pool.
+  virtual void ReEnqueueSequence(
+      SequenceAndTransaction sequence_and_transaction,
+      bool is_changing_pools) = 0;
+
+  // Called when the Sequence in |sequence_and_transaction| can be scheduled.
+  // It is expected that TaskTracker::RunNextTask() will be called with
+  // the Sequence as argument after this is called.
+  virtual void OnCanScheduleSequence(
+      SequenceAndTransaction sequence_and_transaction) = 0;
+
  protected:
   SchedulerWorkerPool(TrackedRef<TaskTracker> task_tracker,
-                      DelayedTaskManager* delayed_task_manager);
-
-  // Posts |task| to be executed by this SchedulerWorkerPool as part of
-  // |sequence|. This must only be called after |task| has gone through
-  // PostTaskWithSequence() and after |task|'s delayed run time.
-  void PostTaskWithSequenceNow(Task task, scoped_refptr<Sequence> sequence);
+                      TrackedRef<Delegate> delegate);
 
   const TrackedRef<TaskTracker> task_tracker_;
-  DelayedTaskManager* const delayed_task_manager_;
+  const TrackedRef<Delegate> delegate_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SchedulerWorkerPool);

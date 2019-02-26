@@ -509,10 +509,16 @@ struct SSLCipherPreferenceList {
 
   bool Init(UniquePtr<STACK_OF(SSL_CIPHER)> ciphers,
             Span<const bool> in_group_flags);
+  bool Init(const SSLCipherPreferenceList &);
+
+  void Remove(const SSL_CIPHER *cipher);
 
   UniquePtr<STACK_OF(SSL_CIPHER)> ciphers;
   bool *in_group_flags = nullptr;
 };
+
+// AllCiphers returns an array of all supported ciphers, sorted by id.
+Span<const SSL_CIPHER> AllCiphers();
 
 // ssl_cipher_get_evp_aead sets |*out_aead| to point to the correct EVP_AEAD
 // object for |cipher| protocol version |version|. It sets |*out_mac_secret_len|
@@ -664,6 +670,12 @@ class SSLAEADContext {
                                           Span<const uint8_t> enc_key,
                                           Span<const uint8_t> mac_key,
                                           Span<const uint8_t> fixed_iv);
+
+  // CreatePlaceholderForQUIC creates a placeholder |SSLAEADContext| for the
+  // given cipher and version. The resulting object can be queried for various
+  // properties but cannot encrypt or decrypt data.
+  static UniquePtr<SSLAEADContext> CreatePlaceholderForQUIC(
+      uint16_t version, const SSL_CIPHER *cipher);
 
   // SetVersionIfNullCipher sets the version the SSLAEADContext for the null
   // cipher, to make version-specific determinations in the record layer prior
@@ -988,6 +1000,15 @@ class SSLKeyShare {
   virtual bool Deserialize(CBS *in) { return false; }
 };
 
+struct NamedGroup {
+  int nid;
+  uint16_t group_id;
+  const char name[8], alias[11];
+};
+
+// NamedGroups returns all supported groups.
+Span<const NamedGroup> NamedGroups();
+
 // ssl_nid_to_group_id looks up the group corresponding to |nid|. On success, it
 // sets |*out_group_id| to the group ID and returns true. Otherwise, it returns
 // false.
@@ -1019,6 +1040,7 @@ struct SSLMessage {
 extern const uint8_t kHelloRetryRequest[SSL3_RANDOM_SIZE];
 extern const uint8_t kTLS12DowngradeRandom[8];
 extern const uint8_t kTLS13DowngradeRandom[8];
+extern const uint8_t kJDK11DowngradeRandom[8];
 
 // ssl_max_handshake_message_len returns the maximum number of bytes permitted
 // in a handshake message for |ssl|.
@@ -1031,6 +1053,10 @@ bool tls_can_accept_handshake_data(const SSL *ssl, uint8_t *out_alert);
 // tls_has_unprocessed_handshake_data returns whether there is buffered
 // handshake data that has not been consumed by |get_message|.
 bool tls_has_unprocessed_handshake_data(const SSL *ssl);
+
+// tls_append_handshake_data appends |data| to the handshake buffer. It returns
+// true on success and false on allocation failure.
+bool tls_append_handshake_data(SSL *ssl, Span<const uint8_t> data);
 
 // dtls_has_unprocessed_handshake_data behaves like
 // |tls_has_unprocessed_handshake_data| for DTLS.
@@ -1231,7 +1257,8 @@ bool tls13_advance_key_schedule(SSL_HANDSHAKE *hs, const uint8_t *in,
 
 // tls13_set_traffic_key sets the read or write traffic keys to
 // |traffic_secret|. It returns true on success and false on error.
-bool tls13_set_traffic_key(SSL *ssl, enum evp_aead_direction_t direction,
+bool tls13_set_traffic_key(SSL *ssl, enum ssl_encryption_level_t level,
+                           enum evp_aead_direction_t direction,
                            const uint8_t *traffic_secret,
                            size_t traffic_secret_len);
 
@@ -1272,7 +1299,8 @@ bool tls13_finished_mac(SSL_HANDSHAKE *hs, uint8_t *out, size_t *out_len,
 // tls13_derive_session_psk calculates the PSK for this session based on the
 // resumption master secret and |nonce|. It returns true on success, and false
 // on failure.
-bool tls13_derive_session_psk(SSL_SESSION *session, Span<const uint8_t> nonce);
+bool tls13_derive_session_psk(SSL_SESSION *session, Span<const uint8_t> nonce,
+                              bool use_quic);
 
 // tls13_write_psk_binder calculates the PSK binder value and replaces the last
 // bytes of |msg| with the resulting value. It returns true on success, and
@@ -1568,6 +1596,10 @@ struct SSL_HANDSHAKE {
 
   // cert_compression_negotiated is true iff |cert_compression_alg_id| is valid.
   bool cert_compression_negotiated : 1;
+
+  // apply_jdk11_workaround is true if the peer is probably a JDK 11 client
+  // which implemented TLS 1.3 incorrectly.
+  bool apply_jdk11_workaround : 1;
 
   // client_version is the value sent or received in the ClientHello version.
   uint16_t client_version = 0;
@@ -2013,7 +2045,7 @@ struct CertCompressionAlg {
 
 BSSL_NAMESPACE_END
 
-DECLARE_LHASH_OF(SSL_SESSION)
+DEFINE_LHASH_OF(SSL_SESSION)
 
 DEFINE_NAMED_STACK_OF(CertCompressionAlg, bssl::CertCompressionAlg);
 
@@ -2073,6 +2105,9 @@ struct SSL3_STATE {
   // returned.  This is needed for non-blocking IO so we know what request
   // needs re-doing when in SSL_accept or SSL_connect
   int rwstate = SSL_NOTHING;
+
+  enum ssl_encryption_level_t read_level = ssl_encryption_initial;
+  enum ssl_encryption_level_t write_level = ssl_encryption_initial;
 
   // early_data_skipped is the amount of early data that has been skipped by the
   // record layer.
@@ -2459,7 +2494,11 @@ struct SSL_CONFIG {
 
   // ignore_tls13_downgrade is whether the connection should continue when the
   // server random signals a downgrade.
-  bool ignore_tls13_downgrade:1;
+  bool ignore_tls13_downgrade : 1;
+
+  // jdk11_workaround is whether to disable TLS 1.3 for JDK 11 clients, as a
+  // workaround for https://bugs.openjdk.java.net/browse/JDK-8211806.
+  bool jdk11_workaround : 1;
 };
 
 // From RFC 8446, used in determining PSK modes.
@@ -2789,6 +2828,9 @@ struct ssl_ctx_st {
   // |SSL_CTX_set_min_proto_version|. Note this version is normalized in DTLS
   // and is further constrainted by |SSL_OP_NO_*|.
   uint16_t conf_min_version = 0;
+
+  // quic_method is the method table corresponding to the QUIC hooks.
+  const SSL_QUIC_METHOD *quic_method = nullptr;
 
   // tls13_variant is the variant of TLS 1.3 we are using for this
   // configuration.

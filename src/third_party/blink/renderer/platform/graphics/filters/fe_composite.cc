@@ -47,7 +47,7 @@ FEComposite* FEComposite::Create(Filter* filter,
                                  float k2,
                                  float k3,
                                  float k4) {
-  return new FEComposite(filter, type, k1, k2, k3, k4);
+  return MakeGarbageCollected<FEComposite>(filter, type, k1, k2, k3, k4);
 }
 
 CompositeOperationType FEComposite::Operation() const {
@@ -191,11 +191,11 @@ sk_sp<PaintFilter> FEComposite::CreateImageFilterWithoutValidation() {
 sk_sp<PaintFilter> FEComposite::CreateImageFilterInternal(
     bool requires_pm_color_validation) {
   sk_sp<PaintFilter> foreground(
-      PaintFilterBuilder::Build(InputEffect(0), OperatingInterpolationSpace(),
-                                !MayProduceInvalidPreMultipliedPixels()));
+      paint_filter_builder::Build(InputEffect(0), OperatingInterpolationSpace(),
+                                  !MayProduceInvalidPreMultipliedPixels()));
   sk_sp<PaintFilter> background(
-      PaintFilterBuilder::Build(InputEffect(1), OperatingInterpolationSpace(),
-                                !MayProduceInvalidPreMultipliedPixels()));
+      paint_filter_builder::Build(InputEffect(1), OperatingInterpolationSpace(),
+                                  !MayProduceInvalidPreMultipliedPixels()));
   PaintFilter::CropRect crop_rect = GetCropRect();
 
   if (type_ == FECOMPOSITE_OPERATOR_ARITHMETIC) {

@@ -16,7 +16,7 @@
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_controller.h"
 #include "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_ios.h"
 #include "ios/chrome/browser/ui/omnibox/popup/shortcuts/shortcuts_coordinator.h"
-#include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -61,6 +61,7 @@
   self.mediator =
       [[OmniboxPopupMediator alloc] initWithFetcher:std::move(imageFetcher)
                                            delegate:_popupView.get()];
+  self.mediator.dispatcher = (id<BrowserCommands>)self.dispatcher;
   self.mediator.webStateList = self.webStateList;
   self.popupViewController = [[OmniboxPopupViewController alloc] init];
   self.popupViewController.incognito = self.browserState->IsOffTheRecord();
@@ -79,16 +80,6 @@
                    forProtocol:@protocol(OmniboxSuggestionCommands)];
 
   _popupView->SetMediator(self.mediator);
-
-  if (base::FeatureList::IsEnabled(
-          omnibox::kOmniboxPopupShortcutIconsInZeroState)) {
-    self.shortcutsCoordinator = [[ShortcutsCoordinator alloc]
-        initWithBaseViewController:self.popupViewController
-                      browserState:self.browserState];
-    [self.shortcutsCoordinator start];
-    self.popupViewController.shortcutsViewController =
-        self.shortcutsCoordinator.viewController;
-  }
 }
 
 - (void)stop {
@@ -103,11 +94,27 @@
 }
 
 - (void)openPopup {
+  // Initialize the shortcuts feature when necessary.
+  if (base::FeatureList::IsEnabled(
+          omnibox::kOmniboxPopupShortcutIconsInZeroState) &&
+      !self.browserState->IsOffTheRecord() && !self.shortcutsCoordinator) {
+    self.shortcutsCoordinator = [[ShortcutsCoordinator alloc]
+        initWithBaseViewController:self.popupViewController
+                      browserState:self.browserState];
+    self.shortcutsCoordinator.dispatcher =
+        (id<ApplicationCommands, BrowserCommands, UrlLoader,
+            OmniboxFocuser>)(self.dispatcher);
+    [self.shortcutsCoordinator start];
+    self.popupViewController.shortcutsViewController =
+        self.shortcutsCoordinator.viewController;
+  }
+
   // Show shortcuts when the feature is enabled. Don't show them on NTP as they
   // are already part of the NTP.
-  if (!IsVisibleUrlNewTabPage(self.webStateList->GetActiveWebState()) &&
+  if (!IsVisibleURLNewTabPage(self.webStateList->GetActiveWebState()) &&
       base::FeatureList::IsEnabled(
-          omnibox::kOmniboxPopupShortcutIconsInZeroState)) {
+          omnibox::kOmniboxPopupShortcutIconsInZeroState) &&
+      !self.browserState->IsOffTheRecord()) {
     self.popupViewController.shortcutsEnabled = YES;
   }
 

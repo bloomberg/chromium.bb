@@ -30,7 +30,7 @@ class CORE_EXPORT ImageElementBase : public CanvasImageSource,
   ScriptPromise CreateImageBitmap(ScriptState*,
                                   EventTarget&,
                                   base::Optional<IntRect>,
-                                  const ImageBitmapOptions&) override;
+                                  const ImageBitmapOptions*) override;
 
   scoped_refptr<Image> GetSourceImageForCanvas(SourceImageStatus*,
                                                AccelerationHint,
@@ -46,6 +46,8 @@ class CORE_EXPORT ImageElementBase : public CanvasImageSource,
   bool IsAccelerated() const override;
 
   bool IsSVGSource() const override;
+
+  bool IsImageElement() const override;
 
   bool IsOpaque() const override;
 

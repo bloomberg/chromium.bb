@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "net/base/net_errors.h"
 #include "net/dns/dns_client.h"
+#include "net/dns/dns_util.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver_impl.h"
 
@@ -39,8 +40,8 @@ PrioritizedDispatcher::Limits HostResolver::Options::GetDispatcherLimits()
   limits.total_jobs = kDefaultMaxProcTasks;
 
   // Parallelism is determined by the field trial.
-  std::string group = base::FieldTrialList::FindFullName(
-      "HostResolverDispatch");
+  std::string group =
+      base::FieldTrialList::FindFullName("HostResolverDispatch");
 
   if (group.empty())
     return limits;
@@ -86,7 +87,12 @@ PrioritizedDispatcher::Limits HostResolver::Options::GetDispatcherLimits()
 HostResolver::Options::Options()
     : max_concurrent_resolves(kDefaultParallelism),
       max_retry_attempts(kDefaultRetryAttempts),
-      enable_caching(true) {
+      enable_caching(true) {}
+
+std::unique_ptr<HostResolver> HostResolver::Factory::CreateResolver(
+    const Options& options,
+    NetLog* net_log) {
+  return CreateSystemResolver(options, net_log);
 }
 
 HostResolver::RequestInfo::RequestInfo(const HostPortPair& host_port_pair)
@@ -108,8 +114,7 @@ HostResolver::RequestInfo::RequestInfo()
 
 HostResolver::~HostResolver() = default;
 
-void HostResolver::SetDnsClientEnabled(bool enabled) {
-}
+void HostResolver::SetDnsClientEnabled(bool enabled) {}
 
 HostCache* HostResolver::GetHostCache() {
   return nullptr;
@@ -179,22 +184,6 @@ AddressFamily HostResolver::DnsQueryTypeToAddressFamily(
       // |dns_query_type| should be an address type (A or AAAA) or UNSPECIFIED.
       NOTREACHED();
       return ADDRESS_FAMILY_UNSPECIFIED;
-  }
-}
-
-// static
-HostResolver::DnsQueryType HostResolver::AddressFamilyToDnsQueryType(
-    AddressFamily address_family) {
-  switch (address_family) {
-    case ADDRESS_FAMILY_UNSPECIFIED:
-      return DnsQueryType::UNSPECIFIED;
-    case ADDRESS_FAMILY_IPV4:
-      return DnsQueryType::A;
-    case ADDRESS_FAMILY_IPV6:
-      return DnsQueryType::AAAA;
-    default:
-      NOTREACHED();
-      return DnsQueryType::UNSPECIFIED;
   }
 }
 

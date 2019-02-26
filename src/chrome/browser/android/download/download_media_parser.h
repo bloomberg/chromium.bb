@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/sequenced_task_runner.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/download/download_stats.h"
 #include "chrome/common/media_galleries/metadata_types.h"
 #include "chrome/services/media_gallery_util/public/cpp/media_parser_provider.h"
@@ -108,6 +109,13 @@ class DownloadMediaParser : public MediaParserProvider, public media::MediaLog {
 
   // The task runner to do blocking disk IO.
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
+
+  // A timer to prevent unresponsive Android decoder during video file parsing,
+  // and the parser will fail gracefully after timeout.
+  base::OneShotTimer timer_;
+
+  // The time that we start to parse media file.
+  base::Time start_time_;
 
   // Cached video frame data, which contains either encoded frame or decoded
   // video frame. Encoded frame is extracted with ffmpeg, the data can be large

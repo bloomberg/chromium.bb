@@ -58,11 +58,6 @@ class STORAGE_EXPORT MojoBlobReader {
     // data this method is called with null.
     virtual void DidReadSideData(net::IOBufferWithSize* data) {}
 
-    // Called when the MojoBlobReader actually starts reading data from the
-    // blob. Should return a data pipe to which all the data read from the blob
-    // should be written.
-    virtual mojo::ScopedDataPipeProducerHandle PassDataPipe() = 0;
-
     // Called whenever some amount of data is read from the blob and about to be
     // written to the data pipe.
     virtual void DidRead(int num_bytes) {}
@@ -80,12 +75,14 @@ class STORAGE_EXPORT MojoBlobReader {
 
   static void Create(const BlobDataHandle* handle,
                      const net::HttpByteRange& range,
-                     std::unique_ptr<Delegate> delegate);
+                     std::unique_ptr<Delegate> delegate,
+                     mojo::ScopedDataPipeProducerHandle response_body_stream);
 
  private:
   MojoBlobReader(const BlobDataHandle* handle,
                  const net::HttpByteRange& range,
-                 std::unique_ptr<Delegate> delegate);
+                 std::unique_ptr<Delegate> delegate,
+                 mojo::ScopedDataPipeProducerHandle response_body_stream);
   ~MojoBlobReader();
 
   void Start();
@@ -97,8 +94,10 @@ class STORAGE_EXPORT MojoBlobReader {
   void StartReading();
   void ReadMore();
   void DidRead(bool completed_synchronously, int num_bytes);
-  void OnResponseBodyStreamClosed(MojoResult result);
-  void OnResponseBodyStreamReady(MojoResult result);
+  void OnResponseBodyStreamClosed(MojoResult result,
+                                  const mojo::HandleSignalsState& state);
+  void OnResponseBodyStreamReady(MojoResult result,
+                                 const mojo::HandleSignalsState& state);
 
   const std::unique_ptr<Delegate> delegate_;
 

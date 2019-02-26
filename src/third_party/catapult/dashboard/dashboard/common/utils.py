@@ -13,6 +13,7 @@ import urllib
 
 from apiclient import discovery
 from apiclient import errors
+from google.appengine.api import app_identity
 from google.appengine.api import memcache
 from google.appengine.api import oauth
 from google.appengine.api import urlfetch
@@ -34,6 +35,10 @@ OAUTH_SCOPES = (
     'https://www.googleapis.com/auth/userinfo.email',
 )
 OAUTH_ENDPOINTS = ['/api/', '/add_histograms']
+
+
+def IsDevAppserver():
+  return app_identity.get_application_id() == 'None'
 
 
 def _GetNowRfc3339():
@@ -369,6 +374,8 @@ def MinimumRange(ranges):
 
 def IsInternalUser():
   """Checks whether the user should be able to see internal-only data."""
+  if IsDevAppserver():
+    return True
   email = GetEmail()
   if not email:
     return False
@@ -455,13 +462,19 @@ def ServiceAccountHttp(scope=EMAIL_SCOPE, timeout=None):
 def IsValidSheriffUser():
   """Checks whether the user should be allowed to triage alerts."""
   email = GetEmail()
+  if not email:
+    return False
+
   sheriff_domains = stored_object.Get(SHERIFF_DOMAINS_KEY)
-  if email:
-    domain_matched = sheriff_domains and any(
-        email.endswith('@' + domain) for domain in sheriff_domains)
-    return domain_matched or IsGroupMember(
-        identity=email, group='project-chromium-tryjob-access')
-  return False
+  domain_matched = sheriff_domains and any(
+      email.endswith('@' + domain) for domain in sheriff_domains)
+  return domain_matched or IsTryjobUser()
+
+
+def IsTryjobUser():
+  email = GetEmail()
+  return bool(email) and IsGroupMember(
+      identity=email, group='project-chromium-tryjob-access')
 
 
 def GetIpWhitelist():

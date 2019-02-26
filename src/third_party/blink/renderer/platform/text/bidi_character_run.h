@@ -35,30 +35,30 @@ struct BidiCharacterRun {
                    unsigned char level,
                    int start,
                    int stop,
-                   WTF::Unicode::CharDirection dir,
-                   WTF::Unicode::CharDirection override_dir)
+                   WTF::unicode::CharDirection dir,
+                   WTF::unicode::CharDirection override_dir)
       : override_(override),
         level_(level),
         next_(nullptr),
         start_(start),
         stop_(stop) {
     DCHECK_LE(start_, stop_);
-    if (dir == WTF::Unicode::kOtherNeutral)
+    if (dir == WTF::unicode::kOtherNeutral)
       dir = override_dir;
 
     level_ = level;
 
     // add level of run (cases I1 & I2)
     if (level_ % 2) {
-      if (dir == WTF::Unicode::kLeftToRight ||
-          dir == WTF::Unicode::kArabicNumber ||
-          dir == WTF::Unicode::kEuropeanNumber)
+      if (dir == WTF::unicode::kLeftToRight ||
+          dir == WTF::unicode::kArabicNumber ||
+          dir == WTF::unicode::kEuropeanNumber)
         level_++;
     } else {
-      if (dir == WTF::Unicode::kRightToLeft)
+      if (dir == WTF::unicode::kRightToLeft)
         level_++;
-      else if (dir == WTF::Unicode::kArabicNumber ||
-               dir == WTF::Unicode::kEuropeanNumber)
+      else if (dir == WTF::unicode::kArabicNumber ||
+               dir == WTF::unicode::kEuropeanNumber)
         level_ += 2;
     }
   }

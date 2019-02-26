@@ -58,6 +58,9 @@ const std::string GetFlagNames(uint32_t flag) {
       case kHitTestNotActive:
         name = "NotActive";
         break;
+      case kHitTestDebug:
+        name = "Debug";
+        break;
       case 0:
         break;
     }
@@ -111,6 +114,17 @@ bool HitTestQuery::TransformLocationForTarget(
   if (hit_test_data_.empty())
     return false;
 
+  // Use GetTransformToTarget if |target_ancestors| only has the target.
+  if (target_ancestors.size() == 1u) {
+    gfx::Transform transform;
+    if (!GetTransformToTarget(target_ancestors.front(), &transform))
+      return false;
+
+    *transformed_location = location_in_root;
+    transform.TransformPoint(transformed_location);
+    return true;
+  }
+
   if (target_ancestors.size() == 0u ||
       target_ancestors[target_ancestors.size() - 1] !=
           hit_test_data_[0].frame_sink_id) {
@@ -162,6 +176,9 @@ bool HitTestQuery::FindTargetInRegionForLocation(
     target->frame_sink_id = hit_test_data_[region_index].frame_sink_id;
     target->location_in_target = gfx::PointF();
     target->flags = HitTestRegionFlags::kHitTestAsk;
+    RecordSlowPathHitTestReasons(
+        AsyncHitTestReasons::kPerspectiveTransform |
+        hit_test_data_[region_index].async_hit_test_reasons);
     return true;
   }
 
@@ -182,6 +199,23 @@ bool HitTestQuery::FindTargetInRegionForLocation(
   gfx::PointF location_in_target =
       location_transformed -
       hit_test_data_[region_index].rect.OffsetFromOrigin();
+
+  const uint32_t flags = hit_test_data_[region_index].flags;
+
+  // Verify that async_hit_test_reasons is set if and only if there's
+  // a kHitTestAsk flag.
+  DCHECK_EQ(!!(flags & HitTestRegionFlags::kHitTestAsk),
+            !!hit_test_data_[region_index].async_hit_test_reasons);
+
+  if (flags & HitTestRegionFlags::kHitTestAsk) {
+    target->frame_sink_id = hit_test_data_[region_index].frame_sink_id;
+    target->location_in_target = location_in_target;
+    target->flags = flags;
+    RecordSlowPathHitTestReasons(
+        hit_test_data_[region_index].async_hit_test_reasons);
+    return true;
+  }
+
   while (child_region < child_region_end) {
     if (FindTargetInRegionForLocation(event_source, location_in_target,
                                       child_region, target)) {
@@ -196,14 +230,16 @@ bool HitTestQuery::FindTargetInRegionForLocation(
     child_region = child_region + child_region_child_count + 1;
   }
 
-  const uint32_t flags = hit_test_data_[region_index].flags;
   if (!RegionMatchEventSource(event_source, flags))
     return false;
-  if (flags &
-      (HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestAsk)) {
+
+  if (flags & HitTestRegionFlags::kHitTestMine) {
     target->frame_sink_id = hit_test_data_[region_index].frame_sink_id;
     target->location_in_target = location_in_target;
     target->flags = flags;
+    // We record fast path hit testing instances with reason kNotAsyncHitTest.
+    RecordSlowPathHitTestReasons(
+        hit_test_data_[region_index].async_hit_test_reasons);
     return true;
   }
   return false;
@@ -300,6 +336,27 @@ bool HitTestQuery::GetTransformToTargetRecursively(
 void HitTestQuery::ReceivedBadMessageFromGpuProcess() const {
   if (!bad_message_gpu_callback_.is_null())
     bad_message_gpu_callback_.Run();
+}
+
+void HitTestQuery::RecordSlowPathHitTestReasons(uint32_t reasons) const {
+  static const char* kAsyncHitTestReasonsHistogramName =
+      "Event.VizHitTest.AsyncHitTestReasons";
+  if (reasons == AsyncHitTestReasons::kNotAsyncHitTest) {
+    UMA_HISTOGRAM_ENUMERATION(
+        kAsyncHitTestReasonsHistogramName,
+        AsyncHitTestReasons::kNotAsyncHitTest,
+        AsyncHitTestReasons::kAsyncHitTestReasonCount + 1);
+    return;
+  }
+
+  for (uint32_t i = 0; i < AsyncHitTestReasons::kAsyncHitTestReasonCount; ++i) {
+    unsigned val = 1 << i;
+    if (reasons & val) {
+      UMA_HISTOGRAM_ENUMERATION(
+          kAsyncHitTestReasonsHistogramName, i + 1,
+          AsyncHitTestReasons::kAsyncHitTestReasonCount + 1);
+    }
+  }
 }
 
 std::string HitTestQuery::PrintHitTestData() const {

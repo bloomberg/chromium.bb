@@ -1025,7 +1025,7 @@
       interpolable: true,
       field_group: "surround",
       field_template: "external",
-      include_paths: ["third_party/blink/renderer/platform/length_size.h"],
+      include_paths: ["third_party/blink/renderer/platform/geometry/length_size.h"],
       default_value: "LengthSize(Length(0, kFixed), Length(0, kFixed))",
       type_name: "LengthSize",
       converter: "ConvertRadius",
@@ -1037,7 +1037,7 @@
       interpolable: true,
       field_group: "surround",
       field_template: "external",
-      include_paths: ["third_party/blink/renderer/platform/length_size.h"],
+      include_paths: ["third_party/blink/renderer/platform/geometry/length_size.h"],
       default_value: "LengthSize(Length(0, kFixed), Length(0, kFixed))",
       type_name: "LengthSize",
       converter: "ConvertRadius",
@@ -1062,7 +1062,7 @@
       interpolable: true,
       field_group: "surround",
       field_template: "external",
-      include_paths: ["third_party/blink/renderer/platform/layout_unit.h"],
+      include_paths: ["third_party/blink/renderer/platform/geometry/layout_unit.h"],
       keywords: ["thin", "medium", "thick"],
       default_value: "LayoutUnit(3)",
       typedom_types: ["Keyword", "Length"],
@@ -1164,7 +1164,7 @@
       interpolable: true,
       field_group: "surround",
       field_template: "external",
-      include_paths: ["third_party/blink/renderer/platform/layout_unit.h"],
+      include_paths: ["third_party/blink/renderer/platform/geometry/layout_unit.h"],
       keywords: ["thin", "medium", "thick"],
       default_value: "LayoutUnit(3)",
       typedom_types: ["Keyword", "Length"],
@@ -1207,7 +1207,7 @@
       interpolable: true,
       field_group: "surround",
       field_template: "external",
-      include_paths: ["third_party/blink/renderer/platform/layout_unit.h"],
+      include_paths: ["third_party/blink/renderer/platform/geometry/layout_unit.h"],
       keywords: ["thin", "medium", "thick"],
       default_value: "LayoutUnit(3)",
       typedom_types: ["Keyword", "Length"],
@@ -1237,7 +1237,7 @@
       interpolable: true,
       field_group: "surround",
       field_template: "external",
-      include_paths: ["third_party/blink/renderer/platform/length_size.h"],
+      include_paths: ["third_party/blink/renderer/platform/geometry/length_size.h"],
       default_value: "LengthSize(Length(0, kFixed), Length(0, kFixed))",
       type_name: "LengthSize",
       converter: "ConvertRadius",
@@ -1249,7 +1249,7 @@
       interpolable: true,
       field_group: "surround",
       field_template: "external",
-      include_paths: ["third_party/blink/renderer/platform/length_size.h"],
+      include_paths: ["third_party/blink/renderer/platform/geometry/length_size.h"],
       default_value: "LengthSize(Length(0, kFixed), Length(0, kFixed))",
       type_name: "LengthSize",
       converter: "ConvertRadius",
@@ -1274,7 +1274,7 @@
       interpolable: true,
       field_group: "surround",
       field_template: "external",
-      include_paths: ["third_party/blink/renderer/platform/layout_unit.h"],
+      include_paths: ["third_party/blink/renderer/platform/geometry/layout_unit.h"],
       keywords: ["thin", "medium", "thick"],
       default_value: "LayoutUnit(3)",
       typedom_types: ["Keyword", "Length"],
@@ -1390,10 +1390,9 @@
       name: "clear",
       property_methods: ["CSSValueFromComputedStyleInternal"],
       field_template: "keyword",
-      keywords: ["none", "left", "right", "both"],
+      keywords: ["none", "left", "right", "both", "inline-start", "inline-end"],
       typedom_types: ["Keyword"],
       default_value: "none",
-      style_builder_custom_functions: ["value"],
     },
     {
       name: "clip",
@@ -1401,7 +1400,7 @@
       interpolable: true,
       field_group: "visual",
       field_template: "external",
-      include_paths: ["third_party/blink/renderer/platform/length_box.h"],
+      include_paths: ["third_party/blink/renderer/platform/geometry/length_box.h"],
       default_value: "LengthBox()",
       type_name: "LengthBox",
       computed_style_custom_functions: ["setter"],
@@ -1606,7 +1605,7 @@
       interpolable: true,
       inherited: true,
       svg: true,
-      converter: "ConvertNumberOrPercentage",
+      converter: "ConvertAlpha",
       typedom_types: ["Number"],
     },
     {
@@ -1687,12 +1686,11 @@
       name: "float",
       property_methods: ["CSSValueFromComputedStyleInternal"],
       field_template: "keyword",
-      keywords: ["none", "left", "right"],
+      keywords: ["none", "left", "right", "inline-start", "inline-end"],
       typedom_types: ["Keyword"],
       default_value: "none",
       name_for_methods: "Floating",
       type_name: "EFloat",
-      style_builder_custom_functions: ["value"],
     },
     {
       name: "flood-color",
@@ -1708,7 +1706,7 @@
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       svg: true,
-      converter: "ConvertNumberOrPercentage",
+      converter: "ConvertAlpha",
       typedom_types: ["Number"]
     },
     {
@@ -2212,7 +2210,7 @@
       interpolable: true,
       field_group: "*",
       field_template: "external",
-      include_paths: ["third_party/blink/renderer/platform/length_point.h"],
+      include_paths: ["third_party/blink/renderer/platform/geometry/length_point.h"],
       default_value: "LengthPoint(Length(50.0, kPercent), Length(50.0, kPercent))",
       type_name: "LengthPoint",
       converter: "ConvertPosition",
@@ -2225,7 +2223,7 @@
       runtime_flag: "CSSOffsetPositionAnchor",
       field_group: "*",
       field_template: "external",
-      include_paths: ["third_party/blink/renderer/platform/length_point.h"],
+      include_paths: ["third_party/blink/renderer/platform/geometry/length_point.h"],
       default_value: "LengthPoint(Length(kAuto), Length(kAuto))",
       type_name: "LengthPoint",
       converter: "ConvertPositionOrAuto",
@@ -2263,7 +2261,7 @@
       runtime_flag: "CSSOffsetPositionAnchor",
       field_group: "*",
       field_template: "external",
-      include_paths: ["third_party/blink/renderer/platform/length_point.h"],
+      include_paths: ["third_party/blink/renderer/platform/geometry/length_point.h"],
       default_value: "LengthPoint(Length(kAuto), Length(kAuto))",
       type_name: "LengthPoint",
       converter: "ConvertPositionOrAuto",
@@ -2366,7 +2364,7 @@
       interpolable: true,
       field_group: "*",
       field_template: "external",
-      include_paths: ["third_party/blink/renderer/platform/layout_unit.h"],
+      include_paths: ["third_party/blink/renderer/platform/geometry/layout_unit.h"],
       default_value: "LayoutUnit(3)",
       type_name: "LayoutUnit",
       computed_style_custom_functions: ["initial", "getter", "setter"],
@@ -2509,7 +2507,7 @@
       layout_dependent: true,
       field_group: "*",
       field_template: "external",
-      include_paths: ["third_party/blink/renderer/platform/length_point.h"],
+      include_paths: ["third_party/blink/renderer/platform/geometry/length_point.h"],
       default_value: "LengthPoint(Length(50.0, kPercent), Length(50.0, kPercent))",
       type_name: "LengthPoint",
       converter: "ConvertPosition",
@@ -2522,8 +2520,8 @@
       inherited: true,
       field_template: "keyword",
       keywords: [
-        "none", "auto", "stroke", "fill", "painted", "visible", "visibleStroke",
-        "visibleFill", "visiblePainted", "bounding-box", "all"
+        "none", "auto", "stroke", "fill", "painted", "visible", "visiblestroke",
+        "visiblefill", "visiblepainted", "bounding-box", "all"
       ],
       typedom_types: ["Keyword"],
       default_value: "auto",
@@ -2559,7 +2557,7 @@
       property_methods: ["CSSValueFromComputedStyleInternal"],
       field_group: "*",
       field_template: "keyword",
-      keywords: ["none", "both", "horizontal", "vertical"],
+      keywords: ["none", "both", "horizontal", "vertical", "block", "inline"],
       typedom_types: ["Keyword"],
       default_value: "none",
       style_builder_custom_functions: ["value"],
@@ -2605,7 +2603,6 @@
     {
       name: "scroll-behavior",
       property_methods: ["CSSValueFromComputedStyleInternal"],
-      runtime_flag: "CSSOMSmoothScroll",
       field_group: "*",
       field_size: 2, // FIXME: Convert this to a keyword field
       field_template: "primitive",
@@ -2617,7 +2614,6 @@
     {
       name: "scroll-margin-block-end",
       property_methods: ["ParseSingleValue"],
-      runtime_flag: "CSSScrollSnapPoints",
       direction_aware_options: {
         logical_side: "after",
         shorthand_for_physical_side: "scrollMarginShorthand",
@@ -2627,19 +2623,18 @@
     {
       name: "scroll-customization",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      converter: "ConvertFlags<blink::ScrollCustomization::ScrollDirection>",
-      type_name: "ScrollCustomization::ScrollDirection",
+      converter: "ConvertFlags<blink::scroll_customization::ScrollDirection>",
+      type_name: "scroll_customization::ScrollDirection",
       field_group: "*",
       field_size: 4,
       field_template: "primitive",
-      default_value: "ScrollCustomization::kScrollDirectionNone",
+      default_value: "scroll_customization::kScrollDirectionNone",
       include_paths: ["third_party/blink/renderer/core/scroll/scroll_customization.h"],
       runtime_flag: "ScrollCustomization",
     },
     {
       name: "scroll-margin-block-start",
       property_methods: ["ParseSingleValue"],
-      runtime_flag: "CSSScrollSnapPoints",
       direction_aware_options: {
         logical_side: "before",
         shorthand_for_physical_side: "scrollMarginShorthand",
@@ -2649,7 +2644,6 @@
     {
       name: "scroll-margin-bottom",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      runtime_flag: "CSSScrollSnapPoints",
       field_group: "*",
       field_template: "primitive",
       default_value: "0.0f",
@@ -2660,7 +2654,6 @@
     {
       name: "scroll-margin-inline-end",
       property_methods: ["ParseSingleValue"],
-      runtime_flag: "CSSScrollSnapPoints",
       direction_aware_options: {
         logical_side: "end",
         shorthand_for_physical_side: "scrollMarginShorthand",
@@ -2670,7 +2663,6 @@
     {
       name: "scroll-margin-inline-start",
       property_methods: ["ParseSingleValue"],
-      runtime_flag: "CSSScrollSnapPoints",
       direction_aware_options: {
         logical_side: "start",
         shorthand_for_physical_side: "scrollMarginShorthand",
@@ -2680,7 +2672,6 @@
     {
       name: "scroll-margin-left",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      runtime_flag: "CSSScrollSnapPoints",
       field_group: "*",
       field_template: "primitive",
       default_value: "0.0f",
@@ -2691,7 +2682,6 @@
     {
       name: "scroll-margin-right",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      runtime_flag: "CSSScrollSnapPoints",
       field_group: "*",
       field_template: "primitive",
       default_value: "0.0f",
@@ -2702,7 +2692,6 @@
     {
       name: "scroll-margin-top",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      runtime_flag: "CSSScrollSnapPoints",
       field_group: "*",
       field_template: "primitive",
       default_value: "0.0f",
@@ -2713,8 +2702,7 @@
     {
       name: "scroll-padding-block-end",
       property_methods: ["ParseSingleValue"],
-      runtime_flag: "CSSScrollSnapPoints",
-      include_paths: ["third_party/blink/renderer/platform/length.h"],
+      include_paths: ["third_party/blink/renderer/platform/geometry/length.h"],
       typedom_types: ["Keyword", "Length", "Percentage"],
       type_name: "Length",
       converter: "ConvertLength",
@@ -2726,8 +2714,7 @@
     {
       name: "scroll-padding-block-start",
       property_methods: ["ParseSingleValue"],
-      runtime_flag: "CSSScrollSnapPoints",
-      include_paths: ["third_party/blink/renderer/platform/length.h"],
+      include_paths: ["third_party/blink/renderer/platform/geometry/length.h"],
       typedom_types: ["Keyword", "Length", "Percentage"],
       type_name: "Length",
       converter: "ConvertLength",
@@ -2739,7 +2726,6 @@
     {
       name: "scroll-padding-bottom",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      runtime_flag: "CSSScrollSnapPoints",
       field_group: "*",
       field_template: "<length>",
       default_value: "Length()",
@@ -2749,8 +2735,7 @@
     {
       name: "scroll-padding-inline-end",
       property_methods: ["ParseSingleValue"],
-      runtime_flag: "CSSScrollSnapPoints",
-      include_paths: ["third_party/blink/renderer/platform/length.h"],
+      include_paths: ["third_party/blink/renderer/platform/geometry/length.h"],
       typedom_types: ["Keyword", "Length", "Percentage"],
       type_name: "Length",
       converter: "ConvertLength",
@@ -2762,8 +2747,7 @@
     {
       name: "scroll-padding-inline-start",
       property_methods: ["ParseSingleValue"],
-      runtime_flag: "CSSScrollSnapPoints",
-      include_paths: ["third_party/blink/renderer/platform/length.h"],
+      include_paths: ["third_party/blink/renderer/platform/geometry/length.h"],
       typedom_types: ["Keyword", "Length", "Percentage"],
       type_name: "Length",
       converter: "ConvertLength",
@@ -2775,7 +2759,6 @@
     {
       name: "scroll-padding-left",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      runtime_flag: "CSSScrollSnapPoints",
       field_group: "*",
       field_template: "<length>",
       default_value: "Length()",
@@ -2785,7 +2768,6 @@
     {
       name: "scroll-padding-right",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      runtime_flag: "CSSScrollSnapPoints",
       field_group: "*",
       field_template: "<length>",
       default_value: "Length()",
@@ -2795,7 +2777,6 @@
     {
       name: "scroll-padding-top",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      runtime_flag: "CSSScrollSnapPoints",
       field_group: "*",
       field_template: "<length>",
       default_value: "Length()",
@@ -2805,7 +2786,6 @@
     {
       name: "scroll-snap-align",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      runtime_flag: "CSSScrollSnapPoints",
       field_group: "*",
       field_template: "external",
       include_paths: ["third_party/blink/renderer/platform/scroll/scroll_snap_data.h"],
@@ -2819,7 +2799,6 @@
     {
       name: "scroll-snap-stop",
       property_methods: ["CSSValueFromComputedStyleInternal"],
-      runtime_flag: "CSSScrollSnapPoints",
       field_template: "keyword",
       keywords: ["normal", "always"],
       default_value: "normal",
@@ -2828,7 +2807,6 @@
     {
       name: "scroll-snap-type",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      runtime_flag: "CSSScrollSnapPoints",
       field_group: "*",
       field_template: "external",
       include_paths: ["third_party/blink/renderer/platform/scroll/scroll_snap_data.h"],
@@ -2915,7 +2893,7 @@
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       svg: true,
-      converter: "ConvertNumberOrPercentage",
+      converter: "ConvertAlpha",
       typedom_types: ["Number"]
     },
     {
@@ -2989,7 +2967,7 @@
       interpolable: true,
       inherited: true,
       svg: true,
-      converter: "ConvertNumberOrPercentage",
+      converter: "ConvertAlpha",
       typedom_types: ["Number"]
     },
     {
@@ -3567,7 +3545,7 @@
       interpolable: true,
       field_group: "*",
       field_template: "external",
-      include_paths: ["third_party/blink/renderer/platform/layout_unit.h"],
+      include_paths: ["third_party/blink/renderer/platform/geometry/layout_unit.h"],
       default_value: "LayoutUnit(3)",
       type_name: "LayoutUnit",
       computed_style_custom_functions: ["initial", "getter", "setter"],
@@ -4918,19 +4896,16 @@
       name: "scroll-margin",
       longhands: ["scroll-margin-top", "scroll-margin-right", "scroll-margin-bottom", "scroll-margin-left"],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
-      runtime_flag: "CSSScrollSnapPoints",
     },
     {
       name: "scroll-margin-block",
       longhands: ["scroll-margin-block-start", "scroll-margin-block-end"],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
-      runtime_flag: "CSSScrollSnapPoints",
     },
     {
       name: "scroll-margin-inline",
       longhands: ["scroll-margin-inline-start", "scroll-margin-inline-end"],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
-      runtime_flag: "CSSScrollSnapPoints",
     },
     {
       name: "scroll-padding",
@@ -4939,19 +4914,16 @@
         "scroll-padding-left"
       ],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
-      runtime_flag: "CSSScrollSnapPoints",
     },
     {
       name: "scroll-padding-block",
       longhands: ["scroll-padding-block-start", "scroll-padding-block-end"],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
-      runtime_flag: "CSSScrollSnapPoints",
     },
     {
       name: "scroll-padding-inline",
       longhands: ["scroll-padding-inline-start", "scroll-padding-inline-end"],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
-      runtime_flag: "CSSScrollSnapPoints",
     },
     {
       name: "text-decoration",

@@ -263,6 +263,11 @@
       "gm",
       "image",
       "colorImage",
+      "--blacklist",
+      "_",
+      "image",
+      "gen_platf",
+      "error",
       "--nonativeFonts",
       "--verbose"
     ],
@@ -274,8 +279,7 @@
     "name": "symbolized dm"
   },
   {
-    "name": "$result",
-    "recipe_result": null,
-    "status_code": 0
+    "jsonResult": null,
+    "name": "$result"
   }
 ]

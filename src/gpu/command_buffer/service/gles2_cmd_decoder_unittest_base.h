@@ -27,6 +27,7 @@
 #include "gpu/command_buffer/service/gpu_tracer.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
+#include "gpu/command_buffer/service/passthrough_discardable_manager.h"
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
 #include "gpu/command_buffer/service/sampler_manager.h"
@@ -45,10 +46,11 @@
 #include "ui/gl/gl_version_info.h"
 
 namespace gpu {
-namespace gles2 {
-
 class MemoryTracker;
+
+namespace gles2 {
 class MockCopyTextureResourceManager;
+class MockCopyTexImageResourceManager;
 
 class GLES2DecoderTestBase : public ::testing::TestWithParam<bool>,
                              public DecoderClient {
@@ -258,6 +260,8 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool>,
   uint32_t GetAndClearBackbufferClearBitsForTest() const {
     return decoder_->GetAndClearBackbufferClearBitsForTest();
   }
+
+  SharedImageManager* GetSharedImageManager() { return &shared_image_manager_; }
 
   typedef TestHelper::AttribInfo AttribInfo;
   typedef TestHelper::UniformInfo UniformInfo;
@@ -813,7 +817,8 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool>,
   MockGLStates gl_states_;
   base::MessageLoop message_loop_;
 
-  MockCopyTextureResourceManager* copy_texture_manager_;  // not owned
+  MockCopyTextureResourceManager* copy_texture_manager_;     // not owned
+  MockCopyTexImageResourceManager* copy_tex_image_blitter_;  // not owned
 };
 
 class GLES2DecoderWithShaderTestBase : public GLES2DecoderTestBase {
@@ -934,6 +939,11 @@ class GLES2DecoderPassthroughTestBase : public testing::Test,
   PassthroughResources* GetPassthroughResources() const {
     return group_->passthrough_resources();
   }
+  SharedImageRepresentationFactory* GetSharedImageRepresentationFactory()
+      const {
+    return group_->shared_image_representation_factory();
+  }
+  SharedImageManager* GetSharedImageManager() { return &shared_image_manager_; }
   const base::circular_deque<GLES2DecoderPassthroughImpl::PendingReadPixels>&
   GetPendingReadPixels() const {
     return decoder_->pending_read_pixels_;
@@ -955,7 +965,10 @@ class GLES2DecoderPassthroughTestBase : public testing::Test,
                        GLsizeiptr size,
                        const void* data);
 
+  void DoGenTexture(GLuint client_id);
+  bool DoIsTexture(GLuint client_id);
   void DoBindTexture(GLenum target, GLuint client_id);
+  void DoDeleteTexture(GLuint client_id);
   void DoTexImage2D(GLenum target,
                     GLint level,
                     GLenum internal_format,
@@ -979,6 +992,17 @@ class GLES2DecoderPassthroughTestBase : public testing::Test,
                                  GLuint renderbuffer);
 
   void DoBindRenderbuffer(GLenum target, GLuint client_id);
+
+  void DoGetIntegerv(GLenum pname, GLint* result, size_t num_results);
+
+  void DoInitializeDiscardableTextureCHROMIUM(GLuint client_id);
+  void DoUnlockDiscardableTextureCHROMIUM(GLuint client_id);
+  void DoLockDiscardableTextureCHROMIUM(GLuint client_id);
+
+  PassthroughDiscardableManager* passthrough_discardable_texture_manager() {
+    return &passthrough_discardable_manager_;
+  }
+  ContextGroup* group() { return group_.get(); }
 
   static const size_t kSharedBufferSize = 2048;
   static const uint32_t kSharedMemoryOffset = 132;
@@ -1008,6 +1032,7 @@ class GLES2DecoderPassthroughTestBase : public testing::Test,
   FramebufferCompletenessCache framebuffer_completeness_cache_;
   ImageManager image_manager_;
   ServiceDiscardableManager discardable_manager_;
+  PassthroughDiscardableManager passthrough_discardable_manager_;
   SharedImageManager shared_image_manager_;
 
   scoped_refptr<gl::GLSurface> surface_;

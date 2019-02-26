@@ -430,6 +430,7 @@ void AddMigrateUsageStatsWorkItems(const InstallerState& installer_state,
       static_cast<DWORD>(consent), true);
 }
 
+#if defined(GOOGLE_CHROME_BUILD)
 // Adds work items to register the Elevation Service with Windows. Only for
 // system level installs.
 void AddElevationServiceWorkItems(const base::FilePath& elevation_service_path,
@@ -444,10 +445,14 @@ void AddElevationServiceWorkItems(const base::FilePath& elevation_service_path,
 
   const base::string16 clsid_reg_path = GetElevationServiceClsidRegistryPath();
   const base::string16 appid_reg_path = GetElevationServiceAppidRegistryPath();
+  const base::string16 iid_reg_path = GetElevationServiceIidRegistryPath();
+  const base::string16 typelib_reg_path =
+      GetElevationServiceTypeLibRegistryPath();
 
   // Delete any old registrations first, taking into account 32-bit -> 64-bit or
   // 64-bit -> 32-bit migration.
-  for (const auto& reg_path : {clsid_reg_path, appid_reg_path}) {
+  for (const auto& reg_path :
+       {clsid_reg_path, appid_reg_path, iid_reg_path, typelib_reg_path}) {
     for (const auto& key_flag : {KEY_WOW64_32KEY, KEY_WOW64_64KEY})
       list->AddDeleteRegKeyWorkItem(root, reg_path, key_flag);
   }
@@ -464,7 +469,41 @@ void AddElevationServiceWorkItems(const base::FilePath& elevation_service_path,
   list->AddSetRegValueWorkItem(root, appid_reg_path, WorkItem::kWow64Default,
                                L"LocalService",
                                install_static::GetElevationServiceName(), true);
+
+  // Registering the Ole Automation marshaler with the CLSID
+  // {00020424-0000-0000-C000-000000000046} as the proxy/stub for the IElevator
+  // interface.
+  list->AddCreateRegKeyWorkItem(root, iid_reg_path, WorkItem::kWow64Default);
+  list->AddCreateRegKeyWorkItem(root, iid_reg_path + L"\\ProxyStubClsid32",
+                                WorkItem::kWow64Default);
+  list->AddSetRegValueWorkItem(root, iid_reg_path + L"\\ProxyStubClsid32",
+                               WorkItem::kWow64Default, L"",
+                               L"{00020424-0000-0000-C000-000000000046}", true);
+  list->AddCreateRegKeyWorkItem(root, iid_reg_path + L"\\TypeLib",
+                                WorkItem::kWow64Default);
+  list->AddSetRegValueWorkItem(root, iid_reg_path + L"\\TypeLib",
+                               WorkItem::kWow64Default, L"",
+                               GetElevationServiceIid(L""), true);
+
+  // The TypeLib registration for the Ole Automation marshaler.
+  list->AddCreateRegKeyWorkItem(root, typelib_reg_path,
+                                WorkItem::kWow64Default);
+  list->AddCreateRegKeyWorkItem(root, typelib_reg_path + L"\\1.0",
+                                WorkItem::kWow64Default);
+  list->AddCreateRegKeyWorkItem(root, typelib_reg_path + L"\\1.0\\0",
+                                WorkItem::kWow64Default);
+  list->AddCreateRegKeyWorkItem(root, typelib_reg_path + L"\\1.0\\0\\win32",
+                                WorkItem::kWow64Default);
+  list->AddSetRegValueWorkItem(root, typelib_reg_path + L"\\1.0\\0\\win32",
+                               WorkItem::kWow64Default, L"",
+                               elevation_service_path.value(), true);
+  list->AddCreateRegKeyWorkItem(root, typelib_reg_path + L"\\1.0\\0\\win64",
+                                WorkItem::kWow64Default);
+  list->AddSetRegValueWorkItem(root, typelib_reg_path + L"\\1.0\\0\\win64",
+                               WorkItem::kWow64Default, L"",
+                               elevation_service_path.value(), true);
 }
+#endif  // defined(GOOGLE_CHROME_BUILD
 
 }  // namespace
 
@@ -577,12 +616,9 @@ void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
                                          true);
     // TODO(wfh): Ensure that this value is preserved in the 64-bit hive when
     // 64-bit installs place the uninstall information into the 64-bit registry.
-    install_list->AddSetRegValueWorkItem(reg_root,
-                                         uninstall_reg,
-                                         KEY_WOW64_32KEY,
-                                         L"InstallDate",
-                                         InstallUtil::GetCurrentDate(),
-                                         false);
+    install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
+                                         KEY_WOW64_32KEY, L"InstallDate",
+                                         InstallUtil::GetCurrentDate(), true);
 
     const std::vector<uint32_t>& version_components = new_version.components();
     if (version_components.size() == 4) {
@@ -877,7 +913,7 @@ void AddInstallWorkItems(const InstallationState& original_state,
 #if defined(GOOGLE_CHROME_BUILD)
   AddEnterpriseEnrollmentWorkItems(installer_state, setup_path, new_version,
                                    install_list);
-#endif
+#endif  // defined(GOOGLE_CHROME_BUILD
   AddFirewallRulesWorkItems(installer_state, current_version == nullptr,
                             install_list);
 
@@ -887,10 +923,12 @@ void AddInstallWorkItems(const InstallationState& original_state,
       installer_state.root_key(),
       GetNotificationHelperPath(target_path, new_version), install_list);
 
+#if defined(GOOGLE_CHROME_BUILD)
   if (installer_state.system_install()) {
     AddElevationServiceWorkItems(
         GetElevationServicePath(target_path, new_version), install_list);
   }
+#endif  // defined(GOOGLE_CHROME_BUILD
 
   InstallUtil::AddUpdateDowngradeVersionItem(
       installer_state.root_key(), current_version, new_version, install_list);
@@ -1113,6 +1151,6 @@ void AddEnterpriseEnrollmentWorkItems(const InstallerState& installer_state,
     cmd.AddWorkItems(root_key, cmd_key, install_list);
   }
 }
-#endif
+#endif  // defined(GOOGLE_CHROME_BUILD
 
 }  // namespace installer

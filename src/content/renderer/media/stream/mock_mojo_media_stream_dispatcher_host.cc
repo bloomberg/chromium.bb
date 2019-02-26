@@ -34,7 +34,7 @@ void MockMojoMediaStreamDispatcherHost::GenerateStream(
     MediaStreamDevice audio_device;
     audio_device.id = controls.audio.device_id + base::IntToString(session_id_);
     audio_device.name = "microphone";
-    audio_device.type = MEDIA_DEVICE_AUDIO_CAPTURE;
+    audio_device.type = controls.audio.stream_type;
     audio_device.session_id = session_id_;
     audio_device.matched_output_device_id =
         "associated_output_device_id" + base::IntToString(request_id_);
@@ -45,7 +45,7 @@ void MockMojoMediaStreamDispatcherHost::GenerateStream(
     MediaStreamDevice video_device;
     video_device.id = controls.video.device_id + base::IntToString(session_id_);
     video_device.name = "usb video camera";
-    video_device.type = MEDIA_DEVICE_VIDEO_CAPTURE;
+    video_device.type = controls.video.stream_type;
     video_device.video_facing = media::MEDIA_VIDEO_FACING_USER;
     video_device.session_id = session_id_;
     video_devices_.push_back(video_device);

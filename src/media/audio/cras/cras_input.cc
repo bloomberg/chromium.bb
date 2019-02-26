@@ -5,6 +5,7 @@
 #include "media/audio/cras/cras_input.h"
 
 #include <math.h>
+#include <algorithm>
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -290,13 +291,19 @@ void CrasInputStream::ReadAudio(size_t frames,
   double normalized_volume = 0.0;
   GetAgcVolume(&normalized_volume);
 
-  // Warning: It is generally unsafe to manufacture TimeTicks values; but
-  // here it is required for interfacing with cras. Assumption: cras
-  // is providing the timestamp from the CLOCK_MONOTONIC POSIX clock.
-  const base::TimeTicks capture_time =
-      base::TimeTicks() + base::TimeDelta::FromTimeSpec(*sample_ts);
-  DCHECK_EQ(base::TimeTicks::GetClock(),
-            base::TimeTicks::Clock::LINUX_CLOCK_MONOTONIC);
+  // Don't just assume sample_ts is from the same clock as base::TimeTicks (it
+  // is not). Instead, convert it to a latency with a cras utility function
+  // (guaranteed to use the same clock) and apply that latency to
+  // TimeTicks::Now().
+  timespec latency_ts = {0, 0};
+  cras_client_calc_capture_latency(sample_ts, &latency_ts);
+
+  const base::TimeDelta delay =
+      std::max(base::TimeDelta::FromTimeSpec(latency_ts), base::TimeDelta());
+
+  // The delay says how long ago the capture was, so we subtract the delay from
+  // Now() to find the capture time.
+  const base::TimeTicks capture_time = base::TimeTicks::Now() - delay;
 
   audio_bus_->FromInterleaved<SignedInt16SampleTypeTraits>(
       reinterpret_cast<int16_t*>(buffer), audio_bus_->frames());

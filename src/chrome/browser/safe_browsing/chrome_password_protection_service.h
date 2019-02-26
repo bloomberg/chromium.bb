@@ -271,8 +271,12 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
                            VerifyUserPopulationForSyncPasswordEntryPing);
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
                            VerifyUserPopulationForSavedPasswordEntryPing);
-  FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
-                           VerifyPasswordReuseUserEventNotRecorded);
+  FRIEND_TEST_ALL_PREFIXES(
+      ChromePasswordProtectionServiceTest,
+      VerifyPasswordReuseUserEventNotRecordedDueToIncognito);
+  FRIEND_TEST_ALL_PREFIXES(
+      ChromePasswordProtectionServiceTest,
+      VerifyPasswordReuseUserEventNotRecordedDueToNotSignedIn);
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
                            VerifyPasswordReuseDetectedUserEventRecorded);
   FRIEND_TEST_ALL_PREFIXES(

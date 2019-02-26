@@ -308,7 +308,7 @@ sk_sp<PaintFilter> CanvasRenderingContext2DState::GetFilterForOffscreenCanvas(
   if (last_effect) {
     // TODO(chrishtr): Taint the origin if needed. crbug.com/792506.
     resolved_filter_ =
-        PaintFilterBuilder::Build(last_effect, kInterpolationSpaceSRGB);
+        paint_filter_builder::Build(last_effect, kInterpolationSpaceSRGB);
   }
 
   return resolved_filter_;
@@ -359,10 +359,11 @@ sk_sp<PaintFilter> CanvasRenderingContext2DState::GetFilter(
         1.0f,  // Deliberately ignore zoom on the canvas element.
         &fill_flags_for_filter, &stroke_flags_for_filter);
 
-    if (FilterEffect* last_effect = filter_effect_builder.BuildFilterEffect(
-            filter_style->Filter(), !context->OriginClean())) {
+    FilterEffect* last_effect = filter_effect_builder.BuildFilterEffect(
+        filter_style->Filter(), !context->OriginClean());
+    if (last_effect) {
       resolved_filter_ =
-          PaintFilterBuilder::Build(last_effect, kInterpolationSpaceSRGB);
+          paint_filter_builder::Build(last_effect, kInterpolationSpaceSRGB);
       if (resolved_filter_) {
         context->UpdateFilterReferences(filter_style->Filter());
         if (last_effect->OriginTainted())

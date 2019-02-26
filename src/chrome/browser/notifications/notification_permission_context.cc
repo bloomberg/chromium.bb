@@ -241,7 +241,7 @@ ContentSetting NotificationPermissionContext::GetPermissionStatusForExtension(
   DCHECK(notifier_state_tracker);
 
   message_center::NotifierId notifier_id(
-      message_center::NotifierId::APPLICATION, extension->id());
+      message_center::NotifierType::APPLICATION, extension->id());
   return notifier_state_tracker->IsNotifierEnabled(notifier_id)
              ? CONTENT_SETTING_ALLOW
              : CONTENT_SETTING_BLOCK;

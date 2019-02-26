@@ -34,19 +34,21 @@
 #include "hb-font.hh"
 #include "hb-machinery.hh"
 
+
 /**
  * SECTION:hb-shape
- * @title: Shaping
+ * @title: hb-shape
  * @short_description: Conversion of text strings into positioned glyphs
  * @include: hb.h
  *
  * Shaping is the central operation of HarfBuzz. Shaping operates on buffers,
  * which are sequences of Unicode characters that use the same font and have
- * the same text direction, script and language. After shaping the buffer
+ * the same text direction, script, and language. After shaping the buffer
  * contains the output glyphs and their positions.
  **/
 
-#ifdef HB_USE_ATEXIT
+
+#if HB_USE_ATEXIT
 static void free_static_shaper_list (void);
 #endif
 
@@ -61,13 +63,13 @@ static struct hb_shaper_list_lazy_loader_t : hb_lazy_loader_t<const char *,
     if (unlikely (!shaper_list))
       return nullptr;
 
-    const hb_shaper_pair_t *shapers = _hb_shapers_get ();
+    const hb_shaper_entry_t *shapers = _hb_shapers_get ();
     unsigned int i;
     for (i = 0; i < HB_SHAPERS_COUNT; i++)
       shaper_list[i] = shapers[i].name;
     shaper_list[i] = nullptr;
 
-#ifdef HB_USE_ATEXIT
+#if HB_USE_ATEXIT
     atexit (free_static_shaper_list);
 #endif
 
@@ -83,7 +85,7 @@ static struct hb_shaper_list_lazy_loader_t : hb_lazy_loader_t<const char *,
   }
 } static_shaper_list;
 
-#ifdef HB_USE_ATEXIT
+#if HB_USE_ATEXIT
 static
 void free_static_shaper_list (void)
 {

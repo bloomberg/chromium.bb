@@ -12,6 +12,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -114,7 +115,10 @@ void FakeCWS::SetUpdateCrx(const std::string& app_id,
       test_data_dir.AppendASCII("chromeos/app_mode/webstore/downloads")
           .AppendASCII(crx_file);
   std::string crx_content;
-  ASSERT_TRUE(base::ReadFileToString(crx_file_path, &crx_content));
+  {
+    base::ScopedAllowBlockingForTesting allow_io;
+    ASSERT_TRUE(base::ReadFileToString(crx_file_path, &crx_content));
+  }
 
   const std::string sha256 = crypto::SHA256HashString(crx_content);
   const std::string sha256_hex = base::HexEncode(sha256.c_str(), sha256.size());

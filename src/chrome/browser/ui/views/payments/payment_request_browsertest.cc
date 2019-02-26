@@ -491,7 +491,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestSettingsLinkTest, ClickSettingsLink) {
   content::WebContents* new_tab_contents =
       web_contents_added_observer.GetWebContents();
 
-  EXPECT_EQ("chrome://settings/autofill",
+  EXPECT_EQ("chrome://settings/payments",
             new_tab_contents->GetVisibleURL().spec());
 }
 

@@ -32,7 +32,7 @@
 namespace blink {
 
 WebGLProgram* WebGLProgram::Create(WebGLRenderingContextBase* ctx) {
-  return new WebGLProgram(ctx);
+  return MakeGarbageCollected<WebGLProgram>(ctx);
 }
 
 WebGLProgram::WebGLProgram(WebGLRenderingContextBase* ctx)

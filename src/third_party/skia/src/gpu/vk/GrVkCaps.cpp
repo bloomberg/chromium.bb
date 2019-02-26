@@ -12,6 +12,7 @@
 #include "GrShaderCaps.h"
 #include "GrVkInterface.h"
 #include "GrVkUtil.h"
+#include "SkGr.h"
 #include "vk/GrVkBackendContext.h"
 #include "vk/GrVkExtensions.h"
 
@@ -782,12 +783,64 @@ bool GrVkCaps::getConfigFromBackendFormat(const GrBackendFormat& format, SkColor
     return validate_image_info(*vkFormat, ct, config);
 }
 
-#ifdef GR_TEST_UTILS
+static bool get_yuva_config(VkFormat vkFormat, GrPixelConfig* config) {
+    *config = kUnknown_GrPixelConfig;
+
+    switch (vkFormat) {
+    case VK_FORMAT_R8_UNORM:
+        *config = kAlpha_8_as_Red_GrPixelConfig;
+        break;
+    case VK_FORMAT_R8G8B8A8_UNORM:
+        *config = kRGBA_8888_GrPixelConfig;
+        break;
+    case VK_FORMAT_R8G8B8_UNORM:
+        *config = kRGB_888_GrPixelConfig;
+        break;
+    case VK_FORMAT_B8G8R8A8_UNORM:
+        *config = kBGRA_8888_GrPixelConfig;
+        break;
+    default:
+        return false;
+    }
+
+    return true;
+}
+
+bool GrVkCaps::getYUVAConfigFromBackendTexture(const GrBackendTexture& tex,
+                                               GrPixelConfig* config) const {
+    GrVkImageInfo imageInfo;
+    if (!tex.getVkImageInfo(&imageInfo)) {
+        return false;
+    }
+    return get_yuva_config(imageInfo.fFormat, config);
+}
+
+bool GrVkCaps::getYUVAConfigFromBackendFormat(const GrBackendFormat& format,
+                                              GrPixelConfig* config) const {
+    const VkFormat* vkFormat = format.getVkFormat();
+    if (!vkFormat) {
+        return false;
+    }
+    return get_yuva_config(*vkFormat, config);
+}
+
 GrBackendFormat GrVkCaps::onCreateFormatFromBackendTexture(
         const GrBackendTexture& backendTex) const {
     GrVkImageInfo vkInfo;
     SkAssertResult(backendTex.getVkImageInfo(&vkInfo));
     return GrBackendFormat::MakeVk(vkInfo.fFormat);
 }
-#endif
+
+GrBackendFormat GrVkCaps::getBackendFormatFromGrColorType(GrColorType ct,
+                                                          GrSRGBEncoded srgbEncoded) const {
+    GrPixelConfig config = GrColorTypeToPixelConfig(ct, srgbEncoded);
+    if (config == kUnknown_GrPixelConfig) {
+        return GrBackendFormat();
+    }
+    VkFormat format;
+    if (!GrPixelConfigToVkFormat(config, &format)) {
+        return GrBackendFormat();
+    }
+    return GrBackendFormat::MakeVk(format);
+}
 

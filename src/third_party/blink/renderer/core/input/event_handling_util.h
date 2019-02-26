@@ -20,7 +20,7 @@ class ScrollableArea;
 class PaintLayer;
 enum class DispatchEventResult;
 
-namespace EventHandlingUtil {
+namespace event_handling_util {
 
 HitTestResult HitTestResultInFrame(
     LocalFrame*,
@@ -46,9 +46,11 @@ MouseEventWithHitTestResults PerformMouseEventHitTest(LocalFrame*,
                                                       const HitTestRequest&,
                                                       const WebMouseEvent&);
 
-LocalFrame* SubframeForHitTestResult(const MouseEventWithHitTestResults&);
+LocalFrame* GetTargetSubframe(const MouseEventWithHitTestResults&,
+                              Node* capturing_node = nullptr,
+                              bool* is_remote_frame = nullptr);
 
-LocalFrame* SubframeForTargetNode(Node*);
+LocalFrame* SubframeForTargetNode(Node*, bool* is_remote_frame = nullptr);
 
 class PointerEventTarget {
   DISALLOW_NEW();
@@ -64,10 +66,11 @@ class PointerEventTarget {
   String region;
 };
 
-}  // namespace EventHandlingUtil
+}  // namespace event_handling_util
 
 }  // namespace blink
 
-WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::EventHandlingUtil::PointerEventTarget);
+WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(
+    blink::event_handling_util::PointerEventTarget);
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_EVENT_HANDLING_UTIL_H_

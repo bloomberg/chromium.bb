@@ -368,51 +368,51 @@ typedef unsigned long long GLuint64;
     // to avoid conflicts. The effect is the same: if uniform*v is called with only two arguments,
     // it goes to the WebGL1 signatures; if it's called with three or four arguments, it goes to
     // the WebGL2 specific signatures.
-    void uniform1fv(WebGLUniformLocation? location, [FlexibleArrayBufferView] Float32Array v,
+    void uniform1fv(WebGLUniformLocation? location, [AllowShared, FlexibleArrayBufferView] Float32Array v,
                     GLuint srcOffset, optional GLuint srcLength = 0);
     void uniform1fv(WebGLUniformLocation? location, sequence<GLfloat> v,
                     GLuint srcOffset, optional GLuint srcLength = 0);
-    void uniform2fv(WebGLUniformLocation? location, [FlexibleArrayBufferView] Float32Array v,
+    void uniform2fv(WebGLUniformLocation? location, [AllowShared, FlexibleArrayBufferView] Float32Array v,
                     GLuint srcOffset, optional GLuint srcLength = 0);
     void uniform2fv(WebGLUniformLocation? location, sequence<GLfloat> v,
                     GLuint srcOffset, optional GLuint srcLength = 0);
-    void uniform3fv(WebGLUniformLocation? location, [FlexibleArrayBufferView] Float32Array v,
+    void uniform3fv(WebGLUniformLocation? location, [AllowShared, FlexibleArrayBufferView] Float32Array v,
                     GLuint srcOffset, optional GLuint srcLength = 0);
     void uniform3fv(WebGLUniformLocation? location, sequence<GLfloat> v,
                     GLuint srcOffset, optional GLuint srcLength = 0);
-    void uniform4fv(WebGLUniformLocation? location, [FlexibleArrayBufferView] Float32Array v,
+    void uniform4fv(WebGLUniformLocation? location, [AllowShared, FlexibleArrayBufferView] Float32Array v,
                     GLuint srcOffset, optional GLuint srcLength = 0);
     void uniform4fv(WebGLUniformLocation? location, sequence<GLfloat> v,
                     GLuint srcOffset, optional GLuint srcLength = 0);
-    void uniform1iv(WebGLUniformLocation? location, [FlexibleArrayBufferView] Int32Array v,
+    void uniform1iv(WebGLUniformLocation? location, [AllowShared, FlexibleArrayBufferView] Int32Array v,
                     GLuint srcOffset, optional GLuint srcLength = 0);
     void uniform1iv(WebGLUniformLocation? location, sequence<GLint> v,
                     GLuint srcOffset, optional GLuint srcLength = 0);
-    void uniform2iv(WebGLUniformLocation? location, [FlexibleArrayBufferView] Int32Array v,
+    void uniform2iv(WebGLUniformLocation? location, [AllowShared, FlexibleArrayBufferView] Int32Array v,
                     GLuint srcOffset, optional GLuint srcLength = 0);
     void uniform2iv(WebGLUniformLocation? location, sequence<GLint> v,
                     GLuint srcOffset, optional GLuint srcLength = 0);
-    void uniform3iv(WebGLUniformLocation? location, [FlexibleArrayBufferView] Int32Array v,
+    void uniform3iv(WebGLUniformLocation? location, [AllowShared, FlexibleArrayBufferView] Int32Array v,
                     GLuint srcOffset, optional GLuint srcLength = 0);
     void uniform3iv(WebGLUniformLocation? location, sequence<GLint> v,
                     GLuint srcOffset, optional GLuint srcLength = 0);
-    void uniform4iv(WebGLUniformLocation? location, [FlexibleArrayBufferView] Int32Array v,
+    void uniform4iv(WebGLUniformLocation? location, [AllowShared, FlexibleArrayBufferView] Int32Array v,
                     GLuint srcOffset, optional GLuint srcLength = 0);
     void uniform4iv(WebGLUniformLocation? location, sequence<GLint> v,
                     GLuint srcOffset, optional GLuint srcLength = 0);
-    void uniform1uiv(WebGLUniformLocation? location, [FlexibleArrayBufferView] Uint32Array v,
+    void uniform1uiv(WebGLUniformLocation? location, [AllowShared, FlexibleArrayBufferView] Uint32Array v,
                      optional GLuint srcOffset = 0, optional GLuint srcLength = 0);
     void uniform1uiv(WebGLUniformLocation? location, sequence<GLuint> v,
                      optional GLuint srcOffset = 0, optional GLuint srcLength = 0);
-    void uniform2uiv(WebGLUniformLocation? location, [FlexibleArrayBufferView] Uint32Array v,
+    void uniform2uiv(WebGLUniformLocation? location, [AllowShared, FlexibleArrayBufferView] Uint32Array v,
                      optional GLuint srcOffset = 0, optional GLuint srcLength = 0);
     void uniform2uiv(WebGLUniformLocation? location, sequence<GLuint> v,
                      optional GLuint srcOffset = 0, optional GLuint srcLength = 0);
-    void uniform3uiv(WebGLUniformLocation? location, [FlexibleArrayBufferView] Uint32Array v,
+    void uniform3uiv(WebGLUniformLocation? location, [AllowShared, FlexibleArrayBufferView] Uint32Array v,
                      optional GLuint srcOffset = 0, optional GLuint srcLength = 0);
     void uniform3uiv(WebGLUniformLocation? location, sequence<GLuint> v,
                      optional GLuint srcOffset = 0, optional GLuint srcLength = 0);
-    void uniform4uiv(WebGLUniformLocation? location, [FlexibleArrayBufferView] Uint32Array v,
+    void uniform4uiv(WebGLUniformLocation? location, [AllowShared, FlexibleArrayBufferView] Uint32Array v,
                      optional GLuint srcOffset = 0, optional GLuint srcLength = 0);
     void uniform4uiv(WebGLUniformLocation? location, sequence<GLuint> v,
                      optional GLuint srcOffset = 0, optional GLuint srcLength = 0);

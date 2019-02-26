@@ -47,12 +47,15 @@ class API_AVAILABLE(macos(10.12.2)) WebContentsNotificationBridge
   }
 
   // TabStripModelObserver:
-  void ActiveTabChanged(content::WebContents* old_contents,
-                        content::WebContents* new_contents,
-                        int index,
-                        int reason) override {
-    UpdateWebContents(new_contents);
-    contents_ = new_contents;
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override {
+    if (tab_strip_model->empty() || !selection.active_tab_changed())
+      return;
+
+    UpdateWebContents(selection.new_contents);
+    contents_ = selection.new_contents;
   }
 
   content::WebContents* contents() const { return contents_; }
@@ -117,7 +120,6 @@ class API_AVAILABLE(macos(10.12.2)) WebContentsNotificationBridge
 
 - (void)updateWebContents:(content::WebContents*)contents {
   [defaultTouchBar_ updateWebContents:contents];
-  [webTextfieldTouchBar_ updateWebContents:contents];
   [self invalidateTouchBar];
 }
 

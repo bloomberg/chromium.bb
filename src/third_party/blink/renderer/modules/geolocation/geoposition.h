@@ -40,7 +40,12 @@ class Geoposition final : public ScriptWrappable {
 
  public:
   static Geoposition* Create(Coordinates* coordinates, DOMTimeStamp timestamp) {
-    return new Geoposition(coordinates, timestamp);
+    return MakeGarbageCollected<Geoposition>(coordinates, timestamp);
+  }
+
+  Geoposition(Coordinates* coordinates, DOMTimeStamp timestamp)
+      : coordinates_(coordinates), timestamp_(timestamp) {
+    DCHECK(coordinates_);
   }
 
   void Trace(blink::Visitor* visitor) override {
@@ -52,11 +57,6 @@ class Geoposition final : public ScriptWrappable {
   Coordinates* coords() const { return coordinates_; }
 
  private:
-  Geoposition(Coordinates* coordinates, DOMTimeStamp timestamp)
-      : coordinates_(coordinates), timestamp_(timestamp) {
-    DCHECK(coordinates_);
-  }
-
   Member<Coordinates> coordinates_;
   DOMTimeStamp timestamp_;
 };

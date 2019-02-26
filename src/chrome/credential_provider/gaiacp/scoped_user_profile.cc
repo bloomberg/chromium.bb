@@ -13,7 +13,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
-#include "chrome/credential_provider/gaiacp/gcp_strings.h"
+#include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
@@ -23,7 +23,11 @@ namespace credential_provider {
 namespace {
 
 // Registry key under HKCU to write account info into.
+#if defined(GOOGLE_CHROME_BUILD)
 const wchar_t kRegAccountsPath[] = L"Software\\Google\\Accounts";
+#else
+const wchar_t kRegAccountsPath[] = L"Software\\Chromium\\Accounts";
+#endif  // defined(GOOGLE_CHROME_BUILD)
 
 std::string GetEncryptedRefreshToken(
     base::win::ScopedHandle::Handle logon_handle,
@@ -145,6 +149,12 @@ HRESULT ScopedUserProfile::SaveAccountInfo(
                                token_handle.c_str());
   if (FAILED(hr)) {
     LOGFN(ERROR) << "SetUserProperty(th) hr=" << putHR(hr);
+    return hr;
+  }
+
+  hr = SetUserProperty(sid.c_str(), kUserId, id.c_str());
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "SetUserProperty(id) hr=" << putHR(hr);
     return hr;
   }
 

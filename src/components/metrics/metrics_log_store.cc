@@ -100,6 +100,12 @@ const std::string& MetricsLogStore::staged_log_hash() const {
              : ongoing_log_queue_.staged_log_hash();
 }
 
+const std::string& MetricsLogStore::staged_log_signature() const {
+  return initial_log_queue_.has_staged_log()
+             ? initial_log_queue_.staged_log_signature()
+             : ongoing_log_queue_.staged_log_signature();
+}
+
 void MetricsLogStore::StageNextLog() {
   DCHECK(!has_staged_log());
   if (initial_log_queue_.has_unsent_logs())

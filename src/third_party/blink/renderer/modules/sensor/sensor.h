@@ -19,7 +19,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 
 namespace blink {
 
@@ -44,7 +44,7 @@ class Sensor : public EventTargetWithInlineData,
 
   // EventTarget overrides.
   const AtomicString& InterfaceName() const override {
-    return EventTargetNames::Sensor;
+    return event_target_names::kSensor;
   }
   ExecutionContext* GetExecutionContext() const override {
     return ContextLifecycleObserver::GetExecutionContext();
@@ -55,9 +55,9 @@ class Sensor : public EventTargetWithInlineData,
   bool hasReading() const;
   DOMHighResTimeStamp timestamp(ScriptState*, bool& is_null) const;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(reading);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(activate);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(reading, kReading);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(activate, kActivate);
 
   // ActiveScriptWrappable overrides.
   bool HasPendingActivity() const override;
@@ -66,13 +66,13 @@ class Sensor : public EventTargetWithInlineData,
 
  protected:
   Sensor(ExecutionContext*,
-         const SensorOptions&,
+         const SensorOptions*,
          ExceptionState&,
          device::mojom::blink::SensorType,
          const Vector<mojom::FeaturePolicyFeature>&);
 
   Sensor(ExecutionContext*,
-         const SpatialSensorOptions&,
+         const SpatialSensorOptions*,
          ExceptionState&,
          device::mojom::blink::SensorType,
          const Vector<mojom::FeaturePolicyFeature>&);

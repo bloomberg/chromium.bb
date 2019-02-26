@@ -30,6 +30,8 @@ class RemoteCharacteristicImpl : public RemoteCharacteristic {
       const bluetooth_v2_shlib::Uuid& uuid) override;
   void SetRegisterNotification(bool enable, StatusCallback cb) override;
   void SetNotification(bool enable, StatusCallback cb) override;
+  void SetRegisterNotificationOrIndication(bool enable,
+                                           StatusCallback cb) override;
   void ReadAuth(bluetooth_v2_shlib::Gatt::Client::AuthReq auth_req,
                 ReadCallback callback) override;
   void Read(ReadCallback callback) override;
@@ -64,6 +66,12 @@ class RemoteCharacteristicImpl : public RemoteCharacteristic {
 
   std::map<bluetooth_v2_shlib::Uuid, scoped_refptr<RemoteDescriptor>>
   CreateDescriptorMap();
+
+  // If |indication| is true, register or deregister indication.
+  // If |indication| is false, register or deregister notification.
+  void SetRegisterNotificationOrIndicationInternal(bool indication,
+                                                   bool enable,
+                                                   StatusCallback cb);
 
   // Weak reference to avoid refcount loop.
   RemoteDeviceImpl* const device_;

@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window_state.h"
+#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/browser_root_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -66,6 +67,7 @@ void BrowserFrame::InitBrowserFrame() {
   native_browser_frame_ =
       NativeBrowserFrameFactory::CreateNativeBrowserFrame(this, browser_view_);
   views::Widget::InitParams params = native_browser_frame_->GetWidgetParams();
+  params.name = "BrowserFrame";
   params.delegate = browser_view_;
   if (browser_view_->browser()->is_type_tabbed()) {
     // Typed panel/popup can only return a size once the widget has been
@@ -169,8 +171,14 @@ bool BrowserFrame::GetAccelerator(int command_id,
 }
 
 const ui::ThemeProvider* BrowserFrame::GetThemeProvider() const {
-  return &ThemeService::GetThemeProviderForProfile(
-      browser_view_->browser()->profile());
+  Browser* browser = browser_view_->browser();
+  Profile* profile = browser->profile();
+  // Hosted apps are meant to appear stand alone from the main browser so they
+  // do not use the normal browser's configured theme.
+  using HostedAppController = extensions::HostedAppBrowserController;
+  return HostedAppController::IsForExperimentalHostedAppBrowser(browser)
+             ? &ThemeService::GetDefaultThemeProviderForProfile(profile)
+             : &ThemeService::GetThemeProviderForProfile(profile);
 }
 
 const ui::NativeTheme* BrowserFrame::GetNativeTheme() const {
@@ -246,7 +254,7 @@ void BrowserFrame::OnMenuClosed() {
   menu_runner_.reset();
 }
 
-void BrowserFrame::OnMdModeChanged() {
+void BrowserFrame::OnTouchUiChanged() {
   client_view()->InvalidateLayout();
   non_client_view()->InvalidateLayout();
   GetRootView()->Layout();

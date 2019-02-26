@@ -24,7 +24,7 @@ void WebRTCStatsReportCallbackResolver::OnStatsDelivered(
     std::unique_ptr<WebRTCStatsReport> report) {
   DCHECK(
       ExecutionContext::From(resolver_->GetScriptState())->IsContextThread());
-  resolver_->Resolve(new RTCStatsReport(std::move(report)));
+  resolver_->Resolve(MakeGarbageCollected<RTCStatsReport>(std::move(report)));
 }
 
 }  // namespace blink

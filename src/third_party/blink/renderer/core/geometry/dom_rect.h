@@ -24,15 +24,14 @@ class CORE_EXPORT DOMRect final : public DOMRectReadOnly {
                          double width = 0,
                          double height = 0);
   static DOMRect* FromFloatRect(const FloatRect&);
-  static DOMRect* fromRect(const DOMRectInit&);
+  static DOMRect* fromRect(const DOMRectInit*);
+
+  DOMRect(double x, double y, double z, double w);
 
   void setX(double x) { x_ = x; }
   void setY(double y) { y_ = y; }
   void setWidth(double width) { width_ = width; }
   void setHeight(double height) { height_ = height; }
-
- protected:
-  DOMRect(double x, double y, double z, double w);
 };
 
 }  // namespace blink

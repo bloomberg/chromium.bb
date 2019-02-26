@@ -47,12 +47,10 @@ public class SuggestionsBinder {
     private static final int MAX_HEADER_LINES = 3;
     private static final int MAX_HEADER_LINES_WITH_SNIPPET = 2;
     private static final int MAX_SNIPPET_LINES = 3;
-    private static final int MAX_SNIPPET_LINES_ALTERNATE = 4;
 
     private final ImageFetcher mImageFetcher;
     private final SuggestionsUiDelegate mUiDelegate;
     private final boolean mIsContextual;
-    private final boolean mUseContextualAlternateCardLayout;
 
     private final View mCardContainerView;
     private final LinearLayout mTextLayout;
@@ -105,11 +103,8 @@ public class SuggestionsBinder {
         if (mIsContextual) {
             mThumbnailSize = mCardContainerView.getResources().getDimensionPixelSize(
                     R.dimen.snippets_thumbnail_size_small);
-            mUseContextualAlternateCardLayout = ChromeFeatureList.isEnabled(
-                    ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_ALTERNATE_CARD_LAYOUT);
         } else {
             mThumbnailSize = getThumbnailSize(mCardContainerView.getResources());
-            mUseContextualAlternateCardLayout = false;
         }
 
         mSmallThumbnailCornerRadius = mCardContainerView.getResources().getDimensionPixelSize(
@@ -162,9 +157,7 @@ public class SuggestionsBinder {
 
         if (mSnippetTextView != null) {
             mSnippetTextView.setVisibility(showSnippet ? View.VISIBLE : View.GONE);
-            mSnippetTextView.setMaxLines(mUseContextualAlternateCardLayout
-                            ? MAX_SNIPPET_LINES_ALTERNATE
-                            : MAX_SNIPPET_LINES);
+            mSnippetTextView.setMaxLines(MAX_SNIPPET_LINES);
         }
     }
 
@@ -213,7 +206,7 @@ public class SuggestionsBinder {
             setFaviconOnView(drawable, publisherFaviconSizePx);
         };
 
-        mImageFetcher.makeFaviconRequest(mSuggestion, publisherFaviconSizePx, faviconCallback);
+        mImageFetcher.makeFaviconRequest(mSuggestion, faviconCallback);
     }
 
     private void setThumbnail() {
@@ -237,16 +230,15 @@ public class SuggestionsBinder {
         // Temporarily set placeholder and then fetch the thumbnail from a provider.
         mThumbnailView.setBackground(null);
         if (mIsContextual) {
-            mThumbnailView.setImageResource(mUseContextualAlternateCardLayout
-                            ? R.drawable.contextual_suggestions_placeholder_thumbnail_alternate
-                            : R.drawable.contextual_suggestions_placeholder_thumbnail);
+            mThumbnailView.setImageResource(
+                    R.drawable.contextual_suggestions_placeholder_thumbnail);
         } else if (ChromeFeatureList.isEnabled(
                            ChromeFeatureList.CONTENT_SUGGESTIONS_THUMBNAIL_DOMINANT_COLOR)) {
             ColorDrawable colorDrawable =
                     new ColorDrawable(mSuggestion.getThumbnailDominantColor() != null
                                     ? mSuggestion.getThumbnailDominantColor()
                                     : ApiCompatibilityUtils.getColor(mThumbnailView.getResources(),
-                                              R.color.modern_grey_100));
+                                              R.color.thumbnail_placeholder_on_white_bg));
             mThumbnailView.setImageDrawable(colorDrawable);
         } else {
             mThumbnailView.setImageResource(R.drawable.ic_snippet_thumbnail_placeholder);
@@ -420,10 +412,8 @@ public class SuggestionsBinder {
 
             Drawable drawable;
             if (mIsContextual) {
-                drawable = mUseContextualAlternateCardLayout
-                        ? new BitmapDrawable(mThumbnailView.getResources(), thumbnail)
-                        : ViewUtils.createRoundedBitmapDrawable(
-                                  thumbnail, mSmallThumbnailCornerRadius);
+                drawable = ViewUtils.createRoundedBitmapDrawable(
+                        thumbnail, mSmallThumbnailCornerRadius);
             } else {
                 drawable = ThumbnailGradient.createDrawableWithGradientIfNeeded(
                         thumbnail, mThumbnailView.getResources());

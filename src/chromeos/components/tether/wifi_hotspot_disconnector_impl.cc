@@ -96,8 +96,8 @@ void WifiHotspotDisconnectorImpl::OnSuccessfulWifiDisconnect(
     const std::string& wifi_network_path,
     const base::Closure& success_callback,
     const network_handler::StringResultCallback& error_callback) {
-  PA_LOG(INFO) << "Successfully disconnected from Wi-Fi network with GUID "
-               << wifi_network_guid << ".";
+  PA_LOG(VERBOSE) << "Successfully disconnected from Wi-Fi network with GUID "
+                  << wifi_network_guid << ".";
   CleanUpAfterWifiDisconnection(true /* success */, wifi_network_path,
                                 success_callback, error_callback);
 }

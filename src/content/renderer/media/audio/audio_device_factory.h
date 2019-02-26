@@ -51,9 +51,11 @@ class CONTENT_EXPORT AudioDeviceFactory {
   static media::AudioLatency::LatencyType GetSourceLatencyType(
       SourceType source);
 
-  // Creates a sink for AudioRendererMixer.
-  // |render_frame_id| refers to the RenderFrame containing the entity
-  // producing the audio.
+  // Creates a sink for AudioRendererMixer. |render_frame_id| refers to the
+  // RenderFrame containing the entity producing the audio. Note: These sinks do
+  // not support the blocking GetOutputDeviceInfo() API and instead clients are
+  // required to use the GetOutputDeviceInfoAsync() API. As such they are
+  // configured with no authorization timeout value.
   static scoped_refptr<media::AudioRendererSink> NewAudioRendererMixerSink(
       int render_frame_id,
       const media::AudioSinkParameters& params);
@@ -99,10 +101,12 @@ class CONTENT_EXPORT AudioDeviceFactory {
   // on the default implementation.
 
   // Creates a final sink in the rendering pipeline, which represents the actual
-  // output device.
+  // output device. |auth_timeout| is the authorization timeout allowed for the
+  // underlying AudioOutputDevice instance; a timeout of zero means no timeout.
   virtual scoped_refptr<media::AudioRendererSink> CreateFinalAudioRendererSink(
       int render_frame_id,
-      const media::AudioSinkParameters& params) = 0;
+      const media::AudioSinkParameters& params,
+      base::TimeDelta auth_timeout) = 0;
 
   virtual scoped_refptr<media::AudioRendererSink> CreateAudioRendererSink(
       SourceType source_type,
@@ -126,7 +130,8 @@ class CONTENT_EXPORT AudioDeviceFactory {
 
   static scoped_refptr<media::AudioRendererSink> NewFinalAudioRendererSink(
       int render_frame_id,
-      const media::AudioSinkParameters& params);
+      const media::AudioSinkParameters& params,
+      base::TimeDelta auth_timeout);
 
   DISALLOW_COPY_AND_ASSIGN(AudioDeviceFactory);
 };

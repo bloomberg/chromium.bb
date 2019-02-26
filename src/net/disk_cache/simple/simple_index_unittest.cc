@@ -66,8 +66,8 @@ class EntryMetadataTest : public testing::Test {
 class MockSimpleIndexFile : public SimpleIndexFile,
                             public base::SupportsWeakPtr<MockSimpleIndexFile> {
  public:
-  MockSimpleIndexFile()
-      : SimpleIndexFile(NULL, NULL, net::DISK_CACHE, base::FilePath()),
+  explicit MockSimpleIndexFile(net::CacheType cache_type)
+      : SimpleIndexFile(NULL, NULL, cache_type, base::FilePath()),
         load_result_(NULL),
         load_index_entries_calls_(0),
         disk_writes_(0) {}
@@ -120,11 +120,12 @@ class SimpleIndexTest : public net::TestWithScopedTaskEnvironment,
   }
 
   void SetUp() override {
-    std::unique_ptr<MockSimpleIndexFile> index_file(new MockSimpleIndexFile());
+    std::unique_ptr<MockSimpleIndexFile> index_file(
+        new MockSimpleIndexFile(CacheType()));
     index_file_ = index_file->AsWeakPtr();
     index_.reset(new SimpleIndex(/* io_thread = */ nullptr,
                                  /* cleanup_tracker = */ nullptr, this,
-                                 net::DISK_CACHE, std::move(index_file)));
+                                 CacheType(), std::move(index_file)));
 
     index_->Initialize(base::Time());
   }
@@ -177,6 +178,8 @@ class SimpleIndexTest : public net::TestWithScopedTaskEnvironment,
   }
   int doom_entries_calls() const { return doom_entries_calls_; }
 
+  virtual net::CacheType CacheType() const { return net::DISK_CACHE; }
+
   const simple_util::ImmutableArray<uint64_t, 16> hashes_;
   std::unique_ptr<SimpleIndex> index_;
   base::WeakPtr<MockSimpleIndexFile> index_file_;
@@ -186,6 +189,11 @@ class SimpleIndexTest : public net::TestWithScopedTaskEnvironment,
 
   std::vector<uint64_t> last_doom_entry_hashes_;
   int doom_entries_calls_;
+};
+
+class SimpleIndexAppCacheTest : public SimpleIndexTest {
+ protected:
+  net::CacheType CacheType() const override { return net::APP_CACHE; }
 };
 
 TEST_F(EntryMetadataTest, Basics) {
@@ -704,37 +712,50 @@ TEST_F(SimpleIndexTest, DiskWriteQueued) {
   index()->SetMaxSize(1000);
   ReturnIndexFile();
 
-  EXPECT_FALSE(index()->write_to_disk_timer_.IsRunning());
+  EXPECT_FALSE(index()->HasPendingWrite());
 
   const uint64_t kHash1 = hashes_.at<1>();
   index()->Insert(kHash1);
-  EXPECT_TRUE(index()->write_to_disk_timer_.IsRunning());
+  EXPECT_TRUE(index()->HasPendingWrite());
   index()->write_to_disk_timer_.Stop();
-  EXPECT_FALSE(index()->write_to_disk_timer_.IsRunning());
+  EXPECT_FALSE(index()->HasPendingWrite());
+
+  // Attempting to insert a hash that already exists should not queue the
+  // write timer.
+  index()->Insert(kHash1);
+  EXPECT_FALSE(index()->HasPendingWrite());
 
   index()->UseIfExists(kHash1);
-  EXPECT_TRUE(index()->write_to_disk_timer_.IsRunning());
+  EXPECT_TRUE(index()->HasPendingWrite());
   index()->write_to_disk_timer_.Stop();
 
   index()->UpdateEntrySize(kHash1, 20u);
-  EXPECT_TRUE(index()->write_to_disk_timer_.IsRunning());
+  EXPECT_TRUE(index()->HasPendingWrite());
   index()->write_to_disk_timer_.Stop();
 
+  // Updating to the same size should not queue the write timer.
+  index()->UpdateEntrySize(kHash1, 20u);
+  EXPECT_FALSE(index()->HasPendingWrite());
+
   index()->Remove(kHash1);
-  EXPECT_TRUE(index()->write_to_disk_timer_.IsRunning());
+  EXPECT_TRUE(index()->HasPendingWrite());
   index()->write_to_disk_timer_.Stop();
+
+  // Removing a non-existent hash should not queue the write timer.
+  index()->Remove(kHash1);
+  EXPECT_FALSE(index()->HasPendingWrite());
 }
 
 TEST_F(SimpleIndexTest, DiskWriteExecuted) {
   index()->SetMaxSize(1000);
   ReturnIndexFile();
 
-  EXPECT_FALSE(index()->write_to_disk_timer_.IsRunning());
+  EXPECT_FALSE(index()->HasPendingWrite());
 
   const uint64_t kHash1 = hashes_.at<1>();
   index()->Insert(kHash1);
   index()->UpdateEntrySize(kHash1, 20u);
-  EXPECT_TRUE(index()->write_to_disk_timer_.IsRunning());
+  EXPECT_TRUE(index()->HasPendingWrite());
 
   EXPECT_EQ(0, index_file_->disk_writes());
   index()->write_to_disk_timer_.FireNow();
@@ -756,11 +777,11 @@ TEST_F(SimpleIndexTest, DiskWritePostponed) {
   index()->SetMaxSize(1000);
   ReturnIndexFile();
 
-  EXPECT_FALSE(index()->write_to_disk_timer_.IsRunning());
+  EXPECT_FALSE(index()->HasPendingWrite());
 
   index()->Insert(hashes_.at<1>());
   index()->UpdateEntrySize(hashes_.at<1>(), 20u);
-  EXPECT_TRUE(index()->write_to_disk_timer_.IsRunning());
+  EXPECT_TRUE(index()->HasPendingWrite());
   base::TimeTicks expected_trigger(
       index()->write_to_disk_timer_.desired_run_time());
 
@@ -768,9 +789,50 @@ TEST_F(SimpleIndexTest, DiskWritePostponed) {
   EXPECT_EQ(expected_trigger, index()->write_to_disk_timer_.desired_run_time());
   index()->Insert(hashes_.at<2>());
   index()->UpdateEntrySize(hashes_.at<2>(), 40u);
-  EXPECT_TRUE(index()->write_to_disk_timer_.IsRunning());
+  EXPECT_TRUE(index()->HasPendingWrite());
   EXPECT_LT(expected_trigger, index()->write_to_disk_timer_.desired_run_time());
   index()->write_to_disk_timer_.Stop();
+}
+
+// net::APP_CACHE mode should not need to queue disk writes in as many places
+// as the default net::DISK_CACHE mode.
+TEST_F(SimpleIndexAppCacheTest, DiskWriteQueued) {
+  index()->SetMaxSize(1000);
+  ReturnIndexFile();
+
+  EXPECT_FALSE(index()->HasPendingWrite());
+
+  const uint64_t kHash1 = hashes_.at<1>();
+  index()->Insert(kHash1);
+  EXPECT_TRUE(index()->HasPendingWrite());
+  index()->write_to_disk_timer_.Stop();
+  EXPECT_FALSE(index()->HasPendingWrite());
+
+  // Attempting to insert a hash that already exists should not queue the
+  // write timer.
+  index()->Insert(kHash1);
+  EXPECT_FALSE(index()->HasPendingWrite());
+
+  // Since net::APP_CACHE does not evict or track access times using an
+  // entry should not queue the write timer.
+  index()->UseIfExists(kHash1);
+  EXPECT_FALSE(index()->HasPendingWrite());
+
+  index()->UpdateEntrySize(kHash1, 20u);
+  EXPECT_TRUE(index()->HasPendingWrite());
+  index()->write_to_disk_timer_.Stop();
+
+  // Updating to the same size should not queue the write timer.
+  index()->UpdateEntrySize(kHash1, 20u);
+  EXPECT_FALSE(index()->HasPendingWrite());
+
+  index()->Remove(kHash1);
+  EXPECT_TRUE(index()->HasPendingWrite());
+  index()->write_to_disk_timer_.Stop();
+
+  // Removing a non-existent hash should not queue the write timer.
+  index()->Remove(kHash1);
+  EXPECT_FALSE(index()->HasPendingWrite());
 }
 
 }  // namespace disk_cache

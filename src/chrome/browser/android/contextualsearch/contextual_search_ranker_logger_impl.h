@@ -49,11 +49,11 @@ class ContextualSearchRankerLoggerImpl {
       jobject obj,
       const base::android::JavaParamRef<jobject>& java_web_contents);
 
-  // Logs a long value with the given feature name.
-  void LogLong(JNIEnv* env,
-               jobject obj,
-               const base::android::JavaParamRef<jstring>& j_feature,
-               jlong j_long);
+  // Logs an int32 value with the given feature name.
+  void LogInt32(JNIEnv* env,
+                jobject obj,
+                const base::android::JavaParamRef<jstring>& j_feature,
+                jint j_int);
 
   // Runs the model and returns the inference result as an
   // AssistRankerPrediction enum.
@@ -74,7 +74,7 @@ class ContextualSearchRankerLoggerImpl {
   void LogFeature(const std::string& feature_name, int value);
 
   // Sets up the Ranker Predictor for the given |web_contents|.
-  void SetupRankerPredictor(const content::WebContents& web_contents);
+  void SetupRankerPredictor(content::WebContents& web_contents);
 
   // Logs to UMA when an important feature or outcome is present in the example.
   void logImportantFeaturePresent(const std::string& feature,

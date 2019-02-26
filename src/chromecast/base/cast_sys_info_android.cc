@@ -13,7 +13,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "chromecast/base/cast_sys_info_util.h"
 #include "chromecast/base/version.h"
 #include "chromecast/chromecast_buildflags.h"

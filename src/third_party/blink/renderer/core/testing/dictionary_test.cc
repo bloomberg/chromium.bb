@@ -39,124 +39,80 @@ DictionaryTest::DictionaryTest() : required_boolean_member_(false) {}
 
 DictionaryTest::~DictionaryTest() = default;
 
-void DictionaryTest::set(const InternalDictionary& testing_dictionary) {
+void DictionaryTest::set(const InternalDictionary* testing_dictionary) {
   Reset();
-  if (testing_dictionary.hasLongMember())
-    long_member_ = testing_dictionary.longMember();
-  if (testing_dictionary.hasLongMemberWithClamp())
-    long_member_with_clamp_ = testing_dictionary.longMemberWithClamp();
-  if (testing_dictionary.hasLongMemberWithEnforceRange())
+  if (testing_dictionary->hasLongMember())
+    long_member_ = testing_dictionary->longMember();
+  if (testing_dictionary->hasLongMemberWithClamp())
+    long_member_with_clamp_ = testing_dictionary->longMemberWithClamp();
+  if (testing_dictionary->hasLongMemberWithEnforceRange()) {
     long_member_with_enforce_range_ =
-        testing_dictionary.longMemberWithEnforceRange();
-  long_member_with_default_ = testing_dictionary.longMemberWithDefault();
-  if (testing_dictionary.hasLongOrNullMember())
-    long_or_null_member_ = testing_dictionary.longOrNullMember();
+        testing_dictionary->longMemberWithEnforceRange();
+  }
+  long_member_with_default_ = testing_dictionary->longMemberWithDefault();
+  if (testing_dictionary->hasLongOrNullMember())
+    long_or_null_member_ = testing_dictionary->longOrNullMember();
   // |longOrNullMemberWithDefault| has a default value but can be null, so
   // we need to check availability.
-  if (testing_dictionary.hasLongOrNullMemberWithDefault())
+  if (testing_dictionary->hasLongOrNullMemberWithDefault()) {
     long_or_null_member_with_default_ =
-        testing_dictionary.longOrNullMemberWithDefault();
-  if (testing_dictionary.hasBooleanMember())
-    boolean_member_ = testing_dictionary.booleanMember();
-  if (testing_dictionary.hasDoubleMember())
-    double_member_ = testing_dictionary.doubleMember();
-  if (testing_dictionary.hasUnrestrictedDoubleMember())
-    unrestricted_double_member_ = testing_dictionary.unrestrictedDoubleMember();
-  string_member_ = testing_dictionary.stringMember();
-  string_member_with_default_ = testing_dictionary.stringMemberWithDefault();
-  byte_string_member_ = testing_dictionary.byteStringMember();
-  usv_string_member_ = testing_dictionary.usvStringMember();
-  if (testing_dictionary.hasStringSequenceMember())
-    string_sequence_member_ = testing_dictionary.stringSequenceMember();
+        testing_dictionary->longOrNullMemberWithDefault();
+  }
+  if (testing_dictionary->hasBooleanMember())
+    boolean_member_ = testing_dictionary->booleanMember();
+  if (testing_dictionary->hasDoubleMember())
+    double_member_ = testing_dictionary->doubleMember();
+  if (testing_dictionary->hasUnrestrictedDoubleMember()) {
+    unrestricted_double_member_ =
+        testing_dictionary->unrestrictedDoubleMember();
+  }
+  string_member_ = testing_dictionary->stringMember();
+  string_member_with_default_ = testing_dictionary->stringMemberWithDefault();
+  byte_string_member_ = testing_dictionary->byteStringMember();
+  usv_string_member_ = testing_dictionary->usvStringMember();
+  if (testing_dictionary->hasStringSequenceMember())
+    string_sequence_member_ = testing_dictionary->stringSequenceMember();
   string_sequence_member_with_default_ =
-      testing_dictionary.stringSequenceMemberWithDefault();
-  if (testing_dictionary.hasStringSequenceOrNullMember())
+      testing_dictionary->stringSequenceMemberWithDefault();
+  if (testing_dictionary->hasStringSequenceOrNullMember()) {
     string_sequence_or_null_member_ =
-        testing_dictionary.stringSequenceOrNullMember();
-  enum_member_ = testing_dictionary.enumMember();
-  enum_member_with_default_ = testing_dictionary.enumMemberWithDefault();
-  enum_or_null_member_ = testing_dictionary.enumOrNullMember();
-  if (testing_dictionary.hasElementMember())
-    element_member_ = testing_dictionary.elementMember();
-  if (testing_dictionary.hasElementOrNullMember())
-    element_or_null_member_ = testing_dictionary.elementOrNullMember();
-  object_member_ = testing_dictionary.objectMember();
+        testing_dictionary->stringSequenceOrNullMember();
+  }
+  enum_member_ = testing_dictionary->enumMember();
+  enum_member_with_default_ = testing_dictionary->enumMemberWithDefault();
+  enum_or_null_member_ = testing_dictionary->enumOrNullMember();
+  if (testing_dictionary->hasElementMember())
+    element_member_ = testing_dictionary->elementMember();
+  if (testing_dictionary->hasElementOrNullMember())
+    element_or_null_member_ = testing_dictionary->elementOrNullMember();
+  object_member_ = testing_dictionary->objectMember();
   object_or_null_member_with_default_ =
-      testing_dictionary.objectOrNullMemberWithDefault();
-  if (testing_dictionary.hasDoubleOrStringMember())
-    double_or_string_member_ = testing_dictionary.doubleOrStringMember();
-  if (testing_dictionary.hasDoubleOrStringSequenceMember())
+      testing_dictionary->objectOrNullMemberWithDefault();
+  if (testing_dictionary->hasDoubleOrStringMember())
+    double_or_string_member_ = testing_dictionary->doubleOrStringMember();
+  if (testing_dictionary->hasDoubleOrStringSequenceMember()) {
     double_or_string_sequence_member_ =
-        testing_dictionary.doubleOrStringSequenceMember();
-  event_target_or_null_member_ = testing_dictionary.eventTargetOrNullMember();
-  if (testing_dictionary.hasDictionaryMember()) {
+        testing_dictionary->doubleOrStringSequenceMember();
+  }
+  event_target_or_null_member_ = testing_dictionary->eventTargetOrNullMember();
+  if (testing_dictionary->hasDictionaryMember()) {
     NonThrowableExceptionState exception_state;
     dictionary_member_properties_ =
-        testing_dictionary.dictionaryMember().GetOwnPropertiesAsStringHashMap(
+        testing_dictionary->dictionaryMember().GetOwnPropertiesAsStringHashMap(
             exception_state);
   }
-  if (testing_dictionary.hasInternalEnumOrInternalEnumSequenceMember()) {
+  if (testing_dictionary->hasInternalEnumOrInternalEnumSequenceMember()) {
     internal_enum_or_internal_enum_sequence_ =
-        testing_dictionary.internalEnumOrInternalEnumSequenceMember();
+        testing_dictionary->internalEnumOrInternalEnumSequenceMember();
   }
-  any_member_ = testing_dictionary.anyMember();
-  callback_function_member_ = testing_dictionary.callbackFunctionMember();
+  any_member_ = testing_dictionary->anyMember();
+  callback_function_member_ = testing_dictionary->callbackFunctionMember();
 }
 
-void DictionaryTest::get(InternalDictionary& result) {
-  if (long_member_)
-    result.setLongMember(long_member_.value());
-  if (long_member_with_clamp_)
-    result.setLongMemberWithClamp(long_member_with_clamp_.value());
-  if (long_member_with_enforce_range_) {
-    result.setLongMemberWithEnforceRange(
-        long_member_with_enforce_range_.value());
-  }
-  result.setLongMemberWithDefault(long_member_with_default_);
-  if (long_or_null_member_)
-    result.setLongOrNullMember(long_or_null_member_.value());
-  if (long_or_null_member_with_default_) {
-    result.setLongOrNullMemberWithDefault(
-        long_or_null_member_with_default_.value());
-  }
-  if (boolean_member_)
-    result.setBooleanMember(boolean_member_.value());
-  if (double_member_)
-    result.setDoubleMember(double_member_.value());
-  if (unrestricted_double_member_)
-    result.setUnrestrictedDoubleMember(unrestricted_double_member_.value());
-  result.setStringMember(string_member_);
-  result.setStringMemberWithDefault(string_member_with_default_);
-  result.setByteStringMember(byte_string_member_);
-  result.setUsvStringMember(usv_string_member_);
-  if (string_sequence_member_)
-    result.setStringSequenceMember(string_sequence_member_.value());
-  result.setStringSequenceMemberWithDefault(
-      string_sequence_member_with_default_);
-  if (string_sequence_or_null_member_) {
-    result.setStringSequenceOrNullMember(
-        string_sequence_or_null_member_.value());
-  }
-  result.setEnumMember(enum_member_);
-  result.setEnumMemberWithDefault(enum_member_with_default_);
-  result.setEnumOrNullMember(enum_or_null_member_);
-  if (element_member_)
-    result.setElementMember(element_member_);
-  if (element_or_null_member_.has_value())
-    result.setElementOrNullMember(element_or_null_member_.value());
-  result.setObjectMember(object_member_);
-  result.setObjectOrNullMemberWithDefault(object_or_null_member_with_default_);
-  if (!double_or_string_member_.IsNull())
-    result.setDoubleOrStringMember(double_or_string_member_);
-  if (double_or_string_sequence_member_) {
-    result.setDoubleOrStringSequenceMember(
-        double_or_string_sequence_member_.value());
-  }
-  result.setEventTargetOrNullMember(event_target_or_null_member_);
-  result.setInternalEnumOrInternalEnumSequenceMember(
-      internal_enum_or_internal_enum_sequence_);
-  result.setAnyMember(any_member_);
-  result.setCallbackFunctionMember(callback_function_member_);
+InternalDictionary* DictionaryTest::get() {
+  InternalDictionary* result = InternalDictionary::Create();
+  GetInternals(result);
+  return result;
 }
 
 ScriptValue DictionaryTest::getDictionaryMemberProperties(
@@ -171,34 +127,34 @@ ScriptValue DictionaryTest::getDictionaryMemberProperties(
   return builder.GetScriptValue();
 }
 
-void DictionaryTest::setDerived(const InternalDictionaryDerived& derived) {
-  DCHECK(derived.hasRequiredBooleanMember());
+void DictionaryTest::setDerived(const InternalDictionaryDerived* derived) {
+  DCHECK(derived->hasRequiredBooleanMember());
   set(derived);
-  if (derived.hasDerivedStringMember())
-    derived_string_member_ = derived.derivedStringMember();
+  if (derived->hasDerivedStringMember())
+    derived_string_member_ = derived->derivedStringMember();
   derived_string_member_with_default_ =
-      derived.derivedStringMemberWithDefault();
-  required_boolean_member_ = derived.requiredBooleanMember();
+      derived->derivedStringMemberWithDefault();
+  required_boolean_member_ = derived->requiredBooleanMember();
 }
 
-void DictionaryTest::getDerived(InternalDictionaryDerived& result) {
-  get(result);
-  result.setDerivedStringMember(derived_string_member_);
-  result.setDerivedStringMemberWithDefault(derived_string_member_with_default_);
-  result.setRequiredBooleanMember(required_boolean_member_);
+InternalDictionaryDerived* DictionaryTest::getDerived() {
+  InternalDictionaryDerived* result = InternalDictionaryDerived::Create();
+  GetDerivedInternals(result);
+  return result;
 }
 
 void DictionaryTest::setDerivedDerived(
-    const InternalDictionaryDerivedDerived& derived) {
+    const InternalDictionaryDerivedDerived* derived) {
   setDerived(derived);
-  if (derived.hasDerivedDerivedStringMember())
-    derived_derived_string_member_ = derived.derivedDerivedStringMember();
+  if (derived->hasDerivedDerivedStringMember())
+    derived_derived_string_member_ = derived->derivedDerivedStringMember();
 }
 
-void DictionaryTest::getDerivedDerived(
-    InternalDictionaryDerivedDerived& result) {
-  getDerived(result);
-  result.setDerivedDerivedStringMember(derived_derived_string_member_);
+InternalDictionaryDerivedDerived* DictionaryTest::getDerivedDerived() {
+  InternalDictionaryDerivedDerived* result =
+      InternalDictionaryDerivedDerived::Create();
+  GetDerivedDerivedInternals(result);
+  return result;
 }
 
 String DictionaryTest::stringFromIterable(
@@ -261,6 +217,79 @@ void DictionaryTest::Reset() {
       InternalEnumOrInternalEnumSequence();
   any_member_ = ScriptValue();
   callback_function_member_ = nullptr;
+}
+
+void DictionaryTest::GetInternals(InternalDictionary* dict) {
+  DCHECK(dict);
+
+  if (long_member_)
+    dict->setLongMember(long_member_.value());
+  if (long_member_with_clamp_)
+    dict->setLongMemberWithClamp(long_member_with_clamp_.value());
+  if (long_member_with_enforce_range_) {
+    dict->setLongMemberWithEnforceRange(
+        long_member_with_enforce_range_.value());
+  }
+  dict->setLongMemberWithDefault(long_member_with_default_);
+  if (long_or_null_member_)
+    dict->setLongOrNullMember(long_or_null_member_.value());
+  if (long_or_null_member_with_default_) {
+    dict->setLongOrNullMemberWithDefault(
+        long_or_null_member_with_default_.value());
+  }
+  if (boolean_member_)
+    dict->setBooleanMember(boolean_member_.value());
+  if (double_member_)
+    dict->setDoubleMember(double_member_.value());
+  if (unrestricted_double_member_)
+    dict->setUnrestrictedDoubleMember(unrestricted_double_member_.value());
+  dict->setStringMember(string_member_);
+  dict->setStringMemberWithDefault(string_member_with_default_);
+  dict->setByteStringMember(byte_string_member_);
+  dict->setUsvStringMember(usv_string_member_);
+  if (string_sequence_member_)
+    dict->setStringSequenceMember(string_sequence_member_.value());
+  dict->setStringSequenceMemberWithDefault(
+      string_sequence_member_with_default_);
+  if (string_sequence_or_null_member_) {
+    dict->setStringSequenceOrNullMember(
+        string_sequence_or_null_member_.value());
+  }
+  dict->setEnumMember(enum_member_);
+  dict->setEnumMemberWithDefault(enum_member_with_default_);
+  dict->setEnumOrNullMember(enum_or_null_member_);
+  if (element_member_)
+    dict->setElementMember(element_member_);
+  if (element_or_null_member_.has_value())
+    dict->setElementOrNullMember(element_or_null_member_.value());
+  dict->setObjectMember(object_member_);
+  dict->setObjectOrNullMemberWithDefault(object_or_null_member_with_default_);
+  if (!double_or_string_member_.IsNull())
+    dict->setDoubleOrStringMember(double_or_string_member_);
+  if (double_or_string_sequence_member_) {
+    dict->setDoubleOrStringSequenceMember(
+        double_or_string_sequence_member_.value());
+  }
+  dict->setEventTargetOrNullMember(event_target_or_null_member_);
+  dict->setInternalEnumOrInternalEnumSequenceMember(
+      internal_enum_or_internal_enum_sequence_);
+  dict->setAnyMember(any_member_);
+  dict->setCallbackFunctionMember(callback_function_member_);
+}
+
+void DictionaryTest::GetDerivedInternals(InternalDictionaryDerived* dict) {
+  GetInternals(dict);
+
+  dict->setDerivedStringMember(derived_string_member_);
+  dict->setDerivedStringMemberWithDefault(derived_string_member_with_default_);
+  dict->setRequiredBooleanMember(required_boolean_member_);
+}
+
+void DictionaryTest::GetDerivedDerivedInternals(
+    InternalDictionaryDerivedDerived* dict) {
+  GetDerivedInternals(dict);
+
+  dict->setDerivedDerivedStringMember(derived_derived_string_member_);
 }
 
 void DictionaryTest::Trace(blink::Visitor* visitor) {

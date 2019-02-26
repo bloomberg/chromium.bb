@@ -15,7 +15,7 @@
 #include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_config.h"
 #include "base/values.h"
@@ -49,7 +49,7 @@
 #endif
 
 #if defined(OS_WIN)
-#include "content/browser/tracing/etw_tracing_agent_win.h"
+#include "base/win/windows_version.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -135,8 +135,6 @@ void TracingControllerImpl::AddAgents() {
   agents_.push_back(std::make_unique<CrOSTracingAgent>(connector));
 #elif defined(CAST_TRACING_AGENT)
   agents_.push_back(std::make_unique<CastTracingAgent>(connector));
-#elif defined(OS_WIN)
-  agents_.push_back(std::make_unique<EtwTracingAgent>(connector));
 #endif
 
   auto trace_event_agent = tracing::TraceEventAgent::Create(
@@ -189,6 +187,7 @@ TracingControllerImpl::GenerateMetadataDict() const {
   if (soname)
     metadata_dict->SetString("chrome-library-name", soname.value());
 #endif  // defined(OS_ANDROID)
+  metadata_dict->SetInteger("chrome-bitness", 8 * sizeof(uintptr_t));
 
   // OS
 #if defined(OS_CHROMEOS)
@@ -198,6 +197,17 @@ TracingControllerImpl::GenerateMetadataDict() const {
 #endif
   metadata_dict->SetString("os-version",
                            base::SysInfo::OperatingSystemVersion());
+#if defined(OS_WIN)
+  if (base::win::OSInfo::GetInstance()->architecture() ==
+      base::win::OSInfo::X64_ARCHITECTURE) {
+    if (base::win::OSInfo::GetInstance()->wow64_status() ==
+        base::win::OSInfo::WOW64_ENABLED) {
+      metadata_dict->SetString("os-wow64", "enabled");
+    } else {
+      metadata_dict->SetString("os-wow64", "disabled");
+    }
+  }
+#endif
   metadata_dict->SetString("os-arch",
                            base::SysInfo::OperatingSystemArchitecture());
 
@@ -446,6 +456,15 @@ void TracingControllerImpl::OnMetadataAvailable(base::Value metadata) {
   }
   if (is_data_complete_)
     CompleteFlush();
+}
+
+void TracingControllerImpl::SetTracingDelegateForTesting(
+    std::unique_ptr<TracingDelegate> delegate) {
+  if (!delegate)
+    delegate_.reset(GetContentClient()->browser()->GetTracingDelegate());
+  else {
+    delegate_ = std::move(delegate);
+  }
 }
 
 }  // namespace content

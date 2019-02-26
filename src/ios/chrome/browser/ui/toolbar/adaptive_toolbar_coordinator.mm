@@ -14,7 +14,7 @@
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_visibility_configuration.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tools_menu_button.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_mediator.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 
@@ -124,7 +124,7 @@
 }
 
 - (void)updateToolbarForSideSwipeSnapshot:(web::WebState*)webState {
-  BOOL isNTP = IsVisibleUrlNewTabPage(webState);
+  BOOL isNTP = IsVisibleURLNewTabPage(webState);
 
   [self.mediator updateConsumerForWebState:webState];
   [self.viewController updateForSideSwipeSnapshotOnNTP:isNTP];

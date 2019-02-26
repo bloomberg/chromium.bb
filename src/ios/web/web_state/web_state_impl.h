@@ -46,7 +46,7 @@ class BrowserState;
 struct ContextMenuParams;
 struct FaviconURL;
 struct LoadCommittedDetails;
-class NavigationContext;
+class NavigationContextImpl;
 class NavigationManager;
 class SessionCertificatePolicyCacheImpl;
 class WebInterstitialImpl;
@@ -78,21 +78,18 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   void SetWebController(CRWWebController* web_controller);
 
   // Notifies the observers that a navigation has started.
-  void OnNavigationStarted(web::NavigationContext* context);
+  void OnNavigationStarted(web::NavigationContextImpl* context);
 
   // Notifies the observers that a navigation has finished. For same-document
   // navigations notifies the observers about favicon URLs update using
   // candidates received in OnFaviconUrlUpdated.
-  void OnNavigationFinished(web::NavigationContext* context);
+  void OnNavigationFinished(web::NavigationContextImpl* context);
 
   // Called when current window's canGoBack / canGoForward state was changed.
   void OnBackForwardStateChanged();
 
   // Called when page title was changed.
   void OnTitleChanged();
-
-  // Called when a dialog or child window open request was suppressed.
-  void OnDialogSuppressed();
 
   // Notifies the observers that the render process was terminated.
   void OnRenderProcessGone();
@@ -189,8 +186,6 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   void SetDelegate(WebStateDelegate* delegate) override;
   bool IsWebUsageEnabled() const override;
   void SetWebUsageEnabled(bool enabled) override;
-  bool ShouldSuppressDialogs() const override;
-  void SetShouldSuppressDialogs(bool should_suppress) override;
   UIView* GetView() override;
   void WasShown() override;
   void WasHidden() override;

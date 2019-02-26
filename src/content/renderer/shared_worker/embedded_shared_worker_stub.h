@@ -20,7 +20,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
-#include "third_party/blink/public/mojom/shared_worker/shared_worker_main_script_load_params.mojom.h"
+#include "third_party/blink/public/mojom/shared_worker/worker_main_script_load_params.mojom.h"
 #include "third_party/blink/public/platform/web_content_security_policy.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -71,7 +71,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
       int appcache_host_id,
       network::mojom::URLLoaderFactoryAssociatedPtrInfo
           main_script_loader_factory,
-      blink::mojom::SharedWorkerMainScriptLoadParamsPtr main_script_load_params,
+      blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
       std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
       mojom::ControllerServiceWorkerInfoPtr controller_info,
       mojom::SharedWorkerHostPtr host,
@@ -92,7 +92,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
       blink::WebApplicationCacheHostClient*) override;
   std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
   CreateServiceWorkerNetworkProvider() override;
-  std::unique_ptr<blink::WebWorkerFetchContext> CreateWorkerFetchContext(
+  scoped_refptr<blink::WebWorkerFetchContext> CreateWorkerFetchContext(
       blink::WebServiceWorkerNetworkProvider*) override;
   void WaitForServiceWorkerControllerInfo(
       blink::WebServiceWorkerNetworkProvider* web_network_provider,

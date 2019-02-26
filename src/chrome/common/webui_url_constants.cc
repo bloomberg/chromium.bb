@@ -143,8 +143,6 @@ const char kChromeUISupervisedUserPassphrasePageHost[] =
     "managed-user-passphrase";
 const char kChromeUISyncConfirmationHost[] = "sync-confirmation";
 const char kChromeUISyncConfirmationURL[] = "chrome://sync-confirmation/";
-const char kChromeUISyncConsentBumpURL[] =
-    "chrome://sync-confirmation/?consent-bump";
 const char kChromeUISyncFileSystemInternalsHost[] = "syncfs-internals";
 const char kChromeUISyncHost[] = "sync";
 const char kChromeUISyncInternalsHost[] = "sync-internals";
@@ -207,8 +205,6 @@ const char kChromeUIIntenetDetailDialogURL[] =
     "chrome://internet-detail-dialog/";
 const char kChromeUIInternetConfigDialogHost[] = "internet-config-dialog";
 const char kChromeUIInternetDetailDialogHost[] = "internet-detail-dialog";
-const char kChromeUIKeyboardOverlayHost[] = "keyboardoverlay";
-const char kChromeUIKeyboardOverlayURL[] = "chrome://keyboardoverlay/";
 const char kChromeUILinuxCreditsHost[] = "linux-credits";
 const char kChromeUILinuxCreditsURL[] = "chrome://linux-credits/";
 const char kChromeUIMobileSetupHost[] = "mobilesetup";
@@ -228,6 +224,8 @@ const char kChromeUISetTimeURL[] = "chrome://set-time/";
 const char kChromeUISlowHost[] = "slow";
 const char kChromeUISlowTraceHost[] = "slow_trace";
 const char kChromeUISlowURL[] = "chrome://slow/";
+const char kChromeUISmbShareHost[] = "smb-share-dialog";
+const char kChromeUISmbShareURL[] = "chrome://smb-share-dialog/";
 const char kChromeUISysInternalsHost[] = "sys-internals";
 const char kChromeUIUserImageHost[] = "userimage";
 const char kChromeUIUserImageURL[] = "chrome://userimage/";
@@ -242,7 +240,6 @@ const char kChromeUIMetroFlowURL[] = "chrome://make-metro/";
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 const char kChromeUICastHost[] = "cast";
-const char kChromeUICastURL[] = "chrome://cast/";
 #endif
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
@@ -274,6 +271,7 @@ const char kChromeUIWebRtcLogsHost[] = "webrtc-logs";
 // chrome_autocomplete_provider_client.cc to be listed by the built-in
 // AutocompleteProvider.
 
+const char kAddressesSubPage[] = "addresses";
 const char kAutofillSubPage[] = "autofill";
 const char kClearBrowserDataSubPage[] = "clearBrowserData";
 const char kContentSettingsSubPage[] = "content";
@@ -299,6 +297,7 @@ const char kHelpSubPage[] = "help";
 const char kInternetSubPage[] = "internet";
 // 'multidevice/features' is a child of the 'multidevice' route
 const char kConnectedDevicesSubPage[] = "multidevice/features";
+const char kLockScreenSubPage[] = "lockScreen";
 const char kNetworkDetailSubPage[] = "networkDetail";
 const char kPowerSubPage[] = "power";
 const char kSmbSharesPageAddDialog[] = "smbShares?showAddShare=true";
@@ -400,7 +399,6 @@ const char* const kChromeHostURLs[] = {
     kChromeUICryptohomeHost,
     kChromeUIDriveInternalsHost,
     kChromeUIFirstRunHost,
-    kChromeUIKeyboardOverlayHost,
     kChromeUILinuxCreditsHost,
     kChromeUINetworkHost,
     kChromeUIOobeHost,

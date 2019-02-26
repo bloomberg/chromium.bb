@@ -113,70 +113,74 @@ TEST_F(MediaCustomControlsFullscreenDetectorTest, computeIsDominantVideo) {
 TEST_F(MediaCustomControlsFullscreenDetectorTest,
        hasNoListenersBeforeAddingToDocument) {
   auto* video =
-      ToHTMLVideoElement(GetDocument().CreateRawElement(HTMLNames::videoTag));
+      ToHTMLVideoElement(GetDocument().CreateRawElement(html_names::kVideoTag));
 
   EXPECT_FALSE(CheckEventListenerRegistered(GetDocument(),
-                                            EventTypeNames::fullscreenchange,
+                                            event_type_names::kFullscreenchange,
                                             FullscreenDetectorFor(video)));
   EXPECT_FALSE(CheckEventListenerRegistered(
-      GetDocument(), EventTypeNames::webkitfullscreenchange,
+      GetDocument(), event_type_names::kWebkitfullscreenchange,
       FullscreenDetectorFor(video)));
   EXPECT_FALSE(CheckEventListenerRegistered(
-      *video, EventTypeNames::loadedmetadata, FullscreenDetectorFor(video)));
+      *video, event_type_names::kLoadedmetadata, FullscreenDetectorFor(video)));
 }
 
 TEST_F(MediaCustomControlsFullscreenDetectorTest,
        hasListenersAfterAddToDocumentByScript) {
   auto* video =
-      ToHTMLVideoElement(GetDocument().CreateRawElement(HTMLNames::videoTag));
+      ToHTMLVideoElement(GetDocument().CreateRawElement(html_names::kVideoTag));
   GetDocument().body()->AppendChild(video);
 
+  EXPECT_TRUE(CheckEventListenerRegistered(GetDocument(),
+                                           event_type_names::kFullscreenchange,
+                                           FullscreenDetector()));
   EXPECT_TRUE(CheckEventListenerRegistered(
-      GetDocument(), EventTypeNames::fullscreenchange, FullscreenDetector()));
-  EXPECT_TRUE(CheckEventListenerRegistered(
-      GetDocument(), EventTypeNames::webkitfullscreenchange,
+      GetDocument(), event_type_names::kWebkitfullscreenchange,
       FullscreenDetector()));
-  EXPECT_TRUE(CheckEventListenerRegistered(
-      *VideoElement(), EventTypeNames::loadedmetadata, FullscreenDetector()));
+  EXPECT_TRUE(CheckEventListenerRegistered(*VideoElement(),
+                                           event_type_names::kLoadedmetadata,
+                                           FullscreenDetector()));
 }
 
 TEST_F(MediaCustomControlsFullscreenDetectorTest,
        hasListenersAfterAddToDocumentByParser) {
   GetDocument().body()->SetInnerHTMLFromString("<body><video></video></body>");
 
+  EXPECT_TRUE(CheckEventListenerRegistered(GetDocument(),
+                                           event_type_names::kFullscreenchange,
+                                           FullscreenDetector()));
   EXPECT_TRUE(CheckEventListenerRegistered(
-      GetDocument(), EventTypeNames::fullscreenchange, FullscreenDetector()));
-  EXPECT_TRUE(CheckEventListenerRegistered(
-      GetDocument(), EventTypeNames::webkitfullscreenchange,
+      GetDocument(), event_type_names::kWebkitfullscreenchange,
       FullscreenDetector()));
-  EXPECT_TRUE(CheckEventListenerRegistered(
-      *VideoElement(), EventTypeNames::loadedmetadata, FullscreenDetector()));
+  EXPECT_TRUE(CheckEventListenerRegistered(*VideoElement(),
+                                           event_type_names::kLoadedmetadata,
+                                           FullscreenDetector()));
 }
 
 TEST_F(MediaCustomControlsFullscreenDetectorTest,
        hasListenersAfterDocumentMove) {
   auto* video =
-      ToHTMLVideoElement(GetDocument().CreateRawElement(HTMLNames::videoTag));
+      ToHTMLVideoElement(GetDocument().CreateRawElement(html_names::kVideoTag));
   GetDocument().body()->AppendChild(video);
 
   NewDocument().body()->AppendChild(VideoElement());
 
   EXPECT_FALSE(CheckEventListenerRegistered(GetDocument(),
-                                            EventTypeNames::fullscreenchange,
+                                            event_type_names::kFullscreenchange,
                                             FullscreenDetectorFor(video)));
   EXPECT_FALSE(CheckEventListenerRegistered(
-      GetDocument(), EventTypeNames::webkitfullscreenchange,
+      GetDocument(), event_type_names::kWebkitfullscreenchange,
       FullscreenDetectorFor(video)));
 
   EXPECT_TRUE(CheckEventListenerRegistered(NewDocument(),
-                                           EventTypeNames::fullscreenchange,
+                                           event_type_names::kFullscreenchange,
                                            FullscreenDetectorFor(video)));
   EXPECT_TRUE(CheckEventListenerRegistered(
-      NewDocument(), EventTypeNames::webkitfullscreenchange,
+      NewDocument(), event_type_names::kWebkitfullscreenchange,
       FullscreenDetectorFor(video)));
 
   EXPECT_TRUE(CheckEventListenerRegistered(
-      *video, EventTypeNames::loadedmetadata, FullscreenDetectorFor(video)));
+      *video, event_type_names::kLoadedmetadata, FullscreenDetectorFor(video)));
 }
 
 }  // namespace blink

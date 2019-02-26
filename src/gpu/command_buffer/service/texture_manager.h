@@ -37,6 +37,8 @@ class DecoderContext;
 class ServiceDiscardableManager;
 class SharedImageBackingGLTexture;
 class SharedImageBackingFactoryGLTexture;
+class SharedImageBackingAHB;
+class SharedImageRepresentationGLTexture;
 
 namespace gles2 {
 class GLStreamTextureImage;
@@ -58,6 +60,11 @@ class GPU_GLES2_EXPORT TexturePassthrough final
  public:
   TexturePassthrough(GLuint service_id, GLenum target);
 
+  // TextureBase implementation:
+  TextureBase::Type GetType() const override;
+
+  static TexturePassthrough* CheckedCast(TextureBase* texture);
+
   // Notify the texture that the context is lost and it shouldn't delete the
   // native GL texture in the destructor
   void MarkContextLost();
@@ -72,6 +79,9 @@ class GPU_GLES2_EXPORT TexturePassthrough final
     is_bind_pending_ = is_bind_pending;
   }
 
+  void SetEstimatedSize(size_t size);
+  size_t estimated_size() const { return estimated_size_; }
+
  protected:
   ~TexturePassthrough() override;
 
@@ -80,6 +90,8 @@ class GPU_GLES2_EXPORT TexturePassthrough final
 
   bool have_context_;
   bool is_bind_pending_ = false;
+
+  size_t estimated_size_ = 0;
 
   // Bound images divided into faces and then levels
   std::vector<std::vector<scoped_refptr<gl::GLImage>>> level_images_;
@@ -118,6 +130,11 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   };
 
   explicit Texture(GLuint service_id);
+
+  // TextureBase implementation:
+  TextureBase::Type GetType() const override;
+
+  static Texture* CheckedCast(TextureBase* texture);
 
   const SamplerState& sampler_state() const {
     return sampler_state_;
@@ -338,16 +355,18 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   friend class MailboxManagerTest;
   friend class gpu::SharedImageBackingGLTexture;
   friend class gpu::SharedImageBackingFactoryGLTexture;
+  friend class gpu::SharedImageBackingAHB;
   friend class TextureDefinition;
   friend class TextureManager;
   friend class TextureRef;
   friend class TextureTestHelper;
+  friend class TestSharedImageBacking;
   FRIEND_TEST_ALL_PREFIXES(TextureMemoryTrackerTest, LightweightRef);
 
   ~Texture() override;
   void AddTextureRef(TextureRef* ref);
   void RemoveTextureRef(TextureRef* ref, bool have_context);
-  void SetLightweightRef(MemoryTypeTracker* tracker);
+  void SetLightweightRef();
   void RemoveLightweightRef(bool have_context);
   void MaybeDeleteThis(bool have_context);
 
@@ -577,7 +596,7 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   // The texture refs that point to this Texture.
   typedef base::flat_set<TextureRef*> RefSet;
   RefSet refs_;
-  MemoryTypeTracker* lightweight_ref_ = nullptr;
+  bool has_lightweight_ref_ = false;
 
   // The single TextureRef that accounts for memory for this texture. Must be
   // one of refs_.
@@ -668,11 +687,18 @@ class GPU_GLES2_EXPORT TextureRef : public base::RefCounted<TextureRef> {
   void AddObserver() { num_observers_++; }
   void RemoveObserver() { num_observers_--; }
 
+  // TODO(ericrk): Remove this once the Texture itself is generated from and
+  // owns the SharedImageRepresentation.
+  void SetSharedImageRepresentation(
+      std::unique_ptr<SharedImageRepresentationGLTexture> shared_image);
   const Texture* texture() const { return texture_; }
   Texture* texture() { return texture_; }
   GLuint client_id() const { return client_id_; }
   GLuint service_id() const { return texture_->service_id(); }
   GLint num_observers() const { return num_observers_; }
+  SharedImageRepresentationGLTexture* shared_image() const {
+    return shared_image_.get();
+  }
 
   // When the TextureRef is destroyed, it will assume that the context has been
   // lost, regardless of the state of the TextureManager.
@@ -693,6 +719,8 @@ class GPU_GLES2_EXPORT TextureRef : public base::RefCounted<TextureRef> {
   GLuint client_id_;
   GLint num_observers_;
   bool force_context_lost_;
+
+  std::unique_ptr<SharedImageRepresentationGLTexture> shared_image_;
 
   DISALLOW_COPY_AND_ASSIGN(TextureRef);
 };
@@ -865,6 +893,12 @@ class GPU_GLES2_EXPORT TextureManager
 
   // Maps an existing texture into the texture manager, at a given client ID.
   TextureRef* Consume(GLuint client_id, Texture* texture);
+
+  // Maps an existing SharedImage into the texture manager, at a given client
+  // ID.
+  TextureRef* ConsumeSharedImage(
+      GLuint client_id,
+      std::unique_ptr<SharedImageRepresentationGLTexture> shared_image);
 
   // Sets |rect| of mip as cleared.
   void SetLevelClearedRect(TextureRef* ref,

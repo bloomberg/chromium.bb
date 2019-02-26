@@ -69,7 +69,7 @@
 // --------------------+-------------+-------------------+--------------
 //                     | Firefox3    | InternetExplorer8 |  --> Us <---
 // --------------------+-------------+-------------------+--------------
-// myIpAddress()       | IPv4/IPv6   |  IPv4             |  IPv4
+// myIpAddress()       | IPv4/IPv6   |  IPv4             |  IPv4/IPv6
 // dnsResolve()        | IPv4/IPv6   |  IPv4             |  IPv4
 // isResolvable()      | IPv4/IPv6   |  IPv4             |  IPv4
 // myIpAddressEx()     | N/A         |  IPv4/IPv6        |  IPv4/IPv6
@@ -384,6 +384,11 @@ class SharedIsolateFactory {
         v8::V8::SetFlagsFromString(kOptimizeForSize, strlen(kOptimizeForSize));
         static const char kNoOpt[] = "--noopt";
         v8::V8::SetFlagsFromString(kNoOpt, strlen(kNoOpt));
+
+        // WebAssembly isn't encountered during resolution, so reduce the
+        // potential attack surface.
+        static const char kNoExposeWasm[] = "--no-expose-wasm";
+        v8::V8::SetFlagsFromString(kNoExposeWasm, strlen(kNoExposeWasm));
 
         gin::IsolateHolder::Initialize(
             gin::IsolateHolder::kNonStrictMode,

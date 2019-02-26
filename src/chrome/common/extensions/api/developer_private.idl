@@ -201,9 +201,12 @@ namespace developerPrivate {
     boolean granted;
   };
 
-  dictionary SpecificSiteControls {
+  dictionary RuntimeHostPermissions {
     // True if |hosts| contains an all hosts like pattern.
     boolean hasAllHosts;
+
+    // The current HostAccess setting for the extension.
+    HostAccess hostAccess;
 
     // The site controls for all granted and requested patterns.
     SiteControl[] hosts;
@@ -213,12 +216,8 @@ namespace developerPrivate {
     Permission[] simplePermissions;
 
     // Only populated for extensions that can be affected by the runtime host
-    // permissions feature.The current host access.
-    HostAccess? hostAccess;
-
-    // Only populated for extensions affected by the runtime host
-    // permissions feature and |hostAccess| is equal to ON_SPECIFIC_SITES.
-    SpecificSiteControls? specificSiteControls;
+    // permissions feature.
+    RuntimeHostPermissions? runtimeHostPermissions;
   };
 
   dictionary ExtensionInfo {

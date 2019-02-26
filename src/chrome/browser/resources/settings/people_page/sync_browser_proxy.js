@@ -30,6 +30,7 @@ settings.StoredAccount;
  *            signedInUsername: (string|undefined),
  *            signinAllowed: (boolean|undefined),
  *            statusAction: (!settings.StatusAction),
+ *            statusActionText: (string|undefined),
  *            statusText: (string|undefined),
  *            supervisedUser: (boolean|undefined),
  *            syncSystemEnabled: (boolean|undefined)}}
@@ -97,9 +98,6 @@ settings.StatusAction = {
  *   typedUrlsEnforced: boolean,
  *   typedUrlsRegistered: boolean,
  *   typedUrlsSynced: boolean,
- *   userEventsEnforced: boolean,
- *   userEventsRegistered: boolean,
- *   userEventsSynced: boolean,
  * }}
  */
 settings.SyncPrefs;
@@ -141,11 +139,6 @@ cr.define('settings', function() {
      * Invalidates the Sync token without signing the user out.
      */
     pauseSync() {}
-
-    /**
-     * Opens the multi-profile user manager.
-     */
-    manageOtherPeople() {}
 
     /**
      * @return {number} the number of times the sync account promo was shown.
@@ -220,13 +213,6 @@ cr.define('settings', function() {
      * Opens the Google Activity Controls url in a new tab.
      */
     openActivityControlsUrl() {}
-
-    /**
-     * Function to invoke when the unified consent toggle state changes, to
-     * notify the C++ layer.
-     * @param {boolean} toggleChecked
-     */
-    unifiedConsentToggleChanged(toggleChecked) {}
   }
 
   /**
@@ -247,11 +233,6 @@ cr.define('settings', function() {
     /** @override */
     pauseSync() {
       chrome.send('SyncSetupPauseSync');
-    }
-
-    /** @override */
-    manageOtherPeople() {
-      chrome.send('SyncSetupManageOtherPeople');
     }
 
     /** @override */
@@ -318,11 +299,6 @@ cr.define('settings', function() {
     openActivityControlsUrl() {
       chrome.metricsPrivate.recordUserAction(
           'Signin_AccountSettings_GoogleActivityControlsClicked');
-    }
-
-    /** @override */
-    unifiedConsentToggleChanged(toggleChecked) {
-      chrome.send('UnifiedConsentToggleChanged', [toggleChecked]);
     }
   }
 

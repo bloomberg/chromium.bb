@@ -224,7 +224,7 @@ IN_PROC_BROWSER_TEST_F(TouchExplorationTest, DISABLED_SplitTapExplore) {
   // touch press and release events which should send a click press and release.
   // Once the press is passed through, mouse events should be disabled.
   // Mouse events are reenabled after the release.
-  generator.set_current_location(gfx::Point(102, 202));
+  generator.set_current_screen_location(gfx::Point(102, 202));
   generator.PressTouchId(2);
   EXPECT_FALSE(cursor_client->IsMouseEventsEnabled());
   EXPECT_FALSE(cursor_client->IsCursorVisible());

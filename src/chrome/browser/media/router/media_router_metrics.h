@@ -57,9 +57,10 @@ enum class MediaRouterUserAction {
   CLOSE = 3,
   STATUS_REMOTE = 4,
   REPLACE_LOCAL_ROUTE = 5,
+  STOP_REMOTE = 6,
 
   // Note: Add entries only immediately above this line.
-  TOTAL_COUNT = 6
+  TOTAL_COUNT = 7
 };
 
 enum class PresentationUrlType {
@@ -96,6 +97,7 @@ class MediaRouterMetrics {
   static const char kHistogramStartLocalLatency[];
   static const char kHistogramStartLocalPosition[];
   static const char kHistogramStartLocalSessionSuccessful[];
+  static const char kHistogramStopRoute[];
   static const char kHistogramUiDeviceCount[];
   static const char kHistogramUiDialogPaint[];
   static const char kHistogramUiDialogLoadedWithData[];
@@ -165,6 +167,10 @@ class MediaRouterMetrics {
 
   // Records whether or not an attempt to start casting was successful.
   static void RecordStartLocalSessionSuccessful(bool success);
+
+  // Records the user stopping a route in the UI.
+  static void RecordStopLocalRoute();
+  static void RecordStopRemoteRoute();
 
   // Records whether or not a sink was found for the ID that the user manually
   // entered and attempted to cast to.

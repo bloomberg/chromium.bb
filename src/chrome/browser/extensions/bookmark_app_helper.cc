@@ -37,6 +37,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/web_applications/components/web_app_icon_downloader.h"
+#include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/browser/web_applications/extensions/web_app_extension_shortcut.h"
 #include "chrome/browser/webshare/share_target_pref_helper.h"
@@ -59,6 +60,7 @@
 #include "extensions/common/url_pattern.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 #if defined(OS_MACOSX)
@@ -75,36 +77,6 @@
 namespace extensions {
 
 namespace {
-
-std::set<int> SizesToGenerate() {
-  // Generate container icons from smaller icons.
-  const int kIconSizesToGenerate[] = {
-      extension_misc::EXTENSION_ICON_SMALL,
-      extension_misc::EXTENSION_ICON_SMALL * 2,
-      extension_misc::EXTENSION_ICON_MEDIUM,
-      extension_misc::EXTENSION_ICON_MEDIUM * 2,
-      extension_misc::EXTENSION_ICON_LARGE,
-      extension_misc::EXTENSION_ICON_LARGE * 2,
-  };
-  return std::set<int>(kIconSizesToGenerate,
-                       kIconSizesToGenerate + arraysize(kIconSizesToGenerate));
-}
-
-void ReplaceWebAppIcons(std::map<int, web_app::BitmapAndSource> bitmap_map,
-                        WebApplicationInfo* web_app_info) {
-  web_app_info->icons.clear();
-
-  // Populate the icon data into the WebApplicationInfo we are using to
-  // install the bookmark app.
-  for (const auto& pair : bitmap_map) {
-    WebApplicationInfo::IconInfo icon_info;
-    icon_info.data = pair.second.bitmap;
-    icon_info.url = pair.second.source_url;
-    icon_info.width = icon_info.data.width();
-    icon_info.height = icon_info.data.height();
-    web_app_info->icons.push_back(icon_info);
-  }
-}
 
 // Class to handle installing a bookmark app after it has synced. Handles
 // downloading and decoding the icons.
@@ -161,7 +133,7 @@ class BookmarkAppInstaller : public base::RefCounted<BookmarkAppInstaller>,
 
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override {
-    web_app_icon_downloader_.reset(new WebAppIconDownloader(
+    web_app_icon_downloader_.reset(new web_app::WebAppIconDownloader(
         web_contents_.get(), urls_to_download_,
         "Extensions.BookmarkApp.Icon.HttpStatusCodeClassOnSync",
         base::BindOnce(&BookmarkAppInstaller::OnIconsDownloaded,
@@ -205,7 +177,7 @@ class BookmarkAppInstaller : public base::RefCounted<BookmarkAppInstaller>,
     // the sizes to generate set. This ensures that we will have all of the
     // icon sizes from when the app was originally added, even if icon URLs are
     // no longer accessible.
-    std::set<int> sizes_to_generate = SizesToGenerate();
+    std::set<int> sizes_to_generate = web_app::SizesToGenerate();
     for (const auto& icon : web_app_info_.icons)
       sizes_to_generate.insert(icon.width);
 
@@ -239,54 +211,12 @@ class BookmarkAppInstaller : public base::RefCounted<BookmarkAppInstaller>,
   bool is_locally_installed_;
 
   std::unique_ptr<content::WebContents> web_contents_;
-  std::unique_ptr<WebAppIconDownloader> web_app_icon_downloader_;
+  std::unique_ptr<web_app::WebAppIconDownloader> web_app_icon_downloader_;
   std::vector<GURL> urls_to_download_;
   std::vector<web_app::BitmapAndSource> downloaded_bitmaps_;
 };
 
 }  // namespace
-
-// static
-void BookmarkAppHelper::UpdateWebAppInfoFromManifest(
-    const blink::Manifest& manifest,
-    WebApplicationInfo* web_app_info,
-    ForInstallableSite for_installable_site) {
-  if (!manifest.short_name.is_null())
-    web_app_info->title = manifest.short_name.string();
-
-  // Give the full length name priority.
-  if (!manifest.name.is_null())
-    web_app_info->title = manifest.name.string();
-
-  // Set the url based on the manifest value, if any.
-  if (manifest.start_url.is_valid())
-    web_app_info->app_url = manifest.start_url;
-
-  if (for_installable_site == ForInstallableSite::kYes) {
-    // If there is no scope present, use 'start_url' without the filename as the
-    // scope. This does not match the spec but it matches what we do on Android.
-    // See: https://github.com/w3c/manifest/issues/550
-    if (!manifest.scope.is_empty())
-      web_app_info->scope = manifest.scope;
-    else if (manifest.start_url.is_valid())
-      web_app_info->scope = manifest.start_url.Resolve(".");
-  }
-
-  if (manifest.theme_color)
-    web_app_info->theme_color = *manifest.theme_color;
-
-  // If any icons are specified in the manifest, they take precedence over any
-  // we picked up from the web_app stuff.
-  if (!manifest.icons.empty()) {
-    web_app_info->icons.clear();
-    for (const auto& icon : manifest.icons) {
-      // TODO(benwells): Take the declared icon density and sizes into account.
-      WebApplicationInfo::IconInfo info;
-      info.url = icon.src;
-      web_app_info->icons.push_back(info);
-    }
-  }
-}
 
 // static
 void BookmarkAppHelper::UpdateWebAppIconsWithoutChangingLinks(
@@ -314,7 +244,6 @@ void BookmarkAppHelper::UpdateWebAppIconsWithoutChangingLinks(
   }
 }
 
-
 BookmarkAppHelper::BookmarkAppHelper(Profile* profile,
                                      WebApplicationInfo web_app_info,
                                      content::WebContents* contents,
@@ -324,6 +253,7 @@ BookmarkAppHelper::BookmarkAppHelper(Profile* profile,
       web_app_info_(web_app_info),
       crx_installer_(CrxInstaller::CreateSilent(
           ExtensionSystem::Get(profile)->extension_service())),
+      for_installable_site_(web_app::ForInstallableSite::kUnknown),
       install_source_(install_source),
       weak_factory_(this) {
   if (contents)
@@ -377,7 +307,7 @@ void BookmarkAppHelper::Create(const CreateBookmarkAppCallback& callback) {
                              weak_factory_.GetWeakPtr()));
     }
   } else {
-    for_installable_site_ = ForInstallableSite::kNo;
+    for_installable_site_ = web_app::ForInstallableSite::kNo;
     OnIconsDownloaded(true, std::map<GURL, std::vector<SkBitmap>>());
   }
 }
@@ -398,11 +328,11 @@ void BookmarkAppHelper::OnDidPerformInstallableCheck(
 
   for_installable_site_ =
       data.error_code == NO_ERROR_DETECTED && !shortcut_app_requested_
-          ? ForInstallableSite::kYes
-          : ForInstallableSite::kNo;
+          ? web_app::ForInstallableSite::kYes
+          : web_app::ForInstallableSite::kNo;
 
-  UpdateWebAppInfoFromManifest(*data.manifest, &web_app_info_,
-                               for_installable_site_);
+  web_app::UpdateWebAppInfoFromManifest(*data.manifest, &web_app_info_,
+                                        for_installable_site_);
 
   // TODO(mgiuca): Web Share Target should have its own flag, rather than using
   // the experimental-web-platform-features flag. https://crbug.com/736178.
@@ -412,31 +342,12 @@ void BookmarkAppHelper::OnDidPerformInstallableCheck(
                              profile_->GetPrefs());
   }
 
-  // Add icon urls to download from the WebApplicationInfo.
-  std::vector<GURL> web_app_info_icon_urls;
-  for (auto& info : web_app_info_.icons) {
-    if (!info.url.is_valid())
-      continue;
+  const std::vector<GURL> web_app_info_icon_urls =
+      web_app::GetValidIconUrlsToDownload(data, web_app_info_);
 
-    // Skip downloading icon if we already have it from the InstallableManager.
-    if (info.url == data.primary_icon_url && data.primary_icon)
-      continue;
+  web_app::MergeInstallableDataIcon(data, &web_app_info_);
 
-    web_app_info_icon_urls.push_back(info.url);
-  }
-
-  // Add the primary icon to the final bookmark app creation data.
-  if (data.primary_icon_url.is_valid()) {
-    WebApplicationInfo::IconInfo primary_icon_info;
-    const SkBitmap& icon = *data.primary_icon;
-    primary_icon_info.url = data.primary_icon_url;
-    primary_icon_info.data = icon;
-    primary_icon_info.width = icon.width();
-    primary_icon_info.height = icon.height();
-    web_app_info_.icons.push_back(primary_icon_info);
-  }
-
-  web_app_icon_downloader_.reset(new WebAppIconDownloader(
+  web_app_icon_downloader_.reset(new web_app::WebAppIconDownloader(
       contents_, web_app_info_icon_urls,
       "Extensions.BookmarkApp.Icon.HttpStatusCodeClassOnCreate",
       base::BindOnce(&BookmarkAppHelper::OnIconsDownloaded,
@@ -462,35 +373,11 @@ void BookmarkAppHelper::OnIconsDownloaded(
     return;
   }
 
-  std::vector<web_app::BitmapAndSource> downloaded_icons;
-  for (const std::pair<GURL, std::vector<SkBitmap>>& url_bitmap : bitmaps) {
-    for (const SkBitmap& bitmap : url_bitmap.second) {
-      if (bitmap.empty() || bitmap.width() != bitmap.height())
-        continue;
+  std::vector<web_app::BitmapAndSource> downloaded_icons =
+      web_app::FilterSquareIcons(bitmaps, web_app_info_);
+  web_app::ResizeDownloadedIconsGenerateMissing(std::move(downloaded_icons),
+                                                &web_app_info_);
 
-      downloaded_icons.push_back(
-          web_app::BitmapAndSource(url_bitmap.first, bitmap));
-    }
-  }
-
-  // Add all existing icons from WebApplicationInfo.
-  for (const WebApplicationInfo::IconInfo& icon_info : web_app_info_.icons) {
-    const SkBitmap& icon = icon_info.data;
-    if (!icon.drawsNothing() && icon.width() == icon.height()) {
-      downloaded_icons.push_back(web_app::BitmapAndSource(icon_info.url, icon));
-    }
-  }
-
-  // Ensure that the necessary-sized icons are available by resizing larger
-  // icons down to smaller sizes, and generating icons for sizes where resizing
-  // is not possible.
-  web_app_info_.generated_icon_color = SK_ColorTRANSPARENT;
-  std::map<int, web_app::BitmapAndSource> size_to_icons =
-      web_app::ResizeIconsAndGenerateMissing(
-          downloaded_icons, SizesToGenerate(), web_app_info_.app_url,
-          &web_app_info_.generated_icon_color);
-
-  ReplaceWebAppIcons(size_to_icons, &web_app_info_);
   web_app_icon_downloader_.reset();
 
   if (!contents_) {
@@ -507,7 +394,7 @@ void BookmarkAppHelper::OnIconsDownloaded(
   }
 
   if (base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing) &&
-      for_installable_site_ == ForInstallableSite::kYes) {
+      for_installable_site_ == web_app::ForInstallableSite::kYes) {
     web_app_info_.open_as_window = true;
     chrome::ShowPWAInstallDialog(
         contents_, web_app_info_,
@@ -549,7 +436,7 @@ void BookmarkAppHelper::OnBubbleCompleted(
     crx_installer_->InstallWebApp(web_app_info_);
 
     if (InstallableMetrics::IsReportableInstallSource(install_source_) &&
-        for_installable_site_ == ForInstallableSite::kYes) {
+        for_installable_site_ == web_app::ForInstallableSite::kYes) {
       InstallableMetrics::TrackInstallEvent(install_source_);
     }
   } else {
@@ -563,12 +450,6 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
   LaunchType launch_type =
       web_app_info_.open_as_window ? LAUNCH_TYPE_WINDOW : LAUNCH_TYPE_REGULAR;
 
-  if (base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing)) {
-    DCHECK_NE(ForInstallableSite::kUnknown, for_installable_site_);
-    launch_type = for_installable_site_ == ForInstallableSite::kYes
-                      ? LAUNCH_TYPE_WINDOW
-                      : LAUNCH_TYPE_REGULAR;
-  }
   profile_->GetPrefs()->SetInteger(pref_names::kBookmarkAppCreationLaunchType,
                                    launch_type);
 

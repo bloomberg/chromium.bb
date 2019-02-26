@@ -36,6 +36,8 @@ class TestSafeBrowsingDatabaseHelper;
 
 namespace subresource_filter {
 
+class RulesetService;
+
 class SubresourceFilterBrowserTest : public InProcessBrowserTest {
  public:
   SubresourceFilterBrowserTest();
@@ -87,6 +89,11 @@ class SubresourceFilterBrowserTest : public InProcessBrowserTest {
   void SetRulesetToDisallowURLsWithPathSuffix(const std::string& suffix);
 
   void SetRulesetWithRules(const std::vector<proto::UrlRule>& rules);
+
+  // Re-initializes the ruleset_service by opening the ruleset file provided
+  // by indexed_ruleset_path and publishing it.
+  void OpenAndPublishRuleset(RulesetService* ruleset_service,
+                             const base::FilePath& indexed_ruleset_path);
 
   void ResetConfiguration(Configuration config);
 

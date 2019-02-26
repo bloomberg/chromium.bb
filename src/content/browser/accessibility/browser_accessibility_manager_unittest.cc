@@ -61,10 +61,6 @@ class TestBrowserAccessibilityDelegate
   void AccessibilityPerformAction(const ui::AXActionData& data) override {}
   bool AccessibilityViewHasFocus() const override { return false; }
   gfx::Rect AccessibilityGetViewBounds() const override { return gfx::Rect(); }
-  gfx::Point AccessibilityOriginInScreen(
-      const gfx::Rect& bounds) const override {
-    return gfx::Point();
-  }
   float AccessibilityGetDeviceScaleFactor() const override { return 1.0f; }
   void AccessibilityFatalError() override { got_fatal_error_ = true; }
   gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget() override {
@@ -574,20 +570,20 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRange) {
   ui::AXNodeData root;
   root.id = 1;
   root.role = ax::mojom::Role::kRootWebArea;
-  root.location = gfx::RectF(0, 0, 800, 600);
+  root.relative_bounds.bounds = gfx::RectF(0, 0, 800, 600);
 
   ui::AXNodeData static_text;
   static_text.id = 2;
   static_text.SetName("Hello, world.");
   static_text.role = ax::mojom::Role::kStaticText;
-  static_text.location = gfx::RectF(100, 100, 29, 18);
+  static_text.relative_bounds.bounds = gfx::RectF(100, 100, 29, 18);
   root.child_ids.push_back(2);
 
   ui::AXNodeData inline_text1;
   inline_text1.id = 3;
   inline_text1.SetName("Hello, ");
   inline_text1.role = ax::mojom::Role::kInlineTextBox;
-  inline_text1.location = gfx::RectF(100, 100, 29, 9);
+  inline_text1.relative_bounds.bounds = gfx::RectF(100, 100, 29, 9);
   inline_text1.SetTextDirection(ax::mojom::TextDirection::kLtr);
   std::vector<int32_t> character_offsets1;
   character_offsets1.push_back(6);   // 0
@@ -605,7 +601,7 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRange) {
   inline_text2.id = 4;
   inline_text2.SetName("world.");
   inline_text2.role = ax::mojom::Role::kInlineTextBox;
-  inline_text2.location = gfx::RectF(100, 109, 28, 9);
+  inline_text2.relative_bounds.bounds = gfx::RectF(100, 109, 28, 9);
   inline_text2.SetTextDirection(ax::mojom::TextDirection::kLtr);
   std::vector<int32_t> character_offsets2;
   character_offsets2.push_back(5);
@@ -658,20 +654,20 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRangeMultiElement) {
   ui::AXNodeData root;
   root.id = 1;
   root.role = ax::mojom::Role::kRootWebArea;
-  root.location = gfx::RectF(0, 0, 800, 600);
+  root.relative_bounds.bounds = gfx::RectF(0, 0, 800, 600);
 
   ui::AXNodeData static_text;
   static_text.id = 2;
   static_text.SetName("ABC");
   static_text.role = ax::mojom::Role::kStaticText;
-  static_text.location = gfx::RectF(0, 20, 33, 9);
+  static_text.relative_bounds.bounds = gfx::RectF(0, 20, 33, 9);
   root.child_ids.push_back(2);
 
   ui::AXNodeData inline_text1;
   inline_text1.id = 3;
   inline_text1.SetName("ABC");
   inline_text1.role = ax::mojom::Role::kInlineTextBox;
-  inline_text1.location = gfx::RectF(0, 20, 33, 9);
+  inline_text1.relative_bounds.bounds = gfx::RectF(0, 20, 33, 9);
   inline_text1.SetTextDirection(ax::mojom::TextDirection::kLtr);
   std::vector<int32_t> character_offsets { 10, 21, 33 };
   inline_text1.AddIntListAttribute(
@@ -682,14 +678,14 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRangeMultiElement) {
   static_text2.id = 4;
   static_text2.SetName("ABC");
   static_text2.role = ax::mojom::Role::kStaticText;
-  static_text2.location = gfx::RectF(10, 40, 33, 9);
+  static_text2.relative_bounds.bounds = gfx::RectF(10, 40, 33, 9);
   root.child_ids.push_back(4);
 
   ui::AXNodeData inline_text2;
   inline_text2.id = 5;
   inline_text2.SetName("ABC");
   inline_text2.role = ax::mojom::Role::kInlineTextBox;
-  inline_text2.location = gfx::RectF(10, 40, 33, 9);
+  inline_text2.relative_bounds.bounds = gfx::RectF(10, 40, 33, 9);
   inline_text2.SetTextDirection(ax::mojom::TextDirection::kLtr);
   inline_text2.AddIntListAttribute(
       ax::mojom::IntListAttribute::kCharacterOffsets, character_offsets);
@@ -765,20 +761,20 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRangeBiDi) {
   ui::AXNodeData root;
   root.id = 1;
   root.role = ax::mojom::Role::kRootWebArea;
-  root.location = gfx::RectF(0, 0, 800, 600);
+  root.relative_bounds.bounds = gfx::RectF(0, 0, 800, 600);
 
   ui::AXNodeData static_text;
   static_text.id = 2;
   static_text.SetName("123abc");
   static_text.role = ax::mojom::Role::kStaticText;
-  static_text.location = gfx::RectF(100, 100, 60, 20);
+  static_text.relative_bounds.bounds = gfx::RectF(100, 100, 60, 20);
   root.child_ids.push_back(2);
 
   ui::AXNodeData inline_text1;
   inline_text1.id = 3;
   inline_text1.SetName("123");
   inline_text1.role = ax::mojom::Role::kInlineTextBox;
-  inline_text1.location = gfx::RectF(100, 100, 30, 20);
+  inline_text1.relative_bounds.bounds = gfx::RectF(100, 100, 30, 20);
   inline_text1.SetTextDirection(ax::mojom::TextDirection::kLtr);
   std::vector<int32_t> character_offsets1;
   character_offsets1.push_back(10);  // 0
@@ -792,7 +788,7 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRangeBiDi) {
   inline_text2.id = 4;
   inline_text2.SetName("abc");
   inline_text2.role = ax::mojom::Role::kInlineTextBox;
-  inline_text2.location = gfx::RectF(130, 100, 30, 20);
+  inline_text2.relative_bounds.bounds = gfx::RectF(130, 100, 30, 20);
   inline_text2.SetTextDirection(ax::mojom::TextDirection::kRtl);
   std::vector<int32_t> character_offsets2;
   character_offsets2.push_back(10);
@@ -840,20 +836,20 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRangeScrolledWindow) {
   root.role = ax::mojom::Role::kRootWebArea;
   root.AddIntAttribute(ax::mojom::IntAttribute::kScrollX, 25);
   root.AddIntAttribute(ax::mojom::IntAttribute::kScrollY, 50);
-  root.location = gfx::RectF(0, 0, 800, 600);
+  root.relative_bounds.bounds = gfx::RectF(0, 0, 800, 600);
 
   ui::AXNodeData static_text;
   static_text.id = 2;
   static_text.SetName("ABC");
   static_text.role = ax::mojom::Role::kStaticText;
-  static_text.location = gfx::RectF(100, 100, 16, 9);
+  static_text.relative_bounds.bounds = gfx::RectF(100, 100, 16, 9);
   root.child_ids.push_back(2);
 
   ui::AXNodeData inline_text;
   inline_text.id = 3;
   inline_text.SetName("ABC");
   inline_text.role = ax::mojom::Role::kInlineTextBox;
-  inline_text.location = gfx::RectF(100, 100, 16, 9);
+  inline_text.relative_bounds.bounds = gfx::RectF(100, 100, 16, 9);
   inline_text.SetTextDirection(ax::mojom::TextDirection::kLtr);
   std::vector<int32_t> character_offsets1;
   character_offsets1.push_back(6);   // 0
@@ -888,12 +884,12 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRangeOnParentElement) {
   root.id = 1;
   root.role = ax::mojom::Role::kRootWebArea;
   root.child_ids.push_back(2);
-  root.location = gfx::RectF(0, 0, 800, 600);
+  root.relative_bounds.bounds = gfx::RectF(0, 0, 800, 600);
 
   ui::AXNodeData div;
   div.id = 2;
   div.role = ax::mojom::Role::kGenericContainer;
-  div.location = gfx::RectF(100, 100, 100, 20);
+  div.relative_bounds.bounds = gfx::RectF(100, 100, 100, 20);
   div.child_ids.push_back(3);
   div.child_ids.push_back(4);
   div.child_ids.push_back(5);
@@ -902,27 +898,27 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRangeOnParentElement) {
   static_text1.id = 3;
   static_text1.SetName("AB");
   static_text1.role = ax::mojom::Role::kStaticText;
-  static_text1.location = gfx::RectF(100, 100, 40, 20);
+  static_text1.relative_bounds.bounds = gfx::RectF(100, 100, 40, 20);
   static_text1.child_ids.push_back(6);
 
   ui::AXNodeData img;
   img.id = 4;
   img.SetName("Test image");
   img.role = ax::mojom::Role::kImage;
-  img.location = gfx::RectF(140, 100, 20, 20);
+  img.relative_bounds.bounds = gfx::RectF(140, 100, 20, 20);
 
   ui::AXNodeData static_text2;
   static_text2.id = 5;
   static_text2.SetName("CD");
   static_text2.role = ax::mojom::Role::kStaticText;
-  static_text2.location = gfx::RectF(160, 100, 40, 20);
+  static_text2.relative_bounds.bounds = gfx::RectF(160, 100, 40, 20);
   static_text2.child_ids.push_back(7);
 
   ui::AXNodeData inline_text1;
   inline_text1.id = 6;
   inline_text1.SetName("AB");
   inline_text1.role = ax::mojom::Role::kInlineTextBox;
-  inline_text1.location = gfx::RectF(100, 100, 40, 20);
+  inline_text1.relative_bounds.bounds = gfx::RectF(100, 100, 40, 20);
   inline_text1.SetTextDirection(ax::mojom::TextDirection::kLtr);
   std::vector<int32_t> character_offsets1;
   character_offsets1.push_back(20);  // 0
@@ -934,7 +930,7 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRangeOnParentElement) {
   inline_text2.id = 7;
   inline_text2.SetName("CD");
   inline_text2.role = ax::mojom::Role::kInlineTextBox;
-  inline_text2.location = gfx::RectF(160, 100, 40, 20);
+  inline_text2.relative_bounds.bounds = gfx::RectF(160, 100, 40, 20);
   inline_text2.SetTextDirection(ax::mojom::TextDirection::kLtr);
   std::vector<int32_t> character_offsets2;
   character_offsets2.push_back(20);  // 0

@@ -13,11 +13,9 @@
 #include "net/url_request/url_request_interceptor.h"
 
 namespace data_reduction_proxy {
-class DataReductionProxyBypassProtocol;
 class DataReductionProxyBypassStats;
 class DataReductionProxyConfig;
 class DataReductionProxyConfigServiceClient;
-class DataReductionProxyEventCreator;
 
 // Used to intercept responses that contain explicit and implicit signals
 // to bypass the Data Reduction Proxy. If the proxy should be bypassed,
@@ -25,14 +23,13 @@ class DataReductionProxyEventCreator;
 // without use of the proxy.
 class DataReductionProxyInterceptor : public net::URLRequestInterceptor {
  public:
-  // Constructs the interceptor. |config|, |config_service_client|, |stats|, and
-  // |event_creator| must outlive |this|. |stats| and |config_service_client|
+  // Constructs the interceptor. |config|, |config_service_client|, and |stats|
+  //  must outlive |this|. |stats| and |config_service_client|
   // may be NULL.
   DataReductionProxyInterceptor(
       DataReductionProxyConfig* config,
       DataReductionProxyConfigServiceClient* config_service_client,
-      DataReductionProxyBypassStats* stats,
-      DataReductionProxyEventCreator* event_creator);
+      DataReductionProxyBypassStats* stats);
 
   // Destroys the interceptor.
   ~DataReductionProxyInterceptor() override;
@@ -64,14 +61,6 @@ class DataReductionProxyInterceptor : public net::URLRequestInterceptor {
   net::URLRequestJob* MaybeInterceptResponseOrRedirect(
       net::URLRequest* request, net::NetworkDelegate* network_delegate) const;
 
-  // If a request is being bypassed, log the bypass event to the
-  // |event_creator_|.
-  void MaybeAddBypassEvent(
-      net::URLRequest* request,
-      const DataReductionProxyInfo& data_reduction_proxy_info,
-      DataReductionProxyBypassType bypass_type,
-      bool should_retry) const;
-
   // Must outlive |this| if non-NULL.
   DataReductionProxyBypassStats* bypass_stats_;
 
@@ -79,12 +68,7 @@ class DataReductionProxyInterceptor : public net::URLRequestInterceptor {
   DataReductionProxyConfigServiceClient* config_service_client_;
 
   // Must outlive |this|.
-  DataReductionProxyEventCreator* event_creator_;
-
-  // Object responsible for identifying cases when a response should cause the
-  // data reduction proxy to be bypassed, and for triggering proxy bypasses in
-  // these cases.
-  std::unique_ptr<DataReductionProxyBypassProtocol> bypass_protocol_;
+  DataReductionProxyConfig* config_;
 
   base::ThreadChecker thread_checker_;
 

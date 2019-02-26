@@ -105,7 +105,7 @@ def main():
     if args.installer_path:
       installer_name = os.path.split(args.installer_path)[-1]
       run_args.append('--installer-path=' + installer_name)
-      logging.info('Archiving: %s', installer_name)
+      logging.debug('Archiving: %s', installer_name)
       zipf.write(args.installer_path, installer_name)
 
     if args.previous_version_installer_path:
@@ -113,14 +113,14 @@ def main():
         args.previous_version_installer_path)[-1]
       run_args.append(
         '--previous-version-installer-path=' + previous_version_installer_name)
-      logging.info('Archiving: %s', previous_version_installer_name)
+      logging.debug('Archiving: %s', previous_version_installer_name)
       zipf.write(
         args.previous_version_installer_path, previous_version_installer_name)
 
     if args.chromedriver_path:
       chromedriver_name = os.path.split(args.chromedriver_path)[-1]
       run_args.append('--chromedriver-path=' + chromedriver_name)
-      logging.info('Archiving: %s', chromedriver_name)
+      logging.debug('Archiving: %s', chromedriver_name)
       zipf.write(
         args.chromedriver_path, chromedriver_name)
 
@@ -133,11 +133,11 @@ def main():
                os.path.split('README.txt')[-1])
 
     # Archive this and the chromedriver code directories
-    logging.info('Zipping chrome/test/mini_installer')
+    logging.debug('Zipping chrome/test/mini_installer')
     ArchiveDirectory(THIS_DIR, zipf)
-    logging.info('Zipping third_party/webdriver/pylib')
+    logging.debug('Zipping third_party/webdriver/pylib')
     ArchiveDirectory(SELENIUM_PATH, zipf)
-  logging.info('Wrote zip to %s', args.output_path)
+  logging.debug('Wrote zip to %s', args.output_path)
 
   return 0
 

@@ -184,7 +184,8 @@ TEST(HttpUtilTest, HeadersIterator_Reset) {
 TEST(HttpUtilTest, ValuesIterator) {
   std::string values = " must-revalidate,   no-cache=\"foo, bar\"\t, private ";
 
-  HttpUtil::ValuesIterator it(values.begin(), values.end(), ',');
+  HttpUtil::ValuesIterator it(values.begin(), values.end(), ',',
+                              true /* ignore_empty_values */);
 
   ASSERT_TRUE(it.GetNext());
   EXPECT_EQ(std::string("must-revalidate"), it.value());
@@ -198,12 +199,50 @@ TEST(HttpUtilTest, ValuesIterator) {
   EXPECT_FALSE(it.GetNext());
 }
 
+TEST(HttpUtilTest, ValuesIterator_EmptyValues) {
+  std::string values = ", foopy , \t ,,,";
+
+  HttpUtil::ValuesIterator it(values.begin(), values.end(), ',',
+                              true /* ignore_empty_values */);
+  ASSERT_TRUE(it.GetNext());
+  EXPECT_EQ(std::string("foopy"), it.value());
+  EXPECT_FALSE(it.GetNext());
+
+  HttpUtil::ValuesIterator it_with_empty_values(
+      values.begin(), values.end(), ',', false /* ignore_empty_values */);
+  ASSERT_TRUE(it_with_empty_values.GetNext());
+  EXPECT_EQ(std::string(""), it_with_empty_values.value());
+
+  ASSERT_TRUE(it_with_empty_values.GetNext());
+  EXPECT_EQ(std::string("foopy"), it_with_empty_values.value());
+
+  ASSERT_TRUE(it_with_empty_values.GetNext());
+  EXPECT_EQ(std::string(""), it_with_empty_values.value());
+
+  ASSERT_TRUE(it_with_empty_values.GetNext());
+  EXPECT_EQ(std::string(""), it_with_empty_values.value());
+
+  ASSERT_TRUE(it_with_empty_values.GetNext());
+  EXPECT_EQ(std::string(""), it_with_empty_values.value());
+
+  ASSERT_TRUE(it_with_empty_values.GetNext());
+  EXPECT_EQ(std::string(""), it_with_empty_values.value());
+
+  EXPECT_FALSE(it_with_empty_values.GetNext());
+}
+
 TEST(HttpUtilTest, ValuesIterator_Blanks) {
   std::string values = " \t ";
 
-  HttpUtil::ValuesIterator it(values.begin(), values.end(), ',');
-
+  HttpUtil::ValuesIterator it(values.begin(), values.end(), ',',
+                              true /* ignore_empty_values */);
   EXPECT_FALSE(it.GetNext());
+
+  HttpUtil::ValuesIterator it_with_empty_values(
+      values.begin(), values.end(), ',', false /* ignore_empty_values */);
+  ASSERT_TRUE(it_with_empty_values.GetNext());
+  EXPECT_EQ(std::string(""), it_with_empty_values.value());
+  EXPECT_FALSE(it_with_empty_values.GetNext());
 }
 
 TEST(HttpUtilTest, Unquote) {
@@ -221,10 +260,6 @@ TEST(HttpUtilTest, Unquote) {
   // Act as identity function on unquoted inputs.
   EXPECT_STREQ("X", HttpUtil::Unquote("X").c_str());
   EXPECT_STREQ("\"", HttpUtil::Unquote("\"").c_str());
-
-  // Allow single quotes to act as quote marks.
-  // Not part of RFC 2616.
-  EXPECT_STREQ("x\"", HttpUtil::Unquote("'x\"'").c_str());
 
   // Allow quotes in the middle of the input.
   EXPECT_STREQ("foo\"bar", HttpUtil::Unquote("\"foo\"bar\"").c_str());
@@ -1156,25 +1191,26 @@ void CheckInvalidNameValuePair(std::string valid_part,
 }  // namespace
 
 TEST(HttpUtilTest, NameValuePairsIteratorCopyAndAssign) {
-  std::string data = "alpha='\\'a\\''; beta=\" b \"; cappa='c;'; delta=\"d\"";
+  std::string data =
+      "alpha=\"\\\"a\\\"\"; beta=\" b \"; cappa=\"c;\"; delta=\"d\"";
   HttpUtil::NameValuePairsIterator parser_a(data.begin(), data.end(), ';');
 
   EXPECT_TRUE(parser_a.valid());
   ASSERT_NO_FATAL_FAILURE(
-      CheckNextNameValuePair(&parser_a, true, true, "alpha", "'a'"));
+      CheckNextNameValuePair(&parser_a, true, true, "alpha", "\"a\""));
 
   HttpUtil::NameValuePairsIterator parser_b(parser_a);
   // a and b now point to same location
   ASSERT_NO_FATAL_FAILURE(
-      CheckCurrentNameValuePair(&parser_b, true, "alpha", "'a'"));
+      CheckCurrentNameValuePair(&parser_b, true, "alpha", "\"a\""));
   ASSERT_NO_FATAL_FAILURE(
-      CheckCurrentNameValuePair(&parser_a, true, "alpha", "'a'"));
+      CheckCurrentNameValuePair(&parser_a, true, "alpha", "\"a\""));
 
   // advance a, no effect on b
   ASSERT_NO_FATAL_FAILURE(
       CheckNextNameValuePair(&parser_a, true, true, "beta", " b "));
   ASSERT_NO_FATAL_FAILURE(
-      CheckCurrentNameValuePair(&parser_b, true, "alpha", "'a'"));
+      CheckCurrentNameValuePair(&parser_b, true, "alpha", "\"a\""));
 
   // assign b the current state of a, no effect on a
   parser_b = parser_a;
@@ -1200,10 +1236,13 @@ TEST(HttpUtilTest, NameValuePairsIteratorEmptyInput) {
 }
 
 TEST(HttpUtilTest, NameValuePairsIterator) {
-  std::string data = "alpha=1; beta= 2 ;cappa =' 3; ';"
-                     "delta= \" \\\"4\\\" \"; e= \" '5'\"; e=6;"
-                     "f='\\'\\h\\e\\l\\l\\o\\ \\w\\o\\r\\l\\d\\'';"
-                     "g=''; h='hello'";
+  std::string data =
+      "alpha=1; beta= 2 ;"
+      "cappa =' 3; foo=';"
+      "cappa =\" 3; foo=\";"
+      "delta= \" \\\"4\\\" \"; e= \" '5'\"; e=6;"
+      "f=\"\\\"\\h\\e\\l\\l\\o\\ \\w\\o\\r\\l\\d\\\"\";"
+      "g=\"\"; h=\"hello\"";
   HttpUtil::NameValuePairsIterator parser(data.begin(), data.end(), ';');
   EXPECT_TRUE(parser.valid());
 
@@ -1211,8 +1250,17 @@ TEST(HttpUtilTest, NameValuePairsIterator) {
       CheckNextNameValuePair(&parser, true, true, "alpha", "1"));
   ASSERT_NO_FATAL_FAILURE(
       CheckNextNameValuePair(&parser, true, true, "beta", "2"));
+
+  // Single quotes shouldn't be treated as quotes.
   ASSERT_NO_FATAL_FAILURE(
-      CheckNextNameValuePair(&parser, true, true, "cappa", " 3; "));
+      CheckNextNameValuePair(&parser, true, true, "cappa", "' 3"));
+  ASSERT_NO_FATAL_FAILURE(
+      CheckNextNameValuePair(&parser, true, true, "foo", "'"));
+
+  // But double quotes should be, and can contain semi-colons and equal signs.
+  ASSERT_NO_FATAL_FAILURE(
+      CheckNextNameValuePair(&parser, true, true, "cappa", " 3; foo="));
+
   ASSERT_NO_FATAL_FAILURE(
       CheckNextNameValuePair(&parser, true, true, "delta", " \"4\" "));
   ASSERT_NO_FATAL_FAILURE(
@@ -1220,7 +1268,7 @@ TEST(HttpUtilTest, NameValuePairsIterator) {
   ASSERT_NO_FATAL_FAILURE(
       CheckNextNameValuePair(&parser, true, true, "e", "6"));
   ASSERT_NO_FATAL_FAILURE(
-      CheckNextNameValuePair(&parser, true, true, "f", "'hello world'"));
+      CheckNextNameValuePair(&parser, true, true, "f", "\"hello world\""));
   ASSERT_NO_FATAL_FAILURE(
       CheckNextNameValuePair(&parser, true, true, "g", std::string()));
   ASSERT_NO_FATAL_FAILURE(
@@ -1277,8 +1325,9 @@ TEST(HttpUtilTest, NameValuePairsIteratorIllegalInputs) {
   ASSERT_NO_FATAL_FAILURE(CheckInvalidNameValuePair("alpha=1", "; beta"));
   ASSERT_NO_FATAL_FAILURE(CheckInvalidNameValuePair(std::string(), "beta"));
 
-  ASSERT_NO_FATAL_FAILURE(CheckInvalidNameValuePair("alpha=1", "; 'beta'=2"));
-  ASSERT_NO_FATAL_FAILURE(CheckInvalidNameValuePair(std::string(), "'beta'=2"));
+  ASSERT_NO_FATAL_FAILURE(CheckInvalidNameValuePair("alpha=1", "; \"beta\"=2"));
+  ASSERT_NO_FATAL_FAILURE(
+      CheckInvalidNameValuePair(std::string(), "\"beta\"=2"));
   ASSERT_NO_FATAL_FAILURE(CheckInvalidNameValuePair("alpha=1", ";beta="));
   ASSERT_NO_FATAL_FAILURE(CheckInvalidNameValuePair("alpha=1",
                                                     ";beta=;cappa=2"));
@@ -1309,7 +1358,7 @@ TEST(HttpUtilTest, NameValuePairsIteratorExtraSeparators) {
 // See comments on the implementation of NameValuePairsIterator::GetNext
 // regarding this derogation from the spec.
 TEST(HttpUtilTest, NameValuePairsIteratorMissingEndQuote) {
-  std::string data = "name='value";
+  std::string data = "name=\"value";
   HttpUtil::NameValuePairsIterator parser(data.begin(), data.end(), ';');
   EXPECT_TRUE(parser.valid());
 
@@ -1568,6 +1617,30 @@ TEST(HttpUtilTest, ParseContentEncoding) {
     EXPECT_STREQ(tests[i].expected, reformatted.c_str())
         << "value=\"" << value << "\"";
   }
+}
+
+// Test the expansion of the Language List.
+TEST(HttpUtilTest, ExpandLanguageList) {
+  EXPECT_EQ("", HttpUtil::ExpandLanguageList(""));
+  EXPECT_EQ("en-US,en", HttpUtil::ExpandLanguageList("en-US"));
+  EXPECT_EQ("fr", HttpUtil::ExpandLanguageList("fr"));
+
+  // The base language is added after all regional codes...
+  EXPECT_EQ("en-US,en-CA,en", HttpUtil::ExpandLanguageList("en-US,en-CA"));
+
+  // ... but before other language families.
+  EXPECT_EQ("en-US,en-CA,en,fr",
+            HttpUtil::ExpandLanguageList("en-US,en-CA,fr"));
+  EXPECT_EQ("en-US,en-CA,en,fr,en-AU",
+            HttpUtil::ExpandLanguageList("en-US,en-CA,fr,en-AU"));
+  EXPECT_EQ("en-US,en-CA,en,fr-CA,fr",
+            HttpUtil::ExpandLanguageList("en-US,en-CA,fr-CA"));
+
+  // Add a base language even if it's already in the list.
+  EXPECT_EQ("en-US,en,fr-CA,fr,it,es-AR,es,it-IT",
+            HttpUtil::ExpandLanguageList("en-US,fr-CA,it,fr,es-AR,it-IT"));
+  // Trims a whitespace.
+  EXPECT_EQ("en-US,en,fr", HttpUtil::ExpandLanguageList("en-US, fr"));
 }
 
 }  // namespace net

@@ -51,11 +51,10 @@ const int kAutoFlushBig = 2;     // 1/2 of the buffer
 //
 // helper.WaitForToken(token);  // this doesn't return until the first two
 //                              // commands have been executed.
-class GPU_EXPORT CommandBufferHelper
-    : public base::trace_event::MemoryDumpProvider {
+class GPU_EXPORT CommandBufferHelper {
  public:
   explicit CommandBufferHelper(CommandBuffer* command_buffer);
-  ~CommandBufferHelper() override;
+  virtual ~CommandBufferHelper();
 
   // Initializes the CommandBufferHelper.
   // Parameters:
@@ -267,9 +266,8 @@ class GPU_EXPORT CommandBufferHelper
 
   bool usable() const { return usable_; }
 
-  // Overridden from base::trace_event::MemoryDumpProvider:
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
-                    base::trace_event::ProcessMemoryDump* pmd) override;
+                    base::trace_event::ProcessMemoryDump* pmd);
 
   int32_t GetPutOffsetForTest() const { return put_; }
 

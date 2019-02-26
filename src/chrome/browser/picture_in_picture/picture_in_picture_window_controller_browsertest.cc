@@ -9,10 +9,10 @@
 #include "build/build_config.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/views/overlay/overlay_window_views.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
@@ -41,6 +41,11 @@
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/shell.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/hit_test.h"
+#endif
+
+#if defined(TOOLKIT_VIEWS)
+#include "chrome/browser/ui/views/overlay/overlay_window_views.h"
 #endif
 
 using ::testing::_;
@@ -163,9 +168,9 @@ class ControlPictureInPictureWindowControllerBrowserTest
 };
 
 // Checks the creation of the window controller, as well as basic window
-// creation and visibility.
+// creation, visibility and activation.
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
-                       CreationAndVisibility) {
+                       CreationAndVisibilityAndActivation) {
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(
@@ -181,19 +186,37 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 
   ASSERT_TRUE(window_controller()->GetWindowForTesting() != nullptr);
   EXPECT_FALSE(window_controller()->GetWindowForTesting()->IsVisible());
-
   bool result = false;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
       active_web_contents, "enterPictureInPicture();", &result));
   EXPECT_TRUE(result);
 
   EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
+
+#if defined(TOOLKIT_VIEWS)
+  auto* overlay_window = window_controller()->GetWindowForTesting();
+  gfx::NativeWindow native_window =
+      static_cast<OverlayWindowViews*>(overlay_window)->GetNativeWindow();
+#if defined(OS_CHROMEOS) || \
+    (defined(MAC_OS_X_VERSION_10_12) && !defined(MAC_OS_VERSION_10_13))
+  EXPECT_FALSE(platform_util::IsWindowActive(native_window));
+#else
+  EXPECT_TRUE(platform_util::IsWindowActive(native_window));
+#endif
+#endif
 }
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if (defined(OS_MACOSX) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
 class PictureInPicturePixelComparisonBrowserTest
     : public PictureInPictureWindowControllerBrowserTest {
  public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    PictureInPictureWindowControllerBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(
+        switches::kEnableExperimentalWebPlatformFeatures);
+    command_line->AppendSwitch(switches::kDisableGpu);
+  }
+
   base::FilePath GetFilePath(base::FilePath::StringPieceType relative_path) {
     base::FilePath base_dir;
     CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &base_dir));
@@ -233,12 +256,16 @@ class PictureInPicturePixelComparisonBrowserTest
             base::BindOnce(
                 &PictureInPicturePixelComparisonBrowserTest::ReadbackResult,
                 base::Unretained(this), run_loop.QuitClosure()));
-    overlay_window_views->GetNativeWindow()->layer()->RequestCopyOfOutput(
-        std::move(request));
+    overlay_window_views->GetLayer()->RequestCopyOfOutput(std::move(request));
     run_loop.Run();
   }
 
   bool CompareImages(const SkBitmap& actual_bmp) {
+    // Allowable error and thresholds because of small color shift by
+    // video to image conversion and GPU issues.
+    const int allowable_error = 2;
+    const unsigned high_threshold = 0xff - allowable_error;
+    const unsigned low_threshold = 0x00 + allowable_error;
     // Number of pixels with an error
     int error_pixels_count = 0;
     gfx::Rect error_bounding_rect;
@@ -246,12 +273,12 @@ class PictureInPicturePixelComparisonBrowserTest
     for (int x = 0; x < actual_bmp.width(); ++x) {
       for (int y = 0; y < actual_bmp.height(); ++y) {
         SkColor actual_color = actual_bmp.getColor(x, y);
-        // Check color is Yellow. The difference is caused by video conversion.
+        // Check color is Yellow and is within the tolerance range.
         // TODO(cliffordcheng): Compare with an expected image instead of just
         // checking pixel RGB color.
-        if (SkColorGetR(actual_color) != 254 &&
-            SkColorGetG(actual_color) != 253 &&
-            SkColorGetB(actual_color) != 0) {
+        if (SkColorGetR(actual_color) < high_threshold &&
+            SkColorGetG(actual_color) < high_threshold &&
+            SkColorGetB(actual_color) > low_threshold) {
           ++error_pixels_count;
           error_bounding_rect.Union(gfx::Rect(x, y, 1, 1));
         }
@@ -265,14 +292,20 @@ class PictureInPicturePixelComparisonBrowserTest
     return true;
   }
 
+  void Wait(base::TimeDelta timeout) {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), timeout);
+    run_loop.Run();
+  }
+
   SkBitmap& GetResultBitmap() { return *result_bitmap_; }
 
  private:
   std::unique_ptr<SkBitmap> result_bitmap_;
 };
 
-// TODO(cliffordcheng): enable this tests on other platforms when
-// Windows and Mac capture screen problem is solved.
+// TODO(cliffordcheng): enable on Windows when compile errors are resolved.
 // Plays a video and then trigger Picture-in-Picture. Grabs a screenshot of
 // Picture-in-Picture window and verifies it's as expected.
 IN_PROC_BROWSER_TEST_F(PictureInPicturePixelComparisonBrowserTest, VideoPlay) {
@@ -313,6 +346,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPicturePixelComparisonBrowserTest, VideoPlay) {
   EXPECT_EQ(expected_title,
             content::TitleWatcher(active_web_contents, expected_title)
                 .WaitAndGetTitle());
+  Wait(base::TimeDelta::FromSeconds(3));
   TakeOverlayWindowScreenshot(overlay_window_views);
 
   std::string test_image = "pixel_test_actual_0.png";
@@ -320,7 +354,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPicturePixelComparisonBrowserTest, VideoPlay) {
   ASSERT_TRUE(SaveBitmap(test_image_path, GetResultBitmap()));
   EXPECT_TRUE(CompareImages(GetResultBitmap()));
 }
-#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#endif  // (defined(OS_MACOSX) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
 
 // Tests that when an active WebContents accurately tracks whether a video
 // is in Picture-in-Picture.
@@ -806,7 +840,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_TRUE(in_picture_in_picture);
 
   EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
-  EXPECT_FALSE(
+  EXPECT_TRUE(
       window_controller()->GetWindowForTesting()->GetVideoLayer()->visible());
 }
 
@@ -1317,8 +1351,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
       window_controller()->GetWindowForTesting());
 
-  EXPECT_TRUE(overlay_window->play_pause_controls_view_for_testing()
-                  ->toggled_for_testing());
+  EXPECT_EQ(overlay_window->playback_state_for_testing(),
+            OverlayWindowViews::PlaybackState::kPlaying);
 
   ASSERT_TRUE(
       content::ExecuteScript(active_web_contents, "exitPictureInPicture();"));
@@ -1344,8 +1378,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
     OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
         window_controller()->GetWindowForTesting());
 
-    EXPECT_FALSE(overlay_window->play_pause_controls_view_for_testing()
-                     ->toggled_for_testing());
+    EXPECT_EQ(overlay_window->playback_state_for_testing(),
+              OverlayWindowViews::PlaybackState::kPaused);
   }
 }
 
@@ -1606,6 +1640,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   // The resize button should be in the top left corner.
   EXPECT_GT(center.x(), resize_button_position.x());
   EXPECT_GT(center.y(), resize_button_position.y());
+  // The resize button hit test should start a top left resizing drag.
+  EXPECT_EQ(HTTOPLEFT, overlay_window_views->GetResizeHTComponent());
 
   // Move the window to the bottom left corner.
   gfx::Rect bottom_left_bounds(0, bottom_right_bounds.y(),
@@ -1623,6 +1659,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   // The resize button should be in the top right corner.
   EXPECT_LT(center.x(), resize_button_position.x());
   EXPECT_GT(center.y(), resize_button_position.y());
+  // The resize button hit test should start a top right resizing drag.
+  EXPECT_EQ(HTTOPRIGHT, overlay_window_views->GetResizeHTComponent());
 
   // Move the window to the top right corner.
   gfx::Rect top_right_bounds(bottom_right_bounds.x(), 0,
@@ -1640,6 +1678,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   // The resize button should be in the bottom left corner.
   EXPECT_GT(center.x(), resize_button_position.x());
   EXPECT_LT(center.y(), resize_button_position.y());
+  // The resize button hit test should start a bottom left resizing drag.
+  EXPECT_EQ(HTBOTTOMLEFT, overlay_window_views->GetResizeHTComponent());
 
   // Move the window to the top left corner.
   gfx::Rect top_left_bounds(0, 0, bottom_right_bounds.width(),
@@ -1656,6 +1696,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   // The resize button should be in the bottom right corner.
   EXPECT_LT(center.x(), resize_button_position.x());
   EXPECT_LT(center.y(), resize_button_position.y());
+  // The resize button hit test should start a bottom right resizing drag.
+  EXPECT_EQ(HTBOTTOMRIGHT, overlay_window_views->GetResizeHTComponent());
 }
 
 #endif  // defined(OS_CHROMEOS)

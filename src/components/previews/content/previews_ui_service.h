@@ -25,10 +25,6 @@
 
 class GURL;
 
-namespace base {
-class SingleThreadTaskRunner;
-}
-
 namespace previews {
 class PreviewsDeciderImpl;
 
@@ -38,8 +34,7 @@ class PreviewsUIService
     : public network::NetworkQualityTracker::EffectiveConnectionTypeObserver {
  public:
   PreviewsUIService(
-      PreviewsDeciderImpl* previews_decider_impl,
-      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
+      std::unique_ptr<PreviewsDeciderImpl> previews_decider_impl,
       std::unique_ptr<blacklist::OptOutStore> previews_opt_out_store,
       std::unique_ptr<PreviewsOptimizationGuide> previews_opt_guide,
       const PreviewsIsEnabledCallback& is_enabled_callback,
@@ -51,11 +46,6 @@ class PreviewsUIService
   // network::EffectiveConnectionTypeObserver:
   void OnEffectiveConnectionTypeChanged(
       net::EffectiveConnectionType type) override;
-
-  // Sets |previews_decider_impl_| to |previews_decider_impl| to allow calls
-  // from the UI thread to the IO thread. Virtualized in testing.
-  virtual void SetIOData(
-      base::WeakPtr<PreviewsDeciderImpl> previews_decider_impl);
 
   // Adds a navigation to |url| to the black list with result |opt_out|.
   void AddPreviewNavigation(const GURL& url,
@@ -136,18 +126,18 @@ class PreviewsUIService
   // return null.
   PreviewsLogger* previews_logger() const;
 
+  // Gets the decision making object for Previews triggering. Guaranteed to be
+  // non-null.
+  PreviewsDeciderImpl* previews_decider_impl() const;
+
   // When triggering previews, prevent long term black list rules.
   void SetIgnoreLongTermBlackListForServerPreviews(
       bool ignore_long_term_black_list_rules_allowed);
 
  private:
-  // The IO thread portion of the inter-thread communication for previews.
-  base::WeakPtr<previews::PreviewsDeciderImpl> previews_decider_impl_;
-
-  base::ThreadChecker thread_checker_;
-
-  // The IO thread task runner. Used to post tasks to |previews_decider_impl_|.
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  // The decision making object for Previews triggering. Guaranteed to be
+  // non-null.
+  std::unique_ptr<previews::PreviewsDeciderImpl> previews_decider_impl_;
 
   // |resource_loading_hints_patterns_| are the set of subresource patterns
   // whose loading should be blocked. The hints apply to subresources when
@@ -167,6 +157,8 @@ class PreviewsUIService
   // The current EffectiveConnectionType estimate.
   net::EffectiveConnectionType current_effective_connection_type_ =
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<PreviewsUIService> weak_factory_;
 

@@ -97,6 +97,7 @@ class VulkanLibrary final : NonCopyable
     VkInstance mInstance = VK_NULL_HANDLE;
 };
 
+ANGLE_FORMAT_PRINTF(1, 2)
 std::string FormatString(const char *fmt, ...)
 {
     va_list vararg;
@@ -128,7 +129,7 @@ bool GetSystemInfo(SystemInfo *info)
         GPA(vkLibrary, PFN_vkEnumeratePhysicalDevices, "vkEnumeratePhysicalDevices");
     PFN_vkGetPhysicalDeviceProperties pfnGetPhysicalDeviceProperties =
         GPA(vkLibrary, PFN_vkGetPhysicalDeviceProperties, "vkGetPhysicalDeviceProperties");
-    uint32_t physicalDeviceCount       = 0;
+    uint32_t physicalDeviceCount = 0;
     if (!pfnEnumeratePhysicalDevices ||
         pfnEnumeratePhysicalDevices(instance, &physicalDeviceCount, nullptr) != VK_SUCCESS)
     {
@@ -159,23 +160,23 @@ bool GetSystemInfo(SystemInfo *info)
         switch (properties.vendorID)
         {
             case kVendorID_AMD:
-                gpu.driverVendor  = "Advanced Micro Devices, Inc";
-                gpu.driverVersion = FormatString("0x%x", properties.driverVersion);
+                gpu.driverVendor                = "Advanced Micro Devices, Inc";
+                gpu.driverVersion               = FormatString("0x%x", properties.driverVersion);
                 gpu.detailedDriverVersion.major = properties.driverVersion;
                 break;
             case kVendorID_ARM:
-                gpu.driverVendor  = "Arm Holdings";
-                gpu.driverVersion = FormatString("0x%x", properties.driverVersion);
+                gpu.driverVendor                = "Arm Holdings";
+                gpu.driverVersion               = FormatString("0x%x", properties.driverVersion);
                 gpu.detailedDriverVersion.major = properties.driverVersion;
                 break;
             case kVendorID_ImgTec:
-                gpu.driverVendor  = "Imagination Technologies Limited";
-                gpu.driverVersion = FormatString("0x%x", properties.driverVersion);
+                gpu.driverVendor                = "Imagination Technologies Limited";
+                gpu.driverVersion               = FormatString("0x%x", properties.driverVersion);
                 gpu.detailedDriverVersion.major = properties.driverVersion;
                 break;
             case kVendorID_Intel:
-                gpu.driverVendor  = "Intel Corporation";
-                gpu.driverVersion = FormatString("0x%x", properties.driverVersion);
+                gpu.driverVendor                = "Intel Corporation";
+                gpu.driverVersion               = FormatString("0x%x", properties.driverVersion);
                 gpu.detailedDriverVersion.major = properties.driverVersion;
                 break;
             case kVendorID_Nvidia:
@@ -207,18 +208,18 @@ bool GetSystemInfo(SystemInfo *info)
                 }
                 break;
             case kVendorID_Vivante:
-                gpu.driverVendor  = "Vivante";
-                gpu.driverVersion = FormatString("0x%x", properties.driverVersion);
+                gpu.driverVendor                = "Vivante";
+                gpu.driverVersion               = FormatString("0x%x", properties.driverVersion);
                 gpu.detailedDriverVersion.major = properties.driverVersion;
                 break;
             case kVendorID_VeriSilicon:
-                gpu.driverVendor  = "VeriSilicon";
-                gpu.driverVersion = FormatString("0x%x", properties.driverVersion);
+                gpu.driverVendor                = "VeriSilicon";
+                gpu.driverVersion               = FormatString("0x%x", properties.driverVersion);
                 gpu.detailedDriverVersion.major = properties.driverVersion;
                 break;
             case kVendorID_Kazan:
-                gpu.driverVendor  = "Kazan Software";
-                gpu.driverVersion = FormatString("0x%x", properties.driverVersion);
+                gpu.driverVendor                = "Kazan Software";
+                gpu.driverVersion               = FormatString("0x%x", properties.driverVersion);
                 gpu.detailedDriverVersion.major = properties.driverVersion;
                 break;
             default:

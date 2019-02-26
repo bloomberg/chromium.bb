@@ -99,10 +99,10 @@ LinkLoadParameters::LinkLoadParameters(const LinkHeader& header,
       media(header.Media()),
       nonce(header.Nonce()),
       integrity(header.Integrity()),
-      referrer_policy(kReferrerPolicyDefault),
+      referrer_policy(network::mojom::ReferrerPolicy::kDefault),
       href(KURL(base_url, header.Url())),
-      srcset(header.Srcset()),
-      sizes(header.Imgsizes()) {}
+      image_srcset(header.ImageSrcset()),
+      image_sizes(header.ImageSizes()) {}
 
 class LinkLoader::FinishObserver final
     : public GarbageCollectedFinalized<ResourceFinishObserver>,
@@ -362,14 +362,14 @@ static Resource* PreloadIfNeeded(const LinkLoadParameters& params,
 
   MediaValues* media_values = nullptr;
   KURL url;
-  if (resource_type == ResourceType::kImage && !params.srcset.IsEmpty() &&
+  if (resource_type == ResourceType::kImage && !params.image_srcset.IsEmpty() &&
       RuntimeEnabledFeatures::PreloadImageSrcSetEnabled()) {
     media_values = CreateMediaValues(document, viewport_description);
     float source_size =
-        SizesAttributeParser(media_values, params.sizes).length();
+        SizesAttributeParser(media_values, params.image_sizes).length();
     ImageCandidate candidate = BestFitSourceForImageAttributes(
         media_values->DevicePixelRatio(), source_size, params.href,
-        params.srcset);
+        params.image_srcset);
     url = base_url.IsNull() ? document.CompleteURL(candidate.ToString())
                             : KURL(base_url, candidate.ToString());
   } else {
@@ -417,7 +417,7 @@ static Resource* PreloadIfNeeded(const LinkLoadParameters& params,
       GetFetchImportanceAttributeValue(params.importance));
 
   ResourceLoaderOptions options;
-  options.initiator_info.name = FetchInitiatorTypeNames::link;
+  options.initiator_info.name = fetch_initiator_type_names::kLink;
   options.parser_disposition = parser_disposition;
   FetchParameters link_fetch_params(resource_request, options);
   link_fetch_params.SetCharset(document.Encoding());
@@ -577,7 +577,7 @@ static Resource* PrefetchIfNeeded(const LinkLoadParameters& params,
         GetFetchImportanceAttributeValue(params.importance));
 
     ResourceLoaderOptions options;
-    options.initiator_info.name = FetchInitiatorTypeNames::link;
+    options.initiator_info.name = fetch_initiator_type_names::kLink;
 
     FetchParameters link_fetch_params(resource_request, options);
     if (params.cross_origin != kCrossOriginAttributeNotSet) {
@@ -664,7 +664,7 @@ bool LinkLoader::LoadLink(
     resource = PrefetchIfNeeded(params, document);
   }
   if (resource)
-    finish_observer_ = new FinishObserver(this, resource);
+    finish_observer_ = MakeGarbageCollected<FinishObserver>(this, resource);
 
   ModulePreloadIfNeeded(params, document, nullptr, this);
 

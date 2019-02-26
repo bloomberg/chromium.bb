@@ -17,8 +17,6 @@
 
 namespace gpu {
 
-class DecoderClient;
-
 namespace gles2 {
 
 class DebugMarkerManager;
@@ -27,7 +25,10 @@ class GPU_GLES2_EXPORT Logger {
  public:
   static const int kMaxLogMessages = 256;
 
-  Logger(const DebugMarkerManager* debug_marker_manager, DecoderClient* client);
+  using LogMessageCallback = base::RepeatingCallback<void(const std::string&)>;
+
+  Logger(const DebugMarkerManager* debug_marker_manager,
+         const LogMessageCallback& callback);
   ~Logger();
 
   void LogMessage(const char* filename, int line, const std::string& msg);
@@ -44,7 +45,7 @@ class GPU_GLES2_EXPORT Logger {
  private:
   // Uses the current marker to add information to logs.
   const DebugMarkerManager* debug_marker_manager_;
-  DecoderClient* client_;
+  const LogMessageCallback log_message_callback_;
   std::string this_in_hex_;
 
   int log_message_count_;

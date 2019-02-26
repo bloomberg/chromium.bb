@@ -60,8 +60,10 @@ void HostFrameSinkManager::SetBadMessageReceivedFromGpuCallback(
   bad_message_received_from_gpu_callback_ = std::move(callback);
 }
 
-void HostFrameSinkManager::RegisterFrameSinkId(const FrameSinkId& frame_sink_id,
-                                               HostFrameSinkClient* client) {
+void HostFrameSinkManager::RegisterFrameSinkId(
+    const FrameSinkId& frame_sink_id,
+    HostFrameSinkClient* client,
+    ReportFirstSurfaceActivation report_activation) {
   DCHECK(frame_sink_id.is_valid());
   DCHECK(client);
 
@@ -69,7 +71,9 @@ void HostFrameSinkManager::RegisterFrameSinkId(const FrameSinkId& frame_sink_id,
   DCHECK(!data.IsFrameSinkRegistered());
   DCHECK(!data.has_created_compositor_frame_sink);
   data.client = client;
-  frame_sink_manager_->RegisterFrameSinkId(frame_sink_id);
+  data.report_activation = report_activation;
+  frame_sink_manager_->RegisterFrameSinkId(
+      frame_sink_id, report_activation == ReportFirstSurfaceActivation::kYes);
 }
 
 bool HostFrameSinkManager::IsFrameSinkIdRegistered(
@@ -85,15 +89,9 @@ void HostFrameSinkManager::InvalidateFrameSinkId(
   FrameSinkData& data = frame_sink_data_map_[frame_sink_id];
   DCHECK(data.IsFrameSinkRegistered());
 
-  if (data.has_created_compositor_frame_sink && data.is_root) {
-    // This synchronous call ensures that the GL context/surface that draw to
-    // the platform window (eg. XWindow or HWND) get destroyed before the
-    // platform window is destroyed.
-    mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
-    frame_sink_manager_->DestroyCompositorFrameSink(frame_sink_id);
-  }
+  const bool destroy_synchronously =
+      data.has_created_compositor_frame_sink && data.is_root;
 
-  frame_sink_manager_->InvalidateFrameSinkId(frame_sink_id);
   data.has_created_compositor_frame_sink = false;
   data.client = nullptr;
 
@@ -102,6 +100,21 @@ void HostFrameSinkManager::InvalidateFrameSinkId(
     frame_sink_data_map_.erase(frame_sink_id);
 
   display_hit_test_query_.erase(frame_sink_id);
+
+  if (destroy_synchronously) {
+    // This synchronous call ensures that the GL context/surface that draw to
+    // the platform window (eg. XWindow or HWND) get destroyed before the
+    // platform window is destroyed.
+    mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
+    frame_sink_manager_->DestroyCompositorFrameSink(frame_sink_id);
+
+    // Other synchronous IPCs continue to get processed while
+    // DestroyCompositorFrameSink() is happening, so it's possible
+    // HostFrameSinkManager has been mutated. |data| might not be a valid
+    // reference at this point.
+  }
+
+  frame_sink_manager_->InvalidateFrameSinkId(frame_sink_id);
 }
 
 void HostFrameSinkManager::EnableSynchronizationReporting(
@@ -184,6 +197,13 @@ void HostFrameSinkManager::OnFrameTokenChanged(const FrameSinkId& frame_sink_id,
   const FrameSinkData& data = iter->second;
   if (data.client)
     data.client->OnFrameTokenChanged(frame_token);
+}
+
+void HostFrameSinkManager::SetHitTestAsyncQueriedDebugRegions(
+    const FrameSinkId& root_frame_sink_id,
+    const std::vector<FrameSinkId>& hit_test_async_queried_debug_queue) {
+  frame_sink_manager_->SetHitTestAsyncQueriedDebugRegions(
+      root_frame_sink_id, hit_test_async_queried_debug_queue);
 }
 
 bool HostFrameSinkManager::RegisterFrameSinkHierarchy(
@@ -348,8 +368,11 @@ void HostFrameSinkManager::RegisterAfterConnectionLoss() {
   for (auto& map_entry : frame_sink_data_map_) {
     const FrameSinkId& frame_sink_id = map_entry.first;
     FrameSinkData& data = map_entry.second;
-    if (data.client)
-      frame_sink_manager_->RegisterFrameSinkId(frame_sink_id);
+    if (data.client) {
+      frame_sink_manager_->RegisterFrameSinkId(
+          frame_sink_id,
+          data.report_activation == ReportFirstSurfaceActivation::kYes);
+    }
     if (!data.synchronization_reporting_label.empty()) {
       frame_sink_manager_->EnableSynchronizationReporting(
           frame_sink_id, data.synchronization_reporting_label);

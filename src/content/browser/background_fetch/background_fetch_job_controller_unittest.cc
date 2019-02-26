@@ -24,12 +24,15 @@
 #include "content/browser/background_fetch/background_fetch_test_base.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/storage_partition_impl.h"
+#include "content/common/service_worker/service_worker_type_converter.h"
 #include "content/public/browser/background_fetch_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/fake_download_item.h"
 #include "content/public/test/mock_download_manager.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
 
 using testing::_;
 
@@ -112,11 +115,12 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
     std::vector<scoped_refptr<BackgroundFetchRequestInfo>> request_infos;
     int request_counter = 0;
     for (const auto& pair : request_data) {
-      ServiceWorkerFetchRequest fetch_request(
-          GURL(pair.first), pair.second, ServiceWorkerHeaderMap(), Referrer(),
-          false /* is_reload */);
+      blink::mojom::FetchAPIRequestPtr request_ptr =
+          CreateFetchAPIRequest(GURL(pair.first), pair.second,
+                                base::flat_map<std::string, std::string>(),
+                                blink::mojom::Referrer::New(), false);
       auto request = base::MakeRefCounted<BackgroundFetchRequestInfo>(
-          request_counter++, fetch_request);
+          request_counter++, std::move(request_ptr));
       request->InitializeDownloadGuid();
       request_infos.push_back(request);
     }
@@ -146,7 +150,7 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
     delegate_proxy_ = std::make_unique<BackgroundFetchDelegateProxy>(delegate_);
 
     auto controller = std::make_unique<BackgroundFetchJobController>(
-        delegate_proxy_.get(), context_->scheduler_.get(), registration_id,
+        nullptr /* data_manager */, delegate_proxy_.get(), registration_id,
         BackgroundFetchOptions(), SkBitmap(), 0 /* bytes_downloaded */,
         base::BindRepeating(
             &BackgroundFetchJobControllerTest::DidUpdateProgress,
@@ -154,17 +158,17 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
         base::BindOnce(&BackgroundFetchJobControllerTest::DidFinishJob,
                        base::Unretained(this)));
 
-    controller->InitializeRequestStatus(
-        0, total_downloads, {} /* outstanding_guids */, "" /* ui_title */,
-        /* start_paused = */ false);
+    controller->InitializeRequestStatus(0, total_downloads,
+                                        {} /* outstanding_guids */,
+                                        /* start_paused = */ false);
 
     return controller;
   }
 
-  void AddControllerToContextMap(
+  void AddControllerToSchedulerMap(
       const std::string& unique_id,
       std::unique_ptr<BackgroundFetchJobController> controller) {
-    context_->job_controllers_[unique_id] = std::move(controller);
+    scheduler()->job_controllers_[unique_id] = std::move(controller);
   }
 
   // BackgroundFetchTestBase overrides:
@@ -206,6 +210,8 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
   std::unique_ptr<BackgroundFetchDelegateProxy> delegate_proxy_;
   BackgroundFetchDelegate* delegate_;
 
+  BackgroundFetchScheduler* scheduler() { return context_->scheduler_.get(); }
+
  private:
   void DidUpdateProgress(const BackgroundFetchRegistration& registration) {
     last_downloaded_ = registration.downloaded;
@@ -216,7 +222,8 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
 
   void DidFinishJob(
       const BackgroundFetchRegistrationId& registration_id,
-      blink::mojom::BackgroundFetchFailureReason reason_to_abort) {
+      blink::mojom::BackgroundFetchFailureReason reason_to_abort,
+      base::OnceCallback<void(blink::mojom::BackgroundFetchError)> callback) {
     auto iter = pending_requests_counts_.find(registration_id);
     DCHECK(iter != pending_requests_counts_.end());
 
@@ -383,7 +390,8 @@ TEST_F(BackgroundFetchJobControllerTest, Abort) {
                      base::Unretained(this), registration_id));
 
   controller->Abort(
-      blink::mojom::BackgroundFetchFailureReason::CANCELLED_FROM_UI);
+      blink::mojom::BackgroundFetchFailureReason::CANCELLED_FROM_UI,
+      base::DoNothing());
 
   base::RunLoop().RunUntilIdle();
 
@@ -440,9 +448,10 @@ TEST_F(BackgroundFetchJobControllerTest, ServiceWorkerRegistrationDeleted) {
   std::unique_ptr<BackgroundFetchJobController> controller =
       CreateJobController(registration_id, requests.size());
 
-  AddControllerToContextMap(registration_id.unique_id(), std::move(controller));
-  context_->OnRegistrationDeleted(kExampleServiceWorkerRegistrationId,
-                                  GURL("https://example.com/funny_cat.png"));
+  AddControllerToSchedulerMap(registration_id.unique_id(),
+                              std::move(controller));
+  scheduler()->OnRegistrationDeleted(kExampleServiceWorkerRegistrationId,
+                                     GURL("https://example.com/funny_cat.png"));
 
   base::RunLoop().RunUntilIdle();
 
@@ -463,9 +472,10 @@ TEST_F(BackgroundFetchJobControllerTest, ServiceWorkerDatabaseDeleted) {
   std::unique_ptr<BackgroundFetchJobController> controller =
       CreateJobController(registration_id, requests.size());
 
-  AddControllerToContextMap(registration_id.unique_id(), std::move(controller));
+  AddControllerToSchedulerMap(registration_id.unique_id(),
+                              std::move(controller));
 
-  context_->OnStorageWiped();
+  scheduler()->OnStorageWiped();
 
   base::RunLoop().RunUntilIdle();
 

@@ -10,8 +10,8 @@
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/web_graphics_context_3d_provider_wrapper.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
-#include "third_party/blink/renderer/platform/web_task_runner.h"
 #include "third_party/skia/include/core/SkImage.h"
 
 namespace blink {
@@ -112,8 +112,7 @@ void UnacceleratedStaticBitmapImage::Transfer() {
   DETACH_FROM_THREAD(thread_checker_);
 
   original_skia_image_ = paint_image_.GetSkImage();
-  Thread* thread = Platform::Current()->CurrentThread();
-  original_skia_image_task_runner_ = thread->GetTaskRunner();
+  original_skia_image_task_runner_ = Thread::Current()->GetTaskRunner();
 }
 
 }  // namespace blink

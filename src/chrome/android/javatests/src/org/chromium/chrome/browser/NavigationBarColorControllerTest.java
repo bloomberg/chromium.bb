@@ -6,6 +6,7 @@ package org.chromium.chrome.browser;
 
 import static org.junit.Assert.assertEquals;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.graphics.Color;
 import android.os.Build;
@@ -32,6 +33,7 @@ import org.chromium.chrome.test.util.ChromeTabUtils;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @MinAndroidSdkLevel(Build.VERSION_CODES.O_MR1)
 @TargetApi(Build.VERSION_CODES.O_MR1)
+@SuppressLint("NewApi")
 public class NavigationBarColorControllerTest {
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();

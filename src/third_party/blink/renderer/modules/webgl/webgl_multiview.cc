@@ -21,7 +21,7 @@ WebGLExtensionName WebGLMultiview::GetName() const {
 }
 
 WebGLMultiview* WebGLMultiview::Create(WebGLRenderingContextBase* context) {
-  return new WebGLMultiview(context);
+  return MakeGarbageCollected<WebGLMultiview>(context);
 }
 
 void WebGLMultiview::framebufferTextureMultiviewWEBGL(GLenum target,

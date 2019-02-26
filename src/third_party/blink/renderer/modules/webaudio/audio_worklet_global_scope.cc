@@ -110,7 +110,7 @@ void AudioWorkletGlobalScope::registerProcessor(
   // of |AudioParamDescriptor| and pass it to the definition.
   if (did_get_parameter_descriptor &&
       !parameter_descriptors_value_local->IsNullOrUndefined()) {
-    HeapVector<AudioParamDescriptor> audio_param_descriptors =
+    HeapVector<Member<AudioParamDescriptor>> audio_param_descriptors =
         NativeValueTraits<IDLSequence<AudioParamDescriptor>>::NativeValue(
             isolate, parameter_descriptors_value_local, exception_state);
 

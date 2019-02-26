@@ -35,9 +35,13 @@ namespace chromeos {
 
 class ArcKioskAppManager;
 class DemoModeResourcesRemover;
+class DiagnosticsdBridge;
+class DiscoverManager;
 class EventRewriterDelegateImpl;
+class FastTransitionObserver;
 class IdleActionWarningObserver;
 class LowDiskNotification;
+class NetworkChangeManagerClient;
 class NetworkPrefStateObserver;
 class NetworkThrottlingObserver;
 class PowerMetricsReporter;
@@ -60,6 +64,10 @@ namespace ml {
 class AdaptiveScreenBrightnessManager;
 class UserActivityController;
 }  // namespace ml
+
+namespace auto_screen_brightness {
+class Controller;
+}  // namespace auto_screen_brightness
 }  // namespace power
 
 // ChromeBrowserMainParts implementation for chromeos specific code.
@@ -95,7 +103,9 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   std::unique_ptr<RendererFreezer> renderer_freezer_;
   std::unique_ptr<PowerMetricsReporter> power_metrics_reporter_;
   std::unique_ptr<WakeOnWifiManager> wake_on_wifi_manager_;
+  std::unique_ptr<FastTransitionObserver> fast_transition_observer_;
   std::unique_ptr<NetworkThrottlingObserver> network_throttling_observer_;
+  std::unique_ptr<NetworkChangeManagerClient> network_change_manager_client_;
 
   // Indicates whether the DBus has been initialized before. It is possible that
   // the DBus has been initialized in ChromeFeatureListCreator.
@@ -139,9 +149,13 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
       adaptive_screen_brightness_manager_;
 
   std::unique_ptr<power::ml::UserActivityController> user_activity_controller_;
+  std::unique_ptr<power::auto_screen_brightness::Controller>
+      auto_screen_brightness_controller_;
 
   std::unique_ptr<DemoModeResourcesRemover> demo_mode_resources_remover_;
   std::unique_ptr<crostini::CrosvmMetrics> crosvm_metrics_;
+  std::unique_ptr<DiscoverManager> discover_manager_;
+  std::unique_ptr<DiagnosticsdBridge> diagnosticsd_bridge_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsChromeos);
 };

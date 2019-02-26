@@ -210,9 +210,6 @@ SUSPECT_REASONS = {
     SUSPECT_REASON_UNKNOWN: 6,
 }
 
-# Ts-mon related constants
-TSMON_METRIC_FIELDS = '/tmp/ts_mon_fields.txt'
-
 # Monarch metric names
 MON_CQ_WALL_CLOCK_SECS = 'chromeos/cbuildbot/cq_wall_clock_seconds'
 MON_CQ_SELF_DESTRUCTION_COUNT = ('chromeos/cbuildbot/build/'
@@ -610,6 +607,10 @@ BRANCH_UTIL_CONFIG = 'branch-util'
 # Generic type of tryjob only build configs.
 TRYJOB_TYPE = 'tryjob'
 
+# Builds that run repeatedly to verify TOT state, and generate secondary
+# artifacts (like prebuilts).
+POSTSUBMIT_TYPE = 'postsubmit'
+
 # Special build type for Chroot builders.  These builds focus on building
 # toolchains and validate that they work.
 CHROOT_BUILDER_TYPE = 'chroot'
@@ -636,7 +637,8 @@ VALID_BUILD_TYPES = (
     TOOLCHAIN_TYPE,
     TRYJOB_TYPE,
     GENERIC_TYPE,
-    PRE_CQ_TYPE
+    PRE_CQ_TYPE,
+    POSTSUBMIT_TYPE,
 )
 
 # The default list of pre-cq configs to use.
@@ -1166,7 +1168,7 @@ GOLO_SMTP_SERVER = 'mail.golo.chromium.org'
 CHROME_GARDENER = 'chrome'
 
 # URLs to retrieve sheriff names from the waterfall.
-CHROME_GARDENER_URL = '%s/sheriff_cr_cros_gardeners.js' % (BUILD_DASHBOARD)
+CHROME_GARDENER_URL = 'https://go/legoland-chrome-pfq'
 
 SHERIFF_TYPE_TO_URL = {
     CHROME_GARDENER: (CHROME_GARDENER_URL,)
@@ -1224,13 +1226,11 @@ CHROMEOS_SERVICE_ACCOUNT = os.path.join('/', 'creds', 'service_accounts',
 # Buildbucket buckets
 CHROMEOS_RELEASE_BUILDBUCKET_BUCKET = 'master.chromeos_release'
 CHROMEOS_BUILDBUCKET_BUCKET = 'master.chromeos'
-CHROMIUMOS_BUILDBUCKET_BUCKET = 'master.chromiumos'
 INTERNAL_SWARMING_BUILDBUCKET_BUCKET = 'luci.chromeos.general'
 
 ACTIVE_BUCKETS = [
     CHROMEOS_RELEASE_BUILDBUCKET_BUCKET,
     CHROMEOS_BUILDBUCKET_BUCKET,
-    CHROMIUMOS_BUILDBUCKET_BUCKET,
     INTERNAL_SWARMING_BUILDBUCKET_BUCKET,
 ]
 

@@ -20,7 +20,7 @@ ConstantSourceHandler::ConstantSourceHandler(AudioNode& node,
                                              AudioParamHandler& offset)
     : AudioScheduledSourceHandler(kNodeTypeConstantSource, node, sample_rate),
       offset_(&offset),
-      sample_accurate_values_(AudioUtilities::kRenderQuantumFrames) {
+      sample_accurate_values_(audio_utilities::kRenderQuantumFrames) {
   // A ConstantSource is always mono.
   AddOutput(1);
 
@@ -38,7 +38,7 @@ ConstantSourceHandler::~ConstantSourceHandler() {
   Uninitialize();
 }
 
-void ConstantSourceHandler::Process(size_t frames_to_process) {
+void ConstantSourceHandler::Process(uint32_t frames_to_process) {
   AudioBus* output_bus = Output(0).Bus();
   DCHECK(output_bus);
 
@@ -132,7 +132,7 @@ ConstantSourceNode* ConstantSourceNode::Create(
 
 ConstantSourceNode* ConstantSourceNode::Create(
     BaseAudioContext* context,
-    const ConstantSourceOptions& options,
+    const ConstantSourceOptions* options,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
@@ -141,7 +141,7 @@ ConstantSourceNode* ConstantSourceNode::Create(
   if (!node)
     return nullptr;
 
-  node->offset()->setValue(options.offset());
+  node->offset()->setValue(options->offset());
 
   return node;
 }

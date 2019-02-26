@@ -14,6 +14,7 @@
 #include "SkColorData.h"
 #include "SkDescriptor.h"
 #include "SkDraw.h"
+#include "SkFontPriv.h"
 #include "SkGlyph.h"
 #include "SkMakeUnique.h"
 #include "SkMaskFilter.h"
@@ -549,7 +550,7 @@ bool SkScalerContext::getPath(SkPackedGlyphID glyphID, SkPath* path) {
     return this->internalGetPath(glyphID, path);
 }
 
-void SkScalerContext::getFontMetrics(SkPaint::FontMetrics* fm) {
+void SkScalerContext::getFontMetrics(SkFontMetrics* fm) {
     SkASSERT(fm);
     this->generateFontMetrics(fm);
 }
@@ -819,7 +820,7 @@ protected:
         path->reset();
         return false;
     }
-    void generateFontMetrics(SkPaint::FontMetrics* metrics) override {
+    void generateFontMetrics(SkFontMetrics* metrics) override {
         if (metrics) {
             sk_bzero(metrics, sizeof(*metrics));
         }
@@ -853,18 +854,16 @@ static SkScalar sk_relax(SkScalar x) {
     return n / 1024.0f;
 }
 
-static SkMask::Format compute_mask_format(const SkPaint& paint) {
-    uint32_t flags = paint.getFlags();
-
-    // Antialiasing being disabled trumps all other settings.
-    if (!(flags & SkPaint::kAntiAlias_Flag)) {
-        return SkMask::kBW_Format;
+static SkMask::Format compute_mask_format(const SkFont& font) {
+    switch (font.getEdging()) {
+        case SkFont::Edging::kAlias:
+            return SkMask::kBW_Format;
+        case SkFont::Edging::kAntiAlias:
+            return SkMask::kA8_Format;
+        case SkFont::Edging::kSubpixelAntiAlias:
+            return SkMask::kLCD16_Format;
     }
-
-    if (flags & SkPaint::kLCDRenderText_Flag) {
-        return SkMask::kLCD16_Format;
-    }
-
+    SkASSERT(false);
     return SkMask::kA8_Format;
 }
 
@@ -889,54 +888,49 @@ static bool too_big_for_lcd(const SkScalerContextRec& rec, bool checkPost2x2) {
 
 // if linear-text is on, then we force hinting to be off (since that's sort of
 // the point of linear-text.
-static SkPaint::Hinting computeHinting(const SkPaint& paint) {
-    SkPaint::Hinting h = paint.getHinting();
-    if (paint.isLinearText()) {
-        h = SkPaint::kNo_Hinting;
+static SkFontHinting computeHinting(const SkFont& font) {
+    SkFontHinting h = (SkFontHinting)font.getHinting();
+    if (font.isLinearMetrics()) {
+        h = kNo_SkFontHinting;
     }
     return h;
 }
 
 // The only reason this is not file static is because it needs the context of SkScalerContext to
 // access SkPaint::computeLuminanceColor.
-void SkScalerContext::MakeRecAndEffects(const SkPaint& paint,
-                                        const SkSurfaceProps* surfaceProps,
-                                        const SkMatrix* deviceMatrix,
+void SkScalerContext::MakeRecAndEffects(const SkFont& font, const SkPaint& paint,
+                                        const SkSurfaceProps& surfaceProps,
                                         SkScalerContextFlags scalerContextFlags,
+                                        const SkMatrix& deviceMatrix,
                                         SkScalerContextRec* rec,
                                         SkScalerContextEffects* effects,
                                         bool enableTypefaceFiltering) {
-    SkASSERT(deviceMatrix == nullptr || !deviceMatrix->hasPerspective());
+    SkASSERT(!deviceMatrix.hasPerspective());
 
     sk_bzero(rec, sizeof(SkScalerContextRec));
 
-    SkTypeface* typeface = SkPaintPriv::GetTypefaceOrDefault(paint);
+    SkTypeface* typeface = SkFontPriv::GetTypefaceOrDefault(font);
 
     rec->fFontID = typeface->uniqueID();
-    rec->fTextSize = paint.getTextSize();
-    rec->fPreScaleX = paint.getTextScaleX();
-    rec->fPreSkewX  = paint.getTextSkewX();
+    rec->fTextSize = font.getSize();
+    rec->fPreScaleX = font.getScaleX();
+    rec->fPreSkewX  = font.getSkewX();
 
     bool checkPost2x2 = false;
 
-    if (deviceMatrix) {
-        const SkMatrix::TypeMask mask = deviceMatrix->getType();
-        if (mask & SkMatrix::kScale_Mask) {
-            rec->fPost2x2[0][0] = sk_relax(deviceMatrix->getScaleX());
-            rec->fPost2x2[1][1] = sk_relax(deviceMatrix->getScaleY());
-            checkPost2x2 = true;
-        } else {
-            rec->fPost2x2[0][0] = rec->fPost2x2[1][1] = SK_Scalar1;
-        }
-        if (mask & SkMatrix::kAffine_Mask) {
-            rec->fPost2x2[0][1] = sk_relax(deviceMatrix->getSkewX());
-            rec->fPost2x2[1][0] = sk_relax(deviceMatrix->getSkewY());
-            checkPost2x2 = true;
-        } else {
-            rec->fPost2x2[0][1] = rec->fPost2x2[1][0] = 0;
-        }
+    const SkMatrix::TypeMask mask = deviceMatrix.getType();
+    if (mask & SkMatrix::kScale_Mask) {
+        rec->fPost2x2[0][0] = sk_relax(deviceMatrix.getScaleX());
+        rec->fPost2x2[1][1] = sk_relax(deviceMatrix.getScaleY());
+        checkPost2x2 = true;
     } else {
         rec->fPost2x2[0][0] = rec->fPost2x2[1][1] = SK_Scalar1;
+    }
+    if (mask & SkMatrix::kAffine_Mask) {
+        rec->fPost2x2[0][1] = sk_relax(deviceMatrix.getSkewX());
+        rec->fPost2x2[1][0] = sk_relax(deviceMatrix.getSkewY());
+        checkPost2x2 = true;
+    } else {
         rec->fPost2x2[0][1] = rec->fPost2x2[1][0] = 0;
     }
 
@@ -945,15 +939,15 @@ void SkScalerContext::MakeRecAndEffects(const SkPaint& paint,
 
     unsigned flags = 0;
 
-    if (paint.isFakeBoldText()) {
+    if (font.isEmbolden()) {
 #ifdef SK_USE_FREETYPE_EMBOLDEN
         flags |= SkScalerContext::kEmbolden_Flag;
 #else
-        SkScalar fakeBoldScale = SkScalarInterpFunc(paint.getTextSize(),
+        SkScalar fakeBoldScale = SkScalarInterpFunc(font.getSize(),
                                                     kStdFakeBoldInterpKeys,
                                                     kStdFakeBoldInterpValues,
                                                     kStdFakeBoldInterpLength);
-        SkScalar extra = paint.getTextSize() * fakeBoldScale;
+        SkScalar extra = font.getSize() * fakeBoldScale;
 
         if (style == SkPaint::kFill_Style) {
             style = SkPaint::kStrokeAndFill_Style;
@@ -980,16 +974,15 @@ void SkScalerContext::MakeRecAndEffects(const SkPaint& paint,
         rec->fStrokeCap = 0;
     }
 
-    rec->fMaskFormat = SkToU8(compute_mask_format(paint));
+    rec->fMaskFormat = SkToU8(compute_mask_format(font));
 
     if (SkMask::kLCD16_Format == rec->fMaskFormat) {
         if (too_big_for_lcd(*rec, checkPost2x2)) {
             rec->fMaskFormat = SkMask::kA8_Format;
             flags |= SkScalerContext::kGenA8FromLCD_Flag;
         } else {
-            SkPixelGeometry geometry = surfaceProps
-                                       ? surfaceProps->pixelGeometry()
-                                       : SkSurfacePropsDefaultPixelGeometry();
+            SkPixelGeometry geometry = surfaceProps.pixelGeometry();
+
             switch (geometry) {
                 case kUnknown_SkPixelGeometry:
                     // eeek, can't support LCD
@@ -1013,22 +1006,19 @@ void SkScalerContext::MakeRecAndEffects(const SkPaint& paint,
         }
     }
 
-    if (paint.isEmbeddedBitmapText()) {
+    if (font.isEmbeddedBitmaps()) {
         flags |= SkScalerContext::kEmbeddedBitmapText_Flag;
     }
-    if (paint.isSubpixelText()) {
+    if (font.isSubpixel()) {
         flags |= SkScalerContext::kSubpixelPositioning_Flag;
     }
-    if (paint.isAutohinted()) {
+    if (font.isForceAutoHinting()) {
         flags |= SkScalerContext::kForceAutohinting_Flag;
-    }
-    if (paint.isVerticalText()) {
-        flags |= SkScalerContext::kVertical_Flag;
     }
     rec->fFlags = SkToU16(flags);
 
     // these modify fFlags, so do them after assigning fFlags
-    rec->setHinting(computeHinting(paint));
+    rec->setHinting(computeHinting(font));
 
     rec->setLuminanceColor(paint.computeLuminanceColor());
 
@@ -1114,14 +1104,24 @@ SkDescriptor* SkScalerContext::MakeDescriptorForPaths(SkFontID typefaceID,
 }
 
 SkDescriptor* SkScalerContext::CreateDescriptorAndEffectsUsingPaint(
-    const SkPaint& paint, const SkSurfaceProps* surfaceProps,
-    SkScalerContextFlags scalerContextFlags,
-    const SkMatrix* deviceMatrix, SkAutoDescriptor* ad,
-    SkScalerContextEffects* effects) {
-
+    const SkFont& font, const SkPaint& paint, const SkSurfaceProps& surfaceProps,
+    SkScalerContextFlags scalerContextFlags, const SkMatrix& deviceMatrix, SkAutoDescriptor* ad,
+    SkScalerContextEffects* effects)
+{
     SkScalerContextRec rec;
-    MakeRecAndEffects(paint, surfaceProps, deviceMatrix, scalerContextFlags, &rec, effects);
+    MakeRecAndEffects(font, paint, surfaceProps, scalerContextFlags, deviceMatrix, &rec, effects);
     return AutoDescriptorGivenRecAndEffects(rec, *effects, ad);
+}
+
+SkDescriptor* SkScalerContext::CreateDescriptorAndEffectsUsingPaint(
+    const SkPaint& paint, const SkSurfaceProps& surfaceProps,
+    SkScalerContextFlags scalerContextFlags,
+    const SkMatrix& deviceMatrix, SkAutoDescriptor* ad,
+    SkScalerContextEffects* effects)
+{
+    return CreateDescriptorAndEffectsUsingPaint(SkFont::LEGACY_ExtractFromPaint(paint), paint,
+                                                surfaceProps, scalerContextFlags,
+                                                deviceMatrix, ad, effects);
 }
 
 static size_t calculate_size_and_flatten(const SkScalerContextRec& rec,

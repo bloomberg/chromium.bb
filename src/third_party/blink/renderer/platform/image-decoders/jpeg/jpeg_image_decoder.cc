@@ -40,7 +40,7 @@
 #include <memory>
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image_metrics.h"
-#include "third_party/blink/renderer/platform/instrumentation/platform_instrumentation.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
 extern "C" {
 #include <stdio.h>  // jpeglib.h needs stdio FILE.
@@ -929,9 +929,11 @@ bool JPEGImageDecoder::DecodeToYUV() {
   if (!HasImagePlanes())
     return false;
 
-  PlatformInstrumentation::WillDecodeImage("JPEG");
-  Decode(false);
-  PlatformInstrumentation::DidDecodeImage();
+  {
+    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "Decode Image",
+                 "imageType", "JPEG");
+    Decode(false);
+  }
   return !Failed();
 }
 

@@ -16,6 +16,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "components/leveldb_proto/leveldb_database.h"
+#include "components/leveldb_proto/proto_leveldb_wrapper_metrics.h"
 #include "third_party/leveldatabase/env_chromium.h"
 
 namespace base {
@@ -59,6 +60,10 @@ class ProtoLevelDBWrapper {
   ProtoLevelDBWrapper(
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
 
+  ProtoLevelDBWrapper(
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+      LevelDB* db);
+
   virtual ~ProtoLevelDBWrapper();
 
   template <typename T>
@@ -73,6 +78,14 @@ class ProtoLevelDBWrapper {
       std::unique_ptr<typename ProtoLevelDBWrapper::Internal<T>::KeyEntryVector>
           entries_to_save,
       const LevelDB::KeyFilter& delete_key_filter,
+      UpdateCallback callback);
+
+  template <typename T>
+  void UpdateEntriesWithRemoveFilter(
+      std::unique_ptr<typename ProtoLevelDBWrapper::Internal<T>::KeyEntryVector>
+          entries_to_save,
+      const LevelDB::KeyFilter& delete_key_filter,
+      const std::string& target_prefix,
       UpdateCallback callback);
 
   template <typename T>
@@ -111,6 +124,7 @@ class ProtoLevelDBWrapper {
           callback);
 
   void LoadKeys(LoadKeysCallback callback);
+  void LoadKeys(const std::string& target_prefix, LoadKeysCallback callback);
 
   template <typename T>
   void GetEntry(
@@ -119,22 +133,39 @@ class ProtoLevelDBWrapper {
 
   void Destroy(DestroyCallback callback);
 
+  void RunInitCallback(typename ProtoLevelDBWrapper::InitCallback callback,
+                       const leveldb::Status* status);
+
   // Allow callers to provide their own Database implementation.
   void InitWithDatabase(LevelDB* database,
                         const base::FilePath& database_dir,
                         const leveldb_env::Options& options,
+                        bool destroy_on_corruption,
                         InitCallback callback);
 
+  void SetMetricsId(const std::string& id);
+
+  bool IsCorrupt();
   bool GetApproximateMemoryUse(uint64_t* approx_mem_use);
+
   const scoped_refptr<base::SequencedTaskRunner>& task_runner();
 
  private:
-  THREAD_CHECKER(thread_checker_);
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  // Set to true if the status from the previous Init call is corruption.
+  bool is_corrupt_ = false;
 
   // Used to run blocking tasks in-order, must be the TaskRunner that |db_|
   // relies on.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   LevelDB* db_ = nullptr;
+
+  // The identifier used when recording metrics to determine the source of the
+  // LevelDB calls, likely the database client name.
+  std::string metrics_id_ = "Default";
+
+  base::WeakPtrFactory<ProtoLevelDBWrapper> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProtoLevelDBWrapper);
 };
@@ -179,7 +210,8 @@ void UpdateEntriesFromTaskRunner(
     std::unique_ptr<typename ProtoLevelDBWrapper::Internal<T>::KeyEntryVector>
         entries_to_save,
     std::unique_ptr<KeyVector> keys_to_remove,
-    bool* success) {
+    bool* success,
+    const std::string& client_id) {
   DCHECK(success);
 
   // Serialize the values from Proto to string before passing on to database.
@@ -189,7 +221,9 @@ void UpdateEntriesFromTaskRunner(
         std::make_pair(pair.first, pair.second.SerializeAsString()));
   }
 
-  *success = database->Save(pairs_to_save, *keys_to_remove);
+  leveldb::Status status;
+  *success = database->Save(pairs_to_save, *keys_to_remove, &status);
+  ProtoLevelDBWrapperMetrics::RecordUpdate(client_id, *success, status);
 }
 
 template <typename T>
@@ -198,7 +232,9 @@ void UpdateEntriesWithRemoveFilterFromTaskRunner(
     std::unique_ptr<typename ProtoLevelDBWrapper::Internal<T>::KeyEntryVector>
         entries_to_save,
     const LevelDB::KeyFilter& delete_key_filter,
-    bool* success) {
+    const std::string& target_prefix,
+    bool* success,
+    const std::string& client_id) {
   DCHECK(success);
 
   // Serialize the values from Proto to string before passing on to database.
@@ -208,7 +244,10 @@ void UpdateEntriesWithRemoveFilterFromTaskRunner(
         std::make_pair(pair.first, pair.second.SerializeAsString()));
   }
 
-  *success = database->UpdateWithRemoveFilter(pairs_to_save, delete_key_filter);
+  leveldb::Status status;
+  *success = database->UpdateWithRemoveFilter(pairs_to_save, delete_key_filter,
+                                              target_prefix, &status);
+  ProtoLevelDBWrapperMetrics::RecordUpdate(client_id, *success, status);
 }
 
 template <typename T>
@@ -217,7 +256,8 @@ void LoadKeysAndEntriesFromTaskRunner(LevelDB* database,
                                       const leveldb::ReadOptions& options,
                                       const std::string& target_prefix,
                                       std::map<std::string, T>* keys_entries,
-                                      bool* success) {
+                                      bool* success,
+                                      const std::string& client_id) {
   DCHECK(success);
   DCHECK(keys_entries);
 
@@ -236,6 +276,8 @@ void LoadKeysAndEntriesFromTaskRunner(LevelDB* database,
 
     keys_entries->insert(std::make_pair(pair.first, entry));
   }
+
+  ProtoLevelDBWrapperMetrics::RecordLoadKeysAndEntries(client_id, *success);
 }
 
 template <typename T>
@@ -244,7 +286,8 @@ void LoadEntriesFromTaskRunner(LevelDB* database,
                                const leveldb::ReadOptions& options,
                                const std::string& target_prefix,
                                std::vector<T>* entries,
-                               bool* success) {
+                               bool* success,
+                               const std::string& client_id) {
   DCHECK(success);
   DCHECK(entries);
 
@@ -263,6 +306,8 @@ void LoadEntriesFromTaskRunner(LevelDB* database,
 
     entries->push_back(entry);
   }
+
+  ProtoLevelDBWrapperMetrics::RecordLoadEntries(client_id, *success);
 }
 
 template <typename T>
@@ -270,27 +315,22 @@ void GetEntryFromTaskRunner(LevelDB* database,
                             const std::string& key,
                             T* entry,
                             bool* found,
-                            bool* success) {
+                            bool* success,
+                            const std::string& client_id) {
   DCHECK(success);
   DCHECK(found);
   DCHECK(entry);
 
   std::string serialized_entry;
-  *success = database->Get(key, found, &serialized_entry);
+  leveldb::Status status;
+  *success = database->Get(key, found, &serialized_entry, &status);
 
-  if (!*success) {
-    *found = false;
-    return;
-  }
-
-  if (!*found)
-    return;
-
-  if (!entry->ParseFromString(serialized_entry)) {
+  if (*found && !entry->ParseFromString(serialized_entry)) {
     *found = false;
     DLOG(WARNING) << "Unable to parse leveldb_proto entry";
-    // TODO(cjhopman): Decide what to do about un-parseable entries.
   }
+
+  ProtoLevelDBWrapperMetrics::RecordGet(client_id, *success, *found, status);
 }
 
 }  // namespace
@@ -301,13 +341,13 @@ void ProtoLevelDBWrapper::UpdateEntries(
         entries_to_save,
     std::unique_ptr<KeyVector> keys_to_remove,
     typename ProtoLevelDBWrapper::UpdateCallback callback) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   bool* success = new bool(false);
   task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(UpdateEntriesFromTaskRunner<T>, base::Unretained(db_),
                      std::move(entries_to_save), std::move(keys_to_remove),
-                     success),
+                     success, metrics_id_),
       base::BindOnce(RunUpdateCallback<T>, std::move(callback),
                      base::Owned(success)));
 }
@@ -318,14 +358,25 @@ void ProtoLevelDBWrapper::UpdateEntriesWithRemoveFilter(
         entries_to_save,
     const LevelDB::KeyFilter& delete_key_filter,
     typename ProtoLevelDBWrapper::UpdateCallback callback) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  bool* success = new bool(false);
+  UpdateEntriesWithRemoveFilter<T>(std::move(entries_to_save),
+                                   delete_key_filter, std::string(),
+                                   std::move(callback));
+}
 
+template <typename T>
+void ProtoLevelDBWrapper::UpdateEntriesWithRemoveFilter(
+    std::unique_ptr<typename ProtoLevelDBWrapper::Internal<T>::KeyEntryVector>
+        entries_to_save,
+    const LevelDB::KeyFilter& delete_key_filter,
+    const std::string& target_prefix,
+    typename ProtoLevelDBWrapper::UpdateCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  bool* success = new bool(false);
   task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(UpdateEntriesWithRemoveFilterFromTaskRunner<T>,
                      base::Unretained(db_), std::move(entries_to_save),
-                     delete_key_filter, success),
+                     delete_key_filter, target_prefix, success, metrics_id_),
       base::BindOnce(RunUpdateCallback<T>, std::move(callback),
                      base::Owned(success)));
 }
@@ -350,7 +401,7 @@ void ProtoLevelDBWrapper::LoadEntriesWithFilter(
     const leveldb::ReadOptions& options,
     const std::string& target_prefix,
     typename ProtoLevelDBWrapper::Internal<T>::LoadCallback callback) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   bool* success = new bool(false);
 
   std::unique_ptr<std::vector<T>> entries(new std::vector<T>());
@@ -360,7 +411,8 @@ void ProtoLevelDBWrapper::LoadEntriesWithFilter(
   task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(LoadEntriesFromTaskRunner<T>, base::Unretained(db_),
-                     key_filter, options, target_prefix, entries_ptr, success),
+                     key_filter, options, target_prefix, entries_ptr, success,
+                     metrics_id_),
       base::BindOnce(RunLoadCallback<T>, std::move(callback),
                      base::Owned(success), std::move(entries)));
 }
@@ -388,7 +440,7 @@ void ProtoLevelDBWrapper::LoadKeysAndEntriesWithFilter(
     const std::string& target_prefix,
     typename ProtoLevelDBWrapper::Internal<T>::LoadKeysAndEntriesCallback
         callback) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   bool* success = new bool(false);
 
   auto keys_entries = std::make_unique<std::map<std::string, T>>();
@@ -399,7 +451,7 @@ void ProtoLevelDBWrapper::LoadKeysAndEntriesWithFilter(
       FROM_HERE,
       base::BindOnce(LoadKeysAndEntriesFromTaskRunner<T>, base::Unretained(db_),
                      key_filter, options, target_prefix, keys_entries_ptr,
-                     success),
+                     success, metrics_id_),
       base::BindOnce(RunLoadKeysAndEntriesCallback<T>, std::move(callback),
                      base::Owned(success), std::move(keys_entries)));
 }
@@ -408,7 +460,7 @@ template <typename T>
 void ProtoLevelDBWrapper::GetEntry(
     const std::string& key,
     typename ProtoLevelDBWrapper::Internal<T>::GetCallback callback) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   bool* success = new bool(false);
   bool* found = new bool(false);
 
@@ -419,7 +471,7 @@ void ProtoLevelDBWrapper::GetEntry(
   task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(GetEntryFromTaskRunner<T>, base::Unretained(db_), key,
-                     entry_ptr, found, success),
+                     entry_ptr, found, success, metrics_id_),
       base::BindOnce(RunGetCallback<T>, std::move(callback),
                      base::Owned(success), base::Owned(found),
                      std::move(entry)));

@@ -7,12 +7,10 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
-#include "base/unguessable_token.h"
 #include "base/values.h"
 #include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/data_decoder/public/mojom/xml_parser.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/mojom/constants.mojom.h"
 
 namespace data_decoder {
 
@@ -24,7 +22,7 @@ class SafeXmlParser {
   SafeXmlParser(service_manager::Connector* connector,
                 const std::string& unsafe_xml,
                 XmlParserCallback callback,
-                const std::string& batch_id);
+                const base::Token& batch_id);
   ~SafeXmlParser();
 
  private:
@@ -41,17 +39,17 @@ class SafeXmlParser {
 SafeXmlParser::SafeXmlParser(service_manager::Connector* connector,
                              const std::string& unsafe_xml,
                              XmlParserCallback callback,
-                             const std::string& batch_id)
+                             const base::Token& batch_id)
     : callback_(std::move(callback)) {
   DCHECK(callback_);  // Parsing without a callback is useless.
 
   // If no batch ID has been provided, use a random instance ID to guarantee the
   // connection is to a new service running in its own process.
-  service_manager::Identity identity(
-      mojom::kServiceName, service_manager::mojom::kInheritUserID,
-      batch_id.empty() ? base::UnguessableToken::Create().ToString()
-                       : batch_id);
-  connector->BindInterface(identity, &xml_parser_ptr_);
+  connector->BindInterface(
+      service_manager::ServiceFilter::ByNameWithId(
+          mojom::kServiceName,
+          batch_id.is_zero() ? base::Token::CreateRandom() : batch_id),
+      &xml_parser_ptr_);
 
   // Unretained(this) is safe as the xml_parser_ptr_ is owned by this class.
   xml_parser_ptr_.set_connection_error_handler(base::BindOnce(
@@ -96,7 +94,7 @@ std::string GetXmlQualifiedName(const std::string& name_space,
 void ParseXml(service_manager::Connector* connector,
               const std::string& unsafe_xml,
               XmlParserCallback callback,
-              const std::string& batch_id) {
+              const base::Token& batch_id) {
   new SafeXmlParser(connector, unsafe_xml, std::move(callback), batch_id);
 }
 

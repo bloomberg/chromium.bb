@@ -147,9 +147,8 @@ TargetList::TargetList(const AtomVector& target_list)
 
 bool TargetList::ContainsText() const {
   std::vector<::Atom> atoms = GetTextAtomsFrom();
-  for (std::vector< ::Atom>::const_iterator it = atoms.begin();
-       it != atoms.end(); ++it) {
-    if (ContainsAtom(*it))
+  for (const auto& atom : atoms) {
+    if (ContainsAtom(atom))
       return true;
   }
 
@@ -379,8 +378,8 @@ SelectionData ClipboardAuraX11::AuraX11Details::RequestAndWaitForTypes(
     // with the X server.
     const SelectionFormatMap& format_map = LookupStorageForAtom(selection_name);
 
-    for (auto it = types.begin(); it != types.end(); ++it) {
-      auto format_map_it = format_map.find(*it);
+    for (const auto& type : types) {
+      auto format_map_it = format_map.find(type);
       if (format_map_it != format_map.end())
         return SelectionData(format_map_it->first, format_map_it->second);
     }
@@ -405,9 +404,8 @@ TargetList ClipboardAuraX11::AuraX11Details::WaitAndGetTargetsList(
     // We can local fastpath and return the list of local targets.
     const SelectionFormatMap& format_map = LookupStorageForAtom(selection_name);
 
-    for (auto it = format_map.begin(); it != format_map.end(); ++it) {
-      out.push_back(it->first);
-    }
+    for (const auto& format : format_map)
+      out.push_back(format.first);
   } else {
     scoped_refptr<base::RefCountedMemory> data;
     size_t out_data_items = 0;
@@ -431,16 +429,12 @@ TargetList ClipboardAuraX11::AuraX11Details::WaitAndGetTargetsList(
       // copy the data to see if it is available, but at least this path
       // shouldn't be hit for conforming programs.
       std::vector< ::Atom> types = GetTextAtoms();
-      for (std::vector< ::Atom>::const_iterator it = types.begin();
-           it != types.end(); ++it) {
+      for (const auto& text_atom : types) {
         ::Atom type = x11::None;
-        if (selection_requestor_.PerformBlockingConvertSelection(selection_name,
-                                                                 *it,
-                                                                 NULL,
-                                                                 NULL,
-                                                                 &type) &&
-            type == *it) {
-          out.push_back(*it);
+        if (selection_requestor_.PerformBlockingConvertSelection(
+                selection_name, text_atom, NULL, NULL, &type) &&
+            type == text_atom) {
+          out.push_back(text_atom);
         }
       }
     }
@@ -812,9 +806,8 @@ void ClipboardAuraX11::WriteObjects(ClipboardType type,
   DCHECK(IsSupportedClipboardType(type));
 
   aurax11_details_->CreateNewClipboardData();
-  for (auto iter = objects.begin(); iter != objects.end(); ++iter) {
-    DispatchObject(static_cast<ObjectType>(iter->first), iter->second);
-  }
+  for (const auto& object : objects)
+    DispatchObject(static_cast<ObjectType>(object.first), object.second);
   aurax11_details_->TakeOwnershipOfSelection(type);
 
   if (type == CLIPBOARD_TYPE_COPY_PASTE) {

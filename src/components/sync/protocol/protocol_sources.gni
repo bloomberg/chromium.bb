@@ -43,6 +43,7 @@ sync_protocol_bases = [
   "priority_preference_specifics",
   "reading_list_specifics",
   "search_engine_specifics",
+  "send_tab_to_self_specifics",
   "session_specifics",
   "sync",
   "sync_enums",

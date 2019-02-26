@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "components/toolbar/test_toolbar_model.h"
+#include "components/omnibox/browser/test_location_bar_model.h"
 #include "components/variations/variations_http_header_provider.h"
 #include "ios/chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
@@ -34,7 +34,7 @@ using variations::VariationsHttpHeaderProvider;
 @end
 
 @implementation TestToolbarCoordinatorDelegate {
-  std::unique_ptr<ToolbarModel> _model;
+  std::unique_ptr<LocationBarModel> _model;
 }
 
 - (void)locationBarDidBecomeFirstResponder {
@@ -44,9 +44,9 @@ using variations::VariationsHttpHeaderProvider;
 - (void)locationBarBeganEdit {
 }
 
-- (ToolbarModel*)toolbarModel {
+- (LocationBarModel*)locationBarModel {
   if (!_model) {
-    _model = std::make_unique<TestToolbarModel>();
+    _model = std::make_unique<TestLocationBarModel>();
   }
 
   return _model.get();
@@ -126,8 +126,11 @@ TEST_F(LocationBarCoordinatorTest, LoadGoogleUrl) {
 
   GURL url("https://www.google.com/");
   ui::PageTransition transition = ui::PAGE_TRANSITION_TYPED;
+  WindowOpenDisposition disposition = WindowOpenDisposition::SWITCH_TO_TAB;
   [coordinator_ start];
-  [coordinator_ loadGURLFromLocationBar:url transition:transition];
+  [coordinator_ loadGURLFromLocationBar:url
+                             transition:transition
+                            disposition:disposition];
 
   EXPECT_EQ(url, url_loader_.url);
   EXPECT_TRUE(url_loader_.referrer.url.is_empty());
@@ -136,6 +139,7 @@ TEST_F(LocationBarCoordinatorTest, LoadGoogleUrl) {
   EXPECT_FALSE(url_loader_.rendererInitiated);
   ASSERT_EQ(1U, url_loader_.extraHeaders.count);
   EXPECT_GT([url_loader_.extraHeaders[@"X-Client-Data"] length], 0U);
+  EXPECT_EQ(disposition, url_loader_.disposition);
 }
 
 // Calls -loadGURLFromLocationBar:transition: with https://www.nongoogle.com/
@@ -148,8 +152,11 @@ TEST_F(LocationBarCoordinatorTest, LoadNonGoogleUrl) {
 
   GURL url("https://www.nongoogle.com/");
   ui::PageTransition transition = ui::PAGE_TRANSITION_TYPED;
+  WindowOpenDisposition disposition = WindowOpenDisposition::CURRENT_TAB;
   [coordinator_ start];
-  [coordinator_ loadGURLFromLocationBar:url transition:transition];
+  [coordinator_ loadGURLFromLocationBar:url
+                             transition:transition
+                            disposition:disposition];
 
   EXPECT_EQ(url, url_loader_.url);
   EXPECT_TRUE(url_loader_.referrer.url.is_empty());
@@ -157,6 +164,7 @@ TEST_F(LocationBarCoordinatorTest, LoadNonGoogleUrl) {
   EXPECT_TRUE(ui::PageTransitionCoreTypeIs(transition, url_loader_.transition));
   EXPECT_FALSE(url_loader_.rendererInitiated);
   ASSERT_EQ(0U, url_loader_.extraHeaders.count);
+  EXPECT_EQ(disposition, url_loader_.disposition);
 }
 
 }  // namespace

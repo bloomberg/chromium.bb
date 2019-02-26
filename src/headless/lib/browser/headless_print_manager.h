@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/ref_counted_memory.h"
 #include "components/printing/browser/print_manager.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -65,7 +66,8 @@ class HeadlessPrintManager
   };
 
   using GetPDFCallback =
-      base::OnceCallback<void(PrintResult, const std::string&)>;
+      base::OnceCallback<void(PrintResult,
+                              scoped_refptr<base::RefCountedMemory>)>;
 
   ~HeadlessPrintManager() override;
 

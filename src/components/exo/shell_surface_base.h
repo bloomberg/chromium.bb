@@ -87,20 +87,8 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   // Sets the system modality.
   void SetSystemModal(bool system_modal);
 
-  // Sets the application ID for the window. The application ID identifies the
-  // general class of applications to which the window belongs.
-  static void SetApplicationId(aura::Window* window,
-                               const base::Optional<std::string>& id);
-  static const std::string* GetApplicationId(const aura::Window* window);
-
   // Set the application ID for the surface.
   void SetApplicationId(const char* application_id);
-
-  // Sets the startup ID for the window. The startup ID identifies the
-  // application using startup notification protocol.
-  static void SetStartupId(aura::Window* window,
-                           const base::Optional<std::string>& id);
-  static const std::string* GetStartupId(aura::Window* window);
 
   // Set the startup ID for the surface.
   void SetStartupId(const char* startup_id);
@@ -138,13 +126,6 @@ class ShellSurfaceBase : public SurfaceTreeHost,
 
   // Prevents shell surface from being moved.
   void DisableMovement();
-
-  // Sets the main surface for the window.
-  static void SetMainSurface(aura::Window* window, Surface* surface);
-
-  // Returns the main Surface instance or nullptr if it is not set.
-  // |window| must not be nullptr.
-  static Surface* GetMainSurface(const aura::Window* window);
 
   // Returns the target surface for the located event |event|.  If an
   // event handling is grabbed by an window, it'll first examine that

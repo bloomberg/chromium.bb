@@ -325,6 +325,32 @@ TEST_F(MojoVideoDecoderIntegrationTest, Initialize) {
   EXPECT_EQ(client_->GetMaxDecodeRequests(), kMaxDecodeRequests);
 }
 
+TEST_F(MojoVideoDecoderIntegrationTest, InitializeFailNoDecoder) {
+  CreateClient();
+
+  StrictMock<base::MockCallback<VideoDecoder::InitCB>> init_cb;
+  EXPECT_CALL(init_cb, Run(false));
+
+  // Clear |decoder_| so that Initialize() should fail.
+  decoder_.reset();
+  client_->Initialize(TestVideoConfig::NormalH264(), false, nullptr,
+                      init_cb.Get(), output_cb_.Get(), base::NullCallback());
+  RunUntilIdle();
+}
+
+TEST_F(MojoVideoDecoderIntegrationTest, InitializeFailNoCdm) {
+  CreateClient();
+
+  StrictMock<base::MockCallback<VideoDecoder::InitCB>> init_cb;
+  EXPECT_CALL(init_cb, Run(false));
+
+  // CdmContext* (3rd parameter) is not provided but the VideoDecoderConfig
+  // specifies encrypted video, so Initialize() should fail.
+  client_->Initialize(TestVideoConfig::NormalEncrypted(), false, nullptr,
+                      init_cb.Get(), output_cb_.Get(), base::NullCallback());
+  RunUntilIdle();
+}
+
 TEST_F(MojoVideoDecoderIntegrationTest, MediaLogIsProxied) {
   ASSERT_TRUE(Initialize());
   EXPECT_MEDIA_LOG_ON(client_media_log_, HasSubstr("\"test\""));

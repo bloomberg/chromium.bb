@@ -82,6 +82,9 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
   ~IndexedDBDispatcherHost() override;
 
   // blink::mojom::IDBFactory implementation:
+  void GetDatabaseInfo(
+      blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info,
+      const url::Origin& origin) override;
   void GetDatabaseNames(
       blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info,
       const url::Origin& origin) override;

@@ -27,21 +27,8 @@
 #include "ui/android/view_android.h"
 #endif  // OS_ANDROID
 
-namespace base {
-class UnguessableToken;
-}
-
-namespace network {
-struct ResourceResponse;
-}
-
 namespace viz {
 class CompositorFrameMetadata;
-}
-
-namespace net {
-class SSLInfo;
-class X509Certificate;
 }
 
 namespace content {
@@ -50,17 +37,18 @@ class BrowserContext;
 class DevToolsFrameTraceRecorder;
 class FrameTreeNode;
 class NavigationHandleImpl;
-class NavigationRequest;
-class NavigationThrottle;
 class RenderFrameHostImpl;
-class SignedExchangeEnvelope;
-struct SignedExchangeError;
 
 class CONTENT_EXPORT RenderFrameDevToolsAgentHost
     : public DevToolsAgentHostImpl,
       private WebContentsObserver {
  public:
   static void AddAllAgentHosts(DevToolsAgentHost::List* result);
+
+  // Returns appropriate agent host for given frame tree node, traversing
+  // up to local root as needed.
+  static DevToolsAgentHostImpl* GetFor(FrameTreeNode* frame_tree_node);
+  // Similar to GetFor(), but creates a host if it doesn't exist yet.
   static scoped_refptr<DevToolsAgentHost> GetOrCreateFor(
       FrameTreeNode* frame_tree_node);
 
@@ -72,60 +60,6 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   static scoped_refptr<DevToolsAgentHost> FindForDangling(
       FrameTreeNode* frame_tree_node);
 
-  static void OnWillSendNavigationRequest(
-      FrameTreeNode* frame_tree_node,
-      mojom::BeginNavigationParams* begin_params,
-      bool* report_raw_headers);
-
-  static void OnResetNavigationRequest(NavigationRequest* navigation_request);
-
-  static void ApplyOverrides(FrameTreeNode* frame_tree_node,
-                             mojom::BeginNavigationParams* begin_params,
-                             bool* report_raw_headers);
-  static bool WillCreateURLLoaderFactory(
-      RenderFrameHostImpl* rfh,
-      bool is_navigation,
-      bool is_download,
-      network::mojom::URLLoaderFactoryRequest* loader_factory_request);
-
-  static void OnNavigationRequestWillBeSent(
-      const NavigationRequest& navigation_request);
-  static void OnNavigationResponseReceived(
-      const NavigationRequest& nav_request,
-      const network::ResourceResponse& response);
-  static void OnNavigationRequestFailed(
-      const NavigationRequest& nav_request,
-      const network::URLLoaderCompletionStatus& status);
-
-  static void OnSignedExchangeReceived(
-      FrameTreeNode* frame_tree_node,
-      base::Optional<const base::UnguessableToken> devtools_navigation_token,
-      const GURL& outer_request_url,
-      const network::ResourceResponseHead& outer_response,
-      const base::Optional<SignedExchangeEnvelope>& header,
-      const scoped_refptr<net::X509Certificate>& certificate,
-      const base::Optional<net::SSLInfo>& ssl_info,
-      const std::vector<SignedExchangeError>& errors);
-  static void OnSignedExchangeCertificateRequestSent(
-      FrameTreeNode* frame_tree_node,
-      const base::UnguessableToken& request_id,
-      const base::UnguessableToken& loader_id,
-      const network::ResourceRequest& request,
-      const GURL& signed_exchange_url);
-  static void OnSignedExchangeCertificateResponseReceived(
-      FrameTreeNode* frame_tree_node,
-      const base::UnguessableToken& request_id,
-      const base::UnguessableToken& loader_id,
-      const GURL& url,
-      const network::ResourceResponseHead& head);
-  static void OnSignedExchangeCertificateRequestCompleted(
-      FrameTreeNode* frame_tree_node,
-      const base::UnguessableToken& request_id,
-      const network::URLLoaderCompletionStatus& status);
-
-  static std::vector<std::unique_ptr<NavigationThrottle>>
-  CreateNavigationThrottles(NavigationHandleImpl* navigation_handle);
-  static bool IsNetworkHandlerEnabled(FrameTreeNode* frame_tree_node);
   static void WebContentsCreated(WebContents* web_contents);
 
   static void SignalSynchronousSwapCompositorFrame(
@@ -156,12 +90,15 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
  private:
   friend class DevToolsAgentHost;
+
+  static void UpdateRawHeadersAccess(RenderFrameHostImpl* old_rfh,
+                                     RenderFrameHostImpl* new_rfh);
+
   explicit RenderFrameDevToolsAgentHost(FrameTreeNode*);
   ~RenderFrameDevToolsAgentHost() override;
 
   // DevToolsAgentHostImpl overrides.
-  bool AttachSession(DevToolsSession* session,
-                     TargetRegistry* registry) override;
+  bool AttachSession(DevToolsSession* session) override;
   void DetachSession(DevToolsSession* session) override;
   void InspectElement(RenderFrameHost* frame_host, int x, int y) override;
   void UpdateRendererChannel(bool force) override;
@@ -185,8 +122,6 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   void OnSwapCompositorFrame(const IPC::Message& message);
   void DestroyOnRenderFrameGone();
   void UpdateFrameHost(RenderFrameHostImpl* frame_host);
-  void GrantPolicy();
-  void RevokePolicy();
   void SetFrameTreeNode(FrameTreeNode* frame_tree_node);
 
   bool ShouldAllowSession(DevToolsSession* session);

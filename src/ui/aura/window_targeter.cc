@@ -190,7 +190,7 @@ ui::EventTarget* WindowTargeter::FindTargetForEvent(ui::EventTarget* root,
                                                     ui::Event* event) {
   Window* window = static_cast<Window*>(root);
   Window* target = event->IsKeyEvent()
-                       ? FindTargetForKeyEvent(window, *event->AsKeyEvent())
+                       ? FindTargetForKeyEvent(window)
                        : FindTargetForNonKeyEvent(window, event);
   if (target && !window->parent() &&
       ProcessEventIfTargetsDifferentRootWindow(window, target, event)) {
@@ -203,6 +203,24 @@ ui::EventTarget* WindowTargeter::FindNextBestTarget(
     ui::EventTarget* previous_target,
     ui::Event* event) {
   return nullptr;
+}
+
+Window* WindowTargeter::FindTargetForKeyEvent(Window* window) {
+  Window* root_window = window->GetRootWindow();
+  client::FocusClient* focus_client = client::GetFocusClient(root_window);
+  if (!focus_client)
+    return window;
+  Window* focused_window = focus_client->GetFocusedWindow();
+  if (!focused_window)
+    return window;
+
+  client::EventClient* event_client = client::GetEventClient(root_window);
+  if (event_client &&
+      !event_client->CanProcessEventsWithinSubtree(focused_window)) {
+    focus_client->FocusWindow(nullptr);
+    return nullptr;
+  }
+  return focused_window ? focused_window : window;
 }
 
 void WindowTargeter::OnInstalled(Window* window) {
@@ -326,25 +344,6 @@ void WindowTargeter::UpdateMusIfNecessary() {
       AreInsetsEmptyOrPositive(touch_extend_)) {
     WindowPortMus::Get(window_)->SetHitTestInsets(mouse_extend_, touch_extend_);
   }
-}
-
-Window* WindowTargeter::FindTargetForKeyEvent(Window* window,
-                                              const ui::KeyEvent& key) {
-  Window* root_window = window->GetRootWindow();
-  client::FocusClient* focus_client = client::GetFocusClient(root_window);
-  if (!focus_client)
-    return window;
-  Window* focused_window = focus_client->GetFocusedWindow();
-  if (!focused_window)
-    return window;
-
-  client::EventClient* event_client = client::GetEventClient(root_window);
-  if (event_client &&
-      !event_client->CanProcessEventsWithinSubtree(focused_window)) {
-    focus_client->FocusWindow(nullptr);
-    return nullptr;
-  }
-  return focused_window ? focused_window : window;
 }
 
 Window* WindowTargeter::FindTargetForNonKeyEvent(Window* root_window,

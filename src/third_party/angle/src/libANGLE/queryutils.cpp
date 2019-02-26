@@ -32,6 +32,100 @@ namespace gl
 namespace
 {
 
+template <bool isPureInteger>
+ColorGeneric ConvertToColor(const GLfloat *params)
+{
+    if (isPureInteger)
+    {
+        UNREACHABLE();
+        return ColorGeneric(ColorI());
+    }
+    else
+    {
+        return ColorGeneric(ColorF::fromData(params));
+    }
+}
+
+template <bool isPureInteger>
+ColorGeneric ConvertToColor(const GLint *params)
+{
+    if (isPureInteger)
+    {
+        return ColorGeneric(ColorI(params[0], params[1], params[2], params[3]));
+    }
+    else
+    {
+        return ColorGeneric(ColorF(normalizedToFloat(params[0]), normalizedToFloat(params[1]),
+                                   normalizedToFloat(params[2]), normalizedToFloat(params[3])));
+    }
+}
+
+template <bool isPureInteger>
+ColorGeneric ConvertToColor(const GLuint *params)
+{
+    if (isPureInteger)
+    {
+        return ColorGeneric(ColorUI(params[0], params[1], params[2], params[3]));
+    }
+    else
+    {
+        UNREACHABLE();
+        return ColorGeneric(ColorF());
+    }
+}
+
+template <bool isPureInteger>
+void ConvertFromColor(const ColorGeneric &color, GLfloat *outParams)
+{
+    if (isPureInteger)
+    {
+        UNREACHABLE();
+    }
+    else
+    {
+        ASSERT(color.type == ColorGeneric::Type::Float);
+        color.colorF.writeData(outParams);
+    }
+}
+
+template <bool isPureInteger>
+void ConvertFromColor(const ColorGeneric &color, GLint *outParams)
+{
+    if (isPureInteger)
+    {
+        ASSERT(color.type == ColorGeneric::Type::Int);
+        outParams[0] = color.colorI.red;
+        outParams[1] = color.colorI.green;
+        outParams[2] = color.colorI.blue;
+        outParams[3] = color.colorI.alpha;
+    }
+    else
+    {
+        ASSERT(color.type == ColorGeneric::Type::Float);
+        outParams[0] = floatToNormalized<GLint>(color.colorF.red);
+        outParams[1] = floatToNormalized<GLint>(color.colorF.green);
+        outParams[2] = floatToNormalized<GLint>(color.colorF.blue);
+        outParams[3] = floatToNormalized<GLint>(color.colorF.alpha);
+    }
+}
+
+template <bool isPureInteger>
+void ConvertFromColor(const ColorGeneric &color, GLuint *outParams)
+{
+    if (isPureInteger)
+    {
+        ASSERT(color.type == ColorGeneric::Type::UInt);
+        outParams[0] = color.colorUI.red;
+        outParams[1] = color.colorUI.green;
+        outParams[2] = color.colorUI.blue;
+        outParams[3] = color.colorUI.alpha;
+    }
+    else
+    {
+        UNREACHABLE();
+    }
+}
+
 template <typename ParamType>
 void QueryTexLevelParameterBase(const Texture *texture,
                                 TextureTarget target,
@@ -111,13 +205,17 @@ void QueryTexLevelParameterBase(const Texture *texture,
         case GL_TEXTURE_COMPRESSED:
             *params = CastFromStateValue<ParamType>(pname, static_cast<GLint>(info->compressed));
             break;
+        case GL_MEMORY_SIZE_ANGLE:
+            *params =
+                CastFromStateValue<ParamType>(pname, texture->getLevelMemorySize(target, level));
+            break;
         default:
             UNREACHABLE();
             break;
     }
 }
 
-template <typename ParamType>
+template <bool isPureInteger, typename ParamType>
 void QueryTexParameterBase(const Texture *texture, GLenum pname, ParamType *params)
 {
     ASSERT(texture != nullptr);
@@ -200,13 +298,19 @@ void QueryTexParameterBase(const Texture *texture, GLenum pname, ParamType *para
         case GL_GENERATE_MIPMAP:
             *params = CastFromGLintStateValue<ParamType>(pname, texture->getGenerateMipmapHint());
             break;
+        case GL_MEMORY_SIZE_ANGLE:
+            *params = CastFromStateValue<ParamType>(pname, texture->getMemorySize());
+            break;
+        case GL_TEXTURE_BORDER_COLOR:
+            ConvertFromColor<isPureInteger>(texture->getBorderColor(), params);
+            break;
         default:
             UNREACHABLE();
             break;
     }
 }
 
-template <typename ParamType>
+template <bool isPureInteger, typename ParamType>
 void SetTexParameterBase(Context *context, Texture *texture, GLenum pname, const ParamType *params)
 {
     ASSERT(texture != nullptr);
@@ -254,7 +358,7 @@ void SetTexParameterBase(Context *context, Texture *texture, GLenum pname, const
             break;
         case GL_TEXTURE_BASE_LEVEL:
         {
-            context->handleError(texture->setBaseLevel(
+            (void)(texture->setBaseLevel(
                 context, clampCast<GLuint>(CastQueryValueTo<GLint>(pname, params[0]))));
             break;
         }
@@ -282,13 +386,16 @@ void SetTexParameterBase(Context *context, Texture *texture, GLenum pname, const
         case GL_GENERATE_MIPMAP:
             texture->setGenerateMipmapHint(ConvertToGLenum(params[0]));
             break;
+        case GL_TEXTURE_BORDER_COLOR:
+            texture->setBorderColor(ConvertToColor<isPureInteger>(params));
+            break;
         default:
             UNREACHABLE();
             break;
     }
 }
 
-template <typename ParamType>
+template <bool isPureInteger, typename ParamType>
 void QuerySamplerParameterBase(const Sampler *sampler, GLenum pname, ParamType *params)
 {
     switch (pname)
@@ -326,13 +433,16 @@ void QuerySamplerParameterBase(const Sampler *sampler, GLenum pname, ParamType *
         case GL_TEXTURE_SRGB_DECODE_EXT:
             *params = CastFromGLintStateValue<ParamType>(pname, sampler->getSRGBDecode());
             break;
+        case GL_TEXTURE_BORDER_COLOR:
+            ConvertFromColor<isPureInteger>(sampler->getBorderColor(), params);
+            break;
         default:
             UNREACHABLE();
             break;
     }
 }
 
-template <typename ParamType>
+template <bool isPureInteger, typename ParamType>
 void SetSamplerParameterBase(Context *context,
                              Sampler *sampler,
                              GLenum pname,
@@ -372,6 +482,9 @@ void SetSamplerParameterBase(Context *context,
             break;
         case GL_TEXTURE_SRGB_DECODE_EXT:
             sampler->setSRGBDecode(ConvertToGLenum(pname, params[0]));
+            break;
+        case GL_TEXTURE_BORDER_COLOR:
+            sampler->setBorderColor(ConvertToColor<isPureInteger>(params));
             break;
         default:
             UNREACHABLE();
@@ -416,7 +529,7 @@ void QueryVertexAttribBase(const VertexAttribute &attrib,
             *params = CastFromGLintStateValue<ParamType>(pname, binding.getBuffer().id());
             break;
         case GL_VERTEX_ATTRIB_ARRAY_DIVISOR:
-            *params = CastFromGLintStateValue<ParamType>(pname, binding.getDivisor());
+            *params = CastFromStateValue<ParamType>(pname, binding.getDivisor());
             break;
         case GL_VERTEX_ATTRIB_ARRAY_INTEGER:
             *params = CastFromGLintStateValue<ParamType>(pname, attrib.pureInteger);
@@ -460,6 +573,9 @@ void QueryBufferParameterBase(const Buffer *buffer, GLenum pname, ParamType *par
             break;
         case GL_BUFFER_MAP_LENGTH:
             *params = CastFromStateValue<ParamType>(pname, buffer->getMapLength());
+            break;
+        case GL_MEMORY_SIZE_ANGLE:
+            *params = CastFromStateValue<ParamType>(pname, buffer->getMemorySize());
             break;
         default:
             UNREACHABLE();
@@ -1015,7 +1131,7 @@ void QueryBufferPointerv(const Buffer *buffer, GLenum pname, void **params)
     }
 }
 
-void QueryProgramiv(const Context *context, const Program *program, GLenum pname, GLint *params)
+void QueryProgramiv(Context *context, const Program *program, GLenum pname, GLint *params)
 {
     ASSERT(program != nullptr);
 
@@ -1154,6 +1270,9 @@ void QueryRenderbufferiv(const Context *context,
         case GL_RENDERBUFFER_SAMPLES_ANGLE:
             *params = renderbuffer->getSamples();
             break;
+        case GL_MEMORY_SIZE_ANGLE:
+            *params = renderbuffer->getMemorySize();
+            break;
         default:
             UNREACHABLE();
             break;
@@ -1213,22 +1332,42 @@ void QueryTexLevelParameteriv(const Texture *texture,
 
 void QueryTexParameterfv(const Texture *texture, GLenum pname, GLfloat *params)
 {
-    QueryTexParameterBase(texture, pname, params);
+    QueryTexParameterBase<false>(texture, pname, params);
 }
 
 void QueryTexParameteriv(const Texture *texture, GLenum pname, GLint *params)
 {
-    QueryTexParameterBase(texture, pname, params);
+    QueryTexParameterBase<false>(texture, pname, params);
+}
+
+void QueryTexParameterIiv(const Texture *texture, GLenum pname, GLint *params)
+{
+    QueryTexParameterBase<true>(texture, pname, params);
+}
+
+void QueryTexParameterIuiv(const Texture *texture, GLenum pname, GLuint *params)
+{
+    QueryTexParameterBase<true>(texture, pname, params);
 }
 
 void QuerySamplerParameterfv(const Sampler *sampler, GLenum pname, GLfloat *params)
 {
-    QuerySamplerParameterBase(sampler, pname, params);
+    QuerySamplerParameterBase<false>(sampler, pname, params);
 }
 
 void QuerySamplerParameteriv(const Sampler *sampler, GLenum pname, GLint *params)
 {
-    QuerySamplerParameterBase(sampler, pname, params);
+    QuerySamplerParameterBase<false>(sampler, pname, params);
+}
+
+void QuerySamplerParameterIiv(const Sampler *sampler, GLenum pname, GLint *params)
+{
+    QuerySamplerParameterBase<true>(sampler, pname, params);
+}
+
+void QuerySamplerParameterIuiv(const Sampler *sampler, GLenum pname, GLuint *params)
+{
+    QuerySamplerParameterBase<true>(sampler, pname, params);
 }
 
 void QueryVertexAttribfv(const VertexAttribute &attrib,
@@ -1346,12 +1485,12 @@ void QueryFramebufferParameteriv(const Framebuffer *framebuffer, GLenum pname, G
     }
 }
 
-Error QuerySynciv(const Context *context,
-                  const Sync *sync,
-                  GLenum pname,
-                  GLsizei bufSize,
-                  GLsizei *length,
-                  GLint *values)
+angle::Result QuerySynciv(const Context *context,
+                          const Sync *sync,
+                          GLenum pname,
+                          GLsizei bufSize,
+                          GLsizei *length,
+                          GLint *values)
 {
     ASSERT(sync);
 
@@ -1362,7 +1501,7 @@ Error QuerySynciv(const Context *context,
         {
             *length = 0;
         }
-        return NoError();
+        return angle::Result::Continue();
     }
 
     switch (pname)
@@ -1390,47 +1529,67 @@ Error QuerySynciv(const Context *context,
         *length = 1;
     }
 
-    return NoError();
+    return angle::Result::Continue();
 }
 
 void SetTexParameterf(Context *context, Texture *texture, GLenum pname, GLfloat param)
 {
-    SetTexParameterBase(context, texture, pname, &param);
+    SetTexParameterBase<false>(context, texture, pname, &param);
 }
 
 void SetTexParameterfv(Context *context, Texture *texture, GLenum pname, const GLfloat *params)
 {
-    SetTexParameterBase(context, texture, pname, params);
+    SetTexParameterBase<false>(context, texture, pname, params);
 }
 
 void SetTexParameteri(Context *context, Texture *texture, GLenum pname, GLint param)
 {
-    SetTexParameterBase(context, texture, pname, &param);
+    SetTexParameterBase<false>(context, texture, pname, &param);
 }
 
 void SetTexParameteriv(Context *context, Texture *texture, GLenum pname, const GLint *params)
 {
-    SetTexParameterBase(context, texture, pname, params);
+    SetTexParameterBase<false>(context, texture, pname, params);
+}
+
+void SetTexParameterIiv(Context *context, Texture *texture, GLenum pname, const GLint *params)
+{
+    SetTexParameterBase<true>(context, texture, pname, params);
+}
+
+void SetTexParameterIuiv(Context *context, Texture *texture, GLenum pname, const GLuint *params)
+{
+    SetTexParameterBase<true>(context, texture, pname, params);
 }
 
 void SetSamplerParameterf(Context *context, Sampler *sampler, GLenum pname, GLfloat param)
 {
-    SetSamplerParameterBase(context, sampler, pname, &param);
+    SetSamplerParameterBase<false>(context, sampler, pname, &param);
 }
 
 void SetSamplerParameterfv(Context *context, Sampler *sampler, GLenum pname, const GLfloat *params)
 {
-    SetSamplerParameterBase(context, sampler, pname, params);
+    SetSamplerParameterBase<false>(context, sampler, pname, params);
 }
 
 void SetSamplerParameteri(Context *context, Sampler *sampler, GLenum pname, GLint param)
 {
-    SetSamplerParameterBase(context, sampler, pname, &param);
+    SetSamplerParameterBase<false>(context, sampler, pname, &param);
 }
 
 void SetSamplerParameteriv(Context *context, Sampler *sampler, GLenum pname, const GLint *params)
 {
-    SetSamplerParameterBase(context, sampler, pname, params);
+    SetSamplerParameterBase<false>(context, sampler, pname, params);
+}
+
+void SetSamplerParameterIiv(Context *context, Sampler *sampler, GLenum pname, const GLint *params)
+{
+    SetSamplerParameterBase<true>(context, sampler, pname, params);
+}
+
+void SetSamplerParameterIuiv(Context *context, Sampler *sampler, GLenum pname, const GLuint *params)
+{
+    SetSamplerParameterBase<true>(context, sampler, pname, params);
 }
 
 void SetFramebufferParameteri(const Context *context,
@@ -2560,6 +2719,7 @@ unsigned int GetTexParameterCount(GLenum pname)
     switch (pname)
     {
         case GL_TEXTURE_CROP_RECT_OES:
+        case GL_TEXTURE_BORDER_COLOR:
             return 4;
         case GL_TEXTURE_MAG_FILTER:
         case GL_TEXTURE_MIN_FILTER:
@@ -2828,6 +2988,9 @@ void QuerySurfaceAttrib(const Surface *surface, EGLint attribute, EGLint *value)
         case EGL_ROBUST_RESOURCE_INITIALIZATION_ANGLE:
             *value = surface->isRobustResourceInitEnabled();
             break;
+        case EGL_TIMESTAMPS_ANDROID:
+            *value = surface->isTimestampsEnabled();
+            break;
         default:
             UNREACHABLE();
             break;
@@ -2852,6 +3015,9 @@ void SetSurfaceAttrib(Surface *surface, EGLint attribute, EGLint value)
             break;
         case EGL_HEIGHT:
             surface->setFixedHeight(value);
+            break;
+        case EGL_TIMESTAMPS_ANDROID:
+            surface->setTimestampsEnabled(value != EGL_FALSE);
             break;
         default:
             UNREACHABLE();

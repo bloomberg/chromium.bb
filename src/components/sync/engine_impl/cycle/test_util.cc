@@ -11,93 +11,100 @@ void SimulateGetEncryptionKeyFailed(ModelTypeSet requsted_types,
                                     sync_pb::SyncEnums::GetUpdatesOrigin origin,
                                     SyncCycle* cycle) {
   cycle->mutable_status_controller()->set_last_get_key_result(
-      SERVER_RESPONSE_VALIDATION_FAILED);
+      SyncerError(SyncerError::SERVER_RESPONSE_VALIDATION_FAILED));
   cycle->mutable_status_controller()->set_last_download_updates_result(
-      SYNCER_OK);
+      SyncerError(SyncerError::SYNCER_OK));
 }
 
 void SimulateConfigureSuccess(ModelTypeSet requsted_types,
                               sync_pb::SyncEnums::GetUpdatesOrigin origin,
                               SyncCycle* cycle) {
-  cycle->mutable_status_controller()->set_last_get_key_result(SYNCER_OK);
+  cycle->mutable_status_controller()->set_last_get_key_result(
+      SyncerError(SyncerError::SYNCER_OK));
   cycle->mutable_status_controller()->set_last_download_updates_result(
-      SYNCER_OK);
+      SyncerError(SyncerError::SYNCER_OK));
 }
 
 void SimulateConfigureFailed(ModelTypeSet requsted_types,
                              sync_pb::SyncEnums::GetUpdatesOrigin origin,
                              SyncCycle* cycle) {
-  cycle->mutable_status_controller()->set_last_get_key_result(SYNCER_OK);
+  cycle->mutable_status_controller()->set_last_get_key_result(
+      SyncerError(SyncerError::SYNCER_OK));
   cycle->mutable_status_controller()->set_last_download_updates_result(
-      SERVER_RETURN_TRANSIENT_ERROR);
+      SyncerError(SyncerError::SERVER_RETURN_TRANSIENT_ERROR));
 }
 
 void SimulateConfigureConnectionFailure(
     ModelTypeSet requsted_types,
     sync_pb::SyncEnums::GetUpdatesOrigin origin,
     SyncCycle* cycle) {
-  cycle->mutable_status_controller()->set_last_get_key_result(SYNCER_OK);
+  cycle->mutable_status_controller()->set_last_get_key_result(
+      SyncerError(SyncerError::SYNCER_OK));
   cycle->mutable_status_controller()->set_last_download_updates_result(
-      NETWORK_CONNECTION_UNAVAILABLE);
+      SyncerError(SyncerError::NETWORK_CONNECTION_UNAVAILABLE));
 }
 
 void SimulateNormalSuccess(ModelTypeSet requested_types,
                            NudgeTracker* nudge_tracker,
                            SyncCycle* cycle) {
-  cycle->mutable_status_controller()->set_commit_result(SYNCER_OK);
+  cycle->mutable_status_controller()->set_commit_result(
+      SyncerError(SyncerError::SYNCER_OK));
   cycle->mutable_status_controller()->set_last_download_updates_result(
-      SYNCER_OK);
+      SyncerError(SyncerError::SYNCER_OK));
 }
 
 void SimulateDownloadUpdatesFailed(ModelTypeSet requested_types,
                                    NudgeTracker* nudge_tracker,
                                    SyncCycle* cycle) {
   cycle->mutable_status_controller()->set_last_download_updates_result(
-      SERVER_RETURN_TRANSIENT_ERROR);
+      SyncerError(SyncerError::SERVER_RETURN_TRANSIENT_ERROR));
 }
 
 void SimulateCommitFailed(ModelTypeSet requested_types,
                           NudgeTracker* nudge_tracker,
                           SyncCycle* cycle) {
-  cycle->mutable_status_controller()->set_last_get_key_result(SYNCER_OK);
+  cycle->mutable_status_controller()->set_last_get_key_result(
+      SyncerError(SyncerError::SYNCER_OK));
   cycle->mutable_status_controller()->set_last_download_updates_result(
-      SYNCER_OK);
+      SyncerError(SyncerError::SYNCER_OK));
   cycle->mutable_status_controller()->set_commit_result(
-      SERVER_RETURN_TRANSIENT_ERROR);
+      SyncerError(SyncerError::SERVER_RETURN_TRANSIENT_ERROR));
 }
 
 void SimulateConnectionFailure(ModelTypeSet requested_types,
                                NudgeTracker* nudge_tracker,
                                SyncCycle* cycle) {
   cycle->mutable_status_controller()->set_last_download_updates_result(
-      NETWORK_CONNECTION_UNAVAILABLE);
+      SyncerError(SyncerError::NETWORK_CONNECTION_UNAVAILABLE));
 }
 
 void SimulatePollSuccess(ModelTypeSet requested_types, SyncCycle* cycle) {
   cycle->mutable_status_controller()->set_last_download_updates_result(
-      SYNCER_OK);
+      SyncerError(SyncerError::SYNCER_OK));
 }
 
 void SimulatePollFailed(ModelTypeSet requested_types, SyncCycle* cycle) {
   cycle->mutable_status_controller()->set_last_download_updates_result(
-      SERVER_RETURN_TRANSIENT_ERROR);
+      SyncerError(SyncerError::SERVER_RETURN_TRANSIENT_ERROR));
 }
 
 void SimulateThrottledImpl(SyncCycle* cycle, const base::TimeDelta& delta) {
   cycle->mutable_status_controller()->set_last_download_updates_result(
-      SERVER_RETURN_THROTTLED);
+      SyncerError(SyncerError::SERVER_RETURN_THROTTLED));
   cycle->delegate()->OnThrottled(delta);
 }
 
 void SimulateTypesThrottledImpl(SyncCycle* cycle,
                                 ModelTypeSet types,
                                 const base::TimeDelta& delta) {
-  cycle->mutable_status_controller()->set_commit_result(SYNCER_OK);
+  cycle->mutable_status_controller()->set_commit_result(
+      SyncerError(SyncerError::SYNCER_OK));
   cycle->delegate()->OnTypesThrottled(types, delta);
 }
 
 void SimulatePartialFailureImpl(SyncCycle* cycle, ModelTypeSet types) {
-  cycle->mutable_status_controller()->set_commit_result(SYNCER_OK);
+  cycle->mutable_status_controller()->set_commit_result(
+      SyncerError(SyncerError::SYNCER_OK));
   cycle->delegate()->OnTypesBackedOff(types);
 }
 
@@ -110,7 +117,7 @@ void SimulatePollIntervalUpdateImpl(ModelTypeSet requested_types,
 
 void SimulateGuRetryDelayCommandImpl(SyncCycle* cycle, base::TimeDelta delay) {
   cycle->mutable_status_controller()->set_last_download_updates_result(
-      SYNCER_OK);
+      SyncerError(SyncerError::SYNCER_OK));
   cycle->delegate()->OnReceivedGuRetryDelay(delay);
 }
 

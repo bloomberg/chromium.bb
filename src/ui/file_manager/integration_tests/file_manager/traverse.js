@@ -8,63 +8,40 @@
  * Test utility for traverse tests.
  * @param {string} path Root path to be traversed.
  */
-function traverseDirectories(path) {
-  var appId;
-  StepsRunner.run([
-    // Set up File Manager. Do not add initial files.
-    function() {
-      openNewWindow(null, path, this.next);
-    },
-    // Check the initial view.
-    function(inAppId) {
-      appId = inAppId;
-      remoteCall.waitForElement(appId, '#detail-table').then(this.next);
-    },
-    function() {
-      addEntries(['local', 'drive'], NESTED_ENTRY_SET, this.next);
-    },
-    function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.waitForFiles(appId, [ENTRIES.directoryA.getExpectedRow()]).
-          then(this.next);
-    },
-    // Open the directory
-    function() {
-      remoteCall.callRemoteTestUtil('openFile', appId, ['A'], this.next);
-    },
-    // Check the contents of current directory.
-    function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.waitForFiles(appId, [ENTRIES.directoryB.getExpectedRow()]).
-          then(this.next);
-    },
-    // Open the directory
-    function() {
-      remoteCall.callRemoteTestUtil('openFile', appId, ['B'], this.next);
-    },
-    // Check the contents of current directory.
-    function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.waitForFiles(appId, [ENTRIES.directoryC.getExpectedRow()]).
-          then(this.next);
-    },
-    // Check the error.
-    function() {
-      checkIfNoErrorsOccured(this.next);
-    }
-  ]);
+async function traverseDirectories(path) {
+  // Set up File Manager. Do not add initial files.
+  const appId = await openNewWindow(null, path);
+
+  // Check the initial view.
+  await remoteCall.waitForElement(appId, '#detail-table');
+  await addEntries(['local', 'drive'], NESTED_ENTRY_SET);
+  await remoteCall.waitForFiles(appId, [ENTRIES.directoryA.getExpectedRow()]);
+
+  // Open the directory
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('openFile', appId, ['A']));
+
+  // Check the contents of current directory.
+  await remoteCall.waitForFiles(appId, [ENTRIES.directoryB.getExpectedRow()]);
+
+  // Open the directory
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('openFile', appId, ['B']));
+
+  // Check the contents of current directory.
+  await remoteCall.waitForFiles(appId, [ENTRIES.directoryC.getExpectedRow()]);
 }
 
 /**
  * Tests to traverse local directories.
  */
 testcase.traverseDownloads = function() {
-  traverseDirectories(RootPath.DOWNLOADS);
+  return traverseDirectories(RootPath.DOWNLOADS);
 };
 
 /**
  * Tests to traverse drive directories.
  */
 testcase.traverseDrive = function() {
-  traverseDirectories(RootPath.DRIVE);
+  return traverseDirectories(RootPath.DRIVE);
 };

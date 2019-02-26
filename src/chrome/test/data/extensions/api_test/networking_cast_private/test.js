@@ -30,15 +30,6 @@ chrome.test.getConfig(function(config) {
             assertTrue(isValid);
           }));
     },
-    function verifyAndEncryptCredentials() {
-      var networkGuid = 'wifi_guid';
-      chrome.networking.castPrivate.verifyAndEncryptCredentials(
-          verificationProperties,
-          networkGuid,
-          callbackPass(function(result) {
-            assertEq('encrypted_credentials', result);
-          }));
-    },
     function verifyAndEncryptData() {
       chrome.networking.castPrivate.verifyAndEncryptData(
           verificationProperties,

@@ -34,6 +34,7 @@
 #include "third_party/webrtc/api/audio_codecs/audio_encoder_factory_template.h"
 #include "third_party/webrtc/api/audio_codecs/opus/audio_decoder_opus.h"
 #include "third_party/webrtc/api/audio_codecs/opus/audio_encoder_opus.h"
+#include "third_party/webrtc/api/create_peerconnection_factory.h"
 #include "third_party/webrtc/api/stats/rtcstats_objects.h"
 #include "third_party/webrtc/api/video_codecs/builtin_video_decoder_factory.h"
 
@@ -235,6 +236,12 @@ class WebrtcTransport::PeerConnectionWrapper
         webrtc::PeerConnectionInterface::kRtcpMuxPolicyRequire;
 
     rtc_config.media_config.video.periodic_alr_bandwidth_probing = true;
+
+    // Currently, the host only supports the deprecated "Plan B" semantics, so
+    // specify it here.
+    // TODO(crbug.com/903012): Change to kUnifiedPlan and make any necessary
+    // changes for this to work.
+    rtc_config.sdp_semantics = webrtc::SdpSemantics::kPlanB;
 
     peer_connection_ = peer_connection_factory_->CreatePeerConnection(
         rtc_config, std::move(port_allocator), nullptr, this);

@@ -39,7 +39,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -74,10 +74,12 @@ int CallStat(const char* path, stat_wrapper_t* sb) {
   ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
   return stat(path, sb);
 }
+#if !defined(OS_NACL_NONSFI)
 int CallLstat(const char* path, stat_wrapper_t* sb) {
   ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
   return lstat(path, sb);
 }
+#endif
 #else
 int CallStat(const char* path, stat_wrapper_t* sb) {
   ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);

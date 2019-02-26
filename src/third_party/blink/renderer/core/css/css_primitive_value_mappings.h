@@ -44,9 +44,9 @@
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 #include "third_party/blink/renderer/platform/fonts/font_smoothing_mode.h"
 #include "third_party/blink/renderer/platform/fonts/text_rendering_mode.h"
+#include "third_party/blink/renderer/platform/geometry/length.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
-#include "third_party/blink/renderer/platform/length.h"
 #include "third_party/blink/renderer/platform/text/text_run.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
 #include "third_party/blink/renderer/platform/theme_types.h"
@@ -549,6 +549,12 @@ inline CSSIdentifierValue::CSSIdentifierValue(EFloat e)
     case EFloat::kRight:
       value_id_ = CSSValueRight;
       break;
+    case EFloat::kInlineStart:
+      value_id_ = CSSValueInlineStart;
+      break;
+    case EFloat::kInlineEnd:
+      value_id_ = CSSValueInlineEnd;
+      break;
   }
 }
 
@@ -559,6 +565,10 @@ inline EFloat CSSIdentifierValue::ConvertTo() const {
       return EFloat::kLeft;
     case CSSValueRight:
       return EFloat::kRight;
+    case CSSValueInlineStart:
+      return EFloat::kInlineStart;
+    case CSSValueInlineEnd:
+      return EFloat::kInlineEnd;
     case CSSValueNone:
       return EFloat::kNone;
     default:
@@ -1491,31 +1501,31 @@ inline TouchAction CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline ScrollCustomization::ScrollDirection CSSIdentifierValue::ConvertTo()
+inline scroll_customization::ScrollDirection CSSIdentifierValue::ConvertTo()
     const {
   switch (value_id_) {
     case CSSValueNone:
-      return ScrollCustomization::kScrollDirectionNone;
+      return scroll_customization::kScrollDirectionNone;
     case CSSValueAuto:
-      return ScrollCustomization::kScrollDirectionAuto;
+      return scroll_customization::kScrollDirectionAuto;
     case CSSValuePanLeft:
-      return ScrollCustomization::kScrollDirectionPanLeft;
+      return scroll_customization::kScrollDirectionPanLeft;
     case CSSValuePanRight:
-      return ScrollCustomization::kScrollDirectionPanRight;
+      return scroll_customization::kScrollDirectionPanRight;
     case CSSValuePanX:
-      return ScrollCustomization::kScrollDirectionPanX;
+      return scroll_customization::kScrollDirectionPanX;
     case CSSValuePanUp:
-      return ScrollCustomization::kScrollDirectionPanUp;
+      return scroll_customization::kScrollDirectionPanUp;
     case CSSValuePanDown:
-      return ScrollCustomization::kScrollDirectionPanDown;
+      return scroll_customization::kScrollDirectionPanDown;
     case CSSValuePanY:
-      return ScrollCustomization::kScrollDirectionPanY;
+      return scroll_customization::kScrollDirectionPanY;
     default:
       break;
   }
 
   NOTREACHED();
-  return ScrollCustomization::kScrollDirectionNone;
+  return scroll_customization::kScrollDirectionNone;
 }
 
 template <>

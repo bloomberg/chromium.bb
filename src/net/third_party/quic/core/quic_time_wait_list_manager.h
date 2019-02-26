@@ -1,7 +1,7 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
+
 // Handles packets for connection_ids in time wait state by discarding the
 // packet and sending the clients a public reset packet with exponential
 // backoff.
@@ -130,6 +130,8 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
                                const QuicSocketAddress& client_address,
                                QuicConnectionId connection_id,
                                bool ietf_quic);
+
+  virtual void GetEndpointId(QuicString* endpoint_id) {}
 
   // Returns a stateless reset token which will be included in the public reset
   // packet.

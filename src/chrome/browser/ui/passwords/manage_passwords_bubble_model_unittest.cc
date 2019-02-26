@@ -34,6 +34,7 @@
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source.h"
@@ -193,6 +194,7 @@ class ManagePasswordsBubbleModelTest : public ::testing::Test {
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
+  content::RenderViewHostTestEnabler rvh_enabler_;
   TestingProfile profile_;
   std::unique_ptr<content::WebContents> test_web_contents_;
   std::unique_ptr<ManagePasswordsBubbleModel> model_;
@@ -373,8 +375,12 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickNever) {
 TEST_F(ManagePasswordsBubbleModelTest, ClickManage) {
   PretendManagingPasswords();
 
-  EXPECT_CALL(*controller(), NavigateToPasswordManagerSettingsPage());
-  model()->OnManageClicked();
+  EXPECT_CALL(
+      *controller(),
+      NavigateToPasswordManagerSettingsPage(
+          password_manager::ManagePasswordsReferrer::kManagePasswordsBubble));
+  model()->OnManageClicked(
+      password_manager::ManagePasswordsReferrer::kManagePasswordsBubble);
 
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, model()->state());
   DestroyModelExpectReason(password_manager::metrics_util::CLICKED_MANAGE);
@@ -551,9 +557,13 @@ TEST_P(ManagePasswordsBubbleModelManageLinkTest, OnManageClicked) {
 
   PretendManagingPasswords();
 
-  EXPECT_CALL(*controller(), NavigateToPasswordManagerSettingsPage());
+  EXPECT_CALL(
+      *controller(),
+      NavigateToPasswordManagerSettingsPage(
+          password_manager::ManagePasswordsReferrer::kManagePasswordsBubble));
 
-  model()->OnManageClicked();
+  model()->OnManageClicked(
+      password_manager::ManagePasswordsReferrer::kManagePasswordsBubble);
 }
 
 INSTANTIATE_TEST_CASE_P(Default,

@@ -33,6 +33,7 @@ enum class DeepLinkType {
 
 // Enumeration of deep link parameters.
 enum class DeepLinkParam {
+  kId,
   kPage,
   kQuery,
   kRelaunch,
@@ -72,6 +73,10 @@ ASH_EXPORT bool IsDeepLinkType(const GURL& url, DeepLinkType type);
 // Returns true if the specified |url| is a deep link, false otherwise.
 ASH_EXPORT bool IsDeepLinkUrl(const GURL& url);
 
+// Returns the URL for the specified Assistant reminder |id|. If id is absent,
+// the returned URL will be for top-level Assistant Reminders.
+ASH_EXPORT GURL GetAssistantRemindersUrl(const base::Optional<std::string>& id);
+
 // Returns the URL for the specified Chrome Settings |page|. If page is absent
 // or not allowed, the URL will be for top-level Chrome Settings.
 ASH_EXPORT GURL GetChromeSettingsUrl(const base::Optional<std::string>& page);
@@ -81,10 +86,12 @@ ASH_EXPORT GURL GetChromeSettingsUrl(const base::Optional<std::string>& page);
 // IsWebDeepLink(GURL) API.
 ASH_EXPORT base::Optional<GURL> GetWebUrl(const GURL& deep_link);
 
-// Returns the web URL for a deep link of the specified |type|. A return value
-// will only be present if the deep link type is a web deep link type as
-// identified by the IsWebDeepLinkType(DeepLinkType) API.
-ASH_EXPORT base::Optional<GURL> GetWebUrl(DeepLinkType type);
+// Returns the web URL for a deep link of the specified |type| with the given
+// |params|. A return value will only be present if the deep link type is a web
+// deep link type as identified by the IsWebDeepLinkType(DeepLinkType) API.
+ASH_EXPORT base::Optional<GURL> GetWebUrl(
+    DeepLinkType type,
+    const std::map<std::string, std::string>& params);
 
 // Returns true if the specified |deep_link| is a web deep link.
 ASH_EXPORT bool IsWebDeepLink(const GURL& deep_link);

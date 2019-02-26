@@ -56,7 +56,7 @@ std::unique_ptr<ClientSocketPoolManager> CreateSocketPoolManager(
       context.client_socket_factory ? context.client_socket_factory
                                     : ClientSocketFactory::GetDefaultFactory(),
       context.socket_performance_watcher_factory,
-      context.network_quality_provider, context.host_resolver,
+      context.network_quality_estimator, context.host_resolver,
       context.cert_verifier, context.channel_id_service,
       context.transport_security_state, context.cert_transparency_verifier,
       context.ct_policy_enforcer, ssl_session_cache_shard,
@@ -165,11 +165,16 @@ HttpNetworkSession::Context::Context()
       http_auth_handler_factory(nullptr),
       net_log(nullptr),
       socket_performance_watcher_factory(nullptr),
-      network_quality_provider(nullptr),
+      network_quality_estimator(nullptr),
+#if BUILDFLAG(ENABLE_REPORTING)
+      reporting_service(nullptr),
+      network_error_logging_service(nullptr),
+#endif
       quic_clock(nullptr),
       quic_random(nullptr),
       quic_crypto_client_stream_factory(
-          QuicCryptoClientStreamFactory::GetDefaultFactory()) {}
+          QuicCryptoClientStreamFactory::GetDefaultFactory()) {
+}
 
 HttpNetworkSession::Context::Context(const Context& other) = default;
 
@@ -182,6 +187,10 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
       http_server_properties_(context.http_server_properties),
       cert_verifier_(context.cert_verifier),
       http_auth_handler_factory_(context.http_auth_handler_factory),
+#if BUILDFLAG(ENABLE_REPORTING)
+      reporting_service_(context.reporting_service),
+      network_error_logging_service_(context.network_error_logging_service),
+#endif
       proxy_resolution_service_(context.proxy_resolution_service),
       ssl_config_service_(context.ssl_config_service),
       websocket_endpoint_lock_manager_(
@@ -197,7 +206,6 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
           context.http_server_properties,
           context.cert_verifier,
           context.ct_policy_enforcer,
-          context.channel_id_service,
           context.transport_security_state,
           context.cert_transparency_verifier,
           context.socket_performance_watcher_factory,
@@ -230,7 +238,6 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
           params.quic_headers_include_h2_stream_dependency,
           params.quic_connection_options,
           params.quic_client_connection_options,
-          params.enable_channel_id,
           params.quic_enable_socket_recv_optimization),
       spdy_session_pool_(context.host_resolver,
                          context.ssl_config_service,
@@ -242,7 +249,8 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
                          params.spdy_session_max_recv_window_size,
                          AddDefaultHttp2Settings(params.http2_settings),
                          params.greased_http2_frame,
-                         params.time_func),
+                         params.time_func,
+                         context.network_quality_estimator),
       http_stream_factory_(std::make_unique<HttpStreamFactory>(this)),
       params_(params),
       context_(context) {

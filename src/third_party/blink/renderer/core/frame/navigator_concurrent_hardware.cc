@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/frame/navigator_concurrent_hardware.h"
 
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 
 namespace blink {
 

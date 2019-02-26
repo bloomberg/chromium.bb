@@ -2,9 +2,8 @@
   "comments": [
     "Runs tests on FYI on the latest simulators."
   ],
-  "xcode build version": "10a254a",
+  "xcode build version": "10b61",
   "gn_args": [
-    "additional_target_cpus=[\"x86\"]",
     "goma_dir=\"$(goma_dir)\"",
     "is_component_build=false",
     "is_debug=true",
@@ -21,7 +20,7 @@
         "--enable-features=SlimNavigationManager"
       ],
       "device type": "iPhone 6s",
-      "os": "12.0",
+      "os": "12.1",
       "dimensions": [
         { "os": "Mac-10.13.4", "pool": "Chrome" },
         { "os": "Mac-10.13.5", "pool": "Chrome" },
@@ -35,7 +34,7 @@
         "--enable-features=CredentialManager"
       ],
       "device type": "iPhone 6s",
-      "os": "12.0",
+      "os": "12.1",
       "xctest": true,
       "dimensions": [
         { "os": "Mac-10.13.4", "pool": "Chrome" },
@@ -49,7 +48,7 @@
         "--enable-features=CredentialManager"
       ],
       "device type": "iPad Air 2",
-      "os": "10.3",
+      "os": "12.1",
       "xctest": true,
       "dimensions": [
         { "os": "Mac-10.13.4", "pool": "Chrome" },
@@ -63,7 +62,7 @@
         "--enable-features=SlimNavigationManager"
       ],
       "device type": "iPhone 6s",
-      "os": "12.0",
+      "os": "12.1",
       "xctest": true,
       "dimensions": [
         { "os": "Mac-10.13.4", "pool": "Chrome" },
@@ -77,7 +76,7 @@
         "--enable-features=SlimNavigationManager"
       ],
       "device type": "iPhone 6s",
-      "os": "12.0",
+      "os": "12.1",
       "xctest": true,
       "dimensions": [
         { "os": "Mac-10.13.4", "pool": "Chrome" },
@@ -91,7 +90,7 @@
         "--enable-features=SlimNavigationManager"
       ],
       "device type": "iPhone 6s",
-      "os": "12.0",
+      "os": "12.1",
       "xctest": true,
       "dimensions": [
         { "os": "Mac-10.13.4", "pool": "Chrome" },
@@ -105,7 +104,7 @@
         "--enable-features=SlimNavigationManager"
       ],
       "device type": "iPhone 6s",
-      "os": "12.0",
+      "os": "12.1",
       "xctest": true,
       "dimensions": [
         { "os": "Mac-10.13.4", "pool": "Chrome" },
@@ -119,7 +118,7 @@
         "--enable-features=SlimNavigationManager"
       ],
       "device type": "iPhone 6s",
-      "os": "12.0",
+      "os": "12.1",
       "xctest": true,
       "dimensions": [
         { "os": "Mac-10.13.4", "pool": "Chrome" },

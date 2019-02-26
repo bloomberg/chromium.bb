@@ -47,6 +47,10 @@ class BASE_EXPORT NativeLibraryPrefetcher {
   // information to decide how to advise each part of the library.
   static void MadviseForOrderfile();
 
+  // Calls madvise() on the native library executable so that residency
+  // collection is accurate.
+  static void MadviseForResidencyCollection();
+
  private:
   // Returns the percentage of [start, end] currently resident in
   // memory, or -1 in case of error.

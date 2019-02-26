@@ -7,23 +7,9 @@ var mockCommandLinePrivate;
 var metrics;
 var onDirectoryChangedListeners;
 
-/**
- * Set string data.
- * @type {Object}
- */
-loadTimeData.data = {
-  DOWNLOADS_DIRECTORY_LABEL: 'Downloads',
-  DRIVE_DIRECTORY_LABEL: 'Google Drive',
-  DRIVE_MY_DRIVE_LABEL: 'My Drive',
-  DRIVE_TEAM_DRIVES_LABEL: 'Team Drives',
-  DRIVE_OFFLINE_COLLECTION_LABEL: 'Offline',
-  DRIVE_SHARED_WITH_ME_COLLECTION_LABEL: 'Shared with me',
-  REMOVABLE_DIRECTORY_LABEL: 'External Storage',
-  ARCHIVE_DIRECTORY_LABEL: 'Archives',
-  MY_FILES_ROOT_LABEL: 'My files',
-};
-
 function setUp() {
+  window.loadTimeData.getString = id => id;
+  window.loadTimeData.data = {};
   chrome = {
     fileManagerPrivate: {
       onDirectoryChanged: {
@@ -78,7 +64,7 @@ function getDirectoryTreeItemLabelsAsAList(directoryTree) {
 
 /**
  * Test case for typical creation of directory tree.
- * This test expect that the following tree is built.
+ * This test expects that the following tree is built.
  *
  * Google Drive
  * - My Drive
@@ -138,7 +124,7 @@ function testCreateDirectoryTree(callback) {
 
 /**
  * Test case for creating tree with Team Drives.
- * This test expect that the following tree is built.
+ * This test expects that the following tree is built.
  *
  * Google Drive
  * - My Drive
@@ -263,6 +249,211 @@ function testCreateDirectoryTreeWithEmptyTeamDrive(callback) {
 }
 
 /**
+ * Test case for creating tree with Computers.
+ * This test expects that the following tree is built.
+ *
+ * Google Drive
+ * - My Drive
+ * - Computers (only if there is a child computer).
+ * - Shared with me
+ * - Offline
+ * Downloads
+ *
+ * @param {!function(boolean)} callback A callback function which is called with
+ *     test result.
+ */
+function testCreateDirectoryTreeWithComputers(callback) {
+  // Create elements.
+  let parentElement = document.createElement('div');
+  let directoryTree = document.createElement('div');
+  directoryTree.metadataModel = mockMetadataModel();
+
+  parentElement.appendChild(directoryTree);
+
+  // Create mocks.
+  let directoryModel = new MockDirectoryModel();
+  let volumeManager = new MockVolumeManager();
+  const fileOperationManager = {addEventListener: function(name, callback) {}};
+
+  // Set entry which is returned by
+  // window.webkitResolveLocalFileSystemURLResults.
+  const driveFileSystem = volumeManager.volumeInfoList.item(0).fileSystem;
+  window.webkitResolveLocalFileSystemURLEntries['filesystem:drive/root'] =
+      new MockDirectoryEntry(driveFileSystem, '/root');
+  window.webkitResolveLocalFileSystemURLEntries['filesystem:drive/Computers'] =
+      new MockDirectoryEntry(driveFileSystem, '/Computers');
+  window.webkitResolveLocalFileSystemURLEntries
+      ['filesystem:drive/Comuters/My Laptop'] =
+      new MockDirectoryEntry(driveFileSystem, '/Computers/My Laptop');
+
+  // Populate the directory tree with the mock filesystem.
+  DirectoryTree.decorate(
+      directoryTree, directoryModel, volumeManager, null, fileOperationManager,
+      true);
+  directoryTree.dataModel = new MockNavigationListModel(volumeManager);
+  directoryTree.redraw(true);
+
+  // At top level, Drive and downloads should be listed.
+  assertEquals(2, directoryTree.items.length);
+  assertEquals(str('DRIVE_DIRECTORY_LABEL'), directoryTree.items[0].label);
+  assertEquals(str('DOWNLOADS_DIRECTORY_LABEL'), directoryTree.items[1].label);
+
+  const driveItem = directoryTree.items[0];
+
+  reportPromise(
+      waitUntil(function() {
+        // Under the drive item, there exist 4 entries.
+        return driveItem.items.length == 4;
+      }).then(function() {
+        // There exist 1 my drive entry and 3 fake entries under the drive item.
+        assertEquals(str('DRIVE_MY_DRIVE_LABEL'), driveItem.items[0].label);
+        assertEquals(str('DRIVE_COMPUTERS_LABEL'), driveItem.items[1].label);
+        assertEquals(
+            str('DRIVE_SHARED_WITH_ME_COLLECTION_LABEL'),
+            driveItem.items[2].label);
+        assertEquals(
+            str('DRIVE_OFFLINE_COLLECTION_LABEL'), driveItem.items[3].label);
+      }),
+      callback);
+}
+
+/**
+ * Test case for creating tree with empty Computers.
+ * The Computers subtree should be removed if the user has no computers.
+ *
+ * @param {!function(boolean)} callback A callback function which is called with
+ *     test result.
+ */
+function testCreateDirectoryTreeWithEmptyComputers(callback) {
+  // Create elements.
+  let parentElement = document.createElement('div');
+  let directoryTree = document.createElement('div');
+  directoryTree.metadataModel = mockMetadataModel();
+
+  parentElement.appendChild(directoryTree);
+
+  // Create mocks.
+  let directoryModel = new MockDirectoryModel();
+  let volumeManager = new MockVolumeManager();
+  const fileOperationManager = {addEventListener: function(name, callback) {}};
+
+  // Set entry which is returned by
+  // window.webkitResolveLocalFileSystemURLResults.
+  const driveFileSystem = volumeManager.volumeInfoList.item(0).fileSystem;
+  window.webkitResolveLocalFileSystemURLEntries['filesystem:drive/root'] =
+      new MockDirectoryEntry(driveFileSystem, '/root');
+  window.webkitResolveLocalFileSystemURLEntries['filesystem:drive/Computers'] =
+      new MockDirectoryEntry(driveFileSystem, '/Computers');
+  // No directories exist under Team Drives
+
+  // Populate the directory tree with the mock filesystem.
+  DirectoryTree.decorate(
+      directoryTree, directoryModel, volumeManager, null, fileOperationManager,
+      true);
+  directoryTree.dataModel = new MockNavigationListModel(volumeManager);
+  directoryTree.redraw(true);
+
+  const driveItem = directoryTree.items[0];
+
+  // Ensure we do not have a "Computers" item in drive, as it does not contain
+  // any children.
+  reportPromise(
+      waitUntil(function() {
+        // Root entries under Drive volume is generated, Computers isn't
+        // included because it has no child.
+        // See testCreateDirectoryTreeWithComputers for detail.
+        return driveItem.items.length == 3;
+      }).then(function() {
+        let teamDrivesItemFound = false;
+        for (let i = 0; i < driveItem.items.length; i++) {
+          if (driveItem.items[i].label == str('DRIVE_COMPUTERS_LABEL')) {
+            teamDrivesItemFound = true;
+            break;
+          }
+        }
+        assertFalse(teamDrivesItemFound, 'Computers should NOT be generated');
+      }),
+      callback);
+}
+
+/**
+ * Test case for creating tree with Team Drives & Computers.
+ * This test expects that the following tree is built.
+ *
+ * Google Drive
+ * - My Drive
+ * - Team Drives
+ * - Computers
+ * - Shared with me
+ * - Offline
+ * Downloads
+ *
+ * @param {!function(boolean)} callback A callback function which is called with
+ *     test result.
+ */
+function testCreateDirectoryTreeWithTeamDrivesAndComputers(callback) {
+  // Create elements.
+  let parentElement = document.createElement('div');
+  let directoryTree = document.createElement('div');
+  directoryTree.metadataModel = mockMetadataModel();
+
+  parentElement.appendChild(directoryTree);
+
+  // Create mocks.
+  let directoryModel = new MockDirectoryModel();
+  let volumeManager = new MockVolumeManager();
+  const fileOperationManager = {addEventListener: function(name, callback) {}};
+
+  // Set entry which is returned by
+  // window.webkitResolveLocalFileSystemURLResults.
+  const driveFileSystem = volumeManager.volumeInfoList.item(0).fileSystem;
+  window.webkitResolveLocalFileSystemURLEntries['filesystem:drive/root'] =
+      new MockDirectoryEntry(driveFileSystem, '/root');
+  window
+      .webkitResolveLocalFileSystemURLEntries['filesystem:drive/team_drives'] =
+      new MockDirectoryEntry(driveFileSystem, '/team_drives');
+  window.webkitResolveLocalFileSystemURLEntries
+      ['filesystem:drive/team_drives/a'] =
+      new MockDirectoryEntry(driveFileSystem, '/team_drives/a');
+  window.webkitResolveLocalFileSystemURLEntries['filesystem:drive/Computers'] =
+      new MockDirectoryEntry(driveFileSystem, '/Computers');
+  window.webkitResolveLocalFileSystemURLEntries
+      ['filesystem:drive/Comuters/My Laptop'] =
+      new MockDirectoryEntry(driveFileSystem, '/Computers/My Laptop');
+
+  // Populate the directory tree with the mock filesystem.
+  DirectoryTree.decorate(
+      directoryTree, directoryModel, volumeManager, null, fileOperationManager,
+      true);
+  directoryTree.dataModel = new MockNavigationListModel(volumeManager);
+  directoryTree.redraw(true);
+
+  // At top level, Drive and downloads should be listed.
+  assertEquals(2, directoryTree.items.length);
+  assertEquals(str('DRIVE_DIRECTORY_LABEL'), directoryTree.items[0].label);
+  assertEquals(str('DOWNLOADS_DIRECTORY_LABEL'), directoryTree.items[1].label);
+
+  const driveItem = directoryTree.items[0];
+
+  reportPromise(
+      waitUntil(function() {
+        // Under the drive item, there exist 4 entries.
+        return driveItem.items.length == 5;
+      }).then(function() {
+        // There exist 1 my drive entry and 3 fake entries under the drive item.
+        assertEquals(str('DRIVE_MY_DRIVE_LABEL'), driveItem.items[0].label);
+        assertEquals(str('DRIVE_TEAM_DRIVES_LABEL'), driveItem.items[1].label);
+        assertEquals(str('DRIVE_COMPUTERS_LABEL'), driveItem.items[2].label);
+        assertEquals(
+            str('DRIVE_SHARED_WITH_ME_COLLECTION_LABEL'),
+            driveItem.items[3].label);
+        assertEquals(
+            str('DRIVE_OFFLINE_COLLECTION_LABEL'), driveItem.items[4].label);
+      }),
+      callback);
+}
+
+/**
  * Test case for updateSubElementsFromList setting section-start attribute.
  *
  * 'section-start' attribute is used to display a line divider between
@@ -295,8 +486,10 @@ function testUpdateSubElementsFromListSections() {
   assertEquals(NavigationSection.MY_FILES, myFilesItem.section);
   assertEquals(NavigationSection.CLOUD, driveItem.section);
 
-  DirectoryTree.decorate(directoryTree, directoryModel, volumeManager,
-      null, fileOperationManager, true);
+  const metadataModel = mockMetadataModel();
+  DirectoryTree.decorate(
+      directoryTree, directoryModel, volumeManager, metadataModel,
+      fileOperationManager, true);
   directoryTree.dataModel = treeModel;
   directoryTree.updateSubElementsFromList(false);
 
@@ -570,6 +763,156 @@ function testRemoveLastTeamDrive(callback) {
       callback);
 }
 
+/**
+ * Test adding the first computer for a user.
+ * Computers subtree should be shown after the change notification is
+ * delivered.
+ *
+ * @param {!function(boolean)} callback A callback function which is called with
+ *     test result.
+ */
+function testAddFirstComputer(callback) {
+  // Create elements.
+  let parentElement = document.createElement('div');
+  let directoryTree = document.createElement('div');
+  directoryTree.metadataModel = mockMetadataModel();
+
+  parentElement.appendChild(directoryTree);
+
+  // Create mocks.
+  let directoryModel = new MockDirectoryModel();
+  let volumeManager = new MockVolumeManager();
+  const fileOperationManager = {addEventListener: function(name, callback) {}};
+
+  // Set entry which is returned by
+  // window.webkitResolveLocalFileSystemURLResults.
+  var driveFileSystem = volumeManager.volumeInfoList.item(0).fileSystem;
+  window.webkitResolveLocalFileSystemURLEntries['filesystem:drive/root'] =
+      new MockDirectoryEntry(driveFileSystem, '/root');
+  window.webkitResolveLocalFileSystemURLEntries['filesystem:drive/Computers'] =
+      new MockDirectoryEntry(driveFileSystem, '/Computers');
+  // No directories exist under Computers
+
+  // Populate the directory tree with the mock filesystem.
+  DirectoryTree.decorate(
+      directoryTree, directoryModel, volumeManager, null, fileOperationManager,
+      true);
+  directoryTree.dataModel = new MockNavigationListModel(volumeManager);
+  directoryTree.redraw(true);
+
+  let driveItem = directoryTree.items[0];
+
+  // Test that we initially do not have a Computers item under druve, and that
+  // adding a filesystem "/Computers/a" results in the Computers item being
+  // displayed under drive.
+  reportPromise(
+      waitUntil(() => {
+        return driveItem.items.length == 3;
+      })
+          .then(() => {
+            window.webkitResolveLocalFileSystemURLEntries
+                ['filesystem:drive/Computers/a'] =
+                new MockDirectoryEntry(driveFileSystem, '/Computers/a');
+            let event = {
+              entry: window.webkitResolveLocalFileSystemURLEntries
+                         ['filesystem:drive/Computers'],
+              eventType: 'changed',
+            };
+            for (let listener of onDirectoryChangedListeners) {
+              listener(event);
+            }
+          })
+          .then(() => {
+            return waitUntil(() => {
+              for (let i = 0; i < driveItem.items.length; i++) {
+                if (driveItem.items[i].label == str('DRIVE_COMPUTERS_LABEL')) {
+                  return !driveItem.items[i].hidden;
+                }
+              }
+              return false;
+            });
+          }),
+      callback);
+}
+
+/**
+ * Test removing the last computer for a user.
+ * Computerss subtree should be removed after the change notification is
+ * delivered.
+ *
+ * @param {!function(boolean)} callback A callback function which is called with
+ *     test result.
+ */
+function testRemoveLastComputer(callback) {
+  // Create elements.
+  let parentElement = document.createElement('div');
+  let directoryTree = document.createElement('div');
+  directoryTree.metadataModel = mockMetadataModel();
+
+  parentElement.appendChild(directoryTree);
+
+  // Create mocks.
+  let directoryModel = new MockDirectoryModel();
+  let volumeManager = new MockVolumeManager();
+  const fileOperationManager = {addEventListener: function(name, callback) {}};
+
+  // Set entry which is returned by
+  // window.webkitResolveLocalFileSystemURLResults.
+  var driveFileSystem = volumeManager.volumeInfoList.item(0).fileSystem;
+  window.webkitResolveLocalFileSystemURLEntries['filesystem:drive/root'] =
+      new MockDirectoryEntry(driveFileSystem, '/root');
+  window.webkitResolveLocalFileSystemURLEntries['filesystem:drive/Computers'] =
+      new MockDirectoryEntry(driveFileSystem, '/Computers');
+  window
+      .webkitResolveLocalFileSystemURLEntries['filesystem:drive/Computers/a'] =
+      new MockDirectoryEntry(driveFileSystem, '/Computers/a');
+
+  // Populate the directory tree with the mock filesystem.
+  DirectoryTree.decorate(
+      directoryTree, directoryModel, volumeManager, null, fileOperationManager,
+      true);
+  directoryTree.dataModel = new MockNavigationListModel(volumeManager);
+  directoryTree.redraw(true);
+
+  const driveItem = directoryTree.items[0];
+
+  // Check that removing the local computer "a" results in the entire
+  // "Computers" element being removed, as it has no children.
+  reportPromise(
+      waitUntil(() => {
+        return driveItem.items.length == 4;
+      })
+          .then(() => {
+            return new Promise(resolve => {
+              window
+                  .webkitResolveLocalFileSystemURLEntries
+                      ['filesystem:drive/Computers/a']
+                  .remove(resolve);
+            });
+          })
+          .then(() => {
+            let event = {
+              entry: window.webkitResolveLocalFileSystemURLEntries
+                         ['filesystem:drive/Computers'],
+              eventType: 'changed',
+            };
+            for (let listener of onDirectoryChangedListeners) {
+              listener(event);
+            }
+          })
+          .then(() => {
+            // Wait team drive grand root to appear.
+            return waitUntil(() => {
+              for (let i = 0; i < driveItem.items.length; i++) {
+                if (driveItem.items[i].label == str('DRIVE_COMPUTERS_LABEL')) {
+                  return false;
+                }
+              }
+              return true;
+            });
+          }),
+      callback);
+}
 
 /**
  * Test DirectoryItem.insideMyDrive property, which should return true when
@@ -602,9 +945,10 @@ function testInsideMyDriveAndInsideDrive(callback) {
       .webkitResolveLocalFileSystemURLEntries['filesystem:downloads/folder1'] =
       new MockDirectoryEntry(downloadsFileSystem, '/folder1');
 
+  const metadataModel = mockMetadataModel();
   DirectoryTree.decorate(
-      directoryTree, directoryModel, volumeManager, null, fileOperationManager,
-      true);
+      directoryTree, directoryModel, volumeManager, metadataModel,
+      fileOperationManager, true);
   directoryTree.dataModel = new MockNavigationListModel(volumeManager);
   directoryTree.redraw(true);
 

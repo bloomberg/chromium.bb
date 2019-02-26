@@ -142,6 +142,8 @@ class BluetoothTestWinrt : public BluetoothTestWin,
       BluetoothDevice::ConnectErrorCode error_code) override;
   void SimulateGattDisconnection(BluetoothDevice* device) override;
   void SimulateDeviceBreaksConnection(BluetoothDevice* device) override;
+  void SimulateGattNameChange(BluetoothDevice* device,
+                              const std::string& new_name) override;
   void SimulateGattServicesDiscovered(
       BluetoothDevice* device,
       const std::vector<std::string>& uuids) override;

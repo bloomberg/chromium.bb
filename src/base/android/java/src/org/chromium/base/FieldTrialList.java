@@ -40,7 +40,16 @@ public class FieldTrialList {
         return nativeGetVariationParameter(trialName, parameterKey);
     }
 
+    /**
+     * Print active trials and their group assignments to logcat, for debugging purposes. Continue
+     * prtinting new trials as they become active. This should be called at most once.
+     */
+    public static void logActiveTrials() {
+        nativeLogActiveTrials();
+    }
+
     private static native String nativeFindFullName(String trialName);
     private static native boolean nativeTrialExists(String trialName);
     private static native String nativeGetVariationParameter(String trialName, String parameterKey);
+    private static native void nativeLogActiveTrials();
 }

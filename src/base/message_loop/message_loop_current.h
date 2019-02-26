@@ -5,6 +5,8 @@
 #ifndef BASE_MESSAGE_LOOP_MESSAGE_LOOP_CURRENT_H_
 #define BASE_MESSAGE_LOOP_MESSAGE_LOOP_CURRENT_H_
 
+#include <ostream>
+
 #include "base/base_export.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
@@ -12,11 +14,25 @@
 #include "base/message_loop/message_pump_for_ui.h"
 #include "base/pending_task.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/task_observer.h"
 #include "build/build_config.h"
+
+namespace web {
+class TestWebThreadBundle;
+}
 
 namespace base {
 
-class MessageLoop;
+class MessageLoopBase;
+class MessageLoopImpl;
+
+namespace sequence_manager {
+class LazyThreadControllerForTest;
+
+namespace internal {
+class SequenceManagerImpl;
+}
+}  // namespace sequence_manager
 
 // MessageLoopCurrent is a proxy to the public interface of the MessageLoop
 // bound to the thread it's obtained on.
@@ -41,10 +57,17 @@ class BASE_EXPORT MessageLoopCurrent {
   // copy/move around.
   MessageLoopCurrent(const MessageLoopCurrent& other) = default;
   MessageLoopCurrent(MessageLoopCurrent&& other) = default;
+  MessageLoopCurrent& operator=(const MessageLoopCurrent& other) = default;
+
+  bool operator==(const MessageLoopCurrent& other) const;
 
   // Returns a proxy object to interact with the MessageLoop running the
   // current thread. It must only be used on the thread it was obtained.
   static MessageLoopCurrent Get();
+
+  // Return an empty MessageLoopCurrent. No methods should be called on this
+  // object.
+  static MessageLoopCurrent GetNull();
 
   // Returns true if the current thread is running a MessageLoop. Prefer this to
   // verifying the boolean value of Get() (so that Get() can ultimately DCHECK
@@ -56,10 +79,6 @@ class BASE_EXPORT MessageLoopCurrent {
   // MessageLoop*.
   MessageLoopCurrent* operator->() { return this; }
   explicit operator bool() const { return !!current_; }
-
-  // TODO(gab): Migrate the types of variables that store MessageLoop::current()
-  // and remove this implicit cast back to MessageLoop*.
-  operator MessageLoop*() const { return current_; }
 
   // A DestructionObserver is notified when the current MessageLoop is being
   // destroyed.  These observers are notified prior to MessageLoop::current()
@@ -88,31 +107,22 @@ class BASE_EXPORT MessageLoopCurrent {
   // DestructionObserver is receiving a notification callback.
   void RemoveDestructionObserver(DestructionObserver* destruction_observer);
 
+  // Returns the name for the thread associated with this object.
+  std::string GetThreadName() const;
+
   // Forwards to MessageLoop::task_runner().
   // DEPRECATED(https://crbug.com/616447): Use ThreadTaskRunnerHandle::Get()
   // instead of MessageLoopCurrent::Get()->task_runner().
-  const scoped_refptr<SingleThreadTaskRunner>& task_runner() const;
+  scoped_refptr<SingleThreadTaskRunner> task_runner() const;
 
   // Forwards to MessageLoop::SetTaskRunner().
   // DEPRECATED(https://crbug.com/825327): only owners of the MessageLoop
   // instance should replace its TaskRunner.
   void SetTaskRunner(scoped_refptr<SingleThreadTaskRunner> task_runner);
 
-  // A TaskObserver is an object that receives task notifications from the
-  // MessageLoop.
-  //
-  // NOTE: A TaskObserver implementation should be extremely fast!
-  class BASE_EXPORT TaskObserver {
-   public:
-    // This method is called before processing a task.
-    virtual void WillProcessTask(const PendingTask& pending_task) = 0;
-
-    // This method is called after processing a task.
-    virtual void DidProcessTask(const PendingTask& pending_task) = 0;
-
-   protected:
-    virtual ~TaskObserver() = default;
-  };
+  // This alias is deprecated. Use base::TaskObserver instead.
+  // TODO(yutak): Replace all the use sites with base::TaskObserver.
+  using TaskObserver = base::TaskObserver;
 
   // Forwards to MessageLoop::(Add|Remove)TaskObserver.
   // DEPRECATED(https://crbug.com/825327): only owners of the MessageLoop
@@ -163,9 +173,12 @@ class BASE_EXPORT MessageLoopCurrent {
     ~ScopedNestableTaskAllower();
 
    private:
-    MessageLoop* const loop_;
+    MessageLoopBase* const loop_;
     const bool old_state_;
   };
+
+  // Returns true if this is the active MessageLoop for the current thread.
+  bool IsBoundToCurrentThread() const;
 
   // Returns true if the message loop is idle (ignoring delayed tasks). This is
   // the same condition which triggers DoWork() to return false: i.e.
@@ -174,24 +187,34 @@ class BASE_EXPORT MessageLoopCurrent {
   // level.
   bool IsIdleForTesting();
 
+ protected:
   // Binds |current| to the current thread. It will from then on be the
   // MessageLoop driven by MessageLoopCurrent on this thread. This is only meant
   // to be invoked by the MessageLoop itself.
-  static void BindToCurrentThreadInternal(MessageLoop* current);
+  static void BindToCurrentThreadInternal(MessageLoopBase* current);
 
   // Unbinds |current| from the current thread. Must be invoked on the same
   // thread that invoked |BindToCurrentThreadInternal(current)|. This is only
   // meant to be invoked by the MessageLoop itself.
-  static void UnbindFromCurrentThreadInternal(MessageLoop* current);
+  static void UnbindFromCurrentThreadInternal(MessageLoopBase* current);
 
-  // Returns true if |message_loop| is bound to MessageLoopCurrent on the
-  // current thread. This is only meant to be invoked by the MessageLoop itself.
-  static bool IsBoundToCurrentThreadInternal(MessageLoop* message_loop);
+  explicit MessageLoopCurrent(MessageLoopBase* current) : current_(current) {}
 
- protected:
-  explicit MessageLoopCurrent(MessageLoop* current) : current_(current) {}
+  friend class MessageLoopImpl;
+  friend class MessagePumpLibeventTest;
+  friend class ScheduleWorkTest;
+  friend class Thread;
+  friend class sequence_manager::LazyThreadControllerForTest;
+  friend class sequence_manager::internal::SequenceManagerImpl;
+  friend class MessageLoopTaskRunnerTest;
+  friend class web::TestWebThreadBundle;
 
-  MessageLoop* const current_;
+  // Return the pointer to MessageLoop for internal needs.
+  // All other callers should call MessageLoopCurrent::Get().
+  // TODO(altimin): Remove this.
+  MessageLoopBase* ToMessageLoopBaseDeprecated() const { return current_; }
+
+  MessageLoopBase* current_;
 };
 
 #if !defined(OS_NACL)
@@ -220,7 +243,7 @@ class BASE_EXPORT MessageLoopCurrentForUI : public MessageLoopCurrent {
                            MessagePumpForUI::FdWatcher* delegate);
 #endif
 
-#if defined(OS_IOS)
+#if defined(OS_IOS) || defined(OS_ANDROID)
   // Forwards to MessageLoopForUI::Attach().
   // TODO(https://crbug.com/825327): Plumb the actual MessageLoopForUI* to
   // callers and remove ability to access this method from
@@ -242,12 +265,10 @@ class BASE_EXPORT MessageLoopCurrentForUI : public MessageLoopCurrent {
 #endif
 
  private:
-  MessageLoopCurrentForUI(MessageLoop* current, MessagePumpForUI* pump)
-      : MessageLoopCurrent(current), pump_(pump) {
-    DCHECK(pump_);
-  }
+  explicit MessageLoopCurrentForUI(MessageLoopBase* current)
+      : MessageLoopCurrent(current) {}
 
-  MessagePumpForUI* const pump_;
+  MessagePumpForUI* GetMessagePumpForUI() const;
 };
 
 #endif  // !defined(OS_NACL)
@@ -293,12 +314,10 @@ class BASE_EXPORT MessageLoopCurrentForIO : public MessageLoopCurrent {
 #endif  // !defined(OS_NACL_SFI)
 
  private:
-  MessageLoopCurrentForIO(MessageLoop* current, MessagePumpForIO* pump)
-      : MessageLoopCurrent(current), pump_(pump) {
-    DCHECK(pump_);
-  }
+  explicit MessageLoopCurrentForIO(MessageLoopBase* current)
+      : MessageLoopCurrent(current) {}
 
-  MessagePumpForIO* const pump_;
+  MessagePumpForIO* GetMessagePumpForIO() const;
 };
 
 }  // namespace base

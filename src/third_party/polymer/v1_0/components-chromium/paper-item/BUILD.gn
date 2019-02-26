@@ -18,12 +18,3 @@ js_library("paper-item-behavior-extracted") {
     "../iron-behaviors:iron-control-state-extracted",
   ]
 }
-
-js_library("paper-item-body-extracted") {
-}
-
-js_library("paper-item-extracted") {
-  deps = [
-    ":paper-item-behavior-extracted",
-  ]
-}

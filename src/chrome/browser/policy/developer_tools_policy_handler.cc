@@ -40,10 +40,6 @@ PolicyCheckResult CheckDeveloperToolsDisabled(
   if (!developer_tools_disabled)
     return PolicyCheckResult::kNotSet;
 
-  if (errors) {
-    errors->AddError(key::kDeveloperToolsDisabled, IDS_POLICY_DEPRECATED);
-  }
-
   if (!developer_tools_disabled->is_bool()) {
     if (errors) {
       errors->AddError(key::kDeveloperToolsDisabled, IDS_POLICY_TYPE_ERROR,

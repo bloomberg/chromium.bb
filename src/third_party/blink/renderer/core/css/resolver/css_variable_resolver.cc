@@ -5,7 +5,9 @@
 #include "third_party/blink/renderer/core/css/resolver/css_variable_resolver.h"
 
 #include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
+#include "third_party/blink/renderer/core/css/css_invalid_variable_value.h"
 #include "third_party/blink/renderer/core/css/css_pending_substitution_value.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_unset_value.h"
 #include "third_party/blink/renderer/core/css/css_variable_data.h"
 #include "third_party/blink/renderer/core/css/css_variable_reference_value.h"
@@ -20,7 +22,6 @@
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_stats.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
-#include "third_party/blink/renderer/core/css_property_names.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -85,14 +86,28 @@ scoped_refptr<CSSVariableData> ComputedVariableData(
 
 }  // namespace
 
-bool CSSVariableResolver::ResolveFallback(CSSParserTokenRange range,
-                                          const Options& options,
-                                          Result& result) {
+CSSVariableResolver::Fallback CSSVariableResolver::ResolveFallback(
+    CSSParserTokenRange range,
+    const Options& options,
+    const PropertyRegistration* registration,
+    Result& result) {
   if (range.AtEnd())
-    return false;
+    return Fallback::kNone;
   DCHECK_EQ(range.Peek().GetType(), kCommaToken);
   range.Consume();
-  return ResolveTokenRange(range, options, result);
+  size_t first_fallback_token = result.tokens.size();
+  if (!ResolveTokenRange(range, options, result))
+    return Fallback::kFail;
+  if (registration) {
+    CSSParserTokenRange range(result.tokens);
+    range = range.MakeSubRange(&range.Peek(first_fallback_token), range.end());
+    const CSSParserContext* context =
+        StrictCSSParserContext(state_.GetDocument().GetSecureContextMode());
+    const bool is_animation_tainted = false;
+    if (!registration->Syntax().Parse(range, context, is_animation_tainted))
+      return Fallback::kFail;
+  }
+  return Fallback::kSuccess;
 }
 
 scoped_refptr<CSSVariableData> CSSVariableResolver::ValueForCustomProperty(
@@ -109,11 +124,31 @@ scoped_refptr<CSSVariableData> CSSVariableResolver::ValueForCustomProperty(
 
   CSSVariableData* variable_data = GetVariable(name, registration);
 
-  if (!variable_data)
-    return registration ? registration->InitialVariableData() : nullptr;
+  if (!variable_data) {
+    // For unregistered properties, not having a CSSVariableData here means
+    // that it either never existed, or we have resolved it earlier, but
+    // resolution failed. Either way, we return nullptr to signify that this is
+    // an invalid variable.
+    if (!registration)
+      return nullptr;
+    // For registered properties, it's more complicated. Here too, it can mean
+    // that it never existed, or that resolution failed earlier, but now we need
+    // to know which; in the former case we must provide the initial value, and
+    // in the latter case the variable is invalid.
+    return IsRegisteredVariableInvalid(name, *registration)
+               ? nullptr
+               : registration->InitialVariableData();
+  }
 
-  scoped_refptr<CSSVariableData> resolved_data =
-      ResolveCustomPropertyIfNeeded(name, variable_data, options);
+  bool cycle_detected = false;
+  scoped_refptr<CSSVariableData> resolved_data = ResolveCustomPropertyIfNeeded(
+      name, variable_data, options, cycle_detected);
+
+  if (!resolved_data && cycle_detected) {
+    if (options.absolutize)
+      SetInvalidVariable(name, registration);
+    return nullptr;
+  }
 
   if (resolved_data) {
     if (IsVariableDisallowed(*resolved_data, options, registration))
@@ -146,7 +181,8 @@ scoped_refptr<CSSVariableData> CSSVariableResolver::ValueForCustomProperty(
   // take inherited values instead of falling back on initial.
   if (registration->Inherits() && !resolved_data) {
     resolved_data = state_.ParentStyle()->GetVariable(name, true);
-    resolved_value = state_.ParentStyle()->GetRegisteredVariable(name, true);
+    resolved_value =
+        state_.ParentStyle()->GetNonInitialRegisteredVariable(name, true);
   }
 
   DCHECK(!!resolved_data == !!resolved_value);
@@ -197,9 +233,10 @@ scoped_refptr<CSSVariableData> CSSVariableResolver::ResolveCustomProperty(
   bool success = ResolveTokenRange(variable_data.Tokens(), options, result);
   variables_seen_.erase(name);
 
-  if (!success || !cycle_start_points_.IsEmpty()) {
-    cycle_start_points_.erase(name);
+  if (!cycle_start_points_.IsEmpty())
     cycle_detected = true;
+  if (!success || cycle_detected) {
+    cycle_start_points_.erase(name);
     return nullptr;
   }
   cycle_detected = false;
@@ -219,14 +256,14 @@ scoped_refptr<CSSVariableData>
 CSSVariableResolver::ResolveCustomPropertyIfNeeded(
     AtomicString name,
     CSSVariableData* variable_data,
-    const Options& options) {
+    const Options& options,
+    bool& cycle_detected) {
   DCHECK(variable_data);
   bool resolve_urls = ShouldResolveRelativeUrls(name, *variable_data);
   if (!variable_data->NeedsVariableResolution() && !resolve_urls)
     return variable_data;
-  bool unused_cycle_detected;
   return ResolveCustomProperty(name, *variable_data, options, resolve_urls,
-                               unused_cycle_detected);
+                               cycle_detected);
 }
 
 void CSSVariableResolver::ResolveRelativeUrls(
@@ -319,6 +356,25 @@ void CSSVariableResolver::SetRegisteredVariable(
   }
 }
 
+void CSSVariableResolver::SetInvalidVariable(
+    const AtomicString& name,
+    const PropertyRegistration* registration) {
+  // TODO(andruud): Use RemoveVariable instead, but currently it also does
+  // a lookup in the registered map, which seems wasteful.
+  SetVariable(name, registration, nullptr);
+  if (registration) {
+    const CSSValue* value = CSSInvalidVariableValue::Create();
+    SetRegisteredVariable(name, *registration, value);
+  }
+}
+
+bool CSSVariableResolver::IsRegisteredVariableInvalid(
+    const AtomicString& name,
+    const PropertyRegistration& registration) {
+  const CSSValue* value = GetRegisteredVariable(name, registration);
+  return value && value->IsInvalidVariableValue();
+}
+
 bool CSSVariableResolver::ResolveVariableReference(CSSParserTokenRange range,
                                                    const Options& options,
                                                    bool is_env_variable,
@@ -337,6 +393,13 @@ bool CSSVariableResolver::ResolveVariableReference(CSSParserTokenRange range,
     non_inherited_variables_ = state_.Style()->NonInheritedVariables();
   }
 
+  const PropertyRegistration* registration = nullptr;
+  if (registry_) {
+    registration = registry_->Registration(variable_name);
+    if (!is_env_variable)
+      registry_->MarkReferenced(variable_name);
+  }
+
   scoped_refptr<CSSVariableData> variable_data =
       is_env_variable ? ValueForEnvironmentVariable(variable_name)
                       : ValueForCustomProperty(variable_name, options);
@@ -344,7 +407,8 @@ bool CSSVariableResolver::ResolveVariableReference(CSSParserTokenRange range,
   if (!variable_data) {
     // TODO(alancutter): Append the registered initial custom property value if
     // we are disallowing an animation tainted value.
-    return ResolveFallback(range, options, result);
+    return ResolveFallback(range, options, registration, result) ==
+           Fallback::kSuccess;
   }
 
   result.tokens.AppendVector(variable_data->Tokens());
@@ -356,7 +420,13 @@ bool CSSVariableResolver::ResolveVariableReference(CSSParserTokenRange range,
   result.absolutized &= variable_data->IsAbsolutized();
 
   Result trash;
-  ResolveFallback(range, options, trash);
+  Fallback fallback = ResolveFallback(range, options, registration, trash);
+
+  // For registered properties, the fallback (if present) must be valid, even
+  // if it's not used.
+  if (registration && fallback == Fallback::kFail)
+    return false;
+
   return true;
 }
 

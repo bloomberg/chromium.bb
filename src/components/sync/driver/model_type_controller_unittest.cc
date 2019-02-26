@@ -195,11 +195,17 @@ class ModelTypeControllerTest : public testing::Test {
     controller_.StartAssociating(callback.Get());
   }
 
+  void StopAndWait(ShutdownReason shutdown_reason) {
+    // ModelTypeProcessorProxy does posting of tasks, so we need a runloop. This
+    // also verifies that the completion callback is run.
+    base::RunLoop loop;
+    controller_.Stop(shutdown_reason, loop.QuitClosure());
+    loop.Run();
+  }
+
   void DeactivateDataTypeAndStop(ShutdownReason shutdown_reason) {
     controller_.DeactivateDataType(&configurer_);
-    controller_.Stop(shutdown_reason, base::DoNothing());
-    // ModelTypeProcessorProxy does posting of tasks.
-    base::RunLoop().RunUntilIdle();
+    StopAndWait(shutdown_reason);
   }
 
   MockDelegate* delegate() { return &mock_delegate_; }
@@ -329,9 +335,38 @@ TEST_F(ModelTypeControllerTest, StopBeforeLoadModels) {
 
   ASSERT_EQ(DataTypeController::NOT_RUNNING, controller()->state());
 
-  controller()->Stop(DISABLE_SYNC, base::DoNothing());
+  StopAndWait(DISABLE_SYNC);
 
   EXPECT_EQ(DataTypeController::NOT_RUNNING, controller()->state());
+}
+
+// Test emulates disabling sync when datatype is in error state. Metadata should
+// not be cleared as the delegate is potentially not ready to handle it.
+TEST_F(ModelTypeControllerTest, StopDuringFailedState) {
+  EXPECT_CALL(*delegate(), OnSyncStopping(CLEAR_METADATA)).Times(0);
+
+  ModelErrorHandler error_handler;
+  EXPECT_CALL(*delegate(), OnSyncStarting(_, _))
+      .WillOnce([&](const DataTypeActivationRequest& request,
+                    ModelTypeControllerDelegate::StartCallback callback) {
+        error_handler = request.error_handler;
+      });
+
+  base::MockCallback<DataTypeController::ModelLoadCallback> load_models_done;
+  controller()->LoadModels(MakeConfigureContext(), load_models_done.Get());
+  ASSERT_EQ(DataTypeController::MODEL_STARTING, controller()->state());
+  ASSERT_TRUE(error_handler);
+  // Mimic completion for OnSyncStarting(), with an error.
+  error_handler.Run(ModelError(FROM_HERE, "Test error"));
+  // TODO(mastiz): We shouldn't need RunUntilIdle() here, but
+  // ModelTypeController currently uses task-posting for errors.
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_EQ(DataTypeController::FAILED, controller()->state());
+
+  StopAndWait(DISABLE_SYNC);
+
+  EXPECT_EQ(DataTypeController::FAILED, controller()->state());
 }
 
 // Test emulates disabling sync when datatype is loading. The controller should
@@ -425,7 +460,7 @@ TEST_F(ModelTypeControllerTest, StopWhileErrorInFlight) {
   // At this point, the UI stops the datatype, but it's possible that the
   // backend has already posted a task to the UI thread, which we'll process
   // later below.
-  controller()->Stop(DISABLE_SYNC, base::DoNothing());
+  StopAndWait(DISABLE_SYNC);
   ASSERT_EQ(DataTypeController::NOT_RUNNING, controller()->state());
 
   base::HistogramTester histogram_tester;
@@ -466,7 +501,7 @@ TEST(ModelTypeControllerWithMultiDelegateTest, ToggleStorageOption) {
                     ModelTypeControllerDelegate::StartCallback callback) {
         start_callback = std::move(callback);
       });
-  context.storage_option = ConfigureContext::STORAGE_IN_MEMORY;
+  context.storage_option = STORAGE_IN_MEMORY;
   controller.LoadModels(context, base::DoNothing());
 
   ASSERT_EQ(DataTypeController::MODEL_STARTING, controller.state());
@@ -489,7 +524,7 @@ TEST(ModelTypeControllerWithMultiDelegateTest, ToggleStorageOption) {
                     ModelTypeControllerDelegate::StartCallback callback) {
         start_callback = std::move(callback);
       });
-  context.storage_option = ConfigureContext::STORAGE_ON_DISK;
+  context.storage_option = STORAGE_ON_DISK;
   controller.LoadModels(context, base::DoNothing());
 
   ASSERT_EQ(DataTypeController::MODEL_STARTING, controller.state());

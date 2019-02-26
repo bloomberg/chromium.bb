@@ -17,6 +17,7 @@
 #include "remoting/host/file_proxy_wrapper.h"
 #include "remoting/protocol/fake_message_pipe.h"
 #include "remoting/protocol/fake_message_pipe_wrapper.h"
+#include "remoting/protocol/file_transfer_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -24,12 +25,25 @@ namespace {
 constexpr char kTestDatachannelName[] = "filetransfer-test";
 constexpr char kTestFilename[] = "test-file.txt";
 
-std::unique_ptr<remoting::CompoundBuffer> ToBuffer(const std::string& data) {
+std::unique_ptr<remoting::CompoundBuffer> StringToBuffer(
+    const std::string& data) {
   std::unique_ptr<remoting::CompoundBuffer> buffer =
       std::make_unique<remoting::CompoundBuffer>();
-  buffer->Append(base::MakeRefCounted<net::WrappedIOBuffer>(data.data()),
+  buffer->Append(base::MakeRefCounted<net::StringIOBuffer>(data.data()),
                  data.size());
   return buffer;
+}
+
+std::unique_ptr<remoting::CompoundBuffer> MessageToBuffer(
+    const remoting::protocol::FileTransfer& message) {
+  return StringToBuffer(message.SerializeAsString());
+}
+
+std::unique_ptr<remoting::CompoundBuffer> DataToBuffer(
+    const std::string& data) {
+  remoting::protocol::FileTransfer message;
+  message.mutable_data()->set_data(data);
+  return MessageToBuffer(message);
 }
 
 // base::queue doesn't provide operator==.
@@ -59,27 +73,26 @@ class FakeFileProxyWrapper : public FileProxyWrapper {
   ~FakeFileProxyWrapper() override;
 
   // FileProxyWrapper implementation.
-  void Init(StatusCallback status_callback) override;
+  void Init(ResultCallback result_callback) override;
   void CreateFile(const base::FilePath& directory,
                   const std::string& filename) override;
   void OpenFile(const base::FilePath& filepath,
                 OpenFileCallback open_callback) override;
-  void WriteChunk(std::unique_ptr<CompoundBuffer> buffer) override;
+  void WriteChunk(std::string buffer) override;
   void ReadChunk(uint64_t chunk_size, ReadCallback read_callback) override;
   void Close() override;
   void Cancel() override;
   State state() override;
 
-  void RunStatusCallback(
-      base::Optional<protocol::FileTransferResponse_ErrorCode> error);
+  void RunResultCallback(base::Optional<protocol::FileTransfer_Error> error);
   const std::string& filename();
-  base::queue<std::vector<char>> chunks();
+  base::queue<std::string> chunks();
 
  private:
   State state_ = kUninitialized;
-  StatusCallback status_callback_;
+  ResultCallback result_callback_;
   std::string filename_;
-  base::queue<std::vector<char>> chunks_;
+  base::queue<std::string> chunks_;
 };
 
 class FileTransferMessageHandlerTest : public testing::Test {
@@ -96,18 +109,18 @@ class FileTransferMessageHandlerTest : public testing::Test {
   const std::string kTestDataTwo = "this is the second test string";
 
   std::unique_ptr<protocol::FakeMessagePipe> fake_pipe_;
-  protocol::FileTransferRequest fake_request_;
-  std::string fake_request_string_;
+  protocol::FileTransfer fake_metadata_;
+  protocol::FileTransfer fake_end_;
 };
 
 FakeFileProxyWrapper::FakeFileProxyWrapper() = default;
 FakeFileProxyWrapper::~FakeFileProxyWrapper() = default;
 
-void FakeFileProxyWrapper::Init(StatusCallback status_callback) {
+void FakeFileProxyWrapper::Init(ResultCallback result_callback) {
   ASSERT_EQ(state_, kUninitialized);
   state_ = kInitialized;
 
-  status_callback_ = std::move(status_callback);
+  result_callback_ = std::move(result_callback);
 }
 
 void FakeFileProxyWrapper::CreateFile(const base::FilePath& directory,
@@ -126,13 +139,10 @@ void FakeFileProxyWrapper::OpenFile(const base::FilePath& filepath,
   // TODO(jarhar): Implement fake file reading.
 }
 
-void FakeFileProxyWrapper::WriteChunk(std::unique_ptr<CompoundBuffer> buffer) {
+void FakeFileProxyWrapper::WriteChunk(std::string buffer) {
   ASSERT_EQ(state_, kReady);
 
-  std::vector<char> data;
-  data.resize(buffer->total_bytes());
-  buffer->CopyTo(data.data(), data.size());
-  chunks_.push(data);
+  chunks_.push(std::move(buffer));
 }
 
 void FakeFileProxyWrapper::ReadChunk(uint64_t chunk_size,
@@ -155,16 +165,16 @@ FileProxyWrapper::State FakeFileProxyWrapper::state() {
   return state_;
 }
 
-void FakeFileProxyWrapper::RunStatusCallback(
-    base::Optional<protocol::FileTransferResponse_ErrorCode> error) {
-  std::move(status_callback_).Run(state_, error);
+void FakeFileProxyWrapper::RunResultCallback(
+    base::Optional<protocol::FileTransfer_Error> error) {
+  std::move(result_callback_).Run(std::move(error));
 }
 
 const std::string& FakeFileProxyWrapper::filename() {
   return filename_;
 }
 
-base::queue<std::vector<char>> FakeFileProxyWrapper::chunks() {
+base::queue<std::string> FakeFileProxyWrapper::chunks() {
   return chunks_;
 }
 
@@ -175,10 +185,12 @@ void FileTransferMessageHandlerTest::SetUp() {
   fake_pipe_ =
       base::WrapUnique(new protocol::FakeMessagePipe(false /* asynchronous */));
 
-  fake_request_ = protocol::FileTransferRequest();
-  fake_request_.set_filename(kTestFilename);
-  fake_request_.set_filesize(kTestDataOne.size() + kTestDataTwo.size());
-  fake_request_.SerializeToString(&fake_request_string_);
+  fake_metadata_.Clear();
+  fake_metadata_.mutable_metadata()->set_filename(kTestFilename);
+  fake_metadata_.mutable_metadata()->set_size(kTestDataOne.size() +
+                                              kTestDataTwo.size());
+  fake_end_.Clear();
+  fake_end_.mutable_end();
 }
 
 void FileTransferMessageHandlerTest::TearDown() {}
@@ -196,36 +208,29 @@ TEST_F(FileTransferMessageHandlerTest, WriteTwoChunks) {
                                  std::move(file_proxy_wrapper));
 
   fake_pipe_->OpenPipe();
-  fake_pipe_->Receive(ToBuffer(fake_request_string_));
-  fake_pipe_->Receive(ToBuffer(kTestDataOne));
-  fake_pipe_->Receive(ToBuffer(kTestDataTwo));
+  fake_pipe_->Receive(MessageToBuffer(fake_metadata_));
+  fake_pipe_->Receive(DataToBuffer(kTestDataOne));
+  fake_pipe_->Receive(DataToBuffer(kTestDataTwo));
+  fake_pipe_->Receive(MessageToBuffer(fake_end_));
 
-  file_proxy_wrapper_ptr->RunStatusCallback(
-      base::Optional<protocol::FileTransferResponse_ErrorCode>());
+  file_proxy_wrapper_ptr->RunResultCallback(base::nullopt);
 
-  base::queue<std::vector<char>> actual_chunks =
-      file_proxy_wrapper_ptr->chunks();
+  base::queue<std::string> actual_chunks = file_proxy_wrapper_ptr->chunks();
 
   fake_pipe_->ClosePipe();
   file_proxy_wrapper_ptr = nullptr;
 
-  base::queue<std::vector<char>> expected_chunks;
-  expected_chunks.push(
-      std::vector<char>(kTestDataOne.begin(), kTestDataOne.end()));
-  expected_chunks.push(
-      std::vector<char>(kTestDataTwo.begin(), kTestDataTwo.end()));
+  base::queue<std::string> expected_chunks;
+  expected_chunks.push(kTestDataOne);
+  expected_chunks.push(kTestDataTwo);
   ASSERT_TRUE(QueuesEqual(expected_chunks, actual_chunks));
 
   const base::queue<std::string>& actual_sent_messages =
       fake_pipe_->sent_messages();
-  protocol::FileTransferResponse expected_response;
-  expected_response.set_state(
-      protocol::FileTransferResponse_TransferState_DONE);
-  expected_response.set_total_bytes_written(fake_request_.filesize());
-  std::string expected_response_string;
-  expected_response.SerializeToString(&expected_response_string);
+  protocol::FileTransfer expected_response;
+  expected_response.mutable_success();
   base::queue<std::string> expected_sent_messages;
-  expected_sent_messages.push(expected_response_string);
+  expected_sent_messages.push(expected_response.SerializeAsString());
   ASSERT_TRUE(QueuesEqual(expected_sent_messages, actual_sent_messages));
 }
 
@@ -237,32 +242,29 @@ TEST_F(FileTransferMessageHandlerTest, FileProxyError) {
   // |file_proxy_wrapper_ptr| is valid until fake_pipe_->ClosePipe() is called.
   FakeFileProxyWrapper* file_proxy_wrapper_ptr = file_proxy_wrapper.get();
 
-  protocol::FileTransferResponse_ErrorCode fake_error =
-      protocol::FileTransferResponse_ErrorCode_FILE_IO_ERROR;
+  protocol::FileTransfer_Error fake_error = protocol::MakeFileTransferError(
+      FROM_HERE, protocol::FileTransfer_Error_Type_IO_ERROR);
 
   // This will delete itself when fake_pipe_->ClosePipe() is called.
   new FileTransferMessageHandler(kTestDatachannelName, fake_pipe_->Wrap(),
                                  std::move(file_proxy_wrapper));
 
   fake_pipe_->OpenPipe();
-  fake_pipe_->Receive(ToBuffer(fake_request_string_));
-  fake_pipe_->Receive(ToBuffer(kTestDataOne));
+  fake_pipe_->Receive(MessageToBuffer(fake_metadata_));
+  fake_pipe_->Receive(DataToBuffer(kTestDataOne));
 
   file_proxy_wrapper_ptr->Cancel();
-  file_proxy_wrapper_ptr->RunStatusCallback(
-      base::Optional<protocol::FileTransferResponse_ErrorCode>(fake_error));
+  file_proxy_wrapper_ptr->RunResultCallback(fake_error);
 
   fake_pipe_->ClosePipe();
   file_proxy_wrapper_ptr = nullptr;
 
   const base::queue<std::string>& actual_sent_messages =
       fake_pipe_->sent_messages();
-  protocol::FileTransferResponse expected_response;
-  expected_response.set_error(fake_error);
-  std::string expected_response_string;
-  expected_response.SerializeToString(&expected_response_string);
+  protocol::FileTransfer expected_response;
+  *expected_response.mutable_error() = fake_error;
   base::queue<std::string> expected_sent_messages;
-  expected_sent_messages.push(expected_response_string);
+  expected_sent_messages.push(expected_response.SerializeAsString());
   ASSERT_TRUE(QueuesEqual(expected_sent_messages, actual_sent_messages));
 }
 

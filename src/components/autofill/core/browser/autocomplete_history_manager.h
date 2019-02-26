@@ -61,6 +61,8 @@ class AutocompleteHistoryManager : public WebDataServiceConsumer {
 
   // The class measure the percentage field that triggers the query and the
   // percentage field that has the suggestion.
+  // TODO(crbug.com/908562): Move this to AutofillMetrics with the other
+  // Autocomplete metrics for better consistency.
   class UMARecorder {
    public:
     UMARecorder() = default;

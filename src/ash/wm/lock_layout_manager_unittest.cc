@@ -16,9 +16,9 @@
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_ui.h"
 #include "ui/keyboard/keyboard_util.h"
+#include "ui/keyboard/public/keyboard_switches.h"
 #include "ui/keyboard/test/keyboard_test_util.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -26,8 +26,6 @@
 namespace ash {
 
 namespace {
-
-const int kVirtualKeyboardHeight = 100;
 
 // A login implementation of WidgetDelegate.
 class LoginTestWidgetDelegate : public views::WidgetDelegate {
@@ -57,13 +55,9 @@ class LockLayoutManagerTest : public AshTestBase {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         keyboard::switches::kEnableVirtualKeyboard);
     AshTestBase::SetUp();
-    Shell::GetPrimaryRootWindowController()->ActivateKeyboard(
-        keyboard::KeyboardController::Get());
   }
 
   void TearDown() override {
-    Shell::GetPrimaryRootWindowController()->DeactivateKeyboard(
-        keyboard::KeyboardController::Get());
     AshTestBase::TearDown();
   }
 
@@ -92,13 +86,7 @@ class LockLayoutManagerTest : public AshTestBase {
 
     if (show) {
       keyboard->ShowKeyboard(false);
-      if (keyboard->GetKeyboardWindow()->bounds().height() == 0) {
-        keyboard->GetKeyboardWindow()->SetBounds(
-            keyboard::KeyboardBoundsFromRootBounds(
-                Shell::GetPrimaryRootWindow()->bounds(),
-                kVirtualKeyboardHeight));
-        keyboard->NotifyKeyboardWindowLoaded();
-      }
+      ASSERT_TRUE(keyboard::WaitUntilShown());
     } else {
       keyboard->HideKeyboardByUser();
     }
@@ -284,7 +272,7 @@ TEST_F(LockLayoutManagerTest, KeyboardBounds) {
   SetKeyboardOverscrollBehavior(
       keyboard::mojom::KeyboardOverscrollBehavior::kDefault);
 
-  keyboard->SetContainerType(keyboard::ContainerType::FLOATING,
+  keyboard->SetContainerType(keyboard::mojom::ContainerType::kFloating,
                              base::nullopt /* target_bounds */,
                              base::BindOnce([](bool success) {}));
   ShowKeyboard(true);

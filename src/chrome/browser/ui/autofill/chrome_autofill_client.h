@@ -15,14 +15,14 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/ui/card_unmask_prompt_controller_impl.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 #if !defined(OS_ANDROID)
-#include "components/autofill/core/browser/ui/local_card_migration_bubble_controller.h"
-#include "components/autofill/core/browser/ui/local_card_migration_dialog_controller.h"
+#include "chrome/browser/ui/autofill/manage_migration_ui_controller.h"
 #include "components/autofill/core/browser/ui/save_card_bubble_controller.h"
 #include "components/zoom/zoom_observer.h"
 #endif  // !defined(OS_ANDROID)
@@ -34,6 +34,7 @@ class WebContents;
 namespace autofill {
 
 class AutofillPopupControllerImpl;
+class CardNameFixFlowViewAndroid;
 
 // Chrome implementation of AutofillClient.
 class ChromeAutofillClient
@@ -49,16 +50,21 @@ class ChromeAutofillClient
   ~ChromeAutofillClient() override;
 
   // AutofillClient:
+  version_info::Channel GetChannel() const override;
   PersonalDataManager* GetPersonalDataManager() override;
   scoped_refptr<AutofillWebDataService> GetDatabase() override;
   PrefService* GetPrefs() override;
   syncer::SyncService* GetSyncService() override;
   identity::IdentityManager* GetIdentityManager() override;
-  StrikeDatabase* GetStrikeDatabase() override;
+  payments::PaymentsClient* GetPaymentsClient() override;
+  FormDataImporter* GetFormDataImporter() override;
+  LegacyStrikeDatabase* GetLegacyStrikeDatabase() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
   AddressNormalizer* GetAddressNormalizer() override;
   security_state::SecurityLevel GetSecurityLevelForUmaHistograms() override;
+  std::string GetPageLanguage() const override;
+
   void ShowAutofillSettings(bool show_credit_card_settings) override;
   void ShowUnmaskPrompt(const CreditCard& card,
                         UnmaskCardReason reason,
@@ -70,6 +76,11 @@ class ChromeAutofillClient
       std::unique_ptr<base::DictionaryValue> legal_message,
       const std::vector<MigratableCreditCard>& migratable_credit_cards,
       LocalCardMigrationCallback start_migrating_cards_callback) override;
+  void ShowLocalCardMigrationResults(
+      const bool has_server_error,
+      const base::string16& tip_message,
+      const std::vector<MigratableCreditCard>& migratable_credit_cards,
+      MigrationDeleteCardCallback delete_local_card_callback) override;
   void ConfirmSaveAutofillProfile(const AutofillProfile& profile,
                                   base::OnceClosure callback) override;
   void ConfirmSaveCreditCardLocally(const CreditCard& card,
@@ -79,10 +90,16 @@ class ChromeAutofillClient
       const CreditCard& card,
       std::unique_ptr<base::DictionaryValue> legal_message,
       bool should_request_name_from_user,
+      bool should_request_expiration_date_from_user,
       bool show_prompt,
+      UserAcceptedUploadCallback callback) override;
+#if defined(OS_ANDROID)
+  void ConfirmAccountNameFixFlow(
       base::OnceCallback<void(const base::string16&)> callback) override;
+#endif  // defined(OS_ANDROID)
+
   void ConfirmCreditCardFillAssist(const CreditCard& card,
-                                   const base::Closure& callback) override;
+                                   base::OnceClosure callback) override;
   void LoadRiskData(
       base::OnceCallback<void(const std::string&)> callback) override;
   bool HasCreditCardScanFeature() override;
@@ -132,8 +149,17 @@ class ChromeAutofillClient
 
   void ShowHttpNotSecureExplanation();
 
+  Profile* GetProfile() const;
+  base::string16 GetAccountHolderName();
+
+  std::unique_ptr<payments::PaymentsClient> payments_client_;
+  std::unique_ptr<FormDataImporter> form_data_importer_;
   base::WeakPtr<AutofillPopupControllerImpl> popup_controller_;
   CardUnmaskPromptControllerImpl unmask_controller_;
+
+#if defined(OS_ANDROID)
+  std::unique_ptr<CardNameFixFlowViewAndroid> card_name_fix_flow_view_android_;
+#endif  // defined(OS_ANDROID)
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAutofillClient);
 };

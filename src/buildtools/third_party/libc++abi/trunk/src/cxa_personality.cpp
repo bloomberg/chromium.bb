@@ -23,6 +23,16 @@
 #include "private_typeinfo.h"
 #include "unwind.h"
 
+#if defined(__SEH__) && !defined(__USING_SJLJ_EXCEPTIONS__)
+#include <windows.h>
+#include <winnt.h>
+
+extern "C" EXCEPTION_DISPOSITION _GCC_specific_handler(PEXCEPTION_RECORD,
+                                                       void *, PCONTEXT,
+                                                       PDISPATCHER_CONTEXT,
+                                                       _Unwind_Personality_Fn);
+#endif
+
 /*
     Exception Header Layout:
 
@@ -492,7 +502,7 @@ get_thrown_object_ptr(_Unwind_Exception* unwind_exception)
     // Even for foreign exceptions, the exception object is *probably* at unwind_exception + 1
     //    Regardless, this library is prohibited from touching a foreign exception
     void* adjustedPtr = unwind_exception + 1;
-    if (unwind_exception->exception_class == kOurDependentExceptionClass)
+    if (__getExceptionClass(unwind_exception) == kOurDependentExceptionClass)
         adjustedPtr = ((__cxa_dependent_exception*)adjustedPtr - 1)->primaryException;
     return adjustedPtr;
 }
@@ -934,11 +944,15 @@ _UA_CLEANUP_PHASE
 */
 
 #if !defined(_LIBCXXABI_ARM_EHABI)
+#if defined(__SEH__) && !defined(__USING_SJLJ_EXCEPTIONS__)
+static _Unwind_Reason_Code __gxx_personality_imp
+#else
 _LIBCXXABI_FUNC_VIS _Unwind_Reason_Code
 #ifdef __USING_SJLJ_EXCEPTIONS__
 __gxx_personality_sj0
 #else
 __gxx_personality_v0
+#endif
 #endif
                     (int version, _Unwind_Action actions, uint64_t exceptionClass,
                      _Unwind_Exception* unwind_exception, _Unwind_Context* context)
@@ -1022,6 +1036,17 @@ __gxx_personality_v0
     // We were called improperly: neither a phase 1 or phase 2 search
     return _URC_FATAL_PHASE1_ERROR;
 }
+
+#if defined(__SEH__) && !defined(__USING_SJLJ_EXCEPTIONS__)
+extern "C" _LIBCXXABI_FUNC_VIS EXCEPTION_DISPOSITION
+__gxx_personality_seh0(PEXCEPTION_RECORD ms_exc, void *this_frame,
+                       PCONTEXT ms_orig_context, PDISPATCHER_CONTEXT ms_disp)
+{
+  return _GCC_specific_handler(ms_exc, this_frame, ms_orig_context, ms_disp,
+                               __gxx_personality_imp);
+}
+#endif
+
 #else
 
 extern "C" _Unwind_Reason_Code __gnu_unwind_frame(_Unwind_Exception*,
@@ -1073,8 +1098,7 @@ __gxx_personality_v0(_Unwind_State state,
     if (unwind_exception == 0 || context == 0)
         return _URC_FATAL_PHASE1_ERROR;
 
-    bool native_exception = (unwind_exception->exception_class & get_vendor_and_language) ==
-                            (kOurExceptionClass & get_vendor_and_language);
+    bool native_exception = __isOurExceptionClass(unwind_exception);
 
 #if !defined(LIBCXXABI_USE_LLVM_UNWINDER)
     // Copy the address of _Unwind_Control_Block to r12 so that
@@ -1178,9 +1202,7 @@ __cxa_call_unexpected(void* arg)
     if (unwind_exception == 0)
         call_terminate(false, unwind_exception);
     __cxa_begin_catch(unwind_exception);
-    bool native_old_exception =
-        (unwind_exception->exception_class & get_vendor_and_language) ==
-        (kOurExceptionClass                & get_vendor_and_language);
+    bool native_old_exception = __isOurExceptionClass(unwind_exception);
     std::unexpected_handler u_handler;
     std::terminate_handler t_handler;
     __cxa_exception* old_exception_header = 0;
@@ -1242,16 +1264,14 @@ __cxa_call_unexpected(void* arg)
             if (new_exception_header == 0)
                 // This shouldn't be able to happen!
                 std::__terminate(t_handler);
-            bool native_new_exception =
-                (new_exception_header->unwindHeader.exception_class & get_vendor_and_language) ==
-                                                (kOurExceptionClass & get_vendor_and_language);
+            bool native_new_exception = __isOurExceptionClass(&new_exception_header->unwindHeader);
             void* adjustedPtr;
             if (native_new_exception && (new_exception_header != old_exception_header))
             {
                 const __shim_type_info* excpType =
                     static_cast<const __shim_type_info*>(new_exception_header->exceptionType);
                 adjustedPtr =
-                    new_exception_header->unwindHeader.exception_class == kOurDependentExceptionClass ?
+                    __getExceptionClass(&new_exception_header->unwindHeader) == kOurDependentExceptionClass ?
                         ((__cxa_dependent_exception*)new_exception_header)->primaryException :
                         new_exception_header + 1;
                 if (!exception_spec_can_catch(ttypeIndex, classInfo, ttypeEncoding,

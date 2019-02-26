@@ -11,12 +11,9 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "net/cookies/cookie_store.h"
-#include "net/extras/sqlite/sqlite_channel_id_store.h"
 #include "net/extras/sqlite/sqlite_persistent_cookie_store.h"
 #include "net/http/http_network_layer.h"
 #include "net/http/http_transaction_factory.h"
-#include "net/ssl/channel_id_service.h"
-#include "net/ssl/default_channel_id_store.h"
 #include "net/url_request/url_request_context.h"
 
 using content::BrowserThread;
@@ -51,50 +48,16 @@ SafeBrowsingURLRequestContextGetter::GetURLRequestContext() {
         base::CreateSequencedTaskRunnerWithTraits(
             {base::MayBlock(), net::GetCookieStoreBackgroundSequencePriority(),
              base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
-    // Set up the ChannelIDService
-    scoped_refptr<net::SQLiteChannelIDStore> channel_id_db =
-        new net::SQLiteChannelIDStore(ChannelIDFilePath(),
-                                      background_task_runner);
-    channel_id_service_.reset(new net::ChannelIDService(
-        new net::DefaultChannelIDStore(channel_id_db.get())));
 
     // Set up the CookieStore
     content::CookieStoreConfig cookie_config(CookieFilePath(), false, false,
                                              nullptr);
-    cookie_config.channel_id_service = channel_id_service_.get();
     cookie_config.background_task_runner = background_task_runner;
     safe_browsing_cookie_store_ =
         content::CreateCookieStore(cookie_config, nullptr /* netlog */);
     safe_browsing_request_context_->set_cookie_store(
         safe_browsing_cookie_store_.get());
 
-    safe_browsing_request_context_->set_channel_id_service(
-        channel_id_service_.get());
-    safe_browsing_cookie_store_->SetChannelIDServiceID(
-        channel_id_service_->GetUniqueID());
-
-    // Rebuild the HttpNetworkSession and the HttpTransactionFactory to use the
-    // new ChannelIDService.
-    if (safe_browsing_request_context_->http_transaction_factory() &&
-        safe_browsing_request_context_->http_transaction_factory()
-            ->GetSession()) {
-      net::HttpNetworkSession::Params safe_browsing_session_params =
-          safe_browsing_request_context_->http_transaction_factory()
-              ->GetSession()
-              ->params();
-      net::HttpNetworkSession::Context safe_browsing_session_context =
-          safe_browsing_request_context_->http_transaction_factory()
-              ->GetSession()
-              ->context();
-      safe_browsing_session_context.channel_id_service =
-          channel_id_service_.get();
-      http_network_session_.reset(new net::HttpNetworkSession(
-          safe_browsing_session_params, safe_browsing_session_context));
-      http_transaction_factory_.reset(
-          new net::HttpNetworkLayer(http_network_session_.get()));
-      safe_browsing_request_context_->set_http_transaction_factory(
-          http_transaction_factory_.get());
-    }
     safe_browsing_request_context_->set_name("safe_browsing");
   }
 
@@ -137,10 +100,6 @@ base::FilePath SafeBrowsingURLRequestContextGetter::GetBaseFilename() {
 
 base::FilePath SafeBrowsingURLRequestContextGetter::CookieFilePath() {
   return base::FilePath(GetBaseFilename().value() + kCookiesFile);
-}
-
-base::FilePath SafeBrowsingURLRequestContextGetter::ChannelIDFilePath() {
-  return base::FilePath(GetBaseFilename().value() + kChannelIDFile);
 }
 
 SafeBrowsingURLRequestContextGetter::~SafeBrowsingURLRequestContextGetter() {}

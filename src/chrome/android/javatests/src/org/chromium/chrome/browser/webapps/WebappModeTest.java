@@ -92,7 +92,7 @@ public class WebappModeTest {
                 null, WebDisplayMode.STANDALONE, ScreenOrientationValues.PORTRAIT,
                 ShortcutSource.UNKNOWN, ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, null, false /* isIconGenerated */,
-                false /* forceNavigation */);
+                false /* isIconAdaptive */, false /* forceNavigation */);
         webappInfo.setWebappIntentExtras(intent);
 
         return intent;

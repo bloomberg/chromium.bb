@@ -10,20 +10,20 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* GridAutoFlow::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   CSSIdentifierValue* row_or_column_value =
-      CSSPropertyParserHelpers::ConsumeIdent<CSSValueRow, CSSValueColumn>(
+      css_property_parser_helpers::ConsumeIdent<CSSValueRow, CSSValueColumn>(
           range);
   CSSIdentifierValue* dense_algorithm =
-      CSSPropertyParserHelpers::ConsumeIdent<CSSValueDense>(range);
+      css_property_parser_helpers::ConsumeIdent<CSSValueDense>(range);
   if (!row_or_column_value) {
     row_or_column_value =
-        CSSPropertyParserHelpers::ConsumeIdent<CSSValueRow, CSSValueColumn>(
+        css_property_parser_helpers::ConsumeIdent<CSSValueRow, CSSValueColumn>(
             range);
     if (!row_or_column_value && !dense_algorithm)
       return nullptr;
@@ -69,5 +69,5 @@ const CSSValue* GridAutoFlow::CSSValueFromComputedStyleInternal(
   return list;
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

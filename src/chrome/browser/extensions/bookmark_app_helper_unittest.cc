@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/installable/installable_data.h"
 #include "chrome/browser/web_applications/components/web_app_icon_downloader.h"
+#include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -38,21 +39,16 @@ namespace extensions {
 
 namespace {
 
-using ForInstallableSite = BookmarkAppHelper::ForInstallableSite;
+using ForInstallableSite = web_app::ForInstallableSite;
 
 const char kManifestUrl[] = "http://www.chromium.org/manifest.json";
 const char kAppUrl[] = "http://www.chromium.org/index.html";
-const char kAlternativeAppUrl[] = "http://www.notchromium.org";
 const char kAppScope[] = "http://www.chromium.org/scope/";
 const char kAppAlternativeScope[] = "http://www.chromium.org/new/";
 const char kAppDefaultScope[] = "http://www.chromium.org/";
 const char kAppTitle[] = "Test title";
-const char kAppShortName[] = "Test short name";
 const char kAlternativeAppTitle[] = "Different test title";
 const char kAppDescription[] = "Test description";
-const char kAppIcon1[] = "fav1.png";
-const char kAppIcon2[] = "fav2.png";
-const char kAppIcon3[] = "fav3.png";
 const char kAppIconURL1[] = "http://foo.com/1.png";
 const char kAppIconURL2[] = "http://foo.com/2.png";
 
@@ -149,6 +145,7 @@ class TestBookmarkAppHelper : public BookmarkAppHelper {
         &manifest,
         GURL(kAppIconURL1),
         &bitmap_,
+        false,
         GURL(),
         nullptr,
         installable,
@@ -176,7 +173,7 @@ class TestBookmarkAppHelper : public BookmarkAppHelper {
 
   const Extension* extension() { return extension_; }
 
-  const WebAppIconDownloader* web_app_icon_downloader() {
+  const web_app::WebAppIconDownloader* web_app_icon_downloader() {
     return web_app_icon_downloader_.get();
   }
 
@@ -326,6 +323,7 @@ TEST_P(BookmarkAppHelperExtensionServiceInstallableSiteTest,
   manifest.scope = GURL(kAppScope);
   blink::Manifest::ImageResource icon;
   icon.src = GURL(kAppIconURL1);
+  icon.purpose = {blink::Manifest::ImageResource::Purpose::ANY};
   manifest.icons.push_back(icon);
   icon.src = GURL(kAppIconURL2);
   manifest.icons.push_back(icon);
@@ -397,7 +395,6 @@ TEST_F(BookmarkAppHelperExtensionServiceTest,
   auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
   scoped_feature_list->InitAndEnableFeature(features::kDesktopPWAWindowing);
 
-  WebApplicationInfo web_app_info;
   std::map<GURL, std::vector<SkBitmap>> icon_map;
 
   blink::Manifest manifest;
@@ -405,6 +402,8 @@ TEST_F(BookmarkAppHelperExtensionServiceTest,
   manifest.name = base::NullableString16(base::UTF8ToUTF16(kAppTitle), false);
   manifest.scope = GURL(kAppScope);
   {
+    WebApplicationInfo web_app_info;
+    web_app_info.open_as_window = true;
     TestBookmarkAppHelper helper(service_, web_app_info, web_contents());
     helper.Create(base::Bind(&TestBookmarkAppHelper::CreationComplete,
                              base::Unretained(&helper)));
@@ -434,6 +433,8 @@ TEST_F(BookmarkAppHelperExtensionServiceTest,
               GetLaunchContainer(ExtensionPrefs::Get(profile()), extension));
   }
   {
+    WebApplicationInfo web_app_info;
+    web_app_info.open_as_window = false;
     TestBookmarkAppHelper helper(service_, web_app_info, web_contents());
     helper.Create(base::Bind(&TestBookmarkAppHelper::CreationComplete,
                              base::Unretained(&helper)));
@@ -623,80 +624,6 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateAndUpdateBookmarkApp) {
                      extension, kIconSizeLarge, ExtensionIconSet::MATCH_EXACTLY)
                      .empty());
     EXPECT_TRUE(BookmarkAppIsLocallyInstalled(profile(), extension));
-  }
-}
-
-TEST_F(BookmarkAppHelperTest, UpdateWebAppInfoFromManifest) {
-  WebApplicationInfo web_app_info;
-  web_app_info.title = base::UTF8ToUTF16(kAlternativeAppTitle);
-  web_app_info.app_url = GURL(kAlternativeAppUrl);
-  WebApplicationInfo::IconInfo info;
-  info.url = GURL(kAppIcon1);
-  web_app_info.icons.push_back(info);
-
-  blink::Manifest manifest;
-  manifest.start_url = GURL(kAppUrl);
-  manifest.short_name = base::NullableString16(base::UTF8ToUTF16(kAppShortName),
-                                               false);
-
-  BookmarkAppHelper::UpdateWebAppInfoFromManifest(manifest, &web_app_info,
-                                                  ForInstallableSite::kNo);
-  EXPECT_EQ(base::UTF8ToUTF16(kAppShortName), web_app_info.title);
-  EXPECT_EQ(GURL(kAppUrl), web_app_info.app_url);
-
-  // The icon info from |web_app_info| should be left as is, since the manifest
-  // doesn't have any icon information.
-  EXPECT_EQ(1u, web_app_info.icons.size());
-  EXPECT_EQ(GURL(kAppIcon1), web_app_info.icons[0].url);
-
-  // Test that |manifest.name| takes priority over |manifest.short_name|, and
-  // that icons provided by the manifest replace icons in |web_app_info|.
-  manifest.name = base::NullableString16(base::UTF8ToUTF16(kAppTitle), false);
-
-  blink::Manifest::ImageResource icon;
-  icon.src = GURL(kAppIcon2);
-  manifest.icons.push_back(icon);
-  icon.src = GURL(kAppIcon3);
-  manifest.icons.push_back(icon);
-
-  BookmarkAppHelper::UpdateWebAppInfoFromManifest(
-      manifest, &web_app_info, BookmarkAppHelper::ForInstallableSite::kNo);
-  EXPECT_EQ(base::UTF8ToUTF16(kAppTitle), web_app_info.title);
-
-  EXPECT_EQ(2u, web_app_info.icons.size());
-  EXPECT_EQ(GURL(kAppIcon2), web_app_info.icons[0].url);
-  EXPECT_EQ(GURL(kAppIcon3), web_app_info.icons[1].url);
-}
-
-// Tests "scope" is only set for installable sites.
-TEST_F(BookmarkAppHelperTest, UpdateWebAppInfoFromManifestInstallableSite) {
-  {
-    blink::Manifest manifest;
-    manifest.start_url = GURL(kAppUrl);
-    WebApplicationInfo web_app_info;
-    BookmarkAppHelper::UpdateWebAppInfoFromManifest(
-        manifest, &web_app_info,
-        BookmarkAppHelper::ForInstallableSite::kUnknown);
-    EXPECT_EQ(GURL(), web_app_info.scope);
-  }
-
-  {
-    blink::Manifest manifest;
-    manifest.start_url = GURL(kAppUrl);
-    WebApplicationInfo web_app_info;
-    BookmarkAppHelper::UpdateWebAppInfoFromManifest(
-        manifest, &web_app_info, BookmarkAppHelper::ForInstallableSite::kNo);
-    EXPECT_EQ(GURL(), web_app_info.scope);
-  }
-
-  {
-    blink::Manifest manifest;
-    manifest.start_url = GURL(kAppUrl);
-    WebApplicationInfo web_app_info;
-    BookmarkAppHelper::UpdateWebAppInfoFromManifest(
-        manifest, &web_app_info, BookmarkAppHelper::ForInstallableSite::kYes);
-
-    EXPECT_NE(GURL(), web_app_info.scope);
   }
 }
 

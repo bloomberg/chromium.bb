@@ -32,12 +32,13 @@ class XMLSerializer final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static XMLSerializer* Create() { return new XMLSerializer; }
+  static XMLSerializer* Create() {
+    return MakeGarbageCollected<XMLSerializer>();
+  }
+
+  XMLSerializer() = default;
 
   String serializeToString(Node*);
-
- private:
-  XMLSerializer() = default;
 };
 
 }  // namespace blink

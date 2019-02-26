@@ -68,11 +68,11 @@ class OobeWebDialogView : public views::WebDialogView {
     return true;
   }
 
-  void HandleKeyboardEvent(
+  bool HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) override {
-    unhandled_keyboard_event_handler_.HandleKeyboardEvent(event,
-                                                          GetFocusManager());
+    return unhandled_keyboard_event_handler_.HandleKeyboardEvent(
+        event, GetFocusManager());
   }
 
  private:
@@ -118,6 +118,8 @@ class CaptivePortalDialogDelegate
   void Show() { widget_->Show(); }
 
   void Hide() { widget_->Hide(); }
+
+  void Close() { widget_->Close(); }
 
   web_modal::WebContentsModalDialogHost* GetWebContentsModalDialogHost()
       override {
@@ -180,11 +182,17 @@ class CaptivePortalDialogDelegate
 
   bool ShouldShowDialogTitle() const override { return false; }
 
+  base::WeakPtr<CaptivePortalDialogDelegate> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
  private:
   views::Widget* widget_ = nullptr;
   views::WebDialogView* view_ = nullptr;
   views::WebDialogView* host_view_ = nullptr;
   content::WebContents* web_contents_ = nullptr;
+
+  base::WeakPtrFactory<CaptivePortalDialogDelegate> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalDialogDelegate);
 };
@@ -220,7 +228,8 @@ OobeUIDialogDelegate::OobeUIDialogDelegate(
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       dialog_view_->web_contents());
 
-  captive_portal_delegate_ = new CaptivePortalDialogDelegate(dialog_view_);
+  captive_portal_delegate_ =
+      (new CaptivePortalDialogDelegate(dialog_view_))->GetWeakPtr();
 
   GetOobeUI()->GetErrorScreen()->MaybeInitCaptivePortalWindowProxy(
       dialog_view_->web_contents());
@@ -229,6 +238,12 @@ OobeUIDialogDelegate::OobeUIDialogDelegate(
 }
 
 OobeUIDialogDelegate::~OobeUIDialogDelegate() {
+  // At shutdown, all widgets are closed. The order of destruction maybe
+  // different; i.e. the captive portal dialog might have been destroyed
+  // already. So we check the WeakPtr first.
+  if (captive_portal_delegate_)
+    captive_portal_delegate_->Close();
+
   if (controller_)
     controller_->OnDialogDestroyed(this);
 }

@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/webui/site_settings_helper.h"
 
+#include <algorithm>
 #include <functional>
-#include <string>
 
 #include "base/feature_list.h"
 #include "base/values.h"
@@ -99,6 +99,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {CONTENT_SETTINGS_TYPE_CLIPBOARD_WRITE, nullptr},
     {CONTENT_SETTINGS_TYPE_PLUGINS_DATA, nullptr},
     {CONTENT_SETTINGS_TYPE_BACKGROUND_FETCH, nullptr},
+    {CONTENT_SETTINGS_TYPE_INTENT_PICKER_DISPLAY, nullptr},
 };
 static_assert(arraysize(kContentSettingsTypeGroupNames) ==
                   // ContentSettingsType starts at -1, so add 1 here.
@@ -590,6 +591,12 @@ void GetChooserExceptionsFromProfile(Profile* profile,
       chooser_context->GetAllGrantedObjects();
   AllOriginObjects all_origin_objects;
   for (const auto& object : objects) {
+    // Skip policy controlled objects until they are ready to be displayed.
+    // TODO(https://crbug.com/854329): Include policy controlled objects
+    // when the UI is capable of displaying them properly as policy controlled
+    // objects.
+    if (object->source == SiteSettingSourceToString(SiteSettingSource::kPolicy))
+      continue;
     std::string name = chooser_context->GetObjectName(object->object);
     // It is safe for this structure to hold references into |objects| because
     // they are both destroyed at the end of this function.

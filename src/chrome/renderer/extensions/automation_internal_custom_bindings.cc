@@ -7,7 +7,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <algorithm>
 #include <memory>
+#include <set>
+#include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/i18n/string_search.h"
@@ -20,6 +24,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/automation.h"
 #include "extensions/common/manifest_handlers/background_info.h"
@@ -33,7 +38,6 @@
 #include "ui/accessibility/ax_event.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_role_properties.h"
-#include "ui/accessibility/ax_table_info.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace extensions {
@@ -67,16 +71,6 @@ v8::Local<v8::Object> RectToV8Object(v8::Isolate* isolate,
       .Set("width", rect.width())
       .Set("height", rect.height())
       .Build();
-}
-
-ui::AXNode* GetContainingTable(ui::AXNode* node) {
-  while (node && !ui::IsTableLikeRole(node->data().role))
-    node = node->parent();
-
-  if (node && ui::IsTableLikeRole(node->data().role))
-    return node;
-
-  return nullptr;
 }
 
 // Adjust the bounding box of a node from local to global coordinates,
@@ -380,13 +374,67 @@ class NodeIDPlusStringBoolWrapper
   NodeIDPlusStringBoolFunction function_;
 };
 
+using NodeIDPlusDimensionsFunction =
+    void (*)(v8::Isolate* isolate,
+             v8::ReturnValue<v8::Value> result,
+             AutomationAXTreeWrapper* tree_wrapper,
+             ui::AXNode* node,
+             int x,
+             int y,
+             int width,
+             int height);
+
+class NodeIDPlusDimensionsWrapper
+    : public base::RefCountedThreadSafe<NodeIDPlusDimensionsWrapper> {
+ public:
+  NodeIDPlusDimensionsWrapper(
+      AutomationInternalCustomBindings* automation_bindings,
+      NodeIDPlusDimensionsFunction function)
+      : automation_bindings_(automation_bindings), function_(function) {}
+
+  void Run(const v8::FunctionCallbackInfo<v8::Value>& args) {
+    v8::Isolate* isolate = automation_bindings_->GetIsolate();
+    if (args.Length() < 6 || !args[0]->IsString() || !args[1]->IsInt32() ||
+        !args[2]->IsInt32() || !args[3]->IsInt32() || !args[4]->IsInt32() ||
+        !args[5]->IsInt32()) {
+      ThrowInvalidArgumentsException(automation_bindings_);
+    }
+
+    ui::AXTreeID tree_id =
+        ui::AXTreeID::FromString(*v8::String::Utf8Value(isolate, args[0]));
+    int node_id = args[1].As<v8::Int32>()->Value();
+    int x = args[2].As<v8::Int32>()->Value();
+    int y = args[3].As<v8::Int32>()->Value();
+    int width = args[4].As<v8::Int32>()->Value();
+    int height = args[5].As<v8::Int32>()->Value();
+
+    AutomationAXTreeWrapper* tree_wrapper =
+        automation_bindings_->GetAutomationAXTreeWrapperFromTreeID(tree_id);
+    if (!tree_wrapper)
+      return;
+
+    ui::AXNode* node = tree_wrapper->tree()->GetFromId(node_id);
+    if (!node)
+      return;
+
+    function_(isolate, args.GetReturnValue(), tree_wrapper, node, x, y, width,
+              height);
+  }
+
+ private:
+  virtual ~NodeIDPlusDimensionsWrapper() {}
+
+  friend class base::RefCountedThreadSafe<NodeIDPlusDimensionsWrapper>;
+
+  AutomationInternalCustomBindings* automation_bindings_;
+  NodeIDPlusDimensionsFunction function_;
+};
 }  // namespace
 
 class AutomationMessageFilter : public IPC::MessageFilter {
  public:
   explicit AutomationMessageFilter(AutomationInternalCustomBindings* owner)
-      : owner_(owner),
-        removed_(false) {
+      : owner_(owner), removed_(false) {
     DCHECK(owner);
     content::RenderThread::Get()->AddFilter(this);
     task_runner_ = base::ThreadTaskRunnerHandle::Get();
@@ -401,28 +449,23 @@ class AutomationMessageFilter : public IPC::MessageFilter {
   bool OnMessageReceived(const IPC::Message& message) override {
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(
-            &AutomationMessageFilter::OnMessageReceivedOnRenderThread,
-            this, message));
+        base::Bind(&AutomationMessageFilter::OnMessageReceivedOnRenderThread,
+                   this, message));
 
     // Always return false in case there are multiple
     // AutomationInternalCustomBindings instances attached to the same thread.
     return false;
   }
 
-  void OnFilterRemoved() override {
-    removed_ = true;
-  }
+  void OnFilterRemoved() override { removed_ = true; }
 
-private:
+ private:
   void OnMessageReceivedOnRenderThread(const IPC::Message& message) {
     if (owner_)
       owner_->OnMessageReceived(message);
   }
 
-  ~AutomationMessageFilter() override {
-    Remove();
-  }
+  ~AutomationMessageFilter() override { Remove(); }
 
   void Remove() {
     if (!removed_) {
@@ -452,8 +495,8 @@ AutomationInternalCustomBindings::AutomationInternalCustomBindings(
   if (context && context->extension()) {
     const GURL background_page_url =
         extensions::BackgroundInfo::GetBackgroundURL(context->extension());
-    should_ignore_context_ = background_page_url != "" &&
-        background_page_url != context->url();
+    should_ignore_context_ =
+        background_page_url != "" && background_page_url != context->url();
   }
 }
 
@@ -477,7 +520,7 @@ void AutomationInternalCustomBindings::AddRoutes() {
   ROUTE_FUNCTION(GetFocus);
   ROUTE_FUNCTION(GetHtmlAttributes);
   ROUTE_FUNCTION(GetState);
-  #undef ROUTE_FUNCTION
+#undef ROUTE_FUNCTION
 
   // Bindings that take a Tree ID and return a property of the tree.
 
@@ -660,14 +703,13 @@ void AutomationInternalCustomBindings::AddRoutes() {
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
          AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node, int start,
          int end) {
-        if (node->data().role != ax::mojom::Role::kInlineTextBox) {
-          gfx::Rect global_bounds = ComputeGlobalNodeBounds(tree_wrapper, node);
-          result.Set(RectToV8Object(isolate, global_bounds));
-        }
+        if (node->data().role != ax::mojom::Role::kInlineTextBox)
+          return;
 
         // Use character offsets to compute the local bounds of this subrange.
-        gfx::RectF local_bounds(0, 0, node->data().location.width(),
-                                node->data().location.height());
+        gfx::RectF local_bounds(0, 0,
+                                node->data().relative_bounds.bounds.width(),
+                                node->data().relative_bounds.bounds.height());
         std::string name =
             node->data().GetStringAttribute(ax::mojom::StringAttribute::kName);
         std::vector<int> character_offsets = node->data().GetIntListAttribute(
@@ -706,6 +748,20 @@ void AutomationInternalCustomBindings::AddRoutes() {
         // transformations.
         gfx::Rect global_bounds = ComputeGlobalNodeBounds(
             tree_wrapper, node, local_bounds, nullptr, true /* clip_bounds */);
+        result.Set(RectToV8Object(isolate, global_bounds));
+      });
+
+  RouteNodeIDPlusDimensionsFunction(
+      "ComputeGlobalBounds",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node, int x, int y,
+         int width, int height) {
+        gfx::RectF local_bounds(x, y, width, height);
+
+        // Convert from local coordinates in Android window, to global
+        // coordinates spanning entire screen.
+        gfx::Rect global_bounds = ComputeGlobalNodeBounds(
+            tree_wrapper, node, local_bounds, nullptr, false /* clip_bounds */);
         result.Set(RectToV8Object(isolate, global_bounds));
       });
 
@@ -874,26 +930,20 @@ void AutomationInternalCustomBindings::AddRoutes() {
   RouteNodeIDFunction(
       "GetBold", [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
                     AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
-        bool value =
-            (node->data().GetIntAttribute(ax::mojom::IntAttribute::kTextStyle) &
-             static_cast<int32_t>(ax::mojom::TextStyle::kTextStyleBold)) != 0;
+        bool value = node->data().HasTextStyle(ax::mojom::TextStyle::kBold);
         result.Set(v8::Boolean::New(isolate, value));
       });
   RouteNodeIDFunction(
       "GetItalic", [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
                       AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
-        bool value =
-            (node->data().GetIntAttribute(ax::mojom::IntAttribute::kTextStyle) &
-             static_cast<int32_t>(ax::mojom::TextStyle::kTextStyleItalic)) != 0;
+        bool value = node->data().HasTextStyle(ax::mojom::TextStyle::kItalic);
         result.Set(v8::Boolean::New(isolate, value));
       });
   RouteNodeIDFunction("GetUnderline", [](v8::Isolate* isolate,
                                          v8::ReturnValue<v8::Value> result,
                                          AutomationAXTreeWrapper* tree_wrapper,
                                          ui::AXNode* node) {
-    bool value =
-        (node->data().GetIntAttribute(ax::mojom::IntAttribute::kTextStyle) &
-         static_cast<int32_t>(ax::mojom::TextStyle::kTextStyleUnderline)) != 0;
+    bool value = node->data().HasTextStyle(ax::mojom::TextStyle::kUnderline);
     result.Set(v8::Boolean::New(isolate, value));
   });
   RouteNodeIDFunction(
@@ -901,9 +951,7 @@ void AutomationInternalCustomBindings::AddRoutes() {
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
          AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
         bool value =
-            (node->data().GetIntAttribute(ax::mojom::IntAttribute::kTextStyle) &
-             static_cast<int32_t>(
-                 ax::mojom::TextStyle::kTextStyleLineThrough)) != 0;
+            node->data().HasTextStyle(ax::mojom::TextStyle::kLineThrough);
         result.Set(v8::Boolean::New(isolate, value));
       });
   RouteNodeIDFunction(
@@ -1061,23 +1109,8 @@ void AutomationInternalCustomBindings::AddRoutes() {
       "GetTableCellColumnHeaders",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
          AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
-        ui::AXTree* tree = tree_wrapper->tree();
-
-        int32_t column_index;
-        if (!node->GetIntAttribute(
-                ax::mojom::IntAttribute::kTableCellColumnIndex, &column_index))
-          return;
-
-        ui::AXNode* table = GetContainingTable(node);
-        if (!table)
-          return;
-
-        ui::AXTableInfo* table_info = tree->GetTableInfo(table);
-        if (column_index < 0 || column_index >= table_info->col_count)
-          return;
-
-        std::vector<int32_t>& col_headers =
-            table_info->col_headers[column_index];
+        std::vector<int32_t> col_headers;
+        node->GetTableCellColHeaderNodeIds(&col_headers);
         v8::Local<v8::Array> array_result(
             v8::Array::New(isolate, col_headers.size()));
         for (size_t i = 0; i < col_headers.size(); ++i)
@@ -1089,21 +1122,8 @@ void AutomationInternalCustomBindings::AddRoutes() {
       "GetTableCellRowHeaders",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
          AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
-        ui::AXTree* tree = tree_wrapper->tree();
-        int32_t row_index;
-        if (!node->GetIntAttribute(ax::mojom::IntAttribute::kTableCellRowIndex,
-                                   &row_index))
-          return;
-
-        ui::AXNode* table = GetContainingTable(node);
-        if (!table)
-          return;
-
-        ui::AXTableInfo* table_info = tree->GetTableInfo(table);
-        if (row_index < 0 || row_index >= table_info->row_count)
-          return;
-
-        std::vector<int32_t>& row_headers = table_info->row_headers[row_index];
+        std::vector<int32_t> row_headers;
+        node->GetTableCellRowHeaderNodeIds(&row_headers);
         v8::Local<v8::Array> array_result(
             v8::Array::New(isolate, row_headers.size()));
         for (size_t i = 0; i < row_headers.size(); ++i)
@@ -1125,7 +1145,7 @@ void AutomationInternalCustomBindings::Invalidate() {
 // http://crbug.com/784266
 // clang-format off
 void AutomationInternalCustomBindings::OnMessageReceived(
-    const IPC::Message& message){
+    const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(AutomationInternalCustomBindings, message)
     IPC_MESSAGE_HANDLER(ExtensionMsg_AccessibilityEventBundle,
                         OnAccessibilityEvents)
@@ -1421,17 +1441,22 @@ ui::AXNode* AutomationInternalCustomBindings::GetParent(
   if (node->parent())
     return node->parent();
 
+  AutomationAXTreeWrapper* parent_tree_wrapper = nullptr;
+
   ui::AXTreeID parent_tree_id =
       (*in_out_tree_wrapper)->tree()->data().parent_tree_id;
+  if (parent_tree_id != ui::AXTreeIDUnknown()) {
+    // If the tree specifies its parent tree ID, use that. That provides
+    // some additional security guarantees, so a tree can't be "claimed"
+    // by something else.
+    parent_tree_wrapper = GetAutomationAXTreeWrapperFromTreeID(parent_tree_id);
+  } else {
+    // Otherwise if it was unspecified, check to see if another tree listed
+    // this one as its child, and then we know the parent.
+    parent_tree_wrapper = AutomationAXTreeWrapper::GetParentOfTreeId(
+        (*in_out_tree_wrapper)->tree_id());
+  }
 
-  // Try the desktop tree if the parent is unknown. If this tree really is
-  // a child of the desktop tree, we'll find its parent, and if not, the
-  // search, below, will fail until the real parent tree loads.
-  if (parent_tree_id == ui::AXTreeIDUnknown())
-    parent_tree_id = ui::DesktopAXTreeID();
-
-  AutomationAXTreeWrapper* parent_tree_wrapper =
-      GetAutomationAXTreeWrapperFromTreeID(parent_tree_id);
   if (!parent_tree_wrapper)
     return nullptr;
 
@@ -1471,7 +1496,7 @@ bool AutomationInternalCustomBindings::GetRootOfChildTree(
   AutomationAXTreeWrapper* child_tree_wrapper =
       GetAutomationAXTreeWrapperFromTreeID(
           ui::AXTreeID::FromString(child_tree_id_str));
-  if (!child_tree_wrapper)
+  if (!child_tree_wrapper || !child_tree_wrapper->tree()->root())
     return false;
 
   *in_out_tree_wrapper = child_tree_wrapper;
@@ -1572,6 +1597,15 @@ void AutomationInternalCustomBindings::RouteNodeIDPlusStringBoolFunction(
       new NodeIDPlusStringBoolWrapper(this, callback);
   RouteHandlerFunction(
       name, base::BindRepeating(&NodeIDPlusStringBoolWrapper::Run, wrapper));
+}
+
+void AutomationInternalCustomBindings::RouteNodeIDPlusDimensionsFunction(
+    const std::string& name,
+    NodeIDPlusDimensionsFunction callback) {
+  scoped_refptr<NodeIDPlusDimensionsWrapper> wrapper =
+      new NodeIDPlusDimensionsWrapper(this, callback);
+  RouteHandlerFunction(
+      name, base::BindRepeating(&NodeIDPlusDimensionsWrapper::Run, wrapper));
 }
 
 void AutomationInternalCustomBindings::GetChildIDAtIndex(
@@ -1679,8 +1713,8 @@ bool AutomationInternalCustomBindings::SendTreeChangeEvent(
 
   bool has_filter = false;
   if (tree_change_observer_overall_filter_ &
-      (1 <<
-       api::automation::TREE_CHANGE_OBSERVER_FILTER_LIVEREGIONTREECHANGES)) {
+      (1
+       << api::automation::TREE_CHANGE_OBSERVER_FILTER_LIVEREGIONTREECHANGES)) {
     if (node->data().HasStringAttribute(
             ax::mojom::StringAttribute::kContainerLiveStatus) ||
         node->data().role == ax::mojom::Role::kAlert ||

@@ -10,6 +10,7 @@
 #include "ash/test/ash_test_helper.h"
 #include "ash/wm/top_level_window_factory.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "cc/base/math_util.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "components/viz/common/quads/compositor_frame.h"
@@ -141,7 +142,9 @@ TEST_F(NonClientFrameControllerMashTest, ContentRegionNotDrawnForClient) {
   // Give the ui::Compositor a LocalSurfaceId so that it does not defer commit
   // when a draw is scheduled.
   viz::LocalSurfaceId local_surface_id(1, base::UnguessableToken::Create());
-  compositor->SetLocalSurfaceId(local_surface_id);
+  compositor->SetScaleAndSize(
+      1.f, gfx::Size(100, 100),
+      viz::LocalSurfaceIdAllocation(local_surface_id, base::TimeTicks::Now()));
 
   // Without the window visible, there should be a tile for the wallpaper at
   // (tile_x, tile_y) of size |tile_size|.

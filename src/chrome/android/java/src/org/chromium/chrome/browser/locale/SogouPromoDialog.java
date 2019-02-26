@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.locale;
 
 import android.app.Activity;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
@@ -54,9 +53,7 @@ public class SogouPromoDialog extends PromoDialog {
     private final LocaleManager mLocaleManager;
     private final ClickableSpan mSpan = new NoUnderlineClickableSpan((widget) -> {
         mChoice = UserChoice.SETTINGS;
-        Intent intent = PreferencesLauncher.createIntentForSettingsPage(
-                getContext(), SearchEnginePreference.class.getName());
-        getContext().startActivity(intent);
+        PreferencesLauncher.launchSettingsPage(getContext(), SearchEnginePreference.class);
         dismiss();
     });
 

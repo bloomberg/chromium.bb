@@ -17,6 +17,13 @@ namespace features {
 // When this flag is enabled, the metadata field of the HttpCache is unused.
 NET_EXPORT extern const base::Feature kIsolatedCodeCache;
 
+// Enables the additional TLS 1.3 server-random-based downgrade protection
+// described in https://tools.ietf.org/html/rfc8446#section-4.1.3
+//
+// This is a MUST-level requirement of TLS 1.3, but has compatibility issues
+// with some buggy non-compliant TLS-terminating proxies.
+NET_EXPORT extern const base::Feature kEnforceTLS13Downgrade;
+
 }  // namespace features
 }  // namespace net
 

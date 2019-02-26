@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
@@ -18,20 +17,16 @@ int RunHelper(base::TestSuite* test_suite) {
 
 }  // namespace
 
-extern bool g_OnlyOneRunFrame;
+void ANGLEProcessPerfTestArgs(int *argc, char **argv);
 
 int main(int argc, char** argv) {
-  for (int i = 0; i < argc; ++i) {
-    if (strcmp("--one-frame-only", argv[i]) == 0) {
-      g_OnlyOneRunFrame = true;
-    }
-  }
-
+  // base::CommandLine::Init must be called before ANGLEProcessPerfTestArgs.
+  // See comment in angle_deqp_tests_main.cc.
   base::CommandLine::Init(argc, argv);
+  ANGLEProcessPerfTestArgs(&argc, argv);
+
   base::TestSuite test_suite(argc, argv);
   int rt = base::LaunchUnitTestsSerially(
-      argc,
-      argv,
-      base::Bind(&RunHelper, base::Unretained(&test_suite)));
+      argc, argv, base::BindOnce(&RunHelper, base::Unretained(&test_suite)));
   return rt;
 }

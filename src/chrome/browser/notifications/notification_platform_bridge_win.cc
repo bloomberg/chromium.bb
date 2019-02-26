@@ -16,7 +16,6 @@
 #include "base/feature_list.h"
 #include "base/hash.h"
 #include "base/logging.h"
-#include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -78,6 +77,7 @@ typedef winfoundtn::ITypedEventHandler<
     winui::Notifications::ToastNotification*,
     winui::Notifications::ToastDismissedEventArgs*>
     ToastDismissedHandler;
+
 typedef winfoundtn::ITypedEventHandler<
     winui::Notifications::ToastNotification*,
     winui::Notifications::ToastFailedEventArgs*>
@@ -106,11 +106,18 @@ void ForwardNotificationOperationOnUiThread(
   if (!g_browser_process)
     return;
 
+  // Profile ID can be empty for system notifications, which are not bound to a
+  // profile, but system notifications are transient and thus not handled by
+  // this NotificationPlatformBridge.
+  // When transient notifications are supported, this should route the
+  // notification response to the system NotificationDisplayService.
+  DCHECK(!profile_id.empty());
+
   g_browser_process->profile_manager()->LoadProfile(
       profile_id, incognito,
-      base::Bind(&NotificationDisplayServiceImpl::ProfileLoadedCallback,
-                 operation, notification_type, origin, notification_id,
-                 action_index, reply, by_user));
+      base::BindOnce(&NotificationDisplayServiceImpl::ProfileLoadedCallback,
+                     operation, notification_type, origin, notification_id,
+                     action_index, reply, by_user));
 }
 
 }  // namespace
@@ -137,27 +144,22 @@ class NotificationPlatformBridgeWinImpl
             base::win::ResolveCoreWinRTDelayload() &&
             ScopedHString::ResolveCoreWinRTStringDelayload()),
         notification_task_runner_(std::move(notification_task_runner)),
-        // file_deletion_task_runner_ runs tasks to delete notification image
-        // files on the disk. This task will be retried on each Chrome startup,
-        // so it's okay to specify TaskShutdownBehavior to be
-        // CONTINUE_ON_SHUTDOWN (i.e., ignore this task for all purposes at
-        // shutdown).
-        file_deletion_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-             base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
-        image_retainer_(std::make_unique<NotificationImageRetainer>(
-            file_deletion_task_runner_)) {
+        image_retainer_(std::make_unique<NotificationImageRetainer>()) {
+    // Delete any remaining temp files in the image folder from the previous
+    // sessions.
     DCHECK(notification_task_runner_);
-    DCHECK(file_deletion_task_runner_);
+    content::BrowserThread::PostAfterStartupTask(
+        FROM_HERE, notification_task_runner_,
+        image_retainer_->GetCleanupTask());
   }
 
-  // Obtain an IToastNotification interface from a given XML (provided by the
-  // NotificationTemplateBuilder). This function is only used when displaying
-  // notification in production code, which explains why the UMA metrics record
-  // within are classified with the display path.
+  // Obtain an IToastNotification interface from a given XML as in
+  // |xml_template|. This function is only used when displaying notification in
+  // production code, which explains why the UMA metrics record within are
+  // classified with the display path.
   mswr::ComPtr<winui::Notifications::IToastNotification> GetToastNotification(
       const message_center::Notification& notification,
-      const NotificationTemplateBuilder& notification_template_builder,
+      const base::string16& xml_template,
       const std::string& profile_id,
       bool incognito) {
     ScopedHString ref_class_name =
@@ -181,9 +183,7 @@ class NotificationPlatformBridgeWinImpl
       return nullptr;
     }
 
-    base::string16 notification_template =
-        notification_template_builder.GetNotificationTemplate();
-    ScopedHString ref_template = ScopedHString::Create(notification_template);
+    ScopedHString ref_template = ScopedHString::Create(xml_template);
     hr = document_io->LoadXml(ref_template.get());
     if (FAILED(hr)) {
       LogDisplayHistogram(DisplayStatus::LOAD_XML_FAILED);
@@ -355,11 +355,10 @@ class NotificationPlatformBridgeWinImpl
     NotificationLaunchId launch_id(notification_type, notification->id(),
                                    profile_id, incognito,
                                    notification->origin_url());
-    std::unique_ptr<NotificationTemplateBuilder> notification_template =
-        NotificationTemplateBuilder::Build(
-            image_retainer_->AsWeakPtr(), launch_id, profile_id, *notification);
+    base::string16 xml_template = BuildNotificationTemplate(
+        image_retainer_.get(), launch_id, *notification);
     mswr::ComPtr<winui::Notifications::IToastNotification> toast =
-        GetToastNotification(*notification, *notification_template, profile_id,
+        GetToastNotification(*notification, xml_template, profile_id,
                              incognito);
     if (!toast)
       return;
@@ -543,8 +542,6 @@ class NotificationPlatformBridgeWinImpl
   void GetDisplayed(const std::string& profile_id,
                     bool incognito,
                     GetDisplayedNotificationsCallback callback) const {
-    // TODO(finnur): Once this function is properly implemented, add DCHECK(UI)
-    // to NotificationPlatformBridgeWin::GetDisplayed.
     DCHECK(notification_task_runner_->RunsTasksInCurrentSequence());
 
     std::vector<mswr::ComPtr<winui::Notifications::IToastNotification>>
@@ -664,10 +661,11 @@ class NotificationPlatformBridgeWinImpl
 
  private:
   friend class base::RefCountedThreadSafe<NotificationPlatformBridgeWinImpl>;
-  friend class MockIToastNotifier;
   friend class NotificationPlatformBridgeWin;
 
-  ~NotificationPlatformBridgeWinImpl() = default;
+  ~NotificationPlatformBridgeWinImpl() {
+    notification_task_runner_->DeleteSoon(FROM_HERE, image_retainer_.release());
+  }
 
   base::string16 GetAppId() const {
     return ShellUtil::GetBrowserModelId(InstallUtil::IsPerUserInstall());
@@ -758,9 +756,6 @@ class NotificationPlatformBridgeWinImpl
   // The task runner running notification related tasks.
   scoped_refptr<base::SequencedTaskRunner> notification_task_runner_;
 
-  // The task runner running tasks to delete files.
-  scoped_refptr<base::SequencedTaskRunner> file_deletion_task_runner_;
-
   // An object that keeps temp files alive long enough for Windows to pick up.
   std::unique_ptr<NotificationImageRetainer> image_retainer_;
 
@@ -819,6 +814,8 @@ void NotificationPlatformBridgeWin::Close(Profile* profile,
 void NotificationPlatformBridgeWin::GetDisplayed(
     Profile* profile,
     GetDisplayedNotificationsCallback callback) const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   notification_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&NotificationPlatformBridgeWinImpl::GetDisplayed, impl_,
@@ -834,6 +831,8 @@ void NotificationPlatformBridgeWin::SetReadyCallback(
       base::BindOnce(&NotificationPlatformBridgeWinImpl::SetReadyCallback,
                      impl_, std::move(callback)));
 }
+
+void NotificationPlatformBridgeWin::DisplayServiceShutDown(Profile* profile) {}
 
 // static
 bool NotificationPlatformBridgeWin::HandleActivation(
@@ -877,9 +876,11 @@ bool NotificationPlatformBridgeWin::HandleActivation(
 
 // static
 bool NotificationPlatformBridgeWin::NativeNotificationEnabled() {
-  // Windows 10 native notification seems to have memory leak issues on OS
-  // builds older than 17134 (i.e., VERSION_WIN10_RS4). This seems to be a
-  // Windows issue which has been fixed in 17134.
+  // There was a Microsoft bug in Windows 10 prior to build 17134 (i.e.,
+  // VERSION_WIN10_RS4), causing endless loops in displaying notifications. It
+  // significantly amplified the memory and CPU usage. Therefore, we enable
+  // Windows 10 native notification only for build 17134 and later. See
+  // crbug.com/882622 and crbug.com/878823 for more details.
   return base::win::GetVersion() >= base::win::VERSION_WIN10_RS4 &&
          base::FeatureList::IsEnabled(features::kNativeNotifications);
 }
@@ -912,9 +913,9 @@ void NotificationPlatformBridgeWin::SetNotifierForTesting(
 mswr::ComPtr<winui::Notifications::IToastNotification>
 NotificationPlatformBridgeWin::GetToastNotificationForTesting(
     const message_center::Notification& notification,
-    const NotificationTemplateBuilder& notification_template_builder,
+    const base::string16& xml_template,
     const std::string& profile_id,
     bool incognito) {
-  return impl_->GetToastNotification(
-      notification, notification_template_builder, profile_id, incognito);
+  return impl_->GetToastNotification(notification, xml_template, profile_id,
+                                     incognito);
 }

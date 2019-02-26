@@ -44,7 +44,7 @@ v8::Local<v8::Value> ToV8(EventTarget* impl,
   if (UNLIKELY(!impl))
     return v8::Null(isolate);
 
-  if (impl->InterfaceName() == EventTargetNames::DOMWindow)
+  if (impl->InterfaceName() == event_target_names::kWindow)
     return ToV8(static_cast<DOMWindow*>(impl), creation_context, isolate);
   return ToV8(static_cast<ScriptWrappable*>(impl), creation_context, isolate);
 }

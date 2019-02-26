@@ -76,8 +76,16 @@ void CrostiniHandler::HandleRemoveCrostiniSharedPath(
   std::string path;
   CHECK(args->GetString(0, &path));
 
-  crostini::UnsharePath(profile_, crostini::kCrostiniDefaultVmName,
-                        base::FilePath(path), base::DoNothing());
+  crostini::CrostiniSharePath::GetForProfile(profile_)->UnsharePath(
+      crostini::kCrostiniDefaultVmName, base::FilePath(path),
+      base::BindOnce(
+          [](const std::string& path, bool result, std::string failure_reason) {
+            if (!result) {
+              LOG(ERROR) << "Error unsharing " << path << ": "
+                         << failure_reason;
+            }
+          },
+          path));
 }
 
 }  // namespace settings

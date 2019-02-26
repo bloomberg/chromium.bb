@@ -30,16 +30,19 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">Select&amp;ează tot</translation>
+<translation id="1938451708255335766">Pentru a regla densitatea afișajului ferestrei, repornește aplicația.</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 zi}few{# zile}other{# zile}}</translation>
 <translation id="2148716181193084225">Astăzi</translation>
 <translation id="2168039046890040389">O pagină mai sus</translation>
 <translation id="2190355936436201913">(gol)</translation>
+<translation id="2192232475740621500">Folosește densitatea joasă</translation>
 <translation id="219905428774326614">Lansator, toate aplicațiile</translation>
 <translation id="2267918077332197517">Blochează toate notificările de la acest site</translation>
 <translation id="2289052229480071835">Atinge țintele de atingere de pe ecran.</translation>
 <translation id="2295140143284145483">Sondaj</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="24452542372838207">Extinde notificarea</translation>
+<translation id="2445449901874883781">Folosește densitatea ridicată</translation>
 <translation id="2482878487686419369">Notificări</translation>
 <translation id="2497284189126895209">Toate fișierele</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -60,6 +63,7 @@
 <translation id="3234408098842461169">Săgeată în jos</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{O zi}few{# zile}other{# de zile}}</translation>
 <translation id="335581015389089642">Voce</translation>
+<translation id="3479552764303398839">Nu acum</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{O zi rămasă}few{# zile rămase}other{# de zile rămase}}</translation>
 <translation id="3618849550573277856">Caută „<ph name="LOOKUP_STRING" />”</translation>
 <translation id="364720409959344976">Selectați un dosar de încărcat</translation>
@@ -99,6 +103,7 @@
 <translation id="5613020302032141669">Săgeată stânga</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{Un min.}few{# min.}other{# min.}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{O zi și  }few{# zile și  }other{# de zile și  }}</translation>
+<translation id="5895138241574237353">Reîncepe</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{O secundă rămasă}few{# secunde rămase}other{# de secunde rămase}}</translation>
 <translation id="5941711191222866238">Minimizează</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{o oră}few{# ore}other{# de ore}}</translation>

@@ -34,9 +34,9 @@ TEST_F(PrefsTest, TestIndex) {
             GetPrefName(CONTEXTUAL_SUGGESTIONS_ENABLED));
   EXPECT_EQ(prefs::kIncognitoModeAvailability,
             GetPrefName(INCOGNITO_MODE_AVAILABILITY));
-  EXPECT_EQ(ntp_snippets::prefs::kEnableSnippets,
+  EXPECT_EQ(feed::prefs::kEnableSnippets,
             GetPrefName(NTP_ARTICLES_SECTION_ENABLED));
-  EXPECT_EQ(ntp_snippets::prefs::kArticlesListVisible,
+  EXPECT_EQ(feed::prefs::kArticlesListVisible,
             GetPrefName(NTP_ARTICLES_LIST_VISIBLE));
   EXPECT_EQ(prefs::kPromptForDownloadAndroid,
             GetPrefName(PROMPT_FOR_DOWNLOAD_ANDROID));

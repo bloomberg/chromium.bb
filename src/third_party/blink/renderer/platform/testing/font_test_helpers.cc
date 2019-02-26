@@ -21,10 +21,14 @@ class TestFontSelector : public FontSelector {
   static TestFontSelector* Create(const String& path) {
     scoped_refptr<SharedBuffer> font_buffer = test::ReadFromFile(path);
     String ots_parse_message;
-    return new TestFontSelector(
+    return MakeGarbageCollected<TestFontSelector>(
         FontCustomPlatformData::Create(font_buffer.get(), ots_parse_message));
   }
 
+  TestFontSelector(scoped_refptr<FontCustomPlatformData> custom_platform_data)
+      : custom_platform_data_(std::move(custom_platform_data)) {
+    DCHECK(custom_platform_data_);
+  }
   ~TestFontSelector() override = default;
 
   scoped_refptr<FontData> GetFontData(
@@ -66,11 +70,6 @@ class TestFontSelector : public FontSelector {
   }
 
  private:
-  TestFontSelector(scoped_refptr<FontCustomPlatformData> custom_platform_data)
-      : custom_platform_data_(std::move(custom_platform_data)) {
-    DCHECK(custom_platform_data_);
-  }
-
   scoped_refptr<FontCustomPlatformData> custom_platform_data_;
 };
 

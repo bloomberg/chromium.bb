@@ -24,6 +24,7 @@
 #include "gtest/gtest.h"
 
 namespace perfetto {
+namespace profiling {
 namespace {
 
 using ::testing::_;
@@ -53,9 +54,9 @@ TEST_F(SocketListenerTest, ReceiveRecord) {
     callback_called();
   };
 
-  GlobalCallstackTrie bookkeeping;
-  SocketListener listener({},  // We do not care about the sampling rate.
-                          std::move(callback_fn), &bookkeeping);
+  BookkeepingThread bookkeeping_thread;
+  SocketListener listener(std::move(callback_fn), &bookkeeping_thread);
+  auto handle = listener.ExpectPID(getpid(), {});
   MockEventListener client_listener;
   EXPECT_CALL(client_listener, OnConnect(_, _))
       .WillOnce(InvokeWithoutArgs(connected));
@@ -82,4 +83,5 @@ TEST_F(SocketListenerTest, ReceiveRecord) {
 }
 
 }  // namespace
+}  // namespace profiling
 }  // namespace perfetto

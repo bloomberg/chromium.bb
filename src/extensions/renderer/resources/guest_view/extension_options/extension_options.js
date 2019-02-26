@@ -30,7 +30,7 @@ ExtensionOptionsImpl.prototype.setupAttributes = function() {
 };
 
 ExtensionOptionsImpl.prototype.buildContainerParams = function() {
-  var params = {};
+  var params = $Object.create(null);
   for (var i in this.attributes) {
     params[i] = this.attributes[i].getValue();
   }
@@ -39,7 +39,7 @@ ExtensionOptionsImpl.prototype.buildContainerParams = function() {
 
 ExtensionOptionsImpl.prototype.createGuest = function() {
   // Destroy the old guest if one exists.
-  this.guest.destroy($Function.bind(this.prepareForReattach_, this));
+  this.guest.destroy($Function.bind(this.prepareForReattach$, this));
 
   this.guest.create(this.buildParams(), $Function.bind(function() {
     if (!this.guest.getId()) {

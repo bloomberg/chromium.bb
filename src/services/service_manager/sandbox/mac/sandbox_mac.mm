@@ -28,6 +28,7 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
+#include "base/metrics/field_trial_memory_mac.h"
 #include "base/rand_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
@@ -36,7 +37,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "sandbox/mac/sandbox_compiler.h"
 #include "services/service_manager/sandbox/mac/audio.sb.h"
 #include "services/service_manager/sandbox/mac/cdm.sb.h"
@@ -96,6 +97,7 @@ const char* SandboxMac::kSandboxLoggingPathAsLiteral = "LOG_FILE_PATH";
 const char* SandboxMac::kSandboxOSVersion = "OS_VERSION";
 const char* SandboxMac::kSandboxElCapOrLater = "ELCAP_OR_LATER";
 const char* SandboxMac::kSandboxMacOS1013 = "MACOS_1013";
+const char* SandboxMac::kSandboxFieldTrialSeverName = "FIELD_TRIAL_SERVER_NAME";
 const char* SandboxMac::kSandboxBundleVersionPath = "BUNDLE_VERSION_PATH";
 
 // Warm up System APIs that empirically need to be accessed before the Sandbox
@@ -234,6 +236,13 @@ bool SandboxMac::Enable(SandboxType sandbox_type) {
                                   home_dir_canonical.value())) {
     return false;
   }
+
+  if (!compiler.InsertStringParam(
+          kSandboxFieldTrialSeverName,
+          base::FieldTrialMemoryClient::GetBootstrapName())) {
+    return false;
+  }
+
   bool elcap_or_later = base::mac::IsAtLeastOS10_11();
   if (!compiler.InsertBooleanParam(kSandboxElCapOrLater, elcap_or_later))
     return false;

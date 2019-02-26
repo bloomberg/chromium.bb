@@ -29,12 +29,12 @@ SettingsPasswordSectionBrowserTest.prototype = {
   __proto__: PolymerTest.prototype,
 
   /** @override */
-  browsePreload:
-      'chrome://settings/passwords_and_forms_page/passwords_section.html',
+  browsePreload: 'chrome://settings/autofill_page/passwords_section.html',
 
   /** @override */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
     'ensure_lazy_loaded.js',
+    'test_util.js',
   ]),
 
   /** @override */
@@ -279,10 +279,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
 
       validatePasswordList(passwordsSection.$.passwordList, passwordList);
       // Simulate 'longwebsite.com' being removed from the list.
-      passwordList = [
-        FakeDataMaker.passwordEntry('anotherwebsite.com', 'luigi', 1, 0),
-        FakeDataMaker.passwordEntry('website.com', 'mario', 70, 1)
-      ];
+      passwordList.splice(1, 1);
       passwordManager.lastCallback.addSavedPasswordListChangedListener(
           passwordList);
       Polymer.dom.flush();
@@ -307,11 +304,8 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
 
       validatePasswordList(passwordsSection.$.passwordList, passwordList);
       // Simulate 'website.com' being added to the list.
-      passwordList = [
-        FakeDataMaker.passwordEntry('website.com', 'mario', 70, 0),
-        FakeDataMaker.passwordEntry('anotherwebsite.com', 'luigi', 1, 1),
-        FakeDataMaker.passwordEntry('longwebsite.com', 'peach', 7, 2),
-      ];
+      passwordList.unshift(
+          FakeDataMaker.passwordEntry('website.com', 'mario', 70, 2));
       passwordManager.lastCallback.addSavedPasswordListChangedListener(
           passwordList);
       Polymer.dom.flush();
@@ -336,9 +330,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       validatePasswordList(passwordsSection.$.passwordList, passwordList);
 
       // Simulate '(website.com, mario)' being removed from the list.
-      passwordList =
-          [FakeDataMaker.passwordEntry('website.com', 'luigi', 7, 0)];
-
+      passwordList.shift();
       passwordManager.lastCallback.addSavedPasswordListChangedListener(
           passwordList);
       Polymer.dom.flush();
@@ -373,9 +365,9 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       assert(firstNode);
       const firstPassword = passwordList[0];
 
-      passwordManager.onRemoveSavedPassword = function(index) {
+      passwordManager.onRemoveSavedPassword = function(id) {
         // Verify that the event matches the expected value.
-        assertEquals(firstPassword.index, index);
+        assertEquals(firstPassword.id, id);
 
         // Clean up after self.
         passwordManager.onRemoveSavedPassword = null;
@@ -438,18 +430,12 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       validatePasswordList(passwordsSection.$.passwordList, expectedList);
 
       // Simulate removal of three.com/show
-      passwordList = [
-        FakeDataMaker.passwordEntry('one.com', 'SHOW', 5, 0),
-        FakeDataMaker.passwordEntry('two.com', 'shower', 3, 1),
-        FakeDataMaker.passwordEntry('four.com', 'three', 2, 2),
-        FakeDataMaker.passwordEntry('five.com', 'two', 4, 3),
-        FakeDataMaker.passwordEntry('six-show.com', 'one', 6, 4),
-      ];
+      passwordList.splice(2, 1);
 
       expectedList = [
         FakeDataMaker.passwordEntry('one.com', 'SHOW', 5, 0),
         FakeDataMaker.passwordEntry('two.com', 'shower', 3, 1),
-        FakeDataMaker.passwordEntry('six-show.com', 'one', 6, 4),
+        FakeDataMaker.passwordEntry('six-show.com', 'one', 6, 5),
       ];
 
       passwordManager.lastCallback.addSavedPasswordListChangedListener(
@@ -569,10 +555,10 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
         exceptions[item].querySelector('#removeExceptionButton').click();
       };
 
-      passwordManager.onRemoveException = function(index) {
+      passwordManager.onRemoveException = function(id) {
         // Verify that the event matches the expected value.
         assertTrue(item < exceptionList.length);
-        assertEquals(index, exceptionList[item].index);
+        assertEquals(id, exceptionList[item].id);
 
         if (++item < exceptionList.length) {
           clickRemoveButton();  // Click 'remove' on all passwords, one by one.
@@ -750,7 +736,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
         done();
       };
 
-      exportDialog.$.exportPasswordsButton.click();
+      exportDialog.$$('#exportPasswordsButton').click();
     });
 
     // Test the export flow. If exporting is fast, we should skip the
@@ -763,18 +749,19 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       let mockTimer = new MockTimer();
       mockTimer.install();
 
-      assertTrue(exportDialog.$.dialog_start.open);
-      exportDialog.$.exportPasswordsButton.click();
-      assertTrue(exportDialog.$.dialog_start.open);
+      assertTrue(exportDialog.$$('#dialog_start').open);
+      exportDialog.$$('#exportPasswordsButton').click();
+      assertTrue(exportDialog.$$('#dialog_start').open);
       progressCallback(
           {status: chrome.passwordsPrivate.ExportProgressStatus.IN_PROGRESS});
       progressCallback(
           {status: chrome.passwordsPrivate.ExportProgressStatus.SUCCEEDED});
 
+      Polymer.dom.flush();
       // When we are done, the export dialog closes completely.
-      assertFalse(exportDialog.$.dialog_start.open);
-      assertFalse(exportDialog.$.dialog_error.open);
-      assertFalse(exportDialog.$.dialog_progress.open);
+      assertFalse(!!exportDialog.$$('#dialog_start'));
+      assertFalse(!!exportDialog.$$('#dialog_error'));
+      assertFalse(!!exportDialog.$$('#dialog_progress'));
       done();
 
       mockTimer.uninstall();
@@ -789,9 +776,9 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       let mockTimer = new MockTimer();
       mockTimer.install();
 
-      assertTrue(exportDialog.$.dialog_start.open);
-      exportDialog.$.exportPasswordsButton.click();
-      assertTrue(exportDialog.$.dialog_start.open);
+      assertTrue(exportDialog.$$('#dialog_start').open);
+      exportDialog.$$('#exportPasswordsButton').click();
+      assertTrue(exportDialog.$$('#dialog_start').open);
       progressCallback(
           {status: chrome.passwordsPrivate.ExportProgressStatus.IN_PROGRESS});
       progressCallback({
@@ -800,11 +787,13 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
         folderName: 'tmp',
       });
 
+      Polymer.dom.flush();
       // Test that the error dialog is shown.
-      assertTrue(exportDialog.$.dialog_error.open);
+      assertTrue(exportDialog.$$('#dialog_error').open);
       // Test that the error dialog can be dismissed.
-      exportDialog.$.cancelErrorButton.click();
-      assertFalse(exportDialog.$.dialog_error.open);
+      exportDialog.$$('#cancelErrorButton').click();
+      Polymer.dom.flush();
+      assertFalse(!!exportDialog.$$('#dialog_error'));
       done();
 
       mockTimer.uninstall();
@@ -819,7 +808,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       let mockTimer = new MockTimer();
       mockTimer.install();
 
-      exportDialog.$.exportPasswordsButton.click();
+      exportDialog.$$('#exportPasswordsButton').click();
       progressCallback(
           {status: chrome.passwordsPrivate.ExportProgressStatus.IN_PROGRESS});
       progressCallback({
@@ -828,14 +817,15 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
         folderName: 'tmp',
       });
 
+      Polymer.dom.flush();
       // Test that the error dialog is shown.
-      assertTrue(exportDialog.$.dialog_error.open);
+      assertTrue(exportDialog.$$('#dialog_error').open);
       // Test that clicking retry will start a new export.
       passwordManager.exportPasswords = (callback) => {
         callback();
         done();
       };
-      exportDialog.$.tryAgainButton.click();
+      exportDialog.$$('#tryAgainButton').click();
 
       mockTimer.uninstall();
     });
@@ -851,32 +841,34 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
 
       // The initial dialog remains open for 100ms after export enters the
       // in-progress state.
-      assertTrue(exportDialog.$.dialog_start.open);
-      exportDialog.$.exportPasswordsButton.click();
-      assertTrue(exportDialog.$.dialog_start.open);
+      assertTrue(exportDialog.$$('#dialog_start').open);
+      exportDialog.$$('#exportPasswordsButton').click();
+      assertTrue(exportDialog.$$('#dialog_start').open);
       progressCallback(
           {status: chrome.passwordsPrivate.ExportProgressStatus.IN_PROGRESS});
-      assertTrue(exportDialog.$.dialog_start.open);
+      assertTrue(exportDialog.$$('#dialog_start').open);
 
       // After 100ms of not having completed, the dialog switches to the
       // progress bar. Chrome will continue to show the progress bar for 1000ms,
       // despite a completion event.
       mockTimer.tick(99);
-      assertTrue(exportDialog.$.dialog_start.open);
+      assertTrue(exportDialog.$$('#dialog_start').open);
       mockTimer.tick(1);
-      assertTrue(exportDialog.$.dialog_progress.open);
+      Polymer.dom.flush();
+      assertTrue(exportDialog.$$('#dialog_progress').open);
       progressCallback(
           {status: chrome.passwordsPrivate.ExportProgressStatus.SUCCEEDED});
-      assertTrue(exportDialog.$.dialog_progress.open);
+      assertTrue(exportDialog.$$('#dialog_progress').open);
 
       // After 1000ms, Chrome will display the completion event.
       mockTimer.tick(999);
-      assertTrue(exportDialog.$.dialog_progress.open);
+      assertTrue(exportDialog.$$('#dialog_progress').open);
       mockTimer.tick(1);
+      Polymer.dom.flush();
       // On SUCCEEDED the dialog closes completely.
-      assertFalse(exportDialog.$.dialog_progress.open);
-      assertFalse(exportDialog.$.dialog_start.open);
-      assertFalse(exportDialog.$.dialog_error.open);
+      assertFalse(!!exportDialog.$$('#dialog_progress'));
+      assertFalse(!!exportDialog.$$('#dialog_start'));
+      assertFalse(!!exportDialog.$$('#dialog_error'));
       done();
 
       mockTimer.uninstall();
@@ -897,18 +889,20 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
 
       // The initial dialog remains open for 100ms after export enters the
       // in-progress state.
-      exportDialog.$.exportPasswordsButton.click();
+      exportDialog.$$('#exportPasswordsButton').click();
       progressCallback(
           {status: chrome.passwordsPrivate.ExportProgressStatus.IN_PROGRESS});
       // The progress bar only appears after 100ms.
       mockTimer.tick(100);
-      assertTrue(exportDialog.$.dialog_progress.open);
-      exportDialog.$.cancel_progress_button.click();
+      Polymer.dom.flush();
+      assertTrue(exportDialog.$$('#dialog_progress').open);
+      exportDialog.$$('#cancel_progress_button').click();
 
+      Polymer.dom.flush();
       // The dialog should be dismissed entirely.
-      assertFalse(exportDialog.$.dialog_progress.open);
-      assertFalse(exportDialog.$.dialog_start.open);
-      assertFalse(exportDialog.$.dialog_error.open);
+      assertFalse(!!exportDialog.$$('#dialog_progress'));
+      assertFalse(!!exportDialog.$$('#dialog_start'));
+      assertFalse(!!exportDialog.$$('#dialog_error'));
 
       mockTimer.uninstall();
     });
@@ -917,11 +911,32 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
     test('exportDismissable', function(done) {
       const exportDialog = createExportPasswordsDialog(passwordManager);
 
-      assertTrue(exportDialog.$.dialog_start.open);
-      exportDialog.$.cancelButton.click();
-      assertFalse(exportDialog.$.dialog_start.open);
+      assertTrue(exportDialog.$$('#dialog_start').open);
+      exportDialog.$$('#cancelButton').click();
+      Polymer.dom.flush();
+      assertFalse(!!exportDialog.$$('#dialog_start'));
 
       done();
+    });
+
+    test('fires close event when canceled', () => {
+      const exportDialog = createExportPasswordsDialog(passwordManager);
+      const wait = test_util.eventToPromise(
+          'passwords-export-dialog-close', exportDialog);
+      exportDialog.$$('#cancelButton').click();
+      return wait;
+    });
+
+    test('fires close event after export complete', () => {
+      const exportDialog = createExportPasswordsDialog(passwordManager);
+      const wait = test_util.eventToPromise(
+          'passwords-export-dialog-close', exportDialog);
+      exportDialog.$$('#exportPasswordsButton').click();
+      passwordManager.progressCallback(
+          {status: chrome.passwordsPrivate.ExportProgressStatus.IN_PROGRESS});
+      passwordManager.progressCallback(
+          {status: chrome.passwordsPrivate.ExportProgressStatus.SUCCEEDED});
+      return wait;
     });
   });
 

@@ -19,70 +19,25 @@ constexpr int kMaxBones = 80; // Supports up to 80 bones per mesh.
  * view matrix and wire through color, coverage, UV coords if requested.
  */
 namespace GrDefaultGeoProcFactory {
-    // Structs for adding vertex attributes
-    struct PositionAttr {
-        SkPoint fPosition;
-    };
-
-    struct PositionCoverageAttr {
-        SkPoint fPosition;
-        float   fCoverage;
-    };
-
-    struct PositionColorAttr {
-        SkPoint fPosition;
-        SkColor fColor;
-    };
-
-    struct PositionColorCoverageAttr {
-        SkPoint fPosition;
-        SkColor fColor;
-        float   fCoverage;
-    };
-
-    struct PositionLocalCoordAttr {
-        SkPoint fPosition;
-        SkPoint fLocalCoord;
-    };
-
-    struct PositionLocalCoordCoverageAttr {
-        SkPoint fPosition;
-        SkPoint fLocalCoord;
-        float   fCoverage;
-    };
-
-    struct PositionColorLocalCoordAttr {
-        SkPoint fPosition;
-        GrColor fColor;
-        SkPoint fLocalCoord;
-    };
-
-    struct PositionColorLocalCoordCoverageAttr {
-        SkPoint fPosition;
-        GrColor fColor;
-        SkPoint fLocalCoord;
-        float   fCoverage;
-    };
-
     struct Color {
         enum Type {
             kPremulGrColorUniform_Type,
             kPremulGrColorAttribute_Type,
             kUnpremulSkColorAttribute_Type,
         };
-        explicit Color(GrColor color)
+        explicit Color(const SkPMColor4f& color)
                 : fType(kPremulGrColorUniform_Type)
                 , fColor(color)
                 , fColorSpaceXform(nullptr) {}
         Color(Type type)
                 : fType(type)
-                , fColor(GrColor_ILLEGAL)
+                , fColor(SK_PMColor4fILLEGAL)
                 , fColorSpaceXform(nullptr) {
             SkASSERT(type != kPremulGrColorUniform_Type);
         }
 
         Type fType;
-        GrColor fColor;
+        SkPMColor4f fColor;
 
         // This only applies to SkColor. Any GrColors are assumed to have been color converted
         // during paint conversion.

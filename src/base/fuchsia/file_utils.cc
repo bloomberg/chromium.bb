@@ -48,7 +48,8 @@ base::File GetFileFromHandle(zx::handle handle) {
   base::ScopedFD fd;
   zx_handle_t handles[1] = {handle.release()};
   zx_handle_t types[1] = {PA_FDIO_REMOTE};
-  zx_status_t status = fdio_create_fd(handles, types, 1, fd.receive());
+  zx_status_t status =
+      fdio_create_fd(handles, types, 1, base::ScopedFD::Receiver(fd).get());
   if (status != ZX_OK) {
     ZX_LOG(WARNING, status) << "fdio_create_fd";
     return base::File();

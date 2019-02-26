@@ -93,6 +93,9 @@ class DownloadTask {
   // Content-Disposition header value from HTTP response.
   virtual std::string GetContentDisposition() const = 0;
 
+  // MIME type that the download request originally attempted to fetch.
+  virtual std::string GetOriginalMimeType() const = 0;
+
   // Effective MIME type of downloaded content.
   virtual std::string GetMimeType() const = 0;
 

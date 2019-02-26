@@ -6,8 +6,9 @@
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_MESSAGING_STRING_MESSAGE_CODEC_H_
 
 #include <vector>
+#include "base/containers/span.h"
 #include "base/strings/string16.h"
-#include "third_party/blink/common/common_export.h"
+#include "third_party/blink/public/common/common_export.h"
 
 namespace blink {
 
@@ -25,7 +26,7 @@ BLINK_COMMON_EXPORT std::vector<uint8_t> EncodeStringMessage(
     const base::string16& data);
 
 BLINK_COMMON_EXPORT bool DecodeStringMessage(
-    const std::vector<uint8_t>& encoded_data,
+    base::span<const uint8_t> encoded_data,
     base::string16* result);
 
 }  // namespace blink

@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/net/dns_probe_service.h"
 #include "chrome/common/network_diagnostics.mojom.h"
+#include "chrome/common/network_easter_egg.mojom.h"
 #include "components/error_page/common/net_error_info.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/prefs/pref_member.h"
@@ -20,6 +21,10 @@
 #include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+
+namespace user_prefs {
+class PrefRegistrySyncable;
+}  // namespace user_prefs
 
 namespace chrome_browser_net {
 
@@ -29,7 +34,8 @@ namespace chrome_browser_net {
 class NetErrorTabHelper
     : public content::WebContentsObserver,
       public content::WebContentsUserData<NetErrorTabHelper>,
-      public chrome::mojom::NetworkDiagnostics {
+      public chrome::mojom::NetworkDiagnostics,
+      public chrome::mojom::NetworkEasterEgg {
  public:
   enum TestingState {
     TESTING_DEFAULT,
@@ -43,6 +49,8 @@ class NetErrorTabHelper
   ~NetErrorTabHelper() override;
 
   static void set_state_for_testing(TestingState testing_state);
+
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* prefs);
 
   // Sets a callback that will be called immediately after the helper sends
   // a NetErrorHelper IPC.  (Used by the DNS probe browser test to know when to
@@ -100,6 +108,10 @@ class NetErrorTabHelper
   // chrome::mojom::NetworkDiagnostics:
   void RunNetworkDiagnostics(const GURL& url) override;
 
+  // chrome::mojom::NetworkEasterEgg:
+  void GetHighScore(GetHighScoreCallback callback) override;
+  void UpdateHighScore(uint32_t high_score) override;
+
   // Shows the diagnostics dialog after its been sanitized, virtual for
   // testing.
   virtual void RunNetworkDiagnosticsHelper(const std::string& sanitized_url);
@@ -111,6 +123,8 @@ class NetErrorTabHelper
 
   content::WebContentsFrameBindingSet<chrome::mojom::NetworkDiagnostics>
       network_diagnostics_bindings_;
+  content::WebContentsFrameBindingSet<chrome::mojom::NetworkEasterEgg>
+      network_easter_egg_bindings_;
 
   // True if the last provisional load that started was for an error page.
   bool is_error_page_;
@@ -139,6 +153,9 @@ class NetErrorTabHelper
   // "Use a web service to resolve navigation errors" preference is required
   // to allow probes.
   BooleanPrefMember resolve_errors_with_web_service_;
+
+  // Preference storing the user's current easter egg game high score.
+  IntegerPrefMember easter_egg_high_score_;
 
   base::WeakPtrFactory<NetErrorTabHelper> weak_factory_;
 

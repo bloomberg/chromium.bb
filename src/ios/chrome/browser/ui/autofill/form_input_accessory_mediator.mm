@@ -8,21 +8,24 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_block.h"
 #import "base/strings/sys_string_conversions.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/ios/browser/autofill_switches.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
+#import "components/autofill/ios/browser/personal_data_manager_observer_bridge.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
 #include "components/autofill/ios/form_util/form_activity_params.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_consumer.h"
+#import "ios/chrome/browser/autofill/form_input_accessory_view.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view_handler.h"
-#import "ios/chrome/browser/autofill/form_input_accessory_view_provider.h"
+#import "ios/chrome/browser/autofill/form_input_suggestions_provider.h"
 #import "ios/chrome/browser/autofill/form_suggestion_tab_helper.h"
 #import "ios/chrome/browser/autofill/form_suggestion_view.h"
+#import "ios/chrome/browser/autofill/manual_fill/passwords_fetcher.h"
 #import "ios/chrome/browser/passwords/password_generation_utils.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/keyboard_observer_helper.h"
-#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_accessory_view_controller.h"
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
-#include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/web/public/url_scheme_util.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
@@ -34,40 +37,51 @@
 #error "This file requires ARC support."
 #endif
 
-@interface FormInputAccessoryMediator ()<FormActivityObserver,
-                                         CRWWebStateObserver,
-                                         KeyboardObserverHelperDelegate,
-                                         WebStateListObserving>
-
-// The JS manager for interacting with the underlying form.
-@property(nonatomic, weak) JsSuggestionManager* JSSuggestionManager;
+@interface FormInputAccessoryMediator () <FormActivityObserver,
+                                          FormInputAccessoryViewDelegate,
+                                          CRWWebStateObserver,
+                                          KeyboardObserverHelperConsumer,
+                                          PasswordFetcherDelegate,
+                                          PersonalDataManagerObserver,
+                                          WebStateListObserving>
 
 // The main consumer for this mediator.
 @property(nonatomic, weak) id<FormInputAccessoryConsumer> consumer;
 
 // The object that manages the currently-shown custom accessory view.
-@property(nonatomic, weak) id<FormInputAccessoryViewProvider> currentProvider;
+@property(nonatomic, weak) id<FormInputSuggestionsProvider> currentProvider;
+
+// YES if the first responder is a text input other than the web view.
+@property(nonatomic, assign) BOOL editingUIKitTextInput;
 
 // The form input handler. This is in charge of form navigation.
 @property(nonatomic, strong)
     FormInputAccessoryViewHandler* formInputAccessoryHandler;
 
+// Track the use of hardware keyboard, when there's a notification of keyboard
+// use but no keyboard on the screen.
+@property(nonatomic, assign) BOOL hardwareKeyboard;
+
+// The JS manager for interacting with the underlying form.
+@property(nonatomic, weak) JsSuggestionManager* JSSuggestionManager;
+
 // The observer to determine when the keyboard dissapears and when it stays.
 @property(nonatomic, strong) KeyboardObserverHelper* keyboardObserver;
 
-// Last seen provider. Used to reenable suggestions.
-@property(nonatomic, weak) id<FormInputAccessoryViewProvider> lastProvider;
+// The objects that can provide a custom input accessory view while filling
+// forms.
+@property(nonatomic, copy) NSArray<id<FormInputSuggestionsProvider>>* providers;
 
-// Last seen suggestions. Used to reenable suggestions.
-@property(nonatomic, strong) UIView* lastSuggestionView;
+// The password fetcher used to know if passwords are available and update the
+// consumer accordingly.
+@property(nonatomic, strong) PasswordFetcher* passwordFetcher;
 
 // Whether suggestions are disabled.
 @property(nonatomic, assign) BOOL suggestionsDisabled;
 
-// The objects that can provide a custom input accessory view while filling
-// forms.
-@property(nonatomic, copy)
-    NSArray<id<FormInputAccessoryViewProvider>>* providers;
+// YES if the latest form activity was made in a form that supports the
+// accessory.
+@property(nonatomic, assign) BOOL validActivityForAccessoryView;
 
 // The WebState this instance is observing. Can be null.
 @property(nonatomic, assign) web::WebState* webState;
@@ -78,6 +92,13 @@
   // The WebStateList this instance is observing in order to update the
   // active WebState.
   WebStateList* _webStateList;
+
+  // Personal data manager to be observed.
+  autofill::PersonalDataManager* _personalDataManager;
+
+  // C++ to ObjC bridge for PersonalDataManagerObserver.
+  std::unique_ptr<autofill::PersonalDataManagerObserverBridge>
+      _personalDataManagerObserver;
 
   // Bridge to observe the web state list from Objective-C.
   std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
@@ -91,13 +112,26 @@
 
   // Whether suggestions have previously been shown.
   BOOL _suggestionsHaveBeenShown;
+
+  // The last seen valid params of a form before retrieving suggestions. Or
+  // empty if |_hasLastSeenParams| is NO.
+  autofill::FormActivityParams _lastSeenParams;
+
+  // If YES |_lastSeenParams| is valid.
+  BOOL _hasLastSeenParams;
 }
 
-- (instancetype)initWithConsumer:(id<FormInputAccessoryConsumer>)consumer
-                    webStateList:(WebStateList*)webStateList {
+- (instancetype)
+       initWithConsumer:(id<FormInputAccessoryConsumer>)consumer
+           webStateList:(WebStateList*)webStateList
+    personalDataManager:(autofill::PersonalDataManager*)personalDataManager
+          passwordStore:
+              (scoped_refptr<password_manager::PasswordStore>)passwordStore {
   self = [super init];
   if (self) {
     _consumer = consumer;
+    _consumer.navigationDelegate = self;
+
     if (webStateList) {
       _webStateList = webStateList;
       _webStateListObserver =
@@ -131,9 +165,42 @@
                       selector:@selector(handleTextInputDidBeginEditing:)
                           name:UITextFieldTextDidBeginEditingNotification
                         object:nil];
+    [defaultCenter addObserver:self
+                      selector:@selector(handleTextInputDidEndEditing:)
+                          name:UITextFieldTextDidEndEditingNotification
+                        object:nil];
     _keyboardObserver = [[KeyboardObserverHelper alloc] init];
-    _keyboardObserver.delegate = self;
+    _keyboardObserver.consumer = self;
   }
+  // In BVC unit tests the password store doesn't exist. Skip creating the
+  // fetcher.
+  // TODO:(crbug.com/878388) Remove this workaround.
+  if (passwordStore) {
+    _passwordFetcher =
+        [[PasswordFetcher alloc] initWithPasswordStore:passwordStore
+                                              delegate:self];
+  }
+  // There is no personal data manager in OTR (incognito).
+  // TODO:(crbug.com/905720) Support Incognito.
+  if (personalDataManager) {
+    _personalDataManager = personalDataManager;
+    _personalDataManagerObserver.reset(
+        new autofill::PersonalDataManagerObserverBridge(self));
+    personalDataManager->AddObserver(_personalDataManagerObserver.get());
+
+    // TODO:(crbug.com/845472) Add earl grey test to verify the credit card
+    // button is hidden when local cards are saved and then
+    // kAutofillCreditCardEnabled is changed to disabled.
+    consumer.creditCardButtonHidden =
+        personalDataManager->GetCreditCards().empty();
+
+    consumer.addressButtonHidden =
+        personalDataManager->GetProfilesToSuggest().empty();
+  } else {
+    consumer.creditCardButtonHidden = YES;
+    consumer.addressButtonHidden = YES;
+  }
+
   return self;
 }
 
@@ -142,7 +209,6 @@
     _webState->RemoveObserver(_webStateObserverBridge.get());
     _webStateObserverBridge.reset();
     _webState = nullptr;
-    _formActivityObserverBridge.reset();
   }
   if (_webStateList) {
     _webStateList->RemoveObserver(_webStateListObserver.get());
@@ -150,6 +216,9 @@
     _webStateList = nullptr;
   }
   _formActivityObserverBridge.reset();
+  if (_personalDataManager) {
+    _personalDataManager->RemoveObserver(_personalDataManagerObserver.get());
+  }
 }
 
 - (void)detachFromWebState {
@@ -162,7 +231,12 @@
   }
 }
 
-#pragma mark - KeyboardObserverHelperDelegate
+#pragma mark - KeyboardObserverHelperConsumer
+
+- (void)keyboardWillShowWithHardwareKeyboardAttached:(BOOL)isHardwareKeyboard {
+  self.hardwareKeyboard = isHardwareKeyboard;
+  [self updateSuggestionsIfNeeded];
+}
 
 - (void)keyboardDidStayOnScreen {
   [self.consumer removeAnimationsOnKeyboardView];
@@ -180,37 +254,80 @@
     didRegisterFormActivity:(const autofill::FormActivityParams&)params
                     inFrame:(web::WebFrame*)frame {
   DCHECK_EQ(_webState, webState);
+  self.validActivityForAccessoryView = NO;
+
+  // Return early if |params| is not complete.
+  if (params.input_missing) {
+    return;
+  }
+
+  // Return early if the URL can't be verified.
   web::URLVerificationTrustLevel trustLevel;
   const GURL pageURL(webState->GetCurrentURL(&trustLevel));
-  if (params.input_missing ||
-      trustLevel != web::URLVerificationTrustLevel::kAbsolute ||
-      !web::UrlHasWebScheme(pageURL) || !webState->ContentIsHTML()) {
+  if (trustLevel != web::URLVerificationTrustLevel::kAbsolute) {
+    return;
+  }
+
+  // Return early, pause and reset if the url is not HTML.
+  if (!web::UrlHasWebScheme(pageURL) || !webState->ContentIsHTML()) {
+    [self pauseCustomKeyboardView];
     [self reset];
     return;
   }
 
+  // Return early and reset if messaging is enabled but frame is missing or
+  // can't call JS.
   if (autofill::switches::IsAutofillIFrameMessagingEnabled() &&
       (!frame || !frame->CanCallJavaScriptFunction())) {
     [self reset];
     return;
   }
 
+  self.validActivityForAccessoryView = YES;
+  [self continueCustomKeyboardView];
+
+  NSString* frameID;
+  if (frame) {
+    frameID = base::SysUTF8ToNSString(frame->GetFrameId());
+  } else {
+    frameID = base::SysUTF8ToNSString(params.frame_id);
+  }
+
+  [self.formInputAccessoryHandler setLastFocusFormActivityWebFrameID:frameID];
+  [self synchronizeNavigationControls];
+
+  // Don't look for suggestions in the next events.
   if (params.type == "blur" || params.type == "change" ||
       params.type == "form_changed") {
     return;
   }
+  _lastSeenParams = params;
+  _hasLastSeenParams = YES;
+  [self retrieveSuggestionsForForm:params webState:webState];
+}
 
-  [_formInputAccessoryHandler
-      setLastFocusFormActivityWebFrameID:base::SysUTF8ToNSString(
-                                             params.frame_id)];
-  [self retrieveAccessoryViewForForm:params webState:webState];
+#pragma mark - FormInputAccessoryViewDelegate
+
+- (void)formInputAccessoryViewDidTapNextButton:(FormInputAccessoryView*)sender {
+  [self.formInputAccessoryHandler selectNextElementWithButtonPress];
+}
+
+- (void)formInputAccessoryViewDidTapPreviousButton:
+    (FormInputAccessoryView*)sender {
+  [self.formInputAccessoryHandler selectPreviousElementWithButtonPress];
+}
+
+- (void)formInputAccessoryViewDidTapCloseButton:
+    (FormInputAccessoryView*)sender {
+  [self.formInputAccessoryHandler closeKeyboardWithButtonPress];
 }
 
 #pragma mark - CRWWebStateObserver
 
 - (void)webStateWasShown:(web::WebState*)webState {
   DCHECK_EQ(_webState, webState);
-  [self.consumer continueCustomKeyboardView];
+  [self continueCustomKeyboardView];
+  [self updateSuggestionsIfNeeded];
 }
 
 - (void)webStateWasHidden:(web::WebState*)webState {
@@ -225,7 +342,7 @@
   if (IsIPadIdiom()) {
     [self reset];
   } else {
-    [self.consumer pauseCustomKeyboardView];
+    [self pauseCustomKeyboardView];
   }
 }
 
@@ -254,29 +371,70 @@
 
 - (void)disableSuggestions {
   self.suggestionsDisabled = YES;
-  [self updateWithProvider:nil suggestionView:nil];
 }
 
 - (void)enableSuggestions {
   self.suggestionsDisabled = NO;
-  if (self.lastProvider && self.lastSuggestionView) {
-    [self updateWithProvider:self.lastProvider
-              suggestionView:self.lastSuggestionView];
-  }
+  [self updateSuggestionsIfNeeded];
 }
 
 #pragma mark - Setters
 
-- (void)setCurrentProvider:(id<FormInputAccessoryViewProvider>)currentProvider {
+- (void)setCurrentProvider:(id<FormInputSuggestionsProvider>)currentProvider {
   if (_currentProvider == currentProvider) {
     return;
   }
   [_currentProvider inputAccessoryViewControllerDidReset];
   _currentProvider = currentProvider;
-  [_currentProvider setAccessoryViewDelegate:self.formInputAccessoryHandler];
+  _currentProvider.formInputNavigator = self.formInputAccessoryHandler;
 }
 
 #pragma mark - Private
+
+- (void)updateSuggestionsIfNeeded {
+  if (_hasLastSeenParams && _webState) {
+    [self retrieveSuggestionsForForm:_lastSeenParams webState:_webState];
+  }
+}
+
+// Tells the consumer to pause the custom keyboard view.
+- (void)pauseCustomKeyboardView {
+  [self.consumer pauseCustomKeyboardView];
+}
+
+// Tells the consumer to continue the custom keyboard view if the last activity
+// is valid, the web state is visible, and there is no other text input.
+- (void)continueCustomKeyboardView {
+  // Return early if the form is not a supported one.
+  if (!self.validActivityForAccessoryView) {
+    return;
+  }
+
+  // Return early if the current webstate is not visible.
+  if (!self.webState || !self.webState->IsVisible()) {
+    return;
+  }
+
+  // Return early if the current text input is not the web view.
+  if (self.editingUIKitTextInput) {
+    return;
+  }
+
+  [self.consumer continueCustomKeyboardView];
+}
+
+// Update the status of the consumer form navigation buttons to match the
+// handler state.
+- (void)synchronizeNavigationControls {
+  __weak __typeof(self) weakSelf = self;
+  [self.formInputAccessoryHandler
+      fetchPreviousAndNextElementsPresenceWithCompletionHandler:^(
+          BOOL previousButtonEnabled, BOOL nextButtonEnabled) {
+        weakSelf.consumer.formInputNextButtonEnabled = nextButtonEnabled;
+        weakSelf.consumer.formInputPreviousButtonEnabled =
+            previousButtonEnabled;
+      }];
+}
 
 // Updates the accessory mediator with the passed web state, its JS suggestion
 // manager and the registered providers. If NULL is passed it will instead clear
@@ -309,8 +467,10 @@
 // Resets the current provider, the consumer view and the navigation handler. As
 // well as reenables suggestions.
 - (void)reset {
+  _lastSeenParams = autofill::FormActivityParams();
+  _hasLastSeenParams = NO;
+
   [self.consumer restoreOriginalKeyboardView];
-  [self.manualFillAccessoryViewController reset];
   [self.formInputAccessoryHandler reset];
 
   self.suggestionsDisabled = NO;
@@ -319,9 +479,10 @@
 
 // Asynchronously queries the providers for an accessory view. Sends it to
 // the consumer if found.
-- (void)retrieveAccessoryViewForForm:(const autofill::FormActivityParams&)params
-                            webState:(web::WebState*)webState {
+- (void)retrieveSuggestionsForForm:(const autofill::FormActivityParams&)params
+                          webState:(web::WebState*)webState {
   DCHECK_EQ(webState, self.webState);
+  DCHECK(_hasLastSeenParams);
 
   // TODO(crbug.com/845472): refactor this overly complex code. There is
   // always at max one provider in _providers.
@@ -330,7 +491,7 @@
   // if the provider can provide an accessory view for the specified form/field
   // and NO otherwise.
   NSMutableArray* findProviderBlocks = [[NSMutableArray alloc] init];
-  for (id<FormInputAccessoryViewProvider> provider in _providers) {
+  for (id<FormInputSuggestionsProvider> provider in _providers) {
     passwords::PipelineBlock findProviderBlock =
         [self queryViewBlockForProvider:provider params:params];
     [findProviderBlocks addObject:findProviderBlock];
@@ -349,7 +510,7 @@
 // Returns a pipeline block used to search for a provider with the current form
 // params.
 - (passwords::PipelineBlock)
-queryViewBlockForProvider:(id<FormInputAccessoryViewProvider>)provider
+queryViewBlockForProvider:(id<FormInputSuggestionsProvider>)provider
                    params:(autofill::FormActivityParams)params {
   __weak __typeof(self) weakSelf = self;
   return ^(void (^completion)(BOOL success)) {
@@ -357,70 +518,89 @@ queryViewBlockForProvider:(id<FormInputAccessoryViewProvider>)provider
     if (!strongSelf) {
       return;
     }
-    AccessoryViewReadyCompletion accessoryViewReadyCompletion =
+    FormSuggestionsReadyCompletion formSuggestionsReadyCompletion =
         [self accessoryViewReadyBlockWithCompletion:completion];
-    [provider retrieveAccessoryViewForForm:params
-                                  webState:strongSelf.webState
-                  accessoryViewUpdateBlock:accessoryViewReadyCompletion];
+    [provider retrieveSuggestionsForForm:params
+                                webState:strongSelf.webState
+                accessoryViewUpdateBlock:formSuggestionsReadyCompletion];
   };
 }
 
 // Returns a block setting up the provider and the view returned. It calls the
 // passed completion with NO if the view found is invalid. With YES otherwise.
-- (AccessoryViewReadyCompletion)accessoryViewReadyBlockWithCompletion:
+- (FormSuggestionsReadyCompletion)accessoryViewReadyBlockWithCompletion:
     (void (^)(BOOL success))completion {
   __weak __typeof(self) weakSelf = self;
-  return ^(UIView* accessoryView, id<FormInputAccessoryViewProvider> provider) {
+  return ^(NSArray<FormSuggestion*>* suggestions,
+           id<FormInputSuggestionsProvider> provider) {
     // View is nil, tell the pipeline to continue searching.
-    if (!accessoryView) {
+    if (!suggestions) {
       completion(NO);
       return;
     }
     // Once the view is retrieved, tell the pipeline to stop and
     // update the UI.
     completion(YES);
-    [weakSelf updateWithProvider:provider suggestionView:accessoryView];
+    [weakSelf updateWithProvider:provider suggestions:suggestions];
   };
 }
 
 // Post the passed |suggestionView| to the consumer. In case suggestions are
 // disabled, it's keep for later.
-- (void)updateWithProvider:(id<FormInputAccessoryViewProvider>)provider
-            suggestionView:(UIView*)suggestionView {
-  // If the povider is valid, save the view and the provider for later. This is
-  // used to restore the state when re-enabling suggestions.
-  if (provider) {
-    self.lastSuggestionView = suggestionView;
-    self.lastProvider = provider;
-  }
+- (void)updateWithProvider:(id<FormInputSuggestionsProvider>)provider
+               suggestions:(NSArray<FormSuggestion*>*)suggestions {
   // If the suggestions are disabled, post this view with no suggestions to the
   // consumer. This allows the navigation buttons be in sync.
-  UIView* consumerView = suggestionView;
   if (self.suggestionsDisabled) {
-    consumerView = [[FormSuggestionView alloc] initWithFrame:CGRectZero
-                                                      client:nil
-                                                 suggestions:@[]];
+    return;
   } else {
     // If suggestions are enabled update |currentProvider|.
     self.currentProvider = provider;
+    // Post it to the consumer.
+    [self.consumer showAccessorySuggestions:suggestions
+                           suggestionClient:provider
+                         isHardwareKeyboard:self.hardwareKeyboard];
   }
-  // If Manual Fallback is enabled, add its view after the suggestions.
-  if (autofill::features::IsPasswordManualFallbackEnabled()) {
-    FormSuggestionView* formSuggestionView =
-        base::mac::ObjCCast<FormSuggestionView>(consumerView);
-    formSuggestionView.trailingView =
-        self.manualFillAccessoryViewController.view;
-  }
-  // Post it to the consumer.
-  [self.consumer showCustomInputAccessoryView:consumerView
-                           navigationDelegate:self.formInputAccessoryHandler];
+}
+
+#pragma mark - Keyboard Notifications
+
+// When any text field or text view (e.g. omnibox, settings search bar)
+// begins editing, pause the consumer so it doesn't present the custom view over
+// the keyboard.
+- (void)handleTextInputDidBeginEditing:(NSNotification*)notification {
+  self.editingUIKitTextInput = YES;
+  [self pauseCustomKeyboardView];
 }
 
 // When any text field or text view (e.g. omnibox, settings, card unmask dialog)
-// begins editing, reset ourselves so that we don't present our custom view over
-// the keyboard.
-- (void)handleTextInputDidBeginEditing:(NSNotification*)notification {
-  [self.consumer pauseCustomKeyboardView];
+// ends editing, continue presenting.
+- (void)handleTextInputDidEndEditing:(NSNotification*)notification {
+  self.editingUIKitTextInput = NO;
+  [self continueCustomKeyboardView];
+  if (IsIPadIdiom()) {
+    [self updateSuggestionsIfNeeded];
+  }
+}
+
+#pragma mark - PasswordFetcherDelegate
+
+- (void)passwordFetcher:(PasswordFetcher*)passwordFetcher
+      didFetchPasswords:
+          (std::vector<std::unique_ptr<autofill::PasswordForm>>&)passwords {
+  self.consumer.passwordButtonHidden = passwords.empty();
+}
+
+#pragma mark - PersonalDataManagerObserver
+
+- (void)onPersonalDataChanged {
+  DCHECK(_personalDataManager);
+
+  self.consumer.creditCardButtonHidden =
+      _personalDataManager->GetCreditCards().empty();
+
+  self.consumer.addressButtonHidden =
+      _personalDataManager->GetProfilesToSuggest().empty();
 }
 
 #pragma mark - Tests
@@ -442,8 +622,7 @@ queryViewBlockForProvider:(id<FormInputAccessoryViewProvider>)provider
   _formInputAccessoryHandler.JSSuggestionManager = _JSSuggestionManager;
 }
 
-- (void)injectProviders:
-    (NSArray<id<FormInputAccessoryViewProvider>>*)providers {
+- (void)injectProviders:(NSArray<id<FormInputSuggestionsProvider>>*)providers {
   self.providers = providers;
 }
 

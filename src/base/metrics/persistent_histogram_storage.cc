@@ -39,8 +39,6 @@ PersistentHistogramStorage::~PersistentHistogramStorage() {
   PersistentHistogramAllocator* allocator = GlobalHistogramAllocator::Get();
   allocator->UpdateTrackingHistograms();
 
-  // TODO(chengx): Investigate making early return depend on whethere there are
-  // metrics to report at this point or not.
   if (disabled_)
     return;
 

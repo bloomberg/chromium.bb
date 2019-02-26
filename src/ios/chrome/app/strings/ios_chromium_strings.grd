@@ -146,9 +146,6 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_ACCOUNT_UNIFIED_CONSENT_TITLE" desc="Title on the sign-in consent dialog to explain why sign-in can be useful for the user. [iOS only]">
         Get Google smarts in Chromium
       </message>
-      <message name="IDS_IOS_APP_RATING_PROMO_STRING" desc="Text displayed for the rate this app promo. [iOS only]">
-        Enjoying Chromium? <ph name="BEGIN_LINK"><ex>BEGIN_LINK</ex>BEGIN_LINK</ph>Rate this app<ph name="END_LINK"><ex>END_LINK</ex>END_LINK</ph>
-      </message>
       <message name="IDS_IOS_AUTOFILL_DESCRIBE_LOCAL_COPY" desc="Text label that describes a Wallet credit card which has been copied to the local Chromium instance. Title case. [Length: 20em] [iOS only]">
         Copied to Chromium
       </message>
@@ -164,12 +161,6 @@ locale.  The strings in this file are specific to iOS.
       </message>
       <message name="IDS_IOS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_TITLE" desc="Title of a dialog that informs the user that the deletion of Chromium's browsing data has been completed.">
         Cleared Chromium data
-      </message>
-      <message name="IDS_IOS_CONSENT_BUMP_PERSONALIZATION_MESSAGE" desc="Title for the Consent Bump personalization menu, presented when the user wants more informations and control over the sync personalization. [iOS only]">
-        The settings that control sync, personalization, and other Google services in Chromium have changed. This may affect your current settings.
-      </message>
-      <message name="IDS_IOS_CONSENT_BUMP_TURN_ON_TEXT" desc="Text for the Consent Bump personalization option to turn on the sync. [iOS only]">
-        You can customize this anytime in Chromium Settings
       </message>
       <message name="IDS_IOS_DISCONNECT_DIALOG_TITLE" desc="The title of the disconnect dialog [Length: 30em].">
         Sign out of Chromium?
@@ -210,8 +201,14 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_LONG_PRESS_TOOLBAR_IPH_PROMOTION_VOICE_OVER" desc="Text to be read by VoiceOver when the LongPress Toolbar Tip is presented to the user. Read by Text-to-Speech.">
         Chromium tip. For more tab options, press and hold the Show Tabs button in the toolbar, which is at the bottom or top of your screen.
       </message>
-      <message name="IDS_IOS_MANAGED_DISCONNECT_DIALOG_INFO" desc="Message explaini ng that signing out of a managed account will clear all the Chromium data.[Length: 200em, may be line wrapped to multiple lines at run time.].">
+      <message name="IDS_IOS_MANAGED_DISCONNECT_DIALOG_INFO" desc="Message explaining that signing out of a managed account will clear all the Chromium data.[Length: 200em, may be line wrapped to multiple lines at run time.] [iOS only].">
         You are signing out of an account managed by <ph name="SIGNOUT_MANAGED_DOMAIN">$1<ex>google.com</ex></ph>. This will delete your Chromium data from this device, but your data will remain in your Google account.
+      </message>
+      <message name="IDS_IOS_MANAGED_DISCONNECT_DIALOG_INFO_UNITY" desc="Message explaining that signing out of a managed account will clear all the Chromium data.[Length: 200em, may be line wrapped to multiple lines at run time.] [iOS only].">
+        Because you're signing out of an account managed by <ph name="SIGNOUT_MANAGED_DOMAIN">$1<ex>google.com</ex></ph>, your Chromium data will be deleted from this device. Your data will remain in your Google Account.
+      </message>
+      <message name="IDS_IOS_MANAGED_DISCONNECT_DIALOG_TITLE_UNITY" desc="Title of the dialog shown when signing out of a managed account.[Length: 50em] [iOS only].">
+        Clear your Chromium data from this device?
       </message>
       <message name="IDS_IOS_MANAGED_SIGNIN_SUBTITLE" desc="The subtitle of the Sign in to a managed account dialog. [300em]">
         You are signing in with an account managed by <ph name="DOMAIN">$1<ex>doe.com</ex></ph> and giving its administrator control over your Chromium data. Your data will become permanently tied to this account. Signing out of Chromium will delete your data from this device, but it will remain stored in your Google Account.

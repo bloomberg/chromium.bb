@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
 #include "base/memory/singleton.h"
@@ -44,7 +47,7 @@ class URLRequestDataJobFuzzerHarness : public net::URLRequest::Delegate {
     read_lengths_.clear();
 
     // Allocate an IOBuffer with fuzzed size.
-    int buf_size = provider.ConsumeUint32InRange(1, 127);  // 7 bits.
+    int buf_size = provider.ConsumeIntegralInRange(1, 127);  // 7 bits.
     buf_ = base::MakeRefCounted<net::IOBufferWithSize>(buf_size);
 
     // Generate a range header, and a bool determining whether to use it.
@@ -52,7 +55,7 @@ class URLRequestDataJobFuzzerHarness : public net::URLRequest::Delegate {
     // header in consistent byte addresses so the fuzzer doesn't have to work as
     // hard.
     bool use_range = provider.ConsumeBool();
-    std::string range(provider.ConsumeBytes(kMaxLengthForFuzzedRange));
+    std::string range = provider.ConsumeBytesAsString(kMaxLengthForFuzzedRange);
 
     // Generate a sequence of reads sufficient to read the entire data URL,
     // capping it at 20000 reads, to avoid hangs. Once the limit is reached,
@@ -60,7 +63,7 @@ class URLRequestDataJobFuzzerHarness : public net::URLRequest::Delegate {
     size_t simulated_bytes_read = 0;
     while (simulated_bytes_read < provider.remaining_bytes() &&
            read_lengths_.size() < 20000u) {
-      size_t read_length = provider.ConsumeUint32InRange(1, buf_size);
+      size_t read_length = provider.ConsumeIntegralInRange(1, buf_size);
       read_lengths_.push_back(read_length);
       simulated_bytes_read += read_length;
     }
@@ -69,7 +72,7 @@ class URLRequestDataJobFuzzerHarness : public net::URLRequest::Delegate {
     // ensure that if it's a URL, it's a data URL. If the URL is invalid just
     // use a test variant, so the fuzzer has a chance to execute something.
     std::string data_url_string =
-        std::string("data:") + provider.ConsumeRemainingBytes();
+        std::string("data:") + provider.ConsumeRemainingBytesAsString();
     GURL data_url(data_url_string);
     if (!data_url.is_valid())
       data_url = GURL("data:text/html;charset=utf-8,<p>test</p>");

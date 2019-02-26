@@ -33,16 +33,32 @@
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
 class CharacterIteratorTest : public EditingTestBase {};
 
-TEST_F(CharacterIteratorTest, SubrangeWithReplacedElements) {
+class ParameterizedCharacterIteratorTest
+    : public testing::WithParamInterface<bool>,
+      private ScopedLayoutNGForTest,
+      public CharacterIteratorTest {
+ public:
+  ParameterizedCharacterIteratorTest() : ScopedLayoutNGForTest(GetParam()) {}
+
+ protected:
+  bool LayoutNGEnabled() const { return GetParam(); }
+};
+
+INSTANTIATE_TEST_CASE_P(All,
+                        ParameterizedCharacterIteratorTest,
+                        testing::Bool());
+
+TEST_P(ParameterizedCharacterIteratorTest, SubrangeWithReplacedElements) {
   static const char* body_content =
       "<div id='div' contenteditable='true'>1<img src='foo.png'>345</div>";
   SetBodyContent(body_content);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   Node* div_node = GetDocument().getElementById("div");
   Range* entire_range = Range::Create(GetDocument(), div_node, 0, div_node, 3);
@@ -54,11 +70,11 @@ TEST_F(CharacterIteratorTest, SubrangeWithReplacedElements) {
   EXPECT_EQ(Position(text_node, 3), result.EndPosition());
 }
 
-TEST_F(CharacterIteratorTest, CollapsedSubrange) {
+TEST_P(ParameterizedCharacterIteratorTest, CollapsedSubrange) {
   static const char* body_content =
       "<div id='div' contenteditable='true'>hello</div>";
   SetBodyContent(body_content);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   Node* text_node = GetDocument().getElementById("div")->lastChild();
   Range* entire_range =
@@ -72,7 +88,7 @@ TEST_F(CharacterIteratorTest, CollapsedSubrange) {
   EXPECT_EQ(Position(text_node, 3), result.EndPosition());
 }
 
-TEST_F(CharacterIteratorTest, GetPositionWithBlock) {
+TEST_P(ParameterizedCharacterIteratorTest, GetPositionWithBlock) {
   SetBodyContent("a<div>b</div>c");
 
   const Element& body = *GetDocument().body();
@@ -126,7 +142,7 @@ TEST_F(CharacterIteratorTest, GetPositionWithBlock) {
   EXPECT_TRUE(it.AtEnd());
 }
 
-TEST_F(CharacterIteratorTest, GetPositionWithBlocks) {
+TEST_P(ParameterizedCharacterIteratorTest, GetPositionWithBlocks) {
   SetBodyContent("<p id=a>b</p><p id=c>d</p>");
 
   const Element& body = *GetDocument().body();
@@ -173,7 +189,7 @@ TEST_F(CharacterIteratorTest, GetPositionWithBlocks) {
   EXPECT_TRUE(it.AtEnd());
 }
 
-TEST_F(CharacterIteratorTest, GetPositionWithBR) {
+TEST_P(ParameterizedCharacterIteratorTest, GetPositionWithBR) {
   SetBodyContent("a<br>b");
 
   const Element& body = *GetDocument().body();
@@ -212,7 +228,8 @@ TEST_F(CharacterIteratorTest, GetPositionWithBR) {
   EXPECT_TRUE(it.AtEnd());
 }
 
-TEST_F(CharacterIteratorTest, GetPositionWithCollapsedWhitespaces) {
+TEST_P(ParameterizedCharacterIteratorTest,
+       GetPositionWithCollapsedWhitespaces) {
   SetBodyContent("a <div> b </div> c");
 
   const Element& body = *GetDocument().body();
@@ -266,7 +283,7 @@ TEST_F(CharacterIteratorTest, GetPositionWithCollapsedWhitespaces) {
   EXPECT_TRUE(it.AtEnd());
 }
 
-TEST_F(CharacterIteratorTest, GetPositionWithEmitChar16Before) {
+TEST_P(ParameterizedCharacterIteratorTest, GetPositionWithEmitChar16Before) {
   InsertStyleElement("b { white-space: pre; }");
   SetBodyContent("a   <b> c</b>");
 
@@ -289,15 +306,17 @@ TEST_F(CharacterIteratorTest, GetPositionWithEmitChar16Before) {
   EXPECT_EQ(Position(text_a, 1), it.StartPosition());
   EXPECT_EQ(Position(text_a, 2), it.EndPosition());
 
-  // TODO(editing-dev): We should know why we emit a space character for
-  // "white-space: pre" element after trailing whitespace.
-  // A space character emitted by |EmitChar16Before()|.
-  ASSERT_FALSE(it.AtEnd());
-  it.Advance(1);
-  EXPECT_EQ(Position(text_c, 0), it.GetPositionBefore());
-  EXPECT_EQ(Position(text_c, 0), it.GetPositionAfter());
-  EXPECT_EQ(Position(text_c, 0), it.StartPosition());
-  EXPECT_EQ(Position(text_c, 0), it.EndPosition());
+  if (!LayoutNGEnabled()) {
+    // TODO(editing-dev): TextIterator with legacy layout incorrectly emits a
+    // space character for "white-space: pre" element after trailing whitespace.
+    // A space character emitted by |EmitChar16Before()|. Fix it.
+    ASSERT_FALSE(it.AtEnd());
+    it.Advance(1);
+    EXPECT_EQ(Position(text_c, 0), it.GetPositionBefore());
+    EXPECT_EQ(Position(text_c, 0), it.GetPositionAfter());
+    EXPECT_EQ(Position(text_c, 0), it.StartPosition());
+    EXPECT_EQ(Position(text_c, 0), it.EndPosition());
+  }
 
   ASSERT_FALSE(it.AtEnd());
   it.Advance(1);

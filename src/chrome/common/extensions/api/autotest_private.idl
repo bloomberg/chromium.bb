@@ -222,5 +222,9 @@ namespace autotestPrivate {
     // daemon startup, and 2. the initial D-Bus -> Mojo IPC bootstrap.
     // |callback|: Called when the operation has completed.
     static void bootstrapMachineLearningService(VoidCallback callback);
+
+    // Enable/disable the Google Assistant
+    // |callback|: Called when the operation has completed.
+    static void setAssistantEnabled(boolean enabled, long timeout_ms, VoidCallback callback);
   };
 };

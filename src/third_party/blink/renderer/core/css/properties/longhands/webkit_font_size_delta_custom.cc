@@ -8,16 +8,16 @@
 #include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* WebkitFontSizeDelta::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSPropertyParserHelpers::ConsumeLength(
+  return css_property_parser_helpers::ConsumeLength(
       range, context.Mode(), kValueRangeAll,
-      CSSPropertyParserHelpers::UnitlessQuirk::kAllow);
+      css_property_parser_helpers::UnitlessQuirk::kAllow);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

@@ -5,8 +5,6 @@
 #include "ash/system/tray/actionable_view.h"
 
 #include "ash/public/cpp/ash_constants.h"
-#include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -24,11 +22,9 @@ namespace ash {
 // static
 const char ActionableView::kViewClassName[] = "tray/ActionableView";
 
-ActionableView::ActionableView(SystemTrayItem* owner,
-                               TrayPopupInkDropStyle ink_drop_style)
+ActionableView::ActionableView(TrayPopupInkDropStyle ink_drop_style)
     : views::Button(this),
       destroyed_(nullptr),
-      owner_(owner),
       ink_drop_style_(ink_drop_style) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
   set_ink_drop_base_color(kTrayPopupInkDropBaseColor);
@@ -64,7 +60,7 @@ bool ActionableView::OnKeyPressed(const ui::KeyEvent& event) {
 
 void ActionableView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kButton;
-  node_data->SetName(accessible_name());
+  node_data->SetName(GetAccessibleName());
 }
 
 std::unique_ptr<views::InkDrop> ActionableView::CreateInkDrop() {
@@ -86,11 +82,6 @@ std::unique_ptr<views::InkDropMask> ActionableView::CreateInkDropMask() const {
   return TrayPopupUtils::CreateInkDropMask(ink_drop_style_, this);
 }
 
-void ActionableView::CloseSystemBubble() {
-  DCHECK(owner_);
-  owner_->system_tray()->CloseBubble();
-}
-
 void ActionableView::ButtonPressed(Button* sender, const ui::Event& event) {
   bool destroyed = false;
   destroyed_ = &destroyed;
@@ -103,10 +94,9 @@ void ActionableView::ButtonPressed(Button* sender, const ui::Event& event) {
 }
 
 ButtonListenerActionableView::ButtonListenerActionableView(
-    SystemTrayItem* owner,
     TrayPopupInkDropStyle ink_drop_style,
     views::ButtonListener* listener)
-    : ActionableView(owner, ink_drop_style), listener_(listener) {}
+    : ActionableView(ink_drop_style), listener_(listener) {}
 
 bool ButtonListenerActionableView::PerformAction(const ui::Event& event) {
   listener_->ButtonPressed(this, event);

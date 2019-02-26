@@ -120,8 +120,8 @@ IDBRequest* IDBRequest::Create(ScriptState* script_state,
                                const Source& source,
                                IDBTransaction* transaction,
                                IDBRequest::AsyncTraceState metrics) {
-  IDBRequest* request =
-      new IDBRequest(script_state, source, transaction, std::move(metrics));
+  IDBRequest* request = MakeGarbageCollected<IDBRequest>(
+      script_state, source, transaction, std::move(metrics));
   request->PauseIfNeeded();
   // Requests associated with IDBFactory (open/deleteDatabase/getDatabaseNames)
   // do not have an associated transaction.
@@ -200,9 +200,9 @@ const String& IDBRequest::readyState() const {
   DCHECK(ready_state_ == PENDING || ready_state_ == DONE);
 
   if (ready_state_ == PENDING)
-    return IndexedDBNames::pending;
+    return indexed_db_names::kPending;
 
-  return IndexedDBNames::done;
+  return indexed_db_names::kDone;
 }
 
 std::unique_ptr<WebIDBCallbacks> IDBRequest::CreateWebCallbacks() {
@@ -239,8 +239,8 @@ void IDBRequest::Abort() {
   request_aborted_ = true;
 }
 
-void IDBRequest::SetCursorDetails(IndexedDB::CursorType cursor_type,
-                                  WebIDBCursorDirection direction) {
+void IDBRequest::SetCursorDetails(indexed_db::CursorType cursor_type,
+                                  mojom::IDBCursorDirection direction) {
   DCHECK_EQ(ready_state_, PENDING);
   DCHECK(!pending_cursor_);
   cursor_type_ = cursor_type;
@@ -418,7 +418,7 @@ void IDBRequest::EnqueueResponse(DOMException* error) {
   error_ = error;
   SetResult(IDBAny::CreateUndefined());
   pending_cursor_.Clear();
-  EnqueueEvent(Event::CreateCancelableBubble(EventTypeNames::error));
+  EnqueueEvent(Event::CreateCancelableBubble(event_type_names::kError));
   metrics_.RecordAndReset();
 }
 
@@ -460,11 +460,11 @@ void IDBRequest::EnqueueResponse(std::unique_ptr<WebIDBCursor> backend,
   DCHECK(!source.IsNull());
 
   switch (cursor_type_) {
-    case IndexedDB::kCursorKeyOnly:
+    case indexed_db::kCursorKeyOnly:
       cursor = IDBCursor::Create(std::move(backend), cursor_direction_, this,
                                  source, transaction_.Get());
       break;
-    case IndexedDB::kCursorKeyAndValue:
+    case indexed_db::kCursorKeyAndValue:
       cursor = IDBCursorWithValue::Create(std::move(backend), cursor_direction_,
                                           this, source, transaction_.Get());
       break;
@@ -573,7 +573,7 @@ void IDBRequest::EnqueueResultInternal(IDBAny* result) {
   DCHECK(!pending_cursor_);
   DCHECK(transit_blob_handles_.IsEmpty());
   SetResult(result);
-  EnqueueEvent(Event::Create(EventTypeNames::success));
+  EnqueueEvent(Event::Create(event_type_names::kSuccess));
 }
 
 void IDBRequest::SetResult(IDBAny* result) {
@@ -625,7 +625,7 @@ void IDBRequest::ContextDestroyed(ExecutionContext*) {
 }
 
 const AtomicString& IDBRequest::InterfaceName() const {
-  return EventTargetNames::IDBRequest;
+  return event_target_names::kIDBRequest;
 }
 
 ExecutionContext* IDBRequest::GetExecutionContext() const {
@@ -640,7 +640,7 @@ DispatchEventResult IDBRequest::DispatchEventInternal(Event& event) {
   DCHECK(has_pending_activity_);
   DCHECK_EQ(event.target(), this);
 
-  if (event.type() != EventTypeNames::blocked)
+  if (event.type() != event_type_names::kBlocked)
     ready_state_ = DONE;
 
   HeapVector<Member<EventTarget>> targets;
@@ -657,7 +657,7 @@ DispatchEventResult IDBRequest::DispatchEventInternal(Event& event) {
   // Cursor properties should not be updated until the success event is being
   // dispatched.
   IDBCursor* cursor_to_notify = nullptr;
-  if (event.type() == EventTypeNames::success) {
+  if (event.type() == event_type_names::kSuccess) {
     cursor_to_notify = GetResultCursor();
     if (cursor_to_notify) {
       cursor_to_notify->SetValueReady(std::move(cursor_key_),
@@ -666,23 +666,23 @@ DispatchEventResult IDBRequest::DispatchEventInternal(Event& event) {
     }
   }
 
-  if (event.type() == EventTypeNames::upgradeneeded) {
+  if (event.type() == event_type_names::kUpgradeneeded) {
     DCHECK(!did_fire_upgrade_needed_event_);
     did_fire_upgrade_needed_event_ = true;
   }
 
   // FIXME: When we allow custom event dispatching, this will probably need to
   // change.
-  DCHECK(event.type() == EventTypeNames::success ||
-         event.type() == EventTypeNames::error ||
-         event.type() == EventTypeNames::blocked ||
-         event.type() == EventTypeNames::upgradeneeded)
+  DCHECK(event.type() == event_type_names::kSuccess ||
+         event.type() == event_type_names::kError ||
+         event.type() == event_type_names::kBlocked ||
+         event.type() == event_type_names::kUpgradeneeded)
       << "event type was " << event.type();
   const bool set_transaction_active =
       transaction_ &&
-      (event.type() == EventTypeNames::success ||
-       event.type() == EventTypeNames::upgradeneeded ||
-       (event.type() == EventTypeNames::error && !request_aborted_));
+      (event.type() == event_type_names::kSuccess ||
+       event.type() == event_type_names::kUpgradeneeded ||
+       (event.type() == event_type_names::kError && !request_aborted_));
 
   if (set_transaction_active)
     transaction_->SetActive(true);
@@ -710,7 +710,7 @@ DispatchEventResult IDBRequest::DispatchEventInternal(Event& event) {
             DOMException::Create(DOMExceptionCode::kAbortError,
                                  "Uncaught exception in event handler."));
         transaction_->abort(IGNORE_EXCEPTION_FOR_TESTING);
-      } else if (event.type() == EventTypeNames::error &&
+      } else if (event.type() == event_type_names::kError &&
                  dispatch_result == DispatchEventResult::kNotCanceled) {
         transaction_->SetError(error_);
         transaction_->abort(IGNORE_EXCEPTION_FOR_TESTING);
@@ -728,7 +728,7 @@ DispatchEventResult IDBRequest::DispatchEventInternal(Event& event) {
 
   // An upgradeneeded event will always be followed by a success or error event,
   // so must be kept alive.
-  if (ready_state_ == DONE && event.type() != EventTypeNames::upgradeneeded)
+  if (ready_state_ == DONE && event.type() != event_type_names::kUpgradeneeded)
     has_pending_activity_ = false;
 
   return dispatch_result;

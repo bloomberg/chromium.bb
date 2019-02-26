@@ -27,10 +27,12 @@ class MockChromePromptIPC : public ChromePromptIPC {
   void PostPromptUserTask(
       const std::vector<base::FilePath>& files_to_delete,
       const std::vector<base::string16>& registry_keys,
+      const std::vector<base::string16>& extension_ids,
       mojom::ChromePrompt::PromptUserCallback callback) override;
-  MOCK_METHOD3(MockPostPromptUserTask,
+  MOCK_METHOD4(MockPostPromptUserTask,
                void(const std::vector<base::FilePath>& files_to_delete,
                     const std::vector<base::string16>& registry_keys,
+                    const std::vector<base::string16>& extension_ids,
                     mojom::ChromePrompt::PromptUserCallback* callback));
 };
 

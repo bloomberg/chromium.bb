@@ -2,6 +2,7 @@
 
 include_rules = [
   "+components/discardable_memory/client",
+  "+components/ui_devtools",
   "+components/viz/common/switches.h",
   "+components/viz/service",
   "+gpu/command_buffer",
@@ -12,6 +13,7 @@ include_rules = [
   "+media/gpu",
   "+mojo/public/cpp",
   "+services/metrics/public",
+  "+services/network/public/mojom",
   "+services/service_manager/public/cpp",
   "+services/viz/privileged/interfaces",
 ]

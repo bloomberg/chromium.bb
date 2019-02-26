@@ -50,7 +50,6 @@
 #include "third_party/blink/public/mojom/loader/code_cache.mojom-shared.h"
 #include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/public/platform/code_cache_loader.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_factory.h"
 #include "third_party/blink/public/platform/user_metrics_action.h"
 #include "third_party/blink/public/platform/web_audio_device.h"
 #include "third_party/blink/public/platform/web_common.h"
@@ -65,10 +64,13 @@
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/public/platform/web_url_loader_factory.h"
-#include "third_party/webrtc/p2p/base/portallocator.h"
 
 namespace base {
 class SingleThreadTaskRunner;
+}
+
+namespace cricket {
+class PortAllocator;
 }
 
 namespace gpu {
@@ -166,6 +168,12 @@ class BLINK_PLATFORM_EXPORT Platform {
   // Used to switch the current platform only for testing.
   // You should not pass in a Platform object that is not fully instantiated.
   static void SetCurrentPlatformForTesting(Platform*);
+
+  // This sets up a minimally viable implementation of blink::Thread without
+  // changing the current Platform. This is essentially a workaround for the
+  // initialization order in ScopedUnittestsEnvironmentSetup, and nobody else
+  // should use this.
+  static void CreateMainThreadForTesting();
 
   // These are dirty workaround for tests requiring the main thread task runner
   // from a non-main thread. If your test needs base::ScopedTaskEnvironment
@@ -289,11 +297,6 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   virtual WebString ConvertIDNToUnicode(const WebString& host) { return host; }
 
-  // IndexedDB ----------------------------------------------------------
-
-  // Must return non-null.
-  virtual std::unique_ptr<WebIDBFactory> CreateIdbFactory() { return nullptr; }
-
   // History -------------------------------------------------------------
 
   // Returns the hash for the given canonicalized URL for use in visited
@@ -341,7 +344,7 @@ class BLINK_PLATFORM_EXPORT Platform {
   // get a factory bundle from the browser process, and compose a new factory
   // using both the bundle and this default.
   //
-  // TODO(kinuko): See if we can deprecate this too.
+  // TODO(kinuko): https://crbug.com/891872: See if we can deprecate this too.
   virtual std::unique_ptr<WebURLLoaderFactory> CreateDefaultURLLoaderFactory() {
     return nullptr;
   }
@@ -428,38 +431,34 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Threads -------------------------------------------------------
 
-  // blink::Thread creation is no longer customizable in Platform.
-  // CreateThread() always creates a new physical thread for Blink.
-  // Platform maintains the thread-local storage containing each blink::Thread
-  // object, so that CurrentThread() could return the correct thread object.
-  //
-  // TODO(yutak): These non-virtual functions should be moved to somewhere
-  // else, because they no longer require embedder's implementation.
+  // Most of threading functionality has moved to blink::Thread. The functions
+  // in Platform are deprecated; use the counterpart in blink::Thread as noted
+  // below.
 
-  // Creates a new thread. This may be called from a non-main thread (e.g.
-  // nested Web workers).
+  // DEPRECATED: Use Thread::CreateThread() instead.
   std::unique_ptr<Thread> CreateThread(const ThreadCreationParams&);
 
-  // Creates a WebAudio-specific thread with the elevated priority. Do NOT use
-  // for any other purpose.
+  // DEPRECATED: Use Thread::CreateWebAudioThread() instead.
   std::unique_ptr<Thread> CreateWebAudioThread();
 
-  // Create and initialize the compositor thread. The thread is saved in
-  // Platform, and will be accessible through CompositorThread().
-  void InitializeCompositorThread();
-
-  // Returns an interface to the current thread.
+  // DEPRECATED: Use Thread::Current() instead.
   Thread* CurrentThread();
 
-  // Returns an interface to the main thread.
+  // DEPRECATED: Use Thread::MainThread() instead.
   Thread* MainThread();
 
-  // Returns an interface to the compositor thread. This can be null if the
-  // renderer was created with threaded rendering disabled.
+  // DEPRECATED: Use Thread::CompositorThread() instead.
   Thread* CompositorThread();
 
+  // The two compositor-related functions below are called by the embedder.
+  // TODO(yutak): Perhaps we should move these to somewhere else?
+
+  // Create and initialize the compositor thread. After this function
+  // completes, you can access CompositorThreadTaskRunner().
+  void CreateAndSetCompositorThread();
+
   // Returns the task runner of the compositor thread. This is available
-  // once InitializeCompositorThread() is called.
+  // once CreateAndSetCompositorThread() is called.
   scoped_refptr<base::SingleThreadTaskRunner> CompositorThreadTaskRunner();
 
   // This is called after the compositor thread is created, so the embedder
@@ -655,9 +654,7 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // May return null if WebRTC functionality is not implemented.
   virtual std::unique_ptr<cricket::PortAllocator> CreateWebRtcPortAllocator(
-      WebLocalFrame* frame) {
-    return nullptr;
-  }
+      WebLocalFrame* frame);
 
   // Creates a WebCanvasCaptureHandler to capture Canvas output.
   virtual std::unique_ptr<WebCanvasCaptureHandler>
@@ -766,28 +763,9 @@ class BLINK_PLATFORM_EXPORT Platform {
   // runs during Chromium's build step).
   virtual bool IsTakingV8ContextSnapshot() { return false; }
 
- protected:
-  Thread* main_thread_;
-
  private:
-  static void InitializeCommon(Platform* platform);
-
-  void WaitUntilThreadTLSUpdate(Thread*);
-  void UpdateThreadTLS(Thread* thread, base::WaitableEvent* event);
-
-  // Platform owns the main thread in most cases. The pointer value is the same
-  // as main_thread_ if this variable is non-null.
-  //
-  // This variable is null if (and only if) ScopedTestingPlatformSupport<>
-  // overrides the old Platform. In this case, main_thread_ points to the old
-  // Platform's main thread. See testing_platform_support.h for this.
-  std::unique_ptr<Thread> owned_main_thread_;
-
-  std::unique_ptr<Thread> compositor_thread_;
-
-  // We can't use WTF stuff here. Ultimately these should go away (see comments
-  // near CreateThread()), though.
-  base::ThreadLocalStorage::Slot current_thread_slot_;
+  static void InitializeCommon(Platform* platform,
+                               std::unique_ptr<Thread> main_thread);
 };
 
 }  // namespace blink

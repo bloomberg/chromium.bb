@@ -57,6 +57,7 @@ jumbo_static_library("browser") {
     "credential_manager_pending_prevent_silent_access_task.h",
     "credential_manager_pending_request_task.cc",
     "credential_manager_pending_request_task.h",
+    "credentials_cleaner.cc",
     "credentials_cleaner.h",
     "credentials_cleaner_runner.cc",
     "credentials_cleaner_runner.h",
@@ -97,14 +98,13 @@ jumbo_static_library("browser") {
     "login_database_win.cc",
     "login_model.cc",
     "login_model.h",
+    "manage_passwords_referrer.h",
     "new_password_form_manager.cc",
     "new_password_form_manager.h",
     "password_autofill_manager.cc",
     "password_autofill_manager.h",
     "password_bubble_experiment.cc",
     "password_bubble_experiment.h",
-    "password_data_type_controller.cc",
-    "password_data_type_controller.h",
     "password_form_filling.cc",
     "password_form_filling.h",
     "password_form_manager.cc",
@@ -134,8 +134,6 @@ jumbo_static_library("browser") {
     "password_manager_metrics_util.h",
     "password_manager_util.cc",
     "password_manager_util.h",
-    "password_model_worker.cc",
-    "password_model_worker.h",
     "password_requirements_service.cc",
     "password_requirements_service.h",
     "password_store.cc",
@@ -152,8 +150,6 @@ jumbo_static_library("browser") {
     "password_store_sync.h",
     "password_sync_util.cc",
     "password_sync_util.h",
-    "password_syncable_service.cc",
-    "password_syncable_service.h",
     "password_ui_utils.cc",
     "password_ui_utils.h",
     "psl_matching_helper.cc",
@@ -168,6 +164,18 @@ jumbo_static_library("browser") {
     "store_metrics_reporter.h",
     "suppressed_form_fetcher.cc",
     "suppressed_form_fetcher.h",
+    "sync/password_data_type_controller.cc",
+    "sync/password_data_type_controller.h",
+    "sync/password_model_type_controller.cc",
+    "sync/password_model_type_controller.h",
+    "sync/password_model_worker.cc",
+    "sync/password_model_worker.h",
+    "sync/password_sync_bridge.cc",
+    "sync/password_sync_bridge.h",
+    "sync/password_syncable_service.cc",
+    "sync/password_syncable_service.h",
+    "sync/password_syncable_service_based_model_type_controller.cc",
+    "sync/password_syncable_service_based_model_type_controller.h",
     "sync_credentials_filter.cc",
     "sync_credentials_filter.h",
     "ui/credential_provider_interface.h",
@@ -227,6 +235,7 @@ jumbo_static_library("browser") {
     "//components/webdata/common",
     "//google_apis",
     "//net",
+    "//services/identity/public/cpp:cpp",
     "//services/metrics/public/cpp:metrics_cpp",
     "//services/metrics/public/cpp:ukm_builders",
     "//services/network/public/cpp",
@@ -261,6 +270,14 @@ jumbo_static_library("browser") {
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+}
+
+if (is_android) {
+  java_cpp_enum("password_manager_java_enums_srcjar") {
+    sources = [
+      "manage_passwords_referrer.h",
+    ]
+  }
 }
 
 fuzzable_proto_library("proto") {
@@ -395,6 +412,7 @@ source_set("unit_tests") {
     "credential_manager_logger_unittest.cc",
     "credential_manager_password_form_manager_unittest.cc",
     "credentials_cleaner_runner_unittest.cc",
+    "credentials_cleaner_unittest.cc",
     "export/csv_writer_unittest.cc",
     "export/password_csv_writer_unittest.cc",
     "export/password_manager_exporter_unittest.cc",
@@ -426,7 +444,6 @@ source_set("unit_tests") {
     "password_store_origin_unittest.h",
     "password_store_unittest.cc",
     "password_sync_util_unittest.cc",
-    "password_syncable_service_unittest.cc",
     "password_ui_utils_unittest.cc",
     "psl_matching_helper_unittest.cc",
     "site_affiliation/asset_link_data_unittest.cc",
@@ -434,6 +451,7 @@ source_set("unit_tests") {
     "statistics_table_unittest.cc",
     "store_metrics_reporter_unittest.cc",
     "suppressed_form_fetcher_unittest.cc",
+    "sync/password_syncable_service_unittest.cc",
     "sync_credentials_filter_unittest.cc",
     "sync_username_test_base.cc",
     "sync_username_test_base.h",
@@ -489,6 +507,7 @@ source_set("unit_tests") {
     "//components/variations",
     "//google_apis:google_apis",
     "//net:test_support",
+    "//services/identity/public/cpp:test_support",
     "//services/metrics/public/cpp:ukm_builders",
     "//services/network:network_service",
     "//services/network:test_support",
@@ -532,6 +551,7 @@ if (use_libfuzzer) {
       ":browser",
       ":proto",
       "//base:base",
+      "//base:i18n",
       "//third_party/libprotobuf-mutator",
     ]
   }

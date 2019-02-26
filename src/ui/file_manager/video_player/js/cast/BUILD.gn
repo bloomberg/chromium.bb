@@ -19,12 +19,10 @@ js_library("closure_compile_externs") {
   externs_list = [
     "$externs_path/chrome_extensions.js",
     "$externs_path/media_player_private.js",
-    "$externs_path/metrics_private.js",
     "../../../externs/app_window_common.js",
     "../../../externs/background/volume_manager_factory.js",
     "../../../externs/chrome_cast.js",
     "../../../externs/platform.js",
-    "//third_party/analytics/externs.js",
   ]
 }
 

@@ -15,15 +15,15 @@ found in the LICENSE file.
 /**
  * @fileoverview This file contains implementations of the following metrics.
  *
- * queueing_durations_tbmv2
- * ========================
+ * queueing_durations
+ * ==================
  * This quantifies how out of sync the compositor and renderer threads are. It
  * is the amount of wall time that elapses between a
  * ScheduledActionSendBeginMainFrame event in the compositor thread and the
  * corresponding BeginMainFrame event in the main thread.
  *
- * All renderer processes, including ones for out-of-process iframes, are used
- * to compute the metric.
+ * TODO(chiniforooshan): Does it make sense to just ignore data from OOPIF
+ * processes, like what we are doing here?
  */
 tr.exportTo('tr.metrics.rendering', function() {
   // Various tracing events.
@@ -49,9 +49,13 @@ tr.exportTo('tr.metrics.rendering', function() {
         tr.model.helpers.ChromeModelHelper);
     if (!chromeHelper) return;
 
+    let targetRenderers = chromeHelper.telemetryHelper.renderersWithIR;
+    if (targetRenderers.length === 0) {
+      targetRenderers = Object.values(chromeHelper.rendererHelpers);
+    }
     const queueingDurations = [];
     const ranges = segments.map(s => s.boundsRange);
-    for (const rendererHelper of Object.values(chromeHelper.rendererHelpers)) {
+    for (const rendererHelper of targetRenderers) {
       const mainThread = rendererHelper.mainThread;
       const compositorThread = rendererHelper.compositorThread;
       if (mainThread === undefined || compositorThread === undefined) continue;
@@ -66,10 +70,11 @@ tr.exportTo('tr.metrics.rendering', function() {
     }
 
     histograms.createHistogram(
-        'queueing_durations_tbmv2',
+        'queueing_durations',
         tr.b.Unit.byName.timeDurationInMs_smallerIsBetter, queueingDurations, {
           binBoundaries:
             tr.v.HistogramBinBoundaries.createExponential(0.01, 2, 20),
+          summaryOptions: tr.metrics.rendering.SUMMARY_OPTIONS,
           description: 'Time between ScheduledActionSendBeginMainFrame in ' +
                        'the compositor thread and the corresponding ' +
                        'BeginMainFrame in the main thread.'

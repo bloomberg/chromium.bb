@@ -62,7 +62,12 @@ class SequenceManager {
   // CreateUnboundSequenceManager(nullptr). Must not be called in any other
   // circumstances. Note it's assumed |message_loop| outlives the
   // SequenceManager.
-  virtual void BindToMessageLoop(MessageLoop* message_loop) = 0;
+  virtual void BindToMessageLoop(MessageLoopBase* message_loop_base) = 0;
+
+  // Finishes the initialization for a SequenceManager created via
+  // CreateUnboundSequenceManagerWithPump(). Must not be called in any other
+  // circumstances. The ownership of the pump is transferred to SequenceManager.
+  virtual void BindToMessagePump(std::unique_ptr<MessagePump> message_pump) = 0;
 
   // Initializes the SequenceManager on the bound thread. Should only be called
   // once and only after the ThreadController's dependencies were initialized.
@@ -87,8 +92,6 @@ class SequenceManager {
   virtual void SetObserver(Observer* observer) = 0;
 
   // Must be called on the main thread.
-  virtual void AddTaskObserver(MessageLoop::TaskObserver* task_observer) = 0;
-  virtual void RemoveTaskObserver(MessageLoop::TaskObserver* task_observer) = 0;
   virtual void AddTaskTimeObserver(TaskTimeObserver* task_time_observer) = 0;
   virtual void RemoveTaskTimeObserver(TaskTimeObserver* task_time_observer) = 0;
 
@@ -137,11 +140,26 @@ class SequenceManager {
   // Must be called on the main thread.
   // TODO(scheduler-dev): SequenceManager should not create TaskQueues.
   template <typename TaskQueueType, typename... Args>
-  scoped_refptr<TaskQueueType> CreateTaskQueue(const TaskQueue::Spec& spec,
-                                               Args&&... args) {
+  scoped_refptr<TaskQueueType> CreateTaskQueueWithType(
+      const TaskQueue::Spec& spec,
+      Args&&... args) {
     return WrapRefCounted(new TaskQueueType(CreateTaskQueueImpl(spec), spec,
                                             std::forward<Args>(args)...));
   }
+
+  // Creates a vanilla TaskQueue rather than a user type derived from it. This
+  // should be used if you don't wish to sub class TaskQueue.
+  // Must be called on the main thread.
+  virtual scoped_refptr<TaskQueue> CreateTaskQueue(
+      const TaskQueue::Spec& spec) = 0;
+
+  // Returns true iff this SequenceManager has no immediate work to do
+  // (tasks with unexpired delay are fine, tasks with zero delay and
+  // expired delay are not).
+  virtual bool IsIdleForTesting() = 0;
+
+  // The total number of posted tasks that haven't executed yet.
+  virtual size_t GetPendingTaskCountForTesting() const = 0;
 
  protected:
   virtual std::unique_ptr<internal::TaskQueueImpl> CreateTaskQueueImpl(
@@ -150,10 +168,17 @@ class SequenceManager {
 
 // Create SequenceManager using MessageLoop on the current thread.
 // Implementation is located in sequence_manager_impl.cc.
-// TODO(scheduler-dev): Rename to TakeOverCurrentThread when we'll stop using
-// MessageLoop and will actually take over a thread.
+// TODO(scheduler-dev): Remove after every thread has a SequenceManager.
 BASE_EXPORT std::unique_ptr<SequenceManager>
 CreateSequenceManagerOnCurrentThread();
+
+// Create a SequenceManager using the given MessagePump on the current thread.
+// MessagePump instances can be created with
+// MessageLoop::CreateMessagePumpForType().
+BASE_EXPORT std::unique_ptr<SequenceManager>
+CreateSequenceManagerOnCurrentThreadWithPump(
+    MessageLoop::Type type,
+    std::unique_ptr<MessagePump> message_pump);
 
 // Create a SequenceManager for a future thread using the provided MessageLoop.
 // The SequenceManager can be initialized on the current thread and then needs
@@ -163,8 +188,9 @@ CreateSequenceManagerOnCurrentThread();
 //
 // Implementation is located in sequence_manager_impl.cc. TODO(scheduler-dev):
 // Remove when we get rid of MessageLoop.
+// TODO(scheduler-dev): Change this to CreateUnboundSequenceManagerWithPump.
 BASE_EXPORT std::unique_ptr<SequenceManager> CreateUnboundSequenceManager(
-    MessageLoop* message_loop);
+    MessageLoopBase* message_loop_base);
 
 }  // namespace sequence_manager
 }  // namespace base

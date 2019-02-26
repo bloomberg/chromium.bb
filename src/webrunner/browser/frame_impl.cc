@@ -4,15 +4,20 @@
 
 #include "webrunner/browser/frame_impl.h"
 
+#include <zircon/syscalls.h>
+
 #include <string>
 
+#include "base/fuchsia/fuchsia_logging.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/message_port_provider.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host_platform.h"
@@ -20,6 +25,8 @@
 #include "ui/wm/core/base_focus_rules.h"
 #include "url/gurl.h"
 #include "webrunner/browser/context_impl.h"
+#include "webrunner/browser/message_port_impl.h"
+#include "webrunner/browser/vmo_util.h"
 
 namespace webrunner {
 
@@ -119,6 +126,32 @@ bool FrameFocusRules::SupportsChildActivation(aura::Window*) const {
   return true;
 }
 
+bool IsOriginWhitelisted(const GURL& url,
+                         const std::vector<std::string>& allowed_origins) {
+  constexpr const char kWildcard[] = "*";
+
+  for (const std::string& origin : allowed_origins) {
+    if (origin == kWildcard)
+      return true;
+
+    GURL origin_url(origin);
+    if (!origin_url.is_valid()) {
+      DLOG(WARNING) << "Ignored invalid origin spec for whitelisting: "
+                    << origin;
+      continue;
+    }
+
+    if (origin_url != url.GetOrigin())
+      continue;
+
+    // TODO(crbug.com/893236): Add handling for nonstandard origins
+    // (e.g. data: URIs).
+
+    return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 FrameImpl::FrameImpl(std::unique_ptr<content::WebContents> web_contents,
@@ -130,13 +163,16 @@ FrameImpl::FrameImpl(std::unique_ptr<content::WebContents> web_contents,
       context_(context),
       binding_(this, std::move(frame_request)) {
   web_contents_->SetDelegate(this);
-  binding_.set_error_handler([this]() { context_->DestroyFrame(this); });
+  Observe(web_contents_.get());
+  binding_.set_error_handler(
+      [this](zx_status_t status) { context_->DestroyFrame(this); });
 }
 
 FrameImpl::~FrameImpl() {
   if (window_tree_host_) {
     aura::client::SetFocusClient(root_window(), nullptr);
     wm::SetActivationClient(root_window(), nullptr);
+    root_window()->RemovePreTargetHandler(focus_controller_.get());
     web_contents_->ClosePage();
     window_tree_host_->Hide();
     window_tree_host_->compositor()->SetVisible(false);
@@ -178,8 +214,17 @@ bool FrameImpl::ShouldCreateWebContents(
 void FrameImpl::CreateView(
     fidl::InterfaceRequest<fuchsia::ui::viewsv1token::ViewOwner> view_owner,
     fidl::InterfaceRequest<fuchsia::sys::ServiceProvider> services) {
+  // Cast |view_owner| request to a eventpair.
+  CreateView2(zx::eventpair(view_owner.TakeChannel().release()),
+              std::move(services), nullptr);
+}
+
+void FrameImpl::CreateView2(
+    zx::eventpair view_token,
+    fidl::InterfaceRequest<fuchsia::sys::ServiceProvider> incoming_services,
+    fidl::InterfaceHandle<fuchsia::sys::ServiceProvider> outgoing_services) {
   ui::PlatformWindowInitProperties properties;
-  properties.view_owner_request = std::move(view_owner);
+  properties.view_token = std::move(view_token);
 
   window_tree_host_ =
       std::make_unique<aura::WindowTreeHostPlatform>(std::move(properties));
@@ -204,6 +249,10 @@ void FrameImpl::CreateView(
 void FrameImpl::GetNavigationController(
     fidl::InterfaceRequest<chromium::web::NavigationController> controller) {
   controller_bindings_.AddBinding(this, std::move(controller));
+}
+
+void FrameImpl::SetJavaScriptLogLevel(chromium::web::LogLevel level) {
+  log_level_ = level;
 }
 
 void FrameImpl::LoadUrl(fidl::StringPtr url,
@@ -273,15 +322,46 @@ void FrameImpl::SetNavigationEventObserver(
 
   if (observer) {
     navigation_observer_.Bind(std::move(observer));
-    navigation_observer_.set_error_handler([this]() {
-      // Stop observing on Observer connection loss.
-      SetNavigationEventObserver(nullptr);
-    });
-    Observe(web_contents_.get());
+    navigation_observer_.set_error_handler(
+        [this](zx_status_t status) { SetNavigationEventObserver(nullptr); });
   } else {
     navigation_observer_.Unbind();
-    Observe(nullptr);  // Stop receiving WebContentsObserver events.
   }
+}
+
+void FrameImpl::ExecuteJavaScript(fidl::VectorPtr<::fidl::StringPtr> origins,
+                                  fuchsia::mem::Buffer script,
+                                  chromium::web::ExecuteMode mode,
+                                  ExecuteJavaScriptCallback callback) {
+  if (!context_->IsJavaScriptInjectionAllowed()) {
+    callback(false);
+    return;
+  }
+
+  if (origins->empty()) {
+    callback(false);
+    return;
+  }
+
+  base::string16 script_utf16;
+  if (!ReadUTF8FromVMOAsUTF16(script, &script_utf16)) {
+    DLOG(WARNING) << "Ignored non-UTF8 script passed to ExecuteJavaScript().";
+    callback(false);
+    return;
+  }
+
+  std::vector<std::string> origins_strings;
+  for (const auto& origin : *origins)
+    origins_strings.push_back(origin);
+
+  if (mode == chromium::web::ExecuteMode::IMMEDIATE_ONCE) {
+    if (IsOriginWhitelisted(web_contents_->GetLastCommittedURL(),
+                            origins_strings))
+      web_contents_->GetMainFrame()->ExecuteJavaScript(script_utf16);
+  } else {
+    before_load_scripts_.emplace_back(origins_strings, script_utf16);
+  }
+  callback(true);
 }
 
 void FrameImpl::DidFinishLoad(content::RenderFrameHost* render_frame_host,
@@ -298,27 +378,142 @@ void FrameImpl::DidFinishLoad(content::RenderFrameHost* render_frame_host,
                              &pending_navigation_event_);
   cached_navigation_state_ = std::move(current_navigation_state);
 
-  if (pending_navigation_event_is_dirty_ &&
-      !waiting_for_navigation_event_ack_) {
-    MaybeSendNavigationEvent();
-  }
+  MaybeSendNavigationEvent();
 }
 
 void FrameImpl::MaybeSendNavigationEvent() {
-  if (pending_navigation_event_is_dirty_) {
-    pending_navigation_event_is_dirty_ = false;
-    waiting_for_navigation_event_ack_ = true;
-
-    // Send the event to the observer and, upon acknowledgement, revisit this
-    // function to send another update.
-    navigation_observer_->OnNavigationStateChanged(
-        std::move(pending_navigation_event_),
-        [this]() { MaybeSendNavigationEvent(); });
+  if (!navigation_observer_)
     return;
-  } else {
-    // No more changes to report.
-    waiting_for_navigation_event_ack_ = false;
+
+  if (!pending_navigation_event_is_dirty_ ||
+      waiting_for_navigation_event_ack_) {
+    return;
   }
+
+  pending_navigation_event_is_dirty_ = false;
+  waiting_for_navigation_event_ack_ = true;
+
+  // Send the event to the observer and, upon acknowledgement, revisit this
+  // function to send another update.
+  navigation_observer_->OnNavigationStateChanged(
+      std::move(pending_navigation_event_), [this]() {
+        waiting_for_navigation_event_ack_ = false;
+        MaybeSendNavigationEvent();
+      });
+}
+
+void FrameImpl::ReadyToCommitNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (before_load_scripts_.empty())
+    return;
+
+  if (!navigation_handle->IsInMainFrame() ||
+      navigation_handle->IsSameDocument() || navigation_handle->IsErrorPage())
+    return;
+
+  mojom::OnLoadScriptInjectorAssociatedPtr before_load_script_injector;
+  navigation_handle->GetRenderFrameHost()
+      ->GetRemoteAssociatedInterfaces()
+      ->GetInterface(&before_load_script_injector);
+
+  // Provision the renderer's ScriptInjector with the scripts scoped to this
+  // page's origin.
+  before_load_script_injector->ClearOnLoadScripts();
+  for (const OriginScopedScript& script : before_load_scripts_) {
+    if (IsOriginWhitelisted(navigation_handle->GetURL(), script.origins)) {
+      before_load_script_injector->AddOnLoadScript(script.script);
+    }
+  }
+}
+
+bool FrameImpl::DidAddMessageToConsole(content::WebContents* source,
+                                       int32_t level,
+                                       const base::string16& message,
+                                       int32_t line_no,
+                                       const base::string16& source_id) {
+  if (static_cast<std::underlying_type<chromium::web::LogLevel>::type>(
+          log_level_) > level) {
+    return false;
+  }
+
+  std::string message_formatted =
+      base::StringPrintf("%s:%d : %s", base::UTF16ToUTF8(source_id).data(),
+                         line_no, base::UTF16ToUTF8(message).data());
+  switch (level) {
+    case static_cast<std::underlying_type<chromium::web::LogLevel>::type>(
+        chromium::web::LogLevel::DEBUG):
+      LOG(INFO) << "debug:" << message;
+      break;
+    case static_cast<std::underlying_type<chromium::web::LogLevel>::type>(
+        chromium::web::LogLevel::INFO):
+      LOG(INFO) << "info:" << message;
+      break;
+    case static_cast<std::underlying_type<chromium::web::LogLevel>::type>(
+        chromium::web::LogLevel::WARN):
+      LOG(WARNING) << "warn:" << message;
+      break;
+    case static_cast<std::underlying_type<chromium::web::LogLevel>::type>(
+        chromium::web::LogLevel::ERROR):
+      LOG(ERROR) << "error:" << message;
+      break;
+    default:
+      DLOG(WARNING) << "Unknown log level: " << level;
+      return false;
+  }
+
+  return true;
+}
+
+FrameImpl::OriginScopedScript::OriginScopedScript(
+    std::vector<std::string> origins,
+    base::string16 script)
+    : origins(std::move(origins)), script(script) {}
+
+FrameImpl::OriginScopedScript::~OriginScopedScript() = default;
+
+void FrameImpl::PostMessage(chromium::web::WebMessage message,
+                            fidl::StringPtr target_origin,
+                            PostMessageCallback callback) {
+  constexpr char kWildcardOrigin[] = "*";
+
+  if (target_origin->empty()) {
+    callback(false);
+    return;
+  }
+
+  base::Optional<base::string16> target_origin_utf16;
+  if (*target_origin != kWildcardOrigin)
+    target_origin_utf16 = base::UTF8ToUTF16(*target_origin);
+
+  base::string16 data_utf16;
+  if (!ReadUTF8FromVMOAsUTF16(message.data, &data_utf16)) {
+    DLOG(WARNING) << "PostMessage() rejected non-UTF8 |message.data|.";
+    callback(false);
+    return;
+  }
+
+  // Include outgoing MessagePorts in the message.
+  std::vector<mojo::ScopedMessagePipeHandle> message_ports;
+  if (message.outgoing_transfer) {
+    if (!message.outgoing_transfer->is_message_port()) {
+      DLOG(WARNING) << "|outgoing_transfer| is not a MessagePort.";
+      callback(false);
+      return;
+    }
+
+    mojo::ScopedMessagePipeHandle port = MessagePortImpl::FromFidl(
+        std::move(message.outgoing_transfer->message_port()));
+    if (!port) {
+      callback(false);
+      return;
+    }
+    message_ports.push_back(std::move(port));
+  }
+
+  content::MessagePortProvider::PostMessageToFrame(
+      web_contents_.get(), base::string16(), target_origin_utf16,
+      std::move(data_utf16), std::move(message_ports));
+  callback(true);
 }
 
 }  // namespace webrunner

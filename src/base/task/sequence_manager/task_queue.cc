@@ -34,8 +34,6 @@ TaskQueue::TaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl,
                      const TaskQueue::Spec& spec)
     : impl_(std::move(impl)),
       sequence_manager_(impl_ ? impl_->GetSequenceManagerWeakPtr() : nullptr),
-      graceful_queue_shutdown_helper_(
-          impl_ ? impl_->GetGracefulQueueShutdownHelper() : nullptr),
       associated_thread_((impl_ && impl_->sequence_manager())
                              ? impl_->sequence_manager()->associated_thread()
                              : MakeRefCounted<internal::AssociatedThreadId>()),
@@ -48,8 +46,11 @@ TaskQueue::~TaskQueue() {
     return;
   if (impl_->IsUnregistered())
     return;
-  graceful_queue_shutdown_helper_->GracefullyShutdownTaskQueue(
-      TakeTaskQueueImpl());
+
+  // If we've not been unregistered then this must occur on the main thread.
+  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
+  impl_->SetOnNextWakeUpChangedCallback(RepeatingCallback<void(TimeTicks)>());
+  impl_->sequence_manager()->ShutdownTaskQueueGracefully(TakeTaskQueueImpl());
 }
 
 TaskQueue::TaskTiming::TaskTiming(bool has_wall_time, bool has_thread_time)

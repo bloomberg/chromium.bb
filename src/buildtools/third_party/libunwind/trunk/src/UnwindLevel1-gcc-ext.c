@@ -25,6 +25,10 @@
 
 #if defined(_LIBUNWIND_BUILD_ZERO_COST_APIS)
 
+#if defined(_LIBUNWIND_SUPPORT_SEH_UNWIND)
+#define private_1 private_[0]
+#endif
+
 ///  Called by __cxa_rethrow().
 _LIBUNWIND_EXPORT _Unwind_Reason_Code
 _Unwind_Resume_or_Rethrow(_Unwind_Exception *exception_object) {
@@ -33,9 +37,9 @@ _Unwind_Resume_or_Rethrow(_Unwind_Exception *exception_object) {
                        (void *)exception_object,
                        (long)exception_object->unwinder_cache.reserved1);
 #else
-  _LIBUNWIND_TRACE_API("_Unwind_Resume_or_Rethrow(ex_obj=%p), private_1=%ld",
+  _LIBUNWIND_TRACE_API("_Unwind_Resume_or_Rethrow(ex_obj=%p), private_1=%" PRIdPTR,
                        (void *)exception_object,
-                       (long)exception_object->private_1);
+                       (intptr_t)exception_object->private_1);
 #endif
 
 #if defined(_LIBUNWIND_ARM_EHABI)
@@ -92,9 +96,9 @@ _LIBUNWIND_EXPORT void *_Unwind_FindEnclosingFunction(void *pc) {
   unw_proc_info_t info;
   unw_getcontext(&uc);
   unw_init_local(&cursor, &uc);
-  unw_set_reg(&cursor, UNW_REG_IP, (unw_word_t)(long) pc);
+  unw_set_reg(&cursor, UNW_REG_IP, (unw_word_t)(intptr_t) pc);
   if (unw_get_proc_info(&cursor, &info) == UNW_ESUCCESS)
-    return (void *)(long) info.start_ip;
+    return (void *)(intptr_t) info.start_ip;
   else
     return NULL;
 }
@@ -190,14 +194,14 @@ _LIBUNWIND_EXPORT const void *_Unwind_Find_FDE(const void *pc,
   unw_proc_info_t info;
   unw_getcontext(&uc);
   unw_init_local(&cursor, &uc);
-  unw_set_reg(&cursor, UNW_REG_IP, (unw_word_t)(long) pc);
+  unw_set_reg(&cursor, UNW_REG_IP, (unw_word_t)(intptr_t) pc);
   unw_get_proc_info(&cursor, &info);
   bases->tbase = (uintptr_t)info.extra;
   bases->dbase = 0; // dbase not used on Mac OS X
   bases->func = (uintptr_t)info.start_ip;
   _LIBUNWIND_TRACE_API("_Unwind_Find_FDE(pc=%p) => %p", pc,
-                  (void *)(long) info.unwind_info);
-  return (void *)(long) info.unwind_info;
+                  (void *)(intptr_t) info.unwind_info);
+  return (void *)(intptr_t) info.unwind_info;
 }
 
 /// Returns the CFA (call frame area, or stack pointer at start of function)

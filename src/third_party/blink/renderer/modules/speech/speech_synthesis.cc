@@ -41,7 +41,7 @@
 namespace blink {
 
 SpeechSynthesis* SpeechSynthesis::Create(ExecutionContext* context) {
-  return new SpeechSynthesis(context);
+  return MakeGarbageCollected<SpeechSynthesis>(context);
 }
 
 SpeechSynthesis::SpeechSynthesis(ExecutionContext* context)
@@ -59,7 +59,7 @@ void SpeechSynthesis::SetPlatformSynthesizer(
 void SpeechSynthesis::VoicesDidChange() {
   voice_list_.clear();
   if (GetExecutionContext())
-    DispatchEvent(*Event::Create(EventTypeNames::voiceschanged));
+    DispatchEvent(*Event::Create(event_type_names::kVoiceschanged));
 }
 
 const HeapVector<Member<SpeechSynthesisVoice>>& SpeechSynthesis::getVoices() {
@@ -158,28 +158,28 @@ void SpeechSynthesis::FireEvent(const AtomicString& type,
   if (!GetElapsedTimeMillis(&millis))
     return;
 
-  SpeechSynthesisEventInit init;
-  init.setUtterance(utterance);
-  init.setCharIndex(char_index);
-  init.setElapsedTime(millis - (utterance->StartTime() * 1000.0));
-  init.setName(name);
+  SpeechSynthesisEventInit* init = SpeechSynthesisEventInit::Create();
+  init->setUtterance(utterance);
+  init->setCharIndex(char_index);
+  init->setElapsedTime(millis - (utterance->StartTime() * 1000.0));
+  init->setName(name);
   utterance->DispatchEvent(*SpeechSynthesisEvent::Create(type, init));
 }
 
 void SpeechSynthesis::FireErrorEvent(SpeechSynthesisUtterance* utterance,
-                                     unsigned long char_index,
+                                     uint32_t char_index,
                                      const String& error) {
   double millis;
   if (!GetElapsedTimeMillis(&millis))
     return;
 
-  SpeechSynthesisErrorEventInit init;
-  init.setUtterance(utterance);
-  init.setCharIndex(char_index);
-  init.setElapsedTime(millis - (utterance->StartTime() * 1000.0));
-  init.setError(error);
+  SpeechSynthesisErrorEventInit* init = SpeechSynthesisErrorEventInit::Create();
+  init->setUtterance(utterance);
+  init->setCharIndex(char_index);
+  init->setElapsedTime(millis - (utterance->StartTime() * 1000.0));
+  init->setError(error);
   utterance->DispatchEvent(
-      *SpeechSynthesisErrorEvent::Create(EventTypeNames::error, init));
+      *SpeechSynthesisErrorEvent::Create(event_type_names::kError, init));
 }
 
 void SpeechSynthesis::HandleSpeakingCompleted(
@@ -204,7 +204,7 @@ void SpeechSynthesis::HandleSpeakingCompleted(
     // generic error.
     FireErrorEvent(utterance, 0, "synthesis-failed");
   } else {
-    FireEvent(EventTypeNames::end, utterance, 0, String());
+    FireEvent(event_type_names::kEnd, utterance, 0, String());
   }
 
   // Start the next utterance if we just finished one and one was pending.
@@ -221,12 +221,12 @@ void SpeechSynthesis::BoundaryEventOccurred(
 
   switch (boundary) {
     case kSpeechWordBoundary:
-      FireEvent(EventTypeNames::boundary,
+      FireEvent(event_type_names::kBoundary,
                 static_cast<SpeechSynthesisUtterance*>(utterance->Client()),
                 char_index, word_boundary_string);
       break;
     case kSpeechSentenceBoundary:
-      FireEvent(EventTypeNames::boundary,
+      FireEvent(event_type_names::kBoundary,
                 static_cast<SpeechSynthesisUtterance*>(utterance->Client()),
                 char_index, sentence_boundary_string);
       break;
@@ -238,7 +238,7 @@ void SpeechSynthesis::BoundaryEventOccurred(
 void SpeechSynthesis::DidStartSpeaking(
     PlatformSpeechSynthesisUtterance* utterance) {
   if (utterance->Client())
-    FireEvent(EventTypeNames::start,
+    FireEvent(event_type_names::kStart,
               static_cast<SpeechSynthesisUtterance*>(utterance->Client()), 0,
               String());
 }
@@ -247,7 +247,7 @@ void SpeechSynthesis::DidPauseSpeaking(
     PlatformSpeechSynthesisUtterance* utterance) {
   is_paused_ = true;
   if (utterance->Client())
-    FireEvent(EventTypeNames::pause,
+    FireEvent(event_type_names::kPause,
               static_cast<SpeechSynthesisUtterance*>(utterance->Client()), 0,
               String());
 }
@@ -256,7 +256,7 @@ void SpeechSynthesis::DidResumeSpeaking(
     PlatformSpeechSynthesisUtterance* utterance) {
   is_paused_ = false;
   if (utterance->Client())
-    FireEvent(EventTypeNames::resume,
+    FireEvent(event_type_names::kResume,
               static_cast<SpeechSynthesisUtterance*>(utterance->Client()), 0,
               String());
 }
@@ -283,7 +283,7 @@ SpeechSynthesisUtterance* SpeechSynthesis::CurrentSpeechUtterance() const {
 }
 
 const AtomicString& SpeechSynthesis::InterfaceName() const {
-  return EventTargetNames::SpeechSynthesis;
+  return event_target_names::kSpeechSynthesis;
 }
 
 void SpeechSynthesis::Trace(blink::Visitor* visitor) {

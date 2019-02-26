@@ -8,9 +8,15 @@
 #include "content/public/common/web_preferences.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
+#include "content/public/renderer/v8_value_converter.h"
 #include "gin/object_template_builder.h"
+#include "third_party/blink/public/web/blink.h"
+#include "third_party/blink/public/web/web_dom_message_event.h"
 #include "third_party/blink/public/web/web_element.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_plugin_container.h"
+#include "third_party/blink/public/web/web_script_source.h"
+#include "third_party/blink/public/web/web_serialized_script_value.h"
 #include "third_party/re2/src/re2/re2.h"
 
 namespace plugins {
@@ -109,6 +115,27 @@ void PluginPlaceholderBase::HideCallback() {
   content::RenderThread::Get()->RecordAction(
       base::UserMetricsAction("Plugin_Hide_Click"));
   HidePlugin();
+}
+
+void PluginPlaceholderBase::NotifyPlaceholderReadyForTestingCallback() {
+  if (!plugin())
+    return;
+
+  // Set an attribute and post an event, so browser tests can wait for the
+  // placeholder to be ready to receive simulated user input.
+  blink::WebElement element = plugin()->Container()->GetElement();
+  element.SetAttribute("placeholderReady", "true");
+
+  base::Value value("placeholderReady");
+  blink::WebSerializedScriptValue message_data =
+      blink::WebSerializedScriptValue::Serialize(
+          blink::MainThreadIsolate(),
+          content::V8ValueConverter::Create()->ToV8Value(
+              &value,
+              element.GetDocument().GetFrame()->MainWorldScriptContext()));
+  blink::WebDOMMessageEvent msg_event(message_data);
+
+  plugin()->Container()->EnqueueMessageEvent(msg_event);
 }
 
 void PluginPlaceholderBase::OnDestruct() {}

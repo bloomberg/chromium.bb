@@ -5,6 +5,7 @@
 #include "content/browser/loader/prefetch_url_loader_service.h"
 
 #include "base/feature_list.h"
+#include "base/time/default_tick_clock.h"
 #include "content/browser/loader/prefetch_url_loader.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/public/browser/content_browser_client.h"
@@ -38,7 +39,8 @@ struct PrefetchURLLoaderService::BindContext {
 
 PrefetchURLLoaderService::PrefetchURLLoaderService()
     : signed_exchange_prefetch_metric_recorder_(
-          base::MakeRefCounted<SignedExchangePrefetchMetricRecorder>()) {}
+          base::MakeRefCounted<SignedExchangePrefetchMetricRecorder>(
+              base::DefaultTickClock::GetInstance())) {}
 
 void PrefetchURLLoaderService::InitializeResourceContext(
     ResourceContext* resource_context,

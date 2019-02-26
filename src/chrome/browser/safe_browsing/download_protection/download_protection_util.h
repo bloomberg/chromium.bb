@@ -10,6 +10,7 @@
 #include "base/callback_list.h"
 #include "components/download/public/common/download_item.h"
 #include "components/safe_browsing/proto/csd.pb.h"
+#include "net/cert/x509_certificate.h"
 
 namespace safe_browsing {
 
@@ -114,6 +115,14 @@ typedef std::unique_ptr<PPAPIDownloadRequestCallbackList::Subscription>
     PPAPIDownloadRequestSubscription;
 
 void RecordCountOfWhitelistedDownload(WhitelistType type);
+
+// Given a certificate and its immediate issuer certificate, generates the
+// list of strings that need to be checked against the download whitelist to
+// determine whether the certificate is whitelisted.
+void GetCertificateWhitelistStrings(
+    const net::X509Certificate& certificate,
+    const net::X509Certificate& issuer,
+    std::vector<std::string>* whitelist_strings);
 
 }  // namespace safe_browsing
 

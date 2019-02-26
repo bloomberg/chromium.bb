@@ -77,9 +77,7 @@ BaseBlockingPage::CreateDefaultDisplayOptions(
       IsMainPageLoadBlocked(unsafe_resources),
       false,                 // kSafeBrowsingExtendedReportingOptInAllowed
       false,                 // is_off_the_record
-      false,                 // is_unified_consent_enabled
       false,                 // is_extended_reporting
-      false,                 // is_scout
       false,                 // is_sber_policy_managed
       false,                 // kSafeBrowsingProceedAnywayDisabled
       false,                 // should_open_links_in_new_tab
@@ -380,11 +378,12 @@ void BaseBlockingPage::set_sb_error_ui(
 
 // static
 bool BaseBlockingPage::ShouldReportThreatDetails(SBThreatType threat_type) {
-  return threat_type == SB_THREAT_TYPE_URL_PHISHING ||
-         threat_type == SB_THREAT_TYPE_URL_MALWARE ||
-         threat_type == SB_THREAT_TYPE_URL_UNWANTED ||
+  return threat_type == SB_THREAT_TYPE_BILLING ||
+         threat_type == SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE ||
          threat_type == SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING ||
-         threat_type == SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE;
+         threat_type == SB_THREAT_TYPE_URL_MALWARE ||
+         threat_type == SB_THREAT_TYPE_URL_PHISHING ||
+         threat_type == SB_THREAT_TYPE_URL_UNWANTED;
 }
 
 }  // namespace safe_browsing

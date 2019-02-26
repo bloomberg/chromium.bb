@@ -6,10 +6,9 @@ module service_manager.mojom;
 
 const string kServiceName = "service_manager";
 
-// TODO(beng): Determine who (if anyone) uses kRootUserID.
-const string kRootUserID = "505C0EE9-3013-43C0-82B0-A84F50CF8D84";
-const string kInheritUserID = "D26290E4-4485-4EAE-81A2-66D1EEB40A9D";
-const uint32 kInvalidInstanceID = 0;
+// High and low parts of the default system instance group ID.
+const uint64 kSystemInstanceGroupHigh = 0xE90E5C501330C043;
+const uint64 kSystemInstanceGroupLow = 0x82B0A84F50CF8D84;
 
 // TODO(rockot): Remove this. It's here to force the ":constants" GN target to
 // emit at least one symbol in the shared sources library, which is a

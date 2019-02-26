@@ -721,15 +721,6 @@ ChromeClient* VisualViewport::GetChromeClient() const {
   return &GetPage().GetChromeClient();
 }
 
-bool VisualViewport::ShouldUseIntegerScrollOffset() const {
-  LocalFrame* frame = MainFrame();
-  if (frame && frame->GetSettings() &&
-      !frame->GetSettings()->GetPreferCompositingToLCDTextEnabled())
-    return true;
-
-  return ScrollableArea::ShouldUseIntegerScrollOffset();
-}
-
 void VisualViewport::SetScrollOffset(const ScrollOffset& offset,
                                      ScrollType scroll_type,
                                      ScrollBehavior scroll_behavior) {

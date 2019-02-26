@@ -128,7 +128,9 @@ namespace base {
 // this data directly (rather than in a separate object on the heap) to support
 // constexpr-compatible TaskTraits construction.
 struct BASE_EXPORT TaskTraitsExtensionStorage {
-  static constexpr size_t kStorageSize = 8;  // bytes
+  // Size in bytes.
+  // Keep in sync with org.chromium.base.task.TaskTraits.EXTENSION_STORAGE_SIZE
+  static constexpr size_t kStorageSize = 8;
 
   inline constexpr TaskTraitsExtensionStorage();
   inline constexpr TaskTraitsExtensionStorage(
@@ -146,11 +148,13 @@ struct BASE_EXPORT TaskTraitsExtensionStorage {
   inline bool operator==(const TaskTraitsExtensionStorage& other) const;
 
   enum ExtensionId : uint8_t {
+    // Keep in sync with org.chromium.base.task.TaskTraits.INVALID_EXTENSION_ID
     kInvalidExtensionId = 0,
     // The embedder is responsible for assigning the remaining values uniquely.
     kFirstEmbedderExtensionId = 1,
     // Maximum number of extension types is artificially limited to support
     // super efficient TaskExecutor lookup in post_task.cc.
+    // Keep in sync with org.chromium.base.TaskTraits.MAX_EXTENSION_ID
     kMaxExtensionId = 4
   };
 

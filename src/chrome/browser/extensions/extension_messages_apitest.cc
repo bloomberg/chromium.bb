@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/base64.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -34,11 +35,11 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/crx_file/id_util.h"
-#include "components/network_session_configurator/common/network_features.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_registrar.h"
@@ -63,71 +64,12 @@
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 #include "extensions/test/test_extension_dir.h"
-#include "net/cert/asn1_util.h"
-#include "net/cert/jwk_serializer.h"
 #include "net/dns/mock_host_resolver.h"
-#include "net/ssl/channel_id_service.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
 namespace extensions {
 namespace {
-
-void GotDomainBoundCert(base::WaitableEvent* waitable_event, int status) {
-  ASSERT_EQ(net::OK, status);
-  waitable_event->Signal();
-}
-
-void CreateDomainBoundCertOnIOThread(
-    base::WaitableEvent* waitable_event,
-    std::unique_ptr<crypto::ECPrivateKey>* channel_id_key,
-    net::ChannelIDService::Request* request,
-    const GURL& url,
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  net::ChannelIDService* channel_id_service =
-      request_context_getter->GetURLRequestContext()->channel_id_service();
-  if (!channel_id_service) {
-    waitable_event->Signal();
-    return;
-  }
-  int status = channel_id_service->GetOrCreateChannelID(
-      url.host(), channel_id_key,
-      base::BindRepeating(&GotDomainBoundCert, waitable_event), request);
-  if (status == net::ERR_IO_PENDING)
-    return;
-  GotDomainBoundCert(waitable_event, status);
-}
-
-// Creates a TLS channel id for the given |url| for the request context
-// retrieved from |request_context_getter|.
-std::string CreateTlsChannelId(
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
-    const GURL& url) {
-  std::unique_ptr<crypto::ECPrivateKey> channel_id_key;
-  net::ChannelIDService::Request request;
-  base::WaitableEvent waitable_event(
-      base::WaitableEvent::ResetPolicy::AUTOMATIC,
-      base::WaitableEvent::InitialState::NOT_SIGNALED);
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(&CreateDomainBoundCertOnIOThread, &waitable_event,
-                     &channel_id_key, &request, url, request_context_getter));
-  waitable_event.Wait();
-  // Create the expected value.
-  std::vector<uint8_t> spki_vector;
-  if (!channel_id_key || !channel_id_key->ExportPublicKey(&spki_vector))
-    return std::string();
-  base::StringPiece spki(reinterpret_cast<char*>(spki_vector.data()),
-                         spki_vector.size());
-  base::DictionaryValue jwk_value;
-  net::JwkSerializer::ConvertSpkiFromDerToJwk(spki, &jwk_value);
-  std::string tls_channel_id_value;
-  base::JSONWriter::Write(jwk_value, &tls_channel_id_value);
-  return tls_channel_id_value;
-}
 
 class MessageSender : public content::NotificationObserver {
  public:
@@ -280,6 +222,13 @@ IN_PROC_BROWSER_TEST_P(MessagingApiTest, MessagingInterstitial) {
   if (content::AreAllSitesIsolatedForTesting())
     return;
 #endif
+  // TODO(carlosil): Completely remove this test once committed interstitials
+  // fully launch.
+  // With committed interstitials enabled, interstitials are no longer a
+  // special case, and do have a web contents, so the special conditions
+  // that are checked in this test no longer apply.
+  if (base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials))
+    return;
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
   ASSERT_TRUE(https_server.Start());
@@ -1147,13 +1096,8 @@ IN_PROC_BROWSER_TEST_P(ExternallyConnectableMessagingTest, FromPopup) {
 // that can connect to it, with a TLS channel ID having been generated.
 IN_PROC_BROWSER_TEST_P(ExternallyConnectableMessagingTest,
                        WebConnectableWithNonEmptyTlsChannelId) {
-  std::string expected_tls_channel_id_value =
-      CreateTlsChannelId(profile()->GetRequestContext(), chromium_org_url());
-  bool expect_empty_id = false;
-  if (!base::FeatureList::IsEnabled(::features::kChannelID)) {
-    expected_tls_channel_id_value = "";
-    expect_empty_id = true;
-  }
+  std::string expected_tls_channel_id_value;
+  bool expect_empty_id = true;
 
   scoped_refptr<const Extension> chromium_connectable =
       LoadChromiumConnectableExtensionWithTlsChannelId();
@@ -1211,7 +1155,6 @@ class ExternallyConnectableMessagingTestNoChannelID
   ~ExternallyConnectableMessagingTestNoChannelID() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    scoped_feature_list_.InitAndDisableFeature(::features::kChannelID);
     ExternallyConnectableMessagingTest::SetUpCommandLine(command_line);
   }
 
@@ -1223,8 +1166,7 @@ class ExternallyConnectableMessagingTestNoChannelID
 
 IN_PROC_BROWSER_TEST_P(ExternallyConnectableMessagingTestNoChannelID,
                        TlsChannelIdEmptyWhenDisabled) {
-  std::string expected_tls_channel_id_value =
-      CreateTlsChannelId(profile()->GetRequestContext(), chromium_org_url());
+  std::string expected_tls_channel_id_value;
 
   scoped_refptr<const Extension> chromium_connectable =
       LoadChromiumConnectableExtensionWithTlsChannelId();
@@ -1255,8 +1197,7 @@ INSTANTIATE_TEST_CASE_P(JavaScriptBindingsNoChannelID,
 IN_PROC_BROWSER_TEST_P(
     ExternallyConnectableMessagingTest,
     DISABLED_WebConnectableWithNonEmptyTlsChannelIdAndClosedBackgroundPage) {
-  std::string expected_tls_channel_id_value =
-      CreateTlsChannelId(profile()->GetRequestContext(), chromium_org_url());
+  std::string expected_tls_channel_id_value;
 
   scoped_refptr<const Extension> chromium_connectable =
       LoadChromiumConnectableExtensionWithTlsChannelId();
@@ -1467,12 +1408,8 @@ IN_PROC_BROWSER_TEST_P(MessagingApiTest,
 
   // Add a TLS channel id for the app's origin in the app's storage partition.
   GURL background_url = platform_app->GetResourceURL("background.js");
-  std::string tls_channel_id = CreateTlsChannelId(
-      app_storage_partition->GetURLRequestContext(), background_url);
+  std::string tls_channel_id("undefined");
   ASSERT_FALSE(tls_channel_id.empty());
-  if (!base::FeatureList::IsEnabled(::features::kChannelID)) {
-    tls_channel_id = "undefined";
-  }
 
   // Load up an extension that the app can message, which we will use to
   // verify the TLS channel id sent to the message listener.

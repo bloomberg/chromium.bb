@@ -20,6 +20,9 @@ const char kSwitchValueFalse[] = "false";
 // Default is "https://clients2.google.com/cr/staging_report" for non prod.
 const char kCrashServerUrl[] = "crash-server-url";
 
+// Switch to disable Crash reporting
+const char kDisableCrashReporter[] = "disable-crash-reporter";
+
 // Enable file accesses. It should not be enabled for most Cast devices.
 const char kEnableLocalFileAccesses[] = "enable-local-file-accesses";
 

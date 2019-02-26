@@ -5,7 +5,9 @@
 #include "ash/assistant/assistant_notification_controller.h"
 
 #include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/util/deep_link_util.h"
 #include "ash/new_window_controller.h"
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/shell.h"
@@ -54,16 +56,27 @@ class AssistantNotificationDelegate
 
   void Click(const base::Optional<int>& button_index,
              const base::Optional<base::string16>& reply) override {
+    const auto& action_url =
+        button_index.has_value()
+            ? notification_->buttons[button_index.value()]->action_url
+            : notification_->action_url;
     // Open the action url if it is valid.
-    if (notification_->action_url.is_valid() && assistant_controller_) {
-      assistant_controller_->OpenUrl(notification_->action_url);
+    if (action_url.is_valid() &&
+        (action_url.SchemeIsHTTPOrHTTPS() ||
+         assistant::util::IsDeepLinkUrl(action_url)) &&
+        assistant_controller_) {
+      assistant_controller_->OpenUrl(action_url);
+      Close(/*by_user=*/true);
       return;
     }
 
     if (notification_controller_) {
-      // TODO(wutao): support buttons with different |action_index|.
+      // Action index 0 is the top level action and the first button's action
+      // index is 1.
+      const int action_index =
+          button_index.has_value() ? button_index.value() + 1 : 0;
       notification_controller_->RetrieveNotification(notification_.Clone(),
-                                                     /*action_index=*/0);
+                                                     action_index);
     }
   }
 
@@ -86,7 +99,7 @@ std::string GetNotificationId(const std::string& grouping_key) {
 
 message_center::NotifierId GetNotifierId() {
   return message_center::NotifierId(
-      message_center::NotifierId::SYSTEM_COMPONENT, kNotifierAssistant);
+      message_center::NotifierType::SYSTEM_COMPONENT, kNotifierAssistant);
 }
 
 }  // namespace
@@ -138,13 +151,17 @@ void AssistantNotificationController::OnShowNotification(
 
   message_center::MessageCenter* message_center =
       message_center::MessageCenter::Get();
-  message_center::RichNotificationData optional_field;
+  message_center::RichNotificationData data;
+  for (const auto& button : notification->buttons) {
+    data.buttons.push_back(
+        message_center::ButtonInfo(base::UTF8ToUTF16(button->label)));
+  }
 
   std::unique_ptr<message_center::Notification> system_notification =
-      message_center::Notification::CreateSystemNotification(
+      ash::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE,
           GetNotificationId(notification->grouping_key), title, message,
-          display_source, GURL(), notifier_id_, optional_field,
+          display_source, GURL(), notifier_id_, data,
           new AssistantNotificationDelegate(weak_factory_.GetWeakPtr(),
                                             assistant_controller_->GetWeakPtr(),
                                             notification.Clone()),

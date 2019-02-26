@@ -195,6 +195,47 @@ class LitePage(IntegrationTest):
       self.assertEqual(1, btf_response)
       self.assertGreater(1, image_responses)
 
+  # Tests that the stale previews UI is shown on a stale Lite page.
+  @AndroidOnly
+  @ChromeVersionEqualOrAfterM(65)
+  def testStaleLitePageNano(self):
+    # If it was attempted to run with another experiment, skip this test.
+    if common.ParseFlags().browser_args and ('--data-reduction-proxy-experiment'
+        in common.ParseFlags().browser_args):
+      self.skipTest('This test cannot be run with other experiments.')
+    with TestDriver() as test_driver:
+      test_driver.AddChromeArg('--enable-spdy-proxy-auth')
+      test_driver.AddChromeArg('--enable-features='
+                               'Previews,DataReductionProxyDecidesTransform')
+      test_driver.AddChromeArg('--force-effective-connection-type=2G')
+      # Set exp=client_test_nano to force Lite page response.
+      test_driver.AddChromeArg(
+        '--data-reduction-proxy-experiment=client_test_nano')
+      # LoadURL waits for onLoadFinish so the Previews UI will be showing by
+      # then since it's triggered on commit.
+      test_driver.LoadURL(
+        'http://check.googlezip.net/cacheable/test.html?age_seconds=360')
+
+      histogram = test_driver.GetHistogram(
+        'Previews.StalePreviewTimestampShown')
+      self.assertEqual(1, histogram['count'])
+      # Check that there is a single entry in the 'Timestamp Shown' bucket.
+      self.assertEqual(
+        {'count': 1, 'high': 1, 'low': 0},
+        histogram['buckets'][0])
+
+      # Go to a non stale page and check that the stale timestamp is not shown.
+      test_driver.LoadURL(
+        'http://check.googlezip.net/cacheable/test.html?age_seconds=0')
+
+      histogram = test_driver.GetHistogram(
+        'Previews.StalePreviewTimestampShown')
+      # Check that there is still a single entry in the 'Timestamp Shown'
+      # bucket.
+      self.assertEqual(
+        {'count': 1, 'high': 1, 'low': 0},
+        histogram['buckets'][0])
+
   # Lo-Fi fallback is not supported without the
   # DataReductionProxyDecidesTransform feature. Check that no Lo-Fi response
   # is received if a Lite Page is not served.

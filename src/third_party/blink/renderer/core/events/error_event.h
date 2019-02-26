@@ -46,30 +46,37 @@ class ErrorEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static ErrorEvent* Create() { return new ErrorEvent; }
+  static ErrorEvent* Create() { return MakeGarbageCollected<ErrorEvent>(); }
   static ErrorEvent* Create(const String& message,
                             std::unique_ptr<SourceLocation> location,
                             DOMWrapperWorld* world) {
-    return new ErrorEvent(message, std::move(location), ScriptValue(), world);
+    return MakeGarbageCollected<ErrorEvent>(message, std::move(location),
+                                            ScriptValue(), world);
   }
 
   static ErrorEvent* Create(const String& message,
                             std::unique_ptr<SourceLocation> location,
                             ScriptValue error,
                             DOMWrapperWorld* world) {
-    return new ErrorEvent(message, std::move(location), error, world);
+    return MakeGarbageCollected<ErrorEvent>(message, std::move(location), error,
+                                            world);
   }
 
   static ErrorEvent* Create(ScriptState* script_state,
                             const AtomicString& type,
-                            const ErrorEventInit& initializer) {
-    return new ErrorEvent(script_state, type, initializer);
+                            const ErrorEventInit* initializer) {
+    return MakeGarbageCollected<ErrorEvent>(script_state, type, initializer);
   }
-  static ErrorEvent* CreateSanitizedError(DOMWrapperWorld* world) {
-    return new ErrorEvent("Script error.",
-                          SourceLocation::Create(String(), 0, 0, nullptr),
-                          ScriptValue(), world);
-  }
+
+  // Creates an error for a script whose errors are muted.
+  static ErrorEvent* CreateSanitizedError(ScriptState* script_state);
+
+  ErrorEvent();
+  ErrorEvent(const String& message,
+             std::unique_ptr<SourceLocation>,
+             ScriptValue error,
+             DOMWrapperWorld*);
+  ErrorEvent(ScriptState*, const AtomicString&, const ErrorEventInit*);
   ~ErrorEvent() override;
 
   // As 'message' is exposed to JavaScript, never return unsanitizedMessage.
@@ -98,13 +105,6 @@ class ErrorEvent final : public Event {
   void Trace(blink::Visitor*) override;
 
  private:
-  ErrorEvent();
-  ErrorEvent(const String& message,
-             std::unique_ptr<SourceLocation>,
-             ScriptValue error,
-             DOMWrapperWorld*);
-  ErrorEvent(ScriptState*, const AtomicString&, const ErrorEventInit&);
-
   String unsanitized_message_;
   String sanitized_message_;
   std::unique_ptr<SourceLocation> location_;

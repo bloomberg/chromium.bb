@@ -37,6 +37,7 @@ typedef (File or USVString) FormDataEntryValue;
 // append/set null values instead of throwing. https://crbug.com/561338
 [
     Constructor(optional HTMLFormElement form),
+    RaisesException=Constructor,
     Exposed=(Window,Worker),
     LegacyInterfaceTypeChecking
 ] interface FormData {

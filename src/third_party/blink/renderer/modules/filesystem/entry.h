@@ -48,6 +48,8 @@ class MODULES_EXPORT Entry : public EntryBase {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  Entry(DOMFileSystemBase*, const String& full_path);
+
   DOMFileSystem* filesystem() const {
     return static_cast<DOMFileSystem*>(file_system_.Get());
   }
@@ -75,9 +77,6 @@ class MODULES_EXPORT Entry : public EntryBase {
   String toURL(ScriptState*) const;
 
   void Trace(blink::Visitor*) override;
-
- protected:
-  Entry(DOMFileSystemBase*, const String& full_path);
 };
 
 }  // namespace blink

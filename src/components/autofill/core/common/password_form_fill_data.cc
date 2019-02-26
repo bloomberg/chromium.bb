@@ -7,6 +7,7 @@
 #include <tuple>
 
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "components/autofill/core/common/form_field_data.h"
 
 namespace autofill {
@@ -38,6 +39,12 @@ void InitPasswordFormFillData(
   password_field.value = preferred_match->password_value;
   password_field.unique_renderer_id = form_on_page.password_element_renderer_id;
   password_field.form_control_type = "password";
+
+// On iOS, use the unique_id field to refer to elements.
+#if defined(OS_IOS)
+  username_field.unique_id = form_on_page.username_element;
+  password_field.unique_id = form_on_page.password_element;
+#endif
 
   // Fill basic form data.
   result->form_renderer_id = form_on_page.form_data.unique_renderer_id;

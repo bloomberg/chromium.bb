@@ -17,13 +17,14 @@ class KeyframeStyleRuleCSSStyleDeclaration final
   static KeyframeStyleRuleCSSStyleDeclaration* Create(
       MutableCSSPropertyValueSet& property_set,
       CSSKeyframeRule* parent_rule) {
-    return new KeyframeStyleRuleCSSStyleDeclaration(property_set, parent_rule);
+    return MakeGarbageCollected<KeyframeStyleRuleCSSStyleDeclaration>(
+        property_set, parent_rule);
   }
 
- private:
   KeyframeStyleRuleCSSStyleDeclaration(MutableCSSPropertyValueSet&,
                                        CSSKeyframeRule*);
 
+ private:
   void DidMutate(MutationType) override;
   bool IsKeyframeStyle() const final { return true; }
 };

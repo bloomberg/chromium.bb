@@ -31,7 +31,13 @@ namespace {
 
 using UkmEntry = ukm::builders::LookalikeUrl_NavigationSuggestion;
 
-enum class FeatureTestState { kDisabled, kEnabledWithoutUI, kEnabledWithUI };
+enum class FeatureTestState { kDisabled, kEnabled };
+
+// An engagement score above MEDIUM.
+const int kHighEngagement = 20;
+
+// An engagement score below MEDIUM.
+const int kLowEngagement = 1;
 
 struct SiteEngagementTestCase {
   const char* const navigated;
@@ -58,13 +64,12 @@ class LookalikeUrlNavigationObserverBrowserTest
       public testing::WithParamInterface<FeatureTestState> {
  protected:
   void SetUp() override {
-    if (GetParam() == FeatureTestState::kEnabledWithoutUI) {
-      feature_list_.InitAndEnableFeatureWithParameters(
-          features::kLookalikeUrlNavigationSuggestions,
-          {{"metrics_only", "true"}});
-    } else if (GetParam() == FeatureTestState::kEnabledWithUI) {
+    if (GetParam() == FeatureTestState::kEnabled) {
       feature_list_.InitAndEnableFeature(
-          features::kLookalikeUrlNavigationSuggestions);
+          features::kLookalikeUrlNavigationSuggestionsUI);
+    } else {
+      feature_list_.InitAndDisableFeature(
+          features::kLookalikeUrlNavigationSuggestionsUI);
     }
     InProcessBrowserTest::SetUp();
   }
@@ -177,10 +182,9 @@ class LookalikeUrlNavigationObserverBrowserTest
 INSTANTIATE_TEST_CASE_P(,
                         LookalikeUrlNavigationObserverBrowserTest,
                         ::testing::Values(FeatureTestState::kDisabled,
-                                          FeatureTestState::kEnabledWithoutUI,
-                                          FeatureTestState::kEnabledWithUI));
+                                          FeatureTestState::kEnabled));
 
-// Navigating to a non-IDN shouldn't show an infobar.
+// Navigating to a non-IDN shouldn't show an infobar or record metrics.
 IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
                        NonIdn_NoInfobar) {
   TestInfobarNotShown(
@@ -189,7 +193,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
 }
 
 // Navigating to a domain whose visual representation does not look like a
-// top domain shouldn't show an infobar.
+// top domain shouldn't show an infobar or record metrics.
 IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
                        NonTopDomainIdn_NoInfobar) {
   TestInfobarNotShown(
@@ -197,96 +201,36 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
   CheckNoUkm();
 }
 
-// Navigating to a domain whose visual representation looks like a top domain
-// should show a "Did you mean to go to ..." infobar and record metrics.
-IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
-                       TopDomainIdn_Infobar) {
-  if (GetParam() != FeatureTestState::kEnabledWithUI)
-    return;
-
-  base::HistogramTester histograms;
-
-  const GURL kNavigatedUrl =
-      embedded_test_server()->GetURL("googlé.com", "/title1.html");
-
-  TestInfobarShown(kNavigatedUrl,
-                   embedded_test_server()->GetURL(
-                       "google.com", "/title1.html") /* suggested */);
-
-  histograms.ExpectTotalCount(LookalikeUrlNavigationObserver::kHistogramName,
-                              3);
-  histograms.ExpectBucketCount(
-      LookalikeUrlNavigationObserver::kHistogramName,
-      LookalikeUrlNavigationObserver::NavigationSuggestionEvent::kInfobarShown,
-      1);
-  histograms.ExpectBucketCount(
-      LookalikeUrlNavigationObserver::kHistogramName,
-      LookalikeUrlNavigationObserver::NavigationSuggestionEvent::kLinkClicked,
-      1);
-  histograms.ExpectBucketCount(
-      LookalikeUrlNavigationObserver::kHistogramName,
-      LookalikeUrlNavigationObserver::NavigationSuggestionEvent::kMatchTopSite,
-      1);
-  CheckUkm({kNavigatedUrl},
-           LookalikeUrlNavigationObserver::MatchType::kTopSite);
-}
-
-// Same as TopDomainIdn_Infobar but the UI is disabled, so only checks for
-// metrics.
-IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
-                       TopDomainIdn_Metrics_NoInfobar) {
-  if (GetParam() != FeatureTestState::kEnabledWithoutUI)
-    return;
-
-  base::HistogramTester histograms;
-  const GURL kNavigatedUrl =
-      embedded_test_server()->GetURL("googlé.com", "/title1.html");
-
-  TestInfobarNotShown(kNavigatedUrl);
-
-  histograms.ExpectTotalCount(LookalikeUrlNavigationObserver::kHistogramName,
-                              1);
-  histograms.ExpectBucketCount(
-      LookalikeUrlNavigationObserver::kHistogramName,
-      LookalikeUrlNavigationObserver::NavigationSuggestionEvent::kMatchTopSite,
-      1);
-  CheckUkm({kNavigatedUrl},
-           LookalikeUrlNavigationObserver::MatchType::kTopSite);
-}
-
-// Same as TopDomainIdn_Infobar but the user has engaged with the domain before.
-// Shouldn't show an infobar.
+// If the user has engaged with the domain before, metrics shouldn't be recorded
+// and the infobar shouldn't be shown, even if the domain is visually similar
+// to a top domain.
 IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
                        TopDomainIdn_EngagedSite_NoInfobar) {
-  // If the user already engaged with the site, the infobar shouldn't be shown.
   const GURL url = embedded_test_server()->GetURL("googlé.com", "/title1.html");
-  SetSiteEngagementScore(url, 20);
+  SetSiteEngagementScore(url, kHighEngagement);
   TestInfobarNotShown(url);
   CheckNoUkm();
 }
 
-// Navigating to a domain whose visual representation looks like a domain with a
-// site engagement score above a certain threshold should show a "Did you mean
-// to go to ..." infobar.
+// Navigate to a domain whose visual representation looks like a top domain.
+// This should record metrics. It should also show a "Did you mean to go to ..."
+// infobar if configured via a feature param.
 IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
-                       SiteEngagement_Infobar) {
-  if (GetParam() != FeatureTestState::kEnabledWithUI)
-    return;
+                       Idn_TopDomain_Match) {
+  base::HistogramTester histograms;
 
-  SetSiteEngagementScore(GURL("http://site1.test"), 20);
-  SetSiteEngagementScore(GURL("http://www.site2.test"), 20);
-  SetSiteEngagementScore(GURL("http://sité3.test"), 20);
-  SetSiteEngagementScore(GURL("http://www.sité4.test"), 20);
+  const GURL kNavigatedUrl =
+      embedded_test_server()->GetURL("googlé.com", "/title1.html");
 
-  std::vector<GURL> ukm_urls;
-  for (const auto& test_case : kSiteEngagementTestCases) {
-    base::HistogramTester histograms;
-    const GURL kNavigatedUrl =
-        embedded_test_server()->GetURL(test_case.navigated, "/title1.html");
-    TestInfobarShown(kNavigatedUrl, embedded_test_server()->GetURL(
-                                        test_case.suggested, "/title1.html"));
-    ukm_urls.push_back(kNavigatedUrl);
-
+  if (GetParam() == FeatureTestState::kEnabled) {
+    // Even if the navigated site has a low engagement score, it should be
+    // considered for lookalike suggestions.
+    SetSiteEngagementScore(kNavigatedUrl, kLowEngagement);
+    // If the feature is enabled, the UI will be displayed. Expect extra
+    // histogram entries for kInfobarShown and kLinkClicked events.
+    TestInfobarShown(kNavigatedUrl,
+                     embedded_test_server()->GetURL(
+                         "google.com", "/title1.html") /* suggested */);
     histograms.ExpectTotalCount(LookalikeUrlNavigationObserver::kHistogramName,
                                 3);
     histograms.ExpectBucketCount(LookalikeUrlNavigationObserver::kHistogramName,
@@ -297,57 +241,95 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
         LookalikeUrlNavigationObserver::kHistogramName,
         LookalikeUrlNavigationObserver::NavigationSuggestionEvent::kLinkClicked,
         1);
-    histograms.ExpectBucketCount(
-        LookalikeUrlNavigationObserver::kHistogramName,
-        LookalikeUrlNavigationObserver::NavigationSuggestionEvent::
-            kMatchSiteEngagement,
-        1);
+    histograms.ExpectBucketCount(LookalikeUrlNavigationObserver::kHistogramName,
+                                 LookalikeUrlNavigationObserver::
+                                     NavigationSuggestionEvent::kMatchTopSite,
+                                 1);
+  } else {
+    TestInfobarNotShown(kNavigatedUrl);
+    histograms.ExpectTotalCount(LookalikeUrlNavigationObserver::kHistogramName,
+                                1);
+    histograms.ExpectBucketCount(LookalikeUrlNavigationObserver::kHistogramName,
+                                 LookalikeUrlNavigationObserver::
+                                     NavigationSuggestionEvent::kMatchTopSite,
+                                 1);
   }
-  CheckUkm(ukm_urls,
-           LookalikeUrlNavigationObserver::MatchType::kSiteEngagement);
+
+  CheckUkm({kNavigatedUrl},
+           LookalikeUrlNavigationObserver::MatchType::kTopSite);
 }
 
-// Same as SiteEngagement_Infobar but the UI is disabled, so only checks for
-// metrics.
+// Navigate to a domain whose visual representation looks like a domain with a
+// site engagement score above a certain threshold. This should record metrics.
+// It should also show a "Did you mean to go to ..." infobar if configured via
+// a feature param.
 IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
-                       SiteEngagement_Metrics_NoInfobar) {
-  if (GetParam() != FeatureTestState::kEnabledWithoutUI)
-    return;
-
-  SetSiteEngagementScore(GURL("http://site1.test"), 20);
-  SetSiteEngagementScore(GURL("http://www.site2.test"), 20);
-  SetSiteEngagementScore(GURL("http://sité3.test"), 20);
-  SetSiteEngagementScore(GURL("http://www.sité4.test"), 20);
+                       Idn_SiteEngagement_Match) {
+  SetSiteEngagementScore(GURL("http://site1.test"), kHighEngagement);
+  SetSiteEngagementScore(GURL("http://www.site2.test"), kHighEngagement);
+  SetSiteEngagementScore(GURL("http://sité3.test"), kHighEngagement);
+  SetSiteEngagementScore(GURL("http://www.sité4.test"), kHighEngagement);
 
   std::vector<GURL> ukm_urls;
   for (const auto& test_case : kSiteEngagementTestCases) {
     base::HistogramTester histograms;
     const GURL kNavigatedUrl =
         embedded_test_server()->GetURL(test_case.navigated, "/title1.html");
-    TestInfobarNotShown(kNavigatedUrl);
-    ukm_urls.push_back(kNavigatedUrl);
+    // Even if the navigated site has a low engagement score, it should be
+    // considered for lookalike suggestions.
+    SetSiteEngagementScore(kNavigatedUrl, kLowEngagement);
 
-    histograms.ExpectTotalCount(LookalikeUrlNavigationObserver::kHistogramName,
-                                1);
-    histograms.ExpectBucketCount(
-        LookalikeUrlNavigationObserver::kHistogramName,
-        LookalikeUrlNavigationObserver::NavigationSuggestionEvent::
-            kMatchSiteEngagement,
-        1);
+    if (GetParam() == FeatureTestState::kEnabled) {
+      // If the feature is enabled, the UI will be displayed. Expect extra
+      // histogram entries for kInfobarShown and kLinkClicked events.
+      TestInfobarShown(kNavigatedUrl, embedded_test_server()->GetURL(
+                                          test_case.suggested, "/title1.html"));
+      histograms.ExpectTotalCount(
+          LookalikeUrlNavigationObserver::kHistogramName, 3);
+      histograms.ExpectBucketCount(
+          LookalikeUrlNavigationObserver::kHistogramName,
+          LookalikeUrlNavigationObserver::NavigationSuggestionEvent::
+              kInfobarShown,
+          1);
+      histograms.ExpectBucketCount(
+          LookalikeUrlNavigationObserver::kHistogramName,
+          LookalikeUrlNavigationObserver::NavigationSuggestionEvent::
+              kLinkClicked,
+          1);
+      histograms.ExpectBucketCount(
+          LookalikeUrlNavigationObserver::kHistogramName,
+          LookalikeUrlNavigationObserver::NavigationSuggestionEvent::
+              kMatchSiteEngagement,
+          1);
+    } else {
+      TestInfobarNotShown(kNavigatedUrl);
+      histograms.ExpectTotalCount(
+          LookalikeUrlNavigationObserver::kHistogramName, 1);
+      histograms.ExpectBucketCount(
+          LookalikeUrlNavigationObserver::kHistogramName,
+          LookalikeUrlNavigationObserver::NavigationSuggestionEvent::
+              kMatchSiteEngagement,
+          1);
+    }
+
+    ukm_urls.push_back(kNavigatedUrl);
   }
   CheckUkm(ukm_urls,
            LookalikeUrlNavigationObserver::MatchType::kSiteEngagement);
 }
 
-// The infobar shouldn't be shown when the feature is disabled.
 IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
-                       TopDomainIdn_FeatureDisabled) {
-  if (GetParam() != FeatureTestState::kDisabled)
-    return;
-
-  TestInfobarNotShown(
-      embedded_test_server()->GetURL("googlé.com", "/title1.html"));
-  CheckNoUkm();
+                       Idn_SiteEngagement_Match_Ignored) {
+  // Test that navigations to a site with a high engagement score shouldn't
+  // record metrics or show infobar.
+  base::HistogramTester histograms;
+  SetSiteEngagementScore(GURL("http://site5.test"), kHighEngagement);
+  const GURL high_engagement_url =
+      embedded_test_server()->GetURL("síte5.test", "/title1.html");
+  SetSiteEngagementScore(high_engagement_url, kHighEngagement);
+  TestInfobarNotShown(high_engagement_url);
+  histograms.ExpectTotalCount(LookalikeUrlNavigationObserver::kHistogramName,
+                              0);
 }
 
 // IDNs with a single label should be properly handled. There are two cases
@@ -357,9 +339,6 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
 // Neither of these should cause a crash.
 IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
                        IdnWithSingleLabelShouldNotCauseACrash) {
-  if (GetParam() != FeatureTestState::kEnabledWithUI)
-    return;
-
   base::HistogramTester histograms;
 
   // Case 1: Navigating to an IDN with a single label shouldn't cause a crash.
@@ -367,7 +346,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
 
   // Case 2: An IDN with a single label with a site engagement score shouldn't
   // cause a crash.
-  SetSiteEngagementScore(GURL("http://tést"), 20);
+  SetSiteEngagementScore(GURL("http://tést"), kHighEngagement);
   TestInfobarNotShown(
       embedded_test_server()->GetURL("tést.com", "/title1.html"));
 

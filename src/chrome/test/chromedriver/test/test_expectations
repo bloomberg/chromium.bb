@@ -12,20 +12,23 @@ import fnmatch
 
 _REVISION_NEGATIVE_FILTER = {}
 _REVISION_NEGATIVE_FILTER['HEAD'] = [
-    # marked as not yet implemented with chrome but already works
-    'ChildrenFindingTest.testShouldNotReturnRootElementWhenFindingChildrenById',
-    'ClearTest.shouldBeAbleToClearDateInput',
-    'ClearTest.shouldBeAbleToClearDatetimeLocalInput',
-    'ClearTest.shouldBeAbleToClearMonthInput',
-    'ClearTest.shouldBeAbleToClearTimeInput',
-    'ClearTest.shouldBeAbleToClearWeekInput',
-
     # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=528
     'PageLoadingTest.testShouldDoNothingIfThereIsNothingToGoBackTo',
 
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2532
     'SlowLoadingPageTest.testRefreshShouldBlockUntilPageLoads',
     'PageLoadingTest.testShouldTimeoutIfAPageTakesTooLongToRefresh',
+
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2653
+    'ReferrerTest.navigationWhenProxyInterceptsASpecificUrl',
+
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2661
+    'WindowTest.testSetsTheSizeOfTheCurrentWindowFromIframe',
+]
+
+_REVISION_READY_TO_RUN_FILTER = {}
+_REVISION_READY_TO_RUN_FILTER['HEAD'] = [
+    # marked as not yet implemented with chrome but already works
 ]
 
 _OS_NEGATIVE_FILTER = {}
@@ -34,9 +37,23 @@ _OS_NEGATIVE_FILTER['win'] = [
 _OS_NEGATIVE_FILTER['linux'] = [
 ]
 _OS_NEGATIVE_FILTER['mac'] = [
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2664
+    'WindowTest.canFullscreenTheWindow',
+    'WindowTest.testSetsTheSizeOfTheCurrentWindowFromIframe',
+    'WindowTest.testSetsTheSizeOfTheCurrentWindowFromFrame',
+    'WindowTest.canFullscreenTheWindowFromFrame',
+    'WindowTest.canFullscreenTheWindowFromIframe',
+    'WindowTest.testSetsTheSizeOfTheCurrentWindow',
+    'BasicMouseInterfaceTest.testMovingMouseByRelativeOffset',
 ]
 
 _SPECIFIC_OS_REVISION_NEGATIVE_FILTER = {}
+_SPECIFIC_OS_REVISION_NEGATIVE_FILTER['mac_69'] = [
+    # Maximize window doesn't always increase window size on Mac 69
+    'WindowTest.testCanMaximizeTheWindowFromFrame',
+    'WindowTest.testCanMaximizeTheWindowFromIframe',
+    'WindowTest.testCanMaximizeTheWindow',
+]
 
 _OS_NEGATIVE_FILTER['android:chrome'] = [
     'ChromeOptionsFunctionalTest.*',
@@ -171,6 +188,9 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
 
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2601
     'BasicKeyboardInterfaceTest.testSelectionSelectBySymbol',
+
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2611
+    'CorrectEventFiringTest.testClickAnElementThatDisappear',
 ]
 
 _OS_NEGATIVE_FILTER['android:chrome_stable'] = (
@@ -209,6 +229,11 @@ def _GetRevisionNegativeFilter(chrome_version):
     return _REVISION_NEGATIVE_FILTER[chrome_version]
   return _REVISION_NEGATIVE_FILTER['HEAD']
 
+def _GetRevisionReadyToRunFilter(chrome_version):
+  if chrome_version in _REVISION_READY_TO_RUN_FILTER:
+    return _REVISION_READY_TO_RUN_FILTER[chrome_version]
+  return _REVISION_READY_TO_RUN_FILTER['HEAD']
+
 def _GetSpecificOsRevisionNegativeFilter(operating_system, chrome_version):
   os_version = operating_system + "_" + chrome_version
   if os_version in _SPECIFIC_OS_REVISION_NEGATIVE_FILTER:
@@ -232,6 +257,8 @@ def GetDisabledTestMatchers(operating_system, chrome_version):
           _GetSpecificOsRevisionNegativeFilter(operating_system,
                                                chrome_version))[:]
 
+def GetReadyToRunTestMatchers(chrome_version):
+  return (_GetRevisionReadyToRunFilter(chrome_version))[:]
 
 def ApplyJavaTestFilter(operating_system, chrome_version, tests):
   """Applies the test filter to the given list of tests.

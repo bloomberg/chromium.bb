@@ -37,16 +37,6 @@ void WebWidgetTestProxy::Initialize(
   set_widget_test_client(interfaces->CreateWebWidgetTestClient(this));
 }
 
-blink::WebScreenInfo WebWidgetTestProxy::GetScreenInfo() {
-  blink::WebScreenInfo info = RenderWidget::GetScreenInfo();
-  blink::WebScreenInfo test_info = widget_test_client()->GetScreenInfo();
-  if (test_info.orientation_type != blink::kWebScreenOrientationUndefined) {
-    info.orientation_type = test_info.orientation_type;
-    info.orientation_angle = test_info.orientation_angle;
-  }
-  return info;
-}
-
 void WebWidgetTestProxy::ScheduleAnimation() {
   RenderWidget::ScheduleAnimation();
   widget_test_client()->ScheduleAnimation();
@@ -70,11 +60,11 @@ void WebWidgetTestProxy::SetToolTipText(const blink::WebString& text,
   widget_test_client()->SetToolTipText(text, hint);
 }
 
-void WebWidgetTestProxy::StartDragging(blink::WebReferrerPolicy policy,
+void WebWidgetTestProxy::StartDragging(network::mojom::ReferrerPolicy policy,
                                        const blink::WebDragData& data,
                                        blink::WebDragOperationsMask mask,
                                        const SkBitmap& drag_image,
-                                       const blink::WebPoint& image_offset) {
+                                       const gfx::Point& image_offset) {
   widget_test_client()->StartDragging(policy, data, mask, drag_image,
                                       image_offset);
   // Don't forward this call to RenderWidget because we don't want to do a

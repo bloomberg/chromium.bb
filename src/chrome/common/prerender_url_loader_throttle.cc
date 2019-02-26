@@ -140,7 +140,7 @@ void PrerenderURLLoaderThrottle::WillStartRequest(
 }
 
 void PrerenderURLLoaderThrottle::WillRedirectRequest(
-    const net::RedirectInfo& redirect_info,
+    net::RedirectInfo* redirect_info,
     const network::ResourceResponseHead& response_head,
     bool* defer,
     std::vector<std::string>* /* to_be_removed_headers */,
@@ -156,12 +156,12 @@ void PrerenderURLLoaderThrottle::WillRedirectRequest(
   response_head.headers->GetNormalizedHeader(
       kFollowOnlyWhenPrerenderShown, &follow_only_when_prerender_shown_header);
   // Abort any prerenders with requests which redirect to invalid schemes.
-  if (!DoesURLHaveValidScheme(redirect_info.new_url)) {
+  if (!DoesURLHaveValidScheme(redirect_info->new_url)) {
     delegate_->CancelWithError(net::ERR_ABORTED);
     canceler_getter_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(CancelPrerenderForUnsupportedScheme,
-                       std::move(canceler_getter_), redirect_info.new_url));
+                       std::move(canceler_getter_), redirect_info->new_url));
   } else if (follow_only_when_prerender_shown_header == "1" &&
              resource_type_ != content::RESOURCE_TYPE_MAIN_FRAME) {
     // Only defer redirects with the Follow-Only-When-Prerender-Shown

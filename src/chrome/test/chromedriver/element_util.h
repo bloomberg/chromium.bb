@@ -45,6 +45,11 @@ Status IsElementFocused(
     const std::string& element_id,
     bool* is_focused);
 
+Status IsDocumentTypeXml(
+    Session* session,
+    WebView* web_view,
+    bool* is_xml_document);
+
 Status GetElementAttribute(Session* session,
                            WebView* web_view,
                            const std::string& element_id,

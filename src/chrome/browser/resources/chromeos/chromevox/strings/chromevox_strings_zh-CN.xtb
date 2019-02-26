@@ -20,7 +20,6 @@
 <translation id="1087788677726983142">隐藏事件流过滤条件</translation>
 <translation id="1088219014394087294">无标题。</translation>
 <translation id="1106741348836243114">开启或关闭声音反馈（耳标）。</translation>
-<translation id="1108651818222110612">副标题</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1120938014254001895">向上滑动两根手指</translation>
 <translation id="1124771028211010580">当前显示样式为并排。</translation>
@@ -33,7 +32,7 @@
 <translation id="1177863135347784049">自定义</translation>
 <translation id="1188858454923323853">补充内容</translation>
 <translation id="1195238899008218998">后记</translation>
-<translation id="1201402288615127009">下一步</translation>
+<translation id="1201402288615127009">下一页</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1213216066620407844">ChromeVox - 为Chrome提供语音功能</translation>
 <translation id="1225437811932752266">恭喜！您已顺利学完使用 ChromeVox 所需掌握的基本知识。请记住，您随时可通过按搜索键+句点键打开 ChromeVox 命令菜单。要详细了解 ChromeVox 和 Chrome 操作系统，请阅读以下文章。
@@ -44,12 +43,15 @@
 <translation id="1251750620252348585">下一个6级标题</translation>
 <translation id="1275718070701477396">已选中</translation>
 <translation id="1286609444451033486">同时按搜索键和空格键即可切换选中状态。</translation>
+<translation id="1291286136605998134">切换按钮</translation>
+<translation id="1303806948938513162">用 4 根手指点按即可进入 ChromeVox 菜单</translation>
 <translation id="1319608975892113573">不存在上一段引用。</translation>
 <translation id="1321576897702511272">隐藏ChromeVox帮助</translation>
 <translation id="1331702245475014624">第<ph name="INDEX" />个，共<ph name="TOTAL" />个</translation>
 <translation id="1334095593597963605">字符和字词回显</translation>
 <translation id="1339428534620983148">表格上一列</translation>
 <translation id="1342835525016946179">文章标记</translation>
+<translation id="1346059596910821859">提示</translation>
 <translation id="1346748346194534595">向右</translation>
 <translation id="135978014023467274">您已更新至 ChromeVox 63！</translation>
 <translation id="136718599399906424">表格下一行</translation>
@@ -158,6 +160,7 @@
 <translation id="2422937916923936891">菜单项复选框</translation>
 <translation id="2428534162001909979">命令菜单</translation>
 <translation id="2429669115401274487">下午</translation>
+<translation id="242998846562331953">副标题</translation>
 <translation id="2435413342408885429">“<ph name="KEY" />”现已设为新的ChromeVox辅助键。</translation>
 <translation id="2450814015951372393">复选框</translation>
 <translation id="2462626033734746142">单选按钮组</translation>
@@ -193,7 +196,6 @@
 <translation id="2737520612859577214">上标的结尾</translation>
 <translation id="2749275490991666823">已选中</translation>
 <translation id="27527859628328957">跳转到下一个可设置为焦点的项</translation>
-<translation id="276402504937943375">目录</translation>
 <translation id="2770781857296573485">进入群组浏览</translation>
 <translation id="2777845298774924149">已退出</translation>
 <translation id="2781264313200109999">链接开头</translation>
@@ -237,6 +239,7 @@
 <translation id="3046838483509668188">ChromeVox选项</translation>
 <translation id="3047143736589213134">实验性按键映射</translation>
 <translation id="3060756054951570867">已打开“<ph name="TITLE" />”菜单</translation>
+<translation id="3060880924447482063">用 1 根手指向左或向右滑动即可逐项移动</translation>
 <translation id="3070245424257836917">向上滑动三根手指</translation>
 <translation id="3078345202707391975">下一个2级标题</translation>
 <translation id="3078740164268491126">表格</translation>
@@ -330,6 +333,7 @@
 <translation id="3389259863310851658">上一个表单字段</translation>
 <translation id="3390225400784126843">下一个不同元素。</translation>
 <translation id="3392045790598181549"><ph name="NAME" />，菜单项</translation>
+<translation id="3393605254399152980">拖动 1 根手指即可听取您所触摸的内容</translation>
 <translation id="3406283310380167331">显示表单列表</translation>
 <translation id="3423495725743882470">第 $1 行，第 $2 列</translation>
 <translation id="3457000393508828486">部分已按下</translation>
@@ -345,6 +349,7 @@
 <translation id="3497063866483065785">{COUNT,plural, =1{1个问号}other{#个问号}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{1个插入符号}other{#个插入符号}}</translation>
 <translation id="352577523970648069">可编辑的文本字段</translation>
+<translation id="3549680091535286226">用 2 根手指点按即可暂时关闭语音</translation>
 <translation id="3568702578574425662"><ph name="NAME" />，未选中的复选框</translation>
 <translation id="3589661172894441357">词汇表</translation>
 <translation id="3599054940393788245">非数学范畴</translation>
@@ -382,6 +387,7 @@
 <translation id="3930498801443296724">重要引述</translation>
 <translation id="3941269780691800708">说出鼠标指针下方的文字。</translation>
 <translation id="3962990492275676168">从当前位置开始读</translation>
+<translation id="3989324057180830702">切换按钮</translation>
 <translation id="4004802134384979325">已选中</translation>
 <translation id="4006140876663370126">图片</translation>
 <translation id="4038349100599457191">月份控件</translation>
@@ -395,6 +401,7 @@
 <translation id="4058278702844053247">正在加载网页</translation>
 <translation id="4065205963140826639">现在请尝试使用搜索键 + 向右箭头找到“下一个”按钮，然后按搜索键 + 空格键点击该按钮。</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{1个波浪号}other{#个波浪号}}</translation>
+<translation id="4086311032171418648">正在停止学习模式。</translation>
 <translation id="409334809956508737">上一个对象</translation>
 <translation id="4099274309791143834">包含子菜单</translation>
 <translation id="4101527861445851766">已选中的复选框</translation>
@@ -407,6 +414,7 @@
 <translation id="4166192625054637755">下标的结尾</translation>
 <translation id="4173994908659439270">不存在下一个可编辑的文本字段。</translation>
 <translation id="4176463684765177261">已停用</translation>
+<translation id="4187322598335821254">用 1 根手指向上或向下滑动即可逐行移动</translation>
 <translation id="4188530942454211480">上一个句子</translation>
 <translation id="4191918948604314587">按钮</translation>
 <translation id="419265409837491189">转到上一列</translation>
@@ -497,6 +505,7 @@
 <translation id="4877261390094455813">输入搜索查询内容。</translation>
 <translation id="4886524826165775965">第<ph name="INDEX" />项，共<ph name="TOTAL" />项</translation>
 <translation id="489907760999452556">内部链接</translation>
+<translation id="4915087353619183190">正在启动学习模式。要了解该模式的功能，请按 qwerty 键或可刷新的盲文键，也可以使用触摸手势。按 Ctrl+W 键或按 Esc 键即可退出。</translation>
 <translation id="492295894462528572">前言</translation>
 <translation id="495170559598752135">操作</translation>
 <translation id="4953585991029886728">编辑文本</translation>
@@ -692,6 +701,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{1个冒号}other{#个冒号}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />，菜单</translation>
 <translation id="6444046323172968959">提醒对话框</translation>
+<translation id="6452403590345320472">目录</translation>
 <translation id="6459511626086141404">降调按键映射</translation>
 <translation id="6468049171101508116">下一个按钮</translation>
 <translation id="646954774886932461">索引</translation>
@@ -704,6 +714,7 @@
 <translation id="6583174818554398774">后移一个朗读单位</translation>
 <translation id="6587021927234520429">不存在下一个4级标题。</translation>
 <translation id="6601344353291556895">启用详细说明。</translation>
+<translation id="6609828810966525877">若想探索更多手势，请开启学习模式或前往 Chromebook 帮助中心</translation>
 <translation id="6615602925644411249">在网页中查找。</translation>
 <translation id="6628427060004938651">部分</translation>
 <translation id="6633350132811819843">不存在下一个表格。</translation>
@@ -755,6 +766,7 @@
 要转到下一个打开的标签页，请按 Ctrl+Tab。
 要打开 Chrome 浏览器菜单，请按 Alt+F。</translation>
 <translation id="7086377898680121060">调高亮度</translation>
+<translation id="7088743565397416204">用 1 根手指连续点按两次即可激活所聚焦的项目</translation>
 <translation id="7095834689119144465">仅修改数字文本</translation>
 <translation id="7096001299300236431">上一个媒体内容</translation>
 <translation id="7116595520562830928">multln</translation>
@@ -810,6 +822,7 @@
 <translation id="7491962110804786152">标签</translation>
 <translation id="7492049978501397201">已进入对话框</translation>
 <translation id="7518543783849163354">要使 ChromeVox 暂时停止朗读功能，请按 Ctrl 键。</translation>
+<translation id="7521682724501952239">您可将 ChromeVox 与触摸屏搭配使用。</translation>
 <translation id="7532613204005497612">6月</translation>
 <translation id="7552432549459840808">实用的 Chrome 快捷键</translation>
 <translation id="7579911500627256166">点 <ph name="DOT" /></translation>
@@ -823,7 +836,6 @@
 <translation id="7625690649919402823">下一个表格</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />)，等级：<ph name="GRADE" /></translation>
 <translation id="7641134354185483015">不存在上一个3级标题。</translation>
-<translation id="7647456547678091388">提示</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />，<ph name="NAME" />，文本框</translation>
 <translation id="7663318257180412551">2级标题标记</translation>
 <translation id="7674576868851035240">下一个链接</translation>
@@ -869,6 +881,7 @@
 <translation id="8076492880354921740">标签页</translation>
 <translation id="8091452896542422286">空格</translation>
 <translation id="8110647606445335195">无ARIA地标。</translation>
+<translation id="8138880386467279117">触摸</translation>
 <translation id="8153880621934657047">不在表格内。</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{1个下划线}other{#个下划线}}</translation>
 <translation id="8179976553408161302">Enter</translation>

@@ -10,6 +10,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 # enums and constants).
 mojom("interfaces_internal") {
   visibility = [ "//ash/public/cpp:*" ]
+  disable_variants = true
 
   sources = [
     "accelerator_controller.mojom",
@@ -25,6 +26,7 @@ mojom("interfaces_internal") {
     "assistant_volume_control.mojom",
     "cast_config.mojom",
     "constants.mojom",
+    "contained_shell.mojom",
     "cros_display_config.mojom",
     "display_output_protection.mojom",
     "docked_magnifier_controller.mojom",
@@ -41,6 +43,7 @@ mojom("interfaces_internal") {
     "login_user_info.mojom",
     "media.mojom",
     "menu.mojom",
+    "multi_user_window_manager.mojom",
     "new_window.mojom",
     "night_light_controller.mojom",
     "note_taking_controller.mojom",
@@ -59,7 +62,6 @@ mojom("interfaces_internal") {
     "volume.mojom",
     "vpn_list.mojom",
     "wallpaper.mojom",
-    "web_contents_manager.mojom",
     "window_pin_type.mojom",
     "window_properties.mojom",
     "window_state_type.mojom",
@@ -72,6 +74,7 @@ mojom("interfaces_internal") {
     "//components/arc/common:notifications",
     "//components/sync/mojo:interfaces",
     "//mojo/public/mojom/base",
+    "//services/content/public/mojom",
     "//services/preferences/public/mojom",
     "//skia/public/interfaces",
     "//ui/accessibility:ax_enums_mojo",
@@ -95,7 +98,9 @@ mojom("interfaces_internal") {
 
 mojom("test_interfaces") {
   testonly = true
+  disable_variants = true
   sources = [
+    "login_screen_test_api.mojom",
     "shelf_test_api.mojom",
     "shell_test_api.mojom",
     "status_area_widget_test_api.mojom",
@@ -103,6 +108,7 @@ mojom("test_interfaces") {
     "time_to_first_present_recorder_test_api.mojom",
   ]
   deps = [
+    "//components/account_id/interfaces",
     "//mojo/public/mojom/base",
     "//ui/gfx/geometry/mojo",
   ]

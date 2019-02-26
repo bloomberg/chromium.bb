@@ -31,14 +31,18 @@ import java.util.Locale;
  *                    duplicating work to decode the same image for two different requests.
  */
 public class ThumbnailProviderImpl implements ThumbnailProvider, ThumbnailStorageDelegate {
-    /** 5 MB of thumbnails should be enough for everyone. */
-    private static final int MAX_CACHE_BYTES = 5 * ConversionUtils.BYTES_PER_MEGABYTE;
+    /** Default in-memory thumbnail cache size. */
+    private static final int DEFAULT_MAX_CACHE_BYTES = 5 * ConversionUtils.BYTES_PER_MEGABYTE;
 
     /**
      * Helper object to store in the LruCache when we don't really need a value but can't use null.
      */
     private static final Object NO_BITMAP_PLACEHOLDER = new Object();
 
+    /**
+     * An in-memory LRU cache used to cache bitmaps, mostly improve performance for scrolling, when
+     * the view is recycled and needs a new thumbnail.
+     */
     private BitmapCache mBitmapCache;
 
     /**
@@ -57,9 +61,22 @@ public class ThumbnailProviderImpl implements ThumbnailProvider, ThumbnailStorag
 
     private ThumbnailDiskStorage mStorage;
 
+    /**
+     * Constructor to build the thumbnail provider with default thumbnail cache size.
+     * @param referencePool The application's reference pool.
+     */
     public ThumbnailProviderImpl(DiscardableReferencePool referencePool) {
+        this(referencePool, DEFAULT_MAX_CACHE_BYTES);
+    }
+
+    /**
+     * Constructor to build the thumbnail provider.
+     * @param referencePool The application's reference pool.
+     * @param bitmapCacheSizeByte The size in bytes of the in-memory LRU bitmap cache.
+     */
+    public ThumbnailProviderImpl(DiscardableReferencePool referencePool, int bitmapCacheSizeByte) {
         ThreadUtils.assertOnUiThread();
-        mBitmapCache = new BitmapCache(referencePool, MAX_CACHE_BYTES);
+        mBitmapCache = new BitmapCache(referencePool, bitmapCacheSizeByte);
         mStorage = ThumbnailDiskStorage.create(this);
     }
 

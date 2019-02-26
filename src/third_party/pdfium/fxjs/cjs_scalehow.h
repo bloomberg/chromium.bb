@@ -7,14 +7,13 @@
 #ifndef FXJS_CJS_SCALEHOW_H_
 #define FXJS_CJS_SCALEHOW_H_
 
-#include "fxjs/js_define.h"
+#include "fxjs/cjs_object.h"
 
 class CJS_ScaleHow final : public CJS_Object {
  public:
   static void DefineJSObjects(CFXJS_Engine* pEngine);
 
-  CJS_ScaleHow(v8::Local<v8::Object> pObject, CJS_Runtime* pRuntime);
-  ~CJS_ScaleHow() override;
+  CJS_ScaleHow() = delete;
 
  private:
   static int ObjDefnID;

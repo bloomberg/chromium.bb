@@ -15,7 +15,7 @@
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
-#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/traced_value.h"
 #include "cc/base/math_util.h"
 #include "cc/raster/raster_source.h"
 #include "cc/tiles/prioritized_tile.h"

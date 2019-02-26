@@ -10,6 +10,9 @@ package org.chromium.support_lib_boundary.util;
  * Chromium can share its definition.
  */
 public class Features {
+    // Features suffixed with DEV will only be visible on debug devices.
+    public static final String DEV_SUFFIX = ":dev";
+
     // This class just contains constants representing features.
     private Features() {}
 

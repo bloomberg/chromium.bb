@@ -10,11 +10,13 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequence_checker.h"
 #include "base/task/post_task.h"
 #include "base/time/default_clock.h"
 #include "components/leveldb_proto/proto_database_impl.h"
+#include "media/base/media_switches.h"
 #include "media/capabilities/video_decode_stats.pb.h"
 
 namespace media {
@@ -27,7 +29,31 @@ namespace {
 // See comments in components/leveldb_proto/leveldb_database.h
 const char kDatabaseClientName[] = "VideoDecodeStatsDB";
 
+const int kMaxFramesPerBufferDefault = 2500;
+
+const int kMaxDaysToKeepStatsDefault = 30;
+
 };  // namespace
+
+const char VideoDecodeStatsDBImpl::kMaxFramesPerBufferParamName[] =
+    "db_frames_buffer_size";
+
+const char VideoDecodeStatsDBImpl::kMaxDaysToKeepStatsParamName[] =
+    "db_days_to_keep_stats";
+
+// static
+int VideoDecodeStatsDBImpl::GetMaxFramesPerBuffer() {
+  return base::GetFieldTrialParamByFeatureAsDouble(
+      kMediaCapabilitiesWithParameters, kMaxFramesPerBufferParamName,
+      kMaxFramesPerBufferDefault);
+}
+
+// static
+int VideoDecodeStatsDBImpl::GetMaxDaysToKeepStats() {
+  return base::GetFieldTrialParamByFeatureAsDouble(
+      kMediaCapabilitiesWithParameters, kMaxDaysToKeepStatsParamName,
+      kMaxDaysToKeepStatsDefault);
+}
 
 // static
 std::unique_ptr<VideoDecodeStatsDBImpl> VideoDecodeStatsDBImpl::Create(
@@ -137,8 +163,11 @@ bool VideoDecodeStatsDBImpl::AreStatsExpired(
     last_write_date = default_write_time_.ToJsTime();
   }
 
+  const int kMaxDaysToKeepStats = GetMaxDaysToKeepStats();
+  DCHECK_GT(kMaxDaysToKeepStats, 0);
+
   return wall_clock_->Now() - base::Time::FromJsTime(last_write_date) >
-         base::TimeDelta::FromDays(VideoDecodeStatsDBImpl::kMaxDaysToKeepStats);
+         base::TimeDelta::FromDays(kMaxDaysToKeepStats);
 }
 
 void VideoDecodeStatsDBImpl::WriteUpdatedEntry(
@@ -169,6 +198,9 @@ void VideoDecodeStatsDBImpl::WriteUpdatedEntry(
   uint64_t old_frames_decoded = stats_proto->frames_decoded();
   uint64_t old_frames_dropped = stats_proto->frames_dropped();
   uint64_t old_frames_power_efficient = stats_proto->frames_power_efficient();
+
+  const uint64_t kMaxFramesPerBuffer = GetMaxFramesPerBuffer();
+  DCHECK_GT(kMaxFramesPerBuffer, 0UL);
 
   if (old_frames_decoded + new_entry.frames_decoded > kMaxFramesPerBuffer) {
     // The |new_entry| is pushing out some or all of the old data. Achieve this

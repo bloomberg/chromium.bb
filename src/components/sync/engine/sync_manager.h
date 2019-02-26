@@ -31,8 +31,7 @@
 #include "components/sync/engine/sync_status.h"
 #include "components/sync/protocol/sync_protocol_error.h"
 #include "components/sync/syncable/change_record.h"
-
-class GURL;
+#include "url/gurl.h"
 
 namespace base {
 namespace trace_event {
@@ -305,14 +304,10 @@ class SyncManager {
   // syncer will remain in CONFIGURATION_MODE until StartSyncingNormally is
   // called.
   // |ready_task| is invoked when the configuration completes.
-  // |retry_task| is invoked if the configuration job could not immediately
-  //              execute. |ready_task| will still be called when it eventually
-  //              does finish.
   virtual void ConfigureSyncer(ConfigureReason reason,
                                ModelTypeSet to_download,
                                SyncFeatureState sync_feature_state,
-                               const base::Closure& ready_task,
-                               const base::Closure& retry_task) = 0;
+                               const base::Closure& ready_task) = 0;
 
   // Inform the syncer of a change in the invalidator's state.
   virtual void SetInvalidatorEnabled(bool invalidator_enabled) = 0;

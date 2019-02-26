@@ -80,8 +80,8 @@ class ScopedKeepAlive;
   // Outlets for the close tab/window menu items so that we can adjust the
   // commmand-key equivalent depending on the kind of window and how many
   // tabs it has.
-  IBOutlet NSMenuItem* closeTabMenuItem_;
-  IBOutlet NSMenuItem* closeWindowMenuItem_;
+  NSMenuItem* closeTabMenuItem_;
+  NSMenuItem* closeWindowMenuItem_;
 
   // If we are expecting a workspace change in response to a reopen
   // event, the time we got the event. A null time otherwise.
@@ -122,6 +122,10 @@ class ScopedKeepAlive;
 // Stop trying to terminate the application. That is, prevent the final browser
 // window closure from causing the application to quit.
 - (void)stopTryingToTerminateApplication:(NSApplication*)app;
+
+// Run the quit confirmation panel and return whether or not to continue
+// quitting.
+- (BOOL)runConfirmQuitPanel;
 
 // Indicate that the system is powering off or logging out.
 - (void)willPowerOff:(NSNotification*)inNotification;

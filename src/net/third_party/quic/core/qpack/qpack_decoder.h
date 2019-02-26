@@ -7,9 +7,8 @@
 
 #include <memory>
 
-#include "net/third_party/http2/hpack/huffman/hpack_huffman_decoder.h"
-#include "net/third_party/http2/hpack/varint/hpack_varint_decoder.h"
 #include "net/third_party/quic/core/qpack/qpack_header_table.h"
+#include "net/third_party/quic/core/qpack/qpack_instruction_decoder.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
@@ -47,14 +46,15 @@ class QUIC_EXPORT_PRIVATE QpackDecoder {
   };
 
   // Class to decode a single header block.
-  class QUIC_EXPORT_PRIVATE ProgressiveDecoder {
+  class QUIC_EXPORT_PRIVATE ProgressiveDecoder
+      : public QpackInstructionDecoder::Delegate {
    public:
     ProgressiveDecoder() = delete;
     ProgressiveDecoder(QpackHeaderTable* header_table,
                        HeadersHandlerInterface* handler);
     ProgressiveDecoder(const ProgressiveDecoder&) = delete;
     ProgressiveDecoder& operator=(const ProgressiveDecoder&) = delete;
-    ~ProgressiveDecoder() = default;
+    ~ProgressiveDecoder() override = default;
 
     // Provide a data fragment to decode.
     void Decode(QuicStringPiece data);
@@ -63,80 +63,20 @@ class QUIC_EXPORT_PRIVATE QpackDecoder {
     // through Decode().  No methods must be called afterwards.
     void EndHeaderBlock();
 
+    // QpackInstructionDecoder::Delegate implementation.
+    bool OnInstructionDecoded(const QpackInstruction* instruction) override;
+    void OnError(QuicStringPiece error_message) override;
+
    private:
-    enum class State {
-      // Every instruction starts encoding an integer on the first octet:
-      // either an index or the length of the name string literal.
-      kStart,
-      kVarintResume,
-      kVarintDone,
-      // This might be followed by the name as a string literal,
-      // optionally Huffman encoded.
-      kReadName,
-      kDecodeName,
-      // This might be followed by the length of the value.
-      kValueLengthStart,
-      kValueLengthResume,
-      kValueLengthDone,
-      // This might be followed by the value as a string literal,
-      // optionally Huffman encoded.
-      kReadValue,
-      kDecodeValue,
-      kDone,
-    };
-
-    // One method for each state.  Some take input data and return the number of
-    // octets processed.  Some only change internal state.
-    size_t DoStart(QuicStringPiece data);
-    size_t DoVarintResume(QuicStringPiece data);
-    void DoVarintDone();
-    size_t DoReadName(QuicStringPiece data);
-    void DoDecodeName();
-    size_t DoValueLengthStart(QuicStringPiece data);
-    size_t DoValueLengthResume(QuicStringPiece data);
-    void DoValueLengthDone();
-    size_t DoReadValue(QuicStringPiece data);
-    void DoDecodeValue();
-    void DoDone();
-
-    void OnError(QuicStringPiece error_message);
-
+    QpackInstructionDecoder instruction_decoder_;
     const QpackHeaderTable* const header_table_;
     HeadersHandlerInterface* handler_;
-    State state_;
-    http2::HpackVarintDecoder varint_decoder_;
-    http2::HpackHuffmanDecoder huffman_decoder_;
 
     // True until EndHeaderBlock() is called.
     bool decoding_;
 
     // True if a decoding error has been detected.
     bool error_detected_;
-
-    // The following variables are used to carry information between states
-    // within a single header field.  That is, a value assigned while decoding
-    // one header field shall never be used for decoding subsequent header
-    // fields.
-
-    // True if the header field name is encoded as a string literal.
-    bool literal_name_;
-
-    // True if the header field value is encoded as a string literal.
-    bool literal_value_;
-
-    // Decoded length for header name.
-    size_t name_length_;
-
-    // Decoded length for header value.
-    size_t value_length_;
-
-    // Whether the currently parsed string (name or value) is
-    // Huffman encoded.
-    bool is_huffman_;
-
-    // Decoded header name and value.
-    QuicString name_;
-    QuicString value_;
   };
 
   // Factory method to create a ProgressiveDecoder for decoding a header block.

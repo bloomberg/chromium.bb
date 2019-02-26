@@ -25,6 +25,7 @@
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/http_util.h"
 #include "net/http/transport_security_state.h"
+#include "net/http/transport_security_state_test_util.h"
 #include "net/quic/crypto/proof_verifier_chromium.h"
 #include "net/quic/mock_crypto_client_stream_factory.h"
 #include "net/quic/mock_quic_data.h"
@@ -39,8 +40,6 @@
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/spdy_session_test_util.h"
 #include "net/spdy/spdy_test_util_common.h"
-#include "net/ssl/channel_id_service.h"
-#include "net/ssl/default_channel_id_store.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
@@ -240,8 +239,6 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
                       quic::Perspective::IS_SERVER,
                       false),
         cert_verifier_(std::make_unique<MockCertVerifier>()),
-        channel_id_service_(
-            new ChannelIDService(new DefaultChannelIDStore(nullptr))),
         cert_transparency_verifier_(std::make_unique<DoNothingCTVerifier>()),
         scoped_mock_network_change_notifier_(nullptr),
         factory_(nullptr),
@@ -280,8 +277,8 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
     factory_.reset(new QuicStreamFactory(
         net_log_.net_log(), host_resolver_.get(), ssl_config_service_.get(),
         socket_factory_.get(), &http_server_properties_, cert_verifier_.get(),
-        &ct_policy_enforcer_, channel_id_service_.get(),
-        &transport_security_state_, cert_transparency_verifier_.get(),
+        &ct_policy_enforcer_, &transport_security_state_,
+        cert_transparency_verifier_.get(),
         /*SocketPerformanceWatcherFactory*/ nullptr,
         &crypto_client_stream_factory_, &random_generator_, &clock_,
         quic::kDefaultMaxPacketSize, string(),
@@ -300,7 +297,6 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
         allow_server_migration_, race_cert_verification_, estimate_initial_rtt_,
         client_headers_include_h2_stream_dependency_, connection_options_,
         client_connection_options_,
-        /*enable_channel_id*/ false,
         /*enable_socket_recv_optimization*/ false));
   }
 
@@ -852,7 +848,6 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
   QuicTestPacketMaker server_maker_;
   HttpServerPropertiesImpl http_server_properties_;
   std::unique_ptr<CertVerifier> cert_verifier_;
-  std::unique_ptr<ChannelIDService> channel_id_service_;
   TransportSecurityState transport_security_state_;
   std::unique_ptr<CTVerifier> cert_transparency_verifier_;
   DefaultCTPolicyEnforcer ct_policy_enforcer_;
@@ -1501,14 +1496,14 @@ TEST_P(QuicStreamFactoryTest, HttpsPoolingWithMatchingPins) {
 
   HostPortPair server1(kDefaultServerHostName, 443);
   HostPortPair server2(kServer2HostName, 443);
-  uint8_t primary_pin = 1;
-  uint8_t backup_pin = 2;
-  test::AddPin(&transport_security_state_, kServer2HostName, primary_pin,
-               backup_pin);
+  transport_security_state_.EnableStaticPinsForTesting();
+  ScopedTransportSecurityStateSource scoped_security_state_source;
 
+  HashValue primary_pin(HASH_VALUE_SHA256);
+  EXPECT_TRUE(primary_pin.FromString(
+      "sha256/Nn8jk5By4Vkq6BeOVZ7R7AC6XUUBZsWmUbJR1f1Y5FY="));
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
-  verify_details.cert_verify_result.public_key_hashes.push_back(
-      test::GetTestHashValue(primary_pin));
+  verify_details.cert_verify_result.public_key_hashes.push_back(primary_pin);
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   host_resolver_->set_synchronous_mode(true);
@@ -1554,20 +1549,20 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithDifferentPins) {
 
   HostPortPair server1(kDefaultServerHostName, 443);
   HostPortPair server2(kServer2HostName, 443);
-  uint8_t primary_pin = 1;
-  uint8_t backup_pin = 2;
-  uint8_t bad_pin = 3;
-  test::AddPin(&transport_security_state_, kServer2HostName, primary_pin,
-               backup_pin);
+  transport_security_state_.EnableStaticPinsForTesting();
+  ScopedTransportSecurityStateSource scoped_security_state_source;
 
   ProofVerifyDetailsChromium verify_details1 = DefaultProofVerifyDetails();
+  uint8_t bad_pin = 3;
   verify_details1.cert_verify_result.public_key_hashes.push_back(
       test::GetTestHashValue(bad_pin));
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details1);
 
+  HashValue primary_pin(HASH_VALUE_SHA256);
+  EXPECT_TRUE(primary_pin.FromString(
+      "sha256/Nn8jk5By4Vkq6BeOVZ7R7AC6XUUBZsWmUbJR1f1Y5FY="));
   ProofVerifyDetailsChromium verify_details2 = DefaultProofVerifyDetails();
-  verify_details2.cert_verify_result.public_key_hashes.push_back(
-      test::GetTestHashValue(primary_pin));
+  verify_details2.cert_verify_result.public_key_hashes.push_back(primary_pin);
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details2);
 
   host_resolver_->set_synchronous_mode(true);
@@ -1677,6 +1672,12 @@ TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
   socket_data.AddRead(ASYNC,
                       server_maker_.MakeRstPacket(1, false, stream_id,
                                                   quic::QUIC_STREAM_CANCELLED));
+  if (version_ == quic::QUIC_VERSION_99) {
+    socket_data.AddWrite(SYNCHRONOUS,
+                         client_maker_.MakeStreamIdBlockedPacket(3, true, 102));
+    socket_data.AddRead(ASYNC,
+                        server_maker_.MakeMaxStreamIdPacket(4, true, 102 + 2));
+  }
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
@@ -1724,6 +1725,7 @@ TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
   streams.front()->Close(false);
   // Trigger exchange of RSTs that in turn allow progress for the last
   // stream.
+  base::RunLoop().RunUntilIdle();
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
 
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
@@ -2696,7 +2698,8 @@ TEST_P(QuicStreamFactoryTest, OnNetworkMadeDefaultNonMigratableStream) {
   socket_data.AddWrite(
       SYNCHRONOUS,
       client_maker_.MakeRstAckAndConnectionClosePacket(
-          3, false, 5, quic::QUIC_STREAM_CANCELLED,
+          3, false, GetNthClientInitiatedStreamId(0),
+          quic::QUIC_STREAM_CANCELLED,
           quic::QuicTime::Delta::FromMilliseconds(0), 1, 1, 1,
           quic::QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS, "net error"));
 
@@ -4379,7 +4382,8 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyNonMigratableStream) {
   socket_data.AddWrite(
       SYNCHRONOUS,
       client_maker_.MakeRstAckAndConnectionClosePacket(
-          3, false, 5, quic::QUIC_STREAM_CANCELLED,
+          3, false, GetNthClientInitiatedStreamId(0),
+          quic::QUIC_STREAM_CANCELLED,
           quic::QuicTime::Delta::FromMilliseconds(0), 1, 1, 1,
           quic::QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS, "net error"));
   socket_data.AddSocketDataToFactory(socket_factory_.get());
@@ -8405,6 +8409,42 @@ TEST_P(QuicStreamFactoryTest, HostResolverUsesRequestPriority) {
 
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+}
+
+TEST_P(QuicStreamFactoryTest, HostResolverRequestReprioritizedOnSetPriority) {
+  Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
+  socket_data.AddSocketDataToFactory(socket_factory_.get());
+
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(
+                host_port_pair_, version_, privacy_mode_, MAXIMUM_PRIORITY,
+                SocketTag(),
+                /*cert_verify_flags=*/0, url_, net_log_, &net_error_details_,
+                failed_on_default_network_callback_, callback_.callback()));
+
+  EXPECT_EQ(MAXIMUM_PRIORITY, host_resolver_->last_request_priority());
+  EXPECT_EQ(MAXIMUM_PRIORITY, host_resolver_->request_priority(1));
+
+  QuicStreamRequest request2(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request2.Request(
+                host_port_pair_, version_, privacy_mode_, DEFAULT_PRIORITY,
+                SocketTag(),
+                /*cert_verify_flags=*/0, url2_, net_log_, &net_error_details_,
+                failed_on_default_network_callback_, callback_.callback()));
+  EXPECT_EQ(DEFAULT_PRIORITY, host_resolver_->last_request_priority());
+  EXPECT_EQ(DEFAULT_PRIORITY, host_resolver_->request_priority(2));
+
+  request.SetPriority(LOWEST);
+  EXPECT_EQ(LOWEST, host_resolver_->request_priority(1));
+  EXPECT_EQ(DEFAULT_PRIORITY, host_resolver_->request_priority(2));
 }
 
 // Passes |max_time_before_crypto_handshake_seconds| and

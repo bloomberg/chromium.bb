@@ -624,7 +624,7 @@ void DOMSelection::addRange(Range* new_range) {
     return;
 
   if (!new_range->IsConnected()) {
-    AddConsoleError("The given range isn't in document.");
+    AddConsoleWarning("addRange(): The given range isn't in document.");
     return;
   }
 
@@ -832,10 +832,11 @@ bool DOMSelection::IsValidForPosition(Node* node) const {
          node->isConnected();
 }
 
-void DOMSelection::AddConsoleError(const String& message) {
-  if (tree_scope_)
-    tree_scope_->GetDocument().AddConsoleMessage(
-        ConsoleMessage::Create(kJSMessageSource, kErrorMessageLevel, message));
+void DOMSelection::AddConsoleWarning(const String& message) {
+  if (tree_scope_) {
+    tree_scope_->GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+        kJSMessageSource, kWarningMessageLevel, message));
+  }
 }
 
 void DOMSelection::Trace(blink::Visitor* visitor) {

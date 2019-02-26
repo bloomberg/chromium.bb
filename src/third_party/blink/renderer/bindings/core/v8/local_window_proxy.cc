@@ -182,6 +182,9 @@ void LocalWindowProxy::Initialize() {
 
   InstallConditionalFeatures();
 
+  // This needs to go after everything else since it accesses the window object.
+  InitializeV8ExtrasBinding(script_state_);
+
   if (World().IsMainWorld()) {
     GetFrame()->Loader().DispatchDidClearWindowObjectInMainWorld();
   }
@@ -194,16 +197,8 @@ void LocalWindowProxy::CreateContext() {
   // TODO(yukishiino): Remove this CHECK once crbug.com/713699 gets fixed.
   CHECK(IsMainThread());
 
-  Vector<const char*> extension_names;
-  // Dynamically tell v8 about our extensions now.
-  if (GetFrame()->Client()->AllowScriptExtensions()) {
-    const V8Extensions& extensions = ScriptController::RegisteredExtensions();
-    extension_names.ReserveInitialCapacity(extensions.size());
-    for (const auto* extension : extensions)
-      extension_names.push_back(extension->name());
-  }
-  v8::ExtensionConfiguration extension_configuration(extension_names.size(),
-                                                     extension_names.data());
+  v8::ExtensionConfiguration extension_configuration =
+      ScriptController::ExtensionsFor(GetFrame()->GetDocument());
 
   v8::Local<v8::Context> context;
   {
@@ -229,7 +224,7 @@ void LocalWindowProxy::CreateContext() {
     // in some cases, e.g. loading XML files.
     if (context.IsEmpty()) {
       v8::Local<v8::ObjectTemplate> global_template =
-          V8Window::domTemplate(isolate, World())->InstanceTemplate();
+          V8Window::DomTemplate(isolate, World())->InstanceTemplate();
       CHECK(!global_template.IsEmpty());
       context = v8::Context::New(isolate, &extension_configuration,
                                  global_template, global_proxy);
@@ -243,8 +238,6 @@ void LocalWindowProxy::CreateContext() {
 #endif
 
   script_state_ = ScriptState::Create(context, world_);
-
-  InitializeV8ExtrasBinding(script_state_);
 
   DCHECK(lifecycle_ == Lifecycle::kContextIsUninitialized ||
          lifecycle_ == Lifecycle::kGlobalObjectIsDetached);
@@ -275,7 +268,7 @@ void LocalWindowProxy::InstallConditionalFeatures() {
   wrapper_type_info->InstallConditionalFeatures(
       context, World(), global_proxy, unused_prototype_object,
       unused_interface_object,
-      wrapper_type_info->domTemplate(GetIsolate(), World()));
+      wrapper_type_info->DomTemplate(GetIsolate(), World()));
 
   if (World().IsMainWorld()) {
     // For the main world, install any remaining conditional bindings (i.e.
@@ -466,11 +459,11 @@ static v8::Local<v8::Value> GetNamedProperty(
     v8::Local<v8::Object> creation_context,
     v8::Isolate* isolate) {
   if (!html_document->HasNamedItem(key))
-    return V8Undefined();
+    return v8::Local<v8::Value>();
 
   DocumentNameCollection* items = html_document->DocumentNamedItems(key);
   if (items->IsEmpty())
-    return V8Undefined();
+    return v8::Local<v8::Value>();
 
   if (items->HasExactlyOneItem()) {
     HTMLElement* element = items->Item(0);

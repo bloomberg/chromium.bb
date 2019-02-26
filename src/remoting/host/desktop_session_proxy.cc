@@ -23,6 +23,7 @@
 #include "remoting/host/client_session.h"
 #include "remoting/host/client_session_control.h"
 #include "remoting/host/desktop_session_connector.h"
+#include "remoting/host/ipc_action_executor.h"
 #include "remoting/host/ipc_audio_capturer.h"
 #include "remoting/host/ipc_input_injector.h"
 #include "remoting/host/ipc_mouse_cursor_monitor.h"
@@ -105,6 +106,12 @@ DesktopSessionProxy::DesktopSessionProxy(
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 }
 
+std::unique_ptr<ActionExecutor> DesktopSessionProxy::CreateActionExecutor() {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  return std::make_unique<IpcActionExecutor>(this);
+}
+
 std::unique_ptr<AudioCapturer> DesktopSessionProxy::CreateAudioCapturer() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
@@ -182,6 +189,8 @@ bool DesktopSessionProxy::OnMessageReceived(const IPC::Message& message) {
                         OnAudioPacket)
     IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_CaptureResult,
                         OnCaptureResult)
+    IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_DisplayChanged,
+                        OnDesktopDisplayChanged)
     IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_MouseCursor,
                         OnMouseCursor)
     IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_CreateSharedBuffer,
@@ -398,6 +407,13 @@ void DesktopSessionProxy::SetScreenResolution(
       new ChromotingNetworkDesktopMsg_SetScreenResolution(screen_resolution_));
 }
 
+void DesktopSessionProxy::ExecuteAction(
+    const protocol::ActionRequest& request) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  SendToDesktop(new ChromotingNetworkDesktopMsg_ExecuteActionRequest(request));
+}
+
 DesktopSessionProxy::~DesktopSessionProxy() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
@@ -455,6 +471,17 @@ void DesktopSessionProxy::OnReleaseSharedBuffer(int id) {
 
   // Drop the cached reference to the buffer.
   shared_buffers_.erase(id);
+}
+
+void DesktopSessionProxy::OnDesktopDisplayChanged(
+    const protocol::VideoLayout& displays) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  if (client_session_control_) {
+    auto layout = std::make_unique<protocol::VideoLayout>();
+    layout->CopyFrom(displays);
+    client_session_control_->OnDesktopDisplayChanged(std::move(layout));
+  }
 }
 
 void DesktopSessionProxy::OnCaptureResult(

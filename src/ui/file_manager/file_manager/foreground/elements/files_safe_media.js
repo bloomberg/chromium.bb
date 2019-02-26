@@ -81,6 +81,13 @@ var FilesSafeMedia = Polymer({
   },
 
   ready: function() {
+    this.addEventListener('focus', (event) => {
+      if (this.type === 'audio' || this.type === 'video')
+        // Avoid setting the focus on the files-safe-media itself, rather sends
+        // it down to its webview element.
+        if (this.webview_)
+          this.webview_.focus();
+    });
     window.addEventListener('message', function(event) {
       if (event.origin !== FILES_APP_ORIGIN) {
         console.log('Unknown origin.');

@@ -15,11 +15,12 @@ class HTMLIFrameElement;
 class HTMLIFrameElementSandbox final : public DOMTokenList {
  public:
   static HTMLIFrameElementSandbox* Create(HTMLIFrameElement* element) {
-    return new HTMLIFrameElementSandbox(element);
+    return MakeGarbageCollected<HTMLIFrameElementSandbox>(element);
   }
 
- private:
   explicit HTMLIFrameElementSandbox(HTMLIFrameElement*);
+
+ private:
   bool ValidateTokenValue(const AtomicString&, ExceptionState&) const override;
 };
 

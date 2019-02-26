@@ -183,7 +183,7 @@ TEST_F(TooltipControllerTest, ViewTooltip) {
   generator_->MoveMouseToCenterOf(GetWindow());
 
   EXPECT_EQ(GetWindow(), GetRootWindow()->GetEventHandlerForPoint(
-      generator_->current_location()));
+                             generator_->current_screen_location()));
   base::string16 expected_tooltip = ASCIIToUTF16("Tooltip Text");
   EXPECT_EQ(expected_tooltip, wm::GetTooltipText(GetWindow()));
   EXPECT_EQ(expected_tooltip, helper_->GetTooltipText());
@@ -273,7 +273,7 @@ TEST_F(TooltipControllerTest, TooltipsInMultipleViews) {
     generator_->MoveMouseBy(1, 0);
     EXPECT_TRUE(helper_->IsTooltipVisible());
     EXPECT_EQ(window, root_window->GetEventHandlerForPoint(
-            generator_->current_location()));
+                          generator_->current_screen_location()));
     base::string16 expected_tooltip = ASCIIToUTF16("Tooltip Text");
     EXPECT_EQ(expected_tooltip, wm::GetTooltipText(window));
     EXPECT_EQ(expected_tooltip, helper_->GetTooltipText());
@@ -283,7 +283,7 @@ TEST_F(TooltipControllerTest, TooltipsInMultipleViews) {
     generator_->MoveMouseBy(1, 0);
     EXPECT_FALSE(helper_->IsTooltipVisible());
     EXPECT_EQ(window, root_window->GetEventHandlerForPoint(
-            generator_->current_location()));
+                          generator_->current_screen_location()));
     base::string16 expected_tooltip;  // = ""
     EXPECT_EQ(expected_tooltip, wm::GetTooltipText(window));
     EXPECT_EQ(expected_tooltip, helper_->GetTooltipText());
@@ -346,9 +346,8 @@ TEST_F(TooltipControllerTest, TooltipHidesOnKeyPressAndStaysHiddenUntilChange) {
     generator_->MoveMouseBy(1, 0);
     EXPECT_FALSE(helper_->IsTooltipVisible());
     EXPECT_FALSE(helper_->IsTooltipShownTimerRunning());
-    EXPECT_EQ(window,
-              GetRootWindow()->GetEventHandlerForPoint(
-                  generator_->current_location()));
+    EXPECT_EQ(window, GetRootWindow()->GetEventHandlerForPoint(
+                          generator_->current_screen_location()));
     base::string16 expected_tooltip = ASCIIToUTF16("Tooltip Text for view 1");
     EXPECT_EQ(expected_tooltip, wm::GetTooltipText(window));
     EXPECT_EQ(expected_tooltip, helper_->GetTooltipText());
@@ -392,7 +391,7 @@ TEST_F(TooltipControllerTest, TooltipHidesOnTimeoutAndStaysHiddenUntilChange) {
     EXPECT_FALSE(helper_->IsTooltipVisible());
     EXPECT_FALSE(helper_->IsTooltipShownTimerRunning());
     EXPECT_EQ(window, GetRootWindow()->GetEventHandlerForPoint(
-                  generator_->current_location()));
+                          generator_->current_screen_location()));
     base::string16 expected_tooltip = ASCIIToUTF16("Tooltip Text for view 1");
     EXPECT_EQ(expected_tooltip, wm::GetTooltipText(window));
     EXPECT_EQ(expected_tooltip, helper_->GetTooltipText());
@@ -712,8 +711,10 @@ class TooltipControllerTest3 : public ViewsTestBase {
     auto tooltip = std::make_unique<TestTooltip>();
     test_tooltip_ = tooltip.get();
     controller_ = std::make_unique<TooltipController>(std::move(tooltip));
-    GetRootWindow()->RemovePreTargetHandler(static_cast<TooltipController*>(
-        wm::GetTooltipClient(widget_->GetNativeWindow()->GetRootWindow())));
+    auto* tooltip_controller = static_cast<TooltipController*>(
+        wm::GetTooltipClient(widget_->GetNativeWindow()->GetRootWindow()));
+    if (tooltip_controller)
+      GetRootWindow()->RemovePreTargetHandler(tooltip_controller);
     GetRootWindow()->AddPreTargetHandler(controller_.get());
     helper_.reset(new TooltipControllerTestHelper(controller_.get()));
     SetTooltipClient(GetRootWindow(), controller_.get());

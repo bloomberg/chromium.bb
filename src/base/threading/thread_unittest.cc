@@ -14,8 +14,6 @@
 #include "base/debug/leak_annotations.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
@@ -152,7 +150,7 @@ TEST_F(ThreadTest, StartWithOptions_StackSize) {
   options.stack_size = 3072 * sizeof(uintptr_t);
 #endif
   EXPECT_TRUE(a.StartWithOptions(options));
-  EXPECT_TRUE(a.message_loop());
+  EXPECT_TRUE(a.task_runner());
   EXPECT_TRUE(a.IsRunning());
 
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
@@ -175,7 +173,7 @@ TEST_F(ThreadTest, StartWithOptions_NonJoinable) {
   Thread::Options options;
   options.joinable = false;
   EXPECT_TRUE(a->StartWithOptions(options));
-  EXPECT_TRUE(a->message_loop());
+  EXPECT_TRUE(a->task_runner());
   EXPECT_TRUE(a->IsRunning());
 
   // Without this call this test is racy. The above IsRunning() succeeds because
@@ -212,7 +210,7 @@ TEST_F(ThreadTest, TwoTasksOnJoinableThread) {
   {
     Thread a("TwoTasksOnJoinableThread");
     EXPECT_TRUE(a.Start());
-    EXPECT_TRUE(a.message_loop());
+    EXPECT_TRUE(a.task_runner());
 
     // Test that all events are dispatched before the Thread object is
     // destroyed.  We do this by dispatching a sleep event before the
@@ -252,18 +250,18 @@ TEST_F(ThreadTest, DISABLED_DestroyWhileRunningNonJoinableIsSafe) {
 TEST_F(ThreadTest, StopSoon) {
   Thread a("StopSoon");
   EXPECT_TRUE(a.Start());
-  EXPECT_TRUE(a.message_loop());
+  EXPECT_TRUE(a.task_runner());
   EXPECT_TRUE(a.IsRunning());
   a.StopSoon();
   a.Stop();
-  EXPECT_FALSE(a.message_loop());
+  EXPECT_FALSE(a.task_runner());
   EXPECT_FALSE(a.IsRunning());
 }
 
 TEST_F(ThreadTest, StopTwiceNop) {
   Thread a("StopTwiceNop");
   EXPECT_TRUE(a.Start());
-  EXPECT_TRUE(a.message_loop());
+  EXPECT_TRUE(a.task_runner());
   EXPECT_TRUE(a.IsRunning());
   a.StopSoon();
   // Calling StopSoon() a second time should be a nop.
@@ -271,7 +269,7 @@ TEST_F(ThreadTest, StopTwiceNop) {
   a.Stop();
   // Same with Stop().
   a.Stop();
-  EXPECT_FALSE(a.message_loop());
+  EXPECT_FALSE(a.task_runner());
   EXPECT_FALSE(a.IsRunning());
   // Calling them when not running should also nop.
   a.StopSoon();
@@ -324,23 +322,23 @@ TEST_F(ThreadTest, TransferOwnershipAndStop) {
 TEST_F(ThreadTest, StartTwice) {
   Thread a("StartTwice");
 
-  EXPECT_FALSE(a.message_loop());
+  EXPECT_FALSE(a.task_runner());
   EXPECT_FALSE(a.IsRunning());
 
   EXPECT_TRUE(a.Start());
-  EXPECT_TRUE(a.message_loop());
+  EXPECT_TRUE(a.task_runner());
   EXPECT_TRUE(a.IsRunning());
 
   a.Stop();
-  EXPECT_FALSE(a.message_loop());
+  EXPECT_FALSE(a.task_runner());
   EXPECT_FALSE(a.IsRunning());
 
   EXPECT_TRUE(a.Start());
-  EXPECT_TRUE(a.message_loop());
+  EXPECT_TRUE(a.task_runner());
   EXPECT_TRUE(a.IsRunning());
 
   a.Stop();
-  EXPECT_FALSE(a.message_loop());
+  EXPECT_FALSE(a.task_runner());
   EXPECT_FALSE(a.IsRunning());
 }
 
@@ -357,7 +355,7 @@ TEST_F(ThreadTest, StartTwiceNonJoinableNotAllowed) {
   Thread::Options options;
   options.joinable = false;
   EXPECT_TRUE(a->StartWithOptions(options));
-  EXPECT_TRUE(a->message_loop());
+  EXPECT_TRUE(a->task_runner());
   EXPECT_TRUE(a->IsRunning());
 
   // Signaled when last task on |a| is processed.
@@ -456,7 +454,7 @@ TEST_F(ThreadTest, CleanUp) {
     // Start a thread which writes its event into |captured_events|.
     CaptureToEventList t(&captured_events);
     EXPECT_TRUE(t.Start());
-    EXPECT_TRUE(t.message_loop());
+    EXPECT_TRUE(t.task_runner());
     EXPECT_TRUE(t.IsRunning());
 
     // Register an observer that writes into |captured_events| once the
@@ -552,12 +550,12 @@ class ExternalMessageLoopThread : public Thread {
 
 TEST_F(ThreadTest, ExternalMessageLoop) {
   ExternalMessageLoopThread a;
-  EXPECT_FALSE(a.message_loop());
+  EXPECT_FALSE(a.task_runner());
   EXPECT_FALSE(a.IsRunning());
   a.VerifyUsingExternalMessageLoop(false);
 
   a.InstallMessageLoop();
-  EXPECT_TRUE(a.message_loop());
+  EXPECT_TRUE(a.task_runner());
   EXPECT_TRUE(a.IsRunning());
   a.VerifyUsingExternalMessageLoop(true);
 
@@ -568,7 +566,7 @@ TEST_F(ThreadTest, ExternalMessageLoop) {
   EXPECT_TRUE(ran);
 
   a.Stop();
-  EXPECT_FALSE(a.message_loop());
+  EXPECT_FALSE(a.task_runner());
   EXPECT_FALSE(a.IsRunning());
   a.VerifyUsingExternalMessageLoop(true);
 

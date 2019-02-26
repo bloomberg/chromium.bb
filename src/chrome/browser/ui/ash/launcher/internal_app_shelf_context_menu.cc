@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/grit/generated_resources.h"
-#include "ui/base/ui_base_features.h"
 
 InternalAppShelfContextMenu::InternalAppShelfContextMenu(
     ChromeLauncherController* controller,
@@ -31,8 +30,6 @@ void InternalAppShelfContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
   if (!app_is_open) {
     AddContextMenuOption(menu_model, ash::MENU_OPEN_NEW,
                          IDS_APP_CONTEXT_MENU_ACTIVATE_ARC);
-    if (!features::IsTouchableAppContextMenuEnabled())
-      menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
   }
 
   const auto* internal_app = app_list::FindInternalApp(item().id.app_id);
@@ -44,8 +41,4 @@ void InternalAppShelfContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
     AddContextMenuOption(menu_model, ash::MENU_CLOSE,
                          IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
   }
-
-  // Default menu items, e.g. "Autohide shelf" are appended. Adding a separator.
-  if (!features::IsTouchableAppContextMenuEnabled())
-    menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
 }

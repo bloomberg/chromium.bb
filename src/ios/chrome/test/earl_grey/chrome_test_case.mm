@@ -19,6 +19,7 @@
 #include "ios/chrome/test/app/signin_test_util.h"
 #import "ios/chrome/test/app/sync_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
+#import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "testing/coverage_util_ios.h"
 
@@ -91,6 +92,9 @@ const CFTimeInterval kDrainTimeout = 5;
   BOOL _isHTTPServerStopped;
   BOOL _isMockAuthenticationDisabled;
   std::unique_ptr<net::EmbeddedTestServer> _testServer;
+
+  // The orientation of the device when entering these tests.
+  UIDeviceOrientation _originalOrientation;
 }
 
 // Cleans up mock authentication.
@@ -191,11 +195,11 @@ const CFTimeInterval kDrainTimeout = 5;
   _isHTTPServerStopped = NO;
   _isMockAuthenticationDisabled = NO;
   _tearDownHandler = nil;
+  _originalOrientation = [[UIDevice currentDevice] orientation];
 
   chrome_test_util::ResetSigninPromoPreferences();
   chrome_test_util::ResetMockAuthentication();
-  chrome_test_util::OpenNewTab();
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGrey openNewTab];
 }
 
 // Tear down called once per test, to close all tabs and menus, and clear the
@@ -224,6 +228,12 @@ const CFTimeInterval kDrainTimeout = 5;
   // state.
   [[self class] removeAnyOpenMenusAndInfoBars];
   [[self class] closeAllTabs];
+
+  if ([[UIDevice currentDevice] orientation] != _originalOrientation) {
+    // Rotate the device back to the original orientation, since some tests
+    // attempt to run in other orientations.
+    [EarlGrey rotateDeviceToOrientation:_originalOrientation errorOrNil:nil];
+  }
   [super tearDown];
 }
 

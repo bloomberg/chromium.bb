@@ -39,6 +39,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "build/build_config.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 #include "third_party/blink/renderer/platform/fonts/font_fallback_iterator.h"
@@ -70,8 +71,7 @@ void CheckShapeResultRange(const ShapeResult* result,
   DCHECK_LE(start, end);
   unsigned length = end - start;
   if (length == result->NumCharacters() &&
-      (!length || (start == result->StartIndexForResult() &&
-                   end == result->EndIndexForResult())))
+      (!length || (start == result->StartIndex() && end == result->EndIndex())))
     return;
 
   // Log font-family/size as specified.
@@ -99,8 +99,7 @@ void CheckShapeResultRange(const ShapeResult* result,
 
   // Log the text to shape.
   log.Append(String::Format(": %u-%u -> %u-%u:", start, end,
-                            result->StartIndexForResult(),
-                            result->EndIndexForResult()));
+                            result->StartIndex(), result->EndIndex()));
   for (unsigned i = start; i < end; ++i)
     log.Append(String::Format(" %02X", text[i]));
 
@@ -238,14 +237,6 @@ inline bool ShapeRange(hb_buffer_t* buffer,
                               ? HarfBuzzFace::PrepareForVerticalLayout
                               : HarfBuzzFace::NoVerticalLayout);
   hb_shape(hb_font, buffer, font_features, font_features_size);
-
-  // We cannot round all glyph positions during hb_shape because the
-  // hb_font_funcs_set_glyph_h_kerning_func only works for legacy kerning.
-  // OpenType uses gpos tables for kerning and harfbuzz does not call
-  // the callback to let us round as we go.
-  // Without this rounding, we get inconsistent spacing between kern points
-  // if subpixel positioning is disabled.
-  // See http://crbug.com/740385.
   if (!face->ShouldSubpixelPosition())
     RoundHarfBuzzBufferPositions(buffer);
 
@@ -336,12 +327,11 @@ void HarfBuzzShaper::CommitGlyphs(RangeData* range_data,
   // Here we need to specify glyph positions.
   BufferSlice next_slice;
   for (const BufferSlice* current_slice = &slice;;) {
-    ShapeResult::RunInfo* run = new ShapeResult::RunInfo(
+    auto run = ShapeResult::RunInfo::Create(
         current_font, direction, canvas_rotation, script,
         current_slice->start_character_index, current_slice->num_glyphs,
         current_slice->num_characters);
-    shape_result->InsertRun(base::WrapUnique(run),
-                            current_slice->start_glyph_index,
+    shape_result->InsertRun(run, current_slice->start_glyph_index,
                             current_slice->num_glyphs, range_data->buffer);
     unsigned num_glyphs_inserted = run->NumGlyphs();
     if (num_glyphs_inserted == current_slice->num_glyphs)
@@ -1004,9 +994,9 @@ scoped_refptr<ShapeResult> HarfBuzzShaper::Shape(
     }
   }
 
-  // Ensure we have at least one run for StartIndexForResult().
-  if (UNLIKELY(result->runs_.IsEmpty() && start))
-    result->InsertRunForIndex(start);
+  // Ensure |start_index_| is updated even when no runs were inserted.
+  if (UNLIKELY(result->runs_.IsEmpty()))
+    result->start_index_ = start;
 
 #if DCHECK_IS_ON()
   if (result)

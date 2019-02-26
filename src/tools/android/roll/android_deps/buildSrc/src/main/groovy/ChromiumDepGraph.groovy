@@ -155,11 +155,15 @@ class ChromiumDepGraph {
     private customizeDep(DependencyDescription dep) {
         if (dep.id?.startsWith("com_google_android_")) {
             dep.licenseUrl = ""
-            // This should match fetch_all._ANDROID_SDK_LICENSE_PATH
+            // This should match fetch_all._ANDROID_SDK_LICENSE_PATH.
             dep.licensePath = "licenses/Android_SDK_License-December_9_2016.txt"
             if (dep.url?.isEmpty()) {
                 dep.url = "https://developers.google.com/android/guides/setup"
             }
+        } else if (dep.licenseUrl?.equals("http://openjdk.java.net/legal/gplv2+ce.html")) {
+            // This avoids using html in a LICENSE file.
+            dep.licenseUrl = ""
+            dep.licensePath = "licenses/GNU_v2_with_Classpath_Exception_1991.txt"
         } else if (dep.licenseName?.isEmpty()) {
             def fallbackProperties = FALLBACK_PROPERTIES.get(dep.id)
             if (fallbackProperties != null) {

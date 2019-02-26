@@ -13,13 +13,13 @@
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
 #include "media/base/media_content_type.h"
-#include "third_party/blink/public/platform/modules/mediasession/media_session.mojom.h"
+#include "services/media_session/public/mojom/media_session.mojom.h"
 
 namespace content {
 
 using MediaSessionUserAction = MediaSessionUmaHelper::MediaSessionUserAction;
 using SuspendType = MediaSession::SuspendType;
-using MediaSessionAction = blink::mojom::MediaSessionAction;
+using MediaSessionAction = media_session::mojom::MediaSessionAction;
 
 namespace {
 
@@ -48,17 +48,17 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
 };
 
 struct ActionMappingEntry {
-  blink::mojom::MediaSessionAction action;
+  media_session::mojom::MediaSessionAction action;
   MediaSessionUserAction user_action;
 };
 
 ActionMappingEntry kActionMappings[] = {
-    {MediaSessionAction::PLAY, MediaSessionUserAction::Play},
-    {MediaSessionAction::PAUSE, MediaSessionUserAction::Pause},
-    {MediaSessionAction::PREVIOUS_TRACK, MediaSessionUserAction::PreviousTrack},
-    {MediaSessionAction::NEXT_TRACK, MediaSessionUserAction::NextTrack},
-    {MediaSessionAction::SEEK_BACKWARD, MediaSessionUserAction::SeekBackward},
-    {MediaSessionAction::SEEK_FORWARD, MediaSessionUserAction::SeekForward},
+    {MediaSessionAction::kPlay, MediaSessionUserAction::Play},
+    {MediaSessionAction::kPause, MediaSessionUserAction::Pause},
+    {MediaSessionAction::kPreviousTrack, MediaSessionUserAction::PreviousTrack},
+    {MediaSessionAction::kNextTrack, MediaSessionUserAction::NextTrack},
+    {MediaSessionAction::kSeekBackward, MediaSessionUserAction::SeekBackward},
+    {MediaSessionAction::kSeekForward, MediaSessionUserAction::SeekForward},
 };
 
 }  // anonymous namespace
@@ -73,8 +73,6 @@ class MediaSessionImplUmaTest : public RenderViewHostImplTestHarness {
     contents()->GetMainFrame()->InitializeRenderFrameIfNeeded();
     StartPlayer();
   }
-
-  void TearDown() override { RenderViewHostImplTestHarness::TearDown(); }
 
  protected:
   MediaSessionImpl* GetSession() { return MediaSessionImpl::Get(contents()); }

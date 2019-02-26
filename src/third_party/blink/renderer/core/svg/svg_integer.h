@@ -41,7 +41,11 @@ class SVGInteger final : public SVGPropertyHelper<SVGInteger> {
   typedef void TearOffType;
   typedef int PrimitiveType;
 
-  static SVGInteger* Create(int value = 0) { return new SVGInteger(value); }
+  static SVGInteger* Create(int value = 0) {
+    return MakeGarbageCollected<SVGInteger>(value);
+  }
+
+  explicit SVGInteger(int);
 
   virtual SVGInteger* Clone() const;
 
@@ -68,8 +72,6 @@ class SVGInteger final : public SVGPropertyHelper<SVGInteger> {
   static constexpr int kInitialValueBits = 2;
 
  protected:
-  explicit SVGInteger(int);
-
   int value_;
 };
 

@@ -9,12 +9,13 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/optional.h"
 #include "base/process/process_handle.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/browser_child_process_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
 
 namespace base {
@@ -23,11 +24,9 @@ class TickClock;
 
 namespace content {
 
-struct ChildProcessData;
-
+// Tracks the system's active audio service instance, if any exists.
 class CONTENT_EXPORT AudioServiceListener
-    : public service_manager::mojom::ServiceManagerListener,
-      public BrowserChildProcessObserver {
+    : public service_manager::mojom::ServiceManagerListener {
  public:
   class CONTENT_EXPORT Metrics {
    public:
@@ -40,24 +39,14 @@ class CONTENT_EXPORT AudioServiceListener
       kMaxValue = kFailure,
     };
 
-    // Matches histogram enum AudioServiceProcessTerminationStatus, entries
-    // (except kMaxEnum) must not be renumbered.
-    enum class ServiceProcessTerminationStatus {
-      kDisconnect = 0,
-      kCrash = 1,
-      kKill = 2,
-      kMaxValue = kKill,
-    };
-
     explicit Metrics(const base::TickClock* clock);
     ~Metrics();
 
-    void ServiceAlreadyRunning();
+    void ServiceAlreadyRunning(service_manager::mojom::InstanceState state);
     void ServiceCreated();
     void ServiceFailedToStart();
     void ServiceStarted();
     void ServiceStopped();
-    void ServiceProcessTerminated(ServiceProcessTerminationStatus status);
 
    private:
     void LogServiceStartStatus(ServiceStartStatus status);
@@ -83,15 +72,6 @@ class CONTENT_EXPORT AudioServiceListener
                            OnInitWithAudioService_ProcessIdNotNull);
   FRIEND_TEST_ALL_PREFIXES(AudioServiceListenerTest,
                            OnAudioServiceCreated_ProcessIdNotNull);
-  FRIEND_TEST_ALL_PREFIXES(
-      AudioServiceListenerTest,
-      AudioProcessDisconnected_LogProcessTerminationStatus_ProcessIdNull);
-  FRIEND_TEST_ALL_PREFIXES(
-      AudioServiceListenerTest,
-      AudioProcessCrashed_LogProcessTerminationStatus_ProcessIdNull);
-  FRIEND_TEST_ALL_PREFIXES(
-      AudioServiceListenerTest,
-      AudioProcessKilled_LogProcessTerminationStatus_ProcessIdNull);
   FRIEND_TEST_ALL_PREFIXES(AudioServiceListenerTest,
                            StartService_LogStartStatus);
 
@@ -100,26 +80,20 @@ class CONTENT_EXPORT AudioServiceListener
                   running_services) override;
   void OnServiceCreated(
       service_manager::mojom::RunningServiceInfoPtr service) override;
-  void OnServiceStarted(const ::service_manager::Identity& identity,
+  void OnServiceStarted(const service_manager::Identity& identity,
                         uint32_t pid) override;
-  void OnServicePIDReceived(const ::service_manager::Identity& identity,
+  void OnServicePIDReceived(const service_manager::Identity& identity,
                             uint32_t pid) override;
   void OnServiceFailedToStart(
-      const ::service_manager::Identity& identity) override;
-  void OnServiceStopped(const ::service_manager::Identity& identity) override;
-
-  // BrowserChildProcessObserver implementation.
-  void BrowserChildProcessHostDisconnected(const ChildProcessData& data) final;
-  void BrowserChildProcessCrashed(
-      const ChildProcessData& data,
-      const ChildProcessTerminationInfo& info) final;
-  void BrowserChildProcessKilled(const ChildProcessData& data,
-                                 const ChildProcessTerminationInfo& info) final;
+      const service_manager::Identity& identity) override;
+  void OnServiceStopped(const service_manager::Identity& identity) override;
 
   void MaybeSetLogFactory();
 
   mojo::Binding<service_manager::mojom::ServiceManagerListener> binding_;
   std::unique_ptr<service_manager::Connector> connector_;
+  base::Optional<service_manager::Identity> current_instance_identity_;
+  base::Optional<service_manager::mojom::InstanceState> current_instance_state_;
   base::ProcessId process_id_ = base::kNullProcessId;
   Metrics metrics_;
   bool log_factory_is_set_ = false;

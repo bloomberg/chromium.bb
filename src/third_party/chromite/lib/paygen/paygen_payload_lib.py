@@ -16,6 +16,7 @@ import tempfile
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib.paygen import filelib
@@ -692,8 +693,9 @@ def FindExistingPayloads(payload):
   Returns:
     List of URIs for existing payloads that match the default payload pattern.
   """
+  ctx = gs.GSContext()
   search_uri = DefaultPayloadUri(payload, random_str='*')
-  return _FilterNonPayloadUris(urilib.ListFiles(search_uri))
+  return _FilterNonPayloadUris(ctx.LS(search_uri))
 
 
 def FindCacheDir():

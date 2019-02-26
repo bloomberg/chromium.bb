@@ -22,7 +22,9 @@ class WindowSelectorTest;
 
 // Manages a window selector which displays an overview of all windows and
 // allows selecting a window to activate it.
-class ASH_EXPORT WindowSelectorController : public WindowSelectorDelegate {
+class ASH_EXPORT WindowSelectorController
+    : public WindowSelectorDelegate,
+      public ::wm::ActivationChangeObserver {
  public:
   enum class AnimationCompleteReason {
     kCompleted,
@@ -84,7 +86,21 @@ class ASH_EXPORT WindowSelectorController : public WindowSelectorDelegate {
   void RemoveAndDestroyStartAnimationObserver(
       DelayedAnimationObserver* animation_observer) override;
 
+  // ::wm::ActivationChangeObserver:
+  void OnWindowActivating(ActivationReason reason,
+                          aura::Window* gained_active,
+                          aura::Window* lost_active) override;
+  void OnWindowActivated(ActivationReason reason,
+                         aura::Window* gained_active,
+                         aura::Window* lost_active) override {}
+  void OnAttemptToReactivateWindow(aura::Window* request_active,
+                                   aura::Window* actual_active) override;
+
   WindowSelector* window_selector() { return window_selector_.get(); }
+
+  void set_occlusion_pause_duration_for_end_ms_for_test(int duration) {
+    occlusion_pause_duration_for_end_ms_ = duration;
+  }
 
  private:
   class OverviewBlurController;
@@ -120,6 +136,8 @@ class ASH_EXPORT WindowSelectorController : public WindowSelectorDelegate {
 
   // If we are in middle of ending overview mode.
   bool is_shutting_down_ = false;
+
+  int occlusion_pause_duration_for_end_ms_;
 
   // Handles blurring of the wallpaper when entering or exiting overview mode.
   // Animates the blurring if necessary.

@@ -11,12 +11,15 @@
 #include "base/macros.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/test_sync_user_settings.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "url/gurl.h"
 
 namespace syncer {
 
+// A simple test implementation of SyncService that allows direct control over
+// the returned state. By default, everything returns "enabled"/"active".
 class TestSyncService : public SyncService {
  public:
   TestSyncService();
@@ -25,22 +28,28 @@ class TestSyncService : public SyncService {
   void SetDisableReasons(int disable_reasons);
   void SetTransportState(TransportState transport_state);
   void SetLocalSyncEnabled(bool local_sync_enabled);
+  void SetAuthenticatedAccountInfo(const AccountInfo& account_info);
+  void SetIsAuthenticatedAccountPrimary(bool is_primary);
   void SetAuthError(const GoogleServiceAuthError& auth_error);
+  void SetFirstSetupComplete(bool first_setup_complete);
   void SetPreferredDataTypes(const ModelTypeSet& types);
   void SetActiveDataTypes(const ModelTypeSet& types);
-  void SetCustomPassphraseEnabled(bool enabled);
+  void SetIsUsingSecondaryPassphrase(bool enabled);
   void SetLastCycleSnapshot(const SyncCycleSnapshot& snapshot);
+  // Convenience versions of the above, for when the caller doesn't care about
+  // the particular values in the snapshot, just whether there is one.
+  void SetEmptyLastCycleSnapshot();
+  void SetNonEmptyLastCycleSnapshot();
 
   // SyncService implementation.
+  syncer::SyncUserSettings* GetUserSettings() override;
+  const syncer::SyncUserSettings* GetUserSettings() const override;
   int GetDisableReasons() const override;
   TransportState GetTransportState() const override;
   bool IsLocalSyncEnabled() const override;
   AccountInfo GetAuthenticatedAccountInfo() const override;
   bool IsAuthenticatedAccountPrimary() const override;
   const GoogleServiceAuthError& GetAuthError() const override;
-
-  bool IsFirstSetupComplete() const override;
-  void SetFirstSetupComplete() override;
 
   std::unique_ptr<SyncSetupInProgressHandle> GetSetupInProgressHandle()
       override;
@@ -49,11 +58,8 @@ class TestSyncService : public SyncService {
   ModelTypeSet GetPreferredDataTypes() const override;
   ModelTypeSet GetActiveDataTypes() const override;
 
-  void RequestStart() override;
   void RequestStop(SyncStopDataFate data_fate) override;
   void OnDataTypeRequestsSyncStartup(ModelType type) override;
-  void OnUserChoseDatatypes(bool sync_everything,
-                            ModelTypeSet chosen_types) override;
   void TriggerRefresh(const ModelTypeSet& types) override;
   void ReenableDatatype(ModelType type) override;
   void ReadyForStartChanged(syncer::ModelType type) override;
@@ -67,13 +73,9 @@ class TestSyncService : public SyncService {
   bool IsUsingSecondaryPassphrase() const override;
   void EnableEncryptEverything() override;
   bool IsEncryptEverythingEnabled() const override;
-  void SetEncryptionPassphrase(const std::string& passphrase,
-                               PassphraseType type) override;
+  void SetEncryptionPassphrase(const std::string& passphrase) override;
   bool SetDecryptionPassphrase(const std::string& passphrase) override;
-  bool IsCryptographerReady(const BaseTransaction* trans) const override;
 
-  SyncClient* GetSyncClient() const override;
-  sync_sessions::OpenTabsUIDelegate* GetOpenTabsUIDelegate() override;
   UserShare* GetUserShare() const override;
 
   SyncTokenStatus GetSyncTokenStatus() const override;
@@ -91,6 +93,7 @@ class TestSyncService : public SyncService {
   base::WeakPtr<JsController> GetJsController() override;
   void GetAllNodes(const base::Callback<void(std::unique_ptr<base::ListValue>)>&
                        callback) override;
+  void SetInvalidationsForSessionsEnabled(bool enabled) override;
 
   // DataTypeEncryptionHandler implementation.
   bool IsPassphraseRequired() const override;
@@ -100,16 +103,19 @@ class TestSyncService : public SyncService {
   void Shutdown() override;
 
  private:
+  TestSyncUserSettings user_settings_;
+
   int disable_reasons_ = DISABLE_REASON_NONE;
   TransportState transport_state_ = TransportState::ACTIVE;
   bool local_sync_enabled_ = false;
   AccountInfo account_info_;
+  bool account_is_primary_ = true;
   GoogleServiceAuthError auth_error_;
 
   ModelTypeSet preferred_data_types_;
   ModelTypeSet active_data_types_;
 
-  bool custom_passphrase_enabled_ = false;
+  bool using_secondary_passphrase_ = false;
 
   SyncCycleSnapshot last_cycle_snapshot_;
 

@@ -20,11 +20,11 @@
 namespace blink {
 
 WakeLock* WakeLock::CreateScreenWakeLock(ScriptState* script_state) {
-  return new WakeLock(script_state, LockType::kScreen);
+  return MakeGarbageCollected<WakeLock>(script_state, LockType::kScreen);
 }
 
 WakeLock* WakeLock::CreateSystemWakeLock(ScriptState* script_state) {
-  return new WakeLock(script_state, LockType::kSystem);
+  return MakeGarbageCollected<WakeLock>(script_state, LockType::kSystem);
 }
 
 WakeLock::~WakeLock() = default;
@@ -76,7 +76,7 @@ void WakeLock::ChangeActiveStatus(bool active) {
     wake_lock_service_->CancelWakeLock();
 
   active_ = active;
-  EnqueueEvent(*Event::Create(EventTypeNames::activechange),
+  EnqueueEvent(*Event::Create(event_type_names::kActivechange),
                TaskType::kMiscPlatformAPI);
 }
 
@@ -110,7 +110,7 @@ WakeLockRequest* WakeLock::createRequest() {
     ChangeActiveStatus(true);
 
   request_counter_++;
-  return new WakeLockRequest(this);
+  return MakeGarbageCollected<WakeLockRequest>(this);
 }
 
 void WakeLock::CancelRequest() {
@@ -122,7 +122,7 @@ void WakeLock::CancelRequest() {
 }
 
 const WTF::AtomicString& WakeLock::InterfaceName() const {
-  return EventTargetNames::WakeLock;
+  return event_target_names::kWakeLock;
 }
 
 ExecutionContext* WakeLock::GetExecutionContext() const {

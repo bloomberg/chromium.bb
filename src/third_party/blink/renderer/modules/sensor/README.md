@@ -15,7 +15,7 @@ The platform-specific parts of the implementation are located in
 
 ## Testing
 
-Sensors layout tests are located in `LayoutTests/sensor`.
+Sensors layout tests are located in `web_tests/sensor`.
 
 Sensors browser tests are located in `content/test/data/generic_sensor`.
 

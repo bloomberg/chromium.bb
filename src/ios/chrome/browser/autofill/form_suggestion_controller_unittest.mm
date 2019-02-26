@@ -18,7 +18,7 @@
 #import "ios/chrome/browser/autofill/form_input_accessory_consumer.h"
 #import "ios/chrome/browser/autofill/form_suggestion_view.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory_mediator.h"
-#include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
@@ -38,11 +38,14 @@
 
 @property(weak, nonatomic, readonly) FormSuggestion* suggestion;
 @property(weak, nonatomic, readonly) NSString* formName;
-@property(weak, nonatomic, readonly) NSString* fieldName;
+@property(weak, nonatomic, readonly) NSString* fieldIdentifier;
 @property(weak, nonatomic, readonly) NSString* frameID;
 @property(nonatomic, assign) BOOL selected;
 @property(nonatomic, assign) BOOL askedIfSuggestionsAvailable;
 @property(nonatomic, assign) BOOL askedForSuggestions;
+
+// Creates a test provider with default suggesstions.
++ (instancetype)providerWithSuggestions;
 
 - (instancetype)initWithSuggestions:(NSArray*)suggestions;
 
@@ -51,7 +54,6 @@
 @implementation TestSuggestionProvider {
   NSArray* _suggestions;
   NSString* _formName;
-  NSString* _fieldName;
   NSString* _fieldIdentifier;
   NSString* _frameID;
   FormSuggestion* _suggestion;
@@ -60,6 +62,20 @@
 @synthesize selected = _selected;
 @synthesize askedIfSuggestionsAvailable = _askedIfSuggestionsAvailable;
 @synthesize askedForSuggestions = _askedForSuggestions;
+
++ (instancetype)providerWithSuggestions {
+  NSArray* suggestions = @[
+    [FormSuggestion suggestionWithValue:@"foo"
+                     displayDescription:nil
+                                   icon:@""
+                             identifier:0],
+    [FormSuggestion suggestionWithValue:@"bar"
+                     displayDescription:nil
+                                   icon:@""
+                             identifier:1]
+  ];
+  return [[TestSuggestionProvider alloc] initWithSuggestions:suggestions];
+}
 
 - (instancetype)initWithSuggestions:(NSArray*)suggestions {
   self = [super init];
@@ -72,8 +88,8 @@
   return _formName;
 }
 
-- (NSString*)fieldName {
-  return _fieldName;
+- (NSString*)fieldIdentifier {
+  return _fieldIdentifier;
 }
 
 - (NSString*)frameID {
@@ -85,7 +101,6 @@
 }
 
 - (void)checkIfSuggestionsAvailableForForm:(NSString*)formName
-                                 fieldName:(NSString*)fieldName
                            fieldIdentifier:(NSString*)fieldIdentifier
                                  fieldType:(NSString*)fieldType
                                       type:(NSString*)type
@@ -101,7 +116,6 @@
 }
 
 - (void)retrieveSuggestionsForForm:(NSString*)formName
-                         fieldName:(NSString*)fieldName
                    fieldIdentifier:(NSString*)fieldIdentifier
                          fieldType:(NSString*)fieldType
                               type:(NSString*)type
@@ -114,35 +128,21 @@
 }
 
 - (void)didSelectSuggestion:(FormSuggestion*)suggestion
-                  fieldName:(NSString*)fieldName
-            fieldIdentifier:(NSString*)fieldIdentifier
                        form:(NSString*)formName
+            fieldIdentifier:(NSString*)fieldIdentifier
                     frameID:(NSString*)frameID
           completionHandler:(SuggestionHandledCompletion)completion {
   self.selected = YES;
   _suggestion = suggestion;
   _formName = [formName copy];
-  _fieldName = [fieldName copy];
-  _frameID = [frameID copy];
   _fieldIdentifier = [fieldIdentifier copy];
+  _frameID = [frameID copy];
   completion();
 }
 
 @end
 
 namespace {
-
-// Finds the FormSuggestionView in |parent|'s view hierarchy, if it exists.
-FormSuggestionView* GetSuggestionView(UIView* parent) {
-  if ([parent isKindOfClass:[FormSuggestionView class]])
-    return base::mac::ObjCCastStrict<FormSuggestionView>(parent);
-  for (UIView* child in parent.subviews) {
-    UIView* suggestion_view = GetSuggestionView(child);
-    if (suggestion_view)
-      return base::mac::ObjCCastStrict<FormSuggestionView>(suggestion_view);
-  }
-  return nil;
-}
 
 // Test fixture for FormSuggestionController testing.
 class FormSuggestionControllerTest : public PlatformTest {
@@ -157,19 +157,6 @@ class FormSuggestionControllerTest : public PlatformTest {
     mock_js_suggestion_manager_ =
         [OCMockObject niceMockForClass:[JsSuggestionManager class]];
 
-    // Set up a fake keyboard accessory view. It is expected to have two
-    // subviews.
-    input_accessory_view_ = [[UIView alloc] init];
-    UIView* fake_view_1 = [[UIView alloc] init];
-    [input_accessory_view_ addSubview:fake_view_1];
-    UIView* fake_view_2 = [[UIView alloc] init];
-    [input_accessory_view_ addSubview:fake_view_2];
-
-    // Return the fake keyboard accessory view from the mock CRWWebViewProxy.
-    mock_web_view_proxy_ =
-        [OCMockObject niceMockForProtocol:@protocol(CRWWebViewProxy)];
-    [[[mock_web_view_proxy_ stub] andReturn:input_accessory_view_]
-        keyboardAccessory];
     test_web_state_.SetWebViewProxy(mock_web_view_proxy_);
   }
 
@@ -192,40 +179,37 @@ class FormSuggestionControllerTest : public PlatformTest {
         niceMockForProtocol:@protocol(FormInputAccessoryConsumer)];
     // Mock the consumer to verify the suggestion views.
     void (^mockShow)(NSInvocation*) = ^(NSInvocation* invocation) {
-      for (UIView* view in [input_accessory_view_ subviews]) {
-        [view removeFromSuperview];
-      }
-      __unsafe_unretained UIView* view;
-      [invocation getArgument:&view atIndex:2];
-      [input_accessory_view_ addSubview:view];
+      __unsafe_unretained NSArray* suggestions;
+      [invocation getArgument:&suggestions atIndex:2];
+      received_suggestions_ = suggestions;
     };
     [[[mock_consumer_ stub] andDo:mockShow]
-        showCustomInputAccessoryView:[OCMArg any]
-                  navigationDelegate:[OCMArg any]];
+        showAccessorySuggestions:[OCMArg any]
+                suggestionClient:[OCMArg any]
+              isHardwareKeyboard:NO];
 
     // Mock restore keyboard to verify cleanup.
     void (^mockRestore)(NSInvocation*) = ^(NSInvocation* invocation) {
-      for (UIView* view in [input_accessory_view_ subviews]) {
-        [view removeFromSuperview];
-      }
+      received_suggestions_ = nil;
     };
     [[[mock_consumer_ stub] andDo:mockRestore] restoreOriginalKeyboardView];
 
     accessory_mediator_ =
         [[FormInputAccessoryMediator alloc] initWithConsumer:mock_consumer_
-                                                webStateList:NULL];
+                                                webStateList:NULL
+                                         personalDataManager:NULL
+                                               passwordStore:NULL];
 
     [accessory_mediator_ injectWebState:&test_web_state_];
-    [accessory_mediator_
-        injectProviders:@[ [suggestion_controller_ accessoryViewProvider] ]];
+    [accessory_mediator_ injectProviders:@[ suggestion_controller_ ]];
     [accessory_mediator_ injectSuggestionManager:mock_js_suggestion_manager_];
   }
 
   // The FormSuggestionController under test.
   FormSuggestionController* suggestion_controller_;
 
-  // A fake keyboard accessory view.
-  UIView* input_accessory_view_;
+  // The suggestions the controller sent to the client, if any.
+  NSArray* received_suggestions_;
 
   // Mock JsSuggestionManager for verifying interactions.
   id mock_js_suggestion_manager_;
@@ -250,33 +234,32 @@ class FormSuggestionControllerTest : public PlatformTest {
 
 // Tests that pages whose URLs don't have a web scheme aren't processed.
 TEST_F(FormSuggestionControllerTest, PageLoadShouldBeIgnoredWhenNotWebScheme) {
-  SetUpController(@[]);
+  SetUpController(@[ [TestSuggestionProvider providerWithSuggestions] ]);
   test_web_state_.SetCurrentURL(GURL("data:text/html;charset=utf8;base64,"));
   test_web_state_.OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
-  EXPECT_FALSE(GetSuggestionView(input_accessory_view_));
+  EXPECT_FALSE(received_suggestions_.count);
   EXPECT_OCMOCK_VERIFY(mock_js_suggestion_manager_);
 }
 
 // Tests that pages whose content isn't HTML aren't processed.
 TEST_F(FormSuggestionControllerTest, PageLoadShouldBeIgnoredWhenNotHtml) {
-  SetUpController(@[]);
+  SetUpController(@[ [TestSuggestionProvider providerWithSuggestions] ]);
   // Load PDF file URL.
   test_web_state_.SetContentIsHTML(false);
   test_web_state_.OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
-  EXPECT_FALSE(GetSuggestionView(input_accessory_view_));
+  EXPECT_FALSE(received_suggestions_.count);
 }
 
-// Tests that the keyboard accessory view is reset and JavaScript is injected
-// when a page is loaded.
+// Tests that the suggestions are reset and JavaScript is injected when a page
+// is loaded.
 TEST_F(FormSuggestionControllerTest,
        PageLoadShouldRestoreKeyboardAccessoryViewAndInjectJavaScript) {
-  SetUpController(@[]);
+  SetUpController(@[ [TestSuggestionProvider providerWithSuggestions] ]);
   test_web_state_.SetCurrentURL(GURL("http://foo.com"));
 
   // Trigger form activity, which should set up the suggestions view.
   autofill::FormActivityParams params;
   params.form_name = "form";
-  params.field_name = "field";
   params.field_identifier = "field_id";
   params.field_type = "text";
   params.type = "type";
@@ -284,19 +267,19 @@ TEST_F(FormSuggestionControllerTest,
   params.input_missing = false;
   test_form_activity_tab_helper_.FormActivityRegistered(
       /*sender_frame*/ nullptr, params);
-  EXPECT_TRUE(GetSuggestionView(input_accessory_view_));
+  EXPECT_TRUE(received_suggestions_.count);
 
-  // Trigger another page load. The suggestions accessory view should
-  // not be present.
+  // Trigger another page load. The suggestions should not be present.
   test_web_state_.OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
-  EXPECT_FALSE(GetSuggestionView(input_accessory_view_));
+  EXPECT_FALSE(received_suggestions_.count);
 }
 
 // Tests that "blur" events are ignored.
 TEST_F(FormSuggestionControllerTest, FormActivityBlurShouldBeIgnored) {
+  SetUpController(@[ [TestSuggestionProvider providerWithSuggestions] ]);
+
   autofill::FormActivityParams params;
   params.form_name = "form";
-  params.field_name = "field";
   params.field_identifier = "field_id";
   params.field_type = "text";
   params.type = "blur";  // blur!
@@ -304,7 +287,7 @@ TEST_F(FormSuggestionControllerTest, FormActivityBlurShouldBeIgnored) {
   params.input_missing = false;
   test_form_activity_tab_helper_.FormActivityRegistered(
       /*sender_frame*/ nullptr, params);
-  EXPECT_FALSE(GetSuggestionView(input_accessory_view_));
+  EXPECT_FALSE(received_suggestions_.count);
 }
 
 // Tests that no suggestions are displayed when no providers are registered.
@@ -315,7 +298,6 @@ TEST_F(FormSuggestionControllerTest,
   test_web_state_.SetCurrentURL(GURL("http://foo.com"));
   autofill::FormActivityParams params;
   params.form_name = "form";
-  params.field_name = "field";
   params.field_identifier = "field_id";
   params.field_type = "text";
   params.type = "type";
@@ -324,10 +306,9 @@ TEST_F(FormSuggestionControllerTest,
   test_form_activity_tab_helper_.FormActivityRegistered(
       /*sender_frame*/ nullptr, params);
 
-  // The suggestions accessory view should be empty.
-  FormSuggestionView* suggestionView = GetSuggestionView(input_accessory_view_);
-  EXPECT_TRUE(suggestionView);
-  EXPECT_EQ(0U, [suggestionView.suggestions count]);
+  // The suggestions should be empty.
+  EXPECT_TRUE(received_suggestions_);
+  EXPECT_EQ(0U, received_suggestions_.count);
 }
 
 // Tests that, when no providers have suggestions to offer for a form/field,
@@ -345,7 +326,6 @@ TEST_F(FormSuggestionControllerTest,
 
   autofill::FormActivityParams params;
   params.form_name = "form";
-  params.field_name = "field";
   params.field_identifier = "field_id";
   params.field_type = "text";
   params.type = "type";
@@ -364,15 +344,13 @@ TEST_F(FormSuggestionControllerTest,
   EXPECT_FALSE([provider1 askedForSuggestions]);
   EXPECT_FALSE([provider2 askedForSuggestions]);
 
-  // The accessory view should be empty.
-  FormSuggestionView* suggestionView = GetSuggestionView(input_accessory_view_);
-  EXPECT_TRUE(suggestionView);
-  EXPECT_EQ(0U, [suggestionView.suggestions count]);
+  // The suggestions should be empty.
+  EXPECT_FALSE(received_suggestions_.count);
+  EXPECT_EQ(0U, received_suggestions_.count);
 }
 
 // Tests that, once a provider is asked if it has suggestions for a form/field,
-// it and only it is asked to provide them, and that they are then displayed
-// in the keyboard accessory view.
+// it and only it is asked to provide them, and that suggestions are then sent.
 TEST_F(FormSuggestionControllerTest,
        FormActivityShouldRetrieveSuggestions_SuggestionsAddedToAccessoryView) {
   // Set up the controller with some providers, one of which can provide
@@ -396,7 +374,6 @@ TEST_F(FormSuggestionControllerTest,
 
   autofill::FormActivityParams params;
   params.form_name = "form";
-  params.field_name = "field";
   params.field_identifier = "field_id";
   params.field_type = "text";
   params.type = "type";
@@ -415,14 +392,13 @@ TEST_F(FormSuggestionControllerTest,
   EXPECT_TRUE([provider1 askedForSuggestions]);
   EXPECT_FALSE([provider2 askedForSuggestions]);
 
-  // The accessory view should show the suggestions.
-  FormSuggestionView* suggestionView = GetSuggestionView(input_accessory_view_);
-  EXPECT_TRUE(suggestionView);
-  EXPECT_NSEQ(suggestions, suggestionView.suggestions);
+  // The controller should have provided suggestions.
+  EXPECT_TRUE(received_suggestions_.count);
+  EXPECT_NSEQ(suggestions, received_suggestions_);
 }
 
-// Tests that selecting a suggestion from the accessory view informs the
-// specified delegate for that suggestion.
+// Tests that selecting a suggestion informs the specified delegate for that
+// suggestion.
 TEST_F(FormSuggestionControllerTest, SelectingSuggestionShouldNotifyDelegate) {
   // Send some suggestions to the controller and then tap one.
   NSArray* suggestions = @[
@@ -437,7 +413,6 @@ TEST_F(FormSuggestionControllerTest, SelectingSuggestionShouldNotifyDelegate) {
   test_web_state_.SetCurrentURL(GURL("http://foo.com"));
   autofill::FormActivityParams params;
   params.form_name = "form";
-  params.field_name = "field";
   params.field_identifier = "field_id";
   params.field_type = "text";
   params.type = "type";
@@ -451,7 +426,7 @@ TEST_F(FormSuggestionControllerTest, SelectingSuggestionShouldNotifyDelegate) {
   [suggestion_controller_ didSelectSuggestion:suggestions[0]];
   EXPECT_TRUE([provider selected]);
   EXPECT_NSEQ(@"form", [provider formName]);
-  EXPECT_NSEQ(@"field", [provider fieldName]);
+  EXPECT_NSEQ(@"field_id", [provider fieldIdentifier]);
   EXPECT_NSEQ(@"frame_id", [provider frameID]);
   EXPECT_NSEQ(suggestions[0], [provider suggestion]);
 }

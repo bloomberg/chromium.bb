@@ -36,15 +36,15 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 inline HTMLHtmlElement::HTMLHtmlElement(Document& document)
-    : HTMLElement(htmlTag, document) {}
+    : HTMLElement(kHTMLTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLHtmlElement)
 
 bool HTMLHtmlElement::IsURLAttribute(const Attribute& attribute) const {
-  return attribute.GetName() == manifestAttr ||
+  return attribute.GetName() == kManifestAttr ||
          HTMLElement::IsURLAttribute(attribute);
 }
 
@@ -73,7 +73,7 @@ void HTMLHtmlElement::MaybeSetupApplicationCache() {
   if (!document_loader ||
       !GetDocument().Parser()->DocumentWasLoadedAsPartOfNavigation())
     return;
-  const AtomicString& manifest = FastGetAttribute(manifestAttr);
+  const AtomicString& manifest = FastGetAttribute(kManifestAttr);
 
   if (RuntimeEnabledFeatures::RestrictAppCacheToSecureContextsEnabled() &&
       !GetDocument().IsSecureContext()) {

@@ -54,7 +54,8 @@ void BoxPainterBase::PaintNormalBoxShadow(const PaintInfo& info,
                                           const LayoutRect& paint_rect,
                                           const ComputedStyle& style,
                                           bool include_logical_left_edge,
-                                          bool include_logical_right_edge) {
+                                          bool include_logical_right_edge,
+                                          bool background_is_skipped) {
   if (!style.BoxShadow())
     return;
   GraphicsContext& context = info.context;
@@ -64,8 +65,9 @@ void BoxPainterBase::PaintNormalBoxShadow(const PaintInfo& info,
 
   bool has_border_radius = style.HasBorderRadius();
   bool has_opaque_background =
+      !background_is_skipped &&
       style.VisitedDependentColor(GetCSSPropertyBackgroundColor()).Alpha() ==
-      255;
+          255;
 
   GraphicsContextStateSaver state_saver(context, false);
 
@@ -425,15 +427,19 @@ inline bool PaintFastBottomLayer(Node* node,
   // so snap to integers. This is particuarly important for sprite maps.
   // Calculation up to this point, in LayoutUnits, can lead to small variations
   // from integer size, so it is safe to round without introducing major issues.
-  const FloatRect src_rect =
-      FloatRect(RoundedIntRect(Image::ComputeSubsetForBackground(
-          image_tile, dest_rect_for_subset, intrinsic_tile_size)));
+  const FloatRect unrounded_subset = Image::ComputeSubsetForBackground(
+      image_tile, dest_rect_for_subset, intrinsic_tile_size);
+  FloatRect src_rect = FloatRect(RoundedIntRect(unrounded_subset));
+
+  // If we have rounded the image size to 0, revert the rounding.
+  if (src_rect.IsEmpty())
+    src_rect = unrounded_subset;
 
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage",
                "data",
-               InspectorPaintImageEvent::Data(node, *info.image,
-                                              FloatRect(image->Rect()),
-                                              FloatRect(image_border.Rect())));
+               inspector_paint_image_event::Data(
+                   node, *info.image, FloatRect(image->Rect()),
+                   FloatRect(image_border.Rect())));
 
   // Since there is no way for the developer to specify decode behavior, use
   // kSync by default.
@@ -548,7 +554,7 @@ void PaintFillLayerBackground(GraphicsContext& context,
       image) {
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage",
                  "data",
-                 InspectorPaintImageEvent::Data(
+                 inspector_paint_image_event::Data(
                      node, *info.image, FloatRect(image->Rect()),
                      FloatRect(scrolled_paint_rect)));
     context.DrawTiledImage(image,

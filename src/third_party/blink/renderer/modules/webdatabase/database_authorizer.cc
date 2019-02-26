@@ -40,7 +40,8 @@ namespace blink {
 DatabaseAuthorizer* DatabaseAuthorizer::Create(
     DatabaseContext* database_context,
     const String& database_info_table_name) {
-  return new DatabaseAuthorizer(database_context, database_info_table_name);
+  return MakeGarbageCollected<DatabaseAuthorizer>(database_context,
+                                                  database_info_table_name);
 }
 
 DatabaseAuthorizer::DatabaseAuthorizer(DatabaseContext* database_context,
@@ -316,14 +317,6 @@ int DatabaseAuthorizer::AllowAnalyze(const String& table_name) {
 }
 
 int DatabaseAuthorizer::AllowPragma(const String&, const String&) {
-  return security_enabled_ ? kSQLAuthDeny : kSQLAuthAllow;
-}
-
-int DatabaseAuthorizer::AllowAttach(const String&) {
-  return security_enabled_ ? kSQLAuthDeny : kSQLAuthAllow;
-}
-
-int DatabaseAuthorizer::AllowDetach(const String&) {
   return security_enabled_ ? kSQLAuthDeny : kSQLAuthAllow;
 }
 

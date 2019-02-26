@@ -7,7 +7,7 @@
 
 #include <stddef.h>
 
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "build/build_config.h"
 #include "ui/gfx/geometry/size.h"
 

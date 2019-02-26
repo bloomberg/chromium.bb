@@ -22,7 +22,6 @@
 #include "chrome/browser/ui/ash/launcher/internal_app_shelf_context_menu.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/grit/generated_resources.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/menu/menu_config.h"
@@ -163,7 +162,7 @@ void LauncherContextMenu::AddContextMenuOption(ui::SimpleMenuModel* menu_model,
                                                ash::CommandId type,
                                                int string_id) {
   const gfx::VectorIcon& icon = GetCommandIdVectorIcon(type, string_id);
-  if (features::IsTouchableAppContextMenuEnabled() && !icon.is_empty()) {
+  if (!icon.is_empty()) {
     const views::MenuConfig& menu_config = views::MenuConfig::instance();
     menu_model->AddItemWithStringIdAndIcon(
         type, string_id,

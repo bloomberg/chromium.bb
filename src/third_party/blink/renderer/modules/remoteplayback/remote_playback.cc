@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/modules/presentation/presentation_controller.h"
 #include "third_party/blink/renderer/modules/remoteplayback/availability_callback_wrapper.h"
 #include "third_party/blink/renderer/platform/memory_coordinator.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
 
 namespace blink {
@@ -58,8 +59,8 @@ KURL GetAvailabilityUrl(const WebURL& source, bool is_source_supported) {
   // remote-playback://<encoded-data> where |encoded-data| is base64 URL
   // encoded string representation of the source URL.
   std::string source_string = source.GetString().Utf8();
-  String encoded_source =
-      WTF::Base64URLEncode(source_string.data(), source_string.length());
+  String encoded_source = WTF::Base64URLEncode(
+      source_string.data(), SafeCast<unsigned>(source_string.length()));
 
   return KURL("remote-playback://" + encoded_source);
 }
@@ -72,7 +73,7 @@ bool IsBackgroundAvailabilityMonitoringDisabled() {
 
 // static
 RemotePlayback* RemotePlayback::Create(HTMLMediaElement& element) {
-  return new RemotePlayback(element);
+  return MakeGarbageCollected<RemotePlayback>(element);
 }
 
 RemotePlayback::RemotePlayback(HTMLMediaElement& element)
@@ -86,7 +87,7 @@ RemotePlayback::RemotePlayback(HTMLMediaElement& element)
       presentation_connection_binding_(this) {}
 
 const AtomicString& RemotePlayback::InterfaceName() const {
-  return EventTargetNames::RemotePlayback;
+  return event_target_names::kRemotePlayback;
 }
 
 ExecutionContext* RemotePlayback::GetExecutionContext() const {
@@ -99,7 +100,8 @@ ScriptPromise RemotePlayback::watchAvailability(
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  if (media_element_->FastHasAttribute(HTMLNames::disableremoteplaybackAttr)) {
+  if (media_element_->FastHasAttribute(
+          html_names::kDisableremoteplaybackAttr)) {
     resolver->Reject(
         DOMException::Create(DOMExceptionCode::kInvalidStateError,
                              "disableRemotePlayback attribute is present."));
@@ -129,7 +131,8 @@ ScriptPromise RemotePlayback::cancelWatchAvailability(ScriptState* script_state,
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  if (media_element_->FastHasAttribute(HTMLNames::disableremoteplaybackAttr)) {
+  if (media_element_->FastHasAttribute(
+          html_names::kDisableremoteplaybackAttr)) {
     resolver->Reject(
         DOMException::Create(DOMExceptionCode::kInvalidStateError,
                              "disableRemotePlayback attribute is present."));
@@ -152,7 +155,8 @@ ScriptPromise RemotePlayback::cancelWatchAvailability(
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  if (media_element_->FastHasAttribute(HTMLNames::disableremoteplaybackAttr)) {
+  if (media_element_->FastHasAttribute(
+          html_names::kDisableremoteplaybackAttr)) {
     resolver->Reject(
         DOMException::Create(DOMExceptionCode::kInvalidStateError,
                              "disableRemotePlayback attribute is present."));
@@ -170,7 +174,8 @@ ScriptPromise RemotePlayback::prompt(ScriptState* script_state) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  if (media_element_->FastHasAttribute(HTMLNames::disableremoteplaybackAttr)) {
+  if (media_element_->FastHasAttribute(
+          html_names::kDisableremoteplaybackAttr)) {
     resolver->Reject(
         DOMException::Create(DOMExceptionCode::kInvalidStateError,
                              "disableRemotePlayback attribute is present."));
@@ -348,7 +353,7 @@ void RemotePlayback::StateChanged(WebRemotePlaybackState state) {
   state_ = state;
   switch (state_) {
     case WebRemotePlaybackState::kConnecting:
-      DispatchEvent(*Event::Create(EventTypeNames::connecting));
+      DispatchEvent(*Event::Create(event_type_names::kConnecting));
       if (RuntimeEnabledFeatures::NewRemotePlaybackPipelineEnabled()) {
         if (media_element_->IsHTMLVideoElement()) {
           // TODO(xjz): Pass the remote device name.
@@ -358,10 +363,10 @@ void RemotePlayback::StateChanged(WebRemotePlaybackState state) {
       }
       break;
     case WebRemotePlaybackState::kConnected:
-      DispatchEvent(*Event::Create(EventTypeNames::connect));
+      DispatchEvent(*Event::Create(event_type_names::kConnect));
       break;
     case WebRemotePlaybackState::kDisconnected:
-      DispatchEvent(*Event::Create(EventTypeNames::disconnect));
+      DispatchEvent(*Event::Create(event_type_names::kDisconnect));
       if (RuntimeEnabledFeatures::NewRemotePlaybackPipelineEnabled()) {
         if (media_element_->IsHTMLVideoElement()) {
           ToHTMLVideoElement(media_element_)

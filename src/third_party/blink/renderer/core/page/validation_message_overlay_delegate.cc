@@ -16,8 +16,8 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/page_popup_client.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 
 namespace blink {
 
@@ -120,7 +120,8 @@ void ValidationMessageOverlayDelegate::UpdateFrameViewState(
   // FindVisualRectNeedingUpdateScopeBase::CheckVisualRect().
   FrameView().GetLayoutView()->SetSubtreeShouldCheckForPaintInvalidation();
 
-  FrameView().UpdateAllLifecyclePhases();
+  FrameView().UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kOther);
 }
 
 void ValidationMessageOverlayDelegate::EnsurePage(const PageOverlay& overlay,
@@ -131,7 +132,7 @@ void ValidationMessageOverlayDelegate::EnsurePage(const PageOverlay& overlay,
   // InspectorOverlayAgent?
   Page::PageClients page_clients;
   FillWithEmptyClients(page_clients);
-  chrome_client_ = new ValidationMessageChromeClient(
+  chrome_client_ = MakeGarbageCollected<ValidationMessageChromeClient>(
       main_page_->GetChromeClient(), anchor_->GetDocument().View(),
       const_cast<PageOverlay&>(overlay));
   page_clients.chrome_client = chrome_client_;
@@ -140,7 +141,6 @@ void ValidationMessageOverlayDelegate::EnsurePage(const PageOverlay& overlay,
   page_->GetSettings().SetMinimumFontSize(main_settings.GetMinimumFontSize());
   page_->GetSettings().SetMinimumLogicalFontSize(
       main_settings.GetMinimumLogicalFontSize());
-  page_->GetSettings().SetAcceleratedCompositingEnabled(false);
 
   LocalFrame* frame =
       LocalFrame::Create(EmptyLocalFrameClient::Create(), *page_, nullptr);
@@ -160,7 +160,7 @@ void ValidationMessageOverlayDelegate::EnsurePage(const PageOverlay& overlay,
   frame->ForceSynchronousDocumentInstall("text/html", data);
 
   Element& container = GetElementById("container");
-  if (LayoutTestSupport::IsRunningLayoutTest()) {
+  if (WebTestSupport::IsRunningWebTest()) {
     container.SetInlineStyleProperty(CSSPropertyTransition, "none");
     GetElementById("icon").SetInlineStyleProperty(CSSPropertyTransition,
                                                   "none");
@@ -170,7 +170,9 @@ void ValidationMessageOverlayDelegate::EnsurePage(const PageOverlay& overlay,
         .SetInlineStyleProperty(CSSPropertyTransition, "none");
   }
   // Get the size to decide position later.
-  FrameView().UpdateAllLifecyclePhases();
+  // TODO(schenney): This says get size, so we only need to update to layout.
+  FrameView().UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kOther);
   bubble_size_ = container.VisibleBoundsInVisualViewport().Size();
   // Add one because the content sometimes exceeds the exact width due to
   // rounding errors.
@@ -178,8 +180,9 @@ void ValidationMessageOverlayDelegate::EnsurePage(const PageOverlay& overlay,
   container.SetInlineStyleProperty(CSSPropertyMinWidth,
                                    bubble_size_.Width() / zoom_factor,
                                    CSSPrimitiveValue::UnitType::kPixels);
-  container.setAttribute(HTMLNames::classAttr, "shown-initially");
-  FrameView().UpdateAllLifecyclePhases();
+  container.setAttribute(html_names::kClassAttr, "shown-initially");
+  FrameView().UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kOther);
 }
 
 void ValidationMessageOverlayDelegate::WriteDocument(SharedBuffer* data) {
@@ -294,7 +297,7 @@ void ValidationMessageOverlayDelegate::AdjustBubblePosition(
     GetElementById("inner-arrow-bottom")
         .SetInlineStyleProperty(CSSPropertyLeft, arrow_x,
                                 CSSPrimitiveValue::UnitType::kPixels);
-    container.setAttribute(HTMLNames::classAttr, "shown-fully bottom-arrow");
+    container.setAttribute(html_names::kClassAttr, "shown-fully bottom-arrow");
     container.SetInlineStyleProperty(
         CSSPropertyTransformOrigin,
         String::Format("%.2f%% bottom", arrow_anchor_percent));
@@ -305,7 +308,7 @@ void ValidationMessageOverlayDelegate::AdjustBubblePosition(
     GetElementById("inner-arrow-top")
         .SetInlineStyleProperty(CSSPropertyLeft, arrow_x,
                                 CSSPrimitiveValue::UnitType::kPixels);
-    container.setAttribute(HTMLNames::classAttr, "shown-fully");
+    container.setAttribute(html_names::kClassAttr, "shown-fully");
     container.SetInlineStyleProperty(
         CSSPropertyTransformOrigin,
         String::Format("%.2f%% top", arrow_anchor_percent));

@@ -5,7 +5,6 @@
 #include "chrome/browser/android/feed/feed_network_bridge.h"
 
 #include <utility>
-#include <vector>
 
 #include "base/android/callback_android.h"
 #include "base/android/jni_android.h"
@@ -27,29 +26,16 @@ using base::android::ScopedJavaGlobalRef;
 
 namespace feed {
 
-namespace {
-
-void OnResult(const ScopedJavaGlobalRef<jobject>& j_callback,
-              int32_t http_code,
-              std::vector<uint8_t> response_bytes) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jbyteArray> j_response_bytes =
-      base::android::ToJavaByteArray(env, response_bytes);
-  ScopedJavaLocalRef<jobject> j_http_response =
-      Java_FeedNetworkBridge_createHttpResponse(env, http_code,
-                                                j_response_bytes);
-  base::android::RunObjectCallbackAndroid(j_callback, j_http_response);
-}
-
-}  // namespace
-
-FeedNetworkBridge::FeedNetworkBridge(const JavaParamRef<jobject>& j_profile) {
+FeedNetworkBridge::FeedNetworkBridge(const JavaParamRef<jobject>& j_profile)
+    : weak_factory_(this) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   FeedHostService* host_service =
       FeedHostServiceFactory::GetForBrowserContext(profile);
   networking_host_ = host_service->GetNetworkingHost();
   DCHECK(networking_host_);
 }
+
+FeedNetworkBridge::~FeedNetworkBridge() = default;
 
 static jlong JNI_FeedNetworkBridge_Init(
     JNIEnv* env,
@@ -72,12 +58,30 @@ void FeedNetworkBridge::SendNetworkRequest(
     const JavaParamRef<jobject>& j_callback) {
   auto url = GURL(ConvertJavaStringToUTF8(env, j_url));
   FeedNetworkingHost::ResponseCallback callback =
-      base::BindOnce(&OnResult, ScopedJavaGlobalRef<jobject>(env, j_callback));
+      base::BindOnce(&FeedNetworkBridge::OnResult, weak_factory_.GetWeakPtr(),
+                     ScopedJavaGlobalRef<jobject>(env, j_callback));
   std::vector<uint8_t> request_body;
-  base::android::JavaByteArrayToByteVector(env, j_body.obj(), &request_body);
+  base::android::JavaByteArrayToByteVector(env, j_body, &request_body);
 
   networking_host_->Send(url, ConvertJavaStringToUTF8(env, j_request_type),
                          std::move(request_body), std::move(callback));
+}
+
+void FeedNetworkBridge::CancelRequests(JNIEnv* env,
+                                       const JavaParamRef<jobject>& j_this) {
+  networking_host_->CancelRequests();
+}
+
+void FeedNetworkBridge::OnResult(const ScopedJavaGlobalRef<jobject>& j_callback,
+                                 int32_t http_code,
+                                 std::vector<uint8_t> response_bytes) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jbyteArray> j_response_bytes =
+      base::android::ToJavaByteArray(env, response_bytes);
+  ScopedJavaLocalRef<jobject> j_http_response =
+      Java_FeedNetworkBridge_createHttpResponse(env, http_code,
+                                                j_response_bytes);
+  base::android::RunObjectCallbackAndroid(j_callback, j_http_response);
 }
 
 }  // namespace feed

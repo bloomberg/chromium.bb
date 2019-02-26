@@ -11,27 +11,15 @@
 #include "base/macros.h"
 #include "content/public/browser/resource_context.h"
 
-namespace net {
-class URLRequestContext;
-}
-
 namespace content {
 
 class MockResourceContext : public ResourceContext {
  public:
   MockResourceContext();
 
-  // Does not take ownership of |test_request_context|.
-  explicit MockResourceContext(net::URLRequestContext* test_request_context);
-
   ~MockResourceContext() override;
 
-  // ResourceContext implementation:
-  net::URLRequestContext* GetRequestContext() override;
-
  private:
-  net::URLRequestContext* test_request_context_;
-
   DISALLOW_COPY_AND_ASSIGN(MockResourceContext);
 };
 

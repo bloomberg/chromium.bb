@@ -27,11 +27,6 @@ namespace device {
 class FidoAuthenticator;
 class AuthenticatorMakeCredentialResponse;
 
-using RegisterResponseCallback =
-    base::OnceCallback<void(FidoReturnCode,
-                            base::Optional<AuthenticatorMakeCredentialResponse>,
-                            FidoTransportProtocol)>;
-
 class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialRequestHandler
     : public FidoRequestHandler<AuthenticatorMakeCredentialResponse> {
  public:
@@ -40,7 +35,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialRequestHandler
       const base::flat_set<FidoTransportProtocol>& supported_transports,
       CtapMakeCredentialRequest request_parameter,
       AuthenticatorSelectionCriteria authenticator_criteria,
-      RegisterResponseCallback completion_callback);
+      CompletionCallback completion_callback);
   ~MakeCredentialRequestHandler() override;
 
   // FidoRequestHandlerBase:

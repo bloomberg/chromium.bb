@@ -43,8 +43,6 @@ const base::Feature kViewsTaskManager{"ViewsTaskManager",
 #endif  // defined(OS_MACOSX)
 
 #if !defined(OS_ANDROID)
-const base::Feature kAnimatedAppMenuIcon{"AnimatedAppMenuIcon",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAppBanners {
   "AppBanners",
 #if defined(OS_CHROMEOS)
@@ -61,6 +59,12 @@ const base::Feature kAppBanners {
 const base::Feature kAppNotificationStatusMessaging{
     "AppNotificationStatusMessaging", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_ANDROID)
+
+#if !defined(OS_ANDROID)
+// Use the App Service. See chrome/services/app_service/README.md.
+const base::Feature kAppService{"AppService",
+                                base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // !defined(OS_ANDROID)
 
 // If enabled, the list of content suggestions on the New Tab page will contain
 // assets (e.g. books, pictures, audio) that the user downloaded for later use.
@@ -138,12 +142,6 @@ const base::Feature kTabMetricsLogging{"TabMetricsLogging",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-#if defined(OS_MACOSX)
-// Enables the suggested text touch bar for autocomplete in textfields.
-const base::Feature kTextSuggestionsTouchBar{"TextSuggestionsTouchBar",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
-
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 // Enables the blocking of third-party modules.
 // Note: Due to a limitation in the implementation of this feature, it is
@@ -191,13 +189,6 @@ const base::Feature kUsageTimeLimitPolicy{"UsageTimeLimitPolicy",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-#if defined(OS_WIN)
-// Enables or disables desktop ios promotion, which shows a promotion to the
-// user promoting Chrome for iOS.
-const base::Feature kDesktopIOSPromotion{"DesktopIOSPromotion",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
-
 // Enables or disables windowing related features for desktop PWAs.
 const base::Feature kDesktopPWAWindowing {
   "DesktopPWAWindowing",
@@ -212,31 +203,35 @@ const base::Feature kDesktopPWAWindowing {
 const base::Feature kDesktopPWAsLinkCapturing{
     "DesktopPWAsLinkCapturing", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Determines whether out of scope pages in the hosted app will use the
+// custom tab UI.
+const base::Feature kDesktopPWAsCustomTabUI{"DesktopPWAsCustomTabUI",
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Determines whether in scope requests are always opened in the same window.
 const base::Feature kDesktopPWAsStayInWindow{"DesktopPWAsStayInWindow",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables or disables new Desktop PWAs implementation that does not use
+// extensions.
+const base::Feature kDesktopPWAsWithoutExtensions{
+    "DesktopPWAsWithoutExtensions", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Disables downloads of unsafe file types over HTTP.
 const base::Feature kDisallowUnsafeHttpDownloads{
     "DisallowUnsafeHttpDownloads", base::FEATURE_DISABLED_BY_DEFAULT};
 const char kDisallowUnsafeHttpDownloadsParamName[] = "MimeTypeList";
 
-#if !defined(OS_ANDROID)
-const base::Feature kDoodlesOnLocalNtp{"DoodlesOnLocalNtp",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
-
-#if defined(OS_ANDROID)
-// Enables downloads as a foreground service for all versions of Android.
-const base::Feature kDownloadsForeground{"DownloadsForeground",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
-
 #if defined(OS_ANDROID)
 // Enable changing default downloads storage location on Android.
 const base::Feature kDownloadsLocationChange{"DownloadsLocationChange",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
+
+// Show the number of open incognito windows besides incognito icon on the
+// toolbar.
+const base::Feature kEnableIncognitoWindowCounter{
+    "EnableIncognitoWindowCounter", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // An experimental way of showing app banners, which has modal banners and gives
 // developers more control over when to show them.
@@ -281,8 +276,8 @@ const base::Feature kFullscreenExitUI{"FullscreenExitUI",
 
 #if defined(OS_WIN)
 // Enables using GDI to print text as simply text.
-const base::Feature kGdiTextPrinting {"GdiTextPrinting",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kGdiTextPrinting{"GdiTextPrinting",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 // Controls whether the GeoLanguage system is enabled. GeoLanguage uses IP-based
@@ -299,10 +294,10 @@ const base::Feature kGrantNotificationsToDSE{"GrantNotificationsToDSE",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_ANDROID)
 
-#if defined (OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
 // Enables or disables the Happiness Tracking System for the device.
-const base::Feature kHappinessTrackingSystem {
-    "HappinessTrackingSystem", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kHappinessTrackingSystem{"HappinessTrackingSystem",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 #if !defined(OS_ANDROID)
@@ -317,11 +312,12 @@ const base::Feature kViewsCastDialog{"ViewsCastDialog",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // !defined(OS_ANDROID)
 
-// Enables navigation suggestions for lookalike URLs (e.g. internationalized
+// Enables navigation suggestions UI for lookalike URLs (e.g. internationalized
 // domain names that are visually similar to popular domains or to domains with
-// engagement score, such as googlé.com).
-const base::Feature kLookalikeUrlNavigationSuggestions{
-    "LookalikeUrlNavigationSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
+// engagement score, such as googlé.com). This is prefixed with V2 because the
+// client logic handling the feature was changed.
+const base::Feature kLookalikeUrlNavigationSuggestionsUI{
+    "LookalikeUrlNavigationSuggestionsUI", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether the "improved recovery component" is used. The improved
 // recovery component is a redesigned Chrome component intended to restore
@@ -373,13 +369,7 @@ const base::Feature kAcknowledgeNtpOverrideOnDeactivate{
 
 // The material redesign of the Incognito NTP.
 const base::Feature kMaterialDesignIncognitoNTP{
-  "MaterialDesignIncognitoNTP",
-#if defined(OS_ANDROID)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-};
+    "MaterialDesignIncognitoNTP", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables modal permission prompts.
 const base::Feature kModalPermissionPrompts{"ModalPermissionPrompts",
@@ -403,6 +393,11 @@ const char kNewNetErrorPageUIAlternateParameterName[] = "ui-alternate";
 const char kNewNetErrorPageUIAlternateContentList[] = "content_list";
 const char kNewNetErrorPageUIAlternateContentPreview[] = "content_preview";
 #endif  // OS_ANDROID
+
+#if !defined(OS_ANDROID)
+const base::Feature kNewTabLoadingAnimation{"NewTabLoadingAnimation",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // !OS_ANDROID
 
 #if defined(OS_POSIX)
 // Enables NTLMv2, which implicitly disables NTLMv1.
@@ -456,6 +451,11 @@ const base::Feature kPolicyTool{"PolicyTool",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+// Allows prediction operations (e.g., prefetching) on all connection types.
+const base::Feature kPredictivePrefetchingAllowedOnAllConnectionTypes{
+    "PredictivePrefetchingAllowedOnAllConnectionTypes",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if BUILDFLAG(ENABLE_PLUGINS)
 // Prefer HTML content by hiding Flash from the list of plugins.
 // https://crbug.com/626728
@@ -481,7 +481,7 @@ const base::Feature kCloudPrinterHandler{"CloudPrinterHandler",
 const base::Feature kNewPrintPreview{"NewPrintPreview",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kNupPrinting{"NupPrinting",
-                                 base::FEATURE_DISABLED_BY_DEFAULT};
+                                 base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // Enables or disables push subscriptions keeping Chrome running in the
@@ -495,6 +495,11 @@ const base::Feature kSafeSearchUrlReporting{"SafeSearchUrlReporting",
 // Controls whether the user is prompted when sites request attestation.
 const base::Feature kSecurityKeyAttestationPrompt{
     "SecurityKeyAttestationPrompt", base::FEATURE_ENABLED_BY_DEFAULT};
+
+#if !defined(OS_ANDROID)
+const base::Feature kShowManagedUi{"ShowManagedUi",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 #if defined(OS_ANDROID)
 const base::Feature kShowTrustedPublisherURL{"ShowTrustedPublisherURL",
@@ -571,13 +576,13 @@ const base::Feature kSysInternals{"SysInternals",
 const base::Feature kSystemWebApps{"SystemWebApps",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables or disables the App Management UI.
+const base::Feature kAppManagement{"AppManagement",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable TopSites to source and sort its site data using site engagement.
 const base::Feature kTopSitesFromSiteEngagement{
     "TopSitesFromSiteEngagement", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables using the local NTP if Google is the default search engine.
-const base::Feature kUseGoogleLocalNtp{"UseGoogleLocalNtp",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if defined(OS_CHROMEOS)
 // Enables or disables logging for adaptive screen brightness on Chrome OS.
@@ -633,7 +638,7 @@ const base::Feature kCrOSComponent{"CrOSComponent",
 
 // Enables or disables TPM firmware update capability on Chrome OS.
 const base::Feature kTPMFirmwareUpdate{"TPMFirmwareUpdate",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables "usm" service in the list of user services returned by
 // userInfo Gaia message.
@@ -650,7 +655,8 @@ const base::Feature kUsbguard{"USBGuard", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable running shill in a minijail sandbox on Chrome OS.
 const base::Feature kShillSandboxing{"ShillSandboxing",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
+
 #endif  // defined(OS_CHROMEOS)
 
 // Enable showing a tab-modal dialog while a Web Authentication API request is
@@ -673,7 +679,7 @@ const base::Feature kWebRtcRemoteEventLogGzipped{
 #if defined(OS_WIN)
 // Enables the accelerated default browser flow for Windows 10.
 const base::Feature kWin10AcceleratedDefaultBrowserFlow{
-    "Win10AcceleratedDefaultBrowserFlow", base::FEATURE_DISABLED_BY_DEFAULT};
+    "Win10AcceleratedDefaultBrowserFlow", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN)
 
 #if defined(OS_ANDROID)

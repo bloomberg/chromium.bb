@@ -42,8 +42,7 @@ class SigninViewControllerDelegateViews : public views::DialogDelegateView,
       signin_metrics::AccessPoint access_point);
 
   static std::unique_ptr<views::WebView> CreateSyncConfirmationWebView(
-      Browser* browser,
-      bool is_consent_bump = false);
+      Browser* browser);
 
   static std::unique_ptr<views::WebView> CreateSigninErrorWebView(
       Browser* browser);
@@ -75,7 +74,7 @@ class SigninViewControllerDelegateViews : public views::DialogDelegateView,
   void ResizeNativeView(int height) override;
 
   // content::WebContentsDelegate:
-  void HandleKeyboardEvent(
+  bool HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) override;
 

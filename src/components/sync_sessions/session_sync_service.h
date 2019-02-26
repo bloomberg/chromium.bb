@@ -8,23 +8,21 @@
 #include <memory>
 #include <string>
 
+#include "base/callback_list.h"
+#include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/sync/model/model_type_store.h"
-#include "components/version_info/channel.h"
+#include "components/sync/driver/data_type_controller.h"
 
 namespace syncer {
 class GlobalIdMapper;
 class ModelTypeControllerDelegate;
-class SyncableService;
 }  // namespace syncer
 
 namespace sync_sessions {
 
-class AbstractSessionsSyncManager;
 class FaviconCache;
 class OpenTabsUIDelegate;
-class SyncSessionsClient;
 
 // KeyedService responsible session sync (aka tab sync), including favicon sync.
 // This powers things like the history UI, where "Tabs from other devices"
@@ -32,39 +30,40 @@ class SyncSessionsClient;
 // local tabs.
 class SessionSyncService : public KeyedService {
  public:
-  SessionSyncService(version_info::Channel channel,
-                     std::unique_ptr<SyncSessionsClient> sessions_client);
+  SessionSyncService();
   ~SessionSyncService() override;
 
-  syncer::GlobalIdMapper* GetGlobalIdMapper() const;
+  virtual syncer::GlobalIdMapper* GetGlobalIdMapper() const = 0;
 
-  // Intended for ProfileSyncService: returns the OpenTabsUIDelegate instance,
-  // which is guaranteed to be non-null (independently of whether sync is
-  // running or not)
-  OpenTabsUIDelegate* GetRawOpenTabsUIDelegate();
+  // Return the active OpenTabsUIDelegate. If open/proxy tabs is not enabled or
+  // not currently syncing, returns nullptr.
+  virtual OpenTabsUIDelegate* GetOpenTabsUIDelegate() = 0;
+
+  // Allows client code to be notified when foreign sessions change.
+  virtual std::unique_ptr<base::CallbackList<void()>::Subscription>
+  SubscribeToForeignSessionsChanged(const base::RepeatingClosure& cb)
+      WARN_UNUSED_RESULT = 0;
 
   // Schedules garbage collection of foreign sessions.
-  void ScheduleGarbageCollection();
+  virtual void ScheduleGarbageCollection() = 0;
 
-  // For ProfileSyncService to initialize the controller for SESSIONS. Exactly
-  // one of the two below will return non-null (depending on a feature toggle).
-  syncer::SyncableService* GetSyncableService();
-  base::WeakPtr<syncer::ModelTypeControllerDelegate> GetControllerDelegate();
+  // For ProfileSyncService to initialize the controller for SESSIONS.
+  virtual base::WeakPtr<syncer::ModelTypeControllerDelegate>
+  GetControllerDelegate() = 0;
 
   // For ProfileSyncService to initialize the controller for FAVICON_IMAGES and
   // FAVICON_TRACKING.
-  FaviconCache* GetFaviconCache();
+  virtual FaviconCache* GetFaviconCache() = 0;
+
+  // Intended to be used by ProxyDataTypeController: influences whether
+  // GetOpenTabsUIDelegate() returns null or not.
+  virtual void ProxyTabsStateChanged(
+      syncer::DataTypeController::State state) = 0;
 
   // Used on Android only, to override the machine tag.
-  void SetSyncSessionsGUID(const std::string& guid);
+  virtual void SetSyncSessionsGUID(const std::string& guid) = 0;
 
  private:
-  std::unique_ptr<SyncSessionsClient> sessions_client_;
-
-  // Locally owned SyncableService or ModelTypeSyncBridge implementations.
-  std::unique_ptr<sync_sessions::AbstractSessionsSyncManager>
-      sessions_sync_manager_;
-
   DISALLOW_COPY_AND_ASSIGN(SessionSyncService);
 };
 

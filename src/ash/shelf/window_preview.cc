@@ -112,12 +112,12 @@ bool WindowPreview::OnMousePressed(const ui::MouseEvent& event) {
   if (!mirror_->bounds().Contains(event.location()))
     return false;
 
-  aura::Window* target = mirror_->target();
-  if (target) {
+  aura::Window* source = mirror_->source();
+  if (source) {
     // The window might have been closed in the mean time.
     // TODO: Use WindowObserver to listen to when previewed windows are
     // being closed and remove this condition.
-    wm::ActivateWindow(target);
+    wm::ActivateWindow(source);
 
     // This will have the effect of deleting this view.
     delegate_->OnPreviewActivated(this);
@@ -128,14 +128,14 @@ bool WindowPreview::OnMousePressed(const ui::MouseEvent& event) {
 void WindowPreview::ButtonPressed(views::Button* sender,
                                   const ui::Event& event) {
   // The close button was pressed.
-  aura::Window* target = mirror_->target();
+  aura::Window* source = mirror_->source();
 
   // The window might have been closed in the mean time.
   // TODO: Use WindowObserver to listen to when previewed windows are
   // being closed and remove this condition.
-  if (!target)
+  if (!source)
     return;
-  wm::CloseWidgetForWindow(target);
+  wm::CloseWidgetForWindow(source);
 
   // This will have the effect of deleting this view.
   delegate_->OnPreviewDismissed(this);

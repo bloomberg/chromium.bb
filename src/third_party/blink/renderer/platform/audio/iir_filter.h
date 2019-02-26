@@ -20,7 +20,9 @@ class PLATFORM_EXPORT IIRFilter final {
             const AudioDoubleArray* feedback_coef);
   ~IIRFilter();
 
-  void Process(const float* source_p, float* dest_p, size_t frames_to_process);
+  void Process(const float* source_p,
+               float* dest_p,
+               uint32_t frames_to_process);
 
   void Reset();
 

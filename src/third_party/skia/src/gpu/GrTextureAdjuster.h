@@ -25,8 +25,7 @@ public:
             const SkRect& constraintRect,
             FilterConstraint,
             bool coordsLimitedToConstraintRect,
-            const GrSamplerState::Filter* filterOrNullForBicubic,
-            SkColorSpace* dstColorSpace) override;
+            const GrSamplerState::Filter* filterOrNullForBicubic) override;
 
     // We do not ref the texture nor the colorspace, so the caller must keep them in scope while
     // this Adjuster is alive.
@@ -35,6 +34,7 @@ public:
 
 protected:
     SkAlphaType alphaType() const override { return fAlphaType; }
+    SkColorSpace* colorSpace() const override { return fColorSpace; }
     void makeCopyKey(const CopyParams& params, GrUniqueKey* copyKey) override;
     void didCacheCopy(const GrUniqueKey& copyKey, uint32_t contextUniqueID) override;
 
@@ -43,8 +43,6 @@ protected:
 
 private:
     sk_sp<GrTextureProxy> onRefTextureProxyForParams(const GrSamplerState&,
-                                                     SkColorSpace* dstColorSpace,
-                                                     sk_sp<SkColorSpace>* proxyColorSpace,
                                                      bool willBeMipped,
                                                      SkScalar scaleAdjust[2]) override;
 

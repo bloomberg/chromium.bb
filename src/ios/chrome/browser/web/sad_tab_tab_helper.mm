@@ -26,8 +26,6 @@
 #error "This file requires ARC support."
 #endif
 
-DEFINE_WEB_STATE_USER_DATA_KEY(SadTabTabHelper);
-
 const double SadTabTabHelper::kDefaultRepeatFailureInterval = 60.0f;
 
 namespace {
@@ -88,10 +86,17 @@ void SadTabTabHelper::WasShown(web::WebState* web_state) {
     requires_reload_on_becoming_visible_ = false;
   }
   UpdateFullscreenDisabler();
+  if (showing_sad_tab_) {
+    [delegate_ sadTabTabHelper:this
+        didShowForRepeatedFailure:repeated_failure_];
+  }
 }
 
 void SadTabTabHelper::WasHidden(web::WebState* web_state) {
   UpdateFullscreenDisabler();
+  if (showing_sad_tab_) {
+    [delegate_ sadTabTabHelperDidHide:this];
+  }
 }
 
 void SadTabTabHelper::RenderProcessGone(web::WebState* web_state) {
@@ -117,6 +122,7 @@ void SadTabTabHelper::DidStartNavigation(
     web::NavigationContext* navigation_context) {
   // The sad tab is removed when a new navigation begins.
   SetIsShowingSadTab(false);
+  [delegate_ sadTabTabHelperDismissSadTab:this];
 }
 
 void SadTabTabHelper::DidFinishNavigation(
@@ -142,13 +148,13 @@ void SadTabTabHelper::PresentSadTab(const GURL& url_causing_failure) {
   double seconds_since_last_failure =
       last_failed_timer_ ? last_failed_timer_->Elapsed().InSecondsF() : DBL_MAX;
 
-  bool repeated_failure =
+  repeated_failure_ =
       (url_causing_failure.EqualsIgnoringRef(last_failed_url_) &&
        seconds_since_last_failure < repeat_failure_interval_);
 
   [delegate_ sadTabTabHelper:this
       presentSadTabForWebState:web_state_
-               repeatedFailure:repeated_failure];
+               repeatedFailure:repeated_failure_];
 
   last_failed_url_ = url_causing_failure;
   last_failed_timer_ = std::make_unique<base::ElapsedTimer>();

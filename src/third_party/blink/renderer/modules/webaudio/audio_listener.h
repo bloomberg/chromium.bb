@@ -87,17 +87,17 @@ class AudioListener : public ScriptWrappable {
     return FloatPoint3D(up_x_->value(), up_y_->value(), up_z_->value());
   }
 
-  const float* GetPositionXValues(size_t frames_to_process);
-  const float* GetPositionYValues(size_t frames_to_process);
-  const float* GetPositionZValues(size_t frames_to_process);
+  const float* GetPositionXValues(uint32_t frames_to_process);
+  const float* GetPositionYValues(uint32_t frames_to_process);
+  const float* GetPositionZValues(uint32_t frames_to_process);
 
-  const float* GetForwardXValues(size_t frames_to_process);
-  const float* GetForwardYValues(size_t frames_to_process);
-  const float* GetForwardZValues(size_t frames_to_process);
+  const float* GetForwardXValues(uint32_t frames_to_process);
+  const float* GetForwardYValues(uint32_t frames_to_process);
+  const float* GetForwardZValues(uint32_t frames_to_process);
 
-  const float* GetUpXValues(size_t frames_to_process);
-  const float* GetUpYValues(size_t frames_to_process);
-  const float* GetUpZValues(size_t frames_to_process);
+  const float* GetUpXValues(uint32_t frames_to_process);
+  const float* GetUpYValues(uint32_t frames_to_process);
+  const float* GetUpZValues(uint32_t frames_to_process);
 
   // Position
   void setPosition(float x, float y, float z, ExceptionState& exceptionState) {
@@ -167,7 +167,7 @@ class AudioListener : public ScriptWrappable {
   // the audio thread.
   bool is_listener_dirty_;
 
-  void UpdateValuesIfNeeded(size_t frames_to_process);
+  void UpdateValuesIfNeeded(uint32_t frames_to_process);
 
   AudioFloatArray position_x_values_;
   AudioFloatArray position_y_values_;

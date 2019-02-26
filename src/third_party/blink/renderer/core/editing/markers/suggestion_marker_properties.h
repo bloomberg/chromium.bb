@@ -25,6 +25,9 @@ class CORE_EXPORT SuggestionMarkerProperties final {
   SuggestionMarkerProperties();
 
   SuggestionMarker::SuggestionType Type() const { return type_; }
+  SuggestionMarker::RemoveOnFinishComposing RemoveOnFinishComposing() const {
+    return remove_on_finish_composing_;
+  }
   Vector<String> Suggestions() const { return suggestions_; }
   Color HighlightColor() const { return highlight_color_; }
   Color UnderlineColor() const { return underline_color_; }
@@ -34,6 +37,8 @@ class CORE_EXPORT SuggestionMarkerProperties final {
  private:
   SuggestionMarker::SuggestionType type_ =
       SuggestionMarker::SuggestionType::kNotMisspelling;
+  SuggestionMarker::RemoveOnFinishComposing remove_on_finish_composing_ =
+      SuggestionMarker::RemoveOnFinishComposing::kDoNotRemove;
   Vector<String> suggestions_;
   Color highlight_color_ = Color::kTransparent;
   Color underline_color_ = Color::kTransparent;
@@ -52,6 +57,7 @@ class CORE_EXPORT SuggestionMarkerProperties::Builder final {
   SuggestionMarkerProperties Build() const;
 
   Builder& SetType(SuggestionMarker::SuggestionType);
+  Builder& SetRemoveOnFinishComposing(bool);
   Builder& SetSuggestions(const Vector<String>& suggestions);
   Builder& SetHighlightColor(Color);
   Builder& SetUnderlineColor(Color);

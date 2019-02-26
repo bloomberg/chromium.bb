@@ -6,6 +6,7 @@
 #define UI_AURA_ENV_H_
 
 #include <memory>
+#include <set>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
@@ -15,7 +16,6 @@
 #include "mojo/public/cpp/system/buffer.h"
 #include "ui/aura/aura_export.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
-#include "ui/events/event_handler.h"
 #include "ui/events/event_target.h"
 #include "ui/events/system_input_injector.h"
 #include "ui/gfx/geometry/point.h"
@@ -36,6 +36,7 @@ class Connector;
 namespace ui {
 class ContextFactory;
 class ContextFactoryPrivate;
+class EventObserver;
 class GestureRecognizer;
 class PlatformEventSource;
 }  // namespace ui
@@ -54,6 +55,7 @@ class EnvWindowTreeClientSetter;
 
 class EnvInputStateController;
 class EnvObserver;
+class EventObserverAdapter;
 class InputStateLookup;
 class MouseLocationManager;
 class MusMouseLocationUpdater;
@@ -182,6 +184,9 @@ class AURA_EXPORT Env : public ui::EventTarget,
     return gesture_recognizer_.get();
   }
 
+  void SetGestureRecognizer(
+      std::unique_ptr<ui::GestureRecognizer> gesture_recognizer);
+
   // See CreateInstance() for description.
   void SetWindowTreeClient(WindowTreeClient* window_tree_client);
   bool HasWindowTreeClient() const { return window_tree_client_ != nullptr; }
@@ -192,8 +197,25 @@ class AURA_EXPORT Env : public ui::EventTarget,
       mojo::InterfacePtr<ws::mojom::WindowTreeClient> client,
       base::OnceCallback<void(const base::UnguessableToken&)> callback);
 
-  // Get WindowOcclusionTracker instance. Create it if it is not yet created.
+  // Get WindowOcclusionTracker instance. Create one if not yet created.
   WindowOcclusionTracker* GetWindowOcclusionTracker();
+
+  // Pause/unpause window occlusion tracking. It hides the detail of where
+  // WindowOcclusionTracker lives. It calls the tracker for LOCAL aura and calls
+  // Window Service to access the tracker there for MUS aura.
+  void PauseWindowOcclusionTracking();
+  void UnpauseWindowOcclusionTracking();
+
+  // Add, remove, or notify EventObservers. EventObservers are essentially
+  // pre-target EventHandlers that can not modify the events nor alter dispatch.
+  // On Chrome OS, observers receive system-wide events if |target| is this Env.
+  // On desktop platforms, observers may only receive events targeting Chrome.
+  // Observers must be removed before their target is destroyed.
+  void AddEventObserver(ui::EventObserver* observer,
+                        ui::EventTarget* target,
+                        const std::set<ui::EventType>& types);
+  void RemoveEventObserver(ui::EventObserver* observer);
+  void NotifyEventObservers(const ui::Event& event);
 
  private:
   friend class test::EnvTestHelper;
@@ -222,9 +244,6 @@ class AURA_EXPORT Env : public ui::EventTarget,
 
   // Called by the WindowTreeHost when it is initialized. Notifies observers.
   void NotifyHostInitialized(WindowTreeHost* host);
-
-  // Invoked by WindowTreeHost when it is activated. Notifies observers.
-  void NotifyHostActivated(WindowTreeHost* host);
 
   void WindowTreeClientDestroyed(WindowTreeClient* client);
 
@@ -257,11 +276,15 @@ class AURA_EXPORT Env : public ui::EventTarget,
   base::ObserverList<WindowEventDispatcherObserver>::Unchecked
       window_event_dispatcher_observers_;
 
+  // The ObserverList and set of owned EventObserver adapters.
+  base::ObserverList<EventObserverAdapter> event_observer_adapter_list_;
+  std::set<std::unique_ptr<EventObserverAdapter>> event_observer_adapters_;
+
   std::unique_ptr<EnvInputStateController> env_controller_;
   int mouse_button_flags_;
   // Location of last mouse event, in screen coordinates.
   mutable gfx::Point last_mouse_location_;
-  bool is_touch_down_;
+  bool is_touch_down_ = false;
   bool get_last_mouse_location_from_mus_;
   // This may be set to true in tests to force using |last_mouse_location_|
   // rather than querying WindowTreeClient.

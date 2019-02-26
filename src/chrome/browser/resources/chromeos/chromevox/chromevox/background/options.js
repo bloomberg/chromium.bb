@@ -9,6 +9,7 @@
 
 goog.provide('cvox.OptionsPage');
 
+goog.require('BluetoothBrailleDisplayManager');
 goog.require('ConsoleTts');
 goog.require('EventStreamLogger');
 goog.require('Msgs');

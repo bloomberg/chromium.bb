@@ -32,6 +32,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -59,10 +60,6 @@ bool IsWebauthnRPIDListedInEnterprisePolicy(
                        return v.GetString() == relying_party_id;
                      });
 #endif
-}
-
-bool IsWebAuthnUiEnabled() {
-  return base::FeatureList::IsEnabled(features::kWebAuthenticationUI);
 }
 
 }  // namespace
@@ -152,6 +149,11 @@ void ChromeAuthenticatorRequestDelegate::RegisterActionCallbacks(
   transient_dialog_model_holder_->SetRequestCallback(request_callback);
   transient_dialog_model_holder_->SetBluetoothAdapterPowerOnCallback(
       bluetooth_adapter_power_on_callback);
+  transient_dialog_model_holder_->SetBlePairingCallback(ble_pairing_callback);
+  transient_dialog_model_holder_->SetBleDevicePairedCallback(
+      base::BindRepeating(
+          &ChromeAuthenticatorRequestDelegate::AddFidoBleDeviceToPairedList,
+          weak_ptr_factory_.GetWeakPtr()));
 
   weak_dialog_model_ = transient_dialog_model_holder_.get();
   weak_dialog_model_->AddObserver(this);
@@ -159,9 +161,14 @@ void ChromeAuthenticatorRequestDelegate::RegisterActionCallbacks(
 
 bool ChromeAuthenticatorRequestDelegate::ShouldPermitIndividualAttestation(
     const std::string& relying_party_id) {
-  // If the RP ID is listed in the policy, signal that individual attestation is
-  // permitted.
-  return IsWebauthnRPIDListedInEnterprisePolicy(browser_context(),
+  constexpr char kGoogleCorpAppId[] =
+      "https://www.gstatic.com/securitykey/a/google.com/origins.json";
+
+  // If the RP ID is actually the Google corp App ID (because the request is
+  // actually a U2F request originating from cryptotoken), or is listed in the
+  // enterprise policy, signal that individual attestation is permitted.
+  return relying_party_id == kGoogleCorpAppId ||
+         IsWebauthnRPIDListedInEnterprisePolicy(browser_context(),
                                                 relying_party_id);
 }
 
@@ -260,16 +267,38 @@ void ChromeAuthenticatorRequestDelegate::UpdateLastTransportUsed(
       Profile::FromBrowserContext(browser_context())->GetPrefs();
   prefs->SetString(kWebAuthnLastTransportUsedPrefName,
                    device::ToString(transport));
+
+  if (!weak_dialog_model_)
+    return;
+
+  // We already invoke AddFidoBleDeviceToPairedList() on
+  // AuthenticatorRequestDialogModel::OnPairingSuccess(). We invoke the function
+  // here once more to take into account the case when user pairs Bluetooth
+  // authenticator separately via system OS rather than using Chrome WebAuthn
+  // UI. AddFidoBleDeviceToPairedList() handles the case when duplicate
+  // authenticator id is being stored.
+  const auto& selected_bluetooth_authenticator_id =
+      weak_dialog_model_->selected_authenticator_id();
+  if (transport == device::FidoTransportProtocol::kBluetoothLowEnergy &&
+      selected_bluetooth_authenticator_id) {
+    AddFidoBleDeviceToPairedList(*selected_bluetooth_authenticator_id);
+  }
 }
 
 void ChromeAuthenticatorRequestDelegate::OnTransportAvailabilityEnumerated(
     device::FidoRequestHandlerBase::TransportAvailabilityInfo data) {
 #if !defined(OS_ANDROID)
+  if (data.disable_embedder_ui) {
+    disable_ui_ = true;
+    return;
+  }
+
   if (!IsWebAuthnUiEnabled())
     return;
 
   DCHECK(weak_dialog_model_);
-  weak_dialog_model_->StartFlow(std::move(data), GetLastTransportUsed());
+  weak_dialog_model_->StartFlow(std::move(data), GetLastTransportUsed(),
+                                GetPreviouslyPairedFidoBleDeviceIds());
 
   DCHECK(transient_dialog_model_holder_);
   ShowAuthenticatorRequestDialog(
@@ -280,13 +309,18 @@ void ChromeAuthenticatorRequestDelegate::OnTransportAvailabilityEnumerated(
 
 bool ChromeAuthenticatorRequestDelegate::EmbedderControlsAuthenticatorDispatch(
     const device::FidoAuthenticator& authenticator) {
-  // TODO(hongjunchoi): Change this so that requests for BLE authenticators are
-  // not dispatched immediately if WebAuthN UI is enabled.
   if (!IsWebAuthnUiEnabled())
     return false;
-
-  return authenticator.AuthenticatorTransport() ==
-         device::FidoTransportProtocol::kInternal;
+  // On macOS, a native dialog is shown for the Touch ID authenticator
+  // immediately after dispatch to that authenticator. This dialog must not
+  // be triggered before Chrome's WebAuthn UI has advanced accordingly.
+  // Also, connection to Bluetooth authenticators should not be established
+  // before user explicitly chooses to use a BLE device as it can trigger
+  // OS native pairing UI.
+  const auto& transport = authenticator.AuthenticatorTransport();
+  return transport &&
+         (*transport == device::FidoTransportProtocol::kInternal ||
+          *transport == device::FidoTransportProtocol::kBluetoothLowEnergy);
 }
 
 void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorAdded(
@@ -322,11 +356,13 @@ void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorIdChanged(
 }
 
 void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorPairingModeChanged(
-    base::StringPiece authenticator_id) {
+    base::StringPiece authenticator_id,
+    bool is_in_pairing_mode) {
   if (!weak_dialog_model_)
     return;
 
-  weak_dialog_model_->UpdateAuthenticatorReferencePairingMode(authenticator_id);
+  weak_dialog_model_->UpdateAuthenticatorReferencePairingMode(
+      authenticator_id, is_in_pairing_mode);
 }
 
 void ChromeAuthenticatorRequestDelegate::BluetoothAdapterPowerChanged(
@@ -349,19 +385,21 @@ void ChromeAuthenticatorRequestDelegate::OnCancelRequest() {
 }
 
 void ChromeAuthenticatorRequestDelegate::AddFidoBleDeviceToPairedList(
-    std::string device_address) {
+    std::string ble_authenticator_id) {
   ListPrefUpdate update(
       Profile::FromBrowserContext(browser_context())->GetPrefs(),
       kWebAuthnBlePairedMacAddressesPrefName);
   bool already_contains_address = std::any_of(
-      update->begin(), update->end(), [&device_address](const auto& value) {
-        return value.is_string() && value.GetString() == device_address;
+      update->begin(), update->end(),
+      [&ble_authenticator_id](const auto& value) {
+        return value.is_string() && value.GetString() == ble_authenticator_id;
       });
 
   if (already_contains_address)
     return;
 
-  update->Append(std::make_unique<base::Value>(std::move(device_address)));
+  update->Append(
+      std::make_unique<base::Value>(std::move(ble_authenticator_id)));
 }
 
 base::Optional<device::FidoTransportProtocol>
@@ -373,9 +411,16 @@ ChromeAuthenticatorRequestDelegate::GetLastTransportUsed() const {
 }
 
 const base::ListValue*
-ChromeAuthenticatorRequestDelegate::GetPreviouslyPairedFidoBleDeviceAddresses()
+ChromeAuthenticatorRequestDelegate::GetPreviouslyPairedFidoBleDeviceIds()
     const {
   PrefService* prefs =
       Profile::FromBrowserContext(browser_context())->GetPrefs();
   return prefs->GetList(kWebAuthnBlePairedMacAddressesPrefName);
+}
+
+bool ChromeAuthenticatorRequestDelegate::IsWebAuthnUiEnabled() const {
+  // UI can be disabled via flag or by the request handler for certain
+  // requests (e.g. on Windows, where the native API renders its own UI).
+  return base::FeatureList::IsEnabled(features::kWebAuthenticationUI) &&
+         !disable_ui_;
 }

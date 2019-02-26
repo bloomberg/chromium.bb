@@ -17,11 +17,11 @@ class NavigateAction : public Action {
   explicit NavigateAction(const ActionProto& proto);
   ~NavigateAction() override;
 
-  // Overrides Action:
-  void ProcessAction(ActionDelegate* delegate,
-                     ProcessActionCallback callback) override;
-
  private:
+  // Overrides Action:
+  void InternalProcessAction(ActionDelegate* delegate,
+                             ProcessActionCallback callback) override;
+
   DISALLOW_COPY_AND_ASSIGN(NavigateAction);
 };
 

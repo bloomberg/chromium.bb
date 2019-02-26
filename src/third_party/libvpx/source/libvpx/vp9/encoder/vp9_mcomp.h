@@ -59,7 +59,7 @@ struct SPEED_FEATURES;
 int vp9_init_search_range(int size);
 
 int vp9_refining_search_sad(const struct macroblock *x, struct mv *ref_mv,
-                            int sad_per_bit, int distance,
+                            int error_per_bit, int search_range,
                             const struct vp9_variance_vtable *fn_ptr,
                             const struct mv *center_mv);
 
@@ -75,7 +75,7 @@ typedef uint32_t(fractional_mv_step_fp)(
     int forced_stop,  // 0 - full, 1 - qtr only, 2 - half only
     int iters_per_step, int *cost_list, int *mvjcost, int *mvcost[2],
     uint32_t *distortion, uint32_t *sse1, const uint8_t *second_pred, int w,
-    int h);
+    int h, int use_accurate_subpel_search);
 
 extern fractional_mv_step_fp vp9_find_best_sub_pixel_tree;
 extern fractional_mv_step_fp vp9_find_best_sub_pixel_tree_pruned;
@@ -134,6 +134,8 @@ double vp9_full_pixel_diamond_new(const struct VP9_COMP *cpi, MACROBLOCK *x,
                                   const vp9_variance_fn_ptr_t *fn_ptr,
                                   const int_mv *nb_full_mvs,
                                   struct TplDepStats *tpl_stats, int rf_idx);
+
+double av1_nb_mvs_inconsistency(const MV *mv, const int_mv *nb_mvs);
 #endif  // CONFIG_NON_GREEDY_MV
 #ifdef __cplusplus
 }  // extern "C"

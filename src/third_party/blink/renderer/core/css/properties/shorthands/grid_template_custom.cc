@@ -13,7 +13,7 @@
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 
 namespace blink {
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool GridTemplate::ParseShorthand(
     bool important,
@@ -24,7 +24,7 @@ bool GridTemplate::ParseShorthand(
   CSSValue* template_rows = nullptr;
   CSSValue* template_columns = nullptr;
   CSSValue* template_areas = nullptr;
-  if (!CSSParsingUtils::ConsumeGridTemplateShorthand(
+  if (!css_parsing_utils::ConsumeGridTemplateShorthand(
           important, range, context, template_rows, template_columns,
           template_areas))
     return false;
@@ -33,17 +33,18 @@ bool GridTemplate::ParseShorthand(
   DCHECK(template_columns);
   DCHECK(template_areas);
 
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyGridTemplateRows, CSSPropertyGridTemplate, *template_rows,
-      important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyGridTemplateColumns, CSSPropertyGridTemplate,
       *template_columns, important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
-  CSSPropertyParserHelpers::AddProperty(
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
+  css_property_parser_helpers::AddProperty(
       CSSPropertyGridTemplateAreas, CSSPropertyGridTemplate, *template_areas,
-      important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
 
   return true;
@@ -65,5 +66,5 @@ const CSSValue* GridTemplate::CSSValueFromComputedStyleInternal(
       allow_visited_style);
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink

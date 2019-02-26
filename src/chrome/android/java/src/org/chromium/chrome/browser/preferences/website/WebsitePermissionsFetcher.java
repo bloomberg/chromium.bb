@@ -71,25 +71,16 @@ public class WebsitePermissionsFetcher {
     // This map looks up Websites by their origin and embedder.
     private final Map<OriginAndEmbedder, Website> mSites = new HashMap<>();
 
-    // The callback to run when the permissions have been fetched.
-    private final WebsitePermissionsCallback mCallback;
-
     private final boolean mFetchSiteImportantInfo;
 
-    /**
-     * @param callback The callback to run when the fetch is complete.
-     */
-    public WebsitePermissionsFetcher(WebsitePermissionsCallback callback) {
-        this(callback, false);
+    public WebsitePermissionsFetcher() {
+        this(false);
     }
 
     /**
-     * @param callback The callback to run when the fetch is complete.
      * @param fetchSiteImportantInfo if the fetcher should query whether each site is 'important'.
      */
-    public WebsitePermissionsFetcher(
-            WebsitePermissionsCallback callback, boolean fetchSiteImportantInfo) {
-        mCallback = callback;
+    public WebsitePermissionsFetcher(boolean fetchSiteImportantInfo) {
         mFetchSiteImportantInfo = fetchSiteImportantInfo;
     }
 
@@ -97,8 +88,12 @@ public class WebsitePermissionsFetcher {
      * Fetches preferences for all sites that have them.
      * TODO(mvanouwerkerk): Add an argument |url| to only fetch permissions for
      * sites from the same origin as that of |url| - https://crbug.com/459222.
+     * @param callback The callback to run when the fetch is complete.
+     *
+     * NB: you should call either this method or {@link #fetchPreferencesForCategory} only once per
+     * instance.
      */
-    public void fetchAllPreferences() {
+    public void fetchAllPreferences(WebsitePermissionsCallback callback) {
         TaskQueue queue = new TaskQueue();
         // Populate features from more specific to less specific.
         // Geolocation lookup permission is per-origin and per-embedder.
@@ -143,7 +138,7 @@ public class WebsitePermissionsFetcher {
         // Sensors permission is per-origin.
         queue.add(new PermissionInfoFetcher(PermissionInfo.Type.SENSORS));
 
-        queue.add(new PermissionsAvailableCallbackRunner());
+        queue.add(new PermissionsAvailableCallbackRunner(callback));
 
         queue.next();
     }
@@ -151,11 +146,16 @@ public class WebsitePermissionsFetcher {
     /**
      * Fetches all preferences within a specific category.
      *
-     * @param catgory A category to fetch.
+     * @param category A category to fetch.
+     * @param callback The callback to run when the fetch is complete.
+     *
+     * NB: you should call either this method or {@link #fetchAllPreferences} only once per
+     * instance.
      */
-    public void fetchPreferencesForCategory(SiteSettingsCategory category) {
+    public void fetchPreferencesForCategory(SiteSettingsCategory category,
+            WebsitePermissionsCallback callback) {
         if (category.showSites(SiteSettingsCategory.Type.ALL_SITES)) {
-            fetchAllPreferences();
+            fetchAllPreferences(callback);
             return;
         }
 
@@ -219,7 +219,7 @@ public class WebsitePermissionsFetcher {
             // Sensors permission is per-origin.
             queue.add(new PermissionInfoFetcher(PermissionInfo.Type.SENSORS));
         }
-        queue.add(new PermissionsAvailableCallbackRunner());
+        queue.add(new PermissionsAvailableCallbackRunner(callback));
         queue.next();
     }
 
@@ -238,10 +238,12 @@ public class WebsitePermissionsFetcher {
         int exceptionType;
         for (exceptionType = 0; exceptionType < ContentSettingException.Type.NUM_ENTRIES;
                 exceptionType++) {
-            if (contentSettingsType == ContentSettingException.CONTENT_TYPES[exceptionType]) break;
+            if (contentSettingsType
+                    == ContentSettingException.getContentSettingsType(exceptionType))
+                break;
         }
         assert contentSettingsType
-                == ContentSettingException.CONTENT_TYPES[exceptionType]
+                == ContentSettingException.getContentSettingsType(exceptionType)
             : "Unexpected content setting type received: "
                         + contentSettingsType;
 
@@ -371,6 +373,12 @@ public class WebsitePermissionsFetcher {
     }
 
     private class PermissionsAvailableCallbackRunner extends Task {
+        private final WebsitePermissionsCallback mCallback;
+
+        private PermissionsAvailableCallbackRunner(WebsitePermissionsCallback callback) {
+            mCallback = callback;
+        }
+
         @Override
         public void run() {
             mCallback.onWebsitePermissionsAvailable(mSites.values());

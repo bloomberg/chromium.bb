@@ -39,7 +39,8 @@ class CompletionEvent {
     DCHECK(!waited_);
     waited_ = true;
 #endif
-    base::ThreadRestrictions::ScopedAllowWait allow_wait;
+    // http://crbug.com/902653
+    base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
     event_.Wait();
   }
 
@@ -48,7 +49,8 @@ class CompletionEvent {
     DCHECK(!waited_);
     waited_ = true;
 #endif
-    base::ThreadRestrictions::ScopedAllowWait allow_wait;
+    // http://crbug.com/902653
+    base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
     if (event_.TimedWait(max_time))
       return true;
 #if DCHECK_IS_ON()

@@ -84,6 +84,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "jingle/glue/network_service_config_test_util.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/base/network_change_notifier.h"
@@ -181,9 +182,12 @@ std::unique_ptr<KeyedService> BuildP2PProfileInvalidationProvider(
     content::BrowserContext* context,
     syncer::P2PNotificationTarget notification_target) {
   Profile* profile = static_cast<Profile*>(context);
+  auto config_helper =
+      std::make_unique<jingle_glue::NetworkServiceConfigTestUtil>(
+          profile->GetRequestContext());
   return std::make_unique<invalidation::ProfileInvalidationProvider>(
       std::make_unique<invalidation::P2PInvalidationService>(
-          profile->GetRequestContext(), content::GetNetworkConnectionTracker(),
+          std::move(config_helper), content::GetNetworkConnectionTracker(),
           notification_target),
       std::make_unique<invalidation::ProfileIdentityProvider>(
           IdentityManagerFactory::GetForProfile(profile)));
@@ -333,10 +337,14 @@ bool SyncTest::CreateGaiaAccount(const std::string& username,
   return entry->GetHttpStatusCode() == 200;
 }
 
+void SyncTest::BeforeSetupClient(int index) {}
+
 bool SyncTest::CreateProfile(int index) {
+  base::FilePath profile_path;
+
   base::ScopedAllowBlockingForTesting allow_blocking;
-  tmp_profile_paths_[index] = new base::ScopedTempDir();
   if (UsingExternalServers() && num_clients_ > 1) {
+    scoped_temp_dirs_.push_back(std::make_unique<base::ScopedTempDir>());
     // For multi profile UI signin, profile paths should be outside user data
     // dir to allow signing-in multiple profiles to same account. Otherwise, we
     // get an error that the profile has already signed in on this device.
@@ -344,23 +352,26 @@ bool SyncTest::CreateProfile(int index) {
     // user data dir. We violate that assumption here, which can lead to weird
     // issues, see https://crbug.com/801569 and the workaround in
     // TearDownOnMainThread.
-    if (!tmp_profile_paths_[index]->CreateUniqueTempDir()) {
+    if (!scoped_temp_dirs_.back()->CreateUniqueTempDir()) {
       ADD_FAILURE();
       return false;
     }
+
+    profile_path = scoped_temp_dirs_.back()->GetPath();
   } else {
-    // Create new profiles in user data dir so that other profiles can know
-    // about it. This is needed in tests such as supervised user cases which
-    // assume browser->profile() as the custodian profile.
     base::FilePath user_data_dir;
     base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-    if (!tmp_profile_paths_[index]->CreateUniqueTempDirUnderPath(
-            user_data_dir)) {
-      ADD_FAILURE();
-      return false;
-    }
+
+    // Create new profiles in user data dir so that other profiles can know
+    // about it. This is needed in tests such as supervised user cases which
+    // assume browser->profile() as the custodian profile. Instead of creating
+    // a new directory, we use a deterministic name such that PRE_ tests (i.e.
+    // test that span browser restarts) can reuse the same directory and carry
+    // over state.
+    profile_path = user_data_dir.AppendASCII(
+        base::StringPrintf("SyncIntegrationTestClient%d", index));
   }
-  base::FilePath profile_path = tmp_profile_paths_[index]->GetPath();
+
   if (UsingExternalServers()) {
     // If running against an EXTERNAL_LIVE_SERVER, we signin profiles using real
     // GAIA server. This requires creating profiles with no test hooks.
@@ -537,7 +548,6 @@ bool SyncTest::SetupClients() {
   // Create the required number of sync profiles, browsers and clients.
   profiles_.resize(num_clients_);
   profile_delegates_.resize(num_clients_ + 1);  // + 1 for the verifier.
-  tmp_profile_paths_.resize(num_clients_);
   clients_.resize(num_clients_);
   invalidation_forwarders_.resize(num_clients_);
   sync_refreshers_.resize(num_clients_);
@@ -575,6 +585,7 @@ bool SyncTest::SetupClients() {
 #endif
 
   for (int i = 0; i < num_clients_; ++i) {
+    BeforeSetupClient(i);
     if (!CreateProfile(i)) {
       return false;
     }
@@ -641,6 +652,20 @@ void SyncTest::InitializeProfile(int index, Profile* profile) {
 
 void SyncTest::DisableNotificationsForClient(int index) {
   fake_server_->RemoveObserver(fake_server_invalidation_services_[index]);
+}
+
+void SyncTest::SetEncryptionPassphraseForClient(int index,
+                                                const std::string& passphrase) {
+  // Must be called before client initialization.
+  DCHECK(clients_.empty());
+  client_encryption_passphrases_[index] = passphrase;
+}
+
+void SyncTest::SetDecryptionPassphraseForClient(int index,
+                                                const std::string& passphrase) {
+  // Must be called before client initialization.
+  DCHECK(clients_.empty());
+  client_decryption_passphrases_[index] = passphrase;
 }
 
 void SyncTest::SetupMockGaiaResponsesForProfile(Profile* profile) {
@@ -782,8 +807,35 @@ bool SyncTest::SetupSync() {
 
   // Sync each of the profiles.
   for (; clientIndex < num_clients_; clientIndex++) {
+    ProfileSyncServiceHarness* client = GetClient(clientIndex);
     DVLOG(1) << "Setting up " << clientIndex << " client";
-    if (!GetClient(clientIndex)->SetupSync()) {
+
+    auto decryption_passphrase_it =
+        client_decryption_passphrases_.find(clientIndex);
+    auto encryption_passphrase_it =
+        client_encryption_passphrases_.find(clientIndex);
+    bool decryption_passphrase_provided =
+        (decryption_passphrase_it != client_decryption_passphrases_.end());
+    bool encryption_passphrase_provided =
+        (encryption_passphrase_it != client_encryption_passphrases_.end());
+    if (decryption_passphrase_provided && encryption_passphrase_provided) {
+      LOG(FATAL) << "Both an encryption and decryption passphrase were "
+                    "provided for the client. This is disallowed.";
+      return false;
+    }
+
+    bool setup_succeeded;
+    if (encryption_passphrase_provided) {
+      setup_succeeded = client->SetupSyncWithEncryptionPassphrase(
+          syncer::UserSelectableTypes(), encryption_passphrase_it->second);
+    } else if (decryption_passphrase_provided) {
+      setup_succeeded = client->SetupSyncWithDecryptionPassphrase(
+          syncer::UserSelectableTypes(), decryption_passphrase_it->second);
+    } else {
+      setup_succeeded = client->SetupSync(syncer::UserSelectableTypes());
+    }
+
+    if (!setup_succeeded) {
       LOG(FATAL) << "SetupSync() failed.";
       return false;
     }
@@ -858,10 +910,6 @@ void SyncTest::TearDownOnMainThread() {
   if (previous_profile_) {
     profiles::SetLastUsedProfile(
         previous_profile_->GetPath().BaseName().MaybeAsASCII());
-  }
-
-  for (size_t i = 0; i < clients_.size(); ++i) {
-    clients_[i]->service()->RequestStop(ProfileSyncService::CLEAR_DATA);
   }
 
   // Closing all browsers created by this test. The calls here block until
@@ -1134,14 +1182,15 @@ bool SyncTest::EnableEncryption(int index) {
   if (::IsEncryptionComplete(service))
     return true;
 
-  service->EnableEncryptEverything();
+  service->GetUserSettings()->EnableEncryptEverything();
 
   // In order to kick off the encryption we have to reconfigure. Just grab the
   // currently synced types and use them.
-  syncer::ModelTypeSet synced_datatypes = service->GetPreferredDataTypes();
-  bool sync_everything = (synced_datatypes == syncer::ModelTypeSet::All());
-  synced_datatypes.RetainAll(syncer::UserSelectableTypes());
-  service->OnUserChoseDatatypes(sync_everything, synced_datatypes);
+  syncer::ModelTypeSet synced_datatypes =
+      service->GetUserSettings()->GetChosenDataTypes();
+  bool sync_everything = (synced_datatypes == syncer::UserSelectableTypes());
+  service->GetUserSettings()->SetChosenDataTypes(sync_everything,
+                                                 synced_datatypes);
 
   return AwaitEncryptionComplete(index);
 }

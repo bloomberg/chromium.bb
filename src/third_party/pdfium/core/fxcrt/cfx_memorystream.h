@@ -22,9 +22,13 @@ class CFX_MemoryStream final : public IFX_SeekableStream {
   FX_FILESIZE GetSize() override;
   FX_FILESIZE GetPosition() override;
   bool IsEOF() override;
-  bool ReadBlock(void* buffer, FX_FILESIZE offset, size_t size) override;
+  bool ReadBlockAtOffset(void* buffer,
+                         FX_FILESIZE offset,
+                         size_t size) override;
   size_t ReadBlock(void* buffer, size_t size) override;
-  bool WriteBlock(const void* buffer, FX_FILESIZE offset, size_t size) override;
+  bool WriteBlockAtOffset(const void* buffer,
+                          FX_FILESIZE offset,
+                          size_t size) override;
   bool Flush() override;
 
   const uint8_t* GetBuffer() const { return m_data.get(); }

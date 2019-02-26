@@ -47,6 +47,10 @@ namespace {
 
 constexpr uint32_t kInitialConnectionBackoffMs = 100;
 constexpr uint32_t kMaxConnectionBackoffMs = 30 * 1000;
+
+// Should be larger than FtraceController::kFlushTimeoutMs.
+constexpr uint32_t kFlushTimeoutMs = 1000;
+
 constexpr char kFtraceSourceName[] = "linux.ftrace";
 constexpr char kProcessStatsSourceName[] = "linux.process_stats";
 constexpr char kInodeMapSourceName[] = "linux.inode_file_map";
@@ -239,7 +243,8 @@ std::unique_ptr<ProbesDataSource> ProbesProducer::CreateProcessStatsDataSource(
   base::ignore_result(id);
   auto buffer_id = static_cast<BufferID>(config.target_buffer());
   return std::unique_ptr<ProcessStatsDataSource>(new ProcessStatsDataSource(
-      session_id, endpoint_->CreateTraceWriter(buffer_id), config));
+      task_runner_, session_id, endpoint_->CreateTraceWriter(buffer_id),
+      config));
 }
 
 std::unique_ptr<SysStatsDataSource> ProbesProducer::CreateSysStatsDataSource(
@@ -279,12 +284,64 @@ void ProbesProducer::OnTracingSetup() {}
 void ProbesProducer::Flush(FlushRequestID flush_request_id,
                            const DataSourceInstanceID* data_source_ids,
                            size_t num_data_sources) {
+  PERFETTO_DCHECK(flush_request_id);
+  auto weak_this = weak_factory_.GetWeakPtr();
+
+  // Issue a Flush() to all started data sources.
+  bool flush_queued = false;
   for (size_t i = 0; i < num_data_sources; i++) {
-    auto it = data_sources_.find(data_source_ids[i]);
+    DataSourceInstanceID ds_id = data_source_ids[i];
+    auto it = data_sources_.find(ds_id);
     if (it == data_sources_.end() || !it->second->started)
       continue;
-    it->second->Flush();
+    pending_flushes_.emplace(flush_request_id, ds_id);
+    flush_queued = true;
+    auto flush_callback = [weak_this, flush_request_id, ds_id] {
+      if (weak_this)
+        weak_this->OnDataSourceFlushComplete(flush_request_id, ds_id);
+    };
+    it->second->Flush(flush_request_id, flush_callback);
   }
+
+  // If there is nothing to flush, ack immediately.
+  if (!flush_queued) {
+    endpoint_->NotifyFlushComplete(flush_request_id);
+    return;
+  }
+
+  // Otherwise, post the timeout task.
+  task_runner_->PostDelayedTask(
+      [weak_this, flush_request_id] {
+        if (weak_this)
+          weak_this->OnFlushTimeout(flush_request_id);
+      },
+      kFlushTimeoutMs);
+}
+
+void ProbesProducer::OnDataSourceFlushComplete(FlushRequestID flush_request_id,
+                                               DataSourceInstanceID ds_id) {
+  PERFETTO_DLOG("Flush %" PRIu64 " acked by data source %" PRIu64,
+                flush_request_id, ds_id);
+  auto range = pending_flushes_.equal_range(flush_request_id);
+  for (auto it = range.first; it != range.second; it++) {
+    if (it->second == ds_id) {
+      pending_flushes_.erase(it);
+      break;
+    }
+  }
+
+  if (pending_flushes_.count(flush_request_id))
+    return;  // Still waiting for other data sources to ack.
+
+  PERFETTO_DLOG("All data sources acked to flush %" PRIu64, flush_request_id);
+  endpoint_->NotifyFlushComplete(flush_request_id);
+}
+
+void ProbesProducer::OnFlushTimeout(FlushRequestID flush_request_id) {
+  if (pending_flushes_.count(flush_request_id) == 0)
+    return;  // All acked.
+  PERFETTO_ELOG("Flush(%" PRIu64 ") timed out", flush_request_id);
+  pending_flushes_.erase(flush_request_id);
   endpoint_->NotifyFlushComplete(flush_request_id);
 }
 
@@ -329,13 +386,21 @@ void ProbesProducer::OnFtraceDataWrittenIntoDataSourceBuffers() {
       case InodeFileDataSource::kTypeId:
         inode_data_source = static_cast<InodeFileDataSource*>(ds);
         break;
-      case ProcessStatsDataSource::kTypeId:
-        ps_data_source = static_cast<ProcessStatsDataSource*>(ds);
+      case ProcessStatsDataSource::kTypeId: {
+        // A trace session might have declared more than one ps data source.
+        // In those cases we often use one for a full dump on startup (
+        // targeting a dedicated buffer) and another one for on-demand dumps
+        // targeting the main buffer.
+        // Only use the one that has on-demand dumps enabled, if any.
+        auto ps = static_cast<ProcessStatsDataSource*>(ds);
+        if (ps->on_demand_dumps_enabled())
+          ps_data_source = ps;
         break;
+      }
       case SysStatsDataSource::kTypeId:
         break;
       default:
-        PERFETTO_DCHECK(false);
+        PERFETTO_DFATAL("Invalid data source.");
     }  // switch (type_id)
   }    // for (session_data_sources_)
 }

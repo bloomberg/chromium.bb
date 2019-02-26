@@ -67,7 +67,7 @@ class OffHeapGarbageCollectedHolder {
 TEST(ToV8Test, garbageCollectedScriptWrappable) {
   V8TestingScope scope;
   GarbageCollectedScriptWrappable* object =
-      new GarbageCollectedScriptWrappable("world");
+      MakeGarbageCollected<GarbageCollectedScriptWrappable>("world");
   GarbageCollectedHolderForToV8Test holder(object);
   OffHeapGarbageCollectedHolder off_heap_holder(object);
 
@@ -231,10 +231,10 @@ TEST(ToV8Test, pairHeapVector) {
   V8TestingScope scope;
   HeapVector<std::pair<String, Member<GarbageCollectedScriptWrappable>>>
       pair_heap_vector;
-  pair_heap_vector.push_back(
-      std::make_pair("one", new GarbageCollectedScriptWrappable("foo")));
-  pair_heap_vector.push_back(
-      std::make_pair("two", new GarbageCollectedScriptWrappable("bar")));
+  pair_heap_vector.push_back(std::make_pair(
+      "one", MakeGarbageCollected<GarbageCollectedScriptWrappable>("foo")));
+  pair_heap_vector.push_back(std::make_pair(
+      "two", MakeGarbageCollected<GarbageCollectedScriptWrappable>("bar")));
   TEST_TOV8("[object Object]", pair_heap_vector);
   v8::Local<v8::Context> context = scope.GetScriptState()->GetContext();
   v8::Local<v8::Object> result =
@@ -287,8 +287,8 @@ TEST(ToV8Test, stringVectorVector) {
 TEST(ToV8Test, heapVector) {
   V8TestingScope scope;
   HeapVector<Member<GarbageCollectedScriptWrappable>> v;
-  v.push_back(new GarbageCollectedScriptWrappable("hoge"));
-  v.push_back(new GarbageCollectedScriptWrappable("fuga"));
+  v.push_back(MakeGarbageCollected<GarbageCollectedScriptWrappable>("hoge"));
+  v.push_back(MakeGarbageCollected<GarbageCollectedScriptWrappable>("fuga"));
   v.push_back(nullptr);
 
   TEST_TOV8("hoge,fuga,", v);

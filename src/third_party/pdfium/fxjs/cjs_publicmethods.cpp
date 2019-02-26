@@ -17,8 +17,10 @@
 #include <utility>
 #include <vector>
 
+#include "core/fpdfdoc/cpdf_formcontrol.h"
 #include "core/fpdfdoc/cpdf_interactiveform.h"
 #include "core/fxcrt/fx_extension.h"
+#include "core/fxge/cfx_color.h"
 #include "fpdfsdk/cpdfsdk_formfillenvironment.h"
 #include "fpdfsdk/cpdfsdk_interactiveform.h"
 #include "fxjs/cjs_color.h"
@@ -28,33 +30,35 @@
 #include "fxjs/cjs_object.h"
 #include "fxjs/cjs_runtime.h"
 #include "fxjs/cjs_util.h"
+#include "fxjs/fx_date_helpers.h"
 #include "fxjs/js_define.h"
 #include "fxjs/js_resources.h"
+#include "third_party/base/optional.h"
 
 // static
 const JSMethodSpec CJS_PublicMethods::GlobalFunctionSpecs[] = {
+    {"AFDate_Format", AFDate_Format_static},
+    {"AFDate_FormatEx", AFDate_FormatEx_static},
+    {"AFDate_Keystroke", AFDate_Keystroke_static},
+    {"AFDate_KeystrokeEx", AFDate_KeystrokeEx_static},
+    {"AFExtractNums", AFExtractNums_static},
+    {"AFMakeNumber", AFMakeNumber_static},
+    {"AFMergeChange", AFMergeChange_static},
     {"AFNumber_Format", AFNumber_Format_static},
     {"AFNumber_Keystroke", AFNumber_Keystroke_static},
+    {"AFParseDateEx", AFParseDateEx_static},
     {"AFPercent_Format", AFPercent_Format_static},
     {"AFPercent_Keystroke", AFPercent_Keystroke_static},
-    {"AFDate_FormatEx", AFDate_FormatEx_static},
-    {"AFDate_KeystrokeEx", AFDate_KeystrokeEx_static},
-    {"AFDate_Format", AFDate_Format_static},
-    {"AFDate_Keystroke", AFDate_Keystroke_static},
-    {"AFTime_FormatEx", AFTime_FormatEx_static},
-    {"AFTime_KeystrokeEx", AFTime_KeystrokeEx_static},
-    {"AFTime_Format", AFTime_Format_static},
-    {"AFTime_Keystroke", AFTime_Keystroke_static},
+    {"AFRange_Validate", AFRange_Validate_static},
+    {"AFSimple", AFSimple_static},
+    {"AFSimple_Calculate", AFSimple_Calculate_static},
     {"AFSpecial_Format", AFSpecial_Format_static},
     {"AFSpecial_Keystroke", AFSpecial_Keystroke_static},
     {"AFSpecial_KeystrokeEx", AFSpecial_KeystrokeEx_static},
-    {"AFSimple", AFSimple_static},
-    {"AFMakeNumber", AFMakeNumber_static},
-    {"AFSimple_Calculate", AFSimple_Calculate_static},
-    {"AFRange_Validate", AFRange_Validate_static},
-    {"AFMergeChange", AFMergeChange_static},
-    {"AFParseDateEx", AFParseDateEx_static},
-    {"AFExtractNums", AFExtractNums_static},
+    {"AFTime_Format", AFTime_Format_static},
+    {"AFTime_FormatEx", AFTime_FormatEx_static},
+    {"AFTime_Keystroke", AFTime_Keystroke_static},
+    {"AFTime_KeystrokeEx", AFTime_KeystrokeEx_static},
 };
 
 namespace {
@@ -63,14 +67,23 @@ namespace {
 constexpr double kDoubleCorrect = 0.000000000000001;
 #endif
 
-const wchar_t* const kMonths[] = {L"Jan", L"Feb", L"Mar", L"Apr",
-                                  L"May", L"Jun", L"Jul", L"Aug",
-                                  L"Sep", L"Oct", L"Nov", L"Dec"};
+constexpr const wchar_t* kDateFormats[] = {L"m/d",
+                                           L"m/d/yy",
+                                           L"mm/dd/yy",
+                                           L"mm/yy",
+                                           L"d-mmm",
+                                           L"d-mmm-yy",
+                                           L"dd-mmm-yy",
+                                           L"yy-mm-dd",
+                                           L"mmm-yy",
+                                           L"mmmm-yy",
+                                           L"mmm d, yyyy",
+                                           L"mmmm d, yyyy",
+                                           L"m/d/yy h:MM tt",
+                                           L"m/d/yy HH:MM"};
 
-const wchar_t* const kFullMonths[] = {L"January", L"February", L"March",
-                                      L"April",   L"May",      L"June",
-                                      L"July",    L"August",   L"September",
-                                      L"October", L"November", L"December"};
+constexpr const wchar_t* kTimeFormats[] = {L"HH:MM", L"h:MM tt", L"HH:MM:ss",
+                                           L"h:MM:ss tt"};
 
 template <typename T>
 T StrTrim(const T& str) {
@@ -186,35 +199,23 @@ void NormalizeDecimalMarkW(WideString* str) {
   str->Replace(L",", L".");
 }
 
-bool IsValidMonth(int m) {
-  return m >= 1 && m <= 12;
-}
-
-// TODO(thestig): Should this take the month into consideration?
-bool IsValidDay(int d) {
-  return d >= 1 && d <= 31;
-}
-
-// TODO(thestig): Should 24 be allowed? Similarly, 60 for minutes and seconds.
-bool IsValid24Hour(int h) {
-  return h >= 0 && h <= 24;
-}
-
-bool IsValidMinute(int m) {
-  return m >= 0 && m <= 60;
-}
-
-bool IsValidSecond(int s) {
-  return s >= 0 && s <= 60;
+Optional<double> ApplyNamedOperation(const wchar_t* sFunction,
+                                     double dValue1,
+                                     double dValue2) {
+  if (FXSYS_wcsicmp(sFunction, L"AVG") == 0 ||
+      FXSYS_wcsicmp(sFunction, L"SUM") == 0) {
+    return dValue1 + dValue2;
+  }
+  if (FXSYS_wcsicmp(sFunction, L"PRD") == 0)
+    return dValue1 * dValue2;
+  if (FXSYS_wcsicmp(sFunction, L"MIN") == 0)
+    return std::min(dValue1, dValue2);
+  if (FXSYS_wcsicmp(sFunction, L"MAX") == 0)
+    return std::max(dValue1, dValue2);
+  return {};
 }
 
 }  // namespace
-
-CJS_PublicMethods::CJS_PublicMethods(v8::Local<v8::Object> pObject,
-                                     CJS_Runtime* pRuntime)
-    : CJS_Object(pObject, pRuntime) {}
-
-CJS_PublicMethods::~CJS_PublicMethods() = default;
 
 // static
 void CJS_PublicMethods::DefineJSObjects(CFXJS_Engine* pEngine) {
@@ -304,28 +305,14 @@ bool CJS_PublicMethods::IsReservedMaskChar(wchar_t ch) {
   return ch == L'9' || ch == L'A' || ch == L'O' || ch == L'X';
 }
 
-double CJS_PublicMethods::AF_Simple(const wchar_t* sFuction,
-                                    double dValue1,
-                                    double dValue2) {
-  if (FXSYS_wcsicmp(sFuction, L"AVG") == 0 ||
-      FXSYS_wcsicmp(sFuction, L"SUM") == 0) {
-    return dValue1 + dValue2;
-  }
-  if (FXSYS_wcsicmp(sFuction, L"PRD") == 0)
-    return dValue1 * dValue2;
-  if (FXSYS_wcsicmp(sFuction, L"MIN") == 0)
-    return std::min(dValue1, dValue2);
-  if (FXSYS_wcsicmp(sFuction, L"MAX") == 0)
-    return std::max(dValue1, dValue2);
-  return dValue1;
-}
-
 v8::Local<v8::Array> CJS_PublicMethods::AF_MakeArrayFromList(
     CJS_Runtime* pRuntime,
     v8::Local<v8::Value> val) {
-  if (!val.IsEmpty() && val->IsArray())
+  ASSERT(!val.IsEmpty());
+  if (val->IsArray())
     return pRuntime->ToArray(val);
 
+  ASSERT(val->IsString());
   WideString wsStr = pRuntime->ToWideString(val);
   ByteString t = wsStr.ToDefANSI();
   const char* p = t.c_str();
@@ -351,57 +338,16 @@ v8::Local<v8::Array> CJS_PublicMethods::AF_MakeArrayFromList(
   return StrArray;
 }
 
-int CJS_PublicMethods::ParseStringInteger(const WideString& str,
-                                          size_t nStart,
-                                          size_t* pSkip,
-                                          size_t nMaxStep) {
-  int nRet = 0;
-  size_t nSkip = 0;
-  for (size_t i = nStart; i < str.GetLength(); ++i) {
-    if (i - nStart > 10)
-      break;
 
-    wchar_t c = str[i];
-    if (!std::iswdigit(c))
-      break;
-
-    nRet = nRet * 10 + FXSYS_DecimalCharToInt(c);
-    ++nSkip;
-    if (nSkip >= nMaxStep)
-      break;
-  }
-
-  *pSkip = nSkip;
-  return nRet;
-}
-
-WideString CJS_PublicMethods::ParseStringString(const WideString& str,
-                                                size_t nStart,
-                                                size_t* pSkip) {
-  WideString swRet;
-  swRet.Reserve(str.GetLength());
-  for (size_t i = nStart; i < str.GetLength(); ++i) {
-    wchar_t c = str[i];
-    if (!std::iswdigit(c))
-      break;
-
-    swRet += c;
-  }
-
-  *pSkip = swRet.GetLength();
-  return swRet;
-}
-
-double CJS_PublicMethods::ParseNormalDate(const WideString& value,
-                                          bool* bWrongFormat) {
-  double dt = JS_GetDateTime();
-
-  int nYear = JS_GetYearFromTime(dt);
-  int nMonth = JS_GetMonthFromTime(dt) + 1;
-  int nDay = JS_GetDayFromTime(dt);
-  int nHour = JS_GetHourFromTime(dt);
-  int nMin = JS_GetMinFromTime(dt);
-  int nSec = JS_GetSecFromTime(dt);
+double CJS_PublicMethods::ParseDate(const WideString& value,
+                                    bool* bWrongFormat) {
+  double dt = FX_GetDateTime();
+  int nYear = FX_GetYearFromTime(dt);
+  int nMonth = FX_GetMonthFromTime(dt) + 1;
+  int nDay = FX_GetDayFromTime(dt);
+  int nHour = FX_GetHourFromTime(dt);
+  int nMin = FX_GetMinFromTime(dt);
+  int nSec = FX_GetSecFromTime(dt);
 
   int number[3];
 
@@ -415,7 +361,7 @@ double CJS_PublicMethods::ParseNormalDate(const WideString& value,
 
     wchar_t c = value[i];
     if (std::iswdigit(c)) {
-      number[nIndex++] = ParseStringInteger(value, i, &nSkip, 4);
+      number[nIndex++] = FX_ParseStringInteger(value, i, &nSkip, 4);
       i += nSkip;
     } else {
       i++;
@@ -426,10 +372,10 @@ double CJS_PublicMethods::ParseNormalDate(const WideString& value,
     // TODO(thestig): Should the else case set |bWrongFormat| to true?
     // case2: month/day
     // case3: day/month
-    if (IsValidMonth(number[0]) && IsValidDay(number[1])) {
+    if (FX_IsValidMonth(number[0]) && FX_IsValidDay(number[1])) {
       nMonth = number[0];
       nDay = number[1];
-    } else if (IsValidDay(number[0]) && IsValidMonth(number[1])) {
+    } else if (FX_IsValidDay(number[0]) && FX_IsValidMonth(number[1])) {
       nDay = number[0];
       nMonth = number[1];
     }
@@ -441,16 +387,17 @@ double CJS_PublicMethods::ParseNormalDate(const WideString& value,
     // case1: year/month/day
     // case2: month/day/year
     // case3: day/month/year
-    if (number[0] > 12 && IsValidMonth(number[1]) && IsValidDay(number[2])) {
+    if (number[0] > 12 && FX_IsValidMonth(number[1]) &&
+        FX_IsValidDay(number[2])) {
       nYear = number[0];
       nMonth = number[1];
       nDay = number[2];
-    } else if (IsValidMonth(number[0]) && IsValidDay(number[1]) &&
+    } else if (FX_IsValidMonth(number[0]) && FX_IsValidDay(number[1]) &&
                number[2] > 31) {
       nMonth = number[0];
       nDay = number[1];
       nYear = number[2];
-    } else if (IsValidDay(number[0]) && IsValidMonth(number[1]) &&
+    } else if (FX_IsValidDay(number[0]) && FX_IsValidMonth(number[1]) &&
                number[2] > 31) {
       nDay = number[0];
       nMonth = number[1];
@@ -470,280 +417,39 @@ double CJS_PublicMethods::ParseNormalDate(const WideString& value,
                                          nYear, nHour, nMin, nSec));
 }
 
-double CJS_PublicMethods::MakeRegularDate(const WideString& value,
-                                          const WideString& format,
-                                          bool* bWrongFormat) {
-  double dt = JS_GetDateTime();
+double CJS_PublicMethods::ParseDateUsingFormat(const WideString& value,
+                                               const WideString& format,
+                                               bool* bWrongFormat) {
+  double dRet = std::nan("");
+  fxjs::ConversionStatus status = FX_ParseDateUsingFormat(value, format, &dRet);
+  if (status == fxjs::ConversionStatus::kSuccess)
+    return dRet;
 
-  if (format.IsEmpty() || value.IsEmpty())
-    return dt;
+  if (status == fxjs::ConversionStatus::kBadDate) {
+    dRet = JS_DateParse(value);
+    if (!std::isnan(dRet))
+      return dRet;
+  }
 
-  int nYear = JS_GetYearFromTime(dt);
-  int nMonth = JS_GetMonthFromTime(dt) + 1;
-  int nDay = JS_GetDayFromTime(dt);
-  int nHour = JS_GetHourFromTime(dt);
-  int nMin = JS_GetMinFromTime(dt);
-  int nSec = JS_GetSecFromTime(dt);
-
-  int nYearSub = 99;  // nYear - 2000;
-
-  bool bPm = false;
-  bool bExit = false;
   bool bBadFormat = false;
-
-  size_t i = 0;
-  size_t j = 0;
-
-  while (i < format.GetLength()) {
-    if (bExit)
-      break;
-
-    wchar_t c = format[i];
-    switch (c) {
-      case ':':
-      case '.':
-      case '-':
-      case '\\':
-      case '/':
-        i++;
-        j++;
-        break;
-
-      case 'y':
-      case 'm':
-      case 'd':
-      case 'H':
-      case 'h':
-      case 'M':
-      case 's':
-      case 't': {
-        size_t oldj = j;
-        size_t nSkip = 0;
-        size_t remaining = format.GetLength() - i - 1;
-
-        if (remaining == 0 || format[i + 1] != c) {
-          switch (c) {
-            case 'y':
-              i++;
-              j++;
-              break;
-            case 'm':
-              nMonth = ParseStringInteger(value, j, &nSkip, 2);
-              i++;
-              j += nSkip;
-              break;
-            case 'd':
-              nDay = ParseStringInteger(value, j, &nSkip, 2);
-              i++;
-              j += nSkip;
-              break;
-            case 'H':
-              nHour = ParseStringInteger(value, j, &nSkip, 2);
-              i++;
-              j += nSkip;
-              break;
-            case 'h':
-              nHour = ParseStringInteger(value, j, &nSkip, 2);
-              i++;
-              j += nSkip;
-              break;
-            case 'M':
-              nMin = ParseStringInteger(value, j, &nSkip, 2);
-              i++;
-              j += nSkip;
-              break;
-            case 's':
-              nSec = ParseStringInteger(value, j, &nSkip, 2);
-              i++;
-              j += nSkip;
-              break;
-            case 't':
-              bPm = (j < value.GetLength() && value[j] == 'p');
-              i++;
-              j++;
-              break;
-          }
-        } else if (remaining == 1 || format[i + 2] != c) {
-          switch (c) {
-            case 'y':
-              nYear = ParseStringInteger(value, j, &nSkip, 2);
-              i += 2;
-              j += nSkip;
-              break;
-            case 'm':
-              nMonth = ParseStringInteger(value, j, &nSkip, 2);
-              i += 2;
-              j += nSkip;
-              break;
-            case 'd':
-              nDay = ParseStringInteger(value, j, &nSkip, 2);
-              i += 2;
-              j += nSkip;
-              break;
-            case 'H':
-              nHour = ParseStringInteger(value, j, &nSkip, 2);
-              i += 2;
-              j += nSkip;
-              break;
-            case 'h':
-              nHour = ParseStringInteger(value, j, &nSkip, 2);
-              i += 2;
-              j += nSkip;
-              break;
-            case 'M':
-              nMin = ParseStringInteger(value, j, &nSkip, 2);
-              i += 2;
-              j += nSkip;
-              break;
-            case 's':
-              nSec = ParseStringInteger(value, j, &nSkip, 2);
-              i += 2;
-              j += nSkip;
-              break;
-            case 't':
-              bPm = (j + 1 < value.GetLength() && value[j] == 'p' &&
-                     value[j + 1] == 'm');
-              i += 2;
-              j += 2;
-              break;
-          }
-        } else if (remaining == 2 || format[i + 3] != c) {
-          switch (c) {
-            case 'm': {
-              WideString sMonth = ParseStringString(value, j, &nSkip);
-              bool bFind = false;
-              for (int m = 0; m < 12; m++) {
-                if (sMonth.CompareNoCase(kMonths[m]) == 0) {
-                  nMonth = m + 1;
-                  i += 3;
-                  j += nSkip;
-                  bFind = true;
-                  break;
-                }
-              }
-
-              if (!bFind) {
-                nMonth = ParseStringInteger(value, j, &nSkip, 3);
-                i += 3;
-                j += nSkip;
-              }
-            } break;
-            case 'y':
-              break;
-            default:
-              i += 3;
-              j += 3;
-              break;
-          }
-        } else if (remaining == 3 || format[i + 4] != c) {
-          switch (c) {
-            case 'y':
-              nYear = ParseStringInteger(value, j, &nSkip, 4);
-              j += nSkip;
-              i += 4;
-              break;
-            case 'm': {
-              bool bFind = false;
-
-              WideString sMonth = ParseStringString(value, j, &nSkip);
-              sMonth.MakeLower();
-
-              for (int m = 0; m < 12; m++) {
-                WideString sFullMonths = WideString(kFullMonths[m]);
-                sFullMonths.MakeLower();
-
-                if (sFullMonths.Contains(sMonth.c_str())) {
-                  nMonth = m + 1;
-                  i += 4;
-                  j += nSkip;
-                  bFind = true;
-                  break;
-                }
-              }
-
-              if (!bFind) {
-                nMonth = ParseStringInteger(value, j, &nSkip, 4);
-                i += 4;
-                j += nSkip;
-              }
-            } break;
-            default:
-              i += 4;
-              j += 4;
-              break;
-          }
-        } else {
-          if (j >= value.GetLength() || format[i] != value[j]) {
-            bBadFormat = true;
-            bExit = true;
-          }
-          i++;
-          j++;
-        }
-
-        if (oldj == j) {
-          bBadFormat = true;
-          bExit = true;
-        }
-        break;
-      }
-
-      default:
-        if (value.GetLength() <= j) {
-          bExit = true;
-        } else if (format[i] != value[j]) {
-          bBadFormat = true;
-          bExit = true;
-        }
-
-        i++;
-        j++;
-        break;
-    }
-  }
-
-  if (bPm)
-    nHour += 12;
-
-  if (nYear >= 0 && nYear <= nYearSub)
-    nYear += 2000;
-
-  if (!bBadFormat) {
-    bBadFormat = !IsValidMonth(nMonth) || !IsValidDay(nDay) ||
-                 !IsValid24Hour(nHour) || !IsValidMinute(nMin) ||
-                 !IsValidSecond(nSec);
-  }
-
-  double dRet;
-  if (bBadFormat) {
-    dRet = ParseNormalDate(value, &bBadFormat);
-  } else {
-    dRet = JS_MakeDate(JS_MakeDay(nYear, nMonth - 1, nDay),
-                       JS_MakeTime(nHour, nMin, nSec, 0));
-    if (std::isnan(dRet))
-      dRet = JS_DateParse(value);
-  }
-
-  if (std::isnan(dRet))
-    dRet = ParseNormalDate(value, &bBadFormat);
-
+  dRet = ParseDate(value, &bBadFormat);
   if (bWrongFormat)
     *bWrongFormat = bBadFormat;
 
   return dRet;
 }
 
-WideString CJS_PublicMethods::MakeFormatDate(double dDate,
-                                             const WideString& format) {
+WideString CJS_PublicMethods::PrintDateUsingFormat(double dDate,
+                                                   const WideString& format) {
   WideString sRet;
   WideString sPart;
 
-  int nYear = JS_GetYearFromTime(dDate);
-  int nMonth = JS_GetMonthFromTime(dDate) + 1;
-  int nDay = JS_GetDayFromTime(dDate);
-  int nHour = JS_GetHourFromTime(dDate);
-  int nMin = JS_GetMinFromTime(dDate);
-  int nSec = JS_GetSecFromTime(dDate);
+  int nYear = FX_GetYearFromTime(dDate);
+  int nMonth = FX_GetMonthFromTime(dDate) + 1;
+  int nDay = FX_GetDayFromTime(dDate);
+  int nHour = FX_GetHourFromTime(dDate);
+  int nMin = FX_GetMinFromTime(dDate);
+  int nSec = FX_GetSecFromTime(dDate);
 
   size_t i = 0;
   while (i < format.GetLength()) {
@@ -821,8 +527,8 @@ WideString CJS_PublicMethods::MakeFormatDate(double dDate,
           switch (c) {
             case 'm':
               i += 3;
-              if (IsValidMonth(nMonth))
-                sPart += kMonths[nMonth - 1];
+              if (FX_IsValidMonth(nMonth))
+                sPart += fxjs::kMonths[nMonth - 1];
               break;
             default:
               i += 3;
@@ -839,8 +545,8 @@ WideString CJS_PublicMethods::MakeFormatDate(double dDate,
               break;
             case 'm':
               i += 4;
-              if (IsValidMonth(nMonth))
-                sPart += kFullMonths[nMonth - 1];
+              if (FX_IsValidMonth(nMonth))
+                sPart += fxjs::kFullMonths[nMonth - 1];
               break;
             default:
               i += 4;
@@ -928,7 +634,7 @@ CJS_Result CJS_PublicMethods::AFNumber_Format(
   }
 
   // Processing currency string
-  Value = WideString::FromLocal(strValue.AsStringView());
+  Value = WideString::FromDefANSI(strValue.AsStringView());
   if (bCurrencyPrepend)
     Value = wstrCurrency + Value;
   else
@@ -945,7 +651,7 @@ CJS_Result CJS_PublicMethods::AFNumber_Format(
     if (iNegStyle == 1 || iNegStyle == 3) {
       if (CJS_Field* fTarget = pEvent->Target_Field()) {
         v8::Local<v8::Array> arColor = pRuntime->NewArray();
-        pRuntime->PutArrayElement(arColor, 0, pRuntime->NewString(L"RGB"));
+        pRuntime->PutArrayElement(arColor, 0, pRuntime->NewString("RGB"));
         pRuntime->PutArrayElement(arColor, 1, pRuntime->NewNumber(1));
         pRuntime->PutArrayElement(arColor, 2, pRuntime->NewNumber(0));
         pRuntime->PutArrayElement(arColor, 3, pRuntime->NewNumber(0));
@@ -956,7 +662,7 @@ CJS_Result CJS_PublicMethods::AFNumber_Format(
     if (iNegStyle == 1 || iNegStyle == 3) {
       if (CJS_Field* fTarget = pEvent->Target_Field()) {
         v8::Local<v8::Array> arColor = pRuntime->NewArray();
-        pRuntime->PutArrayElement(arColor, 0, pRuntime->NewString(L"RGB"));
+        pRuntime->PutArrayElement(arColor, 0, pRuntime->NewString("RGB"));
         pRuntime->PutArrayElement(arColor, 1, pRuntime->NewNumber(0));
         pRuntime->PutArrayElement(arColor, 2, pRuntime->NewNumber(0));
         pRuntime->PutArrayElement(arColor, 3, pRuntime->NewNumber(0));
@@ -1139,7 +845,7 @@ CJS_Result CJS_PublicMethods::AFPercent_Format(
     strValue.InsertAtFront('-');
 
   strValue += '%';
-  Value = WideString::FromLocal(strValue.AsStringView());
+  Value = WideString::FromDefANSI(strValue.AsStringView());
 #endif
   return CJS_Result::Success();
 }
@@ -1171,11 +877,10 @@ CJS_Result CJS_PublicMethods::AFDate_FormatEx(
   WideString sFormat = pRuntime->ToWideString(params[0]);
   double dDate;
   if (strValue.Contains(L"GMT")) {
-    // for GMT format time
-    // such as "Tue Aug 11 14:24:16 GMT+08002009"
-    dDate = MakeInterDate(strValue);
+    // e.g. "Tue Aug 11 14:24:16 GMT+08002009"
+    dDate = ParseDateAsGMT(strValue);
   } else {
-    dDate = MakeRegularDate(strValue, sFormat, nullptr);
+    dDate = ParseDateUsingFormat(strValue, sFormat, nullptr);
   }
 
   if (std::isnan(dDate)) {
@@ -1185,11 +890,11 @@ CJS_Result CJS_PublicMethods::AFDate_FormatEx(
     return CJS_Result::Failure(JSMessage::kParseDateError);
   }
 
-  val = MakeFormatDate(dDate, sFormat);
+  val = PrintDateUsingFormat(dDate, sFormat);
   return CJS_Result::Success();
 }
 
-double CJS_PublicMethods::MakeInterDate(const WideString& strValue) {
+double CJS_PublicMethods::ParseDateAsGMT(const WideString& strValue) {
   std::vector<WideString> wsArray;
   WideString sTemp;
   for (const auto& c : strValue) {
@@ -1205,8 +910,8 @@ double CJS_PublicMethods::MakeInterDate(const WideString& strValue) {
 
   int nMonth = 1;
   sTemp = wsArray[1];
-  for (size_t i = 0; i < FX_ArraySize(kMonths); ++i) {
-    if (sTemp.Compare(kMonths[i]) == 0) {
+  for (size_t i = 0; i < FX_ArraySize(fxjs::kMonths); ++i) {
+    if (sTemp.Compare(fxjs::kMonths[i]) == 0) {
       nMonth = i + 1;
       break;
     }
@@ -1217,8 +922,8 @@ double CJS_PublicMethods::MakeInterDate(const WideString& strValue) {
   int nMin = FX_atof(wsArray[4].AsStringView());
   int nSec = FX_atof(wsArray[5].AsStringView());
   int nYear = FX_atof(wsArray[7].AsStringView());
-  double dRet = JS_MakeDate(JS_MakeDay(nYear, nMonth - 1, nDay),
-                            JS_MakeTime(nHour, nMin, nSec, 0));
+  double dRet = FX_MakeDate(FX_MakeDay(nYear, nMonth - 1, nDay),
+                            FX_MakeTime(nHour, nMin, nSec, 0));
   if (std::isnan(dRet))
     dRet = JS_DateParse(strValue);
 
@@ -1246,9 +951,9 @@ CJS_Result CJS_PublicMethods::AFDate_KeystrokeEx(
   if (strValue.IsEmpty())
     return CJS_Result::Success();
 
-  WideString sFormat = pRuntime->ToWideString(params[0]);
   bool bWrongFormat = false;
-  double dRet = MakeRegularDate(strValue, sFormat, &bWrongFormat);
+  WideString sFormat = pRuntime->ToWideString(params[0]);
+  double dRet = ParseDateUsingFormat(strValue, sFormat, &bWrongFormat);
   if (bWrongFormat || std::isnan(dRet)) {
     WideString swMsg = WideString::Format(
         JSGetStringFromID(JSMessage::kParseDateError).c_str(), sFormat.c_str());
@@ -1264,25 +969,10 @@ CJS_Result CJS_PublicMethods::AFDate_Format(
   if (params.size() != 1)
     return CJS_Result::Failure(JSMessage::kParamError);
 
-  static constexpr const wchar_t* cFormats[] = {L"m/d",
-                                                L"m/d/yy",
-                                                L"mm/dd/yy",
-                                                L"mm/yy",
-                                                L"d-mmm",
-                                                L"d-mmm-yy",
-                                                L"dd-mmm-yy",
-                                                L"yy-mm-dd",
-                                                L"mmm-yy",
-                                                L"mmmm-yy",
-                                                L"mmm d, yyyy",
-                                                L"mmmm d, yyyy",
-                                                L"m/d/yy h:MM tt",
-                                                L"m/d/yy HH:MM"};
-
-  int iIndex =
-      WithinBoundsOrZero(pRuntime->ToInt32(params[0]), FX_ArraySize(cFormats));
+  int iIndex = WithinBoundsOrZero(pRuntime->ToInt32(params[0]),
+                                  FX_ArraySize(kDateFormats));
   std::vector<v8::Local<v8::Value>> newParams;
-  newParams.push_back(pRuntime->NewString(cFormats[iIndex]));
+  newParams.push_back(pRuntime->NewString(kDateFormats[iIndex]));
   return AFDate_FormatEx(pRuntime, newParams);
 }
 
@@ -1293,25 +983,10 @@ CJS_Result CJS_PublicMethods::AFDate_Keystroke(
   if (params.size() != 1)
     return CJS_Result::Failure(JSMessage::kParamError);
 
-  static constexpr const wchar_t* cFormats[] = {L"m/d",
-                                                L"m/d/yy",
-                                                L"mm/dd/yy",
-                                                L"mm/yy",
-                                                L"d-mmm",
-                                                L"d-mmm-yy",
-                                                L"dd-mmm-yy",
-                                                L"yy-mm-dd",
-                                                L"mmm-yy",
-                                                L"mmmm-yy",
-                                                L"mmm d, yyyy",
-                                                L"mmmm d, yyyy",
-                                                L"m/d/yy h:MM tt",
-                                                L"m/d/yy HH:MM"};
-
-  int iIndex =
-      WithinBoundsOrZero(pRuntime->ToInt32(params[0]), FX_ArraySize(cFormats));
+  int iIndex = WithinBoundsOrZero(pRuntime->ToInt32(params[0]),
+                                  FX_ArraySize(kDateFormats));
   std::vector<v8::Local<v8::Value>> newParams;
-  newParams.push_back(pRuntime->NewString(cFormats[iIndex]));
+  newParams.push_back(pRuntime->NewString(kDateFormats[iIndex]));
   return AFDate_KeystrokeEx(pRuntime, newParams);
 }
 
@@ -1322,13 +997,10 @@ CJS_Result CJS_PublicMethods::AFTime_Format(
   if (params.size() != 1)
     return CJS_Result::Failure(JSMessage::kParamError);
 
-  static constexpr const wchar_t* cFormats[] = {L"HH:MM", L"h:MM tt",
-                                                L"HH:MM:ss", L"h:MM:ss tt"};
-
-  int iIndex =
-      WithinBoundsOrZero(pRuntime->ToInt32(params[0]), FX_ArraySize(cFormats));
+  int iIndex = WithinBoundsOrZero(pRuntime->ToInt32(params[0]),
+                                  FX_ArraySize(kTimeFormats));
   std::vector<v8::Local<v8::Value>> newParams;
-  newParams.push_back(pRuntime->NewString(cFormats[iIndex]));
+  newParams.push_back(pRuntime->NewString(kTimeFormats[iIndex]));
   return AFDate_FormatEx(pRuntime, newParams);
 }
 
@@ -1338,13 +1010,10 @@ CJS_Result CJS_PublicMethods::AFTime_Keystroke(
   if (params.size() != 1)
     return CJS_Result::Failure(JSMessage::kParamError);
 
-  static constexpr const wchar_t* cFormats[] = {L"HH:MM", L"h:MM tt",
-                                                L"HH:MM:ss", L"h:MM:ss tt"};
-
-  int iIndex =
-      WithinBoundsOrZero(pRuntime->ToInt32(params[0]), FX_ArraySize(cFormats));
+  int iIndex = WithinBoundsOrZero(pRuntime->ToInt32(params[0]),
+                                  FX_ArraySize(kTimeFormats));
   std::vector<v8::Local<v8::Value>> newParams;
-  newParams.push_back(pRuntime->NewString(cFormats[iIndex]));
+  newParams.push_back(pRuntime->NewString(kTimeFormats[iIndex]));
   return AFDate_KeystrokeEx(pRuntime, newParams);
 }
 
@@ -1382,7 +1051,7 @@ CJS_Result CJS_PublicMethods::AFSpecial_Format(
       wsFormat = L"99999-9999";
       break;
     case 2:
-      if (CJS_Util::printx(L"9999999999", wsSource).GetLength() >= 10)
+      if (CJS_Util::StringPrintx(L"9999999999", wsSource).GetLength() >= 10)
         wsFormat = L"(999) 999-9999";
       else
         wsFormat = L"999-9999";
@@ -1392,7 +1061,7 @@ CJS_Result CJS_PublicMethods::AFSpecial_Format(
       break;
   }
 
-  pEvent->Value() = CJS_Util::printx(wsFormat, wsSource);
+  pEvent->Value() = CJS_Util::StringPrintx(wsFormat, wsSource);
   return CJS_Result::Success();
 }
 
@@ -1417,13 +1086,19 @@ CJS_Result CJS_PublicMethods::AFSpecial_KeystrokeEx(
     if (valEvent.IsEmpty())
       return CJS_Result::Success();
 
-    size_t iIndexMask = 0;
-    for (; iIndexMask < valEvent.GetLength(); ++iIndexMask) {
-      if (!MaskSatisfied(valEvent[iIndexMask], wstrMask[iIndexMask]))
+    if (valEvent.GetLength() > wstrMask.GetLength()) {
+      AlertIfPossible(pContext,
+                      JSGetStringFromID(JSMessage::kParamTooLongError));
+      pEvent->Rc() = false;
+      return CJS_Result::Success();
+    }
+
+    size_t iIndex = 0;
+    for (iIndex = 0; iIndex < valEvent.GetLength(); ++iIndex) {
+      if (!MaskSatisfied(valEvent[iIndex], wstrMask[iIndex]))
         break;
     }
-    if (iIndexMask != wstrMask.GetLength() ||
-        (iIndexMask != valEvent.GetLength() && wstrMask.GetLength() != 0)) {
+    if (iIndex != wstrMask.GetLength()) {
       AlertIfPossible(pContext,
                       JSGetStringFromID(JSMessage::kInvalidInputError));
       pEvent->Rc() = false;
@@ -1537,7 +1212,7 @@ CJS_Result CJS_PublicMethods::AFParseDateEx(
 
   WideString sValue = pRuntime->ToWideString(params[0]);
   WideString sFormat = pRuntime->ToWideString(params[1]);
-  double dDate = MakeRegularDate(sValue, sFormat, nullptr);
+  double dDate = ParseDateUsingFormat(sValue, sFormat, nullptr);
   if (std::isnan(dDate)) {
     WideString swMsg = WideString::Format(
         JSGetStringFromID(JSMessage::kParseDateError).c_str(), sFormat.c_str());
@@ -1553,9 +1228,21 @@ CJS_Result CJS_PublicMethods::AFSimple(
   if (params.size() != 3)
     return CJS_Result::Failure(JSMessage::kParamError);
 
-  return CJS_Result::Success(pRuntime->NewNumber(static_cast<double>(AF_Simple(
-      pRuntime->ToWideString(params[0]).c_str(), pRuntime->ToDouble(params[1]),
-      pRuntime->ToDouble(params[2])))));
+  WideString sFunction = pRuntime->ToWideString(params[0]);
+  double arg1 = pRuntime->ToDouble(params[1]);
+  double arg2 = pRuntime->ToDouble(params[2]);
+  if (std::isnan(arg1) || std::isnan(arg2))
+    return CJS_Result::Failure(JSMessage::kValueError);
+
+  Optional<double> result = ApplyNamedOperation(sFunction.c_str(), arg1, arg2);
+  if (!result.has_value())
+    return CJS_Result::Failure(JSMessage::kValueError);
+
+  double dValue = result.value();
+  if (wcscmp(sFunction.c_str(), L"AVG") == 0)
+    dValue /= 2.0;
+
+  return CJS_Result::Success(pRuntime->NewNumber(dValue));
 }
 
 CJS_Result CJS_PublicMethods::AFMakeNumber(
@@ -1581,18 +1268,18 @@ CJS_Result CJS_PublicMethods::AFSimple_Calculate(
   if (params.size() != 2)
     return CJS_Result::Failure(JSMessage::kParamError);
 
-  if ((params[1].IsEmpty() || !params[1]->IsArray()) && !params[1]->IsString())
+  if (params[1].IsEmpty() || (!params[1]->IsArray() && !params[1]->IsString()))
     return CJS_Result::Failure(JSMessage::kParamError);
+
+  WideString sFunction = pRuntime->ToWideString(params[0]);
+  v8::Local<v8::Array> FieldNameArray =
+      AF_MakeArrayFromList(pRuntime, params[1]);
 
   CPDFSDK_InteractiveForm* pReaderForm =
       pRuntime->GetFormFillEnv()->GetInteractiveForm();
   CPDF_InteractiveForm* pForm = pReaderForm->GetInteractiveForm();
 
-  WideString sFunction = pRuntime->ToWideString(params[0]);
   double dValue = wcscmp(sFunction.c_str(), L"PRD") == 0 ? 1.0 : 0.0;
-
-  v8::Local<v8::Array> FieldNameArray =
-      AF_MakeArrayFromList(pRuntime, params[1]);
   int nFieldsCount = 0;
   for (size_t i = 0; i < pRuntime->GetArrayLength(FieldNameArray); ++i) {
     WideString wsFieldName =
@@ -1646,8 +1333,12 @@ CJS_Result CJS_PublicMethods::AFSimple_Calculate(
            wcscmp(sFunction.c_str(), L"MAX") == 0)) {
         dValue = dTemp;
       }
-      dValue = AF_Simple(sFunction.c_str(), dValue, dTemp);
+      Optional<double> dResult =
+          ApplyNamedOperation(sFunction.c_str(), dValue, dTemp);
+      if (!dResult.has_value())
+        return CJS_Result::Failure(JSMessage::kValueError);
 
+      dValue = dResult.value();
       nFieldsCount++;
     }
   }

@@ -18,38 +18,38 @@
 
 namespace {
 
-const uint16_t MSSymbolEncoding[256] = {
+const uint16_t MSSymbolEncoding[CPDF_FontEncoding::kEncodingTableSize] = {
     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
-    0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 32,     33,     8704,   35,
-    8707,   37,     38,     8715,   40,     41,     8727,   43,     44,
-    8722,   46,     47,     48,     49,     50,     51,     52,     53,
-    54,     55,     56,     57,     58,     59,     60,     61,     62,
-    63,     8773,   913,    914,    935,    916,    917,    934,    915,
-    919,    921,    977,    922,    923,    924,    925,    927,    928,
-    920,    929,    931,    932,    933,    962,    937,    926,    936,
-    918,    91,     8756,   93,     8869,   95,     8254,   945,    946,
-    967,    948,    949,    966,    947,    951,    953,    981,    954,
-    955,    956,    957,    959,    960,    952,    961,    963,    964,
-    965,    982,    969,    958,    968,    950,    123,    124,    125,
-    8764,   0,      0,      0,      0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+    0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0020, 0x0021, 0x2200, 0x0023,
+    0x2203, 0x0025, 0x0026, 0x220b, 0x0028, 0x0029, 0x2217, 0x002b, 0x002c,
+    0x2212, 0x002e, 0x002f, 0x0030, 0x0031, 0x0032, 0x0033, 0x0034, 0x0035,
+    0x0036, 0x0037, 0x0038, 0x0039, 0x003a, 0x003b, 0x003c, 0x003d, 0x003e,
+    0x003f, 0x2245, 0x0391, 0x0392, 0x03a7, 0x0394, 0x0395, 0x03a6, 0x0393,
+    0x0397, 0x0399, 0x03d1, 0x039a, 0x039b, 0x039c, 0x039d, 0x039f, 0x03a0,
+    0x0398, 0x03a1, 0x03a3, 0x03a4, 0x03a5, 0x03c2, 0x03a9, 0x039e, 0x03a8,
+    0x0396, 0x005b, 0x2234, 0x005d, 0x22a5, 0x005f, 0x203e, 0x03b1, 0x03b2,
+    0x03c7, 0x03b4, 0x03b5, 0x03c6, 0x03b3, 0x03b7, 0x03b9, 0x03d5, 0x03ba,
+    0x03bb, 0x03bc, 0x03bd, 0x03bf, 0x03c0, 0x03b8, 0x03c1, 0x03c3, 0x03c4,
+    0x03c5, 0x03d6, 0x03c9, 0x03be, 0x03c8, 0x03b6, 0x007b, 0x007c, 0x007d,
+    0x223c, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
-    0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 978,
-    8242,   8804,   8725,   8734,   402,    9827,   9830,   9828,   9824,
-    8596,   8592,   8593,   8594,   8595,   176,    177,    8243,   8805,
-    215,    8733,   8706,   8729,   247,    8800,   8801,   8776,   8943,
-    0,      0,      8629,   0,      8465,   8476,   8472,   8855,   8853,
-    8709,   8745,   8746,   8835,   8839,   8836,   8834,   8838,   8712,
-    8713,   8736,   8711,   174,    169,    8482,   8719,   8730,   8901,
-    172,    8743,   8744,   8660,   8656,   8657,   8658,   8659,   9674,
-    9001,   0,      0,      0,      8721,   0,      0,      0,      0,
-    0,      0,      0,      0,      0,      0,      0x0000, 9002,   8747,
-    8992,   0,      8993,   0,      0,      0,      0,      0,      0,
+    0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x03d2,
+    0x2032, 0x2264, 0x2215, 0x221e, 0x0192, 0x2663, 0x2666, 0x2664, 0x2660,
+    0x2194, 0x2190, 0x2191, 0x2192, 0x2193, 0x00b0, 0x00b1, 0x2033, 0x2265,
+    0x00d7, 0x221d, 0x2202, 0x2219, 0x00f7, 0x2260, 0x2261, 0x2248, 0x22ef,
+    0x0000, 0x0000, 0x21b5, 0x0000, 0x2111, 0x211c, 0x2118, 0x2297, 0x2295,
+    0x2205, 0x2229, 0x222a, 0x2283, 0x2287, 0x2284, 0x2282, 0x2286, 0x2208,
+    0x2209, 0x2220, 0x2207, 0x00ae, 0x00a9, 0x2122, 0x220f, 0x221a, 0x22c5,
+    0x00ac, 0x2227, 0x2228, 0x21d4, 0x21d0, 0x21d1, 0x21d2, 0x21d3, 0x25ca,
+    0x2329, 0x0000, 0x0000, 0x0000, 0x2211, 0x0000, 0x0000, 0x0000, 0x0000,
+    0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x232a, 0x222b,
+    0x2320, 0x0000, 0x2321, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
     0x0000, 0x0000, 0x0000, 0x0000};
 
-const uint16_t StandardEncoding[256] = {
+const uint16_t StandardEncoding[CPDF_FontEncoding::kEncodingTableSize] = {
     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
@@ -80,7 +80,7 @@ const uint16_t StandardEncoding[256] = {
     0x0000, 0x0000, 0x0131, 0x0000, 0x0000, 0x0142, 0x00f8, 0x0153, 0x00df,
     0x0000, 0x0000, 0x0000, 0x0000};
 
-const uint16_t MacRomanEncoding[256] = {
+const uint16_t MacRomanEncoding[CPDF_FontEncoding::kEncodingTableSize] = {
     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
@@ -111,7 +111,7 @@ const uint16_t MacRomanEncoding[256] = {
     0x00db, 0x00d9, 0x0131, 0x02c6, 0x02dc, 0x00af, 0x02d8, 0x02d9, 0x02da,
     0x00b8, 0x02dd, 0x02db, 0x02c7};
 
-const uint16_t AdobeWinAnsiEncoding[256] = {
+const uint16_t AdobeWinAnsiEncoding[CPDF_FontEncoding::kEncodingTableSize] = {
     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
@@ -142,7 +142,7 @@ const uint16_t AdobeWinAnsiEncoding[256] = {
     0x00f3, 0x00f4, 0x00f5, 0x00f6, 0x00f7, 0x00f8, 0x00f9, 0x00fa, 0x00fb,
     0x00fc, 0x00fd, 0x00fe, 0x00ff};
 
-const uint16_t MacExpertEncoding[256] = {
+const uint16_t MacExpertEncoding[CPDF_FontEncoding::kEncodingTableSize] = {
     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
@@ -173,7 +173,7 @@ const uint16_t MacExpertEncoding[256] = {
     0xf6f4, 0xf7af, 0xf6ea, 0x207f, 0xf6ef, 0xf6e2, 0xf6e8, 0xf6f7, 0xf6fc,
     0x0000, 0x0000, 0x0000, 0x0000};
 
-const uint16_t AdobeSymbolEncoding[256] = {
+const uint16_t AdobeSymbolEncoding[CPDF_FontEncoding::kEncodingTableSize] = {
     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
@@ -205,7 +205,7 @@ const uint16_t AdobeSymbolEncoding[256] = {
     0xF8FC, 0xF8FD, 0xF8FE, 0x0000,
 };
 
-const uint16_t ZapfEncoding[256] = {
+const uint16_t ZapfEncoding[CPDF_FontEncoding::kEncodingTableSize] = {
     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
@@ -237,7 +237,14 @@ const uint16_t ZapfEncoding[256] = {
     0x27BC, 0x27BD, 0x27BE, 0x0000,
 };
 
-const char* const StandardEncodingNames[224] = {
+constexpr size_t kEncodingTableFirstChar = 32;
+constexpr size_t kEncodingNamesTableSize =
+    CPDF_FontEncoding::kEncodingTableSize - kEncodingTableFirstChar;
+constexpr size_t kPDFDocEncodingTableFirstChar = 24;
+constexpr size_t kPDFDocEncodingNamesTableSize =
+    CPDF_FontEncoding::kEncodingTableSize - kPDFDocEncodingTableFirstChar;
+
+const char* const StandardEncodingNames[kEncodingNamesTableSize] = {
     "space",
     "exclam",
     "quotedbl",
@@ -464,7 +471,7 @@ const char* const StandardEncodingNames[224] = {
     nullptr,
 };
 
-const char* const AdobeWinAnsiEncodingNames[224] = {
+const char* const AdobeWinAnsiEncodingNames[kEncodingNamesTableSize] = {
     "space",
     "exclam",
     "quotedbl",
@@ -691,7 +698,7 @@ const char* const AdobeWinAnsiEncodingNames[224] = {
     "ydieresis",
 };
 
-const char* const MacRomanEncodingNames[224] = {
+const char* const MacRomanEncodingNames[kEncodingNamesTableSize] = {
     "space",
     "exclam",
     "quotedbl",
@@ -918,7 +925,7 @@ const char* const MacRomanEncodingNames[224] = {
     "caron",
 };
 
-const char* const MacExpertEncodingNames[224] = {
+const char* const MacExpertEncodingNames[kEncodingNamesTableSize] = {
     "space",
     "exclamsmall",
     "Hungarumlautsmall",
@@ -1145,7 +1152,7 @@ const char* const MacExpertEncodingNames[224] = {
     nullptr,
 };
 
-const char* const PDFDocEncodingNames[232] = {
+const char* const PDFDocEncodingNames[kPDFDocEncodingNamesTableSize] = {
     "breve",
     "caron",
     "circumflex",
@@ -1380,7 +1387,7 @@ const char* const PDFDocEncodingNames[232] = {
     "ydieresis",
 };
 
-const char* const AdobeSymbolEncodingNames[224] = {
+const char* const AdobeSymbolEncodingNames[kEncodingNamesTableSize] = {
     "space",
     "exclam",
     "universal",
@@ -1607,7 +1614,7 @@ const char* const AdobeSymbolEncodingNames[224] = {
     nullptr,
 };
 
-const char* const ZapfEncodingNames[224] = {
+const char* const ZapfEncodingNames[kEncodingNamesTableSize] = {
     "space", "a1",    "a2",    "a202",  "a3",    "a4",    "a5",    "a119",
     "a118",  "a117",  "a11",   "a12",   "a13",   "a14",   "a15",   "a16",
     "a105",  "a17",   "a18",   "a19",   "a20",   "a21",   "a22",   "a23",
@@ -1638,9 +1645,10 @@ const char* const ZapfEncodingNames[224] = {
     "a186",  "a195",  "a187",  "a188",  "a189",  "a190",  "a191",  nullptr};
 
 uint32_t PDF_FindCode(const uint16_t* pCodes, uint16_t unicode) {
-  for (uint32_t i = 0; i < 256; i++)
+  for (size_t i = 0; i < CPDF_FontEncoding::kEncodingTableSize; i++) {
     if (pCodes[i] == unicode)
       return i;
+  }
   return 0;
 }
 
@@ -1651,10 +1659,10 @@ CPDF_FontEncoding::CPDF_FontEncoding() {
 }
 
 int CPDF_FontEncoding::CharCodeFromUnicode(wchar_t unicode) const {
-  for (int i = 0; i < 256; i++)
-    if (m_Unicodes[i] == unicode) {
+  for (size_t i = 0; i < FX_ArraySize(m_Unicodes); i++) {
+    if (m_Unicodes[i] == unicode)
       return i;
-    }
+  }
   return -1;
 }
 
@@ -1663,7 +1671,7 @@ CPDF_FontEncoding::CPDF_FontEncoding(int PredefinedEncoding) {
   if (!pSrc) {
     memset(m_Unicodes, 0, sizeof(m_Unicodes));
   } else {
-    for (int i = 0; i < 256; i++)
+    for (size_t i = 0; i < FX_ArraySize(m_Unicodes); i++)
       m_Unicodes[i] = pSrc[i];
   }
 }
@@ -1679,7 +1687,7 @@ std::unique_ptr<CPDF_Object> CPDF_FontEncoding::Realize(
        cs++) {
     const uint16_t* pSrc = PDF_UnicodesForPredefinedCharSet(cs);
     bool match = true;
-    for (int i = 0; i < 256; ++i) {
+    for (size_t i = 0; i < FX_ArraySize(m_Unicodes); i++) {
       if (m_Unicodes[i] != pSrc[i]) {
         match = false;
         break;
@@ -1691,23 +1699,26 @@ std::unique_ptr<CPDF_Object> CPDF_FontEncoding::Realize(
     }
   }
   if (predefined) {
+    const char* pName;
     if (predefined == PDFFONT_ENCODING_WINANSI)
-      return pdfium::MakeUnique<CPDF_Name>(pPool, "WinAnsiEncoding");
-    if (predefined == PDFFONT_ENCODING_MACROMAN)
-      return pdfium::MakeUnique<CPDF_Name>(pPool, "MacRomanEncoding");
-    if (predefined == PDFFONT_ENCODING_MACEXPERT)
-      return pdfium::MakeUnique<CPDF_Name>(pPool, "MacExpertEncoding");
+      pName = "WinAnsiEncoding";
+    else if (predefined == PDFFONT_ENCODING_MACROMAN)
+      pName = "MacRomanEncoding";
+    else if (predefined == PDFFONT_ENCODING_MACEXPERT)
+      pName = "MacExpertEncoding";
+    else
+      return nullptr;
 
-    return nullptr;
+    return pdfium::MakeUnique<CPDF_Name>(pPool, pName);
   }
   const uint16_t* pStandard =
       PDF_UnicodesForPredefinedCharSet(PDFFONT_ENCODING_WINANSI);
   auto pDiff = pdfium::MakeUnique<CPDF_Array>();
-  for (int i = 0; i < 256; i++) {
+  for (size_t i = 0; i < FX_ArraySize(m_Unicodes); i++) {
     if (pStandard[i] == m_Unicodes[i])
       continue;
 
-    pDiff->AddNew<CPDF_Number>(i);
+    pDiff->AddNew<CPDF_Number>(static_cast<int>(i));
     pDiff->AddNew<CPDF_Name>(PDF_AdobeNameFromUnicode(m_Unicodes[i]));
   }
 
@@ -1770,15 +1781,15 @@ ByteString PDF_AdobeNameFromUnicode(wchar_t unicode) {
 
 const char* PDF_CharNameFromPredefinedCharSet(int encoding, uint8_t charcode) {
   if (encoding == PDFFONT_ENCODING_PDFDOC) {
-    if (charcode < 24)
+    if (charcode < kPDFDocEncodingTableFirstChar)
       return nullptr;
 
-    charcode -= 24;
+    charcode -= kPDFDocEncodingTableFirstChar;
   } else {
-    if (charcode < 32)
+    if (charcode < kEncodingTableFirstChar)
       return nullptr;
 
-    charcode -= 32;
+    charcode -= kEncodingTableFirstChar;
   }
   switch (encoding) {
     case PDFFONT_ENCODING_WINANSI:

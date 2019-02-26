@@ -11,9 +11,9 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_test.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
-#include "third_party/blink/renderer/platform/calculation_value.h"
-#include "third_party/blink/renderer/platform/layout_unit.h"
-#include "third_party/blink/renderer/platform/length.h"
+#include "third_party/blink/renderer/platform/geometry/calculation_value.h"
+#include "third_party/blink/renderer/platform/geometry/layout_unit.h"
+#include "third_party/blink/renderer/platform/geometry/length.h"
 
 namespace blink {
 namespace {
@@ -27,13 +27,13 @@ static NGConstraintSpace ConstructConstraintSpace(
   NGLogicalSize size = {LayoutUnit(inline_size), LayoutUnit(block_size)};
 
   return NGConstraintSpaceBuilder(
-             writing_mode,
-             /* icb_size */ size.ConvertToPhysical(writing_mode))
+             writing_mode, writing_mode,
+             /* is_new_fc */ false)
       .SetAvailableSize(size)
       .SetPercentageResolutionSize(size)
       .SetIsFixedSizeInline(fixed_inline)
       .SetIsFixedSizeBlock(fixed_block)
-      .ToConstraintSpace(writing_mode);
+      .ToConstraintSpace();
 }
 
 class NGLengthUtilsTest : public testing::Test {
@@ -105,7 +105,7 @@ TEST_F(NGLengthUtilsTest, testResolveInlineLength) {
       ResolveInlineLength(Length(30, kPercent), LengthResolveType::kMaxSize,
                           LengthResolvePhase::kIntrinsic));
   EXPECT_EQ(
-      LayoutUnit(200),
+      LayoutUnit::Max(),
       ResolveInlineLength(Length(kFillAvailable), LengthResolveType::kMaxSize,
                           LengthResolvePhase::kIntrinsic));
   MinMaxSize sizes;

@@ -16,6 +16,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/country_names.h"
@@ -182,6 +183,7 @@ class AutofillMergeTest : public DataDrivenTest,
   // Deserializes |str| into a field type.
   ServerFieldType StringToFieldType(const std::string& str);
 
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   TestAutofillClient autofill_client_;
   PersonalDataManagerMock personal_data_;
   std::unique_ptr<FormDataImporter> form_data_importer_;

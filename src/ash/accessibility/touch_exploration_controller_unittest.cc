@@ -434,7 +434,7 @@ TEST_F(TouchExplorationTest, EntersTouchToMouseModeAfterMoveOutsideSlop) {
 
   SwitchTouchExplorationMode(true);
   EXPECT_FALSE(IsInTouchToMouseMode());
-  generator_->set_current_location(gfx::Point(11, 12));
+  generator_->set_current_screen_location(gfx::Point(11, 12));
   generator_->PressTouch();
   generator_->MoveTouch(gfx::Point(11 + half_slop, 12));
   EXPECT_FALSE(IsInTouchToMouseMode());
@@ -448,7 +448,7 @@ TEST_F(TouchExplorationTest, EntersTouchToMouseModeAfterMoveOutsideSlop) {
 TEST_F(TouchExplorationTest, OneFingerTap) {
   SwitchTouchExplorationMode(true);
   gfx::Point location(11, 12);
-  generator_->set_current_location(location);
+  generator_->set_current_screen_location(location);
   generator_->PressTouch();
   generator_->ReleaseTouch();
   AdvanceSimulatedTimePastTapDelay();
@@ -468,7 +468,7 @@ TEST_F(TouchExplorationTest, ActualMouseMovesUnaffected) {
 
   gfx::Point location_start(11, 12);
   gfx::Point location_end(13, 14);
-  generator_->set_current_location(location_start);
+  generator_->set_current_screen_location(location_start);
   generator_->PressTouch();
   AdvanceSimulatedTimePastTapDelay();
   generator_->MoveTouch(location_end);
@@ -601,14 +601,14 @@ TEST_F(TouchExplorationTest, TimerFiresLateAfterTap) {
 
   // Send a tap at location1.
   gfx::Point location0(11, 12);
-  generator_->set_current_location(location0);
+  generator_->set_current_screen_location(location0);
   generator_->PressTouch();
   generator_->ReleaseTouch();
 
   // Send a tap at location2, after the double-tap timeout, but before the
   // timer fires.
   gfx::Point location1(33, 34);
-  generator_->set_current_location(location1);
+  generator_->set_current_screen_location(location1);
   simulated_clock_.Advance(base::TimeDelta::FromMilliseconds(301));
   generator_->PressTouch();
   generator_->ReleaseTouch();
@@ -633,7 +633,7 @@ TEST_F(TouchExplorationTest, DoubleTap) {
 
   // Tap at one location, and get a mouse move event.
   gfx::Point tap_location(51, 52);
-  generator_->set_current_location(tap_location);
+  generator_->set_current_screen_location(tap_location);
   generator_->PressTouchId(1);
   generator_->ReleaseTouchId(1);
   AdvanceSimulatedTimePastTapDelay();
@@ -651,7 +651,7 @@ TEST_F(TouchExplorationTest, DoubleTap) {
   // a single touch press and release at the location of the tap,
   // not at the location of the double-tap.
   gfx::Point double_tap_location(33, 34);
-  generator_->set_current_location(double_tap_location);
+  generator_->set_current_screen_location(double_tap_location);
   generator_->PressTouch();
   generator_->ReleaseTouch();
   generator_->PressTouch();
@@ -675,7 +675,7 @@ TEST_F(TouchExplorationTest, DoubleTapTiming) {
 
   // Tap at one location, and get a mouse move event.
   gfx::Point tap_location(51, 52);
-  generator_->set_current_location(tap_location);
+  generator_->set_current_screen_location(tap_location);
   generator_->PressTouchId(1);
   generator_->ReleaseTouchId(1);
   AdvanceSimulatedTimePastTapDelay();
@@ -692,7 +692,7 @@ TEST_F(TouchExplorationTest, DoubleTapTiming) {
 
   // The press of the second tap happens in time, but the release does not.
   gfx::Point double_tap_location(33, 34);
-  generator_->set_current_location(double_tap_location);
+  generator_->set_current_screen_location(double_tap_location);
   generator_->PressTouch();
   generator_->ReleaseTouch();
   simulated_clock_.Advance(gesture_detector_config_.double_tap_timeout -
@@ -714,7 +714,7 @@ TEST_F(TouchExplorationTest, DoubleTapWithExplicitAnchorPoint) {
 
   // Tap at one location, and get a mouse move event.
   gfx::Point tap_location(51, 52);
-  generator_->set_current_location(tap_location);
+  generator_->set_current_screen_location(tap_location);
   generator_->PressTouchId(1);
   generator_->ReleaseTouchId(1);
   AdvanceSimulatedTimePastTapDelay();
@@ -733,7 +733,7 @@ TEST_F(TouchExplorationTest, DoubleTapWithExplicitAnchorPoint) {
   // Now double-tap at a different location. This should result in
   // a click gesture.
   gfx::Point double_tap_location(33, 34);
-  generator_->set_current_location(double_tap_location);
+  generator_->set_current_screen_location(double_tap_location);
   generator_->PressTouch();
   generator_->ReleaseTouch();
   generator_->PressTouch();
@@ -753,7 +753,7 @@ TEST_F(TouchExplorationTest, DoubleTapPassthrough) {
 
   // Tap at one location, and get a mouse move event.
   gfx::Point tap_location(11, 12);
-  generator_->set_current_location(tap_location);
+  generator_->set_current_screen_location(tap_location);
   generator_->PressTouch();
   generator_->ReleaseTouch();
   AdvanceSimulatedTimePastTapDelay();
@@ -771,11 +771,11 @@ TEST_F(TouchExplorationTest, DoubleTapPassthrough) {
   // This should result in a single touch press at the location of the tap,
   // not at the location of the double-tap.
   gfx::Point first_tap_location(13, 14);
-  generator_->set_current_location(first_tap_location);
+  generator_->set_current_screen_location(first_tap_location);
   generator_->PressTouchId(1);
   generator_->ReleaseTouchId(1);
   gfx::Point second_tap_location(15, 16);
-  generator_->set_current_location(second_tap_location);
+  generator_->set_current_screen_location(second_tap_location);
   generator_->PressTouchId(1);
   // Advance to the finger passing through.
   AdvanceSimulatedTimePastTapDelay();
@@ -843,7 +843,7 @@ TEST_F(TouchExplorationTest, DoubleTapLongPress) {
   SwitchTouchExplorationMode(true);
   // Tap at one location, and get a mouse move event.
   gfx::Point tap_location(11, 12);
-  generator_->set_current_location(tap_location);
+  generator_->set_current_screen_location(tap_location);
   generator_->PressTouch();
   generator_->ReleaseTouch();
   AdvanceSimulatedTimePastTapDelay();
@@ -861,11 +861,11 @@ TEST_F(TouchExplorationTest, DoubleTapLongPress) {
   // at the location of the tap, not at the location of the double-tap.
   // There should be a time delay between the touch press and release.
   gfx::Point first_tap_location(33, 34);
-  generator_->set_current_location(first_tap_location);
+  generator_->set_current_screen_location(first_tap_location);
   generator_->PressTouch();
   generator_->ReleaseTouch();
   gfx::Point second_tap_location(23, 24);
-  generator_->set_current_location(second_tap_location);
+  generator_->set_current_screen_location(second_tap_location);
   generator_->PressTouch();
   // Advance to the finger passing through, and then to the longpress timeout.
   AdvanceSimulatedTimePastTapDelay();
@@ -894,7 +894,7 @@ TEST_F(TouchExplorationTest, SingleTap) {
 
   // Tap once to simulate a mouse moved event.
   gfx::Point initial_location(11, 12);
-  generator_->set_current_location(initial_location);
+  generator_->set_current_screen_location(initial_location);
   generator_->PressTouch();
   AdvanceSimulatedTimePastTapDelay();
   ClearCapturedEvents();
@@ -907,7 +907,7 @@ TEST_F(TouchExplorationTest, SingleTap) {
   // Allow time to pass within the grace period of releasing before
   // tapping again.
   gfx::Point final_location(33, 34);
-  generator_->set_current_location(final_location);
+  generator_->set_current_screen_location(final_location);
   simulated_clock_.Advance(base::TimeDelta::FromMilliseconds(250));
   generator_->PressTouch();
   generator_->ReleaseTouch();
@@ -936,7 +936,7 @@ TEST_F(TouchExplorationTest, DoubleTapNoTouchExplore) {
   // touch exploration event. The double-tap should be discarded, and no events
   // should be generated at all.
   gfx::Point double_tap_location(33, 34);
-  generator_->set_current_location(double_tap_location);
+  generator_->set_current_screen_location(double_tap_location);
   generator_->PressTouch();
   generator_->ReleaseTouch();
   generator_->PressTouch();
@@ -1712,7 +1712,7 @@ TEST_F(TouchExplorationTest, InBoundariesTouchExploration) {
 TEST_F(TouchExplorationTest, TwoFingerTap) {
   SwitchTouchExplorationMode(true);
 
-  generator_->set_current_location(gfx::Point(101, 102));
+  generator_->set_current_screen_location(gfx::Point(101, 102));
   generator_->PressTouchId(1);
   EXPECT_FALSE(IsInTwoFingerTapState());
 
@@ -1847,7 +1847,7 @@ TEST_F(TouchExplorationTest, ExclusionArea) {
 
   // Motion starting in exclusion bounds is passed-through unchanged.
   {
-    generator_->set_current_location(in_pt);
+    generator_->set_current_screen_location(in_pt);
     generator_->PressTouchId(0);
     AdvanceSimulatedTimePastPotentialTapDelay();
     generator_->MoveTouchId(out_mv_pt, 0);
@@ -1863,7 +1863,7 @@ TEST_F(TouchExplorationTest, ExclusionArea) {
 
   // Complete motion outside exclusion is rewritten.
   {
-    generator_->set_current_location(out_pt);
+    generator_->set_current_screen_location(out_pt);
     generator_->PressTouchId(0);
     AdvanceSimulatedTimePastTapDelay();
     generator_->MoveTouchId(out_mv_pt, 0);
@@ -1882,7 +1882,7 @@ TEST_F(TouchExplorationTest, ExclusionArea) {
   // events are discarded unless they end the motion.
   {
     // finger 0 down outside, moves inside.
-    generator_->set_current_location(out_pt);
+    generator_->set_current_screen_location(out_pt);
     generator_->PressTouchId(0);
     AdvanceSimulatedTimePastTapDelay();
     generator_->MoveTouchId(out_mv_pt, 0);
@@ -1894,7 +1894,7 @@ TEST_F(TouchExplorationTest, ExclusionArea) {
     ClearCapturedEvents();
 
     // finger 1 down inside, moves outside
-    generator_->set_current_location(in_pt);
+    generator_->set_current_screen_location(in_pt);
     generator_->PressTouchId(1);
     generator_->MoveTouchId(out_mv_pt, 1);
     generator_->ReleaseTouchId(1);
@@ -1924,7 +1924,7 @@ TEST_F(TouchExplorationTest, SingleTapInLiftActivationArea) {
   // The user has to have previously selected something.
   SetTouchAccessibilityAnchorPoint(tap_location);
 
-  generator_->set_current_location(tap_location);
+  generator_->set_current_screen_location(tap_location);
   generator_->PressTouchId(1);
   generator_->ReleaseTouchId(1);
   AdvanceSimulatedTimePastTapDelay();
@@ -1938,7 +1938,7 @@ TEST_F(TouchExplorationTest, SingleTapInLiftActivationArea) {
 
   gfx::Point out_tap_location(tap_location.x(), lift_activation.bottom() + 20);
   SetTouchAccessibilityAnchorPoint(out_tap_location);
-  generator_->set_current_location(out_tap_location);
+  generator_->set_current_screen_location(out_tap_location);
   generator_->PressTouchId(1);
   generator_->ReleaseTouchId(1);
   AdvanceSimulatedTimePastTapDelay();

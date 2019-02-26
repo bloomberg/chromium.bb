@@ -7,16 +7,19 @@
 
 from __future__ import print_function
 
+import copy
 import json
 import mock
 import os
 
 from chromite.cbuildbot import cbuildbot_unittest
 from chromite.cbuildbot import commands
+from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import test_stages
 from chromite.lib.const import waterfall
+from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -24,11 +27,12 @@ from chromite.lib import cros_test_lib
 from chromite.lib import failures_lib
 from chromite.lib import fake_cidb
 from chromite.lib import osutils
+from chromite.lib import parallel
 from chromite.lib import path_util
 from chromite.lib import timeout_util
+from chromite.scripts import cbuildbot
 
-
-# pylint: disable=too-many-ancestors
+# pylint: disable=too-many-ancestors,protected-access
 
 class UnitTestStageTest(generic_stages_unittest.AbstractStageTestCase,
                         cbuildbot_unittest.SimpleBuilderTestCase):
@@ -408,3 +412,75 @@ class CbuildbotLaunchTestEndToEndTest(
         self.tryjob_failure_exception, None, None, None])
 
     self.RunStage()
+
+class HWTestPlanStageTest(cros_test_lib.MockTempDirTestCase):
+  """Tests for the HWTestPlanStageTest."""
+  def setUp(self):
+    self.buildroot = os.path.join(self.tempdir, 'buildroot')
+
+  def _initConfig(
+      self, bot_id, master=False, extra_argv=None, override_hw_test_config=None,
+      models=None):
+    """Return normal options/build_config for |bot_id|"""
+    site_config = config_lib.GetConfig()
+    build_config = copy.deepcopy(site_config[bot_id])
+    build_config['master'] = master
+    build_config['important'] = False
+    if models:
+      build_config['models'] = models
+
+    # Use the cbuildbot parser to create properties and populate default values.
+    parser = cbuildbot._CreateParser()
+    argv = (['-r', self.buildroot, '--buildbot', '--debug', '--nochromesdk'] +
+            (extra_argv if extra_argv else []) + [bot_id])
+    options = cbuildbot.ParseCommandLine(parser, argv)
+
+    # Yikes.
+    options.managed_chrome = build_config['sync_chrome']
+
+    # Iterate through override and update HWTestConfig attributes.
+    if override_hw_test_config:
+      for key, val in override_hw_test_config.iteritems():
+        for hw_test in build_config.hw_tests:
+          setattr(hw_test, key, val)
+
+    return cbuildbot_run.BuilderRun(
+        options, site_config, build_config, parallel.Manager())
+
+  def testGetHWTestStageWithPerModelFilters(self):
+    """Verify hwtests are filtered correctly on a per-model basis"""
+    extra_argv = ['--hwtest']
+    unified_build = self._initConfig(
+        'eve-release',
+        extra_argv=extra_argv)
+    unified_build.attrs.chrome_version = 'TheChromeVersion'
+
+    test_phase1 = unified_build.config.hw_tests[0]
+    test_phase2 = unified_build.config.hw_tests[1]
+
+    model1 = config_lib.ModelTestConfig('model1', 'some_lab_board')
+    model2 = config_lib.ModelTestConfig('model2', 'mode11', [test_phase2.suite])
+
+    stage = test_stages.TestPlanStage(unified_build, 'eve')
+
+    hw_stage = stage._GetHWTestStage(
+        unified_build,
+        'eve',
+        model1,
+        test_phase1)
+    self.assertIsNotNone(hw_stage)
+    self.assertEqual(hw_stage._board_name, 'some_lab_board')
+
+    hw_stage = stage._GetHWTestStage(
+        unified_build,
+        'eve',
+        model2,
+        test_phase1)
+    self.assertIsNone(hw_stage)
+
+    hw_stage = stage._GetHWTestStage(
+        unified_build,
+        'eve',
+        model2,
+        test_phase2)
+    self.assertIsNotNone(hw_stage)

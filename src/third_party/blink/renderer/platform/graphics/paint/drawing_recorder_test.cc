@@ -9,6 +9,8 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller_test.h"
 #include "third_party/blink/renderer/platform/testing/fake_display_item_client.h"
 
+using testing::ElementsAre;
+
 namespace blink {
 
 using DrawingRecorderTest = PaintControllerTestBase;
@@ -23,8 +25,8 @@ TEST_F(DrawingRecorderTest, Nothing) {
   InitRootChunk();
   DrawNothing(context, client, kForegroundType);
   CommitAndFinishCycle();
-  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 1,
-                      TestDisplayItem(client, kForegroundType));
+  EXPECT_THAT(GetPaintController().GetDisplayItemList(),
+              ElementsAre(IsSameId(&client, kForegroundType)));
   EXPECT_FALSE(static_cast<const DrawingDisplayItem&>(
                    GetPaintController().GetDisplayItemList()[0])
                    .GetPaintRecord());
@@ -36,8 +38,8 @@ TEST_F(DrawingRecorderTest, Rect) {
   InitRootChunk();
   DrawRect(context, client, kForegroundType, kBounds);
   CommitAndFinishCycle();
-  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 1,
-                      TestDisplayItem(client, kForegroundType));
+  EXPECT_THAT(GetPaintController().GetDisplayItemList(),
+              ElementsAre(IsSameId(&client, kForegroundType)));
 }
 
 TEST_F(DrawingRecorderTest, Cached) {
@@ -48,9 +50,9 @@ TEST_F(DrawingRecorderTest, Cached) {
   DrawRect(context, client, kForegroundType, kBounds);
   CommitAndFinishCycle();
 
-  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
-                      TestDisplayItem(client, kBackgroundType),
-                      TestDisplayItem(client, kForegroundType));
+  EXPECT_THAT(GetPaintController().GetDisplayItemList(),
+              ElementsAre(IsSameId(&client, kBackgroundType),
+                          IsSameId(&client, kForegroundType)));
 
   InitRootChunk();
   DrawNothing(context, client, kBackgroundType);
@@ -60,9 +62,9 @@ TEST_F(DrawingRecorderTest, Cached) {
 
   CommitAndFinishCycle();
 
-  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
-                      TestDisplayItem(client, kBackgroundType),
-                      TestDisplayItem(client, kForegroundType));
+  EXPECT_THAT(GetPaintController().GetDisplayItemList(),
+              ElementsAre(IsSameId(&client, kBackgroundType),
+                          IsSameId(&client, kForegroundType)));
 }
 
 }  // namespace

@@ -44,7 +44,11 @@ class WaitableEvent;
 
 class DatabaseThread : public GarbageCollectedFinalized<DatabaseThread> {
  public:
-  static DatabaseThread* Create() { return new DatabaseThread; }
+  static DatabaseThread* Create() {
+    return MakeGarbageCollected<DatabaseThread>();
+  }
+
+  DatabaseThread();
   ~DatabaseThread();
   void Trace(blink::Visitor*);
 
@@ -69,8 +73,6 @@ class DatabaseThread : public GarbageCollectedFinalized<DatabaseThread> {
   }
 
  private:
-  DatabaseThread();
-
   void SetupDatabaseThread();
   void CleanupDatabaseThread();
   void CleanupDatabaseThreadCompleted();

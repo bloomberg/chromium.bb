@@ -7,14 +7,14 @@
 
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 
-@class FaviconViewNew;
+@class FaviconView;
 
 // Corresponding cell for an article in the suggestions.
 @interface ContentSuggestionsCell : MDCCollectionViewCell
 
 @property(nonatomic, readonly, strong) UILabel* titleLabel;
 // View for displaying the favicon.
-@property(nonatomic, readonly, strong) FaviconViewNew* faviconView;
+@property(nonatomic, readonly, strong) FaviconView* faviconView;
 // Whether the image should be displayed.
 @property(nonatomic, assign) BOOL displayImage;
 

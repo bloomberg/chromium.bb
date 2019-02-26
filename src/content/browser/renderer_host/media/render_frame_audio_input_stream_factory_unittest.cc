@@ -64,12 +64,12 @@ class RenderFrameAudioInputStreamFactoryTest
     RenderFrameHostTester::For(main_rfh())->InitializeRenderFrameIfNeeded();
 
     // Set up the ForwardingAudioStreamFactory.
-    service_manager::Connector::TestApi connector_test_api(
+    service_manager::Connector* connector =
         ForwardingAudioStreamFactory::ForFrame(main_rfh())
             ->core()
-            ->get_connector_for_testing());
-    connector_test_api.OverrideBinderForTesting(
-        service_manager::Identity(audio::mojom::kServiceName),
+            ->get_connector_for_testing();
+    connector->OverrideBinderForTesting(
+        service_manager::ServiceFilter::ByName(audio::mojom::kServiceName),
         audio::mojom::StreamFactory::Name_,
         base::BindRepeating(
             &RenderFrameAudioInputStreamFactoryTest::BindFactory,

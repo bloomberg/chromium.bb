@@ -144,7 +144,6 @@ extern const char kChromeUISupervisedUserInternalsHost[];
 extern const char kChromeUISupervisedUserPassphrasePageHost[];
 extern const char kChromeUISyncConfirmationHost[];
 extern const char kChromeUISyncConfirmationURL[];
-extern const char kChromeUISyncConsentBumpURL[];
 extern const char kChromeUISyncFileSystemInternalsHost[];
 extern const char kChromeUISyncHost[];
 extern const char kChromeUISyncInternalsHost[];
@@ -202,8 +201,6 @@ extern const char kChromeUIIntenetConfigDialogURL[];
 extern const char kChromeUIIntenetDetailDialogURL[];
 extern const char kChromeUIInternetConfigDialogHost[];
 extern const char kChromeUIInternetDetailDialogHost[];
-extern const char kChromeUIKeyboardOverlayHost[];
-extern const char kChromeUIKeyboardOverlayURL[];
 extern const char kChromeUILinuxCreditsHost[];
 extern const char kChromeUILinuxCreditsURL[];
 extern const char kChromeUIMobileSetupHost[];
@@ -223,6 +220,8 @@ extern const char kChromeUISetTimeURL[];
 extern const char kChromeUISlowHost[];
 extern const char kChromeUISlowTraceHost[];
 extern const char kChromeUISlowURL[];
+extern const char kChromeUISmbShareHost[];
+extern const char kChromeUISmbShareURL[];
 extern const char kChromeUISysInternalsHost[];
 extern const char kChromeUIUserImageHost[];
 extern const char kChromeUIUserImageURL[];
@@ -237,7 +236,6 @@ extern const char kChromeUIMetroFlowURL[];
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 extern const char kChromeUICastHost[];
-extern const char kChromeUICastURL[];
 #endif
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
@@ -264,6 +262,7 @@ extern const char kChromeUIPrintHost[];
 extern const char kChromeUIWebRtcLogsHost[];
 
 // Settings sub-pages.
+extern const char kAddressesSubPage[];
 extern const char kAutofillSubPage[];
 extern const char kClearBrowserDataSubPage[];
 extern const char kContentSettingsSubPage[];
@@ -290,6 +289,7 @@ extern const char kDisplaySubPage[];
 extern const char kHelpSubPage[];
 extern const char kInternetSubPage[];
 extern const char kConnectedDevicesSubPage[];
+extern const char kLockScreenSubPage[];
 extern const char kNetworkDetailSubPage[];
 extern const char kPowerSubPage[];
 extern const char kSmbSharesPage[];

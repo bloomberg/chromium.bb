@@ -30,6 +30,7 @@ class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
  public:
   static RemoteFrameView* Create(RemoteFrame*);
 
+  explicit RemoteFrameView(RemoteFrame*);
   ~RemoteFrameView() override;
 
   void AttachToLayout() override;
@@ -73,8 +74,6 @@ class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit RemoteFrameView(RemoteFrame*);
-
   LocalFrameView* ParentFrameView() const;
 
   void UpdateRenderThrottlingStatus(bool hidden, bool subtree_throttled);

@@ -34,6 +34,9 @@ class MODULES_EXPORT ImageBitmapRenderingContext final
     }
   };
 
+  ImageBitmapRenderingContext(CanvasRenderingContextHost*,
+                              const CanvasContextCreationAttributesCore&);
+
   // Script API
   void transferFromImageBitmap(ImageBitmap*, ExceptionState&);
 
@@ -45,10 +48,6 @@ class MODULES_EXPORT ImageBitmapRenderingContext final
   void SetCanvasGetContextResult(RenderingContext&) final;
 
   ~ImageBitmapRenderingContext() override;
-
- private:
-  ImageBitmapRenderingContext(CanvasRenderingContextHost*,
-                              const CanvasContextCreationAttributesCore&);
 };
 
 DEFINE_TYPE_CASTS(ImageBitmapRenderingContext,

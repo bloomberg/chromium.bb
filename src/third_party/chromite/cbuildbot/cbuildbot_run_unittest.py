@@ -347,11 +347,15 @@ class BuilderRunTest(_BuilderRunTestCase):
 
   def testInEmailReportingEnvironment(self):
     run = self._NewBuilderRun()
-    self.assertFalse(run.InEmailReportingEnvironment())
+    self.assertTrue(run.InEmailReportingEnvironment())
 
     run.attrs.metadata.UpdateWithDict(
         {'buildbot-master-name': waterfall.WATERFALL_INTERNAL})
     self.assertTrue(run.InEmailReportingEnvironment())
+
+    run.attrs.metadata.UpdateWithDict(
+        {'buildbot-master-name': waterfall.WATERFALL_INFRA})
+    self.assertFalse(run.InEmailReportingEnvironment())
 
 
 class GetVersionTest(_BuilderRunTestCase):

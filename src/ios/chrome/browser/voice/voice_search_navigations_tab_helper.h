@@ -8,10 +8,6 @@
 #import "ios/web/public/web_state/web_state_observer.h"
 #import "ios/web/public/web_state/web_state_user_data.h"
 
-namespace web {
-class NavigationItem;
-}
-
 // A helper object that tracks which NavigationItems were created because of
 // voice search queries.
 class VoiceSearchNavigationTabHelper
@@ -25,9 +21,6 @@ class VoiceSearchNavigationTabHelper
   // Returns whether the next committed navigation item is the result of a voice
   // search.
   bool IsExpectingVoiceSearch() const;
-
-  // Returns whether |item| was created for a voice search query.
-  bool IsNavigationFromVoiceSearch(const web::NavigationItem* item) const;
 
  private:
   friend class web::WebStateUserData<VoiceSearchNavigationTabHelper>;

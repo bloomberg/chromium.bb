@@ -5,14 +5,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_HIT_TEST_DATA_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_HIT_TEST_DATA_H_
 
-#include "third_party/blink/renderer/platform/geometry/region.h"
 #include "third_party/blink/renderer/platform/graphics/hit_test_rect.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
-
-class DisplayItemClient;
-class GraphicsContext;
 
 using HitTestRects = Vector<HitTestRect>;
 
@@ -33,15 +29,17 @@ struct PLATFORM_EXPORT HitTestData {
            non_fast_scrollable_region == rhs.non_fast_scrollable_region;
   }
 
+  void Append(const HitTestRect& rect) {
+    // TODO(836905): Support other types of hit testing.
+    touch_action_rects.push_back(rect);
+  }
+
   bool operator!=(const HitTestData& rhs) const { return !(*this == rhs); }
 
-  // Records a display item for hit testing to ensure a paint chunk exists and
-  // is sized to include hit test rects, then adds the hit test rect to
-  // |HitTestData.touch_action_rects|.
-  static void RecordHitTestRect(GraphicsContext&,
-                                const DisplayItemClient&,
-                                const HitTestRect&);
+  String ToString() const;
 };
+
+PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const HitTestData&);
 
 }  // namespace blink
 

@@ -192,8 +192,16 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
                              const AtomicString& name,
                              SMILTime offset,
                              int repeat = -1) {
-      return new Condition(type, begin_or_end, base_id, name, offset, repeat);
+      return MakeGarbageCollected<Condition>(type, begin_or_end, base_id, name,
+                                             offset, repeat);
     }
+
+    Condition(Type,
+              BeginOrEnd,
+              const AtomicString& base_id,
+              const AtomicString& name,
+              SMILTime offset,
+              int repeat);
     ~Condition();
     void Trace(blink::Visitor*);
 
@@ -213,13 +221,6 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
     void DisconnectEventBase(SVGSMILElement&);
 
    private:
-    Condition(Type,
-              BeginOrEnd,
-              const AtomicString& base_id,
-              const AtomicString& name,
-              SMILTime offset,
-              int repeat);
-
     Type type_;
     BeginOrEnd begin_or_end_;
     AtomicString base_id_;
@@ -298,11 +299,11 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
 };
 
 inline bool IsSVGSMILElement(const SVGElement& element) {
-  return element.HasTagName(SVGNames::setTag) ||
-         element.HasTagName(SVGNames::animateTag) ||
-         element.HasTagName(SVGNames::animateMotionTag) ||
-         element.HasTagName(SVGNames::animateTransformTag) ||
-         element.HasTagName((SVGNames::discardTag));
+  return element.HasTagName(svg_names::kSetTag) ||
+         element.HasTagName(svg_names::kAnimateTag) ||
+         element.HasTagName(svg_names::kAnimateMotionTag) ||
+         element.HasTagName(svg_names::kAnimateTransformTag) ||
+         element.HasTagName((svg_names::kDiscardTag));
 }
 
 DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGSMILElement);

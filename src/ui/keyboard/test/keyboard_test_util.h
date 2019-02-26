@@ -6,9 +6,6 @@
 #define UI_KEYBOARD_TEST_KEYBOARD_TEST_UTIL_H_
 
 #include "ui/aura/test/test_window_delegate.h"
-#include "ui/aura/window.h"
-#include "ui/base/ime/dummy_input_method.h"
-#include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_ui.h"
 
 namespace gfx {
@@ -23,9 +20,6 @@ bool WaitUntilShown();
 // Waits until the keyboard starts to hide, with possible pending animations.
 bool WaitUntilHidden();
 
-// Waits until the keyboard state is changed to the given state.
-void WaitControllerStateChangesTo(const KeyboardControllerState state);
-
 // Returns true if the keyboard is about to show or already shown.
 bool IsKeyboardShowing();
 
@@ -33,9 +27,9 @@ bool IsKeyboardShowing();
 bool IsKeyboardHiding();
 
 // Gets the calculated keyboard bounds from |root_bounds|. The keyboard height
-// is specified by |keyboard_height|.
+// may be specified by |keyboard_height|, or a default height is used.
 gfx::Rect KeyboardBoundsFromRootBounds(const gfx::Rect& root_bounds,
-                                       int keyboard_height);
+                                       int keyboard_height = 100);
 
 class TestKeyboardUI : public KeyboardUI {
  public:
@@ -43,12 +37,10 @@ class TestKeyboardUI : public KeyboardUI {
   ~TestKeyboardUI() override;
 
   // Overridden from KeyboardUI:
-  bool HasKeyboardWindow() const override;
-  aura::Window* GetKeyboardWindow() override;
+  aura::Window* LoadKeyboardWindow(LoadCallback callback) override;
+  aura::Window* GetKeyboardWindow() const override;
   ui::InputMethod* GetInputMethod() override;
   void ReloadKeyboardIfNeeded() override {}
-  void InitInsets(const gfx::Rect& keyboard_bounds) override {}
-  void ResetInsets() override {}
 
  private:
   std::unique_ptr<aura::Window> window_;

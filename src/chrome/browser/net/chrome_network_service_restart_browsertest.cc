@@ -44,6 +44,8 @@ class ChromeNetworkServiceRestartBrowserTest : public InProcessBrowserTest {
 // after crash.
 IN_PROC_BROWSER_TEST_F(ChromeNetworkServiceRestartBrowserTest,
                        StoragePartitionGetNetworkContext) {
+  if (content::IsNetworkServiceRunningInProcess())
+    return;
 #if defined(OS_MACOSX)
   // |NetworkServiceTestHelper| doesn't work on browser_tests on macOS.
   return;
@@ -72,6 +74,8 @@ IN_PROC_BROWSER_TEST_F(ChromeNetworkServiceRestartBrowserTest,
 // after crash.
 IN_PROC_BROWSER_TEST_F(ChromeNetworkServiceRestartBrowserTest,
                        SystemNetworkContextManagerGetContext) {
+  if (content::IsNetworkServiceRunningInProcess())
+    return;
 #if defined(OS_MACOSX)
   // |NetworkServiceTestHelper| doesn't work on browser_tests on macOS.
   return;

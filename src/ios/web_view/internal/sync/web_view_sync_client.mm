@@ -4,6 +4,8 @@
 
 #import "ios/web_view/internal/sync/web_view_sync_client.h"
 
+#include <algorithm>
+
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/task/post_task.h"
@@ -18,8 +20,9 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/keyed_service/core/service_access_type.h"
-#include "components/password_manager/core/browser/password_model_worker.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/sync/password_model_worker.h"
+#include "components/sync/driver/data_type_controller.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync/driver/sync_util.h"
 #include "components/sync/engine/passive_model_worker.h"
@@ -48,12 +51,12 @@ namespace ios_web_view {
 
 namespace {
 syncer::ModelTypeSet GetDisabledTypes() {
-  syncer::ModelTypeSet disabled_types = syncer::UserSelectableTypes();
-  // Don't need to sync preferences.
-  disabled_types.Put(syncer::PRIORITY_PREFERENCES);
-  // Only want autofill and passwords.
-  disabled_types.Remove(syncer::AUTOFILL);
-  disabled_types.Remove(syncer::PASSWORDS);
+  // Only want credit card autofill for now.
+  // TODO(crbug.com/906910): Remove syncer::AUTOFILL_PROFILE and
+  // syncer::PASSWORDS as well once they are ready.
+  syncer::ModelTypeSet disabled_types = syncer::UserTypes();
+  disabled_types.Remove(syncer::AUTOFILL_WALLET_DATA);
+  disabled_types.Remove(syncer::AUTOFILL_WALLET_METADATA);
   return disabled_types;
 }
 }  // namespace
@@ -140,11 +143,16 @@ base::RepeatingClosure WebViewSyncClient::GetPasswordStateChangedCallback() {
 }
 
 syncer::DataTypeController::TypeVector
-WebViewSyncClient::CreateDataTypeControllers(
-    syncer::LocalDeviceInfoProvider* local_device_info_provider) {
-  // The iOS port does not have any platform-specific datatypes.
-  return component_factory_->CreateCommonDataTypeControllers(
-      GetDisabledTypes(), local_device_info_provider);
+WebViewSyncClient::CreateDataTypeControllers() {
+  // iOS WebView uses butter sync and so has no need to record user consents.
+  syncer::DataTypeController::TypeVector type_vector =
+      component_factory_->CreateCommonDataTypeControllers(GetDisabledTypes());
+  type_vector.erase(std::remove_if(type_vector.begin(), type_vector.end(),
+                                   [](const auto& data_type_controller) {
+                                     return data_type_controller->type() ==
+                                            syncer::USER_CONSENTS;
+                                   }));
+  return type_vector;
 }
 
 BookmarkUndoService* WebViewSyncClient::GetBookmarkUndoServiceIfExists() {
@@ -168,22 +176,23 @@ WebViewSyncClient::GetExtensionsActivity() {
 
 base::WeakPtr<syncer::SyncableService>
 WebViewSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
-  if (!profile_web_data_service_) {
+  auto service = account_web_data_service_ ?: profile_web_data_service_;
+  if (!service) {
     NOTREACHED();
     return base::WeakPtr<syncer::SyncableService>();
   }
   switch (type) {
     case syncer::AUTOFILL_PROFILE:
       return autofill::AutofillProfileSyncableService::FromWebDataService(
-                 profile_web_data_service_.get())
+                 service.get())
           ->AsWeakPtr();
     case syncer::AUTOFILL_WALLET_DATA:
       return autofill::AutofillWalletSyncableService::FromWebDataService(
-                 profile_web_data_service_.get())
+                 service.get())
           ->AsWeakPtr();
     case syncer::AUTOFILL_WALLET_METADATA:
       return autofill::AutofillWalletMetadataSyncableService::
-          FromWebDataService(profile_web_data_service_.get())
+          FromWebDataService(service.get())
               ->AsWeakPtr();
     case syncer::PASSWORDS:
       return password_store_ ? password_store_->GetPasswordSyncableService()
@@ -196,17 +205,9 @@ WebViewSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
 
 base::WeakPtr<syncer::ModelTypeControllerDelegate>
 WebViewSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
-  switch (type) {
-    case syncer::DEVICE_INFO:
-      // TODO(crbug.com/872420): Distinguish ios/web_view from ios/chrome.
-      return WebViewProfileSyncServiceFactory::GetForBrowserState(
-                 browser_state_)
-          ->GetDeviceInfoSyncControllerDelegate();
-    default:
-      NOTREACHED();
-      // TODO(crbug.com/873790): Figure out if USER_CONSENTS need to be enabled.
-      return base::WeakPtr<syncer::ModelTypeControllerDelegate>();
-  }
+  NOTREACHED();
+  // TODO(crbug.com/873790): Figure out if USER_CONSENTS need to be enabled.
+  return base::WeakPtr<syncer::ModelTypeControllerDelegate>();
 }
 
 scoped_refptr<syncer::ModelSafeWorker>

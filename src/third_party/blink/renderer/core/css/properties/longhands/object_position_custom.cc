@@ -11,14 +11,14 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* ObjectPosition::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   return ConsumePosition(range, context,
-                         CSSPropertyParserHelpers::UnitlessQuirk::kForbid,
+                         css_property_parser_helpers::UnitlessQuirk::kForbid,
                          base::Optional<WebFeature>());
 }
 
@@ -36,5 +36,5 @@ const CSSValue* ObjectPosition::CSSValueFromComputedStyleInternal(
       CSSValuePair::kKeepIdenticalValues);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

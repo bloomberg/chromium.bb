@@ -19,7 +19,8 @@ void PlatformTestHelper::SimulateNativeDestroy(Widget* widget) {
   // Retain the window while closing it, otherwise the window may lose its
   // last owner before -[NSWindow close] completes (this offends AppKit).
   // Usually this reference will exist on an event delivered to the runloop.
-  base::scoped_nsobject<NSWindow> window([widget->GetNativeWindow() retain]);
+  base::scoped_nsobject<NSWindow> window(
+      [widget->GetNativeWindow().GetNativeNSWindow() retain]);
   [window close];
 }
 

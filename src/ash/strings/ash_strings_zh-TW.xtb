@@ -31,6 +31,7 @@
 <translation id="1351937230027495976">收合選單</translation>
 <translation id="1383876407941801731">搜尋</translation>
 <translation id="1419738280318246476">解鎖裝置即可執行通知動作</translation>
+<translation id="1455242230282523554">顯示語言設定</translation>
 <translation id="1467432559032391204">向左</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{顯示通知設定。已關閉一個應用程式的通知}other{顯示通知設定。已關閉 # 個應用程式的通知}}</translation>
@@ -38,8 +39,8 @@
 <translation id="1537254971476575106">全螢幕放大鏡</translation>
 <translation id="15373452373711364">大型滑鼠游標</translation>
 <translation id="1550523713251050646">按一下即可查看更多選項</translation>
-<translation id="1567387640189251553">自你上次輸入密碼後，裝置已連接其他鍵盤。你的按鍵行為可能會遭到側錄。</translation>
 <translation id="1570871743947603115">切換藍牙設定。<ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">存取你在這個工作階段內的所有活動</translation>
 <translation id="1608626060424371292">移除這位使用者</translation>
 <translation id="1621499497873603021">電池剩餘使用時間：<ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">啟動語音查詢</translation>
@@ -111,8 +112,8 @@
 <translation id="2727977024730340865">使用低功率充電器，可能導致充電狀態不穩定。</translation>
 <translation id="2761704814324807722">狀態匣：時間 <ph name="TIME" />，<ph name="BATTERY" /></translation>
 <translation id="277257480934873581">正在重新連線至 <ph name="NAME" /></translation>
-<translation id="2790844815106384441">選擇網站是否可使用定位服務，或是裝置的麥克風、相機或其他功能</translation>
 <translation id="2792498699870441125">Alt + 搜尋鍵</translation>
+<translation id="2803734122639935495">如要解鎖，請輸入你的密碼</translation>
 <translation id="2819276065543622893">現在即將登出。</translation>
 <translation id="2825619548187458965">檔案櫃</translation>
 <translation id="2844169650293029770">USB-C 裝置 (左前方連接埠)</translation>
@@ -126,6 +127,7 @@
 <translation id="2946119680249604491">新增連線</translation>
 <translation id="2961963223658824723">發生錯誤，請於幾秒後再試一次。</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">安裝應用程式、擴充功能和主題</translation>
 <translation id="2995447421581609334">顯示投放裝置。</translation>
 <translation id="2996462380875591307">停駐放大鏡已啟用。再次按下 Ctrl 鍵 + 搜尋鍵 + D 鍵即可停用。</translation>
 <translation id="3000461861112256445">單聲道音訊</translation>
@@ -155,6 +157,7 @@
 <translation id="3413817803639110246">目前還沒有任何通知</translation>
 <translation id="3445925074670675829">USB-C 裝置</translation>
 <translation id="3454224730401036106">已切換至更安全的網路連線</translation>
+<translation id="3465223694362104965">這個裝置自你上次登入後接上了另外一組鍵盤。使用前請確認你信任該組鍵盤。</translation>
 <translation id="3477079411857374384">Ctrl + Shift + 空格鍵</translation>
 <translation id="3510164367642747937">醒目顯示滑鼠游標</translation>
 <translation id="3510503721818156981">Chromebook 已連上新手機</translation>
@@ -173,6 +176,7 @@
 <translation id="3783640748446814672">Alt</translation>
 <translation id="3784455785234192852">鎖定</translation>
 <translation id="3798670284305777884">喇叭 (內部)</translation>
+<translation id="3799080171973636491">你按下了全螢幕放大鏡的鍵盤快速鍵。確定要啟用這項功能嗎？</translation>
 <translation id="380165613292957338">你好，需要什麼協助嗎？</translation>
 <translation id="383629559565718788">顯示鍵盤設定</translation>
 <translation id="3846575436967432996">沒有可用的網路資訊</translation>
@@ -190,7 +194,7 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{針對 1 個應用程式關閉}other{針對 # 個應用程式關閉}}</translation>
 <translation id="4072264167173457037">訊號中等</translation>
 <translation id="4146833061457621061">播放音樂</translation>
-<translation id="4200057768455216496">你按下了停駐放大鏡的快速鍵。確定要啟用這項功能嗎？</translation>
+<translation id="4181841719683918333">語言</translation>
 <translation id="4217571870635786043">語音輸入</translation>
 <translation id="4261870227682513959">顯示通知設定。已關閉所有通知</translation>
 <translation id="4269883910223712419">這部裝置的管理員擁有下列權限：</translation>
@@ -198,12 +202,14 @@
 <translation id="4279490309300973883">鏡像</translation>
 <translation id="4292681942966152062">正在啟動<ph name="NETWORK_NAME" /></translation>
 <translation id="4321179778687042513">Ctrl</translation>
+<translation id="4321776623976362024">你按下了高對比的鍵盤快速鍵。確定要啟用這項功能嗎？</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">放大鏡</translation>
 <translation id="4351433414020964307">正在載入小幫手…</translation>
 <translation id="435527878592612277">請選取你的相片</translation>
 <translation id="4378551569595875038">連線中…</translation>
 <translation id="4379531060876907730">這些是可用的觸控筆工具</translation>
+<translation id="4389184120735010762">你按下了停駐放大鏡的鍵盤快速鍵。確定要啟用這項功能嗎？</translation>
 <translation id="4421231901400348175">透過遠端協助與<ph name="HELPER_NAME" />分享螢幕控制功能。</translation>
 <translation id="4430019312045809116">音量</translation>
 <translation id="4450893287417543264">不要再顯示</translation>
@@ -219,6 +225,7 @@
 <translation id="4628757576491864469">裝置</translation>
 <translation id="4659419629803378708">ChromeVox 已啟用</translation>
 <translation id="4734965478015604180">橫向</translation>
+<translation id="476166673298332917">裝置管理員可能會監控你的瀏覽活動。</translation>
 <translation id="4774338217796918551"><ph name="COME_BACK_TIME" /> 裝置就會解除鎖定。</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> 的密碼</translation>
 <translation id="4778095205580009397">Google 助理不適用於示範工作階段。</translation>
@@ -241,6 +248,7 @@
 <translation id="5207949376430453814">醒目顯示文字插入點</translation>
 <translation id="5222676887888702881">登出</translation>
 <translation id="523505283826916779">協助工具設定</translation>
+<translation id="5302048478445481009">語言</translation>
 <translation id="5313326810920013265">藍牙設定</translation>
 <translation id="5331975486040154427">USB-C 裝置 (左後方連接埠)</translation>
 <translation id="5379115545237091094">嘗試次數過多</translation>
@@ -253,13 +261,14 @@
 <translation id="5537725057119320332">投放</translation>
 <translation id="5548285847212963613">「<ph name="EXTENSION_NAME" />」擴充功能可協助連線至這個網路。</translation>
 <translation id="554893713779400387">切換語音輸入</translation>
-<translation id="5554214597676791969">如要重新登入，請輸入你的密碼</translation>
 <translation id="5571066253365925590">藍牙已啟用</translation>
 <translation id="5597451508971090205"><ph name="DATE" /><ph name="SHORT_WEEKDAY" /></translation>
 <translation id="5600837773213129531">按下 Ctrl + Alt + Z 鍵即可停用互動朗讀功能。</translation>
+<translation id="5626283214046138476">你的受監管使用者帳戶即將失效。</translation>
 <translation id="5648021990716966815">麥克風插孔</translation>
 <translation id="5669267381087807207">啟用中</translation>
 <translation id="5673434351075758678">同步處理設定後，「<ph name="FROM_LOCALE" />」已變更為「<ph name="TO_LOCALE" />」。</translation>
+<translation id="5691772641933328258">指紋辨識失敗</translation>
 <translation id="5710450975648804523">「零打擾」模式已開啟</translation>
 <translation id="574392208103952083">中</translation>
 <translation id="5744083938413354016">輕觸拖曳</translation>
@@ -300,7 +309,6 @@
 <translation id="6284232397434400372">解析度已變更</translation>
 <translation id="6297287540776456956">使用觸控筆選取擷取範圍</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> 已旋轉到<ph name="ROTATION" /></translation>
-<translation id="632744581670418035">鍵盤自訂快速鍵</translation>
 <translation id="6344698853700675736">切換夜燈模式</translation>
 <translation id="6376931439017688372">藍牙已開啟</translation>
 <translation id="639644700271529076">大寫鍵已關閉</translation>
@@ -322,6 +330,7 @@
 <translation id="6627638273713273709">搜尋鍵 + Shift + K 鍵</translation>
 <translation id="6650933572246256093">藍牙裝置「<ph name="DEVICE_NAME" />」要求配對權限，請在裝置上輸入此密碼金鑰：<ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">密碼</translation>
+<translation id="6665545700722362599">將定位服務、裝置的麥克風、相機或其他功能的使用權限授予網站、應用程式及擴充功能</translation>
 <translation id="6691659475504239918">搜尋鍵 + Shift 鍵 + H 鍵</translation>
 <translation id="6696025732084565524">你的卸除式鍵盤需安裝重大更新</translation>
 <translation id="6700713906295497288">IME 選單按鈕</translation>
@@ -332,7 +341,6 @@
 <translation id="6751826523481687655">效能追蹤已啟用</translation>
 <translation id="6785414152754474415">電池電量為 <ph name="PERCENTAGE" />% (充電中)。</translation>
 <translation id="6803622936009808957">找不到系統支援的解析度，因此無法顯示鏡像。已改為進入延伸桌面。</translation>
-<translation id="6814658242098378692">管理應用程式、擴充功能和主題</translation>
 <translation id="6820676911989879663">目前禁止使用裝置！</translation>
 <translation id="683971173229319003">搜尋鍵 + L 鍵</translation>
 <translation id="6857811139397017780">啟用 <ph name="NETWORKSERVICE" /></translation>
@@ -343,7 +351,6 @@
 <translation id="698231206551913481">將這位使用者移除後，與這位使用者相關聯的所有檔案和本機資料都會遭到永久刪除。</translation>
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" /> 裝置就會解除鎖定。</translation>
 <translation id="7029814467594812963">結束工作階段</translation>
-<translation id="7037152028959403492">你按下了高對比的快速鍵。確定要啟用這項功能嗎？</translation>
 <translation id="7066646422045619941">您的管理員已停用這個網路。</translation>
 <translation id="7067196344162293536">自動旋轉</translation>
 <translation id="7068360136237591149">開啟檔案</translation>
@@ -373,7 +380,6 @@
 <translation id="7564874036684306347">將視窗移至其他桌面可能會導致未預期的行為。後續的通知、視窗和對話方塊可能會分開顯示在不同桌面上。</translation>
 <translation id="7569509451529460200">點字模式和 ChromeVox 已啟用</translation>
 <translation id="7593891976182323525">搜尋鍵或 Shift 鍵</translation>
-<translation id="7604942372593434070">存取你的瀏覽活動</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (擁有者)</translation>
 <translation id="7647488630410863958">解鎖裝置即可查看通知</translation>
 <translation id="7649070708921625228">說明</translation>
@@ -382,6 +388,7 @@
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 則通知}other{# 則通知}}</translation>
 <translation id="776344839111254542">按一下即可查看更新詳細資料</translation>
+<translation id="7780159184141939021">旋轉螢幕</translation>
 <translation id="7796353162336583443">輕觸檔案櫃的觸控筆圖示即可寫筆記、擷取螢幕畫面，以及使用 Google 助理、雷射筆和放大鏡。</translation>
 <translation id="7798302898096527229">按下搜尋鍵或 Shift 鍵即可取消。</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> 小時 <ph name="MINUTE" /> 分鐘</translation>
@@ -389,14 +396,17 @@
 <translation id="7842211907556571265">正在連線至<ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">警告：實驗功能</translation>
 <translation id="7846634333498149051">鍵盤</translation>
+<translation id="7868900307798234037">指紋辨識成功，正在解鎖</translation>
 <translation id="7886169021410746335">調整隱私權設定</translation>
 <translation id="7886277072580235377">登出帳戶後，系統將清除你的網際網路工作階段。<ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">傳送電子郵件</translation>
+<translation id="7897375687985782769">你按下了旋轉螢幕的鍵盤快速鍵。確定要旋轉螢幕嗎？</translation>
 <translation id="7904094684485781019">這個帳戶的管理員已禁止多重登入。</translation>
 <translation id="7933084174919150729">Google 助理僅適用於主要設定檔。</translation>
 <translation id="79341161159229895">這個帳戶是由 <ph name="FIRST_PARENT_EMAIL" /> 和 <ph name="SECOND_PARENT_EMAIL" /> 管理</translation>
 <translation id="7977927628060636163">正在搜尋行動網路...</translation>
 <translation id="7982789257301363584">網路</translation>
+<translation id="7984197416080286869">指紋辨識失敗的次數過多</translation>
 <translation id="7994370417837006925">多帳戶登入</translation>
 <translation id="8000066093800657092">沒有網路</translation>
 <translation id="8029241286966751120">全螢幕放大鏡已啟用。再次按下 Ctrl 鍵 + 搜尋鍵 + M 鍵即可停用。</translation>
@@ -408,7 +418,6 @@
 <translation id="8132793192354020517">已連線至 <ph name="NAME" /></translation>
 <translation id="813913629614996137">正在初始化...</translation>
 <translation id="8142699993796781067">私人網路</translation>
-<translation id="8152119955266188852">你按下了全螢幕放大鏡的快速鍵。確定要啟用這項功能嗎？</translation>
 <translation id="8190698733819146287">自訂語言與輸入法...</translation>
 <translation id="8192202700944119416">已隱藏通知。</translation>
 <translation id="8236042855478648955">休息時間到了</translation>

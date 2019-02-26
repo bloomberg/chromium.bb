@@ -13,6 +13,8 @@
 
 // static
 std::string NotificationPlatformBridge::GetProfileId(Profile* profile) {
+  if (!profile)
+    return "";
 #if defined(OS_WIN)
   return base::WideToUTF8(profile->GetPath().BaseName().value());
 #elif defined(OS_POSIX)

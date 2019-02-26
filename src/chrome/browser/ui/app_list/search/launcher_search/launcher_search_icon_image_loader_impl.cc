@@ -53,8 +53,8 @@ void LauncherSearchIconImageLoaderImpl::LoadIconResourceFromExtension() {
       ui::SCALE_FACTOR_200P));
   extensions::ImageLoader::Get(profile_)->LoadImagesAsync(
       extension_, info_list,
-      base::Bind(&LauncherSearchIconImageLoaderImpl::OnCustomIconImageLoaded,
-                 this));
+      base::BindOnce(
+          &LauncherSearchIconImageLoaderImpl::OnCustomIconImageLoaded, this));
 }
 
 void LauncherSearchIconImageLoaderImpl::OnExtensionIconImageChanged(

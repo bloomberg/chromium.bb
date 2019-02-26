@@ -17,6 +17,27 @@ enum class LaunchContainer {
   kWindow,
 };
 
+// The result of an attempted web app installation, uninstallation or update.
+//
+// This is an enum, instead of a struct with multiple fields (e.g. one field for
+// success or failure, one field for whether action was taken), because we want
+// to track metrics for the overall cross product of the these axes.
+//
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused. Update corresponding enums.xml entry
+// when making changes here.
+enum class InstallResultCode {
+  kSuccess = 0,
+  kAlreadyInstalled = 1,
+  // Catch-all failure category. More-specific failure categories are below.
+  kFailedUnknownReason = 2,
+  kGetWebApplicationInfoFailed = 3,
+  kPreviouslyUninstalled = 4,
+  kWebContentsDestroyed = 5,
+  kWriteDataFailed = 6,
+  kMaxValue = kWriteDataFailed,
+};
+
 // Where an app was installed from. This affects what flags will be used when
 // installing the app.
 //

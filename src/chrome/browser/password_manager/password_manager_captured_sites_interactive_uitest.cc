@@ -19,13 +19,20 @@
 
 namespace {
 
-// Return path to the Password Manager captured sites test directory. The
-// directory contains site capture files and test recipe replay files.
-base::FilePath GetReplayFilesDirectory() {
+struct TestParams {
+  std::string scenarioDir;
+  std::string siteName;
+};
+
+// Return path to the Password Manager captured sites test root directory. The
+// directory contains subdirectories for different password manager test
+// scenarios. The test scenario subdirectories contain site capture files
+// and test recipe replay files.
+base::FilePath GetReplayFilesRootDirectory() {
   base::FilePath src_dir;
   if (base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir)) {
     return src_dir.Append(
-        FILE_PATH_LITERAL("chrome/test/data/password/captured_sites/sign_in"));
+        FILE_PATH_LITERAL("chrome/test/data/password/captured_sites"));
   }
 
   ADD_FAILURE() << "Unable to obtain the Chromium src directory!";
@@ -36,30 +43,38 @@ base::FilePath GetReplayFilesDirectory() {
 // Iterate through Password Manager's Web Page Replay capture file directory to
 // look for captures sites and automation recipe files. Return a list of sites
 // for which recipe-based testing is available.
-std::vector<std::string> GetCapturedSites() {
-  std::vector<std::string> sites;
-  base::FileEnumerator capture_files(GetReplayFilesDirectory(), false,
-                                     base::FileEnumerator::FILES);
-  for (base::FilePath file = capture_files.Next(); !file.empty();
-       file = capture_files.Next()) {
-    // If a site capture file is found, also look to see if the directory has
-    // a corresponding recorded action recipe log file.
-    // A site capture file has no extension. A recorded action recipe log file
-    // has the '.test' extension.
-    if (file.Extension().empty() &&
-        base::PathExists(file.AddExtension(FILE_PATH_LITERAL(".test")))) {
-      sites.push_back(
-          captured_sites_test_utils::FilePathToUTF8(file.BaseName().value()));
+std::vector<TestParams> GetCapturedSites() {
+  std::vector<TestParams> sites;
+  base::FileEnumerator sub_dirs(GetReplayFilesRootDirectory(), false,
+                                base::FileEnumerator::DIRECTORIES);
+  for (base::FilePath dir = sub_dirs.Next(); !dir.empty();
+       dir = sub_dirs.Next()) {
+    base::FileEnumerator capture_files(dir, false, base::FileEnumerator::FILES);
+    for (base::FilePath file = capture_files.Next(); !file.empty();
+         file = capture_files.Next()) {
+      // If a site capture file is found, also look to see if the directory has
+      // a corresponding recorded action recipe log file.
+      // A site capture file has no extension. A recorded action recipe log file
+      // has the '.test' extension.
+      if (file.Extension().empty() &&
+          base::PathExists(file.AddExtension(FILE_PATH_LITERAL(".test")))) {
+        TestParams params;
+        params.scenarioDir =
+            captured_sites_test_utils::FilePathToUTF8(dir.BaseName().value());
+        params.siteName =
+            captured_sites_test_utils::FilePathToUTF8(file.BaseName().value());
+        sites.push_back(params);
+      }
     }
   }
-  std::sort(sites.begin(), sites.end());
   return sites;
 }
 
 struct GetParamAsString {
   template <class ParamType>
   std::string operator()(const testing::TestParamInfo<ParamType>& info) const {
-    return info.param;
+    return base::StringPrintf("%s_%s", info.param.scenarioDir.c_str(),
+                              info.param.siteName.c_str());
   }
 };
 
@@ -74,7 +89,7 @@ class CapturedSitesPasswordManagerBrowserTest
     : public InProcessBrowserTest,
       public captured_sites_test_utils::
           TestRecipeReplayChromeFeatureActionExecutor,
-      public ::testing::WithParamInterface<std::string> {
+      public ::testing::WithParamInterface<TestParams> {
  public:
   // TestRecipeReplayChromeFeatureActionExecutor:
   bool AddCredential(const std::string& origin,
@@ -200,17 +215,22 @@ IN_PROC_BROWSER_TEST_P(CapturedSitesPasswordManagerBrowserTest, Recipe) {
   base::FilePath src_dir;
   ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));
   base::FilePath capture_file_path =
-      GetReplayFilesDirectory().AppendASCII(GetParam().c_str());
+      GetReplayFilesRootDirectory()
+          .AppendASCII(GetParam().scenarioDir.c_str())
+          .AppendASCII(GetParam().siteName.c_str());
 
   // Craft the recipe file path.
-  base::FilePath recipe_file_path = GetReplayFilesDirectory().AppendASCII(
-      base::StringPrintf("%s.test", GetParam().c_str()));
+  base::FilePath recipe_file_path =
+      GetReplayFilesRootDirectory()
+          .AppendASCII(GetParam().scenarioDir.c_str())
+          .AppendASCII(
+              base::StringPrintf("%s.test", GetParam().siteName.c_str()));
 
   ASSERT_TRUE(
       recipe_replayer()->ReplayTest(capture_file_path, recipe_file_path));
 }
 
-INSTANTIATE_TEST_CASE_P(All,
+INSTANTIATE_TEST_CASE_P(,
                         CapturedSitesPasswordManagerBrowserTest,
                         testing::ValuesIn(GetCapturedSites()),
                         GetParamAsString());

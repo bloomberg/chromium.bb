@@ -54,7 +54,7 @@ class CSSPreloadScanner {
             PreloadRequestStream&,
             const KURL&);
 
-  void SetReferrerPolicy(const ReferrerPolicy);
+  void SetReferrerPolicy(network::mojom::ReferrerPolicy);
 
  private:
   enum State {
@@ -84,7 +84,8 @@ class CSSPreloadScanner {
   StringBuilder rule_;
   StringBuilder rule_value_;
 
-  ReferrerPolicy referrer_policy_ = kReferrerPolicyDefault;
+  network::mojom::ReferrerPolicy referrer_policy_ =
+      network::mojom::ReferrerPolicy::kDefault;
 
   // Below members only non-null during scan()
   PreloadRequestStream* requests_ = nullptr;

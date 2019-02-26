@@ -13,14 +13,14 @@ namespace blink {
 
 class CSSParserLocalContext;
 
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* MinHeight::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ConsumeWidthOrHeight(
-      range, context, CSSPropertyParserHelpers::UnitlessQuirk::kAllow);
+  return css_parsing_utils::ConsumeWidthOrHeight(
+      range, context, css_property_parser_helpers::UnitlessQuirk::kAllow);
 }
 
 const CSSValue* MinHeight::CSSValueFromComputedStyleInternal(
@@ -35,5 +35,5 @@ const CSSValue* MinHeight::CSSValueFromComputedStyleInternal(
                                                              style);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

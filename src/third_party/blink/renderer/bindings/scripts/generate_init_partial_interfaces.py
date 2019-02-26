@@ -43,9 +43,6 @@ def parse_options():
     parser = OptionParser(usage=usage)
     parser.add_option('--idl-files-list',
                       help='a text file containing the IDL file paths, so the command line doesn\'t exceed OS length limits.')
-    parser.add_option('--gyp-format-list', default=False, action='store_true',
-                      help='if specified, idl-files-list is newline separated. ' +
-                      'When unspecified, it\'s formatted as a Posix command line.')
     parser.add_option('--output')
 
     options, args = parser.parse_args()
@@ -86,7 +83,7 @@ def extract_meta_data(file_paths):
 def main():
     options = parse_options()
 
-    idl_file_names = read_idl_files_list_from_file(options.idl_files_list, is_gyp_format=options.gyp_format_list)
+    idl_file_names = read_idl_files_list_from_file(options.idl_files_list)
 
     meta_data_list = extract_meta_data(idl_file_names)
     interface_names = ['V8%sPartial' % meta_data['basename']
@@ -96,7 +93,7 @@ def main():
     includes = ['#include "third_party/blink/renderer/bindings/modules/v8/%s.h"' %
                 build_basename(interface_name)
                 for interface_name in interface_names]
-    initialize_calls = ['  %s::initialize();' % interface_name
+    initialize_calls = ['  %s::Initialize();' % interface_name
                         for interface_name in interface_names]
 
     content = _INIT_PARTIAL_INTERFACE % (

@@ -153,6 +153,7 @@ CrElementsScrollableBehaviorTest.prototype = {
 
   /** @override */
   extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    '../settings/test_util.js',
     'cr_scrollable_behavior_tests.js',
   ]),
 };
@@ -258,6 +259,30 @@ CrElementsPolicyNetworkIndicatorTest.prototype = {
 TEST_F('CrElementsPolicyNetworkIndicatorTest', 'All', function() {
   mocha.run();
 });
+
+/**
+ * @constructor
+ * @extends {CrElementsBrowserTest}
+ */
+function CrElementsFingerprintProgressArcTest() {}
+
+CrElementsFingerprintProgressArcTest.prototype = {
+  __proto__: CrElementsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://resources/cr_elements/chromeos/fingerprint/' +
+      'cr_fingerprint_progress_arc.html',
+
+  /** @override */
+  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    'cr_fingerprint_progress_arc_tests.js',
+  ]),
+};
+
+TEST_F('CrElementsFingerprintProgressArcTest', 'All', function() {
+  mocha.run();
+});
+
 GEN('#endif');
 
 /**
@@ -352,6 +377,31 @@ CrElementsRadioButtonTest.prototype = {
 TEST_F('CrElementsRadioButtonTest', 'All', function() {
   mocha.run();
 });
+
+/**
+ * @constructor
+ * @extends {CrElementsBrowserTest}
+ */
+function CrElementsRadioGroupTest() {}
+
+CrElementsRadioGroupTest.prototype = {
+  __proto__: CrElementsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://resources/cr_elements/cr_radio_group/cr_radio_group.html',
+
+  /** @override */
+  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    '../settings/test_util.js',
+    'cr_radio_group_test.js',
+  ]),
+};
+
+TEST_F('CrElementsRadioGroupTest', 'All', function() {
+  mocha.run();
+});
+
 
 /**
  * @constructor

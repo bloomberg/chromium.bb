@@ -1,5 +1,7 @@
 include_rules = [
   "+components/sync/base",
+  # TODO(crbug.com/902349): Remove the dependency below when fully migrating passwords to USS and the feature toggle isn't required in the ModelTypeWorker anymore.
+  "+components/sync/driver",
   "+components/sync/engine",
   "+components/sync/js",
   "+components/sync/model",

@@ -32,7 +32,6 @@
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/instance_counters.h"
-#include "third_party/blink/renderer/platform/wtf/atomics.h"
 
 #if DEBUG_AUDIONODE_REFERENCES
 #include <stdio.h>
@@ -76,8 +75,6 @@ AudioHandler::AudioHandler(NodeType node_type,
 
 AudioHandler::~AudioHandler() {
   DCHECK(IsMainThread());
-  // dispose() should be called.
-  DCHECK(!GetNode());
   InstanceCounters::DecrementCounter(InstanceCounters::kAudioHandlerCounter);
 #if DEBUG_AUDIONODE_REFERENCES
   --node_count_[GetNodeType()];
@@ -111,7 +108,6 @@ void AudioHandler::Dispose() {
   Context()->GetDeferredTaskHandler().RemoveAutomaticPullNode(this);
   for (auto& output : outputs_)
     output->Dispose();
-  node_ = nullptr;
 }
 
 AudioNode* AudioHandler::GetNode() const {
@@ -203,7 +199,7 @@ AudioNodeOutput& AudioHandler::Output(unsigned i) {
   return *outputs_[i];
 }
 
-unsigned long AudioHandler::ChannelCount() {
+unsigned AudioHandler::ChannelCount() {
   return channel_count_;
 }
 
@@ -218,7 +214,7 @@ void AudioHandler::SetInternalChannelInterpretation(
   new_channel_interpretation_ = interpretation;
 }
 
-void AudioHandler::SetChannelCount(unsigned long channel_count,
+void AudioHandler::SetChannelCount(unsigned channel_count,
                                    ExceptionState& exception_state) {
   DCHECK(IsMainThread());
   BaseAudioContext::GraphAutoLocker locker(Context());
@@ -316,7 +312,7 @@ void AudioHandler::UpdateChannelsForInputs() {
     input->ChangedOutputs();
 }
 
-void AudioHandler::ProcessIfNecessary(size_t frames_to_process) {
+void AudioHandler::ProcessIfNecessary(uint32_t frames_to_process) {
   DCHECK(Context()->IsAudioThread());
 
   if (!IsInitialized())
@@ -378,7 +374,7 @@ bool AudioHandler::PropagatesSilence() const {
          Context()->currentTime();
 }
 
-void AudioHandler::PullInputs(size_t frames_to_process) {
+void AudioHandler::PullInputs(uint32_t frames_to_process) {
   DCHECK(Context()->IsAudioThread());
 
   // Process all of the AudioNodes connected to our inputs.
@@ -453,10 +449,9 @@ void AudioHandler::DisableOutputsIfNecessary() {
     // the outputs so that the tail for the node can be output.
     // Otherwise, we can disable the outputs right away.
     if (RequiresTailProcessing()) {
-      if (Context()->ContextState() !=
-          BaseAudioContext::AudioContextState::kClosed) {
-        Context()->GetDeferredTaskHandler().AddTailProcessingHandler(this);
-      }
+      auto& deferred_task_handler = Context()->GetDeferredTaskHandler();
+      if (deferred_task_handler.AcceptsTailProcessing())
+        deferred_task_handler.AddTailProcessingHandler(this);
     } else {
       DisableOutputs();
     }
@@ -470,7 +465,8 @@ void AudioHandler::DisableOutputs() {
 }
 
 void AudioHandler::MakeConnection() {
-  AtomicIncrement(&connection_ref_count_);
+  Context()->AssertGraphOwner();
+  connection_ref_count_++;
 
 #if DEBUG_AUDIONODE_REFERENCES
   fprintf(
@@ -512,8 +508,7 @@ void AudioHandler::BreakConnection() {
 
 void AudioHandler::BreakConnectionWithLock() {
   Context()->AssertGraphOwner();
-
-  AtomicDecrement(&connection_ref_count_);
+  connection_ref_count_--;
 
 #if DEBUG_AUDIONODE_REFERENCES
   fprintf(stderr,
@@ -618,11 +613,11 @@ void AudioNode::Dispose() {
 
   if (context()->HasRealtimeConstraint()) {
     // Add the handler to the orphan list if the context is not
-    // closed. (Nothing will clean up the orphan list if the context
-    // is closed.)  These will get cleaned up in the post render task
+    // uninitialized (Nothing will clean up the orphan list if the context
+    // is uninitialized.)  These will get cleaned up in the post render task
     // if audio thread is running or when the context is colleced (in
     // the worst case).
-    if (context()->ContextState() != BaseAudioContext::kClosed) {
+    if (!context()->IsContextClosed()) {
       context()->GetDeferredTaskHandler().AddRenderingOrphanHandler(
           std::move(handler_));
     }
@@ -659,16 +654,16 @@ void AudioNode::Trace(blink::Visitor* visitor) {
   EventTargetWithInlineData::Trace(visitor);
 }
 
-void AudioNode::HandleChannelOptions(const AudioNodeOptions& options,
+void AudioNode::HandleChannelOptions(const AudioNodeOptions* options,
                                      ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
-  if (options.hasChannelCount())
-    setChannelCount(options.channelCount(), exception_state);
-  if (options.hasChannelCountMode())
-    setChannelCountMode(options.channelCountMode(), exception_state);
-  if (options.hasChannelInterpretation())
-    setChannelInterpretation(options.channelInterpretation(), exception_state);
+  if (options->hasChannelCount())
+    setChannelCount(options->channelCount(), exception_state);
+  if (options->hasChannelCountMode())
+    setChannelCountMode(options->channelCountMode(), exception_state);
+  if (options->hasChannelInterpretation())
+    setChannelInterpretation(options->channelInterpretation(), exception_state);
 }
 
 BaseAudioContext* AudioNode::context() const {
@@ -737,8 +732,10 @@ AudioNode* AudioNode::connect(AudioNode* destination,
   destination->Handler()
       .Input(input_index)
       .Connect(Handler().Output(output_index));
-  if (!connected_nodes_[output_index])
-    connected_nodes_[output_index] = new HeapHashSet<Member<AudioNode>>();
+  if (!connected_nodes_[output_index]) {
+    connected_nodes_[output_index] =
+        MakeGarbageCollected<HeapHashSet<Member<AudioNode>>>();
+  }
   connected_nodes_[output_index]->insert(destination);
 
   Handler().UpdatePullStatusIfNeeded();
@@ -783,8 +780,10 @@ void AudioNode::connect(AudioParam* param,
   }
 
   param->Handler().Connect(Handler().Output(output_index));
-  if (!connected_params_[output_index])
-    connected_params_[output_index] = new HeapHashSet<Member<AudioParam>>();
+  if (!connected_params_[output_index]) {
+    connected_params_[output_index] =
+        MakeGarbageCollected<HeapHashSet<Member<AudioParam>>>();
+  }
   connected_params_[output_index]->insert(param);
 
   Handler().UpdatePullStatusIfNeeded();
@@ -1024,11 +1023,11 @@ unsigned AudioNode::numberOfOutputs() const {
   return Handler().NumberOfOutputs();
 }
 
-unsigned long AudioNode::channelCount() const {
+unsigned AudioNode::channelCount() const {
   return Handler().ChannelCount();
 }
 
-void AudioNode::setChannelCount(unsigned long count,
+void AudioNode::setChannelCount(unsigned count,
                                 ExceptionState& exception_state) {
   Handler().SetChannelCount(count, exception_state);
 }
@@ -1052,7 +1051,7 @@ void AudioNode::setChannelInterpretation(const String& interpretation,
 }
 
 const AtomicString& AudioNode::InterfaceName() const {
-  return EventTargetNames::AudioNode;
+  return event_target_names::kAudioNode;
 }
 
 ExecutionContext* AudioNode::GetExecutionContext() const {

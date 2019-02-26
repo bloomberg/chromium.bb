@@ -27,37 +27,30 @@ message RecordPageloadMetricsRequest {
   optional PageloadDeviceInfo device_info = 3;
 }
 
-// Information about each network transaction used to load the main frame HTML.
-message RequestInfo {
-  enum Protocol {
+// Information about an attempted HTTPS Lite Page Redirect Preview.
+message HTTPSLitePagePreviewInfo {
+  // The end result statuses. See
+  // //components/previews/content/previews_user_data.h for more detail.
+  enum Status {
     UNKNOWN = 0;
-    HTTP = 1;
-    HTTPS = 2;
-    QUIC = 3;
+    SUCCESS = 1;
+    BYPASS = 2;
+    REDIRECT = 3;
+    FAILURE = 4;
+    CONTROL = 5;
   };
 
-  // The protocol used to connect to the Data Saver proxy.
-  optional Protocol protocol = 1;
+  // The end status of the attempted preview.
+  optional Status status = 1;
 
-  // True if this request received a proxy bypass.
-  optional bool proxy_bypass = 2;
-
-  // Time to resolve DNS. e.g., to resolve proxy.googlezip.net.
-  optional Duration dns_time = 3;
-
-  // For TCP protocols, this is TCP connect + TLS setup.
-  // For 1RTT QUIC, this is the QUIC connection time (which includes TLS).
-  // For 0RTT QUIC (or TLS1.3 with fast-open), this will be zero.
-  optional Duration connect_time = 4;
-
-  // Time between sending the HTTP request and receiving the response.
-  optional Duration http_time = 5;
+  // The time spent restarting navigations before the final navigation began.
+  optional Duration navigation_restart_penalty = 2;
 }
 
 // Metrics for a single pageload.
 message PageloadMetrics {
-  // Next ID: 31
-  reserved 3;
+  // Next ID: 35
+  reserved 3, 26;
 
   // The possible effective connection type values.
   // See //net/nqe/effective_connection_type.h for the detailed description of
@@ -233,13 +226,6 @@ message PageloadMetrics {
   // The queuing delay for the first user input on the page.
   optional Duration first_input_delay = 25;
 
-  // Connection timing information for each network transaction to load the main
-  // frame HTML. If the main frame HTML was reached after N redirects, then this
-  // array has N+1 values. In most cases we expect this will have 1 value. The
-  // first value is the original request and each following value is the next
-  // redirect in order.
-  repeated RequestInfo main_frame_network_request = 26;
-
   // The time when the page load was ended.
   optional Duration page_end_time = 27;
 
@@ -251,4 +237,19 @@ message PageloadMetrics {
 
   // The number of scroll events that happened on the page.
   optional uint32 scroll_count = 30;
+
+  // The release channel of this Chrome instance, e.g.: "stable", "beta", "dev",
+  // "canary", "unknown".
+  optional string channel = 31;
+
+  // The duration between the navigation start as reported by the navigation
+  // handle, and when the fetchStart of the main page HTML.
+  optional Duration navigation_start_to_main_frame_fetch_start = 32;
+
+  // The number of main frame redirects that occurred before commit.
+  optional uint32 redirect_count = 33;
+
+  // Information about an attempted HTTPS Lite Page Redirect Preview, if one was
+  // attempted.
+  optional HTTPSLitePagePreviewInfo https_litepage_info = 34;
 }

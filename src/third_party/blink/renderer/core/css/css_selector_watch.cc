@@ -55,7 +55,7 @@ CSSSelectorWatch::CSSSelectorWatch(Document& document)
 CSSSelectorWatch& CSSSelectorWatch::From(Document& document) {
   CSSSelectorWatch* watch = FromIfExists(document);
   if (!watch) {
-    watch = new CSSSelectorWatch(document);
+    watch = MakeGarbageCollected<CSSSelectorWatch>(document);
     ProvideTo(document, watch);
   }
   return *watch;

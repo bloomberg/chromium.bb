@@ -3597,6 +3597,8 @@ OpFunctionEnd
   SinglePassRunAndCheck<AggressiveDCEPass>(assembly, assembly, true, true);
 }
 
+// This is not valid input and ADCE does not support variable pointers and only
+// supports shaders.
 TEST_F(AggressiveDCETest, PointerVariable) {
   // ADCE is able to handle code that contains a load whose base address
   // comes from a load and not an OpVariable.  I want to see an instruction
@@ -3693,6 +3695,10 @@ OpReturn
 OpFunctionEnd
 )";
 
+  // The input is not valid and ADCE only supports shaders, but not variable
+  // pointers. Workaround this by enabling relaxed logical pointers in the
+  // validator.
+  ValidatorOptions()->relax_logical_pointer = true;
   SinglePassRunAndCheck<AggressiveDCEPass>(before, after, true, true);
 }
 
@@ -4180,7 +4186,7 @@ TEST_F(AggressiveDCETest, BasicNoneDeadConstants) {
       JoinAllInsts(text), JoinAllInsts(text), /* skip_nop = */ true);
 }
 
-struct EliminateDeadConstantTestCase {
+struct AggressiveEliminateDeadConstantTestCase {
   // Type declarations and constants that should be kept.
   std::vector<std::string> used_consts;
   // Instructions that refer to constants, this is added to create uses for
@@ -4192,7 +4198,8 @@ struct EliminateDeadConstantTestCase {
   std::vector<std::string> checks;
 };
 
-// All types that are potentially required in EliminateDeadConstantTest.
+// All types that are potentially required in
+// AggressiveEliminateDeadConstantTest.
 const std::vector<std::string> CommonTypes = {
     // clang-format off
     // scalar types
@@ -4228,10 +4235,10 @@ const std::vector<std::string> CommonTypes = {
     // clang-format on
 };
 
-using EliminateDeadConstantTest =
-    PassTest<::testing::TestWithParam<EliminateDeadConstantTestCase>>;
+using AggressiveEliminateDeadConstantTest =
+    PassTest<::testing::TestWithParam<AggressiveEliminateDeadConstantTestCase>>;
 
-TEST_P(EliminateDeadConstantTest, Custom) {
+TEST_P(AggressiveEliminateDeadConstantTest, Custom) {
   auto& tc = GetParam();
   AssemblyBuilder builder;
   builder.AppendTypesConstantsGlobals(CommonTypes)
@@ -4248,8 +4255,8 @@ TEST_P(EliminateDeadConstantTest, Custom) {
 }
 
 INSTANTIATE_TEST_CASE_P(
-    ScalarTypeConstants, EliminateDeadConstantTest,
-    ::testing::ValuesIn(std::vector<EliminateDeadConstantTestCase>({
+    ScalarTypeConstants, AggressiveEliminateDeadConstantTest,
+    ::testing::ValuesIn(std::vector<AggressiveEliminateDeadConstantTestCase>({
         // clang-format off
         // Scalar type constants, one dead constant and one used constant.
         {
@@ -4340,8 +4347,8 @@ INSTANTIATE_TEST_CASE_P(
     })));
 
 INSTANTIATE_TEST_CASE_P(
-    VectorTypeConstants, EliminateDeadConstantTest,
-    ::testing::ValuesIn(std::vector<EliminateDeadConstantTestCase>({
+    VectorTypeConstants, AggressiveEliminateDeadConstantTest,
+    ::testing::ValuesIn(std::vector<AggressiveEliminateDeadConstantTestCase>({
         // clang-format off
         // Tests eliminating dead constant type ivec2. One dead constant vector
         // and one used constant vector, each built from its own group of
@@ -4467,8 +4474,8 @@ INSTANTIATE_TEST_CASE_P(
     })));
 
 INSTANTIATE_TEST_CASE_P(
-    StructTypeConstants, EliminateDeadConstantTest,
-    ::testing::ValuesIn(std::vector<EliminateDeadConstantTestCase>({
+    StructTypeConstants, AggressiveEliminateDeadConstantTest,
+    ::testing::ValuesIn(std::vector<AggressiveEliminateDeadConstantTestCase>({
         // clang-format off
         // A plain struct type dead constants. All of its components are dead
         // constants too.
@@ -4638,8 +4645,8 @@ INSTANTIATE_TEST_CASE_P(
     })));
 
 INSTANTIATE_TEST_CASE_P(
-    ScalarTypeSpecConstants, EliminateDeadConstantTest,
-    ::testing::ValuesIn(std::vector<EliminateDeadConstantTestCase>({
+    ScalarTypeSpecConstants, AggressiveEliminateDeadConstantTest,
+    ::testing::ValuesIn(std::vector<AggressiveEliminateDeadConstantTestCase>({
         // clang-format off
         // All scalar type spec constants.
         {
@@ -4691,8 +4698,8 @@ INSTANTIATE_TEST_CASE_P(
     })));
 
 INSTANTIATE_TEST_CASE_P(
-    VectorTypeSpecConstants, EliminateDeadConstantTest,
-    ::testing::ValuesIn(std::vector<EliminateDeadConstantTestCase>({
+    VectorTypeSpecConstants, AggressiveEliminateDeadConstantTest,
+    ::testing::ValuesIn(std::vector<AggressiveEliminateDeadConstantTestCase>({
         // clang-format off
         // Bool vector type spec constants. One vector has all component dead,
         // another vector has one dead boolean and one used boolean.
@@ -4813,8 +4820,8 @@ INSTANTIATE_TEST_CASE_P(
     })));
 
 INSTANTIATE_TEST_CASE_P(
-    SpecConstantOp, EliminateDeadConstantTest,
-    ::testing::ValuesIn(std::vector<EliminateDeadConstantTestCase>({
+    SpecConstantOp, AggressiveEliminateDeadConstantTest,
+    ::testing::ValuesIn(std::vector<AggressiveEliminateDeadConstantTestCase>({
         // clang-format off
         // Cast operations: uint <-> int <-> bool
         {
@@ -4995,8 +5002,8 @@ INSTANTIATE_TEST_CASE_P(
     })));
 
 INSTANTIATE_TEST_CASE_P(
-    LongDefUseChain, EliminateDeadConstantTest,
-    ::testing::ValuesIn(std::vector<EliminateDeadConstantTestCase>({
+    LongDefUseChain, AggressiveEliminateDeadConstantTest,
+    ::testing::ValuesIn(std::vector<AggressiveEliminateDeadConstantTestCase>({
         // clang-format off
         // Long Def-Use chain with binary operations.
         {
@@ -5808,6 +5815,280 @@ OpFunctionEnd
   SinglePassRunAndCheck<AggressiveDCEPass>(test, test, true, true);
 }
 
+TEST_F(AggressiveDCETest, CountingLoopNotEliminated) {
+  // #version 310 es
+  //
+  // precision highp float;
+  // precision highp int;
+  //
+  // layout(location = 0) out vec4 _GLF_color;
+  //
+  // void main()
+  // {
+  //   float data[1];
+  //   for (int c = 0; c < 1; c++) {
+  //     if (true) {
+  //       do {
+  //         for (int i = 0; i < 1; i++) {
+  //           data[i] = 1.0;
+  //         }
+  //       } while (false);
+  //     }
+  //   }
+  //   _GLF_color = vec4(data[0], 0.0, 0.0, 1.0);
+  // }
+  const std::string test =
+      R"(OpCapability Shader
+%1 = OpExtInstImport "GLSL.std.450"
+OpMemoryModel Logical GLSL450
+OpEntryPoint Fragment %main "main" %_GLF_color
+OpExecutionMode %main OriginUpperLeft
+OpSource ESSL 310
+OpName %main "main"
+OpName %c "c"
+OpName %i "i"
+OpName %data "data"
+OpName %_GLF_color "_GLF_color"
+OpDecorate %_GLF_color Location 0
+%void = OpTypeVoid
+%8 = OpTypeFunction %void
+%int = OpTypeInt 32 1
+%_ptr_Function_int = OpTypePointer Function %int
+%int_0 = OpConstant %int 0
+%int_1 = OpConstant %int 1
+%bool = OpTypeBool
+%float = OpTypeFloat 32
+%uint = OpTypeInt 32 0
+%uint_1 = OpConstant %uint 1
+%_arr_float_uint_1 = OpTypeArray %float %uint_1
+%_ptr_Function__arr_float_uint_1 = OpTypePointer Function %_arr_float_uint_1
+%float_1 = OpConstant %float 1
+%_ptr_Function_float = OpTypePointer Function %float
+%false = OpConstantFalse %bool
+%v4float = OpTypeVector %float 4
+%_ptr_Output_v4float = OpTypePointer Output %v4float
+%_GLF_color = OpVariable %_ptr_Output_v4float Output
+%float_0 = OpConstant %float 0
+%main = OpFunction %void None %8
+%26 = OpLabel
+%c = OpVariable %_ptr_Function_int Function
+%i = OpVariable %_ptr_Function_int Function
+%data = OpVariable %_ptr_Function__arr_float_uint_1 Function
+OpStore %c %int_0
+OpBranch %27
+%27 = OpLabel
+OpLoopMerge %28 %29 None
+OpBranch %30
+%30 = OpLabel
+%31 = OpLoad %int %c
+%32 = OpSLessThan %bool %31 %int_1
+OpBranchConditional %32 %33 %28
+%33 = OpLabel
+OpBranch %34
+%34 = OpLabel
+OpBranch %35
+%35 = OpLabel
+OpLoopMerge %36 %37 None
+OpBranch %38
+%38 = OpLabel
+OpStore %i %int_0
+OpBranch %39
+%39 = OpLabel
+OpLoopMerge %40 %41 None
+OpBranch %42
+%42 = OpLabel
+%43 = OpLoad %int %i
+%44 = OpSLessThan %bool %43 %int_1
+OpSelectionMerge %45 None
+OpBranchConditional %44 %46 %40
+%46 = OpLabel
+%47 = OpLoad %int %i
+%48 = OpAccessChain %_ptr_Function_float %data %47
+OpStore %48 %float_1
+OpBranch %41
+%41 = OpLabel
+%49 = OpLoad %int %i
+%50 = OpIAdd %int %49 %int_1
+OpStore %i %50
+OpBranch %39
+%40 = OpLabel
+OpBranch %37
+%37 = OpLabel
+OpBranchConditional %false %35 %36
+%36 = OpLabel
+OpBranch %45
+%45 = OpLabel
+OpBranch %29
+%29 = OpLabel
+%51 = OpLoad %int %c
+%52 = OpIAdd %int %51 %int_1
+OpStore %c %52
+OpBranch %27
+%28 = OpLabel
+%53 = OpAccessChain %_ptr_Function_float %data %int_0
+%54 = OpLoad %float %53
+%55 = OpCompositeConstruct %v4float %54 %float_0 %float_0 %float_1
+OpStore %_GLF_color %55
+OpReturn
+OpFunctionEnd
+)";
+
+  SetAssembleOptions(SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS);
+  SinglePassRunAndCheck<AggressiveDCEPass>(test, test, true, true);
+}
+
+TEST_F(AggressiveDCETest, EliminateLoopWithUnreachable) {
+  // #version 430
+  //
+  // layout(std430) buffer U_t
+  // {
+  //   float g_F[10];
+  //   float g_S;
+  // };
+  //
+  // layout(location = 0)out float o;
+  //
+  // void main(void)
+  // {
+  //   // Useless loop
+  //   for (int i = 0; i<10; i++) {
+  //     if (g_F[i] == 0.0)
+  //       break;
+  //     else
+  //       break;
+  //     // Unreachable merge block created here.
+  //     // Need to edit SPIR-V to change to OpUnreachable
+  //   }
+  //   o = g_S;
+  // }
+
+  const std::string before =
+      R"(OpCapability Shader
+%1 = OpExtInstImport "GLSL.std.450"
+OpMemoryModel Logical GLSL450
+OpEntryPoint Fragment %main "main" %o
+OpExecutionMode %main OriginUpperLeft
+OpSource GLSL 430
+OpName %main "main"
+OpName %i "i"
+OpName %U_t "U_t"
+OpMemberName %U_t 0 "g_F"
+OpMemberName %U_t 1 "g_S"
+OpName %_ ""
+OpName %o "o"
+OpDecorate %_arr_float_uint_10 ArrayStride 4
+OpMemberDecorate %U_t 0 Offset 0
+OpMemberDecorate %U_t 1 Offset 40
+OpDecorate %U_t BufferBlock
+OpDecorate %_ DescriptorSet 0
+OpDecorate %o Location 0
+%void = OpTypeVoid
+%9 = OpTypeFunction %void
+%int = OpTypeInt 32 1
+%_ptr_Function_int = OpTypePointer Function %int
+%int_0 = OpConstant %int 0
+%int_10 = OpConstant %int 10
+%bool = OpTypeBool
+%float = OpTypeFloat 32
+%uint = OpTypeInt 32 0
+%uint_10 = OpConstant %uint 10
+%_arr_float_uint_10 = OpTypeArray %float %uint_10
+%U_t = OpTypeStruct %_arr_float_uint_10 %float
+%_ptr_Uniform_U_t = OpTypePointer Uniform %U_t
+%_ = OpVariable %_ptr_Uniform_U_t Uniform
+%_ptr_Uniform_float = OpTypePointer Uniform %float
+%float_0 = OpConstant %float 0
+%int_1 = OpConstant %int 1
+%_ptr_Output_float = OpTypePointer Output %float
+%o = OpVariable %_ptr_Output_float Output
+%main = OpFunction %void None %9
+%23 = OpLabel
+%i = OpVariable %_ptr_Function_int Function
+OpStore %i %int_0
+OpBranch %24
+%24 = OpLabel
+OpLoopMerge %25 %26 None
+OpBranch %27
+%27 = OpLabel
+%28 = OpLoad %int %i
+%29 = OpSLessThan %bool %28 %int_10
+OpBranchConditional %29 %30 %25
+%30 = OpLabel
+%31 = OpLoad %int %i
+%32 = OpAccessChain %_ptr_Uniform_float %_ %int_0 %31
+%33 = OpLoad %float %32
+%34 = OpFOrdEqual %bool %33 %float_0
+OpSelectionMerge %35 None
+OpBranchConditional %34 %36 %37
+%36 = OpLabel
+OpBranch %25
+%37 = OpLabel
+OpBranch %25
+%35 = OpLabel
+OpUnreachable
+%26 = OpLabel
+%38 = OpLoad %int %i
+%39 = OpIAdd %int %38 %int_1
+OpStore %i %39
+OpBranch %24
+%25 = OpLabel
+%40 = OpAccessChain %_ptr_Uniform_float %_ %int_1
+%41 = OpLoad %float %40
+OpStore %o %41
+OpReturn
+OpFunctionEnd
+)";
+
+  const std::string after =
+      R"(OpCapability Shader
+%1 = OpExtInstImport "GLSL.std.450"
+OpMemoryModel Logical GLSL450
+OpEntryPoint Fragment %main "main" %o
+OpExecutionMode %main OriginUpperLeft
+OpSource GLSL 430
+OpName %main "main"
+OpName %U_t "U_t"
+OpMemberName %U_t 0 "g_F"
+OpMemberName %U_t 1 "g_S"
+OpName %_ ""
+OpName %o "o"
+OpDecorate %_arr_float_uint_10 ArrayStride 4
+OpMemberDecorate %U_t 0 Offset 0
+OpMemberDecorate %U_t 1 Offset 40
+OpDecorate %U_t BufferBlock
+OpDecorate %_ DescriptorSet 0
+OpDecorate %o Location 0
+%void = OpTypeVoid
+%9 = OpTypeFunction %void
+%int = OpTypeInt 32 1
+%float = OpTypeFloat 32
+%uint = OpTypeInt 32 0
+%uint_10 = OpConstant %uint 10
+%_arr_float_uint_10 = OpTypeArray %float %uint_10
+%U_t = OpTypeStruct %_arr_float_uint_10 %float
+%_ptr_Uniform_U_t = OpTypePointer Uniform %U_t
+%_ = OpVariable %_ptr_Uniform_U_t Uniform
+%_ptr_Uniform_float = OpTypePointer Uniform %float
+%int_1 = OpConstant %int 1
+%_ptr_Output_float = OpTypePointer Output %float
+%o = OpVariable %_ptr_Output_float Output
+%main = OpFunction %void None %9
+%23 = OpLabel
+OpBranch %24
+%24 = OpLabel
+OpBranch %25
+%25 = OpLabel
+%40 = OpAccessChain %_ptr_Uniform_float %_ %int_1
+%41 = OpLoad %float %40
+OpStore %o %41
+OpReturn
+OpFunctionEnd
+)";
+
+  SetAssembleOptions(SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS);
+  SinglePassRunAndCheck<AggressiveDCEPass>(before, after, true, true);
+}
+
 TEST_F(AggressiveDCETest, DeadHlslCounterBufferGOOGLE) {
   // We are able to remove "local2" because it is not loaded, but have to keep
   // the stores to "local1".
@@ -5855,6 +6136,42 @@ TEST_F(AggressiveDCETest, DeadHlslCounterBufferGOOGLE) {
                OpStore %23 %19
                OpReturn
                OpFunctionEnd
+)";
+
+  SetAssembleOptions(SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS);
+  SinglePassRunAndMatch<AggressiveDCEPass>(test, true);
+}
+
+TEST_F(AggressiveDCETest, Dead) {
+  // We are able to remove "local2" because it is not loaded, but have to keep
+  // the stores to "local1".
+  const std::string test =
+      R"(
+; CHECK: OpCapability
+; CHECK-NOT: OpMemberDecorateStringGOOGLE
+; CHECK: OpFunctionEnd
+           OpCapability Shader
+           OpExtension "SPV_GOOGLE_hlsl_functionality1"
+      %1 = OpExtInstImport "GLSL.std.450"
+           OpMemoryModel Logical GLSL450
+           OpEntryPoint Vertex %VSMain "VSMain"
+           OpSource HLSL 500
+           OpName %VSMain "VSMain"
+           OpName %PSInput "PSInput"
+           OpMemberName %PSInput 0 "Pos"
+           OpMemberName %PSInput 1 "uv"
+           OpMemberDecorateStringGOOGLE %PSInput 0 HlslSemanticGOOGLE "SV_POSITION"
+           OpMemberDecorateStringGOOGLE %PSInput 1 HlslSemanticGOOGLE "TEX_COORD"
+   %void = OpTypeVoid
+      %5 = OpTypeFunction %void
+  %float = OpTypeFloat 32
+%v2float = OpTypeVector %float 2
+%v4float = OpTypeVector %float 4
+%PSInput = OpTypeStruct %v4float %v2float
+ %VSMain = OpFunction %void None %5
+      %9 = OpLabel
+           OpReturn
+           OpFunctionEnd
 )";
 
   SetAssembleOptions(SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS);

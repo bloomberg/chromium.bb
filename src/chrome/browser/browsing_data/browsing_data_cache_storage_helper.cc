@@ -13,28 +13,29 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cache_storage_context.h"
+#include "content/public/browser/storage_usage_info.h"
 
 using content::BrowserThread;
 using content::CacheStorageContext;
-using content::CacheStorageUsageInfo;
+using content::StorageUsageInfo;
 
 namespace {
 
 void GetAllOriginsInfoForCacheStorageCallback(
-    const BrowsingDataCacheStorageHelper::FetchCallback& callback,
-    const std::vector<CacheStorageUsageInfo>& origins) {
+    BrowsingDataCacheStorageHelper::FetchCallback callback,
+    const std::vector<StorageUsageInfo>& origins) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!callback.is_null());
 
-  std::list<content::CacheStorageUsageInfo> result;
-  for (const CacheStorageUsageInfo& origin : origins) {
+  std::list<content::StorageUsageInfo> result;
+  for (const StorageUsageInfo& origin : origins) {
     if (!BrowsingDataHelper::HasWebScheme(origin.origin))
       continue;  // Non-websafe state is not considered browsing data.
     result.push_back(origin);
   }
 
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(callback, result));
+                           base::BindOnce(std::move(callback), result));
 }
 
 }  // namespace
@@ -47,15 +48,14 @@ BrowsingDataCacheStorageHelper::BrowsingDataCacheStorageHelper(
 
 BrowsingDataCacheStorageHelper::~BrowsingDataCacheStorageHelper() {}
 
-void BrowsingDataCacheStorageHelper::StartFetching(
-    const FetchCallback& callback) {
+void BrowsingDataCacheStorageHelper::StartFetching(FetchCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &BrowsingDataCacheStorageHelper::FetchCacheStorageUsageInfoOnIOThread,
-          this, callback));
+          this, std::move(callback)));
 }
 
 void BrowsingDataCacheStorageHelper::DeleteCacheStorage(const GURL& origin) {
@@ -68,11 +68,11 @@ void BrowsingDataCacheStorageHelper::DeleteCacheStorage(const GURL& origin) {
 }
 
 void BrowsingDataCacheStorageHelper::FetchCacheStorageUsageInfoOnIOThread(
-    const FetchCallback& callback) {
+    FetchCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!callback.is_null());
-  cache_storage_context_->GetAllOriginsInfo(
-      base::Bind(&GetAllOriginsInfoForCacheStorageCallback, callback));
+  cache_storage_context_->GetAllOriginsInfo(base::BindOnce(
+      &GetAllOriginsInfoForCacheStorageCallback, std::move(callback)));
 }
 
 void BrowsingDataCacheStorageHelper::DeleteCacheStorageOnIOThread(
@@ -130,21 +130,20 @@ CannedBrowsingDataCacheStorageHelper::GetCacheStorageUsageInfo() const {
 }
 
 void CannedBrowsingDataCacheStorageHelper::StartFetching(
-    const FetchCallback& callback) {
+    FetchCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
-  std::list<CacheStorageUsageInfo> result;
+  std::list<StorageUsageInfo> result;
   for (const PendingCacheStorageUsageInfo& pending_info :
        pending_cache_storage_info_) {
-    CacheStorageUsageInfo info(pending_info.origin,
-                               pending_info.total_size_bytes,
-                               pending_info.last_modified);
+    StorageUsageInfo info(pending_info.origin, pending_info.total_size_bytes,
+                          pending_info.last_modified);
     result.push_back(info);
   }
 
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(callback, result));
+                           base::BindOnce(std::move(callback), result));
 }
 
 void CannedBrowsingDataCacheStorageHelper::DeleteCacheStorage(

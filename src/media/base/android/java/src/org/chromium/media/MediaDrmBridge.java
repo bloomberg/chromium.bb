@@ -21,6 +21,7 @@ import org.chromium.media.MediaDrmSessionManager.SessionInfo;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Queue;
@@ -35,13 +36,11 @@ import java.util.UUID;
 // creation will resume after provisioning completes.
 //
 // Unprovision: If requiresMediaCrypto is false, MediaDrmBridge is not created for playback.
-// Instead, it's created to unprovision the device/origin. resetDeviceCredentials() will trigger the
-// provisioning process to reprovision the device. This is used on older Android versions since
-// direct unprovision is not supported. On newer Android versions, unprovision() will unprovision
-// the origin, as part of clear media licenses.
+// Instead, it's created to unprovision the device/origin, which is only supported on newer Android
+// versions. unprovision() is triggered when user clears media licenses.
 //
-// NotProvisionedException: If this exception is thrown in operations other than createMediaCrypto()
-// and resetDeviceCredentials(), we will fail that operation and not trying to provision again.
+// NotProvisionedException: If this exception is thrown in operations other than
+// createMediaCrypto(), we will fail that operation and not trying to provision again.
 //
 // Session Manager: Each createSession() call creates a new session. All created sessions are
 // managed in mSessionManager except for mMediaCryptoSession.
@@ -73,9 +72,17 @@ public class MediaDrmBridge {
     private static final UUID WIDEVINE_UUID =
             UUID.fromString("edef8ba9-79d6-4ace-a3c8-27dcd51d21ed");
 
-    // On Android L and before, MediaDrm doesn't support KeyStatus. Use a dummy
-    // key ID to report key status info.
-    // See details: https://github.com/w3c/encrypted-media/issues/32
+    // On Android L and before, MediaDrm doesn't support KeyStatus at all. On later Android
+    // versions, key IDs are not available on sessions where getKeyRequest() has been called with
+    // KEY_TYPE_RELEASE. In these cases, the EME spec recommends to use a one-byte key ID 0:
+    // "Some older platforms may contain Key System implementations that do not expose key IDs,
+    // making it impossible to provide a compliant user agent implementation. To maximize
+    // interoperability, user agent implementations exposing such CDMs should implement this member
+    // as follows: Whenever a non-empty list is appropriate, such as when the key session
+    // represented by this object may contain key(s), populate the map with a single pair containing
+    // the one-byte key ID 0 and the MediaKeyStatus most appropriate for the aggregated status of
+    // this object."
+    // See details: https://www.w3.org/TR/encrypted-media/#dom-mediakeysession-keystatuses
     private static final byte[] DUMMY_KEY_ID = new byte[] {0};
 
     // Special provision response to remove the cert.
@@ -98,8 +105,6 @@ public class MediaDrmBridge {
 
     // The persistent storage to record origin provisioning informations.
     private MediaDrmStorageBridge mStorage;
-
-    private boolean mResetDeviceCredentialsPending;
 
     // Whether the current MediaDrmBridge instance is waiting for provisioning response.
     private boolean mProvisioningPending;
@@ -266,7 +271,6 @@ public class MediaDrmBridge {
         mStorage = new MediaDrmStorageBridge(nativeMediaDrmStorageBridge);
         mSessionManager = new MediaDrmSessionManager(mStorage);
 
-        mResetDeviceCredentialsPending = false;
         mProvisioningPending = false;
 
         mMediaDrm.setOnEventListener(new EventListener());
@@ -542,20 +546,6 @@ public class MediaDrmBridge {
     }
 
     /**
-     * Reset the device DRM credentials.
-     */
-    @CalledByNative
-    private void resetDeviceCredentials() {
-        if (mMediaDrm == null) {
-            onResetDeviceCredentialsCompleted(false);
-            return;
-        }
-
-        mResetDeviceCredentialsPending = true;
-        startProvisioning();
-    }
-
-    /**
      * Unprovision the current origin, a.k.a removing the cert for current origin.
      */
     @CalledByNative
@@ -609,12 +599,6 @@ public class MediaDrmBridge {
         if (mMediaCryptoSession != null) {
             closeSessionNoException(mMediaCryptoSession);
             mMediaCryptoSession = null;
-        }
-
-        // Fail device credentials resetting.
-        if (mResetDeviceCredentialsPending) {
-            mResetDeviceCredentialsPending = false;
-            onResetDeviceCredentialsCompleted(false);
         }
 
         if (mMediaDrm != null) {
@@ -905,6 +889,7 @@ public class MediaDrmBridge {
      * Load persistent license from storage.
      */
     @CalledByNative
+    @TargetApi(Build.VERSION_CODES.M)
     private void loadSession(byte[] emeId, final long promiseId) {
         Log.d(TAG, "loadSession()");
         assert !mProvisioningPending;
@@ -926,16 +911,38 @@ public class MediaDrmBridge {
      * Load session back to memory with MediaDrm. Load persistent storage
      * before calling this. It will fail if persistent storage isn't loaded.
      */
+    @TargetApi(Build.VERSION_CODES.M)
     private void loadSessionWithLoadedStorage(SessionId sessionId, final long promiseId) {
         byte[] drmId = null;
         try {
             drmId = openSession();
             if (drmId == null) {
-                onPromiseRejected(promiseId, "Failed to open session to load license");
+                onPromiseRejected(promiseId, "Failed to open session to load license.");
                 return;
             }
 
             mSessionManager.setDrmId(sessionId, drmId);
+            assert Arrays.equals(sessionId.drmId(), drmId);
+
+            SessionInfo sessionInfo = mSessionManager.get(sessionId);
+
+            // If persistent license (KEY_TYPE_OFFLINE) is released but we don't receive the ack
+            // from the server, we should avoid restoring the keys. Report success to JS so that
+            // they can release it again.
+            if (sessionInfo.keyType() == MediaDrm.KEY_TYPE_RELEASE) {
+                Log.w(TAG, "Persistent license is waiting for release ack.");
+                onPromiseResolvedWithSession(promiseId, sessionId);
+
+                // Report keystatuseschange event to JS. Ideally we should report the event with
+                // list of known key IDs. However we can't get the key IDs from MediaDrm. Just
+                // report with dummy key IDs.
+                onSessionKeysChange(sessionId,
+                        getDummyKeysInfo(MediaDrm.KeyStatus.STATUS_EXPIRED).toArray(),
+                        false /* hasAdditionalUsableKey */, true /* isKeyRelease */);
+                return;
+            }
+
+            assert sessionInfo.keyType() == MediaDrm.KEY_TYPE_OFFLINE;
 
             // Defer event handlers until license is loaded.
             assert mSessionEventDeferrer == null;
@@ -948,33 +955,13 @@ public class MediaDrmBridge {
 
             mSessionEventDeferrer.fire();
             mSessionEventDeferrer = null;
-
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-                onSessionKeysChange(sessionId,
-                        getDummyKeysInfo(MediaDrm.KeyStatus.STATUS_USABLE).toArray(), true, false);
-            }
         } catch (android.media.NotProvisionedException e) {
             // If device isn't provisioned, storage loading should fail.
-            assert false;
+            Log.w(TAG, "Persistent license load fail because origin isn't provisioned.");
+            onPersistentLicenseLoadFail(sessionId, promiseId);
         } catch (java.lang.IllegalStateException e) {
-            // license doesn't exist
-            if (sessionId.drmId() == null) {
-                // TODO(yucliu): Check if the license is released or doesn't exist.
-                onPersistentLicenseNoExist(promiseId);
-                return;
-            }
-
-            closeSessionNoException(sessionId);
-            mSessionManager.clearPersistentSessionInfo(sessionId, new Callback<Boolean>() {
-                @Override
-                public void onResult(Boolean success) {
-                    if (!success) {
-                        Log.w(TAG, "Failed to clear persistent storage for non-exist license");
-                    }
-
-                    onPersistentLicenseNoExist(promiseId);
-                }
-            });
+            assert sessionId.drmId() != null;
+            onPersistentLicenseLoadFail(sessionId, promiseId);
         }
     }
 
@@ -984,13 +971,29 @@ public class MediaDrmBridge {
         onPromiseResolvedWithSession(promiseId, SessionId.createNoExistSessionId());
     }
 
+    // If persistent license load fails, we want to clean the storage and report it to JS as license
+    // doesn't exist.
+    private void onPersistentLicenseLoadFail(SessionId sessionId, final long promiseId) {
+        closeSessionNoException(sessionId);
+        mSessionManager.clearPersistentSessionInfo(sessionId, new Callback<Boolean>() {
+            @Override
+            public void onResult(Boolean success) {
+                if (!success) {
+                    Log.w(TAG, "Failed to clear persistent storage for non-exist license");
+                }
+
+                onPersistentLicenseNoExist(promiseId);
+            }
+        });
+    }
+
     /**
      * Remove session from device. This will mark the key as released and
      * generate a key release request. The license is removed from the device
      * when the session is updated with a license release response.
      */
     @CalledByNative
-    private void removeSession(byte[] emeId, long promiseId) {
+    private void removeSession(byte[] emeId, final long promiseId) {
         Log.d(TAG, "removeSession()");
         SessionId sessionId = getSessionIdByEmeId(emeId);
 
@@ -999,8 +1002,8 @@ public class MediaDrmBridge {
             return;
         }
 
-        SessionInfo sessionInfo = mSessionManager.get(sessionId);
-        if (sessionInfo.keyType() != MediaDrm.KEY_TYPE_OFFLINE) {
+        final SessionInfo sessionInfo = mSessionManager.get(sessionId);
+        if (sessionInfo.keyType() == MediaDrm.KEY_TYPE_STREAMING) {
             // TODO(yucliu): Support 'remove' of temporary session.
             onPromiseRejected(promiseId, "Removing temporary session isn't implemented");
             return;
@@ -1008,12 +1011,30 @@ public class MediaDrmBridge {
 
         assert sessionId.keySetId() != null;
 
-        mSessionManager.markKeyReleased(sessionId);
+        // Persist the key type before removing the keys completely.
+        // 1. If we fails to persist the key type, both the persistent storage and MediaDrm think
+        // the keys are alive. JS can just remove the session again.
+        // 2. If we are able to persist the key type but don't get the callback, persistent storage
+        // thinks keys are removed but MediaDrm thinks keys are alive. JS thinks keys are removed
+        // next time it loads the keys, which matches the expectation of this function.
+        mSessionManager.setKeyType(sessionId, MediaDrm.KEY_TYPE_RELEASE, new Callback<Boolean>() {
+            @Override
+            public void onResult(Boolean success) {
+                if (!success) {
+                    onPromiseRejected(promiseId, "Fail to update persistent storage");
+                    return;
+                }
 
+                doRemoveSession(sessionId, sessionInfo.mimeType(), promiseId);
+            }
+        });
+    }
+
+    private void doRemoveSession(SessionId sessionId, String mimeType, long promiseId) {
         try {
             // Get key release request.
-            MediaDrm.KeyRequest request = getKeyRequest(
-                    sessionId, null, sessionInfo.mimeType(), MediaDrm.KEY_TYPE_RELEASE, null);
+            MediaDrm.KeyRequest request =
+                    getKeyRequest(sessionId, null, mimeType, MediaDrm.KEY_TYPE_RELEASE, null);
 
             if (request == null) {
                 onPromiseRejected(promiseId, "Fail to generate key release request");
@@ -1085,13 +1106,6 @@ public class MediaDrmBridge {
         // If |mMediaDrm| is released, there is no need to callback native.
         if (mMediaDrm != null) {
             success = isResponseReceived ? provideProvisionResponse(response) : false;
-        }
-
-        if (mResetDeviceCredentialsPending) {
-            assert !mRequiresMediaCrypto;
-            onResetDeviceCredentialsCompleted(success);
-            mResetDeviceCredentialsPending = false;
-            return;
         }
 
         // This may call release() internally. However, sMediaCryptoDeferrer.onProvisionDone() will
@@ -1239,12 +1253,6 @@ public class MediaDrmBridge {
         if (isNativeMediaDrmBridgeValid()) {
             nativeOnSessionExpirationUpdate(
                     mNativeMediaDrmBridge, sessionId.emeId(), expirationTime);
-        }
-    }
-
-    private void onResetDeviceCredentialsCompleted(final boolean success) {
-        if (isNativeMediaDrmBridgeValid()) {
-            nativeOnResetDeviceCredentialsCompleted(mNativeMediaDrmBridge, success);
         }
     }
 
@@ -1417,7 +1425,4 @@ public class MediaDrmBridge {
             Object[] keysInfo, boolean hasAdditionalUsableKey, boolean isKeyRelease);
     private native void nativeOnSessionExpirationUpdate(
             long nativeMediaDrmBridge, byte[] emeSessionId, long expirationTime);
-
-    private native void nativeOnResetDeviceCredentialsCompleted(
-            long nativeMediaDrmBridge, boolean success);
 }

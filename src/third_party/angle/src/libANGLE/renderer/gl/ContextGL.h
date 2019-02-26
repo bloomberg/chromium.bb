@@ -11,6 +11,7 @@
 #define LIBANGLE_RENDERER_GL_CONTEXTGL_H_
 
 #include "libANGLE/renderer/ContextImpl.h"
+#include "libANGLE/renderer/gl/RendererGL.h"
 
 namespace sh
 {
@@ -32,7 +33,7 @@ class ContextGL : public ContextImpl
     ContextGL(const gl::ContextState &state, const std::shared_ptr<RendererGL> &renderer);
     ~ContextGL() override;
 
-    gl::Error initialize() override;
+    angle::Result initialize() override;
 
     // Shader creation
     CompilerImpl *createCompiler() override;
@@ -73,45 +74,45 @@ class ContextGL : public ContextImpl
     std::vector<PathImpl *> createPaths(GLsizei range) override;
 
     // Flush and finish.
-    gl::Error flush(const gl::Context *context) override;
-    gl::Error finish(const gl::Context *context) override;
+    angle::Result flush(const gl::Context *context) override;
+    angle::Result finish(const gl::Context *context) override;
 
     // Drawing methods.
     angle::Result drawArrays(const gl::Context *context,
                              gl::PrimitiveMode mode,
                              GLint first,
                              GLsizei count) override;
-    gl::Error drawArraysInstanced(const gl::Context *context,
-                                  gl::PrimitiveMode mode,
-                                  GLint first,
-                                  GLsizei count,
-                                  GLsizei instanceCount) override;
+    angle::Result drawArraysInstanced(const gl::Context *context,
+                                      gl::PrimitiveMode mode,
+                                      GLint first,
+                                      GLsizei count,
+                                      GLsizei instanceCount) override;
 
-    gl::Error drawElements(const gl::Context *context,
-                           gl::PrimitiveMode mode,
-                           GLsizei count,
-                           GLenum type,
-                           const void *indices) override;
-    gl::Error drawElementsInstanced(const gl::Context *context,
+    angle::Result drawElements(const gl::Context *context,
+                               gl::PrimitiveMode mode,
+                               GLsizei count,
+                               GLenum type,
+                               const void *indices) override;
+    angle::Result drawElementsInstanced(const gl::Context *context,
+                                        gl::PrimitiveMode mode,
+                                        GLsizei count,
+                                        GLenum type,
+                                        const void *indices,
+                                        GLsizei instances) override;
+    angle::Result drawRangeElements(const gl::Context *context,
                                     gl::PrimitiveMode mode,
+                                    GLuint start,
+                                    GLuint end,
                                     GLsizei count,
                                     GLenum type,
-                                    const void *indices,
-                                    GLsizei instances) override;
-    gl::Error drawRangeElements(const gl::Context *context,
-                                gl::PrimitiveMode mode,
-                                GLuint start,
-                                GLuint end,
-                                GLsizei count,
-                                GLenum type,
-                                const void *indices) override;
-    gl::Error drawArraysIndirect(const gl::Context *context,
-                                 gl::PrimitiveMode mode,
-                                 const void *indirect) override;
-    gl::Error drawElementsIndirect(const gl::Context *context,
-                                   gl::PrimitiveMode mode,
-                                   GLenum type,
-                                   const void *indirect) override;
+                                    const void *indices) override;
+    angle::Result drawArraysIndirect(const gl::Context *context,
+                                     gl::PrimitiveMode mode,
+                                     const void *indirect) override;
+    angle::Result drawElementsIndirect(const gl::Context *context,
+                                       gl::PrimitiveMode mode,
+                                       GLenum type,
+                                       const void *indirect) override;
 
     // CHROMIUM_path_rendering implementation
     void stencilFillPath(const gl::Path *path, GLenum fillMode, GLuint mask) override;
@@ -183,7 +184,7 @@ class ContextGL : public ContextImpl
     GLint64 getTimestamp() override;
 
     // Context switching
-    gl::Error onMakeCurrent(const gl::Context *context) override;
+    angle::Result onMakeCurrent(const gl::Context *context) override;
 
     // Caps queries
     gl::Caps getNativeCaps() const override;
@@ -194,28 +195,37 @@ class ContextGL : public ContextImpl
     void applyNativeWorkarounds(gl::Workarounds *workarounds) const override;
 
     // Handle helpers
-    const FunctionsGL *getFunctions() const;
+    ANGLE_INLINE const FunctionsGL *getFunctions() const { return mRenderer->getFunctions(); }
+
     StateManagerGL *getStateManager();
     const WorkaroundsGL &getWorkaroundsGL() const;
     BlitGL *getBlitter() const;
     ClearMultiviewGL *getMultiviewClearer() const;
 
-    gl::Error dispatchCompute(const gl::Context *context,
-                              GLuint numGroupsX,
-                              GLuint numGroupsY,
-                              GLuint numGroupsZ) override;
-    gl::Error dispatchComputeIndirect(const gl::Context *context, GLintptr indirect) override;
+    angle::Result dispatchCompute(const gl::Context *context,
+                                  GLuint numGroupsX,
+                                  GLuint numGroupsY,
+                                  GLuint numGroupsZ) override;
+    angle::Result dispatchComputeIndirect(const gl::Context *context, GLintptr indirect) override;
 
-    gl::Error memoryBarrier(const gl::Context *context, GLbitfield barriers) override;
-    gl::Error memoryBarrierByRegion(const gl::Context *context, GLbitfield barriers) override;
-
-    void handleError(GLenum errorCode,
-                     const char *message,
-                     const char *file,
-                     const char *function,
-                     unsigned int line);
+    angle::Result memoryBarrier(const gl::Context *context, GLbitfield barriers) override;
+    angle::Result memoryBarrierByRegion(const gl::Context *context, GLbitfield barriers) override;
 
   private:
+    angle::Result setDrawArraysState(const gl::Context *context,
+                                     GLint first,
+                                     GLsizei count,
+                                     GLsizei instanceCount);
+
+    angle::Result setDrawElementsState(const gl::Context *context,
+                                       GLsizei count,
+                                       GLenum type,
+                                       const void *indices,
+                                       GLsizei instanceCount,
+                                       const void **outIndices);
+
+    angle::Result setDrawIndirectState(const gl::Context *context);
+
     std::shared_ptr<RendererGL> mRenderer;
 };
 

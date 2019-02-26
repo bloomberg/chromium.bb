@@ -19,8 +19,6 @@
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/components/proximity_auth/messenger_observer.h"
 #include "chromeos/components/proximity_auth/remote_status_update.h"
-#include "components/cryptauth/connection.h"
-#include "components/cryptauth/secure_context.h"
 #include "components/cryptauth/wire_message.h"
 
 namespace proximity_auth {
@@ -43,7 +41,6 @@ const char kMessageTypeUnlockResponse[] = "unlock_response";
 
 // The name for an unlock event originating from the local device.
 const char kUnlockEventName[] = "easy_unlock";
-const char kEasyUnlockFeatureName[] = "easy_unlock";
 
 // Serializes the |value| to a JSON string and returns the result.
 std::string SerializeValueToJson(const base::Value& value) {
@@ -64,28 +61,14 @@ std::string GetMessageType(const base::DictionaryValue& message) {
 }  // namespace
 
 MessengerImpl::MessengerImpl(
-    std::unique_ptr<cryptauth::Connection> connection,
-    std::unique_ptr<cryptauth::SecureContext> secure_context,
     std::unique_ptr<chromeos::secure_channel::ClientChannel> channel)
-    : connection_(std::move(connection)),
-      secure_context_(std::move(secure_context)),
-      channel_(std::move(channel)),
-      weak_ptr_factory_(this) {
-  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
-    DCHECK(!channel_->is_disconnected());
-    channel_->AddObserver(this);
-  } else {
-    DCHECK(connection_->IsConnected());
-    connection_->AddObserver(this);
-  }
+    : channel_(std::move(channel)), weak_ptr_factory_(this) {
+  DCHECK(!channel_->is_disconnected());
+  channel_->AddObserver(this);
 }
 
 MessengerImpl::~MessengerImpl() {
-  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
-    channel_->RemoveObserver(this);
-  } else if (connection_) {
-    connection_->RemoveObserver(this);
-  }
+  channel_->RemoveObserver(this);
 }
 
 void MessengerImpl::AddObserver(MessengerObserver* observer) {
@@ -97,11 +80,7 @@ void MessengerImpl::RemoveObserver(MessengerObserver* observer) {
 }
 
 bool MessengerImpl::SupportsSignIn() const {
-  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi))
-    return true;
-
-  return (secure_context_->GetProtocolVersion() ==
-          cryptauth::SecureContext::PROTOCOL_VERSION_THREE_ONE);
+  return true;
 }
 
 void MessengerImpl::DispatchUnlockEvent() {
@@ -149,16 +128,6 @@ void MessengerImpl::RequestUnlock() {
   ProcessMessageQueue();
 }
 
-cryptauth::SecureContext* MessengerImpl::GetSecureContext() const {
-  DCHECK(!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi));
-  return secure_context_.get();
-}
-
-cryptauth::Connection* MessengerImpl::GetConnection() const {
-  DCHECK(!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi));
-  return connection_.get();
-}
-
 chromeos::secure_channel::ClientChannel* MessengerImpl::GetChannel() const {
   if (channel_->is_disconnected())
     return nullptr;
@@ -182,37 +151,16 @@ void MessengerImpl::ProcessMessageQueue() {
   if (pending_message_ || queued_messages_.empty())
     return;
 
-  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi) &&
-      channel_->is_disconnected()) {
+  if (channel_->is_disconnected())
     return;
-  }
-
-  if (!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi) &&
-      connection_->is_sending_message()) {
-    return;
-  }
 
   pending_message_.reset(new PendingMessage(queued_messages_.front()));
   queued_messages_.pop_front();
 
-  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
-    channel_->SendMessage(
-        pending_message_->json_message,
-        base::BindOnce(&MessengerImpl::OnSendMessageResult,
-                       weak_ptr_factory_.GetWeakPtr(), true /* success */));
-  } else {
-    secure_context_->Encode(
-        pending_message_->json_message,
-        base::BindRepeating(&MessengerImpl::OnMessageEncoded,
-                            weak_ptr_factory_.GetWeakPtr()));
-  }
-}
-
-void MessengerImpl::OnMessageEncoded(const std::string& encoded_message) {
-  DCHECK(!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi));
-
-  connection_->SendMessage(std::make_unique<cryptauth::WireMessage>(
-      encoded_message, kEasyUnlockFeatureName));
+  channel_->SendMessage(
+      pending_message_->json_message,
+      base::BindOnce(&MessengerImpl::OnSendMessageResult,
+                     weak_ptr_factory_.GetWeakPtr(), true /* success */));
 }
 
 void MessengerImpl::HandleRemoteStatusUpdateMessage(
@@ -250,50 +198,12 @@ void MessengerImpl::HandleUnlockResponseMessage(
     observer.OnUnlockResponse(true);
 }
 
-void MessengerImpl::OnConnectionStatusChanged(
-    cryptauth::Connection* connection,
-    cryptauth::Connection::Status old_status,
-    cryptauth::Connection::Status new_status) {
-  DCHECK(!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi));
-
-  DCHECK_EQ(connection, connection_.get());
-  if (new_status == cryptauth::Connection::Status::DISCONNECTED) {
-    PA_LOG(INFO) << "Secure channel disconnected...";
-    connection_->RemoveObserver(this);
-    for (auto& observer : observers_)
-      observer.OnDisconnected();
-    // TODO(isherman): Determine whether it's also necessary/appropriate to fire
-    // this notification from the destructor.
-  }
-}
-
-void MessengerImpl::OnMessageReceived(
-    const cryptauth::Connection& connection,
-    const cryptauth::WireMessage& wire_message) {
-  DCHECK(!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi));
-
-  secure_context_->Decode(wire_message.payload(),
-                          base::BindRepeating(&MessengerImpl::HandleMessage,
-                                              weak_ptr_factory_.GetWeakPtr()));
-}
-
-void MessengerImpl::OnSendCompleted(const cryptauth::Connection& connection,
-                                    const cryptauth::WireMessage& wire_message,
-                                    bool success) {
-  DCHECK(!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi));
-
-  OnSendMessageResult(success);
-}
-
 void MessengerImpl::OnDisconnected() {
-  DCHECK(base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi));
-
   for (auto& observer : observers_)
     observer.OnDisconnected();
 }
 
 void MessengerImpl::OnMessageReceived(const std::string& payload) {
-  DCHECK(base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi));
   HandleMessage(payload);
 }
 

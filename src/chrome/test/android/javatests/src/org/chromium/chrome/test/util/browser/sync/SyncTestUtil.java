@@ -269,7 +269,6 @@ public final class SyncTestUtil {
     public static void encryptWithPassphrase(final String passphrase) {
         ThreadUtils.runOnUiThreadBlocking(
                 () -> ProfileSyncService.get().setEncryptionPassphrase(passphrase));
-        waitForCryptographer();
         // Make sure the new encryption settings make it to the server.
         SyncTestUtil.triggerSyncAndWaitForCompletion();
     }
@@ -280,20 +279,5 @@ public final class SyncTestUtil {
     public static void decryptWithPassphrase(final String passphrase) {
         ThreadUtils.runOnUiThreadBlocking(
                 () -> { ProfileSyncService.get().setDecryptionPassphrase(passphrase); });
-    }
-
-    /**
-     * Blocks until the sync server is verified to be using a passphrase.
-     */
-    private static void waitForCryptographer() {
-        CriteriaHelper.pollUiThread(
-                new Criteria("Timed out waiting for cryptographer to be ready.") {
-                    @Override
-                    public boolean isSatisfied() {
-                        ProfileSyncService syncService = ProfileSyncService.get();
-                        return syncService.isUsingSecondaryPassphrase()
-                                && syncService.isCryptographerReady();
-                    }
-                });
     }
 }

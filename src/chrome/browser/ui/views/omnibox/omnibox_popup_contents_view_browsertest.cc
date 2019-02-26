@@ -25,6 +25,7 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "content/public/test/test_utils.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/widget/widget.h"
@@ -39,19 +40,20 @@ namespace {
 // A View that positions itself over another View to intercept clicks.
 class ClickTrackingOverlayView : public views::View {
  public:
-  ClickTrackingOverlayView(views::View* over, gfx::Point* last_click)
-      : last_click_(last_click) {
+  explicit ClickTrackingOverlayView(views::View* over) {
     SetBoundsRect(over->bounds());
     over->parent()->AddChildView(this);
   }
 
   // views::View:
   void OnMouseEvent(ui::MouseEvent* event) override {
-    *last_click_ = event->location();
+    last_click_ = event->location();
   }
 
+  base::Optional<gfx::Point> last_click() const { return last_click_; }
+
  private:
-  gfx::Point* last_click_;
+  base::Optional<gfx::Point> last_click_;
 };
 
 // Helper to wait for theme changes. The wait is triggered when an instance of
@@ -141,18 +143,10 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest, PopupAlignment) {
   EXPECT_EQ(popup_rect.right(), alignment_rect.right());
 }
 
-#if defined(OS_MACOSX)
-// This test doesn't work on Mac because Mac doesn't theme the omnibox the way
-// it expects.
-#define MAYBE_ThemeIntegration DISABLED_ThemeIntegration
-#else
-#define MAYBE_ThemeIntegration ThemeIntegration
-#endif
-
 // Integration test for omnibox popup theming. This is a browser test since it
 // relies on initialization done in chrome_browser_main_extra_parts_views_linux
 // propagating through correctly to OmniboxPopupContentsView::GetTint().
-IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest, MAYBE_ThemeIntegration) {
+IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest, ThemeIntegration) {
   // Sanity check the bot: ensure the profile is configured to use the system
   // theme. On Linux, the default depends on a whitelist using the result of
   // base::nix::GetDesktopEnvironment(). E.g. KDE never uses the system theme.
@@ -195,20 +189,18 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest, MAYBE_ThemeIntegration) {
 
   EXPECT_EQ(selection_color_light, get_selection_color());
 
-#if defined(OS_MACOSX) || defined(USE_X11)
-  // Mac and system-themed Desktop Linux continue to use light theming in
-  // incognito windows.
-  const bool dark_used_in_system_incognito_theme = false;
+#if defined(USE_X11)
+  // System-themed Desktop Linux continues to use light theming in incognito
+  // windows.
+  const SkColor incognito_selection_color = selection_color_light;
 #else
-  const bool dark_used_in_system_incognito_theme = true;
+  const SkColor incognito_selection_color = selection_color_dark;
 #endif
 
   // Check unthemed incognito windows.
   Browser* incognito_browser = CreateIncognitoBrowser();
   browser_under_test = incognito_browser;
-  EXPECT_EQ(dark_used_in_system_incognito_theme ? selection_color_dark
-                                                : selection_color_light,
-            get_selection_color());
+  EXPECT_EQ(incognito_selection_color, get_selection_color());
 
   // Install a theme (in both browsers, since it's the same profile).
   extensions::ChromeTestExtensionLoader loader(browser()->profile());
@@ -240,18 +232,25 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest, MAYBE_ThemeIntegration) {
   EXPECT_EQ(selection_color_dark, get_selection_color());
 }
 
-// This is only enabled on ChromeOS for now, since it's hard to align an
-// EventGenerator when multiple native windows are involved (the sanity check
-// will fail). TODO(tapted): Enable everywhere.
-#if defined(OS_CHROMEOS)
-#define MAYBE_ClickOmnibox ClickOmnibox
-#else
+// TODO(tapted): https://crbug.com/905508 Fix and enable on Mac.
+#if defined(OS_MACOSX) && !defined(USE_AURA)
 #define MAYBE_ClickOmnibox DISABLED_ClickOmnibox
+#else
+#define MAYBE_ClickOmnibox ClickOmnibox
 #endif
 // Test that clicks over the omnibox do not hit the popup.
 IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest, MAYBE_ClickOmnibox) {
   CreatePopupForTestQuery();
-  ui::test::EventGenerator generator(browser()->window()->GetNativeWindow());
+
+  gfx::NativeWindow event_window = browser()->window()->GetNativeWindow();
+#if defined(USE_AURA)
+  event_window = event_window->GetRootWindow();
+#endif
+#if defined(OS_CHROMEOS)
+  if (features::IsUsingWindowService())
+    event_window = nullptr;
+#endif
+  ui::test::EventGenerator generator(event_window);
 
   OmniboxResultView* result = GetResultViewAt(0);
   ASSERT_TRUE(result);
@@ -263,11 +262,12 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest, MAYBE_ClickOmnibox) {
     const gfx::Point expected_point = result->GetLocalBounds().CenterPoint();
     EXPECT_NE(gfx::Point(), expected_point);
 
-    gfx::Point click;
-    ClickTrackingOverlayView overlay(result, &click);
+    ClickTrackingOverlayView overlay(result);
     generator.MoveMouseTo(result->GetBoundsInScreen().CenterPoint());
     generator.ClickLeftButton();
-    EXPECT_EQ(expected_point, click);
+    auto click = overlay.last_click();
+    ASSERT_TRUE(click.has_value());
+    ASSERT_EQ(expected_point, click.value());
   }
 
   // Select the text, so that we can test whether a click is received (which

@@ -14,6 +14,8 @@ jumbo_static_library("core") {
     "can_make_payment_query.h",
     "currency_formatter.cc",
     "currency_formatter.h",
+    "error_logger.cc",
+    "error_logger.h",
     "features.cc",
     "features.h",
     "journey_logger.cc",

@@ -268,7 +268,7 @@ bool Predicate::Evaluate(EvaluationContext& context) const {
   // foo[3] means foo[position()=3]
   if (result.IsNumber())
     return EqTestOp(EqTestOp::kOpcodeEqual, CreateFunction("position"),
-                    new Number(result.ToNumber()))
+                    MakeGarbageCollected<Number>(result.ToNumber()))
         .Evaluate(context)
         .ToBoolean();
 

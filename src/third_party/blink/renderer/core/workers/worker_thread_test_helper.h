@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/inspector/worker_devtools_params.h"
 #include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/parent_execution_context_task_runners.h"
@@ -27,7 +28,6 @@
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
 #include "third_party/blink/renderer/platform/waitable_event.h"
 #include "third_party/blink/renderer/platform/web_thread_supporting_gc.h"
@@ -53,7 +53,7 @@ class FakeWorkerGlobalScope : public WorkerGlobalScope {
 
   // EventTarget
   const AtomicString& InterfaceName() const override {
-    return EventTargetNames::DedicatedWorkerGlobalScope;
+    return event_target_names::kDedicatedWorkerGlobalScope;
   }
 
   // WorkerGlobalScope
@@ -91,8 +91,9 @@ class WorkerThreadForTest : public WorkerThread {
     Vector<CSPHeaderAndType> headers{
         {"contentSecurityPolicy", kContentSecurityPolicyHeaderTypeReport}};
     auto creation_params = std::make_unique<GlobalScopeCreationParams>(
-        script_url, ScriptType::kClassic, "fake user agent", headers,
-        kReferrerPolicyDefault, security_origin,
+        script_url, mojom::ScriptType::kClassic, "fake user agent",
+        nullptr /* web_worker_fetch_context */, headers,
+        network::mojom::ReferrerPolicy::kDefault, security_origin,
         false /* starter_secure_context */,
         CalculateHttpsState(security_origin), worker_clients,
         mojom::IPAddressSpace::kLocal, nullptr,
@@ -102,10 +103,9 @@ class WorkerThreadForTest : public WorkerThread {
 
     Start(std::move(creation_params),
           WorkerBackingThreadStartupData::CreateDefault(),
-          WorkerInspectorProxy::PauseOnWorkerStart::kDontPause,
+          std::make_unique<WorkerDevToolsParams>(),
           parent_execution_context_task_runners);
-    EvaluateClassicScript(script_url, kOpaqueResource, source,
-                          nullptr /* cached_meta_data */,
+    EvaluateClassicScript(script_url, source, nullptr /* cached_meta_data */,
                           v8_inspector::V8StackTraceId());
   }
 
@@ -120,7 +120,8 @@ class WorkerThreadForTest : public WorkerThread {
  protected:
   WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
       std::unique_ptr<GlobalScopeCreationParams> creation_params) override {
-    return new FakeWorkerGlobalScope(std::move(creation_params), this);
+    return MakeGarbageCollected<FakeWorkerGlobalScope>(
+        std::move(creation_params), this);
   }
 
  private:

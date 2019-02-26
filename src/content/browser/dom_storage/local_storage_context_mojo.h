@@ -34,7 +34,7 @@ class SpecialStoragePolicy;
 namespace content {
 
 class DOMStorageTaskRunner;
-struct LocalStorageUsageInfo;
+struct StorageUsageInfo;
 
 // Used for mojo-based LocalStorage implementation (can be disabled with
 // --disable-mojo-local-storage for now).
@@ -46,7 +46,7 @@ class CONTENT_EXPORT LocalStorageContextMojo
     : public base::trace_event::MemoryDumpProvider {
  public:
   using GetStorageUsageCallback =
-      base::OnceCallback<void(std::vector<LocalStorageUsageInfo>)>;
+      base::OnceCallback<void(std::vector<StorageUsageInfo>)>;
 
   LocalStorageContextMojo(
       scoped_refptr<base::SequencedTaskRunner> task_runner,
@@ -62,6 +62,8 @@ class CONTENT_EXPORT LocalStorageContextMojo
   // |callback| is called when the deletion is sent to the database and
   // GetStorageUsage() will not return entries for |origin| anymore.
   void DeleteStorage(const url::Origin& origin, base::OnceClosure callback);
+  // Ensure that no traces of deleted data are left in the backing storage.
+  void PerformCleanup(base::OnceClosure callback);
   void Flush();
   void FlushOriginForTesting(const url::Origin& origin);
 
@@ -116,6 +118,7 @@ class CONTENT_EXPORT LocalStorageContextMojo
   void DeleteAndRecreateDatabase(const char* histogram_name);
   void OnDBDestroyed(bool recreate_in_memory,
                      leveldb::mojom::DatabaseError status);
+  void OnMojoConnectionDestroyed();
 
   // The (possibly delayed) implementation of OpenLocalStorage(). Can be called
   // directly from that function, or through |on_database_open_callbacks_|.
@@ -130,7 +133,7 @@ class CONTENT_EXPORT LocalStorageContextMojo
                      leveldb::mojom::DatabaseError status,
                      std::vector<leveldb::mojom::KeyValuePtr> data);
 
-  void OnGotStorageUsageForShutdown(std::vector<LocalStorageUsageInfo> usage);
+  void OnGotStorageUsageForShutdown(std::vector<StorageUsageInfo> usage);
   void OnShutdownComplete(leveldb::mojom::DatabaseError error);
 
   void GetStatistics(size_t* total_cache_size, size_t* unused_area_count);

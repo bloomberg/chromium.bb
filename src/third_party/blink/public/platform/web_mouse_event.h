@@ -12,7 +12,7 @@ namespace blink {
 
 class WebGestureEvent;
 
-// See WebInputEvent.h for details why this pack is here.
+// See web_input_event.h for details why this pack is here.
 #pragma pack(push, 4)
 
 // WebMouseEvent --------------------------------------------------------------
@@ -75,7 +75,6 @@ class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
                                       base::TimeTicks time_stamp_param,
                                       PointerId id_param = kMousePointerId);
 
-  BLINK_PLATFORM_EXPORT WebFloatPoint MovementInRootFrame() const;
   BLINK_PLATFORM_EXPORT WebFloatPoint PositionInRootFrame() const;
 
   // Sets any scaled values to be their computed values and sets |frame_scale_|

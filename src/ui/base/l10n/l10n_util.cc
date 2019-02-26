@@ -471,6 +471,10 @@ std::string GetApplicationLocaleInternal(const std::string& pref_locale) {
 
 #elif defined(OS_ANDROID)
 
+  // Try pref_locale first.
+  if (!pref_locale.empty())
+    candidates.push_back(base::i18n::GetCanonicalLocale(pref_locale));
+
   // On Android, query java.util.Locale for the default locale.
   candidates.push_back(base::android::GetDefaultLocaleString());
 

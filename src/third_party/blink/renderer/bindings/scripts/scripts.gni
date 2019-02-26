@@ -62,8 +62,6 @@ web_idl_scripts = get_path_info([
                                   "web_idl/argument.py",
                                   "web_idl/attribute.py",
                                   "web_idl/callback_function.py",
-                                  "web_idl/collection.py",
-                                  "web_idl/collector.py",
                                   "web_idl/constant.py",
                                   "web_idl/dictionary.py",
                                   "web_idl/ecma_script_types.py",
@@ -500,11 +498,13 @@ template("generate_web_idl_collection") {
     output_path = "${output_dir}/${output_file_name}"
     inputs = [
                script,
-               "${bindings_scripts_dir}/utilities.py",
-             ] + web_idl_scripts + invoker.sources
+               "${bindings_scripts_dir}/web_idl/collection.py",
+               "${bindings_scripts_dir}/web_idl/collector.py",
+             ] + idl_lexer_parser_files + invoker.sources
     outputs = [
       output_path,
     ]
+    deps = invoker.deps
 
     # List input file names in a temporary file.
     response_file_contents = rebase_path(invoker.sources, root_build_dir)

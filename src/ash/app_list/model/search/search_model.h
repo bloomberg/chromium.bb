@@ -54,8 +54,15 @@ class APP_LIST_MODEL_EXPORT SearchModel {
 
   SearchResult* FindSearchResult(const std::string& id);
 
+  // Returns the first available SearchResult which has not been marked as
+  // hidden by its source. Returns null if no such result exists.
+  SearchResult* GetFirstVisibleResult();
+
   // Deletes all search results. This is used in profile switches.
   void DeleteAllResults();
+
+  // Delete result by the given id.
+  void DeleteResultById(const std::string& id);
 
  private:
   std::unique_ptr<SearchBoxModel> search_box_;

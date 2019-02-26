@@ -105,6 +105,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
   // we switch to using bluetooth identifiers throughout Chrome.
   // http://crbug.com/507824
   static std::string GetPeripheralHashAddress(CBPeripheral* peripheral);
+  static std::string GetPeripheralHashAddress(
+      base::StringPiece device_identifier);
 
  private:
   friend class BluetoothAdapterMac;
@@ -125,6 +127,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
 
   // Returns the Bluetooth adapter.
   BluetoothAdapterMac* GetMacAdapter();
+  BluetoothAdapterMac* GetMacAdapter() const;
 
   // Returns the CoreBluetooth Peripheral.
   CBPeripheral* GetPeripheral();

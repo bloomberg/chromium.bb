@@ -247,7 +247,8 @@ static int combined_motion_search(VP9_COMP *cpi, MACROBLOCK *x,
         x, &tmp_mv->as_mv, &ref_mv, cpi->common.allow_high_precision_mv,
         x->errorperbit, &cpi->fn_ptr[bsize], subpel_force_stop,
         cpi->sf.mv.subpel_search_level, cond_cost_list(cpi, cost_list),
-        x->nmvjointcost, x->mvcost, &dis, &x->pred_sse[ref], NULL, 0, 0);
+        x->nmvjointcost, x->mvcost, &dis, &x->pred_sse[ref], NULL, 0, 0,
+        cpi->sf.use_accurate_subpel_search);
     *rate_mv = vp9_mv_bit_cost(&tmp_mv->as_mv, &ref_mv, x->nmvjointcost,
                                x->mvcost, MV_COST_WEIGHT);
   }
@@ -1539,7 +1540,8 @@ static int search_new_mv(VP9_COMP *cpi, MACROBLOCK *x,
         cpi->common.allow_high_precision_mv, x->errorperbit,
         &cpi->fn_ptr[bsize], cpi->sf.mv.subpel_force_stop,
         cpi->sf.mv.subpel_search_level, cond_cost_list(cpi, cost_list),
-        x->nmvjointcost, x->mvcost, &dis, &x->pred_sse[ref_frame], NULL, 0, 0);
+        x->nmvjointcost, x->mvcost, &dis, &x->pred_sse[ref_frame], NULL, 0, 0,
+        cpi->sf.use_accurate_subpel_search);
   } else if (svc->use_base_mv && svc->spatial_layer_id) {
     if (frame_mv[NEWMV][ref_frame].as_int != INVALID_MV) {
       const int pre_stride = xd->plane[0].pre[0].stride;
@@ -1730,11 +1732,21 @@ void vp9_pick_inter_mode(VP9_COMP *cpi, MACROBLOCK *x, TileDataEnc *tile_data,
   if (!cpi->use_svc ||
       (svc->use_gf_temporal_ref_current_layer &&
        !svc->layer_context[svc->temporal_layer_id].is_key_frame)) {
+    struct scale_factors *const sf_last = &cm->frame_refs[LAST_FRAME - 1].sf;
+    struct scale_factors *const sf_golden =
+        &cm->frame_refs[GOLDEN_FRAME - 1].sf;
     gf_temporal_ref = 1;
-    if (cpi->rc.avg_frame_low_motion > 70)
-      thresh_svc_skip_golden = 500;
-    else
-      thresh_svc_skip_golden = 0;
+    // For temporal long term prediction, check that the golden reference
+    // is same scale as last reference, otherwise disable.
+    if ((sf_last->x_scale_fp != sf_golden->x_scale_fp) ||
+        (sf_last->y_scale_fp != sf_golden->y_scale_fp)) {
+      gf_temporal_ref = 0;
+    } else {
+      if (cpi->rc.avg_frame_low_motion > 70)
+        thresh_svc_skip_golden = 500;
+      else
+        thresh_svc_skip_golden = 0;
+    }
   }
 
   init_ref_frame_cost(cm, xd, ref_frame_cost);
@@ -2758,7 +2770,8 @@ void vp9_pick_inter_mode_sub8x8(VP9_COMP *cpi, MACROBLOCK *x, int mi_row,
                 &cpi->fn_ptr[bsize], cpi->sf.mv.subpel_force_stop,
                 cpi->sf.mv.subpel_search_level, cond_cost_list(cpi, cost_list),
                 x->nmvjointcost, x->mvcost, &dummy_dist,
-                &x->pred_sse[ref_frame], NULL, 0, 0);
+                &x->pred_sse[ref_frame], NULL, 0, 0,
+                cpi->sf.use_accurate_subpel_search);
 
             xd->mi[0]->bmi[i].as_mv[0].as_mv = tmp_mv;
           } else {

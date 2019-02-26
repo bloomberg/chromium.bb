@@ -700,6 +700,7 @@ var setupIndexedQuadWithOptions = function (gl, options) {
 
   if (options.colorLocation !== undefined) {
     var colors = new Float32Array(numVerts * 4);
+    poffset = 0;
     for (var yy = 0; yy <= gridRes; ++yy) {
       for (var xx = 0; xx <= gridRes; ++xx) {
         if (options.color !== undefined) {
@@ -1510,7 +1511,7 @@ var create3DContext = function(opt_canvas, opt_attributes, opt_version) {
     attributes.antialias = false;
   }
   if (!opt_version) {
-    opt_version = parseInt(getUrlOptions().webglVersion, 10) || default3DContextVersion;
+    opt_version = getDefault3DContextVersion();
   }
   opt_canvas = opt_canvas || document.createElement("canvas");
   if (typeof opt_canvas == 'string') {
@@ -1682,6 +1683,45 @@ var glErrorShouldBeImpl = function(gl, glErrors, reportSuccesses, opt_msg) {
     testPassed(msg + expected + " : " + opt_msg);
   }
   return err;
+};
+
+/**
+ * Tests that a function throws or not.
+ * @param {!WebGLContext} gl The WebGLContext to use.
+ * @param throwType Type of thrown error (e.g. TypeError), or false.
+ * @param {string} info Info on what's being tested
+ * @param {function} func The func to test.
+ */
+var shouldThrow = function(gl, throwType, info, func) {
+  while (gl.getError()) {}
+
+  var shouldThrow = (throwType != false);
+
+  try {
+    func();
+
+    if (shouldThrow) {
+      testFailed("Should throw a " + throwType.name + ": " + info);
+    } else {
+      testPassed("Should not have thrown: " + info);
+    }
+  } catch (e) {
+    if (shouldThrow) {
+      if (e instanceof throwType) {
+        testPassed("Should throw a " + throwType.name + ": " + info);
+      } else {
+        testFailed("Should throw a " + throwType.name + ", threw " + e.name + ": " + info);
+      }
+    } else {
+      testFailed("Should not have thrown: " + info);
+    }
+
+    if (gl.getError()) {
+      testFailed("Should not generate an error when throwing: " + info);
+    }
+  }
+
+  while (gl.getError()) {}
 };
 
 /**
@@ -2460,6 +2500,7 @@ var makeImageFromCanvas = function(canvas, onload, imageFormat) {
  */
 var makeVideo = function(src, onerror) {
   var vid = document.createElement('video');
+  vid.muted = true;
   if (onerror) {
     vid.onerror = onerror;
   } else {
@@ -2618,6 +2659,28 @@ var getSupportedExtensionWithKnownPrefixes = function(gl, name) {
     }
   }
 };
+
+/**
+ * @param {WebGLRenderingContext} gl The WebGLRenderingContext to use.
+ * @param {string} name Name of extension to look for.
+ * @param {boolean} extensionEnabled True if the extension was enabled successfully via gl.getExtension().
+ */
+var runExtensionSupportedTest = function(gl, name, extensionEnabled) {
+  var prefixedName = getSupportedExtensionWithKnownPrefixes(gl, name);
+  if (prefixedName !== undefined) {
+      if (extensionEnabled) {
+          testPassed(name + " listed as supported and getExtension succeeded");
+      } else {
+          testFailed(name + " listed as supported but getExtension failed");
+      }
+  } else {
+      if (extensionEnabled) {
+          testFailed(name + " not listed as supported but getExtension succeeded");
+      } else {
+          testPassed(name + " not listed as supported and getExtension failed -- this is legal");
+      }
+  }
+}
 
 /**
  * Given an extension name like WEBGL_compressed_texture_s3tc
@@ -3220,6 +3283,7 @@ var API = {
   makeImageFromCanvas: makeImageFromCanvas,
   makeVideo: makeVideo,
   error: error,
+  runExtensionSupportedTest: runExtensionSupportedTest,
   shallowCopyObject: shallowCopyObject,
   setDefault3DContextVersion: setDefault3DContextVersion,
   setupColorQuad: setupColorQuad,
@@ -3243,6 +3307,7 @@ var API = {
   startPlayingAndWaitForVideo: startPlayingAndWaitForVideo,
   startsWith: startsWith,
   shouldGenerateGLError: shouldGenerateGLError,
+  shouldThrow: shouldThrow,
   readFile: readFile,
   readFileList: readFileList,
   replaceParams: replaceParams,

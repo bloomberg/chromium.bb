@@ -14,6 +14,8 @@
 #include "fxjs/cfxjse_runtimedata.h"
 #include "fxjs/cjs_object.h"
 #include "third_party/base/ptr_util.h"
+#include "third_party/base/stl_util.h"
+#include "v8/include/v8-util.h"
 
 class CFXJS_PerObjectData;
 
@@ -124,15 +126,9 @@ class CFXJS_ObjDefinition {
         m_pIsolate(isolate) {
     v8::Isolate::Scope isolate_scope(isolate);
     v8::HandleScope handle_scope(isolate);
-
     v8::Local<v8::FunctionTemplate> fun = v8::FunctionTemplate::New(isolate);
     fun->InstanceTemplate()->SetInternalFieldCount(2);
-    fun->SetCallHandler([](const v8::FunctionCallbackInfo<v8::Value>& info) {
-      v8::Local<v8::Object> holder = info.Holder();
-      ASSERT(holder->InternalFieldCount() == 2);
-      holder->SetAlignedPointerInInternalField(0, nullptr);
-      holder->SetAlignedPointerInInternalField(1, nullptr);
-    });
+    fun->SetCallHandler(CallHandler, v8::Number::New(isolate, eObjType));
     if (eObjType == FXJSOBJTYPE_GLOBAL) {
       fun->InstanceTemplate()->Set(
           v8::Symbol::GetToStringTag(isolate),
@@ -140,9 +136,29 @@ class CFXJS_ObjDefinition {
               .ToLocalChecked());
     }
     m_FunctionTemplate.Reset(isolate, fun);
+    m_Signature.Reset(isolate, v8::Signature::New(isolate, fun));
+  }
 
-    v8::Local<v8::Signature> sig = v8::Signature::New(isolate, fun);
-    m_Signature.Reset(isolate, sig);
+  static void CallHandler(const v8::FunctionCallbackInfo<v8::Value>& info) {
+    v8::Isolate* isolate = info.GetIsolate();
+    if (!info.IsConstructCall()) {
+      isolate->ThrowException(
+          v8::String::NewFromUtf8(isolate, "illegal constructor",
+                                  v8::NewStringType::kNormal)
+              .ToLocalChecked());
+      return;
+    }
+    if (info.Data().As<v8::Int32>()->Value() != FXJSOBJTYPE_DYNAMIC) {
+      isolate->ThrowException(
+          v8::String::NewFromUtf8(isolate, "not a dynamic object",
+                                  v8::NewStringType::kNormal)
+              .ToLocalChecked());
+      return;
+    }
+    v8::Local<v8::Object> holder = info.Holder();
+    ASSERT(holder->InternalFieldCount() == 2);
+    holder->SetAlignedPointerInInternalField(0, nullptr);
+    holder->SetAlignedPointerInInternalField(1, nullptr);
   }
 
   v8::Isolate* GetIsolate() const { return m_pIsolate.Get(); }
@@ -297,6 +313,10 @@ void FXJS_PerIsolateData::SetUp(v8::Isolate* pIsolate) {
 FXJS_PerIsolateData* FXJS_PerIsolateData::Get(v8::Isolate* pIsolate) {
   return static_cast<FXJS_PerIsolateData*>(
       pIsolate->GetData(g_embedderDataSlot));
+}
+
+int FXJS_PerIsolateData::MaxObjDefinitionID() const {
+  return pdfium::CollectionSize<int>(m_ObjectDefnArray);
 }
 
 FXJS_PerIsolateData::FXJS_PerIsolateData(v8::Isolate* pIsolate)
@@ -583,6 +603,10 @@ v8::Local<v8::Object> CFXJS_Engine::GetThisObj() {
 
 void CFXJS_Engine::Error(const WideString& message) {
   GetIsolate()->ThrowException(NewString(message.AsStringView()));
+}
+
+v8::Local<v8::Context> CFXJS_Engine::GetV8Context() {
+  return v8::Local<v8::Context>::New(GetIsolate(), m_V8Context);
 }
 
 // static

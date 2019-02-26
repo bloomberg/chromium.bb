@@ -188,9 +188,9 @@ void RuntimeCallStats::AddCounterMapStatsToBuilder(
 }
 #endif
 
-const char* const RuntimeCallStatsScopedTracer::s_category_group_ =
+constexpr const char* RuntimeCallStatsScopedTracer::s_category_group_ =
     TRACE_DISABLED_BY_DEFAULT("v8.runtime_stats");
-const char* const RuntimeCallStatsScopedTracer::s_name_ =
+constexpr const char* RuntimeCallStatsScopedTracer::s_name_ =
     "BlinkRuntimeCallStats";
 
 void RuntimeCallStatsScopedTracer::AddBeginTraceEventIfEnabled(
